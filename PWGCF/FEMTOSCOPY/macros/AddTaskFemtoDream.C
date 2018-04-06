@@ -17,7 +17,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool eventMixing=true,//12
     bool phiSpin=true,//13
     bool ContributionSplitting=false,//14
-    bool ContributionSplittingDaug=false)//15
+    bool ContributionSplittingDaug=false,//15
+    bool RunNumberQA=false)//16
 {
 	// the manager is static, so get the existing manager via the static method
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -134,6 +135,13 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	AntiCascadeCuts->SetPDGCodePosDaug(211);
 	AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
 	AntiCascadeCuts->SetPDGCodeBach(-211);
+
+	if (RunNumberQA) {
+	  v0Cuts->SetRunNumberQA(265525,267167);
+	  Antiv0Cuts->SetRunNumberQA(265525,267167);
+	  CascadeCuts->SetRunNumberQA(265525,267167);
+	  AntiCascadeCuts->SetRunNumberQA(265525,267167);
+	}
 
   //Thanks, CINT - will not compile due to an illegal constructor
   //std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -340,7 +348,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	}
 //	task->SetDebugLevel(0);
 	task->SetEvtCutQA(true);
-	task->SetTrackBufferSize(10000);
+	task->SetTrackBufferSize(2000);
 	task->SetEventCuts(evtCuts);
 	task->SetTrackCuts(TrackCuts);
 	task->SetAntiTrackCuts(AntiTrackCuts);

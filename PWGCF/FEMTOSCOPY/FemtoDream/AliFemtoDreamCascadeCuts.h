@@ -28,6 +28,9 @@ class AliFemtoDreamCascadeCuts {
   bool GetIsMonteCarlo() {return fMCData;};
   void SetContributionSplitting(bool contrSplit){
     fContribSplitting=contrSplit;};
+  void SetRunNumberQA(int iMinRun,int iMaxRun) {
+    fRunNumberQA=true;fMinRunNumber=iMinRun;fMaxRunNumber=iMaxRun;
+  }
   void SetXiMassRange(float mass,float width){
     fcutXiMass=true;fXiMass=mass;fXiMassWidth=width;};
   void SetXiCharge(int charge){fcutXiCharge=true;fXiCharge=charge;}
@@ -81,56 +84,59 @@ class AliFemtoDreamCascadeCuts {
  private:
   AliFemtoDreamCascadeHist *fHist;            //!
   AliFemtoDreamv0MCHist *fMCHist;             //!
-  AliFemtoDreamTrackCuts *fNegCuts;
-  AliFemtoDreamTrackCuts *fPosCuts;
-  AliFemtoDreamTrackCuts *fBachCuts;
-  TList *fHistList;
-  TList *fMCHistList;
-  bool fMinimalBooking;
-  bool fMCData;
-  bool fContribSplitting;
-  bool fCutPt;
-  double fPtMin;
-  double fPtMax;
-  bool fCutPtv0;
-  double fPtMinv0;
-  double fPtMaxv0;
-  bool fcutXiMass;
-  float fXiMass;
-  float fXiMassWidth;
-  bool fcutXiCharge;
-  int fXiCharge;
-  bool fcutDCAXiDaug;
-  float fMaxDCAXiDaug;
-  bool fcutMinDistVtxBach;
-  float fMinDistVtxBach;
-  bool fcutCPAXi;
-  float fCPAXi;
-  bool fcutXiTransRadius;
-  float fMinXiTransRadius;
-  float fMaxXiTransRadius;
-  bool fcutv0Mass;
-  float fv0Mass;
-  float fv0Width;
-  bool fcutv0MaxDCADaug;
-  float fv0MaxDCADaug;
-  bool fcutCPAv0;
-  float fCPAv0;
-  bool fcutv0TransRadius;
-  float fMinv0TransRadius;
-  float fMaxv0TransRadius;
-  bool fcutv0MinDistVtx;
-  float fv0MinDistVtx;
-  bool fcutv0DaugMinDistVtx;
-  float fv0DaugMinDistVtx;
-  bool fRejOmega;
-  float fRejOmegaMass;
-  float fRejOmegaWidth;
-  int fPDGCasc;
-  int fPDGv0;
-  int fPDGPosDaug;
-  int fPDGNegDaug;
-  int fPDGBachDaug;
+  AliFemtoDreamTrackCuts *fNegCuts;   //
+  AliFemtoDreamTrackCuts *fPosCuts;   //
+  AliFemtoDreamTrackCuts *fBachCuts;  //
+  TList *fHistList; //!
+  TList *fMCHistList;                 //!
+  bool fMinimalBooking;               //
+  bool fMCData;                       //
+  bool fContribSplitting;             //
+  bool fRunNumberQA;                  //
+  int fMinRunNumber;                  //
+  int fMaxRunNumber;                  //
+  bool fCutPt;                        //
+  double fPtMin;                  //
+  double fPtMax;          //
+  bool fCutPtv0;          //
+  double fPtMinv0;  //
+  double fPtMaxv0;    //
+  bool fcutXiMass;//
+  float fXiMass;//
+  float fXiMassWidth; //
+  bool fcutXiCharge; //
+  int fXiCharge; //
+  bool fcutDCAXiDaug; //
+  float fMaxDCAXiDaug;  //
+  bool fcutMinDistVtxBach;  //
+  float fMinDistVtxBach;    //
+  bool fcutCPAXi;     //
+  float fCPAXi;   //
+  bool fcutXiTransRadius; //
+  float fMinXiTransRadius;  //
+  float fMaxXiTransRadius;//
+  bool fcutv0Mass;  //
+  float fv0Mass;    //
+  float fv0Width;   //
+  bool fcutv0MaxDCADaug;  //
+  float fv0MaxDCADaug;    //
+  bool fcutCPAv0;     //
+  float fCPAv0;       //
+  bool fcutv0TransRadius;       //
+  float fMinv0TransRadius;      //
+  float fMaxv0TransRadius;      //
+  bool fcutv0MinDistVtx;        //
+  float fv0MinDistVtx;          //
+  bool fcutv0DaugMinDistVtx;    //
+  float fv0DaugMinDistVtx;      //
+  bool fRejOmega;               //
+  float fRejOmegaMass;          //
+  float fRejOmegaWidth;         //
+  int fPDGCasc;                 //
+  int fPDGv0;                   //
+  int fPDGPosDaug;              //
+  int fPDGNegDaug;              //
+  int fPDGBachDaug;             //
   ClassDef(AliFemtoDreamCascadeCuts,2)
 };
 
