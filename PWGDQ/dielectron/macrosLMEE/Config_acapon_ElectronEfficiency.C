@@ -109,6 +109,7 @@ AliAnalysisCuts* SetupEventCuts()
 	// event cuts are identical for all analysis 'cutInstance's that run together!
 	AliDielectronEventCuts *eventCuts = new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
 
+  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
 	eventCuts->SetRequireVertex();
 	eventCuts->SetMinVtxContributors(1);
 	eventCuts->SetVertexZ(-10.,10.);
@@ -157,6 +158,8 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutInstance, Bool_t hasITS = kTRUE)
 	if(cutInstance == 0){
 		//FilterBit 4 used to filter AODs
 		//Set via GetStandardITSTPCTrackCuts 2011(kFALSE, 1)
+		fesdTrackCuts->SetPtRange(0.2, 1e30);
+    fesdTrackCuts->SetEtaRange(-0.8, 0.8);
 		fesdTrackCuts->SetMinNCrossedRowsTPC(70);
 		//fesdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
 		fesdTrackCuts->SetMaxChi2PerClusterTPC(4);
