@@ -38,12 +38,12 @@ class AliEventPoolManager;
 class AliEventPool;
 class TObjArray;
 	//Lucile
-class AliCaloTrackAODReader;
-class AliCaloTrackReader;
-	//exotic
-class AliEMCALRecoUtils;
+//class AliCaloTrackAODReader;
+//class AliCaloTrackReader;
+//  //exotic
+//class AliEMCALRecoUtils;
 class AliAODReader;
-class AliCalorimeterUtils;
+//class AliCalorimeterUtils;
 class AliAnalysisUtils;
 
 	// --- ROOT system ---
@@ -57,12 +57,11 @@ class TArrayF;
 	//--- ANALYSIS system ---
 class AliVEvent;
 class AliVTrack;
-class AliAODPWG4Particle;
 class AliAODCaloCluster;
 class AliVCaloCells;
-class AliPHOSGeoUtils;
-class AliEMCALGeometry;
-#include "AliEMCALRecoUtils.h"
+//class AliPHOSGeoUtils;
+//class AliEMCALGeometry;
+//#include "AliEMCALRecoUtils.h"
 
 
 	//______________________________________________________________________
