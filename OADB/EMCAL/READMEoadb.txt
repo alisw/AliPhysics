@@ -27,5 +27,7 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20180311: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC17o,p,q time calibrations
 - 20180320: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC17j time calibrations
 - 20180403: Update of EMCALBadChannels.root with LHC16f BC maps
+- 20180406: !! Fix for AliOADBContainer deletion problem uploaded, all files recreated for this !!
+- 20180406: Update of EMCALBadChannels.root with new maps for LHC17i,l and additional bad channels for LHC16h,i,j,l,q,t
 
 */
