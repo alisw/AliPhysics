@@ -75,14 +75,23 @@ fUseCentrality(kFALSE),
 fCentralityEstimator("V0M"),
 fCentralityPercentileMin(0.0),
 fCentralityPercentileMax(5.0),
-fInjectedSignals(kTRUE),
-fRejectLabelAboveThreshold(kTRUE),
+fInjectedSignals(kFALSE),
+fRejectLabelAboveThreshold(kFALSE),
 fGenToBeKept("Hijing"),
-fRejectCheckGenName(kTRUE),
+fRejectCheckGenName(kFALSE),
 fPIDResponse(0),
+fElectronRejection(kFALSE),
+fElectronOnlyRejection(kFALSE),
+fElectronRejectionNSigma(-1.),
+fElectronRejectionMinPt(0.),
+fElectronRejectionMaxPt(1000.),
 fPIDCombined(0),
 fUsePIDnSigmaComb(kTRUE),
 fBayesPIDThr(0.8),
+fUsePIDstrategy(kFALSE),
+fUsePIDFromPDG(kFALSE),
+fpartOfInterest(AliPID::kPion),
+fPDGCodeWanted(0),
 fVxMax(3.0),
 fVyMax(3.0),
 fVzMax(10.),
@@ -103,10 +112,8 @@ fEtaBin(100), //=100 (BF) 16
 fdEtaBin(64), //=64 (BF)  16
 fPtBin(100), //=100 (BF)  36
 fHistSurvived4EtaPtPhiPlus(0),
-fHistSurvived8EtaPtPhiPlus(0),
-fUseParticleID(kTRUE),
-fpartOfInterest(AliPID::kPion),
-fPDGCodeWanted(0){
+fHistSurvived8EtaPtPhiPlus(0)
+{
     
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -152,14 +159,23 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fCentralityEstimator("V0M"), 
     fCentralityPercentileMin(0.0), 
     fCentralityPercentileMax(5.0), 
-    fInjectedSignals(kTRUE),
-    fRejectLabelAboveThreshold(kTRUE),
+    fInjectedSignals(kFALSE),
+    fRejectLabelAboveThreshold(kFALSE),
     fGenToBeKept("Hijing"),
-    fRejectCheckGenName(kTRUE),
+    fRejectCheckGenName(kFALSE),
     fPIDResponse(0),
+    fElectronRejection(kFALSE),
+    fElectronOnlyRejection(kFALSE),
+    fElectronRejectionNSigma(-1.),
+    fElectronRejectionMinPt(0.),
+    fElectronRejectionMaxPt(1000.),
     fPIDCombined(0),
     fUsePIDnSigmaComb(kTRUE),
     fBayesPIDThr(0.8),
+    fUsePIDstrategy(kFALSE),
+    fUsePIDFromPDG(kFALSE),
+    fpartOfInterest(AliPID::kPion),
+    fPDGCodeWanted(0),
     fVxMax(3.0), 
     fVyMax(3.0),
     fVzMax(10.), 
@@ -180,10 +196,8 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fdEtaBin(64), //=64 (BF)  16
     fPtBin(100), //=100 (BF)  36
     fHistSurvived4EtaPtPhiPlus(0),
-    fHistSurvived8EtaPtPhiPlus(0),
-    fUseParticleID(kTRUE),
-    fpartOfInterest(AliPID::kPion),
-    fPDGCodeWanted(0){   
+    fHistSurvived8EtaPtPhiPlus(0)
+   {   
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -236,7 +250,7 @@ void AliAnalysisTaskEffContBF::UserCreateOutputObjects() {
   Double_t nArrayDEta[17]={0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6}; 
   //====================================================//
 
-  if (fUseParticleID){
+  if (fUsePIDFromPDG){
     fPDGCodeWanted = AliPID::ParticleCode(fpartOfInterest);
     Printf("******************** fPDGCodeWanted =%d ******************", fPDGCodeWanted);
   }
@@ -601,7 +615,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 	      // ==============================================================================================
 
 
-		if (fUseParticleID){
+		if (fUsePIDFromPDG || fUsePIDstrategy){
 		  Int_t pdgcode = AODmcTrack->GetPdgCode();
 		  if (TMath::Abs(pdgcode) != fPDGCodeWanted) continue;
 		}
@@ -654,7 +668,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  }  
 		}
 
-		if (fUseParticleID){
+		if (fUsePIDFromPDG || fUsePIDstrategy ){
 
 		  Int_t pdgcode = mcTrack->GetPdgCode();
 		  if (TMath::Abs(pdgcode) != fPDGCodeWanted) continue;
@@ -724,7 +738,7 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                   if(mcLabel != label) continue;
                   // if(label > trackAOD->GetLabel()) continue; // MODIFIED 11.01.2017 (take all labels for efficiency)
 		  
-                  if(fUseParticleID){
+                  if(fUsePIDFromPDG){
                       AliAODMCParticle *mcTracMatchedWithReco = (AliAODMCParticle*) mcEvent->GetTrack(label);
                       if (!mcTracMatchedWithReco) {
                           AliError(Form("ERROR: Could not receive track %d (match reco - gen)", label));
@@ -738,16 +752,49 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                   //acceptance
                   if(TMath::Abs(trackAOD->Eta()) > fMaxEta) continue;
                   if((trackAOD->Pt() > fMinPt)&&(trackAOD->Pt() < fMaxPt)) {
-                      level[k]  = 2;
+		    level[k]  = 2;
                   }else{ continue;}
-
-
+		  
                   Short_t gCharge = trackAOD->Charge();
                   Double_t phiRad = trackAOD->Phi();
                   Double_t mom = trackAOD->P();
+
+		  
+		  if(fElectronRejection) {
+		    
+		    // get the electron nsigma
+		    Double_t nSigma = fPIDResponse->NumberOfSigmasTPC(trackAOD,(AliPID::EParticleType)AliPID::kElectron);
+		    fHistNSigmaTPCvsPtbeforePID->Fill(trackAOD->Pt(),nSigma);		    
+		    
+		    // check only for given momentum range
+		    if( trackAOD->Pt() > fElectronRejectionMinPt && trackAOD->Pt() < fElectronRejectionMaxPt ){
+		      
+		      //look only at electron nsigma
+		      if(!fElectronOnlyRejection){
+			
+			//Make the decision based on the n-sigma of electrons
+			if(TMath::Abs(nSigma) < fElectronRejectionNSigma) continue;
+		      }
+		      else{
+			
+			Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackAOD,(AliPID::EParticleType)AliPID::kPion));
+			Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackAOD,(AliPID::EParticleType)AliPID::kKaon));
+			Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackAOD,(AliPID::EParticleType)AliPID::kProton));
+			
+			//Make the decision based on the n-sigma of electrons exclusively ( = track not in nsigma region for other species)
+			if(TMath::Abs(nSigma) < fElectronRejectionNSigma
+			   && nSigmaPions   > fElectronRejectionNSigma
+			   && nSigmaKaons   > fElectronRejectionNSigma
+			   && nSigmaProtons > fElectronRejectionNSigma ) continue;
+		      }
+		    }
+		    
+		    fHistNSigmaTPCvsPtafterPID->Fill(trackAOD->Pt(),nSigma);		    
+
+		  }
                   
 
-                  if(fUseParticleID){
+                  if(fUsePIDstrategy){
 
 
                       AliAODPid* pidObj = trackAOD->GetDetPid();
@@ -831,26 +878,28 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
                           }//mom>0.5
                       }
                       if(ParticleFlag && gCharge > 0){ fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);}
-                      else if(ParticleFlag && gCharge < 0){ fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);}
-                  }
-                  if(!fUseParticleID && gCharge > 0){ fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);}
-                  else if(!fUseParticleID && gCharge < 0){ fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);}
+                      else if(ParticleFlag && gCharge < 0){ fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);}	                        }
+		  else {
+		    if (gCharge > 0) fHistSurvivedEtaPtPhiPlus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad);
+		    else if(gCharge < 0)  fHistSurvivedEtaPtPhiMinus->Fill(trackAOD->Eta(),trackAOD->Pt(),phiRad); 
+		  }
+		  
               }//end of mcGoods
 	      }//AOD track loop
 	      
 	      labelMCArray.Reset();
 	      labelArray.Reset();	       
 	      
-	    }//Vz cut
-	  }//Vy cut
-	}//Vx cut
-    }//Vz resolution
-    }//number of contributors
-  }//valid vertex  
-  
-  // Here comes the 2 particle analysis
+	      }//Vz cut
+	    }//Vy cut
+	  }//Vx cut
+	}//Vz resolution
+      }//number of contributors
+    }//valid vertex  
+    
+    // Here comes the 2 particle analysis
   // loop over all good MC particles
-  for (Int_t i = 0; i < nMCLabelCounter ; i++) {
+    for (Int_t i = 0; i < nMCLabelCounter ; i++) {
     // control 1D histograms (charge might be different?)
     if(charge[i] > 0){
       if(level[i] > 0) fHistGeneratedEtaPtPlusControl->Fill(eta[i],pt[i]);
