@@ -64,6 +64,10 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax
   task_CME->SetHarmonicsFor3Particle(gN,gM);  // n and m, Cos(n*phi1 + m*phi2 - (n+m)Psi_{gPsiN})
   task_CME->SetEventPlaneHarmonic(gPsiN);     // gPsiN = order N of Event Plane. Look Here ---->^
   task_CME->SetFlagSkipPileUpCuts(bSkipPileUp);
+  task_CME->SetCentralityEstimator("V0M");    //V0M or V0A or V0C or V0=V0M
+
+
+
 
 
   if(bFillNUAPID){
