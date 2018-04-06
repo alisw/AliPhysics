@@ -78,7 +78,7 @@ class AliFemtoDreamAnalysis {
   AliFemtoDreamPairCleaner *fPairCleaner;   //!
   AliFemtoDreamControlSample *fControlSample;   //!
   int fTrackBufferSize;
-  AliAODTrack           **fGTI;             //!
+  std::vector<AliAODTrack*> fGTI;           //!
   AliFemtoDreamCollConfig *fConfig;         //!
   AliFemtoDreamPartCollection *fPartColl;   //!
   ClassDef(AliFemtoDreamAnalysis,3)

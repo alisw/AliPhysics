@@ -22,7 +22,6 @@ class AliFemtoDreamPartContainer {
   AliFemtoDreamPartContainer(int MixingDepth);
   AliFemtoDreamPartContainer& operator=(const AliFemtoDreamPartContainer& obj);
   virtual ~AliFemtoDreamPartContainer();
-  void PrintLastEvent();
   void SetEvent(std::vector<AliFemtoDreamBasePart> &Particles);
   std::deque<std::vector<AliFemtoDreamBasePart>> GetEventBuffer()
       const {return fPartBuffer;};
