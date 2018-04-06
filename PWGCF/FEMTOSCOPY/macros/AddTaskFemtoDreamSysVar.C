@@ -578,7 +578,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   }
   task->SetDebugLevel(0);
   task->SetEvtCutQA(false);
-  task->SetTrackBufferSize(10000);
+  task->SetTrackBufferSize(2000);
   task->SetEventCuts(evtCuts);
   task->SetTrackCuts(TrackCuts);
   task->SetAntiTrackCuts(AntiTrackCuts);
