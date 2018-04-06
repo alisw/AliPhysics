@@ -93,7 +93,10 @@ __R_ADDTASK__->Initialize(true);
 
 Note that your configuration wagon should depend on the centralized correction task wagon, but your tasks (such as jet
 finders, user tasks, etc) should depend **only** on the centralized correction task wagon.
-They should not depend on your configuration wagon!
+They should not depend on your configuration wagon! One side effect of this configuration is that intermediate train
+test may fail with an error about the correction task not being configured. Intermediate tests failing is not necessarily
+a problem in itself - instead, check on the result of the full train test. If that test was successful, the train is fine
+and can be started.
 
 # Configuring Corrections                                       {#configureEMCalCorrections}
 
