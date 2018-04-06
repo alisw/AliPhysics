@@ -25,13 +25,14 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   
   void SetIsMC(Bool_t MC){isMC = MC;}
-  void SetCutEta(Bool_t toCut){cutEta = toCut;}
+  void SetCutEta(Float_t cut){cutEta = cut;}
   Double_t GetMedian(Double_t *daArray);
   void FillTree(TTree *t, TLorentzVector v);
  private:
  
   AliPIDResponse *fPIDResponse;
-  Bool_t isMC, cutEta;
+  Bool_t isMC; 
+  Float_t cutEta;
 
   TList *fOutputList;		//<
   TH1D *fHistEvents;		//!
@@ -57,7 +58,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   
   Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
   Int_t fChannel, fSign, fRunNumber, fNFiredMaxiPads;
-  Bool_t fTriggerInputsMC[10];
+  Bool_t fTriggerInputsMC[10], fInEtaGen, fInEtaRec;
   
   TFile *fSPDfile;
   TH1D *hBCmod4;
@@ -66,7 +67,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 14); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 15); 
 };
 
 #endif

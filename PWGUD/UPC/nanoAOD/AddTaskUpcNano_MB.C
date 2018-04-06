@@ -1,4 +1,4 @@
-AliAnalysisTaskUpcNano_MB *AddTaskUpcNano_MB(Bool_t cutEta = kFALSE){
+AliAnalysisTaskUpcNano_MB *AddTaskUpcNano_MB(Float_t cutEta = 0.9){
 
   
   //--- get the current analysis manager ---//
