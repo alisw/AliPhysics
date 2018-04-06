@@ -2334,6 +2334,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrack->GetLabel() );
         Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrack->GetLabel() );
         
+        fTreeVariablePosLabel = lblPosV0Dghter;
+        fTreeVariableNegLabel = lblNegV0Dghter;
+        
         TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
         TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
         
