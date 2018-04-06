@@ -824,7 +824,10 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00062113","2444400000013300000","0163803100000010"); // QA
     cuts.AddCut("00062113","2444400040013300000","0163803100000010"); // 100ns timing cut, no track matching
     cuts.AddCut("00062113","2444400043013300000","0163803100000010"); // 100ns timing cut
-
+  } else if (trainConfig == 363){ // train config for bad channels and NonLin Variation
+    cuts.AddCut("00000113","2444400000013300000","0163803100000010"); // no NonLin
+    cuts.AddCut("00000113","2444401000013300000","0163803100000010"); // extern PHOS NonLin
+    cuts.AddCut("00000113","2444412000013300000","0163803100000010"); // constant non Lin first iteration
   // PHOS @ 8 TeV
   } else if (trainConfig == 381){ // PHOS clusters
     cuts.AddCut("00010113","2444400040013300000","0163103100000010");
