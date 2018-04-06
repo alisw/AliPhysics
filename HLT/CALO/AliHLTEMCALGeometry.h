@@ -19,7 +19,7 @@
 #include "AliHLTCaloGeometry.h"
 //#include "AliEMCALGeoUtils.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALRecoUtils.h"
+#include "AliEMCALRecoUtilsBase.h"
 
 class TGeoManager;
 class AliCDBManager;
@@ -41,7 +41,7 @@ class  AliHLTEMCALGeometry : public AliHLTCaloGeometry
 	virtual void GetLocalCoordinatesFromAbsId(Int_t absId, Int_t& module, Int_t& x, Int_t& z);
 	
 	const AliEMCALGeometry *GetGeometryPtr() const { return fGeo; }
-	const AliEMCALRecoUtils *GetRecoUtilsPtr() const { return fReco; }
+	const AliEMCALRecoUtilsBase *GetRecoUtilsPtr() const { return fReco; }
 
 	
 protected:
@@ -55,7 +55,7 @@ private:
 	//AliEMCALGeoUtils *fGeo;
 	
 	AliEMCALGeometry *fGeo;
-	AliEMCALRecoUtils *fReco;
+	AliEMCALRecoUtilsBase *fReco;
 };
 
 #endif

@@ -66,11 +66,11 @@ AliHLTEMCALGeometry::GetGlobalCoordinates(AliHLTCaloRecPointDataStruct &recPoint
     
     {
       if (iParticle == 1)  // electron case
-	fDepth = fReco->GetDepth(recPoint.fAmp, AliEMCALRecoUtils::kElectron, recPoint.fModule);
+	fDepth = fReco->GetDepth(recPoint.fAmp, AliEMCALRecoUtilsBase::kElectron, recPoint.fModule);
       else if (iParticle == 2) // hadron case 
-	fDepth = fReco->GetDepth(recPoint.fAmp, AliEMCALRecoUtils::kHadron, recPoint.fModule);
+	fDepth = fReco->GetDepth(recPoint.fAmp, AliEMCALRecoUtilsBase::kHadron, recPoint.fModule);
       else // anything else is photon
-	fDepth = fReco->GetDepth(recPoint.fAmp, AliEMCALRecoUtils::kPhoton, recPoint.fModule);
+	fDepth = fReco->GetDepth(recPoint.fAmp, AliEMCALRecoUtilsBase::kPhoton, recPoint.fModule);
     }
   
   else {
@@ -135,7 +135,7 @@ AliHLTEMCALGeometry::GetGeometryFromCDB(Int_t runnumber)
 	      else
 	        fGeo = AliEMCALGeometry::GetInstanceFromRunNumber(runnumber);
 	      //fGeo = new AliEMCALGeoUtils("EMCAL_COMPLETE","EMCAL");
-	      fReco = new AliEMCALRecoUtils;
+	      fReco = new AliEMCALRecoUtilsBase;
 	      
 	      // Old misalignments for 2010
 	      // We don't use them now

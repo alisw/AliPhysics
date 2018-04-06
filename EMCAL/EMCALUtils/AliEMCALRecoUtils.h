@@ -85,9 +85,6 @@ public:
 
   /// Cluster position enum list of possible algoritms
   enum     PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
-
-  /// Position depth enum list of possible particle types
-  enum     ParticleType{kPhoton=0, kElectron=1, kHadron =2, kUnknown=-1};
   
   /// Track matching, Marcel
   enum     { kNCuts = 12 }; 
@@ -104,7 +101,6 @@ public:
   void     RecalculateClusterPositionFromTowerGlobal(const AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu); 
   
   Float_t  GetCellWeight(Float_t eCell, Float_t eCluster) const ;
-  Float_t  GetDepth(Float_t eCluster, Int_t iParticle, Int_t iSM) const; 
   void     GetMaxEnergyCell(const AliEMCALGeometry *geom, AliVCaloCells* cells, const AliVCluster* clu, 
                             Int_t & absId,  Int_t& iSupMod, Int_t& ieta, Int_t& iphi, Bool_t &shared);
   
