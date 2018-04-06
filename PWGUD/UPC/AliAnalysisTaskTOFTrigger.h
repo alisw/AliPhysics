@@ -65,6 +65,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TH1I *hNMaxiPadIn;			//!
   TH1I *hNCrossTracks;			//!
 
+  Bool_t fIsPass1;
   Bool_t fGeomLoaded;
   Float_t fMaxPt;
   Float_t fMinPt;
@@ -76,7 +77,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
 
-  ClassDef(AliAnalysisTaskTOFTrigger, 7);
+  ClassDef(AliAnalysisTaskTOFTrigger, 8);
 };
 
 #endif
