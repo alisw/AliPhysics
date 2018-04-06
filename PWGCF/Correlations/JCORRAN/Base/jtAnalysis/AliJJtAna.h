@@ -49,8 +49,8 @@ public:
 
   void SetCard( AliJCard *c ) { fcard = c; } // Setter for JCrad
   void SetTrackList( TClonesArray *inlist ) { finputList = inlist; } // Setter for Data Manager track list
-  void SetTrigger( char* p ) { fjtrigg = GetParticleType(p); } // Setter for trigger particle type
-  void SetAssoc( char* p ) { fjassoc = GetParticleType(p); } // Setter for associated particle type
+  void SetTrigger( char const *p ) { fjtrigg = GetParticleType(p); } // Setter for trigger particle type
+  void SetAssoc( char const *p ) { fjassoc = GetParticleType(p); } // Setter for associated particle type
   void SetInclusiveFile( const char *f ){ fInclusiveFile = f; } // Setter for inclusive histogram file
   void SetInputFile( char *f ) { finputFile = f; } // Setter for Data Manager configuration file
 
@@ -60,7 +60,7 @@ public:
   void SetZVertex(double zvtx) { fZvert = zvtx;}
 
   double DeltaPhi(double phi1, double phi2); // Calculate deltaPhi from two phi values
-  particleType  GetParticleType(char *inchar); // Get particleType from string
+  particleType  GetParticleType(char const *inchar); // Get particleType from string
   TClonesArray * GetInputList() const{return finputList;}
 
 private:
