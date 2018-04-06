@@ -234,6 +234,10 @@ private:
 
   AliTHn* fhistmcprim;
   TH2D*fhmcprimvzeta;
+
+  TH1F*frefvz;
+  TH2D*fhcorr[10];
+
   TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];
   TH1D*fhrefphiFMD[4];
