@@ -753,12 +753,21 @@ public:
   /// If either is not a map, do nothing.
   /// Loop through keys in "default" object, if any key is missing
   /// in `this`, copy value over. If both keys point to maps, recursively
-  /// call SetDefault on thses sub-objects.
+  /// call SetDefault on the sub-objects.
   ///
   void SetDefault(const AliFemtoConfigObject &default_mapobj);
 #ifdef ENABLE_MOVE_SEMANTICS
   void SetDefault(AliFemtoConfigObject &&default_mapobj);
 #endif
+
+  /// Update map with key/value pairs from other dict.
+  /// If either is not a map, do nothing.
+  ///
+  /// \param source     Copy values from this object
+  /// \param all_keys   If true, all keys are read in from source,
+  ///                   otherwise only copy in the keys already present
+  ///
+  void Update(const AliFemtoConfigObject &source, bool all_keys=true);
 
   /// Print warning that multiple objects remain in this map or
   /// array. This is useful for ensuring all fields are used after
