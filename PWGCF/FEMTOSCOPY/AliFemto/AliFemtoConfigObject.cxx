@@ -628,6 +628,28 @@ AliFemtoConfigObject::SetDefault(const AliFemtoConfigObject &d)
   }
 }
 
+void
+AliFemtoConfigObject::Update(const AliFemtoConfigObject &other, bool copy)
+{
+  if (!is_map() || !other.is_map()) {
+    return;
+  }
+
+  for (auto &kv_pair : other.fValueMap) {
+    auto found = fValueMap.find(kv_pair.first);
+    if (found == fValueMap.end()) {
+      if (copy) {
+        fValueMap.emplace(kv_pair.first, kv_pair.second);
+      }
+    } else if (found->second.is_map() && kv_pair.second.is_map()) {
+      found->second.Update(kv_pair.second, copy);
+    } else {
+      found->second = kv_pair.second;
+    }
+  }
+}
+
+
 #define INT_PATTERN "\\-?\\d+"
 #define FLT_PATTERN "\\-?(?:inf|nan|(?:\\d+\\.\\d*|\\.\\d+)(?:e[+\\-]?\\d+)?|\\d+e[+\\-]?\\d+)"
 #define NUM_PATTERN "(?:" FLT_PATTERN "|" INT_PATTERN ")"
