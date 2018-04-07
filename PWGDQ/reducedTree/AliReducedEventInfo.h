@@ -60,6 +60,10 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    ITSClusters(Int_t layer)          const {return (layer>=1 && layer<=6 ? fITSClusters[layer-1] : 0);}
   Int_t     SPDnSingleClusters()              const {return fSPDnSingle;}
   Int_t     TracksPerTrackingFlag(Int_t flag) const {return (flag>=0 && flag<32 ? fNtracksPerTrackingFlag[flag] : -999);}
+  Int_t     Nch16 (Bool_t exclJpsiDau = kFALSE )  const {return (exclJpsiDau? fNch[0] : fNch[1] );}
+  Int_t     Nch10 (Bool_t exclJpsiDau = kFALSE )  const {return (exclJpsiDau? fNch[2] : fNch[3] );}
+  Int_t     NchV0A(Bool_t exclJpsiDau = kFALSE ) const {return (exclJpsiDau? fNch[4] : fNch[5] );}
+  Int_t     NchV0C(Bool_t exclJpsiDau = kFALSE ) const {return (exclJpsiDau? fNch[6] : fNch[7] );}
   
   Float_t   MultEstimatorOnlineV0M()   const {return fMultiplicityEstimators[0];}
   Float_t   MultEstimatorOnlineV0A()   const {return fMultiplicityEstimators[1];}
@@ -184,6 +188,7 @@ class AliReducedEventInfo : public AliReducedBaseEvent {
   UInt_t    fITSClusters[6];        // number of ITS clusters per layer
   Int_t     fSPDnSingle;            // number of clusters in SPD layer 1, not associated to a tracklet on SPD layer 2
   Int_t     fNtracksPerTrackingFlag[32];  // number of tracks for each tracking status bit                
+  Int_t     fNch[8];                // number of MCtruth charged particles in different eta regions
   Float_t   fVZEROMult[64];         // VZERO multiplicity in all 64 channels
   Float_t   fVZEROTotalMult[2];    // Total VZERO multiplicity
   Float_t   fZDCnEnergy[10];         // neutron ZDC energy in all 8 channels
