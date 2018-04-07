@@ -314,7 +314,6 @@ struct AbstractConfiguration<AliFemtoEventCut> {
 
 template<>
 struct Configuration<AliFemtoEventCutCentrality> : AbstractConfiguration<AliFemtoEventCut> {
-  using Super = AbstractConfiguration<AliFemtoEventCut>;
 
   AliFemtoEventCutCentrality::Parameters params;
 
@@ -325,7 +324,6 @@ struct Configuration<AliFemtoEventCutCentrality> : AbstractConfiguration<AliFemt
 
   void Configure(AliFemtoEventCutCentrality &cut) const
   {
-    Super::Configure(cut);
     cut.ResetWithParameters(params);
   }
 
