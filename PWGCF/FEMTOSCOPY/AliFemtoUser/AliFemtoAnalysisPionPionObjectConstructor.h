@@ -467,6 +467,21 @@ struct Configuration<AliFemtoShareQualityPairCut> : AbstractConfiguration<AliFem
     cut.SetShareFractionMax(max_share_fraction);
     cut.SetRemoveSameLabel(remove_same_label);
   }
+
+  static void ReadConfigurationInto(AliFemtoConfigObject &dest, const AliFemtoShareQualityPairCut &cut)
+  {
+    dest.Update(AliFemtoConfigObject::BuildMap()
+                ("max_share_quality", cut.GetShareQualityMax())
+                ("max_share_fraction", cut.GetShareFractionMax())
+                ("remove_same_label", cut.GetRemoveSameLabel()));
+  }
+
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoShareQualityPairCut &cut)
+  {
+    auto result = AliFemtoConfigObject::BuildMap();
+    ReadConfigurationInto(result, cut);
+    return result;
+  }
 };
 #endif
 
@@ -480,12 +495,13 @@ struct Configuration<AliFemtoPairCutDetaDphi> : Configuration<AliFemtoShareQuali
   Double_t delta_eta_min { 0.0 },
            delta_phi_min { 0.0 },
            radius { 1.2 };
-  Int_t cut_technique { (int)AliFemtoPairCutDetaDphi::Quad };
+  Bool_t use_quad { true };
 
   Configuration(AliFemtoConfigObject &cfg):
     Super(cfg)
   {
     cfg.pop_all()
+      ("use_quad", use_quad)
       ("radius", radius)
       ("delta_phi_min", delta_phi_min)
       ("delta_eta_min", delta_eta_min);
@@ -498,12 +514,26 @@ struct Configuration<AliFemtoPairCutDetaDphi> : Configuration<AliFemtoShareQuali
     return result;
   }
 
-  void Configure(AliFemtoPairCutDetaDphi &cut) const {
+  void Configure(AliFemtoPairCutDetaDphi &cut) const
+  {
     Super::Configure(cut);
-    cut.SetCutTechnique(AliFemtoPairCutDetaDphi::Quad);
+    cut.SetCutTechnique(use_quad ? AliFemtoPairCutDetaDphi::Quad : AliFemtoPairCutDetaDphi::Simple);
     cut.SetR(radius);
     cut.SetMinEta(delta_eta_min);
     cut.SetMinPhi(delta_phi_min);
+  }
+
+  static AliFemtoConfigObject GetConfigOf(const AliFemtoPairCutDetaDphi &cut)
+  {
+    return AliFemtoConfigObject::BuildMap()
+      ("class", "AliFemtoPairCutDetaDphi")
+      ("share_fraction_max", cut.GetShareFractionMax())
+      ("share_quality_max", cut.GetShareQualityMax())
+      ("remove_same_label", cut.GetRemoveSameLabel())
+      ("use_quad", cut.GetUsesQuadratureTechnique())
+      ("radius", cut.GetRadius())
+      ("delta_phi_min", cut.GetMinDeltaPhi())
+      ("delta_eta_min", cut.GetMinDeltaEta());
   }
 };
 #endif
@@ -528,17 +558,19 @@ struct Configuration<AliFemtoPairCutAntiGamma> : Configuration<AliFemtoShareQual
     cfg.pop_and_load("min_avg_sep", min_avg_sep);
   }
 
-  virtual operator AliFemtoPairCut*() const {
+  virtual operator AliFemtoPairCut*() const
+  {
     AliFemtoPairCutAntiGamma *result = new AliFemtoPairCutAntiGamma();
     Configure(*result);
     return result;
   }
 
-  void Configure(AliFemtoShareQualityPairCut &cut) const {
+  void Configure(AliFemtoShareQualityPairCut &cut) const
+  {
     Super::Configure(cut);
-
   }
 };
+
 #endif
 
 
@@ -774,6 +806,15 @@ struct Configuration<AliFemtoCorrFctnDPhiStarDEta> : AbstractConfiguration<AliFe
                                                                          phi_range.second);
     Super::Configure(*ptr);
     return ptr;
+  }
+
+  static AliFemtoConfigObject GetConfigOf(const AliFemtoCorrFctnDPhiStarDEta &cut)
+  {
+    return AliFemtoConfigObject::BuildMap()
+      ("class", "AliFemtoCorrFctnDPhiStarDEta")
+      ("share_fraction_max", cut.GetShareFractionMax())
+      ("share_quality_max", cut.GetShareQualityMax())
+      ("remove_same_label", cut.GetRemoveSameLabel());
   }
 };
 #endif
