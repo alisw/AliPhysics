@@ -1332,9 +1332,6 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
       // fill MC truth number of charged particles
       if( eventInfo){
         if( particle->IsPhysicalPrimary() && particle->Charge()){
-          cout << "charge: "  << particle->Charge() << endl;
-          cout << "eta: "  << particle->Eta() << endl;
-          cout << "pdg: " << particle->PdgCode() << endl;
           Float_t eta = particle->Eta();
           Float_t etaAbs = TMath::Abs(eta);
           if( etaAbs < 1.6) eventInfo->fNch[0]++;
@@ -1424,9 +1421,6 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
         
       fReducedEvent->fNtracks[1] += 1;  
    }
-
-  
-       cout <<"nch " <<eventInfo->fNch[0]<<endl;
 }
 
 
