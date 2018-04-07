@@ -374,6 +374,13 @@ fTreeCascVarBachIsKink(kFALSE),
 fTreeCascVarPosIsKink(kFALSE),
 fTreeCascVarNegIsKink(kFALSE),
 fkSelectCharge(0),
+fTreeCascVarPrimVertexX(0),
+fTreeCascVarPrimVertexY(0),
+fTreeCascVarPrimVertexZ(0),
+fTreeCascVarBachTrack(0x0),
+fTreeCascVarPosTrack(0x0),
+fTreeCascVarNegTrack(0x0),
+fTreeCascVarMagneticField(0),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0)
@@ -632,6 +639,13 @@ fTreeCascVarBachIsKink(kFALSE),
 fTreeCascVarPosIsKink(kFALSE),
 fTreeCascVarNegIsKink(kFALSE),
 fkSelectCharge(0),
+fTreeCascVarPrimVertexX(0),
+fTreeCascVarPrimVertexY(0),
+fTreeCascVarPrimVertexZ(0),
+fTreeCascVarBachTrack(0x0),
+fTreeCascVarPosTrack(0x0),
+fTreeCascVarNegTrack(0x0),
+fTreeCascVarMagneticField(0),
 //Histos
 fHistEventCounter(0),
 fHistCentrality(0)
@@ -956,6 +970,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarBachIndex",&fTreeCascVarBachIndex,"fTreeCascVarBachIndex/I");
             //Event Number (check same-event index mixups)
             fTreeCascade->Branch("fTreeCascVarEventNumber",&fTreeCascVarEventNumber,"fTreeCascVarEventNumber/l");
+        }
+        if ( fkSandboxMode ){
+            //Full track info for DCA minim optimization
+            fTreeCascade->Branch("fTreeCascVarBachTrack", &fTreeCascVarBachTrack,16000,99);
+            fTreeCascade->Branch("fTreeCascVarPosTrack", &fTreeCascVarPosTrack,16000,99);
+            fTreeCascade->Branch("fTreeCascVarNegTrack", &fTreeCascVarNegTrack,16000,99);
+            
+            //for sandbox mode
+            fTreeCascade->Branch("fTreeCascVarMagneticField",&fTreeCascVarMagneticField,"fTreeCascVarMagneticField/F");
+            
+            //Cascade decay position calculation metrics
+            fTreeCascade->Branch("fTreeCascVarPrimVertexX",&fTreeCascVarPrimVertexX,"fTreeCascVarPrimVertexX/F");
+            fTreeCascade->Branch("fTreeCascVarPrimVertexY",&fTreeCascVarPrimVertexY,"fTreeCascVarPrimVertexY/F");
+            fTreeCascade->Branch("fTreeCascVarPrimVertexZ",&fTreeCascVarPrimVertexZ,"fTreeCascVarPrimVertexZ/F");
         }
         if ( fkDebugOOBPileup ) {
             fTreeCascade->Branch("fTreeCascVarNegTOFExpTDiff",&fTreeCascVarNegTOFExpTDiff,"fTreeCascVarNegTOFExpTDiff/F");
@@ -1928,6 +1956,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         AliESDtrack *nTrackXi		= lESDevent->GetTrack( lIdxNegXi );
         AliESDtrack *bachTrackXi	= lESDevent->GetTrack( lBachIdx );
         
+        //Sandbox information: always, regardless of status
+        fTreeCascVarBachTrack = bachTrackXi;
+        fTreeCascVarPosTrack = pTrackXi;
+        fTreeCascVarNegTrack = nTrackXi;
+        
         fTreeCascVarNegIndex  = lIdxNegXi;
         fTreeCascVarPosIndex  = lIdxPosXi;
         fTreeCascVarBachIndex = lBachIdx;
@@ -2081,6 +2114,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarNegTrackStatus = nTrackXi->GetStatus();
         fTreeCascVarBachTrackStatus = bachTrackXi->GetStatus();
         
+        //Sandbox mode information, please 
+        fTreeCascVarMagneticField = lESDevent->GetMagneticField();
         fTreeCascVarPosDCAz = GetDCAz(pTrackXi);
         fTreeCascVarNegDCAz = GetDCAz(nTrackXi);
         fTreeCascVarBachDCAz = GetDCAz(bachTrackXi);
@@ -2157,6 +2192,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         
         xi->GetXYZ( lPosV0Xi[0],  lPosV0Xi[1], lPosV0Xi[2] );
         lV0RadiusXi		= TMath::Sqrt( lPosV0Xi[0]*lPosV0Xi[0]  +  lPosV0Xi[1]*lPosV0Xi[1] );
+        
+        fTreeCascVarPrimVertexX = lBestPrimaryVtxPos[0];
+        fTreeCascVarPrimVertexY = lBestPrimaryVtxPos[1];
+        fTreeCascVarPrimVertexZ = lBestPrimaryVtxPos[2];
         
         fTreeCascVarV0DecayX = lPosV0Xi[0];
         fTreeCascVarV0DecayY = lPosV0Xi[1];

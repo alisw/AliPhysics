@@ -536,6 +536,19 @@ private:
     
     //Select charge (testing / checks)
     Int_t fkSelectCharge;
+    
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Sandbox mode for cascades
+    Float_t fTreeCascVarPrimVertexX;
+    Float_t fTreeCascVarPrimVertexY;
+    Float_t fTreeCascVarPrimVertexZ;
+    
+    AliExternalTrackParam *fTreeCascVarBachTrack;
+    AliExternalTrackParam *fTreeCascVarPosTrack;
+    AliExternalTrackParam *fTreeCascVarNegTrack;
+    
+    Float_t fTreeCascVarMagneticField;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 //===========================================================================================
 //   Histograms
