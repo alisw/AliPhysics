@@ -39,6 +39,8 @@ public:
   
   virtual ~AliEMCALRecoUtilsBase() { ; }  
   
+  // Track-cluster mathing extrapolation methods
+  
   static Bool_t ExtrapolateTrackToEMCalSurface(AliVTrack *track, /*note, on success the call will change the track*/
                                                Double_t   emcalR=440, 
                                                Double_t   mass=0.1396,
@@ -68,6 +70,12 @@ public:
                                            Double_t step,
                                            Float_t &tmpEta, 
                                            Float_t &tmpPhi);
+  
+  /// Position depth enum list of possible particle types
+  enum     ParticleType{kPhoton=0, kElectron=1, kHadron =2, kUnknown=-1};
+  
+  Float_t  GetDepth(Float_t eCluster, Int_t iParticle, Int_t iSM) const; 
+
   
   /// \cond CLASSIMP
   ClassDef(AliEMCALRecoUtilsBase, 1) ;

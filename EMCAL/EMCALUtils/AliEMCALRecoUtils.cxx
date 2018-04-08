@@ -14,9 +14,6 @@
  **************************************************************************/
 
 // ROOT includes
-#include <TGeoManager.h>
-#include <TGeoMatrix.h>
-#include <TGeoBBox.h>
 #include <TH2F.h>
 #include <TArrayI.h>
 #include <TArrayF.h>
@@ -1210,78 +1207,6 @@ if (fNonLinearityFunction == kPCMv1) {
  }
 }
 
-///
-/// Calculate shower depth for a given cluster energy and particle type.
-/// Needed to calculate cluster position.
-///
-/// \param energy: cluster energy
-/// \param iParticle: particle assumption defined in enum ParticleType
-/// \param iSM: supermodule number
-///
-//_________________________________________________________
-Float_t  AliEMCALRecoUtils::GetDepth(Float_t energy, 
-                                     Int_t iParticle, 
-                                     Int_t iSM) const 
-{
-  // parameters 
-  Float_t x0    = 1.31;
-  Float_t ecr   = 8;
-  Float_t depth = 0;
-  Float_t arg   = energy*1000/ ecr; //Multiply energy by 1000 to transform to MeV
-  
-  switch ( iParticle )
-  {
-    case kPhoton:
-      if (arg < 1) 
-        depth = 0;
-      else
-        depth = x0 * (TMath::Log(arg) + 0.5); 
-      break;
-      
-    case kElectron:
-      if (arg < 1) 
-        depth = 0;
-      else
-        depth = x0 * (TMath::Log(arg) - 0.5); 
-      break;
-      
-    case kHadron:
-      // hadron 
-      // boxes anc. here
-      if (gGeoManager) 
-      {
-        gGeoManager->cd("ALIC_1/XEN1_1");
-        TGeoNode        *geoXEn1    = gGeoManager->GetCurrentNode();
-        TGeoNodeMatrix  *geoSM      = dynamic_cast<TGeoNodeMatrix *>(geoXEn1->GetDaughter(iSM));
-        if (geoSM) 
-        {
-          TGeoVolume      *geoSMVol   = geoSM->GetVolume(); 
-          TGeoShape       *geoSMShape = geoSMVol->GetShape();
-          TGeoBBox        *geoBox     = dynamic_cast<TGeoBBox *>(geoSMShape);
-          if (geoBox) depth = 0.5 * geoBox->GetDX()*2 ;
-          else AliFatal("Null GEANT box");
-        }
-        else AliFatal("NULL  GEANT node matrix");
-      }
-      else
-      {//electron
-        if (arg < 1) 
-          depth = 0;
-        else
-          depth = x0 * (TMath::Log(arg) - 0.5); 
-      }
-      
-      break;
-      
-    default://photon
-      if (arg < 1) 
-        depth = 0;
-      else
-        depth = x0 * (TMath::Log(arg) + 0.5);
-  }  
-  
-  return depth;
-}
 
 ///
 /// For a given CaloCluster gets the absId of the cell 
