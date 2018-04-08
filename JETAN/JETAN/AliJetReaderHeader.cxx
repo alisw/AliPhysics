@@ -23,7 +23,6 @@
 #include <TMath.h>
 
 #include "AliJetReaderHeader.h"
-#include "AliEMCALRecoUtils.h"
 
 ClassImp(AliJetReaderHeader)
 
