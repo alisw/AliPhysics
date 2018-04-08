@@ -1323,6 +1323,14 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
     AliReducedEventInfo* eventInfo = NULL; 
     if(fTreeWritingOption==kFullEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
       eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
+      const AliVVertex* mcVtx = event->GetPrimaryVertex();
+      if(mcVtx){
+        eventInfo->fVtxMC[0] = mcVtx->GetX();
+        eventInfo->fVtxMC[1] = mcVtx->GetY();
+        eventInfo->fVtxMC[2] = mcVtx->GetZ();
+
+      } 
+
     }
    
    // We loop over all particles in the MC event
@@ -1421,6 +1429,7 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
         
       fReducedEvent->fNtracks[1] += 1;  
    }
+cout << "nch " << eventInfo->fNch[0] << endl;
 }
 
 
