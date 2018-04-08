@@ -45,6 +45,7 @@ public:
         AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Double_t *params, Int_t charge);
         AliTRDPIDThresholds(Int_t nTracklets, Double_t effMin, Double_t effMax, Double_t *params = NULL);
         AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Double_t *params = NULL);
+	AliTRDPIDThresholds(Int_t nTracklets, Double_t eff, Int_t charge);
         AliTRDPIDThresholds(const AliTRDPIDThresholds &);
         AliTRDPIDThresholds &operator=(const AliTRDPIDThresholds &);
         virtual ~AliTRDPIDThresholds() {}

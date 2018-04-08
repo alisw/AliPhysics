@@ -37,26 +37,28 @@ ClassImp(AliOADBObjCache);
 ClassImp(AliOADBContainer);
 
 //______________________________________________________________________________
-AliOADBContainer::AliOADBContainer() : 
+AliOADBContainer::AliOADBContainer(Bool_t b) : 
   TNamed(),
   fArray(0),
   fDefaultList(0),
   fPassNames(0),
   fLowerLimits(),
   fUpperLimits(),
-  fEntries(0)
+  fEntries(0),
+  fDefOwn(b)
 {
   // Default constructor
 }
 
-AliOADBContainer::AliOADBContainer(const char* name) : 
+AliOADBContainer::AliOADBContainer(const char* name, Bool_t b) : 
   TNamed(name, "OADBContainer"),
   fArray(new TObjArray(100)),
   fDefaultList(new TList()),
   fPassNames(new TObjArray(100)),
   fLowerLimits(),
   fUpperLimits(),
-  fEntries(0)
+  fEntries(0),
+  fDefOwn(b)
 {
   // Constructor
 }
@@ -99,7 +101,8 @@ AliOADBContainer& AliOADBContainer::operator=(const AliOADBContainer& cont)
       fLowerLimits[i] = cont.fLowerLimits[i]; 
       fUpperLimits[i] = cont.fUpperLimits[i];
       fArray->AddAt(cont.fArray->At(i), i);
-      if (cont.fPassNames) if (cont.fPassNames->At(i)) fPassNames->AddAt(cont.fPassNames->At(i), i);
+      if ((cont.fPassNames) && (cont.fPassNames->At(i))) 
+	fPassNames->AddAt(cont.fPassNames->At(i), i);
     }
   }
   //
@@ -107,7 +110,8 @@ AliOADBContainer& AliOADBContainer::operator=(const AliOADBContainer& cont)
   TList* list = cont.GetDefaultList();
   TIter next(list);
   TObject* obj;
-  while((obj = next())) fDefaultList->Add(obj);
+  while((obj = next())) 
+    fDefaultList->Add(obj);
   //
   return *this;
 }
@@ -116,7 +120,8 @@ void AliOADBContainer::AppendObject(TObject* obj, Int_t lower, Int_t upper, TStr
 {
   if (!fPassNames) { // create array of pass names for compatibility with old format
     fPassNames = new TObjArray(100);
-    for (Int_t i=0;i<fArray->GetEntriesFast();i++) fPassNames->Add(new TObjString(""));
+    for (Int_t i=0;i<fArray->GetEntriesFast();i++) 
+      fPassNames->Add(new TObjString(""));
   }
   //
   // Append a new object to the list 
@@ -144,7 +149,8 @@ void AliOADBContainer::RemoveObject(Int_t idx)
 {
   if (!fPassNames) { // create array of pass names for compatibility with old format
     fPassNames = new TObjArray(100);
-    for (Int_t i=0;i<fArray->GetEntriesFast();i++) fPassNames->Add(new TObjString(""));
+    for (Int_t i=0;i<fArray->GetEntriesFast();i++) 
+      fPassNames->Add(new TObjString(""));
   }
 
   //
@@ -237,7 +243,8 @@ Int_t AliOADBContainer::GetIndexForRun(Int_t run, TString passName) const
   Int_t found = 0;
   Int_t index = -1;
   for (Int_t i = 0; i < fEntries; i++) {
-    if (fPassNames) if (fPassNames->At(i)) if (passName.CompareTo(fPassNames->At(i)->GetName())) continue;
+    if ((fPassNames) && (fPassNames->At(i)) && (passName.CompareTo(fPassNames->At(i)->GetName()))) 
+      continue;
     if (run >= fLowerLimits[i] && run <= fUpperLimits[i]) {
       found++;
       index = i;
@@ -404,7 +411,7 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
     fUpperLimits[i] = cont->UpperLimit(i);
     fArray->AddAt(cont->GetObjectByIndex(i), i);
     TObject* passName = cont->GetPassNameByIndex(i);
-    fPassNames->AddAt(passName ? passName : new TObjString(""), i);
+    fPassNames->AddAt(new TObjString(passName ? passName->GetName() : ""), i);
   }
 
   if (!fDefaultList) 
@@ -414,8 +421,8 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
   while((obj = next())) 
     fDefaultList->Add(obj);
 
-  //not yet enabled
-  //SetOwner(); 
+  this->SetOwner(fDefOwn); 
+  cont->SetOwner(0);
 
   delete cont;
   delete file;
@@ -423,14 +430,14 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
   return 0;
 }
 
-void AliOADBContainer::SetOwner(Bool_t deflist) 
+void AliOADBContainer::SetOwner(Bool_t flag) 
 {
   //
   // Set owner of objects (use with care!)
   if (fArray)
-    fArray->SetOwner(1);
+    fArray->SetOwner(flag);
   if (fDefaultList)
-    fDefaultList->SetOwner(deflist);
+    fDefaultList->SetOwner(flag);
   if (fPassNames)
     fPassNames->SetOwner(1);
 }

@@ -389,7 +389,7 @@ void AliTPCcalibAlignInterpolation::ProcessStandalone(const char * inputList){
 
 
 
-void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
+void  AliTPCcalibAlignInterpolation::Process(AliVEvent *eventV) {
   //
   // Create distortion maps out of residual histograms of ITS-TRD interpolation and TPC space points
   // JIRA ticket: https://alice.its.cern.ch/jira/browse/ATO-108
@@ -399,6 +399,10 @@ void  AliTPCcalibAlignInterpolation::Process(AliESDEvent *esdEvent){
   const Double_t kMaxSNP = 0.8; // max snp tolerated
   //
   static Bool_t firstCall = kTRUE;
+
+  AliESDEvent* esdEvent = dynamic_cast<AliESDEvent*>(eventV);
+  if (!esdEvent) return;
+  
   if (firstCall) {
     firstCall = kFALSE;
     ExtractTPCGasData();

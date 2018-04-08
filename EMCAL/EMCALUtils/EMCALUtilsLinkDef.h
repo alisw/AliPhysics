@@ -12,6 +12,7 @@
 #pragma link C++ class AliEMCALShishKebabTrd1Module+;
 #pragma link C++ class AliEMCALPIDUtils+;
 #pragma link C++ class AliEMCALRecoUtils+;
+#pragma link C++ class AliEMCALRecoUtilsBase+;
 #pragma link C++ class AliEMCALTrack+;
 #pragma link C++ class AliEMCALCalibTimeDepCorrection+;
 #pragma link C++ class AliEMCALSuperModuleCalibTimeDepCorrection+;

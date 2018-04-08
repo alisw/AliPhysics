@@ -94,6 +94,7 @@
 #include "AliVfriendEvent.h"
 #include "AliVTrack.h"
 #include "AliVfriendTrack.h"
+#include "AliESDtrack.h"
 #include "AliTPCTracklet.h"
 #include "TH1D.h"
 #include "TH1F.h"
@@ -627,10 +628,16 @@ void AliTPCcalibLaser::Process(AliVEvent * event) {
   Int_t n=fV->GetNumberOfTracks();
   Int_t counter=0;
   for (Int_t i=0;i<n;++i) {
-    AliVfriendTrack *friendTrack=const_cast<AliVfriendTrack*>(fVfriend->GetTrack(i));
-    if (!friendTrack) continue;
     AliVTrack *track=fV->GetVTrack(i);
     if (!track) continue;
+    AliVfriendTrack *friendTrack = 0;
+    if (track->IsA()==AliESDtrack::Class()) {
+      friendTrack = (AliVfriendTrack*)(((AliESDtrack*)track)->GetFriendTrack());
+    }
+    else {
+      friendTrack = const_cast<AliVfriendTrack*>(fVfriend->GetTrack(i));
+    }
+    if (!friendTrack) continue;
     AliExternalTrackParam prm;
     track->GetTrackParam(prm);
     Double_t binC = hisCE.GetBinContent(hisCE.FindBin(prm.GetZ()));

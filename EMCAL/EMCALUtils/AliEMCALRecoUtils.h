@@ -22,6 +22,10 @@
 ///
 /// Plus other helper methods.
 ///
+/// Class derived from AliEMCALRecoUtilsBase since AliRoot tag v5-09-26
+/// The base class just contains few track-matching extrapolation methods used in the 
+/// EMCAL reconstruction module (AliEMCALTracker and AliEMCALReconstructor) and ANALYSIS ESD to AOD filtering task
+///
 /// \author:  Gustavo Conesa Balbastre, <Gustavo.Conesa.Balbastre@cern.ch>, LPSC- Grenoble 
 /// \author:  Rongrong Ma, Yale. Track matching part
 ///
@@ -45,13 +49,14 @@ class AliVEvent;
 class AliMCEvent;
 
 // EMCAL includes
+#include "AliEMCALRecoUtilsBase.h"
 class AliEMCALGeometry;
 class AliEMCALPIDUtils;
 class AliESDtrack;
 class AliExternalTrackParam;
 class AliVTrack;
 
-class AliEMCALRecoUtils : public TNamed {
+class AliEMCALRecoUtils : public AliEMCALRecoUtilsBase {
   
 public:
   
@@ -167,8 +172,8 @@ public:
   void     InitEMCALRecalibrationFactors() ;
   TObjArray* GetEMCALRecalibrationFactorsArray()   const { return fEMCALRecalibrationFactors ; }
   TH2F *   GetEMCALChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALRecalibrationFactors->At(iSM) ; }	
-  void     SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecalibrationFactors = map                  ; }
-  void     SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) { fEMCALRecalibrationFactors->AddAt(h,iSM)          ; }
+  void     SetEMCALChannelRecalibrationFactors(const TObjArray *map);
+  void     SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h);
   Float_t  GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
     if(fEMCALRecalibrationFactors) 
       return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
@@ -203,8 +208,8 @@ public:
     ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc+4*isLGon))->SetBinContent(absID,c) ; }  
   
   TH1F *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)const       { return (TH1F*)fEMCALTimeRecalibrationFactors->At(bc) ; }	
-  void     SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)            { fEMCALTimeRecalibrationFactors = map                 ; }
-  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , TH1F* h)  { fEMCALTimeRecalibrationFactors->AddAt(h,bc)          ; }
+  void     SetEMCALChannelTimeRecalibrationFactors(const TObjArray *map);
+  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , const TH1F* h);
 
   Bool_t   IsLGOn()const { return fLowGain   ; }
   void     SwitchOffLG() { fLowGain = kFALSE ; }
@@ -229,8 +234,8 @@ public:
     ((TH1C*)fEMCALL1PhaseInTimeRecalibration->At(0))->SetBinContent(iSM,c) ; }  
   
   TH1C *   GetEMCALL1PhaseInTimeRecalibrationForAllSM()const       { return (TH1C*)fEMCALL1PhaseInTimeRecalibration->At(0) ; }	
-  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TObjArray *map)            { fEMCALL1PhaseInTimeRecalibration = map  ; }
-  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(TH1C* h)     { fEMCALL1PhaseInTimeRecalibration->AddAt(h,0)          ; }
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TObjArray *map);
+  void     SetEMCALL1PhaseInTimeRecalibrationForAllSM(const TH1C* h);
 
   //-----------------------------------------------------
   // Modules fiducial region, remove clusters in borders
@@ -265,8 +270,8 @@ public:
     if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap()               ;
     ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c)    ; }
   TH2I *   GetEMCALChannelStatusMap(Int_t iSM)     const { return (TH2I*)fEMCALBadChannelMap->At(iSM) ; }
-  void     SetEMCALChannelStatusMap(TObjArray *map)      { fEMCALBadChannelMap = map                  ; }
-  void     SetEMCALChannelStatusMap(Int_t iSM , TH2I* h) { fEMCALBadChannelMap->AddAt(h,iSM)          ; }
+  void     SetEMCALChannelStatusMap(const TObjArray *map);
+  void     SetEMCALChannelStatusMap(Int_t iSM , const TH2I* h);
   Bool_t   ClusterContainsBadChannel(const AliEMCALGeometry* geom, const UShort_t* cellList, Int_t nCells);
  
   //-----------------------------------------------------
@@ -300,21 +305,16 @@ public:
                                           AliExternalTrackParam *trkParam, 
                                           const TObjArray * clusterArr, 
                                           Float_t &dEta, Float_t &dPhi);
-  static Bool_t ExtrapolateTrackToEMCalSurface(AliVTrack *track, /*note, on success the call will change the track*/
-                                               Double_t emcalR=440, Double_t mass=0.1396,
-                                               Double_t step=20, Double_t minpT=0.35,
-                                               Bool_t useMassForTracking = kFALSE, Bool_t useDCA = kFALSE);
-  static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, 
-                                               Double_t emcalR, Double_t mass, Double_t step, 
-                                               Float_t &eta, Float_t &phi, Float_t &pt);
-  static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, const Float_t *clsPos, 
-                                           Double_t mass, Double_t step, 
-                                           Float_t &tmpEta, Float_t &tmpPhi);
-  static Bool_t ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster, 
+ 
+  // Needed by analysis task in AliPhysics, could be removed once base class committed and analysis task is fixed.
+  static Bool_t ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster,
                                            Double_t mass, Double_t step,
-                                           Float_t &tmpEta, Float_t &tmpPhi);
-  Bool_t        ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster, 
-                                           Float_t &tmpEta, Float_t &tmpPhi);
+                                           Float_t &tmpEta, Float_t &tmpPhi)
+  { return AliEMCALRecoUtilsBase::ExtrapolateTrackToCluster (trkParam, cluster, mass, step, tmpEta, tmpPhi) ; }
+  
+  Bool_t   ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, const AliVCluster *cluster, 
+                                      Float_t &tmpEta, Float_t &tmpPhi);
+  
   UInt_t   FindMatchedPosForCluster(Int_t clsIndex) const;
   UInt_t   FindMatchedPosForTrack  (Int_t trkIndex) const;
   void     GetMatchedResiduals       (Int_t clsIndex, Float_t &dEta, Float_t &dPhi);

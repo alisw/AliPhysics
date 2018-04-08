@@ -24,11 +24,14 @@
 #include "AliESDEvent.h"
 #include "AliESDv0.h"
 #include "AliV0vertexer.h"
+#include "AliV0HypSel.h"
+#include "AliLog.h"
 
 ClassImp(AliV0vertexer)
 
 
-//A set of very loose cuts 
+//A set of very loose cuts
+Double_t AliV0vertexer::fgEtaMax =5.0; // max eta
 Double_t AliV0vertexer::fgChi2max=33.; //max chi2
 Double_t AliV0vertexer::fgDNmin=0.05;  //min imp parameter for the 1st daughter
 Double_t AliV0vertexer::fgDPmin=0.05;  //min imp parameter for the 2nd daughter
@@ -53,6 +56,8 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
 
    if (nentr<2) return 0; 
 
+   AliV0HypSel::AccountBField(b);
+
    TArrayI neg(nentr);
    TArrayI pos(nentr);
 
@@ -74,6 +79,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
      else pos[npos++]=i;
    }   
 
+   int nHypSel = fV0HypSelArray ? fV0HypSelArray->GetEntriesFast() : 0;
 
    for (i=0; i<nneg; i++) {
       Int_t nidx=neg[i];
@@ -132,6 +138,20 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
          } else
 	 if (cpa < fCPAmin) continue;
 
+	 if (nHypSel) { // do we select particular hypthesese?
+	   Bool_t reject = kTRUE;
+	   float pt = vertex.Pt();
+	   for (int ih=0;ih<nHypSel;ih++) {
+	     const AliV0HypSel* hyp = (const AliV0HypSel*)(*fV0HypSelArray)[ih];
+	     double m = vertex.GetEffMassExplicit(hyp->GetM0(),hyp->GetM1());
+	     if (TMath::Abs(m - hyp->GetMass())<hyp->GetMassMargin(pt)) {
+	       reject = kFALSE;
+	       break;
+	     }
+	   }
+	   if (reject) continue;
+	 }
+	 
 	 vertex.SetDcaV0Daughters(dca);
          vertex.SetV0CosineOfPointingAngle(cpa);
          vertex.ChangeMassHypothesis(kK0Short);
@@ -148,15 +168,13 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
+//________________________________________________
+void AliV0vertexer::SetV0HypSel(const TObjArray* selArr)
+{
+  if (!selArr || !selArr->GetEntriesFast()) {
+    AliInfo("No V0 hypothesis selection will be performed");
+    return;
+  }
+  fV0HypSelArray = selArr;
+}
 

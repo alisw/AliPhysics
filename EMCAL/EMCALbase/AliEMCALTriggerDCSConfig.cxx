@@ -16,6 +16,8 @@
 #include "AliEMCALTriggerDCSConfig.h"
 #include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerTRUDCSConfig.h"
+#include <bitset>
+#include <iostream>
 #include <sstream>
 
 /// \cond CLASSIMP
@@ -70,6 +72,28 @@ bool AliEMCALTriggerDCSConfig::operator==(const AliEMCALTriggerDCSConfig & other
     }
   }
   return isequal;
+}
+
+bool AliEMCALTriggerDCSConfig::IsTRUEnabled(int itru) const {
+  if(itru < 32){
+    if(fSTUObj) return std::bitset<32>(fSTUObj->GetRegion()).test(itru);
+  } else {
+    if(fSTUDCAL) return std::bitset<32>(fSTUDCAL->GetRegion()).test(itru-32);
+  }
+  return false;
+}
+
+std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerDCSConfig &config) {
+  stream << "EMCAL trigger DCS config:" << std::endl;
+  stream << "================================" << std::endl;
+  for(int i = 0; i < config.GetTRUArr()->GetEntries(); i++) {
+    AliEMCALTriggerTRUDCSConfig *tru = config.GetTRUDCSConfig(i);
+    stream << "TRU" << i << ": " << *tru << std::endl;
+  }
+  AliEMCALTriggerSTUDCSConfig *emcalstu(config.GetSTUDCSConfig(false)), *dcalstu(config.GetSTUDCSConfig(true));
+  if(emcalstu) std::cout << "EMCAL STU: " << *emcalstu << std::endl;
+  if(dcalstu)  std::cout << "DCAL STU:  " << *dcalstu << std::endl;
+  return stream;
 }
 
 std::string AliEMCALTriggerDCSConfig::ToJSON() const {

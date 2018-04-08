@@ -109,7 +109,7 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
   for (Int_t i=0;i<n;++i) {
     AliVTrack *track=fV->GetVTrack(i);
     AliVfriendTrack *friendTrack = 0;
-    if (fV->IsA()==AliESDtrack::Class()) {
+    if (track->IsA()==AliESDtrack::Class()) {
       friendTrack = (AliVfriendTrack*)( ((AliESDtrack*)track )->GetFriendTrack());
     }
     else {

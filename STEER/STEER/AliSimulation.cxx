@@ -673,7 +673,13 @@ Bool_t AliSimulation::Run(Int_t nEvents)
     default: hmodS = "Unknown";
     }
     AliInfoF("HLT Trigger Mode %s detected from GRP",hmodS.Data());
-    if (hmode==AliGRPObject::kModeC) {
+    Int_t activeDetectors = grp->GetDetectorMask();
+    TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
+    Bool_t tpcIN = detStr.Contains("TPC");
+    if (!tpcIN) {
+      AliInfo("TPC is not in the run, disabling HLT");
+    }
+    if (hmode==AliGRPObject::kModeC && tpcIN) {
       fRunHLT.ReplaceAll(fgkRunHLTAuto,fgkHLTDefConf);
       AliInfoF("HLT simulation set to %s",fRunHLT.Data());
     }
