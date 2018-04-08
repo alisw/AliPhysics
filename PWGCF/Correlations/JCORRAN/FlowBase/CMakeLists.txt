@@ -14,72 +14,32 @@
 # **************************************************************************/
 
 #Module
-set(MODULE PWGCFCorrelationsJCORRAN)
+set(MODULE PWGCFCorrelationsJFlowBase)
 add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
-include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base)
+include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/FlowBase
+)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
-                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base/iaaAnalysis
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
+                    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
   )
 
 # Sources - alphabetical order
 set(SRCS
-  AliJAcceptanceCorrection.cxx
-  AliJAcceptanceFunctions.cxx
-  AliJCORRAN.cxx
-  AliJTrackCounter.cxx
-  AliJCORRANTask.cxx
-  AliJEfficiencyTask.cxx
-  AliJDiHadronCorrTask.cxx
-  AliJFilter.cxx
-  AliJEfficiencyScanner.cxx
-  AliJBaseEventHeader.cxx
-  AliJBaseTrack.cxx
-  AliJEventHeader.cxx
-  AliJJet.cxx
-  AliJMCTrack.cxx
-  AliJPhoton.cxx
-  AliJPiZero.cxx
-  AliJRunHeader.cxx
-  AliJTrack.cxx
-  AliJHistManager.cxx
-  AliJCorrelations.cxx
-  AliJDataManager.cxx
-  AliJRunTable.cxx
-  AliJHistos.cxx
-  AliJEventPool.cxx
-  AliJEfficiency.cxx
-  AliJTrackCut.cxx
-  AliJBaseCard.cxx
-  AliJCard.cxx
-  AliJFFlucTask.cxx
-  AliJFFlucAnalysis.cxx
-  AliJXtTask.cxx
-  AliJXtAnalysis.cxx
-  AliJHistogramInterface.cxx
-  AliJCorrelationInterface.cxx
-  jtAnalysis/AliJDiHadronJtTask.cxx
-  jtAnalysis/AliJJtAnalysis.cxx
-  jtAnalysis/AliJJtHistograms.cxx
-  jtAnalysis/AliJJtCorrelations.cxx
-  iaaAnalysis/AliJDiHadronIaaTask.cxx
-  iaaAnalysis/AliJIaaAnalysis.cxx
-  iaaAnalysis/AliJIaaCorrelations.cxx
-  iaaAnalysis/AliJIaaHistograms.cxx
-  AliJPartLifetime.cxx
-  AliJCatalystTask.cxx
-  jtAnalysis/AliJJtTask.cxx
-  jtAnalysis/AliJJtAna.cxx
-  iaaAnalysis/AliJCIaaTask.cxx
-  iaaAnalysis/AliJIaaAna.cxx
+  AliJFlowHistos.cxx
+  AliJFlowBaseTask.cxx
+  AliJCIaaEPTask.cxx
   )
 
 # Headers from sources

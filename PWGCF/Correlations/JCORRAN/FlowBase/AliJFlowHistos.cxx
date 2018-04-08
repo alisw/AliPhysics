@@ -16,6 +16,7 @@
 // Container class for histograms needed in the analysis.
 
 #include "AliJFlowHistos.h"
+#include "AliJFlowBaseTask.h"
 #include <TGrid.h>
 #include <TPRegexp.h>
 

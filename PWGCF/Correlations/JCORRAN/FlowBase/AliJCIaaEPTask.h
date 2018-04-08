@@ -12,9 +12,9 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <AliAnalysisTaskSE.h>
-#include "AliJIaaAna.h"
+#include <AliJIaaAna.h>
+#include "AliJFlowBaseTask.h"
 
-class AliJFlowBaseTask;
 //==============================================================
 
 

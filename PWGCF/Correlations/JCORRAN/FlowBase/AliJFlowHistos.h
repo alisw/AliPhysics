@@ -21,8 +21,7 @@
 #include <TList.h>
 #include <TLorentzVector.h>
 
-#include "AliJHistogramInterface.h"
-#include "AliJFlowBaseTask.h" 
+#include <AliJHistogramInterface.h>
 
 
 using namespace std;
