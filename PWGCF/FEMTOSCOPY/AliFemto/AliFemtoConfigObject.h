@@ -283,7 +283,6 @@ public:
 
     FORWARD_STANDARD_TYPES(IMPL_BUILDITEM);
 
-    IMPL_CASTED_BUILDITEM(TString, StringValue_t);
     IMPL_CASTED_BUILDITEM(Float_t, FloatValue_t);
     IMPL_CASTED_BUILDITEM(Int_t, IntValue_t);
     IMPL_CASTED_BUILDITEM(pair_of_ints, RangeValue_t);
@@ -292,6 +291,10 @@ public:
 
     IMPL_BUILDITEM(AliFemtoConfigObject, 0, 0);
     #undef IMPL_BUILDITEM
+
+    // -- custom operator() methods --
+
+    BuildMap& operator()(const Key_t &key, const TString &val) { fMap.insert(std::make_pair(key, val.Data())); return *this; };
 
     operator AliFemtoConfigObject() {
       return AliFemtoConfigObject(std::move(fMap));
