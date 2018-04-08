@@ -385,6 +385,7 @@ struct Configuration<AliFemtoESDTrackCut> : AbstractConfiguration<AliFemtoPartic
 
   Int_t charge = 0,
         label = 0,
+        status = static_cast<Int_t>(AliESDtrack::kTPCin),
         min_tpc_ncls = 80;
 
   Float_t max_impact_xy = 2.4,
@@ -399,7 +400,24 @@ struct Configuration<AliFemtoESDTrackCut> : AbstractConfiguration<AliFemtoPartic
   // Pion
   Int_t most_probable { 2 };
 
-  void Configure(AliFemtoESDTrackCut &cut) const {
+  Configuration(AliFemtoConfigObject cfg)
+  {
+    cfg.pop_all()
+      ("pt", pt)
+      ("rapidity", rapidity)
+      ("eta", eta)
+      ("sigma", nSigma)
+      ("max_impact_xy", max_impact_xy)
+      ("min_impact_xy", min_impact_xy)
+      ("max_impact_z", max_impact_z)
+      ("status", status)
+      ("label", label)
+      ("charge", charge);
+
+  }
+
+  void Configure(AliFemtoESDTrackCut &cut) const
+  {
     Super::Configure(cut);
     cut.SetCharge(charge);
     cut.SetPt(pt.first, pt.second);
@@ -408,7 +426,7 @@ struct Configuration<AliFemtoESDTrackCut> : AbstractConfiguration<AliFemtoPartic
     cut.SetMostProbablePion();
 
     /// Settings for TPC-Inner Runmode
-    cut.SetStatus(AliESDtrack::kTPCin);
+    cut.SetStatus(status);
     cut.SetminTPCncls(min_tpc_ncls);
     cut.SetLabel(label);
     cut.SetMaxTPCChiNdof(max_tpc_chi_ndof);
@@ -425,6 +443,42 @@ struct Configuration<AliFemtoESDTrackCut> : AbstractConfiguration<AliFemtoPartic
     AliFemtoESDTrackCut *cut = new AliFemtoESDTrackCut();
     Configure(*cut);
     return cut;
+  }
+
+  static void ReadConfigurationInto(AliFemtoConfigObject &dest, const AliFemtoESDTrackCut &cut)
+  {
+    dest.Update(AliFemtoConfigObject::BuildMap()
+                ("pt", cut.GetPt())
+                ("rapidity", cut.GetRapidity())
+                ("eta", cut.GetEta())
+                ("sigma", cut.GetNsigma())
+                ("charge", cut.GetCharge())
+                ("most_probable", cut.GetMostProbable())
+                ("prob_electron", cut.GetProbElectron())
+                ("prob_pion", cut.GetProbPion())
+                ("prob_kaon", cut.GetProbKaon())
+                ("prob_proton", cut.GetProbProton())
+                ("prob_muon", cut.GetProbMuon())
+                ("label", cut.GetLabel())
+                ("status", cut.GetStatus())
+                ("pid_method", cut.GetPIDmethod())
+                ("min_clusters_tpc_findable", cut.GetMinFindableClustersTPC())
+                ("min_clusters_tpc", cut.GetMinNClustersTPC())
+                ("min_clusters_its", cut.GetMinNClustersITS())
+                ("max_its_chiNdof", cut.GetMaxITSchiNdof())
+                ("max_tpc_chiNdof", cut.GetMaxTPCchiNdof())
+                ("max_sigma_to_vertex", cut.GetMaxSigmaToVertex())
+                ("min_impact_xy", cut.GetMinImpactXY())
+                ("max_impact_xy", cut.GetMaxImpactXY())
+                ("max_impact_z", cut.GetMaxImpactZ())
+                ("electron_rejection", cut.GetElectronRejection())
+               );
+  }
+
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoESDTrackCut &cut) {
+    AliFemtoConfigObject result = AliFemtoConfigObject::BuildMap();
+    ReadConfigurationInto(result, cut);
+    return result;
   }
 
 };
@@ -478,7 +532,7 @@ struct Configuration<AliFemtoShareQualityPairCut> : AbstractConfiguration<AliFem
 
   static AliFemtoConfigObject GetConfigurationOf(const AliFemtoShareQualityPairCut &cut)
   {
-    auto result = AliFemtoConfigObject::BuildMap();
+    AliFemtoConfigObject result = AliFemtoConfigObject::BuildMap();
     ReadConfigurationInto(result, cut);
     return result;
   }
@@ -812,9 +866,7 @@ struct Configuration<AliFemtoCorrFctnDPhiStarDEta> : AbstractConfiguration<AliFe
   {
     return AliFemtoConfigObject::BuildMap()
       ("class", "AliFemtoCorrFctnDPhiStarDEta")
-      ("share_fraction_max", cut.GetShareFractionMax())
-      ("share_quality_max", cut.GetShareQualityMax())
-      ("remove_same_label", cut.GetRemoveSameLabel());
+      ;
   }
 };
 #endif
