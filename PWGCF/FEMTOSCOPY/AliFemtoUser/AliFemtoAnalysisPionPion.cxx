@@ -66,7 +66,7 @@ struct Configuration<AliFemtoAnalysisPionPion> {
 };
 
 AliFemtoAnalysisPionPion::AnalysisParams::AnalysisParams()
-: vertex_bins(16), vertex_min(-10.0), vertex_max(10.0)
+: vertex_bins(1), vertex_min(-10.0), vertex_max(10.0)
 , mult_bins(30), mult_min(0.0), mult_max(10000.0f)
 // , pion_type_1(kNone)
 // , pion_type_2(kNone)
@@ -77,6 +77,7 @@ AliFemtoAnalysisPionPion::AnalysisParams::AnalysisParams()
 , verbose(kFALSE)
 , enable_pair_monitors(kTRUE)
 , group_output_objects(kTRUE)
+, output_settings(kFALSE)
 , is_mc_analysis(kFALSE)
 {
 }
@@ -233,20 +234,20 @@ AliFemtoConfigObject::Construct() const
 /// with pion values.
 ///
 struct CutConfig_Pion {
-    RangeF_t pt = {0.2, 2.0}
-           , eta = {-0.8, 0.8}
-           , DCA = {0.5, 4.0}
-           , nSigma = {-3.0, 3.0}
-           ;
+
+    RangeF_t pt = {0.2, 2.0},
+             eta = {-0.8, 0.8},
+             DCA = {0.5, 4.0},
+             nSigma = {-3.0, 3.0};
 
     Int_t charge = 1;
     UInt_t min_tpc_ncls = 80;
 
-    Float_t max_impact_xy = 2.4
-          , max_impact_z = 3.0
-          , max_tpc_chi_ndof = 0.032
-          , max_its_chi_ndof = 0.032
-          ;
+    Float_t max_impact_xy = .20,
+            max_impact_z = .15,
+            max_tpc_chi_ndof = 0.032,
+            max_its_chi_ndof = 0.032,
+            sigma = 3.0;
 
     Bool_t set_label = kTRUE,
            remove_kinks = kTRUE;
@@ -447,40 +448,41 @@ AliFemtoAnalysisPionPion::DefaultCutConfig()
   AliFemtoAnalysisPionPion::CutParams params = {
     // Event
     false, // use AliFemtoBasicEventCut
-    std::get<0>(default_event.multiplicity)
-  , std::get<1>(default_event.multiplicity)
-  , default_event.centrality.first
-  , default_event.centrality.second
-  , default_event.vertex_z.first
-  , default_event.vertex_z.second
-  , default_event.EP_VZero.first
-  , default_event.EP_VZero.second
-  , default_event.trigger_selection
-  , default_event.accept_bad_vertex
-  , default_event.accept_only_physics
+    default_event.multiplicity.first,
+    default_event.multiplicity.second,
+    default_event.centrality.first,
+    default_event.centrality.second,
+    default_event.vertex_z.first,
+    default_event.vertex_z.second,
+    default_event.EP_VZero.first,
+    default_event.EP_VZero.second,
+    default_event.trigger_selection,
+    default_event.accept_bad_vertex,
+    default_event.accept_only_physics,
 
     // Pion 1
-  , default_pion.pt.first
-  , default_pion.pt.second
-  , default_pion.eta.first
-  , default_pion.eta.second
-  , default_pion.DCA.first
-  , default_pion.DCA.second
+    default_pion.pt.first,
+    default_pion.pt.second,
+    default_pion.eta.first,
+    default_pion.eta.second,
+    default_pion.DCA.first,
+    default_pion.DCA.second,
 
-  , default_pion.nSigma.first
-  , default_pion.nSigma.second
+  // , default_pion.nSigma.first
+  // , default_pion.nSigma.second
+    default_pion.sigma,
 
-  , default_pion.max_impact_xy
-  , default_pion.max_impact_z
-  , default_pion.max_tpc_chi_ndof
-  , default_pion.max_its_chi_ndof
+    default_pion.max_impact_xy,
+    default_pion.max_impact_z,
+    default_pion.max_tpc_chi_ndof,
+    default_pion.max_its_chi_ndof,
 
-  , default_pion.min_tpc_ncls
-  , default_pion.remove_kinks
-  , default_pion.set_label
+    default_pion.min_tpc_ncls,
+    default_pion.remove_kinks,
+    default_pion.set_label,
 
     // Pion 2
-  , default_pion.pt.first
+    default_pion.pt.first
   , default_pion.pt.second
   , default_pion.eta.first
   , default_pion.eta.second
@@ -546,6 +548,7 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   cut->SetEta(p.pion_1_EtaMin, p.pion_1_EtaMax);
   cut->SetRapidity(p.pion_1_EtaMin, p.pion_1_EtaMax);
   cut->SetMostProbablePion();
+  cut->SetNsigma(p.pion_1_sigma);
 //   cut->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
 
   /// Settings for TPC-Inner Runmode
