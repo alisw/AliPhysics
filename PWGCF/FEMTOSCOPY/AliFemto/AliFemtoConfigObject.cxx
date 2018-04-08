@@ -125,9 +125,6 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
 
       auto it = fValueMap.cbegin();
 
-      auto stringify_pair = [=] (const auto &pair) {
-      };
-
       if (fValueMap.size() == 0) {
         return "{}";
       } else if (fValueMap.size() == 1 and !it->second.is_map()) {
