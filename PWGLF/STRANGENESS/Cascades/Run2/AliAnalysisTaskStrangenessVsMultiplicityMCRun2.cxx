@@ -2107,6 +2107,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             Printf("ERROR: Could not retreive one of the daughter track");
             continue;
         }
+        
+        fTreeVariablePosTrack = pTrack;
+        fTreeVariableNegTrack = nTrack;
+        
         fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
         fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
         
@@ -2754,9 +2758,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         AliESDtrack *pTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyPos);
         AliESDtrack *nTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyNeg);
-        
-        fTreeVariablePosTrack = pTrack;
-        fTreeVariableNegTrack = nTrack;
         
         if (!pTrack || !nTrack) {
             Printf("ERROR: Could not retreive one of the daughter track");
