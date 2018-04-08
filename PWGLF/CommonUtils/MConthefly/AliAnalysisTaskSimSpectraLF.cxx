@@ -392,7 +392,7 @@ void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
   AliMCEvent *event = dynamic_cast<AliMCEvent*>(obj);
   if ( !event ) return;
     
-  Bool_t isPrimary[11] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE };
+  Bool_t isPrimary[11] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE };
 
   Short_t pidCodeMC = 0;
   Double_t myY = 0.;
@@ -436,9 +436,9 @@ void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
 	if (pPDG==3312) MCPartSel[0]	= 5.5;	//	Xi -
 	if (pPDG==3334) MCPartSel[0]	= 6.5;	//	Omega -
 	if (pPDG==3212) MCPartSel[0]	= 7.5;	//	Sigma 0
-	if (pPDG==323)	MCPartSel[0]	= 8.5;	//	K*(892) +-
       }
       else{
+	if (pPDG==323)	MCPartSel[0]	= 8.5;	//	K*(892) +-
 	if (pPDG==333)	MCPartSel[0]	= 9.5;	//	Phi(1020)
 	if (pPDG==313)	MCPartSel[0]	= 10.5;	//	K*(892)
       }
