@@ -1328,9 +1328,7 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
         eventInfo->fVtxMC[0] = mcVtx->GetX();
         eventInfo->fVtxMC[1] = mcVtx->GetY();
         eventInfo->fVtxMC[2] = mcVtx->GetZ();
-
       } 
-
     }
    
    // We loop over all particles in the MC event
@@ -1429,7 +1427,6 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
         
       fReducedEvent->fNtracks[1] += 1;  
    }
-cout << "nch " << eventInfo->fNch[0] << endl;
 }
 
 
