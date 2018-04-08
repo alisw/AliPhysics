@@ -126,17 +126,12 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
       auto it = fValueMap.cbegin();
 
       auto stringify_pair = [=] (const auto &pair) {
-        auto &key_str = pair.first;
-        auto value_str = (pretty)
-                       ? pair.second.Stringify(pretty, deep+1)
-                       : pair.second.Stringify();
-        return key_str + ": " + value_str;
       };
 
       if (fValueMap.size() == 0) {
         return "{}";
       } else if (fValueMap.size() == 1 and !it->second.is_map()) {
-        return "{" + stringify_pair(*it) + "}";
+        return "{" + it->first + ": " + it->second.Stringify(pretty, deep+1) + "}";
       }
 
       TString result = '{';
@@ -156,7 +151,9 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
       }
 
       for (const auto &pair : fValueMap) {
-        result += prefix + stringify_pair(pair);
+        auto &key_str = pair.first;
+        auto value_str = pair.second.Stringify(pretty, deep+1);
+        result += prefix + key_str + ": " + value_str;
 
         if (prefix_needs_update) {
           prefix = (pretty)
