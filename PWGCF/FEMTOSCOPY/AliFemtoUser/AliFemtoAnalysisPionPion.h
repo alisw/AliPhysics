@@ -75,6 +75,10 @@ public:
                            const AnalysisParams&,
                            const CutParams&);
 
+  /// Construct from configuration object
+  ///
+  AliFemtoAnalysisPionPion(const AliFemtoConfigObject &);
+
   virtual void EventBegin(const AliFemtoEvent*);
   virtual void EventEnd(const AliFemtoEvent*);
 
@@ -121,15 +125,24 @@ public:
   ///
   static AliFemtoEventReader* ConstructEventReader(AliFemtoConfigObject cfg);
 
+  /// Construct event cut via configuration
+  static AliFemtoEventCut* ConstructEventCut(AliFemtoConfigObject);
+
+  /// Construct pion cut via configuration
   static AliFemtoParticleCut* ConstructParticleCut(AliFemtoConfigObject);
+
+  /// Construct pair cut via configuration
   static AliFemtoPairCut* ConstructPairCut(AliFemtoConfigObject);
 
+  /// Construct a CorrelationFunction from config object
   static AliFemtoCorrFctn* ConstructCorrelationFunction(AliFemtoConfigObject);
 
+  template <typename T>
+  static AliFemtoConfigObject GetConfigurationOf(const T&);
 
 protected:
 
-  /// The name of the analysis to identify in the output list
+  /// The name of this analysis used for identification in the output list
   TString fAnalysisName;
 
   /// The type of Pion particles this analysis will search for
@@ -270,5 +283,19 @@ struct AliFemtoAnalysisPionPion::CutParams {
   Bool_t pair_remove_same_label;
 
 };
+
+template <typename T>
+AliFemtoConfigObject
+AliFemtoAnalysisPionPion::GetConfigurationOf(const T &cut)
+{
+  auto *cls = TClass::GetClass(typeid(cut));
+  if (cls) {
+    return AliFemtoConfigObject("");
+  }
+  AliFemtoConfigObject::MapValue_t result;
+  result["class"] = "AliFemtoSomething";
+
+  return AliFemtoConfigObject(result);
+}
 
 #endif

@@ -296,6 +296,12 @@ struct Configuration<AliFemtoBasicEventCut> : AbstractConfiguration<AliFemtoEven
           ("accept_only_physics", accept_only_physics)
           ("min_collection_size", min_coll_size);
     }
+
+    static AliFemtoConfigObject GetConfigurationOf(const AliFemtoBasicEventCut &cut)
+    {
+      return AliFemtoConfigObject::BuildMap();
+        //("multiplicity", cut.GetMultiplicity());
+    }
 };
 #endif
 
@@ -330,6 +336,11 @@ struct Configuration<AliFemtoEventCutCentrality> : AbstractConfiguration<AliFemt
   virtual operator AliFemtoEventCut*() const {
     AliFemtoEventCutCentrality *cut = new AliFemtoEventCutCentrality(params);
     return cut;
+  }
+
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoEventCutCentrality &cut)
+  {
+    return cut.GetConfigObject();
   }
 };
 #endif
@@ -634,7 +645,7 @@ struct Configuration<AliFemtoPairCutDetaDphi> : Configuration<AliFemtoShareQuali
     cut.SetMinPhi(delta_phi_min);
   }
 
-  static AliFemtoConfigObject GetConfigOf(const AliFemtoPairCutDetaDphi &cut)
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoPairCutDetaDphi &cut)
   {
     return AliFemtoConfigObject::BuildMap()
       ("class", "AliFemtoPairCutDetaDphi")
@@ -921,7 +932,7 @@ struct Configuration<AliFemtoCorrFctnDPhiStarDEta> : AbstractConfiguration<AliFe
     return ptr;
   }
 
-  static AliFemtoConfigObject GetConfigOf(const AliFemtoCorrFctnDPhiStarDEta &cut)
+  static AliFemtoConfigObject GetConfigurationOf(const AliFemtoCorrFctnDPhiStarDEta &cut)
   {
     return AliFemtoConfigObject::BuildMap()
       ("class", "AliFemtoCorrFctnDPhiStarDEta")
