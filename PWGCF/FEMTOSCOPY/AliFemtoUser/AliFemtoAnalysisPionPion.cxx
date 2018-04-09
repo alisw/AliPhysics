@@ -443,6 +443,9 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
       phi_star_radius: %f,
       tpc_only: %d,
     },
+    event_cut: %s,
+    track_cut: %s,
+    pair_cut: %s,
   })#",
     fMCAnalysis,
     eventcut_classname.Data(),
@@ -467,6 +470,9 @@ AliFemtoAnalysisPionPion::AliFemtoAnalysisPionPion(const char *name,
     cut_params.pair_max_share_quality, cut_params.pair_max_share_fraction,
     cut_params.pair_delta_eta_min, cut_params.pair_delta_phi_min,
     cut_params.pair_phi_star_radius, cut_params.pair_TPCOnly
+    , event_cut_cfg.Data()
+    , track_cut_cfg.Data()
+    , pair_cut_cfg.Data()
   ).Data());
 }
 
@@ -1028,7 +1034,8 @@ AliFemtoAnalysisPionPion::ConstructEventCut(AliFemtoConfigObject cfg)
   #define TRY_CONSTRUCTING_CLASS(__name) (classname == #__name) ? (AliFemtoEventCut*)(Configuration<__name>(cfg))
 
   auto *result = TRY_CONSTRUCTING_CLASS(AliFemtoBasicEventCut)
-               : TRY_CONSTRUCTING_CLASS(AliFemtoEventCutCentrality)
+              //  : TRY_CONSTRUCTING_CLASS(AliFemtoEventCutCentrality)
+               : classname == "AliFemtoEventCutCentrality" ? new AliFemtoEventCutCentrality(cfg)
                : nullptr;
 
   #undef TRY_CONSTRUCTING_CLASS
