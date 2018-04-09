@@ -214,8 +214,8 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   fDigits->GetQT1(*chargeQT1);
   
   Int_t onlineMean =  fDigits->MeanTime();
-Int_t corridor = GetRecoParam() -> GetCorridor();  
- 
+  Int_t corridor = GetRecoParam() -> GetCorridor();  
+  
   Bool_t tr[5];
   for (Int_t i=0; i<5; i++) tr[i]=false; 
     
@@ -284,7 +284,6 @@ Int_t corridor = GetRecoParam() -> GetCorridor();
   Int_t npmtsC=0;
   for (Int_t ipmt=0; ipmt<12; ipmt++){
     if ( fLHCperiod16) lowAmpThreshold = ampcut[ipmt];
-    printf("@@@ threshold %f %f \n",lowAmpThreshold,highAmpThreshold);
     if(time[ipmt] !=0  && time[ipmt] != -99999
        &&  adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold )
       {
@@ -341,6 +340,15 @@ Int_t corridor = GetRecoParam() -> GetCorridor();
 		  vertex ) );
   
   AliDebug(5,Form("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4]));
+  
+  //FIT CFD
+  Double32_t timeFIT=0;
+  for (int ipmt=0; ipmt<4; ipmt++) {
+    if(timeLED->At(ipmt)>0) {
+      timeFIT = Double32_t (timeLED->At(ipmt)-511);
+      frecpoints.SetFITTime(ipmt, timeFIT);
+    }
+  }
   
   //online mean
   frecpoints.SetOnlineMean(Int_t(onlineMean));
@@ -778,11 +786,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       fESDTZERO->SetTimeFull(i0, iHit,frecpoints.GetTimeFull(i0,iHit));	
   }
     //FIT CFD
-    for (Int_t i0=0; i0<4; i0++) 
+  for (Int_t i0=0; i0<4; i0++) {
       fESDTZERO->SetPileupTime(i0, frecpoints.GetFITTime(i0)); //// 19.05.2016
-    
-    AliDebug(1,Form("T0: SPDshift %f Vertex %f (T0A+T0C)/2 best %f #ps T0signal %f ps OrA %f ps OrC %f ps T0trig %i\n",shift, zPosition, timemean[0], timeClock[0], timeClock[1], timeClock[2], trig));
-    printf("T0: SPDshift %f Vertex %f (T0A+T0C)/2 best %f #ps T0signal %f ps OrA %f ps OrC %f ps T0trig %i\n",shift, zPosition, timemean[0], timeClock[0], timeClock[1], timeClock[2], trig);
+      //      if( frecpoints.GetFITTime(i0)>0)   printf("@@@ T0: %i  time %f \n",i0,frecpoints.GetFITTime(i0));
+  }
+
+    AliDebug(1,Form("T0: SPDshift %f Vertex %f (T0A+T0C)/2 best %f #ps T0signal %f ps OrA// %f ps OrC %f ps T0trig %i\n",shift, zPosition, timemean[0], timeClock[0], timeClock[1], timeClock[2], trig));
     
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // background flags
@@ -906,7 +915,6 @@ void  AliT0Reconstructor::ReadNewQTC(Int_t alldata[250][5], Float_t amplitude[26
      b[i] = GetRecoParam() -> GetLow(i+156);
      if ( fLHCperiod16)     p[i] = GetRecoParam() -> GetHigh(i+72);
      else p[i] = 0;
-     //    printf("@@@ ReadNewQTC %i %f %f %f \n",i, a[i],  b[i],  p[i] );
      if(i<24) 
        qt11mean[i] =qt01mean[i] =fTime0vertex[i] + 15500;
      else
