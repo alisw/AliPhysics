@@ -1758,7 +1758,7 @@ void AliEMCALRecoUtils::RecalculateCellLabelsRemoveAddedGenerator( Int_t absID, 
   if ( mc && fNMCGenerToAccept > 0 )
   {
     //printf("Accept contribution from generator? \n");
-    for(Int_t imc = 0; imc < 4; imc++)
+    for(UInt_t imc = 0; imc < 4; imc++)
     {
       if ( eDepFrac[imc] > 0 && clus->GetNLabels() > imc )
       {
@@ -1788,7 +1788,7 @@ void AliEMCALRecoUtils::RecalculateCellLabelsRemoveAddedGenerator( Int_t absID, 
   // Add MC label and Edep to corresponding array (to be used later in digits)
   //
   Int_t nLabels = 0;
-  for(Int_t imc = 0; imc < 4; imc++)
+  for(UInt_t imc = 0; imc < 4; imc++)
   {
     if ( eDepFrac[imc] > 0 && clus->GetNLabels() > imc && edepTotFrac > 0 )
     {
