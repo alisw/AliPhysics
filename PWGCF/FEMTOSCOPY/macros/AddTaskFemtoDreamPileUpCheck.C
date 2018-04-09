@@ -86,46 +86,40 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   NegAntiv0Daug->SetCutCharge(-1);
 
   if (suffix == "1") {
-    Posv0Daug->SetMaxChi2(10);
-    Negv0Daug->SetMaxChi2(10);
-    PosAntiv0Daug->SetMaxChi2(10);
-    NegAntiv0Daug->SetMaxChi2(10);
+    Posv0Daug->SetChi2Cut(0, 999);
+    Negv0Daug->SetChi2Cut(0, 999);
+    PosAntiv0Daug->SetChi2Cut(0, 999);
+    NegAntiv0Daug->SetChi2Cut(0, 999);
   } else if (suffix == "2") {
-    Posv0Daug->SetMaxChi2(8);
-    Negv0Daug->SetMaxChi2(8);
-    PosAntiv0Daug->SetMaxChi2(8);
-    NegAntiv0Daug->SetMaxChi2(8);
+    Posv0Daug->SetChi2Cut(0.1, 999);
+    Negv0Daug->SetChi2Cut(0.1, 999);
+    PosAntiv0Daug->SetChi2Cut(0.1, 999);
+    NegAntiv0Daug->SetChi2Cut(0.1, 999);
   } else if (suffix == "3") {
-    Posv0Daug->SetMaxChi2(6);
-    Negv0Daug->SetMaxChi2(6);
-    PosAntiv0Daug->SetMaxChi2(6);
-    NegAntiv0Daug->SetMaxChi2(6);
+    Posv0Daug->SetChi2Cut(0.25, 999);
+    Negv0Daug->SetChi2Cut(0.25, 999);
+    PosAntiv0Daug->SetChi2Cut(0.25, 999);
+    NegAntiv0Daug->SetChi2Cut(0.25, 999);
   } else if (suffix == "4") {
-    Posv0Daug->SetMaxChi2(4);
-    Negv0Daug->SetMaxChi2(4);
-    PosAntiv0Daug->SetMaxChi2(4);
-    NegAntiv0Daug->SetMaxChi2(4);
+    Posv0Daug->SetChi2Cut(0.5, 999);
+    Negv0Daug->SetChi2Cut(0.5, 999);
+    PosAntiv0Daug->SetChi2Cut(0.5, 999);
+    NegAntiv0Daug->SetChi2Cut(0.5, 999);
   } else if (suffix == "5") {
-    Posv0Daug->SetMaxChi2(2);
-    Negv0Daug->SetMaxChi2(2);
-    PosAntiv0Daug->SetMaxChi2(2);
-    NegAntiv0Daug->SetMaxChi2(2);
+    Posv0Daug->SetChi2Cut(0.75, 999);
+    Negv0Daug->SetChi2Cut(0.75, 999);
+    PosAntiv0Daug->SetChi2Cut(0.75, 999);
+    NegAntiv0Daug->SetChi2Cut(0.75, 999);
   } else if (suffix == "6") {
-    Posv0Daug->SetMaxChi2(1);
-    Negv0Daug->SetMaxChi2(1);
-    PosAntiv0Daug->SetMaxChi2(1);
-    NegAntiv0Daug->SetMaxChi2(1);
+    Posv0Daug->SetChi2Cut(1, 999);
+    Negv0Daug->SetChi2Cut(1, 999);
+    PosAntiv0Daug->SetChi2Cut(1, 999);
+    NegAntiv0Daug->SetChi2Cut(1, 999);
   } else if (suffix == "7") {
-    Posv0Daug->SetMaxChi2(2.4);
-    Negv0Daug->SetMaxChi2(2.4);
-    PosAntiv0Daug->SetMaxChi2(2.4);
-    NegAntiv0Daug->SetMaxChi2(2.4);
-  } else if (suffix == "8") {
-    Posv0Daug->SetCheckPileUp(true);
-    NegAntiv0Daug->SetCheckPileUp(true);
-  } else if (suffix == "9") {
-    Negv0Daug->SetCheckPileUp(true);
-    PosAntiv0Daug->SetCheckPileUp(true);
+    Posv0Daug->SetChi2Cut(2, 5);
+    Negv0Daug->SetChi2Cut(2, 5);
+    PosAntiv0Daug->SetChi2Cut(2, 5);
+    NegAntiv0Daug->SetChi2Cut(2, 5);
   }
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
@@ -170,25 +164,55 @@ AliAnalysisTaskSE *AddTaskFemtoDreamPileUpCheck(
   AntiXiPosCuts->SetMinimalBooking(true);
   AntiXiBachCuts->SetMinimalBooking(true);
 
-  if (suffix == "10") {
-     XiPosCuts->SetCheckPileUp(true);
-     AntiXiNegCuts->SetCheckPileUp(true);
-   } else if (suffix == "11") {
-    XiNegCuts->SetCheckPileUp(true);
-    AntiXiPosCuts->SetCheckPileUp(true);
-  } else if (suffix == "12") {
-    XiBachCuts->SetCheckPileUp(true);
-    AntiXiBachCuts->SetCheckPileUp(true);
-  } else if (suffix == "13") {
-    XiBachCuts->SetCheckPileUp(true);
-    AntiXiBachCuts->SetCheckPileUp(true);
-    XiPosCuts->SetCheckPileUp(true);
-    AntiXiNegCuts->SetCheckPileUp(true);
-  } else if (suffix == "14") {
-    XiBachCuts->SetCheckPileUp(true);
-    AntiXiBachCuts->SetCheckPileUp(true);
-    XiNegCuts->SetCheckPileUp(true);
-    AntiXiPosCuts->SetCheckPileUp(true);
+  if (suffix == "1") {
+     XiPosCuts->SetChi2Cut(0, 999);
+     XiNegCuts->SetChi2Cut(0, 999);
+     XiBachCuts->SetChi2Cut(0, 999);
+     AntiXiPosCuts->SetChi2Cut(0, 999);
+     AntiXiNegCuts->SetChi2Cut(0, 999);
+     AntiXiBachCuts->SetChi2Cut(0, 999);
+   } else if (suffix == "2") {
+    XiPosCuts->SetChi2Cut(0.1, 999);
+    XiNegCuts->SetChi2Cut(0.1, 999);
+    XiBachCuts->SetChi2Cut(0.1, 999);
+    AntiXiPosCuts->SetChi2Cut(0.1, 999);
+    AntiXiNegCuts->SetChi2Cut(0.1, 999);
+    AntiXiBachCuts->SetChi2Cut(0.1, 999);
+  } else if (suffix == "3") {
+    XiPosCuts->SetChi2Cut(0.25, 999);
+    XiNegCuts->SetChi2Cut(0.25, 999);
+    XiBachCuts->SetChi2Cut(0.25, 999);
+    AntiXiPosCuts->SetChi2Cut(0.25, 999);
+    AntiXiNegCuts->SetChi2Cut(0.25, 999);
+    AntiXiBachCuts->SetChi2Cut(0.25, 999);
+  } else if (suffix == "4") {
+    XiPosCuts->SetChi2Cut(0.5, 999);
+    XiNegCuts->SetChi2Cut(0.5, 999);
+    XiBachCuts->SetChi2Cut(0.5, 999);
+    AntiXiPosCuts->SetChi2Cut(0.5, 999);
+    AntiXiNegCuts->SetChi2Cut(0.5, 999);
+    AntiXiBachCuts->SetChi2Cut(0.5, 999);
+  } else if (suffix == "5") {
+    XiPosCuts->SetChi2Cut(0.75, 999);
+    XiNegCuts->SetChi2Cut(0.75, 999);
+    XiBachCuts->SetChi2Cut(0.75, 999);
+    AntiXiPosCuts->SetChi2Cut(0.75, 999);
+    AntiXiNegCuts->SetChi2Cut(0.75, 999);
+    AntiXiBachCuts->SetChi2Cut(0.75, 999);
+  } else if (suffix == "6") {
+    XiPosCuts->SetChi2Cut(1, 999);
+    XiNegCuts->SetChi2Cut(1, 999);
+    XiBachCuts->SetChi2Cut(1, 999);
+    AntiXiPosCuts->SetChi2Cut(1, 999);
+    AntiXiNegCuts->SetChi2Cut(1, 999);
+    AntiXiBachCuts->SetChi2Cut(1, 999);
+  } else if (suffix == "7") {
+    XiPosCuts->SetChi2Cut(2, 5);
+    XiNegCuts->SetChi2Cut(2, 5);
+    XiBachCuts->SetChi2Cut(2, 5);
+    AntiXiPosCuts->SetChi2Cut(2, 5);
+    AntiXiNegCuts->SetChi2Cut(2, 5);
+    AntiXiBachCuts->SetChi2Cut(2, 5);
   }
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
