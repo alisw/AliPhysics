@@ -37,6 +37,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
 ,fMaxSharedClsTPC(160)
 ,fCutSharedClsTPC(false)
 ,fCutChi2(false)
+,fMinCutChi2(0.f)
 ,fMaxCutChi2(0.f)
 ,fDCAProp(false)
 ,fDCAToVertexXY(0)
@@ -199,7 +200,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
     }
   }
   if (pass && fCutChi2) {
-    if (Track->GetChiSquare() > fMaxCutChi2) {
+    if (Track->GetChiSquare() > fMaxCutChi2 || Track->GetChiSquare() < fMinCutChi2) {
       pass=false;
     } else {
       if (!fMinimalBooking) fHists->FillTrackCounter(14);
@@ -656,7 +657,8 @@ void AliFemtoDreamTrackCuts::BookTrackCuts() {
       fHists->FillConfig(21,1);
     }
     if(fCutChi2) {
-      fHists->FillConfig(22,fMaxCutChi2);
+      fHists->FillConfig(22,fMinCutChi2);
+      fHists->FillConfig(23,fMaxCutChi2);
     }
   }
 }

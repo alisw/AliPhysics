@@ -59,7 +59,7 @@ class AliFemtoDreamTrackCuts {
   void SetCheckPileUp(bool check){fCheckPileUp=check;};
   void SetNClsTPC(int nCls){fnTPCCls = nCls; fcutnTPCCls = kTRUE;};
   void SetMaxSharedClsTPC(int nSCls){fMaxSharedClsTPC=nSCls;fCutSharedClsTPC=true;};
-  void SetMaxChi2(float chi2){fMaxCutChi2=chi2;fCutChi2=true;};
+  void SetChi2Cut(float MinChi2, float MaxChi2){ fMinCutChi2 = MinChi2; fMaxCutChi2=MaxChi2; fCutChi2=true; };
   void SetDCAReCalculation(bool which){fDCAProp = which;};
   void SetDCAVtxXY(float dcaXY){fDCAToVertexXY = dcaXY; fCutDCAToVtxXY = kTRUE;};
   void SetCutDCAVtxXY(bool cutdcaXY){fCutDCAToVtxXY = cutdcaXY;};
@@ -118,6 +118,7 @@ class AliFemtoDreamTrackCuts {
   int fMaxSharedClsTPC;               //
   bool fCutSharedClsTPC;              //
   bool fCutChi2;                      //
+  float fMinCutChi2;                  //
   float fMaxCutChi2;                  //
   bool fDCAProp;                      //  kTRUE means that the DCA gets recalculated by PropagateToDCA, kFALSE just uses the info stored in the AOD
   float fDCAToVertexXY;              //
