@@ -154,6 +154,15 @@ void AliJFlowBaseTask::UserExec(Option_t* /*option*/)
 			fEventPlaneALICE[D_V0A][iH-2] = fFlowVectorMgr->GetDetectorQnVector("VZEROA")->EventPlane(iH);
 			fEventPlaneALICE[D_V0C][iH-2] = fFlowVectorMgr->GetDetectorQnVector("VZEROC")->EventPlane(iH);
 		}
+		for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
+			if (is != D_TPC && is != D_V0A && is != D_V0C) continue;
+			for(int iH=2;iH<=3;iH++) {		
+				double EPref = fEventPlaneALICE[D_V0A][iH-2];
+				double EP = fEventPlaneALICE[is][iH-2];
+				fhistos->fhEPCorrInHar[fCBin][is][iH-2]->Fill( EP-EPref );
+				fhistos->fhEPCorr2D[fCBin][is][iH-2]->Fill(EP,EPref);
+			}
+		}
 	}
 }
 
@@ -222,11 +231,15 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 			fhistos->fh_EP[fCBin][is][iH-2]->Fill(QvectorsEP[is][iH-2].Theta()/double(iH));
 		}
 	}
-	/*
-	   for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
-	   for(int iH=2;iH<=2;iH++) {		
-	   cout << decAcc[is][0]<<"<eta<"<<decAcc[is][1]<<" Nch = "<< NtracksDEC[is] << "\t"<< iH <<"th "<< QvectorsEP[is][iH-2].Theta() << endl;
-	   }
-	   }
-	 */
+
+	// Calculation resolution
+	for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
+		for(int iH=2;iH<=3;iH++) {		
+			double EPref = QvectorsEP[D_V0A][iH-2].Theta()/double(iH);
+			double EP = QvectorsEP[is][iH-2].Theta()/double(iH);
+			fhistos->fhEPCorrInHar[fCBin][is][iH-2]->Fill( EP-EPref );
+			fhistos->fhEPCorr2D[fCBin][is][iH-2]->Fill(EPref,EP);
+		}
+	}
+
 }
