@@ -383,7 +383,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp(
     // nmb cluster TPC > 70, max chi2 = 4; DCA cut on 3cm and xy 0.5cm
     // min pT charged pion = 0.4
     // min pT netral pion = 1.5
-    cuts.AddCut("00000113","2444400043012300000","40b440708","0103563200000000","0153503000000000"); // normal event mixing
+    cuts.AddCut("00000113","2444400043012300000","40b440708","0103563200000000","0153503000000000"); // no NonLin
+    cuts.AddCut("00000113","2444401043012300000","40b440708","0103563200000000","0153503000000000"); // ext PHOS NonLin
+    cuts.AddCut("00000113","2444412043012300000","40b440708","0103563200000000","0153503000000000"); // const NonLin
   } else if( trainConfig == 101 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, pi+pi- mass Cut at 0.65, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
