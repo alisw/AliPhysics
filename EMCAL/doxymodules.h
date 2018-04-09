@@ -50,7 +50,7 @@
 /**
  * \defgroup EMCAL_macros EMCAL_macros
  * \ingroup EMCAL
- * \brief EMCAL macros for testing, OCDB/OADB, generation etc.
+ * \brief EMCAL macros for testing, OCDB, generation etc.
  */
 
 /**
@@ -87,12 +87,6 @@
  * \defgroup EMCAL_SimRecDB EMCAL_SimRecDB
  * \ingroup EMCAL_macros
  * \brief EMCAL macros for generating and printing content of simulation and reconstruction OCDB files
- */
-
-/**
- * \defgroup EMCAL_OADB EMCAL_OADB
- * \ingroup EMCAL_macros
- * \brief EMCAL macros for testing, generating OADB files
  */
 
 /**
