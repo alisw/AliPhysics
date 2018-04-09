@@ -74,6 +74,7 @@ class AliAnalysisTaskStudentsCM : public AliAnalysisTaskSE{		// {AliAnalysisTask
   // 1.) Control histograms:  
   TList *fControlHistogramsList; // list to hold all control histograms
   TList *fTestHistogramsList;	 // {TEST: list to hold the personal histograms for playing around ^^}
+  TH1F *fPtHistNoCut;			 // Histogram containing the transverse momenta before the application of cuts
   TH1F *fPtHist;                 // atrack->Pt() {Histogram containing the transverse momenta}
   Int_t fNbins;                  // number of bins
   Float_t fMinBin;               // min bin
@@ -81,6 +82,7 @@ class AliAnalysisTaskStudentsCM : public AliAnalysisTaskSE{		// {AliAnalysisTask
   TH1F *fPhiHist;                // atrack->Phi()
   TH1F *fEtaHist;                // atrack->Eta()
   TH1F *fEnergyHist;			 // atrack->E() {TEST, histogram containing the energy}
+  TH1F *fEnergyHistNoCut;	     // Histogram containing the energy before the application of cuts
   TH2F *fPtPhiHist;				 // {TEST: 2D histogram containing the azimuthal angle phi as a function of the transverse momentum}
   TH1F *fMassSquareHist;		 // TEST: mass^2 of the particles
 
@@ -88,7 +90,7 @@ class AliAnalysisTaskStudentsCM : public AliAnalysisTaskSE{		// {AliAnalysisTask
   TList *fFinalResultsList; // list to hold all histograms with final results
   TH2F *fEtaMassSquareHist;	// TEST: m^2 as a function of eta, offline made
 
-  ClassDef(AliAnalysisTaskStudentsCM,1);	// {Needed to be increase each time a new version is sent for the daily tag}
+  ClassDef(AliAnalysisTaskStudentsCM,2);	// {Needed to be increase each time a new version that changes the structure of the output file is sent for the daily tag}
 
 };
 
