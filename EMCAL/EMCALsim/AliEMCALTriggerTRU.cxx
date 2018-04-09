@@ -43,7 +43,8 @@ ClassImp(AliEMCALTriggerTRU) ;
 //________________
 AliEMCALTriggerTRU::AliEMCALTriggerTRU() : AliEMCALTriggerBoard(),
 fDCSConfig(0x0),
-fL0Time(0)
+fL0Time(0),
+fActive(true)
 {	
   for (Int_t i=0;i<96;i++) for (Int_t j=0;j<256;j++) fADC[i][j] = 0;
 }
@@ -54,7 +55,8 @@ fL0Time(0)
 AliEMCALTriggerTRU::AliEMCALTriggerTRU(AliEMCALTriggerTRUDCSConfig* dcsConf, const TVector2& rSize, Int_t mapType) : 
 AliEMCALTriggerBoard(rSize),
 fDCSConfig(dcsConf),
-fL0Time(0)
+fL0Time(0),
+fActive(true)
 {
   for (Int_t i=0;i<96;i++) for (Int_t j=0;j<256;j++) fADC[i][j] = 0;
   
@@ -137,6 +139,10 @@ void AliEMCALTriggerTRU::ShowFastOR(Int_t iTimeWindow, Int_t iChannel)
 //________________
 Int_t AliEMCALTriggerTRU::L0()
 {	
+  if(!fActive) {
+    AliDebug(999, "Skipping L0 for inactive TRU");
+    return 0;
+  }
   const Int_t xsize    = Int_t(fRegionSize->X());
   const Int_t ysize    = Int_t(fRegionSize->Y());
   
