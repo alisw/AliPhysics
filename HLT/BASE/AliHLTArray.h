@@ -39,7 +39,7 @@
 #if __GNUC__ > 3
 #define USE_MM_MALLOC
 #endif
-#else // not gcc, assume it can use _mm_malloc since it supports MMX/SSE
+#elif !defined(__INTEL_COMPILER) // not gcc, assume it can use _mm_malloc since it supports MMX/SSE (Except ICC, which seems to have a different interface)
 #define USE_MM_MALLOC
 #endif
 #endif
