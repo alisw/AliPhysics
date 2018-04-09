@@ -96,6 +96,7 @@ public:
   void   SetTrackEtaCut( Double_t val )    { fTrackEtaCut = val; }
   void   SetTrackEtaCutMin( Double_t val )    { fTrackEtaCutMin = val; }
   void   SetOnlyOneEtaSide(Int_t flag)     { fOnlyOneEtaSide = flag; }
+  void   SetOnlyOneAssocEtaSide(Int_t flag)     { fOnlyOneAssocEtaSide = flag; }
   void   SetTrackPhiCutEvPlMin(Double_t val)  { fTrackPhiCutEvPlMin = val; }
   void   SetTrackPhiCutEvPlMax(Double_t val)  { fTrackPhiCutEvPlMax = val; }
   void   SetPtMin(Double_t val)            { fPtMin = val; }
@@ -254,6 +255,7 @@ private:
   Double_t            fTrackPhiCutEvPlMin;   // Minimum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2)
   Double_t            fTrackPhiCutEvPlMax;   // Maximum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2), if = 0, then no cut is performed
   Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
+  Int_t 		fOnlyOneAssocEtaSide;       // decides that only associated particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
   Double_t            fPtMin;                // Min pT to start correlations
   TFormula*           fDCAXYCut;             // additional pt dependent cut on DCA XY (only for AOD)
   Double_t            fSharedClusterCut;  // cut on shared clusters (only for AOD)
