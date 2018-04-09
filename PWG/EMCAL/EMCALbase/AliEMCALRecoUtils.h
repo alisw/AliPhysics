@@ -446,7 +446,6 @@ private:
   
   ///< Type of cell position used for shower shape calculation:
   ///< 0-index; 1-global eta/phi; 2-local x/z; 3- local r/z; 4- global x/z; 5- global r/z
-
   Int_t      fShowerShapeCellLocationType;  
   
   // Non linearity
