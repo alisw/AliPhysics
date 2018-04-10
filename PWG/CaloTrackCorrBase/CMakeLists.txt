@@ -63,7 +63,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependencies
-set(LIBDEPS ANALYSISalice EMCALUtils PHOSUtils)
+set(LIBDEPS ANALYSISalice EMCALUtils PWGEMCALbase PHOSUtils)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
