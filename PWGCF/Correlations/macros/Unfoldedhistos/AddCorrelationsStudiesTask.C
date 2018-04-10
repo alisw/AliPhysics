@@ -29,32 +29,73 @@ AliAnalysisTaskSE *AddCorrelationsStudiesTask(const char *mincenstr, const char 
     TObjArray *mincentokens = mincenstring.Tokenize("[],");
     TObjArray *maxcentokens = maxcenstring.Tokenize("[],");
 
-    if (mincentokens->GetEntries() != maxcentokens->GetEntries()) {
+    if (mincentokens->GetEntries() != maxcentokens->GetEntries() + 1) {
+      /* the first item in mincentokens is the centrality detector qualifier */
       AliFatalGeneral("AddCorrelationsStudiesTask", "number of centrality cuts edges differ. ABORTING");
     }
 
-    int *mincen = new int[mincentokens->GetEntries()];
-    int *maxcen = new int[mincentokens->GetEntries()];
+    int centqualifier = ((TObjString*) mincentokens->At(0))->String().Atoi();
+    int *mincen = new int[maxcentokens->GetEntries()];
+    int *maxcen = new int[maxcentokens->GetEntries()];
 
-    for (int icen = 0; icen < mincentokens->GetEntries(); icen++) {
-      mincen[icen] = ((TObjString*) mincentokens->At(icen))->String().Atoi();
+    for (int icen = 0; icen < maxcentokens->GetEntries(); icen++) {
+      mincen[icen] = ((TObjString*) mincentokens->At(icen+1))->String().Atoi();
       maxcen[icen] = ((TObjString*) maxcentokens->At(icen))->String().Atoi();
     }
 
-    for (int icen = 0; icen < mincentokens->GetEntries(); icen++) {
+    for (int icen = 0; icen < maxcentokens->GetEntries(); icen++) {
       int centclass;
       int lowedge;
       int upedge;
+      /// Sets the type of centrality to handle
+      /// \param ctype the centrality type
+      ///    |code| detector for centrality estimate, range modifier |
+      ///    |:--:|--------|
+      ///    |  0 | no centrality cut |
+      ///    |  1 | default detector for the concerned system, cut in the range 0-100% in steps of 10% |
+      ///    |  2 | alternative detector for the concerned system, cut in the range 0-100% in steps of 10% |
+      ///    |  3 | default detector for the concerned system, cut in the range 0-50% in steps of 5% |
+      ///    |  4 | default detector for the concerned system, cut in the range 50-100% in steps of 5% |
+      ///    |  5 | default detector for the concerned system, cut in the range 0-10% in steps of 1% |
+      ///    |  6 | default detector for the concerned system, cut in the range 10-20% in steps of 1% |
+      ///    |  7 | alternative detector for the concerned system, cut in the range 0-50% in steps of 5% |
+      ///    |  8 | alternative detector for the concerned system, cut in the range 50-100% in steps of 5% |
       if (mincen[icen] < 500 && ((int(mincen[icen] / 100)*100 != mincen[icen]) || (int(maxcen[icen] / 100)*100 != maxcen[icen]))) {
         /* short centrality range */
-        centclass = 3;
-        lowedge = int(mincen[icen]/50);
-        upedge = int(maxcen[icen]/50);
+        switch(centqualifier){
+        case 1:
+        case 3:
+          centclass = 3;
+          lowedge = int(mincen[icen]/50);
+          upedge = int(maxcen[icen]/50);
+          break;
+        case 2:
+        case 7:
+          centclass = 7;
+          lowedge = int(mincen[icen]/50);
+          upedge = int(maxcen[icen]/50);
+          break;
+        default:
+          AliFatalGeneral("AddCorrelationsStudiesTask", "centrality qualifier not supported. ABORTING");
+        }
       }
       else {
-        centclass = 1;
-        lowedge = int(mincen[icen]/100);
-        upedge = int(maxcen[icen]/100);
+        switch(centqualifier){
+        case 1:
+        case 3:
+          centclass = 1;
+          lowedge = int(mincen[icen]/100);
+          upedge = int(maxcen[icen]/100);
+          break;
+        case 2:
+        case 7:
+          centclass = 2;
+          lowedge = int(mincen[icen]/100);
+          upedge = int(maxcen[icen]/100);
+          break;
+        default:
+          AliFatalGeneral("AddCorrelationsStudiesTask", "centrality qualifier not supported. ABORTING");
+        }
       }
       sprintf(suffix,"%dVo%d",int(mincen[icen]),int(maxcen[icen]));
       sprintf(configbuffer,configstring,centclass,lowedge,upedge);
