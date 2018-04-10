@@ -25,7 +25,8 @@
 // Note: Adapted for AliAnalysisTaskSE
 //////////////////////////////////////////////////////////////////////////////
 #include <AliAnalysisManager.h>
-#include "AliJBaseTrack.h"
+#include <AliQnCorrectionsManager.h>
+#include <AliJBaseTrack.h>
 #include "AliJFlowBaseTask.h" 
 static double decAcc[AliJFlowBaseTask::D_COUNT][2] = {
 	{-0.8,0.8},
@@ -42,6 +43,8 @@ AliJFlowBaseTask::AliJFlowBaseTask() :
 	AliAnalysisTaskSE("JFlowBaseTask"),
 	fJCatalystTask(NULL),
 	fJCatalystTaskName("JCatalystTask"),
+	fFlowVectorTask(NULL),
+	fIsMC(kTRUE),
 	fhistos(NULL),
 	fCBin(-1),
 	fOutput(NULL)
@@ -53,12 +56,17 @@ AliJFlowBaseTask::AliJFlowBaseTask(const char *name, TString inputformat):
 	AliAnalysisTaskSE(name), 
 	fJCatalystTask(NULL),
 	fJCatalystTaskName("JCatalystTask"),
+	fFlowVectorTask(NULL),
+	fIsMC(kTRUE),
 	fhistos(NULL),
 	fCBin(-1),
 	fOutput(NULL)
 {
 	// Constructor
 	AliInfo("---- AliJFlowBaseTask Constructor ----");
+	for(uint i=0;i<D_COUNT;i++) {
+		for(uint j=0;j<2;j++) fEventPlaneALICE[i][j] =-999;
+	}
 	DefineOutput (1, TDirectory::Class());
 }
 
@@ -67,6 +75,8 @@ AliJFlowBaseTask::AliJFlowBaseTask(const AliJFlowBaseTask& ap) :
 	AliAnalysisTaskSE(ap.GetName()), 
 	fJCatalystTask(ap.fJCatalystTask),
 	fJCatalystTaskName(ap.fJCatalystTaskName),
+	fFlowVectorTask(ap.fFlowVectorTask),
+	fIsMC(ap.fIsMC),
 	fhistos(ap.fhistos),
 	fCBin(ap.fCBin),
 	fOutput( ap.fOutput )
@@ -106,6 +116,7 @@ void AliJFlowBaseTask::UserCreateOutputObjects()
 	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 
 	fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
+	if(!fIsMC) fFlowVectorTask = (AliAnalysisTaskFlowVectorCorrections*)(man->GetTask("FlowQnVectorCorrections"));
 
 	OpenFile(1);
 	fOutput = gDirectory;
@@ -132,9 +143,27 @@ void AliJFlowBaseTask::UserExec(Option_t* /*option*/)
 	fCBin = AliJFlowHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
 	if(fCBin == -1)
 		return;
-	TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
-	CalculateEventPlane(fInputList);
-	if(fDebug > 5) cout << "\t------- End UserExec "<<endl;
+	if(fIsMC) {
+		TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
+		CalculateEventPlane(fInputList);
+	} else {
+		AliQnCorrectionsManager *fFlowVectorMgr = fFlowVectorTask->GetAliQnCorrectionsManager();
+		for(int iH=2;iH<=3;iH++) {
+			fEventPlaneALICE[D_TPC][iH-2] = fFlowVectorMgr->GetDetectorQnVector("TPC")->EventPlane(iH);
+			fEventPlaneALICE[D_V0P][iH-2] = fFlowVectorMgr->GetDetectorQnVector("VZERO")->EventPlane(iH);
+			fEventPlaneALICE[D_V0A][iH-2] = fFlowVectorMgr->GetDetectorQnVector("VZEROA")->EventPlane(iH);
+			fEventPlaneALICE[D_V0C][iH-2] = fFlowVectorMgr->GetDetectorQnVector("VZEROC")->EventPlane(iH);
+		}
+		for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
+			if (is != D_TPC && is != D_V0A && is != D_V0C) continue;
+			for(int iH=2;iH<=3;iH++) {		
+				double EPref = fEventPlaneALICE[D_V0A][iH-2];
+				double EP = fEventPlaneALICE[is][iH-2];
+				fhistos->fhEPCorrInHar[fCBin][is][iH-2]->Fill( EP-EPref );
+				fhistos->fhEPCorr2D[fCBin][is][iH-2]->Fill(EP,EPref);
+			}
+		}
+	}
 }
 
 //______________________________________________________________________________
@@ -202,11 +231,15 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 			fhistos->fh_EP[fCBin][is][iH-2]->Fill(QvectorsEP[is][iH-2].Theta()/double(iH));
 		}
 	}
-	/*
-	   for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
-	   for(int iH=2;iH<=2;iH++) {		
-	   cout << decAcc[is][0]<<"<eta<"<<decAcc[is][1]<<" Nch = "<< NtracksDEC[is] << "\t"<< iH <<"th "<< QvectorsEP[is][iH-2].Theta() << endl;
-	   }
-	   }
-	 */
+
+	// Calculation resolution
+	for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
+		for(int iH=2;iH<=3;iH++) {		
+			double EPref = QvectorsEP[D_V0A][iH-2].Theta()/double(iH);
+			double EP = QvectorsEP[is][iH-2].Theta()/double(iH);
+			fhistos->fhEPCorrInHar[fCBin][is][iH-2]->Fill( EP-EPref );
+			fhistos->fhEPCorr2D[fCBin][is][iH-2]->Fill(EPref,EP);
+		}
+	}
+
 }
