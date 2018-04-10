@@ -130,6 +130,7 @@ fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
 
 	AliPIDResponse *fPIDResponse;     //! PID response object
         AliMultSelection *fMultSelection;
+        AliMultSelection *fMultSelection_INEL;
 	AliESDtrackCuts *fesdTrackCuts;
         AliESDtrackCuts *fesdTrackCuts_no_dca;
 
@@ -218,15 +219,15 @@ fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0)
         TH3F            *fPtV0MDCAxyTOFMatProtonM;
 
 
-        TH1F            *fPtGenPion_kINT7;
-        TH1F            *fPtGenPion_inel;
-        TH1F            *fPtGenPion_signal_loss;
-        TH1F            *fPtGenKaon_kINT7;
-        TH1F            *fPtGenKaon_inel;
-        TH1F            *fPtGenKaon_signal_loss;
-        TH1F            *fPtGenProton_kINT7;
-        TH1F            *fPtGenProton_inel;
-        TH1F            *fPtGenProton_signal_loss;
+        TH2F            *fPtV0MGenPion_kINT7;
+        TH2F            *fPtV0MGenPion_inel;
+        TH2F            *fPtV0MGenPion_signal_loss;
+        TH2F            *fPtV0MGenKaon_kINT7;
+        TH2F            *fPtV0MGenKaon_inel;
+        TH2F            *fPtV0MGenKaon_signal_loss;
+        TH2F            *fPtV0MGenProton_kINT7;
+        TH2F            *fPtV0MGenProton_inel;
+        TH2F            *fPtV0MGenProton_signal_loss;
 
 
         TH2F            *fPtV0MTOFRecPion_nSigma;
