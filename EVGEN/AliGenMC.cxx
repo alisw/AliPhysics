@@ -400,7 +400,9 @@ void AliGenMC::Boost()
     Double_t beta  = TMath::TanH(fDyBoost);
     Double_t gamma = 1./TMath::Sqrt((1.-beta)*(1.+beta));
     Double_t gb    = gamma * beta;
-
+    Double_t c     = 299792458.;
+    Double_t c_1   = 1. / 299792458.;
+    
     //    printf("\n Boosting particles to lab frame %f %f %f", fDyBoost, beta, gamma);
     
     Int_t i;
@@ -418,6 +420,16 @@ void AliGenMC::Boost()
 	Double_t pzb =   -gb * e +   gamma * pz;
 
 	iparticle->SetMomentum(px, py, pzb, eb);
+
+    	Double_t ct  = iparticle->T() * c;
+	Double_t vx  = iparticle->Vx();
+	Double_t vy  = iparticle->Vy();
+	Double_t vz  = iparticle->Vz();
+
+	Double_t ctb = gamma * ct -      gb * vz;
+	Double_t vzb =   -gb * ct +   gamma * vz;
+
+	iparticle->SetProductionVertex(vx, vy, vzb, ctb * c_1);
     }
 }
 
