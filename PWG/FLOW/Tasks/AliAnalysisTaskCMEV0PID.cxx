@@ -2935,6 +2935,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   Double_t sumQyTPCneg2;
   Double_t sumQxTPCpos2;
   Double_t sumQyTPCpos2;
+  Double_t SumWgtNeg, SumWgtPos;
+  Double_t SumWgtNeg2, SumWgtPos2;
+
 
 
   //--------- Track variable for PID/Charge studies ----------------
@@ -3322,17 +3325,20 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     sumQyTPCneg = sumTPCQn2y[0];
     sumQxTPCpos = sumTPCQn2x[1];
     sumQyTPCpos = sumTPCQn2y[1];
-    
+    SumWgtNeg   = SumWEtaNeg;
+    SumWgtPos   = SumWEtaPos;
 
     //-------- Remove phi1 from EP calculation ----------
 
     if(dEta1 < -0.05){
       sumQxTPCneg -= w1NUA*TMath::Cos(gPsiN*dPhi1);
       sumQyTPCneg -= w1NUA*TMath::Sin(gPsiN*dPhi1); // [0] = eta <-0.05
+      SumWgtNeg   -= w1NUA;
     }
     else if(dEta1 > 0.05){
       sumQxTPCpos -= w1NUA*TMath::Cos(gPsiN*dPhi1);
       sumQyTPCpos -= w1NUA*TMath::Sin(gPsiN*dPhi1); // [1] = eta > 0.05
+      SumWgtPos   -= w1NUA;
     }
     //-----------------------------------------------------
 
@@ -3578,6 +3584,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       sumQyTPCneg2 = sumQyTPCneg;
       sumQxTPCpos2 = sumQxTPCpos;
       sumQyTPCpos2 = sumQyTPCpos;
+      SumWgtNeg2   = SumWgtNeg;
+      SumWgtPos2   = SumWgtPos;
       //------------------------------------------------------
 
 
@@ -3585,19 +3593,22 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       if(dEta2 < -0.05){
 	sumQxTPCneg2 -= w2NUA*TMath::Cos(gPsiN*dPhi2);
 	sumQyTPCneg2 -= w2NUA*TMath::Sin(gPsiN*dPhi2); // [0] = eta <-0.05
+	SumWgtNeg2   -= w2NUA;
       }
       else if(dEta2 > 0.05){
 	sumQxTPCpos2 -= w2NUA*TMath::Cos(gPsiN*dPhi2);
 	sumQyTPCpos2 -= w2NUA*TMath::Sin(gPsiN*dPhi2); // [1] = eta > 0.05
+	SumWgtPos2   -= w2NUA;
       }
 
 
+      sumQyTPCneg2 = sumQyTPCneg2/SumWgtNeg2;
+      sumQxTPCneg2 = sumQxTPCneg2/SumWgtNeg2;
+
+      sumQyTPCpos2 = sumQyTPCpos2/SumWgtPos2;
+      sumQxTPCpos2 = sumQxTPCpos2/SumWgtPos2;
 
 
-
-
-
-     
       // track by track EP:
       /*
       if(gPsiN>2){
@@ -3621,12 +3632,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
       //fHTPCAEventPlaneVsCent->Fill(EvtCent,PsiNTPCA);
       //fHTPCCEventPlaneVsCent->Fill(EvtCent,PsiNTPCC);
+      //-----------------------------------------------------------
+
+
 
 
       // combined weight for EP:
       WgtEP = ptw1*ptw2*w1NUA*w2NUA;
-      //-----------------------------------------------------------
-
  
 
 
