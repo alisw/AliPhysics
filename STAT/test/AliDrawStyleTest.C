@@ -1,13 +1,11 @@
 /// \ingroup STAT/test
 /// \brief  test of AliDrawStyleTest macro
 /// Example usage
-/// Some benchmark of the performance doing parsing in loop
-///      stopwatch.Start(); (for i; i<n; i++) doSomething(); formatted(dosomething, stopwatch.Print());
 /*!
+ * For running:
 \code
 .L $AliRoot_SRC/STAT/test/AliDrawStyleTest.C+
 AliDrawStyleTest();
-root.exe -b -q  $AliRoot_SRC/STAT/test/AliDrawStyleTest.C+ | tee AliDrawStyleTest.log
 \endcode
 */
 
@@ -29,200 +27,205 @@ root.exe -b -q  $AliRoot_SRC/STAT/test/AliDrawStyleTest.C+ | tee AliDrawStyleTes
 #include "AliPainter.h"
 
 void AliDrawStyleTest_StyleArray();
-void AliDrawStyleTest_Attributes();
+void AliDrawStyleTest_ParseDeclaration();
 void AliDrawStyleTest_ConvertColor();
 void AliDrawStyleTest_GetIntValues();
 void AliDrawStyleTest_GetFloatValues();
 //  void AliDrawStyleTest_CSSReadWrite();
-void AliDrawStyleTest_GetProperty();
+void AliDrawStyleTest_GetValue();
 void AliDrawStyleTest_ApplyCssStyle();
 TCanvas *MakeTestPlot(Int_t nHis);
 
-void AliDrawStyleTest(){
+void AliDrawStyleTest() {
   AliDrawStyleTest_StyleArray();
-  AliDrawStyleTest_Attributes();
+  AliDrawStyleTest_ParseDeclaration();
   AliDrawStyleTest_ConvertColor();
   AliDrawStyleTest_GetIntValues();
   AliDrawStyleTest_GetFloatValues();
-  //  AliDrawStyleTest_CSSReadWrite();
-  AliDrawStyleTest_GetProperty();
+//  //  AliDrawStyleTest_CSSReadWrite();
+  AliDrawStyleTest_GetValue();
   AliDrawStyleTest_ApplyCssStyle();
 }
 
-/// Test acces to the style indexed array
-void AliDrawStyleTest_StyleArray(){
-  //
-  // Standard ALICE marker/colors arrays
-  // TODO - extend it with the test of all line and marker atributes
+void AliDrawStyleTest_StyleArray() {
   Int_t result=0;
   result = AliDrawStyle::GetMarkerStyle("1;2,3;4",0);
-  if (result!=1){
+  if (result!=1) {
     ::Error("AliDrawStyleTest","AliDrawStyle::GetMarkerStyle(\"1;2,3;4\",0)==%d should be 1-FAILED\n",result);
   }else{
     ::Info("AliDrawStyleTest","AliDrawStyle::GetMarkerStyle(\"1;2,3;4\",0)- IsOK");
   }
   result = AliDrawStyle::GetMarkerStyle("1;2,3;4",1);
-  if (result!=2){
+  if (result!=2) {
     ::Error("AliDrawStyleTest","AliDrawStyle::GetMarkerStyle(\"1;2,3;4\",1)==%d should be 2-FAILED\n",result);
   }else{
     ::Info("AliDrawStyleTest","AliDrawStyle::GetMarkerStyle(\"1;2,3;4\",1)- IsOK");
   }
-  //
   result = AliDrawStyle::GetMarkerStyle("1;2,3;4",0);
-  if (result!=1){
+  if (result!=1) {
     ::Error("AliDrawStyleTest","AliDrawStyle::GetMarkerStyle(\"1;2,3;4\",0)==%d should be 1-FAILED\n",result);
   }else{
     ::Info("AliDrawStyleTest","AliDrawStyle::GetMarkerStyle(\"1;2,3;4\",0)- IsOK");
   }
-  //
 }
 
-void AliDrawStyleTest_Attributes(){
-  TString input="{marker_style:25,21,22,23; marker_color:1,2,4,5;}";
-  if ( AliDrawStyle::GetPropertyValue(input,"marker_color").Contains("1,2,4,5")){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetPropertyValue(%s, \"marker_color\")- IsOK", input.Data());
+void AliDrawStyleTest_ParseDeclaration() {
+  TString input="{marker-style:25,21,22,23; marker-color:1,2,4,5;}";
+  if ( AliDrawStyle::ParseDeclaration(input,"marker-color").Contains("1,2,4,5")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::ParseDeclaration(%s, \"marker-color\")- IsOK", input.Data());
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetPropertyValue(%s, \"marker_color\")- FAILED", input.Data());
+    ::Error("AliDrawStyleTest","AliDrawStyle::ParseDeclaration(%s, \"marker-color\")- FAILED", input.Data());
   }
-  if ( AliDrawStyle::GetPropertyValue(input,"marker_style").Contains("25,21,22,23")){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetPropertyValue(%s, \"marker_style\")- IsOK", input.Data());
+  if ( AliDrawStyle::ParseDeclaration(input,"marker-style").Contains("25,21,22,23")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::ParseDeclaration(%s, \"marker-style\")- IsOK", input.Data());
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetPropertyValue(%s, \"marker_style\")- FAILED", input.Data());
+    ::Error("AliDrawStyleTest","AliDrawStyle::ParseDeclaration(%s, \"marker-style\")- FAILED", input.Data());
   }
 }
 
 void AliDrawStyleTest_ConvertColor() {
-  TString input="25,rgb(0,0,0),#0000FF,5,rgb(255,255,0),#00FFFF";
+  TString input="25";
   Bool_t status;
-  if ( AliDrawStyle::ConvertColor(input,0,status) == 25){
-    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 0, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::ConvertColor(input.Data()) == 25) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- IsOK", input.Data());
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 0, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- FAILED", input.Data());
   }
-  if ( AliDrawStyle::ConvertColor(input,1,status) == 1){
-    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 1, \"%d\")- IsOK", input.Data(), status);
+  input = "rgb(0,0,0)";
+  if ( AliDrawStyle::ConvertColor(input.Data()) == 1) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- IsOK", input.Data());
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 1, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- FAILED", input.Data());
   }
-  if ( AliDrawStyle::ConvertColor(input,2,status) == 4){
-    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 2, \"%d\")- IsOK", input.Data(), status);
+  input = "#0000FF";
+  if ( AliDrawStyle::ConvertColor(input.Data()) == 4) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- IsOK", input.Data());
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 2, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- FAILED", input.Data());
   }
-  if ( AliDrawStyle::ConvertColor(input,3,status) == 5){
-    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 3, \"%d\")- IsOK", input.Data(), status);
+  input = "5";
+  if ( AliDrawStyle::ConvertColor(input.Data()) == 5) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- IsOK", input.Data());
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 3, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- FAILED", input.Data());
   }
-  if ( AliDrawStyle::ConvertColor(input,4,status) == 5){
-    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 4, \"%d\")- IsOK", input.Data(), status);
+  input = "rgb(255,255,0)";
+  if ( AliDrawStyle::ConvertColor(input.Data()) == 5) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- IsOK", input.Data());
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 4, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- FAILED", input.Data());
   }
-  if ( AliDrawStyle::ConvertColor(input,5,status) == 7){
-    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 5, \"%d\")- IsOK", input.Data(), status);
+  input = "#00FFFF";
+  if ( AliDrawStyle::ConvertColor(input.Data()) == 7) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- IsOK", input.Data());
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\", 5, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::ConvertColor(\"%s\")- FAILED", input.Data());
   }
 }
 
-/// test GetIntValues
-void AliDrawStyleTest_GetIntValues(){
-  TString input="{marker_style:25,21,22,23; marker_color:1,2,4,5;}";
+void AliDrawStyleTest_GetIntValues() {
+  TString input="{marker_style:25,21,22,23; marker-color:1,2,4,5,rgb(123,123,123),#dfdfdf;}";
   Bool_t status;
-  if ( AliDrawStyle::GetNamedIntegerAt(input,"marker_color",0, status) == 1){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_color\",0, \"%d\")- IsOK", input.Data(), status);
-  }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_color\",0, \"%d\")- FAILED", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 0, "marker-color") == 1) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 0, \"marker-color\")- IsOK", input.Data(), status);
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 0, \"marker-color\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedIntegerAt(input,"marker_color",1, status) == 2){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_color\",1, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 1, "marker-color") == 2) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 1, \"marker-color\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_color\",1, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 1, \"marker-color\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedIntegerAt(input,"marker_color",2, status) == 4){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_color\",2, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 2, "marker-color") == 4) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 2, \"marker-color\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_color\",2, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 2, \"marker-color\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedIntegerAt(input,"marker_color",3, status) == 5){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_color\",3, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 3, "marker-color") == 5) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 3, \"marker-color\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_color\",3, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 3, \"marker-color\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedIntegerAt(input,"marker_style",0, status) == 25){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_style\",0, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 0, "marker_style") == 25) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 0, \"marker_style\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_style\",0, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 0, \"marker_style\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedIntegerAt(input,"marker_style",1, status) == 21){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_style\",1, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 1, "marker_style") == 21) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 1, \"marker_style\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_style\",1, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 1, \"marker_style\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedIntegerAt(input,"marker_style",2, status) == 22){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_style\",2, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 2, "marker_style") == 22) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 2, \"marker_style\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_style\",2, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 2, \"marker_style\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedIntegerAt(input,"marker_style",3, status) == 23){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_style\",3, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 3, "marker_style") == 23) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 3, \"marker_style\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedIntegerAt(%s, \"marker_style\",3, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 3, \"marker_style\")- FAILED", input.Data(), status);
+  }
+  if ( AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 4, "marker-color") == 202 || AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 4, "marker-color") == 14) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 4, \"marker-color\")- IsOK", input.Data(), status);
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 4, \"marker-color\")- FAILED", input.Data(), status);
+  }
+  if ( AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 5, "marker-color") == 1179 || AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 5, "marker-color") == 924 || AliDrawStyle::GetNamedTypeAt<Int_t>(input,status, 5, "marker-color") == 18) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 5, \"marker-color\")- IsOK", input.Data(), status);
+  }else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Int_t>(%s, %d, 5, \"marker-color\")- FAILED", input.Data(), status);
   }
 }
 
-///
-void AliDrawStyleTest_GetFloatValues(){
-  TString input="{marker_style:25,21,22,23; marker_color:1,2,4,5;}";
+void AliDrawStyleTest_GetFloatValues() {
+  TString input="{margin-top:300%,474px,5; marker-size:8px,2,4,500%;}";
   Bool_t status;
-  if ( AliDrawStyle::GetNamedFloatAt(input,"marker_color",0, status) == 1){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_color\",0, \"%d\")- IsOK", input.Data(), status);
+
+  if ( AliDrawStyle::GetNamedTypeAt<Float_t>(input,status,0, "marker-size") - 1 <= 0.01) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 0, \"marker-size\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_color\",0, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 0, \"marker-size\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedFloatAt(input,"marker_color",1, status) == 2){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_color\",1, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Float_t>(input,status,1, "marker-size") - 2 <= 0.01) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 1, \"marker-size\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_color\",1, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 1, \"marker-size\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedFloatAt(input,"marker_color",2, status) == 4){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_color\",2, \"%d\")- IsOK", input.Data(), status);
+  if (AliDrawStyle::GetNamedTypeAt<Float_t>(input,status,2, "marker-size") - 4 <= 0.01) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 2, \"marker-size\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_color\",2, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 2, \"marker-size\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedFloatAt(input,"marker_color",3, status) == 5){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_color\",3, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Float_t>(input,status,3, "marker-size") - 5 <= 0.01) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 3, \"marker-size\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_color\",3, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 3, \"marker-size\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedFloatAt(input,"marker_style",0, status) == 25){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_style\",0, \"%d\")- IsOK", input.Data(), status);
+  TCanvas *exampleCanvas = new TCanvas("c1", "The AliDrawStyle::ApplyCssStyle example", 200, 10, 1200, 900);
+  TPad *pad = new TPad("testPad", "testPad",0,0,1,1);
+  pad->Draw();
+  if ( AliDrawStyle::GetNamedTypeAt<Float_t>(input,status,0, "margin-top") - 3 <= 0.01) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 0, \"margin-top\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_style\",0, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 0, \"margin-top\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedFloatAt(input,"marker_style",1, status) == 21){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_style\",1, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Float_t>(input,status,1, "margin-top") - 1 <= 0.01) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 1, \"margin-top\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_style\",1, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 1, \"margin-top\")- FAILED", input.Data(), status);
   }
-  if ( AliDrawStyle::GetNamedFloatAt(input,"marker_style",2, status) == 22){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_style\",2, \"%d\")- IsOK", input.Data(), status);
+  if ( AliDrawStyle::GetNamedTypeAt<Float_t>(input,status,2, "margin-top") - 5 <= 0.01) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 2, \"margin-top\")- IsOK", input.Data(), status);
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_style\",2, \"%d\")- FAILED", input.Data(), status);
-  }
-  if ( AliDrawStyle::GetNamedFloatAt(input,"marker_style",3, status) == 23){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_style\",3, \"%d\")- IsOK", input.Data(), status);
-  }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedFloatAt(%s, \"marker_style\",3, \"%d\")- FAILED", input.Data(), status);
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetNamedTypeAt<Float_t>(\"%s\", %d, 2, \"margin-top\")- FAILED", input.Data(), status);
   }
 }
-
 
 /// To test  - input CSS file to be read and than written
 ///          - diff between the files should be 0 except of the formatting
 /// TODO test - ignoring commented fields in selector and in the declaration
-// void AliDrawStyleTest_CSSReadWrite(){
+// void AliDrawStyleTest_CSSReadWrite() {
 //
 //   if (gSystem->GetFromPipe(TString("[ -f ") + TString("$AliRoot_SRC/STAT/test/alirootTestStyle.css") +  TString(" ] && echo 1 || echo 0")) == "0") {
 //     std::cout << "File doesn't exist1" << std::endl;
@@ -240,7 +243,7 @@ void AliDrawStyleTest_GetFloatValues(){
 //   //AliDrawStyle::WriteCSSFile
 //   //AliDrawStyle::WriteCSSFile
 //
-//   for (Int_t i = 0; i < cssArray->GetEntriesFast(); i++){
+//   for (Int_t i = 0; i < cssArray->GetEntriesFast(); i++) {
 //     if ((TString(cssArray->At(i)->GetName()).ReplaceAll("\n", "") == TString(cssArrayFromTest->At(i)->GetName()).ReplaceAll("\n", "")) && TString(cssArray->At(i)->GetTitle()).ReplaceAll("\n", "") == TString(cssArrayFromTest->At(i)->GetTitle()).ReplaceAll("\n", "")) ::Info("AliDrawStyleTest","AliDrawStyleTest_CSSReadWrite()- ");
 //     else ::Info("AliDrawStyleTest","AliDrawStyleTest_CSSReadWrite()- ");
 //
@@ -249,44 +252,36 @@ void AliDrawStyleTest_GetFloatValues(){
 //
 // }
 
-void  AliDrawStyleTest_GetProperty(){
+void  AliDrawStyleTest_GetValue() {
   AliDrawStyle::RegisterCssStyle("alirootTestStyle.css",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/alirootTestStyle.css",0));
-  if (AliDrawStyle::GetProperty("alirootTestStyle.css","marker-size", "TGraph", "Status", "TPC.QA.dcar_posA_1") == "1,2,3,4"){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker-size\", \"TGraph\", \"Status\", \"TPC.QA.dcar_posA_1\")- IsOK");
+  if (AliDrawStyle::GetValue("alirootTestStyle.css","marker-size", "TGraph", "Status", "TPC.QA.dcar_posA_1", "") == "1,2,3,4") {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetValue(\"alirootTestStyle.css\",\"marker-size\", \"TGraph\", \"Status\", \"TPC.QA.dcar_posA_1\", \"\")- IsOK");
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker-size\", \"TGraph\", \"Status\", \"TPC.QA.dcar_posA_1\")- FAILED");
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetValue(\"alirootTestStyle.css\",\"marker-size\", \"TGraph\", \"Status\", \"TPC.QA.dcar_posA_1\", \"\")- FAILED");
   }
-  if (AliDrawStyle::GetProperty("alirootTestStyle.css","marker-size", "TF1", "Status", "obj4") == "17,18,19,20"){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker-size\", \"TF1\", \"Status\", \"obj4\")- IsOK");
+  if (AliDrawStyle::GetValue("alirootTestStyle.css","marker-size", "TF1", "Status", "obj4", "") == "17,18,19,20") {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetValue(\"alirootTestStyle.css\",\"marker-size\", \"TF1\", \"Status\", \"obj4\", \"\")- IsOK");
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker-size\", \"TF1\", \"Status\", \"obj4\")- FAILED");
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetValue(\"alirootTestStyle.css\",\"marker-size\", \"TF1\", \"Status\", \"obj4\", \"\")- FAILED");
   }
-  if (AliDrawStyle::GetProperty("alirootTestStyle.css","line-color", "TGraphErrors", "Warning", "asdasobj56") == "41,42,43,44"){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"line-color\", \"TGraphErrors\", \"Warning\", \"asdasobj56\")- IsOK");
+  if (AliDrawStyle::GetValue("alirootTestStyle.css","line-color", "TGraphErrors", "Warning", "asdasobj56", "") == "41,42,43,44") {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetValue(\"alirootTestStyle.css\",\"line-color\", \"TGraphErrors\", \"Warning\", \"asdasobj56\", \"\")- IsOK");
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"line-color\", \"TGraphErrors\", \"Warning\", \"asdasobj56\")- FAILED");
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetValue(\"alirootTestStyle.css\",\"line-color\", \"TGraphErrors\", \"Warning\", \"asdasobj56\", \"\")- FAILED");
   }
-  if (AliDrawStyle::GetProperty("alirootTestStyle.css","marker-color", "SomeNotExistingClass", "SomeNotExistingStatus", "obj3") == "37,38,39,40"){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker-color\", \"SomeNotExistingClass\", \"SomeNotExistingStatus\", \"obj3\")- IsOK");
+  if (AliDrawStyle::GetValue("alirootTestStyle.css","marker-color", "TObject", "SomeNotExistingStatus", "obj3", "") == "37,38,39,40") {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetValue(\"alirootTestStyle.css\",\"marker-color\", \"SomeNotExistingClass\", \"SomeNotExistingStatus\", \"obj3\", \"\")- IsOK");
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"marker-color\", \"SomeNotExistingClass\", \"SomeNotExistingStatus\", \"obj3\")- FAILED");
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetValue(\"alirootTestStyle.css\",\"marker-color\", \"SomeNotExistingClass\", \"SomeNotExistingStatus\", \"obj3\", \"\")- FAILED");
   }
-  if (AliDrawStyle::GetProperty("alirootTestStyle.css","line-color", "TH1", "Warning", "obj1") == "57,58,59,60"){
-    ::Info("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"line-color\", \"TH1\", \"Warning\", \"obj1\")- IsOK");
+  if (AliDrawStyle::GetValue("alirootTestStyle.css","line-color", "TH1", "Warning", "obj1", "") == "57,58,59,60") {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetValue(\"alirootTestStyle.css\",\"line-color\", \"TH1\", \"Warning\", \"obj1\", \"\")- IsOK");
   }else{
-    ::Error("AliDrawStyleTest","AliDrawStyle::GetProperty(\"alirootTestStyle.css\",\"line-color\", \"TH1\", \"Warning\", \"obj1\")- FAILED");
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetValue(\"alirootTestStyle.css\",\"line-color\", \"TH1\", \"Warning\", \"obj1\", \"\")- FAILED");
   }
-
 }
 
-
-/// Generate figut and apply 2 styles test1, -> test2 ->test1
-/// resulting pad has to be the same
-//SetStyle(styleName, pathToCssFile)
-//specify into AliDrawStyle::ApplyCssStyle(pad or canvas, styleName) active pad or canvas, styleName
-//for Apply a new style you should set new style and make AliDrawStyle::ApplyCssStyle() again with new styleName.
-
-void AliDrawStyleTest_ApplyCssStyle(){
+void AliDrawStyleTest_ApplyCssStyle() {
   TCanvas *canv = MakeTestPlot(3);
   AliDrawStyle::RegisterCssStyle("test1",AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/test1.css",0));
   AliDrawStyle::ApplyCssStyle(canv, "test1");
@@ -302,15 +297,16 @@ void AliDrawStyleTest_ApplyCssStyle(){
     ::Error("AliDrawStyleTest","AliDrawStyle::ApplyStyle(\"canv\",\"test1\")- FAILED");
   }
 }
-///
+
 TCanvas *MakeTestPlot(Int_t nHis) {
   TRandom r;
   TCanvas *exampleCanvas = new TCanvas("c1", "The AliDrawStyle::ApplyCssStyle example", 200, 10, 1200, 900);
-  AliPainter::DivideTPad("<vertical>[1l,1r]", "Raw", exampleCanvas);
+  exampleCanvas->Divide(1,2);
+  //AliPainter::DivideTPad("<vertical>[1l,1r]", "Raw", "gridX:0;gridY:0;tickX:0;tickY:0;", exampleCanvas);
   exampleCanvas->cd(1);
   TH1F *hisArray[nHis];
   for (Int_t i = 0; i < nHis; i++) {
-    hisArray[i] = new TH1F(TString::Format("his%d.class(Raw)", i).Data(),
+    hisArray[i] = new TH1F(TString::Format("his%d.class(Raw).style(marker-color:%d;)", i, i*2 + 3).Data(),
                            TString::Format("his%d.class(Raw)", i).Data(), 100, -5, 5);
     hisArray[i]->SetStats(0);
     hisArray[i]->SetTitle(TString::Format("his%d", i).Data());
@@ -336,7 +332,7 @@ TCanvas *MakeTestPlot(Int_t nHis) {
       y[j] = log(x[j]) / (i + 1);
     }
     grArray[i] = new TGraph(n, x, y);
-    grArray[i]->SetName(TString::Format("graph%d.class(Raw)", i).Data());
+    grArray[i]->SetName(TString::Format("graph%d.class(Raw).style(marker-size:%d;)", i,i/3 + 1).Data());
     grArray[i]->SetTitle(TString::Format("gr%d", i).Data());
     if (i == 0) {
       grArray[i]->SetMinimum(0);

@@ -70,7 +70,7 @@ TH1.Status#obj1, TH1.Warning#obj1, TH1.Warning#obj3   {
 .statusPad#Bottom{
     margin-bottom:   0.4;
     margin-right:    0.05;
-    margin-top:      0.0;  
-    gridX:           3;   
+    margin-top:      0.0;
+    gridX:           3;
     gridY:           1;
 }

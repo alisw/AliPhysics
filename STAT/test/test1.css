@@ -20,25 +20,6 @@ TH1F    {
   fill-style:    0,0,0;
 }
 
-TPad.Raw#pad   {
-  fill-color:    #f5f5f0,#f5f5f0;
-  fill-style:    1,2;
-  margin-bottom: 0;
-  margin-top:    0;
-  margin-left:   0;
-  margin-right:  0;
-  border-size:   1;
-  border-mode:   2;
-  gridX:         1;
-  gridY:         1;
-  tickX:         1;
-  tickY:         1;
-  logX:          0;
-  logY:          0;
-  logZ:          0;
-
-}
-
 TCanvas    {
   fill-color:    3;
   border-size:   1;

@@ -181,7 +181,7 @@ std::map<TString, Double_t > AliPainter::statValues;
 //TODO: add divFlag for inheritance Mother Class (ClassName) should be add to children (className)=>nameOfObject.class(ClassMother,ClassDaughter) @Boris
 //TODO: should we change the places of *pad and *classID? @Marian
 //TODO: mb remove "<>" from division? @Marian
-TPad *AliPainter::DivideTPad(const char *division, const char *classID, TPad *pad, Int_t verbose) {
+TPad *AliPainter::DivideTPad(const char *division, const char *classID, const char *style, TPad *pad, Int_t verbose) {
 
   if (pad == nullptr) {
     TCanvas *canv = new TCanvas("AliPainterCanvas", "AliPainterCanvas",1200,800);
@@ -232,8 +232,10 @@ TPad *AliPainter::DivideTPad(const char *division, const char *classID, TPad *pa
         yu = a;       //yu -> xu
         xu = 1 - b;   //xu -> 1 - yu
       }
-      if (classID != TString("")) padName = TString::Format("pad[%d].class(%s)", nPads, classID);
-      else padName = TString::Format("pad[%d]", nPads);
+      padName =  TString::Format("pad[%d]", nPads);
+      if (classID != TString("")) padName = TString::Format("%s.class(%s)", padName.Data(), classID);
+      if (style != TString("")) padName = TString::Format("%s.style(%s)", padName.Data(), style);
+
       TPad *newPad = new TPad(padName.Data(), padName.Data(), xl, yl, xu, yu);
       if (verbose == 4) ::Info("AliPainter::DivideTPad", "New pad created: %s", padName.Data());
       if (position == "vertical") {
@@ -250,9 +252,10 @@ TPad *AliPainter::DivideTPad(const char *division, const char *classID, TPad *pa
       newPad->SetNumber(nPads);
     }
   }
-  if (classID != TString("")) padName = TString::Format("%s.class(%s)",pad->GetName(),classID);
-  else padName = TString::Format("%s",pad->GetName());
-  pad->SetName(padName);
+  padName = pad->GetName();
+  if (classID != TString("")) padName = TString::Format("%s.class(%s)", padName.Data(), classID);
+  if (style != TString("")) padName = TString::Format("%s.style(%s)", padName.Data(), style);
+  pad->SetName(padName.Data());
   return pad;
 }
 ///
@@ -400,7 +403,8 @@ void AliPainter::ArgsParser(TString exprsn, TString &hisName, TString &projectio
 /// \brief Private method for parsing fit options in AliPainter::DrawHistogram
 /// \param fitStr - string with fit options
 /// \return array of values from inputOptions
-std::vector<TString> AliPainter::OptionStringParser(const TString optStr, const char d[2], Int_t defSize) {
+std::vector<TString> AliPainter::OptionStringParser(const char *option, const char d[2], Int_t defSize) {
+  TString optStr = TString(option);
   Int_t arg = 0, startIndex = 0;
   std::vector<TString> vecOptions;
   for (Int_t i = 0; i < defSize+1; i++) vecOptions.push_back(TString(""));

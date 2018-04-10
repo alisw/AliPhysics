@@ -24,7 +24,7 @@ class TFormula;
 
 class AliPainter : public TObject{
   public:
-    static TPad *DivideTPad(const char *division, const char *classID="",TPad *pad=nullptr, Int_t verbose=4);
+    static TPad *DivideTPad(const char *division, const char *classID="", const char *style="", TPad *pad=nullptr, Int_t verbose=0);
     static void SetMultiGraphTimeAxis(TMultiGraph *graph, TString option);
     static void DrawHistogram(char *expresion, const TObjArray *histogramArray, TPad *pad=nullptr, TObjArray *metaData=nullptr, TObjArray *keepArray=nullptr, Int_t verbose=4);
     static TPad *SetPadMargin(TPad *cPad, const char *position, const char *wMargin, const char *units, Double_t mValue, Int_t iCol, Int_t nCols);
@@ -37,7 +37,7 @@ class AliPainter : public TObject{
     static std::map<TString, TString> optionValues;
     static std::map<TString, Double_t> statValues;
     static void ArgsParser(TString exprsn, TString &hisName, TString &projections, std::vector<TString> &fitOptions, std::vector<TString> &rangesStrings, Int_t verbose = 4);
-    static std::vector<TString> OptionStringParser(const TString optStr, const char d[2], Int_t defSize);
+    static std::vector<TString> OptionStringParser(const char *option, const char d[2], Int_t defSize);
     static void PandasOptionParser(const TString optionsStr);
     static void RegisterDefaultOptions();
     static std::vector<TString> RangesParser(TString inputRangesStr);

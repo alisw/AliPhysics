@@ -1,4 +1,6 @@
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+#ifndef ALIDRAWSTYLE_H
+#define ALIDRAWSTYLE_H
+ /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
 /// \ingroup STAT
@@ -49,7 +51,7 @@
 #include <vector>
 #include <string>
 #include "TString.h"
-#include <iostream>     // std::cout
+#include <iostream>
 #include <fstream>
 class TPRegexp;
 class TStyle;
@@ -58,6 +60,7 @@ class TCanvas;
 class TF1;
 class TH1;
 class TGraph;
+class TLegend;
 class TMultiGraph;
 class TFrame;
 class TPaveText;
@@ -65,25 +68,6 @@ class AliDrawStyle : public TObject{
 public:
   static void ApplyStyle(const char * styleName);
   static const TStyle *GetStyle(const char * styleName) {return fStyleAlice[styleName];}
-  /// \brief Get Css style by styleName.
-  ///  Getter for css style.
-  /// \param styleName  - name of style.
-  /// \return           - TObjArray with pair selector and declaration from css file.
-  static const TObjArray *GetCssStyle(const char *styleName){return fCssStyleAlice[styleName];}
-  static void TGraphApplyStyle(const char* styleName, TGraph *cGraph);
-  static void TH1ApplyStyle(const char* styleName, TH1 *cHis);
-  static void TF1ApplyStyle(const char* styleName, TF1 *cFunc);
-  static void TPadApplyStyle(const char* styleName, TPad *cPad);
-  static void TCanvasApplyCssStyle(const char* styleName, TCanvas *cCanvas);
-  //static void TFrameApplyCssStyle(const char* styleName, TFrame *cFrame);
-  //static void TPaveTextApplyCssStyle(const char* styleName, TPaveText *cPaveText);
-  static void ApplyCssStyle(TPad *pad, const char* styleName);
-
-  /// \brief Set Css style by styleName.
-  ///  Setter for css style.
-  /// \param styleName  - name of style.
-  /// \param array      - TObjArray with pair selector and declaration from css file.
-  static void RegisterCssStyle(const char *styleName, TObjArray*array ){ fCssStyleAlice[styleName]=array;}
   static void SetDefaults();
   static void SetDefaultStyles(const char * styleName, const char* arrayName);
   static TString GetLatexAlice(const char * symbol);
@@ -93,20 +77,6 @@ public:
   static const std::vector<int> &    GetMarkerColors(const char *style){return AliDrawStyle::fMarkerColors[style];};
   static const std::vector<float> &  GetLineWidth(const char *style){return AliDrawStyle::fLineWidth[style];};
   static const std::vector<int> &    GetFillColors(const char *style){return AliDrawStyle::fFillColors[style];};
-  // CSS like attribute fields parsing
-  static Bool_t  IsSelected(TString selectors, TString elementID, TString classID, TString objectID);
-  static TString GetProperty(const char * styleName, TString propertyName, TString elementID, TString classID, TString objectID, Int_t verbose = 4);
-  static TString  GetPropertyValue(TString input, TString propertyName);
-  //static Int_t    GetObjectIndex(TString &objName);
-  static void     GetIds(TObject *cObj, TString &elementID, TString &classSet, TString &objectID);
-  static Int_t    GetNamedIntegerAt(TString input, TString propertyName, Int_t index, Bool_t &status, Int_t verbose=4);
-  static Float_t  GetNamedFloatAt(TString input, TString propertyName, Int_t index, Bool_t &status);
-  static Double_t UnitsConverter(TString value, Double_t k);
-  static Int_t    ConvertColor(TString inputValues, Int_t index, Bool_t &status, Int_t verbose = 4);
-  static TObjArray * ReadCSSFile(const char *  inputName, TObjArray * array=NULL, Int_t verbose=0);
-  static void    WriteCSSFile(TObjArray * cssArray, const char *  outputName, std::fstream *cssOut=NULL);
-  //
-  //
   static Int_t   GetIntegerAt(const char * format, Int_t index, const char * separator=";");
   static Float_t GetFloatAt(const char * format, Int_t index, const char * separator=";");
   static Int_t   GetMarkerStyle(const char *style, Int_t index);
@@ -136,9 +106,44 @@ protected:
   static void  RegisterDefaultStyle();                        ///< initialize default TStyles
   static void  RegisterDefaultMarkers();                      ///< initialize default Markers/Colors
 
+public:
+  //NEW code for AliDrawStyle:
+  static const TObjArray *GetCssStyle(const char *styleName) {return fCssStyleAlice[styleName];}
+  template <typename T>
+    static void ObjectApplyStyle(const char* styleName, T *cObj, Int_t objNum=0, Int_t verbose=0);
+  static void TGraphApplyStyle(const char* styleName, TGraph *cGraph, Int_t objNum=0, Int_t verbose=0);
+  static void TH1ApplyStyle(const char* styleName, TH1 *cHis, Int_t objNum=0, Int_t verbose=0);
+  static void TF1ApplyStyle(const char* styleName, TF1 *cFunc, Int_t objNum=0, Int_t verbose=0);
+  static void TLegendApplyStyle(const char* styleName, TLegend *cLegend, Int_t objNum=0, Int_t verbose=0);
+  static void TPadApplyStyle(const char* styleName, TPad *cPad, Int_t verbose=0);
+  static void TCanvasApplyCssStyle(const char* styleName, TCanvas *cCanvas, Int_t verbose=0);
+  //static void TFrameApplyCssStyle(const char* styleName, TFrame *cFrame);
+  //static void TPaveTextApplyCssStyle(const char* styleName, TPaveText *cPaveText);
+  static void ApplyCssStyle(TPad *pad, const char* styleName, Int_t verbose=0);
+  static void RegisterCssStyle(const char *styleName, TObjArray*array ) { fCssStyleAlice[styleName]=array;}
+    //parsing methods
+  static Bool_t     IsSelected(TString selectors, TString elementID, TString classID, TString objectID);
+  static TString    GetValue(const char * styleName, TString propertyName, TString elementID, TString classID, TString objectID, TString localStyle=TString(""), Int_t verbose=0);
+  static TString    ParseDeclaration(const char *inputDec, const char *propertyName);
+  static void       GetIds(TObject *cObj, TString &elementID, TString &classID, TString &objectID, TString &localStyle, Int_t verbose=0);
+  template <typename T>
+    static T GetNamedTypeAt(const char *inputStr, Bool_t &status, Int_t index=0, const char *propertyName="", Int_t verbose=0, const char sep=',', const char *ignoreBrackets="()");
+  static Float_t    ConvertUnit(const char *inputValues, const char * option="", Int_t verbose=0);
+  static Int_t      ConvertColor(const char *inputString, Int_t verbose=0);
+  static Float_t    PixelsToFloat_t(const char *value, const char *option="", Int_t verbose=0);
+  static Float_t    PercentToFloat_t(const char *value, Int_t verbose);
+  static Int_t      RgbToColor_t(const char *inputString, Int_t verbose=0);
+  static Int_t      HexToColor_t(const char *inputString, Int_t verbose=0);
+  static TObjArray *ReadCSSFile(const char *  inputName, TObjArray * array=nullptr, Int_t verbose=0);
+  static void       WriteCSSFile(TObjArray * cssArray, const char *  outputName, std::fstream *cssOut=nullptr);
+  template <typename T>
+    static T PrepareValue(const char* styleName, TString propertyName, TString elementID, TString classID, TString objectID, TString localStyle, Bool_t &status, Int_t objNum=0, Int_t verbose=0);
+    // CSS like attribute fields parsing
   ClassDef(AliDrawStyle,1);
   private:
-    static Int_t objectNumber;
-    static void SetObjectNumber(Int_t num) {objectNumber = num;};
-    static Int_t GetObjectNumber() {return objectNumber;};
+    static Int_t padNumber;
+    static void SetPadNumber(Int_t num) {padNumber = num;};
+    static Int_t GetPadNumber() {return padNumber;};
 };
+
+#endif
