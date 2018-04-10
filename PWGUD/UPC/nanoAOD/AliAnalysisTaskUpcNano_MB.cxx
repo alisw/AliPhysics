@@ -200,6 +200,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeRho ->Branch("fNFiredMaxiPads", &fNFiredMaxiPads, "fNFiredMaxiPads/I");
+  fTreeRho ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
+  
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
 
