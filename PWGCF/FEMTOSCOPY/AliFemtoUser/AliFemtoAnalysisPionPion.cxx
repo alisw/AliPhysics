@@ -68,8 +68,10 @@ struct Configuration<AliFemtoAnalysisPionPion> {
 AliFemtoAnalysisPionPion::AnalysisParams::AnalysisParams()
 : vertex_bins(16), vertex_min(-10.0), vertex_max(10.0)
 , mult_bins(30), mult_min(0.0), mult_max(10000.0f)
-, pion_type_1(kNone)
-, pion_type_2(kNone)
+// , pion_type_1(kNone)
+// , pion_type_2(kNone)
+, pion_type_1(kPiPlus)
+, pion_type_2(kPiPlus)
 , num_events_to_mix(6)
 , min_coll_size(15)
 , verbose(kFALSE)
@@ -307,7 +309,7 @@ static const CutConfig_Pion default_pion;
 static const CutConfig_Pair default_pair;
 
 const AliFemtoAnalysisPionPion::PionType
-  default_PionType = AliFemtoAnalysisPionPion::kNone;
+  default_PionType = AliFemtoAnalysisPionPion::kPiPlus;
 
 
 static const AliFemtoAnalysisPionPion::AnalysisParams
