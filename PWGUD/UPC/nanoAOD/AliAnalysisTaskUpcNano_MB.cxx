@@ -370,6 +370,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   UInt_t nGoodTracksTPC=0;
   UInt_t nGoodTracksITS=0;
   UInt_t nGoodTracksSPD=0;
+  UInt_t nGoodTracksLoose=0;
   Int_t TrackIndexTPC[5] = {-1,-1,-1,-1,-1};
   Int_t TrackIndexITS[5] = {-1,-1,-1,-1,-1};
   Int_t TrackIndexALL[7] = {-1,-1,-1,-1,-1,-1,-1};
@@ -384,6 +385,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     Bool_t goodTPCTrack = kTRUE;
     Bool_t goodITSTrack = kTRUE;
     
+    if(trk->TestFilterBit(1<<0) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)))nGoodTracksLoose++;
     if(!(trk->TestFilterBit(1<<5)))goodTPCTrack = kFALSE;
     else{
     	if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
@@ -491,7 +493,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //Two track loop
   nHighPt = 0;
   fInEtaRec = kTRUE;
-  if(nGoodTracksTPC == 2){
+  if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksSPD == 2 && nGoodTracksITS == 0){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
     	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndexTPC[iTrack]));
 	
