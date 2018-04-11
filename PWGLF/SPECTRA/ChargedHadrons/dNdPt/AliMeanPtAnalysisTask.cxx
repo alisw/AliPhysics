@@ -187,11 +187,18 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCResponseMat->GetAxis(1)->SetTitle("#it{N}_{ch}");
     fHistMCResponseMat->Sumw2();
 
-    fHistMCResponseMatTracks = new THnSparseF("fHistMCResponseMatTracks","Response Matrix for primary particles",2,nBinsRespMat, minMultRespMat, maxMultRespMat);
+    /// Track histogram with multiplicity correlation pt:multacc:multgen
+    Int_t nBinsMultTrack[3]={fBinsMult->GetSize()-1,fBinsMult->GetSize()-1, fBinsPt->GetSize()-1};
+    Double_t minMultTrack[3]={fBinsMult->GetAt(0),fBinsMult->GetAt(0), fBinsPt->GetAt(0)};
+    Double_t maxMultTrack[3]={fBinsMult->GetAt(fBinsMult->GetSize()-1),fBinsMult->GetAt(fBinsMult->GetSize()-1), fBinsPt->GetAt(fBinsPt->GetSize()-1)};
+
+    fHistMCResponseMatTracks = new THnSparseF("fHistMCResponseMatTracks","Response Matrix for primary particles",3,nBinsMultTrack, minMultTrack, maxMultTrack);
     fHistMCResponseMatTracks->SetBinEdges(0,fBinsMult->GetArray());
     fHistMCResponseMatTracks->SetBinEdges(1,fBinsMult->GetArray());
+    fHistMCResponseMatTracks->SetBinEdges(2,fBinsPt->GetArray());
     fHistMCResponseMatTracks->GetAxis(0)->SetTitle("#it{N}_{acc}");
     fHistMCResponseMatTracks->GetAxis(1)->SetTitle("#it{N}_{ch}");
+    fHistMCResponseMatTracks->GetAxis(2)->SetTitle("#it{p}_{T} (GeV/c)");
     fHistMCResponseMatTracks->Sumw2();
 
 
@@ -290,20 +297,15 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
         fHistMCParticle->GetAxis(3)->SetTitle("Centrality (%)");
         fHistMCParticle -> Sumw2();
 
-        /// Track histogram with multiplicity correlation pt:multacc:multgen
-        Int_t nBinsMultTrack[3]={fBinsPt->GetSize()-1, fBinsMult->GetSize()-1,fBinsMult->GetSize()-1};
-        Double_t minMultTrack[3]={fBinsPt->GetAt(0), fBinsMult->GetAt(0),fBinsMult->GetAt(0)};
-        Double_t maxMultTrack[3]={fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsMult->GetAt(fBinsMult->GetSize()-1),fBinsMult->GetAt(fBinsMult->GetSize()-1)};
-
 
         // Histogram to illustrate <pt>(Nacc) for fixed Nch and  <pt>(Nch) for fixed Nacc
         fHistMCTrackMultGen = new THnSparseF("fHistMCTrackMultGen", "True Tracks as function of measured and true Mult", 3, nBinsMultTrack, minMultTrack, maxMultTrack);
-        fHistMCTrackMultGen -> SetBinEdges(0,fBinsPt->GetArray());
+        fHistMCTrackMultGen -> SetBinEdges(0,fBinsMult->GetArray());
         fHistMCTrackMultGen -> SetBinEdges(1,fBinsMult->GetArray());
-        fHistMCTrackMultGen -> SetBinEdges(2,fBinsMult->GetArray());
-        fHistMCTrackMultGen->GetAxis(0)->SetTitle("#it{p}_{T}^{MC}");
-        fHistMCTrackMultGen->GetAxis(1)->SetTitle("#it{N}_{acc}");
-        fHistMCTrackMultGen->GetAxis(2)->SetTitle("#it{N}_{ch}");
+        fHistMCTrackMultGen -> SetBinEdges(2,fBinsPt->GetArray());
+        fHistMCTrackMultGen->GetAxis(0)->SetTitle("#it{N}_{acc}");
+        fHistMCTrackMultGen->GetAxis(1)->SetTitle("#it{N}_{ch}");
+        fHistMCTrackMultGen->GetAxis(2)->SetTitle("#it{p}_{T}^{MC}");
         fHistMCTrackMultGen -> Sumw2();
 
         // Correlation between reconstructed tracks and reconstructed particles
@@ -475,8 +477,8 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
         Double_t mcPrimTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
         fHistMCRecPrimTrack->Fill(mcPrimTrackValue);
 
-        Double_t responseMatrixTuple[2] = {multAccTracks, multGenPart};
-        fHistMCResponseMatTracks->Fill(responseMatrixTuple);
+        Double_t responseMatrixTracksTuple[3] = {multAccTracks, multGenPart, mcParticle->Pt()};
+        fHistMCResponseMatTracks->Fill(responseMatrixTracksTuple);
 
       }else{
         Double_t mcSecTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
@@ -516,7 +518,7 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
     	  fHistMCMultPtGenerated->Fill(mcMultPtGenerated);
 
         if(fIncludeCrosscheckHistos){
-      	  Double_t trackValuesMult[3] = {mcGenParticle->Pt(), multAccTracks, multGenPart};
+      	  Double_t trackValuesMult[3] = {multAccTracks, multGenPart, mcGenParticle->Pt()};
       	  fHistMCTrackMultGen->Fill(trackValuesMult);
         }
       }
