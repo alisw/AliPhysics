@@ -146,7 +146,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// Trigger mask
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-  auto selected_trigger = handl->IsEventSelected() & fTriggerMask;
+  unsigned int selected_trigger = handl->IsEventSelected() & fTriggerMask;
   if ((selected_trigger == fTriggerMask && fRequireExactTriggerMask) || (selected_trigger && !fRequireExactTriggerMask))
     fFlag |= BIT(kTrigger);
 
