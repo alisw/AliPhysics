@@ -18,7 +18,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           AliESDtrackCuts::ITSClusterRequirement spdReq=AliESDtrackCuts::kAny,
                                           Bool_t useGenPt = kFALSE,
                                           Bool_t DCAzOn= kFALSE,
-                                          Bool_t fTPConlyFIT=kFALSE) {
+                                          Bool_t fTPConlyFIT=kTRUE) {
 
     
   //
@@ -53,6 +53,8 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
   task->SetTriggerClass(trigClass.Data());
   task->SetTriggerMask(trigMask);
 
+
+  task->SetTPConly(fTPConlyFIT);
   task->SetSpecie(specie);
   task->SetMaxDCAxy(MaxDCAxy);
   task->SetMaxDCAz(MaxDCAz);
