@@ -740,7 +740,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         //7) Daughter eta
         Double_t lNegEta = nTrack->Eta();
         Double_t lPosEta = pTrack->Eta();
-        if( TMath::Abs(lNegEta)>0.8 || TMath::Abs(lPosEta)>0.8 ) continue;
+        if( (TMath::Abs(lNegEta)>0.8 || TMath::Abs(lPosEta)>0.8)&&fkExtraCleanup ) continue;
         
         //8) dE/dx
         //Pre-select dE/dx: only proceed if at least one of these tracks looks like a proton
@@ -800,7 +800,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (dca > fCascadeVertexerSels[4]) continue;
             
             //eta cut - test
-            if (TMath::Abs(pbt->Eta())>0.8) continue;
+            if (TMath::Abs(pbt->Eta())>0.8&&fkExtraCleanup) continue;
             
             AliESDcascade cascade(*pv0,*pbt,bidx);//constucts a cascade candidate
             //PH        if (cascade.GetChi2Xi() > fChi2max) continue;
