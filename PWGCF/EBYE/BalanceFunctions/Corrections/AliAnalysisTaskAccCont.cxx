@@ -333,8 +333,10 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                 
                                 if((gCentrality >= fCentralityPercentileMin) &&
                                    (gCentrality < fCentralityPercentileMax)) {
-                                    
-                                    fHistEventStats->Fill(4,gCentrality);
+
+				  Printf("fCentralityPercentileMin =%f, fCentralityPercentileMax =%f", fCentralityPercentileMin, fCentralityPercentileMax);
+				  
+				  fHistEventStats->Fill(4,gCentrality);
                                     
                                     // check for pile-up event
 				    const Int_t nTracks = gAOD->GetNumberOfTracks(); 
@@ -437,12 +439,14 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
  					Double_t y = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + pt*pt) );
 					Double_t yfromAODTrack = aodTrack->Y(fMassParticleOfInterest);
 					//Printf("y = %f, yfromAODTrack =%f", y, yfromAODTrack);
-
-					if( eta < fEtaMin || eta > fEtaMax) continue;
-
-					if (fUseRapidity)
+					
+					if (fUseRapidity){
 					  if ((y < fEtaMin) || ( y > fEtaMax))
 					    continue;
+					}
+					else{
+					  if( eta < fEtaMin || eta > fEtaMax) continue;
+					}
 					
                                         if( pt < fPtMin || pt > fPtMax) continue;
 
