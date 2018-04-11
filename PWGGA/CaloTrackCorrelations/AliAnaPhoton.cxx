@@ -2758,15 +2758,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhTrackMatchedDEtaDPhiNeg[i]->SetYTitle("#Delta #varphi (rad)");
       fhTrackMatchedDEtaDPhiNeg[i]->SetXTitle("#Delta #eta");
 
-      fhdEdx[i]  = new TH2F (Form("hdEdx%s",cutTM[i].Data()),Form("matched track <dE/dx> vs cluster #it{E}, %s",cutTM[i].Data()),
+      fhdEdx[i]  = new TH2F (Form("hdEdx%s",cutTM[i].Data()),Form("matched track <d#it{E}/d#it{x}> vs cluster #it{E}, %s",cutTM[i].Data()),
                              nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
       fhdEdx[i]->SetXTitle("#it{E}^{cluster} (GeV)");
-      fhdEdx[i]->SetYTitle("<dE/dx>");
+      fhdEdx[i]->SetYTitle("<d#it{E}/d#it{x}>");
       
-      fhEOverP[i]  = new TH2F (Form("hEOverP%s",cutTM[i].Data()),Form("matched track E/p vs cluster #it{E}, %s",cutTM[i].Data()),
+      fhEOverP[i]  = new TH2F (Form("hEOverP%s",cutTM[i].Data()),Form("matched track #it{E}/#it{p} vs cluster #it{E}, %s",cutTM[i].Data()),
                                nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
       fhEOverP[i]->SetXTitle("#it{E}^{cluster} (GeV)");
-      fhEOverP[i]->SetYTitle("E/p");
+      fhEOverP[i]->SetYTitle("#it{E}/#it{p}");
 
 //    outputContainer->Add(fhTrackMatchedDEta[i]) ;
 //    outputContainer->Add(fhTrackMatchedDPhi[i]) ;
@@ -2845,15 +2845,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhTrackMatchedDEtaDPhiNegTrackPt[i]->SetYTitle("#Delta #varphi (rad)");
         fhTrackMatchedDEtaDPhiNegTrackPt[i]->SetXTitle("#Delta #eta");
         
-        fhdEdxTrackPt[i]  = new TH2F (Form("hdEdxTrackPt%s",cutTM[i].Data()),Form("matched track <dE/dx> vs track #it{p}_{T}, %s",cutTM[i].Data()),
+        fhdEdxTrackPt[i]  = new TH2F (Form("hdEdxTrackPt%s",cutTM[i].Data()),Form("matched track <d#it{E}/d#it{x}> vs track #it{p}_{T}, %s",cutTM[i].Data()),
                                       nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
         fhdEdxTrackPt[i]->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
-        fhdEdxTrackPt[i]->SetYTitle("<dE/dx>");
+        fhdEdxTrackPt[i]->SetYTitle("<d#it{E}/d#it{x}>");
         
-        fhEOverPTrackPt[i]  = new TH2F (Form("hEOverPTrackPt%s",cutTM[i].Data()),Form("matched track E/p vs track #it{p}_{T}, %s",cutTM[i].Data()),
+        fhEOverPTrackPt[i]  = new TH2F (Form("hEOverPTrackPt%s",cutTM[i].Data()),Form("matched track #it{E}/#it{p} vs track #it{p}_{T}, %s",cutTM[i].Data()),
                                         nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
-        fhEOverPTrackPt[i]->SetXTitle("#it{p}_{T}^{track} (GeV)^{track/#it{c}}");
-        fhEOverPTrackPt[i]->SetYTitle("E/p");
+        fhEOverPTrackPt[i]->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
+        fhEOverPTrackPt[i]->SetYTitle("#it{E}/#it{p}");
         
 //      outputContainer->Add(fhTrackMatchedDEtaTrackPt[i]) ;
 //      outputContainer->Add(fhTrackMatchedDPhiTrackPt[i]) ;
@@ -2886,10 +2886,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         
         fhEOverPTRD[i]  = new TH2F
         (Form("hEOverPTRD%s",cutTM[i].Data()),
-         Form("matched track E/p vs cluster E, behind TRD, %s",cutTM[i].Data()),
+         Form("matched track #it{E}/#it{p} vs cluster E, behind TRD, %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
         fhEOverPTRD[i]->SetXTitle("#it{E} (GeV)");
-        fhEOverPTRD[i]->SetYTitle("E/p");
+        fhEOverPTRD[i]->SetYTitle("#it{E}/#it{p}");
         
         outputContainer->Add(fhTrackMatchedDEtaTRD[i]) ;
         outputContainer->Add(fhTrackMatchedDPhiTRD[i]) ;
