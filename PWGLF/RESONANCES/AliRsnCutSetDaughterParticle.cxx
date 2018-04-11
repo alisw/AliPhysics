@@ -1212,8 +1212,8 @@ void AliRsnCutSetDaughterParticle::Init()
       AddCut(iCutTPCTOFNSigma);
 	
       // scheme:
-      // quality & [ ( TPConly ) || ( TOFmatch & TOF & TPCTOF ) ]
-      SetCutScheme( Form("%s&((%s)|(%s&%s&%s))", fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName()) ) ;
+      // quality & [ ( TPConly & !TOFmatch) || ( TOF & TPCTOF ) ]
+      SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))", fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName()) ) ;
       
       break;
 
@@ -1238,7 +1238,7 @@ void AliRsnCutSetDaughterParticle::Init()
       /*set pt-dependent tpc cut*/
       iCutTPCNSigma->AddPIDRange(6.,0.0,0.3);
       iCutTPCNSigma->AddPIDRange(4.,0.3,0.4);
-      iCutTPCNSigma->AddPIDRange(fNsigmaTPC,0.4,1.e20);
+      iCutTPCNSigma->AddPIDRange(fNsigmaTPC, 0.4, 1.e20);
 	
       AddCut(fCutQuality);
       AddCut(iCutTPCNSigma);
@@ -1246,8 +1246,8 @@ void AliRsnCutSetDaughterParticle::Init()
       AddCut(iCutTOFNSigma);
       
       // scheme:
-      // quality & [ ( TPConly ) || ( TOFmatch & TOF & TPConly ) ]
-      SetCutScheme( Form("%s&((%s)|(%s&%s&%s))", fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
+      // quality & [ ( TPConly & !TOFmatch) || (TOF & TPConly ) ]
+      SetCutScheme( Form("%s&((%s&(!%s))|(%s&%s))", fCutQuality->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCNSigma->GetName()) ) ;
       
       break;
 
@@ -1290,8 +1290,8 @@ void AliRsnCutSetDaughterParticle::Init()
       AddCut(iCutTPCTOFNSigma);
 	
       // scheme:
-      // quality & electronRejection & [ ( TPConly ) || ( TOFmatch & TOF & TPCTOF ) ]
-      SetCutScheme( Form("(%s)&(!%s)&((%s)|(%s&%s&%s))", fCutQuality->GetName(), iCutTPCNSigmaElectronRejection->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName()) ) ;
+      // quality & electronRejection & [ ( TPConly & !TOFmatch ) || (TOF & TPCTOF ) ]
+      SetCutScheme( Form("(%s)&(!%s)&((%s&(!%s))|(%s&%s))", fCutQuality->GetName(), iCutTPCNSigmaElectronRejection->GetName(), iCutTPCNSigma->GetName(), iCutTOFMatch->GetName(), iCutTOFNSigma->GetName(), iCutTPCTOFNSigma->GetName()) ) ;
       
       break;
       

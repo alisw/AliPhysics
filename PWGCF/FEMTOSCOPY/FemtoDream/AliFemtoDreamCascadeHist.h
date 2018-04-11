@@ -16,7 +16,7 @@
 class AliFemtoDreamCascadeHist {
  public:
   AliFemtoDreamCascadeHist();
-  AliFemtoDreamCascadeHist(float mass);
+  AliFemtoDreamCascadeHist(float mass,bool perRunnumber, int iRunMin, int iRunMax);
   AliFemtoDreamCascadeHist(TString minimalBooking,float mass);
   virtual ~AliFemtoDreamCascadeHist();
   void FillCutCounter(int bin) {if(!fMinimalBooking)fCutCounter->Fill(bin);};
@@ -39,6 +39,8 @@ class AliFemtoDreamCascadeHist {
   void FillMinDistPrimVtxv0DaugPos(int iBin,float dist){if(!fMinimalBooking)fMinDistVtxv0DaugPos[iBin]->Fill(dist);};
   void FillMinDistPrimVtxv0DaugNeg(int iBin,float dist){if(!fMinimalBooking)fMinDistVtxv0DaugNeg[iBin]->Fill(dist);};
   void FillPodolandski(int iBin,float alpha,float qt){if(!fMinimalBooking)fPodolandski[iBin]->Fill(alpha,qt);};
+  void FillInvMassPerRunNumber(int RunNumber,float mass){
+    if(!fMinimalBooking)fInvMassPerRunNumber->Fill(RunNumber,mass);};
   TList *GetHistList() {return fHistList;};
   private:
   bool fMinimalBooking;
@@ -64,6 +66,7 @@ class AliFemtoDreamCascadeHist {
   TH1F *fMinDistVtxv0DaugPos[2];
   TH1F *fMinDistVtxv0DaugNeg[2];
   TH2F *fPodolandski[2];
+  TH2F *fInvMassPerRunNumber;
   ClassDef(AliFemtoDreamCascadeHist,2)
 };
 

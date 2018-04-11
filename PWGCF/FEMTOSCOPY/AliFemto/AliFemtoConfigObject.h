@@ -283,7 +283,6 @@ public:
 
     FORWARD_STANDARD_TYPES(IMPL_BUILDITEM);
 
-    IMPL_CASTED_BUILDITEM(TString, StringValue_t);
     IMPL_CASTED_BUILDITEM(Float_t, FloatValue_t);
     IMPL_CASTED_BUILDITEM(Int_t, IntValue_t);
     IMPL_CASTED_BUILDITEM(pair_of_ints, RangeValue_t);
@@ -292,6 +291,10 @@ public:
 
     IMPL_BUILDITEM(AliFemtoConfigObject, 0, 0);
     #undef IMPL_BUILDITEM
+
+    // -- custom operator() methods --
+
+    BuildMap& operator()(const Key_t &key, const TString &val) { fMap.insert(std::make_pair(key, val.Data())); return *this; };
 
     operator AliFemtoConfigObject() {
       return AliFemtoConfigObject(std::move(fMap));
@@ -753,12 +756,21 @@ public:
   /// If either is not a map, do nothing.
   /// Loop through keys in "default" object, if any key is missing
   /// in `this`, copy value over. If both keys point to maps, recursively
-  /// call SetDefault on thses sub-objects.
+  /// call SetDefault on the sub-objects.
   ///
   void SetDefault(const AliFemtoConfigObject &default_mapobj);
 #ifdef ENABLE_MOVE_SEMANTICS
   void SetDefault(AliFemtoConfigObject &&default_mapobj);
 #endif
+
+  /// Update map with key/value pairs from other dict.
+  /// If either is not a map, do nothing.
+  ///
+  /// \param source     Copy values from this object
+  /// \param all_keys   If true, all keys are read in from source,
+  ///                   otherwise only copy in the keys already present
+  ///
+  void Update(const AliFemtoConfigObject &source, bool all_keys=true);
 
   /// Print warning that multiple objects remain in this map or
   /// array. This is useful for ensuring all fields are used after

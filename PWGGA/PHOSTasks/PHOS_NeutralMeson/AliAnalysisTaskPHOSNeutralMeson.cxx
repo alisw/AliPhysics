@@ -96,9 +96,6 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
 
-// EMCAL includes
-#include "AliEMCALRecoUtils.h"
-
 using std::cout;
 using std::endl;
 

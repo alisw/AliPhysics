@@ -68,10 +68,35 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fRejectCheckGenName=kTRUE;
     fInjectedSignals = kTRUE;
   }
+
+ // electron rejection
+  void SetElectronRejection(Double_t gMaxNSigma){
+    fElectronRejection = kTRUE;
+    fElectronRejectionNSigma = gMaxNSigma;
+  }
+  
+  void SetElectronOnlyRejection(Double_t gMaxNSigma){
+    fElectronRejection       = kTRUE;
+    fElectronOnlyRejection   = kTRUE;
+    fElectronRejectionNSigma = gMaxNSigma;
+  }
+  
+  void SetElectronRejectionPt(Double_t minPt,Double_t maxPt){
+    fElectronRejectionMinPt  = minPt;
+    fElectronRejectionMaxPt  = maxPt;
+  }
+  
   void SetUseParticleID(Bool_t usePID=kFALSE, AliPID::EParticleType partOfInterest = AliPID::kPion) {
-    fUseParticleID = usePID;
+    fUsePIDstrategy = usePID;
+    fUsePIDFromPDG = usePID;
     fpartOfInterest = partOfInterest;
   }
+
+ void SetUsePIDfromPDG(Bool_t usePID=kFALSE, AliPID::EParticleType partOfInterest = AliPID::kPion) {
+   fUsePIDFromPDG = usePID;
+   fpartOfInterest = partOfInterest;
+  }
+  
   void SetUsePIDnSigmaComb(Bool_t UsePIDnSigmaComb){
      fUsePIDnSigmaComb = UsePIDnSigmaComb;
   }
@@ -173,12 +198,19 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
 
   
   AliPIDResponse *fPIDResponse;     //! PID response object
+  Bool_t   fElectronRejection;//flag to use electron rejection
+  Bool_t   fElectronOnlyRejection;//flag to use electron rejection with exclusive electron PID (no other particle in nsigma range)
+  Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
+  Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
+  Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
+  
   AliPIDCombined* fPIDCombined;  //! PID combined
 
   Bool_t  fUsePIDnSigmaComb;//!
   Double_t fBayesPIDThr;//!
     
-  Bool_t fUseParticleID; // flag to switch on PID
+  Bool_t fUsePIDstrategy; // flag to switch on PID
+  Bool_t fUsePIDFromPDG; //flag to switch on MC PID (used for PID tracking eff) 
   AliPID::EParticleType fpartOfInterest; //
   Int_t fPDGCodeWanted;//!
     

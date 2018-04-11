@@ -17,7 +17,7 @@ class AliFemtoDreamv0Hist {
  public:
   AliFemtoDreamv0Hist();
   AliFemtoDreamv0Hist(
-      int MassNBins,float MassMin,float MassMax,bool CPAPlots);
+      int MassNBins,float MassMin,float MassMax,bool CPAPlots,bool perRunnumber, int iRunMin, int iRunMax);
   AliFemtoDreamv0Hist(TString MinimalBooking,int MassNBins,float MassMin,float MassMax);
   virtual ~AliFemtoDreamv0Hist();
   void FillConfig(int iBin,float val){if(!fMinimalBooking)fConfig->Fill(iBin,val);};
@@ -44,6 +44,8 @@ class AliFemtoDreamv0Hist {
   void Fillv0MassDist(float mass){if(!fMinimalBooking)fInvMassBefSelection->Fill(mass);};
   void FillInvMassPtBins(float pT,float mass){fInvMassPt->Fill(pT,mass);};
   void FillCPAPtBins(float pT,float cpa){if(!fMinimalBooking)fCPAPtBins->Fill(pT,cpa);};
+  void FillInvMassPerRunNumber(int RunNumber,float mass){
+    if(!fMinimalBooking)fInvMassPerRunNumber->Fill(RunNumber,mass);};
   TList *GetHistList(){return fHistList;};
  private:
   bool fMinimalBooking;
@@ -69,6 +71,7 @@ class AliFemtoDreamv0Hist {
   TH1F *fInvMassBefSelection;
   TH2F *fInvMassPt;
   TH2F *fCPAPtBins;
+  TH2F *fInvMassPerRunNumber;
   ClassDef(AliFemtoDreamv0Hist,2)
 };
 

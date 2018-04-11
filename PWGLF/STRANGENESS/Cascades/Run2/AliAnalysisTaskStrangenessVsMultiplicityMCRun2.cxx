@@ -259,7 +259,40 @@ fTreeVariablePrimVertexZ(0),
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
 
-fTreeVariableMagneticField(0x0),
+fTreeVariableMagneticField(0),
+
+fTreeVariableNegCreationX(0),
+fTreeVariableNegCreationY(0),
+fTreeVariableNegCreationZ(0),
+fTreeVariablePosCreationX(0),
+fTreeVariablePosCreationY(0),
+fTreeVariablePosCreationZ(0),
+
+fTreeVariableNegPxMC(0),
+fTreeVariableNegPyMC(0),
+fTreeVariableNegPzMC(0),
+fTreeVariablePosPxMC(0),
+fTreeVariablePosPyMC(0),
+fTreeVariablePosPzMC(0),
+
+fTreeVariablePIDNegativeMother(0),
+fTreeVariablePIDPositiveMother(0),
+fTreeVariablePIDNegativeGrandMother(0),
+fTreeVariablePIDPositiveGrandMother(0),
+
+fTreeVariableNegLabel(0),
+fTreeVariablePosLabel(0),
+fTreeVariableNegLabelMother(0),
+fTreeVariablePosLabelMother(0),
+fTreeVariableNegLabelGrandMother(0),
+fTreeVariablePosLabelGrandMother(0),
+
+fTreeVariableIsPhysicalPrimaryNegative(kFALSE),
+fTreeVariableIsPhysicalPrimaryPositive(kFALSE),
+fTreeVariableIsPhysicalPrimaryNegativeMother(kFALSE),
+fTreeVariableIsPhysicalPrimaryPositiveMother(kFALSE),
+fTreeVariableIsPhysicalPrimaryNegativeGrandMother(kFALSE),
+fTreeVariableIsPhysicalPrimaryPositiveGrandMother(kFALSE),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -700,7 +733,40 @@ fTreeVariablePrimVertexZ(0),
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
 
-fTreeVariableMagneticField(0x0),
+fTreeVariableMagneticField(0),
+
+fTreeVariableNegCreationX(0),
+fTreeVariableNegCreationY(0),
+fTreeVariableNegCreationZ(0),
+fTreeVariablePosCreationX(0),
+fTreeVariablePosCreationY(0),
+fTreeVariablePosCreationZ(0),
+
+fTreeVariableNegPxMC(0),
+fTreeVariableNegPyMC(0),
+fTreeVariableNegPzMC(0),
+fTreeVariablePosPxMC(0),
+fTreeVariablePosPyMC(0),
+fTreeVariablePosPzMC(0),
+
+fTreeVariablePIDNegativeMother(0),
+fTreeVariablePIDPositiveMother(0),
+fTreeVariablePIDNegativeGrandMother(0),
+fTreeVariablePIDPositiveGrandMother(0),
+
+fTreeVariableNegLabel(0),
+fTreeVariablePosLabel(0),
+fTreeVariableNegLabelMother(0),
+fTreeVariablePosLabelMother(0),
+fTreeVariableNegLabelGrandMother(0),
+fTreeVariablePosLabelGrandMother(0),
+
+fTreeVariableIsPhysicalPrimaryNegative(kFALSE),
+fTreeVariableIsPhysicalPrimaryPositive(kFALSE),
+fTreeVariableIsPhysicalPrimaryNegativeMother(kFALSE),
+fTreeVariableIsPhysicalPrimaryPositiveMother(kFALSE),
+fTreeVariableIsPhysicalPrimaryNegativeGrandMother(kFALSE),
+fTreeVariableIsPhysicalPrimaryPositiveGrandMother(kFALSE),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCharge(0),
@@ -1210,12 +1276,46 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
         //------------------------------------------------
         if( fkSandboxMode ){
             //Full track info 
-        fTreeV0->Branch("fTreeVariablePrimVertexX",&fTreeVariablePrimVertexX,"fTreeVariablePrimVertexX/F");
-        fTreeV0->Branch("fTreeVariablePrimVertexY",&fTreeVariablePrimVertexY,"fTreeVariablePrimVertexY/F");
-        fTreeV0->Branch("fTreeVariablePrimVertexZ",&fTreeVariablePrimVertexZ,"fTreeVariablePrimVertexZ/F");
-        fTreeV0->Branch("fTreeVariableNegTrack", &fTreeVariableNegTrack,16000,99);
-        fTreeV0->Branch("fTreeVariablePosTrack", &fTreeVariablePosTrack,16000,99);
-        fTreeV0->Branch("fTreeVariableMagneticField",&fTreeVariableMagneticField,"fTreeVariableMagneticField/F");
+            fTreeV0->Branch("fTreeVariablePrimVertexX",&fTreeVariablePrimVertexX,"fTreeVariablePrimVertexX/F");
+            fTreeV0->Branch("fTreeVariablePrimVertexY",&fTreeVariablePrimVertexY,"fTreeVariablePrimVertexY/F");
+            fTreeV0->Branch("fTreeVariablePrimVertexZ",&fTreeVariablePrimVertexZ,"fTreeVariablePrimVertexZ/F");
+            fTreeV0->Branch("fTreeVariableNegTrack", &fTreeVariableNegTrack,16000,99);
+            fTreeV0->Branch("fTreeVariablePosTrack", &fTreeVariablePosTrack,16000,99);
+            fTreeV0->Branch("fTreeVariableMagneticField",&fTreeVariableMagneticField,"fTreeVariableMagneticField/F");
+            
+            //Extra information for debugging vertexer functionality
+            fTreeV0->Branch("fTreeVariableNegCreationX",&fTreeVariableNegCreationX,"fTreeVariableNegCreationX/F");
+            fTreeV0->Branch("fTreeVariableNegCreationY",&fTreeVariableNegCreationY,"fTreeVariableNegCreationY/F");
+            fTreeV0->Branch("fTreeVariableNegCreationZ",&fTreeVariableNegCreationZ,"fTreeVariableNegCreationZ/F");
+            fTreeV0->Branch("fTreeVariablePosCreationX",&fTreeVariablePosCreationX,"fTreeVariablePosCreationX/F");
+            fTreeV0->Branch("fTreeVariablePosCreationY",&fTreeVariablePosCreationY,"fTreeVariablePosCreationY/F");
+            fTreeV0->Branch("fTreeVariablePosCreationZ",&fTreeVariablePosCreationZ,"fTreeVariablePosCreationZ/F");
+            
+            fTreeV0->Branch("fTreeVariableNegPxMC",&fTreeVariableNegPxMC,"fTreeVariableNegPxMC/F");
+            fTreeV0->Branch("fTreeVariableNegPyMC",&fTreeVariableNegPyMC,"fTreeVariableNegPyMC/F");
+            fTreeV0->Branch("fTreeVariableNegPzMC",&fTreeVariableNegPzMC,"fTreeVariableNegPzMC/F");
+            fTreeV0->Branch("fTreeVariablePosPxMC",&fTreeVariablePosPxMC,"fTreeVariablePosPxMC/F");
+            fTreeV0->Branch("fTreeVariablePosPyMC",&fTreeVariablePosPyMC,"fTreeVariablePosPyMC/F");
+            fTreeV0->Branch("fTreeVariablePosPzMC",&fTreeVariablePosPzMC,"fTreeVariablePosPzMC/F");
+            
+            fTreeV0->Branch("fTreeVariablePIDNegativeMother",&fTreeVariablePIDNegativeMother,"fTreeVariablePIDNegativeMother/I");
+            fTreeV0->Branch("fTreeVariablePIDPositiveMother",&fTreeVariablePIDPositiveMother,"fTreeVariablePIDPositiveMother/I");
+            fTreeV0->Branch("fTreeVariablePIDNegativeGrandMother",&fTreeVariablePIDNegativeGrandMother,"fTreeVariablePIDNegativeGrandMother/I");
+            fTreeV0->Branch("fTreeVariablePIDPositiveGrandMother",&fTreeVariablePIDPositiveGrandMother,"fTreeVariablePIDPositiveGrandMother/I");
+            
+            fTreeV0->Branch("fTreeVariableNegLabel",&fTreeVariableNegLabel,"fTreeVariableNegLabel/I");
+            fTreeV0->Branch("fTreeVariablePosLabel",&fTreeVariablePosLabel,"fTreeVariablePosLabel/I");
+            fTreeV0->Branch("fTreeVariableNegLabelMother",&fTreeVariableNegLabelMother,"fTreeVariableNegLabelMother/I");
+            fTreeV0->Branch("fTreeVariablePosLabelMother",&fTreeVariablePosLabelMother,"fTreeVariablePosLabelMother/I");
+            fTreeV0->Branch("fTreeVariableNegLabelGrandMother",&fTreeVariableNegLabelGrandMother,"fTreeVariableNegLabelGrandMother/I");
+            fTreeV0->Branch("fTreeVariablePosLabelGrandMother",&fTreeVariablePosLabelGrandMother,"fTreeVariablePosLabelGrandMother/I");
+            
+            fTreeV0->Branch("fTreeVariableIsPhysicalPrimaryNegative",&fTreeVariableIsPhysicalPrimaryNegative,"fTreeVariableIsPhysicalPrimaryNegative/O");
+            fTreeV0->Branch("fTreeVariableIsPhysicalPrimaryPositive",&fTreeVariableIsPhysicalPrimaryPositive,"fTreeVariableIsPhysicalPrimaryPositive/O");
+            fTreeV0->Branch("fTreeVariableIsPhysicalPrimaryNegativeMother",&fTreeVariableIsPhysicalPrimaryNegativeMother,"fTreeVariableIsPhysicalPrimaryNegativeMother/O");
+            fTreeV0->Branch("fTreeVariableIsPhysicalPrimaryPositiveMother",&fTreeVariableIsPhysicalPrimaryPositiveMother,"fTreeVariableIsPhysicalPrimaryPositiveMother/O");
+            fTreeV0->Branch("fTreeVariableIsPhysicalPrimaryNegativeGrandMother",&fTreeVariableIsPhysicalPrimaryNegativeGrandMother,"fTreeVariableIsPhysicalPrimaryNegativeGrandMother/O");
+            fTreeV0->Branch("fTreeVariableIsPhysicalPrimaryPositiveGrandMother",&fTreeVariableIsPhysicalPrimaryPositiveGrandMother,"fTreeVariableIsPhysicalPrimaryPositiveGrandMother/O");
         }
         //------------------------------------------------
     }
@@ -2007,6 +2107,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             Printf("ERROR: Could not retreive one of the daughter track");
             continue;
         }
+        
+        fTreeVariablePosTrack = pTrack;
+        fTreeVariableNegTrack = nTrack;
+        
         fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
         fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
         
@@ -2209,11 +2313,33 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeVariablePrimaryStatus = 0;
         fTreeVariablePrimaryStatusMother = 0;
         
+        fTreeVariablePIDNegativeMother = -1;
+        fTreeVariablePIDPositiveMother = -1;
+        fTreeVariablePIDNegativeGrandMother = -1;
+        fTreeVariablePIDPositiveGrandMother = -1; 
+        
+        fTreeVariableNegLabel = -1;
+        fTreeVariablePosLabel = -1;
+        fTreeVariableNegLabelMother = -1;
+        fTreeVariablePosLabelMother = -1;
+        fTreeVariableNegLabelGrandMother = -1;
+        fTreeVariablePosLabelGrandMother = -1;
+        
+        fTreeVariableIsPhysicalPrimaryNegative = kFALSE;
+        fTreeVariableIsPhysicalPrimaryPositive = kFALSE;
+        fTreeVariableIsPhysicalPrimaryNegativeMother = kFALSE;
+        fTreeVariableIsPhysicalPrimaryPositiveMother = kFALSE;
+        fTreeVariableIsPhysicalPrimaryNegativeGrandMother = kFALSE;
+        fTreeVariableIsPhysicalPrimaryPositiveGrandMother = kFALSE;
+        
         //fTreeVariablePosTransvMomentumMC = -1;
         //fTreeVariableNegTransvMomentumMC = -1;
         
         Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrack->GetLabel() );
         Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrack->GetLabel() );
+        
+        fTreeVariablePosLabel = lblPosV0Dghter;
+        fTreeVariableNegLabel = lblNegV0Dghter;
         
         TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
         TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
@@ -2227,11 +2353,57 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         fTreeVariablePIDPositive = lPIDPositive;
         fTreeVariablePIDNegative = lPIDNegative;
         
+        //Be careful: Vx, Vy, Vz: Creation vertex. So decay position is the
+        //Creation vertex of any one of the daughters!
+        fTreeVariableNegCreationX = mcNegV0Dghter->Vx();
+        fTreeVariableNegCreationY = mcNegV0Dghter->Vy();
+        fTreeVariableNegCreationZ = mcNegV0Dghter->Vz();
+        fTreeVariablePosCreationX = mcPosV0Dghter->Vx();
+        fTreeVariablePosCreationY = mcPosV0Dghter->Vy();
+        fTreeVariablePosCreationZ = mcPosV0Dghter->Vz();
+        
         Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother();
         Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
         
         Double_t lMCTransvMomNeg = mcNegV0Dghter->Pt();
         Double_t lMCTransvMomPos = mcPosV0Dghter->Pt();
+        
+        fTreeVariableNegPxMC = mcNegV0Dghter->Px();
+        fTreeVariableNegPyMC = mcNegV0Dghter->Py();
+        fTreeVariableNegPzMC = mcNegV0Dghter->Pz();
+        fTreeVariablePosPxMC = mcPosV0Dghter->Px();
+        fTreeVariablePosPyMC = mcPosV0Dghter->Py();
+        fTreeVariablePosPzMC = mcPosV0Dghter->Pz();
+        
+        // Extra: check decoupled parenthood info
+        if ( lblMotherPosV0Dghter > -1 ){
+            TParticle *lPosMother = lMCstack->Particle( lblMotherPosV0Dghter );
+            if( lMCstack->IsPhysicalPrimary( lblMotherPosV0Dghter ) ) fTreeVariableIsPhysicalPrimaryPositiveMother = kTRUE;
+            fTreeVariablePIDPositiveMother = lPosMother->GetPdgCode();
+            fTreeVariablePosLabelMother = lblMotherPosV0Dghter;
+            //Go further than that, please
+            Int_t lblGrandMother = lPosMother->GetFirstMother();
+            if( lblGrandMother > -1 ){
+                TParticle *lPosGrandMother = lMCstack->Particle( lblGrandMother );
+                if( lMCstack->IsPhysicalPrimary( lblGrandMother ) ) fTreeVariableIsPhysicalPrimaryPositiveGrandMother = kTRUE;
+                fTreeVariablePIDPositiveGrandMother = lPosGrandMother->GetPdgCode();
+                fTreeVariablePosLabelGrandMother = lblGrandMother;
+            }
+        }
+        if ( lblMotherNegV0Dghter > -1 ){
+            TParticle *lNegMother = lMCstack->Particle( lblMotherNegV0Dghter );
+            if( lMCstack->IsPhysicalPrimary( lblMotherNegV0Dghter ) ) fTreeVariableIsPhysicalPrimaryNegativeMother = kTRUE;
+            fTreeVariablePIDNegativeMother = lNegMother->GetPdgCode();
+            fTreeVariableNegLabelMother = lblMotherNegV0Dghter;
+            //Go further than that, please
+            Int_t lblGrandMother = lNegMother->GetFirstMother();
+            if( lblGrandMother > -1 ){
+                TParticle *lNegGrandMother = lMCstack->Particle( lblGrandMother );
+                if( lMCstack->IsPhysicalPrimary( lblGrandMother ) ) fTreeVariableIsPhysicalPrimaryNegativeGrandMother = kTRUE;
+                fTreeVariablePIDNegativeGrandMother = lNegGrandMother->GetPdgCode();
+                fTreeVariableNegLabelGrandMother = lblGrandMother;
+            }
+        }
         
         if( lblMotherPosV0Dghter == lblMotherNegV0Dghter && lblMotherPosV0Dghter > -1 ) {
             //either label is fine, they're equal at this stage
@@ -2586,9 +2758,6 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         
         AliESDtrack *pTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyPos);
         AliESDtrack *nTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyNeg);
-        
-        fTreeVariablePosTrack = pTrack;
-        fTreeVariableNegTrack = nTrack;
         
         if (!pTrack || !nTrack) {
             Printf("ERROR: Could not retreive one of the daughter track");

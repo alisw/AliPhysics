@@ -28,9 +28,9 @@ class AliFemtoDreamBasePart {
   void SetMCParticle(AliAODMCParticle *mcPart,AliMCEvent *evt);
   void ResetMCInfo();
   void SetMomentum(float px,float py,float pz) {fP.SetXYZ(px,py,pz);};
-  TVector3 GetMomentum() const {return fP;};
+  const TVector3 *GetMomentum() const {return &fP;};
   void SetMCMomentum(float px,float py,float pz) {fMCP.SetXYZ(px,py,pz);};
-  TVector3 GetMCMomentum() const {return fMCP;};
+  const TVector3 *GetMCMomentum() const {return &fMCP;};
   void SetPt(float pT){fPt=pT;};
   float GetPt() const {return fPt;};
   void SetMCPt(float pT){fMCPt=pT;};
@@ -65,16 +65,17 @@ class AliFemtoDreamBasePart {
   int GetMotherWeak() const {return fPDGMotherWeak;};
   void SetMotherID(int ID) {fMotherID=ID;};
   int GetMotherID() const {return fMotherID;};
+  void SetEvtNumber(int evtNumb){fEvtNumber=evtNumb;};
+  int GetEvtNumber() const {return fEvtNumber;};
   void SetUseMCInfo(bool useMC) {fIsMC=useMC;};
   bool IsSet() const {return fIsSet;};
   void SetUse(bool use) {fUse=use;};
   bool UseParticle() const {return fUse;};
-  void SetGlobalTrackInfo(AliAODTrack **GTI, Int_t size)
-  {fGTI = GTI; fTrackBufferSize = size;};
+//  void SetGlobalTrackInfo(std::vector<AliAODTrack*> &GTI){fGTI = GTI;};
+  void SetGlobalTrackInfo(std::vector<AliAODTrack*> *GTI){fGTI = GTI;};
  protected:
   bool fIsReset;
-  AliAODTrack **fGTI;
-  int fTrackBufferSize;
+  std::vector<AliAODTrack*> *fGTI;
   TVector3 fP;
   TVector3 fMCP;
   float fPt;
@@ -96,6 +97,7 @@ class AliFemtoDreamBasePart {
   int fMCPDGCode;
   int fPDGMotherWeak;
   int fMotherID;
+  int fEvtNumber;
   bool fIsMC;
   bool fUse;    //passes cuts
   bool fIsSet;  //has all the attributes set properly

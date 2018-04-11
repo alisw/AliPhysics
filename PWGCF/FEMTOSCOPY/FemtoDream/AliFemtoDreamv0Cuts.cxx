@@ -19,6 +19,9 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
 ,fMCData(false)
 ,fCPAPlots(false)
 ,fContribSplitting(false)
+,fRunNumberQA(false)
+,fMinRunNumber(0)
+,fMaxRunNumber(0)
 ,fCutOnFlyStatus(false)
 ,fOnFlyStatus(false)
 ,fCutCharge(false)
@@ -256,6 +259,9 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0) {
   if (cpaPass) {
     fHist->FillInvMassPtBins(v0->GetPt(),v0->Getv0Mass());
     if (!fMinimalBooking) fHist->Fillv0MassDist(v0->Getv0Mass());
+    if (fRunNumberQA) {
+      fHist->FillInvMassPerRunNumber(v0->GetEvtNumber(),v0->Getv0Mass());
+    }
   }
   if (massPass&&fCPAPlots&&!fMinimalBooking) {
     fHist->FillCPAPtBins(v0->GetPt(),v0->GetCPA());
@@ -282,7 +288,7 @@ void AliFemtoDreamv0Cuts::Init() {
   fNegCuts->Init();
   if (!fMinimalBooking) {
     fHist=new AliFemtoDreamv0Hist(fNumberXBins,fAxisMinMass,fAxisMaxMass,
-                                  fCPAPlots);
+                                  fCPAPlots,fRunNumberQA,fMinRunNumber,fMaxRunNumber);
     BookTrackCuts();
     fHistList = new TList();
     fHistList->SetOwner();
@@ -482,25 +488,25 @@ float AliFemtoDreamv0Cuts::CalculateInvMass(AliFemtoDreamv0 *v0,
 
   float EDaugP=TMath::Sqrt(
       massDP*massDP +
-      v0->GetPosDaughter()->GetMomentum().X()*v0->GetPosDaughter()->GetMomentum().X()+
-      v0->GetPosDaughter()->GetMomentum().Y()*v0->GetPosDaughter()->GetMomentum().Y()+
-      v0->GetPosDaughter()->GetMomentum().Z()*v0->GetPosDaughter()->GetMomentum().Z());
+      v0->GetPosDaughter()->GetMomentum()->X()*v0->GetPosDaughter()->GetMomentum()->X()+
+      v0->GetPosDaughter()->GetMomentum()->Y()*v0->GetPosDaughter()->GetMomentum()->Y()+
+      v0->GetPosDaughter()->GetMomentum()->Z()*v0->GetPosDaughter()->GetMomentum()->Z());
   float EDaugN=TMath::Sqrt(
       massDN*massDN +
-      v0->GetNegDaughter()->GetMomentum().X()*v0->GetNegDaughter()->GetMomentum().X()+
-      v0->GetNegDaughter()->GetMomentum().Y()*v0->GetNegDaughter()->GetMomentum().Y()+
-      v0->GetNegDaughter()->GetMomentum().Z()*v0->GetNegDaughter()->GetMomentum().Z());
+      v0->GetNegDaughter()->GetMomentum()->X()*v0->GetNegDaughter()->GetMomentum()->X()+
+      v0->GetNegDaughter()->GetMomentum()->Y()*v0->GetNegDaughter()->GetMomentum()->Y()+
+      v0->GetNegDaughter()->GetMomentum()->Z()*v0->GetNegDaughter()->GetMomentum()->Z());
 
   float energysum=EDaugP+EDaugN;
   float pSum2=
-      (v0->GetNegDaughter()->GetMomentum().X()+v0->GetPosDaughter()->GetMomentum().X())*
-      (v0->GetNegDaughter()->GetMomentum().X()+v0->GetPosDaughter()->GetMomentum().X())+
+      (v0->GetNegDaughter()->GetMomentum()->X()+v0->GetPosDaughter()->GetMomentum()->X())*
+      (v0->GetNegDaughter()->GetMomentum()->X()+v0->GetPosDaughter()->GetMomentum()->X())+
 
-      (v0->GetNegDaughter()->GetMomentum().Y()+v0->GetPosDaughter()->GetMomentum().Y())*
-      (v0->GetNegDaughter()->GetMomentum().Y()+v0->GetPosDaughter()->GetMomentum().Y())+
+      (v0->GetNegDaughter()->GetMomentum()->Y()+v0->GetPosDaughter()->GetMomentum()->Y())*
+      (v0->GetNegDaughter()->GetMomentum()->Y()+v0->GetPosDaughter()->GetMomentum()->Y())+
 
-      (v0->GetNegDaughter()->GetMomentum().Z()+v0->GetPosDaughter()->GetMomentum().Z())*
-      (v0->GetNegDaughter()->GetMomentum().Z()+v0->GetPosDaughter()->GetMomentum().Z());
+      (v0->GetNegDaughter()->GetMomentum()->Z()+v0->GetPosDaughter()->GetMomentum()->Z())*
+      (v0->GetNegDaughter()->GetMomentum()->Z()+v0->GetPosDaughter()->GetMomentum()->Z());
   invMass = TMath::Sqrt(energysum*energysum - pSum2);
   return invMass;
 }

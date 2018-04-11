@@ -85,6 +85,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	hTrackPt(0),
 	hNMaxiPadIn(0),
 	hNCrossTracks(0),
+	fIsPass1(kFALSE),
 	fGeomLoaded(kFALSE),
 	fMaxPt(0),
 	fMinPt(0),
@@ -135,6 +136,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	hTrackPt(0),
 	hNMaxiPadIn(0),
 	hNCrossTracks(0),
+	fIsPass1(kFALSE),
 	fGeomLoaded(kFALSE),
 	fMaxPt(highpt),
 	fMinPt(lowpt),
@@ -253,6 +255,11 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
 void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 {
 
+
+  TString fileName = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
+  if(fileName.Contains("pass1"))fIsPass1 = kTRUE;
+  else fIsPass1 = kFALSE;
+
   if(!fGeomLoaded){
   	AliGeomManager::LoadGeometry();
   	AliGeomManager::ApplyAlignObjsFromCDB("ITS TRD TOF");
@@ -283,6 +290,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 0,0,1,1,0,0,1,1,0,0,1,0,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,
 0,0,1,1,0,0,1,1,0,0,1,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,
 0,0,1,1,0,0,1,1,1,0,1,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,0,0}; 
+
 
   AliESDEvent *esd = (AliESDEvent*) InputEvent();
   if(!esd) return;
@@ -453,6 +461,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 
 		GetLTMIndex(detId,indexLTM);
 		UInt_t channelCTTM = indexLTM[1]/2;
+		  
 		//cout<<"Trigger pad "<<nFiredPads<<" in LTM "<<indexLTM[0]<<" CTTM "<<channelCTTM<<" Fired = "<<fTOFmask->IsON(indexLTM[0],channelCTTM)<<endl;
 
 		hTrackDistribution->Fill(trc->Phi()*TMath::RadToDeg(),trc->Eta());
@@ -537,5 +546,18 @@ void AliAnalysisTaskTOFTrigger::GetLTMIndex(const Int_t * const detind, Int_t *i
   else              indexLTM[0] += iStrip<46 ? 1 : 37;
   if (indexLTM[0]<36) indexLTM[1] = iStrip;
   else                indexLTM[1] = 90-iStrip;
+  
+  Int_t reMapPass1[72]={
+       0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+      10,11,12,13,14,15,16,17,20,19,
+      21,22,23,24,26,25,28,27,29,30,
+      32,31,34,33,36,35,36,35,38,37,
+      40,39,42,41,44,43,46,45,48,47,
+      50,49,52,51,54,55,56,57,58,59,
+      60,61,62,63,64,65,66,67,68,69,
+      70,71
+  };
+
+  if(fIsPass1)indexLTM[0] = reMapPass1[indexLTM[0]];
 
 }

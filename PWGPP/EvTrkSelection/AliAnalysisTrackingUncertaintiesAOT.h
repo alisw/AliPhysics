@@ -116,6 +116,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   Bool_t   fUseGenPt;               //flag to use generated pt in match. eff. sparse
   Bool_t   fDoCutV0multTPCout;      //flag to activate cut on V0mult vs #tracks TPCout
   Bool_t   fDCAz;                   //flag to switch on the DCAz axis
+  Bool_t   fTPConlyFIT;             //flag to use only TPC track for DCA fits
 
   TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
 
@@ -126,7 +127,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 8);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 9);
 };
 
 #endif

@@ -8,10 +8,10 @@ class AliAnalysisDataContainer;
 
 AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		                 TString dataname = "dataname",
-		                 Bool_t flagEG1,
-		                 Bool_t flagEG2,
-		                 Bool_t SetFlagClsTypeEMC,
-		                 Bool_t SetFlagClsTypeDCAL)
+		                 Bool_t flagEG1 = kFALSE,
+		                 Bool_t flagEG2 = kFALSE,
+		                 Bool_t SetFlagClsTypeEMC = kFALSE,
+		                 Bool_t SetFlagClsTypeDCAL = kFALSE)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function

@@ -56,7 +56,7 @@ using std::endl;
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB() 
-  : AliAnalysisTaskSE(),fPIDResponse(0),isMC(kFALSE),cutEta(kFALSE),fOutputList(0),
+  : AliAnalysisTaskSE(),fPIDResponse(0),isMC(kFALSE),cutEta(0.9),fOutputList(0),
     	fHistEvents(0),
 	fHistMCTriggers(0),
     	fTreePhi(0),
@@ -74,7 +74,11 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 	hTOFPIDProtonCorr(0),
 	hITSPIDKaon(0),
 	hITSPIDKaonCorr(0),
-	hTPCdEdxCorr(0)
+	hTPCdEdxCorr(0),
+	fSPDfile(0),
+  	hBCmod4(0),
+  	hSPDeff(0) 
+	
 
 {
 
@@ -85,7 +89,7 @@ AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcNano_MB::AliAnalysisTaskUpcNano_MB(const char *name) 
-  : AliAnalysisTaskSE(name),fPIDResponse(0),isMC(kFALSE),cutEta(kFALSE),fOutputList(0),
+  : AliAnalysisTaskSE(name),fPIDResponse(0),isMC(kFALSE),cutEta(0.9),fOutputList(0),
     	fHistEvents(0),
 	fHistMCTriggers(0),
     	fTreePhi(0),
@@ -162,6 +166,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeJPsi ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeJPsi ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeJPsi ->Branch("fNFiredMaxiPads", &fNFiredMaxiPads, "fNFiredMaxiPads/I");
+  fTreeJPsi ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
   if(isMC){
 	fTreeJPsi ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
 	}
@@ -195,6 +200,8 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeRho ->Branch("fPIDsigma", &fPIDsigma,"fPIDsigma/F");
   fTreeRho ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
   fTreeRho ->Branch("fNFiredMaxiPads", &fNFiredMaxiPads, "fNFiredMaxiPads/I");
+  fTreeRho ->Branch("fInEtaRec", &fInEtaRec, "fInEtaRec/O");
+  
   if(isMC) fTreeRho ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[10]/O");
   fOutputList->Add(fTreeRho);
 
@@ -223,6 +230,7 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fTreeGen ->Branch("fY", &fY, "fY/F");
   fTreeGen ->Branch("fM", &fM, "fM/F");
   fTreeGen ->Branch("fRunNumber", &fRunNumber, "fRunNumber/I");
+  fTreeGen ->Branch("fInEtaGen", &fInEtaGen, "fInEtaGen/O");
   if(isMC) fOutputList->Add(fTreeGen);
    
   hTPCPIDMuonCorr = new TH2D("hTPCPIDMuonCorr"," ",100,-10.0,10.0,100,-10.0,10.0);
@@ -276,10 +284,14 @@ AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   fOutputList->Add(hTPCdEdxCorr);
   
   fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run245067.root");
+  fSPDfile->Print();
+  fSPDfile->Map();
   hSPDeff = (TH2D*) fSPDfile->Get("hEff");
+  hSPDeff->SetDirectory(0);
   TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
   hBCmod4 = hBCmod4_2D->ProjectionY();
-  //fSPDfile->Close();
+  fSPDfile->Close();
+ 
     
   PostData(1, fOutputList);
 
@@ -358,6 +370,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   UInt_t nGoodTracksTPC=0;
   UInt_t nGoodTracksITS=0;
   UInt_t nGoodTracksSPD=0;
+  UInt_t nGoodTracksLoose=0;
   Int_t TrackIndexTPC[5] = {-1,-1,-1,-1,-1};
   Int_t TrackIndexITS[5] = {-1,-1,-1,-1,-1};
   Int_t TrackIndexALL[7] = {-1,-1,-1,-1,-1,-1,-1};
@@ -372,9 +385,8 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     Bool_t goodTPCTrack = kTRUE;
     Bool_t goodITSTrack = kTRUE;
     
-    if(cutEta && TMath::Abs(trk->Eta())>0.9)continue;
-    
-    if(!(trk->TestFilterBit(1<<5))) goodTPCTrack = kFALSE;
+    if(trk->TestFilterBit(1<<0) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)))nGoodTracksLoose++;
+    if(!(trk->TestFilterBit(1<<5)))goodTPCTrack = kFALSE;
     else{
     	if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
     	}
@@ -480,10 +492,13 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
 	
   //Two track loop
   nHighPt = 0;
-  if(nGoodTracksTPC == 2){
+  fInEtaRec = kTRUE;
+  if(nGoodTracksTPC == 2 && nGoodTracksLoose == 2 && nGoodTracksSPD == 2 && nGoodTracksITS == 0){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
     	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(aod->GetTrack(TrackIndexTPC[iTrack]));
-	    	
+	
+	if(TMath::Abs(trk->Eta())>cutEta) fInEtaRec = kFALSE;
+	
 	if(trk->Pt() > 1.0) nHighPt++;
 	
 	Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
@@ -619,7 +634,6 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
 {
   
   for(Int_t i=0; i<10; i++) fTriggerInputsMC[i] = kFALSE;
-  
   UShort_t fTriggerAD = aod->GetADData()->GetTriggerBits();
   UShort_t fTriggerVZERO = aod->GetVZEROData()->GetTriggerBits();
   UInt_t fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
@@ -682,6 +696,7 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
 
   vGenerated.SetXYZM(0.,0.,0.,0.);
   Bool_t motherFound = kFALSE;
+  fInEtaGen = kTRUE;
   //loop over mc particles
   for(Int_t imc=0; imc<arrayMC->GetEntriesFast(); imc++) {
     AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(imc);
@@ -703,7 +718,7 @@ void AliAnalysisTaskUpcNano_MB::RunMC(AliAODEvent *aod)
        TMath::Abs(mcPart->GetPdgCode()) == 22){
        
        if(mcPart->GetMother() != -1)continue;
-       if(cutEta && TMath::Abs(mcPart->GetPdgCode()) != 22 && TMath::Abs(mcPart->Eta())>0.9)return;
+       if(TMath::Abs(mcPart->GetPdgCode()) != 22 && TMath::Abs(mcPart->Eta())>cutEta) fInEtaGen = kFALSE;
     
        TParticlePDG *partGen = pdgdat->GetParticle(mcPart->GetPdgCode());
        vDecayProduct.SetXYZM(mcPart->Px(),mcPart->Py(), mcPart->Pz(),partGen->Mass());

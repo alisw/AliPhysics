@@ -137,7 +137,7 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
        isEJ = findTriggerType(fSelectedTriggers, "EJ"),
        isDJ = findTriggerType(fSelectedTriggers, "DJ");
 
-  std::vector<AliEMCALTriggerPatchInfo *> EGApatches, DGApatches, EJEpatches, DJEpatches;
+  std::vector<const AliEMCALTriggerPatchInfo *> EGApatches, DGApatches, EJEpatches, DJEpatches;
   if(isMB || isEG) EGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kEGApatches);
   if(isMB || isDG) DGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kDGApatches);
   if(isMB || isEJ) EJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, kEJEpatches);
@@ -156,13 +156,13 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
     } else if(std::find(kNamesTriggerClasses.begin(), kNamesTriggerClasses.end(), t.Data()) != kNamesTriggerClasses.end()) {
       const char detector = t[0];
       const char *patchtype = ((t[1] == 'G') ? "GA" : "JE");
-      std::vector<AliEMCALTriggerPatchInfo *> &patchhandler = (detector == 'E' ? (t[1] == 'G' ? EGApatches : EJEpatches) : (t[1] == 'G' ? DGApatches : DJEpatches)); 
+      std::vector<const AliEMCALTriggerPatchInfo *> &patchhandler = (detector == 'E' ? (t[1] == 'G' ? EGApatches : EJEpatches) : (t[1] == 'G' ? DGApatches : DJEpatches)); 
       auto firedpatches = SelectFiredPatchesByTrigger(*fTriggerPatchInfo, kPatchIndex.find(t.Data())->second);
       auto patchareas = GetNumberNonOverlappingPatchAreas(firedpatches);
       for(auto p : patchhandler){
+        double point[3] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
         for(const auto &kc : selclusters) {
           fHistos->FillTH1(Form("hPatchADC%c%s%s%s", detector, patchtype, t.Data(), kc.data()), p->GetADCAmp());
-          double point[3] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
           fHistos->FillTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, t.Data(), kc.data()), point);
         }
       }
@@ -176,8 +176,8 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
   return true;
 }
 
-std::vector<AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::SelectAllPatchesByType(const TClonesArray &list, EPatchType_t patchtype) const {
-  std::vector<AliEMCALTriggerPatchInfo *> result;
+std::vector<const AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::SelectAllPatchesByType(const TClonesArray &list, EPatchType_t patchtype) const {
+  std::vector<const AliEMCALTriggerPatchInfo *> result;
   for(auto p : list){
     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
     if(!patch->IsRecalc()) continue;
@@ -193,8 +193,8 @@ std::vector<AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::Se
   return result;
 }
 
-std::vector<AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::SelectFiredPatchesByTrigger(const TClonesArray &list, ETriggerThreshold_t trigger) const {
-  std::vector<AliEMCALTriggerPatchInfo *> result;
+std::vector<const AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::SelectFiredPatchesByTrigger(const TClonesArray &list, ETriggerThreshold_t trigger) const {
+  std::vector<const AliEMCALTriggerPatchInfo *> result;
   EPatchType_t patchtype;
   switch(trigger) {
   case kThresholdEG1: patchtype = kEGApatches; break;
@@ -235,24 +235,40 @@ std::vector<std::string> AliAnalysisTaskEmcalRecalcPatchesRef::GetAcceptedTrigge
   return selclusters;
 }
 
-int AliAnalysisTaskEmcalRecalcPatchesRef::GetNumberNonOverlappingPatchAreas(const std::vector<AliEMCALTriggerPatchInfo *> &firedpatches) const {
-  std::vector<AliEMCALTriggerPatchInfo *> patchareas;
+int AliAnalysisTaskEmcalRecalcPatchesRef::GetNumberNonOverlappingPatchAreas(const std::vector<const AliEMCALTriggerPatchInfo *> &firedpatches) const {
+  std::vector<const AliEMCALTriggerPatchInfo *> patchareas;
   for(const auto patch : firedpatches) {
     if(!patchareas.size()) patchareas.push_back(patch); // first patch always considered as new area
     else {
+      bool overlapFound = false;
       for(const auto refpatch : patchareas) {
-        if(!HasOverlap(refpatch, patch)) patchareas.emplace_back(patch); // New non-overlapping patch found
+        if(!refpatch) {
+          AliErrorStream() << "Ref patch null" << std::endl;
+          AliErrorStream() << "Patchareas has size " << patchareas.size() << std::endl;
+          AliErrorStream() << "Firedpatches has size " << firedpatches.size() << std::endl;
+        } 
+        if(!patch){
+          AliErrorStream() << "Test patch null" << std::endl;
+          AliErrorStream() << "Patchareas has size " << patchareas.size() << std::endl;
+          AliErrorStream() << "Firedpatches has size " << firedpatches.size() << std::endl;
+        }
+        if(HasOverlap(*refpatch, *patch)) {
+          // patch has overlap with allready accepted patch - discard
+          overlapFound = true;
+          break;
+        }
       }
+      if(!overlapFound) patchareas.emplace_back(patch); // New non-overlapping patch found
     }
   }
   return patchareas.size();
 }
 
-bool AliAnalysisTaskEmcalRecalcPatchesRef::HasOverlap(const AliEMCALTriggerPatchInfo *ref, const AliEMCALTriggerPatchInfo *test) const {
-  int testcolmin = test->GetColStart(), testcolmax = test->GetColStart()+test->GetPatchSize()-1,
-      testrowmin = test->GetRowStart(), testrowmax = test->GetRowStart()+test->GetPatchSize()-1,
-      refcolmin = ref->GetColStart(), refcolmax = ref->GetColStart()+ref->GetPatchSize()-1,
-      refrowmin = ref->GetRowStart(), refrowmax = ref->GetRowStart()+ref->GetPatchSize()-1;
+bool AliAnalysisTaskEmcalRecalcPatchesRef::HasOverlap(const AliEMCALTriggerPatchInfo &ref, const AliEMCALTriggerPatchInfo &test) const {
+  int testcolmin = test.GetColStart(), testcolmax = test.GetColStart()+test.GetPatchSize()-1,
+      testrowmin = test.GetRowStart(), testrowmax = test.GetRowStart()+test.GetPatchSize()-1,
+      refcolmin = ref.GetColStart(), refcolmax = ref.GetColStart()+ref.GetPatchSize()-1,
+      refrowmin = ref.GetRowStart(), refrowmax = ref.GetRowStart()+ref.GetPatchSize()-1;
   if((InRange(testcolmin, refcolmin, refcolmax) && InRange(testrowmin, refrowmin, refrowmax)) ||
      (InRange(testcolmax, refcolmin, refcolmax) && InRange(testrowmax, refrowmin, refrowmax))) return true;
   return false;

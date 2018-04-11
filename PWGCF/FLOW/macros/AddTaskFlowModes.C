@@ -20,7 +20,8 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
 					   Bool_t FillWeights = kFALSE,
 					   Int_t PIDComb = 2,					   
 					   Bool_t PIDbayesian = kFALSE,
-                       			   Double_t PIDprob = 0.9)
+                       			   Double_t PIDprob = 0.9,
+					   Bool_t PileUp=kFALSE)
 {
   cout<<"=========================================================="<<endl;
   cout<<"====================AddTaskFlowModes======================"<<endl;
@@ -74,7 +75,7 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     // if DCAxy and DCAz set to 0. then the DCA cuts only come from the filterbit
     task1->SetChargedDCAzMax(DCAzMax); //DCAz max is set to 2 in filterbit 32 and 96 
     task1->SetChargedDCAxyMax(DCAxyMax); // in filterbit 32 and 96 is a pt dependant tight cut and in 768 it is not set at all
- 
+    if(PileUp) task1->SetExtraPileUpCut(); 
     task1->SetMaxChi2perTPCcls(MaxChi2perTPC);   
     task1->SetChargedNumTPCclsMin(NumTPCclsMin);
     task1->SetChargedTrackFilterBit(TrackFilterBit);

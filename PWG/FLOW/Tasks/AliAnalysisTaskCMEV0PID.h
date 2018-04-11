@@ -25,7 +25,7 @@
 #include "TString.h"
 #include "TProfile.h"
 #include "TProfile2D.h"
-
+//#include "TStopwatch.h"
 
 class    AliVEvent;      
 class    AliVVertex;    
@@ -63,9 +63,14 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void SetTrackCutNclusterMin(Int_t ncl)      {this->fTPCclustMin = ncl; }
   void SetFlagUseKinkTracks(Bool_t kink)      {this->bUseKinkTracks = kink; }
 
+
   void SetEventPlaneHarmonic(Int_t pn)            {this->gPsiN     = pn;}
   void SetHarmonicsFor3Particle(Int_t n, Int_t m) {this->gN = n; this->gM = m;}
 
+
+
+
+  void SetCentralityEstimator(TString sCent)  {this->sCentrEstimator = sCent;} 
   void SetCollisionSystem(TString s)          {this->sNucleiTP  = s;}
   void SetCentralityPercentileMin(Double_t b) {this->fCentralityPercentMin = b;}
   void SetCentralityPercentileMax(Double_t b) {this->fCentralityPercentMax = b;}
@@ -76,13 +81,17 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void SetFlagSkipPileUpCuts(Bool_t b)        {this->bSkipPileUpCut  = b;}
   void SetFlagFillNUAforPID(Bool_t b)         {this->bFillNUAHistPID = b;}
 
-  void SetFBEfficiencyList(TList *flist)      {this->fListFBHijing   = flist;}
+
+
+
   void SetFBEfficiencyFilePath(TString path)  {this->sPathOfMCFile   = path;}
-  void SetListForNUACorr(TList *fln)          {this->fListNUACorr    = fln;}
-  void SetListForV0MCorr(TList *flv)          {this->fListV0MCorr    = flv;}
+  //void SetFBEfficiencyList(TList *flist)    {this->fListFBHijing   = flist;}
+  //void SetListForNUACorr(TList *fln)        {this->fListNUACorr    = fln;}
+  //void SetListForV0MCorr(TList *flv)        {this->fListV0MCorr    = flv;}
+  void SetFBEfficiencyList(TList *flist)      {this->fListFBHijing   = (TList *) flist->Clone(); }
+  void SetListForNUACorr(TList *flist)        {this->fListNUACorr    = (TList *) flist->Clone(); }
+  void SetListForV0MCorr(TList *flist)        {this->fListV0MCorr    = (TList *) flist->Clone(); }
 
-
-   
 
  protected:
 
@@ -135,6 +144,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TH2F             *fHV0CEventPlaneVsCent;   //!
   TH2F            *fHTPCAEventPlaneVsCent;   //!
   TH2F            *fHTPCCEventPlaneVsCent;   //!
+  TH2F             *fHTPCEventPlaneVsCent;   //!   Full Event plane
   TH2F                    *fV0MultChVsRun;   //!   To fill VOM multiplicity 
   
   TH1F                   *fCentDistBefore;   //!   without PileUp cut
@@ -144,6 +154,15 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TH2D                   *fHAvgerageQnV0C;   //!   V0C Average <Qn>, n=2,3
 
   TH1D                *fHCentWeightForRun;   //!   Event weights for non-flat centrality 
+
+  TH2F                 *fQAEtaPhiAfterNUA;   //!
+  TH2F             *fQAEtaPhiAfterNUAPion;   //!
+  TH2F             *fQAEtaPhiAfterNUAKaon;   //!
+  TH2F           *fQAEtaPhiAfterNUAProton;   //!
+
+
+
+
 
 
   TProfile              *fV0AQ2xVsCentRun; //!
@@ -168,6 +187,13 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   TProfile              *fTPCAQ4yVsCentRun; //!
   TProfile              *fTPCCQ4xVsCentRun; //!
   TProfile              *fTPCCQ4yVsCentRun; //!
+
+  TProfile              *fTPCFQ2xVsCentRun; //!
+  TProfile              *fTPCFQ2yVsCentRun; //!
+//TProfile              *fTPCFQ3xVsCentRun; //!
+//TProfile              *fTPCFQ3yVsCentRun; //!
+
+
 
 
   //TStopwatch                 watch;  //!
@@ -204,6 +230,7 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
   TString             sPathOfMCFile;  //
   TString                 sNucleiTP;  //
+  TString           sCentrEstimator;  //
  
 
 

@@ -18,26 +18,27 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
 ,fInvMassBefSelection(0)
 ,fInvMassPt(0)
 ,fCPAPtBins(0)
+,fInvMassPerRunNumber()
 {
   for (int i=0;i<2;++i) {
-    fv0CutQA[i]=0;
-    fOnFly[i]=0;
-    fpTDist[i]=0;
-    fetaDist[i]=0;
-    fDecayVtxv0X[i]=0;
-    fDecayVtxv0Y[i]=0;
-    fDecayVtxv0Z[i]=0;
-    fTransRadius[i]=0;
-    fDCAPosDaugToPrimVtx[i]=0;
-    fDCANegDaugToPrimVtx[i]=0;
-    fDCADaugToVtx[i]=0;
-    fCPA[i]=0;
-    fInvMass[i]=0;
+    fv0CutQA[i]=nullptr;
+    fOnFly[i]=nullptr;
+    fpTDist[i]=nullptr;
+    fetaDist[i]=nullptr;
+    fDecayVtxv0X[i]=nullptr;
+    fDecayVtxv0Y[i]=nullptr;
+    fDecayVtxv0Z[i]=nullptr;
+    fTransRadius[i]=nullptr;
+    fDCAPosDaugToPrimVtx[i]=nullptr;
+    fDCANegDaugToPrimVtx[i]=nullptr;
+    fDCADaugToVtx[i]=nullptr;
+    fCPA[i]=nullptr;
+    fInvMass[i]=nullptr;
   }
 }
 
-AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins,float MassMin,
-                                         float MassMax,bool CPAPlots)
+AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(
+    int MassNBins,float MassMin,float MassMax,bool CPAPlots,bool perRunnumber, int iRunMin=0, int iRunMax=0)
 :fMinimalBooking(false)
 {
   TString sName[2]={"before","after"};
@@ -209,7 +210,16 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins,float MassMin,
       fCPAPtBins->GetYaxis()->SetTitle("CPA");
       fHistList->Add(fCPAPtBins);
   } else {
-      fCPAPtBins=0;
+      fCPAPtBins=nullptr;
+  }
+  if (perRunnumber) {
+    int nBins=iRunMax-iRunMin;
+    TString InvMassRunNumbName="InvMassPerRunnumber";
+    fInvMassPerRunNumber= new TH2F(InvMassRunNumbName.Data(),InvMassRunNumbName.Data(),
+                                   nBins,iRunMin,iRunMax,MassNBins,MassMin,MassMax);
+    fHistList->Add(fInvMassPerRunNumber);
+  } else {
+    fInvMassPerRunNumber=nullptr;
   }
 }
 
@@ -222,21 +232,22 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(TString MinimalBooking,int MassNBins,fl
 ,fInvMassBefSelection(0)
 ,fInvMassPt(0)
 ,fCPAPtBins(0)
+,fInvMassPerRunNumber()
 {
   for (int i=0;i<2;++i) {
-    fv0CutQA[i]=0;
-    fOnFly[i]=0;
-    fpTDist[i]=0;
-    fetaDist[i]=0;
-    fDecayVtxv0X[i]=0;
-    fDecayVtxv0Y[i]=0;
-    fDecayVtxv0Z[i]=0;
-    fTransRadius[i]=0;
-    fDCAPosDaugToPrimVtx[i]=0;
-    fDCANegDaugToPrimVtx[i]=0;
-    fDCADaugToVtx[i]=0;
-    fCPA[i]=0;
-    fInvMass[i]=0;
+    fv0CutQA[i]=nullptr;
+    fOnFly[i]=nullptr;
+    fpTDist[i]=nullptr;
+    fetaDist[i]=nullptr;
+    fDecayVtxv0X[i]=nullptr;
+    fDecayVtxv0Y[i]=nullptr;
+    fDecayVtxv0Z[i]=nullptr;
+    fTransRadius[i]=nullptr;
+    fDCAPosDaugToPrimVtx[i]=nullptr;
+    fDCANegDaugToPrimVtx[i]=nullptr;
+    fDCADaugToVtx[i]=nullptr;
+    fCPA[i]=nullptr;
+    fInvMass[i]=nullptr;
   }
   fHistList=new TList();
   fHistList->SetOwner();

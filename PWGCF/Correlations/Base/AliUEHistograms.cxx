@@ -73,6 +73,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fCutResonancesV(-1),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
+  fOnlyOneAssocEtaSide(0),
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
   fTwoTrackCutMinRadius(0.8),
@@ -246,6 +247,7 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fCutResonancesV(-1),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
+  fOnlyOneAssocEtaSide(0),
   fWeightPerEvent(kFALSE),
   fPtOrder(kTRUE),
   fTwoTrackCutMinRadius(0.8),
@@ -766,6 +768,10 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
             continue;
         }
         
+        if (fOnlyOneAssocEtaSide != 0)
+          if (fOnlyOneAssocEtaSide * eta[j] < 0)
+            continue;
+
 	if (fEtaOrdering)
 	{
 	  if (triggerEta < 0 && eta[j] < triggerEta)
@@ -1287,6 +1293,7 @@ void AliUEHistograms::Copy(TObject& c) const
   target.fCutConversionsV = fCutConversionsV;
   target.fCutResonancesV = fCutResonancesV;
   target.fOnlyOneEtaSide = fOnlyOneEtaSide;
+  target.fOnlyOneAssocEtaSide = fOnlyOneAssocEtaSide;
   target.fWeightPerEvent = fWeightPerEvent;
   target.fRunNumber = fRunNumber;
   target.fMergeCount = fMergeCount;

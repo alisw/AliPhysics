@@ -93,6 +93,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     void                    SetPIDNumSigmasProtonMax(Double_t numSigmas) { fCutPIDnSigmaProtonMax = numSigmas; }
     void                    SetPIDNumSigmasCombinedNoTOFrejection(Bool_t reject = kTRUE) { fCutPIDnSigmaCombinedNoTOFrejection = reject; }
     void                    SetPIDnsigmaCombination(Int_t Comb =2){fPIDnsigmaCombination = Comb;}
+    void		    SetExtraPileUpCut(){fExtraPileUp = kTRUE;}
     void                    SetPositivelyChargedRef(Bool_t Pos=kFALSE){fPositivelyChargedRef = Pos;}
     void                    SetNegativelyChargedRef(Bool_t Neg=kFALSE){fNegativelyChargedRef = Neg;}
     void                    SetPositivelyChargedPOI(Bool_t Pos=kFALSE){fPositivelyChargedPOI = Pos;}
@@ -115,7 +116,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
      Short_t                 fEventCounter; // event counter (used for local test runmode purpose)
      Short_t                 fNumEventsAnalyse; // [50] number of events to be analysed / after passing selection (only in test mode)
      Int_t                   fRunNumber; // [-1] run number obtained from AliVHeader
-    
+     Bool_t                  fExtraPileUp; // extra pile-up cuts 
      // array lenghts & constants
      const Double_t          fPDGMassPion; // [DPGMass] DPG mass of charged pion
      const Double_t          fPDGMassKaon; // [DPGMass] DPG mass of charged kaon
@@ -268,7 +269,6 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TH1D*           fhEventCentrality; //! distribution of event centrality
     TH2D*           fh2EventCentralityNumSelCharged; //! distribution of event centrality vs number of selected charged tracks
     TH1D*           fhEventCounter; //! counter following event selection
-    TH2D* 	    fhEventsMultTOFFilterbit32; //! filterbit 32 vs TOF mult.
     // Charged
     TH2D*           fh2RefsMult; //!multiplicity distribution of selected RFPs
     TH2D*           fh2RefsPt; //! pt distribution of selected RFPs
@@ -381,6 +381,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TH1D*           fhQAEventsSPDresol[fiNumIndexQA]; //!
     TH2D*           fhQAEventsCentralityOutliers[fiNumIndexQA]; //!
     TH2D*           fhQAEventsPileUp[fiNumIndexQA]; //!
+    TH2D*           fhEventsMultTOFFilterbit32[fiNumIndexQA]; //!
     // QA: charged tracks
     TH1D*           fhQAChargedMult[fiNumIndexQA];       //! number of AOD charged tracks distribution
     TH1D*           fhQAChargedPt[fiNumIndexQA];         //! pT dist of charged tracks
@@ -422,7 +423,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     Double_t                GetWDist(const AliAODVertex* v0, const AliAODVertex* v1); // gets the distance between the two vertices
     Bool_t                  ProcessEvent(); // main (envelope) method for processing events passing selection
     
-    void                    Filtering(); // main (envelope) method for filtering all POIs in event
+    Bool_t                  Filtering(); // main (envelope) method for filtering all POIs in event
     void                    FilterCharged(); // charged tracks filtering
     Bool_t                  IsChargedSelected(const AliAODTrack* track = 0x0); // charged track selection
     void                    FillQARefs(const Short_t iQAindex, const AliAODTrack* track = 0x0); // filling QA plots for RFPs selection

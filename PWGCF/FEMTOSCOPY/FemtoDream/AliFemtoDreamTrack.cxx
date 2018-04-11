@@ -31,6 +31,7 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
 ,fRatioCR(0)
 ,fnoSharedClst(0)
 ,fTPCClsS(0)
+,fChi2(0.f)
 ,fSharedClsITSLayer(0)
 ,fHasSharedClsITSLayer(false)
 ,fdEdxTPC(0)
@@ -59,16 +60,16 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
   if (trackID<0) {
     if(!fGTI){
       AliFatal("AliFemtoSPTrack::SetTrack No fGTI Set");
-      fGlobalTrack=NULL;
-    }else if(-trackID-1 >= fTrackBufferSize){
+      fGlobalTrack=nullptr;
+    }else if(-trackID-1 >= (int)fGTI->size()){
 //      AliFatal("Buffer Size too small");
       this->fIsSet=false;
       fIsReset=false;
-      fGlobalTrack=NULL;
+      fGlobalTrack=nullptr;
     }else if(!CheckGlobalTrack(trackID)){
-      fGlobalTrack=NULL;
+      fGlobalTrack=nullptr;
     }else{
-      fGlobalTrack=fGTI[-trackID-1];
+      fGlobalTrack=fGTI->at(-trackID-1);
     }
   }else{
     fGlobalTrack=track;
@@ -97,6 +98,7 @@ void AliFemtoDreamTrack::SetTrackingInformation() {
   this->SetPt(fTrack->Pt());
   this->fdcaXY=fTrack->DCA();
   this->fdcaZ=fTrack->ZAtDCA();
+  this->fChi2=fTrack->Chi2perNDF();
   double dcaVals[2] = {-99., -99.};
   double covar[3]={0.,0.,0.};
   AliAODTrack copy(*fGlobalTrack);
@@ -178,6 +180,7 @@ void AliFemtoDreamTrack::SetPhiAtRadii() {
   float pt=GetPt();
   float chg=GetCharge().at(0);
   float bfield=fTrack->GetAODEvent()->GetMagneticField();
+  this->SetEvtNumber(fTrack->GetAODEvent()->GetRunNumber());
   std::vector<float> phiatRadius;
   for(int radius=0;radius<9;radius++)
   {
@@ -290,8 +293,8 @@ bool AliFemtoDreamTrack::CheckGlobalTrack(const Int_t TrackID) {
   //Checks if to the corresponding track a global track exists
   //This is especially useful if one has TPC only tracks and needs the PID information
   bool isGlobal = true;
-  if (TMath::Abs(TrackID)<fTrackBufferSize) {
-    if (!(fGTI[-TrackID-1])) {
+  if (TMath::Abs(TrackID)<(int)fGTI->size()) {
+    if (!(fGTI->at(-TrackID-1))) {
       isGlobal = false;
     }
   }
@@ -342,6 +345,7 @@ void AliFemtoDreamTrack::Reset() {
     //we don't want to reset the fPDGCode
     fMCPDGCode=0;
     fPDGMotherWeak=0;
+    fEvtNumber=0;
     //we don't want to reset isMC
     fUse=false;
     fIsSet=true;

@@ -16,29 +16,30 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist()
 ,fConfig(0)
 ,fInvMassPtXi(0)
 ,fInvMassPtv0(0)
+,fInvMassPerRunNumber()
 {
   for (int i=0;i<2;++i) {
-    fCascadeQA[i]=0;
-    fInvMass[i]=0;
-    fInvMassv0[i]=0;
-    fXiPt[i]=0;
-    fP_Y_Xi[i]=0;
-    fDCAXiDaug[i]=0;
-    fMinDistVtxBach[i]=0;
-    fCPAXi[i]=0;
-    fTransRadiusXi[i]=0;
-    fv0MaxDCADaug[i]=0;
-    fCPAv0[i]=0;
-    fv0Pt[i]=0;
-    fTransRadiusv0[i]=0;
-    fMinDistVtxv0[i]=0;
-    fMinDistVtxv0DaugPos[i]=0;
-    fMinDistVtxv0DaugNeg[i]=0;
-    fPodolandski[i]=0;
+    fCascadeQA[i]=nullptr;
+    fInvMass[i]=nullptr;
+    fInvMassv0[i]=nullptr;
+    fXiPt[i]=nullptr;
+    fP_Y_Xi[i]=nullptr;
+    fDCAXiDaug[i]=nullptr;
+    fMinDistVtxBach[i]=nullptr;
+    fCPAXi[i]=nullptr;
+    fTransRadiusXi[i]=nullptr;
+    fv0MaxDCADaug[i]=nullptr;
+    fCPAv0[i]=nullptr;
+    fv0Pt[i]=nullptr;
+    fTransRadiusv0[i]=nullptr;
+    fMinDistVtxv0[i]=nullptr;
+    fMinDistVtxv0DaugPos[i]=nullptr;
+    fMinDistVtxv0DaugNeg[i]=nullptr;
+    fPodolandski[i]=nullptr;
   }
 }
 
-AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass)
+AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,bool perRunnumber, int iRunMin=0, int iRunMax=0)
 :fMinimalBooking(false)
 {
   fHistList=new TList();
@@ -191,13 +192,13 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass)
 
     TString MinDistVtxv0DaugPosName=Form("MinDistVtxv0DaugPos_%s",sName[i].Data());
     fMinDistVtxv0DaugPos[i]=new TH1F(MinDistVtxv0DaugPosName.Data(),
-                                  MinDistVtxv0DaugPosName.Data(),50,0,10);
+                                     MinDistVtxv0DaugPosName.Data(),50,0,10);
     fMinDistVtxv0DaugPos[i]->Sumw2();
     fCascadeQA[i]->Add(fMinDistVtxv0DaugPos[i]);
 
     TString MinDistVtxv0DaugNameNeg=Form("MinDistVtxv0DaugNeg_%s",sName[i].Data());
     fMinDistVtxv0DaugNeg[i]=new TH1F(MinDistVtxv0DaugNameNeg.Data(),
-                                  MinDistVtxv0DaugNameNeg.Data(),50,0,10);
+                                     MinDistVtxv0DaugNameNeg.Data(),50,0,10);
     fMinDistVtxv0DaugNeg[i]->Sumw2();
     fCascadeQA[i]->Add(fMinDistVtxv0DaugNeg[i]);
 
@@ -206,6 +207,15 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass)
     fPodolandski[i]->Sumw2();
     fCascadeQA[i]->Add(fPodolandski[i]);
   }
+  if (perRunnumber) {
+    int nBins=iRunMax-iRunMin;
+    TString InvMassRunNumbName="InvMassPerRunnumber";
+    fInvMassPerRunNumber= new TH2F(InvMassRunNumbName.Data(),InvMassRunNumbName.Data(),
+                                   nBins,iRunMin,iRunMax,500,mass*0.9,mass*1.3);
+    fHistList->Add(fInvMassPerRunNumber);
+  } else {
+    fInvMassPerRunNumber=nullptr;
+  }
 }
 
 AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(TString minimalBooking,float mass)
@@ -213,25 +223,26 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(TString minimalBooking,float 
 ,fCutCounter(0)
 ,fConfig(0)
 ,fInvMassPtv0(0)
+,fInvMassPerRunNumber()
 {
   for (int i=0;i<2;++i) {
-    fCascadeQA[i]=0;
-    fInvMass[i]=0;
-    fInvMassv0[i]=0;
-    fXiPt[i]=0;
-    fP_Y_Xi[i]=0;
-    fDCAXiDaug[i]=0;
-    fMinDistVtxBach[i]=0;
-    fCPAXi[i]=0;
-    fTransRadiusXi[i]=0;
-    fv0MaxDCADaug[i]=0;
-    fCPAv0[i]=0;
-    fv0Pt[i]=0;
-    fTransRadiusv0[i]=0;
-    fMinDistVtxv0[i]=0;
-    fMinDistVtxv0DaugPos[i]=0;
-    fMinDistVtxv0DaugNeg[i]=0;
-    fPodolandski[i]=0;
+    fCascadeQA[i]=nullptr;
+    fInvMass[i]=nullptr;
+    fInvMassv0[i]=nullptr;
+    fXiPt[i]=nullptr;
+    fP_Y_Xi[i]=nullptr;
+    fDCAXiDaug[i]=nullptr;
+    fMinDistVtxBach[i]=nullptr;
+    fCPAXi[i]=nullptr;
+    fTransRadiusXi[i]=nullptr;
+    fv0MaxDCADaug[i]=nullptr;
+    fCPAv0[i]=nullptr;
+    fv0Pt[i]=nullptr;
+    fTransRadiusv0[i]=nullptr;
+    fMinDistVtxv0[i]=nullptr;
+    fMinDistVtxv0DaugPos[i]=nullptr;
+    fMinDistVtxv0DaugNeg[i]=nullptr;
+    fPodolandski[i]=nullptr;
   }
   fHistList=new TList();
   fHistList->SetOwner();

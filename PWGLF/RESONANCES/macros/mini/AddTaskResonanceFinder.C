@@ -407,10 +407,12 @@ Bool_t Config_piphi(
       name[0].Form("piphi_phimass");
       comp[0].Form("PAIR");
     }else if(i==1){
+      if(!isMC) continue;
       name[0].Form("piphi_phimass_gen");
       comp[0].Form("MOTHER");
     }else if(i==2){
-      name[0].Form("piphi_phimass_gen");
+      if(!isMC) continue;
+      name[0].Form("piphi_phimass_rec");
       comp[0].Form("TRUE");
     }
 
@@ -618,10 +620,12 @@ Bool_t Config_kxphi(
       name[0].Form("kxphi_phimass");
       comp[0].Form("PAIR");
     }else if(i==1){
+      if(!isMC) continue;
       name[0].Form("kxphi_phimass_gen");
       comp[0].Form("MOTHER");
     }else if(i==2){
-      name[0].Form("kxphi_phimass_gen");
+      if(!isMC) continue;
+      name[0].Form("kxphi_phimass_rec");
       comp[0].Form("TRUE");
     }
 
@@ -852,7 +856,7 @@ Bool_t Config_k0phi(
     else out->SetPairCuts(cutsPairMix);
 
     // axis X: invmass or resolution
-    if(useIM[i]) out->AddAxis(imID,170,1.15,2.);
+    if(useIM[i]) out->AddAxis(imID,200,1.5,2.5);
     else out->AddAxis(resID,200,-0.02,0.02);
     
     // axis Y: transverse momentum
@@ -869,10 +873,12 @@ Bool_t Config_k0phi(
       name[0].Form("k0phi_phimass");
       comp[0].Form("PAIR");
     }else if(i==1){
+      if(!isMC) continue;
       name[0].Form("k0phi_phimass_gen");
       comp[0].Form("MOTHER");
     }else if(i==2){
-      name[0].Form("k0phi_phimass_gen");
+      if(!isMC) continue;
+      name[0].Form("k0phi_phimass_rec");
       comp[0].Form("TRUE");
     }
 
@@ -923,12 +929,13 @@ Bool_t Config_pphi(
   if(!(TrackCutsP%10000)) TrackCutsP+=3020;//default settings
   Float_t nsigmaPTPC=0.1*(TrackCutsP%100);
   Float_t nsigmaPTOF=0.1*((TrackCutsP/100)%100);
-  Int_t CutTypeP=(TrackCutsP/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeP=(TrackCutsP/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   if(!(TrackCutsPhi%10000)) TrackCutsPhi+=3020;//default settings
   Float_t nsigmaKTPC=0.1*(TrackCutsPhi%100);
   Float_t nsigmaKTOF=0.1*((TrackCutsPhi/100)%100);
-  Int_t CutTypeK=(TrackCutsPhi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeK=(TrackCutsPhi/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t SideBand=(TrackCutsPhi/100000)%10;
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -975,7 +982,8 @@ Bool_t Config_pphi(
     
   // AliRsnMiniResonanceFinder
   AliRsnCutMiniPair* cutMassPhi=new AliRsnCutMiniPair("cutMassPhi",AliRsnCutMiniPair::kMassRange);
-  cutMassPhi->SetRangeD(1.01,1.03);
+  if(!SideBand) cutMassPhi->SetRangeD(1.01,1.03);
+  else cutMassPhi->SetRangeD(1.04,1.06);
   AliRsnCutMiniPair* cutYPhi=new AliRsnCutMiniPair("cutRapidityPhi",AliRsnCutMiniPair::kRapidityRange);
   cutYPhi->SetRangeD(-0.6,0.6);
   AliRsnCutSet* cutsPhi=new AliRsnCutSet("pairCutsPhi",AliRsnTarget::kMother);
@@ -1055,7 +1063,7 @@ Bool_t Config_pphi(
     out->SetDaughter(1,AliRsnDaughter::kPhi);
     out->SetCutID(1,iCutPhi);
     out->SetCharge(1,'0');
-    out->SetUseStoredMass(1);
+    if(!SideBand) out->SetUseStoredMass(1);
     out->SetMotherPDG(ipdg[i]);
     out->SetMotherMass(mass);
 
@@ -1080,10 +1088,12 @@ Bool_t Config_pphi(
       name[0].Form("pphi_phimass");
       comp[0].Form("PAIR");
     }else if(i==1){
+      if(!isMC) continue;
       name[0].Form("pphi_phimass_gen");
       comp[0].Form("MOTHER");
     }else if(i==2){
-      name[0].Form("pphi_phimass_gen");
+      if(!isMC) continue;
+      name[0].Form("pphi_phimass_rec");
       comp[0].Form("TRUE");
     }
 
@@ -1098,7 +1108,7 @@ Bool_t Config_pphi(
     out->SetMotherMass(rsnfinder->GetResonanceMass());
     out->SetPairCuts(cutsPhi);
         
-    out->AddAxis(imID,50,1.,1.05);
+    out->AddAxis(imID,70,1.,1.07);
     out->AddAxis(ptID,200,0.0,20.0);
     out->AddAxis(centID,nmult,multbins);
   }
@@ -1273,10 +1283,12 @@ Bool_t Config_phiphi(
       name[0].Form("phiphi_phimass");
       comp[0].Form("PAIR");
     }else if(i==1){
+      if(!isMC) continue;
       name[0].Form("phiphi_phimass_gen");
       comp[0].Form("MOTHER");
     }else if(i==2){
-      name[0].Form("phiphi_phimass_gen");
+      if(!isMC) continue;
+      name[0].Form("phiphi_phimass_rec");
       comp[0].Form("TRUE");
     }
 
@@ -1291,7 +1303,7 @@ Bool_t Config_phiphi(
     out->SetMotherMass(rsnfinder->GetResonanceMass());
     out->SetPairCuts(cutsPhi);
       
-    out->AddAxis(imID,50,1.01,1.05);
+    out->AddAxis(imID,50,1.,1.05);
     out->AddAxis(ptID,200,0.0,20.0);
     out->AddAxis(centID,nmult,multbins);
   }
@@ -1549,7 +1561,7 @@ Bool_t Config_Lambdaphi(
     else out->SetPairCuts(cutsPairMix);
 
     // axis X: invmass or resolution
-    if(useIM[i]) out->AddAxis(imID,170,1.15,2.);
+    if(useIM[i]) out->AddAxis(imID,280,2.1,3.5);
     else out->AddAxis(resID,200,-0.02,0.02);
     
     // axis Y: transverse momentum
@@ -1566,10 +1578,12 @@ Bool_t Config_Lambdaphi(
       name[0].Form("Lambdaphi_phimass");
       comp[0].Form("PAIR");
     }else if(i==1){
+      if(!isMC) continue;
       name[0].Form("Lambdaphi_phimass_gen");
       comp[0].Form("MOTHER");
     }else if(i==2){
-      name[0].Form("Lambdaphi_phimass_gen");
+      if(!isMC) continue;
+      name[0].Form("Lambdaphi_phimass_rec");
       comp[0].Form("TRUE");
     }
 

@@ -86,9 +86,9 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
     case kEMPTY: return "";
     case kBOOL: return fValueBool ? "true" : "false";
     case kINT: return TString::Format("%lld", fValueInt);
-    case kFLOAT: return TString::Format("%f", fValueFloat);
+    case kFLOAT: return TString::Format("%g", fValueFloat);
     case kSTRING: return TString::Format("'%s'", fValueString.c_str());
-    case kRANGE: return TString::Format("%f:%f", fValueRange.first, fValueRange.second);
+    case kRANGE: return TString::Format("%g:%g", fValueRange.first, fValueRange.second);
     case kARRAY: {
       TString result = "[";
       auto it = fValueArray.cbegin(),
@@ -107,47 +107,62 @@ AliFemtoConfigObject::Stringify(bool pretty, int deep) const
       auto it = fValueRangeList.cbegin(),
           end = fValueRangeList.cend();
       if (it != end) {
-        result += TString::Format("%f:%f", it->first, it->second);
+        result += TString::Format("%g:%g", it->first, it->second);
       }
       for (++it; it != end; ++it) {
         if (it->first == std::prev(it)->second) {
-          result += TString::Format(":%f", it->second);
+          result += TString::Format(":%g", it->second);
         } else {
-          result += TString::Format(", %f:%f", it->first, it->second);
+          result += TString::Format(", %g:%g", it->first, it->second);
         }
       }
       result += ')';
       return result;
     }
     case kMAP: {
-     TString result = '{';
-     if (pretty) {
-       result += TString('\n');
-     }
-     auto it = fValueMap.cbegin(),
-         end = fValueMap.cend();
-      if (it != end) {
-        if (pretty) {
-          result += TString(' ',(deep+1)*INDENTSTEP);
-          result += it->first + ": " + it->second.Stringify(pretty,deep+1);
-          result += TString('\n');
-        }
-        else {
-          result += it->first + ": " + it->second.Stringify(pretty);
-        }
+      // an experimental drawing-scheme
+      const static bool STRINGIFY_COMPACT = false;
+
+      auto it = fValueMap.cbegin();
+
+      if (fValueMap.size() == 0) {
+        return "{}";
+      } else if (fValueMap.size() == 1 and !it->second.is_map()) {
+        return "{" + it->first + ": " + it->second.Stringify(pretty, deep+1) + "}";
       }
-      for (++it; it != end; ++it) {
-        if (pretty) {
-          result += TString(' ',(deep+1)*INDENTSTEP);
-          result += TString::Format("%s: %s", it->first.c_str(), it->second.Stringify(pretty, deep+1).Data());
-          result += TString('\n');
-        }
-        else {
-          result += TString::Format(", %s: %s", it->first.c_str(), it->second.Stringify(pretty).Data());
-        }
-      }
+
+      TString result = '{';
+      if (!STRINGIFY_COMPACT)
       if (pretty) {
-        result += TString(' ',deep*INDENTSTEP);
+        result += '\n';
+      }
+
+      bool prefix_needs_update = true;
+      TString prefix;
+
+      if (pretty and STRINGIFY_COMPACT) {
+        prefix = " ";
+      } else
+      if (pretty) {
+        prefix = "\n" + TString(' ', (deep+1)*INDENTSTEP);
+      }
+
+      for (const auto &pair : fValueMap) {
+        auto &key_str = pair.first;
+        auto value_str = pair.second.Stringify(pretty, deep+1);
+        result += prefix + key_str + ": " + value_str;
+
+        if (prefix_needs_update) {
+          prefix = (pretty)
+                 ? ((STRINGIFY_COMPACT) ? "\n" + TString(' ', deep*INDENTSTEP) + ", "
+                                        : "," + prefix)
+                 : ", ";
+          prefix_needs_update = false;
+        }
+      }
+
+      if (pretty) {
+        result += "\n" + TString(' ',deep*INDENTSTEP);
       }
       result += '}';
       return result;
@@ -627,6 +642,28 @@ AliFemtoConfigObject::SetDefault(const AliFemtoConfigObject &d)
     }
   }
 }
+
+void
+AliFemtoConfigObject::Update(const AliFemtoConfigObject &other, bool copy)
+{
+  if (!is_map() || !other.is_map()) {
+    return;
+  }
+
+  for (auto &kv_pair : other.fValueMap) {
+    auto found = fValueMap.find(kv_pair.first);
+    if (found == fValueMap.end()) {
+      if (copy) {
+        fValueMap.emplace(kv_pair.first, kv_pair.second);
+      }
+    } else if (found->second.is_map() && kv_pair.second.is_map()) {
+      found->second.Update(kv_pair.second, copy);
+    } else {
+      found->second = kv_pair.second;
+    }
+  }
+}
+
 
 #define INT_PATTERN "\\-?\\d+"
 #define FLT_PATTERN "\\-?(?:inf|nan|(?:\\d+\\.\\d*|\\.\\d+)(?:e[+\\-]?\\d+)?|\\d+e[+\\-]?\\d+)"

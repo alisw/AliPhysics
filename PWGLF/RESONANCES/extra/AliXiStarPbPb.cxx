@@ -771,8 +771,12 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     
     
     
-    TH1F *hXiInvMass = new TH1F("hXiInvMass","Xi invariant mass distribution : cent 0 - 10",200,1.2,1.4);
+    TH1F *hXiInvMass = new TH1F("hXiInvMass","Xi invariant mass distribution",200,1.2,1.4);
     fOutputList->Add(hXiInvMass);
+    
+    TH1F *hXiEtaDist = new TH1F("hXiEtaDist","Xi Eta distribution",200,-2,2);
+    fOutputList->Add(hXiEtaDist);
+
     
     TH1F *hQAXiInvMass = new TH1F("hQAXiInvMass","Xi invariant mass distribution after mass window selection : cent 0 - 10",200,1.2,1.4);
     fOutputList->Add(hQAXiInvMass);
@@ -1539,6 +1543,8 @@ void AliXiStarPbPb::Exec(Option_t *)
         if(StandardXi)((TH1F*)fOutputList->FindObject("fCutEvents"))->Fill(10,1);
         
         //
+
+        
         if(fDecayParameters[11] < fCutValues[0][11]) StandardXi=kFALSE;// Cos PA Lambda
         if(StandardXi)((TH1F*)fOutputList->FindObject("fCutEvents"))->Fill(11,1);
         
@@ -1550,13 +1556,16 @@ void AliXiStarPbPb::Exec(Option_t *)
             if(xiCharge == -1) {
                 CutVar[0].fXi->Fill(xiPt, centralityV0M, xiMass);
                 ((TH1F*)fOutputList->FindObject("hXiInvMass"))->Fill(xiMass);
+                ((TH1F*)fOutputList->FindObject("hXiEtaDist"))->Fill(xiY);
+                
             }
             else {
                 CutVar[0].fXibar->Fill(xiPt, centralityV0M, xiMass);
                 ((TH1F*)fOutputList->FindObject("hXiInvMass"))->Fill(xiMass);
+                ((TH1F*)fOutputList->FindObject("hXiEtaDist"))->Fill(xiY);
+
             }
         }
-        
         
         
         if(StandardXi){
@@ -1564,7 +1573,6 @@ void AliXiStarPbPb::Exec(Option_t *)
             if(fDecayParameters[11] < fCutValues[20][12]) ((TH3F*)fOutputList->FindObject("fXi_CPAXi"))->Fill(xiPt, centralityV0M, xiMass);//QA CPA Xi
             
         }
-        
     
         
         // MC associaton

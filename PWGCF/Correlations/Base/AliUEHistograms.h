@@ -92,6 +92,7 @@ class AliUEHistograms : public TNamed
   void SetPairCuts(Float_t conversions, Float_t resonances) { fCutConversionsV = conversions; fCutResonancesV = resonances; }
   void SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void SetOnlyOneEtaSide(Int_t flag)    { fOnlyOneEtaSide = flag; }
+  void SetOnlyOneAssocEtaSide(Int_t flag)    { fOnlyOneAssocEtaSide = flag; }
   void SetPtOrder(Bool_t flag) { fPtOrder = flag; }
   void SetTwoTrackCutMinRadius(Float_t min) { fTwoTrackCutMinRadius = min; }
 
@@ -154,6 +155,7 @@ protected:
   Float_t fCutResonancesV;         // cut on resonances (inv mass)
   Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
   Int_t fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
+  Int_t fOnlyOneAssocEtaSide;       // decides that only associated particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
   Bool_t fWeightPerEvent;	// weight with the number of trigger particles per event
   Bool_t fPtOrder;		// apply pT,a < pT,t condition
   Float_t fTwoTrackCutMinRadius; // min radius for TTR cut

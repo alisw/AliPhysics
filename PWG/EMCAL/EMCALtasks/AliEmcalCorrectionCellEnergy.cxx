@@ -135,43 +135,44 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   
   Int_t runRC = fEventManager.InputEvent()->GetRunNumber();
   
-  AliOADBContainer *contRF=new AliOADBContainer("");
+  std::unique_ptr<AliOADBContainer> contRF;
+  std::unique_ptr<TFile> recalibFile;
   if (fBasePath!="")
   { //if fBasePath specified
     AliInfo(Form("Loading Recalib OADB from given path %s",fBasePath.Data()));
     
-    TFile *fRecalib= new TFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"read");
-    if (!fRecalib || fRecalib->IsZombie())
+    recalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALRecalib.root",fBasePath.Data()),"read"));
+    if (!recalibFile || recalibFile->IsZombie())
     {
       AliFatal(Form("EMCALRecalib.root not found in %s",fBasePath.Data()));
       return 0;
     }
     
-    if (fRecalib) delete fRecalib;
-    
-    contRF->InitFromFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"AliEMCALRecalib");
+    contRF = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(recalibFile->Get("AliEMCALRecalib")));
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Recalib OADB from OADB/EMCAL");
     
-    TFile *fRecalib= new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"read");
-    if (!fRecalib || fRecalib->IsZombie())
+    recalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"read"));
+    if (!recalibFile || recalibFile->IsZombie())
     {
       AliFatal("OADB/EMCAL/EMCALRecalib.root was not found");
       return 0;
     }
     
-    if (fRecalib) delete fRecalib;
-    
-    contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"AliEMCALRecalib");
+    contRF = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(recalibFile->Get("AliEMCALRecalib")));
   }
+  if(!contRF) {
+    AliError("No OADB container found");
+    return 0;
+  }
+  contRF->SetOwner(true);
   
   TObjArray *recal=(TObjArray*)contRF->GetObject(runRC);
   if (!recal)
   {
     AliError(Form("No Objects for run: %d",runRC));
-    delete contRF;
     return 2;
   }
   
@@ -179,7 +180,6 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   if (!recalpass)
   {
     AliError(Form("No Objects for run: %d - %s",runRC,fFilepass.Data()));
-    delete contRF;
     return 2;
   }
   
@@ -187,7 +187,6 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
   if (!recalib)
   {
     AliError(Form("No Recalib histos found for  %d - %s",runRC,fFilepass.Data()));
-    delete contRF;
     return 2;
   }
   
@@ -209,8 +208,6 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
     fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
   }
   
-  delete contRF;
-  
   return 1;
 }
 
@@ -222,21 +219,6 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
   if (!fEventManager.InputEvent())
     return 0;
 
-  // MF Disable temperature calibration for run2 for the moment
-  // A memory leak in the AliOADBContainer was observed when the 
-  // container is deleted. As consequence when processing multiple
-  // runs the correction task leaks ~100 MB per run included in the 
-  // job, where 70% of the memory leak comes from the temperature
-  // calibration. Untill a fix is provided the temperature calibration
-  // has to be disabled for run2 runs. Disabling has to be done before
-  // opening the OADB container
-  // 
-  // For more information see https://alice.its.cern.ch/jira/browse/EMCAL-135
-  if(fEventManager.InputEvent()->GetRunNumber() > 197692){
-    AliError("Temperature recalibration disabled for run2");
-    return 0;
-  }
-  
   AliInfo("Initialising recalibration factors");
   
   // init default maps first
@@ -245,37 +227,39 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
   
   Int_t runRC = fEventManager.InputEvent()->GetRunNumber();
   
-  AliOADBContainer *contRF=new AliOADBContainer("");
+  std::unique_ptr<AliOADBContainer> contRF;
+  std::unique_ptr<TFile> runDepRecalibFile;
   if (fBasePath!="")
   { //if fBasePath specified in the ->SetBasePath()
     AliInfo(Form("Loading Recalib OADB from given path %s",fBasePath.Data()));
     
-    TFile *fRunDepRecalib= new TFile(Form("%s/EMCALTemperatureCorrCalib.root",fBasePath.Data()),"read");
-    if (!fRunDepRecalib || fRunDepRecalib->IsZombie())
+    runDepRecalibFile = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALTemperatureCorrCalib.root",fBasePath.Data()),"read"));
+    if (!runDepRecalibFile || runDepRecalibFile->IsZombie())
     {
       AliFatal(Form("EMCALTemperatureCorrCalib.root not found in %s",fBasePath.Data()));
       return 0;
     }
     
-    if (fRunDepRecalib) delete fRunDepRecalib;
-    
-    contRF->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fBasePath.Data()),"AliEMCALRunDepTempCalibCorrections");
+    contRF = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(runDepRecalibFile->Get("AliEMCALRunDepTempCalibCorrections")));
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Recalib OADB from OADB/EMCAL");
     
-    TFile *fRunDepRecalib= new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCorrCalib.root").data(),"read");
-    if (!fRunDepRecalib || fRunDepRecalib->IsZombie())
+    runDepRecalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCorrCalib.root").data(),"read"));
+    if (!runDepRecalibFile || runDepRecalibFile->IsZombie())
     {
       AliFatal("OADB/EMCAL/EMCALTemperatureCorrCalib.root was not found");
       return 0;
     }
     
-    if (fRunDepRecalib) delete fRunDepRecalib;
-    
-    contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCorrCalib.root").data(),"AliEMCALRunDepTempCalibCorrections");
+    contRF = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(runDepRecalibFile->Get("AliEMCALRunDepTempCalibCorrections")));
   }
+  if(!contRF) {
+    AliError("No OADB container found");
+    return 0;
+  }
+  contRF->SetOwner(true);
   
   TH1S *rundeprecal=(TH1S*)contRF->GetObject(runRC);
   
@@ -310,8 +294,6 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
   {
     AliError(Form("Total SM is %d but T corrections available for %d channels, skip Init of T recalibration factors",nSM,nbins));
     
-    delete contRF;
-    
     return 2;
   }
   
@@ -332,8 +314,6 @@ Int_t AliEmcalCorrectionCellEnergy::InitRunDepRecalib()
       } // columns
     } // rows
   } // SM loop
-  
-  delete contRF;
   
   return 1;
 }

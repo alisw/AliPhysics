@@ -24,9 +24,9 @@
 #include <AliAnalysisManager.h>
 #include <AliLog.h>
 
+#include <AliJCard.h>
 #include "AliJCIaaEPTask.h"
-#include "../AliJFlowBaseTask.h"
-#include "../AliJCard.h"
+//#include "AliJFlowBaseTask.h"
 
 //______________________________________________________________________________
 AliJCIaaEPTask::AliJCIaaEPTask() :   

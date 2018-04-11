@@ -21,7 +21,8 @@
 #include <TComplex.h>
 #include <AliLog.h>
 #include <AliAnalysisTaskSE.h>
-#include "AliJCatalystTask.h"
+#include <AliJCatalystTask.h>
+#include <AliAnalysisTaskFlowVectorCorrections.h>
 #include "AliJFlowHistos.h"
 
 
@@ -29,7 +30,6 @@ using namespace std;
 //==============================================================
 class TClonesArray;
 class AliJFlowHistos;
-//class AliJCatalystTask;
 
 class AliJFlowBaseTask : public AliAnalysisTaskSE {
 
@@ -49,6 +49,8 @@ class AliJFlowBaseTask : public AliAnalysisTaskSE {
   void CalculateEventPlane(TClonesArray *inList);
   TComplex GetQvectorsEP(int id, int ih) { return QvectorsEP[id][ih];}
   AliJCatalystTask *GetJCatalystTask() {return fJCatalystTask;}
+  Bool_t  IsMC()const{ return fIsMC; }
+  void    SetIsMC(Bool_t b){ fIsMC=b; }
 
   // Methods specific for this class
   void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
@@ -67,7 +69,10 @@ class AliJFlowBaseTask : public AliAnalysisTaskSE {
 
   AliJCatalystTask *fJCatalystTask;  //
   TString           fJCatalystTaskName; // Name for JCatalyst task
+  AliAnalysisTaskFlowVectorCorrections *fFlowVectorTask; //
   TComplex QvectorsEP[D_COUNT][2]; // 0->2th 1->3rd
+  double  fEventPlaneALICE[D_COUNT][2]; // 0->2th 1->3rd
+  Bool_t      fIsMC;       // MC data or real data
   AliJFlowHistos *fhistos;
   int fCBin;
   TDirectory     *fOutput; // Output directory

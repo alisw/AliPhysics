@@ -9,7 +9,6 @@ class TLorentzVector;
 class AliEMCALTrack;
 class AliESDEvent;
 class AliEMCALGeometry;
-class AliEMCALRecoUtils;
 
 class AliHFEcontainer;
 class AliHFEcuts;

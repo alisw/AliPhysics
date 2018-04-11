@@ -454,6 +454,39 @@ private:
     AliExternalTrackParam *fTreeVariableNegTrack;
     
     Float_t fTreeVariableMagneticField;
+    
+    Float_t fTreeVariableNegCreationX;
+    Float_t fTreeVariableNegCreationY;
+    Float_t fTreeVariableNegCreationZ;
+    Float_t fTreeVariablePosCreationX;
+    Float_t fTreeVariablePosCreationY;
+    Float_t fTreeVariablePosCreationZ;
+    
+    Float_t fTreeVariableNegPxMC; //!
+    Float_t fTreeVariableNegPyMC; //!
+    Float_t fTreeVariableNegPzMC; //!
+    Float_t fTreeVariablePosPxMC; //!
+    Float_t fTreeVariablePosPyMC; //!
+    Float_t fTreeVariablePosPzMC; //!
+    
+    Int_t   fTreeVariablePIDNegativeMother;         //!
+    Int_t   fTreeVariablePIDPositiveMother;         //!
+    Int_t   fTreeVariablePIDNegativeGrandMother;         //!
+    Int_t   fTreeVariablePIDPositiveGrandMother;         //!
+    
+    Int_t fTreeVariableNegLabel; //!
+    Int_t fTreeVariablePosLabel; //!
+    Int_t fTreeVariableNegLabelMother; //!
+    Int_t fTreeVariablePosLabelMother; //!
+    Int_t fTreeVariableNegLabelGrandMother; //!
+    Int_t fTreeVariablePosLabelGrandMother; //!
+    
+    Bool_t fTreeVariableIsPhysicalPrimaryNegative;
+    Bool_t fTreeVariableIsPhysicalPrimaryPositive;
+    Bool_t fTreeVariableIsPhysicalPrimaryNegativeMother;
+    Bool_t fTreeVariableIsPhysicalPrimaryPositiveMother;
+    Bool_t fTreeVariableIsPhysicalPrimaryNegativeGrandMother;
+    Bool_t fTreeVariableIsPhysicalPrimaryPositiveGrandMother;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
     //===========================================================================================

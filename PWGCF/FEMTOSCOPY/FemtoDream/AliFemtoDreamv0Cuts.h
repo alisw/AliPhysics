@@ -28,6 +28,9 @@ class AliFemtoDreamv0Cuts {
   void SetAxisInvMassPlots(int nBins,float minMass,float maxMass) {
     fNumberXBins=nBins;fAxisMinMass=minMass;fAxisMaxMass=maxMass;
   }
+  void SetRunNumberQA(int iMinRun,int iMaxRun) {
+    fRunNumberQA=true;fMinRunNumber=iMinRun;fMaxRunNumber=iMaxRun;
+  }
   //Setters for the daughter track cuts
   void SetPosDaugterTrackCuts(AliFemtoDreamTrackCuts *cuts){fPosCuts=cuts;};
   void SetNegDaugterTrackCuts(AliFemtoDreamTrackCuts *cuts){fNegCuts=cuts;};
@@ -92,6 +95,9 @@ class AliFemtoDreamv0Cuts {
   bool fMCData;                       //
   bool fCPAPlots;                     //
   bool fContribSplitting;             //
+  bool fRunNumberQA;                  //
+  int fMinRunNumber;                  //
+  int fMaxRunNumber;                  //
   bool fCutOnFlyStatus;               //
   bool fOnFlyStatus;                  //
   bool fCutCharge;                    //
