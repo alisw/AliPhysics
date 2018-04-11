@@ -105,6 +105,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fVzMax = vz;
   }
 
+
   void SetRequireHighPtTrigger(Double_t gpTtrigger) {
     fRequireHighPtTrigger = kTRUE;
     fPtTriggerMin = gpTtrigger;
@@ -484,7 +485,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
-
+  
   Bool_t fRequireHighPtTrigger;//use pT trigger
   Double_t fPtTriggerMin;//pT trigger min
   TH2F *fHistPtTriggerThreshold;//QA histo
@@ -535,7 +536,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistGlobalvsESDBeforePileUpCuts; //histos to monitor Out of bunch pile up selection
   TH2F *fHistGlobalvsESDAfterPileUpCuts;
 
-  TH2F *fHistV0MvsTPCoutBeforePileUpCuts; //histos to monito pile up cuts J/psi
+  TH2F *fHistV0MvsTPCoutBeforePileUpCuts; //histos to monitor pile up cuts J/psi
   TH2F *fHistV0MvsTPCoutAfterPileUpCuts;
 
   //AliAnalysisUtils
