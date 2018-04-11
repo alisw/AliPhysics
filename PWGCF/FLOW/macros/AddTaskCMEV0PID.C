@@ -83,7 +83,10 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax
     fMCFile = TFile::Open(sMCfilePath,"READ");
 
     if(!fMCFile) {
-      printf("\n\n *** ERROR: MC correction file not found! \n  Please check path/name \n\n");
+      Ssiz_t pos = sMCfilePath.Index(".root");
+      sMCfilePath.Replace(pos,5,"_copy.root");
+      fMCFile = TFile::Open(sMCfilePath,"READ");
+      if(!fMCFile) printf("\n\n *** ERROR: MC correction file not found! \n  Please check path/name \n\n");
       //exit(1);
     }
 
@@ -110,8 +113,12 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax
 
   if(bUseNUA){      
     fNUAFile = TFile::Open(sNUAFilePath,"READ");
+
     if(!fNUAFile) {
-      printf("\n\n *** ERROR: NUA wgt file not found! \n  Please check path/name \n\n");
+      Ssiz_t pos = sNUAFilePath.Index(".root");
+      sNUAFilePath.Replace(pos,5,"_copy.root");
+      fNUAFile = TFile::Open(sNUAFilePath,"READ");
+      if(!fNUAFile) printf("\n\n *** ERROR: NUA wgt file not found! \n  Please check path/name \n\n");
       //exit(1);
     }
     else { 
@@ -131,8 +138,11 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax
   if(bV0MCorr){
     TFile* fV0MFile = TFile::Open(sV0MFile,"READ");
     if(!fV0MFile) {
-      printf("\n\n !!! ERROR: VOM Gain correction file not found! Please check path \n ***(EXIT now)*** \n\n");
-      exit(1);
+      Ssiz_t pos = sV0MFile.Index(".root");
+      sV0MFile.Replace(pos,5,"_copy.root");
+      fV0MFile = TFile::Open(sV0MFile,"READ");
+      if(!fV0MFile) printf("\n\n !!! ERROR: VOM Gain correction file not found! Please check path \n ***(EXIT now)*** \n\n");
+      //exit(1);
     } 
     else{
       TList* fListV0MUse = dynamic_cast<TList*>(fV0MFile->FindObjectAny("fV0MChWgts"));
