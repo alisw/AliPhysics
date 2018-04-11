@@ -18,6 +18,7 @@ The following correction components are available:
 - [CellBadChannel](\ref AliEmcalCorrectionCellBadChannel) -- Sets cells marked as bad to E = 0, using OADB bad channel map.
 - [CellEnergy](\ref AliEmcalCorrectionCellEnergy) -- Performs energy calibration of cells, using OADB calibration.
 - [CellTimeCalib](\ref AliEmcalCorrectionCellTimeCalib) -- Performs time calibration of cells, using OADB calibration.
+- [EmulateCrosstalk](\ref AliEmcalCorrectionCellEmulateCrosstalk) -- Emulate cell-level crosstalk.
 - [Clusterizer](\ref AliEmcalCorrectionClusterizer) -- Clusterizes a collection of cells into a collection of clusters.
 - [ClusterExotics](\ref AliEmcalCorrectionClusterExotics) -- Flags exotic clusters for removal from the cluster collection.
 - [ClusterNonLinearity](\ref AliEmcalCorrectionClusterNonLinearity) -- Corrects cluster energy for non-linear response.
@@ -68,6 +69,8 @@ correctionTask->SetUserConfigurationFilename("userConfiguration.yaml");
 // It is EXTREMELY important to run this function in your run macro!
 correctionTask->Initialize();
 ~~~
+
+Note that this should be added after `CDBconnect`, which is required to use the correction framework.
 
 ## LEGO Train Wagon                                             {#emcCorrectionsLEGOTrainWagon}
 
@@ -471,6 +474,23 @@ for (int i = 0; i < clusters->GetEntries(); i++) {
     }
 }
 ~~~
+
+# FAQ                                                                       {#emcCorrectionsFAQ}
+
+## I am seeing an error related to the EMCal geometry - what is wrong?      {#emcCorrectionsGeometryError}
+
+For example, you may see an error similar to below.
+
+~~~
+F-AliEMCALGeometry::GetMatrixForSuperModule: Cannot find EMCAL misalignment matrices! Recover them either:
+- importing TGeoManager from file geometry.root or
+- from OADB in file OADB/EMCAL/EMCALlocal2master.root or
+- from OCDB in directory OCDB/EMCAL/Align/Data/ or
+- from AliESDs (not in AliAOD) via AliESDRun::GetEMCALMatrix(Int_t superModIndex).
+Store them via AliEMCALGeometry::SetMisalMatrix(Int_t superModIndex)
+~~~
+
+This is due to the OCDB being unavailable. Please ensure that you ran the `CDBconnet` task.
 
 # Details on the framework and the corrections
 
