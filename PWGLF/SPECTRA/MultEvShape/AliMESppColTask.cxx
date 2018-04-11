@@ -98,8 +98,8 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	return;
 	}
 	//trigger selectors
-	if(!fEvInfo->HasTriggerMB()) return ; //Minimum Bias Trigger
-// 	if(!fEvInfo->HasTriggerHM()) return ; //High Multiplicity Trigger
+// 	if(!fEvInfo->HasTriggerMB()) return ; //Minimum Bias Trigger
+	if(!fEvInfo->HasTriggerHM()) return ; //High Multiplicity Trigger
 	
 	Double_t vec_hNoEvts[7]; // vector used to fill hNoEvts
 	THnSparseD *hNoEvts = (THnSparseD*)fHistosQA->At(0);
@@ -171,21 +171,21 @@ void AliMESppColTask::UserExec(Option_t *opt)
     
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
-      if(mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && directivity>0.0 && directivity<=0.3){
+      if(mult_comb08>49 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && directivity>0.0 && directivity<=0.3){
         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
         if(!selectedTracks1) break;
         selectedTracks1->SetOwner(kTRUE);
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks1, 3, 0);
       }
-      if(mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && directivity>0.3 && directivity<=0.6){
+      if(mult_comb08>49 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && directivity>0.3 && directivity<=0.6){
         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
         if(!selectedTracks2) break;
         selectedTracks2->SetOwner(kTRUE);
         FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
       }
-      if(mult_comb08>0 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && directivity>0.6 && directivity<=0.9){
+      if(mult_comb08>49 && mult_comb08<=80 && TMath::Abs(fEvInfo->GetVertexZ())<10.0 && directivity>0.6 && directivity<=0.9){
         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
         if(!selectedTracks3) break;
         selectedTracks3->SetOwner(kTRUE);
