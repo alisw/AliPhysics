@@ -17,7 +17,7 @@ class AliESDtrackCuts;
 class AliAnalysisTaskKinkpp5TeVMC : public AliAnalysisTaskSE {
  public:
   	AliAnalysisTaskKinkpp5TeVMC();
-	AliAnalysisTaskKinkpp5TeVMC(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange);
+	AliAnalysisTaskKinkpp5TeVMC(const char *name, Float_t lRadiusKUp,  Float_t lRadiusKLow, Int_t lNCluster, Float_t lLowQtValue, Float_t yRange, Float_t lnsigma);
   	virtual ~AliAnalysisTaskKinkpp5TeVMC() {}
   
   	virtual void   UserCreateOutputObjects();
@@ -30,6 +30,7 @@ class AliAnalysisTaskKinkpp5TeVMC : public AliAnalysisTaskSE {
 	void SetKinkRadius(Float_t lRadiusKLow, Float_t lRadiusKUp)  { fKinkRadLow=lRadiusKLow; fKinkRadUp=lRadiusKUp;}
         void SetNCluster(Int_t lNCluster){fLowCluster=lNCluster;}
   	void SetLowQtValue(Float_t   lLowQtValue){fLowQt=lLowQtValue;}
+	void SetnSigma(Float_t   lnsigma){fnsigma=lnsigma;}
 
 
   
@@ -205,6 +206,7 @@ class AliAnalysisTaskKinkpp5TeVMC : public AliAnalysisTaskSE {
 	Int_t fLowCluster;
 	Float_t fLowQt;
 	Float_t fRapiK;
+	Float_t fnsigma;
 
 
 	UInt_t fTrigSel;
