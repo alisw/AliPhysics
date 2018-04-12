@@ -29,6 +29,7 @@
 #include <AliESDEvent.h>
 #include <AliESDtrack.h>
 #include <AliAODEvent.h>
+#include <AliAODMCHeader.h>
 #include <AliAODVZERO.h>
 #include <AliVParticle.h>
 #include <AliTriggerAnalysis.h>
@@ -57,7 +58,10 @@ fSpherocitySteps(100.),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
-fHistTrackAnaSpdMult(0)
+fHistTrackAnaSpdMult(0),
+fHistGenVertexZ(0),
+fHistGenVertexZRecoPV(0),
+fHistRecoVertexZ(0)
 {
   // empty constructor
 }
@@ -74,7 +78,10 @@ fSpherocitySteps(100.),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
-fHistTrackAnaSpdMult(0)
+fHistTrackAnaSpdMult(0),
+fHistGenVertexZ(0),
+fHistGenVertexZRecoPV(0),
+fHistRecoVertexZ(0)
 {
   ;
 }
@@ -99,6 +106,9 @@ AliNormalizationCounter::~AliNormalizationCounter()
     delete fHistTrackAnaSpdMult;
     fHistTrackAnaSpdMult=0;
   }
+  delete fHistGenVertexZ;
+  delete fHistGenVertexZRecoPV;
+  delete fHistRecoVertexZ;
 }
 
 //______________________________________________
@@ -122,6 +132,9 @@ void AliNormalizationCounter::Init()
   fHistTrackAnaSpdMult=new TH2F("AnaCandidvsSpdMult","AnaCandidvsSpdMult",5000,-0.5,4999.5,100,-0.5,99.5);
   fHistTrackAnaSpdMult->GetYaxis()->SetTitle("NCandidates");
   fHistTrackAnaSpdMult->GetXaxis()->SetTitle("NSPDTracklets");
+  fHistGenVertexZ=new TH1F("hGenVertexZ","generated z vertex ; z_{vertex}^{MC} (cm) ; counts",600,-30,30);
+  fHistGenVertexZRecoPV=new TH1F("hGenVertexZRecoPV","generated z vertex (events with reconstructed vertex); z_{vertex}^{MC} (cm) ; counts",600,-30,30);
+  fHistRecoVertexZ=new TH1F("hRecoVertexZ","reconstructed z vertex; z_{vertex}^{rec} (cm) ; counts",600,-30,30);
 }
 
 //______________________________________________
@@ -153,6 +166,9 @@ void AliNormalizationCounter::Add(const AliNormalizationCounter *norm){
   fHistTrackAnaEvMult->Add(norm->fHistTrackAnaEvMult);
   fHistTrackFilterSpdMult->Add(norm->fHistTrackFilterSpdMult);
   fHistTrackAnaSpdMult->Add(norm->fHistTrackAnaSpdMult);
+  fHistGenVertexZ->Add(norm->fHistGenVertexZ);
+  fHistGenVertexZRecoPV->Add(norm->fHistGenVertexZRecoPV);
+  fHistRecoVertexZ->Add(norm->fHistRecoVertexZ);
 }
 //_______________________________________
 /*
@@ -235,7 +251,19 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
   if(rdCut->CountEventForNormalization()){
     FillCounters("countForNorm",runNumber,multiplicity,spherocity);
   }
-
+  // fill histograms of vertex position
+  if(mc){
+    AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(eventAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if(mcHeader){
+      Double_t zMCVertex=mcHeader->GetVtxZ();
+      fHistGenVertexZ->Fill(zMCVertex);
+      if(flagPV) fHistGenVertexZRecoPV->Fill(zMCVertex);
+    }
+  }
+  if(flagPV){
+    AliVVertex *vtrc =  (AliVVertex*)event->GetPrimaryVertex();
+    if(vtrc && vtrc->GetNContributors()>0) fHistRecoVertexZ->Fill(vtrc->GetZ()); 
+  }
 
   //Find Candle
   Int_t trkEntries = (Int_t)event->GetNumberOfTracks();
