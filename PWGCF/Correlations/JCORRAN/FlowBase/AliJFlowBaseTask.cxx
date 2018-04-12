@@ -159,7 +159,7 @@ void AliJFlowBaseTask::UserExec(Option_t* /*option*/)
 		}
 		for(UInt_t di = 0; di < sizeof(pdetn)/sizeof(pdetn[0]); ++di) {
 			for(int iH=2;iH<=3;iH++) {		
-				double EPref = fEventPlaneALICE[newDetID[di]][iH-2];
+				double EPref = fEventPlaneALICE[D_V0A][iH-2];
 				double EP = fEventPlaneALICE[newDetID[di]][iH-2];
 				fhistos->fhEPCorrInHar[fCBin][newDetID[di]][iH-2]->Fill( EP-EPref );
 				fhistos->fhEPCorr2D[fCBin][newDetID[di]][iH-2]->Fill(EP,EPref);
