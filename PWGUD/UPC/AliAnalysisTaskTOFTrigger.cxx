@@ -91,7 +91,8 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	fMinPt(0),
 	fMaxMulti(0),
 	fTriggerClass(0),
-	fMaxBCs(0)
+	fMaxBCs(0),
+	fEventCuts(0)
 
 
 {
@@ -142,7 +143,8 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	fMinPt(lowpt),
 	fMaxMulti(highmult),
 	fTriggerClass(trgcls),
-	fMaxBCs(nBCs)
+	fMaxBCs(nBCs),
+	fEventCuts(0)
 
 {
 
@@ -257,7 +259,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 
 
   TString fileName = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
-  if(fileName.Contains("pass1"))fIsPass1 = kTRUE;
+  if(fileName.Contains("pass1") || fileName.Contains("pass5"))fIsPass1 = kTRUE;
   else fIsPass1 = kFALSE;
 
   if(!fGeomLoaded){
@@ -355,6 +357,8 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   Int_t fNtracklets = esd->GetMultiplicity()->GetNumberOfTracklets();
   hNTracklets->Fill(fNtracklets);
   if(fNtracklets>fMaxMulti) return;
+  
+  if(!fEventCuts.AcceptEvent(esd))return;
 
   Int_t numTracksPerMaxiPad[72][23];
   Int_t numMuonTracksPerMaxiPad[72][23];

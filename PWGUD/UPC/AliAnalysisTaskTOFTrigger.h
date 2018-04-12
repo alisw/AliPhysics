@@ -12,6 +12,7 @@ class TH2F;
 class AliESDtrackCuts;
 
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
 
 class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
  public:
@@ -72,12 +73,14 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   Int_t fMaxMulti;
   TString fTriggerClass;
   Int_t fMaxBCs;
+  
+  AliEventCuts fEventCuts;	
 
 
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
 
-  ClassDef(AliAnalysisTaskTOFTrigger, 8);
+  ClassDef(AliAnalysisTaskTOFTrigger, 9);
 };
 
 #endif
