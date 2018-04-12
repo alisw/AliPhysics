@@ -74,7 +74,7 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop() :
   fTreeRecursive_True(0)
 
 {
-  for(Int_t i=0;i<4;i++){
+  for(Int_t i=0;i<5;i++){
     fShapesVar_Det[i]=0;
     fShapesVar_True[i]=0;
   }
@@ -104,7 +104,7 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop(const char *n
   fTreeRecursive_True(0)
 {
   // Standard constructor.
-  for(Int_t i=0;i<4;i++){
+  for(Int_t i=0;i<5;i++){
     fShapesVar_Det[i]=0;
     fShapesVar_True[i]=0;
   }
@@ -136,7 +136,7 @@ AliAnalysisTaskRecursiveSoftDrop::~AliAnalysisTaskRecursiveSoftDrop()
   const char* nameoutput2 = GetOutputSlot(3)->GetContainer()->GetName();
   fTreeRecursive_True = new TTree(nameoutput2, nameoutput2);
 
-  const Int_t intBranches = 4;
+  const Int_t intBranches = 5;
 
   std::vector<TString> fShapesVarNames_Det(intBranches), fShapesVarNames_True(intBranches);
 
@@ -145,10 +145,12 @@ AliAnalysisTaskRecursiveSoftDrop::~AliAnalysisTaskRecursiveSoftDrop()
   fShapesVarNames_Det[1] = "Z";
   fShapesVarNames_Det[2] = "Theta";
   fShapesVarNames_Det[3] = "N";
+  fShapesVarNames_Det[4] = "ParentPt";
   fShapesVarNames_True[0] = "Pt_Truth";
   fShapesVarNames_True[1] = "Z_Truth";
   fShapesVarNames_True[2] = "Theta_Truth";
   fShapesVarNames_True[3] = "N_Truth";
+  fShapesVarNames_True[4] = "ParentPt_Truth";
 
   for(Int_t ivar=0; ivar < intBranches; ivar++){
     cout<<"looping over variables"<<endl;
@@ -376,6 +378,7 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
 	fShapesVar_True[1]=z;
 	fShapesVar_True[2]=delta_R;
 	fShapesVar_True[3]=n;
+	fShapesVar_True[4]=jj.perp();
 	fTreeRecursive_True->Fill();
       }
       else {
@@ -383,6 +386,7 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
 	fShapesVar_Det[1]=z;
 	fShapesVar_Det[2]=delta_R;
 	fShapesVar_Det[3]=n;
+	fShapesVar_Det[4]=jj.perp();
 	fTreeRecursive_Det->Fill();
       }
       jj=j1;
