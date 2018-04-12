@@ -95,6 +95,7 @@
 #pragma link C++ class AliHLTTPCFastTransformObject+;
 #pragma link C++ class AliHLTTPCRawClusterDumpComponent+;
 #pragma link C++ class AliFlexibleSpline1D+;
+#pragma link C++ class AliFlexibleSpline2D3D+;
 
 #endif // __CINT__
 //

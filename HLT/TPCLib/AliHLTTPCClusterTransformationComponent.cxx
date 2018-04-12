@@ -126,7 +126,7 @@ AliHLTComponent* AliHLTTPCClusterTransformationComponent::Spawn() {
 int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv ) 
 { 
   // see header file for class documentation
-  
+
   int iResult=0;
   //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 
