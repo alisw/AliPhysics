@@ -2648,10 +2648,16 @@ UInt_t AliESDEvent::GetTimeStampCTP() const
   // calculate/return CTP time stamp in the approximation of BC=25ns
   const AliTimeStamp* ctp0 = GetCTPStart();
   UInt_t tCTP = 0;
-  if ( !ctp0 || !(tCTP=ctp0->GetSeconds()) ) return GetTimeStamp(); // N/A
+  if ( !(tCTP=ctp0->GetSeconds()) ) return GetTimeStamp(); // N/A
   // subtract from current orbit the orbit at CTP SOR
-  Long64_t span=(GetPeriodNumber()<<24)+GetOrbitNumber()-ctp0->GetOrbit();
-  tCTP += span*3564*25/1000000000;
+  Long64_t span= Long64_t(GetOrbitNumber())-Long64_t(ctp0->GetOrbit());
+  // sometimes the ctp0 points to time after the triggers start
+  if (span<-10000 && GetPeriodNumber()==ctp0->GetPeriod()) {
+    AliWarningF("The triggered orbit is too much ahead (%lld) of 1st scaler, fall back to GetTimeStamp",span);
+    return GetTimeStamp();
+  }
+  span += Long64_t(GetPeriodNumber()<<24);
+  tCTP += (span*3564*25/1000 + ctp0->GetMicroSecs())/1000000;
   return tCTP;
 }
 
@@ -2660,15 +2666,49 @@ UInt_t AliESDEvent::GetTimeStampCTPBCCorr() const
 {
   // calculate/return CTP time stamp in the approximation of BC=25ns
   const AliTimeStamp* ctp0 = GetCTPStart();
-  const double kBCLHC = 1./40.079e6;
+  const double kBCLHC = 1./40.079;
   UInt_t tCTP = 0;
-  if ( !ctp0 || !(tCTP=ctp0->GetSeconds()) ) return GetTimeStamp(); // N/A
+  if ( !(tCTP=ctp0->GetSeconds()) ) return GetTimeStamp(); // N/A
+  Long64_t span= Long64_t(GetOrbitNumber())-Long64_t(ctp0->GetOrbit());
+  // sometimes the ctp0 points to time after the triggers start
+  if (span<-10000 && GetPeriodNumber()==ctp0->GetPeriod()) {
+    AliWarningF("The triggered orbit is too much ahead (%lld) of 1st scaler, fall back to GetTimeStamp",span);
+    return GetTimeStamp();
+  }
   // subtract from current orbit the orbit at CTP SOR
-  Long64_t span=(GetPeriodNumber()<<24)+GetOrbitNumber()-ctp0->GetOrbit();
-  tCTP += span*3564*kBCLHC;
+  span += Long64_t(GetPeriodNumber()<<24);
+  tCTP += (span*3564*kBCLHC+ctp0->GetMicroSecs())/1000000;
   return tCTP;
 }
 
+//______________________________________________________________________________
+AliTimeStamp AliESDEvent::GetAliTimeStamp() const
+{
+  // return precise time stamp
+  const AliTimeStamp* ctp0 = GetCTPStart();
+  const double kBCLHC = 1./40.079;
+  UInt_t sec = ctp0->GetSeconds();
+  UInt_t msec = ctp0->GetMicroSecs();
+  Long64_t span= Long64_t(GetOrbitNumber())-Long64_t(ctp0->GetOrbit());
+  if ( !sec ) {
+    AliWarning("CTP start not available, building from GetTimeStamp()");
+    sec = GetTimeStamp();
+  }
+  else if (span<-10000 && GetPeriodNumber()==ctp0->GetPeriod()) {
+    AliWarningF("The triggered orbit is too much ahead (%lld) of 1st scaler, fall back to GetTimeStamp",span);
+    sec = GetTimeStamp();
+  }
+  else {
+    span += Long64_t(GetPeriodNumber()<<24);
+    span *= 3564*kBCLHC;
+    span += msec;
+    sec += span/1000000;
+    msec = span%1000000;
+  }
+  AliTimeStamp evSt(GetOrbitNumber(),GetPeriodNumber(),sec,msec);
+  return evSt;
+}
+  
 //______________________________________________________________________________
 Int_t AliESDEvent::GetNumberOfTPCTracks() const
 {
