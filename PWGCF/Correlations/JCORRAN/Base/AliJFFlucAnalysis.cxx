@@ -735,7 +735,7 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 		Double_t phi_module_corr = 1.0;
 		if(flags & FLUC_PHI_CORRECTION && pPhiWeights){
 			Double_t w = pPhiWeights->GetBinContent(
-				pPhiWeights->FindBin(fVertex[2],phi,eta));
+				pPhiWeights->FindBin(fVertex[2],phi+TMath::Pi(),eta));
 			if(w > 1e-6)
 				phi_module_corr = w;
 		}
@@ -772,7 +772,7 @@ TComplex AliJFFlucAnalysis::CalculateQnSP( Double_t eta1, Double_t eta2, int ih)
 		Double_t phi_module_corr = 1.0;
 		if(flags & FLUC_PHI_CORRECTION && pPhiWeights){
 			Double_t w = pPhiWeights->GetBinContent(
-				pPhiWeights->FindBin(fVertex[2],phi,eta));
+				pPhiWeights->FindBin(fVertex[2],phi+TMath::Pi(),eta));
 			if(w > 1e-6)
 				phi_module_corr = w;
 		}
@@ -820,7 +820,7 @@ TComplex AliJFFlucAnalysis::Get_Qn_pt(Double_t eta1, Double_t eta2, int harmonic
 		Double_t phi_module_corr = 1.0;
 		if(flags & FLUC_PHI_CORRECTION && pPhiWeights){
 			Double_t w = pPhiWeights->GetBinContent(
-				pPhiWeights->FindBin(fVertex[2],phi,eta));
+				pPhiWeights->FindBin(fVertex[2],phi+TMath::Pi(),eta));
 			if(w > 1e-6)
 				phi_module_corr = w;
 		}
@@ -875,7 +875,7 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 		Double_t phi_module_corr = 1.0;
 		if(flags & FLUC_PHI_CORRECTION && pPhiWeights){
 			Double_t w = pPhiWeights->GetBinContent(
-				pPhiWeights->FindBin(fVertex[2],phi,eta));
+				pPhiWeights->FindBin(fVertex[2],phi+TMath::Pi(),eta));
 			if(w > 1e-6)
 				phi_module_corr = w;
 		}
