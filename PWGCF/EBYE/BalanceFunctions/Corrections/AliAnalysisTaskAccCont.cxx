@@ -333,15 +333,13 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                 
                                 if((gCentrality >= fCentralityPercentileMin) &&
                                    (gCentrality < fCentralityPercentileMax)) {
-
-				  Printf("fCentralityPercentileMin =%f, fCentralityPercentileMax =%f", fCentralityPercentileMin, fCentralityPercentileMax);
 				  
 				  fHistEventStats->Fill(4,gCentrality);
-                                    
-                                    // check for pile-up event
-				    const Int_t nTracks = gAOD->GetNumberOfTracks(); 
-				    Int_t multEsd = ((AliAODHeader*)gAOD->GetHeader())->GetNumberOfESDTracks();
-				    fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
+                                  
+				  // check for pile-up event
+				  const Int_t nTracks = gAOD->GetNumberOfTracks(); 
+				  Int_t multEsd = ((AliAODHeader*)gAOD->GetHeader())->GetNumberOfESDTracks();
+				  fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
                                    
                                     if(fpPb) {
 				    fUtils->SetUseMVPlpSelection(kTRUE);
@@ -350,6 +348,7 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 				    else if (fPbPb) {
 				      fUtils->SetUseMVPlpSelection(kFALSE);
 				      fUtils->SetUseOutOfBunchPileUp(kFALSE);
+				      
 				      if (fUseOutOfBunchPileUpCutsLHC15o){
 					if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
 					  fHistEventStats->Fill(6,gCentrality);
@@ -368,35 +367,39 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					  fHistEventStats->Fill(6,gCentrality);
 					  return;
 					}
-				      }
-				      fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
-				    }
-
-				    if (fUseOutOfBunchPileUpCutsLHC15oJpsi){
-				      Int_t ntrkTPCout = 0;
-				      for (int it = 0; it < gAOD->GetNumberOfTracks(); it++) {
-					AliAODTrack* AODTrk = (AliAODTrack*)gAOD->GetTrack(it);
-					if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
-					  ntrkTPCout++;
+					
+					fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
 				      }
 				      
-				      Double_t multVZERO =0; 
-				      AliVVZERO *vzero = (AliVVZERO*)gAOD->GetVZEROData();
-				      if(vzero) {
-					for(int ich=0; ich < 64; ich++)
-					  multVZERO += vzero->GetMultiplicity(ich);
+				      if (fUseOutOfBunchPileUpCutsLHC15oJpsi){
+					if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+					  fHistEventStats->Fill(6,gCentrality);
+					  return;
+					}
+					Int_t ntrkTPCout = 0;
+					for (int it = 0; it < gAOD->GetNumberOfTracks(); it++) {
+					  AliAODTrack* AODTrk = (AliAODTrack*)gAOD->GetTrack(it);
+					    if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
+					      ntrkTPCout++;
+					}
+					
+					Double_t multVZERO =0; 
+					AliVVZERO *vzero = (AliVVZERO*)gAOD->GetVZEROData();
+					if(vzero) {
+					  for(int ich=0; ich < 64; ich++)
+					    multVZERO += vzero->GetMultiplicity(ich);
+					}
+					
+					fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
+					
+					if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
+					  fHistEventStats->Fill(6, -1);
+					  return;
+					}
+					fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
+					
 				      }
-
-				      fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
-				      
-				      if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
-					fHistEventStats->Fill(9, -1);
-					return;
-				      }
-				      fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
-
 				    }
-				    
 				    
 				    if(fUtils->IsPileUpEvent(gAOD)){ 
 				      fHistEventStats->Fill(6,gCentrality);
