@@ -560,10 +560,9 @@ void AliAnalysisHFCorrOnFlySim::RemoveNDaughterParticleArray(TObject* obj){
 
 //______________________________| HF-Correlations Calculations
 void AliAnalysisHFCorrOnFlySim::HeavyFlavourCorrelations(TObject *obj){
-    printf("FLAG SINGLEPAIR %d\n",fFlagSinglePair);
     if(!obj) return;
     AliVParticle* TrigPart = (AliVParticle*)obj;
-    if(!TrigPart) return;
+    if(!TrigPart) return; 
     
     Int_t PDG_TrigPart  = TMath::Abs(TrigPart->PdgCode());
          if(PDG_TrigPart==421)    PDG_TrigPart = 1; //D0
@@ -802,18 +801,19 @@ void AliAnalysisHFCorrOnFlySim::CalculateQQBarCorrelations(){
               AliVParticle *part1b=(AliVParticle*)fMcEvent->GetTrack(fArray1Part1->At(ipart1));
               Double_t dPhi = TMath::Abs(AssignCorrectPhiRange(part1->Phi() - part1b->Phi()));
               if(dPhi>0.5) fFlagSinglePair = kFALSE;
-              printf("COLLIN 1 %f\n",dPhi);
+              //printf("COLLIN 1 %f\n",dPhi);
             }
             for(Int_t ipart2 = 1; ipart2 < nPart2 ; ipart2++) { //start from 2nd particle, check if "collinear" with first
               AliVParticle *part2b=(AliVParticle*)fMcEvent->GetTrack(fArray2Part2->At(ipart2));
               Double_t dPhi = TMath::Abs(AssignCorrectPhiRange(part2->Phi() - part2b->Phi()));
               if(dPhi>0.5) fFlagSinglePair = kFALSE;
-              printf("COLLIN 2 %f\n",dPhi);
+              //printf("COLLIN 2 %f\n",dPhi);
             }
 
             if(fFlagSinglePair == kTRUE) { //evaluate opening angle of 'mother' c and cbar (mother definition is a bit artificial...)
-              if(AssignCorrectPhiRange_0to2Pi(part1->Phi()-part2->Phi()) < fLimitSmallOpen) fFlagSmallOpen = kTRUE;
-              if(AssignCorrectPhiRange_0to2Pi(part1->Phi()-part2->Phi()) > fLimitLargeOpen) fFlagLargeOpen = kTRUE;
+              if(AssignCorrectPhiRange_0toPiRefl(part1->Phi()-part2->Phi()) < fLimitSmallOpen) fFlagSmallOpen = kTRUE;
+              if(AssignCorrectPhiRange_0toPiRefl(part1->Phi()-part2->Phi()) > fLimitLargeOpen) fFlagLargeOpen = kTRUE;
+              //printf("phi's = %f %f, dPhireduced = %f; The flags are sm,lg = %d,%d\n",part1->Phi(),part2->Phi(),AssignCorrectPhiRange_0toPiRefl(part1->Phi()-part2->Phi()),fFlagSmallOpen,fFlagLargeOpen);
             }
           }
 
