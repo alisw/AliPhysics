@@ -872,13 +872,13 @@ void AliHFCorrFitter::DrawLegendWithParameters(){
     if(fTypeOfFitfunc==kConstThreeGausPeriodicityAS){
       t1=pvStatTests1->AddText(0.,0.85,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
       t2=pvStatTests1->AddText(0.,0.73,Form("NS Y = %.2f#pm%.2f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
-      t3=pvStatTests1->AddText(0.,0.51,Form("NS #sigma= %.2f#pm%.2f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
-      t4=pvStatTests1->AddText(0.,0.24,Form("AS Y = %.2f#pm%.2f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
+      t3=pvStatTests1->AddText(0.,0.61,Form("NS #sigma= %.2f#pm%.2f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
+      t4=pvStatTests1->AddText(0.,0.49,Form("AS Y = %.2f#pm%.2f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
       ass=fFit->GetParNumber("AS #sigma 1g");
-      t5=pvStatTests1->AddText(0.,0.12,Form("AS #sigma 1g = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+      t5=pvStatTests1->AddText(0.,0.37,Form("AS #sigma 1g = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
       ass=fFit->GetParNumber("AS #sigma 2g");
-      t5bis=pvStatTests1->AddText(0.,0.12,Form("AS #sigma 2g = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
-      tAvSigAS=pvStatTests1->AddText(0.,0.37,Form("NS effective #sigma = %.2f#pm%.2f",GetASSigma(),GetASSigmaError()));
+      t5bis=pvStatTests1->AddText(0.,0.24,Form("AS #sigma 2g = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+      tAvSigAS=pvStatTests1->AddText(0.,0.12,Form("AS effective #sigma = %.2f#pm%.2f",GetASSigma(),GetASSigmaError()));
     }    
     else{
       t1=pvStatTests1->AddText(0.,0.87,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
