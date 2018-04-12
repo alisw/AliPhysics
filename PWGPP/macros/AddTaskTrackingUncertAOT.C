@@ -18,7 +18,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           AliESDtrackCuts::ITSClusterRequirement spdReq=AliESDtrackCuts::kAny,
                                           Bool_t useGenPt = kFALSE,
                                           Bool_t DCAzOn= kFALSE,
-                                          Bool_t fTPConlyFIT=kTRUE) {
+                                          Bool_t fTPConlyFIT=kFALSE) {
 
     
   //
