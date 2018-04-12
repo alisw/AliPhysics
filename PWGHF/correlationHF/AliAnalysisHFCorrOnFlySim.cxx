@@ -799,14 +799,20 @@ void AliAnalysisHFCorrOnFlySim::CalculateQQBarCorrelations(){
             Double_t phi2 = part2->Phi();
             for(Int_t ipart1 = 1; ipart1 < nPart1 ; ipart1++) { //start from 2nd particle, check if "collinear" with first
               AliVParticle *part1b=(AliVParticle*)fMcEvent->GetTrack(fArray1Part1->At(ipart1));
-              Double_t dPhi = TMath::Abs(AssignCorrectPhiRange(part1->Phi() - part1b->Phi()));
-              if(dPhi>0.5) fFlagSinglePair = kFALSE;
+              Int_t pdgotherc = TMath::Abs(part1b->PdgCode());
+              if(pdgotherc!=4) fFlagSinglePair = kFALSE; 
+              // OLD APPROACH: 
+              //Double_t dPhi = TMath::Abs(AssignCorrectPhiRange(part1->Phi() - part1b->Phi()));
+              //if(dPhi>0.5) fFlagSinglePair = kFALSE; 
               //printf("COLLIN 1 %f\n",dPhi);
             }
             for(Int_t ipart2 = 1; ipart2 < nPart2 ; ipart2++) { //start from 2nd particle, check if "collinear" with first
               AliVParticle *part2b=(AliVParticle*)fMcEvent->GetTrack(fArray2Part2->At(ipart2));
-              Double_t dPhi = TMath::Abs(AssignCorrectPhiRange(part2->Phi() - part2b->Phi()));
-              if(dPhi>0.5) fFlagSinglePair = kFALSE;
+              Int_t pdgothercbar = TMath::Abs(part2b->PdgCode());
+              if(pdgothercbar!=4) fFlagSinglePair = kFALSE; 
+              // OLD APPROACH: 
+              //Double_t dPhi = TMath::Abs(AssignCorrectPhiRange(part2->Phi() - part2b->Phi()));
+              //if(dPhi>0.5) fFlagSinglePair = kFALSE; 
               //printf("COLLIN 2 %f\n",dPhi);
             }
 
