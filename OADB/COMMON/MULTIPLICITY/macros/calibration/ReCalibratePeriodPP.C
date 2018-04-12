@@ -1,12 +1,14 @@
 ////////////////////////////////////////////////////////////
 //
-// Default macro for calibrating minimum bias pp data.
+// Macro for calibrating high-multiplicity-triggered pp
+// sample. Uses the same functionality that is used for
+// Pb-Pb anchoring.
 //
 ////////////////////////////////////////////////////////////
 
-CalibratePeriodPP(TString lPeriodName = "LHC16k",
-                  TString lWhichData = "MB",
-                  Long_t lRunToUseAsDefault = 257630 ) {
+ReCalibratePeriodPP(TString lPeriodName = "LHC16k",
+                    TString lWhichData = "VHM",
+                    Long_t lRunToUseAsDefault = 257630 ) {
 
     //Load ALICE stuff
     TString gLibs[] =    {"STEER",
@@ -25,8 +27,6 @@ CalibratePeriodPP(TString lPeriodName = "LHC16k",
 
     //All fine, let's try the calibrator
     AliMultSelectionCalibrator *lCalib = new AliMultSelectionCalibrator("lCalib");
-
-    lCalib->SetRunToUseAsDefault( lRunToUseAsDefault );
 
     //============================================================
     // --- Definition of Boundaries ---
@@ -59,32 +59,6 @@ CalibratePeriodPP(TString lPeriodName = "LHC16k",
     lCalib->SetBoundaries( lNDesiredBoundaries, lDesiredBoundaries );
     cout<<"Boundaries set. Will attempt calibration now... "<<endl;
 
-    if ( lPeriodName.Contains("LHC10h") ) {
-        cout<<"Setting event selection criteria for Pb-Pb..."<<endl;
-        lCalib->GetEventCuts()->SetVzCut(10.0);
-        lCalib->GetEventCuts()->SetTriggerCut                (kTRUE );
-        lCalib->GetEventCuts()->SetINELgtZEROCut             (kFALSE);
-        lCalib->GetEventCuts()->SetTrackletsVsClustersCut    (kFALSE);
-        lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kFALSE);
-        lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
-        lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
-    }
-
-    if ( lPeriodName.Contains("LHC15m") || lPeriodName.Contains("LHC15o") ) {
-        cout<<"Setting event selection criteria for Pb-Pb..."<<endl;
-        lCalib->GetEventCuts()->SetVzCut(10.0);
-        lCalib->GetEventCuts()->SetTriggerCut                (kTRUE );
-        lCalib->GetEventCuts()->SetINELgtZEROCut             (kFALSE);
-        lCalib->GetEventCuts()->SetTrackletsVsClustersCut    (kFALSE);
-        lCalib->GetEventCuts()->SetRejectPileupInMultBinsCut (kFALSE);
-        lCalib->GetEventCuts()->SetVertexConsistencyCut      (kFALSE);
-        lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
-    }
-
-    //Additional selections for pp: incompleteDAQ and asymmetric vzero 
-
-
-
     //============================================================
     // --- Definition of Input Variables ---
     //============================================================
@@ -93,7 +67,9 @@ CalibratePeriodPP(TString lPeriodName = "LHC16k",
 
     //Changes in new version: create AliMultSelection here
     AliMultSelection *lMultSel = new AliMultSelection();
-    lCalib->SetMultSelection(lMultSel);
+    
+    //Commented: we'll work on this later!
+    //lCalib->SetMultSelection(lMultSel);
 
     //============================================================
     // --- Definition of Estimators ---
@@ -108,23 +84,6 @@ CalibratePeriodPP(TString lPeriodName = "LHC16k",
 
     Double_t lDefaultCL1Anchor     = 0;
     Double_t lDefaultCL1Percentile = 0;
-
-    if ( lPeriodName.Contains("LHC15o") ) {
-        lDefaultV0MAnchor     = 133.5;
-        lDefaultV0MPercentile = 90.007;
-        lDefaultCL0Anchor     = 33.5;
-        lDefaultCL0Percentile = 90.64;
-        lDefaultCL1Anchor     = 30.5;
-        lDefaultCL1Percentile = 90.485;
-    }
-    if ( lPeriodName.Contains("LHC15m") ) {
-        lDefaultV0MAnchor     = 115.0;
-        lDefaultV0MPercentile = 87.5;
-        lDefaultCL0Anchor     = 39.5;
-        lDefaultCL0Percentile = 88.9;
-        lDefaultCL1Anchor     = 40.5;
-        lDefaultCL1Percentile = 88.1;
-    }
 
     AliMultEstimator *fEstV0M = new AliMultEstimator("V0M", "", "(fAmplitude_V0A)+(fAmplitude_V0C)");
     AliMultEstimator *fEstV0A = new AliMultEstimator("V0A", "", "(fAmplitude_V0A)");
@@ -165,36 +124,85 @@ CalibratePeriodPP(TString lPeriodName = "LHC16k",
     AliMultEstimator *fEstZNACpp = new AliMultEstimator("ZNACpp","", "-0.89 * (fZnaFired) * (fZnaTower) - (fZncFired) * (fZncTower) + !(fZnaFired) * !(fZncFired) * 1e6");
 
     //Universal: V0
-    lCalib->GetMultSelection() -> AddEstimator( fEstV0M );
-    lCalib->GetMultSelection() -> AddEstimator( fEstV0A );
-    lCalib->GetMultSelection() -> AddEstimator( fEstV0C );
+    lMultSel->AddEstimator( fEstV0M );
+    lMultSel->AddEstimator( fEstV0A );
+    lMultSel->AddEstimator( fEstV0C );
     //Only do this in run 2, AD didn't exist in Run 1
     //Will also save space in the OADB for old datasets!
-    lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0M );
-    lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0A );
-    lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0C );
-    lCalib->GetMultSelection() -> AddEstimator( fEstADM );
-    lCalib->GetMultSelection() -> AddEstimator( fEstADA );
-    lCalib->GetMultSelection() -> AddEstimator( fEstADC );
+    if( lPeriodName.Contains("LHC15") ) {
+        lMultSel->AddEstimator( fEstOnlineV0M );
+        lMultSel->AddEstimator( fEstOnlineV0A );
+        lMultSel->AddEstimator( fEstOnlineV0C );
+        lMultSel->AddEstimator( fEstADM );
+        lMultSel->AddEstimator( fEstADA );
+        lMultSel->AddEstimator( fEstADC );
+    }
 
     //Universal: Tracking, etc
-    lCalib->GetMultSelection() -> AddEstimator( fEstnSPDClusters  );
-    lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets );
-    lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta5 );
-    lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta8 );
+    lMultSel->AddEstimator( fEstnSPDClusters  );
+    lMultSel->AddEstimator( fEstnSPDTracklets );
+    lMultSel->AddEstimator( fEstRefMultEta5 );
+    lMultSel->AddEstimator( fEstRefMultEta8 );
 
-    lCalib->GetMultSelection() -> AddEstimator( fEstZNApp );
-    lCalib->GetMultSelection() -> AddEstimator( fEstZNCpp );
-    lCalib->GetMultSelection() -> AddEstimator( fEstZNACpp );
+    lMultSel->AddEstimator( fEstZNApp );
+    lMultSel->AddEstimator( fEstZNCpp );
+    lMultSel->AddEstimator( fEstZNACpp );
 
-
+    
+    //============================================================
+    // --- Definition of Anchor points ---
+    //============================================================
+    vector<int> lRuns;
+    vector<float> lAnchorPercentile;
+    vector<float> lAnchorPoint;
+    FILE *fAP = fopen(Form("Anchors_%s_%s.txt", lPeriodName.Data(), lWhichData.Data()), "r");
+    Char_t buffer[500];
+    while(fgets(buffer, 500, fAP)) {
+      Int_t run_a;
+      Int_t run_b;
+      Float_t ancPer;
+      Float_t ancPoint;
+      sscanf(buffer, "%d %d %f %f", &run_a, &run_b, &ancPer, &ancPoint);
+      if(run_a!=run_b) { cout << "Error: runs do not match" << endl; return -1; }
+      //Debug; print info retrieved from file
+      printf("Run: %d %d \t %.2f%%   %f\n", run_a, run_b, ancPer, ancPoint);
+      lRuns.push_back(run_a);
+      lAnchorPercentile.push_back(ancPer);
+      lAnchorPoint.push_back(ancPoint);
+    }
+    
+    const Long_t lNRuns = lRuns.size();
+    AliMultSelection *lMultSelArray[500]; //We need one AliMultSelection for each run above!
+    
+    //Set Anchor point (common)
+    lMultSel->GetEstimator("V0M")->SetUseAnchor( kTRUE ) ;
+    //lMultSel->GetEstimator("V0M")->SetAnchorPercentile( 0.1 ); // will be done inside the loop
+    
+    //Sweep array
+    for(Long_t iRun = 0; iRun<lNRuns; iRun++) {
+        cout<<"Instantiating AliMultSelection for run "<<lRuns[iRun]<<"... "<<endl;
+        lMultSelArray[iRun] = new AliMultSelection(lMultSel);
+        
+        //Adjust V0M Anchors, please
+        cout << "Setting Anchors........: " << lAnchorPercentile[iRun] << "% --> " << lAnchorPoint[iRun] << endl;
+        lMultSelArray[iRun]->GetEstimator("V0M")->SetAnchorPercentile( lAnchorPercentile[iRun] );
+        lMultSelArray[iRun]->GetEstimator("V0M")->SetAnchorPoint     ( lAnchorPoint[iRun]      );
+        
+        //Debug: check if changed!
+        lMultSelArray[iRun] -> PrintInfo();
+        
+        //cout<<"Adding run range..."<<endl;
+        //Add run to run ranges (still RbyR for now)
+        lCalib->AddRunRange( lRuns[iRun], lRuns[iRun], lMultSelArray[iRun] );
+    }
+    lCalib->SetRunToUseAsDefault( lRunToUseAsDefault );
+    
     //============================================================
     // --- Definition of Input/Output ---
     //============================================================
-
-    lCalib -> SetInputFile  ( Form("AnalysisResults_%s.root", lWhichData.Data()) );
+    
+    lCalib -> SetInputFile  ( Form("../%s/AnalysisResults.root", lWhichData.Data()) );
     lCalib -> SetBufferFile ( Form("buffer-%s-%s.root", lPeriodName.Data(), lWhichData.Data()) );
     lCalib -> SetOutputFile ( Form("OADB-%s-%s.root", lPeriodName.Data(), lWhichData.Data()) );
     lCalib -> Calibrate     ();
-
 }
