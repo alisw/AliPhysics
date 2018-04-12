@@ -141,6 +141,12 @@ AliAnalysisHFETPCTOFBeauty* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t 
 		task->SetBcorrFunction(fBmesonShape2);
 		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
 	}
+    ///Weight from RAAxFONLL/MC
+    if(IsBcorr == 3){
+		TF1 *fBmesonShape3 = new TF1("fBmesonShape3","(1./0.925)*(3.74727e-01/(TMath::Power(TMath::Exp( - (3.65064e-01) * x[0] - (-9.29285e-03) * x[0] * x[0] ) + x[0] / (1.06879e+01), (2.01898e+00))))", 0, 30);
+		task->SetBcorrFunction(fBmesonShape3);
+		cout<<"-----------------------------------------------------IsBcorr"<<IsBcorr<<endl;
+	}
     
     
     if(IsDcorr == 0){
