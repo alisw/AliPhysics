@@ -403,7 +403,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
       params[0]=paramsTPCdEdxcutlow[0];
       pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
    } else { // correct for mean shift in data
-      cutmodel="pol1(0)+[2]/pol1(3)";
+      cutmodel="pol1(0)+[2]*pol1(3)";
       Double_t params[5];
       params[0]=0.061296;
       params[1]=0.036105;
