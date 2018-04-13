@@ -62,11 +62,14 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	eff_MaxiPadLTM_1Trk_El(0),
 	eff_AverageTracklets(0),
 	eff_AverageTrackPt(0),
+	eff_MaxiPadLTM_Around(0),
+	eff_MaxiPadLTM_OnlyAround(0),
 	hTrackDistributionLTM(0),
 	hTrackDistribution_Mu(0),
 	hTrackDistribution_El(0),
 	hTrackDistribution(0),
 	hFiredMaxiPad(0),
+	hFiredMaxiPadOnlyAround(0),
 	hNotFiredMaxiPad(0),
 	hTrackPadCorrPhi(0),
 	hTrackPadCorrEta(0),
@@ -75,6 +78,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	hTriggerCounterIR1(0),
 	hTriggerCounterIR2(0),
 	hNFiredMaxiPads(0),
+	hNFiredMaxiPadsOnlyAround(0),
 	hNTracklets(0),
 	hDetIn0(0),
 	hDetIn1(0),
@@ -114,11 +118,14 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	eff_MaxiPadLTM_1Trk_El(0),
 	eff_AverageTracklets(0),
 	eff_AverageTrackPt(0),
+	eff_MaxiPadLTM_Around(0),
+	eff_MaxiPadLTM_OnlyAround(0),
 	hTrackDistributionLTM(0),
 	hTrackDistribution_Mu(0),
 	hTrackDistribution_El(0),
 	hTrackDistribution(0),
 	hFiredMaxiPad(0),
+	hFiredMaxiPadOnlyAround(0),
 	hNotFiredMaxiPad(0),
 	hTrackPadCorrPhi(0),
 	hTrackPadCorrEta(0),
@@ -127,6 +134,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	hTriggerCounterIR1(0),
 	hTriggerCounterIR2(0),
 	hNFiredMaxiPads(0),
+	hNFiredMaxiPadsOnlyAround(0),
 	hNTracklets(0),
 	hDetIn0(0),
 	hDetIn1(0),
@@ -198,6 +206,11 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   
   eff_AverageTrackPt = new TEfficiency("eff_AverageTrackPt"," ",50,0,5);
   fOutputList->Add(eff_AverageTrackPt);
+  
+  eff_MaxiPadLTM_Around = new TEfficiency("eff_MaxiPadLTM_Around"," ",72,0,72,23,0,23);
+  fOutputList->Add(eff_MaxiPadLTM_Around);
+  eff_MaxiPadLTM_OnlyAround = new TEfficiency("eff_MaxiPadLTM_OnlyAround"," ",72,0,72,23,0,23);
+  fOutputList->Add(eff_MaxiPadLTM_OnlyAround);
 
   hTrackDistributionLTM = new TH2F("hTrackDistributionLTM","hTrackDistributionLTM",72,0,72,23,0,23);
   fOutputList->Add(hTrackDistributionLTM);
@@ -209,6 +222,8 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hTrackDistribution);
   hFiredMaxiPad = new TH2F("hFiredMaxiPad","hFiredMaxiPad",72,0,72,23,0,23);
   fOutputList->Add(hFiredMaxiPad);
+  hFiredMaxiPadOnlyAround = new TH2F("hFiredMaxiPadOnlyAround","hFiredMaxiPadOnlyAround",72,0,72,23,0,23);
+  fOutputList->Add(hFiredMaxiPadOnlyAround);
   hNotFiredMaxiPad = new TH2F("hNotFiredMaxiPad","hNotFiredMaxiPad",72,0,72,23,0,23);
   fOutputList->Add(hNotFiredMaxiPad);
   hTrackPadCorrPhi = new TH2F("hTrackPadCorrPhi","hTrackPadCorrPhi",1440,0,360,72,0,72);
@@ -227,6 +242,8 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hTriggerCounterIR2);
   hNFiredMaxiPads = new TH1F("hNFiredMaxiPads","hNFiredMaxiPads",1657,-0.5,1656.5);
   fOutputList->Add(hNFiredMaxiPads);
+  hNFiredMaxiPadsOnlyAround = new TH1F("hNFiredMaxiPadsOnlyAround","hNFiredMaxiPadsOnlyAround",1657,-0.5,1656.5);
+  fOutputList->Add(hNFiredMaxiPadsOnlyAround);
   hNTracklets = new TH1F("hNTracklets","hNTracklets",1001,-0.5,1000.5);
   fOutputList->Add(hNTracklets);
   hDetIn0 = new TH1I("hDetIn0","hDetIn0",18,-0.5,17.5),
@@ -247,6 +264,8 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hNMaxiPadIn);
   hNCrossTracks = new TH1I("hNCrossTracks","hNCrossTracks",100,0.5,100.5);
   fOutputList->Add(hNCrossTracks);
+  
+  fEventCuts.AddQAplotsToList(fOutputList);
 
   PostData(1, fOutputList);
 
@@ -358,7 +377,15 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   hNTracklets->Fill(fNtracklets);
   if(fNtracklets>fMaxMulti) return;
   
-  if(!fEventCuts.AcceptEvent(esd))return;
+  /*/
+  fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny); 
+  
+  if(!fEventCuts.AcceptEvent(esd)){
+  	cout<<"Rejecting event"<<endl;
+  	PostData(1, fOutputList);
+  	return;
+	}
+	/*/
 
   Int_t numTracksPerMaxiPad[72][23];
   Int_t numMuonTracksPerMaxiPad[72][23];
@@ -502,8 +529,41 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     for (Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM) {
       hNCrossTracks->Fill(numTracksPerMaxiPad[indexLTM][channelCTTM]);
       const Bool_t isON = fTOFmask->IsON(indexLTM, channelCTTM);
+      
+      Int_t phiPlus = indexLTM + 1;
+      if(phiPlus == 36) phiPlus = 0;
+      if(phiPlus == 72) phiPlus = 36;
+      
+      Int_t phiMinus = indexLTM - 1;
+      if(phiMinus == -1) phiMinus = 35;
+      if(phiMinus == 35) phiMinus = 71;
+      
+      Int_t etaPlus = channelCTTM + 1;
+      if(etaPlus > 22){
+      	etaPlus = channelCTTM -1;
+	if(phiPlus<36)phiPlus += 35;
+	if(phiPlus>35)phiPlus -= 35;
+	if(phiMinus<36)phiMinus += 35;
+	if(phiMinus>35)phiMinus -= 35;
+	
+	}
+      Int_t etaMinus = channelCTTM - 1;
+      if(etaMinus < 0)etaMinus = channelCTTM + 1;
+      
+      const Bool_t isONaround = (fTOFmask->IsON(indexLTM, etaPlus) || fTOFmask->IsON(indexLTM, etaMinus)
+      			 ||fTOFmask->IsON(phiPlus, channelCTTM) || fTOFmask->IsON(phiMinus, channelCTTM)
+			 ||fTOFmask->IsON(phiPlus, etaPlus) || fTOFmask->IsON(phiPlus, etaMinus)
+			 ||fTOFmask->IsON(phiMinus, etaPlus) || fTOFmask->IsON(phiMinus, etaMinus));
+      
+      
+      
       for (Int_t l=0; l<numTracksPerMaxiPad[indexLTM][channelCTTM]; ++l){
         eff_MaxiPadLTM_All->Fill(isON, indexLTM, channelCTTM);
+	eff_MaxiPadLTM_Around->Fill(isON||isONaround, indexLTM, channelCTTM);
+	eff_MaxiPadLTM_OnlyAround->Fill(!isON||isONaround, indexLTM, channelCTTM);
+	
+	if(isONaround && !isON)hFiredMaxiPadOnlyAround->Fill(indexLTM, channelCTTM);
+	if(isONaround && !isON)hNFiredMaxiPadsOnlyAround->Fill(fTOFmask->GetNumberMaxiPadOn());
 	if(!fBadMaxiPadMask[indexLTM][channelCTTM])eff_AverageTracklets->Fill(isON,fNtracklets);
 	}
 
