@@ -667,7 +667,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
   // Set special pt binning for pp 13TeV
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
-              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ){
+              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
+              ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV  ){
     binWidthPt                = 0.05;
     nBinsPt                   = 199;
     minPt                     = 0;
@@ -702,6 +703,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else if(i<301) arrClusPtBinning[i]      = 50.+1.0*(i-251);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
+  // Set special pt binning for XeXe 5.44TeV
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kXeXe5440GeV ){
     binWidthPt                = 0.1;
     nBinsPt                   = 90;
@@ -732,9 +734,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else if(i<148) arrClusPtBinning[i]      = 15.+1.0*(i-123);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
-
-  //----------------------------------------------------------------------------------------------------------------
-
+  // Set special pt binning for PbPb 5TeV
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV ){
     binWidthPt  = 0.1;
     nBinsPt     = 63;
@@ -766,9 +766,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else if(i<148) arrClusPtBinning[i]      = 15.+1.0*(i-123);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
-
-    //----------------------------------------------------------------------------------------------------------------
-
+  //----------------------------------------------------------------------------------------------------------------
   } else {
 
     for(Int_t i=0; i<nBinsPt+1;i++){
