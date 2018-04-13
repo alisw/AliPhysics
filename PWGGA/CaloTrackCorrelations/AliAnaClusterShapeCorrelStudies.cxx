@@ -2026,7 +2026,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
       fhOriginM02[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight()); 
     }
     
-    if(noverlaps > 1)
+    if(noverlaps > 0)
     {
       fhOriginENoCutOverlap  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
       fhOriginM02NoCutOverlap[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight());
