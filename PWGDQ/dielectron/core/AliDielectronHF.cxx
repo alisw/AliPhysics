@@ -656,7 +656,7 @@ void AliDielectronHF::Init()
     // mc sources
     if(fHasMC) {
       for(Int_t i=0; i<fSignalsMC->GetEntries(); i++) {
-	TString title = Form("(Signal: %s)",fSignalsMC->At(i)->GetTitle());
+	TString title = Form("(Signal: %s)",fSignalsMC->At(i)->GetName());
 	fArrPairType[istep+i]=(TObjArray*)histArr->Clone(title.Data());
 	if(fStepGenerated)  {
 	  title+=" MC truth";
