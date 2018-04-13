@@ -96,6 +96,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	fMaxMulti(0),
 	fTriggerClass(0),
 	fMaxBCs(0),
+	fUseEventSelection(0),
 	fEventCuts(0)
 
 
@@ -107,7 +108,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs)
+AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS)
   : AliAnalysisTaskSE(name),fOutputList(0),fPIDResponse(0),fTrackCuts(0),
 	fTOFmask(0),
 	eff_MaxiPadLTM_All(0),
@@ -152,6 +153,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	fMaxMulti(highmult),
 	fTriggerClass(trgcls),
 	fMaxBCs(nBCs),
+	fUseEventSelection(useEVS),
 	fEventCuts(0)
 
 {
@@ -265,8 +267,10 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   hNCrossTracks = new TH1I("hNCrossTracks","hNCrossTracks",100,0.5,100.5);
   fOutputList->Add(hNCrossTracks);
   
-  fEventCuts.AddQAplotsToList(fOutputList);
-  fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny);
+  if(fUseEventSelection){
+  	fEventCuts.AddQAplotsToList(fOutputList);
+  	fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny);
+	}
 
   PostData(1, fOutputList);
 
@@ -378,9 +382,11 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   hNTracklets->Fill(fNtracklets);
   if(fNtracklets>fMaxMulti) return;
   
-  if(!fEventCuts.AcceptEvent(esd)){
-  	PostData(1, fOutputList);
-  	return;
+  if(fUseEventSelection){
+  	if(!fEventCuts.AcceptEvent(esd)){
+  		PostData(1, fOutputList);
+  		return;
+		}
 	}
 	
 
