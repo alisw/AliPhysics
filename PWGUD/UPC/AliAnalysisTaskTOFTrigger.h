@@ -34,37 +34,41 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliPIDResponse *fPIDResponse;
   AliESDtrackCuts *fTrackCuts;
   AliTOFTriggerMask *fTOFmask;
-  TEfficiency *eff_MaxiPadLTM_All;	//!
-  TEfficiency *eff_MaxiPadLTM_Mu;	//!
-  TEfficiency *eff_MaxiPadLTM_El;	//!
-  TEfficiency *eff_MaxiPadLTM_1Trk_All;	//!
-  TEfficiency *eff_MaxiPadLTM_1Trk_Mu;	//!
-  TEfficiency *eff_MaxiPadLTM_1Trk_El;	//!
-  TEfficiency *eff_AverageTracklets;	//!
-  TEfficiency *eff_AverageTrackPt;	//!
-  TH2F *hTrackDistributionLTM;		//!
-  TH2F *hTrackDistribution_Mu;		//!
-  TH2F *hTrackDistribution_El;		//!
-  TH2F *hTrackDistribution;		//!
-  TH2F *hFiredMaxiPad;			//!
-  TH2F *hNotFiredMaxiPad;		//!
-  TH2F *hTrackPadCorrPhi;		//!
-  TH2F *hTrackPadCorrEta;		//!
-  TH2F *hNoiseMaxiPad;			//!
-  TH1I *hTriggerCounter;		//!
-  TH1I *hTriggerCounterIR1;		//!
-  TH1I *hTriggerCounterIR2;		//!
-  TH1F *hNFiredMaxiPads;		//!
-  TH1F *hNTracklets;			//!
-  TH1I *hDetIn0;			//!
-  TH1I *hDetIn1;			//!
-  TH1I *hDetIn2;			//!
-  TH1I *hDetIn3;			//!
-  TH1I *hDetIn4;			//!
-  TH1F *hPadDistance;			//!
-  TH1F *hTrackPt;			//!
-  TH1I *hNMaxiPadIn;			//!
-  TH1I *hNCrossTracks;			//!
+  TEfficiency *eff_MaxiPadLTM_All;		//!
+  TEfficiency *eff_MaxiPadLTM_Mu;		//!
+  TEfficiency *eff_MaxiPadLTM_El;		//!
+  TEfficiency *eff_MaxiPadLTM_1Trk_All;		//!
+  TEfficiency *eff_MaxiPadLTM_1Trk_Mu;		//!
+  TEfficiency *eff_MaxiPadLTM_1Trk_El;		//!
+  TEfficiency *eff_AverageTracklets;		//!
+  TEfficiency *eff_AverageTrackPt;		//!
+  TEfficiency *eff_MaxiPadLTM_Around;		//!
+  TEfficiency *eff_MaxiPadLTM_OnlyAround;	//!
+  TH2F *hTrackDistributionLTM;			//!
+  TH2F *hTrackDistribution_Mu;			//!
+  TH2F *hTrackDistribution_El;			//!
+  TH2F *hTrackDistribution;			//!
+  TH2F *hFiredMaxiPad;				//!
+  TH2F *hFiredMaxiPadOnlyAround;		//!
+  TH2F *hNotFiredMaxiPad;			//!
+  TH2F *hTrackPadCorrPhi;			//!
+  TH2F *hTrackPadCorrEta;			//!
+  TH2F *hNoiseMaxiPad;				//!
+  TH1I *hTriggerCounter;			//!
+  TH1I *hTriggerCounterIR1;			//!
+  TH1I *hTriggerCounterIR2;			//!
+  TH1F *hNFiredMaxiPads;			//!
+  TH1F *hNFiredMaxiPadsOnlyAround;		//!
+  TH1F *hNTracklets;				//!
+  TH1I *hDetIn0;				//!
+  TH1I *hDetIn1;				//!
+  TH1I *hDetIn2;				//!
+  TH1I *hDetIn3;				//!
+  TH1I *hDetIn4;				//!
+  TH1F *hPadDistance;				//!
+  TH1F *hTrackPt;				//!
+  TH1I *hNMaxiPadIn;				//!
+  TH1I *hNCrossTracks;				//!
 
   Bool_t fIsPass1;
   Bool_t fGeomLoaded;
@@ -80,7 +84,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
 
-  ClassDef(AliAnalysisTaskTOFTrigger, 9);
+  ClassDef(AliAnalysisTaskTOFTrigger, 10);
 };
 
 #endif
