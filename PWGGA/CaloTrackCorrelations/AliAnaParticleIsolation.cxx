@@ -6061,7 +6061,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               (Form("hPtNCell_SM%d_%s",ism,isoName[iso].Data()),
                Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
                nptbins,ptmin,ptmax,30,-0.5,29.5);
-              fhPtNCellPerSM[iso][ism]->SetYTitle("#lambda_{0}^{2}");
+              fhPtNCellPerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
               fhPtNCellPerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
               outputContainer->Add(fhPtNCellPerSM[iso][ism]) ;
               
@@ -6069,7 +6069,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               (Form("hPtNCell_LowM02_SM%d_%s",ism,isoName[iso].Data()),
                Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, 0.1<#lambda_{0}^{2}<0.3, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
                nptbins,ptmin,ptmax,30,-0.5,29.5);
-              fhPtNCellLowM02PerSM[iso][ism]->SetYTitle("#lambda_{0}^{2}");
+              fhPtNCellLowM02PerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
               fhPtNCellLowM02PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
               outputContainer->Add(fhPtNCellLowM02PerSM[iso][ism]) ;
               
@@ -6077,7 +6077,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
               (Form("hPtNCell_HighM02_SM%d_%s",ism,isoName[iso].Data()),
                Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, 0.5<#lambda_{0}^{2}<2, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
                nptbins,ptmin,ptmax,30,-0.5,29.5);
-              fhPtNCellHighM02PerSM[iso][ism]->SetYTitle("#lambda_{0}^{2}");
+              fhPtNCellHighM02PerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
               fhPtNCellHighM02PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
               outputContainer->Add(fhPtNCellHighM02PerSM[iso][ism]) ;
             }
