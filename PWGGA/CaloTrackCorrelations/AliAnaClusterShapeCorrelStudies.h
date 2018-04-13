@@ -58,7 +58,7 @@ public:
   void         ClusterShapeHistograms(AliVCluster* cluster,  
                                       Int_t   absIdMax    , Double_t maxCellFraction, 
                                       Float_t eCrossFrac  , Float_t ampMax  , Double_t tmax, 
-                                      Int_t   matchedPID  , Int_t    mcIndex);
+                                      Int_t   matchedPID  , Int_t    mcIndex, Int_t noverlaps);
   
   void         ClusterMatchedToTrackPID(AliVCluster *clus, Int_t & matchedPID);
   
@@ -512,6 +512,11 @@ public:
   TH2F *   fhOriginE  [3];                        //!<! check origin of selected clusters, n cell > fNCellMinShape
   TH3F *   fhOriginM02[3];                        //!<! check origin of selected clusters, vs E vs M02, n cell > fNCellMinShape
 
+  TH2F *   fhOriginENoCutOverlap  [3];            //!<! check origin of selected clusters, overlap with other cluster
+  TH3F *   fhOriginM02NoCutOverlap[3];            //!<! check origin of selected clusters, vs E vs M02, overlap with other cluster  
+  TH2F *   fhOriginEOverlap  [3];                 //!<! check origin of selected clusters, n cell > fNCellMinShape, overlap with other cluster
+  TH3F *   fhOriginM02Overlap[3];                 //!<! check origin of selected clusters, vs E vs M02, n cell > fNCellMinShape, overlap with other cluster
+  
   TH3F *   fhSMM02NoCut[3];                       //!<! SM number vs m02, no cut
   TH3F *   fhSMM02    [3];                        //!<! SM number vs m02, n cell > 4
   TH3F *   fhSMM20HighM02NoCut[3];                //!<! SM number vs m20, 0.5<m02<2, no ncell cut

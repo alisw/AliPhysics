@@ -165,6 +165,10 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhOriginM02            [i] = 0;    
     fhOriginENoCut         [i] = 0;
     fhOriginM02NoCut       [i] = 0;
+    fhOriginEOverlap       [i] = 0;
+    fhOriginM02Overlap     [i] = 0;    
+    fhOriginENoCutOverlap  [i] = 0;
+    fhOriginM02NoCutOverlap[i] = 0;
     
     // Cluster asymmetry
     fhDeltaIEtaDeltaIPhi   [i] = 0;
@@ -1431,7 +1435,7 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
 void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
 (AliVCluster* clus , Int_t   absIdMax, Double_t maxFrac  , 
  Float_t eCrossFrac, Float_t eCellMax, Double_t tmax     ,
- Int_t   matchedPID, Int_t    mcIndex)
+ Int_t   matchedPID, Int_t    mcIndex, Int_t noverlaps    )
 {
   // By definition a cluster has at least 1 cell, 
   // and shape only makes sense with at least 2
@@ -2021,6 +2025,18 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
       fhOriginE  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
       fhOriginM02[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight()); 
     }
+    
+    if(noverlaps > 1)
+    {
+      fhOriginENoCutOverlap  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
+      fhOriginM02NoCutOverlap[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight());
+      
+      if(nCell > fNCellMinShape)
+      {
+        fhOriginEOverlap  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
+        fhOriginM02Overlap[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight()); 
+      }
+    }
   } // MC
 }
 
@@ -2162,6 +2178,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     //
     Int_t mcTag   =  0;
     Int_t mcIndex = -1;
+    Int_t noverlaps =0;
     if ( IsDataMC() && fStudyShape )
     {
       mcTag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(), clus->GetNLabels(), GetMC());
@@ -2179,6 +2196,12 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
       else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCAntiProton ) ) mcIndex = 7;
       else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCNeutron    ) ) mcIndex = 8;
       else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCAntiNeutron) ) mcIndex = 9;
+      
+      const UInt_t nlabels = clus->GetNLabels();
+      Int_t overpdg[nlabels];
+      Int_t overlab[nlabels];
+      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(clus->GetLabels(), nlabels, mcTag, -1,
+                                                     GetMC(), overpdg, overlab);
     }
 
     // Cluster mathed with track? and what kind?
@@ -2217,7 +2240,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
   
     //
     if ( fStudyShape  && matchedPID >= 0 && matchedPID < 3 )
-      ClusterShapeHistograms(clus, absIdMax, maxCellFraction, eCrossFrac, ampMax, tmax, matchedPID, mcIndex);
+      ClusterShapeHistograms(clus, absIdMax, maxCellFraction, eCrossFrac, ampMax, tmax, matchedPID, mcIndex, noverlaps);
     
     //
     if ( fStudyTCardCorrelation ) 
@@ -4778,6 +4801,54 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         for(Int_t ilabel = 1; ilabel <=10; ilabel++)
           fhOriginM02[imatch]->GetYaxis()->SetBinLabel(ilabel,mcParticleStringLabel[ilabel-1]);
         outputContainer->Add(fhOriginM02[imatch]); 
+        
+        // At least one overlap with some other particle (but not merged pi0 or eta)
+        //
+        fhOriginENoCutOverlap[imatch]  = new TH2F 
+        (Form("hOriginNoCutOverlap_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin for ID %s, n_{overlaps}>0",matchCase[imatch].Data()),
+         nEbins,minE,maxE, 10,-0.5,9.5); 
+        fhOriginENoCutOverlap[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginENoCutOverlap[imatch]->SetYTitle("particle");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginENoCutOverlap[imatch]->GetYaxis()->SetBinLabel(ilabel ,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginENoCutOverlap[imatch]); 
+        
+        fhOriginM02NoCutOverlap[imatch]  = new TH3F 
+        (Form("hOriginM02NoCutOverlap_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin vs #sigma^{2}_{long} for ID %s, n_{overlaps}>0",matchCase[imatch].Data()),
+         nEbins,minE,maxE,10,-0.5,9.5,nShShBins,minShSh,maxShSh); 
+        fhOriginM02NoCutOverlap[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginM02NoCutOverlap[imatch]->SetYTitle("particle");
+        fhOriginM02NoCutOverlap[imatch]->SetZTitle("#sigma^{2}_{long}");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginM02NoCutOverlap[imatch]->GetYaxis()->SetBinLabel(ilabel,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginM02NoCutOverlap[imatch]); 
+        
+        fhOriginEOverlap[imatch]  = new TH2F 
+        (Form("hOriginOverlap_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin, #it{n}_{cells}^{w>0.01}>%d, for ID %s, n_{overlaps}>0",
+              fNCellMinShape, matchCase[imatch].Data()),
+         nEbins,minE,maxE, 10,-0.5,9.5); 
+        fhOriginEOverlap[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginEOverlap[imatch]->SetYTitle("particle");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginEOverlap[imatch]->GetYaxis()->SetBinLabel(ilabel ,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginEOverlap[imatch]); 
+        
+        fhOriginM02Overlap[imatch]  = new TH3F 
+        (Form("hOriginM02Overlap_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin vs #sigma^{2}_{long}, #it{n}_{cells}^{w>0.01}>%d, for ID %s, n_{overlaps}>0",
+              fNCellMinShape,matchCase[imatch].Data()),
+         nEbins,minE,maxE,10,-0.5,9.5,nShShBins,minShSh,maxShSh); 
+        fhOriginM02Overlap[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginM02Overlap[imatch]->SetYTitle("particle");
+        fhOriginM02Overlap[imatch]->SetZTitle("#sigma^{2}_{long}");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginM02Overlap[imatch]->GetYaxis()->SetBinLabel(ilabel,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginM02Overlap[imatch]); 
+        
+        
       } // MC
     } // match loop
     
