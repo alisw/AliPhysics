@@ -164,6 +164,8 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID(const char *name): AliAnalysisT
   fCentralityPercentMax(90),
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
+  fMinVzCut(-10.0),
+  fMaxVzCut(10.0),
   bApplyMCcorr(kFALSE),
   bV0MGainCorr(kFALSE),
   bSkipPileUpCut(kFALSE), 
@@ -532,6 +534,8 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID():
   fCentralityPercentMax(90),
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
+  fMinVzCut(-10.0),
+  fMaxVzCut(10.0),
   bApplyMCcorr(kFALSE),
   bV0MGainCorr(kFALSE),
   bSkipPileUpCut(kFALSE), 
@@ -971,35 +975,28 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   fListHist->Add(fHistRawVsCorrMultFB);
 
 
+
+
+
+
+  // Turn off PID QA histograms
+  //---------------- PID QA Histograms --------------------- 
+  /*
   fHistTPCdEdxvsPBefore = new TH2F("fHistTPCdEdxvsPBefore","Before; p (GeV/c); dEdx (arb)",200,-5,5,200,0,250);
   fListHist->Add(fHistTPCdEdxvsPBefore);
   fHistTPCdEdxvsPAfter  = new TH2F("fHistTPCdEdxvsPAfter"," After;  p (GeV/c); dEdx (arb)",200,-5,5, 200,0,250);
   fListHist->Add(fHistTPCdEdxvsPAfter);
-
 
   fHistTOFBetavsPBefore = new TH2F("fHistTOFBetavsPBefore","Before; p (GeV/c); beta ",200,-5,5,100,0.0,1.2);
   fListHist->Add(fHistTOFBetavsPBefore);
   fHistTOFBetavsPAfter  = new TH2F("fHistTOFBetavsPAfter"," After;  p (GeV/c); beta ",200,-5,5,100,0.0,1.2);
   fListHist->Add(fHistTOFBetavsPAfter);
 
-
   fHistTOFMassvsPtBefore = new TH2F("fHistTOFMassvsPtBefore","Before; p_{T}(GeV/c); m^{2}(GeV^{2}/c^{4})",200,-5,5,500,-0.5,4.5);
   fListHist->Add(fHistTOFMassvsPtBefore);
 
-  fCentDistBefore = new TH1F("fCentDistBefore","no Cut; Cent (%); Events ",100,0,100);
-  fListHist->Add(fCentDistBefore);
-
-  fCentDistAfter = new TH1F("fCentDistAfter","with Cut; Cent (%); Events ",100,0,100);
-  fListHist->Add(fCentDistAfter);
-
-
-
-
-
-  
-  //---------------- PID QA Histograms --------------------- // Turn off PID QA histograms
   //const char *gSpecies[4] = {"Pion","Kaon","proton","Charge"};
-  /*
+
   for(int i=0;i<3;i++){
     fHistPtwithTPCNsigma[i]  = new TH1F(Form("fHistPtwithTPCNsigma_%d",i), Form("%d;p_{T}(GeV/c))",i),200,-5,5); //i
     fListHist->Add(fHistPtwithTPCNsigma[i]);
@@ -1022,6 +1019,14 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   }// PID histograms done
   */
 
+
+
+
+  fCentDistBefore = new TH1F("fCentDistBefore","no Cut; Cent (%); Events ",100,0,100);
+  fListHist->Add(fCentDistBefore);
+
+  fCentDistAfter = new TH1F("fCentDistAfter","with Cut; Cent (%); Events ",100,0,100);
+  fListHist->Add(fCentDistAfter);
 
 
 
@@ -2163,7 +2168,10 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   Double_t pVtxZ = -999;
   pVtxZ = pVtx->GetZ();
     
-  if(TMath::Abs(pVtxZ)>10.) return;
+//if(TMath::Abs(pVtxZ)>10.) return;
+  //User defined cut:
+  if(pVtxZ<fMinVzCut || pVtxZ>fMaxVzCut ) return;
+
 
   fHistEventCount->Fill(stepCount); //3
   stepCount++;
@@ -2542,7 +2550,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       dEdx   = AODtrack->GetDetPid()->GetTPCsignal(); 
       ChTrk  = AODtrack->Charge();
 
-      if((ptTrk <= fMaxPtCut) && (ptTrk >= fMinPtCut) && (etaTrk <= fMaxEtaEP) && (etaTrk >= fMinEtaEP) && (dEdx >= fdEdxMin) && (nClustTPC >= fTPCclustMin) && (AODtrack->DCA() <= fDCAxyMax) && (AODtrack->ZAtDCA() <= fDCAzMax) &&  (Chi2Trk >= fTrkChi2Min) && (Chi2Trk <= 4.0) && TMath::Abs(ChTrk))
+      if(gPsiN > 0 && (ptTrk <= fMaxPtCut) && (ptTrk >= fMinPtCut) && (etaTrk <= fMaxEtaEP) && (etaTrk >= fMinEtaEP) && (dEdx >= fdEdxMin) && (nClustTPC >= fTPCclustMin) && (AODtrack->DCA() <= fDCAxyMax) && (AODtrack->ZAtDCA() <= fDCAzMax) &&  (Chi2Trk >= fTrkChi2Min) && (Chi2Trk <= 4.0) && TMath::Abs(ChTrk))
       {
 
 	ptWgtMC = 1.0;
@@ -2757,7 +2765,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
 
-  if(multEtaNeg<2 || multEtaPos<2) return;  //Minimum 2 tracks in each eta
+  if(gPsiN > 0 && (multEtaNeg<2 || multEtaPos<2)) return;  //Minimum 2 tracks in each eta
 
   fHistEventCount->Fill(stepCount); //10
   stepCount++;
@@ -2811,107 +2819,113 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
   Float_t sumMa = 0;
   Float_t sumMc = 0;
 
-  for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
+  
+  if(gPsiN>0) {  // Calculate EP only for gPsiN > 0
 
-    fMultv0 = fAODV0->GetMultiplicity(iV0);
+    for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
+
+      fMultv0 = fAODV0->GetMultiplicity(iV0);
  
-    if(fHCorrectV0M){
-      fMultv0 = fMultv0 * fHCorrectV0M->GetBinContent(iV0+1);  // Gain Correction
-    //cout<<"info: run = "<<runNumber<<" cent = "<<centrCL1<<"\t channel = "<<iV0<<" gain = "<<fHCorrectV0M->GetBinContent(iV0+1)<<endl;
-    }
+      if(fHCorrectV0M){
+	fMultv0 = fMultv0 * fHCorrectV0M->GetBinContent(iV0+1);  // Gain Correction
+	//cout<<"info: run = "<<runNumber<<" cent = "<<centrCL1<<"\t channel = "<<iV0<<" gain = "<<fHCorrectV0M->GetBinContent(iV0+1)<<endl;
+      }
      
-    fV0MultChVsRun->Fill(iV0+0.5,centrCL1,fMultv0);
-  //fV0MultChVsRun->Fill(iV0+0.5,runindex,fMultv0);
+      fV0MultChVsRun->Fill(iV0+0.5,centrCL1,fMultv0);
+      //fV0MultChVsRun->Fill(iV0+0.5,runindex,fMultv0);
 
-    phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
+      phiV0 = TMath::PiOver4()*(0.5 + iV0 % 8);
  
-    if(iV0 < 32){
-      Qxcn2  += TMath::Cos(2*phiV0) * fMultv0;
-      Qycn2  += TMath::Sin(2*phiV0) * fMultv0;
-      Qxcn3  += TMath::Cos(3*phiV0) * fMultv0;
-      Qycn3  += TMath::Sin(3*phiV0) * fMultv0;
-      sumMc += fMultv0;
-    }
-    else if(iV0 >= 32){
-      Qxan2  += TMath::Cos(2*phiV0) * fMultv0;
-      Qyan2  += TMath::Sin(2*phiV0) * fMultv0;
-      Qxan3  += TMath::Cos(3*phiV0) * fMultv0;
-      Qyan3  += TMath::Sin(3*phiV0) * fMultv0;
-      sumMa += fMultv0;
-    }
-  }//----- channel loop ----------
+      if(iV0 < 32){
+	Qxcn2  += TMath::Cos(2*phiV0) * fMultv0;
+	Qycn2  += TMath::Sin(2*phiV0) * fMultv0;
+	Qxcn3  += TMath::Cos(3*phiV0) * fMultv0;
+	Qycn3  += TMath::Sin(3*phiV0) * fMultv0;
+	sumMc += fMultv0;
+      }
+      else if(iV0 >= 32){
+	Qxan2  += TMath::Cos(2*phiV0) * fMultv0;
+	Qyan2  += TMath::Sin(2*phiV0) * fMultv0;
+	Qxan3  += TMath::Cos(3*phiV0) * fMultv0;
+	Qyan3  += TMath::Sin(3*phiV0) * fMultv0;
+	sumMa += fMultv0;
+      }
+    }//----- channel loop ----------
 
    
-  if(gPsiN==3){
-    QxanCor = Qxan3/sumMa;  //3rd order event plane
-    QyanCor = Qyan3/sumMa;
-    QxcnCor = Qxcn3/sumMc;
-    QycnCor = Qycn3/sumMc;
+    if(gPsiN==3){
+      QxanCor = Qxan3/sumMa;  //3rd order event plane
+      QyanCor = Qyan3/sumMa;
+      QxcnCor = Qxcn3/sumMc;
+      QycnCor = Qycn3/sumMc;
 
-    if(fHAvgerageQnV0C && fHAvgerageQnV0A && icentV0Qn < 91){
-      QxanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,3);  //x = Cos
-      QxcnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,3);  //x = Cos
-      QyanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,4);  //y = Sin
-      QycnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,4);  //y = Sin
+      if(fHAvgerageQnV0C && fHAvgerageQnV0A && icentV0Qn < 91){
+	QxanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,3);  //x = Cos
+	QxcnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,3);  //x = Cos
+	QyanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,4);  //y = Sin
+	QycnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,4);  //y = Sin
 
-      fV0AQ3xVsCentRun->Fill(centrCL1,QxanCor); 
-      fV0AQ3yVsCentRun->Fill(centrCL1,QyanCor); 
-      fV0CQ3xVsCentRun->Fill(centrCL1,QxcnCor);
-      fV0CQ3yVsCentRun->Fill(centrCL1,QycnCor);
+	fV0AQ3xVsCentRun->Fill(centrCL1,QxanCor); 
+	fV0AQ3yVsCentRun->Fill(centrCL1,QyanCor); 
+	fV0CQ3xVsCentRun->Fill(centrCL1,QxcnCor);
+	fV0CQ3yVsCentRun->Fill(centrCL1,QycnCor);
+      }
+      //printf("\n .... I am using my own V0 gain correction for Psi3...\n");
     }
-    //printf("\n .... I am using my own V0 gain correction for Psi3...\n");
-  }
-  else{
-    QxanCor = Qxan2/sumMa;  //2nd order Event plane 
-    QyanCor = Qyan2/sumMa;
-    QxcnCor = Qxcn2/sumMc;
-    QycnCor = Qycn2/sumMc;
+    else{
+      QxanCor = Qxan2/sumMa;  //2nd order Event plane 
+      QyanCor = Qyan2/sumMa;
+      QxcnCor = Qxcn2/sumMc;
+      QycnCor = Qycn2/sumMc;
 
-    if(fHAvgerageQnV0C && fHAvgerageQnV0A && icentV0Qn < 91){
-      QxanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,1);  //x = Cos
-      QxcnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,1);  //x = Cos
-      QyanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,2);  //y = Sin
-      QycnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,2);  //y = Sin  
+      if(fHAvgerageQnV0C && fHAvgerageQnV0A && icentV0Qn < 91){
+	QxanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,1);  //x = Cos
+	QxcnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,1);  //x = Cos
+	QyanCor -= fHAvgerageQnV0A->GetBinContent(icentV0Qn,2);  //y = Sin
+	QycnCor -= fHAvgerageQnV0C->GetBinContent(icentV0Qn,2);  //y = Sin  
 
-      fV0AQ2xVsCentRun->Fill(centrCL1,QxanCor); 
-      fV0AQ2yVsCentRun->Fill(centrCL1,QyanCor); 
-      fV0CQ2xVsCentRun->Fill(centrCL1,QxcnCor);
-      fV0CQ2yVsCentRun->Fill(centrCL1,QycnCor);
+	fV0AQ2xVsCentRun->Fill(centrCL1,QxanCor); 
+	fV0AQ2yVsCentRun->Fill(centrCL1,QyanCor); 
+	fV0CQ2xVsCentRun->Fill(centrCL1,QxcnCor);
+	fV0CQ2yVsCentRun->Fill(centrCL1,QycnCor);
+      }
+      //printf("\n .... I am using my own V0 gain correction for Psi2...\n");
     }
-    //printf("\n .... I am using my own V0 gain correction for Psi2...\n");
-  }
    
- //------ For V0-Qn Recenter and Event plane: Uncorrectd ----------
-  if(!fHAvgerageQnV0C && !fHAvgerageQnV0A){
-    fV0CQ2xVsCentRun->Fill(centrCL1,Qxcn2/sumMc);
-    fV0CQ2yVsCentRun->Fill(centrCL1,Qycn2/sumMc);
-    fV0AQ2xVsCentRun->Fill(centrCL1,Qxan2/sumMa); 
-    fV0AQ2yVsCentRun->Fill(centrCL1,Qyan2/sumMa); 
+    //------ For V0-Qn Recenter and Event plane: Uncorrectd ----------
+    if(!fHAvgerageQnV0C && !fHAvgerageQnV0A){
+      fV0CQ2xVsCentRun->Fill(centrCL1,Qxcn2/sumMc);
+      fV0CQ2yVsCentRun->Fill(centrCL1,Qycn2/sumMc);
+      fV0AQ2xVsCentRun->Fill(centrCL1,Qxan2/sumMa); 
+      fV0AQ2yVsCentRun->Fill(centrCL1,Qyan2/sumMa); 
 
-    fV0CQ3xVsCentRun->Fill(centrCL1,Qxcn3/sumMc);
-    fV0CQ3yVsCentRun->Fill(centrCL1,Qycn3/sumMc);
-    fV0AQ3xVsCentRun->Fill(centrCL1,Qxan3/sumMa); 
-    fV0AQ3yVsCentRun->Fill(centrCL1,Qyan3/sumMa);
-  }
+      fV0CQ3xVsCentRun->Fill(centrCL1,Qxcn3/sumMc);
+      fV0CQ3yVsCentRun->Fill(centrCL1,Qycn3/sumMc);
+      fV0AQ3xVsCentRun->Fill(centrCL1,Qxan3/sumMa); 
+      fV0AQ3yVsCentRun->Fill(centrCL1,Qyan3/sumMa);
+    }
 
+    if(gPsiN>2){
+      PsiNV0C = 1.0/gPsiN*( TMath::ATan2(QycnCor,QxcnCor) + TMath::Pi() );
+      PsiNV0A = 1.0/gPsiN*( TMath::ATan2(QyanCor,QxanCor) + TMath::Pi() );
+    }
+    else{
+      PsiNV0C = 1.0/gPsiN*TMath::ATan2(QycnCor,QxcnCor) ;
+      if(PsiNV0C<0.) PsiNV0C += 2*TMath::Pi()/gPsiN;
 
-
- if(gPsiN>2){
-    PsiNV0C = 1.0/gPsiN*( TMath::ATan2(QycnCor,QxcnCor) + TMath::Pi() );
-    PsiNV0A = 1.0/gPsiN*( TMath::ATan2(QyanCor,QxanCor) + TMath::Pi() );
-  }
-  else{
-    PsiNV0C = 1.0/gPsiN*TMath::ATan2(QycnCor,QxcnCor) ;
-    if(PsiNV0C<0.) PsiNV0C += 2*TMath::Pi()/gPsiN;
-
-    PsiNV0A = 1.0/gPsiN*TMath::ATan2(QyanCor,QxanCor) ;
-    if(PsiNV0A<0.) PsiNV0A += 2*TMath::Pi()/gPsiN;
-  }
+      PsiNV0A = 1.0/gPsiN*TMath::ATan2(QyanCor,QxanCor) ;
+      if(PsiNV0A<0.) PsiNV0A += 2*TMath::Pi()/gPsiN;
+    }
 
 
-  fHV0CEventPlaneVsCent->Fill(EvtCent,PsiNV0C);
-  fHV0AEventPlaneVsCent->Fill(EvtCent,PsiNV0A);
-  //-------------------------------------------------------------
+    fHV0CEventPlaneVsCent->Fill(EvtCent,PsiNV0C);
+    fHV0AEventPlaneVsCent->Fill(EvtCent,PsiNV0A);
+
+  } //---------------------  if(gPsiN>0)  --------------------------
+
+
+
+
 
 
 
@@ -3316,7 +3330,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       //else{ w1NUA = 1.0; }
     }
 
-
+    if(w1NUA==0) w1NUA = 1.0;
 
 
 
@@ -3566,7 +3580,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	//else{ w2NUA = 1.0; }
       }
 
-
+    if(w2NUA==0) w2NUA = 1.0;
 
 
 
@@ -3601,13 +3615,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	SumWgtPos2   -= w2NUA;
       }
 
+      if(SumWgtNeg2>0 && SumWgtPos2>0){
+        sumQyTPCneg2 = sumQyTPCneg2/SumWgtNeg2;
+        sumQxTPCneg2 = sumQxTPCneg2/SumWgtNeg2;
 
-      sumQyTPCneg2 = sumQyTPCneg2/SumWgtNeg2;
-      sumQxTPCneg2 = sumQxTPCneg2/SumWgtNeg2;
-
-      sumQyTPCpos2 = sumQyTPCpos2/SumWgtPos2;
-      sumQxTPCpos2 = sumQxTPCpos2/SumWgtPos2;
-
+        sumQyTPCpos2 = sumQyTPCpos2/SumWgtPos2;
+        sumQxTPCpos2 = sumQxTPCpos2/SumWgtPos2;
+      }
 
       // track by track EP:
       /*
@@ -3624,11 +3638,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
    	if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
       } */
 
-      PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) ) ; // negetive eta
-      if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
+      if(gPsiN>0){
+	PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) ) ; // negetive eta
+	if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
 
-      PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) ) ; // positive eta
-      if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
+	PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) ) ; // positive eta
+	if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
+      }
 
       //fHTPCAEventPlaneVsCent->Fill(EvtCent,PsiNTPCA);
       //fHTPCCEventPlaneVsCent->Fill(EvtCent,PsiNTPCC);
@@ -3656,13 +3672,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	fHist_Corr3p_EP_Refm_PN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	fHist_Corr3p_EP_Refm_PN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	fHist_Corr3p_EP_Refm_PN[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
-	*/ 
+	
         //2p vs Centrality:
 	fHist_Corr2p_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	fHist_Corr2p_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	fHist_Corr2p_EP_Norm_PN[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	fHist_Corr2p_EP_Norm_PN[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);	
-	/*
+       
 	fHist_Corr2p_EP_Refm_PN[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	fHist_Corr2p_EP_Refm_PN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	fHist_Corr2p_EP_Refm_PN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -3697,13 +3713,12 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_Pion_EP_Refm_PN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	  fHist_Corr3p_Pion_EP_Refm_PN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_Pion_EP_Refm_PN[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
-	  */  
 	  
 	  fHist_Corr2p_Pion_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Pion_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Pion_EP_Norm_PN[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Pion_EP_Norm_PN[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);
-	  /*
+	  
 	  fHist_Corr2p_Pion_EP_Refm_PN[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Pion_EP_Refm_PN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Pion_EP_Refm_PN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -3731,13 +3746,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_Kaon_EP_Refm_PN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	  fHist_Corr3p_Kaon_EP_Refm_PN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_Kaon_EP_Refm_PN[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
-	  */  
+	   
 	  //2p:
 	  fHist_Corr2p_Kaon_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Kaon_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Kaon_EP_Norm_PN[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Kaon_EP_Norm_PN[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);
-	  /*
+	  
 	  //2p vs Refmult:
 	  fHist_Corr2p_Kaon_EP_Refm_PN[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Kaon_EP_Refm_PN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
@@ -3767,13 +3782,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_Proton_EP_Refm_PN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	  fHist_Corr3p_Proton_EP_Refm_PN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_Proton_EP_Refm_PN[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);		
-	  */  
+	   
 	  //2p:
 	  fHist_Corr2p_Proton_EP_Norm_PN[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Proton_EP_Norm_PN[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Proton_EP_Norm_PN[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Proton_EP_Norm_PN[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);	
-	  /*
+	 
 	  fHist_Corr2p_Proton_EP_Refm_PN[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Proton_EP_Refm_PN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Proton_EP_Refm_PN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -3808,13 +3823,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	fHist_Corr3p_EP_Refm_PP[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	fHist_Corr3p_EP_Refm_PP[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	fHist_Corr3p_EP_Refm_PP[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
-	*/  
+	 
 	//2p vs Cent:
 	fHist_Corr2p_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	fHist_Corr2p_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	fHist_Corr2p_EP_Norm_PP[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	fHist_Corr2p_EP_Norm_PP[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);
-        /*
+       
 	fHist_Corr2p_EP_Refm_PP[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	fHist_Corr2p_EP_Refm_PP[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	fHist_Corr2p_EP_Refm_PP[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -3850,12 +3865,12 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_Pion_EP_Refm_PP[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	  fHist_Corr3p_Pion_EP_Refm_PP[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_Pion_EP_Refm_PP[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);	
-	  */  
+	   
 	  fHist_Corr2p_Pion_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Pion_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Pion_EP_Norm_PP[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Pion_EP_Norm_PP[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);
-	  /*
+	 
 	  fHist_Corr2p_Pion_EP_Refm_PP[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Pion_EP_Refm_PP[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Pion_EP_Refm_PP[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -3882,13 +3897,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_Kaon_EP_Refm_PP[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	  fHist_Corr3p_Kaon_EP_Refm_PP[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_Kaon_EP_Refm_PP[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);	
-	  */
+	  
 	  //2p:
 	  fHist_Corr2p_Kaon_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Kaon_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Kaon_EP_Norm_PP[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Kaon_EP_Norm_PP[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);	
-	  /*
+	  
 	  fHist_Corr2p_Kaon_EP_Refm_PP[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Kaon_EP_Refm_PP[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Kaon_EP_Refm_PP[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -3916,13 +3931,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_Proton_EP_Refm_PP[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	  fHist_Corr3p_Proton_EP_Refm_PP[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_Proton_EP_Refm_PP[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);	
-	  */
+	  
 	  //2p:
 	  fHist_Corr2p_Proton_EP_Norm_PP[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Proton_EP_Norm_PP[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Proton_EP_Norm_PP[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Proton_EP_Norm_PP[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);
-	  /*
+	  
 	  fHist_Corr2p_Proton_EP_Refm_PP[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Proton_EP_Refm_PP[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Proton_EP_Refm_PP[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -3959,13 +3974,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	fHist_Corr3p_EP_Refm_NN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	fHist_Corr3p_EP_Refm_NN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	fHist_Corr3p_EP_Refm_NN[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
-	*/
+	
 	//2p vs Cent:
 	fHist_Corr2p_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	fHist_Corr2p_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	fHist_Corr2p_EP_Norm_NN[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	fHist_Corr2p_EP_Norm_NN[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);
-        /*
+        
 	fHist_Corr2p_EP_Refm_NN[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	fHist_Corr2p_EP_Refm_NN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	fHist_Corr2p_EP_Refm_NN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -3999,13 +4014,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_Pion_EP_Refm_NN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	  fHist_Corr3p_Pion_EP_Refm_NN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_Pion_EP_Refm_NN[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
-	  */
+	  
 	  //2p:
 	  fHist_Corr2p_Pion_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Pion_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Pion_EP_Norm_NN[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Pion_EP_Norm_NN[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);
-	  /*
+	  
 	  fHist_Corr2p_Pion_EP_Refm_NN[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Pion_EP_Refm_NN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Pion_EP_Refm_NN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -4032,13 +4047,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_Kaon_EP_Refm_NN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	  fHist_Corr3p_Kaon_EP_Refm_NN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_Kaon_EP_Refm_NN[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);
-	  */
+	 
 	  //2p:
 	  fHist_Corr2p_Kaon_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Kaon_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Kaon_EP_Norm_NN[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Kaon_EP_Norm_NN[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);
-	  /*
+	 
 	  fHist_Corr2p_Kaon_EP_Refm_NN[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Kaon_EP_Refm_NN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Kaon_EP_Refm_NN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -4065,13 +4080,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	  fHist_Corr3p_Proton_EP_Refm_NN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNV0C), WgtEP*fWgtCent);
 	  fHist_Corr3p_Proton_EP_Refm_NN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCA),WgtEP*fWgtCent);
 	  fHist_Corr3p_Proton_EP_Refm_NN[QAindex][3]->Fill(RefMultCorrFB, TMath::Cos(n*dPhi1 + m*dPhi2 - p*PsiNTPCC),WgtEP*fWgtCent);	
-	  */
+	  
 	  //2p vs Cent:
 	  fHist_Corr2p_Proton_EP_Norm_NN[QAindex][0]->Fill(EvtCent, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Proton_EP_Norm_NN[QAindex][1]->Fill(EvtCent, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Proton_EP_Norm_NN[QAindex][2]->Fill(EvtCent, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Proton_EP_Norm_NN[QAindex][3]->Fill(EvtCent, TMath::Cos(4*deltaPhi), WgtEP*fWgtCent);
-	  /*
+	 
 	  fHist_Corr2p_Proton_EP_Refm_NN[QAindex][0]->Fill(RefMultCorrFB, TMath::Cos(deltaPhi),   WgtEP*fWgtCent); 
 	  fHist_Corr2p_Proton_EP_Refm_NN[QAindex][1]->Fill(RefMultCorrFB, TMath::Cos(2*deltaPhi), WgtEP*fWgtCent);
 	  fHist_Corr2p_Proton_EP_Refm_NN[QAindex][2]->Fill(RefMultCorrFB, TMath::Cos(3*deltaPhi), WgtEP*fWgtCent);
@@ -4334,7 +4349,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1]) + TMath::Pi() ) ; // positive eta
     PsiNTPCF = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[3],sumTPCQn2x[3]) + TMath::Pi() ) ; // FUll TPC eta 
   }
-  else{
+  else if(gPsiN!=0){
     PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[0],sumTPCQn2x[0]) ) ; // negetive eta
     if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
     PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumTPCQn2y[1],sumTPCQn2x[1]) ) ; // positive eta
