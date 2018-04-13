@@ -1,6 +1,6 @@
 
 
-void AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax=5.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8, Double_t fDCAxyMax=2.4,Double_t fDCAzMax=3.2, Int_t gNclustTPC=70, Double_t fCentralityMin=0., Double_t fCentralityMax=90.,TString sNuclei="PbPb", TString sTrigger="kINT7", Bool_t bSkipPileUp=kFALSE, Double_t fSlope=3.45, Float_t fConst=100, Int_t gN = 1, Int_t gM = 2, Int_t gPsiN=2, Bool_t bUseMC=kFALSE, TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", Bool_t bUseNUA=kFALSE, TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/NUA15o_pass1_FB96_C15k_CentBin5_AvgEtaFull.root", Bool_t bV0MCorr=kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/V0GainEq_LHC15o_pass1HI_C15K_RbyR.root", Bool_t bFillNUAPID=kTRUE, const char *suffix = "")
+void AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax=5.0, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8, Double_t fDCAxyMax=2.4,Double_t fDCAzMax=3.2, Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90., Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sNuclei="PbPb", TString sTrigger="kINT7", Bool_t bSkipPileUp=kFALSE, Double_t fSlope=3.45, Float_t fConst=100, Int_t gN = 1, Int_t gM = 2, Int_t gPsiN=2, Bool_t bUseMC=kFALSE, TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/FB96_Hijing_LHC15o_HI_CorSec.root", Bool_t bUseNUA=kFALSE, TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/gain/NUA15o_pass1_FB96_C15k_CentBin5_AvgEtaFull.root", Bool_t bV0MCorr=kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/V0GainEq_LHC15o_pass1HI_C15K_RbyR.root", Bool_t bFillNUAPID=kTRUE, const char *suffix = "")
 {
   // standard with task
   printf("========================================================================================\n");
@@ -64,9 +64,15 @@ void AddTaskCMEV0PID(Int_t gFilterBit = 96, Double_t fPtMin=0.2, Double_t fPtMax
   task_CME->SetHarmonicsFor3Particle(gN,gM);  // n and m, Cos(n*phi1 + m*phi2 - (n+m)Psi_{gPsiN})
   task_CME->SetEventPlaneHarmonic(gPsiN);     // gPsiN = order N of Event Plane. Look Here ---->^
   task_CME->SetFlagSkipPileUpCuts(bSkipPileUp);
-  task_CME->SetCentralityEstimator("V0M");    //V0M or V0A or V0C or V0=V0M
+  task_CME->SetVzRangeMin(fVzMin);
+  task_CME->SetVzRangeMax(fVzMax);
 
-
+  if(sCentEstimator=="V0" || sCentEstimator=="V0M"){
+    task_CME->SetCentralityEstimator("V0M");    //V0M or V0A or V0C or V0=V0M
+  }
+  else{
+    task_CME->SetCentralityEstimator(sCentEstimator);    //V0M or V0A or V0C or V0=V0M
+  }
 
 
 
