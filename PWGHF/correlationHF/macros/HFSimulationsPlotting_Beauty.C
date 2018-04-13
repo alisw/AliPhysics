@@ -172,7 +172,11 @@ void CalculateDHadronCorrelations(TList *CorrelationListtemp, TString DMeson, TS
     namefile_gif1D.Form("./plots_beauty/Specific/png/%s.png", FileName.Data());
     Corr1D->Print(namefile_gif1D);
     Corr1D->Close();
-    
+        
+    TH1F *hnTriggers = new TH1F("hnTriggers",Form("Number of %s triggers",DMeson.Data()),1,0.,1.);
+    hnTriggers->Sumw2();
+    hnTriggers->SetBinContent(1,nTrg);
+    hnTriggers->SetBinError(1,TMath::Sqrt(nTrg));
     
     FileName += ".root";
     TFile *fOut=new TFile(FileName.Data(),"RECREATE");
@@ -181,6 +185,7 @@ void CalculateDHadronCorrelations(TList *CorrelationListtemp, TString DMeson, TS
     Corr2D->Write();
     Correlations1D->Write();
     Corr1D->Write();
+    hnTriggers->Write();
     Corr2D->Close();
     Corr1D->Close();
     fOut->Close();
