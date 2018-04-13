@@ -17,14 +17,14 @@ class AliESDtrackCuts;
 class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskTOFTrigger();
-  AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs);
+  AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS);
   virtual ~AliAnalysisTaskTOFTrigger();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-  void SetupParameters(Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs)
-  			{fMaxPt = highpt; fMinPt = lowpt; fMaxMulti = highmult; fTriggerClass = trgcls;fMaxBCs = nBCs;}
+  void SetupParameters(Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS)
+  			{fMaxPt = highpt; fMinPt = lowpt; fMaxMulti = highmult; fTriggerClass = trgcls;fMaxBCs = nBCs;fUseEventSelection = useEVS;}
   void GetLTMIndex(const Int_t * const detind, Int_t *indexLTM);
 
  private:
@@ -77,6 +77,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   Int_t fMaxMulti;
   TString fTriggerClass;
   Int_t fMaxBCs;
+  Bool_t fUseEventSelection;
   
   AliEventCuts fEventCuts;	
 
