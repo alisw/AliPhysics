@@ -3,7 +3,6 @@
 #include <TGraphErrors.h>
 #include <TCanvas.h>
 #include <TH1.h>
-#include <TFile.h>
 #include <TF1.h>
 #include <TStyle.h>
 #include <TLegend.h>
@@ -14,7 +13,7 @@
 #include "AliTriggerBCMask.h"
 
 #include "AliVdMPileup.h"
-#include "proc_pileup.h"
+#include "proc_bkgd.h"
 
 template<typename T>
 T* SetAttr(T* h, Int_t color) {
@@ -24,41 +23,57 @@ T* SetAttr(T* h, Int_t color) {
   h->SetLineWidth(1);
   return h;
 }
-TH1* FitPol0(TH1* h, const char* opt0, const char*opt1, Double_t x0, Double_t x1) {
-  h->Fit("pol0", opt0, opt1, x0, x1);
+TH1* FitPol0(TH1* h) {
+  h->Fit("pol0");
   dynamic_cast<TF1*>(h->FindObject("pol0"))->SetLineColor(h->GetLineColor());
   return h;
 }
 
-void proc_pileup(const AliVdMMetaData& vdmMetaData,
-                 AliVdMScanData& allData,
-                 const char* classAC,
-                 const char* classAnotC,
-                 const char* classCnotA,
-                 const std::vector<Double_t>& par0,
-                 Bool_t subtractBkgd)
+void proc_bkgd(const AliVdMMetaData& vdmMetaData,
+               AliVdMScanData& allData,
+               const char* className)
 {
+  TFile::Open(AliVdMMetaData::GetFileName(TString::Format("%d/%d.root",
+                                                          vdmMetaData.GetFillNumber(),
+                                                          vdmMetaData.GetFillNumber())));
+  TTree *tOffline = nullptr;
+  gFile->GetObject("Vertex_Performance/cOutputVtxESD", tOffline);
+
+  const std::vector<std::string> neededBranches({"timestamp", "bx", "isT0", "timeAD", "timeV0"});
+  tOffline->SetBranchStatus("*", 0);
+  for (const auto& branchName : neededBranches)
+    tOffline->SetBranchStatus(branchName.c_str(), 1);
+
+  struct TreeData {
+    UInt_t timeStamp;
+    UInt_t bx;
+    Bool_t isT0;
+    Float_t timeV0[2];
+    Float_t timeAD[2];
+    Short_t decV0online[2];
+    Short_t decADonline[2];
+  } treeData;
+  tOffline->SetBranchAddress("timeStamp", &treeData.timeStamp);
+  tOffline->SetBranchAddress("bx",        &treeData.bx);
+  tOffline->SetBranchAddress("isT0",      &treeData.isT0);
+  tOffline->SetBranchAddress("timeV0",    &treeData.timeStamp);
+  tOffline->SetBranchAddress("timeAD",    &treeData.timeAD);
+
   typedef std::map<Short_t, TGraphErrors> map_t; // BCID -> TGraphErrors
   map_t gAnotC, gCnotA;  // one-arm/two-arm ratios
 
   // (1) fill one-arm/two-arm ratio graphs for all BCIDs
   for (Int_t iScan=0; iScan<4; ++iScan) {
-    AliVdMTree& vtAND   = allData.GetMap(iScan)[classAC];
-    AliVdMTree& vtAnotC = allData.GetMap(iScan)[classAnotC];
-    AliVdMTree& vtCnotA = allData.GetMap(iScan)[classCnotA];
-    vtAND.Zip3([&gAnotC,&gCnotA,&subtractBkgd](const AliVdMTree::DefaultBranchData& d,
-                                               AliVdMTree::branchMap_t& mapAC,
-                                               AliVdMTree::branchMap_t& mapAnotC,
-                                               AliVdMTree::branchMap_t& mapCnotA)
+    AliVdMTree& vt  = allData.GetMap(iScan)[className];
+    vtAND.Zip3([&gAnotC,&gCnotA](const AliVdMTree::DefaultBranchData& d,
+                                 AliVdMTree::branchMap_t& mapAC,
+                                 AliVdMTree::branchMap_t& mapAnotC,
+                                 AliVdMTree::branchMap_t& mapCnotA)
                {
-                 if (!mapAC["rate"].val())
-                   return;
                  AliVdMTree::ValErr v1 = mapAnotC["rate"];
                  v1 /= mapAC["rate"];
-                 if (subtractBkgd) {
-                   // v1 /= mapAC["relBkgd"];
-                   v1 *= mapAnotC["relBkgd"];
-                 }
+                 // v1 /= mapAC["relBkgd"];
+                 v1 *= mapAnotC["relBkgd"];
                  if (!v1.isInf() && v1.val()) {
                    const Int_t m1 = gAnotC[d.BCID()].GetN();
                    gAnotC[d.BCID()].SetPoint     (m1, mapAC["mu"].val(), v1.val());
@@ -66,11 +81,8 @@ void proc_pileup(const AliVdMMetaData& vdmMetaData,
                  }
                  AliVdMTree::ValErr v2 = mapCnotA["rate"];
                  v2 /= mapAC["rate"];
-                 if (subtractBkgd) {
-                   // v2 /= mapAC["relBkgd"];
-                   v2 *= mapCnotA["relBkgd"];
-                 }
-                 Printf("AandC,AnotC,CnotA: %8.2f %8.2f %8.2f ",  mapAC["rate"].val(), mapAnotC["rate"].val(), mapCnotA["rate"].val());
+                 // v2 /= mapAC["relBkgd"];
+                 v2 *= mapCnotA["relBkgd"];
                  if (!v2.isInf() && v2.val()) {
                    const Int_t m2 = gCnotA[d.BCID()].GetN();
                    gCnotA[d.BCID()].SetPoint     (m2, mapAC["mu"].val(), v2.val());
@@ -101,14 +113,9 @@ void proc_pileup(const AliVdMMetaData& vdmMetaData,
     SetAttr(new TH1D("hChi2NDF", histTitleBase+"#chi^{2}/n.d.f.", nBCs,0,nBCs), kBlue)
   };
 
-  Int_t counterBCOK = 0;
   for (Int_t bc=0, counter=0; bc<3564; ++bc) {
     if (bcMask.GetMask(bc))
       continue;
-    if (!gAnotC[bc].GetN())
-      continue;
-
-    ++counterBCOK;
 
     const TString binLabel = TString::Format("%d", bc);
     for (Int_t i=0; i<5; ++i)
@@ -117,8 +124,7 @@ void proc_pileup(const AliVdMMetaData& vdmMetaData,
     c1->Clear();
     c1->SetLogx();
     c1->SetLogy();
-    const Double_t muMax = 0.5;
-    TH1 *hf = c1->DrawFrame(1e-6, 0.01, muMax, 20);
+    TH1 *hf = c1->DrawFrame(1e-6, 0.01, 0.5, 20);
     hf->SetTitle(TString::Format("fill %d BCID=%d %s;#mu_{0} [rate(%s,BC=%d)/11245Hz];one-arm/two-arm",
                                  vdmMetaData.GetFillNumber(), bc, classAC, classAC, bc));
     hf->GetXaxis()->SetTitleOffset(1.3);
@@ -129,12 +135,12 @@ void proc_pileup(const AliVdMMetaData& vdmMetaData,
     gAnotC[bc].Draw("PE");
     gCnotA[bc].Draw("PE");
 
-    TF1 *fAnotC = SetAttr(new TF1("fAnotC", &pileupModel, &AliVdMPileup::fcnAnotC, 1e-6, muMax, 5), kBlue);
+    TF1 *fAnotC = SetAttr(new TF1("fAnotC", &pileupModel, &AliVdMPileup::fcnAnotC, 1e-6, 0.5, 5), kBlue);
     fAnotC->SetParameters(pileupModel.GetPar());
     fAnotC->SetNpx(1000);
     fAnotC->Draw("same");
 
-    TF1 *fCnotA = SetAttr(new TF1("fCnotA", &pileupModel, &AliVdMPileup::fcnCnotA, 1e-6, muMax, 5), kRed);
+    TF1 *fCnotA = SetAttr(new TF1("fCnotA", &pileupModel, &AliVdMPileup::fcnCnotA, 1e-6, 0.5, 5), kRed);
     fCnotA->SetParameters(pileupModel.GetPar());
     fCnotA->SetNpx(1000);
     fCnotA->Draw("same");
@@ -178,23 +184,11 @@ void proc_pileup(const AliVdMMetaData& vdmMetaData,
   gStyle->SetOptFit(111);
   TCanvas *c2 = new TCanvas;
   for (Int_t i=0; i<4; ++i) {
-    hPar[i]->GetXaxis()->SetRangeUser(0, counterBCOK);
-    FitPol0(hPar[i], "", "", 0, counterBCOK)->Draw();
+    FitPol0(hPar[i])->Draw();
     c2->SaveAs(pn);
   }
-  hPar[4]->GetXaxis()->SetRangeUser(0, counterBCOK);
   hPar[4]->SetMinimum(0);
   hPar[4]->Draw();
   c2->SaveAs(pn+")");
-  pn.ReplaceAll("pdf", "root");
-  TFile::Open(pn, "RECREATE");
-  for (Int_t i=0; i<5; ++i)
-    hPar[i]->Write();
-  for_each(gAnotC.begin(), gAnotC.end(),
-           [&](const map_t::value_type& v) { v.second.Write(TString::Format("gAnotC_%d", v.first)); });
-  for_each(gCnotA.begin(), gCnotA.end(),
-           [&](const map_t::value_type& v) { v.second.Write(TString::Format("gCnotA_%d", v.first)); });
-  gFile->Write();
-  gFile->Close();
 }
 
