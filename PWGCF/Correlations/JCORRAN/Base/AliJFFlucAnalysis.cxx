@@ -53,6 +53,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fh_vertex(),
 	fh_eta(),
 	fh_phi(),
+	fh_phieta(),
 	//fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
@@ -95,6 +96,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fh_vertex(),
 	fh_eta(),
 	fh_phi(),
+	fh_phieta(),
 	//fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
@@ -146,6 +148,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fh_vertex(a.fh_vertex),
 	fh_eta(a.fh_eta),
 	fh_phi(a.fh_phi),
+	fh_phieta(a.fh_phieta),
 	//fh_Qvector(a.fh_Qvector),
 	fh_ntracks(a.fh_ntracks),
 	fh_vn(a.fh_vn),
@@ -226,13 +229,17 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< "END" ;
 
 	fh_eta
-		<< TH1D("h_eta", "h_eta", 100, -15, 15 )
+		<< TH1D("h_eta", "h_eta", 10, -10.0, 10.0 )
 		<< fHistCentBin
 		<< "END" ;
 	fh_phi
-		<< TH1D("h_phi", "h_phi", 100, -10, 10)
+		<< TH1D("h_phi", "h_phi", 50,-TMath::Pi(),TMath::Pi())
 		<< fHistCentBin << fBin_Subset
 		<< "END" ;
+	fh_phieta
+		<< TH2D("h_phieta","h_phieta",50,-TMath::Pi(),TMath::Pi(),10,-10.0,10.0)
+		<< fHistCentBin
+		<< "END";
 	/*fh_Qvector
 		<< TH1D("h_QVector", "h_QVector", 100, -10, 10)
 		<< fHistCentBin << fBin_Subset
@@ -728,10 +735,13 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 	for( Long64_t it=0; it < ntracks; it++){
 		AliJBaseTrack *itrack = (AliJBaseTrack*)fInputList->At(it); // load track
 		Double_t eta = itrack->Eta();
+		Double_t phi = itrack->Phi();
+
+		fh_phieta[fCBin]->Fill(phi,eta);
+
 		if(TMath::Abs(eta) < eta1 || TMath::Abs(eta) > eta2)
 			continue;
 
-		Double_t phi = itrack->Phi();
 		Double_t phi_module_corr = 1.0;
 		if(flags & FLUC_PHI_CORRECTION && pPhiWeights){
 			Double_t w = pPhiWeights->GetBinContent(
