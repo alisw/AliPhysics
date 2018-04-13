@@ -125,12 +125,20 @@ void AverageDmesonTemplates(TString DMesonpTRange, Double_t pTasso) {
 
     cout << "Evaluating average for " << DMesonpTRange.Data() << ", " << pTRange.Data() << endl;    
 
+    TH1F *hnTriggers = new TH1F("hnTriggers","Number of average triggers",1,0.,1.);
+    hnTriggers->Sumw2();
+    hnTriggers->SetBinContent(1,nTrigDzero+nTrigDplus+nTrigDstar);
+    hnTriggers->SetBinError(1,TMath::Sqrt(nTrigDzero+nTrigDplus+nTrigDstar));
+
     FileName.Form("ppCorrelationPlots%sPtAveragefromC%s_%s_DeltaEta10.root", genName.Data(), DMesonpTRange.Data(), pTRange.Data());
     TFile *fOut=new TFile(FileName.Data(),"RECREATE");
     fOut->cd();
     hAverage->Write();
+    hnTriggers->Write();
     fOut->Close();
+
     hAverage->Delete();
+    hnTriggers->Delete();
 
 }
 
