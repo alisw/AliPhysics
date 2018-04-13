@@ -277,6 +277,9 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                   = 1,    
     cuts.AddCut("80000413","00200009327000008250400000","1111141007032230000","0163103100000010"); // 0.25 \mus protected
     cuts.AddCut("80000513","00200009327000008250400000","1111141007032230000","0163103100000010"); // 1.075 \mus protected
 
+  } else if (trainConfig == 15) {
+    cuts.AddCut("80000113","00200009327000008250400000","2444451044013200000","0163103100000010"); // standart cut, kINT7
+    cuts.AddCut("80062113","00200009327000008250400000","2444451044013200000","0163103100000010"); // standard cut, kPHI7
 
   } else if (trainConfig == 17){ // EMCAL clusters standard cuts cent dependent
     cuts.AddCut("80200113","00200009327000008250400000","1111141057032230000","0163103100000010"); // 0-20
