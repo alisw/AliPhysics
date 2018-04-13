@@ -95,7 +95,7 @@ AliT0Digitizer::AliT0Digitizer(AliDigitizationInput* digInput)
   AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entry->GetObject());
   if (!grpData) {printf("Failed to get GRP data for run"); return;}
   TString LHCperiod = grpData->GetLHCPeriod();
-  if(LHCperiod.Contains("LHC15") || LHCperiod.Contains("LHC16") || LHCperiod.Contains("LHC17") || LHCperiod.Contains("LHC18") ) fRun2=kTRUE;
+  if(LHCperiod.Contains("LHC15") || LHCperiod.Contains("LHC16") || LHCperiod.Contains("LHC17") ||   LHCperiod.Contains("LHC18")) fRun2=kTRUE;
   else 
     fRun2=kFALSE;
 
@@ -190,13 +190,13 @@ void AliT0Digitizer::Digitize(Option_t* /*option*/)
   // From hits to digits
   //
   Int_t hit, nhits;
-  Int_t countE[24];
+  Int_t countE[30];
   Int_t volume, pmt, trCFD, trLED; 
   Float_t sl=0, qt=0;
   Int_t  bestATDC=0;
   Int_t  bestCTDC=0;
   Float_t qtCh=0;
-  Float_t time[24], besttime[24], timeGaus[24] ;
+  Float_t time[30], besttime[30], timeGaus[30] ;
   //Q->T-> coefficients !!!! should be asked!!!
   Float_t timeDelayCFD[24];
   Int_t threshold =50; //photoelectrons
@@ -237,7 +237,7 @@ void AliT0Digitizer::Digitize(Option_t* /*option*/)
     fADC -> Reset();
     fADC0 -> Reset();
     ftimeLED ->Reset();
-    for (Int_t i0=0; i0<24; i0++)
+    for (Int_t i0=0; i0<30; i0++)
       {
 	time[i0]=besttime[i0]=timeGaus[i0]=999999; countE[i0]=0;
       }
@@ -282,7 +282,7 @@ void AliT0Digitizer::Digitize(Option_t* /*option*/)
 	  Int_t numpmt=pmt-1;
 	  Double_t e=startHit->Etot();
 	  volume = startHit->Volume();
-	  
+	  if(volume==3) numpmt=24+pmt-1;
 	  if(e>0 ) {
 	    countE[numpmt]++;
 	    besttime[numpmt] = startHit->Time();
@@ -314,7 +314,16 @@ void AliT0Digitizer::Digitize(Option_t* /*option*/)
 	  pmtBestA=ipmt;}
       }	
     }
-
+    if (fRun2) {
+      for ( Int_t ipmt=24; ipmt<28; ipmt++)  {
+	if(countE[ipmt] > threshold) {
+	  timeGaus[ipmt]=gRandom->Gaus(time[ipmt],25); 
+	  trLED= Int_t (timeGaus[ipmt]/channelWidth) ;
+	  ftimeLED->AddAt(trLED,ipmt-24);
+	  printf("@@@@ pmt %i countE%i timeLED %i \n",ipmt,countE[ipmt], trLED);
+	}
+      }
+    }
     timeDelayCFD[0] = fParam->GetTimeDelayCFD(0);
  
     for (Int_t i=0; i<24; i++)
@@ -354,8 +363,9 @@ void AliT0Digitizer::Digitize(Option_t* /*option*/)
 	  if(!fRun2)
 	    trCFD = trCFD + Int_t(slew); //for the same channel as cosmic
 	  ftimeCFD->AddAt(Int_t (trCFD),i);
+
 	  trLED = Int_t(trCFD  + sl );
-	  ftimeLED->AddAt(trLED,i); 
+	  if (!fRun2) ftimeLED->AddAt(trLED,i); 
 	  AliDebug(1,Form("  pmt %i : delay %f time in ns %f time in channels %i  LEd %i  ",  i, timeDelayCFD[i], timeGaus[i],trCFD, trLED ));
 	  AliDebug(1,Form(" qt in MIP %f led-cfd in  %f qt in channels %f   ",qt, sl, qtCh));
 

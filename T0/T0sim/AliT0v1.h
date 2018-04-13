@@ -20,7 +20,7 @@ public:
   AliT0v1();
   AliT0v1(const char *name, const char *title);
   AliT0v1(const AliT0v1& o):AliT0(),
-    fIdSens1(0),
+    fIdSens1(0),fIdSens2(0),
     fEffPMT(0x0) {((AliT0v1 &) o).Copy(*this);}
   
   AliT0v1& operator=(const AliT0v1&) { return *this; }
@@ -37,9 +37,10 @@ public:
 
 protected:
   Int_t fIdSens1; // Sensetive volume  in T0
+  Int_t fIdSens2; // Sensetive volume  in T0
   TObjArray fEffPMT; //pmt registration effeicincy
  
-  ClassDef(AliT0v1,2)  //Class for T0 version 1
+  ClassDef(AliT0v1,3)  //Class for T0 version 1
 };
 
 typedef AliT0v1 AliSTARTv1; // for backward compatibility

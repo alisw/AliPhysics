@@ -63,7 +63,7 @@ ClassImp(AliT0v1)
 
 //--------------------------------------------------------------------
 AliT0v1::AliT0v1():  AliT0(),
-		     fIdSens1(0),
+		     fIdSens1(0),fIdSens2(0),
 		     fEffPMT(0x0)
 
 {
@@ -73,7 +73,7 @@ AliT0v1::AliT0v1():  AliT0(),
 //--------------------------------------------------------------------
 AliT0v1::AliT0v1(const char *name, const char *title):
   AliT0(name,title),
-  fIdSens1(0),
+  fIdSens1(0),fIdSens2(0),
   fEffPMT(0x0)
 
 {
@@ -106,17 +106,17 @@ void AliT0v1::CreateGeometry()
   */
   //
 
-
-   Int_t *idtmed = fIdtmed->GetArray();
-   /*
-   AliT0Parameters* param = AliT0Parameters::Instance();
-   param->Init();
-  Float_t zdetC = param->GetZposition(0);
-  Float_t zdetA = param->GetZposition(1);
-   */
-   Float_t zdetC = 69.7;
-   Float_t zdetA = 373.;
-
+  
+  Int_t *idtmed = fIdtmed->GetArray();
+  /*
+    AliT0Parameters* param = AliT0Parameters::Instance();
+    param->Init();
+    Float_t zdetC = param->GetZposition(0);
+    Float_t zdetA = param->GetZposition(1);
+  */
+  Float_t zdetC = 69.7;
+  Float_t zdetA = 373.;
+  
   Int_t is;
   Int_t idrotm[999];
   Double_t x,y,z;
@@ -150,215 +150,215 @@ void AliT0v1::CreateGeometry()
   Float_t psupport7[3] = {1.44,1.45,0.4}; //kolechko snaruzhu stakanchika Al
    
   // Mother Volume katushka dlia krepezha vokrug truby k Absorbru
-    AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
+  AliMatrix(idrotm[901], 90., 0., 90., 90., 180., 0.);
   Float_t ppcon[70]; 
-    ppcon[0]  =   0;
-    ppcon[1]  = 360;
-    ppcon[2]  =  13;
-//  1: 
-    ppcon[3]  =  7.2;
-    ppcon[4]  =   4.4;
-    ppcon[5]  =   4.5;
-//  2
-    ppcon[6]  = 8.2;
-    ppcon[7]  = 4.4;
-    ppcon[8]  = 4.5;
-//  3
-    ppcon[9]  = 8.2;
-    ppcon[10] = 4.4;
-    ppcon[11] = 5.1;
-
-//  4
-
-    ppcon[12] = 8.3; 
-    ppcon[13] = 4.4;
-    ppcon[14] = 5.1;
-//  5
-
-    ppcon[15] = 8.3;
-    ppcon[16] = 4.9;
-    ppcon[17] = 5.1;
+  ppcon[0]  =   0;
+  ppcon[1]  = 360;
+  ppcon[2]  =  13;
+  //  1: 
+  ppcon[3]  =  7.2;
+  ppcon[4]  =   4.4;
+  ppcon[5]  =   4.5;
+  //  2
+  ppcon[6]  = 8.2;
+  ppcon[7]  = 4.4;
+  ppcon[8]  = 4.5;
+  //  3
+  ppcon[9]  = 8.2;
+  ppcon[10] = 4.4;
+  ppcon[11] = 5.1;
+  
+  //  4
+  
+  ppcon[12] = 8.3; 
+  ppcon[13] = 4.4;
+  ppcon[14] = 5.1;
+  //  5
+  
+  ppcon[15] = 8.3;
+  ppcon[16] = 4.9;
+  ppcon[17] = 5.1;
+  
+  //  6
+  ppcon[18] = 15.; 
+  ppcon[19] = 4.9;
+  ppcon[20] = 5.1;
+  
+  //  7
+  ppcon[21] = 15.; 
+  ppcon[22] = 3.15  ;
+  ppcon[23] = 5.1;
+  
+  /// 8
+  ppcon[24] = 15.01; 
+  ppcon[25] = 3.15;
+  ppcon[26] = 5.1;
+  
+  /// 9
+  ppcon[27] = 15.01; 
+  ppcon[28] = 3.15;
+  ppcon[29] = 3.25;
     
-//  6
-    ppcon[18] = 15.; 
-    ppcon[19] = 4.9;
-    ppcon[20] = 5.1;
     
-//  7
-    ppcon[21] = 15.; 
-    ppcon[22] = 3.15  ;
-    ppcon[23] = 5.1;
-
-/// 8
-    ppcon[24] = 15.01; 
-    ppcon[25] = 3.15;
-    ppcon[26] = 5.1;
-
 /// 9
-    ppcon[27] = 15.01; 
-    ppcon[28] = 3.15;
-    ppcon[29] = 3.25;
-
-    
-/// 9
-     ppcon[30] = 19.71;
-     ppcon[31] = 3.15;
-     ppcon[32] = 3.25; 
-//  10
-    ppcon[33] = 19.8; 
-    ppcon[34] = 3.15;
-    ppcon[35] = 3.25;
-    //  11
-    ppcon[36] = 19.8;
-    ppcon[37] = 3.15;
-    ppcon[38] = 7.6;
-        
+  ppcon[30] = 19.71;
+  ppcon[31] = 3.15;
+  ppcon[32] = 3.25; 
+  //  10
+  ppcon[33] = 19.8; 
+  ppcon[34] = 3.15;
+  ppcon[35] = 3.25;
+  //  11
+  ppcon[36] = 19.8;
+  ppcon[37] = 3.15;
+  ppcon[38] = 7.6;
+  
    //  14
 
-    ppcon[39] =  19.99;
-    ppcon[40] =  3.15;
-    ppcon[41] =  7.6;
-
-
-    TVirtualMC::GetMC()->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,42);
-    z = -zdetC;
-    TVirtualMC::GetMC()->Gspos("0SUP",1,"ALIC",0.,0.,z,idrotm[901],"ONLY");
-   
-//-------------------------------------------------------------------
- //  T0 volume 
- //-------------------------------------------------------------------
+  ppcon[39] =  19.99;
+  ppcon[40] =  3.15;
+  ppcon[41] =  7.6;
   
-    
-    TVirtualMC::GetMC()->Gsvolu("0STR","PCON",idtmed[kAir],pstartR,18);
-    TVirtualMC::GetMC()->Gspos("0STR",1,"ALIC",0.,0.,-zdetC+pstartR[3],idrotm[901],"ONLY");
-    // TVirtualMC::GetMC()->Gspos("0STL",1,"ALIC",0.,0.,zdetA+pstart[2],0,"ONLY");
-
-//T0 interior
-   TVirtualMC::GetMC()->Gsvolu("0INS","TUBE",idtmed[kAir],pinstart,3);
-   TVirtualMC::GetMC()->Gsvolu("0PMT","TUBE",idtmed[kAir],ppmt,3);     
-          
-    TVirtualMC::GetMC()->Gsvolu("0SU1","TUBE",idtmed[kC],psupport1,3);//C kozhuh vnutri
-    TVirtualMC::GetMC()->Gsvolu("0SU2","TUBE",idtmed[kC],psupport2,3);// snaruzhi  C
-    TVirtualMC::GetMC()->Gsvolu("0SU3","TUBE",idtmed[kC],psupport3,3);//kryshka perednaiai  C
-    TVirtualMC::GetMC()->Gsvolu("0SU4","TUBE",idtmed[kC],psupport3,3);//kryshka zadnaiai  C
-    //    TVirtualMC::GetMC()->Gsvolu("0SU5","TUBE",idtmed[kAir],psupport4,3);// dyrki dlia feu v zadnej kryshke Air
-    TVirtualMC::GetMC()->Gsvolu("0SU6","TUBE",idtmed[kC],psupport5,3);// stakanchik dlai feu  C
-    TVirtualMC::GetMC()->Gsvolu("0SU7","TUBE",idtmed[kAl],psupport6,3);//kryshechka stakanchika  Al
-    TVirtualMC::GetMC()->Gsvolu("0SU8","TUBE",idtmed[kAl],psupport7,3);//kolechko snaruzhu stakanchika Al
-   
- 
-
-   //non-absorber side support  and T0A !!!!!!!!
-    
-    TGeoPcon * supPgon = new TGeoPcon("0supPgon",0.,360.,4);
-    supPgon->DefineSection(0, 0, 4.1, 5.5);
-    supPgon->DefineSection(1, 10.5 , 4.1, 5.5);
-    supPgon->DefineSection(2, 10.5 , 4.1, 4.9);
-    supPgon->DefineSection(3, 12.5 , 4.1, 4.9);
-    TGeoTranslation *trPgon = new TGeoTranslation("0trPgon",0,0,0);
-    trPgon->RegisterYourself();
- 
-    TGeoVolumeAssembly * stlin = new TGeoVolumeAssembly("0STL");//empty segment
-    TGeoVolume *ins = gGeoManager->GetVolume("0INS");
-
-    new TGeoTube("0HOLE", 0, 1.51, 6.5);
-    TGeoTranslation *tr [12];
-    Double_t angle  = 2 * TMath::Pi() / 12;
-    // Char_t nameTr[40];
-    TString nameTr;
-    for (Int_t itr=0; itr<12; itr++) {
-      //      sprintf (nameTr,"0TR%i",itr+1);
-      nameTr = Form("0TR%i",itr+1);
-      x = 6.5 * TMath::Sin(itr * angle);
-      y = 6.5 * TMath::Cos(itr * angle);
-      tr[itr] = new TGeoTranslation(nameTr.Data(),x,y,6.5);
-      tr[itr]->RegisterYourself();
-      stlin->AddNode(ins,itr+13,tr[itr]);
-    }
-    TGeoCompositeShape *supsh = new TGeoCompositeShape("0supsh","0supPgon:0trPgon-(0HOLE:0TR1+0HOLE:0TR2+0HOLE:0TR3+0HOLE:0TR4+0HOLE:0TR5+0HOLE:0TR6+0HOLE:0TR7+0HOLE:0TR8+0HOLE:0TR9+0HOLE:0TR10+0HOLE:0TR11+0HOLE:0TR12)");
   
-    TGeoMedium *medal = gGeoManager->GetMedium("T0_Aluminium$");
-    TGeoVolume *supA = new TGeoVolume("0SUA",supsh,medal);
-    stlin->AddNode(supA,1,new TGeoTranslation(0,0,0));
- 
-    TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
-    alice->AddNode(stlin,1,new TGeoTranslation(0,0, zdetA ));
-            
-    // T0A finished
+  TVirtualMC::GetMC()->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,42);
+  z = -zdetC;
+  TVirtualMC::GetMC()->Gspos("0SUP",1,"ALIC",0.,0.,z,idrotm[901],"ONLY");
+  
+  //-------------------------------------------------------------------
+  //  T0 volume 
+  //-------------------------------------------------------------------
+  
+  
+  TVirtualMC::GetMC()->Gsvolu("0STR","PCON",idtmed[kAir],pstartR,18);
+  TVirtualMC::GetMC()->Gspos("0STR",1,"ALIC",0.,0.,-zdetC+pstartR[3],idrotm[901],"ONLY");
+  // TVirtualMC::GetMC()->Gspos("0STL",1,"ALIC",0.,0.,zdetA+pstart[2],0,"ONLY");
+  
+  //T0 interior
+  TVirtualMC::GetMC()->Gsvolu("0INS","TUBE",idtmed[kAir],pinstart,3);
+  TVirtualMC::GetMC()->Gsvolu("0PMT","TUBE",idtmed[kAir],ppmt,3);     
+  
+  TVirtualMC::GetMC()->Gsvolu("0SU1","TUBE",idtmed[kC],psupport1,3);//C kozhuh vnutri
+  TVirtualMC::GetMC()->Gsvolu("0SU2","TUBE",idtmed[kC],psupport2,3);// snaruzhi  C
+  TVirtualMC::GetMC()->Gsvolu("0SU3","TUBE",idtmed[kC],psupport3,3);//kryshka perednaiai  C
+  TVirtualMC::GetMC()->Gsvolu("0SU4","TUBE",idtmed[kC],psupport3,3);//kryshka zadnaiai  C
+  //    TVirtualMC::GetMC()->Gsvolu("0SU5","TUBE",idtmed[kAir],psupport4,3);// dyrki dlia feu v zadnej kryshke Air
+  TVirtualMC::GetMC()->Gsvolu("0SU6","TUBE",idtmed[kC],psupport5,3);// stakanchik dlai feu  C
+  TVirtualMC::GetMC()->Gsvolu("0SU7","TUBE",idtmed[kAl],psupport6,3);//kryshechka stakanchika  Al
+  TVirtualMC::GetMC()->Gsvolu("0SU8","TUBE",idtmed[kAl],psupport7,3);//kolechko snaruzhu stakanchika Al
+  
+  
 
-    //T0C 
-// first ring: 12 units of Scintillator+PMT+divider
+  //non-absorber side support  and T0A !!!!!!!!
+  
+  TGeoPcon * supPgon = new TGeoPcon("0supPgon",0.,360.,4);
+  supPgon->DefineSection(0, 0, 4.1, 5.5);
+  supPgon->DefineSection(1, 10.5 , 4.1, 5.5);
+  supPgon->DefineSection(2, 10.5 , 4.1, 4.9);
+  supPgon->DefineSection(3, 12.5 , 4.1, 4.9);
+  TGeoTranslation *trPgon = new TGeoTranslation("0trPgon",0,0,0);
+  trPgon->RegisterYourself();
+  
+  TGeoVolumeAssembly * stlin = new TGeoVolumeAssembly("0STL");//empty segment
+  TGeoVolume *ins = gGeoManager->GetVolume("0INS");
+  
+  new TGeoTube("0HOLE", 0, 1.51, 6.5);
+  TGeoTranslation *tr [12];
+  Double_t angle  = 2 * TMath::Pi() / 12;
+  // Char_t nameTr[40];
+  TString nameTr;
+  for (Int_t itr=0; itr<12; itr++) {
+    //      sprintf (nameTr,"0TR%i",itr+1);
+    nameTr = Form("0TR%i",itr+1);
+    x = 6.5 * TMath::Sin(itr * angle);
+    y = 6.5 * TMath::Cos(itr * angle);
+    tr[itr] = new TGeoTranslation(nameTr.Data(),x,y,6.5);
+    tr[itr]->RegisterYourself();
+    stlin->AddNode(ins,itr+13,tr[itr]);
+  }
+  TGeoCompositeShape *supsh = new TGeoCompositeShape("0supsh","0supPgon:0trPgon-(0HOLE:0TR1+0HOLE:0TR2+0HOLE:0TR3+0HOLE:0TR4+0HOLE:0TR5+0HOLE:0TR6+0HOLE:0TR7+0HOLE:0TR8+0HOLE:0TR9+0HOLE:0TR10+0HOLE:0TR11+0HOLE:0TR12)");
+  
+  TGeoMedium *medal = gGeoManager->GetMedium("T0_Aluminium$");
+  TGeoVolume *supA = new TGeoVolume("0SUA",supsh,medal);
+  stlin->AddNode(supA,1,new TGeoTranslation(0,0,0));
+  
+  TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
+  alice->AddNode(stlin,1,new TGeoTranslation(0,0, zdetA ));
+  
+  // T0A finished
+  
+  //T0C 
+  // first ring: 12 units of Scintillator+PMT+divider
   Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.6 / zdetC);
   Float_t phi[3];
-   for (is=0; is<12; is++)
-      {  
-
-	x = 6.6 * TMath::Sin(is * angle);
-	y = 6.6 * TMath::Cos(is * angle);
-	
-	phi[0] = -30 * is;
-	phi[1] = 90 - is * 30;
-	phi[2] = 90 - is * 30;
-	for (Int_t j = 0; j < 3; j++)
-	  if (phi[j] < 0)  phi[j] += 360;
-	
-	AliMatrix (idrotm[902 + is], 90.,         phi[0],
-		   90. + theta, phi[1],
-		   theta,       phi[2]);  
-	z=-pstart[2]+pinstart[2]+0.3;
-	TVirtualMC::GetMC()->Gspos ("0INS", is + 1, "0STR", x, y, z, idrotm[902 + is], "ONLY");
-  }	
-     
-   x=0;
-   y=0;
-   //   z=-pinstart[2]+ppmt[2]+psupport6[2]*2;
-   z=-pinstart[2]+ppmt[2]+0.08; //+psupport6[2];
-   TVirtualMC::GetMC()->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
-   // PMT
-   
-   // Entry window (glass)
-   TVirtualMC::GetMC()->Gsvolu("0TOP","TUBE",idtmed[kOpGlass],ptop,3); //glass
-   z=-ppmt[2]+ptop[2];
-   TVirtualMC::GetMC()->Gspos("0TOP",1,"0PMT",0,0,z,0,"ONLY");
-   //"metal" air volume to simulate reclection  
-   TVirtualMC::GetMC()->Gsvolu("0TOO","TUBE",idtmed[kOpAir],ptopout,3); 
-   TVirtualMC::GetMC()->Gspos("0TOO",1,"0PMT",0,0,z,0,"ONLY");
-
-   //Fotokatod
-   TVirtualMC::GetMC()->Gsvolu ("0REG", "TUBE", idtmed[kOpGlassCathode], preg, 3); 
-   z = -ppmt[2] + 2 * ptop[2] + preg[2]; 
-   TVirtualMC::GetMC()->Gspos ("0REG", 1, "0PMT", 0, 0, z, 0, "ONLY"); 
-   //ppmt[2] - pbot[2];
- // top pmt glass
-   TVirtualMC::GetMC()->Gsvolu("0TPM","TUBE",idtmed[kGlass],ptopglass,3);
-   z +=  preg[2] + ptopglass[2] ;
-   TVirtualMC::GetMC()->Gspos("0TPM",1,"0PMT",0,0,z,0,"ONLY");
+  for (is=0; is<12; is++)
+    {  
+      
+      x = 6.6 * TMath::Sin(is * angle);
+      y = 6.6 * TMath::Cos(is * angle);
+      
+      phi[0] = -30 * is;
+      phi[1] = 90 - is * 30;
+      phi[2] = 90 - is * 30;
+      for (Int_t j = 0; j < 3; j++)
+	if (phi[j] < 0)  phi[j] += 360;
+      
+      AliMatrix (idrotm[902 + is], 90.,         phi[0],
+		 90. + theta, phi[1],
+		 theta,       phi[2]);  
+      z=-pstart[2]+pinstart[2]+0.3;
+      TVirtualMC::GetMC()->Gspos ("0INS", is + 1, "0STR", x, y, z, idrotm[902 + is], "ONLY");
+    }	
+  
+  x=0;
+  y=0;
+  //   z=-pinstart[2]+ppmt[2]+psupport6[2]*2;
+  z=-pinstart[2]+ppmt[2]+0.08; //+psupport6[2];
+  TVirtualMC::GetMC()->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
+  // PMT
+  
+  // Entry window (glass)
+  TVirtualMC::GetMC()->Gsvolu("0TOP","TUBE",idtmed[kOpGlass],ptop,3); //glass
+  z=-ppmt[2]+ptop[2];
+  TVirtualMC::GetMC()->Gspos("0TOP",1,"0PMT",0,0,z,0,"ONLY");
+  //"metal" air volume to simulate reclection  
+  TVirtualMC::GetMC()->Gsvolu("0TOO","TUBE",idtmed[kOpAir],ptopout,3); 
+  TVirtualMC::GetMC()->Gspos("0TOO",1,"0PMT",0,0,z,0,"ONLY");
+  
+  //Fotokatod
+  TVirtualMC::GetMC()->Gsvolu ("0REG", "TUBE", idtmed[kOpGlassCathode], preg, 3); 
+  z = -ppmt[2] + 2 * ptop[2] + preg[2]; 
+  TVirtualMC::GetMC()->Gspos ("0REG", 1, "0PMT", 0, 0, z, 0, "ONLY"); 
+  //ppmt[2] - pbot[2];
+  // top pmt glass
+  TVirtualMC::GetMC()->Gsvolu("0TPM","TUBE",idtmed[kGlass],ptopglass,3);
+  z +=  preg[2] + ptopglass[2] ;
+  TVirtualMC::GetMC()->Gspos("0TPM",1,"0PMT",0,0,z,0,"ONLY");
   // Side cylinder glass
-   TVirtualMC::GetMC()->Gsvolu("0OUT","TUBE",idtmed[kGlass],pglass,3);
-   z += ptopglass[2] + pglass[2] ;
-   // z = -ppmt[2] + 2 * ptop[2] + 2.*preg[2] + pglass[2] ;
-     //ppmt[2]-pglass[2];
-   TVirtualMC::GetMC()->Gspos("0OUT",1,"0PMT",0,0,z,0,"ONLY");
- // Bottom glass
-   TVirtualMC::GetMC()->Gsvolu("0BOT","TUBE",idtmed[kGlass],pbot,3);
-   z += pglass[2] + pbot[2] ;
-   TVirtualMC::GetMC()->Gspos("0BOT",1,"0PMT",0,0,z,0,"ONLY");
-    //PMT pins
-   TVirtualMC::GetMC()->Gsvolu("0STE","TUBE",idtmed[kSteel],psteel,3);
-   z += pbot[2] +psteel[2];
-   TVirtualMC::GetMC()->Gspos("0STE",1,"0PMT",0,0,z,0,"ONLY");
-   
-   TVirtualMC::GetMC()->Gsvolu("0CER","TUBE",idtmed[kCer],pcer,3);
-    z += psteel[2] + pcer[2];
-    //   z = -ppmt[2] + 2*ptop[2] + 0.3 + pcer[2];
-   TVirtualMC::GetMC()->Gspos("0CER",1,"0PMT",0,0,z,0,"ONLY");
-    
-   //Support absorber (C) side
-   z=-pstart[2]+psupport1[2];//  0.05; //0.1;
-    TVirtualMC::GetMC()->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
-   //    TVirtualMC::GetMC()->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
+  TVirtualMC::GetMC()->Gsvolu("0OUT","TUBE",idtmed[kGlass],pglass,3);
+  z += ptopglass[2] + pglass[2] ;
+  // z = -ppmt[2] + 2 * ptop[2] + 2.*preg[2] + pglass[2] ;
+  //ppmt[2]-pglass[2];
+  TVirtualMC::GetMC()->Gspos("0OUT",1,"0PMT",0,0,z,0,"ONLY");
+  // Bottom glass
+  TVirtualMC::GetMC()->Gsvolu("0BOT","TUBE",idtmed[kGlass],pbot,3);
+  z += pglass[2] + pbot[2] ;
+  TVirtualMC::GetMC()->Gspos("0BOT",1,"0PMT",0,0,z,0,"ONLY");
+  //PMT pins
+  TVirtualMC::GetMC()->Gsvolu("0STE","TUBE",idtmed[kSteel],psteel,3);
+  z += pbot[2] +psteel[2];
+  TVirtualMC::GetMC()->Gspos("0STE",1,"0PMT",0,0,z,0,"ONLY");
+  
+  TVirtualMC::GetMC()->Gsvolu("0CER","TUBE",idtmed[kCer],pcer,3);
+  z += psteel[2] + pcer[2];
+  //   z = -ppmt[2] + 2*ptop[2] + 0.3 + pcer[2];
+  TVirtualMC::GetMC()->Gspos("0CER",1,"0PMT",0,0,z,0,"ONLY");
+  
+  //Support absorber (C) side
+  z=-pstart[2]+psupport1[2];//  0.05; //0.1;
+  // TVirtualMC::GetMC()->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
+  //  TVirtualMC::GetMC()->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
    z=-pstart[2]+psupport3[2];//  - 0.1;
-   //  TVirtualMC::GetMC()->Gspos("0SU3",1,"0STR",0,0,z,0,"ONLY"); //peredniaia kryshka
+   //TVirtualMC::GetMC()->Gspos("0SU3",1,"0STR",0,0,z,0,"ONLY"); //peredniaia kryshka
    z=-pstart[2]+2.*psupport1[2];//+0.1;
    //  TVirtualMC::GetMC()->Gspos("0SU4",1,"0STR",0,0,z,0,"MANY"); //zadnaiai kryshka
    TVirtualMC::GetMC()->Gspos("0SU6",1,"0INS",0,0,0,0,"ONLY");//C stakanchik dlia feu 
@@ -385,43 +385,124 @@ void AliT0v1::CreateGeometry()
    par[0]=4.9;
    par[1]=5.0;
    par[2]=6.7/2;
-    TVirtualMC::GetMC()->Gsvolu("0SC2","TUBE",idtmed[kC],par,3);
-    z += par[2];
-    TVirtualMC::GetMC()->Gspos("0SC2",1,"0SUP",0,0,z,0,"ONLY"); 
-    z += par[2];
+   TVirtualMC::GetMC()->Gsvolu("0SC2","TUBE",idtmed[kC],par,3);
+   z += par[2];
+   TVirtualMC::GetMC()->Gspos("0SC2",1,"0SUP",0,0,z,0,"ONLY"); 
+   z += par[2];
    
-    par[0]=3.15;
-    par[1]=4.9;
-    par[2]=0.01/2;
-
-    TVirtualMC::GetMC()->Gsvolu("0SA1","TUBE",idtmed[kAl],par,3);
-    z += par[2];
-     //  z -= par[2];
-    TVirtualMC::GetMC()->Gspos("0SA1",1,"0SUP",0,0,z,0,"ONLY"); 
-    z=z+par[2];
-    par[0]=3.15;
-    par[1]=3.16;
-    par[2]=4.7/2;
-    TVirtualMC::GetMC()->Gsvolu("0SA2","TUBE",idtmed[kAl],par,3);
-    z += par[2];
-    TVirtualMC::GetMC()->Gspos("0SA2",1,"0SUP",0,0,z,0,"ONLY"); 
-    z=z+par[2];
-    par[0]=3.16; // eta chast' prikruchena k absorberu
-    par[1]=7.4;
-    par[2]=0.01;
-    TVirtualMC::GetMC()->Gsvolu("0SA3","TUBE",idtmed[kAl],par,3);
-    //   z += par[2];
+   par[0]=3.15;
+   par[1]=4.9;
+   par[2]=0.01/2;
+   
+   TVirtualMC::GetMC()->Gsvolu("0SA1","TUBE",idtmed[kAl],par,3);
+   z += par[2];
+   //  z -= par[2];
+   TVirtualMC::GetMC()->Gspos("0SA1",1,"0SUP",0,0,z,0,"ONLY"); 
+   z=z+par[2];
+   par[0]=3.15;
+   par[1]=3.16;
+   par[2]=4.7/2;
+   TVirtualMC::GetMC()->Gsvolu("0SA2","TUBE",idtmed[kAl],par,3);
+   z += par[2];
+   TVirtualMC::GetMC()->Gspos("0SA2",1,"0SUP",0,0,z,0,"ONLY"); 
+   z=z+par[2];
+   par[0]=3.16; // eta chast' prikruchena k absorberu
+   par[1]=7.4;
+   par[2]=0.01;
+   TVirtualMC::GetMC()->Gsvolu("0SA3","TUBE",idtmed[kAl],par,3);
+   //   z += par[2];
    z = ppcon[39] - par[2];
-    TVirtualMC::GetMC()->Gspos("0SA3",1,"0SUP",0,0,z,0,"ONLY"); 
-    par[0]=3.16; // gvozdi eta chast' prikruchena k absorberu
-    par[1]=7.4;
-    par[2]=0.01;
-    TVirtualMC::GetMC()->Gsvolu("0SN2","TUBE",idtmed[kSteel],par,3);
-    TVirtualMC::GetMC()->Gspos("0SN2",1,"0SUP",0,0,z,0,"MANY"); 
- 
+   TVirtualMC::GetMC()->Gspos("0SA3",1,"0SUP",0,0,z,0,"ONLY"); 
+   par[0]=3.16; // gvozdi eta chast' prikruchena k absorberu
+   par[1]=7.4;
+   par[2]=0.01;
+   TVirtualMC::GetMC()->Gsvolu("0SN2","TUBE",idtmed[kSteel],par,3);
+   TVirtualMC::GetMC()->Gspos("0SN2",1,"0SUP",0,0,z,0,"MANY"); 
    
+   //FIT
+    
+   Float_t pinfit[3] = {2.95,2.95,4.34};
+   Double_t prfv[3]= {0.0002,1.323, 1.};      // Vertical refracting layer bettwen radiators and between radiator and not optical Air
+   Double_t prfh[3]= {1.323,0.0002, 1.};      // Horizontal refracting layer bettwen radiators and ...
+   Double_t palfit[3]= {2.648,2.648, 0.25};      // 5mm Al on top of each radiator
+   Float_t ptopfit[3] = {1.324, 1.324, 1.};      // Cherenkov radiator
+   Float_t ptopreffit[3] = {1.3241, 1.3241, 1.}; // Cherenkov radiator wrapped with reflector
+   Float_t pmcp[3] = {2.949, 2.949, 2.8};     // MCP
+   Float_t pmcpside[3] = {2.949, 2.949, 2.8};     // MCP
+   Float_t pmcptopglass[3] = {2.949, 2.949, 0.1};     // MCP top glass optical 
+   Float_t pregfit[3] = {1.324, 1.324, 0.005};   // Photcathode
 
- 
+   //module
+    TVirtualMC::GetMC()->Gsvolu("0FIT","BOX",idtmed[kAir],pinfit,18);
+    TVirtualMC::GetMC()->Gspos("0FIT",1,"ALIC",0.,-25.,zdetA + pinfit[2],0,"ONLY");
+    TGeoVolume *fitins = gGeoManager->GetVolume("0FIT");
+   
+ // Entry window (glass)
+   TVirtualMC::GetMC()->Gsvolu("0FOP","BOX",idtmed[kOpGlass],ptopfit,3); // Glass radiator
+   TGeoVolume *fittop = gGeoManager->GetVolume("0FOP");
+   TVirtualMC::GetMC()->Gsvolu("0FRE","BOX",idtmed[kAir],ptopreffit,3);  // Air: wrapped  radiator
+   TGeoVolume *fitref = gGeoManager->GetVolume("0FRE");
+   TVirtualMC::GetMC()->Gsvolu ("0FEG", "BOX", idtmed[kOpGlassCathode], pregfit, 3); 
+   TGeoVolume *fitcat = gGeoManager->GetVolume("0FEG");
+    TVirtualMC::GetMC()->Gsvolu("0RFV","BOX",idtmed[kOpAir],prfv,3);   // Optical Air vertical
+   TGeoVolume *rfv = gGeoManager->GetVolume("0RFV");
+   TVirtualMC::GetMC()->Gsvolu("0RFH","BOX",idtmed[kOpAir],prfh,3);   // Optical Air horizontal
+   TGeoVolume *rfh = gGeoManager->GetVolume("0RFH");
+   
+   TVirtualMC::GetMC()->Gsvolu("0PAL","BOX",idtmed[kAl],palfit,3); // 5mm Al on top of the radiator
+   TGeoVolume *altopfit = gGeoManager->GetVolume("0PAL");
+  
+
+  //wrapped radiator +  reflecting layers
+  Int_t ntops=0, nrfvs=0, nrfhs=0;
+  Float_t xin=0, yin=0, xinv=0, yinv=0,xinh=0,yinh=0;
+  x=y=z=0;
+  fitref->AddNode(fittop, 1, new TGeoTranslation(0,0,0) );
+  xinv = -ptopfit[0] - prfv[0];
+  fitref->AddNode(rfv, 1, new TGeoTranslation(xinv,0,0) );
+   printf(" GEOGEO  refv %f ,  0,0 \n",xinv);
+  xinv = ptopfit[0] + prfv[0];
+  fitref->AddNode(rfv, 2, new TGeoTranslation(xinv,0,0) );
+  printf(" GEOGEO  refv %f ,  0,0 \n",xinv);
+  yinv = -ptopfit[1] - prfh[1];
+  fitref->AddNode(rfh, 1, new TGeoTranslation(0,yinv,0) );
+  printf(" GEOGEO  refh  ,  0, %f, 0 \n",yinv);
+  yinv = ptopfit[1] + prfh[1];
+  fitref->AddNode(rfh, 2, new TGeoTranslation(0,yinv,0) );
+  
+  //container for radiator, cathode
+  for (Int_t ix=0; ix<2; ix++) {
+    xin = - pinfit[0] + 0.3 + (ix+0.5)*2*ptopreffit[0];
+    for (Int_t iy=0; iy<2 ; iy++) {
+      z = - pinfit[2] + 2*palfit[2] + ptopreffit[2];
+      yin = - pinfit[1] + 0.3 + (iy+0.5)*2*ptopreffit[1];
+      ntops++;
+      fitins->AddNode(fitref, ntops, new TGeoTranslation(xin,yin,z) );
+      printf(" 0TOP  full %i x %f y %f z %f \n", ntops, xin, yin, z);
+      z = - pinfit[2] + 2*palfit[2] +2.*ptopreffit[2] + 2.*pmcptopglass[2] + pregfit[2] ;
+      fitins->AddNode(fitcat, ntops, new TGeoTranslation(xin, yin, z) );
+      fitcat->Print();
+      printf(" GEOGEO  CATHOD x=%f , y= %f z= %f num  %i\n", xin, yin, z, ntops);
+    }
+  }
+    //Al top
+  z=-pinfit[2] + palfit[2];
+  fitins->AddNode(altopfit, 1 , new TGeoTranslation(0,0,z) );
+  
+  // MCP
+  TVirtualMC::GetMC()->Gsvolu("0MCP","BOX",idtmed[kAir],pmcp,3); //glass
+  TGeoVolume *mcp = gGeoManager->GetVolume("0MCP");
+  mcp->Print();
+  
+  TVirtualMC::GetMC()->Gsvolu("0MTO", "BOX", idtmed[kOpGlass], pmcptopglass,3);   //Op  Glass
+  TGeoVolume *mcptop = gGeoManager->GetVolume("0MTO");
+  z = - pinfit[2] + 2*palfit[2] + 2*ptopreffit[2] + pmcptopglass[2];
+  fitins->AddNode(mcptop, 1, new TGeoTranslation(0,0,z) );
+
+  //  TGeoVolume *alice = gGeoManager->GetVolume("ALIC");
+    alice->AddNode(stlin,1,new TGeoTranslation(0,0, zdetA ));
+    //alice->AddNode(fitins,1,new TGeoTranslation(0,0, zdetA ));
+
 }    
 //------------------------------------------------------------------------
 void AliT0v1::AddAlignableVolumes() const
@@ -664,6 +745,7 @@ void AliT0v1::Init()
 //
   AliT0::Init();
   fIdSens1=TVirtualMC::GetMC()->VolId("0REG");
+  fIdSens2=TVirtualMC::GetMC()->VolId("0FEG");
 
    AliDebug(1,Form("%s: *** T0 version 1 initialized ***\n",ClassName()));
 }
@@ -688,11 +770,13 @@ void AliT0v1::StepManager()
   id=fMC->CurrentVolID(copy);
   
   // Check the sensetive volume
-  if(id==fIdSens1 ) { 
+  if(id==fIdSens1 || id==fIdSens2) { 
     if(fMC->IsTrackEntering()) {
+      //  cout<< TVirtualMC::GetMC()-> CurrentVolName ()<<endl;
       fMC->CurrentVolOffID(2,copy);
       vol[1]=copy;
-      fMC->CurrentVolOffID(3,copy1);
+      fMC->CurrentVolID(copy1);
+      //      printf(" copy %i \n",copy1);
       vol[0]=copy1;
       fMC->TrackPosition(pos);
       hits[0] = pos[0];
@@ -700,7 +784,10 @@ void AliT0v1::StepManager()
       hits[2] = pos[2];
       if(pos[2]<0) vol[0] = 2;
       if(pos[2]>=0) vol[0] = 1; 
-      
+      if (id==fIdSens2){ 
+	vol[0] = 3;
+	vol[1]=copy1;
+      }
       Float_t etot=fMC->Etot();
       hits[3]=etot;
       Int_t iPart= fMC->TrackPid();
@@ -708,6 +795,11 @@ void AliT0v1::StepManager()
       hits[4]=partID;
       Float_t ttime=fMC->TrackTime();
       hits[5]=ttime*1e12;
+      if ( id==fIdSens2 && partID<50) printf("CurrentVolName %s VolID %i part %i  vol[0] %i vol[1]  %i xyz %f %f %f \n",
+				TVirtualMC::GetMC()->CurrentVolName(),
+				copy1,
+				partID, vol[0], vol[1],hits[0],hits[1],hits[2]);
+      
       if (fMC->TrackPid() == 50000050)   // If particles is photon then ...
 	{
 	  if(RegisterPhotoE(vol[1]-1,hits[3])) {
@@ -717,10 +809,15 @@ void AliT0v1::StepManager()
 	}
 
       //charge particle 
-      if ( fMC->TrackCharge() )
+      if ( fMC->TrackCharge() ) {
 	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kT0);
-      
-	/*		
+	//	printf("part %i  vol[0] %i vol[1]  %i xyz %f %f %f \n",
+	//     partID, vol[0], vol[1],hits[0],hits[1],hits[2]);
+
+      }
+
+
+	/*
 		printf("track(%i) alive(%i) disap(%i) enter(%i) exit(%i) inside(%i) out(%i) stop(%i) new(%i) \n",
 		       gAlice->GetMCApp()->GetCurrentTrackNumber(),
            fMC->IsTrackAlive(),
