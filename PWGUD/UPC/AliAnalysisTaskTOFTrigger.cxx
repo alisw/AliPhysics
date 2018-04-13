@@ -266,6 +266,7 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hNCrossTracks);
   
   fEventCuts.AddQAplotsToList(fOutputList);
+  fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny);
 
   PostData(1, fOutputList);
 
@@ -377,15 +378,11 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   hNTracklets->Fill(fNtracklets);
   if(fNtracklets>fMaxMulti) return;
   
-  /*/
-  fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny); 
-  
   if(!fEventCuts.AcceptEvent(esd)){
-  	cout<<"Rejecting event"<<endl;
   	PostData(1, fOutputList);
   	return;
 	}
-	/*/
+	
 
   Int_t numTracksPerMaxiPad[72][23];
   Int_t numMuonTracksPerMaxiPad[72][23];
