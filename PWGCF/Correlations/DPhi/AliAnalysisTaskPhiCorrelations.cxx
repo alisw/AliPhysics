@@ -142,6 +142,7 @@ fTrackEtaCutMin(-1.),
 fTrackPhiCutEvPlMin(0.),
 fTrackPhiCutEvPlMax(0.),
 fOnlyOneEtaSide(0),
+fOnlyOneAssocEtaSide(0),
 fPtMin(0.5),
 fDCAXYCut(0),
 fSharedClusterCut(-1),
@@ -321,6 +322,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   
   fHistos->SetOnlyOneEtaSide(fOnlyOneEtaSide);
   fHistosMixed->SetOnlyOneEtaSide(fOnlyOneEtaSide);
+  
+  fHistos->SetOnlyOneAssocEtaSide(fOnlyOneAssocEtaSide);
+  fHistosMixed->SetOnlyOneAssocEtaSide(fOnlyOneAssocEtaSide);
   
   fHistos->SetEtaOrdering(fEtaOrdering);
   fHistosMixed->SetEtaOrdering(fEtaOrdering);
@@ -531,6 +535,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fTrackPhiCutEvPlMin", &fTrackPhiCutEvPlMin, "TrackPhiCutEvPlMin/D");
   settingsTree->Branch("fTrackPhiCutEvPlMax", &fTrackPhiCutEvPlMax, "TrackPhiCutEvPlMax/D");
   settingsTree->Branch("fOnlyOneEtaSide", &fOnlyOneEtaSide,"OnlyOneEtaSide/I");
+  settingsTree->Branch("fOnlyOneAssocEtaSide", &fOnlyOneAssocEtaSide,"OnlyOneAssocEtaSide/I");
   settingsTree->Branch("fPtMin", &fPtMin, "PtMin/D");
   settingsTree->Branch("fFilterBit", &fFilterBit,"FilterBit/I");
   settingsTree->Branch("fSharedClusterCut", &fSharedClusterCut,"SharedClusterCut/D");

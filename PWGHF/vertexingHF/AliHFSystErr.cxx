@@ -411,8 +411,13 @@ void AliHFSystErr::Init(Int_t decay){
   case 6: // Lc->pK0S
     if (fCollisionType==0) InitLctopK0S2010pp();
     else if (fCollisionType==2) {
-      if (fIsBDTAnalysis) InitLctopK0S2013pPbBDT();
-      else                InitLctopK0S2013pPb();
+      if (fRunNumber==16 || fRunNumber==2016) {
+	if (fIsBDTAnalysis) InitLctopK0S2013pPbBDT();
+	else                InitLctopK0S2016pPb();
+      } else if (fRunNumber==13 || fRunNumber==2013) {
+	if (fIsBDTAnalysis) InitLctopK0S2013pPbBDT();
+	else                InitLctopK0S2013pPb();
+      }
     }
     else AliFatal("Not yet implemented");
     break;
@@ -6695,6 +6700,82 @@ void AliHFSystErr::InitLctopK0S2013pPb() {
   fBR = new TH1F("fBR","fBR",nBins,limits);
   //for(Int_t i=1;i<=nBins;i++) fBR->SetBinContent(i,0.093); // 9.3% PDG2015
   for(Int_t i=1;i<=nBins;i++) fBR->SetBinContent(i,0.05); // 5% PDG2016
+
+}
+
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitLctopK0S2016pPb() {
+  //
+  // Lc->pK0S syst errors. Responsible: A. De Caro, E. Meninno
+  //  2016 p-Pb sample
+  //
+  SetNameTitle("AliHFSystErr","SystErrLctopK0S2013pPb");
+
+  const Int_t nBins=8;
+  Float_t limits[nBins+1]={1.,2.,3.,4.,5.,6.,8.,12.,24.};
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",nBins,limits);
+  for(Int_t i=1;i<=nBins;i++) fNorm->SetBinContent(i,0.037); // 3.7% error
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",nBins,limits);
+  fTrackingEff->SetBinContent(1,0.10); //dummy
+  fTrackingEff->SetBinContent(2,0.10); //dummy
+  fTrackingEff->SetBinContent(3,0.06); //dummy
+  fTrackingEff->SetBinContent(4,0.06); //dummy
+  fTrackingEff->SetBinContent(5,0.06); //dummy
+  fTrackingEff->SetBinContent(6,0.06); //dummy
+  fTrackingEff->SetBinContent(7,0.06); //dummy
+  fTrackingEff->SetBinContent(8,0.06); //dummy
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",nBins,limits);
+  fRawYield->SetBinContent(1,0.13);
+  fRawYield->SetBinContent(2,0.13);
+  fRawYield->SetBinContent(3,0.10);
+  fRawYield->SetBinContent(4,0.10);
+  fRawYield->SetBinContent(5,0.10);
+  fRawYield->SetBinContent(6,0.10);
+  fRawYield->SetBinContent(7,0.13);
+  fRawYield->SetBinContent(8,0.13);
+
+
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",nBins,limits);
+  fCutsEff->SetBinContent(1,0.05); //dummy
+  fCutsEff->SetBinContent(2,0.05); //dummy
+  fCutsEff->SetBinContent(3,0.05); //dummy
+  fCutsEff->SetBinContent(4,0.05); //dummy
+  fCutsEff->SetBinContent(5,0.07); //dummy
+  fCutsEff->SetBinContent(6,0.07); //dummy
+  fCutsEff->SetBinContent(7,0.07); //dummy
+  fCutsEff->SetBinContent(8,0.07); //dummy
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",nBins,limits);
+  fPIDEff->SetBinContent(1,0.06); //dummy
+  fPIDEff->SetBinContent(2,0.06); //dummy
+  fPIDEff->SetBinContent(3,0.06); //dummy
+  fPIDEff->SetBinContent(4,0.06); //dummy
+  fPIDEff->SetBinContent(5,0.06); //dummy
+  fPIDEff->SetBinContent(6,0.06); //dummy
+  fPIDEff->SetBinContent(7,0.06); //dummy
+  fPIDEff->SetBinContent(8,0.06); //dummy
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",nBins,limits); // quadratic sum of ptshape and multiplicity dependence
+  fMCPtShape->SetBinContent(1,0.01); //dummy
+  fMCPtShape->SetBinContent(2,0.01); //dummy
+  fMCPtShape->SetBinContent(3,0.01); //dummy
+  fMCPtShape->SetBinContent(4,0.01); //dummy
+  fMCPtShape->SetBinContent(5,0.03); //dummy
+  fMCPtShape->SetBinContent(6,0.03); //dummy
+  fMCPtShape->SetBinContent(7,0.03); //dummy
+  fMCPtShape->SetBinContent(8,0.03); //dummy
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",nBins,limits);
+  for(Int_t i=1;i<=nBins;i++) fBR->SetBinContent(i,0.05);
 
 }
 

@@ -1,0 +1,3 @@
+EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClusterNoiseTriggers *AddTaskEmcalClusterNoiseTriggers(const char *suffix){
+  return EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClusterNoiseTriggers::AddTaskEmcalClusterNoiseTriggers(suffix);
+}

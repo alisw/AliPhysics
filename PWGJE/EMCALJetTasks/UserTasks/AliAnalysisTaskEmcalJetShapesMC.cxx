@@ -302,11 +302,11 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
   //log(1/theta),log(z*theta),jetpT,algo// 
    const Int_t dimSpec   = 6;
-   const Int_t nBinsSpec[6]     = {50,50,10,3,10,10};
+   const Int_t nBinsSpec[6]     = {50,50,10,3,22,10};
    const Double_t lowBinSpec[6] = {0.0,-10,  0,0,0,0};
-   const Double_t hiBinSpec[6]  = {5.0,  0,200,3,200,10};
+   const Double_t hiBinSpec[6]  = {5.0,  0,200,3,22,10};
    fHLundIterative = new THnSparseF("fHLundIterative",
-                   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,pToriginal,depth]",
+                   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,partonFlavor,depth]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
   fOutput->Add(fHLundIterative);
 
@@ -515,9 +515,9 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       SoftDrop(jet1,jetCont,0.1,1,0); 
       SoftDrop(jet1,jetCont,0.5,1.5,0); 
       SoftDrop(jet1,jetCont,0.002,-2.0,0);
-      RecursiveParents(jet1,jetCont,0);
-      RecursiveParents(jet1,jetCont,1);
-      RecursiveParents(jet1,jetCont,2);
+      RecursiveParents(jet1,jetCont,0,fShapesVar[0]);
+      RecursiveParents(jet1,jetCont,1,fShapesVar[0]);
+      RecursiveParents(jet1,jetCont,2,fShapesVar[0]);
       // Float_t nTFractions[8]={0.,0.,0.,0.,0.,0.,0.,0.};
       //NTValues(jet1, 0, nTFractions);
       //shape 13 is pythia weight!
@@ -1357,7 +1357,7 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
 
 
 //_________________________________________________________________________
-void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo){
+void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo, Float_t partonFlavor){
  
   std::vector<fastjet::PseudoJet>  fInputVectors;
   fInputVectors.clear();
@@ -1459,7 +1459,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
     double y =log(1.0/delta_R);
     double lnpt_rel=log(z*delta_R);
     if(z>fHardCutoff){
-    Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,fJet->Pt(),ndepth};  
+    Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,partonFlavor,ndepth};  
     fHLundIterative->Fill(LundEntries);}
     jj=j1;} 
 

@@ -83,8 +83,8 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
 
   
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
-  Double_t                            fShapesVar_Det[4];       // jet shapes used for the tagging
-  Double_t                            fShapesVar_True[4];      // jet shapes used for the tagging
+  Double_t                            fShapesVar_Det[5];       // jet shapes used for the tagging
+  Double_t                            fShapesVar_True[5];      // jet shapes used for the tagging
   JetShapeSub                         fJetShapeSub;            // jet subtraction to be used
   JetType                             fJetType;                // jet type data/embedded
   Float_t                             fPtThreshold;            // jet pt threshold

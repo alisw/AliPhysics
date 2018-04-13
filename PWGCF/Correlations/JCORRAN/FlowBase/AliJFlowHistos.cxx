@@ -16,6 +16,7 @@
 // Container class for histograms needed in the analysis.
 
 #include "AliJFlowHistos.h"
+#include "AliJFlowBaseTask.h"
 #include <TGrid.h>
 #include <TPRegexp.h>
 
@@ -33,7 +34,8 @@ AliJFlowHistos::AliJFlowHistos() :
 	fh_pt(),
 	fh_eta(),
 	fh_phi(),
-	fh_EP()
+	fh_EP(),
+	fhEPCorrInHar()
 {
 	
 }
@@ -47,7 +49,8 @@ AliJFlowHistos::AliJFlowHistos(const AliJFlowHistos& obj) :
 	fh_pt(obj.fh_pt),
 	fh_eta(obj.fh_eta),
 	fh_phi(obj.fh_phi),
-	fh_EP(obj.fh_EP)
+	fh_EP(obj.fh_EP),
+	fhEPCorrInHar(obj.fhEPCorrInHar)
 {
 	// copy constructor
 }
@@ -89,6 +92,16 @@ void AliJFlowHistos::CreateEventTrackHistos(){
 		<< "END" ;
 	fh_EP
 		<< TH1D("h_EP", "h_EP", 100, -10, 10)
+		<< fHistCentBin << fBin_DetSet
+		<< fBin_hh
+		<< "END" ;
+	fhEPCorrInHar
+		<< TH1D("hEPCorrInHar", "hEPCorrInHar", 500, -TMath::Pi()*2, TMath::Pi()*2)
+		<< fHistCentBin << fBin_DetSet
+		<< fBin_hh
+		<< "END" ;
+	fhEPCorr2D
+		<< TH2D( "hEPCorr2D", "", 100,-TMath::Pi()/2, TMath::Pi()/2, 1000, -TMath::Pi()/2, TMath::Pi()/2)
 		<< fHistCentBin << fBin_DetSet
 		<< fBin_hh
 		<< "END" ;

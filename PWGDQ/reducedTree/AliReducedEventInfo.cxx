@@ -46,6 +46,7 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fVtxTPC(),
   fNVtxTPCContributors(0),
   fVtxSPD(),
+  fVtxMC(),
   fNVtxSPDContributors(0),
   fNpileupSPD(0),
   fNpileupTracks(0),
@@ -81,12 +82,14 @@ AliReducedEventInfo::AliReducedEventInfo() :
   for(Int_t i=0; i<6; ++i) fVtxCovMatrix[i]=0.;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
+  for(Int_t i=0; i<3; ++i) fVtxMC[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimators[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimatorPercentiles[i]=-999.;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i]=0;
   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
+  for(Int_t i=0; i<8; ++i) fNch[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
@@ -120,6 +123,7 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fVtxTPC(),
   fNVtxTPCContributors(0),
   fVtxSPD(),
+  fVtxMC(),
   fNVtxSPDContributors(0),
   fNpileupSPD(0),
   fNpileupTracks(0),
@@ -154,12 +158,14 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   for(Int_t i=0; i<2; ++i) fIRIntClosestIntMap[i] = 0;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
+  for(Int_t i=0; i<3; ++i) fVtxMC[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimators[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimatorPercentiles[i]=-999.;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i]=0;
   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i]=0;
+  for(Int_t i=0; i<8; ++i) fNch[i]=0;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
@@ -214,6 +220,7 @@ void AliReducedEventInfo::CopyEventHeader(const AliReducedEventInfo* other) {
    for(Int_t i=0; i<3; ++i) fVtxTPC[i] = other->fVtxTPC[i];
    fNVtxTPCContributors = other->fNVtxTPCContributors;
    for(Int_t i=0; i<3; ++i) fVtxSPD[i] = other->fVtxSPD[i];
+   for(Int_t i=0; i<3; ++i) fVtxMC[i] = other->fVtxMC[i];
    fNVtxSPDContributors = other->fNVtxSPDContributors;
    fNpileupSPD = other->fNpileupSPD;
    fNpileupTracks = other->fNpileupTracks;
@@ -227,6 +234,7 @@ void AliReducedEventInfo::CopyEventHeader(const AliReducedEventInfo* other) {
    for(Int_t i=0; i<6; ++i) fITSClusters[i] = other->fITSClusters[i];
    fSPDnSingle = other->fSPDnSingle;
    for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = other->fNtracksPerTrackingFlag[i];
+   for(Int_t i=0; i<8; ++i) fNch[i] = other->fNch[i];
    for(Int_t i=0; i<64; ++i) fVZEROMult[i] = other->fVZEROMult[i];
    for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = other->fVZEROTotalMult[i];
    for(Int_t i=0; i<10; ++i) fZDCnEnergy[i] = other->fZDCnEnergy[i];
@@ -279,8 +287,10 @@ void AliReducedEventInfo::ClearEvent() {
   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = 0;
+  for(Int_t i=0; i<8; ++i) fNch[i] = 0;
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
+  for(Int_t i=0; i<3; ++i) fVtxMC[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimators[i]=-999.;
   for(Int_t i=0; i<10; ++i) fMultiplicityEstimatorPercentiles[i]=-999.;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;

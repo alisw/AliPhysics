@@ -244,8 +244,8 @@ void AliAnalysisTaskAccCont::UserCreateOutputObjects() {
     fListResults->Add(fHistEtaPhiVertexPlus);
     fListResults->Add(fHistEtaPhiVertexMinus);
     if(fUseRapidity){
-    fListResults->Add(fHistYPhiVertexPlus);
-    fListResults->Add(fHistYPhiVertexMinus);
+      fListResults->Add(fHistYPhiVertexPlus);
+      fListResults->Add(fHistYPhiVertexMinus);
     }
     fListResults->Add(fHistDCAXYptchargedminus);
     fListResults->Add(fHistDCAXYptchargedplus);
@@ -333,13 +333,13 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                 
                                 if((gCentrality >= fCentralityPercentileMin) &&
                                    (gCentrality < fCentralityPercentileMax)) {
-                                    
-                                    fHistEventStats->Fill(4,gCentrality);
-                                    
-                                    // check for pile-up event
-				    const Int_t nTracks = gAOD->GetNumberOfTracks(); 
-				    Int_t multEsd = ((AliAODHeader*)gAOD->GetHeader())->GetNumberOfESDTracks();
-				    fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
+				  
+				  fHistEventStats->Fill(4,gCentrality);
+                                  
+				  // check for pile-up event
+				  const Int_t nTracks = gAOD->GetNumberOfTracks(); 
+				  Int_t multEsd = ((AliAODHeader*)gAOD->GetHeader())->GetNumberOfESDTracks();
+				  fHistGlobalvsESDBeforePileUpCuts->Fill(nTracks,multEsd);
                                    
                                     if(fpPb) {
 				    fUtils->SetUseMVPlpSelection(kTRUE);
@@ -348,6 +348,7 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 				    else if (fPbPb) {
 				      fUtils->SetUseMVPlpSelection(kFALSE);
 				      fUtils->SetUseOutOfBunchPileUp(kFALSE);
+				      
 				      if (fUseOutOfBunchPileUpCutsLHC15o){
 					if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
 					  fHistEventStats->Fill(6,gCentrality);
@@ -366,35 +367,39 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					  fHistEventStats->Fill(6,gCentrality);
 					  return;
 					}
-				      }
-				      fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
-				    }
-
-				    if (fUseOutOfBunchPileUpCutsLHC15oJpsi){
-				      Int_t ntrkTPCout = 0;
-				      for (int it = 0; it < gAOD->GetNumberOfTracks(); it++) {
-					AliAODTrack* AODTrk = (AliAODTrack*)gAOD->GetTrack(it);
-					if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
-					  ntrkTPCout++;
+					
+					fHistGlobalvsESDAfterPileUpCuts->Fill(nTracks,multEsd);
 				      }
 				      
-				      Double_t multVZERO =0; 
-				      AliVVZERO *vzero = (AliVVZERO*)gAOD->GetVZEROData();
-				      if(vzero) {
-					for(int ich=0; ich < 64; ich++)
-					  multVZERO += vzero->GetMultiplicity(ich);
+				      if (fUseOutOfBunchPileUpCutsLHC15oJpsi){
+					if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+					  fHistEventStats->Fill(6,gCentrality);
+					  return;
+					}
+					Int_t ntrkTPCout = 0;
+					for (int it = 0; it < gAOD->GetNumberOfTracks(); it++) {
+					  AliAODTrack* AODTrk = (AliAODTrack*)gAOD->GetTrack(it);
+					    if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
+					      ntrkTPCout++;
+					}
+					
+					Double_t multVZERO =0; 
+					AliVVZERO *vzero = (AliVVZERO*)gAOD->GetVZEROData();
+					if(vzero) {
+					  for(int ich=0; ich < 64; ich++)
+					    multVZERO += vzero->GetMultiplicity(ich);
+					}
+					
+					fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
+					
+					if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
+					  fHistEventStats->Fill(6, -1);
+					  return;
+					}
+					fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
+					
 				      }
-
-				      fHistV0MvsTPCoutBeforePileUpCuts->Fill(ntrkTPCout, multVZERO);
-				      
-				      if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
-					fHistEventStats->Fill(9, -1);
-					return;
-				      }
-				      fHistV0MvsTPCoutAfterPileUpCuts->Fill(ntrkTPCout, multVZERO);
-
 				    }
-				    
 				    
 				    if(fUtils->IsPileUpEvent(gAOD)){ 
 				      fHistEventStats->Fill(6,gCentrality);
@@ -435,8 +440,17 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                         Double_t zdca = aodTrack->ZAtDCA();
                                         Double_t charge = aodTrack->Charge();
  					Double_t y = log( ( sqrt(fMassParticleOfInterest*fMassParticleOfInterest + pt*pt*cosh(eta)*cosh(eta)) + pt*sinh(eta) ) / sqrt(fMassParticleOfInterest*fMassParticleOfInterest + pt*pt) );
-                                      
-					if( eta < fEtaMin || eta > fEtaMax) continue;
+					Double_t yfromAODTrack = aodTrack->Y(fMassParticleOfInterest);
+					//Printf("y = %f, yfromAODTrack =%f", y, yfromAODTrack);
+					
+					if (fUseRapidity){
+					  if ((y < fEtaMin) || ( y > fEtaMax))
+					    continue;
+					}
+					else{
+					  if( eta < fEtaMin || eta > fEtaMax) continue;
+					}
+					
                                         if( pt < fPtMin || pt > fPtMax) continue;
 
 					Float_t mom = aodTrack->GetTPCmomentum();	
@@ -451,16 +465,27 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					    nSigmaTPCOnly = fPIDResponse->NumberOfSigmasTPC(aodTrack,fParticleOfInterest);
 
 					    if(pt < fPIDMomCut){
-					     
+					      
 					      if (fUsePIDnSigmaComb){
-						if (TMath::Abs(nSigmaTPCOnly)>3.)
-						  continue;
+						if (TMath::Abs(nSigmaTPCOnly)<3.) {
+						  if (charge>0)
+						    fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+						  if (charge<0)
+						    fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ()); 
+						}
+						else continue;
 						hNSigmaCutApplied->Fill(TMath::Abs(nSigmaTPCOnly), mom, pt);
 					      }
 					      
 					      else {
 						//Printf(" detUsed = %d, mom = %f, pt =%f, probTPC[%d] =%f", detUsed, mom, pt, fParticleOfInterest, probTPC[fParticleOfInterest]);
-						if (probTPC[fParticleOfInterest] < fBayesPIDThr) continue;	
+						if (probTPC[fParticleOfInterest] > fBayesPIDThr) {
+						  if (charge>0)
+						    fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+						  if (charge<0)
+						    fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ()); 
+						}
+						else continue;
 						hBayesProbab->Fill(probTPC[fParticleOfInterest], mom, pt);
 					      }
 					      
@@ -482,45 +507,116 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 						if (fParticleOfInterest == (AliPID::kPion)){
 						 
 						  if (fUsePIDnSigmaComb){
-						    if ((pt <= 2.5) && (TMath::Abs(combSquaredSigma)>3)) continue;
-						    else if ((pt>2.5) && (TMath::Abs(combSquaredSigma)>2)) continue;
+						    if (pt <= 2.5){
+						      if (TMath::Abs(combSquaredSigma)< 3){
+							if (charge>0)
+							  fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+							if (charge<0)
+							  fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ());
+						      }
+						      else continue;
+						    }
+						    else if (pt>2.5){
+						      if (TMath::Abs(combSquaredSigma)< 2){
+							if (charge>0)
+							  fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+							if (charge<0)
+							  fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ());
+						      }
+						      else continue;
+						    }
 						    hNSigmaCutApplied->Fill(combSquaredSigma, mom, pt);
 						  }
-
+						  
 						  else{
-						    if (probTPCTOF[fParticleOfInterest] < fBayesPIDThr) continue;  
+						    if (probTPCTOF[fParticleOfInterest] > fBayesPIDThr) {
+						      if (charge>0)
+							fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+						      if (charge<0)
+							fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ());
+						    }
+						    else continue;
 						    hBayesProbab->Fill(probTPCTOF[fParticleOfInterest], mom, pt);
 						  }
 						} //end of pions 
-
+						
 						if (fParticleOfInterest == (AliPID::kKaon)){
 						  
 						  if (fUsePIDnSigmaComb){
-						    if ((pt <= 2.)&&(TMath::Abs(combSquaredSigma)>2.5)) continue;
-						    if ((pt > 2.)&&(TMath::Abs(combSquaredSigma)>1.5)) continue;
+						    if (pt <= 2.){
+						      if (TMath::Abs(combSquaredSigma)<2.5){
+							if (charge>0)
+							  fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+							if (charge<0)
+							  fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ());
+						      }
+						      else continue;
+						    }
+						    if (pt > 2.) {
+						      if (TMath::Abs(combSquaredSigma)< 1.5) {
+							if (charge>0)
+							  fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+							if (charge<0)
+							  fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ());
+						      }
+						      else continue;
+						    }
+
 						    hNSigmaCutApplied->Fill(combSquaredSigma, mom, pt);
 						  }
 						  else{
-						    if (probTPCTOF[fParticleOfInterest] < fBayesPIDThr) continue;
+						    if (probTPCTOF[fParticleOfInterest] > fBayesPIDThr) {
+						      if (charge>0)
+							  fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+						      if (charge<0)
+							fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ());
+						    }
+						    else continue;
 						    hBayesProbab->Fill(probTPCTOF[fParticleOfInterest], mom, pt);
 						  }
-						}
+						} //end of kaons
 
 						if (fParticleOfInterest == (AliPID::kProton)){
 						  
 						  if (fUsePIDnSigmaComb){
-						    if ((pt <= 3.)&&(TMath::Abs(combSquaredSigma)>3)) continue;
-						    if ((pt > 3.)&&(mom <= 5.)&&(TMath::Abs(combSquaredSigma)>1.5)) continue;
-						    if ((pt > 5.)&&(TMath::Abs(combSquaredSigma)>1)) continue;
+						    if (pt <= 3.){
+						      if (TMath::Abs(combSquaredSigma)<3){
+							if (charge>0)
+							  fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+							if (charge<0)
+							  fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ());
+						      }
+						      else continue;
+						    }
+						    if ((pt > 3.)&&(pt <= 5.)){
+						      if (TMath::Abs(combSquaredSigma)< 1.5){
+							if (charge>0)
+							  fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+							if (charge<0)
+							  fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ());
+						      } else continue;
+						    }
+						    if (pt > 5.) {
+						      if (TMath::Abs(combSquaredSigma)<1){
+							if (charge>0)
+							  fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+							if (charge<0)
+							  fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ());
+						      } else continue;
+						    }
 						    hNSigmaCutApplied->Fill(combSquaredSigma, mom, pt);
 						  }
-						  
 						  else {
-						    if (probTPCTOF[fParticleOfInterest] < fBayesPIDThr) continue;  
+						    if (probTPCTOF[fParticleOfInterest] > fBayesPIDThr){
+						      if (charge>0)
+							fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ()); 
+						      if (charge<0)
+							fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ());
+						    } else continue;
 						    hBayesProbab->Fill(probTPCTOF[fParticleOfInterest], mom, pt);
 						  }
-						}	
-					      } 
+						}// end of protons 	
+					      } // higher pT PID
 					    }
 					  }
 					  
@@ -631,8 +727,8 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					
 					if (charge>0){
 					  fHistEtaPhiVertexPlus->Fill(phi,eta,vertex->GetZ());
-					  if (fUseRapidity)
-					    fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ());  
+					  //	  if (fUseRapidity)
+					  //   fHistYPhiVertexPlus->Fill(phi,y,vertex->GetZ());  
 					  if (fAODtrackCutBit==768){
 					    if (fDCAext){
 					      if (aodTrack->TestFilterBit(512))
@@ -655,8 +751,8 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 					}
                                         else if (charge<0){
 					  fHistEtaPhiVertexMinus->Fill(phi,eta,vertex->GetZ());
-					  if (fUseRapidity)
-					    fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ()); 
+					  //if (fUseRapidity)
+					  // fHistYPhiVertexMinus->Fill(phi,y,vertex->GetZ()); 
 					  if (fAODtrackCutBit==768){ 
 					    if (fDCAext){
 					      if (aodTrack->TestFilterBit(512))	

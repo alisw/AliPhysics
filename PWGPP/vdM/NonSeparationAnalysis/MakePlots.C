@@ -485,7 +485,7 @@ void MakePlotsPar(TString pn) {
 
   tl->DrawLatex(0.1, 0.35, Form("R = %.3f_{%+.3f}^{%+.3f}", R(0), eRmin,eRmax));
   tl->DrawLatex(0.1, 0.25, Form("#chi^{2}/NDF = %.0f/%.0f=%.1f", pChi2->GetVal(), pNDF->GetVal(), pChi2->GetVal()/pNDF->GetVal()));
-  tl->DrawLatex(0.1, 0.20, Form("0TVX rate errors rescaled by %.2f", 1.0/TMath::Sqrt(pScaleRateError->GetVal())));
+  //tl->DrawLatex(0.1, 0.20, Form("0TVX rate errors rescaled by %.2f", 1.0/TMath::Sqrt(pScaleRateError->GetVal())));
 
   c1->SaveAs(pn);
   fSave->cd();

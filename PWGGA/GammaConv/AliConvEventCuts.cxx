@@ -996,6 +996,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 1){
       printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
+    } else if ( fModCentralityClass == 2){
+      printf("\t %d - %d \n", fCentralityMin, fCentralityMax);
     } else if (fModCentralityClass == 3){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 4){
@@ -1024,8 +1026,9 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
     }  else if ( fModCentralityClass == 1){
       printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
+    }  else if ( fModCentralityClass == 2){
+      printf("\t %d - %d \n", fCentralityMin, fCentralityMax);
     }
-
     if (fSpecialTrigger == 0){
       printf("\t only events triggered by kINT7 will be analysed \n");
     } else if (fSpecialTrigger > 1){
@@ -1123,6 +1126,20 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=2;
     fDetectorCentrality=1;
     fModCentralityClass=1;
+    break;
+  case 12: // pPb V0A
+    // steps of 1%
+    // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
+    fIsHeavyIon=2;
+    fDetectorCentrality=0;
+    fModCentralityClass=2;
+    break;
+  case 13: // pPb CL1
+    // steps of 1%
+    // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
+    fIsHeavyIon=2;
+    fDetectorCentrality=1;
+    fModCentralityClass=2;
     break;
 
   default:
@@ -2037,7 +2054,12 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       return kTRUE;
     } else return kFALSE;
   }
-
+  else if (fModCentralityClass == 2){
+    centralityC= Int_t(centrality);
+    if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
+      return kTRUE;
+    } else return kFALSE;
+  }
   Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
   Int_t PrimaryTracks10[11][2] =
     {
@@ -2866,10 +2888,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (bin < 10) weight = weightsBins[bin];
     } else if ( fPeriodEnum == kLHC18b8 ){
         Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
-        Double_t weightsBins[20]      = { 16.0869, 4.61169, 2.14976, 0.782544, 0.264854,
-                                            9.7619E-02, 2.92747E-02, 9.89515E-03, 4.05152E-03, 1.35393E-03,
-                                            5.29864E-04, 1.88317E-04, 9.23E-05, 4.29E-05, 2.09E-05,
-                                            1.06E-05, 5.76E-06, 3.00E-06, 1.62E-06, 2.10E-06 };
+        Double_t weightsBins[20]      = { 16.1083,      4.60917,     2.15196,     0.782021,    0.26541,
+                                           0.0978374,   0.0294286,   0.00989457,  0.0040615,   0.00135787,
+                                           0.000531766, 0.000188772, 9.23331e-05, 4.30245e-05, 2.10196e-05,
+                                           1.06695e-05, 5.78742e-06, 3.02897e-06, 1.62702e-06, 2.12118e-06 };
 
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;

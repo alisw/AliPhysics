@@ -4,6 +4,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliEMCALRecoUtils+;
+
 #pragma link C++ class AliAnalysisTaskEmcalLight+;
 #pragma link C++ class AliAnalysisTaskEmcal+;
 #pragma link C++ class AliAnalysisTaskEmcalEmbeddingHelper+;
@@ -48,4 +50,5 @@
 #pragma link C++ class PWG::EMCAL::TestAliEmcalTrackSelResultPtr+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalAODHybridTrackCuts+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalTrackSelectionAOD+;
+
 #endif

@@ -28,7 +28,7 @@ class AliHFCorrFitter{
  public:
     
   // enums
-  enum FunctionType{kConstwoGaus = 1, kTwoGausPeriodicity =2, kConstThreeGausPeriodicity = 3, ConstThreeGausPeriodicityAS =4, kv2Modulation =5, kTwoGausPeriodicityWithv2Modulation = 6};  
+  enum FunctionType{kConstwoGaus = 1, kTwoGausPeriodicity =2, kConstThreeGausPeriodicity = 3, kConstThreeGausPeriodicityAS =4, kv2Modulation =5, kTwoGausPeriodicityWithv2Modulation = 6};  
 
   // constructors
   AliHFCorrFitter();
@@ -63,9 +63,14 @@ class AliHFCorrFitter{
     }
     else return fFit->GetParameter("NS #sigma");
   }
+  Double_t GetASSigma(){
+    if(fTypeOfFitfunc==kConstThreeGausPeriodicityAS){// other cases to be implemented
+      return TMath::Sqrt(fFit->GetParameter("fract 1g")*fFit->GetParameter("AS #sigma 1g")*fFit->GetParameter("AS #sigma 1g")+(1.-fFit->GetParameter("fract 1g"))*fFit->GetParameter("AS #sigma 2g")*fFit->GetParameter("AS #sigma 2g"));
+    }
+    else return fFit->GetParameter("AS #sigma");
+  }  
   
   Double_t GetNSYield(){return fFit->GetParameter("NS Y");}
-  Double_t GetASSigma(){return fFit->GetParameter("AS #sigma");}
   Double_t GetASYield(){return fFit->GetParameter("AS Y");}
   Double_t GetPedestal(){return fBaseline;}
   Double_t Getv2hadron(){return fFit->GetParameter("v_{2} hadron");}
@@ -76,8 +81,13 @@ class AliHFCorrFitter{
     }
     return fFit->GetParError(fFit->GetParNumber("NS #sigma"));
   }
+  Double_t GetASSigmaError(){
+    if(fTypeOfFitfunc==kConstThreeGausPeriodicityAS){// THE FOLLOWING FORMULA IS WRONG... FULL ERROR PROPAGATION TO BE DONE
+      return TMath::Sqrt(fFit->GetParameter("fract 1g")*fFit->GetParError(fFit->GetParNumber("AS #sigma 1g"))*fFit->GetParError(fFit->GetParNumber("AS #sigma 1g"))+(1.-fFit->GetParameter("fract 1g"))*fFit->GetParError(fFit->GetParNumber("AS #sigma 2g"))*fFit->GetParError(fFit->GetParNumber("AS #sigma 2g")));
+    }
+    return fFit->GetParError(fFit->GetParNumber("AS #sigma"));
+  }
   Double_t GetNSYieldError(){return fFit->GetParError(fFit->GetParNumber("NS Y"));}
-  Double_t GetASSigmaError(){return fFit->GetParError(fFit->GetParNumber("AS #sigma"));}
   Double_t GetASYieldError(){return fFit->GetParError(fFit->GetParNumber("AS Y"));}
   Double_t GetPedestalError(){return fErrbaseline;}
   Double_t Getv2hadronError(){return fFit->GetParError(fFit->GetParNumber("v_{2} hadron"));}

@@ -178,6 +178,9 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
       if(cutMode == 118) {task->SetGeometricalCut(kTRUE,4,130,1.5,0.85,0.7);}
       if(cutMode == 119) {task->SetGeometricalCut(kTRUE,2,130,1.5,0.85,0.7);}
 
+      // event cut varaitions
+      if(cutMode == 120) task->SetZvtx(5.);
+      if(cutMode == 121) task->SetZvtx(20.);
 
 
   // hang task in train

@@ -44,7 +44,7 @@ class AliCaloTrackAODReader;
 class AliCaloTrackReader;
 //exotic
 class AliAODReader;
-class AliCalorimeterUtils;
+//class AliCalorimeterUtils;
 class AliAnalysisUtils;
 
 // --- ROOT system ---

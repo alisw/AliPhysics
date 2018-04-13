@@ -792,6 +792,8 @@ void AliCSEventCuts::SetActualSystemType() {
 ///    |  4 | default detector for the concerned system, cut in the range 50-100% in steps of 5% |
 ///    |  5 | default detector for the concerned system, cut in the range 0-10% in steps of 1% |
 ///    |  6 | default detector for the concerned system, cut in the range 10-20% in steps of 1% |
+///    |  7 | alternative detector for the concerned system, cut in the range 0-50% in steps of 5% |
+///    |  8 | alternative detector for the concerned system, cut in the range 50-100% in steps of 5% |
 /// \return kTRUE if proper and supported centrality type
 ///
 /// The default and alternative detector for centrality estimation in the different systems
@@ -850,6 +852,20 @@ Bool_t AliCSEventCuts::SetCentralityType(Int_t ctype)
     fCutsEnabledMask.SetBitNumber(kCentralityCut);
     fCentralityDetector=0;
     fCentralityModifier=4;
+    break;
+  case 7:
+    /* alternative centrality detector for the concerned system */
+    /* centrality cut in the range 0-50% in steps of 5% */
+    fCutsEnabledMask.SetBitNumber(kCentralityCut);
+    fCentralityDetector=1;
+    fCentralityModifier=1;
+    break;
+  case 8:
+    /* alternative centrality detector for the concerned system */
+    /* centrality cut in the range 50-100% in steps of 5% */
+    fCutsEnabledMask.SetBitNumber(kCentralityCut);
+    fCentralityDetector=1;
+    fCentralityModifier=2;
     break;
   default:
     AliError(Form("Centrality type %d not supported",ctype));

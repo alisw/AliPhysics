@@ -254,6 +254,7 @@ private:
 	
 	TH2F                *hBeautyMotherPt;//!
 	TH1F				*fPtBeautyGenerated;//!
+	TH1F				*fPtGeneratedBmesons;//!
 	TH1F				*fPtBeautyReconstructedTracks;//!
 	TH1F				*fPtBeautyReconstructedTracksPID;//!
 	TH1F				*fPtBeautyReconstructedTracksPIDTPC;//!

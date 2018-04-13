@@ -226,6 +226,9 @@ public:
 
     //ConstructorDef(TString, kSTRING, fValueString);   // implicit cast - not allowed by clang 9.0, must be declared explicitly
     ConstructorDef(int, kINT, fValueInt);
+    ConstructorDef(long, kINT, fValueInt);
+    ConstructorDef(unsigned, kINT, fValueInt);
+    ConstructorDef(unsigned long, kINT, fValueInt);
     ConstructorDef(float, kFLOAT, fValueFloat);
   #undef ConstructorDef
   // Explicit constructor for TString - needed for clang 9.0
@@ -283,15 +286,19 @@ public:
 
     FORWARD_STANDARD_TYPES(IMPL_BUILDITEM);
 
-    IMPL_CASTED_BUILDITEM(TString, StringValue_t);
     IMPL_CASTED_BUILDITEM(Float_t, FloatValue_t);
     IMPL_CASTED_BUILDITEM(Int_t, IntValue_t);
+    IMPL_CASTED_BUILDITEM(long, IntValue_t);
     IMPL_CASTED_BUILDITEM(pair_of_ints, RangeValue_t);
     IMPL_CASTED_BUILDITEM(UInt_t, IntValue_t);
     IMPL_CASTED_BUILDITEM(pair_of_floats, RangeValue_t);
 
     IMPL_BUILDITEM(AliFemtoConfigObject, 0, 0);
     #undef IMPL_BUILDITEM
+
+    // -- custom operator() methods --
+
+    BuildMap& operator()(const Key_t &key, const TString &val) { fMap.insert(std::make_pair(key, val.Data())); return *this; };
 
     operator AliFemtoConfigObject() {
       return AliFemtoConfigObject(std::move(fMap));
@@ -352,11 +359,20 @@ public:
   bool is_range() const { return fTypeTag == kRANGE; }
   bool is_rangelist() const { return fTypeTag == kRANGELIST; }
 
+  // template <typename BoolType> bool load_bool(BoolType &v) const { return is_bool() ? v = fValueBool, true : false; }
+  // template <typename StringType> bool load_str(StringType &v) const { return is_str() ? v = fValueString, true : false; }
+  // template <typename FloatType> bool load_float(FloatType &v) const { return is_float() ? v = fValueFloat, true : false; }
+  // template <typename IntType> bool load_int(IntType &v) const { return is_int() ? v = fValueInt, true : false; }
+  // template <typename RangeType> bool load_range(RangeType &v) const { return is_range() ? v = fValueRange, true : false; }
+  // template <typename ArrayType> bool load_array(ArrayType &v) const { return is_array() ? v = fValueArray, true : false; }
+  // template <typename ArrayType> bool load_into_array(ArrayType &v) const { return is_array() ? std::copy(fValueArray.begin(), fValueArray.end(), v), true : false; }
+
   bool load_bool(BoolValue_t &b) const { return is_bool() ? b = fValueBool, true : false; }
   bool load_float(FloatValue_t &f) const { return is_float() ? f = fValueFloat, true : false; }
   bool load_int(IntValue_t &i) const { return is_int() ? i = fValueInt, true : false; }
   bool load_num(FloatValue_t &f) const { return is_int() ? f = fValueInt, true : load_float(f); }
-  bool load_str(StringValue_t &s) const { return is_str() ? s = fValueString, true : false; }
+  bool load_str(std::string &s) const { return is_str() ? s = fValueString, true : false; }
+  bool load_str(TString &s) const { return is_str() ? s = fValueString, true : false; }
   bool load_array(ArrayValue_t &a) const { return is_array() ? a = fValueArray, true : false; }
   bool load_map(MapValue_t &m) const { return is_map() ? m = fValueMap, true : false; }
   bool load_range(RangeValue_t &r) const { return is_range() ? r = fValueRange, true : false; }
@@ -405,6 +421,35 @@ public:
 
   #undef IMPL_FINDANDLOAD
   /// @}
+
+  bool find_and_load(const Key_t &key, AliFemtoConfigObject &dest) const
+  {
+    if (is_map()) {
+      MapValue_t::const_iterator found = fValueMap.find(key);
+      if (found != fValueMap.cend()) {
+        dest = found->second;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  #define IMPL_INSERT(__value_type, _ignored, __ignored)       \
+    void insert(const Key_t &key, const __value_type &value) { \
+      if (!is_map()) { return; }                               \
+      fValueMap[key] = AliFemtoConfigObject(value);            \
+    }
+
+    FORWARD_STANDARD_TYPES(IMPL_INSERT)
+
+    IMPL_INSERT(pair_of_floats, kRANGE, fValueRange);
+    IMPL_INSERT(pair_of_ints, kRANGE, fValueRange);
+    IMPL_INSERT(int, kINT, fValueInt);
+    IMPL_INSERT(unsigned int, kINT, fValueInt);
+    IMPL_INSERT(Float_t, kFLOAT, fValueFloat);
+    IMPL_INSERT(TString, kSTRING, fValueString);
+
+  #undef IMPL_INSERT
 
   /// Checks for existence of key in this object.
   /// Returns false if this is not a map or key is not found.
@@ -509,16 +554,15 @@ public:
   ///
   bool pop_and_load(const Key_t &key, AliFemtoConfigObject &dest)
   {
-    if (!is_map()) {
-      return false;
+    if (is_map()) {
+      MapValue_t::const_iterator found = fValueMap.find(key);
+      if (found != fValueMap.cend()) {
+        dest = found->second;
+        fValueMap.erase(found);
+        return true;
+      }
     }
-    MapValue_t::const_iterator found = fValueMap.find(key);
-    if (found == fValueMap.cend()) {
-      return false;
-    }
-    dest = found->second;
-    fValueMap.erase(found);
-    return true;
+    return false;
   }
 
 
@@ -753,12 +797,21 @@ public:
   /// If either is not a map, do nothing.
   /// Loop through keys in "default" object, if any key is missing
   /// in `this`, copy value over. If both keys point to maps, recursively
-  /// call SetDefault on thses sub-objects.
+  /// call SetDefault on the sub-objects.
   ///
   void SetDefault(const AliFemtoConfigObject &default_mapobj);
 #ifdef ENABLE_MOVE_SEMANTICS
   void SetDefault(AliFemtoConfigObject &&default_mapobj);
 #endif
+
+  /// Update map with key/value pairs from other dict.
+  /// If either is not a map, do nothing.
+  ///
+  /// \param source     Copy values from this object
+  /// \param all_keys   If true, all keys are read in from source,
+  ///                   otherwise only copy in the keys already present
+  ///
+  void Update(const AliFemtoConfigObject &source, bool all_keys=true);
 
   /// Print warning that multiple objects remain in this map or
   /// array. This is useful for ensuring all fields are used after

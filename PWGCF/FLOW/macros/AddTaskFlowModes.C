@@ -15,9 +15,10 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
 					   Double_t DCAzMax = 0.,
                        			   Double_t DCAxyMax = 0.,
 					   TString MultEstimator = "V0M",
+					   Bool_t PileUp=kFALSE,
 					   Bool_t DoOnlyMixedFlow = kTRUE,
+	                                   Bool_t FillWeights = kFALSE,
 					   Bool_t AntiProtonOnly = kFALSE,
-					   Bool_t FillWeights = kFALSE,
 					   Int_t PIDComb = 2,					   
 					   Bool_t PIDbayesian = kFALSE,
                        			   Double_t PIDprob = 0.9)
@@ -43,8 +44,17 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     task1->SetAnalysisType(AliAnalysisTaskFlowModes::kAOD);
     task1->SetFillQAhistos(kTRUE);
     task1->SetProcessCharged(kTRUE);
+    // PID selection
     task1->SetProcessPID(kTRUE,PIDbayesian);
     task1->SetPIDnsigmaCombination(PIDComb); // applies PIDnsigma combination 2 out of the 3 possible combinations.
+    task1->SetPIDUseAntiProtonOnly(AntiProtonOnly);
+    task1->SetPIDNumSigmasPionMax(3);
+    task1->SetPIDNumSigmasKaonMax(3);
+    task1->SetPIDNumSigmasProtonMax(3);
+    if(PIDbayesian) task1->SetBayesianProbability(PIDprob);
+    
+
+
     // Flow
     task1->SetFlowRFPsPtMin(0.2);
     task1->SetFlowRFPsPtMax(5.);
@@ -74,16 +84,10 @@ AliAnalysisTaskFlowModes* AddTaskFlowModes(TString name = "name",
     // if DCAxy and DCAz set to 0. then the DCA cuts only come from the filterbit
     task1->SetChargedDCAzMax(DCAzMax); //DCAz max is set to 2 in filterbit 32 and 96 
     task1->SetChargedDCAxyMax(DCAxyMax); // in filterbit 32 and 96 is a pt dependant tight cut and in 768 it is not set at all
- 
+    if(PileUp) task1->SetExtraPileUpCut(); 
     task1->SetMaxChi2perTPCcls(MaxChi2perTPC);   
     task1->SetChargedNumTPCclsMin(NumTPCclsMin);
     task1->SetChargedTrackFilterBit(TrackFilterBit);
-    // PID selection
-    task1->SetPIDUseAntiProtonOnly(AntiProtonOnly);
-    task1->SetPIDNumSigmasPionMax(3);
-    task1->SetPIDNumSigmasKaonMax(3);
-    task1->SetPIDNumSigmasProtonMax(3);
-    if(PIDbayesian) task1->SetBayesianProbability(PIDprob);
 
   mgr->AddTask(task1); // add your task to the manager
   // Creating containers

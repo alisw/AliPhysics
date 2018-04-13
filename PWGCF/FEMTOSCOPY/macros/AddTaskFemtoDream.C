@@ -137,10 +137,10 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	AntiCascadeCuts->SetPDGCodeBach(-211);
 
 	if (RunNumberQA) {
-	  v0Cuts->SetRunNumberQA(265525,267167);
-	  Antiv0Cuts->SetRunNumberQA(265525,267167);
-	  CascadeCuts->SetRunNumberQA(265525,267167);
-	  AntiCascadeCuts->SetRunNumberQA(265525,267167);
+	  v0Cuts->SetRunNumberQA(265309,267167);
+	  Antiv0Cuts->SetRunNumberQA(265309,267167);
+	  CascadeCuts->SetRunNumberQA(265309,267167);
+	  AntiCascadeCuts->SetRunNumberQA(265309,267167);
 	}
 
   //Thanks, CINT - will not compile due to an illegal constructor

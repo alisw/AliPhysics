@@ -43,6 +43,7 @@ AliAnalysisTaskStudentsCM::AliAnalysisTaskStudentsCM(const char *name, Bool_t us
  // Control histograms:
  fControlHistogramsList(NULL),
  fTestHistogramsList(NULL),	// {TEST}
+ fPtHistNoCut(NULL),
  fPtHist(NULL),
  fNbins(1000),
  fMinBin(0.),
@@ -50,6 +51,7 @@ AliAnalysisTaskStudentsCM::AliAnalysisTaskStudentsCM(const char *name, Bool_t us
  fPhiHist(NULL),
  fEtaHist(NULL),
  fEnergyHist(NULL),	// TEST
+ fEnergyHistNoCut(NULL),
  fPtPhiHist(NULL),	// TEST
  fMassSquareHist(NULL), // TEST
  // Final results:
@@ -96,6 +98,7 @@ AliAnalysisTaskStudentsCM::AliAnalysisTaskStudentsCM():		// {Dummy constructor. 
  // Control histograms:
  fControlHistogramsList(NULL),
  fTestHistogramsList(NULL),		// {TEST}
+ fPtHistNoCut(NULL),
  fPtHist(NULL),
  fNbins(1000),
  fMinBin(0.),
@@ -103,6 +106,7 @@ AliAnalysisTaskStudentsCM::AliAnalysisTaskStudentsCM():		// {Dummy constructor. 
  fPhiHist(NULL),
  fEtaHist(NULL),
  fEnergyHist(NULL),	// {TEST}
+ fEnergyHistNoCut(NULL),
  fPtPhiHist(NULL),	// TEST
  fMassSquareHist(NULL),	// TEST
  // Final results:
@@ -188,10 +192,14 @@ void AliAnalysisTaskStudentsCM::UserExec(Option_t *)
   Double_t charge = aTrack->Charge(); // charge
   Double_t pt = aTrack->Pt(); // Pt (transverse momentum)
   Double_t mSquare = 0.;	// mass^2
+
+  // Fill the control histogram containing the transverse momentum before the application of any cut
+  fPtHistNoCut->Fill(pt);
+  fEnergyHistNoCut->Fill(e);
  
   // apply some cuts: e.g. take for the analysis only particles in -0.8 < eta < 0.8, and 0.2 < pT < 5.0
   // ... implementation of particle cuts ...
-  if( (-0.8 < eta) && (eta < 0.8) && (0.2 < pt) && (pt < 5.0) ) 
+  if( (-0.8 < eta) && (eta < 0.8) && (0.2 < pt) && (pt < 5.0) )
   {
    // Fill some control histograms with the particles which passed cuts:
    fPtHist->Fill(pt);
@@ -292,19 +300,28 @@ void AliAnalysisTaskStudentsCM::BookControlHistograms()
 {
  // Book all control histograms.
 
- // a) Book histogram to hold pt distribution;
- // b) Book histogram to hold phi distribution;
- // c) Book histogram to hold eta distribution.
- // d) ...
+ // a) Book histogram to hold pt distribution before the application of cuts;
+ // b) Book histogram to hold pt distribution;
+ // c) Book histogram to hold phi distribution;
+ // d) Book histogram to hold eta distribution
+ // e) ...
 
- // a) Book histogram to hold pt spectra:
+
+ // a) Book histogram to hold pt distribution before the application of cuts;
+ fPtHistNoCut = new TH1F("fPtHistNoCut", "atrack->Pt()", fNbins, fMinBin, fMaxBin);
+ fPtHistNoCut->SetStats(kTRUE);
+ fPtHistNoCut->SetFillColor(kRed);
+ fPtHistNoCut->GetXaxis()->SetTitle("p_{t}");
+ fControlHistogramsList->Add(fPtHistNoCut);
+
+ // b) Book histogram to hold pt spectra:
  fPtHist = new TH1F("fPtHist","atrack->Pt()",fNbins,fMinBin,fMaxBin);
- fPtHist->SetStats(kFALSE);
+ fPtHist->SetStats(kTRUE);
  fPtHist->SetFillColor(kBlue-10);
  fPtHist->GetXaxis()->SetTitle("p_{t}");
  fControlHistogramsList->Add(fPtHist);
 
- // b) Book histogram to hold phi distribution:
+ // c) Book histogram to hold phi distribution:
  fPhiHist = new TH1F("fPhiHist","Phi Distribution",1000,0.,6.3);
  fPhiHist->GetXaxis()->SetTitle("Phi");
  fPhiHist->SetLineColor(4);
@@ -316,8 +333,6 @@ void AliAnalysisTaskStudentsCM::BookControlHistograms()
  fEtaHist->SetLineColor(4);
  fControlHistogramsList->Add(fEtaHist);*/
  
- // d) ...
-
 } // void AliAnalysisTaskStudentsCM::BookControlHistograms()
 
 //=======================================================================================================================
@@ -327,16 +342,23 @@ void AliAnalysisTaskStudentsCM::BookTestHistograms()
  // Book all personal histograms.
 
  // a) Book histogram to hold energy distribution
- // b) Book 2D histogram to hold (pt, phi) distribution
+ // b) Book histogram to hold energy distribution before the application of cuts
+ // c) Book 2D histogram to hold (pt, phi) distribution
 
  // a) Book histogram to hold energy distribution {TEST}
  fEnergyHist = new TH1F("fEnergyHist", "Energy Distribution",fNbins,fMinBin,fMaxBin);
- fEnergyHist->SetStats(kFALSE);
+ fEnergyHist->SetStats(kTRUE);
  fEnergyHist->SetLineColor(3);
  fEnergyHist->GetXaxis()->SetTitle("E");
  fTestHistogramsList->Add(fEnergyHist);
 
- // b) Book 2D histogram to hold (pt, phi) distribution TEST
+ // b) Book histogram to hold energy distribution before the application of cuts
+ fEnergyHistNoCut = new TH1F("fEnergyHistNoCut", "Energy distribution before cuts", fNbins, fMinBin, fMaxBin);
+ fEnergyHistNoCut->SetStats(kTRUE);
+ fEnergyHistNoCut->GetXaxis()->SetTitle("E");
+ fTestHistogramsList->Add(fEnergyHistNoCut);
+
+ // c) Book 2D histogram to hold (pt, phi) distribution TEST
  fPtPhiHist = new TH2F("fPtPhiHist", "(Pt, Phi) Distribution", fNbins,fMinBin,fMaxBin,1000,0.,6.3);
  fPtPhiHist->SetStats(kFALSE);
  fPtPhiHist->GetXaxis()->SetTitle("p_{t}");

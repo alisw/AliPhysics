@@ -381,11 +381,11 @@ case 4:
     
     fFit->SetParName(0,"ped");
     fFit->SetParName(1,"NS Y");   
-    fFit->SetParName(2,"NS mean 1g");
-    fFit->SetParName(3,"NS #sigma 1g");
+    fFit->SetParName(2,"NS mean");
+    fFit->SetParName(3,"NS #sigma");
     fFit->SetParName(4,"AS Y");
-    fFit->SetParName(5,"AS mean");
-    fFit->SetParName(6,"AS #sigma");
+    fFit->SetParName(5,"AS mean 1g");
+    fFit->SetParName(6,"AS #sigma 1g");
     fFit->SetParName(7,"fract 1g");  
     fFit->SetParName(8,"AS #sigma 2g");
     break;
@@ -857,7 +857,7 @@ void AliHFCorrFitter::DrawLegendWithParameters(){
     TPaveText *pvStatTests1=new TPaveText(0.51,0.6,0.85,0.82,"NDC");
     pvStatTests1->SetFillStyle(0);
     pvStatTests1->SetBorderSize(0);
-    TText *t1,*t2,*t3,*t3bis=0x0,*tAvSig=0x0,*t4,*t5;
+    TText *t1,*t2,*t3,*t3bis=0x0,*tAvSig=0x0,*t4,*t5,*t5bis=0x0,*tAvSigAS=0x0;
     if(fTypeOfFitfunc==kConstThreeGausPeriodicity){
       t1=pvStatTests1->AddText(0.,0.85,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
       t2=pvStatTests1->AddText(0.,0.73,Form("NS Y = %.2f#pm%.2f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
@@ -869,6 +869,17 @@ void AliHFCorrFitter::DrawLegendWithParameters(){
       t4=pvStatTests1->AddText(0.,0.24,Form("AS Y = %.2f#pm%.2f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
       t5=pvStatTests1->AddText(0.,0.12,Form("AS #sigma = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
     }
+    if(fTypeOfFitfunc==kConstThreeGausPeriodicityAS){
+      t1=pvStatTests1->AddText(0.,0.85,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
+      t2=pvStatTests1->AddText(0.,0.73,Form("NS Y = %.2f#pm%.2f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
+      t3=pvStatTests1->AddText(0.,0.61,Form("NS #sigma= %.2f#pm%.2f ",fFit->GetParameter(nss),fFit->GetParError(nss)));
+      t4=pvStatTests1->AddText(0.,0.49,Form("AS Y = %.2f#pm%.2f ",fFit->GetParameter(asy),fFit->GetParError(asy)));
+      ass=fFit->GetParNumber("AS #sigma 1g");
+      t5=pvStatTests1->AddText(0.,0.37,Form("AS #sigma 1g = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+      ass=fFit->GetParNumber("AS #sigma 2g");
+      t5bis=pvStatTests1->AddText(0.,0.24,Form("AS #sigma 2g = %.2f#pm%.2f ",fFit->GetParameter(ass),fFit->GetParError(ass)));
+      tAvSigAS=pvStatTests1->AddText(0.,0.12,Form("AS effective #sigma = %.2f#pm%.2f",GetASSigma(),GetASSigmaError()));
+    }    
     else{
       t1=pvStatTests1->AddText(0.,0.87,Form("#chi^{2}/ndf = %.1f/%d ",fFit->GetChisquare(),fFit->GetNDF()));
       t2=pvStatTests1->AddText(0.,0.69,Form("NS Y = %.2f#pm%.2f ",fFit->GetParameter(nsy),fFit->GetParError(nsy)));    
@@ -885,6 +896,10 @@ void AliHFCorrFitter::DrawLegendWithParameters(){
     }
     t4->SetTextSize(0.02);
     t5->SetTextSize(0.02);
+    if(t5bis){
+      t5bis->SetTextSize(0.02);
+      tAvSigAS->SetTextSize(0.02);
+    }
     if(fBaseline<-998.){
       TText* t6=pvStatTests1->AddText(0.,0.,Form("baseline = %.2f#pm%.2f ",fFit->GetParameter(bas),fFit->GetParError(bas)));
       t6->SetTextSize(0.02);

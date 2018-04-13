@@ -821,7 +821,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   }
 
   fEventCuts.AcceptEvent(aod);
-  if(!fEventCuts.PassedCut(AliEventCuts::kCorrelations)) {
+  if(!fEventCuts.PassedCut(AliEventCuts::kCorrelations) || !fEventCuts.PassedCut(AliEventCuts::kMultiplicity)) {
     fhEventsInfo->Fill(11);
     return;
   }

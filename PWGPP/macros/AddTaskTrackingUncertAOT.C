@@ -53,6 +53,8 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
   task->SetTriggerClass(trigClass.Data());
   task->SetTriggerMask(trigMask);
 
+
+  task->SetTPConly(fTPConlyFIT);
   task->SetSpecie(specie);
   task->SetMaxDCAxy(MaxDCAxy);
   task->SetMaxDCAz(MaxDCAz);

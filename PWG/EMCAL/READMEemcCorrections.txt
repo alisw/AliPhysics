@@ -18,6 +18,7 @@ The following correction components are available:
 - [CellBadChannel](\ref AliEmcalCorrectionCellBadChannel) -- Sets cells marked as bad to E = 0, using OADB bad channel map.
 - [CellEnergy](\ref AliEmcalCorrectionCellEnergy) -- Performs energy calibration of cells, using OADB calibration.
 - [CellTimeCalib](\ref AliEmcalCorrectionCellTimeCalib) -- Performs time calibration of cells, using OADB calibration.
+- [EmulateCrosstalk](\ref AliEmcalCorrectionCellEmulateCrosstalk) -- Emulate cell-level crosstalk.
 - [Clusterizer](\ref AliEmcalCorrectionClusterizer) -- Clusterizes a collection of cells into a collection of clusters.
 - [ClusterExotics](\ref AliEmcalCorrectionClusterExotics) -- Flags exotic clusters for removal from the cluster collection.
 - [ClusterNonLinearity](\ref AliEmcalCorrectionClusterNonLinearity) -- Corrects cluster energy for non-linear response.
@@ -69,6 +70,8 @@ correctionTask->SetUserConfigurationFilename("userConfiguration.yaml");
 correctionTask->Initialize();
 ~~~
 
+Note that this should be added after `CDBconnect`, which is required to use the correction framework.
+
 ## LEGO Train Wagon                                             {#emcCorrectionsLEGOTrainWagon}
 
 There are some special procedures for the LEGO train. There will be a centralized EMCal Correction Task wagon which
@@ -96,7 +99,7 @@ finders, user tasks, etc) should depend **only** on the centralized correction t
 They should not depend on your configuration wagon! One side effect of this configuration is that intermediate train
 test may fail with an error about the correction task not being configured. Intermediate tests failing is not necessarily
 a problem in itself - instead, check on the result of the full train test. If that test was successful, the train is fine
-and can be started.
+and can be started. For more, see the [FAQ answer](\ref emcCorrectionsLEGOTrainTests).
 
 # Configuring Corrections                                       {#configureEMCalCorrections}
 
@@ -471,6 +474,35 @@ for (int i = 0; i < clusters->GetEntries(); i++) {
     }
 }
 ~~~
+
+# FAQ                                                                       {#emcCorrectionsFAQ}
+
+## I am seeing an error related to the EMCal geometry - what is wrong?      {#emcCorrectionsGeometryError}
+
+For example, you may see an error similar to below.
+
+~~~
+F-AliEMCALGeometry::GetMatrixForSuperModule: Cannot find EMCAL misalignment matrices! Recover them either:
+- importing TGeoManager from file geometry.root or
+- from OADB in file OADB/EMCAL/EMCALlocal2master.root or
+- from OCDB in directory OCDB/EMCAL/Align/Data/ or
+- from AliESDs (not in AliAOD) via AliESDRun::GetEMCALMatrix(Int_t superModIndex).
+Store them via AliEMCALGeometry::SetMisalMatrix(Int_t superModIndex)
+~~~
+
+This is due to the OCDB being inaccessible. Please ensure that you ran the `CDBconnet` task.
+
+## Some of the LEGO train tests failed and I can't launch my train! Help!   {#emcCorrectionsLEGOTrainTests}
+
+When a configure wagon is used, it is out of the main dependency chain, which can cause some LEGO train tests to fail.
+In particular, this happens when the configure wagon is not run during a test, which is especially common during intermediate
+tests (ie running some, but not all wagons). In the case that some of these intermediate tests fail, check the full train test.
+If that test was successful, then those failed tests can safely be ignored.
+
+However, train operators should be aware that the LEGO train framework will not allow a train to be launched if any test is
+reported as failed. To workaround this issue, the operator should run a **fast test**, which will only run the baseline and
+full train tests. As noted above, the full test should run successfully with the configure wagon, so assuming that both the
+baseline and full train tests succeed, it is then possible to launch the train.
 
 # Details on the framework and the corrections
 

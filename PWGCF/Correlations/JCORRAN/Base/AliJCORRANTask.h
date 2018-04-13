@@ -80,7 +80,7 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
   
   Int_t 			fFilterEntry; //! entry to compare
   AliJFilter *fFilter; //! filter object 
-  AliJRunHeader * fAliJRunHeader; //!
+  AliJRunHeader * fAliJRunHeader; //
 
   ClassDef(AliJCORRANTask, 1); 
 };
