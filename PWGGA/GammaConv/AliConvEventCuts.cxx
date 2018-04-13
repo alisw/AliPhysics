@@ -996,6 +996,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 1){
       printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
+    } else if ( fModCentralityClass == 2){
+      printf("\t %d - %d \n", fCentralityMin, fCentralityMax);
     } else if (fModCentralityClass == 3){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 4){
@@ -1024,8 +1026,9 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
     }  else if ( fModCentralityClass == 1){
       printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
+    }  else if ( fModCentralityClass == 2){
+      printf("\t %d - %d \n", fCentralityMin, fCentralityMax);
     }
-
     if (fSpecialTrigger == 0){
       printf("\t only events triggered by kINT7 will be analysed \n");
     } else if (fSpecialTrigger > 1){
@@ -1123,6 +1126,20 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=2;
     fDetectorCentrality=1;
     fModCentralityClass=1;
+    break;
+  case 12: // pPb V0A
+    // steps of 1%
+    // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
+    fIsHeavyIon=2;
+    fDetectorCentrality=0;
+    fModCentralityClass=2;
+    break;
+  case 13: // pPb CL1
+    // steps of 1%
+    // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
+    fIsHeavyIon=2;
+    fDetectorCentrality=1;
+    fModCentralityClass=2;
     break;
 
   default:
@@ -2037,7 +2054,12 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       return kTRUE;
     } else return kFALSE;
   }
-
+  else if (fModCentralityClass == 2){
+    centralityC= Int_t(centrality);
+    if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
+      return kTRUE;
+    } else return kFALSE;
+  }
   Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
   Int_t PrimaryTracks10[11][2] =
     {
