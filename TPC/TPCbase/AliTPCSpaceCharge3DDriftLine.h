@@ -341,21 +341,21 @@ private:
   TH3 *fHistogram3DSpaceCharge;  //-> Histogram with the input space charge histogram - used as an optional input
   TH3 *fHistogram3DSpaceChargeA;  //-> Histogram with the input space charge histogram - used as an optional input side A
   TH3 *fHistogram3DSpaceChargeC;  //-> Histogram with the input space charge histogram - used as an optional input side C
-  TF1 *fFormulaBoundaryIFCA = NULL; //-> function define boundary values for IFC side A V(z) assuming symmetry in phi and r.
-  TF1 *fFormulaBoundaryIFCC = NULL; //-> function define boundary values for IFC side C V(z) assuming symmetry in phi and r.
-  TF1 *fFormulaBoundaryOFCA = NULL; //-> function define boundary values for OFC side A V(z) assuming symmetry in phi and r.
-  TF1 *fFormulaBoundaryOFCC = NULL; ///<- function define boundary values for IFC side C V(z) assuming symmetry in phi and r.
-  TF1 *fFormulaBoundaryROCA = NULL; ///<- function define boundary values for ROC side A V(r) assuming symmetry in phi and z.
-  TF1 *fFormulaBoundaryROCC = NULL; ///<- function define boundary values for ROC side V V(t) assuming symmetry in phi and z.
-  TF1 *fFormulaBoundaryCE = NULL; ///<- function define boundary values for CE V(z) assuming symmetry in phi and z.
+  TF1 *fFormulaBoundaryIFCA; //-> function define boundary values for IFC side A V(z) assuming symmetry in phi and r.
+  TF1 *fFormulaBoundaryIFCC; //-> function define boundary values for IFC side C V(z) assuming symmetry in phi and r.
+  TF1 *fFormulaBoundaryOFCA; //-> function define boundary values for OFC side A V(z) assuming symmetry in phi and r.
+  TF1 *fFormulaBoundaryOFCC; ///<- function define boundary values for IFC side C V(z) assuming symmetry in phi and r.
+  TF1 *fFormulaBoundaryROCA; ///<- function define boundary values for ROC side A V(r) assuming symmetry in phi and z.
+  TF1 *fFormulaBoundaryROCC; ///<- function define boundary values for ROC side V V(t) assuming symmetry in phi and z.
+  TF1 *fFormulaBoundaryCE; ///<- function define boundary values for CE V(z) assuming symmetry in phi and z.
 
-  TFormula *fFormulaPotentialV = NULL; ///<- potential V(r,rho,z) function
-  TFormula *fFormulaChargeRho = NULL;  ///<- charge density Rho(r,rho,z) function
+  TFormula *fFormulaPotentialV; ///<- potential V(r,rho,z) function
+  TFormula *fFormulaChargeRho;  ///<- charge density Rho(r,rho,z) function
 
   // analytic formula for E
-  TFormula *fFormulaEPhi = NULL; ///<- ePhi EPhi(r,rho,z) electric field (phi) function
-  TFormula *fFormulaEr = NULL; ///<- er Er(r,rho,z) electric field (r) function
-  TFormula *fFormulaEz = NULL; ///<- ez Ez(r,rho,z) electric field (z) function
+  TFormula *fFormulaEPhi; ///<- ePhi EPhi(r,rho,z) electric field (phi) function
+  TFormula *fFormulaEr; ///<- er Er(r,rho,z) electric field (r) function
+  TFormula *fFormulaEz; ///<- ez Ez(r,rho,z) electric field (z) function
 
 
 

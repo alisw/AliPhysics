@@ -318,6 +318,21 @@ void AliTPCSpaceCharge3DDriftLine::InitAllocateMemory() {
 
   fLookupIntCorrIrregularA->SetKernelType(fRBFKernelType);
   fLookupIntCorrIrregularC->SetKernelType(fRBFKernelType);
+
+  fFormulaBoundaryIFCA = NULL;
+  fFormulaBoundaryIFCC = NULL;
+  fFormulaBoundaryOFCA = NULL;
+  fFormulaBoundaryOFCC = NULL;
+  fFormulaBoundaryROCA = NULL;
+  fFormulaBoundaryROCC = NULL;
+  fFormulaBoundaryCE = NULL;
+
+  fFormulaPotentialV = NULL;
+  fFormulaChargeRho = NULL;
+
+ fFormulaEPhi = NULL;
+  fFormulaEr = NULL;
+  fFormulaEz = NULL;
 }
 /// Destruction for AliTPCSpaceCharge3DDriftLine
 /// Deallocate memory for lookup table and charge distribution
