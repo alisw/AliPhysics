@@ -555,6 +555,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *   fhPtLambda0MC    [fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously).
   TH2F *   fhPtLambda0MCConv[fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously).
+  TH2F *   fhPtLambda0MCNCellCut[fgkNmcTypes][2];       //!<! Shower shape of (non) isolated candidates originated by mcTypes particle with n cell_w > 4.
 
   TH2F *   fhPtLambda0MCWith1Overlap    [fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously). At least one overlap from other particles.
   TH2F *   fhPtLambda0MCConvWith1Overlap[fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously). At least one overlap from other particles.
@@ -625,6 +626,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Selection parameters per supermodule number
   TH2F *   fhPtPerSM[2];                               //!<! Input particle pT distribution per SM
   TH2F *   fhPtLambda0PerSM[2][20];                    //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously).
+  TH2F *   fhPtLambda0PerSMNCellCut[2][20];            //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously). N cell with weight > 4
+  TH2F *   fhPtNCellPerSM       [2][20];               //!<! N cells with weight in cluster per cluster pT, per SM
+  TH2F *   fhPtNCellLowM02PerSM [2][20];               //!<! N cells with weight in cluster per cluster pT for 0.1 < M02 < 0.3, per SM
+  TH2F *   fhPtNCellHighM02PerSM[2][20];               //!<! N cells with weight in cluster per cluster pT for 0.5 < M02 < 2, per SM
  
   TH2F *   fhConeSumPtPerSM[20] ;                      //!<! Cluster and tracks Sum Pt in the cone, per supermodule.
   TH2F *   fhConeSumPtClusterPerSM[20] ;               //!<! Clusters Sum Pt in the cone, per supermodule.
@@ -910,7 +915,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,41) ;
+  ClassDef(AliAnaParticleIsolation,42) ;
   /// \endcond
 
 } ;

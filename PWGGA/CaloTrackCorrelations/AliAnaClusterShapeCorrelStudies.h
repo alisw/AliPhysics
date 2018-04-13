@@ -58,7 +58,7 @@ public:
   void         ClusterShapeHistograms(AliVCluster* cluster,  
                                       Int_t   absIdMax    , Double_t maxCellFraction, 
                                       Float_t eCrossFrac  , Float_t ampMax  , Double_t tmax, 
-                                      Int_t   matchedPID  , Int_t    mcIndex);
+                                      Int_t   matchedPID  , Int_t    mcIndex, Int_t noverlaps);
   
   void         ClusterMatchedToTrackPID(AliVCluster *clus, Int_t & matchedPID);
   
@@ -505,11 +505,18 @@ public:
   TH3F *   fhInvMassNCellSMSame;                  //!<! Invariant mass vs first selected cluster N cell with 8 < E < 12 GeV and per SM of both cluster
   
   TH3F *   fhColRowM02;                           //!<! Cluster position in cell max col-row, 8 < E < 12 GeV, neutral only
-  TH3F *   fhColRowM02NCellCut;                   //!<! Cluster position in cell max col-row, 9 < E < 12 GeV, n cell > 4, neutral only
+  TH3F *   fhColRowM02NCellCut;                   //!<! Cluster position in cell max col-row, 9 < E < 12 GeV, n cell > fNCellMinShape, neutral only
   
-  TH2F *   fhOriginE  [3];                        //!<! check origin of selected clusters
-  TH3F *   fhOriginM02[3];                        //!<! check origin of selected clusters, vs E vs M02
+  TH2F *   fhOriginENoCut  [3];                   //!<! check origin of selected clusters
+  TH3F *   fhOriginM02NoCut[3];                   //!<! check origin of selected clusters, vs E vs M02  
+  TH2F *   fhOriginE  [3];                        //!<! check origin of selected clusters, n cell > fNCellMinShape
+  TH3F *   fhOriginM02[3];                        //!<! check origin of selected clusters, vs E vs M02, n cell > fNCellMinShape
 
+  TH2F *   fhOriginENoCutOverlap  [3];            //!<! check origin of selected clusters, overlap with other cluster
+  TH3F *   fhOriginM02NoCutOverlap[3];            //!<! check origin of selected clusters, vs E vs M02, overlap with other cluster  
+  TH2F *   fhOriginEOverlap  [3];                 //!<! check origin of selected clusters, n cell > fNCellMinShape, overlap with other cluster
+  TH3F *   fhOriginM02Overlap[3];                 //!<! check origin of selected clusters, vs E vs M02, n cell > fNCellMinShape, overlap with other cluster
+  
   TH3F *   fhSMM02NoCut[3];                       //!<! SM number vs m02, no cut
   TH3F *   fhSMM02    [3];                        //!<! SM number vs m02, n cell > 4
   TH3F *   fhSMM20HighM02NoCut[3];                //!<! SM number vs m20, 0.5<m02<2, no ncell cut
@@ -517,6 +524,8 @@ public:
   TH3F *   fhSMM20LowM02NoCut[3];                 //!<! SM number vs m20, 0.1<m02<0.3, no ncell cut
   TH3F *   fhSMM20LowM02[3];                      //!<! SM number vs m20, 0.1<m02<0.3, n cell > 4
   TH3F *   fhSMNCell  [3];                        //!<! SM number vs number of cells
+  TH3F *   fhSMNCellLowM02[3];                    //!<! SM number vs number of cells, 0.1<m02<0.3,
+  TH3F *   fhSMNCellHighM02[3];                   //!<! SM number vs number of cells, 0.5<m02<2
   TH3F *   fhSMNCellM02[3];                       //!<! SM number vs number of cells vs M02, in E bin
   TH3F *   fhColM02   [3];                        //!<! main cell column vs m02, n cell > 4
   TH3F *   fhRowM02   [3];                        //!<! main cell row vs m02, n cell > 4
@@ -663,7 +672,7 @@ public:
   AliAnaClusterShapeCorrelStudies(              const AliAnaClusterShapeCorrelStudies & qa) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaClusterShapeCorrelStudies,7) ;
+  ClassDef(AliAnaClusterShapeCorrelStudies,8) ;
   /// \endcond
 
 } ;

@@ -34,6 +34,8 @@ public:
 
   AliVdMScanData& FillDefaultBranches(const AliVdMMetaData& vdmMetaData, TTree *t,
                                       const std::vector<std::string>& triggerNames);
+  AliVdMScanData& FillDefaultBranchesFromCTPScalers(const AliVdMMetaData& vdmMetaData, TTree *t,
+                                                    const std::vector<std::string>& triggerNames);
 
   map_type& GetMap(std::size_t iScan) {
     for (; iScan >= fData.size();)
