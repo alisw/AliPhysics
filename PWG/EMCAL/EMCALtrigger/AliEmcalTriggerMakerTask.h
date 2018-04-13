@@ -209,6 +209,22 @@ protected:
   std::function<int (unsigned int, unsigned int)> GetMaskHandler() const;
 #endif
 
+ /**
+  * @brief Fix mapping in TRU index
+  * 
+  * In run 2 the index of the TRU is different between
+  * TRU indexing and STU indexing:
+  * - STU indexing: Linear, including PHOS region
+  * - TRU indexing: Out to in in eta (C-side mirrored), no PHOS region
+  * Obviously the mapping uses the STU indexing. This function
+  * remaps the TRU indexing (used in the DCS configuration) to the
+  * STU indexing
+  * 
+  * @param itru TRU index in TRU convention 
+  * @return int TRU index in STU convention
+  */
+  int RemapTRUIndex(int itru) const;
+
   /**
    * @brief Internal QA handler for trigger pathches of given type
    *
