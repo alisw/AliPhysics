@@ -99,7 +99,7 @@ finders, user tasks, etc) should depend **only** on the centralized correction t
 They should not depend on your configuration wagon! One side effect of this configuration is that intermediate train
 test may fail with an error about the correction task not being configured. Intermediate tests failing is not necessarily
 a problem in itself - instead, check on the result of the full train test. If that test was successful, the train is fine
-and can be started.
+and can be started. For more, see the [FAQ answer](\ref emcCorrectionsLEGOTrainTests).
 
 # Configuring Corrections                                       {#configureEMCalCorrections}
 
@@ -490,7 +490,19 @@ F-AliEMCALGeometry::GetMatrixForSuperModule: Cannot find EMCAL misalignment matr
 Store them via AliEMCALGeometry::SetMisalMatrix(Int_t superModIndex)
 ~~~
 
-This is due to the OCDB being unavailable. Please ensure that you ran the `CDBconnet` task.
+This is due to the OCDB being inaccessible. Please ensure that you ran the `CDBconnet` task.
+
+## Some of the LEGO train tests failed and I can't launch my train! Help!   {#emcCorrectionsLEGOTrainTests}
+
+When a configure wagon is used, it is out of the main dependency chain, which can cause some LEGO train tests to fail.
+In particular, this happens when the configure wagon is not run during a test, which is especially common during intermediate
+tests (ie running some, but not all wagons). In the case that some of these intermediate tests fail, check the full train test.
+If that test was successful, then those failed tests can safely be ignored.
+
+However, train operators should be aware that the LEGO train framework will not allow a train to be launched if any test is
+reported as failed. To workaround this issue, the operator should run a **fast test**, which will only run the baseline and
+full train tests. As noted above, the full test should run successfully with the configure wagon, so assuming that both the
+baseline and full train tests succeed, it is then possible to launch the train.
 
 # Details on the framework and the corrections
 
