@@ -128,6 +128,8 @@ fkDoImprovedDCACascDauPropagation ( kFALSE ),
 fkDoPureGeometricMinimization( kFALSE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
+fMinPtV0(   -1 ), //pre-selection
+fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ),
 fMaxPtCascade( 100.00 ),
 fMassWindowAroundCascade(0.060),
@@ -173,6 +175,8 @@ fkDoImprovedDCACascDauPropagation ( kFALSE ),
 fkDoPureGeometricMinimization( kFALSE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
+fMinPtV0(   -1 ), //pre-selection
+fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ), //pre-selection
 fMaxPtCascade( 100.00 ),
 fMassWindowAroundCascade(0.060),
@@ -641,6 +645,14 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             vertex.SetV0CosineOfPointingAngle(cpa);
             vertex.ChangeMassHypothesis(kK0Short);
             
+            //pre-select on pT
+            Double_t lMomX       = 0. , lMomY = 0., lMomZ = 0.;
+            Double_t lTransvMom  = 0. ;
+            vertex.GetPxPyPz( lMomX, lMomY, lMomZ );
+            lTransvMom      = TMath::Sqrt( lMomX*lMomX   + lMomY*lMomY );
+            if(lTransvMom<fMinPtV0) continue;
+            if(lTransvMom>fMaxPtV0) continue;
+            
             event->AddV0(&vertex);
             
             nvtx++;
@@ -821,6 +833,14 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (r2 > (x1*x1+y1*y1)) continue;
             
             if (cascade.GetCascadeCosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex) <fCascadeVertexerSels[5]) continue; //condition on the cascade pointing angle
+            
+            //pre-select on pT
+            Double_t lXiMomX       = 0. , lXiMomY = 0., lXiMomZ = 0.;
+            Double_t lXiTransvMom  = 0. ;
+            cascade.GetPxPyPz( lXiMomX, lXiMomY, lXiMomZ );
+            lXiTransvMom      = TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
+            if(lXiTransvMom<fMinPtCascade) continue;
+            if(lXiTransvMom>fMaxPtCascade) continue;
             
             //Filter masses: anti-cascade hypotheses
             Double_t lV0quality = 0.;
