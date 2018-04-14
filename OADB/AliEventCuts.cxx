@@ -405,7 +405,8 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     return;
   }
 
-  if (fCurrentRun >= 166423 && fCurrentRun <= 170593) {
+  if ((fCurrentRun >= 166423 && fCurrentRun <= 170593) ||
+      (fCurrentRun >= 136833 && fCurrentRun <= 139517)) {
     SetupLHC11h();
     return;
   }
