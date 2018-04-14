@@ -30,7 +30,6 @@ public:
 		kGamma = 22, kPi0 = 111, kEta = 221, kK0s = 310
 	};
 
-				
 	AliPP13EfficiencySelectionMC():
 		AliPP13PhotonSelection(),
 		fInvMass()
@@ -46,7 +45,7 @@ public:
 	{
 		// Force no timing cut for MC,
 		// as there is no photons from different bunches
-		fCuts.fTimingCut = 9999; 
+		fCuts.fTimingCut = 9999;
 
 		// Don't use c++11 here, as it might fail at some nodes
 		fPartNames[kGamma] = "#gamma";
@@ -80,15 +79,6 @@ protected:
 		(void) flags;
 
 	}
-
-	void ConsiderReconstructedParticle(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
-	{
-		(void) c1;
-		(void) c2;
-		(void) eflags;
-	}
-
-
 	AliPP13EfficiencySelectionMC(const AliPP13EfficiencySelectionMC &);
 	AliPP13EfficiencySelectionMC & operator = (const AliPP13EfficiencySelectionMC &);
 	// NB: This data structure contains all necesary histograms

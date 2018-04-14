@@ -122,6 +122,7 @@
 #pragma link C++ class AliPP13TagAndProbeSelection+;
 #pragma link C++ class AliPP13MesonSelectionMC+;
 #pragma link C++ class AliPP13EfficiencySelectionMC+;
+#pragma link C++ class AliPP13EfficiencySelectionSPMC+;
 #pragma link C++ class AliPP13PythiaInfoSelection+;
 #pragma link C++ class AliPP13PhysPhotonSelectionMC+;
 #pragma link C++ class AliPP13NonlinearityScanSelection+;
