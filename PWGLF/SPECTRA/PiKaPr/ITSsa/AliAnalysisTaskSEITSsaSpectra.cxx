@@ -1764,7 +1764,7 @@ double AliAnalysisTaskSEITSsaSpectra::BetheITSsaHybrid(double p, double mass) co
   Double_t gamma=bg/beta;
   Double_t bb=1.;
 
-  Double_t betagcut = fIsNominalBfield? 0.76 : 1e-20;
+  Double_t betagcut = (fIsNominalBfield || (mass>0.130 && mass<0.140) || (mass>0.0005 && mass<0.00052)) ? 0.76 : 1e-20;
 
   Double_t par[10];
   //parameters for pi, K, p
