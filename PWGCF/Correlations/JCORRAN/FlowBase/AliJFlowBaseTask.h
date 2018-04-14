@@ -48,6 +48,7 @@ class AliJFlowBaseTask : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t* );
   void CalculateEventPlane(TClonesArray *inList);
   TComplex GetQvectorsEP(int id, int ih) { return QvectorsEP[id][ih];}
+  double GetEventPlaneALICE(int id, int ih) { return fEventPlaneALICE[id][ih];}
   AliJCatalystTask *GetJCatalystTask() {return fJCatalystTask;}
   Bool_t  IsMC()const{ return fIsMC; }
   void    SetIsMC(Bool_t b){ fIsMC=b; }

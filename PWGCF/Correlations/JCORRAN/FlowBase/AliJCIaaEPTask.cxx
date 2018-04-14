@@ -123,10 +123,15 @@ void AliJCIaaEPTask::UserExec(Option_t* /*option*/)
 	if( fJFlowBaseTask->GetJCatalystTask()->GetJCatalystEntry() != fEntry ) return;
 	// Event selection is done in fJFlowBaseTask
 	// need to put cent/vtx/run#
-	TComplex Qvector;
 	int iH = 2;
-	Qvector = fJFlowBaseTask->GetQvectorsEP(fEPDetID, iH);
-	float EP2 = Qvector.Theta()/double(iH);
+	double EP2 = -999;
+	if(fJFlowBaseTask->IsMC()) {
+		TComplex Qvector;
+		Qvector = fJFlowBaseTask->GetQvectorsEP(fEPDetID, iH);
+		EP2 = Qvector.Theta()/double(iH);
+	} else {
+		EP2 = fJFlowBaseTask->GetEventPlaneALICE(fEPDetID,iH);
+	}
 	fIaaAna->SetRunNumber(fJFlowBaseTask->GetJCatalystTask()->GetRunNumber());
 	fIaaAna->SetCentrality(fJFlowBaseTask->GetJCatalystTask()->GetCentrality());
 	fIaaAna->SetZVertex(fJFlowBaseTask->GetJCatalystTask()->GetZVertex());
