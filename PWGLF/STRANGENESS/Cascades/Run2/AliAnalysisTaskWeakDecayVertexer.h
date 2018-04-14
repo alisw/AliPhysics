@@ -175,6 +175,12 @@ public:
     void SetMaxPtCascade     ( Float_t lMaxPt ) {
         fMaxPtCascade = lMaxPt;
     }
+    void SetMinPtV0     ( Float_t lMinPt ) {
+        fMinPtV0 = lMinPt;
+    }
+    void SetMaxPtV0     ( Float_t lMaxPt ) {
+        fMaxPtV0 = lMaxPt;
+    }
     void SetCentralityInterval     ( Float_t lMinCent, Float_t lMaxCent ) {
         fMinCentrality = lMinCent;
         fMaxCentrality = lMaxCent;
@@ -251,6 +257,8 @@ private:
     Long_t fMaxIterationsWhenMinimizing;
     
     //Min/Max pT for cascades
+    Float_t fMinPtV0; //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxPtV0; //maximum pt below which we keep candidates in TTree output
     Float_t fMinPtCascade; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
 
