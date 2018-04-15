@@ -137,7 +137,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
     fArmPlot(0),
 		fIsEffTree(kFALSE),
     fIsAOD(kTRUE),
-    fFilterBit(4),
+    fFilterBit(16),
     fIsGRIDanalysis(kTRUE),
     fGridPID(-1)
 {
@@ -222,7 +222,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     fArmPlot(0),
 		fIsEffTree(kFALSE),
     fIsAOD(kTRUE),
-    fFilterBit(4),
+    fFilterBit(16),
     fIsGRIDanalysis(kTRUE),
     fGridPID(-1)
 
@@ -488,20 +488,19 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			//Get MC information
 			if(hasMC){
 				if(fIsAOD){
-						mcTrack = dynamic_cast<AliAODMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+					mcTrack = dynamic_cast<AliAODMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
 
-						//Check valid pointer has been returned. If not, disregard track. 
-						if(!mcTrack){
-								continue;
-						}
+					//Check valid pointer has been returned. If not, disregard track. 
+					if(!mcTrack){
+						continue;
+					}
 				}else{
-						mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+					mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
 
-						//Check valid pointer has been returned. If not, disregard track. 
-						if(!mcTrack){
-								continue;
-						}
-
+					//Check valid pointer has been returned. If not, disregard track. 
+					if(!mcTrack){
+						continue;
+					}
 				}
 					
 				fQAhist->Fill("Tracks_MCcheck", 1);
@@ -562,28 +561,30 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 			//Apply some track cuts 
 			pt = track->Pt();
-			if( pt < fPtMin || pt > fPtMax ){ continue;}
+			if( pt < fPtMin || pt >= fPtMax ){ continue;}
 			eta  = track->Eta();
-			if( eta < fEtaMin || eta > fEtaMax ){ continue;} 
+			if( eta < fEtaMin || eta >= fEtaMax ){ continue;} 
 			phi  = track->Phi();
 
 			fQAhist->Fill("Tracks_KineCuts", 1);
 
 			//Get TPC information
+			//kNclsTPC
 			nTPCclusters = track->GetTPCNcls(); 
 			if(nTPCclusters < 70){ continue;}
 			
+			//kNFclsTPCr
 			nTPCcrossed = track->GetTPCClusterInfo(2,1);
 			if(nTPCcrossed < 60){ continue;}
 
 			fTPCcrossOverFind = 0;
-
 			nTPCfindable = track->GetTPCNclsF();
+			//kNFclsTPCfCross
 			if(nTPCfindable > 0){
 				fTPCcrossOverFind = nTPCcrossed/nTPCfindable;
 			}
 
-			if(fTPCcrossOverFind < 0.3 || fTPCcrossOverFind > 1.1){ continue;}
+			if(fTPCcrossOverFind < 0.3 || fTPCcrossOverFind >= 1.1){ continue;}
 
 			tpcSharedMap = 0;
 			if(fIsAOD){
@@ -606,8 +607,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			if((track->GetStatus() & AliVTrack::kTPCrefit) <= 0){ continue;}
 
 			//DCA values
-			Float_t DCAesd[2] = {0.0,0.0};
-			Double_t DCAaod[2] = {0.0,0.0};
+			Float_t  DCAesd[2] = {0.0, 0.0};
+			Double_t DCAaod[2] = {0.0, 0.0};
 			Double_t DCAcov[2] = {0.0, 0.0};
 			if(!fIsAOD){
 				//Arguments: xy, z
@@ -627,12 +628,15 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			}
 
 			//DCAxy cut
-			if(DCA[0] < -1 || DCA[0] > 1){ continue;}
+			//kImpactParXY
+			if(DCA[0] < -1.0 || DCA[0] >= 1.0){ continue;}
 			//DCAz cut
-			if(DCA[1] < -3 || DCA[1] > 3){ continue;}
+			//kImpactParZ
+			if(DCA[1] < -3.0 || DCA[1] >= 3.0){ continue;}
 
 			//Get ITS information
-			nITS = track->GetNcls(0);;
+			//kNclsITS
+			nITS = track->GetNcls(0);
 
 			if(fHasSDD){
 				if(nITS < 4){ continue;}
@@ -641,7 +645,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			}
 			
 			chi2ITS = track->GetITSchi2();
-			if((chi2ITS/nITS) > 36){ continue;} 
+			//kITSchi2Cl
+			if((chi2ITS/nITS) >= 36){ continue;} 
 			
 			fITSshared = 0.;
 			for(Int_t d = 0; d < 6; d++){
@@ -660,7 +665,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 			//Get electron nSigma in TPC for cut (inclusive cut)
 			EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron);
-			if( EnSigmaTPC > fESigTPCMax || EnSigmaTPC < fESigTPCMin) { continue;}
+			if( EnSigmaTPC >= fESigTPCMax || EnSigmaTPC < fESigTPCMin) { continue;}
 				
 			EnSigmaITS = -999;
 			if(fHasSDD){
