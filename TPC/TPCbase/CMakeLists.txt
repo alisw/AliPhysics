@@ -16,6 +16,7 @@
 # Module
 set(MODULE TPCbase)
 add_definitions(-D_MODULE_="${MODULE}")
+add_subdirectory(test)
 
 # Module include folder
 include_directories(${AliRoot_SOURCE_DIR}/TPC/${MODULE})
@@ -109,6 +110,12 @@ set(SRCS
     AliTransform.cxx
     AliXRDPROOFtoolkit.cxx
     AliTPCSAMPAEmulator.cxx
+    AliTPC3DCylindricalInterpolator.cxx
+    AliTPC3DCylindricalInterpolatorIrregular.cxx
+    AliTPCLookUpTable3DInterpolatorD.cxx
+    AliTPCLookUpTable3DInterpolatorIrregularD.cxx
+    AliTPCPoissonSolver.cxx
+    AliTPCSpaceCharge3DDriftLine.cxx
    )
 
 # Headers from sources
