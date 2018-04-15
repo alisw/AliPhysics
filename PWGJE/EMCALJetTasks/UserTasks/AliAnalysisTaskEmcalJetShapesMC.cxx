@@ -1452,13 +1452,14 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
    jj=fOutputJets[0];
    double ndepth=0;
     while(jj.has_parents(j1,j2)){
-      ndepth=ndepth+1;  
+     
     if(j1.perp() < j2.perp()) swap(j1,j2);
     double delta_R=j1.delta_R(j2);
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
     double lnpt_rel=log(z*delta_R);
     if(z>fHardCutoff){
+    ndepth=ndepth+1;
     Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,partonFlavor,ndepth};  
     fHLundIterative->Fill(LundEntries);}
     jj=j1;} 
