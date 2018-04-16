@@ -197,6 +197,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Double_t                    fMinSharedMomentumFraction;           ///< Minimum shared momentum (pp det-level track pT in combined jet) / (pp det-level track pT)
   Double_t                    fMaxMatchedJetDistance;               ///< Maximum distance between two matched jets
   Bool_t                      fUseResponseMaker;                    ///< Flag to use Response Maker rather than JetTagger
+  AliJetContainer*            fMCJetContainer;                      //!<!Pointer to jet container of truth-level jets
   
   // Event selection
   Bool_t                      fUseAliEventCuts;                     ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
@@ -215,7 +216,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 11);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 12);
   /// \endcond
 };
 #endif

@@ -96,6 +96,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fMinSharedMomentumFraction(0.5),
   fMaxMatchedJetDistance(0.3),
   fUseResponseMaker(kFALSE),
+  fMCJetContainer(nullptr),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
   fEventCutList(0),
@@ -142,6 +143,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fMinSharedMomentumFraction(0.5),
   fMaxMatchedJetDistance(0.3),
   fUseResponseMaker(kFALSE),
+  fMCJetContainer(nullptr),
   fUseAliEventCuts(kTRUE),
   fEventCuts(0),
   fEventCutList(0),
@@ -215,8 +217,9 @@ void AliAnalysisTaskEmcalJetPerformance::UserCreateOutputObjects()
     if(fUseManualEventCuts==1)
     {
       fEventCuts.SetManualMode();
-      // Configure manual settings here
-      // ...
+      fEventCuts.fMC = false;
+      fEventCuts.SetupLHC15o();
+      fEventCuts.fUseVariablesCorrelationCuts = true;
     }
     fEventCuts.AddQAplotsToList(fEventCutList);
     fOutput->Add(fEventCutList);
@@ -224,6 +227,21 @@ void AliAnalysisTaskEmcalJetPerformance::UserCreateOutputObjects()
   
   // Get the MC particle branch, in case it exists
   fGeneratorLevel = GetMCParticleContainer("mcparticles");
+  
+  // Get MC jet container, in order to check the jet acceptance criteria
+  if (fPlotMatchedJetHistograms) {
+    for (Int_t i=0; i<2; i++) {
+      auto jetCont = GetJetContainer(i);
+      TString jetContName = jetCont->GetName();
+      if (jetContName.Contains("mcparticles")) {
+        fMCJetContainer = jetCont;
+      }
+    }
+    if (!fMCJetContainer) {
+      Printf("No MC jet container found!");
+    }
+    Printf("mcJetContainer: %s", fMCJetContainer->GetName());
+  }
   
   // Allocate histograms
   if (fPlotJetHistograms) {
@@ -353,7 +371,7 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
       fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     }
     
-    // (Centrality, pT, Nconst, calo type)
+    // (Centrality, pT, Nconst)
     nbinsx = 20; minx = 0; maxx = 100;
     nbinsy = nPtBins; miny = 0; maxy = fMaxPt;
     nbinsz = 50; minz = 0; maxz = fMaxPt;
@@ -367,6 +385,18 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateJetHistograms()
       title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents";
       fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
     }
+    
+    // (Centrality, pT) for eta<0 and eta>0
+    nbinsx = 20; minx = 0; maxx = 100;
+    nbinsy = fMaxPt; miny = 0; maxy = fMaxPt;
+    
+    histname = TString::Format("%s/JetHistograms/hEtaPosVsPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c})";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy);
+    
+    histname = TString::Format("%s/JetHistograms/hEtaNegVsPtEMCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c})";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy);
     
     // (Centrality, jet pT, Enonlincorr - Ehadcorr)
     nbinsx = 20; minx = 0; maxx = 100;
@@ -1303,6 +1333,18 @@ void AliAnalysisTaskEmcalJetPerformance::FillJetHistograms()
       }
       fHistManager.FillTH3(histname, fCent, corrPt, 1.*jet->GetNumberOfConstituents());
       
+      // (Centrality, pT) for eta<0 and eta>0
+      if (type == kEMCal) {
+        if (jet->Eta() > 0) {
+          histname = TString::Format("%s/JetHistograms/hEtaPosVsPtEMCal", jets->GetArrayName().Data());
+          fHistManager.FillTH2(histname, fCent, corrPt);
+        }
+        else if (jet->Eta() < 0) {
+          histname = TString::Format("%s/JetHistograms/hEtaNegVsPtEMCal", jets->GetArrayName().Data());
+          fHistManager.FillTH2(histname, fCent, corrPt);
+        }
+      }
+      
       // (Centrality, jet pT, Enonlincorr - Ehadcorr)
       Double_t deltaEhadcorr = 0;
       const AliVCluster* clus = nullptr;
@@ -2184,7 +2226,13 @@ void AliAnalysisTaskEmcalJetPerformance::FillMatchedJetHistograms()
         // Get the matched part-level jet, if one exists, subject to fMinSharedMomentumFraction, fMaxMatchedJetDistance criteria
         matchedPartLevelJet = GetMatchedPartLevelJet(jets, jet, "MatchedJetHistograms/fHistJetMatchingQA");
       }
+      
+      // Check that the matched jet exists, and is accepted
       if (!matchedPartLevelJet) {
+        continue;
+      }
+      UInt_t rejectionReason = 0;
+      if (!fMCJetContainer->AcceptJet(matchedPartLevelJet, rejectionReason)) {
         continue;
       }
       
