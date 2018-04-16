@@ -52,6 +52,9 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title,
   fDenominator(nullptr),
   fRatio(nullptr),
   fkTMonitor(nullptr),
+
+  tNumerator_RotatePar2(nullptr),
+
   fDetaDphiscal(kFALSE),
   fPairKinematics(kFALSE),
   fRaddedps(1.2),
@@ -86,11 +89,17 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title,
                         "kT Dependence; kT(GeV/c)",
                         DFLT_NbinskT, DFLT_kTMin, DFLT_kTMax);
 
+  tNumerator_RotatePar2 = new TH1D(TString::Format("Num_RotatePar2%s", fTitle.Data()),
+                                   "KStar - Numerator - Rotate Particle 2; k*(GeV/c);",
+                                    nbins, KStarLo, KStarHi);
+
   // to enable error bar calculation...
   fNumerator->Sumw2();
   fDenominator->Sumw2();
   fRatio->Sumw2();
   fkTMonitor->Sumw2();
+
+  tNumerator_RotatePar2->Sumw2();
 }
 
 //____________________________
@@ -114,6 +123,8 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrF
   // copy constructor
   fRatio = (aCorrFctn.fRatio) ? new TH1D(*aCorrFctn.fRatio) : nullptr;
   fkTMonitor =(aCorrFctn.fkTMonitor) ? static_cast<TH1D*>(aCorrFctn.fkTMonitor->Clone()) : nullptr;
+
+  tNumerator_RotatePar2 =(aCorrFctn.tNumerator_RotatePar2) ? static_cast<TH1D*>(aCorrFctn.tNumerator_RotatePar2->Clone()) : nullptr;
 
   if(aCorrFctn.fNumDEtaDPhiS) fNumDEtaDPhiS = new TH2D(*aCorrFctn.fNumDEtaDPhiS);
     else fNumDEtaDPhiS = 0;
@@ -153,6 +164,7 @@ AliFemtoCorrFctnKStar::~AliFemtoCorrFctnKStar()
   delete fDenominator;
   delete fRatio;
   delete fkTMonitor;
+  delete tNumerator_RotatePar2;
   delete fNumDEtaDPhiS;
   delete fDenDEtaDPhiS;
   delete fPairKStar;
@@ -195,6 +207,9 @@ AliFemtoCorrFctnKStar& AliFemtoCorrFctnKStar::operator=(const AliFemtoCorrFctnKS
     fRatio = new TH1D(*aCorrFctn.fRatio);
   if(fkTMonitor) delete fkTMonitor;
     fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
+
+  if(tNumerator_RotatePar2) delete tNumerator_RotatePar2;
+    tNumerator_RotatePar2 = new TH1D(*aCorrFctn.tNumerator_RotatePar2);
 
   if(fNumDEtaDPhiS) delete fNumDEtaDPhiS;
     fNumDEtaDPhiS = new TH2D(*aCorrFctn.fNumDEtaDPhiS);
@@ -247,6 +262,9 @@ TList* AliFemtoCorrFctnKStar::GetOutputList()
   tOutputList->Add(fDenominator);
   tOutputList->Add(fkTMonitor);
   tOutputList->Add(fRatio);
+
+  tOutputList->Add(tNumerator_RotatePar2);
+
   if(fDetaDphiscal) {
     tOutputList->Add(fNumDEtaDPhiS);
     tOutputList->Add(fDenDEtaDPhiS);
@@ -285,6 +303,9 @@ void AliFemtoCorrFctnKStar::Write()
   fNumerator->Write();
   fDenominator->Write();
   fkTMonitor->Write();
+
+  tNumerator_RotatePar2->Write();
+
   if(fDetaDphiscal) {
     fNumDEtaDPhiS->Write();
     fDenDEtaDPhiS->Write();
@@ -321,6 +342,8 @@ void AliFemtoCorrFctnKStar::AddRealPair(AliFemtoPair* aPair)
 
   fNumerator->Fill(tKStar);
   fkTMonitor->Fill(aPair->KT());
+
+  tNumerator_RotatePar2->Fill(fabs(CalcKStar_RotatePar2(aPair)));
 
   if(fDetaDphiscal) FillDEtaDPhiS(fNumDEtaDPhiS,aPair);
   if(fBuildkTBinned) fNumerator_kT->Fill(aPair->KStar(), aPair->KT());
@@ -438,6 +461,56 @@ void AliFemtoCorrFctnKStar::Set3dBins(int aNbinsKStarOut,  double aKStarOutMin, 
   fDenominator3d->SetBins(aNbinsKStarOut, aKStarOutMin, aKStarOutMax,
                         aNbinsKStarSide,aKStarSideMin,aKStarSideMax,
                         aNbinsKStarLong,aKStarLongMin,aKStarLongMax);
+}
+
+//____________________________
+double AliFemtoCorrFctnKStar::CalcKStar_RotatePar2(const AliFemtoPair* aPair)
+{
+  double tKStarCalc = 0.;
+
+  AliFemtoParticle* tTrack1 = aPair->Track1();
+  AliFemtoParticle* tTrack2 = aPair->Track2();
+
+  double px1 = tTrack1->FourMomentum().vect().x();
+  double py1 = tTrack1->FourMomentum().vect().y();
+  double pz1 = tTrack1->FourMomentum().vect().z();
+  double pE1  = tTrack1->FourMomentum().e();
+  double tParticle1Mass;
+  if((pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1)>0)
+    tParticle1Mass = ::sqrt(pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1);
+  else
+    tParticle1Mass = 0;
+
+  double px2 = -1.*tTrack2->FourMomentum().vect().x();
+  double py2 = -1.*tTrack2->FourMomentum().vect().y();
+  double pz2 = tTrack2->FourMomentum().vect().z();
+  double pE2  = tTrack2->FourMomentum().e();
+  double tParticle2Mass;
+  if((pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2)>0)
+    tParticle2Mass = ::sqrt(pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2);
+  else
+    tParticle2Mass = 0;
+
+  double tPx = px1+px2;
+  double tPy = py1+py2;
+  double tPz = pz1+pz2;
+  double tPE = pE1+pE2;
+
+  double tPtrans = tPx*tPx + tPy*tPy;
+  double tMtrans = tPE*tPE - tPz*tPz;
+  double tPinv =   ::sqrt(tMtrans - tPtrans);
+  tMtrans = ::sqrt(tMtrans);
+  tPtrans = ::sqrt(tPtrans);
+
+  double tQinvL = (pE1-pE2)*(pE1-pE2) - (px1-px2)*(px1-px2) -
+    (py1-py2)*(py1-py2) - (pz1-pz2)*(pz1-pz2);
+
+  double tQ = (tParticle1Mass*tParticle1Mass - tParticle2Mass*tParticle2Mass)/tPinv;
+  tQ = sqrt ( tQ*tQ - tQinvL);
+
+  tKStarCalc = tQ/2;
+
+  return tKStarCalc;
 }
 
 //____________________________
