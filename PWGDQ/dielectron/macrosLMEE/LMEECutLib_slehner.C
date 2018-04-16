@@ -87,23 +87,11 @@ AliDielectronCutGroup* LMEECutLib::GetEventCuts() {
   eventCuts->SetMinVtxContributors(1);
   eventCuts->SetVertexZ(-10.,+10.);
     
-//  cuts->AddCut(eventCuts);
-//  cuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
   return cuts;
 }
 
 
-//Selection of relatively 'flat' centralities
-AliAnalysisCuts* LMEECutLib::GetCentralityCuts(AnalysisCut AnaCut) {
-  AliDielectronVarCuts* centCuts = 0x0;
-
-  return centCuts;
-}
-
-
-
-
-AliAnalysisCuts* LMEECutLib::GetPIDCutsAna() {
+AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel) {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliAnalysisCuts* pidCuts=0x0;
   
@@ -112,34 +100,34 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna() {
   AliDielectronVarCuts *ptRange200to8000 = new AliDielectronVarCuts("ptRange200to8000","ptRange200to8000");
   ptRange200to8000->AddCut(AliDielectronVarManager::kPt, 0.2, 8.0);
   
-  //nanoAOD Prefilter cuts - should always be applied  if working on nanoAODs in real data, otherwise MC and real data might not use same cuts
+
   AliDielectronPID *pidFilterCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
+ 
+  //nanoAOD Prefilter cuts - should always be applied  if working on nanoAODs in real data, otherwise MC and real data might not use same cuts
   pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
   pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
   pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
   
-  // additional PID cuts: carsten analysis PID cut (Physics Forum 12.04.18)
-  AliDielectronPID *pidCarsCuts = new AliDielectronPID("pid_Cuts","pid_Cuts");
-  pidCarsCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
-  pidCarsCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
-  pidCarsCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
-  pidCarsCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
+
   
-  switch (AnaCut.GetPIDAna()) {
-      case CarsCuts:
-      pidCuts = LMEECutLib::SetKinematics(etaRange080, ptRange200to8000, pidCarsCuts, AnaCut);;
+  switch (sel) {
+      case 1:
+      // additional PID cuts: carsten analysis PID cut (Physics Forum 12.04.18)
+      pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
+      pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+      pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+      pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
       break;
   }
   
-  pidCuts->AddCut(pidFilterCuts);       //Add nanoAODfilter PID cuts
-  return   pidCuts;
+  return(pidFilterCuts);       //Add nanoAODfilter PID cuts
+
 }
 
-AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna() {
+AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(int selTrm int selPID) {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackSelectionAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliDielectronCutGroup* trackCuts=0x0;
-  
-  
+    
   //Add nanoAOD filter cuts
   AliDielectronVarCuts *varCutsFilter   = new AliDielectronVarCuts("VarCuts","VarCuts");
   AliDielectronTrackCuts *trkCutsFilter = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
@@ -148,6 +136,8 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna() {
   trkCutsFilter->SetRequireITSRefit(kTRUE);
   trkCutsFilter->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
 
+  varCutsFilter->AddCut(AliDielectronVarManager::kPt,           0.2, 8.0);
+  varCutsFilter->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
   varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
@@ -162,13 +152,16 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna() {
   varCutsFilter->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
   
   trackCuts->AddCut(varCutsFilter);
-  trackCuts->AddCut(trkCutsFilter);  
+  trackCuts->AddCut(trkCutsFilter);
   
+  trackCuts->AddCut(GetPIDCutsAna(selPID));
   
-  switch (AnaCut.GetTrackSelectionAna()) {
+  switch (sel) {
 
-      case CarsTrCuts:
-          
+    cout<<"chose track cut "<<sel<<endl;      
+      
+      case 1:
+
             AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");     
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
@@ -208,63 +201,14 @@ AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna() {
             cgTrackCarstCutsAna->AddCut(trackCutsAOD);
             cgTrackCarstCutsAna->AddCut(SharedClusterCut);
             
-            trackCuts = cgTrackCarstCutsAna;            
+            trackCuts = cgTrackCarstCutsAna; 
+            break;
     }
+  
+  return trackCuts;
 }
 
-AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet) {
-  //TRACK CUTS AS USED IN CongifLMEE_nano_PbPb2015.C and in LMEECutLib_caklein.C (cut set 3) (20.03.2018)
-  cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackCuts() >>>>>>>>>>>>>>>>>>>>>> " << endl;
-  AliDielectronCutGroup* trackCuts=new AliDielectronCutGroup("trackCuts","trackCuts",AliDielectronCutGroup::kCompAND);
-  
-  AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
-  AliDielectronVarCuts *varCuts   = new AliDielectronVarCuts("VarCuts","VarCuts");
-  AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
-  AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
 
-  // specific cuts
-  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
-  trkCuts->SetRequireITSRefit(kTRUE);
-  trkCuts->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
-
-  // standard cuts
-  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
-  varCuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
-  varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
-//  varCuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster    // did not work on ESD when filtering nanoAODs
-  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
-  varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-
-  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
-  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
-  
-trackCutsAOD->AddCut(AliDielectronVarManager::kPt,           0.2, 8.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-//  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-//  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
-//  trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 160.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
-  
-trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::kSPD,AliDielectronTrackCuts::kFirst);//(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst) -> error
-trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//(1<<4) -> error
-
-
-trackCuts->AddCut(varCuts);
-trackCuts->AddCut(trkCuts);
-
-trackCuts->AddCut(trackCutsDiel);
-trackCuts->AddCut(trackCutsAOD);
-
-trackCuts->Print();
-
-    
-return trackCuts;
-}
 
 
 
