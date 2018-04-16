@@ -7775,6 +7775,10 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
 
   TH2F *hFrame = new TH2F("hFrame","Systematic errors; p_{T} (GeV/c); Relative Syst. Unc.",50,0,50,100,-1,+1);
   hFrame->SetAxisRange(1.,35.9,"X");
+  if(fIs5TeVAnalysis && !fIsLowPtAnalysis && (fRunNumber==17 || fRunNumber==2017)){
+    hFrame->SetAxisRange(0.,35.9,"X");
+    hFrame->SetAxisRange(-0.15,0.15,"Y");
+  }
   if(fIsLowPtAnalysis) hFrame->SetAxisRange(0.,24.,"X");
   hFrame->SetAxisRange(-0.5,0.5,"Y");
   if(fCollisionType==2 && (fRunNumber==16 || fRunNumber==2016)) hFrame->SetAxisRange(-0.15,0.15,"Y");
