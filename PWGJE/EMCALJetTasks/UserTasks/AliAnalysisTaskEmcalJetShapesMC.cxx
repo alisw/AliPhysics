@@ -99,7 +99,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fTf1Kt(0x0)
 
 {
-  for(Int_t i=0;i<33;i++){
+  for(Int_t i=0;i<8;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -155,7 +155,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   // Standard constructor.
   
   
-  for(Int_t i=0;i<48;i++){
+  for(Int_t i=0;i<8;i++){
     fShapesVar[i]=0;}
   
   SetMakeGeneralHistograms(kTRUE);
@@ -196,7 +196,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 54;
+  const Int_t nVar = 8;
 
   TString *fShapesVarNames = new TString [nVar];
   
@@ -206,48 +206,50 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   fShapesVarNames[3] = "mJet";
   fShapesVarNames[4] = "nbOfConst";
   fShapesVarNames[5] = "angularity";
-  fShapesVarNames[6] = "Nsubjet1kt";
-  fShapesVarNames[7] = "Nsubjet2kt"; 
-  fShapesVarNames[8] = "Nsubjet1Min"; 
-  fShapesVarNames[9] = "Nsubjet2Min";
-  fShapesVarNames[10] = "DeltaRkt";
-  fShapesVarNames[11] = "DeltaRMin";
-  fShapesVarNames[12] = "SDSymm";
-  fShapesVarNames[13] = "SDDeltaR";
-  fShapesVarNames[14] = "SDGroomedFrac"; 
-  fShapesVarNames[15] = "SDGroomedN"; 
-  fShapesVarNames[16] = "SDMass";
-  fShapesVarNames[17] = "SDSymmkt";
-   fShapesVarNames[18] = "SDDeltaRkt";
-  fShapesVarNames[19] = "SDGroomedFrackt"; 
-  fShapesVarNames[20] = "SDGroomedNkt";
-  fShapesVarNames[21] = "SDMasskt";
-   fShapesVarNames[22] = "SDSymmAkt";
-   fShapesVarNames[23] = "SDDeltaRAkt";
-  fShapesVarNames[24] = "SDGroomedFracAkt"; 
-  fShapesVarNames[25] = "SDGroomedNAkt";
-   fShapesVarNames[26] = "SDMassAkt";
-  fShapesVarNames[27] = "SDSymmktForm";
-   fShapesVarNames[28] = "SDDeltaRktForm";
-  fShapesVarNames[29] = "SDGroomedFracktForm"; 
-  fShapesVarNames[30] = "SDGroomedNktForm";
-  fShapesVarNames[31] = "SDMassktForm";
-  fShapesVarNames[32] = "SDSymmDemo";
-  fShapesVarNames[33] = "SDDeltaRDemo";
-  fShapesVarNames[34] = "SDGroomedFracDemo"; 
-  fShapesVarNames[35] = "SDGroomedNDemo";
-  fShapesVarNames[36] = "SDMassDemo";
-  fShapesVarNames[42] = "SDSymmForm";
-  fShapesVarNames[43] = "SDDeltaRForm";
-  fShapesVarNames[44] = "SDGroomedFracForm"; 
-  fShapesVarNames[45] = "SDGroomedNForm";
-  fShapesVarNames[46] = "SDMassForm";
-  fShapesVarNames[47] = "weightPythia";
-  fShapesVarNames[42] = "SDSymmNoCut";
-  fShapesVarNames[43] = "SDDeltaRNoCut";
-  fShapesVarNames[44] = "SDGroomedFracNoCut"; 
-  fShapesVarNames[45] = "SDGroomedNNoCut";
-  fShapesVarNames[46] = "SDMassNoCut";
+  fShapesVarNames[6] = "nsd";
+  fShapesVarNames[7] = "nall"; 
+  // fShapesVarNames[6] = "Nsubjet1kt";
+  // fShapesVarNames[7] = "Nsubjet2kt"; 
+  // fShapesVarNames[8] = "Nsubjet1Min"; 
+  // fShapesVarNames[9] = "Nsubjet2Min";
+  // fShapesVarNames[10] = "DeltaRkt";
+  // fShapesVarNames[11] = "DeltaRMin";
+  // fShapesVarNames[12] = "SDSymm";
+  // fShapesVarNames[13] = "SDDeltaR";
+  // fShapesVarNames[14] = "SDGroomedFrac"; 
+  // fShapesVarNames[15] = "SDGroomedN"; 
+  // fShapesVarNames[16] = "SDMass";
+  // fShapesVarNames[17] = "SDSymmkt";
+  //  fShapesVarNames[18] = "SDDeltaRkt";
+  // fShapesVarNames[19] = "SDGroomedFrackt"; 
+  // fShapesVarNames[20] = "SDGroomedNkt";
+  // fShapesVarNames[21] = "SDMasskt";
+  //  fShapesVarNames[22] = "SDSymmAkt";
+  //  fShapesVarNames[23] = "SDDeltaRAkt";
+  // fShapesVarNames[24] = "SDGroomedFracAkt"; 
+  // fShapesVarNames[25] = "SDGroomedNAkt";
+  //  fShapesVarNames[26] = "SDMassAkt";
+  // fShapesVarNames[27] = "SDSymmktForm";
+  //  fShapesVarNames[28] = "SDDeltaRktForm";
+  // fShapesVarNames[29] = "SDGroomedFracktForm"; 
+  // fShapesVarNames[30] = "SDGroomedNktForm";
+  // fShapesVarNames[31] = "SDMassktForm";
+  // fShapesVarNames[32] = "SDSymmDemo";
+  // fShapesVarNames[33] = "SDDeltaRDemo";
+  // fShapesVarNames[34] = "SDGroomedFracDemo"; 
+  // fShapesVarNames[35] = "SDGroomedNDemo";
+  // fShapesVarNames[36] = "SDMassDemo";
+  // fShapesVarNames[42] = "SDSymmForm";
+  // fShapesVarNames[43] = "SDDeltaRForm";
+  // fShapesVarNames[44] = "SDGroomedFracForm"; 
+  // fShapesVarNames[45] = "SDGroomedNForm";
+  // fShapesVarNames[46] = "SDMassForm";
+  // fShapesVarNames[47] = "weightPythia";
+  // fShapesVarNames[42] = "SDSymmNoCut";
+  // fShapesVarNames[43] = "SDDeltaRNoCut";
+  // fShapesVarNames[44] = "SDGroomedFracNoCut"; 
+  // fShapesVarNames[45] = "SDGroomedNNoCut";
+  // fShapesVarNames[46] = "SDMassNoCut";
 
   
    //fShapesVarNames[7] = "lesub";
@@ -476,45 +478,45 @@ Bool_t AliAnalysisTaskEmcalJetShapesMC::FillHistograms()
       fShapesVar[3] = GetJetMass(jet1,0);
       fShapesVar[4] = 1.*GetJetNumberOfConstituents(jet1,0);
       fShapesVar[5] = GetJetAngularity(jet1,0);
-      //nsub1 and nsub2 for kT
-      fShapesVar[6] = 0;
-      if(fSwitchKtNSub==1) fShapesVar[6]=FjNSubJettiness(jet1,0,1,0,1,0);
-      fShapesVar[7] = 0;
-      if(fSwitchKtNSub==1) fShapesVar[7]=FjNSubJettiness(jet1,0,2,0,1,0);
+      // //nsub1 and nsub2 for kT
+      // fShapesVar[6] = 0;
+      // if(fSwitchKtNSub==1) fShapesVar[6]=FjNSubJettiness(jet1,0,1,0,1,0);
+      // fShapesVar[7] = 0;
+      // if(fSwitchKtNSub==1) fShapesVar[7]=FjNSubJettiness(jet1,0,2,0,1,0);
    
-      //nsub1 and nsub2 for min_axis
-      fShapesVar[8] =0;
-      if(fSwitchMinNSub==1) fShapesVar[8]=FjNSubJettiness(jet1,0,1,10,1,0);
-      fShapesVar[9] = 0;
-      if(fSwitchMinNSub==1) fShapesVar[9]=FjNSubJettiness(jet1,0,2,10,1,0);
-      //nsub1 and nsub2 for akt
-      fShapesVar[10] = 0;
-      if(fSwitchKtNSub==1) fShapesVar[10]=FjNSubJettiness(jet1,0,2,0,1,1);
-      fShapesVar[11] =0;
-      if(fSwitchMinNSub==1) fShapesVar[11]=FjNSubJettiness(jet1,0,2,10,1,1);
-      //nsub1 and nsub2 for kt with SD with Beta = 0 and Zcut =0.1 
-      fShapesVar[48] =0;
-      if(fSwitchSDKtNSub==1) fShapesVar[48]=FjNSubJettiness(jet1,0,1,0,1,0,0,0.1,1);
-      fShapesVar[49] =0;
-      if(fSwitchSDKtNSub==1) fShapesVar[49]=FjNSubJettiness(jet1,0,2,0,1,0,0,0.1,1);
-      //nsub1 and nsub2 for min_axis with SD with Beta = 0 and Zcut =0.1 
-      fShapesVar[50] =0;
-      if(fSwitchSDMinNSub==1) fShapesVar[50]=FjNSubJettiness(jet1,0,1,10,1,0,0,0.1,1);
-      fShapesVar[51] =0;
-      if(fSwitchSDMinNSub==1) fShapesVar[51]=FjNSubJettiness(jet1,0,2,10,1,0,0,0.1,1);
-      //deltaR using axes from 2 subjettiness with kt and Min algorithms with soft drop
-      fShapesVar[52] =0;
-      if(fSwitchSDKtNSub==1) fShapesVar[52]=FjNSubJettiness(jet1,0,2,0,1,1,0,0.1,1);
-      fShapesVar[53] =0;
-      if(fSwitchSDMinNSub==1) fShapesVar[53]=FjNSubJettiness(jet1,0,2,10,1,1,0,0.1,1);
+      // //nsub1 and nsub2 for min_axis
+      // fShapesVar[8] =0;
+      // if(fSwitchMinNSub==1) fShapesVar[8]=FjNSubJettiness(jet1,0,1,10,1,0);
+      // fShapesVar[9] = 0;
+      // if(fSwitchMinNSub==1) fShapesVar[9]=FjNSubJettiness(jet1,0,2,10,1,0);
+      // //nsub1 and nsub2 for akt
+      // fShapesVar[10] = 0;
+      // if(fSwitchKtNSub==1) fShapesVar[10]=FjNSubJettiness(jet1,0,2,0,1,1);
+      // fShapesVar[11] =0;
+      // if(fSwitchMinNSub==1) fShapesVar[11]=FjNSubJettiness(jet1,0,2,10,1,1);
+      // //nsub1 and nsub2 for kt with SD with Beta = 0 and Zcut =0.1 
+      // fShapesVar[48] =0;
+      // if(fSwitchSDKtNSub==1) fShapesVar[48]=FjNSubJettiness(jet1,0,1,0,1,0,0,0.1,1);
+      // fShapesVar[49] =0;
+      // if(fSwitchSDKtNSub==1) fShapesVar[49]=FjNSubJettiness(jet1,0,2,0,1,0,0,0.1,1);
+      // //nsub1 and nsub2 for min_axis with SD with Beta = 0 and Zcut =0.1 
+      // fShapesVar[50] =0;
+      // if(fSwitchSDMinNSub==1) fShapesVar[50]=FjNSubJettiness(jet1,0,1,10,1,0,0,0.1,1);
+      // fShapesVar[51] =0;
+      // if(fSwitchSDMinNSub==1) fShapesVar[51]=FjNSubJettiness(jet1,0,2,10,1,0,0,0.1,1);
+      // //deltaR using axes from 2 subjettiness with kt and Min algorithms with soft drop
+      // fShapesVar[52] =0;
+      // if(fSwitchSDKtNSub==1) fShapesVar[52]=FjNSubJettiness(jet1,0,2,0,1,1,0,0.1,1);
+      // fShapesVar[53] =0;
+      // if(fSwitchSDMinNSub==1) fShapesVar[53]=FjNSubJettiness(jet1,0,2,10,1,1,0,0.1,1);
 
       //SoftDropParameters for different reclustering strategies and beta values 
-      SoftDrop(jet1,jetCont,0.1,0,0);
-      SoftDrop(jet1,jetCont,0.1,0,1);
-      SoftDrop(jet1,jetCont,0.1,0,2);
-      SoftDrop(jet1,jetCont,0.1,1,0); 
-      SoftDrop(jet1,jetCont,0.5,1.5,0); 
-      SoftDrop(jet1,jetCont,0.002,-2.0,0);
+      // SoftDrop(jet1,jetCont,0.1,0,0);
+      // SoftDrop(jet1,jetCont,0.1,0,1);
+      // SoftDrop(jet1,jetCont,0.1,0,2);
+      // SoftDrop(jet1,jetCont,0.1,1,0); 
+      // SoftDrop(jet1,jetCont,0.5,1.5,0); 
+      // SoftDrop(jet1,jetCont,0.002,-2.0,0);
       RecursiveParents(jet1,jetCont,0,fShapesVar[0]);
       RecursiveParents(jet1,jetCont,1,fShapesVar[0]);
       RecursiveParents(jet1,jetCont,2,fShapesVar[0]);
@@ -1277,55 +1279,55 @@ void AliAnalysisTaskEmcalJetShapesMC::SoftDrop(AliEmcalJet *fJet,AliJetContainer
   NGroomedBranches=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
   GroomedPt=finaljet.perp();
   GroomedMass=finaljet.m();
-  if(beta==0){
-  if(ReclusterAlgo==0){
-  fShapesVar[12]=SymParam;
-  fShapesVar[13]=DeltaR;
-  fShapesVar[14]=zeta;
-  fShapesVar[15]=angle;
-  fShapesVar[16]=GroomedMass;}
-   if(ReclusterAlgo==1){
-  fShapesVar[17]=SymParam;
-  fShapesVar[18]=DeltaR;
-  fShapesVar[19]=zeta;
-  fShapesVar[20]=angle;
-  fShapesVar[21]=GroomedMass; }
+  // if(beta==0){
+  // if(ReclusterAlgo==0){
+  // fShapesVar[12]=SymParam;
+  // fShapesVar[13]=DeltaR;
+  // fShapesVar[14]=zeta;
+  // fShapesVar[15]=angle;
+  // fShapesVar[16]=GroomedMass;}
+  //  if(ReclusterAlgo==1){
+  // fShapesVar[17]=SymParam;
+  // fShapesVar[18]=DeltaR;
+  // fShapesVar[19]=zeta;
+  // fShapesVar[20]=angle;
+  // fShapesVar[21]=GroomedMass; }
 
-     if(ReclusterAlgo==2){
-  fShapesVar[22]=SymParam;
-  fShapesVar[23]=DeltaR;
-  fShapesVar[24]=zeta;
-  fShapesVar[25]=angle;
-  fShapesVar[26]=GroomedMass;
-     }}
-  if(beta==1){
-     fShapesVar[27]=SymParam;
-  fShapesVar[28]=DeltaR;
-  fShapesVar[29]=zeta;
-  fShapesVar[30]=angle;
-  fShapesVar[31]=GroomedMass;
-  }
-  //this one kills soft and large angle radiation
-  if((beta==1.5) && (zcut==0.5)){
-  fShapesVar[32]=SymParam;
-  fShapesVar[33]=DeltaR;
-  fShapesVar[34]=zeta;
-  fShapesVar[35]=angle;
-  fShapesVar[36]=GroomedMass; }
-   //this option favour democratic branches at large kt
-   if((beta==-1) && (zcut==0.005)){
-  fShapesVar[37]=SymParam;
-  fShapesVar[38]=DeltaR;
-  fShapesVar[39]=zeta;
-  fShapesVar[40]=angle;
-  fShapesVar[41]=GroomedMass; }
+  //    if(ReclusterAlgo==2){
+  // fShapesVar[22]=SymParam;
+  // fShapesVar[23]=DeltaR;
+  // fShapesVar[24]=zeta;
+  // fShapesVar[25]=angle;
+  // fShapesVar[26]=GroomedMass;
+  //    }}
+  // if(beta==1){
+  //    fShapesVar[27]=SymParam;
+  // fShapesVar[28]=DeltaR;
+  // fShapesVar[29]=zeta;
+  // fShapesVar[30]=angle;
+  // fShapesVar[31]=GroomedMass;
+  // }
+  // //this one kills soft and large angle radiation
+  // if((beta==1.5) && (zcut==0.5)){
+  // fShapesVar[32]=SymParam;
+  // fShapesVar[33]=DeltaR;
+  // fShapesVar[34]=zeta;
+  // fShapesVar[35]=angle;
+  // fShapesVar[36]=GroomedMass; }
+  //  //this option favour democratic branches at large kt
+  //  if((beta==-1) && (zcut==0.005)){
+  // fShapesVar[37]=SymParam;
+  // fShapesVar[38]=DeltaR;
+  // fShapesVar[39]=zeta;
+  // fShapesVar[40]=angle;
+  // fShapesVar[41]=GroomedMass; }
 
-  if((beta==-2) && (zcut==0.005)){
-  fShapesVar[42]=SymParam;
-  fShapesVar[43]=DeltaR;
-  fShapesVar[44]=zeta;
-  fShapesVar[45]=angle;
-  fShapesVar[46]=GroomedMass; }
+  // if((beta==-2) && (zcut==0.005)){
+  // fShapesVar[42]=SymParam;
+  // fShapesVar[43]=DeltaR;
+  // fShapesVar[44]=zeta;
+  // fShapesVar[45]=angle;
+  // fShapesVar[46]=GroomedMass; }
 
 
 
@@ -1451,6 +1453,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
    fastjet::PseudoJet j2;
    jj=fOutputJets[0];
    double ndepth=0;
+   double nall=0;
     while(jj.has_parents(j1,j2)){
      
     if(j1.perp() < j2.perp()) swap(j1,j2);
@@ -1458,11 +1461,15 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
     double lnpt_rel=log(z*delta_R);
+    nall=nall+1;
     if(z>fHardCutoff){
     ndepth=ndepth+1;
     Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,partonFlavor,ndepth};  
     fHLundIterative->Fill(LundEntries);}
-    jj=j1;} 
+    jj=j1;}
+    if(ReclusterAlgo==1){
+    fShapesVar[6]=ndepth;
+    fShapesVar[7]=nall;}
 
     if(fAdditionalTracks>0 && xflagAdded>0){
      zinject=omega2/fOutputJets[0].perp();  
