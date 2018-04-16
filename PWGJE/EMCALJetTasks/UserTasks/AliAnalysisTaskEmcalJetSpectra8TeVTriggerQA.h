@@ -15,6 +15,8 @@
 /* Copyright(c) 1998-2017, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+
+
 #include "AliAnalysisTaskEmcalJet.h"
 #include "THistManager.h"
 #include <string>
@@ -28,7 +30,21 @@ class AliOADBContainer;
 class AliEMCALTriggerPatchInfo;
 class THistManager;
 class TObjArray;
-
+class TFormula;
+class TH2F;
+class TH1F;
+class TF1;
+class THnSparse;
+class TRandom3;
+class TObjArray;
+class TClonesArray;
+class TObject;
+class TString;
+class TProfile2D;
+class AliEMCALGeometry;
+class AliEMCALRecoUtils;
+class AliESDCaloCluster;
+class AliVTrack;
 
 /**
  * \class AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA
@@ -66,12 +82,20 @@ protected:
     void                        DoTrackLoop()                                     ;
     void                        DoClusterLoop()                                   ;
     void                        DoCellLoop()                                      ;
+    Bool_t                      IsLEDEvent() const                                ;
     Bool_t                      fUseRecalcPatches;          ///< Switch between offline (FEE) and recalc (L1) patches
     Bool_t                      SelectSingleShowerPatch(const AliEMCALTriggerPatchInfo *patch) const;
     Bool_t                      SelectJetPatch(const AliEMCALTriggerPatchInfo  *patch) const;
     THistManager                fHistManager                                      ;///< Histogram manager
+    Double_t                    GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
+    Double_t                    GetSmearedTrackPt(AliVTrack *track)                ; ///< smeared Pt resolution with gaussian
 
 private:
+    
+    AliEMCALGeometry              *fGeom                     ;//!          EMCal goemetry utility
+    AliEMCALRecoUtils             *fRecoUtil                 ;//!          Reco utility
+    TF1                           *fClusterEResolution       ;//!          Parameterization of cluster energy resolution from 2010 test beam results a = 4.35 b = 9.07 c = 1.63
+    Double_t                      fVaryTrkPtRes              ;//!          Variation of tracking momentum resolution
 
     TH1F                          *fHistNumbJets;//!           Numb Jets Per Event
     TH1F                          *fHistJetPt;//!              Jet Pt Dist
