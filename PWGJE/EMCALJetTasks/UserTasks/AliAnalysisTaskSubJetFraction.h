@@ -14,9 +14,11 @@ class AliJetContainer;
 class AliEmcalJetFinder;
 class AliFJWrapper;
 
+
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
+#include "TF1.h"
 const Int_t nVar = 28;
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
@@ -103,6 +105,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   std::pair<fastjet::PseudoJet,fastjet::ClusterSequence *>                  ModifyJet(AliEmcalJet* Jet, Int_t JetContNb, TString Modification);
   std::vector<fastjet::PseudoJet>     RandomiseTracks(AliEmcalJet *Jet,std::vector<fastjet::PseudoJet> fInputVectors);
   std::vector<fastjet::PseudoJet>     AddExtraProng(std::vector<fastjet::PseudoJet> fInputVectors, Double_t Distance, Double_t PtFrac);
+  std::vector<fastjet::PseudoJet>     AddkTTracks(AliEmcalJet *Jet,std::vector<fastjet::PseudoJet> fInputVectors, Double_t QHat,Double_t Xlength, Int_t NAdditionalTracks);
  
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
@@ -139,7 +142,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Int_t                               fSoftDropOn;
 
   Bool_t                              fNsubMeasure;
-  
+  TF1                                 *kT_Func;
+  TF1                                 *Omega_Func;
   TH1F                                *fhPtTriggerHadron;
   TH1F                                *fhJetPt;
   TH1F                                *fhJetPt_1;
