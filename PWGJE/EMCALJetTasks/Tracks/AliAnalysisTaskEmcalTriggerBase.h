@@ -88,7 +88,17 @@ public:
    */
   void EnableDCALTriggers(Bool_t doEnable) { fEnableDCALTriggers = doEnable; }
 
+  /**
+   * @brief Enable T0-based (INT8, EMC8, DMC8) trigger suite (Default: Off)
+   * @param doEnable If true T0-based triggers are enabled
+   */
   void EnableT0Triggers(Bool_t doEnable) { fEnableT0Triggers = doEnable; }
+
+  /**
+   * @brief Enable VZERO-based (INT7, EMC7, DMC7) trigger suite (Default: On)
+   * @param doEnable If true VZERO-based triggers are enabled
+   */
+  void EnableVZEROTriggers(Bool_t doEnable) { fEnableV0Triggers = doEnable; }
 
   void EnableCentralityTriggers(Bool_t doEnable) { fEnableCentralityTriggers = doEnable; }
 
@@ -165,11 +175,25 @@ public:
   AliEmcalTriggerOfflineSelection *GetOfflineTriggerSelection() const { return fTriggerSelection; }
 
   /**
+   * @brief Switch on/off vertex cuts
+   * @param[in] doUse If true vertex cuts will be applied
+   */
+  void SetApplyVertexCuts(bool doUse) { fApplyVertexCuts = doUse; }
+
+  /**
    * @brief Set z-range of the primary vertex which is selected
    * @param[in] zmin Min. allowed z-value
    * @param[in] zmax Max. allowed z-value
    */
   void SetVertexCut(double zmin, double zmax) { fVertexCut.SetLimits(zmin, zmax); }
+
+  /**
+   * @brief Use vertex from SPD
+   * 
+   * For productions without TPC (i.e. CALOFAST cluster, muon_calo_pas1)
+   * @param[in] doUse If true the SPD vertex will be used instread of the vertex from tracks
+   */
+  void SetUseSPDVertex(bool doUse) { fUseSPDVertex = doUse; }
 
   /**
    * @brief Specify whether the trigger decision should be done from trigger patches
@@ -414,6 +438,8 @@ protected:
   TString                         fNameClusterContainer;      ///< Name of the cluster container in the event
 
   Bool_t                          fRequireAnalysisUtils;      ///< Switch whether to require event selection in AliAnalysisUtils
+  Bool_t                          fUseSPDVertex;              ///< Use SPD vertex (for productions without TPC)
+  Bool_t                          fApplyVertexCuts;           ///< Apply vertex cuts (default: True)
   AliCutValueRange<double>        fVertexCut;                 ///< Cut on the z-position of the primary vertex
 
   TString                         fNameDownscaleOADB;         ///< Name of the downscale OADB container
@@ -429,6 +455,7 @@ protected:
   Bool_t                          fSelectNoiseEvents;         ///< Explicitly select events triggered only by noisy fastors
   Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
   Bool_t                          fEnableDCALTriggers;        ///< Enable / Disable event selection for DCAL trigger classes
+  Bool_t                          fEnableV0Triggers;          ///< Enable VZERO-based triggers (default)
   Bool_t                          fEnableT0Triggers;          ///< Enable triggers depending on T0 (INT8, EMC8, EMC8EGA, EMC8EJE)
   Bool_t                          fEnableCentralityTriggers;  ///< Enable central / semi-central trigger
   Bool_t                          fRequireL0forL1;            ///< Require L0 for L1
