@@ -437,10 +437,10 @@ void AliAnalysisTaskSoftDropResponse::FillMatchingHistos(AliEmcalJet* jet1, AliE
   
   FillZgRgVectors(jet2);
   
-  int nsdsteps_jet2 = nsdsteps;
-  int nhsplits_jet2 = zg_values.size();
-  float zg2_2 = 0.0;
-  float rg2_2 = 0.0;
+  Int_t nsdsteps_jet2 = nsdsteps;
+  Int_t nhsplits_jet2 = zg_values.size();
+  Float_t zg2_2 = 0.0;
+  Float_t rg2_2 = 0.0;
   if (nhsplits_jet2 > 1) {
     zg2_2 = zg_values[1];
     rg2_2 = rg_values[1];
