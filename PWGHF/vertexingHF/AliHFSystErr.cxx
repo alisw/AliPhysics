@@ -1131,24 +1131,28 @@ void AliHFSystErr::InitD0toKpi2017pp5TeV(){
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",50,0,50);
   fRawYield->SetBinContent(1,0.10);
-  for(Int_t i=2;i<=12;i++) fRawYield->SetBinContent(i,0.03);
-  for(Int_t i=12;i<=50;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=2;i<4;i++) fRawYield->SetBinContent(i,0.03);
+  for(Int_t i=4;i<=13;i++) fRawYield->SetBinContent(i,0.02);
+  for(Int_t i=14;i<=50;i++) fRawYield->SetBinContent(i,0.05);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",50,0,50);
 //  fCutsEff->SetBinContent(1,0.0);
   for(Int_t i=1;i<=3;i++) fCutsEff->SetBinContent(i,0.05);
   for(Int_t i=3;i<=8;i++) fCutsEff->SetBinContent(i,0.03);
-  for(Int_t i=8;i<=50;i++) fCutsEff->SetBinContent(i,0.05);
+  for(Int_t i=8;i<=50;i++) fCutsEff->SetBinContent(i,0.03);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",50,0,50);
-  for(Int_t i=1;i<=50;i++) fPIDEff->SetBinContent(i,0.0);
+  fRawYield->SetBinContent(1,0.01);
+  fRawYield->SetBinContent(2,0.00);
+  for(Int_t i=3;i<=50;i++) fPIDEff->SetBinContent(i,0.0);
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",50,0,50);
-  for(Int_t i=1;i<=50;i++) fMCPtShape->SetBinContent(i,0);
-  fMCPtShape->SetBinContent(2,0.03);
+  fMCPtShape->SetBinContent(1,0.02);
+  fMCPtShape->SetBinContent(2,0.02);
+  for(Int_t i=3;i<=50;i++) fMCPtShape->SetBinContent(i,0);
 
   // particle-antiparticle
   //  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",24,0,24);
