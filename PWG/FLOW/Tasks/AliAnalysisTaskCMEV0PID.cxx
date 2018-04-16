@@ -1101,7 +1101,12 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   }//magfield loop
 
 
- //------------------- 3p correlator vs RefMult (EP method) ------------------ //  ;
+
+
+
+
+ /*
+ //------------------- 3p correlator vs RefMult (EP method) ------------------
   for(int i=0;i<2;i++){
     //Charged:
     for(int j=0;j<4;j++){
@@ -1157,6 +1162,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
       fListHist->Add(fHist_Corr3p_Proton_EP_Refm_NN[i][j]);
     }//Det loop
   }//magfield loop
+ */
 
 
 
@@ -1172,8 +1178,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
 
 
-
-
+  /*
  //------------------- 2p correlator vs Centrality (EP method) ------------------
   for(int i=0;i<2;i++){
     for(int j=0;j<4;j++){
@@ -1222,11 +1227,11 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
       fListHist->Add(fHist_Corr2p_Proton_EP_Norm_NN[i][j]);
     }//Det loop
   }//magfield loop
+  */
 
 
 
-
-
+  /*
  //------------------- 2p correlator vs Refmult (EP method) ------------------
   for(int i=0;i<2;i++){
     for(int j=0;j<4;j++){
@@ -1276,7 +1281,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
     }//Det loop
   }//magfield loop
 
-
+  */
 
 
 
@@ -1808,7 +1813,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
 
 
   //------------------ Differential 2-part correlator -----------------------
-
+  /*
   //Charge:
   for(Int_t i=0;i<2;i++){ 
     for(Int_t j=0;j<6;j++){
@@ -1932,13 +1937,9 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
       fListHist->Add(fHist_Corr2p_EtaDiff_EP_Harm2_NN[i][j]);
     }
   }
-
-
-
-
   //------------ Differential 2p charge done ------------------------
 
-
+  */
 
 
 
@@ -2154,8 +2155,13 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
   //--------- Check if I have PID response object --------
   if(!fPIDResponse){
-    printf("\n\n...... PIDResponse object not found..... \n\n");
-    return;
+     AliAnalysisManager   *mgr=AliAnalysisManager::GetAnalysisManager();
+     AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
+     if(inputHandler) fPIDResponse=inputHandler->GetPIDResponse();
+     if(!fPIDResponse){
+       printf("\n\n...... PIDResponse object not found..... \n\n");
+       return;
+     }
   }
 
 
@@ -2765,7 +2771,9 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
 
-  if(gPsiN > 0 && (multEtaNeg<2 || multEtaPos<2)) return;  //Minimum 2 tracks in each eta
+  if(gPsiN > 0){
+   if(multEtaNeg<2 || multEtaPos<2)  return;  //Minimum 2 tracks in each eta
+  }
 
   fHistEventCount->Fill(stepCount); //10
   stepCount++;
@@ -4141,7 +4149,39 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 
     //-------------- Fill NUA for PID tracks ----------------
-    if(bFillNUAHistPID){
+    if(bFillNUAHistPID) {
+
+      //---------------- Temporary: redefine PID NUA cuts:
+      isPion1 = kFALSE;
+      isKaon1  = kFALSE;
+      isProton1 = kFALSE;
+
+      //------> Pion
+      if(dPt1<0.6 && TMath::Abs(nSigTPCpion)<=2.0){
+	isPion1 = kTRUE;
+      }
+      else if(dPt1>=0.6 && dPt1<=2.0 && TMath::Abs(nSigTPCpion)<=2.5 && TMath::Abs(nSigTOFpion)<=2.0 ){
+	isPion1 = kTRUE;
+      }
+      //------> Kaon
+      if(dPt1<0.5 && TMath::Abs(nSigTPCkaon)<=2.0){
+	isKaon1 = kTRUE;
+      }
+      else if(dPt1>=0.5 && dPt1<=2.0 && TMath::Abs(nSigTPCkaon)<=2.5 && TMath::Abs(nSigTOFkaon)<=2.0){
+	isKaon1 = kTRUE;
+      }
+      //------> Proton 
+      if(dPt1<0.9 && TMath::Abs(nSigTPCproton)<=2.0){
+	isProton1 = kTRUE;
+      }
+      else if(dPt1>=0.9 && dPt1<=2.0 && TMath::Abs(nSigTPCproton)<=2.5 && TMath::Abs(nSigTOFproton)<=2.5){  //0.8 to 3.5 was used earlier.
+	isProton1 = kTRUE;
+      }
+
+      //Proton below 0.4 GeV is garbage
+      if(dPt1<0.4) isProton1 = kFALSE;  
+
+      //-----------------------------------------------------------------
 
       // Pion 
       if(isPion1){
