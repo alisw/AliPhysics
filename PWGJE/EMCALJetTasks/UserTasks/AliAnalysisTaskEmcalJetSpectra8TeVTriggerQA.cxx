@@ -296,6 +296,27 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
             histtitle = TString::Format("%s;#it{p}_{T,JetTrk} (GeV/#it{c});counts", histname.Data());
             fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
             
+            histname = TString::Format("%s/histJetNEFvJetPt_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{p}_{T,Jet};NEF", histname.Data());
+            fHistManager.CreateTH2(histname, histtitle, 200, 0, 200, 100, 0, 1);
+            
+            histname = TString::Format("%s/histNumbJetConstvJetPt_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{p}_{T,Jet};NumberofJetConstit", histname.Data());
+            fHistManager.CreateTH2(histname, histtitle, 200, 0, 200, 20,0,20);
+            
+            histname = TString::Format("%s/histJetFF_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;Z=#it{p}_{T,leading} / #it{p}_{T,Jet};counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, 40, 0, 1.5);
+            
+            histname = TString::Format("%s/histJetZvJetPt_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{p}_{T,Jet};Z=#it{p}_{T,leading} / it{p}_{T,Jet}", histname.Data());
+            fHistManager.CreateTH2(histname, histtitle, 200, 0, 200, 40,0,1.5);
+            
+            //histname = TString::Format("%s/histJetNeutralPtvJetPt_%d", groupname.Data(), cent);
+            //histtitle = TString::Format("%s;#it{p}_{T,Jet};#it{p}_{T,NeutralConstituents}", histname.Data());
+            //fHistManager.CreateTH2(histname, histtitle, 200, 0, 200, 200, 0, 200);
+            
+            
             //Matched Trigger Histos
             histname = TString::Format("%s/fHistJetJetPatchE_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;#it{E}_{JetGammaPatch} (GeV);counts", histname.Data());
@@ -310,7 +331,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
             fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
             
             histname = TString::Format("%s/fHistJetGammaPatchPt_%d", groupname.Data(), cent);
-            histtitle = TString::Format("%s;#it{E}_{JetGammaPatch} (GeV/#it{c});counts", histname.Data());
+            histtitle = TString::Format("%s;#it{P}_{t,JetGammaPatch} (GeV/#it{c});counts", histname.Data());
             fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt);
             
             histname = TString::Format("%s/fHistTriggerPatchE_%d", groupname.Data(), cent);
@@ -410,6 +431,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
             if (!jet) continue;
             count++;
             
+            
             histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, jet->Pt());
             
@@ -424,6 +446,19 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
             
             histname = TString::Format("%s/histJetEta_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, jet->Eta());
+            
+            histname = TString::Format("%s/histJetNEFvJetPt_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH2(histname,jet->Pt(),jet->NEF() );
+            
+            
+            histname = TString::Format("%s/histNumbJetConstvJetPt_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH2(histname,jet->Pt(),jet->N());
+            
+            histname = TString::Format("%s/histJetFF_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH1(histname, jet->MaxTrackPt() / jet->Pt() );
+            
+            histname = TString::Format("%s/histJetZvJetPt_%d", groupname.Data(), fCentBin);
+            fHistManager.FillTH2(histname,jet->Pt(),jet->MaxTrackPt() / jet->Pt());
             
             Double_t MatchedEta = 0.04, MatchedPhi = 0.04;
            //Look at  emcal trigger patches in event and associate with jet
