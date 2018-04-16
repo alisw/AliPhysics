@@ -99,9 +99,7 @@ public:
   TTree*  GetTreeMCPassGuess();
   TString GetMCPassGuess(TString MCprodname);
   TString GetMCAnchPerGuess(const char* runlist);
-  
   TTree* GetLogbookCache();
- 
   TChain* GetChain(TString type, TString period, TString pass, Int_t buildIndex=1);
   TChain* GetChain(TString type, TString period, TString pass, TString friendList);
   TChain* GetChainMC()                                                  {return GetChain("MonALISA.MC", "", "");}

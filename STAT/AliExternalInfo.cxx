@@ -25,9 +25,6 @@
 #include "TLeaf.h"
 #include "TVirtualIndex.h"
 #include "TPRegexp.h" 
-//#include "TTreeReader.h"
-//#include "TTreeReaderValue.h"
-
 ClassImp(AliExternalInfo)
 
 using namespace std;
@@ -359,13 +356,13 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
         gSystem->Exec(TString::Format("cat %s | sed -l 1 s/%s/%s/  > %s",mifFilePath.Data(), oldIndexName.Data(), indexName.Data(),  (mifFilePath+"RunFix0").Data())); // use standrad run number IDS
       }
 
-      gSystem->GetFromPipe(TString::Format("cat %s  | sed s_\\\"\\\"_\\\"\\ \\\"_g | sed s_\\\"\\\"_\\\"\\ \\\"_g > %s",  (mifFilePath+"RunFix0").Data(),  (mifFilePath+"RunFix").Data()).Data());
+      gSystem->GetFromPipe(TString::Format("cat %s  | sed s_\\\"\\\$_\\\"0_g | sed s_\\\"\\\"_\\\"\\ \\\"_g | sed s_\\\"\\\"_\\\"\\ \\\"_g > %s",  (mifFilePath+"RunFix0").Data(),  (mifFilePath+"RunFix").Data()).Data());
       // Store it in a tree inside a root file
       TFile tempfile(internalFilename, "RECREATE");
       tempfile.cd();
       TTree tree(treeName, treeName);
 
-      if ( (tree.ReadFile(mifFilePath, "", '\"')) > 0) {
+      if ( (tree.ReadFile(mifFilePath+"RunFix", "", '\"')) > 0) {
         if (fVerbose>1) AliInfo("Successfully read in tree");
       }
       else {
@@ -471,7 +468,7 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
   for (Int_t iname=0; iname<arr->GetEntriesFast(); ++iname) {
     tree = dynamic_cast<TTree*>( treefile->Get(arr->At(iname)->GetName()) );
     if (tree) break;
-  } 
+  }
   delete arr;
   TTreeSRedirector::FixLeafNameBug(tree);
   if (tree != 0x0) {
@@ -498,7 +495,7 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
     if (fVerbose>1) printf("Processing metadata macro:\n gROOT->ProcessLine(.x %s((TTree*)%p,%d);",     metadataMacro.Data(),tree, fVerbose);
     gROOT->ProcessLine(TString::Format(".x %s((TTree*)%p,%d);",metadataMacro.Data(),tree,fVerbose).Data());
   }
-  
+
   return tree;
 }
 
@@ -601,26 +598,14 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass, In
   TString pathStructure = "";
   TString indexName=""; 
  
-  
+
   // Setting up all the local variables
   SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass,indexName);
 
   TString cmd = TString::Format("/bin/ls %s", internalFilename.Data());
-   std::cout << "==== cmd: " << cmd << std::endl;
+  // std::cout << "==== cmd: " << cmd << std::endl;
 
   TString files=gSystem->GetFromPipe(cmd.Data());
-//  if(!files.Contains(".root"))  {
-//    if (fVerbose&0x2)::Warning("AliExternalInfo::GetChain","Command \"%s\" returned no files matching \"*.root\" but \"%s\"",cmd.Data(),files.Data());
-//    if (fVerbose&0x2)::Warning("AliExternalInfo::GetChain","Caching missing files!");
-//    CacheProduction(TPRegexp(period.Data()),TPRegexp(""),type);
-//  }
-//  
-//  files=gSystem->GetFromPipe(cmd.Data());
-//  if(!files.Contains(".root"))  {
-//    if (fVerbose&0x2)::Warning("AliExternalInfo::GetChain","Command \"%s\" returned again no files matching \"*.root\" but \"%s\"",cmd.Data(),files.Data());
-//  }
-  
-  
   TObjArray *arrFiles=files.Tokenize("\n");
   AliInfo(TString::Format("Files to add to chain: %s", files.Data()));
 
@@ -872,7 +857,7 @@ const TString AliExternalInfo::CurlMif(TString& mifFilePath, const TString& inte
     return TString("No Certificate!");
   }
   if(!gSystem->AccessPathName(privateKey.Data())) {
-    ::Error("AliExternalInfo::CurlMif","Grid private kex can not be found in: %s",privateKey.Data());
+    ::Error("AliExternalInfo::CurlMif","Grid private key can not be found in: %s",privateKey.Data());
     return TString("No private Key!");
   }
   // TString internalLocation = internalFilename(0, internalFilename.Last('/') + 1); // path to internal location
@@ -902,7 +887,7 @@ const TString AliExternalInfo::CurlTree(const TString internalFilename, const TS
     return TString("No Certificate!");
   }
   if(!gSystem->AccessPathName(privateKey.Data())) {
-    ::Error("AliExternalInfo::CurlTree","Grid private kex can not be found in: %s",privateKey.Data());
+    ::Error("AliExternalInfo::CurlTree","Grid private key can not be found in: %s",privateKey.Data());
     return TString("No private Key!");
   }
 
@@ -1039,7 +1024,7 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     char poutputdir[1000];
     Int_t runn;
     TString sRunList;
- 
+
     TObjString sprodname;           // variables that will be written into dumptree 
     TObjString spassname;
     TObjString soutputpath;
@@ -1057,7 +1042,7 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     TBranch* broutputpath= dumptree->Branch("outputPath",&soutputpath);
     TBranch* brconsist= dumptree->Branch("nameconsistency",&consist);
     TBranch* brrunlist= dumptree->Branch("runList",&sRunList);
-    
+
     Int_t entries=dumptree->GetEntries();
     for (Int_t i=0; i<entries; i++){            //loop over all IDs
       dumptree->GetEntry(i);
@@ -1073,7 +1058,6 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
       tree->SetBranchAddress("app_aliroot",&paliroot);
       tree->SetBranchAddress("outputdir",&poutputdir);
       tree->SetBranchAddress("RunNo",&runn);
-     
       sRunList = "";
       
       //Loop over ProdCycleTree to get the string of run numbers (may be used when guessing the anchor pass)
@@ -1091,7 +1075,7 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
       subStrL = TPRegexp("[A-Za-z0-9]*").MatchS(sprodname.String());
       sprodname = *((TObjString *)subStrL->At(0));
       delete subStrL;
-      
+
       subStrL = TPRegexp("[^/]+$").MatchS(soutputdir);              //extract pass name from utputdir
       spassname = *((TObjString *)subStrL->At(0));
       delete subStrL;      
@@ -1134,7 +1118,7 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    TTree* treeProdMC = GetTree("MonALISA.ProductionMC","","");          //tree with "Description" branch - needed to determine if the MC production is general purpose production
    treeMC->AddFriend(treeProdMC);
    TFile* outfile;
-   
+
    Bool_t downloadNeeded = IsDownloadNeeded(fLocalStorageDirectory+TString::Format("/dumptree_MC.root"),TString::Format("QA.TPC"));     //check if download is needed
    if(!downloadNeeded){
         outfile = TFile::Open(fLocalStorageDirectory+TString::Format("%s","/dumptree_MC.root"),"UPDATE");
@@ -1159,7 +1143,6 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    dumptree->SetBranchAddress("runList",&prunlist);
    dumptree->SetBranchAddress("Description",&pdescr);
    dumptree->SetBranchAddress("prodName",&pprodname);
-   
    TObjString sMCanchprodname; 
    TObjString sMCdescr;
    Int_t first=-1;
@@ -1169,7 +1152,6 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    TString slast;
    TString sanprod;
    TObjArray *subStrL;
-   
    Int_t runNTPC;
    Int_t runNITS;
    
@@ -1215,12 +1197,11 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
      brfirst->Fill();
      brlast->Fill();
      brMCdescr->Fill();
-  
    }
    outfile->cd();
    dumptree->SetDirectory(gROOT);
    dumptree->Write("dumptree_MC");
-
+// TODO - fix memory leak in code above - either keep cache or delete intermediate trees )_
 //   delete outfile;
 //   delete treeMC;
 //   delete treeProdMC;
@@ -1258,12 +1239,11 @@ bool operator< (const anchprod & otheranchprod) const       //define comparison 
  
 TTree*  AliExternalInfo::GetTreeMCPassGuess(){
 //    returns and stores (dumptree_MC.root) the tree containing the pass guesses for each MC production
-  
     TFile *MCFileG;
     TTree *MCTreeG; 
-  
     TTree *MCTree;
         
+    //TFile *RDFile;
     TTree *RDTree;
     
     //Check if fMCGuessTree has already been cached   
@@ -1303,10 +1283,7 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
     TObjString* osMCanchprodname=0; //variables for reading TObjString from MCTree
     TObjString*osMCanchprodnameOrig=0;
     TObjString* osMCdescr=0;
-    
-
     TObjString* osMCRunList=0;
-    
     TString sMCanchprodname;      //holds anchor period name after "?" was removed ("?" indicates that anchor period was not specified, but guessed using the run list and the logbook)
 
     Bool_t isgp = kFALSE;         //is MC production a general purpose production?
@@ -1327,8 +1304,7 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
     MCTree->GetBranch("prodName")->SetAddress(&pMCprodname);
     MCTree->GetBranch("anchorProdTag_ForGuess")->SetAddress(&osMCanchprodname);
     MCTree->GetBranch("Description")->SetAddress(&osMCdescr);
-    MCTree->GetBranch("runList")->SetAddress(&pMCrunlist);
-        
+    MCTree->GetBranch("runList")->SetAddress(&pMCrunlist); 
     MCTreeG->Branch("MCProdName",&osMCprodname);
     MCTreeG->Branch("MCAliphysics",&osMCaliphysics);       //set branch addresses
     MCTreeG->Branch("MCAliroot",&osMCaliroot);
