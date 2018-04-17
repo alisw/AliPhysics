@@ -1968,23 +1968,23 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskSubJetFraction::AddkTTracks(AliEm
   Lab_Jet.reset(Jet->Px(),Jet->Py(),Jet->Pz(),Jet->E());
   // Double_t Omega_C=0.5*QHat*XLength*XLength/0.2;
   // Double_t Theta_C=TMath::Sqrt(12*0.2/(QHat*TMath::Power(XLength,3)));
-  Double_t xQs=TMath::Sqrt(QHat*XLength); //1,2				
+  Double_t xQs=TMath::Sqrt(QHat*XLength); //QHat=1,XLength=2				
     //cout<<"medium parameters "<<Omega_C<<" "<<Theta_C<<" "<<xQs<<endl;
 
    for(Int_t i=0;i<NAdditionalTracks;i++){
 
      Double_t kT_Scale,Limit_Min,Limit_Max;
     
-    //generation of kT according to 1/kT^4, with minimum QS=2 GeV and maximum ~sqrt(ptjet*T)	
-     kT_Func= new TF1("kT_Func","1/(x*x*x*x)",xQs,10000);
+    //generation of kT according to 1/kT^4, with minimum QS^2=2 GeV and maximum ~sqrt(ptjet*T)	
+     TF1 *kT_Func= new TF1("kT_Func","1/(x*x*x*x)",xQs*xQs,10000);
      kT_Scale=kT_Func->GetRandom();
      //generation within the jet cone
     
      //generation of w according to 1/w, with minimum wc
      //omega needs to be larger than kT so to have well defined angles
      Limit_Min=kT_Scale;
-     Limit_Max=kT_Scale/TMath::Sin(0.1);
-     Omega_Func= new TF1("Omega_Func","1/x",Limit_Min,Limit_Max);
+     Limit_Max=kT_Scale/TMath::Sin(0.01);
+     TF1 *Omega_Func= new TF1("Omega_Func","1/x",Limit_Min,Limit_Max);
      Double_t Omega=Omega_Func->GetRandom();
      
      Double_t Theta=TMath::ASin(kT_Scale/Omega);
@@ -1996,6 +1996,8 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskSubJetFraction::AddkTTracks(AliEm
      fastjet::PseudoJet ExtraTrack_LabFrame=ExtraTrack.boost(Lab_Jet);
      ExtraTrack_LabFrame.set_user_index(i+Jet->GetNumberOfTracks()+100);											 
      fInputVectors.push_back(ExtraTrack_LabFrame);
+     delete kT_Func;
+     delete Omega_Func;
    }
      return fInputVectors;
 

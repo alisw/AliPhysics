@@ -142,8 +142,6 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Int_t                               fSoftDropOn;
 
   Bool_t                              fNsubMeasure;
-  TF1                                 *kT_Func;
-  TF1                                 *Omega_Func;
   TH1F                                *fhPtTriggerHadron;
   TH1F                                *fhJetPt;
   TH1F                                *fhJetPt_1;
