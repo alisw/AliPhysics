@@ -100,6 +100,20 @@ public:
    */
   void EnableVZEROTriggers(Bool_t doEnable) { fEnableV0Triggers = doEnable; }
 
+  /**
+   * @brief Enable EMCAL triggers without coincidence with INT triggers
+   * 
+   * Exotic case, only of relevance when EMCAL is in PHYSICS_2 or in 
+   * quiet beam runs where VZERO is not in readout
+   * 
+   * @param doEnable If true also EMCAL triggers without INT triggers are enabled
+   */
+  void EnableNoINTTriggers(Bool_t doEnable) { fEnableNoINTTriggers = doEnable; }
+
+  /**
+   * @brief Enable centrality (CENT/SEMICENT) triggers (only relevant for Pb-Pb)
+   * @param doEnable If true centrality triggers are enabled
+   */
   void EnableCentralityTriggers(Bool_t doEnable) { fEnableCentralityTriggers = doEnable; }
 
   /**
@@ -456,7 +470,8 @@ protected:
   Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
   Bool_t                          fEnableDCALTriggers;        ///< Enable / Disable event selection for DCAL trigger classes
   Bool_t                          fEnableV0Triggers;          ///< Enable VZERO-based triggers (default)
-  Bool_t                          fEnableT0Triggers;          ///< Enable triggers depending on T0 (INT8, EMC8, EMC8EGA, EMC8EJE)
+  Bool_t                          fEnableT0Triggers;          ///< Enable triggers depending on T0 (INT8, EMC8, EMC8EGA, EMC8EJE) - default off
+  Bool_t                          fEnableNoINTTriggers;       ///< Process EMCAL triggers without coincidence with INT triggers - exotic case - default off
   Bool_t                          fEnableCentralityTriggers;  ///< Enable central / semi-central trigger
   Bool_t                          fRequireL0forL1;            ///< Require L0 for L1
   Bool_t                          fExclusiveMinBias;          ///< Only look at Min. Bias trigger
