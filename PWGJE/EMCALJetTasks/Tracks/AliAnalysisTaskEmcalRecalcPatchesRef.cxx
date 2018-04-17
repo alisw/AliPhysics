@@ -116,9 +116,7 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::UserFillHistosAfterEventSelection(){
 
   std::vector<TString> handledtriggers;
   for(auto t  : kNamesTriggerClasses) {
-    std::cout << "looking up " << t << std::endl;
     if(findTriggerType(fSelectedTriggers, t.data())){
-      std::cout << "Trigger found\n";
       handledtriggers.emplace_back(t);
     } 
   }
