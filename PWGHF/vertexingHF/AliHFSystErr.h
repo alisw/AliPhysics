@@ -267,7 +267,8 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2013pPb0100();
   void InitDstartoD0pi2016pPb0100();
   void InitDstartoD0pi2010ppPass4();
- 
+  void InitDstartoD0pi2017pp5TeV();
+
   void InitDstoKKpi2010pp();
   void InitDstoKKpi2010ppPass4();
   void InitDstoKKpi2017pp5TeV();
