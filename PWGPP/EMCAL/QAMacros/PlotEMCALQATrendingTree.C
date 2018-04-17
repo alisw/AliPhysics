@@ -124,7 +124,11 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   TString* system;
   TDatime* dtime;
 
-  tree->SetBranchAddress("fDate",&dtime);
+   TString* triggerNameE[6] ={"EGA2","EGA1","EJE2","EJE1","EMC7","INT7"};
+   TString* triggerNameD[6] = {"DGA2","DGA1","DJE2","DJE1","DMC7","INT7"};
+
+
+   tree->SetBranchAddress("fDate",&dtime);
   tree->SetBranchAddress("nSM",&CurN);
   tree->SetBranchAddress("fCalorimeter",&fCalorimeter);
   tree->SetBranchAddress("system",&system);
@@ -153,6 +157,9 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   TGraphErrors* AverMeanSM[n];
   TGraphErrors* AverWidthSM[n];
   TGraphErrors* AverNpi0SM[n];
+  
+  TGraphErrors* TriggerMax[6];
+  TGraphErrors* DTriggerMax[6];
 
   // --------------------------------- plots ------------------------------
 
@@ -183,6 +190,13 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   TString Pi0Mass2;                 Pi0Mass2                = base + "Pi0Mass"     + (*fTrigger)(r) + ".pdf";
   TString Pi0Width;                 Pi0Width                = base + "Pi0Width"    + (*fTrigger)(r) + ".png";
   TString Pi0Width2;                Pi0Width2               = base + "Pi0Width"    + (*fTrigger)(r) + ".pdf";
+  TString TriggerMaxPad;            TriggerMaxPad              = base + "TriggerMax"    + (*fTrigger)(r) + ".png";
+  TString TriggerMaxPad2;           TriggerMaxPad2             = base + "TriggerMax"    + (*fTrigger)(r) + ".pdf";
+  TString TriggerMaxPad3;           TriggerMaxPad3              = base + "TriggerMax2"    + (*fTrigger)(r) + ".png";
+  TString TriggerMaxPad4;           TriggerMaxPad4             = base + "TriggerMax2"    + (*fTrigger)(r) + ".pdf";
+
+
+
 
 
   int nEmptyRuns = tree->Draw("run","Nevent==0","goff");
@@ -762,6 +776,131 @@ int PlotEMCALQATrendingTree(TTree* tree, const char* Trig, TFile* fout, Bool_t S
   c7->Update();
   if(SavePlots)  c7->SaveAs(Pi0Entries);
   if(SavePlots==2) c7->SaveAs(Pi0Entries2);
+
+  if (fTrigger.Contains("default")){
+
+TCanvas* c9 = new TCanvas("ETriggerMax", "ETriggerMax", 1000, 500);
+  c9->SetFillColor(0);
+  c9->SetBorderSize(0);
+  c9->SetFrameBorderMode(0);
+  c9->SetGrid();
+
+  gPad->SetLeftMargin(0.08);
+  gPad->SetRightMargin(0.02);
+  gPad->SetGrid();
+
+  TH1F* h9 = (TH1F*)h1->Clone("");
+  h9->GetYaxis()->SetTitle("Threshold (ADC) ");
+  ZoomFromTree(h9,tree,n,"EtrigMax");
+  h9->GetXaxis()->SetTitle("RUN Index");
+  h9->GetXaxis()->SetTitleOffset(1.86);
+  h9->GetXaxis()->SetTitleSize(0.03);
+  //  h9->GetYaxis()->SetRangeUser(0.,2000.);
+  h9->Draw();
+
+ 
+ 
+ for(Int_t itr = 0 ; itr < 5 ; itr++){
+
+    tree->Draw(Form("NextInt():ETrigMax[%i]",itr),"","goff");
+    TriggerMax[itr] = new  TGraphErrors(tree->GetSelectedRows(), tree->GetV1(), tree->GetV2());
+    TriggerMax[itr]->SetMarkerColor(itr<10?itr+2:itr+1);
+     if (itr==3)    TriggerMax[itr]->SetMarkerColor(7);
+       TriggerMax[itr]->SetMarkerStyle(21+(itr<10 ? itr: itr-10));
+    TriggerMax[itr]->Draw("same P");
+
+  }
+
+  TLegend* l9 = new TLegend(0.123, 0.744, 0.933, 0.894);
+  l9->SetNColumns((n+1)/2.);
+  l9->SetFillColor(0);
+  l9->SetBorderSize(0);
+  l9->SetTextSize(0.04);
+  l9->SetHeader(Form("Max trigger in %s (period %s)",fCalorimeter->Data(),period->Data()));
+  //  l8->AddEntry(MaxTrigger,"average", "p");
+ 
+    l9->AddEntry(TriggerMax[0]," EGA2", "p");
+    l9->AddEntry(TriggerMax[1]," EGA1", "p");
+    l9->AddEntry(TriggerMax[2]," EJE2", "p");
+    l9->AddEntry(TriggerMax[3]," EJE1", "p");
+    l9->AddEntry(TriggerMax[4]," EMC7", "p");
+
+ // for(Int_t itr = 0 ; itr < 5 ; itr++){
+ //     TString projname = Form("trigger %d",itr);
+ //     // l9->AddEntry(TriggerMax[itr],projname.Data(), "p");
+ //    l9->AddEntry(TriggerMax[itr],triggerNameE[itr], "p");
+ //  }
+  l9->Draw("same");
+
+  if(SavePlots) c9->SaveAs(TriggerMaxPad);
+  if(SavePlots==2) c9->SaveAs(TriggerMaxPad2);
+
+
+
+
+TCanvas* c11 = new TCanvas("DTriggerMax", "DTriggerMax", 1000, 500);
+  c11->SetFillColor(0);
+  c11->SetBorderSize(0);
+  c11->SetFrameBorderMode(0);
+  c11->SetGrid();
+
+  gPad->SetLeftMargin(0.08);
+  gPad->SetRightMargin(0.02);
+  gPad->SetGrid();
+
+  TH1F* h11 = (TH1F*)h1->Clone("");
+  h11->GetYaxis()->SetTitle("Threshold ADC ");
+  ZoomFromTree(h11,tree,n,"DtrigMax");
+  h11->GetXaxis()->SetTitle("RUN Index");
+  h11->GetXaxis()->SetTitleOffset(1.86);
+  h11->GetXaxis()->SetTitleSize(0.03);
+  //  h11->GetYaxis()->SetRangeUser(0.,2000.);
+  h11->Draw();
+
+ 
+ 
+ for(Int_t itr = 0 ; itr < 5 ; itr++){
+
+    tree->Draw(Form("NextInt():DTrigMax[%i]",itr),"","goff");
+    DTriggerMax[itr] = new  TGraphErrors(tree->GetSelectedRows(), tree->GetV1(), tree->GetV2());
+    DTriggerMax[itr]->SetMarkerColor(itr<10?itr+2:itr+1);
+    if (itr==3) DTriggerMax[itr]->SetMarkerColor(7);
+    DTriggerMax[itr]->SetMarkerStyle(21+(itr<10 ? itr: itr-10));
+    DTriggerMax[itr]->Draw("same P");
+
+  }
+
+  TLegend* l11 = new TLegend(0.123, 0.744, 0.933, 0.894);
+  l11->SetNColumns((n+1)/2.);
+  l11->SetFillColor(0);
+  l11->SetBorderSize(0);
+  l11->SetTextSize(0.04);
+  l11->SetHeader(Form("Max trigger in %s (period %s)",fCalorimeter->Data(),period->Data()));
+  //  l8->AddEntry(MaxTrigger,"average", "p");
+ 
+    l11->AddEntry(DTriggerMax[0]," DGA2", "p");
+    l11->AddEntry(DTriggerMax[1]," DGA1", "p");
+    l11->AddEntry(DTriggerMax[2]," DJE2", "p");
+    l11->AddEntry(DTriggerMax[3]," DJE1", "p");
+    l11->AddEntry(DTriggerMax[4]," DMC7", "p");
+
+
+ // for(Int_t itr = 0 ; itr < 4 ; itr++){
+ //    TString projname = Form("trigger %d",itr);
+ //    //   l11->AddEntry(DTriggerMax[itr],projname.Data(), "p");
+ // l11->AddEntry(DTriggerMax[itr],triggerNameD[itr].Data(), "p");
+ //  }
+  l11->Draw("same");
+
+  if(SavePlots) c11->SaveAs(TriggerMaxPad3);
+  if(SavePlots==2) c11->SaveAs(TriggerMaxPad4);
+
+
+ }
+
+
+
+
 
   fout->mkdir(Form("%s/%s/%s/%s",period->Data(),pass->Data(),"TrendingQA",fTrigger->Data()));
   fout->cd();
