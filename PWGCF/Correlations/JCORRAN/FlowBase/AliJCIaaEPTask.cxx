@@ -107,7 +107,6 @@ void AliJCIaaEPTask::UserCreateOutputObjects()
 
 	// Order should be kept for correct functionality
 	fIaaAna->UserCreateOutputObjects();
-	fIaaAna->SetTrackList(fJFlowBaseTask->GetJCatalystTask()->GetInputListALICE());
 	fIaaAna->GetCard()->WriteCard(fOutput);
 
 	PostData(1, fOutput);
@@ -121,6 +120,11 @@ void AliJCIaaEPTask::UserExec(Option_t* /*option*/)
 	// Processing of one event
 	if(fDebug > 5) std::cout << "------- AliJCIaaEPTask Exec-------"<<endl;
 	if( fJFlowBaseTask->GetJCatalystTask()->GetJCatalystEntry() != fEntry ) return;
+	if(fJFlowBaseTask->IsMC()) {
+		fIaaAna->SetTrackList(fJFlowBaseTask->GetJCatalystTask()->GetInputListALICE());
+	} else {
+		fIaaAna->SetTrackList(fJFlowBaseTask->GetJCatalystTask()->GetInputList());
+	}
 	// Event selection is done in fJFlowBaseTask
 	// need to put cent/vtx/run#
 	int iH = 2;
