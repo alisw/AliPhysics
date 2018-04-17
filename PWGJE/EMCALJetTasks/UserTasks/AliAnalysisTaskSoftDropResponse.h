@@ -78,10 +78,10 @@ class AliAnalysisTaskSoftDropResponse : public AliJetResponseMaker {
   
   void               FillZgRgVectors(const AliEmcalJet* jet);
 
-  Int_t nsdsteps;
-  std::vector<Float_t> zg_values; //n_SD ordering
-  std::vector<Float_t> rg_values; //n_SD ordering
-  std::vector<Int_t>   SDsteps_values;
+  Int_t fNsdsteps; //!<!
+  std::vector<Float_t> fZg_values; //!<! n_SD ordering
+  std::vector<Float_t> fRg_values; //!<! n_SD ordering
+  std::vector<Int_t>   fSDsteps_values; //!<!
  
   AliAnalysisTaskSoftDropResponse(const AliAnalysisTaskSoftDropResponse&); // not implemented
   AliAnalysisTaskSoftDropResponse &operator=(const AliAnalysisTaskSoftDropResponse&);  // not implemented

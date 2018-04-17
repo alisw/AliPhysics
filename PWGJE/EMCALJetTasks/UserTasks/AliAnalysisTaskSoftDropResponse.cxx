@@ -413,37 +413,29 @@ void AliAnalysisTaskSoftDropResponse::FillMatchingHistos(AliEmcalJet* jet1, AliE
   //Float_t z2g2 = -1.0;
   //CalculateZg(jet1, 0.5, 1.5, z2g1);
   //CalculateZg(jet2, 0.5, 1.5, z2g2);
-  
-  nsdsteps = 0;
-  zg_values.clear();
-  rg_values.clear();
-  SDsteps_values.clear();
  
   FillZgRgVectors(jet1);
   
-  Int_t nsdsteps_jet1 = nsdsteps;
-  Int_t nhsplits_jet1 = zg_values.size();
+  Int_t nsdsteps_jet1 = 0;
+  Int_t nhsplits_jet1 = fZg_values.size();
   Float_t zg2_1 = 0.0;
   Float_t rg2_1 = 0.0;
+  if (nhsplits_jet1 > 0) nsdsteps_jet1 = fSDsteps_values[0];
   if (nhsplits_jet1 > 1) {
-    zg2_1 = zg_values[1];
-    rg2_1 = rg_values[1];
+    zg2_1 = fZg_values[1];
+    rg2_1 = fRg_values[1];
   }
-  
-  nsdsteps = 0;
-  zg_values.clear();
-  rg_values.clear();
-  SDsteps_values.clear();
   
   FillZgRgVectors(jet2);
   
-  Int_t nsdsteps_jet2 = nsdsteps;
-  Int_t nhsplits_jet2 = zg_values.size();
+  Int_t nsdsteps_jet2 = 0;
+  Int_t nhsplits_jet2 = fZg_values.size();
   Float_t zg2_2 = 0.0;
   Float_t rg2_2 = 0.0;
+  if (nhsplits_jet2 > 0) nsdsteps_jet2 = fSDsteps_values[0];
   if (nhsplits_jet2 > 1) {
-    zg2_2 = zg_values[1];
-    rg2_2 = rg_values[1];
+    zg2_2 = fZg_values[1];
+    rg2_2 = fRg_values[1];
   }
   
   if (fHistoType==1) {
@@ -654,7 +646,7 @@ void AliAnalysisTaskSoftDropResponse::Decluster(const fastjet::PseudoJet& jet) {
 
   if ( jet.has_parents(jet1, jet2) ) {
 
-    ++nsdsteps;    
+    ++fNsdsteps;    
 
     Float_t pt1 = jet1.pt();
     Float_t pt2 = jet2.pt();
@@ -666,9 +658,9 @@ void AliAnalysisTaskSoftDropResponse::Decluster(const fastjet::PseudoJet& jet) {
     else z = pt2/(pt1+pt2);
 
     if (z > 0.1) {
-      zg_values.push_back(z);
-      rg_values.push_back(dr);
-      SDsteps_values.push_back(nsdsteps);
+      fZg_values.push_back(z);
+      fRg_values.push_back(dr);
+      fSDsteps_values.push_back(fNsdsteps);
     }
 
     if (pt1 > pt2) Decluster(jet1);
@@ -691,6 +683,10 @@ fastjet::ClusterSequence* AliAnalysisTaskSoftDropResponse::Recluster(const AliEm
 }
 
 void AliAnalysisTaskSoftDropResponse::FillZgRgVectors(const AliEmcalJet* jet) {
+  fNsdsteps = 0;
+  fZg_values.clear();
+  fRg_values.clear();
+  fSDsteps_values.clear();
   fastjet::ClusterSequence* cs = Recluster(jet);
   if (cs) { 
     std::vector<fastjet::PseudoJet> jetrecl = sorted_by_pt( cs->inclusive_jets() );
