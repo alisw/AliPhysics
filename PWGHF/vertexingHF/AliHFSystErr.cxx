@@ -2045,10 +2045,11 @@ void AliHFSystErr::InitDstoKKpi2017pp5TeV(){
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
   for(Int_t i=1;  i<=2;  i++) fTrackingEff->SetBinContent(i, 1.000); // [0-2]
-  for(Int_t i=3;  i<=4;  i++) fTrackingEff->SetBinContent(i, 0.05); // [2-4]
-  for(Int_t i=5;  i<=6;  i++) fTrackingEff->SetBinContent(i, 0.055); // [4-6]
-  for(Int_t i=7;  i<=12; i++) fTrackingEff->SetBinContent(i, 0.06); // [6-8] + [8-12]
-  for(Int_t i=12; i<=16; i++) fTrackingEff->SetBinContent(i, 0.06); // [12-16]
+  for(Int_t i=3;  i<=3;  i++) fTrackingEff->SetBinContent(i, 0.045); // [2-3]
+  for(Int_t i=4;  i<=4;  i++) fTrackingEff->SetBinContent(i, 0.055); // [3-4]
+  for(Int_t i=5;  i<=5; i++) fTrackingEff->SetBinContent(i, 0.06); // [4-5]
+  for(Int_t i=6;  i<=6; i++) fTrackingEff->SetBinContent(i, 0.065); // [5-6]
+  for(Int_t i=7; i<=16; i++) fTrackingEff->SetBinContent(i, 0.07); // [12-16]
   for(Int_t i=17; i<=24; i++) fTrackingEff->SetBinContent(i, 1.000); // [16-24]
   
   // Raw yield extraction
