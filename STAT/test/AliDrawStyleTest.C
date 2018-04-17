@@ -31,6 +31,7 @@ void AliDrawStyleTest_ParseDeclaration();
 void AliDrawStyleTest_ConvertColor();
 void AliDrawStyleTest_GetIntValues();
 void AliDrawStyleTest_GetFloatValues();
+void AliDrawStyleTest_IsSelected();
 //  void AliDrawStyleTest_CSSReadWrite();
 void AliDrawStyleTest_GetValue();
 void AliDrawStyleTest_ApplyCssStyle();
@@ -42,6 +43,7 @@ void AliDrawStyleTest() {
   AliDrawStyleTest_ConvertColor();
   AliDrawStyleTest_GetIntValues();
   AliDrawStyleTest_GetFloatValues();
+  AliDrawStyleTest_IsSelected();
 //  //  AliDrawStyleTest_CSSReadWrite();
   AliDrawStyleTest_GetValue();
   AliDrawStyleTest_ApplyCssStyle();
@@ -222,6 +224,47 @@ void AliDrawStyleTest_GetFloatValues() {
   }
 }
 
+void AliDrawStyleTest_IsSelected() {
+  TString selectors = "TH1.Status#obj1, TH1.Warning#obj1, TH1.Warning#obj3 \tTGraph#obj1, TGraph.Status#TPC.QA.dcar_posA_1 \tTGraph.Warning#TPC.QA.dcar_posA_2 \tTF1.Status, .Status#obj1, #obj3\t .deadBand";
+
+  if (!AliDrawStyle::IsSelected(selectors, "TH1", "deadBand", "")) {
+    ::Info("AliDrawStyleTest","!AliDrawStyle::IsSelected(\"%s\",\"TH1\", \"deadBand\", \"\")- IsOK", selectors.Data());
+  } else{
+    ::Error("AliDrawStyleTest","!AliDrawStyle::IsSelected(\"%s\",\"TH1\", \"deadBand\", \"\")- FAILED", selectors.Data());
+  }
+  if(AliDrawStyle::IsSelected(selectors, "TGraph", "deadBand", "")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::IsSelected(\"%s\",\"TGraph\", \"deadBand\", \"\")- IsOK", selectors.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::IsSelected(\"%s\",\"TGraph\", \"deadBand\", \"\")- FAILED", selectors.Data());
+  }
+  if(AliDrawStyle::IsSelected(selectors, "", "deadBand", "")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::IsSelected(\"%s\",\"\", \"deadBand\", \"\")- IsOK", selectors.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::IsSelected(\"%s\",\"\", \"deadBand\", \"\")- FAILED", selectors.Data());
+  }
+  if(AliDrawStyle::IsSelected(selectors, "", "deadBand2", "")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::IsSelected(\"%s\",\"\", \"deadBand2\", \"\")- IsOK", selectors.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::IsSelected(\"%s\",\"\", \"deadBand2\", \"\")- FAILED", selectors.Data());
+  }
+  if(!AliDrawStyle::IsSelected(selectors, "TH1", "deadBand2", "")) {
+    ::Info("AliDrawStyleTest","!AliDrawStyle::IsSelected(\"%s\",\"TH1\", \"deadBand2\", \"\")- IsOK", selectors.Data());
+  } else{
+    ::Error("AliDrawStyleTest","!AliDrawStyle::IsSelected(\"%s\",\"TH1\", \"deadBand2\", \"\")- FAILED", selectors.Data());
+  }
+  if(AliDrawStyle::IsSelected(selectors, "TGraph", "Status", "")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::IsSelected(\"%s\",\"TGraph\", \"Status\", \"\")- IsOK", selectors.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::IsSelected(\"%s\",\"TGraph\", \"Status\", \"\")- FAILED", selectors.Data());
+  }
+  if(!AliDrawStyle::IsSelected(selectors, "TGraph", "Warning", "obj3")) {
+    ::Info("AliDrawStyleTest","!AliDrawStyle::IsSelected(\"%s\",\"TGraph\", \"Warning\", \"obj3\")- IsOK", selectors.Data());
+  } else{
+    ::Error("AliDrawStyleTest","!AliDrawStyle::IsSelected(\"%s\",\"TGraph\", \"Warning\", \"obj3\")- FAILED", selectors.Data());
+  }
+
+}
+
 /// To test  - input CSS file to be read and than written
 ///          - diff between the files should be 0 except of the formatting
 /// TODO test - ignoring commented fields in selector and in the declaration
@@ -306,7 +349,7 @@ TCanvas *MakeTestPlot(Int_t nHis) {
   exampleCanvas->cd(1);
   TH1F *hisArray[nHis];
   for (Int_t i = 0; i < nHis; i++) {
-    hisArray[i] = new TH1F(TString::Format("his%d.class(Raw).style(marker-color:%d;)", i, i*2 + 3).Data(),
+    hisArray[i] = new TH1F(TString::Format("his%d.class(Raw)", i).Data(),
                            TString::Format("his%d.class(Raw)", i).Data(), 100, -5, 5);
     hisArray[i]->SetStats(0);
     hisArray[i]->SetTitle(TString::Format("his%d", i).Data());
@@ -315,7 +358,7 @@ TCanvas *MakeTestPlot(Int_t nHis) {
     if (i == 0) hisArray[i]->Draw("err");
     else hisArray[i]->Draw("SAMEerr");
   }
-  gPad->BuildLegend();
+ // gPad->BuildLegend();
 
   exampleCanvas->cd(2);
   const Int_t n = 100;
@@ -332,7 +375,7 @@ TCanvas *MakeTestPlot(Int_t nHis) {
       y[j] = log(x[j]) / (i + 1);
     }
     grArray[i] = new TGraph(n, x, y);
-    grArray[i]->SetName(TString::Format("graph%d.class(Raw).style(marker-size:%d;)", i,i/3 + 1).Data());
+    grArray[i]->SetName(TString::Format("graph%d.class(Raw).style(marker-size:%d;marker-color:%d;)", i,i/3 + 1, i + 1).Data());
     grArray[i]->SetTitle(TString::Format("gr%d", i).Data());
     if (i == 0) {
       grArray[i]->SetMinimum(0);
@@ -340,6 +383,6 @@ TCanvas *MakeTestPlot(Int_t nHis) {
     }
     else grArray[i]->Draw("lp");
   }
-  gPad->BuildLegend();
+ // gPad->BuildLegend();
   return exampleCanvas;
 }

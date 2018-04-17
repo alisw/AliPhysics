@@ -122,7 +122,10 @@ public:
   static void ApplyCssStyle(TPad *pad, const char* styleName, Int_t verbose=0);
   static void RegisterCssStyle(const char *styleName, TObjArray*array ) { fCssStyleAlice[styleName]=array;}
     //parsing methods
-  static Bool_t     IsSelected(TString selectors, TString elementID, TString classID, TString objectID);
+  static Bool_t     ElementSearch(const TString selectors, const TString elementID, Int_t verbose=0);
+  static Bool_t     ClassSearch(const TString selectors, const TString classID, Int_t verbose=0);
+  static Bool_t     ObjectSearch(const TString selectors, const TString objectID, Int_t verbose=0);
+  static Bool_t     IsSelected(TString selectors, const TString elementID, const TString classID, const TString objectID, Int_t verbose=0);
   static TString    GetValue(const char * styleName, TString propertyName, TString elementID, TString classID, TString objectID, TString localStyle=TString(""), Int_t verbose=0);
   static TString    ParseDeclaration(const char *inputDec, const char *propertyName);
   static void       GetIds(TObject *cObj, TString &elementID, TString &classID, TString &objectID, TString &localStyle, Int_t verbose=0);

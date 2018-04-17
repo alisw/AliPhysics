@@ -869,6 +869,152 @@ void AliDrawStyle::WriteCSSFile(TObjArray * cssArray, const char *  outputName, 
   }
 }
 
+Bool_t AliDrawStyle::ElementSearch(const TString selector, const TString elementID, Int_t verbose) {
+  if (selector == TString("")) {
+    ::Error("AliDrawStyle", "AliDrawStyle::ElementSearch(\"%s\", \"%s\") selector should not be empty", selector.Data(), elementID.Data());
+    return kFALSE;
+  }
+  //impossible for us
+  if (elementID == TString("")) {
+    if (verbose == 4)
+      ::Info("AliDrawStyle", "AliDrawStyle::ElementSearch(\"%s\", \"%s\") elementID is empty, any element is fine", selector.Data(), elementID.Data());
+    return kTRUE;
+  }
+  TString elementFromSelector = "";
+  Int_t finish = -1;
+  if(selector.Index('#') >= 0) finish = selector.Index('#');
+  if(selector.Index('.') >= 0) finish = selector.Index('.');
+
+  if (finish == 0) return kTRUE;
+  else if (finish > 0) elementFromSelector = selector(0, finish);
+  else elementFromSelector = selector;
+  if (verbose == 4) ::Info("AliDrawStyle", "AliDrawStyle::ElementSearch(\"%s\", \"%s\"). Selector was transformed to %s", selector.Data(), elementID.Data(), elementFromSelector.Data());
+
+  if (elementFromSelector.Index('*') >= 0) {
+    elementFromSelector = elementFromSelector.ReplaceAll("*", ".*");
+    TPRegexp elemPattern(elementFromSelector);
+    if (elementID(elemPattern) == elementID || TClass(elementID.Data()).InheritsFrom(TString(elementFromSelector(0,elementFromSelector.Index("."))).Data())) {
+      if (verbose == 4)
+        ::Info("AliDrawStyle", "AliDrawStyle::ElementSearch(\"%s\", \"%s\") was successful", selector.Data(), elementID.Data());
+      return kTRUE;
+    }
+    else {
+      if (verbose == 4)
+        ::Info("AliDrawStyle", "AliDrawStyle::ElementSearch(\"%s\", \"%s\") was unsuccessful", selector.Data(), elementID.Data());
+      return kFALSE;
+    }
+  }
+
+  if (elementFromSelector == elementID) {
+    if (verbose == 4)
+      ::Info("AliDrawStyle", "AliDrawStyle::ElementSearch(\"%s\", \"%s\") was successful", selector.Data(), elementID.Data());
+    return kTRUE;
+  }
+  if (verbose == 4)
+    ::Info("AliDrawStyle", "AliDrawStyle::ElementSearch(\"%s\", \"%s\") was unsuccessful", selector.Data(), elementID.Data());
+  return kFALSE;
+}
+
+Bool_t AliDrawStyle::ClassSearch(const TString selector, const TString classID, Int_t verbose) {
+  if (selector == TString("")) {
+    ::Error("AliDrawStyle", "AliDrawStyle::ClassSearch(\"%s\", \"%s\") selector should not be empty", selector.Data(), classID.Data());
+    return kFALSE;
+  }
+  if (classID == TString("")) {
+    if (verbose == 4)
+      ::Info("AliDrawStyle", "AliDrawStyle::ClassSearch(\"%s\", \"%s\") classID is empty, any class is fine", selector.Data(), classID.Data());
+    return kTRUE;
+  }
+
+  TPRegexp classPattern("[.].*#|[.].*");
+  TString classFromSelector = "";
+
+  classFromSelector = selector(classPattern);
+  if (classFromSelector == TString(""))
+    return kTRUE;
+
+  if(classFromSelector.Index('#') >= 0) classFromSelector = classFromSelector(1,classFromSelector.Length() - 2);
+  else classFromSelector = classFromSelector(1,classFromSelector.Length());
+  if (verbose == 4) ::Info("AliDrawStyle", "AliDrawStyle::ClassSearch(\"%s\", \"%s\"). Selector was transformed to %s", selector.Data(), classID.Data(), classFromSelector.Data());
+
+  //for multi classes
+  TObjArray *classIDs = classID.Tokenize(",");
+  Int_t nC = classIDs->GetEntriesFast();;
+  TString tempClassID = "";
+
+  for (auto i = 0; i < nC; i++) {
+    tempClassID = classIDs->At(i)->GetName();
+    if (classFromSelector.Index('*') >= 0) {
+      classFromSelector = classFromSelector.ReplaceAll("*", ".*");
+      TPRegexp classSelPattern(classFromSelector);
+      if (tempClassID(classSelPattern) == tempClassID) {
+        if (verbose == 4)
+          ::Info("AliDrawStyle", "AliDrawStyle::ClassSearch(\"%s\", \"%s\") was successful", selector.Data(), classID.Data());
+        return kTRUE;
+      }
+      else {
+        ::Info("AliDrawStyle", "AliDrawStyle::ClassSearch(\"%s\", \"%s\") was unsuccessful", selector.Data(), classID.Data());
+        return kFALSE;
+      }
+    }
+
+    if (classFromSelector == tempClassID) {
+      if (verbose == 4)
+        ::Info("AliDrawStyle", "AliDrawStyle::ClassSearch(\"%s\", \"%s\") was successful", selector.Data(), classID.Data());
+      return kTRUE;
+    }
+  }
+  if (verbose == 4)
+    ::Info("AliDrawStyle", "AliDrawStyle::ClassSearch(\"%s\", \"%s\") was unsuccessful", selector.Data(), classID.Data());
+  return kFALSE;
+}
+
+Bool_t AliDrawStyle::ObjectSearch(const TString selector, const TString objectID, Int_t verbose) {
+  if (selector == TString("")) {
+    ::Error("AliDrawStyle", "AliDrawStyle::ObjectSearch(\"%s\", \"%s\") selector should not be empty", selector.Data(), objectID.Data());
+    return kFALSE;
+  }
+  if (objectID == TString("")) {
+    if (verbose == 4)
+      ::Info("AliDrawStyle", "AliDrawStyle::ObjectSearch(\"%s\", \"%s\") objectID is empty.", selector.Data(), objectID.Data());
+    return kTRUE;
+  }
+
+  TPRegexp objectPattern("[#].*");
+  TString objectFromSelector = "";
+
+  objectFromSelector = selector(objectPattern);
+  if (objectFromSelector == TString(""))
+    return kTRUE;
+
+  objectFromSelector = objectFromSelector(1,objectFromSelector.Length());
+  if (verbose == 4) ::Info("AliDrawStyle", "AliDrawStyle::ObjectSearch(\"%s\", \"%s\"). Selector was transformed to %s", selector.Data(), objectID.Data(), objectFromSelector.Data());
+
+  if (objectFromSelector.Index('*') >= 0) {
+    objectFromSelector = objectFromSelector.ReplaceAll("*", ".*");
+    TPRegexp objectSelPattern(objectFromSelector);
+    if (objectID(objectSelPattern) == objectID) {
+      if (verbose == 4)
+        ::Info("AliDrawStyle", "AliDrawStyle::ObjectSearch(\"%s\", \"%s\") was successful", selector.Data(), objectID.Data());
+      return kTRUE;
+    }
+    else {
+      if (verbose == 4)
+        ::Info("AliDrawStyle", "AliDrawStyle::ObjectSearch(\"%s\", \"%s\") was unsuccessful", selector.Data(), objectID.Data());
+      return kFALSE;
+    }
+  }
+
+  if (objectFromSelector == objectID) {
+    if (verbose == 4)
+      ::Info("AliDrawStyle", "AliDrawStyle::ObjectSearch(\"%s\", \"%s\") was successful", selector.Data(), objectID.Data());
+    return kTRUE;
+  }
+  if (verbose == 4)
+    ::Info("AliDrawStyle", "AliDrawStyle::ObjectSearch(\"%s\", \"%s\") was unsuccessful", selector.Data(), objectID.Data());
+  return kFALSE;
+}
+
 /// Function of checking the match between "CSS" selector and object parameters: elementID, classID, objectID
 /// \param selectors   - selector ID
 /// \param elementName - name of element
@@ -884,64 +1030,33 @@ void AliDrawStyle::WriteCSSFile(TObjArray * cssArray, const char *  outputName, 
   AliDrawStyle::IsSelected(selectors, "TH1C", "Warning", "obj1") // return false
   \endcode
  */
-Bool_t  AliDrawStyle::IsSelected(TString selectors, TString elementID, TString classID, TString objectID) {
-
-  Bool_t    elementCatched;
-  Bool_t    classCatched;
-  Bool_t    objectCatched;
-  Ssiz_t    fromStart0     = 0;
-  Ssiz_t    fromStart1     = 0;
-  TObjArray *classIDs      = classID.Tokenize(",");
-  Int_t     nC             = 0;
+Bool_t  AliDrawStyle::IsSelected(TString selectors, const TString elementID, const TString classID, const TString objectID, Int_t verbose) {
+  if (elementID == TString("") && classID == TString("") && objectID == TString("")) {
+    if (verbose == 4)
+      ::Info("AliDrawStyle", "AliDrawStyle::IsSelected(\"%s\", \"%s\", \"%s\", \"%s\") returned kFALSE. All elements are empty.", \
+                  selectors.Data(), elementID.Data(), classID.Data(), objectID.Data());
+    return kFALSE;
+  }
+  Ssiz_t    fromStart1 = 0;
+  Ssiz_t    fromStart     = 0;
   TString   subSelectors   = "";
   TString   selector       = "";
-  TString   className      = "";
-  TString   elementCss     = "";
-  TString   classCss       = "";
-  TString   objectCss      = "";
-  TPRegexp  elemPat(".*?[.]");
-  TPRegexp  classPat("[.].*[#]");
-  TPRegexp  objPat("[#].*");
-
-  if (classIDs->GetEntriesFast() == 0) nC = 1;
-  else nC = classIDs->GetEntriesFast();
-
-  for (Int_t i = 0; i < nC; i++) {
-    if (classIDs->GetEntriesFast() == 0) className = "";
-    else className = classIDs->At(i)->GetName();
-    fromStart0 = 0;
-    while (selectors.Tokenize(subSelectors, fromStart0, " \t")) {
-      fromStart1 = 0;
-      while (subSelectors.Tokenize(selector, fromStart1, ", ")) {
-        selector = selector.Strip(TString::kBoth, ' ');
-        elementCatched = kFALSE;
-        classCatched = kFALSE;
-        objectCatched = kFALSE;
-        // check object
-        objectCss = TString(selector(objPat))(1,TString(selector(objPat)).Length());
-        objectCss = objectCss.ReplaceAll("*", ".*");
-        if (selector(objPat) == "" || objectID == "") {
-          objectCatched = kTRUE;
-          selector.Append("#anyObjects");
-        } else if (selector(objPat) == ("#" + objectID) || objectID(objectCss) == objectID) objectCatched = kTRUE;
-        // check class
-        classCss = TString(selector(classPat))(1,TString(selector(classPat)).Length()-2);
-        classCss = classCss.ReplaceAll("*", ".*");
-        if (selector(classPat) == "" || className == "") {
-          classCatched = kTRUE;
-          selector.Insert(selector.Index("#"), ".anyClasses");
-        } else if (selector(classPat) == ("." + className + "#") || className(classCss) == className) classCatched = kTRUE;
-        //check element
-        elementCss = TString(selector(elemPat))(0,TString(selector(elemPat)).Length()-1);
-        elementCss = elementCss.ReplaceAll("*", ".*");
-        if (selector(elemPat) == "." || selector(elemPat) == "" ||
-            selector(elemPat) == (elementID + ".") || elementID == "" ||
-            elementID(elementCss) == elementID || TClass(elementID.Data()).InheritsFrom(TString(elementCss(0,elementCss.Index("."))).Data()))
-          elementCatched = kTRUE;
-        if (elementCatched && classCatched && objectCatched) return kTRUE;
+  selectors = selectors.ReplaceAll("\n", "");
+  while (selectors.Tokenize(subSelectors, fromStart1, " \t")) {
+    fromStart = 0;
+    while (subSelectors.Tokenize(selector, fromStart, ", ")) {
+      selector = selector.Strip(TString::kBoth, ' ');
+      if (ElementSearch(selector, elementID, verbose) && ClassSearch(selector, classID, verbose) && ObjectSearch(selector, objectID, verbose)) {
+        if (verbose == 4)
+          ::Info("AliDrawStyle", "AliDrawStyle::IsSelected(\"%s\", \"%s\", \"%s\", \"%s\") returned kTRUE", \
+                  selectors.Data(), elementID.Data(), classID.Data(), objectID.Data());
+        return kTRUE;
       }
     }
   }
+  if (verbose == 4)
+    ::Info("AliDrawStyle", "AliDrawStyle::IsSelected(\"%s\", \"%s\", \"%s\", \"%s\") returned kFALSE", \
+            selectors.Data(), elementID.Data(), classID.Data(), objectID.Data());
   return kFALSE;
 }
 
@@ -978,7 +1093,7 @@ TString AliDrawStyle::GetValue(const char *styleName, TString propertyName, TStr
 
   for(Int_t i = 0; i < entries; i++) {
     if (AliDrawStyle::IsSelected(TString(fCssStyleAlice[styleName]->At(i)->GetName()),
-                                 elementID, classID, objectID)) {
+                                 elementID, classID, objectID, verbose)) {
       if (propertyName == "") value = fCssStyleAlice[styleName]->At(i)->GetTitle();
       else value = AliDrawStyle::ParseDeclaration(fCssStyleAlice[styleName]->At(i)->GetTitle(), propertyName.Data());
       if (value != "") actProperty = value.Strip(TString::kBoth, ' ');
@@ -1604,27 +1719,30 @@ void AliDrawStyle::TPadApplyStyle(const char *styleName, TPad *cPad, Int_t verbo
         AliDrawStyle::TPadApplyStyle(styleName, pad, verbose);
         AliDrawStyle::SetPadNumber(AliDrawStyle::GetPadNumber() + 1);
     }
-    Int_t objNum = 0, objCnt = 0;
+    Int_t objNum = -1, hisCnt = 0, funcCnt = 0, graphCnt = 0, legendCnt = 0;
     for (Int_t k = 0; k < oList->GetEntries(); k++) {
       cObj = oList->At(k);
       if (TString(TString(cObj->GetName())(numPat0))(numPat1) != TString(""))
         objNum = TString(TString(TString(cObj->GetName())(numPat0))(numPat1)).Atoi();
-      else objNum = objCnt;
       if (cObj->InheritsFrom("TH1")) {
-        AliDrawStyle::TH1ApplyStyle(styleName, (TH1 *) cObj, objNum, verbose);
-        objCnt++;
+        if (objNum >= 0) hisCnt = objNum;
+        AliDrawStyle::TH1ApplyStyle(styleName, (TH1 *) cObj, hisCnt, verbose);
+        hisCnt++;
       }
       if (cObj->InheritsFrom("TGraph")) {
-        AliDrawStyle::TGraphApplyStyle(styleName, (TGraph *) cObj, objNum, verbose);
-        objCnt++;
+        if (objNum >= 0) graphCnt = objNum;
+        AliDrawStyle::TGraphApplyStyle(styleName, (TGraph *) cObj, graphCnt, verbose);
+        graphCnt++;
       }
       if (cObj->InheritsFrom("TF1")) {
-        AliDrawStyle::TF1ApplyStyle(styleName, (TF1 *) cObj, objNum, verbose);
-        objCnt++;
+        if (objNum >= 0) funcCnt = objNum;
+        AliDrawStyle::TF1ApplyStyle(styleName, (TF1 *) cObj, funcCnt, verbose);
+        funcCnt++;
       }
       if (cObj->InheritsFrom("TLegend")) {
-        AliDrawStyle::TLegendApplyStyle(styleName, (TLegend *) cObj, objNum, verbose);
-        objCnt++;
+        if (objNum >= 0) legendCnt = objNum;
+        AliDrawStyle::TLegendApplyStyle(styleName, (TLegend *) cObj, legendCnt, verbose);
+        legendCnt++;
       }
     }
     pad->Modified();

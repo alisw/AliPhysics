@@ -271,8 +271,8 @@ void AliPainterTest_ArgsParser(){
 }
 
 void AliPainterTest_DivideTPad() {
-  auto *canvasQA = new TCanvas("canvasQATest", "canvasQATest", 1200, 800);
-  AliPainter::DivideTPad("<horizontal>[1b,1m,1r300px,1lst0.3]", "", canvasQA);
+  TCanvas *canvasQA = new TCanvas("canvasQATest", "canvasQATest", 1200, 800);
+  AliPainter::DivideTPad("<horizontal>[1b,1m,1r300px,1lst0.3]", "", "", canvasQA);
   canvasQA->Print("canvasQADivideTPadTest.xml");
   canvasQA->Print("canvasQADivideTPadTestFixed.xml");
 
@@ -280,7 +280,7 @@ void AliPainterTest_DivideTPad() {
   if (nDiff - 6 <= 0) {
     ::Info("AliPainterTest","AliPainter::DivideTPad(\"canvasQATest\",\"<horizontal>[1b,1m,1m,1lst0.3]\",\"test\")- IsOK");
   }else{
-    ::Error("AliPainterTest","AliDrawStyle::ApplyStyle(\"canvasQATest\",\"<horizontal>[1b,1m,1m,1lst0.3]\",\"test\")- FAILED");
+    ::Error("AliPainterTest","AliDrawStyle::DivideTPad(\"canvasQATest\",\"<horizontal>[1b,1m,1m,1lst0.3]\",\"test\")- FAILED");
   }
 }
 
@@ -295,7 +295,7 @@ void AliPainterTest_DrawHistogram() {
     hisArray->AddLast(o);
   }
   auto *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
-  AliPainter::DivideTPad("<horizontal>[1b,1t,1,1]", "Canvas41", canvasQA);
+  AliPainter::DivideTPad("<horizontal>[1b,1t,1,1]", "Canvas41", "", canvasQA);
   canvasQA->cd(1);
   AliPainter::DrawHistogram((char *) "hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)", hisArray);
   AliPainter::DrawHistogram((char *) "hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)", hisArray);
