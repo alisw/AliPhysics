@@ -1838,19 +1838,7 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeV(){
   fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
   fCutsEff->SetBinContent(2,0.05);
   fCutsEff->SetBinContent(3,0.04);
-  fCutsEff->SetBinContent(4,0.03);
-  fCutsEff->SetBinContent(5,0.02);
-  fCutsEff->SetBinContent(6,0.02);
-  fCutsEff->SetBinContent(7,0.02);
-  fCutsEff->SetBinContent(8,0.02);
-  fCutsEff->SetBinContent(9,0.02);
-  fCutsEff->SetBinContent(10,0.02);
-  fCutsEff->SetBinContent(11,0.02);
-  fCutsEff->SetBinContent(12,0.02);
-
-  for(Int_t i=13;i<=16;i++) fCutsEff->SetBinContent(i,0.04);
-  for(Int_t i=17;i<=24;i++) fCutsEff->SetBinContent(i,0.05);
-  for(Int_t i=25;i<=36;i++) fCutsEff->SetBinContent(i,0.06);
+  for(Int_t i=4;i<=36;i++) fCutsEff->SetBinContent(i,0.03);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
@@ -1858,7 +1846,10 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeV(){
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
-  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(2,0.04);
+  fMCPtShape->SetBinContent(3,0.01);
+  for(Int_t i=4;i<=36;i++) fMCPtShape->SetBinContent(i,0);
+
   return;
 }
 //--------------------------------------------------------------------------
