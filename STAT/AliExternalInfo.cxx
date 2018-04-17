@@ -1068,7 +1068,8 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
       }
       tree->GetEntry(0);
       soutputdir= TString::Format("%s",poutputdir);                 // extract production name from outputdir
-
+      if(soutputdir.EndsWith("/")) soutputdir=soutputdir.Remove(soutputdir.Length()-1);  //if directory ends with "/" remove this
+      
       subStrL = TPRegexp("(?=LHC)(.*?)(?=/)").MatchS(soutputdir);
       sprodname = *((TObjString *)subStrL->At(0)); 
       delete subStrL;
