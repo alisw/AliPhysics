@@ -32,8 +32,11 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCopyCells(Bool_t b)    {fDoCopyCells=b;}
     void                  SetCopyPCells(Bool_t b)   {fDoCopyPCells=b;}
     void                  SetCopyClusters(Bool_t b) {fDoCopyClusters=b;}
+    void                  SetCopyDiMuons(Bool_t b)  {fDoCopyDiMuons=b;}
+    void                  SetCopyZDC(Bool_t b)      {fDoCopyZDC=b;}
     void                  SetCopyMC(Bool_t b)       {fDoCopyMC=b;}
     void                  SetCopyMCHeader(Bool_t b) {fDoCopyMCHeader=b;}
+    const char           *Str() const;
   protected:
     void                  UserCreateOutputObjects();
     void                  UserExec(Option_t* option);
@@ -54,6 +57,8 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Bool_t                fDoCopyCells;     //  if true copy cells (EMC)
     Bool_t                fDoCopyPCells;    //  if true copy cells (PHS)
     Bool_t                fDoCopyClusters;  //  if true copy clusters
+    Bool_t                fDoCopyDiMuons;   //  if true copy dimuons
+    Bool_t                fDoCopyZDC;       //  if true copy zdc
     Bool_t                fDoCopyMC;        //  if true copy MC particles
     Bool_t                fDoCopyMCHeader;  //  if true copy MC header
     UInt_t                fTrials;          //! events seen since last acceptance 
@@ -65,8 +70,10 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     TList                *fOutputList;      //! output list
     TH1F                 *fHevs;            //! events processed/accepted
     TH1F                 *fHclus;           //! cluster distribution
+    const char           *GetVersion() const { return "1.0"; }
+
     AliAodSkimTask(const AliAodSkimTask&);             // not implemented
     AliAodSkimTask& operator=(const AliAodSkimTask&);  // not implemented
-  ClassDef(AliAodSkimTask, 1);
+    ClassDef(AliAodSkimTask, 2); // AliAodSkimTask
 };
 #endif

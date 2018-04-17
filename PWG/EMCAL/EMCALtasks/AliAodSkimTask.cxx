@@ -1,21 +1,21 @@
 #include <Riostream.h>
 #include <TChain.h>
+#include <TFile.h>
 #include <TGraph.h>
 #include <TH1F.h>
+#include <TKey.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TProfile.h>
-#include <TFile.h>
 #include <TSystem.h>
-#include <TKey.h>
-#include <AliAODMCHeader.h>
 #include <AliAODEvent.h>
 #include <AliAODHandler.h>
 #include <AliAODInputHandler.h>
+#include <AliAODMCHeader.h>
 #include <AliAODMCParticle.h>
 #include <AliAnalysisManager.h>
-#include "AliAodSkimTask.h"
 #include <AliLog.h>
+#include "AliAodSkimTask.h"
 
 using namespace std;
 ClassImp(AliAodSkimTask)
@@ -23,16 +23,16 @@ ClassImp(AliAodSkimTask)
 AliAodSkimTask::AliAodSkimTask() : 
   AliAnalysisTaskSE(), fClusMinE(-1), fCutMC(1), fYCutMC(0.7),
   fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracks(1), 
-  fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyMC(1), fDoCopyMCHeader(1),
-  fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0)
+  fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0), fDoCopyZDC(1), 
+  fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0)
 {
 }
 
 AliAodSkimTask::AliAodSkimTask(const char* name) : 
   AliAnalysisTaskSE(name), fClusMinE(-1), fCutMC(1), fYCutMC(0.7),
   fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracks(1), 
-  fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyMC(1), fDoCopyMCHeader(1),
-  fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0)
+  fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0), fDoCopyZDC(1), 
+  fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -73,7 +73,7 @@ void AliAodSkimTask::UserExec(Option_t *)
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler *oh = (AliAODHandler*)man->GetOutputEventHandler();
   if (!oh) {
-    AliFatal("No output handler found");
+    AliFatal(Form("%s: No output handler found", GetName()));
     return;
   }
   oh->SetFillAOD(kFALSE);
@@ -111,6 +111,9 @@ void AliAodSkimTask::UserExec(Option_t *)
     TList *lout = tout->GetUserInfo();
     if (lout->FindObject("alirootVersion")==0) {
       TList *lin = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetUserInfo();
+      TString apver(gSystem->BaseName(gSystem->Getenv("ALICE_PHYSICS")));
+      lout->Add(new TObjString(Form("AodSkim: ver %s, tag %s with settings %s",GetVersion(),apver.Data(),Str())));
+      AliInfo(Form("%s: Set user info %s", GetName(), lout->At(0)->GetName()));
       for (Int_t jj=0;jj<lin->GetEntries()-1;++jj) { 
 	lout->Add(lin->At(jj)->Clone(lin->At(jj)->GetName()));
       }
@@ -137,7 +140,7 @@ void AliAodSkimTask::UserExec(Option_t *)
     TClonesArray *out = eout->GetVertices(); 
     TClonesArray *in  = evin->GetVertices();      
     if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s - UserExce: Previous event not deleted. This should not happen!",GetName()));
+      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
     }
     out->AbsorbObjects(in);
   }
@@ -150,7 +153,7 @@ void AliAodSkimTask::UserExec(Option_t *)
     TClonesArray *out = eout->GetTracks();	                 
     TClonesArray *in  = evin->GetTracks();	
     if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s - UserExce: Previous event not deleted. This should not happen!",GetName()));
+      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
     }
     out->AbsorbObjects(in);
   }
@@ -178,11 +181,26 @@ void AliAodSkimTask::UserExec(Option_t *)
     TClonesArray *out = eout->GetCaloClusters();	         
     TClonesArray *in  = evin->GetCaloClusters();  
     if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-      AliFatal(Form("%s - UserExce: Previous event not deleted. This should not happen!",GetName()));
+      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
     }
     out->AbsorbObjects(in);
   }
-  
+
+  if (fDoCopyDiMuons) { 
+    TClonesArray *out = eout->GetDimuons();
+    TClonesArray *in  = evin->GetDimuons();
+    if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
+      AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
+    }
+    out->AbsorbObjects(in);
+  }
+
+  if (fDoCopyZDC) { 
+    AliAODZDC *out = eout->GetZDCData();
+    AliAODZDC *in  = evin->GetZDCData();
+    *out = *in;
+  }
+
   if (fDoCopyMC) {
     TClonesArray *out = static_cast<TClonesArray*>(eout->FindListObject(AliAODMCParticle::StdBranchName()));
     TClonesArray *in  = static_cast<TClonesArray*>(evin->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -194,14 +212,14 @@ void AliAodSkimTask::UserExec(Option_t *)
     }
     if (in && out) {
       if (out->GetEntries()>0) { // just checking if the deletion of previous event worked
-	AliFatal(Form("%s - UserExce: Previous event not deleted. This should not happen!",GetName()));
+	AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
       }
       out->AbsorbObjects(in);
       if (fCutMC) {
 	for (Int_t i=0;i<out->GetEntriesFast();++i) {
 	  AliAODMCParticle *mc = static_cast<AliAODMCParticle*>(in->At(i));
 	  if ((mc==0)&&(i==0)) {
-	    AliError(Form("%s - UserExce: No MC info, skipping this event!",GetName()));
+	    AliError(Form("%s: No MC info, skipping this event!",GetName()));
 	    oh->SetFillAOD(kFALSE);
 	    return;
 	  }
@@ -247,7 +265,7 @@ Bool_t AliAodSkimTask::UserNotify()
 {
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   if (!tree) {
-    AliError(Form("%s - UserNotify: No current tree!",GetName()));
+    AliError(Form("%s: No current tree!",GetName()));
     return kFALSE;
   }
 
@@ -257,7 +275,7 @@ Bool_t AliAodSkimTask::UserNotify()
 
   TFile *curfile = tree->GetCurrentFile();
   if (!curfile) {
-    AliError(Form("%s - UserNotify: No current file!",GetName()));
+    AliError(Form("%s: No current file!",GetName()));
     return kFALSE;
   }
 
@@ -359,4 +377,27 @@ Bool_t AliAodSkimTask::PythiaInfoFromFile(const char* currFile, Float_t &xsec, F
     fxsec->Close();
   }
   return kTRUE;
+}
+
+const char *AliAodSkimTask::Str() const
+{
+  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
+	      fClusMinE,
+	      fCutMC,
+	      fYCutMC,
+	      fDoCopyHeader,
+	      fDoCopyVZERO,
+	      fDoCopyTZERO,
+	      fDoCopyVertices,
+	      fDoCopyTOF,
+	      fDoCopyTracks,
+	      fDoCopyTrigger,
+	      fDoCopyPTrigger,
+	      fDoCopyCells,
+	      fDoCopyPCells,
+	      fDoCopyClusters,
+	      fDoCopyDiMuons,
+	      fDoCopyZDC,
+	      fDoCopyMC,
+	      fDoCopyMCHeader);
 }
