@@ -2670,6 +2670,9 @@ TString AliMultSelectionTask::GetExceptionMapping( TString lProductionName ) con
     if ( lProductionName.Contains("LHC17g8b") ) lReturnString = "LHC16r-DefaultMC-EPOSLHC";
     if ( lProductionName.Contains("LHC17g8c") ) lReturnString = "LHC16s-DefaultMC-EPOSLHC";
     if ( lProductionName.Contains("LHC17g8a") ) lReturnString = "LHC16t-DefaultMC-EPOSLHC";
+   
+   //Header mistakes
+   if ( lProductionName.EqualTo("LHC17i2a") ) lReturnString = "LHC17i2";
     
     return lReturnString;
 }
