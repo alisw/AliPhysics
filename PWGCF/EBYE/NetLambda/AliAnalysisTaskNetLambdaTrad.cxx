@@ -1,6 +1,10 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
+// Parts of the code taken from:
+// AliEbyEPidEfficiencyContamination.cxx
+// AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
+// AliAnalysisTaskNetLambdaIdent.cxx
 
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
