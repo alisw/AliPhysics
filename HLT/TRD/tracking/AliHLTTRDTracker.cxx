@@ -243,7 +243,7 @@ void AliHLTTRDTracker::LoadTracklet(const AliHLTTRDTrackletWord &tracklet)
   fNtrackletsInChamber[tracklet.GetDetector()]++;
 }
 
-void AliHLTTRDTracker::DoTracking( AliExternalTrackParam *tracksTPC, int *tracksTPClab, int nTPCtracks, int *tracksTPCnTrklts )
+void AliHLTTRDTracker::DoTracking( AliExternalTrackParam *tracksTPC, int *tracksTPClab, int nTPCtracks, int *tracksTPCnTrklts, int *tracksTRDlabel )
 {
   //--------------------------------------------------------------------
   // Steering function for the tracking
@@ -276,6 +276,9 @@ void AliHLTTRDTracker::DoTracking( AliExternalTrackParam *tracksTPC, int *tracks
     t->SetLabel(tracksTPClab[i]);
     if (tracksTPCnTrklts != 0x0) {
       t->SetNtrackletsOffline(tracksTPCnTrklts[i]);
+    }
+    if (tracksTRDlabel != 0x0) {
+      t->SetLabelOffline(tracksTRDlabel[i]);
     }
 
     //FIXME can this be deleted? Or can it happen that a track has no mass assigned?
@@ -594,7 +597,7 @@ bool AliHLTTRDTracker::FollowProlongation(AliHLTTRDTrack *t, int nTPCtracks)
         fDebug->SetChi2Real(fCandidates[currIdx].GetPredictedChi2(yzPosReal, fSpacePoints[realTrkltId].fCov), iLayer);
         fDebug->SetRawTrackletPositionReal(fSpacePoints[realTrkltId].fR, fSpacePoints[realTrkltId].fX, iLayer);
         fDebug->SetCorrectedTrackletPositionReal(yzPosReal, iLayer);
-        fDebug->SetTrackletPropertiesReal(fTracklets[realTrkltId].GetDetector(), fGeo->GetSector(fTracklets[realTrkltId].GetDetector()), iLayer);
+        fDebug->SetTrackletPropertiesReal(fGeo->GetSector(fTracklets[realTrkltId].GetDetector()), fTracklets[realTrkltId].GetDetector(), iLayer);
       }
     }
     //
