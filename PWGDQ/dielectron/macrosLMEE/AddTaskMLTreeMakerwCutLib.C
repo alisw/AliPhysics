@@ -2,7 +2,7 @@ AliAnalysisTask *AddTask_slehner_ElectronEfficiency(Bool_t hasITS = kTRUE,
                                                      Int_t trackCut=1,
                                                      Int_t evCut=1,
                                                      TString directoryBaseName = "slehner",
-                                                     Char_t* outputFileName="LMEE_Eff_output.root",
+                                                     Char_t* outputFileName="LMEE_output.root",
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree'! (needed for LEGO trains)
                                                      TString resolutionfile = "" //Resolution_pp_16l_eta.root
                                                      )

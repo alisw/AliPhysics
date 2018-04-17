@@ -124,7 +124,7 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel) {
 
 }
 
-AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(int selTrm int selPID) {
+AliAnalysisCuts* LMEECutLib::GetTrackSelectionAna(int selTrm, int selPID) {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackSelectionAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliDielectronCutGroup* trackCuts=0x0;
     
