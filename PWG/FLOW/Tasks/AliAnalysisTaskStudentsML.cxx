@@ -30,6 +30,7 @@
 #include "TProfile.h"
 #include "TStyle.h"
 #include "TFile.h"
+#include "TH1F.h"
 
 using std::cout;
 using std::endl;
@@ -49,6 +50,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMaxBin(10.),
  fPhiHist(NULL),
  fEtaHist(NULL),
+ fMultiHisto(NULL),
  fMaxCorrelator(8),
  // Final results:
  fFinalResultsList(NULL)
@@ -98,6 +100,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMaxBin(10.),
  fPhiHist(NULL),
  fEtaHist(NULL),
+ fMultiHisto(NULL),
  fMaxCorrelator(8),
  // Final results:
  fFinalResultsList(NULL)
@@ -162,9 +165,13 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
  if(!aAOD){return;}
 
+
+
+
+
  // b) Start analysis over AODs:
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
- fMultiHist->Fill(nTracks);
+ fMultiHisto->Fill(nTracks);
 
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  {
@@ -203,6 +210,7 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
    
  // c) Reset event-by-event objects:
  // ...
+
 
  // d) PostData:
  PostData(1,fHistList);
@@ -276,6 +284,9 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  // d) Book histogam to hold multiplicty distribution;
  // e) ...
 
+ 
+ 
+
  // a) Book histogram to hold pt spectra:
  fPtHist = new TH1F("fPtHist","atrack->Pt()",fNbins,fMinBin,fMaxBin);
  fPtHist->SetStats(kFALSE);
@@ -294,12 +305,12 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  fEtaHist->GetXaxis()->SetTitle("Eta");
  fEtaHist->SetLineColor(4);
  fControlHistogramsList->Add(fEtaHist);
- 
+
  // d) Book histogam to hold multiplicty distribution:
- fMultiHist = new TH1F("multDistribution","Multiplicity Distribution",300,0.,300.); //histogram for multiplicity
- fMultiHist->GetXaxis()->SetTitle("Multiplicity M");
- fControlHistogramsList->Add(fMultiHist);
- 
+ fMultiHisto = new TH1F("fMultiHisto","Multiplicity",300,0.,3.); //histogram for multiplicity
+ fMultiHisto->GetXaxis()->SetTitle("Multiplicity M");
+ fControlHistogramsList->Add(fMultiHisto);
+
  // e) ...
 
 } // void AliAnalysisTaskStudentsML::BookControlHistograms()
