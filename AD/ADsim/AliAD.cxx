@@ -124,7 +124,7 @@ void AliAD::CreateMaterials()
   Float_t zAir[4]={6.,7.,8.,18.};
   Float_t wAir[4]={0.000124,0.755267,0.231781,0.012827};
   // Float_t dAir = 1.20479E-3; not used
-  Float_t dAir1 = 1.20479E-10;
+  Float_t dAir1 = 1.20479E-11;
   // Steel
   Float_t asteel[4] = { 55.847,51.9961, 58.6934, 28.0855 };
   Float_t zsteel[4] = {    26.,    24.,     28., 14.     };
