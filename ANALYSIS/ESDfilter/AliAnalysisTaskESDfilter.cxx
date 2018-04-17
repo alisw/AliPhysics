@@ -2746,6 +2746,7 @@ void AliAnalysisTaskESDfilter::AdjustCutsForEvent(const AliESDEvent& esd, TList&
   // adjust cut for specific events
   // At the moment, if event has no TPC (therefore only ITS pureSA tracks are present),
   // and there are cuts asking for complementary ITS_SA tracks, force cuts to accept pureSA instead
+  if (!fTrackFilter) return;
   if (revert) {
     TIter next(&modifiedCuts);
     AliESDtrackCuts* cut = 0;
