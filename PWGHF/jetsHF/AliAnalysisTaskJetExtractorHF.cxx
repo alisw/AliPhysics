@@ -663,6 +663,26 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetProperties(AliEmcalJet* jet)
   // If fTruthJetsArrayName is set, the true pt field is calculated by searching the matching jet
   if(fTruthJetsArrayName != "")
     FindMatchingJet(jet);
+  else // otherwise, the true jet pt is set as fraction of non-MC particles in jets
+  {
+    Double_t pt_nonMC = 0.;
+    Double_t pt_all   = 0.;
+
+    for(Int_t iConst = 0; iConst < jet->GetNumberOfTracks(); iConst++)
+    {
+      // Loop over all valid jet constituents
+      AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(iConst, fTracksCont->GetArray()));
+      if(!particle) continue;
+      if(particle->Pt() < 1e-6) continue;
+
+      // Particles marked w/ labels above 100000 are considered from toy
+      if(particle->GetLabel() < 100000)
+        pt_nonMC += particle->Pt();
+      pt_all += particle->Pt();
+    }
+    if(pt_all)
+      fCurrentTrueJetPt = (pt_nonMC/pt_all);
+  }
 }
 
 //________________________________________________________________________
@@ -806,7 +826,7 @@ void AliAnalysisTaskJetExtractorHF::FindMatchingJet(AliEmcalJet* jet)
     Double_t deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
 
     // Cut jets too far away
-    if (deltaR > 0.6)
+    if (deltaR > fJetsCont->GetJetRadius()*2)
       continue;
 
     // Search for the best match
