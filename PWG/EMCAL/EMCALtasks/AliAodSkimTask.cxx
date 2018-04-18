@@ -22,17 +22,17 @@ ClassImp(AliAodSkimTask)
 
 AliAodSkimTask::AliAodSkimTask() : 
   AliAnalysisTaskSE(), fClusMinE(-1), fCutMC(1), fYCutMC(0.7),
-  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracks(1), 
-  fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0), fDoCopyZDC(1), 
-  fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0)
+  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
+  fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0), fDoCopyZDC(1), fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), 
+  fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
 {
 }
 
 AliAodSkimTask::AliAodSkimTask(const char* name) : 
   AliAnalysisTaskSE(name), fClusMinE(-1), fCutMC(1), fYCutMC(0.7),
-  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracks(1), 
-  fDoCopyTrigger(1), fDoCopyPTrigger(0), fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0), fDoCopyZDC(1), 
-  fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0)
+  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
+  fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0), fDoCopyZDC(1), fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), 
+  fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -43,6 +43,8 @@ AliAodSkimTask::~AliAodSkimTask()
   if (fOutputList) {
     delete fOutputList;
   }
+  delete fHevs;
+  delete fHclus;
 }
 
 void AliAodSkimTask::UserCreateOutputObjects()
@@ -300,8 +302,13 @@ Bool_t AliAodSkimTask::UserNotify()
 
 void AliAodSkimTask::Terminate(Option_t *)
 {
-  cout << "AliAodSkimTask " << GetName() << " terminated with accepted fraction of events: " << fHevs->GetBinContent(2)/fHevs->GetEntries() 
-       << " (" << fHevs->GetBinContent(2) << "/" << fHevs->GetEntries() << ")" << endl;
+   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+   if (man->GetAnalysisType()!=0)
+     return;
+   if (fHevs==0)
+     return;
+   cout << "AliAodSkimTask " << GetName() << " terminated with accepted fraction of events: " << fHevs->GetBinContent(2)/fHevs->GetEntries() 
+	<< " (" << fHevs->GetBinContent(2) << "/" << fHevs->GetEntries() << ")" << endl;
 }
 
 Bool_t AliAodSkimTask::PythiaInfoFromFile(const char* currFile, Float_t &xsec, Float_t &trials, Int_t &pthard)
