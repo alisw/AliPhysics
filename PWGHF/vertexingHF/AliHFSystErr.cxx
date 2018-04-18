@@ -1155,9 +1155,7 @@ void AliHFSystErr::InitD0toKpi2017pp5TeV(){
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",50,0,50);
-  fRawYield->SetBinContent(1,0.01);
-  fRawYield->SetBinContent(2,0.00);
-  for(Int_t i=3;i<=50;i++) fPIDEff->SetBinContent(i,0.0);
+  for(Int_t i=1;i<=50;i++) fPIDEff->SetBinContent(i,0.0);
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",50,0,50);
