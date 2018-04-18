@@ -902,38 +902,10 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::IsLEDEvent() const
         Int_t sMod = fGeom->GetSuperModuleNumber(cellId);
         
         if(amp<0.1) continue;
+        nCellCount[sMod]++
         
-        if(sMod==0){
-            nCellCount[0]++;
-        }
-        else if(sMod==1){
-            nCellCount[1]++;
-        }
-        else if(sMod==2){
-            nCellCount[2]++;
-        }
-        else if(sMod==3){
-            nCellCount[3]++;
-        }
-        else if(sMod==4){
-            nCellCount[4]++;
-        }
-        else if(sMod==5){
-            nCellCount[5]++;
-        }
-        else if(sMod==6){
-            nCellCount[6]++;
-        }
-        else if(sMod==7){
-            nCellCount[7]++;
-        }
-        else if(sMod==8){
-            nCellCount[8]++;
-        }
-        else if(sMod==9){
-            nCellCount[9]++;
-        }
     }
+    
     for(Int_t i=0; i<=9; i++){
         fHistEMCalTowerMult[i]->Fill(nCellCount[i]);
     }
