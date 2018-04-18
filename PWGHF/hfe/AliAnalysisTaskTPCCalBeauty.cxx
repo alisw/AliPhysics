@@ -860,7 +860,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         Double_t nsigma = -999;
         nsigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
         if(nsigma>-5.&&nsigma<-3.) {
-            fHadronCamDCA->Fill(track->Pt(),d0z0[0]*MagSign);
+            fHadronCamDCA->Fill(track->Pt(),d0z0[0]);
         }
         
         ///////////////////////////
@@ -1189,7 +1189,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             // Plot Reco Electrons //
             /////////////////////////
             fInclElecDCA->Fill(track->Pt(),DCA);
-            fInclElecDCAnoSign->Fill(track->Pt(),d0z0[0]*MagSign);
+            fInclElecDCAnoSign->Fill(track->Pt(),d0z0[0]);
             
             
             //Make incl electron and photonic electron plots
