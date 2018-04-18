@@ -115,7 +115,9 @@ class AliEMCALReconstructor : public AliReconstructor {
   };
   
   Bool_t CalculateResidual(AliESDtrack *track, AliESDCaloCluster *cluster, Float_t &dEta, Float_t &dPhi) const;
-  
+
+ protected:
+  void InitTriggerElectronics() const;
  private:
   
   AliEMCALReconstructor              (const AliEMCALReconstructor &); /// Not implemented

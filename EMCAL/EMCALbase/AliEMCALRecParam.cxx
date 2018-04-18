@@ -60,6 +60,7 @@ fUseFALTRO(kTRUE),
 fFitLEDEvents(kFALSE),
 fUseL1Phase(kTRUE),// Run1 setting //raw signal
 fRejectBelowThreshold(0),
+fSimulateTriggerElectronics(true),
 fTrkInITS(kFALSE) // Run1 setting 
 {  
   InitPIDParametersForHighFlux();
@@ -102,6 +103,7 @@ fUseFALTRO(rp.fUseFALTRO),
 fFitLEDEvents(rp.fFitLEDEvents), 
 fUseL1Phase(rp.fUseL1Phase),//raw signal
 fRejectBelowThreshold(rp.fRejectBelowThreshold),
+fSimulateTriggerElectronics(rp.fSimulateTriggerElectronics),
 fTrkInITS(rp.fTrkInITS)
 {  
   // PID values
@@ -209,6 +211,9 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
       fPar5[i] = rp.fPar5[i];
       fPar6[i] = rp.fPar6[i];
     }
+
+    // trigger electronics
+    fSimulateTriggerElectronics = rp.fSimulateTriggerElectronics;
   }    
   
   return *this;

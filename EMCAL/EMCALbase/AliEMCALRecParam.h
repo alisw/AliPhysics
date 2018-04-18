@@ -122,6 +122,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetFALTROUsage(Bool_t val)           {fUseFALTRO=val; }
   void SetLEDFit(Bool_t val)                {fFitLEDEvents=val; }
   void SetL1PhaseUse(Bool_t val)            {fUseL1Phase=val; }
+  void SetSimulateTriggerElectronics(Bool_t doSim) {fSimulateTriggerElectronics = doSim; }
 
 	
   /* raw signal getters */
@@ -135,6 +136,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Bool_t   UseFALTRO()            const {return fUseFALTRO; }
   Bool_t   FitLEDEvents()         const {return fFitLEDEvents; }
   Bool_t   UseL1Phase()           const {return fUseL1Phase;}     
+  Bool_t   IsSimulateTriggerElectronics() const { return fSimulateTriggerElectronics; }
   
   //Unfolding (Adam)
   void InitUnfoldingParameters();  
@@ -212,12 +214,15 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Double_t fPar5[3];               ///< UF SSPar nr 5
   Double_t fPar6[3];               ///< UF SSPar nr 6
 
+  // Trigger electronics
+  Bool_t   fSimulateTriggerElectronics; ///< Steer simulating trigger electronics
+
   static TObjArray* fgkMaps;       ///< ALTRO mappings for RCU0..RCUX
 
   Bool_t   fTrkInITS;              ///< Select tracks with AliVTrack::kITSout
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecParam,20) ;
+  ClassDef(AliEMCALRecParam,21) ;
   /// \endcond
  
 };

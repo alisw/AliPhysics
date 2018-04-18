@@ -42,6 +42,7 @@ ClassImp(AliEMCALTriggerSTU) ;
 //_______________
 AliEMCALTriggerSTU::AliEMCALTriggerSTU() : AliEMCALTriggerBoard()
 ,fDCSConfig(0x0)
+,fActive(true)
 {
   fGammaTh[0] = fGammaTh[1] = 0;
   fJetTh[0] = fJetTh[1] = 0;
@@ -53,6 +54,7 @@ AliEMCALTriggerSTU::AliEMCALTriggerSTU() : AliEMCALTriggerBoard()
 //_______________
 AliEMCALTriggerSTU::AliEMCALTriggerSTU(AliEMCALTriggerSTUDCSConfig *dcsConf, const TVector2& RS) : AliEMCALTriggerBoard(RS)
 ,fDCSConfig(dcsConf)
+,fActive(true)
 {
   fGammaTh[0] = fGammaTh[1] = 0;
   fJetTh[0] = fJetTh[1] = 0;	
@@ -136,6 +138,7 @@ void AliEMCALTriggerSTU::Build( TString& str, Int_t iTRU, Int_t** M, const TVect
 //_______________
 void AliEMCALTriggerSTU::L1(int type)
 {	
+  if(!fActive) return;      // Don't simulate L1 for inactive STUs
   TVector2 s1, s2, s3, s4;
   fDCSConfig->GetSegmentation(s1, s2, s3, s4);
   Int_t fBkg = 0;
