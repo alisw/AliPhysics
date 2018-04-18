@@ -108,14 +108,14 @@ protected:
   Int_t                       fNTotTracks;               //!<!Total number of accepted tracks in current event
   AliTLorentzVector           fLeadingTrack;             //!<!Leading track in current event
 
-  THistManager                fHistManager;              //!< Histogram manager
+  THistManager                fHistManager;              //!<!Histogram manager
 
 private:
   AliAnalysisTaskEmcalJetQA(const AliAnalysisTaskEmcalJetQA&);            // not implemented
   AliAnalysisTaskEmcalJetQA &operator=(const AliAnalysisTaskEmcalJetQA&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetQA, 2)
+  ClassDef(AliAnalysisTaskEmcalJetQA, 3)
   /// \endcond
 };
 #endif
