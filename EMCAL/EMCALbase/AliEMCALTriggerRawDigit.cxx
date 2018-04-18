@@ -61,7 +61,13 @@ AliEMCALTriggerRawDigit::~AliEMCALTriggerRawDigit()
 /// Set L0 times
 //____________________________________________________________________________
 Bool_t AliEMCALTriggerRawDigit::SetL0Time(const Int_t i)
-{	
+{  
+  if (fNL0Times > 9)
+  {
+    AliError("More than 10 L0 times!");
+    return kFALSE;
+  }
+
   for (Int_t j = 0; j < fNL0Times; j++)
   {
     if (i == fL0Times[j]) 
@@ -72,13 +78,7 @@ Bool_t AliEMCALTriggerRawDigit::SetL0Time(const Int_t i)
   }
   
   fNL0Times++;
-  
-  if (fNL0Times > 9)
-  {
-    AliError("More than 10 L0 times!");
-    return kFALSE;
-  }
-  
+
   fL0Times[fNL0Times - 1] = i;
   
   return kTRUE;
