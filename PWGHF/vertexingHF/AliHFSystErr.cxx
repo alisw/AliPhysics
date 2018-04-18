@@ -119,6 +119,7 @@ void AliHFSystErr::Init(Int_t decay){
 	else if(fIsPass4Analysis) InitD0toKpi2010ppPass4();
 	else InitD0toKpi2010pp();
       }
+      else if(fRunNumber == 16 || fRunNumber==2016) InitD0toKpi2016pp13TeV();
       else AliFatal("Not yet implemented");
     }
     else if (fCollisionType==1) {
@@ -207,7 +208,7 @@ void AliHFSystErr::Init(Int_t decay){
 	else InitDplustoKpipi2010pp();
       } else if(fRunNumber == 12){
 	InitDplustoKpipi2012pp();
-      } else if(fRunNumber == 16){
+      } else if(fRunNumber == 16 || fRunNumber == 2016){
 	InitDplustoKpipi2016pp13TeV();
       } else AliFatal("Not yet implemented");
     }
@@ -292,7 +293,7 @@ void AliHFSystErr::Init(Int_t decay){
 	else InitDstartoD0pi2010pp();
       } else if(fRunNumber == 12 || fRunNumber==2012){
 	InitDstartoD0pi2012pp();
-      } else if(fRunNumber == 16){
+      } else if(fRunNumber == 16 || fRunNumber==2016){
 	InitDstartoKpipi2016pp13TeV();
       } else if(fRunNumber == 17 || fRunNumber == 2017){
 	if(fIs5TeVAnalysis){
@@ -1218,6 +1219,62 @@ void AliHFSystErr::InitD0toKpi2017pp5TeVLowPtAn() {
 
   return;
 }
+//------------------------------------------------------------------------
+void AliHFSystErr::InitD0toKpi2016pp13TeV(){
+  //
+  // D0->Kpi syst errors
+  //  2016 pp sample (Susanna)
+  //
+
+  AliInfo(" Settings for D0 --> K pi, pp collisions for 13 TeV");
+  SetNameTitle("AliHFSystErr","SystErrD0toKpi2016pp13TeV");
+
+  // Normalization
+  fNorm = new TH1F("fNorm","fNorm",36,0,36);
+  for(Int_t i=1;i<=36;i++) fNorm->SetBinContent(i,0.05); // 
+
+  // Branching ratio
+  fBR = new TH1F("fBR","fBR",36,0,36);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.0129); // (0.05/3.88)
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
+  //  for(Int_t i=1;i<=36;i++) fTrackingEff->SetBinContent(i,0.055); // 9% (3% per track)
+  fTrackingEff->SetBinContent(2,0.03);
+  fTrackingEff->SetBinContent(3,0.03);
+  for(Int_t i=4;i<=36;i++) fTrackingEff->SetBinContent(i,0.04);
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
+  fRawYield->SetBinContent(1,1);
+  fRawYield->SetBinContent(2,0.05); //1-2
+  fRawYield->SetBinContent(3,0.02); //2-3
+  fRawYield->SetBinContent(4,0.02); //3-4
+  fRawYield->SetBinContent(5,0.02); //4-5
+  fRawYield->SetBinContent(6,0.03); //5-6
+  fRawYield->SetBinContent(7,0.04); //6-7
+  fRawYield->SetBinContent(8,0.04); //7-8
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.04); //8-10 and 10-12
+  for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.06); //12-16
+  for(Int_t i=17;i<=36;i++) fRawYield->SetBinContent(i,0.15); //16-24
+
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
+  fCutsEff->SetBinContent(1,1.);
+  fCutsEff->SetBinContent(2,0.05);
+  for(Int_t i=3;i<=36;i++) fCutsEff->SetBinContent(i,0.03); 
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",36,0,36);
+  for(Int_t i=1;i<=36;i++) fPIDEff->SetBinContent(i,0.00); // 0%
+
+  // MC dN/dpt
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",36,0,36);
+  for(Int_t i=1;i<=36;i++) fMCPtShape->SetBinContent(i,0);
+  fMCPtShape->SetBinContent(2,0.02);
+
+  return;
+}
 //_________________________________________________________________________
 void AliHFSystErr::InitD0toKpi2013pPb0100(){
   //
@@ -1869,7 +1926,7 @@ void AliHFSystErr::InitDplustoKpipi2016pp13TeV(){
   //  2016 pp sample
   //
 
- AliInfo(" Settings for D+ --> K pi pi, pp collisions for 13 TeV");
+  AliInfo(" Settings for D+ --> K pi pi, pp collisions for 13 TeV");
   SetNameTitle("AliHFSystErr","SystErrDplustoKpipi2016pp13TeV");
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",36,0,36);
@@ -1887,8 +1944,6 @@ void AliHFSystErr::InitDplustoKpipi2016pp13TeV(){
   for(Int_t i=4;i<=6;i++) fTrackingEff->SetBinContent(i,0.06); //
   for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.07); //
   for(Int_t i=25;i<=36;i++) fTrackingEff->SetBinContent(i,0.075); //
-
-
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
@@ -3593,7 +3648,7 @@ void AliHFSystErr::InitDstartoKpipi2016pp13TeV(){
   //  2016 pp sample (Annelies Venn)
   //
 
-  AliInfo(" Settings for D+ --> K pi pi, pp collisions for 13 TeV");
+  AliInfo(" Settings for D*+ --> D0 pi, pp collisions for 13 TeV");
   SetNameTitle("AliHFSystErr","SystErrDstartoKpipi2016pp13TeV");
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",36,0,36);
