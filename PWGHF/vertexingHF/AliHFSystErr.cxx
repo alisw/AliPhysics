@@ -1791,7 +1791,7 @@ void AliHFSystErr::InitDplustoKpipi2015pp5TeV(){
 void AliHFSystErr::InitDplustoKpipi2017pp5TeV(){
   //
   // D+->Kpipi syst errors
-  //  2075 pp sample
+  //  2017 pp sample
   //Responsible R. Bala
   AliInfo(" Settings for D+ --> K pi pi, pp collisions for 5.02 TeV 2017");
   SetNameTitle("AliHFSystErr","SystErrDplustoKpipi2017pp");
@@ -1805,18 +1805,17 @@ void AliHFSystErr::InitDplustoKpipi2017pp5TeV(){
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-  fTrackingEff->SetBinContent(2,0.06);
-  fTrackingEff->SetBinContent(3,0.06);
-  fTrackingEff->SetBinContent(4,0.06);
+  fTrackingEff->SetBinContent(2,0.035);
+  fTrackingEff->SetBinContent(3,0.045);
+  fTrackingEff->SetBinContent(4,0.05);
   fTrackingEff->SetBinContent(5,0.06);
-  fTrackingEff->SetBinContent(6,0.05);
-  fTrackingEff->SetBinContent(7,0.05);
-  fTrackingEff->SetBinContent(8,0.05);
-  fTrackingEff->SetBinContent(9,0.04);
-  fTrackingEff->SetBinContent(10,0.04);
-  for(Int_t i=11;i<=16;i++) fTrackingEff->SetBinContent(i,0.05);
-  for(Int_t i=17;i<=36;i++) fTrackingEff->SetBinContent(i,0.06);
-
+  fTrackingEff->SetBinContent(6,0.06);
+  fTrackingEff->SetBinContent(7,0.065);
+  fTrackingEff->SetBinContent(8,0.065);
+  fTrackingEff->SetBinContent(9,0.065);
+  fTrackingEff->SetBinContent(10,0.065);
+  for(Int_t i=11;i<=36;i++) fTrackingEff->SetBinContent(i,0.07);
+  
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
   fRawYield->SetBinContent(2,0.09);
