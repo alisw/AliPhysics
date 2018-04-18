@@ -15,7 +15,7 @@
 #include "AliRDHFCuts.h"
 
 class AliAODEvent;
-class AliAODRecoCascadeHF;
+class AliAODRecoDecayHF2Prong;
 class AliAODRecoDecayHF;
 
 class AliRDHFCutsB0toDStarPi : public AliRDHFCuts 
@@ -60,8 +60,8 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
   Double_t GetCircRadius() { return fCircRadius; }
   void SetCircRadius(Double_t radius) { fCircRadius = radius; }
 
-  Double_t DeltaInvMassDStarKpipi(AliAODRecoCascadeHF * DStar) const;
-  Double_t DeltaInvMassB0Kpipipi(AliAODRecoCascadeHF * B0) const;
+  Double_t DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong * DStar) const;
+  Double_t DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const;
 
   void SetCutsD0forD0ptbin(Int_t nVars,Int_t nPtBins,Float_t **cutsRDD0forD0ptbin);
   Int_t PtBinD0forD0ptbin(Double_t pt) const;
