@@ -802,14 +802,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     ////////////////
     //Cluster loop//
     ////////////////
-    TRefArray* caloClusters = new TRefArray();
-    fAOD->GetEMCALClusters(caloClusters);
-    
-    Int_t nclus = caloClusters->GetEntries();
+    Int_t nclus = -999;
+    nclus = fAOD->GetNumberOfCaloClusters;
     for (Int_t icl = 0; icl < nclus; icl++) {
         //ESD and AOD CaloCells carries the same information
         AliVCluster* clus = (AliAODCaloCluster*)fAOD->GetCaloCluster(icl);
-        fClsEAll->Fill(clus->E()); //E of all clusters
+        if(clus && clus->IsEMCAL()){
+            fClsEAll->Fill(clus->E()); //E of all clusters
+        }
     }
     
     ////////////////
@@ -857,6 +857,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         fTrkEta->Fill(track->Eta());
         fdEdx->Fill(track->GetTPCsignal());
         
+        Double_t nsigma = -999;
+        nsigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+        if(nsigma>-5.&&nsigma<-3.) {
+            fHadronCamDCA->Fill(track->Pt(),d0z0[0]*MagSign);
+        }
         
         ///////////////////////////
         // Match tracks to EMCal //
@@ -1153,8 +1158,6 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             ///////////////////////////
             // Hadron Contam. Histos //
             ///////////////////////////
-            Double_t nsigma = -999;
-            nsigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
             Double_t EovP = (clustMatch->E())/(track->P());
             Double_t M20 = clustMatch->GetM20();
             Double_t M02 = clustMatch->GetM02();
@@ -1166,9 +1169,9 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     }
                 }
             }
-            if(nsigma>-5.&&nsigma<-3.) {
-                fHadronCamDCA->Fill(track->Pt(),d0z0[0]*MagSign);
-            }
+            //if(nsigma>-5.&&nsigma<-3.) {
+            //    fHadronCamDCA->Fill(track->Pt(),d0z0[0]*MagSign);
+            //}
             
             ///////////////////
             // Electron Cuts //
