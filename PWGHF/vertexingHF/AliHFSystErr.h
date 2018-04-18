@@ -230,6 +230,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2015pp5TeV();
   void InitD0toKpi2017pp5TeV();
   void InitD0toKpi2017pp5TeVLowPtAn();
+  void InitD0toKpi2016pp13TeV();
   void InitD0toKpi2011PbPb07half();
   void InitD0toKpi2010PbPb020();
   void InitD0toKpi2010PbPb4080();
