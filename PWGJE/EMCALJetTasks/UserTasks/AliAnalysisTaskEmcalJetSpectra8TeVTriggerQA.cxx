@@ -902,7 +902,7 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::IsLEDEvent() const
         Int_t sMod = fGeom->GetSuperModuleNumber(cellId);
         
         if(amp<0.1) continue;
-        nCellCount[sMod]++
+        nCellCount[sMod]++;
         
     }
     
