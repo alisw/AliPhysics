@@ -1124,13 +1124,10 @@ void AliHFSystErr::InitD0toKpi2017pp5TeV(){
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",50,0,50);
   fTrackingEff->SetBinContent(1,0.03); //  0-1
-  fTrackingEff->SetBinContent(2,0.03); //  1-2
-  fTrackingEff->SetBinContent(3,0.03); // 2-3
-  fTrackingEff->SetBinContent(4,0.03); // 3-4
-  for(Int_t i=5;i<=10;i++) fTrackingEff->SetBinContent(i,0.03); //
-  for(Int_t i=11;i<=12;i++) fTrackingEff->SetBinContent(i,0.03); //
-  for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
-  for(Int_t i=17;i<=50;i++) fTrackingEff->SetBinContent(i,0.03); //
+  fTrackingEff->SetBinContent(2,0.035); //  1-2
+  fTrackingEff->SetBinContent(3,0.04); // 2-3
+  for(Int_t i=4;i<=6;i++) fTrackingEff->SetBinContent(i,0.045);
+  for(Int_t i=7;i<=50;i++) fTrackingEff->SetBinContent(i,0.05);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",50,0,50);
@@ -1181,10 +1178,11 @@ void AliHFSystErr::InitD0toKpi2017pp5TeVLowPtAn() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  // temporarily use values from p-Pb 2016
-  for(Int_t i=0;i<=12;i++) fTrackingEff->SetBinContent(i,0.025); //
-  for(Int_t i=12;i<=16;i++) fTrackingEff->SetBinContent(i,0.03); //
-  for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.035); //
+  fTrackingEff->SetBinContent(1,0.03); //  0-1
+  fTrackingEff->SetBinContent(2,0.035); //  1-2
+  fTrackingEff->SetBinContent(3,0.04); // 2-3
+  for(Int_t i=4;i<=6;i++) fTrackingEff->SetBinContent(i,0.045);
+  for(Int_t i=7;i<=24;i++) fTrackingEff->SetBinContent(i,0.05);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
@@ -3423,7 +3421,12 @@ void AliHFSystErr::InitDstartoD0pi2017pp5TeV(){
 
     // Tracking efficiency
     fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
-    for(Int_t i=2;i<=36;i++) fTrackingEff->SetBinContent(i,0.06); // Still to do. 6% is reasonable guess
+    fTrackingEff->SetBinContent(2,0.05);
+    fTrackingEff->SetBinContent(3,0.055);
+    fTrackingEff->SetBinContent(4,0.06);
+    fTrackingEff->SetBinContent(5,0.06);
+    for(Int_t i= 6;i<=16;i++) fTrackingEff->SetBinContent(i,0.065);
+    for(Int_t i=17;i<=36;i++) fTrackingEff->SetBinContent(i,0.07);
     for(Int_t i=1;i<=36;i++) fTrackingEff->SetBinError(i,0.);
 
     // Raw yield extraction
