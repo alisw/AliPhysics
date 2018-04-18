@@ -97,6 +97,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	fTriggerClass(0),
 	fMaxBCs(0),
 	fUseEventSelection(0),
+	fTrackCutSet(0),
 	fEventCuts(0)
 
 
@@ -108,7 +109,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS)
+AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t cutSet)
   : AliAnalysisTaskSE(name),fOutputList(0),fPIDResponse(0),fTrackCuts(0),
 	fTOFmask(0),
 	eff_MaxiPadLTM_All(0),
@@ -154,6 +155,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	fTriggerClass(trgcls),
 	fMaxBCs(nBCs),
 	fUseEventSelection(useEVS),
+	fTrackCutSet(cutSet),
 	fEventCuts(0)
 
 {
@@ -183,8 +185,17 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
-
-  fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  
+  if(fTrackCutSet == 1)fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  if(fTrackCutSet == 2){
+  	fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+	fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+	}
+  if(fTrackCutSet == 3)fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+  if(fTrackCutSet == 4){
+  	fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb();
+	fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kBoth);
+	}
 
   fOutputList = new TList();
   fOutputList ->SetOwner();
@@ -293,7 +304,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 	}
 
 //pass2,pass3  
-  Bool_t fBadMaxiPadMask[72][23] ={ 0,0,1,1,0,1,0,0,1,0,1,0,0,0,1,1,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,1,1,1,0,1,1,0,0,
+  Bool_t fBadMaxiPadMask[23][72] ={ 0,0,1,1,0,1,0,0,1,0,1,0,0,0,1,1,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,1,1,1,0,1,1,0,0,
 0,0,1,1,0,0,0,0,1,0,1,0,0,0,1,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,0,1,1,1,0,0,
 0,0,1,1,0,0,0,0,1,0,1,0,1,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,1,1,1,0,0,
 0,0,1,1,0,0,0,0,1,0,1,0,1,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,1,0,0,1,1,1,0,
@@ -415,38 +426,53 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     	cout<<"No outer param !!!!"<<endl;
     	continue; // no outer param
     }
-
-    Double_t phi = trc->Phi()*TMath::RadToDeg();
+	
+    if (!AliTrackerBase::PropagateTrackToBxByBz(trc, AliTOFGeometry::RinTOF(), esdTrack->GetMassForTracking(), 1.0, kTRUE)) continue; //propagation failed
+    
+    // go to specific frame sector and reach target X in this frame:
+    Double_t phi = trc->PhiPos()*TMath::RadToDeg();
     if (phi<0) phi += 360;
-    Int_t sect = Int_t(phi/20.);
-    Double_t alpha = (sect*20.+10)*TMath::DegToRad();
-    if (!trc->Rotate(alpha)) continue; // failed
-
-    if (!AliTrackerBase::PropagateTrackToBxByBz(trc, AliTOFGeometry::RinTOF(), esdTrack->GetMassForTracking(), 1.0, kFALSE)) continue; // propagation failed
-
-    phi = trc->Phi()*TMath::RadToDeg();
-    if (phi<0) phi += 360;
-    Int_t sect1 = int(phi/20.);
-    if (sect!=sect1) {
-    alpha = (sect1*20.+10)*TMath::DegToRad();
-    if (!trc->Rotate(alpha)) continue; // failed
-    if (!AliTrackerBase::PropagateTrackToBxByBz(trc, AliTOFGeometry::RinTOF(),esdTrack->GetMassForTracking(), 1.0, kFALSE)) continue; // propagation failed
-    sect = sect1;
-    }
+    Int_t sectOld = -1, sect = int(phi/20.);
+    Bool_t failed = kFALSE;
+    while(sectOld!=sect) {
+    	sectOld = sect;
+   	Double_t alpha = (sect*20.+10)*TMath::DegToRad();
+	if (!trc->Rotate(alpha) || !AliTrackerBase::PropagateTrackToBxByBz(trc, AliTOFGeometry::RinTOF(), esdTrack->GetMassForTracking(), 1.0, kFALSE)){ 
+		// don't rotate at every step anymore
+        	failed = kTRUE; 
+		break;
+   		}
+     	// make sure the propagation did not change the sector
+     	phi = trc->PhiPos()*TMath::RadToDeg();
+     	if (phi<0) phi += 360;
+     	sect = int(phi/20.0);
+    	}
+    if (failed) continue; 
 
     //Fine propagation from TOF radius
     Bool_t isin = kFALSE;
     Float_t dist3d[3]={-1.,-1.,-1.}; // residual to TOF channel
     Float_t rTOFused = AliTOFGeometry::RinTOF();
-    UInt_t nmaxstep = 500; // to be tuned
     Double_t pos[3]={0.0,0.0,0.0};
     Float_t posF_In[3]={0.0,0.0,0.0};
     Float_t posF_Out[3]={0.0,0.0,0.0};
     UInt_t nFiredPads = 0;
-   // cout<<"Track"<<endl;
-    for(UInt_t instep = 0; instep < nmaxstep; instep++){
+    UInt_t instep = 0;
+    //cout<<"Track"<<endl;
+    while (rTOFused<AliTOFGeometry::Rmax()){
     	rTOFused += 0.1; // 1 mm step
-    	if(!trc->PropagateTo(rTOFused,esd->GetMagneticField())){hNMaxiPadIn->Fill(-1); break;}
+	instep++;
+	
+    	if(!AliTrackerBase::PropagateTrackParamOnlyToBxByBz(trc,rTOFused,1,kFALSE)){hNMaxiPadIn->Fill(-1); break;}
+	phi = trc->PhiPos()*TMath::RadToDeg();
+        if (phi<0) phi += 360;
+        sect = Int_t(phi/20.0);
+        if (sect!=sectOld){
+        	sectOld = sect;
+        	Double_t alpha = (sect*20.0+10)*TMath::DegToRad();
+        	if (!trc->Rotate(alpha)){hNMaxiPadIn->Fill(-1); break;}
+		}
+	
     	trc->GetXYZ(pos);
 	posF_In[0] = pos[0];
 	posF_In[1] = pos[1];
@@ -460,10 +486,21 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		hPadDistance->Fill(TMath::Sqrt(dist3d[0]*dist3d[0]+dist3d[1]*dist3d[1]+dist3d[2]*dist3d[2]));
 
 		//cout<<"Is in, radius = "<<rTOFused<<" Step = "<<instep<<endl;
-
-		for(UInt_t outstep = 0; outstep < nmaxstep; outstep++){
+		UInt_t outstep = 0;
+		while (rTOFused<AliTOFGeometry::Rmax()){
     			rTOFused += 0.1; // 1 mm step
-    			if(!trc->PropagateTo(rTOFused,esd->GetMagneticField())){hNMaxiPadIn->Fill(-1); break;}
+			outstep++;
+			
+    			if(!AliTrackerBase::PropagateTrackParamOnlyToBxByBz(trc,rTOFused,1,kFALSE)){hNMaxiPadIn->Fill(-1); break;}
+			phi = trc->PhiPos()*TMath::RadToDeg();
+        		if (phi<0) phi += 360;
+       			sect = Int_t(phi/20.0);
+        		if (sect!=sectOld){
+        			sectOld = sect;
+        			Double_t alpha = (sect*20.0+10)*TMath::DegToRad();
+        			if (!trc->Rotate(alpha)){hNMaxiPadIn->Fill(-1); break;}
+				}
+	
     			trc->GetXYZ(pos);
 			posF_Out[0] = pos[0];
 			posF_Out[1] = pos[1];
@@ -506,7 +543,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    hTrackPadCorrEta->Fill(trc->Eta(),channelCTTM);
 		    }
 
-		if(!fBadMaxiPadMask[indexLTM[0]][channelCTTM])eff_AverageTrackPt->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),esdTrack->Pt());
+		if(!fBadMaxiPadMask[channelCTTM][indexLTM[0]])eff_AverageTrackPt->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),esdTrack->Pt());
                 if(nFiredPads<2)numTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
 
 		Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kMuon);
@@ -558,8 +595,6 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 			 ||fTOFmask->IsON(phiPlus, etaPlus) || fTOFmask->IsON(phiPlus, etaMinus)
 			 ||fTOFmask->IsON(phiMinus, etaPlus) || fTOFmask->IsON(phiMinus, etaMinus));
       
-      
-      
       for (Int_t l=0; l<numTracksPerMaxiPad[indexLTM][channelCTTM]; ++l){
         eff_MaxiPadLTM_All->Fill(isON, indexLTM, channelCTTM);
 	eff_MaxiPadLTM_Around->Fill(isON||isONaround, indexLTM, channelCTTM);
@@ -567,7 +602,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 	
 	if(isONaround && !isON)hFiredMaxiPadOnlyAround->Fill(indexLTM, channelCTTM);
 	if(isONaround && !isON)hNFiredMaxiPadsOnlyAround->Fill(fTOFmask->GetNumberMaxiPadOn());
-	if(!fBadMaxiPadMask[indexLTM][channelCTTM])eff_AverageTracklets->Fill(isON,fNtracklets);
+	if(!fBadMaxiPadMask[channelCTTM][indexLTM])eff_AverageTracklets->Fill(isON,fNtracklets);
 	}
 
       for (Int_t l=0; l<numMuonTracksPerMaxiPad[indexLTM][channelCTTM]; ++l)
