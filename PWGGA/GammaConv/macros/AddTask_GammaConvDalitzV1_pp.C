@@ -39,9 +39,11 @@ class CutHandlerConvDalitz{
 
 void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different set of cuts
                                     Bool_t isMC   = kFALSE, //run MC
+                                    Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvDalitzV1
                                     TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                                     Int_t   enableMatBudWeightsPi0          = 0,              // 1 = three radial bins, 2 = 10 radial bins
                                     TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
+                                    TString periodNameV0Reader              = "",
                                     TString   additionalTrainConfig         = "0"
          ) {
 
@@ -110,11 +112,12 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   
   //=========  Set Cutnumber for V0Reader ================================
   //TString cutnumber = "00000000000840010015000000";
-  TString cutnumberPhoton = "06000008400100007500000000";
-  TString cutnumberEvent  = "00000103";
+  TString cutnumberPhoton     = "00000008400000000100000000";
+
+  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0   )
+    cutnumberPhoton         = "00000088400000000100000000";
   
-
-
+  TString cutnumberEvent  = "00000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -122,6 +125,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
 
     AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
+    if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderV1->SetPeriodName(periodNameV0Reader);
 
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
@@ -356,7 +360,7 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
       task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
   }
   //task->SetDoMesonAnalysis(kTRUE);
-  //if (enableQAMesonTask) task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
+  if (enableQAMesonTask) task->SetDoMesonQA(kTRUE); //Attention new switch for Pi0 QA
   //if (enableQAMesonTask) task->SetDoPhotonQA(kTRUE);  //Attention new switch small for Photon QA
 
   //connect containers
