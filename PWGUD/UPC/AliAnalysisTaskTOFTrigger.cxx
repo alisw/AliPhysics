@@ -98,6 +98,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	fMaxBCs(0),
 	fUseEventSelection(0),
 	fTrackCutSet(0),
+	fMaxTrackError(0),
 	fEventCuts(0)
 
 
@@ -109,7 +110,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 
 
 //_____________________________________________________________________________
-AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t cutSet)
+AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t cutSet,Float_t maxErr)
   : AliAnalysisTaskSE(name),fOutputList(0),fPIDResponse(0),fTrackCuts(0),
 	fTOFmask(0),
 	eff_MaxiPadLTM_All(0),
@@ -156,6 +157,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	fMaxBCs(nBCs),
 	fUseEventSelection(useEVS),
 	fTrackCutSet(cutSet),
+	fMaxTrackError(maxErr),
 	fEventCuts(0)
 
 {
@@ -411,15 +413,17 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
       numElectronTracksPerMaxiPad[indexLTM][channelCTTM] = 0;
     }
   }
-
+  Double_t cv[21];
   //Track loop
   for(Int_t iTrack=0; iTrack<esd->GetNumberOfTracks(); iTrack++) {
-    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(esd->GetTrack(iTrack));
-    if( !esdTrack ) continue;
+    AliESDtrack *esdTrackOrig = dynamic_cast<AliESDtrack*>(esd->GetTrack(iTrack));
+    if( !esdTrackOrig ) continue;
 
-    if(!fTrackCuts->AcceptTrack(esdTrack))continue;
-    hTrackPt->Fill(esdTrack->Pt());
-    if(esdTrack->Pt()>fMaxPt || esdTrack->Pt()<fMinPt)continue;
+    if(!fTrackCuts->AcceptTrack(esdTrackOrig))continue;
+    hTrackPt->Fill(esdTrackOrig->Pt());
+    if(esdTrackOrig->Pt()>fMaxPt || esdTrackOrig->Pt()<fMinPt)continue;
+    
+    AliESDtrack *esdTrack = (AliESDtrack*)esdTrackOrig->Clone();
 
     AliExternalTrackParam* trc = (AliExternalTrackParam*)esdTrack->GetOuterParam();
     if (!trc){
@@ -447,7 +451,15 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
      	if (phi<0) phi += 360;
      	sect = int(phi/20.0);
     	}
-    if (failed) continue; 
+    if (failed) continue;
+    
+    //cout<<"Track"<<endl;
+    //cout<<"At RinTOF uncertainty = "<<cv[0]<<" ; "<<cv[2]<<" ; "<<cv[5]<<endl;
+    
+    trc->GetCovarianceXYZPxPyPz(cv);
+    if (cv[0]<0 || TMath::Sqrt(cv[0])>fMaxTrackError){hNMaxiPadIn->Fill(-2); continue;}
+    if (cv[2]<0 || TMath::Sqrt(cv[2])>fMaxTrackError){hNMaxiPadIn->Fill(-2); continue;}
+    if (cv[5]<0 || TMath::Sqrt(cv[5])>fMaxTrackError){hNMaxiPadIn->Fill(-2); continue;}
 
     //Fine propagation from TOF radius
     Bool_t isin = kFALSE;
@@ -458,7 +470,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     Float_t posF_Out[3]={0.0,0.0,0.0};
     UInt_t nFiredPads = 0;
     UInt_t instep = 0;
-    //cout<<"Track"<<endl;
+    
     while (rTOFused<AliTOFGeometry::Rmax()){
     	rTOFused += 0.1; // 1 mm step
 	instep++;

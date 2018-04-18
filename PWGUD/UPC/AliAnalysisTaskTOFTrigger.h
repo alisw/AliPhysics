@@ -17,14 +17,14 @@ class AliESDtrackCuts;
 class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskTOFTrigger();
-  AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t fTrackCutSet);
+  AliAnalysisTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t fTrackCutSet,Float_t fMaxTrackError);
   virtual ~AliAnalysisTaskTOFTrigger();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-  void SetupParameters(Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t cutSet)
-  			{fMaxPt = highpt; fMinPt = lowpt; fMaxMulti = highmult; fTriggerClass = trgcls;fMaxBCs = nBCs;fUseEventSelection = useEVS;fTrackCutSet = cutSet;}
+  void SetupParameters(Float_t lowpt,Float_t highpt,Int_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t cutSet,Int_t maxErr)
+  			{fMaxPt = highpt; fMinPt = lowpt; fMaxMulti = highmult; fTriggerClass = trgcls;fMaxBCs = nBCs;fUseEventSelection = useEVS;fTrackCutSet = cutSet; fMaxTrackError = maxErr;}
   void GetLTMIndex(const Int_t * const detind, Int_t *indexLTM);
 
  private:
@@ -79,6 +79,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   Int_t fMaxBCs;
   Bool_t fUseEventSelection;
   Int_t fTrackCutSet;
+  Float_t fMaxTrackError;
   
   AliEventCuts fEventCuts;	
 
@@ -86,7 +87,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
 
-  ClassDef(AliAnalysisTaskTOFTrigger, 11);
+  ClassDef(AliAnalysisTaskTOFTrigger, 12);
 };
 
 #endif
