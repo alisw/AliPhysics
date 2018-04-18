@@ -286,11 +286,13 @@ class AliHFSystErr : public TNamed
   void InitLctopKpi2010ppBDT();
   void InitLctopKpi2013pPb();
   void InitLctopKpi2013pPbBDT();
+  void InitLctopKpi2016pPb();
 
   void InitLctopK0S2010pp();
   void InitLctopK0S2013pPb();
   void InitLctopK0S2013pPbBDT();
   void InitLctopK0S2016pPb();
+  void InitLctopK0S2016pPbBDT();
 
   void InitD0toKpi2015PbPb010();
   void InitD0toKpi2015PbPb3050();
