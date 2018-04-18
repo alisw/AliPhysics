@@ -7084,16 +7084,16 @@ void AliHFSystErr::InitLctopK0S2016pPbBDT() {
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0.,24.);
   //for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.07); // 3%+4% (3%->bachelor, 4%->V0)
-  for(Int_t i=1;i<=8;i++) fTrackingEff->SetBinContent(i,0.07);
-  for(Int_t i=9;i<=24;i++) fTrackingEff->SetBinContent(i,0.07);
+  for(Int_t i=1;i<=8;i++) fTrackingEff->SetBinContent(i,0.03);
+  for(Int_t i=9;i<=24;i++) fTrackingEff->SetBinContent(i,0.06);
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0.,24.);
   fRawYield->SetBinContent(2,0.15);
-  fRawYield->SetBinContent(3,0.10);
-  fRawYield->SetBinContent(4,0.07);
-  fRawYield->SetBinContent(5,0.07);
-  fRawYield->SetBinContent(6,0.07);
+  fRawYield->SetBinContent(3,0.04);
+  fRawYield->SetBinContent(4,0.04);
+  fRawYield->SetBinContent(5,0.06);
+  fRawYield->SetBinContent(6,0.06);
   for(Int_t i=7;i<=8;i++) fRawYield->SetBinContent(i,0.05);
   for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.06);
   for(Int_t i=13;i<=24;i++) fRawYield->SetBinContent(i,0.08);
