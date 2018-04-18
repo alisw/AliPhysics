@@ -1124,12 +1124,12 @@ void AliHFSystErr::InitD0toKpi2017pp5TeV(){
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",50,0,50);
  // fNorm->SetBinContent(1,0.0); // bin 0.-1.
-  for(Int_t i=1;i<=50;i++) fNorm->SetBinContent(i,0.035);
+  for(Int_t i=1;i<=50;i++) fNorm->SetBinContent(i,0.05);
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",50,0,50);
-  //fBR->SetBinContent(1,0.0); // 1.2% PDG2010
-  for(Int_t i=1;i<=50;i++) fBR->SetBinContent(i,0.01); //
+  //fBR->SetBinContent(1,0.0); // bin 0.-1.
+  for(Int_t i=1;i<=50;i++) fBR->SetBinContent(i,0.0129); //
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",50,0,50);
