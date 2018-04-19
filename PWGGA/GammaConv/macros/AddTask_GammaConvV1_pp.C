@@ -137,7 +137,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   }
   if(corrTaskSetting.CompareTo(""))
     cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
-    
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -809,7 +809,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200089127302001280004000", "0152103500000000"); // Open dEdx
   } else if (trainConfig == 352) {
     cuts.AddCut("00010113", "00200089267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
- 
+
 
   // Material studies Ana
   } else if (trainConfig == 360) {
@@ -823,16 +823,16 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   } else if (trainConfig == 362) {
     cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
     cuts.AddCut("00010113", "00200009267300008250404000", "0152103500000000"); // Min Bias with  dedx at high pT
-    cuts.AddCut("00010113", "00a00009267300008254404000", "0152103500000000"); // 
-    cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); // 
-    cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); // 
+    cuts.AddCut("00010113", "00a00009267300008254404000", "0152103500000000"); //
+    cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); //
+    cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); //
 
  } else if (trainConfig == 372) { // as iConfig 362 to be used with MBW
     cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
     cuts.AddCut("00010113", "00200009267300008250404000", "0152103500000000"); // Min Bias with  dedx at high pT
-    cuts.AddCut("00010113", "00a00009267300008254404000", "0152103500000000"); // 
-    cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); // 
-    cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); // 
+    cuts.AddCut("00010113", "00a00009267300008254404000", "0152103500000000"); //
+    cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); //
+    cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); //
 
 
 
@@ -849,22 +849,26 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009227300008280404000", "0152103500000000"); // Psi pair 0.2  2D
     cuts.AddCut("00010113", "00200009227300008860404000", "0152103500000000"); // variation chi2 20 psi pair 0.2 2D
     cuts.AddCut("00010113", "00200009227300008150404000", "0152103500000000"); // variation chi2 50 psi pair 0.1 2D
-    cuts.AddCut("00010113", "00200009227300008250004000", "0152103500000000"); // CosPA -1
+    cuts.AddCut("00010113", "00200009227300002250404000", "0152103500000000"); // variation qT max 0.06 2D
+    cuts.AddCut("00010113", "00200009227300002252404000", "0152103500000000"); // variation qT max 0.06 2D, asym var 1
   } else if (trainConfig == 403){
+    cuts.AddCut("00010113", "00200009227300002254404000", "0152103500000000"); // variation qT max 0.06 2D, asym vat 2 pt dep
+    cuts.AddCut("00010113", "00200009227300002256404000", "0152103500000000"); // variation qT max 0.06 2D, asym var 3
+  } else if (trainConfig == 404){
     cuts.AddCut("00057113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EMC7
     cuts.AddCut("00083113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG1
     cuts.AddCut("00085113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG2
     cuts.AddCut("00062113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - PHI7
-  } else if (trainConfig == 404){
+
+  } else if (trainConfig == 440){ // as 400 to be used MBW
+   cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+  } else if (trainConfig == 441){
    cuts.AddCut("00010113", "00a00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
    cuts.AddCut("00010113", "00b00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
    cuts.AddCut("00010113", "00c00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
-
-  } else if (trainConfig == 410){ // as 400 to be used MBW
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
-  } else if (trainConfig == 414){  // as 404 to be used MBW
+  } else if (trainConfig == 442){ // as 440 to be used MBW
    cuts.AddCut("00010113", "00a00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 5-33.5
-   cuts.AddCut("00010113", "00b00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72. 
+   cuts.AddCut("00010113", "00b00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72.
    cuts.AddCut("00010113", "00c00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 72-180
 
 
