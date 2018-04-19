@@ -98,6 +98,8 @@ protected:
   Float_t                     fMaxPt;                    ///< Histogram pt limit
   Bool_t                      fSeparateEMCalDCal;        ///< Separate EMCal from DCal in QA plots
   Bool_t                      fIsEmbedded;               ///< Embedded data present
+  THistManager                fHistManager;              ///< Histogram manager
+
   Double_t                    fCent2;                    //!<!Event centrality with method 2
   Double_t                    fCent3;                    //!<!Event centrality with method 3
   AliVVZERO                  *fVZERO;                    //!<!Event V0 object
@@ -108,14 +110,12 @@ protected:
   Int_t                       fNTotTracks;               //!<!Total number of accepted tracks in current event
   AliTLorentzVector           fLeadingTrack;             //!<!Leading track in current event
 
-  THistManager                fHistManager;              //!<!Histogram manager
-
 private:
   AliAnalysisTaskEmcalJetQA(const AliAnalysisTaskEmcalJetQA&);            // not implemented
   AliAnalysisTaskEmcalJetQA &operator=(const AliAnalysisTaskEmcalJetQA&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetQA, 3)
+  ClassDef(AliAnalysisTaskEmcalJetQA, 4)
   /// \endcond
 };
 #endif
