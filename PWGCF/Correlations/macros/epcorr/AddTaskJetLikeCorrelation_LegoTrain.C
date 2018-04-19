@@ -36,7 +36,8 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int colli
 
   AliAnalysisTaskJetLikeCorrelation *taskjetlikecorr = new AliAnalysisTaskJetLikeCorrelation(taskname);
   taskjetlikecorr->UseSeparateMixingPool(kFALSE);
-  taskjetlikecorr->SetMC(kFALSE);
+  taskjetlikecorr->SetMCCorrection(kFALSE);
+  taskjetlikecorr->SetMCTruth(kFALSE);
   taskjetlikecorr->SetEtaCut(fEtaCut);
   taskjetlikecorr->SetPhiCut(fPhiCut);
   taskjetlikecorr->SetMinPtTrigCut(3.000);

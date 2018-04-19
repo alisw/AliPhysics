@@ -38,7 +38,8 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation(int collision, int 
 
   AliAnalysisTaskJetLikeCorrelation *taskjetlikecorr = new AliAnalysisTaskJetLikeCorrelation("taskjetlikecorr");
   taskjetlikecorr->UseSeparateMixingPool(kFALSE);
-  taskjetlikecorr->SetMC(kFALSE);
+  taskjetlikecorr->SetMCCorrection(kFALSE);
+  taskjetlikecorr->SetMCTruth(kFALSE);
   taskjetlikecorr->SetEtaCut(fEtaCut);
   taskjetlikecorr->SetPhiCut(fPhiCut);
   taskjetlikecorr->SetMinPtTrigCut(3.000);

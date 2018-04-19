@@ -21,6 +21,8 @@ class AliExtractedEvent;
 class AliAnalysisTaskFlowVectorCorrections;
 class AliQnCorrectionsManager;
 class AliAODEvent;
+class AliMCEvent;
+class AliAODMCHeader;
 
 #include "AliEventPoolManager.h"
 #include "AliAODVertex.h"
@@ -147,7 +149,8 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
 
     int SetupMixing();
 
-    void SetMC(bool mc) { fMCCorrection = mc; }
+    void SetMCCorrection(bool mc) { fMCCorrection = mc; }
+    void SetMCTruth(bool mc) { fMCTruth = mc; }
     void SetCentArray(TArrayD centarray) { fCentArray = centarray; }
 //    void SetCentArray(vector<float> centarray) { fCentArray = centarray; }
     void SetZVertexArray(TArrayD zvertexarray) { fZVertexArray = zvertexarray; }
@@ -171,6 +174,7 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     int GetCentBin(double);
     int GetZVertexBin(double);
     int GetPtBin(double);
+    double GetCentralityFromIP(double ip);
 
     float CalculatedPhiStar(float, float, float, float, float, float, float);
     int GetEventInformation(AliAODEvent *);
@@ -191,6 +195,8 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
 
     AliInputEventHandler *fInputHandler; //!
     AliInputEventHandler *fMCHandler; //!
+    AliMCEvent *fMCEvent; //!
+    AliAODMCHeader *fMCHeader; //!
 
     TH1D *fHistZVertex;     //!
     TH1D *fHistPt;     //!
@@ -209,6 +215,7 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     TTree *fInputTree; //!
 
     bool fMCCorrection; // Is MC or Data?
+    bool fMCTruth; // MC Truth check
     bool bUseMixingPool; // Do we use separate mixing pool? 
     
     int fMixingPoolSize;   //
@@ -224,8 +231,8 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     int fIsFirstEvent; //!
     int fMinimumPtABinMerging; //
 
-    float fResonancesVCut;
-    float fConversionsVCut;
+    float fResonancesVCut;    //
+    float fConversionsVCut;   //
 
     TArrayD fPtArray;         //
     TArrayD fCentArray;         //
@@ -277,7 +284,6 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     double fEventPlaneV0C; //!
     double fEventPlaneTPC; //!
 
-    
     
     ECollision fCollision; //
     EPeriod fPeriod; //!
@@ -371,7 +377,7 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
       return mass2;
     }
 
-    ClassDef(AliAnalysisTaskJetLikeCorrelation, 2);
+    ClassDef(AliAnalysisTaskJetLikeCorrelation, 3);
 };
 
 class MixedParticle : public TObject {
