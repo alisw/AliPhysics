@@ -34,8 +34,10 @@ public:
   
   virtual void  SetThreshold(int type, Int_t v);
   virtual Int_t GetThreshold(int type);
+  void SetActive(Bool_t active) { fActive = active; }
   
   virtual Int_t GetMedianEnergy();
+  bool IsActive() const { return fActive; }
   virtual void  SetBkgRho(Int_t fRho) { fBkgRho = fRho; }
 
   virtual void  Reset();
@@ -51,7 +53,8 @@ private:
   
   Int_t   fGammaTh[2]; ///< Gamma threshold
   Int_t   fJetTh[2];   ///< Jet threshold
-  Int_t   fBkgRho; // BkgRho for L1 calculation.  Calculated from the other STU. 
+  Int_t   fBkgRho;     ///< BkgRho for L1 calculation.  Calculated from the other STU. 
+  Bool_t  fActive;      ///< Active status for STU, if inactive the L1 trigger will not be simulated
   
   AliEMCALTriggerSTUDCSConfig *fDCSConfig; // DCS config
   

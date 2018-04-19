@@ -109,21 +109,37 @@ fGeometry(0)
     }
   } else fSTUDCAL = 0;
 
+  // active status for STUs
+  if(!stuConf->GetRegion()) fSTU->SetActive(false);
+  if(stuConfDCal && fSTUDCAL && !stuConfDCal->GetRegion()) fSTUDCAL->SetActive(false);
+
   // Checking if the L1 thresholds are missing
   for (int ithr = 0; ithr < 2; ithr++) {
     if (stuConf->GetG(2,ithr) == 0) {
-      AliError(Form("EMCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
+      if(stuConf->GetRegion())
+        AliError(Form("EMCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
+      else
+        AliWarning(Form("EMCAL DCS STU has 0 threshold for EGA %d. EMCAL STU inactive - this trigger will not be simulated.", ithr));
     }
     if (stuConf->GetJ(2,ithr) == 0) {
-      AliError(Form("EMCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
+      if(stuConf->GetRegion())
+        AliError(Form("EMCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
+      else
+        AliWarning(Form("EMCAL DCS STU has 0 threshold for EJE %d. EMCAL STU inactive - this trigger will not be simulated.", ithr));
     }
 
     if (stuConfDCal) {
       if (stuConfDCal->GetG(2,ithr) == 0) {
-        AliError(Form("DCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
+        if(stuConfDCal->GetRegion())
+          AliError(Form("DCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
+        else
+          AliWarning(Form("DCAL DCS STU has 0 threshold for EGA %d. DCAL STU inactive - this trigger will not be simulated.", ithr));
       }
       if (stuConfDCal->GetG(2,ithr) == 0) {
-        AliError(Form("DCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
+        if(stuConfDCal->GetRegion())
+          AliError(Form("DCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
+        else
+          AliWarning(Form("DCAL DCS STU has 0 threshold for EJE %d. DCAL STU inactive - this trigger will not be simulated.", ithr));
       }
     }
   }

@@ -19,6 +19,7 @@
 #include "TGeoMatrix.h"
 
 // --- Standard library ---
+#include <iostream>
 
 // --- AliRoot header files ---
 #include "AliEMCALReconstructor.h"
@@ -168,16 +169,6 @@ AliEMCALReconstructor::AliEMCALReconstructor()
 
   //----------------------------------------------------
   // Get trigger parameters and init other trigger stuff
-  //
-  AliEMCALTriggerDCSConfigDB* dcsConfigDB = AliEMCALTriggerDCSConfigDB::Instance();
-  
-  const AliEMCALTriggerDCSConfig* dcsConfig = dcsConfigDB->GetTriggerDCSConfig();
-  
-  if (!dcsConfig) 
-    AliFatal("No Trigger DCS Configuration from OCDB!");
-  
-  fgTriggerProcessor = new AliEMCALTriggerElectronics( dcsConfig );
-  
   int dsize = (fGeom->GetTriggerMappingVersion() == 2) ? 2 : 1;
   fgTriggerData = new TClonesArray("AliEMCALTriggerData",dsize);
   for (int i=0;i<dsize;i++) {
@@ -230,13 +221,39 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   delete fgClusterizer;
   fgClusterizer = 0;
   
-  delete fgTriggerProcessor;
+  if(fgTriggerProcessor) delete fgTriggerProcessor;
   fgTriggerProcessor = 0;
   
   if(fMatches) { fMatches->Delete(); delete fMatches; fMatches = 0;}
   
   AliCodeTimer::Instance()->Print();
 } 
+
+///
+/// @brief Init the fgTriggerProcessor
+///
+/// Trigger preprocessor will only be initialized in case
+/// the trigger simulation is enabled via the reco params.
+/// In case the trigger simulation is already initialized
+/// the function will do nothing, otherwise it will check
+/// whether the trigger simulation is switched on in the 
+/// reco params and initialize it.
+///
+//____________________________________________________________________________                                  
+void AliEMCALReconstructor::InitTriggerElectronics() const {
+  if(fgTriggerProcessor) return;
+
+  if(GetRecParam()){
+    if(GetRecParam()->IsSimulateTriggerElectronics()){
+      AliEMCALTriggerDCSConfigDB* dcsConfigDB = AliEMCALTriggerDCSConfigDB::Instance();
+       const AliEMCALTriggerDCSConfig* dcsConfig = dcsConfigDB->GetTriggerDCSConfig();
+       if(!dcsConfig)
+         AliFatal("No trigger configuration found in OCDB");
+      fgTriggerProcessor = new AliEMCALTriggerElectronics( dcsConfig );
+    }
+  }
+}
+
 
 ///
 /// Init the fgClusterizer with geometry and calibration pointers, avoid doing it twice.                          
@@ -423,6 +440,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //########################################
   
   static int saveOnce[2] = {0,0};
+
   
   Int_t v0M[2] = {0, 0};
   
@@ -453,7 +471,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   // Note: fgTriggerProcessor reset done at the end of this method
   
-  fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, (AliEMCALTriggerData*)fgTriggerData->At(0));
+  InitTriggerElectronics();
+  if(fgTriggerProcessor) fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, (AliEMCALTriggerData*)fgTriggerData->At(0));
   
   // Fill ESD
   AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("EMCAL");
