@@ -112,6 +112,16 @@ public:
   virtual Bool_t    Run();
 
   /**
+   * @brief Perfrom Event Selection
+   * 
+   * As the trigger maker is a correction task it should run on
+   * any event, no matter whether the event is a good physics event
+   * or not. Therefor it overrides the event selection implemented
+   * in AliAnalysisTaskEmcal.
+   */
+  virtual Bool_t    IsEventSelected() { return true; }
+
+  /**
    * @brief Set range for L0 time
    * @param[in] min Minimum L0 time (default is 7)
    * @param[in] max Maximum L0 time (default is 10)
