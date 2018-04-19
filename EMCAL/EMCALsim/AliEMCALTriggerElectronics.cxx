@@ -112,18 +112,18 @@ fGeometry(0)
   // Checking if the L1 thresholds are missing
   for (int ithr = 0; ithr < 2; ithr++) {
     if (stuConf->GetG(2,ithr) == 0) {
-      AliFatal(Form("EMCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
+      AliError(Form("EMCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
     }
     if (stuConf->GetJ(2,ithr) == 0) {
-      AliFatal(Form("EMCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
+      AliError(Form("EMCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
     }
 
     if (stuConfDCal) {
       if (stuConfDCal->GetG(2,ithr) == 0) {
-        AliFatal(Form("DCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
+        AliError(Form("DCAL DCS STU has 0 threshold for EGA %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
       }
       if (stuConfDCal->GetG(2,ithr) == 0) {
-        AliFatal(Form("DCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be simulated.  Check OCDB!!!",ithr));
+        AliError(Form("DCAL DCS STU has 0 threshold for EJE %d.  This trigger will not be properly simulated.  Check OCDB!!!",ithr));
       }
     }
   }
@@ -190,7 +190,7 @@ fGeometry(0)
       AliDebug(999,Form("Building TRU %d with dimensions %d x %d\n",iTRU,int(rSize.X()),int(rSize.Y())));
       if (truConf->GetGTHRL0() <= 1) { // Checking for the null L0 threshold
         if(dcsConf->IsTRUEnabled(iTRU)){
-          AliFatal(Form("Active TRU %d DCS config is missing L0 threshold.  L0 Trigger will not be simulated for this TRU.",iTRU));
+          AliError(Form("Active TRU %d DCS config is missing L0 threshold.  L0 Trigger will not be properly simulated for this TRU.",iTRU));
         } else {
           AliWarning(Form("Inactive TRU %d - L0 trigger will not be simulated for this TRU", iTRU));
           mytru->SetActive(false);
