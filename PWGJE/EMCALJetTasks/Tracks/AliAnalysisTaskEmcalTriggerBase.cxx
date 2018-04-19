@@ -303,7 +303,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     // Apply cut on the trigger string - this basically discriminates high- and low-threshold
     // triggers
     const std::array<TString, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerStrings = {
-    		"CEMC7-|CEMC8-|C0EMC-", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "CDMC7-|CDMC8-|CDMC0-", "DG1", "DG2", "DJ1", "DJ2"
+    		"CEMC7-|CEMC8-|C0EMC-", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "CDMC7-|CDMC8-|C0DMC-", "DG1", "DG2", "DJ1", "DJ2"
     };
     if(triggerstring.Contains("EMC")) AliDebugStream(1) << GetName() << ": Trigger string " << triggerstring << std::endl;
     bool isT0trigger = triggerstring.Contains("INT8") || triggerstring.Contains("TVX") || triggerstring.Contains("EMC8") || triggerstring.Contains("DMC8"),

@@ -246,7 +246,11 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
  * @return True
  */
 Bool_t AliEmcalTriggerMakerTask::Run(){
-  if(!fTriggerMaker->IsConfigured()) return false;    // only run trigger maker in case it is configured
+  if(!fTriggerMaker->IsConfigured()){
+    AliErrorStream() << "Trigger maker not configured" << std::endl;
+    return false;    // only run trigger maker in case it is configured
+  }
+  AliDebugStream(1) << "Looking for trigger patches ..." << std::endl;
   fCaloTriggersOut->Delete(); // Needed to avoid memory leak
   // prepare trigger maker
   fTriggerMaker->Reset();

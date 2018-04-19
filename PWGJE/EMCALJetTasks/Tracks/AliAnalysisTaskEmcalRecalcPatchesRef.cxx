@@ -136,6 +136,7 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
   if(!fSelectedTriggers.size()) return false;       // no trigger selected
   AliDebugStream(1) << "Found triggers" << std::endl;
   for(auto t : fSelectedTriggers) AliDebugStream(1) << t << std::endl;
+  AliDebugStream(1) << "Trigger patch container has " << fTriggerPatchInfo->GetEntries() << " patches" << std::endl;
 
   // Decode trigger clusters
   const auto selclusters = GetAcceptedTriggerClusters(fInputEvent->GetFiredTriggerClasses().Data());
@@ -163,6 +164,13 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
     } 
   }
 
+  AliDebugStream(1) << "Processing triggers" << std::endl;
+  for(auto t : handledtriggers) AliDebugStream(1) << t << std::endl;
+  if(!handledtriggers.size()){
+    AliDebugStream(1) << "No supported trigger class found " << std::endl;
+    return false;
+  }
+
   std::vector<const AliEMCALTriggerPatchInfo *> EGApatches, DGApatches, EJEpatches, DJEpatches;
   if(isMB || isEG) EGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kEGApatches);
   if(isMB || isDG) DGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kDGApatches);
@@ -182,6 +190,7 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
       std::vector<const AliEMCALTriggerPatchInfo *> &patchhandler = (detector == 'E' ? (t[1] == 'G' ? EGApatches : EJEpatches) : (t[1] == 'G' ? DGApatches : DJEpatches)); 
       auto firedpatches = SelectFiredPatchesByTrigger(*fTriggerPatchInfo, kPatchIndex.find(t.Data())->second);
       auto patchareas = GetNumberNonOverlappingPatchAreas(firedpatches);
+      AliDebugStream(3) << "Trigger " << t << ", patches " << patchhandler.size() << ", firing " << firedpatches.size() << std::endl;
       for(auto p : patchhandler){
         double point[3] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
         for(const auto &kc : selclusters) {
@@ -200,6 +209,7 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
 }
 
 std::vector<const AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::SelectAllPatchesByType(const TClonesArray &list, EPatchType_t patchtype) const {
+  AliDebugStream(2) << "Selecting all patches for trigger " << static_cast<int>(patchtype) << std::endl;
   std::vector<const AliEMCALTriggerPatchInfo *> result;
   for(auto p : list){
     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
@@ -213,6 +223,7 @@ std::vector<const AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesR
     };
     if(selected) result.emplace_back(patch);
   }
+  AliDebugStream(2) << "In: " << list.GetEntries() << ", out: " << result.size() << std::endl;
   return result;
 }
 
