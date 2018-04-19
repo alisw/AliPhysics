@@ -95,6 +95,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fSwitchOffLHC15oFaultyBranches(kFALSE),
   fEventSelectionAfterRun(kFALSE),
   fSelectGeneratorName(),
+  fMinimumEventWeight(1e-6),
+  fMaximumEventWeight(1e6),
   fInhibit(kFALSE),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
@@ -117,11 +119,13 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fPtHard(0),
   fNTrials(0),
   fXsection(0),
+  fEventWeight(1),
   fGeneratorName(),
   fOutput(0),
   fHistTrialsVsPtHardNoSel(0),
   fHistEventsVsPtHardNoSel(0),
   fHistXsectionVsPtHardNoSel(0),
+  fHistEventWeightsNoSel(0),
   fHistTriggerClassesNoSel(0),
   fHistZVertexNoSel(0),
   fHistCentralityNoSel(0),
@@ -129,6 +133,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fHistTrialsVsPtHard(0),
   fHistEventsVsPtHard(0),
   fHistXsectionVsPtHard(0),
+  fHistEventWeights(0),
   fHistTriggerClasses(0),
   fHistZVertex(0),
   fHistCentrality(0),
@@ -191,6 +196,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fSwitchOffLHC15oFaultyBranches(kFALSE),
   fEventSelectionAfterRun(kFALSE),
   fSelectGeneratorName(),
+  fMinimumEventWeight(0),
+  fMaximumEventWeight(100),
   fInhibit(kFALSE),
   fLocalInitialized(kFALSE),
   fDataType(kAOD),
@@ -213,11 +220,13 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fPtHard(0),
   fNTrials(0),
   fXsection(0),
+  fEventWeight(1),
   fGeneratorName(),
   fOutput(0),
   fHistTrialsVsPtHardNoSel(0),
   fHistEventsVsPtHardNoSel(0),
   fHistXsectionVsPtHardNoSel(0),
+  fHistEventWeightsNoSel(0),
   fHistTriggerClassesNoSel(0),
   fHistZVertexNoSel(0),
   fHistCentralityNoSel(0),
@@ -225,6 +234,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fHistTrialsVsPtHard(0),
   fHistEventsVsPtHard(0),
   fHistXsectionVsPtHard(0),
+  fHistEventWeights(0),
   fHistTriggerClasses(0),
   fHistZVertex(0),
   fHistCentrality(0),
@@ -317,6 +327,8 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
   if (!fGeneralHistograms) return;
 
   if (fIsPythia) {
+    auto weight_bins = GenerateLogFixedBinArray(1000, fMinimumEventWeight, fMaximumEventWeight, true);
+
     fHistEventsVsPtHard = new TH1F("fHistEventsVsPtHard", "fHistEventsVsPtHard", 1000, 0, 1000);
     fHistEventsVsPtHard->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
     fHistEventsVsPtHard->GetYaxis()->SetTitle("events");
@@ -332,6 +344,11 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     fHistXsectionVsPtHard->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsectionVsPtHard);
 
+    fHistEventWeights = new TH1F("fHistEventWeights", "fHistEventWeights", 1000, &weight_bins[0]);
+    fHistEventWeights->GetXaxis()->SetTitle("weight");
+    fHistEventWeights->GetYaxis()->SetTitle("events");
+    fOutput->Add(fHistEventWeights);
+
     fHistEventsVsPtHardNoSel = new TH1F("fHistEventsVsPtHardNoSel", "fHistEventsVsPtHardNoSel", 1000, 0, 1000);
     fHistEventsVsPtHardNoSel->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
     fHistEventsVsPtHardNoSel->GetYaxis()->SetTitle("events");
@@ -346,6 +363,11 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     fHistXsectionVsPtHardNoSel->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
     fHistXsectionVsPtHardNoSel->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsectionVsPtHardNoSel);
+
+    fHistEventWeightsNoSel = new TH1F("fHistEventWeightsNoSel", "fHistEventWeightsNoSel", 1000, &weight_bins[0]);
+    fHistEventWeightsNoSel->GetXaxis()->SetTitle("weight");
+    fHistEventWeightsNoSel->GetYaxis()->SetTitle("events");
+    fOutput->Add(fHistEventWeightsNoSel);
 
     fHistTrials = new TH1F("fHistTrials", "fHistTrials", 50, 0, 50);
     fHistTrials->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
@@ -458,6 +480,7 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
       fHistEventsVsPtHard->Fill(fPtHard, 1);
       fHistTrialsVsPtHard->Fill(fPtHard, fNTrials);
       fHistXsectionVsPtHard->Fill(fPtHard, fXsection);
+      fHistEventWeights->Fill(fEventWeight, 1);
     }
 
     fHistZVertex->Fill(fVertex[2]);
@@ -473,6 +496,7 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
       fHistEventsVsPtHardNoSel->Fill(fPtHard, 1);
       fHistTrialsVsPtHardNoSel->Fill(fPtHard, fNTrials);
       fHistXsectionVsPtHardNoSel->Fill(fPtHard, fXsection);
+      fHistEventWeightsNoSel->Fill(fEventWeight, 1);
     }
 
     fHistZVertexNoSel->Fill(fVertex[2]);
@@ -1061,6 +1085,11 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
       fPtHard = fPythiaHeader->GetPtHard();
       fXsection = fPythiaHeader->GetXsection();
       fNTrials = fPythiaHeader->Trials();
+      fEventWeight = fPythiaHeader->EventWeight();
+      AliInfoStream() << "Event weight: " << fEventWeight << std::endl;
+      for (auto w : fPythiaHeader->GetEventWeights()) {
+        AliInfoStream() << "Weight " << w.first << ": " << w.second << std::endl;
+      }
     }
   }
 
@@ -1468,5 +1497,41 @@ std::vector<double> AliAnalysisTaskEmcalLight::GenerateFixedBinArray(int n, doub
 {
   std::vector<double> array;
   GenerateFixedBinArray(n, min, max, array, last);
+  return array;
+}
+
+/**
+ * Generate array with logaritmic fixed binning within min and max with n bins. The parameter array
+ * will contain the bin edges set by this function. Attention, the array needs to be
+ * provided from outside with a size of n+1
+ * @param[in] n Number of bins
+ * @param[in] min Minimum value for the binning
+ * @param[in] max Maximum value for the binning
+ * @param[out] array Vector where the bins are added
+ */
+void AliAnalysisTaskEmcalLight::GenerateLogFixedBinArray(int n, double min, double max, std::vector<double>& array, bool last)
+{
+  double binWidth = std::pow(max / min, 1.0 / n);
+  double v = min;
+  if (last) n++;
+  for (int i = 0; i < n; i++) {
+    array.push_back(v);
+    v *= binWidth;
+  }
+}
+
+/**
+ * Generate array with logaritmic fixed binning within min and max with n bins. The array containing the bin
+ * edges set will be created by this function. Attention, this function does not take care about
+ * memory it allocates - the array needs to be deleted outside of this function
+ * @param[in] n Number of bins
+ * @param[in] min Minimum value for the binning
+ * @param[in] max Maximum value for the binning
+ * @return Vector containing the bin edges created by this function
+ */
+std::vector<double> AliAnalysisTaskEmcalLight::GenerateLogFixedBinArray(int n, double min, double max, bool last)
+{
+  std::vector<double> array;
+  GenerateLogFixedBinArray(n, min, max, array, last);
   return array;
 }
