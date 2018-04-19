@@ -835,7 +835,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       // detailed cell QA histos for EMCAL
       if(fExtendedMatchAndQA > 3){
-        fHistCellEnergyvsCellID                 = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",nBinsClusterECellCoarse,  arrClusEBinningCoarse,
+        fHistCellEnergyvsCellID                 = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",nBinsClusterECell,  arrClusEBinningCoarse,
                                                            nMaxCellsEMCAL, 0, nMaxCellsEMCAL);
         fHistCellEnergyvsCellID->GetXaxis()->SetTitle("E_{cell} (GeV)");
         fHistCellEnergyvsCellID->GetYaxis()->SetTitle("Cell ID");
@@ -915,7 +915,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       // detailed cell QA histos for PHOS
       if(fExtendedMatchAndQA > 3){
-        fHistCellEnergyvsCellID         = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",nBinsClusterECellCoarse,  arrClusEBinningCoarse,
+        fHistCellEnergyvsCellID         = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",nBinsClusterECell,  arrClusEBinningCoarse,
                                                    nMaxCellsPHOS,0,nMaxCellsPHOS);
         fHistCellEnergyvsCellID->GetXaxis()->SetTitle("E_{cell} (GeV)");
         fHistCellEnergyvsCellID->GetYaxis()->SetTitle("Cell ID");
@@ -999,7 +999,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
       // detailed cell QA histos for DCAL
       if(fExtendedMatchAndQA > 3){
-        fHistCellEnergyvsCellID         = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",nBinsClusterECellCoarse,  arrClusEBinningCoarse,
+        fHistCellEnergyvsCellID         = new TH2F(Form("CellEnergyVsCellID %s",GetCutNumber().Data()),"CellEnergyVsCellID",nBinsClusterECell,  arrClusEBinningCoarse,
                                                    nMaxCellsDCAL, nCellsStart, nMaxCellsDCAL+nCellsStart);
         fHistCellEnergyvsCellID->GetXaxis()->SetTitle("E_{cell} (GeV)");
         fHistCellEnergyvsCellID->GetYaxis()->SetTitle("Cell ID");
