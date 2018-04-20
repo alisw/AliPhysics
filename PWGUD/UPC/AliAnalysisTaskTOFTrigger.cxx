@@ -574,7 +574,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    }
 
 		if(!fBadMaxiPadMask[channelCTTM][indexLTM[0]])eff_AverageTrackPt->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),esdTrack->Pt());
-                if(nFiredPads<2)numTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
+                numTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
 
 		Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kMuon);
 		Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron);
