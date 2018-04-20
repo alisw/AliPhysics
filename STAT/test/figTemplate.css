@@ -14,8 +14,8 @@ fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPt
         TObject *o = finput->Get(TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
         hisArray->AddLast(o);
     }
-    }
     AliDrawStyle::RegisterCssStyle("figTemplate", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplate.css"));
+    //
     // Use Canvas41 default layout
     TCanvas *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
     AliPainter::DivideTPad("<horizontal>[1b,1t,1,1]", "Canvas41","",canvasQA);
@@ -23,7 +23,7 @@ fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPt
     AliPainter::DrawHistogram("hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)", hisArray);
     AliPainter::DrawHistogram("hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)", hisArray);
     AliPainter::DrawHistogram("hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)", hisArray);
-    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)", hisArray);
+    AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,0:80:20:20,0,10)(0)(gaus,W)(div=1,class=Mass,dOption=E)", hisArray);
     AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplate");
 
     TCanvas *canvasQA1 = new TCanvas("canvasQA", "canvasQA", 1200, 800);
@@ -88,6 +88,7 @@ TPad {
     fill-color:    10,10,10,10;
     tickX:         1,1,1,1;
     tickY:         1,1,1,1;
+    logY:          0,0,0,1;
     border-mode:   0,0,0,0;
     margin-bottom: 0.15;
 }
@@ -100,6 +101,7 @@ TPad {
     fill-color:    10,10,10,10;
     tickX:         1,1,1,1;
     tickY:         1,1,1,1;
+    logY:          0,0,0,1;
     border-mode:   0,0,0,0;
     margin-bottom: 0.15;
     margin-right:  0.05;
@@ -114,6 +116,7 @@ TPad {
     fill-color:    10,10,10,10;
     tickX:         1,1,1,1;
     tickY:         1,1,1,1;
+    logY:          0,0,0,1;
     border-mode:   0,0,0,0;
     margin-bottom: 0.15;
     /* legend-format: <name> <range=%f>*/
@@ -124,10 +127,11 @@ TPad {
     width:         700;
     gridX:         0;
     gridY:         0;
-    fill-color:    10;
-    tickX:         1;
-    tickY:         1;
-    border-mode:   0;
+    fill-color:    10,10,10,10;
+    tickX:         1,1,1,1;
+    tickY:         1,1,1,1;
+    logY:          0,0,0,1;
+    border-mode:   0,0,0,0;
     margin-bottom: 0.15;
     margin-right:  0.05;
     margin-top:    0.1;
