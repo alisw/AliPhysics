@@ -12,11 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// TODO - ADD TESTS. check few properties | priority: most higher @Boris
-// TODO: prepare presentation for offline week: | priority: high @Boris
-//      -- AliDrawStyle
-//      -- AliPainter
-//      -- AliTMinuitToolkit
 #include "AliPainter.h"
 #include "AliTMinuitToolkit.h"
 #include "TPad.h"
@@ -46,7 +41,7 @@ std::map<TString, Double_t > AliPainter::statValues;
 ///
 /// \param pad           - input pad to divide
 /// \param division      - division string
-///                         <NULL,vertical,horizontal>[div0,div1b, ...]
+///                         <nullptr,vertical,horizontal>[div0,div1b, ...]
 ///                            divi - specify number of pads in row (resp. column)
 ///                                 - sharing parameter for axis
 ///                                 - btlrm  (bottom, left, top, right, middle) middle means rl for horizontal and tb for vertical
@@ -186,7 +181,7 @@ std::map<TString, Double_t > AliPainter::statValues;
 //TODO: add divFlag for inheritance Mother Class (ClassName) should be add to children (className)=>nameOfObject.class(ClassMother,ClassDaughter) @Boris
 //TODO: should we change the places of *pad and *classID? @Marian
 //TODO: mb remove "<>" from division? @Marian
-TPad *AliPainter::DivideTPad(const char *division, const char *classID, TPad *pad, Int_t verbose) {
+TPad *AliPainter::DivideTPad(const char *division, const char *classID, const char *style, TPad *pad, Int_t verbose) {
 
   if (pad == nullptr) {
     TCanvas *canv = new TCanvas("AliPainterCanvas", "AliPainterCanvas",1200,800);
@@ -237,8 +232,10 @@ TPad *AliPainter::DivideTPad(const char *division, const char *classID, TPad *pa
         yu = a;       //yu -> xu
         xu = 1 - b;   //xu -> 1 - yu
       }
-      if (classID != TString("")) padName = TString::Format("pad[%d].class(%s)", nPads, classID);
-      else padName = TString::Format("pad[%d]", nPads);
+      padName =  TString::Format("pad[%d]", nPads);
+      if (classID != TString("")) padName = TString::Format("%s.class(%s)", padName.Data(), classID);
+      if (style != TString("")) padName = TString::Format("%s.style(%s)", padName.Data(), style);
+
       TPad *newPad = new TPad(padName.Data(), padName.Data(), xl, yl, xu, yu);
       if (verbose == 4) ::Info("AliPainter::DivideTPad", "New pad created: %s", padName.Data());
       if (position == "vertical") {
@@ -255,9 +252,10 @@ TPad *AliPainter::DivideTPad(const char *division, const char *classID, TPad *pa
       newPad->SetNumber(nPads);
     }
   }
-  if (classID != TString("")) padName = TString::Format("%s.class(%s)",pad->GetName(),classID);
-  else padName = TString::Format("%s",pad->GetName());
-  pad->SetName(padName);
+  padName = pad->GetName();
+  if (classID != TString("")) padName = TString::Format("%s.class(%s)", padName.Data(), classID);
+  if (style != TString("")) padName = TString::Format("%s.style(%s)", padName.Data(), style);
+  pad->SetName(padName.Data());
   return pad;
 }
 ///
@@ -316,7 +314,7 @@ TPad *AliPainter::SetPadMargin(TPad *cPad, const char *position, const char *wMa
 /// \param graph
 /// \param option
 void AliPainter::SetMultiGraphTimeAxis(TMultiGraph *graph, TString option){
-  TAxis *axis = NULL;
+  TAxis *axis = nullptr;
   for (Int_t i=0; i<graph->GetListOfGraphs()->GetEntries(); i++) {
     TGraph *cGraph=(TGraph *) graph->GetListOfGraphs()->At(i);
     if (option.Contains("X")) axis = cGraph->GetXaxis();
@@ -405,7 +403,8 @@ void AliPainter::ArgsParser(TString exprsn, TString &hisName, TString &projectio
 /// \brief Private method for parsing fit options in AliPainter::DrawHistogram
 /// \param fitStr - string with fit options
 /// \return array of values from inputOptions
-std::vector<TString> AliPainter::OptionStringParser(const TString optStr, const char d[2], Int_t defSize) {
+std::vector<TString> AliPainter::OptionStringParser(const char *option, const char d[2], Int_t defSize) {
+  TString optStr = TString(option);
   Int_t arg = 0, startIndex = 0;
   std::vector<TString> vecOptions;
   for (Int_t i = 0; i < defSize+1; i++) vecOptions.push_back(TString(""));
@@ -582,7 +581,7 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 ///                                dOption - root standard draw options [see docs](https://root.cern.ch/root/htmldoc/guides/users-guide/Histograms.html#draw-options)
 /// \param inputArray       - array of input objects
 ///                         - Object to draw - histogramArray->FindObject(histogramName)
-///                         - in case histogramArray is NULL or histogram not found gROOT->FindObject()
+///                         - in case histogramArray is nullptr or histogram not found gROOT->FindObject()
 ///                           will be used
 /// \param metaData         - array with metadata describing histogram axis
 ///                         - for example in the trees we optionally keep metadata (array of TNamed ()tag,value) in the array "metaTable"
@@ -658,8 +657,8 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 AliTMinuitToolkit::SetPredefinedFitter("ExpFit", fitter);
   TObjArray *keepArray = new TObjArray;
  // AliPainter::DivideTPad(canvasQA,"<horizontal>[1]", "Raw,Error");
- //AliPainter::DrawHistogram("hisK0DMassQPtTgl(0,100,0:60:20:20,0,10)(0)(pol8,,same,funOption(2,2,1),-0.01,0.01)()", hisArray, canvasQA, NULL, keepArray, 4);
- // AliPainter::DrawHistogram("hisK0DMassQPtTgl(0,100)(0)(gauss)()", hisArray, canvasQA, NULL, keepArray, 4);
+ //AliPainter::DrawHistogram("hisK0DMassQPtTgl(0,100,0:60:20:20,0,10)(0)(pol8,,same,funOption(2,2,1),-0.01,0.01)()", hisArray, canvasQA, nullptr, keepArray, 4);
+ // AliPainter::DrawHistogram("hisK0DMassQPtTgl(0,100)(0)(gauss)()", hisArray, canvasQA, nullptr, keepArray, 4);
    }
   \endcode
 */
@@ -689,11 +688,11 @@ void AliPainter::DrawHistogram(char *expression, const TObjArray* histogramArray
     ::Info("AliPainter::DrawHistogram", "You try to draw 4d histogram.");
   //check does the fitter exist if not register defaults:
   //TODO: how I can delete it if I use standart fitter. We should add clearing of fPredefinedFitters into AliTMinuitToolkit::ClearData() @Marian
-  if (AliTMinuitToolkit::GetPredefinedFitter(fitOptions[0].Data()) == NULL) {
+  if (AliTMinuitToolkit::GetPredefinedFitter(fitOptions[0].Data()) == nullptr) {
     AliTMinuitToolkit::RegisterDefaultFitters();
     if (verbose == 4)
       ::Info("AliPainter::DrawHistogram",
-             "AliTMinuitToolkit::GetPredefinedFitter(%s) is NULL. AliTMinuitToolkit::RegisterDefaultFitters();",
+             "AliTMinuitToolkit::GetPredefinedFitter(%s) is nullptr. AliTMinuitToolkit::RegisterDefaultFitters();",
              fitOptions[0].Data());
   }
   //pad->SetTitle(expression);
@@ -762,7 +761,7 @@ void AliPainter::DrawHistogram(char *expression, const TObjArray* histogramArray
       hisArray[j]->SetName(uniqName);
       hisArray[j]->SetTitle(uniqName);
       if (verbose == 4) ::Info("AliPainter::DrawHistogram", "hisArray[%d]->SetName(%s)", j, uniqName.Data());
-      if (keepArray != NULL) {
+      if (keepArray != nullptr) {
         keepArray->AddLast((TObject *) hisArray[j]);
         if (verbose == 4) ::Info("AliPainter::DrawHistogram", "keepArray->AddLast((TObject*) %s)", uniqName.Data());
       }
@@ -787,23 +786,23 @@ void AliPainter::DrawHistogram(char *expression, const TObjArray* histogramArray
           if (verbose == 4) ::Info("AliPainter::DrawHistogram", "hisArray[%d]->SetMaximum(%f)", j, yMax);
         }
       if (optionValues["div"] == TString("1")) {
-        if (pad != NULL) {
+        if (pad != nullptr) {
           if (pad->InheritsFrom("TCanvas")) pad->cd(j + 1);
           else pad->cd();
         }
         hisArray[j]->SetStats(kFALSE);
         hisArray[j]->Draw(optionValues["dOption"].Data());
-        if (pad != NULL) {
+        if (pad != nullptr) {
           if (!pad->InheritsFrom("TCanvas")) {
-            if (cCanvas->GetListOfPrimitives()->After(pad) != NULL) {
+            if (cCanvas->GetListOfPrimitives()->After(pad) != nullptr) {
               nextPad = (TPad *) cCanvas->GetListOfPrimitives()->After(pad);
               pad = nextPad;
             }
           }
         }
         if (verbose == 4) ::Info("AliPainter::DrawHistogram", "hisArray[%d]->Draw(%s)", j, optionValues["dOption"].Data());
-        if (pad == NULL) {
-          if (cCanvas->GetListOfPrimitives()->After(gPad) != NULL) {
+        if (pad == nullptr) {
+          if (cCanvas->GetListOfPrimitives()->After(gPad) != nullptr) {
             nextPad = (TPad *) cCanvas->GetListOfPrimitives()->After(gPad);
             nextPad->cd();
           }
@@ -827,7 +826,7 @@ void AliPainter::DrawHistogram(char *expression, const TObjArray* histogramArray
       }
       if (fitOptions[0] != TString("")) {
         //TODO: add check for standard names and change function to gaus and add standart root fitters @Boris
-        if (AliTMinuitToolkit::GetPredefinedFitter(fitOptions[0].Data()) != NULL) {
+        if (AliTMinuitToolkit::GetPredefinedFitter(fitOptions[0].Data()) != nullptr) {
           if (verbose == 4)
             ::Info("AliPainter::DrawHistogram", "AliTMinuitToolkit::Fit(%s)", fitStr.Data());
           AliTMinuitToolkit::Fit(hisArray[j], fitOptions[0], fitOptions[1], fitOptions[2], fitOptions[3],
@@ -845,7 +844,7 @@ void AliPainter::DrawHistogram(char *expression, const TObjArray* histogramArray
       }
     }
     else if (projections.CountChar(',') + 1 > 3) {
-      if (keepArray != NULL) keepArray->AddLast((TObject *) hisN->Projection(projections.CountChar(',') + 1));
+      if (keepArray != nullptr) keepArray->AddLast((TObject *) hisN->Projection(projections.CountChar(',') + 1));
       }
     else return;
   }
