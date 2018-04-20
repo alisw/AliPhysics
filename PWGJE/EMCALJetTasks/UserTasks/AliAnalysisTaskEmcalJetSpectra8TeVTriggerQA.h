@@ -1,5 +1,33 @@
 #ifndef ALIANALYSISTASKEMCALJETSPECTRA8TEVTRIGGERQA_H
 #define ALIANALYSISTASKEMCALJETSPECTRA8TEVTRIGGERQA_H
+
+/**********************************************************************************
+ * Copyright (C) 2018, Copyright Holders of the ALICE Collaboration                *
+ * All rights reserved.                                                            *
+ *                                                                                 *
+ * Redistribution and use in source and binary forms, with or without              *
+ * modification, are permitted provided that the following conditions are met:     *
+ *   * Redistributions of source code must retain the above copyright              *
+ *     notice, this list of conditions and the following disclaimer.               *
+ *   * Redistributions in binary form must reproduce the above copyright           *
+ *     notice, this list of conditions and the following disclaimer in the         *
+ *     documentation and/or other materials provided with the distribution.        *
+ *   * Neither the name of the <organization> nor the                              *
+ *     names of its contributors may be used to endorse or promote products        *
+ *     derived from this software without specific prior written permission.       *
+ *                                                                                 *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED   *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE          *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY             *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES      *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;    *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND     *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT      *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS   *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                    *
+ * *********************************************************************************/
+
 /**
  * \file AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA.h
  * \brief Declaration of class AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA
@@ -23,6 +51,7 @@
 #include <vector>
 #include "Tracks/AliAnalysisTaskEmcalTriggerBase.h"
 #include "Tracks/AliCutValueRange.h"
+#include "AliEventCuts.h"
 #include <TCustomBinning.h>
 #include <TString.h>
 
@@ -97,6 +126,11 @@ protected:
     Bool_t                      SelectJetPatch(const AliEMCALTriggerPatchInfo  *patch) const;
     THistManager                fHistManager                                      ;//!<!                 Histogram manager
     
+    // Sparse Definition
+    virtual THnSparse*     NewTHnSparseF(const char* name, UInt_t entries);
+    virtual void           GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
+    // Binning helper functions
+    
     //  Utilities
     Double_t                    GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
     Double_t                    GetSmearedTrackPt(AliVTrack *track)                ; //!<!               smeared Pt resolution with gaussian
@@ -120,6 +154,9 @@ private:
     TH1F                          *fHistJetJetPatchPt;//!<!                Jet - Jet Trigger Patch Pt
     TH1F                          *fHistJetGammaPatchPt;//!<!              Jet-Gamma Trigger Patch Pt
     TH1F                          *fHistTriggerPatchE;//!<!                EMCal Trigger Patch E
+    
+    THnSparse                     *fhnMBJetSpectra;//!<!                   MB Jet Spectra sparse
+    
     TH1F                          *fHistEMCalTowerMult[9];//!<!            EMCal Tower Multiplicity by SM
 
     AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&)           ; // not implemented
