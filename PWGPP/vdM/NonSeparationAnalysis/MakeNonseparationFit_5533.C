@@ -143,13 +143,13 @@ void MakeNonseparationFit_5533() {
     "_fix_alpha_XZ",
     "_fix_alpha_XZ_fix_alpha_YZ"
   };
-#if 1
+#if 0
   for (Int_t i=0; i<3; ++i) {
     MakeFit(Form("Scan1%s", var[i]));
     MakeFit(Form("Scan2%s", var[i]));
     MakeFit(Form("Scan1_Scan2%s", var[i]));
   }
-  //#else
+#else
   TCanvas *c1 = new TCanvas;
   c1->Divide(3,3);
   for (Int_t i=0; i<3; ++i) {
@@ -157,7 +157,7 @@ void MakeNonseparationFit_5533() {
       MakePlots(Form("root/5533/fit_%s%s.root", scans[i], var[j]),
                 "ALICE p-Pb #sqrt{#it{s}_{NN}}=8.2 TeV",
                 0.2,
-                kTRUE);
+                !kTRUE);
       TString line = ExtractFromCanvas(Form("pdf/5533/fit_%s%s.pdf_canvas.root", scans[i], var[j]));
       std::ofstream ofs(Form("pdf/5533/fit_%s%s_XZ.pdf_canvas.txt", scans[i], var[j]));
       ofs << line.Data() << std::endl;

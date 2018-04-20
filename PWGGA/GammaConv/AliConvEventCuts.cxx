@@ -996,6 +996,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 1){
       printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
+    } else if ( fModCentralityClass == 2){
+      printf("\t %d - %d \n", fCentralityMin, fCentralityMax);
     } else if (fModCentralityClass == 3){
       printf("\t %d - %d, with Track mult in MC as data \n", fCentralityMin*10, fCentralityMax*10);
     } else if ( fModCentralityClass == 4){
@@ -1024,8 +1026,9 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
     }  else if ( fModCentralityClass == 1){
       printf("\t %d - %d \n", fCentralityMin*5, fCentralityMax*5);
+    }  else if ( fModCentralityClass == 2){
+      printf("\t %d - %d \n", fCentralityMin, fCentralityMax);
     }
-
     if (fSpecialTrigger == 0){
       printf("\t only events triggered by kINT7 will be analysed \n");
     } else if (fSpecialTrigger > 1){
@@ -1123,6 +1126,20 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=2;
     fDetectorCentrality=1;
     fModCentralityClass=1;
+    break;
+  case 12: // pPb V0A
+    // steps of 1%
+    // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
+    fIsHeavyIon=2;
+    fDetectorCentrality=0;
+    fModCentralityClass=2;
+    break;
+  case 13: // pPb CL1
+    // steps of 1%
+    // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
+    fIsHeavyIon=2;
+    fDetectorCentrality=1;
+    fModCentralityClass=2;
     break;
 
   default:
@@ -2037,7 +2054,12 @@ Bool_t AliConvEventCuts::IsCentralitySelected(AliVEvent *event, AliMCEvent *mcEv
       return kTRUE;
     } else return kFALSE;
   }
-
+  else if (fModCentralityClass == 2){
+    centralityC= Int_t(centrality);
+    if(centralityC >= fCentralityMin && centralityC < fCentralityMax){
+      return kTRUE;
+    } else return kFALSE;
+  }
   Int_t nprimaryTracks = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetNumberOfPrimaryTracks();
   Int_t PrimaryTracks10[11][2] =
     {
@@ -5167,10 +5189,18 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
 
   // LHC16x anchored MCs
   // 13TeV LHC16* anchors full field Pythia 8 MB
-  } else if ( periodName.CompareTo("LHC16P1Pyt8") == 0 || periodName.CompareTo("LHC17f6") == 0 || periodName.CompareTo("LHC17d17") == 0 || periodName.CompareTo("LHC17f5") == 0 ||
-              periodName.CompareTo("LHC17d3") == 0 || periodName.CompareTo("LHC17e5") == 0 || periodName.CompareTo("LHC17d20a1") == 0 || periodName.CompareTo("LHC17d20a1_extra") == 0 ||
-              periodName.CompareTo("LHC17d20a2") == 0 || periodName.CompareTo("LHC17d20a2_extra") == 0 || periodName.CompareTo("LHC17d16") == 0 || periodName.CompareTo("LHC17d18") == 0  ||
-              periodName.CompareTo("LHC17f9") == 0 || periodName.CompareTo("LHC17f9_test") == 0){
+  } else if ( periodName.CompareTo("LHC16P1Pyt8") == 0 || 
+    periodName.CompareTo("LHC17f6") == 0 ||  periodName.CompareTo("LHC17f6_extra") == 0 ||
+    periodName.CompareTo("LHC17d17") == 0 || periodName.CompareTo("LHC17d17_extra") == 0 ||  
+    periodName.CompareTo("LHC17f5") == 0 ||  periodName.CompareTo("LHC17f5_extra") == 0 || 
+    periodName.CompareTo("LHC17d3") == 0 ||  periodName.CompareTo("LHC17d3_extra") == 0 ||
+    periodName.CompareTo("LHC17e5") == 0 ||  periodName.CompareTo("LHC17e5_extra") == 0 || 
+    periodName.CompareTo("LHC17d20a1") == 0 || periodName.CompareTo("LHC17d20a1_extra") == 0 ||
+    periodName.CompareTo("LHC17d20a2") == 0 || periodName.CompareTo("LHC17d20a2_extra") == 0 || 
+    periodName.CompareTo("LHC17d16") == 0 ||  periodName.CompareTo("LHC17d16_extra") == 0 || 
+    periodName.CompareTo("LHC17d18") == 0 ||  periodName.CompareTo("LHC17d18_extra") == 0  ||
+    periodName.CompareTo("LHC17f9") == 0 ||  periodName.CompareTo("LHC17f9_extra") == 0 || 
+    periodName.CompareTo("LHC17f9_test") == 0){
     fPeriodEnum = kLHC16P1Pyt8;
     fEnergyEnum = k13TeV;
   // 13TeV LHC16* anchors low field Pythia 8 MB

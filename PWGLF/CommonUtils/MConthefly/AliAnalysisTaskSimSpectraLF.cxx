@@ -493,8 +493,17 @@ void AliAnalysisTaskSimSpectraLF::Terminate(Option_t*){
 Double_t AliAnalysisTaskSimSpectraLF::myRap(Double_t rE, Double_t rPz) const {
 
   Double_t rRap = -999.;
-  if( (rE-rPz+1.e-13) != 0 && (rE+rPz) != 0 )
-    rRap =  0.5*TMath::Log((rE+rPz)/(rE-rPz+1.e-13));
+
+  if (rE == rPz || rE == -rPz) {
+    printf("myRap() -> ERROR : rapidity for 4-vector with rE = Pz or rE = -Pz");
+    return -999;
+  }
+  if (rE < rPz) {
+    printf("myRap() -> ERROR : rapidity for 4-vector with rE < rPz");
+    return -999;
+  }
+
+  rRap = 0.5 * TMath::Log((rE + rPz) / (rE - rPz));
 
   return rRap;
 }

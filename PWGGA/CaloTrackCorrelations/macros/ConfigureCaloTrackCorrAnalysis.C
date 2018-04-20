@@ -587,7 +587,10 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   }
  
   if ( kAnaCutsString.Contains("PerSM") ) 
+  {
     ana->SwitchOnFillHistogramsPerSM(); 
+    ana->SwitchOnStudyNCellsCut(); 
+  }
   
   if ( kAnaCutsString.Contains("PerTCard") ) 
     ana->SwitchOnFillHistogramsPerTCardIndex(); 

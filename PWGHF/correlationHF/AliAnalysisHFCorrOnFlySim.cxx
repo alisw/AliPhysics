@@ -797,24 +797,30 @@ void AliAnalysisHFCorrOnFlySim::CalculateQQBarCorrelations(){
             AliVParticle *part2=(AliVParticle*)fMcEvent->GetTrack(fArray2Part2->At(0));
             Double_t phi1 = part1->Phi();
             Double_t phi2 = part2->Phi();
-            for(Int_t ipart1 = 1; ipart1 < nPart1 ; ipart1++) { //start from 2nd particle, check if "collinear" with first
+            Int_t countc = 0, countcbar = 0;
+            for(Int_t ipart1 = 0; ipart1 < nPart1 ; ipart1++) { //start from 2nd particle, check if "collinear" with first
               AliVParticle *part1b=(AliVParticle*)fMcEvent->GetTrack(fArray1Part1->At(ipart1));
-              Int_t pdgotherc = TMath::Abs(part1b->PdgCode());
-              if(pdgotherc!=4) fFlagSinglePair = kFALSE; 
-              // OLD APPROACH: 
-              //Double_t dPhi = TMath::Abs(AssignCorrectPhiRange(part1->Phi() - part1b->Phi()));
-              //if(dPhi>0.5) fFlagSinglePair = kFALSE; 
-              //printf("COLLIN 1 %f\n",dPhi);
+              Int_t pdgmothotherc = -1;
+              AliVParticle *part1bmoth=(AliVParticle*)fMcEvent->GetTrack(part1b->GetMother());
+              if(part1bmoth) pdgmothotherc = TMath::Abs(part1bmoth->PdgCode());
+              //printf("QUARK c %d (%d) with phi,eta %f,%f; MOTH %d, PDGMOTH = %d\n",ipart1,fArray1Part1->At(ipart1),part1b->Phi(),part1b->Eta(),part1b->GetMother(),pdgmothotherc);
+              if(pdgmothotherc!=4) countc++;
             }
-            for(Int_t ipart2 = 1; ipart2 < nPart2 ; ipart2++) { //start from 2nd particle, check if "collinear" with first
+            if(countc>1) fFlagSinglePair = kFALSE; 
+            for(Int_t ipart2 = 0; ipart2 < nPart2 ; ipart2++) { //start from 2nd particle, check if "collinear" with first
               AliVParticle *part2b=(AliVParticle*)fMcEvent->GetTrack(fArray2Part2->At(ipart2));
-              Int_t pdgothercbar = TMath::Abs(part2b->PdgCode());
-              if(pdgothercbar!=4) fFlagSinglePair = kFALSE; 
-              // OLD APPROACH: 
-              //Double_t dPhi = TMath::Abs(AssignCorrectPhiRange(part2->Phi() - part2b->Phi()));
-              //if(dPhi>0.5) fFlagSinglePair = kFALSE; 
-              //printf("COLLIN 2 %f\n",dPhi);
+              Int_t pdgmothothercbar = -1;
+              AliVParticle *part2bmoth=(AliVParticle*)fMcEvent->GetTrack(part2b->GetMother());
+              if(part2bmoth) pdgmothothercbar = TMath::Abs(part2bmoth->PdgCode());
+              //printf("QUARK cbar %d (%d) with phi,eta %f,%f; MOTH %d, PDGMOTH = %d\n",ipart2,fArray2Part2->At(ipart2),part2b->Phi(),part2b->Eta(),part2b->GetMother(),pdgmothothercbar);
+              if(pdgmothothercbar!=4) countcbar++;
             }
+            if(countcbar>1) fFlagSinglePair = kFALSE; 
+
+            //IMPORTANT: SINCE NOT CLEAR HOW TO CORRECTLY DEFINE MULTI-PAIR EVENTS, FOR NOW THIS SELECTION IS SWITCHED OFF
+            //I.E. ALL THE EVENTS ARE TREATED AS SINGLE-PAIR EVENTS!
+            //THIS BY MEAN OF THE FOLLOWING LINE (TO BE REMOVED AFTER HAVING A BETTER UNDERSTANDING):
+            fFlagSinglePair = kTRUE; 
 
             if(fFlagSinglePair == kTRUE) { //evaluate opening angle of 'mother' c and cbar (mother definition is a bit artificial...)
               if(AssignCorrectPhiRange_0toPiRefl(part1->Phi()-part2->Phi()) < fLimitSmallOpen) fFlagSmallOpen = kTRUE;
@@ -845,7 +851,7 @@ TArrayI* AliAnalysisHFCorrOnFlySim::CalculateNPartType(TString pname, Int_t &cou
         if(!IsParticleMCSelected)continue;
         
         Bool_t IsParticleMCKineAccepted = IsMCParticleInKineCriteria(partAss);
-        if(!IsParticleMCKineAccepted)continue;
+        if(pname != "c" && pname != "b") {if(!IsParticleMCKineAccepted) continue;}
         
         Int_t pdgAss=partAss->PdgCode();
         

@@ -134,7 +134,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         EtIsoClusEtaBand          ( TLorentzVector c , Double_t m02candidate, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
   void                         PtIsoTrackPhiBand         ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &phiBand              ); // PIsoCone via Track UE via PhiBand TPC
   void                         PtIsoTrackEtaBand         ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &etaBand              ); // PIsoCone via Track UE via EtaBand TPC
-  void                         PtIsoTrackOrthCones       ( TLorentzVector c , Double_t &ptIso      , Double_t &cones                                   ); // PIsoCone via Tracks UE via Orthogonal Cones in Phi
+  void                         PtIsoTrackOrthCones       ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &cones                ); // PIsoCone via Tracks UE via Orthogonal Cones in Phi
   void                         PtIsoTrackFullTPC         ( TLorentzVector c , Double_t &ptIso      , Double_t &full                                    ); // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
   void                         ComputeConeAreaInEMCal    ( Double_t etaCand , Double_t phiCand     , Double_t &coneArea                                ); // Iso cone area depending on the cluster position (neutral + charged)
   void                         ComputeConeAreaInTPC      ( Double_t etaCand , Double_t &coneArea                                                       ); // Iso cone area depending on the cluster position (charged-only)

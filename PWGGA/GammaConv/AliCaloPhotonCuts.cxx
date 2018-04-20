@@ -525,7 +525,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     else arrClusEBinning[i]                = maxClusterE;
   }
   for(Int_t i=0; i<nBinsClusterECell+1;i++){
-    if(i<20) arrClusEBinningCoarse[i]             = 0.05*(i-1);
+    if(i<20) arrClusEBinningCoarse[i]             = 0.05*(i);
     else if(i<50) arrClusEBinningCoarse[i]        = 1.+0.1*(i-20);
     else if(i<70) arrClusEBinningCoarse[i]        = 4.+0.2*(i-50);
     else if(i<74) arrClusEBinningCoarse[i]        = 8.+0.5*(i-70);
@@ -5342,7 +5342,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192);
             energy /= 0.9935;
           } else if(fClusterType==2){
-            energy /= ( 0.994914734 ); // additional factors
+            energy /= ( 0.994914734 * 0.9964 ); // additional factors
           }
         } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
           if(fClusterType==1){

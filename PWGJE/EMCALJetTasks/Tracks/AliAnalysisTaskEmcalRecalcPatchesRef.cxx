@@ -102,12 +102,29 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::CreateUserHistos(){
 void AliAnalysisTaskEmcalRecalcPatchesRef::UserFillHistosAfterEventSelection(){
   const std::array<std::string, 9> kNamesTriggerClasses = {{"MB", "EG1", "EG2", "DG1", "DG2", "EJ1", "EJ2", "DJ1", "DJ2"}};
   const auto selclusters = GetAcceptedTriggerClusters(fInputEvent->GetFiredTriggerClasses().Data());
-  for(const auto &kt : kNamesTriggerClasses) {
-    if(std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), kt) != fSelectedTriggers.end()) {
-      if(kt == "MB") fHistos->FillTH1(Form("hEventCounter%s", kt.data()), 1.);
-      else {
-        for(const auto &kc : selclusters) fHistos->FillTH1(Form("hEventCounter%s%s", kt.data(), kc.data()), 1.);
+
+  auto findTriggerType = [](const std::vector<TString> &triggers, TString type) -> bool {
+    bool found = false;
+    for(const auto t : triggers) {
+      if(t.Contains(type)) {
+        found = true;
+        break;
       }
+    }
+    return found;
+  };
+
+  std::vector<TString> handledtriggers;
+  for(auto t  : kNamesTriggerClasses) {
+    if(findTriggerType(fSelectedTriggers, t.data())){
+      handledtriggers.emplace_back(t);
+    } 
+  }
+
+  for(const auto &kt : handledtriggers) {
+    if(kt == "MB") fHistos->FillTH1(Form("hEventCounter%s", kt.Data()), 1.);
+    else {
+      for(const auto &kc : selclusters) fHistos->FillTH1(Form("hEventCounter%s%s", kt.Data(), kc.data()), 1.);
     }
   }
 }
@@ -117,6 +134,9 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
   const std::unordered_map<std::string, ETriggerThreshold_t> kPatchIndex = {{"EG1", kThresholdEG1},{"EG2", kThresholdEG2},{"DG1", kThresholdDG1},{"DG2", kThresholdDG2},
                                                                             {"EJ1", kThresholdEJ1},{"EJ2", kThresholdEJ2},{"DJ1", kThresholdDJ1},{"DJ2", kThresholdDJ2}};
   if(!fSelectedTriggers.size()) return false;       // no trigger selected
+  AliDebugStream(1) << "Found triggers" << std::endl;
+  for(auto t : fSelectedTriggers) AliDebugStream(1) << t << std::endl;
+  AliDebugStream(1) << "Trigger patch container has " << fTriggerPatchInfo->GetEntries() << " patches" << std::endl;
 
   // Decode trigger clusters
   const auto selclusters = GetAcceptedTriggerClusters(fInputEvent->GetFiredTriggerClasses().Data());
@@ -137,28 +157,40 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
        isEJ = findTriggerType(fSelectedTriggers, "EJ"),
        isDJ = findTriggerType(fSelectedTriggers, "DJ");
 
+  std::vector<TString> handledtriggers;
+  for(auto t  : kNamesTriggerClasses) {
+    if(findTriggerType(fSelectedTriggers, t.data())){
+      handledtriggers.emplace_back(t);
+    } 
+  }
+
+  AliDebugStream(1) << "Processing triggers" << std::endl;
+  for(auto t : handledtriggers) AliDebugStream(1) << t << std::endl;
+  if(!handledtriggers.size()){
+    AliDebugStream(1) << "No supported trigger class found " << std::endl;
+    return false;
+  }
+
   std::vector<const AliEMCALTriggerPatchInfo *> EGApatches, DGApatches, EJEpatches, DJEpatches;
   if(isMB || isEG) EGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kEGApatches);
   if(isMB || isDG) DGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kDGApatches);
   if(isMB || isEJ) EJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, kEJEpatches);
   if(isMB || isDJ) DJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, kDJEpatches);
   
-  for(const auto &t : fSelectedTriggers) {
-    if(!std::find(kNamesTriggerClasses.begin(), kNamesTriggerClasses.end(), t.Data())) continue;
+  for(const auto &t : handledtriggers) {
     if(t == "MB") {
       // Min bias: Only fill patch ADC spectra all patches
       for(auto patch :  EGApatches) fHistos->FillTH1("hPatchADCEGAMB", patch->GetADCAmp()); 
       for(auto patch :  DGApatches) fHistos->FillTH1("hPatchADCDGAMB", patch->GetADCAmp()); 
       for(auto patch :  EJEpatches) fHistos->FillTH1("hPatchADCEJEMB", patch->GetADCAmp()); 
       for(auto patch :  DJEpatches) fHistos->FillTH1("hPatchADCDJEMB", patch->GetADCAmp()); 
-
-      continue;
-    } else if(std::find(kNamesTriggerClasses.begin(), kNamesTriggerClasses.end(), t.Data()) != kNamesTriggerClasses.end()) {
+    } else {
       const char detector = t[0];
       const char *patchtype = ((t[1] == 'G') ? "GA" : "JE");
       std::vector<const AliEMCALTriggerPatchInfo *> &patchhandler = (detector == 'E' ? (t[1] == 'G' ? EGApatches : EJEpatches) : (t[1] == 'G' ? DGApatches : DJEpatches)); 
       auto firedpatches = SelectFiredPatchesByTrigger(*fTriggerPatchInfo, kPatchIndex.find(t.Data())->second);
       auto patchareas = GetNumberNonOverlappingPatchAreas(firedpatches);
+      AliDebugStream(3) << "Trigger " << t << ", patches " << patchhandler.size() << ", firing " << firedpatches.size() << std::endl;
       for(auto p : patchhandler){
         double point[3] = {static_cast<double>(p->GetADCAmp()), static_cast<double>(firedpatches.size()), static_cast<double>(patchareas)};
         for(const auto &kc : selclusters) {
@@ -177,6 +209,7 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
 }
 
 std::vector<const AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesRef::SelectAllPatchesByType(const TClonesArray &list, EPatchType_t patchtype) const {
+  AliDebugStream(2) << "Selecting all patches for trigger " << static_cast<int>(patchtype) << std::endl;
   std::vector<const AliEMCALTriggerPatchInfo *> result;
   for(auto p : list){
     AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
@@ -190,6 +223,7 @@ std::vector<const AliEMCALTriggerPatchInfo *> AliAnalysisTaskEmcalRecalcPatchesR
     };
     if(selected) result.emplace_back(patch);
   }
+  AliDebugStream(2) << "In: " << list.GetEntries() << ", out: " << result.size() << std::endl;
   return result;
 }
 
