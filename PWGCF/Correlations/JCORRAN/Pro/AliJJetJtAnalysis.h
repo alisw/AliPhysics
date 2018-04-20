@@ -169,6 +169,7 @@ class AliJJetJtAnalysis{
     AliJJetAnalysis *fJJetAnalysis;
     vector<TString> fJetFinderName;
     vector<TString> fMCJetFinderName;
+    TString fJetFinderNames;
     // Need for events
     AliJEfficiency *fEfficiency;
     int cBin;
