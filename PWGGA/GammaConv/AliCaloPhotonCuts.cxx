@@ -532,7 +532,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     else if(i<90) arrClusEBinningCoarse[i]        = 10.+1.0*(i-74);
     else if(i<97) arrClusEBinningCoarse[i]        = 26.+2.0*(i-90);
     else if(i<109) arrClusEBinningCoarse[i]       = 40.+5.0*(i-97);
-    else if(i<119) arrClusEBinningCoarse[i]       = 100.+10.0*(i-119);
+    else if(i<119) arrClusEBinningCoarse[i]       = 100.+10.0*(i-109);
     else arrClusEBinningCoarse[i]                 = 200;
   }
 
@@ -2115,7 +2115,10 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if(cellAmplitude > 0.05) EnergyOfMod[nMod-nModulesStart]+=cellAmplitude;
 
     if(fExtendedMatchAndQA > 3){
-      if(fHistCellEnergyvsCellID && (cellAmplitude > 0.05)) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
+      if(fHistCellEnergyvsCellID && (cellAmplitude > 0.05) && (fClusterType == 1 || fClusterType == 3) )
+          fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
+      if(fHistCellEnergyvsCellID && (cellAmplitude > 0.01) && fClusterType == 2 )
+          fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
       if(fHistCellTimevsCellID && (cellAmplitude > 0.2)) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
     }
   }
