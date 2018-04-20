@@ -106,8 +106,8 @@ void AliMESppColTask::UserExec(Option_t *opt)
     
 	Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb);// combined multiplicity with |eta| < 0.8
 	// event shape for data (from ESD)
-// 	Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
-	Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
+	Double_t directivity_plus = fEvInfo->GetEventShape()->GetDirectivity(1);
+// 	Double_t directivity_minus = fEvInfo->GetEventShape()->GetDirectivity(0);
 	Double_t sfer = fEvInfo->GetEventShape()->GetSphericity();
 	
 	vec_hNoEvts[0] = 0.;
@@ -136,7 +136,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
 // 	vec_hNoEvts[0] = 3.;
 // 	hNoEvts->Fill(vec_hNoEvts);
 	
-	Double_t directivity = directivity_minus;
+	Double_t directivity = directivity_plus;
 	
 	vec_hNoEvts[1] = mult_comb08; // combined multiplicity with |eta| < 0.8
 	vec_hNoEvts[2] = directivity;
