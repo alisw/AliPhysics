@@ -92,7 +92,8 @@ fHistJetJetPatchE(),
 fHistJetGammaPatchE(),
 fHistJetJetPatchPt(),
 fHistJetGammaPatchPt(),
-fHistTriggerPatchE()
+fHistTriggerPatchE(),
+fhnMBJetSpectra()
 
 {
     //Array Initiation
@@ -121,7 +122,8 @@ fHistJetJetPatchE(0),
 fHistJetGammaPatchE(0),
 fHistJetJetPatchPt(0),
 fHistJetGammaPatchPt(0),
-fHistTriggerPatchE(0)
+fHistTriggerPatchE(0),
+fhnMBJetSpectra(0x0)
 
 
 {
@@ -171,6 +173,13 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::UserCreateOutputObjects()
     fOutput->Add(fHistNumbJets);
     fOutput->Add(fHistJetPt);
     
+    
+    UInt_t SparseBit = 0;// Bit Code from GetDimParams()
+    
+    SparseBit = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 |  1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16;
+    fhnMBJetSpectra = NewTHnSparseF("fhnMBJetSpectra", SparseBit);
+    //fhnMBJetSpectra->Sumw2();
+    fOutput->Add(fhnMBJetSpectra);
     
     if(fUseSumw2==0) {
         // =========== Switch on Sumw2 for all histos ===========
@@ -380,6 +389,9 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
             //histtitle = TString::Format("%s;#it{p}_{T,Jet};#it{p}_{T,NeutralConstituents}", histname.Data());
             //fHistManager.CreateTH2(histname, histtitle, 200, 0, 200, 200, 0, 200);
             
+            histname = TString::Format("%s/histFCrossvZleading_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{z}_{leading};#it{F}_{Cross}", histname.Data());
+            fHistManager.CreateTH2(histname, histtitle, 100, 0, 1, 100, 0, 1);
             
             //Matched Trigger Histos
             histname = TString::Format("%s/fHistJetJetPatchE_%d", groupname.Data(), cent);
@@ -494,6 +506,11 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
         for(auto jet : jetCont->accepted()) {
             if (!jet) continue;
             count++;
+
+            TLorentzVector leadPart;
+            jetCont->GetLeadingHadronMomentum(leadPart, jet);
+            Double_t z = GetParallelFraction(leadPart.Vect(), jet);
+            if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999;
             
             histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, jet->Pt());
@@ -518,8 +535,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
             fHistManager.FillTH2(histname,jet->Pt(),jet->N());
             
             histname = TString::Format("%s/histJetFF_%d", groupname.Data(), fCentBin);
-            fHistManager.FillTH1(histname, jet->MaxTrackPt() / jet->Pt() );
-            
+            fHistManager.FillTH1(histname, z );
             
             Double_t MatchedEta = 0.04, MatchedPhi = 0.04;
            //Look at  emcal trigger patches in event and associate with jet
@@ -539,7 +555,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                 continue;
             }
             
-            AliEMCALTriggerPatchInfo *currentpatch(nullptr);
+            //AliEMCALTriggerPatchInfo *currentpatch(nullptr);
              for(auto p : *fTriggerPatchInfo){
                 AliEMCALTriggerPatchInfo *currentpatch = static_cast<AliEMCALTriggerPatchInfo *>(p);
                 
@@ -601,15 +617,31 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                 for(auto cluster : JetCluster->accepted()) {
                     AliTLorentzVector nPart;
                     cluster->GetMomentum(nPart, fVertex);
+                    Double_t JetFCross = GetFcross(cluster, fCaloCells);
                     histname = TString::Format("%s/histJetClusterEnergy_%d", groupname.Data(), fCentBin);
                     fHistManager.FillTH1(histname, cluster->E());
                     histname = TString::Format("%s/histJetClusterPhi_%d", groupname.Data(), fCentBin);
                     fHistManager.FillTH1(histname, nPart.Phi_0_2pi());
                     histname = TString::Format("%s/histJetClusterEta_%d", groupname.Data(), fCentBin);
                     fHistManager.FillTH1(histname, nPart.Eta());
+                    histname = TString::Format("%s/histFCrossvZleading_%d", groupname.Data(), fCentBin);
+                    fHistManager.FillTH2(histname,jet->MaxTrackPt() / jet->Pt(), JetFCross);
                 }
+                
+                
             }
             
+            AliVCluster* leadingCluster = jet->GetLeadingCluster();
+            if(!leadingCluster) continue;
+            AliTrackContainer * Globaltracks = static_cast<AliTrackContainer * >(GetParticleContainer("tracks"));
+            if(!Globaltracks || !leadingCluster) continue;
+            Double_t JetFCrossLeading = GetFcross(leadingCluster, fCaloCells);
+            Double_t TrackMultiplicity = Globaltracks->GetNTracks();
+            Double_t Numb = jet->N();
+            Double_t NumbNeu = jet->Nn();
+            Double_t NumbChrg = jet->Nch();
+            Double_t MBJetSparseFill[13]={TrackMultiplicity,jet->Pt(),jet->MaxTrackPt(),leadingCluster->E(),jet->Eta(),jet->Phi(),JetFCrossLeading,z,jet->Area(),jet->NEF(),Numb,NumbNeu,NumbChrg};
+            fhnMBJetSpectra->Fill(MBJetSparseFill);
             
             if (jetCont->GetRhoParameter()) {
                 histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), fCentBin);
@@ -777,9 +809,11 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::ExecOnce()
  */
 Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Run()
 {
-    Int_t runNum = InputEvent()->GetRunNumber();
+    //Int_t runNum = InputEvent()->GetRunNumber();
     
     //Bool_t PileUp = AliVEvent::IsPileupFromSPD();
+    
+    //Double_t zVertex=fVertex[2];
     
     this->SetCaloTriggerPatchInfoName("EmcalTriggers");
     
@@ -802,8 +836,8 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Run()
         }
     }
     
-    fClusterEResolution = new TF1("fClusterEResolution","sqrt([0]^2+[1]^2*x+([2]*x)^2)*0.01");
-    fClusterEResolution->SetParameters(4.35,9.07,1.63);
+    fClusterEResolution = new TF1("fClusterEResolution","sqrt([0]^2+[1]^2*x+([2]*x)^2)*0.01");// 2010 EMCal Test Beam Resolution
+    fClusterEResolution->SetParameters(4.35,9.07,1.63);//Fit to test beam
     
     
     
@@ -991,3 +1025,176 @@ Double_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetFcross(const AliVCluste
   //  return fRandomGen->Gaus(0, smear);
     
 //}
+THnSparse* AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::NewTHnSparseF(const char* name, UInt_t entries)
+{
+    Int_t count = 0;
+    UInt_t tmp = entries;
+    while(tmp!=0){
+        count++;
+        tmp = tmp &~ -tmp;  // clear lowest bit
+    }
+    
+    TString hnTitle(name);
+    const Int_t dim = count;
+    Int_t nbins[dim];
+    Double_t xmin[dim];
+    Double_t xmax[dim];
+    
+    Int_t i=0;
+    Int_t c=0;
+    while(c<dim && i<32){
+        if(entries&(1<<i)){
+            
+            TString label("");
+            GetDimParams(i, label, nbins[c], xmin[c], xmax[c]);
+            hnTitle += Form(";%s",label.Data());
+            c++;
+        }
+        
+        i++;
+    }
+    hnTitle += ";";
+    
+    return new THnSparseF(name, hnTitle.Data(), dim, nbins, xmin, xmax);
+}
+/**
+ * Stores labels and binning of axes for creating a new THnSparseF.
+ *
+ * @param[in] iEntry Which axis to pick out of the cases.
+ * @param[out] label Label of the axis.
+ * @param[out] nbins Number of bins for the axis.
+ * @param[out] xmin Minimum value of the axis.
+ * @param[out] xmax Maximum value of the axis.
+ */
+void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetDimParams(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
+{
+    const Double_t pi = TMath::Pi();
+    
+    switch(iEntry){
+            
+        case 0:
+            label = "V0 centrality (%)";
+            nbins = 30;
+            xmin = 0.;
+            xmax = 100.;
+            // Adjust for pp, since we are retrieving multiplicity instead
+            if (fForceBeamType == AliAnalysisTaskEmcal::kpp) {
+                label = "Multiplicity";
+                xmax = 300.;
+            }
+            break;
+            
+        case 1:
+            label = "Jet p_{T}";
+            nbins = 200;
+            xmin = 0.;
+            xmax = 200.;
+            break;
+            
+        case 2:
+            label = "Track p_{T}";
+            nbins = 100;
+            xmin = 0.;
+            xmax = 100;
+            break;
+            
+        case 3:
+            label = "Cluster E";
+            nbins = 100;
+            xmin = 0.;
+            xmax = 100;
+            break;
+            
+        case 4:
+            label = "Jet#eta";
+            nbins = 24;
+            xmin = -1.2;
+            xmax = 1.2;
+            break;
+            
+        case 5:
+            label = "Jet #phi";
+            nbins = 72;
+            xmin = -0.5*pi;
+            xmax = 1.5*pi;
+            break;
+            
+        case 6:
+            label = "#it{p}_{T,track}^{leading}";
+            nbins = 100;
+            xmin = 0;
+            xmax = 100;
+            break;
+            
+        case 7:
+            label = "Matched Trigger Amp";
+            nbins = 10;
+            xmin = 0;
+            xmax = 50;
+            break;
+            
+        case 8:
+            label = "#Delta#eta";
+            nbins = 48;
+            xmin = -1.2;
+            xmax = 1.2;
+            break;
+            
+        case 9:
+            label = "#Delta#phi";
+            nbins = 72;
+            xmin = 0;
+            xmax = 2*pi;
+            break;
+            
+        case 10:
+            label = "F_{cross}";
+            nbins = 20;
+            xmin = 0;
+            xmax = 1;
+            break;
+            
+        case 11:
+            label = "z_{leading}";
+            nbins = 20;
+            xmin = 0;
+            xmax = 1;
+            break;
+            
+        case 12:
+            label = "#it{A}_{jet}";
+            nbins = 20;
+            xmin = 0;
+            xmax = 1;
+            break;
+            
+        case 13:
+            label = "Jet NEF";
+            nbins = 20;
+            xmin = 0;
+            xmax = 1;
+            break;
+            
+        case 14:
+            label = "Numb Constit";
+            nbins = 50;
+            xmin = 0;
+            xmax = 50;
+            break;
+            
+        case 15:
+            label = "Numb Chrg Constit";
+            nbins = 50;
+            xmin = 0;
+            xmax = 50;
+            break;
+            
+        case 16:
+            label = "Numb Neu Constit";
+            nbins = 50;
+            xmin = 0;
+            xmax = 50;
+            break;
+    }
+}
+
