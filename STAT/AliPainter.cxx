@@ -12,6 +12,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+
+/*
+* TODO: add checks for nonexistent projections @Boris
+* TODO: add auto canvas->cd(1) after DivideTPad
+*/
+
+
 #include "AliPainter.h"
 #include "AliTMinuitToolkit.h"
 #include "TPad.h"
@@ -579,14 +587,15 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 ///                                    class = Raw - also as class=[Raw] will add .class(Raw)
 ///                                    class = [] - in this case nothing will add to the end of the name of object (default)
 ///                                dOption - root standard draw options [see docs](https://root.cern.ch/root/htmldoc/guides/users-guide/Histograms.html#draw-options)
-/// \param inputArray       - array of input objects
+/// \param histogramArray   - array of input objects
 ///                         - Object to draw - histogramArray->FindObject(histogramName)
 ///                         - in case histogramArray is nullptr or histogram not found gROOT->FindObject()
 ///                           will be used
-/// \param metaData         - array with metadata describing histogram axis
+/// \param pad              - input pad if nullptr will create new one;
+/// \param metaData         - array with metadata describing histogram
 ///                         - for example in the trees we optionally keep metadata (array of TNamed ()tag,value) in the array "metaTable"
 ///                         - in case not specified -"metaTable" object from the histogramArray used
-/// \param keepArray        - array to keep temporary objects
+/// \param keepArray        - array for keeping temporary objects
 ///
 /// \return
 /*!

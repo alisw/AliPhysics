@@ -32,6 +32,7 @@ void AliDrawStyleTest_ConvertColor();
 void AliDrawStyleTest_GetIntValues();
 void AliDrawStyleTest_GetFloatValues();
 void AliDrawStyleTest_IsSelected();
+void AliDrawStyleTest_GetIds();
 //  void AliDrawStyleTest_CSSReadWrite();
 void AliDrawStyleTest_GetValue();
 void AliDrawStyleTest_ApplyCssStyle();
@@ -44,6 +45,7 @@ void AliDrawStyleTest() {
   AliDrawStyleTest_GetIntValues();
   AliDrawStyleTest_GetFloatValues();
   AliDrawStyleTest_IsSelected();
+  AliDrawStyleTest_GetIds();
 //  //  AliDrawStyleTest_CSSReadWrite();
   AliDrawStyleTest_GetValue();
   AliDrawStyleTest_ApplyCssStyle();
@@ -261,6 +263,109 @@ void AliDrawStyleTest_IsSelected() {
     ::Info("AliDrawStyleTest","!AliDrawStyle::IsSelected(\"%s\",\"TGraph\", \"Warning\", \"obj3\")- IsOK", selectors.Data());
   } else{
     ::Error("AliDrawStyleTest","!AliDrawStyle::IsSelected(\"%s\",\"TGraph\", \"Warning\", \"obj3\")- FAILED", selectors.Data());
+  }
+}
+
+void AliDrawStyleTest_GetIds() {
+  TString elementID = "";
+  TString classID   = "";
+  TString objectID  = "";
+  TString styleID   = "";
+
+  TH1F *his = new TH1F("his1.style(345)", "title", 100,-5,5);
+  TObject *obj = (TObject *) his;
+  AliDrawStyle::GetIds(obj, elementID, classID, objectID, styleID);
+  if(elementID == TString("TH1F") && classID == TString("") && objectID == TString("his1") && styleID == TString("345")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- IsOK", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- FAILED", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  }
+
+  TH1F *his8 = new TH1F("his1.class(123)", "title", 100,-5,5);
+  obj = (TObject *) his8;
+  AliDrawStyle::GetIds(obj, elementID, classID, objectID, styleID);
+  if(elementID == TString("TH1F") && classID == TString("123") && objectID == TString("his1") && styleID == TString("")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- IsOK", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- FAILED", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  }
+
+  elementID = "";
+  classID   = "";
+  objectID  = "";
+  styleID   = "";
+  TH1F *his2 = new TH1F("his1.class(123).style(345)", "title", 100,-5,5);
+  obj = (TObject *) his2;
+  AliDrawStyle::GetIds(obj, elementID, classID, objectID, styleID);
+  if(elementID == TString("TH1F") && classID == TString("123") && objectID == TString("his1") && styleID == TString("345")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- IsOK", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- FAILED", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  }
+
+  elementID = "";
+  classID   = "";
+  objectID  = "";
+  styleID   = "";
+  TH1F *his3 = new TH1F("his1.TPC.RAW.class(123).style(345)", "title", 100,-5,5);
+  obj = (TObject *) his3;
+  AliDrawStyle::GetIds(obj, elementID, classID, objectID, styleID);
+  if(elementID == TString("TH1F") && classID == TString("123") && objectID == TString("his1.TPC.RAW") && styleID == TString("345")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- IsOK", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- FAILED", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  }
+
+  elementID = "";
+  classID   = "";
+  objectID  = "";
+  styleID   = "";
+  TH1F *his4 = new TH1F("his1.TPC.RAW.style(345).class(123)", "title", 100,-5,5);
+  obj = (TObject *) his4;
+  AliDrawStyle::GetIds(obj, elementID, classID, objectID, styleID);
+  if(elementID == TString("TH1F") && classID == TString("123") && objectID == TString("his1.TPC.RAW") && styleID == TString("345")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- IsOK", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- FAILED", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  }
+
+  elementID = "";
+  classID   = "";
+  objectID  = "";
+  styleID   = "";
+  TH1F *his5 = new TH1F("his.TPC.RAW[1].style(345).class(123)", "title", 100,-5,5);
+  obj = (TObject *) his5;
+  AliDrawStyle::GetIds(obj, elementID, classID, objectID, styleID);
+  if(elementID == TString("TH1F") && classID == TString("123") && objectID == TString("his.TPC.RAW") && styleID == TString("345")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- IsOK", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- FAILED", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  }
+
+  elementID = "";
+  classID   = "";
+  objectID  = "";
+  styleID   = "";
+  TH1F *his6 = new TH1F("his[1]", "title", 100,-5,5);
+  obj = (TObject *) his6;
+  AliDrawStyle::GetIds(obj, elementID, classID, objectID, styleID);
+  if(elementID == TString("TH1F") && classID == TString("") && objectID == TString("his") && styleID == TString("")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- IsOK", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- FAILED", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  }
+
+  elementID = "";
+  classID   = "";
+  objectID  = "";
+  styleID   = "";
+  TH1F *his7 = new TH1F("his7", "title", 100,-5,5);
+  obj = (TObject *) his7;
+  AliDrawStyle::GetIds(obj, elementID, classID, objectID, styleID);
+  if(elementID == TString("TH1F") && classID == TString("") && objectID == TString("his7") && styleID == TString("")) {
+    ::Info("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- IsOK", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
+  } else{
+    ::Error("AliDrawStyleTest","AliDrawStyle::GetIds(\"%s\",\"%s\", \"%s\", \"%s\", \"%s\")- FAILED", obj->GetName(), elementID.Data(), classID.Data(), objectID.Data(), styleID.Data());
   }
 
 }

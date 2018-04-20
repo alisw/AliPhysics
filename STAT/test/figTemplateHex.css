@@ -17,7 +17,7 @@ fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPt
     AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
     // Use Canvas41 default layout
     TCanvas *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
-    AliPainter::DivideTPad("<horizontal>[1b,1t,1,1]", "Canvas41",canvasQA);
+    AliPainter::DivideTPad("<horizontal>[1b,1t,1,1]", "Canvas41", "", canvasQA);
     canvasQA->cd(1);
     AliPainter::DrawHistogram("hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)", hisArray);
     AliPainter::DrawHistogram("hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)", hisArray);
@@ -26,7 +26,7 @@ fixme: ApplyStyle doesn't work with huge name of object like this "hisK0DMassQPt
     AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 
     TCanvas *canvasQA1 = new TCanvas("canvasQA", "canvasQA", 1200, 800);
-    AliPainter::DivideTPad("<horizontal>[1]", "Canvas1", canvasQA1);
+    AliPainter::DivideTPad("<horizontal>[1]", "Canvas1", "",  canvasQA1);
     canvasQA1->cd(1);
     AliPainter::DrawHistogram("hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E,ylim=[0,])", hisArray);
     AliDrawStyle::ApplyCssStyle(canvasQA1, "figTemplateHex");
