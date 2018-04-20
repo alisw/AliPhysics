@@ -526,13 +526,14 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         if(dcaNegToVertex >= 0.2 && dcaPosToVertex >= 0.1 && TMath::Abs(posprnsg)  <= 3.)
         {
             f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
-            ptCh[iptbin] += 1;
+            if(invMassLambda > 1.11341 && invMassLambda < 1.11885){ ptCh[iptbin] += 1;}
+           
         }
         
         if(dcaNegToVertex >= 0.1 && dcaPosToVertex >= 0.2 && TMath::Abs(negprnsg)  <= 3.)
         {
             f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
-            ptCh[iptbin+fNptBins] += 1;
+            if(invMassAntiLambda > 1.11341 && invMassAntiLambda < 1.11887) {ptCh[iptbin+fNptBins] += 1;}
         }
         
     
