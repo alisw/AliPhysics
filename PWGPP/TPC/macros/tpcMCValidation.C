@@ -47,7 +47,7 @@
 
 AliExternalInfo *externalInfo = 0;
 AliTreeTrending *trendingDraw = 0;
-TTree *treeMC;
+TTree *treeMC =0;
 std::vector <Double_t> cRange;
 std::vector <Double_t> cRange2;
 std::vector <Double_t> cRange5;
@@ -81,14 +81,19 @@ void tpcMCValidation(const char *mcPeriod, const char *sOutputDir) {
   cout << mcPeriod << endl;
   TString anchorProdNamePass = i.GetMCPassGuess(TString::Format("%s", mcPeriod));
   cout << "Anchor Production Name and Pass: " << anchorProdNamePass << endl;
+  if(anchorProdNamePass.Contains("not found")) {
+      ::Error("tpcMCValidation", "MC not found in guess -> skip plotting!");
+      return;
+  }
   TObjArray *subStrL;
   subStrL = TPRegexp("^([^ ]+)").MatchS(anchorProdNamePass);
-  TString anchorProdName = ((TObjString *) subStrL->At(0))->GetString();
+  TString anchorProdName = ((TObjString *) subStrL->At(0))->GetString().ReplaceAll("?","");
   subStrL = TPRegexp("([^ ])+$").MatchS(anchorProdNamePass);
   TString anchorPassName = ((TObjString *) subStrL->At(0))->GetString();
   if (InitTPCMCValidation(mcPeriod, "passMC", anchorProdName, anchorPassName, 0, 0)) {
     MakeReport();
-  } else ::Error("tpcMCValidation", "InitTPCMCValidation returned with error -> skip plotting!");
+  }
+  else ::Error("tpcMCValidation", "InitTPCMCValidation returned with error -> skip plotting!");
 }
 
 /// makeTPCMCAlarms - Set of expression aliases/formulas  (Warning,Outlier,PhysAcc)
@@ -249,13 +254,13 @@ Bool_t InitTPCMCValidation(TString mcPeriod, TString mcPass, TString anchorPerio
   cRange = std::vector < Double_t > {0.13, 0.01, 0.5, 0.35};
   cRange2 = std::vector < Double_t > {0.13, 0.01, 0.5, 0.3};
   cRange5 = std::vector < Double_t > {0.13, 0.01, 0.8, 0.3};
-  externalInfo = new AliExternalInfo(".", "", verbose);
-  trendingDraw = new AliTreeTrending("mcAnchor","mcAnchor");
+  if(externalInfo==0) externalInfo = new AliExternalInfo(".", "", verbose);
+  if(trendingDraw==0) trendingDraw = new AliTreeTrending("mcAnchor","mcAnchor");
   trendingDraw->SetDefaultStyle();
   
   gStyle->SetOptTitle(0);
 
-  treeMC = externalInfo->GetTree("QA.TPC", mcPeriod, mcPass, "QA.TPC;QA.TRD;QA.TOF;QA.ITS");
+  if(treeMC==0) treeMC = externalInfo->GetTree("QA.TPC", mcPeriod, mcPass, "QA.TPC;QA.TRD;QA.TOF;QA.ITS");
 
   TTree *treeAnchorTPC = NULL;
   treeAnchorTPC = externalInfo->GetTree("QA.TPC", anchorPeriod, anchorPass,
