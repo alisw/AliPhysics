@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_slehner_ElectronEfficiency(Bool_t hasITS = kTRUE,
+AliAnalysisTask *AddTask_slehner_TreeMakeWCutLib(Bool_t hasITS = kTRUE,
                                                      Int_t trackCut=1,
                                                      Int_t evCut=1,
                                                      TString directoryBaseName = "slehner",
@@ -12,7 +12,7 @@ AliAnalysisTask *AddTask_slehner_ElectronEfficiency(Bool_t hasITS = kTRUE,
 	AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 	if(!mgr){
 		
-		Error("AddTask_slehner_ElectronEfficiency", "No analysis manager found.");
+		Error("AddTask_slehner_TreeMakeWCutLib", "No analysis manager found.");
 		return 0;
 	}
 
