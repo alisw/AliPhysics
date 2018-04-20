@@ -22,6 +22,7 @@
 #include "TFile.h"
 #include "TColor.h"
 #include "TEfficiency.h"
+#include <TGeoMatrix.h>
 
 // aliroot headers
 #include "AliAnalysisManager.h"
@@ -39,6 +40,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliTOFGeometry.h"
 #include "AliESDtrackCuts.h"
+
 
 // my headers
 #include "AliAnalysisTaskTOFTrigger.h"
@@ -298,10 +300,17 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   TString fileName = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
   if(fileName.Contains("pass1") || fileName.Contains("pass5"))fIsPass1 = kTRUE;
   else fIsPass1 = kFALSE;
-
+  
+  
   if(!fGeomLoaded){
-  	AliGeomManager::LoadGeometry();
-  	AliGeomManager::ApplyAlignObjsFromCDB("ITS TRD TOF");
+  	//Done in CDB connect task
+  	//AliGeomManager::LoadGeometry();
+  	//AliGeomManager::ApplyAlignObjsFromCDB("ITS TRD TOF");
+	
+  	for (int i=0;i<18;i++) {
+   		AliGeomManager::GetOrigGlobalMatrix( Form("TOF/sm%02d",i) ,matOrig[i]);
+   		matCurr[i] = *AliGeomManager::GetMatrix( Form("TOF/sm%02d",i) );
+   		}
   	fGeomLoaded = kTRUE;
 	}
 
@@ -414,6 +423,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     }
   }
   Double_t cv[21];
+   
   //Track loop
   for(Int_t iTrack=0; iTrack<esd->GetNumberOfTracks(); iTrack++) {
     AliESDtrack *esdTrackOrig = dynamic_cast<AliESDtrack*>(esd->GetTrack(iTrack));
@@ -464,10 +474,12 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     //Fine propagation from TOF radius
     Bool_t isin = kFALSE;
     Float_t dist3d[3]={-1.,-1.,-1.}; // residual to TOF channel
+    Int_t detId[5] = {-1,-1,-1,-1,-1};
     Float_t rTOFused = AliTOFGeometry::RinTOF();
     Double_t pos[3]={0.0,0.0,0.0};
     Float_t posF_In[3]={0.0,0.0,0.0};
     Float_t posF_Out[3]={0.0,0.0,0.0};
+    Double_t locTmp[3]={0.0,0.0,0.0};
     UInt_t nFiredPads = 0;
     UInt_t instep = 0;
     
@@ -486,13 +498,17 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		}
 	
     	trc->GetXYZ(pos);
+	matCurr[sect].MasterToLocal(pos, locTmp); // go to sector local frame, accounting for misaligment
+	matOrig[sect].LocalToMaster(locTmp, pos); // go back to ideal lab frame
+	
 	posF_In[0] = pos[0];
 	posF_In[1] = pos[1];
 	posF_In[2] = pos[2];
 	dist3d[0] = AliTOFGeometry::GetPadDx(posF_In);
      	dist3d[1] = AliTOFGeometry::GetPadDy(posF_In);
      	dist3d[2] = AliTOFGeometry::GetPadDz(posF_In);
-	if(dist3d[0] != -2 && dist3d[1] != -2 && dist3d[2] != -2){
+	
+	if(TMath::Abs(dist3d[0]) < 1.25 && TMath::Abs(dist3d[1]) < 0.1 && TMath::Abs(dist3d[2]) < 1.75){
 		isin= kTRUE;
 		nFiredPads++;
 		hPadDistance->Fill(TMath::Sqrt(dist3d[0]*dist3d[0]+dist3d[1]*dist3d[1]+dist3d[2]*dist3d[2]));
@@ -514,6 +530,9 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 				}
 	
     			trc->GetXYZ(pos);
+			matCurr[sect].MasterToLocal(pos, locTmp); // go to sector local frame, accounting for misaligment
+			matOrig[sect].LocalToMaster(locTmp, pos); // go back to ideal lab frame
+			
 			posF_Out[0] = pos[0];
 			posF_Out[1] = pos[1];
 			posF_Out[2] = pos[2];
@@ -528,7 +547,6 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		}
 	if(isin){
 		isin = kFALSE;
-		Int_t detId[5] = {-1,-1,-1,-1,-1};
 		Int_t indexLTM[2] = {-1,-1};
 		detId[0]=AliTOFGeometry::GetSector(posF_In);
 		detId[1]=AliTOFGeometry::GetPlate(posF_In);
@@ -568,7 +586,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    hTrackDistribution_El->Fill(trc->Phi()*TMath::RadToDeg(),trc->Eta());
                     numElectronTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
 		    }
-		if(trigger.Contains("CCUP8-B")){
+		if(trigger.Contains("CCUP8-B") || trigger.Contains("CCUP4-B")){
 			if(!fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()< 2))hNotFiredMaxiPad->Fill(indexLTM[0],channelCTTM);
 			}
 		}

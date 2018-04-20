@@ -10,6 +10,7 @@ class AliTOFTriggerMask;
 class TEfficiency;
 class TH2F;
 class AliESDtrackCuts;
+class TGeoMatrix;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -72,6 +73,8 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
 
   Bool_t fIsPass1;
   Bool_t fGeomLoaded;
+  TGeoHMatrix matOrig[18]; 
+  TGeoHMatrix matCurr[18];
   Float_t fMaxPt;
   Float_t fMinPt;
   Int_t fMaxMulti;
@@ -87,7 +90,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
 
-  ClassDef(AliAnalysisTaskTOFTrigger, 12);
+  ClassDef(AliAnalysisTaskTOFTrigger, 13);
 };
 
 #endif
