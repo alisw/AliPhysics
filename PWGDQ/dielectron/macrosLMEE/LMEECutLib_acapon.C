@@ -339,13 +339,13 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet){
 			trackCutsTTree->AddCut(AliDielectronVarManager::kNFclsTPCr,      60.0, 200.); //Crossed (60)
 			trackCutsTTree->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); //Crossed rows over findable
 			//DCA
-			trackCutsTTree->AddCut(AliDielectronVarManager::kImpactParXY,  - 1.0, 1.0);
-			trackCutsTTree->AddCut(AliDielectronVarManager::kImpactParZ,   - 3.0, 3.0);
+			trackCutsTTree->AddCut(AliDielectronVarManager::kImpactParXY,  - 3.0, 3.0);
+			trackCutsTTree->AddCut(AliDielectronVarManager::kImpactParZ,   - 4.0, 4.0);
 			//ITS cuts
 			if(wSDD){
-				trackCutsTTree->AddCut(AliDielectronVarManager::kNclsITS,  4.0, 100.0); // < 3
+				trackCutsTTree->AddCut(AliDielectronVarManager::kNclsITS,  3.0, 100.0); // < 3
 			}else{
-				trackCutsTTree->AddCut(AliDielectronVarManager::kNclsITS,  2.0, 100.0); // < 2
+				trackCutsTTree->AddCut(AliDielectronVarManager::kNclsITS,  1.0, 100.0); // < 1
 			}
 			trackCutsTTree->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0, 36.);
 			
