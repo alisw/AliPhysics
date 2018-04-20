@@ -83,7 +83,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
   typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
 
-  enum EOutputType_t { kNoOutput, kTreeOutput, kTHnOutput };
+  enum EOutputType_t { kNoOutput, kTreeOutput, kTHnOutput, kOnlyQAOutput };
   enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
   enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth, kD0Reflection, kOnlyWrongPIDAccepted };
   enum EMesonOrigin_t {
@@ -434,9 +434,9 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     friend bool        operator==(const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs);
     friend inline bool operator!=(const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs){ return !(lhs == rhs); }
 
-  protected:
-    friend class AliAnalysisTaskDmesonJets;
-    friend class AnalysisEngine;
+//  protected:
+//    friend class AliAnalysisTaskDmesonJets;
+//    friend class AnalysisEngine;
 
     EJetType_t                fJetType       ; ///<  Jet type (charged, full, neutral)
     Double_t                  fRadius        ; ///<  Jet radius
@@ -462,6 +462,119 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     /// \endcond
   };
 
+  class AnalysisEngine;
+
+  /// \class OutputHandler
+  /// \brief Output handler for D meson jet analysis
+  ///
+  /// This class encapsulates the handler of the output of the analysis
+  /// This is a base generic class: it only implements the filling of QA histograms
+  class OutputHandler {
+  public:
+    OutputHandler();
+    OutputHandler(AnalysisEngine* eng);
+
+    virtual ~OutputHandler() {;}
+
+    virtual Bool_t FillOutput(Bool_t applyKinCuts);
+
+    virtual void BuildOutputObject(const char* taskName) {;}
+
+    virtual TObject* GetOutputObject() const           { return 0 ; }
+    virtual Int_t  GetDataSlotNumber() const           { return -1; }
+
+  protected:
+    ECandidateType_t                   fCandidateType         ; //!<! Candidate type
+    EMCMode_t                          fMCMode                ; //!<! MC mode: No MC (data and MC detector level), background-only (MC), signal-only (MC), MC truth (particle level)
+    Int_t                              fNMassBins             ; //!<! Mass number of bins
+    Double_t                           fMinMass               ; //!<! Min mass in histogram axis
+    Double_t                           fMaxMass               ; //!<! Max mass in histogram axis
+    std::vector<AliHFJetDefinition>   *fJetDefinitions        ; //!<! Jet definitions
+    Float_t                            fPtBinWidth            ; //!<! Histogram pt bin width
+    Float_t                            fMaxPt                 ; //!<! Histogram pt limit
+    Bool_t                             fD0Extended            ; //!<! Store extended information in the tree (only for D0 mesons)
+    std::map<int, AliDmesonJetInfo>   *fDmesonJets            ; //!<! Array containing the D meson jets
+    THistManager                      *fHistManager           ; //!<! Histograms
+    TString                            fName                  ; //!<! Name of this object
+
+  };
+
+  /// \class OutputHandlerTHnSparse
+  /// \brief Output handler for D meson jet analysis
+  ///
+  /// This class encapsulates the handler of the output of the analysis
+  /// This is a base generic class: it only implements the filling of QA histograms
+  class OutputHandlerTHnSparse : public OutputHandler {
+  public:
+    OutputHandlerTHnSparse();
+    OutputHandlerTHnSparse(AnalysisEngine* eng);
+
+    virtual ~OutputHandlerTHnSparse() {;}
+
+    virtual Bool_t FillOutput(Bool_t applyKinCuts);
+
+    virtual void BuildOutputObject(const char* taskName);
+
+    Bool_t FillHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n);
+
+    Bool_t IsAnyJetInAcceptance(const AliDmesonJetInfo& dMesonJet) const;
+    void SetEnabledAxis(UInt_t axis) { fEnabledAxis = axis; }
+
+  protected:
+    UInt_t               fEnabledAxis               ; //!<! Use bit defined in EAxis_t to enable axis in the THnSparse
+  };
+
+  /// \class OutputHandlerTTree
+  /// \brief Output handler for D meson jet analysis
+  ///
+  /// This class encapsulates the handler of the output of the analysis
+  /// This is a base generic class: it only implements the filling of QA histograms
+  class OutputHandlerTTree : public OutputHandler {
+  public:
+    OutputHandlerTTree();
+    OutputHandlerTTree(AnalysisEngine* eng);
+
+    virtual ~OutputHandlerTTree() {;}
+
+    virtual Bool_t FillOutput(Bool_t applyKinCuts);
+
+    virtual void BuildOutputObject(const char* taskName);
+    virtual TObject* GetOutputObject() const           { return fTree; }
+    virtual Int_t  GetDataSlotNumber() const           { return fDataSlotNumber    ; }
+
+    TTree* GetTree() const { return fTree; }
+    void   AssignDataSlot(Int_t n)             { fDataSlotNumber        = n; }
+
+  protected:
+    Int_t                              fDataSlotNumber        ; //!<! Data slot where the tree output is posted
+    TTree                             *fTree                  ; //!<! Output tree
+    AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
+    AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
+  };
+ /*
+  /// \class OutputHandlerTTreeExtended
+  /// \brief Output handler for D meson jet analysis
+  ///
+  /// This class encapsulates the handler of the output of the analysis
+  /// This is a base generic class: it only implements the filling of QA histograms
+  class OutputHandlerTTreeExtended : public OutputHandler {
+  public:
+    OutputHandlerTTreeExtended();
+    OutputHandlerTTreeExtended(AnalysisEngine* eng);
+    virtual Bool_t FillOutput(Bool_t applyKinCuts);
+
+    virtual void BuildOutputObject(const char* taskName);
+    virtual TObject* GetOutputObject() const           { return fTree; }
+    virtual Int_t  GetDataSlotNumber() const           { return fDataSlotNumber    ; }
+
+    TTree* GetTree() const { return fTree; }
+    void   AssignDataSlot(Int_t n)             { fDataSlotNumber        = n; }
+
+  private:
+    Int_t                              fDataSlotNumber        ; //!<! Data slot where the tree output is posted
+    TTree                             *fTree                  ; //!<! Output tree
+  };
+*/
   /// \class AnalysisEngine
   /// \brief Struct that encapsulates analysis parameters
   ///
@@ -507,11 +620,12 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     EMCMode_t GetMCMode()                     const { return fMCMode         ; }
     ECandidateType_t GetCandidateType()       const { return fCandidateType  ; }
 
+    OutputHandler* GetOutputHandler() const { return fOutputHandler; }
+
     AliHFJetDefinition* AddJetDefinition(EJetType_t type, Double_t r, EJetAlgo_t algo, ERecoScheme_t reco);
     AliHFJetDefinition* AddJetDefinition(const AliHFJetDefinition& def);
     std::vector<AliHFJetDefinition>::iterator FindJetDefinition(const AliHFJetDefinition& eng);
     std::vector<AliAnalysisTaskDmesonJets::AliHFJetDefinition>& GetJetDefinitions() { return fJetDefinitions; }
-    Bool_t IsAnyJetInAcceptance(const AliDmesonJetInfo& dMesonJet) const;
 
     void SetJetPhiRange(Double_t min, Double_t max);
     void SetJetEtaRange(Double_t min, Double_t max);
@@ -525,19 +639,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     void Init(const AliEMCALGeometry* const geom, Int_t runNumber);
 
-    TTree* BuildTree(const char* taskName);
-    TTree* GetTree() const { return fTree; }
-    Bool_t FillTree(Bool_t applyKinCuts);
-
     void   SetTrackEfficiency(Double_t t)      { fTrackEfficiency       = t; }
-    void   AssignDataSlot(Int_t n)             { fDataSlotNumber        = n; }
-    Int_t  GetDataSlotNumber() const           { return fDataSlotNumber    ; }
-
-    void   BuildHnSparse(UInt_t enabledAxis);
-    Bool_t FillHnSparse(Bool_t applyKinCuts);
-    Bool_t FillHnSparse(THnSparse* h, const AliDmesonJetInfo& DmesonJet, std::string n);
-
-    Bool_t FillQA(Bool_t applyKinCuts);
 
     Bool_t IsInhibit() const { return fInhibit; }
 
@@ -548,8 +650,6 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     friend bool        operator==(const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator!=(const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return !(lhs == rhs); }
-
-    std::map<AliAODMCParticle*, Short_t> fPartons ; //!<! set of the partons in the shower that produced each D meson
 
   protected:
     void RunAnalysis();
@@ -572,13 +672,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Float_t                            fPtBinWidth            ; ///<  Histogram pt bin width
     Float_t                            fMaxPt                 ; ///<  Histogram pt limit
     Bool_t                             fD0Extended            ; ///<  Store extended information in the tree (only for D0 mesons)
+    OutputHandler                     *fOutputHandler         ; //!<! Output handler
     TRandom                           *fRandomGen             ; //!<! Random number generator
     Double_t                           fTrackEfficiency       ; //!<! Artificial tracking inefficiency (0...1) -> set automatically at ExecOnce by AliAnalysisTaskDmesonJets
     Bool_t                             fRejectISR             ; //!<! Reject initial state radiation
-    Int_t                              fDataSlotNumber        ; //!<! Data slot where the tree output is posted
-    TTree                             *fTree                  ; //!<! Output tree
-    AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
-    AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
     std::map<int, AliDmesonJetInfo>    fDmesonJets            ; //!<! Array containing the D meson jets
     TClonesArray                      *fCandidateArray        ; //!<! D meson candidate array
     AliHFAODMCParticleContainer*       fMCContainer           ; //!<! MC particle container
@@ -591,6 +688,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     mutable TString                    fName                  ; //!<! Name of this object
 
     friend class AliAnalysisTaskDmesonJets;
+    friend class OutputHandler;
 
   private:
 
@@ -628,6 +726,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   void SetShowPositionJet(Bool_t b = kTRUE)       { fEnabledAxis = b ?  fEnabledAxis | kPositionJet       : fEnabledAxis & ~kPositionJet       ; }
   void SetShowJetConstituents(Bool_t b = kTRUE)   { fEnabledAxis = b ?  fEnabledAxis | kJetConstituents   : fEnabledAxis & ~kJetConstituents   ; }
 
+  UInt_t GetEnabledAxis() const { return fEnabledAxis; }
+
   void SetApplyKinematicCuts(Bool_t b)            { fApplyKinematicCuts = b ; }
   void SetOutputType(EOutputType_t b)             { SetOutputTypeInternal(b); }
   void SetTrackEfficiency(Double_t t)             { fTrackEfficiency    = t ; }
@@ -651,7 +751,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   static const char*   GetHFEventRejectionReasonLabel(UInt_t& bitmap);
   static void          CalculateMassLimits(Double_t range, Int_t pdg, Int_t nbins, Double_t& minMass, Double_t& maxMass);
 
-  Int_t                PostDataFromAnalysisEngine(const AnalysisEngine& eng);
+  Int_t                PostDataFromAnalysisEngine(OutputHandler const* handler);
 
   void                 FillPartonLevelHistograms();
 
