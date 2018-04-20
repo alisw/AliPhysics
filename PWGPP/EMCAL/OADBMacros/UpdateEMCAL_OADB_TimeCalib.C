@@ -1,184 +1,206 @@
-///
-/// \file UpdateEMCAL_OADB_TimeCalib.C
-/// \ingroup EMCAL_OADB
-/// \brief Update OADB file with EMCal Time calibration factors for different BCs
-///
-/// Histograms with time calibration offsets are loaded and some TObjArrays are filled with these histograms.
-/// This UpdateEMCAL_OADB_TimeCalib.C updates the information of a original OADB file EMCALTimeCalib.root
-/// and writes the output to EMCALTimeCalib_update1.root
-/// Remember to change EMCALTimeCalib_updateX.root to EMCALTimeCalib.root when update done
-///
-/// ******* Example to Update OADB Container 
-/// ******* for EMCal Time calibration
-/// ******* for different BCs
-///// update LHC15ijno and LHC16hfg
-///  .x UpdateEMCAL_OADB_TimeCalib.C("OADBfiles_v0_notModified/EMCALTimeCalib.root","CorrectionFilesTime/Reference_LHC15j_calib_final.root",236967,238622,"TimeCalib15j","pass0","update")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update.root","CorrectionFilesTime/Reference_LHC15i_calib.root",235709,236849,"TimeCalib15i","pass0","update2")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update2.root","CorrectionFilesTime/Reference_LHC15o_final.root",244917,246994,"TimeCalib15o","pass1","update3")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update3.root","CorrectionFilesTime/Reference_LHC15n_final.root",244340,244628,"TimeCalib15n","pass1","update4")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update4.root","CorrectionFilesTime/Reference_LHC15i_calib_mcp2_final.root",235709,236849,"TimeCalib15i","pass1","update5")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update5.root","CorrectionFilesTime/Reference_LHC15j_calib_mcp2_final.root",236967,238622,"TimeCalib15j","pass1","update6")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update6.root","CorrectionFilesTime/Reference_LHC16h_mcp1_novdM_calib_final.root",254381,255467,"TimeCalib16h","pass1","update7")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update7.root","CorrectionFilesTime/Reference_LHC16f_final.root",253658,253961,"TimeCalib16f","pass1","update8")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update8.root","CorrectionFilesTime/Reference_LHC16g_final.root",254124,254332,"TimeCalib16g","pass1","update9")
-///
-///// update LHC10b-f periods pass4
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update9.root","CorrectionFilesTime/Reference_LHC10b_calib.root",114737,117223,"TimeCalib10b","pass4","update10")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update10.root","CorrectionFilesTime/Reference_LHC10c_calib.root",118359,121040,"TimeCalib10c","pass4","update11")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update11.root","CorrectionFilesTime/Reference_LHC10d_calib.root",122195,126437,"TimeCalib10d","pass4","update12")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update12.root","CorrectionFilesTime/Reference_LHC10e_calib.root",127102,130850,"TimeCalib10e","pass4","update13")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update13.root","CorrectionFilesTime/Reference_LHC10f_calib.root",133004,135031,"TimeCalib10f","pass4","update14")
-///
-///// update LHC16klqrst only pass1
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update14.root","CorrectionFilesTime/Reference_LHC16k_final.root",256504,258574,"TimeCalib16k","pass1","update15")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update15.root","CorrectionFilesTime/Reference_LHC16l_final.root",258883,260187,"TimeCalib16l","pass1","update16")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update16.root","CorrectionFilesTime/Reference_LHC16q_final.root",265015,265525,"TimeCalib16q","pass1","update17")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update17.root","CorrectionFilesTime/Reference_LHC16r_final.root",265630,266318,"TimeCalib16r","pass1","update18")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update18.root","CorrectionFilesTime/Reference_LHC16s_final.root",266405,267131,"TimeCalib16s","pass1","update19")
-///  .x UpdateEMCAL_OADB_TimeCalib.C("EMCALTimeCalib_update19.root","CorrectionFilesTime/Reference_LHC16q_final.root",267161,267166,"TimeCalib16t","pass1","update20")
-/// \author Adam Matyja, <adam.tomasz.matyja@cern.ch>, IFJ PAN Cracow
-///
+//!  EMCal bad channel map creation macro
+/*!
+    With this macro, the 2D histogram bad channel maps can be added to OADB/EMCAL/EMCALBadChannels.root.
+*/
 
+#include "TGeoManager.h"
 
-
-///
-/// update the root file
-//
-/// \param fileNameOADB: TString, input OADB file
-/// \param filename: TString, input file with constants for given period
-/// \param runMin: Int_t, minimum run of validity for calib. constants
-/// \param runMax: Int_t, maximum run of validity for calib. constants
-/// \param periodname: TString, period name
-/// \param passname: TString, pass name
-/// \param outputPrefix: TString, output prefix
-///
-void UpdateEMCAL_OADB_TimeCalib(TString fileNameOADB="$ALICE_PHYSICS/OADB/EMCAL/EMCALTimeCalib.root",
-				TString filename="CorrectionFilesTime/Reference_LHC15j_calib_final.root",
-				Int_t runMin, Int_t runMax, TString periodname="TimeCalib15j",
-				TString passname="pass1", TString outputPrefix="update1")
+/*******************************************************************
+ *  NOTE: Main function which needs to be adjusted for new BC maps *
+ *******************************************************************/
+void UpdateEMCAL_OADB_TimeCalib(const char *fileNameOADBAli="$ALICE_DATA/OADB/EMCAL/EMCALTimeCalib.root")
 {
-  gSystem->Load("libOADB");  
-  AliOADBContainer *con	= new AliOADBContainer("");
-  con->InitFromFile(fileNameOADB.Data(), "AliEMCALTimeCalib");
+    gSystem->Load("libOADB");  
+    gSystem->Load("libEMCALbase");
+    gSystem->Load("libEMCALUtils");
+    gSystem->Load("libEMCALrec");
 
-  Int_t runNumber  = runMin;
-  Bool_t firstTime=kFALSE;
+    const char *fileNameOADB                ="EMCALTimeCalib_temp.root";
+    gSystem->Exec(Form("cp %s %s",fileNameOADBAli,fileNameOADB));
 
-  //open file with corrections and check
-  TFile *referenceFile = TFile::Open(filename.Data());//<<---change it here
-  if(referenceFile==0x0){
-    AliFatal("No reference file with time calibration");
-    return;
-  } 
+    // LHC17pq - 20180310
+//     updateFile(fileNameOADB,"TimeCalibLHC17pq","LHC17opq/LHC17pqmerge_finalcalib.root","pass1",282000,282441,0);
+//     updateFile(fileNameOADB,"TimeCalibLHC17o","LHC17opq/LHC17o_finalcalib.root","pass1",280282,281999,0);
 
-  //get run (period) array
-  TObjArray *arrayPeriod=NULL;
-  //cout<<"arrayPeriod (null) "<<arrayPeriod<<endl;
-  arrayPeriod=(TObjArray*)con->GetObject(runNumber);
-  //cout<<"arrayPeriod (still null) "<<arrayPeriod<<endl;
-  if(arrayPeriod==0x0){//not exist in OADB need to be created
-    arrayPeriod=new TObjArray(1);
-    arrayPeriod->SetName(Form("%s",periodname.Data()));
-    firstTime=kTRUE;
-  }
-  //cout<<"arrayPeriod (not null)"<<arrayPeriod<<endl;
-  
-  //create pass array
-  TObjArray *arrayPass=new TObjArray(8);
-  arrayPass->SetName(passname.Data());
-  
-  //add histograms to pass array
-  TH1D *tmpRefRun=NULL;
+    // LHC17j - 20180320
+//     updateFile(fileNameOADB,"TimeCalibLHC17j","LHC17j/LHC17j_finalcalib.root","pass1",274591,274671,0);
 
-  if(runNumber>200000){//Low and high gain calibration starts from LHC15 periods
-    for(Int_t iBC=0;iBC<4;iBC++) {//high gain
-      tmpRefRun = (TH1D*)referenceFile->Get(Form("hAllTimeAvBC%d",iBC));
-      if(tmpRefRun==0x0) continue;
-      arrayPass->Add(tmpRefRun);
-    }
 
-    for(Int_t iBC=0;iBC<4;iBC++) {//low gain
-      tmpRefRun = (TH1D*)referenceFile->Get(Form("hAllTimeAvLGBC%d",iBC));
-      if(tmpRefRun==0x0) continue;
-      arrayPass->Add(tmpRefRun);
-    }
-  } else {//for Run1 calibration
-    for(Int_t iBC=0;iBC<4;iBC++) {//high gain gistograms are stored in low gain histos in new 2015 calibration class
-      tmpRefRun = (TH1D*)referenceFile->Get(Form("hAllTimeAvLGBC%d",iBC));
-      tmpRefRun->SetNameTitle(Form("hAllTimeAvBC%d",iBC),Form("hAllTimeAvBC%d",iBC));
-      if(tmpRefRun==0x0) continue;
-      arrayPass->Add(tmpRefRun);
-    }
+    // the final output will be sorted by runnumber
+    sortOutput(fileNameOADB);
+    rebuildTimeContainer("EMCALTimeCalib.root");
 
-  }
-  
-  //add pass array to period
-  arrayPeriod->Add(arrayPass);
-  
-  //When updating object that has already been created: for instance, adding pass2,3 etc.
-  //Just get the object and add new array. Append of runnumber is already done in this case.
-  
-  if(firstTime){
-    //add arrayperiod to main oadb
-    con->AddDefaultObject((TObject*)arrayPeriod);
-    //Establishing run number with the correct objects
-    con->AppendObject(arrayPeriod,runMin,runMax);
-    firstTime=kFALSE;
-  }
-
-  con->WriteToFile(Form("EMCALTimeCalib_%s.root",outputPrefix.Data()));   
-  printf(" written to file\n");
-  
-  tmpRefRun->Delete();
-  
-  referenceFile->Close();    
 }
 
-/// \param runnumber: Int_t, run number
-/// \param passname: TString, pass name
-///
-void Read(Int_t runnumber=236967,TString passname="pass1" ){
-  //
-  // let's read back the file
-  //
-  AliOADBContainer *cont=new AliOADBContainer("");
-  cont->InitFromFile(Form("EMCALTimeCalib_update.root"), "AliEMCALTimeCalib");
-  // 
-  cout<<"_________--------------- dump ---------------------___________"<<endl;
-  cont->Dump();
-  cout<<"_________--------------- list ---------------------___________"<<endl;
-  //cont0.List();
-  cout<<"cont->GetDefaultList()->Print()"<<endl;
-  cont->GetDefaultList()->Print();
+/*******************************************************************
+ *  NOTE: Update function that removes existing BC maps from old   *
+ *          file and adds new BC maps at the end of the file       *
+ *  NOTE: The final file is saved and directly renamed as new      *
+ *      input file for the next loop (this reduces total file size)*
+ *******************************************************************/
+void updateFile(const char *fileNameOADB,TString arrName, TString fileNameTimeCalib, TString passname ,Int_t runMin, Int_t runMax, Int_t updateExistingMap = 0){
+    printf("\n\nAdding %s maps to OADB file:\n",arrName.Data());
 
-  TObjArray *recal=cont->GetObject(runnumber); //GetObject(int runnumber)
-  recal->ls();
+    gSystem->Load("libOADB");
+    AliOADBContainer *con   = new AliOADBContainer("");
+    con->InitFromFile(fileNameOADB, "AliEMCALTimeCalib");
+    con->SetName("Old"); 
 
-  TObjArray *recalpass=(TObjArray *)recal->FindObject(passname.Data());
-  if(!recalpass){
-    cout<<" no pass "<<passname.Data() <<endl;
-    return;
+    AliOADBContainer *con2                      = new AliOADBContainer("AliEMCALTimeCalib");
+
+    Int_t runNumber  = runMin;
+    Bool_t firstTime=kFALSE;
+
+    //open file with corrections and check
+    TFile *referenceFile = TFile::Open(fileNameTimeCalib.Data());//<<---change it here
+    if(referenceFile==0x0){
+        AliFatal("No reference file with time calibration");
+        return;
+    }
+
+    //get run (period) array
+    TObjArray *arrayPeriod=NULL;
+    arrayPeriod=(TObjArray*)con->GetObject(runNumber);
+    if(arrayPeriod==0x0){
+        arrayPeriod=new TObjArray(1);
+        arrayPeriod->SetName(Form("%s",arrName.Data()));
+        firstTime=kTRUE;
+    }
+    for(int i=0;i<con->GetNumberOfEntries();i++){
+        if (runMin >= con->LowerLimit(i) && runMin <= con->UpperLimit(i)){
+            printf("\n!!! Found object #%d for runrange %d--%d as low run limit %d is contained\n", con->GetObjectByIndex(i), con->LowerLimit(i),con->UpperLimit(i),runMin);
+        } else if (runMax >= con->LowerLimit(i) && runMax <= con->UpperLimit(i)){
+            printf("\n!!! Found object #%d for runrange %d--%d as high run limit %d is contained\n", con->GetObjectByIndex(i), con->LowerLimit(i),con->UpperLimit(i),runMax);
+        } else if (runMin <= con->LowerLimit(i) && runMax >= con->UpperLimit(i)){
+            printf("\n!!! Found object #%d for runrange %d--%d as full run range %d--%d is contained\n", con->GetObjectByIndex(i), con->LowerLimit(i),con->UpperLimit(i),runMin,runMax);
+        }else{
+            con2->AddDefaultObject(con->GetObjectByIndex(i));
+            con2->AppendObject(con->GetObjectByIndex(i),con->LowerLimit(i),con->UpperLimit(i));
+        }
+    }
+
+    //create pass array
+    TObjArray *arrayPass=new TObjArray(8);
+    arrayPass->SetName(passname.Data());
+
+    //add histograms to pass array
+    TH1D *tmpRefRun=NULL;
+    for(Int_t iBC=0;iBC<4;iBC++) {//high gain
+        tmpRefRun = (TH1D*)referenceFile->Get(Form("hAllTimeAvBC%d",iBC));
+        if(tmpRefRun==0x0) continue;
+        arrayPass->Add(tmpRefRun);
+    }
+    if(runNumber>200000){//Low and high gain calibration startsfrom LHC15 periods
+        for(Int_t iBC=0;iBC<4;iBC++) {//low gain
+        tmpRefRun = (TH1D*)referenceFile->Get(Form("hAllTimeAvLGBC%d",iBC));
+        if(tmpRefRun==0x0) continue;
+        arrayPass->Add(tmpRefRun);
+        }
+    }
+
+    //add pass array to period
+    arrayPeriod->Add(arrayPass);
+
+    if(firstTime){
+        //add arrayperiod to main oadb
+        con2->AddDefaultObject((TObject*)arrayPeriod);
+        //Establishing run number with the correct objects
+        con2->AppendObject(arrayPeriod,runMin,runMax);
+        firstTime=kFALSE;
+    }
+
+    con2->WriteToFile("EMCALTimeCalib_temp.root");
+    printf(" written to file\n");
+
+    tmpRefRun->Delete();
+
+    referenceFile->Close();
+
+}
+
+
+/*******************************************************************
+ *  NOTE: Sorting function to sort the final OADB file             *
+ *                  by ascending runnumber                         *
+ *******************************************************************/
+void sortOutput(const char *fileNameOADB=""){
+
+    TFile *f                                    = TFile::Open(fileNameOADB);
+    AliOADBContainer *con                       =(AliOADBContainer*)f->Get("AliEMCALTimeCalib");
+    con->SetName("Old");
+
+    Int_t indexAdd                              = 0;
+    Int_t largerthan                            = 0;
+    Int_t currentvalue                          = 0;
+
+    AliOADBContainer *con2                      = new AliOADBContainer("AliEMCALTimeCalib");
+    // First entry needs to be added before sorting loop
+//     con2->AddDefaultObject(con->GetObjectByIndex(0));
+//     con2->AppendObject(con->GetObjectByIndex(0),con->LowerLimit(0),con->UpperLimit(0));
+    Int_t lowestRunIndex = con->GetIndexForRun(114737);
+//     con2->AddDefaultObject(con->GetObjectByIndex(lowestRunIndex));
+    con2->AppendObject(con->GetObjectByIndex(lowestRunIndex),con->LowerLimit(lowestRunIndex),con->UpperLimit(lowestRunIndex));
+    // sorting magic happens here
+    for(int i=1;i<con->GetNumberOfEntries();i++){
+        largerthan                              = con2->UpperLimit(con2->GetNumberOfEntries()-1);
+        currentvalue                            = -1;
+        indexAdd                                = 0;
+        for(int j=0;j<con->GetNumberOfEntries();j++){
+            if(con->UpperLimit(j)<=largerthan) 
+                continue;
+            else if(currentvalue < 0){
+                currentvalue                    = con->UpperLimit(j);
+                indexAdd                        = j;
+            }
+            else if(con->UpperLimit(j)<currentvalue){
+                currentvalue                    = con->UpperLimit(j);
+                indexAdd                        = j;
+            }
+        }
+//         con2->AddDefaultObject(con->GetObjectByIndex(indexAdd));
+        con2->AppendObject(con->GetObjectByIndex(indexAdd),con->LowerLimit(indexAdd),con->UpperLimit(indexAdd));
+    }
+
+    printf("\n\n");
+    Int_t nentries2                             = con2->GetNumberOfEntries();
+    for(int i=0;i<nentries2;i++){
+        printf("\n Entry2 --> %d/%d -->",i,nentries2);
+        printf("%d -- %d --> obj = %p , %s", con2->LowerLimit(i),con2->UpperLimit(i),con2->GetObjectByIndex(i),con2->GetObjectByIndex(i)->GetName());
+    }
+    printf("\n\n");
+
+    con2->WriteToFile("EMCALTimeCalib.root");
+    gSystem->Exec(Form("rm %s",fileNameOADB));
+}
+
+
+TObjArray *CreatePeriodContainer(TObjArray *inputcont){
+  TObjArray *newcont = new TObjArray(inputcont->GetEntries());
+  newcont->SetName(inputcont->GetName());
+  for(int i = 0; i < inputcont->GetEntries(); i++){
+    newcont->AddAt(inputcont->At(i)->Clone(), i);
+  }
+  return newcont;
+}
+
+/*******************************************************************
+ *  NOTE: Function required to fix OADB ownership                  *
+ *                                                                 *
+ *******************************************************************/
+void rebuildTimeContainer(const char *fileNameOADB=""){
+  TFile *reader = TFile::Open(fileNameOADB);
+  AliOADBContainer *cont = static_cast<AliOADBContainer *>(reader->Get("AliEMCALTimeCalib"));
+  delete reader;
+
+  AliOADBContainer *newcont = new AliOADBContainer("AliEMCALTimeCalib");
+  for(int irun = 0; irun < cont->GetNumberOfEntries(); irun++){
+    newcont->AppendObject(CreatePeriodContainer(static_cast<TObjArray *>(cont->GetObjArray()->At(irun))), cont->LowerLimit(irun), cont->UpperLimit(irun));
   }
 
-  TH1D *h=(TH1D *)recalpass->FindObject(Form("hAllTimeAvBC0"));
-  if (h) {
-    printf("runNumber %d found\n", runNumber);
-  }
-  else {
-    printf("runNumber %d not found - Error - do not use this run - not calibrated\n", runNumber);
-    return;
-  }
-  h->Print(); // tmp debug  
+  newcont->WriteToFile("EMCALTimeCalibOADBfix.root");
 
-  // Read parameter file line-by-line  
-  // Get number of lines first
-  
-//  Int_t nSM = 20;
-//  
-//  for(Int_t iSM = 0; iSM < nSM; iSM++)
-//  {
-//    printf("SM %d, content %d\n",iSM,h->GetBinContent(iSM));
-//  }
-  
-  h->Draw();
+  TFile *reader = TFile::Open("EMCALTimeCalibOADBfix.root", "READ");
+    AliOADBContainer *cont = static_cast<AliOADBContainer *>(reader->Get("AliEMCALTimeCalib"));
+    delete reader;
+    delete cont;
 }
