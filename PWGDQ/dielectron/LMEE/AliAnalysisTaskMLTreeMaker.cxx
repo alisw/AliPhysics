@@ -247,9 +247,9 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   fTree(0),
   fQAHist(0)
 {
- SetupTrackCuts(); 
- SetupEventCuts(); 
- AliInfo("Track & Event cuts were set"); 
+// SetupTrackCuts(); 
+// SetupEventCuts(); 
+// AliInfo("Track & Event cuts were set"); 
    
  DefineOutput(1, TList::Class());
 }
@@ -776,14 +776,14 @@ Bool_t AliAnalysisTaskMLTreeMaker::GetDCA(const AliVEvent* event, const AliAODTr
 }
 
 
-void AliAnalysisTaskMLTreeMaker::SetupTrackCuts(AliDielectronCutGroup f)
+void AliAnalysisTaskMLTreeMaker::SetupTrackCuts(AliDielectronCutGroup* f)
 {
 filter   = new AliAnalysisFilter("filter","filter");  
 filter->AddCuts(f);
 }
 
 
-void AliAnalysisTaskMLTreeMaker::SetupEventCuts(AliDielectronEventCuts f)
+void AliAnalysisTaskMLTreeMaker::SetupEventCuts(AliDielectronEventCuts* f)
 {
   evfilter   = new AliAnalysisFilter("evfilter","evfilter");  
   evfilter->AddCuts(f);

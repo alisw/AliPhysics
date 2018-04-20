@@ -16,14 +16,14 @@ AliAnalysisTask *AddTask_slehner_TreeMakeWCutLib(Bool_t hasITS = kTRUE,
 		return 0;
 	}
 
+
+
 	//Base Directory for GRID / LEGO Train  
 	TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 
         TString configLMEECutLib("LMEECutLib_slehner.C");
         TString configLMEECutLibPath(configBasePath+configLMEECutLib);
-        
-	std::cout << "Configpath:  " << configFilePath << std::endl;
-
+    
         //LOAD CUTLIB
         if(gSystem->Exec(Form("ls %s", configLMEECutLibPath.Data()))==0){
 
@@ -40,23 +40,22 @@ AliAnalysisTask *AddTask_slehner_TreeMakeWCutLib(Bool_t hasITS = kTRUE,
 	std::cout << "hasMC = " << hasMC << std::endl;
 
 
-      LMEECutLib* cutlib = new LMEECutLib();
-
-      AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker(taskname);
-
+      LMEECutLib* cutlib = new LMEECutLib();      
+      AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker("treemaker");   
+      
       task->SelectCollisionCandidates(AliVEvent::kINT7);
-      task->SetTrackCuts(cutlib->GetTrackSelectionAna(trackCut));
-      task->SetEventCuts(cutlib->GetEventCuts(evCut));
+      task->SetupTrackCuts(cutlib->GetTrackCuts(0,0));
+      task->SetupEventCuts(cutlib->GetEventCuts(evCut));
         
-  mgr->AddTask(taskESD);
+  mgr->AddTask(task);
 
-  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  TString outputFN = AliAnalysisManager::GetCommonFileName();
 
  
-  AliAnalysisDataContainer *coutESD = mgr->CreateContainer("output", TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  mgr->ConnectInput(taskESD, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(taskESD, 1, coutESD);
+  AliAnalysisDataContainer *coutESD = mgr->CreateContainer("output", TList::Class(),AliAnalysisManager::kOutputContainer,outputFN.Data());
+  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 1, coutESD);
  
- return taskESD;
+ return task;
 
 }

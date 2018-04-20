@@ -46,8 +46,8 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
 //~ 
   
-  void SetupTrackCuts();
-  void SetupEventCuts();
+  void SetupTrackCuts(AliDielectronCutGroup* f);
+  void SetupEventCuts(AliDielectronEventCuts* f);
   
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
