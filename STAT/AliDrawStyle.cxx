@@ -64,7 +64,6 @@
 \endcode
 */
 
-
 #include "AliDrawStyle.h"
 #include "TStyle.h"
 #include "TError.h"
@@ -766,7 +765,7 @@ T AliDrawStyle::PrepareValue(const char* styleName, TString propertyName, TStrin
   TString cProperty = "";
   Int_t hisNum = 0;
   status = kFALSE;
-  T value = T();
+  T value;
   if (localStyle.Contains(propertyName.Data()) && (propertyName.Contains("size") || propertyName.Contains("margin"))) {
     property = localStyle;
     hisNum = 0;
@@ -798,7 +797,7 @@ T AliDrawStyle::PrepareValue(const char* styleName, TString propertyName, TStrin
   }
 
   value = AliDrawStyle::GetNamedTypeAt<T>(property.Data(), status, hisNum, cProperty, verbose);
-  if (verbose == 4) ::Info("AliDrawStyle", "5.AliDrawStyle::PrepareValue(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d) status is %d and returned value %f", styleName, propertyName.Data(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data(), objNum, status, value);
+  if (verbose == 4) ::Info("AliDrawStyle", "5.AliDrawStyle::PrepareValue(\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%d) status is %d and returned value", styleName, propertyName.Data(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data(), objNum, status);
   if (status) return value;
 
   return T();
@@ -1656,17 +1655,28 @@ void AliDrawStyle::TPadApplyStyle(const char *styleName, TPad *cPad, Int_t verbo
 
   elementID = cObject->ClassName();
   objectID = TString(cObject->GetName());
-  TPRegexp classPat("\.class[(].*?[)]");
-  TPRegexp stylePat("\.style[(].*?[)]");
-  TPRegexp objPat("^.*?\[|^.*?[\.]");
+  TPRegexp classPat(".class[(].*?[)]");
+  TPRegexp stylePat(".style[(].*?[)]");
+  TString objPatStr = "";
+  if ((objectID.Index(".class") < objectID.Index(".style")  || objectID.Index(".style") == -1) && objectID.Index(".class") > 0)
+    objPatStr = "^.*[[]|^.*?[.]class|.*";
+  else if ((objectID.Index(".class") > objectID.Index(".style") || objectID.Index(".class") == -1) && objectID.Index(".style") > 0)
+    objPatStr = "^.*[[]|^.*?[.]style|.*";
+  else
+    objPatStr = "^.*[[]|.*";
+  TPRegexp objPat(objPatStr);
+
   classID = objectID(classPat);
   localStyle = objectID(stylePat);
   Int_t classLength = classID.Index(")") - classID.Index("(") - 1;
-  Int_t styleLength = localStyle.Index(")") - classID.Index("(") - 1;
+  Int_t styleLength = localStyle.Index(")") - localStyle.Index("(") - 1;
   classID = classID(classID.Index("(") + 1, classLength);
   localStyle = localStyle(localStyle.Index("(") + 1, styleLength);
   objectID = objectID(objPat);
-  objectID = objectID(0,objectID.Length() - 1);
+  objectID.ReplaceAll(".class", "");
+  objectID.ReplaceAll(".style", "");
+  if (objectID(objectID.Length() - 1) == '[')
+    objectID = objectID(0,objectID.Length() - 1);
     if (verbose == 4)
       ::Info("AliDrawStyle", "Object with name \"%s\" was parsed via AliDrawStyle::GetIds() to elementID = \"%s\", classID = \"%s\", objectID = \"%s\", localStyle = \"%s\"", cObject->GetName(), elementID.Data(), classID.Data(), objectID.Data(), localStyle.Data());
 }

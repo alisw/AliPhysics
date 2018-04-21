@@ -46,7 +46,7 @@ TH1*  {
     marker-color: 14,2,4,8;
     line-color: 14,1,4,8;
     axis-color: 1,1,1,1;
-    title-offset:3.0;
+    title-offset:3.0,3.0,3.0,3.0;
 }
 
 TF1*  {
