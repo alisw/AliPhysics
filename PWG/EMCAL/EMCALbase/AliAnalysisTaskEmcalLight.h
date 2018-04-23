@@ -283,29 +283,13 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
 
   // Output
   TList                      *fOutput;                     //!<!output list
-  TH1                        *fHistTrialsVsPtHardNoSel;    //!<!total number of trials per pt hard bin after selection (no event selection)
-  TH1                        *fHistEventsVsPtHardNoSel;    //!<!total number of events per pt hard bin after selection (no event selection)
-  TProfile                   *fHistXsectionVsPtHardNoSel;  //!<!x section from pythia header (no event selection)
-  TH1                        *fHistEventWeightsNoSel;      //!<!distribution of event weights (no event selection)
-  TH1                        *fHistTriggerClassesNoSel;    //!<!number of events in each trigger class (no event selection)
-  TH1                        *fHistZVertexNoSel;           //!<!z vertex position (no event selection)
-  TH1                        *fHistCentralityNoSel;        //!<!event centrality distribution (no event selection)
-  TH1                        *fHistEventPlaneNoSel;        //!<!event plane distribution (no event selection)
-  TH1                        *fHistTrialsVsPtHard;         //!<!total number of trials per pt hard bin after selection
-  TH1                        *fHistEventsVsPtHard;         //!<!total number of events per pt hard bin after selection
-  TProfile                   *fHistXsectionVsPtHard;       //!<!x section from pythia header
-  TH1                        *fHistEventWeights;           //!<!distribution of event weights
-  TH1                        *fHistTriggerClasses;         //!<!number of events in each trigger class
-  TH1                        *fHistZVertex;                //!<!z vertex position
-  TH1                        *fHistCentrality;             //!<!event centrality distribution
-  TH1                        *fHistEventPlane;             //!<!event plane distribution
-  TH1                        *fHistEventCount;             //!<!incoming and selected events
-  TH1                        *fHistEventRejection;         //!<!book keep reasons for rejecting event
-  TH1                        *fHistTrials;                 //!<!trials from pyxsec.root
-  TH1                        *fHistEvents;                 //!<!total number of events per pt hard bin
-  TProfile                   *fHistXsection;               //!<!x section from pyxsec.root
 
  private:
+  std::map<std::string, TH1*> fHistograms;                 //!<!general QA histograms
+  TH1* GetGeneralTH1(const char* name);
+  TH2* GetGeneralTH2(const char* name);
+  TProfile* GetGeneralTProfile(const char* name);
+
   AliAnalysisTaskEmcalLight(const AliAnalysisTaskEmcalLight&);            // not implemented
   AliAnalysisTaskEmcalLight &operator=(const AliAnalysisTaskEmcalLight&); // not implemented
 
