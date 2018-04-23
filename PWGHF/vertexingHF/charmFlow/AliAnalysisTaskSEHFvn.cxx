@@ -296,18 +296,6 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fDetV0ConfName[0]  = "VZERO";
   fDetV0ConfName[1]  = "VZEROA";
   fDetV0ConfName[2]  = "VZEROC";
-  
-  if(fDecChannel==kD0toKpiFromDstar && fOptD0FromDstar==1 && !fUseFiltBit4SoftPion) {
-    fCutsSoftPion = new AliESDtrackCuts();
-    fCutsSoftPion->SetRequireSigmaToVertex(kFALSE);
-    //default
-    fCutsSoftPion->SetRequireTPCRefit(kFALSE);
-    fCutsSoftPion->SetRequireITSRefit(kTRUE);
-    fCutsSoftPion->SetMinNClustersITS(3);
-    fCutsSoftPion->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-    fCutsSoftPion->SetPtRange(0.1,1.e10);
-    fCutsSoftPion->SetEtaRange(-0.8,0.8);
-  }
 }
 
 //________________________________________________________________________
@@ -402,6 +390,19 @@ void AliAnalysisTaskSEHFvn::LocalInit()
   default:
     return;
   }
+  
+  if(fDecChannel==kD0toKpiFromDstar && fOptD0FromDstar==1 && !fUseFiltBit4SoftPion) {
+    fCutsSoftPion = new AliESDtrackCuts();
+    fCutsSoftPion->SetRequireSigmaToVertex(kFALSE);
+    //default
+    fCutsSoftPion->SetRequireTPCRefit(kFALSE);
+    fCutsSoftPion->SetRequireITSRefit(kTRUE);
+    fCutsSoftPion->SetMinNClustersITS(3);
+    fCutsSoftPion->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    fCutsSoftPion->SetPtRange(0.1,1.e10);
+    fCutsSoftPion->SetEtaRange(-0.8,0.8);
+  }
+
   return;
 }
 //________________________________________________________________________
@@ -1236,6 +1237,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       for(Int_t iTrk=0; iTrk<aod->GetNumberOfTracks(); iTrk++) {
         //check whether D0/D0bar comes from a Dstar, combining it with soft pions
         AliAODTrack* track=(AliAODTrack*)aod->GetTrack(iTrk);
+        if(!track) continue;
         Short_t charge = track->Charge();
         //wrong charge sign --> continue
         if(isSelected==1 && charge<0) continue;
@@ -1267,7 +1269,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
         Double_t deltainvmassKpipi = invmassDstar-invmassD0;
         
         Double_t sigma = 0.0008;
-        if(deltainvmassKpipi<deltamassPDG+3*sigma && deltainvmassKpipi>deltamassPDG+3*sigma) {
+        if(deltainvmassKpipi<deltamassPDG+3*sigma && deltainvmassKpipi>deltamassPDG-3*sigma) {
           isD0fromDstar=kTRUE;
           break;
         }
