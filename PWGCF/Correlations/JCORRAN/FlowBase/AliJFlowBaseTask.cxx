@@ -115,7 +115,7 @@ void AliJFlowBaseTask::UserCreateOutputObjects()
 	//=== Get AnalysisManager
 	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
 
-	fJCatalystTask = (AliJCatalystTask*)(man->GetTask( fJCatalystTaskName ));
+	fJCatalystTask = (AliJCatalystTask*)(man->GetTask( "JCatalystTask" ));
 	if(!fIsMC) fFlowVectorTask = (AliAnalysisTaskFlowVectorCorrections*)(man->GetTask("FlowQnVectorCorrections"));
 
 	OpenFile(1);

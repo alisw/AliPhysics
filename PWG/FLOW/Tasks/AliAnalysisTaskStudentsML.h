@@ -70,29 +70,31 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   // 0.) Base lists:
   TList *fHistList; // base list to hold all output object (a.k.a. grandmother of all lists)
 
-  // 1.) Control histograms:  
+  // 1.) Control histograms: 
   TList *fControlHistogramsList; // list to hold all control histograms
-  TH1F *fPtHist;                 // atrack->Pt()
+  TH1F *fPtHist;                 // atrack->Pt() 
   Int_t fNbins;                  // number of bins
   Float_t fMinBin;               // min bin
   Float_t fMaxBin;               // min bin 
   TH1F *fPhiHist;                // atrack->Phi()
   TH1F *fEtaHist;                // atrack->Eta()
-  TH1F *fMultiHist;		 // multiplicity histogram atrack->nTracks
+
+
+  TH1F *fMultiHisto;              // multiplicity histogram atrack->nTracks
 
   // 2.) Final results:
+  Int_t fMaxCorrelator; // whatever
   TList *fFinalResultsList; // list to hold all histograms with final results
 
-  Int_t fMaxCorrelator;
+  
 
-  ClassDef(AliAnalysisTaskStudentsML,1);
+  ClassDef(AliAnalysisTaskStudentsML,2);
 
 };
 
 //================================================================================================================
 
 #endif
-
 
 
 

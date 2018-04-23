@@ -30,7 +30,7 @@ Bool_t CalcEfficiencyRec      = kTRUE;
 Bool_t CalcEfficiencyPoslabel = kFALSE;
 Bool_t CalcResolution         = kTRUE;
 Bool_t MakeResolutionSparse   = kFALSE;
-Bool_t doPairing              = kTRUE;
+Bool_t doPairing              = kFALSE;
 
 // resolution binnings
 Int_t    NbinsMom        = 2000;
@@ -96,8 +96,8 @@ const Double_t  vertexZcut = 10.;
 // MC cuts
 const Double_t  EtaMinGEN = -1.;    // make sure to be within 3D histogram binning (EtaMin, EtaMax, PtBins[]).
 const Double_t  EtaMaxGEN =  1.;
-const Double_t  PtMinGEN  =  0.100; // 100 MeV as absolute lower limit for any setting.
-const Double_t  PtMaxGEN  =  50.;
+const Double_t  PtMinGEN  =  0.00; // 100 MeV as absolute lower limit for any setting.
+const Double_t  PtMaxGEN  =  10.;
 
 const Bool_t    CutInjectedSignals = kFALSE;
 const UInt_t    NminEleInEventForRej = 2;

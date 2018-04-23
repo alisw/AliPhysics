@@ -232,7 +232,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   Int_t nEventActivityBins = 8;
   Double_t* eventActivityBins = 0;
   // +1 to accomodate the fact that we define bins rather than array entries.
-  Double_t multiplicityBins[kMixedEventMulitplictyBins+1] = {0., 4., 9., 15., 25., 35., 55., 100., 500.};
+  Double_t multiplicityBins[kMixedEventMultiplicityBins+1] = {0., 4., 9., 15., 25., 35., 55., 100., 500.};
 
   // Cannot use GetBeamType() since it is not available until UserExec()
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp ) {   //all besides pp
@@ -798,6 +798,11 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
       nbins = 10;
       xmin = 0.;
       xmax = 100.;
+      // Adjust for pp, since we are retrieving multiplicity instead
+      if (fForceBeamType == AliAnalysisTaskEmcal::kpp) {
+        label = "Multiplicity";
+        xmax = 200.;
+      }
       break;
 
     case 1:
@@ -822,14 +827,14 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
       break;
 
     case 3:
-      label = "#delta#eta";
+      label = "#Delta#eta";
       nbins = 24;
       xmin = -1.2;
       xmax = 1.2;
       break;
 
     case 4:
-      label = "#delta#phi";
+      label = "#Delta#phi";
       nbins = 72;
       xmin = -0.5*pi;
       xmax = 1.5*pi;

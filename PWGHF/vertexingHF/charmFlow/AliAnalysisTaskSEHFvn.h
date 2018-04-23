@@ -20,6 +20,8 @@
 #include "AliHFAfterBurner.h"
 #include "AliQnCorrectionsQnVector.h"
 #include "AliEventCuts.h"
+#include "AliAODTrack.h"
+#include "AliESDtrackCuts.h"
 
 class TH1F;
 class TH2F;
@@ -149,6 +151,13 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     return fEventCuts;
   }
   
+  //options for kD0toKpiFromDstar
+  void SetOptD0FromDstar(Int_t option=0, Bool_t useFilterBit4softPion=kFALSE) {
+    fOptD0FromDstar=option;
+    fUseFiltBit4SoftPion=useFilterBit4softPion;
+  }
+  Bool_t IsSoftPionSelected(AliAODTrack* track);
+
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -237,10 +246,13 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
   Bool_t fEnableCentralityCorrCuts; //enable V0M - CL0 centrality correlation cuts
   Bool_t fEnableCentralityMultiplicityCorrStrongCuts; //enable centrality vs. multiplicity correlation cuts
   AliEventCuts fEventCuts; //Event cut object for centrality correlation event cuts
-
+  Int_t fOptD0FromDstar; //option for D0 from Dstar analysis (0: starting from Dstar, 1: strarting from Dzero)
+  Bool_t fUseFiltBit4SoftPion; //flag to enable filterbit 4 for soft pion in D0 from Dstar analysis
+  AliESDtrackCuts *fCutsSoftPion; //track cuts for soft pions used in case of D0 from Dstar analysis (option 1)
+  
   AliAnalysisTaskSEHFvn::FlowMethod fFlowMethod;
 
-  ClassDef(AliAnalysisTaskSEHFvn,17); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskSEHFvn,18); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

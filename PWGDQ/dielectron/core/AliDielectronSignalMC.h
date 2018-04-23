@@ -13,10 +13,10 @@
       Leg #1  <-- Mother #1  <--  Grandmother #1
                       |
       Leg #2  <-- Mother #2  <--  Grandmother #2
-  
+
    For every leg, mother or grand-mother, a PDG code and a source can be specified.
 
-   1.) For the PDG codes, the PYTHIA standard is used. 
+   1.) For the PDG codes, the PYTHIA standard is used.
    A few non-existent PYTHIA codes are used to select more than one PYTHIA code. All these are described below
    and implemented in AliDielectronMC::ComparePDG() function:
       0 - default, accepts all PYTHIA codes
@@ -42,14 +42,14 @@
    5001 - open beauty baryons                         5000-5499
 
    2.) If the exclusion flags are turned ON then the PDG codes required and the conventional codes described above
-       are used to exclude the selected particles. 
+       are used to exclude the selected particles.
 
    3.) If the selection of both charges is switched ON then the PDG codes act on both particles and anti-particles.
 
    4.) Particles sources implemented:
      (Incomplete list, see AliDielectronMC::CheckParticleSource() for more details.)
      1. Primary   - particle originating in the physics event
-     2. FinalState- stable(final state) particles which reach the detector -> according to AliStack::IsPhysicalPrimary() 
+     2. FinalState- stable(final state) particles which reach the detector -> according to AliStack::IsPhysicalPrimary()
      3. Direct    - primary particle which has no mother (e.g. J/psi's added to pythia MC events via generator cocktails,
                     particles generated in a sudden freeze-out in thermal models, initial state particles)
      4. Secondary - particle created during the GEANT propagation due to interaction of final state primaries with the material
@@ -65,21 +65,38 @@
 
 //__________________________________________________________________
 class AliDielectronSignalMC : public TNamed {
-  
+
  public:
   enum EBranchRelation {kUndefined=0, kSame, kDifferent};
   enum ESource {kDontCare=0, kPrimary, kFinalState, kDirect, kSecondary, kNoCocktail, kSecondaryFromWeakDecay, kSecondaryFromMaterial, kFromBGEvent, kFinalStateFromBGEvent};
   enum EJpsiRadiativ {kAll=0, kIsRadiative, kIsNotRadiative};
-  
+  enum EJpsiSignals {
+    kBegin = 0,
+    kInclusiveJpsi,
+    kBeautyJpsi,
+    kPromptJpsi,
+    kPromptRadJpsi,
+    kPromptNonRadJpsi,
+    kDirectJpsi,
+    kGammaConv,
+    kGammaConvDiffMother,
+    kElectrons,
+    kDirectElectrons,
+    kPrimaryElectrons,
+    kFromBgTest,
+    kEnd
+  };
+
+
   AliDielectronSignalMC();
   AliDielectronSignalMC(const Char_t* name, const Char_t* title);
   virtual ~AliDielectronSignalMC();
-  
-  void SetLegPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)  
+
+  void SetLegPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)
     {fLeg1 = pdg1; fLeg2 = pdg2; fLeg1Exclude=exclude1; fLeg2Exclude=exclude2;}
-  void SetMotherPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)              
+  void SetMotherPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)
     {fMother1 = pdg1; fMother2 = pdg2; fMother1Exclude=exclude1; fMother2Exclude=exclude2;}
-  void SetGrandMotherPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)         
+  void SetGrandMotherPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)
     {fGrandMother1 = pdg1; fGrandMother2 = pdg2; fGrandMother1Exclude=exclude1; fGrandMother2Exclude=exclude2;}
   //both used for niece discrimination, nieces are daughters of the sisters
   void SetLegSources(ESource s1, ESource s2)                       {fLeg1Source = s1;                      fLeg2Source = s2;}
@@ -124,6 +141,9 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t GetCheckLikeSignPP()                          const {return fCheckLikeSignPP;}
   Bool_t GetCheckLikeSignMM()                          const {return fCheckLikeSignMM;}
 
+  static AliDielectronSignalMC* GetJpsiMCsignalDef(EJpsiSignals kSignal);
+  static const char* GetJpsiMCsignalDefName(EJpsiSignals kSignal) {return fgkJpsiSignals[kSignal];}
+
   void SetJpsiRadiative(EJpsiRadiativ rad) { fJpsiRadiative=rad;    }
   EJpsiRadiativ GetJpsiRadiative() const   { return fJpsiRadiative; }
  private:
@@ -131,7 +151,7 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t fCheckUnlikeSign; // default usage, true by default.
   Bool_t fCheckLikeSignPP; // ++ pairs
   Bool_t fCheckLikeSignMM; // -- pairs
-  
+
   // PDG codes for legs, mothers and grand-mothers
   Int_t fLeg1;                        // leg 1 PDG
   Int_t fLeg2;                        // leg 2 PDG
@@ -145,13 +165,13 @@ class AliDielectronSignalMC : public TNamed {
   // Toggle on/off the use of the PDG codes as inclusion or exclusion
   // Example: if fLeg1=211 and fLeg1Exclude=kTRUE than all codes will be accepted for leg 1 with
   //          the exception of 211 (pions)
-  Bool_t fLeg1Exclude;                // leg 1 
-  Bool_t fLeg2Exclude;                // leg 2 
-  Bool_t fMother1Exclude;             // mother 1 
-  Bool_t fMother2Exclude;             // mother 2 
-  Bool_t fGrandMother1Exclude;        // grandmother 1 
-  Bool_t fGrandMother2Exclude;        // grandmother 2 
-    
+  Bool_t fLeg1Exclude;                // leg 1
+  Bool_t fLeg2Exclude;                // leg 2
+  Bool_t fMother1Exclude;             // mother 1
+  Bool_t fMother2Exclude;             // mother 2
+  Bool_t fGrandMother1Exclude;        // grandmother 1
+  Bool_t fGrandMother2Exclude;        // grandmother 2
+
   // Particle sources
   ESource fLeg1Source;                // leg 1 source
   ESource fLeg2Source;                // leg 2 source
@@ -168,21 +188,21 @@ class AliDielectronSignalMC : public TNamed {
   Bool_t fCheckBothChargesGrandMother1; //              grand mother 1
   Bool_t fCheckBothChargesGrandMother2; //              grand mother 2
   Bool_t fCheckGEANTProcess;            //              GEANT process
-  
+
   Bool_t fCheckMotherGrandmother;       // check if a mother is also a grandmother to select B -> e D X -> ee X
   Bool_t fMotherIsGrandmother;          // check if a mother is also a grandmother to select B -> e D X -> ee X
-  Bool_t fCheckStackForPDG;             // check whole stack to exclude a pdg code to get rid of B feeddown in D sample
-
-  EBranchRelation fGrandMothersRelation;   // mother 1&2 relation (same, different or whatever)
-
-
 
   EBranchRelation fMothersRelation;   // mother 1&2 relation (same, different or whatever)
+  EBranchRelation fGrandMothersRelation;   // mother 1&2 relation (same, different or whatever)
+
   TMCProcess fGEANTProcess;           // GEANT process ID (see roots TMCProcess)
   EJpsiRadiativ fJpsiRadiative;       // check for J/psi radiative decay
-  
+
+  Bool_t fCheckStackForPDG;             // check whole stack to exclude a pdg code to get rid of B feeddown in D sample
   Bool_t fFillPureMCStep;             // check and fill the pure MC step
-  
+
+  const static char *fgkJpsiSignals[EJpsiSignals::kEnd];
+
   ClassDef(AliDielectronSignalMC,4);
 };
 

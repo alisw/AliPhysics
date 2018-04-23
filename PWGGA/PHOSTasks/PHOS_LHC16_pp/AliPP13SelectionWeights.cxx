@@ -35,7 +35,8 @@ Double_t AliPP13SelectionWeightsMC::Nonlinearity(Double_t x) const
 //________________________________________________________________
 Double_t AliPP13SelectionWeightsSPMC::Weight(Double_t pT) const
 {
-	Double_t w = pT * pT * fW0 / 2. / TMath::Pi();
+    // NB: Try generating the yield instead of invariant yield
+	Double_t w = /* pT * */ pT * fW0 / 2. / TMath::Pi();
 	Double_t fraction = (fW2 - 1.) * (fW2 - 2.) / (fW2 * fW1 * (fW2 * fW1 + fW4 * (fW2 - 2.)));
 	Double_t power = TMath::Power(1. + (TMath::Sqrt(pT * pT + fW3 * fW3) - fW4) / (fW2 * fW1), -fW2);
 	return w * fraction * power;
@@ -51,10 +52,16 @@ AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SinglePi0()
     // ws.fW1 = 0.28727403800708634;
     // ws.fW2 = 9.9198075195331;
 
+
+    // Debug
+    ws.fW0 = 21.339890553914014;
+    ws.fW1 = 0.08359755308503322;
+    ws.fW2 = 7.334946541612603;
+
     // Weights 0 (new efficiency)
-    ws.fW0 = 0.10325998438001027;
-    ws.fW1 = 0.1710556728057399;
-    ws.fW2 = 8.613628140871766;
+    // ws.fW0 = 0.10325998438001027;
+    // ws.fW1 = 0.1710556728057399;
+    // ws.fW2 = 8.613628140871766;
 
     ws.fW3 = 0.135;
     ws.fW4 = 0.135;
@@ -67,13 +74,13 @@ AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SinglePi0()
     // ws.fNonSigma = 1.4188237289034245;
     // ws.fNonGlobal = 1.0579663356860527;
 
-     // ws.fNonA = -0.014719244288611932;
-     // ws.fNonSigma = 2 * 0.8017501954719543;
-     // ws.fNonGlobal = 1.050000000000015;
+     ws.fNonA = -0.014719244288611932;
+     ws.fNonSigma = 2 * 0.8017501954719543;
+     ws.fNonGlobal = 1.050000000000015;
 
-    ws.fNonGlobal = 1.0;
-    ws.fNonA = 0;
-    ws.fNonSigma = 1.0579663356860527;
+    // ws.fNonGlobal = 1.0;
+    // ws.fNonA = 0;
+    // ws.fNonSigma = 1.0579663356860527;
 
     return ws;
 }

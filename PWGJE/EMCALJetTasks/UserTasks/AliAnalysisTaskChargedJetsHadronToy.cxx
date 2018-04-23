@@ -96,7 +96,7 @@ void AliAnalysisTaskChargedJetsHadronToy::ExecOnce()
 
   fOutputArray = new TClonesArray("AliAODTrack");
   fOutputArray->SetName(fOutputArrayName.Data());
-  InputEvent()->AddObject(fOutputArray);
+  fInputEvent->AddObject(fOutputArray);
 }
 
 //_____________________________________________________________________________________________________
@@ -118,8 +118,16 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   // Create the event from the several inputs and run the jet finder
 
   // ################# 1. Add input tracks (if available)
+  Int_t particleCount = 0;
   if(fInputArray)
-    fOutputArray->AddAll(fInputArray);
+  {
+    for(Int_t iPart=0; iPart<fInputArray->GetEntries(); iPart++)
+    {
+      AliAODTrack* inputParticle = static_cast<AliAODTrack*>(fInputArray->At(iPart));
+      new ((*fOutputArray)[particleCount]) AliAODTrack(*inputParticle);
+      particleCount++;
+    }
+  }
 
   // ################# 2. Create a vertex if there is none (needed by some tasks)
   if(dynamic_cast<AliESDEvent*>(InputEvent()))
@@ -141,7 +149,6 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
   }
 
   // ################# 3. Create toy event
-  Int_t particleCount = fOutputArray->GetEntries();
   Int_t multiplicity = (Int_t)fDistributionMultiplicity->GetRandom();
   for(Int_t i=0;i<multiplicity; i++)
   {
@@ -165,9 +172,11 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
     static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPhi(trackPhi);
     static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetTheta(trackTheta); // AliAODTrack cannot set eta directly
     static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetCharge(trackCharge);
-    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetLabel(10000 + i);
+    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetLabel(100000 + i);
+    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetIsHybridGlobalConstrainedGlobal();
     particleCount++;
   }
+
 }
 
 //_____________________________________________________________________________________________________
