@@ -888,7 +888,7 @@ void FillVertexBranches(TList * VertxList){
     }
     
     if(zVtxTRK){
-        TF1 *fzTRK = new TF1("gausz", "gaus", -1, 1);
+        TF1 *fzTRK = new TF1("gausz", "gaus", -10., 10.);
         if(zVtxTRK->GetEntries()>0){
             zVtxTRK->Fit("gausz","NQRL");
             meanVtxTRKz=(Float_t)fzTRK->GetParameter(1);
@@ -933,7 +933,7 @@ void FillVertexBranches(TList * VertxList){
     }
     
     if(zVtxSPD){
-        TF1 *fzSPD = new TF1("gauszSPD", "gaus", -1, 1);
+        TF1 *fzSPD = new TF1("gauszSPD", "gaus", -10., 10.);
         if(zVtxSPD->GetEntries()>0){
             zVtxSPD->Fit("gauszSPD","NQRL");
             meanVtxSPDz=(Float_t)fzSPD->GetParameter(1);

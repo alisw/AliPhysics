@@ -35,7 +35,8 @@ Double_t AliPP13SelectionWeightsMC::Nonlinearity(Double_t x) const
 //________________________________________________________________
 Double_t AliPP13SelectionWeightsSPMC::Weight(Double_t pT) const
 {
-	Double_t w = pT * pT * fW0 / 2. / TMath::Pi();
+    // NB: Try generating the yield instead of invariant yield
+	Double_t w = /* pT * */ pT * fW0 / 2. / TMath::Pi();
 	Double_t fraction = (fW2 - 1.) * (fW2 - 2.) / (fW2 * fW1 * (fW2 * fW1 + fW4 * (fW2 - 2.)));
 	Double_t power = TMath::Power(1. + (TMath::Sqrt(pT * pT + fW3 * fW3) - fW4) / (fW2 * fW1), -fW2);
 	return w * fraction * power;

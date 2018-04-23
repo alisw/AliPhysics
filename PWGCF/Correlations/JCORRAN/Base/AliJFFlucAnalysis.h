@@ -13,7 +13,6 @@
 class TClonesArray;
 class AliJBaseTrack;
 class AliJEfficiency;
-class TH3D;
 
 class AliJFFlucAnalysis : public AliAnalysisTaskSE {
 public:
@@ -48,7 +47,7 @@ public:
 		fQC_eta_gap_half = QC_eta_gap_half;
 		cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
 	}
-	void SetPhiWeights(TH3D *p){
+	void SetPhiWeights(TH2D *p){
 		pPhiWeights = p;
 	}
 
@@ -102,7 +101,7 @@ private:
 	TClonesArray *fInputList;
 	AliJEfficiency *fEfficiency;
 	const double *fVertex;//!
-	TH3D *pPhiWeights;//!
+	TH2D *pPhiWeights;//!
 	Float_t	fCent;
 	Float_t	fImpactParameter;
 	int fCBin;

@@ -77,6 +77,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fEnableCentralityTriggers(false),
   fEnableV0Triggers(true),
   fEnableT0Triggers(false),
+  fEnableNoINTTriggers(false),
   fRequireL0forL1(false),
   fExclusiveMinBias(false),
   fUseTriggerSelectionContainer(false)
@@ -115,6 +116,7 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fEnableCentralityTriggers(false),
   fEnableV0Triggers(true),
   fEnableT0Triggers(false),
+  fEnableNoINTTriggers(false),
   fRequireL0forL1(false),
   fExclusiveMinBias(false),
   fUseTriggerSelectionContainer(false)
@@ -243,7 +245,8 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
          isCENT = selectionstatus & AliVEvent::kCentral,
          isSemiCENT = selectionstatus & AliVEvent::kSemiCentral,
       emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn],
-      emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgn];
+      emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgn],
+      emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
 
   if(fExclusiveMinBias){
     AliDebugStream(1) << "Min bias mode\n";
@@ -271,6 +274,7 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
 
   for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcalTriggers[itrg] = true;
   if(fEnableT0Triggers) for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emc8Triggers[itrg] = true;
+  if(fEnableNoINTTriggers) for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcNoIntTriggers[itrg] = true;
   if(!isMC){
     // In case of data select events as bunch-bunch (-B-) events.
     // Cut not applied in simulations
@@ -299,10 +303,11 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
     // Apply cut on the trigger string - this basically discriminates high- and low-threshold
     // triggers
     const std::array<TString, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerStrings = {
-    		"CEMC7-|CEMC8-", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "CDMC7-|CDMC8-", "DG1", "DG2", "DJ1", "DJ2"
+    		"CEMC7-|CEMC8-|C0EMC-", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "CDMC7-|CDMC8-|C0DMC-", "DG1", "DG2", "DJ1", "DJ2"
     };
     if(triggerstring.Contains("EMC")) AliDebugStream(1) << GetName() << ": Trigger string " << triggerstring << std::endl;
-    bool isT0trigger = triggerstring.Contains("INT8") || triggerstring.Contains("TVX") || triggerstring.Contains("EMC8") || triggerstring.Contains("DMC8");
+    bool isT0trigger = triggerstring.Contains("INT8") || triggerstring.Contains("TVX") || triggerstring.Contains("EMC8") || triggerstring.Contains("DMC8"),
+         isVZEROtrigger = triggerstring.Contains("INT7") || triggerstring.Contains("EMC7") || triggerstring.Contains("DMC7");
     for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
       AliDebugStream(1) << "Next trigger: " << kSelectTriggerStrings[iclass] << std::endl;
       bool selectionStatus = false;
@@ -334,14 +339,23 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
       if(isT0trigger) {
         emc8Triggers[iclass] &= selectionStatus;
         emcalTriggers[iclass] = false;
-      } else {
+        emcNoIntTriggers[iclass] = false; 
+      } else if(isVZEROtrigger){
         emcalTriggers[iclass] &= selectionStatus;
+        emc8Triggers[iclass] = false;
+        emcNoIntTriggers[iclass] = false; 
+      } else {
+        // No coincidence with interaction trigger
+        emcNoIntTriggers[iclass] &= selectionStatus; 
+        emcalTriggers[iclass] = false;
         emc8Triggers[iclass] = false;
       }
       if(emcalTriggers[iclass])
         AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << " (INT7 suite)" << std::endl;
       if(emc8Triggers[iclass])
         AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << " (INT8 suite)" << std::endl;
+      if(emcNoIntTriggers[iclass])
+        AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << " (No INT coincidence)" << std::endl;
     }
 
     // Online selection / rejection
@@ -490,6 +504,63 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
       }
     }
   }
+
+  if(fEnableNoINTTriggers) {
+    if(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0]) {
+      // EMC8 trigger
+      AliDebugStream(1) << "Event selected as 0EMC" << std::endl;
+      fSelectedTriggers.push_back("0EMC");
+    }
+    if(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ2]){
+      AliDebugStream(1) << "Event selected as EJ2 (E0MC)" << std::endl;
+      fSelectedTriggers.push_back("0EMCEJ2");
+      if(!emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0]) fSelectedTriggers.push_back("0EMCEJ2excl");
+    }
+    if(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ1]){
+      AliDebugStream(1) << "Event selected as EJ1 (0EMC)" << std::endl;
+      fSelectedTriggers.push_back("0EMCEJ1");
+      if(!(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0] || emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgEJ2])) fSelectedTriggers.push_back("0EMCEJ1excl");
+    }
+    if(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgEG2]){
+      AliDebugStream(1) << "Event selected as EG2 (0EMC)" << std::endl;
+      fSelectedTriggers.push_back("0EMCEG2");
+      if(!emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0]) fSelectedTriggers.push_back("0EMCEG2excl");
+    }
+    if(emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgEG1]){
+      AliDebugStream(1) << "Event selected as EG1 (EMC8)" << std::endl;
+      fSelectedTriggers.push_back("0EMCEG1");
+      if(!(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgEL0] || emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgEG2])) fSelectedTriggers.push_back("0EMCEG1excl");
+    }
+
+    if(fEnableDCALTriggers){
+      // Handle DCAL triggers only in case DCAL triggers are enabled,
+      // otherwise ignore results of the online/offline trigger selection
+      if(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0]){
+        AliDebugStream(1) << "Event selected as 0DMC" << std::endl;
+        fSelectedTriggers.push_back("0DMC");
+      }
+      if(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2]){
+        AliDebugStream(1) << "Event selected as DJ2 (0DMC)" << std::endl;
+        fSelectedTriggers.push_back("0DMCDJ2");
+        if(!emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0]) fSelectedTriggers.push_back("0DMCDJ2excl");
+      }
+      if(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ1]){
+        AliDebugStream(1) << "Event selected as DJ1 (0DMC)" << std::endl;
+        fSelectedTriggers.push_back("0DMCDJ1");
+        if(!(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] || emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDJ2])) fSelectedTriggers.push_back("0DMCDJ1excl");
+      }
+      if(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2]){
+        AliDebugStream(1) << "Event selected as DG2 (0DMC)" << std::endl;
+        fSelectedTriggers.push_back("0DMCDG2");
+        if(!emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0]) fSelectedTriggers.push_back("0DMCDG2excl");
+      }
+      if(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDG1]){
+        AliDebugStream(1) << "Event selected as DG1 (0DMC)" << std::endl;
+        fSelectedTriggers.push_back("0DMCDG1");
+        if(!(emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDL0] || emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgDG2])) fSelectedTriggers.push_back("0DMCDG1excl");
+      }
+    }
+  }
 }
 
 void AliAnalysisTaskEmcalTriggerBase::ExecOnce(){
@@ -624,7 +695,11 @@ std::vector<TString> AliAnalysisTaskEmcalTriggerBase::GetSupportedTriggers(Bool_
                                 t0triggers = {{"EMC8",  "EMC8EJ1", "EMC8EJ2", "EMC8EG1", "EMC8EG2"}},
                                 t0exclusive = {{"EMC8excl", "EMC8EG2excl", "EMC8EJ2excl", "EMC8EJ1excl", "EMC8EG1excl"}},
                                 t0dcaltriggers = {{"DMC8", "DMC8DJ1", "DMC8DJ2", "DMC8DG1", "DMC8DG2"}},
-                                t0dcalexclusive = {{"DMC8excl", "DMC8DG2excl", "DMC8DJ2excl", "DMC8DJ1excl", "DMC8DG1excl"}};
+                                t0dcalexclusive = {{"DMC8excl", "DMC8DG2excl", "DMC8DJ2excl", "DMC8DJ1excl", "DMC8DG1excl"}},
+                                nointEMCAL = {{"0EMC", "0EMCEJ1", "0EMCEJ2", "0EMCEG1", "0EMCEG2"}},
+                                nointDCAL = {{"0DMC", "0DMCDJ1", "0DMCDJ2", "0DMCDG1", "0DMCDG2"}};
+  const std::array<TString, 4>  nointemcalexclusive = {{"0EMCEG2excl", "0EMCEJ2excl", "0EMCEJ1excl", "0EMCEG1excl"}}, 
+                                nointdcalexclusive = {{"0DMCDG2excl", "0DMCDJ2excl", "0DMCDJ1excl", "0DMCDG1excl"}};
   const std::array<TString, 2> centralitytriggers = {{"CENT", "SEMICENT"}};
   if(fEnableV0Triggers){
     triggers.push_back("MB"); // Min. Bias always enabled
@@ -653,6 +728,19 @@ std::vector<TString> AliAnalysisTaskEmcalTriggerBase::GetSupportedTriggers(Bool_
       for(const auto &t: t0dcaltriggers) triggers.push_back(t);
       if(useExclusiveTriggers)
         for(const auto &t : t0dcalexclusive) triggers.push_back(t);
+    }
+  }
+  if(fEnableNoINTTriggers) { 
+    // No MB trigger since no interaction trigger
+    if(!fExclusiveMinBias){
+      for(const auto &t: nointEMCAL) triggers.push_back(t);
+      if(useExclusiveTriggers)
+        for(const auto &t : nointemcalexclusive) triggers.push_back(t);
+    }
+    if(fEnableDCALTriggers){
+      for(const auto &t: nointDCAL) triggers.push_back(t);
+      if(useExclusiveTriggers)
+        for(const auto &t : nointdcalexclusive) triggers.push_back(t);
     }
   }
   return triggers;

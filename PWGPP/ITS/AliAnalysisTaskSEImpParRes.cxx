@@ -1311,10 +1311,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   
   Double_t beampiperadius=3.;
   AliVTrack *vtrack = 0;
-  Int_t pdgCode=0;
   Int_t trkLabel;
-  TParticle  *part =0;
-  AliAODMCParticle *AODpart=0;
   Int_t npointsITS=0,npointsSPD=0;
   Int_t skipped[2];
   Double_t dzRec[2], covdzRec[3], dzRecSkip[2], covdzRecSkip[3],dzTrue[2], covdzTrue[3];
@@ -1362,17 +1359,26 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     theta=vtrack->Theta();
 
     //MC
+    TParticle  *part =0x0;
+    AliAODMCParticle *AODpart=0x0;
+    Int_t pdgCode=0;
+
     if (fReadMC){
+      pdgCode=0;
       trkLabel = vtrack->GetLabel();
       if(trkLabel<0) continue;
       if(fIsAOD && mcArray){
 	AODpart = (AliAODMCParticle*)mcArray->At(trkLabel);
-	if(!AODpart) printf("NOPART\n");
-	pdgCode = TMath::Abs(AODpart->GetPdgCode());	
+	if(AODpart){
+	  pdgCode = TMath::Abs(AODpart->GetPdgCode());
+	}
       }
       if(!fIsAOD && mcEvent) {
-	part = ((AliMCParticle*)mcEvent->GetTrack(trkLabel))->Particle();
-	pdgCode = TMath::Abs(part->GetPdgCode());
+	AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(trkLabel);
+	if(mcPart){
+	  part = mcPart->Particle();
+	  pdgCode = TMath::Abs(part->GetPdgCode());
+	}
       }
       //pdgCode = TMath::Abs(part->GetPdgCode());
       //printf("pdgCode===%d\n", pdgCode);
@@ -1417,7 +1423,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     // Select primary particle if MC event (for ESD event), Rprod < 1 micron
     if(fReadMC){
       if(fIsAOD){
-	if((AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+
+	if(AODpart &&
+	   (AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+
 	   (AODpart->Yv()-vtxTrue[1])*(AODpart->Yv()-vtxTrue[1])
 	   > 0.0001*0.0001) {
 	  delete vtxVSkip; vtxVSkip=NULL;
@@ -1425,7 +1432,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
 	}
       }
       else{
-	if((part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
+	if(part &&
+	   (part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
 	   (part->Vy()-vtxTrue[1])*(part->Vy()-vtxTrue[1])
 	   > 0.0001*0.0001) {
 	  delete vtxVSkip; vtxVSkip=NULL;
@@ -2031,10 +2039,10 @@ Bool_t AliAnalysisTaskSEImpParRes::IsSelectedCentrality(AliESDEvent *esd) const
   //
 
   const AliMultiplicity *alimult = esd->GetMultiplicity();
-  Int_t ntrklets=1;
+  //Int_t ntrklets=1;
   Int_t nclsSPDouter=0;
   if(alimult) {
-    ntrklets = alimult->GetNumberOfTracklets();
+    //  ntrklets = alimult->GetNumberOfTracklets();
     nclsSPDouter = alimult->GetNumberOfITSClusters(1);
   }
 

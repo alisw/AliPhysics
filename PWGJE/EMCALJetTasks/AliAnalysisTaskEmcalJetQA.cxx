@@ -59,14 +59,14 @@ AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA() :
   fMaxPt(150),
   fSeparateEMCalDCal(kTRUE),
   fIsEmbedded(kFALSE),
+  fHistManager("AliAnalysisTaskEmcalJetQA"),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
   fV0ATotMult(0),
   fV0CTotMult(0),
   fNTotTracks(0),
-  fLeadingTrack(),
-  fHistManager("AliAnalysisTaskEmcalJetQA")
+  fLeadingTrack()
 {
   // Default constructor.
 
@@ -91,14 +91,14 @@ AliAnalysisTaskEmcalJetQA::AliAnalysisTaskEmcalJetQA(const char *name) :
   fMaxPt(150),
   fSeparateEMCalDCal(kTRUE),
   fIsEmbedded(kFALSE),
+  fHistManager(name),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
   fV0ATotMult(0),
   fV0CTotMult(0),
   fNTotTracks(0),
-  fLeadingTrack(),
-  fHistManager(name)
+  fLeadingTrack()
 {
   // Standard
 

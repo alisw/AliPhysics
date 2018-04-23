@@ -989,6 +989,7 @@ void AliResonanceFits::FitInvMass() {
    
    fGlobalFitFunction = new TF1("GlobalFitFunction", GlobalFitFunction, 0.0, 10.0, 1+fBkgFitFunction->GetNpar());
    fGlobalFitFunction->SetParameter(0, 1.);
+	fGlobalFitFunction->SetNpx(10000.);
    // set starting parameters and parameter limits for the bkg function from the user input
    for(Int_t i=0;i<fBkgFitFunction->GetNpar();++i) {
       fGlobalFitFunction->SetParameter(i+1, fBkgFitFunction->GetParameter(i));
