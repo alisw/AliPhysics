@@ -84,7 +84,6 @@
 #include "AliQnCorrectionsManager.h"
 #include "AliAnalysisTaskFlowVectorCorrections.h"
 #include "AliVertexingHFUtils.h"
-#include "AliESDtrack.h"
 
 #include "AliAnalysisTaskSEHFvn.h"
 
@@ -1234,12 +1233,6 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       Double_t mpion=TDatabasePDG::Instance()->GetParticle(211)->Mass();
       Double_t mkaon=TDatabasePDG::Instance()->GetParticle(321)->Mass();
 
-      AliAODVertex *vAOD = d->GetPrimaryVtx();
-      Double_t pos[3],cov[6];
-      vAOD->GetXYZ(pos);
-      vAOD->GetCovarianceMatrix(cov);
-      const AliESDVertex vESD(pos,cov,100.,100);
-
       for(Int_t iTrk=0; iTrk<aod->GetNumberOfTracks(); iTrk++) {
         //check whether D0/D0bar comes from a Dstar, combining it with soft pions
         AliAODTrack* track=(AliAODTrack*)aod->GetTrack(iTrk);
@@ -1249,7 +1242,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
         if(isSelected==2 && charge>0) continue;
         
         //track does not pass soft pion selections --> continue
-        if(!IsSoftPionSelected(track,&vESD)) continue;
+        if(!IsSoftPionSelected(track)) continue;
         
         if(isSelected==3 && charge>0) {
           Int_t pdgdaughtersD0[2]={211,321};//pi+,K-
@@ -3104,24 +3097,15 @@ void AliAnalysisTaskSEHFvn::RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent*
 }
 
 //________________________________________________________________________
-Bool_t AliAnalysisTaskSEHFvn::IsSoftPionSelected(AliAODTrack* track, const AliESDVertex* primary)
+Bool_t AliAnalysisTaskSEHFvn::IsSoftPionSelected(AliAODTrack* track)
 {
   //track cuts
   if(fUseFiltBit4SoftPion) {
     if(!track->TestFilterBit(4)) return kFALSE;
   }
   else {
-    // convert to ESD track here
-    AliESDtrack esdTrack(track);
-    // set the TPC cluster info
-    esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
-    esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
-    esdTrack.SetTPCPointsF(track->GetTPCNclsF());
-    // needed to calculate the impact parameters
-    esdTrack.RelateToVertex(primary,0.,3.);
-    
     //applying ESDtrackCut
-    if(!fCutsSoftPion->IsSelected(&esdTrack)) return kFALSE;
+    if(!fCutsSoftPion->IsSelected(track)) return kFALSE;
   }
   
   return kTRUE;

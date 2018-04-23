@@ -22,7 +22,6 @@
 #include "AliEventCuts.h"
 #include "AliAODTrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliESDVertex.h"
 
 class TH1F;
 class TH2F;
@@ -157,7 +156,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fOptD0FromDstar=option;
     fUseFiltBit4SoftPion=useFilterBit4softPion;
   }
-  Bool_t IsSoftPionSelected(AliAODTrack* track,const AliESDVertex* primary);
+  Bool_t IsSoftPionSelected(AliAODTrack* track);
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
