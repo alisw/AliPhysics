@@ -33,6 +33,11 @@ public:
     Float_t pz;
     Float_t eta_track;
     Float_t phi_track;
+    Float_t x_track;
+    Float_t y_track;
+    Float_t z_track;
+    Float_t zvtx;
+
     
     //cluster properties
     Float_t energy;
@@ -40,98 +45,79 @@ public:
     Float_t M02;
     Float_t eta_cluster;
     Float_t phi_cluster;
-    UShort_t super_module_number;
-    
-    //mathing properties using default matcher
-    Float_t x_resitual_def;
-    Float_t y_resitual_def;
-    Float_t z_resitual_def;
-    Float_t phi_resitual_def;
-    Float_t eta_resitual_def;
-    
+    Float_t x_cluster;
+    Float_t y_cluster;
+    Float_t z_cluster;
+
     //mathing properties using electron mass
-    Float_t x_resitual_e;
-    Float_t y_resitual_e;
-    Float_t z_resitual_e;
-    Float_t phi_resitual_e;
-    Float_t eta_resitual_e;
-    
+    UShort_t super_module_number;
+    Int_t distance_bad_channel;
+    Bool_t is_in_fid_region;
+
     //PID properties
     Float_t n_sigma_electron_TPC;
     
     ElectronForAlignment()
     {
-        //General Track properties
         charge = -9;
         pt = -999;
         pz = -999;
         eta_track = -999;
         phi_track = -999;
-        
-        //cluster properties
+        x_track = -999;
+        y_track = -999;
+        z_track = -999;
+        zvtx = -999;
+
         energy = -999;
         M20 = -999;
         M02 = -999;
         eta_cluster = -999;
         phi_cluster = -999;
+        x_cluster = -999;
+        y_cluster = -999;
+        z_cluster = -999;
         
-        //mathing properties using default matcher
-        x_resitual_def = -999;
-        y_resitual_def = -999;
-        z_resitual_def = -999;
-        phi_resitual_def = -999;
-        eta_resitual_def = -999;
-        
-        //mathing properties using electron mass
-        x_resitual_e = -999;
-        y_resitual_e = -999;
-        z_resitual_e = -999;
-        phi_resitual_e = -999;
-        eta_resitual_e = -999;
-        
+
         super_module_number = 99;
-        //PID properties
+        distance_bad_channel = -99;
+        is_in_fid_region = kFALSE;
+
         n_sigma_electron_TPC = -999;
     }
     
     void Reset()
     {
-        //General Track properties
-        charge = -9;
+               charge = -9;
         pt = -999;
         pz = -999;
         eta_track = -999;
         phi_track = -999;
-        
-        //cluster properties
+        x_track = -999;
+        y_track = -999;
+        z_track = -999;
+        zvtx = -999;
+
+
         energy = -999;
         M20 = -999;
         M02 = -999;
         eta_cluster = -999;
         phi_cluster = -999;
+        x_cluster = -999;
+        y_cluster = -999;
+        z_cluster = -999;
         
-        //mathing properties using default matcher
-        x_resitual_def = -999;
-        y_resitual_def = -999;
-        z_resitual_def = -999;
-        phi_resitual_def = -999;
-        eta_resitual_def = -999;
-        
-        //mathing properties using electron mass
-        x_resitual_e = -999;
-        y_resitual_e = -999;
-        z_resitual_e = -999;
-        phi_resitual_e = -999;
-        eta_resitual_e = -999;
-        
+
         super_module_number = 99;
-        //PID properties
+        distance_bad_channel = -99;
+        is_in_fid_region = kFALSE;
         n_sigma_electron_TPC = -999;
     }
     
     //Default Initializer
     
-    ClassDef(ElectronForAlignment, 2);
+    ClassDef(ElectronForAlignment, 3);
     
 };
 
