@@ -4871,7 +4871,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC17n") == 0 ){
     fPeriodEnum = kLHC17n;
     fEnergyEnum = kXeXe5440GeV;
-  } else if ( periodName.CompareTo("LHC17pq") == 0  || periodName.CompareTo("LHC17p") == 0 || periodName.CompareTo("LHC17q") == 0 ){
+  } else if ( periodName.Contains("LHC17pq") == 0  || periodName.Contains("LHC17p") == 0 || periodName.Contains("LHC17q") == 0 ){
     fPeriodEnum = kLHC17pq;
     fEnergyEnum = k5TeV;
 
@@ -5189,17 +5189,17 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
 
   // LHC16x anchored MCs
   // 13TeV LHC16* anchors full field Pythia 8 MB
-  } else if ( periodName.CompareTo("LHC16P1Pyt8") == 0 || 
+  } else if ( periodName.CompareTo("LHC16P1Pyt8") == 0 ||
     periodName.CompareTo("LHC17f6") == 0 ||  periodName.CompareTo("LHC17f6_extra") == 0 ||
-    periodName.CompareTo("LHC17d17") == 0 || periodName.CompareTo("LHC17d17_extra") == 0 ||  
-    periodName.CompareTo("LHC17f5") == 0 ||  periodName.CompareTo("LHC17f5_extra") == 0 || 
+    periodName.CompareTo("LHC17d17") == 0 || periodName.CompareTo("LHC17d17_extra") == 0 ||
+    periodName.CompareTo("LHC17f5") == 0 ||  periodName.CompareTo("LHC17f5_extra") == 0 ||
     periodName.CompareTo("LHC17d3") == 0 ||  periodName.CompareTo("LHC17d3_extra") == 0 ||
-    periodName.CompareTo("LHC17e5") == 0 ||  periodName.CompareTo("LHC17e5_extra") == 0 || 
+    periodName.CompareTo("LHC17e5") == 0 ||  periodName.CompareTo("LHC17e5_extra") == 0 ||
     periodName.CompareTo("LHC17d20a1") == 0 || periodName.CompareTo("LHC17d20a1_extra") == 0 ||
-    periodName.CompareTo("LHC17d20a2") == 0 || periodName.CompareTo("LHC17d20a2_extra") == 0 || 
-    periodName.CompareTo("LHC17d16") == 0 ||  periodName.CompareTo("LHC17d16_extra") == 0 || 
+    periodName.CompareTo("LHC17d20a2") == 0 || periodName.CompareTo("LHC17d20a2_extra") == 0 ||
+    periodName.CompareTo("LHC17d16") == 0 ||  periodName.CompareTo("LHC17d16_extra") == 0 ||
     periodName.CompareTo("LHC17d18") == 0 ||  periodName.CompareTo("LHC17d18_extra") == 0  ||
-    periodName.CompareTo("LHC17f9") == 0 ||  periodName.CompareTo("LHC17f9_extra") == 0 || 
+    periodName.CompareTo("LHC17f9") == 0 ||  periodName.CompareTo("LHC17f9_extra") == 0 ||
     periodName.CompareTo("LHC17f9_test") == 0){
     fPeriodEnum = kLHC16P1Pyt8;
     fEnergyEnum = k13TeV;
