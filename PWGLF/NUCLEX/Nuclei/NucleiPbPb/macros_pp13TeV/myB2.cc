@@ -14,13 +14,15 @@ using namespace plotting;
 
 #include <string>
 using std::string;
+#include <fstream>
 
 const char* kPrefix[2] = {"","anti"};
+const int kScaleFactor[10] = {256,128,64,32,16,8,4,2,1,1};
 
 double GetErrorY(const TGraphErrors* gr, double x0);
 void MakeItInvariant(TH1* d_stat);
 TGraphErrors* GetBAPt(const TGraphErrors* grPrtInvDYieldPt,
-    const TGraphErrors* grNucInvDYieldPt, const TString& name);
+    const TGraphErrors* grNucInvDYieldPt, const TString& name, bool syst=true);
 
 constexpr int kInputCent = 10;
 constexpr int kMultInput[11]{0,1,5,10,15,20,30,40,50,70,100};
@@ -37,10 +39,60 @@ constexpr int myCent[kCentLength][2]{
 };
 void myB2(){
 
+  double dNdEta_tmp, dNdEtaErr_tmp, proton_yields_tmp, proton_yields_stat_tmp, proton_yields_syst_tmp;
+
+  vector<double> dNdEta_vec, dNdEtaErr_vec, proton_yields_vec, proton_yields_stat_vec, proton_yields_syst_vec;
+
+  std::ifstream protonFile(Form("%s/proton_yields.txt",kBaseOutputDir.data()));
+  if(!protonFile.is_open()){
+    printf("The file %s could not be opened\n", Form("%s/proton_yields.txt",kBaseOutputDir.data()));
+    exit(1);
+  }
+  else{
+    while(protonFile >> dNdEta_tmp >> dNdEtaErr_tmp >> proton_yields_tmp >> proton_yields_stat_tmp >> proton_yields_syst_tmp){
+      dNdEta_vec.push_back(dNdEta_tmp);
+      dNdEtaErr_vec.push_back(dNdEtaErr_tmp);
+      proton_yields_vec.push_back(proton_yields_tmp);
+      proton_yields_stat_vec.push_back(proton_yields_stat_tmp);
+      proton_yields_syst_vec.push_back(proton_yields_syst_tmp);
+    }
+  }
+
+  double dNdEta[kCentLength-1], dNdEtaErr[kCentLength-1], proton_yields[kCentLength-1], proton_yields_stat[kCentLength-1], proton_yields_syst[kCentLength-1];
+
+  int iC=0;
+  for(int i=0; i< (int) dNdEta_vec.size();i++){
+    if(i!=4){
+      dNdEta[iC] = dNdEta_vec[i];
+      dNdEtaErr[iC] = dNdEtaErr_vec[i];
+      proton_yields[iC] = proton_yields_vec[i];
+      proton_yields_stat[iC] = proton_yields_stat_vec[i];
+      proton_yields_syst[iC] = proton_yields_syst_vec[i];
+      if (i!=3) iC++;
+    }
+    else{
+      dNdEta[iC] = (dNdEta_vec[i]+dNdEta[iC])/2;
+      dNdEtaErr[iC] = TMath::Sqrt(Sq(dNdEtaErr_vec[i]) + Sq(dNdEtaErr[iC]))/2;
+      proton_yields[iC] = (proton_yields_vec[i]+proton_yields[iC])/2;
+      proton_yields_stat[iC] = TMath::Sqrt(Sq(proton_yields_stat_vec[i]) + Sq(proton_yields_stat[iC]))/2;
+      proton_yields_syst[iC] = TMath::Sqrt(Sq(proton_yields_syst_vec[i]) + Sq(proton_yields_syst[iC]))/2;
+      iC++;
+    }
+  }
+
   TFile deuteron_file(kFinalOutput.data());
   TFile output_file(Form("%s/B2.root",kBaseOutputDir.data()),"recreate");
 
   TFile input_file(Form("%sFinal_combined_spectra_pp13TeV.root",kBaseOutputDir.data()));
+
+  TGraphErrors* grB2atPtFixedStat[2];
+  TGraphErrors* grB2atPtFixedSyst[2];
+  for(int iS=0; iS<2; iS++){
+    grB2atPtFixedStat[iS] = new TGraphErrors(kCentLength-1);
+    grB2atPtFixedStat[iS]->SetName(Form("grB2atPtFixedStat_%c",kLetter[iS]));
+    grB2atPtFixedSyst[iS] = new TGraphErrors(kCentLength-1);
+    grB2atPtFixedSyst[iS]->SetName(Form("grB2atPtFixedSyst_%c",kLetter[iS]));
+  }
 
   TH1F* hProtSpectraStat[kCentLength];
   TH1F* hProtSpectraSyst[kCentLength];
@@ -82,6 +134,9 @@ void myB2(){
   TGraphErrors* grB2PtStat[2][kCentLength];
   TGraphErrors* grB2PtSyst[2][kCentLength];
 
+  TGraphErrors* grB2PtStatClone[2][kCentLength];
+  TGraphErrors* grB2PtSystClone[2][kCentLength];
+
   for(int iC=0; iC<kCentLength; iC++){
     //deuteron spectra: normalising by pt
     for(int iS = 0; iS<2; iS++){
@@ -94,8 +149,10 @@ void myB2(){
       grDeutSpectraStat[iS][iC] = new TGraphErrors(hDeutSpectraStat[iS][iC]);
       grDeutSpectraSyst[iS][iC] = new TGraphErrors(hDeutSpectraSyst[iS][iC]);
       //
-      grB2PtStat[iS][iC] = GetBAPt(grProtSpectraStat[iC],grDeutSpectraStat[iS][iC],Form("grStat_%c_%d",kLetter[iS],iC));
+      grB2PtStat[iS][iC] = GetBAPt(grProtSpectraStat[iC],grDeutSpectraStat[iS][iC],Form("grStat_%c_%d",kLetter[iS],iC),false);
+      grB2PtStatClone[iS][iC] = (TGraphErrors*)grB2PtStat[iS][iC]->Clone(Form("grStat_%c_%d_clone",kLetter[iS],iC));
       grB2PtSyst[iS][iC] = GetBAPt(grProtSpectraSyst[iC],grDeutSpectraSyst[iS][iC],Form("grSyst_%c_%d",kLetter[iS],iC));
+      grB2PtSystClone[iS][iC] = (TGraphErrors*)grB2PtSyst[iS][iC]->Clone(Form("grSyst_%c_%d_clone",kLetter[iS],iC));
       //
       grB2PtStat[iS][iC]->GetXaxis()->SetTitle("#it{p}_{T}/A (GeV/#it{c})");
       grB2PtStat[iS][iC]->GetXaxis()->SetRangeUser(0.1,2.);
@@ -112,6 +169,40 @@ void myB2(){
       grB2PtSyst[iS][iC]->SetMarkerColor(kSpectraColors[iC]);
       grB2PtSyst[iS][iC]->SetMarkerStyle(21);
       grB2PtSyst[iS][iC]->SetFillStyle(0);
+      //
+      grB2PtStatClone[iS][iC]->GetXaxis()->SetTitle("#it{p}_{T}/A (GeV/#it{c})");
+      grB2PtStatClone[iS][iC]->GetXaxis()->SetRangeUser(0.1,2.);
+      grB2PtStatClone[iS][iC]->GetYaxis()->SetTitle("#it{B}_{2} (GeV^{2}/#it{c}^{3})");
+      grB2PtStatClone[iS][iC]->SetLineColor(kSpectraColors[iC]);
+      grB2PtStatClone[iS][iC]->SetMarkerColor(kSpectraColors[iC]);
+      grB2PtStatClone[iS][iC]->SetMarkerStyle(21);
+      grB2PtStatClone[iS][iC]->SetFillStyle(0);
+      //
+      grB2PtSystClone[iS][iC]->GetXaxis()->SetTitle("#it{p}_{T}/A (GeV/#it{c})");
+      grB2PtSystClone[iS][iC]->GetXaxis()->SetRangeUser(0.1,2.);
+      grB2PtSystClone[iS][iC]->GetYaxis()->SetTitle("#it{B}_{2} (GeV^{2}/#it{c}^{3})");
+      grB2PtSystClone[iS][iC]->SetLineColor(kSpectraColors[iC]);
+      grB2PtSystClone[iS][iC]->SetMarkerColor(kSpectraColors[iC]);
+      grB2PtSystClone[iS][iC]->SetMarkerStyle(21);
+      grB2PtSystClone[iS][iC]->SetFillStyle(0);
+
+      if(iC==kCentLength-1) continue;
+      double stat_tmp, syst_tmp, x_tmp, dummy;
+      double stat1_tmp, syst1_tmp, x_tmp1, dummy1;
+      //grB2PtStat[iS][iC]->GetPoint(6,x_tmp,val_tmp);
+      double val_tmp = grB2PtStat[iS][iC]->GetY()[5];
+      double val1_tmp = grB2PtStat[iS][iC]->GetY()[4];
+
+      stat_tmp = grB2PtStat[iS][iC]->GetErrorY(5);
+      syst_tmp = grB2PtSyst[iS][iC]->GetErrorY(5);
+      stat1_tmp = grB2PtStat[iS][iC]->GetErrorY(4);
+      syst1_tmp = grB2PtSyst[iS][iC]->GetErrorY(4);
+      printf("x_val: %f\n", x_tmp);
+      printf("val:  %f stat: %f syst %f dNdEta:  %f dNdEtaErr: %f\n", val_tmp, stat_tmp, syst_tmp, dNdEta_vec[iC], dNdEtaErr_vec[iC]);
+      grB2atPtFixedStat[iS]->SetPoint(iC,dNdEta[iC],0.5*val_tmp+0.5*val1_tmp);
+      grB2atPtFixedSyst[iS]->SetPoint(iC,dNdEta[iC],0.5*val_tmp+0.5*val1_tmp);
+      grB2atPtFixedStat[iS]->SetPointError(iC,0,TMath::Sqrt(stat_tmp*stat_tmp+stat1_tmp*stat1_tmp)/2);
+      grB2atPtFixedSyst[iS]->SetPointError(iC,dNdEtaErr[iC],TMath::Sqrt(syst_tmp*syst_tmp+syst1_tmp*syst1_tmp)/2);
     }
   }
 
@@ -122,7 +213,7 @@ void myB2(){
     cB2[iS] = new TCanvas(kNames[iS].data(),kNames[iS].data());
     cB2[iS]->DrawFrame(
       0.,
-      1e-8,
+      0,
       2.,
       0.02,
       ";#it{p}_{T}/A (GeV/#it{c});#it{B}_{2} (GeV^{2}/#it{c}^{3})"
@@ -131,7 +222,8 @@ void myB2(){
     cB2[iS]->SetRightMargin(0.027121);
     cB2[iS]->SetTopMargin(0.06053269);
     cB2[iS]->SetBottomMargin(0.1598063);
-    TLegend leg(0.19,0.65,0.65,0.90);
+    //cB2[iS]->SetLogy();
+    TLegend leg(0.64,0.20,0.94,0.38);
     leg.SetBorderSize(0);
     leg.SetNColumns(2);
     for(int iC=0; iC<kCentLength; iC++){
@@ -146,13 +238,61 @@ void myB2(){
       grB2PtSyst[iS][iC]->Write(Form("grB2Syst_%c_%d",kLetter[iS],iC));
       if(iC==kCentLength-1) continue;
       cB2[iS]->cd();
-      grB2PtStat[iS][iC]->Draw("samepz");
-      grB2PtSyst[iS][iC]->Draw("e2same");
-      leg.AddEntry(grB2PtSyst[iS][iC],Form("%4.0f - %2.0f %%",kCentLabels[iC][0],kCentLabels[iC][1]),"fp");
+      // for (int i=0;i<grB2PtStatClone[iS][iC]->GetN();i++){
+      //   // double x_tmp, val_tmp;
+      //   // grB2PtStat[iS][iC]->GetPoint(i,x_tmp,val_tmp);
+      //   // double errx_tmp = grB2PtStat[iS][iC]->GetEX()[i];
+      //   // double stat_tmp = grB2PtStat[iS][iC]->GetEY()[i];
+      //   // double syst_tmp = grB2PtSyst[iS][iC]->GetEY()[i];
+      //   // grB2PtStatClone[iS][iC]->SetPoint(i,x_tmp,val_tmp*kScaleFactor[iC]);
+      //   // grB2PtStatClone[iS][iC]->SetPointError(i,errx_tmp,stat_tmp*kScaleFactor[iC]);
+      //   // grB2PtSystClone[iS][iC]->SetPoint(i,x_tmp,val_tmp*kScaleFactor[iC]);
+      //   // grB2PtSystClone[iS][iC]->SetPointError(i,errx_tmp,syst_tmp*kScaleFactor[iC]);
+      //
+      //   grB2PtStatClone[iS][iC]->GetY()[i] *= kScaleFactor[iC];
+      //   grB2PtStatClone[iS][iC]->GetEY()[i] *= kScaleFactor[iC];
+      //   grB2PtSystClone[iS][iC]->GetY()[i] *= kScaleFactor[iC];
+      //   grB2PtSystClone[iS][iC]->GetEY()[i] *= kScaleFactor[iC];
+      // }
+      grB2PtStatClone[iS][iC]->Draw("samepz");
+      grB2PtSystClone[iS][iC]->Draw("e2same");
+      leg.AddEntry(grB2PtSystClone[iS][iC],Form("%4.0f - %2.0f %%",kCentLabels[iC][0],kCentLabels[iC][1]),"fp");
     }
     s_dir->cd();
     leg.Draw();
     cB2[iS]->Write();
+  }
+
+  TCanvas* cB2atPtFixed[2] = {new TCanvas(Form("cB2atPtFixed_%c",kLetter[0]),Form("cB2atPtFixed_%c",kLetter[0])),new TCanvas(Form("cB2atPtFixed_%c",kLetter[1]),Form("cB2atPtFixed_%c",kLetter[1]))};
+
+  TFile old_b2_results(Form("%sB2vsColls_pToA_55.root",kBaseOutputDir.data()));
+  TCanvas* cB2atPtFixedInput = (TCanvas*)old_b2_results.Get("c1_n5");
+  Requires(cB2atPtFixedInput,"old b2 at fixed pt results");
+  TPad* pInput = (TPad*)cB2atPtFixedInput->GetPrimitive("c1_n5_1");
+  for(int iS=0; iS<2; iS++){
+    grB2atPtFixedStat[iS]->SetLineColor(kOrange-3);
+    grB2atPtFixedStat[iS]->SetMarkerColor(kOrange-3);
+    grB2atPtFixedStat[iS]->SetMarkerStyle(21);
+    grB2atPtFixedStat[iS]->SetFillStyle(0);
+    grB2atPtFixedSyst[iS]->SetLineColor(kOrange-3);
+    grB2atPtFixedSyst[iS]->SetMarkerColor(kOrange-3);
+    grB2atPtFixedSyst[iS]->SetMarkerStyle(21);
+    grB2atPtFixedSyst[iS]->SetFillStyle(0);
+    grB2atPtFixedSyst[iS]->SetName(Form("grB2atPtFixedSyst_%c",kLetter[iS]));
+    grB2atPtFixedStat[iS]->SetName(Form("grB2atPtFixedStat_%c",kLetter[iS]));
+
+    if(iS==1){
+      pInput->cd();
+      grB2atPtFixedStat[iS]->Draw("pz");
+      grB2atPtFixedSyst[iS]->Draw("e2");
+      pInput->Modified();
+      pInput->Update();
+      pInput->GetListOfPrimitives()->ls();
+      cB2atPtFixed[iS]->cd();
+      pInput->Draw();
+      output_file.cd();
+      cB2atPtFixed[iS]->Write();
+    }
   }
 }
 
@@ -187,7 +327,7 @@ void MakeItInvariant(TH1* d_stat) {
 }
 
 TGraphErrors* GetBAPt(const TGraphErrors* grPrtInvDYieldPt,
-    const TGraphErrors* grNucInvDYieldPt, const TString& name) {
+    const TGraphErrors* grNucInvDYieldPt, const TString& name, bool syst) {
   //
   // coalescence parameter
   //
@@ -200,7 +340,7 @@ TGraphErrors* GetBAPt(const TGraphErrors* grPrtInvDYieldPt,
 
     grNucInvDYieldPt->GetPoint(i, ptNuc, yNuc);
 
-    if(ptNuc/2 < 0.4) continue; // acceptance
+    if(ptNuc/2 < 0.3) continue; // acceptance
 
     Double_t yPrt = grPrtInvDYieldPt->Eval(ptNuc/2); // interpolate
 
@@ -212,7 +352,7 @@ TGraphErrors* GetBAPt(const TGraphErrors* grPrtInvDYieldPt,
     Double_t ePrt = GetErrorY(grPrtInvDYieldPt, ptNuc/2);
     Double_t eNuc = grNucInvDYieldPt->GetErrorY(i);
 
-    Double_t errPt = grNucInvDYieldPt->GetErrorX(i)/2;
+    Double_t errPt = (syst) ? grNucInvDYieldPt->GetErrorX(i)/2 : 0.;
     Double_t errBA = bA*TMath::Sqrt(TMath::Power(eNuc/yNuc,2) + TMath::Power(2*ePrt/yPrt,2));
 
     grBAPt->SetPoint(j, ptNuc/2, bA);

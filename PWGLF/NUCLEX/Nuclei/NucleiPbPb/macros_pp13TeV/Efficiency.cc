@@ -13,16 +13,22 @@ using namespace utils;
 #include <TStyle.h>
 #include <TError.h>
 
-int kCentBins[12][2] = {{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},{8,8},{9,9},{10,10},{11,11},{1,11}};
-int kNcentBins = 12;
+int kCentBins[10][2] = {{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},{8,8},{9,10},{11,13},{2,13}};
+int kNcentBins = 10;
 const char* kLegendLabels[2] = {"Deuterons","Antideuterons"};
 
 TH1* DoEff(TH1* tof, TH1* tot, string name, char letter, int iBx, TArrayD& cent_labels) {
-  int iC0 = kCentBins[iBx-1][0];
-  int iC1 = kCentBins[iBx-1][1];
-  float lmin = iBx ? cent_labels[iC0-1] : cent_labels[0];
-  float lmax = iBx ? cent_labels[iC1]   : cent_labels[cent_labels.GetSize()-1];
-
+  float lmin=0., lmax=0.;
+  if(iBx==0){
+    lmin = cent_labels[0];
+    lmax = cent_labels[cent_labels.GetSize()-1];
+  }
+  else{
+    int iC0 = kCentBins[iBx-1][0];
+    int iC1 = kCentBins[iBx-1][1];
+    lmin = cent_labels[iC0-1];
+    lmax = cent_labels[iC1];
+  }
   TH1* efftof = (TH1*)tof->Clone(Form("eff%s%c%i",name.data(),letter,iBx));
   efftof->SetTitle(Form("%3.0f - %3.0f%%",lmin,lmax));
   efftof->GetYaxis()->SetRangeUser(0.f,1.1f);
@@ -40,10 +46,8 @@ TH1* DoEff(TH1* tof, TH1* tot, string name, char letter, int iBx, TArrayD& cent_
     efftof->SetBinContent(iBin, eff);
     efftof->SetBinError(iBin, std::sqrt(eff * (1. - eff) / den));
   }
-
   efftof->Write();
   return efftof;
-
 }
 
 void Efficiency(bool MBonly = false) {
@@ -59,11 +63,16 @@ void Efficiency(bool MBonly = false) {
   int counter=0;
   for (auto list_key : *input_file.GetListOfKeys()) {
     /// Preliminary operation to read the list and create an output dir
+    // if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
     if (string(list_key->GetName())==Form("%schisquare0",kFilterListNames.data())) continue;
+    if (string(list_key->GetName()).find("_pid2") != string::npos) continue;
+    if (string(list_key->GetName()).find("_pid3") != string::npos) continue;
     TTList* list = (TTList*)input_file.Get(list_key->GetName());
-    output_file.mkdir(list_key->GetName());
-    output_file.cd(list_key->GetName());
+    string out_list = list_key->GetName();
+    //replace(out_list,"mpuccio","nuclei");
+    output_file.mkdir(out_list.data());
+    output_file.cd(out_list.data());
     //if (iList) break;
     iList++;
     /// Getting all the histograms
@@ -88,6 +97,14 @@ void Efficiency(bool MBonly = false) {
     TCanvas* cEff_MB = new TCanvas("cEff_MB","c_Eff_MB");
     TLegend leg(0.58,0.21,0.93,0.41);
     leg.SetBorderSize(0);
+
+    TCanvas* cEff[kCentLength];
+    TLegend* legCent[kCentLength];
+    for(int iC=0; iC<kCentLength; iC++){
+      cEff[iC] = new TCanvas(Form("cEff_%d",iC),Form("cEff_%d",iC));
+      legCent[iC] = new TLegend(0.58,0.21,0.93,0.41);
+      legCent[iC]->SetBorderSize(0);
+    }
 
     TH1* effTofMB[2];
     TH1* effTpcMB[2];
@@ -131,8 +148,11 @@ void Efficiency(bool MBonly = false) {
         TH1D *tof = fITS_TPC_TOF[iS]->ProjectionY(Form("tof%i",iBx),kCentBins[iBx-1][0],kCentBins[iBx-1][1]);
         TH1D *tot = fTotal[iS]->ProjectionY(Form("tot%i",iBx),kCentBins[iBx-1][0],kCentBins[iBx-1][1]);
 
+        int color = (iS==0) ? kBlack : kRed;
         TH1* effTof = DoEff(tof,tot,"Tof",kLetter[iS],iBx,cent_labels);
+        plotting::SetHistStyle(effTof,color,20);
         TH1* effTpc = DoEff(tpc,tot,"Tpc",kLetter[iS],iBx,cent_labels);
+        plotting::SetHistStyle(effTpc,color,21);
 
         tpc->Sumw2();
         tof->Sumw2();
@@ -147,12 +167,28 @@ void Efficiency(bool MBonly = false) {
         tof->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         tof->GetYaxis()->SetTitle("Ratio to MB");
 
-        TH1* ratioTPC = (TH1*)effTpc->Clone(Form("Ratio2MBtpc%c%i",kLetter[iS],iBx));
-        TH1* ratioTOF = (TH1*)effTof->Clone(Form("Ratio2MBtof%c%i",kLetter[iS],iBx));
-        ratioTPC->Divide(effTpcMB[iS]);
-        ratioTOF->Divide(effTofMB[iS]);
-        ratioTPC->Write();
-        ratioTOF->Write();
+        cEff[iBx-1]->cd();
+        if(iS==0){
+          effTof->Draw("PE");
+          effTpc->Draw("PESAME");
+        }
+        else{
+          effTof->Draw("PESAME");
+          effTpc->Draw("PESAME");
+        }
+        legCent[iBx-1]->AddEntry(effTof,Form("%s: TPC +  TOF",kLegendLabels[iS]),"PE");
+        legCent[iBx-1]->AddEntry(effTpc,Form("%s: TPC",kLegendLabels[iS]),"PE");
+        if(iS==1){
+          legCent[iBx-1]->Draw();
+          cEff[iBx-1]->Write();
+        }
+
+        // TH1* ratioTPC = (TH1*)effTpc->Clone(Form("Ratio2MBtpc%c%i",kLetter[iS],iBx));
+        // TH1* ratioTOF = (TH1*)effTof->Clone(Form("Ratio2MBtof%c%i",kLetter[iS],iBx));
+        // ratioTPC->Divide(effTpcMB[iS]);
+        // ratioTOF->Divide(effTofMB[iS]);
+        // ratioTPC->Write();
+        // ratioTOF->Write();
         tpc->Multiply(totMB);
         tpc->Divide(tot);
         tpc->Divide(tpcMB);
