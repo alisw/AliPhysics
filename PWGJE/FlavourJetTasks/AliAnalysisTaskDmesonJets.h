@@ -83,7 +83,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   typedef AliJetContainer::EJetAlgo_t EJetAlgo_t;
   typedef AliJetContainer::ERecoScheme_t ERecoScheme_t;
 
-  enum EOutputType_t { kNoOutput, kTreeOutput, kTHnOutput, kOnlyQAOutput };
+  enum EOutputType_t { kNoOutput, kTreeOutput, kTHnOutput, kOnlyQAOutput, kTreeExtendedOutput };
   enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
   enum EMCMode_t { kNoMC, kSignalOnly, kBackgroundOnly, kMCTruth, kD0Reflection, kOnlyWrongPIDAccepted };
   enum EMesonOrigin_t {
@@ -115,6 +115,47 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
    kDeltaPhi          = BIT(6) , // Add the delta phi axis in the THnSparse
    kPositionJet       = BIT(7) , // Add the jet eta/phi axis in the THnSparse
    kJetConstituents   = BIT(8)   // Add the jet constituent axis in the THnSparse
+  };
+
+  /**
+   * \class EventInfo
+   * \brief Event information
+   */
+  class EventInfo {
+  public:
+    EventInfo() : fCent(-1), fEP(-1), fWeight(1), fPtHard(0) {}
+    EventInfo(double cent, double ep, double w, double pt) : fCent(cent), fEP(ep), fWeight(w), fPtHard(pt) {}
+
+    double fCent;
+    double fEP;
+    double fWeight;
+    double fPtHard;
+  };
+
+  /**
+   * \class AliEventInfoSummary
+   * \brief Class that encapsulates event properties in a very compact structure (useful for pp simulation analysis)
+   *
+   * Class that encapsulates event properties in a very compact structure
+   * for pp analysis on simulations (22 bits)
+   */
+  class AliEventInfoSummary {
+  public:
+    AliEventInfoSummary() : fWeight(1), fPtHard(0) {;}
+    AliEventInfoSummary(EventInfo event);
+
+    virtual ~AliEventInfoSummary() {;}
+
+    void Reset();
+    void Set(EventInfo event);
+
+    /// Centrality of the collision
+    Double32_t  fWeight          ; //[0,0,12]
+    Double32_t  fPtHard          ; //[0,512,10]
+
+    /// \cond CLASSIMP
+    ClassDef(AliEventInfoSummary, 1);
+    /// \endcond
   };
 
   /// \class AliJetInfo
@@ -434,10 +475,6 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     friend bool        operator==(const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs);
     friend inline bool operator!=(const AliHFJetDefinition& lhs, const AliHFJetDefinition& rhs){ return !(lhs == rhs); }
 
-//  protected:
-//    friend class AliAnalysisTaskDmesonJets;
-//    friend class AnalysisEngine;
-
     EJetType_t                fJetType       ; ///<  Jet type (charged, full, neutral)
     Double_t                  fRadius        ; ///<  Jet radius
     EJetAlgo_t                fJetAlgo       ; ///<  Jet algorithm (kt, anti-kt,...)
@@ -493,6 +530,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     Float_t                            fPtBinWidth            ; //!<! Histogram pt bin width
     Float_t                            fMaxPt                 ; //!<! Histogram pt limit
     Bool_t                             fD0Extended            ; //!<! Store extended information in the tree (only for D0 mesons)
+    EventInfo                         *fEventInfo             ; //!<! Object conatining the event information (centrality, pt hard, weight, etc.)
     std::map<int, AliDmesonJetInfo>   *fDmesonJets            ; //!<! Array containing the D meson jets
     THistManager                      *fHistManager           ; //!<! Histograms
     TString                            fName                  ; //!<! Name of this object
@@ -503,7 +541,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// \brief Output handler for D meson jet analysis
   ///
   /// This class encapsulates the handler of the output of the analysis
-  /// This is a base generic class: it only implements the filling of QA histograms
+  /// The output is stored in a THnSparse with user defined axis
   class OutputHandlerTHnSparse : public OutputHandler {
   public:
     OutputHandlerTHnSparse();
@@ -528,7 +566,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
   /// \brief Output handler for D meson jet analysis
   ///
   /// This class encapsulates the handler of the output of the analysis
-  /// This is a base generic class: it only implements the filling of QA histograms
+  /// The output is stored in a TTree. Each entry of the tree corresponds to a D meson
+  /// and there are separate branches for each jet definition.
   class OutputHandlerTTree : public OutputHandler {
   public:
     OutputHandlerTTree();
@@ -551,30 +590,66 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
     AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
   };
- /*
-  /// \class OutputHandlerTTreeExtended
+
+  /// \class OutputHandlerTTreeExtendedBase
   /// \brief Output handler for D meson jet analysis
   ///
   /// This class encapsulates the handler of the output of the analysis
-  /// This is a base generic class: it only implements the filling of QA histograms
-  class OutputHandlerTTreeExtended : public OutputHandler {
+  /// The output is stored in a TTree. This is a base class, containing
+  /// some common fields and functions. The full implementation is given
+  /// in the template class OutputHandlerTTreeExtended for each combination
+  /// of event, D meson and jet output object types.
+  class OutputHandlerTTreeExtendedBase : public OutputHandler {
   public:
-    OutputHandlerTTreeExtended();
-    OutputHandlerTTreeExtended(AnalysisEngine* eng);
-    virtual Bool_t FillOutput(Bool_t applyKinCuts);
+    OutputHandlerTTreeExtendedBase();
+    OutputHandlerTTreeExtendedBase(AnalysisEngine* eng);
 
-    virtual void BuildOutputObject(const char* taskName);
+    virtual ~OutputHandlerTTreeExtendedBase() {;}
+
     virtual TObject* GetOutputObject() const           { return fTree; }
     virtual Int_t  GetDataSlotNumber() const           { return fDataSlotNumber    ; }
 
     TTree* GetTree() const { return fTree; }
     void   AssignDataSlot(Int_t n)             { fDataSlotNumber        = n; }
 
-  private:
-    Int_t                              fDataSlotNumber        ; //!<! Data slot where the tree output is posted
-    TTree                             *fTree                  ; //!<! Output tree
+    static OutputHandlerTTreeExtendedBase* GenerateOutputHandler(AnalysisEngine* eng);
+
+  protected:
+    Int_t                                                       fDataSlotNumber        ; //!<! Data slot where the tree output is posted
+    TTree                                                      *fTree                  ; //!<! Output tree
+    TString                                                     fEventClassName        ;
+    TString                                                     fDMesonClassName       ;
+    TString                                                     fJetClassName          ;
   };
-*/
+
+  /// \class OutputHandlerTTreeExtended
+  /// \brief Output handler for D meson jet analysis
+  ///
+  /// This class encapsulates the handler of the output of the analysis
+  /// The output is stored in a TTree. Each entry of the tree corresponds to an event;
+  /// the event information is stored in a branch with the event header;
+  /// D mesons are stored in a branch of type std::vector;
+  /// each jet definition is stored in a different branch of type std::vector.
+  /// The std:vector branches of the D mesons and of each jet definition are kept in sync:
+  /// in order to get the jets corresponding to each D meson one must look at the same position
+  /// in the corresponding std::vector.
+  template<class EVENTTYPE, class DMESONTYPE, class JETTYPE>
+  class OutputHandlerTTreeExtended : public OutputHandlerTTreeExtendedBase {
+  public:
+    OutputHandlerTTreeExtended();
+    OutputHandlerTTreeExtended(AnalysisEngine* eng);
+
+    virtual ~OutputHandlerTTreeExtended() {;}
+
+    virtual Bool_t FillOutput(Bool_t applyKinCuts);
+    virtual void BuildOutputObject(const char* taskName);
+
+  protected:
+    EVENTTYPE                                                   fCurrentEventInfo      ; //!<! Current event info
+    std::vector<DMESONTYPE>                                     fCurrentDmesonInfo     ; //!<! Current D meson jet info
+    std::map<std::string, std::vector<JETTYPE> >                fCurrentJetInfo        ; //!<! Current jet info
+  };
+
   /// \class AnalysisEngine
   /// \brief Struct that encapsulates analysis parameters
   ///
@@ -643,6 +718,8 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
     Bool_t IsInhibit() const { return fInhibit; }
 
+    Bool_t IsD0Extended() const { return fD0Extended; }
+
     friend bool        operator< (const AnalysisEngine& lhs, const AnalysisEngine& rhs);
     friend inline bool operator> (const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return rhs < lhs    ; }
     friend inline bool operator<=(const AnalysisEngine& lhs, const AnalysisEngine& rhs){ return !(lhs > rhs) ; }
@@ -684,7 +761,7 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     AliAODEvent                       *fAodEvent              ; //!<! AOD event
     AliFJWrapper                      *fFastJetWrapper        ; //!<! Fastjet wrapper
     THistManager                      *fHistManager           ; //!<! Histograms
-    Double_t                           fCent                  ; //!<! Event centrality
+    EventInfo                          fEventInfo             ; //!<! Event info (centrality, weight, pt hard etc.)
     mutable TString                    fName                  ; //!<! Name of this object
 
     friend class AliAnalysisTaskDmesonJets;

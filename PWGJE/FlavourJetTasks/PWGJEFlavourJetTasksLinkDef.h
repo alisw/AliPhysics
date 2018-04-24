@@ -33,6 +33,14 @@
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliDStarInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoSummary+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary+;
+#pragma link C++ class AliAnalysisTaskDmesonJets::AliEventInfoSummary+;
+#pragma link C++ class std::vector<AliAnalysisTaskDmesonJets::AliDmesonInfoSummary>+;
+#pragma link C++ class std::vector<AliAnalysisTaskDmesonJets::AliDmesonMCInfoSummary>+;
+#pragma link C++ class std::vector<AliAnalysisTaskDmesonJets::AliD0InfoSummary>+;
+#pragma link C++ class std::vector<AliAnalysisTaskDmesonJets::AliD0ExtendedInfoSummary>+;
+#pragma link C++ class std::vector<AliAnalysisTaskDmesonJets::AliDStarInfoSummary>+;
+#pragma link C++ class std::vector<AliAnalysisTaskDmesonJets::AliJetInfoSummary>+;
+#pragma link C++ class std::vector<AliAnalysisTaskDmesonJets::AliJetInfoPbPbSummary>+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AnalysisEngine+;
 #pragma link C++ class AliAnalysisTaskDmesonJets::AliHFJetDefinition+;
 #pragma link C++ class std::pair<int,AliAnalysisTaskDmesonJets::AliDmesonJetInfo>+;
