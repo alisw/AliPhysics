@@ -4535,11 +4535,11 @@ void AliAnalysisTaskHaHFECorrel::MCTruthCorrelation(Bool_t AfterEventCuts, Int_t
 	      if ((MCHadron->Eta() < fMaxHadronEta) && (MCHadron->Eta() > fMinHadronEta)) HadronInAcceptanceCut = kTRUE;
 	      
 	      if (HadronInAcceptanceCut  && (MCHadron->Pt() > LeadingParticlePtInAcceptance)) {
-		LeadingParticleInAcceptance = MCHadron->Label();
+		LeadingParticleInAcceptance = abs(MCHadron->Label());
 		LeadingParticlePtInAcceptance = MCHadron->Pt();
 	      }
 	      if (MCHadron->Pt() > LeadingParticlePt) {
-		LeadingParticle = MCHadron->Label();
+		LeadingParticle = abs(MCHadron->Label());
 		LeadingParticlePt = MCHadron->Pt();
 	      }
 
