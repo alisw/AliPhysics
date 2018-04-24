@@ -64,6 +64,7 @@ void Divide(TH1* h, TF1* func, TH1F* h_out) {
     if(h->GetBinCenter(i) < x_low || h->GetBinCenter(i) > x_high) continue;
     if(h->GetBinContent(i) == 0 || fabs(func->Eval(h->GetBinCenter(i))) < 1.e-24) continue;
     h->SetBinContent(i, h->GetBinContent(i) / func->Eval(h->GetBinCenter(i)));
+    h->SetBinError(i, h->GetBinError(i) / func->Eval(h->GetBinCenter(i)));
     h_out->SetBinContent(i, func->Eval(h->GetBinCenter(i)));
   }
 }
@@ -128,6 +129,8 @@ void Spectra() {
   for (auto list_key : *signal_file.GetListOfKeys()) {
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
     if (string(list_key->GetName()).find("_MV") != string::npos) continue;
+    if (string(list_key->GetName()).find("_pid2") != string::npos) continue;
+    if (string(list_key->GetName()).find("_pid3") != string::npos) continue;
     TTList* list = (TTList*)data_file.Get(list_key->GetName());
     /// Getting the correct directories
     TDirectory* base_dir = output_file.mkdir(list_key->GetName());
@@ -149,25 +152,27 @@ void Spectra() {
 
     TF1 *primary_fraction=nullptr;
     TF1 *primary_fraction_tpc=nullptr;
+    TH1F* hResTFF = nullptr;
+    TH1F* hResTFF_TPC = nullptr;
 
     for (int iS = 0; iS < 2; ++iS) {
       TDirectory* particle_dir = base_dir->mkdir(kNames[iS].data());
       particle_dir->cd();
       for (int iC = 0; iC < kCentLength; ++iC) {
         /// Getting efficiencies
-        TH1* eff_tpc_graph = (TH1*)efficiency_file.Get(Form("%s/effTpc%c%i",list_key->GetName(),kLetter[iS],0));
-        TH1* eff_tof_graph = (TH1*)efficiency_file.Get(Form("%s/effTof%c%i",list_key->GetName(),kLetter[iS],0));
+        TH1* eff_tpc_graph = (TH1*)efficiency_file.Get(Form("%s/effTpc%c%i",list_key->GetName(),kLetter[iS],iC+1));
+        TH1* eff_tof_graph = (TH1*)efficiency_file.Get(Form("%s/effTof%c%i",list_key->GetName(),kLetter[iS],iC+1));
         Requires(eff_tpc_graph,Form("%s/effTpc%c%i",list_key->GetName(),kLetter[iS],0));
         Requires(eff_tof_graph,Form("%s/effTof%c%i",list_key->GetName(),kLetter[iS],0));
         /// I am not considering Secondaries here, the analysis is only at high pT
         if (secondaries_file.IsOpen()) {
-          TH1* hResTFF = (TH1*)secondaries_file.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
+          hResTFF = (TH1F*)secondaries_file.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
           Requires(hResTFF,Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
           primary_fraction = hResTFF->GetFunction("fitFrac");
           Requires(primary_fraction,"Missing primary fraction");
         }
         if (secondaries_tpc_file.IsOpen()) {
-          TH1* hResTFF_TPC = (TH1*)secondaries_tpc_file.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
+          hResTFF_TPC = (TH1F*)secondaries_tpc_file.Get(Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
           Requires(hResTFF_TPC,Form("%s/Results/hResTFF_%i",list_key->GetName(),iC));
           primary_fraction_tpc = hResTFF_TPC->GetFunction("fitFrac");
           Requires(primary_fraction_tpc,"Missing primary fraction for TPC");
@@ -213,6 +218,11 @@ void Spectra() {
         g3g4tof[iS]->GetXaxis()->SetRangeUser(1.,6.);
         g3g4tof[iS]->Fit(function_g3g4_tof,"RQ");
         g3g4tof[iS]->Write();
+        // for(int iB=1;iB<= spectraTOF->GetNbinsX(); iB++){
+        //   float correction = (iS==0) ? 0.906530 : 0.885085;
+        //   spectraTOF->SetBinContent(iB,spectraTOF->GetBinContent(iB)/correction);
+        //   spectraTOF->SetBinError(iB,spectraTOF->GetBinError(iB)/correction);
+        // }
         Divide(spectraTOF,function_g3g4_tof,corr_geant_tof[iS]);
         corr_geant_tof[iS]->Write();
         cG3G4[0]->cd();
@@ -226,7 +236,23 @@ void Spectra() {
           leg.Draw();
           cG3G4[0]->Write();
         }
-        if (primary_fraction&&!iS) spectraTOF->Multiply(primary_fraction);
+        //if (primary_fraction&&!iS) spectraTOF->Multiply(primary_fraction);
+        if(!iS){
+          for(int iB=1; iB<= spectraTOF->GetNbinsX(); iB++){
+            float center = spectraTOF->GetBinCenter(iB);
+            float factor = 0.;
+            if(center>kPtRangeMatCorrection[0] && center<kPtRangeMatCorrection[1]){
+              factor = hResTFF->GetBinContent(hResTFF->FindBin(center));
+            }
+            else{
+              factor = primary_fraction->Eval(center);
+            }
+            float prev_val = spectraTOF->GetBinContent(iB);
+            float prev_err = spectraTOF->GetBinError(iB);
+            spectraTOF->SetBinContent(iB,prev_val*factor);
+            spectraTOF->SetBinError(iB,prev_err*factor);
+          }
+        }
         TH1D* spectraTPC = new TH1D(*rawTPC);
         spectraTPC->SetTitle(";#it{p}_{T} (GeV/#it{c});#frac{1}{N_{ev}}#frac{dN}{dp_{T}d#it{y}}");
         Divide(spectraTPC,eff_tpc_graph);
@@ -260,8 +286,35 @@ void Spectra() {
         }
 
         Divide(spectraTPC,&function_g3g4_tpc,corr_geant_tpc[iS]);
+        //Divide(spectraTOF,&function_g3g4_tpc,corr_geant_tof[iS]);
         corr_geant_tpc[iS]->Write();
-        if (primary_fraction_tpc&&!iS) spectraTPC->Multiply(primary_fraction_tpc);
+        if(!iS){
+          for(int iB=1; iB<= spectraTPC->GetNbinsX(); iB++){
+            float center = spectraTPC->GetBinCenter(iB);
+            float factor = 0.;
+            if(center>kPtRangeMatCorrectionTPC[0] && center<kPtRangeMatCorrectionTPC[1]){
+              factor = hResTFF_TPC->GetBinContent(hResTFF_TPC->FindBin(center));
+            }
+            else{
+              factor = primary_fraction_tpc->Eval(center);
+            }
+            float prev_val = spectraTPC->GetBinContent(iB);
+            float prev_err = spectraTPC->GetBinError(iB);
+            spectraTPC->SetBinContent(iB,prev_val*factor);
+            spectraTPC->SetBinError(iB,prev_err*factor);
+          }
+        }
+        // if(!iS){
+        //   for (int iB = spectraTPC->FindBin(kPtRangeMatCorrectionTPC[0]); iB <= spectraTPC->FindBin(kPtRangeMatCorrectionTPC[1]); ++iB){
+        //     float center = spectraTPC->GetBinCenter(iB);
+        //     float factor = hResTFF_TPC->GetBinContent(hResTFF_TPC->FindBin(center));
+        //     float prev_val = spectraTPC->GetBinContent(iB);
+        //     float prev_err = spectraTPC->GetBinError(iB);
+        //     spectraTPC->SetBinContent(iB,prev_val*factor);
+        //     spectraTPC->SetBinError(iB,prev_err*factor);
+        //   }
+        // }//spectraTPC->Multiply(primary_fraction_tpc);
+        // if (primary_fraction_tpc&&!iS) spectraTPC->Multiply(primary_fraction_tpc);
 
         //SignalLoss correction
         if(iC>=6){

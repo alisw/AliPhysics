@@ -21,10 +21,10 @@ const string kNames[2] = {"deuterons","antideuterons"};
 const string kBaseOutputDir = "../results/";
 const string kBaseInputDir = "/Users/lbariogl/cernbox/Deuterons13TeV/";
 
-const string kDataFilename = kBaseInputDir + "Dati/data_20180404.root";
-const string kMCfilename = kBaseInputDir + "mc.root";
+const string kDataFilename = kBaseInputDir + "Dati/data.root";
+const string kMCfilename = kBaseInputDir + "MC/mc_tot_20180417.root";
 
-const string kFilterListNames = "mpuccio_deuterons_";
+const string kFilterListNames = "nuclei_deuterons_";
 const string kNormalisationList = "mpuccio_NucleiPIDqa_default";
 
 const string kEfficiencyOutput = kBaseOutputDir + "efficiency.root";
@@ -60,10 +60,10 @@ const float  kCentLabels[kCentLength][2] = {{0.,1.},{1.,5.},{5.,10.},{10.,20.},{
 const float  kPtRebin[kCentLength] = {2.6,2.6,2.6,2.2,2.2,2.2,2.,0.6,0.6,3.4};
 
 const float  kTPCmaxPt = 1.4f;
-const float  kTOFminPt = 1.f;
+const float  kTOFminPt = 0.8f;
 const float  kPtRange[2] = {0.6,3.8};
 const float  kPtRangeMatCorrection[2] = {0.85,1.55};
-const float  kPtRangeMatCorrectionTPC[2] = {0.65,1.35};
+const float  kPtRangeMatCorrectionTPC[2] = {0.65,1.15};
 
 const bool   kUseBarlow{true};
 const bool   kSmoothSystematics{true};
