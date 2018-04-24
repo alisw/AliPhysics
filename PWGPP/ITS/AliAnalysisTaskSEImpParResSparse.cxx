@@ -103,6 +103,7 @@ fhPtWeights(0x0),
 fUseptWeights(0),
 fScalingFactPtWeight(1.0),
 fOutput(0),
+fParticleSpecies(-2),
 fUsePhysicalPrimary(kFALSE),
 fUseGeneratedPt(kFALSE)
 {
@@ -154,6 +155,7 @@ fhPtWeights(0x0),
 fUseptWeights(0),
 fScalingFactPtWeight(1.0),
 fOutput(0),
+fParticleSpecies(-2),
 fUsePhysicalPrimary(kFALSE),
 fUseGeneratedPt(kFALSE)
 {
@@ -544,13 +546,11 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     Double_t dzRec[2], covdzRec[3], dzRecSkip[2], covdzRecSkip[3], dzTrue[2], covdzTrue[3];
     Double_t dz[2], covdz[3];
     Double_t pt;
-    Int_t bin;
     Int_t nClsTotTPC=0;
     Bool_t haskITSrefit=kFALSE;
     Bool_t haskTPCrefit=kFALSE;
     Int_t charge=0;
     Double_t phi=0.;
-    Double_t theta=0.;
     Double_t eta=0.;
     Double_t pointrphi[4];
     Double_t pullrphi[4];
@@ -670,10 +670,13 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 if(fUseGeneratedPt) pt=AODpart->Pt();
             }
             if(!fIsAOD && mcEvent) {
-                part = ((AliMCParticle*)mcEvent->GetTrack(trkLabel))->Particle();
-                pdgCode = TMath::Abs(part->GetPdgCode());
-                if(fUsePhysicalPrimary) {if(!((AliMCParticle*)part)->IsPhysicalPrimary()) continue;}
-                if(fUseGeneratedPt) pt=part->Pt();
+	      AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(trkLabel);
+	      if(!mcPart) continue;
+	      part = mcPart->Particle();
+	      if(!part) continue;
+	      pdgCode = TMath::Abs(part->GetPdgCode());
+	      if(fUsePhysicalPrimary) {if(!mcPart->IsPhysicalPrimary()) continue;}
+	      if(fUseGeneratedPt) pt=part->Pt();
             }
             //pdgCode = TMath::Abs(part->GetPdgCode());
             //printf("pdgCode===%d\n", pdgCode);
@@ -734,7 +737,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         // Select primary particle if MC event (for ESD event), Rprod < 1 micron
         if(fReadMC){
             if(fIsAOD){
-                if((AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+
+                if(AODpart &&
+		   (AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+
                    (AODpart->Yv()-vtxTrue[1])*(AODpart->Yv()-vtxTrue[1])
                    > 0.0001*0.0001) {
                     delete vtxVSkip; vtxVSkip=NULL;
@@ -742,7 +746,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 }
             }
             else{
-                if((part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
+                if(part &&
+		   (part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
                    (part->Vy()-vtxTrue[1])*(part->Vy()-vtxTrue[1])
                    > 0.0001*0.0001) {
                     delete vtxVSkip; vtxVSkip=NULL;
@@ -988,10 +993,10 @@ Bool_t AliAnalysisTaskSEImpParResSparse::IsSelectedCentrality(AliESDEvent *esd) 
     //
     
     const AliMultiplicity *alimult = esd->GetMultiplicity();
-    Int_t ntrklets=1;
+    //    Int_t ntrklets=1;
     Int_t nclsSPDouter=0;
     if(alimult) {
-        ntrklets = alimult->GetNumberOfTracklets();
+      //        ntrklets = alimult->GetNumberOfTracklets();
         nclsSPDouter = alimult->GetNumberOfITSClusters(1);
     }
     
