@@ -286,9 +286,9 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
 
  private:
   std::map<std::string, TH1*> fHistograms;                 //!<!general QA histograms
-  TH1* GetGeneralTH1(const char* name);
-  TH2* GetGeneralTH2(const char* name);
-  TProfile* GetGeneralTProfile(const char* name);
+  TH1* GetGeneralTH1(const char* name, bool warn=false);
+  TH2* GetGeneralTH2(const char* name, bool warn=false);
+  TProfile* GetGeneralTProfile(const char* name, bool warn=false);
 
   AliAnalysisTaskEmcalLight(const AliAnalysisTaskEmcalLight&);            // not implemented
   AliAnalysisTaskEmcalLight &operator=(const AliAnalysisTaskEmcalLight&); // not implemented

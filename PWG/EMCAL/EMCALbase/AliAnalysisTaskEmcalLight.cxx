@@ -116,7 +116,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fFiredTriggerClasses(),
   fBeamType(kNA),
   fPythiaHeader(0),
-  fPtHardBin(-1),
+  fPtHardBin(0),
   fPtHard(0),
   fNTrials(0),
   fXsection(0),
@@ -197,7 +197,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fFiredTriggerClasses(),
   fBeamType(kNA),
   fPythiaHeader(0),
-  fPtHardBin(-1),
+  fPtHardBin(0),
   fPtHard(0),
   fNTrials(0),
   fXsection(0),
@@ -304,11 +304,17 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     fOutput->Add(h);
     fHistograms["fHistTrialsVsPtHard"] = h;
 
-    h = new TProfile("fHistXsectionVsPtHard", "fHistXsectionVsPtHard", 1000, 0, 1000);
-    h->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
-    h->GetYaxis()->SetTitle("xsection");
+    h = new TProfile("fHistXsection", "fHistXsection", 50, 0, 50);
+    h->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
+    h->GetYaxis()->SetTitle("total integrated cross section (mb)");
     fOutput->Add(h);
-    fHistograms["fHistXsectionVsPtHard"] = h;
+    fHistograms["fHistXsection"] = h;
+
+    h = new TH1F("fHistXsectionDistribution", "fHistXsectionDistribution", 1000, &weight_bins[0]);
+    h->GetXaxis()->SetTitle("total integrated cross section (mb)");
+    h->GetYaxis()->SetTitle("events");
+    fOutput->Add(h);
+    fHistograms["fHistXsectionDistribution"] = h;
 
     h = new TH1F("fHistEventWeights", "fHistEventWeights", 1000, &weight_bins[0]);
     h->GetXaxis()->SetTitle("weight");
@@ -334,11 +340,17 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     fOutput->Add(h);
     fHistograms["fHistTrialsVsPtHardNoSel"] = h;
 
-    h = new TProfile("fHistXsectionVsPtHardNoSel", "fHistXsectionVsPtHardNoSel", 1000, 0, 1000);
-    h->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
-    h->GetYaxis()->SetTitle("xsection");
+    h = new TProfile("fHistXsectionNoSel", "fHistXsectionNoSel", 50, 0, 50);
+    h->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
+    h->GetYaxis()->SetTitle("total integrated cross section (mb)");
     fOutput->Add(h);
-    fHistograms["fHistXsectionVsPtHardNoSel"] = h;
+    fHistograms["fHistXsectionNoSel"] = h;
+
+    h = new TH1F("fHistXsectionDistributionNoSel", "fHistXsectionDistributionNoSel", 1000, &weight_bins[0]);
+    h->GetXaxis()->SetTitle("total integrated cross section (mb)");
+    h->GetYaxis()->SetTitle("events");
+    fOutput->Add(h);
+    fHistograms["fHistXsectionDistributionNoSel"] = h;
 
     h = new TH1F("fHistEventWeightsNoSel", "fHistEventWeightsNoSel", 1000, &weight_bins[0]);
     h->GetXaxis()->SetTitle("weight");
@@ -346,23 +358,29 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
     fOutput->Add(h);
     fHistograms["fHistEventWeightsNoSel"] = h;
 
-    h = new TH1F("fHistTrials", "fHistTrials", 50, 0, 50);
+    h = new TH2F("fHistEventWeightsVsPtHardNoSel", "fHistEventWeightsVsPtHardNoSel", 1000, 0, 1000, 1000, &weight_bins[0]);
+    h->GetXaxis()->SetTitle("#it{p}_{T,hard} (GeV/#it{c})");
+    h->GetYaxis()->SetTitle("event weight");
+    fOutput->Add(h);
+    fHistograms["fHistEventWeightsVsPtHardNoSel"] = h;
+
+    h = new TH1F("fHistTrialsExternalFile", "fHistTrialsExternalFile", 50, 0, 50);
     h->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
     h->GetYaxis()->SetTitle("trials");
     fOutput->Add(h);
     fHistograms["fHistTrialsExternalFile"] = h;
 
-    h = new TH1F("fHistEvents", "fHistEvents", 50, 0, 50);
+    h = new TH1F("fHistEventsExternalFile", "fHistEventsExternalFile", 50, 0, 50);
     h->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
     h->GetYaxis()->SetTitle("total events");
     fOutput->Add(h);
     fHistograms["fHistEventsExternalFile"] = h;
 
-    h = new TProfile("fHistXsection", "fHistXsection", 50, 0, 50);
+    h = new TProfile("fHistXsectionExternalFile", "fHistXsectionExternalFile", 50, 0, 50);
     h->GetXaxis()->SetTitle("#it{p}_{T,hard} bin");
-    h->GetYaxis()->SetTitle("xsection");
+    h->GetYaxis()->SetTitle("total integrated cross section (mb)");
     fOutput->Add(h);
-    fHistograms["fHistXsection"] = h;
+    fHistograms["fHistXsectionExternalFile"] = h;
   }
 
   h = new TH1F("fHistZVertex","Z vertex position", 60, -30, 30);
@@ -467,11 +485,15 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
 {
   if (eventSelected) {
     if (fIsPythia) {
-      GetGeneralTH1("fHistEventsVsPtHard")->Fill(fPtHard, 1);
-      GetGeneralTH1("fHistTrialsVsPtHard")->Fill(fPtHard, fNTrials);
-      GetGeneralTProfile("fHistXsectionVsPtHard")->Fill(fPtHard, fXsection);
-      GetGeneralTH1("fHistEventWeights")->Fill(fEventWeight, 1);
-      GetGeneralTH2("fHistEventWeightsVsPtHard")->Fill(fPtHard, fEventWeight);
+      GetGeneralTH1("fHistEventsVsPtHard", true)->Fill(fPtHard);
+      GetGeneralTH1("fHistTrialsVsPtHard", true)->Fill(fPtHard, fNTrials);
+      GetGeneralTH1("fHistEventWeights", true)->Fill(fEventWeight);
+      GetGeneralTH2("fHistEventWeightsVsPtHard", true)->Fill(fPtHard, fEventWeight);
+      GetGeneralTH1("fHistXsectionDistribution", true)->Fill(fXsection);
+
+      TProfile* hXsection = GetGeneralTProfile("fHistXsection", true);
+      hXsection->SetBinEntries(fPtHardBin + 1, hXsection->GetBinEntries(fPtHardBin + 1) + 1);
+      hXsection->SetBinContent(fPtHardBin + 1, fXsection * hXsection->GetBinEntries(fPtHardBin + 1));
     }
 
     GetGeneralTH1("fHistZVertex")->Fill(fVertex[2]);
@@ -487,13 +509,18 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
   }
   else {
     if (fIsPythia) {
-      GetGeneralTH1("fHistEventsVsPtHardNoSel")->Fill(fPtHard, 1);
-      GetGeneralTH1("fHistTrialsVsPtHardNoSel")->Fill(fPtHard, fNTrials);
-      GetGeneralTProfile("fHistXsectionVsPtHardNoSel")->Fill(fPtHard, fXsection);
-      GetGeneralTH1("fHistEventWeightsNoSel")->Fill(fEventWeight, 1);
+      GetGeneralTH1("fHistEventsVsPtHardNoSel", true)->Fill(fPtHard);
+      GetGeneralTH1("fHistTrialsVsPtHardNoSel", true)->Fill(fPtHard, fNTrials);
+      GetGeneralTH1("fHistEventWeightsNoSel", true)->Fill(fEventWeight);
+      GetGeneralTH2("fHistEventWeightsVsPtHardNoSel", true)->Fill(fPtHard, fEventWeight);
+      GetGeneralTH1("fHistXsectionDistributionNoSel", true)->Fill(fXsection);
+
+      TProfile* hXsection = GetGeneralTProfile("fHistXsectionNoSel", true);
+      hXsection->SetBinEntries(fPtHardBin + 1, hXsection->GetBinEntries(fPtHardBin + 1) + 1);
+      hXsection->SetBinContent(fPtHardBin + 1, fXsection * hXsection->GetBinEntries(fPtHardBin + 1));
     }
 
-    GetGeneralTH1("fHistZVertexNoSel")->Fill(fVertex[2]);
+    GetGeneralTH1("fHistZVertexNoSel", true)->Fill(fVertex[2]);
 
     TH1* hCent = GetGeneralTH1("fHistCentralityNoSel");
     if (hCent) hCent->Fill(fCent);
@@ -501,7 +528,7 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
     TH1* hEventPlane = GetGeneralTH1("fHistEventPlaneNoSel");
     if (hEventPlane) hEventPlane->Fill(fEPV0);
 
-    TH1* hTriggerClasses = GetGeneralTH1("fHistTriggerClassesNoSel");
+    TH1* hTriggerClasses = GetGeneralTH1("fHistTriggerClassesNoSel", true);
     for (auto fired_trg : fFiredTriggerClasses) hTriggerClasses->Fill(fired_trg.c_str(), 1);
   }
 
@@ -544,10 +571,10 @@ void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
 
   if (fGeneralHistograms && fCreateHisto) {
     if (eventSelected) {
-      GetGeneralTH1("fHistEventCount")->Fill("Accepted",1);
+      GetGeneralTH1("fHistEventCount", true)->Fill("Accepted",1);
     }
     else {
-      GetGeneralTH1("fHistEventCount")->Fill("Rejected",1);
+      GetGeneralTH1("fHistEventCount", true)->Fill("Rejected",1);
     }
 
     FillGeneralHistograms(kFALSE);
@@ -576,12 +603,12 @@ void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
  * @param[out] pthard \f$ p_{t} \f$-hard bin, extracted from path name
  * @return True if parameters were obtained successfully, false otherwise
  */
-Bool_t AliAnalysisTaskEmcalLight::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard)
+Bool_t AliAnalysisTaskEmcalLight::PythiaInfoFromFile(const char* currFile, Float_t &xsec, Float_t &trials, Int_t &pthard)
 {
 
   TString file(currFile);
-  fXsec = 0;
-  fTrials = 1;
+  xsec = 0;
+  trials = 1;
 
   if (file.Contains(".zip#")) {
     Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
@@ -630,8 +657,8 @@ Bool_t AliAnalysisTaskEmcalLight::PythiaInfoFromFile(const char* currFile, Float
         fxsec->Close();
         return kFALSE;
       }
-      fXsec = static_cast<TProfile*>(list->FindObject("h1Xsec"))->GetBinContent(1);
-      fTrials = static_cast<TH1F*>(list->FindObject("h1Trials"))->GetBinContent(1);
+      xsec = static_cast<TProfile*>(list->FindObject("h1Xsec"))->GetBinContent(1);
+      trials = static_cast<TH1F*>(list->FindObject("h1Trials"))->GetBinContent(1);
       fxsec->Close();
     }
   } else { // no tree pyxsec.root
@@ -645,8 +672,8 @@ Bool_t AliAnalysisTaskEmcalLight::PythiaInfoFromFile(const char* currFile, Float
     xtree->SetBranchAddress("xsection",&xsection);
     xtree->SetBranchAddress("ntrials",&ntrials);
     xtree->GetEntry(0);
-    fTrials = ntrials;
-    fXsec = xsection;
+    trials = ntrials;
+    xsec = xsection;
     fxsec->Close();
   }
   return kTRUE;
@@ -693,13 +720,13 @@ Bool_t AliAnalysisTaskEmcalLight::UserNotify()
 
   Bool_t res = PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
 
-  fPtHardBin = pthardbin;
+  fPtHardBin = pthardbin >= 0 ? pthardbin : 0;
 
   if (!res) return kTRUE;
 
-  GetGeneralTH1("fHistTrials")->Fill(fPtHardBin, trials);
-  GetGeneralTProfile("fHistXsection")->Fill(fPtHardBin, xsection);
-  GetGeneralTH1("fHistEvents")->Fill(fPtHardBin, nevents);
+  GetGeneralTH1("fHistTrialsExternalFile", true)->Fill(fPtHardBin, trials);
+  GetGeneralTProfile("fHistXsectionExternalFile", true)->Fill(fPtHardBin, xsection);
+  GetGeneralTH1("fHistEventsExternalFile", true)->Fill(fPtHardBin, nevents);
 
   return kTRUE;
 }
@@ -841,7 +868,7 @@ AliAnalysisTaskEmcalLight::EBeamType_t AliAnalysisTaskEmcalLight::GetBeamType()
  */
 Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
 {
-  TH1* hEventRejection = GetGeneralTH1("fHistEventRejection");
+  TH1* hEventRejection = GetGeneralTH1("fHistEventRejection", true);
 
   if (fTriggerSelectionBitMap != 0 && (fFiredTriggerBitMap & fTriggerSelectionBitMap) == 0) {
     if (fGeneralHistograms) hEventRejection->Fill("PhysSel",1);
@@ -1537,23 +1564,24 @@ std::vector<double> AliAnalysisTaskEmcalLight::GenerateLogFixedBinArray(int n, d
 }
 
 
-TH1* AliAnalysisTaskEmcalLight::GetGeneralTH1(const char* name)
+TH1* AliAnalysisTaskEmcalLight::GetGeneralTH1(const char* name, bool warn)
 {
   auto search = fHistograms.find(name);
   if (search != fHistograms.end()) {
     return search->second;
   }
   else {
+    if (warn) AliErrorStream() << "Could not find histogram '" << name << "'" << std::endl;
     return nullptr;
   }
 }
 
-TH2* AliAnalysisTaskEmcalLight::GetGeneralTH2(const char* name)
+TH2* AliAnalysisTaskEmcalLight::GetGeneralTH2(const char* name, bool warn)
 {
-  return static_cast<TH2*>(GetGeneralTH1(name));
+  return static_cast<TH2*>(GetGeneralTH1(name, warn));
 }
 
-TProfile* AliAnalysisTaskEmcalLight::GetGeneralTProfile(const char* name)
+TProfile* AliAnalysisTaskEmcalLight::GetGeneralTProfile(const char* name, bool warn)
 {
-  return static_cast<TProfile*>(GetGeneralTH1(name));
+  return static_cast<TProfile*>(GetGeneralTH1(name, warn));
 }
