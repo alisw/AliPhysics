@@ -141,6 +141,10 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   AddSingleLegMCSignal(task);
   AddPairMCSignal(task);
 
+  // #########################################################
+  // #########################################################
+  // Set mean and width correction for ITS, TPC and TOF
+
 
   // #########################################################
   // #########################################################
@@ -152,6 +156,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
     TString cutDefinition(arrNames->At(iCut)->GetName());
     AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
     task->AddTrackCuts(filter);
+    DoAdditionalWork(task);
   }
 
 
