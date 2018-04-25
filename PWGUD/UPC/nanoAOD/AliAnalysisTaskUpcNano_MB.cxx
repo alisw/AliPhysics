@@ -388,7 +388,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
     if(trk->TestFilterBit(1<<0) && (trk->HasPointOnITSLayer(0) || trk->HasPointOnITSLayer(1)))nGoodTracksLoose++;
     if(!(trk->TestFilterBit(1<<5)))goodTPCTrack = kFALSE;
     else{
-    	if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1))nGoodTracksSPD++;
+    	if(trk->HasPointOnITSLayer(0) && trk->HasPointOnITSLayer(1) && trk->GetTOFsignal()<99998)nGoodTracksSPD++;
     	}
     
     if(!(trk->TestFilterBit(1<<1))) goodITSTrack = kFALSE;
