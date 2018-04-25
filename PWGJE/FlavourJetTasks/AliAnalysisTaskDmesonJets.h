@@ -535,6 +535,9 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     THistManager                      *fHistManager           ; //!<! Histograms
     TString                            fName                  ; //!<! Name of this object
 
+  private:
+    OutputHandler(const OutputHandler &source);  // not implemented
+    OutputHandler& operator=(const OutputHandler& source);  // not implemented
   };
 
   /// \class OutputHandlerTHnSparse
@@ -560,6 +563,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
 
   protected:
     UInt_t               fEnabledAxis               ; //!<! Use bit defined in EAxis_t to enable axis in the THnSparse
+
+  private:
+    OutputHandlerTHnSparse(const OutputHandlerTHnSparse &source);  // not implemented
+    OutputHandlerTHnSparse& operator=(const OutputHandlerTHnSparse& source);  // not implemented
   };
 
   /// \class OutputHandlerTTree
@@ -589,6 +596,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     TTree                             *fTree                  ; //!<! Output tree
     AliDmesonInfoSummary              *fCurrentDmesonJetInfo  ; //!<! Current D meson jet info
     AliJetInfoSummary                **fCurrentJetInfo        ; //!<! Current jet info
+
+  private:
+    OutputHandlerTTree(const OutputHandlerTTree &source);  // not implemented
+    OutputHandlerTTree& operator=(const OutputHandlerTTree& source);  // not implemented
   };
 
   /// \class OutputHandlerTTreeExtendedBase
@@ -620,6 +631,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     TString                                                     fEventClassName        ;
     TString                                                     fDMesonClassName       ;
     TString                                                     fJetClassName          ;
+
+  private:
+    OutputHandlerTTreeExtendedBase(const OutputHandlerTTreeExtendedBase &source);  // not implemented
+    OutputHandlerTTreeExtendedBase& operator=(const OutputHandlerTTreeExtendedBase& source);  // not implemented
   };
 
   /// \class OutputHandlerTTreeExtended
@@ -648,6 +663,10 @@ class AliAnalysisTaskDmesonJets : public AliAnalysisTaskEmcalLight
     EVENTTYPE                                                   fCurrentEventInfo      ; //!<! Current event info
     std::vector<DMESONTYPE>                                     fCurrentDmesonInfo     ; //!<! Current D meson jet info
     std::map<std::string, std::vector<JETTYPE> >                fCurrentJetInfo        ; //!<! Current jet info
+
+  private:
+    OutputHandlerTTreeExtended(const OutputHandlerTTreeExtended &source);  // not implemented
+    OutputHandlerTTreeExtended& operator=(const OutputHandlerTTreeExtended& source);  // not implemented
   };
 
   /// \class AnalysisEngine
