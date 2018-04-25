@@ -398,18 +398,18 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     fListOfHistos->Add(new TH3F("t0time", "t0time;Centrality;Side;Time", 42, -0.5, 41.5, 3, -0.5, 2.5, 200, 0, 2000));
   if (fV0CL1PileUp)
   {
-    fListOfHistos->Add(new TH2I("fHistGlobalvsV0BeforePileUpCuts", "V0;CL1;nEvents", 100, 0, 10000, 100, 0, 10000));
-    fListOfHistos->Add(new TH2I("fHistGlobalvsV0AfterPileUpCuts", "V0;CL1;nEvents", 100, 0, 10000, 100, 0, 10000));
+    fListOfHistos->Add(new TH2I("fHistGlobalvsV0BeforePileUpCuts", "fHistGlobalvsV0BeforePileUpCuts;V0;CL1", 100, 0, 100, 100, 0, 100));
+    fListOfHistos->Add(new TH2I("fHistGlobalvsV0AfterPileUpCuts", "fHistGlobalvsV0AfterPileUpCuts;V0;CL1", 100, 0, 100, 100, 0, 100));
   }
   if (fESDTPCTrackPileUp)
   {
-    fListOfHistos->Add(new TH2I("fHistGlobalvsESDBeforePileUpCuts", "nTracks;multESD;nEvents", 100, 0, 10000, 100, 0, 10000));
-    fListOfHistos->Add(new TH2I("fHistGlobalvsESDAfterPileUpCuts", "nTracks;multESD;nEvents", 100, 0, 10000, 100, 0, 10000));
+    fListOfHistos->Add(new TH2I("fHistGlobalvsESDBeforePileUpCuts", "fHistGlobalvsESDBeforePileUpCuts;nTracks;multESD", 100, 0, 30000, 100, 0, 30000));
+    fListOfHistos->Add(new TH2I("fHistGlobalvsESDAfterPileUpCuts", "fHistGlobalvsESDAfterPileUpCuts;nTracks;multESD", 100, 0, 30000, 100, 0, 30000));
   }
   if (fTPCITSTOFPileUp)
   {
-    fListOfHistos->Add(new TH2I("fHistV0MvsTPCoutBeforePileUpCuts", "ntrkTPCout;multVZERO;nEvents", 100, 0, 10000, 100, 0, 10000));
-    fListOfHistos->Add(new TH2I("fHistV0MvsTPCoutAfterPileUpCuts", "ntrkTPCout;multVZERO;nEvents", 100, 0, 10000, 100, 0, 10000));
+    fListOfHistos->Add(new TH2I("fHistV0MvsTPCoutBeforePileUpCuts", "fHistV0MvsTPCoutBeforePileUpCuts;ntrkTPCout;multVZERO", 100, 0, 40000, 100, 0, 40000));
+    fListOfHistos->Add(new TH2I("fHistV0MvsTPCoutAfterPileUpCuts", "fHistV0MvsTPCoutAfterPileUpCuts;ntrkTPCout;multVZERO", 100, 0, 40000, 100, 0, 40000));
   }
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
@@ -1175,9 +1175,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     ((TH2I*)fListOfHistos->FindObject("fHistGlobalvsV0BeforePileUpCuts"))->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
     if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
       fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
-    ((TH2I*)fListOfHistos->FindObject("fHistGlobalvsV0AfterPileUpCuts"))->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
       return;
     }
+    ((TH2I*)fListOfHistos->FindObject("fHistGlobalvsV0AfterPileUpCuts"))->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
   }
 
   if (fESDTPCTrackPileUp)
