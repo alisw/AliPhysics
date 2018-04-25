@@ -277,7 +277,7 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hPadDistance);
   hTrackPt = new TH1F("hTrackPt","hTrackPt",500,0,50);
   fOutputList->Add(hTrackPt);
-  hNMaxiPadIn = new TH1I("hNMaxiPadIn","hNMaxiPadIn",13,-2.5,10.5);
+  hNMaxiPadIn = new TH1I("hNMaxiPadIn","hNMaxiPadIn",14,-3.5,10.5);
   fOutputList->Add(hNMaxiPadIn);
   hNCrossTracks = new TH1I("hNCrossTracks","hNCrossTracks",100,0.5,100.5);
   fOutputList->Add(hNCrossTracks);
@@ -470,6 +470,8 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     if (cv[0]<0 || TMath::Sqrt(cv[0])>fMaxTrackError){hNMaxiPadIn->Fill(-2); continue;}
     if (cv[2]<0 || TMath::Sqrt(cv[2])>fMaxTrackError){hNMaxiPadIn->Fill(-2); continue;}
     if (cv[5]<0 || TMath::Sqrt(cv[5])>fMaxTrackError){hNMaxiPadIn->Fill(-2); continue;}
+    
+    if(esdTrackOrig->GetTOFsignal()>99998){hNMaxiPadIn->Fill(-3); continue;}
 
     //Fine propagation from TOF radius
     Bool_t isin = kFALSE;
