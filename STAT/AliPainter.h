@@ -4,12 +4,10 @@
 /// \ingroup STAT
 /// \class AliPainter
 /*!
-\brief AliPainter
-\code
-/// TODO add documentation
-\endcode
-
-  \author Marian  Ivanov marian.ivanov@cern.ch, Boris Rumyantsev boris.rumyantsev@cern.ch
+ *
+* \brief Class for generating QA reports
+*  See the documentation in describing of functions.
+* \author Marian  Ivanov marian.ivanov@cern.ch, Boris Rumyantsev boris.rumyantsev@cern.ch
 */
 
 class TPad;
