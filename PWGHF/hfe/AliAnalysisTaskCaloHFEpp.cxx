@@ -796,18 +796,20 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												}
 												if(fTPCnSigma<3 && fTPCnSigma>-1 && m20>0.02 && m20<0.25){
 																fEopPt_ele_tight -> Fill(TrkPt,eop);
-																if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
-																if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt());
-																				//if(ilabelM<NpureMC){fHistPt_HFE_PYTHIA -> Fill(track->Pt());}
-																				//else {fHistPt_HFE_emb -> Fill(track->Pt());}
-																
+																if(eop < 1.2&& eop > 0.8){
+																				if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
+																				if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt());
+																}
+																//if(ilabelM<NpureMC){fHistPt_HFE_PYTHIA -> Fill(track->Pt());}
+																//else {fHistPt_HFE_emb -> Fill(track->Pt());}
+
 												}
 												if(fTPCnSigma<-3.5 && m20>0.02 && m20<0.25){
 																fEopPt_had -> Fill(TrkPt,eop);
 												}
 								}
 
-				}                                                   // continue until all the tracks are processed
+								}                                                   // continue until all the tracks are processed
 				PostData(1, fOutputList);                           // stream the results the analysis of this event to
 				// the output manager which will take care of writing
 				// it to a file
@@ -1063,21 +1065,10 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader)
 			cout<<"!!!!!!!!!!!!!!PGD = "<<pdgGen<<" imc = "<<imc<<endl;
 			}
 
-      //cout << "fetarange = " << fetarange << endl;
-      if(fetarange==0)
-        {
-         if(TMath::Abs(pdgEta)>0.6)continue;
-        }
-      else if(fetarange==1)
-        {
-        if(pdgEta > 0.6 || pdgEta < 0.0)continue;
-        }
-      else
-        {
-         if(pdgEta > 0.0 || pdgEta < -0.6)continue; 
-        }      
+			//cout << "fetarange = " << fetarange << endl;
+			if(TMath::Abs(pdgEta)>0.6)continue;
 
-      fCheckEtaMC->Fill(pdgEta);
+			fCheckEtaMC->Fill(pdgEta);
 
       Int_t pdgMom = -99;
       Int_t labelMom = -1;
