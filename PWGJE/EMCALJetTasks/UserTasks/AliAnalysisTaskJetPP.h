@@ -86,6 +86,8 @@ class AliAnalysisTaskJetPP : public AliAnalysisTaskEmcalJet {
    void        SetVertexCut(Double_t vz){ fZVertexCut = vz; }   
    void        SetMinTrackPt(Double_t mpt){ fMinTrackPt = mpt;}
 
+   void SetASPDCvsTCut(Float_t a) { fASPDCvsTCut = a; }//PILEUP
+   void SetBSPDCvsTCut(Float_t b) { fBSPDCvsTCut = b; }
 
    Bool_t   RetrieveEventObjects();
    Bool_t   Run();
@@ -101,6 +103,7 @@ class AliAnalysisTaskJetPP : public AliAnalysisTaskEmcalJet {
    // ######### CHECK FUNCTIONS
    Bool_t      IsTrackInAcceptance(AliVParticle* track, Bool_t isprimary=0);  
    Bool_t      IsEventInAcceptance(AliVEvent* event);     
+   Bool_t      IsSPDClusterVsTrackletBG(AliVEvent *event);
    Bool_t      IsSignalJetInAcceptance(AliEmcalJet* jet, Bool_t suppressGhost=1); 
 
 
@@ -123,6 +126,8 @@ class AliAnalysisTaskJetPP : public AliAnalysisTaskEmcalJet {
    TString             fCentralityType;        ///< gc Used centrality estimate (V0A, V0C, V0M, ...) 
 
    Double_t            fZVertexCut;            ///< zvertex cut
+   Float_t             fASPDCvsTCut;           ///< SPD cluster-vs-tracklet cut
+   Float_t             fBSPDCvsTCut;           ///< SPD cluster-vs-tracklet cut
 
    // ########## GENERAL ////VARS
    AliAnalysisUtils*   fHelperClass;           //!<! gc Vertex selection helper
@@ -183,7 +188,7 @@ class AliAnalysisTaskJetPP : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskJetPP& operator=(const AliAnalysisTaskJetPP&);
 
    /// \cond CLASSIM
-   ClassDef(AliAnalysisTaskJetPP, 3); // Charged jet analysis for pA,,, increase the last parametre by 1 after a change 
+   ClassDef(AliAnalysisTaskJetPP, 4); // Charged jet analysis for pA,,, increase the last parametre by 1 after a change 
    /// \endcond
 };
 #endif
