@@ -142,7 +142,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   Printf("here \n");
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton           = "00000008400100001500000000";
+  TString cutnumberPhoton           = "06000008400100001500000000";
   TString cutnumberEvent            = "80000003";
   Bool_t doEtaShift                 = kFALSE;
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
