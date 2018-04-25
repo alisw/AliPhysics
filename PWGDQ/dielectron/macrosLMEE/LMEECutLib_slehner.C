@@ -32,13 +32,6 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(int sel) {
 
 AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel) {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
-  AliAnalysisCuts* pidCuts=0x0;
-  
-  AliDielectronVarCuts *etaRange080 = new AliDielectronVarCuts("etaRange080","etaRange080");
-  etaRange080->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-  AliDielectronVarCuts *ptRange200to8000 = new AliDielectronVarCuts("ptRange200to8000","ptRange200to8000");
-  ptRange200to8000->AddCut(AliDielectronVarManager::kPt, 0.2, 8.0);
-  
 
   AliDielectronPID *pidFilterCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
  
@@ -46,9 +39,7 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel) {
   pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
   pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
   pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
-  
 
-  
 //  switch (sel) {
       cout<<"chose PID cut "<<sel<<endl; 
 //      case 0:
@@ -57,7 +48,7 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel) {
       pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
       pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
       pidFilterCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
-      break;
+//      break;
 //  }
   
   return(pidFilterCuts);       //Add nanoAODfilter PID cuts
@@ -91,11 +82,6 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID) {
   varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
   
-  trackCuts->AddCut(varCutsFilter);
-  trackCuts->AddCut(trkCutsFilter);
-  
-  trackCuts->AddCut(GetPIDCutsAna(selPID));
-
 //  switch (selTr) {
 
     std::cout<<"chose track cut "<<selTr<<endl;      
@@ -105,10 +91,10 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID) {
             AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");     
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+//            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
-            trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+//            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+//            trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
 
@@ -135,15 +121,17 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID) {
             
             AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
             trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);   //(1<<4) -> error
-//            trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::Detector(0),AliDielectronTrackCuts::ITSClusterRequirement(3));  //(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst) -> error
             trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
 
+            trackCuts->AddCut(varCutsFilter);
+            trackCuts->AddCut(trkCutsFilter);
+            trackCuts->AddCut(GetPIDCutsAna(selPID));            
             trackCuts->AddCut(trackCutsDiel);
             trackCuts->AddCut(trackCutsAOD);
-            trackCuts->AddCut(SharedClusterCut);
+//            trackCuts->AddCut(SharedClusterCut);
             
 
-            break;
+//            break;
 //    }
   
   return trackCuts;

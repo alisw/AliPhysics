@@ -750,62 +750,57 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
   //Cuts used for nano AOD filtering (taken from ConfigLMEE_nano_PbPb2015.C on 22082018) - redundant for nano AODs but necessary for MC
 
   AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");    
-  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
+//  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
 
-  AliDielectronVarCuts *varCuts   = new AliDielectronVarCuts("VarCuts","VarCuts");
-  AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
+  AliDielectronVarCuts *varCutsFilter   = new AliDielectronVarCuts("VarCuts","VarCuts");
+  AliDielectronTrackCuts *trkCutsFilter = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
   // specific cuts
-  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
-  trkCuts->SetRequireITSRefit(kTRUE);
-  trkCuts->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
+  trkCutsFilter->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
+  trkCutsFilter->SetRequireITSRefit(kTRUE);
+  trkCutsFilter->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
 
-  // standard cuts
-  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
-  varCuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
-  varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
-//  varCuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster  // did not work on ESD when filtering nanoAODs
-  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
-  varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
+  // standard cuts - nanoAOD filtering
+  varCutsFilter->AddCut(AliDielectronVarManager::kPt,           0.2, 8.0);
+  varCutsFilter->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
+  varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
+  varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
+  varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
+//  varCutsFilter->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster    // did not work on ESD when filtering nanoAODs
+  varCutsFilter->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
+  varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
 
-  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
-  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
+  varCutsFilter->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
+  varCutsFilter->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
+  varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
+  varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
+  varCutsFilter->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
 
-
+  //PID Cuts as used in nanoAOD Filtering
   AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
-  // TOF
-  // pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-4.,4.,0.,0.,kFALSE, AliDielectronPID::kIfAvailable);
-  // TPC
   pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
   pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
-  // ITS
   pidCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
 
+  //Carsten's cuts
+  AliDielectronPID *pidCut_3        = new AliDielectronPID("PIDCuts","PIDCuts");
+  pidCut_3->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
+  pidCut_3->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
+  pidCut_3->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.5, 0.5 , 0. ,100., kFALSE);
+  pidCut_3->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
   
-  
-//CARSTEN Cut Set 3  
- // Quality cuts
   AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);
-  
-  AliDielectronPID *PIDcut_3 = new AliDielectronPID("PIDcut_3","PIDcut_3");
-  PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
-  PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -99, 4.0 , 0. ,100., kTRUE);
-  PIDcut_3->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
-  PIDcut_3->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0. , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
-
   AliDielectronCutGroup* trackCuts=0x0;
 
-  AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
-  trackCutsAOD->AddCut(AliDielectronVarManager::kPt,           0.2, 1e30);
+  AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");     
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 161.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+  //            trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+  trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
   trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
+            
   AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
   double delta = 0.00001;
   AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
@@ -826,18 +821,18 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
   SharedClusterCut->AddCut(trackCutsSharedCluster8);
   SharedClusterCut->AddCut(trackCutsSharedCluster16);
   SharedClusterCut->AddCut(trackCutsSharedCluster32);
+  
   AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
   trackCutsDiel->SetAODFilterBit(1<<4);
   trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst);
-  
-  
+    
   trackCuts = new AliDielectronCutGroup("cgTrackCutsAnaSPDfirst","cgTrackCutsAnaSPDfirst",AliDielectronCutGroup::kCompAND);
   //Add nanoAOD prefiltering cuts
   
   //cuts->AddCut(trkFilter);    //not used on ESDs in ConfigLMEE_nano_PbPb2015.C
   
-  trackCuts->AddCut(varCuts);
-  trackCuts->AddCut(trkCuts);
+  trackCuts->AddCut(varCutsFilter);
+  trackCuts->AddCut(trkCutsFilter);
   cuts->AddCut(pidCuts);
   die->GetTrackFilter().AddCuts(pidCuts);
   
@@ -845,10 +840,10 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
 
   trackCuts->AddCut(trackCutsDiel);
   trackCuts->AddCut(trackCutsAOD);
-  trackCuts->AddCut(SharedClusterCut);
+//  trackCuts->AddCut(SharedClusterCut);
   
-  cuts->AddCut(PIDcut_3);
-  die->GetTrackFilter().AddCuts(PIDcut_3);
+  cuts->AddCut(pidCut_3);
+  die->GetTrackFilter().AddCuts(pidCut_3);
 
   cuts->AddCut(trackCuts);
   die->GetTrackFilter().AddCuts(trackCuts);
