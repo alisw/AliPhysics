@@ -225,6 +225,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16P1Pyt8,       //!< anchored LHC16x pass 1 nom B-field - general purpose Pythia8
         kLHC16P1Pyt8LowB,   //!< anchored LHC16f pass 1 low B-field - general purpose Pythia8
         kLHC16P1EPOS,       //!< anchored LHC16x pass 1 nom B-field - general purpose EPOS
+	kLHC16P1PHO,        //!< anchored LHC16d pass 1 nom B- field - for MBW Phojet
         kLHC16P1JJ,         //!< anchored LHC16x pass 1 nom B-field - Pythia8 JJ
         kLHC16P1JJLowB,     //!< anchored LHC16f pass 1 low B-field - Pythia8 JJ
         kLHC17h8a,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
@@ -263,6 +264,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
         kLHC18b8,             //!< anchored LHC17p/q pass 1 - jet-jet MC w/GEANT3,
+	kLHC17P1PHO,          //!< anchored LHC17p only low Intensity Phojet 5 TeV
         //13 TeV LHC2017
         kLHC17k1,               //!LHC17g added dielectrons from HF
         kLHC17k4,               //!LHC17i
@@ -644,7 +646,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,46)
+      ClassDef(AliConvEventCuts,47)
       /// \endcond
 };
 
