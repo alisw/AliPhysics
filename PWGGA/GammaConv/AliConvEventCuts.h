@@ -247,10 +247,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17f3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
         kLHC17f4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
         kLHC17f4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
-        kLHC17g8b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
-        kLHC17g8c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
-        kLHC18b9b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC new
-        kLHC18b9c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC new
+        kLHC16rP1JJ,          //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
+        kLHC16sP1JJ,          //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
 
         //heavy flavour MC pPb k17d2a_fast,
         kLHC17d2a,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
