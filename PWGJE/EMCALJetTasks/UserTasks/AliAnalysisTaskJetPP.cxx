@@ -152,7 +152,7 @@ Bool_t AliAnalysisTaskJetPP::IsEventInAcceptance(AliVEvent* event){
    return kTRUE;
 }
 //PILEUP CUT
-Bool_t AliAnalysisTaskJetPPm::IsSPDClusterVsTrackletBG(AliVEvent *event){ //NEW PILEUP
+Bool_t AliAnalysisTaskJetPP::IsSPDClusterVsTrackletBG(AliVEvent *event){ //NEW PILEUP
    if(fUsePileUpCut){
       Int_t nClustersLayer0 = event->GetNumberOfITSClusters(0);
       Int_t nClustersLayer1 = event->GetNumberOfITSClusters(1);
@@ -228,7 +228,7 @@ Bool_t AliAnalysisTaskJetPP::FillHistograms(){
 
    //Select events (vertex, pile-up,...) 
    if(!IsEventInAcceptance(InputEvent())) return kFALSE; //post data is in UserExec
-
+   if(IsSPDClusterVsTrackletBG(InputEvent())) return kFALSE;
 
 
    // JET+TRACK CONTAINERS
