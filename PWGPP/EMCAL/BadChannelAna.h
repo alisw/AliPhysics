@@ -49,7 +49,7 @@ class BadChannelAna : public TObject {
 	
 public:
       BadChannelAna() ;                // default ctor
-	  virtual ~BadChannelAna()  { ; }  // virtual dtor
+	  ~BadChannelAna();                // dtor
 	  BadChannelAna(TString period, TString train, TString trigger, Int_t runNumber,Int_t trial, TString workDir, TString listName);
 
 	  void Run(Bool_t mergeOnly=0);
@@ -59,6 +59,7 @@ public:
 	  void SetExternalBadMap(TString inputName)            {fExternalBadMapName = inputName;}
 	  void SetQAChecks(Bool_t inputBool)                   {fTestRoutine        = inputBool;}
       void SetPrintOutput(Bool_t inputBool)                {fPrint              = inputBool;}
+      void SetTrackCellRecord(Bool_t inputBool)            {fTrackCellRecord    = inputBool;}
       void SetStartEndCell(Int_t start, Int_t end)         {fStartCell = start; fNoOfCells = end;}
       void SetLowerBound(Double_t input)                   {fEndLowerBound      = input;}
       void AddManualMasking(std::vector<Int_t> cellVector) {fManualMask.swap(cellVector) ;}
@@ -90,6 +91,7 @@ protected:
 	  void SaveBadCellsToPDF(Int_t version, TString pdfName);
 	  void PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd=-1);
 	  void SaveHistoToFile();
+	  void PrintCellInfo(Int_t number);
 
 	  //Settings for analysed period
 	  Int_t   fCurrentRunNumber;            ///< A run number of an analyzed period. This is important for the AliCalorimeterUtils initialization
@@ -120,6 +122,7 @@ protected:
 	  TString fExternalBadMapName;          ///< Load an external bad map to test the effect on block or a given run
 	  Bool_t  fTestRoutine;                 ///< This is a flag, if set true will produce some extra quality check histograms
       Bool_t  fPrint;                       ///< If set true more couts with information of the excluded cells will be printed
+	  Bool_t  fTrackCellRecord;             ///< Track the non-zero elements in the flags throughout the routine
 
 	  //histogram settings
 	  Int_t   fNMaxCols;                    ///< Maximum No of colums in module (eta direction)
@@ -129,9 +132,9 @@ protected:
 
 	  //arrays to store information
 	  Double_t fnEventsInRange;
-	  Int_t *fFlag;                         //!<! fFlag[CellID] = 0 (ok),1 (dead),2 and higher (bad certain criteria) start at 0 (cellID 0 = histobin 1)
+	  std::vector<Int_t> fFlag;             //!<! fFlag[CellID] = 0 (ok),1 (dead),2 and higher (bad certain criteria) start at 0 (cellID 0 = histobin 1)
 	  Int_t fCriterionCounter;              //!<! This value will be written in fflag and updates after each PeriodAnalysis, to distinguish the steps at which cells are marked as bad
-	  Bool_t *fWarmCell;                    //!<! fWarmCell[CellID] = 0 (really bad), fWarmCell[CellID] = 1 (candidate for warm),
+	  std::vector<Bool_t> fWarmCell;        //!<! fWarmCell[CellID] = 0 (really bad), fWarmCell[CellID] = 1 (candidate for warm),
 	  std::vector<Int_t> fManualMask;       //!<! Is a list of cells that should be addidionally masked by hand.
 
 	  //Calorimeter information for the investigated runs
@@ -158,7 +161,7 @@ private:
 	  
 	
 	/// \cond CLASSIMP
-	ClassDef(BadChannelAna, 1);
+	ClassDef(BadChannelAna, 2);
 	/// \endcond
 };
 #endif
