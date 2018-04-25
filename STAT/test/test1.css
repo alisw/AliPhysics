@@ -16,8 +16,8 @@ TGraph   {
   line-color:    1,3,6;
   line-style:    1,2,3;
   line-width:    0.9,1.4,1.9;
-  fill-color:    0,0,0;
-  fill-style:    0,0,0;
+  fill-color:    0;
+  fill-style:    0;
 }
 
 TH1F    {
@@ -27,16 +27,16 @@ TH1F    {
   line-color:    2,4,8;
   line-style:    1,2,3;
   line-width:    0.9,1.4,1.9;
-  fill-color:    0,0,0;
-  fill-style:    0,0,0;
+  fill-color:    0;
+  fill-style:    0;
 }
 
 TPad {
   gridX:         0;
   gridY:         0;
-  fill-color:    10,10,10,10;
-  tickX:         1,1,1,1;
-  tickY:         1,1,1,1;
-  border-mode:   0,0,0,0;
+  fill-color:    10;
+  tickX:         1;
+  tickY:         1;
+  border-mode:   0;
   margin-bottom: 0.15;
 }
