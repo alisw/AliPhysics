@@ -163,7 +163,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton     = "06000008000100001500000000";
+  TString cutnumberPhoton     = "00000008400100001500000000";
   TString cutnumberEvent      = "80000003";
 
   Bool_t doEtaShift = kFALSE;
