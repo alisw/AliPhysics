@@ -968,6 +968,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			}
 			fITSshared /= nITS;
 
+			SPDfirst = (dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(0);
+
 			charge = posTrack->Charge();
 
 			//Fill with feature from positive track
@@ -1057,6 +1059,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				fITSshared += static_cast<Double_t>(negTrack->HasSharedPointOnITSLayer(d));
 			}
 			fITSshared /= nITS;
+
+			SPDfirst = (dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(0);
 
 			charge = negTrack->Charge(); 
 			//Write negative observales to tree (v0 information written twice. Filter by looking at only pos or neg charge)
