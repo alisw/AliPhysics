@@ -108,6 +108,9 @@ fUseVtxAxis(kFALSE),
 fCourseCentralityBinning(kFALSE),
 fSkipTrigger(kFALSE),
 fInjectedSignals(kFALSE),
+fV0CL1PileUp(0),
+fESDTPCTrackPileUp(0),
+fTPCITSTOFPileUp(0),
 fRandomizeReactionPlane(kFALSE),
 fHelperPID(0x0),
 fAnalysisUtils(0x0),
@@ -393,7 +396,21 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     fListOfHistos->Add(new TH2D("Mult_MCGen_CL1", "Mult_MCGen_CL1", 1010, -9.5, 1000.5, 1010, -9.5, 1000.5));
   if (fCentralityMethod == "TRACKS_MANUAL")
     fListOfHistos->Add(new TH3F("t0time", "t0time;Centrality;Side;Time", 42, -0.5, 41.5, 3, -0.5, 2.5, 200, 0, 2000));
-
+  if (fV0CL1PileUp)
+  {
+    fListOfHistos->Add(new TH2I("fHistGlobalvsV0BeforePileUpCuts", "fHistGlobalvsV0BeforePileUpCuts;V0;CL1", 100, 0, 100, 100, 0, 100));
+    fListOfHistos->Add(new TH2I("fHistGlobalvsV0AfterPileUpCuts", "fHistGlobalvsV0AfterPileUpCuts;V0;CL1", 100, 0, 100, 100, 0, 100));
+  }
+  if (fESDTPCTrackPileUp)
+  {
+    fListOfHistos->Add(new TH2I("fHistGlobalvsESDBeforePileUpCuts", "fHistGlobalvsESDBeforePileUpCuts;nTracks;multESD", 100, 0, 30000, 100, 0, 30000));
+    fListOfHistos->Add(new TH2I("fHistGlobalvsESDAfterPileUpCuts", "fHistGlobalvsESDAfterPileUpCuts;nTracks;multESD", 100, 0, 30000, 100, 0, 30000));
+  }
+  if (fTPCITSTOFPileUp)
+  {
+    fListOfHistos->Add(new TH2I("fHistV0MvsTPCoutBeforePileUpCuts", "fHistV0MvsTPCoutBeforePileUpCuts;ntrkTPCout;multVZERO", 100, 0, 40000, 100, 0, 40000));
+    fListOfHistos->Add(new TH2I("fHistV0MvsTPCoutAfterPileUpCuts", "fHistV0MvsTPCoutAfterPileUpCuts;ntrkTPCout;multVZERO", 100, 0, 40000, 100, 0, 40000));
+  }
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
   
@@ -1152,6 +1169,64 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     return;
   }
   
+  if (fV0CL1PileUp)
+  {
+    AliMultSelection *multSelection = (AliMultSelection*) inputEvent->FindListObject("MultSelection");
+    ((TH2I*)fListOfHistos->FindObject("fHistGlobalvsV0BeforePileUpCuts"))->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
+    if (TMath::Abs(multSelection->GetMultiplicityPercentile("V0M") - multSelection->GetMultiplicityPercentile("CL1")) > 7.5) {
+      fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+      return;
+    }
+    ((TH2I*)fListOfHistos->FindObject("fHistGlobalvsV0AfterPileUpCuts"))->Fill(multSelection->GetMultiplicityPercentile("V0M"),multSelection->GetMultiplicityPercentile("CL1"));
+  }
+
+  if (fESDTPCTrackPileUp)
+  {
+    const Int_t nTracks = inputEvent->GetNumberOfTracks();
+    Int_t multEsd = ((AliAODHeader*)inputEvent->GetHeader())->GetNumberOfESDTracks();
+    ((TH2D*)fListOfHistos->FindObject("fHistGlobalvsESDBeforePileUpCuts"))->Fill(nTracks,multEsd);
+    Int_t multTPC = 0;
+    for (Int_t it = 0; it < nTracks; it++) {
+      AliAODTrack* AODTrk = (AliAODTrack*)inputEvent->GetTrack(it);
+     if (!AODTrk){ delete AODTrk; continue; }
+     if (AODTrk->TestFilterBit(128)) {multTPC++;}
+    } // end of for (Int_t it = 0; it < nTracks; it++)
+    double fPileupLHC15oSlope = 3.38;
+    double fPileupLHC15oOffset = 15000;
+    if ((multEsd - fPileupLHC15oSlope*multTPC) > fPileupLHC15oOffset)
+    {
+      fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+      return;
+    }
+    ((TH2I*)fListOfHistos->FindObject("fHistGlobalvsESDAfterPileUpCuts"))->Fill(nTracks,multEsd);
+  }
+
+  if (fTPCITSTOFPileUp)
+  {
+    Int_t ntrkTPCout = 0;
+    for (int it = 0; it < inputEvent->GetNumberOfTracks(); it++) {
+      AliAODTrack* AODTrk = (AliAODTrack*)inputEvent->GetTrack(it);
+      if ((AODTrk->GetStatus() & AliAODTrack::kTPCout) && AODTrk->GetID() > 0)
+        ntrkTPCout++;
+    }
+  
+    Double_t multVZERO =0; 
+    AliVVZERO *vzero = (AliVVZERO*)inputEvent->GetVZEROData();
+    if(vzero) {
+      for(int ich=0; ich < 64; ich++)
+        multVZERO += vzero->GetMultiplicity(ich);
+    }
+  
+  
+    ((TH2I*)fListOfHistos->FindObject("fHistV0MvsTPCoutBeforePileUpCuts"))->Fill(ntrkTPCout, multVZERO);
+  
+    if (multVZERO < (-2200 + 2.5*ntrkTPCout + 1.2e-5*ntrkTPCout*ntrkTPCout))  {
+      fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+      return;
+    }
+    ((TH2I*)fListOfHistos->FindObject("fHistV0MvsTPCoutAfterPileUpCuts"))->Fill(ntrkTPCout, multVZERO);
+  }
+
   // Reject events without a muon in the muon arm ************************************************
   if(fAcceptOnlyMuEvents && !IsMuEvent())return;
   
