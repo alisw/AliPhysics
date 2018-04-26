@@ -3035,60 +3035,197 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 
   if (!fMimicTrigger) return kTRUE;
 
-  Int_t runRangesEMCalL0 [35]   = { 144871, 145288, 146375, 146382,  // LHC11a
+  Int_t runRangesEMCalL0 [52]   = { 144871, 145288, 146375, 146382,  // LHC11a
                                     146502, 148522,         // LHC11a
                                     150209, 153056, 153911, 153915, // LHC11b,c,d
                                     158135, 158136, 158178, 158182, 160683,
                                     160764, 161139, 161256, 161379, 161457,
                                     161525, 161556, 161558, 161609, 161630,
                                     161724, // LHC11d,e
-                                    173731, 177144, 177147, 177653, 177724, 178327,
-                                    195180,              // LHC13b-f
-                                    197469, 197692            // LHC13g
-  };
+                                    173731, 177144, 177147, 177653, 177724, 178327, // LHC12x
+                                    195180,                     // LHC13b-f
+                                    197469, 197692,             // LHC13g
+                                    235195,                     // LHC15a-h
+                                    244285,                     // LHC15i-LHC15m (235196-244284)
+                                    244629,                     // LHC15n (244340-244628)
+                                    245141, 246995,             // LHC15o (244824-246994)
+                                    255539,                     // LHC16i-k  (255515-258574)
+                                    258883,                     // LHC16l (258883-260187)
+                                    260216,                     // LHC16m-p (260216-p)
+                                    265015, 265309,             // LHC16q (265015-265525)
+                                    265589, 265785,             // LHC16r (265589-266318)
+                                    266405,                     // LHC16s (266405-267131)
+                                    267161,                     // LHC16t (267161-267166)
+                                    270531,                     // LHC17c-o (270531-281961)
+                                    282008,                     // LHC17pq (282008-282441)
+                                    282504                      // 2018
+                                  };
 
-  Double_t thresholdEMCalL0[34] = { 2.11, 3.43, 1.71, 2.05,   // LHC11a 7 TeV
+  Double_t thresholdEMCalL0[51] = { 2.11, 3.43, 1.71, 2.05,   // LHC11a 7 TeV
                                     3.43,           // LHC11a  2.76TeV
                                     1.94, 3.39, 4.01, 5.25, 5.5,     // LHC11b, LHC11c, LHC11d
                                     2.05, 5.50, 2.05, 5.50, 2.05, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71, 5.50, 1.71,
                                     2.01, 1.75, 1.52, 2.01, 1.52, 1.85,
                                     3.2,
-                                    /*2.01*/1.8
-  };
-  Double_t spreadEMCalL0[34]    = { 0., 0., 0, 0,   // LHC11a 7TeV
-                                    /*0.7*/0.65,           // LHC11a 2.76TeV
-                                    0., 0., 0., 0., 0.,     // LHC11b, LHC11c, LHC11d
+                                    /*2.01*/1.8,                // LHC13g
+                                    1.8,                        // LHC15a-h
+                                    5.0,                        // LHC15i-m
+                                    5.0,                        // LHC15n
+                                    1.0, 1.0,                   // LHC15o
+                                    2.2,                        // LHC16i-k  (255515-258574)
+                                    2.2,                        // LHC16l (258883-260187)
+                                    2.5,                        // LHC16m-p (260216-p)
+                                    2.5, 2.5,                   // LHC16q (265015-265525)
+                                    2.5, 2.5,                   // LHC16r (265589-266318)
+                                    3.5,                        // LHC16s (266405-267131)
+                                    2.5,                        // LHC16t (267161-267166)
+                                    2.5,                        // LHC17c-o (270531-281961)
+                                    2.5,                        // LHC17pq (282008-282441)
+                                    2.5                         // 2018
+                                  };
+
+  Double_t spreadEMCalL0[51]    = { 0., 0., 0, 0,               // LHC11a 7TeV
+                                    /*0.7*/0.65,                // LHC11a 2.76TeV
+                                    0., 0., 0., 0., 0.,         // LHC11b, LHC11c, LHC11d
                                     0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                                     0., 0., 0., 0., 0.2, 0.2,/*0.,0.,*/
-                                    0.1,
-                                    /*0.1*/0.12
-  };
+                                    0.1,                        // LHC14b-f
+                                    /*0.1*/0.12,                // LHC13g
+                                    0.1,                        // LHC15a-h
+                                    0.1,                        // LHC15i-m
+                                    0.1,                        // LHC15n
+                                    0.1, 0.1,                   // LHC15o
+                                    0.2,                        // LHC16i-k  (255515-258574)
+                                    0.2,                        // LHC16l (258883-260187)
+                                    0.1,                        // LHC16m-p (260216-p)
+                                    0.1, 0.1,                   // LHC16q (265015-265525)
+                                    0.1, 0.1,                   // LHC16r (265589-266318)
+                                    0.1,                        // LHC16s (266405-267131)
+                                    0.1,                        // LHC16t (267161-267166)
+                                    0.1,                        // LHC17c-o (270531-281961)
+                                    0.1,                        // LHC17pq (282008-282441)
+                                    0.1                         // 2018
+                                  };
 
-  Int_t runRangesEMCalL1[4]     = { 179796,             // LHC12c-i
-                                    195180,              // LHC13b-f
-                                    197469, 197692            // LHC13g
-  };
+  Int_t runRangesEMCalL1[21]     = {  179796,                     // LHC12c-i (EGA)
+                                      195180,                     // LHC13b-f
+                                      197469, 197692,             // LHC13g
+                                      235195,                     // LHC15a-h
+                                      244285,                     // LHC15i-LHC15m (235196-244284)
+                                      244629,                     // LHC15n (244340-244628)
+                                      245141, 246995,             // LHC15o (244824-246994)
+                                      255539,                     // LHC16i-k  (255515-258574)
+                                      258883,                     // LHC16l (258883-260187)
+                                      260216,                     // LHC16m-p (260216-p)
+                                      265015, 265309,             // LHC16q (265015-265525)
+                                      265589, 265785,             // LHC16r (265589-266318)
+                                      266405,                     // LHC16s (266405-267131)
+                                      267161,                     // LHC16t (267161-267166)
+                                      270531,                     // LHC17c-o (270531-281961)
+                                      282008,                     // LHC17pq (282008-282441)
+                                      282504                      // 2018
+                                    };
 
-  Double_t thresholdEMCalL1[3]  = { 9.5/*8.398*/, 11.5, /*6.*/5.5};
-  Double_t spreadEMCalL1[3]     = { 1.0/*0.*/, 0.5, /*0.4*/0.6};
+  Double_t thresholdEMCalL1[20] = { 9.5/*8.398*/,               // LHC12c-i (EGA)
+                                    11.5, /*6.*/                // LHC13b-f
+                                    5.5,                        // LHC13g
+                                    1.8,                        // LHC15a-h
+                                    5.0,                        // LHC15i-m
+                                    5.0,                        // LHC15n
+                                    1.0, 10.0,                  // LHC15o
+                                    8.8,                        // LHC16i-k  (255515-258574)
+                                    5.5,                        // LHC16l (258883-260187)
+                                    8.8,                        // LHC16m-p (260216-)
+                                    8.8, 10.8,                  // LHC16q (265015-265525)
+                                    10.8, 7.8,                  // LHC16r (265589-266318)
+                                    7.8,                        // LHC16s (266405-267131)
+                                    7.8,                        // LHC16t (267161-267166)
+                                    8.8,                        // LHC17c-o (270531-281961)
+                                    8.8,                        // LHC17pq (282008-282441)
+                                    8.8                         // 2018
+                                  };
+  Double_t spreadEMCalL1[20]    = { 1.0/*0.*/,
+                                    0.5,
+                                    /*0.4*/ 0.6,
+                                    1.0,                        // LHC15a-h
+                                    1.0,                        // LHC15i-m
+                                    1.0,                        // LHC15n
+                                    1.0, 1.0,                   // LHC15o
+                                    1.0,                        // LHC16i-k  (255515-258574)
+                                    0.8,                        // LHC16l (258883-260187)
+                                    1.0,                        // LHC16m-p (260216-)
+                                    1.0, 1.2,                   // LHC16q (265015-265525)
+                                    1.2, 0.8,                   // LHC16r (265589-266318)
+                                    0.9,                        // LHC16s (266405-267131)
+                                    0.9,                        // LHC16t (267161-267166)
+                                    1.0,                        // LHC17c-o (270531-281961)
+                                    1.0,                        // LHC17pq (282008-282441)
+                                    1.0                         // 2018
+                                  };
 
-  Int_t runRangesEMCalL1G2[3]   = { 195180,              // LHC13b-f
-                                    197469, 197692            // LHC13g
-  };
+  Int_t runRangesEMCalL1G2[20]  = { 195180,                     // LHC13b-f
+                                    197469, 197692,             // LHC13g
+                                    235195,                     // LHC15a-h
+                                    244285,                     // LHC15i-LHC15m (235196-244284)
+                                    244629,                     // LHC15n (244340-244628)
+                                    245141, 246995,             // LHC15o (244824-246994)
+                                    255539,                     // LHC16i-k  (255515-258574)
+                                    258883,                     // LHC16l (258883-260187)
+                                    260216,                     // LHC16m-p (260216-)
+                                    265015, 265309,             // LHC16q (265015-265525)
+                                    265589, 265785,             // LHC16r (265589-266318)
+                                    266405,                     // LHC16s (266405-267131)
+                                    267161,                     // LHC16t (267161-267166)
+                                    270531,                     // LHC17c-o (270531-281961)
+                                    282008,                     // LHC17pq (282008-282441)
+                                    282504                      // 2018
+                                  };
 
-  Double_t thresholdEMCalL1G2[2]  = { 7.2, /*3.9*/3.75};
-  Double_t spreadEMCalL1G2[2]     = { 0.3, /*0.2*/0.25};
+  Double_t thresholdEMCalL1G2[19] = { 7.2,                        // LHC13b-f
+                                      /*3.9*/3.75,                // LHC13g
+                                      1.8,                        // LHC15a-h
+                                      5.0,                        // LHC15i-m
+                                      5.0,                        // LHC15n
+                                      1.0, 10.0,                  // LHC15o
+                                      3.9,                        // LHC16i-k  (255515-258574)
+                                      3.8,                        // LHC16l (258883-260187)
+                                      3.9,                        // LHC16m-p (260216-)
+                                      3.9, 6.3,                   // LHC16q (265015-265525)
+                                      6.3, 5.3,                   // LHC16r (265589-266318)
+                                      5.3,                        // LHC16s (266405-267131)
+                                      5.3,                        // LHC16t (267161-267166)
+                                      3.9,                        // LHC17c-o (270531-281961)
+                                      3.9,                        // LHC17pq (282008-282441)
+                                      3.9                         // 2018
+                                    };
+  Double_t spreadEMCalL1G2[19]    = { 0.3,                        // LHC13bf
+                                      /*0.2*/0.25,                // LHC13g
+                                      0.1,                        // LHC15a-h
+                                      0.1,                        // LHC15i-m
+                                      0.1,                        // LHC15n
+                                      0.1, 1.0,                   // LHC15o
+                                      0.3,                        // LHC16i-k  (255515-258574)
+                                      0.3,                        // LHC16l (258883-260187)
+                                      0.3,                        // LHC16m-p (260216-)
+                                      0.3, 0.4,                   // LHC16q (265015-265525)
+                                      0.4, 0.3,                   // LHC16r (265589-266318)
+                                      0.3,                        // LHC16s (266405-267131)
+                                      0.3,                        // LHC16t (267161-267166)
+                                      0.3,                        // LHC17c-o (270531-281961)
+                                      0.3,                        // LHC17pq (282008-282441)
+                                      0.3                         // 2018
+                                    };
 
   Int_t runnumber = event->GetRunNumber();
 
   if (fSpecialTrigger == 5 ){
     if (runnumber < runRangesEMCalL0[0]) return kTRUE;
     Int_t binRun = 0;
-    while (!(runnumber >= runRangesEMCalL0[binRun] && runnumber < runRangesEMCalL0[binRun+1] ) && binRun < 34 ){
+    while (!(runnumber >= runRangesEMCalL0[binRun] && runnumber < runRangesEMCalL0[binRun+1] ) && binRun < 51 ){
 //       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
       binRun++;
     }
-    if (binRun==34) return kFALSE;
+    if (binRun==51) return kFALSE;
     Double_t threshold = thresholdEMCalL0[binRun];
 
     if (isMC && spreadEMCalL0[binRun] != 0.){
@@ -3166,7 +3303,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   //       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
         binRun++;
       }
-      if (binRun==3) return kFALSE;
+      if (binRun==20) return kFALSE;
       Double_t threshold = thresholdEMCalL1[binRun];
 
       if (isMC && spreadEMCalL1[binRun] != 0.){
@@ -3239,7 +3376,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   //       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
         binRun++;
       }
-      if (binRun==2) return kFALSE;
+      if (binRun==19) return kFALSE;
       Double_t threshold = thresholdEMCalL1G2[binRun];
       if (isMC && spreadEMCalL1G2[binRun] != 0.){
         TF1* triggerSmearing =  new TF1("triggerSmearing","[0]*exp(-0.5*((x-[1])/[2])**2)",0,15);
