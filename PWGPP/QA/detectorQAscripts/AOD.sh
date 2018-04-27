@@ -46,5 +46,39 @@ runLevelAodQA()
 
 periodLevelQA()
 {
-  true
+  trendingFile=$1
+
+  cp $ALICE_PHYSICS/PWGPP/macros/PlotAODtrackQA.C .
+  root -b -q -l "PlotAODtrackQA.C(\"$trendingFile\",\"QA\")"
+  mkdir -p trackQA
+  rm -f trackQA/*.png
+  mv *.png trackQA
+
+  cp $ALICE_PHYSICS/PWGPP/macros/PlotAODvertexQA.C .
+  root -b -q -l "PlotAODvertexQA.C(\"$trendingFile\",\"QA\")"
+  mkdir -p vertexQA
+  rm -f vertexQA/*.png
+  mv *.png vertexQA
+
+  cp $ALICE_PHYSICS/PWGHF/vertexingHF/macros/readMCPerform.C .
+  root -b -q -l "readMCPerform.C(\"$trendingFile\")"
+  mkdir -p hfQA
+  rm -f hfQA/*.png
+  mv *.png hfQA
+
+  cp $ALICE_PHYSICS/PWGPP/macros/DrawTrendingAODTrackQA.C .
+  root -b -q -l "DrawTrendingAODTrackQA.C(\"$trendingFile\",\"trendingTrack\")"
+  cp $ALICE_PHYSICS/PWGPP/macros/DrawTrendingAODVertexQA.C .
+  root -b -q -l "DrawTrendingAODVertexQA.C(\"$trendingFile\",\"trendingVert\")"
+  cp $ALICE_PHYSICS/PWGHF/vertexingHF/macros/DrawHFAODQATrendVsRun.C
+  root -b -q -l "DrawHFAODQATrendVsRun.C(\"$trendingFile\",\"trendingHF\")"
+  cp $ALICE_PHYSICS/PWGPP/macros/DrawTrendingPIDQA.C .
+  root -b -q -l "DrawTrendingPIDQA.C(\"$trendingFile\")"
+  mkdir -p trendvsrun
+  rm -f trendvsrun/*.png
+  rm -f trendvsrun/*.root
+  mv Trend*.png trendvsrun/
+  mv Trend*.root trendvsrun/
+  mv PIDqaTrend*.png trendvsrun/
+
 }

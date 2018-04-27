@@ -24,6 +24,7 @@
 #include "AliEMCALGeometry.h"
 #include "AliExternalTrackParam.h"
 #include "TVector3.h"
+#include "AliTrackerBase.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEMCALAlig)
@@ -99,15 +100,11 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
     
     TIter next(&fParticleCollArray);
     
-    while ((partCont = static_cast<AliParticleContainer*>(next()))) {
-        
-        UInt_t count = 0;
-        
+    while ((partCont = static_cast<AliParticleContainer*>(next()))) {        
         for(auto part : partCont->accepted())
         {
             if (!part)
                 continue;
-            count++;
             
             const AliVTrack* track = static_cast<const AliVTrack*>(part);
             if (!track)
@@ -129,7 +126,7 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
             if (!cluster)
                 continue;
             
-            Double_t EoverP = cluster->GetNonLinCorrEnergy()/track->P();
+            Double_t EoverP = cluster->E()/track->P();
             
             //Loose E/p cut to reduce tree
             if (EoverP<0.7 || EoverP>1.3)
@@ -139,10 +136,6 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
             Float_t  emcx[3];
             cluster->GetPosition(emcx);
             TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
-            Double_t emcphi = clustpos.Phi();
-            Double_t emceta = clustpos.Eta();
-            
-            if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
             
             Int_t iSupMod = -9;
             Int_t ieta = -9;
@@ -152,16 +145,8 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
             
             //Get the SM number
             fEMCALRecoUtils->GetMaxEnergyCell(fEMCALGeo,fCaloCells,cluster,icell,iSupMod,ieta,iphi,Isshared);
-            
-            //Default propagation
-            TVector3 trackposOnEMCAL;
-            trackposOnEMCAL.SetPtEtaPhi(440,track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
                         
-            Float_t xdiff = trackposOnEMCAL.X() - clustpos.X();
-            Float_t ydiff = trackposOnEMCAL.Y() - clustpos.Y();
-            Float_t zdiff = trackposOnEMCAL.Z() - clustpos.Z();
-            
-            //propagation using electron mass
+            //Propagation using electron mass
             
             Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
             track->PxPyPz(pxpypz);
@@ -171,51 +156,47 @@ void AliAnalysisTaskEMCALAlig::DoTrackLoop()
             
             Double_t trackPosExt[3] = {0.,0.,0.};
             Double_t ElectronMass = 0.000510998910; //Electron mass in GeV
-            Float_t EtaResidualsForCrossCheck, PhiResidualsForCrossCheck;
+
+            if (!AliTrackerBase::PropagateTrackToBxByBz(&trackParam, clustpos.Perp(), ElectronMass, fEMCALRecoUtils->GetStep(),kTRUE, 0.8, -1)) 
+    			continue;
             
-            fEMCALRecoUtils->ExtrapolateTrackToPosition(&trackParam, emcx, ElectronMass, fEMCALRecoUtils->GetStep(), EtaResidualsForCrossCheck,PhiResidualsForCrossCheck);
             trackParam.GetXYZ(trackPosExt);
             
-            TVector3 trackposOnEMCALRU;
-            
-            trackposOnEMCALRU.SetXYZ(trackPosExt[0],trackPosExt[1],trackPosExt[2]);
-            
-            Double_t phidiffRU = TVector2::Phi_mpi_pi(trackposOnEMCALRU.Phi()-emcphi);
-            Double_t etadiffRU = trackposOnEMCALRU.Eta() - emceta;
-            Double_t xdiffRU = trackposOnEMCALRU.X() - clustpos.X();
-            Double_t ydiffRU = trackposOnEMCALRU.Y() - clustpos.Y();
-            Double_t zdiffRU = trackposOnEMCALRU.Z() - clustpos.Z();
+            TVector3 trackposOnEMCAL;
+            trackposOnEMCAL.SetXYZ(trackPosExt[0],trackPosExt[1],trackPosExt[2]);
             
             //Save to Tree
-            
+            //Basic track properties
             fElectronInformation.charge = track->Charge();
             fElectronInformation.pt = track->Pt();
             fElectronInformation.pz = track->Pz();
             fElectronInformation.eta_track = track->Eta();
             fElectronInformation.phi_track = track->Phi();
+            fElectronInformation.zvtx = fVertex[2];
             
             //cluster properties
-            fElectronInformation.energy = cluster->GetNonLinCorrEnergy();
+            fElectronInformation.energy = cluster->E();
             fElectronInformation.M20 = cluster->GetM20();
             fElectronInformation.M02 = cluster->GetM02();
             fElectronInformation.eta_cluster = clustpos.Eta();
-            fElectronInformation.phi_cluster = clustpos.Phi();
+			fElectronInformation.phi_cluster = clustpos.Phi();
+            fElectronInformation.x_cluster = clustpos.X();
+            fElectronInformation.y_cluster = clustpos.Y();
+            fElectronInformation.z_cluster = clustpos.Z();
             
-            //mathing properties using default matcher
-            fElectronInformation.x_resitual_def = xdiff;
-            fElectronInformation.y_resitual_def = ydiff;
-            fElectronInformation.z_resitual_def = zdiff;
-            fElectronInformation.phi_resitual_def = cluster->GetTrackDx();
-            fElectronInformation.eta_resitual_def = cluster->GetTrackDz();
                    
             //mathing properties using electron mass
-            fElectronInformation.x_resitual_e = xdiffRU;
-            fElectronInformation.y_resitual_e = ydiffRU;
-            fElectronInformation.z_resitual_e = zdiffRU;
-            fElectronInformation.phi_resitual_e = phidiffRU;
-            fElectronInformation.eta_resitual_e = etadiffRU;
+            fElectronInformation.x_track = trackposOnEMCAL.X();
+            fElectronInformation.y_track = trackposOnEMCAL.Y();
+            fElectronInformation.z_track = trackposOnEMCAL.Z();
             
+            //aditional information
             fElectronInformation.super_module_number = iSupMod;
+            fElectronInformation.distance_bad_channel = cluster->GetDistanceToBadChannel();
+            
+            AliVCaloCells *cells = InputEvent()->GetEMCALCells();
+            fElectronInformation.is_in_fid_region = fEMCALRecoUtils->CheckCellFiducialRegion(fEMCALGeo,cluster,cells);
+            
             //PID properties
             fElectronInformation.n_sigma_electron_TPC = n_sigma_electron_TPC;
             
@@ -237,6 +218,7 @@ void AliAnalysisTaskEMCALAlig::ExecOnce()
     fEMCALGeo = AliEMCALGeometry::GetInstance();
     fEMCALRecoUtils  = new AliEMCALRecoUtils();
     fEMCALRecoUtils->InitParameters();
+    fEMCALRecoUtils->SetNumberOfCellsFromEMCALBorder(1);
 }
 
 Bool_t AliAnalysisTaskEMCALAlig::Run()

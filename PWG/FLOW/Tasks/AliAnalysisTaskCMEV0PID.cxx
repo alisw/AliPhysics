@@ -3095,9 +3095,10 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
   Double_t fWgtCent = 1.0;
 
+  /*
   if(fHCentWeightForRun){
     fWgtCent = fHCentWeightForRun->GetBinContent(iCentBinWgt);
-  }
+  }*/
 
   //Fill Centrality for run-by-run:  in first pass over data
   fCentDistAfter->Fill(centrality); 
@@ -3199,6 +3200,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     isKaon1  = kFALSE;
     isProton1 = kFALSE;
 
+
+    /*
     //------> Pion
     if(dPt1<0.6 && TMath::Abs(nSigTPCpion)<=2.5){
       isPion1 = kTRUE;
@@ -3220,11 +3223,36 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     else if(dPt1>=0.8 && dPt1<=3.5 && TMath::Abs(nSigTPCproton)<=2.5 && TMath::Abs(nSigTOFproton)<=2.5){
       isProton1 = kTRUE;
     }
-
     //Proton below 0.4 GeV is garbage
     if(dPt1<0.4) isProton1 = kFALSE;  
+    */
+ 
+    //------> Pion
+    if(dPt1<=0.6 && TMath::Abs(nSigTPCpion)<=3.0){
+      isPion1 = kTRUE;
+    }
+    else if(dPt1>0.6 && dPt1<=2.0 && TMath::Abs(nSigTPCpion)<=3.0 && TMath::Abs(nSigTOFpion)<=2.0 ){
+      isPion1 = kTRUE;
+    }
+    //------> Kaon
+    if(dPt1<=0.45 && TMath::Abs(nSigTPCkaon)<=3.0){
+      isKaon1 = kTRUE;
+    }
+    else if(dPt1>0.45 && dPt1<=2.0 && TMath::Abs(nSigTPCkaon)<=3.0 && TMath::Abs(nSigTOFkaon)<=2.0){
+      isKaon1 = kTRUE;
+    }
+    //------> Proton 
+    if(dPt1<=0.8 && TMath::Abs(nSigTPCproton)<=3.0){
+      isProton1 = kTRUE;
+      if(dPt1<0.4) isProton1 = kFALSE;      //Proton below 0.4 GeV is garbage
+    }
+    else if(dPt1>0.8 && dPt1<=2.0 && TMath::Abs(nSigTPCproton)<=3.0 && TMath::Abs(nSigTOFproton)<=3.0){  //0.8 to 3.5 was used earlier.
+      isProton1 = kTRUE;
+    }
 
-    //-----------------------------------------------------------------
+
+
+
 
 
 
@@ -3381,6 +3409,8 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     for(Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
 
       if(jtrack==itrack) continue;
+
+      if(n==0) continue;
     
       AliAODTrack *track2=dynamic_cast<AliAODTrack*>(fVevent->GetTrack(jtrack));
       if(!track2) continue;
@@ -3438,6 +3468,33 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       isKaon2  = kFALSE;
       isProton2 = kFALSE;
 
+
+
+      //------> Pion
+      if(dPt2<=0.6 && TMath::Abs(nSigTPCpion2)<=3.0){
+	isPion2 = kTRUE;
+      }
+      else if(dPt2>0.6 && dPt2<=2.0 && TMath::Abs(nSigTPCpion2)<=3.0 && TMath::Abs(nSigTOFpion2)<=2.0 ){
+	isPion2 = kTRUE;
+      }
+      //------> Kaon
+      if(dPt2<=0.45 && TMath::Abs(nSigTPCkaon2)<=3.0){
+	isKaon2 = kTRUE;
+      }
+      else if(dPt2>0.45 && dPt2<=2.0 && TMath::Abs(nSigTPCkaon2)<=3.0 && TMath::Abs(nSigTOFkaon2)<=2.0){
+	isKaon2 = kTRUE;
+      }
+      //------> Proton 
+      if(dPt2<=0.8 && TMath::Abs(nSigTPCproton2)<=3.0){
+	isProton2 = kTRUE;
+	if(dPt2<0.4) isProton2 = kFALSE;      //Proton below 0.4 GeV is garbage
+      }
+      else if(dPt2>0.8 && dPt2<=2.0 && TMath::Abs(nSigTPCproton2)<=3.0 && TMath::Abs(nSigTOFproton2)<=3.0){  //0.8 to 3.5 was used earlier.
+	isProton2 = kTRUE;
+      }
+
+
+      /*
       //------> Pion 2
       if(dPt2<0.6 && TMath::Abs(nSigTPCpion2)<=2.5){
 	isPion2 = kTRUE;
@@ -3461,7 +3518,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       }
       //Proton below 0.4 GeV is garbage
       if(dPt2<0.4) isProton2 = kFALSE;  
-
+      */
       //----------------------------------------------------------------
 
 
@@ -3632,20 +3689,6 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
       }
 
       // track by track EP:
-      /*
-      if(gPsiN>2){
-       //Enable periodicity PsiN directly:
-        PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) + TMath::Pi() ) ; // negetive eta
-	PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) + TMath::Pi() ) ; // positive eta
-      }
-      else{
-	PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) ) ; // negetive eta
-	if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
-
-	PsiNTPCA = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCpos2,sumQxTPCpos2) ) ; // positive eta
-   	if(PsiNTPCA<0.) PsiNTPCA += 2*TMath::Pi()/gPsiN;
-      } */
-
       if(gPsiN>0){
 	PsiNTPCC = (1.0/gPsiN)*( TMath::ATan2(sumQyTPCneg2,sumQxTPCneg2) ) ; // negetive eta
 	if(PsiNTPCC<0.) PsiNTPCC += 2*TMath::Pi()/gPsiN;
@@ -4151,37 +4194,39 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     //-------------- Fill NUA for PID tracks ----------------
     if(bFillNUAHistPID) {
 
+      /*
       //---------------- Temporary: redefine PID NUA cuts:
       isPion1 = kFALSE;
       isKaon1  = kFALSE;
       isProton1 = kFALSE;
 
       //------> Pion
-      if(dPt1<0.6 && TMath::Abs(nSigTPCpion)<=2.0){
+      if(dPt1<=0.6 && TMath::Abs(nSigTPCpion)<=3.0){
 	isPion1 = kTRUE;
       }
-      else if(dPt1>=0.6 && dPt1<=2.0 && TMath::Abs(nSigTPCpion)<=2.5 && TMath::Abs(nSigTOFpion)<=2.0 ){
+      else if(dPt1>0.6 && dPt1<=2.0 && TMath::Abs(nSigTPCpion)<=3.0 && TMath::Abs(nSigTOFpion)<=2.0 ){
 	isPion1 = kTRUE;
       }
       //------> Kaon
-      if(dPt1<0.5 && TMath::Abs(nSigTPCkaon)<=2.0){
+      if(dPt1<=0.45 && TMath::Abs(nSigTPCkaon)<=3.0){
 	isKaon1 = kTRUE;
       }
-      else if(dPt1>=0.5 && dPt1<=2.0 && TMath::Abs(nSigTPCkaon)<=2.5 && TMath::Abs(nSigTOFkaon)<=2.0){
+      else if(dPt1>0.45 && dPt1<=2.0 && TMath::Abs(nSigTPCkaon)<=3.0 && TMath::Abs(nSigTOFkaon)<=2.0){
 	isKaon1 = kTRUE;
       }
       //------> Proton 
-      if(dPt1<0.9 && TMath::Abs(nSigTPCproton)<=2.0){
+      if(dPt1<=0.8 && TMath::Abs(nSigTPCproton)<=3.0){
 	isProton1 = kTRUE;
       }
-      else if(dPt1>=0.9 && dPt1<=2.0 && TMath::Abs(nSigTPCproton)<=2.5 && TMath::Abs(nSigTOFproton)<=2.5){  //0.8 to 3.5 was used earlier.
+      else if(dPt1>0.8 && dPt1<=2.0 && TMath::Abs(nSigTPCproton)<=3.0 && TMath::Abs(nSigTOFproton)<=3.0){  //0.8 to 3.5 was used earlier.
 	isProton1 = kTRUE;
       }
-
       //Proton below 0.4 GeV is garbage
       if(dPt1<0.4) isProton1 = kFALSE;  
-
       //-----------------------------------------------------------------
+      */
+
+
 
       // Pion 
       if(isPion1){

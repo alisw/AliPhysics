@@ -36,9 +36,13 @@ using std::vector;
 #include <RooPlot.h>
 #include <RooRealVar.h>
 
+#include <fstream>
+
 using namespace RooFit;
 
 void SignalMC(bool useMBsignal=true, bool use_extended=true) {
+
+  ofstream debugfile(Form("%s/debugMC.txt",kBaseOutputDir.data()));
 
   /// Suppressing the output
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
@@ -50,12 +54,12 @@ void SignalMC(bool useMBsignal=true, bool use_extended=true) {
   TFile output_file(Form("%ssignalMC.root", kBaseOutputDir.data()),"recreate");
 
   /// Setting up the fitting environment for TOF analysis
-  RooRealVar m("dm2","m^{2} - m^{2}_{d}",-2.,2.5,"GeV^{2}/#it{c}^{4}");
+  RooRealVar m("dm2","m^{2} - m^{2}_{d}",-1.2,1.5,"GeV^{2}/#it{c}^{4}");
   m.setBins(1000,"cache");
   m.setRange("Full", -2., 2.5);
 
   FitExpExpTailGaus fExpExpTailGaus(&m,use_extended);
-  fExpExpTailGaus.mMu->setRange(0.00001,0.5);
+  fExpExpTailGaus.mMu->setRange(0.00001,0.7);
   fExpExpTailGaus.mMu->setVal(0.1);
   fExpExpTailGaus.mMu->setUnit("GeV^{2}/#it{c}^{4}");
   fExpExpTailGaus.mSigma->setRange(0.05,0.11);
@@ -70,11 +74,11 @@ void SignalMC(bool useMBsignal=true, bool use_extended=true) {
   fExpExpTailGaus.mTau0->setUnit("GeV^{-2}#it{c}^{4}");
   fExpExpTailGaus.mTau1 ->setUnit("GeV^{-2}#it{c}^{4}");
   fExpExpTailGaus.mTau0->setRange(-10.,-1.5);
-  fExpExpTailGaus.mTau1->setRange(-0.5,-0.01);
+  fExpExpTailGaus.mTau1->setRange(-0.5,-0.00001);
   fExpExpTailGaus.mKbkg->setRange(0.,1.);
 
   //Background
-  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",-2.,2.5,"GeV^{2}/#it{c}^{4}");
+  RooRealVar m_bis("dm2_bis","m^{2} - m^{2}_{d}",-1.2,1.5,"GeV^{2}/#it{c}^{4}");
   m_bis.setBins(1000,"cache");
   m_bis.setRange("Full", -2., 2.5);
   FitExpExpTailGaus fBkg(&m_bis,use_extended);
@@ -108,6 +112,8 @@ void SignalMC(bool useMBsignal=true, bool use_extended=true) {
     /// Preliminary operation to read the list and create an output dir
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
     if (string(list_key->GetName()).find("_MV") != string::npos) continue;
+    if (string(list_key->GetName()).find("_pid2") != string::npos) continue;
+    if (string(list_key->GetName()).find("_pid3") != string::npos) continue;
 
     TTList* list = (TTList*)input_file.Get(list_key->GetName());
     TDirectory* base_dir = output_file.mkdir(list_key->GetName());
@@ -159,7 +165,7 @@ void SignalMC(bool useMBsignal=true, bool use_extended=true) {
     TH1D* hTPC3sigma[2][kCentLength];
 
     vector<float> n_sigma_vec = {3.0,3.1,3.2,3.3,3.4,3.5};
-    vector<float> v_shift = {-0.1,0.05,0.,0.05,0.1};
+    vector<float> v_shift = {-0.1,-0.05,0.,0.05,0.1};
     int n_shifts = v_shift.size();
     int kNewGreen = kGreen + 3;
     int color_vector[] = {kBlack,kBlue,kNewGreen,kOrange,kRed};
@@ -213,9 +219,12 @@ void SignalMC(bool useMBsignal=true, bool use_extended=true) {
       float sigma_deut[kCentLength];
       float sigma_deut_tpc[kCentLength];
       for (int iS = 1; iS>=0; iS--) {
+        debugfile << "******************************************" << endl;
+        debugfile << "\t\t" << kNames[iS].data() << endl;
+        debugfile << "******************************************" << endl<<endl;
         for (int iC = kCentLength-1; iC>=kCentLength-1;iC--) {
           // TOF analysis
-          if(pt_axis->GetBinCenter(iB+1) > 1){
+          if(pt_axis->GetBinCenter(iB+1) > kTOFminPt){
             if(pt_axis->GetBinCenter(iB+1) > kCentPtLimits[iC]) continue;
             TString iTitle = Form(" %1.0f - %1.0f %% %1.1f #leq #it{p}_{T} < %1.1f GeV/#it{c}", cent_labels[kCentBinsArray[iC][0]-1], cent_labels[kCentBinsArray[iC][1]], pt_labels[iB], pt_labels[iB + 1]);
             TString iName = Form("d%i_%i",iC,iB);
@@ -236,23 +245,23 @@ void SignalMC(bool useMBsignal=true, bool use_extended=true) {
 
             /// Fits
             base_dir->cd(Form("%s/Fits/C_%d",kNames[iS].data(),iC));
-            if(iB<=8){
+            if(iB<=9){
               fExpExpTailGaus.UseBackground(false);
-              fExpExpTailGaus.mSigma->setRange(0.05,0.11);
-              fExpExpTailGaus.mSigma->setVal(0.1);
+              //fExpExpTailGaus.mSigma->setRange(0.05,0.11);
+              //fExpExpTailGaus.mSigma->setVal(0.1);
               //fExpExpTailGaus.mAlpha0->setVal(-1.1);
               //fExpExpTailGaus.mAlpha0->setConstant(true);
-              fExpExpTailGaus.mAlpha0->setVal(1.1);
+              //fExpExpTailGaus.mAlpha0->setVal(1.1);
               //fExpExpTailGaus.mAlpha0->setConstant(true);
             }
             else{
               fExpExpTailGaus.UseBackground(true);
-              fExpExpTailGaus.mSigma->setRange(0.05,0.18);
-              fExpExpTailGaus.mSigma->setVal(0.1);
+              //fExpExpTailGaus.mSigma->setRange(0.05,0.18);
+              //fExpExpTailGaus.mSigma->setVal(0.1);
               //fExpExpTailGaus.mAlpha0->setConstant(false);
               //fExpExpTailGaus.mAlpha0->setConstant(false);
-              if(iB<=10){
-                fExpExpTailGaus.mKbkg->setVal(0.);
+              if(iB<=13){
+                fExpExpTailGaus.mKbkg->setVal(01.);
                 fExpExpTailGaus.mKbkg->setConstant(true);
                 fExpExpTailGaus.mTau0->setConstant(true);
                 fBkg.mKbkg->setVal(0.);
@@ -272,21 +281,49 @@ void SignalMC(bool useMBsignal=true, bool use_extended=true) {
             //   fExpExpTailGaus.mSigma->setVal(sigma_deut[iC]);
             //   fExpExpTailGaus.mSigma->setConstant(true);
             // }
-            if(useMBsignal){
-              if(iC==kCentLength-1){
-                fExpExpTailGaus.mMu->setConstant(false);
-                fExpExpTailGaus.mSigma->setConstant(false);
-                fExpExpTailGaus.mAlpha0->setConstant(false);
+
+            RooPlot* expExpTailGausPlot;
+            if(iB<=4){
+              fExpExpTailGaus.mMu->setConstant(false);
+              fExpExpTailGaus.mSigma->setConstant(false);
+              fExpExpTailGaus.mAlpha0->setConstant(false);
+              fExpExpTailGaus.mSigma->setRange(0.05,0.3);
+              fExpExpTailGaus.mSigma->setVal(0.1);
+              fExpExpTailGaus.mAlpha0->setRange(1.,4.);
+              fExpExpTailGaus.mAlpha0->setVal(1.1);
+              expExpTailGausPlot = fExpExpTailGaus.FitData(dat, iName, iTitle, "Full", "Full",false,-2.,2.5);
+            }
+            else{
+              if(useMBsignal){
+                if(iC==kCentLength-1){
+                  fExpExpTailGaus.mMu->setConstant(false);
+                  fExpExpTailGaus.mSigma->setConstant(false);
+                  fExpExpTailGaus.mAlpha0->setConstant(false);
+                  if(iB<=9){
+                    fExpExpTailGaus.mSigma->setRange(0.05,0.11);
+                    fExpExpTailGaus.mSigma->setVal(0.1);
+                    fExpExpTailGaus.mAlpha0->setRange(1.1,4.);
+                    fExpExpTailGaus.mAlpha0->setVal(1.2);
+                  }
+                  else{
+                    fExpExpTailGaus.mSigma->setRange(0.05,0.2);
+                    fExpExpTailGaus.mSigma->setVal(0.1);
+                    fExpExpTailGaus.mAlpha0->setRange(1.1,4.);
+                    fExpExpTailGaus.mAlpha0->setVal(1.2);
+                  }
+                }
+              }
+              expExpTailGausPlot = fExpExpTailGaus.FitData(dat, iName, iTitle, "Full", "Full",false,-2.,2.5);
+              if(useMBsignal){
+                if(iC==kCentLength-1){
+                  fExpExpTailGaus.mMu->setConstant(true);
+                  fExpExpTailGaus.mSigma->setConstant(true);
+                  fExpExpTailGaus.mAlpha0->setConstant(true);
+                }
               }
             }
-            RooPlot* expExpTailGausPlot = fExpExpTailGaus.FitData(dat, iName, iTitle, "Full", "Full",false,-2.,2.5);
-            if(useMBsignal){
-              if(iC==kCentLength-1){
-                fExpExpTailGaus.mMu->setConstant(true);
-                fExpExpTailGaus.mSigma->setConstant(true);
-                fExpExpTailGaus.mAlpha0->setConstant(true);
-              }
-            }
+            debugfile << Form("iB: %d iC: %d mMu: %f mSigma: %f mAlpha0: %f", iB, iC, fExpExpTailGaus.mMu->getVal(),fExpExpTailGaus.mSigma->getVal(),fExpExpTailGaus.mAlpha0->getVal()) << endl;
+
             //fExpExpTailGaus.mSigma->setConstant(false);
             if(iS==0) sigma_deut[iC] = fExpExpTailGaus.mSigma->getVal();
             if(pt_axis->GetBinCenter(iB+1) > kTOFminPt) expExpTailGausPlot->Write();
@@ -408,7 +445,7 @@ void SignalMC(bool useMBsignal=true, bool use_extended=true) {
               count_tpc_vector[iSigma] = integral_tpc;
               count_tpc_err_vector[iSigma] = TMath::Sqrt(err2);
             }
-            if(iB>5 && iB<=8){
+            if(iB>5 && iB<=9){
               hChiSquareTPC[iS][iC]->SetBinContent(iB+1,TpcChi);
               hChiSquareTPC[iS][iC]->SetBinError(iB+1,0.);
             }

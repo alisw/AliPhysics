@@ -15,6 +15,7 @@ using namespace utils;
 #include <TLegend.h>
 #include <TError.h>
 #include <TROOT.h>
+#include <TLine.h>
 
 void SecondariesTPC() {
 
@@ -33,7 +34,7 @@ void SecondariesTPC() {
   fitModel.SetParLimits(1, -30, 30);
 
   gStyle->SetOptStat(0);
-  gStyle->SetOptFit(1111);
+  gStyle->SetOptFit(0);
   gErrorIgnoreLevel=kError;
 
   const int nDCAbins = 34;
@@ -48,14 +49,22 @@ void SecondariesTPC() {
   for (auto&& list_key : *data_file.GetListOfKeys()) {
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
     if (string(list_key->GetName()).find("_MV") != string::npos) continue;
-    TTList* mcList = (TTList*)mc_file.Get(list_key->GetName());
+    if (string(list_key->GetName()).find("_pid2") != string::npos) continue;
+    if (string(list_key->GetName()).find("_pid3") != string::npos) continue;
+    std::cout << "list_key : " << list_key->GetName() << std::endl;
+    string mc_list_name = list_key->GetName();
+    //replace(mc_list_name,"nuclei","mpuccio");
+    TTList* mcList = (TTList*)mc_file.Get(mc_list_name.data());
     TTList* dtList = (TTList*)data_file.Get(list_key->GetName());
 
     TH3F *primaries = (TH3F*)mcList->FindObject("fMDCAPrimaryTPC");
     TH3F *secondaries = (TH3F*)mcList->FindObject("fMDCASecondaryTPC");
     TH3F *data = (TH3F*)dtList->FindObject("fMDCAxyTPC");
 
-    TDirectory *root = output_file.mkdir(list_key->GetName());
+    string out_list = list_key->GetName();
+    //replace(out_list,"mpuccio","nuclei");
+
+    TDirectory *root = output_file.mkdir(out_list.data());
     TDirectory *datadir = root->mkdir("Data");
     TDirectory *primdir = root->mkdir("Primaries");
     TDirectory *secodir = root->mkdir("Secondaries");
@@ -68,9 +77,11 @@ void SecondariesTPC() {
     int n_cent_bins = data->GetNbinsX();
 
     TH1D* hResTFF[kCentLength] = {nullptr};
+    TH1F* ratio_fit_data[kCentLength] = {nullptr};
     for(int iC=0; iC<kCentLength; iC++){
       hResTFF[iC]= new TH1D(Form("hResTFF_%i",iC),";p_{T} GeV/c;Fraction",pt->GetNbins(),pt->GetXbins()->GetArray());
-      hResTFF[iC]->GetXaxis()->SetRangeUser(0.6,2.);
+      hResTFF[iC]->GetXaxis()->SetRangeUser(0.6,1.4);
+      ratio_fit_data[iC] = new TH1F(Form("ratio_fit_data_%d",iC),Form("%2.0f - %2.0f %%;#it{p}_{T} (GeV/#it{c});data/fit",kCentLabels[iC][0],kCentLabels[iC][1]),pt->GetNbins(),pt->GetXbins()->GetArray());
     }
 
     for (int iB = pt->FindBin(kPtRangeMatCorrectionTPC[0]); iB <= pt->FindBin(kPtRangeMatCorrectionTPC[1]); ++iB) {
@@ -84,10 +95,10 @@ void SecondariesTPC() {
       pr->Scale(1.,"width");
       sc->Scale(1.,"width");
       primdir->cd();
-      pr_tmp->Write();
+      //pr_tmp->Write();
       pr->Write();
       secodir->cd();
-      sc_tmp->Write();
+      //sc_tmp->Write();
       sc->Write();
 
       datadir->cd();
@@ -169,8 +180,31 @@ void SecondariesTPC() {
     }
     resdir->cd();
     for(int iC=0; iC<kCentLength; iC++){
-      hResTFF[iC]->Fit(&fitModel);
+      hResTFF[iC]->Fit(&fitModel,"R");
       hResTFF[iC]->Write();
+      for(int i=2; i<=9; i++){
+        float data_val = hResTFF[iC]->GetBinContent(i);
+        float fit_val = fitModel.Eval(hResTFF[iC]->GetBinCenter(i));
+        float data_err = hResTFF[iC]->GetBinError(i);
+        ratio_fit_data[iC]->SetBinContent(i,data_val/fit_val);
+        ratio_fit_data[iC]->SetBinError(i,data_err/fit_val);
+      }
+      ratio_fit_data[iC]->GetXaxis()->SetRangeUser(0.5,1.4);
+      ratio_fit_data[iC]->GetYaxis()->SetRangeUser(0.8,1.2);
+      ratio_fit_data[iC]->Write();
+      TCanvas* cV = new TCanvas(Form("RatioFitData_%d",iC),Form("cRatioFitData_%d",iC));
+      cV->Divide(2);
+      cV->cd(1);
+      hResTFF[iC]->GetYaxis()->SetRangeUser(0.4,1.2);
+      hResTFF[iC]->Draw();
+      cV->cd(2);
+      ratio_fit_data[iC]->GetYaxis()->SetTitleOffset(1.2);
+      ratio_fit_data[iC]->Draw();
+      TLine *line_one = new TLine(0.5,1.,1.6,1.);
+      line_one->SetLineColor(kBlack);
+      line_one->SetLineStyle(2);
+      line_one->Draw();
+      cV->Write();
     }
     root->Write();
   }

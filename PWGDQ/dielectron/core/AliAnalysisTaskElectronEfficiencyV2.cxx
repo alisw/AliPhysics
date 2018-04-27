@@ -34,6 +34,7 @@
 #include "AliDielectronVarManager.h"
 #include "AliDielectronSignalMC.h"
 #include "AliDielectronPair.h"
+#include "AliDielectronHistos.h"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -85,7 +86,8 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
                                                                               , fDoPairing(false), fDoULSandLS(false)
                                                                               , fGenNegPart(), fGenPosPart(), fRecNegPart(), fRecPosPart()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
-                                                                              , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0)
+                                                                              , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
+                                                                              fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
 {
 // ROOT IO constructor , don ’t allocate memory here !
 }
@@ -116,7 +118,9 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
                                                                               , fDoPairing(false), fDoULSandLS(false)
                                                                               , fGenNegPart(), fGenPosPart(), fRecNegPart(), fRecPosPart()
                                                                               , fDoCocktailWeighting(false), fCocktailFilename(""), fCocktailFilenameFromAlien(""), fCocktailFile(0x0)
-                                                                              , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0)
+                                                                              , fPtPion(0x0), fPtEta(0x0), fPtEtaPrime(0x0), fPtRho(0x0), fPtOmega(0x0), fPtPhi(0x0), fPtJPsi(0x0),
+                                                                              fPostPIDCntrdCorrTPC(0x0), fPostPIDWdthCorrTPC(0x0), fPostPIDCntrdCorrITS(0x0), fPostPIDWdthCorrITS(0x0), fPostPIDCntrdCorrTOF(0x0), fPostPIDWdthCorrTOF(0x0)
+
 {
   DefineInput (0, TChain::Class());
   DefineOutput (1, TList::Class());
@@ -566,6 +570,14 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
   if (!fPIDResponse) SetPIDResponse( eventHandler->GetPIDResponse() );
   AliDielectronVarManager::SetPIDResponse(fPIDResponse);
+
+  if(fPostPIDCntrdCorrTPC) AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorrTPC);
+  if(fPostPIDWdthCorrTPC)  AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorrTPC);
+  if(fPostPIDCntrdCorrITS) AliDielectronPID::SetCentroidCorrFunctionITS(fPostPIDCntrdCorrITS);
+  if(fPostPIDWdthCorrITS)  AliDielectronPID::SetWidthCorrFunctionITS(fPostPIDWdthCorrITS);
+  if(fPostPIDCntrdCorrTOF) AliDielectronPID::SetCentroidCorrFunctionTOF(fPostPIDCntrdCorrTOF);
+  if(fPostPIDWdthCorrTOF)  AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
+
 
   if (isAOD) fEvent = static_cast<AliAODEvent*>(eventHandler->GetEvent());
   else       fEvent = static_cast<AliESDEvent*>(eventHandler->GetEvent());
@@ -1095,9 +1107,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         double pairpt = LvecM.Pt();
         double weight = 1.;
         if (fCocktailFile) {
-          if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
-            double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
-            weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
+          if (fRecNegPart[neg_i].GetMotherID() == fRecPosPart[pos_i].GetMotherID()){
+            double motherpt = fMC->GetTrack(fRecNegPart[neg_i].GetMotherID())->Pt();
+            weight *= GetWeight(fRecNegPart[neg_i], fRecPosPart[pos_i], motherpt);
           }
         }
 
@@ -1438,31 +1450,154 @@ bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID){
 double AliAnalysisTaskElectronEfficiencyV2::GetWeight(Particle part1, Particle part2, double motherpt){
   int pdgMother = 0;
   double weight = 0;
+  int bin = -1;
 
   pdgMother = fMC->GetTrack(part2.GetMotherID())->PdgCode();
   if      (pdgMother == 111) {
-    if (fPtPion) weight = fPtPion    ->GetBinContent(fPtPion    ->FindBin(motherpt));
+    if (fPtPion) {
+      bin = fPtPion->FindBin(motherpt);
+      weight = fPtPion->GetBinContent(bin);
+    }
   }
   else if (pdgMother == 221) {
-    if (fPtEta) weight = fPtEta     ->GetBinContent(fPtEta     ->FindBin(motherpt));
+    if (fPtEta) {
+      bin = fPtEta->FindBin(motherpt);
+      weight = fPtEta->GetBinContent(bin);
+    }
   }
   else if (pdgMother == 331) {
-    if (fPtEtaPrime) weight = fPtEtaPrime->GetBinContent(fPtEtaPrime->FindBin(motherpt));
+    if (fPtEtaPrime) {
+      bin = fPtEtaPrime->FindBin(motherpt);
+      weight = fPtEtaPrime->GetBinContent(bin);
+    }
   }
   else if (pdgMother == 113) {
-    if (fPtRho) weight = fPtRho     ->GetBinContent(fPtRho     ->FindBin(motherpt));
+    if (fPtRho) {
+      bin = fPtRho->FindBin(motherpt);
+      weight = fPtRho->GetBinContent(bin);
+    }
   }
   else if (pdgMother == 223) {
-    if (fPtOmega) weight = fPtOmega   ->GetBinContent(fPtOmega   ->FindBin(motherpt));
+    if (fPtOmega) {
+      bin = fPtOmega->FindBin(motherpt);
+      weight = fPtOmega->GetBinContent(bin);
+    }
   }
   else if (pdgMother == 333) {
-    if (fPtPhi) weight = fPtPhi     ->GetBinContent(fPtPhi     ->FindBin(motherpt));
+    if (fPtPhi) {
+      bin = fPtPhi->FindBin(motherpt);
+      weight = fPtPhi->GetBinContent(bin);
+    }
   }
   else if (pdgMother == 443) {
-    if (fPtJPsi) weight = fPtJPsi    ->GetBinContent(fPtJPsi    ->FindBin(motherpt));
+    if (fPtJPsi) {
+      bin = fPtJPsi->FindBin(motherpt);
+      weight = fPtJPsi->GetBinContent(bin);
+    }
   }
 
-  // std::cout << "weight from " << pdgMother << " for pt = " << motherpt << ": " << weight << std::endl;
+  std::cout << "weight from " << pdgMother << " for pt = " << motherpt << "  weight: " << weight << "  bin: " << bin << std::endl;
 
   return weight;
+}
+
+//______________________________________________
+void AliAnalysisTaskElectronEfficiencyV2::SetCentroidCorrFunction(Detector det, TObject *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  if (fun == 0x0) {
+    std::cout << "No correction function chosen" << std::endl;
+    return;
+  }
+
+  std::string detector = "";
+  if      (det == kITS) detector = "ITS";
+  else if (det == kTPC) detector = "TPC";
+  else if (det == kTOF) detector = "TOF";
+  else {
+    std::cout << "ERROR: No matching detector, must be kITS, kTPC or kTOF. return;" << std::endl;
+    return;
+  }
+  std::cout << "Do centroid correction with detector " << detector << std::endl;
+
+  TH1* correctionMap = 0x0;
+  if      (det == kITS) correctionMap = fPostPIDCntrdCorrITS;
+  else if (det == kTPC) correctionMap = fPostPIDCntrdCorrTPC;
+  else if (det == kTOF) correctionMap = fPostPIDCntrdCorrTOF;
+
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  TString key = Form("cntrdTPC%d%d%d",varx,vary,varz);
+  // StoreVariables() sets the uniqueIDs of the axes to match with the VarManager enum and sets axis titles accordingly.
+  // Needed so that AliDielectronPID can extract the needed variables into its local TBits 'fUsedVars'.
+  // clone temporary histogram, otherwise it will not be streamed to file!
+  if (fun->InheritsFrom(TH1::Class())) {
+    AliDielectronHistos::StoreVariables(fun, valType);
+    correctionMap = (TH1*)fun->Clone(key.Data());
+  }
+  else {
+    AliWarning(Form("WARNING: PID correction object has invalid type: %s!", fun->IsA()->GetName())); return;
+  }
+  if(correctionMap) {
+    // check for corrections and add their variables to the fill map
+    std::cout << "POST " << detector << "PID CORRECTION added for centroids:  " << std::endl;
+    switch(correctionMap->GetDimension()) {
+      case 3: printf(" %s, ",correctionMap->GetZaxis()->GetName());
+      case 2: printf(" %s, ",correctionMap->GetYaxis()->GetName());
+      case 1: printf(" %s ",correctionMap->GetXaxis()->GetName());
+    }
+    printf("\n");
+    // fUsedVars->SetBitNumber(varx, kTRUE); // probably not needed within efficiency task...
+    // fUsedVars->SetBitNumber(vary, kTRUE);
+    // fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+}
+//______________________________________________
+void AliAnalysisTaskElectronEfficiencyV2::SetWidthCorrFunction(Detector det, TObject *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  if (fun == 0x0) {
+    std::cout << "No correction function chosen" << std::endl;
+    return;
+  }
+
+  std::string detector = "";
+  if      (det == kITS) detector = "ITS";
+  else if (det == kTPC) detector = "TPC";
+  else if (det == kTOF) detector = "TOF";
+  else {
+    std::cout << "ERROR: No matching detector, must be kITS, kTPC or kTOF. return;" << std::endl;
+    return;
+  }
+  std::cout << "Do width correction with detector " << detector << std::endl;
+
+  TH1* correctionMap = 0x0;
+  if (det == kITS) correctionMap = fPostPIDWdthCorrITS;
+  if (det == kTPC) correctionMap = fPostPIDWdthCorrTPC;
+  if (det == kTOF) correctionMap = fPostPIDWdthCorrTOF;
+
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  TString key = Form("wdthTPC%d%d%d",varx,vary,varz);
+  // StoreVariables() sets the uniqueIDs of the axes to match with the VarManager enum and sets axis titles accordingly.
+  // Needed so that AliDielectronPID can extract the needed variables into its local TBits 'fUsedVars'.
+  // clone temporary histogram, otherwise it will not be streamed to file!
+  if (fun->InheritsFrom(TH1::Class())) {
+    AliDielectronHistos::StoreVariables(fun, valType);
+    correctionMap = (TH1*)fun->Clone(key.Data());
+  }
+  else {
+    AliWarning(Form("WARNING: PID correction object has invalid type: %s!", fun->IsA()->GetName())); return;
+  }
+  if(correctionMap)  {
+    // check for corrections and add their variables to the fill map
+    std::cout << "POST " << detector << "PID CORRECTION added for widths:  " << std::endl;
+    switch(correctionMap->GetDimension()) {
+      case 3: printf(" %s, ",correctionMap->GetZaxis()->GetName());
+      case 2: printf(" %s, ",correctionMap->GetYaxis()->GetName());
+      case 1: printf(" %s ",correctionMap->GetXaxis()->GetName());
+    }
+    printf("\n");
+    // fUsedVars->SetBitNumber(varx, kTRUE); // probably not needed within efficiency task...
+    // fUsedVars->SetBitNumber(vary, kTRUE);
+    // fUsedVars->SetBitNumber(varz, kTRUE);
+  }
 }

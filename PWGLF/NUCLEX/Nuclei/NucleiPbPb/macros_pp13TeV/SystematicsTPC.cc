@@ -69,18 +69,23 @@ void SystematicsTPC() {
       string count_sys_path = kFilterListNames + "/" + kNames[iS] + "/Systematic/hWidenRangeSystTPC" + kLetter[iS] + to_string(iC);
       TH1F* countsyst_tpc_tmp = (TH1F*)countsyst_file.Get(count_sys_path.data());
       Requires(countsyst_tpc_tmp,"Missing systematic");
+      species_dir->cd();
+      countsyst_tpc_tmp->Write("count_tpc_tmp");
+      references_tpc_tmp->Write("references_tpc_tmp");
+      references_tpc[iC]->Write();
       countsyst_tpc[iC] = (TH1F*)countsyst_tpc_tmp->Rebin(n_pt_bins,Form("countsyst_tpc_%d",iC),pt_bin_limits);
 
       string shift_sys_path = kFilterListNames + "/" + kNames[iS] + "/Systematic/hShiftRangeSystTPC" + kLetter[iS] + to_string(iC);
       TH1F* shiftsyst_tpc_tmp = (TH1F*)shiftsyst_file.Get(shift_sys_path.data());
       Requires(shiftsyst_tpc_tmp,"Missing systematic");
+      shiftsyst_tpc_tmp->Write("shiftsyst_tpc_tmp");
       shiftsyst_tpc[iC] = (TH1F*)shiftsyst_tpc_tmp->Rebin(n_pt_bins,Form("shiftsyst_tpc_%d",iC),pt_bin_limits);
 
       string mat_sys_path = Form("deuterons%ctpc",kLetter[iS]);
       TH1F* matsyst_tmp = (TH1F*)matsyst_file.Get(mat_sys_path.data());
       Requires(matsyst_tmp,"Missing matsysttpc");
+      matsyst_tmp->Write("matsyst_tpc_tmp");
       matsyst_tpc[iC] = (TH1F*)matsyst_tmp->Rebin(n_pt_bins,Form("hMatSyst_%d",iC),pt_bin_limits);
-      matsyst_tpc[iC]->Smooth(1,"R");
 
       cutsyst_tpc[iC] = (TH1F*)countsyst_tpc[iC]->Clone(("cutsyst_tpc" + to_string(iC)).data());
       cutsyst_tpc[iC]->Reset();
@@ -115,7 +120,7 @@ void SystematicsTPC() {
           if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
               ptAxis->GetBinCenter(iB) > kPtRange[1])
             continue;
-          if (ptAxis->GetBinCenter(iB) > 1.) continue;
+          if (ptAxis->GetBinCenter(iB) > kTPCmaxPt) continue;
           abssyst_tpc[iC]->SetBinContent(iB,kAbsSyst[iS]);
           const float m0 = references_tpc[iC]->GetBinContent(iB);
           const float s0 = references_tpc[iC]->GetBinError(iB);
@@ -169,30 +174,32 @@ void SystematicsTPC() {
           if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
               ptAxis->GetBinCenter(iB) > kPtRange[1])
             continue;
-          if (ptAxis->GetBinCenter(iB) > 1.) continue;
+          if (ptAxis->GetBinCenter(iB) > kTPCmaxPt) continue;
           h_rms->SetBinContent(iB,rms[iB-1]);
         }
         h_rms->Write();
       }
       for (int iB = 1; iB <= cutsyst_tpc[iC]->GetNbinsX(); ++iB) {
-        if (ptAxis->GetBinCenter(iB) > 1.1) continue;
+        if (ptAxis->GetBinCenter(iB) > kTPCmaxPt) continue;
         cutsyst_tpc[iC]->SetBinContent(iB,sqrt(cutsyst_tpc[iC]->GetBinContent(iB)));
       }
 
       if (kSmoothSystematics) {
-        cutsyst_tpc[iC]->GetXaxis()->SetRange(cutsyst_tpc[iC]->FindBin(kPtRange[0]+0.01),cutsyst_tpc[iC]->FindBin(0.99));
-        countsyst_tpc[iC]->GetXaxis()->SetRange(countsyst_tpc[iC]->FindBin(1.01),countsyst_tpc[iC]->FindBin(0.99));
-        shiftsyst_tpc[iC]->GetXaxis()->SetRange(shiftsyst_tpc[iC]->FindBin(1.01),shiftsyst_tpc[iC]->FindBin(0.99));
+        cutsyst_tpc[iC]->GetXaxis()->SetRange(cutsyst_tpc[iC]->FindBin(kPtRange[0]+0.01),cutsyst_tpc[iC]->FindBin(kTPCmaxPt-0.01));
+        countsyst_tpc[iC]->GetXaxis()->SetRange(countsyst_tpc[iC]->FindBin(kPtRange[0]+0.01),countsyst_tpc[iC]->FindBin(kTPCmaxPt-0.01));
+        shiftsyst_tpc[iC]->GetXaxis()->SetRange(shiftsyst_tpc[iC]->FindBin(kPtRange[0]+0.01),shiftsyst_tpc[iC]->FindBin(kTPCmaxPt-0.01));
+        matsyst_tpc[iC]->GetXaxis()->SetRange(matsyst_tpc[iC]->FindBin(kPtRange[0]+0.01),matsyst_tpc[iC]->FindBin(kTPCmaxPt-0.01));
         cutsyst_tpc[iC]->Smooth(1,"R");
         countsyst_tpc[iC]->Smooth(1,"R");
         shiftsyst_tpc[iC]->Smooth(1,"R");
+        matsyst_tpc[iC]->Smooth(1,"R");
       }
 
       for (int iB = 1; iB <= cutsyst_tpc[iC]->GetNbinsX(); ++iB) {
         if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
             ptAxis->GetBinCenter(iB) > kPtRange[1])
           continue;
-        if (ptAxis->GetBinCenter(iB) > 1.){
+        if (ptAxis->GetBinCenter(iB) > kTPCmaxPt){
           cutsyst_tpc[iC]->SetBinContent(iB,0.);
           matsyst_tpc[iC]->SetBinContent(iB,0.);
           abssyst_tpc[iC]->SetBinContent(iB,0.);

@@ -35,12 +35,14 @@ void SignalLoss(int n_analysed_species=3, bool save_all_plots = false){
   gStyle->SetOptStat(0);
 
   TCanvas* cSignalLoss[kNCentBins][2];
+  TCanvas* cTotSignalLoss[kNCentBins];
   TCanvas* cRatioToPion[kNspecies][2];
   TCanvas* cTotRatioToPion[kNspecies];
   TH1F* hMeanSignalLoss[kNCentBins][2];
   TH1F* hTotMeanSignalLoss[kNCentBins];
   TH1F* hTotSystSignalLoss[kNCentBins];
   TCanvas* cTotMeanSignalLoss = new TCanvas("cTotMeanSignalLoss","cTotMeanSignalLoss");
+  TCanvas* cTotSpecies[kNspecies];
   TH1F* hSp[kNCentBins][kNspecies][2];
   TH1F* hSpTot[kNCentBins][kNspecies];
   TH1F* hRatioToPion[kNCentBins][kNspecies][2];
@@ -51,6 +53,7 @@ void SignalLoss(int n_analysed_species=3, bool save_all_plots = false){
 
   for(int iSpecies=0; iSpecies<n_analysed_species; iSpecies++){
     //Ratio to pion histograms
+    cTotSpecies[iSpecies] = new TCanvas(Form("cTot_%s",kSpeciesName[iSpecies]),Form("cTot_%s",kSpeciesName[iSpecies]));
     cTotRatioToPion[iSpecies] = new TCanvas(Form("cTotRtP_%s",kSpeciesName[iSpecies]),Form("cTotRtP_%s",kSpeciesName[iSpecies]),3200,1800);
     for(int iM=0; iM<2; iM++){
       cRatioToPion[iSpecies][iM] = new TCanvas(Form("cRtP_%s%s",kSpeciesName[iSpecies],kMatter[iM]),Form("cRtP_%s%s",kSpeciesName[iSpecies],kMatter[iM]),3200,1800);
@@ -62,6 +65,7 @@ void SignalLoss(int n_analysed_species=3, bool save_all_plots = false){
   cent_leg->SetBorderSize(0);
   for(int iC=0; iC<kNCentBins; iC++){
 
+    cTotSignalLoss[iC] = new TCanvas(Form("cTotSignalLoss_%d",iC),Form("cTotSignalLoss_%d",iC));
     TDirectory *c_dir = output.mkdir(Form("%d",iC));
 
     for(int iM=0; iM<2; iM++){
@@ -145,7 +149,7 @@ void SignalLoss(int n_analysed_species=3, bool save_all_plots = false){
         if(iSpecies==0) hSp[iC][iSpecies][iM]->Draw();
         else hSp[iC][iSpecies][iM]->Draw("same");
       }
-      leg->AddEntry(hDeutSignalLoss[iC][iM],"d","PE");
+      //leg->AddEntry(hDeutSignalLoss[iC][iM],"d","PE");
       leg->Draw();
       //plotting pions
       c_dir->cd();
@@ -238,6 +242,34 @@ void SignalLoss(int n_analysed_species=3, bool save_all_plots = false){
   cent_leg->Draw();
   output.cd();
   cTotMeanSignalLoss->Write();
+
+  for(int iSpecies=0; iSpecies<3; iSpecies++){
+    TLegend* leg = new TLegend(0.74,0.19,0.9,0.46);
+    leg->SetBorderSize(0);
+    leg->SetHeader(Form("%s",kSpeciesLabels[iSpecies]));
+    cTotSpecies[iSpecies]->cd();
+    for(int iC=0; iC<kNCentBins; iC++){
+      if (iC==0) hSpTot[iC][iSpecies]->Draw();
+      else hSpTot[iC][iSpecies]->Draw("same");
+      leg->AddEntry(hSpTot[iC][iSpecies],Form("%s %%",kMultLab[iC]),"PE");
+    }
+    leg->Draw();
+    output.cd();
+    cTotSpecies[iSpecies]->Write();
+  }
+
+  for(int iC=0; iC<kNCentBins; iC++){
+    cTotSignalLoss[iC]->cd();
+    TLegend leg(.74,0.19,0.9,0.46);
+    leg.SetBorderSize(0);
+    for(int iSpecies=0; iSpecies<3; iSpecies++){
+      if(!iC) hSpTot[iC][iSpecies]->Draw();
+      else  hSpTot[iC][iSpecies]->Draw("same");
+      leg.AddEntry(hSpTot[iC][iSpecies],Form("%s",kSpeciesLabels[iSpecies]),"PR");
+    }
+    leg.Draw();
+    cTotSignalLoss[iC]->Write();
+  }
 
   //Plotting ratio
 

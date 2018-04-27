@@ -94,7 +94,8 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
   void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
   void SetDerivativeSubtractionOrder(Int_t c)              {fDerivSubtrOrder = c;}
-  
+  void DoJetELoss(Bool_t b, Float_t f)                      {fScaleELoss = b; xfraction = f;}
+
   
   
  protected:
@@ -167,7 +168,8 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                             fCentMax;                     // max centrality value
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
   Int_t                               fDerivSubtrOrder;
-
+  Bool_t                              fScaleELoss;
+  Double_t                            xfraction;
   
   TH2F                                *fPhiJetCorr6;//
   TH2F                                *fPhiJetCorr7;//
