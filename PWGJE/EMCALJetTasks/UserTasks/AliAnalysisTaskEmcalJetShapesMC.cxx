@@ -96,7 +96,9 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0x0),
   fTf1Omega(0x0),
-  fTf1Kt(0x0)
+  fTf1Kt(0x0),
+  fScaleELoss(kFALSE),
+  xfraction(1)
 
 {
   for(Int_t i=0;i<9;i++){
@@ -151,8 +153,10 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fHLundIterativeInject(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0x0),
-    fTf1Omega(0x0),
-  fTf1Kt(0x0)
+  fTf1Omega(0x0),
+  fTf1Kt(0x0),
+  fScaleELoss(kFALSE),
+  xfraction(1)
 {
   // Standard constructor.
   
@@ -1330,13 +1334,24 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
   double lnpt_relinject=0;
   double yinject=0;
   int xflagAdded=0;
-   double zinject,angleinject,pptheta,sinpptheta,omega,omega2,angle2;
-   AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+  double zinject,angleinject,pptheta,sinpptheta,omega,omega2,angle2;
+  AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+  Float_t pTscale=0., phiscale=0., thetascale=0., pXscale=0., pYscale=0., pZscale=0., pscale=0.;
   
-    if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+  if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-      if (!fTrk) continue; 
-      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      if (!fTrk) continue;
+      if (fScaleELoss){
+	pTscale    = xfraction*sqrt(pow(fTrk->Px(),2)+pow(fTrk->Py(),2));
+	phiscale   = fTrk->Phi();
+	thetascale = 2.*TMath::ATan(TMath::Exp(-1.*(fTrk->Eta())));
+	pXscale    = pTscale * TMath::Cos(phiscale);
+	pYscale    = pTscale * TMath::Sin(phiscale);
+	pZscale    = pTscale/TMath::Tan(thetascale);
+	pscale     = TMath::Sqrt(pTscale*pTscale+pZscale*pZscale);
+	PseudoTracks.reset(pXscale, pYscale, pZscale, pscale); 
+      }
+      else PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
       PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
       fInputVectors.push_back(PseudoTracks);
      
