@@ -615,7 +615,7 @@ void AliTPCcalibLaser::Process(AliVEvent * event) {
   //
   //
 
-
+  fTracksTPC.SetOwner(); // this array accepts locally created copies which need to be deleted
   fTracksTPC.Clear();
   fTracksV.Clear();
   fTracksVParam.Delete();
@@ -642,9 +642,11 @@ void AliTPCcalibLaser::Process(AliVEvent * event) {
     track->GetTrackParam(prm);
     Double_t binC = hisCE.GetBinContent(hisCE.FindBin(prm.GetZ()));
     if (binC>336) continue; //remove CE background
-    AliTPCseed *seed=0;
-    AliTPCseed tpcSeed;
-    if (friendTrack->GetTPCseed(tpcSeed)==0) seed=&tpcSeed;
+    AliTPCseed *seed = new AliTPCseed();
+    if (friendTrack->GetTPCseed(*seed)!=0) {
+      delete seed;
+      continue;
+    }
     if (track&&seed&&track->GetTPCNcls()>kMinClusters && seed->GetNumberOfClusters() >kMinClusters) {
       //filter CE tracks
       Int_t id = FindMirror(track,seed);
