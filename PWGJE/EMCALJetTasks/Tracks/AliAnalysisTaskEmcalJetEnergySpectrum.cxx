@@ -33,6 +33,7 @@
 #include <THistManager.h>
 #include <TLinearBinning.h>
 
+#include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJetEnergySpectrum.h"
 #include "AliEmcalAnalysisFactory.h"
@@ -48,6 +49,20 @@ ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergySpectrum);
 
 using namespace EmcalTriggerJets;
 
+AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
+  AliAnalysisTaskEmcalJet(),
+  fHistos(nullptr),
+  fIsMC(false),
+	fTriggerSelectionBits(AliVEvent::kAny),
+  fTriggerSelectionString(""),
+  fNameTriggerDecisionContainer("EmcalTriggerDecision"),
+  fUseTriggerSelectionForData(false),
+  fUseDownscaleWeight(false),
+  fNameJetContainer("datajets")
+{
+  SetUseAliAnaUtils(true);
+}
+
 AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(const char *name):
   AliAnalysisTaskEmcalJet(name, true),
   fHistos(nullptr),
@@ -55,7 +70,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(con
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
-  fUseTriggerSelectionForData(true),
+  fUseTriggerSelectionForData(false),
   fUseDownscaleWeight(false),
   fNameJetContainer("datajets")
 {
@@ -170,6 +185,17 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
     return nullptr;
   }
 
+  Bool_t isAOD(kFALSE);
+  AliInputEventHandler *inputhandler = static_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
+  if(inputhandler) {
+    if(inputhandler->IsA() == AliAODInputHandler::Class()){
+      std::cout << "Analysing AOD events\n";
+      isAOD = kTRUE;
+    } else {
+      std::cout << "Analysing ESD events\n";
+    }
+  }
+
   std::string jettypestring;
   UInt_t acctype(AliJetContainer::kTPCfid);
   switch(jettype){
@@ -202,11 +228,11 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   AliTrackContainer *tracks(nullptr);
   AliClusterContainer *clusters(nullptr);
   if(jettype == AliJetContainer::kChargedJet || jettype == AliJetContainer::kFullJet) {
-    tracks = task->AddTrackContainer("usedefault");
+    tracks = task->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
     tracks->SetMinPt(0.15);
   }
   if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kChargedJet){
-    clusters = task->AddClusterContainer("usedefault");
+    clusters = task->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
     clusters->SetClusHadCorrEnergyCut(0.3);
   }
