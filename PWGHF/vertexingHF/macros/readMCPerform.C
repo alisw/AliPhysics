@@ -45,8 +45,9 @@ void readMCPerform(TString filename="QAresults_AOD.root", Int_t drawOnlyDzerDplu
     return;
   }
   TList *listD2H = (TList *)dirD2H->Get("nEntriesQA");
+  if(!listD2H) listD2H = (TList *)dirD2H->Get("nEntriesQAD0");
   if(!listD2H){
-    printf("TList nEntriesQA not found in file %s\n",filename.Data());
+    printf("TList nEntriesQA and nEntriesQAD0 not found in file %s\n",filename.Data());
     return;  
   }
   TH1F *hNentries = (TH1F *)listD2H->FindObject("hNentries");
