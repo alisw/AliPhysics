@@ -5929,8 +5929,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17j5e") ==0 )      return kPP13T17P1Pyt8Str;
   else if ( namePeriod.CompareTo("LHC17h3") == 0 )      return kPP13T17P1Pyt8LowB;
   // XeXe 5.44 TeV 2017 MB MC
-  else if ( namePeriod.CompareTo("LHC17j7") == 0 )      return kXeXe5T17HIJING;
-
+  else if ( namePeriod.CompareTo("LHC17j7") == 0 ||
+            namePeriod.CompareTo("LHC18d2") == 0 ||
+            namePeriod.CompareTo("LHC18d2_1") == 0 ||
+            namePeriod.CompareTo("LHC18d2_2") == 0 ||
+            namePeriod.CompareTo("LHC18d2_3") == 0 )    return kXeXe5T17HIJING;
 
   // data starts here
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||
