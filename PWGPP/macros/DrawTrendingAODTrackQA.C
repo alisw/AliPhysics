@@ -93,6 +93,7 @@ Bool_t DrawTrendingAODTrackQA(TString mergedTrendFile = "trending.root",
   }
   legfb->Draw();
   cFBfrac->SaveAs("TrendFracTrackPerFiltBit.png");
+  cFBfrac->SaveAs("TrendFracTrackPerFiltBit.root");
 
   TCanvas* cFBpt=new TCanvas("cFBpt","Filt bit <pt>",1200,900);
   first=kTRUE;
@@ -121,6 +122,7 @@ Bool_t DrawTrendingAODTrackQA(TString mergedTrendFile = "trending.root",
   }
   legfb->Draw();
   cFBpt->SaveAs("TrendAverPtPerFiltBit.png");
+  cFBpt->SaveAs("TrendAverPtPerFiltBit.root");
 
   TCanvas* cME=new TCanvas("cME","MatchEff",1200,900);
   cME->Divide(1,3);
@@ -177,6 +179,7 @@ Bool_t DrawTrendingAODTrackQA(TString mergedTrendFile = "trending.root",
   cME->cd(1);
   legME->Draw();
   cME->SaveAs("TrendMatchingEff.png");
+  cME->SaveAs("TrendMatchingEff.root");
 
   return kTRUE;
 
