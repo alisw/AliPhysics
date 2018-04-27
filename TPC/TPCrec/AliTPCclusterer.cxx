@@ -1564,6 +1564,7 @@ Int_t AliTPCclusterer::ReadHLTClusters()
 
         // check if the charge is above the required minimum
         if (maxCharge<minMaxCutAbs)         keepCluster = false;
+	if (cluster->GetQ() < 0) keepCluster = false;
         if (maxCharge<minMaxCutSigma*noise) keepCluster = false;
 	}
 	if (!keepCluster) {
