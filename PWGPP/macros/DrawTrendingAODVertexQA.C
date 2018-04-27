@@ -7,12 +7,12 @@
 #include <TLegendEntry.h>
 #endif
 
-// Macro to draw the trending information from the output of PlotAODtrackQA.C
+// Macro to draw the trending information from the output of PlotAODvertexQA.C
 
 TH1F* CreateHisto(TString nam, Int_t tote);
 
 Bool_t DrawTrendingAODVertexQA(TString mergedTrendFile = "trending.root", 
-				    TString treename="trendingVert"){
+			       TString treename="trendingVert"){
 
   TFile *fin = TFile::Open(mergedTrendFile.Data());
   if(!fin){
