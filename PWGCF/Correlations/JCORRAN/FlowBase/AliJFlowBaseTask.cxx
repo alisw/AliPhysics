@@ -162,7 +162,7 @@ void AliJFlowBaseTask::UserExec(Option_t* /*option*/)
 				double EPref = fEventPlaneALICE[D_V0A][iH-2];
 				double EP = fEventPlaneALICE[newDetID[di]][iH-2];
 				fhistos->fhEPCorrInHar[fCBin][newDetID[di]][iH-2]->Fill( EP-EPref );
-				fhistos->fhEPCorr2D[fCBin][newDetID[di]][iH-2]->Fill(EP,EPref);
+				//fhistos->fhEPCorr2D[fCBin][newDetID[di]][iH-2]->Fill(EP,EPref);
 			}
 		}
 	}
@@ -240,7 +240,7 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 			double EPref = QvectorsEP[D_V0A][iH-2].Theta()/double(iH);
 			double EP = QvectorsEP[is][iH-2].Theta()/double(iH);
 			fhistos->fhEPCorrInHar[fCBin][is][iH-2]->Fill( EP-EPref );
-			fhistos->fhEPCorr2D[fCBin][is][iH-2]->Fill(EPref,EP);
+			//fhistos->fhEPCorr2D[fCBin][is][iH-2]->Fill(EPref,EP);
 		}
 	}
 
