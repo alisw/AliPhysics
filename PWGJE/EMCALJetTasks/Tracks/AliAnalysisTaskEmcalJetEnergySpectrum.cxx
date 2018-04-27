@@ -187,6 +187,17 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   task->SetIsMC(isMC);
   mgr->AddTask(task);
 
+  auto contains = [](const std::string &str, const std::string &test) {
+    return str.find(test) != std::string::npos;
+  };
+
+  std::string trgstr(trigger);
+  if(contains(trgstr, "INT7")) task->SetTriggerSelection(AliVEvent::kINT7, "INT7");
+  else if(contains(trgstr, "EJ1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ1");
+  else if(contains(trgstr, "EJ2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ2");
+  else if(contains(trgstr, "EG1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EG1");
+  else if(contains(trgstr, "EG2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EG2");
+
   // Connect particle and cluster container
   AliTrackContainer *tracks(nullptr);
   AliClusterContainer *clusters(nullptr);
