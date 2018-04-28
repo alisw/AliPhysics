@@ -123,7 +123,7 @@ private:
 	Double_t fQC_eta_gap_half;
 
 	TComplex QvectorQC[kNH][nKL];
-	TComplex QvectorQCeta10[kNH][2]; // ksub
+	TComplex QvectorQCeta10[kNH][nKL][2]; // ksub
 
 	//TH1D *h_phi_module[CENTN][2]; //7 // cent, isub
 

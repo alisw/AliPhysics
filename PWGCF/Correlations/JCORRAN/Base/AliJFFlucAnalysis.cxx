@@ -69,7 +69,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis()
 	fEta_max = 0;
 	fQC_eta_cut_min = -0.8; // default setting
 	fQC_eta_cut_max = 0.8; // default setting
-	fQC_eta_gap_half = 0.5;
+	fQC_eta_gap_half = 0.4;
 	fImpactParameter = -1;
 }
 
@@ -114,7 +114,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name)
 	fEta_max = 0;
 	fQC_eta_cut_min = -0.8; // default setting
 	fQC_eta_cut_max = 0.8; // default setting
-	fQC_eta_gap_half = 0.5;
+	fQC_eta_gap_half = 0.4;
 	fImpactParameter = -1;
 }
 
@@ -551,13 +551,13 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	TComplex M = Q(0,1);
 	Double_t qcn4 = (M*(M-TComplex(1,0))*(M-TComplex(2,0))*(M-TComplex(3,0)));
 	Double_t qcn = (M*(M-TComplex(1,0))).Re();
-	Double_t qcn_10 = (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
+	Double_t qcn_10 = (QvectorQCeta10[0][1][kSubA]*QvectorQCeta10[0][1][kSubB]).Re();
 	Double_t qw1_4 = 1.0, qw1 = 1.0, qw1_10 = 1.0, qw2_10 = 1.0;
 	if(flags & FLUC_EBE_WEIGHTING){
 		qw1_4 = qcn4;
 		qw1 = qcn;
 		qw1_10 = qcn_10;
-		qw2_10 = qcn_10*((QvectorQCeta10[0][kSubA]-TComplex(1,0))*(QvectorQCeta10[0][kSubB]-TComplex(1,0))).Re();
+		qw2_10 = qcn_10*((QvectorQCeta10[0][1][kSubA]-TComplex(1,0))*(QvectorQCeta10[0][1][kSubB]-TComplex(1,0))).Re();
 	}
 
 	TComplex corr10[kNH][nKL];
@@ -567,7 +567,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		four[ih] = ((Q(ih,1)*Q(ih,1)*Q(-ih,1)*Q(-ih,1)+Q(2*ih,1)*Q(-2*ih,1)-TComplex(2,0)*(Q(2*ih,1)*Q(-ih,1)*Q(-ih,1)).Re())
 			-2.0*(2.0*(M-TComplex(2,0))*(Q(ih,1)*Q(-ih,1))-M*(M-TComplex(3,0))))/qcn4;
 		two[ih] = (Q(ih,1)*Q(-ih,1)-M)/(M*(M-TComplex(1,0)));
-		two_eta10[ih] = (QvectorQCeta10[ih][kSubA]*TComplex::Conjugate(QvectorQCeta10[ih][kSubB])) / qcn_10;
+		two_eta10[ih] = (QvectorQCeta10[ih][1][kSubA]*TComplex::Conjugate(QvectorQCeta10[ih][1][kSubB])) / qcn_10;
 
 		corr[ih][1] = two[ih];
 		corr10[ih][1] = two_eta10[ih];
@@ -605,7 +605,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 	if(flags & FLUC_EBE_WEIGHTING){
 		event_weight_four = Four(0,0,0,0).Re();
 		event_weight_two = Two(0,0).Re();
-		event_weight_two_eta10 = (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
+		event_weight_two_eta10 = (QvectorQCeta10[0][1][kSubA]*QvectorQCeta10[0][1][kSubB]).Re();
 	}
 
 	for(int ih=2; ih < kNH; ih++){
@@ -627,7 +627,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 		// fill single vn  with QC without EtaGap as method 2
 		fSingleVn[ih][2] = TMath::Sqrt(sctwo.Re());
 		
-		TComplex sctwo10 = (QvectorQCeta10[ih][kSubA]*TComplex::Conjugate(QvectorQCeta10[ih][kSubB])) / (QvectorQCeta10[0][kSubA]*QvectorQCeta10[0][kSubB]).Re();
+		TComplex sctwo10 = (QvectorQCeta10[ih][1][kSubA]*TComplex::Conjugate(QvectorQCeta10[ih][1][kSubB])) / (QvectorQCeta10[0][1][kSubA]*QvectorQCeta10[0][1][kSubB]).Re();
 		fh_SC_with_QC_2corr_eta10[ih][fCBin]->Fill( sctwo10.Re(), event_weight_two_eta10 );
 		// fill single vn with QC method with Eta Gap as method 1
 		fSingleVn[ih][1] = TMath::Sqrt(sctwo10.Re());
@@ -855,10 +855,11 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 	// calcualte Q-vector for QC method ( no subgroup )
 	//init
 	for(int ih=0; ih<kNH; ih++){
-		for(int ik=0; ik<nKL; ++ik)
-			QvectorQC[ih][ik] = TComplex(0, 0);
-		for(int isub=0; isub<2; isub++){
-			QvectorQCeta10[ih][isub] = TComplex(0, 0);
+		for(int ik=0; ik<nKL; ++ik){
+			QvectorQC[ih][ik] = TComplex(0,0);
+			for(int isub=0; isub<2; isub++){
+				QvectorQCeta10[ih][ik][isub] = TComplex(0,0);
+			}
 		}
 	} // for max harmonics
 	//Calculate Q-vector with particle loop
@@ -896,11 +897,12 @@ void AliJFFlucAnalysis::CalculateQvectorsQC(){
 			for(int ik=0; ik<nKL; ik++){
 				q[ik] = TComplex(tf*TMath::Cos(ih*phi),tf*TMath::Sin(ih*phi));
 				QvectorQC[ih][ik] += q[ik];
+
+				//this is for normalized SC ( denominator needs an eta gap )
+				if(TMath::Abs(eta) > fQC_eta_gap_half)
+					QvectorQCeta10[ih][ik][isub] += q[ik];
+
 				tf *= 1.0/(phi_module_corr*effCorr);
-			}
-			//this is for normalized SC ( denominator needs an eta gap )
-			if(TMath::Abs(eta) > fQC_eta_gap_half){
-				QvectorQCeta10[ih][isub] += q[1];
 			}
 		}
 	} // track loop done.
