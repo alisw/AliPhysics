@@ -205,7 +205,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   };
 
   std::stringstream tag, outfilename;
-  tag << jettypestring << "_R" << std::setw(2) << std::setfill('0') << radius << "_" << trigger;
+  tag << jettypestring << "_R" << std::setw(2) << std::setfill('0') << int(radius * 10.) << "_" << trigger;
   if(strlen(suffix)) {
     tag << "_" << suffix;
   }
