@@ -38,8 +38,8 @@ public:
 	virtual void InitSelectionHistograms();
 	
 protected:
+	virtual void SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags);
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
-	virtual void FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags);
 
 	AliPP13TagAndProbeSelection(const AliPP13TagAndProbeSelection &);
 	AliPP13TagAndProbeSelection & operator = (const AliPP13TagAndProbeSelection &);

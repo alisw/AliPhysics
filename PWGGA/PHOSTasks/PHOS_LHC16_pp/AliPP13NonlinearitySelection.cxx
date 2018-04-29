@@ -14,19 +14,13 @@ using namespace std;
 
 ClassImp(AliPP13NonlinearitySelection);
 
-
 //________________________________________________________________
-void AliPP13NonlinearitySelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
+void AliPP13NonlinearitySelection::SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags)
 {
-	(void) pool;
-	// Ensure that we are not doing mixing
-	EventFlags flags = eflags;
-	flags.isMixing = kFALSE;
+	// NB: Nonlinearity is a function of photon energy
+	//     therefore the histograms should be filled for each photon.
 
-	// Select photons
-	TObjArray photonCandidates;
-	SelectPhotonCandidates(clusArray, &photonCandidates, flags);
-
+	// Int_t counter = 0;
 	// Consider N^2 - N combinations, excluding only same-same clusters.
 	for (Int_t i = 0; i < photonCandidates.GetEntriesFast(); ++i)
 	{
@@ -41,8 +35,7 @@ void AliPP13NonlinearitySelection::FillPi0Mass(TObjArray * clusArray, TList * po
 			ConsiderPair(first, second, flags);
 		} // second cluster loop
 	} // cluster loop
-
-	MixPhotons(photonCandidates, pool, flags);
+	// Int_t Nn = photonCandidates.GetEntriesFast();
 }
 
 //________________________________________________________________
@@ -74,7 +67,6 @@ void AliPP13NonlinearitySelection::ConsiderPair(const AliVCluster * c1, const Al
 	
 	fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.Pt(), weight);	
 }
-
 
 //________________________________________________________________
 void AliPP13NonlinearitySelection::InitSelectionHistograms()

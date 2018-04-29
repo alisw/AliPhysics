@@ -29,13 +29,14 @@ public:
 	virtual void FillAll(Int_t sm1, Int_t sm2, Float_t x, Float_t y = 1.0);
 	virtual void FillModules(Int_t sm1, Int_t sm2, Float_t x, Float_t y = 1.0);
 
-	virtual void FillAll(Int_t sm1, Int_t sm2, Float_t x, Float_t y, Float_t);
-	virtual void FillModules(Int_t sm1, Int_t sm2, Float_t x, Float_t y, Float_t);
+	virtual void FillAll(Int_t sm1, Int_t sm2, Float_t x, Float_t y, Float_t z);
+	virtual void FillModules(Int_t sm1, Int_t sm2, Float_t x, Float_t y, Float_t z);
 
 	virtual TString Title(TString title, Int_t i) const;
 	virtual TString Title(TString title, Int_t i, Int_t j) const;
 
 protected:
+	virtual void FillHist(TH1 * hist, Float_t x, Float_t y, Float_t z);
 	virtual Int_t Index(Int_t sm1, Int_t sm2) const;
 
 
