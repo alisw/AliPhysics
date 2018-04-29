@@ -9,10 +9,11 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 		const char *taskname           	= "AliAnalysisTaskBJetTC",
 		const char *njetsMC             = "Jets",
 		const char *nrhoMC              = "RhoMC",
-		Bool_t V0PhotonRejection 	= kFALSE,
+		Bool_t DoSVAnalysis		= kFALSE,
 		Bool_t DoPtRelAna		= kFALSE,
 		Bool_t DoJetProb 		= kFALSE,
 		TString pathToResolFunc		= "",
+		Bool_t V0PhotonRejection 	= kFALSE,
   		Int_t       ptHardBin           = -999,
 		const char* suffix 		= "")
 {
@@ -37,7 +38,7 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 	}
 
 
-
+	TString V0ReaderName = "";
   	if(V0PhotonRejection){
 
 		  //=========  Set Cutnumber for V0Reader ================================
@@ -49,7 +50,7 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 		  Bool_t doEtaShift = kFALSE;
 		  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 		  //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-		  TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
+		  V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
 		  if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
 			AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1(V0ReaderName.Data());
 		    fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
@@ -57,14 +58,14 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 		    fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
 		    if (!mgr) {
 		      Error("AddTask_V0ReaderV1", "No analysis manager found.");
-		      return;
+		      return NULL;
 		    }
 
 		    AliConvEventCuts *fEventCuts=NULL;
 		    if(cutnumberEvent!=""){
 		      fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
 		      fEventCuts->SetPreSelectionCutFlag(kTRUE);
-		      fEventCuts->SetPeriodEnumExplicit(AliConvEventCuts::kLHC16q);
+		      fEventCuts->SetPeriodEnumExplicit(AliConvEventCuts::kLHC16qt);
 		      fEventCuts->SetV0ReaderName(V0ReaderName);
 		      fEventCuts->SetLightOutput(kTRUE);
 		      if(fEventCuts->InitializeCutsFromCutString(cutnumberEvent.Data())){
@@ -172,6 +173,9 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 
 	jetTask->SetIsPythia(isMC);
 
+	jetTask->SetDoSVAnalysis(DoSVAnalysis);
+	jetTask->SetDoTCAnalysis(kTRUE);
+
         if(V0PhotonRejection) jetTask->SetV0ReaderName(V0ReaderName);
 
 
@@ -188,7 +192,6 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 	//-------------------------------------------------------
 
 	mgr->AddTask(jetTask);
-
 
 	// Create containers for input/output
 	AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
