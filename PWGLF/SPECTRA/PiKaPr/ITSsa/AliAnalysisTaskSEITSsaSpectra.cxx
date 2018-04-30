@@ -915,7 +915,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
     fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
 
     if (fFillNtuple) {
-      float xnt[15];
+      float xnt[16];
       int index = 0;
       /*1 */ xnt[index++] = (float)fEvtMult;
       /*2 */ xnt[index++] = (float)track->GetP();
@@ -1645,7 +1645,7 @@ void AliAnalysisTaskSEITSsaSpectra::AnalyseMCParticles(AliMCEvent *lMCevent, EEv
       xntMC[indexMC++] = (float)mcEta;
       xntMC[indexMC++] = (float)mcRap;
       xntMC[indexMC++] = (float)lIsPhysPrimary;
-      xntMC[indexMC++] = (float)lastEvtCutPassed;
+      //xntMC[indexMC++] = (float)lastEvtCutPassed;
       xntMC[indexMC++] = (float)fESD->GetRunNumber();
 
       fNtupleMC->Fill(xntMC);
