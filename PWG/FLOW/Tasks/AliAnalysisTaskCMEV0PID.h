@@ -513,10 +513,16 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
 
 
-  TH1D           *fFB_Efficiency_Cent[10];   //!   for charge
-  TH1D      *fFB_Efficiency_Pion_Cent[10];   //!   
-  TH1D      *fFB_Efficiency_Kaon_Cent[10];   //!   
-  TH1D    *fFB_Efficiency_Proton_Cent[10];   //!   
+  TH1D           *fFB_Efficiency_Cent[10];    //!   for charge
+  TH1D      *fFB_Efficiency_Pion_Cent[10];    //!   
+  TH1D      *fFB_Efficiency_Kaon_Cent[10];    //!   
+//TH1D    *fFB_Efficiency_Proton_Cent[10];    //!   
+  TH1D    *fFB_Efficiency_Proton_Pos_Cent[10];   //!   
+  TH1D    *fFB_Efficiency_Proton_Neg_Cent[10];   //!  
+
+
+
+
 
 
   //--------- PileUp Functions -----------
