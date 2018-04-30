@@ -23,7 +23,7 @@
 #include "AliJetContainer.h"
 #include "AliPicoTrack.h"
 #include "TMath.h"
-#include "AliAnalysisTaskBJetTCV1.h"
+#include "AliAnalysisTaskBJetTC.h"
 #include "AliExternalTrackParam.h"
 #include "AliVertexerTracks.h"
 #include "AliHFJetsTagging.h"
