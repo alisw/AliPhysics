@@ -81,7 +81,6 @@ GenFunc AliGenITSULib::GetPt(Int_t iPID, const char * sForm) const
   AliError(Form("Unknown Pt distribution %s. Pt distribution is set to 0 ",sForm));
   func=0;
  }
- printf("returning function pointer %p \n", func);
  return func;
 }
 
