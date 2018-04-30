@@ -20,7 +20,7 @@ class AliPP13EpRatioSelection : public AliPP13PhotonSelection
 public:
 	AliPP13EpRatioSelection():
 		AliPP13PhotonSelection(),
-		fEpP(),
+		fEpE(),
 		fEpPt(),
 		fPosition(),
 		fTPCSignal()
@@ -29,7 +29,7 @@ public:
 	AliPP13EpRatioSelection(const char * name, const char * title, AliPP13ClusterCuts cuts,
 		AliPP13SelectionWeights * w):
 		AliPP13PhotonSelection(name, title, cuts, w),
-		fEpP(),
+		fEpE(),
 		fEpPt(),
 		fPosition(),
 		fTPCSignal()
@@ -41,8 +41,8 @@ public:
 		// delete [] fInvariantMass;
 		for(Int_t i = 0; i < 2; ++i)
 		{
-			if (fEpP[i]) 
-				delete fEpP[i];
+			if (fEpE[i]) 
+				delete fEpE[i];
 
 			if (fEpPt[i]) 
 				delete fEpPt[i];
@@ -70,7 +70,7 @@ protected:
 	AliPP13EpRatioSelection(const AliPP13EpRatioSelection &);
 	AliPP13EpRatioSelection & operator = (const AliPP13EpRatioSelection &);
 private:
-	AliPP13DetectorHistogram * fEpP[2]; //!
+	AliPP13DetectorHistogram * fEpE[2]; //!
 	AliPP13DetectorHistogram * fEpPt[2]; //!
 	AliPP13DetectorHistogram * fPosition[4]; //!
 	TH2 * fTPCSignal[4]; //!

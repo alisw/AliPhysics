@@ -37,12 +37,12 @@ void AliPP13EpRatioSelection::InitSelectionHistograms()
 		const char * species = (i == 0) ? "Electrons" : "Non-Electron";
 
 		TH2 * patternP = new TH2F(
-		    Form("hEp%sP", species),
-		    "E/p ratio vs. E_{cluster}, ; E/p; E^{track} ,GeV",
+		    Form("hEp%sE", species),
+		    "E/p ratio vs. E^{cluster}, ; E/p; E^{track} ,GeV",
 		    nM, mMin, mMax, nPt, ptMin, ptMax
 		);
 
-		fEpP[i] = new AliPP13DetectorHistogram(
+		fEpE[i] = new AliPP13DetectorHistogram(
 		    patternP,
 		    fListOfHistos,
 		    AliPP13DetectorHistogram::kModules
@@ -50,7 +50,7 @@ void AliPP13EpRatioSelection::InitSelectionHistograms()
 
 		TH2 * patternPt = new TH2F(
 		    Form("hEp%sP", species),
-		    "E/p ratio vs. E_{cluster}, ; E/p; p_{T}^{track} ,GeV/c",
+		    "E/p ratio vs. p_{T}^{cluster}, ; E/p; p_{T}^{track} ,GeV/c",
 		    nM, mMin, mMax, nPt, ptMin, ptMax
 		);
 
@@ -61,7 +61,7 @@ void AliPP13EpRatioSelection::InitSelectionHistograms()
 		);
 	}
 
-	fTPCSignal[0] = new TH2F("hEpRatioNSigmaElectron", "E/p ratio vs. N_{#sigma}^{e}; E/p; n#sigma^{e}", nM, mMin, mMax, 20, -5, 5);
+	fTPCSignal[0] = new TH2F("hEpRatioNSigmaElectron", "E/p ratio vs. N_{#sigma}^{electron}; E/p; n#sigma^{electron}", nM, mMin, mMax, 20, -5, 5);
 	fTPCSignal[1] = new TH2F("hTPCSignal_Electron", "TPC dE/dx vs. electron momentum; p^{track}, GeV/c; dE/dx, a.u.", 40, 0, 20, 200, 0, 200);
 	fTPCSignal[2] = new TH2F("hTPCSignal_Non-Electron", "TPC dE/dx vs. non-electron momentum; p^{track}, GeV/c; dE/dx, a.u.", 40, 0, 20, 200, 0, 200);
 	fTPCSignal[3] = new TH2F("hTPCSignal_All", "TPC dE/dx vs. all particles momentum; p^{track}, GeV/c; dE/dx, a.u.", 40, 0, 20, 200, 0, 200);
@@ -161,7 +161,7 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 
 	if (isElectron)
 	{
-		fEpP[0]->FillAll(sm, sm, EpRatio, energy);
+		fEpE[0]->FillAll(sm, sm, EpRatio, energy);
 		fEpPt[0]->FillAll(sm, sm, EpRatio, trackPt);
 		fTPCSignal[2]->Fill(trackP, dEdx);
         if(0.8 < energy / trackP && energy / trackP < 1.2) 
@@ -169,7 +169,7 @@ void AliPP13EpRatioSelection::FillClusterHistograms(const AliVCluster * cluster,
 	}
 	else if (nSigma < -3 || 5 < nSigma)
 	{
-		fEpP[1]->FillAll(sm, sm, EpRatio, energy);
+		fEpE[1]->FillAll(sm, sm, EpRatio, energy);
 		fEpPt[1]->FillAll(sm, sm, EpRatio, trackPt);
 		fTPCSignal[3]->Fill(trackP, dEdx);
 	}
