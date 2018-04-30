@@ -63,7 +63,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
   //
   //
   //________________________________________________________________________
-  AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra()
+  AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra(bool __def_prior, bool __fill_ntuple)
   : AliAnalysisTaskSE("TaskITSsaSpectra"),
     fESD(NULL),
     fITSPidParams(NULL),
@@ -124,10 +124,10 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
     fNSigmaDCAz(7.),
     fYear(2010),
     fPidMethod(kMeanCut),
-    fUseDefaultPriors(kTRUE),
+    fUseDefaultPriors(__def_prior),
+    fFillNtuple(__fill_ntuple),
     fIsMC(kFALSE),
     fIsNominalBfield(kTRUE),
-    fFillNtuple(kFALSE),
     fFillIntDistHist(kFALSE),
     fRandGener(0x0),
     fSmearMC(kFALSE),
@@ -214,9 +214,14 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
   fHistMCNegPrHypKaon = NULL;
   fHistMCNegPrHypProt = NULL;
 
+  //Define input
   DefineInput(0, TChain::Class());
+  if (!fUseDefaultPriors) DefineInput(1, TList::Class());
+
+  //Define output
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
+  if (fFillNtuple) DefineOutput(3, TList::Class());
   AliInfo("End of AliAnalysisTaskSEITSsaSpectra");
 }
 
@@ -637,13 +642,12 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects()
     fListTree = new TList();
     fListTree->SetOwner();
 
-    fNtupleData = new TNtuple("fNtupleData", "fNtupleData", "mult:p:pt:s0:s1:s2:s3:dEdx:sign:eta:dcaXY:dcaZ:clumap");
+    fNtupleData = new TNtuple("fNtupleData", "fNtupleData", "mult:p:pt:s0:s1:s2:s3:dEdx:sign:eta:dcaXY:dcaZ:clumap:MCisph:MCdpg:MCpt");
     fListTree->Add(fNtupleData);
     fNtupleMC = new TNtuple("fNtupleMC", "fNtupleMC", "mult:mcPt:pdgcode:sign:mcEta:mcRap:isph:run");
     fListTree->Add(fNtupleMC);
-  }
-  if (fFillNtuple)
     PostData(3, fListTree);
+  }
 
   AliInfo("End of CreateOutputObjects");
 }
@@ -709,14 +713,10 @@ void AliAnalysisTaskSEITSsaSpectra::CreateDCAcutFunctions()
 //
 //
 //________________________________________________________________________
-void AliAnalysisTaskSEITSsaSpectra::Init()
+void AliAnalysisTaskSEITSsaSpectra::Initialization()
 {
   // Initialization
   Printf("Inizializing Task, be sure to run after all configuration have been set...");
-  if (!fUseDefaultPriors)
-    DefineInput(1, TList::Class());
-  if (fFillNtuple)
-    DefineOutput(3, TList::Class());
   AliInfo("Tracks selections");
   AliInfoF(
     " y = yLab + %.3f,  Ymin %.1f, Ymax %.1f, Eabs %.1f, DCAxyCut %.1f, DCAzCut %.1f, Chi2 %.1f,   nSPD %d,   nPID %d",
@@ -915,7 +915,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
     fHistNTracks[i_chg]->Fill(fEvtMult, trkPt, trkSel);
 
     if (fFillNtuple) {
-      float xnt[12];
+      float xnt[15];
       int index = 0;
       /*1 */ xnt[index++] = (float)fEvtMult;
       /*2 */ xnt[index++] = (float)track->GetP();
@@ -931,6 +931,20 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *)
       /*12*/ xnt[index++] = (float)impactZ;
       /*13*/ xnt[index++] = (float)clumap;
 
+      float lMCpt = -999;
+      int lMCpdg = -999;
+      int lMCisph = -999;
+      if (fIsMC) {
+        int lMCtrk = TMath::Abs(track->GetLabel());
+        lMCisph=lMCevent->IsPhysicalPrimary(lMCtrk);
+
+        AliMCParticle *trkMC = (AliMCParticle *)lMCevent->GetTrack(lMCtrk);
+        lMCpdg = trkMC->PdgCode();
+        lMCpt =  trkMC->Pt();
+      }
+      /*14*/ xnt[index++] = (float)lMCisph;
+      /*15*/ xnt[index++] = (float)lMCpdg;
+      /*16*/ xnt[index++] = (float)lMCpt;
       fNtupleData->Fill(xnt);
     } else {
       // track PID aproach
