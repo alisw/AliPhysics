@@ -17,7 +17,7 @@ class AliGenITSULib :public AliGenLib {
 
  public:
 
-  enum EPartId {kLb=5122,kLc=4122,kXi_c = 4232,kBplus = 521,kBzero = 511,kDs=431,kDplus=411};
+  enum EPartId {kLb=5122,kLc=4122,kXi_c = 4232,kBplus = 521,kBzero = 511,kDs=431,kDplus=411, kOmega_ccc=4444};
 
   //Getters
     
@@ -40,8 +40,10 @@ class AliGenITSULib :public AliGenLib {
   static Int_t IpDsPlus(TRandom * /*ran*/)  {return     (int)kDs;}
   static Int_t IpDsMinus(TRandom * /*ran*/) {return    -(int)kDs;}
   static Int_t IpDPlus(TRandom * /*ran*/)   {return  (int)kDplus;}
-  static Int_t IpDMinus(TRandom * /*ran*/)  {return -(int)kDplus;}
+  static Int_t IpDMinus(TRandom * /*ran*/)  {return  -(int)kDplus;}
 
+  static Int_t IpOmegaccc(TRandom * /*ran*/);
+  
   static Double_t PtFlat(const Double_t * /*px*/, const Double_t * /*dummy*/) {return 1;}
   static Double_t YFlat (const Double_t * /*py*/, const Double_t * /*dummy*/) {return 1;}
 

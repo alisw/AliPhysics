@@ -73,7 +73,8 @@ AliGenParam::AliGenParam()
   fKeepParent(kFALSE),
   fKeepIfOneChildSelected(kFALSE),
   fPreserveFullDecayChain(kFALSE),
-  fPDGcode(0)
+  fPDGcode(0),
+  fIncFortran(-1)
 {
   // Default constructor
 }
@@ -101,7 +102,8 @@ AliGenParam::AliGenParam(Int_t npart, const AliGenLib * Library,  Int_t param, c
    fKeepParent(kFALSE),
    fKeepIfOneChildSelected(kFALSE),
    fPreserveFullDecayChain(kFALSE),
-   fPDGcode(0)
+   fPDGcode(0),
+   fIncFortran(-1)
 {
   // Constructor using number of particles parameterisation id and library
   fName     = "Param";
@@ -133,7 +135,8 @@ AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char
   fKeepParent(kFALSE),
   fKeepIfOneChildSelected(kFALSE),
   fPreserveFullDecayChain(kFALSE),
-  fPDGcode(0)
+  fPDGcode(0),
+  fIncFortran(-1)
 {
   // Constructor using parameterisation id and number of particles
   //
@@ -494,7 +497,12 @@ void AliGenParam::Init()
 	Fatal("AliGenParam",
               "No decayer attached");
   }
-
+  // For AliDecayerPythia based on FORTRAN there is a known inconsitency between the index returned by
+  // GetFirstDaughter(), GetLastDaughter(), GetMother() ... and the actual position in the C++ particle list.
+  // That's the reason whe the offset fIncFortran = -1 is needed in this case but not for decayers based on
+  // C++
+  
+  if (fDecayer->ClassName() != "AliDecayerPythia") fIncFortran=0;
   //Begin_Html
   /*
     <img src="picts/AliGenParam.gif">
@@ -508,7 +516,6 @@ void AliGenParam::Init()
   gROOT->GetListOfFunctions()->Remove(fPtPara);
   //  Set representation precision to 10 MeV
   Int_t npx= Int_t((fPtMax - fPtMin) / fDeltaPt);
-
   fPtPara->SetNpx(npx);
 
   snprintf(name, 256, "y-parameterisation  for %s", GetName());
@@ -770,9 +777,9 @@ void AliGenParam::GenerateN(Int_t ntimes)
 
             if(!fPreserveFullDecayChain){
               if (pFlag[i] == 1) {
-                ipF = iparticle->GetFirstDaughter();
-                ipL = iparticle->GetLastDaughter();
-                if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
+                ipF = iparticle->GetFirstDaughter() + fIncFortran;
+                ipL = iparticle->GetLastDaughter()  + fIncFortran;
+                if (ipF > 0) for (j=ipF; j<=ipL; j++) pFlag[j]=1;
                 continue;
               }
             }
@@ -785,9 +792,9 @@ void AliGenParam::GenerateN(Int_t ntimes)
               //  Double_t mass     = particle->Mass();
               //  Double_t width    = particle->Width();
               if (lifeTime > (Double_t) fMaxLifeTime) {
-                ipF = iparticle->GetFirstDaughter();
-                ipL = iparticle->GetLastDaughter();
-                if (ipF > 0) for (j=ipF-1; j<ipL; j++) pFlag[j]=1;
+                ipF = iparticle->GetFirstDaughter() + fIncFortran;
+                ipL = iparticle->GetLastDaughter()  + fIncFortran;
+                if (ipF > 0) for (j=ipF; j<=ipL; j++) pFlag[j]=1;
                     } else{
                 trackIt[i]     = 0;
                 pSelected[i]   = 1;

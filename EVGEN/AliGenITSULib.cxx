@@ -74,13 +74,13 @@ GenFunc AliGenITSULib::GetPt(Int_t iPID, const char * sForm) const
    case kBzero :    func=PtLbDist; break;
    case kDs    :    func=PtLcDist; break;
    case kDplus :    func=PtLcDist; break;
+   case kOmega_ccc: func=PtLbDist;   break;    
    default : AliError(Form("Unknown particle type: %i, Pt dist is 0",iPID));      func=0;
   } 
  }else {
   AliError(Form("Unknown Pt distribution %s. Pt distribution is set to 0 ",sForm));
   func=0;
  }
-
  return func;
 }
 
@@ -88,7 +88,7 @@ GenFunc AliGenITSULib::GetY(Int_t iPID, const char *sForm) const
 {
  GenFunc func;
 
- if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kBplus && TMath::Abs(iPID) != kBzero && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs) {
+ if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kBplus && TMath::Abs(iPID) != kBzero && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs  && TMath::Abs(iPID) != kOmega_ccc) {
   AliError(Form("Unknown PID: %i, form: %s, returning 0",iPID,sForm));   //////////	
   func=0;
  } else { 
@@ -103,7 +103,7 @@ GenFuncIp AliGenITSULib::GetIp(Int_t iPID, const char *sForm) const
  // Return pointer to particle type parameterisation
  GenFuncIp id;
 
- if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kBplus && TMath::Abs(iPID) != kBzero && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs) {
+ if(TMath::Abs(iPID) != kLc && TMath::Abs(iPID) != kLb && TMath::Abs(iPID) != kXi_c && TMath::Abs(iPID) != kBplus && TMath::Abs(iPID) != kBzero && TMath::Abs(iPID)!=kDplus && TMath::Abs(iPID)!=kDs && TMath::Abs(iPID)!=kOmega_ccc) {
   AliError(Form("Unknown PID: %i, form: %s, return 0",iPID,sForm));   //////////	
   id = 0;
  } else {
@@ -122,6 +122,7 @@ GenFuncIp AliGenITSULib::GetIp(Int_t iPID, const char *sForm) const
    case -kDs   :                                  return id=IpDsMinus;
    case kDplus :                                  return id=IpDPlus;
    case -kDplus:                                  return id=IpDMinus;
+   case  kOmega_ccc:                              return id=IpOmegaccc;
    default  : AliFatal(Form("Unknown particle type: %i",iPID));  id=0;
   }
 
@@ -129,3 +130,12 @@ GenFuncIp AliGenITSULib::GetIp(Int_t iPID, const char *sForm) const
 
  return id;
 }
+
+Int_t AliGenITSULib::IpOmegaccc(TRandom* ran)
+{
+  Int_t ip = 4444;
+  if (ran->Rndm() < 0.5) ip = -ip;
+  return ip;
+}
+
+

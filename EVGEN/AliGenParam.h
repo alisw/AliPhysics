@@ -104,8 +104,8 @@ protected:
   Bool_t      fKeepParent;   //  Store parent even if it does not have childs within cuts
   Bool_t      fKeepIfOneChildSelected; //Accept parent and child even if other children are not within cut.
   Bool_t      fPreserveFullDecayChain; //Prevent flagging(/skipping) of decay daughter particles; preserves complete forced decay chain
-
   Int_t       fPDGcode;                // PDG code in case of single particle injector
+  Int_t       fIncFortran;   // respect fortran counting in particle list (Pythia6)
 
 private:
   AliGenParam(const AliGenParam &Param);
