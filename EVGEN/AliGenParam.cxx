@@ -110,7 +110,6 @@ AliGenParam::AliGenParam(Int_t npart, const AliGenLib * Library,  Int_t param, c
   fTitle    = "Particle Generator using pT and y parameterisation";
   fAnalog   = kAnalog;
   SetForceDecay();
-  printf("have pointer %p \n", fPtParaFunc);
 }
 //____________________________________________________________
 AliGenParam::AliGenParam(Int_t npart, Int_t param, const char* tname, const char* name):
@@ -517,7 +516,6 @@ void AliGenParam::Init()
   gROOT->GetListOfFunctions()->Remove(fPtPara);
   //  Set representation precision to 10 MeV
   Int_t npx= Int_t((fPtMax - fPtMin) / fDeltaPt);
-  printf("and now it is %p \n", fPtPara);
   fPtPara->SetNpx(npx);
 
   snprintf(name, 256, "y-parameterisation  for %s", GetName());
