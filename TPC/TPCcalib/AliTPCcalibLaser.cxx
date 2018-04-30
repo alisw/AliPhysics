@@ -647,11 +647,15 @@ void AliTPCcalibLaser::Process(AliVEvent * event) {
       delete seed;
       continue;
     }
+    seed->SetUniqueID(0); // flag as unused
     if (track&&seed&&track->GetTPCNcls()>kMinClusters && seed->GetNumberOfClusters() >kMinClusters) {
       //filter CE tracks
       Int_t id = FindMirror(track,seed);
       if (id>=0) counter++;
     }
+    if (!seed->GetUniqueID()) { // still unused, kill it
+      delete seed;
+    } 
     //
   } 
   fNtracks=counter;
@@ -1453,6 +1457,7 @@ Int_t  AliTPCcalibLaser::FindMirror(AliVTrack *track, AliTPCseed *seed){
     fTracksVParam.AddAt(param.Clone(),id);
     fTracksV.AddAt(track,id);
     fTracksTPC.AddAt(seed,id);
+    seed->SetUniqueID(id+1); // flag as used
   }
   return id;
 }
