@@ -39,9 +39,9 @@ AliAnalysisTaskChargedJetsHadronToy* AddTaskChargedJetsHadronToy(
     TH1* distMult = static_cast<TH1*>(fileInput->Get("Multiplicity"));
     TH1* distPhiEta = static_cast<TH1*>(fileInput->Get("PhiEta"));
 
-    TH2* distV2 = static_cast<TH1*>(fileInput->Get("v2_EP_PbPb"));
-    TH2* distV3 = static_cast<TH1*>(fileInput->Get("v3_EP_PbPb"));
-    TH2* distV4 = static_cast<TH1*>(fileInput->Get("v4_EP_PbPb"));
+    TH2* distV2 = static_cast<TH2*>(fileInput->Get("v2_EP_PbPb"));
+    TH2* distV3 = static_cast<TH2*>(fileInput->Get("v3_EP_PbPb"));
+    TH2* distV4 = static_cast<TH2*>(fileInput->Get("v4_EP_PbPb"));
 
     toyModel->SetDistributionMultiplicity(distMult);
     toyModel->SetDistributionPt(distPt);
