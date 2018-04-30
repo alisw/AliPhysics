@@ -1294,6 +1294,13 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
 	  isAcceptedTPC = kTRUE;
       
     }//kaon
+    else if( fParticleSpecies == 4){ //proton--
+      if( track->Pt() > 0.7 ){
+	if( pid[1] > -0.5 && pid[1] < fNSigmaMaxTPC ) isAcceptedTPC = kTRUE;
+      }
+      else 
+	if (TMath::Abs(pid[1]) < fNSigmaMaxTPC) isAcceptedTPC = kTRUE;
+    }
     else{
       
       if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
@@ -1310,14 +1317,21 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   }
   
   //--------------------------------ITS PID--------------------------
-  if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk) {
+  if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk){
     pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
-    if (TMath::Abs(pid[0]) < fNSigmaMaxITS) 
-      isAcceptedITS = kTRUE;
+    
+    if( fParticleSpecies == 4){ //proton--
+      if( track->Pt() > 0.7 ){
+	if( pid[0] > -1.0 && pid[0] < 2.5) isAcceptedITS = kTRUE;
+      }
+      else if (TMath::Abs(pid[0]) < fNSigmaMaxITS) isAcceptedITS = kTRUE;
+    }
+    else if(TMath::Abs(pid[0]) < fNSigmaMaxITS) isAcceptedITS = kTRUE;
     
     Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
-    if (TMath::Abs(pid[0]) > nSigma)
-      isAcceptedITS = kFALSE;
+    
+    if (TMath::Abs(pid[0]) > nSigma) isAcceptedITS = kFALSE;
+
   }
   
   
