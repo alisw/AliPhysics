@@ -498,9 +498,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *event);
       Bool_t    IsPileUpV0MTPCout(AliVEvent *event);
       Bool_t    VertexZCut(AliVEvent *event);
-      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& weight);
-      Float_t   GetPtHard(AliMCEvent *event);
-      void      GetXSectionAndNTrials(AliMCEvent *event, Float_t &XSection, Float_t &NTrials);
+      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, AliVEvent* event = 0x0);
+      Float_t   GetPtHard(AliMCEvent *mcEvent, AliVEvent* event = 0x0);
+      void      GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSection, Float_t &NTrials, AliVEvent* event = 0x0 );
       Float_t   GetMaxPtJet()                                                       { return fMaxPtJetMC                                        ; }
       Bool_t    MimicTrigger( AliVEvent *event,
                               Bool_t isMC );

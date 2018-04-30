@@ -112,6 +112,8 @@ AliJJtHistograms::AliJJtHistograms(AliJCard* cardP) :
   fhChargedEta(),
   fhLPeta(),
   fhChargedMult(),
+  fhCentr(),
+  fhiCentr(),
   fhZVert(),
   fhAcceptanceTraditional(),
   fhAcceptanceTraditional2D(),
@@ -215,6 +217,8 @@ AliJJtHistograms::AliJJtHistograms(const AliJJtHistograms& obj) :
   fhChargedEta(obj.fhChargedEta),
   fhLPeta(obj.fhLPeta),
   fhChargedMult(obj.fhChargedMult),
+  fhCentr(obj.fhCentr),
+  fhiCentr(obj.fhiCentr),
   fhZVert(obj.fhZVert),
   fhAcceptanceTraditional(obj.fhAcceptanceTraditional),
   fhAcceptanceTraditional2D(obj.fhAcceptanceTraditional2D),
@@ -693,6 +697,8 @@ void AliJJtHistograms::CreateEventTrackHistos(){
   fhChargedMult
       << TH1D("hChargedMult","", 300, 0., 3500.)
       << fCentBin << "END";
+  fhCentr      << TH1D("hCentr","centrality", 101, -0.5, 100.5) << "END";
+  fhiCentr         << TH1D("hiCentr","centrality",10, -0.5, 9.5) << "END";
   fhZVert
       << TH1D("hZVert", "", 100, -30., 30.)
       << fCentBin << "END";

@@ -2229,8 +2229,8 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
       }
     }
     //--------------------------------------------------------------
-    // DoPairsh1h2(lcentrality, fieldsign,fSphericityvalue);  
-    DoPairsh1h2(centralityBin, fieldsign,fSphericityvalue);  
+    DoPairsh1h2((Int_t)lcentrality, fieldsign,fSphericityvalue);  
+    //DoPairsh1h2(centralityBin, fieldsign,fSphericityvalue);  
   }
   // Post output data
   PostData(1, fOutputContainer);
