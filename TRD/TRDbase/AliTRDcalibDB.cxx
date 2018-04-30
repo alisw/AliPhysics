@@ -1115,8 +1115,14 @@ Int_t AliTRDcalibDB::GetOnlineGainTableID()
       if (tableNameTmp.Length() > 0) {
         if ((tableName.Length() > 0) &&
             (tableName != tableNameTmp)) {
-          AliFatal(Form("Inconsistent gain table names! %s - %s"
-                       ,tableName.Data(),tableNameTmp.Data()));
+	  if (fRun<285364 || fRun>=285621) {
+	    AliFatal(Form("Inconsistent gain table names! %s - %s"
+			  ,tableName.Data(),tableNameTmp.Data()));
+	  }
+	  else {
+	    AliError(Form("Inconsistent gain table names! %s (will be used) - %s"
+			  ,tableName.Data(),tableNameTmp.Data()));
+	  }
           continue; // maybe return -1;
         }
         tableName = tableNameTmp; // this contains the first entry found
