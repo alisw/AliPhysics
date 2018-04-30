@@ -970,7 +970,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     //Cluster loop//
     ////////////////
     Int_t nclus = -999;
+<<<<<<< HEAD
     nclus = fAOD->GetNumberOfCaloClusters();
+=======
+    nclus = fAOD->GetNumberOfCaloClusters;
+>>>>>>> 1c2c3d184cd2750f889110e043968b7839fdc1ca
     for (Int_t icl = 0; icl < nclus; icl++) {
         //ESD and AOD CaloCells carries the same information
         AliVCluster* clus = (AliAODCaloCluster*)fAOD->GetCaloCluster(icl);
@@ -1066,6 +1070,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         fTrkEta->Fill(track->Eta());
         fdEdx->Fill(track->GetTPCsignal());
         
+<<<<<<< HEAD
         if(kTruElec == kTRUE) fElecAftTrkCuts->Fill(track->Pt());
         if(kTruHFElec == kTRUE) fHFElecAftTrkCuts->Fill(track->Pt());
         if(kTruBElec == kTRUE) fBElecAftTrkCuts->Fill(track->Pt());
@@ -1077,6 +1082,13 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         //if(nsigma>-5.&&nsigma<-3.) {
             fHadronCamDCA->Fill(track->Pt(),d0z0[0]);
         //}
+=======
+        Double_t nsigma = -999;
+        nsigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+        if(nsigma>-5.&&nsigma<-3.) {
+            fHadronCamDCA->Fill(track->Pt(),d0z0[0]);
+        }
+>>>>>>> 1c2c3d184cd2750f889110e043968b7839fdc1ca
         
         ///////////////////////////
         // Match tracks to EMCal //
