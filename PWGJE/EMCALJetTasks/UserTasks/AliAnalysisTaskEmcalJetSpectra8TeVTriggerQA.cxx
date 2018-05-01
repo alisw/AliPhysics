@@ -174,12 +174,13 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::UserCreateOutputObjects()
     fOutput->Add(fHistJetPt);
     
     
-    UInt_t SparseBit = 0;// Bit Code from GetDimParams()
+   // UInt_t SparseBit = 0;// Bit Code from GetDimParams()
     
-    SparseBit = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 |  1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16;
-    fhnMBJetSpectra = NewTHnSparseF("fhnMBJetSpectra", SparseBit);
+ 
+    //SparseBit = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 |  1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16;
+    //fhnMBJetSpectra = NewTHnSparseF("fhnMBJetSpectra", SparseBit);
     //fhnMBJetSpectra->Sumw2();
-    fOutput->Add(fhnMBJetSpectra);
+   // fOutput->Add(fhnMBJetSpectra);
     
     if(fUseSumw2==0) {
         // =========== Switch on Sumw2 for all histos ===========
@@ -351,12 +352,31 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
     TString histname;
     TString histtitle;
     TString groupname;
+    Double_t pi = TMath::Pi();
     AliJetContainer* jetCont = 0;
     TIter next(&fJetCollArray);
+    UInt_t SparseBit = 0;// Bit Code from GetDimParams()
+    SparseBit = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 |  1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16;
+    
     while ((jetCont = static_cast<AliJetContainer*>(next()))) {
         groupname = jetCont->GetName();
         fHistManager.CreateHistoGroup(groupname);
+        
+        //histname = TString::Format("%s/fhnJetSparse", groupname.Data());
+        //histtitle = histname + TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histname.Data());
+        //fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data());
+        
+        
+        histname = TString::Format("%s/fhnJetSparse", groupname.Data());
+        histtitle = histname + ";Multiplicity;#it{p}_{T,jet}^{uncorr} (GeV/#it{c});#it{p}_{T,leading} (GeV/#it{c};#it{E}_{leading} (GeV);#eta_{jet};#phi_{jet};#it{F}_{cross};#it{z}_{leading};#it{A}_{jet};#it{NEF};#it{N}_{constit};it{N}_{neu};it{N}_{chrg}";
+        Int_t nbins13[13]  = {300, fNbins, fNbins, fNbins,24,72,20,20,20,20,100,100,100};
+        Double_t min13[13] = {0,fMinBinPt,fMinBinPt,fMinBinPt,-1.2, -0.5*pi,0,0,0,0,0,0,0};
+        Double_t max13[13] = {300,fMaxBinPt, fMaxBinPt, fMaxBinPt,1.2,1.5*pi,1,1,1,1,1,1,1};
+        fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data(), 13, nbins13, min13, max13, "s");
+        
+        
         for (Int_t cent = 0; cent < fNcentBins; cent++) {
+            
             histname = TString::Format("%s/histJetPt_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histname.Data());
             fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt, "s");
@@ -631,6 +651,9 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                 
             }
             
+            Double_t leadingtrackpT = 0.0;
+            Double_t leadingclusterE = 0.0;
+            
             AliVCluster* leadingCluster = jet->GetLeadingCluster();
             if(!leadingCluster) continue;
             AliTrackContainer * Globaltracks = static_cast<AliTrackContainer * >(GetParticleContainer("tracks"));
@@ -640,8 +663,12 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
             Double_t Numb = jet->N();
             Double_t NumbNeu = jet->Nn();
             Double_t NumbChrg = jet->Nch();
-            Double_t MBJetSparseFill[13]={TrackMultiplicity,jet->Pt(),jet->MaxTrackPt(),leadingCluster->E(),jet->Eta(),jet->Phi(),JetFCrossLeading,z,jet->Area(),jet->NEF(),Numb,NumbNeu,NumbChrg};
-            fhnMBJetSpectra->Fill(MBJetSparseFill);
+            //Double_t MBJetSparseFill[13]={TrackMultiplicity,jet->Pt(),jet->MaxTrackPt(),leadingCluster->E(),jet->Eta(),jet->Phi(),JetFCrossLeading,z,jet->Area(),jet->NEF(),Numb,NumbNeu,NumbChrg};
+            //fhnMBJetSpectra->Fill(MBJetSparseFill);
+            
+            Double_t x[13]={TrackMultiplicity,jet->Pt(),leadingtrackpT,leadingclusterE,jet->Eta(),jet->Phi(),JetFCrossLeading,z,jet->Area(),jet->NEF(),Numb,NumbNeu,NumbChrg};
+            histname = TString::Format("%s/fhnJetSparse", groupname.Data());
+            fHistManager.FillTHnSparse(histname, x);
             
             if (jetCont->GetRhoParameter()) {
                 histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), fCentBin);

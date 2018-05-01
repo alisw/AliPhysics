@@ -80,6 +80,9 @@ class AliEMCALGeometry;
 class AliEMCALRecoUtils;
 class AliESDCaloCluster;
 class AliVTrack;
+class AliMCEvent;
+class AliAODEvent;
+class AliESDEvent;
 
 /**
  * \class AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA
