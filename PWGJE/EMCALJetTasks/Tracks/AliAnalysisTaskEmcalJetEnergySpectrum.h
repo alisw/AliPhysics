@@ -28,6 +28,7 @@
 #define __ALINANLYSISTASKJETENERGYSPECTRUM_H__
 
 #include "AliAnalysisTaskEmcalJet.h"
+#include <vector>
 
 class THistManager;
 
@@ -35,6 +36,20 @@ namespace EmcalTriggerJets {
 
 class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet {
 public:
+  enum TriggerCluster_t {
+    kTrgClusterANY,
+    kTrgClusterCENT,
+    kTrgClusterCENTNOTRD,
+    kTrgClusterCALO,
+    kTrgClusterCALOFAST,
+    kTrgClusterCENTBOTH,
+    kTrgClusterOnlyCENT,
+    kTrgClusterOnlyCENTNOTRD,
+    kTrgClusterCALOBOTH,
+    kTrgClusterOnlyCALO,
+    kTrgClusterOnlyCALOFAST,
+    kTrgClusterN
+  };
   AliAnalysisTaskEmcalJetEnergySpectrum();
   AliAnalysisTaskEmcalJetEnergySpectrum(const char *name);
   virtual ~AliAnalysisTaskEmcalJetEnergySpectrum();
@@ -55,7 +70,7 @@ protected:
   virtual void UserCreateOutputObjects();
   virtual bool Run();
   bool TriggerSelection() const;
-  Int_t GetTriggerClusterIndex(const TString &triggerstring) const;
+  std::vector<TriggerCluster_t> GetTriggerClusterIndices(const TString &triggerstring) const;
   bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
 
 private:
