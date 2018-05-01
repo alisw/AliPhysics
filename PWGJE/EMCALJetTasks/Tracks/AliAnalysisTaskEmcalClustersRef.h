@@ -67,6 +67,21 @@ public:
     kHadCorrEnergy        ///< Energy corrected for the hadronic contribution
   };
 
+  enum TriggerCluster_t {
+    kTrgClusterANY,
+    kTrgClusterCENT,
+    kTrgClusterCENTNOTRD,
+    kTrgClusterCENTBOTH,
+    kTrgClusterOnlyCENT,
+    kTrgClusterOnlyCENTNOTRD,
+    kTrgClusterCALO,
+    kTrgClusterCALOFAST,
+    kTrgClusterCALOBOTH,
+    kTrgClusterOnlyCALO,
+    kTrgClusterOnlyCALOFAST,
+    kTrgClusterN
+  };
+
   /**
    * @brief Dummy (I/O) constructor
    */
@@ -198,7 +213,7 @@ protected:
    */
   void GetPatchBoundaries(AliEMCALTriggerPatchInfo &o, Double_t *boundaries) const;
 
-  void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, double clustertime, int ncell, const TList *triggerpatches, int energycomp);
+  void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerpatches, int energycomp);
 
   /**
    * @brief Check whether cluster is inside a trigger patch which has fired the trigger
@@ -221,6 +236,7 @@ protected:
   Bool_t                              fDoFillMultiplicityHistograms;    ///< Swich for multiplcity histograms
   Bool_t                              fUseExclusiveTriggers;      ///< Include exclusive triggers (without lower threshold triggers)
   AliCutValueRange<double>            fClusterTimeRange;          ///< Selected range on cluster time
+  std::vector<TriggerCluster_t>       fTriggerClusters;           //!<! Detected trigger clusters for event
 
 private:
 
