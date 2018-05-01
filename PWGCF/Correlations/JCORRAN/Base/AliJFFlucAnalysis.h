@@ -54,7 +54,7 @@ public:
 	void SetEventTracksQA(unsigned int tpc, unsigned int glb){ fTPCtrks = (float)tpc; fGlbtrks = (float)glb;}
 	void SetEventFB32TracksQA(unsigned int fb32, unsigned int fb32tof){ fFB32trks = (float)fb32; fFB32TOFtrks = (float)fb32tof;}
 	
-	TComplex CalculateQnSP( double eta1, double eta2, int harmonics);
+	//TComplex CalculateQnSP( double eta1, double eta2, int harmonics);
 
 	TComplex Get_Qn_pt(double eta1, double eta2, int harmonics, int ipt, double pt_min, double pt_max);
 	double Get_QC_Vn( double QnA_real, double QnA_img, double QnB_real, double QnB_img);
@@ -64,7 +64,7 @@ public:
 	AliJEfficiency* GetAliJEfficiency() const{return fEfficiency;}
 
 	// new function for QC method //
-	void CalculateQvectorsQC();
+	void CalculateQvectorsQC(double, double);
 	TComplex Q(int n, int p);
 	TComplex Two( int n1, int n2);
 	TComplex Four( int n1, int n2, int n3, int n4);
@@ -93,9 +93,9 @@ public:
 
 	static int GetCentralityClass(Double_t);
 
-private:
 	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kH9, kNH}; //harmonics
 	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
+private:
 //#define kcNH kH9 //max N+1 to be 4-particle correlated
 
 	TClonesArray *fInputList;
@@ -123,7 +123,7 @@ private:
 	Double_t fQC_eta_gap_half;
 
 	TComplex QvectorQC[kNH][nKL];
-	TComplex QvectorQCeta10[kNH][2]; // ksub
+	TComplex QvectorQCeta10[2][kNH][nKL]; // ksub
 
 	//TH1D *h_phi_module[CENTN][2]; //7 // cent, isub
 
@@ -151,11 +151,11 @@ private:
 	AliJTH1D fh_vn;//!  // single vn^k  array [ih][ik][iCent]
 	AliJTH1D fh_vna;//! // single vn^k with autocorrelation removed (up to a limited order)
 	AliJTH1D fh_vn_vn;//! // combination for <vn*vn> [ih][ik][ihh][ikk][iCent]
-	AliJTH1D fh_cn_4c;//!  // QC
+	/*AliJTH1D fh_cn_4c;//!  // QC
 	AliJTH1D fh_cn_2c;//!  // QC
 	AliJTH1D fh_cn_cn_2c;//! // QC
 	AliJTH1D fh_cn_2c_eta10;//!  // QC
-	AliJTH1D fh_cn_cn_2c_eta10;//! // QC
+	AliJTH1D fh_cn_cn_2c_eta10;//! // QC*/
 
 	AliJTH1D fh_correlator;//! // some more complex correlators
 	AliJTH2D fh_TrkQA_TPCvsGlob;//! // QA histos
