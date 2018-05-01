@@ -320,10 +320,10 @@ Bool_t AliAnalysisTaskSimSpectraLF::IsMCParticleInKinematicRange(TObject *obj){
 
   if ( vpart->Pt() < fPtMin || vpart->Pt() > fPtMax ) // set pt cut
     isSelected = kFALSE;
-/*  
+  
   if ( TMath::Abs(vpart->Eta()) > fEta ) // set pseudorapidity cut
     isSelected = kFALSE;
-*/
+
   return isSelected;
 }
 
@@ -351,7 +351,7 @@ void AliAnalysisTaskSimSpectraLF::EventSel(TObject* obj){
 
     Int_t pdgcode = TMath::Abs(mcPart->PdgCode());
     
-     /* if ( TMath::Abs(mcPart->Eta()) > fEta ) continue; */ 
+      if ( TMath::Abs(mcPart->Eta()) > fEta ) continue;  
 
     if ( event->IsPhysicalPrimary(i) )
     {
@@ -393,7 +393,7 @@ void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
   AliMCEvent *event = dynamic_cast<AliMCEvent*>(obj);
   if ( !event ) return;
     
-  Bool_t isPrimary[11] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE };
+  Bool_t isPrimary[11] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE };
 
   Short_t pidCodeMC = 0;
   Double_t myY = 0.;
@@ -437,9 +437,9 @@ void AliAnalysisTaskSimSpectraLF::ParticleSel(TObject* obj){
 	if (pPDG==3312) MCPartSel[0]	= 5.5;	//	Xi -
 	if (pPDG==3334) MCPartSel[0]	= 6.5;	//	Omega -
 	if (pPDG==3212) MCPartSel[0]	= 7.5;	//	Sigma 0
+	if (pPDG==323)	MCPartSel[0]	= 8.5;	//	K*(892) +-
       }
       else{
-	if (pPDG==323)	MCPartSel[0]	= 8.5;	//	K*(892) +-
 	if (pPDG==333)	MCPartSel[0]	= 9.5;	//	Phi(1020)
 	if (pPDG==313)	MCPartSel[0]	= 10.5;	//	K*(892)
       }
@@ -494,16 +494,13 @@ Double_t AliAnalysisTaskSimSpectraLF::myRap(Double_t rE, Double_t rPz) const {
 
   Double_t rRap = -999.;
 
-  if (rE == rPz || rE == -rPz) {
-    printf("myRap() -> ERROR : rapidity for 4-vector with rE = Pz or rE = -Pz");
-    return -999;
-  }
   if (rE < rPz) {
     printf("myRap() -> ERROR : rapidity for 4-vector with rE < rPz");
     return -999;
   }
 
-  rRap = 0.5 * TMath::Log((rE + rPz) / (rE - rPz));
+  if( (rE-rPz+1.e-13) != 0 && (rE+rPz) != 0 )
+    rRap = 0.5 * TMath::Log((rE+rPz) / (rE-rPz+1.e-13));
 
   return rRap;
 }
