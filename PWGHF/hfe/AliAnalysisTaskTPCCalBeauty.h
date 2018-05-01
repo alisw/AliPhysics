@@ -98,6 +98,7 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
         TH1F                *fTrkPhi;        //! track phi after track matching
         TH1F                *fTrkEta;        //! track eta after track matching
         TH1F                *fdEdx;          //! track dEdx
+    TH2F                *fnSigma;          //! track dEdx
         TH1F                *fCentCheck;     //! event centrality
         TH1F                *fTrigCheck;     //! checking trigger used
         TH2F                *fEMCTrkMatch;   //! plots distance of cluster from closest track
@@ -183,6 +184,9 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
         TH1F                *fEtaCPt; //!
         TH1F                *fCBaryonPt; //!
     
+        TH1F                *fBMesonPt; //!
+        TH1F                *fBBaryonPt; //!
+    
         TH2F    *fPromptD0DCAWeight; //!
         TH2F    *fD0FromDStarDCAWeight; //!
     TH2F    *fPromptD0DCANoWeight; //!
@@ -200,6 +204,31 @@ class AliAnalysisTaskTPCCalBeauty : public AliAnalysisTaskSE
     
         TH2F                *fDTemplateWeight; //!
         TH2F                *fDTemplateNoWeight; //!
+    
+        TH2F                *fBTemplateNoWeight; //!
+        TH1F                *fAllElecStack; //!
+        TH1F                *fHFElecStack; //!
+        TH1F                *fBElecStack; //!
+    
+        TH1F                *fElecTPCTrk; //!
+        TH1F                *fHFElecTPCTrk; //!
+        TH1F                *fBElecTPCTrk; //!
+    
+        TH1F                *fElecAftTrkCuts; //!
+        TH1F                *fHFElecAftTrkCuts; //!
+        TH1F                *fBElecAftTrkCuts; //!
+    
+        TH1F                *fElecAftTrkMatch; //!
+        TH1F                *fHFElecAftTrkMatch; //!
+        TH1F                *fBElecAftTrkMatch; //!
+    
+        TH1F                *fElecAftTPCeID; //!
+        TH1F                *fHFElecAftTPCeID; //!
+        TH1F                *fBElecAftTPCeID; //!
+    
+        TH1F                *fElecAftEMCeID; //!
+        TH1F                *fHFElecAftEMCeID; //!
+        TH1F                *fBElecAftEMCeID; //!
     
         //THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
         //Double_t            *fvalueElectron; //! Electron info
