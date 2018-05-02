@@ -388,7 +388,7 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
       for(unsigned int ibit = 0; ibit < 16; ibit ++){
         if((truconf->GetMaskReg(ifield) >> ibit) & 0x1){
           try{
-            fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(RemapTRUIndex(itru), (ic =  GetMaskHandler()(ifield, ibit)), fastOrAbsID);
+            fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(RemapTRUIndex(itru), (ic =  GetMaskHandler(itru)(ifield, ibit)), fastOrAbsID);
             AliDebugStream(1) << GetName() << "Channel " << ic  << " in TRU " << itru << " ( abs fastor " << fastOrAbsID << ") masked." << std::endl;
             fTriggerMaker->AddFastORBadChannel(fastOrAbsID);
           } catch (int exept){
@@ -415,8 +415,9 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOADB(){
 }
 
 
-std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMaskHandler() const {
-  if(fGeom->GetTriggerMappingVersion() == 2){
+std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMaskHandler(int itru) const {
+  bool isTRUsmallSM = ((itru >= 30 && itru < 31) || (itru >= 44 && itru < 45)) ;
+  if(fGeom->GetTriggerMappingVersion() == 2 && !isTRUsmallSM){
     // Run 2 - complicated TRU layout in 6 subregions
     return [] (unsigned int ifield, unsigned int ibit) -> int {
       if(ifield >= 6 || ibit >= 16) throw kInvalidChannelException;
