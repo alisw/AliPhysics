@@ -221,6 +221,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHistPt_HFE_MC_B(0),
 				//fHist_eff_pretrack(0),
 				//fHist_eff_postHFE(0),
+				fHist_eff_HFE(0),
 				fHist_eff_match(0),
 				fHist_eff_TPC(0)
 {
