@@ -83,8 +83,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1D*               		fHistPhoEta1;
 		TH1F*               		fHistPt_HFE_MC_D;
 		TH1F*               		fHistPt_HFE_MC_B;
-		TH1F*               		fHist_eff_pretrack;
-		TH1F*               		fHist_eff_posttrack;
+		//TH1F*               		fHist_eff_pretrack;
+		//TH1F*               		fHist_eff_posttrack;
 		TH1F*               		fHist_eff_HFE;
 		TH1F*               		fHist_eff_match;
 		TH1F*               		fHist_eff_TPC;
