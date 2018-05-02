@@ -121,6 +121,12 @@ void CEPRawTrackBuffer::SetTrackVariables(AliESDtrack* track, AliESDVertex* vert
     this->SetTrkEtaOnEMC( track->GetTrackEtaOnEMCal() );
     this->SetTrkPtOnEMC( track->GetTrackPtOnEMCal() );
     this->SetTrkPOnEMC( track->GetTrackPOnEMCal() );
+
+    // the comparison variable: eta
+    Double_t mom[3];
+    track->GetPxPyPz(mom);
+    TVector3 vect3(mom);
+    this->SetEta( vect3.Eta() );
 }
 // ____________________________________________________________________________
 

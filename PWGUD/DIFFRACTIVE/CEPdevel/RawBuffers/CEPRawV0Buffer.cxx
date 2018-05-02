@@ -79,6 +79,7 @@ Float_t CEPRawV0Buffer::GetV0TotalTime() const
 {
     Float_t totalTime(0.0);
     for (UInt_t i(0); i<fNCells; i++){
+        if (fTime[i] == -1024.) continue;
         totalTime += fTime[i]; 
     }
 
