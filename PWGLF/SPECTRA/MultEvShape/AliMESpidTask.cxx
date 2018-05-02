@@ -61,7 +61,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
   AliMESbaseTask::UserExec(opt);
 
 
-  // if( !fEvInfo->HasTriggerMB() ) return;
+  if( !fEvInfo->HasTriggerMB() ) return;
   // if( !fEvInfo->HasTriggerHM() ) return;
 
  /*
