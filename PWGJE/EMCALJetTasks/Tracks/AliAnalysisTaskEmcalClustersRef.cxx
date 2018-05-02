@@ -126,7 +126,9 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
   TLinearBinning v0abinning(1000, 0., 1000.), trackletbinning(500, 0., 500.), itsclustbinning(500, 0., 500.), emcclustbinning(100, 0., 100.), emccellbinning(3000, 0., 3000.), adcbinning(2000, 0., 2000.);
   const TBinning *multbinning[6] = {&v0abinning, &trackletbinning, &trackletbinning, &itsclustbinning, &emcclustbinning, &emccellbinning};
   const TBinning *clustallbinning[6] = {&smbinning, &energybinning, &energybinning, &etabinning, &phibinning, &trgclustbinning};
+  AliDebugStream(1) << "Using exclusive triggers: " << (fUseExclusiveTriggers ? "yes" : "no") << std::endl;
   for(auto trg : GetSupportedTriggers(fUseExclusiveTriggers)){
+    AliDebugStream(1) << "Creating histograms for trigger " << trg << std::endl;
     fHistos->CreateTH1("hTrgClustCounter" + trg, "Event counter in trigger cluster " + trg, trgclustbinning);
     fHistos->CreateTH1("hEventCentrality" + trg, "Event centrality for trigger class " + trg, 103, -2., 101., optionstring);
     fHistos->CreateTH1("hVertexZ" + trg, "z-position of the primary vertex for trigger class " + trg, 200, -40., 40., optionstring);
@@ -273,6 +275,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     et = posvec.Et();
     eta = posvec.Eta();
     phi = posvec.Phi();
+    if(phi < 0) phi += TMath::TwoPi();
 
     // fill histograms allEta
     for(const auto & trg : fSelectedTriggers){
@@ -341,7 +344,10 @@ void AliAnalysisTaskEmcalClustersRef::UserFillHistosAfterEventSelection(){
          emcclustermult = static_cast<double>(CountEmcalClusters(0.5)),
          emccellocc = static_cast<double>(this->GetEMCALCellOccupancy(0.1));
 
+  auto supportedTriggers = GetSupportedTriggers(fUseExclusiveTriggers);
+
   for(const auto &t : fSelectedTriggers){
+    if(std::find(supportedTriggers.begin(), supportedTriggers.end(), t) == supportedTriggers.end()) continue;
     Double_t weight = GetTriggerWeight(t);
     fHistos->FillTH1("hEventCentrality" + t, fEventCentrality, weight);
     fHistos->FillTH1("hVertexZ" + t, fVertex[2], weight);
