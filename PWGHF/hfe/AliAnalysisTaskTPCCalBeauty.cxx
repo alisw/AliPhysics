@@ -905,7 +905,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             }
         }
     }
-    cout << "Electron in stack -------------- " << eleinStack <<endl;
+    //cout << "Electron in stack -------------- " << eleinStack <<endl;
     ///////////////////
     // Trigger Check //
     ///////////////////
@@ -1516,8 +1516,6 @@ Double_t AliAnalysisTaskTPCCalBeauty::CheckCentrality(AliAODEvent* fAOD, Bool_t 
 Bool_t AliAnalysisTaskTPCCalBeauty::GetNMCPartProduced()
 {
     //Get number of MC particles produced by generators.
-    
- //   cout<<"Testiessssssss3"<<endl;
     
     //list of headers
     TList *lh = fMCHeader->GetCocktailHeaders();
