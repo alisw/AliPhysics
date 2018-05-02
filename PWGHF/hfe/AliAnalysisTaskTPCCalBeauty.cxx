@@ -1002,10 +1002,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         Int_t ilabel = -99;
         if(fMCarray)
         {
-           // ilabel = TMath::Abs(track->GetLabel()); //get MC label of track
-           // if(ilabel == 0) continue;
-            ilabel = track->GetLabel();
-            if(ilabel < -1) continue;
+            ilabel = TMath::Abs(track->GetLabel()); //get MC label of track
+            if(ilabel == 0) continue;
+           // ilabel = track->GetLabel();
+           // if(ilabel < -1) continue;
             //cout <<"ilabel = "<<ilabel<<"************************"<<endl;
             fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
             pdg = TMath::Abs(fMCparticle->GetPdgCode()); //get pid of track
@@ -1369,9 +1369,6 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 
             }
             
-            //if(!fMCarray){
-                InvMassCheckData(i, track, d0z0, MagSign);
-            //}
             
             ///////////////////////////
             // Hadron Contam. Histos //
@@ -1417,7 +1414,9 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             fInclElecDCA->Fill(track->Pt(),DCA);
             fInclElecDCAnoSign->Fill(track->Pt(),d0z0[0]);
             
-            
+            if(!fMCarray){
+                InvMassCheckData(i, track, d0z0, MagSign);
+            }
             //Make incl electron and photonic electron plots
             /*if(nsigma>-1 && nsigma<3) {
                 if(M20>0.01 && M20<0.35) {
