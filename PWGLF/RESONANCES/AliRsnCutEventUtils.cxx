@@ -399,7 +399,7 @@ Bool_t AliRsnCutEventUtils::IsInelGt0MCESD(){
     if(!part) continue;
     Double_t eta = part->Eta();
     Short_t charge = part->Charge();
-    if (TMath::Abs(eta)<1.0 && charge!=0) ChargeCount++;
+    if (TMath::Abs(eta)<1.0 && charge!=0 && part->IsPhysicalPrimary()) ChargeCount++;
   }
   if (ChargeCount != 0) return kTRUE;
   return kFALSE;
