@@ -101,7 +101,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   xfraction(1)
 
 {
-  for(Int_t i=0;i<9;i++){
+  for(Int_t i=0;i<10;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
    DefineOutput(1, TList::Class());
@@ -161,7 +161,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   // Standard constructor.
   
   
-  for(Int_t i=0;i<9;i++){
+  for(Int_t i=0;i<10;i++){
     fShapesVar[i]=0;}
   
   SetMakeGeneralHistograms(kTRUE);
@@ -202,7 +202,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 9;
+  const Int_t nVar = 10;
 
   TString *fShapesVarNames = new TString [nVar];
   
@@ -215,13 +215,13 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   fShapesVarNames[6] = "nitersd";
   fShapesVarNames[7] = "niterall";
   fShapesVarNames[8] = "weightPythia";
-  // fShapesVarNames[6] = "Nsubjet1kt";
+  //fShapesVarNames[6] = "Nsubjet1kt";
   // fShapesVarNames[7] = "Nsubjet2kt"; 
   // fShapesVarNames[8] = "Nsubjet1Min"; 
   // fShapesVarNames[9] = "Nsubjet2Min";
   // fShapesVarNames[10] = "DeltaRkt";
   // fShapesVarNames[11] = "DeltaRMin";
-  // fShapesVarNames[12] = "SDSymm";
+  fShapesVarNames[9] = "SDSymm";
   // fShapesVarNames[13] = "SDDeltaR";
   // fShapesVarNames[14] = "SDGroomedFrac"; 
   // fShapesVarNames[15] = "SDGroomedN"; 
@@ -1442,6 +1442,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
     if(z>fHardCutoff){
     ndepth=ndepth+1;
     nsd=nsd+1;
+    if(nsd==1 && ReclusterAlgo==1) fShapesVar[9]=z;
     Double_t LundEntries[6] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,partonFlavor,ndepth};  
     fHLundIterative->Fill(LundEntries);}
     jj=j1;}
