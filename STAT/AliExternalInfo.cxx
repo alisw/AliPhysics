@@ -1540,7 +1540,7 @@ info->GetMCPassGuess("LHC17l1");
   for(int l=0; l<arr->GetEntries(); l++){      
     for(int k=0; k<fLogCache->GetEntries(); k++){
         fLogCache->GetEntry(k);
-      if( std::stoi(((TObjString *)arr->At(l))->GetString().Data())==run){
+      if( std::atoi(((TObjString *)arr->At(l))->GetString().Data())==run){
         if (fVerbose&0x4) cout<<"Anchor Prod Guess : "<<pAnchProdName->c_str()<<" for run number: "<<((TObjString *)arr->At(l))->GetString()<<endl;
         ++map[*pAnchProdName];
       }
