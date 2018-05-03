@@ -67,8 +67,8 @@ AliAnalysisTask* AddTask_xbai_pp_QA(TString cfg="ConfigJpsi_xbai_pp_QA",
   // the different paths
   TString gsiPath("$TRAIN_ROOT/rjimenez_jpsi");
   TString alienPath("alien:///alice/cern.ch/user/x/xbai/pp2017/check_nsigmaE");
-  TString alirootPath("/u/xbai/work/pp2017/check_nsigmaE/Train_test");
-  //TString alirootPath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI");
+  //TString alirootPath("/u/xbai/work/pp2017/check_nsigmaE/Train_test");
+  TString alirootPath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosJPSI");
 
   //printf("test locall XXX");
   // >>> gsi config
