@@ -941,7 +941,7 @@ void AliExternalInfo::BuildHashIndex(TTree* tree, const char *chbranchName,  con
   //
   //
   Int_t indexName=0;
-  char  pbranchName[100];
+  char  pbranchName[10000];
   TBranch *brIndexMC = tree->Branch(chindexName,&indexName,TString::Format("%s/I",chindexName).Data()); // branch to fill
   TBranch *branch=tree->GetBranch(chbranchName); // branhc to get string
   if (branch!=NULL){
@@ -1553,11 +1553,14 @@ info->GetMCPassGuess("LHC17l1");
   }
   else {
     int max=0;
-    for (auto const& x : map) {
-      if (fVerbose&0x4)std::cout << x.first<< ':'<< x.second << std::endl;
-      if(x.second>max) {
-        sProdGuess=x.first;
-        max=x.second;
+
+  std::map<std::string, int>::iterator it;
+  for ( it = map.begin(); it != map.end(); it++ )
+  {
+      if (fVerbose&0x4)std::cout << it->first<< ':'<< it->second << std::endl;
+      if(it->second>max) {
+        sProdGuess=it->first;
+        max=it->second;
       }
     }
     if (fVerbose&0x4) ::Info("AliExternalInfo::GetMCAnchPerGuess","AnchorProd guess is %s based on %d run number hits",sProdGuess.c_str(),max);  
