@@ -35,89 +35,90 @@
 
 ClassImp(AliAnalysisTaskEffContBF)
 
-//________________________________________________________________________
+// ---------------------------------------------------------------------
 AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(),
-fAOD(0),
-fArrayMC(0),
-fQAList(0),
-fOutputList(0),
-fHistEventStats(0),
-fHistCentrality(0),
-fHistNMult(0),
-fHistVz(0),
-fHistNSigmaTPCvsPtbeforePID(0),
-fHistNSigmaTPCvsPtafterPID(0),
-fHistContaminationSecondariesPlus(0),
-fHistContaminationSecondariesMinus(0), //
-fHistContaminationPrimariesPlus(0),
-fHistContaminationPrimariesMinus(0), //
-fHistGeneratedEtaPtPhiPlus(0),
-fHistSurvivedEtaPtPhiPlus(0),
-fHistGeneratedEtaPtPhiMinus(0),
-fHistSurvivedEtaPtPhiMinus(0),
-fHistGeneratedEtaPtPlusControl(0),
-fHistSurvivedEtaPtPlusControl(0),
-fHistGeneratedEtaPtMinusControl(0),
-fHistSurvivedEtaPtMinusControl(0),
-fHistGeneratedEtaPtPlusPlus(0),
-fHistSurvivedEtaPtPlusPlus(0),
-fHistGeneratedEtaPtMinusMinus(0),
-fHistSurvivedEtaPtMinusMinus(0),
-fHistGeneratedEtaPtPlusMinus(0),
-fHistSurvivedEtaPtPlusMinus(0),
-fHistGeneratedPhiEtaPlusPlus(0),
-fHistSurvivedPhiEtaPlusPlus(0),
-fHistGeneratedPhiEtaMinusMinus(0),
-fHistSurvivedPhiEtaMinusMinus(0),
-fHistGeneratedPhiEtaPlusMinus(0),
-fHistSurvivedPhiEtaPlusMinus(0),
-fUseCentrality(kFALSE),
-fCentralityEstimator("V0M"),
-fCentralityPercentileMin(0.0),
-fCentralityPercentileMax(5.0),
-fInjectedSignals(kFALSE),
-fRejectLabelAboveThreshold(kFALSE),
-fGenToBeKept("Hijing"),
-fRejectCheckGenName(kFALSE),
-fPIDResponse(0),
-fElectronRejection(kFALSE),
-fElectronOnlyRejection(kFALSE),
-fElectronRejectionNSigma(-1.),
-fElectronRejectionMinPt(0.),
-fElectronRejectionMaxPt(1000.),
-fPIDCombined(0),
-fUsePIDnSigmaComb(kTRUE),
-fBayesPIDThr(0.8),
-fUsePIDstrategy(kFALSE),
-fUsePIDFromPDG(kFALSE),
-fpartOfInterest(AliPID::kPion),
-fPDGCodeWanted(0),
-fVxMax(3.0),
-fVyMax(3.0),
-fVzMax(10.),
-fAODTrackCutBit(128),
-fMinNumberOfTPCClusters(80),
-fMaxChi2PerTPCCluster(4.0),
-fMaxDCAxy(3.0),
-fMaxDCAz(3.0),
-fMinPt(0.0),
-fMaxPt(20.0),
-fMinEta(-0.8),
-fMaxEta(0.8),
-fEtaRangeMin(0.0),
-fEtaRangeMax(1.6),
-fPtRangeMin(0.0),
-fPtRangeMax(20.0),
-fEtaBin(100), //=100 (BF) 16
-fdEtaBin(64), //=64 (BF)  16
-fPtBin(100), //=100 (BF)  36
-fHistSurvived4EtaPtPhiPlus(0),
-fHistSurvived8EtaPtPhiPlus(0)
-{
-    
-    // default constructor, don't allocate memory here!
-    // this is used by root for IO purposes, it needs to remain empty
-}
+    fAOD(0),
+    fArrayMC(0),
+    fQAList(0),
+    fOutputList(0),
+    fHistEventStats(0),
+    fHistCentrality(0),
+    fHistNMult(0),
+    fHistVz(0),
+    fHistNSigmaTPCvsPtbeforePID(0),
+    fHistNSigmaTPCvsPtafterPID(0),
+    fHistContaminationSecondariesPlus(0),
+    fHistContaminationSecondariesMinus(0), //
+    fHistContaminationSecondariesMaterialPlus(0),
+    fHistContaminationSecondariesMaterialMinus(0), //
+    fHistContaminationSecondariesWeakDecPlus(0),
+    fHistContaminationSecondariesWeakDecMinus(0), //
+    fHistContaminationPrimariesPlus(0),
+    fHistContaminationPrimariesMinus(0), //
+    fHistGeneratedEtaPtPhiPlus(0),
+    fHistSurvivedEtaPtPhiPlus(0),
+    fHistGeneratedEtaPtPhiMinus(0),
+    fHistSurvivedEtaPtPhiMinus(0),
+    fHistGeneratedEtaPtPlusControl(0),
+    fHistSurvivedEtaPtPlusControl(0),
+    fHistGeneratedEtaPtMinusControl(0),
+    fHistSurvivedEtaPtMinusControl(0),
+    fHistGeneratedEtaPtPlusPlus(0),
+    fHistSurvivedEtaPtPlusPlus(0),
+    fHistGeneratedEtaPtMinusMinus(0),
+    fHistSurvivedEtaPtMinusMinus(0),
+    fHistGeneratedEtaPtPlusMinus(0),
+    fHistSurvivedEtaPtPlusMinus(0),
+    fHistGeneratedPhiEtaPlusPlus(0),
+    fHistSurvivedPhiEtaPlusPlus(0),
+    fHistGeneratedPhiEtaMinusMinus(0),
+    fHistSurvivedPhiEtaMinusMinus(0),
+    fHistGeneratedPhiEtaPlusMinus(0),
+    fHistSurvivedPhiEtaPlusMinus(0),
+    fUseCentrality(kFALSE),
+    fCentralityEstimator("V0M"),
+    fCentralityPercentileMin(0.0),
+    fCentralityPercentileMax(5.0),
+    fInjectedSignals(kFALSE),
+    fRejectLabelAboveThreshold(kFALSE),
+    fGenToBeKept("Hijing"),
+    fRejectCheckGenName(kFALSE),
+    fPIDResponse(0),
+    fElectronRejection(kFALSE),
+    fElectronOnlyRejection(kFALSE),
+    fElectronRejectionNSigma(-1.),
+    fElectronRejectionMinPt(0.),
+    fElectronRejectionMaxPt(1000.),
+    fPIDCombined(0),
+    fUsePIDnSigmaComb(kTRUE),
+    fBayesPIDThr(0.8),
+    fUsePIDstrategy(kFALSE),
+    fUsePIDFromPDG(kFALSE),
+    fpartOfInterest(AliPID::kPion),
+    fPDGCodeWanted(0),
+    fVxMax(3.0),
+    fVyMax(3.0),
+    fVzMax(10.),
+    fAODTrackCutBit(128),
+    fMinNumberOfTPCClusters(80),
+    fMaxChi2PerTPCCluster(4.0),
+    fMaxDCAxy(3.0),
+    fMaxDCAz(3.0),
+    fMinPt(0.0),
+    fMaxPt(20.0),
+    fMinEta(-0.8),
+    fMaxEta(0.8),
+    fEtaRangeMin(0.0),
+    fEtaRangeMax(1.6),
+    fPtRangeMin(0.0),
+    fPtRangeMax(20.0),
+    fEtaBin(100), //=100 (BF) 16
+    fdEtaBin(64), //=64 (BF)  16
+    fPtBin(100), //=100 (BF)  36
+    fHistSurvived4EtaPtPhiPlus(0),
+    fHistSurvived8EtaPtPhiPlus(0){
+} 
+
 //________________________________________________________________________
 AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name) 
   : AliAnalysisTaskSE(name), 
@@ -133,6 +134,10 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fHistNSigmaTPCvsPtafterPID(0),  
     fHistContaminationSecondariesPlus(0),
     fHistContaminationSecondariesMinus(0), //
+    fHistContaminationSecondariesMaterialPlus(0),
+    fHistContaminationSecondariesMaterialMinus(0), //
+    fHistContaminationSecondariesWeakDecPlus(0),
+    fHistContaminationSecondariesWeakDecMinus(0), //
     fHistContaminationPrimariesPlus(0),
     fHistContaminationPrimariesMinus(0), //
     fHistGeneratedEtaPtPhiPlus(0), 
@@ -286,6 +291,18 @@ void AliAnalysisTaskEffContBF::UserCreateOutputObjects() {
 
   fHistContaminationSecondariesMinus = new TH3D("fHistContaminationSecondariesMinus","Secondaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
   fOutputList->Add(fHistContaminationSecondariesMinus);
+
+  fHistContaminationSecondariesMaterialPlus = new TH3D("fHistContaminationSecondariesMaterialPlus","Secondaries pos from Material ;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fOutputList->Add(fHistContaminationSecondariesMaterialPlus);
+
+  fHistContaminationSecondariesMaterialMinus = new TH3D("fHistContaminationSecondariesMaterialMinus","Secondaries neg from Material ;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fOutputList->Add(fHistContaminationSecondariesMaterialMinus);
+    
+  fHistContaminationSecondariesWeakDecPlus = new TH3D("fHistContaminationSecondariesWeakDecPlus","Secondaries pos from Weak Decay ;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fOutputList->Add(fHistContaminationSecondariesWeakDecPlus);
+
+  fHistContaminationSecondariesWeakDecMinus = new TH3D("fHistContaminationSecondariesWeakDecMinus","Secondaries neg from Weak Decay ;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
+  fOutputList->Add(fHistContaminationSecondariesWeakDecMinus);
 
   //Contamination for Primaries
   fHistContaminationPrimariesPlus = new TH3D("fHistContaminationPrimariesPlus","Primaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
@@ -629,11 +646,19 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		  }
 		}
 		else{
+		  Bool_t isFromMaterial = kFALSE;
+		  if (AODmcTrack->IsSecondaryFromMaterial()) isFromMaterial = kTRUE;
 		  if(gAODmcCharge > 0){
 		    fHistContaminationSecondariesPlus->Fill(track->Eta(),track->Pt(),phiRad);
+		    if (isFromMaterial)
+		      fHistContaminationSecondariesMaterialPlus->Fill(track->Eta(),track->Pt(),phiRad);
+		    else fHistContaminationSecondariesWeakDecPlus->Fill(track->Eta(),track->Pt(),phiRad);
 		  }
 		  if(gAODmcCharge < 0){
 		    fHistContaminationSecondariesMinus->Fill(track->Eta(),track->Pt(),phiRad);
+		     if (isFromMaterial)
+		      fHistContaminationSecondariesMaterialMinus->Fill(track->Eta(),track->Pt(),phiRad);
+		     else fHistContaminationSecondariesWeakDecMinus->Fill(track->Eta(),track->Pt(),phiRad);
 		  }
 		}
 	      }//loop over tracks

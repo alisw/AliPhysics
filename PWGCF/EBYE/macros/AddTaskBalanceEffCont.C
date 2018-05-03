@@ -11,7 +11,7 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont(TString  centralityEstimator="V0
 						AliPID::EParticleType particleType = AliPID::kPion,
 						Bool_t usePIDstrategy=kFALSE,
 						Bool_t usePIDnSigmaComb=kTRUE,
-						Double_t BayesThr = 0.8,
+						Double_t BayesThr = 0.8
 						) {
 
     // Creates a balance function analysis task and adds it to the analysis manager.

@@ -815,6 +815,12 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
     } else if(triggerstring.find("EJ2") != std::string::npos) {
       treemaker->SetTriggerBits(AliVEvent::kEMCEJE);
       treemaker->SetTriggerString("EJ2");
+    } else if(triggerstring.find("EG1") != std::string::npos) {
+      treemaker->SetTriggerBits(AliVEvent::kEMCEGA);
+      treemaker->SetTriggerString("EG1");
+    } else if(triggerstring.find("EG2") != std::string::npos) {
+      treemaker->SetTriggerBits(AliVEvent::kEMCEGA);
+      treemaker->SetTriggerString("EG2");
     }
   }
   

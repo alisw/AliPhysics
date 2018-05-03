@@ -148,6 +148,12 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   // output histograms
   TH3D        *fHistContaminationSecondariesPlus;//!
   TH3D        *fHistContaminationSecondariesMinus;//!
+
+  TH3D        *fHistContaminationSecondariesMaterialPlus;//!
+  TH3D        *fHistContaminationSecondariesMaterialMinus; //!
+  TH3D        *fHistContaminationSecondariesWeakDecPlus; //!
+  TH3D        *fHistContaminationSecondariesWeakDecMinus; //!
+  
   TH3D        *fHistContaminationPrimariesPlus;//!
   TH3D        *fHistContaminationPrimariesMinus;//!
   
@@ -237,7 +243,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   AliAnalysisTaskEffContBF(const AliAnalysisTaskEffContBF&); // not implemented
   AliAnalysisTaskEffContBF& operator=(const AliAnalysisTaskEffContBF&); // not implemented
   
-  ClassDef(AliAnalysisTaskEffContBF, 3); // example of analysis
+  ClassDef(AliAnalysisTaskEffContBF, 4); // example of analysis
 };
 
 #endif

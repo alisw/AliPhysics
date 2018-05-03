@@ -75,6 +75,12 @@ public:
         //Highly experimental, use with care!
         fkDoImprovedDCACascDauPropagation = lOpt;
     }
+    
+    void SetDoXYPlanePreOptCascade( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoXYPlanePreOptCascade = lOpt;
+    }
+    
     void SetDoPureGeometricMinimization( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkDoPureGeometricMinimization = lOpt;
@@ -252,6 +258,7 @@ private:
     Bool_t fkUseUncheckedChargeCascadeVertexer; //if true, use cascade vertexer that does not check bachelor charge
     Bool_t fkUseOnTheFlyV0Cascading;
     Bool_t fkDoImprovedDCACascDauPropagation;
+    Bool_t fkDoXYPlanePreOptCascade; 
     Bool_t fkDoPureGeometricMinimization;
     Bool_t fkDoCascadeRefit; //WARNING: needs DoV0Refit!
     Long_t fMaxIterationsWhenMinimizing;

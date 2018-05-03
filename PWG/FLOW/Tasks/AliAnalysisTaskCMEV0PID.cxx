@@ -432,7 +432,9 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID(const char *name): AliAnalysisT
     fFB_Efficiency_Cent[i] = NULL;
     fFB_Efficiency_Pion_Cent[i] = NULL;
     fFB_Efficiency_Kaon_Cent[i] = NULL;
-    fFB_Efficiency_Proton_Cent[i] = NULL;
+    //fFB_Efficiency_Proton_Cent[i] = NULL;
+    fFB_Efficiency_Proton_Pos_Cent[i] = NULL;
+    fFB_Efficiency_Proton_Neg_Cent[i] = NULL;
   }
 
 
@@ -807,7 +809,9 @@ AliAnalysisTaskCMEV0PID::AliAnalysisTaskCMEV0PID():
     fFB_Efficiency_Cent[i] = NULL;
     fFB_Efficiency_Pion_Cent[i] = NULL;
     fFB_Efficiency_Kaon_Cent[i] = NULL;
-    fFB_Efficiency_Proton_Cent[i] = NULL;
+    //fFB_Efficiency_Proton_Cent[i] = NULL;
+    fFB_Efficiency_Proton_Pos_Cent[i] = NULL;
+    fFB_Efficiency_Proton_Neg_Cent[i] = NULL;
   }
 }
 
@@ -3316,26 +3320,27 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
     }
     //------ get MC weight and NUA for Proton track1 --------------
     if(isProton1){
-      if(fFB_Efficiency_Proton_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Proton Efficiency file when available.
-	ptBin    = fFB_Efficiency_Proton_Cent[cent10bin]->FindBin(dPt1);
-	ptwProton1 = 1.0/fFB_Efficiency_Proton_Cent[cent10bin]->GetBinContent(ptBin);
-      }
-      //else{ ptwProton1 = 1.0; }
-
       if(gCharge1>0){
+	if(fFB_Efficiency_Proton_Pos_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Proton Efficiency file when available.
+	  ptBin    = fFB_Efficiency_Proton_Pos_Cent[cent10bin]->FindBin(dPt1);
+	  ptwProton1 = 1.0/fFB_Efficiency_Proton_Pos_Cent[cent10bin]->GetBinContent(ptBin);
+	}
 	if(fHCorrectNUAposProton[cForNUA]){
 	  iBinNUA   = fHCorrectNUAposProton[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
 	  wNUAProton1 = fHCorrectNUAposProton[cForNUA]->GetBinContent(iBinNUA);
 	}
-	//else{ wNUAProton1 = 1.0; }
       }
       else{
+	if(fFB_Efficiency_Proton_Neg_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Proton Efficiency file when available.
+	  ptBin    = fFB_Efficiency_Proton_Neg_Cent[cent10bin]->FindBin(dPt1);
+	  ptwProton1 = 1.0/fFB_Efficiency_Proton_Neg_Cent[cent10bin]->GetBinContent(ptBin);
+	}
 	if(fHCorrectNUAnegProton[cForNUA]){
 	  iBinNUA   = fHCorrectNUAnegProton[cForNUA]->FindBin(pVtxZ,dPhi1,dEta1);
 	  wNUAProton1 = fHCorrectNUAnegProton[cForNUA]->GetBinContent(iBinNUA);  
 	}
-	//else{ wNUAProton1 = 1.0; }
       }
+      //else{ ptwProton1 = 1.0; }
     }
     //=========================== X ===============================
 
@@ -3539,7 +3544,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
       //------ get MC weight and NUA for Pion track2 --------------
       if(isPion2){
-	if(fFB_Efficiency_Pion_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Pion Efficiency file when available.
+	if(fFB_Efficiency_Pion_Cent[cent10bin]){ 
 	  ptBin    = fFB_Efficiency_Pion_Cent[cent10bin]->FindBin(dPt2);
 	  ptwPion2 = 1.0/fFB_Efficiency_Pion_Cent[cent10bin]->GetBinContent(ptBin);
 	}
@@ -3565,7 +3570,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
       //------ get MC weight and NUA for Kaon track2 --------------
       if(isKaon2){
-	if(fFB_Efficiency_Kaon_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Kaon Efficiency file when available.
+	if(fFB_Efficiency_Kaon_Cent[cent10bin]){
 	  ptBin    = fFB_Efficiency_Kaon_Cent[cent10bin]->FindBin(dPt2);
 	  ptwKaon2 = 1.0/fFB_Efficiency_Kaon_Cent[cent10bin]->GetBinContent(ptBin);
 	}
@@ -3588,30 +3593,30 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 
 	WgtEPKaon = ptwKaon1*ptwKaon2*wNUAKaon1*wNUAKaon2;
       }
+
       //------ get MC weight and NUA for Proton track2 --------------
       if(isProton2){
-	if(fFB_Efficiency_Proton_Cent[cent10bin]){ // <-------------------- !!!! WARNING: use Proton Efficiency file when available.
-	  ptBin    = fFB_Efficiency_Proton_Cent[cent10bin]->FindBin(dPt2);
-	  ptwProton2 = 1.0/fFB_Efficiency_Proton_Cent[cent10bin]->GetBinContent(ptBin);
-	}
-	//else{ ptwProton2 = 1.0; }
-
 	if(gCharge2>0){
+	  if(fFB_Efficiency_Proton_Pos_Cent[cent10bin]){ 
+	    ptBin    = fFB_Efficiency_Proton_Pos_Cent[cent10bin]->FindBin(dPt2);
+	    ptwProton2 = 1.0/fFB_Efficiency_Proton_Pos_Cent[cent10bin]->GetBinContent(ptBin);
+	  }
 	  if(fHCorrectNUAposProton[cForNUA]){
 	    iBinNUA   = fHCorrectNUAposProton[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
 	    wNUAProton2 = fHCorrectNUAposProton[cForNUA]->GetBinContent(iBinNUA);
 	  }
-	  //else{ wNUAProton2 = 1.0; }
 	}
 	else{
+	  if(fFB_Efficiency_Proton_Neg_Cent[cent10bin]){ 
+	    ptBin    = fFB_Efficiency_Proton_Neg_Cent[cent10bin]->FindBin(dPt2);
+	    ptwProton2 = 1.0/fFB_Efficiency_Proton_Neg_Cent[cent10bin]->GetBinContent(ptBin);
+	  }
 	  if(fHCorrectNUAnegProton[cForNUA]){
 	    iBinNUA   = fHCorrectNUAnegProton[cForNUA]->FindBin(pVtxZ,dPhi2,dEta2);
 	    wNUAProton2 = fHCorrectNUAnegProton[cForNUA]->GetBinContent(iBinNUA);  
 	  }
-	  //else{ wNUAProton2 = 1.0; }
 	}
-
-	WgtEPProton = ptwProton1*ptwProton2*wNUAProton1*wNUAProton2;
+	//else{ ptwProton2 = 1.0; }
       }
       //========================== X ================================
 
@@ -3645,7 +3650,7 @@ void AliAnalysisTaskCMEV0PID::UserExec(Option_t*) {
 	//else{ w2NUA = 1.0; }
       }
 
-    if(w2NUA==0) w2NUA = 1.0;
+      if(w2NUA==0) w2NUA = 1.0;
 
 
 
@@ -4646,7 +4651,9 @@ void AliAnalysisTaskCMEV0PID::SetupMCcorrectionMap(){
     for(int i=0;i<10;i++) {
       fFB_Efficiency_Pion_Cent[i]   = (TH1D *) fListFBHijing->FindObject(Form("eff_unbiased_Pion_%d",i));
       fFB_Efficiency_Kaon_Cent[i]   = (TH1D *) fListFBHijing->FindObject(Form("eff_unbiased_Kaon_%d",i));
-      fFB_Efficiency_Proton_Cent[i] = (TH1D *) fListFBHijing->FindObject(Form("eff_unbiased_Proton_%d",i));
+      //fFB_Efficiency_Proton_Cent[i] = (TH1D *) fListFBHijing->FindObject(Form("eff_unbiased_Proton_%d",i));
+      fFB_Efficiency_Proton_Pos_Cent[i] = (TH1D *) fListFBHijing->FindObject(Form("eff_unbiased_ProtonPos_%d",i));
+      fFB_Efficiency_Proton_Neg_Cent[i] = (TH1D *) fListFBHijing->FindObject(Form("eff_unbiased_ProtonNeg_%d",i));
     }
 
     //------- Fill the flags: --------------
@@ -4659,7 +4666,7 @@ void AliAnalysisTaskCMEV0PID::SetupMCcorrectionMap(){
     if(fFB_Efficiency_Kaon_Cent[0] && fFB_Efficiency_Kaon_Cent[4]){
       fHistTaskConfigParameters->SetBinContent(21,1);
     }
-    if(fFB_Efficiency_Proton_Cent[0] && fFB_Efficiency_Proton_Cent[4]){
+    if(fFB_Efficiency_Proton_Pos_Cent[0] && fFB_Efficiency_Proton_Neg_Cent[0]){
       fHistTaskConfigParameters->SetBinContent(22,1);
     }
   }

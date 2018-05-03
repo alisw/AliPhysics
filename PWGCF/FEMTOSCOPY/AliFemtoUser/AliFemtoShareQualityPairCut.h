@@ -34,9 +34,17 @@ public:
   virtual AliFemtoPairCut* Clone();
   void SetShareQualityMax(Double_t aAliFemtoShareQualityMax);
   Double_t GetAliFemtoShareQualityMax() const;
+  Double_t GetShareQualityMax() const;
+
   void SetShareFractionMax(Double_t aAliFemtoShareFractionMax);
   Double_t GetAliFemtoShareFractionMax() const;
-  void     SetRemoveSameLabel(Bool_t aRemove);
+  Double_t GetShareFractionMax() const;
+
+  void SetRemoveSameLabel(Bool_t aRemove);
+  Bool_t GetRemoveSameLabel() const;
+
+  /// Putting the equality in sharequality
+  bool operator==(const AliFemtoShareQualityPairCut &) const;
 
  protected:
   long fNPairsPassed;          ///< Number of pairs consideered that passed the cut
@@ -73,6 +81,10 @@ inline void AliFemtoShareQualityPairCut::SetShareQualityMax(Double_t aShareQuali
 inline Double_t AliFemtoShareQualityPairCut::GetAliFemtoShareQualityMax() const {
   return fShareQualityMax;
 }
+inline Double_t AliFemtoShareQualityPairCut::GetShareQualityMax() const
+{
+  return fShareQualityMax;
+}
 
 inline void AliFemtoShareQualityPairCut::SetShareFractionMax(Double_t aShareFractionMax) {
   fShareFractionMax = aShareFractionMax;
@@ -80,10 +92,18 @@ inline void AliFemtoShareQualityPairCut::SetShareFractionMax(Double_t aShareFrac
 inline Double_t AliFemtoShareQualityPairCut::GetAliFemtoShareFractionMax() const {
   return fShareFractionMax;
 }
+inline Double_t AliFemtoShareQualityPairCut::GetShareFractionMax() const
+{
+  return fShareFractionMax;
+}
 
 inline void AliFemtoShareQualityPairCut::SetRemoveSameLabel(Bool_t aRemove) {
   fRemoveSameLabel = aRemove;
 }
 
+inline Bool_t AliFemtoShareQualityPairCut::GetRemoveSameLabel() const
+{
+  return fRemoveSameLabel;
+}
 
 #endif

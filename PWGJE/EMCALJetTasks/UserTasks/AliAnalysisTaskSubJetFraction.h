@@ -82,7 +82,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
   void SetReclusteringAlgorithm(Int_t ReclusteringAlgorithm)     {fReclusteringAlgorithm = ReclusteringAlgorithm;}
   void SetSoftDropOn(Int_t SoftDropOn)                           {fSoftDropOn = SoftDropOn;}
-  Int_t GetSoftDropOn()                                          {return fSoftDropOn;} 
+  Int_t GetSoftDropOn()                                          {return fSoftDropOn;}
+  void SetRandomisationEqualPt(Bool_t RandmosationEqualPt)       {fRandomisationEqualPt = RandmosationEqualPt;}
   
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
 
@@ -140,6 +141,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            fZCut;
   Int_t                               fReclusteringAlgorithm;
   Int_t                               fSoftDropOn;
+  Bool_t                              fRandomisationEqualPt;
 
   Bool_t                              fNsubMeasure;
   TH1F                                *fhPtTriggerHadron;

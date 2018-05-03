@@ -2499,7 +2499,7 @@ Int_t AliConvEventCuts::GetNumberOfContributorsVtx(AliVEvent *event){
 //________________________________________________________________________
 // Analysing Jet-Jet MC's
 //________________________________________________________________________
-Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight){
+Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, AliVEvent* event ){
   AliGenCocktailEventHeader *cHeader   = 0x0;
   Bool_t headerFound                   = kFALSE;
   weight                               = -1;
@@ -2727,8 +2727,33 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
   } else {
     AliGenEventHeader * eventHeader = mcEvent->GenEventHeader();
     TString eventHeaderName     = eventHeader->ClassName();
+    Bool_t eventAccepted = kFALSE;
     if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0 || eventHeaderName.Contains("Pythia8Jets")){
-      Bool_t eventAccepted = kTRUE;
+      eventAccepted = kTRUE;
+    }else { //special case for pythia8jets embedded in EPOSLHC for AODs
+      if(event->IsA()==AliAODEvent::Class()){
+        AliAODMCHeader *mch = NULL;
+        AliAODEvent * aod = dynamic_cast<AliAODEvent*> (event);
+        if(aod){
+          mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
+          if ( mch ){
+            Int_t nGenerators = mch->GetNCocktailHeaders();
+            if ( nGenerators > 0  ){
+              for(Int_t igen = 0; igen < nGenerators; igen++)
+              {
+                AliGenEventHeader * eventHeaderGen = mch->GetCocktailHeader(igen) ;
+                TString name = eventHeaderGen->GetName();
+                if (name.CompareTo("AliGenPythiaEventHeader") == 0 || name.Contains("Pythia8Jets")){
+                  eventAccepted = kTRUE;
+                  eventHeader = eventHeaderGen;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if(eventAccepted){
       TParticle * jet =  0;
       Int_t nTriggerJets =  dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->NTriggerJets();
       Float_t ptHard = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
@@ -2886,6 +2911,18 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 10) weight = weightsBins[bin];
+    } else if ( fPeriodEnum == kLHC16rP1JJ ){ // preliminary weights obtained from local running
+        Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
+        Double_t weightsBins[20]      = {2.723740E+01, 8.127540E+00, 3.934400E+00, 1.492720E+00, 5.268010E-01, 2.033790E-01, 6.361520E-02, 2.256080E-02, 9.638840E-03, 3.372890E-03, 1.381980E-03, 5.121390E-04, 2.613120E-04, 1.260940E-04, 6.393150E-05, 3.386080E-05, 1.926040E-05, 1.046950E-05, 5.895950E-06, 8.658420E-06};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 20) weight = weightsBins[bin];
+    } else if ( fPeriodEnum == kLHC16sP1JJ ){ // preliminary weights obtained from local running
+        Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
+        Double_t weightsBins[20]      = {2.716550E+01, 8.121430E+00, 3.932100E+00, 1.492830E+00, 5.272190E-01, 2.023090E-01, 6.371860E-02, 2.245360E-02, 9.590340E-03, 3.369300E-03, 1.384470E-03, 5.119390E-04, 2.606910E-04, 1.259110E-04, 6.408650E-05, 3.396290E-05, 1.917340E-05, 1.044610E-05, 5.882680E-06, 8.672390E-06};
+        Int_t bin = 0;
+        while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+        if (bin < 20) weight = weightsBins[bin];
     } else if ( fPeriodEnum == kLHC18b8 ){
         Double_t ptHardBinRanges[21]  = { 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 10000};
         Double_t weightsBins[20]      = { 16.1083,      4.60917,     2.15196,     0.782021,    0.26541,
@@ -2914,7 +2951,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
 //________________________________________________________________________
 // Analysing Jet-Jet MC's
 //________________________________________________________________________
-void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSection, Float_t &NTrials){
+void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSection, Float_t &NTrials, AliVEvent* event){
 
   AliGenCocktailEventHeader *cHeader   = 0x0;
   Bool_t headerFound                   = kFALSE;
@@ -2970,6 +3007,32 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
       }
     }
   }
+  // the following part is necessary for pythia8jets embedded in EPOS for AODs
+  if(event){
+    if(event->IsA()==AliAODEvent::Class()){
+      AliAODMCHeader *mch = NULL;
+      AliAODEvent * aod = dynamic_cast<AliAODEvent*> (event);
+      if(aod){
+        mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
+        if ( mch ){
+          Int_t nGenerators = mch->GetNCocktailHeaders();
+          if ( nGenerators > 0  ){
+            for(Int_t igen = 0; igen < nGenerators; igen++)
+            {
+              AliGenEventHeader * eventHeaderGen = mch->GetCocktailHeader(igen) ;
+              TString name = eventHeaderGen->GetName();
+              if (name.CompareTo("AliGenPythiaEventHeader") == 0 || name.Contains("Pythia8Jets")){
+                AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(eventHeaderGen);
+                NTrials = gPythia->Trials();
+                XSection = gPythia->GetXsection();
+                return;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
   NTrials = -1;
   XSection = -1;
@@ -2980,7 +3043,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
 //________________________________________________________________________
 // Analysing Jet-Jet MC's
 //________________________________________________________________________
-Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent){
+Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent, AliVEvent* event){
   AliGenCocktailEventHeader *cHeader   = 0x0;
   Bool_t headerFound                   = kFALSE;
 
@@ -3021,6 +3084,27 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent){
       TString eventHeaderName     = eventHeader->ClassName();
       if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0 || eventHeaderName.Contains("Pythia8Jets")){
         return dynamic_cast<AliGenPythiaEventHeader*>(eventHeader)->GetPtHard();
+      }
+    }
+    
+    if(event->IsA()==AliAODEvent::Class()){
+      AliAODMCHeader *mch = NULL;
+      AliAODEvent * aod = dynamic_cast<AliAODEvent*> (event);
+      if(aod){
+        mch = dynamic_cast<AliAODMCHeader*>(aod->FindListObject("mcHeader"));
+        if ( mch ){
+          Int_t nGenerators = mch->GetNCocktailHeaders();
+          if ( nGenerators > 0  ){
+            for(Int_t igen = 0; igen < nGenerators; igen++)
+            {
+              AliGenEventHeader * eventHeaderGen = mch->GetCocktailHeader(igen) ;
+              TString name = eventHeaderGen->GetName();
+              if (name.CompareTo("AliGenPythiaEventHeader") == 0 || name.Contains("Pythia8Jets")){
+                return dynamic_cast<AliGenPythiaEventHeader*>(eventHeaderGen)->GetPtHard();
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -5485,6 +5569,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   // MC for Xe-Xe
   } else if (periodName.CompareTo("LHC17j7") == 0){         // HIJING
     fPeriodEnum = kLHC17j7;
+    fEnergyEnum = kXeXe5440GeV;
+  } else if (periodName.CompareTo("LHC18d2") == 0 || periodName.CompareTo("LHC18d2_1") == 0 || periodName.CompareTo("LHC18d2_2") == 0 || periodName.CompareTo("LHC18d2_3") == 0){    // HIJING
+    fPeriodEnum = kLHC17XeXeHi;
     fEnergyEnum = kXeXe5440GeV;
 
   // LHC17pq anchored MCs

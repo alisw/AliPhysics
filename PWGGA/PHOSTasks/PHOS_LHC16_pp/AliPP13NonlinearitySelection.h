@@ -49,8 +49,8 @@ public:
 	}
 	
 protected:
+	virtual void SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags);
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
-	virtual void FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags);
 
 	AliPP13NonlinearitySelection(const AliPP13NonlinearitySelection &);
 	AliPP13NonlinearitySelection & operator = (const AliPP13NonlinearitySelection &);

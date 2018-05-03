@@ -62,6 +62,7 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 		mc_weights_only.fNonA = 0.0;
 
 		selections->Add(new AliPP13EfficiencySelectionMC("PhysEff", "Physics efficiency for neutral particles fully corrected", cuts_pi0, &mc_weights));
+		selections->Add(new AliPP13EfficiencySelectionMC("PhysEffEta", "Physics efficiency for neutral particles with asymmetry fully corrected", cuts_eta, &mc_weights));
 		selections->Add(new AliPP13EfficiencySelectionMC("PhysEffPlain", "Physics efficiency for neutral particles, no nonlinearity", cuts_pi0, &mc_weights_only));
 
 		selections->Add(new AliPP13NonlinearitySelection("PhysNonlin", "Physics nonlinearity for neutral particles", cuts_pi0, &mc_weights, kTRUE));
@@ -74,6 +75,8 @@ AliAnalysisTaskPP13 * AddAnalysisTaskPP(
 		delete & mc_weights;
 		delete & mc_weights_only;
 	}
+	// This selection should be calculated for data and for MC
+	selections->Add(new AliPP13EpRatioSelection("EpRatio", "E/p ratio selection for electrons", cuts_pi0, &data_weights));
 
 	// Setup the main task
 	//

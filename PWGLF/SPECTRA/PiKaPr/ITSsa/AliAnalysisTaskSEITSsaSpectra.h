@@ -86,12 +86,12 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
     kNbins = 22 ///< deprecated parameter
   };
 
-  AliAnalysisTaskSEITSsaSpectra();
+  AliAnalysisTaskSEITSsaSpectra(bool __def_prior = true, bool __fill_ntuple = false);
   virtual ~AliAnalysisTaskSEITSsaSpectra();
 
   virtual void UserCreateOutputObjects();
-  virtual void Init();
-  virtual void LocalInit() { Init(); }
+  virtual void Initialization();
+  virtual void LocalInit() { Initialization(); }
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *);
 
@@ -163,11 +163,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
 
   // Setters for global settings
   void SetPidTech(int tech) { fPidMethod = static_cast<EPID_Type>(tech); }
-  void SetUseDefaultPriors(bool flag = kTRUE) { fUseDefaultPriors = flag; }
   void SetITSPidParams(AliITSPidParams *pidParams) { fITSPidParams = pidParams; }
   void SetIsNominalBfield(bool flag = kTRUE) {fIsNominalBfield = flag;}
   void SetIsMC(bool flag = kTRUE) { fIsMC = flag; }
-  void SetFillNtuple(bool flag = kTRUE) { fFillNtuple = flag; }
   void SetFillIntDistHist() { fFillIntDistHist = kTRUE; }
 
   AliEventCuts *GetAliEventCuts() { return &fEventCuts; }
@@ -372,9 +370,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   EPID_Type fPidMethod; // track-by-track pid approach
 
   bool fUseDefaultPriors; // flag to use default(equal) priors
+  bool fFillNtuple;       // flag to fill ntuples
   bool fIsMC;             // flag to switch on the MC analysis for the efficiency estimation
   bool fIsNominalBfield;  // flag to select the magnetic field (nominal = 0.5 T)
-  bool fFillNtuple;       // flag to fill ntuples
   bool fFillIntDistHist;  // flag to fill histogram with information for statistic pid analysis
 
   // smearing

@@ -131,7 +131,13 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fPi010(0),
 				fEta010(0),
 				fHistPt_HFE_MC_D(0),
-				fHistPt_HFE_MC_B(0)
+				fHistPt_HFE_MC_B(0),
+				//fHist_eff_pretrack(0),
+				//fHist_eff_posttrack(0),
+				fHist_eff_HFE(0),
+				fHist_eff_match(0),
+				fHist_eff_TPC(0)
+
 {
 				// default constructor, don't allocate memory here!
 				// this is used by root for IO purposes, it needs to remain empty
@@ -212,7 +218,12 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fPi010(0),
 				fEta010(0),
 				fHistPt_HFE_MC_D(0),
-				fHistPt_HFE_MC_B(0)
+				fHistPt_HFE_MC_B(0),
+				//fHist_eff_pretrack(0),
+				//fHist_eff_postHFE(0),
+				fHist_eff_HFE(0),
+				fHist_eff_match(0),
+				fHist_eff_TPC(0)
 {
 				// constructor
 				DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -285,8 +296,17 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fCheckEtaMC = new TH1F("fCheckEtaMC","check Eta range cut in MC",160,-0.8,0.8);
 				fHistMCorgD = new TH1F("fHistMCorgD","MC org D",60,0,60);
 				fHistMCorgB = new TH1F("fHistMCorgB","MC org B",60,0,60);
-				fHistPt_HFE_MC_D = new TH1F("fHistPt_HFE_MC_D","HFE from D MC",1000,0,100);
-				fHistPt_HFE_MC_B = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",1000,0,100);
+				fHistPt_HFE_MC_D  = new TH1F("fHistPt_HFE_MC_D","HFE from D MC",60,0,60);
+				fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",60,0,60);
+				//fHist_eff_pretrack   = new TH1F("fHist_eff_pretrack","efficiency :: before track cut",60,0,60);
+				//fHist_eff_posttrack   = new TH1F("fHist_eff_posttrack","efficiency :: afger track cut",60,0,60);
+				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",60,0,60);
+				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",60,0,60);
+				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",60,0,60);
+
+
+
+
 
 				/////////////////
 				//pi0 weight			
@@ -374,6 +394,14 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fHistPhoEta1);
 				fOutputList->Add(fHistPt_HFE_MC_D);
 				fOutputList->Add(fHistPt_HFE_MC_B);
+				//fOutputList->Add(fHist_eff_pretrack);
+				//fOutputList->Add(fHist_eff_posttrack);
+				fOutputList->Add(fHist_eff_HFE); 
+				fOutputList->Add(fHist_eff_match); 
+				fOutputList->Add(fHist_eff_TPC); 
+
+
+
 
 				PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
 				// fOutputList object. the manager will in the end take care of writing your output to file
@@ -615,10 +643,14 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								Int_t EMCalIndex = -1;
 								EMCalIndex = track->GetEMCALcluster();  // get index of EMCal cluster which matched to track
 
+								//fHist_eff_pretrack->Fill(TrkPt);
 
 								if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
 								if(track->GetTPCNcls() < 80) continue;
 								if(track->GetITSNcls() < 3) continue;
+								if(track->Eta()>0.6 || track->Eta()<-0.6) continue;
+
+								//fHist_eff_posttrack->Fill(TrkPt);
 
 								///////////////////////
 								// Get MC information//
@@ -676,6 +708,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 								if(pidM==443)continue; // remove enhanced J/psi in MC !
 								if(pidM==-99)continue; // remove e from no mother !
+
+								if(pid_eleB || pid_eleD) {
+												fHist_eff_HFE->Fill(TrkPt);
+												if(fTPCnSigma<3 && fTPCnSigma>-1) fHist_eff_TPC->Fill(TrkPt);
+								}				
+
 
 								//if(pid_ele==1.0)cout << "pidM = " << pidM << " ; " << pid_eleP << endl;  
 								//if(pid_eleD)fHistDCAde->Fill(track->Pt(),DCAxy);
@@ -742,6 +780,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												fHistPhi_EMcal->Fill(track->Phi());
 												}
 
+
+												if(fTPCnSigma<3 && fTPCnSigma>-1){
+																if(pid_eleB || pid_eleD) fHist_eff_match->Fill(TrkPt);
+												}
+
 												fHistScatter_EMcal_aftMatch->Fill(track->Eta(),track->Phi());	
 
 												Double_t eop = -1.0;
@@ -790,6 +833,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																}
 
 												}
+
+
 
 												if(fTPCnSigma<3 && fTPCnSigma>-3 && m20>0.02 && m20<0.25){
 																fEopPt_ele_loose -> Fill(TrkPt,eop);

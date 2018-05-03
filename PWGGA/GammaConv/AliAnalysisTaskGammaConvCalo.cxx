@@ -2559,7 +2559,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
     if(fIsMC==2){
       Float_t xsection      = -1.;
       Float_t ntrials       = -1.;
-      ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetXSectionAndNTrials(fMCEvent,xsection,ntrials);
+      ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetXSectionAndNTrials(fMCEvent,xsection,ntrials,fInputEvent);
       if((xsection==-1.) || (ntrials==-1.)) AliFatal(Form("ERROR: GetXSectionAndNTrials returned invalid xsection/ntrials, periodName from V0Reader: '%s'",fV0Reader->GetPeriodName().Data()));
       fProfileJetJetXSection[iCut]->Fill(0.,xsection);
       fHistoJetJetNTrials[iCut]->Fill("#sum{NTrials}",ntrials);
@@ -2568,7 +2568,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
     if(fIsMC>0){
       fWeightJetJetMC       = 1;
   //     cout << fMCEvent << endl;
-      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC );
+      Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC, fInputEvent );
       if (fIsMC == 3){
         Double_t weightMult   = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
         fWeightJetJetMC       = fWeightJetJetMC*weightMult;

@@ -53,6 +53,7 @@
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerSelectionCuts.h"
 #include "AliEmcalTriggerOfflineSelection.h"
+#include "AliEmcalTriggerStringDecoder.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
@@ -82,7 +83,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fEnableSumw2(false),
     fDoFillMultiplicityHistograms(false),
     fUseExclusiveTriggers(true),
-    fClusterTimeRange(-50e-6, 50e-6)
+    fClusterTimeRange(-50e-6, 50e-6),
+    fTriggerClusters()
 {
 }
 
@@ -97,7 +99,8 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fEnableSumw2(false),
     fDoFillMultiplicityHistograms(false),
     fUseExclusiveTriggers(true),
-    fClusterTimeRange(-50e-6, 50e-6)
+    fClusterTimeRange(-50e-6, 50e-6),
+    fTriggerClusters()
 {
 }
 
@@ -108,7 +111,8 @@ AliAnalysisTaskEmcalClustersRef::~AliAnalysisTaskEmcalClustersRef() {
 void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
 
   EnergyBinning energybinning;
-  TLinearBinning smbinning(21, -0.5, 20.5), etabinning(100, -0.7, 0.7), timebinning(1000, -500e-9, 500e-9), ncellbinning(101, -0.5, 100.5);
+  TLinearBinning smbinning(21, -0.5, 20.5), etabinning(100, -0.7, 0.7), phibinning(200, 0., TMath::TwoPi()), timebinning(1000, -500e-9, 500e-9), ncellbinning(101, -0.5, 100.5);
+  TLinearBinning trgclustbinning(kTrgClusterN, -0.5, kTrgClusterN - 0.5);
   TString optionstring = fEnableSumw2 ? "s" : "";
 
   /*
@@ -117,50 +121,25 @@ void AliAnalysisTaskEmcalClustersRef::CreateUserHistos(){
    * This is needed to make the triggers statistically
    * independent.
    */
-  std::array<Double_t, 5> encuts = {1., 2., 5., 10., 20.};
-  Int_t sectorsWithEMCAL[10] = {4, 5, 6, 7, 8, 9, 13, 14, 15, 16};
 
   // Binnings for Multiplicity correlation
   TLinearBinning v0abinning(1000, 0., 1000.), trackletbinning(500, 0., 500.), itsclustbinning(500, 0., 500.), emcclustbinning(100, 0., 100.), emccellbinning(3000, 0., 3000.), adcbinning(2000, 0., 2000.);
   const TBinning *multbinning[6] = {&v0abinning, &trackletbinning, &trackletbinning, &itsclustbinning, &emcclustbinning, &emccellbinning};
+  const TBinning *clustallbinning[6] = {&smbinning, &energybinning, &energybinning, &etabinning, &phibinning, &trgclustbinning};
+  AliDebugStream(1) << "Using exclusive triggers: " << (fUseExclusiveTriggers ? "yes" : "no") << std::endl;
   for(auto trg : GetSupportedTriggers(fUseExclusiveTriggers)){
-    fHistos->CreateTH1("hEventCount" + trg, "Event count for trigger class " + trg, 1, 0.5, 1.5, optionstring);
+    AliDebugStream(1) << "Creating histograms for trigger " << trg << std::endl;
+    fHistos->CreateTH1("hTrgClustCounter" + trg, "Event counter in trigger cluster " + trg, trgclustbinning);
     fHistos->CreateTH1("hEventCentrality" + trg, "Event centrality for trigger class " + trg, 103, -2., 101., optionstring);
     fHistos->CreateTH1("hVertexZ" + trg, "z-position of the primary vertex for trigger class " + trg, 200, -40., 40., optionstring);
     if(this->fDoFillMultiplicityHistograms) fHistos->CreateTHnSparse("hMultiplicityCorrelation" + trg, "Multiplicity correlation for trigger" + trg, 6, multbinning);
-    fHistos->CreateTH1("hClusterEnergy" + trg, "Cluster energy for trigger class " + trg, energybinning, optionstring);
-    fHistos->CreateTH1("hClusterET" + trg, "Cluster transverse energy for trigger class " + trg, energybinning, optionstring);
-    fHistos->CreateTH1("hClusterEnergyFired" + trg, "Cluster energy for trigger class " + trg + ", firing the trigger", energybinning, optionstring);
-    fHistos->CreateTH1("hClusterETFired" + trg, "Cluster transverse energy for trigger class " + trg + ", firing the trigger" , energybinning, optionstring);
-    fHistos->CreateTH2("hClusterEnergySM" + trg, "Cluster energy versus supermodule for trigger class " + trg, smbinning, energybinning, optionstring);
-    fHistos->CreateTH2("hClusterETSM" + trg, "Cluster transverse energy versus supermodule for trigger class " + trg, smbinning, energybinning, optionstring);
-    fHistos->CreateTH2("hClusterEnergyFiredSM" + trg, "Cluster energy versus supermodule for trigger class " + trg + ", firing the trigger" , smbinning, energybinning, optionstring);
-    fHistos->CreateTH2("hClusterETFiredSM" + trg, "Cluster transverse energy versus supermodule for trigger class " + trg + ", firing the trigger" , smbinning, energybinning, optionstring);
-    fHistos->CreateTH2("hEtaEnergy" + trg, "Cluster energy vs. eta for trigger class " + trg, etabinning, energybinning, optionstring);
-    fHistos->CreateTH2("hEtaET" + trg, "Cluster transverse energy vs. eta for trigger class " + trg, etabinning, energybinning, optionstring);
+    fHistos->CreateTHnSparse("hClusterTHnSparseAll" + trg, "Cluster THnSparse (all) for trigger" + trg, 6, clustallbinning);
+    fHistos->CreateTHnSparse("hClusterTHnSparseFired" + trg, "Cluster THnSparse (firing) for trigger" + trg, 6, clustallbinning);
     fHistos->CreateTH2("hTimeEnergy" + trg, "Cluster time vs. energy for trigger class " + trg, timebinning, energybinning, optionstring);
     fHistos->CreateTH2("hNCellEnergy" + trg, "Cluster number of cells vs energy for trigger class " + trg, ncellbinning, energybinning, optionstring);
     fHistos->CreateTH2("hNCellET" + trg, "Cluster number of cells vs transverse energy for trigger class " + trg, ncellbinning, energybinning, optionstring);
-    fHistos->CreateTH2("hEtaEnergyFired" + trg, "Cluster energy vs. eta for trigger class " + trg + ", firing the trigger", etabinning, energybinning, optionstring);
-    fHistos->CreateTH2("hEtaETFired" + trg, "Cluster transverse energy vs. eta for trigger class " + trg + ", firing the trigger", etabinning, energybinning, optionstring);
     fHistos->CreateTH2("hCorrClusterEPatchADC" + trg, "Correlation between cluster E and patch ADC for trigger " + trg, energybinning, adcbinning);
     fHistos->CreateTH2("hCorrClusterEPatchE" + trg, "Correlation between cluster E and patch E for trigger " + trg, energybinning, energybinning);
-    for(int ism = 0; ism < 20; ism++){
-      fHistos->CreateTH2(TString::Format("hEtaEnergySM%d", ism) + trg, TString::Format("Cluster energy vs. eta in Supermodule %d for trigger ", ism) + trg, etabinning, energybinning, optionstring);
-      fHistos->CreateTH2(TString::Format("hEtaETSM%d", ism) + trg, TString::Format("Cluster transverse energy vs. eta in Supermodule %d for trigger ", ism) + trg, etabinning, energybinning, optionstring);
-      fHistos->CreateTH2(TString::Format("hEtaEnergyFiredSM%d", ism) + trg, TString::Format("Cluster energy vs. eta in Supermodule %d for trigger ", ism) + trg + ",  firing the trigger", etabinning, energybinning, optionstring);
-      fHistos->CreateTH2(TString::Format("hEtaETFiredSM%d", ism) + trg, TString::Format("Cluster transverse energy vs. eta in Supermodule %d for trigger ", ism) + trg +", firing the trigger", etabinning, energybinning, optionstring);
-    }
-    for(int isec = 0; isec < 10; isec++){
-      fHistos->CreateTH2(TString::Format("hEtaEnergySec%d", sectorsWithEMCAL[isec]) + trg, TString::Format("Cluster energy vs.eta in tracking sector %d for trigger ", sectorsWithEMCAL[isec]) + trg, etabinning, energybinning, optionstring);
-      fHistos->CreateTH2(TString::Format("hEtaETSec%d", sectorsWithEMCAL[isec]) + trg, TString::Format("Cluster transverse energy vs.eta in tracking sector %d for trigger ", sectorsWithEMCAL[isec]) + trg, etabinning, energybinning, optionstring);
-      fHistos->CreateTH2(TString::Format("hEtaEnergyFiredSec%d", sectorsWithEMCAL[isec]) + trg, TString::Format("Cluster energy vs.eta in tracking sector %d for trigger ", sectorsWithEMCAL[isec]) +  trg + ", firing the trigger", etabinning, energybinning, optionstring);
-      fHistos->CreateTH2(TString::Format("hEtaETFiredSec%d", sectorsWithEMCAL[isec]) + trg, TString::Format("Cluster transverse energy vs.eta in tracking sector %d for trigger ", sectorsWithEMCAL[isec]) +  trg + ", firing the trigger", etabinning, energybinning, optionstring);
-    }
-    for(auto ien : encuts){
-      fHistos->CreateTH2(TString::Format("hEtaPhi%dG", static_cast<int>(ien)) + trg, TString::Format("cluster #eta-#phi map for clusters with energy larger than %f GeV/c for trigger class ", ien) + trg, 100, -0.7, 0.7, 200, 0, 2*TMath::Pi(), optionstring);
-      fHistos->CreateTH2(TString::Format("hEtaPhiFired%dG", static_cast<int>(ien)) +  trg, TString::Format("cluster #eta-#phi map for clusters fired the trigger with energy larger than %f GeV/c for trigger class", ien) + trg + ", firing the trigger", 200, -0.7, 0.7, 200, 0, 2*TMath::Pi(), optionstring);
-    }
   }
 }
 
@@ -189,6 +168,45 @@ bool AliAnalysisTaskEmcalClustersRef::IsUserEventSelected(){
     int bcindex = fInputEvent->GetHeader()->GetBunchCrossNumber() % 4;
     if(bcindex != fBunchCrossingIndex) return false;
   }
+
+  // determine trigger clusters (ANY - 0 always included)
+  // Only meaningfull in data
+  fTriggerClusters.clear();
+  fTriggerClusters.emplace_back(kTrgClusterANY);
+  Bool_t isCENT(false), isCENTNOTRD(false), isCALO(false), isCALOFAST(false);
+  for(auto trg : PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data())){
+    auto trgclust = trg.Triggercluster();
+    if(trgclust == "CENT" && !isCENT){
+      isCENT = true;
+      fTriggerClusters.emplace_back(kTrgClusterCENT);
+    }
+    if(trgclust == "CENTNOTRD" && ! isCENTNOTRD){
+      isCENTNOTRD = true;
+      fTriggerClusters.emplace_back(kTrgClusterCENTNOTRD);
+    }
+    if(trgclust == "CALO" && !isCALO){
+      isCALO = true;
+      fTriggerClusters.emplace_back(kTrgClusterCALO);
+    }
+    if(trgclust == "CALOFAST" && ! isCALOFAST) {
+      isCALOFAST = true;
+      fTriggerClusters.emplace_back();
+    } 
+  }
+  // Mixed clusters
+  if(isCENT || isCENTNOTRD) {
+    if(isCENT) {
+      if(isCENTNOTRD) fTriggerClusters.emplace_back(kTrgClusterCENTBOTH);
+      else fTriggerClusters.emplace_back(kTrgClusterOnlyCENT);
+    } else fTriggerClusters.emplace_back(kTrgClusterOnlyCENTNOTRD);
+  }
+  if(isCALO || isCALOFAST){
+    if(isCALO) {
+      if(isCALOFAST) fTriggerClusters.emplace_back(kTrgClusterCALOBOTH);
+      else fTriggerClusters.emplace_back(kTrgClusterOnlyCALO);
+    } else fTriggerClusters.emplace_back(kTrgClusterOnlyCALOFAST);
+  }
+
   return true;
 }
 
@@ -257,6 +275,7 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
     et = posvec.Et();
     eta = posvec.Eta();
     phi = posvec.Phi();
+    if(phi < 0) phi += TMath::TwoPi();
 
     // fill histograms allEta
     for(const auto & trg : fSelectedTriggers){
@@ -270,42 +289,31 @@ bool AliAnalysisTaskEmcalClustersRef::Run(){
           }
         }
       }
-      FillClusterHistograms(trg.Data(), energy, et, eta, phi, clust->GetTOF(), clust->GetNCells(), selpatches, energycomp);
+      for(auto trgclust : fTriggerClusters) {
+        FillClusterHistograms(trg.Data(), energy, et, eta, phi, clust->GetTOF(), clust->GetNCells(), trgclust, selpatches, energycomp);
+      }
     }
   }
   return true;
 }
 
-void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &triggerclass, double energy, double transverseenergy, double eta, double phi, double clustertime, int ncell, const TList *triggerPatches, int energycomp){
+void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &triggerclass, double energy, double transverseenergy, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerPatches, int energycomp){
   std::vector<AliEMCALTriggerPatchInfo *> matchedPatches;
   if(triggerPatches) {
     matchedPatches = CorrelateToTrigger(eta, phi, *triggerPatches);
   }
   auto hasTriggerPatch = matchedPatches.size() > 0;
-  Int_t supermoduleID = -1, sector = -1;
+  Int_t supermoduleID = -1;
   Double_t weight = GetTriggerWeight(triggerclass);
   AliDebugStream(1) << GetName() << ": Using weight " << weight << " for trigger " << triggerclass << std::endl;
 
   fGeom->SuperModuleNumberFromEtaPhi(eta, phi, supermoduleID);
-  fHistos->FillTH1("hClusterEnergy" + triggerclass, energy, weight);
-  fHistos->FillTH1("hClusterET" + triggerclass, transverseenergy, weight);
-  fHistos->FillTH2("hEtaEnergy" + triggerclass, eta, energy, weight);
-  fHistos->FillTH2("hEtaET" + triggerclass, eta, transverseenergy, weight);
+  double point[6] = {static_cast<double>(supermoduleID), energy, transverseenergy, eta, phi, static_cast<double>(trgcluster)};
+  fHistos->FillTHnSparse("hClusterTHnSparseAll" + triggerclass, point, weight);
+
   fHistos->FillTH2("hTimeEnergy" + triggerclass, clustertime, energy, weight);
   fHistos->FillTH2("hNCellEnergy" + triggerclass, ncell, energy, weight);
   fHistos->FillTH2("hNCellET" + triggerclass, ncell, transverseenergy, weight);
-  if(supermoduleID >= 0){
-    fHistos->FillTH2("hClusterEnergySM" + triggerclass, supermoduleID, energy, weight);
-    fHistos->FillTH2("hClusterETSM" + triggerclass, supermoduleID, transverseenergy, weight);
-    fHistos->FillTH2(TString::Format("hEtaEnergySM%d", supermoduleID) + triggerclass, eta, energy, weight);
-    fHistos->FillTH2(TString::Format("hEtaETSM%d", supermoduleID) + triggerclass, eta, transverseenergy, weight);
-    if(supermoduleID < 12)
-      sector = 4 + int(supermoduleID/2); // EMCAL
-    else
-      sector = 13 + int((supermoduleID-12)/2);  // DCAL
-    fHistos->FillTH2(TString::Format("hEtaEnergySec%d", sector) + triggerclass, eta, energy, weight);
-    fHistos->FillTH2(TString::Format("hEtaETSec%d", sector) + triggerclass, eta, transverseenergy, weight);
-  }
   if(hasTriggerPatch){
     // find maximum trigger patch
     AliEMCALTriggerPatchInfo *maxpatch(nullptr);
@@ -324,27 +332,7 @@ void AliAnalysisTaskEmcalClustersRef::FillClusterHistograms(const TString &trigg
     }
     fHistos->FillTH2("hCorrClusterEPatchADC" + triggerclass, energy, maxpatch->GetADCAmp());
     fHistos->FillTH2("hCorrClusterEPatchE" + triggerclass, energy, maxpatch->GetPatchE());
-    fHistos->FillTH1("hClusterEnergyFired" + triggerclass, energy, weight);
-    fHistos->FillTH1("hClusterETFired" + triggerclass, energy, weight);
-    fHistos->FillTH2("hEtaEnergyFired" + triggerclass, eta, energy, weight);
-    fHistos->FillTH2("hEtaETFired" + triggerclass, eta, energy, weight);
-    if(supermoduleID >= 0){
-      fHistos->FillTH2("hClusterEnergyFiredSM" + triggerclass, supermoduleID, energy, weight);
-      fHistos->FillTH2("hClusterETFiredSM" + triggerclass, supermoduleID, transverseenergy, weight);
-      fHistos->FillTH2(TString::Format("hEtaEnergyFiredSM%d", supermoduleID) + triggerclass, eta, energy,weight);
-      fHistos->FillTH2(TString::Format("hEtaETFiredSM%d", supermoduleID) + triggerclass, eta, transverseenergy, weight);
-      fHistos->FillTH2(TString::Format("hEtaEnergyFiredSec%d", sector) + triggerclass, eta, energy, weight);
-      fHistos->FillTH2(TString::Format("hEtaETFiredSec%d", sector) + triggerclass, eta, transverseenergy, weight);
-    }
-  }
-  Double_t encuts[5] = {1., 2., 5., 10., 20.};
-  for(int ien = 0; ien < 5; ien++){
-    if(energy > encuts[ien]){
-      fHistos->FillTH2(TString::Format("hEtaPhi%dG", static_cast<int>(encuts[ien])) + triggerclass, eta, phi, weight);
-      if(hasTriggerPatch){
-        fHistos->FillTH2(TString::Format("hEtaPhiFired%dG", static_cast<int>(encuts[ien])) + triggerclass, eta, phi, weight);
-      }
-    }
+    fHistos->FillTHnSparse("hClusterTHnSparseFired" + triggerclass, point, weight);
   }
 }
 
@@ -355,11 +343,18 @@ void AliAnalysisTaskEmcalClustersRef::UserFillHistosAfterEventSelection(){
          itsclustermult = fInputEvent->GetMultiplicity()->GetNumberOfSPDClusters(),
          emcclustermult = static_cast<double>(CountEmcalClusters(0.5)),
          emccellocc = static_cast<double>(this->GetEMCALCellOccupancy(0.1));
+
+  auto supportedTriggers = GetSupportedTriggers(fUseExclusiveTriggers);
+
   for(const auto &t : fSelectedTriggers){
+    if(std::find(supportedTriggers.begin(), supportedTriggers.end(), t) == supportedTriggers.end()) continue;
     Double_t weight = GetTriggerWeight(t);
-    fHistos->FillTH1("hEventCount" + t, 1, weight);
     fHistos->FillTH1("hEventCentrality" + t, fEventCentrality, weight);
     fHistos->FillTH1("hVertexZ" + t, fVertex[2], weight);
+    
+    for(auto trgclust : fTriggerClusters){
+      fHistos->FillTH1("hTrgClustCounter" + t, static_cast<double>(trgclust), weight);
+    }
 
     // Multiplicity correlation (no correction for downscaling)
     if(fDoFillMultiplicityHistograms){

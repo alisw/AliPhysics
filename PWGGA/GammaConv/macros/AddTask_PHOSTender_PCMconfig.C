@@ -29,12 +29,13 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
   AliPHOSTenderSupply *PHOSSupply=new AliPHOSTenderSupply(tenderName) ;
   PHOSSupply->SetReconstructionPass(pass) ;
   PHOSSupply->SetNonlinearityVersion(nonLinName) ;
-  if (isRun2 && !isMC)
-    PHOSSupply->ApplyZeroSuppression(0.020)
 
   tenderTask->SetPHOSTenderSupply(PHOSSupply) ;
   if(isMC) //handle MC data
     PHOSSupply->SetMCProduction(options) ;
+  if (isRun2 && !isMC)
+    PHOSSupply->ApplyZeroSuppression(0.020)
+
   if (forceBadChannelMap==1){
     std::cout << "=============================================================" << std::endl;
     std::cout << "INFO: AddPHOSTender_PCMConfig: "<< "You are setting a specific bad channel map using a full OADB file: " <<  specificBCMap.Data() << std::endl;

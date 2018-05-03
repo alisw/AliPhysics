@@ -1169,21 +1169,6 @@ AliFemtoConfigObject& AliFemtoConfigObject::operator=(AliFemtoConfigObject &&rhs
 #endif // move-semantics
 
 
-template <typename StreamType>
-StreamType& operator<<(StreamType &stream, const AliFemtoConfigObject *ptr)
-{
-  return std::operator<<(stream, *ptr);
-}
-
-template <typename StreamType>
-StreamType& operator>>(StreamType &stream, AliFemtoConfigObject *&ptr)
-{
-  if (!ptr) {
-    ptr = new AliFemtoConfigObject();
-  }
-  return std::operator>>(stream, *ptr);
-}
-
 template <typename ReturnType>
 AliFemtoConfigObject* AliFemtoConfigObject::pop(const Key_t &key, const ReturnType &default_)
 {

@@ -69,7 +69,7 @@ void AliPP13PythiaInfoSelection::CountMBEvent()
 }
 
 //________________________________________________________________
-void AliPP13PythiaInfoSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
+void AliPP13PythiaInfoSelection::FillHistograms(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
 {
 	(void) clusArray;
 	(void) pool;

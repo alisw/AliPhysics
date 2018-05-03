@@ -15,6 +15,7 @@
 #include <TH3F.h>
 
 // --- AliRoot header files ---
+#include <AliPIDResponse.h>
 #include <AliPHOSGeometry.h>
 #include <AliVCluster.h>
 #include <AliLog.h>
@@ -31,7 +32,8 @@ struct EventFlags
 		eventPileup(p),
 		eventVtxExists(vtx),
 		ncontributors(0),
-		fMcParticles(0)
+		fMcParticles(0),
+		fPIDResponse(0)
 		//, eventV0AND(v0)
 	{}
 
@@ -44,7 +46,7 @@ struct EventFlags
 	Bool_t eventVtxExists;
 	Int_t ncontributors;
 	TClonesArray * fMcParticles;
-
+	AliPIDResponse * fPIDResponse;
 	// Bool_t eventV0AND;
 };
 
@@ -79,7 +81,7 @@ public:
 
 	// This is a dummy method to count number of Triggered Events.
 	virtual void CountMBEvent();
-	virtual void FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags); // implements algorithm
+	virtual void FillHistograms(TObjArray * clusArray, TList * pool, const EventFlags & eflags); // implements algorithm
     virtual void ConsiderGeneratedParticles(const EventFlags & eflags)
     {
     	(void) eflags;
@@ -90,6 +92,7 @@ public:
 
 protected:
 	virtual void SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags);
+	virtual void SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags);
 	virtual void FillClusterHistograms(const AliVCluster * c, const EventFlags & eflags)
 	{
 		(void) c;
@@ -109,7 +112,6 @@ protected:
 	AliPP13PhotonSelection(const AliPP13PhotonSelection &);
 	AliPP13PhotonSelection & operator = (const AliPP13PhotonSelection &);
 
-	void FillHistogram(const char * key, Double_t x, Double_t y = 1, Double_t z = 1); //Fill 3D histogram witn name key
 	TList  * fListOfHistos;  //! list of histograms
 	AliPP13ClusterCuts fCuts;
 

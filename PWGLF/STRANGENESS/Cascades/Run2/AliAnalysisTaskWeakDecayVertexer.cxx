@@ -125,6 +125,7 @@ fkRunCascadeVertexer    ( kFALSE ),
 fkUseUncheckedChargeCascadeVertexer ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedDCACascDauPropagation ( kFALSE ),
+fkDoXYPlanePreOptCascade( kFALSE ),
 fkDoPureGeometricMinimization( kFALSE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
@@ -172,6 +173,7 @@ fkRunCascadeVertexer    ( kFALSE ),
 fkUseUncheckedChargeCascadeVertexer ( kFALSE ),
 fkUseOnTheFlyV0Cascading( kFALSE ),
 fkDoImprovedDCACascDauPropagation ( kFALSE ),
+fkDoXYPlanePreOptCascade( kFALSE ),
 fkDoPureGeometricMinimization( kFALSE ),
 fkDoCascadeRefit( kFALSE ) ,
 fMaxIterationsWhenMinimizing(27),
@@ -1249,7 +1251,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         Double_t p1[8]; t->GetHelixParameters(p1,b);
         p1[6]=TMath::Sin(p1[2]); p1[7]=TMath::Cos(p1[2]);
         
-        if ( kFALSE ) { //this does not have a significant impact 
+        if ( fkDoXYPlanePreOptCascade ) { //This needs testing! 
             //Look for XY plane characteristics: determine relevant helix properties
             Double_t lBachRadius = TMath::Abs(1./p1[4]);
             Double_t lBachCenter[2];

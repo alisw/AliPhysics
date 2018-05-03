@@ -33,6 +33,7 @@
 #include <THistManager.h>
 #include <TLinearBinning.h>
 
+#include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJetEnergySpectrum.h"
 #include "AliEmcalAnalysisFactory.h"
@@ -48,6 +49,20 @@ ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergySpectrum);
 
 using namespace EmcalTriggerJets;
 
+AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
+  AliAnalysisTaskEmcalJet(),
+  fHistos(nullptr),
+  fIsMC(false),
+	fTriggerSelectionBits(AliVEvent::kAny),
+  fTriggerSelectionString(""),
+  fNameTriggerDecisionContainer("EmcalTriggerDecision"),
+  fUseTriggerSelectionForData(false),
+  fUseDownscaleWeight(false),
+  fNameJetContainer("datajets")
+{
+  SetUseAliAnaUtils(true);
+}
+
 AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(const char *name):
   AliAnalysisTaskEmcalJet(name, true),
   fHistos(nullptr),
@@ -55,7 +70,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(con
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
-  fUseTriggerSelectionForData(true),
+  fUseTriggerSelectionForData(false),
   fUseDownscaleWeight(false),
   fNameJetContainer("datajets")
 {
@@ -88,19 +103,22 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   }
   if(!TriggerSelection()) return false;
 
-  auto trgcluster = GetTriggerClusterIndex(fInputEvent->GetFiredTriggerClasses());
+  auto trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses());
   fHistos->FillTH1("hEventCounter", 1);
-  fHistos->FillTH1("hClusterCounter", trgcluster);
+  for(auto t : trgclusters) fHistos->FillTH1("hClusterCounter", t);
   for(auto j : datajets->accepted()){
-    double datapoint[5] = {j->Pt(), j->Eta(), j->Phi(), j->NEF(), static_cast<double>(trgcluster)};
-    fHistos->FillTHnSparse("hJetTHnSparse", datapoint);
+    double datapoint[5] = {j->Pt(), j->Eta(), j->Phi(), j->NEF(), 0.};
+    for(auto t : trgclusters){
+      datapoint[4] = static_cast<double>(t);
+      fHistos->FillTHnSparse("hJetTHnSparse", datapoint);
+    }
   }
   return true;
 }
 
-Int_t AliAnalysisTaskEmcalJetEnergySpectrum::GetTriggerClusterIndex(const TString &triggerstring) const {
+std::vector<AliAnalysisTaskEmcalJetEnergySpectrum::TriggerCluster_t> AliAnalysisTaskEmcalJetEnergySpectrum::GetTriggerClusterIndices(const TString &triggerstring) const {
   // decode trigger string in order to determine the trigger clusters
-  int clusterindex = -1;
+  std::vector<TriggerCluster_t> result;
   std::vector<std::string> clusternames;
   auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring.Data());
   for(auto t : triggerinfos) {
@@ -110,11 +128,31 @@ Int_t AliAnalysisTaskEmcalJetEnergySpectrum::GetTriggerClusterIndex(const TStrin
        isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
        isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
        isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
-  if(isCENT) clusterindex = 0;
-  else if(isCENTNOTRD) clusterindex = 1;
-  else if(isCALO) clusterindex = 2;
-  else if(isCALOFAST) clusterindex = 3;
-  return clusterindex;
+  if(isCENT || isCENTNOTRD) {
+    if(isCENT) {
+      result.emplace_back(kTrgClusterCENT);
+      if(isCENTNOTRD) {
+        result.emplace_back(kTrgClusterCENTNOTRD);
+        result.emplace_back(kTrgClusterCENTBOTH);
+      } else result.emplace_back(kTrgClusterOnlyCENT);
+    } else {
+      result.emplace_back(kTrgClusterCENTNOTRD);
+      result.emplace_back(kTrgClusterOnlyCENTNOTRD);
+    }
+  }
+  if(isCALO || isCALOFAST) {
+    if(isCALO) {
+      result.emplace_back(kTrgClusterCALO);
+      if(isCALOFAST) {
+        result.emplace_back(kTrgClusterCALOFAST);
+        result.emplace_back(kTrgClusterCALOBOTH);
+      } else result.emplace_back(kTrgClusterOnlyCALO);
+    } else {
+      result.emplace_back(kTrgClusterCALOFAST);
+      result.emplace_back(kTrgClusterOnlyCALOFAST);
+    }
+  }
+  return result;
 }
 
 bool AliAnalysisTaskEmcalJetEnergySpectrum::TriggerSelection() const {
@@ -170,6 +208,17 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
     return nullptr;
   }
 
+  Bool_t isAOD(kFALSE);
+  AliInputEventHandler *inputhandler = static_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
+  if(inputhandler) {
+    if(inputhandler->IsA() == AliAODInputHandler::Class()){
+      std::cout << "Analysing AOD events\n";
+      isAOD = kTRUE;
+    } else {
+      std::cout << "Analysing ESD events\n";
+    }
+  }
+
   std::string jettypestring;
   UInt_t acctype(AliJetContainer::kTPCfid);
   switch(jettype){
@@ -179,7 +228,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   };
 
   std::stringstream tag, outfilename;
-  tag << jettypestring << "_R" << std::setw(2) << std::setfill('0') << radius << "_" << trigger;
+  tag << jettypestring << "_R" << std::setw(2) << std::setfill('0') << int(radius * 10.) << "_" << trigger;
   if(strlen(suffix)) {
     tag << "_" << suffix;
   }
@@ -187,15 +236,26 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   task->SetIsMC(isMC);
   mgr->AddTask(task);
 
+  auto contains = [](const std::string &str, const std::string &test) {
+    return str.find(test) != std::string::npos;
+  };
+
+  std::string trgstr(trigger);
+  if(contains(trgstr, "INT7")) task->SetTriggerSelection(AliVEvent::kINT7, "INT7");
+  else if(contains(trgstr, "EJ1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ1");
+  else if(contains(trgstr, "EJ2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EJ2");
+  else if(contains(trgstr, "EG1")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EG1");
+  else if(contains(trgstr, "EG2")) task->SetTriggerSelection(AliVEvent::kEMCEJE, "EG2");
+
   // Connect particle and cluster container
   AliTrackContainer *tracks(nullptr);
   AliClusterContainer *clusters(nullptr);
   if(jettype == AliJetContainer::kChargedJet || jettype == AliJetContainer::kFullJet) {
-    tracks = task->AddTrackContainer("usedefault");
+    tracks = task->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
     tracks->SetMinPt(0.15);
   }
   if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kChargedJet){
-    clusters = task->AddClusterContainer("usedefault");
+    clusters = task->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
     clusters->SetClusHadCorrEnergyCut(0.3);
   }

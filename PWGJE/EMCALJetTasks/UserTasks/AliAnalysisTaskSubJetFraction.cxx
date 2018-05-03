@@ -104,6 +104,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction() :
   fReclusteringAlgorithm(0),
   fSoftDropOn(0),
   fNsubMeasure(kFALSE),
+  fRandomisationEqualPt(kFALSE),
   fhPtTriggerHadron(0x0),
   fhJetPt(0x0),
   fhJetPt_1(0x0),
@@ -261,6 +262,7 @@ AliAnalysisTaskSubJetFraction::AliAnalysisTaskSubJetFraction(const char *name) :
   fReclusteringAlgorithm(0),
   fSoftDropOn(0),
   fNsubMeasure(kFALSE),
+  fRandomisationEqualPt(kFALSE),
   fhPtTriggerHadron(0x0),
   fhJetPt(0x0),
   fhJetPt_1(0x0),
@@ -1928,8 +1930,9 @@ std::vector<fastjet::PseudoJet> AliAnalysisTaskSubJetFraction::RandomiseTracks(A
     Random_Phi=Jet->Phi()+Random_Phi_Change;
     Random_Eta_Change=fRandom1.Uniform(-1*(TMath::Sqrt((fJetRadius*fJetRadius)-(Random_Phi_Change*Random_Phi_Change))),TMath::Sqrt((fJetRadius*fJetRadius)-(Random_Phi_Change*Random_Phi_Change)));
     Random_Eta=Jet->Eta()+Random_Eta_Change;
-    */    
-    Track_Pt=fInputVectors[i].perp();
+    */
+    if (fRandomisationEqualPt) Track_Pt=Jet->Pt()/fInputVectors.size();
+    else Track_Pt=fInputVectors[i].perp();
     fastjet::PseudoJet Random_Track(Track_Pt*TMath::Cos(Random_Phi),Track_Pt*TMath::Sin(Random_Phi),Track_Pt*TMath::SinH(Random_Eta),TMath::Sqrt((Track_Pt*Track_Pt)+(Track_Pt*TMath::SinH(Random_Eta)*Track_Pt*TMath::SinH(Random_Eta))));
     Random_Track.set_user_index(i);
     Random_Track_Vector.push_back(Random_Track);
