@@ -137,6 +137,7 @@ private:
   AliAnalysisTaskCombinHF(const AliAnalysisTaskCombinHF &source);
   AliAnalysisTaskCombinHF& operator=(const AliAnalysisTaskCombinHF& source);
   Double_t ComputeInvMassKK(AliAODTrack* tr1, AliAODTrack* tr2) const;
+  Double_t ComputeInvMassKK(TLorentzVector* tr1, TLorentzVector* tr2) const;
 
   TList   *fOutput; //!<! list send on output slot 0
   TH1F *fHistNEvents;         //!<!hist. for No. of events

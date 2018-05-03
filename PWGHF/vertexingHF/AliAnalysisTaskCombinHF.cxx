@@ -947,7 +947,13 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   Double_t massRot=0;// calculated later only if candidate is acceptable
   Double_t angleProngXY;
   if(TMath::Abs(pdgD)==421)angleProngXY=TMath::ACos((px[0]*px[1]+py[0]*py[1])/TMath::Sqrt((px[0]*px[0]+py[0]*py[0])*(px[1]*px[1]+py[1]*py[1])));
-  else {
+  else if(TMath::Abs(pdgD)==431) {
+    Double_t px_phi = px[0]+px[2];
+    Double_t py_phi = py[0]+py[2];
+    Double_t pz_phi = pz[0]+pz[2];
+    angleProngXY=TMath::ACos((pz_phi*px[1]+py_phi*py[1])/TMath::Sqrt((px_phi*px_phi+py_phi*py_phi)*(px[1]*px[1]+py[1]*py[1])));
+  }
+  else {//angle between pion and phi meson
     angleProngXY=TMath::ACos(((px[0]+px[1])*px[2]+(py[0]+py[1])*py[2])/TMath::Sqrt(((px[0]+px[1])*(px[0]+px[1])+(py[0]+py[1])*(py[0]+py[1]))*(px[2]*px[2]+py[2]*py[2])));
   }
   Double_t ptOrig=pt;
@@ -955,7 +961,7 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
   
   Double_t rotStep=0.;
   if(fNRotations>1) rotStep=(fMaxAngleForRot-fMinAngleForRot)/(fNRotations-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot
-  if(TMath::Abs(pdgD)==421) fNRotations3=1;
+  if(TMath::Abs(pdgD)==421 || TMath::Abs(pdgD)==431) fNRotations3=1;
   Double_t rotStep3=0.;
   if(fNRotations3>1) rotStep3=(fMaxAngleForRot3-fMinAngleForRot3)/(fNRotations3-1); // -1 is to ensure that the last rotation is done with angle=fMaxAngleForRot
 
@@ -965,10 +971,19 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
     Double_t tmpy=py[0];
     Double_t tmpx2=px[2];
     Double_t tmpy2=py[2];
-    px[0]=tmpx*TMath::Cos(phirot)-tmpy*TMath::Sin(phirot);
-    py[0]=tmpx*TMath::Sin(phirot)+tmpy*TMath::Cos(phirot);
+    if(pdgD==431) {
+      //rotate pion w.r.t. phi meson
+      tmpx=px[1];
+      tmpy=py[1];
+      px[1]=tmpx*TMath::Cos(phirot)-tmpy*TMath::Sin(phirot);
+      py[1]=tmpx*TMath::Sin(phirot)+tmpy*TMath::Cos(phirot);
+    }
+    else {
+      px[0]=tmpx*TMath::Cos(phirot)-tmpy*TMath::Sin(phirot);
+      py[0]=tmpx*TMath::Sin(phirot)+tmpy*TMath::Cos(phirot);
+    }
     for(Int_t irot3=0; irot3<fNRotations3; irot3++){
-      if(pdgD==411 || pdgD==431){
+      if(pdgD==411){
 	Double_t phirot2=fMaxAngleForRot3-rotStep3*irot;
 	px[2]=tmpx*TMath::Cos(phirot2)-tmpy*TMath::Sin(phirot2);
 	py[2]=tmpx*TMath::Sin(phirot2)+tmpy*TMath::Cos(phirot2);
@@ -990,11 +1005,17 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 	}
       }
     }
-    px[0]=tmpx;
-    py[0]=tmpy;
-    if(pdgD==411 || pdgD==431){
-      px[2]=tmpx2;
-      py[2]=tmpy2;
+    if(pdgD==431) {
+      px[1]=tmpx;
+      py[1]=tmpy;
+    }
+    else {
+      px[0]=tmpx;
+      py[0]=tmpy;
+      if(pdgD==411){
+        px[2]=tmpx2;
+        py[2]=tmpy2;
+      }
     }
   }
   fNormRotated->Fill(nRotated);
@@ -1357,7 +1378,7 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
       }     
       TObjArray* parray3=0x0;
       Int_t nPions3=0;
-      if(fMeson!=kDzero){
+      if(fMeson!=kDzero && fMeson!=kDs){
 	Int_t iEv3=iEv2+1;
 	if(iEv3==iEv1) iEv3=iEv2+2;
 	if(iEv3>=nEvents) iEv3=iEv2-3;
@@ -1382,7 +1403,20 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
 	  if(chargePi1*chargeK<0){
 	    if(fMeson==kDzero){
 	      FillMEHistos(421,2,tmpRD2,px,py,pz,pdg0);
-	    }else{
+      }else if(fMeson==kDs) {
+        for(Int_t iTr3=iTr1+1; iTr3<nKaons; iTr3++){
+          TLorentzVector* trK2=(TLorentzVector*)karray1->At(iTr3);
+          Double_t chargeK2=trK2->T();
+          px[2] = trK2->Px();
+          py[2] = trK2->Py();
+          pz[2] = trK2->Pz();
+          Double_t massKK=ComputeInvMassKK(trK,trK2);
+          Double_t deltaMass=massKK-TDatabasePDG::Instance()->GetParticle(333)->Mass();
+          if(chargeK2*chargeK<0 && TMath::Abs(deltaMass)<fPhiMassCut){
+            FillMEHistos(431,3,tmpRD3,px,py,pz,pdgs);
+          }
+        }
+      } else{
 	      if(parray3){
 		for(Int_t iTr3=iTr2+1; iTr3<nPions3; iTr3++){
 		  TLorentzVector* trPi2=(TLorentzVector*)parray3->At(iTr3);
@@ -1392,7 +1426,6 @@ void AliAnalysisTaskCombinHF::DoMixingWithPools(Int_t poolIndex){
 		  pz[2] = trPi2->Pz();
 		  if(chargePi2*chargeK<0){
 		    if(fMeson==kDplus) FillMEHistos(411,3,tmpRD3,px,py,pz,pdgp);
-		    else if(fMeson==kDs) FillMEHistos(431,3,tmpRD3,px,py,pz,pdgs);
 		  }
 		}
 	      }
@@ -1428,6 +1461,21 @@ void AliAnalysisTaskCombinHF::FinishTaskOutput()
 }
 //_________________________________________________________________
 Double_t AliAnalysisTaskCombinHF::ComputeInvMassKK(AliAODTrack* tr1, AliAODTrack* tr2) const{
+  /// inv mass of KK
+  Double_t massK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
+  Double_t p1=tr1->P();
+  Double_t p2=tr2->P();
+  Double_t pxtot=tr1->Px()+tr2->Px();
+  Double_t pytot=tr1->Py()+tr2->Py();
+  Double_t pztot=tr1->Pz()+tr2->Pz();
+  Double_t e1=TMath::Sqrt(massK*massK+p1*p1);
+  Double_t e2=TMath::Sqrt(massK*massK+p2*p2);
+  Double_t etot=e1+e2;
+  Double_t m2=etot*etot-(pxtot*pxtot+pytot*pytot+pztot*pztot);
+  return TMath::Sqrt(m2);
+}
+//_________________________________________________________________
+Double_t AliAnalysisTaskCombinHF::ComputeInvMassKK(TLorentzVector* tr1, TLorentzVector* tr2) const{
   /// inv mass of KK
   Double_t massK=TDatabasePDG::Instance()->GetParticle(321)->Mass();
   Double_t p1=tr1->P();
