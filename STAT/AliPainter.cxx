@@ -718,7 +718,7 @@ std::map<TString, Double_t> AliPainter::statValues;
           }
           if (TString(optionValues["ylim"](1, optionValues["ylim"].Index(",") - 1)) != TString("")) {
             key = TString(optionValues["ylim"](1, optionValues["ylim"].Index(",") - 1));
-            auto kit = AliPainter::statValues.find(key);
+            std::map<TString,Double_t>::iterator kit = AliPainter::statValues.find(key);
             if (kit == AliPainter::statValues.end()) yMin = key.Atof();
             else yMin = AliPainter::statValues[key];
             hisArray[j]->SetMinimum(yMin);
@@ -730,7 +730,7 @@ std::map<TString, Double_t> AliPainter::statValues;
             key = TString(optionValues["ylim"](optionValues["ylim"].Index(",") + 1,
                                                optionValues["ylim"].Index("]") -
                                                optionValues["ylim"].Index(",") - 1));
-            auto kit = AliPainter::statValues.find(key);
+            std::map<TString,Double_t>::iterator kit = AliPainter::statValues.find(key);
             if (kit == AliPainter::statValues.end()) yMax = key.Atof();
             else yMax = AliPainter::statValues[key];
             hisArray[j]->SetMaximum(yMax);

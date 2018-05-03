@@ -472,7 +472,7 @@ T AliDrawStyle::GetNamedTypeAt(const char *inputStr, Bool_t &status, int index, 
   if(TString(propertyName) != TString("")) inputTStr = AliDrawStyle::ParseDeclaration(inputStr,propertyName);
   else inputTStr = TString(inputStr);
   T res = T();
-  auto arg = 0, startIndex = 0;
+  Int_t arg = 0, startIndex = 0;
   if (TString(inputStr) == TString("")) {
     ::Error("AliDrawStyle", "AliDrawStyle::GetNamedTypeAt(\"%s\", %d, \"%s\"). Options string should not be empty.", inputStr, index, propertyName);
     status = kFALSE;
@@ -902,7 +902,7 @@ Bool_t AliDrawStyle::ClassSearch(const TString selector, const TString classID, 
   Int_t nC = classIDs->GetEntriesFast();;
   TString tempClassID = "";
 
-  for (auto i = 0; i < nC; i++) {
+  for (Int_t i = 0; i < nC; i++) {
     tempClassID = classIDs->At(i)->GetName();
     if (classFromSelector.Index('*') >= 0) {
       classFromSelector = classFromSelector.ReplaceAll("*", ".*");
@@ -1233,7 +1233,7 @@ void AliDrawStyle::TH1ApplyStyle(const char *styleName, TH1 *cHis, Int_t objNum,
   if (status) cHis->SetTitleSize(valueF, "Z");
 
   //TODO: how to make it not only for TF1? @Boris
-  for (auto i = 0; i < cHis->GetListOfFunctions()->GetEntries(); i++) {
+  for (Int_t i = 0; i < cHis->GetListOfFunctions()->GetEntries(); i++) {
     AliDrawStyle::ObjectApplyStyle(styleName, (TF1 *) cHis->GetListOfFunctions()->At(i), objNum, verbose);
   }
 
