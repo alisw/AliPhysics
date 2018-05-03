@@ -42,7 +42,8 @@ AliExternalInfo::AliExternalInfo(TString localStorageDirectory, TString configLo
                                 fTree(0x0),
                                 fChain(new TChain()),
                                 fChainMap(),
-                                fMaxCacheSize(-1)
+                                fMaxCacheSize(-1),
+                                fLogCache(0x0)
 {
   // use default cache path from Env variable if specified 
   if (gSystem->Getenv("AliExternalInfoCache")!=NULL){

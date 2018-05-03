@@ -141,7 +141,7 @@ public:
   TChain* fChain;                                   ///< master chain with friends
   std::map<TString, TChain*> fChainMap;             ///< map of chains
   Long64_t fMaxCacheSize;                           ///< maximum chache size for trees and chains
-  TTree* fLogCache=0;                                     ///< TChain for Logbook
+  TTree* fLogCache;                                     ///< TChain for Logbook
   static const TString fgkDefaultConfig;            ///< default config file
 
   ClassDef(AliExternalInfo, 0);  // interface to various trending trees
