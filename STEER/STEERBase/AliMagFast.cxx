@@ -253,6 +253,9 @@ Bool_t AliMagFast::GetSegmentSol(const float xyz[3], int& zSeg,int &rSeg, int &q
     else { // need to check dipole params
       return kFALSE;
     }
+    // check for over/underflow due to the machine precision
+    if (zSeg==kNSolZRanges) zSeg = kNSolZRanges-1;
+    else if (zSeg==-1) zSeg=0;
   }
   else return kFALSE;
   // R segment
