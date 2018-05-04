@@ -60,6 +60,8 @@ public:
   void SetEnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
   void SetOnlineThreshold(ETriggerThreshold_t trigger, Int_t value) { fOnlineThresholds[static_cast<int>(trigger)] = value; }
 
+  void SetSwapPatches(Bool_t doSwap) { fSwapPatches = doSwap; }
+
   static AliAnalysisTaskEmcalRecalcPatchesRef *AddTaskEmcalRecalcPatches(const char *suffix);
 
 protected:
@@ -77,6 +79,7 @@ protected:
 private:
   Bool_t                fEnableSumw2;         ///< Enable sum of weights
   TArrayI               fOnlineThresholds;    ///< Online thresholds
+  Bool_t                fSwapPatches;         ///< Look explicitly for the wrong patches
 
   AliAnalysisTaskEmcalRecalcPatchesRef(const AliAnalysisTaskEmcalRecalcPatchesRef &);
   AliAnalysisTaskEmcalRecalcPatchesRef &operator=(const AliAnalysisTaskEmcalRecalcPatchesRef &);
