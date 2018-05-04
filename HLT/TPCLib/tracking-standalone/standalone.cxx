@@ -10,6 +10,7 @@
 #include <chrono>
 #include <tuple>
 #include <algorithm>
+#include <random>
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -108,7 +109,7 @@ int main(int argc, char** argv)
 	}
 #else
 	if (configStandalone.affinity != -1) {printf("Affinity setting not supported on Windows\n"); return(1);}
-	if (configStandalone.fifi) {printf("FIFO Scheduler setting not supported on Windows\n"); return(1);}
+	if (configStandalone.fifo) {printf("FIFO Scheduler setting not supported on Windows\n"); return(1);}
 	if (configStandalone.fpe) {printf("FPE not supported on Windows\n"); return(1);}
 #endif
 #ifndef BUILD_QA
@@ -205,10 +206,16 @@ int main(int argc, char** argv)
 
 	if (configStandalone.seed == -1)
 	{
-		configStandalone.seed = (int) (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count());
+		std::random_device rd;
+		configStandalone.seed = (int) rd();
 		printf("Using seed %d\n", configStandalone.seed);
 	}
+
 	srand(configStandalone.seed);
+	std::uniform_real_distribution<double> disUniReal(0., 1.);
+	std::uniform_int_distribution<unsigned long long int> disUniInt;
+	std::mt19937_64 rndGen1(configStandalone.seed);
+	std::mt19937_64 rndGen2(disUniInt(rndGen1));
 	
 	int trainDist = 0;
 	float collisionProbability = 0.;
@@ -274,44 +281,50 @@ int main(int argc, char** argv)
 	}
 	else
 	{
+		if (1 || configStandalone.eventDisplay || configStandalone.qa) configStandalone.resetids = true; //Force resetting of IDs in standalone mode for the time being, otherwise late cluster attachment in the merger cannot work with the forced cluster ids in the merger.
 		for (int jj = 0;jj < configStandalone.runs2;jj++)
 		{
+			auto& config = configStandalone.configTF;
 			if (configStandalone.configQA.inputHistogramsOnly) break;
 			if (configStandalone.runs2 > 1) printf("RUN2: %d\n", jj);
 			int nEventsProcessed = 0;
 			long long int nTracksTotal = 0;
 			long long int nClustersTotal = 0;
+			int nTotalCollisions = 0;
+			long long int eventStride = configStandalone.seed;
 			int simBunchNoRepeatEvent = configStandalone.StartEvent;
 			std::vector<char> eventUsed(nEventsInDirectory);
-			if (configStandalone.configTF.noEventRepeat == 2) memset(eventUsed.data(), 0, nEventsInDirectory * sizeof(eventUsed[0]));
+			if (config.noEventRepeat == 2) memset(eventUsed.data(), 0, nEventsInDirectory * sizeof(eventUsed[0]));
 		
 			for (int i = configStandalone.StartEvent;i < configStandalone.NEvents || configStandalone.NEvents == -1;i++)
 			{
+				if (config.nTotalInTFEvents && nTotalCollisions >= config.nTotalInTFEvents) break;
 				if (i != configStandalone.StartEvent) printf("\n");
 				HighResTimer timerLoad;
 				timerLoad.Start();
-				if (configStandalone.configTF.bunchSim)
+				if (config.bunchSim)
 				{
 					hlt.StartDataReading(0);
-					long long int nBunch = -driftTime / configStandalone.configTF.bunchSpacing;
-					long long int lastBunch = configStandalone.configTF.timeFrameLen / configStandalone.configTF.bunchSpacing;
-					long long int lastTFBunch = lastBunch - driftTime / configStandalone.configTF.bunchSpacing;
+					long long int nBunch = -driftTime / config.bunchSpacing;
+					long long int lastBunch = config.timeFrameLen / config.bunchSpacing;
+					long long int lastTFBunch = lastBunch - driftTime / config.bunchSpacing;
 					int nCollisions = 0, nBorderCollisions = 0, nTrainCollissions = 0, nMultipleCollisions = 0, nTrainMultipleCollisions = 0;
 					int nTrain = 0;
 					int mcMin = -1, mcMax = -1;
 					while (nBunch < lastBunch)
 					{
-						for (int iTrain = 0;iTrain < configStandalone.configTF.bunchTrainCount && nBunch < lastBunch;iTrain++)
+						for (int iTrain = 0;iTrain < config.bunchTrainCount && nBunch < lastBunch;iTrain++)
 						{
 							int nCollisionsInTrain = 0;
-							for (int iBunch = 0;iBunch < configStandalone.configTF.bunchCount && nBunch < lastBunch;iBunch++)
+							for (int iBunch = 0;iBunch < config.bunchCount && nBunch < lastBunch;iBunch++)
 							{
-								if (mcMin == -1 && nBunch >= 0) mcMin = hlt.GetNMCInfo();
-								if (mcMax == -1 && nBunch >= lastTFBunch) mcMax = hlt.GetNMCInfo();
+								const bool inTF = nBunch >= 0 && nBunch < lastTFBunch && (config.nTotalInTFEvents == 0 || nCollisions < nTotalCollisions + config.nTotalInTFEvents);
+								if (mcMin == -1 && inTF) mcMin = hlt.GetNMCInfo();
+								if (mcMax == -1 && nBunch >= 0 && !inTF) mcMax = hlt.GetNMCInfo();
 								int nInBunchPileUp = 0;
-								float randVal = (float) rand() / (float) RAND_MAX;
-								float p = exp(-collisionProbability);
-								float p2 = p;
+								double randVal = disUniReal(inTF ? rndGen2 : rndGen1);
+								double p = exp(-collisionProbability);
+								double p2 = p;
 								while (randVal > p)
 								{
 									if (nCollisionsInTrain >= nEventsInDirectory)
@@ -319,44 +332,47 @@ int main(int argc, char** argv)
 										printf("Error: insuffient events for mixing!\n");
 										return(1);
 									}
-									if (nCollisionsInTrain == 0 && configStandalone.configTF.noEventRepeat == 0) memset(eventUsed.data(), 0, nEventsInDirectory * sizeof(eventUsed[0]));
-									if (nBunch >= 0 && nBunch < lastTFBunch) nCollisions++;
+									if (nCollisionsInTrain == 0 && config.noEventRepeat == 0) memset(eventUsed.data(), 0, nEventsInDirectory * sizeof(eventUsed[0]));
+									if (inTF) nCollisions++;
 									else nBorderCollisions++;
 									int useEvent;
-									if (configStandalone.configTF.noEventRepeat == 1) useEvent = simBunchNoRepeatEvent;
-									else while (eventUsed[useEvent = rand() % nEventsInDirectory]);
-									if (configStandalone.configTF.noEventRepeat) simBunchNoRepeatEvent++;
+									if (config.noEventRepeat == 1) useEvent = simBunchNoRepeatEvent;
+									else while (eventUsed[useEvent = (inTF && config.eventStride ? (eventStride += config.eventStride) : disUniInt(inTF ? rndGen2 : rndGen1)) % nEventsInDirectory]);
+									if (config.noEventRepeat) simBunchNoRepeatEvent++;
 									eventUsed[useEvent] = 1;
 									std::ifstream in;
 									char filename[256];
 									sprintf(filename, "events/%s/" HLTCA_EVDUMP_FILE ".%d.dump", configStandalone.EventsDir, useEvent);
 									in.open(filename, std::ifstream::binary);
 									if (in.fail()) {printf("Unexpected error\n");return(1);}
-									float shift = (float) nBunch * (float) configStandalone.configTF.bunchSpacing * (float) TPCZ / (float) driftTime;
-									int nClusters = hlt.ReadEvent(in, true, true, shift, 0, (float) configStandalone.configTF.timeFrameLen * TPCZ / driftTime, true, configStandalone.qa);
-									printf("Placing event %4d+%d (ID %4d) at z %7.3f (time %'dns) %s(collisions %4d, bunch %6lld, train %3d) (%'10d clusters, %'10d MC labels, %'10d track MC info)\n", nCollisions, nBorderCollisions, useEvent, shift, (int) (nBunch * configStandalone.configTF.bunchSpacing), nBunch >= 0 && nBunch < lastTFBunch ? " inside" : "outside", nCollisions, nBunch, nTrain, nClusters, hlt.GetNMCLabels(), hlt.GetNMCInfo());
+									double shift = (double) nBunch * (double) config.bunchSpacing * (double) TPCZ / (double) driftTime;
+									int nClusters = hlt.ReadEvent(in, true, true, shift, 0, (double) config.timeFrameLen * TPCZ / driftTime, true, configStandalone.qa || configStandalone.eventDisplay);
+									printf("Placing event %4d+%d (ID %4d) at z %7.3f (time %'dns) %s(collisions %4d, bunch %6lld, train %3d) (%'10d clusters, %'10d MC labels, %'10d track MC info)\n", nCollisions, nBorderCollisions, useEvent, shift, (int) (nBunch * config.bunchSpacing), inTF ? " inside" : "outside", nCollisions, nBunch, nTrain, nClusters, hlt.GetNMCLabels(), hlt.GetNMCInfo());
 									in.close();
 									nInBunchPileUp++;
 									nCollisionsInTrain++;
 									p2 *= collisionProbability / nInBunchPileUp;
 									p += p2;
-									if (configStandalone.configTF.noEventRepeat && simBunchNoRepeatEvent >= nEventsInDirectory) nBunch = lastBunch;
+									if (config.noEventRepeat && simBunchNoRepeatEvent >= nEventsInDirectory) nBunch = lastBunch;
+									for (int sl = 0;sl < 36;sl++) SetCollisionFirstCluster(nCollisions + nBorderCollisions - 1, sl, hlt.ClusterData(sl).NumberOfClusters());
+									SetCollisionFirstCluster(nCollisions + nBorderCollisions - 1, 36, hlt.GetNMCInfo());
 								}
 								if (nInBunchPileUp > 1) nMultipleCollisions++;
 								nBunch++;
 							}
-							nBunch += trainDist - configStandalone.configTF.bunchCount;
+							nBunch += trainDist - config.bunchCount;
 							if (nCollisionsInTrain) nTrainCollissions++;
 							if (nCollisionsInTrain > 1) nTrainMultipleCollisions++;
 							nTrain++;
 						}
-						nBunch += maxBunchesFull - trainDist * configStandalone.configTF.bunchTrainCount;
+						nBunch += maxBunchesFull - trainDist * config.bunchTrainCount;
 					}
-					printf("Timeframe statistics: collisions: %d+%d in %d trains (inside / outside), average rate %f (pile up: in bunch %d, in train %d)\n", nCollisions, nBorderCollisions, nTrainCollissions, (float) nCollisions / (float) (configStandalone.configTF.timeFrameLen - driftTime) * 1e9, nMultipleCollisions, nTrainMultipleCollisions);
+					nTotalCollisions += nCollisions;
+					printf("Timeframe statistics: collisions: %d+%d in %d trains (inside / outside), average rate %f (pile up: in bunch %d, in train %d)\n", nCollisions, nBorderCollisions, nTrainCollissions, (float) nCollisions / (float) (config.timeFrameLen - driftTime) * 1e9, nMultipleCollisions, nTrainMultipleCollisions);
 #ifdef BUILD_QA
 					SetMCTrackRange(mcMin, mcMax);
 #endif
-					if (configStandalone.configTF.dumpO2)
+					if (config.dumpO2)
 					{
 #if !defined(HAVE_O2HEADERS) | !defined(HLTCA_FULL_CLUSTERDATA)
 						printf("Error, must be compiled with O2 headers and HLTCA_FULL_CLUSTERDATA to dump O2 clusters\n");
@@ -367,7 +383,7 @@ int main(int argc, char** argv)
 						const float o2height[10] = {7.5, 7.5, 7.5, 7.5, 10, 10, 12, 12, 15, 15};
 						const float o2width[10] = {4.16, 4.2, 4.2, 4.36, 6, 6, 6.08, 5.88, 6.04, 6.07};
 						const float o2offsetinpart[10] = {0, 17, 32, 48, 0, 18, 0, 16, 0, 0};
-						std::vector<o2::TPC::ClusterHardware> hwClusters;
+						std::vector<std::array<float, 8>> hwClusters;
 						o2::TPC::ClusterHardwareContainer* container = (o2::TPC::ClusterHardwareContainer*) malloc(8192);
 						int nDumpClustersTotal0 = 0, nDumpClustersTotal1 = 0;
 						for (int iSec = 0;iSec < 36;iSec++)
@@ -381,29 +397,31 @@ int main(int argc, char** argv)
 								FILE* fp = fopen(filename, "w+b");
 								int nClustersInCRU = 0;
 								AliHLTTPCCAClusterData& cd = hlt.ClusterData(iSec);
+								float maxTime = 0;
 								for (int k = 0;k < cd.NumberOfClusters();k++)
 								{
 									AliHLTTPCCAClusterData::Data& c = cd.Clusters()[k];
 									if (c.fRow >= o2rowoffsets[j] && c.fRow < o2rowoffsets[j + 1])
 									{
-										o2::TPC::ClusterHardware& ch = hwClusters[nClustersInCRU];
-										ch.mQMax = c.fAmpMax;
-										ch.mQTot = c.fAmp;
-										ch.mFlags = c.fFlags;
-										ch.mSigmaTime2Pre = c.fSigmaTime2;
-										ch.mTimePre = fabs(c.fZ) / 2.58 /*vDrift*/ / 0.19379844961f /*zBinWidth*/;
-										ch.mRow = c.fRow - o2rowoffsets[j];
+										auto& ch = hwClusters[nClustersInCRU];
+										ch[0] = c.fAmpMax;
+										ch[1] = c.fAmp;
+										ch[2] = c.fFlags;
+										ch[3] = c.fSigmaTime2;
+										ch[4] = fabs(c.fZ) / 2.58 /*vDrift*/ / 0.19379844961f /*zBinWidth*/;
+										ch[5] = c.fRow - o2rowoffsets[j];
 										float yFactor = iSec < 18 ? -1 : 1;
 										const float ks=o2height[j]/o2width[j]*tan(1.74532925199432948e-01); // tan(10deg)
-										int nPads = 2 * std::floor(ks * (ch.mRow + o2offsetinpart[j]) + o2xhelper[j]);
-										float pad = (-c.fY * yFactor / (o2width[j]/10) + nPads / 2);
-										ch.mPadPre = pad * c.fAmp;
-										ch.mSigmaPad2Pre = c.fSigmaPad2 * c.fAmp * c.fAmp + ch.mPadPre * ch.mPadPre;
+										int nPads = 2 * std::floor(ks * (ch[5] + o2offsetinpart[j]) + o2xhelper[j]);
+										ch[6] = (-c.fY * yFactor / (o2width[j]/10) + nPads / 2);
+										ch[7] = c.fSigmaPad2;
 										nClustersInCRU++;
+										if (ch[4] > maxTime) maxTime = ch[4];
 									}
 								}
+								for (int k = 0;k < nClustersInCRU;k++) hwClusters[k][4] = maxTime - hwClusters[k][4];
 								std::sort(hwClusters.data(), hwClusters.data() + nClustersInCRU, [](const auto& a, const auto& b){
-									return a.mTimePre < b.mTimePre;
+									return a[4] < b[4];
 								});
 								
 								int nPacked = 0;
@@ -411,20 +429,18 @@ int main(int argc, char** argv)
 								{
 									int maxPack = (8192 - sizeof(o2::TPC::ClusterHardwareContainer)) / sizeof(o2::TPC::ClusterHardware);
 									if (nPacked + maxPack > nClustersInCRU) maxPack = nClustersInCRU - nPacked;
-									while (hwClusters[nPacked + maxPack - 1].mTimePre > hwClusters[nPacked].mTimePre + 512) maxPack--;
+									while (hwClusters[nPacked + maxPack - 1][4] > hwClusters[nPacked][4] + 512) maxPack--;
 									memset(container, 0, 8192);
-									container->mTimeBinOffset = hwClusters[nPacked].mTimePre;
-									container->mCRU = iSec * 10 + j;
-									container->mNumberOfClusters = maxPack;
+									container->timeBinOffset = hwClusters[nPacked][4];
+									container->CRU = iSec * 10 + j;
+									container->numberOfClusters = maxPack;
 									for (int k = 0;k < maxPack;k++)
 									{
-										o2::TPC::ClusterHardware& cc = container->mClusters[k];
-										cc = hwClusters[nPacked + k];
-										cc.mTimePre -= container->mTimeBinOffset;
-										cc.mTimePre *= cc.mQTot;
-										cc.mSigmaTime2Pre = cc.mSigmaTime2Pre * cc.mQTot * cc.mQTot + cc.mTimePre * cc.mTimePre;
+										o2::TPC::ClusterHardware& cc = container->clusters[k];
+										auto& ch = hwClusters[nPacked + k];
+										cc.setCluster(ch[6], ch[4] - container->timeBinOffset, ch[7], ch[3], ch[0], ch[1], ch[4], ch[2]);
 									}
-									printf("Sector %d CRU %d Writing container %d/%d bytes (Clusters %d, Time Offset %d)\n", iSec, container->mCRU, (int) (sizeof(o2::TPC::ClusterHardwareContainer) + container->mNumberOfClusters * sizeof(o2::TPC::ClusterHardware)), 8192, container->mNumberOfClusters, container->mTimeBinOffset);
+									printf("Sector %d CRU %d Writing container %d/%d bytes (Clusters %d, Time Offset %d)\n", iSec, container->CRU, (int) (sizeof(o2::TPC::ClusterHardwareContainer) + container->numberOfClusters * sizeof(o2::TPC::ClusterHardware)), 8192, container->numberOfClusters, container->timeBinOffset);
 									fwrite(container, 8192, 1, fp);
 									nPacked += maxPack;
 									nDumpClustersTotal1 += maxPack;
@@ -453,31 +469,31 @@ int main(int argc, char** argv)
 					printf("Loading Event %d\n", i);
 					
 					float shift;
-					if (configStandalone.configTF.nMerge && (configStandalone.configTF.shiftFirstEvent || iEventInTimeframe))
+					if (config.nMerge && (config.shiftFirstEvent || iEventInTimeframe))
 					{
-						if (configStandalone.configTF.randomizeDistance)
+						if (config.randomizeDistance)
 						{
-							shift = (double) rand() / (double) RAND_MAX;
-							if (configStandalone.configTF.shiftFirstEvent)
+							shift = disUniReal(rndGen2);
+							if (config.shiftFirstEvent)
 							{
-								if (iEventInTimeframe == 0) shift = shift * configStandalone.configTF.averageDistance;
-								else shift = (iEventInTimeframe + shift) * configStandalone.configTF.averageDistance;
+								if (iEventInTimeframe == 0) shift = shift * config.averageDistance;
+								else shift = (iEventInTimeframe + shift) * config.averageDistance;
 							}
 							else
 							{
 								if (iEventInTimeframe == 0) shift = 0;
-								else shift = (iEventInTimeframe - 0.5 + shift) * configStandalone.configTF.averageDistance;
+								else shift = (iEventInTimeframe - 0.5 + shift) * config.averageDistance;
 							}
 						}
 						else
 						{
-							if (configStandalone.configTF.shiftFirstEvent)
+							if (config.shiftFirstEvent)
 							{
-								shift = configStandalone.configTF.averageDistance * (iEventInTimeframe + 0.5);
+								shift = config.averageDistance * (iEventInTimeframe + 0.5);
 							}
 							else
 							{
-								shift = configStandalone.configTF.averageDistance * (iEventInTimeframe);
+								shift = config.averageDistance * (iEventInTimeframe);
 							}
 						}
 					}
@@ -486,15 +502,17 @@ int main(int argc, char** argv)
 						shift = 0.;
 					}
 
-					if (configStandalone.configTF.nMerge == 0 || iEventInTimeframe == 0) hlt.StartDataReading(0);
-					if (configStandalone.eventDisplay || configStandalone.qa) configStandalone.resetids = true;
-					hlt.ReadEvent(in, configStandalone.resetids, configStandalone.configTF.nMerge > 0, shift);
+					if (config.nMerge == 0 || iEventInTimeframe == 0) hlt.StartDataReading(0);
+					hlt.ReadEvent(in, configStandalone.resetids, config.nMerge > 0, shift);
 					in.close();
 					
-					iEventInTimeframe++;
-					if (configStandalone.configTF.nMerge)
+					for (int sl = 0;sl < 36;sl++) SetCollisionFirstCluster(iEventInTimeframe, sl, hlt.ClusterData(sl).NumberOfClusters());
+					SetCollisionFirstCluster(iEventInTimeframe, 36, hlt.GetNMCInfo());
+					
+					if (config.nMerge)
 					{
-						if (iEventInTimeframe == configStandalone.configTF.nMerge || i == configStandalone.NEvents - 1)
+						iEventInTimeframe++;
+						if (iEventInTimeframe == config.nMerge || i == configStandalone.NEvents - 1)
 						{
 							iEventInTimeframe = 0;
 						}
@@ -573,7 +591,7 @@ int main(int argc, char** argv)
 								fprintf(foutput, "Track %d: %4s Alpha %f X %f Y %f Z %f SinPhi %f DzDs %f q/Pt %f - Clusters ", k, track.OK() ? "OK" : "FAIL", track.GetAlpha(), param.GetX(), param.GetY(), param.GetZ(), param.GetSinPhi(), param.GetDzDs(), param.GetQPt());
 								for (int l = 0;l < track.NClusters();l++)
 								{
-									fprintf(foutput, "%d ", merger.Clusters()[track.FirstClusterRef() + l].fId);
+									fprintf(foutput, "%d ", merger.Clusters()[track.FirstClusterRef() + l].fNum);
 								}
 								fprintf(foutput, "\n");
 							}
@@ -603,7 +621,7 @@ int main(int argc, char** argv)
 								const AliHLTTPCGMMergedTrackHit* clusters = merger.Clusters() + track.FirstClusterRef();
 								for (int l = 0;l < track.NClusters();l++)
 								{
-									fwrite(&clusters[l].fId, sizeof(clusters[l].fId), 1, fpBinaryOutput);
+									fwrite(&clusters[l].fNum, sizeof(clusters[l].fNum), 1, fpBinaryOutput);
 								}
 							}
 						}

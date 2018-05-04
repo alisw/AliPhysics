@@ -26,6 +26,7 @@ class AliHLTTPCCASliceTrack;
 class AliHLTTPCCASliceOutput;
 class AliHLTTPCGMCluster;
 class AliHLTTPCGMTrackParam;
+class AliHLTTPCCATracker;
 
 /**
  * @class AliHLTTPCGMMerger
@@ -53,12 +54,21 @@ public:
   void SetGPUTracker(AliHLTTPCCAGPUTracker* gpu) {fGPUTracker = gpu;}
   void SetDebugLevel(int debug) {fDebugLevel = debug;}
 
-  const AliHLTTPCGMPolynomialField& Field() const {return fField;}
-  const AliHLTTPCGMPolynomialField* pField() const {return &fField;}
+  GPUd() const AliHLTTPCGMPolynomialField& Field() const {return fField;}
+  GPUhd() const AliHLTTPCGMPolynomialField* pField() const {return &fField;}
+  void SetField(AliHLTTPCGMPolynomialField* field) {fField = *field;}
 
   int NClusters() const { return(fNClusters); }
   int NOutputTrackClusters() const { return(fNOutputTrackClusters); }
   AliHLTTPCGMMergedTrackHit* Clusters() const {return(fClusters);}
+  const int* GlobalClusterIDs() const {return(fGlobalClusterIDs);}
+  void SetSliceTrackers(AliHLTTPCCATracker* trk) {fSliceTrackers = trk;}
+  AliHLTTPCCATracker* SliceTrackers() const {return(fSliceTrackers);}
+  int* ClusterAttachment() const {return(fClusterAttachment);}
+  int MaxId() const {return(fMaxID);}
+  unsigned int* TrackOrder() const {return(fTrackOrder);}
+  
+  enum attachTypes {attachAttached = 0x40000000, attachGood = 0x20000000, attachGoodLeg = 0x10000000, attachTube = 0x08000000, attachTrackMask = 0x07FFFFFF, attachFlagMask = 0xF8000000};
 
 private:
   
@@ -78,6 +88,7 @@ private:
   void MergeSlices();
   void CollectMergedTracks();
   void Refit(bool resetTimers);
+  void Finalize();
   
   static const int fgkNSlices = 36;       //* N slices
   int fNextSliceInd[fgkNSlices];
@@ -99,14 +110,19 @@ private:
   int fSliceNGlobalTrackInfos[fgkNSlices]; //* Same for global tracks
   int fMaxSliceTracks;      // max N tracks in one slice
   AliHLTTPCGMMergedTrackHit *fClusters;
+  int* fGlobalClusterIDs;
+  int* fClusterAttachment;
+  int fMaxID;
+  unsigned int* fTrackOrder;
   AliHLTTPCGMBorderTrack *fBorderMemory; // memory for border tracks
   AliHLTTPCGMBorderTrack::Range *fBorderRangeMemory; // memory for border tracks
 
   AliHLTTPCCAGPUTracker* fGPUTracker;
+  AliHLTTPCCATracker* fSliceTrackers;
   int fDebugLevel;
 
   int fNClusters;			//Total number of incoming clusters
   
 };
 
-#endif //ALIHLTTPCCAMERGER_H
+#endif //ALIHLTTPCGMMERGER_H

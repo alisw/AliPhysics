@@ -42,6 +42,7 @@ include_directories(${AliRoot_SOURCE_DIR}/HLT/TPCLib
                     ${AliRoot_SOURCE_DIR}/HLT/TPCLib/offline
                     ${AliRoot_SOURCE_DIR}/HLT/TPCLib/tracking-ca
                     ${AliRoot_SOURCE_DIR}/HLT/TPCLib/transform
+                    ${AliRoot_SOURCE_DIR}/HLT/TPCLib/transform-new
 )
 
 # Additional include folders in alphabetical order except ROOT
@@ -156,6 +157,8 @@ set(SRCS
     transform/AliHLTTPCSpline2D3D.cxx
     transform/AliHLTTPCSpline2D3DObject.cxx
     transform/AliHLTTPCFastTransformObject.cxx
+    transform-new/AliFlexibleSpline1D.cxx
+    transform-new/AliFlexibleSpline2D3D.cxx
     test/AliHLTTPCRawClusterDumpComponent.cxx
    )
 

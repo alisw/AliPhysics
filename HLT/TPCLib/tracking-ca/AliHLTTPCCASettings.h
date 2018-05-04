@@ -19,7 +19,7 @@
 #define HLTCA_GPU_MAXN 40							//Maximum number of neighbor hits to consider in one row in neightbors finder
 #define TRACKLET_CONSTRUCTOR_MAX_ROW_GAP 4			//Maximum number of consecutive rows without hit in track following
 #define TRACKLET_CONSTRUCTOR_MAX_ROW_GAP_SEED 2		//Same, but during fit of seed
-#define MIN_TRACK_PT_DEFAULT 0.015					//Default setting for minimum track Pt at some places
+#define MIN_TRACK_PT_DEFAULT 0.010					//Default setting for minimum track Pt at some places
 
 #define HLTCA_GM_MAXNMISSED 5						//Maximum number of missed hits in merger (0 = disabled)
 
@@ -48,10 +48,8 @@ typedef unsigned short cahit;
 
 #ifdef HLTCA_GPUCODE
 #define ALIHLTTPCCANEIGHBOURS_FINDER_MAX_NNEIGHUP 6
-#define ALIHLTTPCCASTARTHITSFINDER_MAX_FROWSTARTHITS 6000
 #else
 #define ALIHLTTPCCANEIGHBOURS_FINDER_MAX_NNEIGHUP HLTCA_GPU_MAXN
-#define ALIHLTTPCCASTARTHITSFINDER_MAX_FROWSTARTHITS 200000
 #endif //HLTCA_GPUCODE
 
 //#define HLTCA_FULL_CLUSTERDATA						//Store all cluster information in the cluster data, also those not needed for tracking.

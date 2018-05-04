@@ -17,7 +17,7 @@
 //                                                                          *
 //***************************************************************************
 
-#define PASCAL
+#define HLTCA_GPUTYPE_PASCAL
 #include "AliHLTTPCCAGPUTrackerNVCC.h"
 #include "AliHLTTPCCAGPUTrackerCommon.h"
 #define get_global_id(dim) (blockIdx.x * blockDim.x + threadIdx.x)
@@ -89,7 +89,7 @@ int AliHLTTPCCAGPUTrackerNVCC::InitGPU_Runtime(int sliceCount, int forceDeviceID
 		return(1);
 	}
 	if (fDebugLevel >= 2) HLTInfo("Available CUDA devices:");
-#if defined(FERMI) || defined(KEPLER)
+#if defined(HLTCA_GPUTYPE_FERMI) || defined(HLTCA_GPUTYPE_KEPLER)
 	const int reqVerMaj = 2;
 	const int reqVerMin = 0;
 #else
@@ -437,26 +437,6 @@ int AliHLTTPCCAGPUTrackerNVCC::Reconstruct(AliHLTTPCCASliceOutput** pOutput, Ali
 
 		if (fDebugLevel >= 4 && *fSlaveTrackers[firstSlice + iSlice].NTracklets())
 		{
-#ifndef BITWISE_COMPATIBLE_DEBUG_OUTPUT
-			GPUFailedMsg(cudaMemcpy(fSlaveTrackers[firstSlice + iSlice].TrackletStartHits(), fGpuTracker[iSlice].TrackletTmpStartHits(), pClusterData[iSlice].NumberOfClusters() * sizeof(AliHLTTPCCAHitId), cudaMemcpyDeviceToHost));
-			if (fDebugMask & 8)
-			{
-				*fOutFile << "Temporary ";
-				fSlaveTrackers[firstSlice + iSlice].DumpStartHits(*fOutFile);
-			}
-			uint3* tmpMemory = (uint3*) malloc(sizeof(uint3) * fSlaveTrackers[firstSlice + iSlice].Param().NRows());
-			GPUFailedMsg(cudaMemcpy(tmpMemory, fGpuTracker[iSlice].RowStartHitCountOffset(), fSlaveTrackers[firstSlice + iSlice].Param().NRows() * sizeof(uint3), cudaMemcpyDeviceToHost));
-			if (fDebugMask & 16)
-			{
-				*fOutFile << "Start Hits Sort Vector:" << std::endl;
-				for (int i = 1;i < fSlaveTrackers[firstSlice + iSlice].Param().NRows() - 5;i++)
-				{
-					*fOutFile << "Row: " << i << ", Len: " << tmpMemory[i].x << ", Offset: " << tmpMemory[i].y << ", New Offset: " << tmpMemory[i].z << std::endl;
-				}
-			}
-			free(tmpMemory);
-#endif
-
 			GPUFailedMsg(cudaMemcpy(fSlaveTrackers[firstSlice + iSlice].HitMemory(), fGpuTracker[iSlice].HitMemory(), fSlaveTrackers[firstSlice + iSlice].HitMemorySize(), cudaMemcpyDeviceToHost));
 			if (fDebugMask & 32) fSlaveTrackers[firstSlice + iSlice].DumpStartHits(*fOutFile);
 		}
@@ -785,12 +765,17 @@ int AliHLTTPCCAGPUTrackerNVCC::RefitMergedTracks(AliHLTTPCGMMerger* Merger, bool
 
 	if (fDebugLevel >= 2) HLTInfo("Running GPU Merger (%d/%d)", Merger->NOutputTrackClusters(), Merger->NClusters());
 	timer.Start();
+	AliHLTTPCGMMerger* gpuMerger = (AliHLTTPCGMMerger*) new char[sizeof(AliHLTTPCGMMerger)]; //We don't want constructor / destructor!
+	memcpy(gpuMerger, Merger, sizeof(AliHLTTPCGMMerger));
+	gpuMerger->SetField(field);
+	GPUFailedMsg(cudaMemcpyToSymbolAsync(gAliHLTTPCCATracker, Merger, sizeof(*Merger), 0, cudaMemcpyHostToDevice));
+	delete[] (char*) gpuMerger;
 	GPUFailedMsg(cudaMemcpy(clusters, Merger->Clusters(), Merger->NOutputTrackClusters() * sizeof(clusters[0]), cudaMemcpyHostToDevice));
 	GPUFailedMsg(cudaMemcpy(tracks, Merger->OutputTracks(), Merger->NOutputTracks() * sizeof(AliHLTTPCGMMergedTrack), cudaMemcpyHostToDevice));
 	GPUFailedMsg(cudaMemcpy(field, Merger->pField(), sizeof(AliHLTTPCGMPolynomialField), cudaMemcpyHostToDevice));
 	GPUFailedMsg(cudaMemcpy(param, &Merger->SliceParam(), sizeof(AliHLTTPCCAParam), cudaMemcpyHostToDevice));
 	times[0] += timer.GetCurrentElapsedTime(true);
-	RefitTracks<<<fConstructorBlockCount, HLTCA_GPU_THREAD_COUNT>>>(tracks, Merger->NOutputTracks(), field, clusters, param);
+	RefitTracks<<<fConstructorBlockCount, HLTCA_GPU_THREAD_COUNT>>>(tracks, Merger->NOutputTracks(), clusters, param);
 	GPUFailedMsg(cudaThreadSynchronize());
 	times[1] += timer.GetCurrentElapsedTime(true);
 	GPUFailedMsg(cudaMemcpy(Merger->Clusters(), clusters, Merger->NOutputTrackClusters() * sizeof(clusters[0]), cudaMemcpyDeviceToHost));

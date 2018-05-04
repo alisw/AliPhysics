@@ -166,6 +166,7 @@ int AliHLTTPCCAStandaloneFramework::ProcessEvent(int forceSingleSlice, bool rese
 #ifdef HLTCA_GPU_MERGER
 	  if (fTracker.GetGPUTracker()->GPUMergerAvailable()) fMerger.SetGPUTracker(fTracker.GetGPUTracker());
 #endif
+      fMerger.SetSliceTrackers(&fTracker.CPUTracker(0));
 	  fMerger.Reconstruct(resetTimers);
 #ifdef HLTCA_STANDALONE
       timerMerger.Stop();
@@ -174,13 +175,57 @@ int AliHLTTPCCAStandaloneFramework::ProcessEvent(int forceSingleSlice, bool rese
 
 #ifdef HLTCA_STANDALONE
 #ifdef BUILD_QA
-  if (fRunQA)
+  if (fRunQA || (fEventDisplay && GetNMCInfo()))
   {
     timerQA.Start();
-    RunQA();
+    RunQA(!fRunQA);
     timerQA.Stop();
   }
 #endif
+
+  nCount++;
+#ifndef HLTCA_BUILD_O2_LIB
+  char nAverageInfo[16] = "";
+  if (nCount > 1) sprintf(nAverageInfo, " (%d)", nCount);
+  printf("Tracking Time: %'d us%s\n", (int) (1000000 * timerTracking.GetElapsedTime() / nCount), nAverageInfo);
+  if (fRunMerger) printf("Merging and Refit Time: %'d us\n", (int) (1000000 * timerMerger.GetElapsedTime() / nCount));
+  if (fRunQA) printf("QA Time: %'d us\n", (int) (1000000 * timerQA.GetElapsedTime() / nCount));
+#endif
+
+  if (fDebugLevel >= 1)
+  {
+		const char* tmpNames[10] = {"Initialisation", "Neighbours Finder", "Neighbours Cleaner", "Starts Hits Finder", "Start Hits Sorter", "Weight Cleaner", "Tracklet Constructor", "Tracklet Selector", "Global Tracking", "Write Output"};
+
+		for (int i = 0;i < 10;i++)
+		{
+            double time = 0;
+			for ( int iSlice = 0; iSlice < fgkNSlices;iSlice++)
+			{
+				if (forceSingleSlice != -1) iSlice = forceSingleSlice;
+				time += fTracker.GetTimer(iSlice, i);
+                if (!HLTCA_TIMING_SUM) fTracker.ResetTimer(iSlice, i);
+				if (forceSingleSlice != -1) break;
+			}
+			if (forceSingleSlice == -1)
+			{
+				time /= fgkNSlices;
+			}
+			if (fTracker.GetGPUStatus() < 2) time /= omp_get_max_threads();
+
+			printf("Execution Time: Task: %20s ", tmpNames[i]);
+			printf("Time: %1.0f us", time * 1000000 / nCount);
+			printf("\n");
+		}
+		printf("Execution Time: Task: %20s Time: %1.0f us\n", "Merger", timerMerger.GetElapsedTime() * 1000000. / nCount);
+        if (!HLTCA_TIMING_SUM)
+        {
+            timerTracking.Reset();
+            timerMerger.Reset();
+            timerQA.Reset();
+            nCount = 0;
+        }
+  }
+  
 #ifdef BUILD_EVENT_DISPLAY
   if (fEventDisplay)
   {
@@ -222,7 +267,7 @@ int AliHLTTPCCAStandaloneFramework::ProcessEvent(int forceSingleSlice, bool rese
 		usleep(10000);
 #endif
 		iKey = kbhit() ? getch() : 0;
-		if (iKey == 'q') buttonPressed = 2;
+		if (iKey == 'q') exitButton = 2;
         else if (iKey == 'n') break;
         else if (iKey)
         {
@@ -236,9 +281,13 @@ int AliHLTTPCCAStandaloneFramework::ProcessEvent(int forceSingleSlice, bool rese
             }
             sendKey = iKey;
         }
-	} while (buttonPressed == 0);
-	if (buttonPressed == 2) return(2);
-	buttonPressed = 0;
+	} while (exitButton == 0);
+	if (exitButton == 2)
+    {
+        DisplayExit();
+        return(2);
+    }
+	exitButton = 0;
 	printf("Loading next event\n");
 
 #ifdef R__WIN32
@@ -249,50 +298,7 @@ int AliHLTTPCCAStandaloneFramework::ProcessEvent(int forceSingleSlice, bool rese
 
 	displayEventNr++;
   }
-#endif
-
-  nCount++;
-#ifndef HLTCA_BUILD_O2_LIB
-  char nAverageInfo[16] = "";
-  if (nCount > 1) sprintf(nAverageInfo, " (%d)", nCount);
-  printf("Tracking Time: %1.0f us%s\n", 1000000 * timerTracking.GetElapsedTime() / nCount, nAverageInfo);
-  if (fRunMerger) printf("Merging and Refit Time: %1.0f us\n", 1000000 * timerMerger.GetElapsedTime() / nCount);
-  if (fRunQA) printf("QA Time: %1.0f us\n", 1000000 * timerQA.GetElapsedTime() / nCount);
-#endif
-
-  if (fDebugLevel >= 1)
-  {
-		const char* tmpNames[10] = {"Initialisation", "Neighbours Finder", "Neighbours Cleaner", "Starts Hits Finder", "Start Hits Sorter", "Weight Cleaner", "Tracklet Constructor", "Tracklet Selector", "Global Tracking", "Write Output"};
-
-		for (int i = 0;i < 10;i++)
-		{
-            double time = 0;
-			for ( int iSlice = 0; iSlice < fgkNSlices;iSlice++)
-			{
-				if (forceSingleSlice != -1) iSlice = forceSingleSlice;
-				time += fTracker.GetTimer(iSlice, i);
-                if (!HLTCA_TIMING_SUM) fTracker.ResetTimer(iSlice, i);
-				if (forceSingleSlice != -1) break;
-			}
-			if (forceSingleSlice == -1)
-			{
-				time /= fgkNSlices;
-			}
-			if (fTracker.GetGPUStatus() < 2) time /= omp_get_max_threads();
-
-			printf("Execution Time: Task: %20s ", tmpNames[i]);
-			printf("Time: %1.0f us", time * 1000000 / nCount);
-			printf("\n");
-		}
-		printf("Execution Time: Task: %20s Time: %1.0f us\n", "Merger", timerMerger.GetElapsedTime() * 1000000. / nCount);
-        if (!HLTCA_TIMING_SUM)
-        {
-            timerTracking.Reset();
-            timerMerger.Reset();
-            timerQA.Reset();
-            nCount = 0;
-        }
-  }
+#endif  
 #endif
 
   for ( int i = 0; i < 3; i++ ) fStatTime[i] += fLastTime[i];

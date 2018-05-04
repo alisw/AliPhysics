@@ -126,7 +126,7 @@ AliHLTComponent* AliHLTTPCClusterTransformationComponent::Spawn() {
 int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv ) 
 { 
   // see header file for class documentation
-  
+
   int iResult=0;
   //!! iResult = ConfigureFromCDBTObjString(fgkOCDBEntryClusterTransformation);
 
@@ -195,6 +195,8 @@ int AliHLTTPCClusterTransformationComponent::DoInit( int argc, const char** argv
       return -ENOENT;
     }
   }
+
+  //fgTransform.GetFastTransformNonConst().WriteQATree("fastTransformQA.root");
 
   return iResult;
 } // end DoInit()
@@ -310,7 +312,7 @@ int AliHLTTPCClusterTransformationComponent::DoEvent(const AliHLTComponentEventD
 
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
-  
+
   if( fOfflineMode && !fInitializeByObjectInDoEvent && !fOfflineKeepInitialTimestamp )
   {
     Long_t eventTimeStamp = GetTimeStamp();

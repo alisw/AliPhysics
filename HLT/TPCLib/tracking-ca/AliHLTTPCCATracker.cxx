@@ -118,7 +118,7 @@ char* AliHLTTPCCATracker::SetGPUTrackerHitsMemory(char* pGPUMemory, int MaxNHits
 	fHitMemory = (char*) pGPUMemory;
 	SetPointersHits(MaxNHits);
 	pGPUMemory += fHitMemorySize;
-	AssignMemory(fTrackletTmpStartHits, pGPUMemory, NHitsTotal());
+	AssignMemory(fTrackletTmpStartHits, pGPUMemory, HLTCA_ROW_COUNT * HLTCA_GPU_MAX_ROWSTARTHITS);
 	AssignMemory(fRowStartHitCountOffset, pGPUMemory, Param().NRows());
 
 	return(pGPUMemory);
@@ -399,7 +399,11 @@ int AliHLTTPCCATracker::ReadEvent( AliHLTTPCCAClusterData *clusterData )
 	StartEvent();
 
 	//* Convert input hits, create grids, etc.
-	if (fData.InitFromClusterData( *clusterData )) return 1;
+	if (fData.InitFromClusterData( *clusterData ))
+	{
+		printf("Error initializing from cluster data\n");
+		return 1;
+	}
 	if (fData.MaxZ() > 300 && !fParam.GetContinuousTracking())
 	{
 		printf("Need to set continuous tracking mode for data outside of the TPC volume!\n");
@@ -422,15 +426,9 @@ GPUhd() void  AliHLTTPCCATracker::SetPointersHits( int MaxNHits )
 	char *mem = fHitMemory;
 
 	// extra arrays for tpc clusters
-
-#ifdef HLTCA_GPU_SORT_STARTHITS_2
-	AssignMemory( fTrackletStartHits, mem, MaxNHits + 32);
-#else
 	AssignMemory( fTrackletStartHits, mem, MaxNHits);
-#endif
 
 	// calculate the size
-
 	fHitMemorySize = mem - fHitMemory;
 }
 
@@ -664,8 +662,8 @@ GPUh() void AliHLTTPCCATracker::WriteOutput()
 		trackOrder[i].fTtrack = i;
 		trackOrder[i].fSortVal = fTracks[trackOrder[i].fTtrack].NHits() / 1000.f + fTracks[trackOrder[i].fTtrack].Param().GetZ() * 100.f + fTracks[trackOrder[i].fTtrack].Param().GetY();
 	}
-	//std::sort(trackOrder, trackOrder + fCommonMem->fNLocalTracks, SortComparison<trackSortData>);
-	//std::sort(trackOrder + fCommonMem->fNLocalTracks, trackOrder + fCommonMem->fNTracks, SortComparison<trackSortData>);
+	std::sort(trackOrder, trackOrder + fCommonMem->fNLocalTracks, SortComparison<trackSortData>);
+	std::sort(trackOrder + fCommonMem->fNLocalTracks, trackOrder + fCommonMem->fNTracks, SortComparison<trackSortData>);
 	
 	for (int iTrTmp = 0;iTrTmp < fCommonMem->fNTracks;iTrTmp++)
 	{
@@ -725,6 +723,7 @@ GPUh() void AliHLTTPCCATracker::WriteOutput()
 		out->SetNClusters( nClu );
 		out = out->NextTrack();
 	}
+	delete[] trackOrder;
 
 	useOutput->SetNTracks( nStoredTracks );
 	useOutput->SetNLocalTracks( nStoredLocalTracks );
