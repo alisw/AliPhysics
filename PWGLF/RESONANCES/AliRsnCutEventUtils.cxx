@@ -42,6 +42,7 @@ AliRsnCut(name, AliRsnCut::kEvent),
   fASPDCvsTCut(-9999.0),
   fBSPDCvsTCut(-9999.0),
   fCheckInelGt0SPDtracklets(kFALSE),
+  fCheckInelGt0MC(kFALSE),
   fCheckAcceptedMultSelection(kFALSE),
   fUtils(0x0)
 {
@@ -76,6 +77,7 @@ AliRsnCutEventUtils::AliRsnCutEventUtils(const AliRsnCutEventUtils &copy) :
   fASPDCvsTCut(copy.fASPDCvsTCut),
   fBSPDCvsTCut(copy.fBSPDCvsTCut),
   fCheckInelGt0SPDtracklets(copy.fCheckInelGt0SPDtracklets),
+  fCheckInelGt0MC(copy.fCheckInelGt0MC),
   fCheckAcceptedMultSelection(copy.fCheckAcceptedMultSelection),
   fUtils(copy.fUtils)
 {
@@ -113,6 +115,7 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
   fASPDCvsTCut=copy.fASPDCvsTCut;
   fBSPDCvsTCut=copy.fBSPDCvsTCut;
   fCheckInelGt0SPDtracklets=copy.fCheckInelGt0SPDtracklets;
+  fCheckInelGt0MC=copy.fCheckInelGt0MC;
   fCheckAcceptedMultSelection=copy.fCheckAcceptedMultSelection;
   fUtils=copy.fUtils;
 	
