@@ -35,10 +35,13 @@ void AddTaskChargedFlow(
 	//connect containers
 	AliAnalysisDataContainer *coutput =
 		mgr->CreateContainer("ChargedFlow", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedFlow",AliAnalysisManager::GetCommonFileName()));
+	AliAnalysisDataContainer *coutputV0 =
+		mgr->CreateContainer("ChargedFlowV0", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedFlowV0",AliAnalysisManager::GetCommonFileName()));
 		
 	mgr->AddTask(task);
 	mgr->ConnectInput(task,0,cinput);
 	mgr->ConnectOutput(task,1,coutput);
+	mgr->ConnectOutput(task,2,coutputV0);
 	
 	return;
 	

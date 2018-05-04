@@ -56,8 +56,10 @@ AliAnalysisTaskChargedFlow::AliAnalysisTaskChargedFlow():
 	fSample(10),
 
 	fOutputContainer(0),
+	fV0OutputContainer(0),
 
 	hMult(0), 
+	hMultTrigger(0), 
 	fVtxAfterCuts(0),
 
 	fPhiDis(0), 
@@ -82,7 +84,25 @@ AliAnalysisTaskChargedFlow::AliAnalysisTaskChargedFlow():
 	fChsc3232_3sub_perm2(0),
 	fChsc3223_3sub_perm2(0),
 	fChsc3232_3sub_perm3(0),
-	fChsc3223_3sub_perm3(0)
+	fChsc3223_3sub_perm3(0),
+
+	//	for HM
+	fV0Chsc4242(0),
+	fV0Chsc4242Gap0(0),
+	fV0Chsc4242_3sub(0),
+	fV0Chsc4224_3sub(0),
+	fV0Chsc4242_3sub_perm2(0),
+	fV0Chsc4224_3sub_perm2(0),
+	fV0Chsc4242_3sub_perm3(0),
+	fV0Chsc4224_3sub_perm3(0),
+	fV0Chsc3232(0),
+	fV0Chsc3232Gap0(0),
+	fV0Chsc3232_3sub(0),
+	fV0Chsc3223_3sub(0),
+	fV0Chsc3232_3sub_perm2(0),
+	fV0Chsc3223_3sub_perm2(0),
+	fV0Chsc3232_3sub_perm3(0),
+	fV0Chsc3223_3sub_perm3(0)
 {
  
 	for(int h=0; h<3; h++)
@@ -115,6 +135,34 @@ AliAnalysisTaskChargedFlow::AliAnalysisTaskChargedFlow():
 		fChcn8Ntrks1bin[h] 									= 0;
 		fChcn8Gap0Ntrks1bin[h] 							= 0;
 
+		//	for HM
+		fV0Chcn2Ntrks1bin[h] 									= 0;
+		fV0Chcn2Gap0Ntrks1bin[h] 							= 0;
+		fV0Chcn2Gap2Ntrks1bin[h] 							= 0;
+		fV0Chcn2Gap4Ntrks1bin[h] 							= 0;
+		fV0Chcn2Gap8Ntrks1bin[h] 							= 0;
+		fV0Chcn2GapNtrks1bin[h] 							= 0;
+		fV0Chcn2Gap14Ntrks1bin[h] 						= 0;
+
+		fV0Chcn2_3subLMNtrks1bin[h] 					= 0;
+		fV0Chcn2_3subRMNtrks1bin[h] 					= 0;
+		fV0Chcn2_3subLM_perm2Ntrks1bin[h] 		= 0;
+		fV0Chcn2_3subLR_perm2Ntrks1bin[h] 		= 0;
+		fV0Chcn2_3subRM_perm3Ntrks1bin[h] 		= 0;
+		fV0Chcn2_3subRL_perm3Ntrks1bin[h] 		= 0;
+
+		fV0Chcn4Ntrks1bin[h] 									= 0;
+		fV0Chcn4Gap0Ntrks1bin[h] 							= 0;
+		fV0Chcn4_3subNtrks1bin[h] 						= 0;
+		fV0Chcn4_3sub_perm2Ntrks1bin[h]				= 0;
+		fV0Chcn4_3sub_perm3Ntrks1bin[h]				= 0;
+
+		fV0Chcn6Ntrks1bin[h] 									= 0;
+		fV0Chcn6Gap0Ntrks1bin[h] 							= 0;
+
+		fV0Chcn8Ntrks1bin[h] 									= 0;
+		fV0Chcn8Gap0Ntrks1bin[h] 							= 0;
+
  	}
 
 	for(int k=0; k<fSample+1; k++)
@@ -137,6 +185,25 @@ AliAnalysisTaskChargedFlow::AliAnalysisTaskChargedFlow():
 		fsc3223_3sub_perm2[k] 						= 0;
 		fsc3232_3sub_perm3[k] 						= 0;
 		fsc3223_3sub_perm3[k] 						= 0;
+
+		//	V0
+		fV0sc4242[k] 													= 0;
+		fV0sc4242Gap0[k] 											= 0;
+		fV0sc4242_3sub[k] 										= 0;
+		fV0sc4224_3sub[k] 										= 0;
+		fV0sc4242_3sub_perm2[k] 						= 0;
+		fV0sc4224_3sub_perm2[k] 						= 0;
+		fV0sc4242_3sub_perm3[k]							= 0;
+		fV0sc4224_3sub_perm3[k]							= 0;
+
+		fV0sc3232[k] 													= 0;
+		fV0sc3232Gap0[k] 											= 0;
+		fV0sc3232_3sub[k] 										= 0;
+		fV0sc3223_3sub[k] 										= 0;
+		fV0sc3232_3sub_perm2[k] 						= 0;
+		fV0sc3223_3sub_perm2[k] 						= 0;
+		fV0sc3232_3sub_perm3[k] 						= 0;
+		fV0sc3223_3sub_perm3[k] 						= 0;
 
 		for(Int_t h = 0; h < 3; h++)	
 		{		
@@ -168,6 +235,34 @@ AliAnalysisTaskChargedFlow::AliAnalysisTaskChargedFlow():
 			fcn8Ntrks1bin[h][k] 							= 0;
 			fcn8Gap0Ntrks1bin[h][k] 					= 0;
 
+			//	for HM
+			fV0cn2Ntrks1bin[h][k] 							= 0;
+			fV0cn2GapNtrks1bin[h][k] 						= 0;
+			fV0cn2Gap0Ntrks1bin[h][k] 					= 0;
+			fV0cn2Gap2Ntrks1bin[h][k] 					= 0;
+			fV0cn2Gap4Ntrks1bin[h][k] 					= 0;
+			fV0cn2Gap8Ntrks1bin[h][k] 					= 0;
+			fV0cn2Gap14Ntrks1bin[h][k] 					= 0;
+
+			fV0cn2_3subLMNtrks1bin[h][k] 				= 0;
+			fV0cn2_3subRMNtrks1bin[h][k] 				= 0;
+			fV0cn2_3subLM_perm2Ntrks1bin[h][k] = 0;
+			fV0cn2_3subLR_perm2Ntrks1bin[h][k] = 0;
+			fV0cn2_3subRM_perm3Ntrks1bin[h][k] = 0;
+			fV0cn2_3subRL_perm3Ntrks1bin[h][k] = 0;
+
+			fV0cn4Ntrks1bin[h][k] 							= 0;
+			fV0cn4Gap0Ntrks1bin[h][k] 					= 0;
+			fV0cn4_3subNtrks1bin[h][k] 					= 0;	
+			fV0cn4_3sub_perm2Ntrks1bin[h][k]		= 0;
+			fV0cn4_3sub_perm3Ntrks1bin[h][k]		= 0;
+
+			fV0cn6Ntrks1bin[h][k] 							= 0;
+			fV0cn6Gap0Ntrks1bin[h][k] 					= 0;
+
+			fV0cn8Ntrks1bin[h][k] 							= 0;
+			fV0cn8Gap0Ntrks1bin[h][k] 					= 0;
+
 	 }
        
   }
@@ -183,8 +278,10 @@ AliAnalysisTaskChargedFlow::AliAnalysisTaskChargedFlow(const char *name):
 	fSample(10),
 
 	fOutputContainer(0),
+	fV0OutputContainer(0),
 
 	hMult(0), 
+	hMultTrigger(0), 
 	fVtxAfterCuts(0),
 
 	fPhiDis(0), 
@@ -209,7 +306,25 @@ AliAnalysisTaskChargedFlow::AliAnalysisTaskChargedFlow(const char *name):
 	fChsc3232_3sub_perm2(0),
 	fChsc3223_3sub_perm2(0),
 	fChsc3232_3sub_perm3(0),
-	fChsc3223_3sub_perm3(0)
+	fChsc3223_3sub_perm3(0),
+
+	//	For HM
+	fV0Chsc4242(0),
+	fV0Chsc4242Gap0(0),
+	fV0Chsc4242_3sub(0),
+	fV0Chsc4224_3sub(0),
+	fV0Chsc4242_3sub_perm2(0),
+	fV0Chsc4224_3sub_perm2(0),
+	fV0Chsc4242_3sub_perm3(0),
+	fV0Chsc4224_3sub_perm3(0),
+	fV0Chsc3232(0),
+	fV0Chsc3232Gap0(0),
+	fV0Chsc3232_3sub(0),
+	fV0Chsc3223_3sub(0),
+	fV0Chsc3232_3sub_perm2(0),
+	fV0Chsc3223_3sub_perm2(0),
+	fV0Chsc3232_3sub_perm3(0),
+	fV0Chsc3223_3sub_perm3(0)
 {
 
 	for(int h=0; h<3; h++)
@@ -242,6 +357,34 @@ AliAnalysisTaskChargedFlow::AliAnalysisTaskChargedFlow(const char *name):
 		fChcn8Ntrks1bin[h] 									= 0;
 		fChcn8Gap0Ntrks1bin[h] 							= 0;
 
+		//	for V0
+		fV0Chcn2Ntrks1bin[h] 									= 0;
+		fV0Chcn2Gap0Ntrks1bin[h] 							= 0;
+		fV0Chcn2Gap2Ntrks1bin[h] 							= 0;
+		fV0Chcn2Gap4Ntrks1bin[h] 							= 0;
+		fV0Chcn2Gap8Ntrks1bin[h] 							= 0;
+		fV0Chcn2GapNtrks1bin[h] 							= 0;
+		fV0Chcn2Gap14Ntrks1bin[h] 						= 0;
+
+		fV0Chcn2_3subLMNtrks1bin[h] 					= 0;
+		fV0Chcn2_3subRMNtrks1bin[h] 					= 0;
+		fV0Chcn2_3subLM_perm2Ntrks1bin[h] 		= 0;
+		fV0Chcn2_3subLR_perm2Ntrks1bin[h] 		= 0;
+		fV0Chcn2_3subRM_perm3Ntrks1bin[h] 		= 0;
+		fV0Chcn2_3subRL_perm3Ntrks1bin[h] 		= 0;
+
+		fV0Chcn4Ntrks1bin[h] 									= 0;
+		fV0Chcn4Gap0Ntrks1bin[h] 							= 0;
+		fV0Chcn4_3subNtrks1bin[h] 						= 0;
+		fV0Chcn4_3sub_perm2Ntrks1bin[h]				= 0;
+		fV0Chcn4_3sub_perm3Ntrks1bin[h]				= 0;
+
+		fV0Chcn6Ntrks1bin[h] 									= 0;
+		fV0Chcn6Gap0Ntrks1bin[h] 							= 0;
+
+		fV0Chcn8Ntrks1bin[h] 									= 0;
+		fV0Chcn8Gap0Ntrks1bin[h] 							= 0;
+
  	}
 
 	for(int k=0; k<fSample+1; k++)
@@ -264,6 +407,25 @@ AliAnalysisTaskChargedFlow::AliAnalysisTaskChargedFlow(const char *name):
 		fsc3223_3sub_perm2[k] 						= 0;
 		fsc3232_3sub_perm3[k] 						= 0;
 		fsc3223_3sub_perm3[k] 						= 0;
+
+		//	for HM
+		fV0sc4242[k] 													= 0;
+		fV0sc4242Gap0[k] 											= 0;
+		fV0sc4242_3sub[k] 										= 0;
+		fV0sc4224_3sub[k] 										= 0;
+		fV0sc4242_3sub_perm2[k] 						= 0;
+		fV0sc4224_3sub_perm2[k] 						= 0;
+		fV0sc4242_3sub_perm3[k]							= 0;
+		fV0sc4224_3sub_perm3[k]							= 0;
+
+		fV0sc3232[k] 													= 0;
+		fV0sc3232Gap0[k] 											= 0;
+		fV0sc3232_3sub[k] 										= 0;
+		fV0sc3223_3sub[k] 										= 0;
+		fV0sc3232_3sub_perm2[k] 						= 0;
+		fV0sc3223_3sub_perm2[k] 						= 0;
+		fV0sc3232_3sub_perm3[k] 						= 0;
+		fV0sc3223_3sub_perm3[k] 						= 0;
 
 		for(Int_t h = 0; h < 3; h++)	
 		{		
@@ -295,12 +457,41 @@ AliAnalysisTaskChargedFlow::AliAnalysisTaskChargedFlow(const char *name):
 			fcn8Ntrks1bin[h][k]			 					= 0;
 			fcn8Gap0Ntrks1bin[h][k] 					= 0;
 
+			//	for HM
+			fV0cn2Ntrks1bin[h][k] 							= 0;
+			fV0cn2GapNtrks1bin[h][k] 						= 0;
+			fV0cn2Gap0Ntrks1bin[h][k] 					= 0;
+			fV0cn2Gap2Ntrks1bin[h][k] 					= 0;
+			fV0cn2Gap4Ntrks1bin[h][k] 					= 0;
+			fV0cn2Gap8Ntrks1bin[h][k] 					= 0;
+			fV0cn2Gap14Ntrks1bin[h][k] 					= 0;
+
+			fV0cn2_3subLMNtrks1bin[h][k] 				= 0;
+			fV0cn2_3subRMNtrks1bin[h][k] 				= 0;
+			fV0cn2_3subLM_perm2Ntrks1bin[h][k] 				= 0;
+			fV0cn2_3subLR_perm2Ntrks1bin[h][k] 				= 0;
+			fV0cn2_3subRM_perm3Ntrks1bin[h][k] 				= 0;
+			fV0cn2_3subRL_perm3Ntrks1bin[h][k] 				= 0;
+
+			fV0cn4Ntrks1bin[h][k] 							= 0;
+			fV0cn4Gap0Ntrks1bin[h][k] 					= 0;
+			fV0cn4_3subNtrks1bin[h][k] 					= 0;	
+			fV0cn4_3sub_perm2Ntrks1bin[h][k]		= 0;
+			fV0cn4_3sub_perm3Ntrks1bin[h][k]		= 0;
+
+			fV0cn6Ntrks1bin[h][k] 							= 0;
+			fV0cn6Gap0Ntrks1bin[h][k] 					= 0;
+
+			fV0cn8Ntrks1bin[h][k]			 					= 0;
+			fV0cn8Gap0Ntrks1bin[h][k] 					= 0;
+
 	 }
        
   }
     
 	// Output slot #1 writes into a TList
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 	
 }
 
@@ -332,6 +523,16 @@ void AliAnalysisTaskChargedFlow::UserCreateOutputObjects()
     fOutputContainer->SetOwner(kTRUE);
   }
 
+  // Create histograms HM
+  if(fV0OutputContainer != nullptr){
+    delete fV0OutputContainer;
+    fV0OutputContainer          = nullptr;
+  }
+  if(fV0OutputContainer == nullptr){
+    fV0OutputContainer          = new TList();
+    fV0OutputContainer->SetOwner(kTRUE);
+  }
+
 	// range on Xaxis: 
 	//		for pp, pPb and for lowM PbPb and XeXe the range is 200 in unit bins
 	//		for PbPb and XeXe the range is 5000 in bin width 50 (low M part which won't be correct due to mult. fluctuations will be done from unit bins in separate running)
@@ -348,6 +549,10 @@ void AliAnalysisTaskChargedFlow::UserCreateOutputObjects()
 	hMult->Sumw2();
 	fOutputContainer->Add(hMult);
 
+	hMultTrigger = new TH1F("hMultTrigger", ";number of tracks; entries", nn, 0, range);
+	hMultTrigger->Sumw2();
+	fOutputContainer->Add(hMultTrigger);
+
   fVtxAfterCuts = new TH1F("fVtxAfterCuts", "Vtx distribution (after cuts); Vtx z [cm]; Counts", 120, -30, 30);
 	fVtxAfterCuts->Sumw2();
   fOutputContainer->Add(fVtxAfterCuts);
@@ -361,7 +566,7 @@ void AliAnalysisTaskChargedFlow::UserCreateOutputObjects()
 	fEtaDis->Sumw2();
   fOutputContainer->Add(fEtaDis);
    
-  fEtaBefore = new TH1F("fEtaBefore", "eta distribution; #eta; Counts", 200, -2., 2.);
+  fEtaBefore = new TH1F("fEtaBefore", "eta distribution; #eta; Counts", 400, -6., 6.);
 	fEtaBefore->Sumw2();
   fOutputContainer->Add(fEtaBefore);
    
@@ -706,6 +911,373 @@ void AliAnalysisTaskChargedFlow::UserCreateOutputObjects()
 
 	}// samples
 
+  // Event Histograms HM
+	hV0Mult = new TH1F("hV0Mult", ";number of tracks; entries", nn, 0, range);
+	hV0Mult->Sumw2();
+	fV0OutputContainer->Add(hV0Mult);
+
+	hV0MultTrigger = new TH1F("hV0MultTrigger", ";number of tracks; entries", nn, 0, range);
+	hV0MultTrigger->Sumw2();
+	fV0OutputContainer->Add(hV0MultTrigger);
+
+  fV0VtxAfterCuts = new TH1F("fV0VtxAfterCuts", "Vtx distribution (after cuts); Vtx z [cm]; Counts", 120, -30, 30);
+	fV0VtxAfterCuts->Sumw2();
+  fV0OutputContainer->Add(fV0VtxAfterCuts);
+
+	// Track histograms  
+  fV0PhiDis = new TH1F("fV0PhiDis", "phi distribution; #phi; Counts", 360, 0, 2*TMath::Pi()); //..18 sectors of TPC, 20 bins per each sector
+	fV0PhiDis->Sumw2();
+  fV0OutputContainer->Add(fV0PhiDis);
+    
+  fV0EtaDis = new TH1F("fV0EtaDis", "eta distribution; #eta; Counts", 200, -2., 2.);
+	fV0EtaDis->Sumw2();
+  fV0OutputContainer->Add(fV0EtaDis);
+   
+  fV0EtaBefore = new TH1F("fV0EtaBefore", "eta distribution; #eta; Counts", 400, -6., 6.);
+	fV0EtaBefore->Sumw2();
+  fV0OutputContainer->Add(fV0EtaBefore);
+   
+	fV0PtDis = new TH1F("fV0PtDis", "pt distribution; p_{T}; Counts", 100, 0, 10);
+	fV0PtDis->Sumw2();
+	fV0OutputContainer->Add(fV0PtDis);
+ 
+	fV0PtBefore = new TH1F("fV0PtBefore", "pt distribution; p_{T}; Counts", 100, 0, 10);
+	fV0PtBefore->Sumw2();
+	fV0OutputContainer->Add(fV0PtBefore);
+ 
+	hV0IsPiKp = new TH1F("hV0IsPiKp", "", 1, 0, 1);
+	fV0OutputContainer->Add(hV0IsPiKp);
+
+	// Physics profiles
+	// SC(n,m)
+	fV0Chsc4242 = new TProfile("fV0Chsc4242", "# of tracks", nn, 0, range);
+	fV0Chsc4242->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc4242);
+
+	fV0Chsc4242Gap0 = new TProfile("fV0Chsc4242Gap0", "# of tracks", nn, 0, range);
+	fV0Chsc4242Gap0->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc4242Gap0);
+
+	fV0Chsc4242_3sub = new TProfile("fV0Chsc4242_3sub", "# of tracks", nn, 0, range);
+	fV0Chsc4242_3sub->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc4242_3sub);
+
+	fV0Chsc4224_3sub = new TProfile("fV0Chsc4224_3sub", "# of tracks", nn, 0, range);
+	fV0Chsc4224_3sub->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc4224_3sub);
+
+	fV0Chsc4242_3sub_perm2 = new TProfile("fV0Chsc4242_3sub_perm2", "# of tracks", nn, 0, range);
+	fV0Chsc4242_3sub_perm2->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc4242_3sub_perm2);
+
+	fV0Chsc4224_3sub_perm2 = new TProfile("fV0Chsc4224_3sub_perm2", "# of tracks", nn, 0, range);
+	fV0Chsc4224_3sub_perm2->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc4224_3sub_perm2);
+
+	fV0Chsc4242_3sub_perm3 = new TProfile("fV0Chsc4242_3sub_perm3", "# of tracks", nn, 0, range);
+	fV0Chsc4242_3sub_perm3->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc4242_3sub_perm3);
+
+	fV0Chsc4224_3sub_perm3 = new TProfile("fV0Chsc4224_3sub_perm3", "# of tracks", nn, 0, range);
+	fV0Chsc4224_3sub_perm3->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc4224_3sub_perm3);
+
+
+	fV0Chsc3232 = new TProfile("fV0Chsc3232", "# of tracks", nn, 0, range);
+	fV0Chsc3232->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc3232);
+
+	fV0Chsc3232Gap0 = new TProfile("fV0Chsc3232Gap0", "# of tracks", nn, 0, range);
+	fV0Chsc3232Gap0->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc3232Gap0);
+
+	fV0Chsc3232_3sub = new TProfile("fV0Chsc3232_3sub", "# of tracks", nn, 0, range);
+	fV0Chsc3232_3sub->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc3232_3sub);
+
+	fV0Chsc3223_3sub = new TProfile("fV0Chsc3223_3sub", "# of tracks", nn, 0, range);
+	fV0Chsc3223_3sub->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc3223_3sub);
+
+	fV0Chsc3232_3sub_perm2 = new TProfile("fV0Chsc3232_3sub_perm2", "# of tracks", nn, 0, range);
+	fV0Chsc3232_3sub_perm2->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc3232_3sub_perm2);
+
+	fV0Chsc3223_3sub_perm2 = new TProfile("fV0Chsc3223_3sub_perm2", "# of tracks", nn, 0, range);
+	fV0Chsc3223_3sub_perm2->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc3223_3sub_perm2);
+
+	fV0Chsc3232_3sub_perm3 = new TProfile("fV0Chsc3232_3sub_perm3", "# of tracks", nn, 0, range);
+	fV0Chsc3232_3sub_perm3->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc3232_3sub_perm3);
+
+	fV0Chsc3223_3sub_perm3 = new TProfile("fV0Chsc3223_3sub_perm3", "# of tracks", nn, 0, range);
+	fV0Chsc3223_3sub_perm3->Sumw2();
+	fV0OutputContainer->Add(fV0Chsc3223_3sub_perm3);
+
+
+	for(int h=0; h<3; h++)
+	{
+	  fV0Chcn2Ntrks1bin[h] = new TProfile(Form("fV0Chc%d2Ntrks1bin", h+2), "<<2>> Re; # of tracks", nn, 0, range);
+    fV0Chcn2Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2Ntrks1bin[h]);
+
+    fV0Chcn2Gap0Ntrks1bin[h] = new TProfile(Form("fV0Chc%d2Gap0Ntrks1bin", h+2), "<<2>> Re; # of tracks", nn, 0, range);
+    fV0Chcn2Gap0Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2Gap0Ntrks1bin[h]);
+
+    fV0Chcn2Gap2Ntrks1bin[h] = new TProfile(Form("fV0Chc%d2Gap2Ntrks1bin", h+2), "<<2>> Re; # of tracks", nn, 0, range);
+    fV0Chcn2Gap2Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2Gap2Ntrks1bin[h]);
+
+    fV0Chcn2Gap4Ntrks1bin[h] = new TProfile(Form("fV0Chc%d2Gap4Ntrks1bin", h+2), "<<2>> Re; # of tracks", nn, 0, range);
+    fV0Chcn2Gap4Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2Gap4Ntrks1bin[h]);
+
+    fV0Chcn2Gap8Ntrks1bin[h] = new TProfile(Form("fV0Chc%d2Gap8Ntrks1bin", h+2), "<<2>> Re; # of tracks", nn, 0, range);
+    fV0Chcn2Gap8Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2Gap8Ntrks1bin[h]);
+
+    fV0Chcn2GapNtrks1bin[h] = new TProfile(Form("fV0Chc%d2GapNtrks1bin", h+2), "<<2>> Re; # of tracks", nn, 0, range);
+    fV0Chcn2GapNtrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2GapNtrks1bin[h]);
+
+    fV0Chcn2Gap14Ntrks1bin[h] = new TProfile(Form("fV0Chc%d2Gap14Ntrks1bin", h+2), "<<2>> Re; # of tracks", nn, 0, range);
+    fV0Chcn2Gap14Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2Gap14Ntrks1bin[h]);
+
+
+    fV0Chcn2_3subLMNtrks1bin[h] = new TProfile(Form("fV0Chc%d2_3subLMNtrks1bin", h+2), "<<2>> Re for 3-subevent method, left+middle; # of tracks", nn, 0, range);
+    fV0Chcn2_3subLMNtrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2_3subLMNtrks1bin[h]);
+
+    fV0Chcn2_3subRMNtrks1bin[h] = new TProfile(Form("fV0Chc%d2_3subRMNtrks1bin", h+2), "<<2>> Re for 3-subevent method, right+middle; # of tracks", nn, 0, range);
+    fV0Chcn2_3subRMNtrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2_3subRMNtrks1bin[h]);
+
+    fV0Chcn2_3subLM_perm2Ntrks1bin[h] = new TProfile(Form("fV0Chc%d2_3subLM_perm2Ntrks1bin", h+2), "<<2>> Re for 3-subevent method, left+middle; # of tracks", nn, 0, range);
+    fV0Chcn2_3subLM_perm2Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2_3subLM_perm2Ntrks1bin[h]);
+
+    fV0Chcn2_3subLR_perm2Ntrks1bin[h] = new TProfile(Form("fV0Chc%d2_3subLR_perm2Ntrks1bin", h+2), "<<2>> Re for 3-subevent method, right+middle; # of tracks", nn, 0, range);
+    fV0Chcn2_3subLR_perm2Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2_3subLR_perm2Ntrks1bin[h]);
+
+    fV0Chcn2_3subRL_perm3Ntrks1bin[h] = new TProfile(Form("fV0Chc%d2_3subRL_perm3Ntrks1bin", h+2), "<<2>> Re for 3-subevent method, left+middle; # of tracks", nn, 0, range);
+    fV0Chcn2_3subRL_perm3Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2_3subRL_perm3Ntrks1bin[h]);
+
+    fV0Chcn2_3subRM_perm3Ntrks1bin[h] = new TProfile(Form("fV0Chc%d2_3subRM_perm3Ntrks1bin", h+2), "<<2>> Re for 3-subevent method, right+middle; # of tracks", nn, 0, range);
+    fV0Chcn2_3subRM_perm3Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn2_3subRM_perm3Ntrks1bin[h]);
+
+
+	  fV0Chcn4Ntrks1bin[h] = new TProfile(Form("fV0Chc%d4Ntrks1bin", h+2), "<<4>> Re; # of tracks", nn, 0, range);
+    fV0Chcn4Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn4Ntrks1bin[h]);
+
+    fV0Chcn4Gap0Ntrks1bin[h] = new TProfile(Form("fV0Chc%d4Gap0Ntrks1bin", h+2), "<<4>> Re; # of tracks", nn, 0, range);
+    fV0Chcn4Gap0Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn4Gap0Ntrks1bin[h]);
+
+		fV0Chcn4_3subNtrks1bin[h] = new TProfile(Form("fV0Chc%d4_3subNtrks1bin", h+2), "<<4>> 3-subevent method; # of tracks", nn, 0, range);
+		fV0Chcn4_3subNtrks1bin[h]->Sumw2();
+		fV0OutputContainer->Add(fV0Chcn4_3subNtrks1bin[h]);
+	
+		fV0Chcn4_3sub_perm2Ntrks1bin[h] = new TProfile(Form("fV0Chc%d4_3sub_perm2Ntrks1bin", h+2), "<<4>> for 3-subevent method", nn, 0, range);
+		fV0Chcn4_3sub_perm2Ntrks1bin[h]->Sumw2();
+		fV0OutputContainer->Add(fV0Chcn4_3sub_perm2Ntrks1bin[h]);
+
+		fV0Chcn4_3sub_perm3Ntrks1bin[h] = new TProfile(Form("fV0Chc%d4_3sub_perm3Ntrks1bin", h+2), "<<4>> for 3-subevent method", nn, 0, range);
+		fV0Chcn4_3sub_perm3Ntrks1bin[h]->Sumw2();
+		fV0OutputContainer->Add(fV0Chcn4_3sub_perm3Ntrks1bin[h]);
+
+
+	  fV0Chcn6Ntrks1bin[h] = new TProfile(Form("fV0Chc%d6Ntrks1bin", h+2), "<<6>> Re; # of tracks", nn, 0, range);
+    fV0Chcn6Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn6Ntrks1bin[h]);
+
+	  fV0Chcn6Gap0Ntrks1bin[h] = new TProfile(Form("fV0Chc%d6Gap0Ntrks1bin", h+2), "<<6>> Gap0 Re; # of tracks", nn, 0, range);
+    fV0Chcn6Gap0Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn6Gap0Ntrks1bin[h]);
+
+
+	  fV0Chcn8Ntrks1bin[h] = new TProfile(Form("fV0Chc%d8Ntrks1bin", h+2), "<<8>>  Re; # of tracks", nn, 0, range);
+    fV0Chcn8Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn8Ntrks1bin[h]);
+
+	  fV0Chcn8Gap0Ntrks1bin[h] = new TProfile(Form("fV0Chc%d8Gap0Ntrks1bin", h+2), "<<8>> Gap0 Re; # of tracks", nn, 0, range);
+    fV0Chcn8Gap0Ntrks1bin[h]->Sumw2();
+    fV0OutputContainer->Add(fV0Chcn8Gap0Ntrks1bin[h]);
+
+	}// harmonics
+
+	for(int j=0; j<fSample+1; j++)
+	{
+
+		fV0sc4242[j] = new TProfile(Form("fV0sc4242_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc4242[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc4242[j]);
+
+		fV0sc4242Gap0[j] = new TProfile(Form("fV0sc4242Gap0_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc4242Gap0[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc4242Gap0[j]);
+
+		fV0sc4242_3sub[j] = new TProfile(Form("fV0sc4242_3sub_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc4242_3sub[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc4242_3sub[j]);
+
+		fV0sc4224_3sub[j] = new TProfile(Form("fV0sc4224_3sub_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc4224_3sub[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc4224_3sub[j]);
+
+		fV0sc4242_3sub_perm2[j] = new TProfile(Form("fV0sc4242_3sub_perm2_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc4242_3sub_perm2[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc4242_3sub_perm2[j]);
+
+		fV0sc4224_3sub_perm2[j] = new TProfile(Form("fV0sc4224_3sub_perm2_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc4224_3sub_perm2[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc4224_3sub_perm2[j]);
+
+		fV0sc4242_3sub_perm3[j] = new TProfile(Form("fV0sc4242_3sub_perm3_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc4242_3sub_perm3[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc4242_3sub_perm3[j]);
+
+		fV0sc4224_3sub_perm3[j] = new TProfile(Form("fV0sc4224_3sub_perm3_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc4224_3sub_perm3[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc4224_3sub_perm3[j]);
+
+
+		fV0sc3232[j] = new TProfile(Form("fV0sc3232_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc3232[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc3232[j]);
+
+		fV0sc3232Gap0[j] = new TProfile(Form("fV0sc3232Gap0_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc3232Gap0[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc3232Gap0[j]);
+
+		fV0sc3232_3sub[j] = new TProfile(Form("fV0sc3232_3sub_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc3232_3sub[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc3232_3sub[j]);
+
+		fV0sc3223_3sub[j] = new TProfile(Form("fV0sc3223_3sub_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc3223_3sub[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc3223_3sub[j]);
+
+		fV0sc3232_3sub_perm2[j] = new TProfile(Form("fV0sc3232_3sub_perm2_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc3232_3sub_perm2[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc3232_3sub_perm2[j]);
+
+		fV0sc3223_3sub_perm2[j] = new TProfile(Form("fV0sc3223_3sub_perm2_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc3223_3sub_perm2[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc3223_3sub_perm2[j]);
+
+		fV0sc3232_3sub_perm3[j] = new TProfile(Form("fV0sc3232_3sub_perm3_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc3232_3sub_perm3[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc3232_3sub_perm3[j]);
+
+		fV0sc3223_3sub_perm3[j] = new TProfile(Form("fV0sc3223_3sub_perm3_number%d", j), "; Ntrks", nn, 0, range);
+		fV0sc3223_3sub_perm3[j]->Sumw2();
+		fV0OutputContainer->Add(fV0sc3223_3sub_perm3[j]);
+
+		for(int h=0; h<3; h++)
+		{
+	    fV0cn2Ntrks1bin[h][j] = new TProfile(Form("fc%d2_number%dNtrks1bin", h+2, j), "<<2>> Re; # of tracks", nn, 0, range);
+      fV0cn2Ntrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2Ntrks1bin[h][j]);
+
+      fV0cn2Gap0Ntrks1bin[h][j] = new TProfile(Form("fc%d2_number%dGap0Ntrks1bin", h+2, j), "<<2>> Re; # of tracks", nn, 0, range);
+      fV0cn2Gap0Ntrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2Gap0Ntrks1bin[h][j]);
+
+      fV0cn2Gap2Ntrks1bin[h][j] = new TProfile(Form("fc%d2_number%dGap2Ntrks1bin", h+2, j), "<<2>> Re; # of tracks", nn, 0, range);
+      fV0cn2Gap2Ntrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2Gap2Ntrks1bin[h][j]);
+
+      fV0cn2Gap4Ntrks1bin[h][j] = new TProfile(Form("fc%d2_number%dGap4Ntrks1bin", h+2, j), "<<2>> Re; # of tracks", nn, 0, range);
+      fV0cn2Gap4Ntrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2Gap4Ntrks1bin[h][j]);
+
+      fV0cn2Gap8Ntrks1bin[h][j] = new TProfile(Form("fc%d2_number%dGap8Ntrks1bin", h+2, j), "<<2>> Re; # of tracks", nn, 0, range);
+      fV0cn2Gap8Ntrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2Gap8Ntrks1bin[h][j]);
+
+      fV0cn2GapNtrks1bin[h][j] = new TProfile(Form("fc%d2_number%dGapNtrks1bin", h+2, j), "<<2>> Re; # of tracks", nn, 0, range);
+      fV0cn2GapNtrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2GapNtrks1bin[h][j]);
+
+      fV0cn2Gap14Ntrks1bin[h][j] = new TProfile(Form("fc%d2_number%dGap14Ntrks1bin", h+2, j), "<<2>> Re; # of tracks", nn, 0, range);
+      fV0cn2Gap14Ntrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2Gap14Ntrks1bin[h][j]);
+
+
+      fV0cn2_3subLMNtrks1bin[h][j] = new TProfile(Form("fc%d2_number%d_3subLMNtrks1bin", h+2, j), "<<2>> Re for 3-subevent method left+middle; # of tracks", nn, 0, range);
+      fV0cn2_3subLMNtrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2_3subLMNtrks1bin[h][j]);
+
+      fV0cn2_3subRMNtrks1bin[h][j] = new TProfile(Form("fc%d2_number%d_3subRMNtrks1bin", h+2, j), "<<2>> Re for 3-subevent method right+middle; # of tracks", nn, 0, range);
+      fV0cn2_3subRMNtrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2_3subRMNtrks1bin[h][j]);
+
+      fV0cn2_3subLM_perm2Ntrks1bin[h][j] = new TProfile(Form("fc%d2_number%d_3subLM_perm2Ntrks1bin", h+2, j), "<<2>> Re for 3-subevent method left+middle; # of tracks", nn, 0, range);
+      fV0cn2_3subLM_perm2Ntrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2_3subLM_perm2Ntrks1bin[h][j]);
+
+      fV0cn2_3subLR_perm2Ntrks1bin[h][j] = new TProfile(Form("fc%d2_number%d_3subLR_perm2Ntrks1bin", h+2, j), "<<2>> Re for 3-subevent method right+middle; # of tracks", nn, 0, range);
+      fV0cn2_3subLR_perm2Ntrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2_3subLR_perm2Ntrks1bin[h][j]);
+
+      fV0cn2_3subRM_perm3Ntrks1bin[h][j] = new TProfile(Form("fc%d2_number%d_3subRM_perm3Ntrks1bin", h+2, j), "<<2>> Re for 3-subevent method left+middle; # of tracks", nn, 0, range);
+      fV0cn2_3subRM_perm3Ntrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2_3subRM_perm3Ntrks1bin[h][j]);
+
+      fV0cn2_3subRL_perm3Ntrks1bin[h][j] = new TProfile(Form("fc%d2_number%d_3subRL_perm3Ntrks1bin", h+2, j), "<<2>> Re for 3-subevent method right+middle; # of tracks", nn, 0, range);
+      fV0cn2_3subRL_perm3Ntrks1bin[h][j]->Sumw2();
+      fV0OutputContainer->Add(fV0cn2_3subRL_perm3Ntrks1bin[h][j]);
+
+
+			fV0cn4Ntrks1bin[h][j] = new TProfile(Form("fc%d4_number%dNtrks1bin", h+2, j), "<<4>>; # of tracks", nn, 0, range);
+			fV0cn4Ntrks1bin[h][j]->Sumw2();
+			fV0OutputContainer->Add(fV0cn4Ntrks1bin[h][j]);
+	
+			fV0cn4Gap0Ntrks1bin[h][j] = new TProfile(Form("fc%d4Gap0_number%dNtrks1bin", h+2, j), "<<4>>; # of tracks", nn, 0, range);
+			fV0cn4Gap0Ntrks1bin[h][j]->Sumw2();
+			fV0OutputContainer->Add(fV0cn4Gap0Ntrks1bin[h][j]);
+	
+			fV0cn4_3subNtrks1bin[h][j] = new TProfile(Form("fc%d4_3sub_number%dNtrks1bin", h+2, j), "<<4>> 3-subevent method; # of tracks", nn, 0, range);
+			fV0cn4_3subNtrks1bin[h][j]->Sumw2();
+			fV0OutputContainer->Add(fV0cn4_3subNtrks1bin[h][j]);
+
+			fV0cn4_3sub_perm2Ntrks1bin[h][j] = new TProfile(Form("fc%d4_number%d_3sub_perm2Ntrks1bin", h+2, j), "<<4>> for 3-subevent method", nn, 0, range);
+			fV0cn4_3sub_perm2Ntrks1bin[h][j]->Sumw2();
+			fV0OutputContainer->Add(fV0cn4_3sub_perm2Ntrks1bin[h][j]);
+
+			fV0cn4_3sub_perm3Ntrks1bin[h][j] = new TProfile(Form("fc%d4_number%d_3sub_perm3Ntrks1bin", h+2, j), "<<4>> for 3-subevent method", nn, 0, range);
+			fV0cn4_3sub_perm3Ntrks1bin[h][j]->Sumw2();
+			fV0OutputContainer->Add(fV0cn4_3sub_perm3Ntrks1bin[h][j]);
+
+
+			fV0cn6Ntrks1bin[h][j] = new TProfile(Form("fc%d6_number%dNtrks1bin", h+2, j), "<<6>>; # of tracks", nn, 0, range);
+			fV0cn6Ntrks1bin[h][j]->Sumw2();
+			fV0OutputContainer->Add(fV0cn6Ntrks1bin[h][j]);
+	
+			fV0cn6Gap0Ntrks1bin[h][j] = new TProfile(Form("fc%d6Gap0_number%dNtrks1bin", h+2, j), "<<6>> Gap0; # of tracks", nn, 0, range);
+			fV0cn6Gap0Ntrks1bin[h][j]->Sumw2();
+			fV0OutputContainer->Add(fV0cn6Gap0Ntrks1bin[h][j]);
+	
+
+			fV0cn8Ntrks1bin[h][j] = new TProfile(Form("fc%d8_number%dNtrks1bin", h+2, j), "<<8>> ; # of tracks", nn, 0, range);
+			fV0cn8Ntrks1bin[h][j]->Sumw2();
+			fV0OutputContainer->Add(fV0cn8Ntrks1bin[h][j]);
+
+			fV0cn8Gap0Ntrks1bin[h][j] = new TProfile(Form("fc%d8Gap0_number%dNtrks1bin", h+2, j), "<<8>> Gap0; # of tracks", nn, 0, range);
+			fV0cn8Gap0Ntrks1bin[h][j]->Sumw2();
+			fV0OutputContainer->Add(fV0cn8Gap0Ntrks1bin[h][j]);
+
+		}// harmonics
+
+	}// samples
+
   // Post output data.
   PostData(1, fOutputContainer);
 }
@@ -729,6 +1301,7 @@ void AliAnalysisTaskChargedFlow::UserExec(Option_t *)
 
   // Post output data.
 	PostData(1, fOutputContainer);
+	PostData(2, fV0OutputContainer);
 
 }
 //________________________________________________________________________
@@ -737,8 +1310,43 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 
 	AliStack *stack = fMCEvent->Stack();
 	const int nTracks = stack->GetNtrack();
-	
-	double Ntrks = 0; //..count number of tracks after track cuts (and possible primary, pions, etc.)
+
+	//	get multiplicity in forward region to mimic HM trigger
+	bool isHighMultiplicity = false;
+	double Ntrks = 0;
+	double NtrksMeanV0 = 36.3;
+  for(Int_t nt = 0; nt < nTracks; nt++)
+  {
+
+		TParticle *particle = (TParticle*)stack->Particle(nt);
+		if(!particle) continue;
+
+		//if(!(particle->GetPdgCode())) continue;
+
+		//	check if it is primary by checking if it has mother or not
+		bool isPrimary = false;
+		if(stack->IsPhysicalPrimary(nt)) isPrimary = true;
+
+		//	charge
+		bool isCharged = false;
+		int pid = TMath::Abs(particle->GetPdgCode());
+		if((pid == 211) || (pid == 321) || (pid == 2212)) isCharged = true;
+
+		double eta = particle->Eta(); 
+		double pt = particle->Pt();
+
+		//	get multiplicity to mimic HM trigger
+		if((isPrimary == true) && (isCharged == true) && (pt > 0.) && ((eta > -3.7 && eta < -1.7) || (eta > 2.8 && eta < 5.1)))
+			Ntrks += 1;
+
+	}
+
+	//	cut to mimic HM trigger: M/<M> > 4	
+	if(Ntrks > (NtrksMeanV0*4)) isHighMultiplicity = true;
+
+	double NtrksTrigger = 0;
+	double NtrksTrigger3 = 0;
+	double NtrksTrigger_not0 = 0;
 	double NtrksAfter = 0;
 	double NtrksAfterGap0M = 0;
 	double NtrksAfterGap0P = 0;
@@ -834,33 +1442,42 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		TParticle *particle = (TParticle*)stack->Particle(nt);
 		if(!particle) continue;
 
+		//if(!(particle->GetPdgCode())) continue;
+
 		//	check if it is primary by checking if it has mother or not
 		bool isPrimary = false;
 		if(stack->IsPhysicalPrimary(nt)) isPrimary = true;
-		if(isPrimary == false) continue;
 
 		//	charge
 		bool isCharged = false;
 		int pid = TMath::Abs(particle->GetPdgCode());
 		if((pid == 211) || (pid == 321) || (pid == 2212)) {
 			hIsPiKp->Fill("is charged pi, K, p", 1.);
+			if(isHighMultiplicity == true) hV0IsPiKp->Fill("is charged pi, K, p", 1.);
 			isCharged = true;
+		}else {
+			hIsPiKp->Fill("other than pi, K, p", 1.);
+			if(isHighMultiplicity == true) hV0IsPiKp->Fill("other than pi, K, p", 1.);
 		}
-		else {
-			hIsPiKp->Fill("the rest", 1.);
-		}
-
-		if(isCharged == false) continue;
-
-		//if(particle->GetPDG()->Charge() == 0) hIsPiKp->Fill("is neutral from PDG", 1.);
-		//else hIsPiKp->Fill("charge from PDG", 1.);
 
 		double eta = particle->Eta(); 
 		double pt = particle->Pt();
 		double phi = particle->Phi();
 
+		//	get multiplicity to mimic HM trigger
+		if((isPrimary == true) && (isCharged == true) && (pt > 0.) && ((eta > -3.7 && eta < -1.7) || (eta > 2.8 && eta < 5.1)))
+			NtrksTrigger += 1;
+
+		//	do selection
+		if(isPrimary == false) continue;
+		if(isCharged == false) continue;
+
 		fEtaBefore->Fill(eta);
 		fPtBefore->Fill(pt);
+		if(isHighMultiplicity == true){
+			fV0EtaBefore->Fill(eta);
+			fV0PtBefore->Fill(pt);
+		}
 
 		if(pt < fMinPt) continue;
 		if(pt > fMaxPt) continue;
@@ -870,6 +1487,11 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fPhiDis->Fill(phi);
     fEtaDis->Fill(eta);
 		fPtDis->Fill(pt);     
+		if(isHighMultiplicity == true){
+			fV0PhiDis->Fill(phi);
+    	fV0EtaDis->Fill(eta);
+			fV0PtDis->Fill(pt);     
+		}
  
 		NtrksAfter += 1;
 
@@ -1091,6 +1713,12 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
   } // end loop of all track
 
 	hMult->Fill(NtrksAfter);
+	hMultTrigger->Fill(NtrksTrigger);
+	if(isHighMultiplicity == true)
+	{
+		hV0Mult->Fill(NtrksAfter);
+		hV0MultTrigger->Fill(NtrksTrigger);
+	}
 
 	//............................
 	//..GENERIC FRAMEWORK RP
@@ -1157,6 +1785,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn2Ntrks1bin[2]->Fill(NtrksAfter, v42Re, Dn2);
 		fcn2Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Re, Dn2);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22 = Two(2, -2);
+			double v22Re = v22.Re()/Dn2;
+			fV0Chcn2Ntrks1bin[0]->Fill(NtrksAfter, v22Re, Dn2);
+			fV0cn2Ntrks1bin[0][fBin]->Fill(NtrksAfter, v22Re, Dn2);
+
+			TComplex v32 = Two(3, -3);
+			double v32Re = v32.Re()/Dn2;
+			fV0Chcn2Ntrks1bin[1]->Fill(NtrksAfter, v32Re, Dn2);
+			fV0cn2Ntrks1bin[1][fBin]->Fill(NtrksAfter, v32Re, Dn2);
+
+			TComplex v42 = Two(4, -4);
+			double v42Re = v42.Re()/Dn2;
+			fV0Chcn2Ntrks1bin[2]->Fill(NtrksAfter, v42Re, Dn2);
+			fV0cn2Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Re, Dn2);
+		}
+
 	}	
 
 	if(NtrksAfterGap0M > 0 && NtrksAfterGap0P > 0 && Dn2Gap0 != 0)
@@ -1179,6 +1825,23 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn2Gap0Ntrks1bin[2]->Fill(NtrksAfter, v42ReGap0, Dn2Gap0);
 		fcn2Gap0Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42ReGap0, Dn2Gap0);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22Gap0 = TwoGap0(2, -2);
+			double v22Gap0Re = v22Gap0.Re()/Dn2Gap0;
+			fV0Chcn2Gap0Ntrks1bin[0]->Fill(NtrksAfter, v22Gap0Re, Dn2Gap0);
+			fV0cn2Gap0Ntrks1bin[0][fBin]->Fill(NtrksAfter, v22Gap0Re, Dn2Gap0);
+
+			TComplex v32Gap0 = TwoGap0(3, -3);
+			double v32Gap0Re = v32Gap0.Re()/Dn2Gap0;
+			fV0Chcn2Gap0Ntrks1bin[1]->Fill(NtrksAfter, v32Gap0Re, Dn2Gap0);
+			fV0cn2Gap0Ntrks1bin[1][fBin]->Fill(NtrksAfter, v32Gap0Re, Dn2Gap0);
+
+			TComplex v42Gap0 = TwoGap0(4, -4);
+			double v42Gap0Re = v42Gap0.Re()/Dn2Gap0;
+			fV0Chcn2Gap0Ntrks1bin[2]->Fill(NtrksAfter, v42Gap0Re, Dn2Gap0);
+			fV0cn2Gap0Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Gap0Re, Dn2Gap0);
+		}
 	}
 
 	if(NtrksAfterGap2M > 0 && NtrksAfterGap2P > 0 && Dn2Gap2 != 0)
@@ -1200,6 +1863,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		double v42ReGap2 = v42Gap2.Re()/Dn2Gap2;
 		fChcn2Gap2Ntrks1bin[2]->Fill(NtrksAfter, v42ReGap2, Dn2Gap2);
 		fcn2Gap2Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42ReGap2, Dn2Gap2);
+
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22Gap2 = TwoGap2(2, -2);
+			double v22Gap2Re = v22Gap2.Re()/Dn2Gap2;
+			fV0Chcn2Gap2Ntrks1bin[0]->Fill(NtrksAfter, v22Gap2Re, Dn2Gap2);
+			fV0cn2Gap2Ntrks1bin[0][fBin]->Fill(NtrksAfter, v22Gap2Re, Dn2Gap2);
+
+			TComplex v32Gap2 = TwoGap2(3, -3);
+			double v32Gap2Re = v32Gap2.Re()/Dn2Gap2;
+			fV0Chcn2Gap2Ntrks1bin[1]->Fill(NtrksAfter, v32Gap2Re, Dn2Gap2);
+			fV0cn2Gap2Ntrks1bin[1][fBin]->Fill(NtrksAfter, v32Gap2Re, Dn2Gap2);
+
+			TComplex v42Gap2 = TwoGap2(4, -4);
+			double v42Gap2Re = v42Gap2.Re()/Dn2Gap2;
+			fV0Chcn2Gap2Ntrks1bin[2]->Fill(NtrksAfter, v42Gap2Re, Dn2Gap2);
+			fV0cn2Gap2Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Gap2Re, Dn2Gap2);
+		}
 
 	}
 
@@ -1223,6 +1904,23 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn2Gap4Ntrks1bin[2]->Fill(NtrksAfter, v42ReGap4, Dn2Gap4);
 		fcn2Gap4Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42ReGap4, Dn2Gap4);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22Gap4 = TwoGap4(2, -2);
+			double v22Gap4Re = v22Gap4.Re()/Dn2Gap4;
+			fV0Chcn2Gap4Ntrks1bin[0]->Fill(NtrksAfter, v22Gap4Re, Dn2Gap4);
+			fV0cn2Gap4Ntrks1bin[0][fBin]->Fill(NtrksAfter, v22Gap4Re, Dn2Gap4);
+
+			TComplex v32Gap4 = TwoGap4(3, -3);
+			double v32Gap4Re = v32Gap4.Re()/Dn2Gap4;
+			fV0Chcn2Gap4Ntrks1bin[1]->Fill(NtrksAfter, v32Gap4Re, Dn2Gap4);
+			fV0cn2Gap4Ntrks1bin[1][fBin]->Fill(NtrksAfter, v32Gap4Re, Dn2Gap4);
+
+			TComplex v42Gap4 = TwoGap4(4, -4);
+			double v42Gap4Re = v42Gap4.Re()/Dn2Gap4;
+			fV0Chcn2Gap4Ntrks1bin[2]->Fill(NtrksAfter, v42Gap4Re, Dn2Gap4);
+			fV0cn2Gap4Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Gap4Re, Dn2Gap4);
+		}
 	}
 
 	if(NtrksAfterGap8M > 0 && NtrksAfterGap8P > 0 && Dn2Gap8 != 0)
@@ -1245,6 +1943,23 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn2Gap8Ntrks1bin[2]->Fill(NtrksAfter, v42ReGap8, Dn2Gap8);
 		fcn2Gap8Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42ReGap8, Dn2Gap8);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22Gap8 = TwoGap8(2, -2);
+			double v22Gap8Re = v22Gap8.Re()/Dn2Gap8;
+			fV0Chcn2Gap8Ntrks1bin[0]->Fill(NtrksAfter, v22Gap8Re, Dn2Gap8);
+			fV0cn2Gap8Ntrks1bin[0][fBin]->Fill(NtrksAfter, v22Gap8Re, Dn2Gap8);
+
+			TComplex v32Gap8 = TwoGap8(3, -3);
+			double v32Gap8Re = v32Gap8.Re()/Dn2Gap8;
+			fV0Chcn2Gap8Ntrks1bin[1]->Fill(NtrksAfter, v32Gap8Re, Dn2Gap8);
+			fV0cn2Gap8Ntrks1bin[1][fBin]->Fill(NtrksAfter, v32Gap8Re, Dn2Gap8);
+
+			TComplex v42Gap8 = TwoGap8(4, -4);
+			double v42Gap8Re = v42Gap8.Re()/Dn2Gap8;
+			fV0Chcn2Gap8Ntrks1bin[2]->Fill(NtrksAfter, v42Gap8Re, Dn2Gap8);
+			fV0cn2Gap8Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Gap8Re, Dn2Gap8);
+		}
 	}
 
 	if(NtrksAfterGapM > 0 && NtrksAfterGapP > 0 && Dn2Gap != 0)
@@ -1267,6 +1982,23 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn2GapNtrks1bin[2]->Fill(NtrksAfter, v42ReGap, Dn2Gap);
 		fcn2GapNtrks1bin[2][fBin]->Fill(NtrksAfter, v42ReGap, Dn2Gap);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22Gap = TwoGap(2, -2);
+			double v22GapRe = v22Gap.Re()/Dn2Gap;
+			fV0Chcn2GapNtrks1bin[0]->Fill(NtrksAfter, v22GapRe, Dn2Gap);
+			fV0cn2GapNtrks1bin[0][fBin]->Fill(NtrksAfter, v22GapRe, Dn2Gap);
+
+			TComplex v32Gap = TwoGap(3, -3);
+			double v32GapRe = v32Gap.Re()/Dn2Gap;
+			fV0Chcn2GapNtrks1bin[1]->Fill(NtrksAfter, v32GapRe, Dn2Gap);
+			fV0cn2GapNtrks1bin[1][fBin]->Fill(NtrksAfter, v32GapRe, Dn2Gap);
+
+			TComplex v42Gap = TwoGap(4, -4);
+			double v42GapRe = v42Gap.Re()/Dn2Gap;
+			fV0Chcn2GapNtrks1bin[2]->Fill(NtrksAfter, v42GapRe, Dn2Gap);
+			fV0cn2GapNtrks1bin[2][fBin]->Fill(NtrksAfter, v42GapRe, Dn2Gap);
+		}
 	}
 
 	if(NtrksAfterGap14M > 0 && NtrksAfterGap14P > 0 && Dn2Gap14 != 0)
@@ -1289,6 +2021,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn2Gap14Ntrks1bin[2]->Fill(NtrksAfter, v42ReGap14, Dn2Gap14);
 		fcn2Gap14Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42ReGap14, Dn2Gap14);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22Gap14 = TwoGap14(2, -2);
+			double v22Gap14Re = v22Gap14.Re()/Dn2Gap14;
+			fV0Chcn2Gap14Ntrks1bin[0]->Fill(NtrksAfter, v22Gap14Re, Dn2Gap14);
+			fV0cn2Gap14Ntrks1bin[0][fBin]->Fill(NtrksAfter, v22Gap14Re, Dn2Gap14);
+
+			TComplex v32Gap14 = TwoGap14(3, -3);
+			double v32Gap14Re = v32Gap14.Re()/Dn2Gap14;
+			fV0Chcn2Gap14Ntrks1bin[1]->Fill(NtrksAfter, v32Gap14Re, Dn2Gap14);
+			fV0cn2Gap14Ntrks1bin[1][fBin]->Fill(NtrksAfter, v32Gap14Re, Dn2Gap14);
+
+			TComplex v42Gap14 = TwoGap14(4, -4);
+			double v42Gap14Re = v42Gap14.Re()/Dn2Gap14;
+			fV0Chcn2Gap14Ntrks1bin[2]->Fill(NtrksAfter, v42Gap14Re, Dn2Gap14);
+			fV0cn2Gap14Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Gap14Re, Dn2Gap14);
+		}
+
 	}
 
 
@@ -1310,6 +2060,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn2_3subLMNtrks1bin[2]->Fill(NtrksAfter, v42Re_3subLM, Dn2_3subLM);
 		fcn2_3subLMNtrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subLM, Dn2_3subLM);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22_3subLM = Two_3SubLM(2, -2);
+			double v22Re_3subLM = v22_3subLM.Re()/Dn2_3subLM;
+			fV0Chcn2_3subLMNtrks1bin[0]->Fill(NtrksAfter, v22Re_3subLM, Dn2_3subLM);
+			fV0cn2_3subLMNtrks1bin[0][fBin]->Fill(NtrksAfter, v22Re_3subLM, Dn2_3subLM);
+
+			TComplex v32_3subLM = Two_3SubLM(3, -3);
+			double v32Re_3subLM = v32_3subLM.Re()/Dn2_3subLM;
+			fV0Chcn2_3subLMNtrks1bin[1]->Fill(NtrksAfter, v32Re_3subLM, Dn2_3subLM);
+			fV0cn2_3subLMNtrks1bin[1][fBin]->Fill(NtrksAfter, v32Re_3subLM, Dn2_3subLM);
+
+			TComplex v42_3subLM = Two_3SubLM(4, -4);
+			double v42Re_3subLM = v42_3subLM.Re()/Dn2_3subLM;
+			fV0Chcn2_3subLMNtrks1bin[2]->Fill(NtrksAfter, v42Re_3subLM, Dn2_3subLM);
+			fV0cn2_3subLMNtrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subLM, Dn2_3subLM);
+		}
+
 	}
 
 	if(NtrksAfter3subM > 0 && NtrksAfter3subR > 0 && Dn2_3subRM != 0)
@@ -1328,6 +2096,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		double v42Re_3subRM = v42_3subRM.Re()/Dn2_3subRM;
 		fChcn2_3subRMNtrks1bin[2]->Fill(NtrksAfter, v42Re_3subRM, Dn2_3subRM);
 		fcn2_3subRMNtrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subRM, Dn2_3subRM);
+
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22_3subRM = Two_3SubRM(2, -2);
+			double v22Re_3subRM = v22_3subRM.Re()/Dn2_3subRM;
+			fV0Chcn2_3subRMNtrks1bin[0]->Fill(NtrksAfter, v22Re_3subRM, Dn2_3subRM);
+			fV0cn2_3subRMNtrks1bin[0][fBin]->Fill(NtrksAfter, v22Re_3subRM, Dn2_3subRM);
+
+			TComplex v32_3subRM = Two_3SubRM(3, -3);
+			double v32Re_3subRM = v32_3subRM.Re()/Dn2_3subRM;
+			fV0Chcn2_3subRMNtrks1bin[1]->Fill(NtrksAfter, v32Re_3subRM, Dn2_3subRM);
+			fV0cn2_3subRMNtrks1bin[1][fBin]->Fill(NtrksAfter, v32Re_3subRM, Dn2_3subRM);
+
+			TComplex v42_3subRM = Two_3SubRM(4, -4);
+			double v42Re_3subRM = v42_3subRM.Re()/Dn2_3subRM;
+			fV0Chcn2_3subRMNtrks1bin[2]->Fill(NtrksAfter, v42Re_3subRM, Dn2_3subRM);
+			fV0cn2_3subRMNtrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subRM, Dn2_3subRM);
+		}
 
 	}
 
@@ -1349,6 +2135,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn2_3subLM_perm2Ntrks1bin[2]->Fill(NtrksAfter, v42Re_3subLM_perm2, Dn2_3subLM_perm2);
 		fcn2_3subLM_perm2Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subLM_perm2, Dn2_3subLM_perm2);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22_3subLM_perm2 = Two_3SubLM_perm2(2, -2);
+			double v22Re_3subLM_perm2 = v22_3subLM_perm2.Re()/Dn2_3subLM_perm2;
+			fV0Chcn2_3subLM_perm2Ntrks1bin[0]->Fill(NtrksAfter, v22Re_3subLM_perm2, Dn2_3subLM_perm2);
+			fV0cn2_3subLM_perm2Ntrks1bin[0][fBin]->Fill(NtrksAfter, v22Re_3subLM_perm2, Dn2_3subLM_perm2);
+
+			TComplex v32_3subLM_perm2 = Two_3SubLM_perm2(3, -3);
+			double v32Re_3subLM_perm2 = v32_3subLM_perm2.Re()/Dn2_3subLM_perm2;
+			fV0Chcn2_3subLM_perm2Ntrks1bin[1]->Fill(NtrksAfter, v32Re_3subLM_perm2, Dn2_3subLM_perm2);
+			fV0cn2_3subLM_perm2Ntrks1bin[1][fBin]->Fill(NtrksAfter, v32Re_3subLM_perm2, Dn2_3subLM_perm2);
+
+			TComplex v42_3subLM_perm2 = Two_3SubLM_perm2(4, -4);
+			double v42Re_3subLM_perm2 = v42_3subLM_perm2.Re()/Dn2_3subLM_perm2;
+			fV0Chcn2_3subLM_perm2Ntrks1bin[2]->Fill(NtrksAfter, v42Re_3subLM_perm2, Dn2_3subLM_perm2);
+			fV0cn2_3subLM_perm2Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subLM_perm2, Dn2_3subLM_perm2);
+		}
+
 	}
 
 	if(NtrksAfter3subL > 0 && NtrksAfter3subR > 0 && Dn2_3subLR_perm2 != 0)
@@ -1367,6 +2171,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		double v42Re_3subLR_perm2 = v42_3subLR_perm2.Re()/Dn2_3subLR_perm2;
 		fChcn2_3subLR_perm2Ntrks1bin[2]->Fill(NtrksAfter, v42Re_3subLR_perm2, Dn2_3subLR_perm2);
 		fcn2_3subLR_perm2Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subLR_perm2, Dn2_3subLR_perm2);
+
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22_3subLR_perm2 = Two_3SubLR_perm2(2, -2);
+			double v22Re_3subLR_perm2 = v22_3subLR_perm2.Re()/Dn2_3subLR_perm2;
+			fV0Chcn2_3subLR_perm2Ntrks1bin[0]->Fill(NtrksAfter, v22Re_3subLR_perm2, Dn2_3subLR_perm2);
+			fV0cn2_3subLR_perm2Ntrks1bin[0][fBin]->Fill(NtrksAfter, v22Re_3subLR_perm2, Dn2_3subLR_perm2);
+
+			TComplex v32_3subLR_perm2 = Two_3SubLR_perm2(3, -3);
+			double v32Re_3subLR_perm2 = v32_3subLR_perm2.Re()/Dn2_3subLR_perm2;
+			fV0Chcn2_3subLR_perm2Ntrks1bin[1]->Fill(NtrksAfter, v32Re_3subLR_perm2, Dn2_3subLR_perm2);
+			fV0cn2_3subLR_perm2Ntrks1bin[1][fBin]->Fill(NtrksAfter, v32Re_3subLR_perm2, Dn2_3subLR_perm2);
+
+			TComplex v42_3subLR_perm2 = Two_3SubLR_perm2(4, -4);
+			double v42Re_3subLR_perm2 = v42_3subLR_perm2.Re()/Dn2_3subLR_perm2;
+			fV0Chcn2_3subLR_perm2Ntrks1bin[2]->Fill(NtrksAfter, v42Re_3subLR_perm2, Dn2_3subLR_perm2);
+			fV0cn2_3subLR_perm2Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subLR_perm2, Dn2_3subLR_perm2);
+		}
 
 	}
 
@@ -1388,6 +2210,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn2_3subRL_perm3Ntrks1bin[2]->Fill(NtrksAfter, v42Re_3subRL_perm3, Dn2_3subRL_perm3);
 		fcn2_3subRL_perm3Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subRL_perm3, Dn2_3subRL_perm3);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22_3subRL_perm3 = Two_3SubRL_perm3(2, -2);
+			double v22Re_3subRL_perm3 = v22_3subRL_perm3.Re()/Dn2_3subRL_perm3;
+			fV0Chcn2_3subRL_perm3Ntrks1bin[0]->Fill(NtrksAfter, v22Re_3subRL_perm3, Dn2_3subRL_perm3);
+			fV0cn2_3subRL_perm3Ntrks1bin[0][fBin]->Fill(NtrksAfter, v22Re_3subRL_perm3, Dn2_3subRL_perm3);
+
+			TComplex v32_3subRL_perm3 = Two_3SubRL_perm3(3, -3);
+			double v32Re_3subRL_perm3 = v32_3subRL_perm3.Re()/Dn2_3subRL_perm3;
+			fV0Chcn2_3subRL_perm3Ntrks1bin[1]->Fill(NtrksAfter, v32Re_3subRL_perm3, Dn2_3subRL_perm3);
+			fV0cn2_3subRL_perm3Ntrks1bin[1][fBin]->Fill(NtrksAfter, v32Re_3subRL_perm3, Dn2_3subRL_perm3);
+
+			TComplex v42_3subRL_perm3 = Two_3SubRL_perm3(4, -4);
+			double v42Re_3subRL_perm3 = v42_3subRL_perm3.Re()/Dn2_3subRL_perm3;
+			fV0Chcn2_3subRL_perm3Ntrks1bin[2]->Fill(NtrksAfter, v42Re_3subRL_perm3, Dn2_3subRL_perm3);
+			fV0cn2_3subRL_perm3Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subRL_perm3, Dn2_3subRL_perm3);
+		}
+
 	}
 
 	if(NtrksAfter3subM > 0 && NtrksAfter3subR > 0 && Dn2_3subRM_perm3 != 0)
@@ -1406,6 +2246,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		double v42Re_3subRM_perm3 = v42_3subRM_perm3.Re()/Dn2_3subRM_perm3;
 		fChcn2_3subRM_perm3Ntrks1bin[2]->Fill(NtrksAfter, v42Re_3subRM_perm3, Dn2_3subRM_perm3);
 		fcn2_3subRM_perm3Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subRM_perm3, Dn2_3subRM_perm3);
+
+		if(isHighMultiplicity == true)
+		{
+			TComplex v22_3subRM_perm3 = Two_3SubRM_perm3(2, -2);
+			double v22Re_3subRM_perm3 = v22_3subRM_perm3.Re()/Dn2_3subRM_perm3;
+			fV0Chcn2_3subRM_perm3Ntrks1bin[0]->Fill(NtrksAfter, v22Re_3subRM_perm3, Dn2_3subRM_perm3);
+			fV0cn2_3subRM_perm3Ntrks1bin[0][fBin]->Fill(NtrksAfter, v22Re_3subRM_perm3, Dn2_3subRM_perm3);
+
+			TComplex v32_3subRM_perm3 = Two_3SubRM_perm3(3, -3);
+			double v32Re_3subRM_perm3 = v32_3subRM_perm3.Re()/Dn2_3subRM_perm3;
+			fV0Chcn2_3subRM_perm3Ntrks1bin[1]->Fill(NtrksAfter, v32Re_3subRM_perm3, Dn2_3subRM_perm3);
+			fV0cn2_3subRM_perm3Ntrks1bin[1][fBin]->Fill(NtrksAfter, v32Re_3subRM_perm3, Dn2_3subRM_perm3);
+
+			TComplex v42_3subRM_perm3 = Two_3SubRM_perm3(4, -4);
+			double v42Re_3subRM_perm3 = v42_3subRM_perm3.Re()/Dn2_3subRM_perm3;
+			fV0Chcn2_3subRM_perm3Ntrks1bin[2]->Fill(NtrksAfter, v42Re_3subRM_perm3, Dn2_3subRM_perm3);
+			fV0cn2_3subRM_perm3Ntrks1bin[2][fBin]->Fill(NtrksAfter, v42Re_3subRM_perm3, Dn2_3subRM_perm3);
+		}
 
 	}
 
@@ -1436,6 +2294,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn4Ntrks1bin[2]->Fill(NtrksAfter, v44Re, Dn4);
 		fcn4Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44Re, Dn4);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v24 = Four(2, 2, -2, -2);
+			double v24Re = v24.Re()/Dn4;
+			fV0Chcn4Ntrks1bin[0]->Fill(NtrksAfter, v24Re, Dn4);
+			fV0cn4Ntrks1bin[0][fBin]->Fill(NtrksAfter, v24Re, Dn4);
+
+			TComplex v34 = Four(3, 3, -3, -3);
+			double v34Re = v34.Re()/Dn4;
+			fV0Chcn4Ntrks1bin[1]->Fill(NtrksAfter, v34Re, Dn4);
+			fV0cn4Ntrks1bin[1][fBin]->Fill(NtrksAfter, v34Re, Dn4);
+
+			TComplex v44 = Four(4, 4, -4, -4);
+			double v44Re = v44.Re()/Dn4;
+			fV0Chcn4Ntrks1bin[2]->Fill(NtrksAfter, v44Re, Dn4);
+			fV0cn4Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44Re, Dn4);
+		}
+
 	}
 
 	if(NtrksAfterGap0M > 1 && NtrksAfterGap0P > 1 && Dn4Gap0 !=0)
@@ -1456,6 +2332,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn4Gap0Ntrks1bin[2]->Fill(NtrksAfter, v44Gap0Re, Dn4Gap0);
 		fcn4Gap0Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44Gap0Re, Dn4Gap0);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v24Gap0 = FourGap0(2, 2, -2, -2);
+			double v24Gap0Re = v24Gap0.Re()/Dn4Gap0;
+			fV0Chcn4Gap0Ntrks1bin[0]->Fill(NtrksAfter, v24Gap0Re, Dn4Gap0);
+			fV0cn4Gap0Ntrks1bin[0][fBin]->Fill(NtrksAfter, v24Gap0Re, Dn4Gap0);
+
+			TComplex v34Gap0 = FourGap0(3, 3, -3, -3);
+			double v34Gap0Re = v34Gap0.Re()/Dn4Gap0;
+			fV0Chcn4Gap0Ntrks1bin[1]->Fill(NtrksAfter, v34Gap0Re, Dn4Gap0);
+			fV0cn4Gap0Ntrks1bin[1][fBin]->Fill(NtrksAfter, v34Gap0Re, Dn4Gap0);
+
+			TComplex v44Gap0 = FourGap0(4, 4, -4, -4);
+			double v44Gap0Re = v44Gap0.Re()/Dn4Gap0;
+			fV0Chcn4Gap0Ntrks1bin[2]->Fill(NtrksAfter, v44Gap0Re, Dn4Gap0);
+			fV0cn4Gap0Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44Gap0Re, Dn4Gap0);
+		}
+	
 	}
 
 	//..3-subevent method
@@ -1475,6 +2369,25 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		double v44_3subRe = v44_3sub.Re()/Dn4_3sub;
 		fChcn4_3subNtrks1bin[2]->Fill(NtrksAfter, v44_3subRe, Dn4_3sub);
 		fcn4_3subNtrks1bin[2][fBin]->Fill(NtrksAfter, v44_3subRe, Dn4_3sub);
+
+		if(isHighMultiplicity == true)
+		{
+			TComplex v24_3sub = Four_3SubEvts(2, 2, -2, -2);
+			double v24_3subRe = v24_3sub.Re()/Dn4_3sub;
+			fV0Chcn4_3subNtrks1bin[0]->Fill(NtrksAfter, v24_3subRe, Dn4_3sub);
+			fV0cn4_3subNtrks1bin[0][fBin]->Fill(NtrksAfter, v24_3subRe, Dn4_3sub);
+
+			TComplex v34_3sub = Four_3SubEvts(3, 3, -3, -3);
+			double v34_3subRe = v34_3sub.Re()/Dn4_3sub;
+			fV0Chcn4_3subNtrks1bin[1]->Fill(NtrksAfter, v34_3subRe, Dn4_3sub);
+			fV0cn4_3subNtrks1bin[1][fBin]->Fill(NtrksAfter, v34_3subRe, Dn4_3sub);
+
+			TComplex v44_3sub = Four_3SubEvts(4, 4, -4, -4);
+			double v44_3subRe = v44_3sub.Re()/Dn4_3sub;
+			fV0Chcn4_3subNtrks1bin[2]->Fill(NtrksAfter, v44_3subRe, Dn4_3sub);
+			fV0cn4_3subNtrks1bin[2][fBin]->Fill(NtrksAfter, v44_3subRe, Dn4_3sub);
+		}
+
 	}
 
 	//	c24_3sub perm 2
@@ -1494,6 +2407,25 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		double v44_3sub_perm2Re = v44_3sub_perm2.Re()/Dn4_3sub_perm2;
 		fChcn4_3sub_perm2Ntrks1bin[2]->Fill(NtrksAfter, v44_3sub_perm2Re, Dn4_3sub_perm2);
 		fcn4_3sub_perm2Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44_3sub_perm2Re, Dn4_3sub_perm2);
+
+		if(isHighMultiplicity == true)
+		{
+			TComplex v24_3sub_perm2 = Four_3SubEvts_perm2(2, 2, -2, -2);
+			double v24_3sub_perm2Re = v24_3sub_perm2.Re()/Dn4_3sub_perm2;
+			fV0Chcn4_3sub_perm2Ntrks1bin[0]->Fill(NtrksAfter, v24_3sub_perm2Re, Dn4_3sub_perm2);
+			fV0cn4_3sub_perm2Ntrks1bin[0][fBin]->Fill(NtrksAfter, v24_3sub_perm2Re, Dn4_3sub_perm2);
+
+			TComplex v34_3sub_perm2 = Four_3SubEvts_perm2(3, 3, -3, -3);
+			double v34_3sub_perm2Re = v34_3sub_perm2.Re()/Dn4_3sub_perm2;
+			fV0Chcn4_3sub_perm2Ntrks1bin[1]->Fill(NtrksAfter, v34_3sub_perm2Re, Dn4_3sub_perm2);
+			fV0cn4_3sub_perm2Ntrks1bin[1][fBin]->Fill(NtrksAfter, v34_3sub_perm2Re, Dn4_3sub_perm2);
+
+			TComplex v44_3sub_perm2 = Four_3SubEvts_perm2(4, 4, -4, -4);
+			double v44_3sub_perm2Re = v44_3sub_perm2.Re()/Dn4_3sub_perm2;
+			fV0Chcn4_3sub_perm2Ntrks1bin[2]->Fill(NtrksAfter, v44_3sub_perm2Re, Dn4_3sub_perm2);
+			fV0cn4_3sub_perm2Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44_3sub_perm2Re, Dn4_3sub_perm2);
+		}
+
 	}
 
 	//	c24_3sub perm 2
@@ -1513,6 +2445,25 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		double v44_3sub_perm3Re = v44_3sub_perm3.Re()/Dn4_3sub_perm3;
 		fChcn4_3sub_perm3Ntrks1bin[2]->Fill(NtrksAfter, v44_3sub_perm3Re, Dn4_3sub_perm3);
 		fcn4_3sub_perm3Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44_3sub_perm3Re, Dn4_3sub_perm3);
+
+		if(isHighMultiplicity == true)
+		{
+			TComplex v24_3sub_perm3 = Four_3SubEvts_perm3(2, 2, -2, -2);
+			double v24_3sub_perm3Re = v24_3sub_perm3.Re()/Dn4_3sub_perm3;
+			fV0Chcn4_3sub_perm3Ntrks1bin[0]->Fill(NtrksAfter, v24_3sub_perm3Re, Dn4_3sub_perm3);
+			fV0cn4_3sub_perm3Ntrks1bin[0][fBin]->Fill(NtrksAfter, v24_3sub_perm3Re, Dn4_3sub_perm3);
+
+			TComplex v34_3sub_perm3 = Four_3SubEvts_perm3(3, 3, -3, -3);
+			double v34_3sub_perm3Re = v34_3sub_perm3.Re()/Dn4_3sub_perm3;
+			fV0Chcn4_3sub_perm3Ntrks1bin[1]->Fill(NtrksAfter, v34_3sub_perm3Re, Dn4_3sub_perm3);
+			fV0cn4_3sub_perm3Ntrks1bin[1][fBin]->Fill(NtrksAfter, v34_3sub_perm3Re, Dn4_3sub_perm3);
+
+			TComplex v44_3sub_perm3 = Four_3SubEvts_perm3(4, 4, -4, -4);
+			double v44_3sub_perm3Re = v44_3sub_perm3.Re()/Dn4_3sub_perm3;
+			fV0Chcn4_3sub_perm3Ntrks1bin[2]->Fill(NtrksAfter, v44_3sub_perm3Re, Dn4_3sub_perm3);
+			fV0cn4_3sub_perm3Ntrks1bin[2][fBin]->Fill(NtrksAfter, v44_3sub_perm3Re, Dn4_3sub_perm3);
+		}
+
 	}
 
 
@@ -1532,6 +2483,19 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChsc3232->Fill(NtrksAfter, sc3232Re, Dn4);
 		fsc3232[fBin]->Fill(NtrksAfter, sc3232Re, Dn4);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex sc4242 = Four(4, 2, -4, -2);
+			double sc4242Re = sc4242.Re()/Dn4;
+			fV0Chsc4242->Fill(NtrksAfter, sc4242Re, Dn4);
+			fV0sc4242[fBin]->Fill(NtrksAfter, sc4242Re, Dn4);
+
+			TComplex sc3232 = Four(3, 2, -3, -2);
+			double sc3232Re = sc3232.Re()/Dn4;
+			fV0Chsc3232->Fill(NtrksAfter, sc3232Re, Dn4);
+			fV0sc3232[fBin]->Fill(NtrksAfter, sc3232Re, Dn4);
+		}
+
 	}	
 
 	if(NtrksAfterGap0M > 1 && NtrksAfterGap0P > 1 && Dn4Gap0 != 0)
@@ -1546,6 +2510,19 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		double sc3232Gap0Re = sc3232Gap0.Re()/Dn4Gap0;
 		fChsc3232Gap0->Fill(NtrksAfter, sc3232Gap0Re, Dn4Gap0);
 		fsc3232Gap0[fBin]->Fill(NtrksAfter, sc3232Gap0Re, Dn4Gap0);
+
+		if(isHighMultiplicity == true)
+		{
+			TComplex sc4242Gap0 = FourGap0(4, 2, -4, -2);
+			double sc4242Gap0Re = sc4242Gap0.Re()/Dn4Gap0;
+			fV0Chsc4242Gap0->Fill(NtrksAfter, sc4242Gap0Re, Dn4Gap0);
+			fV0sc4242Gap0[fBin]->Fill(NtrksAfter, sc4242Gap0Re, Dn4Gap0);
+
+			TComplex sc3232Gap0 = FourGap0(3, 2, -3, -2);
+			double sc3232Gap0Re = sc3232Gap0.Re()/Dn4Gap0;
+			fV0Chsc3232Gap0->Fill(NtrksAfter, sc3232Gap0Re, Dn4Gap0);
+			fV0sc3232Gap0[fBin]->Fill(NtrksAfter, sc3232Gap0Re, Dn4Gap0);
+		}
 
 	}
 
@@ -1573,6 +2550,31 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		double sc3223_3subRe = sc3223_3sub.Re()/Dn4_3sub;
 		fChsc3223_3sub->Fill(NtrksAfter, sc3223_3subRe, Dn4_3sub);
 		fsc3223_3sub[fBin]->Fill(NtrksAfter, sc3223_3subRe, Dn4_3sub);
+
+		if(isHighMultiplicity == true)
+		{
+			//..variant 1 (4, 2, -4, -2)
+			TComplex sc4242_3sub = Four_3SubEvts(4, 2, -4, -2);
+			double sc4242_3subRe = sc4242_3sub.Re()/Dn4_3sub;
+			fV0Chsc4242_3sub->Fill(NtrksAfter, sc4242_3subRe, Dn4_3sub);
+			fV0sc4242_3sub[fBin]->Fill(NtrksAfter, sc4242_3subRe, Dn4_3sub);
+
+			TComplex sc3232_3sub = Four_3SubEvts(3, 2, -3, -2);
+			double sc3232_3subRe = sc3232_3sub.Re()/Dn4_3sub;
+			fV0Chsc3232_3sub->Fill(NtrksAfter, sc3232_3subRe, Dn4_3sub);
+			fV0sc3232_3sub[fBin]->Fill(NtrksAfter, sc3232_3subRe, Dn4_3sub);
+
+			//..variant 2 (4, 2, -2, -4)
+			TComplex sc4224_3sub = Four_3SubEvts(4, 2, -2, -4);
+			double sc4224_3subRe = sc4224_3sub.Re()/Dn4_3sub;
+			fV0Chsc4224_3sub->Fill(NtrksAfter, sc4224_3subRe, Dn4_3sub);
+			fV0sc4224_3sub[fBin]->Fill(NtrksAfter, sc4224_3subRe, Dn4_3sub);
+
+			TComplex sc3223_3sub = Four_3SubEvts(3, 2, -2, -3);
+			double sc3223_3subRe = sc3223_3sub.Re()/Dn4_3sub;
+			fV0Chsc3223_3sub->Fill(NtrksAfter, sc3223_3subRe, Dn4_3sub);
+			fV0sc3223_3sub[fBin]->Fill(NtrksAfter, sc3223_3subRe, Dn4_3sub);
+		}
 
 	}
 
@@ -1602,6 +2604,31 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChsc3223_3sub_perm2->Fill(NtrksAfter, sc3223_3subRe_perm2, Dn4_3sub_perm2);
 		fsc3223_3sub_perm2[fBin]->Fill(NtrksAfter, sc3223_3subRe_perm2, Dn4_3sub_perm2);
 
+		if(isHighMultiplicity == true)
+		{
+			//..variant 1 (4, 2, -4, -2)
+			TComplex sc4242_3sub_perm2 = Four_3SubEvts_perm2(4, 2, -4, -2);
+			double sc4242_3subRe_perm2 = sc4242_3sub_perm2.Re()/Dn4_3sub_perm2;
+			fV0Chsc4242_3sub_perm2->Fill(NtrksAfter, sc4242_3subRe_perm2, Dn4_3sub_perm2);
+			fV0sc4242_3sub_perm2[fBin]->Fill(NtrksAfter, sc4242_3subRe_perm2, Dn4_3sub_perm2);
+
+			TComplex sc3232_3sub_perm2 = Four_3SubEvts_perm2(3, 2, -3, -2);
+			double sc3232_3subRe_perm2 = sc3232_3sub_perm2.Re()/Dn4_3sub_perm2;
+			fV0Chsc3232_3sub_perm2->Fill(NtrksAfter, sc3232_3subRe_perm2, Dn4_3sub_perm2);
+			fV0sc3232_3sub_perm2[fBin]->Fill(NtrksAfter, sc3232_3subRe_perm2, Dn4_3sub_perm2);
+
+			//..variant 2 (4, 2, -2, -4)
+			TComplex sc4224_3sub_perm2 = Four_3SubEvts_perm2(4, 2, -2, -4);
+			double sc4224_3subRe_perm2 = sc4224_3sub_perm2.Re()/Dn4_3sub_perm2;
+			fV0Chsc4224_3sub_perm2->Fill(NtrksAfter, sc4224_3subRe_perm2, Dn4_3sub_perm2);
+			fV0sc4224_3sub_perm2[fBin]->Fill(NtrksAfter, sc4224_3subRe_perm2, Dn4_3sub_perm2);
+
+			TComplex sc3223_3sub_perm2 = Four_3SubEvts_perm2(3, 2, -2, -3);
+			double sc3223_3subRe_perm2 = sc3223_3sub_perm2.Re()/Dn4_3sub_perm2;
+			fV0Chsc3223_3sub_perm2->Fill(NtrksAfter, sc3223_3subRe_perm2, Dn4_3sub_perm2);
+			fV0sc3223_3sub_perm2[fBin]->Fill(NtrksAfter, sc3223_3subRe_perm2, Dn4_3sub_perm2);
+		}
+
 	}
 
 	//	perm 3
@@ -1630,6 +2657,31 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChsc3223_3sub_perm3->Fill(NtrksAfter, sc3223_3subRe_perm3, Dn4_3sub_perm3);
 		fsc3223_3sub_perm3[fBin]->Fill(NtrksAfter, sc3223_3subRe_perm3, Dn4_3sub_perm3);
 
+		if(isHighMultiplicity == true)
+		{
+			//..variant 1 (4, 2, -4, -2)
+			TComplex sc4242_3sub_perm3 = Four_3SubEvts_perm3(4, 2, -4, -2);
+			double sc4242_3subRe_perm3 = sc4242_3sub_perm3.Re()/Dn4_3sub_perm3;
+			fV0Chsc4242_3sub_perm3->Fill(NtrksAfter, sc4242_3subRe_perm3, Dn4_3sub_perm3);
+			fV0sc4242_3sub_perm3[fBin]->Fill(NtrksAfter, sc4242_3subRe_perm3, Dn4_3sub_perm3);
+
+			TComplex sc3232_3sub_perm3 = Four_3SubEvts_perm3(3, 2, -3, -2);
+			double sc3232_3subRe_perm3 = sc3232_3sub_perm3.Re()/Dn4_3sub_perm3;
+			fV0Chsc3232_3sub_perm3->Fill(NtrksAfter, sc3232_3subRe_perm3, Dn4_3sub_perm3);
+			fV0sc3232_3sub_perm3[fBin]->Fill(NtrksAfter, sc3232_3subRe_perm3, Dn4_3sub_perm3);
+
+			//..variant 2 (4, 2, -2, -4)
+			TComplex sc4224_3sub_perm3 = Four_3SubEvts_perm3(4, 2, -2, -4);
+			double sc4224_3subRe_perm3 = sc4224_3sub_perm3.Re()/Dn4_3sub_perm3;
+			fV0Chsc4224_3sub_perm3->Fill(NtrksAfter, sc4224_3subRe_perm3, Dn4_3sub_perm3);
+			fV0sc4224_3sub_perm3[fBin]->Fill(NtrksAfter, sc4224_3subRe_perm3, Dn4_3sub_perm3);
+
+			TComplex sc3223_3sub_perm3 = Four_3SubEvts_perm3(3, 2, -2, -3);
+			double sc3223_3subRe_perm3 = sc3223_3sub_perm3.Re()/Dn4_3sub_perm3;
+			fV0Chsc3223_3sub_perm3->Fill(NtrksAfter, sc3223_3subRe_perm3, Dn4_3sub_perm3);
+			fV0sc3223_3sub_perm3[fBin]->Fill(NtrksAfter, sc3223_3subRe_perm3, Dn4_3sub_perm3);
+		}
+
 	}
 
 	//..calculate 6-particle correlations	
@@ -1655,6 +2707,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		fChcn6Ntrks1bin[2]->Fill(NtrksAfter, v46Re, Dn6);
 		fcn6Ntrks1bin[2][fBin]->Fill(NtrksAfter, v46Re, Dn6);
 
+		if(isHighMultiplicity == true)
+		{
+			TComplex v26 = Six(2, 2, 2, -2, -2, -2);	
+			double v26Re = v26.Re()/Dn6;
+			fV0Chcn6Ntrks1bin[0]->Fill(NtrksAfter, v26Re, Dn6);
+			fV0cn6Ntrks1bin[0][fBin]->Fill(NtrksAfter, v26Re, Dn6);
+
+			TComplex v36 = Six(3, 3, 3, -3, -3, -3);
+			double v36Re = v36.Re()/Dn6;
+			fV0Chcn6Ntrks1bin[1]->Fill(NtrksAfter, v36Re, Dn6);
+			fV0cn6Ntrks1bin[1][fBin]->Fill(NtrksAfter, v36Re, Dn6);
+
+			TComplex v46 = Six(4, 4, 4, -4, -4, -4);
+			double v46Re = v46.Re()/Dn6;
+			fV0Chcn6Ntrks1bin[2]->Fill(NtrksAfter, v46Re, Dn6);
+			fV0cn6Ntrks1bin[2][fBin]->Fill(NtrksAfter, v46Re, Dn6);
+		}
+
 	}
 
 	if(NtrksAfterGap0M > 2 && NtrksAfterGap0P > 2 && Dn6Gap0 != 0)
@@ -1674,6 +2744,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 		double v46Gap0Re = v46Gap0.Re()/Dn6Gap0;
 		fChcn6Gap0Ntrks1bin[2]->Fill(NtrksAfter, v46Gap0Re, Dn6Gap0);
 		fcn6Gap0Ntrks1bin[2][fBin]->Fill(NtrksAfter, v46Gap0Re, Dn6Gap0);
+
+		if(isHighMultiplicity == true)
+		{
+			TComplex v26Gap0 = SixGap0(2, 2, 2, -2, -2, -2);	
+			double v26Gap0Re = v26Gap0.Re()/Dn6Gap0;
+			fV0Chcn6Gap0Ntrks1bin[0]->Fill(NtrksAfter, v26Gap0Re, Dn6Gap0);
+			fV0cn6Gap0Ntrks1bin[0][fBin]->Fill(NtrksAfter, v26Gap0Re, Dn6Gap0);
+
+			TComplex v36Gap0 = SixGap0(3, 3, 3, -3, -3, -3);
+			double v36Gap0Re = v36Gap0.Re()/Dn6Gap0;
+			fV0Chcn6Gap0Ntrks1bin[1]->Fill(NtrksAfter, v36Gap0Re, Dn6Gap0);
+			fV0cn6Gap0Ntrks1bin[1][fBin]->Fill(NtrksAfter, v36Gap0Re, Dn6Gap0);
+
+			TComplex v46Gap0 = SixGap0(4, 4, 4, -4, -4, -4);
+			double v46Gap0Re = v46Gap0.Re()/Dn6Gap0;
+			fV0Chcn6Gap0Ntrks1bin[2]->Fill(NtrksAfter, v46Gap0Re, Dn6Gap0);
+			fV0cn6Gap0Ntrks1bin[2][fBin]->Fill(NtrksAfter, v46Gap0Re, Dn6Gap0);
+		}
 
 	}
 
@@ -1700,6 +2788,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
     fChcn8Ntrks1bin[2]->Fill(NtrksAfter, v48Re, Dn8);
     fcn8Ntrks1bin[2][fBin]->Fill(NtrksAfter, v48Re, Dn8);
 
+		if(isHighMultiplicity == true)
+		{
+    	TComplex v28 = Eight(2, 2, 2, 2, -2, -2, -2, -2); 
+    	double v28Re = v28.Re()/Dn8;
+    	fV0Chcn8Ntrks1bin[0]->Fill(NtrksAfter, v28Re, Dn8);
+    	fV0cn8Ntrks1bin[0][fBin]->Fill(NtrksAfter, v28Re, Dn8);
+
+    	TComplex v38 = Eight(3, 3, 3, 3, -3, -3, -3, -3);
+    	double v38Re = v38.Re()/Dn8;
+    	fV0Chcn8Ntrks1bin[1]->Fill(NtrksAfter, v38Re, Dn8);
+    	fV0cn8Ntrks1bin[1][fBin]->Fill(NtrksAfter, v38Re, Dn8);
+
+    	TComplex v48 = Eight(4, 4, 4, 4, -4, -4, -4, -4);
+    	double v48Re = v48.Re()/Dn8;
+    	fV0Chcn8Ntrks1bin[2]->Fill(NtrksAfter, v48Re, Dn8);
+    	fV0cn8Ntrks1bin[2][fBin]->Fill(NtrksAfter, v48Re, Dn8);
+		}
+
   } 
 
   if(NtrksAfterGap0M > 3 && NtrksAfterGap0P > 3 && Dn8Gap0 != 0)                                                                                                                                                                    
@@ -1719,6 +2825,24 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
     double v48Gap0Re = v48Gap0.Re()/Dn8Gap0;
     fChcn8Gap0Ntrks1bin[2]->Fill(NtrksAfter, v48Gap0Re, Dn8Gap0);
     fcn8Gap0Ntrks1bin[2][fBin]->Fill(NtrksAfter, v48Gap0Re, Dn8Gap0);
+
+		if(isHighMultiplicity == true)
+		{
+    	TComplex v28Gap0 = EightGap0(2, 2, 2, 2, -2, -2, -2, -2); 
+    	double v28Gap0Re = v28Gap0.Re()/Dn8Gap0;
+    	fV0Chcn8Gap0Ntrks1bin[0]->Fill(NtrksAfter, v28Gap0Re, Dn8Gap0);
+    	fV0cn8Gap0Ntrks1bin[0][fBin]->Fill(NtrksAfter, v28Gap0Re, Dn8Gap0);
+
+    	TComplex v38Gap0 = EightGap0(3, 3, 3, 3, -3, -3, -3, -3);
+    	double v38Gap0Re = v38Gap0.Re()/Dn8Gap0;
+    	fV0Chcn8Gap0Ntrks1bin[1]->Fill(NtrksAfter, v38Gap0Re, Dn8Gap0);
+    	fV0cn8Gap0Ntrks1bin[1][fBin]->Fill(NtrksAfter, v38Gap0Re, Dn8Gap0);
+
+    	TComplex v48Gap0 = EightGap0(4, 4, 4, 4, -4, -4, -4, -4);
+    	double v48Gap0Re = v48Gap0.Re()/Dn8Gap0;
+    	fV0Chcn8Gap0Ntrks1bin[2]->Fill(NtrksAfter, v48Gap0Re, Dn8Gap0);
+    	fV0cn8Gap0Ntrks1bin[2][fBin]->Fill(NtrksAfter, v48Gap0Re, Dn8Gap0);
+		}
 
   } 
 
