@@ -47,7 +47,8 @@ using namespace EMCalTriggerPtAnalysis;
 AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef():
   AliAnalysisTaskEmcalTriggerBase(),
   fEnableSumw2(false),
-  fOnlineThresholds()
+  fOnlineThresholds(),
+  fSwapPatches(false)
 {
 
 }
@@ -55,7 +56,8 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef():
 AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef(const char * name):
   AliAnalysisTaskEmcalTriggerBase(name),
   fEnableSumw2(false),
-  fOnlineThresholds()
+  fOnlineThresholds(),
+  fSwapPatches(false)
 {
   fOnlineThresholds.Set(8);
 }
@@ -172,10 +174,10 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
   }
 
   std::vector<const AliEMCALTriggerPatchInfo *> EGApatches, DGApatches, EJEpatches, DJEpatches;
-  if(isMB || isEG) EGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kEGApatches);
-  if(isMB || isDG) DGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kDGApatches);
-  if(isMB || isEJ) EJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, kEJEpatches);
-  if(isMB || isDJ) DJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, kDJEpatches);
+  if(isMB || isEG) EGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, fSwapPatches ? kEJEpatches : kEGApatches);
+  if(isMB || isDG) DGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, fSwapPatches ? kDJEpatches : kDGApatches);
+  if(isMB || isEJ) EJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, fSwapPatches ? kEGApatches : kEJEpatches);
+  if(isMB || isDJ) DJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, fSwapPatches ? kDGApatches : kDJEpatches);
   
   for(const auto &t : handledtriggers) {
     if(t == "MB") {
