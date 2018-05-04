@@ -80,7 +80,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fCellLabels(),          fCellSecondLabels(),        fCellTime()
 , fCellMatchdEta(),       fCellMatchdPhi()
 , fRecalibrateWithClusterTime(0)
-, fMaxEvent(0),           fDoTrackMatching(kFALSE),   fUpdateCell(0)
+, fMaxEvent(0),           fMinEvent(0)
+, fDoTrackMatching(0),    fUpdateCell(0)
 , fSelectCell(kFALSE),    fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),fRemoveExoticEvents(kFALSE)
@@ -143,7 +144,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fCellLabels(),            fCellSecondLabels(),        fCellTime()
 , fCellMatchdEta(),         fCellMatchdPhi()
 , fRecalibrateWithClusterTime(0)
-, fMaxEvent(0),             fDoTrackMatching(kFALSE),   fUpdateCell(0)
+, fMaxEvent(0),             fMinEvent(0)             
+, fDoTrackMatching(kFALSE), fUpdateCell(0)
 , fSelectCell(kFALSE),      fSelectCellMinE(0),         fSelectCellMinFrac(0)
 , fRejectBelowThreshold(kFALSE)
 , fRemoveLEDEvents(kTRUE),  fRemoveExoticEvents(kFALSE)
@@ -651,15 +653,21 @@ void AliAnalysisTaskEMCALClusterize::AddNewTCardInducedCellsToDigit()
 void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
 {
   fEvent = 0x0;
-      
-  AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+    
   Int_t eventN = Entry();
-  if(aodIH) eventN = aodIH->GetReadEntry(); 
   
-  if (eventN > fMaxEvent) 
+  AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>
+  ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+  
+  // Entry() does not work for AODs
+  if ( eventN <= 0 && aodIH)
+    eventN = aodIH->GetReadEntry(); 
+  
+  if ( eventN > fMaxEvent || eventN < fMinEvent ) 
     return ;
   
-  //printf("Clusterizer --- Event %d-- \n",eventN);
+  //printf("AliAnalysisTaskEMCALClusterize::CheckAndGetEvent() - Event %d - Entry %d - (First,Last)=(%d,%d) \n", 
+  //       eventN, (Int_t) Entry(), fMinEvent, fMaxEvent);
   
   // Check if input event are embedded events
   // If so, take output event
@@ -1484,6 +1492,7 @@ void AliAnalysisTaskEMCALClusterize::Init()
     fRecoUtils        = clus->fRecoUtils; 
     fConfigName       = clus->fConfigName;
     fMaxEvent         = clus->fMaxEvent;
+    fMinEvent         = clus->fMinEvent;
     fDoTrackMatching  = clus->fDoTrackMatching;
     fUpdateCell       = clus->fUpdateCell;
     fOutputAODBranchName = clus->fOutputAODBranchName;
@@ -2027,7 +2036,8 @@ void AliAnalysisTaskEMCALClusterize::PrintParam()
   AliInfo(Form("Use cell time for cluster <%d>, Apply constant time shift <%2.2f>, Do track-matching <%d>, Update cells <%d>, Input from ESD filter <%d>",
                fRecalibrateWithClusterTime, fConstantTimeShift, fDoTrackMatching, fUpdateCell, fInputFromFilter));
   
-  AliInfo(Form("Reject events: larger than <%d>, LED <%d>, exotics <%d>", fMaxEvent, fRemoveLEDEvents, fRemoveExoticEvents));
+  AliInfo(Form("Reject events out of range: %d < N event < %d, LED <%d>, exotics <%d>", 
+               fMinEvent, fMaxEvent, fRemoveLEDEvents, fRemoveExoticEvents));
   
   if (fCentralityBin[0] != -1 && fCentralityBin[1] != -1 ) 
     AliInfo(Form("Centrality bin [%2.2f,%2.2f], class <%s>, use AliCentrality? <%d>", 
