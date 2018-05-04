@@ -157,7 +157,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton     = "00000008400000000100000000";
 
-  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0   )
+  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0 
+      || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0   )
     cutnumberPhoton         = "00000088400000000100000000";
 
   TString cutnumberEvent      = "00000003";
@@ -805,16 +806,37 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00062113", "00200009227300008250404000", "0163103100000000","2444400000013300000"); //PHI7
 
   // Low B Field
-  } else if (trainConfig == 350) {
+  } else if (trainConfig == 560) {
     cuts.AddCut("00010113", "00200089227302001280004000", "0152103500000000"); // Min Bias
     cuts.AddCut("00010113", "00200089327302001280004000", "0152103500000000"); // Open dEdx
-  } else if (trainConfig == 351) {
+  } else if (trainConfig == 561) {
     cuts.AddCut("00010113", "00200089327302001280004000", "0152103500000000"); // Min Bias
     cuts.AddCut("00010113", "00200089127302001280004000", "0152103500000000"); // Open dEdx
-  } else if (trainConfig == 352) {
-    cuts.AddCut("00010113", "00200089267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
+  } else if (trainConfig == 563) {
+    cuts.AddCut("00010113", "00200089267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, 0.02 lowB
+  } else if (trainConfig == 564) {
+    cuts.AddCut("00010113", "002000p9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pt 0.03
+    cuts.AddCut("00010113", "002000s9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.04
+    cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.04
+  } else if (trainConfig == 565) {     // pT scan
+    cuts.AddCut("00010113", "002000o9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.024
+    cuts.AddCut("00010113", "002000q9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.032
+    cuts.AddCut("00010113", "002000r9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.036
 
 
+ // Low B Field to be used with MBW
+  } else if (trainConfig == 573) {
+    cuts.AddCut("00010113", "00200089267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, 0.02 lowB
+  } else if (trainConfig == 574) {
+    cuts.AddCut("00010113", "002000p9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pt 0.03
+    cuts.AddCut("00010113", "002000s9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.04
+    cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.04
+  } else if (trainConfig == 575) {
+    cuts.AddCut("00010113", "002000o9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.024
+    cuts.AddCut("00010113", "002000q9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.032
+    cuts.AddCut("00010113", "002000r9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.036
+
+ 
   // Material studies Ana
   } else if (trainConfig == 360) {
     cuts.AddCut("00010113", "00200009266300008854404000", "0152103500000000"); // Min Bias
@@ -830,15 +852,38 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00a00009267300008254404000", "0152103500000000"); //
     cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); //
     cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); //
+  } else if (trainConfig == 363) {
+    cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
+  } else if (trainConfig == 364) {
+    cuts.AddCut("00010113", "00200049267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pt 0.075 
+    cuts.AddCut("00010113", "00200019267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.1
+    cuts.AddCut("00010113", "00200059267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.125
+ } else if (trainConfig == 365) {
+    cuts.AddCut("00010113", "002000d9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.06
+    cuts.AddCut("00010113", "002000m9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.08
+    cuts.AddCut("00010113", "002000n9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.09
 
- } else if (trainConfig == 372) { // as iConfig 362 to be used with MBW
+
+    // config like 36X but to be used with weights
+  } else if (trainConfig == 372) { // as iConfig 362 to be used with MBW
     cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
     cuts.AddCut("00010113", "00200009267300008250404000", "0152103500000000"); // Min Bias with  dedx at high pT
     cuts.AddCut("00010113", "00a00009267300008254404000", "0152103500000000"); //
     cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); //
     cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); //
+  } else if (trainConfig == 373) {
+    cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
+  } else if (trainConfig == 374) {
+    cuts.AddCut("00010113", "00200049267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pt 0.075
+    cuts.AddCut("00010113", "00200019267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.1
+    cuts.AddCut("00010113", "00200059267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.125
+  } else if (trainConfig == 375) {
+    cuts.AddCut("00010113", "002000d9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.06
+    cuts.AddCut("00010113", "002000m9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.08
+    cuts.AddCut("00010113", "002000n9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.09
 
 
+ 
 
   // ---------------------------------- cut selection for pp 5 TeV 2017 ------------------------------------
   } else if (trainConfig == 400){
