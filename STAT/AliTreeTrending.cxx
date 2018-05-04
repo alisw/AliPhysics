@@ -222,8 +222,14 @@ Bool_t  AliTreeTrending::InitSummaryTrending(TString statusDescription[3], Float
 
   // 3.) compute detector status graphs
   fStatusGraphM = MakeMultiGraphStatus(fTree,"statusBar", sStatusBarVars+";tagID",sStatusBarNames,cutString.Data(),sCriteria,kTRUE);
-  fStatusGraphM->GetYaxis()->SetTitle("");
-  fStatusGraphM->GetHistogram()->SetTitle("");
+  if(fStatusGraphM==0) {
+    ::Error("AliTreeTrending::InitSummaryTrending","MakeMultiGraphStatus() returned NULL pointer when plotting the following variables: %s", sStatusBarVars.Data());
+    return 0;
+  }
+  else{
+    fStatusGraphM->GetYaxis()->SetTitle("");
+    fStatusGraphM->GetHistogram()->SetTitle("");
+  }
   return kTRUE;
 }
 
@@ -348,10 +354,12 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
         //cgr->SetName(TString((oaStatusBarNames->At(iVar)->GetName())).Data());
       }
     } else {
-      ::Error("AliTreeTrending::MakeMultiGraphStatus", "TStatToolkit::MakeStatusMultGr() returned with error -> next");
+      ::Error("AliTreeTrending::MakeMultiGraphStatus", "TStatToolkit::MakeStatusMultGr(sVar=%s) returned with error -> next",sVar.Data());
       continue;
     }
   }
+  
+  Bool_t added=kFALSE;
   // 2.) Set Y ranges and Y labels for each graph
   Double_t *yBins = new Double_t[nVars+1];
   for(Int_t i=0; i<=nVars;i++) yBins[i] = Double_t(i);
@@ -368,10 +376,19 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
       cgr->SetTitle(""); cgr->GetYaxis()->SetTitle("");
       cgr->GetYaxis()->Set(nVars, yBins);
       cgr->GetYaxis()->SetRangeUser(0,nVars);
-      for (Int_t jgr=0; jgr<nVars; jgr++)  cgr->GetYaxis()->SetBinLabel(jgr+1, graphArray->At(jgr)->GetTitle());
+      for (Int_t jgr=0; jgr<nVars; jgr++)  {
+       if(graphArray->At(jgr)!=NULL)  cgr->GetYaxis()->SetBinLabel(jgr+1, graphArray->At(jgr)->GetTitle());
+      }
       mgrCombined->Add(cgr);
+      added=kTRUE;
     }
   }
+  
+  if(! added) {
+      ::Error("AliTreeTrending::MakeMultiGraphStatus","No graphs could be added to multigraph - returning 0");
+      return 0;
+  }
+  
   mgrCombined->SetMinimum(0); mgrCombined->SetMaximum(nVars);
   // TStatToolkit::DrawMultiGraph(mgrCombined,"ap");
   if (setAxis) {      //TODO  - to get axis graph has to be drawn - is there other option ?
@@ -383,7 +400,7 @@ TMultiGraph * AliTreeTrending::MakeMultiGraphStatus(TTree *fTree, TString mgrNam
     mgrCombined->GetYaxis()->Set(nVars, yBins);
     mgrCombined->GetYaxis()->SetRangeUser(0, nVars);
     for (Int_t jgr = 0; jgr < nVars; jgr++)
-      mgrCombined->GetYaxis()->SetBinLabel(jgr + 1, graphArray->At(jgr)->GetTitle());
+      if(graphArray->At(jgr)!=NULL) mgrCombined->GetYaxis()->SetBinLabel(jgr + 1, graphArray->At(jgr)->GetTitle());
     mgrCombined->GetYaxis()->SetTitle("");
     mgrCombined->Draw("ap");
   }
@@ -532,6 +549,45 @@ void AliTreeTrending::MakeStatusPlot(const char *outputDir, const char *figureNa
   AliSysInfo::AddStamp(expression.Data(),3,counter++);
 }
 
+///
+/// \param figureName       - figure name
+/// \param bandNamePrefix   - band prefix
+/// \param selection        - selection
+/// \param groupName        - group name (used to specify class or properties)
+/// TODO- finish implementation
+void AliTreeTrending::AppendDefaultBandsMinMax(const char *outputDir, const char *figureName, const char * bandNamePrefix, const char * selection, const char* groupName /*other drawing variable  TString style*/ ){
+  TMultiGraph *mGraph=0;
+  const char* aType[6]={"WarningMin","WarningMax","OutlierMin","OutlierMax","PhysAccMin","PhysAccMax"}; //yellow 400 ,red 632 ,green 416/
+  TString expr;
+  for(Int_t itype=0; itype<6; itype++){
+    expr = bandNamePrefix+TString(aType[itype])+TString(":run");
+    mGraph = TStatToolkit::MakeMultGraph(fTree,"",expr,selection, "figTemplateTRDPair", "figTemplateTRDPair",kTRUE,0,6,0,kTRUE);
+    if(!mGraph){
+      ::Error("MakePlot","No plot returned -> dummy plot!");
+    }
+    else {
+      if (kTRUE) TStatToolkit::RebinSparseMultiGraph(mGraph,(TGraph*)fStatusGraphM->GetListOfGraphs()->At(0));
+      for(Int_t it=0; it<mGraph->GetListOfGraphs()->GetSize(); it++){
+        TGraph* band = (TGraph*) mGraph->GetListOfGraphs()->At(it);
+        if (groupName && strlen(groupName)>1){    // example  groupName=".class(multiGraphPair).{marker_style:25,21,22,23;marker_color:1,2,4,5;}"
+          band->SetName(TString::Format("graph[%d]%s",itype,groupName).Data());
+        }else {
+          band->SetName(TString::Format("graph[%d].class(deadBand)", itype).Data());
+        }
+        // TODO add group name if exist
+        AliDrawStyle::TGraphApplyStyle(fCurrentCssStyle,band); //"testStyle" to be changed to fCurrenCSSStyle
+      }
+      TStatToolkit::DrawMultiGraph(mGraph,"l");
+    }
+  }
+  if(outputDir!=0){
+    fWorkingCanvas->SaveAs(TString(outputDir)+"/"+TString(figureName));
+    fWorkingCanvas->Print(TString(outputDir)+"/report.pdf");
+    if (fReport) {fReport->cd();fWorkingCanvas->Write(figureName);}
+  }
+  static Int_t counter=0;
+  AliSysInfo::AddStamp(expr,2,counter++);
+}
 
 
 ///

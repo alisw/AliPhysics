@@ -231,8 +231,8 @@ void AliTMinuitToolkit::FitterFCN(int &/*nPar*/, double */*grad*/, double &chi2,
     Double_t delta = (value - funX);
     Double_t toAdd=0;
     if (logLike){
-      //Double_t normDelta = delta*weight;
-      toAdd=logLike->EvalPar(&delta,likeParam)*weight;
+      Double_t normDelta = delta*weight;
+      toAdd=logLike->EvalPar(&normDelta,likeParam);
     }else{
       if (fitter->IsHuberCost() != 0) {       //hubert norm
         delta = TMath::Abs(delta*weight);                   // normalization
@@ -528,7 +528,7 @@ Double_t  AliTMinuitToolkit::GaussCachyLogLike(const Double_t *x, const Double_t
   Double_t vCauchy=p[1]/(TMath::Pi()*(p[1]*p[1]+(*x)*(*x)));
   Double_t vGaus=(TMath::Abs(*x)<20) ? TMath::Gaus(*x,0,1.,kTRUE):0.;
   Double_t p0= p[0]*TMath::Gaus(0,0,1,kTRUE)+(1-p[0])/(TMath::Pi()*p[1]);
-  return -TMath::Log((p[0]*vGaus+(1-p[0])*vCauchy)/p0);
+  return -2.*TMath::Log((p[0]*vGaus+(1-p[0])*vCauchy)/p0);
 }
 
 /// Huber loss  is a loss function used in robust regression - representation as in https://en.wikipedia.org/w/index.php?title=Huber_loss&diff=809252384&oldid=798150659
@@ -550,7 +550,7 @@ Double_t  AliTMinuitToolkit::HuberLogLike(const Double_t *x, const Double_t *p){
 Double_t  AliTMinuitToolkit::PseudoHuberLogLike(const Double_t *x, const Double_t *p){
   Double_t p2=p[0]*p[0];
   Double_t x2=x[0]*x[0];
-  Double_t result=p2*(TMath::Sqrt(1.+x2/p2)-1.);
+  Double_t result=2.*p2*(TMath::Sqrt(1.+x2/p2)-1.);
   return result;
 }
 
@@ -845,7 +845,15 @@ void AliTMinuitToolkit::MISAC(Int_t nFitPoints, UInt_t nIter, const char * repor
 ///   * log-likelihood: chi2, likeGausCachy, huber norm
 void  AliTMinuitToolkit::RegisterDefaultFitters(){
   TF1 *likeGausCachy = new TF1("likeGausCachy", AliTMinuitToolkit::GaussCachyLogLike,-10,10,2);
+  TF1 *likePseudoHuber = new TF1("likePseudoHuber", AliTMinuitToolkit::PseudoHuberLogLike,-10,10,1);
   likeGausCachy->SetParameters(0.8,1);
+  likePseudoHuber->SetParameter(0,3);
+  likeGausCachy->GetXaxis()->SetTitle("#Delta");
+  likeGausCachy->GetYaxis()->SetTitle("-logLikelihood");
+  likeGausCachy->SetLineColor(2);
+  likePseudoHuber->GetXaxis()->SetTitle("#Delta");
+  likePseudoHuber->GetYaxis()->SetTitle("-logLikelihood");
+  likePseudoHuber->SetLineColor(4);
   //
   for (Int_t iPol=0; iPol<10; iPol++){ //register polynomial fitters
     TMatrixD initPar(iPol+1,4);
@@ -868,7 +876,8 @@ void  AliTMinuitToolkit::RegisterDefaultFitters(){
     AliTMinuitToolkit * fitter1DH = new AliTMinuitToolkit();
     fitter1DH->SetVerbose(0x1); fitter1DH->SetFitFunction(fpol,kTRUE);
     fitter1DH->SetInitialParam(&initPar);
-    fitter1DH->EnableRobust(true);
+    //fitter1DH->EnableRobust(true);
+    fitter1DH->SetLogLikelihoodFunction(likePseudoHuber);
     fitter1DH->SetName(TString::Format("pol%dH",iPol).Data());
     AliTMinuitToolkit::SetPredefinedFitter(fitter1DH->GetName(),fitter1DH);
   }

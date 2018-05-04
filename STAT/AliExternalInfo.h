@@ -98,7 +98,8 @@ public:
   TTree*  GetTreeAliVersMC();
   TTree*  GetTreeMCPassGuess();
   TString GetMCPassGuess(TString MCprodname);
-  
+  TString GetMCAnchPerGuess(const char* runlist);
+  TTree* GetLogbookCache();
   TChain* GetChain(TString type, TString period, TString pass, Int_t buildIndex=1);
   TChain* GetChain(TString type, TString period, TString pass, TString friendList);
   TChain* GetChainMC()                                                  {return GetChain("MonALISA.MC", "", "");}
@@ -129,20 +130,22 @@ public:
   const TString CurlTree(const TString internalFilename, const TString& externalLocation);
   const TString CreatePath(TString type, TString period, TString pass);
   Bool_t IsDownloadNeeded(TString file, TString type);
-  Int_t fVerbose;                                   ///< verbosity flag 
+  Int_t fVerbose;                                   ///< verbosity flag
+  Bool_t fLoadMetadata;                             ///< flag load metadata
   // Bool_t fCopyDataToLocalStorage;
   TString fConfigLocation;                          ///< location of the config file
   TString fLocalStorageDirectory;                   ///< location of the local cache directory
   std::map<TString, TString> fConfigMap;            ///< map with tree DB configuration parameters
   TTree* fTree;                                     ///< master tree with friends
+  TTree* fMCGuessTree;                              ///< tree holding information for Anchor Pass guessing
   TChain* fChain;                                   ///< master chain with friends
   std::map<TString, TChain*> fChainMap;             ///< map of chains
   Long64_t fMaxCacheSize;                           ///< maximum chache size for trees and chains
-
+  TTree* fLogCache;                                     ///< TChain for Logbook
   static const TString fgkDefaultConfig;            ///< default config file
 
   ClassDef(AliExternalInfo, 0);  // interface to various trending trees
-
+  
 };
 
 #endif // ALIEXTERNALINFO_H

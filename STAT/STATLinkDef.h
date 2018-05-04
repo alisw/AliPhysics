@@ -28,6 +28,13 @@
 #pragma link C++ class AliTreeTrending+;
 #pragma link C++ class AliNDFormulaBrowser+;
 #pragma link C++ class AliDrawStyle+;
+#pragma link C++ function AliDrawStyle::GetNamedTypeAt<Int_t>;
+#pragma link C++ function AliDrawStyle::GetNamedTypeAt<Float_t>;
+#pragma link C++ function AliDrawStyle::PrepareValue<Int_t>;
+#pragma link C++ function AliDrawStyle::PrepareValue<Float_t>;
+#pragma link C++ function AliDrawStyle::ObjectApplyStyle(const char*, TGraph *, Int_t, Int_t);
+#pragma link C++ function AliDrawStyle::ObjectApplyStyle(const char*, TH1 *, Int_t, Int_t);
+#pragma link C++ function AliDrawStyle::ObjectApplyStyle(const char*, TF1 *, Int_t, Int_t);
 #pragma link C++ class AliPainter+;
 #pragma link C++ class AliElasticSearchRoot++;
 

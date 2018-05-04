@@ -23,6 +23,16 @@
     TString  period="LHC15o", pass="pass1", runSelection="QA.TPC.meanTPCncl>0", varSelection="run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP";
     TString source="Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT;QA.EVS";
 */
+#include "TString.h"
+#include "TObjArray.h"
+#include "TTree.h"
+#include "AliExternalInfo.h"
+#include "TLatex.h"
+#include "TLeaf.h"
+#include "TSystem.h"
+#include "TStatToolkit.h"
+#include "AliTreePlayer.h"
+#include "TLegend.h"
 
 AliExternalInfo info;
 TLatex latex;
@@ -45,7 +55,7 @@ TLatex latex;
 void drawLogbook(TString period, TString pass,TString runSelection="", TString varSelection="runDuration:totalEventsPhysics:totalNumberOfFilesMigrated"){
   TTree * treeLogbook = info.GetTree("Logbook",period,pass,"QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT");
   TObjArray *varList=0;
-  if (varSelection[0]=="["){ //variable list using class selection
+  if (varSelection[0]=='['){ //variable list using class selection
     // Use class selection to select variables
     varList=AliTreePlayer::selectMetadata(treeLogbook,varSelection,0);
     Int_t nvars=varList->GetEntries();
@@ -132,5 +142,131 @@ void makeHTMLPage(TString  period,TString  pass, TString runSelection, TString v
   AliTreePlayer::selectWhatWhereOrderBy(tree,varSelection.Data(), runSelection.Data(),"",0,100000,"html","table.html");
   delete tree;
   gSystem->GetFromPipe("$AliPhysics_SRC/PWGPP/scripts/makeHtmlv1.sh index.html table.html 0");
+
+}
+
+/// \brief Cache  MC production trees, store summary information in formated text files -> root trees
+/// \param dataType  -
+/// \param fileList
+void CacheTestMCProductions(TString dataType, const char *fileList=NULL){
+  AliExternalInfo info;
+  info.fLoadMetadata=kFALSE;
+  TObjArray* periodList = NULL;
+  TArrayI nRuns;
+  if (fileList!=NULL) {
+    periodList=(gSystem->GetFromPipe(TString::Format("cat %s", fileList).Data())).Tokenize("\n");
+    nRuns.Set(periodList->GetEntries());
+
+  }else{
+    TTree * tree = info.GetTree("MonALISA.ProductionMC","","");
+    Int_t nProd=tree->GetEntries();
+    periodList = new TObjArray(nProd);
+    nRuns.Set(nProd);
+    TLeaf *leaf = tree->GetLeaf("Tag");
+    TLeaf *leafRuns = tree->GetLeaf("Number_of_runs");
+    for (Int_t iProd=0; iProd<nProd; iProd++){
+      tree->GetEntry(iProd);
+      TString prodName=((char*)leaf->GetValuePointer());
+      if (prodName.Contains("LHC")==0) continue;
+      periodList->AddAt(new TObjString(((char*)leaf->GetValuePointer())),iProd);
+      nRuns[iProd]=leafRuns->GetValue();
+    }
+    delete tree;
+  }
+  for (Int_t iPeriod=0; iPeriod<periodList->GetEntriesFast(); iPeriod++){
+    TTree* tree = info.GetTree(dataType.Data(),periodList->At(iPeriod)->GetName(),"passMC");
+    if (tree){
+      Int_t entries=tree->Draw("run","1","goff");
+      TString sInfo=periodList->At(iPeriod)->GetName();
+      sInfo+="\t";
+      sInfo+=dataType;
+      sInfo+="\t";
+      sInfo+=TString::Format("%d\t",entries);
+      sInfo+=TString::Format("%d\t",nRuns[iPeriod]);
+      for (Int_t j=0; j<entries; j++) {
+        sInfo+=TString::Format("%2.0f,",tree->GetV1()[j]);
+        ::Info("CacheTestMCProductionsRun:","%s\t%s\t%d\t%d\t%d\t%2.0f",periodList->At(iPeriod)->GetName(),dataType.Data(),entries,nRuns[iPeriod],j, tree->GetV1()[j]);
+      }
+      sInfo+="0";
+      ::Info("CacheTestMCProductionsPeriod:","%s\n",sInfo.Data());
+      delete tree;
+    }else{
+      ::Error("CacheTestMCProductionsPeriod:","%s\t%s\t-1\t%d\t0",periodList->At(iPeriod)->GetName(), dataType.Data(),nRuns[iPeriod]);
+    }
+  }
+}
+
+
+/// Cache MC production information
+void CacheTrendingProductions(TString dataType){
+  AliExternalInfo info;
+  info.fLoadMetadata=kFALSE;
+  TObjArray* periodList = NULL, *idList=NULL;
+  //
+  TTree * tree = info.GetTree("MonALISA.ProductionCycle","","");
+  Int_t nProd=tree->GetEntries();
+  periodList = new TObjArray(nProd);
+  idList= new TObjArray(nProd);
+  TLeaf *leafTag = tree->GetLeaf("Tag");
+  TLeaf *leafID   =  tree->GetLeaf("ID");
+  for (Int_t iProd=0; iProd<nProd; iProd++){
+    tree->GetEntry(iProd);
+    TString prodName=((char*)leafTag->GetValuePointer());
+    TString  idName =TString::Format("%d",TMath::Nint(leafID->GetValue()));
+    if (prodName.Contains("LHC")==0) continue;
+    periodList->AddAt(new TObjString(prodName),iProd);
+    idList->AddAt(new TObjString(idName),iProd);
+  }
+  delete tree;
+  //
+  for (Int_t iPeriod=0; iPeriod<periodList->GetEntriesFast(); iPeriod++) {
+    TTree* treeP = info.GetTreeProdCycleByID(idList->At(iPeriod)->GetName());
+    if (treeP==NULL) continue;
+    TLeaf *leafOutput = treeP->GetLeaf("outputdir");
+    Int_t nRuns= treeP->GetEntries();
+    treeP->GetEntry(0);
+    TString path=((char*)leafOutput->GetValuePointer());
+    TObjArray *pArray = path.Tokenize("/");
+    if (pArray==NULL) continue;
+    Int_t nElems=pArray->GetEntries();
+    if (nElems<4) continue;
+    TString aperiod=pArray->At(3)->GetName();
+    TString apass =pArray->At(nElems-1)->GetName();
+    delete pArray;
+    ::Info("CacheTrendingProductions","%s\t%s\t%s\t%s\t%d",idList->At(iPeriod)->GetName(),path.Data(), aperiod.Data(),apass.Data(),nRuns);
+    delete treeP;
+    TTree* treeQA = info.GetTree(dataType.Data(),aperiod.Data(),apass.Data());
+    if (treeQA){
+      Int_t entries=treeQA->Draw("run","1","goff");
+      TString sInfo=aperiod;
+      sInfo+="\t";
+      sInfo+=apass;
+      sInfo+="\t";
+      sInfo+=dataType;
+      sInfo+="\t";
+      sInfo+=TString::Format("%d\t",entries);
+      sInfo+=TString::Format("%d\t",nRuns);
+      for (Int_t j=0; j<entries; j++) {
+        sInfo+=TString::Format("%2.0f,",treeQA->GetV1()[j]);
+        ::Info("CacheTrendingProductionsRun:","%s\t%s\t%s\t%d\t%d\t%2.0f",aperiod.Data(),apass.Data(),dataType.Data(),entries,nRuns,treeQA->GetV1()[j]);
+      }
+      sInfo+="0";
+      ::Info("CacheTrendingProductionsPeriod:","%s\n",sInfo.Data());
+      delete treeQA;
+    }else{
+      ::Error("CacheTrendingProductionsPeriod:","%s\t%s\t%s\t-1\t%d\t0",aperiod.Data(),apass.Data(), dataType.Data(),nRuns);
+    }
+  }
+}
+
+void CheckProductions(){
+  AliExternalInfo info;
+  //to add there production yer
+  TTree * treeRaw= info.GetTree("QA.Period","data","");
+  treeRaw->SetAlias("isTPC","type==\"QA.TPC\"");
+  treeRaw->SetAlias("isITS","type==\"QA.ITS\"");
+  treeRaw->SetAlias("isTRD","type==\"QA.TRD\"");
+  // black list for production
+  treeRaw->SetAlias("isBlack","strstr(pass,\"clean\")!=0||strstr(pass,\"rec\")!=0||strstr(pass,\"its\")!=0||strstr(pass,\"cpass\")!=0||strstr(pass,\"vpass\")!=0||strstr(pass,\"muon\")!=0||strstr(pass,\"cosmic\")!=0||strstr(pass,\"align\")!=0||strstr(pass,\"FAST\")!=0||strstr(pass,\"scan\")!=0||strstr(pass,\"test\")!=0");
 
 }

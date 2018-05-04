@@ -21,11 +21,11 @@
    Example usage in the test mode: 
   .x ~/rootlogon.C
   
-  .L $ALICE_ROOT/../src/TPC/fastSimul/AliTPCclusterFast.cxx+
+  .L $AliRoot_SRC/TPC/fastSimul/AliTPCclusterFast.cxx+
   AliTPCclusterFast::InitFormulas();
   AliTPCclusterFast::fPRF = new TF1("fprf","gausn",-5,5);  //MWPC
   AliTPCclusterFast::fPRF->SetParameters(1,0,0.5);
-  // 
+  //
   AliTPCclusterFast::fPRF =new TF1("fprf"," GEMPRF(x,0.02)",-3,3); // GEM
   //
   //AliTPCclusterFast::fTRF = new TF1("ftrf","gausn",-5,5);
@@ -1127,7 +1127,6 @@ Float_t  AliTPCclusterFast::UnfoldCluster(Float_t & meani, Float_t & meanj,  Flo
   meanj=0;
   sumu=0;
   overlap=0;
-  //
   //
   //
   MakeDigitization(addOverlap, gain, thr, noise,rounding, addPedestal, skipSample);

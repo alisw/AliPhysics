@@ -930,7 +930,8 @@ EXAMPLE_RECURSIVE      = NO
 
 IMAGE_PATH             = @CMAKE_SOURCE_DIR@/picts \
                          @CMAKE_SOURCE_DIR@/TPC/TPCbase/imgdoc \
-                         @CMAKE_SOURCE_DIR@/FMD/pics
+                         @CMAKE_SOURCE_DIR@/FMD/pics \
+                         @CMAKE_SOURCE_DIR@/STAT/imgdoc
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

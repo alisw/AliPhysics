@@ -75,7 +75,7 @@ EOF
   N_BAD=$(grep -c "E-Ali" AliDrawStyleTest.log)
 
   TEST_STATUS=0
-  if [[ $N_GOOD != 27 ]]; then
+  if [[ $N_GOOD != 49 ]]; then
     alilog_error "statTest.AliDrawStyleTest: Test FAILED"
     ((TEST_STATUS++))
   fi
@@ -92,5 +92,32 @@ EOF
 
 }
 
+testAliPainterTest() {
+  cp $ALIROOT_SOURCE/STAT/test/AliPainterTest.C .
+  root -n -b -l <<\EOF 2>&1 | tee AliPainterTest.log
+    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    .x ./AliPainterTest.C+
+EOF
+
+  N_GOOD=$(grep -cE 'Ali.*OK' AliPainterTest.log)
+  N_BAD=$(grep -c "E-Ali" AliPainterTest.log)
+
+  TEST_STATUS=0
+  if [[ $N_GOOD != 18 ]]; then
+    alilog_error "statTest.AliPainterTest: Test FAILED"
+    ((TEST_STATUS++))
+  fi
+  if [[ $N_BAD != 0 ]]; then
+    alilog_error "statTest.AliPainterTest: Test FAILED"
+    ((TEST_STATUS+=2))
+  fi
+  if [[ $TEST_STATUS == 0 ]]; then
+    alilog_success "statTest.AliPainterTest: All OK"
+  else
+    alilog_error "statTest.: FAILED (code $TEST_STATUS)"
+  fi
+  exit $TEST_STATUS
+
+}
 
 [[ $1 ]] && $1
