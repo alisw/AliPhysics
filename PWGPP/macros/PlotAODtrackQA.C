@@ -494,6 +494,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     c1->Divide(2,2);
     c1->cd(1);
     gPad->SetLogy();
+    hPtAll->SetMinimum(0.5);
     hPtAll->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hPtAll->Draw("histo");
     gPad->Update();
@@ -719,20 +720,20 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TGraphErrors* gRelPi=new TGraphErrors(0);
   TGraphErrors* gRelK=new TGraphErrors(0);
   TGraphErrors* gRelProt=new TGraphErrors(0);
-  gMeanPi->SetName("gMeanProt");
-  gMeanK->SetName("gMeanProt");
+  gMeanPi->SetName("gMeanPi");
+  gMeanK->SetName("gMeanK");
   gMeanProt->SetName("gMeanProt");
   gMeanPi->SetTitle("");
   gMeanK->SetTitle("");
   gMeanProt->SetTitle("");
-  gRmsPi->SetName("gRmsProt");
-  gRmsK->SetName("gRmsProt");
+  gRmsPi->SetName("gRmsPi");
+  gRmsK->SetName("gRmsK");
   gRmsProt->SetName("gRmsProt");
   gRmsPi->SetTitle("");
   gRmsK->SetTitle("");
   gRmsProt->SetTitle("");
-  gRelPi->SetName("gRelProt");
-  gRelK->SetName("gRelProt");
+  gRelPi->SetName("gRelPi");
+  gRelK->SetName("gRelK");
   gRelProt->SetName("gRelProt");
   gRelPi->SetTitle("");
   gRelK->SetTitle("");
@@ -867,7 +868,19 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     plotFileName=Form("PtResisuals.%s",outputForm.Data());
     c2->SaveAs(plotFileName.Data());
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
+    TFile* outres=new TFile("PtResolPiKp.root","recreate");
+    gMeanPi->Write();
+    gMeanK->Write();
+    gMeanProt->Write();
+    gRmsPi->Write();
+    gRmsK->Write();
+    gRmsProt->Write();
+    gRelPi->Write();
+    gRelK->Write();
+    gRelProt->Write();
   }
+
 
   TH2F* hFilterBits=(TH2F*)l->FindObject("hFilterBits");
   hFilterBits->SetStats(0);
@@ -1272,7 +1285,13 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
     Double_t ept=0;
     Int_t ji=j;
     Int_t jf=j;
-    if(pt>10){
+    if(pt>5 && pt<=10){
+      ji=j;
+      jf=j+2;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+    }else if(pt>10){
       ji=j;
       jf=j+5;
       j=jf;
