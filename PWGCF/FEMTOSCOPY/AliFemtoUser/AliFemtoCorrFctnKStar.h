@@ -75,6 +75,8 @@ public:
                  int aNbinsKStarSide, double aKStarSideMin, double aKStarSideMax,
                  int aNbinsKStarLong, double aKStarLongMin, double aKStarLongMax);
 
+  void RotateThreeVecBy180InTransversePlane(AliFemtoThreeVector &a3Vec);
+  bool PassPairCut_RotatePar2(const AliFemtoPair* aPair);
   double CalcKStar_RotatePar2(const AliFemtoPair* aPair);    //Rotate the second particle in the pair by 180 degrees
                                                              // about the z-axis
 
@@ -105,7 +107,7 @@ protected:
   TH1D* fRatio;              // unnormalized ratio num/den
   TH1D* fkTMonitor;          // Monitor the kT of pairs in the function
 
-  TH1D* tNumerator_RotatePar2;
+  TH1D* fNumerator_RotatePar2;
 
   Bool_t fDetaDphiscal;
   Bool_t fPairKinematics;
