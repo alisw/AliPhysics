@@ -161,7 +161,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
   fHistTrack -> SetBinEdges(1,fBinsEta->GetArray());
   fHistTrack -> SetBinEdges(2,fBinsMult->GetArray());
   fHistTrack -> SetBinEdges(3,fBinsCent->GetArray());
-  fHistTrack->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
+  fHistTrack->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fHistTrack->GetAxis(1)->SetTitle("#eta");
   fHistTrack->GetAxis(2)->SetTitle("#it{N}_{acc}");
   fHistTrack->GetAxis(3)->SetTitle("Centrality (%)");
@@ -198,7 +198,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCResponseMatTracks->SetBinEdges(2,fBinsPt->GetArray());
     fHistMCResponseMatTracks->GetAxis(0)->SetTitle("#it{N}_{acc}");
     fHistMCResponseMatTracks->GetAxis(1)->SetTitle("#it{N}_{ch}");
-    fHistMCResponseMatTracks->GetAxis(2)->SetTitle("#it{p}_{T} (GeV/c)");
+    fHistMCResponseMatTracks->GetAxis(2)->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fHistMCResponseMatTracks->Sumw2();
 
 
@@ -210,8 +210,8 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCPtRes = new THnF("fHistMCPtRes","#it{p}_{T} resolution", 2, nBinsMCPtPt,minBinsMCPtPt,maxBinsMCPtPt);
     fHistMCPtRes -> SetBinEdges(0,fBinsPt->GetArray());
     fHistMCPtRes -> SetBinEdges(1,fBinsPt->GetArray());
-    fHistMCPtRes->GetAxis(0)->SetTitle("#it{p}_{T}^{track} (GeV/c)");
-    fHistMCPtRes->GetAxis(1)->SetTitle("#it{p}_{T}^{particle} (GeV/c)");
+    fHistMCPtRes->GetAxis(0)->SetTitle("#it{p}_{T}^{track} (GeV/#it{c})");
+    fHistMCPtRes->GetAxis(1)->SetTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
 
     /// Eta Resolution Histogram
     Int_t nBinsMCEtaEta[2]={fBinsEta->GetSize()-1, fBinsEta->GetSize()-1};
@@ -233,7 +233,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCRecTrack -> SetBinEdges(0,fBinsPt->GetArray());
     fHistMCRecTrack -> SetBinEdges(1,fBinsEta->GetArray());
     fHistMCRecTrack -> SetBinEdges(2,fBinsCent->GetArray());
-    fHistMCRecTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/c)");
+    fHistMCRecTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/#it{c})");
     fHistMCRecTrack->GetAxis(1)->SetTitle("#eta^{MC}");
     fHistMCRecTrack->GetAxis(2)->SetTitle("Centrality (%)");
     fHistMCRecTrack -> Sumw2();
@@ -242,7 +242,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCGenPrimTrack -> SetBinEdges(0,fBinsPt->GetArray());
     fHistMCGenPrimTrack -> SetBinEdges(1,fBinsEta->GetArray());
     fHistMCGenPrimTrack -> SetBinEdges(2,fBinsCent->GetArray());
-    fHistMCGenPrimTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/c)");
+    fHistMCGenPrimTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/#it{c})");
     fHistMCGenPrimTrack->GetAxis(1)->SetTitle("#eta^{MC}");
     fHistMCGenPrimTrack->GetAxis(2)->SetTitle("Centrality (%)");
     fHistMCGenPrimTrack -> Sumw2();
@@ -251,7 +251,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCRecPrimTrack -> SetBinEdges(0,fBinsPt->GetArray());
     fHistMCRecPrimTrack -> SetBinEdges(1,fBinsEta->GetArray());
     fHistMCRecPrimTrack -> SetBinEdges(2,fBinsCent->GetArray());
-    fHistMCRecPrimTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/c)");
+    fHistMCRecPrimTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/#it{c})");
     fHistMCRecPrimTrack->GetAxis(1)->SetTitle("#eta^{MC}");
     fHistMCRecPrimTrack->GetAxis(2)->SetTitle("Centrality (%)");
     fHistMCRecPrimTrack -> Sumw2();
@@ -260,7 +260,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCRecSecTrack -> SetBinEdges(0,fBinsPt->GetArray());
     fHistMCRecSecTrack -> SetBinEdges(1,fBinsEta->GetArray());
     fHistMCRecSecTrack -> SetBinEdges(2,fBinsCent->GetArray());
-    fHistMCRecSecTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/c)");
+    fHistMCRecSecTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/#it{c})");
     fHistMCRecSecTrack->GetAxis(1)->SetTitle("#eta^{MC}");
     fHistMCRecSecTrack->GetAxis(2)->SetTitle("Centrality (%)");
     fHistMCRecSecTrack -> Sumw2();
@@ -291,7 +291,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
         fHistMCParticle -> SetBinEdges(1,fBinsEta->GetArray());
         fHistMCParticle -> SetBinEdges(2,fBinsMult->GetArray());
         fHistMCParticle -> SetBinEdges(3,fBinsCent->GetArray());
-        fHistMCParticle->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/c)");
+        fHistMCParticle->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/#it{c})");
         fHistMCParticle->GetAxis(1)->SetTitle("#eta^{MC}");
         fHistMCParticle->GetAxis(2)->SetTitle("#it{N}_{acc}");
         fHistMCParticle->GetAxis(3)->SetTitle("Centrality (%)");
