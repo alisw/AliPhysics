@@ -31,14 +31,19 @@ void meanpt(string fileName, string inputPath = "Input/Input_", string outputPat
 //  string iterCheckHistName = "momentUnfolded1_nIter_" + nIterstr;
   TStopwatch* stopwatch = new TStopwatch();
 
+  Bool_t useSecondMC = kFALSE;
   Bool_t useExtrapolation = kFALSE;
   Bool_t useModulatedResponse = kFALSE;
   Bool_t useSmoothing = kFALSE;
-  Bool_t includeSystematics = kFALSE; //swich that off when calculating track systematix
+  Bool_t includeSystematics = kTRUE; //swich that off when calculating track systematix
   Bool_t includeSimulation = kFALSE;
 //  if(outputPath == "Histograms/") includeSystematics = kTRUE;
 
   /// Define input and output files
+//  string inputFileResponseName = inputPath + fileName + "_Pythia6" + ".root";
+  string inputFileResponseName = inputPath + fileName + "_EPOS" + ".root";
+  TFile* inputFileResponse = NULL;
+
   string inputFileName = inputPath + fileName + ".root";
   string outputFileName = outputPath + fileName + ".root";
   string inputFileNameExtrapol = "Histograms/" + fileName + "_extrapol.root";
@@ -63,23 +68,28 @@ void meanpt(string fileName, string inputPath = "Input/Input_", string outputPat
   TH2D* multPtMeasured = (TH2D*) inputFile->FindObjectAny("multPtMeasured");
   if(!multPtMeasured) cout << "ERROR: Could not find multPtMeasured" << endl;
 
-  /// ::::::::::: MC Input Histograms :::::::::::
+  /// ::::::::::: Detector Response Histograms :::::::::::
 
-  TH2D* responseMatrixOrig = (TH2D*) inputFile->FindObjectAny("responseMatrixOrig");
+  if(useSecondMC) {inputFileResponse = TFile::Open(inputFileResponseName.c_str(),"READ"); cout << endl << "-> using detector response from: " << inputFileResponse->GetName() << endl;}
+  else {inputFileResponse = inputFile;}
+
+  TH2D* responseMatrixOrig = (TH2D*) inputFileResponse->FindObjectAny("responseMatrixOrig");
   if(!responseMatrixOrig) cout << "ERROR: Could not find responseMatrixOrig" << endl;
 
-  TH2D* responseMatrix = (TH2D*) inputFile->FindObjectAny("responseMatrix");
+  TH2D* responseMatrix = (TH2D*) inputFileResponse->FindObjectAny("responseMatrix");
   if(!responseMatrix) cout << "ERROR: Could not find responseMatrix" << endl;
 
-  TH2D* responseMatrixTracksOrig = (TH2D*) inputFile->FindObjectAny("responseMatrixTracksOrig");
+  TH2D* responseMatrixTracksOrig = (TH2D*) inputFileResponse->FindObjectAny("responseMatrixTracksOrig");
   if(!responseMatrixTracksOrig) cout << "ERROR: Could not find responseMatrixTracksOrig" << endl;
 
-//  TH2D* responseMatrixTracksOrig = getTrackResponseMatrix(responseMatrixOrig);
-
-  TH2D* responseMatrixTracks = (TH2D*) inputFile->FindObjectAny("responseMatrixTracks");
+  TH2D* responseMatrixTracks = (TH2D*) inputFileResponse->FindObjectAny("responseMatrixTracks");
   if(!responseMatrixTracks) cout << "ERROR: Could not find responseMatrixTracks" << endl;
 
+  /// ::::::::::: MC Input Histograms :::::::::::
+
   TH2D* multPtMeasuredMC = (TH2D*) inputFile->FindObjectAny("multPtMeasuredMC");
+  TH2D* multPtMeasuredPtResUnfoldedMC = (TH2D*) inputFile->FindObjectAny("multPtMeasuredPtResUnfoldedMC");
+//  multPtMeasuredMC->SetName("multPtMeasuredMC");
   if(!multPtMeasuredMC) cout << "ERROR: Could not find multPtMeasuredMC" << endl;
 
   TH2D* multPtGeneratedMC = (TH2D*) inputFile->FindObjectAny("multPtGeneratedMC");
@@ -87,6 +97,11 @@ void meanpt(string fileName, string inputPath = "Input/Input_", string outputPat
 
 //  TH2D* multPtMultGen = (TH2D*) inputFile->FindObjectAny("multPtMultGen");
 //  if(!multPtMultGen) cout << "ERROR: Could not find multPtMultGen" << endl;
+
+  TH2D* ptResolution = (TH2D*) inputFile->FindObjectAny("ptResolution");
+  if(!ptResolution) cout << "ERROR: Could not find ptResolution" << endl;
+  TH2D* ptResponseMatrix = (TH2D*) inputFile->FindObjectAny("ptResponseMatrix");
+  if(!ptResponseMatrix) cout << "ERROR: Could not find ptResponseMatrix" << endl;
 
   ///----------------------------------------------------------------------------------------------------
   /// Unfolding for Data
@@ -146,6 +161,11 @@ void meanpt(string fileName, string inputPath = "Input/Input_", string outputPat
   TH1D* multDistGeneratedClosureTest = responseMatrixOrig->ProjectionY("multDistGeneratedClosureTest");
   TH1D* multDistUnfoldedClosureTest = getUnfoldedMultDist(multDistMeasuredClosureTest, responseMatrixOrig, nIter, useSmoothing);
   multDistUnfoldedClosureTest->SetName("multDistUnfoldedClosureTest");
+
+  // MC Closure Test for Unfolding of Multiplicity Distribution with flat start
+  TH1D* multDistInitialClosureTestFlat = responseMatrix->ProjectionY("multDistInitialClosureTestFlat");
+  TH1D* multDistUnfoldedClosureTestFlat = getUnfoldedMultDist(multDistMeasuredClosureTest, responseMatrix, nIter, useSmoothing);
+  multDistUnfoldedClosureTestFlat->SetName("multDistUnfoldedClosureTestFlat");
 
   // MC Closure Test for Unfolding of Integrated Spectra
   TH1D* multDistTracksMeasuredClosureTest = multPtMeasuredMC->ProjectionX("multDistTracksMeasuredClosureTest");
@@ -239,8 +259,17 @@ void meanpt(string fileName, string inputPath = "Input/Input_", string outputPat
   /// Output
   ///----------------------------------------------------------------------------------------------------------------------
 
+//tempstuff
+  TH1D* efficiencyPt = (TH1D*) inputFile->FindObjectAny("efficiencyPt");
+  TH1D* secContPt = (TH1D*) inputFile->FindObjectAny("secContPt");
+
+
+//tempstuf
+
   /// Container to store histograms
   TObjArray* outputHistos = new TObjArray(1);
+  outputHistos->Add(efficiencyPt);
+  outputHistos->Add(secContPt);
 
   if(includeSimulation){
     outputHistos->Add(momentSimulatedMC1);
@@ -252,6 +281,10 @@ void meanpt(string fileName, string inputPath = "Input/Input_", string outputPat
     outputHistos->Add(momentSimulatedMPI3MC1);
 
   }
+
+  outputHistos->Add(multPtMeasuredPtResUnfoldedMC);
+  outputHistos->Add(ptResolution);
+  outputHistos->Add(ptResponseMatrix);
 
   outputHistos->Add(responseMatrixOrig);
   outputHistos->Add(responseMatrix);
@@ -308,6 +341,11 @@ void meanpt(string fileName, string inputPath = "Input/Input_", string outputPat
   outputHistos->Add(multDistGeneratedClosureTest);
   outputHistos->Add(multDistMeasuredClosureTest);
   outputHistos->Add(multDistUnfoldedClosureTest);
+
+  outputHistos->Add(multDistInitialClosureTestFlat);
+  outputHistos->Add(multDistUnfoldedClosureTestFlat);
+
+
   outputHistos->Add(multDistTracksGeneratedClosureTest);
   outputHistos->Add(multDistTracksMeasuredClosureTest);
   outputHistos->Add(multDistTracksUnfoldedClosureTest);
