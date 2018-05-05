@@ -21,17 +21,22 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-  virtual void RunMC(AliAODEvent *aod);
+  virtual void RunMC(AliVEvent *aod);
   virtual void Terminate(Option_t *);
   
   void SetIsMC(Bool_t MC){isMC = MC;}
+  void SetIsESD(Bool_t ESD){isESD = ESD;}
   void SetCutEta(Float_t cut){cutEta = cut;}
   Double_t GetMedian(Double_t *daArray);
   void FillTree(TTree *t, TLorentzVector v);
  private:
  
   AliPIDResponse *fPIDResponse;
+  AliESDtrackCuts *fTrackCutsBit0;
+  AliESDtrackCuts *fTrackCutsBit1;
+  AliESDtrackCuts *fTrackCutsBit5;
   Bool_t isMC; 
+  Bool_t isESD;
   Float_t cutEta;
 
   TList *fOutputList;		//<
@@ -57,8 +62,10 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH2D *hTPCdEdxCorr;		//!
   
   Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
-  Int_t fChannel, fSign, fRunNumber, fNFiredMaxiPads;
+  Int_t fChannel, fSign, fRunNumber, fNFiredMaxiPads, fNTOFtrgPads, fTrackIndex[2];
   Bool_t fTriggerInputsMC[10], fInEtaGen, fInEtaRec;
+  TArrayI fTOFhits;
+  TArrayI fTrackIndices;
   
   TFile *fSPDfile;
   TH1D *hBCmod4;
@@ -67,7 +74,7 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 15); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 16); 
 };
 
 #endif

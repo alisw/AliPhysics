@@ -310,20 +310,27 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 	AliCDBEntry *cdbe = cdb->Get("TRIGGER/TOF/TriggerMask");
         AliTOFTriggerMask *fOCDBmask = (AliTOFTriggerMask *)cdbe->GetObject();
 	
-	Int_t BadLTMs[13] = {2,3,10,12,14,15,47,64,65,66,67,68,69};
+	UInt_t BadLTMs[11] = {10,12,14,15,47,64,65,66,67,68,69};
+	UInt_t BadMaxiPads[5][2] = {{19,1}, {26,4}, {33,4}, {34,1}, {34,2}};
 	UInt_t fgFromTriggertoDCS[72] = {0,1,4,5, 8, 9,12,13,16,17,20,21,24,25,28,29,32,33,36,37,40,41,44,45,48,49,52,53,56,57,60,61,64,65,68,69,
                                 3,2,7,6,11,10,15,14,19,18,23,22,27,26,31,30,35,34,39,38,43,42,47,46,51,50,55,54,59,58,63,62,67,66,71,70};
 
 	for(Int_t indexLTM=0; indexLTM<72; ++indexLTM) {
     		for(Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM) {
 			fBadMaxiPadMask[channelCTTM][indexLTM] = !fOCDBmask->IsON(fgFromTriggertoDCS[indexLTM],channelCTTM);
-			for(Int_t j = 0; j<13; j++)if(indexLTM == BadLTMs[j])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
+			for(Int_t j = 0; j<11; j++)if(indexLTM == BadLTMs[j])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
+			for(Int_t j = 0; j<5; j++)if(indexLTM == BadMaxiPads[j][0] && channelCTTM == BadMaxiPads[j][1])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
 			}
 		}
+	Int_t nAliveChannels = 0;
 	for(Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM){
-	for(Int_t indexLTM=0; indexLTM<72; ++indexLTM)cout<<fBadMaxiPadMask[channelCTTM][indexLTM]<<",";
+		for(Int_t indexLTM=0; indexLTM<72; ++indexLTM){
+			cout<<fBadMaxiPadMask[channelCTTM][indexLTM]<<",";
+			nAliveChannels += !fBadMaxiPadMask[channelCTTM][indexLTM];
+			}
 		cout<<endl;
 		}
+	cout<<"N Active channels = "<<nAliveChannels<<endl;
 	
   	for (int i=0;i<18;i++) {
    		AliGeomManager::GetOrigGlobalMatrix( Form("TOF/sm%02d",i) ,matOrig[i]);
