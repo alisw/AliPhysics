@@ -65,8 +65,8 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     massTol = 0.03,
  Float_t     massTolVeto = 0.0043,
- Bool_t      tol_switch = kTRUE,
- Double_t    tol_sigma = 3,
+ Int_t       tol_switch = 1,
+ Double_t    tol_sigma = 4,
  Float_t     pLife = 20,
  Float_t     radiuslow = 0.5,
  Bool_t      Switch = kTRUE,
@@ -74,7 +74,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
  Float_t     k0sCosPoinAn = 0.97,
  Float_t     k0sDaughDCA = 1.0,
  Int_t       NTPCcluster = 70,
- TString     outNameSuffix = "KStarPlusMinus_3sigma",
+ TString     outNameSuffix = "KStarPlusMinus_test_func",
  Bool_t      ptDep = kFALSE,
  Float_t     DCAxy = 0.06,
  Bool_t      enableSys = kFALSE,
@@ -174,6 +174,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
         if(!MultBins){
             cutEventUtils->SetCheckIncompleteDAQ();
             cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+			  	cutEventUtils->SetCheckInelGt0MC(kFALSE);
         }else{
             //cutEventUtils->SetCheckInelGt0SPDtracklets();
             cutEventUtils->SetRemovePileUppA2013(kFALSE);
@@ -258,7 +259,9 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
         Printf("========================== DATA analysis - PID cuts used");
     
     if (!ConfigKStarPlusMinusRun2016(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, ptDep, DCAxy, enableSys, crossedRows, rowsbycluster, pt1, pt2, Sys)) return 0x0;
-    
+
+	
+
     //
     // -- CONTAINERS --------------------------------------------------------------------------------
     //
