@@ -41,6 +41,7 @@ include_directories(${AliRoot_SOURCE_DIR}/ANALYSIS/ANALYSIS
                     ${AliRoot_SOURCE_DIR}/TPC/TPCbase
                     ${AliRoot_SOURCE_DIR}/TPC/TPCrec
                     ${AliRoot_SOURCE_DIR}/TPC/TPCcalib
+                    ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
                    )
 
 # Sources in alphabetical order

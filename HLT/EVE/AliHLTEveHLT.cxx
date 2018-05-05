@@ -35,8 +35,8 @@
 #include "AliEveTrack.h"
 #include "TEveVSDStructs.h"
 #include "TString.h"
-#include "tracking-ca/AliHLTTPCCATrackParam.h"
-#include "tracking-ca/AliHLTTPCCATrackConvertor.h"
+#include "AliHLTTPCCATrackParam.h"
+#include "AliHLTTPCCATrackConvertor.h"
 #include "AliEveMagField.h"
 #include "TH1.h"
 #include "TH1F.h"
@@ -696,5 +696,3 @@ TString AliHLTEveHLT::CreateTrackTitle(AliESDtrack* t) {
 
   return s;
 }
-
-

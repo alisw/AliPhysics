@@ -21,15 +21,14 @@ if(ROOT_HASOPENGL)
     add_subdirectory(EVE)
 endif()
 
-if(HLT_CUDA)
-    add_subdirectory(tracking-ca/cagpu/cuda)
-endif(HLT_CUDA)
-
-if(HLT_OPENCL)
-    add_subdirectory(tracking-ca/cagpu/opencl)
+if(DEFINED ALITPCCOMMON_DIR)
+    set(ALITPCCOMMON_BUILD_TYPE "ALIROOT")
+    add_subdirectory(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking TPCCAGPUTracking)
+    include_directories(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
+                        ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger)
+else()
+    message(FATAL_ERROR "cmake variable ALITPCCOMMON_DIR is not defined")
 endif()
-
-#add_subdirectory(tracking-standalone/cmake_AliRoot) #We use the HLT O2 CA Tracking standalone build at the moment
 
 # Module
 set(MODULE AliHLTTPC)
@@ -118,41 +117,8 @@ set(SRCS
     HWCFemulator/AliHLTTPCHWCFSupport.cxx
     HWCFemulator/AliHLTTPCHWClusterMerger.cxx
     HWCFemulator/AliHLTTPCHWClusterMergerV1.cxx
-    merger-ca/AliHLTTPCGMMerger.cxx
-    merger-ca/AliHLTTPCGMSliceTrack.cxx
-    merger-ca/AliHLTTPCGMTrackParam.cxx
-    merger-ca/AliHLTTPCGMPhysicalTrackModel.cxx
-    merger-ca/AliHLTTPCGMPropagator.cxx
-    merger-ca/AliHLTTPCGMPolynomialField.cxx
-    merger-ca/AliHLTTPCGMPolynomialFieldCreator.cxx
-    merger-ca/AliHLTTPCGMOfflineFitter.cxx
     offline/AliHLTTPCDigitPublisherComponent.cxx
     offline/AliHLTTPCOfflineCluster.cxx
-    tracking-ca/AliHLTTPCCABaseTrackParam.cxx
-    tracking-ca/AliHLTTPCCAClusterData.cxx
-    tracking-ca/AliHLTTPCCAGlobalMergerComponent.cxx
-    tracking-ca/AliHLTTPCCAGPUTracker.cxx
-    tracking-ca/AliHLTTPCCAGrid.cxx
-    tracking-ca/AliHLTTPCCAHitArea.cxx
-    tracking-ca/AliHLTTPCCAMCPoint.cxx
-    tracking-ca/AliHLTTPCCAMCTrack.cxx
-    tracking-ca/AliHLTTPCCANeighboursCleaner.cxx
-    tracking-ca/AliHLTTPCCANeighboursFinder.cxx
-    tracking-ca/AliHLTTPCCAParam.cxx
-    tracking-ca/AliHLTTPCCARow.cxx
-    tracking-ca/AliHLTTPCCASliceData.cxx
-    tracking-ca/AliHLTTPCCASliceOutput.cxx
-    tracking-ca/AliHLTTPCCAStandaloneFramework.cxx
-    tracking-ca/AliHLTTPCCAStartHitsFinder.cxx
-    tracking-ca/AliHLTTPCCATrackConvertor.cxx
-    tracking-ca/AliHLTTPCCATrackerComponent.cxx
-    tracking-ca/AliHLTTPCCATrackerFramework.cxx
-    tracking-ca/AliHLTTPCCATracker.cxx
-    tracking-ca/AliHLTTPCCATrack.cxx
-    tracking-ca/AliHLTTPCCATrackletConstructor.cxx
-    tracking-ca/AliHLTTPCCATracklet.cxx
-    tracking-ca/AliHLTTPCCATrackletSelector.cxx
-    tracking-ca/AliHLTTPCCATrackParam.cxx
     transform/AliHLTTPCFastTransform.cxx
     transform/AliHLTTPCSpline2D3D.cxx
     transform/AliHLTTPCSpline2D3DObject.cxx
@@ -175,9 +141,6 @@ set(HDRS ${HDRS}
     AliHLTTPCClusterMCData.h
     AliHLTTPCClusterFlagsData.h
     HWCFemulator/AliHLTTPCHWCFDataTypes.h
-    tracking-ca/AliHLTTPCCADef.h
-    tracking-ca/AliHLTTPCCAMath.h
-    merger-ca/AliHLTTPCGMMergedTrack.h
     transform/AliHLTTPCReverseTransformInfoV1.h
 )
 
@@ -190,7 +153,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTRCU TPCbase TPCrec TPCsim TPCcalib Graf Gpad Recorder)
+set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTRCU TPCbase TPCrec TPCsim TPCcalib Graf Gpad Recorder AliTPCCAGPUTracking)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # NOTE: Vc should not stay in the rootmap!
