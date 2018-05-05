@@ -48,9 +48,6 @@ public:
 
   void ConfigureZVertPools(Int_t nPools, Double_t*  zVertLimits);
   void ConfigureMultiplicityPools(Int_t nPools, Double_t*  multLimits);
-  void SelectPromptD(){fPromptFeeddown=kPrompt;}
-  void SelectFeeddownD(){fPromptFeeddown=kFeeddown;}
-  void SelectPromptAndFeeddownD(){fPromptFeeddown=kBoth;}
   void SetGoUpToQuark(Bool_t opt){fGoUpToQuark=opt;}
   void SetKeepNegIDtracks(Bool_t nid){fKeepNegID=nid;}//set it to kTRUE only if you know what you are doing
   void SetTrackCuts(AliESDtrackCuts* cuts){
@@ -146,15 +143,20 @@ private:
   TH1F *fHistTrackStatus;     //!<!hist. of status of tracks
   TH3F* fHistTrackEtaMultZv;  // track distribution vs. era z vertex and mult
   TH1F *fHistCheckOrigin;     //!<!hist. of origin (c/b) of D meson
-  TH1F *fHistCheckOriginSel;  //!<!hist. of origin (c/b) of D meson
   TH1F *fHistCheckDecChan;    //!<!hist. of decay channel of D meson
   TH1F *fHistCheckDecChanAcc; //!<!hist. of decay channel of D meson in acc.
-  TH3F *fPtVsYVsMultGen;        //!<! hist. of Y vs. Pt vs. Mult generated (all D)
-  TH3F *fPtVsYVsMultGenLargeAcc; //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
-  TH3F *fPtVsYVsMultGenLimAcc;  //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
-  TH3F *fPtVsYVsMultGenAcc;     //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
-  TH3F *fPtVsYVsMultGenAccEvSel; //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
-  TH3F *fPtVsYVsMultReco;       //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsYVsMultGenPrompt;         //!<! hist. of Y vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsYVsMultGenLargeAccPrompt; //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
+  TH3F *fPtVsYVsMultGenLimAccPrompt;   //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
+  TH3F *fPtVsYVsMultGenAccPrompt;      //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
+  TH3F *fPtVsYVsMultGenAccEvSelPrompt; //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
+  TH3F *fPtVsYVsMultRecoPrompt;        //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsYVsMultGenFeeddw;         //!<! hist. of Y vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsYVsMultGenLargeAccFeeddw; //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
+  TH3F *fPtVsYVsMultGenLimAccFeeddw;   //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
+  TH3F *fPtVsYVsMultGenAccFeeddw;      //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
+  TH3F *fPtVsYVsMultGenAccEvSelFeeddw; //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
+  TH3F *fPtVsYVsMultRecoFeeddw;        //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
   TH3F *fMassVsPtVsY;     //!<! hist. of Y vs. Pt vs. Mass (all cand)
   TH3F *fMassVsPtVsYRot;   //!<! hist. of Y vs. Pt vs. Mass (rotations)
   TH3F *fMassVsPtVsYLSpp;  //!<! hist. of Y vs. Pt vs. Mass (like sign ++)
@@ -199,7 +201,6 @@ private:
   
   Int_t fMeson;          /// mesonSpecies (see enum)
   Bool_t  fReadMC;       ///  flag for access to MC
-  Int_t fPromptFeeddown; /// flag to select prompt (1), feeddown (2) or all (3)
   Bool_t fGoUpToQuark;   /// flag for definition of c,b origin
   Int_t fFullAnalysis;   /// flag to set analysis level (0 is the fastest)
   
@@ -232,7 +233,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,13); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,14); /// D0D+ task from AOD tracks
   /// \endcond
 };
 
