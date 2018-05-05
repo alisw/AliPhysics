@@ -388,17 +388,15 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
    fTrackIndices.Reset();
    fTOFhits.Set(nTOFhits);
    fTrackIndices.Set(nTOFhits);
-   
-   Int_t hitCounts=0;
+
    for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
      AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
      for (Int_t ihit=0;ihit<cl->GetNTOFhits();ihit++){
        AliESDTOFHit* hit = (AliESDTOFHit*) cl->GetTOFHit(ihit);
        Int_t channel = hit->GetTOFchannel();
        Int_t trackIndex = (cl->GetNMatchableTracks()==1) ? cl->GetTrackIndex(0) : -1;
-       fTOFhits.AddAt(channel,hitCounts);
-       fTrackIndices.AddAt(trackIndex,hitCounts);
-       hitCounts++;
+       fTOFhits.AddAt(channel,ihit);
+       fTrackIndices.AddAt(trackIndex,ihit);
      }
    }
   
@@ -662,7 +660,7 @@ void AliAnalysisTaskUpcNano_MB::UserExec(Option_t *)
   //Two track loop
   if(nGoodTracksITS == 2 && nGoodTracksTPC== 0){
   	for(Int_t iTrack=0; iTrack<2; iTrack++) {
-    	AliAODTrack *trk = dynamic_cast<AliAODTrack*>(fEvent->GetTrack(TrackIndexITS[iTrack]));    
+    	AliVTrack *trk = dynamic_cast<AliVTrack*>(fEvent->GetTrack(TrackIndexITS[iTrack]));   
     
     	Float_t fPIDITSElectron = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kElectron);
     	Float_t fPIDITSPion = fPIDResponse->NumberOfSigmasITS(trk,AliPID::kPion);
