@@ -43,7 +43,6 @@ include_directories(${AliRoot_SOURCE_DIR}/EMCAL/EMCALUtils
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                     ${AliRoot_SOURCE_DIR}/TRD/TRDrec
-                    ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
                    )
 
 # Sources in alphabetical order

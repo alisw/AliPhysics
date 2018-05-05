@@ -27,8 +27,11 @@
 #include "AliTPCcalibDB.h"
 #include "AliHLTTPCFastTransformObject.h"
 #include "AliHLTTPCDataCompressionComponent.h"
+#ifdef HAVE_ALITPCCOMMON
 #include "AliHLTTPCClusterStatComponent.h"
+#endif
 #include "AliHLTTPCGeometry.h"
+#include "TStopwatch.h"
 
 #include <iostream>
 #include <iomanip>
@@ -379,6 +382,7 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
     }
   }
 
+#ifdef HAVE_ALITPCCOMMON
   AliHLTTPCReverseTransformInfoV1* info = fOrigTransform->GetReverseTransformInfo();
 
   AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(*this, 0, 0, info->fDriftTimeFactorA, info->fDriftTimeOffsetA, info);
@@ -422,9 +426,9 @@ Int_t AliHLTTPCFastTransform::SetCurrentTimeStamp( Long_t TimeStamp )
   info->fCorrectY1 = param[0];
   info->fCorrectY2 = param[1];
   info->fCorrectY3 = param[2];
-
   fReverseTransformInfo = *info;
   delete info;
+#endif
   return 0;
 }
 

@@ -21,13 +21,22 @@ if(ROOT_HASOPENGL)
     add_subdirectory(EVE)
 endif()
 
-if(DEFINED ALITPCCOMMON_DIR)
-    set(ALITPCCOMMON_BUILD_TYPE "ALIROOT")
-    add_subdirectory(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking TPCCAGPUTracking)
-    include_directories(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
-                        ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger)
+set(LIBDEPS)
+if((SHUTTLE OR DARPM OR "$ENV{ALIROOT_ONLINE_MODE}") AND NOT "$ENV{HLT_ONLINE_MODE}")
+    message(WARNING "Online build for non-HLT: Disabling TPC GPU Tracking")
 else()
-    message(FATAL_ERROR "cmake variable ALITPCCOMMON_DIR is not defined")
+    if(DEFINED ALITPCCOMMON_DIR)
+        set(ALITPCCOMMON_BUILD_TYPE "ALIROOT")
+        add_subdirectory(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking TPCCAGPUTracking)
+        include_directories(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
+                            ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger
+                            ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/GlobalTracker
+                            ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/DataCompression)
+        add_definitions(-DHAVE_ALITPCCOMMON)
+    else()
+        message(FATAL_ERROR "cmake variable ALITPCCOMMON_DIR is not defined")
+    endif()
+    set(LIBDEPS ${LIBDEPS} AliTPCCAGPUTracking)
 endif()
 
 # Module
@@ -99,7 +108,6 @@ set(SRCS
     AliHLTTPCTrackMCMarkerComponent.cxx
     AliHLTTPCGeometry.cxx
     AliHLTTPCPolynomFit.cxx
-    comp/AliHLTTPCClusterStatComponent.cxx
     comp/AliHLTTPCDataCompressionComponent.cxx
     comp/AliHLTTPCDataCompressionDecoder.cxx
     comp/AliHLTTPCDataCompressionFilterComponent.cxx
@@ -153,7 +161,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTRCU TPCbase TPCrec TPCsim TPCcalib Graf Gpad Recorder AliTPCCAGPUTracking)
+set(LIBDEPS ${LIBDEPS} STEERBase STEER ESD CDB RAWDatabase RAWDatarec ANALYSISalice HLTbase AliHLTUtil AliHLTRCU TPCbase TPCrec TPCsim TPCcalib Graf Gpad Recorder)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # NOTE: Vc should not stay in the rootmap!

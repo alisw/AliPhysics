@@ -21,7 +21,6 @@
 //  @date
 //  @brief  Simple HLT reco QA/monitor
 //
-
 #include <cassert>
 #include "AliHLTGlobalPromptRecoQAComponent.h"
 #include "AliHLTGlobalBarrelTrack.h"

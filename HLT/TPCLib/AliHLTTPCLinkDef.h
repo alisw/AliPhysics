@@ -33,7 +33,6 @@
 #pragma link C++ class AliHLTTPCHistogramHandlerComponent+;
 #pragma link C++ class AliHLTTPCClusterAccessHLTOUT+;
 #pragma link C++ class AliHLTTPCPolynomFit+;
-#pragma link C++ class AliHLTTPCClusterStatComponent+;
 #pragma link C++ class AliHLTTPCDataCompressionComponent+;
 #pragma link C++ class AliHLTTPCDataCompressionMonitorComponent+;
 #pragma link C++ class AliHLTTPCDataCompressionUnpackerComponent+;

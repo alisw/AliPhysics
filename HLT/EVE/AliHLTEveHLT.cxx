@@ -35,8 +35,6 @@
 #include "AliEveTrack.h"
 #include "TEveVSDStructs.h"
 #include "TString.h"
-#include "AliHLTTPCCATrackParam.h"
-#include "AliHLTTPCCATrackConvertor.h"
 #include "AliEveMagField.h"
 #include "TH1.h"
 #include "TH1F.h"
@@ -447,11 +445,6 @@ void AliHLTEveHLT::DrawHistograms(){
 
 AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
   //See header file for documentation
-  
-    
-
-
-
   const double kCLight = 0.000299792458;
   double bz = - kCLight*10.*( cont->GetPropagator()->GetMagField(0,0,0).fZ);
 
@@ -534,9 +527,7 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     double xEnd = at->GetTPCPoints(2)*crot -  at->GetTPCPoints(3)*srot;
   // take parameters constrained to vertex (if they are)
  
-
-    AliHLTTPCCATrackParam t;
-    AliHLTTPCCATrackConvertor::SetExtParam( t, trackParam );
+    AliExternalTrackParam tt = *((AliExternalTrackParam*) at);
     
     Double_t x0 = trackParam.GetX();
     Double_t dx = xEnd - x0;
@@ -550,11 +541,9 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
       double dxx=dx/2; 
       if( TMath::Abs(dxx)>=1. ){
 
-	if( !t.TransportToX(x0+dxx, bz, .999 ) ){
+	if( !tt.PropagateTo(x0+dxx, bz) ){
 	  ok = 0;
 	} else {
-	  AliExternalTrackParam tt;
-	  AliHLTTPCCATrackConvertor::GetExtParam( t, tt, trackParam.GetAlpha() ); 
 	  tt.GetXYZ(vbuf);
 	  tt.GetPxPyPz(pbuf);
 	  TEvePathMark midPoint(TEvePathMark::kReference);
@@ -575,16 +564,11 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
 
     // FIXME this loop does not make sense anymore
     // Matthias 2010-05-02
-    if( !t.TransportToX(x0+dx, bz, .999 ) ){
+    if( !tt.PropagateTo(x0+dx, bz) ){
       ok = 0; 
     }
     
     {
-      if( !ok ){ 
-	AliHLTTPCCATrackConvertor::SetExtParam( t, trackParam );
-      }
-      AliExternalTrackParam tt;
-      AliHLTTPCCATrackConvertor::GetExtParam( t, tt, trackParam.GetAlpha() ); 
       tt.GetXYZ(vbuf);
       tt.GetPxPyPz(pbuf);
       TEvePathMark endPoint(TEvePathMark::kReference);
