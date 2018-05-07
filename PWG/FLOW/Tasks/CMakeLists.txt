@@ -78,7 +78,8 @@ set(SRCS
   AliAnalysisTaskCMEV0PID.cxx
   AliAnalysisTaskStudentsCM.cxx
   AliAnalysisTaskStudentsML.cxx
-  )
+  AliAnalysisTaskFlowModes.cxx
+)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
