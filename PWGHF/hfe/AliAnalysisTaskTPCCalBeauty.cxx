@@ -1,6 +1,6 @@
 //
 //  AliAnalysisTaskTPCCalBeauty.cxx
-//  
+//
 //
 //  Created by Erin Gauger
 //
@@ -33,7 +33,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskTPCCalBeauty)
 
 AliAnalysisTaskTPCCalBeauty::AliAnalysisTaskTPCCalBeauty() :
-    AliAnalysisTaskSE(),
+AliAnalysisTaskSE(),
 fAOD(0),
 fMCHeader(0),
 fMCarray(0),
@@ -188,49 +188,49 @@ fBElecAftEMCeID(0)
 }
 //_____________________________________________________________________
 AliAnalysisTaskTPCCalBeauty::AliAnalysisTaskTPCCalBeauty(const char *name) :
-    AliAnalysisTaskSE(name),
-    fAOD(0),
-    fMCHeader(0),
-    fMCarray(0),
-    fMCparticle(0),
-    fpidResponse(0),
-    fOutputList(0),
-    fMultSelection(0),
-    fCentrality(-1),
-    fCentralityMin(0),
-    fCentralityMax(100),
-    fEMCEG1(kFALSE),
-    fDCalDG1(kFALSE),
-    fFlagClsTypeEMC(kTRUE),
-    fFlagClsTypeDCAL(kTRUE),
-    fUseTender(kTRUE),
-    fFlagULS(kFALSE),
-    fFlagLS(kFALSE),
-    fNevents(0),
-    fVtX(0),
-    fVtY(0),
-    fVtZ(0),
-    fTrkPtB4TC(0),
-    fTrkPt(0),
-    fTrkP(0),
-    fTrkClsPhi(0),
-    fTrkClsEta(0),
-    fClsPhi(0),
-    fClsEta(0),
-    fClsEamDCal(0),
-    fClsEamEMCal(0),
+AliAnalysisTaskSE(name),
+fAOD(0),
+fMCHeader(0),
+fMCarray(0),
+fMCparticle(0),
+fpidResponse(0),
+fOutputList(0),
+fMultSelection(0),
+fCentrality(-1),
+fCentralityMin(0),
+fCentralityMax(100),
+fEMCEG1(kFALSE),
+fDCalDG1(kFALSE),
+fFlagClsTypeEMC(kTRUE),
+fFlagClsTypeDCAL(kTRUE),
+fUseTender(kTRUE),
+fFlagULS(kFALSE),
+fFlagLS(kFALSE),
+fNevents(0),
+fVtX(0),
+fVtY(0),
+fVtZ(0),
+fTrkPtB4TC(0),
+fTrkPt(0),
+fTrkP(0),
+fTrkClsPhi(0),
+fTrkClsEta(0),
+fClsPhi(0),
+fClsEta(0),
+fClsEamDCal(0),
+fClsEamEMCal(0),
 fClsEAll(0),
 fClsEamElecEMC(0),
 fClsEamElecDC(0),
-    fTrkPhi(0),
-    fTrkEta(0),
-    fdEdx(0),
+fTrkPhi(0),
+fTrkEta(0),
+fdEdx(0),
 fnSigma(0),
-    fCentCheck(0),
-    fTrigCheck(0),
-    fEMCTrkMatch(0),
-    fInvmassLS(0),
-    fInvmassULS(0),
+fCentCheck(0),
+fTrigCheck(0),
+fEMCTrkMatch(0),
+fInvmassLS(0),
+fInvmassULS(0),
 fInvmassLSWeightEnhEta(0),
 fInvmassULSWeightEnhEta(0),
 fInvmassLSWeightEnhPi0(0),
@@ -243,8 +243,8 @@ fInvmassLSHijingPhoton(0),
 fInvmassULSHijingPhoton(0),
 fInvmassLSEnhPhoton(0),
 fInvmassULSEnhPhoton(0),
-    fULSdcaBelow(0),
-    fLSdcaBelow(0),
+fULSdcaBelow(0),
+fLSdcaBelow(0),
 fLSWeightEnhEta(0),
 fULSWeightEnhEta(0),
 fLSWeightEnhPi0(0),
@@ -257,15 +257,15 @@ fLSHijingPhoton(0),
 fULSHijingPhoton(0),
 fLSEnhPhoton(0),
 fULSEnhPhoton(0),
-    fPhotonicDCA(0),
-    fInclElecDCA(0),
+fPhotonicDCA(0),
+fInclElecDCA(0),
 fInclElecDCAnoSign(0),
 fInclElecEoP(0),
 fHadronEoP(0),
 fHadronDCA(0),
 fHadronCamDCA(0),
-    fPi0Weight(0),
-    fEtaWeight(0),
+fPi0Weight(0),
+fEtaWeight(0),
 fDWeight(0),
 fEnhEtaDCA(0),
 fEnhEtaWeightedPt(0),
@@ -299,12 +299,12 @@ fPromptD0DCAWeight(0),
 fD0FromDStarDCAWeight(0),
 fPromptD0DCANoWeight(0),
 fD0FromDStarDCANoWeight(0),
-    fNtotMCpart(0),
-    fNpureMC(0),
-    fNembMCpi0(0),
-    fNembMCeta(0),
-    fSprsPi0EtaWeightCal(0),
-    fSprsTemplatesNoWeight(0),
+fNtotMCpart(0),
+fNpureMC(0),
+fNembMCpi0(0),
+fNembMCeta(0),
+fSprsPi0EtaWeightCal(0),
+fSprsTemplatesNoWeight(0),
 fSprsTemplatesWeight(0),
 fDTemplateWeight(0),
 fDTemplateNoWeight(0),
@@ -333,7 +333,7 @@ fBElecAftTPCeID(0),
 fElecAftEMCeID(0),
 fHFElecAftEMCeID(0),
 fBElecAftEMCeID(0)
-    //fElectronSprs(0)
+//fElectronSprs(0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -396,7 +396,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fClsEamDCal = new TH1F("fClsEamDCal","Cluster Energy after track matching to DCal;Cluster E;Counts",250,0.,50);
     fOutputList->Add(fClsEamDCal);
-
+    
     fClsEamEMCal = new TH1F("fClsEamEMCal","Cluster Energy after track matching to EMCal;Cluster E;Counts",250,0.,50.);
     fOutputList->Add(fClsEamEMCal);
     
@@ -454,7 +454,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fOutputList->Add(fInvmassLSHijingEta);
     fInvmassULSHijingEta = new TH1F("fInvmassULSHijingEta", "Inv mass of Hijing Eta ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 100,0,1.0);
     fOutputList->Add(fInvmassULSHijingEta);
-
+    
     fInvmassLSHijingPi0 = new TH1F("fInvmassLSHijingPi0", "Inv mass of Hijing Pi0 LS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 100,0,1.0);
     fOutputList->Add(fInvmassLSHijingPi0);
     fInvmassULSHijingPi0 = new TH1F("fInvmassULSHijingPi0", "Inv mass of Hijing Pi0 ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 100,0,1.0);
@@ -638,7 +638,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fDsMesonPt = new TH1F("fDsMesonPt","Ds Meson Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
     fDsMesonPt->Sumw2();
     fOutputList->Add(fDsMesonPt);
-
+    
     fDStarMesonPt = new TH1F("fDStarMesonPt","D* Meson Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
     fDStarMesonPt->Sumw2();
     fOutputList->Add(fDStarMesonPt);
@@ -659,7 +659,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fCBaryonPt->Sumw2();
     fOutputList->Add(fCBaryonPt);
     
-    fBMesonPt = new TH1F("fBMesonPt","B Meson Spectrum; p_{T}(GeV/c); counts;",100,0,50.);
+    fBMesonPt = new TH1F("fBMesonPt","B Meson Spectrum; p_{T}(GeV/c); counts;",250,0,50.);
     fBMesonPt->Sumw2();
     fOutputList->Add(fBMesonPt);
     
@@ -669,7 +669,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fPromptD0DCAWeight = new TH2F("fPromptD0DCAWeight","Prompt D0 DCA with Weight; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 200,-0.2,0.2);
     fOutputList->Add(fPromptD0DCAWeight);
-
+    
     fD0FromDStarDCAWeight = new TH2F("fD0FromDStarDCAWeight","Prompt D0 DCA with Weight; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 200,-0.2,0.2);
     fOutputList->Add(fD0FromDStarDCAWeight);
     
@@ -710,7 +710,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fBTemplateNoWeight = new TH2F("fBTemplateNoWeight","B Meson DCA template", 100,0,50., 200,-0.2,0.2);
     fOutputList->Add(fBTemplateNoWeight);
-
+    
     fAllElecStack = new TH1F("fAllElecStack","All Elec from Stack; p_{T}(GeV/c); counts;",100,0,50.);
     fAllElecStack->Sumw2();
     fOutputList->Add(fAllElecStack);
@@ -814,18 +814,18 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     
     //Get NParticles from the generators
     if (fMCarray && fMCHeader) {
-     //   cout<<"Test111..................................."<<endl;
+           //cout<<"Test111..................................."<<endl;
         GetNMCPartProduced();
-       // cout<<"Total Number of Particles = "<<fNtotMCpart<< "," << fMCarray->GetEntries() <<endl;
+        // cout<<"Total Number of Particles = "<<fNtotMCpart<< "," << fMCarray->GetEntries() <<endl;
     }
     
     ///////////////////
     //Loop over Stack//
     ///////////////////
-
+    
     Int_t eleinStack=0;
     if (fMCarray) {
-       // cout<<"Test2..................................."<<endl;
+         //cout<<"Test2..................................."<<endl;
         // Make Pi0 and Eta Weight Sparse
         GetPi0EtaWeight(fSprsPi0EtaWeightCal);
         
@@ -838,7 +838,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             
             AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(i);
             if(TMath::Abs(AODMCtrack->Eta()) > 0.7) continue;
-        
+            
             //-------Get PDG
             Int_t TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
             Int_t ilabelM = -99;
@@ -846,7 +846,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             
             
             if(TrackPDG == 11 && AODMCtrack->IsPhysicalPrimary()) {
-               // cout<<"TESTINGGGGGGGGGGGG"<<endl;
+                // cout<<"TESTINGGGGGGGGGGGG"<<endl;
                 fAllElecStack->Fill(AODMCtrack->Pt());
                 eleinStack++;
             }
@@ -866,11 +866,11 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
                 
                 if (pidM==413) fromDStar = kTRUE;
-                if (pidM>500 && pidM<599) {
+                if (TrackPDG>500 && TrackPDG<599) {
                     fBMesonPt->Fill(AODMCtrack->Pt());
                     continue; //reject beauty feed down
                 }
-                if (pidM>5000 && pidM<5999) {
+                if (TrackPDG>5000 && TrackPDG<5999) {
                     fBBaryonPt->Fill(AODMCtrack->Pt());
                     continue; //reject beauty feed down
                 }
@@ -885,23 +885,23 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         continue; //reject beauty feed down
                     }
                 }
-            
+                
                 if(TrackPDG>4000 && TrackPDG<4999) fCBaryonPt->Fill(AODMCtrack->Pt());
                 if(TrackPDG==4122)fLambdaCPt->Fill(AODMCtrack->Pt());
                 if(TrackPDG==4132)fEtaCPt->Fill(AODMCtrack->Pt());
-        
+                
                 if (TrackPDG<400 || TrackPDG>499) {
                     continue; //reject stuff that's not in charm meson range
                 }
                 DMesonPDG->Fill(TrackPDG);
                 fAllDMesonPt->Fill(AODMCtrack->Pt());
-        
+                
                 if(TrackPDG==421) fD0MesonPt->Fill(AODMCtrack->Pt());
                 if(TrackPDG==421 && fromDStar==kTRUE) fD0MesonFromDStarPt->Fill(AODMCtrack->Pt());
                 if(TrackPDG==411) fDPlusMesonPt->Fill(AODMCtrack->Pt());
                 if(TrackPDG==431) fDsMesonPt->Fill(AODMCtrack->Pt());
                 if(TrackPDG==413) fDStarMesonPt->Fill(AODMCtrack->Pt());
-               // cout<<"Total Number of Particles = "<<fNtotMCpart<<endl;
+                // cout<<"Total Number of Particles = "<<fNtotMCpart<<endl;
             }
         }
     }
@@ -964,16 +964,41 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             numberofmotherkink++;
         }
     }
-
+    
     ////////////////
     //Cluster loop//
     ////////////////
     Int_t nclus = -999;
+    Double_t clsphi = -999, clseta=-999;
     nclus = fAOD->GetNumberOfCaloClusters();
+    /*for (Int_t icl = 0; icl < nclus; icl++) {
+        //ESD and AOD CaloCells carries the same information
+        AliVCluster* clus = (AliAODCaloCluster*)fAOD->GetCaloCluster(icl);
+        if(clus && clus->IsEMCAL()){
+            fClsEAll->Fill(clus->E()); //E of all clusters
+        }
+    }*/
     for (Int_t icl = 0; icl < nclus; icl++) {
         //ESD and AOD CaloCells carries the same information
         AliVCluster* clus = (AliAODCaloCluster*)fAOD->GetCaloCluster(icl);
         if(clus && clus->IsEMCAL()){
+            Float_t  emcPos[3]; // cluster pos
+            clus->GetPosition(emcPos);
+            TVector3 clustVec(emcPos[0],emcPos[1],emcPos[2]);
+            clsphi = clustVec.Phi();
+            clseta = clustVec.Eta();
+            if(clsphi < 0) clsphi = clsphi+(2*TMath::Pi()); //TLorentz vector is defined between -pi to pi, so negative phi has to be flipped.
+            if(fFlagClsTypeEMC && !fFlagClsTypeDCAL){ //if we want EMCal
+                if(clsphi > 4.53 && clsphi < 5.708) { //DCAL  : 260 < phi < 327 but it's DCal
+                    continue;//leave out DCal
+                }
+            }
+            if(fFlagClsTypeDCAL && !fFlagClsTypeEMC){//if we want DCal
+                if(clsphi > 1.39 && clsphi < 3.265) {//EMCAL : 80 < phi < 187 but it's EMCal
+                    continue; //leave out EMCal
+                }
+            }
+            
             fClsEAll->Fill(clus->E()); //E of all clusters
         }
     }
@@ -1004,8 +1029,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         {
             ilabel = TMath::Abs(track->GetLabel()); //get MC label of track
             if(ilabel == 0) continue;
-           // ilabel = track->GetLabel();
-           // if(ilabel < -1) continue;
+            // ilabel = track->GetLabel();
+            // if(ilabel < -1) continue;
             //cout <<"ilabel = "<<ilabel<<"************************"<<endl;
             fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
             pdg = TMath::Abs(fMCparticle->GetPdgCode()); //get pid of track
@@ -1016,12 +1041,12 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(pdg==11 && fMCparticle->IsPhysicalPrimary()){
                 eleinTrkLoop++;
                 kTruElec = kTRUE;
-              //  cout<<"TESTING12345674"<<endl;
+                //  cout<<"TESTING12345674"<<endl;
                 ilabelM = fMCparticle->GetMother();
                 if(ilabelM>0){
                     AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(ilabelM); //get mom particle
                     pidM = TMath::Abs(partM->GetPdgCode()); //ask for the Mom's pid
-                //    cout << "Test pidM = "<<pidM<<"!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+                    //    cout << "Test pidM = "<<pidM<<"!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
                     if(pidM>400 && pidM<600) kTruHFElec = kTRUE;
                     if(pidM>500 && pidM<600) kTruBElec = kTRUE;
                 }
@@ -1191,7 +1216,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     else{
                         fSprsTemplatesWeight->Fill(tempValue);
                     }
-        
+                    
                     //if electron from D0
                     if(fpidSort==12){
                         ilabelM = fMCparticle->GetMother(); //get MC label for e Mom
@@ -1300,10 +1325,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                             ComboDenomNoWeight->Fill(track->Pt());
                         }
                     }
-
+                    
                     
                     InvMassCheckMC(i, track, d0z0, MagSign, kHijing, kEmbEta, kEmbPi0, kFlagReco,fWeight, fpidSort);
-                
+                    
                     //cout<<"TESTING2"<<endl;
                     if(kFlagReco){
                         
@@ -1327,7 +1352,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                                 ComboNumWeight->Fill(track->Pt(),fWeight);
                                 ComboNumNoWeight->Fill(track->Pt());
                             }
-                        
+                            
                         }
                         //if Eta--------------------------------
                         if(fpidSort==4){
@@ -1419,61 +1444,60 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             }
             //Make incl electron and photonic electron plots
             /*if(nsigma>-1 && nsigma<3) {
-                if(M20>0.01 && M20<0.35) {
-                    fInclElecEoP->Fill(track->Pt(),EovP);
-                    if(EovP>0.9 && EovP<1.2){
-                        InvMassCheck(i, track, d0z0, MagSign);
-                        fInclElecDCA->Fill(track->Pt(),DCA);
-                    }
-                }
-            }*/
+             if(M20>0.01 && M20<0.35) {
+             fInclElecEoP->Fill(track->Pt(),EovP);
+             if(EovP>0.9 && EovP<1.2){
+             InvMassCheck(i, track, d0z0, MagSign);
+             fInclElecDCA->Fill(track->Pt(),DCA);
+             }
+             }
+             }*/
             
             ////////////////////////////////////////////
             // Label Electrons - Mother and Generator //
             ////////////////////////////////////////////
             /*if(fMCarray){
-                
-                Int_t fpidSort = 3;
-                Int_t pdg = -999;
-                Int_t pidM = -99;
-                Int_t pid_ele = -99;
-                Int_t ilabelM = -1;
-                Int_t ilabel = TMath::Abs(track->GetLabel()); //get MC label of track
-                if(ilabel>0 && fMCarray)
-                {
-                    fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
-                    pdg = fMCparticle->GetPdgCode(); //get pid of track
-                    
-                    if(TMath::Abs(pdg)==11)pid_ele = 1.0; //if electron...
-                    if(pid_ele==1.0){
-                        FindMother(fMCparticle, ilabelM, pidM, fpidSort);//get its mom
-                        if(fpidSort==3) fDalitzDCA->Fill(track->Pt(),DCA);
-                        if(fpidSort==4) fPhotonicDCA->Fill(track->Pt(),DCA);
-                    }
-                    
-                }
-            }
-
-            
-            /////////////////////
-            // Electron sparse //
-            /////////////////////
-            
-            
-            Double_t fvalueElectron[5] = {-999,-999,-999,-999,-999};
-            fvalueElectron[0] = track->Pt();
-            fvalueElectron[1] = nsigma;
-            fvalueElectron[2] = EovP;
-            fvalueElectron[3] = M20;
-            fvalueElectron[4] = DCA;
-            
-            fvalueElectron[5] = -999;
-            if (fClsTypeEMC){
-                fvalueElectron[5] = 0; //0=EMCal, 1=DCal
-            }
-            if (fClsTypeDCAL){
-                fvalueElectron[5] = 1; //0=EMCal, 1=DCal
-            }*/
+             
+             Int_t fpidSort = 3;
+             Int_t pdg = -999;
+             Int_t pidM = -99;
+             Int_t pid_ele = -99;
+             Int_t ilabelM = -1;
+             Int_t ilabel = TMath::Abs(track->GetLabel()); //get MC label of track
+             if(ilabel>0 && fMCarray)
+             {
+             fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
+             pdg = fMCparticle->GetPdgCode(); //get pid of track
+             
+             if(TMath::Abs(pdg)==11)pid_ele = 1.0; //if electron...
+             if(pid_ele==1.0){
+             FindMother(fMCparticle, ilabelM, pidM, fpidSort);//get its mom
+             if(fpidSort==3) fDalitzDCA->Fill(track->Pt(),DCA);
+             if(fpidSort==4) fPhotonicDCA->Fill(track->Pt(),DCA);
+             }
+             
+             }
+             }
+             
+             /////////////////////
+             // Electron sparse //
+             /////////////////////
+             
+             
+             Double_t fvalueElectron[5] = {-999,-999,-999,-999,-999};
+             fvalueElectron[0] = track->Pt();
+             fvalueElectron[1] = nsigma;
+             fvalueElectron[2] = EovP;
+             fvalueElectron[3] = M20;
+             fvalueElectron[4] = DCA;
+             
+             fvalueElectron[5] = -999;
+             if (fClsTypeEMC){
+             fvalueElectron[5] = 0; //0=EMCal, 1=DCal
+             }
+             if (fClsTypeDCAL){
+             fvalueElectron[5] = 1; //0=EMCal, 1=DCal
+             }*/
             //fElectronSprs->Fill(fvalueElectron);
             
         }
@@ -1499,7 +1523,7 @@ Double_t AliAnalysisTaskTPCCalBeauty::CheckCentrality(AliAODEvent* fAOD, Bool_t 
     //AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
     //if(!header) AliFatal("Not a standard AOD");
     //fMultiplicity = header->GetRefMultiplicity();
-
+    
     if ((fCentrality <= fCentralityMin) || (fCentrality > fCentralityMax)){
         //fCentralityNoPass->Fill(fCentrality);
         //fMultiplicityNoPass->Fill(fMultiplicity);
@@ -1528,14 +1552,14 @@ Bool_t AliAnalysisTaskTPCCalBeauty::GetNMCPartProduced()
     TString embeta("eta");
     
     if(!lh){
-     //   cout<<"Testiessssssss2"<<endl;
+        //   cout<<"Testiessssssss2"<<endl;
         AliError("no MC header");
         return (0);
     }
     //loop through headers
     for(int igene=0; igene<lh->GetEntries(); igene++)
     {
-     //   cout<<"Testiessssssss"<<endl;
+        //   cout<<"Testiessssssss"<<endl;
         AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
         if(!gh) continue;
         
@@ -1562,7 +1586,7 @@ void AliAnalysisTaskTPCCalBeauty::GetPi0EtaWeight(THnSparse *SparseWeight)
 {
     //Get pi0 and eta information for weight calculation
     Double_t fvalue[4] = {-999,-999,-999,-999};
-   // cout<<"TestB..................................."<<endl;
+    // cout<<"TestB..................................."<<endl;
     for(int imc=0; imc < fNtotMCpart; imc++)
     {
         AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(imc);
@@ -1599,15 +1623,15 @@ void AliAnalysisTaskTPCCalBeauty::GetPi0EtaWeight(THnSparse *SparseWeight)
 void AliAnalysisTaskTPCCalBeauty::GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff)
 {
     // Calculate phi and eta difference between a track and a cluster. The position of the track is obtained on the EMCAL surface
-
+    
     phidiff = 999;
     etadiff = 999;
     
     if (!t||!v) return;
-
+    
     Double_t veta = t->GetTrackEtaOnEMCal();
     Double_t vphi = t->GetTrackPhiOnEMCal();
-
+    
     Float_t pos[3] = {0};
     v->GetPosition(pos);
     TVector3 cpos(pos);
@@ -1942,92 +1966,92 @@ void AliAnalysisTaskTPCCalBeauty::InvMassCheckMC(int itrack, AliVTrack *track, D
         if (fFlagULS && mass<0.1) {
             kFlagReco = kTRUE;
             /*fULSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
-            if (kHijing) {
-                if (fpidSort==5){
-                    fULSHijingPhoton->Fill(track->Pt()); //photon mama
-                    ComboNumWeight->Fill(track->Pt());
-                    ComboNumNoWeight->Fill(track->Pt());
-                }
-                if (fpidSort==4){
-                    fULSHijingEta->Fill(track->Pt()); //eta mama
-                    ComboNumWeight->Fill(track->Pt());
-                    ComboNumNoWeight->Fill(track->Pt());
-                }
-                if (fpidSort==3) {
-                    fULSHijingPi0->Fill(track->Pt()); //pi0 mama
-                    ComboNumWeight->Fill(track->Pt());
-                    ComboNumNoWeight->Fill(track->Pt());
-                }
-            }
-            if (kEmbEta) {
-                if (fpidSort==4) {
-                    fULSWeightEnhEta->Fill(track->Pt(),fWeight); //eta mama
-                    ComboNumWeight->Fill(track->Pt(),fWeight);
-                    ComboNumNoWeight->Fill(track->Pt());
-                }
-                if (fpidSort==5) {
-                    fULSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
-                    ComboNumWeight->Fill(track->Pt(),fWeight);
-                    ComboNumNoWeight->Fill(track->Pt());
-                }
-            }
-            if (kEmbPi0) {
-                if (fpidSort==3) {
-                    fULSWeightEnhPi0->Fill(track->Pt(),fWeight); //pi0 mama
-                    ComboNumWeight->Fill(track->Pt(),fWeight);
-                    ComboNumNoWeight->Fill(track->Pt());
-                }
-                if (fpidSort==5) {
-                    fULSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
-                    ComboNumWeight->Fill(track->Pt(),fWeight);
-                    ComboNumNoWeight->Fill(track->Pt());
-                }
-            }*/
+             if (kHijing) {
+             if (fpidSort==5){
+             fULSHijingPhoton->Fill(track->Pt()); //photon mama
+             ComboNumWeight->Fill(track->Pt());
+             ComboNumNoWeight->Fill(track->Pt());
+             }
+             if (fpidSort==4){
+             fULSHijingEta->Fill(track->Pt()); //eta mama
+             ComboNumWeight->Fill(track->Pt());
+             ComboNumNoWeight->Fill(track->Pt());
+             }
+             if (fpidSort==3) {
+             fULSHijingPi0->Fill(track->Pt()); //pi0 mama
+             ComboNumWeight->Fill(track->Pt());
+             ComboNumNoWeight->Fill(track->Pt());
+             }
+             }
+             if (kEmbEta) {
+             if (fpidSort==4) {
+             fULSWeightEnhEta->Fill(track->Pt(),fWeight); //eta mama
+             ComboNumWeight->Fill(track->Pt(),fWeight);
+             ComboNumNoWeight->Fill(track->Pt());
+             }
+             if (fpidSort==5) {
+             fULSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
+             ComboNumWeight->Fill(track->Pt(),fWeight);
+             ComboNumNoWeight->Fill(track->Pt());
+             }
+             }
+             if (kEmbPi0) {
+             if (fpidSort==3) {
+             fULSWeightEnhPi0->Fill(track->Pt(),fWeight); //pi0 mama
+             ComboNumWeight->Fill(track->Pt(),fWeight);
+             ComboNumNoWeight->Fill(track->Pt());
+             }
+             if (fpidSort==5) {
+             fULSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
+             ComboNumWeight->Fill(track->Pt(),fWeight);
+             ComboNumNoWeight->Fill(track->Pt());
+             }
+             }*/
             
         }else if(fFlagLS && mass<0.1){
             kFlagReco = kFALSE;
             /*fLSdcaBelow->Fill(track->Pt(),d0z0[0]*track->Charge()*MagSign);
-            if (kHijing) {
-                if (fpidSort==5) {
-                    fLSHijingPhoton->Fill(track->Pt()); //photon mama
-                    //ComboNumWeight->Fill(track->Pt());
-                    //ComboNumNoWeight->Fill(track->Pt());
-                }
-                if (fpidSort==4) {
-                    fLSHijingEta->Fill(track->Pt()); //eta mama
-                    //ComboNumWeight->Fill(track->Pt());
-                    //ComboNumNoWeight->Fill(track->Pt());
-                }
-                if (fpidSort==3) {
-                    fLSHijingPi0->Fill(track->Pt()); //pi0 mama
-                    //ComboNumWeight->Fill(track->Pt());
-                    //ComboNumNoWeight->Fill(track->Pt());
-                }
-            }
-            if (kEmbEta) {
-                if (fpidSort==4) {
-                    fLSWeightEnhEta->Fill(track->Pt(),fWeight); //eta mama
-                    //ComboNumWeight->Fill(track->Pt(),fWeight);
-                    //ComboNumNoWeight->Fill(track->Pt());
-                }
-                if (fpidSort==5) {
-                    fLSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
-                    //ComboNumWeight->Fill(track->Pt(),fWeight);
-                    //ComboNumNoWeight->Fill(track->Pt());
-                }
-            }
-            if (kEmbPi0) {
-                if (fpidSort==3) {
-                    fLSWeightEnhPi0->Fill(track->Pt(),fWeight); //pi0 mama
-                    //ComboNumWeight->Fill(track->Pt(),fWeight);
-                    //ComboNumNoWeight->Fill(track->Pt());
-                }
-                if (fpidSort==5) {
-                    fLSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
-                    //ComboNumWeight->Fill(track->Pt(),fWeight);
-                    //ComboNumNoWeight->Fill(track->Pt());
-                }
-            }*/
+             if (kHijing) {
+             if (fpidSort==5) {
+             fLSHijingPhoton->Fill(track->Pt()); //photon mama
+             //ComboNumWeight->Fill(track->Pt());
+             //ComboNumNoWeight->Fill(track->Pt());
+             }
+             if (fpidSort==4) {
+             fLSHijingEta->Fill(track->Pt()); //eta mama
+             //ComboNumWeight->Fill(track->Pt());
+             //ComboNumNoWeight->Fill(track->Pt());
+             }
+             if (fpidSort==3) {
+             fLSHijingPi0->Fill(track->Pt()); //pi0 mama
+             //ComboNumWeight->Fill(track->Pt());
+             //ComboNumNoWeight->Fill(track->Pt());
+             }
+             }
+             if (kEmbEta) {
+             if (fpidSort==4) {
+             fLSWeightEnhEta->Fill(track->Pt(),fWeight); //eta mama
+             //ComboNumWeight->Fill(track->Pt(),fWeight);
+             //ComboNumNoWeight->Fill(track->Pt());
+             }
+             if (fpidSort==5) {
+             fLSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
+             //ComboNumWeight->Fill(track->Pt(),fWeight);
+             //ComboNumNoWeight->Fill(track->Pt());
+             }
+             }
+             if (kEmbPi0) {
+             if (fpidSort==3) {
+             fLSWeightEnhPi0->Fill(track->Pt(),fWeight); //pi0 mama
+             //ComboNumWeight->Fill(track->Pt(),fWeight);
+             //ComboNumNoWeight->Fill(track->Pt());
+             }
+             if (fpidSort==5) {
+             fLSEnhPhoton->Fill(track->Pt(),fWeight); //photon mama
+             //ComboNumWeight->Fill(track->Pt(),fWeight);
+             //ComboNumNoWeight->Fill(track->Pt());
+             }
+             }*/
         }
         
     }
@@ -2039,4 +2063,3 @@ void AliAnalysisTaskTPCCalBeauty::Terminate(Option_t *)
 {
     // terminate
 }
-//_____________________________________________________________________
