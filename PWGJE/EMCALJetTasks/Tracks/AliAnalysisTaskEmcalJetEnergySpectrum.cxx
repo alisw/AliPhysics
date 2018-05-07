@@ -254,7 +254,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
     tracks = task->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
     tracks->SetMinPt(0.15);
   }
-  if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kChargedJet){
+  if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kFullJet){
     clusters = task->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
     clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
     clusters->SetClusHadCorrEnergyCut(0.3);
