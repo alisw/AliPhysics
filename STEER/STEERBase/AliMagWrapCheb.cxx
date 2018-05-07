@@ -1207,7 +1207,11 @@ void AliMagWrapCheb::SaveData(const char* outfile) const
   // writes coefficients data to output text file
   TString strf = outfile;
   gSystem->ExpandPathName(strf);
-  FILE* stream = fopen(strf,"w+");
+  FILE* stream = fopen(strf.Data(),"w+");
+  if (!stream) {
+    AliErrorF("Failed to open output file %s",strf.Data());
+    return;
+  }
   //
   // Sol part    ---------------------------------------------------------
   fprintf(stream,"# Set of Chebyshev parameterizations for ALICE magnetic field\nSTART %s\n",GetName());
