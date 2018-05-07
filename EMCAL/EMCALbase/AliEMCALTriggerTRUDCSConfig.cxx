@@ -57,7 +57,7 @@ std::ostream &operator<<(std::ostream &stream, const AliEMCALTriggerTRUDCSConfig
 				 << conf.fL0COSM << ", GTHRL0: " << conf.fGTHRL0 << ", RLBKSTU: " << conf.fRLBKSTU << ", FW: " << std::hex
 				 << conf.fFw << std::dec << std::endl;
 	for(int ireg = 0; ireg < 6; ireg++){
-		stream << "Reg" << ireg << ": " << std::bitset<sizeof(UInt_t) *8>(conf.fMaskReg[ireg]) << std::endl;
+		stream << "Reg" << ireg << ": " << std::bitset<sizeof(UInt_t) *8>(conf.fMaskReg[ireg]) << " (" << conf.fMaskReg[ireg] << ")" << std::endl;
 	}
 	return stream;
 }
