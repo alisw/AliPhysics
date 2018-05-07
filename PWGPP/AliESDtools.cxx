@@ -25,10 +25,14 @@
   .L $AliPhysics_SRC/PWGPP/AliESDtools.cxx+
   AliESDtools tools;
   tools.Init(tree);
-   tree->GetEntry(3);
-  tree->Scan("Tracks@.GetEntries():SPDVertex.fNContributors:Entry$","SPDVertex.fNContributors>100&&Tracks@.GetEntries()/PrimaryVertex.fNContributors>10")
-tools->CacheTPCEventInformation()
+   //tree->GetEntry(3);
+  //tree->Scan("Tracks@.GetEntries():SPDVertex.fNContributors:Entry$","SPDVertex.fNContributors>100&&Tracks@.GetEntries()/PrimaryVertex.fNContributors>10")
+  tools->CacheTPCEventInformation()
 
+  /// trigger exceptional pileup
+  tree->Draw(">>entryList","SPDVertex.fNContributors>100&&Tracks@.GetEntries()/PrimaryVertex.fNContributors>10","entrylist");
+   tree->SetEntryList(entryList)
+   tree->Scan("AliESDtools::GetTrackMatchEff(0,0):AliESDtools::GetTrackCounters(0,0):AliESDtools::GetTrackCounters(4,0):AliESDtools::GetMeanHisTPCVertexA():AliESDtools::GetMeanHisTPCVertexC():Entry$","AliESDtools::SCalculateEventVariables(Entry$)")
 */
 
 
@@ -55,7 +59,7 @@ tools->CacheTPCEventInformation()
 #include "AliESDtools.h"
 
 ClassImp(AliESDtools)
-AliESDtools fgktools;
+AliESDtools*  AliESDtools::fgInstance;
 
 AliESDtools::AliESDtools():
   fVerbose(0),
@@ -80,7 +84,7 @@ AliESDtools::AliESDtools():
   fCacheTrackMatchEff(nullptr),         // matchEff counter
   fLumiGraph(nullptr)                  // graph for the interaction rate info for a run
 {
-
+  fgInstance=this;
 }
 
 void AliESDtools::Init(TTree *tree) {
@@ -113,8 +117,6 @@ void AliESDtools::Init(TTree *tree) {
     fHistPhiTPCcounterCITS = new TH1F("hPhiTPCcounterCITS", "control histogram to count tracks on the C side in phi ", 36, 0., 18.);
     fHistPhiITScounterA = new TH1F("hPhiITScounterA", "control histogram to count tracks on the A side in phi ", 36, 0., 18.);
     fHistPhiITScounterC = new TH1F("hPhiITScounterC", "control histogram to count tracks on the C side in phi ", 36, 0., 18.);
-
-
   }
 }
 
@@ -141,6 +143,7 @@ Int_t AliESDtools::CacheTPCEventInformation(){
     if (pTrack->GetTPCClusterInfo(3,1)<kNCRCut) continue;
     pTrack->GetImpactParameters(dcaxy,dcaz);
     if (TMath::Abs(dcaxy)>kDCACut) continue;
+    pTrack->SetESDEvent(fEvent);
     selected++;
     if ((pTrack->GetNumberOfTRDClusters()/20.+pTrack->GetNumberOfITSClusters())>knTrackletCut){
       tools.fHisTPCVertex->Fill(pTrack->GetTPCInnerParam()->GetZ());
@@ -152,12 +155,14 @@ Int_t AliESDtools::CacheTPCEventInformation(){
 
     }
   }
+  /*
   TPCVertexFit(tools.fHisTPCVertex);
   TPCVertexFit(tools.fHisTPCVertexA);
   TPCVertexFit(tools.fHisTPCVertexC);
   TPCVertexFit(tools.fHisTPCVertexACut);
   TPCVertexFit(tools.fHisTPCVertexCCut);
-  if (fVerbose&0x10) printf("%d\n",selected);
+   */
+  if (fVerbose&0x10) printf("%d\n",selected);//acheTPCEventInformation()
   //
   return selected;
 }
@@ -182,17 +187,17 @@ void AliESDtools::TPCVertexFit(TH1F *hisVertex){
 
 
 
-//________________________________________________________________________
-void AliESDtools::CalculateEventVariables()
-{
-
+//
+//
+Int_t AliESDtools::CalculateEventVariables() {
   //AliVEvent *event=InputEvent();
+  CacheTPCEventInformation();
   fCacheTrackCounters->Zero();   // track counter
   fCacheTrackCounters->Zero();   // track counter
-  fCacheTrackdEdxRatio->Zero();; // dedx info counter
+  fCacheTrackdEdxRatio->Zero(); // dedx info counter
   fCacheTrackNcl->Zero();;       // ncl counter
   fCacheTrackChi2->Zero();;      // chi2 counter
-  fCacheTrackMatchEff->Zero();;  // matchEff counter
+  fCacheTrackMatchEff->Zero();  // matchEff counter
   //
   //
   if (fHistPhiTPCcounterA) fHistPhiTPCcounterA->Reset();
@@ -378,5 +383,243 @@ void AliESDtools::CalculateEventVariables()
     (*fCacheTrackChi2)[5]/=(*fCacheTrackCounters)[2];
   } //ITS if TRD
   (*fCacheTrackCounters)[9]=fEvent->GetNumberOfTracks();  // original number of ESDtracks
+  return 1;
+}
+
+
+///
+/// \param trackMatch    -  input track parameter
+/// \param indexSkip     - index to skip  index of track itself
+/// \param event         - posinter to the ESD event
+/// \param trackType     0 - find closets ITS standalone
+///                      1 - find closest track with TPC
+///                      2 - closest track with ITS and TPC
+/// \param paramType
+/// \param paramNearest    - parameter for closest track according trackType
+/// \return               - index of the closets track (chi2 distance)
+Int_t   AliESDtools::GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType, AliExternalTrackParam & paramNearest){
+  //
+  // Find track with closest chi2 distance  (assume all track ae propagated to the DCA)
+
+  //   paramType = 0 - global track
+  //               1 - track at inner wall of TPC
+  if (trackMatch==NULL){
+    ::Error("AliAnalysisTaskFilteredTree::GetNearestTrack","invalid track pointer");
+    return -1;
+  }
+  Int_t ntracks=event->GetNumberOfTracks();
+  const Double_t ktglCut=0.1;
+  const Double_t kqptCut=0.4;
+  const Double_t kAlphaCut=0.2;
+  //
+  Double_t chi2Min=100000;
+  Int_t indexMin=-1;
+  for (Int_t itrack=0; itrack<ntracks; itrack++){
+    if (itrack==indexSkip) continue;
+    AliESDtrack *ptrack=event->GetTrack(itrack);
+    if (ptrack==NULL) continue;
+    if (trackType==0 && (ptrack->IsOn(0x1)==kFALSE || ptrack->IsOn(0x10)==kTRUE))  continue;     // looks for track without TPC information
+    if (trackType==1 && (ptrack->IsOn(0x10)==kFALSE))   continue;                                // looks for tracks with   TPC information
+    if (trackType==2 && (ptrack->IsOn(0x1)==kFALSE || ptrack->IsOn(0x10)==kFALSE)) continue;      // looks for tracks with   TPC+ITS information
+
+    if (ptrack->GetKinkIndex(0)<0) continue;              // skip kink daughters
+    const AliExternalTrackParam * track=0;                //
+    if (paramType==0) track=ptrack;                       // Global track
+    if (paramType==1) track=ptrack->GetInnerParam();      // TPC only track at inner wall of TPC
+    if (track==NULL) {
+      continue;
+    }
+    // first rough cuts
+    // fP3 cut
+    if (TMath::Abs((track->GetTgl()-trackMatch->GetTgl()))>ktglCut) continue;
+    // fP4 cut
+    if (TMath::Abs((track->GetSigned1Pt()-trackMatch->GetSigned1Pt()))>kqptCut) continue;
+    // fAlpha cut
+    //Double_t alphaDist=TMath::Abs((track->GetAlpha()-trackMatch->GetAlpha()));
+    Double_t alphaDist=TMath::Abs(TMath::ATan2(track->Py(),track->Px())-TMath::ATan2(trackMatch->Py(),trackMatch->Py()));
+    if (alphaDist>TMath::Pi()) alphaDist-=TMath::TwoPi();
+    if (alphaDist>kAlphaCut) continue;
+    // calculate and extract track with smallest chi2 distance
+    AliExternalTrackParam param(*track);
+    if (param.Rotate(trackMatch->GetAlpha())==kFALSE) continue;
+    if (param.PropagateTo(trackMatch->GetX(),trackMatch->GetBz())==kFALSE) continue;
+    Double_t chi2=trackMatch->GetPredictedChi2(&param);
+    if (chi2<chi2Min){
+      indexMin=itrack;
+      chi2Min=chi2;
+      paramNearest=param;
+    }
+  }
+  return indexMin;
 
 }
+
+
+///
+/// \param esdEvent   -
+/// \param esdFriend  - in case ESD friend not avaliable - ITS tracks from vertex to be used
+/// \param pcstream   - debug output
+void AliESDtools::ProcessITSTPCmatchOut(AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, TTreeStream *pcstream){
+  //
+  // Process ITS standalone tracks find match with closest TPC(or combined tracks) tracks
+  // marian.ivanov@cern.ch
+  // 0.) Init variables
+  // 1.) GetTrack parameters at TPC inner wall
+  // 2.) Match closest TPC  track  (STANDALONE/global) - chi2 match criteria
+  //
+  // Logic to be used in reco:
+  // 1.) Find matching ITSalone->TPCalone
+  // 2.) if (!TPCalone.FindClose(TPCother))  TPCalone.Addopt(ITSalone)
+  // 3.) ff ((ITSalone.FindClose(Global)==0) CreateGlobaltrack
+  const Double_t radiusMatch=84.;    // redius to propagate
+  //
+  const Double_t dFastPhiCut=0.2;        // 6 sigma (200 MeV) fast angular cut
+  const Double_t dFastThetaCut=0.12;     // 6 sigma (200 MeV) fast angular cut
+  const Double_t dFastPosPhiCut=0.06;    // 6 sigma (200 MeV) fast angular cut
+  const Double_t dFastZCut=6;            // 6 sigma (200 MeV) fast  z difference cut
+  const Double_t dFastPtCut=2.;          // 6 sigma (200 MeV) fast 1/pt cut
+  const Double_t chi2Cut=100;            // chi2 matching cut
+  //
+  if (!esdFriend) return;  // not ITS standalone track
+  if (esdFriend->TestSkipBit()) return; // friends tracks  not stored
+  Int_t ntracks=esdEvent->GetNumberOfTracks();
+  Float_t bz = esdEvent->GetMagneticField();
+  //
+  // 0.) Get parameters in reference radius TPC Inner wall
+  //
+  //
+  TMatrixD vecPosR0(ntracks,6);   // possition and  momentum estimate at reference radius
+  TMatrixD vecMomR0(ntracks,6);   //
+  TMatrixD vecPosR1(ntracks,6);   // possition and  momentum estimate at reference radius TPC track
+  TMatrixD vecMomR1(ntracks,6);   //
+  Double_t xyz[3], pxyz[3];      //
+  for (Int_t iTrack=0; iTrack<ntracks; iTrack++){
+    AliESDtrack *track = esdEvent->GetTrack(iTrack);
+    if(!track) continue;
+    if (track->GetInnerParam()){
+      const AliExternalTrackParam *trackTPC=track->GetInnerParam();
+      trackTPC->GetXYZAt(radiusMatch,bz,xyz);
+      trackTPC->GetPxPyPzAt(radiusMatch,bz,pxyz);
+      for (Int_t i=0; i<3; i++){
+        vecPosR1(iTrack,i)=xyz[i];
+        vecMomR1(iTrack,i)=pxyz[i];
+      }
+      vecPosR1(iTrack,3)= TMath::ATan2(xyz[1],xyz[0]);    // phi pos angle
+      vecMomR1(iTrack,3)= TMath::ATan2(pxyz[1],pxyz[0]);  // phi mom angle
+      vecMomR1(iTrack,4)= trackTPC->GetSigned1Pt();;
+      vecMomR1(iTrack,5)= trackTPC->GetTgl();;
+    }
+    AliESDfriendTrack* friendTrack=esdFriend->GetTrack(iTrack);
+    if(!friendTrack) continue;
+    if (friendTrack->GetITSOut()){
+      const AliExternalTrackParam *trackITS=friendTrack->GetITSOut();
+      trackITS->GetXYZAt(radiusMatch,bz,xyz);
+      trackITS->GetPxPyPzAt(radiusMatch,bz,pxyz);
+      for (Int_t i=0; i<3; i++){
+        vecPosR0(iTrack,i)=xyz[i];
+        vecMomR0(iTrack,i)=pxyz[i];
+      }
+      vecPosR0(iTrack,3)= TMath::ATan2(xyz[1],xyz[0]);
+      vecMomR0(iTrack,3)= TMath::ATan2(pxyz[1],pxyz[0]);
+      vecMomR0(iTrack,4)= trackITS->GetSigned1Pt();;
+      vecMomR0(iTrack,5)= trackITS->GetTgl();;
+    }
+  }
+  //
+  // 1.) Find closest matching tracks, between the ITS standalone track
+  // and  the all other tracks
+  //  a.) caltegory  - All
+  //  b.) category   - without ITS
+  //
+  //
+  Int_t ntracksPropagated=0;
+  AliExternalTrackParam extTrackDummy;
+  AliESDtrack           esdTrackDummy;
+  AliExternalTrackParam itsAtTPC;
+  AliExternalTrackParam itsAtITSTPC;
+  for (Int_t iTrack0=0; iTrack0<ntracks; iTrack0++){
+    AliESDtrack *track0 = esdEvent->GetTrack(iTrack0);
+    if(!track0) continue;
+    if (track0->IsOn(AliVTrack::kTPCin)) continue;
+    AliESDfriendTrack* friendTrack0=esdFriend->GetTrack(iTrack0);
+    if (!friendTrack0) continue;
+    //if (!track0->IsOn(AliVTrack::kITSpureSA)) continue;
+    //if (!friendTrack0->GetITSOut()) continue;  // is there flag for ITS standalone?
+    ntracksPropagated++;
+    //
+    // 2.) find clostest TPCtrack
+    //     a.) all tracks
+    Double_t minChi2All=10000000;
+    Double_t minChi2TPC=10000000;
+    Double_t minChi2TPCITS=10000000;
+    Int_t indexAll=-1;
+    Int_t indexTPC=-1;
+    Int_t indexTPCITS=-1;
+    Int_t ncandidates0=0; // n candidates - rough cut
+    Int_t ncandidates1=0; // n candidates - rough + chi2 cut
+    itsAtTPC=*(friendTrack0->GetITSOut());
+    itsAtITSTPC=*(friendTrack0->GetITSOut());
+    for (Int_t iTrack1=0; iTrack1<ntracks; iTrack1++){
+      AliESDtrack *track1 = esdEvent->GetTrack(iTrack1);
+      if(!track1) continue;
+      if (!track1->IsOn(AliVTrack::kTPCin)) continue;
+      // fast checks
+      //
+      if (TMath::Abs(vecPosR1(iTrack1,2)-vecPosR0(iTrack0,2))>dFastZCut) continue;
+      if (TMath::Abs(vecPosR1(iTrack1,3)-vecPosR0(iTrack0,3))>dFastPosPhiCut) continue;
+      if (TMath::Abs(vecMomR1(iTrack1,3)-vecMomR0(iTrack0,3))>dFastPhiCut) continue;
+      if (TMath::Abs(vecMomR1(iTrack1,5)-vecMomR0(iTrack0,5))>dFastThetaCut) continue;
+      if (TMath::Abs(vecMomR1(iTrack1,4)-vecMomR0(iTrack0,4))>dFastPtCut) continue;
+      ncandidates0++;
+      //
+      const AliExternalTrackParam * param1= track1->GetInnerParam();
+      if (!friendTrack0->GetITSOut()) continue;
+      AliExternalTrackParam outerITS = *(friendTrack0->GetITSOut());
+      if (!outerITS.Rotate(param1->GetAlpha())) continue;
+      if (!outerITS.PropagateTo(param1->GetX(),bz)) continue; // assume track close to the TPC inner wall
+      Double_t chi2 =  outerITS.GetPredictedChi2(param1);
+      if (chi2>chi2Cut) continue;
+      ncandidates1++;
+      if (chi2<minChi2All){
+        minChi2All=chi2;
+        indexAll=iTrack1;
+      }
+      if (chi2<minChi2TPC && track1->IsOn(AliVTrack::kITSin)==0){
+        minChi2TPC=chi2;
+        indexTPC=iTrack1;
+        itsAtTPC=outerITS;
+      }
+      if (chi2<minChi2TPCITS && track1->IsOn(AliVTrack::kITSin)){
+        minChi2TPCITS=chi2;
+        indexTPCITS=iTrack1;
+        itsAtITSTPC=outerITS;
+      }
+    }
+    //
+    AliESDtrack * trackAll= (indexAll>=0)? esdEvent->GetTrack(indexAll):&esdTrackDummy;
+    AliESDtrack * trackTPC= (indexTPC>=0)? esdEvent->GetTrack(indexTPC):&esdTrackDummy;
+    AliESDtrack * trackTPCITS= (indexTPCITS>=0)? esdEvent->GetTrack(indexTPCITS):&esdTrackDummy;
+    (*pcstream)<<"itsTPC"<<
+                       "indexAll="<<indexAll<<          // index of closest track (chi2)
+                       "indexTPC="<<indexTPC<<          // index of closest TPCalone tracks
+                       "indexTPCITS="<<indexTPCITS<<    // index of closest cobined tracks
+                       "ncandidates0="<<ncandidates0<<  // number of candidates
+                       "ncandidates1="<<ncandidates1<<
+                       //
+                       "chi2All="<<minChi2All<<         // chi2 of closest  tracks
+                       "chi2TPC="<<minChi2TPC<<
+                       "chi2TPCITS="<<minChi2TPCITS<<
+                       //
+                       "track0.="<<track0<<             // ITS standalone tracks
+                       "trackAll.="<<trackAll<<         // Closets other track
+                       "trackTPC.="<<trackTPC<<         // Closest TPC only track
+                       "trackTPCITS.="<<trackTPCITS<<   // closest combined track
+                       //
+                       "itsAtTPC.="<<&itsAtTPC<<        // ITS track parameters at the TPC alone track  frame
+                       "itsAtITSTPC.="<<&itsAtITSTPC<<  // ITS track parameters at the TPC combeined track  frame
+                       "\n";
+  }
+}
+
+
+
