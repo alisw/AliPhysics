@@ -855,7 +855,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       if(isProton) fHistImpParXYPtMulProtonTPCselSPDany->Fill(pttrack,impactXY*10000.,ncl1);
     }
 
-    if(fReadMC && pttrack>0.){
+    if(fReadMC && isPhysPrim && pttrack>0.){
       fHistPtResidVsPtTPCselAll->Fill(pttrack,(pttrack-ptgen));
       fHistOneOverPtResidVsPtTPCselAll->Fill(pttrack,pttrack*(1./pttrack-invptgen));
       fHistPzResidVsPtTPCselAll->Fill(pttrack,(track->Pz()-pzgen));
