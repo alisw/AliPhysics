@@ -43,8 +43,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
     void SetEG2(Bool_t flagEG2) { fEMCEG2= flagEG2;};
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
-		void SetfFlagClsTypeEMC(Bool_t fEMC){ fFlagClsTypeDCAL = fEMC;};
-		void SetfFlagClsTypeDCAL(Bool_t fDCAL){ fFlagClsTypeDCAL = fDCAL;};
+		void SetfFlagClsTypeEMC(Bool_t fEMC){fFlagClsTypeDCAL = fEMC;};
+		void SetfFlagClsTypeDCAL(Bool_t fDCAL){fFlagClsTypeDCAL = fDCAL;};
 
 	private:
 		AliAODEvent*            fAOD;           //! input event

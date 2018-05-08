@@ -841,7 +841,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																								fHistPhoReco2->Fill(track->Pt()); // org pho
 																				}
 																}
-
 												}
 
 
@@ -857,7 +856,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																}
 																//if(ilabelM<NpureMC){fHistPt_HFE_PYTHIA -> Fill(track->Pt());}
 																//else {fHistPt_HFE_emb -> Fill(track->Pt());}
-
 												}
 												if(fTPCnSigma<-3.5 && m20>0.02 && m20<0.25){
 																fEopPt_had -> Fill(TrkPt,eop);
@@ -1145,15 +1143,18 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader)
 
 
       //if(iHijing ==0)
-      if(pdgMom>0)
-        {
+      //if(pdgMom>0)
+      if(pdgMom!=0)
+       {
          AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
-         if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)
+         //if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)
+				 if(IsDdecay(pdgMom))
             {
              fHistMCorgD->Fill(fMCparticle->Pt());
              //cout << "orgD : " << pdgMom << " ; " << pdgGen << endl;
             }
-         if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)
+         //if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)
+				 if(IsBdecay(pdgMom))
            {
             fHistMCorgB->Fill(fMCparticle->Pt());
             //cout << "orgB : " << pdgMom << " ; " << pdgGen << endl;
