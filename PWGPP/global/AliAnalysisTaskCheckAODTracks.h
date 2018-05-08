@@ -161,18 +161,30 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH2F* fHistChi2TPCConstrVsGlobPtFiltBit[kNumOfFilterBits];  //!<!  histo of golden chi2 per filter bit
   TH2F* fHistSig1ptCovMatPtFiltBit[kNumOfFilterBits];           //!<!  histo of sig1pt per filter bit
 
-  TH2F* fHistPtResidVsPtTPCselAll;                       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistPtResidVsPtTPCselITSrefAll;                 //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
-  TH2F* fHistOneOverPtResidVsPtTPCselAll;                //!<!  1/Pt residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistOneOverPtResidVsPtTPCselITSrefAll;          //!<!  1/Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
-  TH2F* fHistPtResidVsPtTPCsel[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
-  TH2F* fHistPtResidVsPtTPCselITSref[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
-  TH2F* fHistOneOverPtResidVsPtTPCsel[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
-  TH2F* fHistOneOverPtResidVsPtTPCselITSref[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
-  TH2F* fHistPzResidVsPtTPCselAll;                       //!<!  Pz residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistPzResidVsPtTPCselITSrefAll;                 //!<!  Pz residuals for ITS+TPC tracks tracked with good mass hypothesis
-  TH2F* fHistPzResidVsEtaTPCselAll;                      //!<!  Pz residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistPzResidVsEtaTPCselITSrefAll;                //!<!  Pz residuals for ITS+TPC tracks tracked with good mass hypothesis
+  TH2F* fHistPtResidVsPtTPCselAll;                       //!<!  Pt residuals for TPC only tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselITSrefAll;                 //!<!  Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselAll;                //!<!  1/Pt residuals for TPC only tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefAll;          //!<!  1/Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselPrim;                       //!<!  Pt residuals for TPC only tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselITSrefPrim;                 //!<!  Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselPrim;                //!<!  1/Pt residuals for TPC only tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefPrim;          //!<!  1/Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselSecDec;                       //!<!  Pt residuals for TPC only tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselITSrefSecDec;                 //!<!  Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselSecDec;                //!<!  1/Pt residuals for TPC only tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefSecDec;          //!<!  1/Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselSecMat;                       //!<!  Pt residuals for TPC only tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselITSrefSecMat;                 //!<!  Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselSecMat;                //!<!  1/Pt residuals for TPC only tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefSecMat;          //!<!  1/Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistPtResidVsPtTPCsel[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked  (for each species)
+  TH2F* fHistPtResidVsPtTPCselITSref[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked  (for each species)
+  TH2F* fHistOneOverPtResidVsPtTPCsel[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked  (for each species)
+  TH2F* fHistOneOverPtResidVsPtTPCselITSref[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked  (for each species)
+  TH2F* fHistPzResidVsPtTPCselAll;                       //!<!  Pz residuals for TPC only tracks tracked 
+  TH2F* fHistPzResidVsPtTPCselITSrefAll;                 //!<!  Pz residuals for ITS+TPC tracks tracked 
+  TH2F* fHistPzResidVsEtaTPCselAll;                      //!<!  Pz residuals for TPC only tracks tracked 
+  TH2F* fHistPzResidVsEtaTPCselITSrefAll;                //!<!  Pz residuals for ITS+TPC tracks tracked 
 
   TH3F* fHistEtaPhiPtTPCselITSrefGood;        //!<!  histo of eta,phi,pt - good MC tracks
   TH3F* fHistEtaPhiPtTPCselITSrefFake;        //!<!  histo of eta,phi,pt - fake MC tracks
@@ -207,7 +219,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,15);
+  ClassDef(AliAnalysisTaskCheckAODTracks,16);
 };
 
 

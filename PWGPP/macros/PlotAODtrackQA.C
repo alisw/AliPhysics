@@ -681,80 +681,278 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
   
+  TH2F* hPtResidVsPtTPCselITSrefPrim=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefPrim");
+  TH2F* hPtResidVsPtTPCselITSrefSecDec=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefSecDec");
+  TH2F* hPtResidVsPtTPCselITSrefSecMat=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefSecMat");  
+  TH2F* hOneOverPtResidVsPtTPCselITSrefPrim=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefPrim");
+  TH2F* hOneOverPtResidVsPtTPCselITSrefSecDec=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefSecDec");
+  TH2F* hOneOverPtResidVsPtTPCselITSrefSecMat=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefSecMat");  
+  if(hPtResidVsPtTPCselITSrefPrim){
+    hPtResidVsPtTPCselITSrefPrim->SetStats(0);
+    hPtResidVsPtTPCselITSrefSecDec->SetStats(0);
+    hPtResidVsPtTPCselITSrefSecMat->SetStats(0);
+    hPtResidVsPtTPCselITSrefPrim->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefSecDec->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefSecMat->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefPrim->GetXaxis()->SetTitleOffset(1.1);
+    hPtResidVsPtTPCselITSrefSecDec->GetXaxis()->SetTitleOffset(1.1);
+    hPtResidVsPtTPCselITSrefSecMat->GetXaxis()->SetTitleOffset(1.1);
+  }
+  if(hOneOverPtResidVsPtTPCselITSrefPrim){
+    hOneOverPtResidVsPtTPCselITSrefPrim->SetStats(0);
+    hOneOverPtResidVsPtTPCselITSrefSecDec->SetStats(0);
+    hOneOverPtResidVsPtTPCselITSrefSecMat->SetStats(0);
+    hOneOverPtResidVsPtTPCselITSrefPrim->GetYaxis()->SetTitleOffset(1.5);
+    hOneOverPtResidVsPtTPCselITSrefSecDec->GetYaxis()->SetTitleOffset(1.5);
+    hOneOverPtResidVsPtTPCselITSrefSecMat->GetYaxis()->SetTitleOffset(1.5);
+    hOneOverPtResidVsPtTPCselITSrefPrim->GetXaxis()->SetTitleOffset(1.1);
+    hOneOverPtResidVsPtTPCselITSrefSecDec->GetXaxis()->SetTitleOffset(1.1);
+    hOneOverPtResidVsPtTPCselITSrefSecMat->GetXaxis()->SetTitleOffset(1.1);
+  }
+  TGraphErrors* gMeanPrim=new TGraphErrors(0);
+  TGraphErrors* gMeanSecDec=new TGraphErrors(0);
+  TGraphErrors* gMeanSecMat=new TGraphErrors(0);
+  TGraphErrors* gRmsPrim=new TGraphErrors(0);
+  TGraphErrors* gRmsSecDec=new TGraphErrors(0);
+  TGraphErrors* gRmsSecMat=new TGraphErrors(0);
+  TGraphErrors* gDum=new TGraphErrors(0);
+  TGraphErrors* gRelPrim=new TGraphErrors(0);
+  TGraphErrors* gRelSecDec=new TGraphErrors(0);
+  TGraphErrors* gRelSecMat=new TGraphErrors(0);
+  gMeanPrim->SetName("gMeanPrim");
+  gMeanSecDec->SetName("gMeanSecDec");
+  gMeanSecMat->SetName("gMeanSecMat");
+  gMeanPrim->SetTitle("");
+  gMeanSecDec->SetTitle("");
+  gMeanSecMat->SetTitle("");
+  gRmsPrim->SetName("gRmsPrim");
+  gRmsSecDec->SetName("gRmsSecDec");
+  gRmsSecMat->SetName("gRmsSecMat");
+  gRmsPrim->SetTitle("");
+  gRmsSecDec->SetTitle("");
+  gRmsSecMat->SetTitle("");
+  gRelPrim->SetName("gRelPrim");
+  gRelSecDec->SetName("gRelSecDec");
+  gRelSecMat->SetName("gRelSecMat");
+  gRelPrim->SetTitle("");
+  gRelSecDec->SetTitle("");
+  gRelSecMat->SetTitle("");
+
+  Bool_t okRes=kFALSE;
+  Bool_t okOneOverRes=kFALSE;
+  if(hPtResidVsPtTPCselITSrefPrim && hPtResidVsPtTPCselITSrefPrim->Integral()>0){
+    FillMeanAndRms(hPtResidVsPtTPCselITSrefPrim,gMeanPrim,gRmsPrim);
+    FillMeanAndRms(hPtResidVsPtTPCselITSrefSecDec,gMeanSecDec,gRmsSecDec);
+    FillMeanAndRms(hPtResidVsPtTPCselITSrefSecMat,gMeanSecMat,gRmsSecMat);
+    okRes=kTRUE;
+  }
+  if(hOneOverPtResidVsPtTPCselITSrefPrim && hOneOverPtResidVsPtTPCselITSrefPrim->Integral()>0){
+    FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefPrim,gDum,gRelPrim);
+    FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefSecDec,gDum,gRelSecDec);
+    FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefSecMat,gDum,gRelSecMat);
+    okOneOverRes=kTRUE;
+  }
+  if(okRes){
+    TCanvas* cps2=new TCanvas("cps2","Pt resol - prim/sec",1500,900);
+    cps2->Divide(3,2);
+    cps2->cd(1);
+    gPad->SetLogz();
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefPrim->Draw("colz");
+    cps2->cd(2);
+    gPad->SetLogz();
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefSecDec->Draw("colz");
+    cps2->cd(3);
+    gPad->SetLogz();
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefSecMat->Draw("colz");
+    cps2->cd(4);
+    gPad->SetLeftMargin(0.13);
+    gPad->SetRightMargin(0.07);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    gMeanPrim->SetMarkerStyle(21);
+    gMeanPrim->SetMarkerColor(1);
+    gMeanPrim->SetLineColor(1);
+    gMeanSecDec->SetMarkerStyle(24);
+    gMeanSecDec->SetMarkerColor(kRed+1);
+    gMeanSecDec->SetLineColor(kRed+1);
+    gMeanSecMat->SetMarkerStyle(28);
+    gMeanSecMat->SetMarkerColor(kBlue+1);
+    gMeanSecMat->SetLineColor(kBlue+1);
+    gMeanPrim->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gMeanSecDec->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gMeanSecMat->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gMeanPrim->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
+    gMeanSecDec->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
+    gMeanSecMat->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
+    gMeanSecMat->GetYaxis()->SetTitleOffset(1.6);
+    gMeanSecMat->GetXaxis()->SetTitleOffset(1.2);
+    gMeanSecMat->Draw("AP");
+    gMeanPrim->Draw("psame");
+    gMeanSecDec->Draw("psame");
+    cps2->cd(5);
+    gPad->SetLeftMargin(0.13);
+    gPad->SetRightMargin(0.07);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    gRmsPrim->SetMarkerStyle(21);
+    gRmsPrim->SetMarkerColor(1);
+    gRmsPrim->SetLineColor(1);
+    gRmsSecDec->SetMarkerStyle(24);
+    gRmsSecDec->SetMarkerColor(kRed+1);
+    gRmsSecDec->SetLineColor(kRed+1);
+    gRmsSecMat->SetMarkerStyle(28);
+    gRmsSecMat->SetMarkerColor(kBlue+1);
+    gRmsSecMat->SetLineColor(kBlue+1);
+    gRmsPrim->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gRmsSecDec->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gRmsSecMat->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gRmsPrim->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
+    gRmsSecDec->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
+    gRmsSecMat->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
+    gRmsSecMat->GetYaxis()->SetTitleOffset(1.6);
+    gRmsSecMat->GetXaxis()->SetTitleOffset(1.2);
+    gRmsSecMat->Draw("AP");
+    gRmsSecMat->Draw("AP");
+    gRmsPrim->Draw("psame");
+    gRmsSecDec->Draw("psame");
+    TLegend* legps=new TLegend(0.2,0.7,0.4,0.89);
+    legps->AddEntry(gRmsPrim,"Primary","P");
+    legps->AddEntry(gRmsSecDec,"Sec from decay","P");
+    legps->AddEntry(gRmsSecMat,"Sec from mat","P");
+    legps->Draw();
+    cps2->cd(6);
+    if(okOneOverRes){
+      gPad->SetLeftMargin(0.13);
+      gPad->SetRightMargin(0.07);
+      gPad->SetTickx();
+      gPad->SetTicky();
+      gRelPrim->SetMarkerStyle(21);
+      gRelPrim->SetMarkerColor(1);
+      gRelPrim->SetLineColor(1);
+      gRelSecDec->SetMarkerStyle(24);
+      gRelSecDec->SetMarkerColor(kRed+1);
+      gRelSecDec->SetLineColor(kRed+1);
+      gRelSecMat->SetMarkerStyle(28);
+      gRelSecMat->SetMarkerColor(kBlue+1);
+      gRelSecMat->SetLineColor(kBlue+1);
+      gRelPrim->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+      gRelSecDec->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+      gRelSecMat->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+      gRelPrim->GetYaxis()->SetTitle("#sigma(p_{T} (1/p_{T,reco}-1/p_{T,gen}))");
+      gRelSecDec->GetYaxis()->SetTitle("#sigma(p_{T} (1/p_{T,reco}-1/p_{T,gen}))");
+      gRelPrim->GetYaxis()->SetTitle("#sigma(p_{T} (1/p_{T,reco}-1/p_{T,gen}))");
+      gRelPrim->GetYaxis()->SetTitleOffset(1.6);
+      gRelPrim->GetXaxis()->SetTitleOffset(1.2);
+      gRelPrim->SetMinimum(0.);
+      gRelPrim->SetMaximum(0.05);
+      gRelPrim->Draw("AP");
+      gRelSecMat->Draw("psame");
+      gRelSecDec->Draw("psame");
+    }
+    plotFileName=Form("PtResisualsPrimSec.%s",outputForm.Data());
+    cps2->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+  }
+
   TH2F* hPtResidVsPtTPCselITSrefPion=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefpi");
   TH2F* hPtResidVsPtTPCselITSrefKaon=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefK");
   TH2F* hPtResidVsPtTPCselITSrefProton=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefp");  
   TH2F* hOneOverPtResidVsPtTPCselITSrefPion=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefpi");
   TH2F* hOneOverPtResidVsPtTPCselITSrefKaon=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefK");
   TH2F* hOneOverPtResidVsPtTPCselITSrefProton=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefp");  
+  TH2F* hPtResidVsPtTPCselPion=(TH2F*)l->FindObject("hPtResidVsPtTPCselpi");
+  TH2F* hOneOverPtResidVsPtTPCselPion=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselpi");
   if(hPtResidVsPtTPCselITSrefPion){
     hPtResidVsPtTPCselITSrefPion->SetStats(0);
     hPtResidVsPtTPCselITSrefKaon->SetStats(0);
     hPtResidVsPtTPCselITSrefProton->SetStats(0);
+    hPtResidVsPtTPCselPion->SetStats(0);
     hPtResidVsPtTPCselITSrefPion->GetYaxis()->SetTitleOffset(1.5);
     hPtResidVsPtTPCselITSrefKaon->GetYaxis()->SetTitleOffset(1.5);
     hPtResidVsPtTPCselITSrefProton->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselPion->GetYaxis()->SetTitleOffset(1.5);
     hPtResidVsPtTPCselITSrefPion->GetXaxis()->SetTitleOffset(1.1);
     hPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetTitleOffset(1.1);
     hPtResidVsPtTPCselITSrefProton->GetXaxis()->SetTitleOffset(1.1);
+    hPtResidVsPtTPCselPion->GetXaxis()->SetTitleOffset(1.1);
   }
   if(hOneOverPtResidVsPtTPCselITSrefPion){
     hOneOverPtResidVsPtTPCselITSrefPion->SetStats(0);
     hOneOverPtResidVsPtTPCselITSrefKaon->SetStats(0);
     hOneOverPtResidVsPtTPCselITSrefProton->SetStats(0);
+    hOneOverPtResidVsPtTPCselPion->SetStats(0);
     hOneOverPtResidVsPtTPCselITSrefPion->GetYaxis()->SetTitleOffset(1.5);
     hOneOverPtResidVsPtTPCselITSrefKaon->GetYaxis()->SetTitleOffset(1.5);
     hOneOverPtResidVsPtTPCselITSrefProton->GetYaxis()->SetTitleOffset(1.5);
+    hOneOverPtResidVsPtTPCselPion->GetYaxis()->SetTitleOffset(1.5);
     hOneOverPtResidVsPtTPCselITSrefPion->GetXaxis()->SetTitleOffset(1.1);
     hOneOverPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetTitleOffset(1.1);
     hOneOverPtResidVsPtTPCselITSrefProton->GetXaxis()->SetTitleOffset(1.1);
+    hOneOverPtResidVsPtTPCselPion->GetXaxis()->SetTitleOffset(1.1);
   }
 
   TGraphErrors* gMeanPi=new TGraphErrors(0);
   TGraphErrors* gMeanK=new TGraphErrors(0);
   TGraphErrors* gMeanProt=new TGraphErrors(0);
+  TGraphErrors* gMeanPiTPC=new TGraphErrors(0);
   TGraphErrors* gRmsPi=new TGraphErrors(0);
   TGraphErrors* gRmsK=new TGraphErrors(0);
   TGraphErrors* gRmsProt=new TGraphErrors(0);
-  TGraphErrors* gDum=new TGraphErrors(0);
+  TGraphErrors* gRmsPiTPC=new TGraphErrors(0);
   TGraphErrors* gRelPi=new TGraphErrors(0);
   TGraphErrors* gRelK=new TGraphErrors(0);
   TGraphErrors* gRelProt=new TGraphErrors(0);
+  TGraphErrors* gRelPiTPC=new TGraphErrors(0);
   gMeanPi->SetName("gMeanPi");
   gMeanK->SetName("gMeanK");
   gMeanProt->SetName("gMeanProt");
+  gMeanPiTPC->SetName("gMeanPiTPC");
   gMeanPi->SetTitle("");
   gMeanK->SetTitle("");
   gMeanProt->SetTitle("");
+  gMeanPiTPC->SetTitle("");
   gRmsPi->SetName("gRmsPi");
   gRmsK->SetName("gRmsK");
   gRmsProt->SetName("gRmsProt");
+  gRmsPiTPC->SetName("gRmsPiTPC");
   gRmsPi->SetTitle("");
   gRmsK->SetTitle("");
   gRmsProt->SetTitle("");
+  gRmsPiTPC->SetTitle("");
   gRelPi->SetName("gRelPi");
   gRelK->SetName("gRelK");
   gRelProt->SetName("gRelProt");
+  gRelPiTPC->SetName("gRelPiTPC");
   gRelPi->SetTitle("");
   gRelK->SetTitle("");
   gRelProt->SetTitle("");
+  gRelPiTPC->SetTitle("");
 
-  Bool_t okRes=kFALSE;
-  Bool_t okOneOverRes=kFALSE;
+  okRes=kFALSE;
+  okOneOverRes=kFALSE;
   if(hPtResidVsPtTPCselITSrefPion && hPtResidVsPtTPCselITSrefPion->Integral()>0){
     FillMeanAndRms(hPtResidVsPtTPCselITSrefPion,gMeanPi,gRmsPi);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefKaon,gMeanK,gRmsK);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefProton,gMeanProt,gRmsProt);
+    FillMeanAndRms(hPtResidVsPtTPCselPion,gMeanPiTPC,gRmsPiTPC);
     okRes=kTRUE;
   }
   if(hOneOverPtResidVsPtTPCselITSrefPion && hOneOverPtResidVsPtTPCselITSrefPion->Integral()>0){
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefPion,gDum,gRelPi);
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefKaon,gDum,gRelK);
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefProton,gDum,gRelProt);
+    FillMeanAndRms(hOneOverPtResidVsPtTPCselPion,gDum,gRelPiTPC);
     okOneOverRes=kTRUE;
   }
   if(okRes){
-    TCanvas* c2=new TCanvas("c2","Pt resol",1500,900);
+
+    TCanvas* c2=new TCanvas("c2","Pt resol - species",1500,900);
     c2->Divide(3,2);
     c2->cd(1);
     gPad->SetLogz();
@@ -869,16 +1067,70 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     c2->SaveAs(plotFileName.Data());
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
-    TFile* outres=new TFile("PtResolPiKp.root","recreate");
+    TCanvas* c2p=new TCanvas("c2p","Pt resol - pion",1500,450);
+    c2p->Divide(3,1);
+    c2p->cd(1);
+    gPad->SetLeftMargin(0.13);
+    gPad->SetRightMargin(0.07);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    gMeanPiTPC->SetMarkerStyle(26);
+    gMeanPiTPC->SetMarkerColor(kMagenta+1);
+    gMeanPiTPC->SetLineColor(kMagenta+1);
+    gMeanPi->Draw("AP");
+    gMeanPiTPC->Draw("psame");
+    c2p->cd(2);
+    gPad->SetLeftMargin(0.13);
+    gPad->SetRightMargin(0.07);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    gRmsPiTPC->SetMarkerStyle(26);
+    gRmsPiTPC->SetMarkerColor(kMagenta+1);
+    gRmsPiTPC->SetLineColor(kMagenta+1);
+    gRmsPi->Draw("AP");
+    gRmsPiTPC->Draw("psame");
+    TLegend* legpit=new TLegend(0.2,0.7,0.5,0.89);
+    legpit->AddEntry(gRmsPi,"#pi, TPC+ITS","P");
+    legpit->AddEntry(gRmsPiTPC,"#pi, TPC","P");
+    legpit->Draw();
+    c2p->cd(3);
+    if(okOneOverRes){
+      gPad->SetLeftMargin(0.13);
+      gPad->SetRightMargin(0.07);
+      gPad->SetTickx();
+      gPad->SetTicky();
+      gRelPiTPC->SetMarkerStyle(26);
+      gRelPiTPC->SetMarkerColor(kMagenta+1);
+      gRelPiTPC->SetLineColor(kMagenta+1);
+      gRelPi->Draw("AP");
+      gRelPiTPC->Draw("psame");
+    }
+    plotFileName=Form("PtResisualsPionsTPCITS.%s",outputForm.Data());
+    c2->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
+    TFile* outres=new TFile("PtResol.root","recreate");
+    gMeanPrim->Write();
+    gMeanSecDec->Write();
+    gMeanSecMat->Write();
     gMeanPi->Write();
     gMeanK->Write();
     gMeanProt->Write();
+    gMeanPiTPC->Write();
+    gRmsPrim->Write();
+    gRmsSecDec->Write();
+    gRmsSecMat->Write();
     gRmsPi->Write();
     gRmsK->Write();
     gRmsProt->Write();
+    gRmsPiTPC->Write();
+    gRelPrim->Write();
+    gRelSecDec->Write();
+    gRelSecMat->Write();
     gRelPi->Write();
     gRelK->Write();
     gRelProt->Write();
+    gRelPiTPC->Write();
   }
 
 
