@@ -186,16 +186,15 @@ AliExtractedEvent::~AliExtractedEvent() {
 
 AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation() :
   AliAnalysisTaskSE(),
-  fOutputInc(0), fOutputIn(0), fOutputOut(0), fOutputM1(0), fOutputM2(0),
   fInputHandler(0), fMCHandler(0), fMCEvent(0), fMCHeader(0), 
   fHistZVertex(0), fHistPt(0), fHistPhi(0),fHistCent(0),
   fHistEta(0), fHistPos(0), fHistNeg(0), fHistEventPlaneV0A(0), fHistEventPlaneV0C(0),
-  fHistEventPlaneTPC(0), fPoolMgr(0), fPoolMgr_Highpt(0), fInputRoot(0), fInputTree(0),
+  fHistEventPlaneTPC(0), fPoolMgr(0), fInputRoot(0), fInputTree(0),
   fMCCorrection(0), fMCTruth(0), bUseMixingPool(0), fMixingPoolSize(100), fDebug(0), fMinNumTrack(500),
   fEtaCut(0.9), fPhiCut(TMath::TwoPi()), fMinPtTrigCut(3.0), fTwoTrackEffCut(0.02), 
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
   fMinimumPtABinMerging(5), fResonancesVCut(0.02), fConversionsVCut(0.04),
-  fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
+  fHistNevtSame(0),
   fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
   fCentPercentile(0), fZVertex(0), fEventPlane(0), fEventPlaneV0A(0),
@@ -207,16 +206,15 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation() :
 
 AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char *name) :
   AliAnalysisTaskSE(name),
-  fOutputInc(0), fOutputIn(0), fOutputOut(0), fOutputM1(0), fOutputM2(0),
   fInputHandler(0), fMCHandler(0), fMCEvent(0), fMCHeader(0), 
   fHistZVertex(0), fHistPt(0), fHistPhi(0),fHistCent(0),
   fHistEta(0), fHistPos(0), fHistNeg(0), fHistEventPlaneV0A(0), fHistEventPlaneV0C(0),
-  fHistEventPlaneTPC(0), fPoolMgr(0), fPoolMgr_Highpt(0), fInputRoot(0), fInputTree(0),
+  fHistEventPlaneTPC(0), fPoolMgr(0), fInputRoot(0), fInputTree(0),
   fMCCorrection(0), fMCTruth(0), bUseMixingPool(0), fMixingPoolSize(100), fDebug(0), fMinNumTrack(500),
   fEtaCut(0.9), fPhiCut(TMath::TwoPi()), fMinPtTrigCut(3.0), fTwoTrackEffCut(0.02), 
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
   fMinimumPtABinMerging(5), fResonancesVCut(0.02), fConversionsVCut(0.04),
-  fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
+  fHistNevtSame(0), 
   fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
   fCentPercentile(0), fZVertex(0), fEventPlane(0), fEventPlaneV0A(0),
@@ -225,60 +223,30 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char 
 {
   DefineInput(0, TChain::Class());
 //  DefineInput(1, TList::Class());
-  DefineOutput(1, TList::Class());
-  DefineOutput(2, TList::Class());
-  DefineOutput(3, TList::Class());
-//  DefineOutput(4, TList::Class());
-//  DefineOutput(5, TList::Class());
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    DefineOutput(iplane+1, TList::Class());    //Incl, In, Out, M1, M2, M3, M4 : total 7
+  }
 }
 
 AliAnalysisTaskJetLikeCorrelation::~AliAnalysisTaskJetLikeCorrelation() {
 
-  if (fOutputInc && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fOutputInc;
-  }
-  if (fOutputIn && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fOutputIn;
-  }
-//  if (fOutputM1 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-//    delete fOutputM1;
-//  }
-//  if (fOutputM2 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-//    delete fOutputM2;
-//  }
-  if (fOutputOut && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fOutputOut;
+  for (int iin = 0; iin < fNumberOfPlanes; iin++) {
+    if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+      delete fOutput[iin];
+    }
   }
 }
 
 void AliAnalysisTaskJetLikeCorrelation::Terminate(Option_t *option) {
-  fOutputInc = dynamic_cast<TList*>(GetOutputData(1));
-  if (NULL == fOutputInc) {
-    AliFatal("fOutputIncList == NULL");
-    return;
+
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    fOutput[iplane] = dynamic_cast<TList*>(GetOutputData(iplane));
+    if (NULL == fOutput[iplane]) {
+      AliFatal(Form("fOutput%d == NULL", iplane));
+      return;
+    }
   }
   
-  fOutputIn = dynamic_cast<TList*>(GetOutputData(2));
-  if (NULL == fOutputIn) {
-    AliFatal("fOutputInList == NULL");
-    return;
-  }
-  fOutputOut = dynamic_cast<TList*>(GetOutputData(3));
-  if (NULL == fOutputOut) {
-    AliFatal("fOutputOutList == NULL");
-    return;
-  }
-//  fOutputM1 = dynamic_cast<TList*>(GetOutputData(4));
-//  if (NULL == fOutputM1) {
-//    AliFatal("fOutputM1List == NULL");
-//    return;
-//  }
-//  fOutputM2 = dynamic_cast<TList*>(GetOutputData(5));
-//  if (NULL == fOutputM2) {
-//    AliFatal("fOutputM2List == NULL");
-//    return;
-//  }
-
 }
 
 
@@ -286,30 +254,19 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
 //  fOutput = new TList();
 //  fOutput->SetOwner(kTRUE);
   fIsFirstEvent = 1;
-  fOutputInc = new TList();
-  fOutputInc->SetOwner(kTRUE);
-  fOutputIn = new TList();
-  fOutputIn->SetOwner(kTRUE);
-  fOutputOut = new TList();
-  fOutputOut->SetOwner(kTRUE);
-//  fOutputM1 = new TList();
-//  fOutputM1->SetOwner(kTRUE);
-//  fOutputM2 = new TList();
-//  fOutputM2->SetOwner(kTRUE);
-  
-//  fOutput->Add(fOutputInc);
-//  fOutput->Add(fOutputIn);
-//  fOutput->Add(fOutputOut);
-//  fOutput->Add(fOutputM1);
-//  fOutput->Add(fOutputM2);
+
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    fOutput[iplane] = new TList();
+    fOutput[iplane]->SetOwner(kTRUE);
+  }
 
   fHistZVertex = new TH1D("fHistZVertex", "fHistZVertex", 400, -20, 20);
-  fHistPt = new TH1D("fHistPt", "fHistPt", 2000, 0, 20);
+  fHistPt = new TH1D("fHistPt", "fHistPt", 200, 0, 20);
   fHistPhi = new TH1D("fHistPhi", "fHistPhi", 315*2 , 0, 3.15*2);
   fHistCent = new TH1D("fHistCent", "fHistCent", 100, 0, 100);
   fHistEta = new TH1D("fHistEta", "fHistEta", 200, -1, 1);
-  fHistPos = new TH1D("fHistPos", "fHistPos", 2000, 0, 20);
-  fHistNeg = new TH1D("fHistNeg", "fHistNeg", 2000, 0, 20);
+  fHistPos = new TH1D("fHistPos", "fHistPos", 200, 0, 20);
+  fHistNeg = new TH1D("fHistNeg", "fHistNeg", 200, 0, 20);
   fHistEventPlaneV0A = new TH1D("fHistEventPlaneV0A", "fHistEventPlaneV0A", 315 , 0, 3.15);
   fHistEventPlaneV0C = new TH1D("fHistEventPlaneV0C", "fHistEventPlaneV0C", 315 , 0, 3.15);
   fHistEventPlaneTPC = new TH1D("fHistEventPlaneTPC", "fHistEventPlaneTPC", 315 , 0, 3.15);
@@ -330,118 +287,45 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
   InitHistograms();
 
   
-  fOutputInc->Add(fHistZVertex);
-  fOutputInc->Add(fHistPt);
-  fOutputInc->Add(fHistPhi);
-  fOutputInc->Add(fHistCent);
-  fOutputInc->Add(fHistEta);
-  fOutputInc->Add(fHistPos);
-  fOutputInc->Add(fHistNeg);
-  fOutputInc->Add(fHistEtaSparse);
-  fOutputInc->Add(fHistEventPlaneV0A);
-  fOutputInc->Add(fHistEventPlaneV0C);
-  fOutputInc->Add(fHistEventPlaneTPC);
-  fOutputInc->Add(fHistV2);
-  fOutputInc->Add(fHistResolutionV2[0]);
-  fOutputInc->Add(fHistResolutionV2[1]);
-  fOutputInc->Add(fHistResolutionV2[2]);
-  fOutputInc->Add(fHistNevtSame);
+  fOutput[0]->Add(fHistZVertex);
+  fOutput[0]->Add(fHistPt);
+  fOutput[0]->Add(fHistPhi);
+  fOutput[0]->Add(fHistCent);
+  fOutput[0]->Add(fHistEta);
+  fOutput[0]->Add(fHistPos);
+  fOutput[0]->Add(fHistNeg);
+  fOutput[0]->Add(fHistEtaSparse);
+  fOutput[0]->Add(fHistEventPlaneV0A);
+  fOutput[0]->Add(fHistEventPlaneV0C);
+  fOutput[0]->Add(fHistEventPlaneTPC);
+  fOutput[0]->Add(fHistV2);
+  fOutput[0]->Add(fHistResolutionV2[0]);
+  fOutput[0]->Add(fHistResolutionV2[1]);
+  fOutput[0]->Add(fHistResolutionV2[2]);
+  fOutput[0]->Add(fHistNevtSame);
   if (fMCCorrection)
-    fOutputInc->Add(fHistContamination);
+    fOutput[0]->Add(fHistContamination);
 
-  fOutputInc->Add(fHistPtSame);
-  fOutputIn->Add(fHistPtSameIn);
-  fOutputOut->Add(fHistPtSameOut);
-//  fOutputM1->Add(fHistPtSameM1);
-//  fOutputM2->Add(fHistPtSameM2);
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    fOutput[iplane]->Add(fHistPtSame[iplane]);
+  }
 
   int lMinPtBin = GetPtBin(fMinPtTrigCut);
   
 
-  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-        if (iptt < lMinPtBin) continue;
-        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-          if (iptt < ipta) continue;
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
+      for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
+        for (int iptt = 0; iptt < fPttArray.GetSize() - 1; iptt++) {
+          for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
+            if (iptt < ipta) continue;
 
-          fOutputInc->Add(fHistdEtadPhiSame[icent][izvertex][iptt][ipta]);
-          fOutputInc->Add(fHistdEtadPhiMixed[icent][izvertex][iptt][ipta]);
-          if (fMCCorrection) {
-            fOutputInc->Add(fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta]);
-            fOutputInc->Add(fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta]);
-          }
-        }
-      }
-    }
-  }
-  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-        if (iptt < lMinPtBin) continue;
-        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-          if (iptt < ipta) continue;
-
-          fOutputIn->Add(fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta]);
-          fOutputIn->Add(fHistdEtadPhiMixedIn[icent][izvertex][iptt][ipta]);
-          if (fMCCorrection) {
-            fOutputIn->Add(fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta]);
-            fOutputIn->Add(fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta]);
-          }
-
-        }
-      }
-    }
-  }
-//  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-//    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-//      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-//        if (iptt < lMinPtBin) continue;
-//        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-//          if (iptt < ipta) continue;
-//
-//          fOutputM1->Add(fHistdEtadPhiSameM1[icent][izvertex][iptt][ipta]);
-//          fOutputM1->Add(fHistdEtadPhiMixedM1[icent][izvertex][iptt][ipta]);
-//
-//          if (fMCCorrection) {
-//            fOutputM1->Add(fHistdEtadPhiSameMCCorrPrimM1[icent][izvertex][iptt][ipta]);
-//            fOutputM1->Add(fHistdEtadPhiSameMCCorrContM1[icent][izvertex][iptt][ipta]);
-//          }
-//        }
-//      }
-//    }
-//  }
-//  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-//    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-//      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-//        if (iptt < lMinPtBin) continue;
-//        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-//          if (iptt < ipta) continue;
-//
-//          fOutputM2->Add(fHistdEtadPhiSameM2[icent][izvertex][iptt][ipta]);
-//          fOutputM2->Add(fHistdEtadPhiMixedM2[icent][izvertex][iptt][ipta]);
-//
-//          if (fMCCorrection) {
-//            fOutputM2->Add(fHistdEtadPhiSameMCCorrPrimM2[icent][izvertex][iptt][ipta]);
-//            fOutputM2->Add(fHistdEtadPhiSameMCCorrContM2[icent][izvertex][iptt][ipta]);
-//          }
-//        }
-//      }
-//    }
-//  }
-  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-        if (iptt < lMinPtBin) continue;
-        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-          if (iptt < ipta) continue;
-
-          fOutputOut->Add(fHistdEtadPhiSameOut[icent][izvertex][iptt][ipta]);
-          fOutputOut->Add(fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta]);
-
-          if (fMCCorrection) {
-            fOutputOut->Add(fHistdEtadPhiSameMCCorrPrimOut[icent][izvertex][iptt][ipta]);
-            fOutputOut->Add(fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta]);
+            fOutput[iplane]->Add(fHistdEtadPhiSame[iplane][icent][izvertex][iptt][ipta]);
+            fOutput[iplane]->Add(fHistdEtadPhiMixed[iplane][icent][izvertex][iptt][ipta]);
+            if (fMCCorrection) {
+              fOutput[iplane]->Add(fHistdEtadPhiSameMCCorrPrim[iplane][icent][izvertex][iptt][ipta]);
+              fOutput[iplane]->Add(fHistdEtadPhiSameMCCorrCont[iplane][icent][izvertex][iptt][ipta]);
+            }
           }
         }
       }
@@ -465,11 +349,10 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
  
 //  ConnectInputHandler();
 
-  PostData(1, fOutputInc);
-  PostData(2, fOutputIn);
-  PostData(3, fOutputOut);
-//  PostData(4, fOutputM1);
-//  PostData(5, fOutputM2);
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    PostData(iplane+1, fOutput[iplane]);
+  }
+
 
 }
 
@@ -479,7 +362,7 @@ void AliAnalysisTaskJetLikeCorrelation::ConnectInputHandler() {
 }
 
 void AliAnalysisTaskJetLikeCorrelation::UserExec(Option_t *option) {
-  
+
   // Main loop executed for each event
   // Create Pointer to reconstructed event
   AliVEvent *event = InputEvent();
@@ -505,13 +388,13 @@ void AliAnalysisTaskJetLikeCorrelation::UserExec(Option_t *option) {
 
   if (fIsFirstEvent && bUseMixingPool) {
     TGrid::Connect("alien:");
-string  filename;
+    string  filename;
     if (fCollision == kPbPb)
       filename = Form("alien:///alice/cern.ch/user/h/hyeonjoo/MixingPool_10h/output/000%d/AnalysisResults.root", runnumber); // pbpb
     else 
       filename = Form("alien:///alice/cern.ch/user/h/hyeonjoo/MixingPool_11a/output/000%d/AnalysisResults.root", runnumber); // pbpb
-//    string filename = Form("alien:///alice/cern.ch/user/h/hyeonjoo/Hybrid_11aMixing/output/000%d/AnalysisResults.root", runnumber); // pp
-//    string filename = Form("./146858.root");
+    //    string filename = Form("alien:///alice/cern.ch/user/h/hyeonjoo/Hybrid_11aMixing/output/000%d/AnalysisResults.root", runnumber); // pp
+    //    string filename = Form("./146858.root");
     fInputRoot = TFile::Open(filename.c_str());
     if (!fInputRoot) {
       cout << "File : " << filename << " doesn't exist!" << endl;
@@ -536,9 +419,9 @@ string  filename;
         fPoolSize[icent][izvertex] = 0;
       }
     }
-//    TStopwatch stwa;
-//    stwa.Start();
-//    cout << "Start time : " << endl;
+    //    TStopwatch stwa;
+    //    stwa.Start();
+    //    cout << "Start time : " << endl;
     for (int ientry = fTreeStart; ientry < fTreeEnd; ientry++) {
       fInputTree->GetEntry(ientry);
       if (!fHighPtMixing) {
@@ -609,8 +492,6 @@ string  filename;
 
   TObjArray *lTrackArray = new TObjArray();
   lTrackArray->SetOwner(kTRUE);
-  TObjArray *lTrackArray_HighPt = new TObjArray();
-  lTrackArray_HighPt->SetOwner(kTRUE);
 
   float ldeltaEventPlane = -999;
   float lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso = -999;
@@ -641,8 +522,8 @@ string  filename;
   fHistEventPlaneTPC->Fill(fEventPlaneTPC);
   lCentBin = GetCentBin(fCentPercentile);
   lZVertexBin = GetZVertexBin(fZVertex);
-  
-//  if (fEntry%1000 == 0 ) cout << "Entry : " << fEntry << " Centrality : " << fCentPercentile << " ZVertex : " << fZVertex << " Evp : " << fEventPlaneV0A << endl;
+
+  //  if (fEntry%1000 == 0 ) cout << "Entry : " << fEntry << " Centrality : " << fCentPercentile << " ZVertex : " << fZVertex << " Evp : " << fEventPlaneV0A << endl;
   if (lCentBin == -1 || lZVertexBin == -1) return;   //To reduce time for mixing
 
   if (!fMCTruth) {
@@ -660,7 +541,7 @@ string  filename;
           if (!(aodTrack->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
           //      if (!aodTrack->TestFilterBit(fFilterBit)) continue;
         } else {
-          if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
+          //          if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
           if (!aodTrack->TestFilterBit(fFilterBit)) {
             //     std::cout << "filterbit no" << std::endl;
             continue; //TPC Only Track cut : 128 
@@ -680,8 +561,6 @@ string  filename;
         if (lpTTrig < 0.8) continue;
         lEtaTrig = aodTrack->Eta();
         lPhiTrig = aodTrack->Phi();
-        lpTTrigBin = GetPtBin(lpTTrig);
-        if (lpTTrigBin == -1) continue;
 
 
         if (TMath::Abs(lEtaTrig) >= 0.8) continue;   
@@ -707,57 +586,21 @@ string  filename;
         etavars[3] = lEtaTrig;
         etavars[4] = lpTTrig;
 
-        fHistPtSame->Fill(lCentBin, lZVertexBin, lpTTrig);
+        fHistPtSame[0]->Fill(lCentBin, lZVertexBin, lpTTrig);
+
+        lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
+
+        lpTTrigBin = GetTrigPtBin(lpTTrig);
+        if (lpTTrigBin == -1) continue;
+
         fHistEtaSparse->Fill(etavars);
 
-        if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-          fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-          contvars[1] = 1;
-          etavars[0] = 1;
-          cont_inout = 1;
-        } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-          fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-          contvars[1] = 1;
-          etavars[0] = 1;
-          cont_inout = 1;
-        } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-          fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-          contvars[1] = 1;
-          etavars[0] = 1;
-          cont_inout = 1;
-        } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-          contvars[1] = 3;
-          etavars[0] = 3;
-          cont_inout = 3;
-        } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-          contvars[1] = 3;
-          etavars[0] = 3;
-          cont_inout = 3;
-        } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-          contvars[1] = 4;
-          etavars[0] = 4;
-          cont_inout = 4;
-        } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-          contvars[1] = 4;
-          etavars[0] = 4;
-          cont_inout = 4;
-        } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-          fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-          contvars[1] = 2;
-          etavars[0] = 2;
-          cont_inout = 2;
-        } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-          fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-          contvars[1] = 2;
-          etavars[0] = 2;
-          cont_inout = 2;
-        }
+        cont_inout = CheckInOut(ldeltaEventPlane);
 
         fHistEtaSparse->Fill(etavars);
 
         if (fMCCorrection) {
           // Inclusive & All Reco particles (contaminated + primary)
-
           fHistContamination->Fill(contvars);
           if (kPrimaryTrig) {
             contvars[0] = 1;
@@ -772,12 +615,6 @@ string  filename;
             fHistContamination->Fill(contvars);
           }
         }
-        if (lpTTrig < fMinPtTrigCut) { 
-          //      lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-          continue;
-        }
-        else 
-          lTrackArray_HighPt->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
 
         for (int jtrack = 0; jtrack < ntracks; jtrack++) {
           if (itrack == jtrack) continue;
@@ -790,7 +627,7 @@ string  filename;
             if (!(aodTrackAsso->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
             //        if (!(aodTrackAsso->TestFilterBit(fFilterBit))) continue;
           } else {
-            if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
+            //            if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
             if (!aodTrackAsso->TestFilterBit(fFilterBit)) {
               //     std::cout << "filterbit no" << std::endl;
               continue; //TPC Only Track cut : 128 
@@ -799,7 +636,7 @@ string  filename;
 
           lpTAsso = aodTrackAsso->Pt();
           if (lpTAsso < 0.8 || lpTTrig < lpTAsso) continue;
-          lpTAssoBin = GetPtBin(lpTAsso);
+          lpTAssoBin = GetPtaBin(lpTAsso);
           if (lpTAssoBin == -1) continue;
 
           lEtaAsso = aodTrackAsso->Eta();
@@ -878,19 +715,19 @@ string  filename;
             kPrimaryAsso = lmcTrackAsso->IsPhysicalPrimary();
 
 
-            fHistdEtadPhiSameMCCorrCont[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrContIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrContOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            fHistdEtadPhiSameMCCorrCont[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            if (cont_inout > 0)
+              fHistdEtadPhiSameMCCorrPrim[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
             if (kPrimaryAsso && kPrimaryTrig) {
-              fHistdEtadPhiSameMCCorrPrim[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-              if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrPrimIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-              else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrPrimOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+              fHistdEtadPhiSameMCCorrPrim[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+              if (cont_inout > 0)
+                fHistdEtadPhiSameMCCorrPrim[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
             }
           }
 
-          fHistdEtadPhiSame[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          if ( cont_inout == 1 ) fHistdEtadPhiSameIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          else if ( cont_inout == 2 ) fHistdEtadPhiSameOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+          fHistdEtadPhiSame[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+
+          if (cont_inout > 0) fHistdEtadPhiSame[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
 
         }
 
@@ -909,7 +746,7 @@ string  filename;
           if (!(aodTrack->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
           //      if (!aodTrack->TestFilterBit(fFilterBit)) continue;
         } else {
-          if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
+          //          if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
           if (!aodTrack->TestFilterBit(fFilterBit)) {
             //     std::cout << "filterbit no" << std::endl;
             continue; //TPC Only Track cut : 128 
@@ -926,8 +763,8 @@ string  filename;
           fHistV2->Fill(fCentPercentile, TMath::Cos(2*ldeltaEventPlane));
         }
         if (lpTTrig < 0.8) continue;
-        lpTTrigBin = GetPtBin(lpTTrig);
-        if (lpTTrigBin == -1) continue;
+        lpTTrigBin = GetPttBin(lpTTrig);
+        lTrackArray_HighPt->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
         lEtaTrig = aodTrack->Eta();
         lPhiTrig = aodTrack->Phi();
 
@@ -955,50 +792,14 @@ string  filename;
         etavars[3] = lEtaTrig;
         etavars[4] = lpTTrig;
 
-        fHistPtSame->Fill(lCentBin, lZVertexBin, lpTTrig);
+        fHistPtSame[0]->Fill(lCentBin, lZVertexBin, lpTTrig);
         fHistEtaSparse->Fill(etavars);
 
-        if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-          fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-          contvars[1] = 1;
-          etavars[0] = 1;
-          cont_inout = 1;
-        } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-          fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-          contvars[1] = 1;
-          etavars[0] = 1;
-          cont_inout = 1;
-        } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-          fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-          contvars[1] = 1;
-          etavars[0] = 1;
-          cont_inout = 1;
-        } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-          contvars[1] = 3;
-          etavars[0] = 3;
-          cont_inout = 3;
-        } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-          contvars[1] = 3;
-          etavars[0] = 3;
-          cont_inout = 3;
-        } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-          contvars[1] = 4;
-          etavars[0] = 4;
-          cont_inout = 4;
-        } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-          contvars[1] = 4;
-          etavars[0] = 4;
-          cont_inout = 4;
-        } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-          fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-          contvars[1] = 2;
-          etavars[0] = 2;
-          cont_inout = 2;
-        } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-          fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-          contvars[1] = 2;
-          etavars[0] = 2;
-          cont_inout = 2;
+        cont_inout = CheckInOut(ldeltaEventPlane);
+        if (cont_inout > 0) {
+          contvars[1] = cont_inout;
+          etavars[0] = cont_inout;
+          fHistPtSame[cont_inout]->Fill(lCentBin, lZVertexBin, lpTTrig);
         }
 
         fHistEtaSparse->Fill(etavars);
@@ -1025,13 +826,8 @@ string  filename;
             fHistContamination->Fill(contvars);
           }
         }
-        //      if (lpTTrig < fMinPtTrigCut) { 
-        ////        lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-        //        continue;
-        //      }
-        //      else 
-        lTrackArray_HighPt->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-        if (lpTTrig < fMinPtTrigCut) continue;
+
+        if (lpTTrigBin == -1) continue;
 
         for (int jtrack = 0; jtrack < ntracks; jtrack++) {
           if (itrack == jtrack) continue;
@@ -1044,7 +840,7 @@ string  filename;
             if (!(aodTrackAsso->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
             //        if (!(aodTrackAsso->TestFilterBit(fFilterBit))) continue;
           } else {
-            if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
+            //            if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
             if (!aodTrackAsso->TestFilterBit(fFilterBit)) {
               //     std::cout << "filterbit no" << std::endl;
               continue; //TPC Only Track cut : 128 
@@ -1053,7 +849,7 @@ string  filename;
 
           lpTAsso = aodTrackAsso->Pt();
           if (lpTAsso < 0.8 || lpTTrig < lpTAsso) continue;
-          lpTAssoBin = GetPtBin(lpTAsso);
+          lpTAssoBin = GetPtaBin(lpTAsso);
           if (lpTAssoBin == -1) continue;
 
           lEtaAsso = aodTrackAsso->Eta();
@@ -1133,19 +929,18 @@ string  filename;
             kPrimaryAsso = lmcTrackAsso->IsPhysicalPrimary();
 
 
-            fHistdEtadPhiSameMCCorrCont[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrContIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrContOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            fHistdEtadPhiSameMCCorrCont[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            if (cont_inout > 0) fHistdEtadPhiSameMCCorrCont[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+
             if (kPrimaryAsso && kPrimaryTrig) {
-              fHistdEtadPhiSameMCCorrPrim[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-              if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrPrimIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-              else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrPrimOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+              fHistdEtadPhiSameMCCorrPrim[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+              if (cont_inout > 0) fHistdEtadPhiSameMCCorrPrim[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
             }
           }
 
-          fHistdEtadPhiSame[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          if ( cont_inout == 1 ) fHistdEtadPhiSameIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          else if ( cont_inout == 2 ) fHistdEtadPhiSameOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+          fHistdEtadPhiSame[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+          if (cont_inout > 0) 
+            fHistdEtadPhiSame[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
 
         }
 
@@ -1167,7 +962,7 @@ string  filename;
           }// new version of hybrid selection
           //      if (!aodTrack->TestFilterBit(fFilterBit)) continue;
         } else {
-          if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
+          //          if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
           if (!aodTrack->TestFilterBit(fFilterBit)) {
             //     std::cout << "filterbit no" << std::endl;
             continue; //TPC Only Track cut : 128 
@@ -1180,7 +975,8 @@ string  filename;
         if (lpTTrig < 0.8) continue;
         lEtaTrig = aodTrack->Eta();
         lPhiTrig = aodTrack->Phi();
-        lpTTrigBin = GetPtBin(lpTTrig);
+        lpTTrigBin = GetPttBin(lpTTrig);
+        lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
         if (lpTTrigBin == -1) continue;
 
 
@@ -1204,7 +1000,7 @@ string  filename;
         etavars[3] = lEtaTrig;
         etavars[4] = lpTTrig;
 
-        fHistPtSame->Fill(lCentBin, lZVertexBin, lpTTrig);
+        fHistPtSame[0]->Fill(lCentBin, lZVertexBin, lpTTrig);
         fHistEtaSparse->Fill(etavars);
 
         if (fMCCorrection) {
@@ -1230,9 +1026,6 @@ string  filename;
           }
         }
 
-        lTrackArray_HighPt->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-        if (lpTTrig < fMinPtTrigCut)  
-          continue;
 
         for (int jtrack = 0; jtrack < ntracks; jtrack++) {
           if (itrack == jtrack) continue;
@@ -1245,7 +1038,7 @@ string  filename;
             if (!(aodTrackAsso->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
             //        if (!(aodTrackAsso->TestFilterBit(fFilterBit))) continue;
           } else {
-            if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
+            //            if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
             if (!aodTrackAsso->TestFilterBit(fFilterBit)) {
               //     std::cout << "filterbit no" << std::endl;
               continue; //TPC Only Track cut : 128 
@@ -1254,7 +1047,7 @@ string  filename;
 
           lpTAsso = aodTrackAsso->Pt();
           if (lpTAsso < 0.8 || lpTTrig < lpTAsso) continue;
-          lpTAssoBin = GetPtBin(lpTAsso);
+          lpTAssoBin = GetPtaBin(lpTAsso);
           if (lpTAssoBin == -1) continue;
 
           lEtaAsso = aodTrackAsso->Eta();
@@ -1336,13 +1129,13 @@ string  filename;
             kPrimaryAsso = lmcTrackAsso->IsPhysicalPrimary();
 
 
-            fHistdEtadPhiSameMCCorrCont[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            fHistdEtadPhiSameMCCorrCont[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
             if (kPrimaryAsso && kPrimaryTrig) {
-              fHistdEtadPhiSameMCCorrPrim[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+              fHistdEtadPhiSameMCCorrPrim[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
             }
           }
 
-          fHistdEtadPhiSame[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+          fHistdEtadPhiSame[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
         }
 
       }
@@ -1364,7 +1157,8 @@ string  filename;
       ldeltaEventPlane = lPhiTrig - fEventPlaneV0C;
 
       if (TMath::Abs(lEtaTrig) >= 0.8) continue;
-      lpTTrigBin = GetPtBin(lpTTrig);
+      lpTTrigBin = GetPttBin(lpTTrig);
+      lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
       if (lpTTrigBin == -1) continue;
 
       fHistPhi->Fill(lPhiTrig);
@@ -1373,52 +1167,14 @@ string  filename;
       if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
       if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
 
-      fHistPtSame->Fill(lCentBin, lZVertexBin, lpTTrig);
-
-      if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-        fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 1;
-        etavars[0] = 1;
-        cont_inout = 1;
-      } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-        fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 1;
-        etavars[0] = 1;
-        cont_inout = 1;
-      } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-        fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 1;
-        etavars[0] = 1;
-        cont_inout = 1;
-      } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-        contvars[1] = 3;
-        etavars[0] = 3;
-        cont_inout = 3;
-      } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-        contvars[1] = 3;
-        etavars[0] = 3;
-        cont_inout = 3;
-      } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-        contvars[1] = 4;
-        etavars[0] = 4;
-        cont_inout = 4;
-      } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-        contvars[1] = 4;
-        etavars[0] = 4;
-        cont_inout = 4;
-      } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-        fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 2;
-        etavars[0] = 2;
-        cont_inout = 2;
-      } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-        fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 2;
-        etavars[0] = 2;
-        cont_inout = 2;
+      fHistPtSame[0]->Fill(lCentBin, lZVertexBin, lpTTrig);
+      cont_inout = CheckInOut(ldeltaEventPlane);
+      if (cont_inout > 0) {
+        contvars[1] = cont_inout;
+        etavars[0] = cont_inout;
+        fHistPtSame[cont_inout]->Fill(lCentBin, lZVertexBin, lpTTrig);
       }
-      lTrackArray_HighPt->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-      if (lpTTrig < fMinPtTrigCut) continue;
+
 
       for (int jtrack = 0; jtrack < nmctracks; jtrack++) {
         if (itrack == jtrack) continue;
@@ -1436,7 +1192,7 @@ string  filename;
         if (lpTTrig < lpTAsso) continue;
 
         if (TMath::Abs(lEtaAsso) >= 0.8) continue;
-        lpTAssoBin = GetPtBin(lpTAsso);
+        lpTAssoBin = GetPtaBin(lpTAsso);
         if (lpTAssoBin == -1) continue;
 
         if (fConversionsVCut > 0 && lChargeAsso * lChargeTrig < 0)
@@ -1502,10 +1258,10 @@ string  filename;
         if (TMath::Abs(ldPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
           continue;
 
-//        cout << lCentBin << " " << lZVertexBin << " " << lpTTrigBin << " " << lpTAssoBin << endl;
-        fHistdEtadPhiSame[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-        if ( cont_inout == 1 ) fHistdEtadPhiSameIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-        else if ( cont_inout == 2 ) fHistdEtadPhiSameOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+        //        cout << lCentBin << " " << lZVertexBin << " " << lpTTrigBin << " " << lpTAssoBin << endl;
+        fHistdEtadPhiSame[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+        if (cont_inout > 0)
+          fHistdEtadPhiSame[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
       } // jtrack mc
 
 
@@ -1513,16 +1269,14 @@ string  filename;
 
   } // fMCTruth
 
-//  cout << "End of Event" << endl;
-  DoMixing(fCentPercentile, fZVertex, lTrackArray_HighPt, lTrackArray, fEventPlaneV0C, lBSign);
+  //  cout << "End of Event" << endl;
+  DoMixing(fCentPercentile, fZVertex, lTrackArray, fEventPlaneV0C, lBSign);
   fHistNevtSame->Fill(lCentBin, lZVertexBin);
 
 
-  PostData(1, fOutputInc);
-  PostData(2, fOutputIn);
-  PostData(3, fOutputOut);
- // PostData(4, fOutputM1);
-//  PostData(5, fOutputM2);
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    PostData(iplane+1, fOutput[iplane]);
+  }
 }
 
 int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
@@ -1534,7 +1288,6 @@ int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
   if (fCollision == kPbPb) {
     int poolsize = 100;
     fPoolMgr = new AliEventPoolManager(poolsize, fTrackDepth, nCentBin, centralityarr, nZVertBin, zVertexarr);
-    //    fPoolMgr_Highpt = new AliEventPoolManager(1000, fTrackDepth, nCentBin, centralityarr, nZVertBin, zVertexarr);
   } else if (fCollision == kpPb) {
     int poolsize = 150;
     fPoolMgr = new AliEventPoolManager(poolsize, fTrackDepth, nCentBin, centralityarr, nZVertBin, zVertexarr);
@@ -1550,7 +1303,7 @@ int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
 
 }
 
-int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVertex, TObjArray *lTracksTrig, TObjArray *lTracks_LowPt, float eventPlane, int lbSign) {
+int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVertex, TObjArray *lTracksTrig, float eventPlane, int lbSign) {
 
   //  cout << "Starting Do Mixing.. " << endl;
   int lMinimumPtTBinMerging = GetPtBin(6.00);
@@ -1621,37 +1374,19 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             trigPhi = lParticleTrig->Phi();
             trigCharge = lParticleTrig->Charge();
             //        cout << ldeltaEventPlane << "\n";
-            trigpTBin = GetPtBin(trigpT);
+            trigpTBin = GetPttBin(trigpT);
             if (trigpTBin == -1) continue;
 
             ldeltaEventPlane = trigPhi - eventPlane;
             if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
             if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
 
-            if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-              evp_inout = 1;
-            } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-              evp_inout = 1;
-            } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-              evp_inout = 1;
-            } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-              evp_inout = 3;
-            } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-              evp_inout = 3;
-            } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-              evp_inout = 4;
-            } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-              evp_inout = 4;
-            } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-              evp_inout = 2;
-            } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-              evp_inout = 2;
-            }
+            evp_inout = CheckInOut(ldeltaEventPlane);
 
             for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
               mixFilterBit = ltracksmixing[jtrack].GetFilterBit();
               if (!(mixFilterBit & fFilterBit)) continue;       // Test filter bit
-              if (mixFilterBit == 128 && !(ltracksmixing[jtrack].IsPrimary())) continue;     // Only for TPC only track primary check
+//              if (mixFilterBit == 128 && !(ltracksmixing[jtrack].IsPrimary())) continue;     // Only for TPC only track primary check
               mixpT = ltracksmixing[jtrack].GetPt();
               if (mixpT < 3.0 ||  trigpT < mixpT) continue;  // for pbpb
               //          if (trigpT < mixpT) continue;  // for pp
@@ -1659,7 +1394,7 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
               if (TMath::Abs(mixEta) >= 0.8) continue;
               mixPhi = ltracksmixing[jtrack].GetPhi();
               mixCharge = ltracksmixing[jtrack].GetCharge();
-              mixpTBin = GetPtBin(mixpT);
+              mixpTBin = GetPtaBin(mixpT);
 
               if (mixpTBin == -1) continue;
 
@@ -1726,15 +1461,13 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
                 continue;
 
               if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-                if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-                else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0) fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
               } else {
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0) fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
-                if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-                else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
               }
             }
           }
@@ -1765,7 +1498,7 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             trigCharge = lParticleTrig->Charge();
 
             //        cout << ldeltaEventPlane << "\n";
-            trigpTBin = GetPtBin(trigpT);
+            trigpTBin = GetPttBin(trigpT);
             if (trigpTBin == -1) continue;
 
             for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
@@ -1779,7 +1512,7 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
               if (TMath::Abs(mixEta) >= 0.8) continue;
               mixPhi = ltracksmixing[jtrack].GetPhi();
               mixCharge = ltracksmixing[jtrack].GetCharge();
-              mixpTBin = GetPtBin(mixpT);
+              mixpTBin = GetPtaBin(mixpT);
 
               if (mixpTBin == -1) continue;
 
@@ -1846,9 +1579,9 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
                 continue;
 
               if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
               } else { 
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
               }
 
             }
@@ -1901,28 +1634,10 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
             if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
             //        cout << ldeltaEventPlane << "\n";
-            trigpTBin = GetPtBin(trigpT);
+            trigpTBin = GetPttBin(trigpT);
 
             if (trigpTBin == -1) continue;
-            if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-              evp_inout = 1;
-            } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-              evp_inout = 1;
-            } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-              evp_inout = 1;
-            } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-              evp_inout = 3;
-            } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-              evp_inout = 3;
-            } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-              evp_inout = 4;
-            } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-              evp_inout = 4;
-            } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-              evp_inout = 2;
-            } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-              evp_inout = 2;
-            }
+            evp_inout = CheckInOut(ldeltaEventPlane);
 
             for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
               if (!(lTracksMixing->At(jtrack))) return 1;
@@ -1934,7 +1649,7 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
               if (TMath::Abs(mixEta) >= 0.8) continue;
               mixPhi = lParticleMixing->Phi();
               mixCharge = lParticleMixing->Charge();
-              mixpTBin = GetPtBin(mixpT);
+              mixpTBin = GetPtaBin(mixpT);
 
               if (mixpTBin == -1) continue;
 
@@ -2006,15 +1721,13 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
                 continue;
 
               if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-                if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-                else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0) fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
               } else {
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0)fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
-                if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-                else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
               }
               //          cout << "Ho ! " << mixPhi <<"  " <<  mixCharge << "  " << mixEta << "  "<< endl;
 
@@ -2028,168 +1741,6 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
         pool->UpdatePool(lTracksTrig);
         //    cout << lTracksTrig->GetEntriesFast() << endl;
       } // if pool is ready
-
-      /*
-         AliEventPool *pool_lowpt = fPoolMgr->GetEventPool(lCentrality, fZVertex);
-         if (!pool_lowpt) return 1;
-
-         lnEvent = pool_lowpt->GetCurrentNEvents();
-      //  cout << "pool_lowpt : " << lnEvent << endl;
-
-      if (pool_lowpt->IsReady() || pool_lowpt->NTracksInPool() > fMinNumTrack || pool_lowpt->GetCurrentNEvents() >= 5) {
-      if (fDebug > 4) pool_lowpt->PrintInfo();
-
-      lCentBin = GetCentBin(lCentrality);
-      lZVertexBin = GetZVertexBin(fZVertex);
-      lnTracksMixing = 0;
-      lnTracksTrig = 0;
-
-      evp_inout = 0;
-
-      for (int ievent = 0; ievent < lnEvent; ievent++) {
-      lTracksMixing = pool_lowpt->GetEvent(ievent);
-      //      cout << "lNEvt : " << lnEvent << endl;
-      if (!lTracksMixing) continue;
-      lnTracksMixing = lTracksMixing->GetEntriesFast();
-      lnTracksTrig = lTracksTrig->GetEntriesFast();
-
-      //      cout << "lNEvt : " << lnEvent << " MixingT " << lnTracksMixing << " Trig " << lnTracksTrig << endl;
-
-      for (int itrack = 0; itrack < lnTracksTrig; itrack++) {
-      if (!(lTracksTrig->At(itrack))) return 1;
-      const MixedParticle *lParticleTrig = dynamic_cast<MixedParticle*>(lTracksTrig->At(itrack));
-      trigpT = lParticleTrig->Pt();
-      trigEta = lParticleTrig->Eta();
-      if (TMath::Abs(trigEta) >= 0.8) continue;
-      trigPhi = lParticleTrig->Phi();
-      trigCharge = lParticleTrig->Charge();
-      ldeltaEventPlane = trigPhi - fEventPlane;
-      if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
-      //        cout << ldeltaEventPlane << "\n";
-      trigpTBin = GetPtBin(trigpT);
-
-      if (trigpTBin == -1) continue;
-      if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-      evp_inout = 1;
-      } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-      evp_inout = 1;
-      } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-      evp_inout = 1;
-      } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-      evp_inout = 3;
-      } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-      evp_inout = 3;
-      } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-      evp_inout = 4;
-      } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-      evp_inout = 4;
-      } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-      evp_inout = 2;
-      } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-      evp_inout = 2;
-      }
-
-      for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
-      if (!(lTracksMixing->At(jtrack))) return 1;
-      const MixedParticle *lParticleMixing = dynamic_cast<MixedParticle*>(lTracksMixing->At(jtrack));
-      //          cout << "PROBLEM1 ?" << endl;
-      mixpT = lParticleMixing->Pt();
-      if (trigpT < mixpT) continue;
-      mixEta = lParticleMixing->Eta();
-      if (TMath::Abs(mixEta) >= 0.8) continue;
-      mixPhi = lParticleMixing->Phi();
-      mixCharge = lParticleMixing->Charge();
-      mixpTBin = GetPtBin(mixpT);
-
-      if (mixpTBin == -1) continue;
-
-      if (fConversionsVCut > 0 && mixCharge * trigCharge < 0)
-      {
-        Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
-
-        if (mass < fConversionsVCut * 5)
-        {
-          mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
-
-          if (mass < fConversionsVCut*fConversionsVCut) 
-            continue;
-        }
-      }
-
-      // K0s
-      if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
-      {
-        Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
-
-        const Float_t kK0smass = 0.4976;
-
-        if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
-        {
-          mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
-
-          if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
-            continue;
-        }
-      }
-
-
-      // Lambda
-      if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
-      {
-        Float_t mass1 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
-        Float_t mass2 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
-
-        const Float_t kLambdaMass = 1.115;
-
-        if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-        {
-          mass1 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
-
-          if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-            continue;
-        }
-        if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-        {
-          mass2 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
-
-          if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-            continue;
-        }
-      }
-
-
-      deltaPhi = trigPhi - mixPhi;
-      deltaEta = trigEta - mixEta;
-
-      //          cout << mixpTBin << " and " << trigpTBin << "  " << jtrack << "/" << lnTracksMixing << " and " << itrack << "/" << lnTracksTrig  <<  endl;
-
-      if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
-      if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
-
-      dPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, trigCharge, mixCharge, trigpT, mixpT, lbSign);
-      if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
-        continue;
-
-      fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-      //          cout << fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin] << " & " << fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->GetEntries() << "\n";
-
-      if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-      else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-      else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-      else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-
-      //          cout << "Ho ! " << mixPhi <<"  " <<  mixCharge << "  " << mixEta << "  "<< endl;
-
-  }
-
-  }
-  }
-  //    cout << "problem!" << endl;
-  pool_lowpt->UpdatePool(lTracks_LowPt);
-
-  } else 
-    pool_lowpt->UpdatePool(lTracks_LowPt);
-  */       // Low PT part!
 
     } 
   } else {
@@ -2239,28 +1790,10 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
             if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
             if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
             //        cout << ldeltaEventPlane << "\n";
-            trigpTBin = GetPtBin(trigpT);
+            trigpTBin = GetPttBin(trigpT);
 
             if (trigpTBin == -1) continue;
-            if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-              evp_inout = 1;
-            } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-              evp_inout = 1;
-            } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-              evp_inout = 1;
-            } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-              evp_inout = 3;
-            } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-              evp_inout = 3;
-            } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-              evp_inout = 4;
-            } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-              evp_inout = 4;
-            } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-              evp_inout = 2;
-            } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-              evp_inout = 2;
-            } 
+            evp_inout = CheckInOut(ldeltaEventPlane);
 
             for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
               if (!(lTracksMixing->At(jtrack))) return 1;
@@ -2272,7 +1805,7 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
               if (TMath::Abs(mixEta) >= 0.8) continue;
               mixPhi = lParticleMixing->Phi();
               mixCharge = lParticleMixing->Charge();
-              mixpTBin = GetPtBin(mixpT);
+              mixpTBin = GetPtaBin(mixpT);
 
               if (mixpTBin == -1) continue;
 
@@ -2344,15 +1877,14 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
                 continue;
 
               if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-                if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-                else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0) fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
               } else {
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0)
+                fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
-                if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-                else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
               }
               //          cout << "Ho ! " << mixPhi <<"  " <<  mixCharge << "  " << mixEta << "  "<< endl;
 
@@ -2376,20 +1908,13 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
 
 void AliAnalysisTaskJetLikeCorrelation::InitHistogramVectors() {
 
-  fHistdEtadPhiSame = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiMixed = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiMixedIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiMixedOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
+  fHistdEtadPhiSame = vector <vector < vector <vector< vector<TH2D*> > > > > (fNumberOfPlanes, vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPttArray.GetSize() - 1, vector<TH2D*> (fPtaArray.GetSize() - 1) ) ) ) );
+  fHistdEtadPhiMixed = vector <vector < vector <vector< vector<TH2D*> > > > > (fNumberOfPlanes,  vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPttArray.GetSize() - 1, vector<TH2D*> (fPtaArray.GetSize() - 1) ) ) ) );
 
-  fHistdEtadPhiSameMCCorrCont = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrContIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrContOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
+  fHistdEtadPhiSameMCCorrCont = vector <vector < vector <vector< vector<TH2D*> > > > > (fNumberOfPlanes, vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPttArray.GetSize() - 1, vector<TH2D*> (fPtaArray.GetSize() - 1) ) ) ) );
   
-  fHistdEtadPhiSameMCCorrPrim = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrPrimIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrPrimOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
+  fHistdEtadPhiSameMCCorrPrim = vector <vector < vector <vector< vector<TH2D*> > > > > (fNumberOfPlanes, vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPttArray.GetSize() - 1, vector<TH2D*> (fPtaArray.GetSize() - 1) ) ) ) );
+
   fPoolSize = vector< vector <int> > (fCentArray.GetSize() - 1, vector< int > (fZVertexArray.GetSize() - 1 ) );
 }
 
@@ -2402,106 +1927,52 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
   int lPtMax = 25;
   int lMinPtBin = GetPtBin(fMinPtTrigCut);
 
-  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-        if (iptt < lMinPtBin) continue;
-        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-          if (iptt < ipta) continue;
-          fHistdEtadPhiSame[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSame%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSame%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixed[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixed%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixed%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixedIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
+      for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
+        for (int iptt = 0; iptt < fPttArray.GetSize() - 1; iptt++) {
+          if (iptt < lMinPtBin) continue;
+          for (int ipta = 0; ipta < fPtaArray.GetSize() - 1; ipta++) {
+            if (iptt < ipta) continue;
+            fHistdEtadPhiSame[iplane][icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSame%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSame%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+            fHistdEtadPhiMixed[iplane][icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixed%02d%02d%02d%02d%02d",iplane, icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixed%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
-          fHistdEtadPhiSame[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameOut[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiMixed[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiMixedIn[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta]->Sumw2();
-          
-          if (fMCCorrection) {
-          fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+            fHistdEtadPhiSame[iplane][icent][izvertex][iptt][ipta]->Sumw2();
+            fHistdEtadPhiMixed[iplane][icent][izvertex][iptt][ipta]->Sumw2();
 
-          fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta]->Sumw2();
-          
-          fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrPrimOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+            if (fMCCorrection) {
+              fHistdEtadPhiSameMCCorrCont[iplane][icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
-          fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrPrimOut[icent][izvertex][iptt][ipta]->Sumw2();
+              fHistdEtadPhiSameMCCorrCont[iplane][icent][izvertex][iptt][ipta]->Sumw2();
 
-          }
-        } // ipta
-      } // iptt
-    } //izvertex 
-  }
+              fHistdEtadPhiSameMCCorrPrim[iplane][icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+
+              fHistdEtadPhiSameMCCorrPrim[iplane][icent][izvertex][iptt][ipta]->Sumw2();
+
+            }
+          } // ipta
+        } // iptt
+      } //izvertex 
+    }
+  } // iplane
   
-//  fHistNevtMixed = new TH2D(Form("fHistNevtMixed"), Form("fHistNevtMixed"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//  fHistNevtMixed->GetXaxis()->SetTitle("CentBin");
-//  fHistNevtMixed->GetYaxis()->SetTitle("ZVertBin");
   fHistNevtSame = new TH2D(Form("fHistNevtSame"), Form("fHistNevtSame"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
   fHistNevtSame->GetXaxis()->SetTitle("CentBin");
   fHistNevtSame->GetYaxis()->SetTitle("ZVertBin");
-  
-//  fHistNevtMixedIn = new TH2D(Form("fHistNevtMixedIn"), Form("fHistNevtMixedIn"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//  fHistNevtMixedIn->GetXaxis()->SetTitle("CentBin");
-//  fHistNevtMixedIn->GetYaxis()->SetTitle("ZVertBin");
-//  fHistNevtSameIn = new TH2D(Form("fHistNevtSameIn"), Form("fHistNevtSameIn"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//  fHistNevtSameIn->GetXaxis()->SetTitle("CentBin");
-//  fHistNevtSameIn->GetYaxis()->SetTitle("ZVertBin");
-  //fHistNevtMixedM1 = new TH2D(Form("fHistNevtMixedM1"), Form("fHistNevtMixedM1"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-  //fHistNevtMixedM1->GetXaxis()->SetTitle("CentBin");
-  //fHistNevtMixedM1->GetYaxis()->SetTitle("ZVertBin");
-//fHistNevtSameM1 = new TH2D(Form("fHistNevtSameM1"), Form("fHistNevtSameM1"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//fHistNevtSameM1->GetXaxis()->SetTitle("CentBin");
-//fHistNevtSameM1->GetYaxis()->SetTitle("ZVertBin");
-  //fHistNevtMixedM2 = new TH2D(Form("fHistNevtMixedM2"), Form("fHistNevtMixedM2"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-  //fHistNevtMixedM2->GetXaxis()->SetTitle("CentBin");
-  //fHistNevtMixedM2->GetYaxis()->SetTitle("ZVertBin");
-//fHistNevtSameM2 = new TH2D(Form("fHistNevtSameM2"), Form("fHistNevtSameM2"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//fHistNevtSameM2->GetXaxis()->SetTitle("CentBin");
-//fHistNevtSameM2->GetYaxis()->SetTitle("ZVertBin");
-  //fHistNevtMixedOut = new TH2D(Form("fHistNevtMixedOut"), Form("fHistNevtMixedOut"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-  //fHistNevtMixedOut->GetXaxis()->SetTitle("CentBin");
-  //fHistNevtMixedOut->GetYaxis()->SetTitle("ZVertBin");
-//fHistNevtSameOut = new TH2D(Form("fHistNevtSameOut"), Form("fHistNevtSameOut"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//fHistNevtSameOut->GetXaxis()->SetTitle("CentBin");
-//fHistNevtSameOut->GetYaxis()->SetTitle("ZVertBin");
 
-  /*
-  fHistPtMixed = new TH2I(Form("fHistPtMixed"), Form("fHistPtMixed"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-  fHistPtMixed->GetXaxis()->SetTitle("CentBin");
-  fHistPtMixed->GetYaxis()->SetTitle("ZVertBin"); */
-  fHistPtSame = new TH3D(Form("fHistPtSame"), Form("fHistPtSame"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
-  fHistPtSame->GetXaxis()->SetTitle("CentBin");
-  fHistPtSame->GetYaxis()->SetTitle("ZVertBin");
-  fHistPtSame->GetZaxis()->SetTitle("Pt(GeV/c)");
-  
-  
-  fHistPtSameIn = new TH3D(Form("fHistPtSameIn"), Form("fHistPtSameIn"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
-  fHistPtSameIn->GetXaxis()->SetTitle("CentBin");
-  fHistPtSameIn->GetYaxis()->SetTitle("ZVertBin");
-  fHistPtSameIn->GetZaxis()->SetTitle("Pt(GeV/c)");
-  fHistPtSameOut = new TH3D(Form("fHistPtSameOut"), Form("fHistPtSameOut"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
-  fHistPtSameOut->GetXaxis()->SetTitle("CentBin");
-  fHistPtSameOut->GetYaxis()->SetTitle("ZVertBin");
-  fHistPtSameOut->GetZaxis()->SetTitle("Pt(GeV/c)");
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    fHistPtSame[iplane] = new TH3D(Form("fHistPtSame%02d", iplane), Form("fHistPtSame%02d", iplane), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
+    fHistPtSame[iplane]->GetXaxis()->SetTitle("CentBin");
+    fHistPtSame[iplane]->GetYaxis()->SetTitle("ZVertBin");
+    fHistPtSame[iplane]->GetZaxis()->SetTitle("Pt(GeV/c)");
 
+  }
 //  float lEtaMin = -0.9;
 //  float lEtaMax = 0.9;
 
-  int nbins[5] = {5, 20, 9, 20, 50};
+  int nbins[5] = {8, 20, 9, 20, 50};
   // In/out(5), Cent, ZVtx, Eta, Pt // total 5
-  double maxbin[5] = {4.5, 100, 9,1,25 };
+  double maxbin[5] = {7.5, 100, 9,1,25 };
   double minbin[5] = { -0.5, 0, -9, -1, 0};
   fHistEtaSparse = new THnSparseD("fHistEtaSparse", "fHistEtaSparse", 5, nbins, minbin, maxbin);
   fHistEtaSparse->Sumw2();
@@ -2572,12 +2043,20 @@ int AliAnalysisTaskJetLikeCorrelation::GetZVertexBin(double zvertex) {
       return -1;
 }
 
-int AliAnalysisTaskJetLikeCorrelation::GetPtBin(double pt) {
-    for (int iptbin = 0; iptbin < fPtArray.GetSize() - 1 ; iptbin++) {
-          if (pt >= fPtArray[iptbin] && pt < fPtArray[iptbin+1])
-                  return iptbin;
-            }
-      return -1;
+int AliAnalysisTaskJetLikeCorrelation::GetPttBin(double pt) {
+  for (int iptbin = 0; iptbin < fPttArray.GetSize() - 1 ; iptbin++) {
+    if (pt >= fPttArray[iptbin] && pt < fPttArray[iptbin+1])
+      return iptbin;
+  }
+  return -1;
+}
+
+int AliAnalysisTaskJetLikeCorrelation::GetPtaBin(double pt) {
+  for (int iptbin = 0; iptbin < fPtaArray.GetSize() - 1 ; iptbin++) {
+    if (pt >= fPtaArray[iptbin] && pt < fPtaArray[iptbin+1])
+      return iptbin;
+  }
+  return -1;
 }
 
 int AliAnalysisTaskJetLikeCorrelation::GetEventInformation(AliAODEvent *aodevent) {
@@ -2688,4 +2167,187 @@ double AliAnalysisTaskJetLikeCorrelation::GetCentralityFromIP(double ip) {
 	}
 	return 0.0;
 
+}
+
+int AliAnalysisTaskJetLikeCorrelation::FillPt(double deltaevp, int centbin, int zvertbin, double trigpt) {
+
+  if (deltaevp < 1./12*pi && deltaevp >= 0) {
+    fHistPtSame[1]->Fill(centbin, zvertbin, trigpt); 
+    return 1;
+  } 
+  else if (deltaevp < 2./12*pi && deltaevp >= 1./12*pi) {
+    fHistPtSame[3]->Fill(centbin, zvertbin, trigpt); 
+    return 3;
+  } 
+  else if (deltaevp < 3./12*pi && deltaevp >= 2./12*pi) { 
+    fHistPtSame[4]->Fill(centbin, zvertbin, trigpt); 
+    return 4;
+  } 
+  else if (deltaevp < 4./12*pi && deltaevp >= 3./12*pi) { 
+    fHistPtSame[5]->Fill(centbin, zvertbin, trigpt); 
+    return 5;
+  } 
+  else if (deltaevp < 5./12*pi && deltaevp >= 4./12*pi) { 
+    fHistPtSame[6]->Fill(centbin, zvertbin, trigpt); 
+    return 6;
+  } 
+  else if (deltaevp < 7./12*pi && deltaevp >= 5./12*pi) { 
+    fHistPtSame[2]->Fill(centbin, zvertbin, trigpt); 
+    return 2;
+  } 
+  else if (deltaevp < 8./12*pi && deltaevp >= 7./12*pi) { 
+    fHistPtSame[6]->Fill(centbin, zvertbin, trigpt); 
+    return 6;
+  } 
+  else if (deltaevp < 9./12*pi && deltaevp >= 8./12*pi) { 
+    fHistPtSame[5]->Fill(centbin, zvertbin, trigpt); 
+    return 5;
+  } 
+  else if (deltaevp < 10./12*pi && deltaevp >= 9./12*pi) {
+    fHistPtSame[4]->Fill(centbin, zvertbin, trigpt); 
+    return 4;
+  } 
+  else if (deltaevp < 11./12*pi && deltaevp >= 10./12*pi) { 
+    fHistPtSame[3]->Fill(centbin, zvertbin, trigpt); 
+    return 3;
+  } 
+  else if (deltaevp < 13./12*pi && deltaevp >= 11./12*pi) { 
+    fHistPtSame[1]->Fill(centbin, zvertbin, trigpt); 
+    return 1;
+  } 
+  else if (deltaevp < 14./12*pi && deltaevp >= 13./12*pi) { 
+    fHistPtSame[3]->Fill(centbin, zvertbin, trigpt); 
+    return 3;
+  } 
+  else if (deltaevp < 15./12*pi && deltaevp >= 14./12*pi) { 
+    fHistPtSame[4]->Fill(centbin, zvertbin, trigpt); 
+    return 4;
+  } 
+  else if (deltaevp < 16./12*pi && deltaevp >= 15./12*pi) { 
+    fHistPtSame[5]->Fill(centbin, zvertbin, trigpt); 
+    return 5;
+  } 
+  else if (deltaevp < 17./12*pi && deltaevp >= 16./12*pi) { 
+    fHistPtSame[6]->Fill(centbin, zvertbin, trigpt); 
+    return 6;
+  } 
+  else if (deltaevp < 19./12*pi && deltaevp >= 17./12*pi) { 
+    fHistPtSame[2]->Fill(centbin, zvertbin, trigpt); 
+    return 2;
+  } 
+  else if (deltaevp < 20./12*pi && deltaevp >= 19./12*pi) { 
+    fHistPtSame[6]->Fill(centbin, zvertbin, trigpt); 
+    return 6;
+  } 
+  else if (deltaevp < 21./12*pi && deltaevp >= 20./12*pi) { 
+    fHistPtSame[5]->Fill(centbin, zvertbin, trigpt); 
+    return 5;
+  } 
+  else if (deltaevp < 22./12*pi && deltaevp >= 21./12*pi) { 
+    fHistPtSame[4]->Fill(centbin, zvertbin, trigpt); 
+    return 4;
+  } 
+  else if (deltaevp < 23./12*pi && deltaevp >= 22./12*pi) { 
+    fHistPtSame[3]->Fill(centbin, zvertbin, trigpt); 
+    return 3;
+  } 
+  else if (deltaevp < 24./12*pi && deltaevp >= 23./12*pi) { 
+    fHistPtSame[1]->Fill(centbin, zvertbin, trigpt); 
+    return 1;
+  } 
+
+  return -9;
+}
+
+int CheckInOut(double deltaevp) {
+
+  if (fNumberOfPlanes > 2) {
+    if (deltaevp < 1./12*pi && deltaevp >= 0) {
+      return 1;
+    } 
+    else if (deltaevp < 2./12*pi && deltaevp >= 1./12*pi) {
+      return 3;
+    } 
+    else if (deltaevp < 3./12*pi && deltaevp >= 2./12*pi) { 
+      return 4;
+    } 
+    else if (deltaevp < 4./12*pi && deltaevp >= 3./12*pi) { 
+      return 5;
+    } 
+    else if (deltaevp < 5./12*pi && deltaevp >= 4./12*pi) { 
+      return 6;
+    } 
+    else if (deltaevp < 7./12*pi && deltaevp >= 5./12*pi) { 
+      return 2;
+    } 
+    else if (deltaevp < 8./12*pi && deltaevp >= 7./12*pi) { 
+      return 6;
+    } 
+    else if (deltaevp < 9./12*pi && deltaevp >= 8./12*pi) { 
+      return 5;
+    } 
+    else if (deltaevp < 10./12*pi && deltaevp >= 9./12*pi) {
+      return 4;
+    } 
+    else if (deltaevp < 11./12*pi && deltaevp >= 10./12*pi) { 
+      return 3;
+    } 
+    else if (deltaevp < 13./12*pi && deltaevp >= 11./12*pi) { 
+      return 1;
+    } 
+    else if (deltaevp < 14./12*pi && deltaevp >= 13./12*pi) { 
+      return 3;
+    } 
+    else if (deltaevp < 15./12*pi && deltaevp >= 14./12*pi) { 
+      return 4;
+    } 
+    else if (deltaevp < 16./12*pi && deltaevp >= 15./12*pi) { 
+      return 5;
+    } 
+    else if (deltaevp < 17./12*pi && deltaevp >= 16./12*pi) { 
+      return 6;
+    } 
+    else if (deltaevp < 19./12*pi && deltaevp >= 17./12*pi) { 
+      return 2;
+    } 
+    else if (deltaevp < 20./12*pi && deltaevp >= 19./12*pi) { 
+      return 6;
+    } 
+    else if (deltaevp < 21./12*pi && deltaevp >= 20./12*pi) { 
+      return 5;
+    } 
+    else if (deltaevp < 22./12*pi && deltaevp >= 21./12*pi) { 
+      return 4;
+    } 
+    else if (deltaevp < 23./12*pi && deltaevp >= 22./12*pi) { 
+      return 3;
+    } 
+    else if (deltaevp < 24./12*pi && deltaevp >= 23./12*pi) { 
+      return 1;
+    } 
+    return -9;
+  } 
+  else if (fNumberOfPlanes == 2) {
+    if (deltaevp < 1./12*pi && deltaevp >= 0) {
+      return 1;
+    } 
+    else if (deltaevp < 7./12*pi && deltaevp >= 5./12*pi) { 
+      return 2;
+    } 
+    else if (deltaevp < 13./12*pi && deltaevp >= 11./12*pi) { 
+      return 1;
+    } 
+    else if (deltaevp < 19./12*pi && deltaevp >= 17./12*pi) { 
+      return 2;
+    } 
+    else if (deltaevp < 24./12*pi && deltaevp >= 23./12*pi) { 
+      return 1;
+    } 
+
+    return -9;
+
+  }
+  else {
+    return -9;
+  }
 }
