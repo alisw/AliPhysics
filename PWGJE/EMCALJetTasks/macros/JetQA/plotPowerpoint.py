@@ -7,6 +7,7 @@
 #       your needs -- the code should be intuitive to understand.
 #
 # Prerequisite: pip install python-pptx
+# The output needs to be saved in a folder called "QAoutput" plotDir/QAoutput/
 #
 # Author: <james.mulligan@yale.edu>
 
@@ -21,10 +22,18 @@ def plotPowerpoint(runList, plotDir):
   if not plotDir.endswith("/"):
     plotDir = plotDir + "/"
   if not os.path.exists(plotDir):
-    print "plotDir " + plotDir + "does not exist!"
+    print("plotDir " + plotDir + "does not exist!")
 
   # Detect whether pt-hard production or not
   isPtHard = os.path.exists(plotDir + "AllRuns/QAoutput/PtHard")
+  # Detect whether pp production or not
+  isPbPb = os.path.exists(plotDir + "AllRuns/QAoutput/Jets/hFullJetPtCorrCentral.png")
+  # Detect whether includes PHOS or not
+  isIncludePhos = os.path.exists(plotDir + "AllRuns/QAoutput/Clusters/hClusPHOSEnergy.png")
+
+  print("Is pT hard: %s" % isPtHard)
+  print("Is PbPb data: %s" % isPbPb)
+  print("Includes phos info: %s" % isIncludePhos)
 
   # Create a blank presentation
   qa = Presentation()
@@ -98,10 +107,10 @@ def plotPowerpoint(runList, plotDir):
   
   for run in runList.split():
     
-    print "Plotting Run " +  str(run)
+    print("Plotting Run " +  str(run))
     
     if not os.path.exists(plotDir + str(run) + "/QAoutput/EventQA"):
-      print "Run " + str(run) + " is empty -- skipping."
+      print("Run " + str(run) + " is empty -- skipping.")
       continue
     
     if isPtHard:
@@ -271,28 +280,31 @@ def plotRun(qa, blank_slide_layout, plotDir, run):
   tf.fit_text('Calibri', 36)
 
   img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetPtCorr.png"
-  left = Inches(leftEdge+1)
-  top = Inches(topEdge-0.5)
-  if isAllRuns:
-    top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
+  if os.path.exists(img_path):
+    left = Inches(leftEdge+1)
+    top = Inches(topEdge-0.5)
+    if isAllRuns:
+        top = Inches(topEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
 
   if isAllRuns:
     img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetPtCorrCentral.png"
-    left = Inches(rightEdge-1.)
-    top = Inches(topEdge-0.5)
-    width = Inches(imgWidth)
-    slide.shapes.add_picture(img_path, left, top, width=width)
+    if os.path.exists(img_path):
+        left = Inches(rightEdge-1.)
+        top = Inches(topEdge-0.5)
+        width = Inches(imgWidth)
+        slide.shapes.add_picture(img_path, left, top, width=width)
   
   img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetRhoVsCent.png"
-  left = Inches(rightEdge-1)
-  top = Inches(topEdge)
-  if isAllRuns:
-    left = Inches(leftEdge)
-    top = Inches(lowEdge-0.5)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
+  if os.path.exists(img_path):
+    left = Inches(rightEdge-1)
+    top = Inches(topEdge)
+    if isAllRuns:
+        left = Inches(leftEdge)
+        top = Inches(lowEdge-0.5)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
 
   img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetPtLeadjetPt.png"
   left = Inches(leftEdge+1)
@@ -324,19 +336,21 @@ def plotRun(qa, blank_slide_layout, plotDir, run):
   tf.fit_text('Calibri', 36)
   
   img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPtCorr.png"
-  left = Inches(leftEdge+1.)
-  top = Inches(topEdge-0.5)
-  if isAllRuns:
-    top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
+  if os.path.exists(img_path):
+    left = Inches(leftEdge+1.)
+    top = Inches(topEdge-0.5)
+    if isAllRuns:
+      top = Inches(topEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
 
   if isAllRuns:
     img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPtCorrCentral.png"
-    left = Inches(rightEdge-1.)
-    top = Inches(topEdge-0.5)
-    width = Inches(imgWidth)
-    slide.shapes.add_picture(img_path, left, top, width=width)
+    if os.path.exists(img_path):
+        left = Inches(rightEdge-1.)
+        top = Inches(topEdge-0.5)
+        width = Inches(imgWidth)
+        slide.shapes.add_picture(img_path, left, top, width=width)
   
   img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPtCorrCalo.png"
   if os.path.exists(img_path):
