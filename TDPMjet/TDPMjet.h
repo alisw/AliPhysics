@@ -115,7 +115,7 @@ public:
    			  int ntmass, int ntchar, int idp, int iemu);
 	
    virtual void Dt_Kkinc(int npmass, int npchar, int ntmass, int ntchar, 
-   			 int idp, double elab, int kkmat, int irej);
+   			 int idp, double elab, int kkmat, int& irej);
 
    virtual void Pho_Phist(int imode, double weight);
 

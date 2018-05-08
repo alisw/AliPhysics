@@ -377,8 +377,10 @@ void TDPMjet::GenerateEvent()
    DTEVNO.nevent=fNEvent;
    Int_t kkmat=-1;
    Float_t Elab = fEpn;
-   Int_t irej=0;
-   Dt_Kkinc(fIp, fIpz, fIt, fItz, fIdp, Elab, kkmat, irej);
+   Int_t irej = 1;
+   while (irej) {
+     Dt_Kkinc(fIp, fIpz, fIt, fItz, fIdp, Elab, kkmat, irej);
+   }
 }
 //______________________________________________________________________________
 void TDPMjet::Dt_Dtuini(int nevts, double epn, int npmass, int npchar, 
@@ -402,7 +404,7 @@ void TDPMjet::Dt_Dtuini(int nevts, double epn, int npmass, int npchar,
 
 //______________________________________________________________________________
 void TDPMjet::Dt_Kkinc(int npmass, int npchar, int ntmass, int ntchar, 
-   		       int idp, double elab, int kkmat, int irej)
+   		       int idp, double elab, int kkmat, int& irej)
 {
   // Call dmpjet routine DT_KKINC passing the parameters 
   // in a way accepted by Fortran routines				   
