@@ -36,13 +36,15 @@ set(SRCS
     TKDPDF.cxx
     TKDSpline.cxx
     TStatToolkit.cxx
+    TTreeStream.cxx
+    AliMathBase.cxx
     AliNDLocalRegression.cxx
     AliExternalInfo.cxx
     AliFFTsmoother.cxx
     AliTreeTrending.cxx
     AliNDFormulaBrowser.cxx
     AliDrawStyle.cxx
-        AliPainter.cxx
+    AliPainter.cxx
     AliElasticSearchRoot.cxx)
 
 # Dependencies (libraries)

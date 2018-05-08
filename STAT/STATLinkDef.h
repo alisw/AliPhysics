@@ -15,9 +15,13 @@
 #pragma link C++ class TKDPDF+;
 #pragma link C++ class TKDInterpolator+;
 #pragma link C++ class TKDSpline+;
+#pragma link C++ class TTreeDataElement+;
+#pragma link C++ class TTreeStream+;
+#pragma link C++ class TTreeSRedirector+;
 
 #pragma link C++ class AliTMinuitToolkit+;
 #pragma link C++ class AliNDLocalRegression+;
+#pragma link C++ class AliMathBase+;
 
 #ifdef ROOT_HAS_HTTP
 #pragma link C++ class AliTreePlayer+;

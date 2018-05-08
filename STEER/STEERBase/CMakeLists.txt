@@ -75,7 +75,6 @@ set(SRCS
     AliMagF.cxx
     AliMagWrapCheb.cxx
     AliMagFast.cxx
-    AliMathBase.cxx
     AliMCEvent.cxx
     AliMCEventHandler.cxx
     AliMCParticle.cxx
@@ -144,7 +143,6 @@ set(SRCS
     AliVVZEROfriend.cxx
     AliVZDC.cxx
     AliMergeable.cxx
-    TTreeStream.cxx
    )
 
 # Headers from sources

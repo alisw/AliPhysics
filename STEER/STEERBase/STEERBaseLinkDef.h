@@ -132,10 +132,6 @@
 #pragma link C++ class AliOADBObjCache+;
 #pragma link C++ class AliOADBContainer+;
 
-#pragma link C++ class AliMathBase+;
-#pragma link C++ class  TTreeDataElement+;
-#pragma link C++ class  TTreeStream+;
-#pragma link C++ class  TTreeSRedirector+;
 
 #pragma link C++ class AliVMFT+;
 #pragma link C++ class AliCounterCollection+;

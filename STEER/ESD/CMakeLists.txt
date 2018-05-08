@@ -23,6 +23,7 @@ include_directories(${AliRoot_SOURCE_DIR}/STEER/${MODULE})
 # Additional include directories - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase
+                    ${AliRoot_SOURCE_DIR}/STEER/STAT
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
 		    ${AliRoot_SOURCE_DIR}/RAW/dateStream)
 
@@ -114,7 +115,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("ESD" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Geom Gpad Graf3d MathCore Matrix Physics RIO Tree)
-set(ALIROOT_DEPENDENCIES STEERBase)
+set(ALIROOT_DEPENDENCIES STEERBase STAT)
 
 # Generate the ROOT map
 # Dependecies
