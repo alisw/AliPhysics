@@ -859,11 +859,12 @@ Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t 
         AliError("Using Parameters for both charges");
         if((iCharge!=AliPID::kNoCharge)&&(!fkPIDResponseObject->GetThresholdParameters(nTracklets, level, params,centrality,PIDmethod,AliPID::kNoCharge))){
             AliError("No Params found for the given configuration with charge 0");
+            return kTRUE;
         }
-        return kTRUE;
+        if(iCharge==AliPID::kNoCharge){
+            return kTRUE;
+        }
     }
-
-
 
     Double_t threshold = 1. - params[0] - params[1] * p - params[2] * TMath::Exp(-params[3] * p);
     AliDebug(3,Form("is ident details %i %f %f %i %f %f %f %f \n",nTracklets, level, centrality,PIDmethod,probEle, threshold,TMath::Min(threshold, 0.99),TMath::Max(TMath::Min(threshold, 0.99), 0.2)));
