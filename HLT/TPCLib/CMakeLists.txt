@@ -22,7 +22,7 @@ if(ROOT_HASOPENGL)
 endif()
 
 set(LIBDEPS)
-if((SHUTTLE OR DARPM OR "$ENV{ALIROOT_ONLINE_MODE}") AND NOT "$ENV{HLT_ONLINE_MODE}")
+if(ALIROOT_ONLINE_MODE)
     message(WARNING "Online build for non-HLT: Disabling TPC GPU Tracking")
 else()
     if(DEFINED ALITPCCOMMON_DIR)
