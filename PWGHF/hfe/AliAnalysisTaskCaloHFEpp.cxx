@@ -645,10 +645,20 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 								//fHist_eff_pretrack->Fill(TrkPt);
 
+								/////////////////////////
+								// track cut
+								/////////////////////////
 								if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
-								if(track->GetTPCNcls() < 80) continue;
-								if(track->GetITSNcls() < 3) continue;
-								if(track->Eta()>0.6 || track->Eta()<-0.6) continue;
+								if(track->GetTPCNcls() < 80) continue; //TPC cluster cut
+								if(track->GetITSNcls() < 3) continue;  //ITS cluster cut
+								if(!(track -> HasPointOnITSLayer(0) || track -> HasPointOnITSLayer(1))) continue;
+								if(track->Eta()>0.6 || track->Eta()<-0.6) continue; //Eta cut
+
+								Double_t DCA[2] = {-999.,-999.}, covar[3]; //DCA cut
+								if(track -> PropagateToDCA(pVtx,fVevent -> GetMagneticField(),20.,DCA,covar))
+								{
+												if(TMath::Abs(DCA[0]) > 2.4 || TMath::Abs(DCA[1]) > 3.2) continue;
+								}
 
 								//fHist_eff_posttrack->Fill(TrkPt);
 
