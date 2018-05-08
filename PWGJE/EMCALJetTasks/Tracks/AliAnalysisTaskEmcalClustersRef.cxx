@@ -38,9 +38,10 @@
 #include <THistManager.h>
 #include <TLinearBinning.h>
 #include <TLorentzVector.h>
-#include <TObjArray.h>
-#include <TParameter.h>
 #include <TMath.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TParameter.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisUtils.h"
@@ -84,7 +85,9 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef() :
     fDoFillMultiplicityHistograms(false),
     fUseExclusiveTriggers(true),
     fClusterTimeRange(-50e-6, 50e-6),
-    fTriggerClusters()
+    fTriggerClusters(),
+    fRequiredOverlaps(),
+    fExcludedOverlaps()
 {
 }
 
@@ -100,7 +103,9 @@ AliAnalysisTaskEmcalClustersRef::AliAnalysisTaskEmcalClustersRef(const char *nam
     fDoFillMultiplicityHistograms(false),
     fUseExclusiveTriggers(true),
     fClusterTimeRange(-50e-6, 50e-6),
-    fTriggerClusters()
+    fTriggerClusters(),
+    fRequiredOverlaps(),
+    fExcludedOverlaps()
 {
 }
 
@@ -167,6 +172,33 @@ bool AliAnalysisTaskEmcalClustersRef::IsUserEventSelected(){
   if(fBunchCrossingIndex > -1){
     int bcindex = fInputEvent->GetHeader()->GetBunchCrossNumber() % 4;
     if(bcindex != fBunchCrossingIndex) return false;
+  }
+
+  // handle overlaps
+  if(fRequiredOverlaps.GetEntries() || fExcludedOverlaps.GetEntries()){
+    if(fRequiredOverlaps.GetEntries()){
+      Bool_t allFound(true);
+      for(auto t : fRequiredOverlaps){
+        auto trgstr = static_cast<TObjString *>(t)->String();
+        if(std::find_if(fSelectedTriggers.begin(), fSelectedTriggers.end(), [&trgstr](const TString &seltrigger) -> bool { return seltrigger.Contains(trgstr); }) == fSelectedTriggers.end()) {
+          allFound = false;
+          break;
+        }
+      }
+      if(!allFound) return false;
+    }
+
+    if(fExcludedOverlaps.GetEntries()){
+      Bool_t oneFound(false);
+      for(auto t : fExcludedOverlaps){
+        auto trgstr = static_cast<TObjString *>(t)->String();
+        if(std::find_if(fSelectedTriggers.begin(), fSelectedTriggers.end(), [&trgstr](const TString &seltrigger) -> bool { return seltrigger.Contains(trgstr); }) != fSelectedTriggers.end()) {
+          oneFound = true;
+          break;
+        }
+      }
+      if(oneFound) return false;
+    }
   }
 
   // determine trigger clusters (ANY - 0 always included)
@@ -422,6 +454,16 @@ int AliAnalysisTaskEmcalClustersRef::GetEMCALCellOccupancy(double ecut){
     }
   }
   return cellIDs.size();
+}
+
+void AliAnalysisTaskEmcalClustersRef::AddRequiredTriggerOverlap(const char *trigger){
+  if(fRequiredOverlaps.FindObject(trigger)) return;
+  fRequiredOverlaps.Add(new TObjString(trigger));
+}
+
+void AliAnalysisTaskEmcalClustersRef::AddExcludedTriggerOverlap(const char *trigger){
+  if(fExcludedOverlaps.FindObject(trigger)) return;
+  fExcludedOverlaps.Add(new TObjString(trigger));
 }
 
 AliAnalysisTaskEmcalClustersRef *AliAnalysisTaskEmcalClustersRef::AddTaskEmcalClustersRef(const TString &nclusters, const TString &suffix){

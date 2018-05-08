@@ -34,6 +34,7 @@
 #include <THistManager.h>
 #include <TLinearBinning.h>
 #include <TList.h>
+#include <TObjString.h>
 #include <TString.h>
 #include "AliAnalysisManager.h"
 #include "AliEMCALTriggerPatchInfo.h"
@@ -47,7 +48,10 @@ using namespace EMCalTriggerPtAnalysis;
 AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef():
   AliAnalysisTaskEmcalTriggerBase(),
   fEnableSumw2(false),
-  fOnlineThresholds()
+  fOnlineThresholds(),
+  fSwapPatches(false),
+  fRequiredOverlaps(),
+  fExcludedOverlaps()
 {
 
 }
@@ -55,7 +59,10 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef():
 AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef(const char * name):
   AliAnalysisTaskEmcalTriggerBase(name),
   fEnableSumw2(false),
-  fOnlineThresholds()
+  fOnlineThresholds(),
+  fSwapPatches(false),
+  fRequiredOverlaps(),
+  fExcludedOverlaps()
 {
   fOnlineThresholds.Set(8);
 }
@@ -97,6 +104,36 @@ void AliAnalysisTaskEmcalRecalcPatchesRef::CreateUserHistos(){
       fHistos->CreateTHnSparse(Form("hAllPatches%c%s%s%s", detector, patchtype, kt.data(), kc.data()), Form("Fired %c%s patches for trigger %s (cluster %s)", detector, patchtype, kt.data(), kc.data()), 3, allpatchbinning, fEnableSumw2 ? "s" : "");
     } 
   }
+}
+
+bool AliAnalysisTaskEmcalRecalcPatchesRef::IsUserEventSelected(){
+  // handle overlaps
+  if(fRequiredOverlaps.GetEntries() || fExcludedOverlaps.GetEntries()){
+    if(fRequiredOverlaps.GetEntries()){
+      Bool_t allFound(true);
+      for(auto t : fRequiredOverlaps){
+        auto trgstr = static_cast<TObjString *>(t)->String();
+        if(std::find_if(fSelectedTriggers.begin(), fSelectedTriggers.end(), [&trgstr](const TString &seltrigger) -> bool { return seltrigger.Contains(trgstr); }) == fSelectedTriggers.end()) {
+          allFound = false;
+          break;
+        }
+      }
+      if(!allFound) return false;
+    }
+
+    if(fExcludedOverlaps.GetEntries()){
+      Bool_t oneFound(false);
+      for(auto t : fExcludedOverlaps){
+        auto trgstr = static_cast<TObjString *>(t)->String();
+        if(std::find_if(fSelectedTriggers.begin(), fSelectedTriggers.end(), [&trgstr](const TString &seltrigger) -> bool { return seltrigger.Contains(trgstr); }) != fSelectedTriggers.end()) {
+          oneFound = true;
+          break;
+        }
+      }
+      if(oneFound) return false;
+    }
+  }
+  return true;
 }
 
 void AliAnalysisTaskEmcalRecalcPatchesRef::UserFillHistosAfterEventSelection(){
@@ -172,10 +209,10 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::Run(){
   }
 
   std::vector<const AliEMCALTriggerPatchInfo *> EGApatches, DGApatches, EJEpatches, DJEpatches;
-  if(isMB || isEG) EGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kEGApatches);
-  if(isMB || isDG) DGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, kDGApatches);
-  if(isMB || isEJ) EJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, kEJEpatches);
-  if(isMB || isDJ) DJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, kDJEpatches);
+  if(isMB || isEG) EGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, fSwapPatches ? kEJEpatches : kEGApatches);
+  if(isMB || isDG) DGApatches = SelectAllPatchesByType(*fTriggerPatchInfo, fSwapPatches ? kDJEpatches : kDGApatches);
+  if(isMB || isEJ) EJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, fSwapPatches ? kEGApatches : kEJEpatches);
+  if(isMB || isDJ) DJEpatches = SelectAllPatchesByType(*fTriggerPatchInfo, fSwapPatches ? kDGApatches : kDJEpatches);
   
   for(const auto &t : handledtriggers) {
     if(t == "MB") {
@@ -306,6 +343,16 @@ bool AliAnalysisTaskEmcalRecalcPatchesRef::HasOverlap(const AliEMCALTriggerPatch
   if((InRange(testcolmin, refcolmin, refcolmax) && InRange(testrowmin, refrowmin, refrowmax)) ||
      (InRange(testcolmax, refcolmin, refcolmax) && InRange(testrowmax, refrowmin, refrowmax))) return true;
   return false;
+}
+
+void AliAnalysisTaskEmcalRecalcPatchesRef::AddRequiredTriggerOverlap(const char *trigger){
+  if(fRequiredOverlaps.FindObject(trigger)) return;
+  fRequiredOverlaps.Add(new TObjString(trigger));
+}
+
+void AliAnalysisTaskEmcalRecalcPatchesRef::AddExcludedTriggerOverlap(const char *trigger){
+  if(fExcludedOverlaps.FindObject(trigger)) return;
+  fExcludedOverlaps.Add(new TObjString(trigger));
 }
 
 AliAnalysisTaskEmcalRecalcPatchesRef *AliAnalysisTaskEmcalRecalcPatchesRef::AddTaskEmcalRecalcPatches(const char *suffix) {

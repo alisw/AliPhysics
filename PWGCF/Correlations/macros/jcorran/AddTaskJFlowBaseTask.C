@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFlowBaseTask(TString taskName){
+AliAnalysisTask *AddTaskJFlowBaseTask(TString taskName,Bool_t isMC){
 	// Load Custom Configuration and parameters
 	// override values with parameters
 
@@ -9,6 +9,7 @@ AliAnalysisTask *AddTaskJFlowBaseTask(TString taskName){
 	AliJFlowBaseTask *flowTask = new AliJFlowBaseTask(taskName.Data(),"AOD");
 	flowTask->SetDebugLevel(5);
   	flowTask->SetJCatalystTaskName("JCatalystTaskEP");  // AliJCatalystTask has this name hard coded
+	flowTask->SetIsMC(isMC);
 	cout << flowTask->GetName() << endl;
 
 

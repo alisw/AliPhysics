@@ -645,10 +645,20 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 								//fHist_eff_pretrack->Fill(TrkPt);
 
+								/////////////////////////
+								// track cut
+								/////////////////////////
 								if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
-								if(track->GetTPCNcls() < 80) continue;
-								if(track->GetITSNcls() < 3) continue;
-								if(track->Eta()>0.6 || track->Eta()<-0.6) continue;
+								if(track->GetTPCNcls() < 80) continue; //TPC cluster cut
+								if(track->GetITSNcls() < 3) continue;  //ITS cluster cut
+								if(!(track -> HasPointOnITSLayer(0) || track -> HasPointOnITSLayer(1))) continue;
+								if(track->Eta()>0.6 || track->Eta()<-0.6) continue; //Eta cut
+
+								Double_t DCA[2] = {-999.,-999.}, covar[3]; //DCA cut
+								if(track -> PropagateToDCA(pVtx,fVevent -> GetMagneticField(),20.,DCA,covar))
+								{
+												if(TMath::Abs(DCA[0]) > 2.4 || TMath::Abs(DCA[1]) > 3.2) continue;
+								}
 
 								//fHist_eff_posttrack->Fill(TrkPt);
 
@@ -831,7 +841,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																								fHistPhoReco2->Fill(track->Pt()); // org pho
 																				}
 																}
-
 												}
 
 
@@ -847,7 +856,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																}
 																//if(ilabelM<NpureMC){fHistPt_HFE_PYTHIA -> Fill(track->Pt());}
 																//else {fHistPt_HFE_emb -> Fill(track->Pt());}
-
 												}
 												if(fTPCnSigma<-3.5 && m20>0.02 && m20<0.25){
 																fEopPt_had -> Fill(TrkPt,eop);
@@ -1135,15 +1143,18 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader)
 
 
       //if(iHijing ==0)
-      if(pdgMom>0)
-        {
+      //if(pdgMom>0)
+      if(pdgMom!=0)
+       {
          AliAODMCParticle* fMCparticleMom = (AliAODMCParticle*) fMCarray->At(labelMom);
-         if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)
+         //if(pdgMom==411 || pdgMom==421 || pdgMom==413 || pdgMom==423 || pdgMom==431 || pdgMom==433)
+				 if(IsDdecay(pdgMom))
             {
              fHistMCorgD->Fill(fMCparticle->Pt());
              //cout << "orgD : " << pdgMom << " ; " << pdgGen << endl;
             }
-         if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)
+         //if(pdgMom==511 || pdgMom==521 || pdgMom==513 || pdgMom==523 || pdgMom==531 || pdgMom==533)
+				 if(IsBdecay(pdgMom))
            {
             fHistMCorgB->Fill(fMCparticle->Pt());
             //cout << "orgB : " << pdgMom << " ; " << pdgGen << endl;

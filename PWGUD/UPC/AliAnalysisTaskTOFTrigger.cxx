@@ -68,6 +68,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	eff_AverageTrackPt(0),
 	eff_MaxiPadLTM_Around(0),
 	eff_MaxiPadLTM_OnlyAround(0),
+	eff_MaxiPadLTM_Clusters(0),
 	hTrackDistributionLTM(0),
 	hTrackDistribution_Mu(0),
 	hTrackDistribution_El(0),
@@ -127,6 +128,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	eff_AverageTrackPt(0),
 	eff_MaxiPadLTM_Around(0),
 	eff_MaxiPadLTM_OnlyAround(0),
+	eff_MaxiPadLTM_Clusters(0),
 	hTrackDistributionLTM(0),
 	hTrackDistribution_Mu(0),
 	hTrackDistribution_El(0),
@@ -230,6 +232,9 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(eff_MaxiPadLTM_Around);
   eff_MaxiPadLTM_OnlyAround = new TEfficiency("eff_MaxiPadLTM_OnlyAround"," ",72,0,72,23,0,23);
   fOutputList->Add(eff_MaxiPadLTM_OnlyAround);
+  
+  eff_MaxiPadLTM_Clusters = new TEfficiency("eff_MaxiPadLTM_Clusters"," ",72,0,72,23,0,23);
+  fOutputList->Add(eff_MaxiPadLTM_Clusters);
 
   hTrackDistributionLTM = new TH2F("hTrackDistributionLTM","hTrackDistributionLTM",72,0,72,23,0,23);
   fOutputList->Add(hTrackDistributionLTM);
@@ -310,20 +315,27 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 	AliCDBEntry *cdbe = cdb->Get("TRIGGER/TOF/TriggerMask");
         AliTOFTriggerMask *fOCDBmask = (AliTOFTriggerMask *)cdbe->GetObject();
 	
-	Int_t BadLTMs[13] = {2,3,10,12,14,15,47,64,65,66,67,68,69};
+	UInt_t BadLTMs[11] = {10,12,14,15,47,64,65,66,67,68,69};
+	UInt_t BadMaxiPads[5][2] = {{19,1}, {26,4}, {33,4}, {34,1}, {34,2}};
 	UInt_t fgFromTriggertoDCS[72] = {0,1,4,5, 8, 9,12,13,16,17,20,21,24,25,28,29,32,33,36,37,40,41,44,45,48,49,52,53,56,57,60,61,64,65,68,69,
                                 3,2,7,6,11,10,15,14,19,18,23,22,27,26,31,30,35,34,39,38,43,42,47,46,51,50,55,54,59,58,63,62,67,66,71,70};
 
 	for(Int_t indexLTM=0; indexLTM<72; ++indexLTM) {
     		for(Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM) {
 			fBadMaxiPadMask[channelCTTM][indexLTM] = !fOCDBmask->IsON(fgFromTriggertoDCS[indexLTM],channelCTTM);
-			for(Int_t j = 0; j<13; j++)if(indexLTM == BadLTMs[j])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
+			for(Int_t j = 0; j<11; j++)if(indexLTM == BadLTMs[j])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
+			for(Int_t j = 0; j<5; j++)if(indexLTM == BadMaxiPads[j][0] && channelCTTM == BadMaxiPads[j][1])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
 			}
 		}
+	Int_t nAliveChannels = 0;
 	for(Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM){
-	for(Int_t indexLTM=0; indexLTM<72; ++indexLTM)cout<<fBadMaxiPadMask[channelCTTM][indexLTM]<<",";
+		for(Int_t indexLTM=0; indexLTM<72; ++indexLTM){
+			cout<<fBadMaxiPadMask[channelCTTM][indexLTM]<<",";
+			nAliveChannels += !fBadMaxiPadMask[channelCTTM][indexLTM];
+			}
 		cout<<endl;
 		}
+	cout<<"N Active channels = "<<nAliveChannels<<endl;
 	
   	for (int i=0;i<18;i++) {
    		AliGeomManager::GetOrigGlobalMatrix( Form("TOF/sm%02d",i) ,matOrig[i]);
@@ -414,6 +426,36 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
       numElectronTracksPerMaxiPad[indexLTM][channelCTTM] = 0;
     }
   }
+  
+  TClonesArray* tofClusters = ((AliESDEvent*)fInputEvent)->GetESDTOFClusters();
+  
+  Int_t nTOFhits = 0;
+  for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
+     AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
+     nTOFhits+=cl->GetNTOFhits();
+   }
+   
+   TArrayI fTOFhits;
+   TArrayI fTrackIndices;
+   
+   fTOFhits.Reset();
+   fTrackIndices.Reset();
+   fTOFhits.Set(nTOFhits);
+   fTrackIndices.Set(nTOFhits);
+  
+  Int_t hitCounts = 0;
+   for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
+     AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
+     for (Int_t ihit=0;ihit<cl->GetNTOFhits();ihit++){
+       AliESDTOFHit* hit = (AliESDTOFHit*) cl->GetTOFHit(ihit);
+       Int_t channel = hit->GetTOFchannel();
+       Int_t trackIndex = (cl->GetNMatchableTracks()==1) ? cl->GetTrackIndex(0) : -1;
+       fTOFhits.AddAt(channel,hitCounts);
+       fTrackIndices.AddAt(trackIndex,hitCounts);
+       hitCounts++;
+     }
+   }  
+  
   Double_t cv[21];
    
   //Track loop
@@ -424,6 +466,17 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     if(!fTrackCuts->AcceptTrack(esdTrackOrig))continue;
     hTrackPt->Fill(esdTrackOrig->Pt());
     if(esdTrackOrig->Pt()>fMaxPt || esdTrackOrig->Pt()<fMinPt)continue;
+    
+    Int_t detId[5] = {-1,-1,-1,-1,-1};
+    Int_t indexLTM[2] = {-1,-1};
+    for(Int_t i =0; i<fTrackIndices.GetSize(); i++){
+    	if(iTrack == fTrackIndices.GetAt(i)){
+		AliTOFGeometry::GetVolumeIndices(fTOFhits.GetAt(i),detId);
+		GetLTMIndex(detId,indexLTM);
+		UInt_t channelCTTM = indexLTM[1]/2;
+    		eff_MaxiPadLTM_Clusters->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),indexLTM[0],channelCTTM);
+		}
+	}
     
     AliESDtrack *esdTrack = (AliESDtrack*)esdTrackOrig->Clone();
 
@@ -468,7 +521,6 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     //Fine propagation from TOF radius
     Bool_t isin = kFALSE;
     Float_t dist3d[3]={-1.,-1.,-1.}; // residual to TOF channel
-    Int_t detId[5] = {-1,-1,-1,-1,-1};
     Float_t rTOFused = AliTOFGeometry::RinTOF();
     Double_t pos[3]={0.0,0.0,0.0};
     Float_t posF_In[3]={0.0,0.0,0.0};
@@ -541,7 +593,6 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		}
 	if(isin){
 		isin = kFALSE;
-		Int_t indexLTM[2] = {-1,-1};
 		detId[0]=AliTOFGeometry::GetSector(posF_In);
 		detId[1]=AliTOFGeometry::GetPlate(posF_In);
 		detId[2]=AliTOFGeometry::GetStrip(posF_In);

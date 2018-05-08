@@ -1,10 +1,21 @@
+#if defined(__CLING__)
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGCF/Correlations/macros/jcorran/AddTaskJCatalyst.C>
+#include <PWGCF/Correlations/macros/jcorran/AddTaskJFlowBaseTask.C>
+#endif
+
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJCIaaEPMulti(TString taskName, int EPdetID, TString cardName, TString jtrigg, TString jassoc, TString cardSetting, TString inclusFileName=""){
+AliAnalysisTask *AddTaskJCIaaEPAll(TString taskName, Bool_t isMC,  UInt_t flags = 0, Int_t FilterBit = 768 , double eta_min = -0.8, double eta_max = 0.8, double pt_min = 0.0, double pt_max = 100.0, int EPdetID, TString cardName, TString jtrigg, TString jassoc, TString cardSetting, TString inclusFileName=""){
 	// Load Custom Configuration and parameters
 	// override values with parameters
 
 	cout<<"### DEBUG Input is "<< cardName <<"\t"<<jtrigg<<"\t"<<jassoc<<"\t"<<inclusFileName<<"\t"<<"#########"<<endl;
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/Correlations/macros/jcorran/AddTaskJCatalyst.C");
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWGCF/Correlations/macros/jcorran/AddTaskJFlowBaseTask.C");
+        AddTaskJCatalyst("JCatalystTaskEP",  flags, FilterBit , eta_min, eta_max, pt_min, pt_max, 0);
+        AddTaskJFlowBaseTask("JFlowBaseTask",isMC);
 
 	const int NEPbins = 6;
 	double EPbins[NEPbins+1] = {0,15,30,45,60,75,90};
@@ -15,7 +26,7 @@ AliAnalysisTask *AddTaskJCIaaEPMulti(TString taskName, int EPdetID, TString card
 		TString mytaskName = Form("%s_EP%.0f_%.0f",taskName.Data(),EPbins[i],EPbins[i+1]);
 		myTask[i] = new AliJCIaaEPTask(mytaskName.Data(),"JOD");
 		myTask[i]->SetDebugLevel(5);
-		myTask[i]->SetJFlowBaseTaskName("JFlowBaseTask");  // AliJFlowBaseTask has this name hard coded
+		myTask[i]->SetJFlowBaseTaskName("JFlowBaseTask");  // AliJCatalystTask has this name hard coded
 		myTask[i]->SetEPDector( EPdetID );
 		myTask[i]->SetEPmin(EPbins[i]);
 		myTask[i]->SetEPmax(EPbins[i+1]);

@@ -74,7 +74,7 @@ def plotPWGJEQA(inputFile, outputDir, referenceFile, fileFormat):
 
   # If not a Pt-hard production (since it is done already), we need to set Sumw2 since we will scale and divide histograms
   if not isPtHard:
-    print "Setting Sumw2 on histograms."
+    print("Setting Sumw2 on histograms.")
     for obj in qaList:
       SetSumw2(obj)
 
@@ -96,7 +96,7 @@ def plotPWGJEQA(inputFile, outputDir, referenceFile, fileFormat):
     fRef = ROOT.TFile(referenceFile)
     qaListRef = fRef.Get(qaTaskName)
     if not isPtHard:
-      print "Setting Sumw2 on reference histograms."
+      print("Setting Sumw2 on reference histograms.")
       for obj in qaListRef:
         SetSumw2(obj)
     trackTHnSparseRef = qaListRef.FindObject(tracksListName)
@@ -867,34 +867,35 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
     ratioYAxisTitle = "DCal / EMCal"
     # Note: the spectra already have been scaled by nEvents, bin width
     plotSpectra(hClusDCalEnergy, hClusEMCalEnergy, "", "", 1., 1., ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename)
+  # Plot some PHOS QA plots
+  if includePhos:
+    # Plot also PHOS SM spectra
+    SMlist = clusterQAList.FindObject("BySM")
+    c2 = ROOT.TCanvas("c2","c2: hist",600,450)
+    c2.cd()
+    c2.SetLogy()
 
-  # Plot also PHOS SM spectra
-  SMlist = clusterQAList.FindObject("BySM")
-  c2 = ROOT.TCanvas("c2","c2: hist",600,450)
-  c2.cd()
-  c2.SetLogy()
+    leg = ROOT.TLegend(0.3,0.6,0.88,0.83,"PHOS SM")
+    leg.SetFillColor(10)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0)
+    leg.SetTextSize(0.04)
 
-  leg = ROOT.TLegend(0.3,0.6,0.88,0.83,"PHOS SM")
-  leg.SetFillColor(10)
-  leg.SetBorderSize(0)
-  leg.SetFillStyle(0)
-  leg.SetTextSize(0.04)
+    for sm in range(1,5):
+      hSM = SMlist.FindObject("hPhosClusEnergy_SM" + str(sm))
+      hSM.SetLineColor(sm)
+      hSM.SetLineStyle(1)
+      hSM.GetXaxis().SetRangeUser(0,100)
+      if sm is 1:
+        hSM.Draw("hist E")
+      else:
+        hSM.Draw("hist E same")
+      leg.AddEntry(hSM, "SM " + str(sm), "l")
+    leg.Draw("same")
 
-  for sm in range(1,5):
-    hSM = SMlist.FindObject("hPhosClusEnergy_SM" + str(sm))
-    hSM.SetLineColor(sm)
-    hSM.SetLineStyle(1)
-    hSM.GetXaxis().SetRangeUser(0,100)
-    if sm is 1:
-      hSM.Draw("hist E")
-    else:
-      hSM.Draw("hist E same")
-    leg.AddEntry(hSM, "SM " + str(sm), "l")
-  leg.Draw("same")
-
-  outputFilename = os.path.join(outputDirClusters, "hClusPHOSEnergyBySM" + fileFormat)
-  c2.SaveAs(outputFilename)
-  c2.Close()
+    outputFilename = os.path.join(outputDirClusters, "hClusPHOSEnergyBySM" + fileFormat)
+    c2.SaveAs(outputFilename)
+    c2.Close()
 
   # Plot some PHOS QA plots
   if includePhos:
