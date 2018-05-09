@@ -653,12 +653,23 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
             
             Double_t leadingtrackpT = 0.0;
             Double_t leadingclusterE = 0.0;
+            Double_t JetFCrossLeading = 0.0;
+            AliVParticle *leadingParticle = 0x0;
+            AliVCluster *leadingCluster = 0x0;
             
-            AliVCluster* leadingCluster = jet->GetLeadingCluster();
-            if(!leadingCluster) continue;
+            
+            leadingCluster = jet->GetLeadingCluster();
+            if(leadingCluster){
+                leadingclusterE = leadingCluster->E();
+                JetFCrossLeading = GetFcross(leadingCluster, fCaloCells);
+            }
+            
+            AliVParticle* leadingTrk = jet->GetLeadingTrack();
+            if(leadingTrk){
+                leadingtrackpT = leadingTrk->Pt();
+           }
             AliTrackContainer * Globaltracks = static_cast<AliTrackContainer * >(GetParticleContainer("tracks"));
-            if(!Globaltracks || !leadingCluster) continue;
-            Double_t JetFCrossLeading = GetFcross(leadingCluster, fCaloCells);
+
             Double_t TrackMultiplicity = Globaltracks->GetNTracks();
             Double_t Numb = jet->N();
             Double_t NumbNeu = jet->Nn();
