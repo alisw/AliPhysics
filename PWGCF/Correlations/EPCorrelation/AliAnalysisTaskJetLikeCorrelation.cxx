@@ -248,7 +248,7 @@ AliAnalysisTaskJetLikeCorrelation::~AliAnalysisTaskJetLikeCorrelation() {
 void AliAnalysisTaskJetLikeCorrelation::Terminate(Option_t *option) {
 
   for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
-    fOutput[iplane] = dynamic_cast<TList*>(GetOutputData(iplane));
+    fOutput[iplane] = dynamic_cast<TList*>(GetOutputData(iplane+1));
     if (NULL == fOutput[iplane]) {
       AliFatal(Form("fOutput%d == NULL", iplane));
       return;
@@ -1720,7 +1720,7 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
               deltaPhi = trigPhi - mixPhi;
               deltaEta = trigEta - mixEta;
 
-                        cout << evp_inout << " " << mixpTBin << " and " << trigpTBin << "  " << jtrack << "/" << lnTracksMixing << " and " << itrack << "/" << lnTracksTrig  <<  endl;
+//                        cout << evp_inout << " " << mixpTBin << " and " << trigpTBin << "  " << jtrack << "/" << lnTracksMixing << " and " << itrack << "/" << lnTracksTrig  <<  endl;
 
               if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
               if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();

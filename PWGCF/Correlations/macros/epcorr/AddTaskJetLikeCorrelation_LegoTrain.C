@@ -6,16 +6,18 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int colli
   double centarrpbpb[] = {0, 5, 10, 20, 50, 80};
   double centarrpp[] = {0, 100};
   double zvertarr[] = {-9, -7, -5, -3, -1, 1, 3, 5, 7, 9};
-  double zvertarrpp[] = {-9, -7, -5, -3, -1, 1, 3, 5, 7, 9};
+  double zvertarrpp[] = {-7, -3,3, 7};
   double ptaarr[] = {0.8, 1, 2, 3, 4, 6, 8,15};
   double pttarr[] = { 4, 6, 8,15 };
   TArrayD dcentarr;
+  TArrayD dzvertarr;
   if (collision == 0) {
     dcentarr.Set(2, centarrpp);
+    dzvertarr.Set(4, zvertarrpp);
   } else {
     dcentarr.Set(6, centarrPbPb);
+    dzvertarr.Set(10, zvertarr);
   }
-  TArrayD dzvertarr(10, zvertarr);
   TArrayD dpttarr(4, pttarr);
   TArrayD dptaarr(8, ptaarr);
   float fEtaCut = 0.9;
