@@ -15,7 +15,7 @@ AliAnalysisTaskJetLikeCorrelation *AddTaskJetLikeCorrelation_LegoTrain(int colli
     dcentarr.Set(2, centarrpp);
     dzvertarr.Set(4, zvertarrpp);
   } else {
-    dcentarr.Set(6, centarrPbPb);
+    dcentarr.Set(6, centarrpbpb);
     dzvertarr.Set(10, zvertarr);
   }
   TArrayD dpttarr(4, pttarr);
