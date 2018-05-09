@@ -43,13 +43,14 @@ public:
   AliAnalysisTaskEmcalJetConstituentQA(const char *name);
   virtual ~AliAnalysisTaskEmcalJetConstituentQA();
 
-  static AliAnalysisTaskEmcalJetConstituentQA *AddTaskEmcalJetConstituentQA(const char *trigger, bool parmode = kFALSE);
+  static AliAnalysisTaskEmcalJetConstituentQA *AddTaskEmcalJetConstituentQA(const char *trigger, AliJetContainer::EJetType_t jettype, bool parmode = kFALSE);
 
   void SetTriggerSelection(const char *trigger) { fTriggerSelectionString = trigger; } 
   void SetNameTrackContainer(const char *name) { fNameTrackContainer = name; }
   void SetNameClusterContainer(const char *name) { fNameClusterContainer = name; }
   void AddNameJetContainer(const char *name) { fNamesJetContainers.Add(new TObjString(name)); }
   void SetUseTriggerSelection(Bool_t doUse) { fUseTriggerSelection = doUse; }
+  void SetJetType(AliJetContainer::EJetType_t jettype) { fJetType = jettype; }
 
 protected:
   virtual void UserCreateOutputObjects();
@@ -58,6 +59,7 @@ protected:
 private:
   THistManager                  *fHistos;                   ///< Histogram manager
 
+  AliJetContainer::EJetType_t   fJetType;                   ///< Jet type
   TString                       fNameTrackContainer;        ///< Name of the track container
   TString                       fNameClusterContainer;      ///< Name of the cluster container
   TObjArray                     fNamesJetContainers;        ///< Names of the connected jet container
