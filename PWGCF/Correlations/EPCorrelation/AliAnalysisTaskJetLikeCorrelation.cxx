@@ -198,7 +198,7 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation() :
   fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
   fCentPercentile(0), fZVertex(0), fEventPlane(0), fEventPlaneV0A(0),
-  fEventPlaneV0C(0), fEventPlaneTPC(0), fCollision(kPbPb), fPeriod(k10h),
+  fEventPlaneV0C(0), fEventPlaneTPC(0), pi(TMath::Pi()), fCollision(kPbPb), fPeriod(k10h),
   flowQnVectorTask(0), fFlowQnVectorMgr(0)
 {
 
@@ -218,20 +218,28 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char 
   fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
   fCentPercentile(0), fZVertex(0), fEventPlane(0), fEventPlaneV0A(0),
-  fEventPlaneV0C(0), fEventPlaneTPC(0), fCollision(kPbPb), fPeriod(k10h),
+  fEventPlaneV0C(0), fEventPlaneTPC(0), pi(TMath::Pi()), fCollision(kPbPb), fPeriod(k10h),
   flowQnVectorTask(0), fFlowQnVectorMgr(0)
 {
   DefineInput(0, TChain::Class());
 //  DefineInput(1, TList::Class());
-  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
-    DefineOutput(iplane+1, TList::Class());    //Incl, In, Out, M1, M2, M3, M4 : total 7
-  }
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+  DefineOutput(3, TList::Class());
+  DefineOutput(4, TList::Class());
+  DefineOutput(5, TList::Class());
+  DefineOutput(6, TList::Class());
+  DefineOutput(7, TList::Class());
+//  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+//    DefineOutput(iplane+1, TList::Class());    //Incl, In, Out, M1, M2, M3, M4 : total 7
+//    cout << "DefineOutput " << iplane << endl;
+//  }
 }
 
 AliAnalysisTaskJetLikeCorrelation::~AliAnalysisTaskJetLikeCorrelation() {
 
   for (int iin = 0; iin < fNumberOfPlanes; iin++) {
-    if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    if (fOutput[iin] && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput[iin];
     }
   }
@@ -310,15 +318,15 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
     fOutput[iplane]->Add(fHistPtSame[iplane]);
   }
 
-  int lMinPtBin = GetPtBin(fMinPtTrigCut);
+//  int lMinPtBin = GetPtBin(fMinPtTrigCut);
   
 
   for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
     for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
       for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
         for (int iptt = 0; iptt < fPttArray.GetSize() - 1; iptt++) {
-          for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-            if (iptt < ipta) continue;
+          for (int ipta = 0; ipta < fPtaArray.GetSize() - 1; ipta++) {
+            if (fPttArray[iptt] + 0.1 < fPtaArray[ipta] ) continue;
 
             fOutput[iplane]->Add(fHistdEtadPhiSame[iplane][icent][izvertex][iptt][ipta]);
             fOutput[iplane]->Add(fHistdEtadPhiMixed[iplane][icent][izvertex][iptt][ipta]);
@@ -523,7 +531,7 @@ void AliAnalysisTaskJetLikeCorrelation::UserExec(Option_t *option) {
   lCentBin = GetCentBin(fCentPercentile);
   lZVertexBin = GetZVertexBin(fZVertex);
 
-  //  if (fEntry%1000 == 0 ) cout << "Entry : " << fEntry << " Centrality : " << fCentPercentile << " ZVertex : " << fZVertex << " Evp : " << fEventPlaneV0A << endl;
+    if (fEntry%1000 == 0 ) cout << "Entry : " << fEntry << " Centrality : " << fCentPercentile << " ZVertex : " << fZVertex << " Evp : " << fEventPlaneV0A << endl;
   if (lCentBin == -1 || lZVertexBin == -1) return;   //To reduce time for mixing
 
   if (!fMCTruth) {
@@ -590,7 +598,7 @@ void AliAnalysisTaskJetLikeCorrelation::UserExec(Option_t *option) {
 
         lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
 
-        lpTTrigBin = GetTrigPtBin(lpTTrig);
+        lpTTrigBin = GetPttBin(lpTTrig);
         if (lpTTrigBin == -1) continue;
 
         fHistEtaSparse->Fill(etavars);
@@ -764,7 +772,7 @@ void AliAnalysisTaskJetLikeCorrelation::UserExec(Option_t *option) {
         }
         if (lpTTrig < 0.8) continue;
         lpTTrigBin = GetPttBin(lpTTrig);
-        lTrackArray_HighPt->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
+        lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
         lEtaTrig = aodTrack->Eta();
         lPhiTrig = aodTrack->Phi();
 
@@ -921,13 +929,14 @@ void AliAnalysisTaskJetLikeCorrelation::UserExec(Option_t *option) {
           if (TMath::Abs(ldPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
             continue;
 
+//          cout << fMCCorrection << endl;
           if (fMCCorrection) {
             label = TMath::Abs(aodTrackAsso->GetLabel());
             nmctracks = fMCEvent->GetNumberOfTracks();
             if (label > nmctracks) continue;
             lmcTrackAsso = (AliAODMCParticle*) fMCEvent->GetTrack(label);
             kPrimaryAsso = lmcTrackAsso->IsPhysicalPrimary();
-
+            
 
             fHistdEtadPhiSameMCCorrCont[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
             if (cont_inout > 0) fHistdEtadPhiSameMCCorrCont[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
@@ -1306,7 +1315,7 @@ int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
 int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVertex, TObjArray *lTracksTrig, float eventPlane, int lbSign) {
 
   //  cout << "Starting Do Mixing.. " << endl;
-  int lMinimumPtTBinMerging = GetPtBin(6.00);
+  int lMinimumPtTBinMerging = GetPttBin(6.00);
 
   if (!fMCTruth) {
     if (bUseMixingPool) {
@@ -1711,7 +1720,7 @@ int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVerte
               deltaPhi = trigPhi - mixPhi;
               deltaEta = trigEta - mixEta;
 
-              //          cout << mixpTBin << " and " << trigpTBin << "  " << jtrack << "/" << lnTracksMixing << " and " << itrack << "/" << lnTracksTrig  <<  endl;
+                        cout << evp_inout << " " << mixpTBin << " and " << trigpTBin << "  " << jtrack << "/" << lnTracksMixing << " and " << itrack << "/" << lnTracksTrig  <<  endl;
 
               if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
               if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
@@ -1925,15 +1934,15 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
   int lPtBin = 250;
   int lPtMin = 0;
   int lPtMax = 25;
-  int lMinPtBin = GetPtBin(fMinPtTrigCut);
+//  int lMinPtBin = GetPtBin(fMinPtTrigCut);
 
   for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
     for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
       for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
         for (int iptt = 0; iptt < fPttArray.GetSize() - 1; iptt++) {
-          if (iptt < lMinPtBin) continue;
+//          if (iptt < lMinPtBin) continue;
           for (int ipta = 0; ipta < fPtaArray.GetSize() - 1; ipta++) {
-            if (iptt < ipta) continue;
+            if (fPttArray[iptt] + 0.1 < fPtaArray[ipta] ) continue;
             fHistdEtadPhiSame[iplane][icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSame%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSame%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
             fHistdEtadPhiMixed[iplane][icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixed%02d%02d%02d%02d%02d",iplane, icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixed%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
@@ -2117,7 +2126,6 @@ int AliAnalysisTaskJetLikeCorrelation::GetEventInformation(AliAODEvent *aodevent
     const AliQnCorrectionsQnVector *myV0AQnVector;
     const AliQnCorrectionsQnVector *myV0CQnVector;
     const AliQnCorrectionsQnVector *myTPCQnVector;
- //   cout << fFlowQnVectorMgr << endl;
     myV0QnVector = fFlowQnVectorMgr->GetDetectorQnVector("VZERO");
     if (myV0QnVector != NULL) {
       fEventPlane = myV0QnVector->EventPlane(2);
@@ -2259,7 +2267,7 @@ int AliAnalysisTaskJetLikeCorrelation::FillPt(double deltaevp, int centbin, int 
   return -9;
 }
 
-int CheckInOut(double deltaevp) {
+int AliAnalysisTaskJetLikeCorrelation::CheckInOut(double deltaevp) {
 
   if (fNumberOfPlanes > 2) {
     if (deltaevp < 1./12*pi && deltaevp >= 0) {

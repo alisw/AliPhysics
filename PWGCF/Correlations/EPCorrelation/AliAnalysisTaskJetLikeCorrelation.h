@@ -182,11 +182,15 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     void SetMixingPoolSize(int size) { fMixingPoolSize = size; }
     void SetNumberOfPlanes(int nplane) { fNumberOfPlanes = nplane; }
     void UseSeparateMixingPool(bool pool) { bUseMixingPool = pool; }
+
     
     int GetCentBin(double);
     int GetZVertexBin(double);
-    int GetPtBin(double);
+    int GetPttBin(double);
+    int GetPtaBin(double);
     double GetCentralityFromIP(double ip);
+    int CheckInOut(double );
+    int FillPt(double, int, int, double);
 
     float CalculatedPhiStar(float, float, float, float, float, float, float);
     int GetEventInformation(AliAODEvent *);
@@ -199,7 +203,7 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
   private :
 
 
-    TList *fOutput[kPlane];
+    TList *fOutput[kPlane];      //!
 
     AliInputEventHandler *fInputHandler; //!
     AliInputEventHandler *fMCHandler; //!
@@ -276,6 +280,7 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     double fEventPlaneV0A;  //!
     double fEventPlaneV0C; //!
     double fEventPlaneTPC; //!
+    double pi = TMath::Pi(); //
     
     ECollision fCollision; //
     EPeriod fPeriod; //!
