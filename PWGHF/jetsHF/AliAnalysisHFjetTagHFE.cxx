@@ -1297,11 +1297,11 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                     fHistIncjetBG->Fill(pt,pTeJetBG); 
                     fHistIncjet->Fill(pt,corrPt);
                     fHistIncjetFrac->Fill(pt,efrac);
-                   
+                    /*
                     Double_t pTrand = CalRandomCone(Phi_eJet,Eta_eJet,Area_eJet);
                     Double_t BGfrac = pTrand - pTeJetBG;
                     fHistBGfrac->Fill(BGfrac);
-
+                    */
                     if(!fFlagULS)fHistHFjet->Fill(pt,corrPt);
                     if(fFlagULS) fHistULSjet->Fill(pt,corrPt);
                     if(fFlagLS)fHistLSjet->Fill(pt,corrPt);
