@@ -745,7 +745,7 @@ void AliMUONBusPatchEvolution::ShrinkTimeAxis()
     histos[timeResolution].push_back(h);
   }
 
-  std::set<int, int>::const_iterator it;
+  std::set<int>::const_iterator it;
 
   TH1::AddDirectory(kFALSE);
 
