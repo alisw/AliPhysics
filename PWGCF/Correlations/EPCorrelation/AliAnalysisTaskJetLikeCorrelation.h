@@ -21,6 +21,8 @@ class AliExtractedEvent;
 class AliAnalysisTaskFlowVectorCorrections;
 class AliQnCorrectionsManager;
 class AliAODEvent;
+class AliMCEvent;
+class AliAODMCHeader;
 
 #include "AliEventPoolManager.h"
 #include "AliAODVertex.h"
@@ -130,6 +132,16 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
       k15o,
       k17p,
     };
+    enum EPlane {
+      kIncl,
+      kIn,
+      kOut,
+      kM1, 
+      kM2,
+      kM3,
+      kM4,
+      kPlane, 
+    };
     AliAnalysisTaskJetLikeCorrelation();
     AliAnalysisTaskJetLikeCorrelation(const char *name);
 //    AliAnalysisTaskJetLikeCorrelation(const AliAnalysisTaskJetLikeCorrelation &);
@@ -147,11 +159,13 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
 
     int SetupMixing();
 
-    void SetMC(bool mc) { fMCCorrection = mc; }
+    void SetMCCorrection(bool mc) { fMCCorrection = mc; }
+    void SetMCTruth(bool mc) { fMCTruth = mc; }
     void SetCentArray(TArrayD centarray) { fCentArray = centarray; }
 //    void SetCentArray(vector<float> centarray) { fCentArray = centarray; }
     void SetZVertexArray(TArrayD zvertexarray) { fZVertexArray = zvertexarray; }
-    void SetPtArray(TArrayD ptarray) { fPtArray = ptarray; }
+    void SetPttArray(TArrayD ptarray) { fPttArray = ptarray; }
+    void SetPtaArray(TArrayD ptarray) { fPtaArray = ptarray; }
     void SetEtaCut(float etacut) { fEtaCut = etacut; }
     void SetPhiCut(float phicut) { fPhiCut = phicut; }
     void SetMinPtTrigCut(float ptcut) { fMinPtTrigCut = ptcut; }
@@ -166,15 +180,21 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     void SetFilterBit(int filterbit) { fFilterBit = filterbit; }
     void SetCollision(ECollision col) { fCollision = col; }
     void SetMixingPoolSize(int size) { fMixingPoolSize = size; }
+    void SetNumberOfPlanes(int nplane) { fNumberOfPlanes = nplane; }
     void UseSeparateMixingPool(bool pool) { bUseMixingPool = pool; }
+
     
     int GetCentBin(double);
     int GetZVertexBin(double);
-    int GetPtBin(double);
+    int GetPttBin(double);
+    int GetPtaBin(double);
+    double GetCentralityFromIP(double ip);
+    int CheckInOut(double );
+    int FillPt(double, int, int, double);
 
     float CalculatedPhiStar(float, float, float, float, float, float, float);
     int GetEventInformation(AliAODEvent *);
-    int DoMixing(float , float , TObjArray *,  TObjArray *,float, int );
+    int DoMixing(float , float , TObjArray *,float, int );
     
     void InitHistogramVectors();
     void InitHistograms();
@@ -183,14 +203,12 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
   private :
 
 
-    TList *fOutputInc;
-    TList *fOutputIn;
-    TList *fOutputOut;
-    TList *fOutputM1;
-    TList *fOutputM2;
+    TList *fOutput[kPlane];      //!
 
     AliInputEventHandler *fInputHandler; //!
     AliInputEventHandler *fMCHandler; //!
+    AliMCEvent *fMCEvent; //!
+    AliAODMCHeader *fMCHeader; //!
 
     TH1D *fHistZVertex;     //!
     TH1D *fHistPt;     //!
@@ -204,13 +222,15 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     TH1D *fHistEventPlaneTPC;   //!
 
     AliEventPoolManager *fPoolMgr; //!
-    AliEventPoolManager *fPoolMgr_Highpt; //!
     TFile *fInputRoot; //!
     TTree *fInputTree; //!
 
     bool fMCCorrection; // Is MC or Data?
+    bool fMCTruth; // MC Truth check
+   
     bool bUseMixingPool; // Do we use separate mixing pool? 
     
+    int fNumberOfPlanes; //
     int fMixingPoolSize;   //
     int fDebug;         //
     int fMinNumTrack;      //
@@ -224,45 +244,29 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     int fIsFirstEvent; //!
     int fMinimumPtABinMerging; //
 
-    float fResonancesVCut;
-    float fConversionsVCut;
+    float fResonancesVCut;    //
+    float fConversionsVCut;   //
 
-    TArrayD fPtArray;         //
+    TArrayD fPttArray;         //
+    TArrayD fPtaArray;         //
     TArrayD fCentArray;         //
     TArrayD fZVertexArray;         //
 
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSame;          //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiMixed;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameIn;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiMixedIn;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameOut;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiMixedOut;         //!
+    std::vector< std::vector< std::vector< std::vector< std::vector<TH2D*> > > > >fHistdEtadPhiSame;          //!
+    std::vector< std::vector< std::vector< std::vector< std::vector<TH2D*> > > > >fHistdEtadPhiMixed;         //!
 
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrCont;          //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrContIn;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrContOut;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrPrim;          //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrPrimIn;         //!
-    std::vector< std::vector< std::vector< std::vector<TH2D*> > > > fHistdEtadPhiSameMCCorrPrimOut;         //!
+    std::vector< std::vector< std::vector< std::vector< std::vector<TH2D*> > > > >fHistdEtadPhiSameMCCorrCont;          //!
+    std::vector< std::vector< std::vector< std::vector< std::vector<TH2D*> > > > >fHistdEtadPhiSameMCCorrPrim;          //!
 
 
     TH2D *fHistNevtSame;         //!
 
-    TH3D *fHistPtSame;         //!
-    TH3D *fHistPtSameIn;         //!
-    TH3D *fHistPtSameOut;         //!
+    TH3D *fHistPtSame[kPlane];         //!
 
     THnSparse *fHistEtaSparse;   //!
     TProfile *fHistV2;             //! Only for V0A
     TProfile *fHistResolutionV2[3];   //!
     
-
-//    TH3D *fHistEtaSame;         //!
-//    TH3D *fHistEtaSameIn;         //!
-//    TH3D *fHistEtaSameOut;         //!
-//    TH3D *fHistEtaSameM1;         //!
-//    TH3D *fHistEtaSameM2;         //!
-
     THnSparse *fHistContamination; //!
     AliExtractedEvent *fHighPtMixing; //!
 
@@ -276,8 +280,7 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
     double fEventPlaneV0A;  //!
     double fEventPlaneV0C; //!
     double fEventPlaneTPC; //!
-
-    
+    double pi = TMath::Pi(); //
     
     ECollision fCollision; //
     EPeriod fPeriod; //!
@@ -371,7 +374,7 @@ class AliAnalysisTaskJetLikeCorrelation : public AliAnalysisTaskSE {
       return mass2;
     }
 
-    ClassDef(AliAnalysisTaskJetLikeCorrelation, 2);
+    ClassDef(AliAnalysisTaskJetLikeCorrelation, 3);
 };
 
 class MixedParticle : public TObject {
