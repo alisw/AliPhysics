@@ -112,7 +112,7 @@ fHadronCamDCA(0),
 fPi0Weight(0),
 fEtaWeight(0),
 fDWeight(0),
-//fBWeight(0),
+fBWeight(0),
 fEnhEtaDCA(0),
 fEnhEtaWeightedPt(0),
 fEnhPi0DCA(0),
@@ -155,7 +155,7 @@ fSprsTemplatesWeight(0),
 fDTemplateWeight(0),
 fDTemplateNoWeight(0),
 
-//fBTemplateWeight(0),
+fBTemplateWeight(0),
 fBTemplateNoWeight(0),
 
 fAllElecStack(0),
@@ -267,6 +267,7 @@ fHadronCamDCA(0),
 fPi0Weight(0),
 fEtaWeight(0),
 fDWeight(0),
+fBWeight(0),
 fEnhEtaDCA(0),
 fEnhEtaWeightedPt(0),
 fEnhPi0DCA(0),
@@ -308,7 +309,7 @@ fSprsTemplatesNoWeight(0),
 fSprsTemplatesWeight(0),
 fDTemplateWeight(0),
 fDTemplateNoWeight(0),
-//fBTemplateWeight(0),
+fBTemplateWeight(0),
 fBTemplateNoWeight(0),
 fAllElecStack(0),
 fHFElecStack(0),
@@ -538,7 +539,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fHadronDCA = new TH2F("fHadronDCA","Unscaled Hadron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 200,-0.2,0.2);
     fOutputList->Add(fHadronDCA);
     
-    fHadronCamDCA = new TH2F("fHadronCamDCA","Unscaled Hadron DCA, no E/p cut; p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., 200,-0.2,0.2);
+    fHadronCamDCA = new TH2F("fHadronCamDCA","Unscaled Hadron DCA, no E/p cut; p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., 400,-0.2,0.2);
     fOutputList->Add(fHadronCamDCA);
     
     
@@ -568,6 +569,16 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     }
     fDWeight->Sumw2();
     fOutputList->Add(fDWeight);
+    
+    //D Meson pt weighting
+    Int_t nbinsB = 250;
+    Double_t xbinsB[251] = {0.,0.2,0.4,0.6,0.8,1,1.2,1.4,1.6,1.8,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,4.2,4.4,4.6,4.8,5,5.2,5.4,5.6,5.8,6,6.2,6.4,6.6,6.8,7,7.2,7.4,7.6,7.8,8,8.2,8.4,8.6,8.8,9,9.2,9.4,9.6,9.8,10,10.2,10.4,10.6,10.8,11,11.2,11.4,11.6,11.8,12,12.2,12.4,12.6,12.8,13,13.2,13.4,13.6,13.8,14,14.2,14.4,14.6,14.8,15,15.2,15.4,15.6,15.8,16,16.2,16.4,16.6,16.8,17,17.2,17.4,17.6,17.8,18,18.2,18.4,18.6,18.8,19,19.2,19.4,19.6,19.8,20,20.2,20.4,20.6,20.8,21,21.2,21.4,21.6,21.8,22,22.2,22.4,22.6,22.8,23,23.2,23.4,23.6,23.8,24,24.2,24.4,24.6,24.8,25,25.2,25.4,25.6,25.8,26,26.2,26.4,26.6,26.8,27,27.2,27.4,27.6,27.8,28,28.2,28.4,28.6,28.8,29,29.2,29.4,29.6,29.8,30,30.2,30.4,30.6,30.8,31,31.2,31.4,31.6,31.8,32,32.2,32.4,32.6,32.8,33,33.2,33.4,33.6,33.8,34,34.2,34.4,34.6,34.8,35,35.2,35.4,35.6,35.8,36,36.2,36.4,36.6,36.8,37,37.2,37.4,37.6,37.8,38,38.2,38.4,38.6,38.8,39,39.2,39.4,39.6,39.8,40,40.2,40.4,40.6,40.8,41,41.2,41.4,41.6,41.8,42,42.2,42.4,42.6,42.8,43,43.2,43.4,43.6,43.8,44,44.2,44.4,44.6,44.8,45,45.2,45.4,45.6,45.8,46,46.2,46.4,46.6,46.8,47,47.2,47.4,47.6,47.8,48,48.2,48.4,48.6,48.8,49,49.2,49.4,49.6,49.8,50.};
+    fBWeight = new TH1F("fBWeight","TAMU RAA x FONLL/MC;p_{T} (GeV/c);Weight;",nbinsB,xbinsB);
+    Double_t ratioB[250] = {0.498558,0.62782,0.672398,0.718151,0.731677,0.734297,0.770069,0.776389,0.809054,0.825417,0.859501,0.874636,0.898427,0.923358,0.92293,0.926125,0.926343,0.916683,0.917184,0.911809,0.886661,0.868603,0.852465,0.837679,0.834915,0.813126,0.776888,0.762151,0.745226,0.726064,0.689477,0.675392,0.657326,0.639663,0.610833,0.599204,0.574208,0.551114,0.534405,0.508084,0.503657,0.468409,0.459998,0.447575,0.429903,0.413056,0.396865,0.385802,0.36568,0.358106,0.351127,0.342732,0.324592,0.325566,0.317839,0.306017,0.292589,0.292114,0.28069,0.274267,0.268707,0.260392,0.261063,0.248518,0.245039,0.237828,0.226948,0.221301,0.216985,0.214584,0.210782,0.197669,0.195025,0.190053,0.186186,0.179784,0.171765,0.169136,0.159454,0.161479,0.157118,0.153996,0.14812,0.141091,0.138405,0.137488,0.134021,0.127508,0.126735,0.119841,0.117923,0.11417,0.109935,0.110609,0.106261,0.102496,0.0988583,0.0988566,0.0962846,0.0971962,0.0912081,0.0906153,0.0909837,0.089602,0.0851854,0.0829322,0.0854181,0.0793186,0.0828916,0.079228,0.0765657,0.0755108,0.0746448,0.0749831,0.0726684,0.0741421,0.0725614,0.0725931,0.0708997,0.0691765,0.0675163,0.0638974,0.0636498,0.0696325,0.0621972,0.0654069,0.0613243,0.0604615,0.0588438,0.0602627,0.0602133,0.0562468,0.058719,0.0581855,0.0582384,0.0562759,0.053968,0.053529,0.0549016,0.0524293,0.0523908,0.0529672,0.0515757,0.0493422,0.0481627,0.0482736,0.0459697,0.0458283,0.0453141,0.0433415,0.045522,0.043535,0.0411514,0.0456961,0.0441323,0.0430352,0.0428453,0.0426922,0.0436595,0.040605,0.0381453,0.03843,0.0410627,0.0374946,0.0391381,0.0379844,0.0367569,0.036893,0.0372399,0.0355532,0.0336221,0.0344674,0.0330855,0.0332478,0.0308431,0.0318583,0.0313297,0.03175,0.0314691,0.0320693,0.0312073,0.0297707,0.0285189,0.0289505,0.0291229,0.0291655,0.0305036,0.0281665,0.0276302,0.0291551,0.026976,0.027417,0.027251,0.0245767,0.0246722,0.024308,0.0247152,0.0273125,0.0242685,0.0232144,0.0220058,0.023307,0.0224514,0.0219948,0.0208518,0.0216804,0.0215576,0.0195631,0.0195621,0.0211566,0.0185032,0.0196948,0.0190276,0.0193687,0.0191364,0.0195232,0.0190942,0.0177003,0.0186524,0.0180672,0.017813,0.0173329,0.0163168,0.0163818,0.0158271,0.0169163,0.0164239,0.0157851,0.0169332,0.0180851,0.0152819,0.0149112,0.0141721,0.015732,0.0163534,0.014337,0.0143059,0.014786,0.0140978,0.0145358,0.0145749,0.0134334,0.0130966,0.0138116,0.013262,0.0143179,0.0132258,0.0135375,0.0132521,0.0132662};
+    for (int idata=1; idata<251; idata++) {
+        fBWeight->SetBinContent(idata,ratioB[idata-1]);
+    }
+    fOutputList->Add(fBWeight);
     
     fPi0DCA = new TH2F("fPi0DCA","Pi0 DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 200,-0.2,0.2);
     fOutputList->Add(fPi0DCA);
@@ -707,6 +718,9 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fDTemplateNoWeight = new TH2F("fDTemplateNoWeight","D Meson DCA template w/Weight", 100,0,50., 200,-0.2,0.2);
     fOutputList->Add(fDTemplateNoWeight);
+    
+    fBTemplateWeight = new TH2F("fBTemplateWeight","B Meson DCA template w/Weight", 100,0,50., 200,-0.2,0.2);
+    fOutputList->Add(fBTemplateWeight);
     
     fBTemplateNoWeight = new TH2F("fBTemplateNoWeight","B Meson DCA template", 100,0,50., 200,-0.2,0.2);
     fOutputList->Add(fBTemplateNoWeight);
@@ -1164,6 +1178,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             /////////////////////////
             Int_t fpidSort = -99;
             Double_t dWeight = -99;
+            Double_t bWeight = -99;
             Bool_t kEmbEta = kFALSE;
             Bool_t kEmbPi0 = kFALSE;
             Bool_t kHijing = kFALSE;
@@ -1171,15 +1186,19 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             Int_t fMomGen = 99;
             Double_t momPt = -99;
             Int_t pidGM = -99;
-            Int_t ilabel = -99;
+            //Int_t ilabel = -99;
             Int_t ilabelM = -99;
             Int_t ilabelGM = -99;
+            
+            //cout<<"TESTING0"<<endl;
             //if MC--------------------------------
             if(ilabel>0 && fMCarray)
             {
                 //cout<<"TESTING1"<<endl;
                 fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
                 pdg = fMCparticle->GetPdgCode(); //get pid of track
+                
+                //cout<<"TESTING1"<<endl;
                 
                 //if electron--------------------------------
                 if(TMath::Abs(pdg)==11){
@@ -1200,20 +1219,30 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                     tempValue[4] = momPt;
                     
                     fSprsTemplatesNoWeight->Fill(tempValue);
-                    if(fpidSort==1){
-                        fBTemplateNoWeight->Fill(track->Pt(),DCA);
-                    }
                     
                     //Took out Lambda_c (fpidSort==17) to the weighting
-                    if (fpidSort==2||fpidSort==11||fpidSort==12||fpidSort==14||fpidSort==15||fpidSort==16) {
-                        if (momPt>1 && momPt<50.) {
+                    if (fpidSort==2||fpidSort==11||fpidSort==12||fpidSort==14||fpidSort==15||fpidSort==16) { //if from D meson
+                        //cout<<"TESTING3"<<endl;
+                        if (momPt>1 && momPt<50.) { //in proper pt range
+                            //cout<<"TESTING4"<<endl;
                             dWeight = fDWeight->GetBinContent(fDWeight->FindBin(momPt));
                             fDTemplateWeight->Fill(track->Pt(), DCA, dWeight);
                             fDTemplateNoWeight->Fill(track->Pt(), DCA);
                             fSprsTemplatesWeight->Fill(tempValue,dWeight);
                         }
                     }
+                    else if (fpidSort==1) {//if from B meson
+                        //cout<<"TESTING5"<<endl;
+                        if (momPt>0. && momPt<50.) { //in proper pt range
+                            //cout<<"TESTING6"<<endl;
+                            bWeight = fBWeight->GetBinContent(fBWeight->FindBin(momPt));
+                            fBTemplateWeight->Fill(track->Pt(), DCA, bWeight);
+                            fBTemplateNoWeight->Fill(track->Pt(), DCA);
+                            fSprsTemplatesWeight->Fill(tempValue,bWeight);
+                        }
+                    }
                     else{
+                        //cout<<"TESTING7"<<endl;
                         fSprsTemplatesWeight->Fill(tempValue);
                     }
                     
