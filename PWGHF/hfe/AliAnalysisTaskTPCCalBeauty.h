@@ -147,6 +147,7 @@ private:
     TF1                 *fEtaWeight;    //! Function to weight enhanced eta
     //TF1                 *fPi0EtaWeight; //! Function to weight enhanced eta+pi0
     TH1F                *fDWeight; //!
+    TH1F                *fBWeight; //!
     
     
     Double_t            fWeight;        //!
@@ -205,6 +206,7 @@ private:
     TH2F                *fDTemplateWeight; //!
     TH2F                *fDTemplateNoWeight; //!
     
+    TH2F                *fBTemplateWeight; //!
     TH2F                *fBTemplateNoWeight; //!
     TH1F                *fAllElecStack; //!
     TH1F                *fHFElecStack; //!
