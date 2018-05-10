@@ -5,7 +5,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #endif
 
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJCIaaEPAll(TString taskName, Bool_t isMC,  UInt_t flags = 0, Int_t FilterBit = 768 , double eta_min = -0.8, double eta_max = 0.8, double pt_min = 0.0, double pt_max = 100.0, int EPdetID, TString cardName, TString jtrigg, TString jassoc, TString cardSetting, TString inclusFileName=""){
+AliAnalysisTask *AddTaskJCIaaEPAll(TString taskName="JCIAA", Bool_t isMC=kFALSE,  UInt_t flags = 0, Int_t FilterBit = 768 , double eta_min = -0.8, double eta_max = 0.8, double pt_min = 0.0, double pt_max = 100.0, int EPdetID=0, TString cardName="card.input", TString jtrigg="hadron", TString jassoc="hadron", TString cardSetting="", TString inclusFileName=""){
 	// Load Custom Configuration and parameters
 	// override values with parameters
 

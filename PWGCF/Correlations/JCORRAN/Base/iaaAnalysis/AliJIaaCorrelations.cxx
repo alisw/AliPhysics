@@ -374,7 +374,7 @@ void AliJIaaCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp)
 
 void AliJIaaCorrelations::FillResonanceHistograms(fillType fTyp)
 {
-	fhistos->fhResonanceCut[fTyp][fCentralityBin][fZBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhi, fTrackPairEfficiency);
+	//fhistos->fhResonanceCut[fTyp][fCentralityBin][fZBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhi, fTrackPairEfficiency);
 }
 
 bool AliJIaaCorrelations::ResonanceCut(AliJBaseTrack *ftk1, AliJBaseTrack *ftk2)
