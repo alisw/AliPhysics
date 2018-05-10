@@ -76,6 +76,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	hFiredMaxiPad(0),
 	hFiredMaxiPadOnlyAround(0),
 	hNotFiredMaxiPad(0),
+	hExtraFiredMaxiPad(0),
 	hTrackPadCorrPhi(0),
 	hTrackPadCorrEta(0),
 	hNoiseMaxiPad(0),
@@ -136,6 +137,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	hFiredMaxiPad(0),
 	hFiredMaxiPadOnlyAround(0),
 	hNotFiredMaxiPad(0),
+	hExtraFiredMaxiPad(0),
 	hTrackPadCorrPhi(0),
 	hTrackPadCorrEta(0),
 	hNoiseMaxiPad(0),
@@ -250,6 +252,8 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hFiredMaxiPadOnlyAround);
   hNotFiredMaxiPad = new TH2F("hNotFiredMaxiPad","hNotFiredMaxiPad",72,0,72,23,0,23);
   fOutputList->Add(hNotFiredMaxiPad);
+  hExtraFiredMaxiPad = new TH2F("hExtraFiredMaxiPad","hExtraFiredMaxiPad",72,0,72,23,0,23);
+  fOutputList->Add(hExtraFiredMaxiPad);
   hTrackPadCorrPhi = new TH2F("hTrackPadCorrPhi","hTrackPadCorrPhi",1440,0,360,72,0,72);
   fOutputList->Add(hTrackPadCorrPhi);
   hTrackPadCorrEta = new TH2F("hTrackPadCorrEta","hTrackPadCorrEta",1000,-1,1,23,0,23);
@@ -475,6 +479,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		GetLTMIndex(detId,indexLTM);
 		UInt_t channelCTTM = indexLTM[1]/2;
     		eff_MaxiPadLTM_Clusters->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),indexLTM[0],channelCTTM);
+		//cout<<"Track "<<iTrack<<" Trigger pad in LTM "<<indexLTM[0]<<" CTTM "<<channelCTTM<<" Fired = "<<fTOFmask->IsON(indexLTM[0],channelCTTM)<<endl;
 		}
 	}
     
@@ -633,6 +638,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    }
 		if(trigger.Contains("CCUP8-B") || trigger.Contains("CCUP4-B")){
 			if(!fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()< 2))hNotFiredMaxiPad->Fill(indexLTM[0],channelCTTM);
+			if(fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()> 6))hExtraFiredMaxiPad->Fill(indexLTM[0],channelCTTM);
 			}
 		}
      	}
