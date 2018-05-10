@@ -6,7 +6,7 @@
 /// \author Michal Broz
 ///
 
-AliAnalysisTask* AddTaskFilterUPCNanoAOD(Bool_t withSPDtracklets)
+AliAnalysisTask* AddTaskFilterUPCNanoAOD(Bool_t withSPDtracklets,Bool_t withMuons)
 {
   
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -41,7 +41,7 @@ AliAnalysisTask* AddTaskFilterUPCNanoAOD(Bool_t withSPDtracklets)
   
   aodHandler->SetCreateNonStandardAOD();
   
-  AliAnalysisTask* task = new AliAnalysisTaskFilterUPCNanoAOD(withSPDtracklets);
+  AliAnalysisTask* task = new AliAnalysisTaskFilterUPCNanoAOD(withSPDtracklets,withMuons);
     
   mgr->AddTask(task);
     
