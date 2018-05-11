@@ -56,6 +56,9 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   void SetEtaRangeMin(Double_t b)             {this->fMinEtaCut = b;}
   void SetEtaRangeMax(Double_t b)             {this->fMaxEtaCut = b;}
 
+  void SetVzRangeMin(Double_t b)              {this->fMinVzCut  = b;}
+  void SetVzRangeMax(Double_t b)              {this->fMaxVzCut  = b;}
+
   void SetTrackCutdEdxMin(Float_t   dEd)      {this->fdEdxMin = dEd; }
   void SetTrackCutDCAxyMax(Double_t  dc)      {this->fDCAxyMax = dc; }
   void SetTrackCutDCAzMax(Double_t   dc)      {this->fDCAzMax  = dc; }
@@ -221,6 +224,10 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
   Double_t    fCentralityPercentMax;  //
   Double_t         fPileUpSlopeParm;  //
   Double_t         fPileUpConstParm;  //
+
+  Float_t                 fMinVzCut;  //
+  Float_t                 fMaxVzCut;  //
+
 
   Bool_t               bApplyMCcorr;  //
   Bool_t               bV0MGainCorr;  //
@@ -506,10 +513,16 @@ class AliAnalysisTaskCMEV0PID : public AliAnalysisTaskSE {
 
 
 
-  TH1D           *fFB_Efficiency_Cent[10];   //!   for charge
-  TH1D      *fFB_Efficiency_Pion_Cent[10];   //!   
-  TH1D      *fFB_Efficiency_Kaon_Cent[10];   //!   
-  TH1D    *fFB_Efficiency_Proton_Cent[10];   //!   
+  TH1D           *fFB_Efficiency_Cent[10];    //!   for charge
+  TH1D      *fFB_Efficiency_Pion_Cent[10];    //!   
+  TH1D      *fFB_Efficiency_Kaon_Cent[10];    //!   
+//TH1D    *fFB_Efficiency_Proton_Cent[10];    //!   
+  TH1D    *fFB_Efficiency_Proton_Pos_Cent[10];   //!   
+  TH1D    *fFB_Efficiency_Proton_Neg_Cent[10];   //!  
+
+
+
+
 
 
   //--------- PileUp Functions -----------

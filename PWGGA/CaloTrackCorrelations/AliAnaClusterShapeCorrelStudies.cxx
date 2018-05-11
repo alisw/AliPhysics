@@ -138,6 +138,8 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhNCellsPerClusterMEtaPhiA[i] = 0;
     
     fhSMNCell              [i] = 0;
+    fhSMNCellLowM02        [i] = 0;
+    fhSMNCellHighM02       [i] = 0;
     fhSMNCellM02           [i] = 0;
     fhSMM02                [i] = 0;
     fhSMM02NoCut           [i] = 0;
@@ -160,7 +162,13 @@ fhECellTotalRatioMod(0),               fhECellTotalLogRatioMod(0)
     fhRowM02               [i] = 0;
 
     fhOriginE              [i] = 0;
-    fhOriginM02            [i] = 0;
+    fhOriginM02            [i] = 0;    
+    fhOriginENoCut         [i] = 0;
+    fhOriginM02NoCut       [i] = 0;
+    fhOriginEOverlap       [i] = 0;
+    fhOriginM02Overlap     [i] = 0;    
+    fhOriginENoCutOverlap  [i] = 0;
+    fhOriginM02NoCutOverlap[i] = 0;
     
     // Cluster asymmetry
     fhDeltaIEtaDeltaIPhi   [i] = 0;
@@ -1427,7 +1435,7 @@ void AliAnaClusterShapeCorrelStudies::ChannelCorrelationInTCard
 void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
 (AliVCluster* clus , Int_t   absIdMax, Double_t maxFrac  , 
  Float_t eCrossFrac, Float_t eCellMax, Double_t tmax     ,
- Int_t   matchedPID, Int_t    mcIndex)
+ Int_t   matchedPID, Int_t    mcIndex, Int_t noverlaps    )
 {
   // By definition a cluster has at least 1 cell, 
   // and shape only makes sense with at least 2
@@ -1819,11 +1827,13 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
 
   if      ( m02 > fM02LowBin[0]  && m02 <= fM02LowBin[1]  )
   {
+    fhSMNCellLowM02    [matchedPID]->Fill(energy, smMax  , nCell, GetEventWeight());
     fhSMM20LowM02NoCut [matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
     fhSMEMaxEClusterRatLowM02      ->Fill(energy, smMax  , eCellMax/energy  , GetEventWeight());
   }
     else if ( m02 > fM02HighBin[0] && m02 <= fM02HighBin[1] )
     {
+      fhSMNCellHighM02   [matchedPID]->Fill(energy, smMax  , nCell, GetEventWeight());
       fhSMM20HighM02NoCut[matchedPID]->Fill(energy, smMax  , m20  , GetEventWeight());
       fhSMEMaxEClusterRatHighM02     ->Fill(energy, smMax  , eCellMax/energy  , GetEventWeight());
     }
@@ -2007,8 +2017,26 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   //
   if ( IsDataMC() && mcIndex > -1 && mcIndex < 10)
   {
-    fhOriginE  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
-    fhOriginM02[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight());    
+    fhOriginENoCut  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
+    fhOriginM02NoCut[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight());
+    
+    if(nCell > fNCellMinShape)
+    {
+      fhOriginE  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
+      fhOriginM02[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight()); 
+    }
+    
+    if(noverlaps > 0)
+    {
+      fhOriginENoCutOverlap  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
+      fhOriginM02NoCutOverlap[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight());
+      
+      if(nCell > fNCellMinShape)
+      {
+        fhOriginEOverlap  [matchedPID]->Fill(energy, mcIndex,      GetEventWeight());
+        fhOriginM02Overlap[matchedPID]->Fill(energy, mcIndex, m02, GetEventWeight()); 
+      }
+    }
   } // MC
 }
 
@@ -2150,6 +2178,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     //
     Int_t mcTag   =  0;
     Int_t mcIndex = -1;
+    Int_t noverlaps =0;
     if ( IsDataMC() && fStudyShape )
     {
       mcTag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(), clus->GetNLabels(), GetMC());
@@ -2167,6 +2196,12 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
       else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCAntiProton ) ) mcIndex = 7;
       else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCNeutron    ) ) mcIndex = 8;
       else if ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCAntiNeutron) ) mcIndex = 9;
+      
+      const UInt_t nlabels = clus->GetNLabels();
+      Int_t overpdg[nlabels];
+      Int_t overlab[nlabels];
+      noverlaps = GetMCAnalysisUtils()->GetNOverlaps(clus->GetLabels(), nlabels, mcTag, -1,
+                                                     GetMC(), overpdg, overlab);
     }
 
     // Cluster mathed with track? and what kind?
@@ -2205,7 +2240,7 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
   
     //
     if ( fStudyShape  && matchedPID >= 0 && matchedPID < 3 )
-      ClusterShapeHistograms(clus, absIdMax, maxCellFraction, eCrossFrac, ampMax, tmax, matchedPID, mcIndex);
+      ClusterShapeHistograms(clus, absIdMax, maxCellFraction, eCrossFrac, ampMax, tmax, matchedPID, mcIndex, noverlaps);
     
     //
     if ( fStudyTCardCorrelation ) 
@@ -4516,7 +4551,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSMM20LowM02[imatch]  = new TH3F 
       (Form("hSMM20LowM02_%s",matchCase[imatch].Data()),
        Form("#it{E} vs SM number vs #sigma^{2}_{short}, #it{n}_{cells}^{w>0.01}>%d, for %2.2f<#sigma^{2}_{long}<%2.2f, for ID %s",
-            fNCellMinShape,fM02LowBin[0],fM02LowBin[1],matchCase[imatch].Data()),
+            fNCellMinShape, fM02LowBin[0], fM02LowBin[1], matchCase[imatch].Data()),
        nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
       fhSMM20LowM02[imatch]->SetXTitle("#it{E} (GeV)");
       fhSMM20LowM02[imatch]->SetYTitle("SM number");
@@ -4526,7 +4561,7 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSMM20LowM02NoCut[imatch]  = new TH3F 
       (Form("hSMM20LowM02NoCut_%s",matchCase[imatch].Data()),
        Form("#it{E} vs SM number vs #sigma^{2}_{short}, for %2.2f<#sigma^{2}_{long}<%2.2f, for ID %s",
-            fM02LowBin[0],fM02LowBin[1],matchCase[imatch].Data()),
+            fM02LowBin[0], fM02LowBin[1], matchCase[imatch].Data()),
        nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
       fhSMM20LowM02NoCut[imatch]->SetXTitle("#it{E} (GeV)");
       fhSMM20LowM02NoCut[imatch]->SetYTitle("SM number");
@@ -4535,8 +4570,8 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
 
       fhSMM20HighM02[imatch]  = new TH3F 
       (Form("hSMM20HighM02_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs SM number vs #sigma^{2}_{short}, #it{n}_{cells}^{w>0.01}>%d, for 0.5<#sigma^{2}_{long}<2, for ID %s",
-            fNCellMinShape,matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #sigma^{2}_{short}, #it{n}_{cells}^{w>0.01}>%d, for %2.2f<#sigma^{2}_{long}<%2.2f, for ID %s",
+            fNCellMinShape, fM02HighBin[0], fM02HighBin[1], matchCase[imatch].Data()),
        nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
       fhSMM20HighM02[imatch]->SetXTitle("#it{E} (GeV)");
       fhSMM20HighM02[imatch]->SetYTitle("SM number");
@@ -4545,7 +4580,8 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       
       fhSMM20HighM02NoCut[imatch]  = new TH3F 
       (Form("hSMM20HighM02NoCut_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs SM number vs #sigma^{2}_{short}, for 0.5<#sigma^{2}_{long}<2, for ID %s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs #sigma^{2}_{short}, for %2.2f<#sigma^{2}_{long}<%2.2f, for ID %s",
+            fM02HighBin[0], fM02HighBin[1], matchCase[imatch].Data()),
        nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,(Int_t)nShShBins/1.5,0,maxShSh/1.5); 
       fhSMM20HighM02NoCut[imatch]->SetXTitle("#it{E} (GeV)");
       fhSMM20HighM02NoCut[imatch]->SetYTitle("SM number");
@@ -4560,6 +4596,26 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSMNCell[imatch]->SetYTitle("SM number");
       fhSMNCell[imatch]->SetZTitle("#it{n}_{cells}^{w>0.01}");
       outputContainer->Add(fhSMNCell[imatch]); 
+      
+      fhSMNCellLowM02[imatch]  = new TH3F 
+      (Form("hSMNCellLowM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs  #it{n}_{cells}^{w>0.01}, for %2.2f<#sigma^{2}_{long}<%2.2f, for ID %s",
+            fM02LowBin[0], fM02LowBin[1],matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,cellBins,cellMin,cellMax); 
+      fhSMNCellLowM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMNCellLowM02[imatch]->SetYTitle("SM number");
+      fhSMNCellLowM02[imatch]->SetZTitle("#it{n}_{cells}^{w>0.01}");
+      outputContainer->Add(fhSMNCellLowM02[imatch]); 
+  
+      fhSMNCellHighM02[imatch]  = new TH3F 
+      (Form("hSMNCellHighM02_%s",matchCase[imatch].Data()),
+       Form("#it{E} vs SM number vs  #it{n}_{cells}^{w>0.01}, for %2.2f<#sigma^{2}_{long}<%2.2f, for ID %s",
+            fM02HighBin[0], fM02HighBin[1],matchCase[imatch].Data()),
+       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,cellBins,cellMin,cellMax); 
+      fhSMNCellHighM02[imatch]->SetXTitle("#it{E} (GeV)");
+      fhSMNCellHighM02[imatch]->SetYTitle("SM number");
+      fhSMNCellHighM02[imatch]->SetZTitle("#it{n}_{cells}^{w>0.01}");
+      outputContainer->Add(fhSMNCellHighM02[imatch]); 
       
       fhSMNCellM02[imatch]  = new TH3F 
       (Form("hSMNCellM02_%s",matchCase[imatch].Data()),
@@ -4702,9 +4758,31 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       
       if ( IsDataMC() )
       {
+        fhOriginENoCut[imatch]  = new TH2F 
+        (Form("hOriginNoCut_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE, 10,-0.5,9.5); 
+        fhOriginENoCut[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginENoCut[imatch]->SetYTitle("particle");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginENoCut[imatch]->GetYaxis()->SetBinLabel(ilabel ,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginENoCut[imatch]); 
+        
+        fhOriginM02NoCut[imatch]  = new TH3F 
+        (Form("hOriginM02NoCut_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin vs #sigma^{2}_{long} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,10,-0.5,9.5,nShShBins,minShSh,maxShSh); 
+        fhOriginM02NoCut[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginM02NoCut[imatch]->SetYTitle("particle");
+        fhOriginM02NoCut[imatch]->SetZTitle("#sigma^{2}_{long}");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginM02NoCut[imatch]->GetYaxis()->SetBinLabel(ilabel,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginM02NoCut[imatch]); 
+        
         fhOriginE[imatch]  = new TH2F 
         (Form("hOrigin_%s",matchCase[imatch].Data()),
-         Form("#it{E} vs origin for ID %s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin, #it{n}_{cells}^{w>0.01}>%d, for ID %s",
+              fNCellMinShape, matchCase[imatch].Data()),
          nEbins,minE,maxE, 10,-0.5,9.5); 
         fhOriginE[imatch]->SetXTitle("#it{E} (GeV)");
         fhOriginE[imatch]->SetYTitle("particle");
@@ -4714,7 +4792,8 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         
         fhOriginM02[imatch]  = new TH3F 
         (Form("hOriginM02_%s",matchCase[imatch].Data()),
-         Form("#it{E} vs origin vs #sigma^{2}_{long} for ID %s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin vs #sigma^{2}_{long}, #it{n}_{cells}^{w>0.01}>%d, for ID %s",
+              fNCellMinShape,matchCase[imatch].Data()),
          nEbins,minE,maxE,10,-0.5,9.5,nShShBins,minShSh,maxShSh); 
         fhOriginM02[imatch]->SetXTitle("#it{E} (GeV)");
         fhOriginM02[imatch]->SetYTitle("particle");
@@ -4722,6 +4801,54 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
         for(Int_t ilabel = 1; ilabel <=10; ilabel++)
           fhOriginM02[imatch]->GetYaxis()->SetBinLabel(ilabel,mcParticleStringLabel[ilabel-1]);
         outputContainer->Add(fhOriginM02[imatch]); 
+        
+        // At least one overlap with some other particle (but not merged pi0 or eta)
+        //
+        fhOriginENoCutOverlap[imatch]  = new TH2F 
+        (Form("hOriginNoCutOverlap_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin for ID %s, n_{overlaps}>0",matchCase[imatch].Data()),
+         nEbins,minE,maxE, 10,-0.5,9.5); 
+        fhOriginENoCutOverlap[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginENoCutOverlap[imatch]->SetYTitle("particle");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginENoCutOverlap[imatch]->GetYaxis()->SetBinLabel(ilabel ,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginENoCutOverlap[imatch]); 
+        
+        fhOriginM02NoCutOverlap[imatch]  = new TH3F 
+        (Form("hOriginM02NoCutOverlap_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin vs #sigma^{2}_{long} for ID %s, n_{overlaps}>0",matchCase[imatch].Data()),
+         nEbins,minE,maxE,10,-0.5,9.5,nShShBins,minShSh,maxShSh); 
+        fhOriginM02NoCutOverlap[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginM02NoCutOverlap[imatch]->SetYTitle("particle");
+        fhOriginM02NoCutOverlap[imatch]->SetZTitle("#sigma^{2}_{long}");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginM02NoCutOverlap[imatch]->GetYaxis()->SetBinLabel(ilabel,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginM02NoCutOverlap[imatch]); 
+        
+        fhOriginEOverlap[imatch]  = new TH2F 
+        (Form("hOriginOverlap_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin, #it{n}_{cells}^{w>0.01}>%d, for ID %s, n_{overlaps}>0",
+              fNCellMinShape, matchCase[imatch].Data()),
+         nEbins,minE,maxE, 10,-0.5,9.5); 
+        fhOriginEOverlap[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginEOverlap[imatch]->SetYTitle("particle");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginEOverlap[imatch]->GetYaxis()->SetBinLabel(ilabel ,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginEOverlap[imatch]); 
+        
+        fhOriginM02Overlap[imatch]  = new TH3F 
+        (Form("hOriginM02Overlap_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs origin vs #sigma^{2}_{long}, #it{n}_{cells}^{w>0.01}>%d, for ID %s, n_{overlaps}>0",
+              fNCellMinShape,matchCase[imatch].Data()),
+         nEbins,minE,maxE,10,-0.5,9.5,nShShBins,minShSh,maxShSh); 
+        fhOriginM02Overlap[imatch]->SetXTitle("#it{E} (GeV)");
+        fhOriginM02Overlap[imatch]->SetYTitle("particle");
+        fhOriginM02Overlap[imatch]->SetZTitle("#sigma^{2}_{long}");
+        for(Int_t ilabel = 1; ilabel <=10; ilabel++)
+          fhOriginM02Overlap[imatch]->GetYaxis()->SetBinLabel(ilabel,mcParticleStringLabel[ilabel-1]);
+        outputContainer->Add(fhOriginM02Overlap[imatch]); 
+        
+        
       } // MC
     } // match loop
     

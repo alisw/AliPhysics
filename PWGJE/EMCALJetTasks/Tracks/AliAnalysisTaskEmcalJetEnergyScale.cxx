@@ -156,6 +156,7 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   taskname << "EnergyScaleTask_" << tag.str();
   AliAnalysisTaskEmcalJetEnergyScale *energyscaletask = new AliAnalysisTaskEmcalJetEnergyScale(taskname.str().data());
   mgr->AddTask(energyscaletask);
+  energyscaletask->SetTriggerName(trigger);
 
   auto partcont = energyscaletask->AddMCParticleContainer("mcparticles");
   partcont->SetMinPt(0.);

@@ -1489,9 +1489,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     return kFALSE;
   }
 
-  // Get the entries of the Cluster Container
-  for(auto it : clusters->accepted()){
-    AliVCluster *coi = static_cast<AliVCluster*>(it);
+  if ( fisLCAnalysis ) {
+    // Get the event leading cluster
+    AliVCluster *coi = (clusters->GetLeadingCluster());
+
     if(!coi){
       AliError("No cluster found");
       return kFALSE;
@@ -1534,7 +1535,64 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
       FillGeneralHistograms(coi,vecCOI,index);
     }
+
   }
+  else {
+    // Get the entries of the Cluster Container
+    for(auto it : clusters->accepted()){
+      AliVCluster *coi = static_cast<AliVCluster*>(it);
+
+      if(!coi){
+	AliError("No cluster found");
+	return kFALSE;
+      }
+      if(!coi->IsEMCAL())
+	return kFALSE;
+
+      index=coi->GetID();
+      TLorentzVector vecCOI;
+      coi->GetMomentum(vecCOI,fVertex);
+
+      fPT->Fill(vecCOI.Pt());
+
+      if(fQA)
+	FillQAHistograms(coi,vecCOI);
+
+      if(fWho == 2 && !fQA)
+	fEtaPhiClus->Fill(vecCOI.Eta(),vecCOI.Phi());
+
+      Bool_t isSelected = SelectCandidate(coi);
+
+      if(fQA || (fWho == 2 && !fQA))
+	fEtaPhiClusAftSel->Fill(vecCOI.Eta(),vecCOI.Phi());
+
+      if(isSelected){
+	for(auto it : tracksANA->accepted()){
+	  AliVTrack *tr = static_cast<AliVTrack*>(it);
+	  if(!tr){
+	    AliError("No track found");
+	    return kFALSE;
+	  }
+	  fPtTracksVSpTNC->Fill(vecCOI.Pt(),tr->Pt());
+	  if(fWho != 2){
+	    fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
+	    fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	  }
+	  fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
+	  fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
+	}
+
+	FillGeneralHistograms(coi,vecCOI,index);
+      }
+    }
+  }
+
+
+
+
+
+
+
   return kTRUE;
 }
 
@@ -2650,7 +2708,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
     ComputeConeAreaInTPC   (c.Eta(), isoConeArea);
     ComputePhiBandAreaInTPC(c.Eta(), isoConeArea, phiBandArea);
 
-    fPhiBandUETracks->Fill(c.Pt(), sumpTPhiBandTrack/phiBandArea);
+    fPhiBandUETracks->Fill(c.Pt(), phiBandtrack/phiBandArea);
 
     fPtVsNormConeVsNormPhiBand->Fill(c.Pt(), ptIso/isoConeArea, phiBandtrack/phiBandArea);                // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
     fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - phiBandtrack * (isoConeArea / phiBandArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
@@ -2762,7 +2820,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     ComputeConeAreaInTPC   (c.Eta()    , isoConeArea);
     ComputeEtaBandAreaInTPC(isoConeArea, etaBandArea);
 
-    fEtaBandUETracks->Fill(c.Pt(), sumpTEtaBandTrack/etaBandArea);
+    fEtaBandUETracks->Fill(c.Pt(), etaBandtrack/etaBandArea);
 
     fPtVsNormConeVsNormEtaBand->Fill(c.Pt(), ptIso/isoConeArea, etaBandtrack/etaBandArea);                // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
     fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - etaBandtrack * (isoConeArea / etaBandArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
@@ -2771,7 +2829,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
 
 
   //__________________________________________________________________________
-void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, Double_t &ptIso, Double_t &cones){
+void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, Double_t m02candidate, Double_t &ptIso, Double_t &cones){
 
     // Underlying events study with tracks in orthogonal cones in TPC
 
@@ -2858,6 +2916,20 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
 
   ptIso = sumpTConeCharged;
   cones = sumpTPerpConeTrack;
+
+  Double_t isoConeArea   = 0.; // Cluster (eta, phi)-dependent cone area
+  Double_t perpConesArea = 0.; // Cluster (eta, phi)-dependent perpendicular cones area
+
+  if(fWho == 2 && fAreasPerEvent){
+    ComputeConeAreaInTPC(c.Eta(), isoConeArea);
+    perpConesArea       = 2.*isoConeArea;
+
+    fPerpConesUETracks->Fill(c.Pt(), cones/perpConesArea);
+    fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - cones * (isoConeArea / perpConesArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
+  }
+
+
+
 }
 
   //__________________________________________________________________________
@@ -3625,7 +3697,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
       break;
 
     case 2: // Cones
-      PtIsoTrackOrthCones(vecCOI, isolation, ue);
+      PtIsoTrackOrthCones(vecCOI, m02COI, isolation, ue);
 
       if(fWho==2)
         fPerpConesUETracks->Fill(vecCOI.Pt() , ue);
@@ -4259,9 +4331,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::CalculateUEDensityMC(Double_t etaCand,
         break;
       }
 
-      case 2:
+      case 2:{
+	if(fWho == 2 && fAreasPerEvent){
+	  ComputeConeAreaInTPC(etaCand, isoConeArea);
+	  perpConesArea = 2.*isoConeArea;
+	}
+
         sumUE = sumUE * (isoConeArea / perpConesArea);
         break;
+      }
 
       case 3:
         sumUE = sumUE * (isoConeArea / fullTPCArea);
@@ -4527,7 +4605,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
   if(!fIsMC) return;
   if(!fStack && !fAODMCParticles){ cout << "No stack saved\n"; return; }
 
-  Double_t E_T = 0., sumEiso = 0., sumUE = 0., candidatePhi = 0., candidateEta = 0., radius = 0., particlePhi = 0., particleEta = 0.;
+  Double_t candidateEnergy = 0., candidateEnergyMax = 0., E_T = 0., sumEiso = 0., sumUE = 0., candidatePhi = 0., candidateEta = 0., radius = 0., particlePhi = 0., particleEta = 0.;
   Double_t etaMax_fidu = 0., phiMinEMCal_fidu = 0., phiMaxEMCal_fidu = 0., etaMax = 0., phiMin = 0., phiMax = 0./*, etaMinDCal_InnerEdge = 0., phiMinDCal = 0. , phiMaxDCal_FullSM = 0., phiMaxDCal = 0.*/;
 
   if(fAODMCParticles->GetEntries() < 1){
@@ -4551,27 +4629,84 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
   // }
 
   AliAODMCParticle *candidate, *particle, *candidateMother;
-  Int_t candidatePDG, candidatePhotonLabel, particleMotherLabel, candidateMotherLabel, candidateMotherPDG;
+  Int_t candidatePDG = 0, candidatePhotonLabel = 0, particleMotherLabel = 0, candidateMotherLabel = 0, candidateMotherPDG = 0;
 
-  for(iTrack = 0; iTrack < nTracks; iTrack ++){
-    E_T = 0., candidatePhi = 0., candidateEta = 0.;
+  if ( fisLCAnalysis ) {
+    for(iTrack = 0; iTrack < nTracks; iTrack ++){
+      E_T = 0., candidatePhi = 0., candidateEta = 0.;
 
-    candidate = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
+      candidate = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
 
-    fGenPromptPhotonSel->Fill(0.5);
+      // fGenPromptPhotonSel->Fill(0.5);
 
-    if(candidate->MCStatusCode() != 1)  continue;       // Discard non final-state particles
+      if(candidate->MCStatusCode() != 1)  continue;       // Discard non final-state particles
 
-    fGenPromptPhotonSel->Fill(1.5);
+      // fGenPromptPhotonSel->Fill(1.5);
 
-    if(!candidate->IsPhysicalPrimary()) continue;       // Discard non physical primary particles
+      if(!candidate->IsPhysicalPrimary()) continue;       // Discard non physical primary particles
 
-    fGenPromptPhotonSel->Fill(2.5);
+      // fGenPromptPhotonSel->Fill(2.5);
 
-    candidatePDG = candidate->GetPdgCode();
-    if(candidatePDG != 22) continue;                    // Discard particles which are not photons
+      candidatePDG = candidate->GetPdgCode();
+      if(candidatePDG != 22) continue;                    // Discard particles which are not photons
 
-    fGenPromptPhotonSel->Fill(3.5);
+      // fGenPromptPhotonSel->Fill(3.5);
+
+      if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
+
+      // fGenPromptPhotonSel->Fill(5.5);
+
+      candidateEta = candidate->Eta();
+      candidatePhi = candidate->Phi();
+
+      if(!fTPC4Iso){
+	etaMax_fidu = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
+
+	if(!fPeriod.IsNull()){
+	  phiMinEMCal_fidu = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
+	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	    phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
+	  else
+	    phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
+	}
+	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+	  phiMinEMCal_fidu = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
+	  phiMaxEMCal_fidu = TMath::Pi()-0.03-fFiducialCut;
+	}
+      }
+      else{
+	etaMax_fidu = 0.87-fFiducialCut;
+
+	if(!fPeriod.IsNull()){
+	  phiMinEMCal_fidu = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	    phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
+	  else
+	    phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
+	}
+	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+	  phiMinEMCal_fidu = (4./9.)*TMath::Pi()+0.03;
+	  phiMaxEMCal_fidu = TMath::Pi()-0.03;
+	}
+      }
+
+      if((TMath::Abs(candidateEta) > etaMax_fidu) || (candidatePhi < phiMinEMCal_fidu || candidatePhi > phiMaxEMCal_fidu)) // Discard photons outside acceptance
+	continue;
+
+      // fGenPromptPhotonSel->Fill(6.5);
+
+      // Retrieving the most energetic photon
+      candidateEnergy = candidate->E()*TMath::Sin(candidate->Theta());
+      if(candidateEnergy > candidateEnergyMax){
+	candidateEnergyMax   = candidateEnergy;
+	candidatePhotonLabel = iTrack;
+      }
+      else
+	continue;
+    }
+
+    candidate = static_cast<AliAODMCParticle*>(fAODMCParticles->At(candidatePhotonLabel));
+    E_T       = candidate->E()*(TMath::Sin(candidate->Theta())); // Transform to transverse Energy
 
     candidateMotherLabel = candidate->GetMother();
     if(candidateMotherLabel > 0 && candidateMotherLabel < nTracks){
@@ -4581,126 +4716,235 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
     else
       candidateMotherPDG = candidatePDG;
 
-    if(candidateMotherPDG != 22) continue;              // Discard particles whose mother is not a photon
+    if(candidateMotherPDG == 22){ // Discard particles whose mother is not a photon
 
-    fGenPromptPhotonSel->Fill(4.5);
+      // fGenPromptPhotonSel->Fill(4.5);
 
-    if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
+      radius = 0., particlePhi = 0., particleEta = 0., sumEiso = 0., sumUE = 0.;
 
-    fGenPromptPhotonSel->Fill(5.5);
+      // Isolation and UE measurement
+      for(iTrack = 0; iTrack < nTracks; iTrack ++){
 
-    candidateEta = candidate->Eta();
-    candidatePhi = candidate->Phi();
+	if(iTrack == candidatePhotonLabel) continue; // Do not count the candidate photon as particle contributing to isolation/UE energy
 
-    if(!fTPC4Iso){
-      etaMax_fidu = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
+	particle = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
+	if(!particle) continue;
 
-      if(!fPeriod.IsNull()){
-	phiMinEMCal_fidu = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
-	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	  phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
-	else
-	  phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
-      }
-      else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-	phiMinEMCal_fidu = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
-	phiMaxEMCal_fidu = TMath::Pi()-0.03-fFiducialCut;
-      }
-    }
-    else{
-      etaMax_fidu = 0.87-fFiducialCut;
+	if(particle->Charge() != 0 && particle->MCStatusCode() == 1)
+	  fPtTracksVSpTNC_MC->Fill(E_T,particle->Pt());
 
-      if(!fPeriod.IsNull()){
-	phiMinEMCal_fidu = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
-	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-	  phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
-	else
-	  phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
-      }
-      else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
-	phiMinEMCal_fidu = (4./9.)*TMath::Pi()+0.03;
-	phiMaxEMCal_fidu = TMath::Pi()-0.03;
-      }
-    }
+	if     (fIsoMethod == 2 && particle->Charge() == 0) continue;                                           // Discard neutral particles for charged-only isolation
+	else if(fIsoMethod == 3 && particle->Charge() != 0) continue;                                           // Discard charged particles for neutral-only isolation
 
-    if((TMath::Abs(candidateEta) > etaMax_fidu) || (candidatePhi < phiMinEMCal_fidu || candidatePhi > phiMaxEMCal_fidu)) // Discard photons outside acceptance
-      continue;
+	if(particle->MCStatusCode() != 1 || !particle->IsPhysicalPrimary()) continue; // Discard non primary, non "detected", non final-state particles
 
-    fGenPromptPhotonSel->Fill(6.5);
+	particleMotherLabel = particle->GetMother();
+	if(particleMotherLabel < 0 || particleMotherLabel > nTracks) continue;
+	if(particleMotherLabel == candidatePhotonLabel)              continue;                                // Discard mother if it is the candidate photon
+	if(particle->E() < 0.3)                                      continue;                                // Discard particles with energy lower than minimal for clusters at reco level
 
-    candidatePhotonLabel = iTrack;
-    E_T = candidate->E()*(TMath::Sin(candidate->Theta())); // Transform to transverse Energy
+	particlePhi = particle->Phi();
+	particleEta = particle->Eta();
 
-    radius = 0., particlePhi = 0., particleEta = 0., sumEiso = 0., sumUE = 0.;
+	etaMax = fGeom->GetArm1EtaMax()-0.03;
+	if(fPeriod != ""){
+	  phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
 
-    // Isolation and UE measurement
-    for(iTrack = 0; iTrack < nTracks; iTrack ++){
-
-      if(iTrack == candidatePhotonLabel) continue; // Do not count the candidate photon as particle contributing to isolation/UE energy
-
-      particle = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
-      if(!particle) continue;
-
-      if(particle->Charge() != 0 && particle->MCStatusCode() == 1)
-	fPtTracksVSpTNC_MC->Fill(E_T,particle->Pt());
-
-      if     (fIsoMethod == 2 && particle->Charge() == 0) continue;                                           // Discard neutral particles for charged-only isolation
-      else if(fIsoMethod == 3 && particle->Charge() != 0) continue;                                           // Discard charged particles for neutral-only isolation
-
-      if(particle->MCStatusCode() != 1 || !particle->IsPhysicalPrimary()) continue; // Discard non primary, non "detected", non final-state particles
-
-      particleMotherLabel = particle->GetMother();
-      if(particleMotherLabel < 0 || particleMotherLabel > nTracks) continue;
-      if(particleMotherLabel == candidatePhotonLabel)              continue;                                // Discard mother if it is the candidate photon
-      if(particle->E() < 0.3)                                      continue;                                // Discard particles with energy lower than minimal for clusters at reco level
-
-      particlePhi = particle->Phi();
-      particleEta = particle->Eta();
-
-      etaMax = fGeom->GetArm1EtaMax()-0.03;
-      if(fPeriod != ""){
-      	phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
-
-      	if(fPeriod.Contains("12") || fPeriod.Contains("13"))
-      	  phiMax = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
-      	else
-      	  phiMax = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
-      }
-      else{
-      	phiMin = (4./9.)*TMath::Pi()+0.03;
-      	phiMax = TMath::Pi()-0.03;
-      }
-
-      if((TMath::Abs(candidateEta) <= etaMax) && (particlePhi >= phiMin) && (particlePhi <= phiMax)){
-	radius = TMath::Sqrt(TMath::Power(particlePhi-candidatePhi,2)+TMath::Power(particleEta-candidateEta,2));
-
-	if(radius > fIsoConeRadius){                                  // UE energy
-	  if(particle->Charge() == 0 && particle->GetPdgCode() != 22)
-	    continue;                                                 // Skipping neutral hadrons
+	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	    phiMax = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
 	  else
-	    AddParticleToUEMC(sumUE, particle, candidateEta, candidatePhi);
+	    phiMax = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
 	}
-	else{                                                         // Cone energy
-	  if(particle->Charge() != 0)
-	    sumEiso += particle->Pt();
-	  else{
-	    if(particle->GetPdgCode() == 22)
-	      sumEiso += particle->E()*(TMath::Sin(particle->Theta()));
+	else{
+	  phiMin = (4./9.)*TMath::Pi()+0.03;
+	  phiMax = TMath::Pi()-0.03;
+	}
+
+	if((TMath::Abs(candidateEta) <= etaMax) && (particlePhi >= phiMin) && (particlePhi <= phiMax)){
+	  radius = TMath::Sqrt(TMath::Power(particlePhi-candidatePhi,2)+TMath::Power(particleEta-candidateEta,2));
+
+	  if(radius > fIsoConeRadius){                                  // UE energy
+	    if(particle->Charge() == 0 && particle->GetPdgCode() != 22)
+	      continue;                                                 // Skipping neutral hadrons
 	    else
-	      continue;                                               // Skipping neutral hadrons
+	      AddParticleToUEMC(sumUE, particle, candidateEta, candidatePhi);
+	  }
+	  else{                                                         // Cone energy
+	    if(particle->Charge() != 0)
+	      sumEiso += particle->Pt();
+	    else{
+	      if(particle->GetPdgCode() == 22)
+		sumEiso += particle->E()*(TMath::Sin(particle->Theta()));
+	      else
+		continue;                                               // Skipping neutral hadrons
+	    }
 	  }
 	}
       }
-    }
 
-    CalculateUEDensityMC(candidateEta, candidatePhi, sumUE);
+      CalculateUEDensityMC(candidateEta, candidatePhi, sumUE);
 
-    if(fWho == 2){
-      fPtvsSumUE_MC->Fill(E_T, sumEiso-sumUE); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
-      fSumEiso_MC->Fill(sumEiso);
-      fSumUE_MC->Fill(sumUE);
+      if(fWho == 2){
+	fPtvsSumUE_MC->Fill(E_T, sumEiso-sumUE); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
+	fSumEiso_MC->Fill(sumEiso);
+	fSumUE_MC->Fill(sumUE);
+      }
     }
   }
+  else {
+    for(iTrack = 0; iTrack < nTracks; iTrack ++){
+      E_T = 0., candidatePhi = 0., candidateEta = 0.;
+
+      candidate = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
+
+      fGenPromptPhotonSel->Fill(0.5);
+
+      if(candidate->MCStatusCode() != 1)  continue;       // Discard non final-state particles
+
+      fGenPromptPhotonSel->Fill(1.5);
+
+      if(!candidate->IsPhysicalPrimary()) continue;       // Discard non physical primary particles
+
+      fGenPromptPhotonSel->Fill(2.5);
+
+      candidatePDG = candidate->GetPdgCode();
+      if(candidatePDG != 22) continue;                    // Discard particles which are not photons
+
+      fGenPromptPhotonSel->Fill(3.5);
+
+      candidateMotherLabel = candidate->GetMother();
+      if(candidateMotherLabel > 0 && candidateMotherLabel < nTracks){
+	candidateMother    = static_cast<AliAODMCParticle*>(fAODMCParticles->At(candidateMotherLabel));
+	candidateMotherPDG = TMath::Abs(candidateMother->GetPdgCode());
+      }
+      else
+	candidateMotherPDG = candidatePDG;
+
+      if(candidateMotherPDG != 22) continue;              // Discard particles whose mother is not a photon
+
+      fGenPromptPhotonSel->Fill(4.5);
+
+      if(fPythiaHeader->ProcessType() != 201 && fPythiaHeader->ProcessType() != 202) continue; // Discard particles which do not come from prompt photon processes
+
+      fGenPromptPhotonSel->Fill(5.5);
+
+      candidateEta = candidate->Eta();
+      candidatePhi = candidate->Phi();
+
+      if(!fTPC4Iso){
+	etaMax_fidu = fGeom->GetArm1EtaMax()-0.03-fFiducialCut;
+
+	if(!fPeriod.IsNull()){
+	  phiMinEMCal_fidu = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03+fFiducialCut;
+	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	    phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03-fFiducialCut;
+	  else
+	    phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03-fFiducialCut;
+	}
+	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+	  phiMinEMCal_fidu = (4./9.)*TMath::Pi()+0.03+fFiducialCut;
+	  phiMaxEMCal_fidu = TMath::Pi()-0.03-fFiducialCut;
+	}
+      }
+      else{
+	etaMax_fidu = 0.87-fFiducialCut;
+
+	if(!fPeriod.IsNull()){
+	  phiMinEMCal_fidu = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	    phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
+	  else
+	    phiMaxEMCal_fidu = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
+	}
+	else{ // If no period set, default for 2011-2013 (2*5 EMCal SM)
+	  phiMinEMCal_fidu = (4./9.)*TMath::Pi()+0.03;
+	  phiMaxEMCal_fidu = TMath::Pi()-0.03;
+	}
+      }
+
+      if((TMath::Abs(candidateEta) > etaMax_fidu) || (candidatePhi < phiMinEMCal_fidu || candidatePhi > phiMaxEMCal_fidu)) // Discard photons outside acceptance
+	continue;
+
+      fGenPromptPhotonSel->Fill(6.5);
+
+      candidatePhotonLabel = iTrack;
+      E_T = candidate->E()*(TMath::Sin(candidate->Theta())); // Transform to transverse Energy
+
+      radius = 0., particlePhi = 0., particleEta = 0., sumEiso = 0., sumUE = 0.;
+
+      // Isolation and UE measurement
+      for(iTrack = 0; iTrack < nTracks; iTrack ++){
+
+	if(iTrack == candidatePhotonLabel) continue; // Do not count the candidate photon as particle contributing to isolation/UE energy
+
+	particle = static_cast<AliAODMCParticle*>(fAODMCParticles->At(iTrack));
+	if(!particle) continue;
+
+	if(particle->Charge() != 0 && particle->MCStatusCode() == 1)
+	  fPtTracksVSpTNC_MC->Fill(E_T,particle->Pt());
+
+	if     (fIsoMethod == 2 && particle->Charge() == 0) continue;                                           // Discard neutral particles for charged-only isolation
+	else if(fIsoMethod == 3 && particle->Charge() != 0) continue;                                           // Discard charged particles for neutral-only isolation
+
+	if(particle->MCStatusCode() != 1 || !particle->IsPhysicalPrimary()) continue; // Discard non primary, non "detected", non final-state particles
+
+	particleMotherLabel = particle->GetMother();
+	if(particleMotherLabel < 0 || particleMotherLabel > nTracks) continue;
+	if(particleMotherLabel == candidatePhotonLabel)              continue;                                // Discard mother if it is the candidate photon
+	if(particle->E() < 0.3)                                      continue;                                // Discard particles with energy lower than minimal for clusters at reco level
+
+	particlePhi = particle->Phi();
+	particleEta = particle->Eta();
+
+	etaMax = fGeom->GetArm1EtaMax()-0.03;
+	if(fPeriod != ""){
+	  phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+
+	  if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+	    phiMax = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03;
+	  else
+	    phiMax = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
+	}
+	else{
+	  phiMin = (4./9.)*TMath::Pi()+0.03;
+	  phiMax = TMath::Pi()-0.03;
+	}
+
+	if((TMath::Abs(candidateEta) <= etaMax) && (particlePhi >= phiMin) && (particlePhi <= phiMax)){
+	  radius = TMath::Sqrt(TMath::Power(particlePhi-candidatePhi,2)+TMath::Power(particleEta-candidateEta,2));
+
+	  if(radius > fIsoConeRadius){                                  // UE energy
+	    if(particle->Charge() == 0 && particle->GetPdgCode() != 22)
+	      continue;                                                 // Skipping neutral hadrons
+	    else
+	      AddParticleToUEMC(sumUE, particle, candidateEta, candidatePhi);
+	  }
+	  else{                                                         // Cone energy
+	    if(particle->Charge() != 0)
+	      sumEiso += particle->Pt();
+	    else{
+	      if(particle->GetPdgCode() == 22)
+		sumEiso += particle->E()*(TMath::Sin(particle->Theta()));
+	      else
+		continue;                                               // Skipping neutral hadrons
+	    }
+	  }
+	}
+      }
+
+      CalculateUEDensityMC(candidateEta, candidatePhi, sumUE);
+
+      if(fWho == 2){
+	fPtvsSumUE_MC->Fill(E_T, sumEiso-sumUE); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
+	fSumEiso_MC->Fill(sumEiso);
+	fSumUE_MC->Fill(sumUE);
+      }
+    }
+  }
+
+
+
+
 
   return;
 }

@@ -239,7 +239,10 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   // Fill track matching histograms if track matching activated
   // and only once in case of multiple analysis
   if ( tm && !kAnaCutsString.Contains("MultiIso") ) 
+  {
     ana->SwitchOnTMHistoFill() ;
+    if(tm > 1) ana->SwitchOnTMTrackPtHistoFill() ;
+  }
   
   if(calorimeter == "PHOS")
   {
@@ -584,7 +587,10 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   }
  
   if ( kAnaCutsString.Contains("PerSM") ) 
+  {
     ana->SwitchOnFillHistogramsPerSM(); 
+    ana->SwitchOnStudyNCellsCut(); 
+  }
   
   if ( kAnaCutsString.Contains("PerTCard") ) 
     ana->SwitchOnFillHistogramsPerTCardIndex(); 

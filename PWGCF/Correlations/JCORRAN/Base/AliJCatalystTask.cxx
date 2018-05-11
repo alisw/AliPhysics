@@ -262,6 +262,8 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 						}
 					}
 				} // weak decay particles are exclude
+				Char_t ch = (Char_t) track->Charge();
+				if (ch == 0 ) continue; // Remove all others than charged particles
 
 				if(fPt_min > 0){
 					double Pt = track->Pt();
@@ -270,7 +272,6 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 				}
 
 				Int_t pdg = track->GetPdgCode();
-				Char_t ch = (Char_t) track->Charge();
 				// partile charge selection
 				if( fPcharge != 0){ // fPcharge : 0 all particle
 					if( fPcharge==1 && ch<0 )
@@ -525,6 +526,7 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
 
 			Int_t pdg = particle->GetPdgCode();
 			Char_t ch = (Char_t) track->Charge();
+			if(ch==0) continue; // Remove all others than charged particles
 			if(fPcharge != 0){ // fPcharge 0 : all particle
 				if(fPcharge == 1 && ch < 0)
 					continue; // 1 for + particle

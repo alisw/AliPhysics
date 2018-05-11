@@ -110,7 +110,7 @@ void BWFits(bool antimatter_analysys = false) {
         fit_functions[iF]->SetParLimits(3, normMin, normMax);
       }
       function_dir[iF]->cd();
-		  TH1* h = YieldMean(m,sm,fit_functions[iF],0,10.1);
+      TH1* h = YieldMean(m,sm,fit_functions[iF],0,10.1);
       cout << "\n*****************************" << endl;
       printf("Function: %s\n", kFitFunctionNames[iF].data());
       printf("iC: %d\n", iC);

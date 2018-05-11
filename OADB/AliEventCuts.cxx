@@ -405,8 +405,9 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     return;
   }
 
-  if (fCurrentRun >= 166423 && fCurrentRun <= 170593) {
-    SetupLHC11h();
+  if ((fCurrentRun >= 166423 && fCurrentRun <= 170593) ||
+      (fCurrentRun >= 136833 && fCurrentRun <= 139517)) {
+    SetupRun1PbPb();
     return;
   }
 
@@ -653,7 +654,7 @@ void AliEventCuts::SetupLHC15o() {
 
 }
 
-void AliEventCuts::SetupLHC11h() {
+void AliEventCuts::SetupRun1PbPb() {
   fRequireTrackVertex = true;
   fMinVtz = -10.f;
   fMaxVtz = 10.f;

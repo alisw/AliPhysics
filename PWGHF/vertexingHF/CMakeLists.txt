@@ -80,6 +80,7 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelor.cxx
   AliAnalysisTaskSEDvsMultiplicity.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
+  AliAnalysisTaskCheckEvSel.cxx
   AliAnalysisTaskDmesonMCPerform.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx

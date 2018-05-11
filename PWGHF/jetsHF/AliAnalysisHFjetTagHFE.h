@@ -17,6 +17,7 @@ class AliPIDResponse;
 class AliAODMCHeader;
 class AliAODMCParticle; // sample
 class AliMultSelection;
+class TRandom;
 
 #include "TObject.h"
 #include "TObjArray.h"
@@ -133,9 +134,10 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustE;
   TH1F                        *fHistClustEtime;
   TH2F                        *fEMCClsEtaPhi;
+  TH1F                        *fHistBGfrac;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
-
+  TRandom                     *generator;
 
   AliJetContainer            *fJetsCont;                   //!Jets
   AliJetContainer            *fJetsContPart;                   //!Jets particle
@@ -144,6 +146,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   Bool_t tagHFjet(AliEmcalJet* jet, double *epT, int MCpid, double &maxpT_e);
   //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
   void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
+  Double_t CalRandomCone(Double_t HFjetPhi, Double_t HFjetEta, Double_t HFjetArea);
   Bool_t isHeavyFlavour(int Mompdg);
   Bool_t isPhotonic(int Mompdg);
   //void MakeParticleLevelJet(THnSparse *pJet);

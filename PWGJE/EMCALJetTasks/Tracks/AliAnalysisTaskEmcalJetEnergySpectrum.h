@@ -27,15 +27,8 @@
 #ifndef __ALINANLYSISTASKJETENERGYSPECTRUM_H__
 #define __ALINANLYSISTASKJETENERGYSPECTRUM_H__
 
-#if !(defined __CINT__ || defined __MAKECINT__)
-#if __cplusplus >= 201103L
-// In c++11 mode we will rely on c++11 keywords also in header files 
-// (i.e. final, override, default, delete)
-#define USECXX11HEADERS
-#endif
-#endif
-
 #include "AliAnalysisTaskEmcalJet.h"
+#include <vector>
 
 class THistManager;
 
@@ -43,14 +36,21 @@ namespace EmcalTriggerJets {
 
 class AliAnalysisTaskEmcalJetEnergySpectrum : public AliAnalysisTaskEmcalJet {
 public:
-#ifdef USECXX11HEADERS
-  AliAnalysisTaskEmcalJetEnergySpectrum() = default;
-  AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &) = delete;
-  AliAnalysisTaskEmcalJetEnergySpectrum &operator=(const AliAnalysisTaskEmcalJetEnergySpectrum &) = delete;
-#else
-  // Only needed for rootcint - no implementation necessary
+  enum TriggerCluster_t {
+    kTrgClusterANY,
+    kTrgClusterCENT,
+    kTrgClusterCENTNOTRD,
+    kTrgClusterCALO,
+    kTrgClusterCALOFAST,
+    kTrgClusterCENTBOTH,
+    kTrgClusterOnlyCENT,
+    kTrgClusterOnlyCENTNOTRD,
+    kTrgClusterCALOBOTH,
+    kTrgClusterOnlyCALO,
+    kTrgClusterOnlyCALOFAST,
+    kTrgClusterN
+  };
   AliAnalysisTaskEmcalJetEnergySpectrum();
-#endif
   AliAnalysisTaskEmcalJetEnergySpectrum(const char *name);
   virtual ~AliAnalysisTaskEmcalJetEnergySpectrum();
 
@@ -70,14 +70,13 @@ protected:
   virtual void UserCreateOutputObjects();
   virtual bool Run();
   bool TriggerSelection() const;
-  Int_t GetTriggerClusterIndex(const TString &triggerstring) const;
+  std::vector<TriggerCluster_t> GetTriggerClusterIndices(const TString &triggerstring) const;
   bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
 
 private:
-#ifndef USECXX11HEADERS
   AliAnalysisTaskEmcalJetEnergySpectrum(const AliAnalysisTaskEmcalJetEnergySpectrum &);
   AliAnalysisTaskEmcalJetEnergySpectrum &operator=(const AliAnalysisTaskEmcalJetEnergySpectrum &);
-#endif
+
   THistManager                  *fHistos;                       ///< Histogram manager
   Bool_t                        fIsMC;                          ///< Running on simulated events
 	UInt_t                        fTriggerSelectionBits;          ///< Trigger selection bits

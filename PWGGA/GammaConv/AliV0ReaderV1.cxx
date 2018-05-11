@@ -552,6 +552,7 @@ Bool_t AliV0ReaderV1::Notify(){
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC12P2JJ ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16rP1JJ  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16sP1JJ  ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJ || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJLowB ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18b8
      ){

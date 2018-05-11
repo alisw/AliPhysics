@@ -27,8 +27,8 @@ public:
 
     fMinuit.SetLimitedVariable( 0, "r_{A}",    par0[0], 0.01, 0, 1);
     fMinuit.SetLimitedVariable( 1, "r_{C}",    par0[1], 0.01, 0, 1);
-    fMinuit.SetLimitedVariable( 2, "bkgd_{A}", par0[2], 1e-6, 1e-6, 1e-3);
-    fMinuit.SetLimitedVariable( 3, "bkgd_{C}", par0[3], 1e-6, 1e-6, 1e-3);
+    fMinuit.SetLimitedVariable( 2, "bkgd_{A}", par0[2], 5e-6, 5e-7, 1e-3);
+    fMinuit.SetLimitedVariable( 3, "bkgd_{C}", par0[3], 5e-6, 5e-7, 1e-3);
     fMinuit.Minimize();
     fMinuit.PrintResults();
   }
@@ -77,21 +77,9 @@ public:
     const Double_t mu = trova(x[0], par);
     return rCnotA(&mu,par)/rAC(&mu,par);
   }
-private:
-  static Double_t rCnotA(const Double_t* x, const Double_t* par) {
-    const Double_t mu = x[0];
-    return (1 - TMath::Exp(-par[0]*mu-par[2])) * TMath::Exp(-mu) * TMath::Exp(-par[1]*mu-par[3]);
-  }
-  static Double_t rAnotC(const Double_t* x, const Double_t* par) {
-    const Double_t mu = x[0];
-    return (1 - TMath::Exp(-par[1]*mu-par[3])) * TMath::Exp(-mu) * TMath::Exp(-par[0]*mu-par[2]);
-  }
-  static Double_t rAC(const Double_t* x, const Double_t* par) {
-    const Double_t mu = x[0];
-    return 1-TMath::Exp(-mu) + TMath::Exp(-mu)*(1 - TMath::Exp(-par[1]*mu-par[3]))*(1 - TMath::Exp(-par[0]*mu-par[2]));
-  }
+
   static Double_t trova(Double_t y, const Double_t *par) {
-    Double_t x[2] = {0.0, 1.0}; // xmin,xmax
+    Double_t x[2] = {0.0, 2.0}; // xmin,xmax
     const Double_t eps=1e-16;   // 1e-14
     for(Int_t i=0; i<100 && x[1]-x[0] > eps; ++i){
       const Double_t xmed = 0.5*(x[1]+x[0]);
@@ -99,6 +87,19 @@ private:
       x[val >= y] = xmed;
     }
     return 0.5*(x[1]+x[0]);
+  }
+private:
+  static Double_t rAnotC(const Double_t* x, const Double_t* par) {
+    const Double_t mu = x[0];
+    return (1 - TMath::Exp(-par[0]*mu-par[2])) * TMath::Exp(-mu) * TMath::Exp(-par[1]*mu-par[3]);
+  }
+  static Double_t rCnotA(const Double_t* x, const Double_t* par) {
+    const Double_t mu = x[0];
+    return (1 - TMath::Exp(-par[1]*mu-par[3])) * TMath::Exp(-mu) * TMath::Exp(-par[0]*mu-par[2]);
+  }
+  static Double_t rAC(const Double_t* x, const Double_t* par) {
+    const Double_t mu = x[0];
+    return 1-TMath::Exp(-mu) + TMath::Exp(-mu)*(1 - TMath::Exp(-par[1]*mu-par[3]))*(1 - TMath::Exp(-par[0]*mu-par[2]));
   }
 
   TMinuitMinimizer fMinuit;

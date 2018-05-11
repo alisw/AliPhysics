@@ -67,6 +67,21 @@ public:
     kHadCorrEnergy        ///< Energy corrected for the hadronic contribution
   };
 
+  enum TriggerCluster_t {
+    kTrgClusterANY,
+    kTrgClusterCENT,
+    kTrgClusterCENTNOTRD,
+    kTrgClusterCENTBOTH,
+    kTrgClusterOnlyCENT,
+    kTrgClusterOnlyCENTNOTRD,
+    kTrgClusterCALO,
+    kTrgClusterCALOFAST,
+    kTrgClusterCALOBOTH,
+    kTrgClusterOnlyCALO,
+    kTrgClusterOnlyCALOFAST,
+    kTrgClusterN
+  };
+
   /**
    * @brief Dummy (I/O) constructor
    */
@@ -141,6 +156,25 @@ public:
   void SetUseExclusiveTriggers(Bool_t doUse) { fUseExclusiveTriggers = doUse; }
 
   /**
+   * @brief Add trigger for which overlap is required
+   * 
+   * Event is only selected if the trigger fires as well
+   * 
+   * @param[in] trigger Trigger for which overlap is required 
+   */
+  void AddRequiredTriggerOverlap(const char *trigger);
+
+  /**
+   * @brief Add trigger for which overlap is excluded
+   * 
+   * Event is only selected if the trigger does not fire the event in addition
+   * (histos of this trigger will of course be empty)
+   * 
+   * @param[in] trigger Trigger for which overlap is excluded 
+   */
+  void AddExcludedTriggerOverlap(const char *trigger);
+
+  /**
    * @brief Preconfigure task so that it can be used in subwagons
    * @param[in] nClusters Name of the input cluster container
    * @param[in] suffix Suffix of the subwagon
@@ -198,7 +232,7 @@ protected:
    */
   void GetPatchBoundaries(AliEMCALTriggerPatchInfo &o, Double_t *boundaries) const;
 
-  void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, double clustertime, int ncell, const TList *triggerpatches, int energycomp);
+  void FillClusterHistograms(const TString &triggerclass, double energy, double transversenergy, double eta, double phi, double clustertime, int ncell, int trgcluster, const TList *triggerpatches, int energycomp);
 
   /**
    * @brief Check whether cluster is inside a trigger patch which has fired the trigger
@@ -221,6 +255,9 @@ protected:
   Bool_t                              fDoFillMultiplicityHistograms;    ///< Swich for multiplcity histograms
   Bool_t                              fUseExclusiveTriggers;      ///< Include exclusive triggers (without lower threshold triggers)
   AliCutValueRange<double>            fClusterTimeRange;          ///< Selected range on cluster time
+  std::vector<TriggerCluster_t>       fTriggerClusters;           //!<! Detected trigger clusters for event
+  TObjArray                           fRequiredOverlaps;          ///< Add option to require overlap with certain triggers
+  TObjArray                           fExcludedOverlaps;          ///< Add option to exclude overlap with certain triggers
 
 private:
 

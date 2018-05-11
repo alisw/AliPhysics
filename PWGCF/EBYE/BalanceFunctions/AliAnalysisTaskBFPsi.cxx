@@ -637,7 +637,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     Int_t nVertexBins;
     if(fBalance->IsUseVertexBinning()){
       vtxbins = fBalance->GetBinning(fBalance->GetBinningString(), "vertexVertex", nVertexBins);
-      Printf("inside zvtx bins VertexBins = %d vtxbins = %p",nVertexBins, vtxbins);
+      //Printf("inside zvtx bins VertexBins = %d vtxbins = %p",nVertexBins, vtxbins);
     }
     else{
       vtxbins = fBalance->GetBinning(fBalance->GetBinningString(), "vertex", nVertexBins);
@@ -2073,133 +2073,163 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	
 	fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC); //firts check only TPC
 	UInt_t detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPC);
+	Bool_t isPartIDselected = kFALSE;
 	
 	if (detUsed  == (UInt_t)fPIDCombined->GetDetectorMask()){
 	  
 	  nSigmaTPC = fPIDResponse->NumberOfSigmasTPC(aodTrack,(AliPID::EParticleType)fParticleOfInterest);
-
+	  
 	  fHistdEdxVsPTPCbeforePID -> Fill(aodTrack->GetTPCmomentum()*aodTrack->Charge(),aodTrack->GetTPCsignal()); //aodTrack->P()*aodTrack->Charge()
 	  fHistProbTPCvsPtbeforePID -> Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
-	  fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPC);	
+	  fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPC);
 	  
 	  if(vPt < fPIDMomCut){
-
+	    
 	    if (fUsePIDnSigma){
-	      if (TMath::Abs(nSigmaTPC)>3.)
-		continue;
+	      if (TMath::Abs(nSigmaTPC)<3.) isPartIDselected = kTRUE;
+	      else continue;
 	    }
 	    else {
-	      if (probTPC[fParticleOfInterest] < fMinAcceptedPIDProbability) continue;	
+	      if (probTPC[fParticleOfInterest] > fMinAcceptedPIDProbability) isPartIDselected = kTRUE;
+	      else continue;  
 	    }
 	  }
+	  
+	  // fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF); //firts check only TPC
+	  //detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTOF);
 
-	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF); //firts check only TPC
-	  detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTOF);
 	  
 	  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
 	  detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTPCTOF);
-	  
-	  if(!pidObj || pidObj->GetTOFsignal() > 99999)  continue;
-	  nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(aodTrack,fParticleOfInterest);
-	  nSigmaTPCTOF = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);
-		   
-	  if ((aodTrack->IsOn(AliAODTrack::kITSin)) && (aodTrack->IsOn(AliAODTrack::kTOFout)) ) { 
-	    tofTime = aodTrack->GetTOFsignal();//in ps
-	    length = aodTrack->GetIntegratedLength();
-	    tof = tofTime*1E-3; // ns		      
-	    if (tof <= 0) {
-	      Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
-	      continue;
-	    }
-	    if (length <= 0){
-	      // in old productions integrated track length is not stored in AODs -> need workaround
-	      Double_t exptime[10];
-	      aodTrack->GetIntegratedTimes(exptime);
-	      length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
-	      if (length <= 0){
-		Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+	
+	  if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()){
+	    
+	    if(!pidObj || pidObj->GetTOFsignal() > 99999)  continue;
+	    
+	    nSigmaTOF = fPIDResponse->NumberOfSigmasTOF(aodTrack,fParticleOfInterest);
+	    nSigmaTPCTOF = TMath::Sqrt(nSigmaTPC*nSigmaTPC + nSigmaTOF*nSigmaTOF);
+	    
+	    if ((aodTrack->IsOn(AliAODTrack::kITSin)) && (aodTrack->IsOn(AliAODTrack::kTOFout)) ) { 
+	      tofTime = aodTrack->GetTOFsignal();//in ps
+	      length = aodTrack->GetIntegratedLength();
+	      tof = tofTime*1E-3; // ns		      
+	      if (tof <= 0) {
+		Printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
 		continue;
 	      }
+	      if (length <= 0){
+		// in old productions integrated track length is not stored in AODs -> need workaround
+		Double_t exptime[10];
+		aodTrack->GetIntegratedTimes(exptime);
+		length = exptime[0]*c*1E-3/0.01; //assume electrons are relativistic (and add all multiplication factors)
+		if (length <= 0){
+		  Printf("WARNING: track with negative length found!Skipping this track for PID checks\n");
+		  continue;
+		}
+	      }
+	      length = length*0.01; // in meters
+	      tof = tof*c;
+	      beta = length/tof;
+	      
+	      fHistBetavsPTOFbeforePID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
+	      fHistProbTOFvsPtbeforePID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
+	      fHistNSigmaTOFvsPtbeforePID ->Fill(aodTrack->Pt(),nSigmaTOF);
+	      
+	      
+	      fHistProbTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
+	      fHistBetaVsdEdXbeforePID->Fill(aodTrack->GetTPCsignal(),beta); 	
+	      fHistNSigmaTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPCTOF);
+	      fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());
 	    }
-	    length = length*0.01; // in meters
-	    tof = tof*c;
-	    beta = length/tof;
 	    
-	    fHistBetavsPTOFbeforePID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
-	    fHistProbTOFvsPtbeforePID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
-	    fHistNSigmaTOFvsPtbeforePID ->Fill(aodTrack->Pt(),nSigmaTOF);
-	    
-	    
-	    fHistProbTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
-	    fHistBetaVsdEdXbeforePID->Fill(aodTrack->GetTPCsignal(),beta); 	
-	    fHistNSigmaTPCTOFvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPCTOF);
-	    fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());
-	  }
-	  
-	  if (vPt >= fPIDMomCut){
-	    if (fParticleOfInterest == (AliPID::kPion)){
-	      if (fUsePIDnSigma){
-		if ((vPt <= 2.5) && (TMath::Abs(nSigmaTPCTOF)>3)) continue;
-		else if ((vPt>2.5) && (TMath::Abs(nSigmaTPCTOF)>2)) continue;
-	      }
+	    if (vPt >= fPIDMomCut){
+	      if (fParticleOfInterest == (AliPID::kPion)){
+		if (fUsePIDnSigma){
+		  if (vPt <= 2.5){
+		    if (TMath::Abs(nSigmaTPCTOF)<3) isPartIDselected = kTRUE;
+		    else continue;
+		  }
+		  if (vPt>2.5){
+		    if (TMath::Abs(nSigmaTPCTOF)<2)  isPartIDselected = kTRUE;
+		    else continue;
+		  }
+		}
+		else{
+		  if (probTPCTOF[fParticleOfInterest] > fMinAcceptedPIDProbability) isPartIDselected = kTRUE;
+		  else continue; 
+		}
+	      } //end of pions 
 	      
-	      else{
-		if (probTPCTOF[fParticleOfInterest] < fMinAcceptedPIDProbability) continue;  
-	      }
-	    } //end of pions 
-	    
-	    if (fParticleOfInterest == (AliPID::kKaon)){
-	      if (fUsePIDnSigma){
-		if ((vPt <= 2.)&&(TMath::Abs(nSigmaTPCTOF)>2.5)) continue;
-		if ((vPt > 2.)&&(TMath::Abs(nSigmaTPCTOF)>1.5)) continue;
-	      }
-	      else{
-		if (probTPCTOF[fParticleOfInterest] < fMinAcceptedPIDProbability) continue;
-	      }
-	    } //end of kaons
-
-	    if (fParticleOfInterest == (AliPID::kProton)){
-
-	      if (fUsePIDnSigma){
-		if (vPt <= 3.)
-		  if (TMath::Abs(nSigmaTPCTOF)>3) continue; 
-		if ((vPt > 3.)&&(vPt <= 5.))
-		  if (TMath::Abs(nSigmaTPCTOF)>1.5) continue; 
-		if (vPt > 5.)
-		  if (TMath::Abs(nSigmaTPCTOF)>1) continue; 	
-	      }
+	      if (fParticleOfInterest == (AliPID::kKaon)){
+		if (fUsePIDnSigma){
+		  if (vPt <= 2.){
+		    if (TMath::Abs(nSigmaTPCTOF)<2.5) isPartIDselected = kTRUE;
+		    else continue;
+		  }
+		  if (vPt > 2.) {
+		    if (TMath::Abs(nSigmaTPCTOF)<1.5) isPartIDselected = kTRUE;
+		    else continue;
+		  }
+		}
+		else{
+		  if (probTPCTOF[fParticleOfInterest] > fMinAcceptedPIDProbability) isPartIDselected = kTRUE;
+		  else continue;
+		}
+	      } //end of kaons
 	      
-	      else {
-		if (probTPCTOF[fParticleOfInterest] < fMinAcceptedPIDProbability) continue;  
+	      if (fParticleOfInterest == (AliPID::kProton)){
+		
+		if (fUsePIDnSigma){
+		  if (vPt <= 3.){
+		    if (TMath::Abs(nSigmaTPCTOF)<3) isPartIDselected = kTRUE;
+		    else continue;
+		  }
+		  if ((vPt > 3.)&&(vPt <= 5.)) {
+		    if (TMath::Abs(nSigmaTPCTOF)< 1.5) isPartIDselected = kTRUE;
+		    else continue;
+		  }
+		  if (vPt > 5.) {
+		    if (TMath::Abs(nSigmaTPCTOF) < 1) isPartIDselected = kTRUE;
+		    else continue;
+		  }
+		}
+		else {
+		  if (probTPCTOF[fParticleOfInterest] > fMinAcceptedPIDProbability) isPartIDselected = kTRUE;
+		  else continue;
+		}
+		
+	      } // end of protons
+	    }
+	    
+	    if (isPartIDselected == kTRUE) {
+	      
+	      if (fUsePIDnSigma){
+		fHistNSigmaTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTOF);
+		fHistNSigmaTPCvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPC);
+		fHistNSigmaTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPCTOF);
+		fHistNSigmaTPCTOFPafterPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());  //++++++++++++++
 	      }
-
-	    } // end of protons
+	      else{ 
+		fHistProbTOFvsPtafterPID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
+		fHistProbTPCvsPtafterPID ->Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
+		fHistProbTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
+	      }	   
+	      
+	      //Fill QA after the PID
+	      fHistBetavsPTOFafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
+	      fHistdEdxVsPTPCafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
+	      fHistBetaVsdEdXafterPID ->Fill(aodTrack->GetTPCsignal(),beta);
+	    }
 	  }
-	  
-	  if (fUsePIDnSigma){
-	    fHistNSigmaTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTOF);
-	    fHistNSigmaTPCvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPC);
-	    fHistNSigmaTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),nSigmaTPCTOF);
-	    fHistNSigmaTPCTOFPafterPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());  //++++++++++++++
-	  }
-	  else{ 
-	    fHistProbTOFvsPtafterPID ->Fill(aodTrack->Pt(),probTOF[fParticleOfInterest]);
-	    fHistProbTPCvsPtafterPID ->Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
-	    fHistProbTPCTOFvsPtafterPID ->Fill(aodTrack->Pt(),probTPCTOF[fParticleOfInterest]);
-	  }	   
-	  
-	  //Fill QA after the PID
-	  fHistBetavsPTOFafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),beta);
-	  fHistdEdxVsPTPCafterPID ->Fill(aodTrack->P()*aodTrack->Charge(),aodTrack->GetTPCsignal());
-	  fHistBetaVsdEdXafterPID ->Fill(aodTrack->GetTPCsignal(),beta);
 	}
-	
 	// if no detector flag remove track
 	else{
 	  continue;
 	}
-      
+
+	if (isPartIDselected == kFALSE) continue;
       }
+
       
       //===========================PID===============================//
       //+++++++++++++++++++++++++++++//
@@ -2288,7 +2318,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       if(vCharge > 0) {
 	if (fUseRapidity){
 	  fHistEtaVzPos->Fill(vY,event->GetPrimaryVertex()->GetZ(),
-			      gCentrality); 	
+			      gCentrality);
 	  fHistEtaPhiPos->Fill(vY,vPhi,gCentrality); 
 	}
 	else {
@@ -2328,7 +2358,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	fHistEtaCorr->Fill(vEta,gCentrality, correction);
 	fHistRapidityCorr->Fill(vY,gCentrality, correction);
 	if(vCharge > 0){
-	  if (fUseRapidity){
+	  if (fUseRapidity){		  
 	    fHistEtaPhiPosCorr->Fill(vY, vPhi,gCentrality, correction);
 	    fHistEtaVzPosCorr->Fill(vY, event->GetPrimaryVertex()->GetZ(),gCentrality, correction);
 	  }
@@ -2522,7 +2552,8 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
 
 	// Kinematics cuts from ESD track cuts
-	if( vPt < fPtMin || vPt > fPtMax)      continue;
+	if( vPt < fPtMin || vPt > fPtMax) continue;
+	
 	if (fUseRapidity) {
 	  if ( vY < fEtaMin || vY > fEtaMax)  continue;
 	}

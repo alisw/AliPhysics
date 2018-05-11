@@ -444,8 +444,14 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
   fhPtPerSM[1] = 0;
   for(Int_t ism =0; ism < 20; ism++)
   {
-    fhPtLambda0PerSM    [0][ism] = 0;
-    fhPtLambda0PerSM    [1][ism] = 0;
+    for(Int_t iso =0; iso < 2; iso++)
+    {
+      fhPtLambda0PerSM     [iso][ism] = 0;
+      fhPtLambda0PerSMNCellCut[iso][ism] = 0;
+      fhPtNCellPerSM       [iso][ism] = 0;
+      fhPtNCellLowM02PerSM [iso][ism] = 0; 
+      fhPtNCellHighM02PerSM[iso][ism] = 0;  
+    }
     
     fhConeSumPtPerSM       [ism] = 0;
     fhConeSumPtClusterPerSM[ism] = 0;
@@ -2498,6 +2504,17 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     {
       fhPtPerSM       [isolated]     ->Fill(pt,iSM, GetEventWeight());
       fhPtLambda0PerSM[isolated][iSM]->Fill(pt,m02, GetEventWeight());
+      
+      if ( fStudyNCellsCut )
+      {
+        if ( fNCellsWithWeight > 4 ) 
+          fhPtLambda0PerSMNCellCut[isolated][iSM]->Fill(pt, m02, GetEventWeight());
+        
+        fhPtNCellPerSM[isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight());
+        
+        if      ( m02 > 0.1 && m02 <= 0.3 ) fhPtNCellLowM02PerSM [isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight());
+        else if ( m02 > 0.5 && m02 <= 2   ) fhPtNCellHighM02PerSM[isolated][iSM]->Fill(pt, fNCellsWithWeight, GetEventWeight());
+      }
     }
 
     if ( fFillPerTCardIndexHistograms )
@@ -2512,16 +2529,27 @@ void AliAnaParticleIsolation::FillTrackMatchingShowerShapeControlHistograms
     if(IsDataMC())
     {
       if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
+      {
         fhPtLambda0MC[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+        if ( fNCellsWithWeight > 4 &&  fStudyNCellsCut )
+          fhPtLambda0MCNCellCut[kmcPhoton][isolated]->Fill(pt, m02, GetEventWeight());
+      }
       
       if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
       {
         if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MC[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
         else if( mcIndex == kmcEtaDecay ) fhPtLambda0MC[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+        if ( fNCellsWithWeight > 4 && fStudyNCellsCut )
+        {
+          if     ( mcIndex == kmcPi0Decay ) fhPtLambda0MCNCellCut[kmcPi0DecayLostPair][isolated]->Fill(pt, m02, GetEventWeight());
+          else if( mcIndex == kmcEtaDecay ) fhPtLambda0MCNCellCut[kmcEtaDecayLostPair][isolated]->Fill(pt, m02, GetEventWeight()); 
+        }
       }
       
       fhPtLambda0MC[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
-      
+      if ( fNCellsWithWeight > 4 && fStudyNCellsCut )
+        fhPtLambda0MCNCellCut[mcIndex][isolated]->Fill(pt, m02, GetEventWeight());
+
       if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) )
       {
         if( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
@@ -6013,11 +6041,46 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             
             fhPtLambda0PerSM[iso][ism]  = new TH2F
             (Form("hPtLambda0_SM%d_%s",ism,isoName[iso].Data()),
-             Form("%s cluster : #it{p}_{T} vs #lambda_{0}, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
+             Form("%s cluster : #it{p}_{T} vs #lambda_{0}^{2}, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
              nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
             fhPtLambda0PerSM[iso][ism]->SetYTitle("#lambda_{0}^{2}");
             fhPtLambda0PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
             outputContainer->Add(fhPtLambda0PerSM[iso][ism]) ;
+            
+            if ( fStudyNCellsCut )
+            {
+              fhPtLambda0PerSMNCellCut[iso][ism]  = new TH2F
+              (Form("hPtLambda0_NCellCut_SM%d_%s",ism,isoName[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs #lambda_{0}^{2}, n_{cell}^{w>0} > 4, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
+               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+              fhPtLambda0PerSMNCellCut[iso][ism]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLambda0PerSMNCellCut[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhPtLambda0PerSMNCellCut[iso][ism]) ;
+              
+              fhPtNCellPerSM[iso][ism]  = new TH2F
+              (Form("hPtNCell_SM%d_%s",ism,isoName[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
+               nptbins,ptmin,ptmax,30,-0.5,29.5);
+              fhPtNCellPerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
+              fhPtNCellPerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhPtNCellPerSM[iso][ism]) ;
+              
+              fhPtNCellLowM02PerSM[iso][ism]  = new TH2F
+              (Form("hPtNCell_LowM02_SM%d_%s",ism,isoName[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, 0.1<#lambda_{0}^{2}<0.3, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
+               nptbins,ptmin,ptmax,30,-0.5,29.5);
+              fhPtNCellLowM02PerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
+              fhPtNCellLowM02PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhPtNCellLowM02PerSM[iso][ism]) ;
+              
+              fhPtNCellHighM02PerSM[iso][ism]  = new TH2F
+              (Form("hPtNCell_HighM02_SM%d_%s",ism,isoName[iso].Data()),
+               Form("%s cluster : #it{p}_{T} vs n_{cell}^{w>0}, 0.5<#lambda_{0}^{2}<2, SM %d, %s",isoTitle[iso].Data(), ism, parTitle.Data()),
+               nptbins,ptmin,ptmax,30,-0.5,29.5);
+              fhPtNCellHighM02PerSM[iso][ism]->SetYTitle("n_{cell}^{w>0}");
+              fhPtNCellHighM02PerSM[iso][ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+              outputContainer->Add(fhPtNCellHighM02PerSM[iso][ism]) ;
+            }
           }
         }
   
@@ -6054,7 +6117,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             fhPtLambda0MC[imc][iso]->SetYTitle("#lambda_{0}^{2}");
             fhPtLambda0MC[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtLambda0MC[imc][iso]) ;
-
+          
             fhPtLambda0MCConv[imc][iso]  = new TH2F
             (Form("hPtLambda0%s_MC%sConv",isoName[iso].Data(),mcPartName[imc].Data()),
                                                 Form("%s cluster : #it{p}_{T} vs #lambda_{0}: %s %s, from conversion",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
@@ -6062,6 +6125,17 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
             fhPtLambda0MCConv[imc][iso]->SetYTitle("#lambda_{0}^{2}");
             fhPtLambda0MCConv[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
             outputContainer->Add( fhPtLambda0MCConv[imc][iso]) ;
+            
+            if (  fStudyNCellsCut )
+            {
+              fhPtLambda0MCNCellCut[imc][iso]  = new TH2F
+              (Form("hPtLambda0%s_MC%sNCellCut",isoName[iso].Data(),mcPartName[imc].Data()),
+               Form("%s cluster : #it{p}_{T} vs #lambda_{0}, n_{cell}^{w>0.1} > 4: %s %s",isoTitle[iso].Data(),mcPartType[imc].Data(),parTitle.Data()),
+               nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+              fhPtLambda0MCNCellCut[imc][iso]->SetYTitle("#lambda_{0}^{2}");
+              fhPtLambda0MCNCellCut[imc][iso]->SetXTitle("#it{p}_{T}(GeV/#it{c})");
+              outputContainer->Add( fhPtLambda0MCNCellCut[imc][iso]) ;
+            }
             
             if(fFillOverlapHistograms)
             {

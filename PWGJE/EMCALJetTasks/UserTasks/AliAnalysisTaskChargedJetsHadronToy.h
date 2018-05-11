@@ -7,77 +7,75 @@ class TClonesArray;
 class TString;
 class TRandom3;
 
-#include "AliAnalysisTaskSE.h"
+// Toy model to create an event containing tracks
 
-// Toy model to create an event for charged jet-hadron correlations
-
-class AliAnalysisTaskChargedJetsHadronToy : public AliAnalysisTaskSE {
+class AliAnalysisTaskChargedJetsHadronToy : public AliAnalysisTaskEmcalJet {
 public:
   AliAnalysisTaskChargedJetsHadronToy();
+  AliAnalysisTaskChargedJetsHadronToy(const char* name);
   virtual ~AliAnalysisTaskChargedJetsHadronToy();
 
-  virtual void  UserCreateOutputObjects();
-  virtual void  UserExec(Option_t *);
-  virtual void  Terminate(Option_t *) {}
-  void          ExecOnce();
+  void  UserCreateOutputObjects();
+  void  Terminate(Option_t *);
 
   // ### SETTERS/GETTERS
-  void                        SetCreateUE(Bool_t val)                 {fCreateUE = val;}
-  void                        SetCreateJets(Bool_t val)               {fCreateJets = val;}
-  void                        SetUEMultiplicityDistribution(TH1* val) {fUEMultDistribution = val;}
-  void                        SetUEDistribution(TF1* val)             {fUEDistribution = val;}
-  void                        SetUEMultiplicity(Int_t val)            {fUEMultiplicity = val;}
-  void                        SetGeneratedJetParticleDistribution(TF1* val)   {fGeneratedJetParticleDistribution = val;}
-  void                        SetGeneratedJetPtDistribution(TH1* val) {fGeneratedJetPtDistribution = val;}
-  void                        SetGeneratedJetCount(Int_t val)         {fGeneratedJetCount = val;}
-  void                        SetGeneratedJetPtRange(Double_t min, Double_t max) {fGeneratedJetPtMin = min; fGeneratedJetPtMax = max;}
-  void                        SetGeneratedJetWidthPhi(Double_t val)   {fGeneratedJetWidthPhi = val;}
-  void                        SetGeneratedJetWidthEta(Double_t val)   {fGeneratedJetWidthEta = val;}
-  void                        SetGeneratedJetMinEta(Double_t val)     {fGeneratedJetMinEta = val;}
-  void                        SetGeneratedJetMaxEta(Double_t val)     {fGeneratedJetMaxEta = val;}
+  void                        SetDistributionMultiplicity(TH1* val)           {fDistributionMultiplicity = val;}
+  void                        SetDistributionPt(TH1* val)                     {fDistributionPt = val;}
+  void                        SetDistributionEtaPhi(TH1* val)                 {fDistributionEtaPhi = val;}
+  void                        SetDistributionV2(TH2* val)                     {fDistributionV2 = val;}
+  void                        SetDistributionV3(TH2* val)                     {fDistributionV3 = val;}
+  void                        SetDistributionV4(TH2* val)                     {fDistributionV4 = val;}
+  void                        SetDistributionV5(TH2* val)                     {fDistributionV5 = val;}
+  void                        SetRangeCentrality(Int_t min, Int_t max)        {fMinCentrality = min; fMaxCentrality = max;}
 
-  void                        SetInputTracksName(const char* val)     {fInputArrTracksName = val;}
-  void                        SetOutputTracksName(const char* val)    {fOutputArrTracksName = val;}
-  void                        SetGeneratedJetsName(const char* val)   {fGeneratedJetsArrName = val;}
+  void                        SetInputArrayName(const char* val)              {fInputArrayName = val;}
+  void                        SetOutputArrayName(const char* val)             {fOutputArrayName = val;}
 
-private:
+protected:
   // ### Settings
-  Bool_t                      fCreateUE;                          // create UE in toymodel
-  Bool_t                      fCreateJets;                        // create jets in toymodel
-  TH1*                        fUEMultDistribution;                // histogram for multiplicity distribution
-  TF1*                        fUEDistribution;                    // function for particle pt distribution
-  Int_t                       fUEMultiplicity;                    // multiplicity in UE
-  TF1*                        fGeneratedJetParticleDistribution;  // function for particle pt distribution in jets
-  TH1*                        fGeneratedJetPtDistribution;        // pt distribution used to produce jets
-  Int_t                       fGeneratedJetCount;                 // count of generated jets
+  TH1*                        fDistributionMultiplicity;          // histogram for multiplicity distribution
+  TH1*                        fDistributionPt;                    // histogram for Pt distribution
+  TH1*                        fDistributionEtaPhi;                // histogram for eta/phi distribution
+  Int_t                       fMinCentrality;                     // minimum centrality
+  Int_t                       fMaxCentrality;                     // maximum centrality
 
-  Double_t                    fGeneratedJetPtMin;                 // generated jets pT (min)
-  Double_t                    fGeneratedJetPtMax;                 // generated jets pT (max)
-  Double_t                    fGeneratedJetWidthPhi;              // width of generated jets in phi
-  Double_t                    fGeneratedJetWidthEta;              // width of generated jets in eta
-  Double_t                    fGeneratedJetMinEta;                // generated jets min eta
-  Double_t                    fGeneratedJetMaxEta;                // generated jets max eta
+  TH2*                        fDistributionV2;                    /// Distribution for v2 in bins of pt and centrality
+  TH2*                        fDistributionV3;                    /// Distribution for v3 in bins of pt and centrality
+  TH2*                        fDistributionV4;                    /// Distribution for v4 in bins of pt and centrality
+  TH2*                        fDistributionV5;                    /// Distribution for v5 in bins of pt and centrality
 
   // ### Input/output settings+arrays
-  TClonesArray*               fInputArrTracks;                    //! input array containing tracks from events
-  TString                     fInputArrTracksName;                // Name of the TClonesArray that will be loaded
-  TClonesArray*               fOutputArrTracks;                   //! array holding tracks from toy model
-  TString                     fOutputArrTracksName;               // Name of the destination TClonesArray
-  TClonesArray*               fGeneratedJetsArr;                  //! array holding generated jets from toy model
-  TString                     fGeneratedJetsArrName;              // Name of the destination TClonesArray
+  TString                     fInputArrayName;                    // Name of the TClonesArray that will be loaded
+  TString                     fOutputArrayName;                   // Name of the TClonesArray that will be loaded
+  TClonesArray*               fInputArray;                        //! input array containing tracks from events
+  TClonesArray*               fOutputArray;                       //! input array containing tracks from events
 
   // ### Misc
-  TF1*                        fDistEtaGaussian;                   //! function for gaussian distribution in toy
-  TF1*                        fDistPhiGaussian;                   //! function for gaussian distribution in toy
   TRandom3*                   fRandom;                            //! random number generator
-  Bool_t                      fInitialized;                       // internal state when ExecOnce has been executed
+  Double_t                    fToyCent;                           /// eventwise centrality value
+  Double_t                    fRandomPsi3;                        /// eventwise calculated psi 3
+  Double_t                    fRandomPsi4;                        /// eventwise calculated psi 4
+  Double_t                    fRandomPsi5;                        /// eventwise calculated psi 5
 
+  Bool_t                      Run();
   void                        AssembleEvent();
+  void                        CreateQAPlots();
+  Double_t                    AddFlow(Double_t phi, Double_t pt);
+  void                        ExecOnce();
 
+  void                        FillHistogram(const char * key, Double_t x);
+  void                        FillHistogram(const char * key, Double_t x, Double_t y);
+  void                        FillHistogram(const char * key, Double_t x, Double_t y, Double_t add);
+  template <class T> T*       AddHistogram1D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, const char* xTitle = "x axis", const char* yTitle = "y axis");
+  template <class T> T*       AddHistogram2D(const char* name = "CustomHistogram", const char* title = "NO_TITLE", const char* options = "", Int_t xBins = 100, Double_t xMin = 0.0, Double_t xMax = 20.0, Int_t yBins = 100, Double_t yMin = 0.0, Double_t yMax = 20.0,  const char* xTitle = "x axis", const char* yTitle = "y axis", const char* zTitle = "z axis");
+
+private:
   AliAnalysisTaskChargedJetsHadronToy(const AliAnalysisTaskChargedJetsHadronToy&);            // not implemented
   AliAnalysisTaskChargedJetsHadronToy &operator=(const AliAnalysisTaskChargedJetsHadronToy&); // not implemented
 
-  ClassDef(AliAnalysisTaskChargedJetsHadronToy, 1);
+  /// \cond CLASSIMP
+  ClassDef(AliAnalysisTaskChargedJetsHadronToy, 2); // Toy model
+  /// \endcond
 };
 
 #endif

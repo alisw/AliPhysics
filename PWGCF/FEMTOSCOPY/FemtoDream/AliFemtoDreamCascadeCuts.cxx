@@ -253,7 +253,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
   if (pass) {
     fHist->FillInvMassPtXi(casc->GetPt(),casc->GetXiMass());
     if (fRunNumberQA) {
-      fHist->FillInvMassPerRunNumber(casc->GetEvtNumber(),casc->Getv0Mass());
+      fHist->FillInvMassPerRunNumber(casc->GetEvtNumber(),casc->GetXiMass());
     }
   }
   if (pass&&fcutXiMass) {

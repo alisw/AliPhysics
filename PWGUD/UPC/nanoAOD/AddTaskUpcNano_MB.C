@@ -16,13 +16,16 @@ AliAnalysisTaskUpcNano_MB *AddTaskUpcNano_MB(Float_t cutEta = 0.9){
   }
 	
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  Bool_t isMC;
-  if(mgr->GetMCtruthEventHandler()) isMC = kTRUE;
+  Bool_t isMC = kFALSE;
+  if(mgr->GetMCtruthEventHandler())isMC = kTRUE;
+  Bool_t isESD = kFALSE;
+  if(inputDataType.Contains("ESD"))isESD = kTRUE;
   
   // Create tasks
   AliAnalysisTaskUpcNano_MB *task = new AliAnalysisTaskUpcNano_MB(inputDataType.Data());
   task->SetIsMC(isMC);
   task->SetCutEta(cutEta);
+  task->SetIsESD(isESD);
   mgr->AddTask(task);
 
 

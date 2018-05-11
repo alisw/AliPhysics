@@ -111,11 +111,12 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fFlagDG2(kFALSE),
     //##################### Real Data ##################### //
     //-----Vertex------
+    fNevents(0),
     fvtxZ(0),
     fvtxZ_NoCut(0),
     fvtxZ_NcontCut(0),
-    fNcontV(0),
-    fNcontVSPD(0),
+    fNcont(0),
+    fVertexCorre(0),
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE(0),
     fCaloClusterEAfterMatch(0),
@@ -129,6 +130,7 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fTrackPtAfterMatch(0),
     fTrackphieta(0),
     fTrackphietaAfterMatch(0),
+    fTrackCluster_woCut(0),
     fTrackCluster(0),
     fTrackChi2(0),
     fDCAxy(0),
@@ -147,6 +149,7 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fEopElectron(0),
     fEopHadron(0),
     fElectronphieta(0),
+    fElectronEpT(0),
     //-----select photonic electron------
     fInvmassLS(0),
     fInvmassULS(0),
@@ -252,11 +255,12 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fFlagDG2(kFALSE),
     //##################### Real Data ##################### //
     //-----Vertex------
+    fNevents(0),
     fvtxZ(0),
     fvtxZ_NoCut(0),
     fvtxZ_NcontCut(0),
-    fNcontV(0),
-    fNcontVSPD(0),
+    fNcont(0),
+    fVertexCorre(0),
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE(0),
     fCaloClusterEAfterMatch(0),
@@ -270,6 +274,7 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fTrackPtAfterMatch(0),
     fTrackphieta(0),
     fTrackphietaAfterMatch(0),
+    fTrackCluster_woCut(0),
     fTrackCluster(0),
     fTrackChi2(0),
     fDCAxy(0),
@@ -288,6 +293,7 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fEopElectron(0),
     fEopHadron(0),
     fElectronphieta(0),
+    fElectronEpT(0),
     //-----select photonic electron------
     fInvmassLS(0),
     fInvmassULS(0),
@@ -383,6 +389,16 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
 
 
     //-----Vertex------
+    fNevents = new TH1F("fNevents","Number of evnents;;coutns",7,0,7);
+    fNevents -> GetXaxis() -> SetBinLabel(1,"Total");
+    fNevents -> GetXaxis() -> SetBinLabel(2,"Trigger fired");
+    fNevents -> GetXaxis() -> SetBinLabel(3,"Pile up cut");
+    fNevents -> GetXaxis() -> SetBinLabel(4,"Diff of vertex");
+    fNevents -> GetXaxis() -> SetBinLabel(5,"SPD vertex reso");
+    fNevents -> GetXaxis() -> SetBinLabel(6,"N_{cont}");
+    fNevents -> GetXaxis() -> SetBinLabel(7,"Vertex pos");
+    fOutputList -> Add(fNevents);
+
     fvtxZ = new TH1F("fvtxZ","Z vertex position;Vtx_{z} (cm.);counts",300,-30,30);
     fOutputList -> Add(fvtxZ);
 
@@ -392,11 +408,11 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fvtxZ_NcontCut = new TH1F("fvtxZ_NcontCut",Form("Z vertex position, Ncont_{global} >= %d);Vtx_{z} (cm.);counts",CutNcontV),300,-30,30);
     fOutputList -> Add(fvtxZ_NcontCut);
 
-    // fNcontV = new TH1F("fNcontV","Number of contributors (ITS+TPC);# of contributors;counts",500,0,500);
-    // fOutputList -> Add(fNcontV);
-    //
-    // fNcontVSPD = new TH1F("fNcontVSPD","Number of contributors (SPD);# of contributors;counts",500,0,500);
-    // fOutputList -> Add(fNcontVSPD);
+    fVertexCorre = new TH2F("fVertexCorre","Z vertex position;Vtx_{z}^{SPD} (cm.);Vtx_{z}^{primary} (cm.)",300,-30,30,300,-30,30);
+    fOutputList -> Add(fVertexCorre);
+
+    fNcont = new TH2F("fNcont","Number of contributors;Ncont (SPD);Ncont (primary)",500,0,500,500,0,500);
+    fOutputList -> Add(fNcont);
 
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE = new TH1F("fCaloClusterE", "cluster energy distribution;Energy (GeV.);counts",500,0,50);
@@ -438,6 +454,12 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
 
     fDCAz = new TH2F("fDCAz","DCAz distribution;p_{T} (GeV/c.);DCAz (cm.)",500,0,50,400,-0.2,0.2);
     fOutputList -> Add(fDCAz);
+
+    fTrackCluster_woCut = new TH2F("fTrackCluster_woCut","Track Clusters (wo/cut);;# of clusters",3,0,3,165,0,165);
+    fTrackCluster_woCut -> GetXaxis() -> SetBinLabel(1,"ITS cluster");
+    fTrackCluster_woCut -> GetXaxis() -> SetBinLabel(2,"TPC cluster");
+    fTrackCluster_woCut -> GetXaxis() -> SetBinLabel(3,"Crossed rows");
+    fOutputList -> Add(fTrackCluster_woCut);
 
     fTrackCluster = new TH2F("fTrackCluster","Track Clusters;;# of clusters",3,0,3,165,0,165);
     fTrackCluster -> GetXaxis() -> SetBinLabel(1,"ITS cluster");
@@ -490,6 +512,9 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
 
     fElectronphieta = new TH2F("fElectronphieta","Charged track #phi-#eta;#eta;#phi",100,-0.9,0.9,200,0,6.3);
     fOutputList -> Add(fElectronphieta);
+
+    fElectronEpT = new TH2F("fElectronEpT","#it{p}_{T} vs energy;#it{p}_{T} (GeV/#it{c});Energy (GeV)",500,0,50,500,0,50);
+    fOutputList ->  Add(fElectronEpT);
 
     //-----select photonic electron------
     fInvmassLS = new TH2F("fInvmassLS","Invariant-mass (like-sign);p_{T} (GeV/c.);M_{ee} (GeV/c^{2}.)",500,0,50,500,0,0.5);
@@ -707,7 +732,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
   Double_t CutPhotEMass = MassCut;
   //################################################################# //
 
-    Bool_t IsPamaCheck = kTRUE;
+    Bool_t IsPamaCheck = kFALSE;
     if(IsPamaCheck)
     {
       cout << " ############### Analysis Parameters ###############" << endl;
@@ -765,38 +790,62 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
     fPIDresponse = fInputHandler -> GetPIDResponse();
 
     //########################## Trigger Selection ##########################//
+    fNevents -> Fill(0);
     TString firedTrigger;
     TString TriggerEG1 = "EG1", TriggerEG2 = "EG2", TriggerDG1 = "DG1", TriggerDG2 = "DG2";
     fVevent -> GetFiredTriggerClasses();
     if(fAOD) firedTrigger = fAOD -> GetFiredTriggerClasses();
-    // --- EMCAL + DCAL analysis --- //
-    if(fFlagEG2 && fFlagDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
-    if(fFlagEG1 && fFlagDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+    if(fFlagClsTypeEMCal && fFlagClsTypeDCal)
+    {
+      if(fFlagEG2 && fFlagDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
+      if(fFlagEG1 && fFlagDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+    }
     // --- separate EMCAL and DCAL --- //
-    // if(fFlagEG1) if(!firedTrigger.Contains(TriggerEG1)) return;
-    // if(fFlagEG2) if(!firedTrigger.Contains(TriggerEG2)) return;
-    // if(fFlagDG1) if(!firedTrigger.Contains(TriggerDG1)) return;
-    // if(fFlagDG2) if(!firedTrigger.Contains(TriggerDG2)) return;
+    else
+    {
+      if(fFlagEG1) if(!firedTrigger.Contains(TriggerEG1)) return;
+      if(fFlagEG2) if(!firedTrigger.Contains(TriggerEG2)) return;
+      if(fFlagDG1) if(!firedTrigger.Contains(TriggerDG1)) return;
+      if(fFlagDG2) if(!firedTrigger.Contains(TriggerDG2)) return;
+    }
+    fNevents -> Fill(1);
     //#######################################################################//
 
     //########################## Event Selection ##########################//
     // --- SPD Vtx --- //
     const AliVVertex *pVtxSPD = fVevent -> GetPrimaryVertexSPD();
+    Double_t ZvertexSPD = pVtxSPD -> GetZ();
     Double_t NcontVSPD = pVtxSPD -> GetNContributors();
-    // fNcontVSPD -> Fill(NcontVSPD);
+    Double_t cov[6]={0};
+    pVtxSPD->GetCovarianceMatrix(cov);
     // --- Global Vtx --- //
     const AliVVertex *pVtx = fVevent -> GetPrimaryVertex();
     Double_t NcontV = pVtx -> GetNContributors();
     Double_t Zvertex = pVtx -> GetZ();
-    // fNcontV -> Fill(NcontV);
+    fNcont -> Fill(NcontVSPD,NcontV);
+    fVertexCorre -> Fill(ZvertexSPD,Zvertex);
     fvtxZ_NoCut -> Fill(Zvertex);
-    if(fVevent->IsPileupFromSPDInMultBins()) return; // pile up removal //
-    // if(!fEventCuts->GoodPrimaryAODVertex(fVevent)) return; // remove Vtx with only TPC track //
-    if(!(NcontV >= CutNcontV)) return; // # of contributors cut //
-    if(!(NcontVSPD >= CutNcontV)) return; // # of SPD contributors cut //
+    // pile up removal //
+    if(fVevent->IsPileupFromSPDInMultBins()) return;
+    fNevents -> Fill(2);
+    // difference between SPD and primary vertex //
+    if(TMath::Abs(ZvertexSPD - Zvertex) > 0.5) return;
+    fNevents -> Fill(3);
+    // SPD vertex resolution cut //
+    if (TMath::Sqrt(cov[5]) > 0.25) return;
+    fNevents -> Fill(4);
+    // # of contributors cut //
+    if(!(NcontV >= CutNcontV)) return;
+    // # of SPD contributors cut //
+    if(!(NcontVSPD >= CutNcontV)) return;
+    fNevents -> Fill(5);
     fvtxZ_NcontCut -> Fill(Zvertex);
-    if(TMath::Abs(Zvertex) > CutZver) return; // Z vertex position cut //
+    // Z vertex position cut //
+    if(TMath::Abs(Zvertex) > CutZver) return;
+    fNevents -> Fill(6);
     fvtxZ -> Fill(Zvertex);
+    // remove Vtx with only TPC track //
+    // if(!fEventCuts->GoodPrimaryAODVertex(fVevent)) return;
     //#####################################################################//
 
     if(Isdebug) cout << "event selection finished" << endl;
@@ -1090,6 +1139,9 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
         TPCNCls = track -> GetTPCNcls();
         for(Int_t l = 0 ; l < 6 ; l++) if(TESTBIT(track ->GetITSClusterMap(),l)) ITSNCls++;
         TPCCrossedRows = track -> GetTPCCrossedRows();
+        fTrackCluster_woCut -> Fill(0.,ITSNCls);
+        fTrackCluster_woCut -> Fill(1.,TPCNCls);
+        fTrackCluster_woCut -> Fill(2.,TPCCrossedRows);
 
         //########################## Standard Track Cut ##########################//
         // successful track fitting in TPC and ITS //
@@ -1300,6 +1352,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
             //########################## PID cut in TPC & EMCal/DCal ##########################//
             if(!flagNsigmaECut || !flagShowerShapeCut || !flagEopCut) continue;
             //#################################################################################//
+            fElectronEpT -> Fill(TrackPt,EMCalClusterE);
             fElectronphieta -> Fill(TrackEta,TrackPhi);
             fCaloClusterEincE -> Fill(EMCalClusterE);
 

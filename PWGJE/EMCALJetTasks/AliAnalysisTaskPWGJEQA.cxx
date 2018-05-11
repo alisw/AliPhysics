@@ -51,6 +51,9 @@
 
 #include "AliAnalysisTaskPWGJEQA.h"
 
+using std::cout;
+using std::endl;
+
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskPWGJEQA);
 /// \endcond
@@ -388,6 +391,32 @@ void AliAnalysisTaskPWGJEQA::AllocateJetHistograms() {
       histname = TString::Format("%s/fHistRhoVsCent", jets->GetArrayName().Data());
       title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
       fHistManager.CreateTH2(histname.Data(), title.Data(), 101, 0, 101, 100, 0, 500);
+    }
+    if (fForceBeamType != kpp) {
+    histname = TString::Format("%s/hNEFVsPtEMC", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%); #it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, 250, 0, 250, 50, 0, 1);
+
+    histname = TString::Format("%s/hNEFVsPtDCal", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%); #it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, 250, 0, 250, 50, 0, 1);
+
+    histname = TString::Format("%s/hDeltaEHadCorr", jets->GetArrayName().Data());
+    title = histname + ";Centrality (%); #it{p}_{T}^{corr} (GeV/#it{c}); #sum #it{E_{nonlincorr}} - #it{E}_{hadcorr}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, 250, 0, 250, 250, 0, 50);
+    }
+    else{
+    	histname = TString::Format("%s/hNEFVsPtEMC", jets->GetArrayName().Data());
+    	title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 250, 0, 250, 50, 0, 1);
+
+    	histname = TString::Format("%s/hNEFVsPtDCal", jets->GetArrayName().Data());
+    	title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 250, 0, 250, 50, 0, 1);
+
+    	histname = TString::Format("%s/hDeltaEHadCorr", jets->GetArrayName().Data());
+    	title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c}); #sum#it{E_{nonlincorr}} - #it{E}_{hadcorr}";
+    	fHistManager.CreateTH2(histname.Data(), title.Data(), 250, 0, 250, 250, 0, 50);
     }
   }
 }
@@ -766,7 +795,6 @@ void AliAnalysisTaskPWGJEQA::ExecOnce()
       }
     }
   }
-  
 }
 
 //________________________________________________________________________
@@ -1138,6 +1166,30 @@ void AliAnalysisTaskPWGJEQA::FillJetHistograms() {
       }
       histJetObservables->Fill(contents);
       
+      UInt_t jetType = jet->GetJetAcceptanceType();
+      if(jetType & AliEmcalJet::kEMCALfid)
+      {
+    	  	histname = TString::Format("%s/hNEFVsPtEMC", jets->GetArrayName().Data());
+    	    if (fForceBeamType != kpp)fHistManager.FillTH3(histname.Data(), fCent, jet->Pt(), jet->NEF());
+    	    else                      fHistManager.FillTH2(histname.Data(), jet->Pt(), jet->NEF());
+      }
+      else if(jetType & AliEmcalJet::kDCALonlyfid)
+      {
+    	    histname = TString::Format("%s/hNEFVsPtDCal", jets->GetArrayName().Data());
+    	    if (fForceBeamType != kpp)fHistManager.FillTH3(histname.Data(), fCent, jet->Pt(), jet->NEF());
+    	    else                      fHistManager.FillTH2(histname.Data(), jet->Pt(), jet->NEF());
+     }
+      Double_t deltaEhadcorr = 0;
+      const AliVCluster* clus = nullptr;
+      Int_t nClusters = jet->GetNumberOfClusters();
+      for (Int_t iClus = 0; iClus < nClusters; iClus++) {
+    	  clus = jet->Cluster(iClus);
+    	  deltaEhadcorr += (clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy());
+      }
+
+      histname = TString::Format("%s/hDeltaEHadCorr", jets->GetArrayName().Data());
+      if (fForceBeamType != kpp)fHistManager.FillTH3(histname, fCent, jet->Pt(), deltaEhadcorr);
+      else                      fHistManager.FillTH2(histname, jet->Pt(), deltaEhadcorr);
     } //jet loop
   }
 }
@@ -1280,4 +1332,174 @@ void AliAnalysisTaskPWGJEQA::FillMatchedParticlesTHnSparse(Double_t cent, Double
   }
   
   thnTracks_Matched->Fill(contents);
+}
+
+/**
+ * This function adds the task to the analysis manager. Often, this function is called
+ * by an AddTask C macro. However, by compiling the code, it ensures that we do not
+ * have to deal with difficulties caused by CINT.
+ */
+AliAnalysisTaskPWGJEQA* AliAnalysisTaskPWGJEQA::AddTaskPWGJEQA(
+                        const char* ntracks,
+                        const char* nclusters,
+                        const char* ncells,
+                        const char *nGenLev,
+                        Bool_t      doTrackQA,
+                        Bool_t      doCaloQA,
+                        Bool_t      doJetQA,
+                        Bool_t      doEventQA,
+                        Double_t    trackPtCut,
+                        Double_t    clusECut,
+                        const char* suffix)
+{
+	// Get the pointer to the existing analysis manager via the static access method
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	if (!mgr) {
+		::Error("AddTaskPWGJEQA", "No analysis manager to connect to.");
+		return NULL;
+	}
+
+	// Check the analysis type using the event handlers connected to the analysis manager
+	AliVEventHandler* handler = mgr->GetInputEventHandler();
+	if (!handler) {
+		::Error("AddTaskPWGJEQA", "This task requires an input event handler");
+		return NULL;
+	}
+
+	enum EDataType_t {
+		kUnknown,
+		kESD,
+		kAOD
+	};
+
+	EDataType_t dataType = kUnknown;
+
+	if (handler->InheritsFrom("AliESDInputHandler")) {
+		dataType = kESD;
+	}
+	else if (handler->InheritsFrom("AliAODInputHandler")) {
+		dataType = kAOD;
+	}
+
+	// Init the task and do settings
+	TString trackName(ntracks);
+	TString clusName(nclusters);
+	TString cellName(ncells);
+
+	if (trackName == "usedefault") {
+		if (dataType == kESD) {
+			trackName = "Tracks";
+		}
+		else if (dataType == kAOD) {
+			trackName = "tracks";
+		}
+		else {
+			trackName = "";
+		}
+	}
+
+	if (clusName == "usedefault") {
+		if (dataType == kESD) {
+			clusName = "CaloClusters";
+		}
+		else if (dataType == kAOD) {
+			clusName = "caloClusters";
+		}
+		else {
+			clusName = "";
+		}
+	}
+
+	if (cellName == "usedefault") {
+		if (dataType == kESD) {
+			cellName = "EMCALCells";
+		}
+		else if (dataType == kAOD) {
+			cellName = "emcalCells";
+		}
+		else {
+			cellName = "";
+		}
+	}
+
+	TString name("AliAnalysisTaskPWGJEQA");
+	if (!trackName.IsNull()) {
+		name += "_";
+		name += trackName;
+	}
+	if (!clusName.IsNull()) {
+		name += "_";
+		name += clusName;
+	}
+
+	if (!cellName.IsNull()) {
+		name += "_";
+		name += cellName;
+	}
+
+	if (strcmp(suffix,"")) {
+		name += "_";
+		name += suffix;
+	}
+
+	if (nGenLev && strcmp(nGenLev,"")!=0) cout<<"MC Part: "<<  nGenLev<<endl;
+	else  cout<<"No MC Part: "<<  nGenLev<<endl;
+
+	AliAnalysisTaskPWGJEQA* qaTask = new AliAnalysisTaskPWGJEQA(name);
+	qaTask->SetVzRange(-10,10);
+	qaTask->SetNeedEmcalGeom(kFALSE);
+	qaTask->SetCaloCellsName(cellName);
+	qaTask->SetDetectorLevelName(trackName);
+	if (nGenLev && strcmp(nGenLev,"")!=0) qaTask->SetGeneratorLevelName(nGenLev);
+	qaTask->SetDoTrackQA(doTrackQA);
+	qaTask->SetDoCaloQA(doCaloQA);
+	qaTask->SetDoJetQA(doJetQA);
+	qaTask->SetDoEventQA(doEventQA);
+
+	// Add the detector-level track container
+	if (trackName == "tracks" || trackName == "Tracks") {
+		AliTrackContainer* trackCont = qaTask->AddTrackContainer(trackName);
+		trackCont->SetFilterHybridTracks(kTRUE);
+	}
+	else if (!trackName.IsNull()) {
+		qaTask->AddParticleContainer(trackName);
+	}
+	AliParticleContainer *partCont = qaTask->GetParticleContainer(trackName);
+	if (partCont) {
+		partCont->SetParticlePtCut(trackPtCut);
+	}
+
+	// Add the generator-level container, if specified
+	if (nGenLev && strcmp(nGenLev,"")!=0) {
+		AliMCParticleContainer* mcpartCont = qaTask->AddMCParticleContainer(nGenLev);
+		mcpartCont->SelectPhysicalPrimaries(kTRUE);
+		mcpartCont->SetParticlePtCut(0);
+	}
+
+	// Add the cluster container
+	AliClusterContainer *clusterCont = qaTask->AddClusterContainer(clusName);
+	if (clusterCont) {
+		clusterCont->SetClusECut(0.);
+		clusterCont->SetClusPtCut(0.);
+		clusterCont->SetClusHadCorrEnergyCut(clusECut);
+		clusterCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+	}
+
+	// Final settings, pass to manager and set the containers
+	mgr->AddTask(qaTask);
+
+	// Create containers for input/output
+	AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+
+	TString contName = TString::Format("%s_histos", name.Data());
+	TString commonoutput;
+	commonoutput = mgr->GetCommonFileName();
+	AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(),
+			TList::Class(),AliAnalysisManager::kOutputContainer,
+			commonoutput);
+	mgr->ConnectInput  (qaTask, 0,  cinput1 );
+	mgr->ConnectOutput (qaTask, 1, coutput1 );
+
+	return qaTask;
+
 }

@@ -43,12 +43,10 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
   TString kContSuffix(pidName[pidMethod]);
 
   // Create and configure the task
-  AliAnalysisTaskSEITSsaSpectra* taskits = new AliAnalysisTaskSEITSsaSpectra();
+  AliAnalysisTaskSEITSsaSpectra* taskits = new AliAnalysisTaskSEITSsaSpectra(defPriors,optNtuple);
 
   taskits->SetPidTech(pidMethod);
   taskits->SetIsMC(isMC);
-  taskits->SetFillNtuple(optNtuple);
-  taskits->SetUseDefaultPriors(defPriors);
   if (pidMethod==2) {
     AliITSPidParams* aliParams = new AliITSPidParams(isMC);
     taskits->SetITSPidParams(aliParams);
@@ -66,7 +64,7 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
   };
   taskits->SetPtBins(nPtBins, ptBins);
 
-  taskits->Init();
+  taskits->Initialization();
 
   kContSuffix += suffix;
   mgr->AddTask(taskits);
@@ -101,9 +99,9 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
   TString kNtupleContName("cListTreeInfo");
   kNtupleContName += kContSuffix;
 
+  AliAnalysisDataContainer* kNtupleDataCont = NULL;
   if (optNtuple){
-    AliAnalysisDataContainer* kNtupleDataCont;
-    kNtupleDataCont = mgr->CreateContainer(kNtupleContName.Data(),
+        kNtupleDataCont = mgr->CreateContainer(kNtupleContName.Data(),
                                            TList::Class(),
                                            AliAnalysisManager::kOutputContainer,
                                            outputFileName);

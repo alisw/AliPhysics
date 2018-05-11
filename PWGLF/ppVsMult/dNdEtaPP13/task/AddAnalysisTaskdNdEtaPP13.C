@@ -10,8 +10,8 @@
 #endif
 
 
-const Double_t centBinsMultV0M[] =   {0., 1., 5., 10., 20., 30., 40., 60., 80., 100.};
-//const Double_t centBinsMultV0M[] =   {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100.};
+//const Double_t centBinsMultV0M[] =   {0., 1., 5., 10., 20., 30., 40., 60., 80., 100.};
+const Double_t centBinsMultV0M[] =       {0., 0.01, 0.05, 0.1, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100.};
 const Double_t centBinsMultV0M_Ridge[] = {0., 0.01, 0.1, 0.5, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100.};
 //const Double_t centBinsMultV0M_Ridge[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
 const Double_t centBinsMultRef[] = {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100.};

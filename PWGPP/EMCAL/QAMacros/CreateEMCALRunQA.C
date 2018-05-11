@@ -7,7 +7,8 @@
 #include <TDirectory.h>
 #include <TF1.h>
 #include <TFile.h>
-#include <TH2F.h>
+#include <TH2.h>
+#include <TH2D.h>
 #include <TCanvas.h>
 #include <TGraphErrors.h>
 #include <TLegend.h>
@@ -40,6 +41,8 @@ Int_t DrawRun(Long_t run, TString period, TString pass, TString fTrigger, TFile 
 Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TString period, TString pass, const int n, TList* TriggersList, TFile* f, TFile *fout, Int_t SavePlots);
 
 TH2F* FormatRunHisto(TH2F* aHisto, const char* title, const char* YTitle="");
+TH2D* FormatRunHisto2D(TH2D* aHisto, const char* title, const char* YTitle="");
+
 TH2F* HistoPerMod(TH2F* name, const char* title);
 TH2*  AutoZoom(TH2* H, Option_t* aType="all", Int_t EntryMin=0);
 int   FindNumberOfSM(TFile* f, TString fTrigger, TString period);
@@ -315,36 +318,36 @@ Int_t DrawOccupancy(Long_t  run, TString period, TString pass, TString fTrigger,
 
   cout <<" Run: " << run << " trigger: " << fTrigger << " N_events: "<<Events<<endl;
 
-  TPMERegexp r("_\\w+");
-  TString Energy;   Energy   = QAPATH + "MapEnergy"  + fTrigger(r) + ".pdf";
-  TString Energy2;  Energy2  = QAPATH + "MapEnergy"  + fTrigger(r) + ".png";
-  TString Entries;  Entries  = QAPATH + "MapEntries" + fTrigger(r) + ".pdf";
-  TString Entries2; Entries2 = QAPATH + "MapEntries" + fTrigger(r) + ".png";
+   TPMERegexp r("_\\w+");
+  // TString Energy;   Energy   = QAPATH + "MapEnergy"  + fTrigger(r) + ".pdf";
+  // TString Energy2;  Energy2  = QAPATH + "MapEnergy"  + fTrigger(r) + ".png";
+  // TString Entries;  Entries  = QAPATH + "MapEntries" + fTrigger(r) + ".pdf";
+  // TString Entries2; Entries2 = QAPATH + "MapEntries" + fTrigger(r) + ".png";
 
-  TCanvas *c1 = new TCanvas("Energymap", "Energy Map", 600, 600);
-  c1->SetFillColor(0);
-  c1->SetGrid();
-  c1->SetRightMargin(0.14);
+  // TCanvas *c1 = new TCanvas("Energymap", "Energy Map", 600, 600);
+  // c1->SetFillColor(0);
+  // c1->SetGrid();
+  // c1->SetRightMargin(0.14);
 
-  TString title = "run ";
-  title += run ;
-  if(fTrigger.Contains("EMC"))
-    title += " EMC ";
-  else
-    title += " MB ";
-  title += " Summed energy map";
+  // TString title = "run ";
+  // title += run ;
+  // if(fTrigger.Contains("EMC"))
+  //   title += " EMC ";
+  // else
+  //   title += " MB ";
+  // title += " Summed energy map";
 
-  hEnergyMapReal->SetTitle(title);
-  AutoZoom(hEnergyMapReal, "miny")->DrawCopy("colz");
+  // hEnergyMapReal->SetTitle(title);
+  // AutoZoom(hEnergyMapReal, "miny")->DrawCopy("colz");
 
-  if(nSupMod<=12){
-    if(SavePlots==2)
-      c1->SaveAs(Energy);
-    if(SavePlots)
-      c1->SaveAs(Energy2);
-    c1->Write();
-  }
-  delete c1;
+  // if(nSupMod<=12){
+  //   if(SavePlots==2)
+  //     c1->SaveAs(Energy);
+  //   if(SavePlots)
+  //     c1->SaveAs(Energy2);
+  //   c1->Write();
+  // }
+  // delete c1;
 
   // TCanvas *c2 = new TCanvas("Occupancy", "Occupancy Map", 600, 600);
   // c2->SetFillColor(0);
@@ -406,6 +409,10 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
   // gStyle->SetOptStat(1);
 
   TH1::AddDirectory(kFALSE);
+
+
+  TString mupass ="muon_calo";
+
   TString outfilename;
   TString outfilename2;
   const char* legend="";
@@ -508,7 +515,7 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
   c1->Write();
   delete c1;
 
-  if(pass!="simu"){
+  if((pass!="simu")||(pass!="passMC")){
     TCanvas* c1a = new TCanvas("TimeVsAbsId", "Cell Id vs. time ", 600, 600);
     c1a->SetLogz();
     c1a->SetFillColor(0);
@@ -534,7 +541,7 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
       c1a->SaveAs(outfilename2);
     c1a->Write();
     delete c1a;
-  }
+  } 
 
   // TCanvas* c1aLG = new TCanvas("TimeVsAbsIdLG", "Cell Id vs. time LG ", 600, 600);
   // c1aLG->SetLogz();
@@ -606,7 +613,8 @@ Int_t DrawRun(const Long_t  run, TString period, TString pass, TString fTrigger,
   // c1bLG->Write();
   // delete c1bLG;
 
-  if(pass!="muon_calo_pass1"){
+  if (!(pass.Contains("muon_calo"))){
+    //  if(pass!="muon_calo_pass1"){
     TCanvas  * c2 = new TCanvas("ClusterVsTrack ", "Correlation calo Mult vs. Track Multiplicity", 600, 600);
     c2->SetLogz();
     c2->SetFillColor(0);
@@ -741,7 +749,17 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
   
   TDatime now;
 
+
+
   Double_t Nevent=0 ;
+  Double_t NeventEGA1=0 ;
+  Double_t NeventEGA2=0 ;
+  Double_t NeventDGA1=0 ;
+  Double_t NeventDGA2=0 ;
+  Double_t NeventEJE1=0 ;
+  Double_t NeventEJE2=0 ;
+  Double_t NeventDJE1=0 ;
+  Double_t NeventDJE2=0 ;
   Double_t xe=0.5;
   Double_t NTClusters=0;    // total number of clusters
   Double_t NTClustersRMS=0;
@@ -798,6 +816,14 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
   tree->Branch("xe", &xe, "xe/D");
 
   tree->Branch("Nevent", &Nevent, "Nevent/D");
+  tree->Branch("NeventEGA1", &NeventEGA1, "NeventEGA1/D");
+  tree->Branch("NeventEGA2", &NeventEGA2, "NeventEGA2/D");
+  tree->Branch("NeventDGA1", &NeventDGA1, "NeventDGA1/D");
+  tree->Branch("NeventDGA2", &NeventDGA2, "NeventDGA2/D");
+  tree->Branch("NeventEJE1", &NeventEJE1, "NeventEJE1/D");
+  tree->Branch("NeventEJE2", &NeventEJE2, "NeventEJE2/D");
+  tree->Branch("NeventDJE1", &NeventDJE1, "NeventDJE1/D");
+  tree->Branch("NeventDJE2", &NeventDJE2, "NeventDJE2/D"); 
   tree->Branch("NMatchClustersP", &NMatchClustersP, "NMatchClustersP/D");
   tree->Branch("NMatchClustersPRMS", &NMatchClustersPRMS, "NMatchClustersPRMS/D");
   tree->Branch("CellMean", &CellMean, "CellMean/D");
@@ -855,6 +881,13 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
   Double_t Npi0SM[nMax];
   Double_t Npi0ErrSM[nMax];
 
+  Int_t nTRIG=6;
+  Double_t ETrigMax[nTRIG];
+  Double_t DTrigMax[nTRIG];
+
+
+
+
   tree->Branch("CellMeanSM", CellMeanSM, TString::Format("CellMeanSM[%i]/D", nMax));
   tree->Branch("CellRMSSM", CellRMSSM, TString::Format("CellRMSSM[%i]/D", nMax));
   tree->Branch("ClusterMeanSM", ClusterMeanSM, TString::Format("ClusterMeanSM[%i]/D", nMax));
@@ -873,6 +906,9 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
   tree->Branch("WidthErrSM", WidthErrSM, TString::Format("WidthErrSM[%i]/D", nMax));
   tree->Branch("Npi0SM", Npi0SM, TString::Format("Npi0SM[%i]/D", nMax));
   tree->Branch("Npi0ErrSM", Npi0ErrSM, TString::Format("Npi0ErrSM[%i]/D", nMax));
+  tree->Branch("ETrigMax", ETrigMax, TString::Format("EtrigMax[%i]/D", nTRIG));
+  tree->Branch("DTrigMax", DTrigMax, TString::Format("DtrigMax[%i]/D", nTRIG));
+
 
   TF1* fitMass = new TF1("fitMass", pi0massP2, 100, 250, 6);
   fitMass->SetParName(0, "A");
@@ -897,6 +933,30 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
   TH1F* NClusters[n];
   TH2F* NCellsPerCluster[n];
   TH1F* E[n];
+  TH1D* hEGA2;
+  TH1D* hEGA1;
+  TH1D* hEJE2;
+  TH1D* hEJE1;
+  TH1D* hEMC7;
+  TH1D* hDGA2;
+  TH1D* hDGA1;
+  TH1D* hDJE1;
+  TH1D* hDJE2;
+  TH1D* hDMC7;
+
+
+  TH2D* hEGA2Map;
+  TH2D* hEGA1Map;
+  TH2D* hEJE2Map;
+  TH2D* hEJE1Map;
+  TH2D* hEMC7Map;
+  TH2D* hDGA2Map;
+  TH2D* hDGA1Map;
+  TH2D* hDJE1Map;
+  TH2D* hDJE2Map;
+  TH2D* hDMC7Map;
+
+
 
   TH2F* fhIM;
   TH2F* fhIMDCAL;
@@ -973,6 +1033,8 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
     memset (WidthErrSM, 0, sizeof (Double_t) * nMax);
     memset (Npi0SM, 0, sizeof (Double_t) * nMax);
     memset (Npi0ErrSM, 0, sizeof (Double_t) * nMax);
+    memset (ETrigMax, 0, sizeof (Double_t) * nTRIG);
+    memset (DTrigMax, 0, sizeof (Double_t) * nTRIG);
 
     TString dirname;
     if(!fTrigger.Contains("QA")){
@@ -1533,10 +1595,11 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
       SignifDCALErr = SignifDCAL*SignifDCALErr;
     }
 
-    cout<<"******************"<<endl;
+    //    cout<<"******************"<<endl;
     // end of global trending
 
     // cout<<"********************************** Total number of clusters **********************************"<<endl;
+ 
     NTClusters=fhE->IntegralAndError(fhE->GetXaxis()->FindBin(0.), fhE->GetXaxis()->FindBin(200.), NTClustersRMS);
     NCClusters=fhECharged->IntegralAndError(fhECharged->GetXaxis()->FindBin(0.), fhECharged->GetXaxis()->FindBin(50.), NCClustersRMS);
 
@@ -1555,6 +1618,356 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
     ClusterRMS=fhNClusters->GetMeanError();
     CellMean=fhNCells->GetMean();
     CellRMS=fhNCells->GetMeanError();
+
+    if (fTrigger.Contains("default")){
+      // if (fTrigger.Contains("default") && pass.Contains("muon_calo")){
+
+    // specific triggerQA 
+
+ TList *outputListEG2  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_EG2_histos");
+
+ if(outputListEG2){  // here we test only the first list presence to check if triggerTask was activated
+ TList *outputListEG2N = (TList*)outputListEG2->FindObject("histosAliEmcalTriggerQATask_EG2");
+
+  
+ TList *outputListEG1  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_EG1_histos");
+ TList *outputListEG1N = (TList*)outputListEG1->FindObject("histosAliEmcalTriggerQATask_EG1");
+ TList *outputListEJ2  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_EJ2_histos");
+ TList *outputListEJ2N = (TList*)outputListEJ2->FindObject("histosAliEmcalTriggerQATask_EJ2");
+ 
+ TList *outputListEJ1  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_EJ1_histos");
+ TList *outputListEJ1N = (TList*)outputListEJ1->FindObject("histosAliEmcalTriggerQATask_EJ1");
+ TList *outputListINT7  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_CINT7_histos");
+ TList *outputListINT7N = (TList*)outputListINT7->FindObject("histosAliEmcalTriggerQATask_CINT7");
+ TList *outputListEMC7  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_CEMC7_histos");
+ TList *outputListEMC7N = (TList*)outputListEMC7->FindObject("histosAliEmcalTriggerQATask_CEMC7");
+
+ TList *outputListDG2  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_DG2_histos");
+ TList *outputListDG2N = (TList*)outputListDG2->FindObject("histosAliEmcalTriggerQATask_DG2");
+
+  
+ TList *outputListDG1  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_DG1_histos");
+ TList *outputListDG1N = (TList*)outputListDG1->FindObject("histosAliEmcalTriggerQATask_DG1");
+ TList *outputListDJ2  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_DJ2_histos");
+ TList *outputListDJ2N = (TList*)outputListDJ2->FindObject("histosAliEmcalTriggerQATask_DJ2");
+ 
+ TList *outputListDJ1  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_DJ1_histos");
+ TList *outputListDJ1N = (TList*)outputListDJ1->FindObject("histosAliEmcalTriggerQATask_DJ1");
+ TList *outputListDMC7  = (TList*)gDirectory->Get("AliEmcalTriggerQATask_CDMC7_histos");
+ TList *outputListDMC7N = (TList*)outputListDMC7->FindObject("histosAliEmcalTriggerQATask_CDMC7");
+
+
+
+ 
+ if(!outputListEG2N) cout << "NO outputListEG2"<<endl;
+ if(!outputListEG1N) cout << "NO outputListEG1"<<endl;
+ if(!outputListEJ2N) cout << "NO outputListEJ2"<<endl;
+ if(!outputListEJ1N) cout << "NO outputListEJ1"<<endl;
+ if(!outputListDG2N) cout << "NO outputListEG2"<<endl;
+ if(!outputListDG1N) cout << "NO outputListDG1"<<endl;
+ if(!outputListDJ2N) cout << "NO outputListDJ2"<<endl;
+ if(!outputListDJ1N) cout << "NO outputListDJ1"<<endl;
+ if(!outputListINT7N) cout << "NO outputListINT7"<<endl;
+ if(!outputListEMC7N) cout << "NO outputListEMC7"<<endl;
+ if(!outputListDMC7N) cout << "NO outputListDMC7"<<endl;
+ 
+
+
+
+
+   hEGA2 =(TH1D*)outputListEG2N->FindObject("EMCTRQA_histEMCalMaxPatchAmpEMCGAHRecalc");
+   hEGA1 =(TH1D*)outputListEG1N->FindObject("EMCTRQA_histEMCalMaxPatchAmpEMCGAHRecalc");
+
+   hDGA2 =(TH1D*)outputListDG2N->FindObject("EMCTRQA_histDCalMaxPatchAmpEMCGAHRecalc");
+   hDGA1 =(TH1D*)outputListDG1N->FindObject("EMCTRQA_histDCalMaxPatchAmpEMCGAHRecalc");
+   hEJE2 =(TH1D*)outputListEJ2N->FindObject("EMCTRQA_histEMCalMaxPatchAmpEMCJEHRecalc");
+   hEJE1 =(TH1D*)outputListEJ1N->FindObject("EMCTRQA_histEMCalMaxPatchAmpEMCJEHRecalc");
+   hDJE2 =(TH1D*)outputListDJ2N->FindObject("EMCTRQA_histDCalMaxPatchAmpEMCJEHRecalc");
+   hDJE1 =(TH1D*)outputListDJ1N->FindObject("EMCTRQA_histDCalMaxPatchAmpEMCJEHRecalc");
+   hEMC7 =(TH1D*)outputListEMC7N->FindObject("EMCTRQA_histEMCalMaxPatchAmpEMCL0Recalc");
+   hDMC7 =(TH1D*)outputListDMC7N->FindObject("EMCTRQA_histDCalMaxPatchAmpEMCL0Recalc");
+ //hINT7 =(TH1D*)outputListINT7N->FindObject("EMCTRQA_histEMCalMaxPatchAmpEMCL0HRecalc");
+ 
+
+ // Trigger Occupancy plots
+ hEGA2Map =(TH2D*)outputListEG2N->FindObject("EMCTRQA_histFastORL1AccumulatedAmplitude");
+ hEGA1Map =(TH2D*)outputListEG1N->FindObject("EMCTRQA_histFastORL1AccumulatedAmplitude");
+ hEJE2Map =(TH2D*)outputListEJ2N->FindObject("EMCTRQA_histFastORL1AccumulatedAmplitude");
+ hEJE1Map =(TH2D*)outputListEJ1N->FindObject("EMCTRQA_histFastORL1AccumulatedAmplitude");
+ hEMC7Map =(TH2D*)outputListEMC7N->FindObject("EMCTRQA_histFastORL0AccumulatedAmplitude");
+ hDGA2Map =(TH2D*)outputListDG2N->FindObject("EMCTRQA_histFastORL1AccumulatedAmplitude");
+ hDGA1Map =(TH2D*)outputListDG1N->FindObject("EMCTRQA_histFastORL1AccumulatedAmplitude");
+ hDJE2Map =(TH2D*)outputListDJ2N->FindObject("EMCTRQA_histFastORL1AccumulatedAmplitude");
+ hDJE1Map =(TH2D*)outputListDJ1N->FindObject("EMCTRQA_histFastORL1AccumulatedAmplitude");
+ hDMC7Map =(TH2D*)outputListDMC7N->FindObject("EMCTRQA_histFastORL0AccumulatedAmplitude");
+
+
+ TCanvas* c00T = new TCanvas("Occupancy map", "Occupancy", 1000, 1000);
+  c00T->SetLogz();
+  c00T->SetFillColor(0);
+  c00T->SetBorderSize(0);
+  c00T->SetFrameBorderMode(0);
+  c00T->Divide(2,3);
+
+  // TString namefile = QAPATH + period + "_" +  pass + fTrigger(r).Data() + "_" + RunId + "_data.txt";
+  //legend = "run "+RunId; 
+  const char* legend="";
+  legend = Form(" Run %d  ", (int)RunId);
+  // // TPMERegexp r("_\\w+");
+  // legend = Form(" Run %s  ", RunId);
+  // legend = "run "+RunId; 
+
+  c00T->cd(1);
+    gPad->SetLogz();
+ 
+    FormatRunHisto2D(hEGA2Map, Form("EGA2 FastORL1Amp %s", legend), "#varphi (bin)");
+    hEGA2Map->SetXTitle("#eta (bin)");
+ 
+    if(hEGA2Map->GetEntries()>10)hEGA2Map->Draw("colz");
+
+ 
+ 
+  c00T->cd(2);
+     gPad->SetLogz();
+     FormatRunHisto2D(hEGA1Map, Form("EGA1 FastORL1Amp %s", legend), "#varphi (bin)");
+     hEGA1Map->SetXTitle("#eta (bin)");
+     if(hEGA1Map->GetEntries()>10)hEGA1Map->Draw("colz");
+
+  c00T->cd(3);
+    hEJE2Map->SetXTitle("#eta (bin)");
+    gPad->SetLogz();
+      FormatRunHisto2D(hEJE2Map, Form("EJE2 FastORL1Amp %s", legend), "#varphi (bin)");
+    if(hEJE2Map->GetEntries()>10)hEJE2Map->Draw("colz");
+
+ c00T->cd(4);
+     gPad->SetLogz();
+
+    hEJE1Map->SetXTitle("#eta (bin)");
+        FormatRunHisto2D(hEJE1Map, Form("EJE1 FastORL1Amp %s", legend), "#varphi (bin)");
+   if(hEJE1Map->GetEntries()>10)hEJE1Map->Draw("colz");
+  c00T->cd(5);
+
+      gPad->SetLogz();
+    hEMC7Map->SetXTitle("#eta (bin)");
+      FormatRunHisto2D(hEMC7Map, Form("EMC7 FastORL0Amp %s", legend), "#varphi (bin)");
+    if(hEMC7Map->GetEntries()>10)hEMC7Map->Draw("colz");
+    c00T->cd(6);
+
+
+  TCanvas* c00TD = new TCanvas("Occupancy map DCAL", "Occupancy", 1000, 1000);
+  // c00T->SetLogz();
+  c00TD->SetFillColor(0);
+  c00TD->SetBorderSize(0);
+  c00TD->SetFrameBorderMode(0);
+  c00TD->Divide(2,3);
+
+    c00TD->cd(1);
+       gPad->SetLogz();
+ 
+     hDGA2Map->SetXTitle("#eta (bin)");
+    hDGA2Map->SetTitle("DGA2FastORL1Accumulated ");
+     FormatRunHisto2D(hDGA2Map, Form("DGA2 FastORL1Amp %s", legend), "#varphi (bin)");
+   if(hDGA2Map->GetEntries()>10)hDGA2Map->Draw("colz");
+
+ 
+  c00TD->cd(2);
+      gPad->SetLogz();
+    hDGA1Map->SetXTitle("#eta (bin)");
+    hDGA1Map->SetTitle("DGA1 FastORL1Accumulated amplitudes");
+       FormatRunHisto2D(hDGA1Map, Form("DGA1 FastORL1Amp %s", legend), "#varphi (bin)");
+  if(hDGA1Map->GetEntries()>10)hDGA1Map->Draw("colz");
+
+  c00TD->cd(3);
+      gPad->SetLogz();
+    hDJE2Map->SetXTitle("#eta (bin)");
+    hDJE2Map->SetTitle("DJE2 FastORL1Accumulated amplitudes");
+    FormatRunHisto2D(hDJE2Map, Form("DJE2 FastORL1Amp %s", legend), "#varphi (bin)");
+  if(hDJE2Map->GetEntries()>10)hDJE2Map->Draw("colz");
+
+ c00TD->cd(4);
+      gPad->SetLogz();
+    hDJE1Map->SetXTitle("#eta (bin)");
+    hDJE1Map->SetTitle("DJE1 FastORL1Accumulated amplitudes");
+    FormatRunHisto2D(hDJE1Map, Form("DJE1 FastORL1Amp %s", legend), "#varphi (bin)");
+    if(hDJE1Map->GetEntries()>10)hDJE1Map->Draw("colz");
+  c00TD->cd(5);
+      gPad->SetLogz();
+    hDMC7Map->SetXTitle("#eta (bin)");
+    hDMC7Map->SetTitle("DMC7 FastORL1Accumulated amplitudes");
+    FormatRunHisto2D(hDMC7Map, Form("DMC7 FastORL0Amp %s", legend), "#varphi (bin)");
+    if(hDMC7Map->GetEntries()>10)hDMC7Map->Draw("colz");
+  
+
+
+
+      //  hEMC7->Draw("same");
+  // TLegend* lTM = new TLegend(0.123, 0.744, 0.933, 0.894);
+  // lTM->SetNColumns((n+1)/2.);
+  // lTM->SetFillColor(0);
+  // lTM->SetBorderSize(0);
+  // lTM->SetTextSize(0.04);
+  // lTM->SetHeader(Form("Trigger in EMCAL %s (period %s) run %s",fCalorimeter.Data(),period.Data(),RunId));
+  
+  // lTM->Draw();
+
+
+   // if(!hEGA2) {cout << "NO histo hEGA2"<<endl;
+   //  ret=-8;
+   //  continue;}
+
+
+  Double_t EGA2;
+  
+  TCanvas* cT = new TCanvas("EMCTriggers", "EMCTriggers", 600, 600);
+  cT->SetLogy();
+  cT->SetFillColor(0);
+  cT->SetBorderSize(0);
+  cT->SetFrameBorderMode(0);
+
+  hEGA2->SetLineColor(2);
+  hEGA2->SetLineWidth(2);
+  if(hEGA2->GetEntries()>0)hEGA2->Scale(1./hEGA2->GetEntries());
+  hEGA2->GetXaxis()->SetTitle("(ADC counts)");
+  hDGA2->GetXaxis()->SetTitle(" (ADC counts)");
+
+  hEGA1->SetLineColor(3);
+  hEGA1->SetLineWidth(2);
+   if(hEGA1->GetEntries()>0)hEGA1->Scale(1./hEGA1->GetEntries());
+  hEJE2->SetLineColor(4);
+  hEJE2->SetLineWidth(2);
+  if(hEJE2->GetEntries()>0) hEJE2->Scale(1./hEJE2->GetEntries());
+  hEJE1->SetLineColor(7);
+  hEJE1->SetLineWidth(2);
+  if(hEJE1->GetEntries()>0) hEJE1->Scale(1./hEJE1->GetEntries());
+  hEMC7->SetLineColor(6);  
+  hEMC7->SetLineWidth(2);
+  if(hEMC7->GetEntries()>0) hEMC7->Scale(1./hEMC7->GetEntries());
+
+  hDGA2->SetLineColor(2);
+  hDGA2->SetLineWidth(2);
+  if(hDGA2->GetEntries()>0)hDGA2->Scale(1./hDGA2->GetEntries());
+  hDGA1->SetLineColor(3);
+  hDGA1->SetLineWidth(2);
+ if(hDGA1->GetEntries()>0) hDGA1->Scale(1./hDGA1->GetEntries());
+  hDJE2->SetLineColor(4);
+  hDJE2->SetLineWidth(2);
+ if(hDJE2->GetEntries()>0) hDJE2->Scale(1./hDJE2->GetEntries());
+  hDJE1->SetLineColor(7);
+  hDJE1->SetLineWidth(2);
+  if(hDJE1->GetEntries()>0)  hDJE1->Scale(1./hDJE1->GetEntries());
+  hDMC7->SetLineColor(6);
+  hDMC7->SetLineWidth(2);
+  if(hDMC7->GetEntries()>0) hDMC7->Scale(1./hDMC7->GetEntries());
+
+  //  FormatRunHisto(hClusterTimeEnergy, Form("Time vs. Energy%s", legend), "EMCal ToF (ns)");
+  //  AutoZoom(hClusterTimeEnergy, "maxx")->DrawCopy("colz");
+
+  cT->Divide(1,2);
+  cT->cd(1);
+  
+   const char* legend2="";
+   legend2 = Form(" Run %d EMCalMaxPatchAmp ", (int)RunId);
+   hEGA2->SetTitle(legend2);
+    const char* legend3="";
+
+   legend3 = Form(" Run %d DMCalMaxPatchAmp ", (int)RunId);
+
+  hDGA2->SetTitle(legend3);
+
+   hEGA2->GetXaxis()->SetRangeUser(0.,1000.);
+  hEGA2->Draw();
+  hEGA1->Draw("same");
+  hEJE2->Draw("same");
+  hEJE1->Draw("same");
+  hEMC7->Draw("same");
+  TLegend* lT = new TLegend(0.123, 0.744, 0.833, 0.894);
+  lT->SetNColumns((n+1)/2.);
+  lT->SetFillColor(0);
+  lT->SetBorderSize(0);
+  lT->SetTextSize(0.04);
+  // lT->SetHeader(Form("Trigger in EMCAL (period %s) run %d",period.Data(),(int)run));
+   lT->SetHeader(Form("Trigger in EMCAL (period %s)",period.Data()));
+ 
+ 
+    lT->AddEntry(hEGA2," EGA2", "l");
+    lT->AddEntry(hEGA1," EGA1", "l");
+    lT->AddEntry(hEJE2," EJE2", "l");
+    lT->AddEntry(hEJE1," EJE1", "l");
+    lT->AddEntry(hEMC7," EMC7", "l");
+    lT->Draw("same");
+
+  cT->cd(2);
+
+  hDGA2->GetXaxis()->SetRangeUser(0.,1000.);
+  hDGA2->Draw();
+  hDGA1->Draw("same");
+  hDJE2->Draw("same");
+  hDJE1->Draw("same");
+  hDMC7->Draw("same");
+  TLegend* lTD = new TLegend(0.123, 0.744, 0.833, 0.894);
+  lTD->SetNColumns((n+1)/2.);
+  lTD->SetFillColor(0);
+  lTD->SetBorderSize(0);
+  lTD->SetTextSize(0.04);
+  lTD->SetHeader(Form("Trigger in DCAL (period %s)",period.Data()));
+  //lTD->SetHeader(Form("Trigger in DCAL (period %s) run %d",period.Data(),(int)run));
+ 
+ 
+    lTD->AddEntry(hDGA2," DGA2", "l");
+    lTD->AddEntry(hDGA1," DGA1", "l");
+    lTD->AddEntry(hDJE2," DJE2", "l");
+    lTD->AddEntry(hDJE1," DJE1", "l");
+    lTD->AddEntry(hDMC7," DMC7", "l");
+    lTD->Draw("same");
+
+
+
+    //
+
+    //  cout << "TTTTTTTTTTTTTTTTTTTTTTTTTTTTT   TRIGGER TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT" << endl; 
+  // EGA2 = hEGA2->GetMean();
+
+    // cout << " EGA2 (ADC) "  <<hEGA2->GetMaximum() << endl;
+  // if(!hEGA2){
+  if (hEGA2) ETrigMax[0] = hEGA2->GetMaximumBin()*16.;
+  if (hEGA1) ETrigMax[1] = hEGA1->GetMaximumBin()*16.;
+  if (hEJE2) ETrigMax[2] = hEJE2->GetMaximumBin()*16.;
+  if (hEJE1) ETrigMax[3] = hEJE1->GetMaximumBin()*16.;
+  if (hEMC7) ETrigMax[4] = hEMC7->GetMaximumBin()*16.;
+  
+ if (hDGA2) DTrigMax[0] = hDGA2->GetMaximumBin()*16.;
+ if (hDGA1) DTrigMax[1] = hDGA1->GetMaximumBin()*16.;
+ if (hDJE2) DTrigMax[2] = hDJE2->GetMaximumBin()*16.;
+ if (hDJE1) DTrigMax[3] = hDJE1->GetMaximumBin()*16.;
+ if (hDMC7) DTrigMax[4] = hDMC7->GetMaximumBin()*16.;
+
+  TString outfilenameT =  QAPATH + "Triggers" + fTrigger(r) + ".pdf" ;
+  TString outfilename2T = QAPATH + "Triggers" + fTrigger(r) + ".png" ;
+
+  if(SavePlots==2)
+    cT->SaveAs(outfilenameT);
+  if(SavePlots)
+    cT->SaveAs(outfilename2T);
+  
+ TString   outfilename7 =  QAPATH + "OccupancyMapTrigger" + fTrigger(r) + ".pdf" ;
+ TString   outfilename8= QAPATH + "OccupancyMapTrigger" + fTrigger(r) + ".png" ;
+  
+  if(SavePlots==2) c00T->SaveAs(outfilename7);
+  if(SavePlots) c00T->SaveAs(outfilename8);
+
+   
+   TString  outfilename5 =  QAPATH + "OccupancyMapTriggerDCAL" + fTrigger(r) + ".pdf" ;
+  TString   outfilename6 = QAPATH + "OccupancyMapTriggerDCAL" + fTrigger(r) + ".png" ;
+  
+  if(SavePlots==2) c00TD->SaveAs(outfilename5);
+  if(SavePlots) c00TD->SaveAs(outfilename6);
+
+
+   }
+    }
+    
+
+
 
     tree->Fill();
 
@@ -1591,14 +2004,32 @@ Int_t TrendingEMCALTree(Long_t RunId, TString fCalorimeter, TString system, TStr
     if(hTimeSM_BC2) c_TimeSM_BC2->Write();
     if(hTimeSM_BC3) c_TimeSM_BC3->Write();
 
+    //   if ((pass.Contains("muon_calo")) && (fTrigger=="default")){
+
+      cout << "ca marche la boucle !!!!!!!!!!!" << endl;
+      
+      //  if(outputListEG2N){
+       // c00T->Write();
+       // c00TD->Write();
+       // cT->Write();
+       // }
+      //   }
+
+
     c2->Write();
     c1->Write();
-    if(fhIMDCAL)
-      c3->Write();
+    if(fhIMDCAL)c3->Write();
+    //  cT->Write();
 
     delete c1;
     delete c2;
-    if(fhIMDCAL)    delete c3;
+
+    //delete c00T;
+    // delete c00TD;
+    // delete cT;     
+
+
+     if(fhIMDCAL)    delete c3;
     if(hTimeSM_BC0) delete c_TimeSM_BC0;
     if(hTimeSM_BC1) delete c_TimeSM_BC1;
     if(hTimeSM_BC2) delete c_TimeSM_BC2;
@@ -1625,6 +2056,25 @@ TH2F* FormatRunHisto(TH2F* aHisto, const char* title, const char* YTitle){
   if(!aHisto){
     Error(__FUNCTION__, Form("The histogram with title \"%s\" was not found!", title));
     return new TH2F();
+  }
+
+  aHisto->SetStats(kFALSE);
+  aHisto->SetTitle(title);
+  aHisto->SetStats(kFALSE);
+  aHisto->SetYTitle(YTitle);
+  aHisto->GetYaxis()->SetTitleOffset(1.2);
+  aHisto->GetYaxis()->SetLabelSize(0.03);
+  aHisto->GetZaxis()->SetLabelSize(0.02);
+
+  return aHisto;
+
+}
+//-------------------------------------------------------------------------
+TH2D* FormatRunHisto2D(TH2D* aHisto, const char* title, const char* YTitle){
+
+  if(!aHisto){
+    Error(__FUNCTION__, Form("The histogram with title \"%s\" was not found!", title));
+    return new TH2D();
   }
 
   aHisto->SetStats(kFALSE);

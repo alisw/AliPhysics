@@ -175,6 +175,7 @@ void AliJFilter::UserCreateOutputObjects()
 	fAnaUtils->SetUseOutOfBunchPileUp( kTRUE );
 	fMcMap = new TArrayI();
 
+	DEBUG( 5, 0, Form("IsMC() = %d",IsMC())  );
 	//=== Set Tree and TClonesArray
 	//== TRACKS
 	AddList("AliJTrackList", "AliJTrack", &fTrackList, 1000);
@@ -350,7 +351,7 @@ Bool_t AliJFilter::ReadAODTracks(const AliAODEvent * aod)
 		ctrack->SetFilterMap( track->GetFilterMap() );
 
 		//PID TODO
-		double const * pid = track->PID();
+		//double const * pid = track->PID();
 		//ctrack->SetPID(AliJTrack::kElectronAliJ,pid[AliAODTrack::kElectron],AliJTrack::kTOF);
 		//ctrack->SetPID(AliJTrack::kMuonAliJ,    pid[AliAODTrack::kMuon],    AliJTrack::kTOF);
 		//ctrack->SetPID(AliJTrack::kPionAliJ,    pid[AliAODTrack::kPion],    AliJTrack::kTOF);
@@ -526,8 +527,11 @@ UInt_t AliJFilter::ConvertTriggerMask(){
 //--------------------------------------------------------------------
 void AliJFilter::ReadMCTracksFromAOD(){
 	//retreive MC particles from event //FKEFF// 
-	if(!AODEvent()) return;  TClonesArray *mcArray = (TClonesArray*) AODEvent()->
-		FindListObject(AliAODMCParticle::StdBranchName());
+	if(!AODEvent()) { 
+		DEBUG(5, 0, "No AODEvent"); 
+		return;  
+	}
+	TClonesArray *mcArray = (TClonesArray*) AODEvent()->FindListObject(AliAODMCParticle::StdBranchName());
 	if(!mcArray){
 		Printf("No MC particle branch found");
 		return;
@@ -535,10 +539,12 @@ void AliJFilter::ReadMCTracksFromAOD(){
 
 	Long64_t ntrack = 0;
 	Long64_t np = mcArray->GetEntriesFast();
+	DEBUG(5, 1, Form("MC all::NumberOfTracks = %d",(int) np) );
 
 	for(Long64_t it = 0; it < np; it++) {
 		AliAODMCParticle *track = (AliAODMCParticle*) mcArray->At(it);
 		if(!track){
+			DEBUG(5, 0, Form("eadEventAODMC Could not receive particle %d",(int) it) );
 			Error("ReadEventAODMC", "Could not receive particle %d",(int) it);
 			continue;
 		}
@@ -567,6 +573,7 @@ void AliJFilter::ReadMCTracksFromAOD(){
 			ctrack->SetIsFinal(isFinal);
 		}
 	}
+	DEBUG(5, 1, Form("MC primary::NumberOfTracks = %d",fMCTrackList->GetEntriesFast()) );
 
 }
 
@@ -575,7 +582,7 @@ void AliJFilter::ReadMCTracksFromAOD(){
 void AliJFilter::RemapMCLabels(){
 	// remaps all MC labels to the new arrays
 
-	Int_t i, j, label, mother0, mother1;
+	Int_t i, mother0, mother1;
 	AliJTrack *track;
 	// BS AliJCaloCell *cell;
 	AliJMCTrack *mctrack;
@@ -610,17 +617,17 @@ Bool_t AliJFilter::IsGoodEvent(AliAODEvent *event) {
 	// RunTable to sepecify the run conditions
 	// Taken from AliJFFlucTask for basic event selection cuts need to add few more
 	if(fRunTable->GetRunNumberToPeriod(fRunTable->GetRunNumber()) == AliJRunTable::kLHC15o){
-		   const AliVVertex* vtTrc = event->GetPrimaryVertex();
-		   const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
-		   double covTrc[6],covSPD[6];
-		   vtTrc->GetCovarianceMatrix(covTrc);
-		   vtSPD->GetCovarianceMatrix(covSPD);
-		   double dz = vtTrc->GetZ()-vtSPD->GetZ();
-		   double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-		   double errTrc = TMath::Sqrt(covTrc[5]);
-		   double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
-		   if(TMath::Abs(dz) > 0.2 || nsigTot > 10 || nsigTrc > 20)
-		   return kFALSE;
+		const AliVVertex* vtTrc = event->GetPrimaryVertex();
+		const AliVVertex* vtSPD = event->GetPrimaryVertexSPD();
+		double covTrc[6],covSPD[6];
+		vtTrc->GetCovarianceMatrix(covTrc);
+		vtSPD->GetCovarianceMatrix(covSPD);
+		double dz = vtTrc->GetZ()-vtSPD->GetZ();
+		double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+		double errTrc = TMath::Sqrt(covTrc[5]);
+		double nsigTot = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+		if(TMath::Abs(dz) > 0.2 || nsigTot > 10 || nsigTrc > 20)
+			return kFALSE;
 		AliMultSelection *pms = (AliMultSelection*)event->FindListObject("MultSelection");
 		if(!pms){
 			AliError("MultSelection unavailable.");
@@ -631,7 +638,7 @@ Bool_t AliJFilter::IsGoodEvent(AliAODEvent *event) {
 		Float_t cl0cent = pms->GetMultiplicityPercentile("CL0");
 		return kTRUE;
 		if(cl0cent < pfOutlierLowCut->Eval(v0mcent) || cl0cent > pfOutlierHighCut->Eval(v0mcent))
-		return kFALSE;
+			return kFALSE;
 	}
 	return kTRUE;
 }

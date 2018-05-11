@@ -206,6 +206,7 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty(const char *name)
 ,hCharmMotherPt_corr2(0)
 ,hBeautyMotherPt(0)
 ,fPtBeautyGenerated(0)
+,fPtGeneratedBmesons(0)
 ,fPtBeautyReconstructedTracks(0)
 ,fPtBeautyReconstructedTracksPID(0)
 ,fPtBeautyReconstructedTracksPIDTPC(0)
@@ -385,6 +386,7 @@ AliAnalysisHFETPCTOFBeauty::AliAnalysisHFETPCTOFBeauty()
 ,hCharmMotherPt_corr2(0)
 ,hBeautyMotherPt(0)
 ,fPtBeautyGenerated(0)
+,fPtGeneratedBmesons(0)
 ,fPtBeautyReconstructedTracks(0)
 ,fPtBeautyReconstructedTracksPID(0)
 ,fPtBeautyReconstructedTracksPIDTPC(0)
@@ -740,6 +742,9 @@ void AliAnalysisHFETPCTOFBeauty::UserCreateOutputObjects()
     fPtBeautyGenerated = new TH1F("fPtBeautyGenerated","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtBeautyGenerated);
     
+    fPtGeneratedBmesons = new TH1F("fPtGeneratedBmesons","; p_{T} [GeV/c]; Count",1000,0,200);
+    fOutputList->Add(fPtGeneratedBmesons);
+    
     fPtBeautyReconstructedTracks = new TH1F("fPtBeautyReconstructedTracks","; p_{T} [GeV/c]; Count",32,ptbinning);
     fOutputList->Add(fPtBeautyReconstructedTracks);
     
@@ -1089,6 +1094,8 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 				Int_t TrackPDG = TMath::Abs(fMCparticle->GetPdgCode());
                 if(TrackPDG == 421) hPtD0->Fill(fMCparticle->Pt());///D0
                 if(TrackPDG == 4122) hPtLambdaC->Fill(fMCparticle->Pt()); ///LambdaC
+                
+                if((TrackPDG>500 && TrackPDG<600)) fPtGeneratedBmesons->Fill(fMCparticle->Pt()); 
                 
                 
                 ///For the beauty reconstruction efficiency-----------

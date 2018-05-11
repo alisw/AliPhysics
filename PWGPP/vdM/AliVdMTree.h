@@ -24,7 +24,7 @@ public:
       : fTime(2)
       , fSep(2)
       , fBC(0)
-      , fCounter(20) {}
+      , fCounter(30) {}
 
     DefaultBranchData& operator=(const DefaultBranchData& d) {
       for (Int_t i=0; i<2; ++i) {

@@ -71,19 +71,22 @@ void Systematics() {
       TH1F* countsyst_tmp = (TH1F*)countsyst_file.Get(count_sys_path.data());
       Requires(countsyst_tmp,"Missing systematic");
       species_dir->cd();
-      countsyst_tmp->Write("count_tmo");
+      countsyst_tmp->Write("count_tmp");
+      references_tmp->Write("references_tmp");
+      references[iC]->Write();
       countsyst[iC] = (TH1F*)countsyst_tmp->Rebin(n_pt_bins,Form("countsyst_%d",iC),pt_bin_limits);
 
       string shift_sys_path = kFilterListNames + "/" + kNames[iS] + "/Systematic/hShiftRangeSyst" + kLetter[iS] + to_string(iC);
       TH1F* shiftsyst_tmp = (TH1F*)shiftsyst_file.Get(shift_sys_path.data());
       Requires(shiftsyst_tmp,"Missing systematic");
+      shiftsyst_tmp->Write("shiftsyst_tmp");
       shiftsyst[iC] = (TH1F*)shiftsyst_tmp->Rebin(n_pt_bins,Form("shiftsyst_%d",iC),pt_bin_limits);
 
       string mat_sys_path = Form("deuterons%ctof",kLetter[iS]);
       TH1F* matsyst_tmp = (TH1F*)matsyst_file.Get(mat_sys_path.data());
       Requires(matsyst_tmp,Form("deuterons%ctof",kLetter[iS]));
+      matsyst_tmp->Write("matsyst_tmp");
       matsyst[iC] = (TH1F*)matsyst_tmp->Rebin(n_pt_bins,Form("hMatSyst_%d",iC),pt_bin_limits);
-      matsyst[iC]->Smooth(1,"R");
 
       cutsyst[iC] = (TH1F*)countsyst[iC]->Clone(("cutsyst" + to_string(iC)).data());
       cutsyst[iC]->Reset();
@@ -117,10 +120,10 @@ void Systematics() {
 
         vector<float> rms(n_pt_bins,0.f);
         for (int iB = 1; iB <= n_pt_bins; ++iB) {
-          if (ptAxis->GetBinCenter(iB) < 1. ||
+          if (ptAxis->GetBinCenter(iB) < kPtRange[0]||
               ptAxis->GetBinCenter(iB) > kPtRange[1])
             continue;
-          if (ptAxis->GetBinCenter(iB)<1) continue;
+          if (ptAxis->GetBinCenter(iB)<kTOFminPt) continue;
           if (ptAxis->GetBinCenter(iB)>kCentPtLimits[iC]) continue;
           abssyst[iC]->SetBinContent(iB,kAbsSyst[iS]);
           const float m0 = references[iC]->GetBinContent(iB);
@@ -172,10 +175,10 @@ void Systematics() {
         h_rms->GetYaxis()->SetTitle("RMS");
         h_rms->Reset();
         for (int iB = 1; iB <= n_pt_bins; ++iB) {
-          if (ptAxis->GetBinCenter(iB) < 1. ||
+          if (ptAxis->GetBinCenter(iB) < kPtRange[0] ||
               ptAxis->GetBinCenter(iB) > kPtRange[1])
             continue;
-          if(ptAxis->GetBinCenter(iB) <1) continue;
+          if(ptAxis->GetBinCenter(iB) <kTOFminPt) continue;
           if (ptAxis->GetBinCenter(iB)>kCentPtLimits[iC]) continue;
           h_rms->SetBinContent(iB,rms[iB-1]);
         }
@@ -186,12 +189,14 @@ void Systematics() {
       }
 
       if (kSmoothSystematics) {
-        cutsyst[iC]->GetXaxis()->SetRange(cutsyst[iC]->FindBin(1.01),cutsyst[iC]->FindBin(kCentPtLimits[iC]-0.01));
-        countsyst[iC]->GetXaxis()->SetRange(countsyst[iC]->FindBin(1.01),countsyst[iC]->FindBin(kCentPtLimits[iC]-0.01));
-        shiftsyst[iC]->GetXaxis()->SetRange(shiftsyst[iC]->FindBin(1.01),shiftsyst[iC]->FindBin(kCentPtLimits[iC]-0.01));
+        cutsyst[iC]->GetXaxis()->SetRange(cutsyst[iC]->FindBin(kTOFminPt+0.01),cutsyst[iC]->FindBin(kCentPtLimits[iC]-0.01));
+        countsyst[iC]->GetXaxis()->SetRange(countsyst[iC]->FindBin(kTOFminPt+0.01),countsyst[iC]->FindBin(kCentPtLimits[iC]-0.01));
+        shiftsyst[iC]->GetXaxis()->SetRange(shiftsyst[iC]->FindBin(kTOFminPt+0.01),shiftsyst[iC]->FindBin(kCentPtLimits[iC]-0.01));
+        matsyst[iC]->GetXaxis()->SetRange(matsyst[iC]->FindBin(kTOFminPt+0.01),matsyst[iC]->FindBin(kCentPtLimits[iC]-0.01));
         cutsyst[iC]->Smooth(1,"R");
         countsyst[iC]->Smooth(1,"R");
         shiftsyst[iC]->Smooth(1,"R");
+        matsyst[iC]->Smooth(1,"R");
       }
 
       for (int iB = 1; iB <= n_pt_bins; ++iB) {
@@ -199,7 +204,7 @@ void Systematics() {
             ptAxis->GetBinCenter(iB) > kPtRange[1])
           continue;
         if (ptAxis->GetBinCenter(iB)>kCentPtLimits[iC]) matsyst[iC]->SetBinContent(iB,0.);
-        if (ptAxis->GetBinCenter(iB) < 1.){
+        if (ptAxis->GetBinCenter(iB) < kTOFminPt){
           cutsyst[iC]->SetBinContent(iB,0.);
           matsyst[iC]->SetBinContent(iB,0.);
           abssyst[iC]->SetBinContent(iB,0.);

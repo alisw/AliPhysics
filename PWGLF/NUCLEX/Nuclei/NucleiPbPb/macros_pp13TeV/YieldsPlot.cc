@@ -18,6 +18,7 @@ using std::vector;
 #include <TF1.h>
 #include <TStyle.h>
 #include <TGraphErrors.h>
+#include <TLegend.h>
 
 const int kKnownMult = 6;
 //constexpr double dNdEta[kCentLength]    = {25.75, 19.83, 16.12, 12.78, 10.11, 8.07, 6.48, 4.64, 2.52, 6.84};
@@ -227,11 +228,23 @@ void YieldsPlot() {
   // TCanvas* ratio_cv = new TCanvas("ratio_cv");
   // ratio_cv->DrawFrame(0.,0.,2000.,1.5 * Max(ratio),";#LTd#it{N}_{ch}/d#it{#eta}#GT_{|#it{#eta}|<0.5};2 d / (p + #bar{p})");
   // ratio_cv->SetLogx();
-  TFile f_prev(Form("%s/doverp.root",kBaseOutputDir.data()));
-  TCanvas* ratio_cv = (TCanvas*)f_prev.Get("c1");
-  ratio_cv->cd();
+  // TFile f_prev(Form("%s/doverp.root",kBaseOutputDir.data()));
+  // TCanvas* ratio_cv = (TCanvas*)f_prev.Get("c1");
+  TFile f_prev(Form("%sdoverpPaperProp.root",kBaseOutputDir.data()));
+  TCanvas* ratio_cv_input = (TCanvas*)f_prev.Get("c1_n19");
+  TPad* pad = (TPad*)ratio_cv_input->GetPrimitive("c1_n19_1");
+  pad->GetListOfPrimitives()->ls();
+  //TLegend* legPrel = (TLegend*)pad->GetPrimitive("legPrel");
+  TFile f_doverp(Form("%sfinal_doverp.root",kBaseOutputDir.data()),"recreate");
+  TCanvas* ratio_cv = new TCanvas("cDopverp","cDopverp");
   TGraphErrors* ratio_gr_stat = new TGraphErrors(kCentLength-1,dNdEta,ratio.data(),0,ratio_stat.data());
+  ratio_gr_stat->SetName("pp13TeVstat");
   TGraphErrors* ratio_gr_syst = new TGraphErrors(kCentLength-1,dNdEta,ratio.data(),dNdEtaErr,ratio_syst.data());
+  ratio_gr_syst->SetName("pp13TeVsyst");
+  // legPrel->AddEntry(ratio_gr_syst,"ALICE, pp, #sqrt{s} = 13 TeV","PF");
+  // legPrel->AddEntry((TObject*)nullptr,"V0M Multiplicity Classes","");
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
   ratio_gr_syst->SetFillStyle(0);
   ratio_gr_syst->SetMarkerStyle(20);
   ratio_gr_stat->SetMarkerStyle(20);
@@ -239,20 +252,26 @@ void YieldsPlot() {
   ratio_gr_stat->SetMarkerColor(kOrange-3);
   ratio_gr_syst->SetLineColor(kOrange-3);
   ratio_gr_stat->SetLineColor(kOrange-3);
-  ratio_gr_stat->Draw("pz");
-  ratio_gr_syst->Draw("p2");
-  gStyle->SetOptStat(0);
-  gStyle->SetOptTitle(0);
-  ratio_cv->Update();
-  TFile f_doverp(Form("%s/final_doverp.root",kBaseOutputDir.data()),"recreate");
+  pad->cd();
+  cout << "PadName: " << gPad->GetName() << endl;
+  ratio_gr_stat->Draw("samepz");
+  ratio_gr_syst->Draw("samep2");
+  pad->Modified();
+  pad->Update();
+  printf("************************************************\n");
+  pad->GetListOfPrimitives()->ls();
+  ratio_cv->cd();
+  pad->Draw();
   ratio_cv->Write("cDoverp");
   ratio_gr_stat->Write("ratio_gr_stat");
   ratio_gr_syst->Write("ratio_gr_syst");
   TCanvas* cMio = new TCanvas("hMio","hMio");
   cMio->cd();
-  ratio_gr_stat->Draw("pz");
-  ratio_gr_syst->Draw("p2");
-  cMio->SaveAs(Form("%s/miodoverp.C",kBaseOutputDir.data()));
+  ratio_gr_stat->Draw("apz");
+  ratio_gr_syst->Draw("samep2");
+  cMio->SaveAs(Form("%smiodoverp.C",kBaseOutputDir.data()));
+  cMio->Write("cicciopasticcio");
+  cMio->GetListOfPrimitives()->ls();
 }
 //
 //   /// Mass

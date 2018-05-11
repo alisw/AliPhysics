@@ -65,7 +65,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     massTol = 0.03,
  Float_t     massTolVeto = 0.0043,
- Bool_t      tol_switch = kTRUE,
+ Int_t       tol_switch = 1,
  Double_t    tol_sigma = 6,
  Float_t     pLife = 20,
  Float_t     radiuslow = 0.5,
@@ -75,7 +75,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
  Float_t     k0sDaughDCA = 1.0,
  Int_t       NTPCcluster = 70,
  Float_t     maxDiffVzMix = 1.0,
- Float_t     maxDiffMultMix = 3.0,
+ Float_t     maxDiffMultMix = 5.0,
  Float_t     maxDiffAngleMixDeg = 20.0,
  Int_t       aodN = 68,
  TString     outNameSuffix = "KStarPlusMinus_V0Mass_Pt",
@@ -178,6 +178,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
         if(!MultBins){
             cutEventUtils->SetCheckIncompleteDAQ();
             cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+			  	cutEventUtils->SetCheckInelGt0MC(kFALSE);
         }else{
             //cutEventUtils->SetCheckInelGt0SPDtracklets();
             cutEventUtils->SetRemovePileUppA2013(kFALSE);
@@ -255,7 +256,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2
     //
     // -- CONFIG ANALYSIS --------------------------------------------------------------------------
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinusRun2.C");
-    //gROOT->LoadMacro("ConfigKStarPlusMinusRun2.C");
+   // gROOT->LoadMacro("ConfigKStarPlusMinusRun2.C");
     if (isMC) {
         Printf("========================== MC analysis - PID cuts not used");
     } else

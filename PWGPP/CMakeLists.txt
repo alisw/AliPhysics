@@ -66,6 +66,7 @@ set ( SRCS2
   global/AliAnalysisTaskCheckVertexAOD.cxx
   global/AliAnalysisTaskCheckESDTracks.cxx
   global/AliAnalysisTaskCheckAODTracks.cxx
+  global/AliAnalysisTaskCheckGenKine.cxx
   global/AliAnalysisTaskTrackingEffPID.cxx
   global/AliGlobalFBFqa.cxx
   )

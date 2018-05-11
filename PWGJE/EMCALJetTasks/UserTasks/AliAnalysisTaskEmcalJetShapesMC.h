@@ -75,7 +75,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetSwitchMin(Int_t c)                                { fSwitchMinNSub   = c   ; }
   void SetSwitchAkT(Int_t c)                                { fSwitchAktNSub   = c   ; }
   void SetAdditionalTracks(Int_t c)                         { fAdditionalTracks =c   ;}
-  void SetHardCutoff(Int_t c)                               { fHardCutoff =c   ;} 
+  void SetHardCutoff(Float_t c)                               { fHardCutoff =c   ;} 
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetJetRadius(Float_t f)                              { fJetRadius = f ;}
@@ -94,7 +94,8 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
   void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
   void SetDerivativeSubtractionOrder(Int_t c)              {fDerivSubtrOrder = c;}
-  
+  void DoJetELoss(Bool_t b, Float_t f)                      {fScaleELoss = b; xfraction = f;}
+
   
   
  protected:
@@ -117,7 +118,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                            Sigma2(AliEmcalJet *jet, Int_t jetContNb=0);
   void                               NTValues(AliEmcalJet *jet, Int_t jetContNb, Float_t* nTFractions);
   void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, Double_t zcut, Double_t beta, Int_t ReclusterAlgo);
-  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo);
+  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo,Float_t PartonFlavor);
   AliEmcalJetFinder*                 Recluster(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius, Double_t SubJetRadius, Double_t SubJetMinPt, Int_t Algorithm, const char* Name);
 
   //Double_t                           NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
@@ -140,7 +141,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                             fShapesVar[54];              //     jet shapes used for the tagging
+  Float_t                             fShapesVar[10];              //     jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Float_t                             fJetRadius;
@@ -152,7 +153,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Int_t                               fSwitchSDKtNSub;
   Int_t                               fSwitchSDMinNSub;
   Int_t                               fAdditionalTracks;             //number of extra tracks to stress the grooming
-  Int_t                               fHardCutoff;                  //hard cutoff in the iterative procedure 
+  Float_t                               fHardCutoff;                  //hard cutoff in the iterative procedure 
   Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet  
   Float_t                             fmaxpTTrig;
   Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 
@@ -167,7 +168,8 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                             fCentMax;                     // max centrality value
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
   Int_t                               fDerivSubtrOrder;
-
+  Bool_t                              fScaleELoss;
+  Double_t                            xfraction;
   
   TH2F                                *fPhiJetCorr6;//
   TH2F                                *fPhiJetCorr7;//

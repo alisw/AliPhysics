@@ -19,6 +19,7 @@
 #include <TRandom3.h>
 
 // ALIROOT includes
+#include "AdditionalFunctions.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
 #include "AliPWGFunc.h"
@@ -186,7 +187,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     case kBlastWaveShape:
       fPtShape = fFunctCollection->GetBGBW(fPDGMass, fPtShapeParams[0], fPtShapeParams[1], fPtShapeParams[2], 1.);
     case kTsallisShape:
-      fPtShape = fFunctCollection->GetTsallis(fPDGMass, fPtShapeParams[0], fPtShapeParams[1], 1.);
+      fPtShape = LevyTsallis("nuclei_levytsallis", fPDGMass, fPtShapeParams[0], fPtShapeParams[1], 1.);
   }
   if (fPtShape)
     fPtShapeMaximum = fPtShape->GetMaximum(0,10,1.e-10,10000);

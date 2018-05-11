@@ -117,6 +117,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalClustersRef.cxx
     Tracks/AliAnalysisTaskEmcalClusterMatched.cxx
+    Tracks/AliAnalysisTaskEmcalClusterNoiseTriggers.cxx
     Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.cxx
@@ -138,6 +139,8 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
+    Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
+    Tracks/AliAnalysisTaskEmcalClustersInJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx

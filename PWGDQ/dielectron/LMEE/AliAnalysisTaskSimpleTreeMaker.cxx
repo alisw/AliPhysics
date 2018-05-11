@@ -1,3 +1,31 @@
+/*************** Tree Maker Class **********************
+*                                                      *
+* Created: 05.10.2016                                  *
+* Authors: Aaron Capon      (aaron.capon@cern.ch)      *
+*          Sebastian Lehner (sebastian.lehner@cern.ch) *
+*                                                      *
+*******************************************************/
+/**********************************************************************************
+*This analysis task is designed to create simple flat structured TTrees which     *
+*can then be worked on locally. The motivation for this was to create TTrees that *
+*could be easily used within TMVA.                                                *
+*                                                                                 *
+*The default track cuts are relatively loose, and the PID selects out electrons   *
+*within +-4 nSigma in the TPC. This value, as well as cuts on the other detector  *
+*response values, can be turned on and off via their relavent setter function.    *
+*                                                                                 *
+*The GRID PID number for each job is stored with each event along with a simple   *
+*event counter ID, so that after merging each event still has a unique label.     *
+*                                                                                 *
+*By default, the class will return a TTree focused on selecting electrons from    *
+*primary decays. There are setter functions which can be used to instead create a *
+*TTree filled with tracks originating from V0 decays. In this case the DCA cuts   *
+*are removed.  There is a futher option to create a TTree which contains all      *
+*generated particles, and, if reconstructed, their corresponding reconstructed    *
+*track features.                                                                  *
+*TODO: Speed up the creation of the generator TTree (very slow with multiple      *
+*loops over the same particles).                                                  *
+**********************************************************************************/
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -46,13 +74,6 @@
 #include <string>
 #include "AliAnalysisTaskSimpleTreeMaker.h"
 
-/*************** Tree Maker Class **********************
-*                                                      *
-* Created: 05.10.2016                                  *
-* Authors: Aaron Capon      (aaron.capon@cern.ch)      *
-*          Sebastian Lehner (sebastian.lehner@cern.ch) *
-*                                                      *
-*******************************************************/
 
 
 ClassImp(AliAnalysisTaskSimpleTreeMaker)
@@ -137,7 +158,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
     fArmPlot(0),
 		fIsEffTree(kFALSE),
     fIsAOD(kTRUE),
-    fFilterBit(4),
+    fFilterBit(16),
     fIsGRIDanalysis(kTRUE),
     fGridPID(-1)
 {
@@ -222,7 +243,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     fArmPlot(0),
 		fIsEffTree(kFALSE),
     fIsAOD(kTRUE),
-    fFilterBit(4),
+    fFilterBit(16),
     fIsGRIDanalysis(kTRUE),
     fGridPID(-1)
 
@@ -488,20 +509,19 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			//Get MC information
 			if(hasMC){
 				if(fIsAOD){
-						mcTrack = dynamic_cast<AliAODMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+					mcTrack = dynamic_cast<AliAODMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
 
-						//Check valid pointer has been returned. If not, disregard track. 
-						if(!mcTrack){
-								continue;
-						}
+					//Check valid pointer has been returned. If not, disregard track. 
+					if(!mcTrack){
+						continue;
+					}
 				}else{
-						mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+					mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
 
-						//Check valid pointer has been returned. If not, disregard track. 
-						if(!mcTrack){
-								continue;
-						}
-
+					//Check valid pointer has been returned. If not, disregard track. 
+					if(!mcTrack){
+						continue;
+					}
 				}
 					
 				fQAhist->Fill("Tracks_MCcheck", 1);
@@ -562,28 +582,30 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 			//Apply some track cuts 
 			pt = track->Pt();
-			if( pt < fPtMin || pt > fPtMax ){ continue;}
+			if( pt < fPtMin || pt >= fPtMax ){ continue;}
 			eta  = track->Eta();
-			if( eta < fEtaMin || eta > fEtaMax ){ continue;} 
+			if( eta < fEtaMin || eta >= fEtaMax ){ continue;} 
 			phi  = track->Phi();
 
 			fQAhist->Fill("Tracks_KineCuts", 1);
 
 			//Get TPC information
+			//kNclsTPC
 			nTPCclusters = track->GetTPCNcls(); 
 			if(nTPCclusters < 70){ continue;}
 			
+			//kNFclsTPCr
 			nTPCcrossed = track->GetTPCClusterInfo(2,1);
 			if(nTPCcrossed < 60){ continue;}
 
 			fTPCcrossOverFind = 0;
-
 			nTPCfindable = track->GetTPCNclsF();
+			//kNFclsTPCfCross
 			if(nTPCfindable > 0){
 				fTPCcrossOverFind = nTPCcrossed/nTPCfindable;
 			}
 
-			if(fTPCcrossOverFind < 0.3 || fTPCcrossOverFind > 1.1){ continue;}
+			if(fTPCcrossOverFind < 0.3 || fTPCcrossOverFind >= 1.1){ continue;}
 
 			tpcSharedMap = 0;
 			if(fIsAOD){
@@ -606,8 +628,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			if((track->GetStatus() & AliVTrack::kTPCrefit) <= 0){ continue;}
 
 			//DCA values
-			Float_t DCAesd[2] = {0.0,0.0};
-			Double_t DCAaod[2] = {0.0,0.0};
+			Float_t  DCAesd[2] = {0.0, 0.0};
+			Double_t DCAaod[2] = {0.0, 0.0};
 			Double_t DCAcov[2] = {0.0, 0.0};
 			if(!fIsAOD){
 				//Arguments: xy, z
@@ -627,21 +649,25 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			}
 
 			//DCAxy cut
-			if(DCA[0] < -1 || DCA[0] > 1){ continue;}
+			//kImpactParXY
+			if(DCA[0] < -3.0 || DCA[0] >= 3.0){ continue;}
 			//DCAz cut
-			if(DCA[1] < -3 || DCA[1] > 3){ continue;}
+			//kImpactParZ
+			if(DCA[1] < -4.0 || DCA[1] >= 4.0){ continue;}
 
 			//Get ITS information
-			nITS = track->GetNcls(0);;
+			//kNclsITS
+			nITS = track->GetNcls(0);
 
 			if(fHasSDD){
-				if(nITS < 4){ continue;}
+				if(nITS < 3){ continue;}
 			}else{
-				if(nITS < 2){ continue;}
+				if(nITS < 1){ continue;}
 			}
 			
 			chi2ITS = track->GetITSchi2();
-			if((chi2ITS/nITS) > 36){ continue;} 
+			//kITSchi2Cl
+			if((chi2ITS/nITS) >= 36){ continue;} 
 			
 			fITSshared = 0.;
 			for(Int_t d = 0; d < 6; d++){
@@ -660,7 +686,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 			//Get electron nSigma in TPC for cut (inclusive cut)
 			EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron);
-			if( EnSigmaTPC > fESigTPCMax || EnSigmaTPC < fESigTPCMin) { continue;}
+			if( EnSigmaTPC >= fESigTPCMax || EnSigmaTPC < fESigTPCMin) { continue;}
 				
 			EnSigmaITS = -999;
 			if(fHasSDD){
@@ -942,6 +968,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			}
 			fITSshared /= nITS;
 
+			SPDfirst = (dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(0);
+
 			charge = posTrack->Charge();
 
 			//Fill with feature from positive track
@@ -1031,6 +1059,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				fITSshared += static_cast<Double_t>(negTrack->HasSharedPointOnITSLayer(d));
 			}
 			fITSshared /= nITS;
+
+			SPDfirst = (dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(0);
 
 			charge = negTrack->Charge(); 
 			//Write negative observales to tree (v0 information written twice. Filter by looking at only pos or neg charge)

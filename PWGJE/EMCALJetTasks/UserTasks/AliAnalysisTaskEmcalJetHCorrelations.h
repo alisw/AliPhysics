@@ -163,9 +163,9 @@ class AliAnalysisTaskEmcalJetHCorrelations : public AliAnalysisTaskEmcalJet {
    * @brief Define the number of elements in various arrays
    */
   enum binArrayLimits_t {
-    kMaxTrackPtBins = 7,            //!<! Number of elements in track pt binned arrays
-    kMaxCentralityBins = 5,         //!<! Number of elements in centrality binned arrays
-    kMixedEventMulitplictyBins = 8, //!<! Number of elements in mixed event multiplicity binned arrays
+    kMaxTrackPtBins = 7,             //!<! Number of elements in track pt binned arrays
+    kMaxCentralityBins = 5,          //!<! Number of elements in centrality binned arrays
+    kMixedEventMultiplicityBins = 8, //!<! Number of elements in mixed event multiplicity binned arrays
   };
 
   // EMCal framework functions

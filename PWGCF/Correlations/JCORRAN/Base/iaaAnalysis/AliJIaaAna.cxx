@@ -340,8 +340,8 @@ void AliJIaaAna::UserExec(){
 		effCorr = 1.0/triggerTrack->GetTrackEff();
 
 		if( ptt>fMinimumPt ){
-			fhistos->fhChargedPt[cBin]->Fill(ptt, effCorr );
-			fhistos->fhChargedPtPublished[cBin]->Fill(ptt, effCorr );
+			fhistos->fhChargedPt[cBin]->Fill(ptt, ptt>0 ? 1./ptt*effCorr : 0);
+			fhistos->fhChargedPtPublished[cBin]->Fill(ptt, ptt>0 ? 1./ptt*effCorr : 0);
 			fhistos->fhChargedPtNoCorr[cBin]->Fill( ptt );
 			fhistos->fhChargedEta->Fill(triggerTrack->Eta(), effCorr);
 		}

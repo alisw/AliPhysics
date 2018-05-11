@@ -431,7 +431,7 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPrimEtaAccPtEventPlane ;  //!<! primary eta with accepted daughters reconstructed event plane vs pT
   
   // Primaries origin
-  TH2F *   fhPrimPt ;         //!<! Spectrum of generated K+- pi+-
+  TH2F *   fhPrimChHadronPt  ;         //!<! Spectrum of generated K+- pi+-
   TH2F *   fhPrimPi0PtOrigin ;         //!<! Spectrum of generated pi0 vs mother
   TH2F *   fhPrimEtaPtOrigin ;         //!<! Spectrum of generated eta vs mother
   TH2F *   fhPrimNotResonancePi0PtOrigin ; //!<! Spectrum of generated pi0 vs mother

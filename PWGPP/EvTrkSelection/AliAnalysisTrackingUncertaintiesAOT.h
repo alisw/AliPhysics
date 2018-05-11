@@ -70,6 +70,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetMaxCentrality(Double_t val) {fmaxCent = val;}
   void           SetUseCentrality(AliAnalysisTrackingUncertaintiesAOT::ECentrality flag);
   void           SetDCAzOn(Bool_t flag = kTRUE) {fDCAz = flag;}
+  void           SetTPConly(Bool_t tpconly = kTRUE) {fTPConlyFIT = tpconly;}
 
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}

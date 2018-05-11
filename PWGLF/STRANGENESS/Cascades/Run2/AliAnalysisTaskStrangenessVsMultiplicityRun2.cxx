@@ -1287,8 +1287,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         }
         
         //VZERO info
-        fAmplitudeV0A = ((AliMultEstimator*)MultSelection->GetEstimator("V0A"))->GetValue();
-        fAmplitudeV0C = ((AliMultEstimator*)MultSelection->GetEstimator("V0C"))->GetValue();
+        AliMultEstimator *fEstV0A = 0x0, *fEstV0C = 0x0;
+        fEstV0A = (AliMultEstimator*)MultSelection->GetEstimator("V0A");
+        fEstV0C = (AliMultEstimator*)MultSelection->GetEstimator("V0C");
+        if ( fEstV0A ) fAmplitudeV0A = fEstV0A->GetValue();
+        if ( fEstV0C ) fAmplitudeV0C = fEstV0C->GetValue();
         
         //FMD info
         AliAODEvent* aodEvent = AliForwardUtil::GetAODEvent(this);

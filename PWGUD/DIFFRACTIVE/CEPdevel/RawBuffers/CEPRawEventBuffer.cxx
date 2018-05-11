@@ -243,7 +243,7 @@ void CEPRawEventBuffer::SetEventVariables(AliESDEvent* ESDobj)
         // get calo cluster from the ESD object
         aliCluster = (AliESDCaloCluster*)ESDobj->GetCaloCluster(i);
         // fill raw calo-cluster buffer
-        caloTrk->SetCaloClusterVariables(aliCluster);
+        caloTrk->SetCaloClusterVariables(aliCluster, (AliESDCaloCells*)ESDobj->GetEMCALCells());
         // add track to the 
         AddCaloTrack(caloTrk);
     }

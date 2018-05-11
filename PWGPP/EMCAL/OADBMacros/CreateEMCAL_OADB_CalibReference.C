@@ -151,27 +151,84 @@ TObjArray *GetArrayEnergy(Int_t run=153323,
   return array;  
 }
 
+
+/*******************************************************************
+ *  NOTE: Sorting function to sort the final OADB file             *
+ *                  by ascending runnumber                         *
+ *******************************************************************/
+void sortOutput(const char *fileNameOADB=""){
+
+    TFile *f                                    = TFile::Open(fileNameOADB);
+    AliOADBContainer *con                       =(AliOADBContainer*)f->Get("AliEMCALRecalib");
+    con->SetName("Old");
+
+    Int_t indexAdd                              = 0;
+    Int_t largerthan                            = 0;
+    Int_t currentvalue                          = 0;
+
+    AliOADBContainer *con2                      = new AliOADBContainer("AliEMCALRecalib");
+    // First entry needs to be added before sorting loop
+//     con2->AddDefaultObject(con->GetObjectByIndex(0));
+    con2->AppendObject(con->GetObjectByIndex(0),con->LowerLimit(0),con->UpperLimit(0));
+//     Int_t lowestRunIndex = con->GetIndexForRun(235716);
+//     con2->AddDefaultObject(con->GetObjectByIndex(lowestRunIndex));
+//     con2->AppendObject(con->GetObjectByIndex(lowestRunIndex),con->LowerLimit(lowestRunIndex),con->UpperLimit(lowestRunIndex));
+    // sorting magic happens here
+    for(int i=1;i<con->GetNumberOfEntries();i++){
+        largerthan                              = con2->UpperLimit(con2->GetNumberOfEntries()-1);
+        currentvalue                            = -1;
+        indexAdd                                = 0;
+        for(int j=0;j<con->GetNumberOfEntries();j++){
+            if(con->UpperLimit(j)<=largerthan) 
+                continue;
+            else if(currentvalue < 0){
+                currentvalue                    = con->UpperLimit(j);
+                indexAdd                        = j;
+            }
+            else if(con->UpperLimit(j)<currentvalue){
+                currentvalue                    = con->UpperLimit(j);
+                indexAdd                        = j;
+            }
+        }
+//         con2->AddDefaultObject(con->GetObjectByIndex(indexAdd));
+        con2->AppendObject(con->GetObjectByIndex(indexAdd),con->LowerLimit(indexAdd),con->UpperLimit(indexAdd));
+    }
+
+    printf("\n\n");
+    Int_t nentries2                             = con2->GetNumberOfEntries();
+    for(int i=0;i<nentries2;i++){
+        printf("\n Entry2 --> %d/%d -->",i,nentries2);
+        printf("%d -- %d --> obj = %p , %s", con2->LowerLimit(i),con2->UpperLimit(i),con2->GetObjectByIndex(i),con2->GetObjectByIndex(i)->GetName());
+    }
+    printf("\n\n");
+
+    con2->WriteToFile("EMCALCalibOnlineRefNEW.root");
+    //gSystem->Exec(Form("rm %s",fileNameOADB));
+
+}
+
 /// 
 /// Create OADB Container for EMCal Calibration reference objects
 /// Main method
 ///
 void CreateEMCAL_OADB_CalibReference()
 {  
-  TObjArray *array12 = GetArrayEnergy(178000,"Run177115_999999999_v2_s0.root","Recalib",1); //last one is division factor
-  TObjArray *array10 = GetArrayEnergy(113461,"Run113461_999999999_v3_s0.root","Recalib",1); 
-  TObjArray *array11 = GetArrayEnergy(153323,"Run144484_999999999_v3_s0.root","Recalib",1);
+//   TObjArray *array12 = GetArrayEnergy(178000,"Run177115_999999999_v2_s0.root","Recalib",1); //last one is division factor
+//   TObjArray *array10 = GetArrayEnergy(113461,"Run113461_999999999_v3_s0.root","Recalib",1); 
+//   TObjArray *array11 = GetArrayEnergy(153323,"Run144484_999999999_v3_s0.root","Recalib",1);
   
   // Creating Container 
-  AliOADBContainer* con = new AliOADBContainer("AliEMCALRecalib");
+//   AliOADBContainer* con = new AliOADBContainer("AliEMCALRecalib");
   
-  con->AddDefaultObject(*&array10);
-  con->AddDefaultObject(*&array11);
-  con->AddDefaultObject(*&array12);
+//   con->AddDefaultObject(*&array10);
+//   con->AddDefaultObject(*&array11);
+//   con->AddDefaultObject(*&array12);
   
   // Appending objects to their specific Run number
-  con->AppendObject(*&array10,113461,139517);
-  con->AppendObject(*&array11,144484,170593);
-  con->AppendObject(*&array12,177115,197692);
-  
-  con->WriteToFile("EMCALCalibOnlineRef.root");
+//   con->AppendObject(*&array10,113461,139517);
+//   con->AppendObject(*&array11,144484,170593);
+//   con->AppendObject(*&array12,177115,197692);
+//     con->WriteToFile("EMCALCalibOnlineRef.root");
+
+  sortOutput("EMCALCalibOnlineRef.root");
 }

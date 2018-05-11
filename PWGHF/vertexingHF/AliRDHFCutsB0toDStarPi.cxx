@@ -29,7 +29,7 @@
 #include <TDatabasePDG.h>
 #include <Riostream.h>
 #include "AliAODRecoDecayHF2Prong.h"
-#include "AliAODRecoCascadeHF.h"
+#include "AliAODRecoDecayHF2Prong.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsB0toDStarPi.h"
 #include "AliAODTrack.h"
@@ -93,11 +93,11 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
   varNames[iterator++]=   /*-02-*/ "pointing angle [Cos(theta)]";
   varNames[iterator++]=   /*-03-*/ "dca [cm]";                   
   varNames[iterator++]=   /*-04-*/ "Pt D0 [GeV/c]";
-  varNames[iterator++]=   /*-05-*/ "Pt Kaon [GeV/c]";
-  varNames[iterator++]=   /*-06-*/ "Pt Pion [GeV/c]";
+  varNames[iterator++]=   /*-05-*/ "Pt first daughter [GeV/c]";
+  varNames[iterator++]=   /*-06-*/ "Pt second daughter [GeV/c]";
   varNames[iterator++]=   /*-07-*/ "d0 D0 [cm]";
-  varNames[iterator++]=   /*-08-*/ "d0 Kaon [cm]";                
-  varNames[iterator++]=   /*-09-*/ "d0 Pion [cm]";                
+  varNames[iterator++]=   /*-08-*/ "d0 first daughter [cm]";                
+  varNames[iterator++]=   /*-09-*/ "d0 second daughter [cm]";                
   varNames[iterator++]=   /*-10-*/ "d0d0 [cm^2]";
   varNames[iterator++]=   /*-11-*/ "d0d0 XY [cm^2]";
 
@@ -209,11 +209,11 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
   varNamesD0forD0ptbin[iterator++]=   /*-02-*/ "pointing angle [Cos(theta)]";
   varNamesD0forD0ptbin[iterator++]=   /*-03-*/ "dca [cm]";                   
   varNamesD0forD0ptbin[iterator++]=   /*-04-*/ "Pt D0 [GeV/c]";
-  varNamesD0forD0ptbin[iterator++]=   /*-05-*/ "Pt Kaon [GeV/c]";
-  varNamesD0forD0ptbin[iterator++]=   /*-06-*/ "Pt Pion [GeV/c]";
+  varNamesD0forD0ptbin[iterator++]=   /*-05-*/ "Pt first daughter [GeV/c]";
+  varNamesD0forD0ptbin[iterator++]=   /*-06-*/ "Pt second daughter [GeV/c]";
   varNamesD0forD0ptbin[iterator++]=   /*-07-*/ "d0 D0 [cm]";
-  varNamesD0forD0ptbin[iterator++]=   /*-08-*/ "d0 Kaon [cm]";                
-  varNamesD0forD0ptbin[iterator++]=   /*-09-*/ "d0 Pion [cm]";                
+  varNamesD0forD0ptbin[iterator++]=   /*-08-*/ "d0 first daughter [cm]";                
+  varNamesD0forD0ptbin[iterator++]=   /*-09-*/ "d0 second daughter [cm]";                
   varNamesD0forD0ptbin[iterator++]=   /*-10-*/ "d0d0 [cm^2]";
   varNamesD0forD0ptbin[iterator++]=   /*-11-*/ "d0d0 XY [cm^2]";
 
@@ -255,11 +255,11 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
   varNamesD0forDStarptbin[iterator++]=   /*-02-*/ "pointing angle [Cos(theta)]";
   varNamesD0forDStarptbin[iterator++]=   /*-03-*/ "dca [cm]";                   
   varNamesD0forDStarptbin[iterator++]=   /*-04-*/ "Pt D0 [GeV/c]";
-  varNamesD0forDStarptbin[iterator++]=   /*-05-*/ "Pt Kaon [GeV/c]";
-  varNamesD0forDStarptbin[iterator++]=   /*-06-*/ "Pt Pion [GeV/c]";
+  varNamesD0forDStarptbin[iterator++]=   /*-05-*/ "Pt first daughter [GeV/c]";
+  varNamesD0forDStarptbin[iterator++]=   /*-06-*/ "Pt second daughter [GeV/c]";
   varNamesD0forDStarptbin[iterator++]=   /*-07-*/ "d0 D0 [cm]";
-  varNamesD0forDStarptbin[iterator++]=   /*-08-*/ "d0 Kaon [cm]";                
-  varNamesD0forDStarptbin[iterator++]=   /*-09-*/ "d0 Pion [cm]";                
+  varNamesD0forDStarptbin[iterator++]=   /*-08-*/ "d0 first daughter [cm]";                
+  varNamesD0forDStarptbin[iterator++]=   /*-09-*/ "d0 second daughter [cm]";                
   varNamesD0forDStarptbin[iterator++]=   /*-10-*/ "d0d0 [cm^2]";
   varNamesD0forDStarptbin[iterator++]=   /*-11-*/ "d0d0 XY [cm^2]";
 
@@ -439,13 +439,13 @@ Int_t AliRDHFCutsB0toDStarPi::IsSelected(TObject* obj,Int_t selectionLevel, AliA
     return 0;
   }
   
-  AliAODRecoCascadeHF* candidateB0 = (AliAODRecoCascadeHF*)obj;
+  AliAODRecoDecayHF2Prong* candidateB0 = (AliAODRecoDecayHF2Prong*)obj;
   if(!candidateB0){
     cout<<"candidateB0 null"<<endl;
     return 0;
   } 
 
-  AliAODRecoCascadeHF* candidateDStar = (AliAODRecoCascadeHF*)candidateB0->GetDaughter(1);  
+  AliAODRecoDecayHF2Prong* candidateDStar = (AliAODRecoDecayHF2Prong*)candidateB0->GetDaughter(1);  
   if(!candidateDStar){
     cout<<"candidateDStar null"<<endl;
     return 0;
@@ -778,13 +778,13 @@ Int_t AliRDHFCutsB0toDStarPi::IsDStarFromB0Selected(Double_t ptB0, TObject* obj,
     return 0;
   }
   
-  AliAODRecoCascadeHF* candidateDStar = (AliAODRecoCascadeHF*)obj;
+  AliAODRecoDecayHF2Prong* candidateDStar = (AliAODRecoDecayHF2Prong*)obj;
   if(!candidateDStar){
     cout<<"candidateDStar null"<<endl;
     return 0;
   }
   
-  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->Get2Prong();  
+  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->GetDaughter(1); 
   if(!candidateD0){
     cout<<"candidateD0 null"<<endl;
     return 0;
@@ -1114,13 +1114,13 @@ Int_t AliRDHFCutsB0toDStarPi::IsD0FromDStarSelected(Double_t ptB0, TObject* obj,
     return 0;
   }
   
-  AliAODRecoCascadeHF* candidateDStar = (AliAODRecoCascadeHF*)obj;
+  AliAODRecoDecayHF2Prong* candidateDStar = (AliAODRecoDecayHF2Prong*)obj;
   if(!candidateDStar){
     cout<<"candidateDStar null"<<endl;
     return 0;
   }
 
-  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->Get2Prong();  
+  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->GetDaughter(1);
   if(!candidateD0){
     cout<<"candidateD0 null"<<endl;
     return 0;
@@ -1173,8 +1173,23 @@ Int_t AliRDHFCutsB0toDStarPi::IsD0FromDStarSelected(Double_t ptB0, TObject* obj,
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   
     // Half width DStar mass
+    Int_t chargeDStar = candidateDStar->Charge();
     UInt_t prongs[2];
-    prongs[0] = 211; prongs[1] = 321;
+    if(chargeDStar==1)
+    {
+      prongs[0] = 211;
+      prongs[1] = 321;
+    } 
+    else if (chargeDStar==-1)
+    {
+      prongs[1] = 211;
+      prongs[0] = 321;
+    } 
+    else 
+    {
+      cout << "Wrong charge DStar." << endl;
+      return 0;
+    }
     Double_t invMassD0 = candidateD0->InvMass(2,prongs);
     Double_t invMassDifference = TMath::Abs(mD0PDG - invMassD0);
 
@@ -1888,13 +1903,13 @@ Int_t AliRDHFCutsB0toDStarPi::IsD0forDStarptbinSelected(TObject* obj,Int_t selec
     return 0;
   }
   
-  AliAODRecoCascadeHF* candidateDStar = (AliAODRecoCascadeHF*)obj;
+  AliAODRecoDecayHF2Prong* candidateDStar = (AliAODRecoDecayHF2Prong*)obj;
   if(!candidateDStar){
     cout<<"candidateDStar null"<<endl;
     return 0;
   }
 
-  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->Get2Prong();  
+  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->GetDaughter(1);
   if(!candidateD0){
     cout<<"candidateD0 null"<<endl;
     return 0;
@@ -2340,13 +2355,13 @@ Int_t AliRDHFCutsB0toDStarPi::IsDStarforDStarptbinSelected(TObject* obj,Int_t se
     return 0;
   }
   
-  AliAODRecoCascadeHF* candidateDStar = (AliAODRecoCascadeHF*)obj;
+  AliAODRecoDecayHF2Prong* candidateDStar = (AliAODRecoDecayHF2Prong*)obj;
   if(!candidateDStar){
     cout<<"candidateDStar null"<<endl;
     return 0;
   }
   
-  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->Get2Prong();  
+  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->GetDaughter(1); 
   if(!candidateD0){
     cout<<"candidateD0 null"<<endl;
     return 0;
@@ -2691,9 +2706,9 @@ Int_t AliRDHFCutsB0toDStarPi::IsSelectedPID(AliAODRecoDecayHF* obj)
   // PID method, n sigma approach default // not used for B0, done seperately for each daughter
   //
   
-  // AliAODRecoCascadeHF* dstar = (AliAODRecoCascadeHF*)obj;
+  // AliAODRecoDecayHF2Prong* dstar = (AliAODRecoDecayHF2Prong*)obj;
   // if(!dstar){
-  //   cout<<"AliAODRecoCascadeHF null"<<endl;
+  //   cout<<"AliAODRecoDecayHF2Prong null"<<endl;
   //   return 0;
   // } 
  
@@ -2820,46 +2835,78 @@ Int_t AliRDHFCutsB0toDStarPi::SelectPID(AliAODTrack *track, Int_t type)
   
 }
 //-------------------------------------------------------------------------------------
-Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassDStarKpipi(AliAODRecoCascadeHF * DStar) const 
+Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong * DStar) const 
 {
   ///
   /// 3 prong invariant mass of the D0 daughters and the soft pion
   ///
+  Int_t chargeDStar = DStar->Charge();
+
   Double_t e[3];
-  e[0]=DStar->Get2Prong()->EProng(0,211);
-  e[1]=DStar->Get2Prong()->EProng(1,321);
+  UInt_t prongs[2];
+  if(chargeDStar==1){
+    e[0]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(0,211);
+    e[1]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(1,321);
+    prongs[0] = 211;
+    prongs[1] = 321;
+  } 
+  else if (chargeDStar==-1)
+  {
+    e[0]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(1,211);
+    e[1]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(0,321);
+    prongs[1] = 211;
+    prongs[0] = 321;
+  } 
+  else 
+  {
+    cout << "Wrong charge DStar." << endl;
+    return 0;
+  }
   e[2]=DStar->EProng(0,211);
 
   Double_t esum = e[0]+e[1]+e[2];
   Double_t invMassDStar = TMath::Sqrt(esum*esum-DStar->P()*DStar->P());
-
-  Double_t invMassD0 = DStar->Get2Prong()->InvMassD0();
+  Double_t invMassD0 = ((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->InvMass(2,prongs);
 
   return invMassDStar - invMassD0; 
 }
 //-------------------------------------------------------------------------------------
-Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoCascadeHF * B0) const 
+Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const 
 {
   ///
   /// 4 prong invariant mass of the D0 daughters, the soft pion, and the B0 pion
   ///
 
-  AliAODRecoCascadeHF * DStar = (AliAODRecoCascadeHF*)B0->GetDaughter(1);
+  AliAODRecoDecayHF2Prong * DStar = (AliAODRecoDecayHF2Prong*)B0->GetDaughter(1);
+  Int_t chargeDStar = DStar->Charge();
 
   Double_t e[4];
+  UInt_t prongs[2];
+  if(chargeDStar==1){
+    e[1]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(0,211);
+    e[2]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(1,321);
+    prongs[0] = 211;
+    prongs[1] = 321;
+  } 
+  else if (chargeDStar==-1)
+  {
+    e[1]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(1,211);
+    e[2]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(0,321);
+    prongs[1] = 211;
+    prongs[0] = 321;
+  } 
+  else 
+  {
+    cout << "Wrong charge DStar." << endl;
+    return 0;
+  }
   e[0]=DStar->EProng(0,211);
-  e[1]=DStar->Get2Prong()->EProng(0,211);
-  e[2]=DStar->Get2Prong()->EProng(1,321);
   e[3]=B0->EProng(0,211);
-  // cout << "energy 1: " << e[0] << "energy 2: " << e[1] << "energy 3: " << e[2] << "energy 4: " << e[3] << endl;
+
   Double_t esum = e[0]+e[1]+e[2]+e[3];
   Double_t invMassB0 = TMath::Sqrt(esum*esum-B0->P()*B0->P());
 
-  UInt_t prongs[2];
-  prongs[0] = 211;
-  prongs[1] = 421;
-  // Double_t invMassDStar = DStar->InvMass(2,prongs);
-  Double_t invMassD0 = DStar->Get2Prong()->InvMassD0();
+  Double_t invMassD0 = ((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->InvMass(2,prongs);
 
   return invMassB0 - invMassD0; 
 }

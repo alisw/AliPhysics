@@ -57,7 +57,7 @@ public:
 	AliJTH1D fh_phi;//! // for phi dist [ic][isub]
 	AliJTH1D fh_EP;//! // for Q-Vector dist [ic][isub][ih]
 	AliJTH1D fhEPCorrInHar;//! for 3subevt resolution [ic][isub][ih]
-	AliJTH2D fhEPCorr2D;//! EP correlations
+	//AliJTH2D fhEPCorr2D;//! EP correlations
 
 
 };

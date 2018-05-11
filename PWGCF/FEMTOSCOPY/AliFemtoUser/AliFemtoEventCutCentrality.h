@@ -11,6 +11,7 @@
 #include "AliLog.h"
 
 #include <utility> // std::pair
+#include "AliFemtoConfigObject.h"
 
 
 /// \class AliFemtoEventCutCentrality
@@ -40,13 +41,34 @@ public:
   , kCND
   , kNPA
   , kSPD1
+  , kUNKNOWN = -9999
+  };
+
+  struct Parameters {
+
+    CentralityType centrality_type;
+    std::pair<double, double> centrality_range;
+    std::pair<double, double> vertex_z_range;
+    std::pair<double, double> psi_ep_range;
+    int select_trigger;
+
+    Parameters();
+    Parameters(AliFemtoConfigObject&);
+    // Parameters(const AliFemtoConfigObject &);
+
+    operator AliFemtoEventCutCentrality() const
+    {
+      return AliFemtoEventCutCentrality(*this);
+    }
+
   };
 
 public:
 
   /// Default Constructor
   ///
-  /// Uses the 'V0' event centrality calcuation and wide ranges to allow all events.
+  /// Uses the 'V0' event centrality calculation and wide ranges to
+  /// allow all events.
   ///
   AliFemtoEventCutCentrality();
 
@@ -54,6 +76,13 @@ public:
   /// which have passed
   ///
   AliFemtoEventCutCentrality(const AliFemtoEventCutCentrality& c);
+
+  /// Parameter Constructor
+  AliFemtoEventCutCentrality(const Parameters &);
+
+  /// Build AliFemtoConfigObject
+  AliFemtoConfigObject GetConfigObject() const;
+  AliFemtoConfigObject* GetConfigObjectPtr() const;
 
   /// Assignment Operator - Copies the parameters and RESETS the number
   /// of events to 0
@@ -108,6 +137,11 @@ public:
   template <typename RangeType>
   static bool within_range(float, const RangeType&);
 
+  ///
+  static CentralityType CentralityTypeFromName(const TString &);
+
+  std::string CentralityTypeName(const CentralityType) const;
+
 protected:
   typedef std::pair<float, float> Range_t;
 
@@ -132,14 +166,19 @@ inline void AliFemtoEventCutCentrality::SetCentralityType(const CentralityType t
 
 inline void AliFemtoEventCutCentrality::SetCentralityType(const TString& typestr)
 {
-  static const CentralityType BAD_STRING = (CentralityType)-9999;
+  auto type = CentralityTypeFromName(typestr);
+  SetCentralityType(type);
+}
 
+inline AliFemtoEventCutCentrality::CentralityType AliFemtoEventCutCentrality::CentralityTypeFromName(const TString &typestr)
+{
   TString t = typestr;
   t.ToLower();
 
   CentralityType type = t == "v0" ? kV0
+                      : t == "v0m" ? kV0A
                       : t == "v0a" ? kV0A
-                      : t == "v0collection" ? kV0C
+                      : t == "v0c" ? kV0C
                       : t == "zna" ? kZNA
                       : t == "znc" ? kZNC
                       : t == "cl0" ? kCL0
@@ -150,13 +189,39 @@ inline void AliFemtoEventCutCentrality::SetCentralityType(const TString& typestr
                       : t == "cnd" ? kCND
                       : t == "npa" ? kNPA
                       : t == "spd1" ? kSPD1
-                      : BAD_STRING;
+                      : kUNKNOWN;
 
-  if (type == BAD_STRING) {
-    AliWarning("Bad centralty type string: '" + typestr + "'");
-  } else {
-    SetCentralityType(type);
+  // if (type == BAD_STRING) {
+  //   AliWarning("Bad centrality type string: '" + typestr + "'");
+  // }
+
+  return type;
+}
+
+inline std::string AliFemtoEventCutCentrality::CentralityTypeName(const CentralityType type) const
+{
+  #define CASE(val, name) case val: return name;
+
+  switch (type) {
+    CASE(kV0, "V0")
+    CASE(kV0A, "V0A")
+    CASE(kV0C, "V0C")
+    CASE(kZNA, "ZNA")
+    CASE(kZNC, "ZNC")
+    CASE(kCL0, "CL0")
+    CASE(kCL1, "CL1")
+    CASE(kTKL, "TKL")
+    CASE(kFMD, "FMD")
+    CASE(kTrk, "TRK")
+    CASE(kCND, "CND")
+    CASE(kNPA, "NPA")
+    CASE(kSPD1, "SPD1")
+    default: break;
   }
+
+  #undef CASE
+
+  return "UNKNOWN";
 }
 
 inline void AliFemtoEventCutCentrality::SetCentralityRange(const float lo, const float hi)

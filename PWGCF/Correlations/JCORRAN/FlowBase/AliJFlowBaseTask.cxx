@@ -147,20 +147,22 @@ void AliJFlowBaseTask::UserExec(Option_t* /*option*/)
 		TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
 		CalculateEventPlane(fInputList);
 	} else {
+		static const char *pdetn[] = {"TPC","VZERO","VZEROA","VZEROC"};
+		static int newDetID[] = {D_TPC,D_V0P,D_V0A,D_V0C};
 		AliQnCorrectionsManager *fFlowVectorMgr = fFlowVectorTask->GetAliQnCorrectionsManager();
-		for(int iH=2;iH<=3;iH++) {
-			fEventPlaneALICE[D_TPC][iH-2] = fFlowVectorMgr->GetDetectorQnVector("TPC")->EventPlane(iH);
-			fEventPlaneALICE[D_V0P][iH-2] = fFlowVectorMgr->GetDetectorQnVector("VZERO")->EventPlane(iH);
-			fEventPlaneALICE[D_V0A][iH-2] = fFlowVectorMgr->GetDetectorQnVector("VZEROA")->EventPlane(iH);
-			fEventPlaneALICE[D_V0C][iH-2] = fFlowVectorMgr->GetDetectorQnVector("VZEROC")->EventPlane(iH);
+		const AliQnCorrectionsQnVector *fQnVector;
+		for(UInt_t di = 0; di < sizeof(pdetn)/sizeof(pdetn[0]); ++di) {
+			for(int iH=2;iH<=3;iH++) {
+				fQnVector = fFlowVectorMgr->GetDetectorQnVector(pdetn[di]);
+				if(fQnVector) fEventPlaneALICE[newDetID[di]][iH-2] = fQnVector->EventPlane(iH);
+			}
 		}
-		for(int is = 0; is < AliJFlowBaseTask::D_COUNT; is++){
-			if (is != D_TPC && is != D_V0A && is != D_V0C) continue;
+		for(UInt_t di = 0; di < sizeof(pdetn)/sizeof(pdetn[0]); ++di) {
 			for(int iH=2;iH<=3;iH++) {		
 				double EPref = fEventPlaneALICE[D_V0A][iH-2];
-				double EP = fEventPlaneALICE[is][iH-2];
-				fhistos->fhEPCorrInHar[fCBin][is][iH-2]->Fill( EP-EPref );
-				fhistos->fhEPCorr2D[fCBin][is][iH-2]->Fill(EP,EPref);
+				double EP = fEventPlaneALICE[newDetID[di]][iH-2];
+				fhistos->fhEPCorrInHar[fCBin][newDetID[di]][iH-2]->Fill( EP-EPref );
+				//fhistos->fhEPCorr2D[fCBin][newDetID[di]][iH-2]->Fill(EP,EPref);
 			}
 		}
 	}
@@ -238,7 +240,7 @@ void AliJFlowBaseTask::CalculateEventPlane(TClonesArray *inList) {
 			double EPref = QvectorsEP[D_V0A][iH-2].Theta()/double(iH);
 			double EP = QvectorsEP[is][iH-2].Theta()/double(iH);
 			fhistos->fhEPCorrInHar[fCBin][is][iH-2]->Fill( EP-EPref );
-			fhistos->fhEPCorr2D[fCBin][is][iH-2]->Fill(EPref,EP);
+			//fhistos->fhEPCorr2D[fCBin][is][iH-2]->Fill(EPref,EP);
 		}
 	}
 

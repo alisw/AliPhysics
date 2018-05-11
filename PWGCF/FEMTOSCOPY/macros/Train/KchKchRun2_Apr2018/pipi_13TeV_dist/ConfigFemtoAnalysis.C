@@ -184,13 +184,13 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 //////////    Reader->SetNoCentrality(kTRUE);
 //    Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kTPCOnlyRef);
     Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kReference);
-    Reader->SetReadMC(kTRUE);
+    Reader->SetReadMC(kFALSE);
     Reader->SetDCAglobalTrack(kTRUE);//proverit'!!!
     Reader->SetCentralityFlattening(kFALSE);
     Reader->SetReadV0(0);
     // rdr->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
 //!!!!!!!!!!!!!!!!!!!    
-    Reader->SetPionAnalysis(kTRUE);
+//    Reader->SetPionAnalysis(kTRUE);
  
     
   AliFemtoManager* Manager=new AliFemtoManager();
@@ -209,7 +209,7 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   AliFemtoKKTrackCutTest           *dtc2etaphitpc[20];
  // AliFemtoKKTrackCut           *dtc1etaphitpc[20];
  // AliFemtoKKTrackCut           *dtc2etaphitpc[20];
- // AliFemtoESDTrackCut           *dtc1etaphitpc[20];
+  //AliFemtoESDTrackCut           *dtc1etaphitpc[20];
  // AliFemtoESDTrackCut           *dtc2etaphitpc[20];
   AliFemtoCutMonitorParticleYPt *cutPass1YPtetaphitpc[20];
   AliFemtoCutMonitorParticleYPt *cutFail1YPtetaphitpc[20];
@@ -244,6 +244,9 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   // *** Begin Kaon-Kaon (positive) analysis ***
   int aniter = 0;
 
+
+ bool verbose=false;
+
   for (int imult=0; imult<cMu/*4*/; imult++) {
     if (runmults[imult]) {
       for (int ichg=0; ichg<2; ichg++) {
@@ -253,6 +256,7 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(20, -10.0, 10.0, 1, multbins[imult], multbins[imult+1]);
 	  anetaphitpc[aniter]->SetNumEventsToMix(5);
 	  anetaphitpc[aniter]->SetMinSizePartCollection(1);
+          anetaphitpc[aniter]->SetVerboseMode(verbose);
 
 	  mecetaphitpc[aniter] = new AliFemtoBasicEventCut();
 	  mecetaphitpc[aniter]->SetEventMult(0.01,100000);
@@ -284,7 +288,7 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 	  
 	  
 	  dtc1etaphitpc[aniter] = new AliFemtoKKTrackCutTest();
-	 // dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
+	//  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();
 	  //     dtc1etaphitpc[aniter]->SetPidProbPion(0.0,1.001);
 	  //     dtc1etaphitpc[aniter]->SetPidProbMuon(0.0,1.0);
 	  //     dtc1etaphitpc[aniter]->SetPidProbKaon(0.0,1.0);
@@ -405,7 +409,7 @@ AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
 	    sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	    sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
 	    sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
-            sqpcetaphitpc[aniter]->SetAverageSeparation(0.0); //0.8
+            sqpcetaphitpc[aniter]->SetAverageSeparation(12.0); //0.8
 
 	  }
          }        

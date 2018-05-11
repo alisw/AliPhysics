@@ -978,41 +978,41 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
         fQAPID->Add(fh2PIDProtonTPCdEdx);
         fh2PIDProtonTOFbeta = new TH2D("fh2PIDProtonTOFbeta","PID: p: TOF #beta; #it{p} (GeV/#it{c});TOF #beta", 200,0,20, 101,-0.1,1.5);
         fQAPID->Add(fh2PIDProtonTOFbeta);
-        fh2PIDPionTPCnSigmaPion = new TH2D("fh2PIDPionTPCnSigmaPion","PID: #pi: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTPCnSigmaPion = new TH2D("fh2PIDPionTPCnSigmaPion","PID: #pi: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTPCnSigmaPion);
-        fh2PIDPionTOFnSigmaPion = new TH2D("fh2PIDPionTOFnSigmaPion","PID: #pi: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTOFnSigmaPion = new TH2D("fh2PIDPionTOFnSigmaPion","PID: #pi: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTOFnSigmaPion);
-        fh2PIDPionTPCnSigmaKaon = new TH2D("fh2PIDPionTPCnSigmaKaon","PID: #pi: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTPCnSigmaKaon = new TH2D("fh2PIDPionTPCnSigmaKaon","PID: #pi: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTPCnSigmaKaon);
-        fh2PIDPionTOFnSigmaKaon = new TH2D("fh2PIDPionTOFnSigmaKaon","PID: #pi: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTOFnSigmaKaon = new TH2D("fh2PIDPionTOFnSigmaKaon","PID: #pi: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTOFnSigmaKaon);
-        fh2PIDPionTPCnSigmaProton = new TH2D("fh2PIDPionTPCnSigmaProton","PID: #pi: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTPCnSigmaProton = new TH2D("fh2PIDPionTPCnSigmaProton","PID: #pi: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTPCnSigmaProton);
-        fh2PIDPionTOFnSigmaProton = new TH2D("fh2PIDPionTOFnSigmaProton","PID: #pi: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTOFnSigmaProton = new TH2D("fh2PIDPionTOFnSigmaProton","PID: #pi: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTOFnSigmaProton);
-        fh2PIDKaonTPCnSigmaPion = new TH2D("fh2PIDKaonTPCnSigmaPion","PID: K: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTPCnSigmaPion = new TH2D("fh2PIDKaonTPCnSigmaPion","PID: K: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTPCnSigmaPion);
-        fh2PIDKaonTOFnSigmaPion = new TH2D("fh2PIDKaonTOFnSigmaPion","PID: K: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTOFnSigmaPion = new TH2D("fh2PIDKaonTOFnSigmaPion","PID: K: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTOFnSigmaPion);
-        fh2PIDKaonTPCnSigmaKaon = new TH2D("fh2PIDKaonTPCnSigmaKaon","PID: K: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTPCnSigmaKaon = new TH2D("fh2PIDKaonTPCnSigmaKaon","PID: K: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTPCnSigmaKaon);
-        fh2PIDKaonTOFnSigmaKaon = new TH2D("fh2PIDKaonTOFnSigmaKaon","PID: K: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTOFnSigmaKaon = new TH2D("fh2PIDKaonTOFnSigmaKaon","PID: K: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTOFnSigmaKaon);
-        fh2PIDKaonTPCnSigmaProton = new TH2D("fh2PIDKaonTPCnSigmaProton","PID: K: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTPCnSigmaProton = new TH2D("fh2PIDKaonTPCnSigmaProton","PID: K: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTPCnSigmaProton);
-        fh2PIDKaonTOFnSigmaProton = new TH2D("fh2PIDKaonTOFnSigmaProton","PID: K: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTOFnSigmaProton = new TH2D("fh2PIDKaonTOFnSigmaProton","PID: K: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTOFnSigmaProton);
-        fh2PIDProtonTPCnSigmaPion = new TH2D("fh2PIDProtonTPCnSigmaPion","PID: p: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTPCnSigmaPion = new TH2D("fh2PIDProtonTPCnSigmaPion","PID: p: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTPCnSigmaPion);
-        fh2PIDProtonTOFnSigmaPion = new TH2D("fh2PIDProtonTOFnSigmaPion","PID: p: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTOFnSigmaPion = new TH2D("fh2PIDProtonTOFnSigmaPion","PID: p: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTOFnSigmaPion);
-        fh2PIDProtonTPCnSigmaKaon = new TH2D("fh2PIDProtonTPCnSigmaKaon","PID: p: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTPCnSigmaKaon = new TH2D("fh2PIDProtonTPCnSigmaKaon","PID: p: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTPCnSigmaKaon);
-        fh2PIDProtonTOFnSigmaKaon = new TH2D("fh2PIDProtonTOFnSigmaKaon","PID: p: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTOFnSigmaKaon = new TH2D("fh2PIDProtonTOFnSigmaKaon","PID: p: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTOFnSigmaKaon);
-        fh2PIDProtonTPCnSigmaProton = new TH2D("fh2PIDProtonTPCnSigmaProton","PID: p: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTPCnSigmaProton = new TH2D("fh2PIDProtonTPCnSigmaProton","PID: p: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTPCnSigmaProton);
-        fh2PIDProtonTOFnSigmaProton = new TH2D("fh2PIDProtonTOFnSigmaProton","PID: p: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTOFnSigmaProton = new TH2D("fh2PIDProtonTOFnSigmaProton","PID: p: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTOFnSigmaProton);
       }
 
@@ -2038,6 +2038,11 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
   Float_t mismProb;
   Float_t ProbBayes[5] = {0,0,0,0,0}; //0=el, 1=mu, 2=pi, 3=ka, 4=pr, 5=deuteron, 6=triton, 7=He3
 
+  Double_t probTPC[AliPID::kSPECIES]={0.};
+  Double_t probTOF[AliPID::kSPECIES]={0.};
+  Double_t probTPCTOF[AliPID::kSPECIES]={0.};
+
+
   // filling nSigma arrays
   if(bIsTPCok) // should be anyway
   {
@@ -2069,126 +2074,169 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
   }
 
   Int_t ParticleFlag[]={0,0,0,0};//Unknown (electron), pion, kaon, proton  
-  // TPC nSigma cuts
-  if(dP <= 0.5)
-  {
-      if(fPIDnsigma){
+  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+  UInt_t detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
+  if (detUsed  == (UInt_t)fPIDCombined->GetDetectorMask() ) {  // TPC is available  
 
-          Double_t dMinSigmasTPC = TMath::MinElement(5,dNumSigmaTPC);
-          // electron rejection
-          if(dMinSigmasTPC == dNumSigmaTPC[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron) ParticleFlag[0] = 1; //return kUnknown;
-          if(dMinSigmasTPC == dNumSigmaTPC[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1;//return kPion;
-          if(dMinSigmasTPC == dNumSigmaTPC[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1;//return kKaon;
-          if(dMinSigmasTPC == dNumSigmaTPC[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1;//return kProton;
-      }
-      if(fPIDbayesian){
+	// TPC nSigma cuts
+ 	 if(dP>0.2 && dP <= 0.5)
+ 	 {
+   	   if(fPIDnsigma){
+        	 Double_t dMinSigmasTPC = TMath::MinElement(5,dNumSigmaTPC);
+          	// electron rejection
+         	 if(dMinSigmasTPC == dNumSigmaTPC[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron) ParticleFlag[0] = 1; //return kUnknown;
+         	 if(dMinSigmasTPC == dNumSigmaTPC[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1;//return kPion;
+          	 if(dMinSigmasTPC == dNumSigmaTPC[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1;//return kKaon;
+          	 if(dMinSigmasTPC == dNumSigmaTPC[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1;//return kProton;
+      	   }
+      	   if(fPIDbayesian){
+		ProbBayes[0] = probTPC[0];
+                ProbBayes[1] = probTPC[1];
+                ProbBayes[2] = probTPC[2];
+                ProbBayes[3] = probTPC[3];
+                ProbBayes[4] = probTPC[4];
 
-          fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
-          probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
-          ProbBayes[0] = probabilities[0];
-          ProbBayes[1] = probabilities[1];
-          ProbBayes[2] = probabilities[2];
-          ProbBayes[3] = probabilities[3];
-          ProbBayes[4] = probabilities[4];
+                Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+		if(dMaxBayesianProb > fParticleProbability){
+			if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron)ParticleFlag[0] = 1;// return kUnknown;
+              		if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax)ParticleFlag[1] = 1;//return kPion;
+              		if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax)ParticleFlag[2] = 1;//return kKaon;
+              		if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax)ParticleFlag[3] = 1;//return kProton;
+		}
+	  	/*
+          	fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
+          	probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
+          	ProbBayes[0] = probabilities[0];
+          	ProbBayes[1] = probabilities[1];
+          	ProbBayes[2] = probabilities[2];
+          	ProbBayes[3] = probabilities[3];
+          	ProbBayes[4] = probabilities[4];
           
-          mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
+          	mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
           
-          Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
-          if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
-              // electron rejection
-              if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron)ParticleFlag[0] = 1;// return kUnknown;
-              if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax)ParticleFlag[1] = 1;//return kPion;
-              if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax)ParticleFlag[2] = 1;//return kKaon;
-              if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax)ParticleFlag[3] = 1;//return kProton;
-          }
-      }
-  }
+          	Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+          	if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
+              	// electron rejection
+              	if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron)ParticleFlag[0] = 1;// return kUnknown;
+              	if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax)ParticleFlag[1] = 1;//return kPion;
+              	if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax)ParticleFlag[2] = 1;//return kKaon;
+              	if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax)ParticleFlag[3] = 1;//return kProton;
+          	}*/
+      	  }
+  	}
+        fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+        detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
 
-  // combined TPC + TOF nSigma cuts
-  if(dP > 0.5) // && < 4 GeV TODO once TPC dEdx parametrisation is available
-  {
-      Double_t dNumSigmaCombined[5] = {-99,-99,-99,-99,-99};
+        if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()){
+                AliAODPid* pidObj = track->GetDetPid();
+                if ((detUsed >= AliPIDResponse::kDetTOF) && (pidObj && pidObj->GetTOFsignal() < 99999)){
 
-      // discard candidates if no TOF is available if cut is on
-      if(fCutPIDnSigmaCombinedNoTOFrejection && !bIsTOFok) ParticleFlag[0] = 1;// return kUnknown;
+  			// combined TPC + TOF nSigma cuts
+  			if(dP > 0.5) // && < 4 GeV TODO once TPC dEdx parametrisation is available
+        		{
+      				Double_t dNumSigmaCombined[5] = {-99,-99,-99,-99,-99};
 
-      // calculating combined nSigmas
-      for(Short_t i(0); i < 5; i++)
-      {
-        if(bIsTOFok) { dNumSigmaCombined[i] = TMath::Sqrt(dNumSigmaTPC[i]*dNumSigmaTPC[i] + dNumSigmaTOF[i]*dNumSigmaTOF[i]); }
-        else { dNumSigmaCombined[i] = dNumSigmaTPC[i]; }
-      }
+      				// discard candidates if no TOF is available if cut is on
+      				if(fCutPIDnSigmaCombinedNoTOFrejection && !bIsTOFok) ParticleFlag[0] = 1;// return kUnknown;
 
-      if(fPIDnsigma){
-          Double_t dMinSigmasCombined = TMath::MinElement(5,dNumSigmaCombined);
+      				// calculating combined nSigmas
+      				for(Short_t i(0); i < 5; i++)
+      				{
+        				if(bIsTOFok) { dNumSigmaCombined[i] = TMath::Sqrt(dNumSigmaTPC[i]*dNumSigmaTPC[i] + dNumSigmaTOF[i]*dNumSigmaTOF[i]); }
+        				else { dNumSigmaCombined[i] = dNumSigmaTPC[i]; }
+      				}
 
-          // electron rejection
-          if(dMinSigmasCombined == dNumSigmaCombined[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1;// return kUnknown;
+      				if(fPIDnsigma){
+          				Double_t dMinSigmasCombined = TMath::MinElement(5,dNumSigmaCombined);
+
+          				// electron rejection
+          				if(dMinSigmasCombined == dNumSigmaCombined[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1;// return kUnknown;
           
-          switch (fPIDnsigmaCombination) {
-              case 1:
-                  //combination 1
-                  if(dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1;//return kPion;
-                  if(dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
-                  if(dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1;//return kProton;
-                  break;
-              case 2:
-                  //combination 2
-                  if(dP < 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1; //return kPion;
-                  if(dP > 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 2.) ParticleFlag[1] = 1; //return kPion;
+          				switch (fPIDnsigmaCombination) {
+              					case 1:
+                  				//combination 1
+                  				if(dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1;//return kPion;
+                  				if(dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1;//return kProton;
+                  				break;
+              					case 2:
+                  				//combination 2
+                  				if(dP < 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1; //return kPion;
+                  				if(dP > 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 2.) ParticleFlag[1] = 1; //return kPion;
 
-                  if(dP < 2. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
-                  if(dP > 2. && dP < 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.) ParticleFlag[2] = 1; //return kKaon;
-                  if(dP > 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.5) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP < 2. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 2. && dP < 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.5) ParticleFlag[2] = 1; //return kKaon;
 
-                  if(dP < 3. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1; //return kProton;
-                  if(dP > 3. && dP < 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 2.) ParticleFlag[3] = 1; //return kProton;
-                  if(dP > 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 1.5) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP < 3. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 3. && dP < 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 2.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 1.5) ParticleFlag[3] = 1; //return kProton;
 
+                  				break;
+              					case 3:
+                  				//combination 3
+                  				if(dP < 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1; //return kPion;
+                  				if(dP > 2.5 && dP < 4. && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 1.5) ParticleFlag[1] = 1; //return kPion;
+                  				if(dP > 4. && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 1.) ParticleFlag[1] = 1; //return kPion;
+
+                 				if(dP < 2. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 2. && dP < 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.5)ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.) ParticleFlag[2] = 1; //return kKaon;
                   
-              case 3:
-                  //combination 3
-                  if(dP < 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1; //return kPion;
-                  if(dP > 2.5 && dP < 4. && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 1.5) ParticleFlag[1] = 1; //return kPion;
-                  if(dP > 4. && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 1.) ParticleFlag[1] = 1; //return kPion;
-
-                  if(dP > 2. && dP < 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.5)ParticleFlag[2] = 1; //return kKaon;
-                  if(dP > 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.) ParticleFlag[2] = 1; //return kKaon;
-                  
-                  if(dP < 3. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1; //return kProton;
-                  if(dP > 3. && dP < 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 2.) ParticleFlag[3] = 1; //return kProton;
-                  if(dP > 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 1.) ParticleFlag[3] = 1; //return kProton;
-              default:
-                  break;
-          }
-      }
-      if(fPIDbayesian){
-
-          fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
-          probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
-          ProbBayes[0] = probabilities[0];
-          ProbBayes[1] = probabilities[1];
-          ProbBayes[2] = probabilities[2];
-          ProbBayes[3] = probabilities[3];
-          ProbBayes[4] = probabilities[4];
+                  				if(dP < 3. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 3. && dP < 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 2.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 1.) ParticleFlag[3] = 1; //return kProton;
+              					break;
+						default:
+                  				break;
+          				}
+      				}
+      				if(fPIDbayesian){
+					ProbBayes[0] = probTPCTOF[0];
+                       			ProbBayes[1] = probTPCTOF[1];
+                       			ProbBayes[2] = probTPCTOF[2];
+                       			ProbBayes[3] = probTPCTOF[3];
+                       			ProbBayes[4] = probTPCTOF[4];
+                       			Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+					if(dMaxBayesianProb > fParticleProbability){
+						if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1; //return kUnknown;
+       						if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1; //return kPion;
+              					if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1; //return kKaon;
+              					if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1; //return kProton;
+					}else{ParticleFlag[0] = 1;}
+	  				/*
+          				fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
+       					probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
+       					ProbBayes[0] = probabilities[0];
+       					ProbBayes[1] = probabilities[1];
+          				ProbBayes[2] = probabilities[2];
+          				ProbBayes[3] = probabilities[3];
+          				ProbBayes[4] = probabilities[4];
           
-          mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
+          				mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
           
-          Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
-          if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
-              // electron rejection
-              if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1; //return kUnknown;
-              if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1; //return kPion;
-              if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1; //return kKaon;
-              if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1; //return kProton;
-          }
-      }
-  }
- 
-  PartSpecies species = kUnknown;
-  if(!ParticleFlag[0] && ParticleFlag[1] && !ParticleFlag[2] && !ParticleFlag[3]) species = kPion;
-  if(!ParticleFlag[0] && !ParticleFlag[1] && ParticleFlag[2] && !ParticleFlag[3]) species = kKaon;
-  if(!ParticleFlag[0] && !ParticleFlag[1] && !ParticleFlag[2] && ParticleFlag[3]) species = kProton;
+          				Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+       					if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
+              				// electron rejection
+              				if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1; //return kUnknown;
+              				if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1; //return kPion;
+              				if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1; //return kKaon;
+              				if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1; //return kProton;
+       					}*/
+  				}
+  			}//if(dP > 0.5)
+ 		}//if ((detUsed >= AliPIDResponse::kDetTOF) && (pidObj && pidObj->GetTOFsignal() < 99999))
+	}//TPC or TOF if (detUsed)
+  }//TPC if (detUsed)
+
+  PartSpecies species;
+  if(!ParticleFlag[0] && ParticleFlag[1] && !ParticleFlag[2] && !ParticleFlag[3]){ 
+	species = kPion;
+  }else if(!ParticleFlag[0] && !ParticleFlag[1] && ParticleFlag[2] && !ParticleFlag[3]){ 
+	species = kKaon;
+  }else if(!ParticleFlag[0] && !ParticleFlag[1] && !ParticleFlag[2] && ParticleFlag[3]){
+	 species = kProton;
+  }else{species = kUnknown;}
 
   if(fFillQA) FillPIDQA(1,track,species); // filling QA for tracks AFTER selection
  

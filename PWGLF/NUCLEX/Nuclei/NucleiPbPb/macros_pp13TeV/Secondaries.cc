@@ -14,6 +14,7 @@ using namespace utils;
 #include <TRandom3.h>
 #include <TLegend.h>
 #include <TError.h>
+#include <TLine.h>
 
 void Secondaries() {
   /// Taking all the histograms from the MC and data files
@@ -22,8 +23,8 @@ void Secondaries() {
   TFile output_file(kSecondariesOutput.data(),"recreate");
 
   /// Building the function used to fit the primary fraction distribution
-  TF1 fitModel("fitFrac","1/(1-[0]*exp([1]*x))",0.4,6.);
-  fitModel.SetParLimits(0, -100000, 0);
+  TF1 fitModel("fitFrac","1/(1+[0]*exp([1]*x))",0.6,4.);
+  fitModel.SetParLimits(0, 0, 100000);
   fitModel.SetParLimits(1, -30, 30);
 
   gStyle->SetOptStat(0);
@@ -42,15 +43,22 @@ void Secondaries() {
   for (auto&& list_key : *data_file.GetListOfKeys()) {
     if (string(list_key->GetName()).find(kFilterListNames.data()) == string::npos) continue;
     if (string(list_key->GetName()).find("_MV") != string::npos) continue;
+    if (string(list_key->GetName()).find("_pid2") != string::npos) continue;
+    if (string(list_key->GetName()).find("_pid3") != string::npos) continue;
     std::cout << "list_key : " << list_key->GetName() << std::endl;
-    TTList* mcList = (TTList*)mc_file.Get(list_key->GetName());
+    string mc_list_name = list_key->GetName();
+    //replace(mc_list_name,"nuclei","mpuccio");
+    TTList* mcList = (TTList*)mc_file.Get(mc_list_name.data());
     TTList* dtList = (TTList*)data_file.Get(list_key->GetName());
 
     TH3F *primaries = (TH3F*)mcList->FindObject("fMDCAPrimaryTOF");
     TH3F *secondaries = (TH3F*)mcList->FindObject("fMDCASecondaryTOF");
     TH3F *data = (TH3F*)dtList->FindObject("fMDCAxyTOF");
 
-    TDirectory *root = output_file.mkdir(list_key->GetName());
+    string out_list = list_key->GetName();
+    //replace(out_list,"mpuccio","nuclei");
+
+    TDirectory *root = output_file.mkdir(out_list.data());
     TDirectory *datadir = root->mkdir("Data");
     TDirectory *primdir = root->mkdir("Primaries");
     TDirectory *secodir = root->mkdir("Secondaries");
@@ -63,8 +71,11 @@ void Secondaries() {
     int n_cent_bins = data->GetNbinsX();
 
     TH1D* hResTFF[kCentLength] = {nullptr};
+    TH1F* ratio_fit_data[kCentLength] = {nullptr};
     for(int iC=0; iC<kCentLength; iC++){
       hResTFF[iC]= new TH1D(Form("hResTFF_%i",iC),";p_{T} GeV/c;Fraction",pt->GetNbins(),pt->GetXbins()->GetArray());
+      hResTFF[iC]->GetXaxis()->SetRangeUser(0.6,2.);
+      ratio_fit_data[iC] = new TH1F(Form("ratio_fit_data_%d",iC),Form("%2.0f - %2.0f %%;#it{p}_{T} (GeV/#it{c});data/fit",kCentLabels[iC][0],kCentLabels[iC][1]),pt->GetNbins(),pt->GetXbins()->GetArray());
     }
 
     for (int iB = pt->FindBin(kPtRangeMatCorrection[0]); iB <= pt->FindBin(kPtRangeMatCorrection[1]); ++iB) {
@@ -75,7 +86,8 @@ void Secondaries() {
       TH1D* sc = (TH1D*)sc_tmp->Rebin(nDCAbins,Form("sc_%i",iB),dcabins);
       pr->SetTitle(Form("%4.1f < p_{T} #leq %4.1f (GeV/#it{c})",pt->GetBinLowEdge(iB),pt->GetBinLowEdge(iB+1)));
       sc->SetTitle(Form("%4.1f < p_{T} #leq %4.1f (GeV/#it{c})",pt->GetBinLowEdge(iB),pt->GetBinLowEdge(iB+1)));
-
+      pr->Scale(1.,"width");
+      sc->Scale(1.,"width");
       primdir->cd();
       pr->Write();
       secodir->cd();
@@ -87,6 +99,7 @@ void Secondaries() {
         TH1D *dt_tmp = data->ProjectionZ(Form("dt_tmp%i",iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iB,iB);
         dt[iC] = (TH1D*)dt_tmp->Rebin(nDCAbins,Form("dt_%i_%i",iB,iC),dcabins);
         dt[iC]->SetTitle(Form("%1.0f - %1.0f %%  %4.1f < p_{T} #leq %4.1f",cen->GetBinLowEdge(kCentBinsArray[iC][0]),cen->GetBinUpEdge(kCentBinsArray[iC][1]),pt->GetBinLowEdge(iB),pt->GetBinLowEdge(iB+1)));
+        dt[iC]->Scale(1.,"width");
         dt[iC]->Write();
       }
 
@@ -115,10 +128,10 @@ void Secondaries() {
           dt[iC]->SetMarkerSize(0.5);
           dt[iC]->SetMarkerColor(kBlack);
 
-          dt[iC]->Scale(1.,"width");
-          hs->Scale(1.,"width");
-          hp->Scale(1.,"width");
-          hfit->Scale(1.,"width");
+          //dt[iC]->Scale(1.,"width");
+          // hs->Scale(1.,"width");
+          // hp->Scale(1.,"width");
+          // hfit->Scale(1.,"width");
 
           TCanvas cv(Form("tff_%i_%i",iB,iC),Form("TFractionFitter_%i_%i",iB,iC));
           cv.cd();
@@ -129,11 +142,11 @@ void Secondaries() {
 
           float ratio = prim_integral/tot_integral;
 
-          hfit->DrawCopy("same");
+          hfit->DrawCopy("hist same");
           hs->SetLineColor(kRed);
           hp->SetLineColor(kBlue);
-          hs->DrawCopy("same");
-          hp->DrawCopy("same");
+          hs->DrawCopy("hist same");
+          hp->DrawCopy("hist same");
           tffdir->cd();
           TLegend leg (0.6,0.56,0.89,0.84);
           leg.SetBorderSize(0.);
@@ -159,8 +172,31 @@ void Secondaries() {
     }
     resdir->cd();
     for(int iC=0; iC<kCentLength; iC++){
-      hResTFF[iC]->Fit(&fitModel);
+      hResTFF[iC]->Fit(&fitModel,"R");
       hResTFF[iC]->Write();
+      for(int i=4; i<=9; i++){
+        float data_val = hResTFF[iC]->GetBinContent(i);
+        float fit_val = fitModel.Eval(hResTFF[iC]->GetBinCenter(i));
+        float data_err = hResTFF[iC]->GetBinError(i);
+        ratio_fit_data[iC]->SetBinContent(i,data_val/fit_val);
+        ratio_fit_data[iC]->SetBinError(i,data_err/fit_val);
+      }
+      ratio_fit_data[iC]->GetXaxis()->SetRangeUser(0.5,2.);
+      ratio_fit_data[iC]->GetYaxis()->SetRangeUser(0.8,1.2);
+      ratio_fit_data[iC]->Write();
+      TCanvas* cV = new TCanvas(Form("RatioFitData_%d",iC),Form("cRatioFitData_%d",iC));
+      cV->Divide(2);
+      cV->cd(1);
+      hResTFF[iC]->GetYaxis()->SetRangeUser(0.4,1.2);
+      hResTFF[iC]->Draw();
+      cV->cd(2);
+      ratio_fit_data[iC]->GetYaxis()->SetTitleOffset(1.2);
+      ratio_fit_data[iC]->Draw();
+      TLine *line_one = new TLine(0.5,1.,2.,1.);
+      line_one->SetLineColor(kBlack);
+      line_one->SetLineStyle(2);
+      line_one->Draw();
+      cV->Write();
     }
     root->Write();
   }

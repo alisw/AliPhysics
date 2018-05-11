@@ -43,8 +43,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
     void SetEG2(Bool_t flagEG2) { fEMCEG2= flagEG2;};
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
-		void SetfFlagClsTypeEMC(Bool_t fEMC){ fFlagClsTypeDCAL = fEMC;};
-		void SetfFlagClsTypeDCAL(Bool_t fDCAL){ fFlagClsTypeDCAL = fDCAL;};
+		void SetfFlagClsTypeEMC(Bool_t fEMC){fFlagClsTypeDCAL = fEMC;};
+		void SetfFlagClsTypeDCAL(Bool_t fDCAL){fFlagClsTypeDCAL = fDCAL;};
 
 	private:
 		AliAODEvent*            fAOD;           //! input event
@@ -52,11 +52,11 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		AliVEvent   *fVevent;  //!event object
     TF1*                    fPi010;
     TF1*                    fEta010;
-		TH1F*                   fHistPt;        //! dummy histogram
+		TH1F*                   fHist_trackPt;        //! dummy histogram
 		TH1F*                   fHistMatchPt;        
 		TH1F*                   fHistSelectPt;        
-		TH1F*                   fHistE;        //! dummy histogram
-		TH1F*                   fHistE_before;
+		TH1F*                   fHist_ClustE;        //! dummy histogram
+		TH1F*                   fHist_SelectClustE;
 		TH1F*                   fHistMatchE;
 		TH1F*                   fHistEta_track;        //! dummy histogram
 		TH1F*                   fHistPhi_track;        //! dummy histogram
@@ -81,6 +81,13 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1D*               		fHistPhoPi1;
 		TH1D*               		fHistPhoEta0;
 		TH1D*               		fHistPhoEta1;
+		TH1F*               		fHistPt_HFE_MC_D;
+		TH1F*               		fHistPt_HFE_MC_B;
+		//TH1F*               		fHist_eff_pretrack;
+		//TH1F*               		fHist_eff_posttrack;
+		TH1F*               		fHist_eff_HFE;
+		TH1F*               		fHist_eff_match;
+		TH1F*               		fHist_eff_TPC;
 
 		TH2F*                   fHistScatter_EMcal;        //! dummy histogram
 		TH2F*                   fHistScatter_EMcal_aftMatch;        //! dummy histogram
@@ -92,9 +99,9 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fM20;
 		TH2F*                   fM02_2;
 		TH2F*                   fM20_2;
-		TH2F*                   fEopPt;
-		TH2F*                   fEopPt2;
-		TH2F*                   fEopPt3;
+		TH2F*                   fEopPt_ele_loose;
+		TH2F*                   fEopPt_ele_tight;
+		TH2F*                   fEopPt_had;
 		TH2F*                   fInv_pT_ULS;
 		TH2F*                   fInv_pT_LS;
 		TH2F*                   fHistMCorgPi0;

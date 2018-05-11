@@ -15,6 +15,43 @@
 #include <AliStack.h>
 #include <AliLog.h>
 
+#include <AliPIDResponse.h>
+#include <AliPHOSGeometry.h>
+#include <AliVCluster.h>
+#include <AliLog.h>
+
+
+struct EventFlags
+{
+	enum EventType {kMB = 0, kGood = 1, kZvertex = 2, kNcontributors = 3, kTwoPhotons = 4};
+
+	EventFlags(Int_t c = 0, Int_t z = 0, Bool_t m = kFALSE, Bool_t p = kFALSE, Bool_t vtx = kFALSE, UShort_t bc = 0. /*, Bool_t v0 = kFalse*/):
+		centr(c),
+		zvtx(z),
+		BC(bc),
+		isMixing(m),
+		eventPileup(p),
+		eventVtxExists(vtx),
+		ncontributors(0),
+		fMcParticles(0),
+		fPIDResponse(0)
+		//, eventV0AND(v0)
+	{}
+
+	Double_t vtxBest[3];   // Calculated vertex position
+	Int_t  centr;
+	Int_t  zvtx;
+	UShort_t BC;
+	Bool_t isMixing;
+	Bool_t eventPileup;
+	Bool_t eventVtxExists;
+	Int_t ncontributors;
+	TClonesArray * fMcParticles;
+	AliPIDResponse * fPIDResponse;
+	// Bool_t eventV0AND;
+};
+
+
 struct AliPP13SelectionWeights: TObject
 {
 	enum Mode {kData, kMC, kSinglePi0MC, kSingleEtaMC, kPlain};
@@ -22,9 +59,16 @@ struct AliPP13SelectionWeights: TObject
 	// NB: One needs default constructor for IO readsons
 	AliPP13SelectionWeights(): TObject() {}
 
-	virtual Double_t Weight(Double_t x) const
+	virtual Double_t TofEfficiency(Double_t x) const
 	{
 		(void) x;
+		return 1.0;
+	}
+
+	virtual Double_t Weights(Double_t x, const EventFlags & eflags) const
+	{
+		(void) x;
+		(void) eflags;
 		return 1.0;
 	}
 
@@ -61,7 +105,7 @@ struct AliPP13SelectionWeightsTOF: public AliPP13SelectionWeights
 	}
 
 
-	virtual Double_t Weight(Double_t energy) const;
+	virtual Double_t TofEfficiency(Double_t energy) const;
 
 	// Parameters for TOF cut efficiency
 	Double_t fLogA;
@@ -110,7 +154,7 @@ struct AliPP13SelectionWeightsSPMC: public AliPP13SelectionWeightsMC
 		fW4(0.135)
 	{
 	}
-	virtual Double_t Weight(Double_t x) const;
+	virtual Double_t Weights(Double_t x, const EventFlags & eflags) const;
 
 	// TODO: Use Shared_ptr
 	static AliPP13SelectionWeights & SinglePi0();

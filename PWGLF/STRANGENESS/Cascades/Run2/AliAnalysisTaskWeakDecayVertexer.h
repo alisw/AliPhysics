@@ -75,6 +75,12 @@ public:
         //Highly experimental, use with care!
         fkDoImprovedDCACascDauPropagation = lOpt;
     }
+    
+    void SetDoXYPlanePreOptCascade( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoXYPlanePreOptCascade = lOpt;
+    }
+    
     void SetDoPureGeometricMinimization( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkDoPureGeometricMinimization = lOpt;
@@ -175,6 +181,12 @@ public:
     void SetMaxPtCascade     ( Float_t lMaxPt ) {
         fMaxPtCascade = lMaxPt;
     }
+    void SetMinPtV0     ( Float_t lMinPt ) {
+        fMinPtV0 = lMinPt;
+    }
+    void SetMaxPtV0     ( Float_t lMaxPt ) {
+        fMaxPtV0 = lMaxPt;
+    }
     void SetCentralityInterval     ( Float_t lMinCent, Float_t lMaxCent ) {
         fMinCentrality = lMinCent;
         fMaxCentrality = lMaxCent;
@@ -246,11 +258,14 @@ private:
     Bool_t fkUseUncheckedChargeCascadeVertexer; //if true, use cascade vertexer that does not check bachelor charge
     Bool_t fkUseOnTheFlyV0Cascading;
     Bool_t fkDoImprovedDCACascDauPropagation;
+    Bool_t fkDoXYPlanePreOptCascade; 
     Bool_t fkDoPureGeometricMinimization;
     Bool_t fkDoCascadeRefit; //WARNING: needs DoV0Refit!
     Long_t fMaxIterationsWhenMinimizing;
     
     //Min/Max pT for cascades
+    Float_t fMinPtV0; //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxPtV0; //maximum pt below which we keep candidates in TTree output
     Float_t fMinPtCascade; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
 

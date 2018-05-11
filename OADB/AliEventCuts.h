@@ -80,7 +80,7 @@ class AliEventCuts : public TList {
     void   OverrideAutomaticTriggerSelection(unsigned long tr, bool ov = true) { fTriggerMask = tr; fOverrideAutoTriggerMask = ov; }
     void   OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov = true);
     void   SetManualMode (bool man = true) { fManualMode = man; }
-    void   SetupLHC11h();
+    void   SetupRun1PbPb();
     void   SetupLHC15o();
     void   SetupLHC17n();
     void   SetupRun2pp();

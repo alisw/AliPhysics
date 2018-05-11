@@ -14,9 +14,11 @@ class AliJetContainer;
 class AliEmcalJetFinder;
 class AliFJWrapper;
 
+
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
+#include "TF1.h"
 const Int_t nVar = 28;
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
@@ -80,7 +82,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
   void SetReclusteringAlgorithm(Int_t ReclusteringAlgorithm)     {fReclusteringAlgorithm = ReclusteringAlgorithm;}
   void SetSoftDropOn(Int_t SoftDropOn)                           {fSoftDropOn = SoftDropOn;}
-  Int_t GetSoftDropOn()                                          {return fSoftDropOn;} 
+  Int_t GetSoftDropOn()                                          {return fSoftDropOn;}
+  void SetRandomisationEqualPt(Bool_t RandmosationEqualPt)       {fRandomisationEqualPt = RandmosationEqualPt;}
   
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
 
@@ -103,6 +106,7 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   std::pair<fastjet::PseudoJet,fastjet::ClusterSequence *>                  ModifyJet(AliEmcalJet* Jet, Int_t JetContNb, TString Modification);
   std::vector<fastjet::PseudoJet>     RandomiseTracks(AliEmcalJet *Jet,std::vector<fastjet::PseudoJet> fInputVectors);
   std::vector<fastjet::PseudoJet>     AddExtraProng(std::vector<fastjet::PseudoJet> fInputVectors, Double_t Distance, Double_t PtFrac);
+  std::vector<fastjet::PseudoJet>     AddkTTracks(AliEmcalJet *Jet,std::vector<fastjet::PseudoJet> fInputVectors, Double_t QHat,Double_t Xlength, Int_t NAdditionalTracks);
  
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
@@ -137,9 +141,9 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            fZCut;
   Int_t                               fReclusteringAlgorithm;
   Int_t                               fSoftDropOn;
+  Bool_t                              fRandomisationEqualPt;
 
   Bool_t                              fNsubMeasure;
-  
   TH1F                                *fhPtTriggerHadron;
   TH1F                                *fhJetPt;
   TH1F                                *fhJetPt_1;

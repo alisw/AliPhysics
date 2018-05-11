@@ -1,4 +1,3 @@
-
 // #include "iterator"
 
 // --- Custom header files ---
@@ -36,15 +35,10 @@ void AliPP13EfficiencySelectionMC::ConsiderPair(const AliVCluster * c1, const Al
 
 	Double_t ma12 = psum.M();
 	Double_t pt12 = psum.Pt();
+	Double_t w = fWeights->Weights(pt12, eflags);
 
-	Double_t w = fWeights->Weight(pt12);
 	TH2 * hist = dynamic_cast<TH2 *> (fInvMass[eflags.isMixing]);
 	hist->Fill(ma12, pt12, w);
-
-	if (eflags.isMixing)
-		return;
-
-	ConsiderReconstructedParticle(c1, c2, eflags);
 }
 
 
@@ -85,14 +79,14 @@ void AliPP13EfficiencySelectionMC::InitSelectionHistograms()
 }
 
 
-void AliPP13EfficiencySelectionMC::ConsiderGeneratedParticles(const EventFlags & flags)
+void AliPP13EfficiencySelectionMC::ConsiderGeneratedParticles(const EventFlags & eflags)
 {
-	if (!flags.fMcParticles)
+	if (!eflags.fMcParticles)
 		return;
 
-	for (Int_t i = 0; i < flags.fMcParticles->GetEntriesFast(); i++)
+	for (Int_t i = 0; i < eflags.fMcParticles->GetEntriesFast(); i++)
 	{
-		AliAODMCParticle * particle = ( AliAODMCParticle *) flags.fMcParticles->At(i);
+		AliAODMCParticle * particle = ( AliAODMCParticle *) eflags.fMcParticles->At(i);
 		Int_t code = TMath::Abs(particle->GetPdgCode());
 
 		// NB: replace this condition by find, if the number of particles will grow
@@ -102,8 +96,7 @@ void AliPP13EfficiencySelectionMC::ConsiderGeneratedParticles(const EventFlags &
 
 
 		Double_t pt = particle->Pt();
-		Double_t w = fWeights->Weight(pt);
-
+		Double_t w = fWeights->Weights(pt, eflags);
 
 		// Use this to remove forward photons that can modify our true efficiency
 		if (TMath::Abs(particle->Y()) > 0.5) // NB: Use rapidity instead of pseudo rapidity!
@@ -127,7 +120,7 @@ void AliPP13EfficiencySelectionMC::ConsiderGeneratedParticles(const EventFlags &
 
 		fSpectrums[code]->fPtPrimaries[Int_t(primary)]->Fill(pt, w);
 		fSpectrums[code]->fPtPrimariesStandard[Int_t(primary)]->Fill(pt, w);
-		ConsiderGeneratedParticle(i, pt, primary, flags);
+		ConsiderGeneratedParticle(i, pt, primary, eflags);
 	}
 }
 

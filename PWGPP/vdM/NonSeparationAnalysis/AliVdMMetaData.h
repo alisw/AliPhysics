@@ -24,6 +24,10 @@ public:
 
   Int_t GetFillNumber() const { return fFillNumber; }
   const AliTriggerBCMask& GetTriggerBCMask() const { return fTriggerBCMask; }
+  AliTriggerBCMask GetTriggerBCMask(Int_t i) const { return GetTriggerBCMask(TString::Format("bcMask_I%d", i)); }
+  AliTriggerBCMask GetTriggerBCMask(TString name) const {
+    return AliTriggerBCMask(name, fNodeVdM.GetAttr(name).GetData());
+  }
 
   static TString GetScanName(const AliXMLEngine::Node& n) {
     const TString scanType(n.GetAttr("type").GetData());

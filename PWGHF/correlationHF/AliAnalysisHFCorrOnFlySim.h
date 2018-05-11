@@ -91,11 +91,13 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
     return phiClone;
   }
 
-  Double_t AssignCorrectPhiRange_0to2Pi(Double_t phi){
+  Double_t AssignCorrectPhiRange_0toPiRefl(Double_t phi){
     Double_t phiClone = 0.;
     if (phi > 2 * TMath::Pi()) phi -= TMath::TwoPi();
     if (phi < 0) phi += TMath::TwoPi();
     phiClone = phi;
+    
+    if (phiClone>TMath::Pi()) phiClone = 2*TMath::Pi() - phiClone;
     return phiClone;
   }  
   

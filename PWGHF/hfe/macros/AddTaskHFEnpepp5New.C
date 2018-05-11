@@ -67,7 +67,7 @@ AliAnalysisTask *AddTaskHFEnpepp5New(Bool_t MCthere,
    //  0 (49.9%), 0.125 (45%), 0.25 (40%), 0.5 (30.7%)
 
    // On ESD:
-   Double_t dEdxhm[12] = {3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};  // Above 3 sigma we neglect 0.13%
+   Double_t dEdxhm[12] = {3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3};  // Above 3 sigma we neglect 0.13% // abjusted to the shift set to 3.3 to have at least 3 sigma upwards
    Double_t dEdxhm20[12] = {2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0};
    Double_t dEdxhm21[12] = {1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5};
    Double_t dEdxhm22[12] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
@@ -2279,10 +2279,10 @@ AliAnalysisTask *AddTaskHFEnpepp5New(Bool_t MCthere,
             break;
          default:
             // SPD selection
-            // kFirst
-            RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
-                              dEdxhm, kDefTOFs, AliHFEextraCuts::kFirst, 0, kassITS, kassTPCcl, kassTPCPIDcl,
-                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
+//            // kFirst
+//            RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+//                              dEdxhm, kDefTOFs, AliHFEextraCuts::kFirst, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+//                              kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kFALSE, kWei, kWeiData);
 
             // TPC-TOF wit cut at 0
             RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
@@ -2778,7 +2778,7 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
       TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%dminpT%d%s",
                                        tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
                                        iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,iMinPt,cweightsback.Data()));
-   } else if (tpchigh[1]!=3000) {
+   } else if (tpchigh[1]!=3300) {
       TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTPCtop%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%d%s",
                                        tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,tpchigh,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
                                        iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data()));

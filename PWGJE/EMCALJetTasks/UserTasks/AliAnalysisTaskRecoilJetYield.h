@@ -70,24 +70,25 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ;}
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ;}
-  void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
-  void SetHolePos(Float_t poshole)                        { fHolePos = poshole;}
-  void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth;}
-  void SetSubJetAlgorithm(Int_t SubJetAlgorithm)        {fSubJetAlgorithm=SubJetAlgorithm;}
-  void SetSubJetRadius(Float_t SubJetRadius)            {fSubJetRadius=SubJetRadius;}
-  void SetSubJetMinPt(Float_t SubJetMinPt)              {fSubJetMinPt=SubJetMinPt;}
-  void SetRMatched(Double_t RMatched)                     {fRMatched=RMatched;}
+  void SetSemigoodCorrect(Int_t yesno)                      {fSemigoodCorrect=yesno;}
+  void SetHolePos(Float_t poshole)                          { fHolePos = poshole;}
+  void SetHoleWidth(Float_t holewidth)                      { fHoleWidth = holewidth;}
+  void SetSubJetAlgorithm(Int_t SubJetAlgorithm)            {fSubJetAlgorithm=SubJetAlgorithm;}
+  void SetSubJetRadius(Float_t SubJetRadius)                {fSubJetRadius=SubJetRadius;}
+  void SetSubJetMinPt(Float_t SubJetMinPt)                  {fSubJetMinPt=SubJetMinPt;}
+  void SetRMatched(Double_t RMatched)                       {fRMatched=RMatched;}
   void SetSharedFractionPtMin(Double_t SharedFractionPtMin) {fSharedFractionPtMin=SharedFractionPtMin;}
-  void SetDerivativeSubtractionOrder(Int_t Order)              {fDerivSubtrOrder = Order;}
+  void SetDerivativeSubtractionOrder(Int_t Order)           {fDerivSubtrOrder = Order;}
   void SetFullTree(Bool_t FullTree)                         {fFullTree = FullTree;}
   void SetBetaSD(Double_t BetaSD)                           {fBeta_SD = BetaSD;}
   void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
   void SetDoSoftDrop(Bool_t SoftDrop)                       {fDoSoftDrop = SoftDrop;}
   
-  void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
-  void SetRhoName(const char *r)                              {fRhoName = r;}
-  void SetSoftDropRecluster(Int_t n)                          {fReclusterAlgo = n;} //0 = CA, 1 = anti-kt, 2 = kt
-  void SetDoSubDetMatching(Bool_t b)                          {fSubMatching = b;}
+  void SetNsubUnNormMeasure( Bool_t NsubMeasure)            {fNsubMeasure= NsubMeasure;}
+  void SetRhoName(const char *r)                            {fRhoName = r;}
+  void SetSoftDropRecluster(Int_t n)                        {fReclusterAlgo = n;} //0 = CA, 1 = anti-kt, 2 = kt
+  void SetDoSubDetMatching(Bool_t b)                        {fSubMatching = b;}
+  void SetMinSubjetPt(Bool_t b, Float_t f)                  {bMinSubjetPt = b; fMinSubjetPt = f;}
   
 
  protected:
@@ -145,6 +146,9 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TString                             fRhoName;
   AliRhoParameter                     *fRhoParam;
   Bool_t                              fSubMatching;
+  Bool_t                              bMinSubjetPt;
+  Float_t                             fMinSubjetPt;
+    
 
   Bool_t                              fNsubMeasure;
   Int_t                               fReclusterAlgo;

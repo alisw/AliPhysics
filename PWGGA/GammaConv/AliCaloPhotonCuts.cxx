@@ -525,14 +525,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     else arrClusEBinning[i]                = maxClusterE;
   }
   for(Int_t i=0; i<nBinsClusterECell+1;i++){
-    if(i<20) arrClusEBinningCoarse[i]             = 0.05*(i-1);
+    if(i<20) arrClusEBinningCoarse[i]             = 0.05*(i);
     else if(i<50) arrClusEBinningCoarse[i]        = 1.+0.1*(i-20);
     else if(i<70) arrClusEBinningCoarse[i]        = 4.+0.2*(i-50);
     else if(i<74) arrClusEBinningCoarse[i]        = 8.+0.5*(i-70);
     else if(i<90) arrClusEBinningCoarse[i]        = 10.+1.0*(i-74);
     else if(i<97) arrClusEBinningCoarse[i]        = 26.+2.0*(i-90);
     else if(i<109) arrClusEBinningCoarse[i]       = 40.+5.0*(i-97);
-    else if(i<119) arrClusEBinningCoarse[i]       = 100.+10.0*(i-119);
+    else if(i<119) arrClusEBinningCoarse[i]       = 100.+10.0*(i-109);
     else arrClusEBinningCoarse[i]                 = 200;
   }
 
@@ -2115,7 +2115,10 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if(cellAmplitude > 0.05) EnergyOfMod[nMod-nModulesStart]+=cellAmplitude;
 
     if(fExtendedMatchAndQA > 3){
-      if(fHistCellEnergyvsCellID && (cellAmplitude > 0.05)) fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
+      if(fHistCellEnergyvsCellID && (cellAmplitude > 0.05) && (fClusterType == 1 || fClusterType == 3) )
+          fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
+      if(fHistCellEnergyvsCellID && (cellAmplitude > 0.01) && fClusterType == 2 )
+          fHistCellEnergyvsCellID->Fill(cellAmplitude,cellNumber);
       if(fHistCellTimevsCellID && (cellAmplitude > 0.2)) fHistCellTimevsCellID->Fill(cellTime,cellNumber);
     }
   }
@@ -5342,7 +5345,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= FunctionNL_kSDM(energy, 0.989111, -4.26219, -0.819192);
             energy /= 0.9935;
           } else if(fClusterType==2){
-            energy /= ( 0.994914734 ); // additional factors
+            energy /= ( 0.994914734 * 0.9964 ); // additional factors
           }
         } else if( fCurrentMC==kPPb5T13P2HIJAdd ) {
           if(fClusterType==1){
@@ -5907,6 +5910,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   // pPb 8 TeV 2016 JJ MC
   else if ( namePeriod.CompareTo("LHC17g8b") == 0  )    return k17g8b;
   else if ( namePeriod.CompareTo("LHC17g8c") == 0  )    return k17g8c;
+  else if ( namePeriod.CompareTo("LHC18b9b") == 0  )    return k18b9b;
+  else if ( namePeriod.CompareTo("LHC18b9c") == 0  )    return k18b9c;
 
   //pp 13 TeV LHC17
   else if ( namePeriod.CompareTo("LHC17k1") ==0 )       return k17k1; // HF low B
@@ -5924,8 +5929,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC17j5e") ==0 )      return kPP13T17P1Pyt8Str;
   else if ( namePeriod.CompareTo("LHC17h3") == 0 )      return kPP13T17P1Pyt8LowB;
   // XeXe 5.44 TeV 2017 MB MC
-  else if ( namePeriod.CompareTo("LHC17j7") == 0 )      return kXeXe5T17HIJING;
-
+  else if ( namePeriod.CompareTo("LHC17j7") == 0 ||
+            namePeriod.CompareTo("LHC18d2") == 0 ||
+            namePeriod.CompareTo("LHC18d2_1") == 0 ||
+            namePeriod.CompareTo("LHC18d2_2") == 0 ||
+            namePeriod.CompareTo("LHC18d2_3") == 0 )    return kXeXe5T17HIJING;
 
   // data starts here
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||

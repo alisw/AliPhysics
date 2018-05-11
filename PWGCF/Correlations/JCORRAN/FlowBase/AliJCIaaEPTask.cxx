@@ -107,7 +107,6 @@ void AliJCIaaEPTask::UserCreateOutputObjects()
 
 	// Order should be kept for correct functionality
 	fIaaAna->UserCreateOutputObjects();
-	fIaaAna->SetTrackList(fJFlowBaseTask->GetJCatalystTask()->GetInputListALICE());
 	fIaaAna->GetCard()->WriteCard(fOutput);
 
 	PostData(1, fOutput);
@@ -121,12 +120,25 @@ void AliJCIaaEPTask::UserExec(Option_t* /*option*/)
 	// Processing of one event
 	if(fDebug > 5) std::cout << "------- AliJCIaaEPTask Exec-------"<<endl;
 	if( fJFlowBaseTask->GetJCatalystTask()->GetJCatalystEntry() != fEntry ) return;
+	if(fDebug > 5 ) std::cout << fJFlowBaseTask->GetJCatalystTask()->GetJCatalystTaskName() << endl;
+	if(fJFlowBaseTask->IsMC()) {
+		fIaaAna->SetTrackList(fJFlowBaseTask->GetJCatalystTask()->GetInputListALICE());
+	} else {
+		fIaaAna->SetTrackList(fJFlowBaseTask->GetJCatalystTask()->GetInputList());
+	}
 	// Event selection is done in fJFlowBaseTask
 	// need to put cent/vtx/run#
-	TComplex Qvector;
-	int iH = 2;
-	Qvector = fJFlowBaseTask->GetQvectorsEP(fEPDetID, iH);
-	float EP2 = Qvector.Theta()/double(iH);
+	int iH = 0; // 0:2nd 1:3rd
+	double EP2 = -999;
+	if(fJFlowBaseTask->IsMC()) {
+		TComplex Qvector;
+		Qvector = fJFlowBaseTask->GetQvectorsEP(fEPDetID, iH);
+		EP2 = Qvector.Theta()/double(iH+2);
+	} else {
+		EP2 = fJFlowBaseTask->GetEventPlaneALICE(fEPDetID,iH);
+	}
+	if(fDebug > 5) printf("entry, EP2 = %d, %.2f\n", fEntry,EP2);
+	if(fDebug > 5) printf("runN,cent,zvtx = %d, %.1f, %.1f\n",fJFlowBaseTask->GetJCatalystTask()->GetRunNumber(),fJFlowBaseTask->GetJCatalystTask()->GetCentrality(),fJFlowBaseTask->GetJCatalystTask()->GetZVertex());
 	fIaaAna->SetRunNumber(fJFlowBaseTask->GetJCatalystTask()->GetRunNumber());
 	fIaaAna->SetCentrality(fJFlowBaseTask->GetJCatalystTask()->GetCentrality());
 	fIaaAna->SetZVertex(fJFlowBaseTask->GetJCatalystTask()->GetZVertex());

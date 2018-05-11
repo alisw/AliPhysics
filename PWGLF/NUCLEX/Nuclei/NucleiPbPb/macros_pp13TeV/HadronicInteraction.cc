@@ -9,6 +9,7 @@ using namespace plotting;
 #include <TH1D.h>
 #include <TCanvas.h>
 #include <TLegend.h>
+#include <algorithm>
 
 void HadronicInteraction(){
   TFile signalfile(kSignalOutput.data());
@@ -23,11 +24,15 @@ void HadronicInteraction(){
 
   TH1D* fraction[2];
   TH1D* fractionMC[2];
-  TH1D* correction[2];
+
+  std::vector<float> correction[2];
+  float mean_correction[2] = {0.};
+  float syst_correction[2] = {0.};
 
   TCanvas* cFraction[2];
 
-  double frac_bins[3] = {1.0,1.1,1.2};//,1.4};
+  const int nFracBins = 3;
+  double frac_bins[nFracBins+1] = {0.9,1.0,1.1,1.2};//,1.4};
 
   TTList* list = (TTList*)signalfile.Get(kFilterListNames.data());
   TTList* listmc = (TTList*)signalMCfile.Get(kFilterListNames.data());
@@ -47,22 +52,19 @@ void HadronicInteraction(){
     Requires(hTPC3sigmaMC[iS],Form("MC: %s/%s/TPC3sigma/hTPC3sigma%c%i",list->GetName(),kNames[iS].data(),kLetter[iS],9));
     hTPC3sigmaMC[iS]->SetDirectory(0);
     //
-    fraction[iS] = new TH1D(Form("hFraction%c",kLetter[iS]),";#it{p}_{T} (GeV/#it{c}); TOF + TPC counts / TPC counts",2,frac_bins);
+    fraction[iS] = new TH1D(Form("hFraction%c",kLetter[iS]),";#it{p}_{T} (GeV/#it{c}); TOF + TPC counts / TPC counts",nFracBins,frac_bins);
     SetHistStyle(fraction[iS],kBlue);
     fraction[iS]->GetYaxis()->SetRangeUser(0.,1.);
-    fractionMC[iS] = new TH1D(Form("hFractionMC%c",kLetter[iS]),";#it{p}_{T} (GeV/#it{c}); TOF + TPC counts / TPC counts",2,frac_bins);
+    fractionMC[iS] = new TH1D(Form("hFractionMC%c",kLetter[iS]),";#it{p}_{T} (GeV/#it{c}); TOF + TPC counts / TPC counts",nFracBins,frac_bins);
     fractionMC[iS]->GetYaxis()->SetRangeUser(0.,1.);
     SetHistStyle(fractionMC[iS],kRed);
-    correction[iS] = new TH1D(Form("hCorrection%c",kLetter[iS]),";#it{p}_{T} (GeV/#it{c}); correction",2,frac_bins);
-    correction[iS]->GetYaxis()->SetRangeUser(0.,.3);
-    SetHistStyle(correction[iS],kBlack);
     //
     TLegend leg(0.72,0.22,0.92,0.35);
     leg.SetBorderSize(0);
     leg.AddEntry(fraction[iS],"Data","PE");
     leg.AddEntry(fractionMC[iS],"MC","PE");
     float ratio=0., ratio_err=0., ratio_mc=0., ratio_mc_err=0.;
-    for(int iB=6; iB<=7; iB++){
+    for(int iB=5; iB<=7; iB++){
       //
       ratio = hRawCounts[iS]->GetBinContent(iB)/hTPC3sigma[iS]->GetBinContent(iB);
       ratio_err = ratio * TMath::Sqrt( Sq(hRawCounts[iS]->GetBinError(iB)/hRawCounts[iS]->GetBinContent(iB)) + Sq(hTPC3sigma[iS]->GetBinError(iB)/hTPC3sigma[iS]->GetBinContent(iB)) );
@@ -74,11 +76,16 @@ void HadronicInteraction(){
       fractionMC[iS]->SetBinContent(fractionMC[iS]->FindBin(hRawCountsMC[iS]->GetBinCenter(iB)),ratio_mc);
       fractionMC[iS]->SetBinError(fractionMC[iS]->FindBin(hRawCountsMC[iS]->GetBinCenter(iB)),ratio_mc_err);
       //
-      float correction_val = TMath::Abs(ratio-ratio_mc)/ratio;
-      printf("correction: %f\n", correction_val);
-      correction[iS]->SetBinContent(correction[iS]->FindBin(hRawCountsMC[iS]->GetBinCenter(iB)),correction_val);
-      correction[iS]->SetBinError(correction[iS]->FindBin(hRawCountsMC[iS]->GetBinCenter(iB)),0);
+      correction[iS].push_back(ratio/ratio_mc);
+      printf("matter: %c ratio: %f ratio_mc: %f ratio/ratio_mc: %f\n", kLetter[iS], ratio, ratio_mc, ratio/ratio_mc);
     }
+    for(auto p : correction[iS]){
+      printf("corr_%c: %f\n",kLetter[iS],p);
+      mean_correction[iS] += p;
+    }
+    mean_correction[iS]/=nFracBins;
+    syst_correction[iS] = (*std::max_element(correction[iS].begin(),correction[iS].end()) - *std::min_element(correction[iS].begin(),correction[iS].end()))/2/mean_correction[iS];
+    printf("State: %c correction: %f systematic: %f \n",kLetter[iS], mean_correction[iS], syst_correction[iS]);
     output.cd();
     hRawCountsMC[iS]->Write(Form("TofMC_%c",kLetter[iS]));
     hRawCounts[iS]->Write(Form("Tof_%c",kLetter[iS]));
@@ -86,7 +93,6 @@ void HadronicInteraction(){
     hTPC3sigmaMC[iS]->Write(Form("TpcMC_%c",kLetter[iS]));
     fraction[iS]->Write();
     fractionMC[iS]->Write();
-    correction[iS]->Write();
     cFraction[iS]->cd();
     fraction[iS]->Draw();
     fractionMC[iS]->Draw("same");

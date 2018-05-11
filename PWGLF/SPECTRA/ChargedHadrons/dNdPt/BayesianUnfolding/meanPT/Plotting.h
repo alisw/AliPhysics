@@ -12,6 +12,7 @@
 #include "TF1.h"
 #include "TKey.h"
 #include "TROOT.h"
+#include "TPaletteAxis.h"
 #include <sstream>
 
 
@@ -179,7 +180,7 @@ TCanvas *makeCanvas(string canvasName, TObjArray *histArray, TObjArray *ratioArr
 
   Float_t titleOffsetY    = 1.5;
   Float_t titleOffsetX    = 1.5;    //3.5
-  Float_t titleOffsetZ    = 1.5;
+  Float_t titleOffsetZ    = 2.5;
   Float_t margin          = 0.12;
 
   if(control.Contains("square")||control.Contains("Square")||control.Contains("SQUARE")){
@@ -310,7 +311,8 @@ TCanvas *makeCanvas(string canvasName, TObjArray *histArray, TObjArray *ratioArr
       newCanvas->SetTopMargin(margin-0.05);
       newCanvas->SetBottomMargin(margin+0.02);
       if(histArray->At(0)->InheritsFrom("TH2")){
-        newCanvas->SetRightMargin(margin+0.03);
+//        newCanvas->SetRightMargin(margin+0.03);
+        newCanvas->SetRightMargin(margin+0.06); //TODO
         newCanvas->SetTopMargin(margin-0.05);
         newCanvas->SetBottomMargin(margin+0.02);
       }
@@ -354,6 +356,21 @@ TCanvas *makeCanvas(string canvasName, TObjArray *histArray, TObjArray *ratioArr
     else{PlotArray(histArray,controlstring,colorArray,markerArray,relativeTextSize,lableSize, titleSize, lableFont, titleFont, titleOffsetY, titleOffsetX, margin, xMin,xMax, titleOffsetZ);}
   }
 
+  if (histArray->At(0)->InheritsFrom("TH2")){
+    TH2D *hist2d = (TH2D*) histArray->At(0);
+    hist2d->GetZaxis()->SetTitleOffset(1.6);
+    newCanvas->Update();
+//    gStyle->SetPalette(1,0);
+    TPaletteAxis *palette = (TPaletteAxis*)hist2d->GetListOfFunctions()->FindObject("palette");
+//    palette->SetX1NDC(palette->GetX1NDC() * 0.8);
+    palette->SetX2NDC(0.88);
+//    palette->SetTitleOffset(20);
+  //  palette->SetY1NDC(0.1);
+  //  palette->SetY2NDC(0.5);
+    newCanvas->Update();
+
+  }
+
   if(ratioArray){upperPad->cd();}
   newCanvas->SetName(canvasName.c_str());
   return newCanvas;
@@ -384,6 +401,7 @@ TLegend* makeLegend(Double_t x, Double_t y, TObjArray* entries, string* titles, 
 
   for (Int_t i = 0; i < nEntriesTrue; i++){
     TString histName = entries->At(i)->GetName();
+    if(titles[i] == "dummy") continue;
     if(histName.Contains("SystErr")) continue;
     if(histName.Contains("dummyHist")) continue;
     nEntries++;
@@ -398,6 +416,7 @@ TLegend* makeLegend(Double_t x, Double_t y, TObjArray* entries, string* titles, 
 
   for (Int_t i = 0; i < nEntriesTrue; i++){
     TString histName = entries->At(i)->GetName();
+    if(titles[i] == "dummy") continue;
     if(histName.Contains("SystErr")) continue;
     if(histName.Contains("dummyHist")) continue;
     if((entries->At(i)->InheritsFrom("TF1")) || noErrBars)
@@ -468,14 +487,16 @@ void setTitle(string axis, string title, TH1D* hist){
 
 
 TObject* getClone(string histName, string fileName, TList* histList){
-
-  return (histList->FindObject(fileName.c_str())->FindObject((appendFileName(histName.c_str(), fileName)).c_str()))->Clone();
+  TObject* returnObj = (histList->FindObject(fileName.c_str())->FindObject((appendFileName(histName.c_str(), fileName)).c_str()));
+  if(!returnObj) cout << "ERROR: Could not find " << histName << " in " << fileName << endl;
+  return returnObj->Clone();
 }
 
-TH1D* getRatio(string hist1Name, string hist2Name, string ratioName, string fileName, TList* histList){
+TH1D* getRatio(string hist1Name, string hist2Name, string ratioName, string fileName, TList* histList, string fileName2 = ""){
 
+  if(fileName2 == "") fileName2 = fileName;
   TH1D* hist1 = (TH1D*)getClone(hist1Name, fileName, histList);
-  TH1D* hist2 = (TH1D*)getClone(hist2Name, fileName, histList);
+  TH1D* hist2 = (TH1D*)getClone(hist2Name, fileName2, histList);
 
   hist1->Divide(hist2);
   hist1->GetYaxis()->SetTitle(ratioName.c_str());
@@ -526,32 +547,30 @@ TList* getHistosFromFile(string fileName){
 
 
 
-/*
-TList* getHistosFromMacro(string fileName){
 
-  ostringstream filePath;
-  filePath << "Publication/";
-  filePath <<  fileName;
-  filePath << ".C";
+TList* getHistosFromMacro(){
 
-  gROOT->LoadMacro((filePath.str()).c_str());
+  gROOT->LoadMacro("Publication/meanpt_pub.C");
 
   TList* list = new TList();
   list->SetOwner();
-  list->SetName(fileName.c_str());
+  list->SetName("pub");
 
-  TH1D* momentReweighted1 = getHistogramMeanPtPP7TeVStat();
-  momentReweighted1->SetName((appendFileName(momentReweighted1, fileName)).c_str());
+  TH1D* momentReweighted1SysPP = getHistogramMeanPtPP7TeVSys();
+  momentReweighted1SysPP->SetName("momentReweighted1Sys_pp_7TeV_03_pub");
+  list->Add(momentReweighted1SysPP);
 
-  TH1D* momentReweighted1Sys = getHistogramMeanPtPP7TeVSys();
-  momentReweighted1Sys->SetName((appendFileName(momentReweighted1Sys, fileName)).c_str());
+  TH1D* momentReweighted1SysPPb = getHistogramMeanPtPPb5TeVSys();
+  momentReweighted1SysPPb->SetName("momentReweighted1Sys_pPb_5TeV_03_pub");
+  list->Add(momentReweighted1SysPPb);
 
-  list->Add(momentReweighted1);
-  list->Add(momentReweighted1Sys);
+  TH1D* momentReweighted1SysPbPb = getHistogramMeanPtPbPb2TeVSys();
+  momentReweighted1SysPbPb->SetName("momentReweighted1Sys_PbPb_2TeV_03_pub");
+  list->Add(momentReweighted1SysPbPb);
 
   return list;
 }
-*/
+
 
 /// ---------------------------------------------------------------------------
 /// Function to obtain moments from momentum distributions

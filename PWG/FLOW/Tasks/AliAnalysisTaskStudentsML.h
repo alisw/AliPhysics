@@ -7,7 +7,6 @@
 /********************************************** 
 * template class for student projects         *
 * author: Marcel Lesch (marcel.lesch@cern.ch) *
-*
 **********************************************/ 
 
 #ifndef ALIANALYSISTASKSTUDENTSML_H
@@ -21,6 +20,10 @@
 #include "TH1F.h"
 #include "TH1I.h"
 #include "TComplex.h"
+#include <TArrayF.h>
+#include <vector>
+#include "TMath.h"
+#include "TF1.h"
 
 //================================================================================================================
 
@@ -37,6 +40,8 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   // 0.) Methods called in the constructor:
   virtual void InitializeArrays();
  
+  TComplex Q(Int_t n, Int_t p);
+  TComplex Recursion(Int_t n, Int_t* harmonic, Int_t mult, Int_t skip);
   // 1.) Methods called in UserCreateOutputObjects():
   virtual void BookAndNestAllLists();
   virtual void BookControlHistograms();
@@ -46,7 +51,9 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   // 2.) Methods called in UserExec(Option_t *):
   // ...
   //add all except Cosmetics
-  
+  virtual void Cosmetics();
+  virtual void CalculateQvectors();
+  virtual void Correlation();
   // 3.) Methods called in Terminate():
   // ...
 
@@ -63,6 +70,11 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
    this->fMaxBin = max;
   };
 
+  /*void SetHolder(Int_t const maxcorrelators)
+  {
+   this->fMaxCorrelator = maxcorrelators; 
+  };*/
+
  private:
   AliAnalysisTaskStudentsML(const AliAnalysisTaskStudentsML& aatmpf);
   AliAnalysisTaskStudentsML& operator=(const AliAnalysisTaskStudentsML& aatmpf);
@@ -70,29 +82,55 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   // 0.) Base lists:
   TList *fHistList; // base list to hold all output object (a.k.a. grandmother of all lists)
 
-  // 1.) Control histograms:  
+  // 1.) Control histograms: 
   TList *fControlHistogramsList; // list to hold all control histograms
-  TH1F *fPtHist;                 // atrack->Pt()
+  TH1F *fPtHist;                 // atrack->Pt() 
   Int_t fNbins;                  // number of bins
   Float_t fMinBin;               // min bin
   Float_t fMaxBin;               // min bin 
   TH1F *fPhiHist;                // atrack->Phi()
   TH1F *fEtaHist;                // atrack->Eta()
-  TH1F *fMultiHist;		 // multiplicity histogram atrack->nTracks
 
-  // 2.) Final results:
-  TList *fFinalResultsList; // list to hold all histograms with final results
 
-  Int_t fMaxCorrelator;
+  TH1F *fMultiHisto;             // multiplicity histogram atrack->nTracks
 
-  ClassDef(AliAnalysisTaskStudentsML,1);
+  //2.) Variables for the correlation:
+  Int_t fMaxCorrelator;          // maximum of correlation 
+  TProfile *fRecursion[2][8];    //! //how can i set the 8 as fMaxCorrelator?????? 
+  Bool_t bUseWeights; 
+
+  const Int_t kNumber;           //number of correlation
+
+  const Int_t kh1, kh2, kh3, kh4, kh5, kh6, kh7, kh8;  //harmonics
+   
+  const Int_t kSum; 
+  const Int_t kMaxHarmonic; 
+  const Int_t kMaxPower; 
+  Int_t fParticles;
+  Float_t fCentral;
+  Float_t fMinCentrality;        // min centrality
+  Float_t fMaxCentrality;        // max centrality
+  TArrayD *fAngles;              //! Azimuthal angles 
+  TArrayD *fWeights;            //! Particle weights
+  TArrayI *fBin;                   //! Bins for particle weight
+  TF1 *func1;
+  
+  TComplex Qvector[17][9];       //! //[fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
+
+  // 3.) Final results:
+   
+  TProfile *fCentrality;         // final centrality result
+  TList *fFinalResultsList;      // list to hold all histograms with final results
+
+  
+
+  ClassDef(AliAnalysisTaskStudentsML,2);
 
 };
 
 //================================================================================================================
 
 #endif
-
 
 
 

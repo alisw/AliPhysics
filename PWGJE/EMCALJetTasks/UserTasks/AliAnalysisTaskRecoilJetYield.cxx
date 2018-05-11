@@ -135,7 +135,11 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fhLundIterative(0x0),
   fhLundIterativeTrue(0x0),
   fReclusterAlgo(0),
-  fSubMatching(kFALSE)
+  fSubMatching(kFALSE),
+  bMinSubjetPt(kFALSE),
+  fMinSubjetPt(0)
+
+
 
 {
   for(Int_t i=0;i<nBranch;i++){
@@ -216,8 +220,9 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fhLundIterative(0x0),
   fhLundIterativeTrue(0x0),
   fReclusterAlgo(0),
-  fSubMatching(kFALSE)
-  
+  fSubMatching(kFALSE),
+  bMinSubjetPt(kFALSE),
+  fMinSubjetPt(0)
 {
   // Standard constructor.
   for(Int_t i=0;i<nBranch;i++){
@@ -1171,7 +1176,9 @@ void AliAnalysisTaskRecoilJetYield::RecursiveParents(AliEmcalJet *fJet,AliJetCon
       Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
       if(!bTruth) fhLundIterative->Fill(LundEntries);
       else if(bTruth) fhLundIterativeTrue->Fill(LundEntries);
-      jj=j1;} 
+      jj=j1;
+      if(bMinSubjetPt && jj.perp() < fMinSubjetPt) break;
+    } 
 
 
 
