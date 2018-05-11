@@ -2914,7 +2914,9 @@ void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
   //
   AliCDBStorage* targetStorage = 0x0;
   if (targetOCDBstorage.Length()==0) {
-    targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    targetOCDBstorage  = "local://";
+    targetOCDBstorage += gSystem->pwd();
+    targetOCDBstorage += "/OCDB";
     targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
   }
   else if (targetOCDBstorage.CompareTo("same",TString::kIgnoreCase) == 0 ){
@@ -2996,7 +2998,9 @@ void AliTPCDcalibRes::MakeVDriftOCDB(TString targetOCDBstorage)
   //
   AliCDBStorage* targetStorage = 0x0;
   if (targetOCDBstorage.Length()==0) {
-    targetOCDBstorage+="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    targetOCDBstorage  = "local://";
+    targetOCDBstorage += gSystem->pwd();
+    targetOCDBstorage += "/OCDB";
     targetStorage = AliCDBManager::Instance()->GetStorage(targetOCDBstorage.Data());
   }
   else if (targetOCDBstorage.CompareTo("same",TString::kIgnoreCase) == 0 ){
