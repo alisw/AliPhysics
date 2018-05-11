@@ -3,6 +3,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
+#include "TProfile2D.h"
 #include <TComplex.h>
 
 // STL includes
@@ -105,220 +106,112 @@ class AliAnalysisTaskChargedFlow : public AliAnalysisTaskSE {
  
   // Output objects
 	TList*			fOutputContainer;			//! Output list of objects
-	TList*			fV0OutputContainer;			//! Output list of objects
 
 	// Event histograms
-  TH1F*				hMult;											//! multiplicity distribution
+  TH2F*				hMult;											//! multiplicity distribution
   TH1F*				hMultTrigger;								//! multiplicity distribution
 	TH1F*				fVtxAfterCuts;							//! Vertex z dist after cuts
 
 	// Track histograms
- 	TH1F*				fPhiDis;										//! phi dist
-	TH1F*				fEtaDis;										//! eta dist
-	TH1F*				fEtaBefore;									//! eta dist before track cuts
-	TH1F*				fPtDis;											//! pt dist
-	TH1F*				fPtBefore;									//! pt dist before track cuts
+ 	TH2F*				fPhiDis;										//! phi dist
+	TH2F*				fEtaDis;										//! eta dist
+	TH2F*				fEtaBefore;									//! eta dist before track cuts
+	TH2F*				fPtDis;											//! pt dist
+	TH2F*				fPtBefore;									//! pt dist before track cuts
 	TH1F*				hIsPiKp;										//!
 
 	// Physics profiles
-	TProfile*		fChsc4242;									//! SC(4,2)
-	TProfile*		fChsc4242Gap0;							//! SC(4,2) |#Delta#eta| > 0.0
-	TProfile*		fChsc4242_3sub;							//! SC(4,2)_A 3subevent method
-	TProfile*		fChsc4224_3sub;							//! SC(4,2)_B 3subevent method
-	TProfile*		fChsc4242_3sub_perm2;				//! SC(4,2)_A 3subevent method
-	TProfile*		fChsc4224_3sub_perm2;				//! SC(4,2)_B 3subevent method
-	TProfile*		fChsc4242_3sub_perm3;				//! SC(4,2)_A 3subevent method
-	TProfile*		fChsc4224_3sub_perm3;				//! SC(4,2)_B 3subevent method
+	TProfile2D*		fChsc4242;									//! SC(4,2)
+	TProfile2D*		fChsc4242Gap0;							//! SC(4,2) |#Delta#eta| > 0.0
+	TProfile2D*		fChsc4242_3sub;							//! SC(4,2)_A 3subevent method
+	TProfile2D*		fChsc4224_3sub;							//! SC(4,2)_B 3subevent method
+	TProfile2D*		fChsc4242_3sub_perm2;				//! SC(4,2)_A 3subevent method
+	TProfile2D*		fChsc4224_3sub_perm2;				//! SC(4,2)_B 3subevent method
+	TProfile2D*		fChsc4242_3sub_perm3;				//! SC(4,2)_A 3subevent method
+	TProfile2D*		fChsc4224_3sub_perm3;				//! SC(4,2)_B 3subevent method
 
-	TProfile*		fChsc3232;									//! SC(3,2)
-	TProfile*		fChsc3232Gap0;							//! SC(3,2) |#Delta#eta| > 0.0
-	TProfile*		fChsc3232_3sub;							//! SC(3,2)_A 3subevent method
-	TProfile*		fChsc3223_3sub;							//! SC(3,2)_B 3subevent method
-	TProfile*		fChsc3232_3sub_perm2;				//! SC(3,2)_A 3subevent method
-	TProfile*		fChsc3223_3sub_perm2;				//! SC(3,2)_B 3subevent method
-	TProfile*		fChsc3232_3sub_perm3;				//! SC(3,2)_A 3subevent method
-	TProfile*		fChsc3223_3sub_perm3;				//! SC(3,2)_B 3subevent method
+	TProfile2D*		fChsc3232;									//! SC(3,2)
+	TProfile2D*		fChsc3232Gap0;							//! SC(3,2) |#Delta#eta| > 0.0
+	TProfile2D*		fChsc3232_3sub;							//! SC(3,2)_A 3subevent method
+	TProfile2D*		fChsc3223_3sub;							//! SC(3,2)_B 3subevent method
+	TProfile2D*		fChsc3232_3sub_perm2;				//! SC(3,2)_A 3subevent method
+	TProfile2D*		fChsc3223_3sub_perm2;				//! SC(3,2)_B 3subevent method
+	TProfile2D*		fChsc3232_3sub_perm3;				//! SC(3,2)_A 3subevent method
+	TProfile2D*		fChsc3223_3sub_perm3;				//! SC(3,2)_B 3subevent method
 
-	TProfile*		fsc4242[12];								//! the same but for different fBin (sampling)
-	TProfile*		fsc4242Gap0[12];						//!
-	TProfile*		fsc4242_3sub[12];						//!	
-	TProfile*		fsc4224_3sub[12];						//!
-	TProfile*		fsc4242_3sub_perm2[12];			//!	
-	TProfile*		fsc4224_3sub_perm2[12];			//!
-	TProfile*		fsc4242_3sub_perm3[12];			//!	
-	TProfile*		fsc4224_3sub_perm3[12];			//!
+	TProfile2D*		fsc4242[12];								//! the same but for different fBin (sampling)
+	TProfile2D*		fsc4242Gap0[12];						//!
+	TProfile2D*		fsc4242_3sub[12];						//!	
+	TProfile2D*		fsc4224_3sub[12];						//!
+	TProfile2D*		fsc4242_3sub_perm2[12];			//!	
+	TProfile2D*		fsc4224_3sub_perm2[12];			//!
+	TProfile2D*		fsc4242_3sub_perm3[12];			//!	
+	TProfile2D*		fsc4224_3sub_perm3[12];			//!
 
-	TProfile*		fsc3232[12];								//!
-	TProfile*		fsc3232Gap0[12];						//!
-	TProfile*		fsc3232_3sub[12];						//!
-	TProfile*		fsc3223_3sub[12];						//!
-	TProfile*		fsc3232_3sub_perm2[12];			//!
-	TProfile*		fsc3223_3sub_perm2[12];			//!
-	TProfile*		fsc3232_3sub_perm3[12];			//!
-	TProfile*		fsc3223_3sub_perm3[12];			//!
-
-	// Standard correlation profiles for different harmonics
-  TProfile*		fChcn2Ntrks1bin[6];  				//! <<2>> in unit bins of Ntrks
-  TProfile*		fChcn2Gap0Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.0
-  TProfile*		fChcn2Gap2Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.2
-  TProfile*		fChcn2Gap4Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.4
-  TProfile*		fChcn2Gap8Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.8
-  TProfile*		fChcn2GapNtrks1bin[6];  		//! <<2>> |#Delta#eta| > 1.0
-  TProfile*		fChcn2Gap14Ntrks1bin[6];  	//! <<2>> |#Delta#eta| > 1.4
-
-  TProfile*		fChcn2_3subLMNtrks1bin[6];  		//! <<2>> left vs. middle subevent
-  TProfile*		fChcn2_3subRMNtrks1bin[6];  		//! <<2>> middle vs. right subevent
-  TProfile*		fChcn2_3subLM_perm2Ntrks1bin[6];//! <<2>> left vs. middle subevent
-  TProfile*		fChcn2_3subLR_perm2Ntrks1bin[6];//! <<2>> left vs. right subevent
-  TProfile*		fChcn2_3subRM_perm3Ntrks1bin[6];//! <<2>> right vs. middle subevent
-  TProfile*		fChcn2_3subRL_perm3Ntrks1bin[6];//! <<2>> right vs. left subevent
-
-  TProfile*		fChcn4Ntrks1bin[6];  				//! <<4>> in unit bins of Ntrks
-  TProfile*		fChcn4Gap0Ntrks1bin[6];  		//! <<4>> |#Delta#eta| > 0.0
-	TProfile*		fChcn4_3subNtrks1bin[6]; 		//! <<4>> 3subevent method
-	TProfile*		fChcn4_3sub_perm2Ntrks1bin[6];		//!
-	TProfile*		fChcn4_3sub_perm3Ntrks1bin[6];		//!
-
-  TProfile*		fChcn6Ntrks1bin[6];  				//! <<6>> in unit bins of Ntrks
-  TProfile*		fChcn6Gap0Ntrks1bin[6];  		//! <<6>> |#Delta#eta| > 0.0
-
-  TProfile*		fChcn8Ntrks1bin[6];  				//! <<8>> in unit bins of Ntrks
-  TProfile*		fChcn8Gap0Ntrks1bin[6];  		//! <<8>> |#Delta#eta| > 0.0
-
-	// the same profiles but for different fBin (sampling)
-  TProfile*		fcn2Ntrks1bin[6][12];  			//!
-  TProfile*		fcn2Gap0Ntrks1bin[6][12];		//!
-  TProfile*		fcn2Gap2Ntrks1bin[6][12];		//!
-  TProfile*		fcn2Gap4Ntrks1bin[6][12];		//!
-  TProfile*		fcn2Gap8Ntrks1bin[6][12];		//!
-  TProfile*		fcn2GapNtrks1bin[6][12];		//!
-  TProfile*		fcn2Gap14Ntrks1bin[6][12];	//!
-
-  TProfile*		fcn2_3subLMNtrks1bin[6][12];  		//!
-  TProfile*		fcn2_3subRMNtrks1bin[6][12];  		//!
-  TProfile*		fcn2_3subLM_perm2Ntrks1bin[6][12];//!
-  TProfile*		fcn2_3subLR_perm2Ntrks1bin[6][12];//!
-  TProfile*		fcn2_3subRM_perm3Ntrks1bin[6][12];//!
-  TProfile*		fcn2_3subRL_perm3Ntrks1bin[6][12];//!
-
-  TProfile*		fcn4Ntrks1bin[6][12];				//!
-  TProfile*		fcn4Gap0Ntrks1bin[6][12];		//!
-	TProfile*		fcn4_3subNtrks1bin[6][12];	//!
-	TProfile*		fcn4_3sub_perm2Ntrks1bin[6][12];	//!
-	TProfile*		fcn4_3sub_perm3Ntrks1bin[6][12];	//!
-
-  TProfile*		fcn6Ntrks1bin[6][12];				//!
-  TProfile*		fcn6Gap0Ntrks1bin[6][12];		//!
-
-  TProfile*		fcn8Ntrks1bin[6][12];				//!
-  TProfile*		fcn8Gap0Ntrks1bin[6][12];		//!
-
-	//	for HM
-	// Event histograms
-  TH1F*				hV0Mult;											//! multiplicity distribution
-  TH1F*				hV0MultTrigger;								//! multiplicity distribution
-	TH1F*				fV0VtxAfterCuts;							//! Vertex z dist after cuts
-
-	// Track histograms
- 	TH1F*				fV0PhiDis;										//! phi dist
-	TH1F*				fV0EtaDis;										//! eta dist
-	TH1F*				fV0EtaBefore;									//! eta dist before track cuts
-	TH1F*				fV0PtDis;											//! pt dist
-	TH1F*				fV0PtBefore;									//! pt dist before track cuts
-	TH1F*				hV0IsPiKp;										//!
-
-	// Physics profiles
-	TProfile*		fV0Chsc4242;									//! SC(4,2)
-	TProfile*		fV0Chsc4242Gap0;							//! SC(4,2) |#Delta#eta| > 0.0
-	TProfile*		fV0Chsc4242_3sub;							//! SC(4,2)_A 3subevent method
-	TProfile*		fV0Chsc4224_3sub;							//! SC(4,2)_B 3subevent method
-	TProfile*		fV0Chsc4242_3sub_perm2;				//! SC(4,2)_A 3subevent method
-	TProfile*		fV0Chsc4224_3sub_perm2;				//! SC(4,2)_B 3subevent method
-	TProfile*		fV0Chsc4242_3sub_perm3;				//! SC(4,2)_A 3subevent method
-	TProfile*		fV0Chsc4224_3sub_perm3;				//! SC(4,2)_B 3subevent method
-
-	TProfile*		fV0Chsc3232;									//! SC(3,2)
-	TProfile*		fV0Chsc3232Gap0;							//! SC(3,2) |#Delta#eta| > 0.0
-	TProfile*		fV0Chsc3232_3sub;							//! SC(3,2)_A 3subevent method
-	TProfile*		fV0Chsc3223_3sub;							//! SC(3,2)_B 3subevent method
-	TProfile*		fV0Chsc3232_3sub_perm2;				//! SC(3,2)_A 3subevent method
-	TProfile*		fV0Chsc3223_3sub_perm2;				//! SC(3,2)_B 3subevent method
-	TProfile*		fV0Chsc3232_3sub_perm3;				//! SC(3,2)_A 3subevent method
-	TProfile*		fV0Chsc3223_3sub_perm3;				//! SC(3,2)_B 3subevent method
-
-	TProfile*		fV0sc4242[12];								//! the same but for different fBin (sampling)
-	TProfile*		fV0sc4242Gap0[12];						//!
-	TProfile*		fV0sc4242_3sub[12];						//!	
-	TProfile*		fV0sc4224_3sub[12];						//!
-	TProfile*		fV0sc4242_3sub_perm2[12];			//!	
-	TProfile*		fV0sc4224_3sub_perm2[12];			//!
-	TProfile*		fV0sc4242_3sub_perm3[12];			//!	
-	TProfile*		fV0sc4224_3sub_perm3[12];			//!
-
-	TProfile*		fV0sc3232[12];								//!
-	TProfile*		fV0sc3232Gap0[12];						//!
-	TProfile*		fV0sc3232_3sub[12];						//!
-	TProfile*		fV0sc3223_3sub[12];						//!
-	TProfile*		fV0sc3232_3sub_perm2[12];			//!
-	TProfile*		fV0sc3223_3sub_perm2[12];			//!
-	TProfile*		fV0sc3232_3sub_perm3[12];			//!
-	TProfile*		fV0sc3223_3sub_perm3[12];			//!
+	TProfile2D*		fsc3232[12];								//!
+	TProfile2D*		fsc3232Gap0[12];						//!
+	TProfile2D*		fsc3232_3sub[12];						//!
+	TProfile2D*		fsc3223_3sub[12];						//!
+	TProfile2D*		fsc3232_3sub_perm2[12];			//!
+	TProfile2D*		fsc3223_3sub_perm2[12];			//!
+	TProfile2D*		fsc3232_3sub_perm3[12];			//!
+	TProfile2D*		fsc3223_3sub_perm3[12];			//!
 
 	// Standard correlation profiles for different harmonics
-  TProfile*		fV0Chcn2Ntrks1bin[6];  				//! <<2>> in unit bins of Ntrks
-  TProfile*		fV0Chcn2Gap0Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.0
-  TProfile*		fV0Chcn2Gap2Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.2
-  TProfile*		fV0Chcn2Gap4Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.4
-  TProfile*		fV0Chcn2Gap8Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.8
-  TProfile*		fV0Chcn2GapNtrks1bin[6];  		//! <<2>> |#Delta#eta| > 1.0
-  TProfile*		fV0Chcn2Gap14Ntrks1bin[6];  	//! <<2>> |#Delta#eta| > 1.4
+  TProfile2D*		fChcn2Ntrks1bin[6];  				//! <<2>> in unit bins of Ntrks
+  TProfile2D*		fChcn2Gap0Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.0
+  TProfile2D*		fChcn2Gap2Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.2
+  TProfile2D*		fChcn2Gap4Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.4
+  TProfile2D*		fChcn2Gap8Ntrks1bin[6];  		//! <<2>> |#Delta#eta| > 0.8
+  TProfile2D*		fChcn2GapNtrks1bin[6];  		//! <<2>> |#Delta#eta| > 1.0
+  TProfile2D*		fChcn2Gap14Ntrks1bin[6];  	//! <<2>> |#Delta#eta| > 1.4
 
-  TProfile*		fV0Chcn2_3subLMNtrks1bin[6];  		//! <<2>> left vs. middle subevent
-  TProfile*		fV0Chcn2_3subRMNtrks1bin[6];  		//! <<2>> middle vs. right subevent
-  TProfile*		fV0Chcn2_3subLM_perm2Ntrks1bin[6];//! <<2>> left vs. middle subevent
-  TProfile*		fV0Chcn2_3subLR_perm2Ntrks1bin[6];//! <<2>> left vs. right subevent
-  TProfile*		fV0Chcn2_3subRM_perm3Ntrks1bin[6];//! <<2>> right vs. middle subevent
-  TProfile*		fV0Chcn2_3subRL_perm3Ntrks1bin[6];//! <<2>> right vs. left subevent
+  TProfile2D*		fChcn2_3subLMNtrks1bin[6];  		//! <<2>> left vs. middle subevent
+  TProfile2D*		fChcn2_3subRMNtrks1bin[6];  		//! <<2>> middle vs. right subevent
+  TProfile2D*		fChcn2_3subLM_perm2Ntrks1bin[6];//! <<2>> left vs. middle subevent
+  TProfile2D*		fChcn2_3subLR_perm2Ntrks1bin[6];//! <<2>> left vs. right subevent
+  TProfile2D*		fChcn2_3subRM_perm3Ntrks1bin[6];//! <<2>> right vs. middle subevent
+  TProfile2D*		fChcn2_3subRL_perm3Ntrks1bin[6];//! <<2>> right vs. left subevent
 
-  TProfile*		fV0Chcn4Ntrks1bin[6];  				//! <<4>> in unit bins of Ntrks
-  TProfile*		fV0Chcn4Gap0Ntrks1bin[6];  		//! <<4>> |#Delta#eta| > 0.0
-	TProfile*		fV0Chcn4_3subNtrks1bin[6]; 		//! <<4>> 3subevent method
-	TProfile*		fV0Chcn4_3sub_perm2Ntrks1bin[6];		//!
-	TProfile*		fV0Chcn4_3sub_perm3Ntrks1bin[6];		//!
+  TProfile2D*		fChcn4Ntrks1bin[6];  				//! <<4>> in unit bins of Ntrks
+  TProfile2D*		fChcn4Gap0Ntrks1bin[6];  		//! <<4>> |#Delta#eta| > 0.0
+	TProfile2D*		fChcn4_3subNtrks1bin[6]; 		//! <<4>> 3subevent method
+	TProfile2D*		fChcn4_3sub_perm2Ntrks1bin[6];		//!
+	TProfile2D*		fChcn4_3sub_perm3Ntrks1bin[6];		//!
 
-  TProfile*		fV0Chcn6Ntrks1bin[6];  				//! <<6>> in unit bins of Ntrks
-  TProfile*		fV0Chcn6Gap0Ntrks1bin[6];  		//! <<6>> |#Delta#eta| > 0.0
+  TProfile2D*		fChcn6Ntrks1bin[6];  				//! <<6>> in unit bins of Ntrks
+  TProfile2D*		fChcn6Gap0Ntrks1bin[6];  		//! <<6>> |#Delta#eta| > 0.0
 
-  TProfile*		fV0Chcn8Ntrks1bin[6];  				//! <<8>> in unit bins of Ntrks
-  TProfile*		fV0Chcn8Gap0Ntrks1bin[6];  		//! <<8>> |#Delta#eta| > 0.0
+  TProfile2D*		fChcn8Ntrks1bin[6];  				//! <<8>> in unit bins of Ntrks
+  TProfile2D*		fChcn8Gap0Ntrks1bin[6];  		//! <<8>> |#Delta#eta| > 0.0
 
 	// the same profiles but for different fBin (sampling)
-  TProfile*		fV0cn2Ntrks1bin[6][12];  			//!
-  TProfile*		fV0cn2Gap0Ntrks1bin[6][12];		//!
-  TProfile*		fV0cn2Gap2Ntrks1bin[6][12];		//!
-  TProfile*		fV0cn2Gap4Ntrks1bin[6][12];		//!
-  TProfile*		fV0cn2Gap8Ntrks1bin[6][12];		//!
-  TProfile*		fV0cn2GapNtrks1bin[6][12];		//!
-  TProfile*		fV0cn2Gap14Ntrks1bin[6][12];	//!
+  TProfile2D*		fcn2Ntrks1bin[6][12];  			//!
+  TProfile2D*		fcn2Gap0Ntrks1bin[6][12];		//!
+  TProfile2D*		fcn2Gap2Ntrks1bin[6][12];		//!
+  TProfile2D*		fcn2Gap4Ntrks1bin[6][12];		//!
+  TProfile2D*		fcn2Gap8Ntrks1bin[6][12];		//!
+  TProfile2D*		fcn2GapNtrks1bin[6][12];		//!
+  TProfile2D*		fcn2Gap14Ntrks1bin[6][12];	//!
 
-  TProfile*		fV0cn2_3subLMNtrks1bin[6][12];  		//!
-  TProfile*		fV0cn2_3subRMNtrks1bin[6][12];  		//!
-  TProfile*		fV0cn2_3subLM_perm2Ntrks1bin[6][12];//!
-  TProfile*		fV0cn2_3subLR_perm2Ntrks1bin[6][12];//!
-  TProfile*		fV0cn2_3subRM_perm3Ntrks1bin[6][12];//!
-  TProfile*		fV0cn2_3subRL_perm3Ntrks1bin[6][12];//!
+  TProfile2D*		fcn2_3subLMNtrks1bin[6][12];  		//!
+  TProfile2D*		fcn2_3subRMNtrks1bin[6][12];  		//!
+  TProfile2D*		fcn2_3subLM_perm2Ntrks1bin[6][12];//!
+  TProfile2D*		fcn2_3subLR_perm2Ntrks1bin[6][12];//!
+  TProfile2D*		fcn2_3subRM_perm3Ntrks1bin[6][12];//!
+  TProfile2D*		fcn2_3subRL_perm3Ntrks1bin[6][12];//!
 
-  TProfile*		fV0cn4Ntrks1bin[6][12];				//!
-  TProfile*		fV0cn4Gap0Ntrks1bin[6][12];		//!
-	TProfile*		fV0cn4_3subNtrks1bin[6][12];	//!
-	TProfile*		fV0cn4_3sub_perm2Ntrks1bin[6][12];	//!
-	TProfile*		fV0cn4_3sub_perm3Ntrks1bin[6][12];	//!
+  TProfile2D*		fcn4Ntrks1bin[6][12];				//!
+  TProfile2D*		fcn4Gap0Ntrks1bin[6][12];		//!
+	TProfile2D*		fcn4_3subNtrks1bin[6][12];	//!
+	TProfile2D*		fcn4_3sub_perm2Ntrks1bin[6][12];	//!
+	TProfile2D*		fcn4_3sub_perm3Ntrks1bin[6][12];	//!
 
-  TProfile*		fV0cn6Ntrks1bin[6][12];				//!
-  TProfile*		fV0cn6Gap0Ntrks1bin[6][12];		//!
+  TProfile2D*		fcn6Ntrks1bin[6][12];				//!
+  TProfile2D*		fcn6Gap0Ntrks1bin[6][12];		//!
 
-  TProfile*		fV0cn8Ntrks1bin[6][12];				//!
-  TProfile*		fV0cn8Gap0Ntrks1bin[6][12];		//!
+  TProfile2D*		fcn8Ntrks1bin[6][12];				//!
+  TProfile2D*		fcn8Gap0Ntrks1bin[6][12];		//!
 
  private:
   AliAnalysisTaskChargedFlow(const AliAnalysisTaskChargedFlow&);
