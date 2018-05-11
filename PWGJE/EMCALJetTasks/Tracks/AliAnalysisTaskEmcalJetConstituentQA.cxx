@@ -236,7 +236,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
           TLorentzVector pvect;
           leadingcluster->GetMomentum(pvect, fVertex);
           double lclusterpoint[5] = {std::abs(jet->Pt()), jet->NEF(), std::abs(pvect.Pt()), jet->GetZ(pvect.Px(), pvect.Py(), pvect.Pz()), jetvec.DeltaR(pvect.Vect())};
-          fHistos->FillTHnSparse(Form("hLealdingCluster%s", contname->String().Data()), lclusterpoint);
+          fHistos->FillTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), lclusterpoint);
         }
       }
     }
