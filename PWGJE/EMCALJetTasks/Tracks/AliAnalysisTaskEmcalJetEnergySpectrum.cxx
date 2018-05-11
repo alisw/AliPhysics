@@ -90,6 +90,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH1("hEventCounter", "Event counter histogram", 1, 0.5, 1.5);
   fHistos->CreateTH1("hClusterCounter", "Event counter histogram", 5, -1.5, 3.5);
   fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 5, binnings, "s");
+  fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 5, binnings, "s");
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -105,12 +106,27 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
 
   auto trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses());
   fHistos->FillTH1("hEventCounter", 1);
+  AliEmcalJet *maxjet(nullptr);
   for(auto t : trgclusters) fHistos->FillTH1("hClusterCounter", t);
   for(auto j : datajets->accepted()){
+    if(!maxjet || (j->E() > maxjet->E())) maxjet = j;
     double datapoint[5] = {j->Pt(), j->Eta(), j->Phi(), j->NEF(), 0.};
     for(auto t : trgclusters){
       datapoint[4] = static_cast<double>(t);
       fHistos->FillTHnSparse("hJetTHnSparse", datapoint);
+    }
+  }
+
+  double maxdata[5];
+  memset(maxdata, 0., sizeof(double) * 5);
+  if(maxjet){
+    maxdata[0] = maxjet->Pt();
+    maxdata[1] = maxjet->Eta();
+    maxdata[2] = maxjet->Phi();
+    maxdata[3] = maxjet->NEF();
+    for(auto t : trgclusters){
+      maxdata[4] = static_cast<double>(t);
+      fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata);
     }
   }
   return true;
