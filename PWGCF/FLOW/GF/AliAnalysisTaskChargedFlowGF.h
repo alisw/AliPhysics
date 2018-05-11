@@ -331,14 +331,12 @@ public:
 
 	TH3F*				hTruth;											//! pt, eta, Vz of generated particles
 
-	TH1D*				hPrimary;										//! number of primary particles
-	TH1D*				hPions;											//! number of pions
+	TH2F*				hNtrksRecoNtrksTruth; 			//! Number of generated particles vs. number of reconstructed tracks
 
 	TH2F*				hDCAptMC;										//! DCA vs. Pt
 	TH2F*				hDCAptMC_material;					//! DCA vs. Pt of decays from material interactions
 	TH2F*				hDCAptMC_weak;							//! DCA vs. Pt of weak decays
 
-	TH2F*				hNtrksRecoNtrksTruth; 			//! Number of generated particles vs. number of reconstructed tracks
 
 	// Physics profiles	
 	TProfile*		fChMCsc4242;								//! same profiles as for real data (or reconstructed part of MC)

@@ -8,6 +8,11 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "AliPicoTrack.h"
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
+#include "TH3D.h"
+#include "TProfile3D.h"
+#include "AliAODv0.h"
 
 
 class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
@@ -205,9 +210,9 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
       AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
       TFile*                  fFlowWeightsFile; //! source file containing weights
-      TClonesArray*           fArrayMC; //! input list of MC particles
-      Bool_t                  fMC; // is running on mc?
       Bool_t                  fInit; // initialization check
+      Bool_t                  fMC; // is running on mc?
+      TClonesArray*           fArrayMC; //! input list of MC particles
       Short_t                 fIndexSampling; // sampling index (randomly generated)
       Short_t                 fIndexCentrality; // centrality bin index (based on centrality est. or number of selected tracks)
       Short_t                 fEventCounter; // event counter (used for local test runmode purpose)
@@ -335,15 +340,6 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       // histograms & profiles
 
       // Flow
-      TH3D*           fh3V0sEntriesK0sPos[fNumEtaGap]; //! distribution of K0s candidates (cent, pT, InvMass)
-      TH3D*           fh3V0sEntriesK0sNeg[fNumEtaGap]; //! distribution of K0s candidates (cent, pT, InvMass)
-      TH3D*           fh3V0sEntriesLambdaPos[fNumEtaGap]; //! distribution of (Anti-)Lambda candidates (cent, pT, InvMass)
-      TH3D*           fh3V0sEntriesLambdaNeg[fNumEtaGap]; //! distribution of (Anti-)Lambda candidates (cent, pT, InvMass)
-      TH3D*           fh3PhiEntriesSignalPos[fNumEtaGap]; //! distribution of phi candidates / unlike-sign pairs (cent, pT, InvMass)
-      TH3D*           fh3PhiEntriesSignalNeg[fNumEtaGap]; //! distribution of phi candidates / unlike-sign pairs (cent, pT, InvMass)
-      TH3D*           fh3PhiEntriesBGPos[fNumEtaGap]; //! distribution of phi background candidates / like-sign pairs (cent, pT, InvMass)
-      TH3D*           fh3PhiEntriesBGNeg[fNumEtaGap]; //! distribution of phi background candidates / like-sign pairs (cent, pT, InvMass)
-
       TH3D*           fh3WeightsRefs; //! distribution of Refs particles for estimating weight purpose (phi,eta,pt)
       TH3D*           fh3WeightsCharged; //! distribution of Charged POIs particles for estimating weight purpose (phi,eta,pt)
       TH3D*           fh3WeightsPion; //! distribution of Pion POIs particles for estimating weight purpose (phi,eta,pt)
@@ -379,31 +375,6 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH3D*           fh3WeightLambda; //! container for loading weights for given run
       TH3D*           fh3WeightPhi; //! container for loading weights for given run
 
-      TProfile*       fpRefsCor2[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2> correlations for RFPs
-      TProfile2D*     fp2ChargedCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for Charged tracks POIs: POIs in Eta>0
-      TProfile2D*     fp2ChargedCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for Charged tracks POIs: POIs in Eta<0
-      TProfile2D*     fp2PionCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for pion POIs: POIs in Eta>0
-      TProfile2D*     fp2PionCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for pion POIs: POIs in Eta>0
-      TProfile2D*     fp2KaonCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for kaon POIs: POIs in Eta>0
-      TProfile2D*     fp2KaonCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for kaon POIs: POIs in Eta>0
-      TProfile2D*     fp2ProtonCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for proton POIs: POIs in Eta>0
-      TProfile2D*     fp2ProtonCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for proton POIs: POIs in Eta>0
-      TProfile3D*     fp3V0sCorrK0sCor2Pos[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of K0s candidates: POIs in Eta>0  (cent, pT, InvMass)
-      TProfile3D*     fp3V0sCorrK0sCor2Neg[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of K0s candidates: POIs in Eta<0  (cent, pT, InvMass)
-      TProfile3D*     fp3V0sCorrLambdaCor2Pos[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of (Anti-)Lambda candidates: POIs in Eta>0  (cent, pT, InvMass)
-      TProfile3D*     fp3V0sCorrLambdaCor2Neg[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of (Anti-)Lambda candidates: POIs in Eta<0  (cent, pT, InvMass)
-      TProfile3D*     fp3PhiCorrCor2Pos[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of phi candidates / unlike-sign pairs: POIs in Eta>0 (cent, pT, InvMass)
-      TProfile3D*     fp3PhiCorrCor2Neg[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of phi candidates / unlike-sign pairs: POIs in Eta<0 (cent, pT, InvMass)
-
-      TProfile*       fpRefsCor4[fNumSamples][fNumHarmonics]; //! <4> correlations for RFPs
-      TProfile2D*     fp2ChargedCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for Charged tracks POIs
-      TProfile2D*     fp2PionCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for pion POIs
-      TProfile2D*     fp2KaonCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for kaon POIs
-      TProfile2D*     fp2ProtonCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for proton POIs
-      TProfile3D*     fp3V0sCorrK0sCor4[fNumHarmonics]; //! <4'> correlations of K0s candidates (cent, pT, InvMass)
-      TProfile3D*     fp3V0sCorrLambdaCor4[fNumHarmonics]; //! <4'> correlations of (Anti-)Lambda candidates (cent, pT, InvMass)
-      TProfile3D*     fp3PhiCorrCor4[fNumHarmonics]; //! <4'> correlations of phi candidates / unlike-sign pairs (cent, pT, InvMass)
-
       // Events
       TH2D*           fhEventSampling; //! distribution of sampled events (based on randomly generated numbers)
       TH1D*           fhEventCentrality; //! distribution of event centrality
@@ -422,49 +393,53 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH1D*           fhPIDPionPhi; //! phi distribution of selected pions
       TH1D*           fhPIDPionEta; //! eta distribution of selected pions
       TH1D*           fhPIDPionCharge; //! charge distribution of selected pions
-      TH2D*           fh2PIDPionTPCdEdx; //! TPC dEdx response of selected pions
-      TH2D*           fh2PIDPionTOFbeta; //! TOF beta of selected pions
-      TH2D*           fh2PIDPionTPCnSigmaPion; //! TPC nSigma vs pT for selected pions (pion hypothesis)
-      TH2D*           fh2PIDPionTOFnSigmaPion; //! TOF nSigma vs pT for selected pions (pion hypothesis)
-      TH2D*           fh2PIDPionBayesPion; //! Bayesian PID probability vs pT for selected pions (pion hypothesis)
-      TH2D*           fh2PIDPionTPCnSigmaKaon; //! TPC nSigma vs pT for selected pions (kaon hypothesis)
-      TH2D*           fh2PIDPionTOFnSigmaKaon; //! TOF nSigma vs pT for selected pions (kaon hypothesis)
-      TH2D*           fh2PIDPionBayesKaon; //! Bayesian PID probability vs pT for selected pions (kaon hypothesis)
-      TH2D*           fh2PIDPionTPCnSigmaProton; //! TPC nSigma vs pT for selected pions (proton hypothesis)
-      TH2D*           fh2PIDPionTOFnSigmaProton; //! TOF nSigma vs pT for selected pions (proton hypothesis)
-      TH2D*           fh2PIDPionBayesProton; //! Bayesian PID probability vs pT for selected pions (proton hypothesis)
       TH1D*           fhPIDKaonMult; //! multiplicity distribution of selected pions
       TH1D*           fhPIDKaonPt; //! pt distribution of selected kaons
       TH1D*           fhPIDKaonPhi; //! phi distribution of selected kaons
       TH1D*           fhPIDKaonEta; //! eta distribution of selected kaons
       TH1D*           fhPIDKaonCharge; //! charge distribution of selected pions
-      TH2D*           fh2PIDKaonTPCdEdx; //! TPC dEdx response of selected pions
-      TH2D*           fh2PIDKaonTOFbeta; //! TOF beta of selected pions
-      TH2D*           fh2PIDKaonTPCnSigmaPion; //! TPC nSigma vs pT for selected kaons (pion hypothesis)
-      TH2D*           fh2PIDKaonTOFnSigmaPion; //! TOF nSigma vs pT for selected kaons (pion hypothesis)
-      TH2D*           fh2PIDKaonBayesPion; //! Bayesian PID probability vs pT for selected kaons (pion hypothesis)
-      TH2D*           fh2PIDKaonTPCnSigmaKaon; //! TPC nSigma vs pT for selected kaons (kaon hypothesis)
-      TH2D*           fh2PIDKaonTOFnSigmaKaon; //! TOF nSigma vs pT for selected kaons (kaon hypothesis)
-      TH2D*           fh2PIDKaonBayesKaon; //! Bayesian PID probability vs pT for selected kaons (kaon hypothesis)
-      TH2D*           fh2PIDKaonTPCnSigmaProton; //! TPC nSigma vs pT for selected kaons (proton hypothesis)
-      TH2D*           fh2PIDKaonTOFnSigmaProton; //! TOF nSigma vs pT for selected kaons (proton hypothesis)
-      TH2D*           fh2PIDKaonBayesProton; //! Bayesian PID probability vs pT for selected kaons (proton hypothesis)
       TH1D*           fhPIDProtonMult; //! multiplicity distribution of selected pions
       TH1D*           fhPIDProtonPt; //! pt distribution of selected protons
       TH1D*           fhPIDProtonPhi; //! phi distribution of selected protons
       TH1D*           fhPIDProtonEta; //! eta distribution of selected protons
       TH1D*           fhPIDProtonCharge; //! charge distribution of selected pions
+
+      TH2D*           fh2PIDPionTPCnSigmaPion; //! TPC nSigma vs pT for selected pions (pion hypothesis)
+      TH2D*           fh2PIDPionTOFnSigmaPion; //! TOF nSigma vs pT for selected pions (pion hypothesis)
+      TH2D*           fh2PIDPionTPCnSigmaKaon; //! TPC nSigma vs pT for selected pions (kaon hypothesis)
+      TH2D*           fh2PIDPionTOFnSigmaKaon; //! TOF nSigma vs pT for selected pions (kaon hypothesis)
+      TH2D*           fh2PIDPionTPCnSigmaProton; //! TPC nSigma vs pT for selected pions (proton hypothesis)
+      TH2D*           fh2PIDPionTOFnSigmaProton; //! TOF nSigma vs pT for selected pions (proton hypothesis)
+      TH2D*           fh2PIDPionBayesPion; //! Bayesian PID probability vs pT for selected pions (pion hypothesis)
+      TH2D*           fh2PIDPionBayesKaon; //! Bayesian PID probability vs pT for selected pions (kaon hypothesis)
+      TH2D*           fh2PIDPionBayesProton; //! Bayesian PID probability vs pT for selected pions (proton hypothesis)
+      TH2D*           fh2PIDPionTPCdEdx; //! TPC dEdx response of selected pions
+      TH2D*           fh2PIDPionTOFbeta; //! TOF beta of selected pions
+
+      TH2D*           fh2PIDKaonTPCdEdx; //! TPC dEdx response of selected pions
+      TH2D*           fh2PIDKaonTOFbeta; //! TOF beta of selected pions
       TH2D*           fh2PIDProtonTPCdEdx; //! TPC dEdx response of selected pions
       TH2D*           fh2PIDProtonTOFbeta; //! TOF beta of selected pions
+      TH2D*           fh2PIDKaonTPCnSigmaPion; //! TPC nSigma vs pT for selected kaons (pion hypothesis)
+      TH2D*           fh2PIDKaonTOFnSigmaPion; //! TOF nSigma vs pT for selected kaons (pion hypothesis)
+      TH2D*           fh2PIDKaonTPCnSigmaKaon; //! TPC nSigma vs pT for selected kaons (kaon hypothesis)
+      TH2D*           fh2PIDKaonTOFnSigmaKaon; //! TOF nSigma vs pT for selected kaons (kaon hypothesis)
+      TH2D*           fh2PIDKaonTPCnSigmaProton; //! TPC nSigma vs pT for selected kaons (proton hypothesis)
+      TH2D*           fh2PIDKaonTOFnSigmaProton; //! TOF nSigma vs pT for selected kaons (proton hypothesis)
+      TH2D*           fh2PIDKaonBayesPion; //! Bayesian PID probability vs pT for selected kaons (pion hypothesis)
+      TH2D*           fh2PIDKaonBayesKaon; //! Bayesian PID probability vs pT for selected kaons (kaon hypothesis)
+      TH2D*           fh2PIDKaonBayesProton; //! Bayesian PID probability vs pT for selected kaons (proton hypothesis)
+
       TH2D*           fh2PIDProtonTPCnSigmaPion; //! TPC nSigma vs pT for selected protons (pion hypothesis)
       TH2D*           fh2PIDProtonTOFnSigmaPion; //! TOF nSigma vs pT for selected protons (pion hypothesis)
-      TH2D*           fh2PIDProtonBayesPion; //! Bayesian PID probability vs pT for selected protons (pion hypothesis)
       TH2D*           fh2PIDProtonTPCnSigmaKaon; //! TPC nSigma vs pT for selected protons (kaon hypothesis)
       TH2D*           fh2PIDProtonTOFnSigmaKaon; //! TOF nSigma vs pT for selected protons (kaon hypothesis)
-      TH2D*           fh2PIDProtonBayesKaon; //! Bayesian PID probability vs pT for selected protons (kaon hypothesis)
       TH2D*           fh2PIDProtonTPCnSigmaProton; //! TPC nSigma vs pT for selected protons (proton hypothesis)
       TH2D*           fh2PIDProtonTOFnSigmaProton; //! TOF nSigma vs pT for selected protons (proton hypothesis)
+      TH2D*           fh2PIDProtonBayesPion; //! Bayesian PID probability vs pT for selected protons (pion hypothesis)
+      TH2D*           fh2PIDProtonBayesKaon; //! Bayesian PID probability vs pT for selected protons (kaon hypothesis)
       TH2D*           fh2PIDProtonBayesProton; //! Bayesian PID probability vs pT for selected protons (proton hypothesis)
+
       TH1D*           fhMCRecoSelectedPionPt; //! pt dist of selected (MC reco) pions
       TH1D*           fhMCRecoSelectedTruePionPt; //! pt dist of selected (MC reco) true (tagged in MC gen) pions
       TH1D*           fhMCRecoAllPionPt; //! pt dist of all (MC reco) pions (i.e. selected charged tracks that are tagged in MC)
@@ -497,6 +472,39 @@ class AliAnalysisTaskUniFlow : public AliAnalysisTaskSE
       TH2D*           fhV0sCompetingInvMassK0s; //! dist of InvMass of rejected K0s candidates in (Anti-)Lambda peak
       TH2D*           fhV0sCompetingInvMassLambda; //! dist of InvMass of rejected (Anti-)Lambda candidates in K0s peak
 
+      TProfile*       fpRefsCor4[fNumSamples][fNumHarmonics]; //! <4> correlations for RFPs
+      TProfile2D*     fp2ChargedCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for Charged tracks POIs
+      TProfile2D*     fp2PionCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for pion POIs
+      TProfile2D*     fp2KaonCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for kaon POIs
+      TProfile2D*     fp2ProtonCor4[fNumSamples][fNumHarmonics]; //! <4'> correlations for proton POIs
+      TProfile3D*     fp3V0sCorrK0sCor4[fNumHarmonics]; //! <4'> correlations of K0s candidates (cent, pT, InvMass)
+      TProfile3D*     fp3V0sCorrLambdaCor4[fNumHarmonics]; //! <4'> correlations of (Anti-)Lambda candidates (cent, pT, InvMass)
+      TProfile3D*     fp3PhiCorrCor4[fNumHarmonics]; //! <4'> correlations of phi candidates / unlike-sign pairs (cent, pT, InvMass)
+
+      TH3D*           fh3V0sEntriesK0sPos[fNumEtaGap]; //! distribution of K0s candidates (cent, pT, InvMass)
+      TH3D*           fh3V0sEntriesK0sNeg[fNumEtaGap]; //! distribution of K0s candidates (cent, pT, InvMass)
+      TH3D*           fh3V0sEntriesLambdaPos[fNumEtaGap]; //! distribution of (Anti-)Lambda candidates (cent, pT, InvMass)
+      TH3D*           fh3V0sEntriesLambdaNeg[fNumEtaGap]; //! distribution of (Anti-)Lambda candidates (cent, pT, InvMass)
+      TH3D*           fh3PhiEntriesSignalPos[fNumEtaGap]; //! distribution of phi candidates / unlike-sign pairs (cent, pT, InvMass)
+      TH3D*           fh3PhiEntriesSignalNeg[fNumEtaGap]; //! distribution of phi candidates / unlike-sign pairs (cent, pT, InvMass)
+      TH3D*           fh3PhiEntriesBGPos[fNumEtaGap]; //! distribution of phi background candidates / like-sign pairs (cent, pT, InvMass)
+      TH3D*           fh3PhiEntriesBGNeg[fNumEtaGap]; //! distribution of phi background candidates / like-sign pairs (cent, pT, InvMass)
+
+      TProfile*       fpRefsCor2[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2> correlations for RFPs
+      TProfile2D*     fp2ChargedCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for Charged tracks POIs: POIs in Eta>0
+      TProfile2D*     fp2ChargedCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for Charged tracks POIs: POIs in Eta<0
+      TProfile2D*     fp2PionCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for pion POIs: POIs in Eta>0
+      TProfile2D*     fp2PionCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for pion POIs: POIs in Eta>0
+      TProfile2D*     fp2KaonCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for kaon POIs: POIs in Eta>0
+      TProfile2D*     fp2KaonCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for kaon POIs: POIs in Eta>0
+      TProfile2D*     fp2ProtonCor2Pos[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for proton POIs: POIs in Eta>0
+      TProfile2D*     fp2ProtonCor2Neg[fNumSamples][fNumEtaGap][fNumHarmonics]; //! <2'> correlations for proton POIs: POIs in Eta>0
+      TProfile3D*     fp3V0sCorrK0sCor2Pos[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of K0s candidates: POIs in Eta>0  (cent, pT, InvMass)
+      TProfile3D*     fp3V0sCorrK0sCor2Neg[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of K0s candidates: POIs in Eta<0  (cent, pT, InvMass)
+      TProfile3D*     fp3V0sCorrLambdaCor2Pos[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of (Anti-)Lambda candidates: POIs in Eta>0  (cent, pT, InvMass)
+      TProfile3D*     fp3V0sCorrLambdaCor2Neg[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of (Anti-)Lambda candidates: POIs in Eta<0  (cent, pT, InvMass)
+      TProfile3D*     fp3PhiCorrCor2Pos[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of phi candidates / unlike-sign pairs: POIs in Eta>0 (cent, pT, InvMass)
+      TProfile3D*     fp3PhiCorrCor2Neg[fNumEtaGap][fNumHarmonics]; //! <2'> correlations of phi candidates / unlike-sign pairs: POIs in Eta<0 (cent, pT, InvMass)
 
       // QA: events
       TH1D*           fhQAEventsPVz[fiNumIndexQA]; //!

@@ -633,9 +633,6 @@ void AliAnalysisTaskChargedFlowGF::UserCreateOutputObjects()
   	fEventCuts.fSPDpileupNsigmaDiamZ = 5.;
   	fEventCuts.fTrackletBGcut = true;
 
-  	fEventCuts.fCentEstimators[0] = "V0M";
-  	fEventCuts.fCentEstimators[1] = "CL0";
-
   	fEventCuts.fFB128vsTrklLinearCut[0] = 32.077;
   	fEventCuts.fFB128vsTrklLinearCut[1] = 0.932;
 
@@ -1863,8 +1860,6 @@ void AliAnalysisTaskChargedFlowGF::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 	double NtrksAfter = 0;
 	double NtrksAfterGap0M = 0;
 	double NtrksAfterGap0P = 0;
-	double NtrksAfterGap1M = 0;
-	double NtrksAfterGap1P = 0;
 	double NtrksAfterGap2M = 0;
 	double NtrksAfterGap2P = 0;
 	double NtrksAfterGap4M = 0;
@@ -1875,24 +1870,15 @@ void AliAnalysisTaskChargedFlowGF::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 	double NtrksAfterGapP = 0;
 	double NtrksAfterGap14M = 0;
 	double NtrksAfterGap14P = 0;
-	double NtrksAfterGap16M = 0;
-	double NtrksAfterGap16P = 0;
 	double NtrksAfter3subL = 0;
 	double NtrksAfter3subM = 0;
 	double NtrksAfter3subR = 0;
-	double NtrksAfter3subGapL = 0;
-	double NtrksAfter3subGapM = 0;
-	double NtrksAfter3subGapR = 0;
 
 	//..for DCA	
 	double pos[3], vz, vx, vy;
 	vz = aod->GetPrimaryVertex()->GetZ();
 	vx = aod->GetPrimaryVertex()->GetX();
 	vy = aod->GetPrimaryVertex()->GetY();
-
-	//..for MC
-	bool IsPrimary = false;
-	double label = 0;
 
 	//..loop to get number of tracks in an event
 	//........................................
@@ -4383,7 +4369,6 @@ TComplex AliAnalysisTaskChargedFlowGF::Seven(int n1, int n2, int n3, int n4, int
 
 		int array[6] = {0,1,2,3,4,5};
 		int iPerm = 0;
-		int argument = 0;
 		int count = 0;
 
 		// k==6: there is just one combination, we can add it manually
@@ -4482,7 +4467,6 @@ TComplex AliAnalysisTaskChargedFlowGF::Eight(int n1, int n2, int n3, int n4, int
 
 		int array[7] = {0,1,2,3,4,5,6};
 		int iPerm = 0;
-		int argument = 0;
 		int count = 0;
 
 		// k==7: there is just one combination, we can add it manually

@@ -745,8 +745,6 @@ void AliAnalysisTaskChargedFlow::AnalyzeAOD()
 	double NtrksAfter = 0;
 	double NtrksAfterGap0M = 0;
 	double NtrksAfterGap0P = 0;
-	double NtrksAfterGap1M = 0;
-	double NtrksAfterGap1P = 0;
 	double NtrksAfterGap2M = 0;
 	double NtrksAfterGap2P = 0;
 	double NtrksAfterGap4M = 0;
@@ -2219,7 +2217,6 @@ TComplex AliAnalysisTaskChargedFlow::Seven(int n1, int n2, int n3, int n4, int n
 
 		int array[6] = {0,1,2,3,4,5};
 		int iPerm = 0;
-		int argument = 0;
 		int count = 0;
 
 		// k==6: there is just one combination, we can add it manually
@@ -2318,7 +2315,6 @@ TComplex AliAnalysisTaskChargedFlow::Eight(int n1, int n2, int n3, int n4, int n
 
 		int array[7] = {0,1,2,3,4,5,6};
 		int iPerm = 0;
-		int argument = 0;
 		int count = 0;
 
 		// k==7: there is just one combination, we can add it manually
