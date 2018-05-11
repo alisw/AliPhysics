@@ -35,7 +35,7 @@ void AliPP13EfficiencySelectionMC::ConsiderPair(const AliVCluster * c1, const Al
 
 	Double_t ma12 = psum.M();
 	Double_t pt12 = psum.Pt();
-	Double_t w = fWeights->Weight(pt12);
+	Double_t w = fWeights->Weights(pt12, eflags);
 
 	TH2 * hist = dynamic_cast<TH2 *> (fInvMass[eflags.isMixing]);
 	hist->Fill(ma12, pt12, w);
@@ -96,7 +96,7 @@ void AliPP13EfficiencySelectionMC::ConsiderGeneratedParticles(const EventFlags &
 
 
 		Double_t pt = particle->Pt();
-		Double_t w = fWeights->Weight(pt);
+		Double_t w = fWeights->Weights(pt, eflags);
 
 		// Use this to remove forward photons that can modify our true efficiency
 		if (TMath::Abs(particle->Y()) > 0.5) // NB: Use rapidity instead of pseudo rapidity!

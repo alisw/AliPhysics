@@ -69,7 +69,7 @@ void AliPP13PhysPhotonSelection::ConsiderPair(const AliVCluster * c1, const AliV
 	Double_t ma12 = psum.M();
 	Double_t pt12 = psum.Pt();
 
-	Float_t eff = fWeights->Weight(p1.E()) * fWeights->Weight(p2.E());
+	Float_t eff = fWeights->TofEfficiency(p1.E()) * fWeights->TofEfficiency(p2.E());
 	fInvariantMass[Int_t(eflags.isMixing)]->FillAll(sm1, sm2, ma12, pt12, 1. / eff);
 }
 

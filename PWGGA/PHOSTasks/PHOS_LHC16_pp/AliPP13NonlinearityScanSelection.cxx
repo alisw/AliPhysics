@@ -86,7 +86,7 @@ void AliPP13NonlinearityScanSelection::ConsiderPair(const AliVCluster * c1, cons
 			Double_t pt12 = psum.Pt();
 			TH2 * hist = dynamic_cast<TH2 *> ((!eflags.isMixing) ? fInvariantMass[ia][ib] : fMixInvariantMass[ia][ib]);
 
-			Float_t weight = fWeights->Weight(pt12);
+			Float_t weight = fWeights->Weights(pt12, eflags);
 			hist->Fill(m12, pt12, weight);
 		}
 	}

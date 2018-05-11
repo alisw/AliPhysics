@@ -20,36 +20,6 @@
 #include <AliVCluster.h>
 #include <AliLog.h>
 
-struct EventFlags
-{
-	enum EventType {kMB = 0, kGood = 1, kZvertex = 2, kNcontributors = 3, kTwoPhotons = 4};
-
-	EventFlags(Int_t c = 0, Int_t z = 0, Bool_t m = kFALSE, Bool_t p = kFALSE, Bool_t vtx = kFALSE, UShort_t bc = 0. /*, Bool_t v0 = kFalse*/):
-		centr(c),
-		zvtx(z),
-		BC(bc),
-		isMixing(m),
-		eventPileup(p),
-		eventVtxExists(vtx),
-		ncontributors(0),
-		fMcParticles(0),
-		fPIDResponse(0)
-		//, eventV0AND(v0)
-	{}
-
-	Double_t vtxBest[3];   // Calculated vertex position
-	Int_t  centr;
-	Int_t  zvtx;
-	UShort_t BC;
-	Bool_t isMixing;
-	Bool_t eventPileup;
-	Bool_t eventVtxExists;
-	Int_t ncontributors;
-	TClonesArray * fMcParticles;
-	AliPIDResponse * fPIDResponse;
-	// Bool_t eventV0AND;
-};
-
 
 class AliPP13PhotonSelection : public TNamed
 {

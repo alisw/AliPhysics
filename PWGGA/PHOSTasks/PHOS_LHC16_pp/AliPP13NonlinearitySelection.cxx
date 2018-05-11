@@ -54,17 +54,16 @@ void AliPP13NonlinearitySelection::ConsiderPair(const AliVCluster * c1, const Al
 	if ((sm2 = CheckClusterGetSM(c2, x2, z2)) < 0) return; //  To be sure that everything is Ok
 
 
+	// NB: This is the data cut
 	if (dynamic_cast<AliPP13SelectionWeights *>(fWeights))
 	{
-		Float_t eff = fWeights->Weight(p1.E()) * fWeights->Weight(p2.E());
+		Float_t eff = fWeights->TofEfficiency(p1.E()) * fWeights->TofEfficiency(p2.E());
 		fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.Pt(), 1. / eff);	
 		return;
 	}
 
-	Float_t weight = fWeights->Weight(pt12);
 	// NB: Weight by meson spectrum, but fill only for the first photon
-	// fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, pt12, weight);
-	
+	Float_t weight = fWeights->Weights(pt12, eflags);
 	fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.Pt(), weight);	
 }
 
