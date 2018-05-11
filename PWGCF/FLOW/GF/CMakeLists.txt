@@ -29,6 +29,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskChargedFlow.cxx
+	AliAnalysisTaskUniFlow.cxx
+	AliAnalysisTaskChargedFlowGF.cxx
   )
 
 # Headers from sources
