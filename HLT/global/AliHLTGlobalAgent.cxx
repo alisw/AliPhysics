@@ -50,10 +50,12 @@
 #include "AliHLTAnalysisManagerComponent.h"
 #include "AliHLTAsyncTestComponent.h"
 #include "AliHLTLumiRegComponent.h"
-#include "AliHLTGlobalPromptRecoQAComponent.h"
 #include "AliHLTRootObjectMergerComponent.h"
 #include "AliHLTAsyncCalibrationComponent.h"
 #include "AliHLTZeroComponent.h"
+#ifdef HAVE_ALITPCCOMMON
+#include "AliHLTGlobalPromptRecoQAComponent.h"
+#endif
 #ifdef ZMQ
 #include "AliHLTZMQsink.h"
 #include "AliHLTZMQsource.h"
@@ -114,8 +116,10 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTAsyncCalibrationComponent);
   pHandler->AddComponent(new AliHLTZeroComponent);
   pHandler->AddComponent(new AliHLTLumiRegComponent);
-  pHandler->AddComponent(new AliHLTGlobalPromptRecoQAComponent);
   pHandler->AddComponent(new AliHLTRootObjectMergerComponent);
+#ifdef HAVE_ALITPCCOMMON
+  pHandler->AddComponent(new AliHLTGlobalPromptRecoQAComponent);
+#endif
 #ifdef ZMQ
   pHandler->AddComponent(new AliHLTZMQsink);
   pHandler->AddComponent(new AliHLTZMQsource);

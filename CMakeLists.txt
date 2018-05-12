@@ -424,9 +424,14 @@ else()
     string(REPLACE ";" " " ALIROOT_MODULES_FORTRAN_FLAT "${ALIROOT_MODULES_FORTRAN}")
     message(WARNING "The following modules require Fortran and will not be built: ${ALIROOT_MODULES_FORTRAN_FLAT}")
   endif()
+  
+  option(ALIROOT_ONLINE_MODE "Build HLT GPU tracker using CUDA" OFF)
+  if((SHUTTLE OR DARPM OR "$ENV{ALIROOT_ONLINE_MODE}") AND NOT "$ENV{HLT_ONLINE_MODE}")
+    set(ALIROOT_ONLINE_MODE ON)
+  endif()
 
   # We disable some unneeded modules if this is a SHUTTLE or DARPM build
-  if((SHUTTLE OR DARPM OR "$ENV{ALIROOT_ONLINE_MODE}") AND NOT "$ENV{HLT_ONLINE_MODE}")
+  if(ALIROOT_ONLINE_MODE)
     string(REPLACE ";" " " ALIROOT_MODULES_NOONLINE_FLAT "${ALIROOT_MODULES_NOONLINE}")
     message(WARNING "Online build detected: disabling unneeded modules: ${ALIROOT_MODULES_NOONLINE_FLAT}")
     list(APPEND EXCLUDE_MODULES "${ALIROOT_MODULES_NOONLINE}")

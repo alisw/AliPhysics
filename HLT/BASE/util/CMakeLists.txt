@@ -107,14 +107,16 @@ target_link_libraries(${MODULE} ${LIBDEPS})
 set_target_properties(${MODULE} PROPERTIES COMPILE_FLAGS "")
 
 # System dependent: Modify the way the library is build
-if(${CMAKE_SYSTEM} MATCHES Darwin AND X11_FOUND)
-  set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-  include_directories(${X11_INCLUDE_DIR})
-  SET(CMAKE_EXE_LINKER_FLAGS 
-    "${CMAKE_EXE_LINKER_FLAGS} -L${X11_LIB_DIR}")
-else()
-  message(WARNING "X11 libraries not found - will NOT build ZMQhistViewer")
-endif(${CMAKE_SYSTEM} MATCHES Darwin AND X11_FOUND)
+if(${CMAKE_SYSTEM} MATCHES Darwin)
+  if (X11_FOUND)
+    set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    include_directories(${X11_INCLUDE_DIR})
+    SET(CMAKE_EXE_LINKER_FLAGS 
+      "${CMAKE_EXE_LINKER_FLAGS} -L${X11_LIB_DIR}")
+  else()
+    message(WARNING "X11 libraries not found - will NOT build ZMQhistViewer")
+  endif(X11_FOUND)
+endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
 install(TARGETS ${MODULE}

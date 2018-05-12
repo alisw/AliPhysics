@@ -74,8 +74,6 @@ class AliHLTTPCGeometry {
   static Double_t fgSin[36]; //stores the sin value for local to global rotations  
 
  public:
-  virtual ~AliHLTTPCGeometry() {}
-
   //setters
   static void SetNPatches(Int_t i){fgNPatches = i;}
   static void SetNRows(Int_t s[6]){for(Int_t i=0;i<fgNPatches;i++) fgNRows[i] = s[i];}
@@ -247,7 +245,5 @@ class AliHLTTPCGeometry {
   static UInt_t CluID2Partition ( UInt_t ClusterId )  { return ( ClusterId >> 22 )  & 0x7;  }
   static UInt_t CluID2Index     ( UInt_t ClusterId )  { return   ClusterId & 0x003FFFFF;    }
   
-
-  ClassDef(AliHLTTPCGeometry,0)
 };
 #endif

@@ -165,12 +165,14 @@ public:
     float          fGlobalParameters[1]; //! array of global parameters
   };
 
+#ifdef HAVE_ALITPCCOMMON
   /// calculate correction factor and offset for a linear approximation of the
   /// drift time transformation by just probing the range of timebins
   static int CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform, int slice, int padrow,
 				       float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev = NULL);
   static int CalculateDriftTimeTransformation(AliHLTTPCFastTransform& transform, int slice, int padrow,
 				       float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev = NULL);
+#endif
 
 protected:
   /// inherited from AliHLTProcessor: data processing

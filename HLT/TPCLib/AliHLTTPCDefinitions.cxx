@@ -28,7 +28,6 @@
 #include <cerrno>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
-ClassImp(AliHLTTPCDefinitions)
 
 const AliHLTComponentDataType AliHLTTPCDefinitions::fgkDDLEncodedEntropyRawDataType = AliHLTComponentDataTypeInitializer("DDLENCEN", kAliHLTDataOriginTPC);
 										      								  	      
