@@ -35,7 +35,7 @@
 #include <TPDGCode.h>
 #include <TString.h>
 #include "AliLog.h"
-#include "AliMathBase.h"
+#include "AliExternalTrackParam.h"
 #include "AliTrackReference.h"
 #include "AliTPCParam.h"
 #include "AliTPCTrackHitsV2.h"
@@ -2440,7 +2440,7 @@ void AliTPCv2::StepManager()
     // Mean free path in cm
     const Float_t prim = fTPCParam->GetNprim();
     // Note that the charge**2 is to be able to handle e.g. light nuclei
-    const Double_t mfp = 1.0 / (charge*charge*prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4)));
+    const Double_t mfp = 1.0 / (charge*charge*prim*AliExternalTrackParam::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4)));
 
     const Double_t meanNcoll = stepSize/mfp;
     const Double_t nColl = mc->GetRandom()->Poisson(meanNcoll);

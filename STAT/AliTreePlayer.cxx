@@ -33,7 +33,6 @@
 #include "THn.h"
 #include "TLegend.h"
 #include "TBufferJSON.h"
-#include "AliSysInfo.h"
 #include <sstream>
 #include <bitset>
 #include "TTimeStamp.h"
@@ -1194,7 +1193,6 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
   //
   Int_t tNumber=-1;
   for (Int_t bEntry=firstEntry; bEntry<lastEntry; bEntry+=chunkSize){  // chunks loop
-    AliSysInfo::AddStamp(TString::Format("Begin.%s",tree->GetName()).Data(),0, bEntry);
     Int_t toQuery=TMath::Min(chunkSize, lastEntry-bEntry);
     Int_t qLength = tree->Draw(queryString,defaultCut,"goffpara",toQuery, bEntry); // query varaibles
     if (qLength>tree->GetEstimate()){
@@ -1251,7 +1249,6 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
         }
         THnF * phis = new THnF(hName.Data(),hName.Data(), hisDims[iHis],nBins, xMin,xMax);
         hisArray->AddAt(phis,iHis);
-        AliSysInfo::AddStamp(hName.Data(),10, phis->GetNbins());
         if (verbose&0x1) {
           ::Info("AliTreePlayer::MakeHistograms","%s: size=%lld",hisDescription.Data(), phis->GetNbins());
         }
@@ -1302,7 +1299,6 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
         if (weight>0) his->Fill(values,weight);
       }
     }
-    AliSysInfo::AddStamp(TString::Format("End.%s",tree->GetName()).Data(),0, bEntry);
   }
   //
   delete hisDescriptionArray;

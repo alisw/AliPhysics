@@ -38,7 +38,7 @@
 #include "TTreeFormulaManager.h"
 #include "AliTreeTrending.h"
 #include "TEntryList.h"
-#include "AliLog.h"
+#include "TError.h"
 #include "TStyle.h"
 #include "TROOT.h"
 #include "TLegend.h"
@@ -183,11 +183,11 @@ Bool_t  AliTreeTrending::InitSummaryTrending(TString statusDescription[3], Float
 
   //   0.) Make descriptor
   if (fTree==NULL) {
-    AliError("Input tree not defined");
+    ::Error("AliTreeTrending::InitSummaryTrending", "Input tree not defined");
     return 0;
   }
   if (fTree->GetAlias("tagID")==NULL && fTree->GetBranch("tagID")==NULL) {
-    AliError("tagID is not defined");
+    ::Error("AliTreeTrending::InitSummaryTrending", "tagID is not defined");
     return 0;
   }
   TLatex *latex= new TLatex;
@@ -255,7 +255,7 @@ void AliTreeTrending::AppendStatusPad(Float_t padRatio, Float_t bottomMargin, Fl
   // 2.) Draw status bar in lower part of canvas
   //
   if (fLatexDescription==NULL){
-    AliError("LatexDescription not initialized. Run AliTreeTrending::InitSummaryTrending");
+    ::Error("AliTreeTrending::AppendStatusPad", "LatexDescription not initialized. Run AliTreeTrending::InitSummaryTrending");
     return;
   }
   TCanvas *c1 = fWorkingCanvas;
@@ -497,8 +497,6 @@ void AliTreeTrending::AppendBand(const char* outputDir, const char *figureName, 
     fWorkingCanvas->Print(TString(outputDir)+"/report.pdf");
     if (fReport) {fReport->cd();fWorkingCanvas->Write(figureName);}
   }
-  static Int_t counter=0;
-  AliSysInfo::AddStamp(expr,2,counter++);
 }
 
 /// #### MakeStatusPlot
@@ -545,8 +543,6 @@ void AliTreeTrending::MakeStatusPlot(const char *outputDir, const char *figureNa
     fWorkingCanvas->Print(TString(outputDir) + "/report.pdf");
     if (fReport) {fReport->cd();fWorkingCanvas->Write(figureName);}
   }
-  static Int_t counter=0;
-  AliSysInfo::AddStamp(expression.Data(),3,counter++);
 }
 
 ///
@@ -585,8 +581,6 @@ void AliTreeTrending::AppendDefaultBandsMinMax(const char *outputDir, const char
     fWorkingCanvas->Print(TString(outputDir)+"/report.pdf");
     if (fReport) {fReport->cd();fWorkingCanvas->Write(figureName);}
   }
-  static Int_t counter=0;
-  AliSysInfo::AddStamp(expr,2,counter++);
 }
 
 
@@ -626,8 +620,6 @@ void AliTreeTrending::AppendDefaultBands(const char *outputDir, const char *figu
     fWorkingCanvas->Print(TString(outputDir)+"/report.pdf");
     if (fReport) {fReport->cd();fWorkingCanvas->Write(figureName);}
   }
-  static Int_t counter=0;
-  AliSysInfo::AddStamp(expr,2,counter++);
 }
 
 /// Recursive function to decompose the status string into sub-contribution

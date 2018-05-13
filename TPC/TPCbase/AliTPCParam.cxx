@@ -37,7 +37,7 @@
 #include "TGraphErrors.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCROC.h"
-#include "AliMathBase.h"
+#include "AliExternalTrackParam.h"
 
 TObjArray *AliTPCParam::fBBParam = 0;
 
@@ -995,7 +995,7 @@ void AliTPCParam::SetNominalGainSlopes(){
 
 
 TVectorD * AliTPCParam::GetBetheBlochParamNa49(){
-  /// Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  /// Parameters of the BB for the Aleph parametrization AliExternalTrackParam::BetheBlochAleph
   /// Na49 parameters were used as first set of parameters for ALICE simulation
   /// (see TPC TDR for details)
 
@@ -1009,7 +1009,7 @@ TVectorD * AliTPCParam::GetBetheBlochParamNa49(){
 }
 
 TVectorD * AliTPCParam::GetBetheBlochParamAlice(){
-  /// Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  /// Parameters of the BB for the Aleph parametrization AliExternalTrackParam::BetheBlochAleph
   /// Na49 parameters were used as first set of parameters for ALICE simulation
   /// Second set was obtained from ALICE 2009-2013 data taking
   /// (see TPC TDR for details)
@@ -1024,7 +1024,7 @@ TVectorD * AliTPCParam::GetBetheBlochParamAlice(){
 }
 
 TVectorD * AliTPCParam::GetBetheBlochParamAliceMC(){
-  /// Parameters of the BB for the Aleph parametrization AliMathBase::BetheBlochAleph
+  /// Parameters of the BB for the Aleph parametrization AliExternalTrackParam::BetheBlochAleph
   /// dNdx parameterization
 
   TVectorD v(5);
@@ -1052,7 +1052,7 @@ Double_t  AliTPCParam::BetheBlochAleph(Double_t bg, Int_t type){
   }
   if (!paramBB) return 0;
   //
-  return AliMathBase::BetheBlochAleph(bg,(*paramBB)(0),(*paramBB)(1),(*paramBB)(2),(*paramBB)(3),(*paramBB)(4));
+  return AliExternalTrackParam::BetheBlochAleph(bg,(*paramBB)(0),(*paramBB)(1),(*paramBB)(2),(*paramBB)(3),(*paramBB)(4));
 }
 
 

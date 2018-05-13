@@ -33,7 +33,7 @@
 #include "AliTPCCalROC.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCParam.h"
-#include "AliMathBase.h"
+#include "AliExternalTrackParam.h"
 #include "AliTPCTransform.h"
 #include "AliSplineFit.h"
 #include "AliCDBManager.h"
@@ -966,7 +966,7 @@ void AliTPCseed::CookPID()
     Double_t mass=AliPID::ParticleMass(j);
     Double_t mom=GetP();
     Double_t dedx=fdEdx/fMIP;
-    Double_t bethe=AliMathBase::BetheBlochAleph(mom/mass); 
+    Double_t bethe=AliExternalTrackParam::BetheBlochAleph(mom/mass); 
     Double_t sigma=fRes*bethe;
     if (sigma>0.001){
       if (TMath::Abs(dedx-bethe) > fRange*sigma) {

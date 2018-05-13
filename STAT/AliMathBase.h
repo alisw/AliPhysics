@@ -44,17 +44,6 @@ class AliMathBase : public TObject
  static  void TestGausFit(Int_t nhistos=5000);
 
   //
-  // Bethe-Bloch formula parameterizations
-  //
-  static Double_t BetheBlochAleph(Double_t bg,
-                                  Double_t kp1=0.76176e-1,
-                                  Double_t kp2=10.632,
-                                  Double_t kp3=0.13279e-4,
-                                  Double_t kp4=1.8631,
-                                  Double_t kp5=1.9479
-				  );
-
-  //
   // Distributions
   //
 

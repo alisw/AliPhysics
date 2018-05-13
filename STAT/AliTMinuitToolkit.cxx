@@ -28,7 +28,6 @@
 #include <TStyle.h>
 #include <TTree.h>
 #include <TTreeStream.h>
-#include "AliSysInfo.h"
 #include "AliTMinuitToolkit.h"
 #include "TGraph.h"
 #include "TPRegexp.h"
@@ -583,7 +582,6 @@ Double_t AliTMinuitToolkit::GausKurtosisSkewness(const Double_t *x, const Double
 /// \param option       - fit option
 
 void AliTMinuitToolkit::Bootstrap(ULong_t nIter, const char * reportName, Option_t *option){
-  static Int_t counter=0;
   Int_t nPoints= fPoints->GetNrows();
   fPointIndex.Set(nPoints);
   // Double_t info[3]={0,0,0};
@@ -593,14 +591,12 @@ void AliTMinuitToolkit::Bootstrap(ULong_t nIter, const char * reportName, Option
   if (reportName!= nullptr) rName=reportName;
   std::vector< std::vector<double> > vecPar(static_cast<unsigned long>(nPar), std::vector<double>(nIter));
   for (Int_t iter=0; iter<nIter; iter++){
-    counter++;
     for (Int_t iPoint=0; iPoint<nPoints; iPoint++){
       fPointIndex[iPoint]= static_cast<Int_t>(gRandom->Rndm() * nPoints);
     }
     Fit(option);
     FitterFCN(nPar, nullptr,fChi2, fParam->GetMatrixArray(),0);
     if (fcnP<0) fcnP=fFCNCounter;
-    if (fVerbose&kSysInfo) AliSysInfo::AddStamp("Bootstrap",0,counter,iter,fFCNCounter-fcnP);
     Int_t fcnCounter=fFCNCounter-fcnP;
     fcnP=fFCNCounter;
     for (UInt_t iPar=0; iPar<nPar;iPar++)  vecPar[iPar][iter]=(*fParam)(iPar);
@@ -641,7 +637,6 @@ void AliTMinuitToolkit::Bootstrap(ULong_t nIter, const char * reportName, Option
 /// \param reportName   - report name (identifier in the streamer)
 /// \param option       - fit option
 void AliTMinuitToolkit::TwoFoldCrossValidation(UInt_t nIter, const char *reportName, Option_t *option) {
-  static Int_t counter = 0;
   Int_t nPoints = fPoints->GetNrows();
   TArrayI indexFold(nPoints);
   TArrayD rndmCV(nPoints);
@@ -687,8 +682,6 @@ void AliTMinuitToolkit::TwoFoldCrossValidation(UInt_t nIter, const char *reportN
     Double_t normDistance = TMath::Sqrt(chi2(0, 0));
     //
     if (fcnP < 0) fcnP = fFCNCounter;
-    if (fVerbose & kSysInfo) AliSysInfo::AddStamp("TwoFoldCrossValidation", 0, counter, iter, fFCNCounter - fcnP);
-    counter++;
     Int_t fcnCounter = fFCNCounter - fcnP;
     fcnP = fFCNCounter;
     if (fStreamer) {

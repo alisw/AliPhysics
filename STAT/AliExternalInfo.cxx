@@ -8,7 +8,6 @@
 #include <string>
 #include <map>
 #include <limits>
-#include "AliLog.h"
 #include "TROOT.h"
 
 #include "AliExternalInfo.h"
@@ -24,7 +23,8 @@
 #include "TStatToolkit.h"
 #include "TLeaf.h"
 #include "TVirtualIndex.h"
-#include "TPRegexp.h" 
+#include "TPRegexp.h"
+#include "TError.h"
 ClassImp(AliExternalInfo)
 
 using namespace std;
@@ -93,17 +93,17 @@ void AliExternalInfo::ReadConfig( TString configLocation, Int_t verbose){
       ::Info("AliExternalInfo::ReadConfig","Path: %s\t%s",cName.Data(), configFileName.Data());
     }
     if (gSystem->AccessPathName(configFileName)!=0) {   // be aware of strange convention for the gSystem->AccessPathName - 0 mean it is OK
-      AliError(TString::Format("Could not find config file '%s'", configFileName.Data()));
+      ::Error("AliExternalInfo::ReadConfig", TString::Format("Could not find config file '%s'", configFileName.Data()));
       const TString defaultConfigFileName=gSystem->ExpandPathName(fgkDefaultConfig);
       if (defaultConfigFileName!=configFileName) {
-	AliError("Using default config file instead");
+	::Error("AliExternalInfo::ReadConfig", "Using default config file instead");
 	configFileName=defaultConfigFileName;
       }
     }
     
     std::ifstream configFile(configFileName);
     if (!configFile.is_open()) {
-      AliError(TString::Format("Could not open config file '%s'", configFileName.Data()));
+      ::Error("AliExternalInfo::ReadConfig", TString::Format("Could not open config file '%s'", configFileName.Data()));
       return;
     }
     
@@ -131,7 +131,7 @@ void AliExternalInfo::ReadConfig( TString configLocation, Int_t verbose){
 /// Prints out the config which was read in previously. Useful to check if anything went wrong
 void AliExternalInfo::PrintConfig(){
   // Loop through the map (Would be much easier in c++11)
-  AliInfo("User defined resources are\n");
+  ::Info("AliExternalInfo::PrintConfig", "User defined resources are\n");
   // looping over map with const_iterator
   typedef std::map<TString,TString>::const_iterator it_type;
   for(it_type iterator = fConfigMap.begin(); iterator != fConfigMap.end(); ++iterator) {
@@ -247,7 +247,7 @@ void AliExternalInfo::SetupVariables(TString& internalFilename, TString& interna
   if (indexName.Length()<=0) indexName="run";
   // Create the local path where to store the information of the resource
   internalLocation += pathStructure;
-  AliInfo(TString::Format("Information will be stored/retrieved in/from %s", internalLocation.Data()));
+  ::Info("AliExternalInfo::SetupVariables", TString::Format("Information will be stored/retrieved in/from %s", internalLocation.Data()));
 
   if (!(period.Last('*') == period.Length() - 1) || !(pass.Last('*') == pass.Length() - 1) || period.Length() == 0){
 //     std::cout << "mkdir " << internalLocation.Data() << std::endl;
@@ -269,7 +269,7 @@ void AliExternalInfo::SetupVariables(TString& internalFilename, TString& interna
 /// the class definition as an abbrevation
 /// \return If downloading and creation of tree was successful true, else false
 Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
-  AliInfo(TString::Format("Caching of %s %s from %s in start path %s", period.Data(), pass.Data(), type.Data(), fLocalStorageDirectory.Data()));
+  ::Info("AliExternalInfo::Cache", TString::Format("Caching of %s %s from %s in start path %s", period.Data(), pass.Data(), type.Data(), fLocalStorageDirectory.Data()));
 
   // initialization of local variables
   TString internalFilename = ""; // Resulting path to the file
@@ -310,7 +310,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
         gSystem->GetFromPipe(Form("touch %s",internalFilename.Data()));  // Update the access and modification times of each FILE to the current time
         return kTRUE;
       }else{
-        AliError("Curl caching failed");
+        ::Error("AliExternalInfo::Cache", "Curl caching failed");
         gSystem->GetFromPipe(Form("rm %s",internalFilename.Data()));
         return kFALSE;
       }
@@ -318,21 +318,21 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
     // Download resources in the form of .root files in a tree
     if (resourceIsTree == kTRUE ) {
       externalLocation += pathStructure + rootFileName;
-      AliInfo(TString::Format("Information retrieved from: %s", externalLocation.Data()));
+      ::Info("AliExternalInfo::Cache", TString::Format("Information retrieved from: %s", externalLocation.Data()));
       // Check if external location is a http address or locally accessible
       //    std::cout << externalLocation(0, 4) << std::endl;
       TFile *file = TFile::Open(externalLocation);
       if (file && !file->IsZombie()) { // Checks if webresource is available
-        AliInfo("Resource available");
+        ::Info("AliExternalInfo::Cache", "Resource available");
         if (file->Cp(internalFilename)) {
-          AliInfo("Caching with TFile::Cp() successful");
+          ::Info("AliExternalInfo::Cache", "Caching with TFile::Cp() successful");
           return kTRUE;
         } else {
-          AliError("Copying to internal location failed");
+          ::Error("AliExternalInfo::Cache", "Copying to internal location failed");
           return kFALSE;
         }
       } else {
-        AliError("Resource not available");
+        ::Error("AliExternalInfo::Cache", "Resource not available");
         return kFALSE;
       }
       delete file;
@@ -364,16 +364,16 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
       TTree tree(treeName, treeName);
 
       if ( (tree.ReadFile(mifFilePath+"RunFix", "", '\"')) > 0) {
-        if (fVerbose>1) AliInfo("Successfully read in tree");
+        if (fVerbose>1) ::Info("AliExternalInfo::Cache", "Successfully read in tree");
       }
       else {
-        AliError("-- Error while reading tree");
+        ::Error("AliExternalInfo::Cache", "-- Error while reading tree");
         return kFALSE;
       }
 
       tree.Write();
       tempfile.Close();
-      if (fVerbose>0) AliInfo(TString::Format("Write tree to file: %s", internalFilename.Data()));
+      if (fVerbose>0) ::Info("AliExternalInfo::Cache", TString::Format("Write tree to file: %s", internalFilename.Data()));
       return kTRUE;
     }
   }
@@ -444,18 +444,18 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
   SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass,indexName);
 
   //std::cout << "internalFilename: " << internalFilename << " rootFileName: " << rootFileName << std::endl;
-  if (fVerbose>1) AliInfo(TString::Format("Caching start internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
+  if (fVerbose>1) ::Info("AliExternalInfo::GetTree", TString::Format("Caching start internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
   if (gSystem->AccessPathName(internalFilename.Data()) == kTRUE) {
     if (Cache(type, period, pass) == kFALSE) {
-      AliError(TString::Format("Caching failed internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
+      ::Error("AliExternalInfo::GetTree", TString::Format("Caching failed internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
       return tree;
     }
   }else{
     Bool_t downloadNeeded = IsDownloadNeeded(internalFilename, type);
     if (downloadNeeded){
-      AliInfo(TString::Format("Caching %s", internalFilename.Data()).Data());
+      ::Info("AliExternalInfo::GetTree", TString::Format("Caching %s", internalFilename.Data()).Data());
       if (Cache(type, period, pass) == kFALSE) {
-	AliError(TString::Format("Caching failed internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
+	::Error("AliExternalInfo::GetTree", TString::Format("Caching failed internalFileName\t%s\trootFileName\t%s", internalFilename.Data(), rootFileName.Data()).Data());
 	return tree;
       }
     }    
@@ -473,11 +473,11 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
   delete arr;
   TTreeSRedirector::FixLeafNameBug(tree);
   if (tree != 0x0) {
-    if (fVerbose>1) AliInfo(TString::Format("Successfully read %s/%s",internalFilename.Data(), tree->GetName()));
+    if (fVerbose>1) ::Info("AliExternalInfo::GetTree", TString::Format("Successfully read %s/%s",internalFilename.Data(), tree->GetName()));
     if (buildIndex==1) BuildIndex(tree, type);
   } else {
-    AliError("Error while reading tree: ");
-    AliError(TString::Format("ERROR READING: %s", treeName.Data()));
+    ::Error("AliExternalInfo::GetTree", "Error while reading tree: ");
+    ::Error("AliExternalInfo::GetTree", TString::Format("ERROR READING: %s", treeName.Data()));
   }
 
   const TString cacheSize=fConfigMap[type + ".CacheSize"];
@@ -608,7 +608,7 @@ TChain* AliExternalInfo::GetChain(TString type, TString period, TString pass, In
 
   TString files=gSystem->GetFromPipe(cmd.Data());
   TObjArray *arrFiles=files.Tokenize("\n");
-  AliInfo(TString::Format("Files to add to chain: %s", files.Data()));
+  ::Info("AliExternalInfo::GetChain", TString::Format("Files to add to chain: %s", files.Data()));
 
   //function to get tree namee based on type
   chain=new TChain(treeName.Data());
@@ -756,8 +756,8 @@ Bool_t AliExternalInfo::AddChain(TString type, TString period, TString pass){
 
   // Setting up all the local variables
   SetupVariables(internalFilename, internalLocation, resourceIsTree, pathStructure, detector, rootFileName, treeName, type, period, pass,indexName);
-  AliInfo(TString::Format("Add to internal Chain: %s", internalFilename.Data()));
-  AliInfo(TString::Format("with tree name: %s",        treeName.Data()));
+  ::Info("AliExternalInfo::AddChain", TString::Format("Add to internal Chain: %s", internalFilename.Data()));
+  ::Info("AliExternalInfo::AddChain", TString::Format("with tree name: %s",        treeName.Data()));
   fChain->AddFile(internalFilename.Data(), TChain::kBigNumber, treeName);
 
   return kTRUE;
@@ -822,7 +822,7 @@ Bool_t AliExternalInfo::IsDownloadNeeded(TString file, TString type){
 
   // std::cout << "-- Check, if " << file << " is already there" << std::endl;
   if (gSystem->AccessPathName(file.Data()) == kTRUE) {
-    AliInfo("-- File not found locally --> Caching from remote");
+    ::Info("AliExternalInfo::IsDownloadNeeded", "-- File not found locally --> Caching from remote");
     return kTRUE;
   }
   else {
@@ -833,11 +833,11 @@ Bool_t AliExternalInfo::IsDownloadNeeded(TString file, TString type){
     long int timeFileModified = st.st_mtime;
     // std::cout << "------ File is " << timeNow - timeFileModified << " seconds old" << std::endl;
     if (timeNow - timeFileModified < timeOut) {
-      AliInfo(TString::Format("-- File is %li s old; NOT older than the set timelimit %d s",timeNow - timeFileModified, timeOut));
+      ::Info("AliExternalInfo::IsDownloadNeeded", TString::Format("-- File is %li s old; NOT older than the set timelimit %d s",timeNow - timeFileModified, timeOut));
       return kFALSE; // if file is younger than the set time limit, it will not be downloaded again
     }
     else {
-      AliInfo(TString::Format("-- File is %li s old; Older than the set timelimit %d s",timeNow - timeFileModified, timeOut));
+      ::Info("AliExternalInfo::IsDownloadNeeded", TString::Format("-- File is %li s old; Older than the set timelimit %d s",timeNow - timeFileModified, timeOut));
       return kTRUE;
     }
   }
@@ -1004,12 +1004,12 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
    if(!downloadNeeded){
         outfile = TFile::Open(fLocalStorageDirectory+TString::Format("%s","/dumptree_RD.root"),"UPDATE");
         if(outfile->GetListOfKeys()->Contains("dumptree_RD")){
-           AliInfo("-- dumptree_RD.root found locally and validated--> Not caching");
+	  ::Info("AliExternalInfo::GetTreeAliVersRD", "-- dumptree_RD.root found locally and validated--> Not caching");
            return((TTree*)outfile->Get("dumptree_RD"));
         } 
     } 
         
-    else  AliInfo("-- dumptree_RD.root not validated--> Caching from remote");
+   else  ::Info("AliExternalInfo::GetTreeAliVersRD", "-- dumptree_RD.root not validated--> Caching from remote");
    
     outfile= new TFile(fLocalStorageDirectory+"/dumptree_RD.root","RECREATE");
     TTree *dumptree = treeProd->CloneTree();       //tree that will hold information for guessing
@@ -1047,7 +1047,7 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
     Int_t entries=dumptree->GetEntries();
     for (Int_t i=0; i<entries; i++){            //loop over all IDs
       dumptree->GetEntry(i);
-      AliInfo(TString::Format("Getting ProdCyle ID: %d",id));
+      ::Info("AliExternalInfo::GetTreeAliVersRD", TString::Format("Getting ProdCyle ID: %d",id));
       TTree * tree= GetTreeProdCycleByID(TString::Format("%d",id));         //get tree with production info for each ID
 
       if (tree==NULL) {
@@ -1125,7 +1125,7 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    if(!downloadNeeded){
         outfile = TFile::Open(fLocalStorageDirectory+TString::Format("%s","/dumptree_MC.root"),"UPDATE");
         if(outfile->GetListOfKeys()->Contains("dumptree_MC")){
-           AliInfo("-- dumptree_MC.root found locally and validated--> Not caching");
+	  ::Info(" AliExternalInfo::GetTreeAliVersMC", "-- dumptree_MC.root found locally and validated--> Not caching");
            return((TTree*)outfile->Get("dumptree_MC"));
         } 
     } 
