@@ -120,8 +120,9 @@ Bool_t ConfigureLstar13TeVpp_II
   Bool_t  useIM   [12] = {1         ,1         ,1         ,1         ,1       ,1       ,1        ,1        ,1        ,1        ,1       ,1       };
   TString name    [12] = {"UnlikePM","UnlikeMP","MixingPM","MixingMP","LikePP","LikeMM","MCGenPM","MCGenMP","TruesPM","TruesMP","ResPM" ,"ResMP" };
   TString comp    [12] = {"PAIR"    ,"PAIR"    ,"MIX"     ,"MIX"     ,"PAIR"  ,"PAIR"  ,"MOTHER" ,"MOTHER" ,"TRUE"   ,"TRUE"   ,"TRUE"  ,"TRUE"  };
-  TString output  [12] = {"HIST"   , "HIST"   ,"HIST"   , "HIST"   , "HIST"   , "HIST"   ,"HIST"  ,"HIST"  ,"HIST"   , "HIST"  ,"HIST"  , "HIST"  };
+  //TString output  [12] = {"HIST"    ,"HIST"    ,"HIST"    ,"HIST"    ,"HIST"  ,"HIST"  ,"HIST"   ,"HIST"   ,"HIST"   ,"HIST"   ,"HIST"  ,"HIST"  };
   //TString output  [12] = {"SPARSE"  ,"SPARSE"  ,"SPARSE"  ,"SPARSE"  ,"SPARSE","SPARSE","SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE","SPARSE"};
+  TString output  [12] = {"HIST"  ,"HIST"  ,"HIST"  ,"HIST"  ,"HIST","HIST","HIST" ,"HIST" ,"HIST" ,"HIST" ,"HIST","HIST"};
   Char_t  charge1 [12] = {'+'       ,'-'       ,'+'       ,'-'       ,'+'     ,'-'     ,'+'      ,'-'      ,'+'      ,'-'      ,'+'     ,'-'     };
   Char_t  charge2 [12] = {'-'       ,'+'       ,'-'       ,'+'       ,'+'     ,'-'     ,'-'      ,'+'      ,'_'      ,'+'      ,'-'     ,'+'     };
   Int_t   cutID1  [12] = {iCutP     ,iCutP     ,iCutP    ,iCutP      ,iCutP   ,iCutP   ,iCutP    ,iCutP    ,iCutP    ,iCutP    ,iCutP   ,iCutP   };
@@ -177,69 +178,81 @@ Bool_t ConfigureLstar13TeVpp_II
     
   }
   
-  if (isMC){   
-    AliRsnMiniOutput *outnew2 = task->CreateOutput(Form("Lstar_resolution_lambda%s", opt.Data()), "HIST", "TRUE");  
-    outnew2->SetCutID(0, cutID1[0]);
-    outnew2->SetCutID(1, cutID2[0]);
-    outnew2->SetDaughter(0, AliRsnDaughter::kProton);
-    outnew2->SetDaughter(1, AliRsnDaughter::kKaon);
-    outnew2->SetCharge(0, charge1[0]);
-    outnew2->SetCharge(1, charge2[0]);
-    outnew2->SetMotherPDG(3124);
-    outnew2->SetMotherMass(1.51953);
-    outnew2->SetPairCuts(cutsPair);
-    
-    outnew2->AddAxis(imID, 1000, 1.4, 1.8); // mass axis
-    outnew2->AddAxis(ptID, 100, 0.0, 10.0); //pt axis
-    //outnew2->AddAxis(resmass, 400, -0.2, 0.2);// mass resolution
-    outnew2->AddAxis(IMdif, 1000, -0.5, 0.5);// mass diff (true -reco)
-    
-    AliRsnMiniOutput *outnew1 = task->CreateOutput(Form("Lstar_resolution_antilambda%s%s", opt.Data()), "HIST", "TRUE");
-    outnew1->SetCutID(0, cutID1[0]);
-    outnew1->SetCutID(1, cutID2[0]);
-    outnew1->SetDaughter(0, AliRsnDaughter::kProton);
-    outnew1->SetDaughter(1, AliRsnDaughter::kKaon);
-    
-    outnew1->SetMotherPDG(-3124);
-    outnew1->SetMotherMass(1.51953);
-    outnew1->SetPairCuts(cutsPair);
-    
-    outnew1->AddAxis(imID, 800, 1.4, 2.2); // mass axis                                                                                 
-    outnew1->AddAxis(ptID, 100, 0.0, 10.0); //pt axis                                                                                   
-    outnew1->AddAxis(IMdif, 400, -0.2, 0.2);// mass resolution
-    
-    
-    AliRsnMiniOutput *outnew3 = task->CreateOutput(Form("phase_spaces_Lambda", opt.Data()), "HIST", "TRUE");
-    
-    outnew3->SetCutID(0, cutID1[0]);
-    outnew3->SetCutID(1, cutID2[0]);
-    outnew3->SetDaughter(0, AliRsnDaughter::kProton);
-    outnew3->SetDaughter(1, AliRsnDaughter::kKaon);
-    outnew3->SetCharge(0, charge1[0]);
-    outnew3->SetCharge(1, charge2[0]);
-    outnew3->SetMotherPDG(3124);
-    outnew3->SetMotherMass(1.51953);
-    outnew3->SetPairCuts(cutsPair);
-    
-    outnew3->AddAxis(fdpt,100,0.,10.);
-    outnew3->AddAxis(sdpt,100,0.,10.);
-    outnew3->AddAxis(ptID,200,0.,20.);
-    
-    AliRsnMiniOutput *outnew4 = task->CreateOutput(Form("phase_spaces_antiLambda", opt.Data()), "HIST", "TRUE");
-    
-    outnew4->SetCutID(0, cutID1[0]);
-    outnew4->SetCutID(1, cutID2[0]);
-    outnew4->SetDaughter(0, AliRsnDaughter::kProton);
-    outnew4->SetDaughter(1, AliRsnDaughter::kKaon);
-    outnew4->SetCharge(0, charge1[0]);
-    outnew4->SetCharge(1, charge2[0]);
-    outnew4->SetMotherPDG(-3124);
-    outnew4->SetMotherMass(1.51953);
-    outnew4->SetPairCuts(cutsPair);
-    
-    outnew4->AddAxis(fdpt,100,0.,10.);
-    outnew4->AddAxis(sdpt,100,0.,10.);
-    outnew4->AddAxis(ptID,200,0.,20.); 
+  if (isMC){
+    cout<<"here###################################################################"<<endl;
+
+    AliRsnMiniOutput* outm=task->CreateOutput(Form("LStar_Mother%s", suffix),"HIST","MOTHER");
+    outm->SetDaughter(0,AliRsnDaughter::kProton);
+    outm->SetDaughter(1,AliRsnDaughter::kKaon);
+    outm->SetMotherPDG(3124);
+    outm->SetMotherMass(1.51953);
+    outm->SetPairCuts(cutsPair);
+    outm->AddAxis(imID,215,0.985,1.2);
+    outm->AddAxis(ptID,200,0.,20.);
+    //outm->AddAxis(centID,nmult,multbins);
+    outm->AddAxis(IMdif, 1000, -0.5, 0.5);// mass diff (true -reco)
+
+    AliRsnMiniOutput* outm1=task->CreateOutput(Form("AntiLStar_Mother%s", suffix),"HIST","MOTHER");
+    outm1->SetDaughter(0,AliRsnDaughter::kProton);
+    outm1->SetDaughter(1,AliRsnDaughter::kKaon);
+    outm1->SetMotherPDG(-3124);
+    outm1->SetMotherMass(1.51953);
+    outm1->SetPairCuts(cutsPair);
+    outm1->AddAxis(imID,215,0.985,1.2);
+    outm1->AddAxis(ptID,200,0.,20.);
+    //outm->AddAxis(centID,nmult,multbins);
+    outm1->AddAxis(IMdif, 1000, -0.5, 0.5);// mass diff (true -reco)
+
+    AliRsnMiniOutput* outps=task->CreateOutput(Form("lambda_phaseSpace%s", suffix),"HIST","TRUE");
+    outps->SetDaughter(0,AliRsnDaughter::kProton);
+    outps->SetDaughter(1,AliRsnDaughter::kKaon);
+    outps->SetCutID(0, cutID1[i]);
+    outps->SetCutID(1, cutID2[i]);
+    outps->SetMotherPDG(3124);
+    outps->SetMotherMass(1.51953);
+    outps->SetPairCuts(cutsPair);
+    outps->AddAxis(ptID,200,0.,20.);
+    outps->AddAxis(fdpt,100,0.,10.);
+    outps->AddAxis(sdpt,100,0.,10.);
+   
+
+    AliRsnMiniOutput* outpsf=task->CreateOutput(Form("antilambda_phaseSpace%s", suffix),"HIST","TRUE");
+    outpsf->SetDaughter(0,AliRsnDaughter::kProton);
+    outpsf->SetDaughter(1,AliRsnDaughter::kKaon);
+    outpsf->SetCutID(0, cutID1[i]);
+    outpsf->SetCutID(1, cutID2[i]);
+    outpsf->SetMotherPDG(-3124);
+    outpsf->SetMotherMass(1.59153);
+    outpsf->SetPairCuts(cutsPair);
+    outpsf->AddAxis(ptID,200,0.,20.);
+    outpsf->AddAxis(fdpt,100,0.,10.);
+    outpsf->AddAxis(sdpt,100,0.,10.);
+   
+
+    AliRsnMiniOutput* outps1=task->CreateOutput(Form("lambda_phaseSpace_gen%s", suffix),"HIST","MOTHER");
+    outps1->SetDaughter(0,AliRsnDaughter::kProton);
+    outps1->SetDaughter(1,AliRsnDaughter::kKaon);
+    outps1->SetCutID(0, cutID1[i]);
+    outps1->SetCutID(1, cutID2[i]);
+    outps1->SetMotherPDG(3124);
+    outps1->SetMotherMass(1.51953);
+    outps1->SetPairCuts(cutsPair);
+    outps1->AddAxis(ptID,200,0.,20.);
+    outps1->AddAxis(fdpt,100,0.,10.);
+    outps1->AddAxis(sdpt,100,0.,10.);
+   
+
+    AliRsnMiniOutput* outpsf1=task->CreateOutput(Form("antilambda_phaseSpace_gen%s", suffix),"HIST","MOTHER");
+    outpsf1->SetDaughter(0,AliRsnDaughter::kProton);
+    outpsf1->SetDaughter(1,AliRsnDaughter::kKaon);
+    outpsf1->SetCutID(0, cutID1[i]);
+    outpsf1->SetCutID(1, cutID2[i]);
+    outpsf1->SetMotherPDG(-3124);
+    outpsf1->SetMotherMass(1.59153);
+    outpsf1->SetPairCuts(cutsPair);
+    outpsf1->AddAxis(ptID,200,0.,20.);
+    outpsf1->AddAxis(fdpt,100,0.,10.);
+    outpsf1->AddAxis(sdpt,100,0.,10.);
     
   }  // isMC
   
