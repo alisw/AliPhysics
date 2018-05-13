@@ -94,7 +94,6 @@ set(SRCS
     AliFlatTPCdEdxInfo.h
     AliFlatTPCdEdxInfo.cxx
     AliHLTLumiRegComponent.cxx
-    AliHLTGlobalPromptRecoQAComponent.cxx
     physics/AliHLTCaloHistoCellEnergy.cxx
     physics/AliHLTCaloHistoClusterEnergy.cxx
     physics/AliHLTCaloHistoComponent.cxx
@@ -108,6 +107,12 @@ set(SRCS
     physics/AliHLTAnalysisManagerComponent.cxx
     physics/examples/AliAnalysisTaskExampleV.cxx
    )
+
+if(DEFINED ALITPCCOMMON_DIR)
+  add_definitions(-DHAVE_ALITPCCOMMON)
+  set(SRCS ${SRCS} AliHLTGlobalPromptRecoQAComponent.cxx)
+  include_directories(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker)
+endif()
 
 if(ZEROMQ_FOUND)
   include_directories(${ZEROMQ_INCLUDE_DIR}

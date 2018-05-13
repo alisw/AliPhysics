@@ -24,7 +24,6 @@
 ///
 
 #include "AliHLTTPCTrackMCMarkerComponent.h"
-#include "AliHLTTPCCADef.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCGeometry.h"
 #include "AliHLTTPCClusterMCData.h"
@@ -381,4 +380,3 @@ int AliHLTTPCTrackMCMarkerComponent::DoEvent( const AliHLTComponentEventData &ev
 
   return iResult;
 }
-

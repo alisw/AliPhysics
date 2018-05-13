@@ -25,6 +25,7 @@ message( STATUS "DIMDIR set, building HLT createGRP library" )
 
 # Module include folder
 include_directories(${CREATEGRPDIR}
+                    ${AliRoot_SOURCE_DIR}/STAT
                     ${AliRoot_SOURCE_DIR}/STEER/STEER
                     ${AliRoot_SOURCE_DIR}/STEER/CDB
                     ${AliRoot_SOURCE_DIR}/STEER/STEERBase

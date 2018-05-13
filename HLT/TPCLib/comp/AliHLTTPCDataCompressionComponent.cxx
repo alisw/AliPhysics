@@ -41,8 +41,10 @@
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBEntry.h"
+#ifdef HAVE_ALITPCCOMMON
 #include "AliHLTTPCClusterStatComponent.h"
 #include "AliHLTTPCReverseTransformInfoV1.h"
+#endif
 #include "TH1F.h"
 #include "TFile.h"
 #include <memory>
@@ -1197,14 +1199,17 @@ int AliHLTTPCDataCompressionComponent::InitDriftTimeTransformation()
     return iResult;
   }
 
+#ifdef HAVE_ALITPCCOMMON
   if ((iResult=CalculateDriftTimeTransformation(transform, 0, 0, fDriftTimeFactorA, fDriftTimeOffsetA))<0) return iResult;
   if (fVerbosity>0) HLTInfo("drift time transformation A side: m=%f n=%f", fDriftTimeFactorA, fDriftTimeOffsetA);
   if ((iResult=CalculateDriftTimeTransformation(transform, 18, 0, fDriftTimeFactorC, fDriftTimeOffsetC))<0) return iResult;
   if (fVerbosity>0) HLTInfo("drift time transformation C side: m=%f n=%f", fDriftTimeFactorC, fDriftTimeOffsetC);
+#endif
 
   return 0;
 }
 
+#ifdef HAVE_ALITPCCOMMON
 template <class T> static inline int GenericCalculateDriftTimeTransformation(T& transform,
 									int slice, int padrow,
 									float& m, float& n,
@@ -1267,3 +1272,4 @@ int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTP
 int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTPCFastTransform& transform, int slice, int padrow, float& m, float& n, AliHLTTPCReverseTransformInfoV1* rev) {
     return GenericCalculateDriftTimeTransformation(transform, slice, padrow, m, n, rev);
 }
+#endif

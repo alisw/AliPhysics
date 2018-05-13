@@ -40,9 +40,12 @@
 AliHLTTPCAgent gAliHLTTPCAgent;
 
 // component headers
+#ifdef HAVE_ALITPCCOMMON
 #include "AliHLTTPCCATrackerComponent.h"
-#include "AliHLTTPCTrackMCMarkerComponent.h"
 #include "AliHLTTPCCAGlobalMergerComponent.h"
+#include "AliHLTTPCClusterStatComponent.h"
+#endif
+#include "AliHLTTPCTrackMCMarkerComponent.h"
 #include "AliHLTTPCdEdxComponent.h"
 #include "AliHLTTPCdEdxMonitoringComponent.h"
 #include "AliHLTTPCDigitPublisherComponent.h"
@@ -53,7 +56,6 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCDataCheckerComponent.h"
 #include "AliHLTTPCHWCFEmulatorComponent.h"
 #include "AliHLTTPCHWCFConsistencyControlComponent.h"
-#include "AliHLTTPCClusterStatComponent.h"
 #include "AliHLTTPCDataCompressionComponent.h"
 #include "AliHLTTPCDataCompressionMonitorComponent.h"
 #include "AliHLTTPCDataCompressionUnpackerComponent.h"
@@ -403,8 +405,11 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
 
+#ifdef HAVE_ALITPCCOMMON
   pHandler->AddComponent(new AliHLTTPCCATrackerComponent);
   pHandler->AddComponent(new AliHLTTPCCAGlobalMergerComponent);
+  pHandler->AddComponent(new AliHLTTPCClusterStatComponent);
+#endif
   pHandler->AddComponent(new AliHLTTPCTrackMCMarkerComponent);
   pHandler->AddComponent(new AliHLTTPCdEdxComponent);
   pHandler->AddComponent(new AliHLTTPCFastdEdxComponent);
@@ -417,7 +422,6 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCDataCheckerComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFEmulatorComponent);
 //  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);  //FIXME: Causes crash: https://savannah.cern.ch/bugs/?83677
-  pHandler->AddComponent(new AliHLTTPCClusterStatComponent);
   pHandler->AddComponent(new AliHLTTPCDataCompressionComponent);
   pHandler->AddComponent(new AliHLTTPCDataCompressionMonitorComponent);
   pHandler->AddComponent(new AliHLTTPCDataCompressionUnpackerComponent);

@@ -227,8 +227,6 @@ private:
   /// Do not allow creation of this class since everything is static.
   AliHLTTPCDefinitions();
   virtual ~AliHLTTPCDefinitions();
-
-  ClassDef(AliHLTTPCDefinitions, 0)  // Useful static definitions and methods for TPC
 };
 
 #endif

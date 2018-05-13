@@ -109,7 +109,16 @@ AliESDv0::AliESDv0(const AliESDv0& v0) :
   //--------------------------------------------------------------------
   // The copy constructor
   //--------------------------------------------------------------------
-
+  
+  Short_t cN=fParamN.Charge(), cP=fParamP.Charge();
+  Bool_t swp = cN>0 && (cN != cP);
+  if (swp) {
+    fParamN = v0.fParamP;
+    fParamP = v0.fParamN;
+    fNidx=v0.fPidx;
+    fPidx=v0.fNidx;
+  }
+  
   for (int i=0; i<3; i++) {
     fPos[i]  = v0.fPos[i];
     fNmom[i] = v0.fNmom[i];
@@ -122,9 +131,17 @@ AliESDv0::AliESDv0(const AliESDv0& v0) :
   for (Int_t i=0; i<2; i++) {
     fNormDCAPrim[i]=v0.fNormDCAPrim[i];
   }
-  for (Int_t i=0;i<6;i++){
+  if (swp) {
+    for (Int_t i=0;i<6;i++){
+      fClusters[0][i]=v0.fClusters[1][i]; 
+      fClusters[1][i]=v0.fClusters[0][i];
+    }
+  }
+  else {
+    for (Int_t i=0;i<6;i++){
       fClusters[0][i]=v0.fClusters[0][i]; 
       fClusters[1][i]=v0.fClusters[1][i];
+    }
   }
   for (Int_t i=0;i<3;i++){
       fAngle[i]=v0.fAngle[i];
@@ -162,40 +179,37 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
 
   //Make sure the daughters are ordered (needed for the on-the-fly V0s)
   Short_t cN=t1.Charge(), cP=t2.Charge();
-  if ((cN>0) && (cN != cP)) {
-     fParamN.~AliExternalTrackParam();
-     new (&fParamN) AliExternalTrackParam(t2);
-     fParamP.~AliExternalTrackParam();
-     new (&fParamP) AliExternalTrackParam(t1);
-
-     Int_t index=fNidx;
-     fNidx=fPidx;
-     fPidx=index;
+  Bool_t swp = cN>0 && (cN != cP);
+  if (swp) {
+    fParamN = t2;
+    fParamP = t1;
+    fNidx = i2;
+    fPidx = i1;
   }
-
+  
   for (Int_t i=0; i<6; i++) {
     fPosCov[i]= 0.;
   }
 
   //Trivial estimation of the vertex parameters
-  Double_t alpha=t1.GetAlpha(), cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
+  Double_t alpha=fParamN.GetAlpha(), cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
   Double_t tmp[3];
-  t1.GetPxPyPz(tmp);
+  fParamN.GetPxPyPz(tmp);
   Double_t px1=tmp[0], py1=tmp[1], pz1=tmp[2];
-  t1.GetXYZ(tmp);
+  fParamN.GetXYZ(tmp);
   Double_t  x1=tmp[0],  y1=tmp[1],  z1=tmp[2];
   const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
-  Double_t sx1=sn*sn*t1.GetSigmaY2()+ss, sy1=cs*cs*t1.GetSigmaY2()+ss; 
+  Double_t sx1=sn*sn*fParamN.GetSigmaY2()+ss, sy1=cs*cs*fParamN.GetSigmaY2()+ss; 
 
 
-  alpha=t2.GetAlpha(); cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
-  t2.GetPxPyPz(tmp);
+  alpha=fParamP.GetAlpha(); cs=TMath::Cos(alpha); sn=TMath::Sin(alpha);
+  fParamP.GetPxPyPz(tmp);
   Double_t px2=tmp[0], py2=tmp[1], pz2=tmp[2];
-  t2.GetXYZ(tmp);
+  fParamP.GetXYZ(tmp);
   Double_t  x2=tmp[0],  y2=tmp[1],  z2=tmp[2];
-  Double_t sx2=sn*sn*t2.GetSigmaY2()+ss, sy2=cs*cs*t2.GetSigmaY2()+ss; 
+  Double_t sx2=sn*sn*fParamP.GetSigmaY2()+ss, sy2=cs*cs*fParamP.GetSigmaY2()+ss; 
     
-  Double_t sz1=t1.GetSigmaZ2(), sz2=t2.GetSigmaZ2();
+  Double_t sz1=fParamN.GetSigmaZ2(), sz2=fParamP.GetSigmaZ2();
   Double_t wx1=sx2/(sx1+sx2), wx2=1.- wx1;
   Double_t wy1=sy2/(sy1+sy2), wy2=1.- wy1;
   Double_t wz1=sz2/(sz1+sz2), wz2=1.- wz1;

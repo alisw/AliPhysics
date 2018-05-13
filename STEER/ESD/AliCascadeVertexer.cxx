@@ -178,6 +178,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
 
          cascade.SetDcaXiDaughters(dca);
 	 event->AddCascade(&cascade);
+	 v->SetUsedByCascade(kTRUE);
          ncasc++;
 
       } // end loop tracks

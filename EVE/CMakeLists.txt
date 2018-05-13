@@ -14,6 +14,12 @@
 # **************************************************************************
 
 # EVE libraries
+
+if(ALIROOT_ONLINE_MODE)
+  unset(ZEROMQ_FOUND)
+  remove_definitions(-DZMQ)
+endif()
+
 add_subdirectory(EveBase)
 add_subdirectory(EveDet)
 add_subdirectory(EveHLT)

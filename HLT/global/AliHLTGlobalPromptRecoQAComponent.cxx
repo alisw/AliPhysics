@@ -21,7 +21,6 @@
 //  @date
 //  @brief  Simple HLT reco QA/monitor
 //
-
 #include <cassert>
 #include "AliHLTGlobalPromptRecoQAComponent.h"
 #include "AliHLTGlobalBarrelTrack.h"
@@ -62,8 +61,8 @@
 #include "AliSysInfo.h"
 #include "AliHLTSAPTrackerData.h"
 #include "AliFlatESDVertex.h"
-#include "tracking-ca/AliHLTTPCCADefinitions.h"
-#include "tracking-ca/AliHLTTPCCASliceOutput.h"
+#include "AliHLTTPCCADefinitions.h"
+#include "AliHLTTPCCASliceOutput.h"
 #include "AliHLTTRDDefinitions.h"
 #include "AliHLTEMCALDefinitions.h"
 #include "AliHLTTPCHWCFData.h"

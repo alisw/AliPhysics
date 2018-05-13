@@ -75,8 +75,6 @@ using namespace std;
 * @ingroup alihlt_tpc
 */
 
-ClassImp(AliHLTTPCGeometry)
-
 AliHLTTPCGeometry::AliHLTTPCGeometry()
 {
 }

@@ -984,7 +984,7 @@ int AliESDEvent::CleanV0s(const AliGRPRecoParam *grpRecoParam)
     else {
       // offline V0s have passed mass hypothesis check already at V0-vertexer level
       if ( TMath::Abs(v0->Eta())>etaMax && !used) badV0 = 1; 
-      else if (cleanProngs) { // empty redundand prongs info
+      if (cleanProngs) { // empty redundand prongs info
 	AliExternalTrackParam *parP=(AliExternalTrackParam*)v0->GetParamP();
 	AliExternalTrackParam *parN = (AliExternalTrackParam*) v0->GetParamN();
 	parP->Set(parP->GetX(),0.,zeroArr,zeroArr);
@@ -2866,8 +2866,8 @@ void AliESDEvent::RestoreOfflineV0Prongs()
     if (v0->GetOnFlyStatus()) continue;    
     AliExternalTrackParam *parP = (AliExternalTrackParam*) v0->GetParamP();
     AliExternalTrackParam *parN = (AliExternalTrackParam*) v0->GetParamN();
-    // if at least 1 v0 was not filled by 0s, this is true for all
-    if (parP->GetSigmaY2()>0. && parP->GetSigmaZ2()>0.) break;
+    // if at least 1 v0 was not filled by 0s, this is true for all ...
+    if (parP->GetSigmaY2()>0. && parP->GetSigmaZ2()>0.) continue;
     double xP = parP->GetX(), xN = parN->GetX(); // Only X info is valid
     *parP = *GetTrack(v0->GetPindex());
     *parN = *GetTrack(v0->GetNindex());
