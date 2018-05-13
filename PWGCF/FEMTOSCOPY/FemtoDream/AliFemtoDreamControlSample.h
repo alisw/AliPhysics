@@ -17,8 +17,8 @@ class AliFemtoDreamControlSample {
 
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles, float mult);
 
-  float RelativePairMomentum(const TVector3 *Part1Momentum, int PDGPart1,
-                             const TVector3 *Part2Momentum, int PDGPart2,
+  float RelativePairMomentum(TVector3 Part1Momentum, int PDGPart1,
+                             TVector3 Part2Momentum, int PDGPart2,
                              bool random = false);
   int FindBin(float Multiplicity);
   TString ClassName() { return "Control sample leaking"; };
