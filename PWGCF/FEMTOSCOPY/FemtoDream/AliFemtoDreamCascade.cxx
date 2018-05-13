@@ -69,7 +69,6 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   fOmegaMass=casc->MassOmega();
   fDCAXiDaug=casc->DcaXiDaughters();
   evt->GetPrimaryVertex()->GetXYZ(PrimVtx);
-  this->SetEvtNumber(evt->GetRunNumber());
   fCPA=casc->CosPointingAngleXi(PrimVtx[0],PrimVtx[1],PrimVtx[2]);
   fTransRadius=TMath::Sqrt(
       decayPosXi[0]*decayPosXi[0]+decayPosXi[1]*decayPosXi[1]);
@@ -90,9 +89,9 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   fOmegaLength=fXiLength;
   float XiPDGMass=1.321;
   float OmegaPDGMass=1.672;
-  if (this->GetMomentum()->Mag()>0) {
-    fXiLength=fXiLength*XiPDGMass/this->GetMomentum()->Mag()>0;
-    fOmegaLength=fOmegaLength*OmegaPDGMass/this->GetMomentum()->Mag()>0;
+  if (this->GetMomentum().Mag()>0) {
+    fXiLength=fXiLength*XiPDGMass/this->GetMomentum().Mag()>0;
+    fOmegaLength=fOmegaLength*OmegaPDGMass/this->GetMomentum().Mag()>0;
   } else {
     fXiLength=-1.;
   }
@@ -217,7 +216,6 @@ void AliFemtoDreamCascade::Reset() {
     //we don't want to reset the fPDGCode
     fMCPDGCode=0;
     fPDGMotherWeak=0;
-    fEvtNumber=0;
     //we don't want to reset isMC
     fUse=false;
     fIsSet=false;

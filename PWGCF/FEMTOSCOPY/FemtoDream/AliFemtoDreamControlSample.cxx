@@ -77,9 +77,9 @@ void AliFemtoDreamControlSample::SetEvent(
   }
 }
 
-float AliFemtoDreamControlSample::RelativePairMomentum(const TVector3 *Part1Momentum,
+float AliFemtoDreamControlSample::RelativePairMomentum(TVector3 Part1Momentum,
                                                        int PDGPart1,
-                                                       const TVector3 *Part2Momentum,
+                                                       TVector3 Part2Momentum,
                                                        int PDGPart2,
                                                        bool random) {
   if (PDGPart1 == 0 || PDGPart2 == 0) {
@@ -90,9 +90,9 @@ float AliFemtoDreamControlSample::RelativePairMomentum(const TVector3 *Part1Mome
   // Even if the Daughter tracks were switched up during PID doesn't play a role
   // here cause we are
   // only looking at the mother mass
-  SPtrack.SetXYZM(Part1Momentum->X(), Part1Momentum->Y(), Part1Momentum->Z(),
+  SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(), Part1Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
-  TPProng.SetXYZM(Part2Momentum->X(), Part2Momentum->Y(), Part2Momentum->Z(),
+  TPProng.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
 
   if (random) {
@@ -121,7 +121,7 @@ float AliFemtoDreamControlSample::RelativePairMomentum(const TVector3 *Part1Mome
 }
 
 int AliFemtoDreamControlSample::FindBin(float Multiplicity) {
-  static int binCounter = fMultBins.size();
+  int binCounter = fMultBins.size();
   for (std::vector<int>::reverse_iterator itBin = fMultBins.rbegin();
       itBin != fMultBins.rend(); ++itBin) {
     binCounter--;

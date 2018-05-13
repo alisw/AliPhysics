@@ -54,7 +54,6 @@ void AliFemtoDreamv0::Setv0(AliAODEvent *evt,AliAODv0* v0) {
     } else {
       this->fOnlinev0=false;
     }
-    this->SetEvtNumber(evt->GetRunNumber());
     this->SetMotherInfo(evt,v0);
     if (fIsMC) {
       this->SetMCMotherInfo(evt,v0);
@@ -66,22 +65,22 @@ void AliFemtoDreamv0::Setv0(AliAODEvent *evt,AliAODv0* v0) {
 }
 
 void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
-  if (v0->GetPosID()>=(int)fGTI->size()||v0->GetNegID()>=(int)fGTI->size()) {
+  if (v0->GetPosID()>=fTrackBufferSize||v0->GetNegID()>=fTrackBufferSize) {
     std::cout<<"fGTI too small, no Global Tracks to work with, PosID:  "
         << v0->GetPosID() << " and NegID: " << v0->GetNegID() << std::endl;
     this->fHasDaughter=false;
   } else {
-    fpDaug->SetGlobalTrackInfo(fGTI);
-    fnDaug->SetGlobalTrackInfo(fGTI);
-    if (fGTI->at(v0->GetPosID())&&fGTI->at(v0->GetNegID())) {
-      if (fGTI->at(v0->GetPosID())->Charge() > 0 && fGTI->at(v0->GetNegID())->Charge() < 0) {
-        fnDaug->SetTrack(fGTI->at(v0->GetNegID()));
-        fpDaug->SetTrack(fGTI->at(v0->GetPosID()));
+    fpDaug->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
+    fnDaug->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
+    if (fGTI[v0->GetPosID()]&&fGTI[v0->GetNegID()]) {
+      if (fGTI[v0->GetPosID()]->Charge() > 0 && fGTI[v0->GetNegID()]->Charge() < 0) {
+        fnDaug->SetTrack(fGTI[v0->GetNegID()]);
+        fpDaug->SetTrack(fGTI[v0->GetPosID()]);
         this->SetDaughterInfo(v0);
         this->fHasDaughter=true;
-      } else if(fGTI->at(v0->GetPosID())->Charge() < 0 && fGTI->at(v0->GetNegID())->Charge() > 0) {
-        fnDaug->SetTrack(fGTI->at(v0->GetPosID()));
-        fpDaug->SetTrack(fGTI->at(v0->GetNegID()));
+      } else if(fGTI[v0->GetPosID()]->Charge() < 0 && fGTI[v0->GetNegID()]->Charge() > 0) {
+        fnDaug->SetTrack(fGTI[v0->GetPosID()]);
+        fpDaug->SetTrack(fGTI[v0->GetNegID()]);
         this->SetDaughterInfo(v0);
         this->fHasDaughter=true;
       } else {
@@ -227,7 +226,6 @@ void AliFemtoDreamv0::Reset() {
     //we don't want to reset the fPDGCode
     fMCPDGCode=0;
     fPDGMotherWeak=0;
-    fEvtNumber=0;
     //we don't want to reset isMC
     fUse=false;
     fIsSet=true;
