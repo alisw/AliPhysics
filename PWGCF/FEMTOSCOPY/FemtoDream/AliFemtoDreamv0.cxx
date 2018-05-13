@@ -55,6 +55,7 @@ void AliFemtoDreamv0::Setv0(AliAODEvent *evt,AliAODv0* v0) {
       this->fOnlinev0=false;
     }
     this->SetMotherInfo(evt,v0);
+    this->SetEvtNumber(evt->GetRunNumber());
     if (fIsMC) {
       this->SetMCMotherInfo(evt,v0);
     }

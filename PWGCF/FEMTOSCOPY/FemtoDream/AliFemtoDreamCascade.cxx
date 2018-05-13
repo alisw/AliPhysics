@@ -69,6 +69,7 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   fOmegaMass=casc->MassOmega();
   fDCAXiDaug=casc->DcaXiDaughters();
   evt->GetPrimaryVertex()->GetXYZ(PrimVtx);
+  this->SetEvtNumber(evt->GetRunNumber());
   fCPA=casc->CosPointingAngleXi(PrimVtx[0],PrimVtx[1],PrimVtx[2]);
   fTransRadius=TMath::Sqrt(
       decayPosXi[0]*decayPosXi[0]+decayPosXi[1]*decayPosXi[1]);

@@ -180,6 +180,7 @@ void AliFemtoDreamTrack::SetPhiAtRadii() {
   float pt=GetPt();
   float chg=GetCharge().at(0);
   float bfield=fTrack->GetAODEvent()->GetMagneticField();
+  this->SetEvtNumber(fTrack->GetAODEvent()->GetRunNumber());
   std::vector<float> phiatRadius;
   for(int radius=0;radius<9;radius++)
   {

@@ -65,6 +65,8 @@ class AliFemtoDreamBasePart {
   int GetMotherWeak() const {return fPDGMotherWeak;};
   void SetMotherID(int ID) {fMotherID=ID;};
   int GetMotherID() const {return fMotherID;};
+  void SetEvtNumber(int evtNumb){fEvtNumber=evtNumb;};
+  int GetEvtNumber() const {return fEvtNumber;};
   void SetUseMCInfo(bool useMC) {fIsMC=useMC;};
   bool IsSet() const {return fIsSet;};
   void SetUse(bool use) {fUse=use;};
@@ -96,6 +98,7 @@ class AliFemtoDreamBasePart {
   int fMCPDGCode;
   int fPDGMotherWeak;
   int fMotherID;
+  int fEvtNumber;
   bool fIsMC;
   bool fUse;    //passes cuts
   bool fIsSet;  //has all the attributes set properly
