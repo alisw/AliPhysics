@@ -89,6 +89,9 @@ class AliVAODHeader : public AliVHeader {
   virtual UInt_t  GetDAQAttributes()             const;
   virtual void    SetDAQAttributes(UInt_t);
 
+  virtual Bool_t IsDetectorOn(ULong_t detMask) const = 0;
+
+
 
 };
 

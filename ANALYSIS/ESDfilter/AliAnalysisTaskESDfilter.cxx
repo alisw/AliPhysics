@@ -473,6 +473,9 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
 
   header->SetIRInt2InteractionMap(esd.GetHeader()->GetIRInt2InteractionMap());
   header->SetIRInt1InteractionMap(esd.GetHeader()->GetIRInt1InteractionMap());
+
+  // Detector status
+  header->SetDetectorStatusMask(esd.GetDetectorStatus());
   
   // ITS Cluster Multiplicty
   const AliMultiplicity *mult = esd.GetMultiplicity();
