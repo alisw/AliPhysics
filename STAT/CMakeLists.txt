@@ -47,7 +47,7 @@ set(SRCS
     AliElasticSearchRoot.cxx)
 
 # Dependencies (libraries)
-set(LIBDEPS Gui Graf Tree TreePlayer GeomBuilder)
+set(LIBDEPS Gui Graf Tree TreePlayer GeomBuilder Minuit)
 
 if(ROOT_HASHTTP)
   # ROOT's HTTP library contains the JSON parser required by AliTreePlayer.
