@@ -795,10 +795,10 @@ void AliT0v1::StepManager()
       hits[4]=partID;
       Float_t ttime=fMC->TrackTime();
       hits[5]=ttime*1e12;
-      if ( id==fIdSens2 && partID<50) printf("CurrentVolName %s VolID %i part %i  vol[0] %i vol[1]  %i xyz %f %f %f \n",
+      /*     if ( id==fIdSens2 && partID<50) printf("CurrentVolName %s VolID %i part %i  vol[0] %i vol[1]  %i xyz %f %f %f \n",
 				TVirtualMC::GetMC()->CurrentVolName(),
 				copy1,
-				partID, vol[0], vol[1],hits[0],hits[1],hits[2]);
+				partID, vol[0], vol[1],hits[0],hits[1],hits[2]);*/
       
       if (fMC->TrackPid() == 50000050)   // If particles is photon then ...
 	{
