@@ -41,7 +41,7 @@ TPC version for the krypton runs (Marek)
 #include <TPDGCode.h>
 #include <TString.h>
 #include "AliLog.h"
-#include "AliMathBase.h"
+#include "AliExternalTrackParam.h"
 #include "AliTPCParam.h"
 #include "AliTPCTrackHitsV2.h"
 #include "AliTPCv4.h"
@@ -2154,7 +2154,7 @@ void AliTPCv4::StepManager()
   
   betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
   TVectorD* bbpar = fTPCParam->GetBetheBlochParameters(); //get parametrization from OCDB
-  pp=prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4));    
+  pp=prim*AliExternalTrackParam::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4));    
   if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
   //    }
   

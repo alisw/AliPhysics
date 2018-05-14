@@ -2610,7 +2610,6 @@ void TStatToolkit::MakeDistortionMap(Int_t iter, THnBase * histo, TTreeSRedirect
           printf("\t%d(%d,%d)",TMath::Nint(projectionInfo(idim,3)),TMath::Nint(projectionInfo(idim,0)),TMath::Nint(projectionInfo(idim,1) ));
         }
         printf("\n");	    
-        AliSysInfo::AddStamp("xxx",iter, dimProject);
       }
       Int_t bin0=TMath::Max(ibin-groupProject,1);
       Int_t bin1=TMath::Min(ibin+groupProject,nbins);
@@ -2969,7 +2968,6 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     if ( fitProgress>0 && nfits>0) {
       if   (((++fitCount)%fitProgress)==0) {
         printf("fit %lld %4.1f%% done\n",fitCount,100*double(fitCount)/nfits);
-        AliSysInfo::AddStamp("fitCout", 1,fitCount,100*double(fitCount)/nfits);
       }
     }
     //

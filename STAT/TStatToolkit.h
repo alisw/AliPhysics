@@ -38,7 +38,6 @@
 #include "TRandom.h"
 #include "TStopwatch.h"
 #include "TTreeStream.h"
-#include "AliSysInfo.h"
 
 #include "TObject.h"
 #include "TVectorD.h"

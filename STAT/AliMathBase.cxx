@@ -28,9 +28,7 @@
 #include "TH3.h"
 #include "TF1.h"
 #include "TLinearFitter.h"
-#include "AliLog.h"
-
-#include "AliExternalTrackParam.h"
+#include "TError.h"
 
 //
 // includes neccessary for test functions
@@ -74,7 +72,7 @@ void AliMathBase::EvaluateUni(const Int_t nvectors, const Double_t *data, Double
 
   Int_t hh=hSub;
   if (nvectors<2) {
-    AliErrorClass(Form("nvectors = %d, should be > 1",nvectors));
+    ::Error( "AliMathBase::EvaluateUni",Form("nvectors = %d, should be > 1",nvectors));
     return;
   }
   if (hh==nvectors){
@@ -780,25 +778,6 @@ Double_t AliMathBase::TruncatedGaus(Double_t mean, Double_t sigma, Double_t left
     value=gRandom->Gaus(mean,sigma);
   }while((value-mean)<-leftCut || (value-mean)>rightCut);
   return value;
-}
-
-Double_t AliMathBase::BetheBlochAleph(Double_t bg,
-         Double_t kp1,
-         Double_t kp2,
-         Double_t kp3,
-         Double_t kp4,
-         Double_t kp5) {
-  //
-  // This is the empirical ALEPH parameterization of the Bethe-Bloch formula.
-  // It is normalized to 1 at the minimum.
-  //
-  // bg - beta*gamma
-  // 
-  // The default values for the kp* parameters are for ALICE TPC.
-  // The returned value is in MIP units
-  //
-
-  return AliExternalTrackParam::BetheBlochAleph(bg,kp1,kp2,kp3,kp4,kp5);
 }
 
 Double_t AliMathBase::Gamma(Double_t k)

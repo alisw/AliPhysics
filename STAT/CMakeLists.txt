@@ -24,7 +24,6 @@ include_directories(${AliRoot_SOURCE_DIR}/${MODULE})
 
 # Additional include directories in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIR}
-                    ${AliRoot_SOURCE_DIR}/STEER/STEERBase
                    )
 
 # Sources in alphabetical order
@@ -48,7 +47,7 @@ set(SRCS
     AliElasticSearchRoot.cxx)
 
 # Dependencies (libraries)
-set(LIBDEPS Gui STEERBase Graf Tree TreePlayer GeomBuilder)
+set(LIBDEPS Gui Graf Tree TreePlayer GeomBuilder Minuit)
 
 if(ROOT_HASHTTP)
   # ROOT's HTTP library contains the JSON parser required by AliTreePlayer.

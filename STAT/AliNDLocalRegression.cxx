@@ -57,10 +57,10 @@
   author: marian.ivanov@cern.ch
 */
 
+#include <TError.h>
 #include <TVectorD.h>
 
 #include "AliNDLocalRegression.h"
-#include "AliLog.h"
 
 #include "THn.h"
 #include "TObjString.h"
@@ -162,7 +162,7 @@ void AliNDLocalRegression::SetHistogram(THn* histo ){
   // Setup the local regression ayout according THn hitogram binning
   //
   if (fHistPoints!=0){
-    AliError("Hostogram initialized\n");
+    ::Error("AliNDLocalRegression::SetHistogram","Histogram initialized\n");
     return ;
   }
   fHistPoints=histo;
@@ -181,10 +181,10 @@ void AliNDLocalRegression::SetHistogram(THn* histo ){
   for (Int_t idim=0; idim<ndim; idim++){
     TAxis * axis = histo->GetAxis(idim);
     if (axis->GetNbins()<2) {
-      AliError(TString::Format("Invalid binning nbins<2 %d",  axis->GetNbins()).Data());
+      ::Error("AliNDLocalRegression::SetHistogram",TString::Format("Invalid binning nbins<2 %d",  axis->GetNbins()).Data());
     }
     if (axis->GetXmin()>=axis->GetXmax()) {
-      AliError(TString::Format("Invalid range <%f,%f", axis->GetXmin(),axis->GetXmax()).Data());
+      ::Error("AliNDLocalRegression::SetHistogram",TString::Format("Invalid range <%f,%f", axis->GetXmin(),axis->GetXmax()).Data());
     }    
   }
 
@@ -239,19 +239,19 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   Int_t binRange[kMaxDim]={0};
   Double_t nchi2Cut=-2*TMath::Log(weightCut); // transform probability to nsigma cut 
   if (fHistPoints==NULL){
-    AliError("ND histogram not initialized\n");
+    ::Error("AliNDLocalRegression::MakeFit", "ND histogram not initialized\n");
     return kFALSE;
   }
   if (tree==NULL || tree->GetEntries()==0){
-    AliError("Empty tree\n");
+    ::Error("AliNDLocalRegression::MakeFit", "Empty tree\n");
     return kFALSE;
   }
   if (formulaVar==NULL || formulaVar==0) {
-    AliError("Empty variable list\n");
+    ::Error("AliNDLocalRegression::MakeFit", "Empty variable list\n");
     return kFALSE;
   }
   if (formulaKernel==NULL) {
-    AliError("Kernel width not specified\n");
+    ::Error("AliNDLocalRegression::MakeFit", "Kernel width not specified\n");
     return kFALSE;
   }
   fUseBinNorm=useBinNorm;
@@ -265,7 +265,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   TObjArray * arrayFormulaVar=fFormulaVar->String().Tokenize(":");
   Int_t nvarFormula = arrayFormulaVar->GetEntries();
   if (nvarFormula!=fHistPoints->GetNdimensions()){
-    AliError("Histogram/points mismatch\n");
+    ::Error("AliNDLocalRegression::MakeFit", "Histogram/points mismatch\n");
     return kFALSE;
   }
   TObjArray * arrayKernel=fKernelWidthFormula->String().Tokenize(":");
@@ -273,7 +273,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   if (nvarFormula!=nwidthFormula){
     delete arrayKernel;
     delete arrayFormulaVar;
-    AliError("Variable/Kernel mismath\n");
+    ::Error("AliNDLocalRegression::MakeFit", "Variable/Kernel mismath\n");
     return kFALSE;
   }
   fNParameters=nvarFormula;
@@ -283,11 +283,11 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   //
   Int_t entriesVal = tree->Draw(formulaVal,selection,"goffpara",entries);
   if (entriesVal==0) {
-    AliError(TString::Format("Empty point list\t%s\t%s\n",formulaVal,selection).Data());
+    ::Error("AliNDLocalRegression::MakeFit", TString::Format("Empty point list\t%s\t%s\n",formulaVal,selection).Data());
     return kFALSE; 
   }
   if (tree->GetVal(0)==NULL || (tree->GetVal(1)==NULL)){
-    AliError(TString::Format("Wrong selection\t%s\t%s\n",formulaVar,selection).Data());
+    ::Error("AliNDLocalRegression::MakeFit", TString::Format("Wrong selection\t%s\t%s\n",formulaVar,selection).Data());
     return kFALSE; 
   }
   TVectorD values(entriesVal,tree->GetVal(0));
@@ -300,7 +300,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
   TObjArray pointArray(fNParameters);
   Int_t entriesVar = tree->Draw(formulaVar,selection,"goffpara",entries);
   if (entriesVal!=entriesVar) {
-    AliError(TString::Format("Wrong selection\t%s\t%s\n",formulaVar,selection).Data());
+    ::Error("AliNDLocalRegression::MakeFit", TString::Format("Wrong selection\t%s\t%s\n",formulaVar,selection).Data());
     return kFALSE; 
   }
   for (Int_t ipar=0; ipar<fNParameters; ipar++) pointArray.AddAt(new TVectorD(entriesVar,tree->GetVal(ipar)),ipar);
@@ -311,7 +311,7 @@ Bool_t AliNDLocalRegression::MakeFit(TTree * tree , const char* formulaVal, cons
     TVectorD* vdI2 = new TVectorD(entriesVar,tree->GetVal(ipar));
     for (int k=entriesVar;k--;) { // to speed up, precalculate inverse squared
       double kv = (*vdI2)[k];
-      if (TMath::Abs(kv)<1e-12) AliFatalClassF("Kernel width=%f for entry %d of par:%d",kv,k,ipar);
+      if (TMath::Abs(kv)<1e-12) ::Fatal("AliNDLocalRegression::MakeFit", "Kernel width=%f for entry %d of par:%d",kv,k,ipar);
       (*vdI2)[k] = 1./(kv*kv);
     }
     kernelArrayI2.AddAt(vdI2,ipar);
@@ -1018,7 +1018,7 @@ Bool_t AliNDLocalRegression::AddWeekConstrainsAtBoundaries(Int_t nDims, Int_t *i
     if (TMath::Abs(determinant)<singularity_tolerance ) {
       vecParamUpdated->AddAt(new TVectorD(*((TVectorD*)(fLocalFitParam->UncheckedAt(iBin)))),iBin); 
       vecCovarUpdated->AddAt(new TMatrixD(*((TMatrixD*)(fLocalFitCovar->UncheckedAt(iBin)))),iBin);
-      AliDebug(1,TString::Format("Update matrix not possible matSk.Determinant() too small, skipping bin %d",iBin).Data());
+      Info("AliNDLocalRegression::AddWeekConstrainsAtBoundaries", TString::Format("Update matrix not possible matSk.Determinant() too small, skipping bin %d",iBin).Data());
     }else{
       matSk.Invert();
       matKk = (covXk*matHkT)*matSk;              //  Optimal Kalman gain
