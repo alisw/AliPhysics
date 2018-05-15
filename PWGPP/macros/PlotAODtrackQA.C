@@ -855,7 +855,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelSecMat->Draw("psame");
       gRelSecDec->Draw("psame");
     }
-    plotFileName=Form("PtResisualsPrimSec.%s",outputForm.Data());
+    plotFileName=Form("PtResidualsPrimSec.%s",outputForm.Data());
     cps2->SaveAs(plotFileName.Data());
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
@@ -1063,7 +1063,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelProt->Draw("psame");
       gRelK->Draw("psame");
     }
-    plotFileName=Form("PtResisuals.%s",outputForm.Data());
+    plotFileName=Form("PtResiduals.%s",outputForm.Data());
     c2->SaveAs(plotFileName.Data());
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
@@ -1105,8 +1105,8 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelPi->Draw("AP");
       gRelPiTPC->Draw("psame");
     }
-    plotFileName=Form("PtResisualsPionsTPCITS.%s",outputForm.Data());
-    c2->SaveAs(plotFileName.Data());
+    plotFileName=Form("PtResidualsPionsTPCITS.%s",outputForm.Data());
+    c2p->SaveAs(plotFileName.Data());
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
     TFile* outres=new TFile("PtResol.root","recreate");
