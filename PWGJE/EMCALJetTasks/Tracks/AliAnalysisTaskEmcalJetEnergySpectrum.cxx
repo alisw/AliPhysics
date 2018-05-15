@@ -84,11 +84,11 @@ AliAnalysisTaskEmcalJetEnergySpectrum::~AliAnalysisTaskEmcalJetEnergySpectrum(){
 void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  TLinearBinning jetptbinning(200, 0., 200.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(5, -1.5, 3.5);
+  TLinearBinning jetptbinning(200, 0., 200.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN + 1, -0.5, kTrgClusterN -0.5);
   const TBinning *binnings[5] = {&jetptbinning, &etabinning, &phibinning, &nefbinning, &trgclusterbinning};
   fHistos = new THistManager(Form("Histos_%s", GetName()));
   fHistos->CreateTH1("hEventCounter", "Event counter histogram", 1, 0.5, 1.5);
-  fHistos->CreateTH1("hClusterCounter", "Event counter histogram", 5, -1.5, 3.5);
+  fHistos->CreateTH1("hClusterCounter", "Event counter histogram", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
   fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 5, binnings, "s");
   fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 5, binnings, "s");
 
@@ -144,6 +144,7 @@ std::vector<AliAnalysisTaskEmcalJetEnergySpectrum::TriggerCluster_t> AliAnalysis
        isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
        isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
        isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
+  result.emplace_back(kTrgClusterANY);      // cluster ANY always included 
   if(isCENT || isCENTNOTRD) {
     if(isCENT) {
       result.emplace_back(kTrgClusterCENT);
