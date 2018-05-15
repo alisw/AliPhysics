@@ -436,6 +436,14 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
             fHistManager.CreateTH2(histname, histtitle, 100, 0, 1, 100, 0, 1);
             
             //Matched Trigger Histos
+            histname = TString::Format("%s/fHistNumbJETrigger_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;JE Trigger Normaliztion;counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, 1, 0, 1, "s");
+            
+            histname = TString::Format("%s/fHistNumbGATrigger_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;GA Trigger Normaliztion;counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, 1, 0, 1, "s");
+            
             histname = TString::Format("%s/fHistJetJetPatchE_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;#it{E}_{JetGammaPatch} (GeV);counts", histname.Data());
             fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt, "s");
@@ -609,6 +617,8 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                     fHistManager.FillTH2(histname,jet->E(),currentpatch->GetPatchE());
                     
                     if(jet->Phi() - currentpatch->GetPhiGeo() <= MatchedPhi && jet->Eta() - currentpatch->GetEtaGeo() <= MatchedEta){
+                        histname = TString::Format("%s/fHistNumbGATrigger_%d", groupname.Data(), fCentBin);
+                        fHistManager.FillTH1(histname, 0.5);
                         histname = TString::Format("%s/fHistJetGammaPatchE_%d", groupname.Data(), fCentBin);
                         fHistManager.FillTH1(histname, currentpatch->GetPatchE());
                         histname = TString::Format("%s/fHistJetGammaPatchPt_%d", groupname.Data(), fCentBin);
@@ -624,6 +634,8 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                     fHistManager.FillTH2(histname,jet->E(),currentpatch->GetPatchE());
                     
                     if(jet->Phi() - currentpatch->GetPhiGeo() <= MatchedPhi && jet->Eta() - currentpatch->GetEtaGeo() <= MatchedEta){
+                        histname = TString::Format("%s/fHistNumbJETrigger_%d", groupname.Data(), fCentBin);
+                        fHistManager.FillTH1(histname, 0.5);
                         histname = TString::Format("%s/fHistJetJetPatchE_%d", groupname.Data(), fCentBin);
                         fHistManager.FillTH1(histname, currentpatch->GetPatchE());
                         histname = TString::Format("%s/fHistJetJetPatchPt_%d", groupname.Data(), fCentBin);
@@ -691,14 +703,10 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                 leadingtrackpT = leadingTrk->Pt();
            }
             AliTrackContainer * Globaltracks = static_cast<AliTrackContainer * >(GetParticleContainer("tracks"));
-
             Double_t TrackMultiplicity = Globaltracks->GetNTracks();
             Double_t Numb = jet->N();
             Double_t NumbNeu = jet->Nn();
             Double_t NumbChrg = jet->Nch();
-            //Double_t MBJetSparseFill[13]={TrackMultiplicity,jet->Pt(),jet->MaxTrackPt(),leadingCluster->E(),jet->Eta(),jet->Phi(),JetFCrossLeading,z,jet->Area(),jet->NEF(),Numb,NumbNeu,NumbChrg};
-            //fhnMBJetSpectra->Fill(MBJetSparseFill);
-            
             Double_t x[13]={TrackMultiplicity,jet->Pt(),leadingtrackpT,leadingclusterE,jet->Eta(),jet->Phi(),JetFCrossLeading,z,jet->Area(),jet->NEF(),Numb,NumbNeu,NumbChrg};
             histname = TString::Format("%s/fhnJetSparse", groupname.Data());
             fHistManager.FillTHnSparse(histname, x);
