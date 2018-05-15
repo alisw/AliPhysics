@@ -122,6 +122,7 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalRecalcPatchesRef.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerCorrelation.cxx
     Tracks/AliAnalysisTaskEventSelectionRef.cxx
     Tracks/AliAnalysisTaskEventFilter.cxx
     Tracks/AliAnalysisTaskEtaPhiEfficiency.cxx

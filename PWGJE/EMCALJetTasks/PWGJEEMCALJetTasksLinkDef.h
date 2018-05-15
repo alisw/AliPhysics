@@ -190,6 +190,7 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalNoiseTriggers+;
+#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerCorrelation+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskCountITStracks+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;
 #pragma link C++ class AliAnalysisTaskParticleInJet+;
