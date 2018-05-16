@@ -936,27 +936,27 @@ Bool_t AliTPCDcalibRes::EstimateChunkStatistics()
   AliInfo("Performing rough statistics check");
   if (!fInitDone) Init();
   if (!AliGeomManager::GetGeometry()) InitFieldGeom(); // in case started from saved object
-  //
+  // 
   // pick 1st chunk
   int nChunks = (!fInputChunks) ? ParseInputList() : fInputChunks->GetEntriesFast();
   //
   TTree *tree = 0;
   int chunk=0; // read 1st accessible chunk
-  while (++chunk<nChunks && !(tree=InitDeltaFile(fInputChunks->At(chunk)->GetName()))) {}
+  while ( !(tree=InitDeltaFile(fInputChunks->At(chunk)->GetName())) && ++chunk<nChunks) {}
   if (!tree) {
     AliError("No data chunk was accessible");
     return kFALSE;
   }
   //
   // make sure these branches are always connected in InitDeltaFile
-  const char* kNeedBr[]={"itsOK","trdOK","tofOK","tofBC","nPrimTracks"};
+  const char* kNeedBr[]={"itsOK","trdOK","tofOK","tofBC","nPrimTracks"}; 
   TBranch* br[kCtrNbr];
   for (int i=0;i<kCtrNbr;i++) {
     br[i] = tree->GetBranch(kControlBr[i]);
     if (!br[i]) AliFatalF("Control branch %s is not in the delta tree",kControlBr[i]);
     if (!br[i]->GetAddress()) AliFatalF("Control branch %s address is not set",kControlBr[i]);
     if (!tree->GetBranchStatus(kControlBr[i])) AliFatalF("Control branch %s is not active",kControlBr[i]);
-  }
+  }	       
   fNTestTracks = tree->GetEntries();
   memset(fTestStat,0,kCtrNbr*kCtrNbr*sizeof(float));
   if (fTOFBCTestH) delete fTOFBCTestH;
