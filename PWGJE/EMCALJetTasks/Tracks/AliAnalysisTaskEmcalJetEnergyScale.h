@@ -45,14 +45,7 @@ namespace EmcalTriggerJets {
 
 class AliAnalysisTaskEmcalJetEnergyScale : public AliAnalysisTaskEmcalJet {
 public:
-#ifdef USECXX11HEADERS
-  AliAnalysisTaskEmcalJetEnergyScale() = default;
-  AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &) = delete;
-  AliAnalysisTaskEmcalJetEnergyScale &operator=(const AliAnalysisTaskEmcalJetEnergyScale &) = delete;
-#else
-  // Only needed for rootcint - no implementation necessary
   AliAnalysisTaskEmcalJetEnergyScale();
-#endif
   AliAnalysisTaskEmcalJetEnergyScale(const char *name);
   virtual ~AliAnalysisTaskEmcalJetEnergyScale();
 
@@ -79,10 +72,8 @@ private:
   TString                     fTriggerSelectionString;        ///< Trigger selection string
   TString                     fNameTriggerDecisionContainer;  ///< Global trigger decision container
 
-#ifndef USECXX11HEADERS
   AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &);
   AliAnalysisTaskEmcalJetEnergyScale &operator=(const AliAnalysisTaskEmcalJetEnergyScale &);
-#endif
 
   ClassDef(AliAnalysisTaskEmcalJetEnergyScale, 1);
 };

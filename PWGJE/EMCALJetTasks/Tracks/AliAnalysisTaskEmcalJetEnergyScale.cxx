@@ -43,6 +43,16 @@ ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale)
 
 using namespace EmcalTriggerJets;
 
+AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
+  AliAnalysisTaskEmcalJet(),
+  fHistos(nullptr),
+  fNameDetectorJets(),
+  fNameParticleJets(),
+  fTriggerSelectionString(),
+  fNameTriggerDecisionContainer("EmcalTriggerDecision")
+{
+}
+
 AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const char *name):
   AliAnalysisTaskEmcalJet(name, true),
   fHistos(nullptr),
