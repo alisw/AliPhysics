@@ -60,6 +60,6 @@ AliAnalysisTaskEmcalTriggerCorrelation *AliAnalysisTaskEmcalTriggerCorrelation::
   mgr->AddTask(task);
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("histosTriggerCorrelation_%s", name), TList::Class(), AliAnalysisManager::kExchangeContainer, Form("%s:TriggerCorrelationQA_%s", mgr->GetCommonFileName(), name)));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("histosTriggerCorrelation_%s", name), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TriggerCorrelationQA_%s", mgr->GetCommonFileName(), name)));
   return task;
 }
