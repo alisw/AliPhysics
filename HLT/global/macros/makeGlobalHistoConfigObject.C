@@ -63,12 +63,12 @@ void makeGlobalHistoConfigObject(const char* path,
   // load existing object and init TMap
   AliCDBEntry* pExisting=NULL;
   AliCDBStorage* pStorage=AliCDBManager::Instance()->GetDefaultStorage();
-  if (key && pStorage->GetLatestVersion(path, runNo)>=0) {
+  /*if (key && pStorage->GetLatestVersion(path, runNo)>=0) {
     pExisting=pStorage->Get(path, runNo);
     if (pExisting->GetObject()->IsA() == TMap::Class()) {
       pMap=(TMap*)pExisting->GetObject()->Clone();
     }
-  }  
+  }*/
 
   if (key && !pMap) pMap=new TMap;
 
