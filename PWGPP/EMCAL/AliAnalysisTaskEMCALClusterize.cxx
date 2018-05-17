@@ -218,10 +218,11 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
 ///   * is it bad channel 
 ///
 /// \param absID: absolute cell ID number
+/// \param badmap: consider the bad channel map, on by default, not needed for cross-Talk
 ///
 /// \return bool quality of cell, exists or not 
 //_______________________________________________________________________________
-Bool_t AliAnalysisTaskEMCALClusterize::AcceptCell(Int_t absID) 
+Bool_t AliAnalysisTaskEMCALClusterize::AcceptCell( Int_t absID, Bool_t badmap ) 
 {  
   if ( absID < 0 || absID >= 24*48*fGeom->GetNumberOfSuperModules() ) 
     return kFALSE;
@@ -230,12 +231,15 @@ Bool_t AliAnalysisTaskEMCALClusterize::AcceptCell(Int_t absID)
   if (!fGeom->GetCellIndex(absID,imod,iTower,iIphi,iIeta)) 
     return kFALSE; 
   
-  fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
-  
   // Do not include bad channels found in analysis,
-  if ( fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
-       fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi) ) 
-    return kFALSE;
+  if ( badmap )
+  {
+    fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
+    
+    if ( fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
+         fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi) ) 
+      return kFALSE;
+  }
   
   return kTRUE;
 }
@@ -945,7 +949,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     // Apply here the found induced energies
     if ( fTCardCorrEmulation )
     {
-//      if( TMath::Abs(fTCardCorrCellsEner[id]) > 0.001 ) 
+//      if( TMath::Abs(fTCardCorrCellsEner[id]) > 0.001 )
 //        printf("add energy to digit %d, absId %d: amp %2.2f + %2.2f\n",idigit,id,amp,fTCardCorrCellsEner[id]);
       amp+=fTCardCorrCellsEner[id];
     }
@@ -1793,16 +1797,19 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
     fGeom->GetCellIndex(id,imod,iTower,iIphi,iIeta); 
     fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
-    
+
     //
     // Determine randomly if we want to create a correlation for this cell, 
     // depending the SM number of the cell
-    Float_t rand = fRandom.Uniform(0, 1);
-    
-    if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
+    if ( fTCardCorrInduceEnerProb[imod] < 1 )
+    {  
+      Float_t rand = fRandom.Uniform(0, 1);
+      
+      if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
+    }
     
     AliDebug(1,Form("Reference cell absId %d, iEta %d, iPhi %d, amp %2.3f",id,ieta,iphi,amp));
-      
+
     //
     // Get the absId of the cells in the cross and same T-Card
     Int_t absIDup = -1;
@@ -1857,21 +1864,21 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     
     //
     // Check if they are not declared bad or exist
-    Bool_t okup   = AcceptCell(absIDup   ); 
-    Bool_t okdo   = AcceptCell(absIDdo   ); 
-    Bool_t oklr   = AcceptCell(absIDlr   ); 
-    Bool_t okuplr = AcceptCell(absIDuplr ); 
-    Bool_t okdolr = AcceptCell(absIDdolr ); 
-    Bool_t okup2  = AcceptCell(absIDup2  ); 
-    Bool_t okdo2  = AcceptCell(absIDdo2  ); 
-    Bool_t okup2lr= AcceptCell(absIDup2lr); 
-    Bool_t okdo2lr= AcceptCell(absIDdo2lr); 
+    Bool_t okup   = AcceptCell(absIDup   ,0); 
+    Bool_t okdo   = AcceptCell(absIDdo   ,0); 
+    Bool_t oklr   = AcceptCell(absIDlr   ,0); 
+    Bool_t okuplr = AcceptCell(absIDuplr ,0); 
+    Bool_t okdolr = AcceptCell(absIDdolr ,0); 
+    Bool_t okup2  = AcceptCell(absIDup2  ,0); 
+    Bool_t okdo2  = AcceptCell(absIDdo2  ,0); 
+    Bool_t okup2lr= AcceptCell(absIDup2lr,0); 
+    Bool_t okdo2lr= AcceptCell(absIDdo2lr,0); 
     
     AliDebug(1,Form("Same T-Card cells:\n \t up %d (%d), down %d (%d), left-right %d (%d), up-lr %d (%d), down-lr %d (%d)\n"
                     "\t up2 %d (%d), down2 %d (%d), up2-lr %d (%d), down2-lr %d (%d)",
                     absIDup ,okup ,absIDdo ,okdo ,absIDlr,oklr,absIDuplr ,okuplr ,absIDdolr ,okdolr ,
                     absIDup2,okup2,absIDdo2,okdo2,             absIDup2lr,okup2lr,absIDdo2lr,okdo2lr));
-    
+
     //
     // Generate some energy for the nearby cells in same TCard , depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
@@ -1909,7 +1916,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
       frac2nd        = fRandom.Gaus(frac2nd       ,fTCardCorrInduceEnerFracWidth[3][imod]);
       
       AliDebug(1,Form("Randomized fraction: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
-                      fracupdown,fracupdownleri,fracleri,frac2nd));
+                      fracupdown,fracupdownleri,fracleri,frac2nd)); 
     }
     
     // Calculate induced energy
@@ -1920,7 +1927,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     
     AliDebug(1,Form("Induced energy: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
                     indEupdown,indEupdownleri,indEleri,indE2nd));
-    
+
     // Check if we induce too much energy, in such case use a constant value
     if ( fTCardCorrMaxInduced < indE2nd        ) indE2nd        = fTCardCorrMaxInduced;
     if ( fTCardCorrMaxInduced < indEupdownleri ) indEupdownleri = fTCardCorrMaxInduced;
@@ -1928,7 +1935,7 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
     if ( fTCardCorrMaxInduced < indEleri       ) indEleri       = fTCardCorrMaxInduced;
     
     AliDebug(1,Form("Induced energy, saturated?: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
-                    indEupdown,indEupdownleri,indEleri,indE2nd));
+                    indEupdown,indEupdownleri,indEleri,indE2nd));   
   
     //
     // Add the induced energy, check if cell existed
@@ -2578,7 +2585,7 @@ void AliAnalysisTaskEMCALClusterize::UpdateCells()
   
   const Int_t   ncells = fCaloCells->GetNumberOfCells();
   const Int_t   ndigis = fDigitsArr->GetEntries();
-  
+
   if ( fOutputAODCellsName.Length() > 0 ) 
   {
     fOutputAODCells->DeleteContainer();
@@ -2625,6 +2632,14 @@ void AliAnalysisTaskEMCALClusterize::UpdateCells()
     else
       fOutputAODCells->SetCell(idigit, cellNumber, cellAmplitude, cellTime, cellMcLabel, cellMcEDepFrac, highGain);
   }
+  
+   if ( ncells != ndigis )
+   {
+     if ( fUpdateCell ) 
+       fCaloCells     ->Sort();
+     else
+       fOutputAODCells->Sort();
+   }
 }
 
 //_______________________________________________________
@@ -2716,7 +2731,6 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   if ( fUpdateCell || fOutputAODCellsName.Length() > 0 ) 
     UpdateCells();
- 
 }
 
 
