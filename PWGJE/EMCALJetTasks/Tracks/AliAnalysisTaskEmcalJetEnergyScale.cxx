@@ -24,9 +24,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <algorithm>
 #include <array>
 #include <string>
 #include <sstream>
+#include <vector>
 #include <THistManager.h>
 #include <TCustomBinning.h>
 #include <TLinearBinning.h>
@@ -61,6 +63,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   fTriggerSelectionString(),
   fNameTriggerDecisionContainer("EmcalTriggerDecision")
 {
+  SetUseAliAnaUtils(true);
   DefineOutput(1, TList::Class());
 }
 
@@ -71,21 +74,25 @@ AliAnalysisTaskEmcalJetEnergyScale::~AliAnalysisTaskEmcalJetEnergyScale() {
 void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  TLinearBinning jetPtBinning(20, 0., 200.), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.);
+  TLinearBinning jetPtBinning(20, 0., 200.), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi());
 
   const TBinning *diffbinning[3] = {&jetPtBinning, &nefbinning, &ptdiffbinning},
-                 *corrbinning[3] = {&jetPtBinning, &jetPtBinning, &nefbinning};
+                 *corrbinning[3] = {&jetPtBinning, &jetPtBinning, &nefbinning},
+                 *effbinning[3] = {&jetPtBinning, &jetEtaBinning, &jetPhiBinning};
 
   fHistos = new THistManager("energyScaleHistos");
   fHistos->CreateTH1("hEventCounter", "Event counter", 1, 0.5, 1.5);
   fHistos->CreateTHnSparse("hPtDiff", "pt diff det/part", 3., diffbinning, "s");
   fHistos->CreateTHnSparse("hPtCorr", "Correlation det pt / part pt", 3., corrbinning, "s");
+  fHistos->CreateTHnSparse("hPartJetsAccepted", "Accepted particle level jets", 3, effbinning, "s");
+  fHistos->CreateTHnSparse("hPartJetsReconstructed", "Accepted and reconstructed particle level jets", 3, effbinning, "s");
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);
 
   PostData(1, fOutput);
 }
 
 Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
+  AliDebugStream(1) << "Next event" << std::endl;
   if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
   if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
     auto mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
@@ -96,6 +103,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     }
     if(!mctrigger->IsEventSelected(fTriggerSelectionString)) return false;
   }
+  AliDebugStream(1) << "event selected" << std::endl;
   fHistos->FillTH1("hEventCounter", 1);
 
   auto detjets = GetJetContainer(fNameDetectorJets),
@@ -104,14 +112,29 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     AliErrorStream() << "At least one jet container missing, exiting ..." << std::endl;
     return false;
   }
+  AliDebugStream(1) << "Have both jet containers: part(" << partjets->GetNAcceptedJets() << "|" << partjets->GetNJets() << "), det(" << detjets->GetNAcceptedJets() << "|" << detjets->GetNJets() << ")" << std::endl;
 
+  std::vector<AliEmcalJet *> taggedjets;
   for(auto detjet : detjets->accepted()){
+    AliDebugStream(2) << "Next jet" << std::endl;
     auto partjet = detjet->ClosestJet();
-    if(!partjet) continue;
+    if(!partjet) {
+      AliDebugStream(2) << "No tagged jet" << std::endl;
+      continue;
+    }
+    taggedjets.emplace_back(partjet);
     double pointCorr[3] = {partjet->Pt(), detjet->Pt(), detjet->NEF()},
            pointDiff[3] = {partjet->Pt(), (detjet->Pt()-partjet->Pt())/partjet->Pt(), detjet->NEF()};
     fHistos->FillTHnSparse("hPtDiff", pointDiff);
     fHistos->FillTHnSparse("hPtCorr", pointCorr);
+  }
+
+  // efficiency x acceptance: Add histos for all accepted and reconstucted accepted jets
+  for(auto partjet : partjets->accepted()){
+    double pvect[3] = {partjet->Pt(), partjet->Eta(), partjet->Phi()};
+    if(pvect[2] < 0) pvect[2] += TMath::TwoPi();
+    fHistos->FillTHnSparse("hPartJetsAccepted", pvect);
+    if(std::find(taggedjets.begin(), taggedjets.end(), partjet) != taggedjets.end()) fHistos->FillTHnSparse("hPartJetsReconstructed", pvect);
   }
   return true;
 }
@@ -174,6 +197,17 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   AliClusterContainer *clusters(nullptr);
   if(addClusterContainer) {
     clusters = energyscaletask->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    switch(jettype){
+      case AliJetContainer::kChargedJet: break;     // Silence compiler
+      case AliJetContainer::kFullJet:
+        clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+        clusters->SetClusHadCorrEnergyCut(0.3);
+        break;
+      case AliJetContainer::kNeutralJet:
+        clusters->SetDefaultClusterEnergy(AliVCluster::kNonLinCorr);
+        clusters->SetClusNonLinCorrEnergyCut(0.3);
+        break;
+    };
   }
   AliTrackContainer *tracks(nullptr);
   if(addTrackContainer) {
@@ -181,14 +215,16 @@ AliAnalysisTaskEmcalJetEnergyScale *AliAnalysisTaskEmcalJetEnergyScale::AddTaskJ
   }
 
   auto contpartjet = energyscaletask->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, jetradius,
-                                                      acceptance, partcont, nullptr, "Jet");
+                                                      AliJetContainer::kTPCfid, partcont, nullptr);
   contpartjet->SetName("particleLevelJets");
   energyscaletask->SetNamePartJetContainer("particleLevelJets");
+  std::cout << "Adding particle-level jet container with underling array: " << contpartjet->GetArrayName() << std::endl;
 
   auto contdetjet = energyscaletask->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, jetradius,
-                                                     acceptance, tracks, clusters, "Jet");
+                                                     acceptance, tracks, clusters);
   contdetjet->SetName("detectorLevelJets");
   energyscaletask->SetNameDetJetContainer("detectorLevelJets");
+  std::cout << "Adding detector-level jet container with underling array: " << contdetjet->GetArrayName() << std::endl;
 
   std::stringstream outnamebuilder, listnamebuilder;
   listnamebuilder << "EnergyScaleHists_" << tag.str();

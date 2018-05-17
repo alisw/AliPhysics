@@ -27,14 +27,6 @@
 #ifndef ALIANALYSISTASKEMCALJETENERGYSCALE_H
 #define ALIANALYSISTASKEMCALJETENERGYSCALE_H
 
-#if !(defined __CINT__ || defined __MAKECINT__)
-#if __cplusplus >= 201103L
-// In c++11 mode we will rely on c++11 keywords also in header files 
-// (i.e. final, override, default, delete)
-#define USECXX11HEADERS
-#endif
-#endif
-
 #include <TString.h>
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliJetContainer.h"
