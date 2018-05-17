@@ -39,8 +39,8 @@ AliEmcalCorrectionClusterNonLinearity::AliEmcalCorrectionClusterNonLinearity() :
   fEnergyDistBefore(0),
   fEnergyTimeHistBefore(0),
   fEnergyDistAfter(0),
-  fEnergyTimeHistAfter(0)
-
+  fEnergyTimeHistAfter(0),
+  fSetClusterE(0)
 {
 }
 
@@ -63,6 +63,8 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
   GetProperty("nonLinFunct", nonLinFunctStr);
   UInt_t nonLinFunct = fgkNonlinearityFunctionMap.at(nonLinFunctStr);
 
+  GetProperty("setClusterE", fSetClusterE);
+  
   // init reco utils
   if (!fRecoUtils)
     fRecoUtils  = new AliEMCALRecoUtils;
@@ -129,6 +131,7 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
         if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
           Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
           clus->SetNonLinCorrEnergy(energy);
+          if ( fSetClusterE ) clus->SetE(energy);
         }
       }
 
