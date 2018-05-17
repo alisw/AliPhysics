@@ -18,6 +18,7 @@
   * 15 dec 2017: setter for trigger, removed trigger settings in addtask parameters (now set it in train config)
   * 18 dec 2017: several trigger settings
   * 04 jan 2018: changed back to old trigger method
+  * 17 may 2018: last debugging&cleaning -> zvtx is now ok in local tests 
 
   Remiders:
   * For pp: remove pile up thing
@@ -184,7 +185,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   // fTrigType1(AliVEvent::kMB),
   // fTrigType2(AliVEvent::kCentral),
   // fTrigType3(AliVEvent::kSemiCentral),
-fVtxCut(10.0),  
+  fVtxCut(10.0),  
   fEtaCut(0.8),
   fEtaCutStack(1.2),    
   fMinPt(0.1),
@@ -324,7 +325,8 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // First we make sure that we have valid input(s)!
   //
 
- 
+
+  
   AliVEvent *event = InputEvent();
   if (!event) {
     Error("UserExec", "Could not retrieve event");
@@ -397,9 +399,9 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 
   
   
-  // /*
-  //____________________ OLD METHOD __________________________________________________
-  
+ 
+  //____________________ OLD METHOD, NEW VERSION __________________________________________________
+
   //_____________NOMINAL TRIGGER CONDITION___________
   // Always use if MC
   // Use if 2010 data
@@ -414,8 +416,8 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
     fTriggeredEventMB += 2;  
     fn2->Fill(1);
   }
-  //_____________ end nominal _______________________
-
+  //  //_____________ end nominal _______________________
+  
 
   // //_____________SPECIAL TRIGGER CONDITION___________
   // // Never use if MC
@@ -440,9 +442,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
   // //_____________ end special ______________________
 
   //____________________________________________________________________________
-  // */
-
-  
+ 
 
   // Get process type for MC
   fMcProcessType = 0; // -1=invalid, 0=data, 1=ND, 2=SD, 3=DD
@@ -453,7 +453,7 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 
 
   if (fAnalysisMC) {
-    
+     
     if (fAnalysisType == "ESD"){
 
       AliHeader* headerMC = fMC->Header();
@@ -614,13 +614,13 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
 
   
   // store MC event data no matter what
-  if(fAnalysisMC) {
+  if(fAnalysisMC && fStoreMcIn) {
     
     //   if(fAnalysisPbPb && ((centralityV0M>fMaxCent)||(centralityV0M<fMinCent)))return;
-
+    
     if(fAnalysisType == "ESD") ProcessMCTruthESD();
     else ProcessMCTruthAOD(); // AOD
-  
+    
   }//if MC
 
   
