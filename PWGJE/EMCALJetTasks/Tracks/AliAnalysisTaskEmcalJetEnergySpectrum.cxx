@@ -135,38 +135,41 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
 std::vector<AliAnalysisTaskEmcalJetEnergySpectrum::TriggerCluster_t> AliAnalysisTaskEmcalJetEnergySpectrum::GetTriggerClusterIndices(const TString &triggerstring) const {
   // decode trigger string in order to determine the trigger clusters
   std::vector<TriggerCluster_t> result;
-  std::vector<std::string> clusternames;
-  auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring.Data());
-  for(auto t : triggerinfos) {
-    if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
-  }
-  bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
-       isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
-       isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
-       isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
   result.emplace_back(kTrgClusterANY);      // cluster ANY always included 
-  if(isCENT || isCENTNOTRD) {
-    if(isCENT) {
-      result.emplace_back(kTrgClusterCENT);
-      if(isCENTNOTRD) {
-        result.emplace_back(kTrgClusterCENTNOTRD);
-        result.emplace_back(kTrgClusterCENTBOTH);
-      } else result.emplace_back(kTrgClusterOnlyCENT);
-    } else {
-      result.emplace_back(kTrgClusterCENTNOTRD);
-      result.emplace_back(kTrgClusterOnlyCENTNOTRD);
+  if(!fIsMC){
+    // Data - separate trigger clusters
+    std::vector<std::string> clusternames;
+    auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring.Data());
+    for(auto t : triggerinfos) {
+      if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
     }
-  }
-  if(isCALO || isCALOFAST) {
-    if(isCALO) {
-      result.emplace_back(kTrgClusterCALO);
-      if(isCALOFAST) {
+    bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
+         isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
+         isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
+         isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
+    if(isCENT || isCENTNOTRD) {
+      if(isCENT) {
+        result.emplace_back(kTrgClusterCENT);
+        if(isCENTNOTRD) {
+          result.emplace_back(kTrgClusterCENTNOTRD);
+          result.emplace_back(kTrgClusterCENTBOTH);
+        } else result.emplace_back(kTrgClusterOnlyCENT);
+      } else {
+        result.emplace_back(kTrgClusterCENTNOTRD);
+        result.emplace_back(kTrgClusterOnlyCENTNOTRD);
+      }
+    }
+    if(isCALO || isCALOFAST) {
+      if(isCALO) {
+        result.emplace_back(kTrgClusterCALO);
+        if(isCALOFAST) {
+          result.emplace_back(kTrgClusterCALOFAST);
+          result.emplace_back(kTrgClusterCALOBOTH);
+        } else result.emplace_back(kTrgClusterOnlyCALO);
+      } else {
         result.emplace_back(kTrgClusterCALOFAST);
-        result.emplace_back(kTrgClusterCALOBOTH);
-      } else result.emplace_back(kTrgClusterOnlyCALO);
-    } else {
-      result.emplace_back(kTrgClusterCALOFAST);
-      result.emplace_back(kTrgClusterOnlyCALOFAST);
+        result.emplace_back(kTrgClusterOnlyCALOFAST);
+      }
     }
   }
   return result;
@@ -282,6 +285,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   auto jetcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, radius, acctype, tracks, clusters);
   jetcont->SetName("datajets");
   task->SetNameJetContainer("datajets");
+  std::cout << "Adding jet container with underlying array:" << jetcont->GetArrayName() << std::endl;
 
   // Link input and output container
   outfilename << mgr->GetCommonFileName() << ":JetSpectrum_" << tag.str().data();
