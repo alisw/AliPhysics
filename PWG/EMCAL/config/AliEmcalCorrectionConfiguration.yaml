@@ -200,10 +200,10 @@ PHOSCorrections:                                    # PHOS recalibration compone
 # Just because it is listed here does not mean it will be executed! That is determined by the "enabled" property
 # of each correction component
 executionOrder:
+    - CellEmulateCrosstalk
     - CellEnergy
     - CellBadChannel
     - CellTimeCalib
-    - CellEmulateCrosstalk
     - CellCombineCollections
     - Clusterizer
     - ClusterExotics
