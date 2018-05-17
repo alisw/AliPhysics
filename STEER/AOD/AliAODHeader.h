@@ -107,6 +107,13 @@ class AliAODHeader : public AliVAODHeader {
   Int_t     GetRefMultiplicityComb08() const { return fRefMultComb08; }
   Int_t     GetRefMultiplicityComb10() const { return fRefMultComb10; }
 
+  void SetDetectorStatusMask(UInt_t detStatus) { fDetectorStatus=detStatus;          }
+  void SetDetectorStatus(UInt_t detMask)       { fDetectorStatus|=detMask;           }
+  void ResetDetectorStatus(UInt_t detMask)     { fDetectorStatus&=~detMask;          }
+  UInt_t GetDetectorStatus() const             { return fDetectorStatus;             }
+  Bool_t IsDetectorOn(ULong_t detMask) const    { return (fDetectorStatus&detMask)>0; }
+
+
   UInt_t    GetDAQAttributes()         const {return fDAQAttributes;}
   void      SetDAQAttributes(UInt_t v)       {fDAQAttributes = v;}
 
@@ -253,6 +260,7 @@ class AliAODHeader : public AliVAODHeader {
   Int_t       fNDimuons;            // number of dimuons in the forward spectrometer
   Int_t       fNGlobalMuons;        // number of muons in the forward spectrometer + MFT       // AU
   Int_t       fNGlobalDimuons;      // number of dimuons in the forward spectrometer + MFT     // AU
+  UInt_t      fDetectorStatus;      // set detector event status bit for good event selection
   UInt_t      fDAQAttributes;       // DAQ attibutes
   UInt_t      fEventType;           // Type of Event
   UInt_t      fOrbitNumber;         // Orbit Number
@@ -286,7 +294,7 @@ class AliAODHeader : public AliVAODHeader {
   Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
   TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
   TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
-  ClassDef(AliAODHeader, 30);
+  ClassDef(AliAODHeader, 31);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 

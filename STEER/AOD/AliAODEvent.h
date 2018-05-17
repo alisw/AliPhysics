@@ -109,6 +109,7 @@ class AliAODEvent : public AliVEvent {
   UInt_t GetDAQAttributes() const            {return fHeader ? fHeader->GetDAQAttributes() : 0;}
   Bool_t IsIncompleteDAQ();
 
+  virtual Bool_t IsDetectorOn(ULong_t detMask) const { return fHeader ? fHeader->IsDetectorOn(UInt_t(detMask)) : kTRUE; }
 
   // setters and getters for header information
   void     SetRunNumber(Int_t n) {if (fHeader) fHeader->SetRunNumber(n);}

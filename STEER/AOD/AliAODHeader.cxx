@@ -57,6 +57,7 @@ AliAODHeader::AliAODHeader() :
   fNDimuons(0),
   fNGlobalMuons(0),               // AU
   fNGlobalDimuons(0),             // AU
+  fDetectorStatus(0xFFFFFFFF),
   fDAQAttributes(0),
   fEventType(0),
   fOrbitNumber(0),
@@ -130,6 +131,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fNDimuons(0),
   fNGlobalMuons(0),               // AU
   fNGlobalDimuons(0),             // AU
+  fDetectorStatus(0xFFFFFFFF),
   fDAQAttributes(0),
   fEventType(0),
   fOrbitNumber(nOrbit),
@@ -228,6 +230,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fNDimuons(nDimuons),
   fNGlobalMuons(nGlobalMuons),               // AU
   fNGlobalDimuons(nGlobalDimuons),           // AU
+  fDetectorStatus(0xFFFFFFFF),
   fDAQAttributes(daqAttrib),
   fEventType(evttype),
   fOrbitNumber(nOrbit),
@@ -306,6 +309,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fNDimuons(hdr.fNDimuons),
   fNGlobalMuons(hdr.fNGlobalMuons),           // AU
   fNGlobalDimuons(hdr.fNGlobalDimuons),       // AU
+  fDetectorStatus(hdr.fDetectorStatus),
+  fDAQAttributes(hdr.fDAQAttributes),
   fEventType(hdr.fEventType),
   fOrbitNumber(hdr.fOrbitNumber),
   fPeriodNumber(hdr.fPeriodNumber),
@@ -401,6 +406,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fNDimuons         = hdr.fNDimuons;
     fNGlobalMuons     = hdr.fNGlobalMuons;           // AU
     fNGlobalDimuons   = hdr.fNGlobalDimuons;         // AU
+    fDetectorStatus   = hdr.fDetectorStatus;
     fDAQAttributes    = hdr.fDAQAttributes;
     fDiamondZ         = hdr.fDiamondZ;
     fDiamondSig2Z     = hdr.fDiamondSig2Z;
@@ -559,6 +565,7 @@ void AliAODHeader::Print(Option_t* /*option*/) const
   printf("ref. Mult.Comb |eta|<1. : %d\n", fRefMultComb10);
   printf("number of muons         : %d\n", fNMuons);
   printf("number of dimuons       : %d\n", fNDimuons);
+  printf("DetectorStatus          : %u\n", fDetectorStatus);
   printf("offline trigger         : %u\n", fOfflineTrigger);
 
   if (fQTheta) {

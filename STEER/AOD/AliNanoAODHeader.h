@@ -128,6 +128,9 @@ public:
 
   Int_t GetVarIndex(TString varName); 
   
+  // assume event filtering is done before and that nano AOD don't need the detector staus bits
+  virtual Bool_t IsDetectorOn(ULong_t /*detMask*/) const { return kTRUE; }
+
   ClassDef(AliNanoAODHeader, 4)
 private:
   void NotImplemented() const;

@@ -256,6 +256,7 @@ public:
   // event status
   virtual Bool_t IsIncompleteDAQ() {return kFALSE;}
 
+  virtual Bool_t IsDetectorOn(ULong_t /*detMask*/) const { return kTRUE; }
 
   virtual void ConnectTracks() {}
   virtual EDataLayoutType GetDataLayoutType() const = 0;
