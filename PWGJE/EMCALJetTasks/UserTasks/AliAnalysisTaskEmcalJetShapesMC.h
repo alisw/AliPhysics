@@ -170,6 +170,9 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Int_t                               fDerivSubtrOrder;
   Bool_t                              fScaleELoss;
   Double_t                            xfraction;
+  Bool_t                              fAddMedScat;
+  Double_t                            fAddMedScatPt;
+  Double_t                            fAddMedScatN;
   
   TH2F                                *fPhiJetCorr6;//
   TH2F                                *fPhiJetCorr7;//
