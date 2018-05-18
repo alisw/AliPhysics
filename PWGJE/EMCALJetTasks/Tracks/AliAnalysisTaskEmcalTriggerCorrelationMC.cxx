@@ -99,13 +99,14 @@ bool AliAnalysisTaskEmcalTriggerCorrelationMC::Run(){
     const auto &xlabel = kTriggers[itrg]; 
     for(decltype(kTriggers.size()) jtrg = 0; jtrg < kTriggers.size(); jtrg++){
       if(!triggersSelected.test(jtrg)) continue;
-      const auto &ylabel = kTriggers[itrg];
+      const auto &ylabel = kTriggers[jtrg];
       fTriggerCorrelationHist->Fill(xlabel.data(), ylabel.data(), 1.);
     }
   }
+  return true;
 }
 
-AliAnalysisTaskEmcalTriggerCorrelationMC *AliAnalysisTaskEmcalTriggerCorrelationMC::AddTaskEmcalTriggerCorrelation(const char *suffix) {
+AliAnalysisTaskEmcalTriggerCorrelationMC *AliAnalysisTaskEmcalTriggerCorrelationMC::AddTaskEmcalTriggerCorrelationMC(const char *suffix) {
   auto mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
     std::cerr << "No Analysis Manager found. Exiting ..." << std::endl;
