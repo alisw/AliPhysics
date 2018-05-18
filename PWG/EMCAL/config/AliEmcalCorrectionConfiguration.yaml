@@ -149,6 +149,7 @@ ClusterNonLinearity:                                # Cluster non-linearity corr
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
     nonLinFunct: kBeamTestCorrectedv3               # Sets the non-linearity function. Possible options are defined in the header of the cluster non-linearity correction component
+    setForceClusterE: false                         # Only for backwards compatibility, force cluster->E() to be set to the cluster non-linearity corrected energy. Off by default. For the standard methods, see: http://alidoc.cern.ch/AliPhysics/master/READMEcontainers.html#emcalContainerClusterEnergyCorrections
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     clusterContainersNames:                         # Names of the cluster input objects which should be attached to the correction
