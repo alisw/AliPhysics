@@ -42,7 +42,7 @@ public:
 
   void SetNameTriggerDecisionContainer(const char *name) { fNameTriggerDecisionContainer = name; }
 
-  static AliAnalysisTaskEmcalTriggerCorrelationMC *AddTaskEmcalTriggerCorrelation(const char *suffix);
+  static AliAnalysisTaskEmcalTriggerCorrelationMC *AddTaskEmcalTriggerCorrelationMC(const char *suffix);
 
 protected:
 
