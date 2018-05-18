@@ -105,7 +105,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   
 
 {
-  for(Int_t i=0;i<10;i++){
+  for(Int_t i=0;i<11;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
    DefineOutput(1, TList::Class());
@@ -168,7 +168,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   // Standard constructor.
   
   
-  for(Int_t i=0;i<10;i++){
+  for(Int_t i=0;i<11;i++){
     fShapesVar[i]=0;}
   
   SetMakeGeneralHistograms(kTRUE);
@@ -209,7 +209,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 10;
+  const Int_t nVar = 11;
 
   TString *fShapesVarNames = new TString [nVar];
   
@@ -229,6 +229,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   // fShapesVarNames[10] = "DeltaRkt";
   // fShapesVarNames[11] = "DeltaRMin";
   fShapesVarNames[9] = "SDSymm";
+  fShapesVarNames[10] = "scaledptJet";
   // fShapesVarNames[13] = "SDDeltaR";
   // fShapesVarNames[14] = "SDGroomedFrac"; 
   // fShapesVarNames[15] = "SDGroomedN"; 
@@ -316,7 +317,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
 
 
-  //log(1/theta),log(z*theta),jetpT,algo// 
+    //log(1/theta),log(z*theta),jetpT,algo// 
    const Int_t dimSpec   = 6;
    const Int_t nBinsSpec[6]     = {50,50,10,3,22,10};
    const Double_t lowBinSpec[6] = {0.0,-10,  0,0,0,0};
@@ -1450,6 +1451,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
    double ndepth=0;
    double nsd=0;
    double nall=0;
+   fShapesVar[10]=fOutputJets[0].perp();
     while(jj.has_parents(j1,j2)){
      
     if(j1.perp() < j2.perp()) swap(j1,j2);
