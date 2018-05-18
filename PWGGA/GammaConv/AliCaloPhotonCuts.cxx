@@ -4951,6 +4951,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= 0.9872826260;
             energy /= 0.9930726691;
           }
+        } else if( fCurrentMC==k17l3b ) {
+          if(fClusterType == 3) {
+            energy /= FunctionNL_kSDM(energy, 0.987061, 0.67914, -9.73616);
+          }
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -5014,6 +5018,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if ( fCurrentMC==kPP13T16P1Pyt8 ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.957323, -3.55283, -0.57881);
 
+        } else if( fCurrentMC==k17l3b ) {
+          if(fClusterType == 3) {
+            energy /= FunctionNL_kSDM(energy, 0.984132, -5.23198, -2.0266);
+          }
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -5144,6 +5152,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             energy /= (FunctionNL_DPOW(energy, 1.1343351836,-0.1571288013,-0.0800000607,1.0288066416,-0.0367913727,-0.4995137932));
             energy /= FunctionNL_DPOW(energy, 1.1105555600, -0.1266067088, -0.0800000497, 1.1047136553, -0.1141567995, -0.1573142879);
           }
+        } else if( fCurrentMC==k17l3b ) {
+          if(fClusterType == 3) {
+            energy /= (FunctionNL_DExp(energy, 1.0721342271, -0.0815500220, -0.1857670027, 1.1425286910, -0.1647297698, -0.0800000202));
+          }
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
@@ -5199,6 +5211,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         //pp 13 TeV LHC16
         } else if ( fCurrentMC==kPP13T16P1Pyt8 ){
           if(fClusterType==1) energy /= (FunctionNL_DPOW(energy, 1.0187401756, -0.0857332791, -0.5000000000, 1.1585209386, -0.1999999989, -0.2646540338));
+        } else if( fCurrentMC==k17l3b ) {
+          if(fClusterType == 3) {
+            energy /= (FunctionNL_DExp(energy, 1.1046343012, -0.1760058785, -0.2284054724, 1.1423225698, -0.1998307674, -0.2240989999));
+          }
         } else fPeriodNameAvailable = kFALSE;
       }
       break;
