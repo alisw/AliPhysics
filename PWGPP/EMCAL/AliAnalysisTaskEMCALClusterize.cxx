@@ -854,9 +854,11 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     time-=fConstantTimeShift*1e-9; // only in case of simulations done before 2015
 
     // Do not include cells with too low energy, nor exotic cell
-    if( amp  < fRecParam->GetMinECut() ||
-        time > fRecParam->GetTimeMax() ||
-        time < fRecParam->GetTimeMin()    ) accept = kFALSE;
+    // Comment out since it removes some cells that could be accepted by the clusterizer, not clear why.
+    // To get inline with what is done in the EMCal correction framework
+//    if( amp  < fRecParam->GetMinECut() ||
+//        time > fRecParam->GetTimeMax() ||
+//        time < fRecParam->GetTimeMin()    ) accept = kFALSE;
     
     // In case of old AOD analysis cell time is -1 s, approximate replacing by time of the cluster the digit belongs.
     if (fRecalibrateWithClusterTime)
