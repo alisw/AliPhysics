@@ -40,7 +40,7 @@ AliEmcalCorrectionClusterNonLinearity::AliEmcalCorrectionClusterNonLinearity() :
   fEnergyTimeHistBefore(0),
   fEnergyDistAfter(0),
   fEnergyTimeHistAfter(0),
-  fSetClusterE(0)
+  fSetForceClusterE(kFALSE)
 {
 }
 
@@ -63,7 +63,7 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Initialize()
   GetProperty("nonLinFunct", nonLinFunctStr);
   UInt_t nonLinFunct = fgkNonlinearityFunctionMap.at(nonLinFunctStr);
 
-  GetProperty("setClusterE", fSetClusterE);
+  GetProperty("setForceClusterE", fSetForceClusterE);
   
   // init reco utils
   if (!fRecoUtils)
@@ -131,14 +131,17 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
         if (fRecoUtils->GetNonLinearityFunction() != AliEMCALRecoUtils::kNoCorrection) {
           Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
           clus->SetNonLinCorrEnergy(energy);
-          if ( fSetClusterE ) clus->SetE(energy);
+          if ( fSetForceClusterE ) clus->SetE(energy);
         }
       }
 
       // Fill histograms only if cluster is not exotic, as in ClusterMaker (the clusters are flagged, not removed)
       if (fCreateHisto && !clus->GetIsExotic()) {
-        fEnergyDistAfter->Fill(clus->GetNonLinCorrEnergy());
-        fEnergyTimeHistAfter->Fill(clus->GetNonLinCorrEnergy(), clus->GetTOF());
+        Float_t energy = clus->GetNonLinCorrEnergy();
+        if(fSetForceClusterE) energy = clus->E();
+        
+        fEnergyDistAfter->Fill(energy);
+        fEnergyTimeHistAfter->Fill(energy, clus->GetTOF());
       }
     }
   }
