@@ -94,6 +94,7 @@ class AliCheb3D: public TNamed
   AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec=1E-6, Bool_t run=kTRUE, const Float_t* precD=0);
 #endif
   //
+  TObjArray* GetChebCalcArray() const {return (TObjArray*)&fChebCalc;}
   ~AliCheb3D()                                                                 {Clear();}
   //
   AliCheb3D&   operator=(const AliCheb3D& rhs);
