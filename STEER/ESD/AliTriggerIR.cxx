@@ -227,7 +227,7 @@ void AliTriggerIR::Print( const Option_t* ) const
   cout << "  Transmission Error:   " << fTransErr << endl;
   cout << "IRRun2 Number of signals:    " << fNWord2 << endl;
   for (UInt_t i = 0; i < fNWord2; i++)
-    cout << "    BC: 0x" << hex << fBC[i]  << "  Interaction1: 0x" << fIntRun2[i] << dec << endl;
+    cout << "    BC: 0x" << hex << fBC2[i]  << "  Interaction1: 0x" << fIntRun2[i] << dec << endl;
 
   cout << "  Record incomplete:    " << fIncomplete2 << endl;
   cout << "  Transmission Error:   " << fTransErr2 << endl;
