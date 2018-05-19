@@ -697,10 +697,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   }//fIsPHOSTriggerAnalysis ends
   //opening angle cut study
-  TH3F *h3MggvsPt_OA = new TH3F("hMgg_OA","M_{#gamma#gamma} for opening angle;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);opening angle #theta (mrad.)" ,180,0,0.72,100,0,100,100,0,100);
+  TH3F *h3MggvsPt_OA = new TH3F("hMgg_OA","M_{#gamma#gamma} for opening angle;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);opening angle (mrad.)" ,180,0,0.72,100,0,100,100,0,100);
   h3MggvsPt_OA->Sumw2();
   fOutputContainer->Add(h3MggvsPt_OA);
 
+  TH3F *h3MixMggvsPt_OA = new TH3F("hMixMgg_OA","M_{#gamma#gamma} for opening angle;M_{#gamma#gamma} (GeV/c^{2});p_{T} (GeV/c);opening angle (mrad.)" ,180,0,0.72,100,0,100,100,0,100);
+  h3MixMggvsPt_OA->Sumw2();
+  fOutputContainer->Add(h3MixMggvsPt_OA);
 
   if(fIsMC){
 
@@ -2028,6 +2031,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         value[0] = m12;
         value[1] = pt12;
         value[2] = asym;
+
+        Double_t oa = TMath::Abs(ph1->Angle(ph2->Vect())) * 1e+3;//rad->mrad
+        FillHistogramTH3(fOutputContainer,"hMixMgg_OA",m12,pt12,oa,weight);
 
         if(m12 > 0.96) continue;//reduce entry in THnSparse
 
