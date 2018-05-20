@@ -175,6 +175,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 		TH2F 									**hESDPi0MotherInvMassPt;
 		TH2F 									**hESDPi0MotherDiffInvMassPt;
 		TH2F 									**hESDPi0MotherDiffLimInvMassPt;
+                TH2F                                                                    **hESDEposEnegInvMassPi0MotherPt;
 		TH1F 									**hESDMotherInvMassOpeningAngleGammaElectron;
 		THnSparseF 								**sESDMotherInvMassPtZM;
 		TH2F 									**hESDMotherBackInvMassPt;
