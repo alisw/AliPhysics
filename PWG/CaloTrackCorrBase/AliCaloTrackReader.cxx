@@ -44,6 +44,7 @@
 // ---- CaloTrackCorr ---
 #include "AliCalorimeterUtils.h"
 #include "AliCaloTrackReader.h"
+#include "AliMCAnalysisUtils.h"
 
 // ---- Jets ----
 #include "AliAODJet.h"
@@ -639,18 +640,21 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
     return kFALSE;
   }
   
-  if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
-  {
-    AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
+  TString genName       = ""; 
+  TString processName   = "";  
+  Int_t   process       = 0;
+  Int_t   firstGenPart  = 0; 
+  Int_t   pythiaVersion = 0;
+  AliGenPythiaEventHeader * pygeh = 
+  AliMCAnalysisUtils::GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
+                                           genName,processName,process,firstGenPart,pythiaVersion);
+  if ( pygeh )
+  {  
+    // Do this check only for jet-jet and gamma-jet productions
+//    printf("AliCaloTrackReader::ComparePtHardAndJetPt() - Process %d, Name %s, version %d\n", 
+//           process, processName.Data(), pythiaVersion);
     
-    // Do this check only for gamma-jet or jet-jet productions
-    Int_t process =  pygeh->ProcessType();
-    //printf("Process %d \n", process);
-    if ( process != 14 && process != 18 && process != 29 && process != 114 && process != 115 && // prompt gamma 
-         process != 11 && process != 12 && process != 13 && process != 28  && process !=  53 && // jet-jet 
-         process != 68 && process != 96  // jet-jet
-       ) return kTRUE ;
-    //printf("\t yes \n");
+    if ( !processName.Contains("Jet") ) return kTRUE;
     
     Int_t nTriggerJets =  pygeh->NTriggerJets();
     Float_t ptHard = pygeh->GetPtHard();
@@ -673,10 +677,10 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
                      process, ptHard, jet->Pt(), fPtHardAndJetPtFactor));
         return kFALSE;
       }
-    }
+    } // jet loop
     
     if(jet) delete jet;
-  }
+  } // pythia header
   
   return kTRUE ;
 }
@@ -695,18 +699,22 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
     return kFALSE;
   }
   
-  if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
-  {
-    AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
-    
+  TString genName       = ""; 
+  TString processName   = "";  
+  Int_t   process       = 0;
+  Int_t   firstGenPart  = 0; 
+  Int_t   pythiaVersion = 0;
+  AliGenPythiaEventHeader * pygeh = 
+  AliMCAnalysisUtils::GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
+                                           genName,processName,process,firstGenPart,pythiaVersion);
+  if ( pygeh )
+  {  
     // Do this check only for gamma-jet productions
-    Int_t process =  pygeh->ProcessType();
-    //printf("Process %d \n", process);
-    if ( process != 14 && process != 18 && process != 29 && process != 114 && process != 115 // && // prompt gamma 
-        //process != 11 && process != 12 && process != 13 && process != 28  && process !=  53 && // jet-jet 
-        //process != 68 && process != 96  // jet-jet
-       ) return kTRUE ;
-    //printf("\t yes \n");
+    
+//    printf("AliCaloTrackReader::ComparePtHardAndClusterPt() - Process %d, Name %s, version %d\n", 
+//           process, processName.Data(), pythiaVersion);
+    
+    if(processName !="Gamma-Jet") return kTRUE;
     
     Float_t ptHard = pygeh->GetPtHard();
     
@@ -723,9 +731,9 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
         
         return kFALSE;
       }
-    }
+    } // cluster loop
     
-  }
+  } // pythia header
   
   return kTRUE ;
 }
@@ -1453,13 +1461,22 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   
   //------------------------------------------------------------------
   // Recover the weight assigned to the event, if provided
-  // right now only for pT-hard bins and centrality depedent weights
+  // right now only for pT-hard bins and centrality dependent weights
   //------------------------------------------------------------------
   if ( fWeightUtils->IsWeightSettingOn() )
   {
     fWeightUtils->SetCentrality(cen);
     
-    fWeightUtils->SetPythiaEventHeader(((AliGenPythiaEventHeader*)GetGenEventHeader()));
+    TString genName       = ""; 
+    TString processName   = "";  
+    Int_t   process       = 0;
+    Int_t   firstGenPart  = 0; 
+    Int_t   pythiaVersion = 0;
+    AliGenPythiaEventHeader * pygeh = 
+    AliMCAnalysisUtils::GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
+                                             genName,processName,process,firstGenPart,pythiaVersion);
+    
+    fWeightUtils->SetPythiaEventHeader(pygeh);
       
     fEventWeight = fWeightUtils->GetWeight();
   }

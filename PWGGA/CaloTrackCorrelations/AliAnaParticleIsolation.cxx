@@ -7807,7 +7807,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
-    tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC());
+    tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC(),
+                                            GetReader()->GetNameOfMCEventHederGeneratorToAccept());
     
     if(pdg == 22 && !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {

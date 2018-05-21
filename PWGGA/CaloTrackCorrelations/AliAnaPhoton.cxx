@@ -1038,7 +1038,8 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
-    tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC());
+    tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC(),
+                                            GetReader()->GetNameOfMCEventHederGeneratorToAccept());
     
     if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {
@@ -4589,7 +4590,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     if ( IsDataMC() )
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(), GetMC(), pl); // check lost decays
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(), GetMC(), 
+                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                              pl); // check lost decays
           
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
       
