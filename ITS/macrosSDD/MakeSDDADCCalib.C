@@ -76,8 +76,8 @@ Double_t LangausFun(Double_t *x, Double_t *par) {
 
 //________________________________________________________________________________________
 
-//void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "LHC15o",TString filename ="QAresults_barrel"){
-void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString filename ="CalibObjects", Int_t year = 2015, TString period = "LHC15o", Bool_t readLocal=kFALSE){
+
+void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString filename ="CalibObjects.root", Int_t year = 2015, TString period = "LHC15o", Bool_t readLocal=kFALSE){
     
   //****************** Connection to alien *****************************************
     
@@ -133,7 +133,7 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     //        sprintf(path,"alien:///alice/data/%04i/%s/%09i/zdc_special_wTPC_cpass1/OCDB/CalibObjects.root",year,period.Data(),run);
     fin = TFile::Open(path);
   }
-  else fin = new TFile(Form("%s/%s_%s_Merged.root",foldname.Data(),filename.Data(),period.Data()));
+  else fin = new TFile(Form("%s/%s",foldname.Data(),filename.Data()));
     
   if(!fin)return;
   TString lname = Form("clistSDDCalib");
