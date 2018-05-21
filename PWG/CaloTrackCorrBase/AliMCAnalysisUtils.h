@@ -30,6 +30,7 @@ class TClonesArray;
 //--- AliRoot system ---
 class AliMCEvent;
 class AliGenEventHeader;
+class AliGenPythiaEventHeader;
 
 class AliMCAnalysisUtils : public TObject {
 	
@@ -65,8 +66,9 @@ class AliMCAnalysisUtils : public TObject {
   Int_t   CheckCommonAncestor(Int_t index1, Int_t index2, const AliMCEvent* mcevent, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & prodVertex) ;
   
-  Int_t   CheckOrigin(Int_t label, const AliMCEvent* mcevent) ;  
-  Int_t   CheckOrigin(const Int_t *labels, Int_t nlabels, const AliMCEvent* mcevent, const TObjArray *arrayCluster = 0x0) ; 
+  Int_t   CheckOrigin(Int_t label, AliMCEvent* mcevent, TString selectHeaderName) ;  
+  Int_t   CheckOrigin(const Int_t *labels, Int_t nlabels, AliMCEvent* mcevent, 
+                      TString selectHeaderName, const TObjArray *arrayCluster = 0x0) ; 
   
   void    CheckOverlapped2GammaDecay(const Int_t *labels, Int_t nlabels, Int_t mesonIndex, const AliMCEvent* mcevent, Int_t & tag); 
   
@@ -77,7 +79,8 @@ class AliMCAnalysisUtils : public TObject {
   TLorentzVector GetMother     (Int_t label,const AliMCEvent* mcevent, Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & momLabel);
   TLorentzVector GetGrandMother(Int_t label,const AliMCEvent* mcevent, Int_t & pdg, Int_t & status, Bool_t & ok, Int_t & grandMomLabel, Int_t & greatMomLabel);
 
-  TLorentzVector GetMotherWithPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel);
+  TLorentzVector GetMotherWithPDG     (Int_t label, Int_t pdg,const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel);
+  TLorentzVector GetFirstMotherWithPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent, Bool_t & ok, Int_t & momLabel, Int_t & gparentlabel);
   
   void GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg,const AliMCEvent* mcevent,
                                       Float_t & asy, Float_t & angle, Bool_t & ok);
@@ -109,6 +112,12 @@ class AliMCAnalysisUtils : public TObject {
     
   // Method to recover MC jets stored in generator
   TList * GetJets(AliMCEvent* mcevent, AliGenEventHeader * mcheader, Int_t eventNumber) ;
+  
+  static AliGenPythiaEventHeader * GetPythiaEventHeader
+  (AliMCEvent* mcevent, TString selecHeaderName,
+   TString & genName, TString & processName, 
+   Int_t   & process, Int_t & firstParticle, 
+   Int_t   & pythiaVersion);
   
   void    SetDebug(Int_t deb)           { fDebug=deb           ; }
   Int_t   GetDebug()              const { return fDebug        ; }	
