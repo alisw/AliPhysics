@@ -52,6 +52,7 @@ private:
   Int_t fL0TriggerInputMUL;
   Int_t fL0TriggerInputMSL;
   Int_t fL0TriggerInputTVX;
+  Int_t fhL2TriggerCINT7CENTNOTRD;
   Int_t fNTrigClass;
   TString fTriggerClasses[13];
   Int_t fminContributorsPileUp;
