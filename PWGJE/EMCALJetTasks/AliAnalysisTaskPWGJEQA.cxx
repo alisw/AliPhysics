@@ -62,6 +62,10 @@ ClassImp(AliAnalysisTaskPWGJEQA);
 /// Default constructor for ROOT I/O purposes
 AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskPWGJEQA", kTRUE),
+  fUseAliEventCuts(kTRUE),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
   fCellEnergyCut(0.05),
   fMaxPt(250),
   fNTotTracks(0),
@@ -105,6 +109,10 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
 /// \param name Name of the task
 AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
+  fUseAliEventCuts(kTRUE),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
   fCellEnergyCut(0.05),
   fMaxPt(250),
   fNTotTracks(0),
@@ -153,16 +161,47 @@ void AliAnalysisTaskPWGJEQA::UserCreateOutputObjects()
 {
   // Create histograms
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+  // Intialize AliEventCuts
+  if (fUseAliEventCuts) {
+    fEventCutList = new TList();
+    fEventCutList ->SetOwner();
+    fEventCutList ->SetName("EventCutOutput");
+
+    fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
+    if(fUseManualEventCuts==1)
+    {
+    		fEventCuts.SetManualMode();
+    		fEventCuts.fMC = MCEvent(); //before was= false
+    	if(fForceBeamType != kpp)
+    	{
+    		fEventCuts.SetupLHC15o();
+    		fEventCuts.fUseVariablesCorrelationCuts = true;
+    	}
+    	else if(fForceBeamType == kpp)
+    	{
+    		fEventCuts.SetupRun2pp();
+    		//no other cuts known so far
+    	}
+    	else
+    	{
+    		printf("No implementation of manuel event cuts for pPb yet!");
+    	}
+
+    }
+    fEventCuts.AddQAplotsToList(fEventCutList);
+    fOutput->Add(fEventCutList);
+  }
   
   // Set track container pointers
-  fDetectorLevel = GetTrackContainer(fDetectorLevelName);
+  fDetectorLevel  = GetTrackContainer(fDetectorLevelName);
   fGeneratorLevel = GetMCParticleContainer(fGeneratorLevelName);
   
   // Allocate histograms for tracks, cells, clusters, jets
   if (fDoTrackQA) AllocateTrackHistograms();
-  if (fDoCaloQA) AllocateCellHistograms();
-  if (fDoCaloQA) AllocateClusterHistograms();
-  if (fDoJetQA) AllocateJetHistograms();
+  if (fDoCaloQA)  AllocateCellHistograms();
+  if (fDoCaloQA)  AllocateClusterHistograms();
+  if (fDoJetQA)   AllocateJetHistograms();
   if (fDoEventQA) AllocateEventQAHistograms();
   
   TIter next(fHistManager.GetListOfHistograms());
@@ -202,7 +241,7 @@ void AliAnalysisTaskPWGJEQA::AllocateCellHistograms() {
      
     histname = TString::Format("%s/fHistCellTime", fCaloCellsName.Data());
     title = histname + ";#it{t}_{cell} (s);counts";
-    fHistManager.CreateTH1(histname.Data(), title.Data(), 500,-5e-6, 5e-6);
+    fHistManager.CreateTH1(histname.Data(), title.Data(), 500,-3e-6, 3e-6);
     
     histname = TString::Format("%s/fProfCellAbsIdTime", fCaloCellsName.Data());
     title = histname + ";cell absId;<#it{t}_{cell}> (s)";
@@ -393,30 +432,30 @@ void AliAnalysisTaskPWGJEQA::AllocateJetHistograms() {
       fHistManager.CreateTH2(histname.Data(), title.Data(), 101, 0, 101, 100, 0, 500);
     }
     if (fForceBeamType != kpp) {
-    histname = TString::Format("%s/hNEFVsPtEMC", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%); #it{p}_{T}^{corr} (GeV/#it{c});NEF";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, 250, 0, 250, 50, 0, 1);
+    	  histname = TString::Format("%s/hNEFVsPtEMC", jets->GetArrayName().Data());
+      title = histname + ";Centrality (%); #it{p}_{T}^{corr} (GeV/#it{c});NEF";
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, 250, 0, 250, 50, 0, 1);
 
-    histname = TString::Format("%s/hNEFVsPtDCal", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%); #it{p}_{T}^{corr} (GeV/#it{c});NEF";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, 250, 0, 250, 50, 0, 1);
+      histname = TString::Format("%s/hNEFVsPtDCal", jets->GetArrayName().Data());
+      title = histname + ";Centrality (%); #it{p}_{T}^{corr} (GeV/#it{c});NEF";
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, 250, 0, 250, 50, 0, 1);
 
-    histname = TString::Format("%s/hDeltaEHadCorr", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%); #it{p}_{T}^{corr} (GeV/#it{c}); #sum #it{E_{nonlincorr}} - #it{E}_{hadcorr}";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, 250, 0, 250, 250, 0, 50);
+      histname = TString::Format("%s/hDeltaEHadCorr", jets->GetArrayName().Data());
+      title = histname + ";Centrality (%); #it{p}_{T}^{corr} (GeV/#it{c}); #sum #it{E_{nonlincorr}} - #it{E}_{hadcorr}";
+      fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, 250, 0, 250, 250, 0, 50);
     }
     else{
-    	histname = TString::Format("%s/hNEFVsPtEMC", jets->GetArrayName().Data());
-    	title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});NEF";
-    	fHistManager.CreateTH2(histname.Data(), title.Data(), 250, 0, 250, 50, 0, 1);
+    	  histname = TString::Format("%s/hNEFVsPtEMC", jets->GetArrayName().Data());
+    	  title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    	  fHistManager.CreateTH2(histname.Data(), title.Data(), 250, 0, 250, 50, 0, 1);
 
-    	histname = TString::Format("%s/hNEFVsPtDCal", jets->GetArrayName().Data());
-    	title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});NEF";
-    	fHistManager.CreateTH2(histname.Data(), title.Data(), 250, 0, 250, 50, 0, 1);
+    	  histname = TString::Format("%s/hNEFVsPtDCal", jets->GetArrayName().Data());
+    	  title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});NEF";
+    	  fHistManager.CreateTH2(histname.Data(), title.Data(), 250, 0, 250, 50, 0, 1);
 
-    	histname = TString::Format("%s/hDeltaEHadCorr", jets->GetArrayName().Data());
-    	title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c}); #sum#it{E_{nonlincorr}} - #it{E}_{hadcorr}";
-    	fHistManager.CreateTH2(histname.Data(), title.Data(), 250, 0, 250, 250, 0, 50);
+    	  histname = TString::Format("%s/hDeltaEHadCorr", jets->GetArrayName().Data());
+    	  title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c}); #sum#it{E_{nonlincorr}} - #it{E}_{hadcorr}";
+    	  fHistManager.CreateTH2(histname.Data(), title.Data(), 250, 0, 250, 250, 0, 50);
     }
   }
 }
@@ -797,6 +836,23 @@ void AliAnalysisTaskPWGJEQA::ExecOnce()
   }
 }
 
+///
+/// This function (overloading the base class) uses AliEventCuts to perform event selection.
+///________________________________________________________________________
+Bool_t AliAnalysisTaskPWGJEQA::IsEventSelected()
+{
+  if (fUseAliEventCuts) {
+    if (!fEventCuts.AcceptEvent(InputEvent()))
+    {
+      PostData(1, fOutput);
+      return kFALSE;
+    }
+  }
+  else {
+    AliAnalysisTaskEmcal::IsEventSelected();
+  }
+  return kTRUE;
+}
 //________________________________________________________________________
 Bool_t AliAnalysisTaskPWGJEQA::RetrieveEventObjects()
 {
@@ -1170,26 +1226,34 @@ void AliAnalysisTaskPWGJEQA::FillJetHistograms() {
       if(jetType & AliEmcalJet::kEMCALfid)
       {
     	  	histname = TString::Format("%s/hNEFVsPtEMC", jets->GetArrayName().Data());
-    	    if (fForceBeamType != kpp)fHistManager.FillTH3(histname.Data(), fCent, jet->Pt(), jet->NEF());
-    	    else                      fHistManager.FillTH2(histname.Data(), jet->Pt(), jet->NEF());
+    	    if (fForceBeamType != kpp){fHistManager.FillTH3(histname.Data(), fCent, jet->Pt(), jet->NEF());}
+    	    else                      {fHistManager.FillTH2(histname.Data(), jet->Pt(), jet->NEF());}
       }
       else if(jetType & AliEmcalJet::kDCALonlyfid)
       {
     	    histname = TString::Format("%s/hNEFVsPtDCal", jets->GetArrayName().Data());
-    	    if (fForceBeamType != kpp)fHistManager.FillTH3(histname.Data(), fCent, jet->Pt(), jet->NEF());
-    	    else                      fHistManager.FillTH2(histname.Data(), jet->Pt(), jet->NEF());
-     }
+    	    if (fForceBeamType != kpp){
+    	    	  fHistManager.FillTH3(histname.Data(), fCent, jet->Pt(), jet->NEF());
+    	    }
+    	    else{
+    	    	  fHistManager.FillTH2(histname.Data(), jet->Pt(), jet->NEF());
+    	    }
+      }
       Double_t deltaEhadcorr = 0;
       const AliVCluster* clus = nullptr;
       Int_t nClusters = jet->GetNumberOfClusters();
       for (Int_t iClus = 0; iClus < nClusters; iClus++) {
-    	  clus = jet->Cluster(iClus);
-    	  deltaEhadcorr += (clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy());
+    	    clus = jet->Cluster(iClus);
+    	    deltaEhadcorr += (clus->GetNonLinCorrEnergy() - clus->GetHadCorrEnergy());
       }
 
       histname = TString::Format("%s/hDeltaEHadCorr", jets->GetArrayName().Data());
-      if (fForceBeamType != kpp)fHistManager.FillTH3(histname, fCent, jet->Pt(), deltaEhadcorr);
-      else                      fHistManager.FillTH2(histname, jet->Pt(), deltaEhadcorr);
+      if (fForceBeamType != kpp){
+    	    fHistManager.FillTH3(histname, fCent, jet->Pt(), deltaEhadcorr);
+      }
+      else{
+    	    fHistManager.FillTH2(histname, jet->Pt(), deltaEhadcorr);
+      }
     } //jet loop
   }
 }
