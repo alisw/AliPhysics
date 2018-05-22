@@ -250,12 +250,13 @@ Bool_t Config_piphi(
   if(!(TrackCutsPi%10000)) TrackCutsPi+=3020;//default settings
   Float_t nsigmaPiTPC=0.1*(TrackCutsPi%100);
   Float_t nsigmaPiTOF=0.1*((TrackCutsPi/100)%100);
-  Int_t CutTypePi=(TrackCutsPi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypePi=(TrackCutsPi/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   if(!(TrackCutsPhi%10000)) TrackCutsPhi+=3020;//default settings
   Float_t nsigmaKTPC=0.1*(TrackCutsPhi%100);
   Float_t nsigmaKTOF=0.1*((TrackCutsPhi/100)%100);
-  Int_t CutTypeK=(TrackCutsPhi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeK=(TrackCutsPhi/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t SideBand=(TrackCutsPhi/100000)%10;
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -302,7 +303,8 @@ Bool_t Config_piphi(
     
   // AliRsnMiniResonanceFinder
   AliRsnCutMiniPair* cutMassPhi=new AliRsnCutMiniPair("cutMassPhi",AliRsnCutMiniPair::kMassRange);
-  cutMassPhi->SetRangeD(1.01,1.03);
+  if(!SideBand) cutMassPhi->SetRangeD(1.01,1.03);
+  else cutMassPhi->SetRangeD(1.04,1.06);
   AliRsnCutMiniPair* cutYPhi=new AliRsnCutMiniPair("cutRapidityPhi",AliRsnCutMiniPair::kRapidityRange);
   cutYPhi->SetRangeD(-0.6,0.6);
   AliRsnCutSet* cutsPhi=new AliRsnCutSet("pairCutsPhi",AliRsnTarget::kMother);
@@ -382,7 +384,7 @@ Bool_t Config_piphi(
     out->SetDaughter(1,AliRsnDaughter::kPhi);
     out->SetCutID(1,iCutPhi);
     out->SetCharge(1,'0');
-    out->SetUseStoredMass(1);
+    if(!SideBand) out->SetUseStoredMass(1);
     out->SetMotherPDG(ipdg[i]);
     out->SetMotherMass(mass);
 
@@ -427,7 +429,7 @@ Bool_t Config_piphi(
     out->SetMotherMass(rsnfinder->GetResonanceMass());
     out->SetPairCuts(cutsPhi);
       
-    out->AddAxis(imID,50,1.,1.05);
+    out->AddAxis(imID,70,1.,1.07);
     out->AddAxis(ptID,200,0.0,20.0);
     out->AddAxis(centID,nmult,multbins);
   }
@@ -463,12 +465,13 @@ Bool_t Config_kxphi(
   if(!(TrackCutsK%10000)) TrackCutsK+=3020;//default settings
   Float_t nsigmaK1TPC=0.1*(TrackCutsK%100);
   Float_t nsigmaK1TOF=0.1*((TrackCutsK/100)%100);
-  Int_t CutTypeK1=(TrackCutsK/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeK1=(TrackCutsK/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   if(!(TrackCutsPhi%10000)) TrackCutsPhi+=3020;//default settings
   Float_t nsigmaK2TPC=0.1*(TrackCutsPhi%100);
   Float_t nsigmaK2TOF=0.1*((TrackCutsPhi/100)%100);
-  Int_t CutTypeK2=(TrackCutsPhi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeK2=(TrackCutsPhi/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t SideBand=(TrackCutsPhi/100000)%10;
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -515,7 +518,8 @@ Bool_t Config_kxphi(
     
   // AliRsnMiniResonanceFinder
   AliRsnCutMiniPair* cutMassPhi=new AliRsnCutMiniPair("cutMassPhi",AliRsnCutMiniPair::kMassRange);
-  cutMassPhi->SetRangeD(1.01,1.03);
+  if(!SideBand) cutMassPhi->SetRangeD(1.01,1.03);
+  else cutMassPhi->SetRangeD(1.04,1.06);
   AliRsnCutMiniPair* cutYPhi=new AliRsnCutMiniPair("cutRapidityPhi",AliRsnCutMiniPair::kRapidityRange);
   cutYPhi->SetRangeD(-0.6,0.6);
   AliRsnCutSet* cutsPhi=new AliRsnCutSet("pairCutsPhi",AliRsnTarget::kMother);
@@ -595,7 +599,7 @@ Bool_t Config_kxphi(
     out->SetDaughter(1,AliRsnDaughter::kPhi);
     out->SetCutID(1,iCutPhi);
     out->SetCharge(1,'0');
-    out->SetUseStoredMass(1);
+    if(!SideBand) out->SetUseStoredMass(1);
     out->SetMotherPDG(ipdg[i]);
     out->SetMotherMass(mass);
 
@@ -640,7 +644,7 @@ Bool_t Config_kxphi(
     out->SetMotherMass(rsnfinder->GetResonanceMass());
     out->SetPairCuts(cutsPhi);
       
-    out->AddAxis(imID,50,1.,1.05);
+    out->AddAxis(imID,70,1.,1.07);
     out->AddAxis(ptID,200,0.0,20.0);
     out->AddAxis(centID,nmult,multbins);
   }
@@ -675,7 +679,8 @@ Bool_t Config_k0phi(
   if(!(TrackCutsPhi%10000)) TrackCutsPhi+=3020;//default settings
   Float_t nsigmaKTPC=0.1*(TrackCutsPhi%100);
   Float_t nsigmaKTOF=0.1*((TrackCutsPhi/100)%100);
-  Int_t CutTypeKx=(TrackCutsPhi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeKx=(TrackCutsPhi/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t SideBand=(TrackCutsPhi/100000)%10;
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -769,7 +774,8 @@ Bool_t Config_k0phi(
     
   // AliRsnMiniResonanceFinder
   AliRsnCutMiniPair* cutMassPhi=new AliRsnCutMiniPair("cutMassPhi",AliRsnCutMiniPair::kMassRange);
-  cutMassPhi->SetRangeD(1.01,1.03);
+  if(!SideBand) cutMassPhi->SetRangeD(1.01,1.03);
+  else cutMassPhi->SetRangeD(1.04,1.06);
   AliRsnCutMiniPair* cutYPhi=new AliRsnCutMiniPair("cutRapidityPhi",AliRsnCutMiniPair::kRapidityRange);
   cutYPhi->SetRangeD(-0.6,0.6);
   AliRsnCutSet* cutsPhi=new AliRsnCutSet("pairCutsPhi",AliRsnTarget::kMother);
@@ -848,7 +854,7 @@ Bool_t Config_k0phi(
     out->SetDaughter(1,AliRsnDaughter::kPhi);
     out->SetCutID(1,iCutPhi);
     out->SetCharge(1,'0');
-    out->SetUseStoredMass(1);
+    if(!SideBand) out->SetUseStoredMass(1);
     out->SetMotherPDG(ipdg[i]);
     out->SetMotherMass(mass);
 
@@ -893,7 +899,7 @@ Bool_t Config_k0phi(
     out->SetMotherMass(rsnfinder->GetResonanceMass());
     out->SetPairCuts(cutsPhi);
       
-    out->AddAxis(imID,50,1.,1.05);
+    out->AddAxis(imID,70,1.,1.07);
     out->AddAxis(ptID,200,0.0,20.0);
     out->AddAxis(centID,nmult,multbins);
   }
@@ -1145,7 +1151,7 @@ Bool_t Config_phiphi(
   if(!(TrackCutsPhi%10000)) TrackCutsPhi+=3020;//default settings
   Float_t nsigmaKTPC=0.1*(TrackCutsPhi%100);
   Float_t nsigmaKTOF=0.1*((TrackCutsPhi/100)%100);
-  Int_t CutTypeK=(TrackCutsPhi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeK=(TrackCutsPhi/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -1303,7 +1309,7 @@ Bool_t Config_phiphi(
     out->SetMotherMass(rsnfinder->GetResonanceMass());
     out->SetPairCuts(cutsPhi);
       
-    out->AddAxis(imID,50,1.,1.05);
+    out->AddAxis(imID,70,1.,1.07);
     out->AddAxis(ptID,200,0.0,20.0);
     out->AddAxis(centID,nmult,multbins);
   }
@@ -1338,7 +1344,8 @@ Bool_t Config_Lambdaphi(
   if(!(TrackCutsPhi%10000)) TrackCutsPhi+=3020;//default settings
   Float_t nsigmaKTPC=0.1*(TrackCutsPhi%100);
   Float_t nsigmaKTOF=0.1*((TrackCutsPhi/100)%100);
-  Int_t CutTypeKx=(TrackCutsPhi/10000)%100000;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t CutTypeKx=(TrackCutsPhi/10000)%10;//0=TPC+TOF (default), 1=TPC only, 2=TOF only
+  Int_t SideBand=(TrackCutsPhi/100000)%10;
 
   AliRsnCutTrackQuality* trkQualityCut=new AliRsnCutTrackQuality("myQualityCut");
   trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
@@ -1473,7 +1480,8 @@ Bool_t Config_Lambdaphi(
     
   // AliRsnMiniResonanceFinder
   AliRsnCutMiniPair* cutMassPhi=new AliRsnCutMiniPair("cutMassPhi",AliRsnCutMiniPair::kMassRange);
-  cutMassPhi->SetRangeD(1.01,1.03);
+  if(!SideBand) cutMassPhi->SetRangeD(1.01,1.03);
+  else cutMassPhi->SetRangeD(1.04,1.06);
   AliRsnCutMiniPair* cutYPhi=new AliRsnCutMiniPair("cutRapidityPhi",AliRsnCutMiniPair::kRapidityRange);
   cutYPhi->SetRangeD(-0.6,0.6);
   AliRsnCutSet* cutsPhi=new AliRsnCutSet("pairCutsPhi",AliRsnTarget::kMother);
@@ -1553,7 +1561,7 @@ Bool_t Config_Lambdaphi(
     out->SetDaughter(1,AliRsnDaughter::kPhi);
     out->SetCutID(1,iCutPhi);
     out->SetCharge(1,'0');
-    out->SetUseStoredMass(1);
+    if(!SideBand) out->SetUseStoredMass(1);
     out->SetMotherPDG(ipdg[i]);
     out->SetMotherMass(mass);
 
@@ -1598,7 +1606,7 @@ Bool_t Config_Lambdaphi(
     out->SetMotherMass(rsnfinder->GetResonanceMass());
     out->SetPairCuts(cutsPhi);
       
-    out->AddAxis(imID,50,1.,1.05);
+    out->AddAxis(imID,70,1.,1.07);
     out->AddAxis(ptID,200,0.0,20.0);
     out->AddAxis(centID,nmult,multbins);
   }
