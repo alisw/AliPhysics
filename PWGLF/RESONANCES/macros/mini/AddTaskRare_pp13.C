@@ -35,11 +35,15 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
   bool isPP=false;
   if(!system) isPP=true;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
+
   if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
     else if(MultBins==2) task->UseMultiplicity("AliMultSelection_RefMult08");
     else task->UseMultiplicity("QUALITY");
-  }else task->UseCentrality("V0M");
+  }else if(system==1) task->UseMultiplicity("AliMultSelection_V0A");
+  else if(system==2) task->UseMultiplicity("AliMultSelection_V0M");
+  else task->UseCentrality("V0M");
 
   // set event mixing options
   int nmix=5;
@@ -111,6 +115,8 @@ AliRsnMiniAnalysisTask* AddTaskRare_pp13(
   int j,nmult=0;
   if(!MultBins){
     for(j=0;j<=401;j++){multbins[nmult]=j-0.5; nmult++;}
+  }else if(!trigger){
+    for(j=0;j<=100;j++){multbins[nmult]=j; nmult++;}
   }else{
     for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
     for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
@@ -233,6 +239,7 @@ Bool_t Config_pipi(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -274,7 +281,8 @@ Bool_t Config_pipi(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
   AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
@@ -289,11 +297,15 @@ Bool_t Config_pipi(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
@@ -361,6 +373,7 @@ Bool_t Config_pikx(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -415,7 +428,8 @@ Bool_t Config_pikx(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
   AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
@@ -430,11 +444,15 @@ Bool_t Config_pikx(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
@@ -501,6 +519,7 @@ Bool_t Config_pik0(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -590,7 +609,8 @@ Bool_t Config_pik0(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
 
   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
    
@@ -613,11 +633,15 @@ Bool_t Config_pik0(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
@@ -697,6 +721,7 @@ Bool_t Config_kxkx(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -732,7 +757,8 @@ Bool_t Config_kxkx(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
   AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
@@ -747,11 +773,15 @@ Bool_t Config_kxkx(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
@@ -821,6 +851,7 @@ Bool_t Config_kxk0(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -910,7 +941,8 @@ Bool_t Config_kxk0(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
 
   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
    
@@ -933,11 +965,15 @@ Bool_t Config_kxk0(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
@@ -1019,6 +1055,7 @@ Bool_t Config_pkx(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -1069,7 +1106,8 @@ Bool_t Config_pkx(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
   AliRsnCutSet* cutsPair=new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
   cutsPair->SetCutScheme(cutY->GetName());
@@ -1084,11 +1122,15 @@ Bool_t Config_pkx(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
@@ -1156,6 +1198,7 @@ Bool_t Config_pk0(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -1247,7 +1290,8 @@ Bool_t Config_pk0(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
 
   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
    
@@ -1270,11 +1314,15 @@ Bool_t Config_pk0(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
@@ -1354,6 +1402,7 @@ Bool_t Config_Lambdapi(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -1496,7 +1545,8 @@ Bool_t Config_Lambdapi(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
 
   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
    
@@ -1519,11 +1569,15 @@ Bool_t Config_Lambdapi(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
@@ -1627,6 +1681,7 @@ Bool_t Config_Lambdakx(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -1762,7 +1817,8 @@ Bool_t Config_Lambdakx(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
 
   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
    
@@ -1785,11 +1841,15 @@ Bool_t Config_Lambdakx(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
@@ -1915,6 +1975,7 @@ Bool_t Config_Lambdak0(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -2085,7 +2146,8 @@ Bool_t Config_Lambdak0(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
 
   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
    
@@ -2108,11 +2170,15 @@ Bool_t Config_Lambdak0(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
@@ -2229,6 +2295,7 @@ Bool_t Config_Lambdap(
   if(!system) isPP=true;
   int trigger=EventCuts%10;
   int MultBins=(EventCuts/10)%10;
+  if(system==1 || system==2) MultBins=1;
 
   char suffix[1000];
   sprintf(suffix,"_%s",lname.Data());
@@ -2359,7 +2426,8 @@ Bool_t Config_Lambdap(
 
   // pair cuts
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
-  cutY->SetRangeD(-0.5,0.5);
+  if(system!=1) cutY->SetRangeD(-0.5,0.5);
+  else cutY->SetRangeD(-0.465,0.035);
 
   AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0",AliRsnCutMiniPair::kContainsV0Daughter);
    
@@ -2382,11 +2450,15 @@ Bool_t Config_Lambdap(
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=1.; nmult++;
     multbins[nmult]=5.; nmult++;
-    for(j=1;j<=10;j++){multbins[nmult]=j*10; nmult++;}
+    multbins[nmult]=10.; nmult++;
+    multbins[nmult]=15.; nmult++;
+    for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
   }else{
     multbins[nmult]=0.; nmult++;
     multbins[nmult]=0.001; nmult++;
+    multbins[nmult]=0.005; nmult++;
     multbins[nmult]=0.01; nmult++;
+    multbins[nmult]=0.05; nmult++;
     multbins[nmult]=0.1; nmult++;
     multbins[nmult]=1.; nmult++;
   }
