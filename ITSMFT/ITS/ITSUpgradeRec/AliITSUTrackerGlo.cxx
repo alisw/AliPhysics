@@ -215,9 +215,6 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
   fHypStore.Delete();
   if (fHypStore.GetSize()<fNTracksESD) fHypStore.Expand(fNTracksESD+100);
   //
-  fITS->SortClusters(AliITSUClusterPix::SortModeIdTrkYZ());
-  fITS->ProcessClusters();
-  //
 #ifdef  _ITSU_TUNING_MODE_
   FlagSplitClusters(); // tmp RS
 #endif
@@ -437,6 +434,9 @@ Int_t AliITSUTrackerGlo::LoadClusters(TTree * treeRP)
   // read from tree (if pointer provided) or directly from the ITS reco interface
   //
   return fReconstructor->LoadClusters(treeRP);
+  //
+  fITS->SortClusters(AliITSUClusterPix::SortModeIdTrkYZ());
+  fITS->ProcessClusters();
 } 
 
 //_________________________________________________________________________
