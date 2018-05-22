@@ -98,10 +98,14 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fTf1Omega(0x0),
   fTf1Kt(0x0),
   fScaleELoss(kFALSE),
-  xfraction(1)
+  xfraction(1),
+  fAddMedScat(kFALSE),
+  fAddMedScatPt(1),
+  fAddMedScatN(100)
+  
 
 {
-  for(Int_t i=0;i<10;i++){
+  for(Int_t i=0;i<11;i++){
     fShapesVar[i]=0;}
   SetMakeGeneralHistograms(kTRUE);
    DefineOutput(1, TList::Class());
@@ -156,12 +160,15 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fTf1Omega(0x0),
   fTf1Kt(0x0),
   fScaleELoss(kFALSE),
-  xfraction(1)
+  xfraction(1),
+  fAddMedScat(kFALSE),
+  fAddMedScatPt(1),
+  fAddMedScatN(100)
 {
   // Standard constructor.
   
   
-  for(Int_t i=0;i<10;i++){
+  for(Int_t i=0;i<11;i++){
     fShapesVar[i]=0;}
   
   SetMakeGeneralHistograms(kTRUE);
@@ -202,7 +209,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
-  const Int_t nVar = 10;
+  const Int_t nVar = 11;
 
   TString *fShapesVarNames = new TString [nVar];
   
@@ -222,6 +229,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
   // fShapesVarNames[10] = "DeltaRkt";
   // fShapesVarNames[11] = "DeltaRMin";
   fShapesVarNames[9] = "SDSymm";
+  fShapesVarNames[10] = "scaledptJet";
   // fShapesVarNames[13] = "SDDeltaR";
   // fShapesVarNames[14] = "SDGroomedFrac"; 
   // fShapesVarNames[15] = "SDGroomedN"; 
@@ -309,7 +317,7 @@ AliAnalysisTaskEmcalJetShapesMC::~AliAnalysisTaskEmcalJetShapesMC()
 
 
 
-  //log(1/theta),log(z*theta),jetpT,algo// 
+    //log(1/theta),log(z*theta),jetpT,algo// 
    const Int_t dimSpec   = 6;
    const Int_t nBinsSpec[6]     = {50,50,10,3,22,10};
    const Double_t lowBinSpec[6] = {0.0,-10,  0,0,0,0};
@@ -1356,6 +1364,18 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
       fInputVectors.push_back(PseudoTracks);
      
     }
+  if(fAddMedScat){
+    for(int i = 0; i < fAddMedScatN; i++){
+      TRandom3 rand1(0),rand2(0); //set range +- jet R
+      Double_t randN1 = 0.4*0.4*rand1.Rndm();
+      Double_t randN2 = 2*TMath::Pi()*rand2.Rndm();
+      Double_t phi_rand = (fJet->Phi())+TMath::Sqrt(randN1)*TMath::Sin(randN2);
+      Double_t eta_rand = (fJet->Eta())+TMath::Sqrt(randN1)*TMath::Cos(randN2);
+      PseudoTracks.reset(fAddMedScatPt*TMath::Cos(phi_rand),fAddMedScatPt*TMath::Sin(phi_rand),fAddMedScatPt/TMath::Tan(eta_rand),fAddMedScatPt);
+      fInputVectors.push_back(PseudoTracks);
+    }
+  }
+
 
     //add tracks to the jet prior to the reclusterer in case of iterative mapping of splittings
    
@@ -1431,6 +1451,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
    double ndepth=0;
    double nsd=0;
    double nall=0;
+   fShapesVar[10]=fOutputJets[0].perp();
     while(jj.has_parents(j1,j2)){
      
     if(j1.perp() < j2.perp()) swap(j1,j2);

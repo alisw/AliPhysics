@@ -156,7 +156,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 	double fvertex[3];
 
 	fEvtNum++;
-	if(fEvtNum % 100 == 0)
+	if(fEvtNum % 1000 == 0)
 		cout << "evt : " << fEvtNum <<endl;
 
 	// load current event and save track, event info

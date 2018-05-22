@@ -141,6 +141,7 @@ void MakeTPCPIDResponseOADB(TString outfile="$ALICE_PHYSICS/OADB/COMMON/PID/data
   // ---| pass2 |---------------------------------------------------------------
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15f.pass2/splines_15f.pass2.root", 208505, 229245, "2"); //a-f
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/martin/data/LHC15h.pass2/splines_15h.pass2.root", 229246, 235169, "2"); //includes 15g high field
+  AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/jiyoung/LHC15i.pass2/splines_15i_pass2.root",      235170, 236866, "2");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15n.pass2/v1/splines_15n.pass2.root", 244300, 244639, "2");
   AddOADBObjectFromSplineFile("/u/wiechula/svn/train/PID/splines/nicolas/data/15o.pass2/v1/splines_15o.pass2.root", 244640, 247173, "2", "",
                               "-1.077e-06,-4.999e-05,-9.812e-03,2.492e-02,0 ; -5.562e-07, 1.644e-06, -0.5 ; 0.,0.,0.,0.");

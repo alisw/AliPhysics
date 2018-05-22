@@ -53,7 +53,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   // Event methods, settings
   
-  Bool_t         AcceptCell(Int_t absID);
+  Bool_t         AcceptCell(Int_t absID, Bool_t badmap = kTRUE);
   Bool_t         AcceptEventEMCAL();
   void           SwitchOnSelectEMCALEvent()                    { fSelectEMCALEvent   = kTRUE   ; }
   void           SwitchOffSelectEMCALEvent()                   { fSelectEMCALEvent   = kFALSE  ; }

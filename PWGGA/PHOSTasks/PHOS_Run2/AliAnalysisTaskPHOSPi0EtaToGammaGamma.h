@@ -367,6 +367,9 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       else return kTRUE;
     }
 
+    Bool_t Are2GammasInPHOSAcceptance(Int_t id);
+
+
   protected:
     Bool_t fIsMC;
     Bool_t fIsJJMC;//jet jet MC
@@ -446,7 +449,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 52);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 53);
 };
 
 #endif

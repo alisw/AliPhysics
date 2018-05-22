@@ -146,10 +146,10 @@ void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
   fHistos = new THistManager(Form("Histos_%s", GetName()));
 
   // Create trigger correlation histogram
-  std::array<TString, 11> binlabels = {"MB", "EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7", "DG1", "DG2", "DJ1", "DJ2"};
+  const std::array<const TString, 11> binlabels = {"MB", "EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7", "DG1", "DG2", "DJ1", "DJ2"};
   fHistos->CreateTH2("hTriggerCorrelation", "Correlation selected trigger classes", binlabels.size(), -0.5, binlabels.size() - 0.5, binlabels.size(), -0.5, binlabels.size() - 0.5);
   TH1 *correlationHist = static_cast<TH1 *>(fHistos->FindObject("hTriggerCorrelation"));
-  for(int ib = 0; ib < 6; ib++){
+  for(decltype(binlabels.size()) ib = 0; ib < binlabels.size(); ib++){
     correlationHist->GetXaxis()->SetBinLabel(ib+1, binlabels[ib]);
     correlationHist->GetYaxis()->SetBinLabel(ib+1, binlabels[ib]);
   }
@@ -208,7 +208,7 @@ Bool_t AliAnalysisTaskEmcalTriggerBase::IsEventSelected(){
 
   // Fill histogram with trigger correlation
   // self-correlations included
-  std::array<TString, 11> kAbsTriggers = {"MB", "EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7", "DG1", "DG2", "DJ1", "DJ2"};
+  const std::array<const TString, 11> kAbsTriggers = {"MB", "EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7", "DG1", "DG2", "DJ1", "DJ2"};
   for(int itrg = 0; itrg < kAbsTriggers.size(); itrg++){
     bool hasTriggerA = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), kAbsTriggers[itrg]) != fSelectedTriggers.end());
     if(hasTriggerA) {

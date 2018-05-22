@@ -37,6 +37,8 @@ static double decAcc[AliJFlowBaseTask::D_COUNT][2] = {
 	{2.8,5.1},   // V0P+ need to do it manually
 	{2.5,5.1} // Virtual dector +-
 };
+static const char *pdetn[4] = {"TPC","VZERO","VZEROA","VZEROC"};
+static int newDetID[4] = {AliJFlowBaseTask::D_TPC,AliJFlowBaseTask::D_V0P,AliJFlowBaseTask::D_V0A,AliJFlowBaseTask::D_V0C};
 
 //______________________________________________________________________________
 AliJFlowBaseTask::AliJFlowBaseTask() :   
@@ -138,7 +140,7 @@ void AliJFlowBaseTask::UserExec(Option_t* /*option*/)
 
 	// Processing of one event
 	if(fDebug > 5) cout << "------- AliJFlowBaseTask Exec-------"<<endl;
-	if(!((Entry()-1)%100))  AliInfo(Form(" Processing event # %lld",  Entry())); 
+	if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
 	if( fJCatalystTask->GetJCatalystEntry() != fEntry ) return;
 	fCBin = AliJFlowHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
 	if(fCBin == -1)
@@ -147,8 +149,6 @@ void AliJFlowBaseTask::UserExec(Option_t* /*option*/)
 		TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
 		CalculateEventPlane(fInputList);
 	} else {
-		static const char *pdetn[] = {"TPC","VZERO","VZEROA","VZEROC"};
-		static int newDetID[] = {D_TPC,D_V0P,D_V0A,D_V0C};
 		AliQnCorrectionsManager *fFlowVectorMgr = fFlowVectorTask->GetAliQnCorrectionsManager();
 		const AliQnCorrectionsQnVector *fQnVector;
 		for(UInt_t di = 0; di < sizeof(pdetn)/sizeof(pdetn[0]); ++di) {

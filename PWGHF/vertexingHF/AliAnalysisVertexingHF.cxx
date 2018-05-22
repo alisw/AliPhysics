@@ -3571,6 +3571,8 @@ Bool_t AliAnalysisVertexingHF::SingleTrkCuts(AliESDtrack *trk,
   // this is needed to store the impact parameters
   //AliCodeTimerAuto("",0);
 
+  if (!trk->PropagateToDCA(fV1,fBzkG,kVeryBig)) return kFALSE;
+
   trk->RelateToVertex(fV1,fBzkG,kVeryBig);
 
   UInt_t selectInfo;

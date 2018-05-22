@@ -1,9 +1,7 @@
 /***************************************************************************
- //            Modified by Kishora Nayak - 14/06/2016
- //            Modified by Enrico Fragiacomo - 15/01/2014
- //            Modified by Kunal Garg - 04/02/2017
+ //          	Modified by Kunal Garg - 03/05/2018 (kgarg@cern.ch)
  //            Based on AddAnalysisTaskRsnMini
- //            pPb specific settings from AddTaskKStarPPB.C
+ //
  //
  // Macro to configure the KStarPlusMinus analysis task
  // It calls all configs desired by the user, by means
@@ -75,13 +73,11 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
  Float_t     k0sDaughDCA = 1.0,
  Int_t       NTPCcluster = 70,
  TString     outNameSuffix = "KStarPlusMinus_test_func",
- Bool_t      ptDep = kFALSE,
  Float_t     DCAxy = 0.06,
  Bool_t      enableSys = kFALSE,
  Float_t     crossedRows = 70,
  Float_t     rowsbycluster = 0.8,
- Double_t    pt1 = 0.0105,
- Double_t    pt2 = 0.0350,
+ Float_t		 v0rapidity= 0.8,
  Int_t       Sys= 0
  )
 {
@@ -258,7 +254,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
     } else
         Printf("========================== DATA analysis - PID cuts used");
     
-    if (!ConfigKStarPlusMinusRun2016(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, ptDep, DCAxy, enableSys, crossedRows, rowsbycluster, pt1, pt2, Sys)) return 0x0;
+    if (!ConfigKStarPlusMinusRun2016(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
 
 	
 

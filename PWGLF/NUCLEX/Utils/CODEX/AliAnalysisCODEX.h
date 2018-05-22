@@ -175,6 +175,9 @@ namespace AliAnalysisCODEX {
       float GetDCAz() const { return DCAz * kDCAbinWidth;}
       void  SetDCAz(float c) { DCAz = round(c / kDCAbinWidth); }
 
+      unsigned char GetTRDnTracklets() const { return TRDnTracklets; }
+      void SetTRDnTracklets(unsigned char nTRDtrklt) { TRDnTracklets = nTRDtrklt; }
+
       /// Templates
       template<typename F>void  P(F p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); }
 
@@ -202,6 +205,7 @@ namespace AliAnalysisCODEX {
       unsigned char    ITSchi2NDF;   /// Chi2/ndf (binned) in ITS
       unsigned char    GoldenChi2;   /// Golden Chi2 defined as Constrained Global TPC chi2 (binned)
       unsigned char    ActiveLength; /// Active length in the TPCchi2NDF
+      unsigned char    TRDnTracklets;/// Number of TRD tracklets associated with the track
 
   };
 

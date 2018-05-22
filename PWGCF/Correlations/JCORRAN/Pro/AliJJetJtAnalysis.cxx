@@ -943,12 +943,24 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
   //this cone size information will be pulled to a numerical variable
   nJetContainer = fJetFinderName.size();
   fJetBgListOfList.resize(nJetContainer, TClonesArray("AliJJet",100));
+  fJetFinderNames = "";
   for (int i=0; i<nJetContainer; i++){
+    TString name = "";
+    if(fJetFinderName[i].Contains("mc")) name += "MC_";
+    if(fJetFinderName[i].Contains("Full")){
+      name += "Full_Jets_";
+    }else{
+      name += "Charged_Jets_";
+    }
     TString fullNameOfiJetContainer(fJetFinderName[i]);
     TString coneSizeName (fullNameOfiJetContainer(reg));
+    name += coneSizeName;
+    name += "_";
     TString coneSizeValue (coneSizeName(reg2));
     fConeSizes.push_back( (double) coneSizeValue.Atoi()/100.);
+    fJetFinderNames.Append(Form("%s\t",name.Data()));
   }
+  
 
   if(fDoMC){
     cout << "Start MC Histograms" << endl;
@@ -957,7 +969,7 @@ void AliJJetJtAnalysis::UserCreateOutputObjects(){
   }
 
   fHMG = new AliJHistManager( "AliJJetJtHistManager");
-  fJetFinderBin .Set("JetFinderOrder","NFin","NFin:%d", AliJBin::kSingle).SetBin(nJetContainer);
+  fJetFinderBin .Set("JetFinderOrder","NFin","Finder:%s", AliJBin::kString).SetBin(fJetFinderNames);
   fJetTriggerBin .Set("JetTriggerBin","JetPt","p_{T,jet} : %.1f - %.1f").SetBin(fCard->GetVector("JetTriggPtBorders"));
   fTrkPtBin .Set("TrkPtBin","TrkPt","p_{T,constituent}:%.1f-%.1f").SetBin(fCard->GetVector("JetAssocPtBorders"));
   fTrkLimPtBin .Set("TrkLimitPtBin","TrkLimitPt","p_{T,Limit}<%.1f", AliJBin::kSingle).SetBin(fJetConstPtLowLimits->GetNoElements());
@@ -1610,7 +1622,7 @@ void AliJJetJtAnalysis::CreateMCHistograms(){
   for(int ij=0;ij<=NBINS;ij++) LogBinsX[ij]=LimL*exp(ij*logBW);
 
   fHMGMC = new AliJHistManager( "AliJJetJtMCHistManager");
-  fJetFinderBinMC .Set("JetFinderOrder","NFin","NFin:%d", AliJBin::kSingle).SetBin(nJetContainer);
+  fJetFinderBinMC .Set("JetFinderOrder","NFin","Finder:%s", AliJBin::kString).SetBin(fJetFinderNames);
   fJetTriggerBinMC .Set("JetTriggerBin","JetPt","p_{T,jet} : %.1f - %.1f").SetBin(fCard->GetVector("JetTriggPtBorders"));
   fTrkPtBinMC .Set("TrkPtBin","TrkPt","p_{T,constituent}:%.1f-%.1f").SetBin(fCard->GetVector("JetAssocPtBorders"));
   fTrkLimPtBinMC .Set("TrkLimitPtBin","TrkLimitPt","p_{T,Limit}<%.1f", AliJBin::kSingle).SetBin(fJetConstPtLowLimits->GetNoElements());

@@ -2181,7 +2181,8 @@ void AliAnaClusterShapeCorrelStudies::ClusterLoopHistograms()
     Int_t noverlaps =0;
     if ( IsDataMC() && fStudyShape )
     {
-      mcTag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(), clus->GetNLabels(), GetMC());
+      mcTag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(), clus->GetNLabels(), GetMC(),
+                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept());
       
       if      ( GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCPi0        ) ||
                 GetMCAnalysisUtils()->CheckTagBit(mcTag, AliMCAnalysisUtils::kMCEta        ) ) mcIndex = 0;

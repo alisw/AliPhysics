@@ -35,12 +35,12 @@ class AliFemtoDreamZVtxMultContainer {
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles);
   TString ClassName() {return "zVtxMult Container";};
  private:
-  float RelativePairMomentum(const TVector3 *Part1Momentum,int PDGPart1,
-                             const TVector3 *Part2Momentum,int PDGPart2);
-  float RelativePairkT(const TVector3 *Part1Momentum,int PDGPart1,
-                       const TVector3 *Part2Momentum,int PDGPart2);
-  float RelativePairmT(const TVector3 *Part1Momentum,int PDGPart1,
-                       const TVector3 *Part2Momentum,int PDGPart2);
+  float RelativePairMomentum(TVector3 Part1Momentum,int PDGPart1,
+                              TVector3 Part2Momentum,int PDGPart2);
+  float RelativePairkT(TVector3 Part1Momentum,int PDGPart1,
+                       TVector3 Part2Momentum,int PDGPart2);
+  float RelativePairmT(TVector3 Part1Momentum,int PDGPart1,
+                              TVector3 Part2Momentum,int PDGPart2);
   std::vector<AliFemtoDreamPartContainer> fPartContainer;
   std::vector<int> fPDGParticleSpecies;
   ClassDef(AliFemtoDreamZVtxMultContainer,2);

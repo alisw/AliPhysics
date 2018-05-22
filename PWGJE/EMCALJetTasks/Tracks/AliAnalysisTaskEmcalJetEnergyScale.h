@@ -27,14 +27,6 @@
 #ifndef ALIANALYSISTASKEMCALJETENERGYSCALE_H
 #define ALIANALYSISTASKEMCALJETENERGYSCALE_H
 
-#if !(defined __CINT__ || defined __MAKECINT__)
-#if __cplusplus >= 201103L
-// In c++11 mode we will rely on c++11 keywords also in header files 
-// (i.e. final, override, default, delete)
-#define USECXX11HEADERS
-#endif
-#endif
-
 #include <TString.h>
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliJetContainer.h"
@@ -45,14 +37,7 @@ namespace EmcalTriggerJets {
 
 class AliAnalysisTaskEmcalJetEnergyScale : public AliAnalysisTaskEmcalJet {
 public:
-#ifdef USECXX11HEADERS
-  AliAnalysisTaskEmcalJetEnergyScale() = default;
-  AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &) = delete;
-  AliAnalysisTaskEmcalJetEnergyScale &operator=(const AliAnalysisTaskEmcalJetEnergyScale &) = delete;
-#else
-  // Only needed for rootcint - no implementation necessary
   AliAnalysisTaskEmcalJetEnergyScale();
-#endif
   AliAnalysisTaskEmcalJetEnergyScale(const char *name);
   virtual ~AliAnalysisTaskEmcalJetEnergyScale();
 
@@ -79,10 +64,8 @@ private:
   TString                     fTriggerSelectionString;        ///< Trigger selection string
   TString                     fNameTriggerDecisionContainer;  ///< Global trigger decision container
 
-#ifndef USECXX11HEADERS
   AliAnalysisTaskEmcalJetEnergyScale(const AliAnalysisTaskEmcalJetEnergyScale &);
   AliAnalysisTaskEmcalJetEnergyScale &operator=(const AliAnalysisTaskEmcalJetEnergyScale &);
-#endif
 
   ClassDef(AliAnalysisTaskEmcalJetEnergyScale, 1);
 };

@@ -37,7 +37,7 @@
  * additional QA for the EMCal trigger for the 8 TeV jet spectra analysis
  *
  * \author Andrew Castro <andrew.john.castro@cern.ch>, University of Tennessee
- * \date April 18, 2018
+ * \date April 14, 2018
  */
 
 /* Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
@@ -159,6 +159,9 @@ private:
     TH1F                          *fHistTriggerPatchE;//!<!                EMCal Trigger Patch E
     
     THnSparse                     *fhnMBJetSpectra;//!<!                   MB Jet Spectra sparse
+    THnSparse                     *fhnTrkQA;//!<!                          Charged Track QA Sparse
+    THnSparse                     *fhnClusQA;//!<!                         EMCal Cluster QA
+    
     
     TH1F                          *fHistEMCalTowerMult[9];//!<!            EMCal Tower Multiplicity by SM
 

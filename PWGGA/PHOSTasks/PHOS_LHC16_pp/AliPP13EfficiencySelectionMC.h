@@ -5,7 +5,7 @@
 #include <map>
 
 // --- Custom header files ---
-#include "AliPP13PhotonSelection.h"
+#include "AliPP13PhotonSelectionMC.h"
 #include "AliPP13SelectionWeights.h"
 #include "AliPP13MesonSelectionMC.h"
 
@@ -22,7 +22,7 @@
 #include <AliLog.h>
 
 
-class AliPP13EfficiencySelectionMC: public AliPP13PhotonSelection
+class AliPP13EfficiencySelectionMC: public AliPP13PhotonSelectionMC
 {
 public:
 	enum Particles
@@ -31,7 +31,7 @@ public:
 	};
 
 	AliPP13EfficiencySelectionMC():
-		AliPP13PhotonSelection(),
+		AliPP13PhotonSelectionMC(),
 		fInvMass()
 	{
 		fPartNames[kGamma] = "#gamma";
@@ -40,7 +40,7 @@ public:
 	}
 
 	AliPP13EfficiencySelectionMC(const char * name, const char * title, AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
-		AliPP13PhotonSelection(name, title, cuts, w),
+		AliPP13PhotonSelectionMC(name, title, cuts, w),
 		fInvMass()
 	{
 		// Force no timing cut for MC,
@@ -66,8 +66,6 @@ public:
 protected:
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
 	virtual Bool_t IsPrimary(const AliAODMCParticle * particle) const;
-	TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const;
-
 
 	// NB: Impelement these methods if needed
 	// 

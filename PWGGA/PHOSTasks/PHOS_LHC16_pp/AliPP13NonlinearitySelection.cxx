@@ -58,13 +58,13 @@ void AliPP13NonlinearitySelection::ConsiderPair(const AliVCluster * c1, const Al
 	if (dynamic_cast<AliPP13SelectionWeights *>(fWeights))
 	{
 		Float_t eff = fWeights->TofEfficiency(p1.E()) * fWeights->TofEfficiency(p2.E());
-		fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.Pt(), 1. / eff);	
+		fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.E(), 1. / eff);	
 		return;
 	}
 
 	// NB: Weight by meson spectrum, but fill only for the first photon
 	Float_t weight = fWeights->Weights(pt12, eflags);
-	fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.Pt(), weight);	
+	fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.E(), weight);	
 }
 
 //________________________________________________________________
@@ -82,7 +82,7 @@ void AliPP13NonlinearitySelection::InitSelectionHistograms()
 	for (Int_t i = 0; i < 2; ++i)
 	{
 		const char * sf = (i == 0) ? "" : "Mix";
-		TH2F * hist = new TH2F(Form("h%sMassPt_", sf), "(M_{#gamma#gamma}, pT_{#gamma}) ; M_{#gamma#gamma}, GeV; pT_{#gamma}, GeV", nM, mMin, mMax, nPt, ptMin, ptMax);
+		TH2F * hist = new TH2F(Form("h%sMassPt_", sf), "(M_{#gamma#gamma}, pT_{#gamma}) ; M_{#gamma#gamma}, GeV; E_{#gamma}, GeV", nM, mMin, mMax, nPt, ptMin, ptMax);
 		fMassPt[i] = new AliPP13DetectorHistogram(hist, fListOfHistos, AliPP13DetectorHistogram::kModules);
 	}
 

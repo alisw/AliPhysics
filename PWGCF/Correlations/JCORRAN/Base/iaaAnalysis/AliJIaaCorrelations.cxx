@@ -30,7 +30,7 @@ AliJIaaCorrelations::AliJIaaCorrelations( AliJCard *cardIn, AliJIaaHistograms *h
 	AliJCorrelationInterface(),
 	fcard(cardIn),
 	fhistos(histosIn),
-	fAcceptanceCorrection(0x0),
+//	fAcceptanceCorrection(0x0),
 	fnReal(0),
 	fnMix(0),
 	fsamplingMethod(0),    // flat by default
@@ -74,7 +74,7 @@ AliJIaaCorrelations::AliJIaaCorrelations() :
 	AliJCorrelationInterface(),
 	fcard(0x0),
 	fhistos(0x0),
-	fAcceptanceCorrection(0x0),
+	//fAcceptanceCorrection(0x0),
 	fnReal(0),
 	fnMix(0),
 	fsamplingMethod(0),    // flat by default
@@ -113,7 +113,7 @@ AliJIaaCorrelations::AliJIaaCorrelations() :
 AliJIaaCorrelations::AliJIaaCorrelations(const AliJIaaCorrelations& in) :
 	fcard(in.fcard),
 	fhistos(in.fhistos),
-	fAcceptanceCorrection(in.fAcceptanceCorrection),
+	//fAcceptanceCorrection(in.fAcceptanceCorrection),
 	fnReal(in.fnReal),
 	fnMix(in.fnMix),
 	fsamplingMethod(in.fsamplingMethod),
@@ -191,7 +191,7 @@ AliJIaaCorrelations& AliJIaaCorrelations::operator=(const AliJIaaCorrelations& i
 	// AliJIaaCorrelations and thus should not disappear if the AliJCorrelation managing them is destroyed.
 	fcard = in.fcard;
 	fhistos = in.fhistos;
-	fAcceptanceCorrection = in.fAcceptanceCorrection;
+	//fAcceptanceCorrection = in.fAcceptanceCorrection;
 
 	return *this;
 	// copy constructor
