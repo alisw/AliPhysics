@@ -21,60 +21,106 @@
 # organized in the same file structure, i.e. a directory for each run, and $plotDir/TrainOutput should be the parent directory.
 #
 # Author: James Mulligan <james.mulligan@yale.edu>
+#plotDir="$HOME/ALICE/JetQA/LHC15o/1872_highIR/TrainOutput"
 
-RUNLIST="246928 246846 246845 246844 246810 246809 246808 246807 246805 246804 246766 246765 246760 246759 246758 246757 246751 246750 246495 246493 246487 246434 246424 246271 246225 246222 246217 246115 246113 246089 246042 246037 246003 246001 245963 245954 245952 245949 245831 245829 245705 245702 245700 245683 246488 246087"
+#..........................................
+#15o.......................................
+#RUNLIST="246846 246928"
+#plotDir="YourPlotDir"
+#PREFIX="/alice/data/2015/LHC15o/000"
+#SUFFIX="YourTrainSuffix"
 
-plotDir="$HOME/ALICE/JetQA/LHC15o/1872_highIR/TrainOutput"
+#..........................................
+#16j5.......................................
+#RUNLIST="246991 246994"
+#plotDir="YourPlotDir"
+#PREFIX="/alice/"
+#SUFFIX="YourTrainSuffix"
+
+#..........................................
+#15n.......................................
+#RUNLIST="244340 244351 244355 244359 244364 244377 244411 244416 244418 244421 244453 244456 244480 244481 244482 244483 244484 244531 244540 244542 244617 244618 244619 244626 244627 244628"
+#plotDir="YourPlotDir"
+#PREFIX="/alice/data/2015/LHC15n/000"
+#SUFFIX="YourTrainSuffix"
+
+#..........................................
+#17p.......................................
+#RUNLIST="282343 282342 282341 282340 282314 282313 282312 282307 282306 282305 282304 282303 282302 282247 282230 282229 282227 282224 282206 282189 282147 282146 282126 282123 282122 282119 282118 282099 282098 282078 282051 282031 282030 282025"
+#plotDir="YourPlotDir"
+#PREFIX="/alice/data/2017/LHC17p/000"
+#SUFFIX="YourTrainSuffix"
+
+#..........................................
+#17q.......................................
+#RUNLIST="282367 282366 282365"
+#plotDir="YourPlotDir"
+#PREFIX="/alice/data/2017/LHC17q/000"
+#SUFFIX="YourTrainSuffix"
 
 downloadData=false
-plotQA=false
-generatePresentation=false
+plotQA=true
+generatePresentation=true
 
 analysisFile="AnalysisResults.root"   # For pt-hard, set to "AnalysisResultsFinal.root"
-referenceFile="../AnalysisResultsReference.root"
+#referenceFile="../AnalysisResultsReference.root"
+referenceFile="AllRuns/AnalysisResults.root"
 
-PREFIX="/alice/data/2015/LHC15o/000"
-SUFFIX="/pass1/PWGJE/Jets_EMC_PbPb/1872_20170310-0102/AnalysisResults.root"
-
+#-----------------------------------------
+# Preparations
 if [ ! -d "$plotDir" ]; then
-  mkdir "$plotDir"
+  mkdir -p $plotDir/"AllRuns"
 fi
-cd $plotDir
 echo "output dir: $plotDir"
 
+#-----------------------------------------
+# Download Files Section
 if [ "$downloadData" = true ]; then
 
-  echo "Downloading data, per run..."
+  echo "-> Downloading data, per run..."
 
   for RUN in $RUNLIST
   do
-    if [ ! -d "$RUN" ]; then
-      mkdir "$RUN"
+    if [ ! -d $plotDir/$RUN ]; then
+      mkdir "$plotDir"/"$RUN"
     fi
   done
 
   for RUN in $RUNLIST
   do
-    alien_cp alien://$PREFIX$RUN$SUFFIX $RUN
+    echo "- - - - - - - - - - - - - - - - -"
+    echo "Downloading run " $RUN
+    alien_cp alien://$PREFIX$RUN$SUFFIX $plotDir/$RUN
   done
-
 fi
 
+#-----------------------------------------
+# Plot QA of Files Section
 if [ "$plotQA" = true ]; then
 
-  echo "Executing plotting macro..."
+  echo "-> Executing plotting macro..."
+
+  echo "- - - - - - - - - - - - - - - - -"
+  echo "Plot merged reference run"
+#python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $plotDir/$referenceFile -o $plotDir/"AllRuns"/QAoutput -i ".png"
+  python ~/Software/alice/ali-master/AliPhysics/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $plotDir/$referenceFile -o $plotDir/"AllRuns"/QAoutput -i ".png"
 
   for RUN in $RUNLIST
   do
-    python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $RUN/$analysisFile -o $RUN/QAoutput -r $referenceFile -i ".png"
+    echo "- - - - - - - - - - - - - - - - -"
+    echo "Plotting run " $RUN
+    #python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $plotDir/$RUN/$analysisFile -o $plotDir/$RUN/QAoutput -r $plotDir/$referenceFile -i ".png"
+    python ~/Software/alice/ali-master/AliPhysics/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $plotDir/$RUN/$analysisFile -o $plotDir/$RUN/QAoutput -r $plotDir/$referenceFile -i ".png"
   done
-
 fi
 
+#-----------------------------------------
+# Generate powerpoint presentation Section
 if [ "$generatePresentation" = true ]; then
 
-  echo "Generating presentation..."
-  python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPowerpoint.py -r "$RUNLIST" -d "$plotDir"
+  echo "-> Generating presentation..."
+  #python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPowerpoint.py -r "$RUNLIST" -d "$plotDir"
+  python ~/Software/alice/ali-master/AliPhysics/PWGJE/EMCALJetTasks/macros/JetQA/plotPowerpoint.py -r "$RUNLIST" -d "$plotDir"
 
 fi
 
