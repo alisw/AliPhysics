@@ -471,9 +471,15 @@ void AliITSUCATracker::FindTracksCA(int iteration)
           tr.SetClusterIndex(i,fLayer[i][fCells[i][roads[iR][i]].x()]->index);
           tr.SetClusterIndex(i + 1,fLayer[i + 1][fCells[i][roads[iR][i]].y()]->index);
           first = i;
+          AliITSUClusterPix* cl0 = static_cast<AliITSUClusterPix*>(GetCluster(tr.GetClusterIndex(i)));
+          cl0->GoToFrameTrk();
+          AliITSUClusterPix* cl1 = static_cast<AliITSUClusterPix*>(GetCluster(tr.GetClusterIndex(i + 1)));
+          cl1->GoToFrameTrk();
         }
         tr.SetClusterIndex(i + 2,fLayer[i + 2][fCells[i][roads[iR][i]].z()]->index);
         last = i;
+        AliITSUClusterPix* cl2 = static_cast<AliITSUClusterPix*>(GetCluster(tr.GetClusterIndex(i + 2)));
+        cl2->GoToFrameTrk();
       }
       AliITSUClusterPix* c = fLayer[last + 2].GetClusterSorted(fCells[last][roads[iR][last]].z());
       cl2 = fLayer[last + 2][fCells[last][roads[iR][last]].z()];
@@ -537,7 +543,6 @@ Int_t AliITSUCATracker::LoadClusters(TTree *cluTree)
   // sort them, distribute over the internal tracker arrays, etc
 
   AliITSUTrackerGlo::LoadClusters(cluTree); // === fITS->LoadClusters(cluTree);
-  if (fSAonly) fITS->ProcessClusters();
 
   // I consider a single vertex event for the moment.
   //TODO: pile-up (trivial here), fast reco of primary vertices (not so trivial)
@@ -600,12 +605,13 @@ void AliITSUCATracker::MakeCells(int iteration)
           continue;
         }
         const float dz = tanL * (cls2->r - cls->r) + cls->z - cls2->z;
-        if (TMath::Abs(dz) < fCDZ[iL] && CompareAngles(cls->phi, cls2->phi, fCPhi)) {
+        const float deltar = (cls->r - cls2->r);
+        if (TMath::Abs(dz) < fCDZ[iL] && CompareAngles(cls->phi, cls2->phi, fCPhi) && std::abs(deltar) > 1.e-16) {
           if (first && iL > 0) {
             dLUT[iL - 1][iC] = fDoublets[iL].size();
             first = false;
           }
-          const float dTanL = (cls->z - cls2->z) / (cls->r - cls2->r);
+          const float dTanL = (cls->z - cls2->z) / deltar;
           const float phi = TMath::ATan2(cls->y - cls2->y, cls->x - cls2->x);
           fDoublets[iL].push_back(Doublets(iC,iD2,dTanL,phi));
 #ifdef _TUNING_
