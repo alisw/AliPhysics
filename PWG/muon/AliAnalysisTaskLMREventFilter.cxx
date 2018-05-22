@@ -300,7 +300,7 @@ void AliAnalysisTaskLMREventFilter::NotifyRun()
   fhL0TriggerInputMSL->Fill(fL0TriggerInputMSL);
   fhL0TriggerInputTVX->Fill(fL0TriggerInputTVX);
 
-  Int_t fL2TriggerCINT7CENTNOTRD = inp -> GetClassIndexFromName("CINT7-B-NOPF-CENTNOTRD");
+  Int_t fL2TriggerCINT7CENTNOTRD = cfg -> GetClassIndexFromName("CINT7-B-NOPF-CENTNOTRD");
   fhL2TriggerCINT7CENTNOTRD->Fill(fL2TriggerCINT7CENTNOTRD);
 }
 //====================================================================================================================================================

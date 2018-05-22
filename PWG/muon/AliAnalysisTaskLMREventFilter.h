@@ -46,13 +46,13 @@ private:
   TH1D *fhL0TriggerInputMUL;
   TH1D *fhL0TriggerInputMSL;
   TH1D *fhL0TriggerInputTVX;
+  TH1D *fhL2TriggerCINT7CENTNOTRD;
   TH2D *fhNMu;
 
   Int_t fL0TriggerInputMLL;
   Int_t fL0TriggerInputMUL;
   Int_t fL0TriggerInputMSL;
   Int_t fL0TriggerInputTVX;
-  Int_t fhL2TriggerCINT7CENTNOTRD;
   Int_t fNTrigClass;
   TString fTriggerClasses[13];
   Int_t fminContributorsPileUp;
