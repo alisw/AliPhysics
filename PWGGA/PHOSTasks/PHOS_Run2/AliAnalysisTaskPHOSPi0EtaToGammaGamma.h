@@ -251,6 +251,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     }
 
     void SetTriggerThreshold(Double_t energy) {fEnergyThreshold = energy;}
+    void SetAnaOmega(Bool_t flag) {fAnaOmega3Pi = flag;}
+    void SetOAStudy(Bool_t flag) {fIsOAStudy = flag;}
 
   protected:
     virtual void UserCreateOutputObjects();
@@ -264,6 +266,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     virtual void FillPhoton();
     virtual void FillMgg();
     virtual void FillMixMgg();
+    virtual void FillM3pi();//omega->pi0 pi+ pi-
     virtual void EstimatePIDCutEfficiency();
     void EstimateTOFCutEfficiency();
     void EstimateTriggerEfficiency();
@@ -443,13 +446,14 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
     Double_t fEmin;
-
+    Bool_t fIsOAStudy;
+    Bool_t fAnaOmega3Pi;
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 53);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 54);
 };
 
 #endif
