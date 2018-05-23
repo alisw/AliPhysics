@@ -1534,13 +1534,14 @@ AliGenPythiaEventHeader * AliMCAnalysisUtils::GetPythiaEventHeader
   TList * genlist = mcevent->GetCocktailList();
   if  ( !genlist ) 
   {
-    if ( !mcevent->GenEventHeader() ) return pyGenHead; 
-    else ngen = 1 ;
+    if  ( !mcevent->GenEventHeader() ) return pyGenHead; 
+    else  ngen = 1 ;
   }
   else 
   {
     ngen = genlist->GetEntries();
-    if( ngen < 1 ) return pyGenHead;
+    if  ( ngen < 1 && !mcevent->GenEventHeader() ) return pyGenHead;
+    else  ngen = 1 ;
   }
   
 //  printf("GetPythiaEventHeader() - N generators %d, cocktail list %p, gen header %p\n",
