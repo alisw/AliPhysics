@@ -256,39 +256,21 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
   }
   
   // Check the pT hard in MC, assume it is pythia
-  if ( fCheckPtHard ) 
+  // Make sure AliCaloTrackReader::FillInputEvent() run before
+  if ( fCheckPtHard &&  fReader->GetGenPythiaEventHeader() ) 
   {
-    TString genName       = ""; 
-    TString processName   = "";  
-    Int_t   process       = 0;
-    Int_t   firstGenPart  = 0; 
-    Int_t   pythiaVersion = 0;
-    AliGenPythiaEventHeader * pygeh = 
-    AliMCAnalysisUtils::GetPythiaEventHeader(fReader->GetMC(),
-                                             fReader->GetNameOfMCEventHederGeneratorToAccept(),
-                                             genName,processName,process,firstGenPart,pythiaVersion);
+    Float_t pTHard = (fReader->GetGenPythiaEventHeader())->GetPtHard();
     
-    AliDebug(1,Form("Check pyhead %p; head %p class <%s>, name <%s>; cocktail %p",
-                    pygeh,fReader->GetMC()->GenEventHeader(),
-                    (fReader->GetMC()->GenEventHeader())->ClassName(),
-                    (fReader->GetMC()->GenEventHeader())->GetName(),
-                    fReader->GetMC()->GetCocktailList()));
-    if ( pygeh )
-    {  
-      Float_t pTHard = pygeh->GetPtHard();
-      
-      AliDebug(1,Form("Pythia v%d name <%s>, process %d <%s>, first generated particle %d, pT hard %2.2f GeV/c, event weight %2.2e",
-                      pythiaVersion, genName.Data(), process, processName.Data(), firstGenPart, 
-                      pTHard,fReader->GetEventWeight()));
-      
-      fhPtHard->Fill(pTHard);
-      
-      if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
-          !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
-        fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
-    }
+    fhPtHard->Fill(pTHard);
+    
+    if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
+        !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
+      fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
+    
+    AliDebug(1,Form("Pythia event selected with pT hard %2.2f GeV/c and weight %2.2e",
+                    pTHard,fReader->GetEventWeight()));
   }
-  
+    
   if(fFillDataControlHisto)
   {
     if( fReader->IsPileUpFromSPD())
