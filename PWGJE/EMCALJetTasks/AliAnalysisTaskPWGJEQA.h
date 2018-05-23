@@ -20,6 +20,7 @@ class TH3;
 class THnSparse;
 class AliPHOSGeometry;
 
+#include "AliEventCuts.h"
 #include "THistManager.h"
 #include "AliTLorentzVector.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -80,9 +81,11 @@ public:
   
   void                        UserCreateOutputObjects();
 
+  void                        SetUseAliEventCuts(Bool_t b)                         { fUseAliEventCuts    = b          ; }
+  void                        SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input      ; }
   void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut        ; }
   void                        SetGeneratorLevelName(const char* name)              { fGeneratorLevelName = name       ; }
-  void                        SetDetectorLevelName(const char* name)               { fDetectorLevelName = name        ; }
+  void                        SetDetectorLevelName(const char* name)               { fDetectorLevelName  = name       ; }
   
   void                        SetDoTrackQA(Bool_t b) { fDoTrackQA = b; }
   void                        SetDoCaloQA(Bool_t b)  { fDoCaloQA  = b; }
@@ -94,6 +97,7 @@ public:
 protected:
   
   void                        ExecOnce()                                                    ;
+  Bool_t                      IsEventSelected()                                             ;
   Bool_t                      FillHistograms()                                              ;
   Bool_t                      RetrieveEventObjects()                                        ;
   Bool_t                      UserNotify()                                                  ;
@@ -119,7 +123,12 @@ protected:
   void                        FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt, Byte_t findable);
   void                        FillMatchedParticlesTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt,
                                                             Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType);
-  
+  // Event selection
+  Bool_t                      fUseAliEventCuts;          ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
+  AliEventCuts                fEventCuts;                ///< event selection utility
+  TList                      *fEventCutList;             //!<! Output list for event cut histograms
+  Bool_t                      fUseManualEventCuts;       ///< Flag to use manual event cuts
+
   Float_t                     fCellEnergyCut;            ///< Energy cell cut
   Float_t                     fMaxPt;                    ///< Histogram pt limit
   Int_t                       fNTotClusters[3];          //!<!Total number of accepted clusters in current event (DCal/EMCal)
