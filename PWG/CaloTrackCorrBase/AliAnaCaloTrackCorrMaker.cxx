@@ -27,10 +27,14 @@
 #include "AliInputEventHandler.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliAnaCaloTrackCorrBaseClass.h"
-#include "AliAnaCaloTrackCorrMaker.h"
 #include "AliLog.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliMCEvent.h"
+
+//---- CaloTrack corr system ----
+#include "AliAnaCaloTrackCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+#include "AliMCAnalysisUtils.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloTrackCorrMaker) ;
@@ -251,16 +255,31 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     fhEventPlaneAngleWeighted->Fill(fReader->GetEventPlaneAngle  (),eventWeight);
   }
   
-  // Check the pT hard in MC
-  if ( fCheckPtHard && fReader->GetGenEventHeader()  )
+  // Check the pT hard in MC, assume it is pythia
+  if ( fCheckPtHard ) 
   {
-    if(!strcmp(fReader->GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
-    {
-      AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) fReader->GetGenEventHeader();
-      
+    TString genName       = ""; 
+    TString processName   = "";  
+    Int_t   process       = 0;
+    Int_t   firstGenPart  = 0; 
+    Int_t   pythiaVersion = 0;
+    AliGenPythiaEventHeader * pygeh = 
+    AliMCAnalysisUtils::GetPythiaEventHeader(fReader->GetMC(),
+                                             fReader->GetNameOfMCEventHederGeneratorToAccept(),
+                                             genName,processName,process,firstGenPart,pythiaVersion);
+    
+    AliDebug(1,Form("Check pyhead %p; head %p class <%s>, name <%s>; cocktail %p",
+                    pygeh,fReader->GetMC()->GenEventHeader(),
+                    (fReader->GetMC()->GenEventHeader())->ClassName(),
+                    (fReader->GetMC()->GenEventHeader())->GetName(),
+                    fReader->GetMC()->GetCocktailList()));
+    if ( pygeh )
+    {  
       Float_t pTHard = pygeh->GetPtHard();
       
-      //printf("pT hard %f, event weight %e\n",pTHard,fReader->GetEventWeight());
+      AliDebug(1,Form("Pythia v%d name <%s>, process %d <%s>, first generated particle %d, pT hard %2.2f GeV/c, event weight %2.2e",
+                      pythiaVersion, genName.Data(), process, processName.Data(), firstGenPart, 
+                      pTHard,fReader->GetEventWeight()));
       
       fhPtHard->Fill(pTHard);
       
