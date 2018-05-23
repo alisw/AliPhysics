@@ -84,6 +84,8 @@ fUseRecalcPatches(false),
 fHistManager(),
 fRecevent(),
 fMCevent(),
+fGeneratorLevel(0),
+fMCJetContainer(nullptr),
 fRecoUtil(0x0),  fClusterEResolution(0x0), fVaryTrkPtRes(),
 fUseSumw2(),
 fHistNumbJets(),
@@ -116,6 +118,8 @@ fUseRecalcPatches(false),
 fHistManager(name),
 fRecevent(NULL),
 fMCevent(NULL),
+fGeneratorLevel(0),
+fMCJetContainer(nullptr),
 fRecoUtil(0x0),  fClusterEResolution(0x0), fVaryTrkPtRes(0),
 fUseSumw2(0),
 fHistNumbJets(0),
@@ -164,10 +168,28 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::UserCreateOutputObjects()
          fOutput->Add(fHistEMCalTowerMult[i]);
      }
     
+    // Get the MC particle branch, in case it exists
+    
+    AliJetContainer* jetMCCont = GetJetContainer();
+    TString jetMCContName = jetMCCont->GetName();
+    
+    fGeneratorLevel = GetMCParticleContainer("mcparticles");
+    if(fGeneratorLevel)
+    {
+        Printf("MCparticleContainer: %s", fGeneratorLevel->GetName());
+    }
+    if(jetMCContName.Contains("mcparticles"))
+    {
+        fMCJetContainer = jetMCCont;
+    }
+    
+    
     AllocateClusterHistograms();
     AllocateTrackHistograms();
     AllocateJetHistograms();
     AllocateCellHistograms();
+    //AllocateParticleHistograms();
+    
     
     TIter next(fHistManager.GetListOfHistograms());
     TObject* obj = 0;
@@ -266,6 +288,40 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateClusterHistograms()
             }
         }
     }
+}
+
+/*
+ *  This function allocate histograms to the particle level MC event
+ *  before the particles are propagated through GEANT.
+ *  This function also has adaptability for the jet finder.
+ *
+ */
+
+void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateParticleHistograms()
+{
+    // If MC, get the MC event
+    const AliMCEvent* mcevent = nullptr;
+    if (fGeneratorLevel) {
+        mcevent = MCEvent();
+    }
+    else {
+        return;
+    }
+    TString histname;
+    TString histtitle;
+    TString groupname;
+    Double_t pi = TMath::Pi();
+    AliParticleContainer* MCCont = 0;
+    MCCont = AddMCParticleContainer("mcparticles");
+    groupname = MCCont->GetName();
+    fHistManager.CreateHistoGroup(groupname);
+    
+    for (Int_t cent = 0; cent < fNcentBins; cent++) {
+      histname = TString::Format("%s/fHistParticleLvlpT_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{p}_{T} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt, "s");
+    }
+    
 }
 
 /*
@@ -531,6 +587,7 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::FillHistograms()
     DoTrackLoop();
     DoClusterLoop();
     DoCellLoop();
+    //DoParticleLoop();
     
     return kTRUE;
 }
@@ -661,6 +718,13 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                         
                         histname = TString::Format("%s/histJetZvJetPt_%d", groupname.Data(), fCentBin);
                         fHistManager.FillTH2(histname,jet->Pt(),Z_part);
+                        
+                        //if(jetContName.Contains("mcparticles")){
+                        //  fMCJetContainer
+                        //  Double_t jetPID = 0;
+                        //  jetPID->PID();
+                       //   cout<<"PID of trk in Jet: "<<jetPID<<endl;
+                        //}
                     }
                 }
             }
@@ -884,6 +948,31 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoCellLoop()
         
         fHistManager.FillTH1(histname, amp);
     }
+}
+
+/**
+ *  This function perform a loop ov generator level MC
+ *  particles in a current event and fills the relevent histograms.
+ *  Functionality still in development
+ */
+void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoParticleLoop()
+{
+    TString histname;
+    TString groupname;
+    AliParticleContainer* partMCCont = 0;
+    //TIter next(&fGeneratorLevel);
+    for(auto trk : partMCCont->all()){
+         groupname = partMCCont->GetName();
+         UInt_t count = 0;
+         for(auto part : partMCCont->accepted()) {
+             if (!part) continue;
+             
+             histname = TString::Format("%s/fHistParticleLvlpT_%d", groupname.Data(), fCent);
+             fHistManager.FillTH1(histname, part->Pt());
+         }
+     }
+    
+    
 }
 
 /**
