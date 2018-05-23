@@ -33,6 +33,7 @@ foreach(p CMP0005  # Properly escape preprocessor definitions (v2.6, v3.0.2)
           CMP0025  # Compiler id for Apple Clang is now AppleClang (v3.0)
           CMP0042  # MACOSX_RPATH is enabled by default (v3.0)
           CMP0053  # Simplify variable reference and escape sequence evaluation (v3.1.3)
+          CMP0068
        )
 if(POLICY ${p})
     cmake_policy(SET ${p} NEW)
@@ -115,6 +116,23 @@ include(cmake/modules/MacroOptionalAddSubdirectory.cmake)
 if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
+
+# Be sure about where libraries and binaries are put
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
+
+# Build targets with install rpath on Mac to dramatically speed up installation
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+  endif()
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+endif()
+unset(isSystemDir)
 
 # HLT/ZMQ and HLT/BASE/util need X11
 find_package(X11)
