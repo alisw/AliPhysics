@@ -851,7 +851,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             Bool_t fromDStar = kFALSE;
             
             AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(i);
-            if(TMath::Abs(AODMCtrack->Eta()) > 0.7) continue;
+            if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
             
             //-------Get PDG
             Int_t TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
@@ -1027,7 +1027,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         AliAODTrack *track = dynamic_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!track) continue;
         
-        if(TMath::Abs(track->Eta()) > 0.7) continue;
+        if(TMath::Abs(track->Eta()) > 0.6) continue;
         
         fTrkPtB4TC->Fill(track->Pt());
         
@@ -1049,7 +1049,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             fMCparticle = (AliAODMCParticle*) fMCarray->At(ilabel);
             pdg = TMath::Abs(fMCparticle->GetPdgCode()); //get pid of track
             
-            if(TMath::Abs(fMCparticle->Eta()) > 0.7) continue;
+            if(TMath::Abs(fMCparticle->Eta()) > 0.6) continue;
             //cout<<"TESTING1234"<<endl;
             //if electron--------------------------------
             if(pdg==11 && fMCparticle->IsPhysicalPrimary()){
