@@ -1529,16 +1529,26 @@ AliGenPythiaEventHeader * AliMCAnalysisUtils::GetPythiaEventHeader
   genName       = "";
   processName   = "";
   pythiaVersion = 0 ;
-  
+  Int_t ngen    = 0 ; 
+
   TList * genlist = mcevent->GetCocktailList();
-  if  ( !genlist ) return pyGenHead; 
+  if  ( !genlist ) 
+  {
+    if ( !mcevent->GenEventHeader() ) return pyGenHead; 
+    else ngen = 1 ;
+  }
+  else 
+  {
+    ngen = genlist->GetEntries();
+    if( ngen < 1 ) return pyGenHead;
+  }
   
-  Int_t ngen = genlist->GetEntries();
-  if( ngen < 1 ) return pyGenHead;
-  //printf("GetPythiaEventHeader() - N generators %d\n",genlist->GetEntries());
-  
+//  printf("GetPythiaEventHeader() - N generators %d, cocktail list %p, gen header %p\n",
+//         ngen,genlist,mcevent->GenEventHeader());
+
   if ( ngen == 1 )
   {
+    //printf("GetPythiaEventHeader() - Generator class name %s\n",mcevent->GenEventHeader()->ClassName());
     if ( strcmp(mcevent->GenEventHeader()->ClassName(), "AliGenPythiaEventHeader") ) return pyGenHead ;
     
     pyGenHead = (AliGenPythiaEventHeader*) mcevent->GenEventHeader();
@@ -1552,7 +1562,9 @@ AliGenPythiaEventHeader * AliMCAnalysisUtils::GetPythiaEventHeader
     for(Int_t igen = 0; igen < ngen; igen++)
     {
       AliGenEventHeader * header = (AliGenEventHeader*) genlist->At(igen);
-      
+//      printf("GetPythiaEventHeader() - igen %d Generator class %s, name %s\n",
+//             igen, header->ClassName(),header->GetName());
+ 
       if ( !header || strcmp(header->ClassName(), "AliGenPythiaEventHeader") ) 
       {
         // Count the number of particles before the first header
@@ -1616,7 +1628,8 @@ AliGenPythiaEventHeader * AliMCAnalysisUtils::GetPythiaEventHeader
     processName = "Jet-Jet";
   }
   
-  //printf("GetPythiaEventHeader() - Pythia version %d, process %d, process name %s\n",pythiaVersion, process,processName.Data());
+//  printf("GetPythiaEventHeader() - Pythia version %d, process %d, process name %s\n",
+//         pythiaVersion, process,processName.Data());
   
   //     TString nameGen = "";
   //     mcevent->GetCocktailGenerator(firstParticle-1,genName);
