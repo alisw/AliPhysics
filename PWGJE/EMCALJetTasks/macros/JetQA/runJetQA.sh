@@ -25,10 +25,10 @@
 
 #..........................................
 #15o.......................................
-#RUNLIST="246846 246928"
+#RUNLIST="246928 246846 246845 246844 246810 246809 246808 246807 246805 246804 246766 246765 246760 246759 246758 246757 246751 246750 246495 246493 246487 246434 246424 246271 246225 246222 246217 246115 246113 246089 246042 246037 246003 246001 245963 245954 245952 245949 245831 245829 245705 245702 245700 245683 246488 246087"
 #plotDir="YourPlotDir"
 #PREFIX="/alice/data/2015/LHC15o/000"
-#SUFFIX="YourTrainSuffix"
+#SUFFIX="/pass1/PWGJE/Jets_EMC_PbPb/1872_20170310-0102/AnalysisResults.root"
 
 #..........................................
 #16j5.......................................
@@ -59,8 +59,8 @@
 #SUFFIX="YourTrainSuffix"
 
 downloadData=false
-plotQA=true
-generatePresentation=true
+plotQA=false
+generatePresentation=false
 
 analysisFile="AnalysisResults.root"   # For pt-hard, set to "AnalysisResultsFinal.root"
 #referenceFile="../AnalysisResultsReference.root"
@@ -102,15 +102,13 @@ if [ "$plotQA" = true ]; then
 
   echo "- - - - - - - - - - - - - - - - -"
   echo "Plot merged reference run"
-#python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $plotDir/$referenceFile -o $plotDir/"AllRuns"/QAoutput -i ".png"
-  python ~/Software/alice/ali-master/AliPhysics/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $plotDir/$referenceFile -o $plotDir/"AllRuns"/QAoutput -i ".png"
+  python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $plotDir/$referenceFile -o $plotDir/"AllRuns"/QAoutput -i ".png"
 
   for RUN in $RUNLIST
   do
     echo "- - - - - - - - - - - - - - - - -"
     echo "Plotting run " $RUN
-    #python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $plotDir/$RUN/$analysisFile -o $plotDir/$RUN/QAoutput -r $plotDir/$referenceFile -i ".png"
-    python ~/Software/alice/ali-master/AliPhysics/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $plotDir/$RUN/$analysisFile -o $plotDir/$RUN/QAoutput -r $plotDir/$referenceFile -i ".png"
+    python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPWGJEQA.py -f $plotDir/$RUN/$analysisFile -o $plotDir/$RUN/QAoutput -r $plotDir/$referenceFile -i ".png"
   done
 fi
 
@@ -119,9 +117,7 @@ fi
 if [ "$generatePresentation" = true ]; then
 
   echo "-> Generating presentation..."
-  #python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPowerpoint.py -r "$RUNLIST" -d "$plotDir"
-  python ~/Software/alice/ali-master/AliPhysics/PWGJE/EMCALJetTasks/macros/JetQA/plotPowerpoint.py -r "$RUNLIST" -d "$plotDir"
-
+  python $ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/JetQA/plotPowerpoint.py -r "$RUNLIST" -d "$plotDir"
 fi
 
 echo "Done!"

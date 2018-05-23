@@ -171,23 +171,22 @@ void AliAnalysisTaskPWGJEQA::UserCreateOutputObjects()
     fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger);
     if(fUseManualEventCuts==1)
     {
-    		fEventCuts.SetManualMode();
-    		fEventCuts.fMC = MCEvent(); //before was= false
-    	if(fForceBeamType != kpp)
-    	{
+    	  fEventCuts.SetManualMode();
+      fEventCuts.fMC = MCEvent(); //before was= false
+      if(fForceBeamType != kpp)
+      {
     		fEventCuts.SetupLHC15o();
     		fEventCuts.fUseVariablesCorrelationCuts = true;
-    	}
-    	else if(fForceBeamType == kpp)
-    	{
+      }
+      else if(fForceBeamType == kpp)
+      {
     		fEventCuts.SetupRun2pp();
     		//no other cuts known so far
-    	}
-    	else
-    	{
+      }
+      else
+      {
     		printf("No implementation of manuel event cuts for pPb yet!");
-    	}
-
+      }
     }
     fEventCuts.AddQAplotsToList(fEventCutList);
     fOutput->Add(fEventCutList);

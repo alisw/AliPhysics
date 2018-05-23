@@ -81,10 +81,11 @@ public:
   
   void                        UserCreateOutputObjects();
 
-  void                        SetUseAliEventCuts(Bool_t b)                         { fUseAliEventCuts    = b; }
+  void                        SetUseAliEventCuts(Bool_t b)                         { fUseAliEventCuts    = b          ; }
+  void                        SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input      ; }
   void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut        ; }
   void                        SetGeneratorLevelName(const char* name)              { fGeneratorLevelName = name       ; }
-  void                        SetDetectorLevelName(const char* name)               { fDetectorLevelName  = name        ; }
+  void                        SetDetectorLevelName(const char* name)               { fDetectorLevelName  = name       ; }
   
   void                        SetDoTrackQA(Bool_t b) { fDoTrackQA = b; }
   void                        SetDoCaloQA(Bool_t b)  { fDoCaloQA  = b; }
