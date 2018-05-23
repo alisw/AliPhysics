@@ -353,9 +353,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hMultiplicityV0AvsTrackMultiplicity","V0A multiplicity vs. Track Multiplicity;V0A multiplicity;Ntrack"                   ,80,0,40000,400,0,4000));
   fOutputContainer->Add(new TH2F("hMultiplicityV0CvsTrackMultiplicity","V0C multiplicity vs. Track Multiplicity;V0C multiplicity;Ntrack"                   ,80,0,40000,400,0,4000));
   fOutputContainer->Add(new TH2F("hMultiplicityV0vsTrackMultiplicity" ,"V0  multiplicity vs. Track Multiplicity;V0A + V0C multiplicity;Ntrack"             ,80,0,40000,400,0,4000));
-  fOutputContainer->Add(new TH2F("hMultiplicityV0AvsTrackMultiplicity","V0A multiplicity vs. Track Multiplicity with TOF cut;V0A multiplicity;Ntrack"      ,80,0,40000,400,0,4000));
-  fOutputContainer->Add(new TH2F("hMultiplicityV0CvsTrackMultiplicity","V0C multiplicity vs. Track Multiplicity with TOF cut;V0C multiplicity;Ntrack"      ,80,0,40000,400,0,4000));
-  fOutputContainer->Add(new TH2F("hMultiplicityV0vsTrackMultiplicity" ,"V0  multiplicity vs. Track Multiplicity with TOF cut;V0A + V0C multiplicity;Ntrack",80,0,40000,400,0,4000));
 
   fOutputContainer->Add(new TH2F("hMultiplicityV0AvsPHOSClusterMultiplicity"   ,"V0C multiplicity vs. Cluster Multiplicity;V0A multiplicity;Ncluster"                   ,80,0,40000,201,-0.5,200.5));
   fOutputContainer->Add(new TH2F("hMultiplicityV0CvsPHOSClusterMultiplicity"   ,"V0C multiplicity vs. Cluster Multiplicity;V0C multiplicity;Ncluster"                   ,80,0,40000,201,-0.5,200.5));
@@ -1710,9 +1707,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
   FillHistogramTH2(fOutputContainer,"hMultiplicityV0AvsTrackMultiplicity",mtotV0A,fNHybridTrack);
   FillHistogramTH2(fOutputContainer,"hMultiplicityV0CvsTrackMultiplicity",mtotV0C,fNHybridTrack);
   FillHistogramTH2(fOutputContainer,"hMultiplicityV0vsTrackMultiplicity" ,mtotV0 ,fNHybridTrack);
-  FillHistogramTH2(fOutputContainer,"hMultiplicityV0AvsTrackMultiplicityTOF",mtotV0A,fNHybridTrack);
-  FillHistogramTH2(fOutputContainer,"hMultiplicityV0CvsTrackMultiplicityTOF",mtotV0C,fNHybridTrack);
-  FillHistogramTH2(fOutputContainer,"hMultiplicityV0vsTrackMultiplicityTOF" ,mtotV0 ,fNHybridTrack);
 
 }
 //________________________________________________________________________
