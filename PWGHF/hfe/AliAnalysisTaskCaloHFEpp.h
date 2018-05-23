@@ -32,6 +32,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
     virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
     Bool_t GetEMCalTriggerEG1() { return fEMCEG1; };
     Bool_t GetEMCalTriggerEG2() { return fEMCEG2; };
+    Bool_t GetDCalTriggerDG1()  { return fDCDG1; };
+    Bool_t GetDCalTriggerDG2()  { return fDCDG2; };
     //void SetEMCalTriggerEG1(Bool_t flagTr1) { fEMCEG1=flagTr1; fEMCEG2=kFALSE;};
     //void SetEMCalTriggerEG2(Bool_t flagTr2) { fEMCEG2=flagTr2; fEMCEG1=kFALSE;};
 		Bool_t                  IsPdecay(int mpid);
@@ -39,8 +41,12 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Bool_t                  IsBdecay(int mpid);
     Bool_t                  fEMCEG1;//EMcal Threshold EG1
     Bool_t                  fEMCEG2;//EMcal Threshold EG2
+    Bool_t                  fDCDG1;//EMcal Threshold EG2
+    Bool_t                  fDCDG2;//EMcal Threshold EG2
     void SetEG1(Bool_t flagEG1) { fEMCEG1= flagEG1;};
     void SetEG2(Bool_t flagEG2) { fEMCEG2= flagEG2;};
+    void SetDG1(Bool_t flagDG1) { fDCDG1= flagDG1;};
+    void SetDG2(Bool_t flagDG2) { fDCDG2= flagDG2;};
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
 		void SetfFlagClsTypeEMC(Bool_t fEMC){fFlagClsTypeDCAL = fEMC;};
