@@ -29,7 +29,6 @@
 #include "AliPDG.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "AliAODInputHandler.h"
 #include "AliLog.h"
 
 /// \cond CLASSIMP
@@ -188,10 +187,8 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
   // Entry() does not work for AODs
   if ( eventN <= 0 )
   {
-    AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>
-    ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    
-    if ( aodIH ) eventN = aodIH->GetReadEntry(); 
+    if ( (AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler() )
+      eventN = ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()->GetReadEntry());
   }
   
   if ( (fLastEvent  > 0 && eventN > fLastEvent )  || 

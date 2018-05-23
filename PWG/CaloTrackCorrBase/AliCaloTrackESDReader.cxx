@@ -24,7 +24,6 @@
 #include "AliMCEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliGenCocktailEventHeader.h"
-#include "AliGenPythiaEventHeader.h"
 #include "AliLog.h"
 
 /// \cond CLASSIMP
@@ -92,6 +91,8 @@ Bool_t AliCaloTrackESDReader::CheckForPrimaryVertex() const
 AliGenEventHeader* AliCaloTrackESDReader::GetGenEventHeader() const
 {
   if ( !fMC ) return 0x0 ;
+    
+  if ( fGenEventHeader ) return fGenEventHeader;
   
   AliGenEventHeader * eventHeader = fMC->GenEventHeader();
   
