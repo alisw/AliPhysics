@@ -2083,18 +2083,6 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  fHistProbTPCvsPtbeforePID -> Fill(aodTrack->Pt(),probTPC[fParticleOfInterest]); 
 	  fHistNSigmaTPCvsPtbeforePID -> Fill(aodTrack->Pt(),nSigmaTPC);
 	  
-	  if(vPt < fPIDMomCut){
-	    
-	    if (fUsePIDnSigma){
-	      if (TMath::Abs(nSigmaTPC)<3.) isPartIDselected = kTRUE;
-	      else continue;
-	    }
-	    else {
-	      if (probTPC[fParticleOfInterest] > fMinAcceptedPIDProbability) isPartIDselected = kTRUE;
-	      else continue;  
-	    }
-	  }
-	  
 	  // fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF); //firts check only TPC
 	  //detUsed = fPIDCombined->ComputeProbabilities(aodTrack, fPIDResponse, probTOF);
 
@@ -2142,6 +2130,18 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	      fHistNSigmaTPCTOFPbefPID ->Fill(nSigmaTPC,nSigmaTOF,aodTrack->P());
 	    }
 	    
+	    if(vPt < fPIDMomCut){
+
+              if (fUsePIDnSigma){
+                if (TMath::Abs(nSigmaTPC)<3.) isPartIDselected = kTRUE;
+                else continue;
+              }
+              else {
+                if (probTPC[fParticleOfInterest] > fMinAcceptedPIDProbability) isPartIDselected = kTRUE;
+                else continue;
+              }
+            } 
+
 	    if (vPt >= fPIDMomCut){
 	      if (fParticleOfInterest == (AliPID::kPion)){
 		if (fUsePIDnSigma){
