@@ -338,34 +338,13 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 	fEventCuts.OverrideAutomaticTriggerSelection(fOffTrigger); //..otherwise only kINT7 events are used for the analysis
 	if(fUseManualEventCuts==1)
 	{
-	    //..Enable manual mode.
+		//..Enable manual mode.
 		//..this just means that the automatic cut settings
-	    //..are not loaded every time the event is checked
-	    fEventCuts.SetManualMode();
-		/*
-	     This is not possible because these are private functions!
-	    //..nevertheless we set now the standard settings
-	    //..for the respective period and then overwrite
-	    //..some cuts with the set values in the Emcal task.
-	    fEventCuts.fCurrentRun = fRunNumber;
-	    fEventCuts.AutomaticSetup();
-		 */
-		//..overwrite the manual set cuts with
-		//..some of our own values
-	    fEventCuts.fCentralityFramework=2; //..only for Run1!!
-		fEventCuts.fTriggerMask = fOffTrigger;
-		fEventCuts.fMinVtz = fMinVz;
-		fEventCuts.fMaxVtz = fMaxVz;
-		fEventCuts.fRequireTrackVertex = true;
-		fEventCuts.fMaxDeltaSpdTrackAbsolute=fZvertexDiff;
-		fEventCuts.fTrackletBGcut = fTklVsClusSPDCut; //(false by default for 15o)
-		fEventCuts.fMinCentrality = fMinCent;
-		fEventCuts.fMaxCentrality = fMaxCent;
-		//++fRejectPileup (IsPileupFromSPD)= true (fixed in code)
-		//+remove multi vertexer pile up (false - not activated yet)
-		//+spd vertex resolution etc
-		//+some cent. resolution cuts
-		//+some variable correlatios - fixed to false
+		//..are not loaded every time the event is checked
+		fEventCuts.SetManualMode();
+		fEventCuts.fMC = false; //FixMe substitute by a real flag in the task!
+		fEventCuts.SetupLHC15o();
+		fEventCuts.fUseVariablesCorrelationCuts = true; //..That is specifically for LHC15o!
 	}
 
 	fEventCuts.AddQAplotsToList(fEventCutList);
