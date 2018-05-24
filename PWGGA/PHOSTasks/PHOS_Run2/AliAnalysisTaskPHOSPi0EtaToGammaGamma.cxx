@@ -2233,7 +2233,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
 
       }
 
-      if(0.12 < m12 && m12 < 0.15) continue;
+      if(m12 < 0.12 || 0.15 < m12) continue;
 
       Double_t pi0E = TMath::Sqrt(TMath::Power(pi0Px,2) + TMath::Power(pi0Py,2) + TMath::Power(pi0Pz,2) + TMath::Power(Mpi0,2));
       TLorentzVector *p1pi0 = new TLorentzVector(pi0Px,pi0Py,pi0Pz,pi0E);
