@@ -4,16 +4,51 @@
 class LMEECutLib {
 public:
 
-  LMEECutLib() {}
+  LMEECutLib() {pidFilterCuts        = new AliDielectronPID("PIDCuts","PIDCuts"); }
 
-
+  AliDielectronPID* pidFilterCuts;
   AliDielectronPID* GetPIDCutsAna();
 
   AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0);
   AliDielectronEventCuts* GetEventCuts(int sel);
+  void SetEtaCorrectionTPC(Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
 };
 
+void LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise) {
+     
+  //
+  // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
+  //
+  std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
+  std::string file_name = "/home/sebaleh/output.root";
 
+  TFile* _file = TFile::Open(file_name.c_str(),"RECREATE");
+  std::cout << _file << std::endl;
+  if (_file == 0x0){
+    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/data/output.root .");
+    std::cout << "Copy TPC correction from Alien" << std::endl;
+    _file = TFile::Open("output.root");
+  }
+  else {
+    std::cout << "Correction loaded" << std::endl;
+  }
+  if (runwise){
+    TObjArray* arr_mean = dynamic_cast<TObjArray*>(_file->Get("mean_correction_arr"));
+    TObjArray* arr_width =dynamic_cast<TObjArray*>( _file->Get("width_correction_arr"));
+    std::cout << arr_mean << " " << arr_width << std::endl;
+
+    pidFilterCuts->SetWidthCorrArr(arr_width);
+    pidFilterCuts->SetCentroidCorrArr(arr_mean);
+  }
+  else{
+    TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
+    TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+    pidFilterCuts->SetCentroidCorrFunction(mean);//, corrXdim, corrYdim, corrZdim);
+    pidFilterCuts->SetWidthCorrFunction(width);//, corrXdim, corrYdim, corrZdim);
+    
+  }
+
+}
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 AliDielectronEventCuts* LMEECutLib::GetEventCuts(int sel) {
@@ -33,8 +68,6 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(int sel) {
 AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel) {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
 
-  AliDielectronPID *pidFilterCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
- 
   //nanoAOD Prefilter cuts - should always be applied  if working on nanoAODs in real data, otherwise MC and real data might not use same cuts
   pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
   pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);

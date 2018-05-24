@@ -4,8 +4,9 @@ AliAnalysisTask *AddTask_slehner_TreeMakeWCutLib(Bool_t hasITS = kTRUE,
                                                      TString directoryBaseName = "slehner",
                                                      Char_t* outputFileName="LMEE_output.root",
                                                      Bool_t deactivateTree=kFALSE, // enabling this has priority over 'writeTree'! (needed for LEGO trains)
-                                                     TString resolutionfile = "" //Resolution_pp_16l_eta.root
-                                                     )
+                                                     TString resolutionfile = "", //Resolution_pp_16l_eta.root
+                                                    Bool_t SetTPCCorrection=kTRUE
+                                                    )
 {
 
 	//get the current analysis manager
@@ -42,6 +43,8 @@ AliAnalysisTask *AddTask_slehner_TreeMakeWCutLib(Bool_t hasITS = kTRUE,
 
       LMEECutLib* cutlib = new LMEECutLib();      
       AliAnalysisTaskMLTreeMaker *task = new AliAnalysisTaskMLTreeMaker("treemaker");   
+      
+      if(SetTPCCorrection) cutlib->SetEtaCorrectionTPC(AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly, kFALSE);
       
       task->SelectCollisionCandidates(AliVEvent::kINT7);
       task->SetupTrackCuts(cutlib->GetTrackCuts(0,0));

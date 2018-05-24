@@ -576,14 +576,16 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 
           Rej=kFALSE;
 
-                mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+//                mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+//                mcMTrack = dynamic_cast<AliAODMCParticle *>(fMcArray->GetTrack(TMath::Abs(track->GetLabel())));
+
 //                temppdg = mcMTrack->PdgCode(); 
                 
-                if(!(mcMTrack->GetMother() < 0)){       //get direct mother
-                    mcTrackIndex = mcMTrack->GetMother(); 
-                    mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
-//                    tempmpdg= mcMTrack->PdgCode(); 
-                }
+//                if(!(mcMTrack->GetMother() < 0)){       //get direct mother
+//                    mcTrackIndex = mcMTrack->GetMother(); 
+//                    mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
+////                    tempmpdg= mcMTrack->PdgCode(); 
+//                }
 //                else tempmpdg=-9999;
                   
                   //going to mother particle is done in AliMCEvent::GetCocktailGenerator
@@ -594,7 +596,7 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
                 
                 
 //                if(!(mcEvent->IsFromBGEvent(mcMTrack->GetLabel())))Rej=kTRUE;
-                if(!(CheckGenerator(mcMTrack->GetLabel()))) Rej=kTRUE;
+                if(!(CheckGenerator(TMath::Abs(track->GetLabel())))) Rej=kTRUE;
 //                cout<<"FOUND NON HiJing!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;}
           }
 
