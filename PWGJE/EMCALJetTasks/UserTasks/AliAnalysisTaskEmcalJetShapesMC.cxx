@@ -100,7 +100,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC() :
   fScaleELoss(kFALSE),
   xfraction(1),
   fAddMedScat(kFALSE),
-  fAddMedScatPt(1),
+  fAddMedScatPtFrac(1),
   fAddMedScatN(100)
   
 
@@ -162,7 +162,7 @@ AliAnalysisTaskEmcalJetShapesMC::AliAnalysisTaskEmcalJetShapesMC(const char *nam
   fScaleELoss(kFALSE),
   xfraction(1),
   fAddMedScat(kFALSE),
-  fAddMedScatPt(1),
+  fAddMedScatPtFrac(1),
   fAddMedScatN(100)
 {
   // Standard constructor.
@@ -1371,6 +1371,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
       Double_t randN2 = 2*TMath::Pi()*rand2.Rndm();
       Double_t phi_rand = (fJet->Phi())+TMath::Sqrt(randN1)*TMath::Sin(randN2);
       Double_t eta_rand = (fJet->Eta())+TMath::Sqrt(randN1)*TMath::Cos(randN2);
+      Double_t fAddMedScatPt = (fAddMedScatPtFrac*fJet->Pt())/fAddMedScatN;
       PseudoTracks.reset(fAddMedScatPt*TMath::Cos(phi_rand),fAddMedScatPt*TMath::Sin(phi_rand),fAddMedScatPt/TMath::Tan(eta_rand),fAddMedScatPt);
       fInputVectors.push_back(PseudoTracks);
     }
