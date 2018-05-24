@@ -19,16 +19,17 @@
 //
 // Class for cuts on AOD reconstructed B0->DStarPi->D0PiPi->KPiPiPi
 //
-// Author: Lennart van Doremalen, l.v.r.vandoremalen@uu.nl  
 //
-// Based on work by A.Grelli, alessandro.grelli@uu.nl
-// PID method implemented by   Y.Wang, yifei@physi.uni-heidelberg.de
+//                 Author Lennart van Doremalen
+//           Utrecht University - l.v.r.vandoremalen@uu.nl
+//
+//     Several AliPhysics classes have been used as a basis for this code
+//
 //           
 /////////////////////////////////////////////////////////////
 
 #include <TDatabasePDG.h>
 #include <Riostream.h>
-#include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsB0toDStarPi.h"
@@ -47,34 +48,70 @@ ClassImp(AliRDHFCutsB0toDStarPi);
 /// \endcond
 
 
+
 //--------------------------------------------------------------------------
 AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) : 
   AliRDHFCuts(name),
   fMaxPtPid(9999.),
   fTPCflag(999.),
   fCircRadius(0.),
-  fIsCutUsed(0),   
-  fCutsRDD0forD0ptbin(0),
+  fGetCutInfo(0),
+  fIsCutUsed(0),
+  fnVarsD0forD0ptbin(0),
   fnPtBinsD0forD0ptbin(1),
+  fGlobalIndexD0forD0ptbin(0),
+  fCutsRDD0forD0ptbin(0),
   fnPtBinLimitsD0forD0ptbin(1),
   fPtBinLimitsD0forD0ptbin(0),
   fIsUpperCutD0forD0ptbin(0),
   fIsCutUsedD0forD0ptbin(0),
   fVarNamesD0forD0ptbin(0),
+  fnVarsD0forDStarptbin(0),
+  fnPtBinsD0forDStarptbin(0),
+  fGlobalIndexD0forDStarptbin(0),
   fCutsRDD0forDStarptbin(0),
-  fnPtBinsD0forDStarptbin(1),
   fnPtBinLimitsD0forDStarptbin(1),
   fPtBinLimitsD0forDStarptbin(0),
   fIsUpperCutD0forDStarptbin(0),
   fIsCutUsedD0forDStarptbin(0),
   fVarNamesD0forDStarptbin(0),
-  fCutsRDDStarforDStarptbin(0),
+  fnVarsDStarforDStarptbin(0),
   fnPtBinsDStarforDStarptbin(1),
+  fGlobalIndexDStarforDStarptbin(0),
+  fCutsRDDStarforDStarptbin(0),
   fnPtBinLimitsDStarforDStarptbin(1),
   fPtBinLimitsDStarforDStarptbin(0),
   fIsUpperCutDStarforDStarptbin(0),
   fIsCutUsedDStarforDStarptbin(0),
-  fVarNamesDStarforDStarptbin(0)  
+  fVarNamesDStarforDStarptbin(0),
+  fMinITSNclsD0Pion(0),
+  fMinTPCNclsD0Pion(0),
+  fUseITSRefitD0Pion(0),
+  fUseTPCRefitD0Pion(0),
+  fUseFilterBitD0Pion(0),
+  fFilterBitD0Pion(0),
+  fMinPtD0Pion(0),
+  fMinITSNclsD0Kaon(0),
+  fMinTPCNclsD0Kaon(0),
+  fUseITSRefitD0Kaon(0),
+  fUseTPCRefitD0Kaon(0),
+  fUseFilterBitD0Kaon(0),
+  fFilterBitD0Kaon(0),
+  fMinPtD0Kaon(0),
+  fMinITSNclsDStarPion(0),
+  fMinTPCNclsDStarPion(0),
+  fUseITSRefitDStarPion(0),
+  fUseTPCRefitDStarPion(0),
+  fUseFilterBitDStarPion(0),
+  fFilterBitDStarPion(0),
+  fMinPtDStarPion(0),
+  fMinITSNclsB0Pion(0),
+  fMinTPCNclsB0Pion(0),
+  fUseITSRefitB0Pion(0),
+  fUseTPCRefitB0Pion(0),
+  fUseFilterBitB0Pion(0),
+  fFilterBitB0Pion(0),
+  fMinPtB0Pion(0)
 {
   //
   // Default Constructor
@@ -356,32 +393,141 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const AliRDHFCutsB0toDStarPi &sou
   fMaxPtPid(source.fMaxPtPid),
   fTPCflag(source.fTPCflag),
   fCircRadius(source.fCircRadius),
-  fIsCutUsed(source.fIsCutUsed),   
-  fCutsRDD0forD0ptbin(source.fCutsRDD0forD0ptbin),
+  fGetCutInfo(source.fGetCutInfo),
+  fIsCutUsed(0),
+  fnVarsD0forD0ptbin(source.fnVarsD0forD0ptbin),
   fnPtBinsD0forD0ptbin(source.fnPtBinsD0forD0ptbin),
-  fPtBinLimitsD0forD0ptbin(source.fPtBinLimitsD0forD0ptbin),
-  fIsUpperCutD0forD0ptbin(source.fIsUpperCutD0forD0ptbin),
-  fIsCutUsedD0forD0ptbin(source.fIsCutUsedD0forD0ptbin),
-  fVarNamesD0forD0ptbin(source.fVarNamesD0forD0ptbin),
-  fCutsRDD0forDStarptbin(source.fCutsRDD0forDStarptbin),
-  fnPtBinsD0forDStarptbin(source.fnPtBinsD0forDStarptbin),
-  fPtBinLimitsD0forDStarptbin(source.fPtBinLimitsD0forDStarptbin),
-  fIsUpperCutD0forDStarptbin(source.fIsUpperCutD0forDStarptbin),
-  fIsCutUsedD0forDStarptbin(source.fIsCutUsedD0forDStarptbin),
-  fVarNamesD0forDStarptbin(source.fVarNamesD0forDStarptbin),
-  fCutsRDDStarforDStarptbin(source.fCutsRDDStarforDStarptbin),
-  fnPtBinsDStarforDStarptbin(source.fnPtBinsDStarforDStarptbin),
-  fPtBinLimitsDStarforDStarptbin(source.fPtBinLimitsDStarforDStarptbin),
-  fIsUpperCutDStarforDStarptbin(source.fIsUpperCutDStarforDStarptbin),
-  fIsCutUsedDStarforDStarptbin(source.fIsCutUsedDStarforDStarptbin),
-  fVarNamesDStarforDStarptbin(source.fVarNamesDStarforDStarptbin),  
+  fGlobalIndexD0forD0ptbin(source.fGlobalIndexD0forD0ptbin),
+  fCutsRDD0forD0ptbin(0),
   fnPtBinLimitsD0forD0ptbin(source.fnPtBinLimitsD0forD0ptbin),
+  fPtBinLimitsD0forD0ptbin(0),
+  fIsUpperCutD0forD0ptbin(0),
+  fIsCutUsedD0forD0ptbin(0),
+  fVarNamesD0forD0ptbin(0),
+  fnVarsD0forDStarptbin(source.fnVarsD0forDStarptbin),
+  fnPtBinsD0forDStarptbin(source.fnPtBinsD0forDStarptbin),
+  fGlobalIndexD0forDStarptbin(source.fGlobalIndexD0forDStarptbin),
+  fCutsRDD0forDStarptbin(0),
   fnPtBinLimitsD0forDStarptbin(source.fnPtBinLimitsD0forDStarptbin),
-  fnPtBinLimitsDStarforDStarptbin(source.fnPtBinLimitsDStarforDStarptbin)
+  fPtBinLimitsD0forDStarptbin(0),
+  fIsUpperCutD0forDStarptbin(0),
+  fIsCutUsedD0forDStarptbin(0),
+  fVarNamesD0forDStarptbin(0),
+  fnVarsDStarforDStarptbin(source.fnVarsDStarforDStarptbin),
+  fnPtBinsDStarforDStarptbin(source.fnPtBinsDStarforDStarptbin),
+  fGlobalIndexDStarforDStarptbin(source.fGlobalIndexDStarforDStarptbin),
+  fCutsRDDStarforDStarptbin(0),
+  fnPtBinLimitsDStarforDStarptbin(source.fnPtBinLimitsDStarforDStarptbin),
+  fPtBinLimitsDStarforDStarptbin(0),
+  fIsUpperCutDStarforDStarptbin(0),
+  fIsCutUsedDStarforDStarptbin(0),
+  fVarNamesDStarforDStarptbin(0),
+  fMinITSNclsD0Pion(source.fMinITSNclsD0Pion),
+  fMinTPCNclsD0Pion(source.fMinTPCNclsD0Pion),
+  fUseITSRefitD0Pion(source.fUseITSRefitD0Pion),
+  fUseTPCRefitD0Pion(source.fUseTPCRefitD0Pion),
+  fUseFilterBitD0Pion(source.fUseFilterBitD0Pion),
+  fFilterBitD0Pion(source.fFilterBitD0Pion),
+  fMinPtD0Pion(source.fMinPtD0Pion),
+  fMinITSNclsD0Kaon(source.fMinITSNclsD0Kaon),
+  fMinTPCNclsD0Kaon(source.fMinTPCNclsD0Kaon),
+  fUseITSRefitD0Kaon(source.fUseITSRefitD0Kaon),
+  fUseTPCRefitD0Kaon(source.fUseTPCRefitD0Kaon),
+  fUseFilterBitD0Kaon(source.fUseFilterBitD0Kaon),
+  fFilterBitD0Kaon(source.fFilterBitD0Kaon),
+  fMinPtD0Kaon(source.fMinPtD0Kaon),
+  fMinITSNclsDStarPion(source.fMinITSNclsDStarPion),
+  fMinTPCNclsDStarPion(source.fMinTPCNclsDStarPion),
+  fUseITSRefitDStarPion(source.fUseITSRefitDStarPion),
+  fUseTPCRefitDStarPion(source.fUseTPCRefitDStarPion),
+  fUseFilterBitDStarPion(source.fUseFilterBitDStarPion),
+  fFilterBitDStarPion(source.fFilterBitDStarPion),
+  fMinPtDStarPion(source.fMinPtDStarPion),
+  fMinITSNclsB0Pion(source.fMinITSNclsB0Pion),
+  fMinTPCNclsB0Pion(source.fMinTPCNclsB0Pion),
+  fUseITSRefitB0Pion(source.fUseITSRefitB0Pion),
+  fUseTPCRefitB0Pion(source.fUseTPCRefitB0Pion),
+  fUseFilterBitB0Pion(source.fUseFilterBitB0Pion),
+  fFilterBitB0Pion(source.fFilterBitB0Pion),
+  fMinPtB0Pion(source.fMinPtB0Pion)
 {
   //
   // Copy constructor
   // 
+  if(source.fPtBinLimitsD0forD0ptbin) SetPtBinsD0forD0ptbin(source.fnPtBinLimitsD0forD0ptbin,source.fPtBinLimitsD0forD0ptbin);
+  if(source.fVarNamesD0forD0ptbin) SetVarNamesD0forD0ptbin(source.fnVarsD0forD0ptbin,source.fVarNamesD0forD0ptbin,source.fIsUpperCut);
+  if(source.fPtBinLimitsD0forDStarptbin) SetPtBinsD0forDStarptbin(source.fnPtBinLimitsD0forDStarptbin,source.fPtBinLimitsD0forDStarptbin);
+  if(source.fVarNamesD0forDStarptbin) SetVarNamesD0forDStarptbin(source.fnVarsD0forDStarptbin,source.fVarNamesD0forDStarptbin,source.fIsUpperCut);
+  if(source.fPtBinLimitsDStarforDStarptbin) SetPtBinsDStarforDStarptbin(source.fnPtBinLimitsDStarforDStarptbin,source.fPtBinLimitsDStarforDStarptbin);
+  if(source.fVarNamesDStarforDStarptbin) SetVarNamesDStarforDStarptbin(source.fnVarsDStarforDStarptbin,source.fVarNamesDStarforDStarptbin,source.fIsUpperCut);
+  if(source.fIsCutUsed) 
+  {
+    if(fIsCutUsed) {
+      delete [] fIsCutUsed;
+      fIsCutUsed = NULL;
+    }
+    fIsCutUsed = new Bool_t[(source.GetNPtBins())*(source.GetNVars())];
+
+    for (Int_t i = 0; i < source.fnVars; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBins; j++)
+      { 
+        Bool_t bUse = source.GetIsCutUsed(i,j);
+        SetIsCutUsed(i,j,bUse);
+      }
+    }
+  }
+  if(source.fIsCutUsedD0forD0ptbin) 
+  {
+    if(fIsCutUsedD0forD0ptbin) {
+      delete [] fIsCutUsedD0forD0ptbin;
+      fIsCutUsedD0forD0ptbin = NULL;
+    }
+    fIsCutUsedD0forD0ptbin = new Bool_t[(source.GetNPtBinsD0forD0ptbin())*(source.GetNVarsD0forD0ptbin())];
+    for (Int_t i = 0; i < source.fnVarsD0forD0ptbin; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBinsD0forD0ptbin; j++)
+      {
+        Bool_t bUse = source.GetIsCutUsedD0forD0ptbin(i,j);
+        SetIsCutUsedD0forD0ptbin(i,j,bUse);
+      }
+    }
+  }
+  if(source.fIsCutUsedD0forDStarptbin) 
+  {
+    if(fIsCutUsedD0forDStarptbin) {
+      delete [] fIsCutUsedD0forDStarptbin;
+      fIsCutUsedD0forDStarptbin = NULL;
+    }
+    fIsCutUsedD0forDStarptbin = new Bool_t[(source.GetNPtBinsD0forDStarptbin())*(source.GetNVarsD0forDStarptbin())];
+    for (Int_t i = 0; i < source.fnVarsD0forDStarptbin; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBinsD0forDStarptbin; j++)
+      {
+        Bool_t bUse = source.GetIsCutUsedD0forDStarptbin(i,j);
+        SetIsCutUsedD0forDStarptbin(i,j,bUse);
+      }
+    }
+  }
+  if(source.fIsCutUsedDStarforDStarptbin) 
+  {
+    if(fIsCutUsedDStarforDStarptbin) {
+      delete [] fIsCutUsedDStarforDStarptbin;
+      fIsCutUsedDStarforDStarptbin = NULL;
+    }
+    fIsCutUsedDStarforDStarptbin = new Bool_t[(source.GetNPtBinsDStarforDStarptbin())*(source.GetNVarsDStarforDStarptbin())];
+    for (Int_t i = 0; i < source.fnVarsDStarforDStarptbin; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBinsDStarforDStarptbin; j++)
+      {
+        Bool_t bUse = source.GetIsCutUsedDStarforDStarptbin(i,j);
+        SetIsCutUsedDStarforDStarptbin(i,j,bUse);
+      }
+    }
+  }      
+  if(source.fCutsRDD0forD0ptbin) SetCutsD0forD0ptbin(source.fGlobalIndexD0forD0ptbin,source.fCutsRDD0forD0ptbin);
+  if(source.fCutsRDD0forDStarptbin) SetCutsD0forDStarptbin(source.fGlobalIndexD0forDStarptbin,source.fCutsRDD0forDStarptbin);
+  if(source.fCutsRDDStarforDStarptbin) SetCutsDStarforDStarptbin(source.fGlobalIndexDStarforDStarptbin,source.fCutsRDDStarforDStarptbin);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsB0toDStarPi::~AliRDHFCutsB0toDStarPi() {
@@ -2690,7 +2836,7 @@ Bool_t AliRDHFCutsB0toDStarPi::IsInFiducialAcceptance(Double_t pt, Double_t y) c
   // } else {    
   //   // appliying smooth cut for pt < 5 GeV
   //   Double_t maxFiducialY = -0.2/15*pt*pt+1.9/15*pt+0.5; 
-  //   Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;		
+  //   Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;    
   //   AliDebug(2,Form("pt of D* = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY)); 
   //   if (y < minFiducialY || y > maxFiducialY){
   //     return kFALSE;
@@ -2760,14 +2906,14 @@ Int_t AliRDHFCutsB0toDStarPi::SelectPID(AliAODTrack *track, Int_t type)
 
     if (TPCon){//TPC
       if(fPidHF->CheckStatus(track,"TPC")){
-      	if(type==2) isTPC=fPidHF->IsPionRaw(track,"TPC");
-      	if(type==3) isTPC=fPidHF->IsKaonRaw(track,"TPC");
+        if(type==2) isTPC=fPidHF->IsPionRaw(track,"TPC");
+        if(type==3) isTPC=fPidHF->IsKaonRaw(track,"TPC");
       }
     }
     if (TOFon){//TOF
       if(fPidHF->CheckStatus(track,"TOF")){
-      	if(type==2) isTOF=fPidHF->IsPionRaw(track,"TOF");
-      	if(type==3) isTOF=fPidHF->IsKaonRaw(track,"TOF");
+        if(type==2) isTOF=fPidHF->IsPionRaw(track,"TOF");
+        if(type==3) isTOF=fPidHF->IsKaonRaw(track,"TOF");
       }
     }
 
@@ -2955,6 +3101,22 @@ void AliRDHFCutsB0toDStarPi::SetCutsD0forD0ptbin(Int_t nVars,Int_t nPtBins,Float
   return;
 }
 //---------------------------------------------------------------------------
+void AliRDHFCutsB0toDStarPi::SetCutsD0forD0ptbin(Int_t glIndex,Float_t *cutsRDD0forD0ptbin){
+  //
+  // store the cuts
+  //
+  if(glIndex != fGlobalIndexD0forD0ptbin){
+    cout<<"Wrong array size: it has to be "<<fGlobalIndexD0forD0ptbin<<endl;
+    AliFatal("exiting");
+  }
+  if(!fCutsRDD0forD0ptbin)  fCutsRDD0forD0ptbin = new Float_t[fGlobalIndexD0forD0ptbin];
+
+  for(Int_t iGl=0;iGl<fGlobalIndexD0forD0ptbin;iGl++){
+    fCutsRDD0forD0ptbin[iGl] = cutsRDD0forD0ptbin[iGl];
+  }
+  return;
+}
+//---------------------------------------------------------------------------
 Int_t AliRDHFCutsB0toDStarPi::PtBinD0forD0ptbin(Double_t pt) const {
   //
   //give the pt bin where the pt lies.
@@ -3033,6 +3195,22 @@ void AliRDHFCutsB0toDStarPi::SetCutsD0forDStarptbin(Int_t nVars,Int_t nPtBins,Fl
       fCutsRDD0forDStarptbin[GetGlobalIndexD0forDStarptbin(iv,ib)] = cutsRDD0forDStarptbin[iv][ib];
 
     }
+  }
+  return;
+}
+//---------------------------------------------------------------------------
+void AliRDHFCutsB0toDStarPi::SetCutsD0forDStarptbin(Int_t glIndex,Float_t *cutsRDD0forDStarptbin){
+  //
+  // store the cuts
+  //
+  if(glIndex != fGlobalIndexD0forDStarptbin){
+    cout<<"Wrong array size: it has to be "<<fGlobalIndexD0forDStarptbin<<endl;
+    AliFatal("exiting");
+  }
+  if(!fCutsRDD0forDStarptbin)  fCutsRDD0forDStarptbin = new Float_t[fGlobalIndexD0forDStarptbin];
+
+  for(Int_t iGl=0;iGl<fGlobalIndexD0forDStarptbin;iGl++){
+    fCutsRDD0forDStarptbin[iGl] = cutsRDD0forDStarptbin[iGl];
   }
   return;
 }
@@ -3116,6 +3294,22 @@ void AliRDHFCutsB0toDStarPi::SetCutsDStarforDStarptbin(Int_t nVars,Int_t nPtBins
       fCutsRDDStarforDStarptbin[GetGlobalIndexDStarforDStarptbin(iv,ib)] = cutsRDDStarforDStarptbin[iv][ib];
 
     }
+  }
+  return;
+}
+//---------------------------------------------------------------------------
+void AliRDHFCutsB0toDStarPi::SetCutsDStarforDStarptbin(Int_t glIndex,Float_t *cutsRDDStarforDStarptbin){
+  //
+  // store the cuts
+  //
+  if(glIndex != fGlobalIndexDStarforDStarptbin){
+    cout<<"Wrong array size: it has to be "<<fGlobalIndexDStarforDStarptbin<<endl;
+    AliFatal("exiting");
+  }
+  if(!fCutsRDDStarforDStarptbin)  fCutsRDDStarforDStarptbin = new Float_t[fGlobalIndexDStarforDStarptbin];
+
+  for(Int_t iGl=0;iGl<fGlobalIndexDStarforDStarptbin;iGl++){
+    fCutsRDDStarforDStarptbin[iGl] = cutsRDDStarforDStarptbin[iGl];
   }
   return;
 }
