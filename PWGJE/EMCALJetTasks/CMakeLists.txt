@@ -117,7 +117,6 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalClustersRef.cxx
     Tracks/AliAnalysisTaskEmcalClusterMatched.cxx
-    Tracks/AliAnalysisTaskEmcalClusterNoiseTriggers.cxx
     Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.cxx
@@ -133,7 +132,6 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerEmulation.cxx
     Tracks/AliAnalysisTaskEGAMonitor.cxx
     Tracks/AliAnalysisTaskEmcalPatchMasking.cxx
-    Tracks/AliAnalysisTaskEmcalNoiseTriggers.cxx
     Tracks/AliAnalysisTaskCountITStracks.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
