@@ -49,7 +49,7 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ;}
   void SetJetType(JetType t)                                { fJetType     = t   ;}
   void SetReclusterAlgo(Int_t a)                            { fReclusteringAlgo = a;}
-  void AddMedScat(Bool_t b, Float_t f,Int_t n)              {fAddMedScat = b; fAddMedScatPt = f; fAddMedScatN = n;}
+  void AddMedScat(Bool_t b, Float_t f,Int_t n)              { fAddMedScat = b; fAddMedScatPtFrac = f; fAddMedScatN = n;}
 
   static AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(
 
@@ -96,7 +96,7 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
   Double_t                            fJetRadius;                   // radius used in jet finding
-  Float_t                             fAddMedScatPt;
+  Float_t                             fAddMedScatPtFrac;
   Float_t                             fAddMedScatN;
   Bool_t                              fAddMedScat;
 
