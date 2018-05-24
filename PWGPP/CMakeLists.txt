@@ -230,6 +230,7 @@ set ( SRCS18
   AD/ADESDFriendUtils.cxx
   AD/AliAnalysisTaskADCalib.cxx
   AD/AliAnalysisTaskADChargeMonitoring.cxx
+  AD/AliAnalysisTaskADCent.cxx
   )
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS19
@@ -361,6 +362,7 @@ install(FILES AD/AddTaskADQA.C
 	      AD/AddTaskADPilot.C
 	      AD/AddTaskADCalib.C
 	      AD/AddTaskADChargeMonitoring.C
+	      AD/AddTaskADCent.C
 	      DESTINATION PWGPP/AD)
 install(FILES AD/trending/DrawTrendingADQA.C
  	      AD/trending/MakeTrendingADQA.C
