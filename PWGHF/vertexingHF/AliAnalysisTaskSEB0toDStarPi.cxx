@@ -556,39 +556,39 @@ void AliAnalysisTaskSEB0toDStarPi::UserCreateOutputObjects() {
   fPtBinLimitsD0forDStarptbin = fCuts->GetPtBinLimitsD0forDStarptbin();
   fPtBinLimitsDStarforDStarptbin = fCuts->GetPtBinLimitsDStarforDStarptbin();
 
-  cout << "bins" <<  fCuts->GetNPtBins() << endl;
-  cout << "bins" <<  fCuts->GetNPtBinsD0forD0ptbin() << endl;
-  cout << "bins" <<  fCuts->GetNPtBinsD0forDStarptbin() << endl;
-  cout << "bins" <<  fCuts->GetNPtBinsDStarforDStarptbin() << endl;
+  std::cout << "bins" <<  fCuts->GetNPtBins() << std::endl;
+  std::cout << "bins" <<  fCuts->GetNPtBinsD0forD0ptbin() << std::endl;
+  std::cout << "bins" <<  fCuts->GetNPtBinsD0forDStarptbin() << std::endl;
+  std::cout << "bins" <<  fCuts->GetNPtBinsDStarforDStarptbin() << std::endl;
 
-  cout << "bins" <<  fnPtBins + 1 << endl;
-  cout << "bins" <<  fnPtBinsD0forD0ptbin + 1 << endl;
-  cout << "bins" <<  fnPtBinsD0forDStarptbin + 1 << endl;
-  cout << "bins" <<  fnPtBinsDStarforDStarptbin + 1 << endl;
+  std::cout << "bins" <<  fnPtBins + 1 << std::endl;
+  std::cout << "bins" <<  fnPtBinsD0forD0ptbin + 1 << std::endl;
+  std::cout << "bins" <<  fnPtBinsD0forDStarptbin + 1 << std::endl;
+  std::cout << "bins" <<  fnPtBinsDStarforDStarptbin + 1 << std::endl;
 
-  cout << "bins" <<  fCuts->GetPtBinLimits() << endl;
-  cout << "bins" <<  fCuts->GetPtBinLimitsD0forD0ptbin() << endl;
-  cout << "bins" <<  fCuts->GetPtBinLimitsD0forDStarptbin() << endl;
-  cout << "bins" <<  fCuts->GetPtBinLimitsDStarforDStarptbin() << endl;
+  std::cout << "bins" <<  fCuts->GetPtBinLimits() << std::endl;
+  std::cout << "bins" <<  fCuts->GetPtBinLimitsD0forD0ptbin() << std::endl;
+  std::cout << "bins" <<  fCuts->GetPtBinLimitsD0forDStarptbin() << std::endl;
+  std::cout << "bins" <<  fCuts->GetPtBinLimitsDStarforDStarptbin() << std::endl;
 
   for (int i = 0; i < fnPtBinLimits; ++i)
   {
-    cout << "limit " << i << " " << fPtBinLimits[i] << endl;
+    std::cout << "limit " << i << " " << fPtBinLimits[i] << std::endl;
   }
 
   for (int i = 0; i < fnPtBinsD0forD0ptbinLimits; ++i)
   {
-    cout << "limit " << i << " " << fPtBinLimitsD0forD0ptbin[i] << endl;
+    std::cout << "limit " << i << " " << fPtBinLimitsD0forD0ptbin[i] << std::endl;
   }
 
   for (int i = 0; i < fnPtBinsD0forDStarptbinLimits; ++i)
   {
-    cout << "limit " << i << " " << fPtBinLimitsD0forDStarptbin[i] << endl;
+    std::cout << "limit " << i << " " << fPtBinLimitsD0forDStarptbin[i] << std::endl;
   }
 
   for (int i = 0; i < fnPtBinsDStarforDStarptbinLimits; ++i)
   {
-    cout << "limit " << i << " " << fPtBinLimitsDStarforDStarptbin[i] << endl;
+    std::cout << "limit " << i << " " << fPtBinLimitsDStarforDStarptbin[i] << std::endl;
   }  
 
   // we create an array of pointers for the histograms. This method is more CPU efficient than looking up each histogram by name.
@@ -1470,7 +1470,7 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
 
     // Below, we find all the MC labels for the true signal tracks
     AliAODMCParticle *mcTrackParticle = dynamic_cast< AliAODMCParticle*>(mcTrackArray->At(i));
-    if(!mcTrackParticle) {std::cout << "no particle" << endl; continue;}
+    if(!mcTrackParticle) {std::cout << "no particle" << std::endl; continue;}
     Int_t pdgCodeMC=TMath::Abs(mcTrackParticle->GetPdgCode());
     
     if (pdgCodeMC==511){ //if the track is a B0 we look at its daughters

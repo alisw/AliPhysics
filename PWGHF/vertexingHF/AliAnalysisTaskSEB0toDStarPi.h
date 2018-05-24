@@ -142,7 +142,7 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   TH1F* fMotherHistogramArrayExtra[7][10];   //!
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEB0toDStarPi,11); // class for B0 spectra
+  ClassDef(AliAnalysisTaskSEB0toDStarPi,3); // class for B0 spectra
   /// \endcond
 };
 
