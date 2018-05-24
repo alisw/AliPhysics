@@ -772,12 +772,14 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
   }
 //----------------
   if(!fDoLightOutput){
+    TString namePeriod = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->GetPeriodName();
     if( fClusterType == 1 ){
       Int_t nMaxCellsEMCAL      = fNMaxEMCalModules*48*24;
       fBadChannels              = new TProfile("EMCal - Bad Channels","EMCal - Bad Channels",nMaxCellsEMCAL,-0.5,nMaxCellsEMCAL-0.5);
       fBadChannels->GetXaxis()->SetTitle("channel ID");
       fHistExtQA->Add(fBadChannels);
     } else if( fClusterType == 2 ){
+      if (namePeriod.Contains("LHC10")) fNMaxPHOSModules=3;
       Int_t nMaxCellsPHOS       = fNMaxPHOSModules*56*64;
       fBadChannels              = new TProfile("PHOS - Bad Channels","PHOS - Bad Channels",nMaxCellsPHOS,-0.5,nMaxCellsPHOS-0.5);
       fBadChannels->GetXaxis()->SetTitle("channel ID");
