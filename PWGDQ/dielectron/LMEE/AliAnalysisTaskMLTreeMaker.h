@@ -44,7 +44,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
-//~ 
+  Bool_t CheckGenerator(int Index);
   
   void SetupTrackCuts(AliDielectronCutGroup* f);
   void SetupEventCuts(AliDielectronEventCuts* f);
@@ -148,7 +148,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Bool_t> HasSPDfirstHit; 
   std::vector<Double_t> RatioCrossedRowsFindableClusters;  
   std::vector<Int_t> NTPCSignal; 
-  
+  std::vector<unsigned int> fGeneratorHashs; // will be filled with the TString hashes of the generators you want to be analyzed
   Bool_t loCuts;        //loose cuts?
   
 //  std::vector<Int_t> IsBG;
@@ -200,7 +200,8 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   
   Int_t gMultiplicity;
   Int_t mcTrackIndex;
-  AliMCEvent* fMcArray; 
+  AliMCEvent* fMcArray;
+  AliMCEvent* mcEvent; 
 
   std::vector<Double_t> EsigTPC;
   std::vector<Double_t> EsigTOF;

@@ -86,6 +86,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   HasSPDfirstHit(0),        
   RatioCrossedRowsFindableClusters(0), 
   NTPCSignal(0),
+  fGeneratorHashs(0x0),      
   loCuts(kTRUE),        
   runn(0),      
   n(0),
@@ -112,6 +113,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   gMultiplicity(-999),
   mcTrackIndex(0),
   fMcArray(0x0),
+  mcEvent(0x0),      
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
@@ -179,11 +181,12 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   HasSPDfirstHit(0),        
   RatioCrossedRowsFindableClusters(0), 
   NTPCSignal(0),
+  fGeneratorHashs(0x0),        
   loCuts(kTRUE),        
   runn(0),      
   n(0),
   cent(0),
-  fList(0x0),        
+  fList(0x0), 
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100),         
   fPtMin(0),
@@ -205,6 +208,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   gMultiplicity(-999),
   mcTrackIndex(0),
   fMcArray(0x0),
+  mcEvent(0x0),      
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
@@ -363,6 +367,17 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   AliInfo("Finished setting up the Output");
   TH1::AddDirectory(oldStatus);
+  
+  TString generatorName = "Hijing_0";//;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia B_8;Pythia BB_8";
+ 
+
+  TObjArray arr = *(generatorName.Tokenize(";"));
+  std::cout << "Used Generators: " << std::endl;
+  for (int i = 0; i < arr.GetEntries(); ++i){
+    TString temp = arr.At(i)->GetName();
+    std::cout << "--- " << temp << std::endl;
+    fGeneratorHashs.push_back(temp.Hash());
+  }
 }
 
 //________________________________________________________________________
@@ -388,11 +403,21 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   
   fQAHist->Fill("Events_accepted",1);
   
-  if(hasMC){
-    AliMCEventHandler* mchandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    fMcArray = mchandler->MCEvent();
-    // get the accepted tracks in main event
+     AliInputEventHandler *eventHandler = nullptr;
+     AliInputEventHandler *eventHandlerMC = nullptr;
+  
+    if ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliAODInputHandler::Class()){
+    eventHandler = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    eventHandlerMC = eventHandler;
   }
+     
+    if(hasMC){
+//    AliMCEventHandler* mchandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+//    fMcArray = mchandler->MCEvent();
+    fMcArray = eventHandlerMC->MCEvent();
+    // get the accepted tracks in main event
+  }   
+  
   Double_t lMultiplicityVar = -1;
   Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
 
@@ -560,14 +585,17 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
 //                    tempmpdg= mcMTrack->PdgCode(); 
                 }
 //                else tempmpdg=-9999;
-                    
-                while(!(mcMTrack->GetMother() < 0)){        //get first mother in chain
-                    mcTrackIndex = mcMTrack->GetMother(); 
-                    mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
-                }
-
-                if(!(mcEvent->IsFromBGEvent(abs(mcTrackIndex)))) Rej=kTRUE;
-
+                  
+                  //going to mother particle is done in AliMCEvent::GetCocktailGenerator
+//                while(!(mcMTrack->GetMother() < 0)){        //get first mother in chain
+//                    mcTrackIndex = mcMTrack->GetMother(); 
+//                    mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
+//                }
+                
+                
+//                if(!(mcEvent->IsFromBGEvent(mcMTrack->GetLabel())))Rej=kTRUE;
+                if(!(CheckGenerator(mcMTrack->GetLabel()))) Rej=kTRUE;
+//                cout<<"FOUND NON HiJing!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;}
           }
 
 
@@ -774,4 +802,28 @@ void AliAnalysisTaskMLTreeMaker::SetupEventCuts(AliDielectronEventCuts* f)
 {
   evfilter   = new AliAnalysisFilter("evfilter","evfilter");  
   evfilter->AddCuts(f);
+}
+
+
+
+bool AliAnalysisTaskMLTreeMaker::CheckGenerator(Int_t trackID){     //check if the generator is on the list of generators
+  if (fGeneratorHashs.size() == 0) return true;
+  TString genname;
+  Bool_t hasGenerator = fMcArray->GetCocktailGenerator(TMath::Abs(trackID), genname); // fMC is AliMCEvent
+  // std::cout << genname << std::endl;
+    if(!hasGenerator) {
+
+    Printf("no cocktail header list was found for this track");
+    return false;
+  }
+  else{
+
+    for (unsigned int i = 0; i < fGeneratorHashs.size(); ++i){
+      // std::cout << genname.Hash() << " " << fGeneratorHashs[i] << std::endl;
+      if (genname.Hash() == fGeneratorHashs[i]) return true;
+
+    }
+    return false;
+  }
+  return false; // should not happen
 }
