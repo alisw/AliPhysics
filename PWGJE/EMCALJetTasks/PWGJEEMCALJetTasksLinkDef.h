@@ -175,7 +175,6 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerMultiplicity+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClustersRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClusterMatched+;
-#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalClusterNoiseTriggers+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOnlinePatchesRef+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalOfflinePatchesRef+;
@@ -189,7 +188,6 @@
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerEmulation+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEGAMonitor+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking+;
-#pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalNoiseTriggers+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerCorrelation+;
 #pragma link C++ class EMCalTriggerPtAnalysis::AliAnalysisTaskCountITStracks+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerTreeWriter+;

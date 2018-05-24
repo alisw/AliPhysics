@@ -4,6 +4,7 @@
  * See cxx source for full Copyright notice                               */
 
 #include <TString.h>
+#include <string>
 #include <vector>
 
 #include "AliAnalysisTaskEmcal.h"
@@ -13,6 +14,8 @@
 class TClonesArray;
 class THistManager;
 class AliOADBContainer;
+
+namespace PWG { namespace EMCAL { class AliEmcalTriggerDecisionContainer; } }
 
 namespace EMCalTriggerPtAnalysis {
 
@@ -136,38 +139,6 @@ public:
   void SetApplyDownscaleCorrectionFromOCDB(Bool_t doApply) { fUseDownscaleCorrectionFormOCDB = doApply; }
 
   /**
-   * @brief If true then noise events (events without recalc trigger patch above threshold) are
-   * excluded from the analysis.
-   * @param[in] doExclude If true then noise events are excluded from the analysis
-   */
-  void SetExcludeNoiseEvents(Bool_t doExclude = true) { fRejectNoiseEvents = doExclude; }
-
-  /**
-   * @brief If true then noise events (events without recalc trigger patch above threshold) are
-   * explicitly selected for the analysis.
-   * @param[in] doSelect If true only noise events are used in the analysis
-   */
-  void SetSelectNoiseEvents(Bool_t doSelect = true) { fSelectNoiseEvents = doSelect; }
-
-  /**
-   * @brief Specify whether L0 is needed for L1
-   * @param[in] doRequire if true L0 is required for L1
-   */
-  void SetRequireL0ForL1(Bool_t doRequire = true) { fRequireL0forL1 = doRequire; }
-
-  /**
-   * @brief Add absolute ID of a FastOR to be masked (excluded from trigger patches)
-   * @param[in] fastorID Absolute ID of a fastor to be masked
-   */
-  void AddMaskedFastor(int fastorID) { fMaskedFastors.push_back(fastorID); }
-
-  /**
-   * @brief Set the name of the file with the OADB container containing the masked FastORs
-   * @param[in] oadbname Name of the OADB container file
-   */
-  void SetMaskedFastorOADB(TString oadbname) { fNameMaskedFastorOADB = oadbname; }
-
-  /**
    * @brief Set an offline trigger selection.
    *
    * The offline trigger selection will select events
@@ -210,19 +181,6 @@ public:
   void SetUseSPDVertex(bool doUse) { fUseSPDVertex = doUse; }
 
   /**
-   * @brief Specify whether the trigger decision should be done from trigger patches
-   * @param doUse If true the trigger string is rebuilt from recalc patches
-   */
-  void UseTriggerPatches(Bool_t doUse) { fTriggerStringFromPatches = doUse; }
-
-  /**
-   * @brief Setting trigger threshold for online trigger selection
-   * @param[in] triggerclass Name of the trigger class
-   * @param[in] threshold Online trigger threshold
-   */
-  void SetOnlineTriggerThreshold(const TString &triggerclass, Int_t threshold);
-
-  /**
    * @brief Defining whether to require trigger bits.
    *
    * Attention: Relies on the presence of the physics selection - to be
@@ -249,15 +207,6 @@ public:
    * @param[in] doRequire If true AliAnalysisUtils are used in addition for the event selection
    */
   void SetRequireAnalysisUtils(Bool_t doRequire) { fRequireAnalysisUtils = doRequire; }
-
-  /**
-   * Set the name of teh OADB container with trigger acceptance maps. Trigger
-   * acceptance maps will be used in the trigger offline selection to mimic
-   * the acceptance observed in data. Only useful in simulations and the mimicing
-   * of the trigger in min. bias data.
-   * @param[in] nameAcceptanceOADB Location of the OADB container with the acceptance maps
-   */
-  void SetTriggerAcceptanceOADB(const TString &nameAcceptanceOADB) { fNameAcceptanceOADB = nameAcceptanceOADB; }
 
   /**
    * @brief Run event loop only on min. bias events.
@@ -374,13 +323,6 @@ protected:
   Double_t GetTriggerWeight(const TString &triggerclass) const;
 
   /**
-   * Apply trigger selection using offline patches and trigger thresholds based on offline ADC Amplitude
-   * @param[in] triggerpatches Trigger patches found by the trigger maker
-   * @return String with EMCAL trigger decision
-   */
-  TString GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const;
-
-  /**
    * Steering of the trigger selection:
    * Combines the selection of triggers from event trigger string,
    * offline energy selection, and online noise rejection / selection.
@@ -390,13 +332,30 @@ protected:
   void TriggerSelection();
 
   /**
-   * Second approach: We assume masked fastors are already handled in the
-   * trigger maker. In this case we treat masked fastors similarly to online
-   * masked fastors and apply online cuts on the recalc ADC value. Implemented
-   * for the moment only for L1 triggers.
-   * @return True if the event has at least 1 recalc patch above threshold
+   * @brief Match trigger pattern
+   * 
+   * Trigger pattern can
+   * - start with = - full class name must be found
+   * - contain strings separated with one or more | - any of the classes to be found 
+   * 
+   * @param pattern Pattern used for checking
+   * @param triggerclass Trigger class to be checked
+   * @return true Pattern found
+   * @return false Pattern not found
    */
-  bool SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass trigger) const;
+  bool MatchTriggerFromPattern(const std::string &pattern, const std::string &triggerclass) const;
+
+  /**
+   * @brief Matching triggers in pattern with entry in trigger decision container
+   * 
+   * Trigger will ignore =. | will be used to split several triggers to be checked
+   * 
+   * @param pattern Pattern to be checked
+   * @param trgcont Trigger container with selected classes from patches
+   * @return true Pattern found in the trigger decision container 
+   * @return false Pattern not found in the trigger decision container
+   */
+  bool MatchTriggerFromContainer(const std::string &pattern, const PWG::EMCAL::AliEmcalTriggerDecisionContainer *trgcont) const;
 
   /**
    * Define name of the cluster container used to read EMCAL cluster information
@@ -404,36 +363,6 @@ protected:
    * @param[in] clustercontname Name of the cluster container
    */
   void SetClusterContainer(TString clustercontname) { fNameClusterContainer = clustercontname; }
-
-  /**
-   * Checks whether online trigger thresholds are initialized. All trigger
-   * classes are required to be set for this.
-   * @return True if thresholds are initialized
-   */
-  bool OnlineThresholdsInitialized() const;
-
-  /**
-   * Get STU online trigger threshold by the index in AliEmcalTriggerOfflineSelection
-   * @param[in] trg Index of the trigger class
-   * @return Online trigger threshold
-   */
-  Int_t GetOnlineTriggerThresholdByIndex(AliEmcalTriggerOfflineSelection::EmcalTriggerClass trg) const;
-
-  /**
-   * Get STU online trigger threshold by the name of the online trigger class
-   * @param[in] name Name of the trigger class
-   * @return Online trigger threshold
-   */
-  Int_t GetOnlineTriggerThresholdByName(const TString &name) const;
-
-  /**
-   * Select trigger patches firing the trigger for patches above threshold for
-   * a given trigger class.
-   * @param[in] triggerclass Name of the trigger class from which to apply the threshold
-   * @param[in] adc ADC value of the trigger patch at Level1
-   * @return True if the patch is selected
-   */
-  Bool_t SelectFiredPatch(const TString &triggerclass, Int_t adc) const;
 
   /**
    * @brief Read the downscale factors from the OCDB
@@ -447,7 +376,6 @@ protected:
   Bool_t                          fRequireBunchCrossing;      ///< Require bunch-bunch events (tag -B- in trigger string)
   Bool_t                          fUseDownscaleCorrectionFormOCDB; ///< Use downscale factors from OCDB
   AliEmcalTriggerOfflineSelection *fTriggerSelection;         ///< Offline trigger selection
-  Bool_t                          fTriggerStringFromPatches;  ///< Do rebuild the trigger string from trigger patches
   std::vector<TString>            fSelectedTriggers;          //!<! Triggers selected for given event
   TString                         fNameClusterContainer;      ///< Name of the cluster container in the event
 
@@ -459,21 +387,13 @@ protected:
   TString                         fNameDownscaleOADB;         ///< Name of the downscale OADB container
   AliOADBContainer                *fDownscaleOADB;            //!<! Container with downscale factors for different triggers
   TObjArray                       *fDownscaleFactors;         //!<! Downscalfactors for given run
-  TString                         fNameMaskedFastorOADB;      ///< Name of the masked fastor OADB container
-  AliOADBContainer                *fMaskedFastorOADB;         //!<! Container with masked fastors
-  std::vector<int>                fMaskedFastors;             ///< List of masked fastors
-  TObjArray                       fOnlineTriggerThresholds;   ///< Trigger thresholds applied at online level
-  TString                         fNameAcceptanceOADB;        ///< Name of the OADB container with the trigger acceptance
   TString                         fNameTriggerSelectionContainer; ///< Name of the trigger selection container
 
-  Bool_t                          fSelectNoiseEvents;         ///< Explicitly select events triggered only by noisy fastors
-  Bool_t                          fRejectNoiseEvents;         ///< Reject events triggered by noisy fastors
   Bool_t                          fEnableDCALTriggers;        ///< Enable / Disable event selection for DCAL trigger classes
   Bool_t                          fEnableV0Triggers;          ///< Enable VZERO-based triggers (default)
   Bool_t                          fEnableT0Triggers;          ///< Enable triggers depending on T0 (INT8, EMC8, EMC8EGA, EMC8EJE) - default off
   Bool_t                          fEnableNoINTTriggers;       ///< Process EMCAL triggers without coincidence with INT triggers - exotic case - default off
   Bool_t                          fEnableCentralityTriggers;  ///< Enable central / semi-central trigger
-  Bool_t                          fRequireL0forL1;            ///< Require L0 for L1
   Bool_t                          fExclusiveMinBias;          ///< Only look at Min. Bias trigger
   Bool_t                          fUseTriggerSelectionContainer;    ///< Use trigger decision in trigger selection container
 
