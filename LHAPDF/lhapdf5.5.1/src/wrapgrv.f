@@ -5,7 +5,7 @@
       implicit real*8 (a-h,o-z) 
       include 'parmsetup.inc' 
       PARAMETER(ngrid=2) 
-      PARAMETER (NPART=6, NX=68, NQ=27, NARG=2) 
+      PARAMETER (NPART=6, NX=68, NQ=27, NARG=5) 
       character*16 name(nmxset) 
       integer nmem(nmxset),ndef(nmxset),mmem 
       common/NAME/name,nmem,ndef,mmem 

@@ -20,7 +20,7 @@
      &,f6(nx,nq)                                                        &
      &,f7(nx,nq)                                                        &
      &,f8(nx,nq)                                                        &
-     &,fc(nx,nqc),fb(nx,nqb)                                            
+     &,fc(nx,37),fb(nx,37)                                            
       real*8 qq(nq),xx(nx),                                             &
      &cc1(0:nhess,nx,nq,4,4,nmxset),cc2(0:nhess,nx,nq,4,4,nmxset),      &
      &cc3(0:nhess,nx,nq,4,4,nmxset),cc4(0:nhess,nx,nq,4,4,nmxset),      &
