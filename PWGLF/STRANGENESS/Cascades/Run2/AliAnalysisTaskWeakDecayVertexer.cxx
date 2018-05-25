@@ -858,7 +858,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             cascade.SetDcaXiDaughters(dca);
             
             //Change back to default XiMinus hypothesis
-            cascade.ChangeMassHypothesis(lV0quality , -3312);
+            cascade.ChangeMassHypothesis(lV0quality , 3312);
             event->AddCascade(&cascade);
             ncasc++;
         } // end loop tracks
