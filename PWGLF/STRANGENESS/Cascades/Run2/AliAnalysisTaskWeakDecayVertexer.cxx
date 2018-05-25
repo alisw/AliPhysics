@@ -856,6 +856,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                TMath::Abs(lInvMassOmega-1.672)>fMassWindowAroundCascade ) continue;
             
             cascade.SetDcaXiDaughters(dca);
+            
+            //Change back to default XiMinus hypothesis
+            cascade.ChangeMassHypothesis(lV0quality , -3312);
             event->AddCascade(&cascade);
             ncasc++;
         } // end loop tracks
@@ -925,6 +928,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                TMath::Abs(lInvMassOmega-1.672)>fMassWindowAroundCascade ) continue;
             
             cascade.SetDcaXiDaughters(dca);
+            
+            //Change back to default XiPlus hypothesis
+            cascade.ChangeMassHypothesis(lV0quality , -3312);
             event->AddCascade(&cascade);
             ncasc++;
             
