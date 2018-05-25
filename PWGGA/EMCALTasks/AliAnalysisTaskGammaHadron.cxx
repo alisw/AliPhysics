@@ -595,18 +595,19 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     maxThnPi0[dimThnPi0] = 3;
     dimThnPi0++;
 
-    Double_t mcStatusArray[5+1];
+    Double_t mcStatusArray[6+1];
     if (fIsMC) {
       printf("Adding MCStatus to THnSparse\n"); //FIXME
       //..MC Status array: 0 - no Match, 1 - pair matched to pi0, 2 - pair match to eta
-      //  3 for gamma (PCM), 4 for shared grandmother (K^0, eta, etc.)
+      //  3 for gamma (PCM), 4 for same MC Part, 5 for other common ancestor 
+      ////  3 for gamma (PCM), 4 for shared grandmother (K^0, eta, etc.)
       ////  3 for misc (2 pi0, 1 pi0, 1 eta, etc)
       titleThnPi0[dimThnPi0] = "MC Match Status";
-      nBinsThnPi0[dimThnPi0] = 5;
+      nBinsThnPi0[dimThnPi0] = 6;
       binEdgesThnPi0[dimThnPi0] = mcStatusArray;
-      GenerateFixedBinArray(5,0,5,mcStatusArray);
+      GenerateFixedBinArray(6,0,6,mcStatusArray);
       minThnPi0[dimThnPi0] = 0;
-      maxThnPi0[dimThnPi0] = 5;
+      maxThnPi0[dimThnPi0] = 6;
       dimThnPi0++;
     }
 
@@ -1692,9 +1693,23 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			if(!cluster || !AccClusterForAna(clusters,cluster))continue; //check if the cluster is a good cluster
 
 			fClusEnergy->Fill(cluster->GetNonLinCorrEnergy(),Weight);
-			Int_t iNearestMCIndexClus1 = -1;
+			Int_t iMCIndexClus1 = -1;
+			Int_t iMCRootPartClus1 = -1;
+			Int_t iMCTreeHeight1 = -1;
 			if (fIsMC) {
-				iNearestMCIndexClus1 = FindMCPartForClus(cluster);
+				iMCIndexClus1 = FindMCPartForClus(cluster);
+
+		//		iMCRootPartClus1 = FindMCRootPart(iMCIndexClus1,&iMCTreeHeight1);
+//				printf("MHO: Clus1 MCi = %6d\t, RootMCi,height = %6d,%2d",iMCIndexClus1,iMCRootPartClus1,iMCTreeHeight1);
+
+//				if (iMCIndexClus1 == iMCRootPartClus1) {
+//					printf(".  MC part is its own root\n");
+//				} else {
+//					AliAODMCParticle * rootPart = fMCParticles->GetMCParticle(iMCRootPartClus1);
+//					printf(".  root has pdg = %d\n",rootPart->GetPdgCode());
+
+//				}
+
 			}
 
 			TLorentzVector CaloClusterVec;
@@ -1743,8 +1758,8 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				if(!cluster2 || !AccClusterForAna(clusters,cluster2))continue; //check if the cluster is a good cluster
 
 
-				Int_t iNearestMCIndexClus2 = -1;
-				iNearestMCIndexClus2 = FindMCPartForClus(cluster2);
+				Int_t iMCIndexClus2 = -1;
+				iMCIndexClus2 = FindMCPartForClus(cluster2);
 
 				TLorentzVector CaloClusterVec2;
 				TLorentzVector CaloClusterVecpi0;
@@ -1759,7 +1774,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 				CaloClusterVecpi0=CaloClusterVec+CaloClusterVec2;
 				fHistPi0->Fill(CaloClusterVecpi0.M());
 				if (fPlotQA) {
-					FillPi0CandsHist(CaloClusterVec,CaloClusterVec2,CaloClusterVecpi0,fMaxClusM02,Weight,0,iNearestMCIndexClus1,iNearestMCIndexClus2);
+					FillPi0CandsHist(CaloClusterVec,CaloClusterVec2,CaloClusterVecpi0,fMaxClusM02,Weight,0,iMCIndexClus1,iMCIndexClus2);
 				}
 				fHistClusPairInvarMasspT->Fill(CaloClusterVecpi0.M(),CaloClusterVecpi0.Pt());
 				fMAngle->Fill(CaloClusterVecpi0.M(), CaloClusterVec.Angle(CaloClusterVec2.Vect()),0.5);
@@ -1913,7 +1928,11 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 	Int_t MCMatchStatus = 0; // 0 for no matches, 1 for MC pi0
 	if (fIsMC && fMCParticles) {
 		if (mcIndex1 < 0 || mcIndex2 < 0) {
-		} else {
+		}
+		else if (mcIndex1 == mcIndex2) {
+			 MCMatchStatus = 4; // 2 clusters from 1 MC Part
+		}
+		else {
 			AliAODMCParticle * mcPart1 = fMCParticles->GetMCParticle(mcIndex1);
 			AliAODMCParticle * mcPart2 = fMCParticles->GetMCParticle(mcIndex2);
 
@@ -1957,19 +1976,32 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 				}
 			} else { // Check for grandmothers
 
-				AliAODMCParticle * mcMother1 = fMCParticles->GetMCParticle(iMother1);
-				AliAODMCParticle * mcMother2 = fMCParticles->GetMCParticle(iMother2);
+				Int_t iMCTreeHeight1 = 0;
+				Int_t iMCRootPartClus1 = FindMCRootPart(mcIndex1,&iMCTreeHeight1);
+				Int_t iMCTreeHeight2 = 0;
+				Int_t iMCRootPartClus2 = FindMCRootPart(mcIndex2,&iMCTreeHeight2);
 
-				if (mcMother1 && mcMother2) {
-					Int_t iGMother1 = mcMother1->GetMother();
-					Int_t iGMother2 = mcMother2->GetMother();
-					if (iGMother1 > -1 && iGMother1 == iGMother2) {
-						AliAODMCParticle * mcGMother = fMCParticles->GetMCParticle();
-						if (mcGMother) {
-							MCMatchStatus = 4;
+				if (iMCRootPartClus1 == iMCRootPartClus2) { //The MC Parts still have a common ancestor
+					MCMatchStatus = 5;
+				}
+
+				if (false) {
+					AliAODMCParticle * mcMother1 = fMCParticles->GetMCParticle(iMother1);
+					AliAODMCParticle * mcMother2 = fMCParticles->GetMCParticle(iMother2);
+
+					if (mcMother1 && mcMother2) {
+						Int_t iGMother1 = mcMother1->GetMother();
+						Int_t iGMother2 = mcMother2->GetMother();
+						if (iGMother1 > -1 && iGMother1 == iGMother2) {
+							AliAODMCParticle * mcGMother = fMCParticles->GetMCParticle();
+							if (mcGMother) {
+								MCMatchStatus = 4;
+							}
 						}
 					}
 				}
+
+
 			}
 		}
 	}
@@ -2461,6 +2493,35 @@ Int_t AliAnalysisTaskGammaHadron::FindMCPartForClus(AliVCluster * caloCluster) {
 	}
 
 	return caloCluster->GetLabel();
+}
+// Return the id of the root particle for the given (by index) MC Particle
+// If the particle is its own root, return the particle's ID
+//________________________________________________________________________
+Int_t AliAnalysisTaskGammaHadron::FindMCRootPart(Int_t iMCIndex, Int_t * iMCTreeHeight) {
+	if (iMCIndex == -1) return -1;
+	if (!fMCParticles) {
+		return -1;
+	}
+	AliAODMCParticle * mcPart = fMCParticles->GetMCParticle(iMCIndex);
+	if (!mcPart) {return -2;}
+
+	*iMCTreeHeight = 1;
+
+	AliAODMCParticle * pMotherParticle = 0;
+
+	Int_t iCurrentAnswer = iMCIndex;
+	Int_t iMother = mcPart->GetMother();
+
+	for (Int_t i = 0; i < 22; i++) {
+		if (iMother == -1) return iCurrentAnswer;
+		iCurrentAnswer = iMother;
+		(*iMCTreeHeight)++;
+		pMotherParticle = fMCParticles->GetMCParticle(iMother);
+		if (!pMotherParticle) return iCurrentAnswer;
+		iMother = pMotherParticle->GetMother();
+	}
+
+	return iCurrentAnswer;
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff)

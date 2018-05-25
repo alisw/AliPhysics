@@ -101,6 +101,8 @@ public:
 
   //..Functions for MC purposes
   Int_t                       FindMCPartForClus(AliVCluster * caloCluster);
+  Int_t                       FindMCRootPart(Int_t iMCIndex, Int_t * iMCTreeHeight);
+
 
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
