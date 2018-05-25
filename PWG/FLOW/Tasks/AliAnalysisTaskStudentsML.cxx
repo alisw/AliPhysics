@@ -74,7 +74,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fBin(NULL),
  func1(NULL),
  fCentrality(NULL),
- fCounter(NULL),
+ fCounterHistogram(NULL),
  // Final results:
  fFinalResultsList(NULL)
  {
@@ -142,7 +142,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  func1(NULL),
  // Final results:
  fCentrality(NULL),
- fCounter(NULL),
+ fCounterHistogram(NULL),
  fFinalResultsList(NULL)
 {
   // Dummy constructor.
@@ -203,20 +203,20 @@ void AliAnalysisTaskStudentsML::UserExec(Option_t *)
  // c) Reset event-by-event objects;
  // d) PostData.
  
- fCounter->Fill(0.5); // counter hist 1st bin
+ fCounterHistogram->Fill(0.5); // counter hist 1st bin
 
  // a) Get pointer to AOD event:
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
  if(!aAOD){return;}
  
- fCounter->Fill(1.5); // counter hist 2nd bin
+ fCounterHistogram->Fill(1.5); // counter hist 2nd bin
 
  //a.1) Centrality;
  
  AliMultSelection *ams = (AliMultSelection*)aAOD->FindListObject("MultSelection");
  if(!ams){return;}
  
- fCounter->Fill(2.5); // counter hist 3rd bin
+ fCounterHistogram->Fill(2.5); // counter hist 3rd bin
 
  //func1->SetParameter(2,gRandom->Uniform(0.,TMath::TwoPi())); //*** for testing. for each event psi_2 is different
 
@@ -493,8 +493,8 @@ void AliAnalysisTaskStudentsML::BookControlHistograms()
  fControlHistogramsList->Add(fMultiHisto);
 
  // e) Book histogram to debug
- fCounter = new TProfile("","",3,0.,3.); //histogram for multiplicity
- fControlHistogramsList->Add(fCounter);
+ fCounterHistogram = new TH1F("fCounterHistogram","Histogram for some checks",3,0.,3.); //histogram for multiplicity
+ fControlHistogramsList->Add(fCounterHistogram);
 
 } //void AliAnalysisTaskStudentsML::BookControlHistograms()
 
