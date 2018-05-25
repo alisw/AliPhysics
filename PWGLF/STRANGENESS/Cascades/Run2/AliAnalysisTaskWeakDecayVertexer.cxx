@@ -856,6 +856,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                TMath::Abs(lInvMassOmega-1.672)>fMassWindowAroundCascade ) continue;
             
             cascade.SetDcaXiDaughters(dca);
+            
+            //Change back to default XiMinus hypothesis
+            cascade.ChangeMassHypothesis(lV0quality , 3312);
             event->AddCascade(&cascade);
             ncasc++;
         } // end loop tracks
@@ -925,6 +928,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
                TMath::Abs(lInvMassOmega-1.672)>fMassWindowAroundCascade ) continue;
             
             cascade.SetDcaXiDaughters(dca);
+            
+            //Change back to default XiPlus hypothesis
+            cascade.ChangeMassHypothesis(lV0quality , -3312);
             event->AddCascade(&cascade);
             ncasc++;
             
@@ -1572,9 +1578,6 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
     // distance of closest approach.
     // Returns the (weighed !) distance of closest approach.
     //--------------------------------------------------------------
-    Double_t dy2=nt -> GetSigmaY2() + pt->GetSigmaY2();
-    Double_t dz2=nt -> GetSigmaZ2() + pt->GetSigmaZ2();
-    Double_t dx2=dy2;
     
     //if( fkDoPureGeometricMinimization ){
         //Override uncertainties with small values -> pure geometry
@@ -1813,6 +1816,10 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
         p2[7]=TMath::Cos(p2[2]);
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     }
+    
+    Double_t dy2=nt -> GetSigmaY2() + pt->GetSigmaY2();
+    Double_t dz2=nt -> GetSigmaZ2() + pt->GetSigmaZ2();
+    Double_t dx2=dy2;
     
     Double_t r1[3],g1[3],gg1[3]; Double_t t1=0.;
     Evaluate(p1,t1,r1,g1,gg1);
