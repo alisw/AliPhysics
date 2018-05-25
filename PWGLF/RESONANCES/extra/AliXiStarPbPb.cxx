@@ -1502,10 +1502,19 @@ void AliXiStarPbPb::Exec(Option_t *)
         xiVtx[2] = Xicandidate->Zv();
         xiPt = Xicandidate->Pt();
         xiY = Xicandidate->RapXi();
-        xiMass = Xicandidate->M();
+     //   xiMass = Xicandidate->M();
         xiCharge = Xicandidate->Charge();
         
+        Double_t lV0quality  = 0.;
         
+        if(xiCharge == -1){
+            Xicandidate->ChangeMassHypothesis(lV0quality, 3312);
+            xiMass = Xicandidate->GetEffMassXi();
+        }            else{
+            Xicandidate->ChangeMassHypothesis(lV0quality, -3312);
+            xiMass = Xicandidate->GetEffMassXi();
+        }
+
         
         if(sqrt( pow(tempX[0],2) + pow(tempX[1],2) ) > fMaxDecayLength) continue;
         if(decayLengthXY > fMaxDecayLength) continue;
