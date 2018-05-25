@@ -97,8 +97,8 @@ C          THETAB               = sbottom mixing angle
       REAL AMZISS(4)
       EQUIVALENCE (AMZISS(1),AMZ1SS)
       SAVE /SSPAR/
-      REAL xpar(10),ypar(6)
-      INTEGER ipar(2)
+      REAL xpar(11),ypar(6)
+      INTEGER ipar(10)
       INTEGER pycomp
       REAL*8 ggrnd
       EXTERNAL pydata
@@ -432,7 +432,7 @@ CDECK  ID>, GGRUN.
      &               gvconst(4,10)
       REAL nc
       COMMON /ggevnt/ nrun,ievent,wsq,ygg,xmg1,xmg2, p2g(5),
-     &                ptag1(4),ptag2(4), ngg, kgg(10),pgg(20,5)
+     &                ptag1(10),ptag2(10), ngg, kgg(10),pgg(20,5)
       COMMON /ggxs/ xsmax0, xscur0, xscur, xsbra, xssum, ntry, xstot,
      &  xstote, ssbr(10)
       COMMON /ggkin/ xkin(10)
@@ -445,7 +445,7 @@ CDECK  ID>, GGRUN.
       COMMON/PYDAT2/KCHG(500,4),PMAS(500,4),PARF(2000),VCKM(4,4)
       DOUBLE PRECISION PMAS,PARF,VCKM
       SAVE  /PYDAT2/
-      REAL pgam1(4),pgam2(4)
+      REAL pgam1(10),pgam2(10)
       REAL p3(4), p4(4)
       REAL*8 dbetaz
       REAL*8 ggrnd
