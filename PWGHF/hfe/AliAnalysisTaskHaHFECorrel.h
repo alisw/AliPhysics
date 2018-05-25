@@ -125,6 +125,12 @@ public:
     void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
     void SetPtMaxEvent(Double_t PtMax) {fMaxPtEvent=PtMax;};
 
+
+    void SetEtaMax(Double_t EtaMax) {
+      fMaxElectronEta = TMath::Abs(EtaMax);
+      fMinElectronEta = -TMath::Abs(EtaMax);
+    };
+
     void SetTPCnCut(Int_t TPCnCut) {fTPCnCut = TPCnCut;};
     void SetTPCnCutdEdx(Int_t TPCnCutdEdx) {fTPCndEdxCut = TPCnCutdEdx;};
     void SetITSnCut (Int_t ITSnCut) {fITSnCut = ITSnCut;};
