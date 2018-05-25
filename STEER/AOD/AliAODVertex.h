@@ -108,6 +108,9 @@ class AliAODVertex : public AliVVertex {
   Bool_t   HasDaughter(TObject *daughter) const;
   Int_t    GetNDaughters() const;
   Int_t    GetNContributors() const;
+  Int_t    CountRealContributors() const;
+  Int_t    GetNContributorsStored() const {return fNContributors;}
+  
   void     SetNContributors(Int_t nc) {fNContributors = nc;}
   // covariance matrix elements after rotation by phi around z-axis 
   // and, then, by theta around new y-axis
@@ -138,6 +141,9 @@ class AliAODVertex : public AliVVertex {
   const char* AsString() const;
   
   static const char* GetTypeName(AODVtx_t type);
+  static Bool_t GetUseCountVtxTrackContributors() { return fgUseCountVtxTrackContributors; }
+  static void   SetUseCountVtxTrackContributors(Bool_t v) { fgUseCountVtxTrackContributors = v; }
+
   void     SetBC(Int_t bc)               {fBCID = bc;}
   Int_t    GetBC()              const    {return fBCID;}  
 private:
@@ -157,6 +163,8 @@ private:
   TRef            fParent;        // reference to the parent particle
   TRefArray       fDaughters;     // references to the daughter particles
   TRef            *fProngs;       //[fNprong] alternative daughters for n-prong vertex
+
+  static Bool_t fgUseCountVtxTrackContributors; // enforce old-style counting of VertexTracks contributors
   
   ClassDef(AliAODVertex, 8);
 };
