@@ -120,11 +120,12 @@ class AliAnalysisTaskStudentsML : public AliAnalysisTaskSE{
   // 3.) Final results:
    
   TProfile *fCentrality;         // final centrality result
+  TProfile *fCounter;            // for some checks
   TList *fFinalResultsList;      // list to hold all histograms with final results
 
   
 
-  ClassDef(AliAnalysisTaskStudentsML,2);
+  ClassDef(AliAnalysisTaskStudentsML,3);
 
 };
 
