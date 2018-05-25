@@ -603,15 +603,21 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   // Set maximum number of tracks, gammas and tracklets
   Int_t nGammaCand              = 50;
   Int_t nTracks                 = 200;
-  Int_t nSPDTracklets           = 100;
+  Int_t nSPDTracklets           = 200;
+  Int_t nSPDClusters            = 400;
+  Int_t nBinsTrklCls            = 100;
   if(fIsHeavyIon == 1){
-    nGammaCand                  = 100;
+    nGammaCand                  = 120;
     nTracks                     = 4000;
-    nSPDTracklets               = 500;
+    nSPDTracklets               = 6000;
+    nSPDClusters                = 20000;
+    nBinsTrklCls                = 200;
   } else if(fIsHeavyIon == 2){
     nGammaCand                  = 50;
     nTracks                     = 400;
-    nSPDTracklets               = 150;
+    nSPDTracklets               = 300;
+    nSPDClusters                = 600;
+    nBinsTrklCls                = 150;
   }
 
   Float_t binWidthPt          = 0.1;
@@ -1018,7 +1024,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       if(fDoCentralityFlat > 0) fHistoNGoodESDTracksVsNGammaCandidates[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoNGoodESDTracksVsNGammaCandidates[iCut]);
 
-      fHistoSPDClusterTrackletBackground[iCut]    = new TH2F("SPD tracklets vs SPD clusters", "SPD tracklets vs SPD clusters", nSPDTracklets, 0, (nSPDTracklets*2), nSPDTracklets, 0, (nSPDTracklets*4));
+      fHistoSPDClusterTrackletBackground[iCut]    = new TH2F("SPD tracklets vs SPD clusters", "SPD tracklets vs SPD clusters", nBinsTrklCls, 0, nSPDTracklets, nBinsTrklCls, 0, nSPDClusters);
       if(fDoCentralityFlat > 0) fHistoSPDClusterTrackletBackground[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoSPDClusterTrackletBackground[iCut]);
     }
@@ -1033,7 +1039,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fESDList[iCut]->Add(fHistoV0MultVsNumberTPCoutTracks[iCut]);
 
     if(fIsHeavyIon == 1)
-      fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 30000, 0, 30000);
+      fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 20000, 0, 40000);
     else if(fIsHeavyIon == 2)
       fHistoNV0Tracks[iCut]            = new TH1F("V0 Multiplicity", "V0 Multiplicity", 2500, 0, 2500);
     else
