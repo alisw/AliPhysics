@@ -251,7 +251,11 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     }
 
     void SetTriggerThreshold(Double_t energy) {fEnergyThreshold = energy;}
-    void SetAnaOmega(Bool_t flag) {fAnaOmega3Pi = flag;}
+    void SetAnaOmega(Bool_t flag, Double_t MinPtPi0=1.0, Double_t MinPtChPi=0.2){
+      fAnaOmega3Pi = flag;
+      fMinPtPi0    = MinPtPi0;
+      fMinPtChPi   = MinPtChPi;
+    }
     void SetOAStudy(Bool_t flag) {fIsOAStudy = flag;}
 
   protected:
@@ -448,12 +452,15 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t fEmin;
     Bool_t fIsOAStudy;
     Bool_t fAnaOmega3Pi;
+    Double_t fMinPtPi0;//only for omega->3pi
+    Double_t fMinPtChPi;//only for omega->3pi
+
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 54);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 55);
 };
 
 #endif
