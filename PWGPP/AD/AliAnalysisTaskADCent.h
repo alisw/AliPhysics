@@ -11,7 +11,8 @@
 class TTree;
 
 #include <TBits.h>
-#include "AliCentrality.h"
+#include <TString.h>
+#include <TVectorF.h>
 #include "AliAODAD.h"
 
 #include "AliAnalysisTaskSE.h"
@@ -20,6 +21,12 @@ class AliAnalysisTaskADCent : public AliAnalysisTaskSE {
 public:
   AliAnalysisTaskADCent(const char *name="AliAnalysisTaskADCent");
   virtual ~AliAnalysisTaskADCent();
+
+  void SetEstimatorNames(TString n="V0M:CL0:CL1:SPDClustersCorr:SPDTracklets") {
+    fEstimatorNames = n;
+    fMult.ResizeTo(1+n.CountChar(':'));
+    fCent.ResizeTo(1+n.CountChar(':'));
+  }
 
   virtual void NotifyRun();
   virtual void UserCreateOutputObjects();
@@ -33,11 +40,14 @@ private:
   AliAnalysisTaskADCent(const AliAnalysisTaskADCent&);
   AliAnalysisTaskADCent& operator=(const AliAnalysisTaskADCent&);
 
+  TString fEstimatorNames;
+
   // TTree branches
-  AliAODAD      fAD;             //!
-  TBits         fIR1Map;         //!
-  TBits         fIR2Map;         //!
-  AliCentrality fCent;           //!
+  AliAODAD         fAD;             //!
+  TBits            fIR1Map;         //!
+  TBits            fIR2Map;         //!
+  TVectorF         fMult;           //
+  TVectorF         fCent;           //
 
   // task output
   TTree *fTE;                    //!

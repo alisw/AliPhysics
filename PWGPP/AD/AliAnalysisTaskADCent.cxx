@@ -23,6 +23,8 @@
 #include "AliInputEventHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
+#include "AliMultSelection.h"
+#include "AliMultEstimator.h"
 
 #include "AliAnalysisTaskADCent.h"
 
@@ -30,10 +32,12 @@ ClassImp(AliAnalysisTaskADCent);
 
 AliAnalysisTaskADCent::AliAnalysisTaskADCent(const char *name)
   : AliAnalysisTaskSE(name)
+  , fEstimatorNames("V0M:CL0:CL1:SPDClustersCorr:SPDTracklets")
   , fAD()
   , fIR1Map()
   , fIR2Map()
-  , fCent()
+  , fMult(5)
+  , fCent(5)
 {
   DefineOutput(1, TTree::Class());
 }
@@ -57,7 +61,16 @@ void AliAnalysisTaskADCent::UserCreateOutputObjects() {
   fTE->Branch("fAD",     &fAD,     32000, 1);
   fTE->Branch("fIR1Map", &fIR1Map, 32000, 1);
   fTE->Branch("fIR2Map", &fIR2Map, 32000, 1);
-  fTE->Branch("fCent",   &fCent,   32000, 1);
+  TString branchDescription;
+  TString estimatorName = "";
+  Ssiz_t  from = 0;
+  for (Int_t i=0; fEstimatorNames.Tokenize(estimatorName, from, ":"); ++i) {
+    branchDescription += estimatorName;
+    branchDescription += (i==0 ? "/F:" : ":");
+  }
+  branchDescription = branchDescription(0, branchDescription.Length()-1);
+  fTE->Branch("fMult",   fMult.GetMatrixArray(),  branchDescription);
+  fTE->Branch("fCent",   fCent.GetMatrixArray(),  branchDescription);
   PostData(1, fTE);
   owd->cd();
 }
@@ -89,15 +102,23 @@ void AliAnalysisTaskADCent::UserExec(Option_t* ) {
     AliError("NULL == aodAD");
     return;
   }
-  const AliCentrality *mult = pAODHeader->GetCentralityP();
+  AliMultSelection* mult =dynamic_cast<AliMultSelection*>(pAOD->FindListObject("MultSelection"));
   if (!mult) {
-    AliError("NULL == mult");
+    AliWarning("AliMultSelection object not found!");
     return;
   }
+
   fAD     = *aodAD;
   fIR1Map =  pAODHeader->GetIRInt1InteractionMap();
   fIR2Map =  pAODHeader->GetIRInt2InteractionMap();
-  fCent   = *mult;
+
+  TString estimatorName = "";
+  Ssiz_t  from = 0;
+  for (Int_t i=0; fEstimatorNames.Tokenize(estimatorName, from, ":"); ++i) {
+    fMult[i] = mult->GetEstimator(estimatorName)->GetValue();
+    fCent[i] = mult->GetMultiplicityPercentile(estimatorName);
+    AliDebugF(5, "%d %s %f %f", i, estimatorName.Data(), fMult[i], fCent[i]);
+  }
 
   fTE->Fill();
 
