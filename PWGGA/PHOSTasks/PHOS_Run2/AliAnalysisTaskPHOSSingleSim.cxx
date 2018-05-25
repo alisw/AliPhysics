@@ -538,13 +538,6 @@ void AliAnalysisTaskPHOSSingleSim::FillMgg()
       if(fIsMC){
         w1 = ph1->GetWeight();
         weight = w1;//common weighting to all generated particles in embedding.
-
-        Int_t primary1 = ph1->GetPrimary();
-        Int_t primary2 = ph2->GetPrimary();
-        Double_t TruePi0Pt = 0;
-        if(IsFrom(primary1,TruePi0Pt,111) || IsFrom(primary2,TruePi0Pt,111)) continue;//reject cluster pair from pi0 in eta simulation; //for test
-        if(IsFrom(primary1,TruePi0Pt,211) || IsFrom(primary2,TruePi0Pt,211)) continue;//reject cluster pair from pi0 in eta simulation; //for test
-
       }//end of if fIsMC
 
       if(phi < 0) phi += TMath::TwoPi();
