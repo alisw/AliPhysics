@@ -128,12 +128,29 @@ void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
   fHistos = new THistManager(Form("Histos_%s", GetName()));
 
   // Create trigger correlation histogram
-  const std::array<const TString, 11> binlabels = {"MB", "EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7", "DG1", "DG2", "DJ1", "DJ2"};
+  std::vector<std::string> binlabels = {"MB"};
+  if(fEnableV0Triggers){
+    const std::array<const std::string, 5> vzlabels = {{"EMC7", "EG1", "EG2", "EJ1", "EJ2"}};
+    for(const auto & vlab : vzlabels) binlabels.emplace_back(vlab);
+    if(fEnableDCALTriggers){
+      const std::array<const std::string, 5> dclabels = {{"DMC7", "DG1", "DG2", "DJ1", "DJ2"}};
+      for(const auto & dlab : dclabels) binlabels.emplace_back(dlab);
+    }
+  }
+  if(fEnableT0Triggers) {
+    binlabels.emplace_back("MBT0");
+    const std::array<const std::string, 5> t0labels = {{"EMC8", "EMC8EG1", "EMC8EG2", "EMC8EJ1", "EMC8EJ2"}};
+    for(const auto & tlab : t0labels) binlabels.emplace_back(tlab);
+    if(fEnableDCALTriggers){
+      const std::array<const std::string, 5> dtclabels = {{"DMC8", "DMC8DG1", "DMC8DG2", "DMC8DJ1", "DMC8DJ2"}};
+      for(const auto & dtlab : dtclabels) binlabels.emplace_back(dtlab);
+    }
+  }
   fHistos->CreateTH2("hTriggerCorrelation", "Correlation selected trigger classes", binlabels.size(), -0.5, binlabels.size() - 0.5, binlabels.size(), -0.5, binlabels.size() - 0.5);
   TH1 *correlationHist = static_cast<TH1 *>(fHistos->FindObject("hTriggerCorrelation"));
   for(decltype(binlabels.size()) ib = 0; ib < binlabels.size(); ib++){
-    correlationHist->GetXaxis()->SetBinLabel(ib+1, binlabels[ib]);
-    correlationHist->GetYaxis()->SetBinLabel(ib+1, binlabels[ib]);
+    correlationHist->GetXaxis()->SetBinLabel(ib+1, binlabels[ib].data());
+    correlationHist->GetYaxis()->SetBinLabel(ib+1, binlabels[ib].data());
   }
 
   CreateUserObjects();
@@ -190,14 +207,15 @@ Bool_t AliAnalysisTaskEmcalTriggerBase::IsEventSelected(){
 
   // Fill histogram with trigger correlation
   // self-correlations included
-  const std::array<const TString, 11> kAbsTriggers = {"MB", "EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7", "DG1", "DG2", "DJ1", "DJ2"};
-  for(int itrg = 0; itrg < kAbsTriggers.size(); itrg++){
-    bool hasTriggerA = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), kAbsTriggers[itrg]) != fSelectedTriggers.end());
+  auto *corrhist = static_cast<TH2 *>(fHistos->GetListOfHistograms()->FindObject("hTriggerCorrelation"));
+  for(int itrg = 0; itrg < corrhist->GetXaxis()->GetNbins(); itrg++){
+    const char *xlabel = corrhist->GetXaxis()->GetBinLabel(itrg+1);
+    bool hasTriggerA = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), xlabel) != fSelectedTriggers.end());
     if(hasTriggerA) {
-      for(int jtrg = 0; jtrg < kAbsTriggers.size(); jtrg++){
-        bool hasTriggerB = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), kAbsTriggers[jtrg]) != fSelectedTriggers.end());
-        if(hasTriggerB)
-          fHistos->FillTH2("hTriggerCorrelation", kAbsTriggers[itrg], kAbsTriggers[jtrg]);
+      for(int jtrg = 0; jtrg < corrhist->GetYaxis()->GetNbins(); jtrg++){
+        const char *ylabel = corrhist->GetYaxis()->GetBinLabel(jtrg+1);
+        bool hasTriggerB = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), ylabel) != fSelectedTriggers.end());
+        if(hasTriggerB) fHistos->FillTH2("hTriggerCorrelation", xlabel, ylabel);
       }
     }
   }
