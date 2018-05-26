@@ -142,7 +142,9 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fGlobalEScale(1.0),
   fEmin(0.2),
   fIsOAStudy(kFALSE),
-  fAnaOmega3Pi(kFALSE)
+  fAnaOmega3Pi(kFALSE),
+  fMinPtPi0(1.),
+  fMinPtChPi(0.2)
 {
   // Constructor
 
@@ -2126,6 +2128,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
 
     AliAODTrack *aodtrack = (AliAODTrack*)fEvent->GetTrack(itrack);
     if(TMath::Abs(aodtrack->Eta()) > 0.8) continue;
+    if(aodtrack->Pt() < fMinPtChPi) continue;
 
     if(!aodtrack->IsHybridGlobalConstrainedGlobal()) continue; //select only hybrid track
     
@@ -2234,6 +2237,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
       }
 
       if(m12 < 0.12 || 0.15 < m12) continue;
+      if(pt12 < fMinPtPi0) continue;
 
       Double_t pi0E = TMath::Sqrt(TMath::Power(pi0Px,2) + TMath::Power(pi0Py,2) + TMath::Power(pi0Pz,2) + TMath::Power(Mpi0,2));
       TLorentzVector *p1pi0 = new TLorentzVector(pi0Px,pi0Py,pi0Pz,pi0E);
