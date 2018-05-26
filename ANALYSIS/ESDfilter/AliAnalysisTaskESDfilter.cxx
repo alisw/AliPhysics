@@ -1981,10 +1981,13 @@ void AliAnalysisTaskESDfilter::ConvertPrimaryVertices(const AliESDEvent& esd)
   fPrimaryVertex->SetName(vtx->GetName());
   fPrimaryVertex->SetTitle(vtx->GetTitle());
   fPrimaryVertex->SetBC(vtx->GetBC());
-  
-  TString vtitle = vtx->GetTitle();
-  if (!vtitle.Contains("VertexerTracks")) 
-    fPrimaryVertex->SetNContributors(vtx->GetNContributors());
+
+  /*
+    // RS: always transfer original NContributors
+    TString vtitle = vtx->GetTitle();
+    if (!vtitle.Contains("VertexerTracks")) fPrimaryVertex->SetNContributors(vtx->GetNContributors());
+  */
+  fPrimaryVertex->SetNContributors(vtx->GetNContributors());
   
   if (fDebug > 0) fPrimaryVertex->Print();  
   

@@ -28,6 +28,8 @@
 
 ClassImp(AliAODVertex)
 
+Bool_t AliAODVertex::fgUseCountVtxTrackContributors = kFALSE;
+
 //______________________________________________________________________________
 AliAODVertex::AliAODVertex() : 
   AliVVertex(),
@@ -305,17 +307,28 @@ Int_t AliAODVertex::GetNContributors() const
   Int_t cont  = 0;
 
   TString vtitle = GetTitle();
-  if (!vtitle.Contains("VertexerTracks") || vtitle.Contains("TracksNoConstraint") || fType==kPileupTracks
-      ) {
+  // treatment of old AODVertex, where fNContributors was not stored in for VertexerTracks
+  if ( (!fNContributors || fgUseCountVtxTrackContributors) &&
+       (vtitle.Contains("VertexerTracks") && fType!=kPileupTracks)) {
+    cont = CountRealContributors();
+    if (vtitle.Contains("VertexerTracksWithConstraint")) cont++;
+  }
+  else {
     cont = fNContributors;
-  } else {
-    for (Int_t iDaug = 0; iDaug < GetNDaughters(); iDaug++) {
-	AliAODTrack* aodT = dynamic_cast<AliAODTrack*>(fDaughters.At(iDaug));
-	if (!aodT) continue;
-	if (aodT->GetUsedForPrimVtxFit()) cont++;
-    } 
-    // the constraint adds another DOF
-    if(vtitle.Contains("VertexerTracksWithConstraint"))cont++;
+  }
+  
+  return cont;
+}
+
+//______________________________________________________________________________
+Int_t AliAODVertex::CountRealContributors() const
+{
+  // count daughter primary tracks
+  Int_t cont  = 0;
+  for (Int_t iDaug = 0; iDaug < GetNDaughters(); iDaug++) {
+    AliAODTrack* aodT = dynamic_cast<AliAODTrack*>(fDaughters.At(iDaug));
+    if (!aodT) continue;
+    if (aodT->GetUsedForPrimVtxFit()) cont++;
   }
   return cont;
 }
