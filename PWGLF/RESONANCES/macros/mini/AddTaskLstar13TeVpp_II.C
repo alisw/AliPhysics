@@ -40,7 +40,7 @@ enum eventMixConfig { kDisabled = -1,
 		     
 };
 
-AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
+AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
 (
  Bool_t      isMC = kFALSE,
  Bool_t      isPP = kTRUE,
