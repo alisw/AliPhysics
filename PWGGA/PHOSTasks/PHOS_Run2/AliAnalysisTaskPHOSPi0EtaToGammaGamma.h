@@ -251,7 +251,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     }
 
     void SetTriggerThreshold(Double_t energy) {fEnergyThreshold = energy;}
-    void SetAnaOmega(Bool_t flag, Double_t MinPtPi0=1.0, Double_t MinPtChPi=0.2){
+    void SetAnaOmega(Bool_t flag, Double_t MinPtPi0, Double_t MinPtChPi){
       fAnaOmega3Pi = flag;
       fMinPtPi0    = MinPtPi0;
       fMinPtChPi   = MinPtChPi;
@@ -460,7 +460,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 55);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 56);
 };
 
 #endif
