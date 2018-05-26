@@ -45,7 +45,7 @@ def scalePtHardHistos(referenceFile):
         qaListNames.append(name)
 
     # Get a list that has the event histograms
-    if "PWGJEQA" in name or "Jet" in name:
+    if "PWGJEQA" in name or "JetPerformance" in name:
         eventList = name
     # Note: In the case of embedding, we assume that we only need the number of accepted events, and that internal event selection
     # is activated, in which case the event count can be read from any task that has the internal event selection applied
@@ -215,7 +215,7 @@ def ScaleAllHistograms(obj, scaleFactor, f, bRemoveOutliers=False):
     obj.Sumw2()
     if bRemoveOutliers:
       name = obj.GetName()
-      if "JESshiftEMCal" in name or "ResponseMatrixEMCal" in name:
+      if "JESshiftEMCal" in name or "ResponseMatrixEMCal" in name or "hNEFVsPtEMCal" in name:
         removeOutliers(obj, 2.)
     obj.Scale(scaleFactor)
     print("TH3 %s was scaled..." % obj.GetName())
@@ -239,7 +239,7 @@ def ScaleAllHistograms(obj, scaleFactor, f, bRemoveOutliers=False):
 
 ###################################################################################
 # Function to remove outliers from a TH3 (i.e. truncate the spectrum), based on projecting to the y-axis
-# It truncates the 3D histogram based on when the 1D projection 5-bin moving average has been above
+# It truncates the 3D histogram based on when the 1D projection 4-bin moving average has been above
 # "limit" for "nBinsThreshold" bins.
 def removeOutliers(hist, limit):
   print "Performing outlier removal on {}".format(hist.GetName())
