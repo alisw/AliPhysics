@@ -132,6 +132,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         EtIsoCellEtaBand          ( TLorentzVector c , Double_t &etIso      , Double_t &etaBand                                 ); // EIsoCone via Cells UE via EtaBand EMCal
   void                         EtIsoClusPhiBand          ( TLorentzVector c , Double_t m02candidate, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
   void                         EtIsoClusEtaBand          ( TLorentzVector c , Double_t m02candidate, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
+  void                         EtIsoClusExtraOrthCones   ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &cones  , Int_t index ); // EIsoCone via Clusters + Track but extrapolated charged UE with orthogonal cones
   void                         PtIsoTrackPhiBand         ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &phiBand              ); // PIsoCone via Track UE via PhiBand TPC
   void                         PtIsoTrackEtaBand         ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &etaBand              ); // PIsoCone via Track UE via EtaBand TPC
   void                         PtIsoTrackOrthCones       ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &cones                ); // PIsoCone via Tracks UE via Orthogonal Cones in Phi
@@ -391,7 +392,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator = ( const AliAnalysisTaskEMCALPhotonIsolation & ); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 25);            // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 26);            // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif
