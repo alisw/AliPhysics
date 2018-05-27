@@ -1,9 +1,10 @@
 /***************************************************************************
-    Modified by himani.bhatt@cern.ch  - last modified on 30/04/2018 
+    Modified by himani.bhatt@cern.ch  - last modified on 27/05/2018 
 
    priyanka.sett@cern.ch - last modified on 27/10/2016
   
  
+
   for L* in pp 13 TeV analysis
 
 
@@ -28,6 +29,7 @@ enum eventCutSet { kDefaultVtx = 0,
 		   kDefaultVtx11,  //=4
 		   kNoPileUpCut, //=5                 
 		   kNoEvtSel, //=6   //No event selection, only INEL events  
+
 		   kSpecial2,//=7   // No Vz cut on vtx, f_vtx = kSpecial2/default_data
 		   kSpecial3 //= 8  // No event selection, INEL events with Vz cut on vtx  kSpecial3/default_MC = f_SL
 };
@@ -49,8 +51,6 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
  Int_t       mixingConfigID = 0,
  Int_t       MultBins = 0,// default for V0_M and MultBins = 2 for RefMult0_8 
  Int_t       customQualityCutsID=1, // for default
- AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,
- AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,
  Float_t     nsigmaPr = 2.0,
  Float_t     nsigmaKa = 2.0,
  Bool_t      enableMonitor = kTRUE,
@@ -60,7 +60,8 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
 
 {
 
-
+  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV;
+  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV;
   UInt_t      triggerMask = AliVEvent::kINT7;
   Int_t       signedPdg = 3124;
   TString     monitorOpt = "NoSIGN";  //Flag for AddMonitorOutput.C e.g."NoSIGN"
@@ -258,8 +259,8 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
   
   //for systematic checks
   {
-    
-    gROOT->LoadMacro("ConfigureLstar13TeVpp_II.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp_II.C");
+    //gROOT->LoadMacro("ConfigureLstar13TeVpp_II.C");
     if (!ConfigureLstar13TeVpp_II(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,  enableMonitor, isMC&IsMcTrueOnly, signedPdg, monitorOpt, useCrossedRows, yaxisVar ,useMixLS)) 
       return 0x0;  
   }
