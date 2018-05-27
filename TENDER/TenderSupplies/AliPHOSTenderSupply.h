@@ -108,7 +108,7 @@ private:
   TString fMCProduction ;                    //Name of MC production
   Int_t fDRN;                                //dummy run number for single particle simulation
  
-  ClassDef(AliPHOSTenderSupply, 9); // PHOS tender task
+  ClassDef(AliPHOSTenderSupply, 8); // PHOS tender task
 };
 
 
