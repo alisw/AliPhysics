@@ -60,6 +60,7 @@ public:
   void SetPrivateOADBBadMap(char * filename){fPrivateOADBBadMap = filename;}
   
   void   InitTender();
+  Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
 
 protected:
   AliPHOSTenderSupply(const AliPHOSTenderSupply&c);
@@ -67,7 +68,6 @@ protected:
   void ProcessAODEvent(TClonesArray * clusters, AliAODCaloCells * cells, TVector3 &vertex) ;
   Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge); 
   Double_t CorrectNonlinearity(Double_t en) ;
-  Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
   Double_t TestCoreLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Double_t TestFullLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Bool_t IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
@@ -108,7 +108,7 @@ private:
   TString fMCProduction ;                    //Name of MC production
   Int_t fDRN;                                //dummy run number for single particle simulation
  
-  ClassDef(AliPHOSTenderSupply, 8); // PHOS tender task
+  ClassDef(AliPHOSTenderSupply, 9); // PHOS tender task
 };
 
 
