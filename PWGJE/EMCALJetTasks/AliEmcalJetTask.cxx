@@ -18,6 +18,8 @@
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TRandom3.h>
+#include <TGrid.h>
+#include <TFile.h>
 
 #include <AliVCluster.h>
 #include <AliVEvent.h>
@@ -71,6 +73,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fTrackEfficiency(1.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
+  fTrackEfficiencyFunction(),
+  fApplyArtificialTrackingEfficiency(kFALSE),
   fLocked(0),
   fFillConstituents(kTRUE),
   fJetsName(),
@@ -107,6 +111,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fTrackEfficiency(1.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
+  fTrackEfficiencyFunction(),
+  fApplyArtificialTrackingEfficiency(kFALSE),
   fLocked(0),
   fFillConstituents(kTRUE),
   fJetsName(),
@@ -244,11 +250,14 @@ Int_t AliEmcalJetTask::FindJets()
     AliDebug(2,Form("Tracks from collection %d: '%s'. Embedded: %i, nTracks: %i", iColl-1, tracks->GetName(), tracks->GetIsEmbedding(), tracks->GetNParticles()));
     AliParticleIterableMomentumContainer itcont = tracks->accepted_momentum();
     for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
-      // artificial inefficiency
-      if (fTrackEfficiency < 1.) {
+      
+      // Apply artificial track inefficiency, if supplied (either constant or pT-dependent)
+      if (fApplyArtificialTrackingEfficiency) {
         if (fTrackEfficiencyOnlyForEmbedding == kFALSE || (fTrackEfficiencyOnlyForEmbedding == kTRUE && tracks->GetIsEmbedding())) {
+          
+          Double_t trackEfficiency = fTrackEfficiencyFunction.Eval(it->first.Pt());
           Double_t rnd = gRandom->Rndm();
-          if (fTrackEfficiency < rnd) {
+          if (trackEfficiency < rnd) {
             AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
             continue;
           }
@@ -372,8 +381,19 @@ Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::Pse
  */
 void AliEmcalJetTask::ExecOnce()
 {
+  
+  // If a constant artificial track efficiency is supplied, create a TF1 that is constant in pT
   if (fTrackEfficiency < 1.) {
-    if (gRandom) delete gRandom;
+    fTrackEfficiencyFunction = TF1("trackEfficiencyFunction", "[0]", 0., fMaxBinPt);
+    fTrackEfficiencyFunction.SetParameter(0, fTrackEfficiency);
+    fApplyArtificialTrackingEfficiency = kTRUE;
+  }
+  
+  // If artificial tracking efficiency is enabled (either constant or pT-depdendent), set up random number generator
+  if (fApplyArtificialTrackingEfficiency) {
+    if (gRandom) {
+      delete gRandom;
+    }
     gRandom = new TRandom3(0);
   }
 
@@ -943,6 +963,43 @@ Bool_t AliEmcalJetTask::IsJetInPhos(Double_t eta, Double_t phi, Double_t r)
       return kTRUE;
   }
   return kFALSE;
+}
+  
+/**
+ * Load the artificial tracking efficiency TF1 from a file into the member fTrackEfficiencyFunction
+ * @param path Path to the file containing the TF1
+ * @param name Name of the TF1
+ */
+void AliEmcalJetTask::LoadTrackEfficiencyFunction(const char* path, const char* name)
+{
+  TString fname(path);
+  if (fname.BeginsWith("alien://")) {
+    TGrid::Connect("alien://");
+  }
+  
+  TFile* file = TFile::Open(path);
+  
+  if (!file || file->IsZombie()) {
+    ::Error("AliEmcalJetTask", "Could not open artificial track efficiency function file");
+    return;
+  }
+  
+  TF1* trackEff = dynamic_cast<TF1*>(file->Get(name));
+  
+  if (trackEff) {
+    ::Info("AliEmcalJetTask::LoadTrackEfficiencyFunction", "Artificial track efficiency function %s loaded from file %s.", name, path);
+  }
+  else {
+    ::Error("AliEmcalJetTask::LoadTrackEfficiencyFunction", "Artificial track efficiency function %s not found in file %s.", name, path);
+    return;
+  }
+  
+  TF1* trackEffClone = static_cast<TF1*>(trackEff->Clone());
+  fTrackEfficiencyFunction = *trackEffClone;
+  fApplyArtificialTrackingEfficiency = kTRUE;
+  
+  file->Close();
+  delete file;
 }
 
 /**
