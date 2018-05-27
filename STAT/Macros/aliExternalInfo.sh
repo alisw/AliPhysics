@@ -7,8 +7,8 @@
 #    mcPeriodQATrending.root    - MC detectorQA+production per period
 #    realDataRunTrending.root   - Real data QA+production per run
 #    realDataPeriodTrending.root- Real data QA+production per period
-# ( source $AliRoot_SRC/STAT/Macros/aliExternalInfo.sh; cacheMCInfo; cacheRealDataInfo )
-
+# ( source $AliRoot_SRC/STAT/Macros/aliExternalInfo.sh; cacheMCInfo;  )
+#  ( source $AliRoot_SRC/STAT/Macros/aliExternalInfo.sh; cacheRealDataInfo )
 # cache MC trending trees and create summary trees with run statistic
 cacheMCInfo(){
     aliroot -n -b -l <<\EOF 2>&1 | tee cacheMC.log
