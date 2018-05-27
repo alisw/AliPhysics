@@ -521,6 +521,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     sUEMethod = "PerpCones";
   else if(fUEMethod==3)
     sUEMethod = "FullTPC";
+  else if(fUEMethod==4)
+    sUEMethod = "ExtraCones";
 
   if(fTPC4Iso)
     sBoundaries = "TPC Acceptance";
@@ -833,7 +835,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  }
         }
 
-	if(fUEMethod==2){
+	if(fUEMethod==2 || fUEMethod==4){
 	  fPerpConesUETracks = new TH2F("hConesUE","UE Estimation with Perpendicular Cones in TPC",200,0.,100.,250,0.,100.);
 	  fPerpConesUETracks->SetXTitle("E_{T}");
 	  fPerpConesUETracks->SetYTitle("#Sigma #it{p}_{T}^{UE}");
@@ -2603,6 +2605,173 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - etaBandclus * (isoConeArea / etaBandArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
   }
 }
+  //__________________________________________________________________________
+void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector c, Double_t m02candidate, Double_t &ptIso, Double_t &cones, Int_t index){
+
+    // Underlying events study with clusters in eta band
+
+  Double_t sumEnergyConeClus = 0.     , sumpTConeCharged = 0.     , sumpTPerpConeTrack = 0.;
+  Double_t etaCand           = c.Eta(), phiCand          = c.Phi();
+  Double_t phiCone1          = phiCand - TMath::PiOver2(); phiCone1 = fmod(phiCone1, TMath::TwoPi());
+  Double_t phiCone2          = phiCand + TMath::PiOver2(); phiCone2 = fmod(phiCone2, TMath::TwoPi());
+
+  if(phiCone1 < 0.)
+    phiCone1 += 2*TMath::Pi();
+
+  Double_t clustTOF = 0., phiClust = 0., etaClust = 0., radius = 0.;
+  Double_t phiMin = 0., phiMax = 0., etaMin = 0., etaMax = 0.;
+
+  if(fPeriod != ""){
+    etaMin = fGeom->GetArm1EtaMin()+0.03;
+    etaMax = fGeom->GetArm1EtaMax()-0.03;
+    phiMin = (fGeom->GetArm1PhiMin())*TMath::DegToRad()+0.03;
+
+    if(fPeriod.Contains("12") || fPeriod.Contains("13"))
+      phiMax = (fGeom->GetEMCALPhiMax()-20.)*TMath::DegToRad()-0.03; // fGeom->GetEMCALPhiMax()-20. = 180. deg (in order not to take the two disabled SM into account in 2012-2013)
+    else
+      phiMax = (fGeom->GetEMCALPhiMax())*TMath::DegToRad()-0.03;
+  }
+  else{
+    phiMin = (4./9.)*TMath::Pi()+0.03;
+    phiMax = TMath::Pi()-0.03;
+    etaMin = -0.67;
+    etaMax = 0.67;
+  }
+
+    // AliParticleContainer *clusters = static_cast<AliParticleContainer*>(fParticleCollArray.At(1));
+  AliClusterContainer *clusters = GetClusterContainer(0);
+  Int_t localIndex = 0;
+  TLorentzVector nClust(0., 0., 0., 0.);
+
+  for(auto it : clusters->accepted()){ // Check the position of other clusters with respect to the trigger cluster
+
+    AliVCluster* coi = static_cast<AliVCluster*>(it);
+    localIndex = coi->GetID();
+
+    if(localIndex == index)
+      continue;
+
+    phiClust = etaClust = clustTOF = 0.;
+    coi->GetMomentum(nClust,fVertex);
+    phiClust = nClust.Phi();
+    etaClust = nClust.Eta();
+
+    if(fExtraIsoCuts){
+      if((coi->GetNCells() < 2))
+        continue;
+      if((coi->GetDistanceToBadChannel() < 2))
+        continue;
+    }
+
+    clustTOF = coi->GetTOF()*1e9;
+
+    if(!fIsMC){
+      if(clustTOF < -30. || clustTOF > 30.)
+        continue;
+    }
+
+    if(fTMClusterInConeRejected){
+      if(ClustTrackMatching(coi, kFALSE))
+        continue;
+    }
+
+    if(nClust.E() < 0.3)
+      continue;
+
+    if((phiClust < phiMax) && (phiClust > phiMin) && (etaClust < etaMax) && (etaClust > etaMin)){
+      radius = TMath::Sqrt(TMath::Power(phiClust-phiCand,2)+TMath::Power(etaClust-etaCand,2)); // Define the radius between the leading cluster and the considered cluster
+      if(radius <= fIsoConeRadius){                                                            // The cluster is inside the isolation cone -> add the cluster pT to pT_iso
+	sumEnergyConeClus += nClust.Pt();
+	if(fQA && fWho != 2){
+	  fTestEtaPhiCone->Fill(etaCand,phiCand);
+	  fTestIndex->Fill(index,localIndex);
+	  fTestLocalIndexE->Fill(nClust.Pt(),localIndex);
+	}
+      }
+    }
+  } // End of clusters loop
+
+  AliTrackContainer *tracksAna = GetTrackContainer("filterTracksAna");
+  if(!tracksAna){
+    AliError(Form("Could not retrieve tracks !"));
+    return;
+  }
+
+  if(tracksAna->GetTrackFilterType() != AliEmcalTrackSelection::kHybridTracks)
+    AliError(Form("NOT Hybrid Tracks"));
+
+  tracksAna->ResetCurrentID();
+
+  AliVTrack *eTrack = 0x0;
+  Double_t phiTrack = 0., etaTrack = 0., distToCone1 = 0., distToCone2 = 0.;
+  Int_t iTracksCone = 0;
+  AliAODTrack *aodEtrack = 0x0;
+
+  while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
+    if(!eTrack){
+      AliError(Form("No tracks in collection"));
+      continue;
+    }
+
+    if(!fIsEsd){
+      aodEtrack = static_cast<AliAODTrack*>(eTrack);
+      if(!(aodEtrack->IsHybridGlobalConstrainedGlobal()))
+        continue;
+    }
+
+    if((eTrack->Pt()) < 0.2)
+      continue;
+
+    if((eTrack->GetStatus() & AliAODTrack::kITSrefit) != AliAODTrack::kITSrefit)
+      continue;
+
+    if(!fIsEsd){
+      Double_t frac = 0.;
+      Float_t ncls  = Float_t(aodEtrack->GetTPCncls ());
+      Float_t nclsS = Float_t(aodEtrack->GetTPCnclsS());
+      if(ncls> 0) frac =  nclsS / ncls ;
+
+      if(frac > 0.4)
+        continue;
+    }
+
+    phiTrack = eTrack->Phi();
+    etaTrack = eTrack->Eta();
+    radius   = TMath::Sqrt(TMath::Power(phiTrack - phiCand, 2) + TMath::Power(etaTrack - etaCand, 2));
+
+    if(radius < fIsoConeRadius){ // The track is inside the isolation cone -> add the track pT to pT_iso
+      sumpTConeCharged += eTrack->Pt();
+      if(fIsMC){
+        int tracklabel = TMath::Abs(eTrack->GetLabel());
+        AliAODMCParticle *pMC = static_cast<AliAODMCParticle*>(fAODMCParticles->At(tracklabel));
+        if(fWho==1)
+          fTrackResolutionPtMC->Fill(eTrack->Pt(), pMC->Pt() - eTrack->Pt());
+      }
+      iTracksCone ++;
+    }
+    else{
+      distToCone1 = TMath::Sqrt(TMath::Power(etaTrack - etaCand, 2) + TMath::Power(phiTrack - phiCone1, 2));
+      distToCone2 = TMath::Sqrt(TMath::Power(etaTrack - etaCand, 2) + TMath::Power(phiTrack - phiCone2, 2));
+
+      if((distToCone1 < fIsoConeRadius) || (distToCone2 < fIsoConeRadius)) // The track is inside one of the two orthogonal cones -> add the track pT to pT_UE
+        sumpTPerpConeTrack += eTrack->Pt();
+    }
+  }
+
+  ptIso = sumEnergyConeClus + sumpTConeCharged;
+  cones = 1.369*sumpTPerpConeTrack; // Scaling charged-only UE to neutral + charged UE
+
+  Double_t isoConeArea   = 0.; // Cluster (eta, phi)-dependent cone area
+  Double_t perpConesArea = 0.; // Cluster (eta, phi)-dependent perpendicular cones area
+
+  if(fWho == 2 && fAreasPerEvent){
+    ComputeConeAreaInEMCal(c.Eta(), c.Phi(), isoConeArea);
+    perpConesArea         = 2.*isoConeArea;
+
+    fPerpConesUETracks->Fill(c.Pt(), sumpTPerpConeTrack/perpConesArea);
+    fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - cones * (isoConeArea / perpConesArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
+  }
+}
 
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Double_t m02candidate, Double_t &ptIso, Double_t &phiBandtrack){
@@ -2827,7 +2996,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
   }
 }
 
-
   //__________________________________________________________________________
 void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, Double_t m02candidate, Double_t &ptIso, Double_t &cones){
 
@@ -2854,7 +3022,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
 
   AliVTrack *eTrack = 0x0;
   AliAODTrack *aodEtrack = 0x0;
-  Double_t phiTrack = 0., etaTrack = 0., dist2Clust = 0., dist2Cone1 = 0., dist2Cone2 = 0.;
+  Double_t phiTrack = 0., etaTrack = 0., distToClust = 0., distToCone1 = 0., distToCone2 = 0.;
   Int_t iTracksCone = 0;
 
   while((eTrack = static_cast<AliVTrack*>(tracksAna->GetNextAcceptParticle()))){
@@ -2886,9 +3054,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
 
     phiTrack = eTrack->Phi();
     etaTrack = eTrack->Eta();
-    dist2Clust = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiClus, 2));
+    distToClust = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiClus, 2));
 
-    if(dist2Clust<fIsoConeRadius){ // The track is inside the isolation cone -> add the track pT to pT_iso
+    if(distToClust<fIsoConeRadius){ // The track is inside the isolation cone -> add the track pT to pT_iso
       sumpTConeCharged += eTrack->Pt();
       if(fIsMC){
         int tracklabel = TMath::Abs(eTrack->GetLabel());
@@ -2901,11 +3069,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
 
     else{
         // Distances from the centres of the two Orthogonal Cones
-      dist2Cone1 = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiCone1, 2));
-      dist2Cone2 = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiCone2, 2));
+      distToCone1 = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiCone1, 2));
+      distToCone2 = TMath::Sqrt(TMath::Power(etaTrack-etaClus, 2)+TMath::Power(phiTrack-phiCone2, 2));
 
         // The track is inside one of the two orthogonal cones -> add the track pT to pT_UE
-      if((dist2Cone1 < fIsoConeRadius) || (dist2Cone2 < fIsoConeRadius))
+      if((distToCone1 < fIsoConeRadius) || (distToCone2 < fIsoConeRadius))
         sumpTPerpConeTrack += eTrack->Pt();
     }
   }
@@ -2927,9 +3095,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
     fPerpConesUETracks->Fill(c.Pt(), cones/perpConesArea);
     fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - cones * (isoConeArea / perpConesArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
   }
-
-
-
 }
 
   //__________________________________________________________________________
@@ -3456,13 +3621,19 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
       switch(fUEMethod)
     {
       case 0: // Phi band
-        EtIsoClusPhiBand(vecCOI, m02COI, isolation, ue,index);
+        EtIsoClusPhiBand(vecCOI, m02COI, isolation, ue, index);
 
         ue = ue * (isoConeArea / phiBandArea); // Normalisation of UE wrt UE area
         break;
 
       case 1: // Eta band
-        EtIsoClusEtaBand(vecCOI, m02COI, isolation, ue,index);
+        EtIsoClusEtaBand(vecCOI, m02COI, isolation, ue, index);
+
+        ue = ue * (isoConeArea / etaBandArea); // Normalisation of UE wrt UE area
+        break;
+
+      case 4: // Extrapolated cones
+	EtIsoClusExtraOrthCones(vecCOI, m02COI, isolation, ue, index);
 
         ue = ue * (isoConeArea / etaBandArea); // Normalisation of UE wrt UE area
         break;
@@ -3472,7 +3643,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
 	if(!fAreasPerEvent)
 	  fPtvsM02vsSum->Fill(vecCOI.Pt(),m02COI,isolation);
 
-        isolation=isolation-ue; // UE subtraction
+	if(fAnalysispPb)
+	  isolation=isolation-ue; // UE subtraction
 
 	if(!fAreasPerEvent)
 	  fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
@@ -3536,7 +3708,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
 	if(!fAreasPerEvent)
 	  fPtvsM02vsSum->Fill(vecCOI.Pt(),m02COI,isolation);
 
-        isolation=isolation-ue; // UE subtraction
+	if(fAnalysispPb)
+	  isolation=isolation-ue; // UE subtraction
 
 	if(!fAreasPerEvent)
 	  fPtvsM02vsSumUE->Fill(vecCOI.Pt(),m02COI,isolation);
@@ -4217,6 +4390,24 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE, Ali
 
           break;
         }
+
+        case 4:{ // Extrapolated cones
+          double etacone1 = eta;
+          double etacone2 = eta;
+          double phicone1 = phi - TMath::PiOver2();
+          double phicone2 = phi + TMath::PiOver2();
+
+          if(phicone1 < 0.)
+            phicone1 += 2*TMath::Pi();
+
+          if(TMath::Sqrt(TMath::Power(etap-etacone1,2)+TMath::Power(phip-phicone1,2)) < fIsoConeRadius ||
+             TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2)) < fIsoConeRadius)
+            sumUE += mcpp->Pt();
+	  
+	  sumUE *= 1.369; // Neutral + charged extrapolation
+
+          break;
+        }
       }
     }
   }
@@ -4305,6 +4496,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::CalculateUEDensityMC(Double_t etaCand,
 
 	sumUE = sumUE * (isoConeArea / etaBandArea);
 	break;
+      }
+
+      case 4:{
+	if(fWho == 2 && fAreasPerEvent){
+	  ComputeConeAreaInEMCal(etaCand, phiCand, isoConeArea);
+	  perpConesArea = 2.*isoConeArea;
+	}
+
+        sumUE = sumUE * (isoConeArea / perpConesArea);
+        break;
       }
     }
   }
