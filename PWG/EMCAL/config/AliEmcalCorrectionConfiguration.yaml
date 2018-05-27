@@ -71,6 +71,12 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     randomizeTCardInducedEnergy: true               # Randomize the energy fraction induced by the TCard
     inducedTCardMinimumCellEnergy: 0.01             # Minimum cell energy induced by the TCard
     inducedTCardMaximum: 100                        # Maximum energy induced by the TCard
+    # Note on using the following section:
+    # Each setting can be enabled or disabled. If disabled, the settings will _not_ be applied
+    # The values are formatted as a map, with the keys as either "all", correspoding to all SMs
+    # or the super module number. The format of the value is specified in the comment after the field.
+    #
+    # NOTE: If you specify "all", it will take precedence over any individual SM values, which will be ignored.
     inducedEnergyLossConstant:                      # Constant energy lost by max energy cell in one of T-Card cells
         enabled: false                              # Enable setting these values
         values: {"all" : [0.02, 0.02, 0.02, 0]}     # Values are energy lost in [ upper/lower cell in same column, upper/lower cell in left or right, left or right cell in same row, 2nd row upper/lower cells]
