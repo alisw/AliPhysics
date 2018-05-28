@@ -384,6 +384,11 @@ void AliEmcalJetTask::ExecOnce()
   
   // If a constant artificial track efficiency is supplied, create a TF1 that is constant in pT
   if (fTrackEfficiency < 1.) {
+    // If a TF1 was already loaded, throw an error
+    if (fApplyArtificialTrackingEfficiency) {
+      AliError(Form("%s: fTrackEfficiencyFunction was already loaded! Do not apply multiple artificial track efficiencies.", GetName()));
+    }
+    
     fTrackEfficiencyFunction = TF1("trackEfficiencyFunction", "[0]", 0., fMaxBinPt);
     fTrackEfficiencyFunction.SetParameter(0, fTrackEfficiency);
     fApplyArtificialTrackingEfficiency = kTRUE;
@@ -970,27 +975,27 @@ Bool_t AliEmcalJetTask::IsJetInPhos(Double_t eta, Double_t phi, Double_t r)
  * @param path Path to the file containing the TF1
  * @param name Name of the TF1
  */
-void AliEmcalJetTask::LoadTrackEfficiencyFunction(const char* path, const char* name)
+void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, const std::string & name)
 {
   TString fname(path);
   if (fname.BeginsWith("alien://")) {
     TGrid::Connect("alien://");
   }
   
-  TFile* file = TFile::Open(path);
+  TFile* file = TFile::Open(path.data());
   
   if (!file || file->IsZombie()) {
-    ::Error("AliEmcalJetTask", "Could not open artificial track efficiency function file");
+    AliErrorStream() << "Could not open artificial track efficiency function file\n";
     return;
   }
   
-  TF1* trackEff = dynamic_cast<TF1*>(file->Get(name));
+  TF1* trackEff = dynamic_cast<TF1*>(file->Get(name.data()));
   
   if (trackEff) {
-    ::Info("AliEmcalJetTask::LoadTrackEfficiencyFunction", "Artificial track efficiency function %s loaded from file %s.", name, path);
+    AliInfoStream() << Form("Artificial track efficiency function %s loaded from file %s.", name.data(), path.data()) << "\n";
   }
   else {
-    ::Error("AliEmcalJetTask::LoadTrackEfficiencyFunction", "Artificial track efficiency function %s not found in file %s.", name, path);
+    AliErrorStream() << Form("Artificial track efficiency function %s not found in file %s.", name.data(), path.data()) << "\n";
     return;
   }
   

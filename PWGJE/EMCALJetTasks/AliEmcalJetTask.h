@@ -116,7 +116,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
 
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   
-  void                   LoadTrackEfficiencyFunction(const char* path, const char* name);
+  void                   LoadTrackEfficiencyFunction(const std::string & path, const std::string & name);
 
   Bool_t                 IsLocked() const;
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
