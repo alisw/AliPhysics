@@ -485,19 +485,19 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   Float_t phimax   = GetHistogramRangesAndBinning()->GetHistoPhiMax();
   Float_t phimin   = GetHistogramRangesAndBinning()->GetHistoPhiMin();
 
-  if((fIsoMethod == 0 || fIsoMethod == 1 || fIsoMethod==3) && fTPC4Iso){
+  if((fIsoMethod == 0 || fIsoMethod == 1 || fIsoMethod == 3) && fTPC4Iso){
     cout<<"Error: Iso_Methods with CELLS and CLUSTERS work only within EMCal "<<endl;
     cout<<"Please Set Iso_Method and TPC4Iso Accordingly!!"<<endl;
     return;
   }
 
-  if((fIsoMethod == 0 || fIsoMethod == 1 || fIsoMethod==3) && fUEMethod> 1){
+  if((fIsoMethod == 0 || fIsoMethod == 1 || fIsoMethod == 3) && (fUEMethod > 1 && fUEMethod < 4)){
     cout<<"Error: UE_Methods with CELLS and CLUSTERS work only within EMCal"<<endl;
     cout<<"Please Set Iso_Method and UE_Method Accordingly!!"<<endl;
     return;
   }
 
-  if(fUEMethod>1 && !fTPC4Iso){
+  if((fUEMethod > 1 && fUEMethod < 4) && !fTPC4Iso){
     cout<<"Please set UE Method Accordingly to the Use of the TPC for the Analysis"<<endl;
     return;
   }
