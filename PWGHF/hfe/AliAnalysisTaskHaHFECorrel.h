@@ -452,6 +452,8 @@ public:
     TH3F                  *fElecLPTrigger;          //!
     TH2F                  *fElecLPTriggerLS;         //!
     TH2F                  *fElecLPTriggerULS;        //!
+    TH2F                  *fElecLPTriggerLSNoP;         //!
+    TH2F                  *fElecLPTriggerULSNoP;        //!
     TH2F                  *fHadContLPTrigger;       //!
     TH2F                  *fLPElecTrigger;          //!
     TH2F                  *fLPNonElecTrigger;       //!
