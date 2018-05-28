@@ -8,15 +8,15 @@
       integer ngridx,ngridq,jx,jq
       CHARACTER*80 LINE
       dimension pdf(-6:6)
-      integer ng(2),init,set,i,j,k,l,nset,iset
+      integer ng(9),init,set,i,j,k,l,nset,iset
       double precision fgrid(118,99,-5:3,0:26),grid(217)
       !double precision fgrid(118,99,-5:3,0:0),grid(217)
 !      common/fgridc/fgrid
       double precision upv,dnv,usea,dsea,str,chm,bot,glu
-      double precision arg(2)
+      double precision arg(9)
       double precision lha_dfint
       double precision lha_gjr08
-      data ng /118,99/
+      data ng /118,99,0,0,0,0,0,0,0/
 
       data grid &
      & /1d-9,1.25d-9,1.6d-9,2d-9,2.5d-9,3.16d-9,4d-9,5d-9,6.3d-9,8d-9, &
@@ -138,7 +138,7 @@
       arg(1) = 1d-9
       arg(2) = qalfa*qalfa
 !      imem = 0
-      alfas = lha_dfint(2,arg,ng,grid,fgrid(1,1,3,imem))
+      alfas = lha_dfint(9,arg,ng,grid,fgrid(1,1,3,imem))
       return
 !
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -159,14 +159,14 @@
 
       double precision function LHA_GJR08(x,Q2,grid,fgrid,ng,n,set)
       implicit none
-      integer ng(2),n,set
-      double precision grid(217),arg(2),x,Q2
+      integer ng(9),n,set
+      double precision grid(217),arg(9),x,Q2
       double precision lha_dfint
       double precision fgrid(118,99,-5:3,0:26)
 !      common/fgridc/fgrid
       arg(1) = x
       arg(2) = Q2
-       LHA_GJR08 = lha_dfint(2,arg,ng,grid,fgrid(1,1,n,set))
+       LHA_GJR08 = lha_dfint(9,arg,ng,grid,fgrid(1,1,n,set))
       end
       
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

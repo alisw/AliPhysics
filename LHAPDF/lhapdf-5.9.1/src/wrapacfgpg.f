@@ -542,7 +542,7 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       SUBROUTINE AURGAM(I,NDRV,X,S,ANS) 
       DIMENSION F1(32),F2(32),F3(32) 
-      DIMENSION AF(3),AS(3) 
+      DIMENSION AF(10),AS(10) 
       DIMENSION CALCO(8,20,32) 
       COMMON/W5051I7/CALCO 
       DATA DELTA/0.8000E-01/ 
@@ -572,7 +572,7 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       SUBROUTINE AFGINT(I,NDRV,X,S,ANS) 
       DIMENSION F1(32),F2(32),F3(32) 
-      DIMENSION AF(3),AS(3) 
+      DIMENSION AF(10),AS(10) 
       DIMENSION CALCO(8,20,32) 
       COMMON/W5051IA/CALCO 
       DATA DELTA/0.8000E-01/ 
@@ -602,7 +602,7 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       SUBROUTINE AFGIN2(I,NDRV,X,S,ANS) 
       DIMENSION F1(32),F2(32),F3(32) 
-      DIMENSION AF(3),AS(3) 
+      DIMENSION AF(10),AS(10) 
       DIMENSION CELCO(8,20,32) 
       COMMON/W5051IB/CELCO 
       DATA DELTA/0.8000E-01/ 
@@ -651,7 +651,7 @@
        double precision                                                 &
      &                XI(32),WI(32),XX(33)                              
        COMMON/W5051I9/XI,WI,XX,NTERMS 
-       DIMENSION A(4),B(4) 
+       DIMENSION A(10),B(10) 
        N=4 
        EPS=1.E-7 
        XAM=XX(1)-EPS 

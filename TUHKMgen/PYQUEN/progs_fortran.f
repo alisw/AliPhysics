@@ -839,11 +839,11 @@ c$$$
 c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$
       SUBROUTINE GGSHAD(INUCL,X,Q2,B,RES,TAF)
       IMPLICIT NONE
-      DOUBLE PRECISION TA(31,4),IMPAR(31),ANUCL(4)
+      DOUBLE PRECISION TA(31,4),IMPAR(100),ANUCL(4)
       DOUBLE PRECISION XB(36),Q2V(13)
       DOUBLE PRECISION XMAX,XMAXX,Q2MIN,Q2MAX,BMAX
       DOUBLE PRECISION G(36,13,4),LQ(36,13,4)
-      DOUBLE PRECISION TATMP(31),SHAD(2)
+      DOUBLE PRECISION TATMP(100),SHAD(2)
       DOUBLE PRECISION C(100),D(100),E(100)
       DOUBLE PRECISION X,Q2,B
       DOUBLE PRECISION RES(2)
@@ -864,7 +864,14 @@ c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$$$c$
       DATA ANUCL/40.,110.,197.,206./
       DATA IMPAR
      >     /0.,0.5,1.,1.5,2.,2.5,3.,3.5,4.,4.5,5.,5.5,6.,6.5,7.,7.5,8.,
-     >     8.5,9.,9.5,10.,10.5,11.,11.5,12.,12.5,13.,13.5,14.,14.5,15./
+     >     8.5,9.,9.5,10.,10.5,11.,11.5,12.,12.5,13.,13.5,14.,14.5,15.,
+     >     0,0,0,0,0,0,0,0,0,
+     >     0,0,0,0,0,0,0,0,0,0,
+     >     0,0,0,0,0,0,0,0,0,0,
+     >     0,0,0,0,0,0,0,0,0,0,
+     >     0,0,0,0,0,0,0,0,0,0,
+     >     0,0,0,0,0,0,0,0,0,0,
+     >     0,0,0,0,0,0,0,0,0,0/
       DATA TA
      >     /0.0291662,0.0288636,0.0279354,0.0263044,0.0238341,0.0203565,
      >     0.0158333,0.0107343,0.00617758,0.00307859,0.00139738,
@@ -1574,9 +1581,9 @@ C     END IF
 
       DIMENSION SHAD(2)
       DIMENSION G(36,13,4),LQ(36,13,4)
-      DIMENSION XB(36),Q2V(13)
-      DIMENSION GQTMP(13),LQQTMP(13)
-      DIMENSION GXTMP(36),LQXTMP(36)
+      DIMENSION XB(100),Q2V(100)
+      DIMENSION GQTMP(100),LQQTMP(100)
+      DIMENSION GXTMP(100),LQXTMP(100)
       DIMENSION C(100),D(100),E(100)
 
       PARAMETER(INMAX=13,IMMAX=36)
