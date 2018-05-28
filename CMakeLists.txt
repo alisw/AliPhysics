@@ -33,7 +33,7 @@ foreach(p CMP0005  # Properly escape preprocessor definitions (v2.6, v3.0.2)
           CMP0025  # Compiler id for Apple Clang is now AppleClang (v3.0)
           CMP0042  # MACOSX_RPATH is enabled by default (v3.0)
           CMP0053  # Simplify variable reference and escape sequence evaluation (v3.1.3)
-          CMP0068
+          CMP0068  # RPATH settings on macOS do not affect install_name (v3.9 and newer)
        )
 if(POLICY ${p})
     cmake_policy(SET ${p} NEW)
