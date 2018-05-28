@@ -65,15 +65,15 @@ public:
     virtual void   Terminate(Option_t *);
     
     //******************** ANALYSIS
-    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t mult);
+    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t mult, Bool_t &EvContTP, Bool_t &EvContNTP);
     void FindPhotonicPartner(Int_t iTracks, AliVTrack* track,  const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Int_t &LSPartner, Int_t&ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t &trueULSPartner, Bool_t &iHsPhotonic);
     void CorrelateElectron(TObjArray* RedTracksHFE);
 
     void CorrelateLP(AliVTrack* LPtrack,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], TObjArray* RedTracksHFE);
-    void CorrelateLPMixedEvent(AliVTrack* LPtrack, Float_t mult, Float_t zVtx, Float_t maxPt);
+    void CorrelateLPMixedEvent(AliVTrack* LPtrack, Float_t mult, Float_t zVtx, Float_t maxPt, Bool_t EvContTP, Bool_t EvContNTP);
     
     void CorrelateHadron(TObjArray* RedTracksHFE,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Float_t mult, Float_t maxPt);
-    void CorrelateHadronMixedEvent(Float_t mult, const AliVVertex* zVtx, Float_t maxPt, Int_t nMother, Int_t listMother[]);
+    void CorrelateHadronMixedEvent(Float_t mult, const AliVVertex* zVtx, Float_t maxPt, Int_t nMother, Int_t listMother[], Bool_t EvContTP, Bool_t EvContNTP);
 
     void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Double_t *NonElecIsTriggerWeight, Int_t NumElectronsInEvent); 
 
@@ -124,6 +124,12 @@ public:
     void SetTRDQA(Bool_t TRDQA) {fTRDQA=TRDQA;};
     void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
     void SetPtMaxEvent(Double_t PtMax) {fMaxPtEvent=PtMax;};
+
+
+    void SetEtaMax(Double_t EtaMax) {
+      fMaxElectronEta = TMath::Abs(EtaMax);
+      fMinElectronEta = -TMath::Abs(EtaMax);
+    };
 
     void SetTPCnCut(Int_t TPCnCut) {fTPCnCut = TPCnCut;};
     void SetTPCnCutdEdx(Int_t TPCnCutdEdx) {fTPCndEdxCut = TPCnCutdEdx;};
@@ -322,6 +328,7 @@ public:
 
     THnSparse             *fCheckNHadronScaling;    //!
     THnSparse             *fCheckNPhotHadScaling;  //!
+    TH3F                  *fCheckTaggedEvent;       //!
 
     TH2F                  *fHadContPvsPt;           //!
     TH3F                  *fHadContEtaPhiPt;        //!
