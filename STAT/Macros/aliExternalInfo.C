@@ -18,7 +18,10 @@
 /// ## Example usage
 /// ###   Load library and define some example variables
 /*!
-    .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C
+     AliDrawStyle::SetDefaults();
+     AliDrawStyle::ApplyStyle("figTemplate");
+
+    .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C+
     // define some example selection and copy past the code below
     TString  period="LHC15o", pass="pass1", runSelection="QA.TPC.meanTPCncl>0", varSelection="run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP";
     TString source="Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT;QA.EVS";
@@ -46,7 +49,7 @@ TLatex latex;
 /*!
  * ### Example usage:
 \code
-    .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C
+    .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C+
     drawLogbook("LHC15o","pass1","QA.TPC.meanTPCncl>0","runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:MonALISA.RCT.tpc_value");
     drawLogbook("LHC10h","pass2","totalEventsPhysics>1000&&totalNumberOfFilesMigrated>20","runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:MonALISA.RCT.tpc_value");
     drawLogbook("LHC11h","pass2","totalEventsPhysics>1000&&totalNumberOfFilesMigrated>20","runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:MonALISA.RCT.tpc_value");
@@ -92,7 +95,7 @@ void drawLogbook(TString period, TString pass,TString runSelection="", TString v
 /*!
  * ## Example usage:
  \code
-   .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C
+   .L $AliRoot_SRC/STAT/Macros/aliExternalInfo.C+
   drawLogbookMultiExpr("LHC15o","pass1", "totalNumberOfFilesMigrated>2000", "runDuration;totalEventsPhysics/1000;totalNumberOfFilesMigrated:run");
   drawLogbookMultiExpr("LHC15o","pass1", "totalNumberOfFilesMigrated>2000&&QA.TPC.meanMIP>40", "runDuration;totalEventsPhysics/1000;totalNumberOfFilesMigrated:run");
 \endcode
@@ -174,6 +177,8 @@ void CacheTestMCProductions(TString dataType, const char *fileList=NULL){
     delete tree;
   }
   for (Int_t iPeriod=0; iPeriod<periodList->GetEntriesFast(); iPeriod++){
+    TObjString * pName= (TObjString*)periodList->At(iPeriod);
+    if (pName==NULL) continue;
     TTree* tree = info.GetTree(dataType.Data(),periodList->At(iPeriod)->GetName(),"passMC");
     if (tree){
       Int_t entries=tree->Draw("run","1","goff");
@@ -220,6 +225,8 @@ void CacheTrendingProductions(TString dataType){
   delete tree;
   //
   for (Int_t iPeriod=0; iPeriod<periodList->GetEntriesFast(); iPeriod++) {
+    TObjString * pName= (TObjString*)idList->At(iPeriod);
+    if (pName==NULL) continue;
     TTree* treeP = info.GetTreeProdCycleByID(idList->At(iPeriod)->GetName());
     if (treeP==NULL) continue;
     TLeaf *leafOutput = treeP->GetLeaf("outputdir");
@@ -268,5 +275,8 @@ void CheckProductions(){
   treeRaw->SetAlias("isTRD","type==\"QA.TRD\"");
   // black list for production
   treeRaw->SetAlias("isBlack","strstr(pass,\"clean\")!=0||strstr(pass,\"rec\")!=0||strstr(pass,\"its\")!=0||strstr(pass,\"cpass\")!=0||strstr(pass,\"vpass\")!=0||strstr(pass,\"muon\")!=0||strstr(pass,\"cosmic\")!=0||strstr(pass,\"align\")!=0||strstr(pass,\"FAST\")!=0||strstr(pass,\"scan\")!=0||strstr(pass,\"test\")!=0");
+
+  /// export production in json format
+  AliTreePlayer::selectWhatWhereOrderBy(treeRaw,"period:pass:type:nRuns:nRunsProd:runList","nRuns>0","",0,1000,"json","rawProduction.json");
 
 }
