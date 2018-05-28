@@ -96,8 +96,8 @@ void AliExternalInfo::ReadConfig( TString configLocation, Int_t verbose){
       ::Error("AliExternalInfo::ReadConfig", TString::Format("Could not find config file '%s'", configFileName.Data()));
       const TString defaultConfigFileName=gSystem->ExpandPathName(fgkDefaultConfig);
       if (defaultConfigFileName!=configFileName) {
-	::Error("AliExternalInfo::ReadConfig", "Using default config file instead");
-	configFileName=defaultConfigFileName;
+	      ::Error("AliExternalInfo::ReadConfig", "Using default config file instead");
+	      configFileName=defaultConfigFileName;
       }
     }
     
@@ -367,7 +367,7 @@ Bool_t AliExternalInfo::Cache(TString type, TString period, TString pass){
         if (fVerbose>1) ::Info("AliExternalInfo::Cache", "Successfully read in tree");
       }
       else {
-        ::Error("AliExternalInfo::Cache", "-- Error while reading tree");
+        ::Error("AliExternalInfo::Cache", "Error while reading tree");
         return kFALSE;
       }
 
@@ -476,8 +476,9 @@ TTree* AliExternalInfo::GetTree(TString type, TString period, TString pass, Int_
     if (fVerbose>1) ::Info("AliExternalInfo::GetTree", TString::Format("Successfully read %s/%s",internalFilename.Data(), tree->GetName()));
     if (buildIndex==1) BuildIndex(tree, type);
   } else {
-    ::Error("AliExternalInfo::GetTree", "Error while reading tree: ");
+    //::Error("AliExternalInfo::GetTree", "Error while reading tree: ");
     ::Error("AliExternalInfo::GetTree", TString::Format("ERROR READING: %s", treeName.Data()));
+    delete treefile;
   }
 
   const TString cacheSize=fConfigMap[type + ".CacheSize"];
@@ -1003,7 +1004,7 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
    Bool_t downloadNeeded = IsDownloadNeeded(fLocalStorageDirectory+TString::Format("/dumptree_RD.root"),TString::Format("QA.TPC"));     //check if download is needed
    if(!downloadNeeded){
         outfile = TFile::Open(fLocalStorageDirectory+TString::Format("%s","/dumptree_RD.root"),"UPDATE");
-        if(outfile->GetListOfKeys()->Contains("dumptree_RD")){
+        if (outfile!=NULL) if(outfile->GetListOfKeys()->Contains("dumptree_RD")){
 	  ::Info("AliExternalInfo::GetTreeAliVersRD", "-- dumptree_RD.root found locally and validated--> Not caching");
            return((TTree*)outfile->Get("dumptree_RD"));
         } 
@@ -1054,7 +1055,12 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
         ::Error("AliExternalInfo::GetTreeAliVersRD","GetTreeProdCycleByID(%d) returned bad tree",id);
         continue;
       }
-      if (tree->GetBranch("app_aliphysics")==NULL) continue;
+      if (tree->GetBranch("app_aliphysics")==NULL) {
+        TFile *ftree = ( tree->GetBranch("RunNo")!=NULL) ? tree->GetBranch("RunNo")->GetFile():NULL;
+        delete tree;
+        delete ftree;
+        continue;
+      }
       tree->SetBranchAddress("app_aliphysics",&paliphysics);      // set prod info branch addresses
       tree->SetBranchAddress("app_aliroot",&paliroot);
       tree->SetBranchAddress("outputdir",&poutputdir);
@@ -1102,15 +1108,21 @@ TTree*  AliExternalInfo::GetTreeAliVersRD(){
       broutputpath->Fill();
       brconsist->Fill();
       brrunlist->Fill();
-      
+      TFile *ftree = ( tree->GetBranch("RunNo")!=NULL) ? tree->GetBranch("RunNo")->GetFile():NULL;
       delete tree;
+      if (ftree!=NULL) {
+        delete ftree;  /// delete tree together with file
+      }else{
+        ::Error("AliExternalInfo::GetTreeAliVersRD","Invalif file");
+      }
+
     }
     outfile->cd();
     dumptree->Write("dumptree_RD");
-
+    delete dumptree;
     delete outfile;
-    return dumptree; 
-  }
+    return GetTreeAliVersRD();
+}
   
   
 TTree*  AliExternalInfo::GetTreeAliVersMC(){
@@ -1124,9 +1136,11 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    Bool_t downloadNeeded = IsDownloadNeeded(fLocalStorageDirectory+TString::Format("/dumptree_MC.root"),TString::Format("QA.TPC"));     //check if download is needed
    if(!downloadNeeded){
         outfile = TFile::Open(fLocalStorageDirectory+TString::Format("%s","/dumptree_MC.root"),"UPDATE");
-        if(outfile->GetListOfKeys()->Contains("dumptree_MC")){
-	  ::Info(" AliExternalInfo::GetTreeAliVersMC", "-- dumptree_MC.root found locally and validated--> Not caching");
-           return((TTree*)outfile->Get("dumptree_MC"));
+        if (!outfile){
+          ::Error("AliExternalInfo::GetTreeAliVersMC","File dumptree_MC.root not available or corrupted. Recreating");
+        }else {
+	        ::Info(" AliExternalInfo::GetTreeAliVersMC", "-- dumptree_MC.root found locally and validated--> Not caching");
+	        return((TTree*)outfile->Get("dumptree_MC"));
         } 
     } 
     
@@ -1165,7 +1179,7 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
    Int_t entries=dumptree->GetEntries();  
    for (Int_t i=0; i<entries; i++){           //loop overall MC production
      dumptree->GetEntry(i);                       //read info
-
+     if (fVerbose&0x2) ::Info("AliExternalInfo::GetTreeAliVersMC","%d\tout of %d\n",i,entries);
      sanprod= TString::Format("%s",panchprodname);          //extract anchor production name from anchorProdTag
      subStrL = TPRegexp("[A-Za-z0-9]+").MatchS(sanprod);
      if(subStrL->GetLast()==-1) sanprod =TString("");
@@ -1201,13 +1215,15 @@ TTree*  AliExternalInfo::GetTreeAliVersMC(){
      brMCdescr->Fill();
    }
    outfile->cd();
-   dumptree->SetDirectory(gROOT);
+   //dumptree->SetDirectory(gROOT);
    dumptree->Write("dumptree_MC");
-// TODO - fix memory leak in code above - either keep cache or delete intermediate trees )_
-//   delete outfile;
-//   delete treeMC;
-//   delete treeProdMC;
-   return dumptree;
+  // TODO - fix memory leak in code above - either keep cache or delete intermediate trees )_
+  delete treeMC;
+  delete treeProdMC;
+  delete dumptree;
+  //delete outfile;
+  outfile->Close();
+  return GetTreeAliVersMC();
 }
 
 
@@ -1240,10 +1256,12 @@ bool operator< (const anchprod & otheranchprod) const       //define comparison 
 };
  
 TTree*  AliExternalInfo::GetTreeMCPassGuess(){
+    Bool_t loadMetadataBackup= fLoadMetadata;
+    fLoadMetadata=kFALSE;
 //    returns and stores (dumptree_MC.root) the tree containing the pass guesses for each MC production
-    TFile *MCFileG;
-    TTree *MCTreeG; 
-    TTree *MCTree;
+    TFile *MCFileG=0;
+    TTree *MCTreeG=0;
+    TTree *MCTree=0;
         
     //TFile *RDFile;
     TTree *RDTree;
@@ -1252,10 +1270,14 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
     Bool_t downloadNeeded = IsDownloadNeeded(fLocalStorageDirectory+TString::Format("/dumptree_MC_guess.root"),TString::Format("QA.TPC"));
     if(!downloadNeeded){
       MCFileG= TFile::Open(fLocalStorageDirectory+"/dumptree_MC_guess.root","UPDATE");
-      if(MCFileG->GetListOfKeys()->Contains("dumptree_MC_guess")){
-        if (fVerbose&0x2) ::Info("AliExternalInfo::GetTreeMCPassGuess","Guesses already available - done.");
-        return(dynamic_cast<TTree*>(MCFileG->Get("dumptree_MC_guess")));
-      } 
+      if (MCFileG==NULL){
+        ::Info("AliExternalInfo::GetTreeMCPassGuess","dumptree_MC_guess.root corrupted -> Overwrite it"); /// TODO - is it save ?
+      }else {
+        if (MCFileG->GetListOfKeys()->Contains("dumptree_MC_guess")) {
+          if (fVerbose & 0x2) ::Info("AliExternalInfo::GetTreeMCPassGuess", "Guesses already available - done.");
+          return (dynamic_cast<TTree *>(MCFileG->Get("dumptree_MC_guess")));
+        }
+      }
     }
     if (fVerbose&0x2) ::Info("AliExternalInfo::GetTreeMCPassGuess","dumptree_MC_guess.root not available -> get it");
    
@@ -1267,7 +1289,7 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
     TObjString* osrdaliroot=0;
 
     TObjArray* arrRDrunlist=0;
-    TString* sRDrunlist;
+    TString* sRDrunlist=0;
     
     RDTree->GetBranch("aliphysics")->SetAddress(&osrdaliphys);
     RDTree->GetBranch("aliroot")->SetAddress(&osrdaliroot);
@@ -1276,7 +1298,7 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
     RDTree->GetBranch("runList")->SetAddress(&sRDrunlist);
 
     MCTree = GetTreeAliVersMC();    
-    MCFileG=TFile::Open(fLocalStorageDirectory+"/dumptree_MC_guess.root","UPDATE");
+    MCFileG=TFile::Open(fLocalStorageDirectory+"/dumptree_MC_guess.root","RECREATE");
     MCTreeG=new TTree("dumptree_MC_guess","dumptree_MC_guess"); 
     
     TObjString* osMCaliroot=0;          //char arrays for reading from MCTree
@@ -1474,6 +1496,7 @@ TTree*  AliExternalInfo::GetTreeMCPassGuess(){
     MCFileG->cd();
     MCTreeG->Write();
 //    delete MCFileG;
+    fLoadMetadata=loadMetadataBackup;
     return MCTreeG;
 }
 
@@ -1523,7 +1546,9 @@ info->GetMCPassGuess("LHC17l1");
     ::Info("AliExternalInfo::GetMCAnchPerGuess","Logbook not already opened - getting it!");
     fLogCache = GetLogbookCache();
   }
-  else ::Info("AliExternalInfo::GetMCAnchPerGuess","Logbook already opened!");
+  else {
+    if (fVerbose>2) ::Info("AliExternalInfo::GetMCAnchPerGuess","Logbook already opened!");
+  }
   
   std::string * pAnchProdName = new std::string();
   Int_t run;  
@@ -1537,14 +1562,16 @@ info->GetMCPassGuess("LHC17l1");
 
   TString s = TString(prunlist);
   TObjArray* arr= s.Tokenize(" ,;\t");
-  for(int l=0; l<arr->GetEntries(); l++){      
-    for(int k=0; k<fLogCache->GetEntries(); k++){
-        fLogCache->GetEntry(k);
-      if( std::atoi(((TObjString *)arr->At(l))->GetString().Data())==run){
-        if (fVerbose&0x4) cout<<"Anchor Prod Guess : "<<pAnchProdName->c_str()<<" for run number: "<<((TObjString *)arr->At(l))->GetString()<<endl;
+  Int_t nRuns=arr->GetEntries();
+
+  for(int k=0; k<fLogCache->GetEntries(); k++){
+    fLogCache->GetEntry(k);
+    for(int l=0; l<nRuns; l++){
+      if( std::atoi(((TObjString *)arr->UncheckedAt(l))->GetString().Data())==run){
+        if (fVerbose&0x4) cout<<"Anchor Prod Guess : "<<pAnchProdName->c_str()<<" for run number: "<<((TObjString *)arr->UncheckedAt(l))->GetString()<<endl;
         ++map[*pAnchProdName];
       }
-     }
+    }
   }
   if(map.size()==0)  {
     if (fVerbose&0x4) ::Warning("AliExternalInfo::GetMCAnchPerGuess","No Anchor Production found via run number matching");
