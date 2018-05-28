@@ -266,6 +266,16 @@ void CacheTrendingProductions(TString dataType){
   }
 }
 
+/// Cache MC production information
+/// TODO - reset cache timeout before
+void CacheMCProductionInfo(){
+  AliExternalInfo info;
+  tree = info.GetTreeMCPassGuess();
+  delete tree;
+}
+
+
+/// This is example function
 void CheckProductions(){
   AliExternalInfo info;
   //to add there production yer
@@ -275,8 +285,20 @@ void CheckProductions(){
   treeRaw->SetAlias("isTRD","type==\"QA.TRD\"");
   // black list for production
   treeRaw->SetAlias("isBlack","strstr(pass,\"clean\")!=0||strstr(pass,\"rec\")!=0||strstr(pass,\"its\")!=0||strstr(pass,\"cpass\")!=0||strstr(pass,\"vpass\")!=0||strstr(pass,\"muon\")!=0||strstr(pass,\"cosmic\")!=0||strstr(pass,\"align\")!=0||strstr(pass,\"FAST\")!=0||strstr(pass,\"scan\")!=0||strstr(pass,\"test\")!=0");
-
   /// export production in json format
   AliTreePlayer::selectWhatWhereOrderBy(treeRaw,"period:pass:type:nRuns:nRunsProd:runList","nRuns>0","",0,1000,"json","rawProduction.json");
+}
+
+/// Export MC Anchor Guess + derived information in JSON format
+/// To be used for the web browsing
+void ExportMCAnchorJSON(){
+  AliExternalInfo info;
+  tree = info.GetTreeMCPassGuess();
+  TString toExport="";
+  toExport+="MCProdName.fString:MCAliphysics.fString:MCAliroot.fString";
+  toExport+="AnchorProdTag.fString:AnchorPassName.fString:Anchoraliroot.fString:Anchoraliphys.fString:";
+  toExport+="rankGuess:runNMatches:runNMC:runNAnchor";
+  AliTreePlayer::selectWhatWhereOrderBy(tree,toExport,"","",0,1000,"json","MCAnchor.json");
 
 }
+

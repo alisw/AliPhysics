@@ -698,6 +698,9 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
       }
     }
   }
+  if (isJSON&&!isElastic){
+    fprintf(default_fp,"{\n\t \"tree\": [\n "); // add metadata info
+  }
 
   Int_t selected=0;
   for (Int_t ientry=firstentry; ientry<firstentry+nentries; ientry++){
@@ -732,7 +735,7 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
         if (isElastic){
           fprintf(default_fp,"{\"index\":{\"_id\": \"");
         }else{
-          fprintf(default_fp,"{{\n");
+          fprintf(default_fp,"{\n");
         }
       }
       for (Int_t icol=0; icol<nCols; icol++){
@@ -750,13 +753,15 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
         }
         if (rFormulaList[icol]->GetTree()==NULL) continue;
         Int_t nData=rFormulaList[icol]->GetNdata();
-        if (isElastic==kFALSE){
+        if (isJSON==kFALSE){
           fprintf(default_fp,"\t\"%s\":",rFormulaList[icol]->GetName());
         }else{
           if (isIndex[icol]==kFALSE && isParent[icol]==kFALSE){
             TString fieldName(rFormulaList[icol]->GetName());
-            if (isClass[icol]) fieldName.Remove(fieldName.Length()-1);
-            fieldName.ReplaceAll(".","%_");
+            if (isElastic) {
+              if (isClass[icol]) fieldName.Remove(fieldName.Length() - 1);
+              fieldName.ReplaceAll(".", "%_");
+            }
             if (icol>0 && isIndex[icol-1]==kFALSE && isParent[icol-1]==kFALSE ){
               fprintf(default_fp,"\t,\"%s\":",fieldName.Data());
             }else{
@@ -769,7 +774,7 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
             if (isClass[icol]!=NULL){
               fprintf(default_fp,"%s",obuffer.Data());
             }else {
-              if (isElastic && rFormulaList[icol]->IsString()) {
+              if ( (isElastic || isJSON)  && rFormulaList[icol]->IsString()) {
                 fprintf(default_fp, "\t\"%s\"",
                         rFormulaList[icol]->PrintValue(0, 0, printFormatList[icol]->GetName()));
               } else {
@@ -848,7 +853,7 @@ Int_t  AliTreePlayer::selectWhatWhereOrderBy(TTree * tree, TString what, TString
       fprintf(default_fp,"\n");
     }
   }
-  if (isJSON) fprintf(default_fp,"}\n");
+  if (isJSON) fprintf(default_fp,"}\t]\n}\n");
   if (isHTML){
     fprintf(default_fp,"\t</tbody>"); // add metadata info
     fprintf(default_fp,"</table>"); // add metadata info
