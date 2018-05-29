@@ -1081,6 +1081,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fListCascade->SetOwner();
     }
     
+    //Initialize user objects of cascade type
+    Int_t lNbrConfigs = fListCascade->GetEntries();
+    //AliWarning(Form("[Cascade Analyses] Processing different configurations (%i detected)",lNumberOfConfigurationsCascade));
+    AliCascadeResult *lCscRslt = 0x0;
+    for(Int_t lcfg=0; lcfg<lNbrConfigs; lcfg++){
+        lCscRslt = (AliCascadeResult*) fListCascade->At(lcfg);
+        lCscRslt->InitializeHisto();
+        lCscRslt->InitializeProtonProfile();
+        AliWarning( Form("Initizalized %i cascade output objects!", lcfg));
+    }
+    
     //Regular Output: Slots 1, 2, 3
     PostData(1, fListHist    );
     PostData(2, fListV0      );
@@ -1097,6 +1108,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
 {
+    
     // Main loop
     // Called for each event
     
@@ -3893,7 +3905,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
                 if(iCut == 11 ) lV0Result[lNV0]->SetCutLeastNumberOfCrossedRows ( lCutValue ) ;
                 
                 //Print this variation, add to pool
-                lV0Result[lNV0]->Print();
+                //lV0Result[lNV0]->Print();
                 lNV0++;
             }
         }
@@ -3952,7 +3964,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardV0Configuration(Bo
             if(iCut ==  9 ) lV0Result[lNV0]->SetCutArmenterosParameter               ( lcutsV0[i][2][iCut] ) ;
             
             //Print this variation, add to pool
-            lV0Result[lNV0]->Print();
+            //lV0Result[lNV0]->Print();
             lNV0++;
         }
     }
@@ -4125,7 +4137,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         lCascadeResult[lN] = new AliCascadeResult( Form("%s_Central",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits);
         
         //This is MC: generate profile for G3/F (if ever needed)
-        lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+        lCascadeResult[lN] -> InitializeProtonProfile();
         
         //Setters for V0 Cuts
         lCascadeResult[lN]->SetCutDCANegToPV            ( lcuts[i][1][ 0] ) ;
@@ -4190,7 +4202,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
             lCascadeResult[lN] = new AliCascadeResult( Form("%s_Central_Full",lParticleName[i].Data() ),lMassHypo[i]);
             
             //This is MC: generate profile for G3/F (if ever needed)
-            lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+            lCascadeResult[lN] -> InitializeProtonProfile();
             
             //Setters for V0 Cuts
             lCascadeResult[lN]->SetCutDCANegToPV            ( lcuts[i][1][ 0] ) ;
@@ -4471,7 +4483,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         
         
         //This is MC: generate profile for G3/F (if ever needed)
-        lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+        lCascadeResult[lN] -> InitializeProtonProfile();
         
         //Default cuts: use vertexer level ones
         //Setters for V0 Cuts
@@ -4541,7 +4553,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddCascadeConfiguration276TeV
     for(Int_t i = 0 ; i < 4 ; i ++){
         //2.76 Config result, customized binning: the one to use, usually
         lCascadeResult[lN] = new AliCascadeResult( Form("%s_276TeV",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits);
-        lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+        lCascadeResult[lN] -> InitializeProtonProfile();
         
         //Setters for V0 Cuts
         lCascadeResult[lN]->SetCutDCANegToPV            ( 0.1    ) ;
