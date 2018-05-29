@@ -144,61 +144,25 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
       if (!fMinimalBooking)fHist->FillCutCounter(6);
     }
   }
-  if (pass) {
-    if (!fBachCuts->isSelected(casc->GetBach())) {
-      pass=false;
-    } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(7);
-    }
-  }
-  if (pass&&fcutDCAXiDaug) {
-    if (casc->GetXiDCADaug()>fMaxDCAXiDaug) {
-      pass=false;
-    } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(8);
-    }
-  }
-  if (pass&&fcutMinDistVtxBach) {
-    if (casc->BachDCAPrimVtx()<fMinDistVtxBach) {
-      pass=false;
-    } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(9);
-    }
-  }
-  if (pass&&fcutCPAXi) {
-    if (casc->GetCPA()<fCPAXi) {
-      pass=false;
-    } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(10);
-    }
-  }
-  if (pass&&fcutXiTransRadius) {
-    if ((casc->GetXiTransverseRadius()<fMinXiTransRadius)||
-        (casc->GetXiTransverseRadius()>fMaxXiTransRadius)) {
-      pass=false;
-    } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(11);
-    }
-  }
   if (pass&&fcutv0MaxDCADaug) {
     if (casc->Getv0DCADaug()>fv0MaxDCADaug) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(12);
+      if (!fMinimalBooking)fHist->FillCutCounter(7);
     }
   }
   if (pass&&fcutCPAv0) {
     if (casc->Getv0CPA()<fCPAv0) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(13);
+      if (!fMinimalBooking)fHist->FillCutCounter(8);
     }
   }
   if (pass&&fCutPtv0) {
     if ((casc->Getv0Pt()<fPtMinv0) || (fPtMaxv0<casc->Getv0Pt())) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(14);
+      if (!fMinimalBooking)fHist->FillCutCounter(9);
     }
   }
   if (pass&&fcutv0TransRadius) {
@@ -206,14 +170,14 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->Getv0TransverseRadius()>fMaxv0TransRadius)) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(15);
+      if (!fMinimalBooking)fHist->FillCutCounter(10);
     }
   }
   if (pass&&fcutv0MinDistVtx) {
     if (casc->Getv0DCAPrimVtx()<fv0MinDistVtx) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(16);
+      if (!fMinimalBooking)fHist->FillCutCounter(11);
     }
   }
   if (pass&&fcutv0DaugMinDistVtx) {
@@ -221,7 +185,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->Getv0NegToPrimVtx()<fv0DaugMinDistVtx)) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(17);
+      if (!fMinimalBooking)fHist->FillCutCounter(12);
     }
   }
   if (pass) {
@@ -230,6 +194,42 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
   if (pass&&fcutv0Mass) {
     if ((casc->Getv0Mass()<(fv0Mass-fv0Width))||
         (casc->Getv0Mass()>(fv0Mass+fv0Width))) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(13);
+    }
+  }
+  if (pass) {
+    if (!fBachCuts->isSelected(casc->GetBach())) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(14);
+    }
+  }
+  if (pass&&fcutDCAXiDaug) {
+    if (casc->GetXiDCADaug()>fMaxDCAXiDaug) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(15);
+    }
+  }
+  if (pass&&fcutMinDistVtxBach) {
+    if (casc->BachDCAPrimVtx()<fMinDistVtxBach) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(16);
+    }
+  }
+  if (pass&&fcutCPAXi) {
+    if (casc->GetCPA()<fCPAXi) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(17);
+    }
+  }
+  if (pass&&fcutXiTransRadius) {
+    if ((casc->GetXiTransverseRadius()<fMinXiTransRadius)||
+        (casc->GetXiTransverseRadius()>fMaxXiTransRadius)) {
       pass=false;
     } else {
       if (!fMinimalBooking)fHist->FillCutCounter(18);
