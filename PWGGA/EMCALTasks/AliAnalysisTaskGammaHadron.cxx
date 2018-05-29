@@ -1983,9 +1983,6 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 				if (iMCRootPartClus1 == iMCRootPartClus2) { //The MC Parts still have a common ancestor
 					AliAODMCParticle * pRootPart = fMCParticles->GetMCParticle(iMCRootPartClus1);
 
-					//FIXME delete me
-					if (pRootPart) printf("MHO: Shared Ancestor (height1,height2,pdg) = %2d %2d %d\n",iMCTreeHeight1,iMCTreeHeight2,pRootPart->GetPdgCode());
-
 					if (pRootPart && (221 == pRootPart->GetPdgCode())) MCMatchStatus = 5;
 					else MCMatchStatus = 6;
 				}
