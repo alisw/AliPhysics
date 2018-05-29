@@ -61,12 +61,13 @@ public:
   
   void   InitTender();
   Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
+  Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge);
+  //this returns track index with a minimum distance between a extrapolated track in current and a PHOS cluster where locpos and mod points.
 
 protected:
   AliPHOSTenderSupply(const AliPHOSTenderSupply&c);
   AliPHOSTenderSupply& operator= (const AliPHOSTenderSupply&c);
   void ProcessAODEvent(TClonesArray * clusters, AliAODCaloCells * cells, TVector3 &vertex) ;
-  Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge); 
   Double_t CorrectNonlinearity(Double_t en) ;
   Double_t TestCoreLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Double_t TestFullLambda(Double_t pt,Double_t l1,Double_t l2) ;
