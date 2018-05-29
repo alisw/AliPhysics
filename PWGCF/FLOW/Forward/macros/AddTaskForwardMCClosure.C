@@ -21,7 +21,7 @@
  */
 AliAnalysisTaskSE* AddTaskForwardMCClosure()
 {
-  Bool_t etagap = false;
+  Bool_t etagap = true;
   Int_t mode = kRECON;
   bool doNUA = false;
 
@@ -59,13 +59,13 @@ AliAnalysisTaskSE* AddTaskForwardMCClosure()
     file->Close(); 
   }
 
-    task->fSettings.fNDiffEtaBins = 20;
+    task->fSettings.fNDiffEtaBins = 48;
 
   if (etagap){
     // if etagap otherwise comment out, and it will be standard
     task->fSettings.fFlowFlags = task->fSettings.kEtaGap;
     task->fSettings.fNRefEtaBins = 1;
-    task->fSettings.gap = 0.5;
+    task->fSettings.gap = 0.0;
   }
   else {
     task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?

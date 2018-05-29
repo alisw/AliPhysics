@@ -11,6 +11,7 @@
 #include "TObject.h"
 #include "TString.h"
 #include "TH3.h"
+#include "TH2.h"
 
 class AliForwardFlowRun2Settings : public TObject {
   typedef std::vector< Double_t > edgeContainer;
@@ -59,6 +60,10 @@ class AliForwardFlowRun2Settings : public TObject {
   Double_t gap;
 
   bool mc;
+
+  // return true if good event
+  Bool_t ExtraEventCutFMD(TH2D forwarddNdedp, double cent, Bool_t mc);
+  
   // flags used for method of cumulant
   enum EFlowFlags {
     kStdQC   = 0x0001, // Standard QC{2} and QC{4} calculations

@@ -150,7 +150,7 @@ void AliForwardNUATask::UserExec(Option_t */*option*/)
 
 
   AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
+  v0Centr = MultSelection->GetMultiplicityPercentile("SPDTracklets");
 
   // Get detector objects
   AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
@@ -171,7 +171,7 @@ void AliForwardNUATask::UserExec(Option_t */*option*/)
   double cent = v0Centr;
   //const AliAODTracklets* spdmult = fAOD->GetMultiplicity();
 
-  TH2D& dNdetadphi = aodfmult->GetHistogram(); // also known as dNdetadphi
+  TH2D& forwarddNdedp = aodfmult->GetHistogram(); // also known as forwarddNdedp
   AliAODVertex* aodVtx = fAOD->GetPrimaryVertex();
 
 
@@ -184,68 +184,25 @@ void AliForwardNUATask::UserExec(Option_t */*option*/)
 
   if (iTracks < 10) useEvent = kFALSE;
 
-
-  Int_t nBadBins = 0;
-  //Double_t limit = 9999.;
-  Int_t phibins = dNdetadphi.GetNbinsY();
+  Int_t phibins = forwarddNdedp.GetNbinsY();
   TString detType = "forward";
-  Double_t totalFMDpar = 0;
 
-  for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
-  
-    Double_t acceptance = 1.;
-    Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
-    Double_t runAvg = 0;
-    Double_t avgSqr = 0;
-    Double_t max = 0;
-    Int_t nInAvg = 0;
+  for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
+    Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
 
-    if (fabs(eta) > 1.7 && detType == "forward"){
-      acceptance = dNdetadphi.GetBinContent(etaBin, kphiAcceptanceBin);
-      if (acceptance == 0 || acceptance > 2.0) continue;
-    }
 
     for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
-  
-      // Check for acceptance
-      if ( fabs(eta) > 1.7) {
-        if (phiBin == 0 && dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
-      }
-      //Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
-      Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
+      //Double_t phi = forwarddNdedp.GetYaxis()->GetBinCenter(phiBin);
+      Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
       if (!weight){
         weight = 0;
       }
-      totalFMDpar += weight;
       
-      // We calculate the average Nch per. bin
-      avgSqr += weight*weight;
-      runAvg += weight;
-      nInAvg++;
       if (weight == 0) continue;
-      if (weight > max) {
-        max = weight;
-      }
     } // End of phi loop
-
-    // Outlier cut calculations
-    double fSigmaCut = 4.0;
-    if (nInAvg > 0) {
-      runAvg /= nInAvg;
-      avgSqr /= nInAvg;
-      Double_t stdev = (nInAvg > 1 ? TMath::Sqrt(nInAvg/(nInAvg-1))*TMath::Sqrt(avgSqr - runAvg*runAvg) : 0);
-      Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
-      if (fSigmaCut > 0. && nSigma >= fSigmaCut && cent < 60) nBadBins++;
-      else nBadBins = 0;
-      fOutliers->Fill(cent, nSigma);
-      // We still finish the loop, for fOutliers to make sense, 
-      // but we do no keep the event for analysis 
-      if (nBadBins > 3) useEvent = kFALSE;
-      //if (nBadBins > 3) std::cout << "BAD EVENT" << std::endl;
-    }
   } // End of eta bin
-  if (totalFMDpar < 10) useEvent = kFALSE;
 
+  if (!fSettings.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = false;
   if (useEvent){ 
 
 
@@ -263,32 +220,22 @@ for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
     AliAODTrack* track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
     if (track->TestFilterBit(kHybrid)){
       if (track->Pt() >= 0.2 && track->Pt() <= 5){
-        spddNdedp.Fill(track->Eta(),track->Phi(), 1);
-        fHybrid->Fill(track->Eta(),track->Phi(), 1);
+        //spddNdedp.Fill(track->Eta(),track->Phi(), 1);
+        //fHybrid->Fill(track->Eta(),track->Phi(), 1);
         nuacentral->Fill(track->Eta(),track->Phi(),aodVtx->GetZ(),1);
         nuahist->Fill(track->Eta(),track->Phi(),aodVtx->GetZ(),1);
       }
     }
   }
 
-  for (Int_t etaBin = 1; etaBin <= dNdetadphi.GetNbinsX(); etaBin++) {
+  for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
     
       Double_t acceptance = 1.;
-      Double_t eta = dNdetadphi.GetXaxis()->GetBinCenter(etaBin);
-
-      if (fabs(eta) > 1.7 && detType == "forward"){
-        acceptance = dNdetadphi.GetBinContent(etaBin, kphiAcceptanceBin);
-        if (acceptance == 0 || acceptance > 2.0) continue;
-      }
+      Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
 
       for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
-    
-        // Check for acceptance
-        if ( fabs(eta) > 1.7) {
-          if (phiBin == 0 && dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
-        }
-        Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
-        Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
+        Double_t phi = forwarddNdedp.GetYaxis()->GetBinCenter(phiBin);
+        Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
 
         // We calculate the average Nch per. bin
         if (weight == 0) continue;

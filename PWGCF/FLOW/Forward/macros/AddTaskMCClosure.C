@@ -21,7 +21,7 @@
  */
 AliAnalysisTaskSE* AddTaskForwardMCClosure()
 {
-  Bool_t etagap = false;
+  Bool_t etagap = true;
   Int_t mode = kRECON;
   bool doNUA = false;
 
@@ -59,7 +59,7 @@ AliAnalysisTaskSE* AddTaskForwardMCClosure()
     file->Close(); 
   }
 
-    task->fSettings.fNDiffEtaBins = 20;
+    task->fSettings.fNDiffEtaBins = 40;
 
   if (etagap){
     // if etagap otherwise comment out, and it will be standard

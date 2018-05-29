@@ -168,17 +168,17 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
     static_cast<TList*>(fAutoCorrection)->Add(new TH2F("fQcorrfactor", "fQcorrfactor", 20, -10, 10, 1, -6.0, 6.0)); //(eta, n)
     static_cast<TList*>(fAutoCorrection)->Add(new TH2F("fpcorrfactor", "fpcorrfactor", 20, -10, 10, fSettings.fNDiffEtaBins, -6.0, 6.0)); //(eta, n)
 
-    Int_t bins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 20, fSettings.fCentBins, 24} ;
+    Int_t bins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 21, fSettings.fCentBins, 48} ;
     Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -6};
-    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi() + TMath::Pi()/10.0, 100, 6};
+    Double_t xmax[5] = {10,fSettings.fZVtxAcceptanceUpEdge, TMath::Pi(), 100, 6}; // 
     Int_t dimensions = 5;
     static_cast<TList*>(fGammaList)->Add(new THnD("fgammas", "fgammas", dimensions, bins, xmin, xmax)); //(samples,vertex, phi, cent, eta)
     static_cast<TList*>(fGammaList)->Add(new THnD("fnoPrim", "fnoPrim", dimensions, bins, xmin, xmax)); //(samples,vertex, phi, cent, eta)
 
     fOutputList->Add(fGammaList);
-    //fOutputList->Add(fGFList);
     fOutputList->Add(fEventList);
 
+    // do analysis 
     PostData(1, fOutputList);
   }
 
@@ -213,10 +213,17 @@ void AliForwardSecondariesTask::UserExec(Option_t */*option*/)
     return;
   }
 
-
-
-
+    AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+    double v0cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+//double v0cent = 5.;
+std::cout << "the cent is " << v0cent << std::endl;
     static_cast<TH1D*>(fEventList->FindObject("Vertex"))->Fill(event_vtx_z);
+ 
+
+
+
+/*
+
   AliAODMCHeader* fAODMCHeader = static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
 
   Double_t impactParam[] = { 0.00,  3.72,  5.23,  7.31,  8.88, 10.20, 
@@ -226,7 +233,7 @@ void AliForwardSecondariesTask::UserExec(Option_t */*option*/)
 
   Int_t nPoints = sizeof(impactParam)/sizeof(Double_t);
   TGraph* fImpactParToCent = new TGraph(nPoints, impactParam, centrality);
-  std::cout << fAOD->GetCentrality()->GetCentralityPercentile("V0M") std::endl;
+  std::cout << fAOD->GetCentrality()->GetCentralityPercentile("V0M")<< std::endl;
 
     double fCent = 0;
     if (fAODMCHeader){
@@ -245,7 +252,7 @@ if (fAODMCHeader){
 std::cout << fCent << std::endl;
 std::cout << cent << std::endl;
 
-
+*/
 
   //..AliEventCuts selection
   //if(!fEventCuts.AcceptEvent(fAOD)) {
@@ -257,11 +264,11 @@ std::cout << cent << std::endl;
     //float v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
 //std::cout << "CENT = " << v0Centr << std::endl;
   //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-  float v0cent = 5.;//fAOD->GetCentrality()->GetCentralityPercentile("V0M");
+  //float v0cent = 5.;//fAOD->GetCentrality()->GetCentralityPercentile("V0M");
   //std::cout << MultSelection->GetMultiplicityPercentile("V0M") << std::endl;
 
   // Get detector objects
-  AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
+  //AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
 
   TH2D spddNdedp = TH2D("spddNdedp","spddNdedp",400,-1.5,1.5,400,0,2*TMath::Pi()); // Histogram to contain the central tracks
   TH2D forwarddNdedp = TH2D("forwarddNdedp","forwarddNdedp",200,-4,6,20,0,2*TMath::Pi()); // also known as dNdetadphi
@@ -294,79 +301,21 @@ std::cout << "nPrim = " << nPrim << std::endl;
 
   const AliVVertex* aodVtx = fAOD->GetPrimaryVertex();
   Double_t vertex  = aodVtx->GetZ();
-  //std::cout << "nTracks " << nTracks << std::endl;
-  //std::cout << "nPrim " << nPrim << std::endl;
-
+ 
   for (Int_t iTr = 0; iTr < nTracks; iTr++) {
-        AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
-        //std::cout << p->Eta() << std::endl;
+    AliMCParticle* p = static_cast< AliMCParticle* >(this->MCEvent()->GetTrack(iTr));
     if (AliTrackReference *ref = this->IsHitFMD(p)) {
-      //std::cout << "Hit in FMD!!!!" << std::endl;
       forwarddNdedp.Fill(p->Eta(),p->Phi(),1);
     }
     if (AliTrackReference *ref = this->IsHitTPC(p)) {
-      //std::cout << "Hit in TPC!!!!" << std::endl;
-
       spddNdedp.Fill(p->Eta(),p->Phi(),1);
     }
   }
 
 
   bool useEvent = kTRUE;
-
   if (nTracks < 10) useEvent = kFALSE;
-
-  Int_t nBadBins = 0;
-  Int_t phibins = forwarddNdedp.GetNbinsY();
-  TString detType = "forward";
-  Double_t totalFMDpar = 0;
-
-  for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
-  
-    Double_t acceptance = 1.;
-    Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
-    Double_t runAvg = 0;
-    Double_t avgSqr = 0;
-    Double_t max = 0;
-    Int_t nInAvg = 0;
-
-
-    for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
-  
-      Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
-      if (!weight){
-        weight = 0;
-      }
-      totalFMDpar += weight;
-      
-      // We calculate the average Nch per. bin
-      avgSqr += weight*weight;
-      runAvg += weight;
-      nInAvg++;
-      if (weight == 0) continue;
-      if (weight > max) {
-        max = weight;
-      }
-    } // End of phi loop
-
-    // Outlier cut calculations
-    double fSigmaCut = 4.0;
-    if (nInAvg > 0) {
-      runAvg /= nInAvg;
-      avgSqr /= nInAvg;
-      Double_t stdev = (nInAvg > 1 ? TMath::Sqrt(nInAvg/(nInAvg-1))*TMath::Sqrt(avgSqr - runAvg*runAvg) : 0);
-      Double_t nSigma = (stdev == 0 ? 0 : (max-runAvg)/stdev);
-      if (fSigmaCut > 0. && nSigma >= fSigmaCut && v0cent < 60) nBadBins++;
-      else nBadBins = 0;
-      // We still finish the loop, for fOutliers to make sense, 
-      // but we do no keep the event for analysis 
-      if (nBadBins > 3) useEvent = kFALSE;
-     //if (nBadBins > 3) std::cout << "NUMBER OF BAD BINS > 3" << std::endl;
-    }
-  } // End of eta bin
-  if (totalFMDpar < 10) useEvent = kFALSE;
-  //if (totalFMDpar < 10) std::cout << "TOTAl FMD PARTICLES < 10" << std::endl;
-  //std::cout << "TOTAl FMD PARTICLES = " << totalFMDpar << std::endl;
+  if (!fSettings.ExtraEventCutFMD(forwarddNdedp, v0cent, true)) useEvent = kFALSE;
 
 
   if (useEvent){ 
@@ -378,7 +327,6 @@ std::cout << "nPrim = " << nPrim << std::endl;
 
     // Ignore things that do not make a signal in the FMD or ITS
     if (this->IsHitFMD(p) || this->IsHitTPC(p)){// { && p->Charge()!=0
-      //std::cout << "hit in the FMD" << std::endl;
       //if (!hasParticleMaterialInteractionInAncestors(p)) continue;
       //std::cout << "particle is from material" << std::endl;
       AliMCParticle* mother = GetMother(p); //ok
@@ -396,11 +344,10 @@ std::cout << "nPrim = " << nPrim << std::endl;
 
       Double_t phibin1 = forwarddNdedp.GetYaxis()->FindBin(mother->Phi());
       Double_t phicontent1 = forwarddNdedp.GetYaxis()->GetBinCenter(phibin1);
-
-
+      phicontent1 = mother->Phi();
       Double_t deltaphi = phicontent1 - phicontent;
-      if (deltaphi > TMath::Pi()) deltaphi = deltaphi - TMath::TwoPi();
-      if (deltaphi <= -TMath::Pi()) deltaphi = deltaphi + TMath::TwoPi();
+      if (deltaphi >= TMath::Pi()) deltaphi = deltaphi - 2*TMath::TwoPi();
+      if (deltaphi < -TMath::Pi()) deltaphi = deltaphi + 2*TMath::TwoPi();
       Double_t deltaphi_new = deltaphi;//Wrap02pi(deltaphi);
       Double_t x[5] = {randomInt,event_vtx_z, deltaphi_new, v0cent, mother->Eta()};
       fgammas->Fill(x,1);//(samples,vertex, phi, cent, eta)
@@ -410,11 +357,7 @@ std::cout << "nPrim = " << nPrim << std::endl;
         listOfMothers.push_back(mother->GetLabel());
         fnoPrim->Fill(x,1);
       }
-
-      //if (deltaphi == 0) continue;
-
     }
-    //}
   } // End of useEvent
 
 
@@ -528,6 +471,8 @@ Bool_t AliForwardSecondariesTask::IsRedefinedPhysicalPrimary(AliMCParticle* p) {
   // Is this a pi0 which was produced as a primary particle?
   if (TMath::Abs(p->PdgCode()) == 111 /*pi0*/ &&
       p->GetLabel() < event->Stack()->GetNprimary()) {
+      std::cout << "found a pi0" << std::endl;
+
     return true;
   }
   // Is it a Physical Primary by the standard definition?
@@ -536,6 +481,8 @@ Bool_t AliForwardSecondariesTask::IsRedefinedPhysicalPrimary(AliMCParticle* p) {
   // Check if this is a primary originating from a pi0
   if (isPPStandardDef && pi0Candidate) {
     if (TMath::Abs(pi0Candidate->PdgCode()) == 111/*pi0*/) {
+        std::cout << "found wrong pi0Candidate" << std::endl;
+
       return false;//false; // Don't allow stable particles stemming from pi0!
     }
   }

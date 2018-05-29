@@ -50,11 +50,12 @@ void AliForwardQCumulantRun2::CumulantsAccumulate(TH2D& dNdetadphi, TList* outpu
     //if ( fabs(eta) > 1.7) {
     //  if (dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
     //}
+    /*
     if (fabs(eta) > 1.7 && detType == "forward"){
       acceptance = dNdetadphi.GetBinContent(etaBin, kphiAcceptanceBin);
       
       if (acceptance == 0 || acceptance > 2.0) continue;
-    }
+    }*/
 
     for (Int_t phiBin = 1; phiBin <= phibins; phiBin++) {
   

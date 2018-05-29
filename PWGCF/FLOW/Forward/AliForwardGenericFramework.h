@@ -47,9 +47,9 @@ public:
    * 
    * @param cent Event centrality
    */
-  void CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent,double vertexpos,TString detType);
+  void CumulantsAccumulate(TH2D& dNdetadphi, TList* outputList, double cent,double vertexpos,TString detType,Bool_t doRefFlow, Bool_t doDiffFlow);
 
-void saveEvent(TList* outputList, double cent, double vertexpos,UInt_t r);
+  void saveEvent(TList* outputList, double cent, double vertexpos,UInt_t r);
 
   /**
    * Constants
@@ -58,26 +58,6 @@ void saveEvent(TList* outputList, double cent, double vertexpos,UInt_t r);
     ktpcOnly = 128,        // TPC only tracks
     kphiAcceptanceBin = 21 // phi acceptance bin in the FMD histogram (dNdetadphi)
   };
-
-
-  /**
-   * Get the bin number of <<cos(nphi)>>
-   *
-   * @param n moment
-   *
-   * @return bin number
-   */
-  Int_t GetBinNumberCos(Int_t n = 0) const;
-
-
-  /**
-   * Get the bin number of <<sin(nphi)>>
-   *
-   * @param n moment
-   *
-   * @return bin number
-   */
-  Int_t GetBinNumberSin(Int_t n = 0) const;
 
   /**
    * Reset histograms
@@ -90,22 +70,22 @@ void saveEvent(TList* outputList, double cent, double vertexpos,UInt_t r);
   THnD* fqvector;    // Accumulated differential particles
 
 
-TComplex Q(int n, int p, int etaBin);
-TComplex p(int n, int p, int etaBin);
-TComplex q(int n, int p, int etaBin);
+  TComplex Q(int n, int p, int etaBin);
+  TComplex p(int n, int p, int etaBin);
+  TComplex q(int n, int p, int etaBin);
 
-TH1F fAutoRef;
-TH1F fAutoDiff;
-bool useEvent;
-bool doNUA;
+  TH1F fAutoRef;
+  TH1F fAutoDiff;
+  bool useEvent;
+  bool doNUA;
 
-TComplex Two(int n1, int n2, int eta1, int eta2);
-TComplex TwoDiff(int n1, int n2, int refetabin, int diffetabin);
-TComplex Four(int n1, int n2, int n3, int n4,int eta1, int eta2);
-TComplex FourDiff(int n1, int n2, int n3, int n4, int refetabin, int diffetabin,int qetabin);
+  TComplex Two(int n1, int n2, int eta1, int eta2);
+  TComplex TwoDiff(int n1, int n2, int refetabin, int diffetabin);
+  TComplex Four(int n1, int n2, int n3, int n4,int eta1, int eta2);
+  TComplex FourDiff(int n1, int n2, int n3, int n4, int refetabin, int diffetabin,int qetabin);
 
 
-  ClassDef(AliForwardGenericFramework, 1); // object for eta dependent cumulants ananlysis
+  ClassDef(AliForwardGenericFramework, 1); // object for eta dependent cumulant ananlysis
 };
 
 #endif

@@ -317,9 +317,9 @@ if(!fAOD){
   AliForwardGenericFramework calculator = AliForwardGenericFramework();
   calculator.fSettings = fSettings;
 
-  calculator.CumulantsAccumulate(spddNdedp,fOutputList, lPerc, zvertex,"central");
+  calculator.CumulantsAccumulate(spddNdedp,fOutputList, lPerc, zvertex,"central",true,true);
 
-  if (calculator.useEvent) calculator.CumulantsAccumulate(forwarddNdedp, fOutputList, lPerc, zvertex,"forward");
+  if (calculator.useEvent) calculator.CumulantsAccumulate(forwarddNdedp, fOutputList, lPerc, zvertex,"forward",false,true);
   if (calculator.useEvent) calculator.saveEvent(fOutputList, lPerc, zvertex,  randomInt);
   calculator.reset();
 

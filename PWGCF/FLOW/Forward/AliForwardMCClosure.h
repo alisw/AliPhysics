@@ -19,11 +19,12 @@
 #include "AliForwardFlowRun2Settings.h"
 #include "AliEventCuts.h"
 #include <TF1.h>
+#include "AliMCParticle.h"
 
 class AliAODForwardMult;
 class TH2D;
 class AliESDEvent;
-class AliMCParticle;
+class AliAODMCParticle;
 class THn;
 class AliTrackReference;
 class TParticle;
@@ -91,6 +92,18 @@ public:
    */  
   virtual void UserExec(Option_t *option);
 
+
+// Check if a given particle itself hit the FMD. If so, return the
+  // (first) track reference of such a hit
+  AliTrackReference* IsHitFMD(AliAODMCParticle* p);
+
+// Check if a given particle itself hit the FMD. If so, return the
+  // (first) track reference of such a hit
+  AliTrackReference* IsHitTPC(AliAODMCParticle* p);
+
+  Bool_t AddMotherIfFirstTimeSeen(AliAODMCParticle* p, std::vector<Int_t> v);
+  AliAODMCParticle* GetMother(AliAODMCParticle* p);
+  Bool_t IsRedefinedPhysicalPrimary(AliAODMCParticle* p);
 
 // Check if a given particle itself hit the FMD. If so, return the
   // (first) track reference of such a hit
