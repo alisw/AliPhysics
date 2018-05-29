@@ -311,7 +311,7 @@ Int_t AliAODVertex::GetNContributors() const
   if ( (!fNContributors || fgUseCountVtxTrackContributors) &&
        (vtitle.Contains("VertexerTracks") && fType!=kPileupTracks)) {
     cont = CountRealContributors();
-    if (vtitle.Contains("VertexerTracksWithConstraint")) cont++;
+    if (vtitle.Contains("WithConstraint")) cont++;
   }
   else {
     cont = fNContributors;
