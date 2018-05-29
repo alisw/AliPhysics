@@ -299,7 +299,6 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
     return;
   }
   std::cout << "===================" << std::endl;
-  std::cout << "===================" << std::endl;
   std::cout << "======new Event====" << std::endl;
   std::cout << "===================" << std::endl;
   std::cout << "===================" << std::endl;
