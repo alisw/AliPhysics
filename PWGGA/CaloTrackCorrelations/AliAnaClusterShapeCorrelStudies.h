@@ -153,6 +153,9 @@ public:
   void SwitchOnStudyEMCalModuleCells()          { fStudyModuleCells      = kTRUE  ; }
   void SwitchOffStudyEMCalModuleCells()         { fStudyModuleCells      = kFALSE ; }
   
+  void SwitchOnFillNLocMaxHistograms()          { fFillNLocMaxHistos     = kTRUE  ; }
+  void SwitchOffFillNLocMaxHistograms()         { fFillNLocMaxHistos     = kFALSE ; }
+  
   void SetConstantTimeShift(Float_t shift)      { fConstantTimeShift     = shift  ; }
   
  private:
@@ -178,6 +181,7 @@ public:
   
   Bool_t   fStudyModuleCells;                   ///<  Fill EMCal module cell histograms
   
+  Bool_t   fFillNLocMaxHistos;                  ///< Fill histograms related to number of local maxima, makes sense for V1 clusterizer and similar, not for V2 clusterizer
   //
   // Cuts
   //
@@ -523,6 +527,7 @@ public:
   TH3F *   fhSMM20HighM02[3];                     //!<! SM number vs m20, 0.5<m02<2, n cell > 4
   TH3F *   fhSMM20LowM02NoCut[3];                 //!<! SM number vs m20, 0.1<m02<0.3, no ncell cut
   TH3F *   fhSMM20LowM02[3];                      //!<! SM number vs m20, 0.1<m02<0.3, n cell > 4
+  TH3F *   fhSMNLocMax[3];                        //!<! SM number vs number of local maxima
   TH3F *   fhSMNCell  [3];                        //!<! SM number vs number of cells
   TH3F *   fhSMNCellLowM02[3];                    //!<! SM number vs number of cells, 0.1<m02<0.3,
   TH3F *   fhSMNCellHighM02[3];                   //!<! SM number vs number of cells, 0.5<m02<2
