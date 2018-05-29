@@ -526,7 +526,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
        if(nTracks2>0) {
           if(fWriteEventsWithNoSelectedTracks) {
              writeEvent = kTRUE;
-             // event statistics, event with no POI tracks, but with assoc tracks -> written
+             // event statistics, event with no POI tracks, but with base tracks -> written
              for(Int_t i=0;i<32;++i) 
                 if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
           }
@@ -546,7 +546,8 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
          }
          else if(gRandom->Rndm()<fScaleDownEventsWithNoSelectedTracks) {
             writeEvent = kTRUE;
-            // event statistics, event with no POI tracks, and no assoc tracks -> written
+            fReducedEvent->fEventTag |= (ULong64_t(1)<<14);                    // mark unbiased events
+            // event statistics, event with no POI tracks, and no assoc tracks -> written (random selection)
             for(Int_t i=0;i<32;++i) 
                if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
          }
