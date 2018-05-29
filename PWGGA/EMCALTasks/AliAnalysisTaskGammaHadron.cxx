@@ -595,19 +595,18 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     maxThnPi0[dimThnPi0] = 3;
     dimThnPi0++;
 
-    Double_t mcStatusArray[6+1];
+    Double_t mcStatusArray[7+1];
     if (fIsMC) {
       printf("Adding MCStatus to THnSparse\n"); //FIXME
       //..MC Status array: 0 - no Match, 1 - pair matched to pi0, 2 - pair match to eta
-      //  3 for gamma (PCM), 4 for same MC Part, 5 for other common ancestor 
-      ////  3 for gamma (PCM), 4 for shared grandmother (K^0, eta, etc.)
-      ////  3 for misc (2 pi0, 1 pi0, 1 eta, etc)
+      //  3 for gamma (PCM), 4 for same MC Part, 5 for eta common ancestor(not eta -> 2 gamma) 
+			// 6 for other common ancestor 
       titleThnPi0[dimThnPi0] = "MC Match Status";
-      nBinsThnPi0[dimThnPi0] = 6;
+      nBinsThnPi0[dimThnPi0] = 7;
       binEdgesThnPi0[dimThnPi0] = mcStatusArray;
-      GenerateFixedBinArray(6,0,6,mcStatusArray);
+      GenerateFixedBinArray(7,0,7,mcStatusArray);
       minThnPi0[dimThnPi0] = 0;
-      maxThnPi0[dimThnPi0] = 6;
+      maxThnPi0[dimThnPi0] = 7;
       dimThnPi0++;
     }
 
@@ -1982,7 +1981,13 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 				Int_t iMCRootPartClus2 = FindMCRootPart(mcIndex2,&iMCTreeHeight2);
 
 				if (iMCRootPartClus1 == iMCRootPartClus2) { //The MC Parts still have a common ancestor
-					MCMatchStatus = 5;
+					AliAODMCParticle * pRootPart = fMCParticles->GetMCParticle(iMCRootPartClus1);
+
+					//FIXME delete me
+					if (pRootPart) printf("MHO: Shared Ancestor (height1,height2,pdg) = %2d %2d %d\n",iMCTreeHeight1,iMCTreeHeight2,pRootPart->GetPdgCode());
+
+					if (pRootPart && (221 == pRootPart->GetPdgCode())) MCMatchStatus = 5;
+					else MCMatchStatus = 6;
 				}
 
 				if (false) {
