@@ -471,19 +471,27 @@ Note that this alternative approach will **not** work with automatic setup of Al
 
 # Note on jets and jet finding                                                  {#emcEmbeddingJetFinding}
 
-When handling jet finding, a bit more care needs to be applied, especially if apply an artificial tracking
+When handling jet finding, a bit more care needs to be applied, especially if applying an artificial tracking
 efficiency. This is due to the fact that the jet finder keeps track of constituents by index, which can cause
 some ambiguity in which object applies to which container (if you are interested, see the
 [advanced topics](\ref emcEmbeddingAdvancedTopics) for further details). Thus, the recommend approach is as
 follows:
 
-To apply an artificial efficiency to the embedded input objects, it is best to do so via the jet finder:
+To apply an artificial efficiency to the embedded input objects, it is best to do so via the jet finder. There
+are two different approaches available: to apply a constant additional tracking efficiency, or to apply a
+pT-dependent additional tracking efficiency. For the constant case, one should use: 
 
 ~~~{.cxx}
 // Create the finder jet task as usual (called "jetTask")
 // Set the track efficiency as desired
 jetTask->SetTrackEfficiency(0.94);
 // Tell it to apply to embedding only
+jetTask->SetTrackEfficiencyOnlyForEmbedding(kTRUE);
+~~~
+
+For the pT-dependent case, one should define a TF1 parameterizing the additional efficiency (typically PbPb track efficiency / pp track efficiency) in a root file, and in the AddTask customization call:
+~~~{.cxx}
+jetTask->LoadTrackEfficiencyFunction("/path/to/file.root", "tf1name");
 jetTask->SetTrackEfficiencyOnlyForEmbedding(kTRUE);
 ~~~
 
@@ -499,7 +507,7 @@ for (int i = 0; i < jet->GetNumberOfTracks(); ++i) {
 }
 ~~~
 
-Previous functions such as AliEmcalJet::TrackAt(Int_t index, TCloensArray * arr) still work, but with multiple
+Previous functions such as AliEmcalJet::TrackAt(Int_t index, TClonesArray * arr) still work, but with multiple
 containers, it is impossible to disambiguate which object comes from which container without external help
 (this is handled by AliEmcalContainerIndexMap). AliEmcalJet::Track(Int_t index) handles such situations properly
 and is provided as a convenience. And of course the use is still welcome to get the index directly via
