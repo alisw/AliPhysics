@@ -129,6 +129,13 @@ const Double_t AliReducedVarManager::fgkVZEROminMult = 0.5;   // minimum VZERO c
 const Float_t  AliReducedVarManager::fgkTPCQvecRapGap = 0.8;    // symmetric interval in the middle of the TPC excluded from EP calculation
       Float_t  AliReducedVarManager::fgBeamMomentum = 1380.;   // beam momentum in GeV/c
      
+const Double_t AliReducedVarManager::fgkSPDEtaCutsVsVtxZ[20][2] = {
+   {-0.5, 1.0}, {-0.6, 1.0}, {-0.8, 1.0}, {-0.9, 1.0}, {-1.0, 1.0},
+   {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0},
+   {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0},
+   {-1.0, 1.0}, {-1.0, 0.9}, {-1.0, 0.8}, {-1.0, 0.7}, {-1.0, 0.6}
+};
+     
 Int_t      AliReducedVarManager::fgCurrentRunNumber = -1;
 TString AliReducedVarManager::fgVariableNames[AliReducedVarManager::kNVars] = {""};
 TString AliReducedVarManager::fgVariableUnits[AliReducedVarManager::kNVars] = {""};
@@ -334,6 +341,13 @@ void AliReducedVarManager::FillEventInfo(Float_t* values) {
   // Fill event information
   //
   FillEventInfo(fgEvent, values, fgEventPlane);
+}
+
+void AliReducedVarManager::FillMCEventInfo(AliReducedEventInfo* event, Float_t* values) {
+   //
+   // fill MC event information
+   //
+   
 }
 
 //__________________________________________________________________
@@ -2193,38 +2207,38 @@ void AliReducedVarManager::SetDefaultVarNames() {
     "SPDntracklets08",
     "SPDntracklets16",
     "SPDntrackletsOuterEta",
-    "SPDntrackletsEtaBin00",
-    "SPDntrackletsEtaBin01",
-    "SPDntrackletsEtaBin02",
-    "SPDntrackletsEtaBin03",
-    "SPDntrackletsEtaBin04",
-    "SPDntrackletsEtaBin05",
-    "SPDntrackletsEtaBin06",
-    "SPDntrackletsEtaBin07",
-    "SPDntrackletsEtaBin08",
-    "SPDntrackletsEtaBin09",
-    "SPDntrackletsEtaBin10",
-    "SPDntrackletsEtaBin11",
-    "SPDntrackletsEtaBin12",
-    "SPDntrackletsEtaBin13",
-    "SPDntrackletsEtaBin14",
-    "SPDntrackletsEtaBin15",
-    "SPDntrackletsEtaBin16",
-    "SPDntrackletsEtaBin17",
-    "SPDntrackletsEtaBin18",
-    "SPDntrackletsEtaBin19",
-    "SPDntrackletsEtaBin20",
-    "SPDntrackletsEtaBin21",
-    "SPDntrackletsEtaBin22",
-    "SPDntrackletsEtaBin23",
-    "SPDntrackletsEtaBin24",
-    "SPDntrackletsEtaBin25",
-    "SPDntrackletsEtaBin26",
-    "SPDntrackletsEtaBin27",
-    "SPDntrackletsEtaBin28",
-    "SPDntrackletsEtaBin29",
-    "SPDntrackletsEtaBin30",
-    "SPDntrackletsEtaBin31",
+    "SPDntracklets -1.6<#eta<-1.5",
+    "SPDntracklets -1.5<#eta<-1.4",
+    "SPDntracklets -1.4<#eta<-1.3",
+    "SPDntracklets -1.3<#eta<-1.2",
+    "SPDntracklets -1.2<#eta<-1.1",
+    "SPDntracklets -1.1<#eta<-1.0",
+    "SPDntracklets -1.0<#eta<-0.9",
+    "SPDntracklets -0.9<#eta<-0.8",
+    "SPDntracklets -0.8<#eta<-0.7",
+    "SPDntracklets -0.7<#eta<-0.6",
+    "SPDntracklets -0.6<#eta<-0.5",
+    "SPDntracklets -0.5<#eta<-0.4",
+    "SPDntracklets -0.4<#eta<-0.3",
+    "SPDntracklets -0.3<#eta<-0.2",
+    "SPDntracklets -0.2<#eta<-0.1",
+    "SPDntracklets -0.1<#eta<0.0",
+    "SPDntracklets 0.0<#eta<0.1",
+    "SPDntracklets 0.1<#eta<0.2",
+    "SPDntracklets 0.2<#eta<0.3",
+    "SPDntracklets 0.3<#eta<0.4",
+    "SPDntracklets 0.4<#eta<0.5",
+    "SPDntracklets 0.5<#eta<0.6",
+    "SPDntracklets 0.6<#eta<0.7",
+    "SPDntracklets 0.7<#eta<0.8",
+    "SPDntracklets 0.8<#eta<0.9",
+    "SPDntracklets 0.9<#eta<1.0",
+    "SPDntracklets 1.0<#eta<1.1",
+    "SPDntracklets 1.1<#eta<1.2",
+    "SPDntracklets 1.2<#eta<1.3",
+    "SPDntracklets 1.3<#eta<1.4",
+    "SPDntracklets 1.4<#eta<1.5",
+    "SPDntracklets 1.5<#eta<1.6",
     "SPDntrackletsVtxEta",
     "VZEROTotalMult",
     "VZEROATotalMult",
@@ -2493,6 +2507,18 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableNames[kTPCuQsine+iHarmonic] = Form("sin(%d(#phi - #Psi_{%d}^{TPC})|Q^{TPC}_{%d}|", iHarmonic+1,iHarmonic+1,iHarmonic+1);
     fgVariableUnits[kTPCuQsine+iHarmonic] = "";
   }  // end loop over harmonics 
+  
+  fgVariableNames[kMCNch] = "N_{ch} in |#eta|<1"; fgVariableUnits[kMCNch] = ""; 
+  fgVariableNames[kMCNchSPDacc] = "N_{ch} in SPD acceptance"; fgVariableUnits[kMCNchSPDacc] = ""; 
+  fgVariableNames[kEtaBinForSPDtracklets] = "#eta"; fgVariableUnits[kEtaBinForSPDtracklets] = "";
+  fgVariableNames[kMCNchNegSide] = "N_{ch} in -1<#eta<0"; fgVariableUnits[kMCNchNegSide] = "";
+  fgVariableNames[kMCNchPosSide] = "N_{ch} in 0<#eta<1"; fgVariableUnits[kMCNchPosSide] = ""; 
+  fgVariableNames[kDiffNchSPDtrklts] = "N_{ch}^{|#eta|<1} - SPD #trklts"; fgVariableUnits[kDiffNchSPDtrklts] = "";
+  fgVariableNames[kDiffNchSPDaccSPDtrklts] = "N_{ch}^{SPD} - SPD #trklts"; fgVariableUnits[kDiffNchSPDaccSPDtrklts] = "";
+  fgVariableNames[kRelDiffNchSPDtrklts] = "(N_{ch}^{|#eta|<1} - SPD #trklts) / N_{ch}^{|#eta|<1}"; fgVariableUnits[kRelDiffNchSPDtrklts] = "";
+  fgVariableNames[kRelDiffNchSPDaccSPDtrklts] = "(N_{ch}^{SPD} - SPD #trklts) / N_{ch}^{SPD}"; fgVariableUnits[kRelDiffNchSPDaccSPDtrklts] = "";
+  fgVariableNames[kRelDiff2NchSPDtrklts] = "2*(N_{ch}^{|#eta|<1} - SPD #trklts) / (N_{ch}^{|#eta|<1} + SPD #trklts)"; fgVariableUnits[kRelDiff2NchSPDtrklts] = "";
+  fgVariableNames[kRelDiff2NchSPDaccSPDtrklts] = "2*(N_{ch}^{SPD} - SPD #trklts) / (N_{ch}^{SPD} + SPD #trklts)"; fgVariableUnits[kRelDiff2NchSPDaccSPDtrklts] = "";
   
   fgVariableNames[kPt]    = "p_{T}";   fgVariableUnits[kPt]    = "GeV/c";
   fgVariableNames[kPtMC]    = "p^{MC}_{T}";   fgVariableUnits[kPtMC]    = "GeV/c";
