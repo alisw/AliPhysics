@@ -4616,14 +4616,17 @@ TList * AliAnaClusterShapeCorrelStudies::GetCreateOutputObjects()
       fhSMM20HighM02NoCut[imatch]->SetZTitle("#sigma^{2}_{short}");
       outputContainer->Add(fhSMM20HighM02NoCut[imatch]);       
 
-      fhSMNLocMax[imatch]  = new TH3F 
-      (Form("hSMNLocMax_%s",matchCase[imatch].Data()),
-       Form("#it{E} vs SM number vs #it{n}_{LM} for ID %s",matchCase[imatch].Data()),
-       nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,10,0.5,10.5); 
-      fhSMNLocMax[imatch]->SetXTitle("#it{E} (GeV)");
-      fhSMNLocMax[imatch]->SetYTitle("SM number");
-      fhSMNLocMax[imatch]->SetZTitle("#it{n}_{LM}");
-      outputContainer->Add(fhSMNLocMax[imatch]); 
+      if( fFillNLocMaxHistos )
+      {
+        fhSMNLocMax[imatch]  = new TH3F 
+        (Form("hSMNLocMax_%s",matchCase[imatch].Data()),
+         Form("#it{E} vs SM number vs #it{n}_{LM} for ID %s",matchCase[imatch].Data()),
+         nEbins,minE,maxE,fNModules,-0.5,fNModules-0.5,10,0.5,10.5); 
+        fhSMNLocMax[imatch]->SetXTitle("#it{E} (GeV)");
+        fhSMNLocMax[imatch]->SetYTitle("SM number");
+        fhSMNLocMax[imatch]->SetZTitle("#it{n}_{LM}");
+        outputContainer->Add(fhSMNLocMax[imatch]); 
+      }
       
       fhSMNCell[imatch]  = new TH3F 
       (Form("hSMNCell_%s",matchCase[imatch].Data()),
