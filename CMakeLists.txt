@@ -117,23 +117,6 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
 
-# Be sure about where libraries and binaries are put
-set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
-set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
-
-# Build targets with install rpath on Mac to dramatically speed up installation
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
-  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
-  endif()
-endif()
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-endif()
-unset(isSystemDir)
-
 # HLT/ZMQ and HLT/BASE/util need X11
 find_package(X11)
 if(X11_FOUND)
@@ -286,7 +269,7 @@ else()
   # Enable C++11 by default if found in ROOT
   if(ROOT_HAS_CXX11 AND NOT DISABLE_CXX11)
     message(STATUS "Enabling C++11")
-    if (NOT ${CMAKE_CXX_FLAGS} MATCHES "-std=c\\+\\+11") 
+    if (NOT ${CMAKE_CXX_FLAGS} MATCHES "-std=c\\+\\+11")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     endif()
   endif()
@@ -294,7 +277,7 @@ else()
   # Enable C++14 by default if found in ROOT
   if(ROOT_HAS_CXX14 AND NOT DISABLE_CXX14)
     message(STATUS "Enabling C++14")
-    if (NOT ${CMAKE_CXX_FLAGS} MATCHES "-std=c\\+\\+14") 
+    if (NOT ${CMAKE_CXX_FLAGS} MATCHES "-std=c\\+\\+14")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
     endif()
   endif()
@@ -442,17 +425,36 @@ else()
     string(REPLACE ";" " " ALIROOT_MODULES_FORTRAN_FLAT "${ALIROOT_MODULES_FORTRAN}")
     message(WARNING "The following modules require Fortran and will not be built: ${ALIROOT_MODULES_FORTRAN_FLAT}")
   endif()
-  
+
   option(ALIROOT_ONLINE_MODE "Build HLT GPU tracker using CUDA" OFF)
   if((SHUTTLE OR DARPM OR "$ENV{ALIROOT_ONLINE_MODE}") AND NOT "$ENV{HLT_ONLINE_MODE}")
     set(ALIROOT_ONLINE_MODE ON)
   endif()
 
-  # We disable some unneeded modules if this is a SHUTTLE or DARPM build
   if(ALIROOT_ONLINE_MODE)
+    # Disable some unneeded modules in "online mode"
     string(REPLACE ";" " " ALIROOT_MODULES_NOONLINE_FLAT "${ALIROOT_MODULES_NOONLINE}")
     message(WARNING "Online build detected: disabling unneeded modules: ${ALIROOT_MODULES_NOONLINE_FLAT}")
     list(APPEND EXCLUDE_MODULES "${ALIROOT_MODULES_NOONLINE}")
+  else(ALIROOT_ONLINE_MODE)
+    # Not in "online mode": optimize install speed on macOS and fix install dirs
+
+    # Be sure about where libraries and binaries are put
+    set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
+    set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
+
+    # Build targets with install rpath on Mac to dramatically speed up installation
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+    if("${isSystemDir}" STREQUAL "-1")
+      if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+      endif()
+    endif()
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+      set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    endif()
+    unset(isSystemDir)
   endif()
 
   # Selectively exclude modules (with -DEXCLUDE_MODULES="mod1;mod2"...)
