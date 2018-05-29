@@ -61,7 +61,8 @@ public:
   
   void   InitTender();
   Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
-  Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge); 
+  Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge);
+  //this returns track index with a minimum distance between a extrapolated track in current and a PHOS cluster where locpos and mod points.
 
 protected:
   AliPHOSTenderSupply(const AliPHOSTenderSupply&c);
