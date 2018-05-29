@@ -43,7 +43,7 @@ public:
     AliCascadeResult& operator=(const AliCascadeResult& lCopyMe);
     
     Long64_t Merge(TCollection *hlist);
-    
+
     //Acceptance
     void SetCutMinRapidity      ( Double_t lCut ) { fCutMinRapidity       = lCut; }
     void SetCutMaxRapidity      ( Double_t lCut ) { fCutMaxRapidity       = lCut; }
@@ -265,11 +265,22 @@ public:
     Double_t GetCutDCAPosToPVWeighted    () const { return fCutDCAPosToPVWeighted;     }
     Double_t GetCutDCABachToPVWeighted   () const { return fCutDCABachToPVWeighted;    }
     
+    Long_t      GetNPtBins()   const { return fhNPtBins;   }
+    Double_t*   GetPtBins()    const { return fhPtBins;    }
+    Long_t      GetNCentBins() const { return fhNCentBins; }
+    Double_t*   GetCentBins()  const { return fhCentBins;  }
+    Long_t      GetNMassBins() const { return fhNMassBins; }
+    Double_t    GetMinMass()   const { return fhMinMass;   }
+    Double_t    GetMaxMass()   const { return fhMaxMass;   }
+    
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
     
     TProfile *GetProtonProfile       ()       { return fProtonProfile; }
     TProfile *GetProtonProfileToCopy () const { return fProtonProfile; }
+    
+    void InitializeHisto();         //Initialize main histogram as per request
+    void InitializeProtonProfile(); //Initialize profile, otherwise not stored
     void InitializeProtonProfile(Long_t lNPtBins, Double_t *lPtBins); //Initialize profile, otherwise not stored
     
     //No such thing as feeddown corrections for this result
@@ -285,6 +296,21 @@ private:
 
     AliCascadeResult::EMassHypo fMassHypo; //For determining invariant mass
 
+    //------------------------------------------------------------------------
+    //Histogram-controlling stuff
+    Int_t fhNCentBins;
+    Double_t *fhCentBins; //[fhNCentBins+1]
+    Int_t fhNPtBins;
+    Double_t *fhPtBins; //[fhNPtBins+1]
+    Long_t fhNMassBins;
+    Double_t fhMinMass;
+    Double_t fhMaxMass;
+    //------------------------------------------------------------------------
+    // Histograms / not streamed, initialized on demand 
+    TH3F *fHisto;             //Histogram for storing output with these configurations
+    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
+    //------------------------------------------------------------------------
+    
     //Basic acceptance criteria
     Double_t fCutMinRapidity; //min rapidity
     Double_t fCutMaxRapidity; //max rapidity
@@ -376,10 +402,6 @@ private:
     Double_t fCutDCAPosToPVWeighted;
     Double_t fCutDCABachToPVWeighted;
     
-    TH3F *fHisto; //Histogram for storing output with these configurations
-    
-    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
-    
     ClassDef(AliCascadeResult, 31)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
@@ -412,5 +434,6 @@ private:
     // 29 - implementation of 3D DCA cascade to PV cut, weighted single-track DCA to PV cuts
     // 30 - implementation of variable DCA cascade daughters cut
     // 31 - implementation of TOF experimental cut (no weak decay trajectory correction)
+    // 32 - streaming improvement
 };
 #endif

@@ -6259,7 +6259,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         lCascadeResult[lN] = new AliCascadeResult( Form("%s_Central",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits);
         
         //This is MC: generate profile for G3/F (if ever needed)
-        lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+        lCascadeResult[lN] -> InitializeProtonProfile();
         
         //Setters for V0 Cuts
         lCascadeResult[lN]->SetCutDCANegToPV            ( lcuts[i][1][ 0] ) ;
@@ -6324,7 +6324,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
             lCascadeResult[lN] = new AliCascadeResult( Form("%s_Central_Full",lParticleName[i].Data() ),lMassHypo[i]);
             
             //This is MC: generate profile for G3/F (if ever needed)
-            lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+            lCascadeResult[lN] -> InitializeProtonProfile();
             
             //Setters for V0 Cuts
             lCascadeResult[lN]->SetCutDCANegToPV            ( lcuts[i][1][ 0] ) ;
@@ -6604,7 +6604,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         
         
         //This is MC: generate profile for G3/F (if ever needed)
-        lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+        lCascadeResult[lN] -> InitializeProtonProfile();
         
         //Default cuts: use vertexer level ones
         //Setters for V0 Cuts
@@ -6673,7 +6673,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddCascadeConfiguration276T
     for(Int_t i = 0 ; i < 4 ; i ++){
         //2.76 Config result, customized binning: the one to use, usually
         lCascadeResult[lN] = new AliCascadeResult( Form("%s_276TeV",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits);
-        lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+        lCascadeResult[lN] -> InitializeProtonProfile();
         
         //Setters for V0 Cuts
         lCascadeResult[lN]->SetCutDCANegToPV            ( 0.1    ) ;
