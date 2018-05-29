@@ -140,6 +140,51 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   return;
 }
 
+void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
+  const AliVVertex *vtx = evt->GetPrimaryVertex();
+  AliESDVZERO *vZERO=evt->GetVZEROData();
+  AliESDHeader *header=dynamic_cast<AliESDHeader*>(evt->GetHeader());
+  if (!vtx) {
+    this->fHasVertex=false;
+  } else {
+    this->fHasVertex=true;
+  }
+  if (TMath::Abs(evt->GetMagneticField())< 0.001) {
+    this->fHasMagField=false;
+  } else {
+    this->fHasMagField=true;
+  }
+  this->fnContrib=vtx->GetNContributors();
+  this->fxVtx=vtx->GetX();
+  this->fyVtx=vtx->GetY();
+  this->fzVtx=vtx->GetZ();
+  if (fUtils->IsPileUpEvent(evt)) {
+    this->fisPileUp=true;
+  } else {
+    this->fisPileUp=false;
+  }
+  if (fEvtCuts->AcceptEvent(evt)) {
+    this->fPassAliEvtSelection=true;
+  } else {
+    this->fPassAliEvtSelection=false;
+  }
+  //!to do: Check event multiplicity estimation!
+  this->fSPDMult=evt->GetNumberOfTrdTracklets();
+  this->fRefMult08=evt->GetNumberOfITSClusters(1);
+  this->fV0AMult=vZERO->GetMTotV0A();
+  this->fV0CMult=vZERO->GetMTotV0C();
+  float lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection = (AliMultSelection * ) evt->FindListObject("MultSelection");
+  if( !MultSelection) {
+    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+    AliWarning("AliMultSelection object not found!");
+  }else{
+    fV0MCentrality= MultSelection->GetMultiplicityPercentile("V0M");
+  }
+  return;
+}
+//rebuild
 int AliFemtoDreamEvent::CalculateITSMultiplicity(AliAODEvent *evt) {
   AliAODTracklets* tracklets=evt->GetTracklets();
   int nTr=tracklets->GetNumberOfTracklets();

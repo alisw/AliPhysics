@@ -9,6 +9,7 @@
 #define ALIFEMTODREAMEVENT_H_
 #include "AliAnalysisUtils.h"
 #include "AliAODEvent.h"
+#include "AliESDEvent.h"
 #include "AliEventCuts.h"
 #include "Rtypes.h"
 #include "TList.h"
@@ -25,6 +26,7 @@ class AliFemtoDreamEvent {
   AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA, UInt_t trigger);
   virtual ~AliFemtoDreamEvent();
   void SetEvent(AliAODEvent *evt);
+  void SetEvent(AliESDEvent *evt);
   TList *GetEvtCutList() const {return fEvtCutList;};
   void SetXVertex(float xvtx){fxVtx=xvtx;};
   float GetXVertex() const {return fxVtx;};

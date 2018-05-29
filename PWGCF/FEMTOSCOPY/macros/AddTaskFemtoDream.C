@@ -2,6 +2,7 @@
 #include "TSystem.h"
 AliAnalysisTaskSE* AddTaskFemtoDream(
     bool isMC=false,
+    bool isESD=false,
     TString CentEst="kInt7",
     bool notpp=true,//1
     bool DCAPlots=false,//2
@@ -326,7 +327,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 	}
 	AliAnalysisTaskFemtoDream *task=
-	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isMC);
+	    new AliAnalysisTaskFemtoDream("FemtoDreamDefault",isESD,isMC);
 	if(CentEst == "kInt7"){
 		task->SelectCollisionCandidates(AliVEvent::kINT7);
 		std::cout << "Added kINT7 Trigger \n";

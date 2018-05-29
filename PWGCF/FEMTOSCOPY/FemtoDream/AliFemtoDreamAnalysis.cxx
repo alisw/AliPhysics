@@ -83,12 +83,14 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
       !((!fConfig->GetMinimalBookingME())||(!fConfig->GetMinimalBookingSample()));
   fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinBooking);
 
-  if (MinBooking) {
+  if (!MinBooking) {
     fQA=new TList();
     fQA->SetOwner();
     fQA->SetName("QA");
     fQA->Add(fPairCleaner->GetHistList());
-    if (fEvtCutQA) fQA->Add(fEvent->GetEvtCutList());
+    if (fEvtCutQA) {
+      fQA->Add(fEvent->GetEvtCutList());
+    }
   }
   fPartColl=
       new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
@@ -284,6 +286,17 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   if (fConfig->GetUsePhiSpinning()) {
     fControlSample->SetEvent(
         fPairCleaner->GetCleanParticles(), fEvent->GetMultiplicity());
+  }
+}
+
+
+void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
+  if (!evt) {
+    AliFatal("No Input Event");
+  }
+  fEvent->SetEvent(evt);
+  if (!fEvtCuts->isSelected(fEvent)) {
+    return;
   }
 }
 

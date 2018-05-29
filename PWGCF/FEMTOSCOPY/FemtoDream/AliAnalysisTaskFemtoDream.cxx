@@ -12,6 +12,7 @@ ClassImp(AliAnalysisTaskFemtoDream)
 AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream()
 :AliAnalysisTaskSE()
 ,fTrackBufferSize(0)
+,fESDAnalysis(false)
 ,fMinBookingME(false)
 ,fMinBookingSample(false)
 ,fMVPileUp(false)
@@ -46,9 +47,10 @@ AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream()
 ,fResultQASample(0)
 {}
 
-AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(const char *name,bool isMC)
+AliAnalysisTaskFemtoDream::AliAnalysisTaskFemtoDream(const char *name,bool isESD,bool isMC)
 :AliAnalysisTaskSE(name)
 ,fTrackBufferSize(0)
+,fESDAnalysis(isESD)
 ,fMinBookingME(false)
 ,fMinBookingSample(false)
 ,fMVPileUp(false)
@@ -262,7 +264,7 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
   if (fAnalysis->GetResultSampleList()) {
     fResultsSample=fAnalysis->GetResultSampleList();
   } else {
-	  AliWarning("Results Sample List not Available");
+    AliWarning("Results Sample List not Available");
     fResultsSample=new TList();
     fResultsSample->SetOwner();
     fResultsSample->SetName("ResultsSample");
@@ -344,31 +346,39 @@ void AliAnalysisTaskFemtoDream::UserCreateOutputObjects() {
 }
 
 void AliAnalysisTaskFemtoDream::UserExec(Option_t *) {
-  AliAODEvent *Event=static_cast<AliAODEvent*>(fInputEvent);
-
-  if (!Event) {
-    AliWarning("No Input Event");
-  } else {
-    fAnalysis->Make(Event);
-     PostData(1,fQA);
-     PostData(2,fEvtHistList);
-     PostData(3,fTrackCutHistList);
-     PostData(4,fAntiTrackCutHistList);
-     PostData(5,fv0CutHistList);
-     PostData(6,fAntiv0CutHistList);
-     PostData(7,fCascCutList);
-     PostData(8,fAntiCascCutList);
-     PostData(9,fResults);
-     PostData(10,fResultQA);
-     PostData(11,fResultsSample);
-     PostData(12,fResultQASample);
-    if (fIsMC) {
-      PostData(13,fTrackCutHistMCList);
-      PostData(14,fAntiTrackCutHistMCList);
-      PostData(15,fv0CutHistMCList);
-      PostData(16,fAntiv0CutHistMCList);
-      PostData(17,fCascCutMCList);
-      PostData(18,fAntiCascCutMCList);
+  if (fESDAnalysis) {
+    AliESDEvent *Event=static_cast<AliESDEvent*>(fInputEvent);
+    if (!Event) {
+      AliWarning("No Input Event");
+    } else {
+      fAnalysis->Make(Event);
     }
+  } else {
+    AliAODEvent *Event=static_cast<AliAODEvent*>(fInputEvent);
+    if (!Event) {
+      AliWarning("No Input Event");
+    } else {
+      fAnalysis->Make(Event);
+    }
+  }
+  PostData(1,fQA);
+  PostData(2,fEvtHistList);
+  PostData(3,fTrackCutHistList);
+  PostData(4,fAntiTrackCutHistList);
+  PostData(5,fv0CutHistList);
+  PostData(6,fAntiv0CutHistList);
+  PostData(7,fCascCutList);
+  PostData(8,fAntiCascCutList);
+  PostData(9,fResults);
+  PostData(10,fResultQA);
+  PostData(11,fResultsSample);
+  PostData(12,fResultQASample);
+  if (fIsMC) {
+    PostData(13,fTrackCutHistMCList);
+    PostData(14,fAntiTrackCutHistMCList);
+    PostData(15,fv0CutHistMCList);
+    PostData(16,fAntiv0CutHistMCList);
+    PostData(17,fCascCutMCList);
+    PostData(18,fAntiCascCutMCList);
   }
 }
