@@ -28,18 +28,12 @@
 //                 Author Lennart van Doremalen
 //           Utrecht University - l.v.r.vandoremalen@uu.nl
 //
-//               Based on the DStartoKpipi macro by:
-//
-//                         Author A.Grelli 
-//              ERC-QGP Utrecht University - a.grelli@uu.nl,
-//                         Author Y.Wang
-//        University of Heidelberg - yifei@physi.uni-heidelberg.de
-//                         Author C.Ivan 
-//             ERC-QGP Utrecht University - c.ivan@uu.nl,
+//     Several AliPhysics classes have been used as a basis for this code
 //
 //-----------------------------------------------------------------------
 
 #include <TSystem.h>
+#include <TChain.h>
 #include <TParticle.h>
 #include <TH1I.h>
 #include "TROOT.h"
@@ -63,11 +57,9 @@
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF2Prong.h"
-#include "AliAODRecoDecayHF2Prong.h"
 #include "AliAnalysisVertexingHF.h"
 #include "AliESDtrack.h"
 #include "AliAODMCParticle.h"
-#include "AliNormalizationCounter.h"
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskSEB0toDStarPi.h"
 #include "AliAODInputHandler.h"
@@ -86,6 +78,7 @@ ClassImp(AliAnalysisTaskSEB0toDStarPi);
 //__________________________________________________________________________
 AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi():  
   AliAnalysisTaskSE(),
+  fListCuts(0),
   fEvents(0),
   fUseMCInfo(kFALSE),
   fOutput(0),
@@ -104,7 +97,6 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi():
   fQuickSignalAnalysis(0),
   fGetCutInfo(0),
   fCEvents(0),     
-  fCounter(0),
   fDStarPionTracks(0),
   fB0PionTracks(0),
   fD0Tracks(0),
@@ -124,6 +116,7 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi():
   fPtBinLimitsDStarforDStarptbin(0),
   fDaughterHistogramArray(),
   fDaughterHistogramArray2D(),
+  fDaughterHistogramArrayExtra(),
   fMotherHistogramArray(),
   fMotherHistogramArray2D(),
   fMotherHistogramArrayExtra()
@@ -135,6 +128,7 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi():
 //___________________________________________________________________________
 AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, AliRDHFCutsB0toDStarPi* cuts) :
   AliAnalysisTaskSE(name),
+  fListCuts(0),
   fEvents(0),
   fUseMCInfo(kFALSE),
   fOutput(0),
@@ -149,11 +143,10 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, A
   fOutputD0_DStarPt(0),
   fOutputDStar_DStarPt(0),
   fOutputB0MC(0),
-  fCuts(0),
+  fCuts(cuts),
   fQuickSignalAnalysis(0),
   fGetCutInfo(0),
   fCEvents(0),     
-  fCounter(0),
   fDStarPionTracks(0),
   fB0PionTracks(0),
   fD0Tracks(0),
@@ -173,6 +166,7 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, A
   fPtBinLimitsDStarforDStarptbin(0),
   fDaughterHistogramArray(),
   fDaughterHistogramArray2D(),
+  fDaughterHistogramArrayExtra(),
   fMotherHistogramArray(),
   fMotherHistogramArray2D(),
   fMotherHistogramArrayExtra()
@@ -182,70 +176,22 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, A
   //
   Info("AliAnalysisTaskSEB0toDStarPi","Calling Constructor");
 
-  // we prepare vectors and arrays that will save the candidates during the reconstruction
-  fDStarPionTracks = new std::vector<Int_t>;
-  fB0PionTracks = new std::vector<Int_t>;
-  fD0Tracks = new std::vector<Int_t>; 
 
-  // we get the cut file
-  fCuts=cuts;
+  DefineInput(0,TChain::Class());
+  DefineOutput(1,TList::Class());   // counters
+  DefineOutput(2,TList::Class());   // cut file
+  DefineOutput(3,TList::Class());   // D0 pion output
+  DefineOutput(4,TList::Class());   // D0 kaon output
+  DefineOutput(5,TList::Class());   // DStar pion output
+  DefineOutput(6,TList::Class());   // B0 pion output
+  DefineOutput(7,TList::Class());   // D0 output
+  DefineOutput(8,TList::Class());   // DStar output
+  DefineOutput(9,TList::Class());   // B0 output
+  DefineOutput(10,TList::Class());  // B0 output
+  DefineOutput(11,TList::Class());  // B0 output
+  DefineOutput(12,TList::Class());  // B0 output
+  DefineOutput(13,TList::Class());  // B0MC output
 
-  // we get information on the pt bins
-  fnPtBins = fCuts->GetNPtBins();
-  fnPtBinsD0forD0ptbin = fCuts->GetNPtBinsD0forD0ptbin();
-  fnPtBinsD0forDStarptbin = fCuts->GetNPtBinsD0forDStarptbin();
-  fnPtBinsDStarforDStarptbin = fCuts->GetNPtBinsDStarforDStarptbin();
-
-  fnPtBinLimits = fnPtBins + 1;
-  fnPtBinsD0forD0ptbinLimits = fnPtBinsD0forD0ptbin + 1;
-  fnPtBinsD0forDStarptbinLimits = fnPtBinsD0forDStarptbin + 1;
-  fnPtBinsDStarforDStarptbinLimits = fnPtBinsDStarforDStarptbin + 1;
-
-  fPtBinLimits = fCuts->GetPtBinLimits();
-  fPtBinLimitsD0forD0ptbin = fCuts->GetPtBinLimitsD0forD0ptbin();
-  fPtBinLimitsD0forDStarptbin = fCuts->GetPtBinLimitsD0forDStarptbin();
-  fPtBinLimitsDStarforDStarptbin = fCuts->GetPtBinLimitsDStarforDStarptbin();
-
-  // we create an array of pointers for the histograms. This method is more CPU efficient than looking up each histogram by name.
-  // Automatic option is not yet complete, the arrays are now set manualy in the header file
-
-  // const Int_t numberOfDaughters = 4;
-  // const Int_t numberOfDaughterHistogramSets = 5;
-  // const Int_t numberOfDaughterHistograms = 15;
-  // const Int_t numberOfDaughterHistograms2D = 6;
-
-  // Int_t maxHistogramSets = 6 + 2*fnPtBins;
-  // if(2*fnPtBinsD0forD0ptbin > maxHistogramSets) maxHistogramSets = 2*fnPtBinsD0forD0ptbin;
-  // if(2*fnPtBinsD0forDStarptbin > maxHistogramSets) maxHistogramSets = 2*fnPtBinsD0forDStarptbin;
-  // if(2*fnPtBinsDStarforDStarptbin > maxHistogramSets) maxHistogramSets = 2*fnPtBinsDStarforDStarptbin;
-
-  // const Int_t numberOfOutputs = 6;
-  // const Int_t numberOfMotherHistogramSets = maxHistogramSets;
-  // const Int_t numberOfMotherHistograms = 46;
-  // const Int_t numberOfMotherHistograms2D = 7;
-
-  // fDaughterHistogramArray = new Int_t*[numberOfDaughters][numberOfDaughterHistogramSets][numberOfDaughterHistograms];
-  // fDaughterHistogramArray2D = new Int_t*[numberOfDaughters][numberOfDaughterHistograms2D];
-  // fMotherHistogramArray = new Int_t*[numberOfOutputs][numberOfMotherHistogramSets][numberOfMotherHistograms];
-  // fMotherHistogramArray2D = new Int_t*[numberOfOutputs][numberOfMotherHistograms2D];
-
-
-  DefineOutput(1,TList::Class());  //counters
-  DefineOutput(2,TList::Class());  //All Entries output
-  DefineOutput(3,TList::Class());  //3sigma PID output
-  DefineOutput(4,AliRDHFCutsB0toDStarPi::Class());   //My private output
-  DefineOutput(5,AliNormalizationCounter::Class());   // normalization
-  DefineOutput(6,TList::Class());  // D0 pion output
-  DefineOutput(7,TList::Class());  // D0 kaon output
-  DefineOutput(8,TList::Class());  // DStar pion output
-  DefineOutput(9,TList::Class());  // B0 pion output
-  DefineOutput(10,TList::Class());  // D0 output
-  DefineOutput(11,TList::Class());  // DStar output
-  DefineOutput(12,TList::Class());   // B0 output
-  DefineOutput(13,TList::Class());   // B0 output
-  DefineOutput(14,TList::Class());   // B0 output
-  DefineOutput(15,TList::Class());   // B0 output
-  DefineOutput(16,TList::Class());   // B0MC output
 }
 
 //___________________________________________________________________________
@@ -272,6 +218,7 @@ AliAnalysisTaskSEB0toDStarPi::~AliAnalysisTaskSEB0toDStarPi() {
   delete fD0Tracks;
   delete fDStarPionTracks;
   delete fB0PionTracks;
+  delete fListCuts;
 }
 //_________________________________________________
 void AliAnalysisTaskSEB0toDStarPi::Init(){
@@ -279,10 +226,13 @@ void AliAnalysisTaskSEB0toDStarPi::Init(){
   /// Initialization
   //
 
+  fListCuts=new TList();
+  fListCuts->SetOwner();
   if(fDebug > 1) printf("AliAnalysisTaskSEB0toDStarPi::Init() \n");
-   AliRDHFCutsB0toDStarPi* copyfCuts=new AliRDHFCutsB0toDStarPi(*(static_cast<AliRDHFCutsB0toDStarPi*>(fCuts)));
+  AliRDHFCutsB0toDStarPi* copyfCuts=new AliRDHFCutsB0toDStarPi(*fCuts);
   // Post the data
-  PostData(4,copyfCuts);
+  fListCuts->Add(copyfCuts);
+  PostData(2,fListCuts);
   delete copyfCuts;
   return;
 }
@@ -349,8 +299,7 @@ void AliAnalysisTaskSEB0toDStarPi::UserExec(Option_t *){
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aodEvent->GetPrimaryVertex() || TMath::Abs(aodEvent->GetMagneticField())<0.001) return;
   fCEvents->Fill(2);
-
-  fCounter->StoreEvent(aodEvent,fCuts,fUseMCInfo);
+  
 
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
   TString trigclass=aodEvent->GetFiredTriggerClasses();
@@ -394,8 +343,9 @@ void AliAnalysisTaskSEB0toDStarPi::UserExec(Option_t *){
   //==================================================================================
 
   // We create an array that contains all the monte carlo particles in the event
-  TClonesArray *mcTrackArray = 0; 
+  TClonesArray *mcTrackArray = nullptr; 
   if(fUseMCInfo) mcTrackArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  if(fUseMCInfo && !mcTrackArray) return;
 
   // We create an array to save the MC labels of true signal tracks
   TMatrix * B0toDStarPiLabelMatrix = new TMatrix(0,7);
@@ -413,7 +363,6 @@ void AliAnalysisTaskSEB0toDStarPi::UserExec(Option_t *){
   // Here we select and reconstruct the particles for the B0->D*Pion decay. 
   //
   //==================================================================================
-
 
   DStarPionSelection(aodEvent,primaryVertex,bz,mcTrackArray,B0toDStarPiLabelMatrix);
   B0PionSelection(aodEvent,primaryVertex,bz,mcTrackArray,B0toDStarPiLabelMatrix);
@@ -433,24 +382,23 @@ void AliAnalysisTaskSEB0toDStarPi::UserExec(Option_t *){
   //==================================================================================
 
   PostData(1,fOutput);
-  PostData(5,fCounter);
-  PostData(6,fOutputD0Pion);
-  PostData(7,fOutputD0Kaon);
-  PostData(8,fOutputDStarPion);
-  PostData(9,fOutputB0Pion);
-  PostData(10,fOutputD0);
-  PostData(11,fOutputDStar);
-  PostData(12,fOutputB0);
-  PostData(13,fOutputD0_D0Pt);
-  PostData(14,fOutputD0_DStarPt);
-  PostData(15,fOutputDStar_DStarPt);
-  PostData(16,fOutputB0MC);
+  PostData(3,fOutputD0Pion);
+  PostData(4,fOutputD0Kaon);
+  PostData(5,fOutputDStarPion);
+  PostData(6,fOutputB0Pion);
+  PostData(7,fOutputD0);
+  PostData(8,fOutputDStar);
+  PostData(9,fOutputB0);
+  PostData(10,fOutputD0_D0Pt);
+  PostData(11,fOutputD0_DStarPt);
+  PostData(12,fOutputDStar_DStarPt);
+  PostData(13,fOutputB0MC);
 
 
   //==================================================================================
   //  USER EXECUTION FUNCTION - end
   //==================================================================================
-
+  return;
 }
 //________________________________________ terminate ___________________________
 void AliAnalysisTaskSEB0toDStarPi::Terminate(Option_t*){    
@@ -458,9 +406,8 @@ void AliAnalysisTaskSEB0toDStarPi::Terminate(Option_t*){
   /// a query. It always runs on the client, it can be used to present
   /// the results graphically or save the results to file.
   
-  //Info("Terminate","");
+  // Info("Terminate","");
   AliAnalysisTaskSE::Terminate();
-  
   fOutput = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutput) {     
     printf("ERROR: fOutput not available\n");
@@ -469,57 +416,63 @@ void AliAnalysisTaskSEB0toDStarPi::Terminate(Option_t*){
   
   fCEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fCEvents"));
 
-  fOutputD0Pion = dynamic_cast<TList*> (GetOutputData(6));
+  fListCuts = dynamic_cast<TList*> (GetOutputData(2));
+  if (!fListCuts) {
+    printf("ERROR: fListCuts not available\n");
+    return;
+  }
+
+  fOutputD0Pion = dynamic_cast<TList*> (GetOutputData(3));
   if (!fOutputD0Pion) {
     printf("ERROR: fOutputD0Pion not available\n");
     return;
   }
-  fOutputD0Kaon = dynamic_cast<TList*> (GetOutputData(7));
+  fOutputD0Kaon = dynamic_cast<TList*> (GetOutputData(4));
   if (!fOutputD0Kaon) {
     printf("ERROR: fOutputD0Kaon not available\n");
     return;
   }
-  fOutputDStarPion = dynamic_cast<TList*> (GetOutputData(8));
+  fOutputDStarPion = dynamic_cast<TList*> (GetOutputData(5));
   if (!fOutputDStarPion) {
     printf("ERROR: fOutputDStarPion not available\n");
     return;
   }
-  fOutputB0Pion = dynamic_cast<TList*> (GetOutputData(9));
+  fOutputB0Pion = dynamic_cast<TList*> (GetOutputData(6));
   if (!fOutputB0Pion) {
     printf("ERROR: fOutputB0Pion not available\n");
     return;
   }
-  fOutputD0 = dynamic_cast<TList*> (GetOutputData(10));
+  fOutputD0 = dynamic_cast<TList*> (GetOutputData(7));
   if (!fOutputD0) {
     printf("ERROR: fOutputD0 not available\n");
     return;
   }
-  fOutputDStar = dynamic_cast<TList*> (GetOutputData(11));
+  fOutputDStar = dynamic_cast<TList*> (GetOutputData(8));
   if (!fOutputDStar) {
     printf("ERROR: fOutputDStar not available\n");
     return;
   }
-  fOutputB0 = dynamic_cast<TList*> (GetOutputData(12));
+  fOutputB0 = dynamic_cast<TList*> (GetOutputData(9));
   if (!fOutputB0) {
     printf("ERROR: fOutputB0 not available\n");
     return;
   }
-  fOutputD0_D0Pt = dynamic_cast<TList*> (GetOutputData(13));
+  fOutputD0_D0Pt = dynamic_cast<TList*> (GetOutputData(10));
   if (!fOutputD0_D0Pt) {
     printf("ERROR: fOutputD0_D0Pt not available\n");
     return;
   }
-  fOutputD0_DStarPt = dynamic_cast<TList*> (GetOutputData(14));
+  fOutputD0_DStarPt = dynamic_cast<TList*> (GetOutputData(11));
   if (!fOutputD0_DStarPt) {
     printf("ERROR: fOutputD0_DStarPt not available\n");
     return;
   }
-  fOutputDStar_DStarPt = dynamic_cast<TList*> (GetOutputData(15));
+  fOutputDStar_DStarPt = dynamic_cast<TList*> (GetOutputData(12));
   if (!fOutputDStar_DStarPt) {
     printf("ERROR: fOutputDStar_DStarPt not available\n");
     return;
   }  
-  fOutputB0MC = dynamic_cast<TList*> (GetOutputData(16));
+  fOutputB0MC = dynamic_cast<TList*> (GetOutputData(13));
   if (!fOutputB0MC) {
     printf("ERROR: fOutputB0MC not available\n");
     return;
@@ -582,25 +535,100 @@ void AliAnalysisTaskSEB0toDStarPi::UserCreateOutputObjects() {
   fOutputB0MC->SetOwner();
   fOutputB0MC->SetName("listB0MC");
     
+  // we prepare vectors that will save the positions of the daughter tracks in the track list during the reconstruction
+  fDStarPionTracks = new std::vector<Int_t>;
+  fB0PionTracks = new std::vector<Int_t>;
+  fD0Tracks = new std::vector<Int_t>; 
+
+  // we get information on the pt bins
+  fnPtBins = fCuts->GetNPtBins();
+  fnPtBinsD0forD0ptbin = fCuts->GetNPtBinsD0forD0ptbin();
+  fnPtBinsD0forDStarptbin = fCuts->GetNPtBinsD0forDStarptbin();
+  fnPtBinsDStarforDStarptbin = fCuts->GetNPtBinsDStarforDStarptbin();
+
+  fnPtBinLimits = fnPtBins + 1;
+  fnPtBinsD0forD0ptbinLimits = fnPtBinsD0forD0ptbin + 1;
+  fnPtBinsD0forDStarptbinLimits = fnPtBinsD0forDStarptbin + 1;
+  fnPtBinsDStarforDStarptbinLimits = fnPtBinsDStarforDStarptbin + 1;
+
+  fPtBinLimits = fCuts->GetPtBinLimits();
+  fPtBinLimitsD0forD0ptbin = fCuts->GetPtBinLimitsD0forD0ptbin();
+  fPtBinLimitsD0forDStarptbin = fCuts->GetPtBinLimitsD0forDStarptbin();
+  fPtBinLimitsDStarforDStarptbin = fCuts->GetPtBinLimitsDStarforDStarptbin();
+
+  std::cout << "bins" <<  fCuts->GetNPtBins() << std::endl;
+  std::cout << "bins" <<  fCuts->GetNPtBinsD0forD0ptbin() << std::endl;
+  std::cout << "bins" <<  fCuts->GetNPtBinsD0forDStarptbin() << std::endl;
+  std::cout << "bins" <<  fCuts->GetNPtBinsDStarforDStarptbin() << std::endl;
+
+  std::cout << "bins" <<  fnPtBins + 1 << std::endl;
+  std::cout << "bins" <<  fnPtBinsD0forD0ptbin + 1 << std::endl;
+  std::cout << "bins" <<  fnPtBinsD0forDStarptbin + 1 << std::endl;
+  std::cout << "bins" <<  fnPtBinsDStarforDStarptbin + 1 << std::endl;
+
+  std::cout << "bins" <<  fCuts->GetPtBinLimits() << std::endl;
+  std::cout << "bins" <<  fCuts->GetPtBinLimitsD0forD0ptbin() << std::endl;
+  std::cout << "bins" <<  fCuts->GetPtBinLimitsD0forDStarptbin() << std::endl;
+  std::cout << "bins" <<  fCuts->GetPtBinLimitsDStarforDStarptbin() << std::endl;
+
+  for (int i = 0; i < fnPtBinLimits; ++i)
+  {
+    std::cout << "limit " << i << " " << fPtBinLimits[i] << std::endl;
+  }
+
+  for (int i = 0; i < fnPtBinsD0forD0ptbinLimits; ++i)
+  {
+    std::cout << "limit " << i << " " << fPtBinLimitsD0forD0ptbin[i] << std::endl;
+  }
+
+  for (int i = 0; i < fnPtBinsD0forDStarptbinLimits; ++i)
+  {
+    std::cout << "limit " << i << " " << fPtBinLimitsD0forDStarptbin[i] << std::endl;
+  }
+
+  for (int i = 0; i < fnPtBinsDStarforDStarptbinLimits; ++i)
+  {
+    std::cout << "limit " << i << " " << fPtBinLimitsDStarforDStarptbin[i] << std::endl;
+  }  
+
+  // we create an array of pointers for the histograms. This method is more CPU efficient than looking up each histogram by name.
+  // Automatic option is not yet complete, the arrays are now set manualy in the header file
+
+  // const Int_t numberOfDaughters = 4;
+  // const Int_t numberOfDaughterHistogramSets = 5;
+  // const Int_t numberOfDaughterHistograms = 15;
+  // const Int_t numberOfDaughterHistograms2D = 6;
+
+  // Int_t maxHistogramSets = 6 + 2*fnPtBins;
+  // if(2*fnPtBinsD0forD0ptbin > maxHistogramSets) maxHistogramSets = 2*fnPtBinsD0forD0ptbin;
+  // if(2*fnPtBinsD0forDStarptbin > maxHistogramSets) maxHistogramSets = 2*fnPtBinsD0forDStarptbin;
+  // if(2*fnPtBinsDStarforDStarptbin > maxHistogramSets) maxHistogramSets = 2*fnPtBinsDStarforDStarptbin;
+
+  // const Int_t numberOfOutputs = 6;
+  // const Int_t numberOfMotherHistogramSets = maxHistogramSets;
+  // const Int_t numberOfMotherHistograms = 46;
+  // const Int_t numberOfMotherHistograms2D = 7;
+
+  // fDaughterHistogramArray = new Int_t*[numberOfDaughters][numberOfDaughterHistogramSets][numberOfDaughterHistograms];
+  // fDaughterHistogramArrayExtra = new Int_t*[numberOfDaughters][numberOfDaughterHistograms2D];
+  // fMotherHistogramArray = new Int_t*[numberOfOutputs][numberOfMotherHistogramSets][numberOfMotherHistograms];
+  // fMotherHistogramArray2D = new Int_t*[numberOfOutputs][numberOfMotherHistograms2D];
+
   // define histograms
   DefineHistograms();
-  
-  //Counter for Normalization
-  fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
-  fCounter->Init();
 
   PostData(1,fOutput);
-  PostData(6,fOutputD0Pion);
-  PostData(7,fOutputD0Kaon);
-  PostData(8,fOutputDStarPion);
-  PostData(9,fOutputB0Pion);
-  PostData(10,fOutputD0);
-  PostData(11,fOutputDStar);
-  PostData(12,fOutputB0);
-  PostData(13,fOutputD0_D0Pt);
-  PostData(14,fOutputD0_DStarPt);
-  PostData(15,fOutputDStar_DStarPt);
-  PostData(16,fOutputB0MC);
+  PostData(3,fOutputD0Pion);
+  PostData(4,fOutputD0Kaon);
+  PostData(5,fOutputDStarPion);
+  PostData(6,fOutputB0Pion);
+  PostData(7,fOutputD0);
+  PostData(8,fOutputDStar);
+  PostData(9,fOutputB0);
+  PostData(10,fOutputD0_D0Pt);
+  PostData(11,fOutputD0_DStarPt);
+  PostData(12,fOutputDStar_DStarPt);
+  PostData(13,fOutputB0MC);
 
   return;
 }
@@ -839,7 +867,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         if(j%2==1) histogram->SetMarkerColor(4);
         TH1F* histogram_Clone = (TH1F*)histogram->Clone();
         listout->Add(histogram_Clone);
-        fDaughterHistogramArray[i][j][k] = (Int_t*)histogram_Clone;
+        fDaughterHistogramArray[i][j][k] = histogram_Clone;
       }
 
       TString numberofparticlesperevent="numberofparticlesperevent";
@@ -852,7 +880,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
       hist_numberofparticlesperevent->SetMarkerColor(6);
       TH1F* histogram_numberofparticlesperevent = (TH1F*)hist_numberofparticlesperevent->Clone();
       listout->Add(histogram_numberofparticlesperevent);
-      fDaughterHistogramArray[i][j][12] = (Int_t*)histogram_numberofparticlesperevent;
+      fDaughterHistogramArray[i][j][12] = histogram_numberofparticlesperevent;
     }
 
     TH1F * effectOfCuts = new TH1F("effectOfCutsOnBackground","Removal counter",18,0,18);
@@ -878,7 +906,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     effectOfCuts->GetXaxis()->SetBinLabel(17,"16");
     effectOfCuts->GetXaxis()->SetBinLabel(18,"17");
     listout->Add(effectOfCuts);
-    fDaughterHistogramArray2D[i][0] = (Int_t*)effectOfCuts;
+    fDaughterHistogramArrayExtra[i][0] = effectOfCuts;
 
     TH1F * effectOfCutsMC = new TH1F("effectOfCutsOnSignal","Removal counter",18,0,18);
     effectOfCutsMC->SetStats(kTRUE);
@@ -903,7 +931,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     effectOfCutsMC->GetXaxis()->SetBinLabel(17,"16");
     effectOfCutsMC->GetXaxis()->SetBinLabel(18,"17");
     listout->Add(effectOfCutsMC);
-    fDaughterHistogramArray2D[i][1] = (Int_t*)effectOfCutsMC;
+    fDaughterHistogramArrayExtra[i][1] = effectOfCutsMC;
 
     TString name_particle_pdg ="particle_pdg";
     TH1F* hist_particle_pdg = new TH1F(name_particle_pdg.Data(),"Pdg code particle; pdg code; Entries",2000,-0.5,1999.5);
@@ -914,7 +942,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     hist_particle_pdg->SetMarkerColor(6);
     TH1F* histogram_particle_pdg = (TH1F*)hist_particle_pdg->Clone();
     listout->Add(histogram_particle_pdg);
-    fDaughterHistogramArray2D[i][2] = (Int_t*)histogram_particle_pdg;
+    fDaughterHistogramArrayExtra[i][2] = histogram_particle_pdg;
 
     TString name_particle_mother_pdg ="particle_mother_pdg";
     TH1F* hist_particle_mother_pdg = new TH1F(name_particle_mother_pdg.Data(),"Pdg code particle mother; pdg code; Entries",2000,-0.5,1999.5);
@@ -925,7 +953,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     hist_particle_mother_pdg->SetMarkerColor(6);
     TH1F* histogram_particle_mother_pdg = (TH1F*)hist_particle_mother_pdg->Clone();
     listout->Add(histogram_particle_mother_pdg);
-    fDaughterHistogramArray2D[i][3] = (Int_t*)histogram_particle_mother_pdg;
+    fDaughterHistogramArrayExtra[i][3] = histogram_particle_mother_pdg;
 
     TString name_ptB0_vs_ptTrack ="ptB0_vs_ptTrackBackground";
     TH2F* hist_ptB0_vs_ptTrack = new TH2F(name_ptB0_vs_ptTrack.Data(),"Pt B0 vs Pt ; p_{T} B0 [GeV/c]; p_{T} track [GeV/c]",100,0,30,100,0,30);
@@ -936,7 +964,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     hist_ptB0_vs_ptTrack->SetMarkerColor(6);
     TH2F* histogram_ptB0_vs_ptTrack = (TH2F*)hist_ptB0_vs_ptTrack->Clone();
     listout->Add(histogram_ptB0_vs_ptTrack);
-    fDaughterHistogramArray2D[i][4] = (Int_t*)histogram_ptB0_vs_ptTrack;
+    fDaughterHistogramArray2D[i][4] = histogram_ptB0_vs_ptTrack;
 
     TString name_ptB0_vs_ptTrackMC ="ptB0_vs_ptTrackSignal";
     TH2F* hist_ptB0_vs_ptTrackMC = new TH2F(name_ptB0_vs_ptTrackMC.Data(),"Pt B0 vs Pt ; p_{T} B0 [GeV/c]; p_{T} track [GeV/c]",100,0,30,100,0,30);
@@ -947,7 +975,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     hist_ptB0_vs_ptTrackMC->SetMarkerColor(6);
     TH2F* histogram_ptB0_vs_ptTrackMC = (TH2F*)hist_ptB0_vs_ptTrackMC->Clone();
     listout->Add(histogram_ptB0_vs_ptTrackMC);  
-    fDaughterHistogramArray2D[i][5] = (Int_t*)histogram_ptB0_vs_ptTrackMC;  
+    fDaughterHistogramArray2D[i][5] = histogram_ptB0_vs_ptTrackMC;  
   }
 
   //we make the histograms for the reconstructed particles
@@ -1070,7 +1098,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         if(j%2==1) histogram->SetMarkerColor(4);
         TH1F* histogram_Clone = (TH1F*)histogram->Clone();
         listout->Add(histogram_Clone);
-        fMotherHistogramArray[i][j][k] = (Int_t*)histogram_Clone;
+        fMotherHistogramArray[i][j][k] = histogram_Clone;
       }
 
 
@@ -1129,7 +1157,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         histogram->SetMarkerColor(6);
         TH2F* histogram_Clone = (TH2F*)histogram->Clone();
         list2D->Add(histogram_Clone);
-        fMotherHistogramArray2D[i][j][k] = (Int_t*)histogram_Clone;
+        fMotherHistogramArray2D[i][j][k] = histogram_Clone;
 
         nSecond++;
         if(nSecond>nVariables)
@@ -1152,7 +1180,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
       effectOfCuts->GetXaxis()->SetBinLabel(i+1,integerText);
     }
     listout->Add(effectOfCuts);
-    fMotherHistogramArrayExtra[i][0] = (Int_t*)effectOfCuts;
+    fMotherHistogramArrayExtra[i][0] = effectOfCuts;
 
     TH1F * effectOfCutsMC = new TH1F("effectOfCutsMC","Removal counter",100,0,100);
     effectOfCutsMC->SetStats(kTRUE);
@@ -1166,7 +1194,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
       effectOfCutsMC->GetXaxis()->SetBinLabel(i+1,integerText);
     }
     listout->Add(effectOfCutsMC);
-    fMotherHistogramArrayExtra[i][1] = (Int_t*)effectOfCutsMC;
+    fMotherHistogramArrayExtra[i][1] = effectOfCutsMC;
 
     TString name_particle_pdg ="particle_pdg";
     TH1F* hist_particle_pdg = new TH1F(name_particle_pdg.Data(),"Pdg code particle; pdg code; Entries",2000,-0.5,1999.5);
@@ -1177,7 +1205,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     hist_particle_pdg->SetMarkerColor(6);
     TH1F* histogram_particle_pdg = (TH1F*)hist_particle_pdg->Clone();
     listout->Add(histogram_particle_pdg);
-    fMotherHistogramArrayExtra[i][2] = (Int_t*)histogram_particle_pdg;
+    fMotherHistogramArrayExtra[i][2] = histogram_particle_pdg;
 
     TString name_particle_mother_pdg ="particle_mother_pdg";
     TH1F* hist_particle_mother_pdg = new TH1F(name_particle_mother_pdg.Data(),"Pdg code particle mother; pdg code; Entries",2000,-0.5,1999.5);
@@ -1188,7 +1216,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     hist_particle_mother_pdg->SetMarkerColor(6);
     TH1F* histogram_particle_mother_pdg = (TH1F*)hist_particle_mother_pdg->Clone();
     listout->Add(histogram_particle_mother_pdg);
-    fMotherHistogramArrayExtra[i][3] = (Int_t*)histogram_particle_mother_pdg;   
+    fMotherHistogramArrayExtra[i][3] = histogram_particle_mother_pdg;   
 
     TString name_distance_vertex_from_real ="distance_vertex_from_real";
     TH1F* hist_distance_vertex_from_real = new TH1F(name_distance_vertex_from_real.Data(),"Distance reconstructed vertex from real vertex; distance [cm]; Entries",100,0,1);
@@ -1199,7 +1227,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     hist_distance_vertex_from_real->SetMarkerColor(6);
     TH1F* histogram_distance_vertex_from_real = (TH1F*)hist_distance_vertex_from_real->Clone();
     listout->Add(histogram_distance_vertex_from_real);
-    fMotherHistogramArrayExtra[i][4] = (Int_t*)histogram_distance_vertex_from_real;
+    fMotherHistogramArrayExtra[i][4] = histogram_distance_vertex_from_real;
 
     TString name_distance_vertex_from_real_new ="distance_vertex_from_real_new";
     TH1F* hist_distance_vertex_from_real_new = new TH1F(name_distance_vertex_from_real_new.Data(),"Distance reconstructed vertex from real vertex; distance [cm]; Entries",100,0,1);
@@ -1210,7 +1238,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     hist_distance_vertex_from_real_new->SetMarkerColor(6);
     TH1F* histogram_distance_vertex_from_real_new = (TH1F*)hist_distance_vertex_from_real_new->Clone();
     listout->Add(histogram_distance_vertex_from_real_new);
-    fMotherHistogramArrayExtra[i][5] = (Int_t*)histogram_distance_vertex_from_real_new;
+    fMotherHistogramArrayExtra[i][5] = histogram_distance_vertex_from_real_new;
 
     TString name_momentum_resolution ="momentum_resolution";
     TH1F* hist_momentum_resolution = new TH1F(name_momentum_resolution.Data(),"Momentum resolution; difference between real and reconstructed momentum [GeV/c]; Entries",1000,0,1);
@@ -1221,7 +1249,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     hist_momentum_resolution->SetMarkerColor(6);
     TH1F* histogram_momentum_resolution = (TH1F*)hist_momentum_resolution->Clone();
     listout->Add(histogram_momentum_resolution);
-    fMotherHistogramArrayExtra[i][6] = (Int_t*)histogram_momentum_resolution;    
+    fMotherHistogramArrayExtra[i][6] = histogram_momentum_resolution;    
   }
 
   //we make the histograms for the same sign method histograms and the pt bins
@@ -1442,6 +1470,7 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
 
     // Below, we find all the MC labels for the true signal tracks
     AliAODMCParticle *mcTrackParticle = dynamic_cast< AliAODMCParticle*>(mcTrackArray->At(i));
+    if(!mcTrackParticle) {std::cout << "no particle" << std::endl; continue;}
     Int_t pdgCodeMC=TMath::Abs(mcTrackParticle->GetPdgCode());
     
     if (pdgCodeMC==511){ //if the track is a B0 we look at its daughters
@@ -1515,7 +1544,7 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
       }
     }
     // Next, we save the labels to our array
-    if (mcPionB0Present && mcPionDStarPresent && mcPionD0Present && mcKaonPresent){
+    if(mcPionB0Present && mcPionDStarPresent && mcPionD0Present && mcKaonPresent){
       Int_t rows = B0toDStarPiLabelMatrix->GetNrows();
 
       B0toDStarPiLabelMatrix->ResizeTo(rows+1,7);
@@ -1675,7 +1704,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
 
-    for (Int_t j = 0; j < 10; ++i)
+    for (Int_t j = 0; j < 10; ++j)
     {
       if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
         
@@ -1694,7 +1723,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
       ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
       ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
 
-      for (Int_t j = 0; j < 10; ++i)
+      for (Int_t j = 0; j < 10; ++j)
       {
         if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
           
@@ -1712,30 +1741,30 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
     //we apply a PID cut for a pion
     if(!(fCuts->SelectPID(aodTrack,pionPIDnumber))){ 
       if(isDesiredCandidate) {
-        ((TH1F*)fDaughterHistogramArray2D[2][1])->Fill(2);
-      } else ((TH1F*)fDaughterHistogramArray2D[2][0])->Fill(2);
+        ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(2);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(2);
       bCut = kTRUE;
     }
 
     if(aodTrack->GetITSNcls() < fCuts->GetMinITSNclsDStarPion()){
       if(isDesiredCandidate) {
-        ((TH1F*)fDaughterHistogramArray2D[2][1])->Fill(3);
-      } else ((TH1F*)fDaughterHistogramArray2D[2][0])->Fill(3);
+        ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(3);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(3);
       bCut = kTRUE;
     }
 
     if(aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsDStarPion()){ 
       if(isDesiredCandidate) {
-        ((TH1F*)fDaughterHistogramArray2D[2][1])->Fill(4);
-      } else ((TH1F*)fDaughterHistogramArray2D[2][0])->Fill(4);
+        ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(4);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(4);
       bCut = kTRUE;
     }
 
     if(fCuts->UseITSRefitDStarPion()==kTRUE){
       if(!(aodTrack->GetStatus()&AliESDtrack::kITSrefit)) {
         if(isDesiredCandidate) {
-          ((TH1F*)fDaughterHistogramArray2D[2][1])->Fill(5);
-        } else ((TH1F*)fDaughterHistogramArray2D[2][0])->Fill(5);
+          ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(5);
+        } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(5);
         bCut = kTRUE;
       }
     }
@@ -1743,8 +1772,8 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
     if(fCuts->UseTPCRefitDStarPion()==kTRUE){
       if((!(aodTrack->GetStatus()&AliESDtrack::kTPCrefit))) {
         if(isDesiredCandidate) {
-          ((TH1F*)fDaughterHistogramArray2D[2][1])->Fill(6);
-        } else ((TH1F*)fDaughterHistogramArray2D[2][0])->Fill(6);
+          ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(6);
+        } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(6);
         bCut = kTRUE;
       }
     }
@@ -1752,16 +1781,16 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
     if(fCuts->UseFilterBitDStarPion()==kTRUE){
       if(!(aodTrack->TestFilterMask(BIT(fCuts->GetFilterBitDStarPion())))) {
         if(isDesiredCandidate) {
-          ((TH1F*)fDaughterHistogramArray2D[2][1])->Fill(7);
-        } else ((TH1F*)fDaughterHistogramArray2D[2][0])->Fill(7);
+          ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(7);
+        } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(7);
         bCut = kTRUE;
       }
     }
 
     if(aodTrack->Pt() < fCuts->GetMinPtDStarPion()){ 
       if(isDesiredCandidate) {
-        ((TH1F*)fDaughterHistogramArray2D[2][1])->Fill(8);
-      } else ((TH1F*)fDaughterHistogramArray2D[2][0])->Fill(8);
+        ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(8);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(8);
       bCut = kTRUE;
     }
 
@@ -1769,8 +1798,8 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
 
     if(bCut) {
       if(isDesiredCandidate) {
-        ((TH1F*)fDaughterHistogramArray2D[2][1])->Fill(0);
-      } else ((TH1F*)fDaughterHistogramArray2D[2][0])->Fill(0);
+        ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(0);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(0);
       continue;
     }
 
@@ -1781,7 +1810,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
 
-    for (Int_t j = 0; j < 10; ++i)
+    for (Int_t j = 0; j < 10; ++j)
     {
       if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
         
@@ -1800,7 +1829,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
       ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
       ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
 
-      for (Int_t j = 0; j < 10; ++i)
+      for (Int_t j = 0; j < 10; ++j)
       {
         if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
           
@@ -1893,7 +1922,7 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
 
-    for (Int_t j = 0; j < 10; ++i)
+    for (Int_t j = 0; j < 10; ++j)
     {
       if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
         
@@ -1912,7 +1941,7 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
       ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
       ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
 
-      for (Int_t j = 0; j < 10; ++i)
+      for (Int_t j = 0; j < 10; ++j)
       {
         if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
           
@@ -1930,30 +1959,30 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
     //we apply a PID cut, 2 is used to indicate we look for a pion
     if(!(fCuts->SelectPID(aodTrack,2))){ 
       if(isDesiredCandidate) {
-        ((TH1F*)fDaughterHistogramArray2D[3][1])->Fill(2);
-      } else ((TH1F*)fDaughterHistogramArray2D[3][0])->Fill(2);
+        ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(2);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(2);
       bCut = kTRUE;
     }
 
     if(aodTrack->GetITSNcls() < fCuts->GetMinITSNclsB0Pion()){
       if(isDesiredCandidate) {
-        ((TH1F*)fDaughterHistogramArray2D[3][1])->Fill(3);
-      } else ((TH1F*)fDaughterHistogramArray2D[3][0])->Fill(3);
+        ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(3);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(3);
       bCut = kTRUE;
     }
 
     if(aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsB0Pion()){ 
       if(isDesiredCandidate) {
-        ((TH1F*)fDaughterHistogramArray2D[3][1])->Fill(4);
-      } else ((TH1F*)fDaughterHistogramArray2D[3][0])->Fill(4);
+        ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(4);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(4);
       bCut = kTRUE;
     }
 
     if(fCuts->UseITSRefitB0Pion()==kTRUE){
       if(!(aodTrack->GetStatus()&AliESDtrack::kITSrefit)) {
         if(isDesiredCandidate) {
-          ((TH1F*)fDaughterHistogramArray2D[3][1])->Fill(5);
-        } else ((TH1F*)fDaughterHistogramArray2D[3][0])->Fill(5);
+          ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(5);
+        } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(5);
         bCut = kTRUE;
       }
     }
@@ -1961,8 +1990,8 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
     if(fCuts->UseTPCRefitB0Pion()==kTRUE){
       if((!(aodTrack->GetStatus()&AliESDtrack::kTPCrefit))) {
         if(isDesiredCandidate) {
-          ((TH1F*)fDaughterHistogramArray2D[3][1])->Fill(6);
-        } else ((TH1F*)fDaughterHistogramArray2D[3][0])->Fill(6);
+          ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(6);
+        } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(6);
         bCut = kTRUE;
       }
     }
@@ -1970,16 +1999,16 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
     if(fCuts->UseFilterBitB0Pion()==kTRUE){
       if(!(aodTrack->TestFilterMask(BIT(fCuts->GetFilterBitB0Pion())))) {
         if(isDesiredCandidate) {
-          ((TH1F*)fDaughterHistogramArray2D[3][1])->Fill(7);
-        } else ((TH1F*)fDaughterHistogramArray2D[3][0])->Fill(7);
+          ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(7);
+        } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(7);
         bCut = kTRUE;
       }
     }
 
     if(aodTrack->Pt() < fCuts->GetMinPtB0Pion()){ 
       if(isDesiredCandidate) {
-        ((TH1F*)fDaughterHistogramArray2D[3][1])->Fill(8);
-      } else ((TH1F*)fDaughterHistogramArray2D[3][0])->Fill(8);
+        ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(8);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(8);
       bCut = kTRUE;
     }
 
@@ -1987,8 +2016,8 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
 
     if(bCut) {
       if(isDesiredCandidate) {
-        ((TH1F*)fDaughterHistogramArray2D[3][1])->Fill(0);
-      } else ((TH1F*)fDaughterHistogramArray2D[3][0])->Fill(0);
+        ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(0);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(0);
       continue;
     }
 
@@ -1999,7 +2028,7 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
 
-    for (Int_t j = 0; j < 10; ++i)
+    for (Int_t j = 0; j < 10; ++j)
     {
       if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
         
@@ -2018,7 +2047,7 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
       ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
       ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
 
-      for (Int_t j = 0; j < 10; ++i)
+      for (Int_t j = 0; j < 10; ++j)
       {
         if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
           
@@ -2127,8 +2156,8 @@ void AliAnalysisTaskSEB0toDStarPi::D0Selection(AliAODEvent* aodEvent, AliAODVert
         {
           if (bCutArray[k] == kTRUE){
             if(isDesiredCandidate){
-              ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(k+1);
-            } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(k+1);
+              ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(k+1);
+            } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(k+1);
             cutMother = kTRUE;
           }
         } 
@@ -2139,10 +2168,10 @@ void AliAnalysisTaskSEB0toDStarPi::D0Selection(AliAODEvent* aodEvent, AliAODVert
 
       if(cutMother){
         if(isDesiredCandidate){
-          ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(0);
-        } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(0);
-        delete vertexMother; vertexMother = NULL; 
-        delete trackD0; trackD0 = NULL;
+          ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(0);
+        } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(0);
+        // delete vertexMother; vertexMother = NULL; 
+        // delete trackD0; trackD0 = NULL;
         continue;
       }
 
@@ -2388,7 +2417,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         prongsDStar[0] = 211;
         prongsDStar[1] = 421;
 
-        // cout << vertexDStar->GetNDaughters() << " ";
+
         if(vertexDStar->GetNDaughters()!=2) 
         {
           std::cout << "bad reconstruction 2 - number of daughters for vertex is incorrect" << std::endl;
@@ -2397,8 +2426,6 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           delete trackDStar; trackDStar = NULL; 
           continue;
         }
-
-        // cout << trackDStar->GetSecondaryVtx() << " and " <<  ((AliAODVertex*)trackDStar->GetSecondaryVtx())->GetNDaughters() << " and " << trackFirstDaughter << endl;
 
         trackDStar->GetSecondaryVtx()->AddDaughter(trackFirstDaughter);
         trackDStar->GetSecondaryVtx()->AddDaughter(trackSecondDaughter);
@@ -2533,8 +2560,8 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           {
             if(bCutArrayDStar[n] == kTRUE){
               if(isDesiredCandidate){
-                ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(n+1);
-              } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(n+1);
+                ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(n+1);
+              } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(n+1);
               cutDStar = kTRUE;
             }
           }
@@ -2543,8 +2570,8 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           {
             if(bCutArrayD0[n] == kTRUE){
               if(isDesiredCandidate){
-                ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(n+1+35);
-              } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(n+1+35);
+                ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(n+1+35);
+              } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(n+1+35);
               cutDStar = kTRUE;
             }
           }
@@ -2556,8 +2583,8 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         {
           if(isDesiredCandidate)
           {
-            ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(0);
-          } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(0);
+            ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(0);
+          } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(0);
           delete vertexMother; vertexMother = NULL;
           delete vertexDStar; vertexDStar = NULL;  
           delete trackDStar; trackDStar = NULL;
@@ -2636,8 +2663,8 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           {
             if(bCutArray[n] == kTRUE){
               if(isDesiredCandidate){
-                ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(n+1);
-              } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(n+1);
+                ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(n+1);
+              } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(n+1);
               cutMother = kTRUE;
             }
           }
@@ -2686,8 +2713,8 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         {
           if(isDesiredCandidate)
           {
-            ((TH1F*)fMotherHistogramArray2D[motherType][1])->Fill(0);
-          } else ((TH1F*)fMotherHistogramArray2D[motherType][0])->Fill(0);
+            ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(0);
+          } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(0);
           delete vertexMother; vertexMother = NULL; 
           delete trackB0; trackB0 = NULL;
           delete vertexDStar; vertexDStar = NULL; 
@@ -2707,13 +2734,13 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
 
         if(isDesiredCandidate && fUseMCInfo)
         {
-          TString name_dca_MC_D0_DStarPion ="dca_MC_D0_DStarPion";
+          TString name_dca_MC_D0_DStarPion ="dca_Signal_D0_DStarPion";
           ((TH1F*)(fOutputB0MC->FindObject(name_dca_MC_D0_DStarPion)))->Fill(dcaDStarPionD0);
 
-          TString name_dca_MC_D0_B0Pion ="dca_MC_D0_B0Pion";
+          TString name_dca_MC_D0_B0Pion ="dca_Signal_D0_B0Pion";
           ((TH1F*)(fOutputB0MC->FindObject(name_dca_MC_D0_B0Pion)))->Fill(dcaB0PionD0);
 
-          TString name_dca_MC_DStarPion_B0Pion ="dca_MC_DStarPion_B0Pion";
+          TString name_dca_MC_DStarPion_B0Pion ="dca_Signal_DStarPion_B0Pion";
           ((TH1F*)(fOutputB0MC->FindObject(name_dca_MC_DStarPion_B0Pion)))->Fill(dcaDStarPionB0Pion);
         }
 
@@ -2755,7 +2782,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           }
         }
 
-        //Here we fill the histograms per pt bin and apply the same sign method
+        // Here we fill the histograms per pt bin and apply the same sign method
         TString ptBinMother = "";
         Int_t ptBin = fCuts->PtBin(trackB0->Pt());
         ptBinMother += "_ptbin_"; ptBinMother += fPtBinLimits[ptBin]; ptBinMother += "_to_"; ptBinMother += fPtBinLimits[ptBin+1];
@@ -2970,7 +2997,7 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
   Double_t ptB0 = selectedB0->Pt();
 
   daughterType = 0;
-  histType = 5;
+  histType = 4;
   if(!isDesiredCandidate)
   {
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
@@ -2993,7 +3020,7 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
 
   if(isDesiredCandidate)
   {
-    histType = 6;
+    histType = 5;
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
@@ -3025,13 +3052,13 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
 
       AliAODMCParticle *mcTrackParticle = (AliAODMCParticle*)mcTrackArray->At(mcLabelParticle);
       pdgCodeParticle = TMath::Abs(mcTrackParticle->GetPdgCode());
-      ((TH1F*)fDaughterHistogramArray2D[0][2])->Fill(pdgCodeParticle);
+      ((TH1F*)fDaughterHistogramArrayExtra[0][2])->Fill(pdgCodeParticle);
       mcLabelParticleMother = mcTrackParticle->GetMother();
 
       if(mcLabelParticleMother >= 0){
         AliAODMCParticle *mcTrackParticleMother = (AliAODMCParticle*)mcTrackArray->At(mcLabelParticleMother);
         pdgCodeParticleMother = TMath::Abs(mcTrackParticleMother->GetPdgCode());
-       ((TH1F*)fDaughterHistogramArray2D[0][3])->Fill(pdgCodeParticleMother);
+       ((TH1F*)fDaughterHistogramArrayExtra[0][3])->Fill(pdgCodeParticleMother);
       }
     }
   }
@@ -3051,7 +3078,7 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
   if(TOFok != -1) nSigmaTOFtotal += nSigmaTOF*nSigmaTOF;
 
   daughterType = 1;
-  histType = 5;
+  histType = 4;
   if(!isDesiredCandidate)
   {
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
@@ -3074,7 +3101,7 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
 
   if(isDesiredCandidate)
   {
-    histType = 6;
+    histType = 5;
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
@@ -3106,13 +3133,13 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
 
       AliAODMCParticle *mcTrackParticle = (AliAODMCParticle*)mcTrackArray->At(mcLabelParticle);
       pdgCodeParticle = TMath::Abs(mcTrackParticle->GetPdgCode());
-      ((TH1F*)fDaughterHistogramArray2D[1][2])->Fill(pdgCodeParticle);
+      ((TH1F*)fDaughterHistogramArrayExtra[1][2])->Fill(pdgCodeParticle);
       mcLabelParticleMother = mcTrackParticle->GetMother();
 
       if(mcLabelParticleMother >= 0){
         AliAODMCParticle *mcTrackParticleMother = (AliAODMCParticle*)mcTrackArray->At(mcLabelParticleMother);
         pdgCodeParticleMother = TMath::Abs(mcTrackParticleMother->GetPdgCode());
-       ((TH1F*)fDaughterHistogramArray2D[1][3])->Fill(pdgCodeParticleMother);
+       ((TH1F*)fDaughterHistogramArrayExtra[1][3])->Fill(pdgCodeParticleMother);
       }
     }
   }
@@ -3129,7 +3156,7 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
   if(TPCok != -1) nSigmaTPCtotal += nSigmaTPC*nSigmaTPC;
 
   daughterType = 2;
-  histType = 5;
+  histType = 4;
   if(!isDesiredCandidate)
   {
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
@@ -3152,7 +3179,7 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
 
   if(isDesiredCandidate)
   {
-    histType = 6;
+    histType = 5;
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
@@ -3184,13 +3211,13 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
 
       AliAODMCParticle *mcTrackParticle = (AliAODMCParticle*)mcTrackArray->At(mcLabelParticle);
       pdgCodeParticle = TMath::Abs(mcTrackParticle->GetPdgCode());
-      ((TH1F*)fDaughterHistogramArray2D[2][2])->Fill(pdgCodeParticle);
+      ((TH1F*)fDaughterHistogramArrayExtra[2][2])->Fill(pdgCodeParticle);
       mcLabelParticleMother = mcTrackParticle->GetMother();
 
       if(mcLabelParticleMother >= 0){
         AliAODMCParticle *mcTrackParticleMother = (AliAODMCParticle*)mcTrackArray->At(mcLabelParticleMother);
         pdgCodeParticleMother = TMath::Abs(mcTrackParticleMother->GetPdgCode());
-       ((TH1F*)fDaughterHistogramArray2D[2][3])->Fill(pdgCodeParticleMother);
+       ((TH1F*)fDaughterHistogramArrayExtra[2][3])->Fill(pdgCodeParticleMother);
       }
     }
   }
@@ -3208,7 +3235,7 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
   if(TOFok != -1) nSigmaTOFtotal += nSigmaTOF*nSigmaTOF;
 
   daughterType = 3;
-  histType = 5;
+  histType = 4;
   if(!isDesiredCandidate)
   {
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
@@ -3231,7 +3258,7 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
 
   if(isDesiredCandidate)
   {
-    histType = 6;
+    histType = 5;
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
     ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
@@ -3263,13 +3290,13 @@ void AliAnalysisTaskSEB0toDStarPi::FillFinalTrackHistograms(AliAODRecoDecayHF2Pr
 
       AliAODMCParticle *mcTrackParticle = (AliAODMCParticle*)mcTrackArray->At(mcLabelParticle);
       pdgCodeParticle = TMath::Abs(mcTrackParticle->GetPdgCode());
-      ((TH1F*)fDaughterHistogramArray2D[3][2])->Fill(pdgCodeParticle);
+      ((TH1F*)fDaughterHistogramArrayExtra[3][2])->Fill(pdgCodeParticle);
       mcLabelParticleMother = mcTrackParticle->GetMother();
 
       if(mcLabelParticleMother >= 0){
         AliAODMCParticle *mcTrackParticleMother = (AliAODMCParticle*)mcTrackArray->At(mcLabelParticleMother);
         pdgCodeParticleMother = TMath::Abs(mcTrackParticleMother->GetPdgCode());
-       ((TH1F*)fDaughterHistogramArray2D[3][3])->Fill(pdgCodeParticleMother);
+       ((TH1F*)fDaughterHistogramArrayExtra[3][3])->Fill(pdgCodeParticleMother);
       }
     }
   }
