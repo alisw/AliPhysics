@@ -27,10 +27,14 @@
 #include "AliInputEventHandler.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
-#include "AliAnaCaloTrackCorrBaseClass.h"
-#include "AliAnaCaloTrackCorrMaker.h"
 #include "AliLog.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliMCEvent.h"
+
+//---- CaloTrack corr system ----
+#include "AliAnaCaloTrackCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+#include "AliMCAnalysisUtils.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnaCaloTrackCorrMaker) ;
@@ -251,25 +255,22 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     fhEventPlaneAngleWeighted->Fill(fReader->GetEventPlaneAngle  (),eventWeight);
   }
   
-  // Check the pT hard in MC
-  if ( fCheckPtHard && fReader->GetGenEventHeader()  )
+  // Check the pT hard in MC, assume it is pythia
+  // Make sure AliCaloTrackReader::FillInputEvent() run before
+  if ( fCheckPtHard &&  fReader->GetGenPythiaEventHeader() ) 
   {
-    if(!strcmp(fReader->GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader"))
-    {
-      AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) fReader->GetGenEventHeader();
-      
-      Float_t pTHard = pygeh->GetPtHard();
-      
-      //printf("pT hard %f, event weight %e\n",pTHard,fReader->GetEventWeight());
-      
-      fhPtHard->Fill(pTHard);
-      
-      if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
-          !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
-        fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
-    }
+    Float_t pTHard = (fReader->GetGenPythiaEventHeader())->GetPtHard();
+    
+    fhPtHard->Fill(pTHard);
+    
+    if ( fReader->GetWeightUtils()->IsMCCrossSectionCalculationOn() && 
+        !fReader->GetWeightUtils()->IsMCCrossSectionJustHistoFillOn()  )     
+      fhPtHardWeighted->Fill(pTHard,fReader->GetEventWeight());
+    
+    AliDebug(1,Form("Pythia event selected with pT hard %2.2f GeV/c and weight %2.2e",
+                    pTHard,fReader->GetEventWeight()));
   }
-  
+    
   if(fFillDataControlHisto)
   {
     if( fReader->IsPileUpFromSPD())

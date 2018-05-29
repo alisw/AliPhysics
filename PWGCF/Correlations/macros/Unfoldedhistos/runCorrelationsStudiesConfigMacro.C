@@ -32,12 +32,14 @@ void load2016kTestRunNumber();
 void loadAMPT2015oHIRTestRunNumber();
 void load2017nRunNumbers();
 void load2017nMCRunNumbers();
+void loadAMPT2760RunNumbers();
 
 void runCorrelationsStudiesConfigMacro() {
 
   bTrainScope                = kFALSE;
   bGRIDPlugin                = kTRUE && !bTrainScope;
   bMC                        = kFALSE;
+  bMConlyTruth               = kFALSE;
 
   /* tasks to use */
   /* only valid if not under train scope */
@@ -73,8 +75,9 @@ void runCorrelationsStudiesConfigMacro() {
   // load2010hMCRunNumbers();
   // load2016kTestRunNumber();
   // loadMCAMPT2010hCentrality("0-5");
-  loadAMPT2015oHIRTestRunNumber();
+  // loadAMPT2015oHIRTestRunNumber();
   // load2017nRunNumbers();
+  loadAMPT2760RunNumbers();
 
   szRunPrefix = bMC ? "" : "000";
 
@@ -538,4 +541,40 @@ void load2017nMCRunNumbers() {
   /* the list of runs to analyze 2015o HIR*/
   listOfActiveRuns.Add(new TObjString("280234"));
   listOfActiveRuns.Add(new TObjString("280235"));
+}
+
+/* PbPb, AMPT, fast generation, 2.76TeV (min. bias), String melting ON, rescattering OFF, ID #48823 */
+static const int nNoOf2013f3aRuns = 15;
+static const char *s2013f3aRuns[nNoOf2013f3aRuns] = {
+    "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    "11", "12", "13", "14", "15", "16"
+};
+
+void loadAMPT2760RunNumbers() {
+  /* the fast AMPT dataset */
+  bUseESD                   = kTRUE;
+  bUseAOD                   = !bUseESD;
+
+  /* the GRID working directory */
+  szGridWorkingDir = "CorrelationStudiesAMPTTruth";
+
+  bMC                       = kTRUE;
+  bMConlyTruth              = kTRUE;
+
+  /* reco pass */
+  szpass = "1";
+
+  /* 2013f3 */
+  szDataDir = "/alice/sim/2013/LHC13f3a";
+  /*  fast AMPT */
+  szDataPattern = "*/galice.root";
+
+  /* heavy data files */
+  nNoOfInputFiles = 20;
+  nNoOfTestFiles = 1;
+
+  /* the list of runs to analyze */
+  for (Int_t run = 0; run < nNoOf2013f3aRuns; run++)
+    listOfActiveRuns.Add(new TObjString(s2013f3aRuns[run]));
+
 }

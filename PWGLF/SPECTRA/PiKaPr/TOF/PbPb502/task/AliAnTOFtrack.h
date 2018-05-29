@@ -40,6 +40,7 @@ class AliAnTOFtrack {
   Float_t fTOFExpTime[kExpSpecies];  //Expected time for all species
   Float_t fTOFExpSigma[kExpSpecies]; //Expected sigmas for all species
   Float_t fT0TrkTime;                //T0 best for the event
+  Double32_t fT0TrkSigma;            //[0,1048.576,20]  T0 best resolution for the event
   Double32_t fTOFchan;               //[-1.5,262142.5,18]  Channel of the matched track
   Float_t fEta;                      //Eta distribution of the track
   Double32_t fPhi;                   //[0,6.5536,16]  Phi distribution of the track

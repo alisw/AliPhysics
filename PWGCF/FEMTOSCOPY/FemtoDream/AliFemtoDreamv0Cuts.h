@@ -19,12 +19,17 @@ class AliFemtoDreamv0Cuts {
   static AliFemtoDreamv0Cuts* LambdaCuts(bool isMC,bool CPAPlots,
                                          bool SplitContrib);
   //Setters for plots
+  void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};
+  bool GetMinimalBooking() {return fMinimalBooking;};
   void SetIsMonteCarlo(bool isMC){fMCData=isMC;};
   bool GetIsMonteCarlo(){return fMCData;};
   void SetPlotCPADist(bool plot) {fCPAPlots=plot;};
   void SetPlotContrib(bool plot) {fContribSplitting=plot;};
-  void SetAxisInvMassPlots(int nBins,double minMass,double maxMass) {
+  void SetAxisInvMassPlots(int nBins,float minMass,float maxMass) {
     fNumberXBins=nBins;fAxisMinMass=minMass;fAxisMaxMass=maxMass;
+  }
+  void SetRunNumberQA(int iMinRun,int iMaxRun) {
+    fRunNumberQA=true;fMinRunNumber=iMinRun;fMaxRunNumber=iMaxRun;
   }
   //Setters for the daughter track cuts
   void SetPosDaugterTrackCuts(AliFemtoDreamTrackCuts *cuts){fPosCuts=cuts;};
@@ -39,26 +44,26 @@ class AliFemtoDreamv0Cuts {
   //Setters v0 cuts
   void SetCheckOnFlyStatus(bool val) {fOnFlyStatus=val;fCutOnFlyStatus=true;};
   void SetCutCharge(int charge) {fCutCharge=true;fCharge=charge;};
-  void SetPtRange(double pmin,double pmax) {
+  void SetPtRange(float pmin,float pmax) {
     fpTmin=pmin;fpTmax=pmax;fCutPt=true;
   }
-  void SetKaonRejection(double MassLow,double MassUp) {
+  void SetKaonRejection(float MassLow,float MassUp) {
     fKaonRejection=true;fKaonRejLow=MassLow;fKaonRejUp=MassUp;
   };
-  void SetCutMaxDecayVtx(double maxDecayVtx)  {
+  void SetCutMaxDecayVtx(float maxDecayVtx)  {
     fCutDecayVtxXYZ=true;fMaxDecayVtxXYZ=maxDecayVtx;
   };
-  void SetCutTransverseRadius(double minRadius,double maxRadius) {
+  void SetCutTransverseRadius(float minRadius,float maxRadius) {
     fMinTransRadius=minRadius;fMaxTransRadius=maxRadius;fCutTransRadius=true;
   }
-  void SetCutDCADaugToPrimVtx(double minDCA) {
+  void SetCutDCADaugToPrimVtx(float minDCA) {
     fMinDCADaugToPrimVtx=minDCA;fCutMinDCADaugPrimVtx=true;
   };
-  void SetCutDCADaugTov0Vtx(double maxDCA) {
+  void SetCutDCADaugTov0Vtx(float maxDCA) {
     fMaxDCADaugToDecayVtx=maxDCA;fCutMaxDCADaugToDecayVtx=true;
   }
-  void SetCutCPA(double cpa) {fMinCPA=cpa;fCutCPA=true;};
-  void SetCutInvMass(double width){fInvMassCutWidth=width;fCutInvMass=true;};
+  void SetCutCPA(float cpa) {fMinCPA=cpa;fCutCPA=true;};
+  void SetCutInvMass(float width){fInvMassCutWidth=width;fCutInvMass=true;};
   void Init();
   TList *GetQAHists() {return fHistList;};
 //  TList *GetQAHistsPosDaug() {return fPosCuts->GetQAHists();};
@@ -77,7 +82,7 @@ class AliFemtoDreamv0Cuts {
   void BookMC(AliFemtoDreamv0 *v0);
   void BookTrackCuts();
   void FillMCContributions(AliFemtoDreamv0 *v0);
-  double CalculateInvMass(AliFemtoDreamv0 *v0,int PDGPosDaug,int PDGNegDaug);
+  float CalculateInvMass(AliFemtoDreamv0 *v0,int PDGPosDaug,int PDGNegDaug);
   TList *fHistList;                   //!
   TList *fMCHistList;                 //!
   AliFemtoDreamv0MCHist *fMCHist;     //!
@@ -86,42 +91,46 @@ class AliFemtoDreamv0Cuts {
   AliFemtoDreamTrackCuts *fPosCuts;   //
   AliFemtoDreamTrackCuts *fNegCuts;   //
   //These are all the cuts directly linked to the v0
+  bool fMinimalBooking;               //
   bool fMCData;                       //
   bool fCPAPlots;                     //
   bool fContribSplitting;             //
+  bool fRunNumberQA;                  //
+  int fMinRunNumber;                  //
+  int fMaxRunNumber;                  //
   bool fCutOnFlyStatus;               //
   bool fOnFlyStatus;                  //
   bool fCutCharge;                    //
   int fCharge;                        //
   bool fCutPt;                        //
-  double fpTmin;                      //
-  double fpTmax;                      //
+  float fpTmin;                      //
+  float fpTmax;                      //
   bool fKaonRejection;                //
-  double fKaonRejLow;                 //
-  double fKaonRejUp;                  //
+  float fKaonRejLow;                 //
+  float fKaonRejUp;                  //
   bool fCutDecayVtxXYZ;               //
-  double fMaxDecayVtxXYZ;             //
+  float fMaxDecayVtxXYZ;             //
   bool fCutTransRadius;               //
-  double fMinTransRadius;             //
-  double fMaxTransRadius;             //
+  float fMinTransRadius;             //
+  float fMaxTransRadius;             //
   bool fCutMinDCADaugPrimVtx;         //
-  double fMinDCADaugToPrimVtx;        //
+  float fMinDCADaugToPrimVtx;        //
   bool fCutMaxDCADaugToDecayVtx;      //
-  double fMaxDCADaugToDecayVtx;       //
+  float fMaxDCADaugToDecayVtx;       //
   bool fCutCPA;                       //
-  double fMinCPA;                     //
+  float fMinCPA;                     //
   bool fCutInvMass;                   //
-  double fInvMassCutWidth;            //
+  float fInvMassCutWidth;            //
   //Range for the axis of the hists
-  double fAxisMinMass;                //
-  double fAxisMaxMass;                //
+  float fAxisMinMass;                //
+  float fAxisMaxMass;                //
   int fNumberXBins;                   //
   //PDG Codes of the Mother and the Daughter needed for Inv Mass Calc. and
   //matching in the MC Sample
   int fPDGv0;                         //
   int fPDGDaugP;                      //
   int fPDGDaugN;                      //
-  ClassDef(AliFemtoDreamv0Cuts,1)
+  ClassDef(AliFemtoDreamv0Cuts,2)
 };
 
 #endif /* ALIFEMTODREAMV0CUTS_H_ */

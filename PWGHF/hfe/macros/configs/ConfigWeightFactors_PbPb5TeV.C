@@ -20,17 +20,19 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
   }
 
   const Char_t *backNameMC[9] = {"pion","eta","omega","phi","etap","rho","kaon","k0s","lambda"};
-/*      // GSI version
-  printf("Take the weights from %s\n",Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
-  printf("collType %d\n",collType);
-  TFile *weightFile = TFile::Open(Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
-*/
+
+        // GSI version
+  //printf("Take the weights from %s\n",Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
+  //printf("collType %d\n",collType);
+  //TFile *weightFile = TFile::Open(Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
+
         // GRID version
     printf("Take the weights from %s\n",Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
   printf("collType %d\n",collType);
 //  TFile *weightFile = TFile::Open(Form("%s/PWGHF/hfe/macros/configs/PbPb/%s", gSystem->Getenv("ALICE_PHYSICS"),filename.Data()));
     TFile *weightFile = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
- 
+
+
   if(weightFile){
     if(syst){
       TH1F *hRelErr[9][2];//errors for pion yields, which form the correlated component of the relative error for all other decaying mesons, except for eta, which are parameterized independently
@@ -158,6 +160,66 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
           cout << "\n-------------------------------------------------------------------------------------\n";
           cout << "-------------------------------------------------------------------------------------\n";
           cout << "      PbPb LHC16g1 minimum bias MC weights read (charged pion data spectra used)      ";
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        // 62: equal to 61, but necessary to evaluate upper limit-lower limit systematics (small differences introduced due to daata spectra fits) (mfaggin, 06-Mar-2018)
+        else if(collType == 62){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_chpions_systDefault_%s",backNameMC[iSpecies]));
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 systDefault MC weights read (charged pion data spectra used)      ";
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        //63: upper limit syst. charged pion weights (mfaggin, 06-Mar-2018)
+        else if(collType == 63){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_chpions_systUp_%s",backNameMC[iSpecies]));
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 systUp MC weights read (charged pion data spectra used)      ";
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        //64: lower limit syst. charged pion weights (mfaggin, 06-Mar-2018)
+        else if(collType == 64){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_chpions_systLow_%s",backNameMC[iSpecies]));
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 systLow MC weights read (charged pion data spectra used)      ";
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        //65: lower limit syst. charged pion weights (mfaggin, 06-Mar-2018)
+        else if(collType == 65){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_chpions_systTiltUpDown_%s",backNameMC[iSpecies]));
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 TiltUpDown MC weights read (charged pion data spectra used)      ";
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        //66: lower limit syst. charged pion weights (mfaggin, 06-Mar-2018)
+        else if(collType == 66){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_chpions_systTiltDownUp_%s",backNameMC[iSpecies]));
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 TiltDownUp MC weights read (charged pion data spectra used)      ";
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        //67: pi0 weights (mfaggin, 06-Mar-2018)
+        else if(collType == 67){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_frompi0_%s",backNameMC[iSpecies]));
+          cout << "\n-------------------------------------------------------------------------------------\n";
+          cout << "-------------------------------------------------------------------------------------\n";
+          cout << "             PbPb LHC16g1 MC weights read (pi0 data spectra used)            ";
           cout << "\n-------------------------------------------------------------------------------------\n";
           cout << "-------------------------------------------------------------------------------------\n";
           cout << hRatio->GetName() << endl;

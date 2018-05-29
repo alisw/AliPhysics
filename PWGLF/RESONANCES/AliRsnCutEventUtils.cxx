@@ -12,6 +12,9 @@
 #include "AliAnalysisUtils.h"
 #include "AliESDtrackCuts.h"
 #include "AliMultSelection.h"
+#include "AliMCEvent.h"
+#include "AliMCParticle.h"
+#include "AliAODMCParticle.h"
 #include <AliHeader.h>
 #include <AliAODMCHeader.h>
 #include <AliGenDPMjetEventHeader.h>
@@ -39,6 +42,7 @@ AliRsnCut(name, AliRsnCut::kEvent),
   fASPDCvsTCut(-9999.0),
   fBSPDCvsTCut(-9999.0),
   fCheckInelGt0SPDtracklets(kFALSE),
+  fCheckInelGt0MC(kFALSE),
   fCheckAcceptedMultSelection(kFALSE),
   fUtils(0x0)
 {
@@ -73,6 +77,7 @@ AliRsnCutEventUtils::AliRsnCutEventUtils(const AliRsnCutEventUtils &copy) :
   fASPDCvsTCut(copy.fASPDCvsTCut),
   fBSPDCvsTCut(copy.fBSPDCvsTCut),
   fCheckInelGt0SPDtracklets(copy.fCheckInelGt0SPDtracklets),
+  fCheckInelGt0MC(copy.fCheckInelGt0MC),
   fCheckAcceptedMultSelection(copy.fCheckAcceptedMultSelection),
   fUtils(copy.fUtils)
 {
@@ -110,6 +115,7 @@ AliRsnCutEventUtils &AliRsnCutEventUtils::operator=(const AliRsnCutEventUtils &c
   fASPDCvsTCut=copy.fASPDCvsTCut;
   fBSPDCvsTCut=copy.fBSPDCvsTCut;
   fCheckInelGt0SPDtracklets=copy.fCheckInelGt0SPDtracklets;
+  fCheckInelGt0MC=copy.fCheckInelGt0MC;
   fCheckAcceptedMultSelection=copy.fCheckAcceptedMultSelection;
   fUtils=copy.fUtils;
 	
@@ -161,6 +167,9 @@ Bool_t AliRsnCutEventUtils::IsSelected(TObject *object)
 
    //select INEL>0 based on SPD tracklets
    if(fCheckInelGt0SPDtracklets && !IsInelGt0SPDtracklets()) return kFALSE;
+
+   //select true INEL>0
+   if(fCheckInelGt0MC && !IsInelGt0MC()) return kFALSE;
 
    if(fCheckAcceptedMultSelection && !IsAcceptedMultSelection()) return kFALSE;
    
@@ -369,5 +378,51 @@ Bool_t AliRsnCutEventUtils::IsAcceptedMultSelection(){
     return kFALSE;
   }
 
+  return kFALSE;
+}
+
+
+Bool_t AliRsnCutEventUtils::IsInelGt0MC(){
+  if(!fEvent) return kFALSE;
+  if(fEvent->IsESD()) return IsInelGt0MCESD();
+  else if(fEvent->IsAOD()) return IsInelGt0MCAOD();
+  return kFALSE;
+}
+
+Bool_t AliRsnCutEventUtils::IsInelGt0MCESD(){
+  AliMCEvent* MCevent = fEvent->GetRefMCESD();
+  if(!MCevent) return  kFALSE;
+
+  Double_t npart = MCevent->GetNumberOfTracks();
+
+  int ChargeCount = 0;
+
+  for ( int i = 0; i < npart; i++) {
+    AliMCParticle *part = (AliMCParticle *) MCevent->GetTrack(i);
+    if(!part) continue;
+    Double_t eta = part->Eta();
+    Short_t charge = part->Charge();
+    if (TMath::Abs(eta)<1.0 && charge!=0 && part->IsPhysicalPrimary()) ChargeCount++;
+  }
+  if (ChargeCount != 0) return kTRUE;
+  return kFALSE;
+}
+
+Bool_t AliRsnCutEventUtils::IsInelGt0MCAOD(){
+  TClonesArray *list = fEvent->GetAODList();
+  if(!list) return kFALSE;
+
+  Double_t npart = list->GetEntries();
+
+  int ChargeCount = 0;
+
+  for ( int i = 0; i < npart; i++) {
+    AliAODMCParticle *part = (AliAODMCParticle *) list->At(i);
+    if(!part) continue;
+    Double_t eta = part->Eta();
+    Short_t charge = part->Charge();
+    if (TMath::Abs(eta)<1.0 && charge!=0 && part->IsPhysicalPrimary()) ChargeCount++;
+  }
+  if (ChargeCount != 0) return kTRUE;
   return kFALSE;
 }

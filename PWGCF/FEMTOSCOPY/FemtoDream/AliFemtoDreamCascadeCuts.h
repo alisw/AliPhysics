@@ -19,6 +19,8 @@ class AliFemtoDreamCascadeCuts {
   AliFemtoDreamCascadeCuts();
   virtual ~AliFemtoDreamCascadeCuts();
   static AliFemtoDreamCascadeCuts *XiCuts(bool isMC,bool contribSplitting);
+  void SetMinimalBooking(bool doIt) {fMinimalBooking=doIt;};
+  bool GetMinimalBooking() {return fMinimalBooking;};
   void Setv0Negcuts(AliFemtoDreamTrackCuts *cuts){fNegCuts=cuts;};
   void Setv0PosCuts(AliFemtoDreamTrackCuts *cuts){fPosCuts=cuts;};
   void SetBachCuts(AliFemtoDreamTrackCuts *cuts){fBachCuts=cuts;};
@@ -26,28 +28,40 @@ class AliFemtoDreamCascadeCuts {
   bool GetIsMonteCarlo() {return fMCData;};
   void SetContributionSplitting(bool contrSplit){
     fContribSplitting=contrSplit;};
-  void SetXiMassRange(double mass,double width){
+  void SetRunNumberQA(int iMinRun,int iMaxRun) {
+    fRunNumberQA=true;fMinRunNumber=iMinRun;fMaxRunNumber=iMaxRun;
+  }
+  void SetXiMassRange(float mass,float width){
     fcutXiMass=true;fXiMass=mass;fXiMassWidth=width;};
   void SetXiCharge(int charge){fcutXiCharge=true;fXiCharge=charge;}
-  void SetCutXiDaughterDCA(double maxDCA){
+  void SetCutXiDaughterDCA(float maxDCA){
     fcutDCAXiDaug=true;fMaxDCAXiDaug=maxDCA;};
-  void SetCutXiMinDistBachToPrimVtx(double minDist){
+  void SetCutXiMinDistBachToPrimVtx(float minDist){
     fcutMinDistVtxBach=true;fMinDistVtxBach=minDist;};
-  void SetCutXiCPA(double cpa){fcutCPAXi=true;fCPAXi=cpa;};
-  void SetCutXiTransverseRadius(double minRad,double maxRad){
+  void SetCutXiCPA(float cpa){fcutCPAXi=true;fCPAXi=cpa;};
+  void SetCutXiTransverseRadius(float minRad,float maxRad){
     fcutXiTransRadius=true;fMinXiTransRadius=minRad;fMaxXiTransRadius=maxRad;}
-  void Setv0MassRange(double mass,double width){
+  void Setv0MassRange(float mass,float width){
     fcutv0Mass=true;fv0Mass=mass;fv0Width=width;}
-  void SetCutv0MaxDaughterDCA(double maxDCA){
+  void SetCutv0MaxDaughterDCA(float maxDCA){
     fcutv0MaxDCADaug=true;fv0MaxDCADaug=maxDCA;}
-  void SetCutv0CPA(double CPA){
+  void SetCutv0CPA(float CPA){
     fcutCPAv0=true;fCPAv0=CPA;}
-  void SetCutv0TransverseRadius(double minRad,double maxRad){
+  void SetCutv0TransverseRadius(float minRad,float maxRad){
     fcutv0TransRadius=true;fMinv0TransRadius=minRad;fMaxv0TransRadius=maxRad;}
-  void SetCutv0MinDistToPrimVtx(double minDist){
+  void SetCutv0MinDistToPrimVtx(float minDist){
     fcutv0MinDistVtx=true;fv0MinDistVtx=minDist;}
-  void SetCutv0MinDaugDistToPrimVtx(double minDist){
+  void SetCutv0MinDaugDistToPrimVtx(float minDist){
     fcutv0DaugMinDistVtx=true;fv0DaugMinDistVtx=minDist;};
+  void SetRejectOmegas(float mass, float width) {
+    fRejOmega=true;fRejOmegaMass=mass;fRejOmegaWidth=width;
+  }
+  void SetPtRangeXi(float PtMin,float PtMax){
+    fPtMin=PtMin;fPtMax=PtMax;fCutPt=true;
+  }
+  void SetPtRangev0(float PtMin,float PtMax){
+    fPtMinv0=PtMin;fPtMaxv0=PtMax;fCutPtv0=true;
+  }
   void SetPDGCodeCasc(int PDG){fPDGCasc=PDG;};
   int GetPDGCodeCasc(){return fPDGCasc;};
   void SetPDGCodePosDaug(int PDG){fPDGPosDaug=PDG;};
@@ -62,54 +76,68 @@ class AliFemtoDreamCascadeCuts {
   void Init();
   bool isSelected(AliFemtoDreamCascade *casc);
   void BookQA(AliFemtoDreamCascade *casc);
+  void BookCuts();
   void BookMCQA(AliFemtoDreamCascade *casc);
   void FillMCContributions(AliFemtoDreamCascade *casc);
   TList *GetQAHists() {return fHistList;};
   TList *GetMCQAHists() {return fMCHistList;};
  private:
-  AliFemtoDreamCascadeHist *fHist;
-  AliFemtoDreamv0MCHist *fMCHist;
-  AliFemtoDreamTrackCuts *fNegCuts;
-  AliFemtoDreamTrackCuts *fPosCuts;
-  AliFemtoDreamTrackCuts *fBachCuts;
-  TList *fHistList;
-  TList *fMCHistList;
-  bool fMCData;
-  bool fContribSplitting;
-  bool fcutXiMass;
-  double fXiMass;
-  double fXiMassWidth;
-  bool fcutXiCharge;
-  int fXiCharge;
-  bool fcutDCAXiDaug;
-  double fMaxDCAXiDaug;
-  bool fcutMinDistVtxBach;
-  double fMinDistVtxBach;
-  bool fcutCPAXi;
-  double fCPAXi;
-  bool fcutXiTransRadius;
-  double fMinXiTransRadius;
-  double fMaxXiTransRadius;
-  bool fcutv0Mass;
-  double fv0Mass;
-  double fv0Width;
-  bool fcutv0MaxDCADaug;
-  double fv0MaxDCADaug;
-  bool fcutCPAv0;
-  double fCPAv0;
-  bool fcutv0TransRadius;
-  double fMinv0TransRadius;
-  double fMaxv0TransRadius;
-  bool fcutv0MinDistVtx;
-  double fv0MinDistVtx;
-  bool fcutv0DaugMinDistVtx;
-  double fv0DaugMinDistVtx;
-  int fPDGCasc;
-  int fPDGv0;
-  int fPDGPosDaug;
-  int fPDGNegDaug;
-  int fPDGBachDaug;
-  ClassDef(AliFemtoDreamCascadeCuts,1)
+  AliFemtoDreamCascadeHist *fHist;            //!
+  AliFemtoDreamv0MCHist *fMCHist;             //!
+  AliFemtoDreamTrackCuts *fNegCuts;   //
+  AliFemtoDreamTrackCuts *fPosCuts;   //
+  AliFemtoDreamTrackCuts *fBachCuts;  //
+  TList *fHistList; //!
+  TList *fMCHistList;                 //!
+  bool fMinimalBooking;               //
+  bool fMCData;                       //
+  bool fContribSplitting;             //
+  bool fRunNumberQA;                  //
+  int fMinRunNumber;                  //
+  int fMaxRunNumber;                  //
+  bool fCutPt;                        //
+  double fPtMin;                  //
+  double fPtMax;          //
+  bool fCutPtv0;          //
+  double fPtMinv0;  //
+  double fPtMaxv0;    //
+  bool fcutXiMass;//
+  float fXiMass;//
+  float fXiMassWidth; //
+  bool fcutXiCharge; //
+  int fXiCharge; //
+  bool fcutDCAXiDaug; //
+  float fMaxDCAXiDaug;  //
+  bool fcutMinDistVtxBach;  //
+  float fMinDistVtxBach;    //
+  bool fcutCPAXi;     //
+  float fCPAXi;   //
+  bool fcutXiTransRadius; //
+  float fMinXiTransRadius;  //
+  float fMaxXiTransRadius;//
+  bool fcutv0Mass;  //
+  float fv0Mass;    //
+  float fv0Width;   //
+  bool fcutv0MaxDCADaug;  //
+  float fv0MaxDCADaug;    //
+  bool fcutCPAv0;     //
+  float fCPAv0;       //
+  bool fcutv0TransRadius;       //
+  float fMinv0TransRadius;      //
+  float fMaxv0TransRadius;      //
+  bool fcutv0MinDistVtx;        //
+  float fv0MinDistVtx;          //
+  bool fcutv0DaugMinDistVtx;    //
+  float fv0DaugMinDistVtx;      //
+  bool fRejOmega;               //
+  float fRejOmegaMass;          //
+  float fRejOmegaWidth;         //
+  int fPDGCasc;                 //
+  int fPDGv0;                   //
+  int fPDGPosDaug;              //
+  int fPDGNegDaug;              //
+  int fPDGBachDaug;             //
+  ClassDef(AliFemtoDreamCascadeCuts,2)
 };
 
 #endif /* ALIFEMTODREAMCASCADECUTS_H_ */

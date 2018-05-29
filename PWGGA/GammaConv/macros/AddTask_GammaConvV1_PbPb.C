@@ -109,6 +109,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton = "00000070000000000500004000";
+  if (periodNameV0Reader.CompareTo("LHC17n") == 0 || periodNameV0Reader.Contains("LHC17j7"))
+    cutnumberPhoton         = "00000088400100001500000000";
   TString cutnumberEvent = "10000003";
 
   Bool_t enableV0findingEffi = kFALSE;
@@ -2065,6 +2067,18 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("12410113","00200009327000008250400000","0163103100000000"); // 20-40
     cuts.AddCut("10410113","00200009327000008250400000","0163103100000000"); // 0-40
     cuts.AddCut("14810113","00200009327000008250400000","0163103100000000"); // 40-80
+  } else if (trainConfig == 402){ // min pt elect 0.02
+    cuts.AddCut("10810113","00200089327000008250400000","0163103100000000"); // 0-80
+    cuts.AddCut("10210113","00200089327000008250400000","0163103100000000"); // 0-20
+    cuts.AddCut("12410113","00200089327000008250400000","0163103100000000"); // 20-40
+    cuts.AddCut("10410113","00200089327000008250400000","0163103100000000"); // 0-40
+    cuts.AddCut("14810113","00200089327000008250400000","0163103100000000"); // 40-80
+  } else if (trainConfig == 403){ // min pt elect 0
+    cuts.AddCut("10810113","00200079327000008250400000","0163103100000000"); // 0-80
+    cuts.AddCut("10210113","00200079327000008250400000","0163103100000000"); // 0-20
+    cuts.AddCut("12410113","00200079327000008250400000","0163103100000000"); // 20-40
+    cuts.AddCut("10410113","00200079327000008250400000","0163103100000000"); // 0-40
+    cuts.AddCut("14810113","00200079327000008250400000","0163103100000000"); // 40-80
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -2226,27 +2240,32 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     TString dataInputMultHisto  = "";
     TString mcInputMultHisto    = "";
     if (doMultiplicityWeighting){
-      cout << "enableling mult weighting" << endl;
-
-      if(i == 0){
-        dataInputMultHisto      = Form("%s_0005", periodNameAnchor.Data());
-        mcInputMultHisto        = "LHC14a1a_0005";
-      } else if(i == 1){
-        dataInputMultHisto      = Form("%s_0510", periodNameAnchor.Data());
-        mcInputMultHisto        = "LHC14a1a_0510";
-      } else if(i == 2){
-        dataInputMultHisto      = Form("%s_0010", periodNameAnchor.Data());
-        mcInputMultHisto        = "LHC14a1a_0010";
-      } else if(i == 3){
-        dataInputMultHisto      = Form("%s_2040", periodNameAnchor.Data());
-        mcInputMultHisto        = "LHC14a1b_2040";
-      } else if(i == 4){
-        dataInputMultHisto      = Form("%s_2050", periodNameAnchor.Data());
-        mcInputMultHisto        = "LHC14a1b_2050";
+      cout << "INFO enableling mult weighting" << endl;
+      if(periodNameAnchor.CompareTo("LHC15o")==0){
+	TString cutNumber = cuts.GetEventCut(i);
+	TString centCut = cutNumber(0,3);  // first three digits of event cut
+	dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
+	mcInputMultHisto   = Form("%s_%s", periodName.Data(), centCut.Data());
+	cout << "INFO read " << dataInputMultHisto.Data() << " and " <<  mcInputMultHisto.Data() << " from " << fileNameInputForMultWeighing.Data() << endl;
+      } else {
+	if(i == 0){
+	  dataInputMultHisto      = Form("%s_0005", periodNameAnchor.Data());
+	  mcInputMultHisto        = "LHC14a1a_0005";
+	} else if(i == 1){
+	  dataInputMultHisto      = Form("%s_0510", periodNameAnchor.Data());
+	  mcInputMultHisto        = "LHC14a1a_0510";
+	} else if(i == 2){
+	  dataInputMultHisto      = Form("%s_0010", periodNameAnchor.Data());
+	  mcInputMultHisto        = "LHC14a1a_0010";
+	} else if(i == 3){
+	  dataInputMultHisto      = Form("%s_2040", periodNameAnchor.Data());
+	  mcInputMultHisto        = "LHC14a1b_2040";
+	} else if(i == 4){
+	  dataInputMultHisto      = Form("%s_2050", periodNameAnchor.Data());
+	  mcInputMultHisto        = "LHC14a1b_2050";
+	}
       }
-
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile(kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
-
     }
 
     if (  trainConfig == 1   || trainConfig == 5   || trainConfig == 9   || trainConfig == 13   || trainConfig == 17   ||

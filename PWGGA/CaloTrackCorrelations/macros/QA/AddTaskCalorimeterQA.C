@@ -27,7 +27,6 @@
 #include "AliAnaCaloTrackCorrMaker.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "ConfigureEMCALRecoUtils.C"
 
 #endif // CINT
 
@@ -152,13 +151,16 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   AliEMCALRecoUtils* recou = cu->GetEMCALRecoUtils();
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-  ConfigureEMCALRecoUtils(recou,
-                          simulation,
-                          bExotic,
-                          bNonLin,
-                          bEnCalib,
-                          bBadMap,
-                          bTiCalib);  
+
+  TString recouStr = Form("(reinterpret_cast<AliEMCALRecoUtils*>(%p))", recou);
+  
+  gInterpreter->ProcessLine(Form("ConfigureEMCALRecoUtils(%s, %d, %d, %d, %d, %d, %d)", recouStr.Data(),
+				 (Int_t)simulation,
+				 (Int_t)bExotic,
+				 (Int_t)bNonLin,
+				 (Int_t)bEnCalib,
+				 (Int_t)bBadMap,
+				 (Int_t)bTiCalib));  
   
   if(bBadMap) 
     cu->SwitchOnBadChannelsRemoval();

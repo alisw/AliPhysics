@@ -75,11 +75,24 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetUpperMultiplicity(Double_t maxMult){
     fMaxMult=maxMult;
   }
+  void SetRequireITSrefitForV0Daughters(Bool_t opt){
+    if(opt) fRequireITSforV0dau |= (1<<kBitRequireITSrefit);
+    else fRequireITSforV0dau &= ~(1<<kBitRequireITSrefit);
+  }
+  void SetRequireSPDanyForV0Daughters(Bool_t opt){
+    if(opt) fRequireITSforV0dau |= (1<<kBitRequireSPDany);
+    else fRequireITSforV0dau &= ~(1<<kBitRequireSPDany);
+  }
+  AliESDtrackCuts* GetTPCTrackCuts(){return fTrCutsTPC;}
+
   Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField);
+
+
 
  private:
 
   enum EVarsTree {kNumOfIntVar=12, kNumOfFloatVar=27};
+  enum EITSRequirements {kBitRequireITSrefit=0, kBitRequireSPDany=1};
   enum EFiltBits {kNumOfFilterBits=12};
 
   AliAnalysisTaskCheckAODTracks(const AliAnalysisTaskCheckAODTracks &source);
@@ -129,6 +142,10 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH3F* fHistTPCchi2PerClusPhiPtTPCselITSref;  //!<!  histo of chi2 vs. pt and phi;
   TH3F* fHistTPCchi2PerClusPhiPtTPCselSPDany;  //!<!  histo of chi2 vs. pt and phi;
 
+  TH3F* fHistSig1ptCovMatPhiPtTPCsel;        //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCselITSref;  //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCselSPDany;  //!<!  histo of sigma 1/pt vs. pt and phi;
+
   TH3F* fHistImpParXYPtMulPionTPCselSPDany;    //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulKaonTPCselSPDany;    //!<!  histo of impact parameter (kaon)
   TH3F* fHistImpParXYPtMulProtonTPCselSPDany;  //!<!  histo of impact parameter (proton)
@@ -142,15 +159,32 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH2F* fHistTPCCrowOverFindPtFiltBit[kNumOfFilterBits];      //!<!  histo of crossedrows/findable per filter bit
   TH2F* fHistTPCChi2clusPtFiltBit[kNumOfFilterBits];           //!<!  histo of TPC chi2 per filter bit
   TH2F* fHistChi2TPCConstrVsGlobPtFiltBit[kNumOfFilterBits];  //!<!  histo of golden chi2 per filter bit
+  TH2F* fHistSig1ptCovMatPtFiltBit[kNumOfFilterBits];           //!<!  histo of sig1pt per filter bit
 
-  TH2F* fHistPtResidVsPtTPCselAll;                       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistPtResidVsPtTPCselITSrefAll;                 //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
-  TH2F* fHistOneOverPtResidVsPtTPCselAll;                //!<!  1/Pt residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistOneOverPtResidVsPtTPCselITSrefAll;          //!<!  1/Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
-  TH2F* fHistPtResidVsPtTPCsel[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
-  TH2F* fHistPtResidVsPtTPCselITSref[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
-  TH2F* fHistOneOverPtResidVsPtTPCsel[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
-  TH2F* fHistOneOverPtResidVsPtTPCselITSref[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
+  TH2F* fHistPtResidVsPtTPCselAll;                       //!<!  Pt residuals for TPC only tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselITSrefAll;                 //!<!  Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselAll;                //!<!  1/Pt residuals for TPC only tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefAll;          //!<!  1/Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselPrim;                       //!<!  Pt residuals for TPC only tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselITSrefPrim;                 //!<!  Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselPrim;                //!<!  1/Pt residuals for TPC only tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefPrim;          //!<!  1/Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselSecDec;                       //!<!  Pt residuals for TPC only tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselITSrefSecDec;                 //!<!  Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselSecDec;                //!<!  1/Pt residuals for TPC only tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefSecDec;          //!<!  1/Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselSecMat;                       //!<!  Pt residuals for TPC only tracks tracked 
+  TH2F* fHistPtResidVsPtTPCselITSrefSecMat;                 //!<!  Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselSecMat;                //!<!  1/Pt residuals for TPC only tracks tracked 
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefSecMat;          //!<!  1/Pt residuals for ITS+TPC tracks tracked 
+  TH2F* fHistPtResidVsPtTPCsel[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked  (for each species)
+  TH2F* fHistPtResidVsPtTPCselITSref[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked  (for each species)
+  TH2F* fHistOneOverPtResidVsPtTPCsel[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked  (for each species)
+  TH2F* fHistOneOverPtResidVsPtTPCselITSref[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked  (for each species)
+  TH2F* fHistPzResidVsPtTPCselAll;                       //!<!  Pz residuals for TPC only tracks tracked 
+  TH2F* fHistPzResidVsPtTPCselITSrefAll;                 //!<!  Pz residuals for ITS+TPC tracks tracked 
+  TH2F* fHistPzResidVsEtaTPCselAll;                      //!<!  Pz residuals for TPC only tracks tracked 
+  TH2F* fHistPzResidVsEtaTPCselITSrefAll;                //!<!  Pz residuals for ITS+TPC tracks tracked 
 
   TH3F* fHistEtaPhiPtTPCselITSrefGood;        //!<!  histo of eta,phi,pt - good MC tracks
   TH3F* fHistEtaPhiPtTPCselITSrefFake;        //!<!  histo of eta,phi,pt - fake MC tracks
@@ -181,10 +215,11 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Double_t fMinPt;             // minimum pt for histos
   Double_t fMaxPt;             // maximum pt for histos
   Double_t fMaxMult;           // upper limit of multiplicity plots
+  Int_t   fRequireITSforV0dau; // ITSrefit/SPDany requests for V0 daughters
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,12);
+  ClassDef(AliAnalysisTaskCheckAODTracks,16);
 };
 
 

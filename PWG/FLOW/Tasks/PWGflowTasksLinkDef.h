@@ -48,5 +48,8 @@
 #pragma link C++ class AliAnalysisTaskPiKpK0Lamba+;
 #pragma link C++ class AliAnalysisTaskCmeEse+;
 #pragma link C++ class AliAnalysisTaskCMEV0+;
+#pragma link C++ class AliAnalysisTaskCMEV0PID+;
+#pragma link C++ class AliAnalysisTaskStudentsCM+;
+#pragma link C++ class AliAnalysisTaskStudentsML+;
 #endif
 

@@ -39,6 +39,10 @@ declare -a isreflectedMC=(0 0 0 0 0 0 0 1 ) # used only to determine the fit ran
 declare -a templRootNamepp=( "CorrelationPlotsPerugia0PtDzerofromC" "CorrelationPlotsPerugia2010PtDzerofromC" "CorrelationPlotsPerugia2011PtDzerofromC" "CorrelationPlotsPYTHIA8PtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC"  "CorrelationPlotsEPOS3PtDzerofromC")
 declare -a templRootNamepPb=( "CorrelationPlotsPerugia0wBoostPtDzerofromC" "CorrelationPlotsPerugia2010wBoostPtDzerofromC" "CorrelationPlotsPerugia2011wBoostPtDzerofromC" "CorrelationPlotsPYTHIA8wBoostPtDzerofromC" "CorrelationPlotsPOWHEGPtDzerofromC" "CorrelationPlotsEPOS3PtDzerofromC")
 
+declare puritytemplateDirpp="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPb0100/Inputs/Purity_Templates_pp"
+declare puritytemplateDirpPb="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPb0100/Inputs/Purity_Templates_pPb"
+declare -a puritytemplateDir=( "$puritytemplateDirpp" "$puritytemplateDirpPb" "$puritytemplateDirpPb" )
+
 ########## THE FOLLOWING DIRECTORIES SHOULD CONTAIN THE RESULTS BEFORE FD SUBTRACTION #####
 declare dirppDzeroNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPb0100/Inputs/Dzero_pp"
 declare dirpPbDzeroNotFDsubt="/home/colamaria/Scrivania/Codici_Ausiliari_Dh/Dhadron_Final_Output_pPb0100/Inputs/Dzero_pPb"
@@ -84,7 +88,9 @@ declare reflect=1   #0 : do not reflect, 1 reflect
 declare averageOpt=0  #0 = weighted, 1=arithmetic (BE AWARE THAT SETTINGS FOR FINAL STYLE PLOTS MIGHT NOT BE OK FOR ARITHMETIC AVERAGE AND THEY MIGHT USE PATHS EXPECTED FOR WEIGHTING AV)
 declare -a includev2=( 0 0 1 ) 
 ##### Subtraction of b-origin modulation (MC closure) - Set 0 in pp2010, pPb2013; set 1 in pPb2016. IF 1, REMEMBER TO SET THE UNCERTAINTY UPWARDS!
-declare subtrMCclos=1 
+declare subtrMCclos=1  #0: don't do anything for MC closure structures (use old approach), #1 apply correction for MC closure b->D structures
+declare purityOpt=0 #0: simple rescale (flat), 10: multiply by prim/inclusive histogram, 20: multiply by template fit on prim/inclusive histogram, 30: multiply by moving mean of prim/inclusive histogram
+declare doNewPedestalVars=1 #USE ALWAYS 1 UNLESS FOR REPRODUCING 2010+2013 PAPER RESULTS; #0: use paper pedestal variations; #1: use new variations (less transverse regions, added baseline +/- isigma_stat)
 
 ###############################################################################
 ############ YOU CAN CHOOSE TO DO ONLY SOME STEPS           ###################
@@ -294,12 +300,12 @@ if [ $doFeedDownGlob = 1 ]; then
 	    echo "ProducePlotChain: subtracting FD for meson $imeson in coll system $collsyst"
 	    mkdir -p ${baseDirFD}/${collsystdir[${collsyst}]}/${meson[${imeson}]}
 	    cd ${baseDirFD}/${collsystdir[${collsyst}]}/${meson[${imeson}]}
-	    if [ ${imeson} = 0 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDzeroNotFDsubt[${collsyst}]}/${fpromptfileDzero[${collsyst}]} ${templateDir[${collsyst}]} ${dirDzeroNotFDsubt[${collsyst}]} ${filerootDzero[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames} ${centralitybin}
+        if [ ${imeson} = 0 ]; then        
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDzeroNotFDsubt[${collsyst}]}/${fpromptfileDzero[${collsyst}]} ${templateDir[${collsyst}]} ${dirDzeroNotFDsubt[${collsyst}]} ${filerootDzero[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames} ${centralitybin} ${purityOpt} ${puritytemplateDir[${collsyst}]}
 	    elif [ ${imeson} = 1 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDstarNotFDsubt[${collsyst}]}/${fpromptfileDstar[${collsyst}]} ${templateDir[${collsyst}]} ${dirDstarNotFDsubt[${collsyst}]} ${filerootDstar[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames} ${centralitybin}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDstarNotFDsubt[${collsyst}]}/${fpromptfileDstar[${collsyst}]} ${templateDir[${collsyst}]} ${dirDstarNotFDsubt[${collsyst}]} ${filerootDstar[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames} ${centralitybin} ${purityOpt} ${puritytemplateDir[${collsyst}]}
 	    elif [ ${imeson} = 2 ]; then
-		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDplusNotFDsubt[${collsyst}]}/${fpromptfileDplus[${collsyst}]} ${templateDir[${collsyst}]} ${dirDplusNotFDsubt[${collsyst}]} ${filerootDplus[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames} ${centralitybin}
+		$HFCJlocalCodeDir/DoSubtractFD.sh ${collsyst} ${imeson} ${dirDplusNotFDsubt[${collsyst}]}/${fpromptfileDplus[${collsyst}]} ${templateDir[${collsyst}]} ${dirDplusNotFDsubt[${collsyst}]} ${filerootDplus[${collsyst}]} 3 ${templateDirSystemSuffix[${collsyst}]} ${subtrMCclos} ${useoldFilenames} ${centralitybin} ${purityOpt} ${puritytemplateDir[${collsyst}]}
 	    fi
 	    imeson=${imeson}+1
 	done
@@ -513,7 +519,7 @@ collsyst=${firstcollsyst}
 if [ ${dofit} = 1 ]; then
     cd ${baseDir}/AllPlots/Averages/FitResults/    
     while [ ${collsyst} -le ${lastcollsyst} ]; do
-	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/ ${includev2[${collsyst}]} ${dofitawayside}
+	$HFCJlocalCodeDir/DoFit.sh ${collsyst} ${reflect} ${averageOpt} ${baseDir}/AllPlots/Averages/  ${baseDir}/AllPlots/Averages/FitResults/ ${includev2[${collsyst}]} ${dofitawayside} ${doNewPedestalVars}
 	collsyst=${collsyst}+1
     done
 fi

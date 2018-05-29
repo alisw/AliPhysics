@@ -851,56 +851,63 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
     // if not fUseKinkDaughters don't use tracks with kink index > 0
     if(!fUseKinkDaughters && vTrack->GetKinkIndex(0) > 0) continue;
 
-    if(bUseVfriend && vfriendEvent && vfriendEvent->TestSkipBit()==kFALSE && iTrack<vfriendEvent->GetNumberOfTracks())
-        {
-          const AliVfriendTrack *friendTrack=vfriendEvent->GetTrack(iTrack);
-          if(friendTrack) 
-              {
-                //
-                TObject *calibObject=0;
-                AliTPCseed *seed=0;
-                for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j) {
-                if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) {
-                break;
-              }
-                }
-                for (Int_t irow=0;irow<159;irow++) {
-                if(!seed) continue;
+    if(bUseVfriend && vfriendEvent && vfriendEvent->TestSkipBit()==kFALSE) {
+      const AliVfriendTrack *friendTrack = 0;
+      if (vTrack->IsA()==AliESDtrack::Class()) {
+	friendTrack = ((AliESDtrack*)vTrack)->GetFriendTrack();
+      }
+      else {
+	if (iTrack<vfriendEvent->GetNumberOfTracks()) {
+	  friendTrack=vfriendEvent->GetTrack(iTrack);
+	}
+      }
+      if(friendTrack) 
+	{
+	  //
+	  TObject *calibObject=0;
+	  AliTPCseed *seed=0;
+	  for (Int_t j=0;(calibObject=friendTrack->GetCalibObject(j));++j) {
+	    if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) {
+	      break;
+	    }
+	  }
+	  for (Int_t irow=0;irow<159;irow++) {
+	    if(!seed) continue;
                   
-                  AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
-                  if (!cluster) continue;
+	    AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
+	    if (!cluster) continue;
 
-                     Float_t gclf[3];
-                     cluster->GetGlobalXYZ(gclf);
+	    Float_t gclf[3];
+	    cluster->GetGlobalXYZ(gclf);
 
-                     //Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
-                     //Int_t i[1]={cluster->GetDetector()};
-                         //transform->Transform(x,i,0,1);
-                     //printf("gx %f gy  %f  gz %f \n", cluster->GetX(), cluster->GetY(),cluster->GetZ());
-                     //printf("gclf[0] %f gclf[1]  %f  gclf[2] %f \n", gclf[0], gclf[1],  gclf[2]);
+	    //Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
+	    //Int_t i[1]={cluster->GetDetector()};
+	    //transform->Transform(x,i,0,1);
+	    //printf("gx %f gy  %f  gz %f \n", cluster->GetX(), cluster->GetY(),cluster->GetZ());
+	    //printf("gclf[0] %f gclf[1]  %f  gclf[2] %f \n", gclf[0], gclf[1],  gclf[2]);
                  
-                         Int_t TPCside; 
-                     if(gclf[2]>0.) TPCside=0; // A side 
-                     else TPCside=1;
+	    Int_t TPCside; 
+	    if(gclf[2]>0.) TPCside=0; // A side 
+	    else TPCside=1;
 
-                     //
-                         //Double_t vTPCClust1[3] = { gclf[0], gclf[1],  TPCside };
-                         //fTPCClustHisto1->Fill(vTPCClust1);
+	    //
+	    //Double_t vTPCClust1[3] = { gclf[0], gclf[1],  TPCside };
+	    //fTPCClustHisto1->Fill(vTPCClust1);
 
-                         //  
-                     Double_t phi = TMath::ATan2(gclf[1],gclf[0]);
-                     if(phi < 0) phi += 2.*TMath::Pi();
+	    //  
+	    Double_t phi = TMath::ATan2(gclf[1],gclf[0]);
+	    if(phi < 0) phi += 2.*TMath::Pi();
                     
-                  //Float_t pad = cluster->GetPad();
-                  //Int_t detector = cluster->GetDetector();
-                  //Double_t vTPCClust[6] = { irow, phi, TPCside, pad, detector, gclf[2] };
-                  Double_t vTPCClust[3] = { static_cast<Double_t>(irow), phi, static_cast<Double_t>(TPCside) };
-                    if(fUseSparse) fTPCClustHisto->Fill(vTPCClust);
-                    else{
-                        h_tpc_clust_0_1_2->Fill(vTPCClust[0],vTPCClust[1],vTPCClust[2]);
-                    }
-                } //end if(bUseVfriend && vfriendEvent && ...)
-            }
+	    //Float_t pad = cluster->GetPad();
+	    //Int_t detector = cluster->GetDetector();
+	    //Double_t vTPCClust[6] = { irow, phi, TPCside, pad, detector, gclf[2] };
+	    Double_t vTPCClust[3] = { static_cast<Double_t>(irow), phi, static_cast<Double_t>(TPCside) };
+	    if(fUseSparse) fTPCClustHisto->Fill(vTPCClust);
+	    else{
+	      h_tpc_clust_0_1_2->Fill(vTPCClust[0],vTPCClust[1],vTPCClust[2]);
+	    }
+	  } //end if(bUseVfriend && vfriendEvent && ...)
+	}
     }
     if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,vTrack,vEvent,vertStatus);
     else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,vTrack,vEvent,vertStatus);

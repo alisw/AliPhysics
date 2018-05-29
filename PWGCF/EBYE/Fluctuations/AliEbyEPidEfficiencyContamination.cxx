@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: ALICE Offline.                                                 *
  * Contributors are mentioned in the code where appropriate.              *
@@ -21,7 +21,7 @@
 //                   Deepika Rathee  | Satyajit Jena                       //
 //                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//                        (Last Modified 2018/02/12)                       //
+//                        (Last Modified 2018/03/14)                       //
 //                 Dealing with Wide pT Window Modified to ESDs            //
 //Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
 //analysis task.                                                           //
@@ -44,13 +44,15 @@
 #include "AliPIDCombined.h"
 #include "AliAODHeader.h"
 #include "AliAODpidUtil.h"
-#include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include "AliMultSelection.h"
 //#include "AliHelperPID.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
+#include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliESDtrackCuts.h"
 #include "AliInputEventHandler.h"
 #include "AliMCEventHandler.h"
@@ -76,7 +78,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination()
   fESDtrackCuts(NULL),
   fMCEvent(NULL),
   fMCStack(NULL),
-  fanaUtils(NULL),
+  fEventCuts(NULL),
   fRun("LHC10h"),
   fCentralityEstimator("V0M"),
   
@@ -98,6 +100,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination()
   fIsMC(kFALSE),
   fIsAOD(kFALSE),
   fIsQA(kFALSE),
+  fIsRapCut(kFALSE),
   fIsTrig(kFALSE),
   fIsThn(kFALSE),
 
@@ -178,7 +181,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char
     fESDtrackCuts(NULL),
     fMCEvent(NULL),
     fMCStack(NULL),
-    fanaUtils(NULL),
+    fEventCuts(NULL),
     fRun("LHC10h"),
     fCentralityEstimator("V0M"),
     
@@ -199,6 +202,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char
     fIsMC(kFALSE),
     fIsAOD(kFALSE),
     fIsQA(kFALSE),
+    fIsRapCut(kFALSE),
     fIsTrig(kFALSE),
     fIsThn(kFALSE),
     
@@ -272,7 +276,7 @@ AliEbyEPidEfficiencyContamination::~AliEbyEPidEfficiencyContamination() {
   
    // Default destructor
   if( fThnList ) delete fThnList;
-  if( fanaUtils ) delete fanaUtils;
+  if( fEventCuts ) delete fEventCuts;
   if( fESDtrackCuts ) delete fESDtrackCuts;
   
 }
@@ -290,7 +294,9 @@ void AliEbyEPidEfficiencyContamination::UserCreateOutputObjects(){
     AliError("No PID response task found !!");
   }
   
-  fanaUtils = new AliAnalysisUtils();
+  if(fRun == "LHC15o"){
+    fEventCuts = new AliEventCuts();
+  }
   
   fThnList = new TList();
   fThnList->SetOwner(kTRUE);
@@ -677,62 +683,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
     LocalPost();
     return;
   }
- 
-  //---Check pileup
-  if(!fanaUtils){
-    cout << "No pileup check ! " << endl;
-    return;
-  }
-  
-  fanaUtils->SetUseMVPlpSelection(kTRUE);
-  fanaUtils->SetUseOutOfBunchPileUp(kTRUE);
-  
-  if(fanaUtils->IsPileUpMV(fVevent)) return;
-  if(fanaUtils->IsOutOfBunchPileUp(fVevent)) return;
-  if(fanaUtils->IsSPDClusterVsTrackletBG(fVevent)) return;
 
-  const AliVVertex *vertex = fVevent->GetPrimaryVertex();
-  if(!vertex) { LocalPost(); return; }
-
-  Bool_t vtest = kFALSE;
-  Double32_t fCov[6];
-  vertex->GetCovarianceMatrix(fCov);
-  if(vertex->GetNContributors() > 0) {
-    if(fCov[5] != 0) {
-      vtest = kTRUE;
-    }
-  }
-  if(!vtest) { LocalPost(); return; }
-  
-  if(TMath::Abs(vertex->GetX()) > fVxMax) { LocalPost(); return; }
-  if(TMath::Abs(vertex->GetY()) > fVyMax) { LocalPost(); return; }
-  if(TMath::Abs(vertex->GetZ()) > fVzMax) { LocalPost(); return; }
-
-  if( fRun == "LHC10h" || fRun == "LHC11h" ){
-    AliCentrality *centrality = fVevent->GetCentrality();
-    if(!centrality) return;
-    if (centrality->GetQuality() != 0) { LocalPost(); return; }
-    
-    fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
-  }
-  
-  else if (fRun == "LHC15o" ){
-    AliMultSelection *fMultSelection= (AliMultSelection *) fVevent->FindListObject("MultSelection");
-    
-    if(!fMultSelection ){
-      cout << "AliMultSelection object not found!" << endl;
-      return;
-    }
-    else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(), false);
-
-  }
- 
-  if( fCentrality < 0 || fCentrality >=80 ) return;
-
-  fHistCent->Fill(fCentrality);
-
-  fEventCounter->Fill(2);
-  
   //---------- Initiate MC
   if (fIsMC){
     fMCEvent = NULL;
@@ -763,6 +714,86 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
       }
     }
   }//if---fIsMC-----
+  
+  //Pile-up cut for Run2------
+  if(fRun == "LHC15o"){
+    if(!fEventCuts->AcceptEvent(fVevent)) {
+      LocalPost();
+      return;
+    }
+  }
+  
+  const AliVVertex *vertex = fVevent->GetPrimaryVertex();
+  if(!vertex) { LocalPost(); return; }
+
+  Bool_t vtest = kFALSE;
+  Double32_t fCov[6];
+  vertex->GetCovarianceMatrix(fCov);
+  if(vertex->GetNContributors() > 0) {
+    if(fCov[5] != 0) {
+      vtest = kTRUE;
+    }
+  }
+  if(!vtest) { LocalPost(); return; }
+  
+  if(TMath::Abs(vertex->GetX()) > fVxMax) { LocalPost(); return; }
+  if(TMath::Abs(vertex->GetY()) > fVyMax) { LocalPost(); return; }
+  if(TMath::Abs(vertex->GetZ()) > fVzMax) { LocalPost(); return; }
+
+  //-----------Centrality task---------------------------------
+  if( fRun == "LHC10h" || fRun == "LHC11h" ){
+    AliCentrality *centrality = fVevent->GetCentrality();
+    if(!centrality) return;
+    if (centrality->GetQuality() != 0) { LocalPost(); return; }
+    
+    fCentrality = centrality->GetCentralityPercentile(fCentralityEstimator.Data());
+  }
+  else if (fRun == "LHC15o" ){
+    AliMultSelection *fMultSelection= (AliMultSelection *) fVevent->FindListObject("MultSelection");
+    if(!fMultSelection ){
+      cout << "AliMultSelection object not found!" << endl;
+      return;
+    }
+    else fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator.Data(), false);
+
+  }
+  else if( fRun == "LHC10hAMPT"){
+    //----------centrality range from imp. par. 
+    AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+    if(!genHeader) return;
+    
+    Double_t impactPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
+    
+    if( impactPar >= 0. && impactPar < 3.51 ) fCentrality = 1.; //0-5
+    if( impactPar >= 3.51 && impactPar < 4.96 ) fCentrality = 6.; //5-10
+    if( impactPar >= 4.96 && impactPar < 6.08 ) fCentrality = 11.;//10-15
+    if( impactPar >= 6.08 && impactPar < 7.01 ) fCentrality = 16.;//15-20
+    if( impactPar >= 7.01 && impactPar < 7.84 ) fCentrality = 21.;//20-25
+    if( impactPar >= 7.84 && impactPar < 8.59 ) fCentrality = 26.;//25-30
+    if( impactPar >= 8.59 && impactPar < 9.27 ) fCentrality = 31.;//30-35
+    if( impactPar >= 9.27 && impactPar < 9.92 ) fCentrality = 36.;//35-40
+    if( impactPar >= 9.92 && impactPar < 10.5 ) fCentrality = 41.;//40-45
+    if( impactPar >= 10.5 && impactPar < 11.1 ) fCentrality = 46.;//45-50
+    if( impactPar >= 11.1 && impactPar < 11.6 ) fCentrality = 51.;//50-55
+    if( impactPar >= 11.6 && impactPar < 12.1 ) fCentrality = 56.;//55-60
+    if( impactPar >= 12.1 && impactPar < 12.6 ) fCentrality = 61.;//60-65
+    if( impactPar >= 12.6 && impactPar < 13.1 ) fCentrality = 66.;//65-70
+    if( impactPar >= 13.1 && impactPar < 13.6 ) fCentrality = 71.;//70-75
+    if( impactPar >= 13.6 && impactPar < 14.0 ) fCentrality = 76.;//75-80
+  
+  }
+  else{
+    cout <<"Wrong run period for centrality" << endl;
+    LocalPost();
+    return;
+  }
+  
+  if( fCentrality < 0 || fCentrality >=80 ) return;
+
+  fHistCent->Fill(fCentrality);
+
+  fEventCounter->Fill(2);
+  
   
   //----------
   
@@ -1080,12 +1111,17 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
     rap = 0.5*TMath::Log( (en + pz)/(en - pz) );
   }
   else rap = -999.;
-  
-  //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
-  
-  if (TMath::Abs(track->Eta()) > fEtaMax) return kFALSE; 
 
+  if( fIsRapCut ){
+    if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
+    if( TMath::Abs(track->Eta()) > fEtaMax ) return kFALSE;
+  }
+  else{
+    if( TMath::Abs(track->Eta()) > fEtaMax ) return kFALSE; 
+  }
+  
   return kTRUE;
+  
 }
 
 
@@ -1107,10 +1143,16 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle)
   }
   else rap = -999;
   
-  //if( TMath::Abs(rap) > 0.5 ) return kFALSE;//rapidity cut
-  if (TMath::Abs(particle->Eta()) > fEtaMax) return kFALSE;
+  if( fIsRapCut ){
+    if( TMath::Abs(rap) > 0.5 ) return kFALSE; //rapidity cut
+    if( TMath::Abs(particle->Eta()) > fEtaMax ) return kFALSE;
+  }
+  else{
+    if( TMath::Abs(particle->Eta()) > fEtaMax ) return kFALSE;
+  }
   
   return kTRUE;
+  
 }
 //---------------------------------------------------------------
 Int_t AliEbyEPidEfficiencyContamination::GetPtBin(Double_t pt){
@@ -1234,8 +1276,21 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,   2.0  };
   
 
+  //--------------------------------ITS PID--------------------------
+  if(fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk){
+    pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
+    
+    if(TMath::Abs(pid[0]) < fNSigmaMaxITS) isAcceptedITS = kTRUE;
+    
+    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
+    
+    if (TMath::Abs(pid[0]) > nSigma) isAcceptedITS = kFALSE;
+    
+  }
+  
   //--------------------------TPC PID----------------
   if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk) {
+
     pid[1] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track, fParticleSpecies);
     
     if(fParticleSpecies == 3){//for kaon only 
@@ -1263,19 +1318,10 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
       if (track->Pt() < fMaxPtForTPClow)         // if less than a pt when low nsigma should be applied
 	isAcceptedTPC = isAcceptedTPClow;        // --------nslow-----|ptlow|----------------nshigh------
     }
+
     Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
     if (TMath::Abs(pid[1]) > nSigma) isAcceptedTPC = kFALSE;
-  }
-  
-  //--------------------------------ITS PID--------------------------
-  if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk) {
-    pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
-    if (TMath::Abs(pid[0]) < fNSigmaMaxITS) 
-      isAcceptedITS = kTRUE;
-    
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
-    if (TMath::Abs(pid[0]) > nSigma)
-      isAcceptedITS = kFALSE;
+
   }
   
   
@@ -1344,8 +1390,17 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   }
   
   
-  if (fParticleSpecies == 2) {//for Pion: TPC+TOF
-    isAccepted = isAcceptedTPC && isAcceptedTOF;
+  if (fParticleSpecies == 2){//for Pion: TPC+TOF
+    if(fPidStrategy == 0){
+      isAccepted = isAcceptedTPC && isAcceptedTOF;
+    }
+    else if( fPidStrategy == 1){  
+      Double_t nsigCombined = TMath::Sqrt( pid[1]*pid[1] +  pid[2]*pid[2] );
+      if( nsigCombined < fNSigmaMaxTOF ) isAccepted = kTRUE;
+    }
+    else if( fPidStrategy == 2){
+      isAccepted = isAcceptedTOF;
+    } 
   }
   
   if( fParticleSpecies == 3){//for kaon: TPC and/or TOF

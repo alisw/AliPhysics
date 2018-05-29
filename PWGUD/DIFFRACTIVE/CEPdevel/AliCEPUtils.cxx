@@ -1942,7 +1942,7 @@ void AliCEPUtils::SetMCTruth (
   // all charged physical primary tracks with abs(eta)<1.
   TParticle *part;
   Int_t PDGCode;
-  stack->DumpPStack();
+  // stack->DumpPStack();
   for (Int_t ii=5; ii<nTracks; ii++) {
     //printf("part[%i] %i %i %i\n\n",ii,
     //  stack->IsPhysicalPrimary(ii),

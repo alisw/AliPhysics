@@ -17,8 +17,13 @@
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliCSEventCuts.h"
+#include "AliCSTrackCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliGenEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliCollisionGeometry.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliAODMCParticle.h"
@@ -248,9 +253,22 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
   /* check for MC event and its quality */
   if (fgIsMC) {
     if (fgIsESD) {
-      if (!fgMCHandler->InitOk() || !fgMCHandler->TreeK() || !fgMCHandler->TreeTR()){
-        fCutsActivatedMask.SetBitNumber(kMCdataQuality);
-        accepted = kFALSE;
+      AliInfo(TString::Format("InitOk: %s, TreeK: %s, TreeTR: %s",
+          fgMCHandler->InitOk() ? "true" : "false",
+              fgMCHandler->TreeK() ? "true" : "false",
+                  fgMCHandler->TreeTR() ? "true" : "false"));
+      if (fgIsMConlyTruth) {
+        /* track references are not there if fast MC, i.e. only truth productions */
+        if (!fgMCHandler->InitOk() || !fgMCHandler->TreeK()){
+          fCutsActivatedMask.SetBitNumber(kMCdataQuality);
+          accepted = kFALSE;
+        }
+      }
+      else {
+        if (!fgMCHandler->InitOk() || !fgMCHandler->TreeK() || !fgMCHandler->TreeTR()){
+          fCutsActivatedMask.SetBitNumber(kMCdataQuality);
+          accepted = kFALSE;
+        }
       }
     }
     else {
@@ -277,31 +295,35 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
     accepted = kFALSE;
   }
 
-  /* trigger cut */
-  UInt_t offlineTriggerMask = fOfflineTriggerMask;
-  if (fgIsMC && fSystem != kpp)
-    offlineTriggerMask = AliVEvent::kAny;
-  if (!(offlineTriggerMask & fgInputHandler->IsEventSelected())) {
-    /* cut activated, event rejected */
-    fCutsActivatedMask.SetBitNumber(kOfflineTriggerCut);
-    accepted = kFALSE;
+  if (!fgIsMConlyTruth) {
+    /* trigger cut */
+    UInt_t offlineTriggerMask = fOfflineTriggerMask;
+    if (fgIsMC && fSystem != kpp)
+      offlineTriggerMask = AliVEvent::kAny;
+    if (!(offlineTriggerMask & fgInputHandler->IsEventSelected())) {
+      /* cut activated, event rejected */
+      fCutsActivatedMask.SetBitNumber(kOfflineTriggerCut);
+      accepted = kFALSE;
+    }
   }
 
   /* vertex cut */
   fVertexZ = GetVertexZ(fInputEvent);
   if (fCutsEnabledMask.TestBitNumber(kVertexCut)) {
-    if (GetNumberOfVertexContributors(fInputEvent) < 1) {
-      fCutsActivatedMask.SetBitNumber(kVertexContributorsCut);
-      accepted = kFALSE;
-    }
-    if (!PassVertexResolutionAndDispersionTh(fInputEvent)) {
-      fCutsActivatedMask.SetBitNumber(kVertexQualityCut);
-      accepted = kFALSE;
-    }
-    if (fUseSPDTracksVtxDist) {
-      if (!AcceptSPDTracksVtxDist(fInputEvent)) {
-        fCutsActivatedMask.SetBitNumber(kSPDTrackVtxDistance);
+    if (!fgIsMConlyTruth) {
+      if (GetNumberOfVertexContributors(fInputEvent) < 1) {
+        fCutsActivatedMask.SetBitNumber(kVertexContributorsCut);
         accepted = kFALSE;
+      }
+      if (!PassVertexResolutionAndDispersionTh(fInputEvent)) {
+        fCutsActivatedMask.SetBitNumber(kVertexQualityCut);
+        accepted = kFALSE;
+      }
+      if (fUseSPDTracksVtxDist) {
+        if (!AcceptSPDTracksVtxDist(fInputEvent)) {
+          fCutsActivatedMask.SetBitNumber(kSPDTrackVtxDistance);
+          accepted = kFALSE;
+        }
       }
     }
     if (fMaxVertexZ < TMath::Abs(fVertexZ)) {
@@ -310,21 +332,23 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
     }
   }
 
-  /* pile up cut */
-  if (fSystem == kpPb) {
-    if (fAnalysisUtils.IsFirstEventInChunk(fInputEvent)) {
-      fCutsActivatedMask.SetBitNumber(kPileUpCut);
-      accepted = kFALSE;
+  if (!fgIsMConlyTruth) {
+    /* pile up cut */
+    if (fSystem == kpPb) {
+      if (fAnalysisUtils.IsFirstEventInChunk(fInputEvent)) {
+        fCutsActivatedMask.SetBitNumber(kPileUpCut);
+        accepted = kFALSE;
+      }
     }
-  }
-  if (fCutsEnabledMask.TestBitNumber(kPileUpCut)) {
-    if(fAnalysisUtils.IsPileUpEvent(fInputEvent)){
-      fCutsActivatedMask.SetBitNumber(kPileUpCut);
-      accepted = kFALSE;
-    }
-    if (fAnalysisUtils.IsSPDClusterVsTrackletBG(fInputEvent)){
-      fCutsActivatedMask.SetBitNumber(kSPDClsVsTrkaletsCut);
-      accepted = kFALSE;
+    if (fCutsEnabledMask.TestBitNumber(kPileUpCut)) {
+      if(fAnalysisUtils.IsPileUpEvent(fInputEvent)){
+        fCutsActivatedMask.SetBitNumber(kPileUpCut);
+        accepted = kFALSE;
+      }
+      if (fAnalysisUtils.IsSPDClusterVsTrackletBG(fInputEvent)){
+        fCutsActivatedMask.SetBitNumber(kSPDClsVsTrkaletsCut);
+        accepted = kFALSE;
+      }
     }
   }
 
@@ -338,12 +362,14 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
     }
   }
 
-  /* 2015 additional pile up cut also applicable to 2010h*/
-  /* check the additional pile up rejection if required */
-  if (fCutsEnabledMask.TestBitNumber(k2015PileUpCut)) {
-    if (Is2015PileUpEvent()) {
-      fCutsActivatedMask.SetBitNumber(k2015PileUpCut);
-      accepted = kFALSE;
+  if (!fgIsMConlyTruth) {
+    /* 2015 additional pile up cut also applicable to 2010h*/
+    /* check the additional pile up rejection if required */
+    if (fCutsEnabledMask.TestBitNumber(k2015PileUpCut)) {
+      if (Is2015PileUpEvent()) {
+        fCutsActivatedMask.SetBitNumber(k2015PileUpCut);
+        accepted = kFALSE;
+      }
     }
   }
 
@@ -766,6 +792,8 @@ void AliCSEventCuts::SetActualSystemType() {
 ///    |  4 | default detector for the concerned system, cut in the range 50-100% in steps of 5% |
 ///    |  5 | default detector for the concerned system, cut in the range 0-10% in steps of 1% |
 ///    |  6 | default detector for the concerned system, cut in the range 10-20% in steps of 1% |
+///    |  7 | alternative detector for the concerned system, cut in the range 0-50% in steps of 5% |
+///    |  8 | alternative detector for the concerned system, cut in the range 50-100% in steps of 5% |
 /// \return kTRUE if proper and supported centrality type
 ///
 /// The default and alternative detector for centrality estimation in the different systems
@@ -824,6 +852,20 @@ Bool_t AliCSEventCuts::SetCentralityType(Int_t ctype)
     fCutsEnabledMask.SetBitNumber(kCentralityCut);
     fCentralityDetector=0;
     fCentralityModifier=4;
+    break;
+  case 7:
+    /* alternative centrality detector for the concerned system */
+    /* centrality cut in the range 0-50% in steps of 5% */
+    fCutsEnabledMask.SetBitNumber(kCentralityCut);
+    fCentralityDetector=1;
+    fCentralityModifier=1;
+    break;
+  case 8:
+    /* alternative centrality detector for the concerned system */
+    /* centrality cut in the range 50-100% in steps of 5% */
+    fCutsEnabledMask.SetBitNumber(kCentralityCut);
+    fCentralityDetector=1;
+    fCentralityModifier=2;
     break;
   default:
     AliError(Form("Centrality type %d not supported",ctype));
@@ -952,95 +994,157 @@ Float_t AliCSEventCuts::GetEventCentrality(AliVEvent *event) const
     return this->fNoOfFB32AccTracks;
 
   if (esdEvent != NULL) {
-    AliCentrality *Centrality = event->GetCentrality();
-    if (fUseNewMultFramework) {
-      AliMultSelection *MultSelection = (AliMultSelection*) event->FindListObject("MultSelection");
-      if (MultSelection == NULL) {
-        AliError("No MultSelection object instance");
-        return -1.0;
+    /* for the time being, only ESD input supported with fast MC productions */
+    if (fgIsMConlyTruth) {
+      AliMCEvent* mcEvent = fgMCHandler->MCEvent();
+
+      /* TODO: this is quick fix to start with AMPT production. Incorporate the kind of generator to automate this */
+      AliGenEventHeader* eventHeader = NULL;
+      if (mcEvent != NULL) {
+        AliHeader* header = (AliHeader*) mcEvent->Header();
+        if (header != NULL) {
+          AliGenCocktailEventHeader* cocktailHeader = dynamic_cast<AliGenCocktailEventHeader*> (header->GenEventHeader());
+          if (cocktailHeader) {
+            eventHeader = dynamic_cast<AliGenEventHeader*> (cocktailHeader->GetHeaders()->First());
+          }
+          eventHeader = dynamic_cast<AliGenEventHeader*> (header->GenEventHeader());
+        }
       }
-      switch(fCentralityDetector) {
-      case 0:
-        /* default centrality detector */
-        if (fSystem == kpPb)
-          return Centrality->GetCentralityPercentile("V0A");
-        else
-          /* we don't leave Multiplicity task cuts precede our own */
-          return MultSelection->GetMultiplicityPercentile("V0M", kFALSE);
-      case 1:
-        /* alternative centrality detector */
-        /* we don't leave Multiplicity task cuts precede our own */
-        return MultSelection->GetMultiplicityPercentile("CL1", kFALSE);
-      default:
-        AliError("Wrong stored centrality detector");
-        return -1.0;
+
+      if (eventHeader != NULL) {
+        Float_t b = -1.0;
+        AliCollisionGeometry* collGeometry = dynamic_cast<AliCollisionGeometry*> (eventHeader);
+        AliGenHepMCEventHeader* hepMCHeader = dynamic_cast<AliGenHepMCEventHeader*> (eventHeader);
+        if (!collGeometry && !hepMCHeader) {
+          eventHeader->Dump();
+          AliFatal("Fast MC production, but event header has no collision geometry information");
+          return -1;
+        }
+        if (collGeometry)
+          b = collGeometry->ImpactParameter();
+        else if (hepMCHeader)
+          b = hepMCHeader->impact_parameter();
+
+        /* now we have to make the conversion from the impact parameter to the centrality */
+        const Int_t ncentAMPT = 10;
+        Float_t centAMPT[ncentAMPT+1] = { 0.0, 5.00, 10.0, 20.0, 30.0,  40.0,  50.0,  60.0,  70.0,  80.0,  90.00};
+        Float_t bAMPT[ncentAMPT+1]    = { 0.0, 3.72,  5.23, 7.31, 8.88, 10.20, 11.38, 12.47, 13.50, 14.51, 30.00};
+/*        const Int_t ncentHIJING = 15;
+        Float_t centHIJING[ncentHIJING+1] = {0.00, 1.00, 2.00, 3.00, 4.00, 5.00, 10.00, 20.00, 30.00, 40.00, 50.00, 60.00, 70.00, 80.00, 90.00, 100.00};
+        Float_t bHIJING[ncentHIJING+1]    = {0.00, 1.47, 2.11, 2.61, 3.03, 3.40,  4.84,  6.89,  8.46,  9.79, 10.95, 12.01, 12.98, 13.88, 14.79,  30.00};
+*/
+        if (this->fDataPeriod == this->kLHC13f3) {
+          for (Int_t icent = 0; icent < ncentAMPT; icent++) {
+            if (b < bAMPT[icent+1]) {
+              AliInfo(TString::Format("Impact parameter: %.2f ===> centrality %.1f", b, (centAMPT[icent+1]+centAMPT[icent]) / 2.0));
+              return (centAMPT[icent+1]+centAMPT[icent]) / 2.0;
+            }
+          }
+        }
+      }
+      else {
+        AliError("Fast MC: Event header not found. Skipping this event.");
+        return -1;
       }
     }
     else {
-      switch(fCentralityDetector) {
-      case 0:
-        /* default centrality detector */
-        if (fSystem == kpPb)
-          return Centrality->GetCentralityPercentile("V0A");
-        else
-          return Centrality->GetCentralityPercentile("V0M");
-      case 1:
-        /* alternative centrality detector */
-        return Centrality->GetCentralityPercentile("CL1");
-      default:
-        AliError("Wrong stored centrality detector");
-        return -1.0;
+      AliCentrality *Centrality = event->GetCentrality();
+      if (fUseNewMultFramework) {
+        AliMultSelection *MultSelection = (AliMultSelection*) event->FindListObject("MultSelection");
+        if (MultSelection == NULL) {
+          AliError("No MultSelection object instance");
+          return -1.0;
+        }
+        switch(fCentralityDetector) {
+        case 0:
+          /* default centrality detector */
+          if (fSystem == kpPb)
+            return Centrality->GetCentralityPercentile("V0A");
+          else
+            /* we don't leave Multiplicity task cuts precede our own */
+            return MultSelection->GetMultiplicityPercentile("V0M", kFALSE);
+        case 1:
+          /* alternative centrality detector */
+          /* we don't leave Multiplicity task cuts precede our own */
+          return MultSelection->GetMultiplicityPercentile("CL1", kFALSE);
+        default:
+          AliError("Wrong stored centrality detector");
+          return -1.0;
+        }
+      }
+      else {
+        switch(fCentralityDetector) {
+        case 0:
+          /* default centrality detector */
+          if (fSystem == kpPb)
+            return Centrality->GetCentralityPercentile("V0A");
+          else
+            return Centrality->GetCentralityPercentile("V0M");
+        case 1:
+          /* alternative centrality detector */
+          return Centrality->GetCentralityPercentile("CL1");
+        default:
+          AliError("Wrong stored centrality detector");
+          return -1.0;
+        }
       }
     }
   }
 
   if(aodEvent){
-    if(fUseNewMultFramework){
-      AliMultSelection *MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
-      if (MultSelection == NULL) {
-        AliError("No MultSelection object instance");
-        return -1.0;
-      }
-      switch(fCentralityDetector) {
-      case 0:
-        /* default centrality detector */
-        /* we don't leave Multiplicity task cuts precede our own */
-        return MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
-      case 1:
-        /* alternative centrality detector */
-        /* we don't leave Multiplicity task cuts precede our own */
-        return MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
-      default:
-        AliError("Wrong stored centrality detector");
-        return -1.0;
-      }
-    }else{
-      if(aodEvent->GetHeader()) {
-        AliCentrality *aodCentrality = ((AliVAODHeader*)aodEvent->GetHeader())->GetCentralityP();
-        if (aodCentrality != NULL) {
-          switch(fCentralityDetector) {
-          case 0:
-            /* default centrality detector */
-            if (fSystem == kpPb)
-              return aodCentrality->GetCentralityPercentile("V0A");
-            else
-              return aodCentrality->GetCentralityPercentile("V0M");
-          case 1:
-            /* alternative centrality detector */
-            return aodCentrality->GetCentralityPercentile("CL1");
-          default:
-            AliError("Wrong stored centrality detector");
-            return -1.0;
+    /* for the time being, only ESD input supported with fast MC productions */
+    if (fgIsMConlyTruth) {
+      AliError("Fast MC productions not supported with AOD input format. Please, use ESD.");
+      return -1;
+    }
+    else {
+      if(fUseNewMultFramework){
+        AliMultSelection *MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
+        if (MultSelection == NULL) {
+          AliError("No MultSelection object instance");
+          return -1.0;
+        }
+        switch(fCentralityDetector) {
+        case 0:
+          /* default centrality detector */
+          /* we don't leave Multiplicity task cuts precede our own */
+          return MultSelection->GetMultiplicityPercentile("V0M",kFALSE);
+        case 1:
+          /* alternative centrality detector */
+          /* we don't leave Multiplicity task cuts precede our own */
+          return MultSelection->GetMultiplicityPercentile("CL1",kFALSE);
+        default:
+          AliError("Wrong stored centrality detector");
+          return -1.0;
+        }
+      }else{
+        if(aodEvent->GetHeader()) {
+          AliCentrality *aodCentrality = ((AliVAODHeader*)aodEvent->GetHeader())->GetCentralityP();
+          if (aodCentrality != NULL) {
+            switch(fCentralityDetector) {
+            case 0:
+              /* default centrality detector */
+              if (fSystem == kpPb)
+                return aodCentrality->GetCentralityPercentile("V0A");
+              else
+                return aodCentrality->GetCentralityPercentile("V0M");
+            case 1:
+              /* alternative centrality detector */
+              return aodCentrality->GetCentralityPercentile("CL1");
+            default:
+              AliError("Wrong stored centrality detector");
+              return -1.0;
+            }
+          }
+          else {
+            AliError("No AliCentrality attached to AOD header");
+            return -1;
           }
         }
         else {
-          AliError("No AliCentrality attached to AOD header");
+          AliError("Not a standard AOD");
           return -1;
         }
-      }
-      else {
-        AliError("Not a standard AOD");
-        return -1;
       }
     }
   }
@@ -1899,98 +2003,116 @@ Bool_t AliCSEventCuts::StoreEventMultiplicities(AliVEvent *event) {
   fNoOfInitialTPCoutTracks = 0;
   fReferenceMultiplicity = -1;
 
-  Int_t nTracks = 0;
+  if (fgIsMConlyTruth) {
+    /* for fast MC we need to infer few of this counting */
+    Int_t nTracks = 0;
 
-  fV0Multiplicity = event->GetVZEROData()->GetMTotV0A()+event->GetVZEROData()->GetMTotV0C();
+    AliMCEvent *mcevent = fgMCHandler->MCEvent();
+    if (mcevent != NULL) {
+      for (Int_t itrk = 0; itrk < mcevent->GetNumberOfTracks(); itrk++) {
+        if (AliCSTrackCuts::IsPhysicalPrimary(itrk))
+          nTracks++;
+      }
 
-  AliInfo(Form("Event V0M multiplicity: %d", fV0Multiplicity));
-  if (aodEvent == NULL && esdEvent == NULL) {
-    AliError("Not a proper event");
-    return kFALSE;
-  }
-
-  if (aodEvent != NULL) {
-    if(aodEvent->GetHeader()) {
-      fReferenceMultiplicity = ((AliAODHeader*)aodEvent->GetHeader())->GetRefMultiplicityComb08();
-      fNoOfAODTracks = aodEvent->GetNumberOfTracks();
-      fNoOfESDTracks = ((AliVAODHeader*)aodEvent->GetHeader())->GetNumberOfESDTracks();
-      nTracks = fNoOfAODTracks;
-    }
-    else {
-      AliError("Not a proper AOD event. No header!");
+      fReferenceMultiplicity = nTracks;
+      fNoOfAODTracks = fNoOfESDTracks = mcevent->GetNumberOfTracks();
     }
   }
+  else {
 
-  if (esdEvent != NULL) {
-    AliESDtrackCuts::MultEstTrackType estType = esdEvent->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
-    fReferenceMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity(esdEvent,estType,0.8);
-    fNoOfESDTracks = esdEvent->GetNumberOfTracks();
-    nTracks = fNoOfESDTracks;
-  }
+    Int_t nTracks = 0;
 
-  for (Int_t itrk = 0; itrk < nTracks; itrk++) {
-    AliVTrack *trk = dynamic_cast<AliVTrack*>(event->GetTrack(itrk));
+    fV0Multiplicity = event->GetVZEROData()->GetMTotV0A()+event->GetVZEROData()->GetMTotV0C();
 
-    if (trk != NULL) {
+    AliInfo(Form("Event V0M multiplicity: %d", fV0Multiplicity));
+    if (aodEvent == NULL && esdEvent == NULL) {
+      AliError("Not a proper event");
+      return kFALSE;
+    }
 
-      /* the initial method of counting TPC out tracks in its two versions */
-      if (!(trk->Pt() < 0.15) && (TMath::Abs(trk->Eta()) < 0.8)) {
-        if (fParameters[kRemove2015PileUp] == 1) {
-          /* the initial method of counting TPC out tracks, faulty */
-          /* we have to force the parenthesis for silencing compiler warning */
-          /* but this is how it really looks like, that's why is faulty */
-          if (!(trk->GetStatus() & (AliVTrack::kTPCout != AliVTrack::kTPCout))) {
-            fNoOfInitialTPCoutTracks++;
-          }
-        }
-        else {
-          /* the initial method of counting TPC out tracks, corrected */
-          if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout) {
-            fNoOfInitialTPCoutTracks++;
-          }
-        }
+    if (aodEvent != NULL) {
+      if(aodEvent->GetHeader()) {
+        fReferenceMultiplicity = ((AliAODHeader*)aodEvent->GetHeader())->GetRefMultiplicityComb08();
+        fNoOfAODTracks = aodEvent->GetNumberOfTracks();
+        fNoOfESDTracks = ((AliVAODHeader*)aodEvent->GetHeader())->GetNumberOfESDTracks();
+        nTracks = fNoOfAODTracks;
       }
+      else {
+        AliError("Not a proper AOD event. No header!");
+      }
+    }
 
-      if (trk->IsA() == AliESDtrack::Class()) {
-        if (fESDFB32->AcceptTrack(dynamic_cast<AliESDtrack *>(trk))) {
-          fNoOfFB32Tracks++;
+    if (esdEvent != NULL) {
+      AliESDtrackCuts::MultEstTrackType estType = esdEvent->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
+      fReferenceMultiplicity = AliESDtrackCuts::GetReferenceMultiplicity(esdEvent,estType,0.8);
+      fNoOfESDTracks = esdEvent->GetNumberOfTracks();
+      nTracks = fNoOfESDTracks;
+    }
 
-          if (TMath::Abs(trk->GetTOFsignalDz()) <= 10. && trk->GetTOFsignal() >= 12000. && trk->GetTOFsignal() <= 25000.)
-            fNoOfFB32TOFTracks++;
+    for (Int_t itrk = 0; itrk < nTracks; itrk++) {
+      AliVTrack *trk = dynamic_cast<AliVTrack*>(event->GetTrack(itrk));
 
-          if ((TMath::Abs(trk->Eta()) < 0.8) && (trk->GetTPCNcls() >= 70) && (trk->Pt() >= 0.2) && (trk->Pt() < 50.)) {
-            fNoOfFB32AccTracks++;
-            if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout )
-              fNoOfTPCoutTracks++;
+      if (trk != NULL) {
+
+        /* the initial method of counting TPC out tracks in its two versions */
+        if (!(trk->Pt() < 0.15) && (TMath::Abs(trk->Eta()) < 0.8)) {
+          if (fParameters[kRemove2015PileUp] == 1) {
+            /* the initial method of counting TPC out tracks, faulty */
+            /* we have to force the parenthesis for silencing compiler warning */
+            /* but this is how it really looks like, that's why is faulty */
+            if (!(trk->GetStatus() & (AliVTrack::kTPCout != AliVTrack::kTPCout))) {
+              fNoOfInitialTPCoutTracks++;
+            }
+          }
+          else {
+            /* the initial method of counting TPC out tracks, corrected */
+            if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout) {
+              fNoOfInitialTPCoutTracks++;
+            }
           }
         }
-        if (fESDFB128->AcceptTrack(dynamic_cast<AliESDtrack *>(trk))) {
-          /* TODO we need to enrich this to really match AOD FB128 */
-          /* there are TPC only tracks which will not become AOD FB128 tracks */
-          fNoOfFB128Tracks++;
-        }
-      }
-      else if (trk->IsA() == AliAODTrack::Class()) {
-        AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(trk);
 
-        if (aodt->TestFilterBit(32)) {
-          fNoOfFB32Tracks++;
+        if (trk->IsA() == AliESDtrack::Class()) {
+          if (fESDFB32->AcceptTrack(dynamic_cast<AliESDtrack *>(trk))) {
+            fNoOfFB32Tracks++;
 
-          if (TMath::Abs(trk->GetTOFsignalDz()) <= 10. && trk->GetTOFsignal() >= 12000. && trk->GetTOFsignal() <= 25000.)
-            fNoOfFB32TOFTracks++;
+            if (TMath::Abs(trk->GetTOFsignalDz()) <= 10. && trk->GetTOFsignal() >= 12000. && trk->GetTOFsignal() <= 25000.)
+              fNoOfFB32TOFTracks++;
 
-          if ((TMath::Abs(trk->Eta()) < 0.8) && (trk->GetTPCNcls() >= 70) && (trk->Pt() >= 0.2) && (trk->Pt() < 50.)) {
-            fNoOfFB32AccTracks++;
-            if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout )
-              fNoOfTPCoutTracks++;
+            if ((TMath::Abs(trk->Eta()) < 0.8) && (trk->GetTPCNcls() >= 70) && (trk->Pt() >= 0.2) && (trk->Pt() < 50.)) {
+              fNoOfFB32AccTracks++;
+              if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout )
+                fNoOfTPCoutTracks++;
+            }
+          }
+          if (fESDFB128->AcceptTrack(dynamic_cast<AliESDtrack *>(trk))) {
+            /* TODO we need to enrich this to really match AOD FB128 */
+            /* there are TPC only tracks which will not become AOD FB128 tracks */
+            fNoOfFB128Tracks++;
           }
         }
-        if (aodt->TestFilterBit(128)) {
-          fNoOfFB128Tracks++;
+        else if (trk->IsA() == AliAODTrack::Class()) {
+          AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(trk);
+
+          if (aodt->TestFilterBit(32)) {
+            fNoOfFB32Tracks++;
+
+            if (TMath::Abs(trk->GetTOFsignalDz()) <= 10. && trk->GetTOFsignal() >= 12000. && trk->GetTOFsignal() <= 25000.)
+              fNoOfFB32TOFTracks++;
+
+            if ((TMath::Abs(trk->Eta()) < 0.8) && (trk->GetTPCNcls() >= 70) && (trk->Pt() >= 0.2) && (trk->Pt() < 50.)) {
+              fNoOfFB32AccTracks++;
+              if ((trk->GetStatus() & AliVTrack::kTPCout) == AliVTrack::kTPCout )
+                fNoOfTPCoutTracks++;
+            }
+          }
+          if (aodt->TestFilterBit(128)) {
+            fNoOfFB128Tracks++;
+          }
         }
+        else
+          continue;
       }
-      else
-        continue;
     }
   }
 

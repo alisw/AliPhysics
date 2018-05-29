@@ -21,8 +21,6 @@
 #include "TChain.h"
 #include "TMath.h"
 #include "TTree.h"
-#include "TH1F.h"
-#include "TH2F.h"
 
 ClassImp(AliAnalysisTaskReducedTreeNuclei)
 
@@ -33,27 +31,27 @@ fAODevent(NULL),
 fPIDResponse(NULL),
 fAODeventCuts(),
 fUtils(NULL),
-fOutputList(NULL),
 fQAList(NULL),
-histoEventSelection(NULL),
+TreeEventSelection(NULL),
 reducedTree_Helium(NULL),
 reducedTree_HyperTriton(NULL),
+SelectionStep(-1),
 magFieldSign(0),
-multPercentile_V0M(0),
-multPercentile_V0A(0),
-multPercentile_V0C(0),
-multPercentile_OnlineV0M(0),
-multPercentile_OnlineV0A(0),
-multPercentile_OnlineV0C(0),
-multPercentile_ADM(0),
-multPercentile_ADA(0),
-multPercentile_ADC(0),
-multPercentile_SPDClusters(0),
-multPercentile_SPDTracklets(0),
-multPercentile_RefMult05(0),
-multPercentile_RefMult08(0),
-multPercentile_CL1(0),
-multPercentile_ZNA(0),
+multPercentile_V0M(-1),
+multPercentile_V0A(-1),
+multPercentile_V0C(-1),
+multPercentile_OnlineV0M(-1),
+multPercentile_OnlineV0A(-1),
+multPercentile_OnlineV0C(-1),
+multPercentile_ADM(-1),
+multPercentile_ADA(-1),
+multPercentile_ADC(-1),
+multPercentile_SPDClusters(-1),
+multPercentile_SPDTracklets(-1),
+multPercentile_RefMult05(-1),
+multPercentile_RefMult08(-1),
+multPercentile_CL1(-1),
+multPercentile_ZNA(-1),
 Ntrk_OnlineV0M(0),
 Ntrk_OnlineV0A(0),
 Ntrk_OnlineV0C(0),
@@ -252,27 +250,27 @@ fAODevent(NULL),
 fPIDResponse(NULL),
 fAODeventCuts(),
 fUtils(NULL),
-fOutputList(NULL),
 fQAList(NULL),
-histoEventSelection(NULL),
+TreeEventSelection(NULL),
 reducedTree_Helium(NULL),
 reducedTree_HyperTriton(NULL),
+SelectionStep(-1),
 magFieldSign(0),
-multPercentile_V0M(0),
-multPercentile_V0A(0),
-multPercentile_V0C(0),
-multPercentile_OnlineV0M(0),
-multPercentile_OnlineV0A(0),
-multPercentile_OnlineV0C(0),
-multPercentile_ADM(0),
-multPercentile_ADA(0),
-multPercentile_ADC(0),
-multPercentile_SPDClusters(0),
-multPercentile_SPDTracklets(0),
-multPercentile_RefMult05(0),
-multPercentile_RefMult08(0),
-multPercentile_CL1(0),
-multPercentile_ZNA(0),
+multPercentile_V0M(-1),
+multPercentile_V0A(-1),
+multPercentile_V0C(-1),
+multPercentile_OnlineV0M(-1),
+multPercentile_OnlineV0A(-1),
+multPercentile_OnlineV0C(-1),
+multPercentile_ADM(-1),
+multPercentile_ADA(-1),
+multPercentile_ADC(-1),
+multPercentile_SPDClusters(-1),
+multPercentile_SPDTracklets(-1),
+multPercentile_RefMult05(-1),
+multPercentile_RefMult08(-1),
+multPercentile_CL1(-1),
+multPercentile_ZNA(-1),
 Ntrk_OnlineV0M(0),
 Ntrk_OnlineV0A(0),
 Ntrk_OnlineV0C(0),
@@ -467,33 +465,36 @@ qtV0(0)
    fUtils = new AliAnalysisUtils();
    DefineInput(0, TChain::Class());
    DefineOutput(1, TList::Class());
-   DefineOutput(2, TList::Class());
+   DefineOutput(2, TTree::Class());
+   DefineOutput(3, TTree::Class());
+   DefineOutput(4, TTree::Class());
+
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskReducedTreeNuclei::~AliAnalysisTaskReducedTreeNuclei()
 {
-   //    fOutputList->Clear();
    if(fAODevent) delete fAODevent;
    if(fPIDResponse) delete fPIDResponse;
-   if(fOutputList) delete fOutputList;
    if(fQAList) delete fQAList;
+   if(TreeEventSelection) delete TreeEventSelection;
+   if(reducedTree_Helium) delete reducedTree_Helium;
+   if(reducedTree_HyperTriton) delete reducedTree_HyperTriton;
    delete fUtils;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
 {
-   fOutputList = new TList();
-   fOutputList -> SetOwner();
-
    fQAList = new TList();
    fQAList -> SetOwner();
 
    fAODeventCuts.AddQAplotsToList(fQAList); /// Add event selection QA plots
 
-   histoEventSelection = new TH1F("histoEventSelection","Events after selection steps",3,0,3);
-   histoEventSelection->GetXaxis()->SetTitle("Selection steps");
-   histoEventSelection->Sumw2();
-   fOutputList->Add(histoEventSelection);
+   TreeEventSelection = new TTree("TreeEventSelection","TreeEventSelection");
+   TreeEventSelection -> Branch("SelectionStep",&SelectionStep,"SelectionStep/I");
+   TreeEventSelection -> Branch("multPercentile_V0A",&multPercentile_V0A,"multPercentile_V0A/D");
+   TreeEventSelection -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
+   TreeEventSelection -> Branch("multPercentile_SPDTracklets",&multPercentile_SPDTracklets,"multPercentile_SPDTracklets/D");
+
 
    //Reduced Tree (Helium3)
    reducedTree_Helium = new TTree("reducedTree_Helium","reducedTree_Helium");
@@ -618,101 +619,100 @@ void AliAnalysisTaskReducedTreeNuclei::UserCreateOutputObjects()
 
    //Reduced Tree HyperTriton
    reducedTree_HyperTriton = new TTree("reducedTree_HyperTriton","reducedTree_HyperTriton");
-   reducedTree_HyperTriton -> Branch("px_Daughter1",&px_Daughter1,"px_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("py_Daughter1",&py_Daughter1,"py_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("pz_Daughter1",&pz_Daughter1,"pz_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("TPCmomentum_Daughter1",&TPCmomentum_Daughter1,"TPCmomentum_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("trackID_Daughter1",&trackID_Daughter1,"trackID_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("eta_Daughter1",&eta_Daughter1,"eta_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("phi_Daughter1",&phi_Daughter1,"phi_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("theta_Daughter1",&theta_Daughter1,"theta_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("y_Daughter1",&y_Daughter1,"y_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("q_Daughter1",&q_Daughter1,"q_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("dcaxy_Daughter1",&dcaxy_Daughter1,"dcaxy_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("dcaz_Daughter1",&dcaz_Daughter1,"dcaz_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("nTPC_Clusters_Daughter1",&nTPC_Clusters_Daughter1,"nTPC_Clusters_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("nTPC_FindableClusters_Daughter1",&nTPC_FindableClusters_Daughter1,"nTPC_FindableClusters_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("nTPC_CrossedRows_Daughter1",&nTPC_CrossedRows_Daughter1,"nTPC_CrossedRows_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("nTPC_Clusters_dEdx_Daughter1",&nTPC_Clusters_dEdx_Daughter1,"nTPC_Clusters_dEdx_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("nITS_Clusters_Daughter1",&nITS_Clusters_Daughter1,"nITS_Clusters_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer0_Daughter1",&HasPointOnITSLayer0_Daughter1,"HasPointOnITSLayer0_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer1_Daughter1",&HasPointOnITSLayer1_Daughter1,"HasPointOnITSLayer1_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer2_Daughter1",&HasPointOnITSLayer2_Daughter1,"HasPointOnITSLayer2_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer3_Daughter1",&HasPointOnITSLayer3_Daughter1,"HasPointOnITSLayer3_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer4_Daughter1",&HasPointOnITSLayer4_Daughter1,"HasPointOnITSLayer4_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer5_Daughter1",&HasPointOnITSLayer5_Daughter1,"HasPointOnITSLayer5_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer0_Daughter1",&HasSharedPointOnITSLayer0_Daughter1,"HasSharedPointOnITSLayer0_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer1_Daughter1",&HasSharedPointOnITSLayer1_Daughter1,"HasSharedPointOnITSLayer1_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer2_Daughter1",&HasSharedPointOnITSLayer2_Daughter1,"HasSharedPointOnITSLayer2_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer3_Daughter1",&HasSharedPointOnITSLayer3_Daughter1,"HasSharedPointOnITSLayer3_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer4_Daughter1",&HasSharedPointOnITSLayer4_Daughter1,"HasSharedPointOnITSLayer4_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer5_Daughter1",&HasSharedPointOnITSLayer5_Daughter1,"HasSharedPointOnITSLayer5_Daughter1/I");
-   reducedTree_HyperTriton -> Branch("chi2_TPC_Daughter1",&chi2_TPC_Daughter1,"chi2_TPC_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("chi2_NDF_Daughter1",&chi2_NDF_Daughter1,"chi2_NDF_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("chi2_ITS_Daughter1",&chi2_ITS_Daughter1,"chi2_ITS_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("nSigmaITS_He3_Daughter1",&nSigmaITS_He3_Daughter1,"nSigmaITS_He3_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTPC_He3_Daughter1",&nSigmaTPC_He3_Daughter1,"nSigmaTPC_He3_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTOF_He3_Daughter1",&nSigmaTOF_He3_Daughter1,"nSigmaTOF_He3_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("nSigmaITS_Pion_Daughter1",&nSigmaITS_Pion_Daughter1,"nSigmaITS_Pion_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTPC_Pion_Daughter1",&nSigmaTPC_Pion_Daughter1,"nSigmaTPC_Pion_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTOF_Pion_Daughter1",&nSigmaTOF_Pion_Daughter1,"nSigmaTOF_Pion_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("nSigmaITS_Trit_Daughter1",&nSigmaITS_Trit_Daughter1,"nSigmaITS_Trit_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTPC_Trit_Daughter1",&nSigmaTPC_Trit_Daughter1,"nSigmaTPC_Trit_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTOF_Trit_Daughter1",&nSigmaTOF_Trit_Daughter1,"nSigmaTOF_Trit_Daughter1/D");
-   reducedTree_HyperTriton -> Branch("px_Daughter2",&px_Daughter2,"px_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("py_Daughter2",&py_Daughter2,"py_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("pz_Daughter2",&pz_Daughter2,"pz_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("TPCmomentum_Daughter2",&TPCmomentum_Daughter2,"TPCmomentum_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("trackID_Daughter2",&trackID_Daughter2,"trackID_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("eta_Daughter2",&eta_Daughter2,"eta_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("phi_Daughter2",&phi_Daughter2,"phi_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("theta_Daughter2",&theta_Daughter2,"theta_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("y_Daughter2",&y_Daughter2,"y_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("q_Daughter2",&q_Daughter2,"q_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("dcaxy_Daughter2",&dcaxy_Daughter2,"dcaxy_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("dcaz_Daughter2",&dcaz_Daughter2,"dcaz_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("nTPC_Clusters_Daughter2",&nTPC_Clusters_Daughter2,"nTPC_Clusters_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("nTPC_FindableClusters_Daughter2",&nTPC_FindableClusters_Daughter2,"nTPC_FindableClusters_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("nTPC_CrossedRows_Daughter2",&nTPC_CrossedRows_Daughter2,"nTPC_CrossedRows_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("nTPC_Clusters_dEdx_Daughter2",&nTPC_Clusters_dEdx_Daughter2,"nTPC_Clusters_dEdx_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("nITS_Clusters_Daughter2",&nITS_Clusters_Daughter2,"nITS_Clusters_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer0_Daughter2",&HasPointOnITSLayer0_Daughter2,"HasPointOnITSLayer0_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer1_Daughter2",&HasPointOnITSLayer1_Daughter2,"HasPointOnITSLayer1_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer2_Daughter2",&HasPointOnITSLayer2_Daughter2,"HasPointOnITSLayer2_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer3_Daughter2",&HasPointOnITSLayer3_Daughter2,"HasPointOnITSLayer3_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer4_Daughter2",&HasPointOnITSLayer4_Daughter2,"HasPointOnITSLayer4_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer5_Daughter2",&HasPointOnITSLayer5_Daughter2,"HasPointOnITSLayer5_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer0_Daughter2",&HasSharedPointOnITSLayer0_Daughter2,"HasSharedPointOnITSLayer0_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer1_Daughter2",&HasSharedPointOnITSLayer1_Daughter2,"HasSharedPointOnITSLayer1_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer2_Daughter2",&HasSharedPointOnITSLayer2_Daughter2,"HasSharedPointOnITSLayer2_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer3_Daughter2",&HasSharedPointOnITSLayer3_Daughter2,"HasSharedPointOnITSLayer3_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer4_Daughter2",&HasSharedPointOnITSLayer4_Daughter2,"HasSharedPointOnITSLayer4_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer5_Daughter2",&HasSharedPointOnITSLayer5_Daughter2,"HasSharedPointOnITSLayer5_Daughter2/I");
-   reducedTree_HyperTriton -> Branch("chi2_TPC_Daughter2",&chi2_TPC_Daughter2,"chi2_TPC_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("chi2_NDF_Daughter2",&chi2_NDF_Daughter2,"chi2_NDF_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("chi2_ITS_Daughter2",&chi2_ITS_Daughter2,"chi2_ITS_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("nSigmaITS_He3_Daughter2",&nSigmaITS_He3_Daughter2,"nSigmaITS_He3_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTPC_He3_Daughter2",&nSigmaTPC_He3_Daughter2,"nSigmaTPC_He3_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTOF_He3_Daughter2",&nSigmaTOF_He3_Daughter2,"nSigmaTOF_He3_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("nSigmaITS_Pion_Daughter2",&nSigmaITS_Pion_Daughter2,"nSigmaITS_Pion_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTPC_Pion_Daughter2",&nSigmaTPC_Pion_Daughter2,"nSigmaTPC_Pion_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTOF_Pion_Daughter2",&nSigmaTOF_Pion_Daughter2,"nSigmaTOF_Pion_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("nSigmaITS_Trit_Daughter2",&nSigmaITS_Trit_Daughter2,"nSigmaITS_Trit_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTPC_Trit_Daughter2",&nSigmaTPC_Trit_Daughter2,"nSigmaTPC_Trit_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("nSigmaTOF_Trit_Daughter2",&nSigmaTOF_Trit_Daughter2,"nSigmaTOF_Trit_Daughter2/D");
-   reducedTree_HyperTriton -> Branch("cosPointingAngle",&cosPointingAngle,"cosPointingAngle/D");
-   reducedTree_HyperTriton -> Branch("dcaV0Daughters",&dcaV0Daughters,"dcaV0Daughters/D");
-   reducedTree_HyperTriton -> Branch("radius",&radius,"radius/D");
-   reducedTree_HyperTriton -> Branch("DecayLength",&DecayLength,"DecayLength/D");
-   reducedTree_HyperTriton -> Branch("massV0",&massV0,"massV0/D");
-   reducedTree_HyperTriton -> Branch("alphaV0",&alphaV0,"alphaV0/D");
-   reducedTree_HyperTriton -> Branch("qtV0",&qtV0,"qtV0/D");
+//   reducedTree_HyperTriton -> Branch("px_Daughter1",&px_Daughter1,"px_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("py_Daughter1",&py_Daughter1,"py_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("pz_Daughter1",&pz_Daughter1,"pz_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("TPCmomentum_Daughter1",&TPCmomentum_Daughter1,"TPCmomentum_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("trackID_Daughter1",&trackID_Daughter1,"trackID_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("eta_Daughter1",&eta_Daughter1,"eta_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("phi_Daughter1",&phi_Daughter1,"phi_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("theta_Daughter1",&theta_Daughter1,"theta_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("y_Daughter1",&y_Daughter1,"y_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("q_Daughter1",&q_Daughter1,"q_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("dcaxy_Daughter1",&dcaxy_Daughter1,"dcaxy_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("dcaz_Daughter1",&dcaz_Daughter1,"dcaz_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("nTPC_Clusters_Daughter1",&nTPC_Clusters_Daughter1,"nTPC_Clusters_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("nTPC_FindableClusters_Daughter1",&nTPC_FindableClusters_Daughter1,"nTPC_FindableClusters_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("nTPC_CrossedRows_Daughter1",&nTPC_CrossedRows_Daughter1,"nTPC_CrossedRows_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("nTPC_Clusters_dEdx_Daughter1",&nTPC_Clusters_dEdx_Daughter1,"nTPC_Clusters_dEdx_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("nITS_Clusters_Daughter1",&nITS_Clusters_Daughter1,"nITS_Clusters_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer0_Daughter1",&HasPointOnITSLayer0_Daughter1,"HasPointOnITSLayer0_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer1_Daughter1",&HasPointOnITSLayer1_Daughter1,"HasPointOnITSLayer1_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer2_Daughter1",&HasPointOnITSLayer2_Daughter1,"HasPointOnITSLayer2_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer3_Daughter1",&HasPointOnITSLayer3_Daughter1,"HasPointOnITSLayer3_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer4_Daughter1",&HasPointOnITSLayer4_Daughter1,"HasPointOnITSLayer4_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer5_Daughter1",&HasPointOnITSLayer5_Daughter1,"HasPointOnITSLayer5_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer0_Daughter1",&HasSharedPointOnITSLayer0_Daughter1,"HasSharedPointOnITSLayer0_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer1_Daughter1",&HasSharedPointOnITSLayer1_Daughter1,"HasSharedPointOnITSLayer1_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer2_Daughter1",&HasSharedPointOnITSLayer2_Daughter1,"HasSharedPointOnITSLayer2_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer3_Daughter1",&HasSharedPointOnITSLayer3_Daughter1,"HasSharedPointOnITSLayer3_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer4_Daughter1",&HasSharedPointOnITSLayer4_Daughter1,"HasSharedPointOnITSLayer4_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer5_Daughter1",&HasSharedPointOnITSLayer5_Daughter1,"HasSharedPointOnITSLayer5_Daughter1/I");
+//   reducedTree_HyperTriton -> Branch("chi2_TPC_Daughter1",&chi2_TPC_Daughter1,"chi2_TPC_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("chi2_NDF_Daughter1",&chi2_NDF_Daughter1,"chi2_NDF_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("chi2_ITS_Daughter1",&chi2_ITS_Daughter1,"chi2_ITS_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaITS_He3_Daughter1",&nSigmaITS_He3_Daughter1,"nSigmaITS_He3_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTPC_He3_Daughter1",&nSigmaTPC_He3_Daughter1,"nSigmaTPC_He3_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTOF_He3_Daughter1",&nSigmaTOF_He3_Daughter1,"nSigmaTOF_He3_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaITS_Pion_Daughter1",&nSigmaITS_Pion_Daughter1,"nSigmaITS_Pion_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTPC_Pion_Daughter1",&nSigmaTPC_Pion_Daughter1,"nSigmaTPC_Pion_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTOF_Pion_Daughter1",&nSigmaTOF_Pion_Daughter1,"nSigmaTOF_Pion_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaITS_Trit_Daughter1",&nSigmaITS_Trit_Daughter1,"nSigmaITS_Trit_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTPC_Trit_Daughter1",&nSigmaTPC_Trit_Daughter1,"nSigmaTPC_Trit_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTOF_Trit_Daughter1",&nSigmaTOF_Trit_Daughter1,"nSigmaTOF_Trit_Daughter1/D");
+//   reducedTree_HyperTriton -> Branch("px_Daughter2",&px_Daughter2,"px_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("py_Daughter2",&py_Daughter2,"py_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("pz_Daughter2",&pz_Daughter2,"pz_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("TPCmomentum_Daughter2",&TPCmomentum_Daughter2,"TPCmomentum_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("trackID_Daughter2",&trackID_Daughter2,"trackID_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("eta_Daughter2",&eta_Daughter2,"eta_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("phi_Daughter2",&phi_Daughter2,"phi_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("theta_Daughter2",&theta_Daughter2,"theta_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("y_Daughter2",&y_Daughter2,"y_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("q_Daughter2",&q_Daughter2,"q_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("dcaxy_Daughter2",&dcaxy_Daughter2,"dcaxy_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("dcaz_Daughter2",&dcaz_Daughter2,"dcaz_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("nTPC_Clusters_Daughter2",&nTPC_Clusters_Daughter2,"nTPC_Clusters_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("nTPC_FindableClusters_Daughter2",&nTPC_FindableClusters_Daughter2,"nTPC_FindableClusters_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("nTPC_CrossedRows_Daughter2",&nTPC_CrossedRows_Daughter2,"nTPC_CrossedRows_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("nTPC_Clusters_dEdx_Daughter2",&nTPC_Clusters_dEdx_Daughter2,"nTPC_Clusters_dEdx_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("nITS_Clusters_Daughter2",&nITS_Clusters_Daughter2,"nITS_Clusters_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer0_Daughter2",&HasPointOnITSLayer0_Daughter2,"HasPointOnITSLayer0_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer1_Daughter2",&HasPointOnITSLayer1_Daughter2,"HasPointOnITSLayer1_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer2_Daughter2",&HasPointOnITSLayer2_Daughter2,"HasPointOnITSLayer2_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer3_Daughter2",&HasPointOnITSLayer3_Daughter2,"HasPointOnITSLayer3_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer4_Daughter2",&HasPointOnITSLayer4_Daughter2,"HasPointOnITSLayer4_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasPointOnITSLayer5_Daughter2",&HasPointOnITSLayer5_Daughter2,"HasPointOnITSLayer5_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer0_Daughter2",&HasSharedPointOnITSLayer0_Daughter2,"HasSharedPointOnITSLayer0_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer1_Daughter2",&HasSharedPointOnITSLayer1_Daughter2,"HasSharedPointOnITSLayer1_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer2_Daughter2",&HasSharedPointOnITSLayer2_Daughter2,"HasSharedPointOnITSLayer2_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer3_Daughter2",&HasSharedPointOnITSLayer3_Daughter2,"HasSharedPointOnITSLayer3_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer4_Daughter2",&HasSharedPointOnITSLayer4_Daughter2,"HasSharedPointOnITSLayer4_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("HasSharedPointOnITSLayer5_Daughter2",&HasSharedPointOnITSLayer5_Daughter2,"HasSharedPointOnITSLayer5_Daughter2/I");
+//   reducedTree_HyperTriton -> Branch("chi2_TPC_Daughter2",&chi2_TPC_Daughter2,"chi2_TPC_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("chi2_NDF_Daughter2",&chi2_NDF_Daughter2,"chi2_NDF_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("chi2_ITS_Daughter2",&chi2_ITS_Daughter2,"chi2_ITS_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaITS_He3_Daughter2",&nSigmaITS_He3_Daughter2,"nSigmaITS_He3_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTPC_He3_Daughter2",&nSigmaTPC_He3_Daughter2,"nSigmaTPC_He3_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTOF_He3_Daughter2",&nSigmaTOF_He3_Daughter2,"nSigmaTOF_He3_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaITS_Pion_Daughter2",&nSigmaITS_Pion_Daughter2,"nSigmaITS_Pion_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTPC_Pion_Daughter2",&nSigmaTPC_Pion_Daughter2,"nSigmaTPC_Pion_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTOF_Pion_Daughter2",&nSigmaTOF_Pion_Daughter2,"nSigmaTOF_Pion_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaITS_Trit_Daughter2",&nSigmaITS_Trit_Daughter2,"nSigmaITS_Trit_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTPC_Trit_Daughter2",&nSigmaTPC_Trit_Daughter2,"nSigmaTPC_Trit_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("nSigmaTOF_Trit_Daughter2",&nSigmaTOF_Trit_Daughter2,"nSigmaTOF_Trit_Daughter2/D");
+//   reducedTree_HyperTriton -> Branch("cosPointingAngle",&cosPointingAngle,"cosPointingAngle/D");
+//   reducedTree_HyperTriton -> Branch("dcaV0Daughters",&dcaV0Daughters,"dcaV0Daughters/D");
+//   reducedTree_HyperTriton -> Branch("radius",&radius,"radius/D");
+//   reducedTree_HyperTriton -> Branch("DecayLength",&DecayLength,"DecayLength/D");
+//   reducedTree_HyperTriton -> Branch("massV0",&massV0,"massV0/D");
+//   reducedTree_HyperTriton -> Branch("alphaV0",&alphaV0,"alphaV0/D");
+//   reducedTree_HyperTriton -> Branch("qtV0",&qtV0,"qtV0/D");
 
-   fOutputList -> Add(reducedTree_Helium);
-   fOutputList -> Add(reducedTree_HyperTriton);
-
-   PostData(1, fOutputList);
-   PostData(2, fQAList);
+   PostData(1, fQAList);
+   PostData(2, TreeEventSelection);
+   PostData(3, reducedTree_Helium);
+   PostData(4, reducedTree_HyperTriton);
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeNuclei::UserExec(Option_t *)
@@ -983,8 +983,11 @@ void AliAnalysisTaskReducedTreeNuclei::UserExec(Option_t *)
       reducedTree_HyperTriton -> Fill();
    }
 
-   PostData(1, fOutputList);
-   PostData(2,fQAList);
+   PostData(1,fQAList);
+   PostData(2, TreeEventSelection);
+   PostData(3,reducedTree_Helium);
+   PostData(4,reducedTree_HyperTriton);
+
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
@@ -992,7 +995,7 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
    //Get Input Event
    fAODevent = dynamic_cast <AliAODEvent*>(InputEvent());
    if (!fAODevent) return false;
-   histoEventSelection->Fill(0.5);
+   SelectionStep = 0; // Event exists
 
    //   //Primary Vertex ( already implemented in AliEventCuts::AcceptEvent() )
    //   AliAODVertex *vertex = (AliAODVertex*) fAODevent->GetPrimaryVertex();
@@ -1007,15 +1010,20 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
 
    //Event Cut
    if (!fAODeventCuts.AcceptEvent(fAODevent)) {
-      PostData(2, fQAList);
+      TreeEventSelection->Fill();
+      PostData(2, TreeEventSelection);
       return false;
    }
-   histoEventSelection->Fill(1.5);
+	SelectionStep = 1; // Event accepted
 
    //Multiplicity Percentile
    AliMultSelection *MultSelection = NULL;
    MultSelection = (AliMultSelection*) fAODevent->FindListObject("MultSelection");
-   if (!MultSelection) return false;
+   if (!MultSelection){
+      TreeEventSelection->Fill();
+      PostData(2, TreeEventSelection);
+      return false;
+   }
 
    multPercentile_V0M              = MultSelection->GetMultiplicityPercentile("V0M");
    multPercentile_V0A              = MultSelection->GetMultiplicityPercentile("V0A");
@@ -1049,7 +1057,8 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::GetInputEvent ()  {
    estimator = MultSelection->GetEstimator("V0A");          if (estimator) { Ntrk_V0A = estimator->GetValue(); }
    estimator = MultSelection->GetEstimator("V0C");          if (estimator) { Ntrk_V0C = estimator->GetValue(); }
 
-   histoEventSelection->Fill(2.5);
+   SelectionStep = 2; // Event has valid multiplicity
+   TreeEventSelection->Fill();
    return true;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
@@ -1132,9 +1141,6 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::IsHyperTritonCandidate (AliAODTrack *tr
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskReducedTreeNuclei::Terminate(Option_t *)  {
-
-   fOutputList = dynamic_cast<TList*> (GetOutputData(1));
-   if (!fOutputList) return;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________
 

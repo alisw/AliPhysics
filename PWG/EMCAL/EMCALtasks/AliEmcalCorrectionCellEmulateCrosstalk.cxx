@@ -33,7 +33,8 @@ AliEmcalCorrectionCellEmulateCrosstalk::AliEmcalCorrectionCellEmulateCrosstalk()
   fRandomizeTCard(kTRUE),
   fTCardCorrMinAmp(0.01),
   fTCardCorrMaxInduced(100),
-  fPrintOnce(kFALSE)
+  fPrintOnce(kFALSE),
+  fAODCellsTmp(0x0)
 {
   for(Int_t i = 0; i < fgkNsm;    i++)
   {
@@ -51,7 +52,6 @@ AliEmcalCorrectionCellEmulateCrosstalk::AliEmcalCorrectionCellEmulateCrosstalk()
   }
   
   ResetArrays();
-  
 }
 
 /**
@@ -59,6 +59,8 @@ AliEmcalCorrectionCellEmulateCrosstalk::AliEmcalCorrectionCellEmulateCrosstalk()
  */
 AliEmcalCorrectionCellEmulateCrosstalk::~AliEmcalCorrectionCellEmulateCrosstalk()
 {
+  fAODCellsTmp->DeleteContainer();
+  delete fAODCellsTmp;
 }
 
 /**
@@ -163,7 +165,7 @@ Bool_t AliEmcalCorrectionCellEmulateCrosstalk::Run()
     AliError("Event ptr = 0, returning");
     return kFALSE;
   }
-  
+ 
   // START PROCESSING ---------------------------------------------------------
   // Test if cells present
   if (fCaloCells->GetNumberOfCells()<=0)
@@ -205,14 +207,21 @@ void AliEmcalCorrectionCellEmulateCrosstalk::MakeCellTCardCorrelation()
   Int_t    id     = -1;
   Float_t  amp    = -1;
   
+  if (fPrintOnce) {
+    PrintTCardParam();
+    fPrintOnce = 0;
+  }
+  
+  Int_t nCells = fCaloCells->GetNumberOfCells();
+  
   // Loop on all cells with signal
-  for (Int_t icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++)
+  for (Int_t icell = 0; icell < nCells; icell++)
   {
     id  = fCaloCells->GetCellNumber(icell);
     amp = fCaloCells->GetAmplitude (icell); // fCaloCells->GetCellAmplitude(id);
-    
+
     if ( amp <= fTCardCorrMinAmp ) continue ;
-    
+
     //
     // First get the SM, col-row of this tower
     Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1;
@@ -222,12 +231,15 @@ void AliEmcalCorrectionCellEmulateCrosstalk::MakeCellTCardCorrelation()
     //
     // Determine randomly if we want to create a correlation for this cell,
     // depending the SM number of the cell
-    Float_t rand = fRandom.Uniform(0, 1);
-    
-    if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
+    if ( fTCardCorrInduceEnerProb[imod] < 1 )
+    {  
+      Float_t rand = fRandom.Uniform(0, 1);
+      
+      if ( rand > fTCardCorrInduceEnerProb[imod] ) continue;
+    }
     
     AliDebug(1,Form("Reference cell absId %d, iEta %d, iPhi %d, amp %2.3f",id,ieta,iphi,amp));
-    
+
     //
     // Get the absId of the cells in the cross and same T-Card
     Int_t absIDup = -1;
@@ -296,7 +308,7 @@ void AliEmcalCorrectionCellEmulateCrosstalk::MakeCellTCardCorrelation()
                     "\t up2 %d (%d), down2 %d (%d), up2-lr %d (%d), down2-lr %d (%d)",
                     absIDup ,okup ,absIDdo ,okdo ,absIDlr,oklr,absIDuplr ,okuplr ,absIDdolr ,okdolr ,
                     absIDup2,okup2,absIDdo2,okdo2,             absIDup2lr,okup2lr,absIDdo2lr,okdo2lr));
-    
+
     //
     // Generate some energy for the nearby cells in same TCard , depending on this cell energy
     // Check if originally the tower had no or little energy, in which case tag it as new
@@ -344,7 +356,7 @@ void AliEmcalCorrectionCellEmulateCrosstalk::MakeCellTCardCorrelation()
     Float_t indE2nd        = fTCardCorrInduceEner[3][imod]+amp*frac2nd;
     
     AliDebug(1,Form("Induced energy: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
-                    indEupdown,indEupdownleri,indEleri,indE2nd));
+                    indEupdown,indEupdownleri,indEleri,indE2nd));    
     
     // Check if we induce too much energy, in such case use a constant value
     if ( fTCardCorrMaxInduced < indE2nd        ) indE2nd        = fTCardCorrMaxInduced;
@@ -354,7 +366,7 @@ void AliEmcalCorrectionCellEmulateCrosstalk::MakeCellTCardCorrelation()
     
     AliDebug(1,Form("Induced energy, saturated?: up-down %2.3f; up-down-left-right %2.3f; left-right %2.3f; 2nd row %2.3f",
                     indEupdown,indEupdownleri,indEleri,indE2nd));
-    
+
     //
     // Add the induced energy, check if cell existed
     if ( okup )
@@ -441,6 +453,8 @@ void AliEmcalCorrectionCellEmulateCrosstalk::MakeCellTCardCorrelation()
 
 /**
  * Add to existing cells the found induced energies in MakeCellTCardCorrelation() if new signal is larger than 10 MeV.
+ * Need to destroy/create the default cells list and do a copy from the old to the new via a temporal arrat fAODCellsTmp
+ * Not too nice or fast, but it works.
  */
 void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToExistingCells()
 {
@@ -450,22 +464,26 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToExistingCells()
   Int_t     mclabel = -1;
   Double_t  efrac   = 0.;
   
-  for (Int_t icell = 0; icell < fCaloCells->GetNumberOfCells(); icell++)
+  // Add the induced energy to the cells and copy them into a new temporal container
+  // used in AddInducedEnergiesToNewCells() to refill the default cells list fCaloCells
+  // Create the data member only once. Done here, not sure where to do this properly in the framework.
+  //
+  if ( !fAODCellsTmp )
+    fAODCellsTmp = new AliAODCaloCells("tmpCaloCellsAOD","tmpCaloCellsAOD",AliAODCaloCells::kEMCALCell);
+  
+  Int_t nCells = fCaloCells->GetNumberOfCells();
+  fAODCellsTmp->CreateContainer(nCells);
+
+  for (Int_t icell = 0; icell < nCells; icell++)
   {
-    
     // Get cell
     fCaloCells->GetCell(icell, absId, amp, time, mclabel, efrac);
-    
-    if(amp <= 0.01) continue ; // accept if > 10 MeV
-    
+        
     amp+=fTCardCorrCellsEner[absId];
-    
-    //if(fTCardCorrCellsEner[absId] > 0.05) printf("\t absId %d amp %2.2f\n",absId,fTCardCorrCellsEner[absId]);
 
-    // Set new amplitude
-    fCaloCells->SetCell(icell, absId, amp, time, mclabel, efrac);
+    // Set new amplitude in new temporal container
+    fAODCellsTmp->SetCell(icell, absId, amp, time, mclabel, efrac);
   }
-  
 }
   
 /**
@@ -473,8 +491,50 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToExistingCells()
  */
 void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToNewCells()
 {
-  Int_t nCells = fCaloCells->GetNumberOfCells();
+  // Count how many new cells
+  //
+  Int_t nCells    = fCaloCells->GetNumberOfCells();
+  Int_t nCellsNew = 0;
+  for(Int_t j = 0; j < fgkNEMCalCells; j++)
+  {
+    // Newly created?
+    if ( !fTCardCorrCellsNew[j] ) continue;
+    
+    // Accept only if at least 10 MeV
+    if (  fTCardCorrCellsEner[j] < 0.01 ) continue;
+    
+    nCellsNew++;
+  }
+    
+  // Delete default cells container and create new one with larger arrays
+  // to contain new cells.
+  //
+  fCaloCells->DeleteContainer();
+  fCaloCells->CreateContainer(nCells+nCellsNew);
   
+  // Recover the original input from fAODCellsTmp filled in AddInducedEnergiesToExistingCells()
+  //
+  Short_t   absId      = -1;
+  Float_t   amp        = -1;
+  Double_t  time       =  0;
+  Int_t     mclabel    = -1;
+  Double_t  efrac      = -1;
+  Bool_t    highgain   =  1;
+  Int_t     cellNumber = -1;
+  
+  for(Int_t j = 0; j < nCells; j++)
+  {
+    absId      = fAODCellsTmp->GetCellNumber(j);
+    amp        = fAODCellsTmp->GetAmplitude(j);
+    time       = fAODCellsTmp->GetTime(j);
+    mclabel    = fAODCellsTmp->GetMCLabel(j);
+    efrac      = fAODCellsTmp->GetEFraction(j);
+    highgain   = fAODCellsTmp->GetHighGain(j);
+    fCaloCells->SetCell(j, absId, amp, time, mclabel, efrac, highgain);
+  }
+  
+  // Add the new cells
+  //
   for(Int_t j = 0; j < fgkNEMCalCells; j++)
   {
     // Newly created?
@@ -484,17 +544,21 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToNewCells()
     if (  fTCardCorrCellsEner[j] < 0.01 ) continue;
     
     // Add new cell
-    Int_t     cellNumber = nCells;
-    Short_t   absId      = j;
-    Float_t   amp        = fTCardCorrCellsEner[j];
-    Double_t  time       = 615.*1e-9;
-    Int_t     mclabel    = -1;
-    Double_t  efrac      = 0.;
-    fCaloCells->SetCell(cellNumber, absId, amp, time, mclabel, efrac);
-        
+    cellNumber = nCells;
+    absId      = j;
+    amp        = fTCardCorrCellsEner[j];
+    time       = 615.*1e-9;
+    mclabel    = -1;
+    efrac      = 0.;
+
+    Int_t ok = fCaloCells->SetCell(cellNumber, absId, amp, time, mclabel, efrac,1);
+    
+    if ( !ok ) AliError("Induced new cell could not be added!");
+      
     nCells++;
   }
   
+  if ( nCellsNew > 0 ) fCaloCells->Sort();  
 }
 
 /**
@@ -507,6 +571,8 @@ void AliEmcalCorrectionCellEmulateCrosstalk::ResetArrays()
     fTCardCorrCellsEner[j] = 0.;
     fTCardCorrCellsNew [j] = kFALSE;
   }
+
+  if ( fAODCellsTmp ) fAODCellsTmp->DeleteContainer();
 }
 
 /**

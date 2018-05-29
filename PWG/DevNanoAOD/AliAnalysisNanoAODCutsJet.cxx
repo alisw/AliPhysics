@@ -30,14 +30,14 @@ void AliNanoAODSimpleSetterJet::SetNanoAODTrack (const AliAODTrack * aodTrack, A
 
     Int_t nTracksPythia = fArrayPythia->GetEntries();
 
+    spTrack->SetVar(inIsPyt,0.);
+    
     for(Int_t iTrackPyth = 0; iTrackPyth<nTracksPythia; iTrackPyth++){
         AliAODTrack *pythTrack = (AliAODTrack*)fArrayPythia->At(iTrackPyth);
-        if((pythTrack->Pt()!=aodTrack->Pt())&&(pythTrack->Phi()!=aodTrack->Phi())) {
-            spTrack->SetVar(inIsPyt,0.);
-        }else{
-            spTrack->SetVar(inIsPyt,1.);
-            return;
-        }
+	if((pythTrack->Pt()==aodTrack->Pt())&&(pythTrack->Eta()==aodTrack->Eta())&&(pythTrack->Phi()==aodTrack->Phi())) {
+	  spTrack->SetVar(inIsPyt,1.);
+	  return;
+	}
     }
 
 

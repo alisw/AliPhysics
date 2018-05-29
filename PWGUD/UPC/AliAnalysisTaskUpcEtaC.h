@@ -171,6 +171,16 @@ class AliAnalysisTaskUpcEtaC : public AliAnalysisTaskSE {
   TList *fListHistKstar;
   TList *fListHist2Rho4Pion;
   TList *fListHistK0s3PiPi4K;
+  TList *fListHistZDC;
+
+  //New ZDC histos
+  TH1D *fHistZDCAenergy;
+  TH1D *fHistZDCCenergy;
+  TH1D *fHistZDCAtime;
+  TH1D *fHistZDCCtime;
+  TH1D *fHistZDCImpactParameter;
+  TH1D *fHistZDCAImpactParameter;
+  TH1D *fHistZDCCImpactParameter;
 
   TH1D *fHistNeventsEtaC; //Count potential EtaC events at each step
   TH2D *fMPiKvsMPiK; //Dalitz Plot, Mass first PiK combo vs Mass second PiK combo

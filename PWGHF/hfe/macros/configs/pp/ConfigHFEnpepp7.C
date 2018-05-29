@@ -106,7 +106,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp7(Bool_t useMC, Bool_t isAOD, TString appendix
 
       // First hadron contamination fit for 5TeV  by Sebastian Hornung, March 9, 2017
       // relative to the case of a TPC PID cut at -1 sigma
-
+/*
       if(HadronContFunc == 0){
        TF1 *hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
        hBackground->SetParameter(0, 3.15556e-01);
@@ -123,8 +123,24 @@ AliAnalysisTaskHFE* ConfigHFEnpepp7(Bool_t useMC, Bool_t isAOD, TString appendix
             hBackground->SetParameter(2, 2.70920e+00);
             
         }
+*/
+          if(HadronContFunc == 0){
+       TF1 *hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
+       hBackground->SetParameter(0, 3.90278e-01);
+       hBackground->SetParameter(1, 3.90278e-01);
+       hBackground->SetParameter(2, 7.02623e-01);     //   nSigma -1.0 to 3.0 contamination
+       hBackground->SetParameter(3,-3.80587e+00);
+        }
 
-      
+
+      if(HadronContFunc == 1){
+       TF1 *hBackground= new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
+       hBackground->SetParameter(0, 3.39863e-01);
+       hBackground->SetParameter(1, 3.39863e-01);       //   nSigma -0.5 to 3.0 contamination
+       hBackground->SetParameter(2, 6.48442e-01);
+       hBackground->SetParameter(3,-4.01111e+00);
+        }
+
 
       //error function
 

@@ -1913,6 +1913,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     }
     //For now: very trivial way of storing event type
     TString lHistTitle = Form("Event type: %s",lEventType.Data());
+    lHistTitle.Append(Form(", Production name: %s",lProductionName.Data()));
  
     AliWarning("==================================================");
     AliWarning(Form(" Event type: %s",lEventType.Data()));
@@ -1928,6 +1929,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliWarning("This is uncalibrated data, will generate empty OADB!");
         AliWarning("This means kNoCalib (=199) will be returned everywhere.");
         CreateEmptyOADB();
+        //Set histo title for posterity
+        lHistTitle.Append(", OADB: uncalibrated data");
+        fHistEventCounter->SetTitle(lHistTitle.Data());
         return -1;
     }
     
@@ -1955,7 +1959,17 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
                 AliWarning(Form(" This is EPOS LHC! Will use OADB named %s",lProductionName.Data()));
             }
             if ( (!lItsHijing) && (!lItsDPMJet) && (!lItsEPOSLHC) ){
-                AliWarning(" Unable to detect generator type from header. Sorry.");
+                AliWarning(" Unable to detect generator type from header.");
+                AliMCEvent *mcevptr = MCEvent();
+                if(mcevptr){
+                    AliWarning(Form(" Header title for debug: %s",mcevptr->GenEventHeader()->GetTitle()));
+                }
+                AliWarning(" Consulting list of exceptions, hang on...");
+                TString lExceptionMap = GetExceptionMapping( lProductionName );
+                if( !lExceptionMap.EqualTo("") ){
+                    AliWarning(Form(" Found exception! Production %s will map to %s!", lProductionName.Data(), lExceptionMap.Data() ));
+                    lProductionName = lExceptionMap;
+                }
             }
         }else{
             AliWarning(" OADB for this period exists. Proceeding as usual.");
@@ -2018,6 +2032,9 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
             AliWarning("======================================================================");
             //Create an empty OADB for us, please !
             CreateEmptyOADB();
+            //Set histo title for posterity
+            lHistTitle.Append(", No appropriate calibration found");
+            fHistEventCounter->SetTitle(lHistTitle.Data());
             return -1;
         }
     }
@@ -2091,6 +2108,8 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
                 AliWarning("======================================================================");
                 //Create an empty OADB for us, please !
                 CreateEmptyOADB();
+                //Set histo title for posterity
+                fHistEventCounter->SetTitle(lHistTitle.Data());
                 return -1;
             }
         }
@@ -2143,7 +2162,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
         AliWarning("Weird! No AliMultSelectionCuts found...");
     }
     
-    //Set histo name for posterity
+    //Set histo title for posterity
     fHistEventCounter->SetTitle(lHistTitle.Data());
     return 0;
 }
@@ -2532,13 +2551,16 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lProductionName = "LHC17e";
     if ( fCurrentRun >= 270854 && fCurrentRun <= 270865 ) lProductionName = "LHC17f";
     if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lProductionName = "LHC17g";
+    if ( fCurrentRun >= 271868 && fCurrentRun <= 273103 ) lProductionName = "LHC17h";
     if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lProductionName = "LHC17i"; 
     if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lProductionName = "LHC17j";
     if ( fCurrentRun >= 274690 && fCurrentRun <= 276508 ) lProductionName = "LHC17k";
     if ( fCurrentRun >= 276551 && fCurrentRun <= 278216 ) lProductionName = "LHC17l"; 
+    if ( fCurrentRun >= 278914 && fCurrentRun <= 280140 ) lProductionName = "LHC17m"; 
     if ( fCurrentRun >= 280282 && fCurrentRun <= 281961 ) lProductionName = "LHC17o"; 
     if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lProductionName = "LHC17p"; 
     if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lProductionName = "LHC17q"; 
+    if ( fCurrentRun >= 282504 && fCurrentRun <= 282704 ) lProductionName = "LHC17r"; 
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";
@@ -2606,13 +2628,16 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     if ( fCurrentRun >= 270822 && fCurrentRun <= 270830 ) lSystemType = "pp";
     if ( fCurrentRun >= 270854 && fCurrentRun <= 270865 ) lSystemType = "pp";
     if ( fCurrentRun >= 270882 && fCurrentRun <= 271777 ) lSystemType = "pp";
+    if ( fCurrentRun >= 271868 && fCurrentRun <= 273103 ) lSystemType = "pp";
     if ( fCurrentRun >= 273591 && fCurrentRun <= 274442 ) lSystemType = "pp"; 
     if ( fCurrentRun >= 274593 && fCurrentRun <= 274671 ) lSystemType = "pp";
     if ( fCurrentRun >= 274690 && fCurrentRun <= 276508 ) lSystemType = "pp";
     if ( fCurrentRun >= 276551 && fCurrentRun <= 278216 ) lSystemType = "pp"; 
+    if ( fCurrentRun >= 278914 && fCurrentRun <= 280140 ) lSystemType = "pp"; 
     if ( fCurrentRun >= 280282 && fCurrentRun <= 281961 ) lSystemType = "pp"; 
     if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lSystemType = "pp"; 
     if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lSystemType = "pp"; 
+    if ( fCurrentRun >= 282504 && fCurrentRun <= 282704 ) lSystemType = "pp"; 
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lSystemType = "Pb-Pb";
@@ -2630,6 +2655,28 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     
     return lSystemType;
 }
+//______________________________________________________________________
+TString AliMultSelectionTask::GetExceptionMapping( TString lProductionName ) const
+{
+    //This function stores some exceptional productions in which MC auto-detect
+    //will not work because headers are lacking relevant information
+    //
+    //This will capture only productions for which manual intervention
+    //has been coded right here! And yes, this is an ugly hack :-(
+    
+    TString lReturnString = ""; //I don't know of this exception, return empty 
+    
+    if ( lProductionName.Contains("LHC17g8a") ) lReturnString = "LHC16q-DefaultMC-EPOSLHC";
+    if ( lProductionName.Contains("LHC17g8b") ) lReturnString = "LHC16r-DefaultMC-EPOSLHC";
+    if ( lProductionName.Contains("LHC17g8c") ) lReturnString = "LHC16s-DefaultMC-EPOSLHC";
+    if ( lProductionName.Contains("LHC17g8a") ) lReturnString = "LHC16t-DefaultMC-EPOSLHC";
+   
+   //Header mistakes
+   if ( lProductionName.EqualTo("LHC17i2a") ) lReturnString = "LHC17i2";
+    
+    return lReturnString;
+}
+
 //______________________________________________________________________
 Bool_t AliMultSelectionTask::CheckOADB(TString lProdName) const { 
     //This helper function checks if an OADB exists for the production named lProdName

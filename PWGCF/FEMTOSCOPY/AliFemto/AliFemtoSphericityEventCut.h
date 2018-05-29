@@ -14,12 +14,12 @@ class AliFemtoSphericityEventCut : public AliFemtoEventCut {
 public:
 
   AliFemtoSphericityEventCut();
-  AliFemtoSphericityEventCut(AliFemtoSphericityEventCut& c);
+  AliFemtoSphericityEventCut(const AliFemtoSphericityEventCut& c);
   virtual ~AliFemtoSphericityEventCut();
-  AliFemtoSphericityEventCut& operator=(AliFemtoSphericityEventCut& c);
+  AliFemtoSphericityEventCut& operator=(const AliFemtoSphericityEventCut& c);
 
-  void SetEventMult(const int& lo,const int& hi);
-  void SetVertZPos(const float& lo, const float& hi);
+  void SetEventMult(const int lo,const int hi);
+  void SetVertZPos(const float lo, const float hi);
   void SetAcceptBadVertex(bool b);
   int NEventsPassed() const;
   int NEventsFailed() const;
@@ -29,12 +29,12 @@ public:
   void SetStMax(double stMax );
   void SetTriggerSelection(int trig);
 
-  void SetEPVZERO(const float& lo, const float& hi);
+  void SetEPVZERO(const float lo, const float hi);
 
   virtual AliFemtoString Report();
   virtual bool Pass(const AliFemtoEvent* event);
 
-  AliFemtoSphericityEventCut* Clone();
+  virtual AliFemtoEventCut* Clone() const;
 
 private:   // here are the quantities I want to cut on...
 
@@ -57,28 +57,35 @@ private:   // here are the quantities I want to cut on...
 
 };
 
-inline void AliFemtoSphericityEventCut::SetEventMult(const int& lo, const int& hi){fEventMult[0]=lo; fEventMult[1]=hi;}
-inline void AliFemtoSphericityEventCut::SetVertZPos(const float& lo, const float& hi){fVertZPos[0]=lo; fVertZPos[1]=hi;}
-inline void AliFemtoSphericityEventCut::SetEPVZERO(const float& lo, const float& hi){fPsiEP[0]=lo; fPsiEP[1]=hi;}
+inline void AliFemtoSphericityEventCut::SetEventMult(const int lo, const int hi){fEventMult[0]=lo; fEventMult[1]=hi;}
+inline void AliFemtoSphericityEventCut::SetVertZPos(const float lo, const float hi){fVertZPos[0]=lo; fVertZPos[1]=hi;}
+inline void AliFemtoSphericityEventCut::SetEPVZERO(const float lo, const float hi){fPsiEP[0]=lo; fPsiEP[1]=hi;}
 inline int  AliFemtoSphericityEventCut::NEventsPassed() const {return fNEventsPassed;}
 inline int  AliFemtoSphericityEventCut::NEventsFailed() const {return fNEventsFailed;}
-inline void  AliFemtoSphericityEventCut::SetStMin(double stMin ) {fStCutMin=stMin;}
-inline void  AliFemtoSphericityEventCut::SetStMax(double stMax ) {fStCutMax=stMax;}
+inline void  AliFemtoSphericityEventCut::SetStMin(double stMin) {fStCutMin=stMin;}
+inline void  AliFemtoSphericityEventCut::SetStMax(double stMax) {fStCutMax=stMax;}
 inline void AliFemtoSphericityEventCut::SetTriggerSelection(int trig) { fSelectTrigger = trig; }
-inline AliFemtoSphericityEventCut* AliFemtoSphericityEventCut::Clone() { AliFemtoSphericityEventCut* c = new AliFemtoSphericityEventCut(*this); return c;}
-inline AliFemtoSphericityEventCut::AliFemtoSphericityEventCut(AliFemtoSphericityEventCut& c) : AliFemtoEventCut(c), fAcceptBadVertex(false), fNEventsPassed(0), fNEventsFailed(0), fAcceptOnlyPhysics(false),fStCutMin(0),fStCutMax(1),  fSelectTrigger(0) {
+inline AliFemtoEventCut* AliFemtoSphericityEventCut::Clone() const { AliFemtoSphericityEventCut* c = new AliFemtoSphericityEventCut(*this); return c;}
+inline AliFemtoSphericityEventCut::AliFemtoSphericityEventCut(const AliFemtoSphericityEventCut& c):
+  AliFemtoEventCut(c),
+  fAcceptBadVertex(c.fAcceptBadVertex),
+  fNEventsPassed(0),
+  fNEventsFailed(0),
+  fAcceptOnlyPhysics(c.fAcceptOnlyPhysics),
+  fStCutMin(c.fStCutMin),
+  fStCutMax(c.fStCutMax),
+  fSelectTrigger(c.fSelectTrigger)
+{
   fEventMult[0] = c.fEventMult[0];
   fEventMult[1] = c.fEventMult[1];
   fVertZPos[0] = c.fVertZPos[0];
   fVertZPos[1] = c.fVertZPos[1];
   fPsiEP[0] = c.fPsiEP[0];
   fPsiEP[1] = c.fPsiEP[1];
-  fStCutMin = c.fStCutMin;
-  fStCutMax = c.fStCutMax;
-
 }
 
-inline AliFemtoSphericityEventCut& AliFemtoSphericityEventCut::operator=(AliFemtoSphericityEventCut& c) {   
+inline AliFemtoSphericityEventCut& AliFemtoSphericityEventCut::operator=(const AliFemtoSphericityEventCut& c)
+{
   if (this != &c) {
     AliFemtoEventCut::operator=(c);
     fEventMult[0] = c.fEventMult[0];
@@ -87,8 +94,13 @@ inline AliFemtoSphericityEventCut& AliFemtoSphericityEventCut::operator=(AliFemt
     fVertZPos[1] = c.fVertZPos[1];
     fPsiEP[0] = c.fPsiEP[0];
     fPsiEP[1] = c.fPsiEP[1];
+    fAcceptBadVertex = c.fAcceptBadVertex;
+    // fNEventsPassed = c.fNEventsPassed;
+    // fNEventsFailed = c.fNEventsFailed;
+    fAcceptOnlyPhysics = c.fAcceptOnlyPhysics;
     fStCutMin = c.fStCutMin;
     fStCutMax = c.fStCutMax;
+    fSelectTrigger = c.fSelectTrigger;
   }
 
   return *this;

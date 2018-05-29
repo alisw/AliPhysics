@@ -47,6 +47,7 @@
 #include "AliExternalTrackParam.h"
 #include "AliVfriendTrack.h"
 #include "AliVfriendEvent.h"
+#include "AliESDtrack.h"
 #include "AliLog.h" 
 #include "AliMCEvent.h" 
 #include "AliMCParticle.h" 
@@ -59,6 +60,9 @@
 
 using namespace std;
 
+#define MATCH_VALID_LABELS 0 //Needs to run two times!!
+#define FILTER_CLONES 0
+
 ClassImp(AliPerformanceRes)
 Double_t AliPerformanceRes::fgkMergeEntriesCut=5000000.; //5*10**6 tracks (small default to keep default memory foorprint low)
 
@@ -69,7 +73,9 @@ AliPerformanceRes::AliPerformanceRes(TRootIOCtor* b):
   fPullHisto(0),
 
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(0),
+  fValidLabels(NULL),
+  fComparisonContainer(NULL)
 {
   // io constructor	
 }
@@ -81,7 +87,9 @@ AliPerformanceRes::AliPerformanceRes(const Char_t* name, const Char_t* title, In
   fPullHisto(0),
 
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(0),
+  fValidLabels(NULL),
+  fComparisonContainer(NULL)
 {
   // named constructor	
   // 
@@ -96,10 +104,12 @@ AliPerformanceRes::~AliPerformanceRes()
 {
   // destructor
    
-  if(fResolHisto) delete fResolHisto; fResolHisto=0;     
-  if(fPullHisto)  delete fPullHisto;  fPullHisto=0;     
-  
-  if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
+  if(fResolHisto) delete fResolHisto;
+  fResolHisto=0;     
+  if(fPullHisto) delete fPullHisto;
+  fPullHisto=0;     
+  if(fAnalysisFolder) delete fAnalysisFolder;
+  fAnalysisFolder=0;
 }
 
 //_____________________________________________________________________________
@@ -111,7 +121,7 @@ void AliPerformanceRes::Init(){
 
   // set pt bins
   Int_t nPtBins = 50;
-  Double_t ptMin = 15.e-3, ptMax = 20.;
+  Double_t ptMin = 80.e-3, ptMax = 20.;
 
   Double_t *binsPt = 0;
 
@@ -623,7 +633,13 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
   // exclude electrons
   if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
-  Double_t mclocal[4]; //Rotated x,y,Px,Py mc-coordinates - the MC data should be rotated since the track is propagated best along x
+  const float kDeg2Rad = 3.1415926535897 / 180.f;
+  const float kSectAngle = 2*3.1415926535897 / 18.f;
+  float mcAngle = (floor(atan2(ref0->Y(), ref0->X()) / kDeg2Rad / 20.f) + 0.5) * kSectAngle;
+  if (fabs(mcAngle - track->GetAlpha()) > 1.5 * kSectAngle) return; //This is most likely the backward leg of a looper that entered the TPC somewhere else
+  if (!track->Rotate(mcAngle)) return;
+  float oldX = track->GetX(), oldY = track->GetY(), oldZ = track->GetZ();
+  Double_t mclocal[4]; //Rotated x,y,Px,Py mc-coordinates, we use the local coordinate system in the sector of the MC label
   Double_t c = TMath::Cos(track->GetAlpha());
   Double_t s = TMath::Sin(track->GetAlpha());
   Double_t x = ref0->X();
@@ -638,14 +654,31 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
   //Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
   // propagate track to the radius of the first track reference within TPC
   //Double_t trRadius = TMath::Sqrt(xyz[1] * xyz[1] + xyz[0] * xyz[0]);
-  Double_t field[3]; track->GetBxByBz(field);
   if (TGeoGlobalMagField::Instance()->GetField() == NULL) {
     Error("ProcessInnerTPC", "Magnetic Field not set");
   }
-  Bool_t isOK = track->PropagateToBxByBz(mclocal[0],field);
-  if(!isOK) {return;}
-  //track->AliExternalTrackParam::PropagateTo(mclocal[0],esdEvent->GetMagneticField());  //Use different propagation since above methods returns zero B field and does not work
   
+  if (!AliTrackerBase::PropagateTrackToBxByBz(track, mclocal[0], particle->GetMass(), 1., 0)) return;
+  if (fabs(track->GetY() - mclocal[1]) > 2 || fabs(track->GetZ() - ref0->Z()) > 2) return;
+  if (FILTER_CLONES)
+  {
+    for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
+    {
+      AliVTrack* compareTrack = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
+      if (!compareTrack) continue;
+      if (compareTrack->GetTPCLabel() != vTrack->GetTPCLabel()) continue;
+      if (vTrack == compareTrack) continue;
+      AliExternalTrackParam tmpTrack = *compareTrack->GetInnerParam();
+      if (AliTrackerBase::PropagateTrackToBxByBz(&tmpTrack, mclocal[0], particle->GetMass(), 1., 0))
+      {
+        float dy0 = (track->GetY() - mclocal[1]);
+        float dy1 = (tmpTrack.GetY() - mclocal[1]);
+        float dz0 = (track->GetZ() - ref0->Z());
+        float dz1 = (tmpTrack.GetZ() - ref0->Z());
+        if (dy1 * dy1 + dz1 * dz1 < dy0 * dy0 + dz0 * dz0) return;
+      }
+    }
+  }
   Float_t mceta =  -TMath::Log(TMath::Tan(0.5 * ref0->Theta()));
   Float_t mcphi =  ref0->Phi();
   if(mcphi<0) mcphi += 2.*TMath::Pi();
@@ -668,12 +701,13 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
   }
   else
   {
-	  //If Track vertex is not used the above check does not work, hence we use the MC reference track
+    //If Track vertex is not used the above check does not work, hence we use the MC reference track
     isPrimary = mcEvent->IsPhysicalPrimary(label);
   }
   if(isPrimary) 
   { 
     if(mcpt == 0) return;
+    if (MATCH_VALID_LABELS) fValidLabels[label] = 1;
     
     deltaYTPC= track->GetY()-mclocal[1];
     deltaZTPC = track->GetZ()-ref0->Z();
@@ -696,6 +730,12 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *co
     //pullPhiTPC = deltaPhiTPC / TMath::Sqrt(track->GetSigmaSnp2()); 
     if (mcpt) pull1PtTPC = (track->OneOverPt()-1./mcpt) / TMath::Sqrt(track->GetSigma1Pt2());
     else pull1PtTPC = 0.;
+    
+    if (MATCH_VALID_LABELS)
+    {
+      comparisonContainer cont = {(float) mclocal[0], (float) mclocal[1], ref0->Z(), mcpt, mcphi, mctgl, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC, deltaPtTPC, oldX, oldY, oldZ, (float) vTrack->GetTPCNcls()};
+      fComparisonContainer[label] = cont;
+    }
 
     Double_t vResolHisto[10] = {deltaYTPC,deltaZTPC,deltaPhiTPC,deltaLambdaTPC,deltaPtTPC,ref0->Y(),ref0->Z(),mcphi,mceta,mcpt};
     fResolHisto->Fill(vResolHisto);
@@ -937,19 +977,35 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
   //    // TPC track vertex
   //    vtxESD = esdEvent->GetPrimaryVertexTPC();
   //  }
- 
-
-
-
+  
+  char *validLabelsIn, *validLabelsOut;
+  if (MATCH_VALID_LABELS)
+  {
+    validLabelsIn = new char[mcEvent->GetNumberOfTracks()];
+    for (int i = 0;i < mcEvent->GetNumberOfTracks();i++) validLabelsIn[i] = 1;
+    validLabelsOut = new char[mcEvent->GetNumberOfTracks()];
+    for (int i = 0;i < mcEvent->GetNumberOfTracks();i++) validLabelsOut[i] = 0;
+    FILE* fp = fopen(Form("labels.%d.tmp", vEvent->GetEventNumberInFile()), "rb");
+    if (fp)
+    {
+      fread(validLabelsIn, sizeof(validLabelsIn[0]), mcEvent->GetNumberOfTracks(), fp);
+      fclose(fp);
+    }
+    fValidLabels = validLabelsOut;
+    fComparisonContainer = new comparisonContainer[mcEvent->GetNumberOfTracks()];
+  }
+  
   //  Process events
   for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
-  { 
+  {
     AliVTrack *vTrack = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
     if(!vTrack) continue;
     
     const AliVfriendTrack *friendTrack= NULL;
     
-    Int_t label = TMath::Abs(vTrack->GetLabel());
+    int mode = GetAnalysisMode();
+    Int_t label = (mode == 0 || mode == 3 || mode == 4) ? vTrack->GetTPCLabel() : vTrack->GetLabel();
+    
     /* // RS this check is not needed
     if ( label > mcEvent->GetNumberOfTracks() ) 
     {
@@ -970,16 +1026,23 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
       continue;
     }
 */
-    if (label == 0) continue;		//Cannot distinguish between track or fake track
-    if (vTrack->GetLabel() < 0) continue; //Do not consider fake tracks
+    if (label <= 0) continue; //Cannot distinguish between track or fake track for label = 0, do not process fakes (<0)
+    if (MATCH_VALID_LABELS && validLabelsIn[label] == 0) continue;
 
     if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,vTrack,vEvent);
     else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,vTrack,vEvent);
     else if(GetAnalysisMode() == 2) ProcessConstrained(mcEvent,vTrack,vEvent);
     else if(GetAnalysisMode() == 3) ProcessInnerTPC(mcEvent,vTrack,vEvent);
     else if(GetAnalysisMode() == 4) {
-      if(bUseVfriend && vfriendEvent && vfriendEvent->TestSkipBit()==kFALSE && iTrack<vfriendEvent->GetNumberOfTracks()) {
-	friendTrack=vfriendEvent->GetTrack(iTrack);
+      if(bUseVfriend && vfriendEvent && vfriendEvent->TestSkipBit()==kFALSE) {
+	if (vTrack->IsA()==AliESDtrack::Class()) {
+	  friendTrack = ((AliESDtrack*)vTrack)->GetFriendTrack();
+	}
+	else {
+	  if (iTrack<vfriendEvent->GetNumberOfTracks()) {
+	    friendTrack=vfriendEvent->GetTrack(iTrack);
+	  }
+	}
 	if(!friendTrack) continue;
       }
       ProcessOuterTPC(mcEvent,vTrack,friendTrack,vEvent);
@@ -988,6 +1051,35 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent,
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;
     }
+  }
+  if (MATCH_VALID_LABELS)
+  { 
+    FILE* fp = fopen(Form("labels.%d.tmp", vEvent->GetEventNumberInFile()), "w+b");
+    if (fp)
+    {
+      fwrite(validLabelsOut, sizeof(validLabelsOut[0]), mcEvent->GetNumberOfTracks(), fp);
+      fclose(fp);
+    }
+    delete[] validLabelsIn;
+    delete[] validLabelsOut;
+    fValidLabels = NULL;
+
+    static int lastNum = -1;
+    static int repeat = 0;
+    if (lastNum != vEvent->GetEventNumberInFile())
+    {
+        lastNum = vEvent->GetEventNumberInFile();
+        repeat = 0;
+    }
+    else
+    {
+        repeat++;
+    }
+    fp = fopen(Form("result.%d.%d.tmp", vEvent->GetEventNumberInFile(), repeat), "w+b");
+    fwrite(fComparisonContainer, sizeof(fComparisonContainer[0]), mcEvent->GetNumberOfTracks(), fp);
+    fclose(fp);
+    delete[] fComparisonContainer;
+    fComparisonContainer = NULL;
   }
 }
 
@@ -1033,13 +1125,11 @@ void AliPerformanceRes::Analyse() {
       else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
       if (j!=9) fResolHisto->GetAxis(9)->SetRangeUser(0.1,19.99);            // pt threshold
       else fResolHisto->GetAxis(9)->SetRangeUser(0.015,19.99);
-      if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
 
       if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
       else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);      // eta window
       if (j!=9) fPullHisto->GetAxis(9)->SetRangeUser(0.1,19.99);            // pt threshold
       else fPullHisto->GetAxis(9)->SetRangeUser(0.015,19.99);
-      if(GetAnalysisMode() == 3) fPullHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
       
       //Resolutions
 

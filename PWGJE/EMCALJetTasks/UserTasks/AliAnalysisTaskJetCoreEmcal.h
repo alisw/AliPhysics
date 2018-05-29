@@ -87,21 +87,21 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 
 	// flags and selection
 	AliEventCuts fEventCuts; ///< Event cuts
-	Float_t fCentMin;
-	Float_t fCentMax;
-	Float_t fTTLowRef;
-	Float_t fTTUpRef;
-	Float_t fTTLowSig;
-	Float_t fTTUpSig;
-	Int_t fNRPBins;	
-	Float_t fFrac;
-	Float_t fJetEtaMin;
-	Float_t fJetEtaMax;
-	Float_t fJetHadronDeltaPhi;
-	TString fJetContName;
-	Bool_t fRunAnaAzimuthalCorrelation;
+	Float_t fCentMin; ///<
+	Float_t fCentMax; ///<
+	Float_t fTTLowRef; ///<
+	Float_t fTTUpRef; ///<
+	Float_t fTTLowSig; ///<
+	Float_t fTTUpSig; ///<
+	Int_t fNRPBins;	 ///<
+	Float_t fFrac; ///<
+	Float_t fJetEtaMin; ///<
+	Float_t fJetEtaMax; ///<
+	Float_t fJetHadronDeltaPhi; ///<
+	TString fJetContName; ///<
+	Bool_t fRunAnaAzimuthalCorrelation; ///<
 	//
-	TRandom3 *fRandom;
+	TRandom3 *fRandom; ///<
 	//histograms to fill
 	TH1I *fHistEvtSelection; //!<!
 	THnSparse *fHJetSpec;  //!<!
@@ -113,8 +113,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH2F *fh2RPTC10; //!<!
 	TH2F *fh2RPTC20; //!<!
 
-	TH2F *fhTTPt; //!<!
-	THnSparseF *fHJetPhiCorr; //!<!
+	THnSparse *fHJetPhiCorr; //!<!
 	TH2F *fhDphiPtSig; //!<!
 	TH2F *fhDphiPtRef; //!<!
 
@@ -123,7 +122,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 2);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 3);
   /// \endcond
 };
 #endif

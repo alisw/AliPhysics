@@ -721,8 +721,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
 
     // read track REC info
-    if (fESDfriend->GetNumberOfTracks() > itrk) {
-      const AliESDfriendTrack* esdFriendTrack = dynamic_cast<const AliESDfriendTrack*>(fESDfriend->GetTrack(itrk));
+    const AliESDfriendTrack* esdFriendTrack = dynamic_cast<const AliESDfriendTrack*>(esdTrack->GetFriendTrack());
+    if (esdFriendTrack) {
       fTrackInfo->SetTPCoutParam(esdFriendTrack->GetTPCOut());
       fTrackInfo->SetITSoutParam(esdFriendTrack->GetITSOut());
       const AliTrackPointArray *tps(NULL);

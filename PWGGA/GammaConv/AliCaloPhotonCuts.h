@@ -92,8 +92,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kNMinCells,
       kMinM02,
       kMaxM02,
-      kMinM20,
-      kMaxM20,
+      kMinMaxM20,
+      kRecConv,
       kDispersion,
       kNLM,
       kNCuts
@@ -110,53 +110,55 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     enum MCSet {
       // MC data sets
       kNoMC=0,
-      k14e2a,
-      k14e2b,
-      k14e2c,
+      // pp 7 TeV 2010
+      k14j4,
+      // pp 2.76 TeV 2011
       k12f1a,
       k12f1b,
       k12i3,
-      k15g1a,
+      kPP2T11P4JJ,
       k15g1b,
-      k15g2,
-      k15a3a,
-      k15a3a_plus,
-      k15a3b,
-      k13b2_efix,
-      k13e7,
-      k15h1,
-      k15h2,
-      k14j4,
+      // PbPb 2.76 TeV 2011
       k14a1,
-      k16c2,
-      k16c2_plus,
+      // pp 8 TeV 2012
+      k14e2b,
+      kPP8T12P2Pyt8,
+      kPP8T12P2Pho,
+      kPP8T12P2JJ,
+      // pPb 5 TeV 2013
+      kPPb5T13P2DPMJet,
+      kPPb5T13P2HIJAdd,
       k16c3a,
       k16c3b,
       k16c3c,
-      k16h3,
-      k16h3b,
+      // pp 2.76TeV 2013
+      k15g2,
+      kPP2T13P1JJ,
+      k15a3b,
+      // pp 13 TeV 2015
+      kPP13T15P2Pyt8,
+      kPP13T15P2EPOS,
+      k15k5,
+      // pp 5 TeV 2015
       k16h8a,
       k16h8b,
       k16k3a,
-      k16k3b,
       k16k5a,
       k16k5b,
-      k17a2a,
-      k17a2b,
-      k17a3a,
-      k17a3b,
-      k17a4a,
-      k17a4b,
       k17e2,
-      k17f2a,
-      k17f2b,
-      k17f3a,
-      k17f3b,
-      k17f4a,
-      k17f4b,
-      k17g8a,
-      k17g8b,
-      k17g8c,
+      k16h3,
+      // pp 5 TeV 2017
+      k17l4b,
+      k17l3b,
+      // PbPb 5 TeV 2015
+      kPbPb5T15HIJING,
+      k16k3b,
+      // pp 13 TeV 2016
+      kPP13T16P1Pyt8,
+      kPP13T16P1Pyt8LowB,
+      kPP13T16P1EPOS,
+      kPP13T16P1JJ,
+      kPP13T16P1JJLowB,
       k17h8a,
       k17h8b,
       k17h8c,
@@ -164,35 +166,30 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       k17c3a1,
       k17c3b2,
       k17c3a2,
-      k17d2a_fast,
-      k17d2a_cent,
-      k17d2b_fast,
-      k17d2b_cent,
-      // 13TeV MC anc 2015 pp
-      k15k5,
-      k15P2Pyt8,
-      k15P2EPos,
-
-      // 13TeV MC anc 2016 pp
-      k16P1Pyt8,        //
-      k16P1Pyt8LowB,    //
-      k16P1EPOS,        //
-      k16P1JJ,          //
-      k16P1JJLowB,      //
-      //13 TeV LHC2017
-      k17k1, //LHC17g added dielectrons from HF
-      k17k4, //LHC17i
-      k17h11, //LHC17j
-      k17h7b, //LHC17j
-      k17h7a, //LHC17j
-      k17j5a, //LHC17k Strangeness enhanced
-      k17j5b, //LHC17l Strangeness enhanced
-      k17j5c, //LHC17o Strangeness enhanced
-      k17l5,
-      k17h1,
-      k17h3,
+      // pPb 5 TeV 2016
+      kPPb5T16EPOS,
+      kPPb5T16DPMJet,
+      k17g8a,
+      k17d2a,
+      k17d2b,
+      // pPb 8 TeV 2016
+      k17f3a,
+      k17f3b,
+      k17f4a,
+      k17f4b,
+      k17g8b,
+      k17g8c,
+      k18b9b,
+      k18b9c,
+      // pp 13 TeV 2017
+      k17k1,
+      kPP13T17P1Pyt8,
+      kPP13T17P1Pho,
+      kPP13T17P1Pyt6,
+      kPP13T17P1Pyt8Str,
+      kPP13T17P1Pyt8LowB,
       // Xe-Xe MC
-      k17j7,            // HIJING
+      kXeXe5T17HIJING,
 
       // Data starts here
       k10pp7TeV,
@@ -226,7 +223,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      SetCut(cutIds cutID, Int_t cut);
     Bool_t      UpdateCutString();
     void        PrintCuts();
-    void        PrintCutsWithValues();
+    void        PrintCutsWithValues(const TString analysisCutSelection);
 
     Bool_t      InitializeCutsFromCutString(const TString analysisCutSelection);
     TString     GetCutNumber();
@@ -262,8 +259,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     void        ApplyNonLinearity(AliVCluster* cluster, Int_t isMC);
 
     Float_t     FunctionNL_kPi0MC(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5, Float_t p6);
-    Float_t     FunctionNL_PHOS(Float_t e, Float_t p0, Float_t p1, Float_t p2);
-    Float_t     FunctionNL_PHOSRun2(Float_t e, Float_t p0 = 0.08, Float_t p1 = 0.055, Float_t p2 = 0.03, Float_t p3 = 6.65e-02);
+    Float_t     FunctionNL_PHOSOnlyMC(Float_t e, Float_t p0, Float_t p1, Float_t p2);
+
     Float_t     FunctionNL_kSDM(Float_t e, Float_t p0, Float_t p1, Float_t p2);
     Float_t     FunctionNL_DPOW(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
     Float_t     FunctionNL_DExp(Float_t e, Float_t p0, Float_t p1, Float_t p2, Float_t p3, Float_t p4, Float_t p5);
@@ -339,8 +336,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      SetMinNCellsCut(Int_t);
     Bool_t      SetMaxM02(Int_t);
     Bool_t      SetMinM02(Int_t);
-    Bool_t      SetMaxM20(Int_t);
-    Bool_t      SetMinM20(Int_t);
+    Bool_t      SetMinMaxM20(Int_t);
+    Bool_t      SetRecConv(Int_t);
     Bool_t      SetDispersion(Int_t);
     Bool_t      SetNLM(Int_t);
     Bool_t      SetNonLinearity1(Int_t);
@@ -441,6 +438,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMaxM20;                                  // maximum M20
     Double_t  fMinM20;                                  // minimum M20
     Bool_t    fUseM20;                                  // flag for switching on M20 cut
+    Double_t  fMaxMGGRecConv;                           // maximum invariant mass below which the 2 clusters are gonna be combined assuming they are from a photon
+    Bool_t    fUseRecConv;                              // flag to switch on conversion recovery
     Double_t  fMaxDispersion;                           // maximum dispersion
     Bool_t    fUseDispersion;                           // flag for switching on dispersion cut
     Int_t     fMinNLM;                                  // minimum number of local maxima in cluster
@@ -568,7 +567,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,57)
+    ClassDef(AliCaloPhotonCuts,61)
 };
 
 #endif

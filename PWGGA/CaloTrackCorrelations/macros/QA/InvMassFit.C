@@ -53,6 +53,7 @@ TString part  = "Eta";    /// define fitting and plotting ranges for particle
 Int_t   polN  = 1;        /// polinomyal type for residual background under the peak
 Bool_t  sumw2 = kTRUE;    /// Apply Root method Sumw2()
 Bool_t  drawAllCombi = 0; /// Plot also many SM combinations
+Float_t nPairCut = 20;    /// Minimum number of cluster pairs in pi0 or eta window 
 
 // Initializations
 Int_t nEvt = 0;
@@ -73,29 +74,36 @@ TF1 *fitfun   = 0;
 /// \param mixed      : bool, use mixed event to constrain combinatorial background
 /// \param pol        : int, polinomyal type for residual background under the peak
 /// \param ncomb      : total number of SM combinations (Single SM, same side 2 SM, same sector 2 SM)
+/// \param nPairMin   : minimum number of entries un the pi0 or eta peak integral to do the fits and plotting. Careful in MC scaled productions.
 /// \param fileFormat : define the type of figures: eps, pdf, etc.
 ///
 //-----------------------------------------------------------------------------
 void InvMassFit
-(TString prodname     = "LHC17l3b_fast", 
+(TString prodname     = "LHC18c3_NystromOn",//"LHC17l3b_fast", 
  TString filename     = "AnalysisResults",
  TString histoDir     = "Pi0IM_GammaTrackCorr_EMCAL", 
  TString histoList    = "default", 
- TString calorimeter  = "EMCAL",
+ TString calorimeter  = "DCAL",
  TString particle     = "Pi0",
  Bool_t  mixed        = 0,
  Int_t   pol          = 1,
  Int_t   ncomb        = 1,
- TString fileFormat   = "pdf")
+ Float_t nPairMin     = 20, 
+ TString fileFormat   = "eps")
 {
   part = particle;
   polN = pol;
   mix  = mixed;
   
-  printf("Settings: prodname %s, filename %s, histoDir %s, histoList %s, particle %s, calorimeter %s, mix %d, polN %d, n combi %d\n",
-         prodname.Data(),filename.Data(),histoDir.Data(),histoList.Data(), part.Data(), calorimeter.Data(), mix, polN, ncomb);
-
   Int_t ok = GetFileAndEvents(prodname,filename,histoDir, histoList);
+
+  nPairCut = nPairMin;
+//  nPairCut/=nEvt;
+  
+  printf("Settings: prodname %s, filename %s, histoDir %s, histoList %s, particle %s, calorimeter %s, \n"
+         " \t mix %d, polN %d, n combi %d, n pairs cut %2.2e\n",
+         prodname.Data(),filename.Data(),histoDir.Data(),histoList.Data(), part.Data(), calorimeter.Data(), 
+         mix, polN, ncomb,nPairCut);
   
   if ( !ok )
   {
@@ -200,6 +208,8 @@ void InvMassFit
   comment[0] = "All SM";
   leg    [0] = "All SM";
   hname  [0] = "AllSM";
+  
+  //hRe[0]->Scale(1./nEvt);
   
   // Histograms for cluster pairs in different combinations of SM
   //
@@ -429,11 +439,11 @@ void InvMassFit
 //        hIMPu[i]->SetLineColor(kOrange-3);
 //      }
       
-      Double_t nMax =0;
+      Double_t nMax     = 0;
       if(part=="Pi0")
       {
-        nMax= hIM[icomb][i]->Integral(hIM[icomb][i]->FindBin(0.08),
-                                      hIM[icomb][i]->FindBin(0.17));
+        nMax= hIM[icomb][i]->Integral(hIM[icomb][i]->FindBin(0.09),
+                                      hIM[icomb][i]->FindBin(0.25));
       }
       else
       {
@@ -441,21 +451,23 @@ void InvMassFit
                                        hIM[icomb][i]->FindBin(0.65));
       }
       
-      //printf("icombi %d, bin %d, nMax %f\n",icomb,i,nMax);
+      //printf("icombi %d, bin %d, nMax %f \n",icomb,i,nMax);
       
-      if(nMax > 20 && !mix)
+      fitfun->SetParLimits(0,nMax/100,nMax*100);
+
+      if(nMax > nPairCut && !mix)
       {
         if(part=="Pi0")
         {
-          fitfun->SetParameters(nMax/5,0.135,20,1.,0.);
+          fitfun->SetParameters(nMax/4,0.135,0.02,1.,0.);
           if(i<9)
-            hIM[icomb][i]->Fit("fitfun","QR","",0.08,0.25);
+            hIM[icomb][i]->Fit("fitfun","QR","",0.09,0.25);
           else
             hIM[icomb][i]->Fit("fitfun","QR","",0.10,0.25);
         } // pi0
         else  //eta
         {
-          fitfun->SetParameters(nMax/5,0.54,40,1.,0.);
+          fitfun->SetParameters(nMax/4,0.54,0.04,1.,0.);
           if(i<4)
             hIM[icomb][i]->Fit("fitfun","QR","",0.4,0.7);
           else if(i < 15)
@@ -530,10 +542,10 @@ void InvMassFit
           
           emesonPt[icomb][i] = TMath::Min(emesonPt[icomb][i], TMath::Sqrt(mesonPt[icomb] [i]));
           
-          mesonPt [icomb][i]/=(exPt[i]*2)/nEvt;
-          emesonPt[icomb][i]/=(exPt[i]*2)/nEvt;
+          mesonPt [icomb] [i]/=(nEvt*(exPt[i]*2));
+          emesonPt[icomb] [i]/=(nEvt*(exPt[i]*2));
           
-          //cout << "N(pi0) fit  = " <<  mesonPt[icomb][i] << "+-"<<  emesonPt[icomb][i] << " mstep " << mStep<<endl;
+          cout << "N(pi0) fit  = " <<  mesonPt[icomb][i] << "+-"<<  emesonPt[icomb][i] << " mstep " << mStep<<endl;
           
           mesonMass [icomb][i] = mean*1000.;
           emesonMass[icomb][i] = emean*1000.;
@@ -668,13 +680,16 @@ void InvMassFit
             nMax= hSignal[icomb][i]->Integral(hIM[icomb][i]->FindBin(0.1),
                                               hIM[icomb][i]->FindBin(0.2));
           }
-          else{
+          else
+          {
             nMax = hSignal[icomb][i]->Integral(hIM[icomb][i]->FindBin(0.4),
                                                hIM[icomb][i]->FindBin(0.65));
           }
           
-          if(nMax > 50)
+          if(nMax > nPairCut)
           {
+            fitfun->SetParLimits(0,nMax/100,nMax*100);
+            
             if(part=="Pi0"){
               if(polN < 4 )fitfun->SetParameters(nMax/5,0.135,20,0);
               else         fitfun->SetParameters(nMax/5,20,0.135,20,20,nMax/5);
@@ -742,7 +757,6 @@ void InvMassFit
               emesonPt[icomb][i]= TMath::Sqrt(ePi0)* mesonPt[icomb][i];
               
               emesonPt[icomb][i] = TMath::Min(emesonPt[icomb][i], TMath::Sqrt(mesonPt[icomb] [i]));
-              
               
               mesonPt [icomb] [i]/=(nEvt*(exPt[i]*2));
               emesonPt[icomb] [i]/=(nEvt*(exPt[i]*2));
@@ -827,7 +841,7 @@ void InvMassFit
         }
 
         
-        if(nMax>1)
+        if(nMax > nPairCut)
         {
           hIM[icomb][i]->Draw("HE");
 
@@ -840,7 +854,7 @@ void InvMassFit
         }
 
       }//mix on
-      else if(nMax>1)
+      else if(nMax > nPairCut)
       {
         //printf("HERE 1\n");
 
@@ -1380,7 +1394,8 @@ void InvMassFit
   {
     for(Int_t ipt = 0; ipt < nPt; ipt++)
     {
-      if(hIM[icomb][ipt]) { hIM[icomb][ipt]->Scale(1./nEvt); hIM[icomb][ipt]->Write(); }
+      //if(hIM[icomb][ipt]) { hIM[icomb][ipt]->Scale(1./nEvt); hIM[icomb][ipt]->Write(); }
+      if(hIM[icomb][ipt]) { hIM[icomb][ipt]->Write(); }
       if(mix)
       {
 //        if(hMix         [icomb][ipt]) { hMix         [icomb][ipt]->Scale(1./nEvt); hMix         [icomb][ipt]->Write();}
@@ -1434,7 +1449,7 @@ Bool_t GetFileAndEvents( TString prodname, TString filename,
   if ( !lis && listName != "") return kFALSE;
   
   if(!lis)
-    nEvt = ((TH1F*) fil->Get("hnEvt"))->GetEntries();
+    nEvt = ((TH1F*) fil->Get("hNEvents"))->GetEntries();
   else
     nEvt = ((TH1F*) lis->FindObject("hNEvents"))->GetEntries();
   
@@ -1471,16 +1486,16 @@ void SetFitFun()
     
     if(polN < 4)
     {
-      fitfun->SetParLimits(0,  1,1.e+6);
-      fitfun->SetParLimits(1,  0.105,0.165);
-      fitfun->SetParLimits(2,  0.001,0.030);
+      fitfun->SetParLimits(0,  nPairCut/5,nPairCut*1.e4);
+      fitfun->SetParLimits(1,  0.105,0.185);
+      fitfun->SetParLimits(2,  0.001,0.040);
     }
     else
     {
-      fitfun->SetParLimits(0,  1,1.e+6);
-      fitfun->SetParLimits(2,  0.105,0.165);
-      fitfun->SetParLimits(1,  0.001,0.030);
-      fitfun->SetParLimits(3,  0.001,0.030);
+      fitfun->SetParLimits(0,  nPairCut/5,nPairCut*1.e6);
+      fitfun->SetParLimits(2,  0.105,0.185);
+      fitfun->SetParLimits(1,  0.001,0.040);
+      fitfun->SetParLimits(3,  0.001,0.040);
       fitfun->SetParLimits(4,  0,10);
       fitfun->SetParLimits(5,  1,1.e+6);
     }
@@ -1497,7 +1512,7 @@ void SetFitFun()
     else if (polN == 3)
       fitfun = new TF1("fitfun",pi0massP3,0.400,0.650,7);
     if(polN < 4){
-      fitfun->SetParLimits(0,  1,1.e+6);
+      fitfun->SetParLimits(0,  nPairCut/10,1.e+6);
       fitfun->SetParLimits(1,  0.20,0.80);
       fitfun->SetParLimits(2,  0.001,0.06);
     }

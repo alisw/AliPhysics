@@ -66,8 +66,8 @@ public:
   
   void         FillChargedAngularCorrelationHistograms  (Float_t ptAssoc,  Float_t ptTrig,      Int_t   assocBin,
                                                          Float_t phiAssoc, Float_t phiTrig,     Float_t deltaPhi,
-                                                         Float_t etaAssoc, Float_t etaTrig,
-                                                         Int_t   decayTag, Float_t hmpidSignal, Int_t outTOF,
+                                                         Float_t etaAssoc, Float_t etaTrig,     Int_t   sm,
+                                                         Int_t   decayTag, Float_t hmpidSignal, Int_t   outTOF,
                                                          Int_t   cenbin,   Int_t   mcTag);
   
   void         FillChargedEventMixPool();
@@ -77,12 +77,13 @@ public:
                                                          Int_t histoIndex,  Bool_t  lostDecayPair);
   
   void         FillChargedMomentumImbalanceHistograms   (Float_t ptTrig,   Float_t ptAssoc,
-                                                         Float_t deltaPhi, Int_t cenbin, Int_t charge,
+                                                         Float_t deltaPhi, Int_t sm,
+                                                         Int_t   cenbin,   Int_t charge,
                                                          Int_t   assocBin, Int_t decayTag,
                                                          Int_t   outTOF,   Int_t mcTag );
   
-  void         FillChargedUnderlyingEventHistograms     (Float_t ptTrig,   Float_t ptAssoc,
-                                                         Float_t deltaPhi, Int_t cenbin, Int_t outTOF, Int_t   mcTag);
+  void         FillChargedUnderlyingEventHistograms     (Float_t ptTrig,   Float_t ptAssoc, Float_t deltaPhi, 
+                                                         Int_t sm, Int_t cenbin, Int_t outTOF, Int_t   mcTag);
   
   void         FillChargedUnderlyingEventSidesHistograms(Float_t ptTrig,   Float_t ptAssoc,
                                                          Float_t deltaPhi, Int_t   mcTag);
@@ -238,6 +239,12 @@ public:
   void         SwitchOnFillPtImbalancePerPtABinHistograms()  { fFillMomImbalancePtAssocBinsHisto = kTRUE  ; }
   void         SwitchOffFillPtImbalancePerPtABinHistograms() { fFillMomImbalancePtAssocBinsHisto = kFALSE ; }
   
+  void         SwitchOnFillHistogramsPerSM()     { fFillPerSMHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsPerSM()    { fFillPerSMHistograms = kFALSE ; }  
+
+  void         SwitchOnFillHistogramsPerTCardIndex()  { fFillPerTCardIndexHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsPerTCardIndex() { fFillPerTCardIndexHistograms = kFALSE ; }  
+  
   void         SetMCGenType(Int_t min = 0, Int_t max = 6) { if(min >= 0 && min < fgkNmcTypes) fMCGenTypeMin = min ;
     if(max >= 0 && max < fgkNmcTypes) fMCGenTypeMax = max ; }
   
@@ -324,8 +331,13 @@ private:
   
   Bool_t       fFillBkgBinsHisto;                        ///<  Fill pT in cone in background bins distributions.
   
-  Bool_t       fFillTaggedDecayHistograms;               ///<  Fill pT in cone distributions in background bins for decay particles.
+  Bool_t       fFillPerSMHistograms ;                    ///<  Fill histograms per SM.
   
+  Bool_t       fFillPerTCardIndexHistograms ;            ///<  Fill histograms per T-Card index.
+  Int_t        fTCardIndex;                              ///<  Store here the T-Card index per trigger cluster.
+  
+  Bool_t       fFillTaggedDecayHistograms;               ///<  Fill pT in cone distributions in background bins for decay particles.
+    
   Float_t      fDecayTagsM02Cut;                         ///<  Lambda0 cut for decay particles.
   
   Int_t        fMCGenTypeMin;                            ///<  Of the fgkNmcTypes possible types, select those between fMCGenTypeMin and fMCGenTypeMax.
@@ -647,6 +659,19 @@ private:
   
   TH2F *        fhTrackResolutionUE;                     //!<! track resolution sigma pT vs pT, UE side, ESDs.
   
+  // Per SM histograms
+  TH2F *       fhPtTriggerPerSM ;                        //!<! pT distribution of trigger particles per SM number.
+  TH2F *       fhXEChargedPerSM      [20] ;              //!<! Trigger particle -charged hadron momentum imbalance histogram, per SM number.
+  TH2F *       fhXEUeChargedPerSM    [20] ;              //!<! Trigger particle -Ue charged hadron momentum imbalance histogram, per SM number.
+  TH2F *       fhDeltaPhiChargedPerSM[20] ;              //!<! Difference of charged particle phi and trigger particle phi as function of trigger pT, per SM number.
+  TH2F *       fhDeltaPhiChargedPtA3GeVPerSM[20] ;       //!<! Difference of charged particle phi with pT > 3 GeV and trigger particle phi as function of trigger pT, per SM number
+
+  TH2F *       fhPtTriggerPerTCardIndex ;                //!<! pT distribution of trigger particles per T-Card index.
+  TH2F *       fhXEChargedPerTCardIndex      [16] ;      //!<! Trigger particle -charged hadron momentum imbalance histogram, per SM T-Card index.
+  TH2F *       fhXEUeChargedPerTCardIndex    [16] ;      //!<! Trigger particle -Ue charged hadron momentum imbalance histogram, per T-Card index.
+  TH2F *       fhDeltaPhiChargedPerTCardIndex[16] ;      //!<! Difference of charged particle phi and trigger particle phi as function of trigger pT, per T-Card index.
+  TH2F *       fhDeltaPhiChargedPtA3GeVPerTCardIndex[16];//!<! Difference of charged particle phi with pT > 3 GeV and trigger particle phi as function of trigger pT, per T-Card index
+  
   /// Copy constructor not implemented.
   AliAnaParticleHadronCorrelation(              const AliAnaParticleHadronCorrelation & ph) ;
   
@@ -654,7 +679,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,36) ;
+  ClassDef(AliAnaParticleHadronCorrelation,37) ;
   /// \endcond
   
 } ;

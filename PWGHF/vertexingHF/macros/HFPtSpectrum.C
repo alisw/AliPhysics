@@ -39,7 +39,7 @@
 //
 
 enum decay { kD0Kpi, kDplusKpipi, kDstarD0pi, kDsKKpi, kLctopKpi, kLcK0Sp};
-enum centrality{ kpp8, kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k1030, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb010, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centrality{ kpp8, kpp7, kpp5, kpp276, k07half, kpPb0100, k010, k1020, k020, k1030, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb010, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { knone, kfc, kNb };
@@ -405,12 +405,12 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   spectra->SetIsParticlePlusAntiParticleYield(isParticlePlusAntiParticleYield);
 
   // Set the Tab parameter and uncertainties
-  if ( (cc != kpp7) && (cc != kpp8) && (cc != kpp276)  ) {
+  if ( (cc != kpp7) && (cc != kpp8) && (cc != kpp276) && (cc != kpp5) ) {
     spectra->SetTabParameter(tab,tabUnc);
   }
   if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     spectra->SetCollisionType(2);
-  } else if ( !( cc==kpp7 || cc==kpp8 || cc==kpp276 ) ) {
+  } else if ( !( cc==kpp7 || cc==kpp8 || cc==kpp276 || cc==kpp5 ) ) {
     spectra->SetCollisionType(1);
   }
 
@@ -423,6 +423,11 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   }
   else if (cc==kpp8){
     systematics->SetRunNumber(12);
+  }
+  else if (cc==kpp5){
+    systematics->SetIs5TeVAnalysis(true);
+    systematics->SetRunNumber(17);
+    systematics->SetCollisionType(0);
   }
   else if ( cc == kpPb0100 || cc == kpPb010 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematics->SetCollisionType(2);
@@ -489,15 +494,15 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
         else if ( cc == k6080 )  systematics->SetCentrality("6080");
         else if ( cc == k4080 ) systematics->SetCentrality("4080");
     } else if (Energy==k5dot023){
-				systematicsAB->SetRunNumber(15);
-				if ( cc == k3050 ){
-					 systematicsAB->SetCentrality("3050");
-				}
-				else if ( cc == k1030 ) {
-					systematicsAB->SetCentrality("3050"); //no systematics available for 10--30
-				}
-			}
-			else {
+      systematics->SetRunNumber(15);
+      if ( cc == k3050 ){
+	systematics->SetCentrality("3050");
+      }
+      else if ( cc == k1030 ) {
+	systematics->SetCentrality("3050"); //no systematics available for 10--30
+      }
+    }
+    else {
       cout << " Systematics not yet implemented " << endl;
       return;
     }

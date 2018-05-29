@@ -34,12 +34,14 @@ ClassImp(AliAnalysisTaskFilterUPCNanoAOD)
 /// \endcond
 
 //_____________________________________________________________________________
-AliAnalysisTaskFilterUPCNanoAOD::AliAnalysisTaskFilterUPCNanoAOD(Bool_t withSPDTracklets)
+AliAnalysisTaskFilterUPCNanoAOD::AliAnalysisTaskFilterUPCNanoAOD(Bool_t withSPDTracklets,Bool_t withMuonTracks)
 : AliAnalysisTaskSE("AliAnalysisTaskFilterUPCNanoAOD"),
 fBranchReplicator(new AliAODUPCReplicator("UPCReplicator",
-                                           "remove non muon tracks and non primary or pileup vertices",
+                                           "UPC",
                                            kTRUE,
-                                           withSPDTracklets))
+                                           withSPDTracklets,
+					   withMuonTracks)),
+					   fWithMuonTracks(withMuonTracks)
 {
   /// ctor. For the parameters \see AliAODUPCReplicator::AliAODUPCReplicator
 }
@@ -84,24 +86,9 @@ void AliAnalysisTaskFilterUPCNanoAOD::UserExec(Option_t*)
  //Trigger
   Bool_t isTriggered = kFALSE;
   TString trigger = aod->GetFiredTriggerClasses();
-  /*/
-  if(trigger.Contains("CCUP4-B")) isTriggered = kTRUE; // *0VBA *0VBC 0SM2 0OMU
-  if(trigger.Contains("CCUP2-B")) isTriggered = kTRUE; // *0VBA *0VBC 0SM2 0OM2
-  if(trigger.Contains("CCUP7-B")) isTriggered = kTRUE; // *0VBA *0VBC 0STP 0OMU
-  if(trigger.Contains("CINT1-B")) isTriggered = kTRUE; // 0VBA || 0VBC || 0SMB
-  if(trigger.Contains("CTEST58-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0SH1
-  if(trigger.Contains("CTEST59-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP
-  if(trigger.Contains("CTEST60-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0OM2
-  if(trigger.Contains("CTEST61-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0OMU
-  if(trigger.Contains("CCUP8-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP 0OMU
-  if(trigger.Contains("CCUP9-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0STP
-  if(trigger.Contains("CCUP10-B")) isTriggered = kTRUE; // *0VBA *0VBC *0UBA *0UBC 0SH1
-  if(trigger.Contains("CCUP11-B")) isTriggered = kTRUE; // *0UBA *0UBC 0STP 0OMU
-  if(trigger.Contains("CCUP12-B")) isTriggered = kTRUE; // *0UBA *0UBC 0STP
-  /*/
   
   if(trigger.Contains("CCUP")) isTriggered = kTRUE; // UPC central barrel
-  if(trigger.Contains("CMUP")) isTriggered = kTRUE; // UPC MUON
+  if(trigger.Contains("CMUP") && fWithMuonTracks) isTriggered = kTRUE; // UPC MUON
   
   //Vertex
   Bool_t hasGoodVertex = kFALSE;

@@ -1,3 +1,3 @@
-EmcalTriggerJets::AliAnalysisTaskEmcalJetConstituentQA *AddTaskEmcalJetConstituentQA(const char *trigger) {
-  return EmcalTriggerJets::AliAnalysisTaskEmcalJetConstituentQA::AddTaskEmcalJetConstituentQA(trigger);
+EmcalTriggerJets::AliAnalysisTaskEmcalJetConstituentQA *AddTaskEmcalJetConstituentQA(AliJetContainer::EJetType_t jettype, bool part, const char *trigger) {
+  return EmcalTriggerJets::AliAnalysisTaskEmcalJetConstituentQA::AddTaskEmcalJetConstituentQA(trigger, jettype, part);
 }

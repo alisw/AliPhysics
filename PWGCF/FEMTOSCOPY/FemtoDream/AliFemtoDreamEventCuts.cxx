@@ -9,6 +9,7 @@
 ClassImp(AliFemtoDreamEventCuts)
 AliFemtoDreamEventCuts::AliFemtoDreamEventCuts()
 :fHist(0)
+,fMinimalBooking(false)
 ,fCutMinContrib(false)
 ,fMinContrib(2)
 ,fCutZVtx(false)
@@ -22,6 +23,7 @@ AliFemtoDreamEventCuts::AliFemtoDreamEventCuts()
 ,fUseV0CMult(false)
 ,fUseRef08Mult(false)
 ,fUseAliEvtCuts(false)
+,fCentVsMultPlots(false)
 {
 }
 
@@ -31,71 +33,73 @@ AliFemtoDreamEventCuts::~AliFemtoDreamEventCuts() {
 
 bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
   bool pass=true;
-  fHist->FillEvtCounter(0);
+  if (!fMinimalBooking) fHist->FillEvtCounter(0);
   if (fUseAliEvtCuts) {
     if (!evt->PassAliEvtSelection()) {
       pass=false;
     } else {
-      fHist->FillEvtCounter(1);
+      if (!fMinimalBooking) fHist->FillEvtCounter(1);
     }
   } else {
     //This needs to be always the case!
     if (!(evt->GetMagneticField()||evt->GetHasVertex())) {
       pass=false;
     } else {
-      fHist->FillEvtCounter(2);
+      if (!fMinimalBooking) fHist->FillEvtCounter(2);
     }
     if (pass&&fCutMinContrib) {
       if (evt->GetNumberOfContributers()<fMinContrib) {
         pass=false;
       } else {
-        fHist->FillEvtCounter(3);
+        if (!fMinimalBooking) fHist->FillEvtCounter(3);
       }
     }
     if (pass&&fCutZVtx) {
       if (evt->GetZVertex()<=fzVtxLow||evt->GetZVertex()>=fzVtxUp) {
         pass=false;
       } else {
-        fHist->FillEvtCounter(4);
+        if (!fMinimalBooking) fHist->FillEvtCounter(4);
       }
     }
     if (pass&&fPileUpRejection) {
       if (evt->GetIsPileUp()) {
         pass=false;
       } else {
-        fHist->FillEvtCounter(5);
+        if (!fMinimalBooking) fHist->FillEvtCounter(5);
       }
     }
-    if (pass&&fCleanEvtMult) {
-      if (pass&&fUseSPDMult) {
-        if (!(evt->GetSPDMult()>0)) {
-          pass=false;
-        } else {
-          fHist->FillEvtCounter(6);
-        }
+  }
+  //we need to make sure that our evt mult estimator is >0 else we wont
+  //be able to find a bin to put the event in.
+  if (pass&&fCleanEvtMult) {
+    if (pass&&fUseSPDMult) {
+      if (!(evt->GetSPDMult()>0)) {
+        pass=false;
+      } else {
+        if (!fMinimalBooking) fHist->FillEvtCounter(6);
       }
-      if (pass&&fUseV0AMult) {
-        if (!(evt->GetV0AMult()>0)) {
-          pass=false;
-        } else {
-          fHist->FillEvtCounter(7);
-          //Fill Hist
-        }
+    }
+    if (pass&&fUseV0AMult) {
+      if (!(evt->GetV0AMult()>0)) {
+        pass=false;
+      } else {
+        if (!fMinimalBooking) fHist->FillEvtCounter(7);
+        //Fill Hist
       }
-      if (pass&&fUseV0CMult) {
-        if (!(evt->GetV0CMult()>0)) {
-          pass=false;
-        } else {
-          fHist->FillEvtCounter(8);
-          //Fill Hist
-        }
+    }
+    if (pass&&fUseV0CMult) {
+      if (!(evt->GetV0CMult()>0)) {
+        pass=false;
+      } else {
+        if (!fMinimalBooking) fHist->FillEvtCounter(8);
+        //Fill Hist
       }
-      if (pass&&fUseRef08Mult) {
-        if (!(evt->GetRefMult08()>0)) {
-          pass=false;
-        } else {
-          fHist->FillEvtCounter(9);
-        }
+    }
+    if (pass&&fUseRef08Mult) {
+      if (!(evt->GetRefMult08()>0)) {
+        pass=false;
+      } else {
+        if (!fMinimalBooking) fHist->FillEvtCounter(9);
       }
     }
   }
@@ -105,8 +109,12 @@ bool AliFemtoDreamEventCuts::isSelected(AliFemtoDreamEvent *evt) {
 }
 
 void AliFemtoDreamEventCuts::InitQA() {
-  fHist=new AliFemtoDreamEventHist();
-  BookCuts();
+  if (fMinimalBooking) {
+    fHist=0;
+  } else {
+    fHist=new AliFemtoDreamEventHist(fCentVsMultPlots);
+    BookCuts();
+  }
 }
 
 AliFemtoDreamEventCuts* AliFemtoDreamEventCuts::StandardCutsRun1() {
@@ -125,75 +133,85 @@ AliFemtoDreamEventCuts* AliFemtoDreamEventCuts::StandardCutsRun2() {
   return evtCuts;
 }
 void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
-  for (int i=0;i<2;++i) {
-    if (i==0||(i==1&&evt->GetSelectionStatus())) {
-      fHist->FillEvtNCont(i,evt->GetNumberOfContributers());
-      fHist->FillEvtVtxX(i,evt->GetXVertex());
-      fHist->FillEvtVtxY(i,evt->GetYVertex());
-      fHist->FillEvtVtxZ(i,evt->GetZVertex());
-      fHist->FillMultSPD(i,evt->GetSPDMult());
-      fHist->FillMultV0A(i,evt->GetV0AMult());
-      fHist->FillMultV0C(i,evt->GetV0CMult());
-      fHist->FillMultRef08(i,evt->GetRefMult08());
+  if (!fMinimalBooking) {
+    for (int i=0;i<2;++i) {
+      if (i==0||(i==1&&evt->GetSelectionStatus())) {
+        fHist->FillEvtNCont(i,evt->GetNumberOfContributers());
+        fHist->FillEvtVtxX(i,evt->GetXVertex());
+        fHist->FillEvtVtxY(i,evt->GetYVertex());
+        fHist->FillEvtVtxZ(i,evt->GetZVertex());
+        fHist->FillMultSPD(i,evt->GetSPDMult());
+        fHist->FillMultV0A(i,evt->GetV0AMult());
+        fHist->FillMultV0C(i,evt->GetV0CMult());
+        fHist->FillMultRef08(i,evt->GetRefMult08());
+      }
+    }
+    if (fCentVsMultPlots) {
+      fHist->FillCentVsMultV0A(evt->GetV0MCentrality(),evt->GetV0AMult());
+      fHist->FillCentVsMultV0M(evt->GetV0MCentrality(),evt->GetV0MMult());
+      fHist->FillCentVsMultV0C(evt->GetV0MCentrality(),evt->GetV0CMult());
+      fHist->FillCentVsMultRef(evt->GetV0MCentrality(),evt->GetRefMult08());
     }
   }
 }
 void AliFemtoDreamEventCuts::BookCuts() {
-  if (fCutMinContrib) {
-    fHist->FillCuts(0,fMinContrib);
-  } else {
-    fHist->FillCuts(0,0);
-  }
-  if (fCutZVtx) {
-    fHist->FillCuts(1,1);
-    fHist->FillCuts(2,fzVtxLow);
-    fHist->FillCuts(3,fzVtxUp);
-  } else {
-    fHist->FillCuts(1,0);
-    fHist->FillCuts(2,0);
-    fHist->FillCuts(3,0);
-  }
-  if (fPileUpRejection) {
-    fHist->FillCuts(4,1);
-  } else {
-    fHist->FillCuts(4,0);
-  }
-  if (fUseMVPileUpRej) {
-    fHist->FillCuts(5,1);
-  } else {
-    fHist->FillCuts(5,0);
-  }
-  if (fCleanEvtMult) {
-    if (fUseSPDMult) {
-      fHist->FillCuts(6,1);
+  if (!fMinimalBooking) {
+    if (fCutMinContrib) {
+      fHist->FillCuts(0,fMinContrib);
+    } else {
+      fHist->FillCuts(0,0);
+    }
+    if (fCutZVtx) {
+      fHist->FillCuts(1,1);
+      fHist->FillCuts(2,fzVtxLow);
+      fHist->FillCuts(3,fzVtxUp);
+    } else {
+      fHist->FillCuts(1,0);
+      fHist->FillCuts(2,0);
+      fHist->FillCuts(3,0);
+    }
+    if (fPileUpRejection) {
+      fHist->FillCuts(4,1);
+    } else {
+      fHist->FillCuts(4,0);
+    }
+    if (fUseMVPileUpRej) {
+      fHist->FillCuts(5,1);
+    } else {
+      fHist->FillCuts(5,0);
+    }
+    if (fCleanEvtMult) {
+      if (fUseSPDMult) {
+        fHist->FillCuts(6,1);
+      } else {
+        fHist->FillCuts(6,0);
+      }
+      if (fUseV0AMult) {
+        fHist->FillCuts(7,1);
+      } else {
+        fHist->FillCuts(7,0);
+      }
+      if (fUseV0CMult) {
+        fHist->FillCuts(8,1);
+      } else {
+        fHist->FillCuts(8,0);
+      }
+      if (fUseRef08Mult) {
+        fHist->FillCuts(9,1);
+      } else {
+        fHist->FillCuts(9,0);
+      }
     } else {
       fHist->FillCuts(6,0);
-    }
-    if (fUseV0AMult) {
-      fHist->FillCuts(7,1);
-    } else {
-      fHist->FillCuts(7,0);
-    }
-    if (fUseV0CMult) {
-      fHist->FillCuts(8,1);
-    } else {
-      fHist->FillCuts(8,0);
-    }
-    if (fUseRef08Mult) {
-      fHist->FillCuts(9,1);
-    } else {
-      fHist->FillCuts(9,0);
-    }
-  } else {
-      fHist->FillCuts(6,0);
       fHist->FillCuts(7,0);
       fHist->FillCuts(8,0);
       fHist->FillCuts(9,0);
-  }
-  if (fUseAliEvtCuts) {
-    fHist->FillCuts(10,1);
-  } else {
-    fHist->FillCuts(10,0);
+    }
+    if (fUseAliEvtCuts) {
+      fHist->FillCuts(10,1);
+    } else {
+      fHist->FillCuts(10,0);
+    }
   }
 }
 

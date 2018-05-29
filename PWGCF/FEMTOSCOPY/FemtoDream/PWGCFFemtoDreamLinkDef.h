@@ -17,6 +17,7 @@
 #pragma link C++ class AliFemtoDreamv0Hist+;
 #pragma link C++ class AliFemtoDreamv0MCHist+;
 #pragma link C++ class AliFemtoDreamv0Cuts+;
+#pragma link C++ class AliFemtoDreamControlSample+;
 #pragma link C++ class AliFemtoDreamCascade+;
 #pragma link C++ class AliFemtoDreamCascadeHist+;
 #pragma link C++ class AliFemtoDreamCascadeCuts+;
@@ -29,6 +30,7 @@
 #pragma link C++ class AliFemtoDreamPartCollection+;
 #pragma link C++ class AliFemtoDreamAnalysis+;
 #pragma link C++ class AliAnalysisTaskFemtoDream+;
+#pragma link C++ class AliAnalysisTaskMCFemtoDream+;
 
 #endif
 

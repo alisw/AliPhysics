@@ -48,7 +48,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
   } else {
       filecuts=TFile::Open(cutsfile.Data());
       if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-	AliFatal("Input file not found : check your cut object");
+	::Fatal("AddTaskDStarSpectra", "Input file not found : check your cut object");
       }
   }
 
@@ -90,7 +90,7 @@ AliAnalysisTaskSEDStarSpectra *AddTaskDStarSpectra(Int_t system=0/*0=pp,1=PbPb*/
 
     cout<<"Specific AliRDHFCuts not found"<<endl;
 
-    return;
+    return NULL;
 
   }
 

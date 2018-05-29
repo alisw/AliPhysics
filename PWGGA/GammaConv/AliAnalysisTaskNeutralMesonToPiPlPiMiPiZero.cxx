@@ -107,6 +107,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fTrackMultiplicityEtaEvent(-1),
   fZVertexEtaEvent(-1),
   fPtEta(-1),
+  fPDGMassPi0(-1),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaEta(NULL),
   fHistoClusterGammaPt(NULL),
@@ -281,6 +282,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::AliAnalysisTaskNeutralMesonToPiPlPi
   fTrackMultiplicityEtaEvent(-1),
   fZVertexEtaEvent(-1),
   fPtEta(-1),
+  fPDGMassPi0(-1),
   fHistoConvGammaPt(NULL),
   fHistoConvGammaEta(NULL),
   fHistoClusterGammaPt(NULL),
@@ -514,11 +516,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
 
   // Set pT and mass ranges
   Double_t HistoMassRange[2]            = {0.4,1.0};
-  Double_t HistoMassRangeSub[2]         = {0.1,1.0};
+  Double_t HistoMassRangeSub[2]         = {0.4,1.0};
   Double_t HistoPtRange[2]              = {0.,25.};
   Double_t HistoNMassBins               = 600;
-  Double_t HistoNMassBinsSub            = 900;
+  Double_t HistoNMassBinsSub            = 600;
   Double_t HistoNPtBins                 = 250;
+  fPDGMassPi0                           = 0.1349766; // hard coded PDG value to keep results reproducable later
+
   // Create the output container
   if(fOutputContainer != NULL){
     delete fOutputContainer;
@@ -794,7 +798,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
         fESDList[iCut]->Add(fHistoMotherLikeSignBackInvMassPt[iCut]);
     }
     fHistoMotherInvMassSubPi0[iCut]                       = new TH2F("ESD_InvMass_Mother_Sub_InvMass(NeutralPion)_Pt","ESD_Mother_InvMass_Sub_InvMass(NeutralPion)_Pt",HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
-    fHistoMotherInvMassSubPi0[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} - M_{#pi^{0}} (GeV/c^{2})");
+    fHistoMotherInvMassSubPi0[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} - (M_{#pi^{0}}-M_{#pi^{0},PDG}) (GeV/c^{2})");
     fHistoMotherInvMassSubPi0[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
     fESDList[iCut]->Add(fHistoMotherInvMassSubPi0[iCut]);
 
@@ -807,13 +811,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
     fHistoBackInvMassPtGroup4SubPi0[iCut]    = new TH2F("ESD_Background_4_InvMass_Sub_InvMass(NeutralPion)_Pt","ESD_Background_4_InvMass_Sub_InvMass(NeutralPion)_Pt",
                                                                      HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
 
-    fHistoBackInvMassPtGroup1SubPi0[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} - M_{#pi^{0}} (GeV/c^{2})");
+    fHistoBackInvMassPtGroup1SubPi0[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} - (M_{#pi^{0}}-M_{#pi^{0},PDG}) (GeV/c^{2})");
     fHistoBackInvMassPtGroup1SubPi0[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-    fHistoBackInvMassPtGroup2SubPi0[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} - M_{#pi^{0}} (GeV/c^{2})");
+    fHistoBackInvMassPtGroup2SubPi0[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} - (M_{#pi^{0}}-M_{#pi^{0},PDG}) (GeV/c^{2})");
     fHistoBackInvMassPtGroup2SubPi0[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-    fHistoBackInvMassPtGroup3SubPi0[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} - M_{#pi^{0}} (GeV/c^{2})");
+    fHistoBackInvMassPtGroup3SubPi0[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} - (M_{#pi^{0}}-M_{#pi^{0},PDG}) (GeV/c^{2})");
     fHistoBackInvMassPtGroup3SubPi0[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
-    fHistoBackInvMassPtGroup4SubPi0[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} - M_{#pi^{0}} (GeV/c^{2})");
+    fHistoBackInvMassPtGroup4SubPi0[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} - (M_{#pi^{0}}-M_{#pi^{0},PDG}) (GeV/c^{2})");
     fHistoBackInvMassPtGroup4SubPi0[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
     if(!(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing())){
         fESDList[iCut]->Add(fHistoBackInvMassPtGroup4SubPi0[iCut]);
@@ -2756,7 +2760,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::CalculateMesonCandidates(){
                   //Double_t sparesFill[4] = {mesoncand->M(),mesoncand->Pt(),(Double_t)zbin,(Double_t)mbin};
                   //fTHnSparseMotherInvMassPtZM[fiCut]->Fill(sparesFill,1);
               }
-              fHistoMotherInvMassSubPi0[fiCut]->Fill(mesoncand->M()-neutralPion->M(),mesoncand->Pt());
+
+              // Subtract mass of used pi0 candidate and then add PDG mass to get to right range again
+              fHistoMotherInvMassSubPi0[fiCut]->Fill(mesoncand->M()-(neutralPion->M()-fPDGMassPi0),mesoncand->Pt());
+
+              // Fix Pz of pi0 candidate to match pi0 PDG mass
               AliAODConversionMother *Pi0tmp = new AliAODConversionMother();
               Pi0tmp->SetPxPyPzE(neutralPion->Px(), neutralPion->Py(), neutralPion->Pz(), neutralPion->Energy());
               FixPzToMatchPDGInvMassPi0(Pi0tmp);
@@ -2896,13 +2904,13 @@ if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()))
                     // Pi+ and Pi- don't come from the same event (but different than pi0 event)
                     // Fill histograms
                     fHistoBackInvMassPtGroup4[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M(),PiPlPiMiPiZeroBackgroundCandidate->Pt());
-                    fHistoBackInvMassPtGroup4SubPi0[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M()-EventPiZeroGoodMeson->M(),PiPlPiMiPiZeroBackgroundCandidate->Pt());
+                    fHistoBackInvMassPtGroup4SubPi0[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M()-(EventPiZeroGoodMeson->M()-fPDGMassPi0),PiPlPiMiPiZeroBackgroundCandidate->Pt());
                     fHistoBackInvMassPtGroup4FixedPzPi0[fiCut]->Fill(PiPlPiMiPiZerotmp->M(),PiPlPiMiPiZerotmp->Pt());
 
                   } else if(nEventsInBGMi==nEventsInBGPl){
                     // Pi+ and Pi- come from the same event (but different than pi0 event)
                     fHistoBackInvMassPtGroup1[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M(),PiPlPiMiPiZeroBackgroundCandidate->Pt());
-                    fHistoBackInvMassPtGroup1SubPi0[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M()-EventPiZeroGoodMeson->M(),PiPlPiMiPiZeroBackgroundCandidate->Pt());
+                    fHistoBackInvMassPtGroup1SubPi0[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M()-(EventPiZeroGoodMeson->M()-fPDGMassPi0),PiPlPiMiPiZeroBackgroundCandidate->Pt());
                     fHistoBackInvMassPtGroup1FixedPzPi0[fiCut]->Fill(PiPlPiMiPiZerotmp->M(),PiPlPiMiPiZerotmp->Pt());
                   }
 
@@ -2980,7 +2988,7 @@ if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()))
 
               // Fill histograms (pi- and pi0 from same event)
               fHistoBackInvMassPtGroup3[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M(),PiPlPiMiPiZeroBackgroundCandidate->Pt());
-              fHistoBackInvMassPtGroup3SubPi0[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M()-EventPiZeroGoodMeson->M(),PiPlPiMiPiZeroBackgroundCandidate->Pt());
+              fHistoBackInvMassPtGroup3SubPi0[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M()-(EventPiZeroGoodMeson->M()-fPDGMassPi0),PiPlPiMiPiZeroBackgroundCandidate->Pt());
               fHistoBackInvMassPtGroup3FixedPzPi0[fiCut]->Fill(PiPlPiMiPiZerotmp->M(),PiPlPiMiPiZerotmp->Pt());
 
               delete Pi0tmp;
@@ -3060,7 +3068,7 @@ if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()))
 
               // Fill histograms (pi+ and pi0 from same event)
               fHistoBackInvMassPtGroup2[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M(),PiPlPiMiPiZeroBackgroundCandidate->Pt());
-              fHistoBackInvMassPtGroup2SubPi0[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M()-EventPiZeroGoodMeson->M(),PiPlPiMiPiZeroBackgroundCandidate->Pt());
+              fHistoBackInvMassPtGroup2SubPi0[fiCut]->Fill(PiPlPiMiPiZeroBackgroundCandidate->M()-(EventPiZeroGoodMeson->M()-fPDGMassPi0),PiPlPiMiPiZeroBackgroundCandidate->Pt());
               fHistoBackInvMassPtGroup2FixedPzPi0[fiCut]->Fill(PiPlPiMiPiZerotmp->M(),PiPlPiMiPiZerotmp->Pt());
 
               delete Pi0tmp;
@@ -3129,7 +3137,7 @@ if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()))
 
                       // Fill histograms (likesign)
                       fHistoMotherLikeSignBackInvMassPt[fiCut]->Fill(PiPlPiPlPiZeroBackgroundCandidate->M(),PiPlPiPlPiZeroBackgroundCandidate->Pt());
-                      fHistoMotherLikeSignBackInvMassSubPi0Pt[fiCut]->Fill(PiPlPiPlPiZeroBackgroundCandidate->M()-EventPiZeroGoodMeson->M(),PiPlPiPlPiZeroBackgroundCandidate->Pt());
+                      fHistoMotherLikeSignBackInvMassSubPi0Pt[fiCut]->Fill(PiPlPiPlPiZeroBackgroundCandidate->M()-(EventPiZeroGoodMeson->M()-fPDGMassPi0),PiPlPiPlPiZeroBackgroundCandidate->Pt());
                       fHistoMotherLikeSignBackInvMassFixedPzPi0Pt[fiCut]->Fill(PiPlPiPlPiZerotmp->M(),PiPlPiPlPiZerotmp->Pt());
 
                       delete Pi0tmp;
@@ -3189,7 +3197,7 @@ if(!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseLikeSignMixing()))
 
                       // Fill histograms (likesign)
                       fHistoMotherLikeSignBackInvMassPt[fiCut]->Fill(PiMiPiMiPiZeroBackgroundCandidate->M(),PiMiPiMiPiZeroBackgroundCandidate->Pt());
-                      fHistoMotherLikeSignBackInvMassSubPi0Pt[fiCut]->Fill(PiMiPiMiPiZeroBackgroundCandidate->M()-EventPiZeroGoodMeson->M(),PiMiPiMiPiZeroBackgroundCandidate->Pt());
+                      fHistoMotherLikeSignBackInvMassSubPi0Pt[fiCut]->Fill(PiMiPiMiPiZeroBackgroundCandidate->M()-(EventPiZeroGoodMeson->M()-fPDGMassPi0),PiMiPiMiPiZeroBackgroundCandidate->Pt());
                       fHistoMotherLikeSignBackInvMassFixedPzPi0Pt[fiCut]->Fill(PiMiPiMiPiZerotmp->M(),PiMiPiMiPiZerotmp->Pt());
 
                       delete Pi0tmp;
@@ -3500,15 +3508,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::MoveParticleAccordingToVertex(
 //________________________________________________________________________
 void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::FixPzToMatchPDGInvMassPi0(AliAODConversionMother* particle){
 
-TParticle pi0;
-pi0.SetPdgCode(111);
-Double_t PdgMass = pi0.GetMass();
-
 Double_t px = particle->Px();
 Double_t py = particle->Py();
 Int_t signPz = particle->Pz()<0?-1:1;
 Double_t energy = particle->Energy();
-Double_t pz = signPz*TMath::Sqrt(TMath::Abs(pow(PdgMass,2)-pow(energy,2)+pow(px,2)+pow(py,2)));
+Double_t pz = signPz*TMath::Sqrt(TMath::Abs(pow(fPDGMassPi0,2)-pow(energy,2)+pow(px,2)+pow(py,2)));
 particle->SetPxPyPzE(px,py,pz,energy);
 
 return;

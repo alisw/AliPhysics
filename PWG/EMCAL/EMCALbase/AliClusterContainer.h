@@ -7,6 +7,7 @@ class TLorentzVector;
 
 class AliVEvent;
 
+#include <map>
 #include <TArrayI.h>
 #include <AliVCluster.h>
 
@@ -32,6 +33,9 @@ typedef EMCALIterableContainer::AliEmcalIterableContainerT<AliVCluster, EMCALIte
 class AliClusterContainer : public AliEmcalContainer {
  public:
   typedef enum AliVCluster::VCluUserDefEnergy_t VCluUserDefEnergy_t;
+
+  /// Relates string to the cluster energy enumeration for %YAML configuration
+  static const std::map <std::string, VCluUserDefEnergy_t> fgkClusterEnergyTypeMap; //!<!
 
   AliClusterContainer();
   AliClusterContainer(const char *name); 

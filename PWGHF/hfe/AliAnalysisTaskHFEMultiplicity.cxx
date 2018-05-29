@@ -72,7 +72,6 @@
 #include "AliKFParticle.h"
 #include "AliKFVertex.h"
 #include "AliESDCaloTrigger.h"
-#include "AliEMCALRecoUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliGeomManager.h"
 #include "AliCentrality.h"
@@ -105,6 +104,8 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity() : AliAnalysisTa
  //Event Cut
   fCutNcontV(2),
  //Track Cut
+  fCutTPCMaxCls(100.),
+  fCutTPCchi2perNDF(4.),
   fCutTPCNCls(80.),
   fCutITSNCls(3.),
   fCutDCAxy(2.4),
@@ -302,6 +303,8 @@ AliAnalysisTaskHFEMultiplicity::AliAnalysisTaskHFEMultiplicity(const char* name)
  //Event Cut
   fCutNcontV(2),
  //Track Cut
+  fCutTPCMaxCls(100.),
+  fCutTPCchi2perNDF(4.),
   fCutTPCNCls(80.),
   fCutITSNCls(3.),
   fCutDCAxy(2.4),
@@ -565,12 +568,14 @@ void AliAnalysisTaskHFEMultiplicity::UserCreateOutputObjects()
   fOutputList->SetOwner(kTRUE);       
  
   
-  fNevents 		= new TH1F ("fNevents","Number of events",4,-0.5,3.5);
+  fNevents = new TH1F ("fNevents","Number of events",6,-0.5,5.5);
   fNevents->GetYaxis()->SetTitle("counts");
-  fNevents->GetXaxis()->SetBinLabel(1,"All");
-  fNevents->GetXaxis()->SetBinLabel(2,"With >2 Trks");
-  fNevents->GetXaxis()->SetBinLabel(3,"Vtx_{z}<10cm");
-  fNevents->GetXaxis()->SetBinLabel(4,"Vtx_{z}<10cm with Trigger");
+  fNevents->GetXaxis()->SetBinLabel(1,"nEvents Total");
+  fNevents->GetXaxis()->SetBinLabel(2,"nEvents With >2 Trks");
+  fNevents->GetXaxis()->SetBinLabel(3,"nEvents with Zvtx cut");
+  fNevents->GetXaxis()->SetBinLabel(4,"nEvents with Trigger");
+  fNevents->GetXaxis()->SetBinLabel(5,"nEvents with pileup cut");
+  fNevents->GetXaxis()->SetBinLabel(6,"nEvents with vertex cut");
 	
   
   
@@ -1001,6 +1006,7 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
   Zvertex1 =pVtx->GetZ();
  
   if (fRejectPUFromSPD && fAOD->IsPileupFromSPDInMultBins()) return; // pile-up cut
+  fNevents->Fill(4);
   //--------------------vertex selection cuts-----------------------
   AliAODVertex* vtxSPD = fAOD->GetPrimaryVertexSPD();
 	
@@ -1009,7 +1015,9 @@ void AliAnalysisTaskHFEMultiplicity::UserExec(Option_t *)
   vtxSPD->GetCovarianceMatrix(cov);
   if (TMath::Sqrt(cov[5]) > 0.25) return;
 
-  //----------V0M Multiplicity------------------
+  fNevents->Fill(5);
+  
+//----------V0M Multiplicity------------------
   AliAODVZERO *vzeroAOD = dynamic_cast<AliAODVZERO *>( dynamic_cast<AliAODEvent *>(fAOD)->GetVZEROData());
   Int_t V0AMult = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
   Int_t V0CMult = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
@@ -1556,7 +1564,7 @@ Bool_t AliAnalysisTaskHFEMultiplicity::Passtrackcuts(AliAODTrack *atrack)
       numberofmotherkink++;
     }
   }
-  if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return kFALSE; //minimum cuts- filter bit 4
+ 
   //reject kink
   Bool_t kinkmotherpass = kTRUE;
   for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
@@ -1568,6 +1576,9 @@ Bool_t AliAnalysisTaskHFEMultiplicity::Passtrackcuts(AliAODTrack *atrack)
   if(!kinkmotherpass) return kFALSE;
 
   //other cuts
+  if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return kFALSE; //minimum cuts- filter bit 4
+  if(atrack->GetTPCCrossedRows() < fCutTPCMaxCls) return kFALSE;
+  if(atrack->Chi2perNDF() >= fCutTPCchi2perNDF) return kFALSE;
   if(atrack->GetTPCNcls() < fCutTPCNCls) return kFALSE;
   if(atrack->GetITSNcls() < fCutITSNCls) return kFALSE;
   if((!(atrack->GetStatus()&AliAODTrack::kITSrefit)|| (!(atrack->GetStatus()&AliAODTrack::kTPCrefit)))) return kFALSE;
@@ -1651,6 +1662,8 @@ void AliAnalysisTaskHFEMultiplicity::SelectNonHFElectron(Int_t itrack, AliAODTra
     if(!atrackAsso) continue;
 
     if(!atrackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
+    if(atrackAsso->GetTPCCrossedRows() < fCutTPCMaxCls) continue;
+    if(atrackAsso->Chi2perNDF() >= fCutTPCchi2perNDF) continue;
     if(atrackAsso->GetTPCNcls() < fCutTPCNCls) continue;
     if(atrackAsso->GetITSNcls() < fCutITSNCls) continue;
     if((!(atrackAsso->GetStatus()&AliAODTrack::kITSrefit)|| (!(atrackAsso->GetStatus()&AliAODTrack::kTPCrefit)))) continue; //refit required

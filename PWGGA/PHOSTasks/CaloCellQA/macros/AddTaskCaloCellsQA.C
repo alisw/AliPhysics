@@ -1,5 +1,5 @@
 AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
-                                               char* fname = "CellsQA.root", char* contname = NULL)
+                                               TString fname = "CellsQA.root", TString contname = "")
 {
   // Task to add EMCAL/PHOS cellsQA/runsQA to your analysis.
   //
@@ -42,6 +42,7 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
   //   file mgr->GetCommonFileName() with container name CellsQAResults.
 
   // get manager instance
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskCaloCellsQA", "No analysis manager to connect to");
@@ -66,23 +67,22 @@ AliAnalysisTaskCaloCellsQA* AddTaskCaloCellsQA(Int_t nmods = 10, Int_t det = 0,
 
   AliAnalysisTaskCaloCellsQA* task;
 
-  if (fname && !contname) task = new AliAnalysisTaskCaloCellsQA("AliAnalysisTaskCaloCellsQA", nmods, det2, fname);
+  if ((fname.Length() != 0) && (contname.Length() == 0)) task = new AliAnalysisTaskCaloCellsQA("AliAnalysisTaskCaloCellsQA", nmods, det2, fname.Data());
   else                    task = new AliAnalysisTaskCaloCellsQA("AliAnalysisTaskCaloCellsQA", nmods, det2);
   mgr->AddTask(task);
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
   // container output into particular file
-  if (fname && contname)
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,
-                       TObjArray::Class(), AliAnalysisManager::kOutputContainer, fname));
+  if ((fname.Length() != 0) && (contname.Length() != 0))
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname.Data(),
+						     TObjArray::Class(), AliAnalysisManager::kOutputContainer, fname.Data()));
 
   // container output into common file
-  if (!fname) {
-    if (!contname) contname = "CellsQAResults";
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,
-                       TObjArray::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
+  if ((fname.Length() == 0)) {
+    if (contname.Length() == 0) contname = "CellsQAResults";
+      mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname.Data(),
+						       TObjArray::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));
   }
-
   return task;
 }

@@ -79,8 +79,8 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   void SetLowPtCut(Float_t lowPtCut) {fLowPtCut=lowPtCut;};
   Float_t GetLowPtCut() const {return fLowPtCut;};
 
-  void SetMinCombinedProbability(Int_t ptBins, Float_t *ptMin);
-  const Float_t *GetMinCombinedProbability() {return fMinCombinedProbability;}
+  void SetMinCombinedProbability(Int_t nPBins, Float_t *minProb);
+  const Float_t *GetMinCombinedProbability() {return fMinCombProb;}
 
   void SetExcludedCut(Int_t excludedCut) {fExcludedCut=excludedCut;}
   Int_t GetExcludedCut(){return fExcludedCut;}
@@ -99,11 +99,23 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Double_t GetReSignedd0(AliAODRecoDecayHF *d);
   void SetMagneticField(Double_t a){fBzkG = a;}
 
+  void SetBachelorPLimitsForPID(Int_t nPBins, Float_t *pMin);
+  const Float_t *GetBachelorPLimitsForPID() {return fBachelorPLimitsForPID;}
+
+  const Float_t GetNTPCSigmaCutForPreselection() {return fNTPCSigmaCutForPreselection;}
+  void SetGetNTPCSigmaCutForPreselection(Float_t a) {fNTPCSigmaCutForPreselection = a;}
+
   virtual void PrintAll() const;
+
+  const Int_t GetNBachelorPBins() {return fNBachelorPBins;}
+  void SetNBachelorPBins(Int_t nPbins) {fNBachelorPBins=nPbins;}
+
  protected:
 
-  void CheckPID(Int_t candPtBin, AliAODTrack *bachelor, AliAODTrack * /*v0Neg*/, AliAODTrack * /*v0Pos*/,
+  void CheckPID(AliAODTrack *bachelor, AliAODTrack * /*v0Neg*/, AliAODTrack * /*v0Pos*/,
 		Bool_t &isBachelorID1, Bool_t &isBachelorID2, Bool_t &isBachelorID4);
+
+  Int_t GetBachelorPBin(Double_t bachelorP) const;
 
  private:
 
@@ -113,13 +125,17 @@ class AliRDHFCutsLctoV0 : public AliRDHFCuts
   Float_t fHighPtCut;  /// high pT cut separation for proton identification
   Float_t fLowPtCut;   /// low pT cut separation for proton identification
   Int_t   fExcludedCut; /// cut to be excluded (-1=none)
-  Float_t *fMinCombinedProbability; //[fnPtBins] min value for combined PID probabilities
-  Double_t fBzkG; //Magnetic field for propagation
+  Float_t *fMinCombProbVsLcPt; //[fnPtBins] min value for combined PID probabilities (vs Lc pT)
+  Double_t fBzkG; /// Magnetic field for propagation
+  Int_t fNBachelorPBins; // number of bachelor p bins
+  Float_t *fMinCombProb; //[fNBachelorPBins] min value for combined PID probabilities (vs bachelor p)
+  Float_t *fBachelorPLimitsForPID;  //[fNBachelorPBins] limits for bachelor p bins
+  Float_t fNTPCSigmaCutForPreselection; /// number of TPC sigmas for PID preselection
 
   //UShort_t fV0channel;
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsLctoV0,8);  /// class for cuts on AOD reconstructed Lc->V0+bachelor
+  ClassDef(AliRDHFCutsLctoV0,9);  /// class for cuts on AOD reconstructed Lc->V0+bachelor
   /// \endcond
 };
 

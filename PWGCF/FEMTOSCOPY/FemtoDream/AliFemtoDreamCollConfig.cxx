@@ -9,13 +9,29 @@
 ClassImp(AliFemtoDreamCollConfig)
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 :TNamed()
+,fMultBinning(false)
+,fkTBinning(false)
+,fmTBinning(false)
+,fMomentumResolution(false)
+,fPhiEtaBinning(false)
+,fdPhidEtaPlots(false)
+,fMixedEventStatistics(true)
+,fGetTheControlSampel(false)
+,fMinimalBookingME(false)
+,fMinimalBookingSample(false)
+,fNumberRadii(0)
 ,fZVtxBins(0)
 ,fMultBins(0)
 ,fPDGParticleSpecies(0)
 ,fNBinsHists(0)
 ,fMinK_rel(0)
 ,fMaxK_rel(0)
+,fCentBins(0)
 ,fMixingDepth(0)
+,fSpinningDepth(0)
+,fkTCentrality(false)
+,fMCCommonAncestor(false)
+,fEst(AliFemtoDreamEvent::kSPD)
 {
   //should not be used, since we need a name to deal with root objects
 }
@@ -23,7 +39,22 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
                                                  const char *title)
 :TNamed(name,title)
+,fMultBinning(false)
+,fkTBinning(false)
+,fmTBinning(false)
+,fMomentumResolution(false)
+,fPhiEtaBinning(false)
+,fdPhidEtaPlots(false)
+,fMixedEventStatistics(true)
+,fGetTheControlSampel(false)
+,fMinimalBookingME(false)
+,fMinimalBookingSample(false)
+,fNumberRadii(0)
 ,fMixingDepth(0)
+,fSpinningDepth(0)
+,fkTCentrality(false)
+,fMCCommonAncestor(false)
+,fEst(AliFemtoDreamEvent::kSPD)
 {
   fZVtxBins=new TNtuple("ZBins","ZBins","zvtx");
   fMultBins=new TNtuple("MultBins","MultBins","mult");
@@ -31,6 +62,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
   fNBinsHists=new TNtuple("NmbBins","NmbBins","NmbBins");
   fMinK_rel=new TNtuple("MinK_rel","MinK_rel","minkRel");
   fMaxK_rel=new TNtuple("MaxK_rel","MaxK_rel","maxkRel");
+  fCentBins=new TNtuple("CentBins","CentBins","centBin");
 }
 
 AliFemtoDreamCollConfig::~AliFemtoDreamCollConfig() {
@@ -43,16 +75,16 @@ AliFemtoDreamCollConfig::~AliFemtoDreamCollConfig() {
 
 }
 
-void AliFemtoDreamCollConfig::SetZBins(std::vector<double> ZBins) {
+void AliFemtoDreamCollConfig::SetZBins(std::vector<float> ZBins) {
   //Make sure to set the entries in ascending order!
   //Todo: maybe build in a check for this
-  for (std::vector<double>::iterator it=ZBins.begin();it!=ZBins.end();++it) {
+  for (std::vector<float>::iterator it=ZBins.begin();it!=ZBins.end();++it) {
     fZVtxBins->Fill(*it);
   }
 }
-std::vector<double> AliFemtoDreamCollConfig::GetZVtxBins() {
+std::vector<float> AliFemtoDreamCollConfig::GetZVtxBins() {
   //Make sure to set the entries in ascending order!
-  std::vector<double> ZBins;
+  std::vector<float> ZBins;
   float out=0;
   fZVtxBins->SetBranchAddress("zvtx",&out);
   for (int iBins=0;iBins<fZVtxBins->GetEntries();++iBins) {
@@ -137,15 +169,15 @@ std::vector<int> AliFemtoDreamCollConfig::GetNBinsHist() {
   }
   return NBinsHist;
 }
-void AliFemtoDreamCollConfig::SetMinKRel(std::vector<double> minKRel) {
+void AliFemtoDreamCollConfig::SetMinKRel(std::vector<float> minKRel) {
   //See SetNBinsHist
-  for (std::vector<double>::iterator it=minKRel.begin();it!=minKRel.end();++it)
+  for (std::vector<float>::iterator it=minKRel.begin();it!=minKRel.end();++it)
   {
     fMinK_rel->Fill(*it);
   }
 }
-std::vector<double> AliFemtoDreamCollConfig::GetMinKRel() {
-  std::vector<double> MinKRel;
+std::vector<float> AliFemtoDreamCollConfig::GetMinKRel() {
+  std::vector<float> MinKRel;
   float out=0;
   fMinK_rel->SetBranchAddress("minkRel",&out);
   for (int iBins=0;iBins<fMinK_rel->GetEntries();++iBins) {
@@ -154,15 +186,15 @@ std::vector<double> AliFemtoDreamCollConfig::GetMinKRel() {
   }
   return MinKRel;
 }
-void AliFemtoDreamCollConfig::SetMaxKRel(std::vector<double> maxKRel) {
+void AliFemtoDreamCollConfig::SetMaxKRel(std::vector<float> maxKRel) {
   //See SetNBinsHist
-  for (std::vector<double>::iterator it=maxKRel.begin();it!=maxKRel.end();++it)
+  for (std::vector<float>::iterator it=maxKRel.begin();it!=maxKRel.end();++it)
   {
     fMaxK_rel->Fill(*it);
   }
 }
-std::vector<double> AliFemtoDreamCollConfig::GetMaxKRel() {
-  std::vector<double> MaxKRel;
+std::vector<float> AliFemtoDreamCollConfig::GetMaxKRel() {
+  std::vector<float> MaxKRel;
   float out=0;
   fMaxK_rel->SetBranchAddress("maxkRel",&out);
   for (int iBins=0;iBins<fMaxK_rel->GetEntries();++iBins) {
@@ -171,4 +203,20 @@ std::vector<double> AliFemtoDreamCollConfig::GetMaxKRel() {
   }
   return MaxKRel;
 }
-
+void AliFemtoDreamCollConfig::SetCentBins(std::vector<float> CentBins) {
+  //Set Centrality Bins for the kT Centrality Binning
+  for (std::vector<float>::iterator it=CentBins.begin();it!=CentBins.end();++it)
+  {
+    fCentBins->Fill(*it);
+  }
+}
+std::vector<float> AliFemtoDreamCollConfig::GetCentBins() {
+  std::vector<float> CentBins;
+  float out=0;
+  fCentBins->SetBranchAddress("centBin",&out);
+  for (int iBins=0;iBins<fCentBins->GetEntries();++iBins) {
+    fCentBins->GetEntry(iBins);
+    CentBins.push_back(out);
+  }
+  return CentBins;
+}

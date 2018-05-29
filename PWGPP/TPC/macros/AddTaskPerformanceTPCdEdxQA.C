@@ -83,7 +83,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   //
   AliPerformanceTask *task = new AliPerformanceTask("PerformanceQA",Form("%s%s Performance",taskName[idx].Data(), taskName2[idx2].Data()));
   if (!task) {
-    Error("AddTaskPerformanceTPCdEdxQA", Form("%s%s performance task cannot be created!",taskName[idx].Data(), taskName2[idx2].Data()));
+    Error("AddTaskPerformanceTPCdEdxQA", "%s", Form("%s%s performance task cannot be created!",taskName[idx].Data(), taskName2[idx2].Data()));
     return NULL;
   }
   task->SetUseMCInfo(bUseMCInfo);

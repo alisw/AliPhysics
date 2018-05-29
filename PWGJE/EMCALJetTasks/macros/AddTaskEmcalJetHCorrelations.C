@@ -1,4 +1,4 @@
-AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorrelations(
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorrelations(
    const char *nTracks              = "usedefault",
    const char *nCaloClusters        = "usedefault",
    // Jet options
@@ -16,14 +16,14 @@ AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorrelations(
    const Bool_t lessSparseAxes      = 0,
    const Bool_t widerTrackBin       = 0,
    // Corrections
-   const Int_t doEffCorrSW          = 0,
+   const PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations::ESingleTrackEfficiency_t singleTrackEfficiency = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations::kEffDisable,
    const Bool_t embeddingCorrection = kFALSE,
    const char * embeddingCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/embeddingCorrection.root",
    const char * embeddingCorrectionHistName = "embeddingCorrection",
    const char *suffix               = "biased"
 )
 {  
-  AliAnalysisTaskEmcalJetHCorrelations * task = AliAnalysisTaskEmcalJetHCorrelations::AddTaskEmcalJetHCorrelations(
+  PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations * task = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations::AddTaskEmcalJetHCorrelations(
                           nTracks, nCaloClusters,
                           trackBias, clusterBias,
                           nTracksMixedEvent, minNTracksMixedEvent, minNEventsMixedEvent,
@@ -31,7 +31,7 @@ AliAnalysisTaskEmcalJetHCorrelations* AddTaskEmcalJetHCorrelations(
                           trigEvent, mixEvent,
                           lessSparseAxes,
                           widerTrackBin,
-                          doEffCorrSW,
+                          singleTrackEfficiency,
                           embeddingCorrection,
                           embeddingCorrectionFilename, embeddingCorrectionHistName,
                           suffix

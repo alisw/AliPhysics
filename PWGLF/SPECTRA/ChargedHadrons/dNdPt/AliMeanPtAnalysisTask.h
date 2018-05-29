@@ -108,7 +108,6 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     void SetMaxChi2TPCConstrained(Float_t chi2TPCconstrained){fMaxChi2TPCConstrained = chi2TPCconstrained;}
     void SetMinLenghtInActiveZoneTPC(Int_t length){fMinActiveLength = length;}
     void SetGeometricalCut(Bool_t usegeometricalCut, Float_t deadzoneWidth, Float_t ncrnclgeomlength , Float_t ncrnclgeom1pt, Float_t fractionNcr, Float_t fractionNcl  ){fUseGeomCut = usegeometricalCut; fDeadZoneWidth = deadzoneWidth; fCutGeoNcrNclLenght = ncrnclgeomlength; fCutGeoNcrNclGeom1Pt = ncrnclgeom1pt; fCutGeoNcrNclFractionNcl = fractionNcr; fCutGeoNcrNclFractionNcl = fractionNcl;}
-    void SetMaxCentrality(Float_t maxCentrality){fMaxCentrality = maxCentrality;}
 
     /// Event cuts for 2013 and 2015 data
     void Set2013pA(Bool_t is2013) { fIs2013pA = is2013; }
@@ -183,7 +182,6 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     Float_t       fCutGeoNcrNclGeom1Pt;
     Float_t       fCutGeoNcrNclFractionNcr;
     Float_t       fCutGeoNcrNclFractionNcl;
-    Float_t       fMaxCentrality;
 
     TArrayD*      fBinsMult;		///< Array of bins in multiplicity
     TArrayD*      fBinsCent;		///< Array of bins in centrality

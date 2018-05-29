@@ -549,10 +549,12 @@ Bool_t AliV0ReaderV1::Notify(){
   if (  fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3a_plus ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15a3b  ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC15g1b ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2   || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c2_plus  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC12P2JJ ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3a  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3b ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16c3c  ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJ || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJLowB
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16rP1JJ  || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16sP1JJ  ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJ || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC16P1JJLowB ||
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18b8
      ){
         TObjArray *arr = fCurrentFileName.Tokenize("/");
         fPtHardBin = -1;

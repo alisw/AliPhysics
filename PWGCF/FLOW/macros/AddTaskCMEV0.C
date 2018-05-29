@@ -2,7 +2,7 @@
 #include "TSystem.h"
 class AliAnalysisTaskCMEV0;
 
- AliAnalysisTaskCMEV0* AddTaskCMEV0(Int_t gFilterBit = 768, Int_t gClusterTPC = 70, Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, 
+ void AddTaskCMEV0(Int_t gFilterBit = 768, Int_t gClusterTPC = 70, Double_t fpTLow = 0.2, Double_t fpTHigh = 10.0, 
  Double_t fEtaLow = -0.8, Double_t fEtaHigh = 0.8, TString sAnalysisFile = "AOD", TString sDataSet = "2015", TString sAnalysisType = "AUTOMATIC", 
  TString sEventTrigger = "MB", Bool_t bEventCutsQA = kFALSE, Bool_t bTrackCutsQA = kFALSE,Double_t dVertexLow = -10.,Double_t dVertexHigh = 10., 
  Bool_t bPileUp = kFALSE, Bool_t bPileUpTight = kFALSE, Float_t fPileUpSlope = 3.43, Float_t fPileUpConst = 43.0, TString sCentEstimator = "V0",
@@ -12,7 +12,8 @@ class AliAnalysisTaskCMEV0;
  Bool_t bZDCGainEq= kFALSE, TString sZDCFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015o_pass1_ZDNP_WgtTotEn_VsCentRun.root", 
  Bool_t bV0MgainCorr= kFALSE, TString sV0MFile="alien:///alice/cern.ch/user/m/mhaque/gain/Run2015_V0GainEq_RbyR_pPb_FAST.root", 
  Bool_t bFillTPCQn= kFALSE, Bool_t bFillNUAhist= kFALSE,Bool_t bFillZDCHist= kFALSE, Bool_t bSkipNestedLoop= kFALSE, 
- Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR", const char *suffix = "")
+ Int_t fSetHarmN = 1, Int_t fSetHarmM = 1, Int_t fSetPsiHarm = 2, Bool_t bUseNUAinEP = kFALSE, TString sNUAtype="NewR", Float_t hbtCut = 0.0,
+ const char *suffix = "")
 {
 
   //gSystem->Load("libPWGflowBase.so");
@@ -22,18 +23,14 @@ class AliAnalysisTaskCMEV0;
   gSystem->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/OCDB -I$ALICE_ROOT/STEER/macros -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/TRD -I$ALICE_ROOT/ZDC -I$ALICE_ROOT/macros -I$ALICE_PHYSICS -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/OADB $ALICE_PHYSICS/OADB/macros -I$ALICE_PHYSICS/PWGGA -I$ALICE_PHYSICS/PWGCF -I$ALICE_PHYSICS/PWGHF -I$ALICE_PHYSICS/TENDER -I$ALICE_PHYSICS/TENDER/Tender -I$ALICE_PHYSICS/TENDER/TenderSupplies -I$ALICE_PHYSICS/PARfiles -I$ALICE_PHYSICS/PWGCF/FLOW/macros I$ALICE_PHYSICS/PWGPP/ZDC -g ");
 
   //Fixed Track cuts: only vary for systematic check
-  Double_t dDCAxy = 2.4;
-  Double_t dDCAz  = 3.2;
-  Double_t dcentrMin=0;
-  Double_t dcentrMax=90.;
+  Float_t dDCAxy = 2.4;
+  Float_t dDCAz  = 3.2;
+
+  Float_t dcentrMin= 0.;
+  Float_t dcentrMax=90.;
 
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
-  //gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"); // Needed for LHC2015o
-  //AliMultSelectionTask *task = AddTaskMultSelection(kFALSE);            // kFALSE == User mode, kTRUE == Calibration mode
-  //task->SetSelectedTriggerClass(AliVEvent::kINT7); //kMB ?                     
-  //mgr->AddTask(task);
 
 
   TString taskFEname;
@@ -44,7 +41,7 @@ class AliAnalysisTaskCMEV0;
   taskFE->SetQAOn(bEventCutsQA);
   taskFE->SetAnalysisType(sAnalysisType); //sanalysisType = AUTOMATIC see the initializers!!
 
-  if(sDataSet=="2015"||sDataSet=="2015pPb"||sDataSet=="pPb"){
+  if(sDataSet=="2015"||sDataSet=="2015LI"||sDataSet=="2015pPb"||sDataSet=="pPb"){
     taskFE->SelectCollisionCandidates(AliVEvent::kINT7);
   }
   else{
@@ -66,7 +63,7 @@ class AliAnalysisTaskCMEV0;
     cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE); 	 
   }
 
-  if(sDataSet=="2015"||sDataSet=="2015pPb")
+  if(sDataSet=="2015"||sDataSet=="2015LI"||sDataSet=="2015pPb")
   {
    cutsEvent->SetCentralityPercentileRange(dcentrMin, dcentrMax, kTRUE);
   }
@@ -76,11 +73,11 @@ class AliAnalysisTaskCMEV0;
    cutsEvent->SetCheckPileup(kTRUE);
   }
 
-  if(sCentEstimator=="V0")
-    cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
+  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0); //default is V0
 
-  if(sCentEstimator=="TPC")
+  if(sCentEstimator=="TPC"){
     cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kTPConly);
+  }
 
   if(sDataSet == "2011"){
     cutsEvent->SetLHC11h(kTRUE);
@@ -193,7 +190,7 @@ class AliAnalysisTaskCMEV0;
 
   AliAnalysisTaskCMEV0 *taskQC_prot = new AliAnalysisTaskCMEV0(TaskZDCflow);
 
-  if(sDataSet == "2015"||sDataSet == "2015pPb")
+  if(sDataSet == "2015"||sDataSet == "2015LI"||sDataSet == "2015pPb")
   {
     taskQC_prot->SelectCollisionCandidates(AliVEvent::kINT7);
   }
@@ -222,8 +219,12 @@ class AliAnalysisTaskCMEV0;
   taskQC_prot->SetRemoveNegTrkRndm(kFALSE);
   taskQC_prot->SetApplyV0MCorr(bV0MgainCorr);
   taskQC_prot->SetPileUpCutParam(fPileUpSlope,fPileUpConst);
+  taskQC_prot->SetTrackFilterBit(gFilterBit);
+  taskQC_prot->SetHBTcutParameter(hbtCut);
 
 
+
+  
   if(bFBeffi){
     TFile* FileFBeffi  = TFile::Open(sEfficiencyFB,"READ");
     TList* FBEffiListUse = dynamic_cast<TList*>(FileFBeffi->FindObjectAny("fMcEffiHij"));
@@ -242,14 +243,15 @@ class AliAnalysisTaskCMEV0;
     if(!fNUAFile) {
       printf("\n\n *** ERROR: NUA wgt file not found! **EXIT** \n\n");
       //exit(1);
-    } 
-    TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
-    if(fListNUA){
-      taskQC_prot->SetInputListNUA(fListNUA);
     }
-    else{
-      printf("\n\n *** ERROR: NUA wgt List not found! **EXIT** \n\n");
-      //return NULL;
+    else{ 
+      TList* fListNUA = dynamic_cast<TList*>(fNUAFile->FindObjectAny("fNUA_ChPosChNeg"));
+      if(fListNUA){
+        taskQC_prot->SetInputListNUA(fListNUA);
+      }
+      else{
+        printf("\n\n *** ERROR: NUA file Exist, But fList name is wrong !! **EXIT** \n\n");
+      }
     }
   }
 
@@ -271,87 +273,40 @@ class AliAnalysisTaskCMEV0;
      }
   }
 
+  TList* fListV0MUse=NULL;
 
   if(bV0MgainCorr){
+
     TFile* fV0MFile = TFile::Open(sV0MFile,"READ");
+
      if(!fV0MFile) {
-       printf("\n\n *** ERROR: VOM Gain correction file not found! **EXIT** \n\n");
-       exit(1);
+        printf("\n\n *** ERROR: VOM Gain correction file not found! **EXIT** \n\n");
+        exit(1);
      } 
      else{
-       TList* fListV0MUse = dynamic_cast<TList*>(fV0MFile->FindObjectAny("fV0MChWgts"));
+       //TList* fListV0MUse = dynamic_cast<TList*>(fV0MFile->FindObjectAny("fV0MChWgts"));
+        fListV0MUse = dynamic_cast<TList*>(fV0MFile->FindObjectAny("fV0MChWgts"));
      }
 
      if(fListV0MUse) {
-       taskQC_prot->SetInputListforV0M(fListV0MUse);
+        taskQC_prot->SetInputListforV0M(fListV0MUse);
      }
      else{
-       printf("\n\n !!!!**** ERROR: VOM Gain List not found **EXIT**!!!\n\n");
-       taskQC_prot->SetInputListforV0M(NULL);
+        printf("\n\n !!!!**** ERROR: VOM Gain List not found **EXIT**!!!\n\n");
+        taskQC_prot->SetInputListforV0M(NULL);
        //exit(1);
      }
   }
 
 
- 
-
-
-  /*
-  if(bApplyRecent){
-     TFile* fRecentFile = TFile::Open(sRecentFile,"READ");
-     if(!fRecentFile) {
-       printf("\n\n **** ERROR: ZDC Recenter file not found! **EXIT** \n\n");
-       exit(1);
-     }
-
-     TList* fZDCRecentUse = dynamic_cast<TList*>(fRecentFile->FindObjectAny("recenterZDC"));
-  
-     if(fZDCRecentUse) {
-       taskQC_prot->SetZDCESEList(fZDCRecentUse);
-     }
-     else{
-       printf("\n\n !!!!**** ERROR:ZDC Recenter Histograms not found **EXIT**!!!\n\n");
-       exit(1);
-     }
-
-  }//if(bApplyRecent)
-*/
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  mgr->AddTask(taskQC_prot);            // connect the task to the analysis manager
+  mgr->AddTask(taskQC_prot);                      // connect the task to the analysis manager
   mgr->ConnectInput(taskQC_prot, 0, cinput);      // give AOD event to my Task..!!
   mgr->ConnectInput(taskQC_prot, 1, coutputFE);   // give FlowEvent object to my Task..!!
 
  //mgr->ConnectInput(taskQC_prot, 2,(AliAnalysisDataContainer*) mgr->GetContainers()->FindObject("ZDCEPExchangeContainer"));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -382,8 +337,8 @@ class AliAnalysisTaskCMEV0;
   //}
 
 
-  return taskQC_prot;
+  //return taskQC_prot;
 
-   printf("\n\n ***** AddTask Configured properly. *******\n\n");
+  printf("\n\n=======================  Info: AliAnalysisTaskCMEV0 Configured properly =============================\n\n");
 
 }//main ends

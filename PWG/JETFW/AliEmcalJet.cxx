@@ -774,12 +774,11 @@ const PWG::JETFW::AliEmcalParticleJetConstituent *AliEmcalJet::ParticleConstitue
 
 const PWG::JETFW::AliEmcalClusterJetConstituent *AliEmcalJet::GetLeadingClusterConstituent() const {
   if(!fClusterConstituents.size()) return nullptr;
-  PWG::JETFW::AliEmcalClusterJetConstituent * leading(nullptr);
-  for(auto c : fClusterConstituents) {
-    PWG::JETFW::AliEmcalClusterJetConstituent *tmp = &c;
-    if(!leading) leading = tmp;
+  const PWG::JETFW::AliEmcalClusterJetConstituent *leading(nullptr);
+  for(const auto &c : fClusterConstituents) {
+    if(!leading) leading = &c;
     else {
-      if(tmp->E() > leading->E()) leading = tmp;
+      if(c.E() > leading->E()) leading = &c;
     }
   }
   return leading;
@@ -787,12 +786,11 @@ const PWG::JETFW::AliEmcalClusterJetConstituent *AliEmcalJet::GetLeadingClusterC
 
 const PWG::JETFW::AliEmcalParticleJetConstituent *AliEmcalJet::GetLeadingParticleConstituent() const {
   if(!fParticleConstituents.size()) return nullptr;
-  PWG::JETFW::AliEmcalParticleJetConstituent *leading(nullptr);
-  for(auto p : fParticleConstituents) {
-    PWG::JETFW::AliEmcalParticleJetConstituent *tmp = &p;
-    if(!leading) leading = tmp;
+  const PWG::JETFW::AliEmcalParticleJetConstituent *leading(nullptr);
+  for(const auto &p : fParticleConstituents) {
+    if(!leading) leading = &p;
     else {
-      if(tmp->Pt() > leading->Pt()) leading = tmp;
+      if(p.Pt() > leading->Pt()) leading = &p;
     }
   }
   return leading;

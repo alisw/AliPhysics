@@ -25,8 +25,8 @@ TF1* GetEtaCorrection(){
   return 0;
 }
 
-  // ***** Background selection for PbPb 5TeV *****                                // TOF sigma and ITS sigma added
-Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma, double sigmaTPChigh, double TOFs, double ITSsMin, double ITSsMax){
+  // ***** Background selection for PbPb 5TeV *****                                // TOF sigma and ITS sigma added                                  // mfaggin (13-Mar-2018)
+Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigma, double sigmaTPChigh, double TOFs, double ITSsMin, double ITSsMax, int hadcontphi = 0){
   //TFile *in = TFile::Open(Form("$TRAIN_ROOT/util/hfe/%s", filename.Data()));   // GSI version 
   TFile *in = TFile::Open(Form("$ALICE_PHYSICS/PWGHF/hfe/macros/configs/PbPb/%s", filename.Data()));   // GRID version 
   gROOT->cd();
@@ -83,6 +83,12 @@ Bool_t ReadContaminationFunctions(TString filename, TF1 **functions, double sigm
         funcName += "_";
         funcName += isigTPChigh;
     }
+
+    // mfaggin, 13-Mar-2018
+    if(hadcontphi==1)   funcName+= "_phi014";
+    if(hadcontphi==2)   funcName+= "_phi14326";
+    if(hadcontphi==3)   funcName+= "_phi3262pi";
+
     funcName += "_";
     funcName += icent;
     printf("Function to be checked: %s ... ",funcName.Data());
@@ -117,8 +123,11 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
 				     Double_t *assTPCSminus=NULL, Double_t *assTPCSplus=NULL, 
 				     Bool_t useCat1Tracks = kTRUE, Bool_t useCat2Tracks = kTRUE, 
                                      Int_t weightlevelback = -1, 
-                                     Double_t assMinpT = 0.1,  // associated particle minimum pT syst. (mfaggin, 14th July 2017)
-                                     Double_t maxDCA = 3.0
+                                     Double_t assMinpT = 0.1  // associated particle minimum pT syst. (mfaggin, 14th July 2017)
+                                     //,Double_t maxDCA = 3.0
+                                     ,Bool_t hadcontsyst = kFALSE
+                                     ,Int_t phisystconsistenthadcont    // mfaggin, 13-Mar-2018
+                                     ,Bool_t RejKinks           // mfaggin, 12-Apr-2018
                                      )
 {
   Bool_t kAnalyseTaggedTracks = kFALSE;
@@ -153,7 +162,11 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
   hfecuts->SetMaxChi2perClusterITS(itsChi2PerClusters);
   hfecuts->SetEtaRange(etami,etama);
   hfecuts->SetFractionOfSharedTPCClusters(tpcClShared);
-  hfecuts->SetAcceptKinkMothers();
+  if(RejKinks){
+    hfecuts->SetRejectKinkMothers();
+    hfecuts->SetRejectKinkDaughters();
+  }
+  else  hfecuts->SetAcceptKinkMothers();
   if(isAOD) hfecuts->SetAODFilterBit(2);  
 
   if((itshitpixel==AliHFEextraCuts::kAny) || (itshitpixel==AliHFEextraCuts::kSecond))     
@@ -207,7 +220,10 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
   task->SetRemovePileUp(kFALSE);
   task->SetHFECuts(hfecuts);
   task->GetPIDQAManager()->SetHighResolutionHistos();
-  task->SetRejectKinkMother(kFALSE);
+  if(RejKinks){
+    task->SetRejectKinkMother(kTRUE);
+  }
+  else  task->SetRejectKinkMother(kFALSE);
   
   // Determine the centrality estimator
   task->SetCentralityEstimator("V0M");
@@ -244,10 +260,14 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
   Int_t sizept=(sizeof(ptbinning)/sizeof(double))-1;
   Int_t sizeeta=(sizeof(etabinning)/sizeof(double))-1;
 
+  const Int_t sizephi = 7;   // mfaggin, 01-Mar-2018
+  Double_t phibinning[sizephi+1] = {0.,0.7,1.4,2.33,TMath::Pi(),3.26,4.77,2*TMath::Pi()};  // mfaggin, 01-Mar-2018
+
   AliHFEvarManager *vm = task->GetVarManager();
   vm->AddVariable("pt", sizept, ptbinning);
   vm->AddVariable("eta", sizeeta, -0.8,0.8);
-  vm->AddVariable("phi",21, -0, 2*TMath::Pi());
+  //vm->AddVariable("phi",21, -0, 2*TMath::Pi());
+  vm->AddVariable("phi",sizephi, phibinning);   // mfaggin, 01-Mar-2018
   vm->AddVariable("charge");
   vm->AddVariable("source");
   vm->AddVariable("centrality");
@@ -363,6 +383,8 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
 
     //status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_newFunc2018Jan17.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);     // mfaggin 17-Jan-2018
     if(itshitpixel==AliHFEextraCuts::kAny)      status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_newFunc_kAny.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);
+    if(hadcontsyst)                             status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_hadcontsyst.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);
+    if(phisystconsistenthadcont)                status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_LandauExpKaonProt_systPhi.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax, phisystconsistenthadcont);
     else                                        status = ReadContaminationFunctions("hadronContamination_PbPb5TeV_LandauExpKaonProt.root", hBackground, tpcdEdxcutlow[0], paramsTPCdEdxcuthigh[4], TOFs, ITSsMin, ITSsMax);     // mfaggin 19-Jan-2018
 
 

@@ -55,15 +55,74 @@
 #include "iostream"
 // Authors: Pranjal Sarma(Date modified=29/08/16)
 
-Double_t v0mpc,dtPion,dtKaon,dtProton;
+Double_t v0mpc,v0mpc_inel,dtPion,dtKaon,dtProton;
 
 ClassImp(AliAnalysisTaskTOFMC)
 
 //________________________________________________________________________
+AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC()
+ : AliAnalysisTaskSE(),fESD(0), fOutputList(0),fPIDResponse(0),fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
+fTrigSel(AliVEvent::kINT7),fMultSelection(0x0),fMultSelection_INEL(0x0),
+fdEdxP(0),fdEdxPt(0),fdEdxPq(0),fdEdxPtq(0),fbetaAllPt(0),fbetaAllP(0),fbetaAllPtq(0),fbetaAllPq(0),
+fPtVsTPion(0),fPtVsTKaon(0),fPtVsTProton(0),
+fEventCounter(0),fEventPS(0),fEventVtx(0),fEventVtx10(0),fZVertex(0),fZVertexRec(0),fZVertexEff(0),fZVertex10(0),
+fCorrRefMultVsNch(0),fCorrRefMultVsV0M(0),fV0MPC(0),
+
+fPtV0MGenPion(0),fPtV0MTPCRecPion(0),fPtV0MTOFRecPion(0),
+fPtV0MGenPionP(0),fPtV0MTPCRecPionP(0),fPtV0MTOFRecPionP(0),
+fPtV0MGenPionM(0),fPtV0MTPCRecPionM(0),fPtV0MTOFRecPionM(0),
+
+fPtV0MGenKaon(0),fPtV0MTPCRecKaon(0),fPtV0MTOFRecKaon(0),
+fPtV0MGenKaonP(0),fPtV0MTPCRecKaonP(0),fPtV0MTOFRecKaonP(0),
+fPtV0MGenKaonM(0),fPtV0MTPCRecKaonM(0),fPtV0MTOFRecKaonM(0),
+
+fPtV0MGenProton(0),fPtV0MTPCRecProton(0),fPtV0MTOFRecProton(0),
+fPtV0MGenProtonP(0),fPtV0MTPCRecProtonP(0),fPtV0MTOFRecProtonP(0),
+fPtV0MGenProtonM(0),fPtV0MTPCRecProtonM(0),fPtV0MTOFRecProtonM(0),
+
+fPtV0MDCAxyTOFPriPion(0),fPtV0MDCAxyTOFPriPionP(0),fPtV0MDCAxyTOFPriPionM(0),
+fPtV0MDCAxyTOFWeakPion(0),fPtV0MDCAxyTOFWeakPionP(0),fPtV0MDCAxyTOFWeakPionM(0),
+fPtV0MDCAxyTOFMatPion(0),fPtV0MDCAxyTOFMatPionP(0),fPtV0MDCAxyTOFMatPionM(0),
+
+fPtV0MDCAxyTOFPriProton(0),fPtV0MDCAxyTOFPriProtonP(0),fPtV0MDCAxyTOFPriProtonM(0),
+fPtV0MDCAxyTOFWeakProton(0),fPtV0MDCAxyTOFWeakProtonP(0),fPtV0MDCAxyTOFWeakProtonM(0),
+fPtV0MDCAxyTOFMatProton(0),fPtV0MDCAxyTOFMatProtonP(0),fPtV0MDCAxyTOFMatProtonM(0),
+
+
+fPPVsMultUtils(new AliPPVsMultUtils()),
+fPtV0MGenPion_kINT7(0),fPtV0MGenPion_inel(0),fPtV0MGenPion_signal_loss(0),
+fPtV0MGenKaon_kINT7(0),fPtV0MGenKaon_inel(0),fPtV0MGenKaon_signal_loss(0),
+fPtV0MGenProton_kINT7(0),fPtV0MGenProton_inel(0),fPtV0MGenProton_signal_loss(0),
+
+
+fPtV0MTOFRecPion_nSigma(0),fPtV0MTOFRecPionP_nSigma(0),fPtV0MTOFRecPionM_nSigma(0),
+fPtV0MTOFRecKaon_nSigma(0),fPtV0MTOFRecKaonP_nSigma(0),fPtV0MTOFRecKaonM_nSigma(0),
+fPtV0MTOFRecProton_nSigma(0),fPtV0MTOFRecProtonP_nSigma(0),fPtV0MTOFRecProtonM_nSigma(0),
+
+fPtV0MTOFRecPion_nSigma_excl(0),fPtV0MTOFRecPionP_nSigma_excl(0),fPtV0MTOFRecPionM_nSigma_excl(0),
+fPtV0MTOFRecKaon_nSigma_excl(0),fPtV0MTOFRecKaonP_nSigma_excl(0),fPtV0MTOFRecKaonM_nSigma_excl(0),
+fPtV0MTOFRecProton_nSigma_excl(0),fPtV0MTOFRecProtonP_nSigma_excl(0),fPtV0MTOFRecProtonM_nSigma_excl(0),
+
+fTOFTimeV0MPtPi(0),fTOFTimeV0MPtK(0),fTOFTimeV0MPtP(0),
+fTOFTimeV0MPtMismatchDecayPi(0),fTOFTimeV0MPtMismatchDecayK(0),fTOFTimeV0MPtMismatchDecayP(0), 
+
+fEventV0MPS(0),fEventV0MVtx(0),fEventV0M(0),
+fTOFLabel(),
+
+fV0MPC_vertexcut(0),
+fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0),
+
+fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0),
+
+fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0),fMaxDCAxy(0)
+
+{}
+
+//________________________________________________________________________
 //AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *name)
-AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *name, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz)
-     : AliAnalysisTaskSE(name),fESD(0), fOutputList(0),fPIDResponse(0),fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
-fTrigSel(AliVEvent::kINT7),fMultSelection(0x0),
+AliAnalysisTaskTOFMC::AliAnalysisTaskTOFMC(const char *PeriodName, Int_t nTPC_CR, Int_t Chi2_TPCcluser, Int_t DCAz, Int_t DCAxy)
+     : AliAnalysisTaskSE("name"),fESD(0), fOutputList(0),fPIDResponse(0),fesdTrackCuts(0x0),fesdTrackCuts_no_dca(0x0),
+fTrigSel(AliVEvent::kINT7),fMultSelection(0x0),fMultSelection_INEL(0x0),
 fdEdxPt(0),fdEdxP(0),fdEdxPtq(0),fdEdxPq(0),fbetaAllPt(0),fbetaAllP(0),fbetaAllPtq(0),fbetaAllPq(0),
 fPtVsTPion(0),fPtVsTKaon(0),fPtVsTProton(0),
 fEventCounter(0),fEventPS(0),fEventVtx(0),fEventVtx10(0),fZVertex(0),fZVertexRec(0),fZVertexEff(0),fZVertex10(0),
@@ -92,10 +151,9 @@ fPtV0MDCAxyTOFMatProton(0),fPtV0MDCAxyTOFMatProtonP(0),fPtV0MDCAxyTOFMatProtonM(
 
 
 fPPVsMultUtils(new AliPPVsMultUtils()),
-fPtGenPion_kINT7(0),fPtGenPion_inel(0),fPtGenPion_signal_loss(0),
-fPtGenKaon_kINT7(0),fPtGenKaon_inel(0),fPtGenKaon_signal_loss(0),
-fPtGenProton_kINT7(0),fPtGenProton_inel(0),fPtGenProton_signal_loss(0),
-
+fPtV0MGenPion_kINT7(0),fPtV0MGenPion_inel(0),fPtV0MGenPion_signal_loss(0),
+fPtV0MGenKaon_kINT7(0),fPtV0MGenKaon_inel(0),fPtV0MGenKaon_signal_loss(0),
+fPtV0MGenProton_kINT7(0),fPtV0MGenProton_inel(0),fPtV0MGenProton_signal_loss(0),
 
 fPtV0MTOFRecPion_nSigma(0),fPtV0MTOFRecPionP_nSigma(0),fPtV0MTOFRecPionM_nSigma(0),
 fPtV0MTOFRecKaon_nSigma(0),fPtV0MTOFRecKaonP_nSigma(0),fPtV0MTOFRecKaonM_nSigma(0),
@@ -114,7 +172,9 @@ fTOFLabel(),
 fV0MPC_vertexcut(0),
 fPtTPC_AllP(0),fPtTOF_AllP(0), fPtTPC_AllN(0),fPtTOF_AllN(0),
 
-fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0)
+fTPC_CR(0), fChi2TPCcluster(0), fDCAZ(0),fDCAxy(0),
+
+fMinTPCcr(0),fMaxChi2PerTPC(0),fMaxDCAz(0),fMaxDCAxy(0)
 
 
 
@@ -297,11 +357,11 @@ fCorrRefMultVsV0M = new TH2F("fCorrRefMultVsV0M","Ref Mult vs V0M PC;V0M PC;Ref 
         fOutputList->Add(fPtV0MDCAxyTOFWeakPionP);
 	fPtV0MDCAxyTOFMatPionP = new TH3F("fPtV0MDCAxyTOFMatPionP","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFMatPionP);
-	fPtV0MDCAxyTOFPriPionM = new TH3F("fPtV0MDCAxyTOFPriPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
+	fPtV0MDCAxyTOFPriPionM = new TH3F("fPtV0MDCAxyTOFPriPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFPriPionM);
-	fPtV0MDCAxyTOFWeakPionM = new TH3F("fPtV0MDCAxyTOFWeakPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
+	fPtV0MDCAxyTOFWeakPionM = new TH3F("fPtV0MDCAxyTOFWeakPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFWeakPionM);
-	fPtV0MDCAxyTOFMatPionM = new TH3F("fPtV0MDCAxyTOFMatPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAxybins);
+	fPtV0MDCAxyTOFMatPionM = new TH3F("fPtV0MDCAxyTOFMatPionM","Pt vs V0M vs DCAxy;p_{T} (GeV/c);V0M PC;DCA_{xy}",nPtbins,Ptbins,nV0Mbins,V0Mbins,1200,DCAbin);
         fOutputList->Add(fPtV0MDCAxyTOFMatPionM);
 
 
@@ -350,26 +410,26 @@ fCorrRefMultVsV0M = new TH2F("fCorrRefMultVsV0M","Ref Mult vs V0M PC;V0M PC;Ref 
         fOutputList->Add(fPtVsTProton);
 
 
-	fPtGenPion_kINT7 = new TH1F("fPtGenPion_kINT7","Pt",nPtbins,Ptbins);
-        fOutputList->Add(fPtGenPion_kINT7);
-	fPtGenPion_inel = new TH1F("fPtGenPion_inel","Pt",nPtbins,Ptbins);
-        fOutputList->Add(fPtGenPion_inel);
-	fPtGenPion_signal_loss = new TH1F("fPtGenPion_signal_loss","Pt",nPtbins,Ptbins);
-        fOutputList->Add(fPtGenPion_signal_loss);
+	fPtV0MGenPion_kINT7 = new TH2F("fPtV0MGenPion_kINT7","Pt vs vom",nPtbins,Ptbins,nV0Mbins,V0Mbins);
+        fOutputList->Add(fPtV0MGenPion_kINT7);
+	fPtV0MGenPion_inel = new TH2F("fPtV0MGenPion_inel","Pt vs vom",nPtbins,Ptbins,nV0Mbins,V0Mbins);
+        fOutputList->Add(fPtV0MGenPion_inel);
+	fPtV0MGenPion_signal_loss = new TH2F("fPtV0MGenPion_signal_loss","Pt vs vom",nPtbins,Ptbins,nV0Mbins,V0Mbins);
+        fOutputList->Add(fPtV0MGenPion_signal_loss);
 
-	fPtGenKaon_kINT7 = new TH1F("fPtGenKaon_kINT7","Pt",nPtbins,Ptbins);
-        fOutputList->Add(fPtGenKaon_kINT7);
-	fPtGenKaon_inel = new TH1F("fPtGenKaon_inel","Pt",nPtbins,Ptbins);
-        fOutputList->Add(fPtGenKaon_inel);
-	fPtGenKaon_signal_loss = new TH1F("fPtGenKaon_signal_loss","Pt",nPtbins,Ptbins);
-        fOutputList->Add(fPtGenKaon_signal_loss);
+	fPtV0MGenKaon_kINT7 = new TH2F("fPtV0MGenKaon_kINT7","Pt vs vom",nPtbins,Ptbins,nV0Mbins,V0Mbins);
+        fOutputList->Add(fPtV0MGenKaon_kINT7);
+	fPtV0MGenKaon_inel = new TH2F("fPtV0MGenKaon_inel","Pt vs vom",nPtbins,Ptbins,nV0Mbins,V0Mbins);
+        fOutputList->Add(fPtV0MGenKaon_inel);
+	fPtV0MGenKaon_signal_loss = new TH2F("fPtV0MGenKaon_signal_loss","Pt vs vom",nPtbins,Ptbins,nV0Mbins,V0Mbins);
+        fOutputList->Add(fPtV0MGenKaon_signal_loss);
 
-	fPtGenProton_kINT7 = new TH1F("fPtGenProton_kINT7","Pt",nPtbins,Ptbins);
-        fOutputList->Add(fPtGenProton_kINT7);
-	fPtGenProton_inel = new TH1F("fPtGenProton_inel","Pt",nPtbins,Ptbins);
-        fOutputList->Add(fPtGenProton_inel);
-	fPtGenProton_signal_loss = new TH1F("fPtGenProton_signal_loss","Pt",nPtbins,Ptbins);
-        fOutputList->Add(fPtGenProton_signal_loss);
+	fPtV0MGenProton_kINT7 = new TH2F("fPtV0MGenProton_kINT7","Pt vs vom",nPtbins,Ptbins,nV0Mbins,V0Mbins);
+        fOutputList->Add(fPtV0MGenProton_kINT7);
+	fPtV0MGenProton_inel = new TH2F("fPtV0MGenProton_inel","Pt vs vom",nPtbins,Ptbins,nV0Mbins,V0Mbins);
+        fOutputList->Add(fPtV0MGenProton_inel);
+	fPtV0MGenProton_signal_loss = new TH2F("fPtV0MGenProton_signal_loss","Pt vs v0m",nPtbins,Ptbins,nV0Mbins,V0Mbins);
+        fOutputList->Add(fPtV0MGenProton_signal_loss);
 
 	
 fPtV0MTOFRecPion_nSigma = new TH2F("fPtV0MTOFRecPion_nSigma","p_{T} vs V0M of reco;p_{T} (GeV/c);V0M PC",nPtbins,Ptbins,nV0Mbins,V0Mbins);
@@ -464,17 +524,23 @@ fPtV0MTOFRecProtonM_nSigma = new TH2F("fPtV0MTOFRecProtonM_nSigma","p_{T} vs V0M
         fOutputList->Add(fDCAxy);
 
 	 //ESD track cut
-//        fesdTrackCuts =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-	fesdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+        fesdTrackCuts =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
+	fesdTrackCuts->SetMinNCrossedRowsTPC(fMinTPCcr);
+	fesdTrackCuts->SetMaxChi2PerClusterTPC(fMaxChi2PerTPC);
+	fesdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAz);
+	fesdTrackCuts->SetMaxDCAToVertexXYPtDep(fMaxDCAxy);
 
-//	fesdTrackCuts_no_dca->GetTrackCuts();
-        //fesdTrackCuts_no_dca =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);// no DCA xy cut
+	//no DCAxy cut for secondaries
+        fesdTrackCuts_no_dca =  AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);// no DCA xy cut
+	fesdTrackCuts_no_dca->SetMinNCrossedRowsTPC(fMinTPCcr);
+        fesdTrackCuts_no_dca->SetMaxChi2PerClusterTPC(fMaxChi2PerTPC);
+        fesdTrackCuts_no_dca->SetMaxDCAToVertexZ(fMaxDCAz);
 
 
 
-fPtGenPion_signal_loss->Sumw2();
-fPtGenKaon_signal_loss->Sumw2();
-fPtGenProton_signal_loss->Sumw2();
+fPtV0MGenPion_signal_loss->Sumw2();
+fPtV0MGenKaon_signal_loss->Sumw2();
+fPtV0MGenProton_signal_loss->Sumw2();
 
 
 
@@ -573,6 +639,14 @@ void AliAnalysisTaskTOFMC::UserExec(Option_t *)
 
 	Double_t INELgt0=(AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0) >= 1);
         if(INELgt0){
+
+	fMultSelection_INEL = (AliMultSelection*) fESD->FindListObject("MultSelection"); // Esto es para 13 TeV
+        if (!fMultSelection_INEL)
+           //cout<<"------- No AliMultSelection Object Found --------"<<fMultSelection<<endl;
+           AliWarning("No AliMultSelection Object Found --------");
+        else
+          v0mpc_inel = fMultSelection_INEL->GetMultiplicityPercentile("V0M",kFALSE);
+
 //	if(AliPPVsMultUtils::IsINELgtZERO(fESD)){
 	//if(fPPVsMultUtils->IsINELgtZERO(fESD)){
 	Double_t yGenPi2=0;
@@ -601,17 +675,17 @@ void AliAnalysisTaskTOFMC::UserExec(Option_t *)
 	if (TMath::Abs(eta)<0.8){
 	if (TMath::Abs(yGenPi2)<0.5){
 	if(TMath::Abs(pdgcode)==211){
-	fPtGenPion_inel->Fill(pt);
+	fPtV0MGenPion_inel->Fill(pt,v0mpc_inel);
 }//pdg
 }//y
 	if (TMath::Abs(yGenK2)<0.5){
         if(TMath::Abs(pdgcode)==321){
-	fPtGenKaon_inel->Fill(pt);
+	fPtV0MGenKaon_inel->Fill(pt,v0mpc_inel);
 }//pdg
 }//y
 	if (TMath::Abs(yGenP2)<0.5){
         if(TMath::Abs(pdgcode)==2212){
-	fPtGenProton_inel->Fill(pt);
+	fPtV0MGenProton_inel->Fill(pt,v0mpc_inel);
 }//pdg
 }//y
 }//eta cut
@@ -1086,7 +1160,7 @@ void AliAnalysisTaskTOFMC::UserExec(Option_t *)
 	if (TMath::Abs(yGenPi)<0.5){
 	if(TMath::Abs(pdgcode)==211){
 	
-	fPtGenPion_kINT7->Fill(pt);
+	fPtV0MGenPion_kINT7->Fill(pt,v0mpc);
 
         if (pt>=0.2 && pt<10. ) {
 	
@@ -1099,7 +1173,7 @@ void AliAnalysisTaskTOFMC::UserExec(Option_t *)
 	if (TMath::Abs(yGenK)<0.5){
         if(TMath::Abs(pdgcode)==321){
 
-	fPtGenKaon_kINT7->Fill(pt);
+	fPtV0MGenKaon_kINT7->Fill(pt,v0mpc);
 
         if (pt>=0.2 && pt<10. ) {
         fPtV0MGenKaon->Fill(pt,v0mpc);
@@ -1111,7 +1185,7 @@ void AliAnalysisTaskTOFMC::UserExec(Option_t *)
 	if (TMath::Abs(yGenP)<0.5){
         if(TMath::Abs(pdgcode)==2212){
 
-	fPtGenProton_kINT7->Fill(pt);
+	fPtV0MGenProton_kINT7->Fill(pt,v0mpc);
         if (pt>=0.2 && pt<10. ) {
         fPtV0MGenProton->Fill(pt,v0mpc);
         if(mcPart->Charge()>0) fPtV0MGenProtonP->Fill(pt,v0mpc);
@@ -1227,15 +1301,15 @@ void AliAnalysisTaskTOFMC::Terminate(Option_t *)
         fPtVsTKaon = dynamic_cast<TH2F*> (fOutputList->At(65));
         fPtVsTProton = dynamic_cast<TH2F*> (fOutputList->At(66));
 
-        fPtGenPion_kINT7 = dynamic_cast<TH1F*> (fOutputList->At(67));
-        fPtGenPion_inel = dynamic_cast<TH1F*> (fOutputList->At(68));
-        fPtGenPion_signal_loss = dynamic_cast<TH1F*> (fOutputList->At(69));
-        fPtGenKaon_kINT7 = dynamic_cast<TH1F*> (fOutputList->At(70));
-        fPtGenKaon_inel = dynamic_cast<TH1F*> (fOutputList->At(71));
-        fPtGenKaon_signal_loss = dynamic_cast<TH1F*> (fOutputList->At(72));
-        fPtGenProton_kINT7 = dynamic_cast<TH1F*> (fOutputList->At(73));
-        fPtGenProton_inel = dynamic_cast<TH1F*> (fOutputList->At(74));
-        fPtGenProton_signal_loss = dynamic_cast<TH1F*> (fOutputList->At(75));
+        fPtV0MGenPion_kINT7 = dynamic_cast<TH2F*> (fOutputList->At(67));
+        fPtV0MGenPion_inel = dynamic_cast<TH2F*> (fOutputList->At(68));
+        fPtV0MGenPion_signal_loss = dynamic_cast<TH2F*> (fOutputList->At(69));
+        fPtV0MGenKaon_kINT7 = dynamic_cast<TH2F*> (fOutputList->At(70));
+        fPtV0MGenKaon_inel = dynamic_cast<TH2F*> (fOutputList->At(71));
+        fPtV0MGenKaon_signal_loss = dynamic_cast<TH2F*> (fOutputList->At(72));
+        fPtV0MGenProton_kINT7 = dynamic_cast<TH2F*> (fOutputList->At(73));
+        fPtV0MGenProton_inel = dynamic_cast<TH2F*> (fOutputList->At(74));
+        fPtV0MGenProton_signal_loss = dynamic_cast<TH2F*> (fOutputList->At(75));
 	
 
 
@@ -1285,9 +1359,9 @@ void AliAnalysisTaskTOFMC::Terminate(Option_t *)
 
 
 
-fPtGenPion_signal_loss->Divide(fPtGenPion_inel,fPtGenPion_kINT7);
-fPtGenKaon_signal_loss->Divide(fPtGenKaon_inel,fPtGenKaon_kINT7);
-fPtGenProton_signal_loss->Divide(fPtGenProton_inel,fPtGenProton_kINT7);
+fPtV0MGenPion_signal_loss->Divide(fPtV0MGenPion_inel,fPtV0MGenPion_kINT7);
+fPtV0MGenKaon_signal_loss->Divide(fPtV0MGenKaon_inel,fPtV0MGenKaon_kINT7);
+fPtV0MGenProton_signal_loss->Divide(fPtV0MGenProton_inel,fPtV0MGenProton_kINT7);
 
 
 	TCanvas *c1 = new TCanvas();
@@ -1320,11 +1394,11 @@ fPtGenProton_signal_loss->Divide(fPtGenProton_inel,fPtGenProton_kINT7);
         c5->cd(3);
         fPtVsTProton->Draw();
         c5->cd(4);
-        fPtGenPion_signal_loss->Draw();
+        fPtV0MGenPion_signal_loss->Draw();
         c5->cd(5);
-        fPtGenKaon_signal_loss->Draw();
+        fPtV0MGenKaon_signal_loss->Draw();
         c5->cd(6);
-        fPtGenProton_signal_loss->Draw();
+        fPtV0MGenProton_signal_loss->Draw();
 
 	TCanvas *cR5=new TCanvas();
         cR5->Divide(3,2);
@@ -1338,7 +1412,7 @@ fPtGenProton_signal_loss->Divide(fPtGenProton_inel,fPtGenProton_kINT7);
         fTOFTimeV0MPtMismatchDecayP->Draw();
 
 
-
+/*
 TFile *f=new TFile("result/12dec/MC_final_TOF_output.root","recreate");//v0m bin different
 f->cd();
 
@@ -1460,6 +1534,8 @@ fPtTPC_AllP->Write();
 fPtTPC_AllN->Write();
 fPtTOF_AllP->Write();
 fPtTOF_AllN->Write();	
+*/
+
 }
 //-----------------------------------------------------------------
 Bool_t AliAnalysisTaskTOFMC::selectVertex2015pp(AliESDEvent *esd,

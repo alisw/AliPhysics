@@ -21,7 +21,7 @@ class AliFJWrapper;
 #include "AliClusterContainer.h"
 #include "FJ_includes.h"
 
-const Int_t nBranch = 20;
+const Int_t nBranch = 22;
 class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
  public:
   
@@ -70,24 +70,25 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ;}
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ;}
-  void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
-  void SetHolePos(Float_t poshole)                        { fHolePos = poshole;}
-  void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth;}
-  void SetSubJetAlgorithm(Int_t SubJetAlgorithm)        {fSubJetAlgorithm=SubJetAlgorithm;}
-  void SetSubJetRadius(Float_t SubJetRadius)            {fSubJetRadius=SubJetRadius;}
-  void SetSubJetMinPt(Float_t SubJetMinPt)              {fSubJetMinPt=SubJetMinPt;}
-  void SetRMatched(Double_t RMatched)                     {fRMatched=RMatched;}
+  void SetSemigoodCorrect(Int_t yesno)                      {fSemigoodCorrect=yesno;}
+  void SetHolePos(Float_t poshole)                          { fHolePos = poshole;}
+  void SetHoleWidth(Float_t holewidth)                      { fHoleWidth = holewidth;}
+  void SetSubJetAlgorithm(Int_t SubJetAlgorithm)            {fSubJetAlgorithm=SubJetAlgorithm;}
+  void SetSubJetRadius(Float_t SubJetRadius)                {fSubJetRadius=SubJetRadius;}
+  void SetSubJetMinPt(Float_t SubJetMinPt)                  {fSubJetMinPt=SubJetMinPt;}
+  void SetRMatched(Double_t RMatched)                       {fRMatched=RMatched;}
   void SetSharedFractionPtMin(Double_t SharedFractionPtMin) {fSharedFractionPtMin=SharedFractionPtMin;}
-  void SetDerivativeSubtractionOrder(Int_t Order)              {fDerivSubtrOrder = Order;}
+  void SetDerivativeSubtractionOrder(Int_t Order)           {fDerivSubtrOrder = Order;}
   void SetFullTree(Bool_t FullTree)                         {fFullTree = FullTree;}
   void SetBetaSD(Double_t BetaSD)                           {fBeta_SD = BetaSD;}
   void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
   void SetDoSoftDrop(Bool_t SoftDrop)                       {fDoSoftDrop = SoftDrop;}
   
-  void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
-  void SetRhoName(const char *r)                              {fRhoName = r;}
-  void SetSoftDropRecluster(Int_t n)                          {fReclusterAlgo = n;} //0 = CA, 1 = anti-kt, 2 = kt
-  void SetDoSubDetMatching(Bool_t b)                          {fSubMatching = b;}
+  void SetNsubUnNormMeasure( Bool_t NsubMeasure)            {fNsubMeasure= NsubMeasure;}
+  void SetRhoName(const char *r)                            {fRhoName = r;}
+  void SetSoftDropRecluster(Int_t n)                        {fReclusterAlgo = n;} //0 = CA, 1 = anti-kt, 2 = kt
+  void SetDoSubDetMatching(Bool_t b)                        {fSubMatching = b;}
+  void SetMinSubjetPt(Bool_t b, Float_t f)                  {bMinSubjetPt = b; fMinSubjetPt = f;}
   
 
  protected:
@@ -105,6 +106,7 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   Double_t                            GetFractionSharedPt_SubMatching(const AliEmcalJet *jet, AliParticleContainer *cont2 = 0x0) const;
   Double_t                            LeadingTrackPt(fastjet::PseudoJet jet);
   static Bool_t                       SameParticle(const AliVParticle* part1, const AliVParticle* part2, Double_t dist = 1.e-4);
+  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo, Bool_t bTrue);
 
 
   
@@ -144,6 +146,9 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TString                             fRhoName;
   AliRhoParameter                     *fRhoParam;
   Bool_t                              fSubMatching;
+  Bool_t                              bMinSubjetPt;
+  Float_t                             fMinSubjetPt;
+    
 
   Bool_t                              fNsubMeasure;
   Int_t                               fReclusterAlgo;
@@ -182,8 +187,10 @@ class AliAnalysisTaskRecoilJetYield : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhJetCounter_True;
   TH1F                                *fhNumberOfJetTracks_Det;
   TH1F                                *fhNumberOfJetTracks_True;
-  TH2F                                *fh2PtRatio; 
-    
+  TH2F                                *fh2PtRatio;
+  THnSparse                           *fhLundIterative;
+  THnSparse                           *fhLundIterativeTrue;
+
   
 
  private:

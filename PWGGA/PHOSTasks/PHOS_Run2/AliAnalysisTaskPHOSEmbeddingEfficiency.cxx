@@ -117,15 +117,15 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserCreateOutputObjects()
   const Int_t Npar = 3;
   const TString parname[Npar] = {"Pi0","Eta","Gamma"};
   for(Int_t ipar=0;ipar<Npar;ipar++){
-    TH1F *h1Pt = new TH1F(Form("hGenEmbedded%sPt",parname[ipar].Data()        ),Form("generated %s pT",parname[ipar].Data()        ),NpTgg-1,pTgg);
+    TH1F *h1Pt = new TH1F(Form("hGenEmbedded%sPt",parname[ipar].Data()        ),Form("generated %s pT;p_{T} (GeV/c)",parname[ipar].Data()        ),NpTgg-1,pTgg);
     h1Pt->Sumw2();
     fOutputContainer->Add(h1Pt);
 
-    TH2F *h2EtaPhi = new TH2F(Form("hGenEmbedded%sEtaPhi",parname[ipar].Data()),Form("generated %s eta vs phi",parname[ipar].Data()),200,-1,1,60,0,TMath::TwoPi());
+    TH2F *h2EtaPhi = new TH2F(Form("hGenEmbedded%sEtaPhi",parname[ipar].Data()),Form("generated %s y vs phi;#phi (rad);rapidity",parname[ipar].Data()),200,-1,1,60,0,TMath::TwoPi());
     h2EtaPhi->Sumw2();
     fOutputContainer->Add(h2EtaPhi);
 
-    TH2F *h2EtaPt = new TH2F(Form("hGenEmbedded%sEtaPt",parname[ipar].Data()  ),Form("generated %s eta vs pT",parname[ipar].Data() ),200,-1,1,NpTgg-1,pTgg);
+    TH2F *h2EtaPt = new TH2F(Form("hGenEmbedded%sEtaPt",parname[ipar].Data()  ),Form("generated %s y vs pT;rapidity;p_{T} (GeV/c)",parname[ipar].Data() ),200,-1,1,NpTgg-1,pTgg);
     h2EtaPt->Sumw2();
     fOutputContainer->Add(h2EtaPt);
 

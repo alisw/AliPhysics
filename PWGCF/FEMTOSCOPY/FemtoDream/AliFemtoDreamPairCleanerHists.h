@@ -25,7 +25,7 @@ class AliFemtoDreamPairCleanerHists {
   TH1F **fTrackDecays;
   TH1F **fDecayDecays;
   TList *fOutput;
-  ClassDef(AliFemtoDreamPairCleanerHists,1)
+  ClassDef(AliFemtoDreamPairCleanerHists,2)
 };
 
 #endif /* ALIFEMTODREAMPAIRCLEANERHISTS_H_ */

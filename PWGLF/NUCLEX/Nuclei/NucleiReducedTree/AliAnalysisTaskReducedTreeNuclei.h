@@ -1,24 +1,19 @@
 #ifndef AliAnalysisTaskReducedTreeNuclei_cxx
 #define AliAnalysisTaskReducedTreeNuclei_cxx
 
-
+#ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
-#include "AliMultSelection.h"
-#include "AliAnalysisTask.h"
-#include "AliPIDResponse.h"
-#include "AliAODVertex.h"
-#include "AliAODEvent.h"
-#include "AliAODTrack.h"
+#endif
+
+class AliMultSelection;
+class AliPIDResponse;
+class AliAODEvent;
+class AliAODTrack;
+class AliAnalysisUtils;
+class TList;
+class TTree;
+
 #include "AliEventCuts.h"
-#include "AliAnalysisUtils.h"
-#include "TObjArray.h"
-#include "TVector2.h"
-#include "TVector3.h"
-#include "AliAODv0.h"
-#include "TList.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TH2F.h"
 
 class AliAnalysisTaskReducedTreeNuclei : public AliAnalysisTaskSE {
    
@@ -45,17 +40,17 @@ private:
    AliEventCuts   fAODeventCuts;// Event cuts
    AliAnalysisUtils *fUtils;//!
    
-   TList          *fOutputList;//!
    TList          *fQAList;//!
-   // Event histogram
-   TH1F *histoEventSelection; //!
+   // Event Selection Tree
+   TTree *TreeEventSelection;//!
    //Reduced Trees
    TTree *reducedTree_Helium;//!
    TTree *reducedTree_HyperTriton;//!
    
    //Variables (Helium)
    Int_t magFieldSign;//
-   
+
+   Int_t SelectionStep;
    //check for more estimators, e.g. SPD, TPC track multiplicity ...
    Double_t multPercentile_V0M;//
    Double_t multPercentile_V0A;//
@@ -307,6 +302,6 @@ private:
    AliAnalysisTaskReducedTreeNuclei(const AliAnalysisTaskReducedTreeNuclei&);
    AliAnalysisTaskReducedTreeNuclei& operator=(const AliAnalysisTaskReducedTreeNuclei&);
    
-   ClassDef(AliAnalysisTaskReducedTreeNuclei, 1);
+   ClassDef(AliAnalysisTaskReducedTreeNuclei, 2);
 };
 #endif

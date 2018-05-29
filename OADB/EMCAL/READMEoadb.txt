@@ -7,14 +7,30 @@ If you want to have the OADB files locally, you can download them from lxplus vi
 rsync -av --delete cern_user@lxplus.cern.ch:/eos/experiment/alice/analysis-data/ /path/to/my/local/oadb/
 ~~~
 
-In order for local tests to work properly, please add the OADB_PATH global variable to your bashrc or similar.
+In order for local tests to work properly, please add the ALICE_DATA global variable to your bashrc or similar.
 ~~~{.sh}
-OADB_PATH=/path/to/my/local/oadb/OADB
+ALICE_DATA=/path/to/my/local/oadb
 ~~~
-It is crucial, that the additional /OADB is added to the global variable OADB_PATH. This is necessary as the downloaded directory from EOS contains the subfolder OADB. OADB_PATH must point to this subfolder in order to be able to properly load the files.
+
+Furthermore, the "export" command should be used in addition to adding the path to the bashrc. This will make the variable available to all processes:
+~~~{.sh}
+export ALICE_DATA=/path/to/my/local/oadb
+~~~
 
 In addition, a short history of changes to the files in EOS will be listed here:
 
 - 20180213: Moved all files to EOS.
+- 20180220: Update of EMCALBadChannels.root with LHC17o BC maps
+- 20180305: Update of EMCALBadChannels.root with LHC17m BC maps
+- 20180308: Update of EMCALBadChannels.root with LHC17ghjk BC maps
+- 20180308: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC17k,m,h,o,p,q time calibrations
+- 20180311: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC17o,p,q time calibrations
+- 20180320: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC17j time calibrations
+- 20180403: Update of EMCALBadChannels.root with LHC16f BC maps
+- 20180406: !! Fix for AliOADBContainer deletion problem uploaded, all files recreated for this !!
+- 20180406: Update of EMCALBadChannels.root with new maps for LHC17i,l and additional bad channels for LHC16h,i,j,l,q,t
+- 20180423: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC17i time calibrations
+- 20180504: Update of EMCALBadChannels.root with additional bad channels for LHC17n
+- 20180524: Update of EMCALBadChannels.root with new maps for LHC17r
 
 */

@@ -65,15 +65,19 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop() :
   fCentMax(10),
   fJetRadius(0.4),
   fSharedFractionPtMin(0.5),
+  fReclusteringAlgo(0),
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
   fhDetJetPt_Matched(0x0),
   fTreeRecursive_Det(0),
-  fTreeRecursive_True(0)
+  fTreeRecursive_True(0),
+  fAddMedScat(kFALSE),
+  fAddMedScatPtFrac(1),
+  fAddMedScatN(100)
 
 {
-  for(Int_t i=0;i<4;i++){
+  for(Int_t i=0;i<5;i++){
     fShapesVar_Det[i]=0;
     fShapesVar_True[i]=0;
   }
@@ -94,15 +98,19 @@ AliAnalysisTaskRecursiveSoftDrop::AliAnalysisTaskRecursiveSoftDrop(const char *n
   fCentMax(10),
   fJetRadius(0.4),
   fSharedFractionPtMin(0.5),
+  fReclusteringAlgo(0),
   fhJetPt(0x0),
   fhJetPhi(0x0),
   fhJetEta(0x0),
   fhDetJetPt_Matched(0x0),
   fTreeRecursive_Det(0),
-  fTreeRecursive_True(0)
+  fTreeRecursive_True(0),
+  fAddMedScat(kFALSE),
+  fAddMedScatPtFrac(1),
+  fAddMedScatN(100)
 {
   // Standard constructor.
-  for(Int_t i=0;i<4;i++){
+  for(Int_t i=0;i<5;i++){
     fShapesVar_Det[i]=0;
     fShapesVar_True[i]=0;
   }
@@ -134,7 +142,7 @@ AliAnalysisTaskRecursiveSoftDrop::~AliAnalysisTaskRecursiveSoftDrop()
   const char* nameoutput2 = GetOutputSlot(3)->GetContainer()->GetName();
   fTreeRecursive_True = new TTree(nameoutput2, nameoutput2);
 
-  const Int_t intBranches = 4;
+  const Int_t intBranches = 5;
 
   std::vector<TString> fShapesVarNames_Det(intBranches), fShapesVarNames_True(intBranches);
 
@@ -143,16 +151,17 @@ AliAnalysisTaskRecursiveSoftDrop::~AliAnalysisTaskRecursiveSoftDrop()
   fShapesVarNames_Det[1] = "Z";
   fShapesVarNames_Det[2] = "Theta";
   fShapesVarNames_Det[3] = "N";
+  fShapesVarNames_Det[4] = "ParentPt";
   fShapesVarNames_True[0] = "Pt_Truth";
   fShapesVarNames_True[1] = "Z_Truth";
   fShapesVarNames_True[2] = "Theta_Truth";
   fShapesVarNames_True[3] = "N_Truth";
+  fShapesVarNames_True[4] = "ParentPt_Truth";
 
   for(Int_t ivar=0; ivar < intBranches; ivar++){
     cout<<"looping over variables"<<endl;
     fTreeRecursive_Det->Branch(fShapesVarNames_Det[ivar].Data(), &fShapesVar_Det[ivar], Form("%s/D", fShapesVarNames_Det[ivar].Data()));
     fTreeRecursive_True->Branch(fShapesVarNames_True[ivar].Data(), &fShapesVar_True[ivar], Form("%s/D", fShapesVarNames_True[ivar].Data()));
-
   }
   
   fhJetPt= new TH1F("fhJetPt", "Jet Pt",1500,-0.5,149.5 );   
@@ -207,7 +216,7 @@ Bool_t AliAnalysisTaskRecursiveSoftDrop::FillHistograms()
 	  else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
 	  fhJetPhi->Fill(JetPhi);
 	  fhJetEta->Fill(Jet1->Eta());
-	  RecursiveParents(Jet1,JetCont,1,kFALSE); //Third argument = reclustering algorithm (0=Antikt,1=CA,2=kt)
+	  RecursiveParents(Jet1,JetCont,kFALSE);
 	}
       }
     }
@@ -270,8 +279,8 @@ Bool_t AliAnalysisTaskRecursiveSoftDrop::FillHistograms()
       else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
       fhJetPhi->Fill(JetPhi);
       fhJetEta->Fill(JetHybridS->Eta());
-      RecursiveParents(JetHybridS,JetContHybridS,1,kFALSE); //Third argument = reclustering algorithm (0=Antikt,1=CA,2=kt)
-      RecursiveParents(JetPythTrue,JetContPythTrue,1,kTRUE); //Third argument = reclustering algorithm (0=Antikt,1=CA,2=kt)
+      RecursiveParents(JetHybridS,JetContHybridS,kFALSE); 
+      RecursiveParents(JetPythTrue,JetContPythTrue,kTRUE); 
      
       
     
@@ -279,11 +288,50 @@ Bool_t AliAnalysisTaskRecursiveSoftDrop::FillHistograms()
   }
 
 
+  if(fJetType == kTrueDet){            
+    AliEmcalJet *JetPythDet = NULL; //Detector Level Pythia Jet
+    AliEmcalJet *JetPythTrue = NULL; //Particle Level Pyhtia Jet                                                                                
+    AliJetContainer *JetContPythDet= GetJetContainer(0); //Jet Container for Detector Level Pyhtia Jets 
+    AliJetContainer *JetContPythTrue= GetJetContainer(1); //Jet Container for Particle Level Pythia Jets
+
+  
+
+    Bool_t JetsMatched = kFALSE;
+    Double_t JetPtThreshold;
+    JetContPythDet->ResetCurrentID();
+    JetContPythTrue->ResetCurrentID();
+
+    while((JetPythDet = JetContPythDet->GetNextAcceptJet())){ //Get next detector level jet
+      if (fJetShapeSub==kConstSub) JetPtThreshold=JetPythDet->Pt();
+      else JetPtThreshold=JetPythDet->Pt()-(GetRhoVal(0)*JetPythDet->Area());
+      if ( (!JetPythDet) || (JetPtThreshold<fPtThreshold)) continue; //check pT is above threshold
+      Int_t JetNumber=-1;
+      if((JetPythTrue = JetPythDet->ClosestJet())){
+	JetsMatched=kTRUE;
+      }
+      else continue;
+    
+     
+      fhJetPt->Fill(JetPythDet->Pt());    
+      Double_t JetPhi=JetPythDet->Phi();
+      if(JetPhi < -1*TMath::Pi()) JetPhi += (2*TMath::Pi());
+      else if (JetPhi > TMath::Pi()) JetPhi -= (2*TMath::Pi());
+      fhJetPhi->Fill(JetPhi);
+      fhJetEta->Fill(JetPythDet->Eta());
+      RecursiveParents(JetPythDet,JetContPythDet,kFALSE); 
+      RecursiveParents(JetPythTrue,JetContPythTrue,kTRUE); 
+     
+      
+    
+     }
+  }
+
+  
   return kTRUE;
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo,Bool_t bTruth){
+void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont,Bool_t bTruth){
   std::vector<fastjet::PseudoJet>  fInputVectors;
   fInputVectors.clear();
   fastjet::PseudoJet  PseudoTracks;
@@ -298,17 +346,29 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
       fInputVectors.push_back(PseudoTracks);
      
     }
+  if(fAddMedScat){
+    for(int i = 0; i < fAddMedScatN; i++){
+      TRandom3 rand1(0),rand2(0); //set range +- jet R
+      Double_t randN1 = 0.4*0.4*rand1.Rndm();
+      Double_t randN2 = 2*TMath::Pi()*rand2.Rndm();
+      Double_t phi_rand = (fJet->Phi())+TMath::Sqrt(randN1)*TMath::Sin(randN2);
+      Double_t eta_rand = (fJet->Eta())+TMath::Sqrt(randN1)*TMath::Cos(randN2);
+      Double_t fAddMedScatPt = (fAddMedScatPtFrac*fJet->Pt())/fAddMedScatN;
+      PseudoTracks.reset(fAddMedScatPt*TMath::Cos(phi_rand),fAddMedScatPt*TMath::Sin(phi_rand),fAddMedScatPt/TMath::Tan(eta_rand),fAddMedScatPt);
+      fInputVectors.push_back(PseudoTracks);
+    }
+  }
 
 
 
   fastjet::JetAlgorithm jetalgo(fastjet::antikt_algorithm);
-  if(ReclusterAlgo==0){ xflagalgo=0.5;
+  if(fReclusteringAlgo==0){ xflagalgo=0.5;
     jetalgo=fastjet::kt_algorithm ;}
       
-  if(ReclusterAlgo==1){ xflagalgo=1.5;
+  if(fReclusteringAlgo==1){ xflagalgo=1.5;
     jetalgo=fastjet::cambridge_algorithm;
   }
-  if(ReclusterAlgo==2){ xflagalgo=2.5;
+  if(fReclusteringAlgo==2){ xflagalgo=2.5;
     jetalgo=fastjet::antikt_algorithm;
   } 
   
@@ -336,6 +396,7 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
 	fShapesVar_True[1]=z;
 	fShapesVar_True[2]=delta_R;
 	fShapesVar_True[3]=n;
+	fShapesVar_True[4]=jj.perp();
 	fTreeRecursive_True->Fill();
       }
       else {
@@ -343,6 +404,7 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
 	fShapesVar_Det[1]=z;
 	fShapesVar_Det[2]=delta_R;
 	fShapesVar_Det[3]=n;
+	fShapesVar_Det[4]=jj.perp();
 	fTreeRecursive_Det->Fill();
       }
       jj=j1;
@@ -431,6 +493,11 @@ AliAnalysisTaskRecursiveSoftDrop* AliAnalysisTaskRecursiveSoftDrop::AddTaskRecur
     wagonName2 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_Det",njetsHybridS,trigClass.Data(),tag.Data());
     wagonName3 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_True",njetsHybridS,trigClass.Data(),tag.Data());
   }
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kTrueDet){
+    wagonName1 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%s",njetsDet,trigClass.Data(),tag.Data());
+    wagonName2 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_Det",njetsDet,trigClass.Data(),tag.Data());
+    wagonName3 = Form("AliAnalysisTaskRecursiveSoftDrop_%s_TC%s%sTree_True",njetsDet,trigClass.Data(),tag.Data());
+  }
   //Configure jet tagger task
   AliAnalysisTaskRecursiveSoftDrop *task = new AliAnalysisTaskRecursiveSoftDrop(wagonName1.Data());
 
@@ -444,8 +511,14 @@ AliAnalysisTaskRecursiveSoftDrop* AliAnalysisTaskRecursiveSoftDrop::AddTaskRecur
   AliParticleContainer *trackContHybridS=0x0;
   AliParticleContainer *trackContHybridUs=0x0;
 
-  trackContData = task->AddParticleContainer(ntracksData);
+  if(fjetType!=AliAnalysisTaskRecursiveSoftDrop::kTrueDet) trackContData = task->AddParticleContainer(ntracksData);
   if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kEmb){
+    trackContDet = task->AddParticleContainer(ntracksDet);
+    trackContTrue = task->AddMCParticleContainer(ntracksTrue);
+    trackContHybridS = task->AddParticleContainer(ntracksHybridS);
+    trackContHybridUs = task->AddParticleContainer(ntracksHybridUs);
+  }
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kTrueDet){
     trackContDet = task->AddParticleContainer(ntracksDet);
     trackContTrue = task->AddMCParticleContainer(ntracksTrue);
   }
@@ -486,6 +559,27 @@ AliAnalysisTaskRecursiveSoftDrop* AliAnalysisTaskRecursiveSoftDrop::AddTaskRecur
       JetContHybridUs->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
       if(jetShapeSub==AliAnalysisTaskRecursiveSoftDrop::kConstSub) JetContHybridUs->SetAreaEmcCut(-2);
     }
+    JetContDet = task->AddJetContainer(njetsDet,strType,R); //Det
+    if(JetContDet) {
+      JetContDet->SetRhoName(nrhoBase);
+      JetContDet->ConnectParticleContainer(trackContDet);
+      JetContDet->SetPercAreaCut(0.6);
+      JetContDet->SetJetRadius(R);
+      JetContDet->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
+      if(jetShapeSub==AliAnalysisTaskRecursiveSoftDrop::kConstSub) JetContDet->SetAreaEmcCut(-2);
+    }
+    JetContTrue = task->AddJetContainer(njetsTrue,strType,R); //True
+    if(JetContTrue) {
+      JetContTrue->SetRhoName(nrhoBase);
+      JetContTrue->ConnectParticleContainer(trackContTrue);
+      JetContTrue->SetPercAreaCut(0.6);
+      JetContTrue->SetJetRadius(R);
+      JetContTrue->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
+      if(jetShapeSub==AliAnalysisTaskRecursiveSoftDrop::kConstSub) JetContTrue->SetAreaEmcCut(-2);
+    }
+  }
+
+  if(fjetType==AliAnalysisTaskRecursiveSoftDrop::kTrueDet){
     JetContDet = task->AddJetContainer(njetsDet,strType,R); //Det
     if(JetContDet) {
       JetContDet->SetRhoName(nrhoBase);

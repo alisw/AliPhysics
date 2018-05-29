@@ -102,7 +102,10 @@ fPtDistrib(0),
 fhPtWeights(0x0),
 fUseptWeights(0),
 fScalingFactPtWeight(1.0),
-fOutput(0)
+fOutput(0),
+fParticleSpecies(-2),
+fUsePhysicalPrimary(kFALSE),
+fUseGeneratedPt(kFALSE)
 {
     //
     // Default constructor
@@ -151,7 +154,10 @@ fPtDistrib(0),
 fhPtWeights(0x0),
 fUseptWeights(0),
 fScalingFactPtWeight(1.0),
-fOutput(0)
+fOutput(0),
+fParticleSpecies(-2),
+fUsePhysicalPrimary(kFALSE),
+fUseGeneratedPt(kFALSE)
 {
     //
     // Default constructor
@@ -540,13 +546,11 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
     Double_t dzRec[2], covdzRec[3], dzRecSkip[2], covdzRecSkip[3], dzTrue[2], covdzTrue[3];
     Double_t dz[2], covdz[3];
     Double_t pt;
-    Int_t bin;
     Int_t nClsTotTPC=0;
     Bool_t haskITSrefit=kFALSE;
     Bool_t haskTPCrefit=kFALSE;
     Int_t charge=0;
     Double_t phi=0.;
-    Double_t theta=0.;
     Double_t eta=0.;
     Double_t pointrphi[4];
     Double_t pullrphi[4];
@@ -602,21 +606,6 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             }
         }
         
-        pt = vtrack->Pt();
-        Double_t weight=pt<fhPtWeights->GetBinLowEdge(fhPtWeights->GetNbinsX()+1) ? fhPtWeights->GetBinContent(fhPtWeights->FindBin(pt)) : 1.;
-        if (pt > 1000.) continue;
-        if( ((Double_t)pt*10000.)-((Long_t)(pt*10000.))>weight) continue;
-        
-        pullrphi[1]=pt;
-        pullrphi1[1]=pt;
-        pointrphi[1]=pt;
-        pointrphi1[1]=pt;
-        pointrphi2[1]=pt;
-        pullz[1]=pt;
-        pullz1[1]=pt;
-        pointz[1]=pt;
-        pointz1[1]=pt;
-        pointz2[1]=pt;
         
         eta = vtrack->Eta();
         if(eta<-0.8 || eta>0.8) continue;
@@ -662,6 +651,10 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         if(magField<0.) {pointrphi1[3]=0.; pointz1[3]=0.; pullrphi1[3]=0.; pullz1[3]=0.;}
         else if(magField>0.) {pointrphi1[3]=1.; pointz1[3]=1.; pullrphi1[3]=1.; pullz1[3]=1.;}
         
+        pt = vtrack->Pt();
+        Double_t weight=pt<fhPtWeights->GetBinLowEdge(fhPtWeights->GetNbinsX()+1) ? fhPtWeights->GetBinContent(fhPtWeights->FindBin(pt)) : 1.;
+        if (pt > 1000.) continue;
+        if( ((Double_t)pt*10000.)-((Long_t)(pt*10000.))>weight) continue;
         
         //MC
         if (fReadMC){
@@ -669,18 +662,37 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
             if(trkLabel<0) continue;
             if(fIsAOD && mcArray){
                 AODpart = (AliAODMCParticle*)mcArray->At(trkLabel);
-                if(!AODpart) printf("NOPART\n");
+                if(!AODpart) continue;
                 pdgCode = TMath::Abs(AODpart->GetPdgCode());
+                if(fUsePhysicalPrimary) {
+                    if(!AODpart->IsPhysicalPrimary()) {continue;}
+                }
+                if(fUseGeneratedPt) pt=AODpart->Pt();
             }
             if(!fIsAOD && mcEvent) {
-                part = ((AliMCParticle*)mcEvent->GetTrack(trkLabel))->Particle();
-                pdgCode = TMath::Abs(part->GetPdgCode());
+	      AliMCParticle* mcPart = (AliMCParticle*)mcEvent->GetTrack(trkLabel);
+	      if(!mcPart) continue;
+	      part = mcPart->Particle();
+	      if(!part) continue;
+	      pdgCode = TMath::Abs(part->GetPdgCode());
+	      if(fUsePhysicalPrimary) {if(!mcPart->IsPhysicalPrimary()) continue;}
+	      if(fUseGeneratedPt) pt=part->Pt();
             }
             //pdgCode = TMath::Abs(part->GetPdgCode());
             //printf("pdgCode===%d\n", pdgCode);
             if(fSelectedPdg>0 && pdgCode!=fSelectedPdg) continue;
         }
         
+        pullrphi[1]=pt;
+        pullrphi1[1]=pt;
+        pointrphi[1]=pt;
+        pointrphi1[1]=pt;
+        pointrphi2[1]=pt;
+        pullz[1]=pt;
+        pullz1[1]=pt;
+        pointz[1]=pt;
+        pointz1[1]=pt;
+        pointz2[1]=pt;
         
 	if (fParticleSpecies>-1) {
 	  AliPID::EParticleType type=AliPID::EParticleType(fParticleSpecies);
@@ -725,7 +737,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         // Select primary particle if MC event (for ESD event), Rprod < 1 micron
         if(fReadMC){
             if(fIsAOD){
-                if((AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+
+                if(AODpart &&
+		   (AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+
                    (AODpart->Yv()-vtxTrue[1])*(AODpart->Yv()-vtxTrue[1])
                    > 0.0001*0.0001) {
                     delete vtxVSkip; vtxVSkip=NULL;
@@ -733,7 +746,8 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
                 }
             }
             else{
-                if((part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
+                if(part &&
+		   (part->Vx()-vtxTrue[0])*(part->Vx()-vtxTrue[0])+
                    (part->Vy()-vtxTrue[1])*(part->Vy()-vtxTrue[1])
                    > 0.0001*0.0001) {
                     delete vtxVSkip; vtxVSkip=NULL;
@@ -979,10 +993,10 @@ Bool_t AliAnalysisTaskSEImpParResSparse::IsSelectedCentrality(AliESDEvent *esd) 
     //
     
     const AliMultiplicity *alimult = esd->GetMultiplicity();
-    Int_t ntrklets=1;
+    //    Int_t ntrklets=1;
     Int_t nclsSPDouter=0;
     if(alimult) {
-        ntrklets = alimult->GetNumberOfTracklets();
+      //        ntrklets = alimult->GetNumberOfTracklets();
         nclsSPDouter = alimult->GetNumberOfITSClusters(1);
     }
     

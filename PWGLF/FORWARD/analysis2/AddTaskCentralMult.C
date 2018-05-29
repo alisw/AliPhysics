@@ -58,10 +58,6 @@ AddTaskCentralMult(Bool_t      mc=false,
   // --- Prime the corrections ---------------------------------------
   if(sys>0 && sNN > 0) {
     cm.Init(runNo, sys, sNN, field);
-    if (!cm.HasSecondaryCorrection()) 
-      Fatal("AddTaskCentralMult", "No secondary correction defined!");
-    if (!cm.HasAcceptanceCorrection()) 
-      Fatal("AddTaskCentralMult", "No acceptance correction defined!");
   }
 
   // --- Make the output container and connect it --------------------

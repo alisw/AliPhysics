@@ -29,7 +29,6 @@
 #include "TRefArray.h"
 #include "TVector.h"
 #include "AliESDCaloCluster.h"
-#include "AliEMCALRecoUtils.h"
 #include "AliEMCALGeometry.h"
 #include "stdio.h"
 #include "TGeoManager.h"

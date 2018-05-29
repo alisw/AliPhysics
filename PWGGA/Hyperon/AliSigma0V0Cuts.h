@@ -63,7 +63,7 @@ class AliSigma0V0Cuts : public TObject {
   }
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
-  void SetIsRun1(bool isRun1) { fIsRun1 = isRun1; }
+  void SetPileUpRejection(bool isPileUpRej) { fPileUpRejection = isPileUpRej; }
   void SetExtendedQA(bool isExtended) { fIsExtendedQA = isExtended; }
   void SetV0OnFlyStatus(bool onFly) { fV0OnFly = onFly; }
   void SetV0PtMin(float ptMin) { fV0PtMin = ptMin; }
@@ -76,6 +76,10 @@ class AliSigma0V0Cuts : public TObject {
     fUsePID = true;
   }
   void SetTPCclusterMin(short nTPCcluster) { fTPCclusterMin = nTPCcluster; }
+  void SetTPCcrossedRowsMin(short nCrossed) { fTPCnCrossedRowsMin = nCrossed; }
+  void SetTPCRatioFindable(float ratio) { fTPCratioFindable = ratio; }
+  void SetTPCnClsFindable(short nClsFind) { fTPCfindableMin = nClsFind; }
+  void SetTPCnSharedMax(short nSharedMax) { fTPCnSharedMax = nSharedMax; }
   void SetEtaMax(float etaMax) { fEtaMax = etaMax; }
   void SetDaughterDCAMax(float ddcaMax) { fDaughterDCAMax = ddcaMax; }
   void SetDaughterDCAtoPV(float dca2pv) { fDaughterDCAPV = dca2pv; }
@@ -128,7 +132,7 @@ class AliSigma0V0Cuts : public TObject {
   short fPID;
 
   bool fIsMC;
-  bool fIsRun1;
+  bool fPileUpRejection;
   bool fIsExtendedQA;
   bool fV0OnFly;
   bool fArmenterosCut;
@@ -141,6 +145,10 @@ class AliSigma0V0Cuts : public TObject {
   float fPIDnSigma;
   float fEtaMax;
   float fTPCclusterMin;
+  short fTPCnCrossedRowsMin;
+  float	fTPCratioFindable;
+  short fTPCfindableMin;
+  short	fTPCnSharedMax;
   float fDaughterDCAMax;
   float fDaughterDCAPV;
   float fK0RejectionLow;
@@ -239,6 +247,12 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistV0SingleParticleEtaAfter[2];       //
   TH1F *fHistV0SingleParticleNclsTPCBefore[2];  //
   TH1F *fHistV0SingleParticleNclsTPCAfter[2];   //
+  TH1F *fHistV0SingleParticleNclsTPCFindableBefore[2];  //
+  TH1F *fHistV0SingleParticleNclsTPCFindableAfter[2];   //
+  TH1F *fHistV0SingleParticleNclsTPCRatioFindableBefore[2];  //
+  TH1F *fHistV0SingleParticleNclsTPCRatioFindableAfter[2];   //
+  TH1F *fHistV0SingleParticleNcrossedTPCBefore[2];  //
+  TH1F *fHistV0SingleParticleNcrossedTPCAfter[2];   //
   TH1F *fHistV0SingleParticleNclsTPCShared[2];       //
   TH2F *fHistV0SingleParticleNclsTPCSharedTiming[2]; //
   TH1F *fHistV0SingleParticleNclsITSShared[2];       //
@@ -253,6 +267,12 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistAntiV0SingleParticleEtaAfter[2];       //
   TH1F *fHistAntiV0SingleParticleNclsTPCBefore[2];  //
   TH1F *fHistAntiV0SingleParticleNclsTPCAfter[2];   //
+  TH1F *fHistAntiV0SingleParticleNclsTPCFindableBefore[2];  //
+  TH1F *fHistAntiV0SingleParticleNclsTPCFindableAfter[2];   //
+  TH1F *fHistAntiV0SingleParticleNclsTPCRatioFindableBefore[2];  //
+  TH1F *fHistAntiV0SingleParticleNclsTPCRatioFindableAfter[2];   //
+  TH1F *fHistAntiV0SingleParticleNcrossedTPCBefore[2];  //
+  TH1F *fHistAntiV0SingleParticleNcrossedTPCAfter[2];   //
   TH1F *fHistAntiV0SingleParticleNclsTPCShared[2];       //
   TH2F *fHistAntiV0SingleParticleNclsTPCSharedTiming[2]; //
   TH1F *fHistAntiV0SingleParticleNclsITSShared[2];       //
@@ -262,7 +282,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistAntiV0SingleParticlePID[2];            //
 
  private:
-  ClassDef(AliSigma0V0Cuts, 1)
+  ClassDef(AliSigma0V0Cuts, 2)
 };
 
 #endif

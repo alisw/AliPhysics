@@ -43,6 +43,8 @@ class AliEmcalJet;
 class AliParticleContainer;
 class AliTrackContainer;
 
+#define EXPERIMENTAL_JETCONSTITUENTS
+
 namespace EmcalTriggerJets {
 
 /**
@@ -137,21 +139,12 @@ struct AliJetStructureParameters {
 };
 
 struct AliJetTreeGlobalParameters {
-  Double_t fJetRadius;
-  Double_t fEventWeight;
-  Double_t fRhoParamters[4];
+  Double_t fJetRadius;                        ///< jet radius
+  Double_t fEventWeight;                      ///< event weight (downscale factor)
+  Int_t    fTriggerClusterIndex;              ///< Index of the trigger cluster (0 - CENT, 1 - CENTNOTRD)
+  Double_t fRhoParamters[4];                  ///< Rho parameters
 
   void LinkJetTreeBranches(TTree *jettree, bool fillRho);
-};
-
-struct Triggerinfo {
-  std::string fTriggerClass;
-  std::string fBunchCrossing;
-  std::string fPastFutureProtection;
-  std::string fTriggerCluster;
-
-  std::string ExpandClassName() const; 
-  bool IsTriggerClass(const std::string &triggerclass) const;
 };
 
 /**
@@ -214,7 +207,7 @@ public:
   void SetUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
   void SetUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
 
-	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, const char *name);
+	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *name);
 
 protected:
 	virtual void UserCreateOutputObjects();
@@ -235,10 +228,9 @@ protected:
 	Double_t MakePtD(const AliEmcalJet &jet, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
 
   void FillLuminosity();
-
+  
 	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
 
-  std::vector<Triggerinfo> DecodeTriggerString(const std::string &triggerstring) const;
   std::string MatchTrigger(const std::string &triggerclass) const;
   bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
 

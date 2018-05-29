@@ -6,12 +6,14 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTaskCaloHFEpp* AddTaslCaloHFEpp(TString name = "name",
+AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		                 TString dataname = "dataname",
-		                 Bool_t flagEG1,
-		                 Bool_t flagEG2,
-		                 Bool_t SetFlagClsTypeEMC,
-		                 Bool_t SetFlagClsTypeDCAL)
+		                 Bool_t flagEG1 = kFALSE,
+		                 Bool_t flagEG2 = kFALSE,
+		                 Bool_t flagDG1 = kFALSE,
+		                 Bool_t flagDG2 = kFALSE,
+		                 Bool_t SetFlagClsTypeEMC = kFALSE,
+		                 Bool_t SetFlagClsTypeDCAL = kFALSE)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -32,6 +34,8 @@ AliAnalysisTaskCaloHFEpp* AddTaslCaloHFEpp(TString name = "name",
     AliAnalysisTaskCaloHFEpp* task = new AliAnalysisTaskCaloHFEpp(name.Data());   
     task -> SetEG1(flagEG1);
     task -> SetEG2(flagEG2);
+    task -> SetDG1(flagDG1);
+    task -> SetDG2(flagDG2);
     task -> SetfFlagClsTypeEMC(SetFlagClsTypeEMC);
     task -> SetfFlagClsTypeDCAL(SetFlagClsTypeDCAL);
     if(!task) return 0x0;

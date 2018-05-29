@@ -1100,10 +1100,10 @@ void AliSigma0EventContainer::TrackCleaner(
   for (auto &LambdaCandidate : V0Container) {
     if (!LambdaCandidate.GetIsUse()) continue;
     for (const auto ProtonCandidate : ParticleContainer) {
-      if (LambdaCandidate.GetTrackLabelNeg() ==
-              ProtonCandidate.GetTrackLabel() ||
-          LambdaCandidate.GetTrackLabelPos() ==
-              ProtonCandidate.GetTrackLabel()) {
+      if ((LambdaCandidate.GetTrackLabelNeg() ==
+              ProtonCandidate.GetTrackLabel()) ||
+          (LambdaCandidate.GetTrackLabelPos() ==
+              ProtonCandidate.GetTrackLabel())) {
         LambdaCandidate.SetUse(false);
         ++nShared;
       }
@@ -1117,10 +1117,10 @@ void AliSigma0EventContainer::TrackCleaner(
   for (auto &LambdaCandidate : AntiV0Container) {
     if (!LambdaCandidate.GetIsUse()) continue;
     for (const auto ProtonCandidate : ParticleContainer) {
-      if (LambdaCandidate.GetTrackLabelNeg() ==
-              ProtonCandidate.GetTrackLabel() ||
-          LambdaCandidate.GetTrackLabelPos() ==
-              ProtonCandidate.GetTrackLabel()) {
+      if ((LambdaCandidate.GetTrackLabelNeg() ==
+              ProtonCandidate.GetTrackLabel()) ||
+          (LambdaCandidate.GetTrackLabelPos() ==
+              ProtonCandidate.GetTrackLabel())) {
         LambdaCandidate.SetUse(false);
         ++nShared;
       }
@@ -1134,10 +1134,10 @@ void AliSigma0EventContainer::TrackCleaner(
   for (auto &LambdaCandidate : V0Container) {
     if (!LambdaCandidate.GetIsUse()) continue;
     for (const auto ProtonCandidate : AntiParticleContainer) {
-      if (LambdaCandidate.GetTrackLabelNeg() ==
-              ProtonCandidate.GetTrackLabel() ||
-          LambdaCandidate.GetTrackLabelPos() ==
-              ProtonCandidate.GetTrackLabel()) {
+      if ((LambdaCandidate.GetTrackLabelNeg() ==
+              ProtonCandidate.GetTrackLabel()) ||
+          (LambdaCandidate.GetTrackLabelPos() ==
+              ProtonCandidate.GetTrackLabel())) {
         LambdaCandidate.SetUse(false);
         ++nShared;
       }
@@ -1151,10 +1151,10 @@ void AliSigma0EventContainer::TrackCleaner(
   for (auto &LambdaCandidate : AntiV0Container) {
     if (!LambdaCandidate.GetIsUse()) continue;
     for (const auto ProtonCandidate : AntiParticleContainer) {
-      if (LambdaCandidate.GetTrackLabelNeg() ==
-              ProtonCandidate.GetTrackLabel() ||
-          LambdaCandidate.GetTrackLabelPos() ==
-              ProtonCandidate.GetTrackLabel()) {
+      if ((LambdaCandidate.GetTrackLabelNeg() ==
+              ProtonCandidate.GetTrackLabel()) ||
+          (LambdaCandidate.GetTrackLabelPos() ==
+              ProtonCandidate.GetTrackLabel())) {
         LambdaCandidate.SetUse(false);
         ++nShared;
       }
@@ -1171,14 +1171,14 @@ void AliSigma0EventContainer::TrackCleaner(
     for (auto jLambdaCandidate = iLambdaCandidate + 1;
          jLambdaCandidate != V0Container.end(); ++jLambdaCandidate) {
       if (!jLambdaCandidate->GetIsUse()) continue;
-      if (iLambdaCandidate->GetTrackLabelNeg() ==
-              jLambdaCandidate->GetTrackLabelNeg() ||
-          iLambdaCandidate->GetTrackLabelPos() ==
-              jLambdaCandidate->GetTrackLabelPos() ||
-          iLambdaCandidate->GetTrackLabelPos() ==
-              jLambdaCandidate->GetTrackLabelNeg() ||
-          iLambdaCandidate->GetTrackLabelNeg() ==
-              jLambdaCandidate->GetTrackLabelPos()) {
+      if ((iLambdaCandidate->GetTrackLabelNeg() ==
+              jLambdaCandidate->GetTrackLabelNeg()) ||
+          (iLambdaCandidate->GetTrackLabelPos() ==
+              jLambdaCandidate->GetTrackLabelPos()) ||
+          (iLambdaCandidate->GetTrackLabelPos() ==
+              jLambdaCandidate->GetTrackLabelNeg()) ||
+          (iLambdaCandidate->GetTrackLabelNeg() ==
+              jLambdaCandidate->GetTrackLabelPos())) {
         ++nShared;
         if (iLambdaCandidate->GetCosineAlpha() >=
             jLambdaCandidate->GetCosineAlpha()) {
@@ -1203,14 +1203,14 @@ void AliSigma0EventContainer::TrackCleaner(
     for (auto jLambdaCandidate = iLambdaCandidate + 1;
          jLambdaCandidate != AntiV0Container.end(); ++jLambdaCandidate) {
       if (!jLambdaCandidate->GetIsUse()) continue;
-      if (iLambdaCandidate->GetTrackLabelNeg() ==
-              jLambdaCandidate->GetTrackLabelNeg() ||
-          iLambdaCandidate->GetTrackLabelPos() ==
-              jLambdaCandidate->GetTrackLabelPos() ||
-          iLambdaCandidate->GetTrackLabelPos() ==
-              jLambdaCandidate->GetTrackLabelNeg() ||
-          iLambdaCandidate->GetTrackLabelNeg() ==
-              jLambdaCandidate->GetTrackLabelPos()) {
+      if ((iLambdaCandidate->GetTrackLabelNeg() ==
+              jLambdaCandidate->GetTrackLabelNeg()) ||
+          (iLambdaCandidate->GetTrackLabelPos() ==
+              jLambdaCandidate->GetTrackLabelPos()) ||
+          (iLambdaCandidate->GetTrackLabelPos() ==
+              jLambdaCandidate->GetTrackLabelNeg()) ||
+          (iLambdaCandidate->GetTrackLabelNeg() ==
+              jLambdaCandidate->GetTrackLabelPos())) {
         ++nShared;
         if (iLambdaCandidate->GetCosineAlpha() >=
             jLambdaCandidate->GetCosineAlpha()) {

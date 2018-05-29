@@ -9,6 +9,8 @@
 #include "AliAODHeader.h"
 #include "AliAODVertex.h"
 #include "AliAODVZERO.h"
+#include "AliMultSelection.h"
+
 ClassImp(AliFemtoDreamEvent)
 AliFemtoDreamEvent::AliFemtoDreamEvent()
 :fUtils(new AliAnalysisUtils())
@@ -21,17 +23,20 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
 ,fRefMult08(0)
 ,fV0AMult(0)
 ,fV0CMult(0)
+,fV0MCentrality(0)
 ,fnContrib(0)
 ,fPassAliEvtSelection(false)
 ,fisPileUp(false)
 ,fHasVertex(false)
 ,fHasMagField(false)
 ,fisSelected(false)
+,fEstimator(AliFemtoDreamEvent::kRef08)
 {
 
 }
 
-AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA)
+AliFemtoDreamEvent::AliFemtoDreamEvent(
+    bool mvPileUp,bool EvtCutQA, UInt_t trigger)
 :fUtils(new AliAnalysisUtils())
 ,fEvtCuts(new AliEventCuts())
 ,fxVtx(0)
@@ -41,21 +46,31 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA)
 ,fRefMult08(0)
 ,fV0AMult(0)
 ,fV0CMult(0)
+,fV0MCentrality(0)
 ,fnContrib(0)
 ,fPassAliEvtSelection(false)
 ,fisPileUp(false)
 ,fHasVertex(false)
 ,fHasMagField(false)
 ,fisSelected(false)
+,fEstimator(kRef08)
 {
-//  if (mvPileUp) {
-//    //For pPb this is necessary according to DPG Processing status news
-//    //(week 29 April - 5 May 2017)
-//    fUtils->SetUseMVPlpSelection(true);
-//  } else {
-//    //Following the analysis in pp Run1 of O.Arnold
-//    fUtils->SetMinPlpContribSPD(3);
-//  }
+  if (mvPileUp) {
+    //For pPb this is necessary according to DPG Processing status news
+    //(week 29 April - 5 May 2017)
+    fUtils->SetUseMVPlpSelection(true);
+  } else {
+    //Following the analysis in pp Run1 of O.Arnold
+    fUtils->SetMinPlpContribSPD(3);
+  }
+
+  if(trigger != AliVEvent::kINT7) {
+    fEvtCuts->SetManualMode();
+    fEvtCuts->SetupRun2pp();
+    std::cout << "Setting up Track Cuts correspondingly for pp trigger: " <<
+        trigger << std::endl;
+    fEvtCuts->fTriggerMask = trigger;
+  }
   if (EvtCutQA) {
     fEvtCutList=new TList();
     fEvtCutList->SetName("AliEventCuts");
@@ -99,11 +114,11 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fxVtx=vtx->GetX();
   this->fyVtx=vtx->GetY();
   this->fzVtx=vtx->GetZ();
-//  if (fUtils->IsPileUpEvent(evt)) {
-//    this->fisPileUp=true;
-//  } else {
-//    this->fisPileUp=false;
-//  }
+  if (fUtils->IsPileUpEvent(evt)) {
+    this->fisPileUp=true;
+  } else {
+    this->fisPileUp=false;
+  }
   if (fEvtCuts->AcceptEvent(evt)) {
     this->fPassAliEvtSelection=true;
   } else {
@@ -113,6 +128,15 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fV0AMult=vZERO->GetMTotV0A();
   this->fV0CMult=vZERO->GetMTotV0C();
   this->fRefMult08=header->GetRefMultiplicityComb08();
+  float lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection = (AliMultSelection * ) evt->FindListObject("MultSelection");
+  if( !MultSelection) {
+    //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+    AliWarning("AliMultSelection object not found!");
+  }else{
+    fV0MCentrality= MultSelection->GetMultiplicityPercentile("V0M");
+  }
   return;
 }
 
@@ -121,11 +145,37 @@ int AliFemtoDreamEvent::CalculateITSMultiplicity(AliAODEvent *evt) {
   int nTr=tracklets->GetNumberOfTracklets();
   int count=0;
   for(int iTr=0; iTr<nTr; iTr++){
-    double theta=tracklets->GetTheta(iTr);
-    double eta=-TMath::Log(TMath::Tan(theta/2.));
+    float theta=tracklets->GetTheta(iTr);
+    float eta=-TMath::Log(TMath::Tan(theta/2.));
     if(TMath::Abs(eta) < 0.8){
       count++;
     }
   }
   return count;
+}
+
+int AliFemtoDreamEvent::GetMultiplicity() {
+  int mult=0;
+  switch(fEstimator) {
+    case AliFemtoDreamEvent::kRef08:
+      mult=GetRefMult08();
+      break;
+    case AliFemtoDreamEvent::kSPD:
+      mult=GetSPDMult();
+      break;
+    case AliFemtoDreamEvent::kV0M:
+      mult=GetV0MMult();
+      break;
+    case AliFemtoDreamEvent::kV0A:
+      mult=GetV0AMult();
+      break;
+    case AliFemtoDreamEvent::kV0C:
+      mult=GetV0CMult();
+      break;
+    default:
+      AliFatal("Type Not implemented");
+      break;
+  }
+
+  return mult;
 }

@@ -67,7 +67,8 @@ void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /
                                                            Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
                                                            Float_t & excessFracEta,         Float_t & excessFracPhi         ) const
 {
-  Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  Float_t coneA = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  if ( fDistMinToTrigger > 0 ) coneA -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
   //Careful here if EMCal limits changed .. 2010 (4 SM) to 2011-12 (10 SM), for the moment consider 100 deg in phi
   Float_t emcEtaSize = 0.7*2; // TO FIX
@@ -107,8 +108,9 @@ void AliIsolationCut::CalculateUEBandTrackNormalization  (AliCaloTrackReader * r
                                                           Float_t & phiUEptsumTrackNorm,  Float_t & etaUEptsumTrackNorm,
                                                           Float_t & excessFracEta,        Float_t & excessFracPhi          ) const
 {
-  Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
-
+  Float_t coneA = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  if ( fDistMinToTrigger > 0 ) coneA -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
+  
   // Get the cut used for the TPC tracks in the reader, +-0.8, +-0.9 ...
   // Only valid in simple fidutial cut case and if the cut is applied, careful!
   Float_t tpcEtaSize = reader->GetFiducialCut()->GetCTSFidCutMaxEtaArray()->At(0) -

@@ -19,6 +19,8 @@ inputObjects:
             branchName: "S500A100W5ClustersBranch"
         ClusterContainerS500A100W55:
             branchName: "S500A100W55ClustersBranch"
+        ClusterContainerS500A100W6:
+            branchName: "S500A100W6ClustersBranch"
         ClusterContainerS400A100:
             branchName: "S400A100ClustersBranch"
         ClusterContainerS600A100:
@@ -107,6 +109,13 @@ Clusterizer_S500A100W55:
     w0: 5.5
     clusterContainersNames:
         - ClusterContainerS500A100W55
+Clusterizer_S500A100W6:
+    enabled: true
+    cellE: 0.1
+    seedE: 0.5
+    w0: 6.0
+    clusterContainersNames:
+        - ClusterContainerS500A100W6
 Clusterizer_S400A100:
     enabled: true
     cellE: 0.1
@@ -169,6 +178,10 @@ ClusterNonLinearity_S500A100W55:
     enabled: true
     clusterContainersNames:
         - ClusterContainerS500A100W55
+ClusterNonLinearity_S500A100W6:
+    enabled: true
+    clusterContainersNames:
+        - ClusterContainerS500A100W6
 ClusterNonLinearity_S400A100:
     enabled: true
     clusterContainersNames:

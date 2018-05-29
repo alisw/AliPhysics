@@ -108,7 +108,10 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00200008400000002200000000";
+ 
+  TString cutnumberPhoton = "00000008400000000100000000";
+  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0   )
+    cutnumberPhoton         = "00000088400000000100000000";
   TString cutnumberEvent = "00000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
@@ -252,11 +255,28 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //New standard cut Gamma Pi0 Eta pp 13TeV, V0AND
   } else if (trainConfig == 44){
     cuts.AddCut("00010113", "00200009266300008854404000", "0152101500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 45){
+    cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 46){
+    cuts.AddCut("00010113", "00a00009267300008254404000", "0152103500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 47){
+    cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 48){
+    cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 49){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000"); // J. Luehder AOD Compare
+
   //----------------------------- configuration for run 2 analysis 5 TeV ----------------------------------------------------
   } else if (trainConfig == 50){
     cuts.AddCut("00010113", "00200009227300008250404000", "0152101500000000"); //old standard cut pp 5 TeV VAND
   } else if (trainConfig == 51){
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
+  } else if (trainConfig == 52){
+    cuts.AddCut("00010113", "00a00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
+  } else if (trainConfig == 53){
+    cuts.AddCut("00010113", "00b00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
+  } else if (trainConfig == 54){
+    cuts.AddCut("00010113", "00c00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
 
 
   } else {

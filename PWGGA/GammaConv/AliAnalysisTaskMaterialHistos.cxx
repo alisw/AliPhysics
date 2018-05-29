@@ -708,7 +708,9 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 
       } else {
         //cout << "same mother" << endl;
-        Int_t pdgCode;
+	pdgCodePos = posDaughter->GetPdgCode();
+        pdgCodeNeg = negDaughter->GetPdgCode();
+ 	Int_t pdgCode;
         pdgCode = gamma->GetMCParticle(fMCEvent)->GetPdgCode();
         if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11)
             fKind = 2; // combinatorics from hadronic decays

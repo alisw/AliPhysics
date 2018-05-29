@@ -13,7 +13,7 @@ ClassImp(AliPP13SelectionWeightsMC);
 ClassImp(AliPP13SelectionWeightsSPMC);
 
 //________________________________________________________________
-Double_t AliPP13SelectionWeightsTOF::Weight(Double_t energy) const
+Double_t AliPP13SelectionWeightsTOF::TofEfficiency(Double_t energy) const
 {
     // TOF efficiency was parametrized as photon energy
     //
@@ -33,11 +33,17 @@ Double_t AliPP13SelectionWeightsMC::Nonlinearity(Double_t x) const
 
 
 //________________________________________________________________
-Double_t AliPP13SelectionWeightsSPMC::Weight(Double_t pT) const
+Double_t AliPP13SelectionWeightsSPMC::Weights(Double_t pT, const EventFlags & eflags) const
 {
-	Double_t w = pT * pT * fW0 / 2. / TMath::Pi();
+    // NB: Don't use origin pT
+    (void) pT;
+    AliAODMCParticle * origin = (AliAODMCParticle*)eflags.fMcParticles->At(0);//0 is always generated particle by AliGenBox.
+    Double_t opT = origin->Pt();
+
+    // NB: Try generating the yield instead of invariant yield
+	Double_t w = /* opT * */ opT * fW0 / 2. / TMath::Pi();
 	Double_t fraction = (fW2 - 1.) * (fW2 - 2.) / (fW2 * fW1 * (fW2 * fW1 + fW4 * (fW2 - 2.)));
-	Double_t power = TMath::Power(1. + (TMath::Sqrt(pT * pT + fW3 * fW3) - fW4) / (fW2 * fW1), -fW2);
+	Double_t power = TMath::Power(1. + (TMath::Sqrt(opT * opT + fW3 * fW3) - fW4) / (fW2 * fW1), -fW2);
 	return w * fraction * power;
 }
 
@@ -47,16 +53,28 @@ AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SinglePi0()
     AliPP13SelectionWeightsSPMC & ws = * new AliPP13SelectionWeightsSPMC();
 
     // Weights 3
-    ws.fW0 = 0.014875782846110793;
-    ws.fW1 = 0.28727403800708634;
-    ws.fW2 = 9.9198075195331;
+    // ws.fW0 = 0.014875782846110793;
+    // ws.fW1 = 0.28727403800708634;
+    // ws.fW2 = 9.9198075195331;
+
+
+    // Debug
+    ws.fW0 = 21.339890553914014;
+    ws.fW1 = 0.08359755308503322;
+    ws.fW2 = 7.334946541612603;
+
+    // Weights 0 (new efficiency)
+    // ws.fW0 = 0.10325998438001027;
+    // ws.fW1 = 0.1710556728057399;
+    // ws.fW2 = 8.613628140871766;
 
     ws.fW3 = 0.135;
     ws.fW4 = 0.135;
 
+
+
     // Nonlinearity Naive estimation
     //
-    
     // ws.fNonA = -0.022934923767457753;
     // ws.fNonSigma = 1.4188237289034245;
     // ws.fNonGlobal = 1.0579663356860527;

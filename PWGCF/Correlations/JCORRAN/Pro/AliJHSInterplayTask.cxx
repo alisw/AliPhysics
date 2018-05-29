@@ -620,6 +620,7 @@ bool AliJHSInterplayTask::IsGoodEvent(AliVEvent *event) {
 		}
 		return goodRecVertex;
 	}
+	return kTRUE;
 	//---------------------------------
 }
 

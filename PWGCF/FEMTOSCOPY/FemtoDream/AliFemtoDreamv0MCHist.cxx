@@ -50,11 +50,11 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist()
 }
 
 AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(
-    int MassNBins,double MassMin,double MassMax,bool contribSplitting,
+    int MassNBins,float MassMin,float MassMax,bool contribSplitting,
     bool CPADist)
 {
-  double ptmin=0.;
-  double ptmax=5.;
+  float ptmin=0.;
+  float ptmax=5.;
   int ptBins=50;
 
   fMCList=new TList();
@@ -323,7 +323,7 @@ AliFemtoDreamv0MCHist::~AliFemtoDreamv0MCHist() {
 }
 
 void AliFemtoDreamv0MCHist::FillMCCPAPtBins(
-    AliFemtoDreamBasePart::PartOrigin org,double pT,double cpa) {
+    AliFemtoDreamBasePart::PartOrigin org,float pT,float cpa) {
   if (org==AliFemtoDreamBasePart::kPhysPrimary) {
     fMCPrimCPAPtBins->Fill(pT,cpa);
   } else if(org == AliFemtoDreamBasePart::kWeak) {

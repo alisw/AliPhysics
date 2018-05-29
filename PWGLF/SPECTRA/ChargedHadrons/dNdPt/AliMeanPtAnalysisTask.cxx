@@ -76,7 +76,6 @@ AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char* name) : AliAnalysisTask
   fCutGeoNcrNclGeom1Pt(1.5),
   fCutGeoNcrNclFractionNcr(0.85),
   fCutGeoNcrNclFractionNcl(0.7),
-  fMaxCentrality(100),
   //Arrays for Binning
   fBinsMult(0),
   fBinsCent(0),
@@ -133,13 +132,12 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
 
 
   // Control histogram to check the effect of event cuts
-  fEventCount = new TH1F("fEventCount","Number of events after cuts",5,0.5,5.5);
+  fEventCount = new TH1F("fEventCount","Number of events after cuts",4,0.5,4.5);
   fEventCount->GetYaxis()->SetTitle("#it{N}_{events}");
   fEventCount->GetXaxis()->SetBinLabel(1, "all");
   fEventCount->GetXaxis()->SetBinLabel(2, "triggered");
   fEventCount->GetXaxis()->SetBinLabel(3, "Vertex ok, no Pileup");
-  fEventCount->GetXaxis()->SetBinLabel(4, "accepted Centraliy");
-  fEventCount->GetXaxis()->SetBinLabel(5, "without #it{N}_{ch} overflow");
+  fEventCount->GetXaxis()->SetBinLabel(4, "without #it{N}_{ch} overflow");
 
   /// Event histogram Nacc:cent
   Int_t nBinsEvent[2]={fBinsMult->GetSize()-1, fBinsCent->GetSize()-1};
@@ -163,7 +161,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
   fHistTrack -> SetBinEdges(1,fBinsEta->GetArray());
   fHistTrack -> SetBinEdges(2,fBinsMult->GetArray());
   fHistTrack -> SetBinEdges(3,fBinsCent->GetArray());
-  fHistTrack->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
+  fHistTrack->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fHistTrack->GetAxis(1)->SetTitle("#eta");
   fHistTrack->GetAxis(2)->SetTitle("#it{N}_{acc}");
   fHistTrack->GetAxis(3)->SetTitle("Centrality (%)");
@@ -189,11 +187,18 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCResponseMat->GetAxis(1)->SetTitle("#it{N}_{ch}");
     fHistMCResponseMat->Sumw2();
 
-    fHistMCResponseMatTracks = new THnSparseF("fHistMCResponseMatTracks","Response Matrix for primary particles",2,nBinsRespMat, minMultRespMat, maxMultRespMat);
+    /// Track histogram with multiplicity correlation pt:multacc:multgen
+    Int_t nBinsMultTrack[3]={fBinsMult->GetSize()-1,fBinsMult->GetSize()-1, fBinsPt->GetSize()-1};
+    Double_t minMultTrack[3]={fBinsMult->GetAt(0),fBinsMult->GetAt(0), fBinsPt->GetAt(0)};
+    Double_t maxMultTrack[3]={fBinsMult->GetAt(fBinsMult->GetSize()-1),fBinsMult->GetAt(fBinsMult->GetSize()-1), fBinsPt->GetAt(fBinsPt->GetSize()-1)};
+
+    fHistMCResponseMatTracks = new THnSparseF("fHistMCResponseMatTracks","Response Matrix for primary particles",3,nBinsMultTrack, minMultTrack, maxMultTrack);
     fHistMCResponseMatTracks->SetBinEdges(0,fBinsMult->GetArray());
     fHistMCResponseMatTracks->SetBinEdges(1,fBinsMult->GetArray());
+    fHistMCResponseMatTracks->SetBinEdges(2,fBinsPt->GetArray());
     fHistMCResponseMatTracks->GetAxis(0)->SetTitle("#it{N}_{acc}");
     fHistMCResponseMatTracks->GetAxis(1)->SetTitle("#it{N}_{ch}");
+    fHistMCResponseMatTracks->GetAxis(2)->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fHistMCResponseMatTracks->Sumw2();
 
 
@@ -205,8 +210,8 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCPtRes = new THnF("fHistMCPtRes","#it{p}_{T} resolution", 2, nBinsMCPtPt,minBinsMCPtPt,maxBinsMCPtPt);
     fHistMCPtRes -> SetBinEdges(0,fBinsPt->GetArray());
     fHistMCPtRes -> SetBinEdges(1,fBinsPt->GetArray());
-    fHistMCPtRes->GetAxis(0)->SetTitle("#it{p}_{T}^{track} (GeV/c)");
-    fHistMCPtRes->GetAxis(1)->SetTitle("#it{p}_{T}^{particle} (GeV/c)");
+    fHistMCPtRes->GetAxis(0)->SetTitle("#it{p}_{T}^{track} (GeV/#it{c})");
+    fHistMCPtRes->GetAxis(1)->SetTitle("#it{p}_{T}^{particle} (GeV/#it{c})");
 
     /// Eta Resolution Histogram
     Int_t nBinsMCEtaEta[2]={fBinsEta->GetSize()-1, fBinsEta->GetSize()-1};
@@ -228,7 +233,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCRecTrack -> SetBinEdges(0,fBinsPt->GetArray());
     fHistMCRecTrack -> SetBinEdges(1,fBinsEta->GetArray());
     fHistMCRecTrack -> SetBinEdges(2,fBinsCent->GetArray());
-    fHistMCRecTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/c)");
+    fHistMCRecTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/#it{c})");
     fHistMCRecTrack->GetAxis(1)->SetTitle("#eta^{MC}");
     fHistMCRecTrack->GetAxis(2)->SetTitle("Centrality (%)");
     fHistMCRecTrack -> Sumw2();
@@ -237,7 +242,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCGenPrimTrack -> SetBinEdges(0,fBinsPt->GetArray());
     fHistMCGenPrimTrack -> SetBinEdges(1,fBinsEta->GetArray());
     fHistMCGenPrimTrack -> SetBinEdges(2,fBinsCent->GetArray());
-    fHistMCGenPrimTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/c)");
+    fHistMCGenPrimTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/#it{c})");
     fHistMCGenPrimTrack->GetAxis(1)->SetTitle("#eta^{MC}");
     fHistMCGenPrimTrack->GetAxis(2)->SetTitle("Centrality (%)");
     fHistMCGenPrimTrack -> Sumw2();
@@ -246,7 +251,7 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCRecPrimTrack -> SetBinEdges(0,fBinsPt->GetArray());
     fHistMCRecPrimTrack -> SetBinEdges(1,fBinsEta->GetArray());
     fHistMCRecPrimTrack -> SetBinEdges(2,fBinsCent->GetArray());
-    fHistMCRecPrimTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/c)");
+    fHistMCRecPrimTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/#it{c})");
     fHistMCRecPrimTrack->GetAxis(1)->SetTitle("#eta^{MC}");
     fHistMCRecPrimTrack->GetAxis(2)->SetTitle("Centrality (%)");
     fHistMCRecPrimTrack -> Sumw2();
@@ -255,22 +260,24 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
     fHistMCRecSecTrack -> SetBinEdges(0,fBinsPt->GetArray());
     fHistMCRecSecTrack -> SetBinEdges(1,fBinsEta->GetArray());
     fHistMCRecSecTrack -> SetBinEdges(2,fBinsCent->GetArray());
-    fHistMCRecSecTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/c)");
+    fHistMCRecSecTrack->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/#it{c})");
     fHistMCRecSecTrack->GetAxis(1)->SetTitle("#eta^{MC}");
     fHistMCRecSecTrack->GetAxis(2)->SetTitle("Centrality (%)");
     fHistMCRecSecTrack -> Sumw2();
 
 
     // MC truth pt vs. Nch (reference for closure test)
-    Int_t nBinsMultPt[2]={fBinsMult->GetSize()-1,fBinsPt->GetSize()-1};
-    Double_t minMultPt[2]={fBinsMult->GetAt(0),fBinsPt->GetAt(0)};
-    Double_t maxMultPt[2]={fBinsMult->GetAt(fBinsMult->GetSize()-1),fBinsPt->GetAt(fBinsPt->GetSize()-1)};
+    Int_t nBinsMultPt[3]={fBinsMult->GetSize()-1,fBinsPt->GetSize()-1, fBinsCent->GetSize()-1};
+    Double_t minMultPt[3]={fBinsMult->GetAt(0),fBinsPt->GetAt(0), fBinsCent->GetAt(0)};
+    Double_t maxMultPt[3]={fBinsMult->GetAt(fBinsMult->GetSize()-1),fBinsPt->GetAt(fBinsPt->GetSize()-1), fBinsCent->GetAt(fBinsCent->GetSize()-1)};
 
-    fHistMCMultPtGenerated = new THnF("fHistMCMultPtGenerated","Histogram for generator comparison and closure test",2,nBinsMultPt, minMultPt, maxMultPt);
+    fHistMCMultPtGenerated = new THnF("fHistMCMultPtGenerated","Histogram for generator comparison and closure test",3,nBinsMultPt, minMultPt, maxMultPt);
     fHistMCMultPtGenerated->SetBinEdges(0,fBinsMult->GetArray());
     fHistMCMultPtGenerated->SetBinEdges(1,fBinsPt->GetArray());
+    fHistMCMultPtGenerated->SetBinEdges(2,fBinsCent->GetArray());
     fHistMCMultPtGenerated->GetAxis(0)->SetTitle("#it{N}_{ch}");
     fHistMCMultPtGenerated->GetAxis(1)->SetTitle("#it{p}_{T}^{MC}");
+    fHistMCMultPtGenerated->GetAxis(2)->SetTitle("Centrality (%)");
     fHistMCMultPtGenerated->Sumw2();
 
 
@@ -284,26 +291,21 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
         fHistMCParticle -> SetBinEdges(1,fBinsEta->GetArray());
         fHistMCParticle -> SetBinEdges(2,fBinsMult->GetArray());
         fHistMCParticle -> SetBinEdges(3,fBinsCent->GetArray());
-        fHistMCParticle->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/c)");
+        fHistMCParticle->GetAxis(0)->SetTitle("#it{p}_{T}^{MC} (GeV/#it{c})");
         fHistMCParticle->GetAxis(1)->SetTitle("#eta^{MC}");
         fHistMCParticle->GetAxis(2)->SetTitle("#it{N}_{acc}");
         fHistMCParticle->GetAxis(3)->SetTitle("Centrality (%)");
         fHistMCParticle -> Sumw2();
 
-        /// Track histogram with multiplicity correlation pt:multacc:multgen
-        Int_t nBinsMultTrack[3]={fBinsPt->GetSize()-1, fBinsMult->GetSize()-1,fBinsMult->GetSize()-1};
-        Double_t minMultTrack[3]={fBinsPt->GetAt(0), fBinsMult->GetAt(0),fBinsMult->GetAt(0)};
-        Double_t maxMultTrack[3]={fBinsPt->GetAt(fBinsPt->GetSize()-1),fBinsMult->GetAt(fBinsMult->GetSize()-1),fBinsMult->GetAt(fBinsMult->GetSize()-1)};
-
 
         // Histogram to illustrate <pt>(Nacc) for fixed Nch and  <pt>(Nch) for fixed Nacc
         fHistMCTrackMultGen = new THnSparseF("fHistMCTrackMultGen", "True Tracks as function of measured and true Mult", 3, nBinsMultTrack, minMultTrack, maxMultTrack);
-        fHistMCTrackMultGen -> SetBinEdges(0,fBinsPt->GetArray());
+        fHistMCTrackMultGen -> SetBinEdges(0,fBinsMult->GetArray());
         fHistMCTrackMultGen -> SetBinEdges(1,fBinsMult->GetArray());
-        fHistMCTrackMultGen -> SetBinEdges(2,fBinsMult->GetArray());
-        fHistMCTrackMultGen->GetAxis(0)->SetTitle("#it{p}_{T}^{MC}");
-        fHistMCTrackMultGen->GetAxis(1)->SetTitle("#it{N}_{acc}");
-        fHistMCTrackMultGen->GetAxis(2)->SetTitle("#it{N}_{ch}");
+        fHistMCTrackMultGen -> SetBinEdges(2,fBinsPt->GetArray());
+        fHistMCTrackMultGen->GetAxis(0)->SetTitle("#it{N}_{acc}");
+        fHistMCTrackMultGen->GetAxis(1)->SetTitle("#it{N}_{ch}");
+        fHistMCTrackMultGen->GetAxis(2)->SetTitle("#it{p}_{T}^{MC}");
         fHistMCTrackMultGen -> Sumw2();
 
         // Correlation between reconstructed tracks and reconstructed particles
@@ -396,9 +398,6 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
 
   Double_t centrality = 50;
   if((fBinsCent->GetSize()-1) > 1) centrality = GetCentrality(fEvent);
-  if(centrality >= fMaxCentrality) return;
-
-  fEventCount->Fill(4); // Events after Centrality cut
 
   /// ------------------ Count Multiplicities --------------------------------------
 
@@ -428,7 +427,7 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
     fHistMCResponseMat->Fill(responseMatrixTuple);
 
     if(multGenPart >= fBinsMult->GetAt(fBinsMult->GetSize()-1)) return;
-    fEventCount->Fill(5); // Events after excluding Nch overflow
+    fEventCount->Fill(4); // Events after excluding Nch overflow
   }
 
   /// ------------------ Event Histogram ---------------------------------------
@@ -478,8 +477,8 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
         Double_t mcPrimTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
         fHistMCRecPrimTrack->Fill(mcPrimTrackValue);
 
-        Double_t responseMatrixTuple[2] = {multAccTracks, multGenPart};
-        fHistMCResponseMatTracks->Fill(responseMatrixTuple);
+        Double_t responseMatrixTracksTuple[3] = {multAccTracks, multGenPart, mcParticle->Pt()};
+        fHistMCResponseMatTracks->Fill(responseMatrixTracksTuple);
 
       }else{
         Double_t mcSecTrackValue[3] = {mcParticle->Pt(), mcParticle->Eta(), centrality};
@@ -515,11 +514,11 @@ void AliMeanPtAnalysisTask::UserExec(Option_t *){ // Main loop (called for each 
         fHistMCGenPrimTrack->Fill(mcGenPrimTrackValue);
 
       	// Reference histogram for MC closure test and generator comparison
-    	  Double_t mcMultPtGenerated[2] = {multGenPart, mcGenParticle->Pt()};
+    	  Double_t mcMultPtGenerated[3] = {multGenPart, mcGenParticle->Pt(), centrality};
     	  fHistMCMultPtGenerated->Fill(mcMultPtGenerated);
 
         if(fIncludeCrosscheckHistos){
-      	  Double_t trackValuesMult[3] = {mcGenParticle->Pt(), multAccTracks, multGenPart};
+      	  Double_t trackValuesMult[3] = {multAccTracks, multGenPart, mcGenParticle->Pt()};
       	  fHistMCTrackMultGen->Fill(trackValuesMult);
         }
       }

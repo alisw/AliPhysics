@@ -25,14 +25,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <algorithm>
-#include <vector>
+#include <iostream>
+#include <sstream>
+#include <unordered_map>
 #include <TH1.h>
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
 #include "AliEmcalTriggerSelection.h"
-#include "AliEmcalTriggerSelectionCuts.h"
 #include "AliAnalysisTaskEmcalTriggerSelection.h"
 #include "AliEMCALTriggerPatchInfo.h"
+#include "AliYAMLConfiguration.h"
 
 /// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection)
@@ -108,12 +110,100 @@ void AliAnalysisTaskEmcalTriggerSelection::MakeQA(const AliEmcalTriggerDecisionC
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::AutoConfigure(const char *period) {
-  std::vector<TString> pp2016periods = {"LHC16h", "LHC16i", "LHC16j", "LHC16k", "LHC16l", "LHC16o", "LHC16p"};
-  std::vector<TString> mcpp2016periods = {"LHC17f8", "LHC17f8a", "LHC17f8b", "LHC178c", "LHC17f8d", "LHC17f8e",
-                                          "LHC17f8f", "LHC17f8g", "LHC17f8h", "LHC17f8i", "LHC17f8j", "LHC17f8k"};
-  TString periodstring(period);
-  if(std::find(pp2016periods.begin(), pp2016periods.end(), periodstring) != pp2016periods.end()) ConfigurePP2016();
-  if(std::find(mcpp2016periods.begin(), mcpp2016periods.end(), periodstring) != mcpp2016periods.end()) ConfigureMCPP2016();
+  if(Is2012PP(period)) ConfigurePP2012();
+  if(Is2016PP(period)) ConfigurePP2016();
+  if(Is2012MCPP(period)) ConfigureMCPP2012();
+  if(Is2016MCPP(period)) ConfigureMCPP2016();
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2012PP(const char *dataset) const {
+  TString datasetstring(dataset);
+  datasetstring.ToLower();
+  if(datasetstring.Length() != 6) return false;     // not data period
+  if(datasetstring.Contains("lhc12")){
+    auto subperiod = datasetstring[5];
+    if(subperiod > 'b' && subperiod < 'j') return true;
+  }
+  return false;
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016PP(const char *dataset) const { 
+  TString datasetstring(dataset);
+  datasetstring.ToLower();
+  if(datasetstring.Length() != 6) return false;     // not data period
+  if(datasetstring.Contains("lhc16") || datasetstring.Contains("lhc17") || datasetstring.Contains("lhc18")){
+    auto subperiod = datasetstring[5];
+    if(datasetstring.Contains("lhc16")){
+      if(subperiod > 'g' && subperiod < 'q') return true;
+    }
+    if(datasetstring.Contains("lhc17")) {
+      if((subperiod > 'c' && subperiod < 'n') || (subperiod == 'o') || (subperiod < 'r')) return true;
+    }
+    if(datasetstring.Contains("lhc18")) {
+      // 2018 runs will follow when taken
+      return true;
+    }
+  }
+  return false;
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2012MCPP(const char *dataset) const {
+  std::vector<TString> supportedProductions = {"lhc15h1", "lhc15h2", "lhc16a1", "lhc16c2", "lhc17g5a", "lhc17g5"};
+  return IsSupportedMCSample(dataset, supportedProductions);
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::Is2016MCPP(const char *dataset) const {
+  std::vector<TString> supportedProductions = {"lhc17f8"};
+  return IsSupportedMCSample(dataset, supportedProductions);
+}
+
+Bool_t AliAnalysisTaskEmcalTriggerSelection::IsSupportedMCSample(const char *dataset, std::vector<TString> &supportedProductions) const{
+  TString datasetstring(dataset);
+  datasetstring.ToLower();
+  bool found(false);
+  for(const auto & prod : supportedProductions) {
+    if(datasetstring.Contains(prod)) {
+      found = true;
+      break;
+    }
+  }
+  return found;
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2012(){
+  AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
+  eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
+  eg1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
+  eg1cuts->SetUseRecalcPatches(true);
+  eg1cuts->SetThreshold(130);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EGA", eg1cuts));
+
+  AliEmcalTriggerSelectionCuts *ej1cuts = new AliEmcalTriggerSelectionCuts;
+  ej1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  ej1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetHighPatch);
+  ej1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
+  ej1cuts->SetUseRecalcPatches(true);
+  ej1cuts->SetThreshold(200);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EJE", ej1cuts));
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2012() {
+  AliEmcalTriggerSelectionCuts *eg1cuts = new AliEmcalTriggerSelectionCuts;
+  eg1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  eg1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaHighPatch);
+  eg1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
+  eg1cuts->SetUseSimpleOfflinePatches(true);
+  eg1cuts->SetThreshold(10.);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EGA", eg1cuts));
+
+  AliEmcalTriggerSelectionCuts *ej1cuts = new AliEmcalTriggerSelectionCuts;
+  ej1cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kEMCALAcceptance);
+  ej1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetHighPatch);
+  ej1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
+  ej1cuts->SetUseSimpleOfflinePatches(true);
+  ej1cuts->SetThreshold(15.5);
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EJE", ej1cuts));
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2016(){
@@ -222,7 +312,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   ej1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetHighPatch);
   ej1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   ej1cuts->SetUseSimpleOfflinePatches(true);
-  ej1cuts->SetThreshold(20.);
+  ej1cuts->SetThreshold(19.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EJ1", ej1cuts));
 
   AliEmcalTriggerSelectionCuts *ej2cuts = new AliEmcalTriggerSelectionCuts;
@@ -230,7 +320,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   ej2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetLowPatch);
   ej2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   ej2cuts->SetUseSimpleOfflinePatches(true);
-  ej2cuts->SetThreshold(16.);
+  ej2cuts->SetThreshold(14.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EJ2", ej2cuts));
 
   AliEmcalTriggerSelectionCuts *dj1cuts = new AliEmcalTriggerSelectionCuts;
@@ -238,7 +328,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   dj1cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetHighPatch);
   dj1cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   dj1cuts->SetUseSimpleOfflinePatches(true);
-  dj1cuts->SetThreshold(20.);
+  dj1cuts->SetThreshold(19.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ1", dj1cuts));
 
   AliEmcalTriggerSelectionCuts *dj2cuts = new AliEmcalTriggerSelectionCuts;
@@ -246,8 +336,101 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPP2016() {
   dj2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1JetLowPatch);
   dj2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   dj2cuts->SetUseSimpleOfflinePatches(true);
-  dj2cuts->SetThreshold(16.);
+  dj2cuts->SetThreshold(14.);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("DJ2", dj2cuts));
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::ConfigureFromYAML(const char *configfile) {
+  using YAMLhandler = PWG::Tools::AliYAMLConfiguration;
+  YAMLhandler configuration;
+  configuration.AddConfiguration(configfile, "user");
+  configuration.Initialize();
+  std::string namecontainer, acceptance, patchtype, energydef, energysource;
+  std::vector<std::string> triggerclasses;
+  configuration.GetProperty("containername", namecontainer);
+  configuration.GetProperty("energydef", energydef);
+  configuration.GetProperty("energysource", energysource);
+  configuration.GetProperty("triggerclasses", triggerclasses);
+  bool isOfflineSimple = energysource.find("Offline") != std::string::npos,
+       isRecalc = energysource.find("Recalc") != std::string::npos;
+
+  SetGlobalDecisionContainerName(namecontainer.data());
+
+  AliEmcalTriggerSelectionCuts::SelectionMethod_t selectionmethod;
+  try {
+    selectionmethod = DecodeEnergyDefinition(energydef);
+  } catch(ConfigValueException &e) {
+    AliErrorStream() << e.what() << " - not processing trigger classes" << std::endl;
+    return; 
+  }
+  for(auto t : triggerclasses) {
+    double threshold;
+    configuration.GetProperty(Form("%s:acceptance", t.data()), acceptance);
+    configuration.GetProperty(Form("%s:patchtype", t.data()), patchtype);
+    configuration.GetProperty(Form("%s:threshold", t.data()), threshold);
+
+    AliEmcalTriggerSelectionCuts *cuts = new AliEmcalTriggerSelectionCuts;
+    try {
+      cuts->SetAcceptanceType(DecodeAcceptanceString(acceptance));
+      cuts->SetPatchType(DecodePatchTypeString(patchtype));
+    } catch(ConfigValueException &e){
+      AliErrorStream() << e.what() << " - not adding trigger class " << t << std::endl;
+      delete cuts;
+      continue;
+    }
+
+    cuts->SetSelectionMethod(selectionmethod);
+    if(isOfflineSimple) cuts->SetUseSimpleOfflinePatches();
+    if(isRecalc) cuts->SetUseRecalcPatches();
+    cuts->SetThreshold(threshold);
+    this->AddTriggerSelection(new AliEmcalTriggerSelection(t.data(), cuts));
+  }
+}
+
+AliEmcalTriggerSelectionCuts::AcceptanceType_t AliAnalysisTaskEmcalTriggerSelection::DecodeAcceptanceString(const std::string &acceptancestring){
+  std::unordered_map<std::string, AliEmcalTriggerSelectionCuts::AcceptanceType_t> mapacceptance = {
+    {"EMCAL", AliEmcalTriggerSelectionCuts::kEMCALAcceptance},
+    {"DCAL", AliEmcalTriggerSelectionCuts::kDCALAcceptance}
+  };
+  auto result = mapacceptance.find(acceptancestring);
+  if(result == mapacceptance.end()) throw ConfigValueException("accpetance", acceptancestring.data());
+  return result->second;
+}
+
+AliEmcalTriggerSelectionCuts::PatchType_t AliAnalysisTaskEmcalTriggerSelection::DecodePatchTypeString(const std::string &patchtypestring) {
+  std::unordered_map<std::string, AliEmcalTriggerSelectionCuts::PatchType_t> mappatchtype = {
+    {"L1Gamma", AliEmcalTriggerSelectionCuts::kL1GammaPatch},
+    {"L1GammaHigh", AliEmcalTriggerSelectionCuts::kL1GammaHighPatch},
+    {"L1GammaLow", AliEmcalTriggerSelectionCuts::kL1GammaLowPatch},
+    {"L1Jet", AliEmcalTriggerSelectionCuts::kL1JetPatch},
+    {"L1JetHigh", AliEmcalTriggerSelectionCuts::kL1JetHighPatch},
+    {"L1JetLow", AliEmcalTriggerSelectionCuts::kL1JetLowPatch}
+  };
+  auto result = mappatchtype.find(patchtypestring);
+  if(result == mappatchtype.end()) throw ConfigValueException("accpetance", patchtypestring.data());
+  return result->second;
+}
+
+AliEmcalTriggerSelectionCuts::SelectionMethod_t AliAnalysisTaskEmcalTriggerSelection::DecodeEnergyDefinition(const std::string &energydefstring){
+  std::unordered_map<std::string, AliEmcalTriggerSelectionCuts::SelectionMethod_t> mapenergydef = {
+    {"ADC", AliEmcalTriggerSelectionCuts::kADC},
+    {"Energy", AliEmcalTriggerSelectionCuts::kEnergyOffline},
+    {"EnergyRough", AliEmcalTriggerSelectionCuts::kEnergyRough},
+    {"EnergySmeared", AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared}
+  };
+  auto result = mapenergydef.find(energydefstring);
+  if(result == mapenergydef.end()) throw ConfigValueException("accpetance", energydefstring.data());
+  return result->second;
+
+}
+
+void AliAnalysisTaskEmcalTriggerSelection::PrintStream(std::ostream &stream) const {
+    stream << "Task: " << GetName() << ", name of the output container: " << fGlobalDecisionContainerName << std::endl << std::endl;
+    stream << "Trigger classes: " << std::endl;
+    for(const auto c : this->fTriggerSelections){
+      PWG::EMCAL::AliEmcalTriggerSelection *sel = static_cast<PWG::EMCAL::AliEmcalTriggerSelection *>(c);
+      stream << *sel << std::endl;
+    }
 }
 
 AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::AliEmcalTriggerSelectionQA():
@@ -302,5 +485,20 @@ void AliAnalysisTaskEmcalTriggerSelection::AliEmcalTriggerSelectionQA::GetHistos
 
 }
 
+AliAnalysisTaskEmcalTriggerSelection::ConfigValueException::ConfigValueException(const char *key, const char *value): 
+  fKey(key), 
+  fValue(value),
+  fMessage()
+{
+  std::stringstream msgbuilder;
+  msgbuilder << "Improper value for key " << fKey << ": " << fValue;
+  fMessage = msgbuilder.str();
 }
+
+}
+}
+
+std::ostream &operator<<(std::ostream &stream, const PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection &task) {
+  task.PrintStream(stream);
+  return stream;
 }

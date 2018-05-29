@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,14 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//=========================================================================//
+//             AliEbyE Analysis for Net-Particle Higher Moment study       //
+//                           Nirbhay K. Behera                             //
+//                           nbehera@cern.ch                               //
+//                   Deepika Rathee  | Satyajit Jena                       //
+//                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//             AliEbyE Analysis  Net-Particle Higher Moment study          //
-//              Author:   Deepika Rathee  || Satyajit Jena                 //
-//                        drathee@cern.ch || sjena@cern.ch                 //
-//                                Nirbhay K. Behera                        //              
-//                          (Last modified: 2017/04/07)                    //
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//                        (Last Modified 2018/03/14)                       //
+//                 Dealing with Wide pT Window Modified to ESDs            //
+//Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
+//analysis task.                                                           //
+//=========================================================================//
 
 #ifndef AliEbyEPidEfficiencyContamination_H
 #define AliEbyEPidEfficiencyContamination_H
@@ -36,7 +40,7 @@ class AliVEvent;
 class AliESDtrackCuts;
 class AliMCEvent;
 class AliStack;
-class AliAnalysisUtils;
+class AliEventCuts;
 class AliVParticle;
 class AliVTrack;
 class TClonesArray;
@@ -67,6 +71,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
     fVxMax = vx;fVyMax = vy; fVzMax = vz;
   }
   
+  void SetIsRapidityCut(Bool_t IsRapCut){ fIsRapCut = IsRapCut; }
   void SetKinematicsCuts(Double_t ptl, Double_t pth, Double_t eta) {
     fPtMin = ptl; fPtMax = pth; fEtaMin = -eta; fEtaMax = eta; 
   }
@@ -100,7 +105,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   AliESDtrackCuts     *fESDtrackCuts;  // ESD Track Cuts
   AliMCEvent          *fMCEvent;       // Current MC Event
   AliStack            *fMCStack;       // Stak tree
-  AliAnalysisUtils    *fanaUtils;      //using for pileup check
+  AliEventCuts        *fEventCuts;      //using for pileup check
   TString             fRun;            //Run  production name 
   TString             fCentralityEstimator;   // "V0M","TRK","CL1"
  
@@ -121,6 +126,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   Bool_t     fIsMC;                         // Is MC event - Auto set by Add Task
   Bool_t     fIsAOD;                        // analysis mode: 0 = ESDs  | 1 = AODs
   Bool_t     fIsQA;                         // Check for QA
+  Bool_t     fIsRapCut;                     // Use rapidity cut 1= yes, 0= no
   Bool_t     fIsTrig;           //
   Bool_t     fIsThn;            //
 
@@ -206,7 +212,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   //________________________________
   AliEbyEPidEfficiencyContamination(const AliEbyEPidEfficiencyContamination&);
   AliEbyEPidEfficiencyContamination& operator = (const AliEbyEPidEfficiencyContamination&);
-  ClassDef(AliEbyEPidEfficiencyContamination, 2);
+  ClassDef(AliEbyEPidEfficiencyContamination, 5);
 };
 
 #endif

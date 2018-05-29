@@ -389,6 +389,7 @@ void AliAnalysisTaskCEP::UserCreateOutputObjects()
 
   // ... TPC and TOF
   UInt_t Maskin =
+    AliPIDResponse::kDetITS |
     AliPIDResponse::kDetTPC |
     AliPIDResponse::kDetTOF;
 
@@ -691,7 +692,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // topology (dphiMin=0)
   // The OSTG trigger in 2017 required two online tracklets with
   // min opening angle >=54 deg (dphiMin=4)
-  const AliVMultiplicity *mult = fEvent->GetMultiplicity();
+  const AliMultiplicity *mult = (AliMultiplicity*)fEvent->GetMultiplicity();
   TBits foMap = mult->GetFastOrFiredChips();
   
   // each bit (11 bits are used) of fisSTGTriggerFired corresponds to a specific
@@ -742,6 +743,8 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   // to replay the CCUP25-B-SPD1-CENTNOTRD two fired TOF maxiPads are required
   // in addition to CCUP13
   fnTOFmaxipads = fEvent->GetTOFHeader()->GetNumberOfTOFmaxipad();
+  AliTOFTriggerMask *fTOFTriggerMask =
+    fEvent->GetTOFHeader()->GetTriggerMask();
   // if ( isDGTrigger ) {
   //   printf("Number of fired TOF MaxiPads = %i / %i\n",
   //     fnTOFmaxipads,firedTriggerClasses.Contains("CCUP25-B-SPD1-CENTNOTRD"));
@@ -749,7 +752,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
   
   // number of tracklets and singles
   Int_t nTracklets = mult->GetNumberOfTracklets();
-  Int_t nSingles   = ((AliMultiplicity*)mult)->GetNumberOfSingleClusters();
+  Int_t nSingles   = mult->GetNumberOfSingleClusters();
   
   // get number of ITS cluster
   Short_t nITSCluster[6] = {0};
@@ -1062,8 +1065,12 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     fCEPEvent->SetFiredTriggerClasses(firedTriggerClasses);
     fCEPEvent->SetnITSCluster(nITSCluster);
     fCEPEvent->SetnFiredChips(nFiredChips);
+    fCEPEvent->SetSPMapOnline(mult->GetFastOrFiredChips());
+    fCEPEvent->SetSPMapOffline(mult->GetFiredChipMap());
+    
     fCEPEvent->SetisSTGTriggerFired(fisSTGTriggerFired);
     fCEPEvent->SetnTOFmaxipads(fnTOFmaxipads);
+    fCEPEvent->SetTOFTriggerMask(fTOFTriggerMask);
     
     // FP Flags of V0 and AD
     fCEPEvent->SetPFFlags(fEvent);
@@ -1098,9 +1105,9 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       
       // which track uses the tracklet-clusters on layers 1 and 2
       ref1=-1.; ref2=-1.;
-      nr = ((AliMultiplicity*)mult)->GetTrackletTrackIDsLay(0,ii,0,refs,5);
+      nr = mult->GetTrackletTrackIDsLay(0,ii,0,refs,5);
       if (nr>0) ref1 = refs[0];
-      nr = ((AliMultiplicity*)mult)->GetTrackletTrackIDsLay(1,ii,0,refs,5);
+      nr = mult->GetTrackletTrackIDsLay(1,ii,0,refs,5);
       if (nr>0) ref2 = refs[0];
       
       // new tracklet-track association
@@ -1170,17 +1177,54 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       // check if track contributes to main vertex reconstruction
       trk->SetinVertex(vertex->UsesTrack(trkIndex));      
       
+      // get MC truth
+      Int_t MCind = tmptrk->GetLabel();
+      // printf("MCind %i\n",MCind);
+      //printf("%i - TPC PID:",fEventNum);
+      if (fMCEvent && MCind >= 0) {
+        
+        TParticle* part = stack->Particle(MCind);
+        // printf("MC particle (%i): %f/%f/%f - %f/%f\n",
+        //   ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
+        
+        // set MC mass and momentum
+        TLorentzVector lv;
+        part->Momentum(lv);
+        
+        trk->SetMCPID(part->GetPdgCode());
+        trk->SetMCMass(part->GetMass());
+        trk->SetMCMomentum(TVector3(lv.Px(),lv.Py(),lv.Pz()));
+
+        //printf(" %i",part->GetPdgCode());
+
+      }
+
       // set PID information
+      // ... ITS
+      stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kITS,tmptrk,AliPID::kSPECIES,probs);
+      trk->SetPIDITSStatus(stat);
+      trk->SetPIDITSSignal(tmptrk->GetITSsignal());
+      for (Int_t jj=0; jj<AliPID::kSPECIES; jj++) {
+        stat = fPIDResponse->NumberOfSigmas(
+          AliPIDResponse::kITS,tmptrk,(AliPID::EParticleType)jj,nsig);
+        trk->SetPIDITSnSigma(jj,nsig);
+        trk->SetPIDITSProbability(jj,probs[jj]);
+      }
+      
       // ... TPC
       stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kTPC,tmptrk,AliPID::kSPECIES,probs);
       trk->SetPIDTPCStatus(stat);
       trk->SetPIDTPCSignal(tmptrk->GetTPCsignal());
+      //printf(" %f",tmptrk->GetTPCsignal());
       for (Int_t jj=0; jj<AliPID::kSPECIES; jj++) {
         stat = fPIDResponse->NumberOfSigmas(
           AliPIDResponse::kTPC,tmptrk,(AliPID::EParticleType)jj,nsig);
         trk->SetPIDTPCnSigma(jj,nsig);
         trk->SetPIDTPCProbability(jj,probs[jj]);
+        
+        //printf(" %f/%f ",nsig,probs[jj]);
       }
+      //printf("\n");
       
       // ... TOF
       stat = fPIDResponse->ComputePIDProbability(AliPIDResponse::kTOF,tmptrk,AliPID::kSPECIES,probs);
@@ -1210,25 +1254,6 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
       for (Int_t jj=0; jj<AliPID::kSPECIES; jj++)
         trk->SetPIDBayesProbability(jj,probs[jj]);
       
-      // get MC truth
-      Int_t MCind = tmptrk->GetLabel();
-      // printf("MCind %i\n",MCind);
-      if (fMCEvent && MCind >= 0) {
-        
-        TParticle* part = stack->Particle(MCind);
-        // printf("MC particle (%i): %f/%f/%f - %f/%f\n",
-        //   ii,part->Px(),part->Py(),part->Pz(),part->GetMass(),part->Energy());
-        
-        // set MC mass and momentum
-        TLorentzVector lv;
-        part->Momentum(lv);
-        
-        trk->SetMCPID(part->GetPdgCode());
-        trk->SetMCMass(part->GetMass());
-        trk->SetMCMomentum(TVector3(lv.Px(),lv.Py(),lv.Pz()));
-
-      }
-
       // add track to the CEPEventBuffer
       fCEPEvent->AddTrack(trk);
     

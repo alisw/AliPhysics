@@ -228,12 +228,16 @@ private:
   TH2F* mixedDist;
   TH2F* mixedDist2;
   
-
+  
   AliTHn *fHistLeadQA;
   AliTHn *fHistPIDQA;
 
   AliTHn* fhistmcprim;
   TH2D*fhmcprimvzeta;
+
+  TH1F*frefvz;
+  TH2D*fhcorr[10];
+
   TH1D*fhmcprimpdgcode;
   TH1D*fhrefetaFMD[4];
   TH1D*fhrefphiFMD[4];
@@ -241,8 +245,11 @@ private:
   TH2D*  fh2_FMD_acceptance_prim;
   TH2D*  fh2_FMD_eta_phi_prim;
   TH2D*  fh2_FMD_acceptance;
+  TH2D*  fh2_ITS_acceptance;
   TH2D*  fh2_FMD_eta_phi;
+
   AliTHn* fhistfmd;
+  THnSparseF* fhistits;
   AliTHn* fhSecFMD;
 
   TH2F*fFMDV0;

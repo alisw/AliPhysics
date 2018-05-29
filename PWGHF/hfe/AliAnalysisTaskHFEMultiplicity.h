@@ -17,7 +17,6 @@ class AliMagF;
 class AliESDEvent;
 class AliAODEvent;
 class AliEMCALGeometry;
-class AliEMCALRecoUtils;
 class AliAnalysisFilter;
 class AliESDtrackCuts;
 class AliESDtrack;
@@ -100,6 +99,7 @@ class AliAnalysisTaskHFEMultiplicity : public AliAnalysisTaskSE
 
   void 			SetNcontVCut(Int_t NcontV){fCutNcontV=NcontV;}
   void 			SetEtaRange(Double_t Etarange){fCutTrackEta=Etarange;}
+  void 			SetMaxTPCCluster(Int_t MaxTPCclus){fCutTPCMaxCls=MaxTPCclus;}
   void 			SetNTPCCluster(Int_t TPCNclus){fCutTPCNCls=TPCNclus;}
   void 			SetNITSCluster(Int_t ITSNclus){fCutITSNCls=ITSNclus;}
   void 			SetTrackpTMin(Double_t TrackPtMin){fCutpTMin = TrackPtMin;}
@@ -142,6 +142,8 @@ private:
 //--------------------Event Cut------------------
   Int_t 		fCutNcontV;
 //--------------------Track Cut------------------
+  Int_t			fCutTPCMaxCls;
+  Int_t			fCutTPCchi2perNDF;
   Int_t 		fCutTPCNCls;
   Int_t 		fCutITSNCls;
   Double_t 		fCutDCAxy;

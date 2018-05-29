@@ -104,8 +104,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   if(L1input == 7)       Ethre = 8.0;
   else if(L1input == 6)  Ethre = 6.0;
   else if(L1input == 5)  Ethre = 4.0;
-  else if(L0input == 9)  Ethre = 2.0;//LHC15n//threshold was s et to 3 GeV, but efficiency can be measured down to 2 GeV
-  else if(L0input == 17) Ethre = 2.0;//LHC17p//threshold was s et to 4 GeV, but efficiency can be measured down to 3 GeV
+  else if(L0input == 9)  Ethre = 0.0;//LHC15n//threshold was s et to 3 GeV, but efficiency can be measured down to 2 GeV
+  else if(L0input == 17) Ethre = 0.0;//LHC17p//threshold was s et to 4 GeV, but efficiency can be measured down to 3 GeV
 
   if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
   if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
@@ -149,7 +149,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
   if(!isMC && TOFcorrection){
     TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
     f1tof->SetNpx(1000);
-    f1tof->SetParameters(0.996,2.32,2.76e-4,0.376,7.41,0.562);//20180124
+    f1tof->SetParameters(0.997,2.32,7.33e-4,0.424,7.57,0.607);//20180219
+    //f1tof->SetParameters(0.996,2.32,2.76e-4,0.376,7.41,0.562);//20180124
     //f1tof->SetParameters(0.997,2.31,-6.15e-4,0.406,7.53,0.620);//20171231
     //f1tof->SetParameters(0.991,2.38,8.12e-3,0.425,7.63,0.677);
     //f1tof->SetParameters(0.996,2.33,1.97e-3,0.332,7.56,0.774);
@@ -162,7 +163,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV(
     //f1trg->SetParameters(0.985,2.56,0.30);
 
     TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1) + [3]/(TMath::Exp(-(x-[4])/[5]) + 1)",0,100);//20180211
-    f1trg->SetParameters(0.380 * 0.846,2.72,0.255,0.380 * 0.129,5.96,0.573);
+    f1trg->SetParameters(0.210,2.72,0.190,0.0676,3.97,0.364);
 
     f1trg->SetNpx(1000);
     task->SetTriggerEfficiency(f1trg);

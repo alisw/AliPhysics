@@ -17,6 +17,7 @@
 
 #include "AliFemtoXiParticle.h"
 
+ClassImp(AliFemtoXiParticle)
 
 AliFemtoXiParticle::AliFemtoXiParticle() :
   fMomentum(),

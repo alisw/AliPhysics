@@ -1,38 +1,3 @@
-//____________________________________________________________________________________________________________________________________
-Double_t TSallisPi0(Double_t *x, Double_t * par)
-{
-  Double_t pT = x[0];
-  const Double_t A = par[0];
-  const Double_t C = par[1];//in GeV/c2
-  const Double_t n = par[2];
-  const Double_t m = 0.135;//mass of pi0
-
-  Double_t mT = sqrt(pT*pT + m*m);
-  Double_t twopi = TMath::TwoPi();
-  //Double_t c = TMath::C();
-  Double_t c = 1.; // in natural unit
-  Double_t value = A/twopi * (n-1)*(n-2)/(n*C*(n*C + m*(n-2))) * 1/pow(c,2.) * pow(1+(mT-m)/(n*C),-n);
-  return value;
-
-}
-//____________________________________________________________________________________________________________________________________
-Double_t TSallisEta(Double_t *x, Double_t * par)
-{
-  Double_t pT = x[0];
-  const Double_t A = par[0];
-  const Double_t C = par[1];//in GeV/c2
-  const Double_t n = par[2];
-  const Double_t m = 0.547;//mass of eta
-
-  Double_t mT = sqrt(pT*pT + m*m);
-  Double_t twopi = TMath::TwoPi();
-  //Double_t c = TMath::C();
-  Double_t c = 1.; // in natural unit
-  Double_t value = A/twopi * (n-1)*(n-2)/(n*C*(n*C + m*(n-2))) * 1/pow(c,2.) * pow(1+(mT-m)/(n*C),-n);
-  return value;
-
-}
-//____________________________________________________________________________________________________________________________________
 AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
     const char* name     = "SingleSim",
     const TString parname = "Pi0",
@@ -97,7 +62,7 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
   else         PIDname += "_FullE";
 
   TString taskname = "";
-  taskname = Form("%s_%s%s_BS%dns_DBC%dcell_Emin%dMeV",name,TriggerName.Data(),PIDname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
+  taskname = Form("%s_pp_%s%s_BS%dns_DBC%dcell_Emin%dMeV",name,TriggerName.Data(),PIDname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
 
   AliAnalysisTaskPHOSSingleSim* task = new AliAnalysisTaskPHOSSingleSim(taskname);
 
@@ -111,7 +76,7 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
   task->SetCollisionSystem(0);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
   task->SetJetJetMC(kFALSE);
   task->SetMCType("MBMC");
-  task->SetNonLinearityStudy(NonLinStudy,1.012);
+  task->SetNonLinearityStudy(NonLinStudy,1.018);
   task->SetParticle(parname); 
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
@@ -143,6 +108,8 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
   //bunch space for TOF cut
   task->SetBunchSpace(bs);//in unit of ns.
 
+  printf("Your particle is %s\n",parname.Data());
+
   if(isMC){
     if(parname=="Pi0"){
       //for pi0 pT weighting
@@ -153,12 +120,12 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
       TObjArray *farray_Pi0 = new TObjArray(Ncen_Pi0-1);
       TF1 *f1weightPi0[Ncen_Pi0-1];
 
-      const Double_t p0[Ncen_Pi0-1] = {2.93};
+      const Double_t p0[Ncen_Pi0-1] = {2.70};
       const Double_t p1[Ncen_Pi0-1] = {0.132};
-      const Double_t p2[Ncen_Pi0-1] = {6.7};
+      const Double_t p2[Ncen_Pi0-1] = {6.64};
 
       for(Int_t icen=0;icen<Ncen_Pi0-1;icen++){
-        f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),TSallisPi0,0,100,3);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
+        f1weightPi0[icen] = new TF1(Form("f1weightPi0_%d",icen),"1.0 * ([0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.139*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.139*0.139) - 0.139)/([2]*[1]),-[2]))",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
         f1weightPi0[icen]->SetNpx(1000);
         f1weightPi0[icen]->SetParameters(p0[icen],p1[icen],p2[icen]);
         farray_Pi0->Add(f1weightPi0[icen]);
@@ -174,12 +141,12 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
       TObjArray *farray_Eta = new TObjArray(Ncen_Eta-1);
       TF1 *f1weightEta[Ncen_Eta-1];
 
-      const Double_t p0[Ncen_Eta-1] = {2.93};
-      const Double_t p1[Ncen_Eta-1] = {0.132};
-      const Double_t p2[Ncen_Eta-1] = {6.7};
+      const Double_t p0[Ncen_Eta-1] = {0.25};
+      const Double_t p1[Ncen_Eta-1] = {0.218};
+      const Double_t p2[Ncen_Eta-1] = {6.60};
 
       for(Int_t icen=0;icen<Ncen_Eta-1;icen++){
-        f1weightEta[icen] = new TF1(Form("f1weightEta_%d",icen),TSallisEta,0,100,3);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
+        f1weightEta[icen] = new TF1(Form("f1weightEta_%d",icen),"[0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.547*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.547*0.547) - 0.547)/([2]*[1]),-[2])",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
         f1weightEta[icen]->SetNpx(1000);
         f1weightEta[icen]->SetParameters(p0[icen],p1[icen],p2[icen]);
         farray_Eta->Add(f1weightEta[icen]);

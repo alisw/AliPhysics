@@ -176,7 +176,7 @@ void SubtractFDexploitingClassDzero(Double_t ptmin, Double_t ptmax, Double_t pta
                                     TString spectraMacroOutput="HFPtSpectrum_Nb.root",
                                     TString strdirTempl="temp/",
                                     Int_t system =0, Double_t v2D = 0, Double_t v2Had = 0,Int_t systoption = 3,
-                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     TFile *fDataCorr=TFile::Open(correlationDataFile.Data(),"READ");
     TCanvas *cData;
@@ -195,7 +195,7 @@ void SubtractFDexploitingClassDzero(Double_t ptmin, Double_t ptmax, Double_t pta
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
 
     const Int_t Dzero = 0;
-    SubtractFDexploitingClass(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClass(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin,filepurity);
     fDataCorr->Close();
     fSpectrum->Close();
 }
@@ -208,7 +208,7 @@ void SubtractFDexploitingClassDstar(Double_t ptmin, Double_t ptmax, Double_t pta
                                     TString spectraMacroOutput="HFPtSpectrum_Nb.root",
                                     TString strdirTempl="temp/",
                                     Int_t system =0, Double_t v2D = 0, Double_t v2Had = 0,Int_t systoption = 3,
-                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     TFile *fDataCorr=TFile::Open(correlationDataFile.Data(),"READ");
     TCanvas *cData;
@@ -227,7 +227,7 @@ void SubtractFDexploitingClassDstar(Double_t ptmin, Double_t ptmax, Double_t pta
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
     
     const Int_t Dstar = 1;
-    SubtractFDexploitingClass(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClass(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin,filepurity);
     fDataCorr->Close();
     fSpectrum->Close();    
 }
@@ -239,7 +239,7 @@ void SubtractFDexploitingClassDplus(Double_t ptmin, Double_t ptmax, Double_t pta
                                     TString spectraMacroOutput="HFPtSpectrum_Nb.root",
                                     TString strdirTempl="temp/",
                                     Int_t system =0, Double_t v2D = 0, Double_t v2Had = 0,Int_t systoption = 3,
-                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                    Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     TFile *fDataCorr=TFile::Open(correlationDataFile.Data(),"READ");
     TCanvas *cData;
@@ -258,7 +258,7 @@ void SubtractFDexploitingClassDplus(Double_t ptmin, Double_t ptmax, Double_t pta
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
 
     const Int_t Dplus = 2;
-    SubtractFDexploitingClass(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClass(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,v2D,v2Had,systoption,subtrMCclos,centbin,filepurity);
     fDataCorr->Close();
     fSpectrum->Close();
 }
@@ -269,7 +269,7 @@ void SubtractFDexploitingClassDzerov2Modulations(Double_t ptmin, Double_t ptmax,
                                                  Int_t rebin=1,TString correlationDataFile="1Dcorr.root",
                                                  TString spectraMacroOutput="HFPtSpectrum_Nb.root", TString strdirTempl="temp",
                                                  Int_t system = 1, Int_t systoption=3,
-                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     /*Parameter
      (Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],
@@ -295,7 +295,7 @@ void SubtractFDexploitingClassDzerov2Modulations(Double_t ptmin, Double_t ptmax,
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
     
     const Int_t Dzero = 0;
-    SubtractFDexploitingClassv2Modulations(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClassv2Modulations(Dzero,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin,filepurity);
 }
 
 
@@ -305,7 +305,7 @@ void SubtractFDexploitingClassDstarv2Modulations(Double_t ptmin,Double_t ptmax,D
                                                  Int_t rebin=1,TString correlationDataFile="1Dcorr.root",
                                                  TString spectraMacroOutput="HFPtSpectrum_Nb.root", TString strdirTempl="temp",
                                                  Int_t system = 1, Int_t systoption=3,
-                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     /*Parameter
      (Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],
@@ -331,7 +331,7 @@ void SubtractFDexploitingClassDstarv2Modulations(Double_t ptmin,Double_t ptmax,D
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
     
     const Int_t Dstar = 1;
-    SubtractFDexploitingClassv2Modulations(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClassv2Modulations(Dstar,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin,filepurity);
     fDataCorr->Close();
     fSpectrum->Close();
 }
@@ -342,7 +342,7 @@ void SubtractFDexploitingClassDplusv2Modulations(Double_t ptmin,Double_t ptmax,D
                                                  Int_t rebin=1,TString correlationDataFile="1Dcorr.root",
                                                  TString spectraMacroOutput="HFPtSpectrum_Nb.root", TString strdirTempl="temp",
                                                  Int_t system = 1, Int_t systoption=3,
-                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0){
+                                                 Int_t oldnames=1, Bool_t subtrMCclos=kFALSE, Int_t centbin=0, TString filepurity=""){
     
     /*Parameter 
      (Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],
@@ -368,13 +368,13 @@ void SubtractFDexploitingClassDplusv2Modulations(Double_t ptmin,Double_t ptmax,D
     TGraphAsymmErrors *gr=(TGraphAsymmErrors*)fSpectrum->Get(namefpr.Data());
 
     const Int_t Dplus = 2;
-    SubtractFDexploitingClassv2Modulations(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin);
+    SubtractFDexploitingClassv2Modulations(Dplus,hData,gr,ptmin,ptmax,ptassoc,ptassocMax,strdirTempl,strfileout,purity,methodSubtr,1,system,systoption,subtrMCclos,centbin,filepurity);
     fDataCorr->Close();
     fSpectrum->Close();
 }
 
 //______________________________________________________________________________________________
-void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFprompt,Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,TString strdirTempl,TString strfileout="FDoutput",Double_t purity=0.963,Int_t methodSubtr=2,Int_t rebin=1, Int_t system =0 /*0 is pp, 1 is pPb*/, Double_t v2D = 0, Double_t v2Had = 0, Int_t systoption = 3, Bool_t subtrMCclos = kFALSE, Int_t centbin){
+void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFprompt,Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,TString strdirTempl,TString strfileout="FDoutput",Double_t purity=0.963,Int_t methodSubtr=2,Int_t rebin=1, Int_t system =0 /*0 is pp, 1 is pPb*/, Double_t v2D = 0, Double_t v2Had = 0, Int_t systoption = 3, Bool_t subtrMCclos = kFALSE, Int_t centbin, TString filepurity=""){
     
     if(system ==0){
         if(TMath::Abs(v2D)>0.00000001 || TMath::Abs(v2Had)>0.00000001){
@@ -397,9 +397,34 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
       gROOT->LoadMacro(Form("%s/FitPlots.C",localcode.Data()));
       fitcodeIsLoaded=kTRUE;
     }
+
     hData->Sumw2();
     hData->Rebin(rebin);
-    hData->Scale(purity*1./(Double_t)rebin);
+    
+    if(purity<=1) hData->Scale(purity*1./(Double_t)rebin);
+    else if(purity==10) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflected");
+      hPurity->Rebin(rebin);
+      hData->Multiply(hPurity);
+    }
+    else if(purity==20) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = (TCanvas*)fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflected");
+      TF1 *funPurity = (TF1*)hPurity->GetListOfFunctions()->At(0);
+      if(rebin!=1) {printf("WARNING! Not possible to apply purity correction via fit function in case of rebinning of the histogram!"); return;}
+      hData->Multiply(funPurity);
+    }
+    else if(purity==30) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflMovMean");
+      hPurity->Rebin(rebin);
+      hData->Multiply(hPurity);
+    }
+
 
     //Apply modulation from MC closure test (as correction on data points! pPb2016 preliminary approach!)
     if(subtrMCclos) SubtractMCclosureModulation(hData,0.5*(ptmin+ptmax),ptassoc,ptassocMax,system,centbin);
@@ -675,7 +700,7 @@ void SubtractFDexploitingClass(Int_t meson,TH1D *hData,TGraphAsymmErrors *grFpro
 }
 
 //______________________________________________________________________________________________
-void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraphAsymmErrors *grFprompt,Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,TString strdirTempl,TString strfileout="FDoutput",Double_t purity=0.963,Int_t methodSubtr=2,Int_t rebin=1, Int_t system =0, Int_t systoption =3, Bool_t subtrMCclos = kFALSE, Int_t centbin){
+void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraphAsymmErrors *grFprompt,Double_t ptmin,Double_t ptmax,Double_t ptassoc,Double_t ptassocMax,TString strdirTempl,TString strfileout="FDoutput",Double_t purity=0.963,Int_t methodSubtr=2,Int_t rebin=1, Int_t system =0, Int_t systoption =3, Bool_t subtrMCclos = kFALSE, Int_t centbin, TString filepurity=""){
     
     cout << "This might take a while - go and get a coffee, you deserved it :) " << endl;
     gSystem->Sleep(2000);
@@ -706,7 +731,30 @@ void SubtractFDexploitingClassv2Modulations(const Int_t meson,TH1D *hData,TGraph
     }
     hData->Sumw2();
     hData->Rebin(rebin);
-    hData->Scale(purity*1./(Double_t)rebin);
+    
+    if(purity<=1) hData->Scale(purity*1./(Double_t)rebin);
+    else if(purity==10) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflected");
+      hPurity->Rebin(rebin);
+      hData->Multiply(hPurity);
+    }
+    else if(purity==20) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = (TCanvas*)fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflected");
+      TF1 *funPurity = (TF1*)hPurity->GetListOfFunctions()->At(0);
+      if(rebin!=1) {printf("WARNING! Not possible to apply purity correction via fit function in case of rebinning of the histogram!"); return;}
+      hData->Multiply(funPurity);
+    }
+    else if(purity==30) {
+      TFile fPurity(filepurity.Data());
+      TCanvas *c = fPurity.Get("cRatio");
+      TH1F *hPurity = (TH1F*)c->FindObject("hRatioReflMovMean");
+      hPurity->Rebin(rebin);
+      hData->Multiply(hPurity);
+    }
 
     //Apply modulation from MC closure test (as correction on data points! pPb2016 preliminary approach!)
     if(subtrMCclos) SubtractMCclosureModulation(hData,0.5*(ptmin+ptmax),ptassoc,ptassocMax,system,centbin);

@@ -98,11 +98,8 @@ Float_t nsigmaPiTOF=3.0;
   Int_t   cutIDPi [12] = {iCutPi    ,iCutPi    ,iCutPi    ,iCutPi    ,iCutPi  ,iCutPi  ,iCutPi   ,iCutPi   ,iCutPi   ,iCutPi   ,iCutPi  ,iCutPi  };
   Int_t   cutIDK  [12] = {iCutK     ,iCutK     ,iCutK     ,iCutK     ,iCutK   ,iCutK   ,iCutK    ,iCutK    ,iCutK    ,iCutK    ,iCutK   ,iCutK   };
   Int_t   PDGCode [12] = {313       ,313       ,313       ,313       ,313     ,313     ,313      ,-313     ,313      ,-313      ,313     ,-313    };
-
-
- 
-
- Double_t multbins[200];
+  
+  Double_t multbins[200];
   int j,nmult=0;
   if(triggerMask==AliVEvent::kHighMultV0){
     for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
@@ -112,10 +109,6 @@ Float_t nsigmaPiTOF=3.0;
     for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
     for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
   }
-
-
-
-
   
   for (Int_t i = 0; i < 12; i++) {
     if (!use[i]) continue;
@@ -137,7 +130,7 @@ Float_t nsigmaPiTOF=3.0;
       out->AddAxis(resID, 200, -0.02, 0.02);
     
     // axis Y: transverse momentum
-    out->AddAxis(ptID, 200, 0.0, 20.0);
+    out->AddAxis(ptID, 300, 0.0, 30.0);
     
     // axis Z: centrality-multiplicity
     if (!isPP)

@@ -58,6 +58,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   TString outputFileName(fileNameBase);
   outputFileName.Append(".root");
 
+  TGrid::Connect("alien:",0,0,"t");
+  
   //===========================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -198,14 +200,14 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     }
 
     //++++++++++++++++//
-    if(kUsePID) {
+    /* if(kUsePID) {
       if(kUseBayesianPID)
 	taskBF->SetUseBayesianPID(gMinAcceptedProbability);
       else if(kUseNSigmaPID)
 	taskBF->SetUseNSigmaPID(nSigmaMax);
       taskBF->SetParticleOfInterest(AliAnalysisTaskBFPsi::kKaon);
       taskBF->SetDetectorUsedForPID(AliAnalysisTaskBFPsi::kTPCTOF); //TOFpid,TPCpid
-    }
+      }*/
     //++++++++++++++++//
 
   }
@@ -249,7 +251,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   taskBF->SetCentralityEstimator(centralityEstimator);
   
   // vertex cut (x,y,z)
-  taskBF->SetVertexDiamond(3.,3.,vertexZ);
+  //taskBF->SetVertexDiamond(3.,3.,vertexZ);
 
   taskBF->SetCorrectionProcedure(corrProc);
 
@@ -257,8 +259,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
   //++++++++++++++++++++++
   // Efficiency + Contamination corrections
   // If correctionFileName = "", do not use corrections
-  if(corrProc == AliAnalysisTaskBFPsi::kMCCorr)
-    taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
+  // if(corrProc == AliAnalysisTaskBFPsi::kMCCorr)
+  // taskBF->SetInputCorrection(Form("$ALICE_PHYSICS/PWGCF/EBYE/BalanceFunctions/Corrections/%s",correctionFileName.Data()),nCentralityArrayBinsForCorrection,gCentralityArrayForCorrections);
   
   /*else if (corrProc == AliAnalysisTaskBFPsi::kDataDrivCorr){
 

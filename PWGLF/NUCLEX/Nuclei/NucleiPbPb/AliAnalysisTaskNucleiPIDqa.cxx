@@ -6,6 +6,7 @@
 using std::string;
 
 // ROOT includes
+#include <TAxis.h>
 #include <TChain.h>
 #include <TH2F.h>
 #include <TList.h>
@@ -27,6 +28,26 @@ const string                kNames[4]= {"2H","3H","3He","4He"};
 const AliPID::EParticleType kSpecies[4] = {AliPID::kDeuteron, AliPID::kTriton, AliPID::kHe3, AliPID::kAlpha};
 const char                  kLetter[2] = {'A','M'};
 const string                kPIDmethod[5] = {"ITS","TPC","TOF","ITSTPC","TPCTOF"};
+
+void BinLogAxis(TH1 *h) {
+  //
+  // Method for the correct logarithmic binning of histograms
+  //
+  TAxis* axis = h->GetXaxis();
+  int bins = axis->GetNbins();
+  double from = axis->GetXmin();
+  double to = axis->GetXmax();
+  double *newBins = new double[bins + 1];
+
+  newBins[0] = from;
+  double factor = pow(to / from, 1. / bins);
+
+  for (int i = 1; i <= bins; i++) {
+    newBins[i] = factor * newBins[i - 1];
+  }
+  axis->Set(bins, newBins);
+  delete[] newBins;
+}
 
 /// Standard and default constructor of the class.
 ///
@@ -69,6 +90,12 @@ void AliAnalysisTaskNucleiPIDqa::UserCreateOutputObjects() {
 
   fList = new TList();
   fList->SetOwner(kTRUE);
+
+  fTPCperformance = new TH2D("fTPCperformance",";#it{p}/ |#it{z}| (GeV/#it{c});TPC d#it{E}/d#it{x} (arb. units);Entries",600,0.1,11.,1400,0,1400);
+  fTPCperformanceTwoCharges = new TH2D("fTPCperformanceTwoCharges",";#it{p}/ #it{z} (GeV/#it{c});TPC d#it{E}/d#it{x} (arb. units);Entries",600,-3,3,1400,0,1400);
+  BinLogAxis(fTPCperformance);
+  fList->Add(fTPCperformance);
+  fList->Add(fTPCperformanceTwoCharges);
 
   for (int iC = 0; iC < 2; ++iC) {
     fITSsignal[iC] = new TH2F(Form("f%cITSsignal",kLetter[iC]),";#it{p} (GeV/#it{c});ITS d#it{E}/d#it{x} (keV / 300#mum);Entries",490,0.2,10.,700,0,1400);
@@ -139,6 +166,11 @@ void AliAnalysisTaskNucleiPIDqa::UserExec(Option_t *) {
     const float beta = AliAnalysisTaskNucleiYield::HasTOF(track,fPID);
     const int hasTOF = beta > 1.e-24 ? 1 : 0;
     const int iC = (track->Charge() > 0) ? 1 : 0;
+
+    if (track->GetTPCsignalN() > 69) {
+      fTPCperformance->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+      fTPCperformanceTwoCharges->Fill(track->GetTPCmomentum() * (2 * iC - 1), track->GetTPCsignal());
+    }
 
     int nSPD = 0u, nSDD = 0u, nSSD = 0u;
     int nITS = AliAnalysisTaskNucleiYield::GetNumberOfITSclustersPerLayer(track, nSPD, nSDD, nSSD);

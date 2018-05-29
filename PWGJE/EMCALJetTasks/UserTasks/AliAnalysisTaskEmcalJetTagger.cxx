@@ -222,8 +222,8 @@ void AliAnalysisTaskEmcalJetTagger::Init(){
    if(!cont1 || !cont2) AliError("Missing jet container");
    
    // when full azimuth, don't do anything
-   Double_t phiMin1 = cont1->GetJetPhiMin(), phiMax1 = cont1->GetJetPhiMax();
-   Double_t phiMin2 = cont2->GetJetPhiMin(), phiMax2 = cont2->GetJetPhiMax();
+   Double_t phiMin1 = cont1->GetJetPhiMin();
+   Double_t phiMin2 = cont2->GetJetPhiMin();
    Bool_t isZeroTwoPi1 = kFALSE;
    //check only one side of phi, since the upper bound is not well defined
    if(phiMin1 > -1.e-6 && phiMin1 < 1.e-6) isZeroTwoPi1 = kTRUE;
@@ -272,7 +272,7 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
 
     //fill histo with angle between jet axis and constituents
     for(Int_t icc=0; icc<jet1->GetNumberOfTracks(); icc++) {
-      AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(icc, jetCont->GetParticleContainer()->GetArray()));//fTracks));
+      AliVParticle *vp = static_cast<AliVParticle*>(jet1->Track(icc));
       if(!vp) continue;
       Double_t dEta = jet1->Eta()-vp->Eta();
       Double_t dPhi = jet1->Phi()-vp->Phi();

@@ -163,7 +163,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     /// Tracking quality cuts
     if (!track->GetInnerParam()) continue;
     if (!Cuts.AcceptTrack(track)) continue;
-    if (track->Pt() < mPtCut && !mMCtrue) continue;
+    if (track->Pt() < mPtCut) continue;
 
     /// PID cuts
     float sig[8] = {999.f};
@@ -273,6 +273,7 @@ void AliAnalysisCODEXtask::UserExec(Option_t *){
     t.SetTPCChi2NDF(track->GetTPCchi2() / track->GetTPCNcls());
     t.SetITSChi2NDF((track->GetITSNcls()) ? track->GetITSchi2() / track->GetITSNcls() : 1.e9);
     t.SetGoldenChi2NDF(track->GetChi2TPCConstrainedVsGlobal(vertex));
+    t.SetTRDnTracklets(track->GetTRDntracklets());
 
     if (mMCtrue) {
       int label = track->GetLabel();

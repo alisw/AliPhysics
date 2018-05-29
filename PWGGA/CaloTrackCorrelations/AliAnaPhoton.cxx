@@ -52,7 +52,7 @@ fRejectTrackMatch(0),         fFillTMHisto(kFALSE),         fFillTMHistoTrackPt(
 fTimeCutMin(-10000),          fTimeCutMax(10000),
 fNCellsCut(0),
 fNLMCutMin(-1),               fNLMCutMax(10),
-fFillSSHistograms(0),         fFillEMCALRegionSSHistograms(0), 
+fFillSSHistograms(0),         fFillSSPerSMHistograms(0),    fFillEMCALRegionSSHistograms(0), 
 fFillConversionVertexHisto(0),fFillOnlySimpleSSHisto(1),
 fFillSSNLocMaxHisto(0),
 fFillTrackMultHistograms(0),
@@ -1038,7 +1038,8 @@ void AliAnaPhoton::FillAcceptanceHistograms()
   
     // Get tag of this particle photon from fragmentation, decay, prompt ...
     // Set the origin of the photon.
-    tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC());
+    tag = GetMCAnalysisUtils()->CheckOrigin(i, GetMC(),
+                                            GetReader()->GetNameOfMCEventHederGeneratorToAccept());
     
     if(!GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
     {
@@ -1387,16 +1388,24 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
   Float_t lambda0 = cluster->GetM02();
   Float_t lambda1 = cluster->GetM20();
   Float_t disp    = cluster->GetDispersion()*cluster->GetDispersion();
-  
+  Int_t   sm      = -1; GetModuleNumber(cluster);
+
   Float_t pt  = fMomentum.Pt();
   Float_t eta = fMomentum.Eta();
-  Float_t phi = fMomentum.Phi();
-  if(phi < 0) phi+=TMath::TwoPi();
+  Float_t phi = GetPhi(fMomentum.Phi());
   
   fhLam0E ->Fill(energy, lambda0, GetEventWeight());
   fhLam0Pt->Fill(pt    , lambda0, GetEventWeight());
   fhLam1E ->Fill(energy, lambda1, GetEventWeight());
   fhLam1Pt->Fill(pt    , lambda1, GetEventWeight());
+  
+  if(fFillSSPerSMHistograms)
+  {
+    sm  = GetModuleNumber(cluster);
+
+    fhLam0PerSM[sm]->Fill(pt, lambda0, GetEventWeight());
+    fhLam1PerSM[sm]->Fill(pt, lambda1, GetEventWeight());
+  }
   
   if(!fFillOnlySimpleSSHisto)
   {
@@ -1433,19 +1442,15 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, Int_t mcTag,
   //
   if(cluster->IsEMCAL() && fFillEMCALRegionSSHistograms)
   {
-    Int_t sm = GetModuleNumber(cluster);
-    
+    if ( sm < 0 ) sm = GetModuleNumber(cluster);
+
 //    Bool_t shared = GetCaloUtils()->IsClusterSharedByTwoSuperModules(GetEMCALGeometry(),cluster);
-    
-    fhLam0PerSM[sm]->Fill(pt, lambda0, GetEventWeight());
-    fhLam1PerSM[sm]->Fill(pt, lambda1, GetEventWeight());
-    
 //    if(GetReader()->IsPileUpFromSPD())
 //    {
 //      fhLam0PerSMSPDPileUp[sm]->Fill(pt, lambda0, GetEventWeight());
 //      fhLam1PerSMSPDPileUp[sm]->Fill(pt, lambda1, GetEventWeight());      
 //    }
-    
+
     Int_t etaRegion = -1, phiRegion = -1;
     GetCaloUtils()->GetEMCALSubregion(cluster,GetReader()->GetEMCALCells(),etaRegion,phiRegion);
     if(etaRegion >= 0 && etaRegion < 4 && phiRegion >=0 && phiRegion < 3) 
@@ -2389,6 +2394,29 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhLam1Pt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhLam1Pt);
 
+    if(fFillSSPerSMHistograms)
+    {
+      for(Int_t ism = 0; ism < fNModules; ism++)
+      {
+        if(ism < fFirstModule || ism > fLastModule) continue;
+        fhLam0PerSM[ism] = new TH2F
+        (Form("hLam0_SM%d",ism),
+         Form("#it{p}_{T} vs #lambda^{2}_{0} in SM %d",ism),
+         nptbins,ptmin,ptmax,40,0,0.4);
+        fhLam0PerSM[ism]->SetYTitle("#lambda^{2}_{0}");
+        fhLam0PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhLam0PerSM[ism]) ;             
+        
+        fhLam1PerSM[ism] = new TH2F
+        (Form("hLam1_SM%d",ism),
+         Form("#it{p}_{T} vs #lambda^{2}_{1} in SM %d",ism),
+         nptbins,ptmin,ptmax,40,0,0.4);
+        fhLam1PerSM[ism]->SetYTitle("#lambda^{2}_{1}");
+        fhLam1PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+        outputContainer->Add(fhLam1PerSM[ism]) ;   
+      }
+    }
+    
     if(!fFillOnlySimpleSSHisto)
     {
       fhDispE  = new TH2F ("hDispE"," dispersion^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
@@ -2731,15 +2759,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhTrackMatchedDEtaDPhiNeg[i]->SetYTitle("#Delta #varphi (rad)");
       fhTrackMatchedDEtaDPhiNeg[i]->SetXTitle("#Delta #eta");
 
-      fhdEdx[i]  = new TH2F (Form("hdEdx%s",cutTM[i].Data()),Form("matched track <dE/dx> vs cluster #it{E}, %s",cutTM[i].Data()),
+      fhdEdx[i]  = new TH2F (Form("hdEdx%s",cutTM[i].Data()),Form("matched track <d#it{E}/d#it{x}> vs cluster #it{E}, %s",cutTM[i].Data()),
                              nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
       fhdEdx[i]->SetXTitle("#it{E}^{cluster} (GeV)");
-      fhdEdx[i]->SetYTitle("<dE/dx>");
+      fhdEdx[i]->SetYTitle("<d#it{E}/d#it{x}>");
       
-      fhEOverP[i]  = new TH2F (Form("hEOverP%s",cutTM[i].Data()),Form("matched track E/p vs cluster #it{E}, %s",cutTM[i].Data()),
+      fhEOverP[i]  = new TH2F (Form("hEOverP%s",cutTM[i].Data()),Form("matched track #it{E}/#it{p} vs cluster #it{E}, %s",cutTM[i].Data()),
                                nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
       fhEOverP[i]->SetXTitle("#it{E}^{cluster} (GeV)");
-      fhEOverP[i]->SetYTitle("E/p");
+      fhEOverP[i]->SetYTitle("#it{E}/#it{p}");
 
 //    outputContainer->Add(fhTrackMatchedDEta[i]) ;
 //    outputContainer->Add(fhTrackMatchedDPhi[i]) ;
@@ -2818,15 +2846,15 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhTrackMatchedDEtaDPhiNegTrackPt[i]->SetYTitle("#Delta #varphi (rad)");
         fhTrackMatchedDEtaDPhiNegTrackPt[i]->SetXTitle("#Delta #eta");
         
-        fhdEdxTrackPt[i]  = new TH2F (Form("hdEdxTrackPt%s",cutTM[i].Data()),Form("matched track <dE/dx> vs track #it{p}_{T}, %s",cutTM[i].Data()),
+        fhdEdxTrackPt[i]  = new TH2F (Form("hdEdxTrackPt%s",cutTM[i].Data()),Form("matched track <d#it{E}/d#it{x}> vs track #it{p}_{T}, %s",cutTM[i].Data()),
                                       nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax);
         fhdEdxTrackPt[i]->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
-        fhdEdxTrackPt[i]->SetYTitle("<dE/dx>");
+        fhdEdxTrackPt[i]->SetYTitle("<d#it{E}/d#it{x}>");
         
-        fhEOverPTrackPt[i]  = new TH2F (Form("hEOverPTrackPt%s",cutTM[i].Data()),Form("matched track E/p vs track #it{p}_{T}, %s",cutTM[i].Data()),
+        fhEOverPTrackPt[i]  = new TH2F (Form("hEOverPTrackPt%s",cutTM[i].Data()),Form("matched track #it{E}/#it{p} vs track #it{p}_{T}, %s",cutTM[i].Data()),
                                         nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
-        fhEOverPTrackPt[i]->SetXTitle("#it{p}_{T}^{track} (GeV)^{track/#it{c}}");
-        fhEOverPTrackPt[i]->SetYTitle("E/p");
+        fhEOverPTrackPt[i]->SetXTitle("#it{p}_{T}^{track} (GeV/#it{c})");
+        fhEOverPTrackPt[i]->SetYTitle("#it{E}/#it{p}");
         
 //      outputContainer->Add(fhTrackMatchedDEtaTrackPt[i]) ;
 //      outputContainer->Add(fhTrackMatchedDPhiTrackPt[i]) ;
@@ -2859,10 +2887,10 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         
         fhEOverPTRD[i]  = new TH2F
         (Form("hEOverPTRD%s",cutTM[i].Data()),
-         Form("matched track E/p vs cluster E, behind TRD, %s",cutTM[i].Data()),
+         Form("matched track #it{E}/#it{p} vs cluster E, behind TRD, %s",cutTM[i].Data()),
          nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax);
         fhEOverPTRD[i]->SetXTitle("#it{E} (GeV)");
-        fhEOverPTRD[i]->SetYTitle("E/p");
+        fhEOverPTRD[i]->SetYTitle("#it{E}/#it{p}");
         
         outputContainer->Add(fhTrackMatchedDEtaTRD[i]) ;
         outputContainer->Add(fhTrackMatchedDPhiTRD[i]) ;
@@ -3297,22 +3325,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     for(Int_t ism = 0; ism < fNModules; ism++)
     {
       if(ism < fFirstModule || ism > fLastModule) continue;
-
-      fhLam0PerSM[ism] = new TH2F
-      (Form("hLam0_sm%d",ism),
-       Form("#it{p}_{T} vs #lambda^{2}_{0} in sm %d",ism),
-       nptbins,ptmin,ptmax,40,0,0.4);
-      fhLam0PerSM[ism]->SetYTitle("#lambda^{2}_{0}");
-      fhLam0PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhLam0PerSM[ism]) ;             
-      
-      fhLam1PerSM[ism] = new TH2F
-      (Form("hLam1_sm%d",ism),
-       Form("#it{p}_{T} vs #lambda^{2}_{1} in sm %d",ism),
-       nptbins,ptmin,ptmax,40,0,0.4);
-      fhLam1PerSM[ism]->SetYTitle("#lambda^{2}_{1}");
-      fhLam1PerSM[ism]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-      outputContainer->Add(fhLam1PerSM[ism]) ;   
       
       fhLam0PerSMLargeTimeInClusterCell[ism] = new TH2F
       (Form("hLam0_sm%d_LargeTimeInClusterCell",ism),
@@ -4578,7 +4590,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     
     if ( IsDataMC() )
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(), GetMC(), pl); // check lost decays
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(), GetMC(), 
+                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept(),
+                                              pl); // check lost decays
           
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
       

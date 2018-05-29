@@ -16,6 +16,7 @@
 # Include the libraries
 add_subdirectory(blastwave)
 add_subdirectory(CME)
+add_subdirectory(GF)
 add_subdirectory(CME/TwoPwrtRP)
 add_subdirectory(Forward)
 

@@ -72,6 +72,11 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
   fSubjetCutoff(0.1),
+  fHardCutoff(0),
+  fDoTwoTrack(kFALSE),
+  fPhiCutValue(0.02),
+  fEtaCutValue(0.02),
+  fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0), 
@@ -86,7 +91,7 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging() :
   fhPhi(0x0),
   fhTrackPhi(0x0),
   fHLundIterative(0x0),
-  fHCheckResolutionSubjets(0x0),  
+  fHCheckResolutionSubjets(0x0),
   fNbOfConstvspT(0x0),
   fTreeObservableTagging(0)
 
@@ -121,6 +126,11 @@ AliAnalysisTaskEmcalQGTagging::AliAnalysisTaskEmcalQGTagging(const char *name) :
   fOneConstSelectOn(kFALSE),
   fTrackCheckPlots(kFALSE),
   fSubjetCutoff(0.1),
+  fHardCutoff(0),
+  fDoTwoTrack(kFALSE),
+  fPhiCutValue(0.02),
+  fEtaCutValue(0.02),
+  fMagFieldPolarity(1),
   fDerivSubtrOrder(0),
   fh2ResponseUW(0x0),
   fh2ResponseW(0x0),
@@ -238,7 +248,7 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
 
  
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 12;
+  const Int_t nVar = 14;
   const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeObservableTagging = new TTree(nameoutput, nameoutput);
   
@@ -264,6 +274,8 @@ AliAnalysisTaskEmcalQGTagging::~AliAnalysisTaskEmcalQGTagging()
   fShapesVarNames[10] = "lesubMatch";
   //fShapesVarNames[14] = "coronnaMatch";
   fShapesVarNames[11]="weightPythia";
+  fShapesVarNames[12]="nsd";
+  fShapesVarNames[13]="nall";
   //fShapesVarNames[14]="ntrksEvt";
   //fShapesVarNames[16]="rhoVal";
   //fShapesVarNames[17]="rhoMassVal";
@@ -620,7 +632,7 @@ Bool_t AliAnalysisTaskEmcalQGTagging::FillHistograms()
         if(fJetShapeSub==kDerivSub) kMatched = 2;
         ptMatch=jet3->Pt();
         ptDMatch=GetJetpTD(jet3, kMatched);
-        massMatch=jet3->Phi();
+        massMatch=jet2->Pt();
 	//GetJetMass(jet3,kMatched);
         // constMatch=1.*GetJetNumberOfConstituents(jet3,kMatched);
         angulMatch=GetJetAngularity(jet3, kMatched);
@@ -1173,7 +1185,8 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
   
     if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
       AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
-      if (!fTrk) continue; 
+      if (!fTrk) continue;
+      if(fDoTwoTrack==kTRUE && CheckClosePartner(i,fJet,fTrk,fTrackCont)) continue;
       PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
       PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
       fInputVectors.push_back(PseudoTracks);
@@ -1202,19 +1215,24 @@ void AliAnalysisTaskEmcalQGTagging::RecursiveParents(AliEmcalJet *fJet,AliJetCon
    fastjet::PseudoJet j2;
    jj=fOutputJets[0];
    double ndepth=0;
+   double nall=0;
     while(jj.has_parents(j1,j2)){
-      ndepth=ndepth+1;
+      nall=nall+1;
     if(j1.perp() < j2.perp()) swap(j1,j2);
     double delta_R=j1.delta_R(j2);
     double z=j2.perp()/(j1.perp()+j2.perp());
     double y =log(1.0/delta_R);
     double lnpt_rel=log(z*delta_R);
+    if(z>fHardCutoff){
+     ndepth=ndepth+1;  
     Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
-    fHLundIterative->Fill(LundEntries);
+    fHLundIterative->Fill(LundEntries);}
     jj=j1;} 
 
-
-
+    if(ReclusterAlgo==1){
+      fShapesVar[12]=nall;
+      fShapesVar[13]=ndepth;
+    }
 
   } catch (fastjet::Error) {
     AliError(" [w] FJ Exception caught.");
@@ -1338,6 +1356,49 @@ void AliAnalysisTaskEmcalQGTagging::CheckSubjetResolution(AliEmcalJet *fJet,AliJ
 }
 
 
+Bool_t AliAnalysisTaskEmcalQGTagging::CheckClosePartner(Int_t index, AliEmcalJet *fJet,AliVParticle *fTrk1, AliParticleContainer *fTrackCont){
+      //check if tracks are close//
+      for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk2 = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk2) continue;
+      if(i==index) continue;
+      Double_t phi1 = fTrk1->Phi();
+      Double_t phi2 = fTrk2->Phi();
+      Double_t chg1 = fTrk1->Charge();
+      Double_t chg2 = fTrk2->Charge();
+      Double_t ptv1 = fTrk1->Pt();
+      Double_t ptv2 = fTrk2->Pt();
+      Double_t deta=fTrk2->Eta()-fTrk1->Eta();
+      const Float_t kLimit = fPhiCutValue* 3;
+
+      if (TMath::Abs(fTrk1->Eta()-fTrk2->Eta()) < fEtaCutValue*2.5*3){
+      Float_t initdpsinner = (phi2 - TMath::ASin(0.075*chg2*fMagFieldPolarity*0.8/ptv2) -
+      (phi1 - TMath::ASin(0.075*chg1*fMagFieldPolarity*0.8/ptv1)));
+      
+      Float_t initdpsouter = (phi2 - TMath::ASin(0.075*chg2*fMagFieldPolarity*2.5/ptv2) -
+      (phi1 - TMath::ASin(0.075*chg1*fMagFieldPolarity*2.5/ptv1)));
+
+      initdpsinner = TVector2::Phi_mpi_pi(initdpsinner);
+      initdpsouter = TVector2::Phi_mpi_pi(initdpsouter);
+
+      
+
+     if (TMath::Abs(initdpsinner) < kLimit ||
+      TMath::Abs(initdpsouter) < kLimit || initdpsinner * initdpsouter < 0 ) {
+      Double_t mindps = 1e5;
+    
+   
+   
+        for (Double_t rad = 0.8; rad < 2.51; rad += 0.01) {
+          Double_t dps = (phi2 - TMath::ASin(0.075*chg2*fMagFieldPolarity*rad/ptv2) - (phi1 - TMath::ASin(0.075*chg1*fMagFieldPolarity*rad/ptv1)));
+          dps = TVector2::Phi_mpi_pi(dps);
+          if (TMath::Abs(dps) < TMath::Abs(mindps))
+            mindps = dps;
+        }
+	if(TMath::Abs(mindps)<fPhiCutValue && TMath::Abs(deta)<fEtaCutValue) return kTRUE;
+     } }
+	 return kFALSE;
+      }}
 
 
 

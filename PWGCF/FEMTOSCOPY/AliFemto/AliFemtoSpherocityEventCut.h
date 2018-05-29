@@ -14,9 +14,9 @@ class AliFemtoSpherocityEventCut : public AliFemtoEventCut {
 public:
 
   AliFemtoSpherocityEventCut();
-  AliFemtoSpherocityEventCut(AliFemtoSpherocityEventCut& c);
+  AliFemtoSpherocityEventCut(const AliFemtoSpherocityEventCut& c);
   virtual ~AliFemtoSpherocityEventCut();
-  AliFemtoSpherocityEventCut& operator=(AliFemtoSpherocityEventCut& c);
+  AliFemtoSpherocityEventCut& operator=(const AliFemtoSpherocityEventCut& c);
 
   void SetEventMult(const int& lo,const int& hi);
   void SetVertZPos(const float& lo, const float& hi);
@@ -34,20 +34,20 @@ public:
   virtual AliFemtoString Report();
   virtual bool Pass(const AliFemtoEvent* event);
 
-  AliFemtoSpherocityEventCut* Clone();
+  virtual AliFemtoEventCut* Clone() const;
 
 private:   // here are the quantities I want to cut on...
 
-  int fEventMult[2];      // range of multiplicity
-  float fVertZPos[2];     // range of z-position of vertex
-  float fPsiEP[2];     // range of vzero ep angle
-  bool fAcceptBadVertex;  // Set to true to accept events with bad vertex
-  long fNEventsPassed;    // Number of events checked by this cut that passed
-  long fNEventsFailed;    // Number of events checked by this cut that failed
-  bool fAcceptOnlyPhysics;// Accept only physics events
-  double fSoCutMin;       // transverse sphericity minimum
-  double fSoCutMax;       // transverse sphericity maximum
-  int  fSelectTrigger;    // If set, only given trigger will be selected
+  int fEventMult[2];       ///< range of multiplicity
+  float fVertZPos[2];      ///< range of z-position of vertex
+  float fPsiEP[2];         ///< range of vzero ep angle
+  bool fAcceptBadVertex;   ///< Set to true to accept events with bad vertex
+  long fNEventsPassed;     ///< Number of events checked by this cut that passed
+  long fNEventsFailed;     ///< Number of events checked by this cut that failed
+  bool fAcceptOnlyPhysics; ///< Accept only physics events
+  double fSoCutMin;        ///< transverse sphericity minimum
+  double fSoCutMax;        ///< transverse sphericity maximum
+  int  fSelectTrigger;     ///< If set, only given trigger will be selected
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -62,11 +62,20 @@ inline void AliFemtoSpherocityEventCut::SetVertZPos(const float& lo, const float
 inline void AliFemtoSpherocityEventCut::SetEPVZERO(const float& lo, const float& hi){fPsiEP[0]=lo; fPsiEP[1]=hi;}
 inline int  AliFemtoSpherocityEventCut::NEventsPassed() const {return fNEventsPassed;}
 inline int  AliFemtoSpherocityEventCut::NEventsFailed() const {return fNEventsFailed;}
-inline void  AliFemtoSpherocityEventCut::SetSoMin(double soMin ) {fSoCutMin=soMin;}
-inline void  AliFemtoSpherocityEventCut::SetSoMax(double soMax ) {fSoCutMax=soMax;}
+inline void AliFemtoSpherocityEventCut::SetSoMin(double soMin) {fSoCutMin=soMin;}
+inline void AliFemtoSpherocityEventCut::SetSoMax(double soMax) {fSoCutMax=soMax;}
 inline void AliFemtoSpherocityEventCut::SetTriggerSelection(int trig) { fSelectTrigger = trig; }
-inline AliFemtoSpherocityEventCut* AliFemtoSpherocityEventCut::Clone() { AliFemtoSpherocityEventCut* c = new AliFemtoSpherocityEventCut(*this); return c;}
-inline AliFemtoSpherocityEventCut::AliFemtoSpherocityEventCut(AliFemtoSpherocityEventCut& c) : AliFemtoEventCut(c), fAcceptBadVertex(false), fNEventsPassed(0), fNEventsFailed(0), fAcceptOnlyPhysics(false), fSoCutMin(0), fSoCutMax(1), fSelectTrigger(0) {
+inline AliFemtoEventCut* AliFemtoSpherocityEventCut::Clone() const { AliFemtoSpherocityEventCut* c = new AliFemtoSpherocityEventCut(*this); return c;}
+inline AliFemtoSpherocityEventCut::AliFemtoSpherocityEventCut(const AliFemtoSpherocityEventCut& c):
+  AliFemtoEventCut(c),
+  fAcceptBadVertex(c.fAcceptBadVertex),
+  fNEventsPassed(0),
+  fNEventsFailed(0),
+  fAcceptOnlyPhysics(c.fAcceptOnlyPhysics),
+  fSoCutMin(c.fSoCutMin),
+  fSoCutMax(c.fSoCutMax),
+  fSelectTrigger(c.fSelectTrigger)
+{
   fEventMult[0] = c.fEventMult[0];
   fEventMult[1] = c.fEventMult[1];
   fVertZPos[0] = c.fVertZPos[0];
@@ -75,7 +84,7 @@ inline AliFemtoSpherocityEventCut::AliFemtoSpherocityEventCut(AliFemtoSpherocity
   fPsiEP[1] = c.fPsiEP[1];
 }
 
-inline AliFemtoSpherocityEventCut& AliFemtoSpherocityEventCut::operator=(AliFemtoSpherocityEventCut& c) {
+inline AliFemtoSpherocityEventCut& AliFemtoSpherocityEventCut::operator=(const AliFemtoSpherocityEventCut& c) {
   if (this != &c) {
     AliFemtoEventCut::operator=(c);
     fEventMult[0] = c.fEventMult[0];
@@ -84,6 +93,14 @@ inline AliFemtoSpherocityEventCut& AliFemtoSpherocityEventCut::operator=(AliFemt
     fVertZPos[1] = c.fVertZPos[1];
     fPsiEP[0] = c.fPsiEP[0];
     fPsiEP[1] = c.fPsiEP[1];
+
+    fAcceptBadVertex = c.fAcceptBadVertex;
+    fNEventsPassed = 0;
+    fNEventsFailed = 0;
+    fAcceptOnlyPhysics = c.fAcceptOnlyPhysics;
+    fSoCutMin = c.fSoCutMin;
+    fSoCutMax = c.fSoCutMax;
+    fSelectTrigger = c.fSelectTrigger;
   }
 
   return *this;

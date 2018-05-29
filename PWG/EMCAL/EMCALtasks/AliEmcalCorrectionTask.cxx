@@ -34,20 +34,6 @@ ClassImp(AliEmcalCorrectionTask);
 ClassImp(AliEmcalCorrectionCellContainer);
 /// \endcond
 
-const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> AliEmcalCorrectionTask::fgkClusterEnergyTypeMap = {
-  {"kNonLinCorr", AliVCluster::kNonLinCorr },
-  {"kHadCorr", AliVCluster::kHadCorr },
-  {"kUserDefEnergy1", AliVCluster::kUserDefEnergy1 },
-  {"kUserDefEnergy2", AliVCluster::kUserDefEnergy2 }
-};
-
-const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> AliEmcalCorrectionTask::fgkTrackFilterTypeMap = {
-  {"kNoTrackFilter", AliEmcalTrackSelection::kNoTrackFilter },
-  {"kCustomTrackFilter", AliEmcalTrackSelection::kCustomTrackFilter },
-  {"kHybridTracks",  AliEmcalTrackSelection::kHybridTracks },
-  {"kTPCOnlyTracks", AliEmcalTrackSelection::kTPCOnlyTracks }
-};
-
 /**
  * Default constructor.
  */
@@ -908,7 +894,7 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
     /*result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "defaultClusterEnergy", tempString, false);
     if (result) {
       // Need to get the enumeration
-      AliVCluster::VCluUserDefEnergy_t clusterEnergyType = fgkClusterEnergyTypeMap.at(tempString);
+      AliVCluster::VCluUserDefEnergy_t clusterEnergyType = AliClusterContainer::fgkClusterEnergyTypeMap.at(tempString);
       AliDebugStream(2) << clusterContainer->GetName() << ": Setting cluster energy type to " << clusterEnergyType << std::endl;
       clusterContainer->SetDefaultClusterEnergy(clusterEnergyType);
     }*/
@@ -955,8 +941,8 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
     result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "trackFilterType", tempString, false);
     if (result) {
       // Need to get the enumeration
-      AliEmcalTrackSelection::ETrackFilterType_t trackFilterType = fgkTrackFilterTypeMap.at(tempString);
-      AliDebugStream(2) << trackContainer->GetName() << ": Setting trackFilterType of " << trackFilterType << std::endl;
+      AliEmcalTrackSelection::ETrackFilterType_t trackFilterType = AliTrackContainer::fgkTrackFilterTypeMap.at(tempString);
+      AliDebugStream(2) << trackContainer->GetName() << ": Setting trackFilterType of " << trackFilterType << " (" << tempString << ")\n";
       trackContainer->SetTrackFilterType(trackFilterType);
     }
 

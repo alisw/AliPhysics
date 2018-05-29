@@ -783,7 +783,7 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
     if ( !onFlyV0 && isInCascadeWindow &&
 	 part->CosV0PointingAngle()>0.99 && TMath::Abs(invmassK0S-mk0sPDG)<=0.05 &&
 	 part->Pt()>=fPtMinToFillTheTree && part->Pt()<fPtMaxToFillTheTree &&
-	 (!fUseTPCPIDtoFillTree || (fUseTPCPIDtoFillTree && TMath::Abs(nSigmaTPCpr)<3.)))
+	 (!fUseTPCPIDtoFillTree || (fUseTPCPIDtoFillTree && TMath::Abs(nSigmaTPCpr)<cutsAnal->GetNTPCSigmaCutForPreselection())))
       FillTheTree(part,cutsAnal,mcArray,isLc,originLc);
     return;
   }

@@ -71,12 +71,14 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fEventAOD(0x0),
   fPIDResponse(0x0),
   fPIDCombined(0x0),
-  fFlowWeightsFile(0x0),
+  fFlowNUAWeightsFile(0x0),
+  fFlowNUEWeightsFile(0x0),
   fInit(kFALSE),
   fIndexCentrality(-1),
   fEventCounter(0),
   fNumEventsAnalyse(50),
   fRunNumber(-1),
+  fExtraPileUp(kFALSE),
   fPDGMassPion(TDatabasePDG::Instance()->GetParticle(211)->Mass()),
   fPDGMassKaon(TDatabasePDG::Instance()->GetParticle(321)->Mass()),
   fPDGMassProton(TDatabasePDG::Instance()->GetParticle(2212)->Mass()),
@@ -106,10 +108,14 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fCutFlowDoFourCorrelations(kTRUE),
   fDoOnlyMixedCorrelations(kFALSE),
   fFlowFillWeights(kFALSE),
-  fFlowUseWeights(kFALSE),
-  fFlowWeightsPath(),
+  fFlowUseNUAWeights(kFALSE),
+  fFlowUseNUEWeights(kFALSE),
+  fFlowNUAWeightsPath(),
+  fFlowNUEWeightsPath(),
   fPositivelyChargedRef(kFALSE),
   fNegativelyChargedRef(kFALSE),
+  fPositivelyChargedPOI(kFALSE),
+  fNegativelyChargedPOI(kFALSE),
 
 
 
@@ -132,7 +138,8 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   // PID tracks selection
   fESDpid(),
   fCutPIDUseAntiProtonOnly(kFALSE),
-  fPID3sigma(kTRUE),
+  fPIDnsigma(kTRUE),
+  fPIDnsigmaCombination(2),
   fPIDbayesian(kFALSE),
   fCutPIDnSigmaPionMax(3),
   fCutPIDnSigmaKaonMax(3),
@@ -152,28 +159,60 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes() : AliAnalysisTaskSE(),
   fFlowPID(0x0),
 
   // flow histograms & profiles
-  fh3WeightsRefs(0x0),
-  fh3WeightsCharged(0x0),
-  fh3WeightsPion(0x0),
-  fh3WeightsKaon(0x0),
-  fh3WeightsProton(0x0),
-  fh3AfterWeightsRefs(0x0),
-  fh3AfterWeightsCharged(0x0),
-  fh3AfterWeightsPion(0x0),
-  fh3AfterWeightsKaon(0x0),
-  fh3AfterWeightsProton(0x0),
-  fh2WeightRefs(0x0),
-  fh2WeightCharged(0x0),
-  fh2WeightPion(0x0),
-  fh2WeightKaon(0x0),
-  fh2WeightProton(0x0),
+  fh3BeforeNUAWeightsRefs(0x0),
+  fh3BeforeNUAWeightsCharged(0x0),
+  fh3BeforeNUAWeightsPion(0x0),
+  fh3BeforeNUAWeightsKaon(0x0),
+  fh3BeforeNUAWeightsProton(0x0),
+
+  fh3AfterNUAWeightsRefs(0x0),
+  fh3AfterNUAWeightsCharged(0x0),
+  fh3AfterNUAWeightsPion(0x0),
+  fh3AfterNUAWeightsKaon(0x0),
+  fh3AfterNUAWeightsProton(0x0),
+
+  fhBeforeNUEWeightsRefs(0x0),
+  fhBeforeNUEWeightsCharged(0x0),
+  fhBeforeNUEWeightsPion(0x0),
+  fhBeforeNUEWeightsKaon(0x0),
+  fhBeforeNUEWeightsProton(0x0),
+
+  fhAfterNUEWeightsRefs(0x0),
+  fhAfterNUEWeightsCharged(0x0),
+  fhAfterNUEWeightsPion(0x0),
+  fhAfterNUEWeightsKaon(0x0),
+  fhAfterNUEWeightsProton(0x0),
+
+  fh3NUAWeightRefsPlus(0x0),
+  fh3NUAWeightChargedPlus(0x0),
+  fh3NUAWeightPionPlus(0x0),
+  fh3NUAWeightKaonPlus(0x0),
+  fh3NUAWeightProtonPlus(0x0),
+
+  fh3NUAWeightRefsMinus(0x0),
+  fh3NUAWeightChargedMinus(0x0),
+  fh3NUAWeightPionMinus(0x0),
+  fh3NUAWeightKaonMinus(0x0),
+  fh3NUAWeightProtonMinus(0x0),
+
+  fhNUEWeightRefsPlus(0x0),
+  fhNUEWeightChargedPlus(0x0),
+  fhNUEWeightPionPlus(0x0),
+  fhNUEWeightKaonPlus(0x0),
+  fhNUEWeightProtonPlus(0x0),
+
+  fhNUEWeightRefsMinus(0x0),
+  fhNUEWeightChargedMinus(0x0),
+  fhNUEWeightPionMinus(0x0),
+  fhNUEWeightKaonMinus(0x0),
+  fhNUEWeightProtonMinus(0x0),
 
 
   // event histograms
   fhEventCentrality(0x0),
   fh2EventCentralityNumSelCharged(0x0),
   fhEventCounter(0x0),
-
+ 
   // charged histogram
   fh2RefsMult(0x0),
   fh2RefsPt(0x0),
@@ -237,12 +276,14 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fEventAOD(0x0),
   fPIDResponse(0x0),
   fPIDCombined(0x0),
-  fFlowWeightsFile(0x0),
+  fFlowNUAWeightsFile(0x0),
+  fFlowNUEWeightsFile(0x0),
   fInit(kFALSE),
   fIndexCentrality(-1),
   fEventCounter(0),
   fNumEventsAnalyse(50),
   fRunNumber(-1),
+  fExtraPileUp(kFALSE),
   fPDGMassPion(TDatabasePDG::Instance()->GetParticle(211)->Mass()),
   fPDGMassKaon(TDatabasePDG::Instance()->GetParticle(321)->Mass()),
   fPDGMassProton(TDatabasePDG::Instance()->GetParticle(2212)->Mass()),
@@ -272,10 +313,14 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fCutFlowDoFourCorrelations(kTRUE),
   fDoOnlyMixedCorrelations(kFALSE),
   fFlowFillWeights(kFALSE),
-  fFlowUseWeights(kFALSE),
-  fFlowWeightsPath(),
+  fFlowUseNUAWeights(kFALSE),
+  fFlowUseNUEWeights(kFALSE),
+  fFlowNUAWeightsPath(),
+  fFlowNUEWeightsPath(),
   fPositivelyChargedRef(kFALSE),
   fNegativelyChargedRef(kFALSE),
+  fPositivelyChargedPOI(kFALSE),
+  fNegativelyChargedPOI(kFALSE),
 
   // events selection
   fPVtxCutZ(0.),
@@ -295,7 +340,8 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   // PID tracks selection
   fESDpid(),
   fCutPIDUseAntiProtonOnly(kFALSE),
-  fPID3sigma(kTRUE),
+  fPIDnsigma(kTRUE),
+  fPIDnsigmaCombination(2.),
   fPIDbayesian(kFALSE),
   fCutPIDnSigmaPionMax(3),
   fCutPIDnSigmaKaonMax(3),
@@ -316,21 +362,53 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
   fFlowPID(0x0),
 
   // flow histograms & profiles
-  fh3WeightsRefs(0x0),
-  fh3WeightsCharged(0x0),
-  fh3WeightsPion(0x0),
-  fh3WeightsKaon(0x0),
-  fh3WeightsProton(0x0),
-  fh3AfterWeightsRefs(0x0),
-  fh3AfterWeightsCharged(0x0),
-  fh3AfterWeightsPion(0x0),
-  fh3AfterWeightsKaon(0x0),
-  fh3AfterWeightsProton(0x0),
-  fh2WeightRefs(0x0),
-  fh2WeightCharged(0x0),
-  fh2WeightPion(0x0),
-  fh2WeightKaon(0x0),
-  fh2WeightProton(0x0),
+  fh3BeforeNUAWeightsRefs(0x0),
+  fh3BeforeNUAWeightsCharged(0x0),
+  fh3BeforeNUAWeightsPion(0x0),
+  fh3BeforeNUAWeightsKaon(0x0),
+  fh3BeforeNUAWeightsProton(0x0),
+
+  fh3AfterNUAWeightsRefs(0x0),
+  fh3AfterNUAWeightsCharged(0x0),
+  fh3AfterNUAWeightsPion(0x0),
+  fh3AfterNUAWeightsKaon(0x0),
+  fh3AfterNUAWeightsProton(0x0),
+
+  fhBeforeNUEWeightsRefs(0x0),
+  fhBeforeNUEWeightsCharged(0x0),
+  fhBeforeNUEWeightsPion(0x0),
+  fhBeforeNUEWeightsKaon(0x0),
+  fhBeforeNUEWeightsProton(0x0),
+
+  fhAfterNUEWeightsRefs(0x0),
+  fhAfterNUEWeightsCharged(0x0),
+  fhAfterNUEWeightsPion(0x0),
+  fhAfterNUEWeightsKaon(0x0),
+  fhAfterNUEWeightsProton(0x0),
+
+  fh3NUAWeightRefsPlus(0x0),
+  fh3NUAWeightChargedPlus(0x0),
+  fh3NUAWeightPionPlus(0x0),
+  fh3NUAWeightKaonPlus(0x0),
+  fh3NUAWeightProtonPlus(0x0),
+
+  fh3NUAWeightRefsMinus(0x0),
+  fh3NUAWeightChargedMinus(0x0),
+  fh3NUAWeightPionMinus(0x0),
+  fh3NUAWeightKaonMinus(0x0),
+  fh3NUAWeightProtonMinus(0x0),
+
+  fhNUEWeightRefsPlus(0x0),
+  fhNUEWeightChargedPlus(0x0),
+  fhNUEWeightPionPlus(0x0),
+  fhNUEWeightKaonPlus(0x0),
+  fhNUEWeightProtonPlus(0x0),
+
+  fhNUEWeightRefsMinus(0x0),
+  fhNUEWeightChargedMinus(0x0),
+  fhNUEWeightPionMinus(0x0),
+  fhNUEWeightKaonMinus(0x0),
+  fhNUEWeightProtonMinus(0x0),
 
   // event histograms
   fhEventCentrality(0x0),
@@ -484,7 +562,7 @@ AliAnalysisTaskFlowModes::AliAnalysisTaskFlowModes(const char* name) : AliAnalys
     fhQAEventsSPDresol[iQA] = 0x0;
     fhQAEventsPileUp[iQA] = 0x0;
     fhQAEventsCentralityOutliers[iQA] = 0x0;
-
+    fhEventsMultTOFFilterbit32[iQA] = 0x0;
     // charged
     fhQAChargedMult[iQA] = 0x0;
     fhQAChargedPt[iQA] = 0x0;
@@ -601,74 +679,88 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
     
     fhEventCentrality = new TH1D("fhEventCentrality",Form("Event centrality (%s); centrality/multiplicity",fMultEstimator.Data()), fFlowCentNumBins,0,fFlowCentNumBins);
     fQAEvents->Add(fhEventCentrality);
-    fh2EventCentralityNumSelCharged = new TH2D("fh2EventCentralityNumSelCharged",Form("Event centrality (%s) vs. N^{sel}_{ch}; N^{sel}_{ch}; centrality/multiplicity",fMultEstimator.Data()), 150,0,150, fFlowCentNumBins,0,fFlowCentNumBins);
+    fh2EventCentralityNumSelCharged = new TH2D("fh2EventCentralityNumSelCharged",Form("Event centrality (%s) vs. N^{sel}_{ch}; N^{sel}_{ch}; centrality/multiplicity",fMultEstimator.Data()), 3000,0,3000, fFlowCentNumBins,0,fFlowCentNumBins);
     fQAEvents->Add(fh2EventCentralityNumSelCharged); 
 
-    const Short_t iEventCounterBins = 10;
-    TString sEventCounterLabel[iEventCounterBins] = {"Input","Physics selection OK","Centr. Est. Consis. OK","PV OK","SPD Vtx OK","Pileup MV OK","Vtx Consis. OK","PV #it{z} OK","ESD TPC Mult. Diff. OK","Selected"};
+    const Short_t iEventCounterBins = 11;//10 it was
+    TString sEventCounterLabel[iEventCounterBins] = {"Input","Physics selection OK","Centr. Est. Consis. OK","PV OK","SPD Vtx OK","Pileup MV OK","Out-of-bunch Pileup OK","Vtx Consis. OK","PV #it{z} OK","ESD TPC Mult. Diff. OK","Selected"};
     fhEventCounter = new TH1D("fhEventCounter","Event Counter",iEventCounterBins,0,iEventCounterBins);
     for(Short_t i(0); i < iEventCounterBins; i++) fhEventCounter->GetXaxis()->SetBinLabel(i+1, sEventCounterLabel[i].Data() );
     fQAEvents->Add(fhEventCounter);
-  
+    
     // flow histograms & profiles
     // weights
     if(fFlowFillWeights || fRunMode == kFillWeights)
     {
-      // for(Short_t iGap(0); iGap < fNumEtaGap; iGap++)
-      //   for(Short_t iHarm(0); iHarm < fNumHarmonics; iHarm++)
-      //   {
-      //     fpMeanQxRefsPos[iGap][iHarm] = new TProfile(Form("fpMeanQxRefs_harm%d_gap%02.2g_Pos",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("<<Qx>>: Refs | Gap %g | n=%d | POS; multiplicity/centrality; <Qx>",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,0,fFlowCentNumBins);
-      //     fpMeanQxRefsPos[iGap][iHarm]->Sumw2();
-      //     fFlowWeights->Add(fpMeanQxRefsPos[iGap][iHarm]);
-      //
-      //     fpMeanQxRefsNeg[iGap][iHarm] = new TProfile(Form("fpMeanQxRefs_harm%d_gap%02.2g_Neg",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("<<Qx>>: Refs | Gap %g | n=%d | NEG; multiplicity/centrality; <Qx>",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,0,fFlowCentNumBins);
-      //     fpMeanQxRefsNeg[iGap][iHarm]->Sumw2();
-      //     fFlowWeights->Add(fpMeanQxRefsNeg[iGap][iHarm]);
-      //
-      //     fpMeanQyRefsPos[iGap][iHarm] = new TProfile(Form("fpMeanQyRefs_harm%d_gap%02.2g_Pos",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("<<Qy>>: Refs | Gap %g | n=%d | POS; multiplicity/centrality; <Qy>",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,0,fFlowCentNumBins);
-      //     fpMeanQyRefsPos[iGap][iHarm]->Sumw2();
-      //     fFlowWeights->Add(fpMeanQyRefsPos[iGap][iHarm]);
-      //
-      //     fpMeanQyRefsNeg[iGap][iHarm] = new TProfile(Form("fpMeanQyRefs_harm%d_gap%02.2g_Neg",fHarmonics[iHarm],10*fEtaGap[iGap]),Form("<<Qy>>: Refs | Gap %g | n=%d | NEG; multiplicity/centrality; <Qy>",fEtaGap[iGap],fHarmonics[iHarm]), fFlowCentNumBins,0,fFlowCentNumBins);
-      //     fpMeanQyRefsNeg[iGap][iHarm]->Sumw2();
-      //     fFlowWeights->Add(fpMeanQyRefsNeg[iGap][iHarm]);
-      //   }
-
-      fh3WeightsRefs = new TH3D("fh3WeightsRefs","Weights: Refs; #varphi; #eta; #it{p}_{T} (GeV/#it{c})", 100,0,TMath::TwoPi(), 151,-1.5,1.5, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-      fh3WeightsRefs->Sumw2();
-      fFlowWeights->Add(fh3WeightsRefs);
-      fh3WeightsCharged = new TH3D("fh3WeightsCharged","Weights: Charged; #varphi; #eta; #it{p}_{T} (GeV/#it{c})", 100,0,TMath::TwoPi(), 151,-1.5,1.5, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-      fh3WeightsCharged->Sumw2();
-      fFlowWeights->Add(fh3WeightsCharged);
-      fh3WeightsPion = new TH3D("fh3WeightsPion","Weights: #pi; #varphi; #eta; #it{p}_{T} (GeV/#it{c})", 100,0,TMath::TwoPi(), 151,-1.5,1.5, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-      fh3WeightsPion->Sumw2();
-      fFlowWeights->Add(fh3WeightsPion);
-      fh3WeightsKaon = new TH3D("fh3WeightsKaon","Weights: K; #varphi; #eta; #it{p}_{T} (GeV/#it{c})", 100,0,TMath::TwoPi(), 151,-1.5,1.5, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-      fh3WeightsKaon->Sumw2();
-      fFlowWeights->Add(fh3WeightsKaon);
-      fh3WeightsProton = new TH3D("fh3WeightsProton","Weights: p; #varphi; #eta; #it{p}_{T} (GeV/#it{c})", 100,0,TMath::TwoPi(), 151,-1.5,1.5, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-      fh3WeightsProton->Sumw2();
-      fFlowWeights->Add(fh3WeightsProton);
+      fh3BeforeNUAWeightsRefs = new TH3D("fh3BeforeNUAWeightsRefs","Weights: Refs; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5, 20, -10,10);
+      fh3BeforeNUAWeightsRefs->Sumw2();
+      fFlowWeights->Add(fh3BeforeNUAWeightsRefs);
+        fh3BeforeNUAWeightsCharged = new TH3D("fh3BeforeNUAWeightsCharged","Weights: Charged; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5,20, -10,10);
+      fh3BeforeNUAWeightsCharged->Sumw2();
+      fFlowWeights->Add(fh3BeforeNUAWeightsCharged);
+      fh3BeforeNUAWeightsPion = new TH3D("fh3BeforeNUAWeightsPion","Weights: #pi; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5,20, -10,10);
+      fh3BeforeNUAWeightsPion->Sumw2();
+      fFlowWeights->Add(fh3BeforeNUAWeightsPion);
+      fh3BeforeNUAWeightsKaon = new TH3D("fh3BeforeNUAWeightsKaon","Weights: K; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5,20, -10,10);
+      fh3BeforeNUAWeightsKaon->Sumw2();
+      fFlowWeights->Add(fh3BeforeNUAWeightsKaon);
+      fh3BeforeNUAWeightsProton = new TH3D("fh3BeforeNUAWeightsProton","Weights: p; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5,20, -10,10);
+      fh3BeforeNUAWeightsProton->Sumw2();
+      fFlowWeights->Add(fh3BeforeNUAWeightsProton);
+        
+      fhBeforeNUEWeightsRefs = new TH1D("fhBeforeNUEWeightsRefs","Weights: Refs; #it{p}_{T} (GeV/#it{c})",fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+      fhBeforeNUEWeightsRefs->Sumw2();
+      fFlowWeights->Add(fhBeforeNUEWeightsRefs);
+      fhBeforeNUEWeightsCharged = new TH1D("fhBeforeNUEWeightsCharged","Weights: Charged; #it{p}_{T} (GeV/#it{c})",fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+      fhBeforeNUEWeightsCharged->Sumw2();
+      fFlowWeights->Add(fhBeforeNUEWeightsCharged);
+      fhBeforeNUEWeightsPion = new TH1D("fhBeforeNUEWeightsPion","Weights: #pi; #it{p}_{T} (GeV/#it{c})",fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+      fhBeforeNUEWeightsPion->Sumw2();
+      fFlowWeights->Add(fhBeforeNUEWeightsPion);
+      fhBeforeNUEWeightsKaon = new TH1D("fhBeforeNUEWeightsKaon","Weights: K; #it{p}_{T} (GeV/#it{c})",fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+      fhBeforeNUEWeightsKaon->Sumw2();
+      fFlowWeights->Add(fhBeforeNUEWeightsKaon);
+      fhBeforeNUEWeightsProton = new TH1D("fhBeforeNUEWeightsProton","Weights: p; #it{p}_{T} (GeV/#it{c})",fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+      fhBeforeNUEWeightsProton->Sumw2();
+      fFlowWeights->Add(fhBeforeNUEWeightsProton);
     }//if(fFlowFillWeights || fRunMode == kFillWeights)
 
-    if(fFlowUseWeights)
+    if(fFlowUseNUAWeights)
     {
-      fh3AfterWeightsRefs = new TH3D("fh3AfterWeightsRefs","Weights: Refs; #varphi (After); #eta; #it{p}_{T} (GeV/#it{c})", 100,0,TMath::TwoPi(), 151,-1.5,1.5, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-      fh3AfterWeightsRefs->Sumw2();
-      fFlowWeights->Add(fh3AfterWeightsRefs);
-      fh3AfterWeightsCharged = new TH3D("fh3AfterWeightsCharged","Weights: Charged (After); #varphi; #eta; #it{p}_{T} (GeV/#it{c})", 100,0,TMath::TwoPi(), 151,-1.5,1.5, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-      fh3AfterWeightsCharged->Sumw2();
-      fFlowWeights->Add(fh3AfterWeightsCharged);
-      fh3AfterWeightsPion = new TH3D("fh3AfterWeightsPion","Weights: #pi (After); #varphi; #eta; #it{p}_{T} (GeV/#it{c})", 100,0,TMath::TwoPi(), 151,-1.5,1.5, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-      fh3AfterWeightsPion->Sumw2();
-      fFlowWeights->Add(fh3AfterWeightsPion);
-      fh3AfterWeightsKaon = new TH3D("fh3AfterWeightsKaon","Weights: K (After); #varphi; #eta; #it{p}_{T} (GeV/#it{c})", 100,0,TMath::TwoPi(), 151,-1.5,1.5, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-      fh3AfterWeightsKaon->Sumw2();
-      fFlowWeights->Add(fh3AfterWeightsKaon);
-      fh3AfterWeightsProton = new TH3D("fh3AfterWeightsProton","Weights: p (After); #varphi; #eta; #it{p}_{T} (GeV/#it{c})", 100,0,TMath::TwoPi(), 151,-1.5,1.5, fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
-      fh3AfterWeightsProton->Sumw2();
-      fFlowWeights->Add(fh3AfterWeightsProton);
-    }//if(fFlowUseWeights)
+        fh3AfterNUAWeightsRefs = new TH3D("fh3AfterNUAWeightsRefs","Weights: Refs; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5, 20, -10,10);
+        fh3AfterNUAWeightsRefs->Sumw2();
+        fFlowWeights->Add(fh3AfterNUAWeightsRefs);
+        fh3AfterNUAWeightsCharged = new TH3D("fh3AfterNUAWeightsCharged","Weights: Charged; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5,20, -10,10);
+        fh3AfterNUAWeightsCharged->Sumw2();
+        fFlowWeights->Add(fh3AfterNUAWeightsCharged);
+        fh3AfterNUAWeightsPion = new TH3D("fh3AfterNUAWeightsPion","Weights: #pi; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5,20, -10,10);
+        fh3AfterNUAWeightsPion->Sumw2();
+        fFlowWeights->Add(fh3AfterNUAWeightsPion);
+        fh3AfterNUAWeightsKaon = new TH3D("fh3AfterNUAWeightsKaon","Weights: K; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5,20, -10,10);
+        fh3AfterNUAWeightsKaon->Sumw2();
+        fFlowWeights->Add(fh3AfterNUAWeightsKaon);
+        fh3AfterNUAWeightsProton = new TH3D("fh3AfterNUAWeightsProton","Weights: p; #varphi; #eta; Prim. vtx_{z} (cm)", 100,0,TMath::TwoPi(), 151,-1.5,1.5,20, -10,10);
+        fh3AfterNUAWeightsProton->Sumw2();
+        fFlowWeights->Add(fh3AfterNUAWeightsProton);
+    }//if(fFlowUseNUAWeights)
+    if(fFlowUseNUEWeights){
+        fhAfterNUEWeightsRefs = new TH1D("fhAfterNUEWeightsRefs","Weights: Refs; #it{p}_{T} (GeV/#it{c})",fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+        fhAfterNUEWeightsRefs->Sumw2();
+        fFlowWeights->Add(fhAfterNUEWeightsRefs);
+        fhAfterNUEWeightsCharged = new TH1D("fhAfterNUEWeightsCharged","Weights: Charged; #it{p}_{T} (GeV/#it{c})",fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+        fhAfterNUEWeightsCharged->Sumw2();
+        fFlowWeights->Add(fhAfterNUEWeightsCharged);
+        fhAfterNUEWeightsPion = new TH1D("fhAfterNUEWeightsPion","Weights: #pi; #it{p}_{T} (GeV/#it{c})",fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+        fhAfterNUEWeightsPion->Sumw2();
+        fFlowWeights->Add(fhAfterNUEWeightsPion);
+        fhAfterNUEWeightsKaon = new TH1D("fhAfterNUEWeightsKaon","Weights: K; #it{p}_{T} (GeV/#it{c})",fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+        fhAfterNUEWeightsKaon->Sumw2();
+        fFlowWeights->Add(fhAfterNUEWeightsKaon);
+        fhAfterNUEWeightsProton = new TH1D("fhAfterNUEWeightsProton","Weights: p; #it{p}_{T} (GeV/#it{c})",fFlowPOIsPtNumBins,fFlowPOIsPtMin,fFlowPOIsPtMax);
+        fhAfterNUEWeightsProton->Sumw2();
+        fFlowWeights->Add(fhAfterNUEWeightsProton);
+    }//if(fFlowUseNUEWeights)
+    
 
     //mixed correlations 
     //
@@ -886,41 +978,41 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
         fQAPID->Add(fh2PIDProtonTPCdEdx);
         fh2PIDProtonTOFbeta = new TH2D("fh2PIDProtonTOFbeta","PID: p: TOF #beta; #it{p} (GeV/#it{c});TOF #beta", 200,0,20, 101,-0.1,1.5);
         fQAPID->Add(fh2PIDProtonTOFbeta);
-        fh2PIDPionTPCnSigmaPion = new TH2D("fh2PIDPionTPCnSigmaPion","PID: #pi: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTPCnSigmaPion = new TH2D("fh2PIDPionTPCnSigmaPion","PID: #pi: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTPCnSigmaPion);
-        fh2PIDPionTOFnSigmaPion = new TH2D("fh2PIDPionTOFnSigmaPion","PID: #pi: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTOFnSigmaPion = new TH2D("fh2PIDPionTOFnSigmaPion","PID: #pi: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTOFnSigmaPion);
-        fh2PIDPionTPCnSigmaKaon = new TH2D("fh2PIDPionTPCnSigmaKaon","PID: #pi: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTPCnSigmaKaon = new TH2D("fh2PIDPionTPCnSigmaKaon","PID: #pi: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTPCnSigmaKaon);
-        fh2PIDPionTOFnSigmaKaon = new TH2D("fh2PIDPionTOFnSigmaKaon","PID: #pi: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTOFnSigmaKaon = new TH2D("fh2PIDPionTOFnSigmaKaon","PID: #pi: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTOFnSigmaKaon);
-        fh2PIDPionTPCnSigmaProton = new TH2D("fh2PIDPionTPCnSigmaProton","PID: #pi: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTPCnSigmaProton = new TH2D("fh2PIDPionTPCnSigmaProton","PID: #pi: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTPCnSigmaProton);
-        fh2PIDPionTOFnSigmaProton = new TH2D("fh2PIDPionTOFnSigmaProton","PID: #pi: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDPionTOFnSigmaProton = new TH2D("fh2PIDPionTOFnSigmaProton","PID: #pi: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDPionTOFnSigmaProton);
-        fh2PIDKaonTPCnSigmaPion = new TH2D("fh2PIDKaonTPCnSigmaPion","PID: K: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTPCnSigmaPion = new TH2D("fh2PIDKaonTPCnSigmaPion","PID: K: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTPCnSigmaPion);
-        fh2PIDKaonTOFnSigmaPion = new TH2D("fh2PIDKaonTOFnSigmaPion","PID: K: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTOFnSigmaPion = new TH2D("fh2PIDKaonTOFnSigmaPion","PID: K: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTOFnSigmaPion);
-        fh2PIDKaonTPCnSigmaKaon = new TH2D("fh2PIDKaonTPCnSigmaKaon","PID: K: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTPCnSigmaKaon = new TH2D("fh2PIDKaonTPCnSigmaKaon","PID: K: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTPCnSigmaKaon);
-        fh2PIDKaonTOFnSigmaKaon = new TH2D("fh2PIDKaonTOFnSigmaKaon","PID: K: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTOFnSigmaKaon = new TH2D("fh2PIDKaonTOFnSigmaKaon","PID: K: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTOFnSigmaKaon);
-        fh2PIDKaonTPCnSigmaProton = new TH2D("fh2PIDKaonTPCnSigmaProton","PID: K: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTPCnSigmaProton = new TH2D("fh2PIDKaonTPCnSigmaProton","PID: K: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTPCnSigmaProton);
-        fh2PIDKaonTOFnSigmaProton = new TH2D("fh2PIDKaonTOFnSigmaProton","PID: K: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDKaonTOFnSigmaProton = new TH2D("fh2PIDKaonTOFnSigmaProton","PID: K: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDKaonTOFnSigmaProton);
-        fh2PIDProtonTPCnSigmaPion = new TH2D("fh2PIDProtonTPCnSigmaPion","PID: p: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTPCnSigmaPion = new TH2D("fh2PIDProtonTPCnSigmaPion","PID: p: TPC n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTPCnSigmaPion);
-        fh2PIDProtonTOFnSigmaPion = new TH2D("fh2PIDProtonTOFnSigmaPion","PID: p: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTOFnSigmaPion = new TH2D("fh2PIDProtonTOFnSigmaPion","PID: p: TOF n#sigma (#pi hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTOFnSigmaPion);
-        fh2PIDProtonTPCnSigmaKaon = new TH2D("fh2PIDProtonTPCnSigmaKaon","PID: p: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTPCnSigmaKaon = new TH2D("fh2PIDProtonTPCnSigmaKaon","PID: p: TPC n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTPCnSigmaKaon);
-        fh2PIDProtonTOFnSigmaKaon = new TH2D("fh2PIDProtonTOFnSigmaKaon","PID: p: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTOFnSigmaKaon = new TH2D("fh2PIDProtonTOFnSigmaKaon","PID: p: TOF n#sigma (K hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTOFnSigmaKaon);
-        fh2PIDProtonTPCnSigmaProton = new TH2D("fh2PIDProtonTPCnSigmaProton","PID: p: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTPCnSigmaProton = new TH2D("fh2PIDProtonTPCnSigmaProton","PID: p: TPC n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TPC n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTPCnSigmaProton);
-        fh2PIDProtonTOFnSigmaProton = new TH2D("fh2PIDProtonTOFnSigmaProton","PID: p: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 21,-11,10);
+        fh2PIDProtonTOFnSigmaProton = new TH2D("fh2PIDProtonTOFnSigmaProton","PID: p: TOF n#sigma (p hyp.); #it{p}_{T} (GeV/#it{c}); TOF n#sigma", 200,0,20, 42,-11,10);
         fQAPID->Add(fh2PIDProtonTOFnSigmaProton);
       }
 
@@ -953,7 +1045,8 @@ void AliAnalysisTaskFlowModes::UserCreateOutputObjects()
           
         fhQAEventsPileUp[iQA] = new TH2D(Form("fhQAEventsPileUp_%s",sQAindex[iQA].Data()),"QA Events: TPC vs. ESD multiplicity; TPC multiplicity; ESD multiplicity",500,0,6000,500,0,6000);
         fQAEvents->Add(fhQAEventsPileUp[iQA]);
-          
+        fhEventsMultTOFFilterbit32[iQA] = new TH2D(Form("fhEventsMultTOFFilterbit32_%s",sQAindex[iQA].Data()),"filterbit32 vs. TOF multiplicity; multiplicity(fb32);multiplicity(fb32+TOF)", 4000,0,4000,2000,0,2000);
+        fQAEvents->Add(fhEventsMultTOFFilterbit32[iQA]);
         // Charged tracks QA
         if(fProcessCharged)
         {
@@ -1054,10 +1147,14 @@ void AliAnalysisTaskFlowModes::ListParameters()
   printf("      fFlowCentNumBins: (Int_t) %d (GeV/c)\n",    fFlowCentNumBins);
   printf("      fFlowCentMin: (Int_t) %d (GeV/c)\n",    fFlowCentMin);
   printf("      fFlowCentMax: (Int_t) %d (GeV/c)\n",    fFlowCentMax);
-  printf("      fFlowUseWeights: (Bool_t) %s\n",    fFlowUseWeights ? "kTRUE" : "kFALSE");
+  printf("      fFlowUseNUAWeights: (Bool_t) %s\n",    fFlowUseNUAWeights ? "kTRUE" : "kFALSE");
+  printf("      fFlowUseNUEWeights: (Bool_t) %s\n",    fFlowUseNUEWeights ? "kTRUE" : "kFALSE");
   printf("      fPositivelyChargedRef: (Bool_t) %s\n", fPositivelyChargedRef ? "kTRUE" : "kFALSE");
   printf("      fNegativelyChargedRef: (Bool_t) %s\n", fNegativelyChargedRef ? "kTRUE" : "kFALSE");
-  printf("      fFlowWeightsPath: (TString) '%s' \n",    fFlowWeightsPath.Data());
+  printf("      fPositivelyChargedPOI: (Bool_t) %s\n", fPositivelyChargedPOI ? "kTRUE" : "kFALSE");
+  printf("      fNegativelyChargedPOI: (Bool_t) %s\n", fNegativelyChargedPOI ? "kTRUE" : "kFALSE");
+  printf("      fFlowNUAWeightsPath: (TString) '%s' \n",    fFlowNUAWeightsPath.Data());
+  printf("      fFlowNUEWeightsPath: (TString) '%s' \n",    fFlowNUEWeightsPath.Data());
   printf("   -------- Events ----------------------------------------------\n");
   printf("      fTrigger: (Short_t) %d\n",    fTrigger);
   printf("      fMultEstimator: (TString) '%s'\n",    fMultEstimator.Data());
@@ -1141,13 +1238,22 @@ Bool_t AliAnalysisTaskFlowModes::InitializeTask()
   fMultEstimator.ToUpper();
 
   // checking for weights source file
-  if(fFlowUseWeights && !fFlowWeightsPath.EqualTo(""))
+  if(fFlowUseNUAWeights && !fFlowNUAWeightsPath.EqualTo(""))
   {
-    fFlowWeightsFile = TFile::Open(Form("alien:///%s",fFlowWeightsPath.Data()));
-    if(!fFlowWeightsFile)
+    fFlowNUAWeightsFile = TFile::Open(Form("alien:///%s",fFlowNUAWeightsPath.Data()));
+    if(!fFlowNUAWeightsFile)
     {
-      ::Error("InitializeTask","Flow weights file not found");
+      ::Error("InitializeTask","NUA flow weights file not found");
       return kFALSE;
+    }
+  }
+  if(fFlowUseNUEWeights && !fFlowNUEWeightsPath.EqualTo(""))
+  {
+    fFlowNUEWeightsFile = TFile::Open(Form("alien:///%s",fFlowNUEWeightsPath.Data()));
+    if(!fFlowNUEWeightsFile)
+    {
+        ::Error("InitializeTask","NUE flow weights file not found");
+        return kFALSE;
     }
   }
 
@@ -1283,6 +1389,7 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
  
  
   // check for multi-vertexer pile-up
+  /*
   const int    kMinPileUpContrib = 5;
   const double kMaxPileUpChi2 = 5.0;
   const double kMinWDist = 15;
@@ -1293,20 +1400,40 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
   
   if (nPileUp) {
     if (vtx == vtxSPD) return kTRUE; // there are pile-up vertices but no primary
+    Int_t bcPrim = vtPrm->GetBC();
     for (int iPileUp=0;iPileUp<nPileUp;iPileUp++) {
         vtxPileUp = (const AliAODVertex*)fEventAOD->GetPileupVertexTracks(iPileUp);
         if (vtxPileUp->GetNContributors() < kMinPileUpContrib) continue;
         if (vtxPileUp->GetChi2perNDF() > kMaxPileUpChi2) continue;
-        //  int bcPlp = vtxPileUp->GetBC();
-        //  if (bcPlp!=AliVTrack::kTOFBCNA && TMath::Abs(bcPlp-bcPrim)>2) return kTRUE; // pile-up from other BC
+        int bcPlp = vtxPileUp->GetBC(); ///newly added
+        if (bcPlp!=AliVTrack::kTOFBCNA && TMath::Abs(bcPlp-bcPrim)>2) return kTRUE; // pile-up from other Bunch crossing (BC)
         double wDst = GetWDist(vtx,vtxPileUp);
         if (wDst<kMinWDist) continue;
         return kTRUE; // pile-up: well separated vertices
     }
   }
+*/
+//  fhEventCounter->Fill("Pileup MV OK",1);
+/////////////////////////////  
+  AliAnalysisUtils utils;
+  utils.SetMinPlpContribMV(5);
+  utils.SetMaxPlpChi2MV(5);
+  utils.SetMinWDistMV(15);
+  utils.SetCheckPlpFromDifferentBCMV(kTRUE);
 
+  Bool_t isPileupFromMV = utils.IsPileUpMV(fEventAOD);
+
+  if(isPileupFromMV) return kFALSE;
   fhEventCounter->Fill("Pileup MV OK",1);
-    
+
+  //Bool_t fRejectOutOfBunchPileUp = kFALSE;
+  //if(fRejectOutOfBunchPileUp) // out-of-bunch rejection (provided by Christian)
+  //{
+    //out-of-bunch
+  //  if (utils.IsOutOfBunchPileUp(fEventAOD)){ return kFALSE; }
+  //}
+  fhEventCounter->Fill("Out-of-bunch Pileup OK",1);
+/////////////////////////////
   // check vertex consistency
   double dz = vtx->GetZ() - vtxSPD->GetZ();
   double errTot = TMath::Sqrt(cov[5]+covSPD[5]);
@@ -1324,22 +1451,36 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_PbPb()
   // cut on # ESD tracks vs # TPC only tracks
   const Int_t nTracks = fEventAOD->GetNumberOfTracks();
   Int_t multEsd = ((AliAODHeader*)fEventAOD->GetHeader())->GetNumberOfESDTracks();
-  //Int_t multTrk = 0;
+  Int_t multTrk = 0;
   //Int_t multTrkBefC = 0;
-  //Int_t multTrkTOFBefC = 0;
+  Int_t multTrkTOF = 0;
   Int_t multTPC = 0;
   for (Int_t it = 0; it < nTracks; it++) {
      AliAODTrack* AODTrk = (AliAODTrack*)fEventAOD->GetTrack(it);
      if (!AODTrk){ delete AODTrk; continue; }
      if (AODTrk->TestFilterBit(128)) {multTPC++;}
+     if (AODTrk->TestFilterBit(32)){
+         multTrk++;
+         if ( TMath::Abs(AODTrk->GetTOFsignalDz()) <= 10 && AODTrk->GetTOFsignal() >= 12000 && AODTrk->GetTOFsignal() <= 25000) multTrkTOF++;
+    }
   } // end of for (Int_t it = 0; it < nTracks; it++)
   Double_t multTPCn = multTPC;
   Double_t multEsdn = multEsd;
+
   Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
+  
   if (multESDTPCDif > 15000.) return kFALSE;
+  
   fhEventCounter->Fill("ESD TPC Mult. Diff. OK",1);
 
-    
+  Double_t multTrkn = multTrk;
+  Double_t multTrkTOFn = multTrkTOF;
+  
+  if(fExtraPileUp && multTrkTOFn< (-32+ 0.32*multTrkn+0.000037*multTrkn*multTrkn)) return kFALSE;
+  if(fExtraPileUp && multTrkTOFn> (13+0.46*multTrkn+0.000018*multTrkn*multTrkn)) return kFALSE;
+
+  fhEventCounter->Fill("TOF fb32 Mult. correlation OK",1);
+
   fhEventCounter->Fill("Selected",1);
     
   // Fill event QA AFTER cuts
@@ -1416,25 +1557,26 @@ Bool_t AliAnalysisTaskFlowModes::IsEventSelected_pp()
     //fhEventCounter->Fill("Pileup SPD OK",1);
     
     // pileup rejection from multivertexer
+    
     AliAnalysisUtils utils;
-    utils.SetMinPlpContribMV(5);
-    utils.SetMaxPlpChi2MV(5);
-    utils.SetMinWDistMV(15);
-    utils.SetCheckPlpFromDifferentBCMV(kFALSE);
-    Bool_t isPileupFromMV = utils.IsPileUpMV(fEventAOD);
-    
-    if(isPileupFromMV) return kFALSE;
-    fhEventCounter->Fill("Pileup MV OK",1);
-    
-    // if(fRejectOutOfBunchPU) // out-of-bunch rejection (provided by Christian)
-    // {
-    //   //out-of-bunch 11 BC
-    //   if (utils.IsOutOfBunchPileUp(fEventAOD))
-    //   {
-    //     return kFALSE;
-    //   }
-    //   fhEventCounter->Fill("OOBPU OK",1);
-    //
+  utils.SetMinPlpContribMV(5);
+  utils.SetMaxPlpChi2MV(5);
+  utils.SetMinWDistMV(15);
+  utils.SetCheckPlpFromDifferentBCMV(kFALSE);
+  Bool_t isPileupFromMV = utils.IsPileUpMV(fEventAOD);
+  utils.SetCheckPlpFromDifferentBCMV(kTRUE);
+
+  if(isPileupFromMV) return kFALSE;
+  fhEventCounter->Fill("Pileup MV OK",1);
+
+  //Bool_t fRejectOutOfBunchPileUp = kTRUE; //you have to add this to the task and set from header
+  //if(fRejectOutOfBunchPileUp) // out-of-bunch rejection (provided by Christian)
+  //{
+    //out-of-bunch
+  //  if (utils.IsOutOfBunchPileUp(fEventAOD)){ return kFALSE; }
+  //}
+  fhEventCounter->Fill("Out-of-bunch Pileup OK",1);
+
     //   if (utils.IsSPDClusterVsTrackletBG(fEventAOD))
     //   {
     //     return kFALSE;
@@ -1498,17 +1640,25 @@ void AliAnalysisTaskFlowModes::FillEventsQA(const Short_t iQAindex)
   const Int_t nTracks = fEventAOD->GetNumberOfTracks();
   Int_t multEsd = ((AliAODHeader*)fEventAOD->GetHeader())->GetNumberOfESDTracks();
   Int_t multTPC = 0;
+  Int_t multTrk = 0;
+  Int_t multTrkTOF = 0;
   for (Int_t it = 0; it < nTracks; it++) {
       AliAODTrack* AODTrk = (AliAODTrack*)fEventAOD->GetTrack(it);
       if (!AODTrk){ delete AODTrk; continue; }
       if (AODTrk->TestFilterBit(128)) {multTPC++;}
+      if (AODTrk->TestFilterBit(32)){
+         multTrk++;
+         if ( TMath::Abs(AODTrk->GetTOFsignalDz()) <= 10 && AODTrk->GetTOFsignal() >= 12000 && AODTrk->GetTOFsignal() <= 25000) multTrkTOF++;
+      }
+
   }// end of for (Int_t it = 0; it < nTracks; it++)
   fhQAEventsPileUp[iQAindex]->Fill(multTPC,multEsd);
+  fhEventsMultTOFFilterbit32[iQAindex]->Fill(multTrk,multTrkTOF);
 
   return;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlowModes::Filtering()
+Bool_t AliAnalysisTaskFlowModes::Filtering() //void
 {
 
   // main (envelope) method for filtering all particles of interests (POIs) in selected events
@@ -1517,7 +1667,7 @@ void AliAnalysisTaskFlowModes::Filtering()
   // *************************************************************
 
   if(!fProcessCharged && !fProcessPID) // if neither is ON, filtering is skipped
-    return;
+    return kFALSE; //return;
 
   fVectorCharged->clear();
   FilterCharged();
@@ -1525,12 +1675,16 @@ void AliAnalysisTaskFlowModes::Filtering()
   // estimate centrality & assign indexes (centrality/percentile, ...)
   if(fColSystem == kPbPb){
       fIndexCentrality = GetCentralityIndex();
-      if(fIndexCentrality < 0) return; // not succesfull estimation
+      if(fIndexCentrality < 0) return kFALSE; // return; not succesfull estimation
+      Double_t Mult = fVectorCharged->size();
+      if(fExtraPileUp && fIndexCentrality< (-1.5*TMath::Power(Mult,0.46)-0.6*TMath::Log(Mult)*TMath::Log(Mult)+81)) return kFALSE;
+      if(fExtraPileUp && fIndexCentrality>(-2.3*TMath::Power(Mult,0.39)-0.9*TMath::Log(Mult)*TMath::Log(Mult)+110)) return kFALSE;
   }
   if(fColSystem == kPP){fIndexCentrality = 1;}
     
-  fhEventCentrality->Fill(fIndexCentrality);
   fh2EventCentralityNumSelCharged->Fill(fVectorCharged->size(),fIndexCentrality); 
+
+  fhEventCentrality->Fill(fIndexCentrality);
 
   if(fProcessPID)
   {
@@ -1539,7 +1693,7 @@ void AliAnalysisTaskFlowModes::Filtering()
     fVectorProton->clear();
     FilterPID();
   }
-  return;
+  return kTRUE; //return;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowModes::FilterCharged()
@@ -1556,36 +1710,63 @@ void AliAnalysisTaskFlowModes::FilterCharged()
 
   AliAODTrack* track = 0x0;
   Int_t iNumRefs = 0;
-  Double_t weight = 0;
+  Double_t NUAweight = 0;
+  Double_t NUEweight = 0;
 
   for(Short_t iTrack(0); iTrack < iNumTracks; iTrack++)
   {
     track = static_cast<AliAODTrack*>(fEventAOD->GetTrack(iTrack));
     if(!track) continue;
-
+      
     if(fFillQA) FillQACharged(0,track); // QA before selection
-
+      
+    if(fNegativelyChargedRef==kTRUE && track->Charge()>0) continue;
+    if(fPositivelyChargedRef==kTRUE && track->Charge()<0) continue;
+    
     if(IsChargedSelected(track))
     {
       fVectorCharged->emplace_back( FlowPart(track->Pt(),track->Phi(),track->Eta(), track->Charge(), kCharged) );
-      if(fRunMode == kFillWeights || fFlowFillWeights) fh3WeightsCharged->Fill(track->Phi(),track->Eta(),track->Pt());
-      if(fFlowUseWeights)
-      {
-        weight = fh2WeightCharged->GetBinContent( fh2WeightCharged->FindBin(track->Eta(),track->Phi()) );
-        fh3AfterWeightsCharged->Fill(track->Phi(),track->Eta(),track->Pt(),weight);
+      if(fRunMode == kFillWeights || fFlowFillWeights){
+         fh3BeforeNUAWeightsCharged->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ());
+         fhBeforeNUEWeightsCharged->Fill(track->Pt());
       }
+      if(fFlowUseNUAWeights)
+      {
+          if(track->Charge()>0){ NUAweight = fh3NUAWeightChargedPlus->GetBinContent( fh3NUAWeightChargedPlus->FindBin(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ()) );}
+          if(track->Charge()<0){ NUAweight = fh3NUAWeightChargedMinus->GetBinContent( fh3NUAWeightChargedMinus->FindBin(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ()) );}
+
+          fh3AfterNUAWeightsCharged->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ(),NUAweight);
+      }
+      if(fFlowUseNUEWeights){
+          if(track->Charge()>0){ NUEweight = fhNUEWeightChargedPlus->GetBinContent( fhNUEWeightChargedPlus->FindBin(track->Pt()));}
+          if(track->Charge()<0){ NUEweight = fhNUEWeightChargedMinus->GetBinContent( fhNUEWeightChargedMinus->FindBin(track->Pt()));}
+
+          fhAfterNUEWeightsCharged->Fill(track->Pt(),NUEweight);
+      }
+        
       if(fFillQA) FillQACharged(1,track); // QA after selection
-      //printf("pt %g | phi %g | eta %g\n",track->Pt(),track->Phi(),track->Eta());
 
       // Filling refs QA plots
       if(fCutFlowRFPsPtMin > 0. && track->Pt() >= fCutFlowRFPsPtMin && fCutFlowRFPsPtMax > 0. && track->Pt() <= fCutFlowRFPsPtMax)
       {
         iNumRefs++;
-        if(fRunMode == kFillWeights || fFlowFillWeights) fh3WeightsRefs->Fill(track->Phi(),track->Eta(),track->Pt());
-        if(fFlowUseWeights)
+        if(fRunMode == kFillWeights || fFlowFillWeights){
+            fh3BeforeNUAWeightsRefs->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ());
+            fhBeforeNUEWeightsRefs->Fill(track->Pt());
+        }
+        if(fFlowUseNUAWeights)
         {
-          weight = fh2WeightRefs->GetBinContent( fh2WeightRefs->FindBin(track->Eta(),track->Phi()) );
-          fh3AfterWeightsRefs->Fill(track->Phi(),track->Eta(),track->Pt(),weight);
+            if(track->Charge()>0){ NUAweight = fh3NUAWeightRefsPlus->GetBinContent( fh3NUAWeightRefsPlus->FindBin(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ()) );}
+            if(track->Charge()<0){ NUAweight = fh3NUAWeightRefsMinus->GetBinContent( fh3NUAWeightRefsMinus->FindBin(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ()) );}
+
+            fh3AfterNUAWeightsRefs->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ(),NUAweight);
+        }
+        if(fFlowUseNUEWeights)
+        {
+            if(track->Charge()>0){NUEweight = fhNUEWeightRefsPlus->GetBinContent( fhNUEWeightRefsPlus->FindBin(track->Pt()) );}
+            if(track->Charge()<0){NUEweight = fhNUEWeightRefsMinus->GetBinContent( fhNUEWeightRefsMinus->FindBin(track->Pt()) );}
+
+            fhAfterNUEWeightsRefs->Fill(track->Pt(),NUEweight);
         }
         FillQARefs(1,track);
       }
@@ -1729,7 +1910,8 @@ void AliAnalysisTaskFlowModes::FilterPID()
 
   PartSpecies species = kUnknown;
   AliAODTrack* track = 0x0;
-  Double_t weight = 0;
+  Double_t NUAweight = 0;
+  Double_t NUEweight = 0;
 
   for(Short_t iTrack(0); iTrack < iNumTracks; iTrack++)
   {
@@ -1741,6 +1923,9 @@ void AliAnalysisTaskFlowModes::FilterPID()
 
     if(fFillQA) FillPIDQA(0,track,kUnknown);   // filling QA for tracks before selection (but after charged criteria applied)
 
+    if(fNegativelyChargedPOI==kTRUE && track->Charge()>0) continue;
+    if(fPositivelyChargedPOI==kTRUE && track->Charge()<0) continue;
+      
     // PID track selection (return most favourable species)
     PartSpecies species = IsPIDSelected(track);
     // check if only protons should be used
@@ -1751,36 +1936,72 @@ void AliAnalysisTaskFlowModes::FilterPID()
     {
       case kPion:
         fVectorPion->emplace_back( FlowPart(track->Pt(),track->Phi(),track->Eta(), track->Charge(), kPion, fPDGMassPion, track->Px(), track->Py(), track->Pz()) );
-        if(fRunMode == kFillWeights || fFlowFillWeights) fh3WeightsPion->Fill(track->Phi(), track->Eta(), track->Pt());
-        if(fFlowUseWeights)
+        if(fRunMode == kFillWeights || fFlowFillWeights){
+            fh3BeforeNUAWeightsPion->Fill(track->Phi(), track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ());
+            fhBeforeNUEWeightsPion->Fill(track->Pt());
+        }
+        if(fFlowUseNUAWeights)
         {
-          weight = fh2WeightPion->GetBinContent( fh2WeightPion->FindBin(track->Eta(),track->Phi()) );
-          fh3AfterWeightsPion->Fill(track->Phi(),track->Eta(),track->Pt(),weight);
+            if(track->Charge() > 0){ NUAweight = fh3NUAWeightPionPlus->GetBinContent( fh3NUAWeightPionPlus->FindBin(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ()) );}
+            if(track->Charge() < 0){ NUAweight = fh3NUAWeightPionMinus->GetBinContent( fh3NUAWeightPionMinus->FindBin(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ()) );}
+
+            fh3AfterNUAWeightsPion->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ(),NUAweight);
+        }
+        if(fFlowUseNUEWeights)
+        {
+            if(track->Charge() > 0){ NUEweight = fhNUEWeightPionPlus->GetBinContent( fhNUEWeightPionPlus->FindBin(track->Pt()) );}
+            if(track->Charge() < 0){ NUEweight = fhNUEWeightPionMinus->GetBinContent( fhNUEWeightPionMinus->FindBin(track->Pt()) );}
+            
+            fhAfterNUEWeightsPion->Fill(track->Pt(),NUEweight);
         }
         break;
       case kKaon:
         fVectorKaon->emplace_back( FlowPart(track->Pt(),track->Phi(),track->Eta(), track->Charge(), kKaon, fPDGMassKaon, track->Px(), track->Py(), track->Pz()) );
-        if(fRunMode == kFillWeights || fFlowFillWeights) fh3WeightsKaon->Fill(track->Phi(), track->Eta(), track->Pt());
-        if(fFlowUseWeights)
+        if(fRunMode == kFillWeights || fFlowFillWeights){
+            fh3BeforeNUAWeightsKaon->Fill(track->Phi(), track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ());
+            fhBeforeNUEWeightsKaon->Fill(track->Pt());
+        }
+        if(fFlowUseNUAWeights)
         {
-          weight = fh2WeightKaon->GetBinContent( fh2WeightKaon->FindBin(track->Eta(),track->Phi()) );
-          fh3AfterWeightsKaon->Fill(track->Phi(),track->Eta(),track->Pt(),weight);
+            if(track->Charge() > 0){NUAweight = fh3NUAWeightKaonPlus->GetBinContent( fh3NUAWeightKaonPlus->FindBin(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ()) );}
+            if(track->Charge() < 0){NUAweight = fh3NUAWeightKaonMinus->GetBinContent( fh3NUAWeightKaonMinus->FindBin(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ()) );}
+
+            fh3AfterNUAWeightsKaon->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ(),NUAweight);
+        }
+        if(fFlowUseNUEWeights)
+        {
+            if(track->Charge() > 0){ NUEweight = fhNUEWeightKaonPlus->GetBinContent( fhNUEWeightKaonPlus->FindBin(track->Pt()) );}
+            if(track->Charge() < 0){ NUEweight = fhNUEWeightKaonMinus->GetBinContent( fhNUEWeightKaonMinus->FindBin(track->Pt()) );}
+
+            fhAfterNUEWeightsKaon->Fill(track->Pt(),NUEweight);
         }
         break;
       case kProton:
         fVectorProton->emplace_back( FlowPart(track->Pt(),track->Phi(),track->Eta(), track->Charge(), kProton, fPDGMassProton, track->Px(), track->Py(), track->Pz()) );
-        if(fRunMode == kFillWeights || fFlowFillWeights) fh3WeightsProton->Fill(track->Phi(), track->Eta(), track->Pt());
-        if(fFlowUseWeights)
+        if(fRunMode == kFillWeights || fFlowFillWeights){
+            fh3BeforeNUAWeightsProton->Fill(track->Phi(), track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ());
+            fhBeforeNUEWeightsProton->Fill(track->Pt());
+        }
+        if(fFlowUseNUAWeights)
         {
-          weight = fh2WeightProton->GetBinContent( fh2WeightProton->FindBin(track->Eta(),track->Phi()) );
-          fh3AfterWeightsProton->Fill(track->Phi(),track->Eta(),track->Pt(),weight);
+            if(track->Charge() > 0){NUAweight = fh3NUAWeightProtonPlus->GetBinContent( fh3NUAWeightProtonPlus->FindBin(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ()) );}
+            if(track->Charge() < 0){NUAweight = fh3NUAWeightProtonMinus->GetBinContent( fh3NUAWeightProtonMinus->FindBin(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ()) );}
+
+            fh3AfterNUAWeightsProton->Fill(track->Phi(),track->Eta(),fEventAOD->GetPrimaryVertex()->GetZ(),NUAweight);
+        }
+        if(fFlowUseNUEWeights)
+        {
+            if(track->Charge() > 0){ NUEweight = fhNUEWeightProtonPlus->GetBinContent( fhNUEWeightProtonPlus->FindBin(track->Pt()) );}
+            if(track->Charge() < 0){ NUEweight = fhNUEWeightProtonMinus->GetBinContent( fhNUEWeightProtonMinus->FindBin(track->Pt()) );}
+
+            fhAfterNUEWeightsProton->Fill(track->Pt(),NUEweight);
         }
         break;
       default:
-        continue;
+        break;
     }
 
-    if(fFillQA) FillPIDQA(1,track,species); // filling QA for tracks AFTER selection
+    //if(fFillQA) FillPIDQA(1,track,species); // filling QA for tracks AFTER selection
   }
 
   fh2PIDPionMult->Fill(fIndexCentrality,fVectorPion->size());
@@ -1806,6 +2027,7 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
   //if(!bIsTPCok) return kUnknown;
     
   const Double_t dPt = track->Pt();
+  const Double_t dP = track->P();
 
   // use nSigma cuts (based on combination of TPC / TOF nSigma cuts)
 
@@ -1815,6 +2037,11 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
   Float_t *probabilities;
   Float_t mismProb;
   Float_t ProbBayes[5] = {0,0,0,0,0}; //0=el, 1=mu, 2=pi, 3=ka, 4=pr, 5=deuteron, 6=triton, 7=He3
+
+  Double_t probTPC[AliPID::kSPECIES]={0.};
+  Double_t probTOF[AliPID::kSPECIES]={0.};
+  Double_t probTPCTOF[AliPID::kSPECIES]={0.};
+
 
   // filling nSigma arrays
   if(bIsTPCok) // should be anyway
@@ -1845,91 +2072,175 @@ AliAnalysisTaskFlowModes::PartSpecies AliAnalysisTaskFlowModes::IsPIDSelected(co
       }
       fBayesianResponse->SetDetAND(1);
   }
-    
-  // TPC nSigma cuts
-  if(dPt <= 0.4)
-  {
-      if(fPID3sigma){
 
-          Double_t dMinSigmasTPC = TMath::MinElement(5,dNumSigmaTPC);
-          // electron rejection
-          if(dMinSigmasTPC == dNumSigmaTPC[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron) return kUnknown;
-          if(dMinSigmasTPC == dNumSigmaTPC[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax) return kPion;
-          if(dMinSigmasTPC == dNumSigmaTPC[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax) return kKaon;
-          if(dMinSigmasTPC == dNumSigmaTPC[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax) return kProton;
-      }
-      if(fPIDbayesian){
+  Int_t ParticleFlag[]={0,0,0,0};//Unknown (electron), pion, kaon, proton  
+  fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+  UInt_t detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
+  if (detUsed  == (UInt_t)fPIDCombined->GetDetectorMask() ) {  // TPC is available  
 
-          fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
-          probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
-          ProbBayes[0] = probabilities[0];
-          ProbBayes[1] = probabilities[1];
-          ProbBayes[2] = probabilities[2];
-          ProbBayes[3] = probabilities[3];
-          ProbBayes[4] = probabilities[4];
+	// TPC nSigma cuts
+ 	 if(dP>0.2 && dP <= 0.5)
+ 	 {
+   	   if(fPIDnsigma){
+        	 Double_t dMinSigmasTPC = TMath::MinElement(5,dNumSigmaTPC);
+          	// electron rejection
+         	 if(dMinSigmasTPC == dNumSigmaTPC[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron) ParticleFlag[0] = 1; //return kUnknown;
+         	 if(dMinSigmasTPC == dNumSigmaTPC[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1;//return kPion;
+          	 if(dMinSigmasTPC == dNumSigmaTPC[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1;//return kKaon;
+          	 if(dMinSigmasTPC == dNumSigmaTPC[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1;//return kProton;
+      	   }
+      	   if(fPIDbayesian){
+		ProbBayes[0] = probTPC[0];
+                ProbBayes[1] = probTPC[1];
+                ProbBayes[2] = probTPC[2];
+                ProbBayes[3] = probTPC[3];
+                ProbBayes[4] = probTPC[4];
+
+                Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+		if(dMaxBayesianProb > fParticleProbability){
+			if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron)ParticleFlag[0] = 1;// return kUnknown;
+              		if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax)ParticleFlag[1] = 1;//return kPion;
+              		if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax)ParticleFlag[2] = 1;//return kKaon;
+              		if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax)ParticleFlag[3] = 1;//return kProton;
+		}
+	  	/*
+          	fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
+          	probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
+          	ProbBayes[0] = probabilities[0];
+          	ProbBayes[1] = probabilities[1];
+          	ProbBayes[2] = probabilities[2];
+          	ProbBayes[3] = probabilities[3];
+          	ProbBayes[4] = probabilities[4];
           
-          mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
+          	mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
           
-          Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
-          if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
-              // electron rejection
-              if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron) return kUnknown;
-              if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax){return kPion;}
-              if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax){return kKaon;}
-              if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax){return kProton;}
-          }
-      }
-  }
+          	Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+          	if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
+              	// electron rejection
+              	if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaTPC[0]) <= fCutPIDnSigmaTPCRejectElectron)ParticleFlag[0] = 1;// return kUnknown;
+              	if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaTPC[2]) <= fCutPIDnSigmaPionMax)ParticleFlag[1] = 1;//return kPion;
+              	if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaTPC[3]) <= fCutPIDnSigmaKaonMax)ParticleFlag[2] = 1;//return kKaon;
+              	if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaTPC[4]) <= fCutPIDnSigmaProtonMax)ParticleFlag[3] = 1;//return kProton;
+          	}*/
+      	  }
+  	}
+        fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+        detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
 
-  // combined TPC + TOF nSigma cuts
-  if(dPt > 0.4) // && < 4 GeV TODO once TPC dEdx parametrisation is available
-  {
-      Double_t dNumSigmaCombined[5] = {-99,-99,-99,-99,-99};
+        if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()){
+                AliAODPid* pidObj = track->GetDetPid();
+                if ((detUsed >= AliPIDResponse::kDetTOF) && (pidObj && pidObj->GetTOFsignal() < 99999)){
 
-      // discard candidates if no TOF is available if cut is on
-      if(fCutPIDnSigmaCombinedNoTOFrejection && !bIsTOFok) return kUnknown;
+  			// combined TPC + TOF nSigma cuts
+  			if(dP > 0.5) // && < 4 GeV TODO once TPC dEdx parametrisation is available
+        		{
+      				Double_t dNumSigmaCombined[5] = {-99,-99,-99,-99,-99};
 
-      // calculating combined nSigmas
-      for(Short_t i(0); i < 5; i++)
-      {
-        if(bIsTOFok) { dNumSigmaCombined[i] = TMath::Sqrt(dNumSigmaTPC[i]*dNumSigmaTPC[i] + dNumSigmaTOF[i]*dNumSigmaTOF[i]); }
-        else { dNumSigmaCombined[i] = dNumSigmaTPC[i]; }
-      }
+      				// discard candidates if no TOF is available if cut is on
+      				if(fCutPIDnSigmaCombinedNoTOFrejection && !bIsTOFok) ParticleFlag[0] = 1;// return kUnknown;
 
-      if(fPID3sigma){
-          Double_t dMinSigmasCombined = TMath::MinElement(5,dNumSigmaCombined);
+      				// calculating combined nSigmas
+      				for(Short_t i(0); i < 5; i++)
+      				{
+        				if(bIsTOFok) { dNumSigmaCombined[i] = TMath::Sqrt(dNumSigmaTPC[i]*dNumSigmaTPC[i] + dNumSigmaTOF[i]*dNumSigmaTOF[i]); }
+        				else { dNumSigmaCombined[i] = dNumSigmaTPC[i]; }
+      				}
 
-          // electron rejection
-          if(dMinSigmasCombined == dNumSigmaCombined[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) return kUnknown;
-          if(dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax){return kPion;}
-          if(dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax){return kKaon;}
-          if(dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax){return kProton;}
-      }
-      if(fPIDbayesian){
+      				if(fPIDnsigma){
+          				Double_t dMinSigmasCombined = TMath::MinElement(5,dNumSigmaCombined);
 
-          fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
-          probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
-          ProbBayes[0] = probabilities[0];
-          ProbBayes[1] = probabilities[1];
-          ProbBayes[2] = probabilities[2];
-          ProbBayes[3] = probabilities[3];
-          ProbBayes[4] = probabilities[4];
+          				// electron rejection
+          				if(dMinSigmasCombined == dNumSigmaCombined[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1;// return kUnknown;
           
-          mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
+          				switch (fPIDnsigmaCombination) {
+              					case 1:
+                  				//combination 1
+                  				if(dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1;//return kPion;
+                  				if(dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1;//return kProton;
+                  				break;
+              					case 2:
+                  				//combination 2
+                  				if(dP < 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1; //return kPion;
+                  				if(dP > 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 2.) ParticleFlag[1] = 1; //return kPion;
+
+                  				if(dP < 2. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 2. && dP < 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.5) ParticleFlag[2] = 1; //return kKaon;
+
+                  				if(dP < 3. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 3. && dP < 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 2.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 1.5) ParticleFlag[3] = 1; //return kProton;
+
+                  				break;
+              					case 3:
+                  				//combination 3
+                  				if(dP < 2.5 && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 3.) ParticleFlag[1] = 1; //return kPion;
+                  				if(dP > 2.5 && dP < 4. && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 1.5) ParticleFlag[1] = 1; //return kPion;
+                  				if(dP > 4. && dMinSigmasCombined == dNumSigmaCombined[2] && TMath::Abs(dNumSigmaCombined[2]) <= 1.) ParticleFlag[1] = 1; //return kPion;
+
+                 				if(dP < 2. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 2.5) ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 2. && dP < 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.5)ParticleFlag[2] = 1; //return kKaon;
+                  				if(dP > 3. && dMinSigmasCombined == dNumSigmaCombined[3] && TMath::Abs(dNumSigmaCombined[3]) <= 1.) ParticleFlag[2] = 1; //return kKaon;
+                  
+                  				if(dP < 3. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 3.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 3. && dP < 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 2.) ParticleFlag[3] = 1; //return kProton;
+                  				if(dP > 5. && dMinSigmasCombined == dNumSigmaCombined[4] && TMath::Abs(dNumSigmaCombined[4]) <= 1.) ParticleFlag[3] = 1; //return kProton;
+              					break;
+						default:
+                  				break;
+          				}
+      				}
+      				if(fPIDbayesian){
+					ProbBayes[0] = probTPCTOF[0];
+                       			ProbBayes[1] = probTPCTOF[1];
+                       			ProbBayes[2] = probTPCTOF[2];
+                       			ProbBayes[3] = probTPCTOF[3];
+                       			ProbBayes[4] = probTPCTOF[4];
+                       			Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+					if(dMaxBayesianProb > fParticleProbability){
+						if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1; //return kUnknown;
+       						if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1; //return kPion;
+              					if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1; //return kKaon;
+              					if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1; //return kProton;
+					}else{ParticleFlag[0] = 1;}
+	  				/*
+          				fBayesianResponse->ComputeProb(track,track->GetAODEvent()); // fCurrCentr is needed for mismatch fraction
+       					probabilities = fBayesianResponse->GetProb(); // Bayesian Probability (from 0 to 4) (Combined TPC || TOF) including a tuning of priors and TOF mism$
+       					ProbBayes[0] = probabilities[0];
+       					ProbBayes[1] = probabilities[1];
+          				ProbBayes[2] = probabilities[2];
+          				ProbBayes[3] = probabilities[3];
+          				ProbBayes[4] = probabilities[4];
           
-          Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
-          if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
-              // electron rejection
-              if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) return kUnknown;
-              if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax){return kPion;}
-              if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax){return kKaon;}
-              if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax){return kProton;}
-          }
-      }
-  }
+          				mismProb = fBayesianResponse->GetTOFMismProb(); // mismatch Bayesian probabilities
+          
+          				Double_t dMaxBayesianProb = TMath::MaxElement(5,ProbBayes);
+       					if(dMaxBayesianProb > fParticleProbability && mismProb < 0.5){
+              				// electron rejection
+              				if(dMaxBayesianProb == ProbBayes[0] && TMath::Abs(dNumSigmaCombined[0]) <= fCutPIDnSigmaPionMax) ParticleFlag[0] = 1; //return kUnknown;
+              				if(dMaxBayesianProb == ProbBayes[2] && TMath::Abs(dNumSigmaCombined[2]) <= fCutPIDnSigmaPionMax) ParticleFlag[1] = 1; //return kPion;
+              				if(dMaxBayesianProb == ProbBayes[3] && TMath::Abs(dNumSigmaCombined[3]) <= fCutPIDnSigmaKaonMax) ParticleFlag[2] = 1; //return kKaon;
+              				if(dMaxBayesianProb == ProbBayes[4] && TMath::Abs(dNumSigmaCombined[4]) <= fCutPIDnSigmaProtonMax) ParticleFlag[3] = 1; //return kProton;
+       					}*/
+  				}
+  			}//if(dP > 0.5)
+ 		}//if ((detUsed >= AliPIDResponse::kDetTOF) && (pidObj && pidObj->GetTOFsignal() < 99999))
+	}//TPC or TOF if (detUsed)
+  }//TPC if (detUsed)
 
+  PartSpecies species;
+  if(!ParticleFlag[0] && ParticleFlag[1] && !ParticleFlag[2] && !ParticleFlag[3]){ 
+	species = kPion;
+  }else if(!ParticleFlag[0] && !ParticleFlag[1] && ParticleFlag[2] && !ParticleFlag[3]){ 
+	species = kKaon;
+  }else if(!ParticleFlag[0] && !ParticleFlag[1] && !ParticleFlag[2] && ParticleFlag[3]){
+	 species = kProton;
+  }else{species = kUnknown;}
 
-  return kUnknown;
+  if(fFillQA) FillPIDQA(1,track,species); // filling QA for tracks AFTER selection
+ 
+  return species;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowModes::FillPIDQA(const Short_t iQAindex, const AliAODTrack* track, const PartSpecies species)
@@ -1937,7 +2248,6 @@ void AliAnalysisTaskFlowModes::FillPIDQA(const Short_t iQAindex, const AliAODTra
   // Filling various QA plots related to PID (pi,K,p) track selection
   // *************************************************************
   if(!track) return;
-
   if(!fPIDResponse || !fPIDCombined)
   {
     ::Error("FillPIDQA","AliPIDResponse or AliPIDCombined object not found!");
@@ -2099,28 +2409,69 @@ Bool_t AliAnalysisTaskFlowModes::ProcessEvent()
 
   // printf("======= EVENT ================\n");
 
-  // checking the run number for aplying weights & loading TList with weights
-  // if(fFlowUseWeights && fRunNumber < 0)
-  if(fFlowUseWeights && (fRunNumber < 0 || fRunNumber != fEventAOD->GetRunNumber()) )
+  // checking the run number for applying weights & loading TList with weights
+  if(fRunNumber < 0 || fRunNumber != fEventAOD->GetRunNumber() )
   { 
     fRunNumber = fEventAOD->GetRunNumber();
-    if(fFlowWeightsFile)
+      
+    if(fFlowUseNUAWeights && fFlowNUAWeightsFile)
     {
-      TList* listFlowWeights = (TList*) fFlowWeightsFile->Get(Form("%d",fRunNumber));
-      if(!listFlowWeights) {::Error("ProcessEvent","TList from flow weights not found."); return kFALSE; }
-      fh2WeightRefs = (TH2D*) listFlowWeights->FindObject("Refs"); if(!fh2WeightRefs) { ::Error("ProcessEvent","Refs weights not found"); return kFALSE; }
+      TDirectory* dirFlowNUAWeights = (TDirectory*) fFlowNUAWeightsFile->Get(Form("000%d",fRunNumber));
+      if(!dirFlowNUAWeights) {::Error("ProcessEvent","TList from flow weights not found."); return kFALSE; }
+      fh3NUAWeightRefsPlus = (TH3D*) dirFlowNUAWeights->Get("ChargedPlus"); if(!fh3NUAWeightRefsPlus) { ::Error("ProcessEvent","Positive Refs weights not found"); return kFALSE; }
+      fh3NUAWeightRefsMinus = (TH3D*) dirFlowNUAWeights->Get("ChargedMinus"); if(!fh3NUAWeightRefsMinus) { ::Error("ProcessEvent","Negative Refs weights not found"); return kFALSE; }
 
-      fh2WeightCharged = (TH2D*) listFlowWeights->FindObject("Charged"); if(!fh2WeightCharged) { ::Error("ProcessEvent","Charged weights not found"); return kFALSE; }
-      fh2WeightPion = (TH2D*) listFlowWeights->FindObject("Pion"); if(!fh2WeightPion) { ::Error("ProcessEvent","Pion weights not found"); return kFALSE; }
-      fh2WeightKaon = (TH2D*) listFlowWeights->FindObject("Kaon"); if(!fh2WeightKaon) { ::Error("ProcessEvent","Kaon weights not found"); return kFALSE; }
-      fh2WeightProton = (TH2D*) listFlowWeights->FindObject("Proton"); if(!fh2WeightProton) { ::Error("ProcessEvent","Proton weights not found"); return kFALSE; }
+      fh3NUAWeightChargedPlus = (TH3D*) dirFlowNUAWeights->Get("ChargedPlus"); if(!fh3NUAWeightChargedPlus) { ::Error("ProcessEvent","Positive Charged weights not found"); return kFALSE; }
+      fh3NUAWeightChargedMinus = (TH3D*) dirFlowNUAWeights->Get("ChargedMinus"); if(!fh3NUAWeightChargedMinus) { ::Error("ProcessEvent","Nagative Charged weights not found"); return kFALSE; }
+
+      fh3NUAWeightPionPlus = (TH3D*) dirFlowNUAWeights->Get("PionPlus"); if(!fh3NUAWeightPionPlus) { ::Error("ProcessEvent","Positive Pion weights not found"); return kFALSE; }
+      fh3NUAWeightPionMinus = (TH3D*) dirFlowNUAWeights->Get("PionMinus"); if(!fh3NUAWeightPionMinus) { ::Error("ProcessEvent","Negative Pion weights not found"); return kFALSE; }
+
+        
+      fh3NUAWeightKaonPlus = (TH3D*) dirFlowNUAWeights->Get("KaonPlus"); if(!fh3NUAWeightKaonPlus) { ::Error("ProcessEvent","Positive Kaon weights not found"); return kFALSE; }
+      fh3NUAWeightKaonMinus = (TH3D*) dirFlowNUAWeights->Get("KaonMinus"); if(!fh3NUAWeightKaonMinus) { ::Error("ProcessEvent","Negative Kaon weights not found"); return kFALSE; }
+
+        
+      fh3NUAWeightProtonPlus = (TH3D*) dirFlowNUAWeights->Get("ProtonPlus"); if(!fh3NUAWeightProtonPlus) { ::Error("ProcessEvent","Positive Proton weights not found"); return kFALSE; }
+      fh3NUAWeightProtonMinus = (TH3D*) dirFlowNUAWeights->Get("ProtonMinus"); if(!fh3NUAWeightProtonMinus) { ::Error("ProcessEvent","Negative Proton weights not found"); return kFALSE; }
+
+        
     }
-  }
+   }
+   // filtering particles
+   if(!Filtering()) return kFALSE;
+   // at this point, centrality index (percentile) should be properly estimated, if not, skip event
+   if(fIndexCentrality < 0) {return kFALSE;}
+  
 
-  // filtering particles
-  Filtering();
-  // at this point, centrality index (percentile) should be properly estimated, if not, skip event
-  if(fIndexCentrality < 0) {return kFALSE;}
+   if(fFlowUseNUEWeights && fFlowNUEWeightsFile)
+   {
+        TDirectory* dirFlowNUEWeights = 0x0;
+        if(fIndexCentrality>0. && fIndexCentrality<5.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("0-5cc"));
+        if(fIndexCentrality>5. && fIndexCentrality<10.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("5-10cc"));
+        if(fIndexCentrality>10. && fIndexCentrality<20.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("10-20cc"));
+        if(fIndexCentrality>20. && fIndexCentrality<30.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("20-30cc"));
+        if(fIndexCentrality>30. && fIndexCentrality<40.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("30-60cc"));
+        if(fIndexCentrality>40. && fIndexCentrality<50.) dirFlowNUEWeights = (TDirectory*) fFlowNUEWeightsFile->Get(Form("40-50cc"));
+
+        if(!dirFlowNUEWeights) {::Error("ProcessEvent","TDirectoy from NUE weights not found."); return kFALSE; }
+        fhNUEWeightRefsPlus = (TH1D*) dirFlowNUEWeights->FindObject("ChargedPlus"); if(!fhNUEWeightRefsPlus) { ::Error("ProcessEvent","Positive Refs weights not found"); return kFALSE; }
+        fhNUEWeightRefsMinus = (TH1D*) dirFlowNUEWeights->FindObject("ChargedMinus"); if(!fhNUEWeightRefsMinus) { ::Error("ProcessEvent","Negative Refs weights not found"); return kFALSE; }
+
+        fhNUEWeightChargedPlus = (TH1D*) dirFlowNUEWeights->FindObject("ChargedPlus"); if(!fhNUEWeightChargedPlus) { ::Error("ProcessEvent","Positive Charged weights not found"); return kFALSE; }
+        fhNUEWeightChargedMinus = (TH1D*) dirFlowNUEWeights->FindObject("ChargedMinus"); if(!fhNUEWeightChargedMinus) { ::Error("ProcessEvent","Negative Charged weights not found"); return kFALSE; }
+
+        fhNUEWeightPionPlus = (TH1D*) dirFlowNUEWeights->FindObject("PionPlus"); if(!fhNUEWeightPionPlus) { ::Error("ProcessEvent","Positive Pion weights not found"); return kFALSE; }
+        fhNUEWeightPionMinus = (TH1D*) dirFlowNUEWeights->FindObject("PionMinus"); if(!fhNUEWeightPionMinus) { ::Error("ProcessEvent","Negative Pion weights not found"); return kFALSE; }
+
+        fhNUEWeightKaonPlus = (TH1D*) dirFlowNUEWeights->FindObject("KaonPlus"); if(!fhNUEWeightKaonPlus) { ::Error("ProcessEvent","Positive Kaon weights not found"); return kFALSE; }
+        fhNUEWeightKaonMinus = (TH1D*) dirFlowNUEWeights->FindObject("KaonMinus"); if(!fhNUEWeightKaonMinus) { ::Error("ProcessEvent","Negative Kaon weights not found"); return kFALSE; }
+
+        fhNUEWeightProtonPlus = (TH1D*) dirFlowNUEWeights->FindObject("ProtonPlus"); if(!fhNUEWeightProtonPlus) { ::Error("ProcessEvent","Positive Proton weights not found"); return kFALSE; }
+        fhNUEWeightProtonMinus = (TH1D*) dirFlowNUEWeights->FindObject("ProtonMinus"); if(!fhNUEWeightProtonMinus) { ::Error("ProcessEvent","Negative Proton weights not found"); return kFALSE; }
+
+    }
+ 
     
   // if running in kFillWeights mode, skip the remaining part
   if(fRunMode == kFillWeights) { fEventCounter++; return kTRUE; }
@@ -2523,13 +2874,11 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
   // return kTRUE if succesfull (i.e. no error occurs), kFALSE otherwise
   // *************************************************************
   const Float_t dEtaGap = fEtaGap[iEtaGapIndex];
-  TH2D* h2Weights = 0x0;
-  Double_t dWeight = 1.;
-  if(fFlowUseWeights)
-  {
-    h2Weights = fh2WeightRefs;
-    if(!h2Weights) { ::Error("FillRefsVectors","Histogtram with weights not found."); return; }
-  }
+  TH3D* h3NUAWeights = 0x0;
+  TH1D* hNUEWeights = 0x0;
+  Double_t dNUAWeight = 1.;
+  Double_t dNUEWeight = 1.;
+  
 
   // clearing output (global) flow vectors
   ResetRFPsVector(fFlowVecQpos);
@@ -2550,11 +2899,21 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
       ::Warning("FillRefsVectors","Unexpected part. species (%d) in selected sample (expected %d)",part->species,kCharged);
       continue;
     }
+    if(fFlowUseNUAWeights)
+    {
+        if(part->charge >0) h3NUAWeights = fh3NUAWeightRefsPlus;
+        if(part->charge <0) h3NUAWeights = fh3NUAWeightRefsMinus;
+          
+        if(!h3NUAWeights) { ::Error("FillRefsVectors","Histogram with NUA weights not found."); continue; }
+    }
+      
+    if(fFlowUseNUEWeights)
+    {
+        if(part->charge >0) hNUEWeights = fhNUEWeightRefsPlus;
+        if(part->charge <0) hNUEWeights = fhNUEWeightRefsMinus;
 
-    if(fNegativelyChargedRef==kTRUE && part->charge>0) continue;
-    if(fPositivelyChargedRef==kTRUE && part->charge<0) continue;
-
-    
+        if(!hNUEWeights) { ::Error("FillRefsVectors","Histogram with NUE weights not found."); return; }
+    }
     // RFPs pT check
     if(fCutFlowRFPsPtMin > 0. && part->pt < fCutFlowRFPsPtMin)
       continue;
@@ -2569,11 +2928,17 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
     dQsinNeg = 0;
 
     // loading weights if needed
-    if(fFlowUseWeights && h2Weights)
+    if(fFlowUseNUAWeights && h3NUAWeights)
     {
-      dWeight = h2Weights->GetBinContent(h2Weights->FindBin(part->eta,part->phi));
-      if(dWeight <= 0) dWeight = 1.;
-      // if(iEtaGapIndex == 0) fh3AfterWeightsRefs->Fill(part->phi,part->eta,part->pt, dWeight);
+      dNUAWeight = h3NUAWeights->GetBinContent(h3NUAWeights->FindBin(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ()));
+      if(dNUAWeight <= 0) dNUAWeight = 1.;
+      if(iEtaGapIndex == 0) fh3AfterNUAWeightsRefs->Fill(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ(), dNUAWeight);
+    }
+    if(fFlowUseNUEWeights && hNUEWeights)
+    {
+        dNUEWeight = hNUEWeights->GetBinContent(hNUEWeights->FindBin(part->pt));
+        if(dNUEWeight <= 0) dNUEWeight = 1.;
+        if(iEtaGapIndex == 0) fhAfterNUEWeightsRefs->Fill(part->pt, dNUEWeight);
     }
 
     // RPF candidate passing all criteria: start filling flow vectors
@@ -2584,8 +2949,8 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
       for(Short_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++){
         for(Short_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
         {
-            dQcosPos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * part->phi);
-            dQsinPos = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * part->phi);
+            dQcosPos = TMath::Power(dNUAWeight*dNUEWeight,iPower) * TMath::Cos(iHarm * part->phi);
+            dQsinPos = TMath::Power(dNUAWeight*dNUEWeight,iPower) * TMath::Sin(iHarm * part->phi);
             fFlowVecQpos[iHarm][iPower] += TComplex(dQcosPos,dQsinPos,kFALSE);
         }
       }
@@ -2596,8 +2961,8 @@ void AliAnalysisTaskFlowModes::FillRefsVectors(const Short_t iEtaGapIndex)
       for(Short_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++){
         for(Short_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
         {
-          dQcosNeg = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * part->phi);
-          dQsinNeg = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * part->phi);
+          dQcosNeg = TMath::Power(dNUAWeight*dNUEWeight,iPower) * TMath::Cos(iHarm * part->phi);
+          dQsinNeg = TMath::Power(dNUAWeight*dNUEWeight,iPower) * TMath::Sin(iHarm * part->phi);
           fFlowVecQneg[iHarm][iPower] += TComplex(dQcosNeg,dQsinNeg,kFALSE);
         }
       }
@@ -2624,7 +2989,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
 
   if(species == kUnknown) return;
 
-  Double_t dWeight = 1.;  // for generic framework != 1
+  Double_t dNUAWeight = 1.;  // for generic framework != 1
+  Double_t dNUEWeight = 1.;  // for generic framework != 1
 
   // clearing output (global) flow vectors
   ResetPOIsVector(fFlowVecPpos);
@@ -2634,38 +3000,32 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
   std::vector<FlowPart>* vector = 0x0;
   //TH3D* hist = 0x0;
   //Double_t dMassLow = 0, dMassHigh = 0;
-  TH2D* h2Weights = 0x0;
-
+  TH3D* h3NUAWeights = 0x0;
+  TH1D* hNUEWeights = 0x0;
+    
   // swich based on species
   switch (species)
   {
-    case kCharged:
-      vector = fVectorCharged;
-      if(fFlowUseWeights) { h2Weights = fh2WeightCharged; }
-      break;
-
-    case kPion:
-      vector = fVectorPion;
-      if(fFlowUseWeights) { h2Weights = fh2WeightPion; }
-      break;
-
-    case kKaon:
-      vector = fVectorKaon;
-      if(fFlowUseWeights) { h2Weights = fh2WeightKaon; }
-
-      break;
-
-    case kProton:
-      vector = fVectorProton;
-      if(fFlowUseWeights) { h2Weights = fh2WeightProton; }
-      break;
-
-    default:
-      ::Error("FillPOIsVectors","Selected species unknown.");
-      return;
+      case kCharged:
+          vector = fVectorCharged;
+          break;
+            
+      case kPion:
+          vector = fVectorPion;
+          break;
+            
+      case kKaon:
+          vector = fVectorKaon;
+          break;
+            
+      case kProton:
+          vector = fVectorProton;
+          break;
+            
+      default:
+          ::Error("FillPOIsVectors","Selected species unknown.");
+          return;
   }//switch(species)
-
-  if(fFlowUseWeights && !h2Weights) { ::Error("FillPOIsVectors","Histogtram with weights not found."); return; }
 
   const Double_t dEtaGap = fEtaGap[iEtaGapIndex];
   //const Double_t dMass = (dMassLow+dMassHigh)/2;
@@ -2675,6 +3035,62 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
 
   for (auto part = vector->begin(); part != vector->end(); part++)
   {
+      
+    // swich based on species
+    switch (species)
+    {
+          case kCharged:
+              if(fFlowUseNUAWeights) {
+                  if(part->charge >0) h3NUAWeights = fh3NUAWeightChargedPlus;
+                  if(part->charge <0) h3NUAWeights = fh3NUAWeightChargedMinus;
+              }
+              if(fFlowUseNUEWeights) {
+                  if(part->charge >0) hNUEWeights = fhNUEWeightChargedPlus;
+                  if(part->charge <0) hNUEWeights = fhNUEWeightChargedMinus;
+              }
+              break;
+              
+          case kPion:
+              if(fFlowUseNUAWeights) {
+                  if(part->charge >0) h3NUAWeights = fh3NUAWeightPionPlus;
+                  if(part->charge <0) h3NUAWeights = fh3NUAWeightPionMinus;
+              }
+              if(fFlowUseNUEWeights) {
+                 if(part->charge >0) hNUEWeights = fhNUEWeightPionPlus;
+                 if(part->charge <0) hNUEWeights = fhNUEWeightPionMinus;
+              }
+              break;
+              
+          case kKaon:
+              if(fFlowUseNUAWeights) {
+                  if(part->charge >0) h3NUAWeights = fh3NUAWeightKaonPlus;
+                  if(part->charge <0) h3NUAWeights = fh3NUAWeightKaonMinus;
+              }
+              if(fFlowUseNUEWeights) {
+                 if(part->charge >0) hNUEWeights = fhNUEWeightKaonPlus;
+                 if(part->charge <0) hNUEWeights = fhNUEWeightKaonMinus;
+              }
+              break;
+              
+          case kProton:
+              if(fFlowUseNUAWeights) {
+                  if(part->charge >0) h3NUAWeights = fh3NUAWeightProtonPlus;
+                  if(part->charge <0) h3NUAWeights = fh3NUAWeightProtonMinus;
+              }
+              if(fFlowUseNUEWeights) {
+                 if(part->charge >0) hNUEWeights = fhNUEWeightProtonPlus;
+                 if(part->charge <0) hNUEWeights = fhNUEWeightProtonMinus;
+              }
+              break;
+            
+          default:
+              ::Error("FillPOIsVectors","Selected species unknown.");
+              return;
+    }//switch(species)
+    
+    if(fFlowUseNUAWeights && !h3NUAWeights) { ::Error("FillPOIsVectors","Histogram with NUA weights not found."); continue; }
+    if(fFlowUseNUEWeights && !hNUEWeights) { ::Error("FillPOIsVectors","Histogram with NUE weights not found."); return; }
+
     // checking species of used particles (just for double checking purpose)
     if( part->species != species)
     {
@@ -2692,11 +3108,57 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
     // POIs candidate passing all criteria: start filling flow vectors
 
     // loading weights if needed
-    if(fFlowUseWeights && h2Weights)
+    if(fFlowUseNUAWeights && h3NUAWeights)
     {
-      dWeight = h2Weights->GetBinContent(h2Weights->FindBin(part->eta,part->phi));
-      if(dWeight <= 0) dWeight = 1.;
-    }//endif{fFlowUseWeights && h2Weights}
+      dNUAWeight = h3NUAWeights->GetBinContent(h3NUAWeights->FindBin(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ()));
+      if(dNUAWeight <= 0){ dNUAWeight = 1.;}
+      if(iEtaGapIndex == 0){
+          switch (species)
+          {
+              case kCharged:
+                  fh3AfterNUAWeightsCharged->Fill(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ(), dNUAWeight);
+                  break;
+              case kPion:
+                  fh3AfterNUAWeightsPion->Fill(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ(), dNUAWeight);
+                  break;
+              case kKaon:
+                  fh3AfterNUAWeightsKaon->Fill(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ(), dNUAWeight);
+                  break;
+              case kProton:
+                  fh3AfterNUAWeightsProton->Fill(part->phi,part->eta,fEventAOD->GetPrimaryVertex()->GetZ(), dNUAWeight);
+                  break;
+              default:
+                  ::Error("Fill fh3AfterNUAWeights","Selected species unknown.");
+                  return;
+          }
+      }
+    }//endif{fFlowUseNUAWeights && h3NUAWeights}
+      
+    if(fFlowUseNUEWeights && hNUEWeights)
+    {
+        dNUEWeight = hNUEWeights->GetBinContent(hNUEWeights->FindBin(part->pt));
+        if(dNUEWeight <= 0) dNUEWeight = 1.;
+        if(iEtaGapIndex == 0){
+            switch (species)
+            {
+                case kCharged:
+                    fhAfterNUEWeightsCharged->Fill(part->pt, dNUEWeight);
+                    break;
+                case kPion:
+                    fhAfterNUEWeightsPion->Fill(part->pt, dNUEWeight);
+                    break;
+                case kKaon:
+                    fhAfterNUEWeightsKaon->Fill(part->pt, dNUEWeight);
+                    break;
+                case kProton:
+                    fhAfterNUEWeightsProton->Fill(part->pt, dNUEWeight);
+                    break;
+                default:
+                    ::Error("Fill fhAfterNUEWeights","Selected species unknown.");
+                    return;
+            }
+        }
+    }//endif{fFlowUseNUEWeights && hNUEWeights}
 
     if(part->eta > dEtaGap / 2 )
     {
@@ -2704,8 +3166,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
         for(Short_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++){
           for(Short_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
           {
-            dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * part->phi);
-            dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * part->phi);
+            dCos = TMath::Power(dNUAWeight*dNUEWeight,iPower) * TMath::Cos(iHarm * part->phi);
+            dSin = TMath::Power(dNUAWeight*dNUEWeight,iPower) * TMath::Sin(iHarm * part->phi);
             fFlowVecPpos[iHarm][iPower][iPtBin] += TComplex(dCos,dSin,kFALSE);
           }//endfor{Short_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++}
        }//endfor{Short_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++}
@@ -2715,8 +3177,8 @@ void AliAnalysisTaskFlowModes::FillPOIsVectors(const Short_t iEtaGapIndex, const
          for(Short_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++){
            for(Short_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++)
            {
-             dCos = TMath::Power(dWeight,iPower) * TMath::Cos(iHarm * part->phi);
-             dSin = TMath::Power(dWeight,iPower) * TMath::Sin(iHarm * part->phi);
+             dCos = TMath::Power(dNUAWeight*dNUEWeight,iPower) * TMath::Cos(iHarm * part->phi);
+             dSin = TMath::Power(dNUAWeight*dNUEWeight,iPower) * TMath::Sin(iHarm * part->phi);
              fFlowVecPneg[iHarm][iPower][iPtBin] += TComplex(dCos,dSin,kFALSE);
            }//endfor{Short_t iPower(0); iPower < fFlowNumWeightPowersMax; iPower++}
          }//endfor{Short_t iHarm(0); iHarm < fFlowNumHarmonicsMax; iHarm++}
@@ -3029,6 +3491,10 @@ void AliAnalysisTaskFlowModes::SetPriors(Float_t centrCur){
     fBinLimitPID[16] = 2.800000;
     fBinLimitPID[17] = 3.000000;
     
+    for(Int_t i=18;i<fgkPIDptBin;i++){
+        fBinLimitPID[i] = 3.0 + 0.2 * (i-17);
+    }
+    
     // 0-10%
     if(centrCur < 10){
         fC[0][0] = 0.005;
@@ -3137,7 +3603,15 @@ void AliAnalysisTaskFlowModes::SetPriors(Float_t centrCur){
         fC[17][1] = 0.005;
         fC[17][2] = 1.0000;
         fC[17][3] = 0.5173;
-        fC[17][4] = 0.9059;   
+        fC[17][4] = 0.9059;
+        
+        for(Int_t i=18;i<fgkPIDptBin;i++){
+            fC[i][0] = fC[17][0];
+            fC[i][1] = fC[17][1];
+            fC[i][2] = fC[17][2];
+            fC[i][3] = fC[17][3];
+            fC[i][4] = fC[17][4];
+        }
     }
     // 10-20%
     else if(centrCur < 20){
@@ -3248,6 +3722,14 @@ void AliAnalysisTaskFlowModes::SetPriors(Float_t centrCur){
         fC[17][2] = 1.0000;
         fC[17][3] = 0.4804;
         fC[17][4] = 0.8218;
+        
+        for(Int_t i=18;i<fgkPIDptBin;i++){
+            fC[i][0] = fC[17][0];
+            fC[i][1] = fC[17][1];
+            fC[i][2] = fC[17][2];
+            fC[i][3] = fC[17][3];
+            fC[i][4] = fC[17][4];
+        }
     }
     // 20-30%
     else if(centrCur < 30){
@@ -3358,6 +3840,14 @@ void AliAnalysisTaskFlowModes::SetPriors(Float_t centrCur){
         fC[17][2] = 1.0000;
         fC[17][3] = 0.4411;
         fC[17][4] = 0.7293;
+        
+        for(Int_t i=18;i<fgkPIDptBin;i++){
+            fC[i][0] = fC[17][0];
+            fC[i][1] = fC[17][1];
+            fC[i][2] = fC[17][2];
+            fC[i][3] = fC[17][3];
+            fC[i][4] = fC[17][4];
+        }
     }
     // 30-40%
     else if(centrCur < 40){
@@ -3468,6 +3958,14 @@ void AliAnalysisTaskFlowModes::SetPriors(Float_t centrCur){
         fC[17][2] = 1.0000;
         fC[17][3] = 0.4293;
         fC[17][4] = 0.6491;
+        
+        for(Int_t i=18;i<fgkPIDptBin;i++){
+            fC[i][0] = fC[17][0];
+            fC[i][1] = fC[17][1];
+            fC[i][2] = fC[17][2];
+            fC[i][3] = fC[17][3];
+            fC[i][4] = fC[17][4];
+        }
     }
     // 40-50%
     else if(centrCur < 50){
@@ -3578,6 +4076,14 @@ void AliAnalysisTaskFlowModes::SetPriors(Float_t centrCur){
         fC[17][2] = 1.0000;
         fC[17][3] = 0.3960;
         fC[17][4] = 0.5374;
+        
+        for(Int_t i=18;i<fgkPIDptBin;i++){
+            fC[i][0] = fC[17][0];
+            fC[i][1] = fC[17][1];
+            fC[i][2] = fC[17][2];
+            fC[i][3] = fC[17][3];
+            fC[i][4] = fC[17][4];
+        }
     }
     // 50-60%
     else if(centrCur < 60){
@@ -3688,6 +4194,14 @@ void AliAnalysisTaskFlowModes::SetPriors(Float_t centrCur){
         fC[17][2] = 1.0000;
         fC[17][3] = 0.4237;
         fC[17][4] = 0.4773;
+        
+        for(Int_t i=18;i<fgkPIDptBin;i++){
+            fC[i][0] = fC[17][0];
+            fC[i][1] = fC[17][1];
+            fC[i][2] = fC[17][2];
+            fC[i][3] = fC[17][3];
+            fC[i][4] = fC[17][4];
+        }
     }
     // 60-70%
     else if(centrCur < 70){
@@ -3798,6 +4312,14 @@ void AliAnalysisTaskFlowModes::SetPriors(Float_t centrCur){
         fC[17][2] = 1.0000;
         fC[17][3] = 0.3875;
         fC[17][4] = 0.4083;
+        
+        for(Int_t i=18;i<fgkPIDptBin;i++){
+            fC[i][0] = fC[17][0];
+            fC[i][1] = fC[17][1];
+            fC[i][2] = fC[17][2];
+            fC[i][3] = fC[17][3];
+            fC[i][4] = fC[17][4];
+        }
     }
     // 70-80%
     else if(centrCur < 80){
@@ -3908,6 +4430,14 @@ void AliAnalysisTaskFlowModes::SetPriors(Float_t centrCur){
         fC[17][2] = 1.0000;
         fC[17][3] = 0.3727;
         fC[17][4] = 0.3877;
+        
+        for(Int_t i=18;i<fgkPIDptBin;i++){
+            fC[i][0] = fC[17][0];
+            fC[i][1] = fC[17][1];
+            fC[i][2] = fC[17][2];
+            fC[i][3] = fC[17][3];
+            fC[i][4] = fC[17][4];
+        }
     }
     // 80-100%
     else{
@@ -4018,16 +4548,17 @@ void AliAnalysisTaskFlowModes::SetPriors(Float_t centrCur){
         fC[17][2] = 1.0000;
         fC[17][3] = 0.3788;
         fC[17][4] = 0.3011;
+        
+        for(Int_t i=18;i<fgkPIDptBin;i++){
+            fC[i][0] = fC[17][0];
+            fC[i][1] = fC[17][1];
+            fC[i][2] = fC[17][2];
+            fC[i][3] = fC[17][3];
+            fC[i][4] = fC[17][4];
+        }
     }
     
-    for(Int_t i=18;i<fgkPIDptBin;i++){
-        fBinLimitPID[i] = 3.0 + 0.2 * (i-18);
-        fC[i][0] = fC[17][0];
-        fC[i][1] = fC[17][1];
-        fC[i][2] = fC[17][2];
-        fC[i][3] = fC[17][3];
-        fC[i][4] = fC[17][4];
-    }  
+    
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 Bool_t AliAnalysisTaskFlowModes::TPCTOFagree(const AliVTrack *track)

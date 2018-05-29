@@ -16,6 +16,9 @@ AliAnalysisGrid* CreateAlienHandler(const char *runMode,Bool_t gridMerge)
   //Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
   plugin->SetRunMode(runMode);
 
+  // Set MC chain if MC truth as input
+  plugin->SetUseMCchain(bMC && bMConlyTruth);
+
   plugin->SetNtestFiles(nNoOfTestFiles); // num of test files in "test" mode
 
   if (TString(runMode).EqualTo("test"))

@@ -75,12 +75,14 @@ class AliEventCuts : public TList {
     bool   AcceptEvent (AliVEvent *ev);
     bool   PassedCut (AliEventCuts::CutsBin cut) { return fFlag & BIT(cut); }
     bool   CheckNormalisationMask (AliEventCuts::NormMask mask) { return (fFlag & mask) == mask; }
+    bool   IsTrueINELgtZero (AliVEvent *ev, bool chkGenVtxZ = false);
     void   AddQAplotsToList(TList *qaList = 0x0, bool addCorrelationPlots = false);
     void   OverrideAutomaticTriggerSelection(unsigned long tr, bool ov = true) { fTriggerMask = tr; fOverrideAutoTriggerMask = ov; }
     void   OverridePileUpCuts(int minContrib, float minZdist, float nSigmaZdist, float nSigmaDiamXY, float nSigmaDiamZ, bool ov = true);
     void   SetManualMode (bool man = true) { fManualMode = man; }
-    void   SetupLHC11h();
+    void   SetupRun1PbPb();
     void   SetupLHC15o();
+    void   SetupLHC17n();
     void   SetupRun2pp();
     void   SetupRun1pA(int iPeriod);
     void   SetupRun2pA(int iPeriod);
@@ -175,7 +177,7 @@ class AliEventCuts : public TList {
     bool          fOverrideAutoTriggerMask;       ///<  If true the trigger mask chosen by the user is not overridden by the Automatic Setup
     bool          fOverrideAutoPileUpCuts;        ///<  If true the pile-up cuts are defined by the user.
     bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
-    
+
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1D* fCutStats;               //!<! Cuts statistics: every column keeps track of how many times a cut is passed independently from the other cuts.
     TH1D* fCutStatsAfterTrigger;   //!<! Cuts statistics: every column keeps track of how many times a cut is passed for events that pass the trigger selection

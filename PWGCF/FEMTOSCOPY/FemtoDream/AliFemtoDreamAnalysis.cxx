@@ -5,6 +5,7 @@
  *      Author: bernhardhohlweger
  */
 #include <vector>
+#include "AliLog.h"
 #include "AliFemtoDreamAnalysis.h"
 #include "TClonesArray.h"
 #include <iostream>
@@ -12,7 +13,7 @@ ClassImp(AliFemtoDreamAnalysis)
 AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 :fMVPileUp(false)
 ,fEvtCutQA(false)
-,fQA(0)
+,fQA()
 ,fFemtoTrack()
 ,fFemtov0()
 ,fFemtoCasc()
@@ -24,7 +25,8 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 ,fAntiv0Cuts()
 ,fCascCuts()
 ,fAntiCascCuts()
-,fPairCleaner(new AliFemtoDreamPairCleaner(2,2))
+,fPairCleaner()
+,fControlSample()
 ,fTrackBufferSize(0)
 ,fGTI(0)
 ,fConfig(0)
@@ -45,7 +47,7 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
   }
 }
 
-void AliFemtoDreamAnalysis::Init(bool isMonteCarlo) {
+void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
   fFemtoTrack=new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(isMonteCarlo);
 
@@ -67,7 +69,6 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo) {
   fFemtoCasc->SetPDGDaugBach(fCascCuts->GetPDGCodeBach());
   fFemtoCasc->GetBach()->SetUseMCInfo(isMonteCarlo);
   fFemtoCasc->Setv0PDGCode(fCascCuts->GetPDGv0());
-
   fEvtCuts->InitQA();
   fTrackCuts->Init();
   fAntiTrackCuts->Init();
@@ -76,15 +77,23 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo) {
   fCascCuts->Init();
   fAntiCascCuts->Init();
   fGTI=new AliAODTrack*[fTrackBufferSize];
-  fQA=new TList();
-  fQA->SetOwner();
-  fQA->SetName("QA");
+  fEvent=new AliFemtoDreamEvent(fMVPileUp,fEvtCutQA,trigger);
+  fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
+  bool MinBooking=
+      !((!fConfig->GetMinimalBookingME())||(!fConfig->GetMinimalBookingSample()));
+  fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinBooking);
 
-  fQA->Add(fPairCleaner->GetHistList());
-  fEvent=new AliFemtoDreamEvent(fMVPileUp,fEvtCutQA);
-  fQA->Add(fEvent->GetEvtCutList());
-
-  fPartColl=new AliFemtoDreamPartCollection(fConfig);
+  if (MinBooking) {
+    fQA=new TList();
+    fQA->SetOwner();
+    fQA->SetName("QA");
+    fQA->Add(fPairCleaner->GetHistList());
+    if (fEvtCutQA) fQA->Add(fEvent->GetEvtCutList());
+  }
+  fPartColl=
+      new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
+  fControlSample=
+      new AliFemtoDreamControlSample(fConfig,fConfig->GetMinimalBookingSample());
   return;
 }
 
@@ -186,7 +195,6 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   if (!evt) {
     AliFatal("No Input Event");
   }
-
   fEvent->SetEvent(evt);
   if (!fEvtCuts->isSelected(fEvent)) {
     return;
@@ -236,35 +244,46 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiDecays.push_back(*fFemtov0);
     }
   }
+  std::vector<AliFemtoDreamBasePart> XiDecays;
+  std::vector<AliFemtoDreamBasePart> AntiXiDecays;
   int numcascades = evt->GetNumberOfCascades();
   for (int iXi=0;iXi<numcascades;++iXi) {
     AliAODcascade *xi = evt->GetCascade(iXi);
     if (!xi) continue;
     fFemtoCasc->SetCascade(evt,xi);
     if (fCascCuts->isSelected(fFemtoCasc)) {
-      //
+      XiDecays.push_back(*fFemtoCasc);
     }
     if (fAntiCascCuts->isSelected(fFemtoCasc)) {
-      //
+      AntiXiDecays.push_back(*fFemtoCasc);
     }
   }
-
-  //  std::cout << "=============================" <<std::endl;
-  //  std::cout << "=============================" <<std::endl;
-  //  std::cout << "======Particle Cleaner=======" <<std::endl;
-  //  std::cout << "=============================" <<std::endl;
-  //  std::cout << "=============================" <<std::endl;
-
   fPairCleaner->ResetArray();
   fPairCleaner->CleanTrackAndDecay(&Particles,&Decays,0);
+  fPairCleaner->CleanTrackAndDecay(&Particles,&XiDecays,2);
   fPairCleaner->CleanTrackAndDecay(&AntiParticles,&AntiDecays,1);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles,&AntiXiDecays,3);
+
   fPairCleaner->CleanDecay(&Decays,0);
   fPairCleaner->CleanDecay(&AntiDecays,1);
+  fPairCleaner->CleanDecay(&XiDecays,2);
+  fPairCleaner->CleanDecay(&AntiXiDecays,3);
+
   fPairCleaner->StoreParticle(Particles);
   fPairCleaner->StoreParticle(AntiParticles);
   fPairCleaner->StoreParticle(Decays);
   fPairCleaner->StoreParticle(AntiDecays);
-  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
-                      fEvent->GetSPDMult());
+  fPairCleaner->StoreParticle(XiDecays);
+  fPairCleaner->StoreParticle(AntiXiDecays);
+
+  if (fConfig->GetUseEventMixing()) {
+    fPartColl->SetEvent(
+        fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
+        fEvent->GetMultiplicity(),fEvent->GetV0MCentrality());
+  }
+  if (fConfig->GetUsePhiSpinning()) {
+    fControlSample->SetEvent(
+        fPairCleaner->GetCleanParticles(), fEvent->GetMultiplicity());
+  }
 }
 

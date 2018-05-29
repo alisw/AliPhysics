@@ -49,6 +49,19 @@ ClassImp(AliTrackContainer);
 
 TString AliTrackContainer::fgDefTrackCutsPeriod = "";
 
+// string to enum map for use with the %YAML config
+const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> AliTrackContainer::fgkTrackFilterTypeMap = {
+  {"kNoTrackFilter", AliEmcalTrackSelection::kNoTrackFilter },
+  {"kCustomTrackFilter", AliEmcalTrackSelection::kCustomTrackFilter },
+  {"kHybridTracks",  AliEmcalTrackSelection::kHybridTracks },
+  {"kTPCOnlyTracks", AliEmcalTrackSelection::kTPCOnlyTracks },
+  {"kITSPureTracks", AliEmcalTrackSelection::kITSPureTracks },
+  {"kHybridTracks2010wNoRefit", AliEmcalTrackSelection::kHybridTracks2010wNoRefit },
+  {"kHybridTracks2010woNoRefit", AliEmcalTrackSelection::kHybridTracks2010woNoRefit },
+  {"kHybridTracks2011wNoRefit", AliEmcalTrackSelection::kHybridTracks2011wNoRefit },
+  {"kHybridTracks2011woNoRefit", AliEmcalTrackSelection::kHybridTracks2011woNoRefit }
+};
+
 /**
  * Default constructor.
  */

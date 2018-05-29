@@ -47,6 +47,7 @@
 #include "AliRsnMiniParticle.h"
 
 #include "AliRsnMiniAnalysisTask.h"
+#include "AliRsnMiniResonanceFinder.h"
 
 
 ClassImp(AliRsnMiniAnalysisTask)
@@ -101,11 +102,14 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
-   fRsnTreeInFile(kFALSE)
+   fRsnTreeInFile(kFALSE),
+   fNResonanceFinders(0)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
 //
+
+   fResonanceFinder[0] = fResonanceFinder[1] = 0;
 }
 
 //__________________________________________________________________________________________________
@@ -158,7 +162,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fMotherAcceptanceCutMinPt(0.0),
    fMotherAcceptanceCutMaxEta(0.9),
    fKeepMotherInAcceptance(kFALSE),
-   fRsnTreeInFile(saveRsnTreeInFile)
+   fRsnTreeInFile(saveRsnTreeInFile),
+   fNResonanceFinders(0)
 {
 //
 // Default constructor.
@@ -169,6 +174,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
 
    DefineOutput(1, TList::Class());
    if (fRsnTreeInFile) DefineOutput(2, TTree::Class());
+
+   fResonanceFinder[0] = fResonanceFinder[1] = 0;
 }
 
 //__________________________________________________________________________________________________
@@ -221,13 +228,16 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fMotherAcceptanceCutMinPt(copy.fMotherAcceptanceCutMinPt),
    fMotherAcceptanceCutMaxEta(copy.fMotherAcceptanceCutMaxEta),
    fKeepMotherInAcceptance(copy.fKeepMotherInAcceptance),
-   fRsnTreeInFile(copy.fRsnTreeInFile)
+   fRsnTreeInFile(copy.fRsnTreeInFile),
+   fNResonanceFinders(0)
 {
 //
 // Copy constructor.
 // Implemented as requested by C++ standards.
 // Can be used in PROOF and by plugins.
 //
+    
+   fResonanceFinder[0] = fResonanceFinder[1] = 0;
 }
 
 //__________________________________________________________________________________________________
@@ -301,6 +311,8 @@ AliRsnMiniAnalysisTask::~AliRsnMiniAnalysisTask()
    if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput;
       delete fEvBuffer;
+      delete fResonanceFinder[0];
+      delete fResonanceFinder[1];
    }
 }
 
@@ -317,14 +329,19 @@ Int_t AliRsnMiniAnalysisTask::AddTrackCuts(AliRsnCutSet *cuts)
 //
 
    TObject *obj = fTrackCuts.FindObject(cuts->GetName());
+   Int_t v = 0;
 
    if (obj) {
       AliInfo(Form("A cut set named '%s' already exists", cuts->GetName()));
-      return fTrackCuts.IndexOf(obj);
+      v = fTrackCuts.IndexOf(obj);
    } else {
       fTrackCuts.AddLast(cuts);
-      return fTrackCuts.IndexOf(cuts);
+      v = fTrackCuts.IndexOf(cuts);
    }
+
+    for (Int_t i=0; i<fNResonanceFinders; i++) if(fResonanceFinder[i]) fResonanceFinder[i]->IncrementResonanceCutID();
+    
+    return v;
 }
 
 //__________________________________________________________________________________________________
@@ -453,6 +470,8 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
    // fill a mini-event from current
    // and skip this event if no tracks were accepted
    FillMiniEvent(check);
+
+   for (Int_t i=0; i<fNResonanceFinders; i++) if(fResonanceFinder[i]) fResonanceFinder[i]->RunResonanceFinder(fMiniEvent);
 
    // fill MC based histograms on mothers,
    // which do need the original event
@@ -1213,6 +1232,8 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
    AliMCParticle *daughter1, *daughter2;
    TLorentzVector p1, p2;
    AliRsnMiniOutput *def = 0x0;
+    
+   for ( id = 0; id < fNResonanceFinders; id++) if(fResonanceFinder[id]) fResonanceFinder[id]->FillMother(fMCEvent, miniEvent);
 
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
@@ -1220,6 +1241,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
       if (!def->IsMother() && !def->IsMotherInAcc()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliMCParticle *part = (AliMCParticle *)fMCEvent->GetTrack(ip);
+	 
          //get mother pdg code
          if (!AliRsnDaughter::IsEquivalentPDGCode(part->Particle()->GetPdgCode() , def->GetMotherPDG())) continue;
          // check that daughters match expected species
@@ -1327,6 +1349,8 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
    AliAODMCParticle *daughter1, *daughter2;
    TLorentzVector p1, p2;
    AliRsnMiniOutput *def = 0x0;
+    
+   for ( id = 0; id < fNResonanceFinders; id++) if(fResonanceFinder[id]) fResonanceFinder[id]->FillMother(list, miniEvent);
 
    for (id = 0; id < ndef; id++) {
       def = (AliRsnMiniOutput *)fHistograms[id];
@@ -1334,6 +1358,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
       if (!def->IsMother() && !def->IsMotherInAcc()) continue;
       for (ip = 0; ip < npart; ip++) {
          AliAODMCParticle *part = (AliAODMCParticle *)list->At(ip);
+	 
          if (!AliRsnDaughter::IsEquivalentPDGCode(part->GetPdgCode() , def->GetMotherPDG())) continue;
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
@@ -1742,4 +1767,24 @@ AliQnCorrectionsQnVector *AliRsnMiniAnalysisTask::GetQnVectorFromList(
       theQnVector = NULL;
   }
   return theQnVector;
+}
+
+//----------------------------------------------------------------------------------
+Int_t AliRsnMiniAnalysisTask::SetResonanceFinder(AliRsnMiniResonanceFinder* f, Int_t j)
+{
+   Int_t k = 0;
+   if(j<0) {
+      if (fNResonanceFinders == 0 || !fResonanceFinder[0]) k = 0;
+      else k=1;
+   } else if(!j) k = 0;
+   else k = 1;
+    
+   if(fNResonanceFinders <= k) fNResonanceFinders = k+1;
+    
+   if(fResonanceFinder[k]) AliWarning("Replacing existing AliRsnMiniResonanceFinder");
+
+   fResonanceFinder[k] = f;
+   Int_t v = GetNumberOfTrackCuts()+k;
+   f->SetResonanceCutID(v);
+   return v;
 }

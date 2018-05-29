@@ -7,10 +7,12 @@
  */
 #include <iostream>
 #include "AliFemtoDreamPartCollection.h"
+#include "AliLog.h"
 ClassImp(AliFemtoDreamPartCollection)
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
 :fResults()
 ,fNSpecies(0)
+,fDoMCAncestorCheck(false)
 ,fZVtxMultBuffer()
 ,fValuesZVtxBins()
 ,fValuesMultBins()
@@ -18,9 +20,10 @@ AliFemtoDreamPartCollection::AliFemtoDreamPartCollection()
 
 }
 AliFemtoDreamPartCollection::AliFemtoDreamPartCollection(
-    AliFemtoDreamCollConfig *conf)
-:fResults(new AliFemtoDreamCorrHists(conf))
+    AliFemtoDreamCollConfig *conf,bool MinimalBooking)
+:fResults(new AliFemtoDreamCorrHists(conf,MinimalBooking))
 ,fNSpecies(conf->GetNParticles())
+,fDoMCAncestorCheck(conf->GetDoSECommonAncestor())
 ,fZVtxMultBuffer(conf->GetNZVtxBins(),
                  std::vector<AliFemtoDreamZVtxMultContainer>(
                      conf->GetNMultBins(),
@@ -35,23 +38,27 @@ AliFemtoDreamPartCollection::~AliFemtoDreamPartCollection() {
 
 void AliFemtoDreamPartCollection::SetEvent(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-    double ZVtx,double Mult)
+    float ZVtx,float Mult,float cent)
 {
   if (Particles.size()!=fNSpecies) {
-    std::cout<<"Particles too small!"<<std::endl;
+    TString fatalOut=
+        Form("Too few Species %d for %d",Particles.size(),(int)fNSpecies);
+    AliFatal(fatalOut.Data());
   }
   int bins[2] = {0,0};
   FindBin(ZVtx,Mult,bins);
-  if (bins[0]==-99||bins[1]==-99) {
-    //TODO: error msg!
+  if (!(bins[0]==-99||bins[1]==-99)) {
+    auto itZVtx=fZVtxMultBuffer.begin();
+    itZVtx+=bins[0];
+    auto itMult=itZVtx->begin();
+    itMult+=bins[1];
+    itMult->PairParticlesSE(Particles,fResults,bins[1],cent);
+    itMult->PairParticlesME(Particles,fResults,bins[1],cent);
+    if (fDoMCAncestorCheck) {
+      itMult->PairMCParticlesSE(Particles,fResults,bins[1]);
+    }
+    itMult->SetEvent(Particles);
   }
-  auto itZVtx=fZVtxMultBuffer.begin();
-  itZVtx+=bins[0];
-  auto itMult=itZVtx->begin();
-  itMult+=bins[1];
-  itMult->PairParticlesSE(Particles,fResults);
-  itMult->PairParticlesME(Particles,fResults);
-  itMult->SetEvent(Particles);
   return;
 }
 
@@ -63,7 +70,7 @@ void AliFemtoDreamPartCollection::PrintEvent(int ZVtx,int Mult) {
   return;
 }
 
-void AliFemtoDreamPartCollection::FindBin(double ZVtxPos,double Multiplicity,
+void AliFemtoDreamPartCollection::FindBin(float ZVtxPos,float Multiplicity,
                                           int *returnBins) {
   returnBins[0]=-99;
   returnBins[1]=-99;

@@ -36,7 +36,8 @@ struct ParticleSpectrum
 		fEtaPhi(0),
 		fPtLong(0),
 		fPt(0),
-		fPtPrimaries()
+		fPtPrimaries(),
+		fPtPrimariesStandard()
 	{
 		fPtAllRange = new TH1F(Form("hPt_allrange_%s", n), Form("Generated p_{T} spectrum of %ss in 4 #pi ; p_{T}, GeV/c", n), ptsize, ptbins);
 		fPtRadius   = new TH2F(Form("hPt_%s_radius", n), Form("Generated radius, p_{T} spectrum of all %ss; r, cm; p_{T}, GeV/c", n), 500, 0., 500., 400, 0, 20);
@@ -58,6 +59,10 @@ struct ParticleSpectrum
 			const char * s = (i == 0) ? "secondary": "primary";
 			fPtPrimaries[i] = new TH1F(Form("hPt_%s_%s_", n, s), Form("Generated p_{T} spectrum of %s %ss; p_{T}, GeV/c", s, n), ptsize, ptbins);
 			fListOfHistos->Add(fPtPrimaries[i]);
+
+			fPtPrimariesStandard[i] = new TH1F(Form("hPt_%s_%s_standard", n, s), Form("Generated p_{T} spectrum of %s %ss; p_{T}, GeV/c", s, n), 200, 0, 20);
+			fListOfHistos->Add(fPtPrimariesStandard[i]);
+
 		}
 	}
 
@@ -69,6 +74,7 @@ struct ParticleSpectrum
 	TH1F * fPtLong;     //!
 	TH1F * fPt;         //!
 	TH1F * fPtPrimaries[2]; //!
+	TH1F * fPtPrimariesStandard[2]; //!
 
 };
 
@@ -86,7 +92,6 @@ public:
 		kKplus = 321, kKminus = -321, kSigmaZero = 3212
 	};
 
-				
 	AliPP13MesonSelectionMC():
 		AliPP13PhysPhotonSelectionMC(),
 		fPrimaryPi0(),

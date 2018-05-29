@@ -53,6 +53,7 @@ fSwapV0MesonCharge(kFALSE),
 fSwapV0BaryonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutUse276TeVV0CosPA(kFALSE),
+fCutUseTOFUnchecked(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
@@ -132,6 +133,7 @@ fSwapV0MesonCharge(kFALSE),
 fSwapV0BaryonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutUse276TeVV0CosPA(kFALSE),
+fCutUseTOFUnchecked(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
@@ -213,6 +215,7 @@ fSwapV0MesonCharge(kFALSE),
 fSwapV0BaryonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutUse276TeVV0CosPA(kFALSE),
+fCutUseTOFUnchecked(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
@@ -303,6 +306,7 @@ fSwapV0MesonCharge(kFALSE),
 fSwapV0BaryonCharge(kFALSE),
 fCutUseITSRefitTracks(kFALSE),
 fCutUse276TeVV0CosPA(kFALSE),
+fCutUseTOFUnchecked(kFALSE),
 fCutLeastNumberOfClusters(70),
 fCutMinEtaTracks(-0.8),
 fCutMaxEtaTracks(+0.8),
@@ -391,6 +395,7 @@ fSwapV0MesonCharge(lCopyMe.fSwapV0MesonCharge),
 fSwapV0BaryonCharge(lCopyMe.fSwapV0BaryonCharge),
 //276 Reanalysis
 fCutUse276TeVV0CosPA(lCopyMe.fCutUse276TeVV0CosPA),
+fCutUseTOFUnchecked(lCopyMe.fCutUseTOFUnchecked),
 //Track selections
 fCutUseITSRefitTracks(lCopyMe.fCutUseITSRefitTracks),
 fCutLeastNumberOfClusters(lCopyMe.fCutLeastNumberOfClusters),
@@ -488,6 +493,8 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     
     //2.76 TeV reanalysis
     fCutUse276TeVV0CosPA = lCopyMe ->GetCutUse276TeVV0CosPA();
+    
+    fCutUseTOFUnchecked = lCopyMe ->GetCutUseTOFUnchecked(),
     
     //Track cuts
     fCutUseITSRefitTracks    = lCopyMe -> GetCutUseITSRefitTracks();
@@ -606,6 +613,8 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     
     //2.76 TeV reanalysis
     fCutUse276TeVV0CosPA = lCopyMe.GetCutUse276TeVV0CosPA();
+    
+    fCutUseTOFUnchecked = lCopyMe.GetCutUseTOFUnchecked(),
     
     //Track cuts
     fCutUseITSRefitTracks = lCopyMe.GetCutUseITSRefitTracks();
@@ -750,6 +759,8 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     
     //Check if parametric V0 CosPA (as in 2.76 analysis) used
     if( fCutUse276TeVV0CosPA != lCompareCascade->GetCutUse276TeVV0CosPA() ) lReturnValue = kFALSE;
+    
+    if( fCutUseTOFUnchecked != lCompareCascade->GetCutUseTOFUnchecked() ) lReturnValue = kFALSE;
     
     if( TMath::Abs( fCutMinEtaTracks - lCompareCascade->GetCutMinEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMaxEtaTracks - lCompareCascade->GetCutMaxEtaTracks() ) > 1e-6 ) lReturnValue = kFALSE;

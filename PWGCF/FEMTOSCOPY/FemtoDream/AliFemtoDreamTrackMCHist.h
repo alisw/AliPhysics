@@ -20,52 +20,52 @@ class AliFemtoDreamTrackMCHist {
   AliFemtoDreamTrackMCHist(bool contribSplitting,bool DCADist);
   virtual ~AliFemtoDreamTrackMCHist();
   void FillMCDCAXYPtBins(AliFemtoDreamBasePart::PartOrigin org,
-                         int PDGCodeMoth,double pT,double dcaxy);
-  void FillMCCorr(double pT){fMCCorrPt->Fill(pT);};
-  void FillMCIdent(double pT){fMCIdentPt->Fill(pT);};
-  void FillMCGen(double pT){fMCGenPt->Fill(pT);};
-  void FillMCCont(double pT){fMCContPt->Fill(pT);};
-  void FillMCUnkn(double pT){fMCUnknownPt->Fill(pT);};
-  void FillMCPrimary(double pT){fMCPrimaryPt->Fill(pT);};
-  void FillMCMaterial(double pT){fMCMaterialPt->Fill(pT);};
-  void FillMCFeeddown(double pT, double pdg){
+                         int PDGCodeMoth,float pT,float dcaxy);
+  void FillMCCorr(float pT){fMCCorrPt->Fill(pT);};
+  void FillMCIdent(float pT){fMCIdentPt->Fill(pT);};
+  void FillMCGen(float pT){fMCGenPt->Fill(pT);};
+  void FillMCCont(float pT){fMCContPt->Fill(pT);};
+  void FillMCUnkn(float pT){fMCUnknownPt->Fill(pT);};
+  void FillMCPrimary(float pT){fMCPrimaryPt->Fill(pT);};
+  void FillMCMaterial(float pT){fMCMaterialPt->Fill(pT);};
+  void FillMCFeeddown(float pT, float pdg){
     fMCFeeddownWeakPt->Fill(pT, pdg);
   };
-  void FillMCpTPCCut(int i, double pTPC){fMCpTPCDist[i]->Fill(pTPC);};
-  void FillMCetaCut(int i, double eta){fMCetaDist[i]->Fill(eta);};
-  void FillMCphiCut(int i, double phi){fMCphiDist[i]->Fill(phi);};
-  void FillMCTPCclsCut(int i, double pT, double nCls){
+  void FillMCpTPCCut(int i, float pTPC){fMCpTPCDist[i]->Fill(pTPC);};
+  void FillMCetaCut(int i, float eta){fMCetaDist[i]->Fill(eta);};
+  void FillMCphiCut(int i, float phi){fMCphiDist[i]->Fill(phi);};
+  void FillMCTPCclsCut(int i, float pT, float nCls){
     fMCTPCCls[i]->Fill(pT, nCls);
   };
-  void FillMCDCAxyCut(int i, double pT, double dcaxy){
+  void FillMCDCAxyCut(int i, float pT, float dcaxy){
     fMCDCAxy[i]->Fill(pT, dcaxy);
   };
-  void FillMCDCAzCut(int i, double pT, double dcaz){
+  void FillMCDCAzCut(int i, float pT, float dcaz){
     fMCDCAz[i]->Fill(pT, dcaz);
   };
-  void FillMCTPCCrossedRowCut(int i, double pT, float Crossed){
+  void FillMCTPCCrossedRowCut(int i, float pT, float Crossed){
     fMCTPCCrossedRows[i]->Fill(pT,Crossed);};
-  void FillMCTPCRatioCut(int i, double pT, float ratio){
+  void FillMCTPCRatioCut(int i, float pT, float ratio){
     fMCTPCRatio[i]->Fill(pT,ratio);};
-  void FillMCTPCdedx(int i, double mom, double dedx){
+  void FillMCTPCdedx(int i, float mom, float dedx){
     fMCTPCdedx[i]->Fill(mom,dedx);
   };
-  void FillMCTOFbeta(int i, double mom, double beta){
+  void FillMCTOFbeta(int i, float mom, float beta){
     fMCTOFbeta[i]->Fill(mom,beta);
   };
-  void FillMCNSigTPC(int i, double mom, double nSigTPC){
+  void FillMCNSigTPC(int i, float mom, float nSigTPC){
     fMCNSigTPC[i]->Fill(mom, nSigTPC);
   };
-  void FillMCNSigTOF(int i, double mom, double nSigTOF){
+  void FillMCNSigTOF(int i, float mom, float nSigTOF){
     fMCNSigTOF[i]->Fill(mom, nSigTOF);
   };
   void SetName(TString name){fMCList->SetName(name.Data());};
   TList *GetHistList() const {return fMCList;};
   TString ClassName() {return "AliFemtoDreamTrackMCHist";};
  private:
-  double fpTmin;                  //!
-  double fpTmax;                  //!
-  double fpTbins;                 //!
+  float fpTmin;                  //!
+  float fpTmax;                  //!
+  float fpTbins;                 //!
   bool fDoSplitting;              //!
   bool fDoDCAPlots;               //!
 
@@ -101,7 +101,7 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fMCTOFbeta[4];            //!
   TH2F *fMCNSigTPC[4];            //!
   TH2F *fMCNSigTOF[4];            //!
-  ClassDef(AliFemtoDreamTrackMCHist,1);
+  ClassDef(AliFemtoDreamTrackMCHist,2);
 };
 
 #endif /* ALIFEMTODREAMTRACKMCHIST_H_ */

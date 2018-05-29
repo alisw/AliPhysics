@@ -3,6 +3,8 @@
 //
 // Author: M. Verweij, S. Aiola
 
+#include <iostream>
+
 #include <TClonesArray.h>
 
 #include "AliVEvent.h"
@@ -46,7 +48,12 @@ AliMCParticleContainer::AliMCParticleContainer(const char *name):
 AliAODMCParticle* AliMCParticleContainer::GetMCParticleWithLabel(Int_t lab) const
 {
   Int_t i = GetIndexFromLabel(lab);
-  return GetMCParticle(i);
+  if (i >= 0) {
+    return GetMCParticle(i);
+  }
+  else {
+    return nullptr;
+  }
 }
 
 /**
@@ -57,7 +64,12 @@ AliAODMCParticle* AliMCParticleContainer::GetMCParticleWithLabel(Int_t lab) cons
 AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticleWithLabel(Int_t lab)
 {
   Int_t i = GetIndexFromLabel(lab);
-  return GetAcceptMCParticle(i);
+  if (i >= 0) {
+    return GetAcceptMCParticle(i);
+  }
+  else {
+    return nullptr;
+  }
 }
 
 /**
@@ -88,8 +100,8 @@ AliAODMCParticle* AliMCParticleContainer::GetAcceptMCParticle(Int_t i) const
       return GetMCParticle(i);
   }
   else {
-    AliDebug(2,"Particle not accepted.");
-    return 0;
+    AliDebugStream(2) << "Particle " << i << " not accepted." << std::endl;
+    return nullptr;
   }
 }
 
@@ -164,11 +176,12 @@ Bool_t AliMCParticleContainer::AcceptMCParticle(const AliAODMCParticle *vp, UInt
 Bool_t AliMCParticleContainer::AcceptMCParticle(Int_t i, UInt_t &rejectionReason) const
 {
   // Return true if vp is accepted.
+
   Bool_t r = ApplyMCParticleCuts(GetMCParticle(i), rejectionReason);
   if (!r) return kFALSE;
 
   AliTLorentzVector mom;
-  if(!GetMomentum(mom, i)) return false;
+  if (!GetMomentum(mom, i)) return kFALSE;
 
   return ApplyKinematicCuts(mom, rejectionReason);
 }

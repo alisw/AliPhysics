@@ -295,7 +295,7 @@ Bool_t AliCSTrackCuts::IsTrueTrackAccepted(Int_t itrk) {
 
   if (fgIsESD) {
     /* we stay only with primary tracks */
-    if (!fgMCHandler->MCEvent()->IsPhysicalPrimary(itrk))
+    if (!IsPhysicalPrimary(itrk))
       return kFALSE;
 
     /* get the associated particle */
@@ -488,13 +488,96 @@ Bool_t AliCSTrackCuts::AcceptTrackType(AliVTrack *trk, AliVTrack *&ttrk) {
   return accepted;
 }
 
+
+/// Check whether the index passed corresponds to a MC physical primary track
+///
+/// Basically this is needed in case of AMPT fast MC which does not discard
+/// weak decays when asked for physical primaries.
+///
+/// (NOTE: learned from AliAnalysisTaskPhiCorrelations)
+/// \param itrk the index of the true track
+/// \return kTRUE if the track particle is MC physical primary kFALSE otherwise
+Bool_t AliCSTrackCuts::IsPhysicalPrimary(Int_t itrk) {
+
+  if (fgIsESD) {
+    if (!fgIsMConlyTruth) {
+      return fgMCHandler->MCEvent()->IsPhysicalPrimary(itrk);
+    }
+    else {
+      /* taken from AliAnalysisTaskPhiCorrelations */
+      // Exclude weak decay products (if not done by IsPhysicalPrimary)
+      // In order to prevent analyzing daughters from weak decays
+      // - AMPT does not only strong decays, so IsPhysicalPrimary does not catch it
+
+      const Int_t kNWeakParticles = 7;
+      const Int_t kWeakParticles[kNWeakParticles] = {
+          3322, 3312, 3222, // Xi0 Xi+- Sigma-+
+          3122, 3112, // Lambda0 Sigma+-
+          130, 310 // K_L0 K_S0
+      };
+
+      AliMCEvent* mcEvent = fgMCHandler->MCEvent();
+
+      if (mcEvent != NULL) {
+        /* if it is rejected by the own event we have finished */
+        if (!mcEvent->IsPhysicalPrimary(itrk))
+          return kFALSE;
+
+        TParticle* particle = mcEvent->Particle(itrk);
+
+        if (particle != NULL) {
+          Int_t motherix = particle->GetFirstMother();
+
+          if (motherix < 0) {
+            return kTRUE;
+          }
+          else {
+            TParticle* motherparticle = mcEvent->Particle(motherix);
+
+            if (motherparticle != NULL) {
+              Int_t pdgcode = TMath::Abs(motherparticle->GetPdgCode());
+
+              for (Int_t j=0; j != kNWeakParticles; ++j) {
+                if (kWeakParticles[j] == pdgcode) {
+                  return kFALSE;
+                }
+              }
+              return kTRUE;
+            }
+            else {
+              return kTRUE;
+            }
+          }
+        }
+        else {
+          return kFALSE;
+        }
+      }
+      else {
+        return kFALSE;
+      }
+    }
+  }
+  else {
+    /* get the associated particle */
+    AliAODMCParticle *particle = (AliAODMCParticle *) fgMCArray->At(TMath::Abs(itrk));
+
+    /* just to be sure */
+    if (particle == NULL) return kFALSE;
+
+    /* we stay only with primary tracks */
+    return particle->IsPhysicalPrimary();
+  }
+}
+
+
 /// Check whether the true particle associated to a reconstructed track is primary
 /// \param trk the reconstructed track
 /// \return kTRUE if the associated particle is primary kFALSE otherwise
 Bool_t AliCSTrackCuts::IsTruePrimary(AliVTrack *trk) {
 
   if (fgIsESD) {
-    return fgMCHandler->MCEvent()->IsPhysicalPrimary(TMath::Abs(trk->GetLabel()));
+    return IsPhysicalPrimary(TMath::Abs(trk->GetLabel()));
   }
   else {
     /* get the associated particle */

@@ -34,9 +34,7 @@ class AliFemtoLambdaEventCollection2
 
     void FIFOShift();  //remove/add event (first in, first out)
     void SetBufferSize(short a){fBufferSize = a;} //set size of event buffer
-    
-#ifdef __ROOT__
-    ClassDef(AliFemtoLambdaEventCollection2, 1);
-#endif
+
+    ClassDef(AliFemtoLambdaEventCollection2, 2)
 };
 #endif

@@ -246,7 +246,11 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
  * @return True
  */
 Bool_t AliEmcalTriggerMakerTask::Run(){
-  if(!fTriggerMaker->IsConfigured()) return false;    // only run trigger maker in case it is configured
+  if(!fTriggerMaker->IsConfigured()){
+    AliErrorStream() << "Trigger maker not configured" << std::endl;
+    return false;    // only run trigger maker in case it is configured
+  }
+  AliDebugStream(1) << "Looking for trigger patches ..." << std::endl;
   fCaloTriggersOut->Delete(); // Needed to avoid memory leak
   // prepare trigger maker
   fTriggerMaker->Reset();
@@ -384,7 +388,7 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOCDB(){
       for(unsigned int ibit = 0; ibit < 16; ibit ++){
         if((truconf->GetMaskReg(ifield) >> ibit) & 0x1){
           try{
-            fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(itru, (ic =  GetMaskHandler()(ifield, ibit)), fastOrAbsID);
+            fGeom->GetTriggerMapping()->GetAbsFastORIndexFromTRU(RemapTRUIndex(itru), (ic =  GetMaskHandler(itru)(ifield, ibit)), fastOrAbsID);
             AliDebugStream(1) << GetName() << "Channel " << ic  << " in TRU " << itru << " ( abs fastor " << fastOrAbsID << ") masked." << std::endl;
             fTriggerMaker->AddFastORBadChannel(fastOrAbsID);
           } catch (int exept){
@@ -411,8 +415,9 @@ void AliEmcalTriggerMakerTask::InitializeFastORMaskingFromOADB(){
 }
 
 
-std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMaskHandler() const {
-  if(fGeom->GetTriggerMappingVersion() == 2){
+std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMaskHandler(int itru) const {
+  bool isTRUsmallSM = ((itru >= 30 && itru < 31) || (itru >= 44 && itru < 45)) ;
+  if(fGeom->GetTriggerMappingVersion() == 2 && !isTRUsmallSM){
     // Run 2 - complicated TRU layout in 6 subregions
     return [] (unsigned int ifield, unsigned int ibit) -> int {
       if(ifield >= 6 || ibit >= 16) throw kInvalidChannelException;
@@ -431,6 +436,13 @@ std::function<int (unsigned int, unsigned int)> AliEmcalTriggerMakerTask::GetMas
       return ifield * 16 + ibit;
     };
   }
+}
+
+int AliEmcalTriggerMakerTask::RemapTRUIndex(int itru) const {
+  if(fGeom->GetTriggerMappingVersion() == 2){
+    const int trumapping[46] = {0,1,2,5,4,3,6,7,8,11,10,9,12,13,14,17,16,15,18,19,20,23,22,21,24,25,26,29,28,27,30,31,32,33,37,36,38,39,43,42,44,45,49,48,50,51};
+    return trumapping[itru];
+  } else return itru;
 }
 
 void AliEmcalTriggerMakerTask::FillQAHistos(const TString &patchtype, const AliEMCALTriggerPatchInfo &recpatch){

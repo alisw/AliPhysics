@@ -167,6 +167,8 @@ AliGenEventHeader* AliCaloTrackAODReader::GetGenEventHeader() const
 {
   if ( !GetAODMCHeader() ) return 0x0;
   
+  if ( fGenEventHeader ) return fGenEventHeader;
+  
   Int_t nGenerators = GetAODMCHeader()->GetNCocktailHeaders();
   
   if ( nGenerators <= 0  ) return 0x0;
@@ -174,12 +176,20 @@ AliGenEventHeader* AliCaloTrackAODReader::GetGenEventHeader() const
   if ( fMCGenerEventHeaderToAccept=="" ) 
     return GetAODMCHeader()->GetCocktailHeader(0);
   
+  //if(nGenerators < 1) printf("No generators %d\n",nGenerators);
+  
   for(Int_t igen = 0; igen < nGenerators; igen++)
   {
     AliGenEventHeader * eventHeader = GetAODMCHeader()->GetCocktailHeader(igen) ;
    
     TString name = eventHeader->GetName();
-    //printf("AOD Event header %d %s\n",igen,name.Data());
+    
+    AliDebug(2,Form("AOD Event header %d name %s event header class %s: Select if contains <%s>",
+             igen,name.Data(),eventHeader->ClassName(),fMCGenerEventHeaderToAccept.Data()));
+    
+//   if(nGenerators < 2) 
+//     printf("AOD Event header %d name %s event header class %s: Select if contains <%s>\n",
+//           igen,name.Data(),eventHeader->ClassName(),fMCGenerEventHeaderToAccept.Data());
     
     if(name.Contains(fMCGenerEventHeaderToAccept,TString::kIgnoreCase))
       return eventHeader ;

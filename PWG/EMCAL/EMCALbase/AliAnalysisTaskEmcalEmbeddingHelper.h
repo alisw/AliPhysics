@@ -28,6 +28,7 @@ class AliEmcalList;
 #include <vector>
 #include <string>
 
+#include <TStopwatch.h>
 #include <AliAnalysisTaskSE.h>
 #include "AliEventCuts.h"
 #include "AliYAMLConfiguration.h"
@@ -124,6 +125,8 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   void SetESD(const char * treeName = "esdTree")                  { fTreeName     = treeName; }
   /// Set to embed from AOD
   void SetAOD(const char * treeName = "aodTree")                  { fTreeName     = treeName; }
+  /// Set whether to print and plot execution time of InitTree()
+  void SetPrintTimingInfoToLog(bool b)                            { fPrintTimingInfoToLog = b;}
   /**
    * Enable to begin embedding at a random entry in each embedded file. Will then loop around in order
    * so that all entries are made available.
@@ -360,6 +363,9 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   double                                        fPythiaCrossSection; //!<! Pythia cross section for the current event (extracted from the pythia header).
   double                                        fPythiaCrossSectionFromFile; //!<! Average pythia cross section extracted from a xsec file.
   double                                        fPythiaPtHard     ; //!<! Pt hard of the current event (extracted from the pythia header).
+  
+  bool                                          fPrintTimingInfoToLog; ///< Flag to print time to execute InitTree(), for logging purposes
+  TStopwatch                                    fTimer            ;    //!<! Timer for the InitTree() function
 
   static AliAnalysisTaskEmcalEmbeddingHelper   *fgInstance        ; //!<! Global instance of this class
 
@@ -368,7 +374,7 @@ class AliAnalysisTaskEmcalEmbeddingHelper : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalEmbeddingHelper &operator=(const AliAnalysisTaskEmcalEmbeddingHelper&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 10);
+  ClassDef(AliAnalysisTaskEmcalEmbeddingHelper, 11);
   /// \endcond
 };
 #endif

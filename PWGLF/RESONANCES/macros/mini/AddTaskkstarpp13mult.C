@@ -105,6 +105,7 @@ AliRsnMiniAnalysisTask * AddTaskkstarpp13mult
    task->SetEventCuts(eventCuts);*/
  
    AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
+   cutEventUtils->SetRemovePileUppA2013(kFALSE);
    cutEventUtils->SetCheckAcceptedMultSelection();
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
    
@@ -128,24 +129,47 @@ AliRsnMiniAnalysisTask * AddTaskkstarpp13mult
    else
      outMult->AddAxis(multID, 110, 0.0, 110.0);
 
+   /*
+   Double_t multbins[200];
+   int j,nmult=0;
+   for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
+   for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+   for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+   for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+   for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+   nmult--;
+   */
+   /*
+   Double_t multbins[200];
+   int j,nmult=0;
+   for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+   for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+   for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+   for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+   nmult--;
+   */
+   
+   Double_t multbins[200];
+   int j,nmult=0;
+   if(triggerMask==AliVEvent::kHighMultV0){
+     for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+     for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+     for(j=1;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
+   }else{
+     for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+     for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+  }
+   nmult--;
 
-  Double_t multbins[200];
-  int j,nmult=0;
-  for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
-  for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
-  nmult--;
-  TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti","",nmult,multbins);
-  task->SetEventQAHist("EventsVsMulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
-
- double ybins[500];
-  for(j=0;j<=401;j++) ybins[j]=j-0.5;
-
-  TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
-  hmc->GetYaxis()->SetTitle("QUALITY");
-  task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
+   
+   TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti","",nmult,multbins);
+   task->SetEventQAHist("EventsVsMulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
+   
+   double ybins[500];
+   for(j=0;j<=401;j++) ybins[j]=j-0.5;
+   TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 401,ybins);
+   hmc->GetYaxis()->SetTitle("QUALITY");
+   task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
    
    
@@ -163,6 +187,7 @@ AliRsnMiniAnalysisTask * AddTaskkstarpp13mult
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    //
    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/Configkstarpp13mult.C");
+   //gROOT->LoadMacro("/home/sourav/alice/ali-master/AliPhysics/PWGLF/RESONANCES/macros/mini/Configkstarpp13mult.C");
    // gROOT->LoadMacro("Configkstarpp13mult.C");
    if (!Configkstarpp13mult(task, isMC, isPP, "", cutsPair, nsigmaPi,nsigmaK, enableMonitor,optSy,triggerMask)) return 0x0;
 

@@ -1,4 +1,4 @@
-AliAnalysisTaskTOFTrigger *AddTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Float_t highmult,TString trgcls,Int_t nBCs,const char* suffix = ""){
+AliAnalysisTaskTOFTrigger *AddTaskTOFTrigger(const char *name,Float_t lowpt,Float_t highpt,Float_t highmult,TString trgcls,Int_t nBCs,Bool_t useEVS,Int_t cutSet, Float_t maxErr, const char* suffix = ""){
 
   
   //--- get the current analysis manager ---//
@@ -19,14 +19,14 @@ AliAnalysisTaskTOFTrigger *AddTaskTOFTrigger(const char *name,Float_t lowpt,Floa
   combinedName.Form("%s%s",name,suffix);
    	  
   // Create tasks
-  AliAnalysisTaskTOFTrigger *task = new AliAnalysisTaskTOFTrigger(name,lowpt,highpt,highmult,trgcls,nBCs);
+  AliAnalysisTaskTOFTrigger *task = new AliAnalysisTaskTOFTrigger(name,lowpt,highpt,highmult,trgcls,nBCs,useEVS,cutSet,maxErr);
   mgr->AddTask(task);
 
 
    // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput = mgr->CreateContainer(combinedName, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOFTrig", AliAnalysisManager::GetCommonFileName()));  
-
+  AliAnalysisDataContainer *coutput = mgr->CreateContainer(combinedName, TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOFTrig", AliAnalysisManager::GetCommonFileName())); 
+  
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput);

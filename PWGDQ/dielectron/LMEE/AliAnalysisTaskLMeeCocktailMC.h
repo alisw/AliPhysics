@@ -26,6 +26,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     void SetMinPt(Float_t MinPt = 0.2){fMinPt = MinPt;}
     void SetResolType(Int_t ResolType = 2){fResolType = ResolType;}
     void SetALTweight(Int_t ALTweightType = 1){fALTweightType = ALTweightType;}
+		void SetpPbResFileName(TString name){ fpPbDataSetName= name; }
 
     // For resolution smearing (from Theos LightFlavorGenerator)
     TObjArray       *fArr;
@@ -151,6 +152,7 @@ class AliAnalysisTaskLMeeCocktailMC : public AliAnalysisTaskSE {
     TFile*      fFileEff;        //! Pointer to input file
     TString     fFileNameVPH;    // Name of the input file (VPH)
     TFile*      fFileVPH;        //! Pointer to input file
+		TString     fpPbDataSetName; //Specify multiplicity class and data set for Run 2 pPb data
 
     //tree
     TTree*               teeTTree; 

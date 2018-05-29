@@ -60,10 +60,10 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,bool DC
 ,fDoSplitting(contribSplitting)
 ,fDoDCAPlots(DCADist)
 {
-  double ptmin=0;
-  double ptmax=5;
-  double ptBins=200;
-  double twoDBins=400;
+  float ptmin=0;
+  float ptmax=5;
+  float ptBins=200;
+  float twoDBins=400;
   fMCList=new TList();
   fMCList->SetName("MonteCarlo");
   fMCList->SetOwner();
@@ -270,7 +270,7 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,bool DC
 }
 void AliFemtoDreamTrackMCHist::FillMCDCAXYPtBins(
     AliFemtoDreamBasePart::PartOrigin org,int PDGCodeMoth,
-    double pT,double dcaxy)
+    float pT,float dcaxy)
 {
   if (!fDoDCAPlots) {
     AliFatal("FullBooking not set for SPCutHistograms! Cannot use this method");

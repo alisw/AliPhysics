@@ -13,6 +13,8 @@ class TH2F;
 class TH2I;
 class AliFemtoEvent;
 
+#include <THnSparse.h>
+
 #include "AliFemtoCutMonitor.h"
 #include "AliFemtoCutMonitorHandler.h"
 #include "AliFemtoAnalysisPionLambda.h"
@@ -43,29 +45,24 @@ namespace AliFemtoCutMonitorPionPion {
   class Event : public AliFemtoCutMonitor {
   public:
 
-    /**
-     * Construct event cut monitor with knowledge if a passing or failing cut.
-     *
-     * \param passing: This will set the correct pass/fail word in histogram
-     *                 titles.
-     *
-     * \param suffix_output: If true, this will put a _P or _F at the end of
-     *   all the histogram names - required if not grouping output lists.
-     */
+    /// Construct event cut monitor with knowledge if a passing or failing cut.
+    ///
+    /// \param passing: This will set the correct pass/fail word in histogram
+    ///                titles.
+    ///
+    /// \param suffix_output: If true, this will put a _P or _F at the end of
+    ///   all the histogram names - required if not grouping output lists.
+    ///
     Event(const bool passing,
           const bool is_identical_analysis=kFALSE,
           const bool is_mc_analysis=kFALSE,
           const bool suffix_output=kFALSE);
 
-    /**
-     * Return list of Histograms to be placed in output file.
-     */
+    /// Return list of Histograms to be placed in output file.
     virtual TList* GetOutputList();
 
-    /**
-     * Called at beginning of event processing. Used to reset the collection
-     * size counters.
-     */
+    /// Called at beginning of event processing. Used to reset the collection
+    /// size counters.
     virtual void EventBegin(const AliFemtoEvent*);
     virtual void EventEnd(const AliFemtoEvent*);
 
@@ -119,7 +116,9 @@ namespace AliFemtoCutMonitorPionPion {
     TH1F *fMC_mass;
     TH2F *fMC_pt;
     TH1I *fMC_type;
-    TH2I *fMC_parent;
+    // TH2I *fMC_parent;
+    THnSparseI *fMC_parent;
+    #define MC_PARENT_IS_THSPARSE
   };
 
   /// \class AliFemtoCutMonitorPionPion::Pair

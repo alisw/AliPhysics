@@ -13,7 +13,11 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    Int_t  RunSyst = 0                            // switch statement useful for systematics (mfaggin, 06/07/2017)
                                    ,Int_t centrMin = 0          // min centrality
                                    ,Int_t centrMax = 10         // max centrality
+                                   ,Bool_t kHadContSyst = kFALSE        // hadron contamination systematics
                                    ,Bool_t kPileUpIonutRejection = kFALSE
+                                   ,Bool_t kCheckDCA = kFALSE    // additional check: set maximum value for DCA between inclusive and associated tracks (default: 3cm)
+                                   ,Bool_t kPhiSystConsistentHadCont = kFALSE    // mfaggin, 13-Mar-2018
+                                   ,Bool_t kRejectKinkParticles = kFALSE         // mfaggin, 12-Apr-2018
                                    )		   
   
 {
@@ -39,6 +43,15 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                 ,kAssMinpT_ITS      = 16        // syst. on associated particle minimum pT
                 ,kMix1              = 17        // syst. on many parameters simultaneous variation (PID + track cuts) 
                 ,kMix2              = 18        // syst. on many parameters simultaneous variation (ass. track cuts) 
+                // ----- syst. weights ----- (mfaggin, 06 March 2018)
+                ,kWeightSyst        = 19        // syst. on weights used for the tagging efficiency
+        };
+
+        // mfaggin, 13-Mar-2018
+        enum HadContFunc{
+                 kPhi_0_14    = 1
+                ,kPhi_14_326  = 2
+                ,kPhi_326_2pi = 3
         };
 
   // Default settings (TOF-TPC PbPb)
@@ -97,6 +110,15 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
 
     k16g1 = 60,         // 60: PbPb LHC16g1 minimum bias MC (mfaggin, 29/06/2017)
     k16g1_2 = 61         // 61: PbPb LHC16g1 minimum bias MC using charged pion data spectra (mfaggin, 26/07/2017)
+
+    // --- systematics on charged pion weights --- (mfaggin, 06-Mar-2018)
+    ,k16g1_2_default = 62       // 62: equal to 61, but necessary to evaluate upper limit-lower limit systematics (small differences introduced due to daata spectra fits)
+    ,k16g1_2_systUp  = 63       // 63: upper limit charged pion weights
+    ,k16g1_2_systLow = 64       // 64: lower limit charged pion weights
+    ,k16g1_2_systTiltUpDown = 65       // 65: tilting up-down charged pion weights
+    ,k16g1_2_systTiltDownUp = 66       // 66: tilting down-up charged pion weights
+
+    ,k16g1_3 = 67               // 67: PbPb LHC16g1 minimum bias MC using pi0 data spectra (mfaggin, 06-Mar-2018)
   };
   //Int_t kWeightMC = k16g1;
   Int_t kWeightMC = k16g1_2;
@@ -501,6 +523,20 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
         RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+                if(kPhiSystConsistentHadCont){
+                        // hadron contamination function used: phi [0,1.4] (mfaggin, 13-Mar-2018)
+                        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+                        kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs,kDefITSsMin,kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+	                kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kFALSE,kFALSE,kPhi_0_14);
+                        // hadron contamination function used: phi [1.4,3.26] (mfaggin, 13-Mar-2018)
+                        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+                        kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs,kDefITSsMin,kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+	                kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kFALSE,kFALSE,kPhi_14_326);
+                        // hadron contamination function used: phi [3.26,2pi] (mfaggin, 13-Mar-2018)
+                        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+                        kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs,kDefITSsMin,kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+	                kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kFALSE,kFALSE,kPhi_326_2pi);
+                }
    }
 
    switch(RunSyst){
@@ -599,7 +635,7 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
                 RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017 
                 kDefTPCcl, kDefTPCclPID, 5, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs, kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 		kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
-/*                // ITS cluster 6
+                // ITS cluster 6
                 RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017 
                 kDefTPCcl, kDefTPCclPID, 6, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs, kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 		kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
@@ -614,7 +650,7 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
                 // SPD hit kNone
                 RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
                 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs, kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kNone, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
-	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);    */
+	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
                 // SPD hit kAny
                 RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017 
                 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs, kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kAny, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
@@ -845,9 +881,43 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
 	        kassETAm, kassETAp, kassITS, 80, 80, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.20);
         break;
 
+        case kWeightSyst:
+                cout << endl << "##################################################################" << endl;
+                cout         << "###   running systematics on weights for tagging efficiency    ###" << endl;
+                cout         << "##################################################################" << endl;
+        // WITH WEIGHTS default ch. pions  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_2_default);
+        // WITH WEIGHTS upper limit ch. pions  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_2_systUp);
+        // WITH WEIGHTS lower limit ch. pions  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_2_systLow);
+        // WITH WEIGHTS tilting up-down ch. pions  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_2_systTiltUpDown);
+        // WITH WEIGHTS tilting down-up ch. pions  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_2_systTiltDownUp);
+        // WITH WEIGHTS pi0  
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_3);
+        break;
+
    }
-
-
  }
 
  
@@ -884,7 +954,53 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kTRUE);
 
   }
+/*
+ if(kCheckDCA){                                                                            
+        printf("\n#####\n");
+        printf("##### kCheckDCA case");
+        printf("\n#####\n");
 
+                // *** change DCA max between inclusive and associated tracks ***
+                // max DCA 2cm
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+                kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs,kDefITSsMin,kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kFALSE,2.0);
+                // max DCA 1.5cm
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+                kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs,kDefITSsMin,kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kFALSE,1.5);
+                // max DCA 1cm
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+                kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs,kDefITSsMin,kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kFALSE,1.0);
+                // max DCA 0.5cm
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+                kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs,kDefITSsMin,kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kFALSE,0.5);
+
+ }*/
+
+if(kHadContSyst){
+        printf("\n#####\n");
+        printf("##### kHadContSyst case");
+        printf("\n#####\n");
+                // WITH WEIGHTS   
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+                kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+                kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kFALSE,//3.0
+                ,kHadContSyst);
+}
+
+if(kRejectKinkParticles){
+        printf("\n#####\n");
+        printf("##### kRejectKinkParticles case");
+        printf("\n#####\n");
+        // WITH WEIGHTS   
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kTRUE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+}
 
 
   
@@ -906,7 +1022,7 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
                                      Double_t itssMin=0., Double_t itssMax=0.,  // mfaggin 15-Dec-2017
                                      Int_t itshitpixel =AliHFEextraCuts::kBoth,
 				     Double_t itschi2percluster = -1, Double_t tpcsharedcluster = 1.1,
-				     Bool_t etacorr=kFALSE, Bool_t multicorr = kFALSE, Bool_t toflast = kFALSE,
+				     Bool_t etacorr=kFALSE, Bool_t multicorr = kFALSE, Bool_t rejkinks = kFALSE,
 				     Double_t etaIncMin = -0.8, Double_t etaIncMax = 0.8,
 				     Double_t assETAm=-0.8, Double_t assETAp=0.8, Int_t assITS=2, Int_t assTPCcl=100,
 				     Int_t assTPCPIDcl=80, Double_t assDCAr=1.0, Double_t assDCAz=2.0,
@@ -915,6 +1031,9 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
 				     Int_t weightlevelback = -1,Int_t wei = 2,
                                      Double_t assMinpTvalue = 0.1,      // associated particle minimum pT (mfaggin, 14th July 2017)
                                      Bool_t applyPileUpRejection = kFALSE    // --- Pile-up rejection using correlation kTPCout-VZEROmult ---
+                                     //,Double_t dcaMAX = 3.0     // DCA max between inclusive and associated tracks (mfaggin, 20-Feb-2018)
+                                     ,Bool_t hadcontsyst = kFALSE
+                                     ,Int_t phisystconsistenthadcont = 0        // mfaggin, 13-Mar-2018
 				     //Bool_t releasemcvx = kFALSE,
 				     //Bool_t ipCharge = kFALSE,
 				     //Bool_t ipOpp = kFALSE
@@ -928,6 +1047,7 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
 	Bool_t releasemcvx = kFALSE;    // mfaggin 02-Feb-2018
 	Bool_t ipCharge = kFALSE;       // mfaggin 02-Feb-2018
         Bool_t ipOpp = kFALSE;          // mfaggin 02-Feb-2018
+        Bool_t toflast = kFALSE;        // mfaggin 12-Apr-2018
 
   //
   // Cuts on the inclusive leg
@@ -1012,7 +1132,17 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
   else                          appendix+=TString::Format("ITSsMin%d",iitssMin);
   appendix+=TString::Format("ITSsMax%dm%dt%d_photMinpT%dTPCc%dTPCp%dITS%dDCAr%dDCAz%dTPCs%d%s%s%s%s",iitssMax,imult,itofpos,iassMinpT,assTPCcl,assTPCPIDcl,assITS,iassDCAr,iassDCAz,iassTPCSplus,cweightsback.Data(),cmvx.Data(),cbeauty.Data(),kfp.Data());
 
+  // DCA max between inclusive and associated tracks (mfaggin, 20-Feb-2018)
+  //Int_t intmaxDCA = (Int_t) (dcaMAX*10);
+  //if(dcaMAX<3.0)                appendix+=TString::Format("DCAmax%d",intmaxDCA);
+
   if(applyPileUpRejection)      appendix+="_PileUpRejIonutCut";
+  if(hadcontsyst)               appendix+="_hadContSyst";
+  if(rejkinks)                  appendix+="_kinksReject";
+
+  if(phisystconsistenthadcont==1)       appendix+="hadcontphi014";      // mfaggin, 13-Mar-2018
+  if(phisystconsistenthadcont==2)       appendix+="hadcontphi14326";    // mfaggin, 13-Mar-2018
+  if(phisystconsistenthadcont==3)       appendix+="hadcontphi3262pi";   // mfaggin, 13-Mar-2018
 
 /*
   // ------- to manage containers name with negative TPC low cut --------
@@ -1046,6 +1176,10 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
 					      assDCAr, assDCAz, assTPCSminus, assTPCSplus,
 					      useCat1Tracks, useCat2Tracks, weightlevelback
                                               ,assMinpTvalue    // associated particle minimum pT syst. (mfaggin, 14th July 2017)
+                                              //,dcaMAX           // DCA max between inclusive and associated tracks (mfaggin, 20-Feb-2018)
+                                              ,hadcontsyst      // had. cont. systematics
+                                              ,phisystconsistenthadcont // phi variation with consistent hadron contamination function (mfaggin, 13-Mar-2018)
+                                              ,rejkinks         // kink particles rejection
                                               );
   // old config file
   //AliAnalysisTaskHFE *task = ConfigHFEnpePbPb(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, tpcdEdxcutlow, tpcdEdxcuthigh, tofs, 0, itss, itshitpixel, itschi2percluster, tpcsharedcluster, etacorr, multicorr, toflast, etaIncMin, etaIncMax,
@@ -1062,7 +1196,10 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
   else		task->SetHasMCData(kFALSE);
 
   //if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors(task,kFALSE,wei);//2;For default PbPb
-  if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);//2;For default PbPb
+  if(useMC&&(beauty || (weightlevelback>=0))){
+        if(wei==67)     ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_frompi0.root");
+        else            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);
+  }
 
   // ----- centrality selection -----
   task->SetCentralityCheck(newCentralitySelection,"V0M");

@@ -29,7 +29,6 @@ class AliAODMCHeader;
 class AliGenEventHeader;
 class AliVEvent;
 class AliEMCALGeometry;
-class AliEMCALRecoUtils;
 class AliAnalysisFilter;
 class AliESDtrackCuts;
 class AliESDtrack;
@@ -51,6 +50,9 @@ class AliESDv0KineCuts;
 #include "AliStack.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "TDatabasePDG.h"
+#include <vector>
+
 
 class AliAnalysisTaskHaHFECorrel : public AliAnalysisTaskSE {
 public:
@@ -97,6 +99,7 @@ public:
     Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliVTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t trueULSPartner, Bool_t isPhotonic, Bool_t isHadron);
 
     void BinLogX(TAxis *axis);
+    void SetPDGAxis(TAxis *axis, std::vector<TString> PDGLabel);
     void CheckHadronIsTrigger(Double_t ptE, Bool_t *HadronIsTrigger);
     void CheckElectronIsTrigger(Double_t ptH, Bool_t *ElectronIsTrigger) ;
     Bool_t PassEventBias( const AliVVertex *pVtx, Int_t nMother, Int_t *listMother);    
@@ -264,6 +267,8 @@ public:
     AliAODMCParticle      *fMCparticle;             //! MC particle
     TClonesArray          *fMCarray;                //! MC array
     AliAODMCHeader        *fMCheader;               //! MC header
+    TDatabasePDG          *PdgTable;                //!
+    std::map<Int_t, Int_t>     PDGMap;                   //!
 
     TClonesArray          *fTracks_tender;          //Tender tracks
     TClonesArray          *fCaloClusters_tender;    //Tender clusters
@@ -279,6 +284,10 @@ public:
     AliHFEpidQAmanager    *fPIDqa;                  //! PID QA manager
         
     TList                 *fOutputList;             //! output list
+    TList                 *fOutputListMain;          //!
+    TList                 *fOutputListLP;           //
+    TList                 *fOutputListHadron;       //!
+    TList                 *fOutputListQA;           //!
     TH1F                  *fNoEvents;               //! no of events for different cuts
     TH2F                  *fTrkpt;                  //! track pt for different cuts
     TH2F                  *fEtaVtxZ;                //! Eta vs Vtx z (check for ITS acceptance problem)
@@ -292,7 +301,13 @@ public:
     TH2F                  *fElectronTrackTPCNclsdEdx; //! 
     TH2F                  *fElectronTrackTPCFrac;    //! 
     TH2F                  *fElectronTrackITSNcls;   //!
-    TH2F                  *fElectronTrackDCA;       //! 
+    TH3F                  *fElectronTrackITSLayer;   //!
+    TH3F                  *fElectronTrackRefit;     //!
+    TH3F                  *fElectronTrackDCA;       //! 
+    
+    TH2F                  *fHadronTrackTPCNcls;   //! 
+    TH3F                  *fHadronTrackRefit;     //!
+    TH3F                  *fHadronTrackDCA;       //! 
 
 
 
@@ -319,12 +334,16 @@ public:
     
 
   
-    TH1F                  *fInclElecPt;             //! inclusive electron p
+    TH2F                  *fInclElecPtEta;             //! inclusive electron p
+    TH2F                  *fInclElecPtEtaWW;             //! inclusive electron p
     TH1F                  *fInclElecP;             //! inclusive electron p
     TH1F                  *fULSElecPt;              //! ULS electron pt (after IM cut)
+    TH1F                  *fULSElecPtWW;              //! ULS electron pt (after IM cut)
     TH1F                  *fLSElecPt;               //! LS electron pt (after IM cut)
+    TH1F                  *fLSElecPtWW;               //! LS electron pt (after IM cut)
     TH2F                  *fInvmassLS;              //! Inv mass of LS (e,e)
     TH2F                  *fInvmassULS;             //! Inv mass of ULS (e,e)
+    TH3F                  *fInvmassMCTrue;           //! Inv mass of ULS (e,e)
     TH2F                  *fOpeningAngleLS;         //! opening angle for LS pairs
     TH2F                  *fOpeningAngleULS;        //! opening angle for ULS pairs
     TH2F                  *fCheckLSULS;             //! check no of LS/ULS partner per electron
@@ -349,8 +368,10 @@ public:
     THnSparse             *fTagEffULSWoWeight;        //!
     THnSparse             *fTagTruePairsWoWeight;     //!
 
-    TH1F                  fCorrectPiontoData;      
+    TH1F                  fCorrectPiontoData;    
+    Double_t              GetPionWeight(Double_t pt);
     TH1F                  fCorrectEtatoData;       
+    Double_t              GetEtaWeight(Double_t pt);
     TH3F                  fHadRecEff;
     TH2F                  fEleRecEff;
 
@@ -368,6 +389,7 @@ public:
     TH1F                  *fElecTrigger;            //! trigger electron vs pt
     TH2F                  *fInclElecPhi;            //! electron (trigger): phi vs pt
     TH2F                  *fInclElecEta;            //! electron (trigger): phi vs pt
+    TH2F                  *fInclElecPhiEta;            //! electron (trigger): phi vs pt
     TH2F                  *fULSElecPhi;             //! phi vs pt for electrons from ULS pairs
     TH2F                  *fLSElecPhi;              //! phi vs pt for electrons from LS pairs
     TH2F                  *fElecDphi;               //! inlcusive electron: dPhi vs pt of triggered electron
@@ -499,7 +521,7 @@ public:
     TObjArray *fV0protons;               //! array with pointer to identified particles from V0 decays (ptotons)
     TH2F      *fhArmenteros;             //!
     TH1F      *fEventsPerRun;            //!
-    TH3F      *fTRDnTrackRun;            //!
+    TH2F      *fTRDnTrackRun;            //!
     Int_t     *fV0tags;                  //!
     void      FindV0CandidatesAOD(AliAODEvent *Event);
     void      FindV0CandidatesESD(AliESDEvent *Event);

@@ -16,29 +16,34 @@
 class AliFemtoDreamCascadeHist {
  public:
   AliFemtoDreamCascadeHist();
-  AliFemtoDreamCascadeHist(double mass);
+  AliFemtoDreamCascadeHist(float mass,bool perRunnumber, int iRunMin, int iRunMax);
+  AliFemtoDreamCascadeHist(TString minimalBooking,float mass);
   virtual ~AliFemtoDreamCascadeHist();
-  void FillCutCounter(int bin) {fCutCounter->Fill(bin);};
-  void FillConfig(int iBin,double val){fConfig->Fill(iBin,val);};
-  void FillInvMassXi(int iBin,double mass){fInvMass[iBin]->Fill(mass);};
-  void FillInvMassPtXi(double Pt,double mass){fInvMassPtXi->Fill(Pt,mass);};
-  void FillInvMassPtv0(double Pt,double mass){fInvMassPtv0->Fill(Pt,mass);};
-  void FillInvMassLambda(int iBin,double mass){fInvMassv0[iBin]->Fill(mass);};
-  void FillXiPt(int iBin,double pT){fXiPt[iBin]->Fill(pT);};
-  void FillMomRapXi(int iBin,double rap,double pT){fP_Y_Xi[iBin]->Fill(rap,pT);};
-  void FillDCAXiDaug(int iBin,double DCA){fDCAXiDaug[iBin]->Fill(DCA);};
-  void FillMinDistPrimVtxBach(int iBin,double dist){fMinDistVtxBach[iBin]->Fill(dist);};
-  void FillCPAXi(int iBin,double cpa){fCPAXi[iBin]->Fill(cpa);};
-  void FillTransverseRadiusXi(int iBin,double rad){fTransRadiusXi[iBin]->Fill(rad);};
-  void FillMaxDCAv0Daug(int iBin,double dca){fv0MaxDCADaug[iBin]->Fill(dca);};
-  void FillCPAv0(int iBin,double cpa){fCPAv0[iBin]->Fill(cpa);};
-  void FillTransverseRadiusv0(int iBin,double rad){fTransRadiusv0[iBin]->Fill(rad);};
-  void FillMinDistPrimVtxv0(int iBin,double dist){fMinDistVtxv0[iBin]->Fill(dist);};
-  void FillMinDistPrimVtxv0DaugPos(int iBin,double dist){fMinDistVtxv0DaugPos[iBin]->Fill(dist);};
-  void FillMinDistPrimVtxv0DaugNeg(int iBin,double dist){fMinDistVtxv0DaugNeg[iBin]->Fill(dist);};
-  void FillPodolandski(int iBin,double alpha,double qt){fPodolandski[iBin]->Fill(alpha,qt);};
+  void FillCutCounter(int bin) {if(!fMinimalBooking)fCutCounter->Fill(bin);};
+  void FillConfig(int iBin,float val){if(!fMinimalBooking)fConfig->Fill(iBin,val);};
+  void FillInvMassXi(int iBin,float mass){if(!fMinimalBooking)fInvMass[iBin]->Fill(mass);};
+  void FillInvMassPtXi(float Pt,float mass){fInvMassPtXi->Fill(Pt,mass);};
+  void FillInvMassPtv0(float Pt,float mass){if(!fMinimalBooking)fInvMassPtv0->Fill(Pt,mass);};
+  void FillInvMassLambda(int iBin,float mass){if(!fMinimalBooking)fInvMassv0[iBin]->Fill(mass);};
+  void FillXiPt(int iBin,float pT){if(!fMinimalBooking)fXiPt[iBin]->Fill(pT);};
+  void FillMomRapXi(int iBin,float rap,float pT){if(!fMinimalBooking)fP_Y_Xi[iBin]->Fill(rap,pT);};
+  void FillDCAXiDaug(int iBin,float DCA){if(!fMinimalBooking)fDCAXiDaug[iBin]->Fill(DCA);};
+  void FillMinDistPrimVtxBach(int iBin,float dist){if(!fMinimalBooking)fMinDistVtxBach[iBin]->Fill(dist);};
+  void FillCPAXi(int iBin,float cpa){if(!fMinimalBooking)fCPAXi[iBin]->Fill(cpa);};
+  void FillTransverseRadiusXi(int iBin,float rad){if(!fMinimalBooking)fTransRadiusXi[iBin]->Fill(rad);};
+  void FillMaxDCAv0Daug(int iBin,float dca){if(!fMinimalBooking)fv0MaxDCADaug[iBin]->Fill(dca);};
+  void FillCPAv0(int iBin,float cpa){if(!fMinimalBooking)fCPAv0[iBin]->Fill(cpa);};
+  void Fillv0Pt(int iBin,float v0pT){if(!fMinimalBooking)fv0Pt[iBin]->Fill(v0pT);};
+  void FillTransverseRadiusv0(int iBin,float rad){if(!fMinimalBooking)fTransRadiusv0[iBin]->Fill(rad);};
+  void FillMinDistPrimVtxv0(int iBin,float dist){if(!fMinimalBooking)fMinDistVtxv0[iBin]->Fill(dist);};
+  void FillMinDistPrimVtxv0DaugPos(int iBin,float dist){if(!fMinimalBooking)fMinDistVtxv0DaugPos[iBin]->Fill(dist);};
+  void FillMinDistPrimVtxv0DaugNeg(int iBin,float dist){if(!fMinimalBooking)fMinDistVtxv0DaugNeg[iBin]->Fill(dist);};
+  void FillPodolandski(int iBin,float alpha,float qt){if(!fMinimalBooking)fPodolandski[iBin]->Fill(alpha,qt);};
+  void FillInvMassPerRunNumber(int RunNumber,float mass){
+    if(!fMinimalBooking)fInvMassPerRunNumber->Fill(RunNumber,mass);};
   TList *GetHistList() {return fHistList;};
   private:
+  bool fMinimalBooking;
   TList *fHistList;
   TH1F *fCutCounter;
   TProfile *fConfig;
@@ -55,12 +60,14 @@ class AliFemtoDreamCascadeHist {
   TH1F *fTransRadiusXi[2];
   TH1F *fv0MaxDCADaug[2];
   TH1F *fCPAv0[2];
+  TH1F *fv0Pt[2];
   TH1F *fTransRadiusv0[2];
   TH1F *fMinDistVtxv0[2];
   TH1F *fMinDistVtxv0DaugPos[2];
   TH1F *fMinDistVtxv0DaugNeg[2];
   TH2F *fPodolandski[2];
-  ClassDef(AliFemtoDreamCascadeHist,1)
+  TH2F *fInvMassPerRunNumber;
+  ClassDef(AliFemtoDreamCascadeHist,2)
 };
 
 #endif /* ALIFEMTODREAMCASCADEHIST_H_ */

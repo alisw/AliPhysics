@@ -60,7 +60,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     void                    SetProcessCharged(Bool_t filter = kTRUE) { fProcessCharged = filter; }
     void                    SetProcessPID(Bool_t filter = kTRUE, Bool_t PIDbayesian = kFALSE) {
                                 fProcessPID = filter;
-                                if(PIDbayesian){fPIDbayesian = PIDbayesian; fPID3sigma = kFALSE;}else{fPIDbayesian = kFALSE; fPID3sigma = kTRUE;}
+                                if(PIDbayesian){fPIDbayesian = PIDbayesian; fPIDnsigma = kFALSE;}else{fPIDbayesian = kFALSE; fPIDnsigma = kTRUE;}
                               }
     // flow related setters
     void                    SetFlowRFPsPtMin(Float_t pt) { fCutFlowRFPsPtMin = pt; }
@@ -68,7 +68,9 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     void                    SetFlowDoFourCorrelations(Bool_t four = kTRUE) { fCutFlowDoFourCorrelations = four; }
     void                    SetFlowDoOnlyMixedCorrelations(Bool_t b = kFALSE) { fDoOnlyMixedCorrelations = b; }
     void                    SetFlowFillWeights(Bool_t weights = kTRUE) { fFlowFillWeights = weights; }
-    void                    SetUseWeigthsFile(const char* file) { fFlowWeightsPath = file; fFlowUseWeights = kTRUE; }
+    void                    SetUseNUAWeigthsFile(const char* file) { fFlowNUAWeightsPath = file; if(fFlowNUAWeightsPath){fFlowUseNUAWeights = kTRUE;} }
+    void                    SetUseNUEWeigthsFile(const char* file) { fFlowNUEWeightsPath = file; if(fFlowNUEWeightsPath){fFlowUseNUEWeights = kTRUE;} }
+
     // events setters
     void                    SetMultEstimator(const char* mult = "CHARGED") { fMultEstimator = mult; }
     void                    SetTrigger(Short_t trigger = 0) { fTrigger = trigger; }
@@ -90,8 +92,12 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     void                    SetPIDNumSigmasKaonMax(Double_t numSigmas) { fCutPIDnSigmaKaonMax = numSigmas; }
     void                    SetPIDNumSigmasProtonMax(Double_t numSigmas) { fCutPIDnSigmaProtonMax = numSigmas; }
     void                    SetPIDNumSigmasCombinedNoTOFrejection(Bool_t reject = kTRUE) { fCutPIDnSigmaCombinedNoTOFrejection = reject; }
+    void                    SetPIDnsigmaCombination(Int_t Comb =2){fPIDnsigmaCombination = Comb;}
+    void		    SetExtraPileUpCut(){fExtraPileUp = kTRUE;}
     void                    SetPositivelyChargedRef(Bool_t Pos=kFALSE){fPositivelyChargedRef = Pos;}
     void                    SetNegativelyChargedRef(Bool_t Neg=kFALSE){fNegativelyChargedRef = Neg;}
+    void                    SetPositivelyChargedPOI(Bool_t Pos=kFALSE){fPositivelyChargedPOI = Pos;}
+    void                    SetNegativelyChargedPOI(Bool_t Neg=kFALSE){fNegativelyChargedPOI = Neg;}
     void                    SetBayesianProbability(Double_t prob=0.9){fParticleProbability = prob;}
     void                    SetPriors(Float_t centr = 0); // set Noferini's favourite priors for Bayesian PID (requested if Bayesian PID is used)
     AliESDpid&              GetESDpid() {return fESDpid;}
@@ -103,13 +109,14 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
      AliAODEvent*            fEventAOD; //! AOD event countainer
      AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
      AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
-     TFile*                  fFlowWeightsFile; //! source file containing weights
+     TFile*                  fFlowNUAWeightsFile; //! source file containing weights
+     TFile*                  fFlowNUEWeightsFile; //! source file containing weights
      Bool_t                  fInit; // initialization check
      Short_t                 fIndexCentrality; // centrality bin index (based on centrality est. or number of selected tracks)
      Short_t                 fEventCounter; // event counter (used for local test runmode purpose)
      Short_t                 fNumEventsAnalyse; // [50] number of events to be analysed / after passing selection (only in test mode)
      Int_t                   fRunNumber; // [-1] run number obtained from AliVHeader
-    
+     Bool_t                  fExtraPileUp; // extra pile-up cuts 
      // array lenghts & constants
      const Double_t          fPDGMassPion; // [DPGMass] DPG mass of charged pion
      const Double_t          fPDGMassKaon; // [DPGMass] DPG mass of charged kaon
@@ -140,10 +147,16 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     Bool_t                  fCutFlowDoFourCorrelations; // [kTRUE] flag for processing <4>
     Bool_t                  fDoOnlyMixedCorrelations; // [kTRUE] flag if I only want to analyse mixed harmonics
     Bool_t                  fFlowFillWeights; //[kFALSE] flag for filling weights
-    Bool_t                  fFlowUseWeights; //[kFALSE] flag for using the previously filled weights (NOTE: this is turned on only when path to file is applied via fFlowWeightsPath)
-    TString                 fFlowWeightsPath; //[] path to source root file with weigthts (if empty unit weights are applied) e.g. "alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2016/PhiWeight_LHC16kl.root"
+    Bool_t                  fFlowUseNUAWeights; //[kFALSE] flag for using the previously filled NUA weights (NOTE: this is turned on only when path to file is applied via fFlowWeightsPath)
+    Bool_t                  fFlowUseNUEWeights; //[kFALSE] flag for using the previously filled NUE weights (NOTE: this is turned on only when path to file is applied via fFlowWeightsPath)
+    TString                 fFlowNUAWeightsPath;//[] path to source root file with weigthts (if empty unit weights are applied) "alice/cern.ch/user/n/nmohamma/CorrectionMaps/fb96/NUACorrectionMap.root"
+   
+    TString                 fFlowNUEWeightsPath; //[] path to source root file with weigthts (if empty unit weights are applied) e.g. "alice/cern.ch/user/k/kgajdoso/EfficienciesWeights/2016/PhiWeight_LHC16kl.root"
     Bool_t                  fPositivelyChargedRef; //for same charged reference particle studies
     Bool_t                  fNegativelyChargedRef; //for same charged reference particle studies
+    Bool_t                  fPositivelyChargedPOI; //for like sign reference particles and POIs studies
+    Bool_t                  fNegativelyChargedPOI; //for unlike sign reference particle and POIs studies
+    
     
     //cuts & selection: events
     Float_t                    fPVtxCutZ; // (cm) PV z cut
@@ -165,7 +178,8 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     // cuts & selection: PID selection
     AliESDpid               fESDpid; //! pid obj
     Bool_t                  fCutPIDUseAntiProtonOnly; // [kFALSE] check proton PID charge to select AntiProtons only
-    Bool_t                  fPID3sigma; // [kTRUE] default pid method
+    Bool_t                  fPIDnsigma; // [kTRUE] default pid method
+    Int_t                   fPIDnsigmaCombination; // 1,2,3 for PID nsigma combinations 1,2,3
     Bool_t                  fPIDbayesian; // [kFALSE] bayesian pid method
     Double_t                fCutPIDnSigmaPionMax; // [3] maximum of nSigmas (TPC or TPC & TOF combined) for pion candidates
     Double_t                fCutPIDnSigmaKaonMax; // [3] maximum of nSigmas (TPC or TPC & TOF combined) for kaon candidates
@@ -175,7 +189,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     Float_t                 fCurrCentr; // current centrality used for set the priors
     Double_t                fParticleProbability; // Minimum Bayesian probability
     
-    static const Int_t      fgkPIDptBin = 20; // pT bins for priors
+    static const Int_t      fgkPIDptBin = 32; // pT bins for priors
     Float_t                 fC[fgkPIDptBin][5],fBinLimitPID[fgkPIDptBin]; // pt bin limit and priors
     static const Short_t    fFlowNumHarmonicsMax = 10; // maximum harmonics length of flow vector array
     static const Short_t    fFlowNumWeightPowersMax = 10; // maximum weight power length of flow vector array
@@ -203,23 +217,53 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     // histograms & profiles
     
     // Flow
-    TH3D*           fh3WeightsRefs; //! distribution of Refs particles for estimating weight purpose (phi,eta,pt)
-    TH3D*           fh3WeightsCharged; //! distribution of Charged POIs particles for estimating weight purpose (phi,eta,pt)
-    TH3D*           fh3WeightsPion; //! distribution of Pion POIs particles for estimating weight purpose (phi,eta,pt)
-    TH3D*           fh3WeightsKaon; //! distribution of Kaon POIs particles for estimating weight purpose (phi,eta,pt)
-    TH3D*           fh3WeightsProton; //! distribution of Proton POIs particles for estimating weight purpose (phi,eta,pt)
+    TH3D*           fh3BeforeNUAWeightsRefs; //! distribution of Refs particles for estimating weight purpose (phi,eta,vtx_z)
+    TH3D*           fh3BeforeNUAWeightsCharged; //! distribution of Charged POIs particles for estimating weight purpose (phi,eta,vtx_z)
+    TH3D*           fh3BeforeNUAWeightsPion; //! distribution of Pion POIs particles for estimating weight purpose (phi,eta,vtx_z)
+    TH3D*           fh3BeforeNUAWeightsKaon; //! distribution of Kaon POIs particles for estimating weight purpose (phi,eta,vtx_z)
+    TH3D*           fh3BeforeNUAWeightsProton; //! distribution of Proton POIs particles for estimating weight purpose (phi,eta,vtx_z)
     
-    TH3D*           fh3AfterWeightsRefs; //! distribution of Refs particles after applying the weights (phi,eta,pt)
-    TH3D*           fh3AfterWeightsCharged; //! distribution of Charged POIs particles after applying the weights (phi,eta,pt)
-    TH3D*           fh3AfterWeightsPion; //! distribution of Pion POIs particles after applying the weights (phi,eta,pt)
-    TH3D*           fh3AfterWeightsKaon; //! distribution of Kaon POIs particles after applying the weights (phi,eta,pt)
-    TH3D*           fh3AfterWeightsProton; //! distribution of Proton POIs particles after applying the weights (phi,eta,pt)
+    TH3D*           fh3AfterNUAWeightsRefs; //! distribution of Refs particles after applying the weights (phi,eta,vtx_z)
+    TH3D*           fh3AfterNUAWeightsCharged; //! distribution of Charged POIs particles after applying the weights (phi,eta,vtx_z)
+    TH3D*           fh3AfterNUAWeightsPion; //! distribution of Pion POIs particles after applying the weights (phi,eta,vtx_z)
+    TH3D*           fh3AfterNUAWeightsKaon; //! distribution of Kaon POIs particles after applying the weights (phi,eta,vtx_z)
+    TH3D*           fh3AfterNUAWeightsProton; //! distribution of Proton POIs particles after applying the weights (phi,eta,vtx_z)
     
-    TH2D*           fh2WeightRefs; //! container for loading weights for given run
-    TH2D*           fh2WeightCharged; //! container for loading weights for given run
-    TH2D*           fh2WeightPion; //! container for loading weights for given run
-    TH2D*           fh2WeightKaon; //! container for loading weights for given run
-    TH2D*           fh2WeightProton; //! container for loading weights for given run
+    TH1D*           fhBeforeNUEWeightsRefs; //! distribution of Refs particles for estimating weight purpose (pt)
+    TH1D*           fhBeforeNUEWeightsCharged; //! distribution of Charged POIs particles for estimating weight purpose (pt)
+    TH1D*           fhBeforeNUEWeightsPion; //! distribution of Pion POIs particles for estimating weight purpose (pt)
+    TH1D*           fhBeforeNUEWeightsKaon; //! distribution of Kaon POIs particles for estimating weight purpose (pt)
+    TH1D*           fhBeforeNUEWeightsProton; //! distribution of Proton POIs particles for estimating weight purpose (pt)
+    
+    TH1D*           fhAfterNUEWeightsRefs; //! distribution of Refs particles after applying the weights (pt)
+    TH1D*           fhAfterNUEWeightsCharged; //! distribution of Charged POIs particles after applying the weights (pt)
+    TH1D*           fhAfterNUEWeightsPion; //! distribution of Pion POIs particles after applying the weights (pt)
+    TH1D*           fhAfterNUEWeightsKaon; //! distribution of Kaon POIs particles after applying the weights (pt)
+    TH1D*           fhAfterNUEWeightsProton; //! distribution of Proton POIs particles after applying the weights (pt)
+    
+    TH3D*           fh3NUAWeightRefsPlus; //! container for loading weights for given run
+    TH3D*           fh3NUAWeightChargedPlus; //! container for loading weights for given run
+    TH3D*           fh3NUAWeightPionPlus; //! container for loading weights for given run
+    TH3D*           fh3NUAWeightKaonPlus; //! container for loading weights for given run
+    TH3D*           fh3NUAWeightProtonPlus; //! container for loading weights for given run
+    
+    TH3D*           fh3NUAWeightRefsMinus; //! container for loading weights for given run
+    TH3D*           fh3NUAWeightChargedMinus; //! container for loading weights for given run
+    TH3D*           fh3NUAWeightPionMinus; //! container for loading weights for given run
+    TH3D*           fh3NUAWeightKaonMinus; //! container for loading weights for given run
+    TH3D*           fh3NUAWeightProtonMinus; //! container for loading weights for given run
+    
+    TH1D*           fhNUEWeightRefsPlus; //! container for loading weights for given run
+    TH1D*           fhNUEWeightChargedPlus; //! container for loading weights for given run
+    TH1D*           fhNUEWeightPionPlus; //! container for loading weights for given run
+    TH1D*           fhNUEWeightKaonPlus; //! container for loading weights for given run
+    TH1D*           fhNUEWeightProtonPlus; //! container for loading weights for given run
+    
+    TH1D*           fhNUEWeightRefsMinus; //! container for loading weights for given run
+    TH1D*           fhNUEWeightChargedMinus; //! container for loading weights for given run
+    TH1D*           fhNUEWeightPionMinus; //! container for loading weights for given run
+    TH1D*           fhNUEWeightKaonMinus; //! container for loading weights for given run
+    TH1D*           fhNUEWeightProtonMinus; //! container for loading weights for given run
     
     // Events
     TH1D*           fhEventCentrality; //! distribution of event centrality
@@ -337,6 +381,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     TH1D*           fhQAEventsSPDresol[fiNumIndexQA]; //!
     TH2D*           fhQAEventsCentralityOutliers[fiNumIndexQA]; //!
     TH2D*           fhQAEventsPileUp[fiNumIndexQA]; //!
+    TH2D*           fhEventsMultTOFFilterbit32[fiNumIndexQA]; //!
     // QA: charged tracks
     TH1D*           fhQAChargedMult[fiNumIndexQA];       //! number of AOD charged tracks distribution
     TH1D*           fhQAChargedPt[fiNumIndexQA];         //! pT dist of charged tracks
@@ -378,7 +423,7 @@ class AliAnalysisTaskFlowModes : public AliAnalysisTaskSE
     Double_t                GetWDist(const AliAODVertex* v0, const AliAODVertex* v1); // gets the distance between the two vertices
     Bool_t                  ProcessEvent(); // main (envelope) method for processing events passing selection
     
-    void                    Filtering(); // main (envelope) method for filtering all POIs in event
+    Bool_t                  Filtering(); // main (envelope) method for filtering all POIs in event
     void                    FilterCharged(); // charged tracks filtering
     Bool_t                  IsChargedSelected(const AliAODTrack* track = 0x0); // charged track selection
     void                    FillQARefs(const Short_t iQAindex, const AliAODTrack* track = 0x0); // filling QA plots for RFPs selection

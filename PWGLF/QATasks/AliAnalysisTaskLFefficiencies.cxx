@@ -36,7 +36,7 @@
 
 using TMath::TwoPi;
 
-const std::string AliAnalysisTaskLFefficiencies::fPosNeg[2] = {"pos","neg"};
+const std::string AliAnalysisTaskLFefficiencies::fPosNeg[2] = {"neg","pos"};
 const int AliAnalysisTaskLFefficiencies::fNcuts = 5;
 const std::string AliAnalysisTaskLFefficiencies::fCutNames[5] = {"FB4","FB5","FB5+PID TPC", "FB5 + TOF matching", "FB5 + PID TOF"};
 
@@ -46,7 +46,8 @@ ClassImp(AliAnalysisTaskLFefficiencies);
 
 AliAnalysisTaskLFefficiencies::AliAnalysisTaskLFefficiencies(TString taskname) :
   AliAnalysisTaskSE(taskname.Data()),
-  fEventCut{false}
+  fEventCut{false},
+  fUseMCtruthParams{false}
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -85,6 +86,7 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
       }
     }
   }
+  fEventCut.AddQAplotsToList(fOutputList);
 
   PostData(1,fOutputList);
 }
@@ -136,7 +138,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
   for (int iT = 0; iT < (int)ev->GetNumberOfTracks(); ++iT) {
     /// Get the track and do the minimal cuts
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
-    if (track->GetID() <= 0) continue;
+    if (track->GetID() < 0) continue;
     if (!track->TestFilterBit(BIT(4))) continue;
 
     AliAODMCParticle *part = (AliAODMCParticle*)stack->At(TMath::Abs(track->GetLabel()));
@@ -151,18 +153,22 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
       }
     }
     if (iSpecies < 0) continue;
-    v.SetPtEtaPhiM(track->Pt() * AliPID::ParticleCharge(iSpecies), track->Eta(), track->Phi(), AliPID::ParticleMass(iSpecies));
 
-    bool hasFB8 = track->TestFilterBit(BIT(5));
+    const double pt = fUseMCtruthParams ? part->Pt() : track->Pt() * AliPID::ParticleCharge(iSpecies);
+    const double eta = fUseMCtruthParams ? part->Eta() : track->Eta();
+    const double phi = fUseMCtruthParams ? part->Phi() : track->Phi();
+    v.SetPtEtaPhiM(pt, eta, phi, AliPID::ParticleMass(iSpecies));
+
+    bool hasFB5 = track->TestFilterBit(BIT(5));
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool hasTOF = HasTOF(track);
     bool TOFpid = std::abs(pid->NumberOfSigmasTOF(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
-    bool cuts[fNcuts] = {true, hasFB8, hasFB8 && TPCpid, hasFB8 && hasTOF, hasFB8 && TOFpid};
+    bool cuts[fNcuts] = {true, hasFB5, hasFB5 && TPCpid, hasFB5 && hasTOF, hasFB5 && TOFpid};
 
     for (int iCut = 0; iCut < fNcuts; ++iCut) {
       if (cuts[iCut]) {
-        fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Rapidity(),track->Phi(),track->Pt() * AliPID::ParticleCharge(iSpecies));
-        fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]->Fill(track->Eta(),track->Phi(),track->Pt() * AliPID::ParticleCharge(iSpecies));
+        fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Rapidity(),phi,pt);
+        fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]->Fill(eta,phi,pt);
       }
     }
   } // End AOD track loop

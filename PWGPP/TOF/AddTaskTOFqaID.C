@@ -8,7 +8,7 @@
 // UInt_t kTriggerInt = AliVEvent::kAnyINT;
 // UInt_t kTriggerMask = kTriggerInt;
 
-AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t  flagEnableAdvancedCheck = kFALSE, 
+AliAnalysisTaskTOFqaID * AddTaskTOFqaID(Bool_t  flagEnableAdvancedCheck = kFALSE, 
 				   UInt_t  triggerMask = AliVEvent::kAnyINT, 
 				   Int_t   trackCutSetTOFqa = AliAnalysisTaskTOFqaID::kStd2011crossedRows, 
 				   Bool_t  flagEnableChargeSplit = kFALSE,
@@ -24,7 +24,7 @@ AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t  flagEnableAdvancedCheck = kFALSE,
    ::Error("AddTask", "No analysis manager to connect to.");
     return NULL;
   }   
-  UInt_t runN = mgr->GetRunFromPath();
+  runN = mgr->GetRunFromPath();
   Printf(":::::::  HERE I TRY TO GET RUN  NUMBER = %i", runN);
 
   // Check the analysis type using the event handlers connected to the analysis manager.
@@ -106,14 +106,14 @@ AliAnalysisTaskSE * AddTaskTOFqaID(Bool_t  flagEnableAdvancedCheck = kFALSE,
   task->SetTrackFilter(trackFilter); 
   
   TString partName(task->GetSpeciesName(absPdgCode));
- 
+
   // Create containers for input/output
   AliAnalysisDataContainer* cInputTOFqa = mgr->CreateContainer("cInputTOFqa", TChain::Class(), AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer* cGeneralTOFqa = mgr->CreateContainer(Form("base_%s%s", partName.Data(), cutName.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOF", mgr->GetCommonFileName(), partName.Data()));
-  AliAnalysisDataContainer* cTimeZeroTOFqa = mgr->CreateContainer(Form("timeZero_%s%s", partName.Data(), cutName.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOF", mgr->GetCommonFileName(), partName.Data()));
-  AliAnalysisDataContainer* cPIDTOFqa = mgr->CreateContainer(Form("pid_%s%s", partName.Data(), cutName.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOF", mgr->GetCommonFileName(), partName.Data()));
-  AliAnalysisDataContainer* cTRDcheckTOFqa = mgr->CreateContainer(Form("trd_%s%s", partName.Data(), cutName.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOF", mgr->GetCommonFileName(), partName.Data()));
-  AliAnalysisDataContainer* cTriggerTOFqa = mgr->CreateContainer(Form("trigger_%s%s", partName.Data(), cutName.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOF", mgr->GetCommonFileName(), partName.Data()));
+  AliAnalysisDataContainer* cGeneralTOFqa = mgr->CreateContainer(Form("base_%s%s", partName.Data(), cutName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOF", mgr->GetCommonFileName()));
+  AliAnalysisDataContainer* cTimeZeroTOFqa = mgr->CreateContainer(Form("timeZero_%s%s", partName.Data(), cutName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOF", mgr->GetCommonFileName()));
+  AliAnalysisDataContainer* cPIDTOFqa = mgr->CreateContainer(Form("pid_%s%s", partName.Data(), cutName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOF", mgr->GetCommonFileName()));
+  AliAnalysisDataContainer* cTRDcheckTOFqa = mgr->CreateContainer(Form("trd_%s%s", partName.Data(), cutName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOF", mgr->GetCommonFileName()));
+  AliAnalysisDataContainer* cTriggerTOFqa = mgr->CreateContainer(Form("trigger_%s%s", partName.Data(), cutName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TOF", mgr->GetCommonFileName()));
 
   // Attach i/o
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

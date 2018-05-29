@@ -51,6 +51,11 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliCentrality.h"
+
+#include "AliVertex.h"
+#include "AliMultSelection.h"
+
+
 #include "AliESDcascade.h"
 #include "AliV0vertexer.h"
 #include "AliCascadeVertexer.h"
@@ -74,11 +79,9 @@ fESD(0x0),
 fOutputList(0x0),
 fTrackCut(0x0),
 fPIDResponse(0x0),
-
 fCentrality(0),
 fEC(0x0),
 fEvt(0x0),
-
 fTempStruct(0x0),
 fZvertexBins(0),
 fEventsToMix(0),
@@ -93,11 +96,9 @@ fTrueMassPi(0),
 fTrueMassK(0),
 fTrueMassLam(0),
 fTrueMassXi(0),
-
 fESDTrack4(0x0),
 fXiTrack(0x0),
 fCutList(0)
-
 
 {
     // Default Constructor
@@ -132,9 +133,6 @@ fCutList(0)
         
     }
     
-    {
-    // ROOT IO constructor, don't allocate memory here!
-    }
 }
 //________________________________________________________________________
 AliXiStarPbPb::AliXiStarPbPb(const char *name, Bool_t AODdecision,  Bool_t MCdecision, Int_t CutListOption)
@@ -161,7 +159,6 @@ fTrueMassPi(0),
 fTrueMassK(0),
 fTrueMassLam(0),
 fTrueMassXi(0),
-
 fESDTrack4(0x0),
 fXiTrack(0x0),
 fCutList(CutListOption)
@@ -204,30 +201,30 @@ fCutList(CutListOption)
     
     
     //Set Variables for re-running the cascade vertexers
-        
- /*   fV0VertexerSels[0] =  33.  ;  // max allowed chi2
-    fV0VertexerSels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
-    fV0VertexerSels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
-    fV0VertexerSels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
-    fV0VertexerSels[4] =   0.95;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
-    fV0VertexerSels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
-    fV0VertexerSels[6] = 200.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
     
-    fCascadeVertexerSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
-    fCascadeVertexerSels[1] =   0.05 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
-    fCascadeVertexerSels[2] =   0.010;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
-    fCascadeVertexerSels[3] =   0.03 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
-    fCascadeVertexerSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
-    fCascadeVertexerSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
-    fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
-    fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
-*/
+    /*   fV0VertexerSels[0] =  33.  ;  // max allowed chi2
+     fV0VertexerSels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
+     fV0VertexerSels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
+     fV0VertexerSels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
+     fV0VertexerSels[4] =   0.95;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
+     fV0VertexerSels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
+     fV0VertexerSels[6] = 200.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
+     
+     fCascadeVertexerSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
+     fCascadeVertexerSels[1] =   0.05 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
+     fCascadeVertexerSels[2] =   0.010;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
+     fCascadeVertexerSels[3] =   0.03 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
+     fCascadeVertexerSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
+     fCascadeVertexerSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
+     fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
+     fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
+     */
     
     
     // Define output for Tree
     DefineInput (0, TChain::Class());
     DefineOutput(1, TList::Class());
-
+    
     
 }
 //________________________________________________________________________
@@ -256,11 +253,9 @@ fTrueMassPi(obj.fTrueMassPi),
 fTrueMassK(obj.fTrueMassK),
 fTrueMassLam(obj.fTrueMassLam),
 fTrueMassXi(obj.fTrueMassXi),
-
 fESDTrack4(obj.fESDTrack4),
 fXiTrack(obj.fXiTrack),
 fCutList(obj.fCutList)
-
 
 {
     // Copy constructor
@@ -331,7 +326,7 @@ AliXiStarPbPb &AliXiStarPbPb::operator=(const AliXiStarPbPb &obj)
 AliXiStarPbPb::~AliXiStarPbPb()
 {
     // Destructor
-
+    
     if(fESD) delete fESD;
     if(fOutputList) delete fOutputList;
     if(fTrackCut) delete fTrackCut;
@@ -342,7 +337,7 @@ AliXiStarPbPb::~AliXiStarPbPb()
     if(fTempStruct) delete fTempStruct;
     if(fESDTrack4) delete fESDTrack4;
     if(fXiTrack) delete fXiTrack;
-    if(fCentralityEstimator) delete fCentralityEstimator;//add
+    if(fCentralityEstimator) delete fCentralityEstimator;
     
     
     for (Int_t cv=0; cv<kNCutVariations; cv++){
@@ -362,7 +357,7 @@ AliXiStarPbPb::~AliXiStarPbPb()
         if(CutVar[cv].fMCrecXibar) delete CutVar[cv].fMCrecXibar;
         if(CutVar[cv].fMCrecXiMinusPiPlus) delete CutVar[cv].fMCrecXiMinusPiPlus;
         if(CutVar[cv].fMCrecXiPlusPiMinus) delete CutVar[cv].fMCrecXiPlusPiMinus;
-    
+        
     }
     
 }
@@ -384,14 +379,14 @@ void AliXiStarPbPb::XiStarInit()
     //fTrackCut->SetMinNClustersTPC(70);
     fTrackCut->SetRequireTPCRefit(kTRUE);
     fTrackCut->SetMaxChi2PerClusterTPC(4); //From Enrico
-
+    
     ////////////////////////////////////////////////
     fZvertexBins = 10;
     fMultBins = 10;
-
     
-    if(fMCcase) fEventsToMix = 0;
-    else fEventsToMix = 5; //5
+    
+    if(fMCcase) fEventsToMix = 2;
+    else fEventsToMix = 0; //5
     
     fMultLimits[0]=0, fMultLimits[1]=1250, fMultLimits[2]=2500, fMultLimits[3]=3750, fMultLimits[4]=5000, fMultLimits[5]=6250, fMultLimits[6]=7500, fMultLimits[7]=8750, fMultLimits[8]=10000, fMultLimits[9]=13000, fMultLimits[10]=20000;
     
@@ -407,8 +402,7 @@ void AliXiStarPbPb::XiStarInit()
         }
     }
     
-    fTempStruct = new AliXiStarPbPbTrackStruct[20000]; //1000 was best but wired EM bg distribution comes from this ?!//20000 for BG
-    
+    fTempStruct = new AliXiStarPbPbTrackStruct[20000];
     
     
     fESDTrack4 = new AliESDtrack();
@@ -437,9 +431,9 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[0][8] = 2.5;
     fCutValues[0][9] = 0.95;
     fCutValues[0][10] = 0.275;
-    fCutValues[0][11] = 0.998; //old selection of CPA L
-    fCutValues[0][12] = 0.9992; //old selection of CPA Xi
-
+    fCutValues[0][11] = 0.95; //tight selection of CPA L (0.998)
+    fCutValues[0][12] = 0.95; //tight selection of CPA Xi (0.9992)
+    
     
     
     for(int cv=1; cv<kNCutVariations; cv++){
@@ -451,15 +445,15 @@ void AliXiStarPbPb::XiStarInit()
     
     // Open CPA L only
     fCutValues[1][0] = 70; fCutValues[1][1] = 70; fCutValues[1][2] = 70; fCutValues[1][3] = 70;
-    fCutValues[2][4] = 0.11;
-    fCutValues[3][5] = 0.11;
+    fCutValues[2][4] = 0.05; //checking for loose PV-DCA
+    fCutValues[3][5] = 0.05; //checking for loose PV-DCA
     fCutValues[4][6] = 0.035;
     fCutValues[5][7] = 0.06;
     fCutValues[6][8] = 2.5;
     fCutValues[7][9] = 0.95;
     fCutValues[8][10] = 0.275;
-    fCutValues[9][11] = 0.95;
-    fCutValues[10][12] = 0.9992;
+    fCutValues[9][11] = 0.998; //checking for tight CPA V0
+    fCutValues[10][12] = 0.95;
     
     // Open CPA L and Xi
     fCutValues[11][0] = 70; fCutValues[11][1] = 70; fCutValues[11][2] = 70; fCutValues[11][3] = 70;// 80
@@ -471,33 +465,33 @@ void AliXiStarPbPb::XiStarInit()
     fCutValues[17][9] = 0.96;
     fCutValues[18][10] = 0.275;
     fCutValues[19][11] = 0.95;
-    fCutValues[20][12] = 0.95;
+    fCutValues[20][12] = 0.9992; //checking for tight CPA Xi
     
     /*
-    //systematic variation// Loose
-    fCutValues[1][0] = 63; fCutValues[1][1] = 63; fCutValues[1][2] = 63; fCutValues[1][3] = 63;// 80
-    fCutValues[2][4] = 0.1;
-    fCutValues[3][5] = 0.1;
-    fCutValues[4][6] = 0.03;
-    fCutValues[5][7] = 0.05;
-    fCutValues[6][8] = 3.0;
-    fCutValues[7][9] = 1.0;
-    fCutValues[8][10] = 0.3;
-    fCutValues[9][11] = 0.95; //Open CPA L
-    fCutValues[10][12] = 0.9992;
-
-    //systematic variation// tight
-    fCutValues[11][0] = 77; fCutValues[11][1] = 77; fCutValues[11][2] = 77; fCutValues[11][3] = 77;// 80
-    fCutValues[12][4] = 0.12;
-    fCutValues[13][5] = 0.12;
-    fCutValues[14][6] = 0.04;
-    fCutValues[15][7] = 0.07;
-    fCutValues[16][8] = 2.0;
-    fCutValues[17][9] = 0.9;
-    fCutValues[18][10] = 0.25;
-    fCutValues[19][11] = 0.95;
-    fCutValues[20][12] = 0.95; //Open CPA L and Xi
-  */
+     //systematic variation// Loose
+     fCutValues[1][0] = 63; fCutValues[1][1] = 63; fCutValues[1][2] = 63; fCutValues[1][3] = 63;// 80
+     fCutValues[2][4] = 0.1;
+     fCutValues[3][5] = 0.1;
+     fCutValues[4][6] = 0.03;
+     fCutValues[5][7] = 0.05;
+     fCutValues[6][8] = 3.0;
+     fCutValues[7][9] = 1.0;
+     fCutValues[8][10] = 0.3;
+     fCutValues[9][11] = 0.95; //Open CPA L
+     fCutValues[10][12] = 0.9992;
+     
+     //systematic variation// tight
+     fCutValues[11][0] = 77; fCutValues[11][1] = 77; fCutValues[11][2] = 77; fCutValues[11][3] = 77;// 80
+     fCutValues[12][4] = 0.12;
+     fCutValues[13][5] = 0.12;
+     fCutValues[14][6] = 0.04;
+     fCutValues[15][7] = 0.07;
+     fCutValues[16][8] = 2.0;
+     fCutValues[17][9] = 0.9;
+     fCutValues[18][10] = 0.25;
+     fCutValues[19][11] = 0.95;
+     fCutValues[20][12] = 0.95; //Open CPA L and Xi
+     */
     
     
     
@@ -577,7 +571,7 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     TH1F *hCentralitySelectedSemiCentral = new TH1F("hCentralitySelectedSemiCentral","hCentralitySelectedSemiCentral",100,0,100);
     hCentralitySelectedSemiCentral->GetXaxis()->SetTitle("Centrality");
     fOutputList->Add(hCentralitySelectedSemiCentral);
-
+    
     TH1F *hCentralitySelectedMB = new TH1F("hCentralitySelectedMB","hCentralitySelectedMB",100,0,100);
     hCentralitySelectedMB->GetXaxis()->SetTitle("Centrality");
     fOutputList->Add(hCentralitySelectedMB);
@@ -696,12 +690,12 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     fOutputList->Add(fQADCADist_pi1_T);
     TH1F *fQADCADist_pi2_T = new TH1F("fQADCADist_pi2_T","After tight cut :DCA distribution 2nd pion",200,0, 0.5); //par 6
     fOutputList->Add(fQADCADist_pi2_T);
-
+    
     
     /* DCA xy distiribution with pT dependent cut*/
     TH1F *fDCADist_3rd_pi_pT = new TH1F("fDCADist_3rd_pi_pT","DCA distribution 3rd pion",300,0,3);
     fOutputList->Add(fDCADist_3rd_pi_pT);
-
+    
     
     TH1F *fDCADist_lambda = new TH1F("fDCADist_lambda","DCA distribution Lambda",200,0,0.5);
     fOutputList->Add(fDCADist_lambda);
@@ -741,49 +735,53 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     TH1F *fQADCADist_pi_lambda_T = new TH1F("fQADCADist_pi_lambda_T","After tight cut :DCA distribution Pion-Lambda",300,0,3); //10
     fOutputList->Add(fQADCADist_pi_lambda_T);
     
-     TH1F *fCosPA_lambda = new TH1F("fCosPA_lambda","Cosine pointing angle Lambda",500,0.9,1.0);
+    TH1F *fCosPA_lambda = new TH1F("fCosPA_lambda","Cosine pointing angle Lambda",500,0.9,1.0);
     fOutputList->Add(fCosPA_lambda);
     
     TH1F *fCosPA_Xi = new TH1F("fCosPA_Xi","Cosine pointing angle Xi",500,0.9,1.0);
     fOutputList->Add(fCosPA_Xi);
     
     
-  /*  TH2F *f2DCosPA_lambda = new TH2F("f2DCosPA_lambda","Cosine pointing angle Lambda vs pT",100,0,10,500,0.9,1.0);
-    fOutputList->Add(f2DCosPA_lambda);
+    /*  TH2F *f2DCosPA_lambda = new TH2F("f2DCosPA_lambda","Cosine pointing angle Lambda vs pT",100,0,10,500,0.9,1.0);
+     fOutputList->Add(f2DCosPA_lambda);
+     
+     TH2F *f2DCosPA_Xi = new TH2F("f2DCosPA_Xi","Cosine pointing angle Xi vs pT",100,0,10,500,0.9,1.0);
+     fOutputList->Add(f2DCosPA_Xi);
+     */
     
-    TH2F *f2DCosPA_Xi = new TH2F("f2DCosPA_Xi","Cosine pointing angle Xi vs pT",100,0,10,500,0.9,1.0);
-    fOutputList->Add(f2DCosPA_Xi);
-*/
     
- 
     TH1F *fQACosPA_lambda = new TH1F("fQACosPA_lambda","After cut :Cosine pointing angle Lambda",500,0.9,1.0);
     fOutputList->Add(fQACosPA_lambda);
     TH1F *fQACosPA_Xi = new TH1F("fQACosPA_Xi","After cut :Cosine pointing angle Xi",500,0.9,1.0);
     fOutputList->Add(fQACosPA_Xi);
     
-     TH1F *fQACosPA_lambda_L = new TH1F("fQACosPA_lambda_L","After loose cut :Cosine pointing angle Lambda",500,0.9,1.0);
+    TH1F *fQACosPA_lambda_L = new TH1F("fQACosPA_lambda_L","After loose cut :Cosine pointing angle Lambda",500,0.9,1.0);
     fOutputList->Add(fQACosPA_lambda_L);
     TH1F *fQACosPA_Xi_L = new TH1F("fQACosPA_Xi_L","After loose cut :Cosine pointing angle Xi",500,0.9,1.0);
     fOutputList->Add(fQACosPA_Xi_L);
-
-
+    
+    
     TH1F *fQACosPA_lambda_T = new TH1F("fQACosPA_lambda_T","After tight cut :Cosine pointing angle Lambda",500,0.9,1.0);
     fOutputList->Add(fQACosPA_lambda_T);
     TH1F *fQACosPA_Xi_T = new TH1F("fQACosPA_Xi_T","After tight cut :Cosine pointing angle Xi",500,0.9,1.0);
     fOutputList->Add(fQACosPA_Xi_T);
-
-    
-
     
     
     
-    TH1F *hXiInvMass = new TH1F("hXiInvMass","Xi invariant mass distribution : cent 0 - 10",200,1.2,1.4);
+    
+    
+    
+    TH1F *hXiInvMass = new TH1F("hXiInvMass","Xi invariant mass distribution",200,1.2,1.4);
     fOutputList->Add(hXiInvMass);
+    
+    TH1F *hXiEtaDist = new TH1F("hXiEtaDist","Xi Eta distribution",200,-2,2);
+    fOutputList->Add(hXiEtaDist);
+
     
     TH1F *hQAXiInvMass = new TH1F("hQAXiInvMass","Xi invariant mass distribution after mass window selection : cent 0 - 10",200,1.2,1.4);
     fOutputList->Add(hQAXiInvMass);
     
-   
+    
     
     
     TH2F *TPCPID = new TH2F("TPCPID","PID via TPC",500,0,20,500,0,200);
@@ -863,7 +861,7 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     
     TH2F *fXiStarMCCosPA_Xi = new TH2F("fXiStarMCCosPA_Xi","MC : Cosine pointing angle Xi vs Xi pT",100,0,10,500,0.9,1.0);
     fOutputList->Add(fXiStarMCCosPA_Xi);
-
+    
     
     
     
@@ -880,8 +878,14 @@ void AliXiStarPbPb::UserCreateOutputObjects()
     fOutputList->Add(fMCinputTotalXi3);
     fOutputList->Add(fMCinputTotalXibar3);
     
-
-     for(Int_t cv=0; cv<kNCutVariations; cv++){
+    //QA for CPA L and Xi
+    TH3F *fXi_CPAL = new TH3F("fXi_CPAL","Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
+    TH3F *fXi_CPAXi = new TH3F("fXi_CPAXi","Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
+    fOutputList->Add(fXi_CPAL);
+    fOutputList->Add(fXi_CPAXi);
+    
+    
+    for(Int_t cv=0; cv<kNCutVariations; cv++){
         
         if(cv==0){
             TString *nameXi=new TString("fXi_");
@@ -891,14 +895,14 @@ void AliXiStarPbPb::UserCreateOutputObjects()
             CutVar[cv].fXi = new TH3F(nameXi->Data(),"Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
             fOutputList->Add(CutVar[cv].fXi);
             CutVar[cv].fXibar = new TH3F(nameXibar->Data(),"Invariant Mass Distribution", 100,0,10, 10,0,100, 100,1.2,1.4);
-           fOutputList->Add(CutVar[cv].fXibar);
+            fOutputList->Add(CutVar[cv].fXibar);
             //
             TString *nameMCrecXi = new TString("fMCrecXi_");
             TString *nameMCrecXibar = new TString("fMCrecXibar_");
             *nameMCrecXi += cv;
             *nameMCrecXibar += cv;
             CutVar[cv].fMCrecXi = new TH3F(nameMCrecXi->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100, 100,1.2,1.4);
-           CutVar[cv].fMCrecXibar = new TH3F(nameMCrecXibar->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100, 100,1.2,1.4);
+            CutVar[cv].fMCrecXibar = new TH3F(nameMCrecXibar->Data(),"Invariant Mass Distribution", 100,0,10, 100,0,100, 100,1.2,1.4);
             fOutputList->Add(CutVar[cv].fMCrecXi);
             fOutputList->Add(CutVar[cv].fMCrecXibar);
         }
@@ -938,7 +942,7 @@ void AliXiStarPbPb::UserCreateOutputObjects()
         fOutputList->Add(CutVar[cv].fXiPlusPiMinusbkg);
         //
         
-         //cent bin 10 to 100 April 7 on MC
+        //cent bin 10 to 100 April 7 on MC
         TString *nameMCrecXiMinusPiPlus = new TString("fMCrecXiMinusPiPlus_");
         TString *nameMCrecXiPlusPiMinus = new TString("fMCrecXiPlusPiMinus_");
         *nameMCrecXiMinusPiPlus += cv;
@@ -948,8 +952,8 @@ void AliXiStarPbPb::UserCreateOutputObjects()
         fOutputList->Add(CutVar[cv].fMCrecXiMinusPiPlus);
         fOutputList->Add(CutVar[cv].fMCrecXiPlusPiMinus);
         //
-         
-         }
+        
+    }
     
     
     
@@ -967,24 +971,24 @@ void AliXiStarPbPb::Exec(Option_t *)
     //------------------------------------------------
     // Connect to input
     //------------------------------------------------
-        fESD = dynamic_cast<AliESDEvent*> (InputEvent());
-        if (!fESD) {Printf("ERROR: fESD not available"); return;}
+    fESD = dynamic_cast<AliESDEvent*> (InputEvent());
+    if (!fESD) {Printf("ERROR: fESD not available"); return;}
     
     //------------------------------------------------
     // Rerun cascade vertexer!
     //------------------------------------------------
-   /* fESD->ResetCascades();
-    fESD->ResetV0s();
-    
-    AliLightV0vertexer lV0vtxer;
-    AliLightCascadeVertexer lCascVtxer;
-    
-    lV0vtxer.SetCuts(fV0VertexerSels);
-    lCascVtxer.SetCuts(fCascadeVertexerSels);
-    
-    lV0vtxer.Tracks2V0vertices(fESD);
-    lCascVtxer.V0sTracks2CascadeVertices(fESD);
-   */
+    /* fESD->ResetCascades();
+     fESD->ResetV0s();
+     
+     AliLightV0vertexer lV0vtxer;
+     AliLightCascadeVertexer lCascVtxer;
+     
+     lV0vtxer.SetCuts(fV0VertexerSels);
+     lCascVtxer.SetCuts(fCascadeVertexerSels);
+     
+     lV0vtxer.Tracks2V0vertices(fESD);
+     lCascVtxer.V0sTracks2CascadeVertices(fESD);
+     */
     
     //------------------------------------------------
     // Getting: Primary Vertex
@@ -1001,7 +1005,7 @@ void AliXiStarPbPb::Exec(Option_t *)
     //------------------------------------------------
     // Getting: Centrality
     //------------------------------------------------
-
+    
     fCentrality = fESD->GetCentrality();
     centralityV0M = fCentrality->GetCentralityPercentile("V0M");
     ((TH1F*)fOutputList->FindObject("hCentrality"))->Fill(centralityV0M);
@@ -1031,24 +1035,24 @@ void AliXiStarPbPb::Exec(Option_t *)
     if(!fMCcase){
         if(!(isSelectedMB|isSelectedkCentral|isSelectedkSemiCentral)) {
             return;
-        //*    cout<<"Event Rejected"<<endl;
+            //*    cout<<"Event Rejected"<<endl;
         }
     }
     ((TH1F*)fOutputList->FindObject("hCentralitySelected"))->Fill(centralityV0M);
     
-
-
     
-
+    
+    
+    
     // Setup PID cut
     double nSigTPCPID = 3.0;
-
     
-   // TClonesArray *mcArray       = 0x0;
-   // AliStack    *mcstack        = 0x0;
+    
+    // TClonesArray *mcArray       = 0x0;
+    // AliStack    *mcstack        = 0x0;
     
     AliMCEvent    *mcstack        = 0x0;
-
+    
     TParticle   *MCLamD1esd     = 0x0;
     TParticle   *MCLamD2esd     = 0x0;
     TParticle   *MCLamesd       = 0x0;
@@ -1085,7 +1089,7 @@ void AliXiStarPbPb::Exec(Option_t *)
     Int_t mBin=0;
     Int_t zBin=0;
     Double_t zStep=2*10/Double_t(fZvertexBins), zStart=-10.;
-  
+    
     
     //
     Bool_t mcXiFilled=kFALSE;// So that mctracks are never used uninitialized
@@ -1094,167 +1098,167 @@ void AliXiStarPbPb::Exec(Option_t *)
         
         if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()){
             if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
-             //   mcstack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
-             mcstack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent();
-
+                //   mcstack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
+                mcstack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent();
+            
         }
         
         
     }
     
     
-        ((TH1F*)fOutputList->FindObject("fMultDist1"))->Fill(fESD->GetNumberOfTracks());
-        PrimaryVertexESD = fESD->GetPrimaryVertex();
-        if(!PrimaryVertexESD) return;
+    ((TH1F*)fOutputList->FindObject("fMultDist1"))->Fill(fESD->GetNumberOfTracks());
+    PrimaryVertexESD = fESD->GetPrimaryVertex();
+    if(!PrimaryVertexESD) return;
+    
+    primaryVtx[0]=PrimaryVertexESD->GetX(); primaryVtx[1]=PrimaryVertexESD->GetY(); primaryVtx[2]=PrimaryVertexESD->GetZ();
+    ((TH3F*)fOutputList->FindObject("fVertexDist1"))->Fill(primaryVtx[0], primaryVtx[1], primaryVtx[2]);
+    
+    if(fMCcase){
+        /////////////////////////////////////////////////
+        // Lam mc input
+        /////////////////////////////////////////////////
+        for (Int_t it = 0; it < mcstack->GetNumberOfPrimaries(); it++) {
             
-        primaryVtx[0]=PrimaryVertexESD->GetX(); primaryVtx[1]=PrimaryVertexESD->GetY(); primaryVtx[2]=PrimaryVertexESD->GetZ();
-        ((TH3F*)fOutputList->FindObject("fVertexDist1"))->Fill(primaryVtx[0], primaryVtx[1], primaryVtx[2]);
-        
-        if(fMCcase){
-            /////////////////////////////////////////////////
-            // Lam mc input
-            /////////////////////////////////////////////////
-            for (Int_t it = 0; it < mcstack->GetNumberOfPrimaries(); it++) {
+            //TParticle *mcInputTrack = (TParticle*)mcstack->Particle(it);
+            TParticle *mcInputTrack = ((AliMCParticle*)mcstack->GetTrack(it))->Particle();
+            
+            if (!mcInputTrack) {
+                Error("UserExec", "Could not receive track %d", it);
+                continue;
+            }
+            if(mcInputTrack->GetPdgCode() != +kXiCode && mcInputTrack->GetPdgCode() != -kXiCode && mcInputTrack->GetPdgCode() != +kXiStarCode && mcInputTrack->GetPdgCode() != -kXiStarCode) continue;
+            
+            MCxiStarY = mcInputTrack->Y();
+            
+            ((TH1F*)fOutputList->FindObject("fXiStarYDistMC"))->Fill(MCxiStarY);
+            if(MCxiStarY<-0.5 ||MCxiStarY>0.5) continue; // here selection of rapidity for PbPb analysis
+            ((TH1F*)fOutputList->FindObject("fQAXiStarYDistMC"))->Fill(MCxiStarY);
+            
+            
+            
+            // Xi
+            if(mcInputTrack->GetPdgCode() == +kXiCode) {((TH3F*)fOutputList->FindObject("fMCinputTotalXi1"))->Fill(mcInputTrack->Pt(), centralityV0M, mcInputTrack->GetCalcMass());
+            }
+            if(mcInputTrack->GetPdgCode() == -kXiCode) {((TH3F*)fOutputList->FindObject("fMCinputTotalXibar1"))->Fill(mcInputTrack->Pt(), centralityV0M, mcInputTrack->GetCalcMass());
                 
-                //TParticle *mcInputTrack = (TParticle*)mcstack->Particle(it);
-                TParticle *mcInputTrack = ((AliMCParticle*)mcstack->GetTrack(it))->Particle();
-
-                if (!mcInputTrack) {
-                    Error("UserExec", "Could not receive track %d", it);
-                    continue;
-                }
-                             if(mcInputTrack->GetPdgCode() != +kXiCode && mcInputTrack->GetPdgCode() != -kXiCode && mcInputTrack->GetPdgCode() != +kXiStarCode && mcInputTrack->GetPdgCode() != -kXiStarCode) continue;
-                
-                MCxiStarY = mcInputTrack->Y();
-                
-                ((TH1F*)fOutputList->FindObject("fXiStarYDistMC"))->Fill(MCxiStarY);
-                if(MCxiStarY<-0.5 ||MCxiStarY>0.5) continue; // here selection of rapidity for PbPb analysis
-                ((TH1F*)fOutputList->FindObject("fQAXiStarYDistMC"))->Fill(MCxiStarY);
-                
-
-                
-                // Xi
-                if(mcInputTrack->GetPdgCode() == +kXiCode) {((TH3F*)fOutputList->FindObject("fMCinputTotalXi1"))->Fill(mcInputTrack->Pt(), centralityV0M, mcInputTrack->GetCalcMass());
-                               }
-                if(mcInputTrack->GetPdgCode() == -kXiCode) {((TH3F*)fOutputList->FindObject("fMCinputTotalXibar1"))->Fill(mcInputTrack->Pt(), centralityV0M, mcInputTrack->GetCalcMass());
-                    
-                    
-                              }
-                
-              
-                // XiStar
-                if(mcInputTrack->GetPdgCode() == +kXiStarCode) {((TH3F*)fOutputList->FindObject("fMCinputTotalXiStar1"))->Fill(mcInputTrack->Pt(), centralityV0M, mcInputTrack->GetCalcMass());
-                                  }
-                
-                if(mcInputTrack->GetPdgCode() == -kXiStarCode) {((TH3F*)fOutputList->FindObject("fMCinputTotalXiStarbar1"))->Fill(mcInputTrack->Pt(),centralityV0M, mcInputTrack->GetCalcMass());
-                    
-                    
-                                 }
                 
             }
-           
-        }
-        
-    // Vertex systematic study default : 10 , loose : 11 , tight : 9 
-        if(fabs(primaryVtx[2]) > 10.) return; // Z-Vertex Cut
-    
-    
-        ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(fESD->GetNumberOfTracks());
-        
-        if(fESD->IsPileupFromSPD()) return; // Reject Pile-up events
-        
-        ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(fESD->GetNumberOfTracks());
-        ((TH3F*)fOutputList->FindObject("fVertexDist3"))->Fill(primaryVtx[0], primaryVtx[1], primaryVtx[2]);
-        
-        // multiplicity
-        
-        if(PrimaryVertexESD->GetNContributors() >= 1) ((TH1F*)fOutputList->FindObject("fMultDist4"))->Fill(fESD->GetNumberOfTracks());
-        if(PrimaryVertexESD->GetNContributors() < 1) return; // Enrico cut
-
-        //Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
-        bField = fESD->GetMagneticField();
-        
-        
-        // Track loop
-        for (Int_t i = 0; i < fESD->GetNumberOfTracks(); i++) {
-            AliESDtrack* esdtrack = fESD->GetTrack(i);
-            if (!esdtrack) continue;
-            
-            status=esdtrack->GetStatus();
-            
-            if(!fTrackCut->AcceptTrack(esdtrack)) continue;
-            
-            Bool_t goodMomentum = esdtrack->GetPxPyPz( fTempStruct[myTracks].fP);
-            if(!goodMomentum) continue;
-            esdtrack->GetXYZ( fTempStruct[myTracks].fX);
             
             
-            //=========checking PID =========//
-            //// *** TPC *** ////
-            Float_t fTPCPIDmom = esdtrack->GetTPCmomentum();
-            Float_t sigTPC = esdtrack->GetTPCsignal();
-            Float_t nsigpi= fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kPion));
-            Float_t nsigk= fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kKaon));
-            Float_t nsigpr= fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kProton));
-           
+            // XiStar
+            if(mcInputTrack->GetPdgCode() == +kXiStarCode) {((TH3F*)fOutputList->FindObject("fMCinputTotalXiStar1"))->Fill(mcInputTrack->Pt(), centralityV0M, mcInputTrack->GetCalcMass());
+            }
             
-            ((TH2F*)fOutputList->FindObject("TPCPID"))->Fill(fTPCPIDmom,sigTPC);
-            if(nsigpi<nSigTPCPID) ((TH2F*)fOutputList->FindObject("hTPCPIDpi"))->Fill(fTPCPIDmom,sigTPC);
-            if(nsigk<nSigTPCPID) ((TH2F*)fOutputList->FindObject("hTPCPIDk"))->Fill(fTPCPIDmom,sigTPC);
-            if(nsigpr<nSigTPCPID) ((TH2F*)fOutputList->FindObject("hTPCPIDp"))->Fill(fTPCPIDmom,sigTPC);
-            
-            ((TH2F*)fOutputList->FindObject("hNSig3rdPion"))->Fill(fTPCPIDmom,fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kPion));
-            
-            //=========selecting 3rd pion using PID=========//
- /* TPC OFF */           if(nsigpi>nSigTPCPID) continue;
-            
-            
-            ((TH2F*)fOutputList->FindObject("hQANSig3rdPion"))->Fill(fTPCPIDmom,fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kPion));
-
-            
-            
-            esdtrack->GetCovarianceXYZPxPyPz( fTempStruct[myTracks].fCov);
-            //esdtrack->GetImpactParameters(dca2, cov);
-            dca2[0] = sqrt( pow(fTempStruct[myTracks].fX[0] - primaryVtx[0],2) + pow(fTempStruct[myTracks].fX[1] - primaryVtx[1],2));
-            dca2[1] = sqrt( pow(fTempStruct[myTracks].fX[2] - primaryVtx[2],2));
-            dca3d = sqrt( pow(dca2[0],2) + pow(dca2[1],2));
-            
-            ((TH1F*)fOutputList->FindObject("fDCADist"))->Fill(fESD->GetNumberOfTracks(), dca3d);
-            ((TH1F*)fOutputList->FindObject("fPtDist"))->Fill(esdtrack->Pt());
-            ((TH1F*)fOutputList->FindObject("fPhiDist"))->Fill(esdtrack->Phi());
-            ((TH1F*)fOutputList->FindObject("fEtaDist"))->Fill(esdtrack->Eta());
-            
-            
-            
-            
-            
-            fTempStruct[myTracks].fStatus = status;
-            fTempStruct[myTracks].fID = esdtrack->GetID();
-            fTempStruct[myTracks].fLabel = esdtrack->GetLabel();
-            fTempStruct[myTracks].fPhi = atan2(fTempStruct[myTracks].fP[1], fTempStruct[myTracks].fP[0]);
-            if(fTempStruct[myTracks].fPhi < 0) fTempStruct[myTracks].fPhi += 2*PI;
-            fTempStruct[myTracks].fPt = sqrt(pow(fTempStruct[myTracks].fP[0],2) + pow(fTempStruct[myTracks].fP[1],2));
-            fTempStruct[myTracks].fMom = sqrt( pow(fTempStruct[myTracks].fPt,2) + pow(fTempStruct[myTracks].fP[2],2) );
-            fTempStruct[myTracks].fEta = esdtrack->Eta();
-            fTempStruct[myTracks].fCharge = esdtrack->Charge();
-            fTempStruct[myTracks].fDCAXY = dca2[0];
-            fTempStruct[myTracks].fDCAZ = dca2[1];
-            fTempStruct[myTracks].fDCA = dca3d;
-            fTempStruct[myTracks].fNSigmaPi = fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kPion));
-            fTempStruct[myTracks].fNSigmaK = fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kKaon));
-            fTempStruct[myTracks].fNSigmaPr = fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kProton));
-            fTempStruct[myTracks].fNclusTPC = esdtrack->GetTPCNcls();
-            
-            
-            if(esdtrack->Charge() > 0) positiveTracks++;
-            else negativeTracks++;
-            
-           if(fTempStruct[myTracks].fNclusTPC < 60) continue;
-            myTracks++;
+            if(mcInputTrack->GetPdgCode() == -kXiStarCode) {((TH3F*)fOutputList->FindObject("fMCinputTotalXiStarbar1"))->Fill(mcInputTrack->Pt(),centralityV0M, mcInputTrack->GetCalcMass());
+                
+                
+            }
             
         }
         
-
+    }
+    
+    // Vertex systematic study default : 10 , loose : 11 , tight : 9
+    if(fabs(primaryVtx[2]) > 10.) return; // Z-Vertex Cut
+    
+    
+    ((TH1F*)fOutputList->FindObject("fMultDist2"))->Fill(fESD->GetNumberOfTracks());
+    
+    if(fESD->IsPileupFromSPD()) return; // Reject Pile-up events
+    
+    ((TH1F*)fOutputList->FindObject("fMultDist3"))->Fill(fESD->GetNumberOfTracks());
+    ((TH3F*)fOutputList->FindObject("fVertexDist3"))->Fill(primaryVtx[0], primaryVtx[1], primaryVtx[2]);
+    
+    // multiplicity
+    
+    if(PrimaryVertexESD->GetNContributors() >= 1) ((TH1F*)fOutputList->FindObject("fMultDist4"))->Fill(fESD->GetNumberOfTracks());
+    if(PrimaryVertexESD->GetNContributors() < 1) return; // Enrico cut
+    
+    //Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+    bField = fESD->GetMagneticField();
+    
+    
+    // Track loop
+    for (Int_t i = 0; i < fESD->GetNumberOfTracks(); i++) {
+        AliESDtrack* esdtrack = fESD->GetTrack(i);
+        if (!esdtrack) continue;
+        
+        status=esdtrack->GetStatus();
+        
+        if(!fTrackCut->AcceptTrack(esdtrack)) continue;
+        
+        Bool_t goodMomentum = esdtrack->GetPxPyPz( fTempStruct[myTracks].fP);
+        if(!goodMomentum) continue;
+        esdtrack->GetXYZ( fTempStruct[myTracks].fX);
+        
+        
+        //=========checking PID =========//
+        //// *** TPC *** ////
+        Float_t fTPCPIDmom = esdtrack->GetTPCmomentum();
+        Float_t sigTPC = esdtrack->GetTPCsignal();
+        Float_t nsigpi= fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kPion));
+        Float_t nsigk= fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kKaon));
+        Float_t nsigpr= fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kProton));
+        
+        
+        ((TH2F*)fOutputList->FindObject("TPCPID"))->Fill(fTPCPIDmom,sigTPC);
+        if(nsigpi<nSigTPCPID) ((TH2F*)fOutputList->FindObject("hTPCPIDpi"))->Fill(fTPCPIDmom,sigTPC);
+        if(nsigk<nSigTPCPID) ((TH2F*)fOutputList->FindObject("hTPCPIDk"))->Fill(fTPCPIDmom,sigTPC);
+        if(nsigpr<nSigTPCPID) ((TH2F*)fOutputList->FindObject("hTPCPIDp"))->Fill(fTPCPIDmom,sigTPC);
+        
+        ((TH2F*)fOutputList->FindObject("hNSig3rdPion"))->Fill(fTPCPIDmom,fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kPion));
+        
+        //=========selecting 3rd pion using PID=========//
+        /* TPC OFF */           if(nsigpi>nSigTPCPID) continue;
+        
+        
+        ((TH2F*)fOutputList->FindObject("hQANSig3rdPion"))->Fill(fTPCPIDmom,fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kPion));
+        
+        
+        
+        esdtrack->GetCovarianceXYZPxPyPz( fTempStruct[myTracks].fCov);
+        //esdtrack->GetImpactParameters(dca2, cov);
+        dca2[0] = sqrt( pow(fTempStruct[myTracks].fX[0] - primaryVtx[0],2) + pow(fTempStruct[myTracks].fX[1] - primaryVtx[1],2));
+        dca2[1] = sqrt( pow(fTempStruct[myTracks].fX[2] - primaryVtx[2],2));
+        dca3d = sqrt( pow(dca2[0],2) + pow(dca2[1],2));
+        
+        ((TH1F*)fOutputList->FindObject("fDCADist"))->Fill(fESD->GetNumberOfTracks(), dca3d);
+        ((TH1F*)fOutputList->FindObject("fPtDist"))->Fill(esdtrack->Pt());
+        ((TH1F*)fOutputList->FindObject("fPhiDist"))->Fill(esdtrack->Phi());
+        ((TH1F*)fOutputList->FindObject("fEtaDist"))->Fill(esdtrack->Eta());
+        
+        
+        
+        
+        
+        fTempStruct[myTracks].fStatus = status;
+        fTempStruct[myTracks].fID = esdtrack->GetID();
+        fTempStruct[myTracks].fLabel = esdtrack->GetLabel();
+        fTempStruct[myTracks].fPhi = atan2(fTempStruct[myTracks].fP[1], fTempStruct[myTracks].fP[0]);
+        if(fTempStruct[myTracks].fPhi < 0) fTempStruct[myTracks].fPhi += 2*PI;
+        fTempStruct[myTracks].fPt = sqrt(pow(fTempStruct[myTracks].fP[0],2) + pow(fTempStruct[myTracks].fP[1],2));
+        fTempStruct[myTracks].fMom = sqrt( pow(fTempStruct[myTracks].fPt,2) + pow(fTempStruct[myTracks].fP[2],2) );
+        fTempStruct[myTracks].fEta = esdtrack->Eta();
+        fTempStruct[myTracks].fCharge = esdtrack->Charge();
+        fTempStruct[myTracks].fDCAXY = dca2[0];
+        fTempStruct[myTracks].fDCAZ = dca2[1];
+        fTempStruct[myTracks].fDCA = dca3d;
+        fTempStruct[myTracks].fNSigmaPi = fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kPion));
+        fTempStruct[myTracks].fNSigmaK = fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kKaon));
+        fTempStruct[myTracks].fNSigmaPr = fabs(fPIDResponse->NumberOfSigmasTPC(esdtrack,AliPID::kProton));
+        fTempStruct[myTracks].fNclusTPC = esdtrack->GetTPCNcls();
+        
+        
+        if(esdtrack->Charge() > 0) positiveTracks++;
+        else negativeTracks++;
+        
+        if(fTempStruct[myTracks].fNclusTPC < 60) continue;
+        myTracks++;
+        
+    }
+    
+    
     
     
     
@@ -1280,7 +1284,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         if( ( myTracks > fMultLimits[i]) && ( myTracks <= fMultLimits[i+1]) ) { mBin=i; break;}
     }
     
-  
+    
     ////////////////////////////////////
     // Add event to buffer if > 0 tracks
     if(myTracks > 0){
@@ -1300,7 +1304,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         for (Int_t it = 0; it < mcstack->GetNumberOfPrimaries(); it++) {
             //TParticle *mcInputTrackXi = (TParticle*)mcstack->Particle(it);
             TParticle *mcInputTrackXi = ((AliMCParticle*)mcstack->GetTrack(it))->Particle();
-
+            
             if (!mcInputTrackXi) {
                 Error("UserExec", "Could not receive track %d", it);
                 continue;
@@ -1314,7 +1318,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                 
             }
             else {((TH3F*)fOutputList->FindObject("fMCinputTotalXibar3"))->Fill(mcInputTrackXi->Pt(), centralityV0M, mcInputTrackXi->GetCalcMass());
-               
+                
             }
             
         }
@@ -1326,7 +1330,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         for (Int_t it = 0; it < mcstack->GetNumberOfPrimaries(); it++) {
             //TParticle *mcInputTrackXiStar = (TParticle*)mcstack->Particle(it);
             TParticle *mcInputTrackXiStar = ((AliMCParticle*)mcstack->GetTrack(it))->Particle();
-
+            
             if (!mcInputTrackXiStar) {
                 Error("UserExec", "Could not receive track %d", it);
                 continue;
@@ -1334,7 +1338,7 @@ void AliXiStarPbPb::Exec(Option_t *)
             
             if(abs(mcInputTrackXiStar->GetPdgCode())!=kXiStarCode) continue;
             if(mcInputTrackXiStar->Y()<-0.5 ||mcInputTrackXiStar->Y()>0.5) continue; // here selection of rapidity for PbPb analysis
-
+            
             if(mcInputTrackXiStar->GetPdgCode() == +kXiStarCode) {((TH3F*)fOutputList->FindObject("fMCinputTotalXiStar3"))->Fill(mcInputTrackXiStar->Pt(), centralityV0M, mcInputTrackXiStar->GetCalcMass());
             }
             else {((TH3F*)fOutputList->FindObject("fMCinputTotalXiStarbar3"))->Fill(mcInputTrackXiStar->Pt(), centralityV0M, mcInputTrackXiStar->GetCalcMass());
@@ -1345,10 +1349,13 @@ void AliXiStarPbPb::Exec(Option_t *)
         }
     }
     
-      ////////////////////////////////////////////////
+    ////////////////////////////////////////////////
     // Reconstruction
     
-    for(Int_t i=0; i<fESD->GetNumberOfCascades(); i++){
+    Long_t ncascades = 0;
+    ncascades = fESD->GetNumberOfCascades();
+    
+    for(Long_t i=0; i < ncascades; i++){
         
         AliESDcascade *Xicandidate = fESD->GetCascade(i);
         
@@ -1357,7 +1364,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         if(TMath::Abs( Xicandidate->GetPindex()) == TMath::Abs( Xicandidate->GetBindex())) continue;
         if(TMath::Abs( Xicandidate->GetNindex()) == TMath::Abs( Xicandidate->GetBindex())) continue;
         
-
+        
         
         AliESDtrack *pTrackXi	= fESD->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
         AliESDtrack *nTrackXi	= fESD->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
@@ -1368,7 +1375,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         if(!fTrackCut->AcceptTrack(nTrackXi)) continue;
         if(!fTrackCut->AcceptTrack(bTrackXi)) continue;
         
-
+        
         
         //////////////////////
         // DecayParameters Key (number represents array index)
@@ -1379,7 +1386,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         // 11 = Cos PA Lambda
         // 12 = Cos PA Xi
         
-         //myxiTracks++;
+        //myxiTracks++;
         
         fDecayParameters[2] = bTrackXi->GetTPCNcls();
         ((TH1F*)fOutputList->FindObject("fTPCNcls_pi2"))->Fill(fDecayParameters[2]);
@@ -1392,7 +1399,7 @@ void AliXiStarPbPb::Exec(Option_t *)
         Double_t fTPCPIDMomXi[3] = {-10,-10,-10};
         Double_t fNSigTPCXi[3] = {-10,-10,-10};
         
-
+        
         
         
         if(Xicandidate->Charge() == -1){
@@ -1413,7 +1420,7 @@ void AliXiStarPbPb::Exec(Option_t *)
             
             fTPCPIDMomXi[2] = bTrackXi->GetTPCmomentum();
             fNSigTPCXi[2] = bTrackXi->GetTPCsignal();
-           
+            
         }else{
             fDecayParameters[0] = nTrackXi->GetTPCNcls();
             fDecayParameters[1] = pTrackXi->GetTPCNcls();
@@ -1453,10 +1460,10 @@ void AliXiStarPbPb::Exec(Option_t *)
         if(fTPCNSigPion1>-nSigTPCPID&& fTPCNSigPion1<nSigTPCPID) ((TH2F*)fOutputList->FindObject("hdEdxPion1After"))->Fill(fTPCPIDMomXi[1],fNSigTPCXi[1]);
         if(fTPCNSigPion2>-nSigTPCPID&&fTPCNSigPion2<nSigTPCPID)((TH2F*)fOutputList->FindObject("hdEdxPion2After"))->Fill(fTPCPIDMomXi[2],fNSigTPCXi[2]);
         
-    
- /* TPC PID OFF */       if(fTPCNSigProton<-nSigTPCPID||fTPCNSigProton>nSigTPCPID) continue; // PID for proton
- /* TPC PID OFF */      if(fTPCNSigPion1<-nSigTPCPID||fTPCNSigPion1>nSigTPCPID) continue; // PID for 1st pion
- /* TPC PID OFF */      if(fTPCNSigPion2<-nSigTPCPID||fTPCNSigPion2>nSigTPCPID) continue; // PID for 2nd pion
+        
+        /* TPC PID OFF */       if(fTPCNSigProton<-nSigTPCPID||fTPCNSigProton>nSigTPCPID) continue; // PID for proton
+        /* TPC PID OFF */      if(fTPCNSigPion1<-nSigTPCPID||fTPCNSigPion1>nSigTPCPID) continue; // PID for 1st pion
+        /* TPC PID OFF */      if(fTPCNSigPion2<-nSigTPCPID||fTPCNSigPion2>nSigTPCPID) continue; // PID for 2nd pion
         
         ((TH1F*)fOutputList->FindObject("fQATPCNSigProton"))->Fill(fTPCNSigProton);
         ((TH1F*)fOutputList->FindObject("fQATPCNSigPion1"))->Fill(fTPCNSigPion1);
@@ -1477,12 +1484,12 @@ void AliXiStarPbPb::Exec(Option_t *)
         
         fDecayParameters[11] = Xicandidate->GetV0CosineOfPointingAngle(primaryVtx[0],primaryVtx[1],primaryVtx[2]);// Cos PA Lambda
         ((TH1F*)fOutputList->FindObject("fCosPA_lambda"))->Fill(fDecayParameters[11]);
-       // ((TH2F*)fOutputList->FindObject("f2DCosPA_lambda"))->Fill(xiPt,fDecayParameters[11]);
+        // ((TH2F*)fOutputList->FindObject("f2DCosPA_lambda"))->Fill(xiPt,fDecayParameters[11]);
         
         
         fDecayParameters[12] = Xicandidate->GetCascadeCosineOfPointingAngle(primaryVtx[0],primaryVtx[1],primaryVtx[2]);// Cos PA Xi
         ((TH1F*)fOutputList->FindObject("fCosPA_Xi"))->Fill(fDecayParameters[12]);
-       // ((TH2F*)fOutputList->FindObject("f2DCosPA_Xi"))->Fill(xiPt,fDecayParameters[12]);
+        // ((TH2F*)fOutputList->FindObject("f2DCosPA_Xi"))->Fill(xiPt,fDecayParameters[12]);
         
         decayLengthXY = sqrt( pow(xiVtx[0]-primaryVtx[0],2) + pow(xiVtx[1]-primaryVtx[1],2) );
         
@@ -1495,10 +1502,19 @@ void AliXiStarPbPb::Exec(Option_t *)
         xiVtx[2] = Xicandidate->Zv();
         xiPt = Xicandidate->Pt();
         xiY = Xicandidate->RapXi();
-        xiMass = Xicandidate->M();
+     //   xiMass = Xicandidate->M();
         xiCharge = Xicandidate->Charge();
- 
         
+        Double_t lV0quality  = 0.;
+        
+        if(xiCharge == -1){
+            Xicandidate->ChangeMassHypothesis(lV0quality, 3312);
+            xiMass = Xicandidate->GetEffMassXi();
+        }            else{
+            Xicandidate->ChangeMassHypothesis(lV0quality, -3312);
+            xiMass = Xicandidate->GetEffMassXi();
+        }
+
         
         if(sqrt( pow(tempX[0],2) + pow(tempX[1],2) ) > fMaxDecayLength) continue;
         if(decayLengthXY > fMaxDecayLength) continue;
@@ -1535,26 +1551,38 @@ void AliXiStarPbPb::Exec(Option_t *)
         if(fDecayParameters[10] > fCutValues[0][10]) StandardXi=kFALSE;// DCAV Lambda-pion
         if(StandardXi)((TH1F*)fOutputList->FindObject("fCutEvents"))->Fill(10,1);
         
+        //
+
+        
         if(fDecayParameters[11] < fCutValues[0][11]) StandardXi=kFALSE;// Cos PA Lambda
         if(StandardXi)((TH1F*)fOutputList->FindObject("fCutEvents"))->Fill(11,1);
         
         if(fDecayParameters[12] < fCutValues[0][12]) StandardXi=kFALSE;// Cos PA Xi
         if(StandardXi)((TH1F*)fOutputList->FindObject("fCutEvents"))->Fill(12,1);
         
-    
+        
         if(StandardXi){
             if(xiCharge == -1) {
                 CutVar[0].fXi->Fill(xiPt, centralityV0M, xiMass);
                 ((TH1F*)fOutputList->FindObject("hXiInvMass"))->Fill(xiMass);
+                ((TH1F*)fOutputList->FindObject("hXiEtaDist"))->Fill(xiY);
+                
             }
             else {
                 CutVar[0].fXibar->Fill(xiPt, centralityV0M, xiMass);
                 ((TH1F*)fOutputList->FindObject("hXiInvMass"))->Fill(xiMass);
+                ((TH1F*)fOutputList->FindObject("hXiEtaDist"))->Fill(xiY);
+
             }
         }
-     
-
         
+        
+        if(StandardXi){
+            if(fDecayParameters[11] < fCutValues[9][11]) ((TH3F*)fOutputList->FindObject("fXi_CPAL"))->Fill(xiPt, centralityV0M, xiMass); //QA CPA L
+            if(fDecayParameters[11] < fCutValues[20][12]) ((TH3F*)fOutputList->FindObject("fXi_CPAXi"))->Fill(xiPt, centralityV0M, xiMass);//QA CPA Xi
+            
+        }
+    
         
         // MC associaton
         mcXiFilled = kFALSE;
@@ -1562,23 +1590,23 @@ void AliXiStarPbPb::Exec(Option_t *)
             
             //MCXiD2esd = (TParticle*)mcstack->Particle(abs(bTrackXi->GetLabel()));
             MCXiD2esd = ((AliMCParticle*)mcstack->GetTrack(abs(bTrackXi->GetLabel())))->Particle();
-
+            
             
             if(abs(MCXiD2esd->GetPdgCode())==kPionCode){
                 
-              //  MCLamD1esd = (TParticle*)mcstack->Particle(abs(pTrackXi->GetLabel()));
-              //  MCLamD2esd = (TParticle*)mcstack->Particle(abs(nTrackXi->GetLabel()));
+                //  MCLamD1esd = (TParticle*)mcstack->Particle(abs(pTrackXi->GetLabel()));
+                //  MCLamD2esd = (TParticle*)mcstack->Particle(abs(nTrackXi->GetLabel()));
                 
                 MCLamD1esd = ((AliMCParticle*)mcstack->GetTrack(abs(pTrackXi->GetLabel())))->Particle();
                 MCLamD2esd = ((AliMCParticle*)mcstack->GetTrack(abs(nTrackXi->GetLabel())))->Particle();
-
+                
                 
                 if(MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)){
                     if(abs(MCLamD1esd->GetPdgCode())==kProtonCode || abs(MCLamD2esd->GetPdgCode())==kProtonCode) {
                         if(abs(MCLamD1esd->GetPdgCode())==kPionCode || abs(MCLamD2esd->GetPdgCode())==kPionCode) {
                             
                             //MCLamesd = (TParticle*)mcstack->Particle(abs(MCLamD1esd->GetMother(0)));
-                             MCLamesd = ((AliMCParticle*)mcstack->GetTrack(abs(MCLamD1esd->GetMother(0))))->Particle();
+                            MCLamesd = ((AliMCParticle*)mcstack->GetTrack(abs(MCLamD1esd->GetMother(0))))->Particle();
                             
                             if(abs(MCLamesd->GetPdgCode())==kLambdaCode) {
                                 
@@ -1589,12 +1617,12 @@ void AliXiStarPbPb::Exec(Option_t *)
                                     
                                     if(abs(MCXiesd->GetPdgCode())==kXiCode) {
                                         mcXiFilled = kTRUE;
-
+                                        
                                         if(StandardXi){
                                             
                                             ((TH2F*)fOutputList->FindObject("fXiMCCosPA_lambda"))->Fill(xiPt,fDecayParameters[11]);
                                             ((TH2F*)fOutputList->FindObject("fXiMCCosPA_Xi"))->Fill(xiPt,fDecayParameters[12]);
-
+                                            
                                             
                                             if(Xicandidate->Charge() == -1){
                                                 
@@ -1642,16 +1670,16 @@ void AliXiStarPbPb::Exec(Option_t *)
                 if((fEvt+EN)->fTracks[l].fCharge>1 || (fEvt+EN)->fTracks[l].fCharge<-1) continue;
                 
                 fESDTrack4->Set((fEvt+EN)->fTracks[l].fX, (fEvt+EN)->fTracks[l].fP, (fEvt+EN)->fTracks[l].fCov, (fEvt+EN)->fTracks[l].fCharge);
-  
-                    fDecayParameters[8] = (fEvt+EN)->fTracks[l].fDCAXY;// DCA Vtx pion third
-                    ((TH1F*)fOutputList->FindObject("fDCADist_3rd_pi"))->Fill(fDecayParameters[8]);
-                    
-                    
                 
-                    if((fEvt+EN)->fTracks[l].fDCAZ > 2) continue;
-                    if( (((fEvt+EN)->fTracks[l].fStatus)&AliESDtrack::kITSrefit)==0) continue;// Require itsrefit
-                    // no Chi^2 cut applied for ESDs.  Info not available in my track structure.
-            
+                fDecayParameters[8] = (fEvt+EN)->fTracks[l].fDCAXY;// DCA Vtx pion third
+                ((TH1F*)fOutputList->FindObject("fDCADist_3rd_pi"))->Fill(fDecayParameters[8]);
+                
+                
+                
+                if((fEvt+EN)->fTracks[l].fDCAZ > 2) continue;
+                if( (((fEvt+EN)->fTracks[l].fStatus)&AliESDtrack::kITSrefit)==0) continue;// Require itsrefit
+                // no Chi^2 cut applied for ESDs.  Info not available in my track structure.
+                
                 
                 if(fabs((fEvt+EN)->fTracks[l].fEta) > 0.8) continue;
                 
@@ -1696,13 +1724,13 @@ void AliXiStarPbPb::Exec(Option_t *)
                 
                 
                 xiStarY = .5*log( ((e1+e2) + xiStarP[2])/((e1+e2) - xiStarP[2]));
-                                ((TH1F*)fOutputList->FindObject("fXiStarYDist"))->Fill(xiStarY);
+                ((TH1F*)fOutputList->FindObject("fXiStarYDist"))->Fill(xiStarY);
                 if(xiStarY<-0.5 ||xiStarY>0.5) continue; // here selection of rapidity for PbPb analysis
-
-                               ((TH1F*)fOutputList->FindObject("fQAXiStarYDist"))->Fill(xiStarY);
+                
+                ((TH1F*)fOutputList->FindObject("fQAXiStarYDist"))->Fill(xiStarY);
                 
                 if(fDecayParameters[8]<(0.026 + 0.05/pow((fEvt+EN)->fTracks[l].fPt,1.01))) ((TH1F*)fOutputList->FindObject("fDCADist_3rd_pi_pT"))->Fill(fDecayParameters[8]); // 10 sigma cut
-
+                
                 
                 for(int cv=0; cv<kNCutVariations; cv++){
                     
@@ -1766,7 +1794,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                         if(cv==8)((TH1F*)fOutputList->FindObject("fQADCADist_pi_lambda_L"))->Fill(fDecayParameters[10]);
                         if(cv==9)((TH1F*)fOutputList->FindObject("fQACosPA_lambda_L"))->Fill(fDecayParameters[11]);
                         if(cv==10)((TH1F*)fOutputList->FindObject("fQACosPA_Xi_L"))->Fill(fDecayParameters[12]);
-
+                        
                     }
                     
                     if(EN==0 && cv==11){
@@ -1787,11 +1815,11 @@ void AliXiStarPbPb::Exec(Option_t *)
                         if(cv==19)((TH1F*)fOutputList->FindObject("fQACosPA_lambda_T"))->Fill(fDecayParameters[11]);
                         if(cv==20)((TH1F*)fOutputList->FindObject("fQACosPA_Xi_T"))->Fill(fDecayParameters[12]);
                         
-
+                        
                     }
-
                     
-
+                    
+                    
                     
                     
                     if(EN==0){
@@ -1799,25 +1827,25 @@ void AliXiStarPbPb::Exec(Option_t *)
                         
                         if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) {
                             CutVar[cv].fXiMinusPiMinus->Fill(xiStarPt, centralityV0M, xiStarMass);
-
+                            
                         }
                         else if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1) {
                             CutVar[cv].fXiMinusPiPlus->Fill(xiStarPt, centralityV0M, xiStarMass);
-
+                            
                         }
                         else if(fXiTrack->Charge() == +1 &&  fESDTrack4->Charge() == -1) {
                             CutVar[cv].fXiPlusPiMinus->Fill(xiStarPt, centralityV0M, xiStarMass);
-
+                            
                         }
                         else {
                             CutVar[cv].fXiPlusPiPlus->Fill(xiStarPt, centralityV0M, xiStarMass);
                         }
                     }else {
                         
-                     
+                        
                         if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == -1) {
                             CutVar[cv].fXiMinusPiMinusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
-
+                            
                         }
                         else if(fXiTrack->Charge() == -1 &&  fESDTrack4->Charge() == +1){
                             CutVar[cv].fXiMinusPiPlusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
@@ -1827,7 +1855,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                         }
                         else {
                             CutVar[cv].fXiPlusPiPlusbkg->Fill(xiStarPt, centralityV0M, xiStarMass);
-
+                            
                         }
                     }
                     
@@ -1846,7 +1874,7 @@ void AliXiStarPbPb::Exec(Option_t *)
                                 
                                 if(abs(MCXiStaresd->GetPdgCode())==kXiStarCode) {
                                     ((TH1F*)fOutputList->FindObject("fXiStarYDistMCout"))->Fill(xiStarY);
-
+                                    
                                     ((TH2F*)fOutputList->FindObject("fXiStarMCCosPA_lambda"))->Fill(xiStarPt,fDecayParameters[11]);
                                     ((TH2F*)fOutputList->FindObject("fXiStarMCCosPA_Xi"))->Fill(xiStarPt,fDecayParameters[12]);
                                     
@@ -1872,12 +1900,12 @@ void AliXiStarPbPb::Exec(Option_t *)
     
     // Post output data.
     PostData(1, fOutputList);
-
+    
 }
 //________________________________________________________________________
 void AliXiStarPbPb::Terminate(Option_t *)
 {
-   //* cout<<"Done"<<endl;
+    //* cout<<"Done"<<endl;
 }
 
 //________________________________________________________________________
@@ -1889,11 +1917,10 @@ Double_t AliXiStarPbPb::Det(Double_t a00, Double_t a01, Double_t a10, Double_t a
 }
 //________________________________________________________________________
 Double_t AliXiStarPbPb::Det(Double_t a00,Double_t a01,Double_t a02,
-                        Double_t a10,Double_t a11,Double_t a12,
-                        Double_t a20,Double_t a21,Double_t a22) const {// Taken from AliCascadeVertexer
+                            Double_t a10,Double_t a11,Double_t a12,
+                            Double_t a20,Double_t a21,Double_t a22) const {// Taken from AliCascadeVertexer
     //--------------------------------------------------------------------
     // This function calculates locally a 3x3 determinant
     //--------------------------------------------------------------------
     return  a00*Det(a11,a12,a21,a22)-a01*Det(a10,a12,a20,a22)+a02*Det(a10,a11,a20,a21);
 }
-

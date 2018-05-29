@@ -265,7 +265,7 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
 
   // check for tension between fTreeWritingOption and individual choices from AddTrackFilter
   if (fTreeWritingOption==kBaseEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithBaseTracks) {
-    for (Int_t i=0; i<fWriteBaseTrack.size(); i++) {
+    for (UInt_t i=0; i<fWriteBaseTrack.size(); i++) {
       if (!fWriteBaseTrack.at(i)) {
         printf("AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects() WARNING: Full tracks requested for filter %d, but interferes with fTreeWritingOption choice! Only base tracks will be written. \n", i);
         fWriteBaseTrack.at(i) = kTRUE;
@@ -1320,10 +1320,42 @@ void AliAnalysisTaskReducedTreeMaker::FillMCTruthInfo()
    
    AliMCEvent* event = AliDielectronMC::Instance()->GetMCEvent();
    
+    AliReducedEventInfo* eventInfo = NULL; 
+    if(fTreeWritingOption==kFullEventsWithBaseTracks || fTreeWritingOption==kFullEventsWithFullTracks) {
+      eventInfo = dynamic_cast<AliReducedEventInfo*>(fReducedEvent);
+      const AliVVertex* mcVtx = event->GetPrimaryVertex();
+      if(mcVtx){
+        eventInfo->fVtxMC[0] = mcVtx->GetX();
+        eventInfo->fVtxMC[1] = mcVtx->GetY();
+        eventInfo->fVtxMC[2] = mcVtx->GetZ();
+      } 
+    }
+   
    // We loop over all particles in the MC event
    for(Int_t i=0; i<event->GetNumberOfTracks(); ++i) {
       AliVParticle* particle = event->GetTrack(i);
       if(!particle) continue;
+      // fill MC truth number of charged particles
+      if( eventInfo){
+        if( particle->IsPhysicalPrimary() && particle->Charge()){
+          Float_t eta = particle->Eta();
+          Float_t etaAbs = TMath::Abs(eta);
+          if( etaAbs < 1.6) eventInfo->fNch[0]++;
+          if( etaAbs < 1.0) eventInfo->fNch[2]++;
+          else if( eta > 2.8 && eta < 5.1 ) eventInfo->fNch[4]++;   // V0A
+          else if( eta > -3.7 && eta < -1.7 ) eventInfo->fNch[6]++; // V0C
+          
+          // check if particle is J/psi daughter
+          AliVParticle* mother = event->GetTrack(particle->GetMother());
+          Bool_t jpsiDaughter = (mother && mother->PdgCode() == 443);
+          if(!jpsiDaughter){
+            if( etaAbs < 1.6) eventInfo->fNch[1]++;
+            if( etaAbs < 1.0) eventInfo->fNch[3]++;
+            else if( eta > 2.8 && eta < 5.1 ) eventInfo->fNch[5]++;   // V0A
+            else if( eta > -3.7 && eta < -1.7 ) eventInfo->fNch[7]++; // V0C
+          }
+        }
+       }
       
       UInt_t mcSignalsMap = MatchMCsignals(i);    // check which MC signals match this particle and fill the bit map
       if(!mcSignalsMap) continue;

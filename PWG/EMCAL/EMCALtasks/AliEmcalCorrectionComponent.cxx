@@ -322,43 +322,44 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   
   Int_t runBC = fEventManager.InputEvent()->GetRunNumber();
   
-  AliOADBContainer *contBC = new AliOADBContainer("");
+  std::unique_ptr<AliOADBContainer> contBC(nullptr);
+  std::unique_ptr<TFile> fbad;
   if (fBasePath!="")
   { //if fBasePath specified in the ->SetBasePath()
     AliInfo(Form("Loading Bad Channels OADB from given path %s",fBasePath.Data()));
     
-    TFile *fbad=new TFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read");
+    fbad = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read"));
     if (!fbad || fbad->IsZombie())
     {
       AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s",fBasePath.Data()));
       return 0;
     }
     
-    if (fbad) delete fbad;
-    
-    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Bad Channels OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fbad=new TFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"read");
+    fbad = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"read"));
     if (!fbad || fbad->IsZombie())
     {
       AliFatal("OADB/EMCAL/EMCALBadChannels.root was not found");
       return 0;
     }
     
-    if (fbad) delete fbad;
-    
-    contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"AliEMCALBadChannels");
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
   }
+  if(!contBC){
+    AliError("No OADB container found");
+    return 0;
+  }
+  contBC->SetOwner(true);
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
   if (!arrayBC)
   {
     AliError(Form("No external hot channel set for run number: %d", runBC));
-    delete contBC;
     return 2;
   }
   
@@ -378,8 +379,6 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
     h->SetDirectory(0);
     fRecoUtils->SetEMCALChannelStatusMap(i,h);
   }
-  
-  delete contBC;
   
   return 1;
 }

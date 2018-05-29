@@ -79,6 +79,9 @@ public:
   virtual	void	SetCourseCentralityBinning(Bool_t flag) { fCourseCentralityBinning = flag; }
   virtual     void    SetSkipTrigger(Bool_t flag) { fSkipTrigger = flag; }
   virtual     void    SetInjectedSignals(Bool_t flag) { fInjectedSignals = flag; }
+  virtual     void    SetV0CL1PileUp(Bool_t flag) { fV0CL1PileUp = flag; }
+  virtual     void    SetESDTPCTrackPileUp(Bool_t flag) { fESDTPCTrackPileUp = flag; }
+  virtual     void    SetTPCITSTOFPileUp(Bool_t flag) { fTPCITSTOFPileUp = flag; }
   void SetRandomizeReactionPlane(Bool_t flag) { fRandomizeReactionPlane = flag; }
 
   // histogram settings
@@ -96,6 +99,7 @@ public:
   void   SetTrackEtaCut( Double_t val )    { fTrackEtaCut = val; }
   void   SetTrackEtaCutMin( Double_t val )    { fTrackEtaCutMin = val; }
   void   SetOnlyOneEtaSide(Int_t flag)     { fOnlyOneEtaSide = flag; }
+  void   SetOnlyOneAssocEtaSide(Int_t flag)     { fOnlyOneAssocEtaSide = flag; }
   void   SetTrackPhiCutEvPlMin(Double_t val)  { fTrackPhiCutEvPlMin = val; }
   void   SetTrackPhiCutEvPlMax(Double_t val)  { fTrackPhiCutEvPlMax = val; }
   void   SetPtMin(Double_t val)            { fPtMin = val; }
@@ -214,6 +218,9 @@ private:
   Bool_t		fSkipTrigger;		  // skip trigger selection
   Bool_t		fInjectedSignals;	  // check header to skip injected signals in MC
   Bool_t		fRandomizeReactionPlane;  // change the orientation of the RP by a random value by shifting all tracks
+  Bool_t		fV0CL1PileUp;  // Remove pile up events according to V0 CL1 correlation
+  Bool_t		fESDTPCTrackPileUp;  // Remove pile up events according ESD tracks and number of TPC only tracks correlation
+  Bool_t		fTPCITSTOFPileUp;  // Remove pile up events according to TPC+ITS tracks (FilterBit 32) and number of tracks matched to TOF with BCid=0 correlation
 
   AliHelperPID*     fHelperPID;      // points to class for PID
   AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
@@ -254,6 +261,7 @@ private:
   Double_t            fTrackPhiCutEvPlMin;   // Minimum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2)
   Double_t            fTrackPhiCutEvPlMax;   // Maximum Phi cut on particles with respect to the Event Plane (values between 0 and Pi/2), if = 0, then no cut is performed
   Int_t 		fOnlyOneEtaSide;       // decides that only trigger particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
+  Int_t 		fOnlyOneAssocEtaSide;       // decides that only associated particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
   Double_t            fPtMin;                // Min pT to start correlations
   TFormula*           fDCAXYCut;             // additional pt dependent cut on DCA XY (only for AOD)
   Double_t            fSharedClusterCut;  // cut on shared clusters (only for AOD)

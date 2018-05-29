@@ -852,14 +852,20 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
 			fUseCorrectedTPCClsInfo=1;
 			break;
         case 10:
-             fMinClsTPC     = 80.;
-             fChi2PerClsTPC = 4;
-             fRequireTPCRefit    = kTRUE;
-             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
-             // Other Cuts concerning TPC
-             fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
-             fEsdTrackCuts->SetRequireTPCRefit(fRequireTPCRefit);
-        break;
+            fMinClsTPC     = 80.;
+            fChi2PerClsTPC = 4;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            // Other Cuts concerning TPC
+            fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
+            fEsdTrackCuts->SetRequireTPCRefit(fRequireTPCRefit);
+            break;
+        case 11: // settings as in PHOS public omega
+            fMinClsTPC     = 70.;
+            fChi2PerClsTPC = 4;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
+            break;
 
 		default:
 			cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;

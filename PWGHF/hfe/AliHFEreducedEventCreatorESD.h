@@ -39,6 +39,8 @@ class AliHFEreducedEventCreatorESD : public AliAnalysisTaskSE{
     AliHFEreducedEventCreatorESD(const char *name);
     virtual ~AliHFEreducedEventCreatorESD();
 
+    enum EPweightType { kNone, kChi, kSigmaSquared}; // event plane weight type
+    
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *);
     virtual void Terminate(Option_t *);
@@ -53,6 +55,13 @@ class AliHFEreducedEventCreatorESD : public AliAnalysisTaskSE{
     AliHFEpidTPC *GetTPCResponse() { return fTPCpid; }
 
     Bool_t IsTOFmismatch(const AliVTrack *const track, const AliPIDResponse *const pid) const;
+    
+    void ReadVZEROCalibration2010h();
+    void CalculateQvectorVZERO(Double_t Qa2[2], Double_t Qc2[2], Double_t Qa3[2], Double_t Qc3[2]) const;
+    void CalculateQvectorCombinedVZERO(Double_t Q2[2], Double_t Q3[2]) const;
+    Int_t GetVZEROCentralityBin() const;
+    void CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
+    void CalculateEventPlaneCombinedVZERO(Double_t* comb) const;
     
   private:
     AliHFEreducedEventCreatorESD(const AliHFEreducedEventCreatorESD &);
@@ -75,7 +84,31 @@ class AliHFEreducedEventCreatorESD : public AliAnalysisTaskSE{
     Bool_t fFlagPileupEvents;         // Flag pileup events
     Bool_t fSelectSignalOnly;         // Select signal-only tracks
     
-    ClassDef(AliHFEreducedEventCreatorESD, 1)
+    // EP correction variables
+    //vzero event plane calibration cache for 10h data ,  from Redmers task
+    Int_t fRunNumber; //! current runnumber (for QA and jet, track selection)
+    Int_t fRunNumberCaliInfo; //! runnumber of the cached calibration info
+    Float_t                 fMeanQ[9][2][2];                //! recentering
+    Float_t                 fWidthQ[9][2][2];               //! recentering
+    Float_t                 fMeanQv3[9][2][2];              //! recentering
+    Float_t                 fWidthQv3[9][2][2];             //! recentering
+    TH1*                    fVZEROgainEqualization;         //! equalization histo
+    Float_t                 fVZEROApol;                     //! calibration info per disc
+    Float_t                 fVZEROCpol;                     //! calibration info per disc
+    TArrayD*                fChi2A;                         // chi vs cent for vzero A ep_2
+    TArrayD*                fChi2C;                         // chi vs cent for vzero C ep_2
+    TArrayD*                fChi3A;                         // chi vs cent for vzero A ep_3
+    TArrayD*                fChi3C;                         // chi vs cent for vzero C ep_3
+    TArrayD*                fSigma2A;                       // chi vs cent for vzero A ep_2
+    TArrayD*                fSigma2C;                       // chi vs cent for vzero C ep_2
+    TArrayD*                fSigma3A;                       // chi vs cent for vzero A ep_3
+    TArrayD*                fSigma3C;                       // chi vs cent for vzero C ep_3
+    EPweightType            fWeightForVZERO;                // use chi weight for vzero
+    TFile* fOADB; //! fOADB
+    TArrayD* fCentralityClasses; //-> centrality classes (maximum 10)
+    Int_t fInCentralitySelection; //! centrality bin
+        
+    ClassDef(AliHFEreducedEventCreatorESD, 2)
 };
 #endif
 

@@ -8,14 +8,13 @@ TVectorD *BinsToVector(Int_t nbins, Double_t min, Double_t max);
 TVectorD *GetVector(Int_t var);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx, kCent, kPhi2D};
 
-TString names=("all");
-//TString names=("all;electrons;lowPt;midLowPt;midPt;midHighPt;highPt");
-//TString names = ("all;electrons;lowPt;midLowPt;midPt;midHighPt;highPt;highMult;midMult;lowMult");
+//TString names=("all");
+TString names=("TTreeCuts");
 //TString names=("all;electrons");
 TObjArray *arrNames = names.Tokenize(";");
 const Int_t nDie = arrNames->GetEntries();
-Bool_t MCenabled = kFALSE; //Needed for LMEEcutlib
-Bool_t isQAtask =  kFALSE;
+Bool_t MCenabled = kTRUE; //Needed for LMEEcutlib
+Bool_t isQAtask =  kTRUE;
 Int_t selectedPID = -1;
 Bool_t pairCuts = kTRUE;
 
@@ -95,8 +94,8 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
             die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
         }
     }
-    else if(cutDefinition == "lowPt"){
-        selectedPID = LMEECutLib::kLowPt;
+    else if(cutDefinition == "TTreeCuts"){
+        selectedPID = LMEECutLib::kTTreeCuts;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedPID) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
@@ -106,50 +105,7 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
             die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
         }
     }
-    else if(cutDefinition == "midLowPt"){
-        selectedPID = LMEECutLib::kMidLowPt;
-        //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
-        if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
-        }
-    }
-    else if(cutDefinition == "midPt"){
-        selectedPID = LMEECutLib::kMidPt;
-        //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
-        if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
-        }
-    }
-    else if(cutDefinition == "midHighPt"){
-        selectedPID = LMEECutLib::kMidHighPt;
-        //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
-        if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
-        }
-    }
-    else if(cutDefinition == "highPt"){
-        selectedPID = LMEECutLib::kHighPt;
-        //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
-        if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
-        }
-    }
+    
     else{
         cout << " =============================== " << endl;
         cout << " ==== INVALID CONFIGURATION ==== " << endl;

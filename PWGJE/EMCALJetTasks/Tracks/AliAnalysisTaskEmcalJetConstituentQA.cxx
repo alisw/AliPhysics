@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <iomanip>
@@ -33,6 +34,7 @@
 #include <THistManager.h>
 #include <TLinearBinning.h>
 #include <TLorentzVector.h>
+#include <TVector3.h>
 
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskEmcalJetConstituentQA.h"
@@ -58,6 +60,7 @@ using namespace EmcalTriggerJets;
 AliAnalysisTaskEmcalJetConstituentQA::AliAnalysisTaskEmcalJetConstituentQA():
   AliAnalysisTaskEmcalJet(),
   fHistos(nullptr),
+  fJetType(AliJetContainer::kFullJet),
   fNameTrackContainer(""),
   fNameClusterContainer(""),
   fTriggerSelectionString(""),
@@ -70,6 +73,7 @@ AliAnalysisTaskEmcalJetConstituentQA::AliAnalysisTaskEmcalJetConstituentQA():
 AliAnalysisTaskEmcalJetConstituentQA::AliAnalysisTaskEmcalJetConstituentQA(const char *name):
   AliAnalysisTaskEmcalJet(name, true),
   fHistos(nullptr),
+  fJetType(AliJetContainer::kFullJet),
   fNameTrackContainer(""),
   fNameClusterContainer(""),
   fTriggerSelectionString(""),
@@ -86,19 +90,33 @@ AliAnalysisTaskEmcalJetConstituentQA::~AliAnalysisTaskEmcalJetConstituentQA(){
 void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  TLinearBinning binningz(50, 0., 1), multbinning(51, -0.5, 50.5), binningnef(50, 0., 1.), binningptconst(200, 0., 200.), binningptjet(20, 0., 200.);
+  TLinearBinning binningz(50, 0., 1), multbinning(51, -0.5, 50.5), binningnef(50, 0., 1.), binningR(50, 0., 0.5), binningptconst(200, 0., 200.), binningptjet(20, 0., 200.),
+                 binningNCell(101, -0.5, 100.5), binningFracCellLeading(100, 0., 1.), binningM02(100, 0., 1.), etabinning(100, -0.8, 0.8), phibinning(100, 0., TMath::TwoPi());
 
   const TBinning *jetbinning[4] = {&binningptjet, &binningnef, &multbinning, &multbinning},
-                 *chargedbinning[6] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningz},
-                 *neutralbinning[7] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningptconst, &binningz};
+                 *chargedbinning[7] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningz, &binningR},
+                 *neutralbinning[8] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningptconst, &binningz, &binningR},
+                 *binningHighZClusters[7] = {&binningptjet, &binningnef, &binningptconst, &binningz, &binningNCell, &binningFracCellLeading, &binningM02},
+                 *leadingbinning[5] = {&binningptjet, &binningnef, &binningptconst, &binningz, &binningR},
+                 *leadingjetvecbinning[4] = {&binningptjet, &etabinning, &phibinning, &binningptjet};
 
   fHistos = new THistManager(Form("histos_%s", GetName()));
   for(auto c : fNamesJetContainers){
     auto contname = dynamic_cast<TObjString *>(c);
     if(!contname) continue;
     fHistos->CreateTHnSparse(Form("hJetCounter%s", contname->String().Data()), Form("jet counter for jets %s", contname->String().Data()), 4, jetbinning);
-    fHistos->CreateTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), Form("charged constituents in jets %s", contname->String().Data()), 6, chargedbinning);
-    fHistos->CreateTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), Form("neutral constituents in jets %s", contname->String().Data()), 7, neutralbinning);
+    fHistos->CreateTHnSparse(Form("hPtEtaPhiELeadingJet%s", contname->String().Data()), Form("Momemtum vector of leading jets %s", contname->String().Data()), 4, leadingjetvecbinning);
+    if(fJetType == AliJetContainer::kFullJet || fJetType == AliJetContainer::kNeutralJet){
+      fHistos->CreateTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), Form("charged constituents in jets %s", contname->String().Data()), 7, chargedbinning);
+      fHistos->CreateTHnSparse(Form("hLeadingTrack%s", contname->String().Data()), Form("leading charged constituent in jets %s", contname->String().Data()), 5, leadingbinning);
+      fHistos->CreateTHnSparse(Form("hLeadingJetLeadingTrack%s", contname->String().Data()), Form("leading charged constituent in jets %s", contname->String().Data()), 5, leadingbinning);
+    }
+    if(fJetType == AliJetContainer::kFullJet || AliJetContainer::kNeutralJet){
+      fHistos->CreateTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), Form("neutral constituents in jets %s", contname->String().Data()), 8, neutralbinning);
+      fHistos->CreateTHnSparse(Form("hHighZClusters%s", contname->String().Data()), "Properties of high-z clusters", 7, binningHighZClusters);
+      fHistos->CreateTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), Form("leading neutral constituent in jets %s", contname->String().Data()), 5, leadingbinning);
+      fHistos->CreateTHnSparse(Form("hLeadingJetLeadingCluster%s", contname->String().Data()), Form("leading neutral constituent in jets %s", contname->String().Data()), 5, leadingbinning);
+    }
   }
 
   for(auto h : *(fHistos->GetListOfHistograms())) fOutput->Add(h);  
@@ -106,10 +124,16 @@ void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
 }
 
 bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
-  auto tracks = GetTrackContainer(fNameTrackContainer);
+  AliParticleContainer * tracks = GetTrackContainer(fNameTrackContainer);
+  if(!tracks) tracks = GetParticleContainer(fNameTrackContainer);
   const auto clusters = GetClusterContainer(fNameClusterContainer);
-  if(!(tracks && clusters)){
-    AliErrorStream() << "Either track or cluster container missing, aborting ..." << std::endl;
+  if(fNameTrackContainer.Length() && !tracks){
+    AliErrorStream() << "Track container " << fNameTrackContainer << " required but missing ..." << std::endl;
+    return kFALSE;
+  }
+  if(fNameClusterContainer.Length() && !clusters){
+    AliErrorStream() << "Cluster container " << fNameClusterContainer << " required but missing ..." << std::endl;
+    return kFALSE;
   }
 
   // Event selection
@@ -149,79 +173,175 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
       AliErrorStream() << "Jet container with name " << contname->String() << " not found in the list of jet containers" << std::endl;
       continue;
     } 
+    AliDebugStream(2) << "Reading " << jetcont->GetArray()->GetName() << std::endl;
 
+    AliEmcalJet *leadingjet(nullptr);
     for(auto jet : jetcont->accepted()){
+      if(!leadingjet || jet->Pt() > leadingjet->Pt()) leadingjet = jet;
       AliDebugStream(3) << "Next accepted jet, found " << jet->GetNumberOfTracks() << " tracks and " << jet->GetNumberOfClusters() << " clusters." << std::endl;
       Double_t pointjet[4] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters())}, 
-               pointcharged[6] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1.}, 
-               pointneutral[7] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1., -1.};
+               pointcharged[7] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1., -1.}, 
+               pointneutral[8] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1., -1., -1.},
+               pointHighZCluster[7] = {std::abs(jet->Pt()), jet->NEF(), -1., -1., -1., -1., -1.};
       fHistos->FillTHnSparse(Form("hJetCounter%s", contname->String().Data()), pointjet);
-      for(decltype(jet->GetNumberOfTracks()) itrk = 0; itrk < jet->GetNumberOfTracks(); itrk++){
-        const auto trk = jet->TrackAt(itrk, tracks->GetArray());
-        if(!trk) continue;
-        pointcharged[4] = std::abs(trk->Pt());
-        pointcharged[5] = std::abs(jet->GetZ(trk));
-        fHistos->FillTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), pointcharged);
+      TVector3 jetvec{jet->Px(), jet->Py(), jet->Pz()};
+      if((fJetType == AliJetContainer::kFullJet || fJetType == AliJetContainer::kChargedJet) && tracks){
+        for(decltype(jet->GetNumberOfTracks()) itrk = 0; itrk < jet->GetNumberOfTracks(); itrk++){
+          const auto trk = jet->TrackAt(itrk, tracks->GetArray());
+          if(!trk) continue;
+          if(trk->Charge()){
+            pointcharged[4] = std::abs(trk->Pt());
+            pointcharged[5] = std::abs(jet->GetZ(trk));
+            pointcharged[6] = jet->DeltaR(trk);
+            fHistos->FillTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), pointcharged);
+          } else {
+            // particle level jets
+            pointneutral[4] = pointneutral[5] = std::abs(trk->E());
+            pointneutral[6] = std::abs(jet->GetZ(trk));
+            pointneutral[7] = jet->DeltaR(trk);
+            fHistos->FillTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), pointneutral);
+          }
+        }
+        // Leading track
+        auto leadingtrack = jet->GetLeadingTrack(tracks->GetArray());
+        if(leadingtrack) {
+          double ltrackpoint[5] = {std::abs(jet->Pt()), jet->NEF(), std::abs(leadingtrack->Pt()), jet->GetZ(leadingtrack), jet->DeltaR(leadingtrack)};
+          fHistos->FillTHnSparse(Form("hLeadingTrack%s", contname->String().Data()), ltrackpoint);
+        }
       }
-      for(decltype(jet->GetNumberOfClusters()) icl = 0; icl < jet->GetNumberOfClusters(); icl++){
-        const auto clust = jet->ClusterAt(icl, clusters->GetArray());
-        if(!clust) continue; 
-        TLorentzVector ptvec;
-        clust->GetMomentum(ptvec, this->fVertex, AliVCluster::kHadCorr);
-        pointneutral[4] = std::abs(clust->GetHadCorrEnergy());
-        pointneutral[5] = std::abs(clust->GetNonLinCorrEnergy());
-        pointneutral[6] = jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz());
-        fHistos->FillTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), pointneutral);
+      if((fJetType == AliJetContainer::kFullJet || fJetType == AliJetContainer::kNeutralJet) && clusters){
+        for(decltype(jet->GetNumberOfClusters()) icl = 0; icl < jet->GetNumberOfClusters(); icl++){
+          const auto clust = jet->ClusterAt(icl, clusters->GetArray());
+          if(!clust) continue; 
+          TLorentzVector ptvec;
+          clust->GetMomentum(ptvec, this->fVertex, AliVCluster::kHadCorr);
+          pointneutral[4] = std::abs(clust->GetHadCorrEnergy());
+          pointneutral[5] = std::abs(clust->GetNonLinCorrEnergy());
+          pointneutral[6] = jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz());
+          pointneutral[7] = jetvec.DeltaR(ptvec.Vect());
+          fHistos->FillTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), pointneutral);
+
+          if(pointneutral[6] > 0.95) {
+            pointHighZCluster[2] = pointneutral[4];
+            pointHighZCluster[3] = pointneutral[6];
+            pointHighZCluster[4] = clust->GetNCells();
+            pointHighZCluster[5] = *std::max_element(clust->GetCellsAmplitudeFraction(), clust->GetCellsAmplitudeFraction()+clust->GetNCells());
+            pointHighZCluster[6] = clust->GetM02();
+            fHistos->FillTHnSparse(Form("hHighZClusters%s", contname->String().Data()), pointHighZCluster);
+          }
+        }
+        // Leading cluster
+        auto leadingcluster = jet->GetLeadingCluster(clusters->GetArray());
+        if(leadingcluster){
+          TLorentzVector pvect;
+          leadingcluster->GetMomentum(pvect, fVertex);
+          double lclusterpoint[5] = {std::abs(jet->Pt()), jet->NEF(), std::abs(pvect.Pt()), jet->GetZ(pvect.Px(), pvect.Py(), pvect.Pz()), jetvec.DeltaR(pvect.Vect())};
+          fHistos->FillTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), lclusterpoint);
+        }
       }
     }
+
+    // Look at leading particles in the leading jet
+    double leadingvec[4] = {0., 0., 0., 0.};
+    if(leadingjet) {
+      TVector3 leadingjetvec{leadingjet->Px(), leadingjet->Py(), leadingjet->Pz()};
+      leadingvec[0] = std::abs(leadingjet->Pt());
+      leadingvec[1] = leadingjet->Eta();
+      leadingvec[2] = leadingjet->Phi();
+      if(leadingvec[2] < 0) leadingvec[2] += TMath::TwoPi();
+      leadingvec[3] = leadingjet->E();
+      if((fJetType == AliJetContainer::kFullJet || fJetType == AliJetContainer::kChargedJet) && tracks){
+        auto leadingtrack = leadingjet->GetLeadingTrack(tracks->GetArray());
+        if(leadingtrack) {
+          double ltrackpoint[5] = {std::abs(leadingjet->Pt()), leadingjet->NEF(), std::abs(leadingtrack->Pt()), leadingjet->GetZ(leadingtrack), leadingjet->DeltaR(leadingtrack)};
+          fHistos->FillTHnSparse(Form("hLeadingTrack%s", contname->String().Data()), ltrackpoint);
+        }
+      }
+      if((fJetType == AliJetContainer::kFullJet || fJetType == AliJetContainer::kNeutralJet) && clusters){
+        auto leadingcluster = leadingjet->GetLeadingCluster(clusters->GetArray());
+        if(leadingcluster){
+          TLorentzVector pvect;
+          leadingcluster->GetMomentum(pvect, fVertex);
+          double lclusterpoint[5] = {std::abs(leadingjet->Pt()), leadingjet->NEF(), std::abs(pvect.Pt()), leadingjet->GetZ(pvect.Px(), pvect.Py(), pvect.Pz()), leadingjetvec.DeltaR(pvect.Vect())};
+          fHistos->FillTHnSparse(Form("hLeadingJetLeadingCluster%s", contname->String().Data()), lclusterpoint);
+        }
+      }
+    }
+    fHistos->FillTHnSparse(Form("hPtEtaPhiELeadingJet%s", contname->String().Data()), leadingvec);
   }
   
   return kTRUE;
 }
 
-AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddTaskEmcalJetConstituentQA(const char *trigger){
+AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddTaskEmcalJetConstituentQA(const char *trigger, AliJetContainer::EJetType_t jettype, bool partmode){
   using AnalysisHelpers = EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
     std::cerr << "[AliAnalysisTaskJetConstituentQA::AddTaskEmcalJetConstituentQA(EE)] No analysis manager provided ..." << std::endl;
     return nullptr;
   }
+
+  std::string jettypestring;
+  switch(jettype){
+    case AliJetContainer::kFullJet:    jettypestring = "fulljets"; break;
+    case AliJetContainer::kChargedJet: jettypestring = "chargedjets"; break;
+    case AliJetContainer::kNeutralJet: jettypestring = "neutraljets"; break;
+  };
   
   std::stringstream taskname;
-  taskname << "constituentQA_" << trigger;
+  taskname << "constituentQA_" << jettypestring << "_" << trigger;
   auto task = new AliAnalysisTaskEmcalJetConstituentQA(taskname.str().data());
   task->SetTriggerSelection(trigger);
+  task->SetJetType(jettype);
   mgr->AddTask(task);
 
   auto inputhandler = mgr->GetInputEventHandler();
   auto isAOD = false;
   if(inputhandler->IsA() == AliAODInputHandler::Class()) isAOD = true;
 
-  auto tracksname = AnalysisHelpers::TrackContainerNameFactory(isAOD);
-  auto tracks = task->AddTrackContainer(tracksname);
-  task->SetNameTrackContainer(tracksname);
-  tracks->SetMinPt(0.15);
+  TString tracksname, clustername;
+  AliParticleContainer *tracks(nullptr);
+  AliClusterContainer *clusters(nullptr);
+  if(!partmode) {
+    if(jettype ==  AliJetContainer::kChargedJet || jettype == AliJetContainer::kFullJet){
+      tracksname = AnalysisHelpers::TrackContainerNameFactory(isAOD);
+      tracks = task->AddTrackContainer(tracksname);
+      task->SetNameTrackContainer(tracksname);
+      tracks->SetMinPt(0.15);
+    }
 
-  auto clustername = AnalysisHelpers::ClusterContainerNameFactory(isAOD);
-  auto clusters = task->AddClusterContainer(clustername);
-  task->SetNameClusterContainer(clustername);
-  clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-  clusters->SetClusHadCorrEnergyCut(0.3);
+    if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kFullJet){
+      clustername = AnalysisHelpers::ClusterContainerNameFactory(isAOD);
+      clusters = task->AddClusterContainer(clustername);
+      task->SetNameClusterContainer(clustername);
+      clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+      clusters->SetClusHadCorrEnergyCut(0.3);
+    }
+  } else {
+    tracksname = "mcparticles";
+    tracks = task->AddParticleContainer(tracksname);
+    task->SetNameTrackContainer(tracksname);
+    tracks->SetMinPt(0.);
+  }
 
   // create jet containers for R02 and R04 jets
-  std::array<double, 2> jetradii = {{0.2, 0.4}};
+  std::array<double, 4> jetradii = {{0.2, 0.3, 0.4, 0.5}};
   for(auto r : jetradii) {
     std::stringstream contname;
-    contname << "fulljets_R" << std::setw(2) << std::setfill('0') << int(r*10.);
-    auto jcont = task->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, r, AliJetContainer::kEMCALfid, tracks, clusters, "Jet");
+    contname << jettypestring << "_R" << std::setw(2) << std::setfill('0') << int(r*10.);
+    auto jcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, r, AliJetContainer::kEMCALfid, tracks, clusters, "Jet");
     jcont->SetName(contname.str().data());
     task->AddNameJetContainer(contname.str().data());
     jcont->SetMinPt(20.);
   }
 
   std::stringstream contname, outfilename;
-  contname << "JetConstituentQA_" << trigger;
+  contname << "JetConstituentQA_" << jettypestring << "_" << trigger;
   outfilename << mgr->GetCommonFileName() << ":JetConstituentQA_" << trigger;
+  if(partmode) {
+    contname << "_part";
+    outfilename << "_part";
+  }
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname.str().data(), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, outfilename.str().data()));
 

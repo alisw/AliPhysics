@@ -69,6 +69,9 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   
   void SetParticleSpecies(Int_t species) {fParticleSpecies=species;}
   Int_t GetParticleSpecies() const {return fParticleSpecies;}
+    
+  void SetUsePhysicalPrimaries(Bool_t opt) {fUsePhysicalPrimary=opt;}
+  void SetUseGenPt(Bool_t opt) {fUseGeneratedPt=opt;}
 
  private:
   
@@ -119,8 +122,10 @@ class AliAnalysisTaskSEImpParResSparse : public AliAnalysisTaskSE {
   Float_t fScalingFactPtWeight;
   TList *fOutput;  //! 
   Int_t fParticleSpecies; /// particle species
+  Bool_t fUsePhysicalPrimary; //
+  Bool_t fUseGeneratedPt; //
 
-  ClassDef(AliAnalysisTaskSEImpParResSparse,4); // AliAnalysisTaskSE for the study of the impact parameter resolution
+  ClassDef(AliAnalysisTaskSEImpParResSparse,5); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif

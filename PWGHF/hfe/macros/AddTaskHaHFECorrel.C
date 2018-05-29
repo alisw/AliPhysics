@@ -1,4 +1,4 @@
-AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC, Bool_t IsAOD, Bool_t UseTender, Int_t ITSnCut,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut,Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
+AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEvent, Double_t MaxPtEvent, Bool_t TRDQA, Bool_t CorrHadron, Bool_t CorrLP, Bool_t MCTruth,  Bool_t IsMC, Bool_t IsAOD, Bool_t IsHFE, Bool_t UseTender, Int_t ITSnCut,  Int_t TPCnCut, Int_t TPCnCutdEdx,   Double_t PhotElecPtCut, Int_t PhotElecTPCnCut,Bool_t PhotElecITSrefitCut,Double_t InvmassCut, Int_t HTPCnCut,   Bool_t HITSrefitCut, Bool_t HTPCrefitCut, Bool_t UseITS, Double_t SigmaITScut, Double_t SigmaTOFcut, Double_t SigmaTPCcut, const char * ID="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -37,11 +37,13 @@ AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEv
   if (IsMC) {
     TH1::AddDirectory(kFALSE);
     printf("Loading Pi0EtaCorrectionFiles\n");
-    TString CorrectPi0EtaFile="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/Pi0EtaWeights.root";
+    TString CorrectPi0EtaFile;
+    if (!IsHFE) CorrectPi0EtaFile="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/Pi0EtaWeightsMinBias.root";
+    else if (IsHFE) CorrectPi0EtaFile="alien:///alice/cern.ch/user/f/flherrma/HaHFECorrel/Pi0EtaWeightsHFE.root";
     TFile *CorrectPi0Eta = TFile::Open(CorrectPi0EtaFile.Data());
     if (CorrectPi0Eta) {    
-      TH1F * Pi0W = (TH1F*)CorrectPi0Eta->Get("Pi0Weights");
-      TH1F * EtaW = (TH1F*)CorrectPi0Eta->Get("EtaWeights");
+      TH1F * Pi0W = (TH1F*)CorrectPi0Eta->Get("Pi0WeightsIncl");
+      TH1F * EtaW = (TH1F*)CorrectPi0Eta->Get("EtaWeightsIncl");
       if (Pi0W) taskMB->SetPi0WeightToData(*Pi0W);
       else printf("Could not load Pi0Weights\n");
       if (EtaW)  taskMB->SetEtaWeightToData(*EtaW);
@@ -79,11 +81,29 @@ AliAnalysisTaskHaHFECorrel *AddTaskHaHFECorrel(Double_t period, Double_t MinPtEv
   TString name1 = "histMB_";
   name1 += ID;
         
-  AliAnalysisDataContainer *cinput   = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(name1.Data(), TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
+  TString name2 = "Main_";
+  name2 += ID;
+  TString name3 = "LP_";
+  name3 += ID;
+  TString name4 = "Hadron_";
+  name4 += ID;
+  TString name5 = "QA_";
+  name5 += ID;
+
+
+  AliAnalysisDataContainer *cinput      = mgr->GetCommonInputContainer();
+  AliAnalysisDataContainer *coutput1    = mgr->CreateContainer(name1.Data(), TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
+  AliAnalysisDataContainer *coutputMain = mgr->CreateContainer(name2.Data(), TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
+  AliAnalysisDataContainer *coutputLP   = mgr->CreateContainer(name3.Data(), TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
+  AliAnalysisDataContainer *coutputHa   = mgr->CreateContainer(name4.Data(), TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
+  AliAnalysisDataContainer *coutputQA   = mgr->CreateContainer(name5.Data(), TList::Class(),AliAnalysisManager::kOutputContainer, containerName1.Data());
+
   mgr->ConnectInput(taskMB, 0, cinput);
   mgr->ConnectOutput(taskMB, 1, coutput1);
-
+  mgr->ConnectOutput(taskMB, 2, coutputMain);
+  mgr->ConnectOutput(taskMB, 3, coutputLP);
+  mgr->ConnectOutput(taskMB, 4, coutputHa);
+  mgr->ConnectOutput(taskMB, 5, coutputQA);
 
 
 

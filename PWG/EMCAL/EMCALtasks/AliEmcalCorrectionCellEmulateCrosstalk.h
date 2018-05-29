@@ -79,6 +79,9 @@ class AliEmcalCorrectionCellEmulateCrosstalk : public AliEmcalCorrectionComponen
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
   
+  AliAODCaloCells      *fAODCellsTmp;              //!<! Temporal array of cells copy
+
+  
 private:
   
   AliEmcalCorrectionCellEmulateCrosstalk(const AliEmcalCorrectionCellEmulateCrosstalk &);               // Not implemented
@@ -88,7 +91,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellEmulateCrosstalk> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellEmulateCrosstalk, 1); // EMCal cell crosstalk emulation correction component
+  ClassDef(AliEmcalCorrectionCellEmulateCrosstalk, 2); // EMCal cell crosstalk emulation correction component
   /// \endcond
 };
 

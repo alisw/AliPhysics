@@ -114,6 +114,9 @@ public:
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
     }
+    void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
+        fkUseOldCentrality = lUseOldCent;
+    }
     //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
     void SetDownScaleV0 ( Bool_t lOpt = kTRUE, Float_t lVal = 0.001) {
@@ -308,6 +311,7 @@ private:
     Bool_t fkDebugParenthood; //if true, add extra info to TTrees (full parenthood) for debugging
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
     Bool_t fkDoExtraEvSels; //use AliEventCuts for event selection
+    Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection
     
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
@@ -365,8 +369,6 @@ private:
     //FMD info for OOB pileup study
     Float_t fNHitsFMDA; //!
     Float_t fNHitsFMDC; //!
-    
-    
     
     //===========================================================================================
     //   Variables for V0 Tree
@@ -441,6 +443,51 @@ private:
     Int_t fTreeVariablePIDMother; //!
     Int_t fTreeVariablePrimaryStatus; //!
     Int_t fTreeVariablePrimaryStatusMother; //!
+    
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Sandbox V0
+    Float_t fTreeVariablePrimVertexX;
+    Float_t fTreeVariablePrimVertexY;
+    Float_t fTreeVariablePrimVertexZ;
+    
+    AliExternalTrackParam *fTreeVariablePosTrack;
+    AliExternalTrackParam *fTreeVariableNegTrack;
+    
+    Float_t fTreeVariableMagneticField;
+    
+    Float_t fTreeVariableNegCreationX;
+    Float_t fTreeVariableNegCreationY;
+    Float_t fTreeVariableNegCreationZ;
+    Float_t fTreeVariablePosCreationX;
+    Float_t fTreeVariablePosCreationY;
+    Float_t fTreeVariablePosCreationZ;
+    
+    Float_t fTreeVariableNegPxMC; //!
+    Float_t fTreeVariableNegPyMC; //!
+    Float_t fTreeVariableNegPzMC; //!
+    Float_t fTreeVariablePosPxMC; //!
+    Float_t fTreeVariablePosPyMC; //!
+    Float_t fTreeVariablePosPzMC; //!
+    
+    Int_t   fTreeVariablePIDNegativeMother;         //!
+    Int_t   fTreeVariablePIDPositiveMother;         //!
+    Int_t   fTreeVariablePIDNegativeGrandMother;         //!
+    Int_t   fTreeVariablePIDPositiveGrandMother;         //!
+    
+    Int_t fTreeVariableNegLabel; //!
+    Int_t fTreeVariablePosLabel; //!
+    Int_t fTreeVariableNegLabelMother; //!
+    Int_t fTreeVariablePosLabelMother; //!
+    Int_t fTreeVariableNegLabelGrandMother; //!
+    Int_t fTreeVariablePosLabelGrandMother; //!
+    
+    Bool_t fTreeVariableIsPhysicalPrimaryNegative;
+    Bool_t fTreeVariableIsPhysicalPrimaryPositive;
+    Bool_t fTreeVariableIsPhysicalPrimaryNegativeMother;
+    Bool_t fTreeVariableIsPhysicalPrimaryPositiveMother;
+    Bool_t fTreeVariableIsPhysicalPrimaryNegativeGrandMother;
+    Bool_t fTreeVariableIsPhysicalPrimaryPositiveGrandMother;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     
     //===========================================================================================
     //   Variables for Cascade Candidate Tree

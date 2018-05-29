@@ -13,6 +13,7 @@
 #include "AliFemtoDreamTrack.h"
 #include "AliLog.h"
 #include "TClonesArray.h"
+#include "TMath.h"
 #include <iostream>
 ClassImp(AliFemtoDreamTrack)
 AliFemtoDreamTrack::AliFemtoDreamTrack()
@@ -30,6 +31,7 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
 ,fRatioCR(0)
 ,fnoSharedClst(0)
 ,fTPCClsS(0)
+,fChi2(0.f)
 ,fSharedClsITSLayer(0)
 ,fHasSharedClsITSLayer(false)
 ,fdEdxTPC(0)
@@ -60,7 +62,9 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
       AliFatal("AliFemtoSPTrack::SetTrack No fGTI Set");
       fGlobalTrack=NULL;
     }else if(-trackID-1 >= fTrackBufferSize){
-      AliFatal("Buffer Size too small");
+//      AliFatal("Buffer Size too small");
+      this->fIsSet=false;
+      fIsReset=false;
       fGlobalTrack=NULL;
     }else if(!CheckGlobalTrack(trackID)){
       fGlobalTrack=NULL;
@@ -94,6 +98,7 @@ void AliFemtoDreamTrack::SetTrackingInformation() {
   this->SetPt(fTrack->Pt());
   this->fdcaXY=fTrack->DCA();
   this->fdcaZ=fTrack->ZAtDCA();
+  this->fChi2=fTrack->Chi2perNDF();
   double dcaVals[2] = {-99., -99.};
   double covar[3]={0.,0.,0.};
   AliAODTrack copy(*fGlobalTrack);
@@ -149,7 +154,7 @@ void AliFemtoDreamTrack::SetTrackingInformation() {
     this->fRatioCR=0.;
   } else {
     this->fRatioCR=
-        fTrack->GetTPCClusterInfo(2, 1)/double(fTrack->GetTPCNclsF());
+        fTrack->GetTPCClusterInfo(2, 1)/float(fTrack->GetTPCNclsF());
   }
   const TBits sharedMap=fTrack->GetTPCSharedMap();
   if ((sharedMap.CountBits()) >= 1) {
@@ -165,8 +170,26 @@ void AliFemtoDreamTrack::SetTrackingInformation() {
     }
   }
   this->fTPCClsS=fTrack->GetTPCnclsS();
+  if (fIsMC) {
+    SetPhiAtRadii();
+  }
 }
-
+void AliFemtoDreamTrack::SetPhiAtRadii() {
+  float TPCradii[9] = {85.,105.,125.,145.,165.,185.,205.,225.,245.};
+  float phi0=GetPhi().at(0);
+  float pt=GetPt();
+  float chg=GetCharge().at(0);
+  float bfield=fTrack->GetAODEvent()->GetMagneticField();
+  this->SetEvtNumber(fTrack->GetAODEvent()->GetRunNumber());
+  std::vector<float> phiatRadius;
+  for(int radius=0;radius<9;radius++)
+  {
+    phiatRadius.push_back(
+        phi0 + TMath::ASin(0.1*chg*bfield*0.3*TPCradii[radius]*0.01/(2.*pt)));
+  }
+  fPhiAtRadius.push_back(phiatRadius);
+  return;
+}
 void AliFemtoDreamTrack::SetPIDInformation() {
   AliPID::EParticleType particleID[5] = {AliPID::kElectron,AliPID::kMuon,
       AliPID::kPion,AliPID::kKaon,AliPID::kProton};
@@ -313,6 +336,7 @@ void AliFemtoDreamTrack::Reset() {
     fTheta.clear();
     fMCTheta.clear();
     fPhi.clear();
+    fPhiAtRadius.clear();
     fMCPhi.clear();
     fIDTracks.clear();
     fCharge.clear();

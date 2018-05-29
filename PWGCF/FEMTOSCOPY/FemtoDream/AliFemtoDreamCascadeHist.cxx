@@ -10,32 +10,38 @@
 ClassImp(AliFemtoDreamCascadeHist)
 
 AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist()
-:fHistList()
+:fMinimalBooking(false)
+,fHistList()
 ,fCutCounter(0)
 ,fConfig(0)
 ,fInvMassPtXi(0)
 ,fInvMassPtv0(0)
+,fInvMassPerRunNumber()
 {
   for (int i=0;i<2;++i) {
-    fCascadeQA[i]=0;
-    fInvMass[i]=0;
-    fInvMassv0[i]=0;
-    fXiPt[i]=0;;
-    fP_Y_Xi[i]=0;;
-    fDCAXiDaug[i]=0;;
-    fMinDistVtxBach[i]=0;;
-    fCPAXi[i]=0;;
-    fTransRadiusXi[i]=0;;
-    fv0MaxDCADaug[i]=0;;
-    fCPAv0[i]=0;;
-    fTransRadiusv0[i]=0;;
-    fMinDistVtxv0[i]=0;;
-    fMinDistVtxv0DaugPos[i]=0;
-    fMinDistVtxv0DaugNeg[i]=0;
-    fPodolandski[i]=0;
+    fCascadeQA[i]=nullptr;
+    fInvMass[i]=nullptr;
+    fInvMassv0[i]=nullptr;
+    fXiPt[i]=nullptr;
+    fP_Y_Xi[i]=nullptr;
+    fDCAXiDaug[i]=nullptr;
+    fMinDistVtxBach[i]=nullptr;
+    fCPAXi[i]=nullptr;
+    fTransRadiusXi[i]=nullptr;
+    fv0MaxDCADaug[i]=nullptr;
+    fCPAv0[i]=nullptr;
+    fv0Pt[i]=nullptr;
+    fTransRadiusv0[i]=nullptr;
+    fMinDistVtxv0[i]=nullptr;
+    fMinDistVtxv0DaugPos[i]=nullptr;
+    fMinDistVtxv0DaugNeg[i]=nullptr;
+    fPodolandski[i]=nullptr;
   }
 }
-AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
+
+AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,bool perRunnumber, int iRunMin=0, int iRunMax=0)
+:fMinimalBooking(false)
+{
   fHistList=new TList();
   fHistList->SetName("Cascade");
   fHistList->SetOwner();
@@ -55,47 +61,50 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
   fCutCounter->GetXaxis()->SetBinLabel(12, "Xi TransRadius");
   fCutCounter->GetXaxis()->SetBinLabel(13, "DCA v0 Vtx Daug");
   fCutCounter->GetXaxis()->SetBinLabel(14, "CPA v0");
-  fCutCounter->GetXaxis()->SetBinLabel(15, "v0 TransRadius");
-  fCutCounter->GetXaxis()->SetBinLabel(16, "Min Dist Prim Vtx v0");
-  fCutCounter->GetXaxis()->SetBinLabel(17, "Min Dist Prim Vtx v0 Daughter");
-  fCutCounter->GetXaxis()->SetBinLabel(18, "Inv Mass Lambda");
-  fCutCounter->GetXaxis()->SetBinLabel(19, "Inv Mass Xi");
+  fCutCounter->GetXaxis()->SetBinLabel(15, "Pt v0");
+  fCutCounter->GetXaxis()->SetBinLabel(16, "v0 TransRadius");
+  fCutCounter->GetXaxis()->SetBinLabel(17, "Min Dist Prim Vtx v0");
+  fCutCounter->GetXaxis()->SetBinLabel(18, "Min Dist Prim Vtx v0 Daughter");
+  fCutCounter->GetXaxis()->SetBinLabel(19, "Inv Mass Lambda");
+  fCutCounter->GetXaxis()->SetBinLabel(20, "Rej Omega");
+  fCutCounter->GetXaxis()->SetBinLabel(21, "PtCut");
+  fCutCounter->GetXaxis()->SetBinLabel(22, "Inv Mass Xi");
 
   fHistList->Add(fCutCounter);
 
-  fConfig=new TProfile("Config","Config",22,0,22);
+  fConfig=new TProfile("Config","Config",25,0,25);
   fConfig->SetStats(0);
-  fConfig->GetXaxis()->SetBinLabel(1,"Require ITSTOF Hit");
-  fConfig->GetXaxis()->SetBinLabel(2,"Require TOF Refit Daug");
-  fConfig->GetXaxis()->SetBinLabel(3,"Ratio CR");
-  fConfig->GetXaxis()->SetBinLabel(4,"NCls TPC");
-  fConfig->GetXaxis()->SetBinLabel(5,"N#Sigma_{TPC}");
-  fConfig->GetXaxis()->SetBinLabel(6,"P_{T,Daug-min}");
-  fConfig->GetXaxis()->SetBinLabel(7,"#Xi_{Mass}");
-  fConfig->GetXaxis()->SetBinLabel(8,"#Xi_{Width}");
-  fConfig->GetXaxis()->SetBinLabel(9,"#Xi Charge");
-  fConfig->GetXaxis()->SetBinLabel(10,"DCA #Xi Daug");
-  fConfig->GetXaxis()->SetBinLabel(11,"Min Dist. Bach To Vtx");
-  fConfig->GetXaxis()->SetBinLabel(12,"CPA #Xi");
-  fConfig->GetXaxis()->SetBinLabel(13,"Min Trans. Radius #Xi");
-  fConfig->GetXaxis()->SetBinLabel(14,"Max Trans. Radius #Xi");
-  fConfig->GetXaxis()->SetBinLabel(15,"v0_{Mass}");
-  fConfig->GetXaxis()->SetBinLabel(16,"v0_{Width}");
-  fConfig->GetXaxis()->SetBinLabel(17,"DCA v0 Daug");
-  fConfig->GetXaxis()->SetBinLabel(18,"CPAv0");
-  fConfig->GetXaxis()->SetBinLabel(19,"Min Trans. Radius v0");
-  fConfig->GetXaxis()->SetBinLabel(20,"Max Trans. Radius v0");
-  fConfig->GetXaxis()->SetBinLabel(21,"Min Dist. v0 To Vtx");
-  fConfig->GetXaxis()->SetBinLabel(22,"Min Dist. v0 Daug to Vtx");
+  fConfig->GetXaxis()->SetBinLabel(1,"Xi Pt Min");
+  fConfig->GetXaxis()->SetBinLabel(2,"Xi Pt Max");
+  fConfig->GetXaxis()->SetBinLabel(3,"v0 Pt Min");
+  fConfig->GetXaxis()->SetBinLabel(4,"v0 Pt Max");
+  fConfig->GetXaxis()->SetBinLabel(5,"Xi Mass");
+  fConfig->GetXaxis()->SetBinLabel(6,"Xi Width");
+  fConfig->GetXaxis()->SetBinLabel(7,"Xi Charge");
+  fConfig->GetXaxis()->SetBinLabel(8,"DCA Xi Daug Decay Vtx");
+  fConfig->GetXaxis()->SetBinLabel(9,"Min DCA Bach");
+  fConfig->GetXaxis()->SetBinLabel(10,"CPA Xi");
+  fConfig->GetXaxis()->SetBinLabel(11,"Min Trans. Radius Xi");
+  fConfig->GetXaxis()->SetBinLabel(12,"Max Trans. Radius Xi");
+  fConfig->GetXaxis()->SetBinLabel(13,"v0 Mass");
+  fConfig->GetXaxis()->SetBinLabel(14,"v0 Width");
+  fConfig->GetXaxis()->SetBinLabel(15,"DCA V0 Daug Vtx");
+  fConfig->GetXaxis()->SetBinLabel(16,"CPA v0");
+  fConfig->GetXaxis()->SetBinLabel(17,"Min Trans. Radius v0");
+  fConfig->GetXaxis()->SetBinLabel(18,"Max Trans. Radius v0");
+  fConfig->GetXaxis()->SetBinLabel(19,"Min DCA v0");
+  fConfig->GetXaxis()->SetBinLabel(20,"Min DCA v0 Daug");
+  fConfig->GetXaxis()->SetBinLabel(21,"Rej. Omega Mass");
+  fConfig->GetXaxis()->SetBinLabel(22,"Rej. Omega Width");
   fHistList->Add(fConfig);
 
-  fInvMassPtXi=new TH2F("InvMassXiPt","InvMassXiPt",19,0.6,6.5,500,mass*0.9,mass*1.3);
+  fInvMassPtXi=new TH2F("InvMassXiPt","InvMassXiPt",13,-0.2,6.3,500,mass*0.9,mass*1.3);
   fInvMassPtXi->Sumw2();
   fInvMassPtXi->GetXaxis()->SetTitle("P_{T}");
   fInvMassPtXi->GetYaxis()->SetTitle("Inv Mass");
   fHistList->Add(fInvMassPtXi);
 
-  fInvMassPtv0=new TH2F("InvMassv0Pt","InvMassv0Pt",19,0.6,6.5,400,0.9,1.2);
+  fInvMassPtv0=new TH2F("InvMassv0Pt","InvMassv0Pt",13,-0.2,6.3,400,0.9,1.2);
   fInvMassPtv0->Sumw2();
   fInvMassPtv0->GetXaxis()->SetTitle("P_{T}");
   fInvMassPtv0->GetYaxis()->SetTitle("Inv Mass");
@@ -120,7 +129,7 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
     fCascadeQA[i]->Add(fInvMassv0[i]);
 
     TString XiPtName=Form("XiPt_%s",sName[i].Data());
-    fXiPt[i]=new TH1F(XiPtName.Data(),XiPtName.Data(),19,0.6,6.5);
+    fXiPt[i]=new TH1F(XiPtName.Data(),XiPtName.Data(),13,-0.2,6.3);
     fXiPt[i]->Sumw2();
     fCascadeQA[i]->Add(fXiPt[i]);
 
@@ -164,6 +173,11 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
     fCPAv0[i]->Sumw2();
     fCascadeQA[i]->Add(fCPAv0[i]);
 
+    TString v0PtName=Form("v0Pt_%s",sName[i].Data());
+    fv0Pt[i]=new TH1F(v0PtName.Data(),v0PtName.Data(),100,0,10);
+    fv0Pt[i]->Sumw2();
+    fCascadeQA[i]->Add(fv0Pt[i]);
+
     TString TransRadiusv0Name=Form("TransRadiusv0_%s",sName[i].Data());
     fTransRadiusv0[i]=new TH1F(TransRadiusv0Name.Data(),
                                TransRadiusv0Name.Data(),200,0,200);
@@ -178,13 +192,13 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
 
     TString MinDistVtxv0DaugPosName=Form("MinDistVtxv0DaugPos_%s",sName[i].Data());
     fMinDistVtxv0DaugPos[i]=new TH1F(MinDistVtxv0DaugPosName.Data(),
-                                  MinDistVtxv0DaugPosName.Data(),50,0,10);
+                                     MinDistVtxv0DaugPosName.Data(),50,0,10);
     fMinDistVtxv0DaugPos[i]->Sumw2();
     fCascadeQA[i]->Add(fMinDistVtxv0DaugPos[i]);
 
     TString MinDistVtxv0DaugNameNeg=Form("MinDistVtxv0DaugNeg_%s",sName[i].Data());
     fMinDistVtxv0DaugNeg[i]=new TH1F(MinDistVtxv0DaugNameNeg.Data(),
-                                  MinDistVtxv0DaugNameNeg.Data(),50,0,10);
+                                     MinDistVtxv0DaugNameNeg.Data(),50,0,10);
     fMinDistVtxv0DaugNeg[i]->Sumw2();
     fCascadeQA[i]->Add(fMinDistVtxv0DaugNeg[i]);
 
@@ -193,6 +207,52 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(double mass) {
     fPodolandski[i]->Sumw2();
     fCascadeQA[i]->Add(fPodolandski[i]);
   }
+  if (perRunnumber) {
+    int nBins=iRunMax-iRunMin;
+    TString InvMassRunNumbName="InvMassPerRunnumber";
+    fInvMassPerRunNumber= new TH2F(InvMassRunNumbName.Data(),InvMassRunNumbName.Data(),
+                                   nBins,iRunMin,iRunMax,500,mass*0.9,mass*1.3);
+    fHistList->Add(fInvMassPerRunNumber);
+  } else {
+    fInvMassPerRunNumber=nullptr;
+  }
+}
+
+AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(TString minimalBooking,float mass)
+:fMinimalBooking(true)
+,fCutCounter(0)
+,fConfig(0)
+,fInvMassPtv0(0)
+,fInvMassPerRunNumber()
+{
+  for (int i=0;i<2;++i) {
+    fCascadeQA[i]=nullptr;
+    fInvMass[i]=nullptr;
+    fInvMassv0[i]=nullptr;
+    fXiPt[i]=nullptr;
+    fP_Y_Xi[i]=nullptr;
+    fDCAXiDaug[i]=nullptr;
+    fMinDistVtxBach[i]=nullptr;
+    fCPAXi[i]=nullptr;
+    fTransRadiusXi[i]=nullptr;
+    fv0MaxDCADaug[i]=nullptr;
+    fCPAv0[i]=nullptr;
+    fv0Pt[i]=nullptr;
+    fTransRadiusv0[i]=nullptr;
+    fMinDistVtxv0[i]=nullptr;
+    fMinDistVtxv0DaugPos[i]=nullptr;
+    fMinDistVtxv0DaugNeg[i]=nullptr;
+    fPodolandski[i]=nullptr;
+  }
+  fHistList=new TList();
+  fHistList->SetOwner();
+  fHistList->SetName(minimalBooking.Data());
+
+  fInvMassPtXi=new TH2F("InvMassXiPt","InvMassXiPt",13,-0.2,6.3,500,mass*0.9,mass*1.3);
+  fInvMassPtXi->Sumw2();
+  fInvMassPtXi->GetXaxis()->SetTitle("P_{T}");
+  fInvMassPtXi->GetYaxis()->SetTitle("Inv Mass");
+  fHistList->Add(fInvMassPtXi);
 }
 
 AliFemtoDreamCascadeHist::~AliFemtoDreamCascadeHist() {

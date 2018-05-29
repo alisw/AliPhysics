@@ -36,6 +36,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskAnalysisQA(TString c
 								       Bool_t ITSRefit = kTRUE,
 								       Int_t spdHits=AliESDtrackCuts::kAny,
 								       Int_t minclustersITS = 0,
+								       Bool_t useRecoEvSelCutsForKine=kFALSE,
 								       Int_t configuration=AliCFSingleTrackEfficiencyTask::kFast,
 								       Int_t usageOfBayesianPID=AliSingleTrackEffCuts::kNoBayesianPID)
 {
@@ -230,6 +231,7 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTaskAnalysisQA(TString c
   if(centralityEstimator != "") task->SetUseCentrality(kTRUE,centralityEstimator);
   task->SetConfiguration(configuration);
   task->SetUseGeneratedKine(useMCtruthForKine);
+  if(useRecoEvSelCutsForKine) task->ApplyRecoEventSelectionsToFillMCKine();
   task->SetCFManager(man); //here is set the CF manager
 
   //

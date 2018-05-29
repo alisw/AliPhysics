@@ -19,4 +19,5 @@
 #pragma link C++ class PWG::EMCAL::AliEmcalTriggerDecisionContainer+;
 #pragma link C++ class PWG::EMCAL::AliEmcalTriggerSelectionCuts++;
 #pragma link C++ class PWG::EMCAL::AliEmcalTriggerSelection+;
+#pragma link C++ class PWG::EMCAL::Triggerinfo+;
 #endif

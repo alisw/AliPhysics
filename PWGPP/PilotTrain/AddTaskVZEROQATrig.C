@@ -1,4 +1,4 @@
-AliAnalysisTaskSE* AddTaskVZEROQATrig(Int_t runNumber)
+AliAnaVZEROQA* AddTaskVZEROQATrig(Int_t runNumber)
 {
   // Creates a QA task exploiting simple symmetries phi, eta +/-, charge ...
   

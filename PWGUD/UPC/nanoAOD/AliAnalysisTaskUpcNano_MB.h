@@ -6,11 +6,10 @@
 #define ALIANALYSISTASKUPCNano_MB_H
 
 class TH1;
+class TH2;
 class TTree;
 class TList;
-class TBits;
-class AliTOFTriggerMask;
-class AliTriggerBCMask;
+class TFile;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -22,17 +21,23 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-  virtual void RunMC(AliAODEvent *aod);
+  virtual void RunMC(AliVEvent *aod);
   virtual void Terminate(Option_t *);
   
   void SetIsMC(Bool_t MC){isMC = MC;}
-  void SetCutEta(Bool_t toCut){cutEta = toCut;}
+  void SetIsESD(Bool_t ESD){isESD = ESD;}
+  void SetCutEta(Float_t cut){cutEta = cut;}
   Double_t GetMedian(Double_t *daArray);
   void FillTree(TTree *t, TLorentzVector v);
  private:
  
   AliPIDResponse *fPIDResponse;
-  Bool_t isMC, cutEta;
+  AliESDtrackCuts *fTrackCutsBit0;
+  AliESDtrackCuts *fTrackCutsBit1;
+  AliESDtrackCuts *fTrackCutsBit5;
+  Bool_t isMC; 
+  Bool_t isESD;
+  Float_t cutEta;
 
   TList *fOutputList;		//<
   TH1D *fHistEvents;		//!
@@ -55,23 +60,21 @@ class AliAnalysisTaskUpcNano_MB : public AliAnalysisTaskSE {
   TH1D *hITSPIDKaon;		//!
   TH2D *hITSPIDKaonCorr;	//!
   TH2D *hTPCdEdxCorr;		//!
-  TH1D *hNLooseTracks;		//!
-  TH1D *hNV0BB;			//!
-  TH1D *hNV0BG;			//!
-  TH1D *hNADBB;			//!
-  TH1D *hNADBG;			//!
   
-  Double_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime, fZNCtime, fPIDsigma;
-  Int_t fChannel, fSign, fRunNumber, fOldRun, fClosestIR1, fClosestIR2,fNV0BB,fNV0BG,fNADBB,fNADBG,fGoodBC;
-  Bool_t fTriggerInputsMC[10];
-  TBits fFOFiredChips;
-  AliTriggerBCMask *fBCmask;
-  AliTOFTriggerMask *fTOFmask;
+  Float_t fPt, fY, fM, fDiLeptonM, fDiLeptonPt, fZNAenergy, fZNCenergy, fZNAtime[4], fZNCtime[4], fPIDsigma;
+  Int_t fChannel, fSign, fRunNumber, fNFiredMaxiPads, fNTOFtrgPads, fTrackIndex[2];
+  Bool_t fTriggerInputsMC[10], fInEtaGen, fInEtaRec;
+  TArrayI fTOFhits;
+  TArrayI fTrackIndices;
+  
+  TFile *fSPDfile;
+  TH1D *hBCmod4;
+  TH2D *hSPDeff;
   
   AliAnalysisTaskUpcNano_MB(const AliAnalysisTaskUpcNano_MB&); //not implemented
   AliAnalysisTaskUpcNano_MB& operator =(const AliAnalysisTaskUpcNano_MB&); //not implemented
   
-  ClassDef(AliAnalysisTaskUpcNano_MB, 9); 
+  ClassDef(AliAnalysisTaskUpcNano_MB, 16); 
 };
 
 #endif

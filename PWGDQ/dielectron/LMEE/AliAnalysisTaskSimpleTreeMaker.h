@@ -78,7 +78,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
             fPSigTPCMax = max;
         }
 
-        void SetMC(Bool_t answer){ fIsMC = answer; }
+        void SetMC(Bool_t answer){ hasMC = answer; }
 
         //Track cut setters. StandardITSTPC2011 cuts used if nothing specified
         void SetTPCminClusters(Int_t number){
@@ -133,12 +133,17 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
         void setSDDstatus(Bool_t answer){
             fHasSDD = answer;
         }
+				void createGenTree(Bool_t answer){
+					fIsEffTree = answer;
+				}
         Bool_t isV0daughterAccepted(AliVTrack* track);
 
         void setFilterBitSelection(Int_t filterBit){
             fFilterBit = filterBit;
         }
-       
+				void analyseMC(Bool_t answer){
+					hasMC = answer;
+				}
 
         Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
 
@@ -151,33 +156,82 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
         AliAnalysisTaskSimpleTreeMaker& operator=(const AliAnalysisTaskSimpleTreeMaker&); // not implemented
 
+				Bool_t hasMC;
 
         AliESDtrackCuts* fESDtrackCuts; // ESD track cuts object
 
         AliPIDResponse* fPIDResponse; //! PID response object
 
-        TTreeStream* fStream;
         TTree* fTree;
+
+				//TTree branch variables
+				//Event variables
+				Double_t primaryVertex[3];
+				Double_t multiplicityV0A;
+				Double_t multiplicityV0C;
+				Double_t multiplicityCL1;
+				Int_t runNumber;
+				Int_t event;
+				//Reconstructed
+				Double_t pt;
+				Double_t eta;
+				Double_t phi;
+				Double_t nTPCclusters;
+				Double_t nTPCcrossed;
+				Double_t fTPCcrossOverFind;
+				Double_t nTPCfindable;
+				TBits tpcSharedMap;
+				Double_t nTPCshared;
+				Double_t chi2TPC;
+				Double_t DCA[2];
+				Int_t nITS;
+				Double_t chi2ITS;
+				Double_t fITSshared;
+				Bool_t SPDfirst;
+				Int_t charge;
+				Double_t EnSigmaITS;
+				Double_t EnSigmaTPC;
+				Double_t EnSigmaTOF;
+				Double_t PnSigmaTPC;
+				Double_t PnSigmaITS;
+				Double_t PnSigmaTOF;
+				Double_t KnSigmaITS;
+				Double_t KnSigmaTPC;
+				Double_t KnSigmaTOF;
+				Double_t ITSsignal;
+				Double_t TPCsignal;
+				Double_t TOFsignal;
+				Double_t goldenChi2;
+				//MC 
+				Double_t mcEta;
+				Double_t mcPhi;
+				Double_t mcPt;
+				Double_t mcVert[3];
+				Int_t iPdg;
+				Int_t iPdgMother;
+				Bool_t HasMother;
+				Int_t motherLabel;
+				//V0 features
+				Double_t pointingAngle;
+				Double_t daughtersDCA;
+				Double_t decayLength;
+				Double_t v0mass;
+				Double_t ptArm;
+				Double_t alpha;
 
         TH1F* fQAhist;
         Double_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
         Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
 
-        //MC flag
-        Bool_t fIsMC;
-      
         Double_t fPtMin;// minimum pT threshold (default = 0)
         Double_t fPtMax;// maximum pT threshold (default = 10)
         Double_t fEtaMin;// minimum eta threshold (default = -0.8)
         Double_t fEtaMax;// maximum eta threshold (default = 0.8)
 
-     
-      
-
         //Values and flags for PID cuts in ITS and TOF
         Double_t fESigITSMin;
         Double_t fESigITSMax;
- 		Double_t fESigTPCMin; 
+				Double_t fESigTPCMin; 
         Double_t fESigTPCMax; 
         Double_t fESigTOFMin;
         Double_t fESigTOFMax;
@@ -190,11 +244,13 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
         Double_t fPSigTPCMin;
         Double_t fPSigTPCMax;
         
-        
         Bool_t fHasSDD;
 
         Bool_t fIsV0tree;
         TH2F* fArmPlot;
+
+				//Efficiency calculation flags
+				Bool_t fIsEffTree;
 
         Bool_t fIsAOD;
         Int_t fFilterBit;
@@ -203,7 +259,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
         Bool_t fIsGRIDanalysis;
         Int_t fGridPID;
         
-        ClassDef(AliAnalysisTaskSimpleTreeMaker, 3); //
+        ClassDef(AliAnalysisTaskSimpleTreeMaker, 4); //
 
 };
 

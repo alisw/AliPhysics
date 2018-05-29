@@ -9,7 +9,7 @@
 // Selector used to analyze Tree generated with CODEX and provide
 // blinded invariant mass distribution or d* candidates
 // ([2.280; 2.480] GeV/c^2 blinded region) with different
-// cuts on π+ π- invarant mass 
+// cuts on π+ π- invarant mass
 //
 // (for more see "/AliPhysics/PWGLF/NUCLEX/Utils/CODEX")
 // Species convention in AliAnalysisCODEX
@@ -25,9 +25,10 @@
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
 #include <TTreeReaderArray.h>
+#include "TRandom3.h"
 #include <vector>
 
-// Headers needed by this particular selector
+/// Headers needed by this particular selector
 #include "AliAnalysisCODEX.h"
 #include "TH2.h"
 
@@ -43,15 +44,15 @@ public:
   TTreeReader     fReader;      //! the tree reader
   TTree          *fChain = 0;   //! pointer to the analyzed TTree or TChain
 
-  // Readers to access the data
-  TTreeReaderValue<Short_t> mZvert = {fReader, "mZvert"};
+  /// Readers to access the data
+  TTreeReaderValue<Short_t> fZvert = {fReader, "mZvert"};
   TTreeReaderArray<Track> fTracks = {fReader, "Tracks"};
 
-  // old reader methods needed to connect AliAnalysisCODEX::Header to TOFpidLite correctly
+  /// old reader methods needed to connect AliAnalysisCODEX::Header to TOFpidLite correctly
   TBranch *header_b;
   Header  *header;
 
-  // stendard selector methods
+  /// standard selector methods
   dStarAnalysisSelector(TTree * /*tree*/ =0);
   virtual ~dStarAnalysisSelector() { }
   virtual Int_t   Version() const { return 2; }
@@ -68,16 +69,16 @@ public:
   virtual void    SlaveTerminate();
   virtual void    Terminate();
 
-  // user defined methods
+  /// user defined methods
   bool PionCutGood(const Track& tr, float nSigmaTPC);
   bool DeuteronCutGood(const Track& tr, float nSigmaTPC);
   FourVector_t TrackToFourVector(const Track& tr, int species);
   void BinLogAxis(TH2 *h);
 
-  // output file name
+  /// output file name
   string fOutputFileName;
 
-  // TOFpidLite object from AliCODEX for particle identification with TOF
+  /// TOFpidLite object from AliCODEX for particle identification with TOF
   AliAnalysisCODEX::TOFpidLite fTOFpid;
 
   /// support vector instantiation
@@ -89,16 +90,30 @@ public:
   float fNSigmaPi;
   float fNSigmaDe;
 
-  //  control histograms
+  ///  control histograms
   TH1F *fZVertex;
-  TH1F *fPiPT;
+  TH1F *fPiPlusPT;
+  TH1F *fPiMinusPT;
   TH1F *fDeuPT;
+  TH1F *fMultiplicity;
 
-  // pions energy loss in TPC for check
-  TH2F *fDedxPi;
+  /// pions energy loss in TPC for check
+  TH2D *fDedxPiDeu;
+  TH2D *fDedx;
+  TH2D *fBeta;
 
-  // invariant mass distribution with blinded region (2.280 < mInv < 2.480) GeV/c^2
+  /// invariant mass distribution with blinded region (2.280 < mInv < 2.480) GeV/c^2
   TH2D *fMInvBlind[11];
+  /// event mixing background with cuts (last one without cuts)
+  TH2D *fMEMInvBackPPSame[11];
+  TH2D *fMEMInvBack3Event[11];
+  /// like-sign background
+  TH2D *fLSPlusMInvBackground[11];
+  TH2D *fLSMinusMInvBackground[11];
+
+  /// event mixing pool
+  AliAnalysisCODEX::EventMixingPool<1, 10, 3> *fPool;
+
 
   ClassDef(dStarAnalysisSelector,0);
 

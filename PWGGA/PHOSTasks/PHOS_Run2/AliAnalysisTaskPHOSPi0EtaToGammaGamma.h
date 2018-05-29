@@ -250,6 +250,14 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fPHOSTriggerHelper  = new AliPHOSTriggerHelper(L1input,L0input,isMC);
     }
 
+    void SetTriggerThreshold(Double_t energy) {fEnergyThreshold = energy;}
+    void SetAnaOmega(Bool_t flag, Double_t MinPtPi0, Double_t MinPtChPi){
+      fAnaOmega3Pi = flag;
+      fMinPtPi0    = MinPtPi0;
+      fMinPtChPi   = MinPtChPi;
+    }
+    void SetOAStudy(Bool_t flag) {fIsOAStudy = flag;}
+
   protected:
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
@@ -262,11 +270,13 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     virtual void FillPhoton();
     virtual void FillMgg();
     virtual void FillMixMgg();
+    virtual void FillM3pi();//omega->pi0 pi+ pi-
     virtual void EstimatePIDCutEfficiency();
     void EstimateTOFCutEfficiency();
     void EstimateTriggerEfficiency();
     void SelectTriggeredCluster();
     void FillRejectionFactorMB();
+    void FillTriggerInfoMB(AliPHOSTriggerHelper *helper, const Int_t L1);
     void FillEpRatio();
     void DDAPhotonPurity();//this can not be measured in neither single nor embedding M.C.
 
@@ -364,6 +374,9 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       else return kTRUE;
     }
 
+    Bool_t Are2GammasInPHOSAcceptance(Int_t id);
+    void FillMixTrackMatching();
+
   protected:
     Bool_t fIsMC;
     Bool_t fIsJJMC;//jet jet MC
@@ -437,13 +450,17 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
     Double_t fEmin;
-
+    Bool_t fIsOAStudy;
+    Bool_t fAnaOmega3Pi;
+    Double_t fMinPtPi0;//only for omega->3pi
+    Double_t fMinPtChPi;//only for omega->3pi
+    TList *fTrackArrayList[10][12];//track matching in mixed event
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 50);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 57);
 };
 
 #endif

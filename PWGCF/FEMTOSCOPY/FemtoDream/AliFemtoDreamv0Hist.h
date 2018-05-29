@@ -17,34 +17,38 @@ class AliFemtoDreamv0Hist {
  public:
   AliFemtoDreamv0Hist();
   AliFemtoDreamv0Hist(
-      int MassNBins,double MassMin,double MassMax,bool CPAPlots);
+      int MassNBins,float MassMin,float MassMax,bool CPAPlots,bool perRunnumber, int iRunMin, int iRunMax);
+  AliFemtoDreamv0Hist(TString MinimalBooking,int MassNBins,float MassMin,float MassMax);
   virtual ~AliFemtoDreamv0Hist();
-  void FillConfig(int iBin,double val){fConfig->Fill(iBin,val);};
-  void FillTrackCounter(int iBin){fCutCounter->Fill(iBin);};
-  void FillOnFlyStatus(int i,double val){fOnFly[i]->Fill(val);};
-  void FillpTCut(int i,double pT){fpTDist[i]->Fill(pT);};
-  void FillPhi(int i,double phi){fPhiDist[i]->Fill(phi);};
-  void FillEtaCut(int i,double eta){fetaDist[i]->Fill(eta);};
-  void Fillv0DecayVtxXCut(int i,double vtx){fDecayVtxv0X[i]->Fill(vtx);};
-  void Fillv0DecayVtxYCut(int i,double vtx){fDecayVtxv0Y[i]->Fill(vtx);};
-  void Fillv0DecayVtxZCut(int i,double vtx){fDecayVtxv0Z[i]->Fill(vtx);};
-  void FillTransverRadiusCut(int i,double rad){fTransRadius[i]->Fill(rad);};
-  void FillDCAPosDaugToPrimVtxCut(int i,double dca){
-    fDCAPosDaugToPrimVtx[i]->Fill(dca);
+  void FillConfig(int iBin,float val){if(!fMinimalBooking)fConfig->Fill(iBin,val);};
+  void FillTrackCounter(int iBin){if(!fMinimalBooking)fCutCounter->Fill(iBin);};
+  void FillOnFlyStatus(int i,float val){if(!fMinimalBooking)fOnFly[i]->Fill(val);};
+  void FillpTCut(int i,float pT){if(!fMinimalBooking)fpTDist[i]->Fill(pT);};
+  void FillPhi(int i,float phi){if(!fMinimalBooking)fPhiDist[i]->Fill(phi);};
+  void FillEtaCut(int i,float eta){fetaDist[i]->Fill(eta);};
+  void Fillv0DecayVtxXCut(int i,float vtx){if(!fMinimalBooking)fDecayVtxv0X[i]->Fill(vtx);};
+  void Fillv0DecayVtxYCut(int i,float vtx){if(!fMinimalBooking)fDecayVtxv0Y[i]->Fill(vtx);};
+  void Fillv0DecayVtxZCut(int i,float vtx){if(!fMinimalBooking)fDecayVtxv0Z[i]->Fill(vtx);};
+  void FillTransverRadiusCut(int i,float rad){if(!fMinimalBooking)fTransRadius[i]->Fill(rad);};
+  void FillDCAPosDaugToPrimVtxCut(int i,float dca){
+    if(!fMinimalBooking)fDCAPosDaugToPrimVtx[i]->Fill(dca);
   };
-  void FillDCANegDaugToPrimVtxCut(int i,double dca){
-    fDCANegDaugToPrimVtx[i]->Fill(dca);
+  void FillDCANegDaugToPrimVtxCut(int i,float dca){
+    if(!fMinimalBooking)fDCANegDaugToPrimVtx[i]->Fill(dca);
   };
-  void FillDCADaugTov0VtxCut(int i, double dca){fDCADaugToVtx[i]->Fill(dca);};
-  void FillCPACut(int i,double cpa){fCPA[i]->Fill(cpa);};
-  void FillInvMass(int i,double mass){fInvMass[i]->Fill(mass);};
-  void FillInvMassBefKaonRej(double mass){fInvMassBefKaonRej->Fill(mass);};
-  void FillInvMassKaon(double mass){fInvMassKaon->Fill(mass);};
-  void Fillv0MassDist(double mass){fInvMassBefSelection->Fill(mass);};
-  void FillInvMassPtBins(double pT,double mass){fInvMassPt->Fill(pT,mass);};
-  void FillCPAPtBins(double pT,double cpa){fCPAPtBins->Fill(pT,cpa);};
+  void FillDCADaugTov0VtxCut(int i, float dca){if(!fMinimalBooking)fDCADaugToVtx[i]->Fill(dca);};
+  void FillCPACut(int i,float cpa){if(!fMinimalBooking)fCPA[i]->Fill(cpa);};
+  void FillInvMass(int i,float mass){if(!fMinimalBooking)fInvMass[i]->Fill(mass);};
+  void FillInvMassBefKaonRej(float mass){if(!fMinimalBooking)fInvMassBefKaonRej->Fill(mass);};
+  void FillInvMassKaon(float mass){if(!fMinimalBooking)fInvMassKaon->Fill(mass);};
+  void Fillv0MassDist(float mass){if(!fMinimalBooking)fInvMassBefSelection->Fill(mass);};
+  void FillInvMassPtBins(float pT,float mass){fInvMassPt->Fill(pT,mass);};
+  void FillCPAPtBins(float pT,float cpa){if(!fMinimalBooking)fCPAPtBins->Fill(pT,cpa);};
+  void FillInvMassPerRunNumber(int RunNumber,float mass){
+    if(!fMinimalBooking)fInvMassPerRunNumber->Fill(RunNumber,mass);};
   TList *GetHistList(){return fHistList;};
  private:
+  bool fMinimalBooking;
   TList *fHistList;
   TList *fv0CutQA[2];
   TProfile *fConfig;
@@ -67,7 +71,8 @@ class AliFemtoDreamv0Hist {
   TH1F *fInvMassBefSelection;
   TH2F *fInvMassPt;
   TH2F *fCPAPtBins;
-  ClassDef(AliFemtoDreamv0Hist,1)
+  TH2F *fInvMassPerRunNumber;
+  ClassDef(AliFemtoDreamv0Hist,2)
 };
 
 #endif /* ALIFEMTODREAMV0HIST_H_ */

@@ -153,6 +153,56 @@ for(auto p : *triggerpatches){
 }
 ~~~
 
+## Selection of triggered events using trigger patches
+
+In some case, i. e. in simulation or in order to select noise, EMCAL-triggered events need to be selected
+using trigger patches. The wagon *PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection* performs the selection
+of EMCAL-triggered events based on period-dependent configurations and adds a container with all the trigger
+decisions for the various supported Level1-triggers to the event. Users can access the trigger decision
+container in their task and use it for their event selection.
+
+### 1. Add task to the analysis
+
+In a simple user analysis do
+
+~~~{.cxx}
+gROOT->LoadMacro(Form("%s/PWG/EMCAL/AddEmcalTriggerSelectionTask.C", gSystem->Getenv("ALICE_PHYSICS)));
+PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection *trgseltask = AddEmcalTriggerSelectionTask();
+trgseltask->SetGlobalDecisionContainerName("EmcalTriggerDecision");
+trgseltask->AutoConfigure(kDataset);
+~~~
+
+Within the train wagon, call the macro *PWG/EMCAL/AddEmcalTriggerSelectionTask.C* with the arguments (no arguments).
+In the wagon configuration add
+
+~~~{.cxx}
+__R_ADDTASK__->SetGlobalDecisionContainerName("EmcalTriggerDecision");
+__R_ADDTASK__->AutoConfigure(kDataset);
+~~~
+
+kDataset should be the name of a supported dataset. Please refer to the description of class PWG::EMCAL::AliAnalysisTaskEmcalTriggerSelection
+for supported datasets.
+
+### 2. Use the trigger selection in your analysis
+
+In case the trigger selection task is added to the analysis, users can access it and use it for event selection. The
+trigger seletion results are store in a trigger decision container (PWG::EMCAL::AliEmcalTriggerDecisionContainer). The
+trigger decision container hold the trigger decision objects, consisting of the final trigger decision (fired yes/no),
+the maximum trigger patch firing the trigger and all trigger patches firing the trigger. If one is just interested in
+the event selection result it is sufficient to query the IsEventSelected method of the trigger decision container with
+the valid name of the Level1 trigger to be selected.
+
+The following code demonstrates how to select EG1 events using the EMCAL trigger decision container
+
+~~~{.cxx}
+auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
+if(!triggercont){
+  AliErrorStream() <<  "Trigger decision container not found in event - not possible to select EMCAL triggers" << std::endl;    }
+  return false;
+if(!triggercont->IsEventSelected(fTriggerSelectionString)) return false;
+~~~
+
+
 ## Trigger bit setup
 
 Trigger bits are used to store online trigger selection by the STU as well as offline trigger selection. 

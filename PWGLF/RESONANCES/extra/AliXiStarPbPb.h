@@ -10,7 +10,6 @@
 
 
 
-
 class TH1F;
 class TH1D;
 class TH2D;
@@ -27,7 +26,9 @@ class AliESDpid;
 #include "AliAODPid.h"
 #include "AliESDpid.h"
 #include "AliXiStarPbPbEventCollection.h"
-
+#include "AliESDVZERO.h"
+#include "AliESDTZERO.h"
+#include "AliVertex.h"
 
 
 class AliXiStarPbPb : public AliAnalysisTaskSE {
@@ -39,6 +40,22 @@ public:
     virtual ~AliXiStarPbPb();
     AliXiStarPbPb(const AliXiStarPbPb &obj);
     AliXiStarPbPb &operator=(const AliXiStarPbPb &obj);
+private:
+    
+    virtual void   UserCreateOutputObjects();
+    virtual void   Exec(Option_t *option);
+    virtual void   Terminate(Option_t *);
+    
+    
+    void XiStarInit();// initialization of fixed values
+    Double_t LinearPropagateToDCA(AliESDtrack*, AliESDtrack*, Double_t);// for linear propagation
+    Double_t Det(Double_t, Double_t, Double_t, Double_t) const;// for linear propagation
+    Double_t Det(Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t) const;// for linear propagation
+    Double_t ComputeCentrality();
+    Double_t fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
+    Double_t fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+    
+    void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
     
     enum {
         kNbinsM              = 200, // mult bins for certain histograms //300
@@ -51,60 +68,6 @@ public:
         kNCuts               = 13// number of cut types //15
     };
 
-    
-    struct St_CutType {
-        TH3F *fXi; //!
-        TH3F *fXibar; //!
-        //
-        TH3F *fXiMinusPiPlus; //!
-        TH3F *fXiMinusPiMinus; //!
-        TH3F *fXiPlusPiPlus; //!
-        TH3F *fXiPlusPiMinus; //!
-        
-        TH3F *fXiMinusPiPlusbkg; //!
-        TH3F *fXiMinusPiMinusbkg; //!
-        TH3F *fXiPlusPiPlusbkg; //!
-        TH3F *fXiPlusPiMinusbkg; //!
-        //
-        TH3F *fMCrecXi; //!
-        TH3F *fMCrecXibar; //!
-        
-        TH3F *fMCrecXiMinusPiPlus; //!
-        TH3F *fMCrecXiPlusPiMinus; //!
-        
-    };
-    struct St_CutType CutVar[kNCutVariations]; //!
-    
-    
-    AliESDtrack* fESDTrack4; //! esdtrack for XiStar's daughter pion
-    AliESDtrack* fXiTrack; //! esdtrack for XiStar's daughter Xi
-    
-    Int_t fCutList;// Cut List option (mean values or systematic variations)
-    
-    Float_t fDecayParameters[kNCuts];// array of reconstruction kinematics
-    Float_t fCutValues[kNCutVariations][kNCuts];// array of reconstruction kinematics
-  
-    
-private:
-    
-
-    
-    virtual void   UserCreateOutputObjects();
-    virtual void   Exec(Option_t *option);
-    virtual void   Terminate(Option_t *);
-    
-    
-    void XiStarInit();// initialization of fixed values
-    Double_t LinearPropagateToDCA(AliESDtrack*, AliESDtrack*, Double_t);// for linear propagation
-    Double_t Det(Double_t, Double_t, Double_t, Double_t) const;// for linear propagation
-    Double_t Det(Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t) const;// for linear propagation
-    Double_t ComputeCentrality();
-    Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
-    Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
-    
-    void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
-    
-    
     
     const char* fname;// name of class
    // AliInputEventHandler *fEventHandler;                              //  for ESDs or AODs
@@ -137,6 +100,42 @@ private:
     Double_t fCovMatrix[21];// Covarience matrix of track
     Double_t fTrueMassPr, fTrueMassPi, fTrueMassK, fTrueMassLam, fTrueMassXi;// The PDG mass values
     Bool_t IsTPC  (AliESDtrack *track);
+    
+    //=================================================================================//
+    //generated Histograms//
+    //=================================================================================//
+    struct St_CutType {
+        TH3F *fXi; //!
+        TH3F *fXibar; //!
+        //
+        TH3F *fXiMinusPiPlus; //!
+        TH3F *fXiMinusPiMinus; //!
+        TH3F *fXiPlusPiPlus; //!
+        TH3F *fXiPlusPiMinus; //!
+        
+        TH3F *fXiMinusPiPlusbkg; //!
+        TH3F *fXiMinusPiMinusbkg; //!
+        TH3F *fXiPlusPiPlusbkg; //!
+        TH3F *fXiPlusPiMinusbkg; //!
+        //
+        TH3F *fMCrecXi; //!
+        TH3F *fMCrecXibar; //!
+        
+        TH3F *fMCrecXiMinusPiPlus; //!
+        TH3F *fMCrecXiPlusPiMinus; //!
+        
+    };
+    struct St_CutType CutVar[kNCutVariations]; //!
+
+    
+    
+    AliESDtrack* fESDTrack4; //! esdtrack for XiStar's daughter pion
+    AliESDtrack* fXiTrack; //! esdtrack for XiStar's daughter Xi
+    
+    Int_t fCutList;// Cut List option (mean values or systematic variations)
+    
+    Float_t fDecayParameters[kNCuts];// array of reconstruction kinematics
+    Float_t fCutValues[kNCutVariations][kNCuts];// array of reconstruction kinematics
 
     
     ClassDef(AliXiStarPbPb, 1); 

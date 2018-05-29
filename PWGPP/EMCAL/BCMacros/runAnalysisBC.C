@@ -10,7 +10,7 @@
 /// ---------------------
 /// use root -b to speed up (no canvas drawn)                                                  <br>
 /// root [1] .L $ALICE_WORK_DIR/../ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/runAnalysisBC.C++                                                    <br>
-/// root [2] runAnalysisBC(1,"LHC15o","Train_771","INT7",244918,"","GloballyGood.txt")           //for merging to one runblock   <br>
+/// root [2] runAnalysisBC(0,"LHC15o","Train_771","INT7",244918,"","GloballyGood.txt")           //for merging to one runblock   <br>
 /// root [2] runAnalysisBC(-1,"LHC15o","Train_771","INT7",244918,"244918_INT7Filtered.root","")  //for single files              <br>
 ///
 /// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
@@ -54,28 +54,35 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 	//Analysis->AddMaskSM(9);                     //..switch off entire SMs
 	//Analysis->AddMaskSM(11);                    //..switch off entire SMs
 	Analysis->SetLowerBound(1);                 //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
+	//Analysis->SetLowerBound(0.4);                 //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
     //Analysis->SetStartEndCell(0,12288);       //..only EMCal
     //Analysis->SetStartEndCell(12288,17664);   //..only DCal
     //Analysis->SetQAChecks(1);                 //..1= Perform QA checks - takes a long time! Saves all good cells for cross check to pdf
-	//Analysis->SetPrintOutput(1);              //..1= prints more information about excluded cells
+    //Analysis->SetPrintOutput(1);              //..1= prints more information about excluded cells
+	Analysis->SetTrackCellRecord(1);            //..1= prints non-zero flag elements thoughout the routine
 	//Analysis->SetExternalBadMap("Version1OADB/LHC16s_INT7_Histograms_V1.root");
 
 	//. . . . . . . . . . . . . . . . . . . . . . . .
 	//. . Add different period analyses
 	//. . . . . . . . . . . . . . . . . . . . . . . .
+	Double_t sigmaNHits=5.5;
+	Double_t sigmaE_hit=4.5;
+	//..a little stricter
+	sigmaNHits=5.0;
+    sigmaE_hit=4.5;
 	//..the range of sigmas should be selected such
 	//..that one does not cut into the natural fluctuation over the modules
-	Analysis->AddPeriodAnalysis(2, 5.5,0.1,0.3);  // hits in cell in range Emin Emax
-	Analysis->AddPeriodAnalysis(1, 4.0,0.1,0.3);  // energy/hit in range Emin Emax
-	Analysis->AddPeriodAnalysis(2, 5.5,0.2,0.5);  // hits in cell range Emin Emax
-	Analysis->AddPeriodAnalysis(1, 4.5,0.2,0.5);  // energy/hit in range Emin Emax
-	Analysis->AddPeriodAnalysis(2, 5.5,0.5,1.0);  // hits in cell range Emin Emax
-	Analysis->AddPeriodAnalysis(1, 4.5,0.5,1.0);  // energy/hit in range Emin Emax
-	Analysis->AddPeriodAnalysis(2, 5.5,1.0,4.0);  // hits in cell range Emin Emax
-    Analysis->AddPeriodAnalysis(1, 4.5,1.0,4.0);  // mean energy in range Emin Emax
-	Analysis->AddPeriodAnalysis(2, 5.5,1.0,10.0); // hits in cell in range Emin Emax
-	Analysis->AddPeriodAnalysis(1, 4.5,1.0,10.0); // energy/hit in range Emin Emax
-	Analysis->AddPeriodAnalysis(2, 5.5,0.11,0.29);  // hits in cell in range Emin Emax
+	Analysis->AddPeriodAnalysis(2, sigmaNHits,0.1,0.3);  // hits in cell in range Emin Emax
+	Analysis->AddPeriodAnalysis(1, sigmaE_hit,0.1,0.3);  // energy/hit in range Emin Emax
+	Analysis->AddPeriodAnalysis(2, sigmaNHits,0.2,0.5);  // hits in cell range Emin Emax
+	Analysis->AddPeriodAnalysis(1, sigmaE_hit,0.2,0.5);  // energy/hit in range Emin Emax
+	Analysis->AddPeriodAnalysis(2, sigmaNHits,0.5,1.0);  // hits in cell range Emin Emax
+	Analysis->AddPeriodAnalysis(1, sigmaE_hit,0.5,1.0);  // energy/hit in range Emin Emax
+	Analysis->AddPeriodAnalysis(2, sigmaNHits,1.0,4.0);  // hits in cell range Emin Emax
+    Analysis->AddPeriodAnalysis(1, sigmaE_hit,1.0,4.0);  // mean energy in range Emin Emax
+	Analysis->AddPeriodAnalysis(2, sigmaNHits,1.0,10.0); // hits in cell in range Emin Emax
+	Analysis->AddPeriodAnalysis(1, sigmaE_hit,1.0,10.0); // energy/hit in range Emin Emax
+	Analysis->AddPeriodAnalysis(2, sigmaNHits,0.11,0.29);  // hits in cell in range Emin Emax
 
 
 	//..special test for extra high energy fluctuations
@@ -96,5 +103,8 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 
 	watch->Stop();
 	cout<<"Finished BC analysis "<<watch->RealTime()/60<<" min"<<endl;
-	watch->Continue();
+	cout<<"Canvases will pop up now - please wait"<<endl;
+
+	//if(watch)    delete watch;
+	//if(Analysis) delete Analysis; //..Delete Causes problems
 }

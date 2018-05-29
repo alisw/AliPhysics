@@ -75,6 +75,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillShowerShapeHistogramsPerNLM()  { fFillSSNLocMaxHisto    = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistogramsPerNLM() { fFillSSNLocMaxHisto    = kFALSE ; }  
+
+  void         SwitchOnFillShowerShapeHistogramsPerSM()   { fFillSSPerSMHistograms = kTRUE  ; }
+  void         SwitchOffFillShowerShapeHistogramsPerSM()  { fFillSSPerSMHistograms = kFALSE ; }  
   
   void         SwitchOnFillEMCALRegionSSHistograms()      { fFillEMCALRegionSSHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionSSHistograms()     { fFillEMCALRegionSSHistograms = kFALSE ; }  
@@ -195,6 +198,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNLMCutMax  ;                            ///<  Remove clusters/cells with number of local maxima larger than this value
     
   Bool_t   fFillSSHistograms ;                      ///<  Fill shower shape histograms
+  
+  Bool_t   fFillSSPerSMHistograms ;                 ///<  Fill shower shape histograms per SM
 
   Bool_t   fFillEMCALRegionSSHistograms ;           ///<  Fill shower shape histograms in EMCal slices
     

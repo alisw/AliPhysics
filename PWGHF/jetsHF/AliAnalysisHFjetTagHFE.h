@@ -17,6 +17,7 @@ class AliPIDResponse;
 class AliAODMCHeader;
 class AliAODMCParticle; // sample
 class AliMultSelection;
+class TRandom;
 
 #include "TObject.h"
 #include "TObjArray.h"
@@ -67,6 +68,9 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Double_t fInvmassCut;  
     Double_t fptAssocut;  
     Bool_t fmcData;
+    Int_t NembMCpi0;
+    Int_t NembMCeta;
+    Int_t NpureMCproc;
 
   // General histograms
   TH1                       **fHistTracksPt;            //!Track pt spectrum
@@ -102,7 +106,13 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistHfEleMC;
   TH1F                        *fHistHfEleMCreco;
   TH1F                        *fHistPhoEleMC;
+  TH1F                        *fHistPhoEleMCpi0;
+  TH1F                        *fHistPhoEleMCeta;
   TH1F                        *fHistPhoEleMCreco;
+  TH1F                        *fHistPhoEleMCrecopi0;
+  TH1F                        *fHistPhoEleMCrecoeta;
+  TH1F                        *fHistMCorgPi0;
+  TH1F                        *fHistMCorgEta;
   TH2F                        *fHistIncjet;
   TH2F                        *fHistIncjetFrac;
   TH2F                        *fHistIncjetOrg;
@@ -124,7 +134,10 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustE;
   TH1F                        *fHistClustEtime;
   TH2F                        *fEMCClsEtaPhi;
-
+  TH1F                        *fHistBGfrac;
+  TF1                         *fPi0Weight;
+  TF1                         *fEtaWeight;
+  TRandom                     *generator;
 
   AliJetContainer            *fJetsCont;                   //!Jets
   AliJetContainer            *fJetsContPart;                   //!Jets particle
@@ -133,12 +146,14 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   Bool_t tagHFjet(AliEmcalJet* jet, double *epT, int MCpid, double &maxpT_e);
   //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
   void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
+  Double_t CalRandomCone(Double_t HFjetPhi, Double_t HFjetEta, Double_t HFjetArea);
   Bool_t isHeavyFlavour(int Mompdg);
   Bool_t isPhotonic(int Mompdg);
   //void MakeParticleLevelJet(THnSparse *pJet);
   void MakeParticleLevelJet();
   //void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
   //void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
+  void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
 
  private:
 

@@ -14,6 +14,7 @@
 #include <TVector3.h>
 #include <TFile.h>
 #include <TGrid.h>
+#include <TRandom3.h>
 
 #include <AliAnalysisManager.h>
 #include <AliInputEventHandler.h>
@@ -30,10 +31,12 @@
 #include "AliTrackContainer.h"
 #include "AliJetContainer.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+#include "AliAnalysisTaskEmcalJetHUtils.h"
 
-/// \cond CLASSIMP
-ClassImp(AliAnalysisTaskEmcalJetHCorrelations);
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHCorrelations);
+
+namespace PWGJE {
+namespace EMCALJetTasks {
 
 // 0-10% centrality: Semi-Good Runs
 Double_t AliAnalysisTaskEmcalJetHCorrelations::p0_10SG[17] = {0.906767, 0.0754127, 1.11638, -0.0233078, 0.795454, 0.00935385, -0.000327857, 1.08903, 0.0107272, 0.443252, -0.143411, 0.965822, 0.359156, -0.581221, 1.0739, 0.00632828, 0.706356};
@@ -65,11 +68,16 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations() :
   fPoolMgr(nullptr),
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
-  fDoEffCorrection(0),
+  fSingleTrackEfficiencyCorrectionType(AliAnalysisTaskEmcalJetHCorrelations::kEffDisable),
+  fArtificialTrackInefficiency(1.0),
   fNoMixedEventJESCorrection(kFALSE),
   fJESCorrectionHist(nullptr),
   fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
   fRequireMatchedJetWhenEmbedding(kTRUE),
+  fMinSharedMomentumFraction(0.),
+  fRequireMatchedPartLevelJet(false),
+  fMaxMatchedJetDistance(-1),
+  fHistManager(),
   fHistTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -93,11 +101,16 @@ AliAnalysisTaskEmcalJetHCorrelations::AliAnalysisTaskEmcalJetHCorrelations(const
   fPoolMgr(nullptr),
   fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
   fDisableFastPartition(kFALSE),
-  fDoEffCorrection(0),
+  fSingleTrackEfficiencyCorrectionType(AliAnalysisTaskEmcalJetHCorrelations::kEffDisable),
+  fArtificialTrackInefficiency(1.0),
   fNoMixedEventJESCorrection(kFALSE),
   fJESCorrectionHist(nullptr),
   fDoLessSparseAxes(kFALSE), fDoWiderTrackBin(kFALSE),
   fRequireMatchedJetWhenEmbedding(kTRUE),
+  fMinSharedMomentumFraction(0.),
+  fRequireMatchedPartLevelJet(false),
+  fMaxMatchedJetDistance(-1),
+  fHistManager(name),
   fHistTrackPt(nullptr),
   fHistJetEtaPhi(nullptr),
   fHistJetHEtaPhi(nullptr),
@@ -158,6 +171,19 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
     fOutput->Add(fHistJetPtBias[centralityBin]);
   }
 
+  // Jet matching cuts
+  std::vector<std::string> binLabels = {"noMatch", "matchedJet", "sharedMomentumFraction", "partLevelMatchedJet", "jetDistance", "passedAllCuts"};
+  for (auto histName : std::vector<std::string>({"SameEvent", "MixedEvent"})) {
+    name = std::string("fHistJetMatching") + histName.c_str() + "Cuts";
+    std::string title = std::string("Jets which passed matching jet cuts for ") + histName;
+    auto histMatchedJetCuts = fHistManager.CreateTH1(name, title.c_str(), binLabels.size(), 0, binLabels.size());
+    // Set label names
+    for (unsigned int i = 1; i <= binLabels.size(); i++) {
+      histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+    }
+    histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
+  }
+
   UInt_t cifras = 0; // bit coded, see GetDimParams() below 
   if(fDoLessSparseAxes) {
     cifras = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<9;
@@ -187,11 +213,18 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   fhnTrigger = NewTHnSparseF("fhnTrigger", cifras);
   fhnTrigger->Sumw2();
   fOutput->Add(fhnTrigger);
+
+  // Store hist manager output in the output list
+  TIter next(fHistManager.GetListOfHistograms());
+  TObject* obj = 0;
+  while ((obj = next())) {
+    fOutput->Add(obj);
+  }
   
   PostData(1, fOutput);
 
   // Event Mixing
-  Int_t poolSize = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPoolManager
+  Int_t poolSize = -1;  // Maximum number of events. Set to -1 to avoid limits on number of events
   // ZVertex
   Int_t nZVertexBins = 10;
   Double_t* zVertexBins = GenerateFixedBinArray(nZVertexBins, -10, 10);
@@ -199,7 +232,7 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   Int_t nEventActivityBins = 8;
   Double_t* eventActivityBins = 0;
   // +1 to accomodate the fact that we define bins rather than array entries.
-  Double_t multiplicityBins[kMixedEventMulitplictyBins+1] = {0., 4., 9., 15., 25., 35., 55., 100., 500.};
+  Double_t multiplicityBins[kMixedEventMultiplicityBins+1] = {0., 4., 9., 15., 25., 35., 55., 100., 500.};
 
   // Cannot use GetBeamType() since it is not available until UserExec()
   if (fForceBeamType != AliAnalysisTaskEmcal::kpp ) {   //all besides pp
@@ -213,6 +246,17 @@ void AliAnalysisTaskEmcalJetHCorrelations::UserCreateOutputObjects() {
   }
 
   fPoolMgr = new AliEventPoolManager(poolSize, fNMixingTracks, nEventActivityBins, eventActivityBins, nZVertexBins, zVertexBins);
+}
+
+void AliAnalysisTaskEmcalJetHCorrelations::ExecOnce()
+{
+  if (fArtificialTrackInefficiency < 1.) {
+    if (gRandom) delete gRandom;
+    gRandom = new TRandom3(0);
+  }
+
+  // Call the base class
+  AliAnalysisTaskEmcalJet::ExecOnce();
 }
 
 /**
@@ -248,6 +292,7 @@ UInt_t AliAnalysisTaskEmcalJetHCorrelations::RetrieveTriggerMask() const
     if (embeddingHelper) {
       auto aodHeader = dynamic_cast<AliVAODHeader *>(embeddingHelper->GetEventHeader());
       if (aodHeader) {
+        AliDebugStream(5) << "Retrieving trigger mask from embedded event\n";
         eventTrigger = aodHeader->GetOfflineTrigger();
       }
       else {
@@ -259,6 +304,7 @@ UInt_t AliAnalysisTaskEmcalJetHCorrelations::RetrieveTriggerMask() const
     }
   }
   else {
+    AliDebugStream(5) << "Retrieving trigger mask from internal event\n";
     eventTrigger = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   }
 
@@ -284,6 +330,10 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     AliError(Form("%s: Unable to retrieve jets!", GetName()));
     return kFALSE;
   }
+
+  // Keep track of the tracks which are rejected with an aritificial track inefficiency
+  std::vector<unsigned int> rejectedTrackIndices;
+  bool useListOfRejectedIndices = false;
 
   // Get z vertex
   Double_t zVertex=fVertex[2];
@@ -321,9 +371,15 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
   for (auto jet : jets->accepted()) {
     // Selects only events that we are interested in (ie triggered)
     if (!(eventTrigger & fTriggerType)) {
-      AliDebugStream(5) << "Rejected jets due to physics selection. Phys sel: " << std::bitset<32>(eventTrigger) << ", requested triggers: " << std::bitset<32>(fTriggerType) << " \n";
-      // We can break here - the physics selection is not going to change within an event.
-      break;
+      // The two bitwise and to zero yet are still equal when both are 0, so we allow for that possibility
+      if (eventTrigger == fTriggerType && eventTrigger == 0) {
+        AliDebugStream(5) << "Event accepted because the physics selection is \"0\".\n";
+      }
+      else {
+        AliDebugStream(5) << "Rejected jets due to physics selection. Phys sel: " << std::bitset<32>(eventTrigger) << ", requested triggers: " << std::bitset<32>(fTriggerType) << " \n";
+        // We can break here - the physics selection is not going to change within an event.
+        break;
+      }
     }
 
     AliDebugStream(5) << "Jet passed event selection!\nJet: " << jet->toString().Data() << "\n";
@@ -331,11 +387,8 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     // Require the found jet to be matched
     // This match should be between detector and particle level MC
     if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
-      if (jet->MatchedJet()) {
-        AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
-      }
-      else {
-        AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+      bool foundMatchedJet = CheckForMatchedJet(jets, jet, "fHistJetMatchingSameEventCuts");
+      if (foundMatchedJet == false) {
         continue;
       }
     }
@@ -353,7 +406,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     leadJet = kFALSE;
     if (jet == leadingJet) leadJet = kTRUE;
     biasedJet = BiasedJet(jet);
-    epAngle = GetRelativeEPAngle(jet->Phi(), fEPV0);
+    epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
 
     // Fill jet properties
     fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
@@ -369,11 +422,20 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     if (jet->Pt() > 15) {
 
       AliDebugStream(4) << "Passed min jet pt cut of 15. Jet: " << jet->toString().Data() << "\n";
-      for (auto trackIter : tracks->accepted_momentum()) {
-
-        // Get proper track proeprties
+      AliDebugStream(4) << "N accepted tracks: " << tracks->GetNAcceptedTracks() << "\n";
+      auto tracksIter = tracks->accepted_momentum();
+      for (auto trackIter = tracksIter.begin(); trackIter != tracksIter.end(); trackIter++ ) {
+        // Get proper track properties
         track.Clear();
-        track = trackIter.first;
+        track = trackIter->first;
+
+        // Artificial inefficiency
+        // Note that we already randomly rejected tracks so that the same tracks will be rejected for the mixed events
+        bool rejectParticle = CheckArtificialTrackEfficiency(trackIter.current_index(), rejectedTrackIndices, useListOfRejectedIndices);
+        if (rejectParticle) {
+          AliDebugStream(4) << "Track rejected in signal correlation loop.\n";
+          continue;
+        }
 
         // Determine relative angles and distances and set the respective variables
         GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
@@ -384,7 +446,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
 
         // Calculate single particle tracking efficiency for correlations
         efficiency = EffCorrection(track.Eta(), track.Pt());
-        AliDebugStream(6) << GetName() << ": efficiency: " << efficiency << "\n";
+        AliDebugStream(6) << "track eta: " << track.Eta() << ", track pt: " << track.Pt() << ", efficiency: " << efficiency << "\n";
 
         if (biasedJet == kTRUE) {
           if(fDoLessSparseAxes) { // check if we want all dimensions
@@ -397,6 +459,12 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
         }
 
       } //track loop
+
+      // After one jet (and looping over whatever tracks are available in this event), we want to use the list of rejected indices,
+      // both for the next possible signal jet in the event and for the mixed events
+      AliDebugStream(4) << "Switching to list of rejected track indices. Number of indices: " << rejectedTrackIndices.size() << "\n";
+      useListOfRejectedIndices = true;
+
     }//jet pt cut
   }//jet loop
 
@@ -442,7 +510,8 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
     // The number of events in the pool
     Int_t nMix = pool->GetCurrentNEvents();
 
-    if(eventTrigger & fTriggerType) {
+    // The two bitwise and to zero yet are still equal when both are 0, so we allow for that possibility
+    if((eventTrigger & fTriggerType) || eventTrigger == fTriggerType) {
       // check for a trigger jet
       if (pool->IsReady() || pool->NTracksInPool() >= fMinNTracksMixedEvents || nMix >= fMinNEventsMixedEvents) {
 
@@ -450,11 +519,8 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           // Require the found jet to be matched
           // This match should be between detector and particle level MC
           if (fIsEmbedded && fRequireMatchedJetWhenEmbedding) {
-            if (jet->MatchedJet()) {
-              AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString().Data() << "\n";
-            }
-            else {
-              AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+            bool foundMatchedJet = CheckForMatchedJet(jets, jet, "fHistJetMatchingMixedEventCuts");
+            if (foundMatchedJet == false) {
               continue;
             }
           }
@@ -471,7 +537,7 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
           leadJet = kFALSE;
           if (jet == leadingJet) { leadJet = kTRUE; }
           biasedJet = BiasedJet(jet);
-          epAngle = GetRelativeEPAngle(jet->Phi(), fEPV0);
+          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
 
           // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
           if (jet->Pt() < 15 || biasedJet == kFALSE) continue;
@@ -485,6 +551,9 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
               if(!bgTrack) {
                 AliError(Form("%s:Failed to retrieve tracks from mixed events", GetName()));
               }
+
+              // NOTE: We don't need to apply the artificial track inefficiency here because we already applied
+              //       it when will filling into the event pool (in CloneAndReduceTrackList()).
 
               // Fill into TLorentzVector for use with functions below
               track.Clear();
@@ -509,8 +578,9 @@ Bool_t AliAnalysisTaskEmcalJetHCorrelations::Run()
       }
     }
 
-    if (eventTrigger & fMixingEventType) {
-      tracksClone = CloneAndReduceTrackList();
+    // The two bitwise and to zero yet are still equal when both are 0, so we allow for that possibility
+    if ((eventTrigger & fMixingEventType) || eventTrigger == fMixingEventType) {
+      tracksClone = CloneAndReduceTrackList(rejectedTrackIndices, useListOfRejectedIndices);
 
       //update pool if jet in event or not
       pool->UpdatePool(tracksClone);
@@ -558,39 +628,114 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDeltaEtaDeltaPhiDeltaR(AliTLorentz
 }
 
 /**
- * Function to calculate angle between jet and EP in the 1st quadrant (0,Pi/2).
- * Adapted from AliAnalysisTaskEmcalJetHadEPpid.
+ * Check whether a track should be rejected due to artificial track inefficiency.
  *
- * @param jetAngle Phi angle of the jet (could be any particle)
- * @param epAngle Event plane angle
- *
- * @return Angle between jet and EP in the 1st quadrant (0,Pi/2)
+ * @param[in] trackIndex Index of the current track.
+ * @param[in] rejectedTrackIndices Vector of track indices which have been already rejected. Can be used to store the track index if rejected or reject a track if matched (depending on useRejectedList).
+ * @param[in] useRejectedList If true, check if the current track index is in the rejected index list and reject if so. If false, will randomly reject the track according to the track inefficiency.
+ * @return True if particle should be rejected
  */
-Double_t AliAnalysisTaskEmcalJetHCorrelations::GetRelativeEPAngle(Double_t jetAngle, Double_t epAngle) const
+bool AliAnalysisTaskEmcalJetHCorrelations::CheckArtificialTrackEfficiency(unsigned int trackIndex, std::vector<unsigned int> & rejectedTrackIndices, bool useRejectedList)
 {
-  Double_t dphi = (epAngle - jetAngle);
-
-  // ran into trouble with a few dEP<-Pi so trying this...
-  if( dphi<-1*TMath::Pi() ) {
-    dphi = dphi + 1*TMath::Pi();
-  } // this assumes we are doing full jets currently
-
-  if( (dphi>0) && (dphi<1*TMath::Pi()/2) ) {
-    // Do nothing! we are in quadrant 1
-  } else if ( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi()) ) {
-    dphi = 1*TMath::Pi() - dphi;
-  } else if ( (dphi<0) && (dphi>-1*TMath::Pi()/2) ) {
-    dphi = std::abs(dphi);
-  } else if ( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi()) ) {
-    dphi = dphi + 1*TMath::Pi();
+  bool returnValue = false;
+  if (fArtificialTrackInefficiency < 1.) {
+    if (useRejectedList) {
+      if (std::find(rejectedTrackIndices.begin(), rejectedTrackIndices.end(), trackIndex) != rejectedTrackIndices.end()) {
+        AliDebugStream(4) << "Track " << trackIndex << " rejected due to artificial tracking inefficiency (from list)\n";
+        returnValue = true;
+      }
+    }
+    else {
+      // Rejet randomly
+      Double_t rnd = gRandom->Rndm();
+      if (fArtificialTrackInefficiency < rnd) {
+        // Store index so we can reject it again if it is also filled for mixed events
+        rejectedTrackIndices.push_back(trackIndex);
+        AliDebugStream(4) << "Track " << trackIndex << " rejected due to artificial tracking inefficiency (from random)\n";
+        returnValue = true;
+      }
+    }
   }
 
-  // Warn if we are not in the proper range
-  if ( dphi < 0 || dphi > TMath::Pi()/2 ) {
-    AliWarningStream() << GetName() << ": dPHI not in range [0, 0.5*Pi]!\n";
+  return returnValue;
+}
+
+/**
+ * Check for whether a matched jet should be accepted based on:
+ * - Jet being identified as matched to another jet
+ * - The shared momentum fraction being larger than some minimum value
+ * - Their matched distance being below the max matching distance
+ * - A particle level jet being matched to the detector level jet
+ *
+ * All of the above options are configurable and off by default (except for requiring a basic match).
+ *
+ * NOTE: AliEmcalJet::ClosestJet() is called instead of AliEmcalJet::MatchedJet() because ClosestJet() will work
+ * with both the EMCal Jet Tagger and the Response Maker, while MatchedJet() will only work with the Response Maker
+ * due to the design of the classes.
+ *
+ * @param[in] jets Jet container corresponding to the matched jet
+ * @param[in] jet Jet to be checked
+ * @param[in] histName Name of the hist in the hist manager where QA information will be filled
+ * @return true if the jet passes the criteria. false otherwise.
+ */
+bool AliAnalysisTaskEmcalJetHCorrelations::CheckForMatchedJet(AliJetContainer * jets, AliEmcalJet * jet, const std::string & histName)
+{
+  bool returnValue = false;
+  if (jet->ClosestJet()) {
+    fHistManager.FillTH1(histName.c_str(), "matchedJet");
+    returnValue = true;
+    // TODO: Can it be merged with the function in JetHPerformance?
+    AliDebugStream(4) << "Jet is matched!\nJet: " << jet->toString() << "\n";
+    // Check shared momentum fraction
+    // We explicitly want to use indices instead of geometric matching
+    double sharedFraction = jets->GetFractionSharedPt(jet, nullptr);
+    if (sharedFraction < fMinSharedMomentumFraction) {
+      AliDebugStream(4) << "Jet rejected due to shared momentum fraction of " << sharedFraction << ", which is smaller than the min momentum fraction of " << fMinSharedMomentumFraction << "\n";
+      returnValue = false;
+    }
+    else {
+      AliDebugStream(4) << "Passed shared momentum fraction with value of " << sharedFraction << "\n";
+      fHistManager.FillTH1(histName.c_str(), "sharedMomentumFraction");
+    }
+
+    if (fRequireMatchedPartLevelJet) {
+      AliEmcalJet * detLevelJet = jet->ClosestJet();
+      AliEmcalJet * partLevelJet = detLevelJet->ClosestJet();
+      if (!partLevelJet) {
+        AliDebugStream(4) << "Jet rejected due to no matching part level jet.\n";
+        returnValue = false;
+      }
+      else {
+        AliDebugStream(4) << "Det level jet has a required match to a part level jet.\n" << "Part level jet: " << partLevelJet->toString() << "\n";
+        fHistManager.FillTH1(histName.c_str(), "partLevelMatchedJet");
+      }
+    }
+
+    // Only check matched jet distance if a value has been set
+    if (fMaxMatchedJetDistance > 0) {
+      double matchedJetDistance = jet->ClosestJetDistance();
+      if (matchedJetDistance > fMaxMatchedJetDistance) {
+        AliDebugStream(4) << "Jet rejected due to matching distance of " << matchedJetDistance << ", which is larger than the max distance of " << fMaxMatchedJetDistance << "\n";
+        returnValue = false;
+      }
+      else {
+        AliDebugStream(4) << "Jet passed distance cut with distance of " << matchedJetDistance << "\n";
+        fHistManager.FillTH1(histName.c_str(), "jetDistance");
+      }
+    }
+
+    // Record all cuts passed
+    if (returnValue == true) {
+      fHistManager.FillTH1(histName.c_str(), "passedAllCuts");
+    }
+  }
+  else {
+    AliDebugStream(5) << "Rejected jet because it was not matched to a external event jet.\n";
+    fHistManager.FillTH1(histName.c_str(), "noMatch");
+    returnValue = false;
   }
 
-  return dphi;   // dphi in [0, Pi/2]
+  return returnValue;
 }
 
 /**
@@ -653,6 +798,11 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
       nbins = 10;
       xmin = 0.;
       xmax = 100.;
+      // Adjust for pp, since we are retrieving multiplicity instead
+      if (fForceBeamType == AliAnalysisTaskEmcal::kpp) {
+        label = "Multiplicity";
+        xmax = 200.;
+      }
       break;
 
     case 1:
@@ -677,14 +827,14 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
       break;
 
     case 3:
-      label = "#delta#eta";
+      label = "#Delta#eta";
       nbins = 24;
       xmin = -1.2;
       xmax = 1.2;
       break;
 
     case 4:
-      label = "#delta#phi";
+      label = "#Delta#phi";
       nbins = 72;
       xmin = -0.5*pi;
       xmax = 1.5*pi;
@@ -734,18 +884,30 @@ void AliAnalysisTaskEmcalJetHCorrelations::GetDimParams(Int_t iEntry, TString &l
  *
  * @return Array containing the lighter track objects.
  */
-TObjArray* AliAnalysisTaskEmcalJetHCorrelations::CloneAndReduceTrackList()
+TObjArray* AliAnalysisTaskEmcalJetHCorrelations::CloneAndReduceTrackList(std::vector<unsigned int> & rejectedTrackIndices, const bool useRejectedList)
 {
   // clones a track list by using AliBasicTrack which uses much less memory (used for event mixing)
   TObjArray* tracksClone = new TObjArray;
   tracksClone->SetOwner(kTRUE);
 
   // Loop over all tracks
+  AliVParticle * particle = 0;
   AliBasicParticle * clone = 0;
   AliTrackContainer * tracks = GetTrackContainer("tracksForCorrelations");
 
-  for (auto particle : tracks->accepted())
+  auto particlesIter = tracks->accepted_momentum();
+  for (auto particleIter = particlesIter.begin(); particleIter != particlesIter.end(); particleIter++)
   {
+    // Retrieve the particle
+    particle = particleIter->second;
+
+    // Artificial inefficiency
+    bool rejectParticle = CheckArtificialTrackEfficiency(particleIter.current_index(), rejectedTrackIndices, useRejectedList);
+    if (rejectParticle) {
+      AliDebugStream(4) << "Track rejected in CloneAndReduceTrackList()\n";
+      continue;
+    }
+
     // Fill some QA information about the tracks
     Int_t trackPtBin = GetTrackPtBin(particle->Pt());
     if(trackPtBin > -1) fHistTrackEtaPhi[trackPtBin]->Fill(particle->Eta(),particle->Phi());
@@ -796,128 +958,149 @@ Double_t AliAnalysisTaskEmcalJetHCorrelations::EffCorrection(Double_t trackETA, 
   // x-variable = track pt, y-variable = track eta
   Double_t x = trackPT;
   Double_t y = trackETA;
-  Double_t TRefficiency = -999;
-  Int_t runNUM = fCurrentRunNumber;
-  Int_t runSwitchGood = -999;
-  //Int_t centbin = -99;
+  double etaaxis = 0;
+  double ptaxis = 0;
 
-  Double_t etaaxis = 0;
-  Double_t ptaxis = 0;
+  // Efficiency paramaters
+  double TRefficiency = -1;
+  int effSwitch = 1;
 
-  Int_t effSwitch = fDoEffCorrection;
-
-  if (beamType != AliAnalysisTaskEmcal::kpp) {
-    if(effSwitch == 1) {
+  if (fSingleTrackEfficiencyCorrectionType == AliAnalysisTaskEmcalJetHCorrelations::kEffAutomaticConfiguration) {
+    if (beamType == AliAnalysisTaskEmcal::kAA) {
+      // Setup for Pb--Pb
+      int runQuality = -1;
       // Semi-Good OROC C08 Runlists
-      if ((runNUM == 169975 || runNUM == 169981 || runNUM == 170038 || runNUM == 170040 || runNUM == 170083 || runNUM == 170084 || runNUM == 170085 || runNUM == 170088 || runNUM == 170089 || runNUM == 170091 || runNUM == 170152 || runNUM == 170155 || runNUM == 170159 || runNUM == 170163 || runNUM == 170193 || runNUM == 170195 || runNUM == 170203 || runNUM == 170204 || runNUM == 170228 || runNUM == 170230 || runNUM == 170268 || runNUM == 170269 || runNUM == 170270 || runNUM == 170306 || runNUM == 170308 || runNUM == 170309)) runSwitchGood = 0;
+      if (fCurrentRunNumber == 169975 || fCurrentRunNumber == 169981 || fCurrentRunNumber == 170038 || fCurrentRunNumber == 170040 || fCurrentRunNumber == 170083 || fCurrentRunNumber == 170084 || fCurrentRunNumber == 170085 || fCurrentRunNumber == 170088 || fCurrentRunNumber == 170089 || fCurrentRunNumber == 170091 || fCurrentRunNumber == 170152 || fCurrentRunNumber == 170155 || fCurrentRunNumber == 170159 || fCurrentRunNumber == 170163 || fCurrentRunNumber == 170193 || fCurrentRunNumber == 170195 || fCurrentRunNumber == 170203 || fCurrentRunNumber == 170204 || fCurrentRunNumber == 170228 || fCurrentRunNumber == 170230 || fCurrentRunNumber == 170268 || fCurrentRunNumber == 170269 || fCurrentRunNumber == 170270 || fCurrentRunNumber == 170306 || fCurrentRunNumber == 170308 || fCurrentRunNumber == 170309) runQuality = 0;
 
       // Good Runlists
-      if ((runNUM == 167902 || runNUM == 167903 || runNUM == 167915 || runNUM == 167920 || runNUM == 167987 || runNUM == 167988 || runNUM == 168066 || runNUM == 168068 || runNUM == 168069 || runNUM == 168076 || runNUM == 168104 || runNUM == 168107 || runNUM == 168108 || runNUM == 168115 || runNUM == 168212 || runNUM == 168310 || runNUM == 168311 || runNUM == 168322 || runNUM == 168325 || runNUM == 168341 || runNUM == 168342 || runNUM == 168361 || runNUM == 168362 || runNUM == 168458 || runNUM == 168460 || runNUM == 168461 || runNUM == 168464 || runNUM == 168467 || runNUM == 168511 || runNUM == 168512 || runNUM == 168777 || runNUM == 168826 || runNUM == 168984 || runNUM == 168988 || runNUM == 168992 || runNUM == 169035 || runNUM == 169091 || runNUM == 169094 || runNUM == 169138 || runNUM == 169143 || runNUM == 169144 || runNUM == 169145 || runNUM == 169148 || runNUM == 169156 || runNUM == 169160 || runNUM == 169167 || runNUM == 169238 || runNUM == 169411 || runNUM == 169415 || runNUM == 169417 || runNUM == 169835 || runNUM == 169837 || runNUM == 169838 || runNUM == 169846 || runNUM == 169855 || runNUM == 169858 || runNUM == 169859 || runNUM == 169923 || runNUM == 169956 || runNUM == 170027 || runNUM == 170036 || runNUM == 170081)) runSwitchGood = 1;
+      if (fCurrentRunNumber == 167902 || fCurrentRunNumber == 167903 || fCurrentRunNumber == 167915 || fCurrentRunNumber == 167920 || fCurrentRunNumber == 167987 || fCurrentRunNumber == 167988 || fCurrentRunNumber == 168066 || fCurrentRunNumber == 168068 || fCurrentRunNumber == 168069 || fCurrentRunNumber == 168076 || fCurrentRunNumber == 168104 || fCurrentRunNumber == 168107 || fCurrentRunNumber == 168108 || fCurrentRunNumber == 168115 || fCurrentRunNumber == 168212 || fCurrentRunNumber == 168310 || fCurrentRunNumber == 168311 || fCurrentRunNumber == 168322 || fCurrentRunNumber == 168325 || fCurrentRunNumber == 168341 || fCurrentRunNumber == 168342 || fCurrentRunNumber == 168361 || fCurrentRunNumber == 168362 || fCurrentRunNumber == 168458 || fCurrentRunNumber == 168460 || fCurrentRunNumber == 168461 || fCurrentRunNumber == 168464 || fCurrentRunNumber == 168467 || fCurrentRunNumber == 168511 || fCurrentRunNumber == 168512 || fCurrentRunNumber == 168777 || fCurrentRunNumber == 168826 || fCurrentRunNumber == 168984 || fCurrentRunNumber == 168988 || fCurrentRunNumber == 168992 || fCurrentRunNumber == 169035 || fCurrentRunNumber == 169091 || fCurrentRunNumber == 169094 || fCurrentRunNumber == 169138 || fCurrentRunNumber == 169143 || fCurrentRunNumber == 169144 || fCurrentRunNumber == 169145 || fCurrentRunNumber == 169148 || fCurrentRunNumber == 169156 || fCurrentRunNumber == 169160 || fCurrentRunNumber == 169167 || fCurrentRunNumber == 169238 || fCurrentRunNumber == 169411 || fCurrentRunNumber == 169415 || fCurrentRunNumber == 169417 || fCurrentRunNumber == 169835 || fCurrentRunNumber == 169837 || fCurrentRunNumber == 169838 || fCurrentRunNumber == 169846 || fCurrentRunNumber == 169855 || fCurrentRunNumber == 169858 || fCurrentRunNumber == 169859 || fCurrentRunNumber == 169923 || fCurrentRunNumber == 169956 || fCurrentRunNumber == 170027 || fCurrentRunNumber == 170036 || fCurrentRunNumber == 170081) runQuality = 1;
 
       // Determine which efficiency to use.
-      // This is just a way to map all possible values of the cent bin and runSwitchGood to a unique flag.
+      // This is just a way to map all possible values of the cent bin and runQuality to a unique flag.
       // 4 is the number of cent bins, and we want to index the effSwitch starting at 2.
-      if (runSwitchGood != -999) {
-        effSwitch = 2 + runSwitchGood*4 + fCentBin;
+      if (runQuality != -1) {
+        effSwitch = 2 + runQuality*4 + fCentBin;
       }
     }
-
-    // set up a switch for different parameter values...
-    switch(effSwitch) {
-      case 1 :
-        // first switch value - TRefficiency not used so = 1
-        // In this case, the run number isn't in any run list, so efficiency = 1
-        TRefficiency = 1.0;
-        break;
-
-      case 2 :
-        // Parameter values for Semi-GOOD TPC (LHC11h) runs (0-10%):
-        ptaxis = (x<2.9)*(p0_10SG[0]*exp(-pow(p0_10SG[1]/x,p0_10SG[2])) + p0_10SG[3]*x) + (x>=2.9)*(p0_10SG[4] + p0_10SG[5]*x + p0_10SG[6]*x*x);
-        etaaxis = (y<-0.07)*(p0_10SG[7]*exp(-pow(p0_10SG[8]/TMath::Abs(y+0.91),p0_10SG[9])) + p0_10SG[10]*y) + (y>=-0.07 && y<=0.4)*(p0_10SG[11] + p0_10SG[12]*y + p0_10SG[13]*y*y) + (y>0.4)*(p0_10SG[14]*exp(-pow(p0_10SG[15]/TMath::Abs(-y+0.91),p0_10SG[16])));
-        TRefficiency = ptaxis*etaaxis;
-        break;
-
-      case 3 :
-        // Parameter values for Semi-GOOD TPC (LHC11h) runs (10-30%):
-        ptaxis = (x<2.9)*(p10_30SG[0]*exp(-pow(p10_30SG[1]/x,p10_30SG[2])) + p10_30SG[3]*x) + (x>=2.9)*(p10_30SG[4] + p10_30SG[5]*x + p10_30SG[6]*x*x);
-        etaaxis = (y<-0.07)*(p10_30SG[7]*exp(-pow(p10_30SG[8]/TMath::Abs(y+0.91),p10_30SG[9])) + p10_30SG[10]*y) + (y>=-0.07 && y<=0.4)*(p10_30SG[11] + p10_30SG[12]*y + p10_30SG[13]*y*y) + (y>0.4)*(p10_30SG[14]*exp(-pow(p10_30SG[15]/TMath::Abs(-y+0.91),p10_30SG[16])));
-        TRefficiency = ptaxis*etaaxis;
-        break;
-
-      case 4 :
-        // Parameter values for Semi-GOOD TPC (LHC11h) runs (30-50%):
-        ptaxis = (x<2.9)*(p30_50SG[0]*exp(-pow(p30_50SG[1]/x,p30_50SG[2])) + p30_50SG[3]*x) + (x>=2.9)*(p30_50SG[4] + p30_50SG[5]*x + p30_50SG[6]*x*x);
-        etaaxis = (y<-0.07)*(p30_50SG[7]*exp(-pow(p30_50SG[8]/TMath::Abs(y+0.91),p30_50SG[9])) + p30_50SG[10]*y) + (y>=-0.07 && y<=0.4)*(p30_50SG[11] + p30_50SG[12]*y + p30_50SG[13]*y*y) + (y>0.4)*(p30_50SG[14]*exp(-pow(p30_50SG[15]/TMath::Abs(-y+0.91),p30_50SG[16])));
-        TRefficiency = ptaxis*etaaxis;
-        break;
-
-      case 5 :
-        // Parameter values for Semi-GOOD TPC (LHC11h) runs (50-90%):
-        ptaxis = (x<2.9)*(p50_90SG[0]*exp(-pow(p50_90SG[1]/x,p50_90SG[2])) + p50_90SG[3]*x) + (x>=2.9)*(p50_90SG[4] + p50_90SG[5]*x + p50_90SG[6]*x*x);
-        etaaxis = (y<-0.07)*(p50_90SG[7]*exp(-pow(p50_90SG[8]/TMath::Abs(y+0.91),p50_90SG[9])) + p50_90SG[10]*y) + (y>=-0.07 && y<=0.4)*(p50_90SG[11] + p50_90SG[12]*y + p50_90SG[13]*y*y) + (y>0.4)*(p50_90SG[14]*exp(-pow(p50_90SG[15]/TMath::Abs(-y+0.91),p50_90SG[16])));
-        TRefficiency = ptaxis*etaaxis;
-        break;
-
-      case 6 :
-        // Parameter values for GOOD TPC (LHC11h) runs (0-10%):
-        ptaxis = (x<2.9)*(p0_10G[0]*exp(-pow(p0_10G[1]/x,p0_10G[2])) + p0_10G[3]*x) + (x>=2.9)*(p0_10G[4] + p0_10G[5]*x + p0_10G[6]*x*x);
-        etaaxis = (y<0.0)*(p0_10G[7]*exp(-pow(p0_10G[8]/TMath::Abs(y+0.91),p0_10G[9])) + p0_10G[10]*y) + (y>=0.0 && y<=0.4)*(p0_10G[11] + p0_10G[12]*y + p0_10G[13]*y*y) + (y>0.4)*(p0_10G[14]*exp(-pow(p0_10G[15]/TMath::Abs(-y+0.91),p0_10G[16])));
-        TRefficiency = ptaxis*etaaxis;
-        break;
-
-      case 7 :
-        // Parameter values for GOOD TPC (LHC11h) runs (10-30%):
-        ptaxis = (x<2.9)*(p10_30G[0]*exp(-pow(p10_30G[1]/x,p10_30G[2])) + p10_30G[3]*x) + (x>=2.9)*(p10_30G[4] + p10_30G[5]*x + p10_30G[6]*x*x);
-        etaaxis = (y<0.0)*(p10_30G[7]*exp(-pow(p10_30G[8]/TMath::Abs(y+0.91),p10_30G[9])) + p10_30G[10]*y) + (y>=0.0 && y<=0.4)*(p10_30G[11] + p10_30G[12]*y + p10_30G[13]*y*y) + (y>0.4)*(p10_30G[14]*exp(-pow(p10_30G[15]/TMath::Abs(-y+0.91),p10_30G[16])));
-        TRefficiency = ptaxis*etaaxis;
-        break;
-
-      case 8 :
-        // Parameter values for GOOD TPC (LHC11h) runs (30-50%):
-        ptaxis = (x<2.9)*(p30_50G[0]*exp(-pow(p30_50G[1]/x,p30_50G[2])) + p30_50G[3]*x) + (x>=2.9)*(p30_50G[4] + p30_50G[5]*x + p30_50G[6]*x*x);
-        etaaxis = (y<0.0)*(p30_50G[7]*exp(-pow(p30_50G[8]/TMath::Abs(y+0.91),p30_50G[9])) + p30_50G[10]*y) + (y>=0.0 && y<=0.4)*(p30_50G[11] + p30_50G[12]*y + p30_50G[13]*y*y) + (y>0.4)*(p30_50G[14]*exp(-pow(p30_50G[15]/TMath::Abs(-y+0.91),p30_50G[16])));
-        TRefficiency = ptaxis*etaaxis;
-        break;
-
-      case 9 :
-        // Parameter values for GOOD TPC (LHC11h) runs (50-90%):
-        ptaxis = (x<2.9)*(p50_90G[0]*exp(-pow(p50_90G[1]/x,p50_90G[2])) + p50_90G[3]*x) + (x>=2.9)*(p50_90G[4] + p50_90G[5]*x + p50_90G[6]*x*x);
-        etaaxis = (y<0.0)*(p50_90G[7]*exp(-pow(p50_90G[8]/TMath::Abs(y+0.91),p50_90G[9])) + p50_90G[10]*y) + (y>=0.0 && y<=0.4)*(p50_90G[11] + p50_90G[12]*y + p50_90G[13]*y*y) + (y>0.4)*(p50_90G[14]*exp(-pow(p50_90G[15]/TMath::Abs(-y+0.91),p50_90G[16])));
-        TRefficiency = ptaxis*etaaxis;
-        break;
-
-      default :
-        // no Efficiency Switch option selected.. therefore don't correct, and set eff = 1
-        // ie. The efficiency correction is disabled.
-        TRefficiency = 1.0;
+    else if (beamType == AliAnalysisTaskEmcal::kpA) {
+      // pA
+      AliErrorStream() << "Single track efficiency for pA is not available.\n";
+      return 0;
     }
-  }
-  else {
-    // Track efficiency for pp
-    // Calculated using LHC12f1a. See analysis note for more details!
-
-    if (fDoEffCorrection != 0) {
-      // If the trackPt > 6 GeV, then all we need is this coefficient
-      Double_t coefficient = 0.898052;                                                // p6
-      if (trackPT < 6) {
-        coefficient =  (1 + -0.442232 * trackPT                                     // p0
-                 +  0.501831 * std::pow(trackPT, 2)                        // p1
-                 + -0.252024 * std::pow(trackPT, 3)                        // p2
-                 +  0.062964 * std::pow(trackPT, 4)                        // p3
-                 + -0.007681 * std::pow(trackPT, 5)                        // p4
-                 +  0.000365 * std::pow(trackPT, 6));                      // p5
-      }
-
-      // Calculate track eff
-      TRefficiency = coefficient * (1 +  0.402825 * std::abs(trackETA)                // p7
-                      + -2.213152 * std::pow(trackETA, 2)             // p8
-                      +  4.311098 * std::abs(std::pow(trackETA, 3))   // p9
-                      + -2.778200 * std::pow(trackETA, 4));           // p10
+    else if (beamType == AliAnalysisTaskEmcal::kpp) {
+      // Setup for pp
+      effSwitch = 10;
     }
     else {
-      // no Efficiency Switch option selected.. therefore don't correct, and set eff = 1
-      TRefficiency = 1;
+      AliErrorStream() << "Beam type " << fBeamType << " is not defined\n";
+      return 0;
     }
+  }
+  else if (fSingleTrackEfficiencyCorrectionType == AliAnalysisTaskEmcalJetHCorrelations::kEffPP) {
+    // Manually set to pp (for example, during embedding)
+    effSwitch = 10;
+  }
+  else if (fSingleTrackEfficiencyCorrectionType == AliAnalysisTaskEmcalJetHCorrelations::kEffDisable) {
+    // Use the default value, which is to have a constant efficiency of 1
+    effSwitch = 1;
+  }
+  else {
+    AliErrorStream() << "Single track efficiency correction type " << fSingleTrackEfficiencyCorrectionType << " is not recongized!\n";
+  }
+
+  AliDebugStream(5) << "Using efficiency switch value of " << effSwitch << "\n";
+
+  switch(effSwitch) {
+    case 1 :
+      // first switch value - TRefficiency not used so = 1
+      // In this case, the run number isn't in any run list, so efficiency = 1
+      TRefficiency = 1.0;
+      break;
+
+    case 2 :
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs (0-10%):
+      ptaxis = (x<2.9)*(p0_10SG[0]*exp(-pow(p0_10SG[1]/x,p0_10SG[2])) + p0_10SG[3]*x) + (x>=2.9)*(p0_10SG[4] + p0_10SG[5]*x + p0_10SG[6]*x*x);
+      etaaxis = (y<-0.07)*(p0_10SG[7]*exp(-pow(p0_10SG[8]/TMath::Abs(y+0.91),p0_10SG[9])) + p0_10SG[10]*y) + (y>=-0.07 && y<=0.4)*(p0_10SG[11] + p0_10SG[12]*y + p0_10SG[13]*y*y) + (y>0.4)*(p0_10SG[14]*exp(-pow(p0_10SG[15]/TMath::Abs(-y+0.91),p0_10SG[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 3 :
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs (10-30%):
+      ptaxis = (x<2.9)*(p10_30SG[0]*exp(-pow(p10_30SG[1]/x,p10_30SG[2])) + p10_30SG[3]*x) + (x>=2.9)*(p10_30SG[4] + p10_30SG[5]*x + p10_30SG[6]*x*x);
+      etaaxis = (y<-0.07)*(p10_30SG[7]*exp(-pow(p10_30SG[8]/TMath::Abs(y+0.91),p10_30SG[9])) + p10_30SG[10]*y) + (y>=-0.07 && y<=0.4)*(p10_30SG[11] + p10_30SG[12]*y + p10_30SG[13]*y*y) + (y>0.4)*(p10_30SG[14]*exp(-pow(p10_30SG[15]/TMath::Abs(-y+0.91),p10_30SG[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 4 :
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs (30-50%):
+      ptaxis = (x<2.9)*(p30_50SG[0]*exp(-pow(p30_50SG[1]/x,p30_50SG[2])) + p30_50SG[3]*x) + (x>=2.9)*(p30_50SG[4] + p30_50SG[5]*x + p30_50SG[6]*x*x);
+      etaaxis = (y<-0.07)*(p30_50SG[7]*exp(-pow(p30_50SG[8]/TMath::Abs(y+0.91),p30_50SG[9])) + p30_50SG[10]*y) + (y>=-0.07 && y<=0.4)*(p30_50SG[11] + p30_50SG[12]*y + p30_50SG[13]*y*y) + (y>0.4)*(p30_50SG[14]*exp(-pow(p30_50SG[15]/TMath::Abs(-y+0.91),p30_50SG[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 5 :
+      // Parameter values for Semi-GOOD TPC (LHC11h) runs (50-90%):
+      ptaxis = (x<2.9)*(p50_90SG[0]*exp(-pow(p50_90SG[1]/x,p50_90SG[2])) + p50_90SG[3]*x) + (x>=2.9)*(p50_90SG[4] + p50_90SG[5]*x + p50_90SG[6]*x*x);
+      etaaxis = (y<-0.07)*(p50_90SG[7]*exp(-pow(p50_90SG[8]/TMath::Abs(y+0.91),p50_90SG[9])) + p50_90SG[10]*y) + (y>=-0.07 && y<=0.4)*(p50_90SG[11] + p50_90SG[12]*y + p50_90SG[13]*y*y) + (y>0.4)*(p50_90SG[14]*exp(-pow(p50_90SG[15]/TMath::Abs(-y+0.91),p50_90SG[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 6 :
+      // Parameter values for GOOD TPC (LHC11h) runs (0-10%):
+      ptaxis = (x<2.9)*(p0_10G[0]*exp(-pow(p0_10G[1]/x,p0_10G[2])) + p0_10G[3]*x) + (x>=2.9)*(p0_10G[4] + p0_10G[5]*x + p0_10G[6]*x*x);
+      etaaxis = (y<0.0)*(p0_10G[7]*exp(-pow(p0_10G[8]/TMath::Abs(y+0.91),p0_10G[9])) + p0_10G[10]*y) + (y>=0.0 && y<=0.4)*(p0_10G[11] + p0_10G[12]*y + p0_10G[13]*y*y) + (y>0.4)*(p0_10G[14]*exp(-pow(p0_10G[15]/TMath::Abs(-y+0.91),p0_10G[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 7 :
+      // Parameter values for GOOD TPC (LHC11h) runs (10-30%):
+      ptaxis = (x<2.9)*(p10_30G[0]*exp(-pow(p10_30G[1]/x,p10_30G[2])) + p10_30G[3]*x) + (x>=2.9)*(p10_30G[4] + p10_30G[5]*x + p10_30G[6]*x*x);
+      etaaxis = (y<0.0)*(p10_30G[7]*exp(-pow(p10_30G[8]/TMath::Abs(y+0.91),p10_30G[9])) + p10_30G[10]*y) + (y>=0.0 && y<=0.4)*(p10_30G[11] + p10_30G[12]*y + p10_30G[13]*y*y) + (y>0.4)*(p10_30G[14]*exp(-pow(p10_30G[15]/TMath::Abs(-y+0.91),p10_30G[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 8 :
+      // Parameter values for GOOD TPC (LHC11h) runs (30-50%):
+      ptaxis = (x<2.9)*(p30_50G[0]*exp(-pow(p30_50G[1]/x,p30_50G[2])) + p30_50G[3]*x) + (x>=2.9)*(p30_50G[4] + p30_50G[5]*x + p30_50G[6]*x*x);
+      etaaxis = (y<0.0)*(p30_50G[7]*exp(-pow(p30_50G[8]/TMath::Abs(y+0.91),p30_50G[9])) + p30_50G[10]*y) + (y>=0.0 && y<=0.4)*(p30_50G[11] + p30_50G[12]*y + p30_50G[13]*y*y) + (y>0.4)*(p30_50G[14]*exp(-pow(p30_50G[15]/TMath::Abs(-y+0.91),p30_50G[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 9 :
+      // Parameter values for GOOD TPC (LHC11h) runs (50-90%):
+      ptaxis = (x<2.9)*(p50_90G[0]*exp(-pow(p50_90G[1]/x,p50_90G[2])) + p50_90G[3]*x) + (x>=2.9)*(p50_90G[4] + p50_90G[5]*x + p50_90G[6]*x*x);
+      etaaxis = (y<0.0)*(p50_90G[7]*exp(-pow(p50_90G[8]/TMath::Abs(y+0.91),p50_90G[9])) + p50_90G[10]*y) + (y>=0.0 && y<=0.4)*(p50_90G[11] + p50_90G[12]*y + p50_90G[13]*y*y) + (y>0.4)*(p50_90G[14]*exp(-pow(p50_90G[15]/TMath::Abs(-y+0.91),p50_90G[16])));
+      TRefficiency = ptaxis*etaaxis;
+      break;
+
+    case 10 :
+      {
+        // Track efficiency for pp
+        // Calculated using LHC12f1a. See analysis note for more details!
+        // If the trackPt > 6 GeV, then all we need is this coefficient
+        Double_t coefficient = 0.898052;                                                // p6
+        if (trackPT < 6) {
+          coefficient =  (1 + -0.442232 * trackPT                                     // p0
+                   +  0.501831 * std::pow(trackPT, 2)                        // p1
+                   + -0.252024 * std::pow(trackPT, 3)                        // p2
+                   +  0.062964 * std::pow(trackPT, 4)                        // p3
+                   + -0.007681 * std::pow(trackPT, 5)                        // p4
+                   +  0.000365 * std::pow(trackPT, 6));                      // p5
+        }
+
+        // Calculate track eff
+        TRefficiency = coefficient * (1 +  0.402825 * std::abs(trackETA)                // p7
+                        + -2.213152 * std::pow(trackETA, 2)             // p8
+                        +  4.311098 * std::abs(std::pow(trackETA, 3))   // p9
+                        + -2.778200 * std::pow(trackETA, 4));           // p10
+        break;
+      }
+
+    default :
+      // no Efficiency Switch option selected.. therefore don't correct, and set eff = 1
+      // ie. The efficiency correction is disabled.
+      AliErrorStream() << "No single track efficiency setting selected! Please select one.\n";
+      TRefficiency = 0.;
   }
 
   return TRefficiency;
@@ -1158,7 +1341,7 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
    const Bool_t lessSparseAxes,
    const Bool_t widerTrackBin,
    // Corrections
-   const Int_t doEffCorrSW,
+   const AliAnalysisTaskEmcalJetHCorrelations::ESingleTrackEfficiency_t singleTrackEfficiency,
    const Bool_t JESCorrection,
    const char * JESCorrectionFilename,
    const char * JESCorrectionHistName,
@@ -1220,7 +1403,7 @@ AliAnalysisTaskEmcalJetHCorrelations * AliAnalysisTaskEmcalJetHCorrelations::Add
   correlationTask->SetDoLessSparseAxes(lessSparseAxes);
   correlationTask->SetDoWiderTrackBin(widerTrackBin);
   // Corrections
-  correlationTask->SetDoEffCorr(doEffCorrSW);
+  correlationTask->SetSingleTrackEfficiencyType(singleTrackEfficiency);
   if (JESCorrection == kTRUE)
   {
     Bool_t result = correlationTask->RetrieveAndInitializeJESCorrectionHist(JESCorrectionFilename, JESCorrectionHistName, correlationTask->GetTrackBias(), correlationTask->GetClusterBias());
@@ -1382,7 +1565,7 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
   }
 
   // Jets
-  // The tag "hybridJets" is defined in the jet finder
+  // The tag "hybridLevelJets" is defined in the jet finder
   AliJetContainer * jetContainer = this->AddJetContainer(AliJetContainer::kFullJet,
                               AliJetContainer::antikt_algorithm,
                               AliJetContainer::pt_scheme,
@@ -1409,7 +1592,7 @@ bool AliAnalysisTaskEmcalJetHCorrelations::ConfigureForEmbeddingAnalysis(std::st
  *
  * @return A newly created particle or track container.
  */
-AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTrackContainer(std::string const & collectionName) const
+AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTrackContainer(const std::string & collectionName) const
 {
   AliParticleContainer * partCont = 0;
   if (collectionName == AliEmcalContainerUtils::DetermineUseDefaultName(AliEmcalContainerUtils::kTrack)) {
@@ -1422,3 +1605,6 @@ AliParticleContainer * AliAnalysisTaskEmcalJetHCorrelations::CreateParticleOrTra
 
   return partCont;
 }
+
+} /* namespace EMCALJetTasks */
+} /* namespace PWGJE */

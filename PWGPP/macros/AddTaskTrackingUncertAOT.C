@@ -1,3 +1,7 @@
+#if !defined (__CINT__) || defined (__CLING__)
+#include "AliAnalysisTrackingUncertaintiesAOT.h"
+#endif
+
 AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           TString trigClass = "CINT1B",
                                           AliVEvent::EOfflineTriggerTypes trigMask = AliVEvent::kMB,
@@ -12,7 +16,10 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
                                           Double_t MaxEta   = 0.8,
                                           Double_t CrossRowsOverFndCltTPC = 0.8,
                                           AliESDtrackCuts::ITSClusterRequirement spdReq=AliESDtrackCuts::kAny,
-                                          Bool_t useGenPt = kFALSE) {
+                                          Bool_t useGenPt = kFALSE,
+                                          Bool_t DCAzOn= kFALSE,
+                                          Bool_t fTPConlyFIT=kFALSE) {
+
     
   //
   // add task of tracking uncertainty
@@ -29,7 +36,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
     ::Error("AddTaskImpParDistrib", "This task requires an input event handler");
     return NULL;
   }
-  AliInputEventHandler* h=mgr->GetInputEventHandler();
+  AliInputEventHandler* h=(AliInputEventHandler*)mgr->GetInputEventHandler();
   h->SetNeedField(kTRUE);
     
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -45,6 +52,9 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
   task->SetReadMC(readMC);
   task->SetTriggerClass(trigClass.Data());
   task->SetTriggerMask(trigMask);
+
+
+  task->SetTPConly(fTPConlyFIT);
   task->SetSpecie(specie);
   task->SetMaxDCAxy(MaxDCAxy);
   task->SetMaxDCAz(MaxDCAz);
@@ -56,6 +66,7 @@ AliAnalysisTask *AddTaskTrackingUncertAOT(Bool_t readMC = kFALSE,
   task->SetMinCentrality(minCentrality);
   task->SetMaxCentrality(maxCentrality);
   task->SetUseGeneratedPt(useGenPt);
+  task->SetDCAzOn(DCAzOn);
     
   mgr->AddTask(task);
   ULong64_t SPeciee = task->GetSpecie();

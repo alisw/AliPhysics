@@ -6,6 +6,7 @@ Bool_t bASCIIoutput;
 Bool_t bGRIDPlugin;
 Bool_t bTrainScope;
 Bool_t bMC;
+Bool_t bMConlyTruth;
 
 Bool_t isHeavyIon;
 

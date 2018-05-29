@@ -65,7 +65,9 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   void SetHFCorrelations(Bool_t YorN2){   fIsCorrOfHeavyFlavor    = YorN2; }
   void SetHHCorrelations(Bool_t YorN3){   fIsCorrOfHadronHadron   = YorN3; }
   void SetQQbarCorrelations(Bool_t YorN1){fIsCorrOfQQbar          = YorN1; }
-    
+
+  void SetDoCCbarOpeningAngleStudies(Bool_t doOpAngle = kFALSE) {fDoOpeningAngleStudies = doOpAngle;}
+  void SetOpeningAngleEdges(Double_t small, Double_t large) {fLimitSmallOpen=small; fLimitLargeOpen=large;} 
   
  private:
   void CalculateEventProperties(TObject* obj);
@@ -88,6 +90,16 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
     phiClone = phi;
     return phiClone;
   }
+
+  Double_t AssignCorrectPhiRange_0toPiRefl(Double_t phi){
+    Double_t phiClone = 0.;
+    if (phi > 2 * TMath::Pi()) phi -= TMath::TwoPi();
+    if (phi < 0) phi += TMath::TwoPi();
+    phiClone = phi;
+    
+    if (phiClone>TMath::Pi()) phiClone = 2*TMath::Pi() - phiClone;
+    return phiClone;
+  }  
   
  protected:
   Bool_t IsMCEventSelected(TObject* obj);
@@ -121,6 +133,13 @@ class AliAnalysisHFCorrOnFlySim : public AliAnalysisTaskSE{
   Bool_t fIsCorrOfQQbar;
   Bool_t fIsCorrOfHeavyFlavor;
   Bool_t fIsCorrOfHadronHadron;
+
+  Bool_t fDoOpeningAngleStudies; //activate differential-opening ccbar studies
+  Bool_t fFlagSinglePair; //if false, there are more than 1 ccbar pair in the event
+  Bool_t fFlagSmallOpen;  //activate filling of plots for small opening ccbar
+  Bool_t fFlagLargeOpen;  //activate filling of plots for large opening ccbar
+  Double_t fLimitSmallOpen;  //dPhi edge for small opening definition
+  Double_t fLimitLargeOpen;  //dPhi edge for large opening definition
 
   TArrayI *fArraySkipDDaugh;//!
   TArrayI *fArrayTrk ;//!

@@ -20,7 +20,7 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
 
 	//Base Directory for GRID / LEGO Train  
 	TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-	if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/i/acapon/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+	if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
 		
 		configBasePath=Form("%s/",gSystem->pwd());
 	}
@@ -60,19 +60,38 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
 	AliAnalysisTaskElectronEfficiency *task = new AliAnalysisTaskElectronEfficiency("acapon_ElectronEfficiency");
 	std::cout << "task created: " << task->GetName() << std::endl;
 
-	if(CalcEfficiencyRec && !resolutionfile.IsNull() &&
-	 (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/i/acapon/ResolutionFiles/%s .",resolutionfile.Data()))) ){
-		TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
-	  	task->SetResolutionP ((TObjArray*) fRes->Get("DeltaPResArr"),kFALSE);
+
+	if(CalcEfficiencyRec && !resolutionfile.IsNull()){
+		if( (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/a/acapon/ResolutionFiles/%s .",resolutionfile.Data()))) ){
+			TFile *fRes = TFile::Open(Form("%s/%s",gSystem->pwd(),resolutionfile.Data()),"READ");
+			if(!fRes){
+				Error("---- Resolution file was specified but not opened. Exiting. ------");
+				return 0;
+			}
+			if(!((TObjArray*)fRes->Get("DeltaPtResArr"))){
+				std::cout << "Pt res file not found" << std::endl;
+			}
+	  	task->SetResolutionP ((TObjArray*) fRes->Get("DeltaPtResArr"),kFALSE);
 	  	if(bUseEtaResolution){
-			task->SetResolutionEta ((TObjArray*) fRes->Get("EtaResArr"));
+				if(!((TObjArray*)fRes->Get("EtaResArr"))){
+					std::cout << "Eta res file not found" << std::endl;
+				}
+				task->SetResolutionEta ((TObjArray*) fRes->Get("EtaResArr"));
 	  	}else{
-			task->SetResolutionTheta((TObjArray*) fRes->Get("ThetaResArr"));
-		}
+				task->SetResolutionTheta((TObjArray*) fRes->Get("ThetaResArr"));
+			}
+			if(!((TObjArray*)fRes->Get("PhiEleResArr")) || !((TObjArray*)fRes->Get("PhiPosResArr"))){
+				std::cout << "Phi res file not found" << std::endl;
+			}
 	  	task->SetResolutionPhi( (TObjArray*) fRes->Get("PhiEleResArr"), (TObjArray*) fRes->Get("PhiPosResArr"));
+		}
+		else{
+			std::cout << "Resolution file was not copied. Exiting." << std::endl;
+			return 0;
+		}
 	}
     
-	//task->SetCalcEfficiencyRec(CalcEfficiencyRec);
+	task->SetCalcEfficiencyRec(CalcEfficiencyRec);
 	//task->SetCalcEfficiencyPoslabel(CalcEfficiencyPoslabel);
 
 	AliDielectronSignalMC* eleFinalState = new AliDielectronSignalMC("eleFinalState","eleFinalState");
@@ -86,8 +105,8 @@ AliAnalysisTask *AddTask_acapon_ElectronEfficiency(Bool_t hasITS = kTRUE,
 	//event related
 	task->SetEventFilter(SetupEventCuts()); //returns eventCuts from Config
 
-	// task->SetUseMultSelection(kTRUE); // for Run 2, MultSelection task is needed
-	task->SetCentralityRange(CentMin, CentMax);  // -2, 102
+	task->SetUseMultSelection(kTRUE); // for Run 2, MultSelection task is needed
+	task->SetCentralityRange(CentMin, CentMax);  
 
 	//generated values
 	task->SetEtaRangeGEN(EtaMinGEN, EtaMaxGEN);

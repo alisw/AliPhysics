@@ -52,7 +52,7 @@ fMCDeuteronVector(),
 fMCPiPlusVector(),
 fMCPiMinusVector()
 {
-  fFilterBit = BIT(8);
+  fFilterBit = BIT(5);
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -251,9 +251,9 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kDeuteron)) < 3.) {
       FourVector_t tmp_deu = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kDeuteron)};
       unsigned char prop = 0u;
-      if (track->Charge() > 0)               prop |= c;
-      if (track->IsPhysicalPrimary())        prop |= p;
-      if (track->IsSecondaryFromMaterial())  prop |= s;
+      if (part->Charge() > 0)               prop |= c;
+      if (part->IsPhysicalPrimary())        prop |= p;
+      if (part->IsSecondaryFromMaterial())  prop |= s;
       if (AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kDeuteron)) < 3.)) prop |= t;
       daughter_struct deu;
       deu.mother_pdg = mum_pdg;
@@ -267,9 +267,9 @@ void AliAnalysisTaskdStar::UserExec(Option_t *) {
     if (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTPC, track, AliPID::kPion)) <  3.) {
       FourVector_t tmp_pi = {(float)track->Pt(), (float)track->Eta(), (float)track->Phi(), (float)track->M(AliAODTrack::kPion)};
       unsigned char prop = 0u;
-      if (track->Charge() > 0)               prop |= c;
-      if (track->IsPhysicalPrimary())        prop |= p;
-      if (track->IsSecondaryFromMaterial())  prop |= s;
+      if (part->Charge() > 0)               prop |= c;
+      if (part->IsPhysicalPrimary())        prop |= p;
+      if (part->IsSecondaryFromMaterial())  prop |= s;
       if (AliAnalysisTaskdStar::HasTOF(track) && (TMath::Abs(fPID->NumberOfSigmas(AliPIDResponse::kTOF,track,AliPID::kPion)) < 3.)) prop |= t;
       daughter_struct pi;
       pi.mother_pdg = mum_pdg;

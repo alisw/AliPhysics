@@ -20,8 +20,21 @@
 void Draw2D(TH2F* h, Double_t maxx);
 TGraphErrors* GetResolVsMult(TH2F* h, TString axis, Int_t uConv=1);
 
-void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA"){
+void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA", Int_t runNumber=-1){
   
+  const Int_t totTrending=16;
+  Float_t vecForTrend[totTrending];
+  TString varForTrending[totTrending]={"fTrackV","fSPD3D","fSPDz","fTPC","fInvalid",
+				       "meanx","meany","meanz","emeanx","emeany","emeanz","meancont",
+				       "fracpilSPD","fracselpilSPD","fracpilMV","fracselpilMV"};
+  
+  TTree* trtree=new TTree("trendingVert","tree of trending variables");
+  trtree->Branch("nrun",&runNumber,"nrun/I");
+  for(Int_t j=0; j<totTrending; j++){
+    trtree->Branch(varForTrending[j].Data(),&vecForTrend[j],Form("%s/F",varForTrending[j].Data()));
+    vecForTrend[j]=-99.;
+  }
+
   TFile* f=new TFile(filename.Data());
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckVertexAOD");
   if(!df){
@@ -67,6 +80,11 @@ void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA")
   }
   cty->SaveAs("VertexAOD-Type.png");
 
+  vecForTrend[0]=hpvt->GetBinContent(3)/hpvt->GetEntries();
+  vecForTrend[1]=hpvt->GetBinContent(4)/hpvt->GetEntries();
+  vecForTrend[2]=hpvt->GetBinContent(5)/hpvt->GetEntries();
+  vecForTrend[3]=hpvt->GetBinContent(6)/hpvt->GetEntries();
+  vecForTrend[4]=hpvt->GetBinContent(1)/hpvt->GetEntries();
 
   Int_t kcm2um=10000;
   Int_t kcm2mm=10;
@@ -125,6 +143,14 @@ void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA")
   if(!hytrk) hytrk=(TH2F*)l->FindObject("hYtrkVsContrib");
   TH2F* hztrk=(TH2F*)l->FindObject("hZtrkVsMult");
   if(!hztrk) hztrk=(TH2F*)l->FindObject("hZtrkVsContrib");
+
+  vecForTrend[5]=hxtrk->GetMean(2);
+  vecForTrend[6]=hytrk->GetMean(2);
+  vecForTrend[7]=hztrk->GetMean(2);
+  vecForTrend[8]=hxtrk->GetMeanError(2);
+  vecForTrend[9]=hytrk->GetMeanError(2);
+  vecForTrend[10]=hztrk->GetMeanError(2);
+  vecForTrend[11]=hztrk->GetMean(1);
 
   TCanvas* cvt=new TCanvas("cvt","TrackVertex",1400,800);
   cvt->Divide(3,2);
@@ -277,7 +303,22 @@ void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA")
   leg->Draw();
   cpil->SaveAs("VertexAOD-Pileup.png");
 
+  vecForTrend[12]=hpils->GetMean();
+  vecForTrend[13]=hselpils->GetMean();
+  vecForTrend[14]=hpilm->GetMean();
+  vecForTrend[15]=hselpilm->GetMean();
 
+  trtree->Fill();
+
+  if(runNumber>0){
+    TFile* foutfile=new TFile("trendingAODvertex.root","recreate");
+    trtree->Write();
+    TDirectory* outdir=foutfile->mkdir(df->GetName());
+    outdir->cd();
+    l->Write(l->GetName(),1);
+    foutfile->Close();
+    delete foutfile;
+  }
 }
 
 void Draw2D(TH2F* h, Double_t maxx){

@@ -40,6 +40,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
                                 TString       periodNameV0Reader            = "",
                                 Bool_t        runLightOutput                = kFALSE,                           // switch to run light output (only essential histograms for afterburner)
                                 Bool_t        processAODcheckForV0s         = kFALSE,                           // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
+                                Bool_t        enableUseTHnSparse            = kTRUE,
                                 TString       additionalTrainConfig         = "0"                               // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
@@ -67,8 +68,10 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00000008400100001500000000";
-  TString cutnumberEvent = "10000003";
+  TString cutnumberPhoton   = "00000008400100001500000000";
+  if (periodNameV0Reader.CompareTo("LHC17n") == 0 || periodNameV0Reader.Contains("LHC17j7"))
+    cutnumberPhoton         = "00000088400100001500000000";
+  TString cutnumberEvent    = "10000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
@@ -257,6 +260,48 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
     cuts.AddCut("56810613","00200009247602008250404000","0652501500000000"); // 60-80% with PU cut
   } else if (trainConfig == 55) {
     cuts.AddCut("58910613","00200009247602008250404000","0652501500000000"); // 80-90% with PU cut
+
+  // Xe-Xe 5.02 TeV 0-80
+  } else if (trainConfig == 100){
+    cuts.AddCut("10810113","00200009327000008250400000","0163103100000000"); // std
+  } else if (trainConfig == 101){
+    cuts.AddCut("10810113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
+  } else if (trainConfig == 102){
+    cuts.AddCut("10810113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
+    // Xe-Xe 5.02 TeV 0-20
+  } else if (trainConfig == 110){
+    cuts.AddCut("10210113","00200009327000008250400000","0163103100000000"); // std
+  } else if (trainConfig == 111){
+    cuts.AddCut("10210113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
+  } else if (trainConfig == 112){
+    cuts.AddCut("10210113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
+  // Xe-Xe 5.02 TeV 20-40
+  } else if (trainConfig == 120){
+    cuts.AddCut("12410113","00200009327000008250400000","0163103100000000"); // std
+  } else if (trainConfig == 121){
+    cuts.AddCut("12410113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
+  } else if (trainConfig == 122){
+    cuts.AddCut("12410113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
+    // Xe-Xe 5.02 TeV 40-80
+  } else if (trainConfig == 130){
+    cuts.AddCut("14810113","00200009327000008250400000","0163103100000000"); // std
+  } else if (trainConfig == 131){
+    cuts.AddCut("14810113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
+  } else if (trainConfig == 132){
+    cuts.AddCut("14810113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
+  // Xe-Xe 5.02 TeV 0-40
+  } else if (trainConfig == 140){
+    cuts.AddCut("10410113","00200009327000008250400000","0163103100000000"); // std
+  } else if (trainConfig == 141){
+    cuts.AddCut("10410113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
+  } else if (trainConfig == 142){
+    cuts.AddCut("10410113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -326,6 +371,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoPlotVsCentrality(kTRUE);
+  task->SetDoTHnSparse(enableUseTHnSparse);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

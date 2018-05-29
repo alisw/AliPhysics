@@ -99,6 +99,7 @@ class AliHFInvMassFitter : public TNamed {
   TF1*     GetBackgroundFullRangeFunc(){return fBkgFunc;}
   TF1*     GetBackgroundRecalcFunc(){return fBkgFuncRefit;}
   TF1*     GetBkgPlusReflFunc(){return fBkRFunc;}
+  TF1*     GetSignalFunc(){return fSigFunc;}
   TF1*     GetMassFunc(){return fTotFunc;}
   Double_t GetChiSquare() const{
     if(fTotFunc) return fTotFunc->GetChisquare();

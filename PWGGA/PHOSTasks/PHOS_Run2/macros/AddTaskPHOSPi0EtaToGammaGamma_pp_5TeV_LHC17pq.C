@@ -104,8 +104,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
   if(L1input == 7)       Ethre = 8.0;
   else if(L1input == 6)  Ethre = 6.0;
   else if(L1input == 5)  Ethre = 4.0;
-  else if(L0input == 9)  Ethre = 2.0;//LHC15n//threshold was s et to 3 GeV, but efficiency can be measured down to 2 GeV
-  else if(L0input == 17) Ethre = 2.0;//LHC17p//threshold was s et to 4 GeV, but efficiency can be measured down to 3 GeV
+  else if(L0input == 9)  Ethre = 0.0;//LHC15n//threshold was s et to 3 GeV, but efficiency can be measured down to 2 GeV
+  else if(L0input == 17) Ethre = 0.0;//LHC17p//threshold was s et to 4 GeV, but efficiency can be measured down to 2 GeV
 
   if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
   if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
@@ -147,9 +147,15 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
   //bunch space for TOF cut
   task->SetBunchSpace(bs);//in unit of ns.
   if(!isMC && TOFcorrection){
-    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);
+    //TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - 1) - ( 0 + [3]/(exp( -(x-[4]) / [5] ) + 1)  )",0,100);//this was not sufficient in LHC17pq
+    TF1 *f1tof = new TF1("f1TOFCutEfficiency","[0] * (2/(1+exp(-[1]*(x-[2]))) - [9]) - (  [3]/(exp( -(x-[4]) / [5] ) + 1) * [6]/(exp( -(x-[7]) / [8] ) + 1) )",0,100);
     f1tof->SetNpx(1000);
-    f1tof->SetParameters(0.990,2.52,6.10e-2,0.513,7.62,0.546);
+    f1tof->SetParameters( 3.04101e+00, 2.05831e+00, -6.79500e-01, 7.71770e-01, 6.43927e+00, 4.26270e-01, 7.20653e-01, 7.75214e+00, 1.07235e+00, 1.67197e+00);//20180314
+
+    //f1tof->SetParameters(0.995,2.44,5.49e-2,0.770,6.19,0.298,0.719,7.90,0.917);//20180305
+    //f1tof->SetParameters(0.992,2.47,5.80e-2,0.750,6.23,0.280,0.731,7.82,0.857);//20180302
+    //f1tof->SetParameters(0.992,2.47,5.81e-2,0.523,7.71,0.586);//2018023
+    //f1tof->SetParameters(0.990,2.52,6.10e-2,0.513,7.62,0.546);
     //f1tof->SetParameters(0.991,2.38,8.12e-3,0.425,7.63,0.677);
     //f1tof->SetParameters(0.996,2.33,1.97e-3,0.332,7.56,0.774);
     //f1tof->SetParameters(0.993,2.34,2.95e-3,0.367,7.27,0.556);
@@ -159,9 +165,9 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
   if(!isMC && Trgcorrection){
     TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
     f1trg->SetNpx(1000);
-    f1trg->SetParameters(0.985,2.56,0.30);
+    f1trg->SetParameters(0.616,3.72,0.298);//from MB //acc x trigger efficiency 3-30GeV
+    //f1trg->SetParameters(0.609,3.73,0.301);//from MB //acc x trigger efficiency 3-30GeV//old
     task->SetTriggerEfficiency(f1trg);
-    //printf("TOF cut efficiency as a function of E is %s\n",f1tof->GetTitle());
   }
 
   if(isMC){

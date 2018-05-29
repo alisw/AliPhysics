@@ -29,7 +29,8 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   };
   enum JetType {
     kData = 0, 
-    kEmb = 1
+    kEmb = 1,
+    kTrueDet = 2
   };
 
   AliAnalysisTaskRecursiveSoftDrop();
@@ -47,6 +48,8 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ;}
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ;}
   void SetJetType(JetType t)                                { fJetType     = t   ;}
+  void SetReclusterAlgo(Int_t a)                            { fReclusteringAlgo = a;}
+  void AddMedScat(Bool_t b, Float_t f,Int_t n)              { fAddMedScat = b; fAddMedScatPtFrac = f; fAddMedScatN = n;}
 
   static AliAnalysisTaskRecursiveSoftDrop* AddTaskRecursiveSoftDrop(
 
@@ -77,22 +80,25 @@ class AliAnalysisTaskRecursiveSoftDrop : public AliAnalysisTaskEmcalJet {
   Bool_t                              RetrieveEventObjects();
   Bool_t                              Run();
   Bool_t                              FillHistograms();
-  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo,Bool_t bTruth);
+  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont,Bool_t bTruth);
 
   
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
-  Double_t                            fShapesVar_Det[4];       // jet shapes used for the tagging
-  Double_t                            fShapesVar_True[4];      // jet shapes used for the tagging
+  Double_t                            fShapesVar_Det[5];       // jet shapes used for the tagging
+  Double_t                            fShapesVar_True[5];      // jet shapes used for the tagging
   JetShapeSub                         fJetShapeSub;            // jet subtraction to be used
   JetType                             fJetType;                // jet type data/embedded
   Float_t                             fPtThreshold;            // jet pt threshold
   Float_t                             fSharedFractionPtMin;    // minimum pt shared fraction to be used to match jets
-
+  Int_t                               fReclusteringAlgo;
   
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
   Double_t                            fJetRadius;                   // radius used in jet finding
+  Float_t                             fAddMedScatPtFrac;
+  Float_t                             fAddMedScatN;
+  Bool_t                              fAddMedScat;
 
   
   TH1F                                *fhJetPt;

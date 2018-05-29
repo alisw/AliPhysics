@@ -132,8 +132,14 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield() :
   fhNumberOfJetTracks_Det(0x0),
   fhNumberOfJetTracks_True(0x0),
   fh2PtRatio(0x0), 
+  fhLundIterative(0x0),
+  fhLundIterativeTrue(0x0),
   fReclusterAlgo(0),
-  fSubMatching(kFALSE)
+  fSubMatching(kFALSE),
+  bMinSubjetPt(kFALSE),
+  fMinSubjetPt(0)
+
+
 
 {
   for(Int_t i=0;i<nBranch;i++){
@@ -210,10 +216,13 @@ AliAnalysisTaskRecoilJetYield::AliAnalysisTaskRecoilJetYield(const char *name) :
   fhJetCounter_True(0x0),
   fhNumberOfJetTracks_Det(0x0),
   fhNumberOfJetTracks_True(0x0),
-  fh2PtRatio(0x0), 
+  fh2PtRatio(0x0),
+  fhLundIterative(0x0),
+  fhLundIterativeTrue(0x0),
   fReclusterAlgo(0),
-  fSubMatching(kFALSE)
-  
+  fSubMatching(kFALSE),
+  bMinSubjetPt(kFALSE),
+  fMinSubjetPt(0)
 {
   // Standard constructor.
   for(Int_t i=0;i<nBranch;i++){
@@ -244,7 +253,7 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
   fTreeJetInfo = new TTree(nameoutput, nameoutput);
   
   if (!fFullTree){
-    const Int_t nVarMin = 20;
+    const Int_t nVarMin = 22;
     TString *fJetInfoVarNames = new TString [nVarMin];
   
     fJetInfoVarNames[0] = "Pt";
@@ -261,13 +270,14 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fJetInfoVarNames[11] = "SLSubJetPt_Truth";
     fJetInfoVarNames[12] = "DelR";
     fJetInfoVarNames[13] = "DelR_Truth";
-    fJetInfoVarNames[14] = "N_Groomed_Branches";
-    fJetInfoVarNames[15] = "N_Groomed_Branches_Truth";
+    fJetInfoVarNames[14] = "N_SplittingsHard";
+    fJetInfoVarNames[15] = "N_SplittingsHard_Truth";
     fJetInfoVarNames[16] = "Groomed_Jet_Pt";
     fJetInfoVarNames[17] = "Groomed_Jet_Pt_Truth";
     fJetInfoVarNames[18] = "Groomed_Mass";
     fJetInfoVarNames[19] = "Groomed_Mass_Truth";
-
+    fJetInfoVarNames[20] = "N_SplittingsAll";
+    fJetInfoVarNames[21] = "N_SplittingsAll_Truth";
   
     
     for(Int_t ivar=0; ivar < nVarMin; ivar++){
@@ -289,6 +299,8 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
       
   
     }
+
+   
 
    if (fJetShapeType==AliAnalysisTaskRecoilJetYield::kData || fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart || fJetShapeType==AliAnalysisTaskRecoilJetYield::kGenOnTheFly){
     
@@ -318,7 +330,22 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fOutput->Add(fhDetJetPt_Incl);
     fhDetJetPt_Matched= new TH1F("fhDetJetPt_Matched", "Jet Pt",200,-0.5,199.5 );   
     fOutput->Add(fhDetJetPt_Matched);
-
+    
+    const Int_t dimSpec   = 5;
+    const Int_t nBinsSpec[5]     = {50,50,10,3,10};
+    const Double_t lowBinSpec[5] = {0.0,-10,  0,0,0};
+    const Double_t hiBinSpec[5]  = {5.0,  0,200,3,10};
+    fhLundIterative = new THnSparseF("fHLundIterative",
+				     "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
+				     dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+    fOutput->Add(fhLundIterative); 
+    if(fJetShapeType==AliAnalysisTaskRecoilJetYield::kDetEmbPart){
+      
+      fhLundIterativeTrue = new THnSparseF("fHLundIterativeTrue",
+					   "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
+					   dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+      fOutput->Add(fhLundIterativeTrue);
+    }
    
   }
   if(fJetShapeType==AliAnalysisTaskRecoilJetYield::kTrueDet){
@@ -353,6 +380,21 @@ AliAnalysisTaskRecoilJetYield::~AliAnalysisTaskRecoilJetYield()
     fOutput->Add(fhJetCounter_True);
     fh2PtRatio= new TH2F("fhPtRatio", "MC pt for detector level vs particle level jets",1500,-0.5,149.5,1500,-0.5,149.5);
     fOutput->Add(fh2PtRatio);
+
+    const Int_t dimSpec   = 5;
+    const Int_t nBinsSpec[5]     = {50,50,10,3,10};
+    const Double_t lowBinSpec[5] = {0.0,-10,  0,0,0};
+    const Double_t hiBinSpec[5]  = {5.0,  0,200,3,10};
+    fhLundIterative = new THnSparseF("fHLundIterative",
+				     "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
+				     dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+    fOutput->Add(fhLundIterative); 
+      
+    fhLundIterativeTrue = new THnSparseF("fHLundIterativeTrue",
+					 "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo,ndepth]",
+					 dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+    fOutput->Add(fhLundIterativeTrue);
+    
   }
   PostData(1,fOutput);
   PostData(2,fTreeJetInfo);
@@ -472,6 +514,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  fJetInfoVar[1]=0;
 	  if(fDoSoftDrop) {
 	    SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kFALSE);
+	    RecursiveParents(Jet1,JetCont,0,kFALSE);
+	    RecursiveParents(Jet1,JetCont,1,kFALSE);
+	    RecursiveParents(Jet1,JetCont,2,kFALSE);
 	    //SoftDrop(Jet1,JetCont,fZCut,fBeta_SD,kTRUE);
 	    
 	    fJetInfoVar[3]=0;
@@ -483,7 +528,7 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[15]=0;
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[19]=0;
-	    
+	    fJetInfoVar[21]=0;	    
 	  }
 	  else{
 	    fJetInfoVar[2]=0;
@@ -504,6 +549,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[18]=0;
 	    fJetInfoVar[19]=0;
+	    fJetInfoVar[20]=0;
+	    fJetInfoVar[21]=0;
+
 	  }		    
 	  fTreeJetInfo->Fill();
 	}
@@ -576,7 +624,13 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
       fJetInfoVar[1]=JetPythTrue->Pt();
       if(fDoSoftDrop) {
 	SoftDrop(JetHybridS,JetContHybridS,fZCut,fBeta_SD,kFALSE);
+	RecursiveParents(JetHybridS,JetContHybridS,0,kFALSE);
+	RecursiveParents(JetHybridS,JetContHybridS,1,kFALSE);
+	RecursiveParents(JetHybridS,JetContHybridS,2,kFALSE);
 	SoftDrop(JetPythTrue,JetContPythTrue,fZCut,fBeta_SD,kTRUE);
+	RecursiveParents(JetPythTrue,JetContPythTrue,0,kTRUE);
+	RecursiveParents(JetPythTrue,JetContPythTrue,1,kTRUE);
+	RecursiveParents(JetPythTrue,JetContPythTrue,2,kTRUE);
       }
       else{
 	fJetInfoVar[2]=0;
@@ -597,6 +651,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	fJetInfoVar[17]=0;
 	fJetInfoVar[18]=0;
 	fJetInfoVar[19]=0;
+	fJetInfoVar[20]=0;
+	fJetInfoVar[21]=0;
+
       }
       fJetInfoVar[4]=JetHybridS->M();
       fJetInfoVar[5]=JetPythTrue->M();
@@ -668,7 +725,13 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	  else fJetInfoVar[1]=JetTrue->Pt();
 	  if(fDoSoftDrop) {
 	    SoftDrop(JetDet,JetContDet,fZCut,fBeta_SD,kFALSE);
+	    RecursiveParents(JetDet,JetContDet,0,kFALSE);
+	    RecursiveParents(JetDet,JetContDet,1,kFALSE);
+	    RecursiveParents(JetDet,JetContDet,2,kFALSE);
 	    SoftDrop(JetTrue,JetContTrue,fZCut,fBeta_SD,kTRUE);
+	    RecursiveParents(JetTrue,JetContTrue,0,kTRUE);
+	    RecursiveParents(JetTrue,JetContTrue,1,kTRUE);
+	    RecursiveParents(JetTrue,JetContTrue,2,kTRUE);
 	  }
 	  else{
 	    fJetInfoVar[2]=0;
@@ -689,6 +752,9 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[18]=0;
 	    fJetInfoVar[19]=0;
+	    fJetInfoVar[20]=0;
+	    fJetInfoVar[21]=0;
+
 	  }
 	  fJetInfoVar[4]=JetDet->M();
 	  fJetInfoVar[5]=JetTrue->M();
@@ -769,6 +835,8 @@ Bool_t AliAnalysisTaskRecoilJetYield::FillHistograms()
 	    fJetInfoVar[17]=0;
 	    fJetInfoVar[18]=0;
 	    fJetInfoVar[19]=0;
+	    fJetInfoVar[20]=0;
+	    fJetInfoVar[21]=0;
 	  }
 	  fJetInfoVar[4]=Jet1->M();
 	  fJetInfoVar[5]=0;
@@ -1037,8 +1105,8 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
   else fJetInfoVar[3]=SymParam;
   if(!fTruthJet) fJetInfoVar[12] = DeltaR;
   else fJetInfoVar[13] = DeltaR;
-  if(!fTruthJet) fJetInfoVar[14]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
-  else fJetInfoVar[15]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
+  //if(!fTruthJet) fJetInfoVar[14]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
+  //else fJetInfoVar[15]=finaljet.structure_of<fastjet::contrib::SoftDrop>().dropped_count();
   if(!(fJetShapeSub==kConstSub)){
     if(!fTruthJet) fJetInfoVar[16]=(finaljet.perp()-(GetRhoVal(0)*fJet->Area()));
     else fJetInfoVar[17]=finaljet.perp();
@@ -1054,6 +1122,86 @@ Double_t AliAnalysisTaskRecoilJetYield::PTD(AliEmcalJet *Jet, Int_t JetContNb){
 
   
 }
+
+//_________________________________________________________________________
+void AliAnalysisTaskRecoilJetYield::RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo, Bool_t bTruth){
+ 
+  std::vector<fastjet::PseudoJet>  fInputVectors;
+  fInputVectors.clear();
+  fastjet::PseudoJet  PseudoTracks;
+  double xflagalgo=0; 
+  AliParticleContainer *fTrackCont = fJetCont->GetParticleContainer();
+  
+  if (fTrackCont) for (Int_t i=0; i<fJet->GetNumberOfTracks(); i++) {
+      AliVParticle *fTrk = fJet->TrackAt(i, fTrackCont->GetArray());
+      if (!fTrk) continue; 
+      PseudoTracks.reset(fTrk->Px(), fTrk->Py(), fTrk->Pz(),fTrk->E());
+      PseudoTracks.set_user_index(fJet->TrackAt(i)+100);
+      fInputVectors.push_back(PseudoTracks);
+     
+    }
+  fastjet::JetAlgorithm jetalgo(fastjet::antikt_algorithm);
+
+  if(ReclusterAlgo==0){ xflagalgo=0.5;
+    jetalgo=fastjet::kt_algorithm ;}
+  if(ReclusterAlgo==1){ xflagalgo=1.5;
+    jetalgo=fastjet::cambridge_algorithm;}
+  if(ReclusterAlgo==2){ xflagalgo=2.5;
+    jetalgo=fastjet::antikt_algorithm;} 
+  
+  fastjet::JetDefinition fJetDef(jetalgo, 1., static_cast<fastjet::RecombinationScheme>(0), fastjet::BestFJ30 ); 
+  double ndepth=0;
+  double nhard=0;
+  double nall=0;
+  try {
+    fastjet::ClusterSequence fClustSeqSA(fInputVectors, fJetDef);
+    std::vector<fastjet::PseudoJet>   fOutputJets;
+    fOutputJets.clear();
+    fOutputJets=fClustSeqSA.inclusive_jets(0);
+  
+    fastjet::PseudoJet jj;
+    fastjet::PseudoJet j1;
+    fastjet::PseudoJet j2;
+    jj=fOutputJets[0];
+    
+    while(jj.has_parents(j1,j2)){
+      ndepth=ndepth+1;
+      nall=nall+1;
+      if(j1.perp() < j2.perp()) swap(j1,j2);
+      double delta_R=j1.delta_R(j2);
+      double z=j2.perp()/(j1.perp()+j2.perp());
+      if(z > 0.1) nhard=nhard+1;
+      double y =log(1.0/delta_R);
+      double lnpt_rel=log(z*delta_R);
+      Double_t LundEntries[5] = {y,lnpt_rel,fOutputJets[0].perp(),xflagalgo,ndepth};  
+      if(!bTruth) fhLundIterative->Fill(LundEntries);
+      else if(bTruth) fhLundIterativeTrue->Fill(LundEntries);
+      jj=j1;
+      if(bMinSubjetPt && jj.perp() < fMinSubjetPt) break;
+    } 
+
+
+
+
+  }
+  catch (fastjet::Error) {
+    AliError(" [w] FJ Exception caught.");
+    //return -1;
+  }
+  if(ReclusterAlgo==1){
+    if(!bTruth) fJetInfoVar[14]=nhard;
+    else if(bTruth) fJetInfoVar[15]=nhard;
+    if(!bTruth) fJetInfoVar[20] = nall;
+    else if(bTruth) fJetInfoVar[21] = nall;
+  }
+
+
+
+  return;
+
+  
+}
+
 
 //--------------------------------------------------------------------------
 Double_t AliAnalysisTaskRecoilJetYield::LeadingTrackPt(fastjet::PseudoJet jet){

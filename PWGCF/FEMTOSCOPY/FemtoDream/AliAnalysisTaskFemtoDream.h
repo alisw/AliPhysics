@@ -36,6 +36,8 @@ class AliAnalysisTaskFemtoDream : public AliAnalysisTaskSE {
   void SetCollectionConfig(AliFemtoDreamCollConfig *conf) {fConfig=conf;};
  private:
   int fTrackBufferSize;                     //
+  bool fMinBookingME;                       //
+  bool fMinBookingSample;                   //
   bool fMVPileUp;                           //
   bool fEvtCutQA;                           //
   bool fIsMC;                               //
@@ -64,7 +66,9 @@ class AliAnalysisTaskFemtoDream : public AliAnalysisTaskSE {
   AliFemtoDreamCollConfig *fConfig;         //
   TList *fResults;                          //!
   TList *fResultQA;                         //!
-  ClassDef(AliAnalysisTaskFemtoDream,1)
+  TList *fResultsSample;                    //!
+  TList *fResultQASample;					//!
+  ClassDef(AliAnalysisTaskFemtoDream,3)
 };
 
 #endif /* ALIANALYSISTASKFEMTODREAM_H_ */

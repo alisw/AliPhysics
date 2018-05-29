@@ -15,9 +15,11 @@ using std::vector;
 
 #include <AliAnalysisManager.h>
 #include <AliAODMCParticle.h>
+#include <AliAODMCHeader.h>
 #include <AliCentrality.h>
 #include <AliESDtrackCuts.h>
 #include <AliInputEventHandler.h>
+#include <AliMCEvent.h>
 #include <AliMCEventHandler.h>
 #include <AliMultSelection.h>
 #include <AliMultSelectionTask.h>
@@ -144,7 +146,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   /// Trigger mask
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-  auto selected_trigger = handl->IsEventSelected() & fTriggerMask;
+  unsigned int selected_trigger = handl->IsEventSelected() & fTriggerMask;
   if ((selected_trigger == fTriggerMask && fRequireExactTriggerMask) || (selected_trigger && !fRequireExactTriggerMask))
     fFlag |= BIT(kTrigger);
 
@@ -199,10 +201,18 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   if (fCentralityFramework) {
     if (fCentralityFramework == 2) {
       AliCentrality* cent = ev->GetCentrality();
+      if (!cent) {
+        AliFatal("The legacy centrality framework has been request but no AliCentrality object was found attached to the Event."
+                 " Did you run the Centrality Framework?");
+      }
       fCentPercentiles[0] = cent->GetCentralityPercentile(fCentEstimators[0].data());
       fCentPercentiles[1] = cent->GetCentralityPercentile(fCentEstimators[1].data());
     } else {
       AliMultSelection* cent = (AliMultSelection*)ev->FindListObject("MultSelection");
+      if (!cent) {
+        AliFatal("The multiplicity selection framework has been request but no AliMultSelection object was found attached to the Event."
+                 " Did you run the AliMultSelectionTask?");
+      }
       fCentPercentiles[0] = cent->GetMultiplicityPercentile(fCentEstimators[0].data(), fMultSelectionEvCuts);
       fCentPercentiles[1] = cent->GetMultiplicityPercentile(fCentEstimators[1].data(), fMultSelectionEvCuts);
     }
@@ -391,14 +401,13 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
 
   if (fCurrentRun == 280234 || fCurrentRun == 280235) {
-    ::Info("AliEventCuts::AutomaticSetup","Xe-Xe runs found: we will setup the same LHC15o cuts.");
-    SetupLHC15o();
-    fUseEstimatorsCorrelationCut = false;
+    SetupLHC17n();
     return;
   }
 
-  if (fCurrentRun >= 166423 && fCurrentRun <= 170593) {
-    SetupLHC11h();
+  if ((fCurrentRun >= 166423 && fCurrentRun <= 170593) ||
+      (fCurrentRun >= 136833 && fCurrentRun <= 139517)) {
+    SetupRun1PbPb();
     return;
   }
 
@@ -645,7 +654,7 @@ void AliEventCuts::SetupLHC15o() {
 
 }
 
-void AliEventCuts::SetupLHC11h() {
+void AliEventCuts::SetupRun1PbPb() {
   fRequireTrackVertex = true;
   fMinVtz = -10.f;
   fMaxVtz = 10.f;
@@ -771,4 +780,58 @@ void AliEventCuts::UseMultSelectionEventSelection(bool useIt) {
   if (useIt) {
     SetCentralityRange(0.,100.);
   }
+}
+
+void AliEventCuts::SetupLHC17n() {
+  ::Info("AliEventCuts::AutomaticSetup","Xe-Xe runs found: we will setup the same LHC15o cuts with somewhat different correlation cuts settings (switched off by default).");
+  SetName("StandardLHC17nEventCuts");
+  SetupLHC15o();
+  fUseEstimatorsCorrelationCut = false;
+
+  array<double,5> vzero_tpcout_polcut = {-1000.0, 2.8, 1.2e-5,0.,0.};
+  std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
+
+}
+
+bool AliEventCuts::IsTrueINELgtZero(AliVEvent *ev, bool chkGenVtxZ) {
+  if (!ev) return false;
+  if (dynamic_cast<AliAODEvent*>(ev)) {
+    TClonesArray *stack = (TClonesArray*)ev->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    if (!stack) {
+      AliWarning("MC particles array not found...");
+      return false;
+    }
+    AliAODMCHeader* mcHeader = (AliAODMCHeader*)ev->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    if (!mcHeader) {
+      AliWarning("AliAODHeader not found...");
+      return false;
+    }
+    if (chkGenVtxZ && !(mcHeader->GetVtxZ() >= fMinVtz &&  mcHeader->GetVtxZ() <= fMaxVtz)) return false;
+    for (unsigned int i_mcTrk = 0; i_mcTrk < stack->GetEntriesFast(); ++i_mcTrk) {
+      AliAODMCParticle* aliMCPart = dynamic_cast<AliAODMCParticle*>(stack->At(i_mcTrk));
+      if (!aliMCPart) continue;
+      if (aliMCPart->Charge() == -99) continue;                      // dummy value for particles w/o TParticlePDG informations
+      if ((double)TMath::Abs(aliMCPart->Charge()/3.) < 0.001) continue; // consider only charged tracks
+      if (!aliMCPart->IsPhysicalPrimary()) continue;                 // consider only physical primary particle
+      if (TMath::Abs(aliMCPart->Eta()) > 1) continue;                // out acceptances
+      return true;
+    }
+  } else if (!dynamic_cast<AliESDEvent*>(ev))
+    AliFatal("I don't find the AOD event nor the ESD one, aborting.");
+  else {
+    AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+    AliMCEvent* mcEvent = eventHandler->MCEvent();
+    const AliVVertex* gVtx = mcEvent->GetPrimaryVertex();
+    if (chkGenVtxZ && !(gVtx->GetZ() >= fMinVtz && gVtx->GetZ() <= fMaxVtz)) return false;
+    for (unsigned int i_mcTrk = 0; i_mcTrk < mcEvent->GetNumberOfTracks(); ++i_mcTrk) {
+      AliMCParticle *aliMCPart = (AliMCParticle *)mcEvent->GetTrack(i_mcTrk);
+      if (!aliMCPart) continue;
+      if (aliMCPart->Charge() == -99) continue;                         // dummy value for particles w/o TParticlePDG informations
+      if ((double)TMath::Abs(aliMCPart->Charge()/3.) < 0.001) continue; // consider only charged particle
+      if (!mcEvent->IsPhysicalPrimary(i_mcTrk)) continue;               // consider only physical primary particle
+      if (TMath::Abs(aliMCPart->Eta()) > 1) continue;                   // out acceptances
+      return true;
+    }
+  }
+  return false;
 }

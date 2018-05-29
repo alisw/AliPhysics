@@ -127,7 +127,7 @@ void AliQnCorrectionsInputGainEqualization::CreateSupportDataStructures() {
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsInputGainEqualization::CreateSupportHistograms(TList *list) {
 
-  TString histoNameAndTitle = Form("%s %s",
+  TString histoNameAndTitle = TString::Format("%s %s",
       szSupportHistogramName,
       fDetectorConfiguration->GetName());
 
@@ -150,19 +150,19 @@ AliQnCorrectionsDetectorConfigurationChannels *ownerConfiguration =
 /// \param list list where the histograms should be incorporated for its persistence
 /// \return kTRUE if everything went OK
 Bool_t AliQnCorrectionsInputGainEqualization::CreateQAHistograms(TList *list) {
-  TString beforeName = Form("%s %s",
+  TString beforeName = TString::Format("%s %s",
       szSupportHistogramName,
       fDetectorConfiguration->GetName());
   beforeName += "Before";
-  TString beforeTitle = Form("%s %s",
+  TString beforeTitle = TString::Format("%s %s",
       szSupportHistogramName,
       fDetectorConfiguration->GetName());
   beforeTitle += " before gain equalization";
-  TString afterName = Form("%s %s",
+  TString afterName = TString::Format("%s %s",
       szSupportHistogramName,
       fDetectorConfiguration->GetName());
   afterName += "After";
-  TString afterTitle = Form("%s %s",
+  TString afterTitle = TString::Format("%s %s",
       szSupportHistogramName,
       fDetectorConfiguration->GetName());
   afterTitle += " after gain equalization";
@@ -192,8 +192,8 @@ Bool_t AliQnCorrectionsInputGainEqualization::CreateNveQAHistograms(TList *list)
   AliQnCorrectionsDetectorConfigurationChannels *ownerConfiguration =
       static_cast<AliQnCorrectionsDetectorConfigurationChannels *>(fDetectorConfiguration);
   fQANotValidatedBin = new AliQnCorrectionsHistogramChannelizedSparse(
-      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
-      Form("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()),
+      TString::Format("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()).Data(),
+      TString::Format("%s %s", szQANotValidatedHistogramName, fDetectorConfiguration->GetName()).Data(),
       ownerConfiguration->GetEventClassVariablesSet(),
       ownerConfiguration->GetNoOfChannels());
   fQANotValidatedBin->CreateChannelizedHistogram(list, ownerConfiguration->GetUsedChannelsMask());

@@ -97,11 +97,12 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         //################//
         // Primary Vertex //
         //################//
+        TH1F *fNevents;
         TH1F *fvtxZ;
         TH1F *fvtxZ_NoCut;
         TH1F *fvtxZ_NcontCut;
-        TH1F *fNcontV;
-        TH1F *fNcontVSPD;
+        TH2F *fNcont;
+        TH2F *fVertexCorre;
 
         //##############//
         // Cluster info //
@@ -117,6 +118,7 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TH2F *fDCAz;
         TH2F *fTrackphieta;
         TH1F *fTrackPt;
+        TH2F *fTrackCluster_woCut;
         TH2F *fTrackCluster;
         TH2F *fTrackChi2;
 
@@ -125,6 +127,7 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         //########################//
         TH2F *fCaloTrackDiff;
         TH1F *fCaloClusterEAfterMatch;
+        TH1F *fCaloClusterEincE;
         TH2F *fCaloClustEtaPhiAfterMatch;
         TH1F *fTrackPtAfterMatch;
         TH2F *fTrackphietaAfterMatch;
@@ -141,6 +144,7 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TH2F *fEopHadron;
         TH2F *fNSigmaEop;
         TH2F *fElectronphieta;
+        TH2F *fElectronEpT;
         //---PHE search by Invariant-mass ---//
         TH2F *fInvmassLS;
         TH2F *fInvmassULS;
@@ -169,6 +173,7 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TH2F *fMCTPCNSigmaelectron;
         TH2F *fMCNsigmaEtaElectron;
         TH2F *fMCHFEEop;
+        TH2F *fMCHFEEopwPID;
         //--- DCA for c/b separation ---//
         TH2F *fMCDCAinclusive;
         TH2F *fMCDCAconv;

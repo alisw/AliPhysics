@@ -45,6 +45,8 @@ public:
    // called at end of analysis
    virtual void Terminate(Option_t* option);
 
+
+   enum Detector {kITS, kTPC, kTOF};
    Bool_t               GetEnablePhysicsSelection() const   {return fSelectPhysics; }
    Int_t                GetTriggerMask() const              {return fTriggerMask; }
    AliAnalysisCuts*     GetEventFilter()                    {return fEventFilter;}
@@ -56,6 +58,11 @@ public:
    // MC Signal setter
    void   AddSingleLegMCSignal(AliDielectronSignalMC signal1)         {fSingleLegMCSignal.push_back(signal1);}
    void   AddPairMCSignal(AliDielectronSignalMC signal1)              {fPairMCSignal.push_back(signal1);}
+
+   // PID correction functions
+   void   SetCentroidCorrFunction(Detector det, TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+   void   SetWidthCorrFunction   (Detector det, TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+
 
    // Generator
    void   SetGeneratorName(TString generatorName) { fGeneratorName = generatorName;}
@@ -144,7 +151,7 @@ private:
   void    SetPIDResponse(AliPIDResponse *fPIDRespIn)        {fPIDResponse = fPIDRespIn;}
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
-  bool    CheckGenerator(int trackID, TString generator);
+  bool    CheckGenerator(int trackID);
 
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
@@ -152,7 +159,7 @@ private:
 
   void    CreateSupportHistos();
 
-  void    FillTrackHistograms(AliVParticle* track);
+  void    FillTrackHistograms(AliVParticle* track, AliVParticle* mcTrack);
 
   TLorentzVector ApplyResolution(double pt, double eta, double phi, short ch);
   Double_t GetSmearing(TObjArray *arr, Double_t x);
@@ -216,6 +223,7 @@ private:
   std::vector<AliDielectronSignalMC> fPairMCSignal;
 
   TString fGeneratorName;
+  std::vector<unsigned int> fGeneratorHashs;
 
   AliPIDResponse* fPIDResponse;
   AliVEvent*      fEvent;
@@ -277,6 +285,14 @@ private:
   TH1F* fPtOmega;
   TH1F* fPtPhi;
   TH1F* fPtJPsi;
+
+  TH1* fPostPIDCntrdCorrTPC;     // post pid correction object for centroids in TPC
+  TH1* fPostPIDWdthCorrTPC;      // post pid correction object for widths in TPC
+  TH1* fPostPIDCntrdCorrITS;     // post pid correction object for centroids in ITS
+  TH1* fPostPIDWdthCorrITS;      // post pid correction object for widths in ITS
+  TH1* fPostPIDCntrdCorrTOF;     // post pid correction object for centroids in TOF
+  TH1* fPostPIDWdthCorrTOF;      // post pid correction object for widths in TOF
+
 
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented

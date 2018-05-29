@@ -55,7 +55,6 @@
 #include "AliPhysicsSelection.h"
 #include "AliESDCaloCluster.h"
 #include "AliAODCaloCluster.h"
-#include "AliEMCALRecoUtils.h"
 #include "AliEMCALGeometry.h"
 #include "AliGeomManager.h"
 #include "stdio.h"

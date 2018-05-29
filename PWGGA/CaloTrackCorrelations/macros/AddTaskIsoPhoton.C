@@ -80,7 +80,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Bool_t   print         = kFALSE,
                                                       const Bool_t   tmInCone      = kTRUE,
                                                       const Int_t    SSsmearing    = 0,
-                                                      const TString  clustListName = ""
+                                                      const TString  clustListName = "",
+                                                      const Int_t    isocut        = 1
                                                       )
 {
 kDebug = debug;
@@ -139,7 +140,12 @@ kPrint = print ;
   Int_t n = 0;//Analysis number, order is important
 
   // Isolation settings
-  Int_t partInCone = AliIsolationCut::kNeutralAndCharged; // kOnlyCharged;
+  if(isocut == 0)  Int_t partInCone = AliIsolationCut::kOnlyCharged;
+  else {
+    Int_t partInCone = AliIsolationCut::kNeutralAndCharged;
+  } // kOnlyCharged;
+
+
   //  Int_t thresType  = AliIsolationCut::kPtThresIC;//  AliIsolationCut::kSumPtFracIC ;
   Int_t thresType  = AliIsolationCut::kSumPtIC ;
 

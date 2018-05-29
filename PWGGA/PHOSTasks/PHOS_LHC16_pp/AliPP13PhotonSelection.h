@@ -15,38 +15,10 @@
 #include <TH3F.h>
 
 // --- AliRoot header files ---
+#include <AliPIDResponse.h>
 #include <AliPHOSGeometry.h>
 #include <AliVCluster.h>
 #include <AliLog.h>
-
-struct EventFlags
-{
-	enum EventType {kMB = 0, kGood = 1, kZvertex = 2, kNcontributors = 3, kTwoPhotons = 4};
-
-	EventFlags(Int_t c = 0, Int_t z = 0, Bool_t m = kFALSE, Bool_t p = kFALSE, Bool_t vtx = kFALSE, UShort_t bc = 0. /*, Bool_t v0 = kFalse*/):
-		centr(c),
-		zvtx(z),
-		BC(bc),
-		isMixing(m),
-		eventPileup(p),
-		eventVtxExists(vtx),
-		ncontributors(0),
-		fMcParticles(0)
-		//, eventV0AND(v0)
-	{}
-
-	Double_t vtxBest[3];   // Calculated vertex position
-	Int_t  centr;
-	Int_t  zvtx;
-	UShort_t BC;
-	Bool_t isMixing;
-	Bool_t eventPileup;
-	Bool_t eventVtxExists;
-	Int_t ncontributors;
-	TClonesArray * fMcParticles;
-
-	// Bool_t eventV0AND;
-};
 
 
 class AliPP13PhotonSelection : public TNamed
@@ -79,7 +51,7 @@ public:
 
 	// This is a dummy method to count number of Triggered Events.
 	virtual void CountMBEvent();
-	virtual void FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags); // implements algorithm
+	virtual void FillHistograms(TObjArray * clusArray, TList * pool, const EventFlags & eflags); // implements algorithm
     virtual void ConsiderGeneratedParticles(const EventFlags & eflags)
     {
     	(void) eflags;
@@ -90,6 +62,7 @@ public:
 
 protected:
 	virtual void SelectPhotonCandidates(const TObjArray * clusArray, TObjArray * candidates, const EventFlags & eflags);
+	virtual void SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags);
 	virtual void FillClusterHistograms(const AliVCluster * c, const EventFlags & eflags)
 	{
 		(void) c;
@@ -109,7 +82,6 @@ protected:
 	AliPP13PhotonSelection(const AliPP13PhotonSelection &);
 	AliPP13PhotonSelection & operator = (const AliPP13PhotonSelection &);
 
-	void FillHistogram(const char * key, Double_t x, Double_t y = 1, Double_t z = 1); //Fill 3D histogram witn name key
 	TList  * fListOfHistos;  //! list of histograms
 	AliPP13ClusterCuts fCuts;
 

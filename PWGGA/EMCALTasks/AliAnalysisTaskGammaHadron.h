@@ -8,100 +8,129 @@
 #include "AliFiducialCut.h"
 #include "AliEMCALRecoUtils.h"
 #include <THn.h>
-  #include <THnSparse.h>
+#include <THnSparse.h>
 
-  class TH1;
-  class TH2;
-  class TH3;
-  class AliVVZERO;
-  class AliEvtPoolManager;
+class TH1;
+class TH2;
+class TH3;
+class AliVVZERO;
+class AliEvtPoolManager;
 
-  using std::vector;
+using std::vector;
 
-  class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
-   public:
-    AliAnalysisTaskGammaHadron();
-    AliAnalysisTaskGammaHadron(Bool_t InputGammaOrPi0,Bool_t InputSameEventAnalysis);
-  virtual ~AliAnalysisTaskGammaHadron();
+class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
+public:
+	AliAnalysisTaskGammaHadron();
+	AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Bool_t InputSameEventAnalysis,Bool_t InputMCorData);
+	virtual ~AliAnalysisTaskGammaHadron();
 
-    //setters for the analysis
-    void                        SetEffHistGamma(THnF *h)                              { fHistEffGamma    = h      ; }
-    void                        SetEffHistHadron(THnF *h)                             { fHistEffHadron   = h      ; }
-    void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
-    void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
-    void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
-    void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut = input; }
-    void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
-  //  void                        SetCutsId(Id, cent, ptCl,Ecl,,.... UInt_t input)      { fMixingEventType = input  ; }
-    void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin = input;}
-    void                        SetNLM(Int_t input)                                   { fMaxNLM = input;}
-    void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
-    void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
-    void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts = input;}
-    void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg = input;}
-    void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples = input;}
-    void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma = input;}
-    void                        SetPi0AsymCut(Float_t input)                          { fPi0AsymCut = input;} 
+	static AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
+			Int_t       InputGammaOrPi0 = 0,
+			Bool_t      InputSeMe       = 0,
+			Bool_t      InputMCorData   = 0,
+			UInt_t      evtTriggerType  = AliVEvent::kEMCEGA,
+			UInt_t      evtMixingType   = AliVEvent::kAnyINT,
+			Bool_t      isRun2          = 1,
+			Double_t    trackptcut      = 0.15,
+			Double_t    clusEcut        = 0.30,
+			Bool_t      SavePool        = 0,
+			const char *trackName       = "usedefault",
+			const char *clusName        = "usedefault",
+			const char *taskname        = "AliAnalysisTask",
+			const char *suffix          = ""
+	);
+
+  //..setters for the analysis
+  void                        SetCorrectEff(Bool_t input)                           { fCorrectEff      = input  ; }
+  void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
+  void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
+  void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
+  void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input; }
+  void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
+  void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin     = input;}
+  void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input;}
+  void                        SetNLM(Int_t input)                                   { fMaxNLM          = input;}
+  void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
+  void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
+  void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts= input;}
+  void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg          = input;}
+  void                        SetDoClusMixing(Bool_t input)                         { fDoClusMixing      = input;}
+  void                        SetClusterDepth(Int_t input)                          { fClusterDepth      = input;}
+  void                        SetNRotBkgSamples(Int_t input)                        { fNRotBkgSamples    = input;}
+  void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
+  void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma         = input;}
+  void                        SetPi0AsymCut(Float_t input)                          { fPi0AsymCut        = input;}
 
 
-    //Functions for mixed event purposes
-    void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
-    AliEventPoolManager*        GetEventPoolManager()                                 {return fPoolMgr;}
-    // Set which pools will be saved
-    void                        AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
+  //..Functions for mixed event purposes
+  void                        SetExternalEventPoolManager(AliEventPoolManager* mgr) {fPoolMgr = mgr;}
+  AliEventPoolManager*        GetEventPoolManager()                                 {return fPoolMgr;}
+  TF1*                        GetEffFunction(Int_t no,Int_t cent)                           ;
+  //..Set which pools will be saved
+  void                        AddEventPoolsToOutput(Double_t minCent, Double_t maxCent,  Double_t minZvtx, Double_t maxZvtx, Double_t minPt, Double_t maxPt);
    private:
-    AliEventCuts                fEventCuts;                   ///< event selection utility
-    AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal in terms of eta and phi
-    AliEMCALRecoUtils*          fFiducialCellCut;             ///< fiducial cut for EMCal+DCal in terms of rows and collumns
+  AliEventCuts                fEventCuts;                   ///< event selection utility
+  AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal in terms of eta and phi
+  AliEMCALRecoUtils*          fFiducialCellCut;             ///< fiducial cut for EMCal+DCal in terms of rows and collumns
 
    protected:
 
-    void                        InitArrays()                                                 ;
-    // overwritten EMCal base class functions
-    Bool_t                      Run()                             	                          ;
-    void                        ExecOnce()         									      ;
-    Bool_t                      IsEventSelected()											  ;
-    void                        UserCreateOutputObjects()        		                      ;
+  void                        InitArrays()                                                 ;
+  //..overwritten EMCal base class functions
+  Bool_t                      Run()                             	                          ;
+  void                        ExecOnce()         									      ;
+  Bool_t                      IsEventSelected()											  ;
+  void                        UserCreateOutputObjects()        		                      ;
 
-    //Functions for mixed event purposes
-    void                        InitEventMixer()											  ;
-    TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
+  //..Functions for mixed event purposes
+  void                        InitEventMixer()											  ;
+  void                        InitClusMixer()											  ;
+  TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
 
-    //..Correlate and fill
-    Bool_t                      FillHistograms()                                              ;
-    Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-    Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-    void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight);
-    void                        FillTriggerHist(AliTLorentzVector ClusterVec, Double_t Weight);
-    void                        FillGhHistograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t Weight);
-    void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec);
-    Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
-    Bool_t                      AccClusPairForAna(AliVCluster* cluster1, AliVCluster * cluster2, TLorentzVector vecPi0);
-    Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff);
+  //..Correlate and fill
+  Bool_t                      FillHistograms()                                              ;
+  Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
+  Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
+  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Bool_t isMixed, Int_t mcIndex1 = -1, Int_t mcIndex2 = -1);
+  void                        FillTriggerHist(AliTLorentzVector ClusterVec, Double_t Weight);
+  void                        FillGhHistograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t Weight);
+  void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t Weight=1);
+  Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
+  Bool_t                      AccClusPairForAna(AliVCluster* cluster1, AliVCluster * cluster2, TLorentzVector vecPi0);
+  Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff);
+
+  //..Functions for MC purposes
+  Int_t                       FindMCPartForClus(AliVCluster * caloCluster);
+  Int_t                       FindMCRootPart(Int_t iMCIndex, Int_t * iMCTreeHeight);
+
 
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)       ;
-  Double_t                    GetEff(AliTLorentzVector ParticleVec)                         ;
+  Double_t                    GetTrackEff(Double_t pT, Double_t eta)                        ;
   void                        GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist);
   AliVCluster*                GetLeadingCluster(const char* opt, AliClusterContainer* clusters);
 
-  Bool_t                      fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0
+  Int_t                       fGammaOrPi0;               ///< This tells me whether the correltation and the filling of histograms is done for gamma or pi0 or pi0 SB
   Bool_t                      fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
   Bool_t                      fDebug;			        ///< Can be set for debugging
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Int_t                       fPlotQA;                   ///< plot additional QA histograms
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
-
+  Bool_t                      fCorrectEff;               ///< Correct efficiency of associated tracks
   //..Input histograms
-  THnF                       *fHistEffGamma;             ///< ??input efficiency for trigger particles
-  THnF                       *fHistEffHadron;            ///< ??input efficiency for associate particles
+  TF1 						 *funcpT_low[4];            ///< input functions for the efficiency correction
+  TF1 						 *funcpT_high[4];
+  TF1 						 *funcpEta_left[4];
+  TF1 						 *funcpEta_right[4];
 
   //..Constants
   Double_t                    fRtoD;                     ///< conversion of rad to degree
   static const Int_t          kNIdentifier=3;            ///< number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
-  static const Int_t          kNvertBins=20;             ///< vertex bins in which the ME are mixed
+  static const Int_t          kNvertBins=10;             ///< vertex bins in which the ME are mixed
   static const Int_t          kNcentBins=8;              ///< centrality bins in which the ME are mixed
+  static const Int_t          kNClusVertBins=7;             ///< vertex bins in which the clusters are mixed
+  static const Int_t          kNEMCalMultBins=4;              ///< EMCal multiplicity bins in which the clusters are mixed
   static const Int_t          kNoGammaBins=9;            ///< Bins in gamma pT
   static const Int_t          kNoZtBins=7;               ///< Bins in Zt
   static const Int_t          kNoXiBins=8;               ///< Bins in Xi
@@ -111,10 +140,11 @@
   Double_t                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
 
   //..cuts
-  Double_t                    fTriggerPtCut;          ///< Cut of 5 GeV/c on Trigger Pt
+  Double_t                    fTriggerPtCut;             ///< Cut of 5 GeV/c on Trigger Pt
   Double_t                    fClShapeMin;               ///< Minimum cluster shape
   Double_t                    fClShapeMax;               ///< Maximum cluster shape
   Double_t                    fClEnergyMin;              ///< Minimum cluster energy for pi0 Reconstruction
+  Double_t                    fOpeningAngleCut;          ///< Minimum opening angle cut for pi0 candidates
   Int_t                       fMaxNLM;                   ///< Maximum number of local maxima
   Bool_t                      fRmvMTrack;                ///< Switch to enable removing clusters with a matched track
   Double_t                    fTrackMatchEta;            ///< eta range in which a track is called a match to a cluster
@@ -122,8 +152,11 @@
   //..Event pool variables
   TAxis                      *fMixBCent;                 ///< Number of centrality bins for the mixed event
   TAxis                      *fMixBZvtx;                 ///< Number of vertex bins for the mixed event
+  TAxis                      *fMixBEMCalMult;            ///< TAxis for EMCAL Multiplicity bins for the mixed clusters
+  TAxis                      *fMixBClusZvtx;             ///< TAxis for vertex bins for the mixed clusters
   AliEventPoolManager        *fPoolMgr;                  ///< event pool manager
   Int_t                       fTrackDepth;               ///<  #tracks to fill pool
+  Int_t                       fClusterDepth;             ///<  #clusters to fill cluster mixing pool
   Int_t                       fPoolSize;                 ///<  Maximum number of events
   vector<vector<Double_t> >   fEventPoolOutputList;      //!<! ???vector representing a list of pools (given by value range) that will be saved
   //..Event selection types
@@ -131,36 +164,59 @@
   UInt_t                      fMixingEventType;          ///<  Event types that are used for the tracks in the mixed event
   UInt_t                      fCurrentEventTrigger;      //!<! Trigger of the current event
 
-  // MC stuff
+  //..MC stuff
   Bool_t                      fParticleLevel;            ///< Set particle level analysis
   Bool_t                      fIsMC;                     ///< Trigger, MC analysis
   UInt_t                      fAODfilterBits[2];         ///< AOD track filter bit map
+  AliMCParticleContainer     *fMCParticles;              ///< Container for MC Particles
 
-  // Other stuff
+
+  //..Other stuff
   TList                      *fEventCutList;           //!<! Output list for event cut histograms
   TList                      *fOutputListQA;           //!<! Output list
+  Double_t                    fscaleEta[4];             ///<
+  //..Histograms -
 
-  // Histograms -
+  TH2             *fHistClusPairInvarMasspT; //!<! Tyler's histogram
+  TH1             *fHistPi0;                 //!<! Tyler's histogram
+  TH2             *fMAngle;                  //!<! Tyler's histogram
+  TH2             *fPtAngle;                 //!<! Tyler's histogram
+  TH1             *fMassPionRej;             //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+  TH2             *fMassPtPionAcc;           //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
+  TH2             *fMassPtPionRej;           //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+  TH3             *fMassPtCentPionAcc;       //!<! Histogram of Mass vs Pt vs Cent for accepted Pi0 Candidates
+  TH3             *fMassPtCentPionRej;       //!<! Histogram of Mass vs Pt vs Cent for rejected Pi0 Candidates
 
-  TH2                       *fHistClusPairInvarMasspT; //!<! Tyler's histogram
-  TH1 					    *fHistPi0;                 //!<! Tyler's histogram
-  TH2                       *fMAngle;                  //!<! Tyler's histogram
-  TH2                       *fPtAngle;                 //!<! Tyler's histogram
-  TH2             *fMassPtPionAcc; //!<! Histogram of Mass vs Pt for accepted Pi0 Candidates
-  TH2             *fMassPtPionRej; //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+
+  TRandom3        *fRand;                      //!<! Random number generator.  Initialzed by rot background
+  TH1             *fClusEnergy;                //!<! Energy of clusters accepted for pi0 analysis
+  Bool_t          fDoRotBkg;                   ///< Whether or not to calculate the rotational background
+  Bool_t          fDoClusMixing;               ///< Whether or not to use event pools to calculate mixed cluster pairs.  
+  Int_t           fNRotBkgSamples;             ///< How many samples to use in the rotational background
+  THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
+  TH2							*fEMCalMultvZvtx;            //!<! Histogram investigating z-vertex, EMCal Multiplicity for mixed cluster pairs
+
+	// Monte Carlo Histograms
+  TH2             *fHistClusMCDE;              //!<! Difference between detector Clus E and MC E (inclusive)
+  TH2             *fHistClusMCDEDRMatch;       //!<! Difference between detector Clus E and MC E (exclusive)
+  TH2             *fHistClusMCDPhiDEta;        //!<! 2D Angle Difference between det. Clus and MC Clus. (incl.)
+  TH2             *fHistClusMCDPhiDEtaMatchDE; //!<! 2D Angle Difference between det. Clus and MC Clus. (excl.)
+
+  TH2             *fHistPi0MCDPt;              //!<! Difference between detector pi0 pt and MC pt.
+  TH2             *fHistEtaMCDPt;              //!<! Difference between detector Eta pt and MC pt.
+  TH2             *fHistPi0MCDPhiDEta;         //!<! 2D Angle Difference between det. pi0 and MC pi0.
+  TH2             *fHistEtaMCDPhiDEta;         //!<! 2D Angle Difference between det. Eta and MC Eta.
 
 
-  TRandom3        *fRand;           //!<! Random number generator.  Initialzed by rot background
-  TH1             *fClusEnergy;     //!<! Energy of clusters accepted for pi0 analysis
-  Bool_t          fDoRotBkg;        ///< Whether or not to calculate the rotational background
-  Int_t           fNRotBkgSamples;  ///< How many samples to use in the rotational background
-  THnSparseF      *fPi0Cands;       //!<! Michael's THnSparse for pi0 Candidates
-
+  Bool_t          fUseParamMassSigma;          ///< Whether to use parametrized or fixed mass,sigma
+  Double_t        fPi0MassFixed[kNoGammaBins]; ///< Fixed Mass Peak per pT bin
+  Double_t        fPi0SigmaFixed[kNoGammaBins];///< Fixed Sigma per pT bin
   Double_t        fPi0MassFitPars[5];          ///< Fit Parameters for mass peak
   Double_t        fPi0SigmaFitPars[5];         ///< Fit Parameters for sigma
   Float_t         fPi0NSigma;                  ///< number of sigma to cut on peak
   Float_t         fPi0AsymCut;                 ///< Asymmetry cut for Pi0 candidates
 
+  TH2                      **fEffCorrectionCheck;      //!<! applied efficiency correction in eta-pT to cross check
   TH1 					    *fHistEvsPt;               //!<! E vs pT
   TH1 					   **fHistBinCheckPt;          //!<! plot Pt distribution for ideal binning
   TH1 					   **fHistBinCheckZt;          //!<! plot Zt distribution for ideal binning
@@ -173,10 +229,10 @@
   THnSparseF                *fCorrVsManyThings;        //!<! Thn sparse filled with delta phi, delta eta,Eg,zt,xi,vertex Z,centrality...
   THnSparseF                *fTriggerHist;             //!<! Thn sparse filled with Eg,vertex Z,eventPlane Bin,centrality,
   THnSparseF                *fClusterProp;             //!<! Thn sparse filled with cluster properties
-  TH2                 	    *fHPoolReady;              //!<! Check how many Jobs start mixing
+  TH2                 	    *fHPoolReady;             //!<! Check how many Jobs start mixing
   //
 
- private:
+   private:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 

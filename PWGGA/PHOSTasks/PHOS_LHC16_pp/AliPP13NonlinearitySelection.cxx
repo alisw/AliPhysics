@@ -14,19 +14,13 @@ using namespace std;
 
 ClassImp(AliPP13NonlinearitySelection);
 
-
 //________________________________________________________________
-void AliPP13NonlinearitySelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
+void AliPP13NonlinearitySelection::SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags)
 {
-	(void) pool;
-	// Ensure that we are not doing mixing
-	EventFlags flags = eflags;
-	flags.isMixing = kFALSE;
+	// NB: Nonlinearity is a function of photon energy
+	//     therefore the histograms should be filled for each photon.
 
-	// Select photons
-	TObjArray photonCandidates;
-	SelectPhotonCandidates(clusArray, &photonCandidates, flags);
-
+	// Int_t counter = 0;
 	// Consider N^2 - N combinations, excluding only same-same clusters.
 	for (Int_t i = 0; i < photonCandidates.GetEntriesFast(); ++i)
 	{
@@ -41,8 +35,7 @@ void AliPP13NonlinearitySelection::FillPi0Mass(TObjArray * clusArray, TList * po
 			ConsiderPair(first, second, flags);
 		} // second cluster loop
 	} // cluster loop
-
-	MixPhotons(photonCandidates, pool, flags);
+	// Int_t Nn = photonCandidates.GetEntriesFast();
 }
 
 //________________________________________________________________
@@ -61,20 +54,18 @@ void AliPP13NonlinearitySelection::ConsiderPair(const AliVCluster * c1, const Al
 	if ((sm2 = CheckClusterGetSM(c2, x2, z2)) < 0) return; //  To be sure that everything is Ok
 
 
+	// NB: This is the data cut
 	if (dynamic_cast<AliPP13SelectionWeights *>(fWeights))
 	{
-		Float_t eff = fWeights->Weight(p1.E()) * fWeights->Weight(p2.E());
-		fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.Pt(), 1. / eff);	
+		Float_t eff = fWeights->TofEfficiency(p1.E()) * fWeights->TofEfficiency(p2.E());
+		fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.E(), 1. / eff);	
 		return;
 	}
 
-	Float_t weight = fWeights->Weight(pt12);
 	// NB: Weight by meson spectrum, but fill only for the first photon
-	// fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, pt12, weight);
-	
-	fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.Pt(), weight);	
+	Float_t weight = fWeights->Weights(pt12, eflags);
+	fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.E(), weight);	
 }
-
 
 //________________________________________________________________
 void AliPP13NonlinearitySelection::InitSelectionHistograms()
@@ -91,7 +82,7 @@ void AliPP13NonlinearitySelection::InitSelectionHistograms()
 	for (Int_t i = 0; i < 2; ++i)
 	{
 		const char * sf = (i == 0) ? "" : "Mix";
-		TH2F * hist = new TH2F(Form("h%sMassPt_", sf), "(M_{#gamma#gamma}, pT_{#gamma}) ; M_{#gamma#gamma}, GeV; pT_{#gamma}, GeV", nM, mMin, mMax, nPt, ptMin, ptMax);
+		TH2F * hist = new TH2F(Form("h%sMassPt_", sf), "(M_{#gamma#gamma}, pT_{#gamma}) ; M_{#gamma#gamma}, GeV; E_{#gamma}, GeV", nM, mMin, mMax, nPt, ptMin, ptMax);
 		fMassPt[i] = new AliPP13DetectorHistogram(hist, fListOfHistos, AliPP13DetectorHistogram::kModules);
 	}
 

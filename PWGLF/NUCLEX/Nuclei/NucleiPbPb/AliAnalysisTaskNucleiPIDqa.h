@@ -38,15 +38,17 @@ private:
   AliPIDResponse* fPID;              //!<! ALICE PID framework
 
   // Data histograms
-  TH2F *fITSsignal[2];               /// ITS dE/dx for positive and negative particles
-  TH2F *fTPCsignal[2];               /// TPC dE/dx for positive and negative particles
-  TH2F *fTOFsignal[2];               /// TOF beta for positive and negative particles
-  TH2F *fITSsignalSelected[2][4][5]; /// ITS dE/dx for (anti)-matter for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
-  TH2F *fTPCsignalSelected[2][4][5]; /// TPC dE/dx for (anti-)matter for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
-  TH2F *fTOFsignalSelected[2][4][5]; /// TOF beta for (anti-)matter for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
-  TH2F *fITSnSigmaSelected[2][4][5]; /// ITS nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
-  TH2F *fTPCnSigmaSelected[2][4][5]; /// TPC nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
-  TH2F *fTOFnSigmaSelected[2][4][5]; /// TOF nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
+  TH2D *fTPCperformance;             //!<!
+  TH2D *fTPCperformanceTwoCharges;   //!<!
+  TH2F *fITSsignal[2];               //!<! ITS dE/dx for positive and negative particles
+  TH2F *fTPCsignal[2];               //!<! TPC dE/dx for positive and negative particles
+  TH2F *fTOFsignal[2];               //!<! TOF beta for positive and negative particles
+  TH2F *fITSsignalSelected[2][4][5]; //!<! ITS dE/dx for (anti)-matter for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
+  TH2F *fTPCsignalSelected[2][4][5]; //!<! TPC dE/dx for (anti-)matter for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
+  TH2F *fTOFsignalSelected[2][4][5]; //!<! TOF beta for (anti-)matter for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
+  TH2F *fITSnSigmaSelected[2][4][5]; //!<! ITS nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
+  TH2F *fTPCnSigmaSelected[2][4][5]; //!<! TPC nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
+  TH2F *fTOFnSigmaSelected[2][4][5]; //!<! TOF nsigma for all the nuclei w/o nsigma cut on ITS, TPC or TOF pid
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskNucleiPIDqa, 1);
   /// \endcond

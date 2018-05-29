@@ -47,6 +47,7 @@
 #pragma link C++ class  AliEmcalCorrectionClusterTrackMatcher+;
 #pragma link C++ class  AliEmcalCorrectionClusterHadronicCorrection+;
 #pragma link C++ class  std::map<AliVTrack *,AliParticleContainer *>+;
+#pragma link C++ class  std::pair<AliVTrack *,AliParticleContainer *>+;
 #pragma link C++ class  AliEmcalCorrectionPHOSCorrections+;
 #pragma link C++ class  AliAnalysisTaskEmcalOccupancy+;
 

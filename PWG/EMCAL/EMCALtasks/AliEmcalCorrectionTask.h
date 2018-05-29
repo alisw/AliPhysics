@@ -53,12 +53,6 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
     kpA       = 2  //!<! Proton-Nucleus
   };
 
-  /// Relates string to the cluster energy enumeration for %YAML configuration
-  static const std::map <std::string, AliVCluster::VCluUserDefEnergy_t> fgkClusterEnergyTypeMap; //!<!
-
-  /// Relates string to the track filter enumeration for %YAML configuration
-  static const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> fgkTrackFilterTypeMap; //!<!
-
   AliEmcalCorrectionTask();
   AliEmcalCorrectionTask(const char * name);
   // Implemented using copy-and-swap mechanism
@@ -256,7 +250,7 @@ class AliEmcalCorrectionTask : public AliAnalysisTaskSE {
   TList *                     fOutput;                     //!<! Output for histograms
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionTask, 5); // EMCal correction task
+  ClassDef(AliEmcalCorrectionTask, 6); // EMCal correction task
   /// \endcond
 };
 

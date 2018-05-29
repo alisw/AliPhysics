@@ -133,7 +133,7 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
   fListHist = new TList ();
   fListHist->SetOwner ();	// IMPORTANT!
   if(fYear==2015) fEventCuts.SetupLHC15o();
-  if(fYear==2011) fEventCuts.SetupLHC11h();
+  if(fYear==2011) fEventCuts.SetupRun1PbPb();
 
   if (!fHistEventMultiplicity)
     {

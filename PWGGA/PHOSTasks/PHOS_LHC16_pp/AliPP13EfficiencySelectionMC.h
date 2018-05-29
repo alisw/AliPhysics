@@ -5,7 +5,7 @@
 #include <map>
 
 // --- Custom header files ---
-#include "AliPP13PhotonSelection.h"
+#include "AliPP13PhotonSelectionMC.h"
 #include "AliPP13SelectionWeights.h"
 #include "AliPP13MesonSelectionMC.h"
 
@@ -22,7 +22,7 @@
 #include <AliLog.h>
 
 
-class AliPP13EfficiencySelectionMC: public AliPP13PhotonSelection
+class AliPP13EfficiencySelectionMC: public AliPP13PhotonSelectionMC
 {
 public:
 	enum Particles
@@ -30,9 +30,8 @@ public:
 		kGamma = 22, kPi0 = 111, kEta = 221, kK0s = 310
 	};
 
-				
 	AliPP13EfficiencySelectionMC():
-		AliPP13PhotonSelection(),
+		AliPP13PhotonSelectionMC(),
 		fInvMass()
 	{
 		fPartNames[kGamma] = "#gamma";
@@ -41,12 +40,12 @@ public:
 	}
 
 	AliPP13EfficiencySelectionMC(const char * name, const char * title, AliPP13ClusterCuts cuts, AliPP13SelectionWeights * w):
-		AliPP13PhotonSelection(name, title, cuts, w),
+		AliPP13PhotonSelectionMC(name, title, cuts, w),
 		fInvMass()
 	{
 		// Force no timing cut for MC,
 		// as there is no photons from different bunches
-		fCuts.fTimingCut = 9999; 
+		fCuts.fTimingCut = 9999;
 
 		// Don't use c++11 here, as it might fail at some nodes
 		fPartNames[kGamma] = "#gamma";
@@ -67,8 +66,6 @@ public:
 protected:
 	virtual void ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags);
 	virtual Bool_t IsPrimary(const AliAODMCParticle * particle) const;
-	TLorentzVector ClusterMomentum(const AliVCluster * c1, const EventFlags & eflags) const;
-
 
 	// NB: Impelement these methods if needed
 	// 
@@ -80,15 +77,6 @@ protected:
 		(void) flags;
 
 	}
-
-	void ConsiderReconstructedParticle(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)
-	{
-		(void) c1;
-		(void) c2;
-		(void) eflags;
-	}
-
-
 	AliPP13EfficiencySelectionMC(const AliPP13EfficiencySelectionMC &);
 	AliPP13EfficiencySelectionMC & operator = (const AliPP13EfficiencySelectionMC &);
 	// NB: This data structure contains all necesary histograms
