@@ -270,7 +270,7 @@ void CacheTrendingProductions(TString dataType){
 /// TODO - reset cache timeout before
 void CacheMCProductionInfo(){
   AliExternalInfo info;
-  tree = info.GetTreeMCPassGuess();
+  TTree *tree = info.GetTreeMCPassGuess();
   delete tree;
 }
 
@@ -293,12 +293,24 @@ void CheckProductions(){
 /// To be used for the web browsing
 void ExportMCAnchorJSON(){
   AliExternalInfo info;
-  tree = info.GetTreeMCPassGuess();
+  TTree*tree = info.GetTreeMCPassGuess();
+  tree->SetAlias("MCProdNameA","MCProdName.fString");
+  tree->SetAlias("MCAliphysicsA","MCAliphysics.fString");
+  tree->SetAlias("MCAlirootA","MCAliroot.fString");
+  tree->SetAlias("AnchorProdTagA","AnchorProdTag.fString");
+  tree->SetAlias("AnchorPassNameA","AnchorPassName.fString");
+  tree->SetAlias("AnchorAliphysicsA","Anchoraliphys.fString");
+  tree->SetAlias("AnchorAlirootA","Anchoraliroot.fString");
+
   TString toExport="";
-  toExport+="MCProdName.fString:MCAliphysics.fString:MCAliroot.fString";
-  toExport+="AnchorProdTag.fString:AnchorPassName.fString:Anchoraliroot.fString:Anchoraliphys.fString:";
+  toExport+="MCProdNameA:MCAliphysicsA:MCAlirootA:";
+  toExport+="AnchorProdTagA:AnchorPassNameA:AnchorAlirootA:AnchorAliphysicsA:";
   toExport+="rankGuess:runNMatches:runNMC:runNAnchor";
-  AliTreePlayer::selectWhatWhereOrderBy(tree,toExport,"","",0,1000,"json","MCAnchor.json");
+  AliTreePlayer::selectWhatWhereOrderBy(tree,toExport,"","",0,100000,"json","MCAnchor.json");
+  // to test output - print using jq
+  // cat MCAnchor.json  | jq .tree[0,1]    # print first selected entries
+  // cat MCAnchor.json  | jq -c '.tree[] | select(.AnchorProdTagA | contains("LHC15o"))'| jq    #print selected entries anchored to LHC15o
+  // cat MCAnchor.json  | jq -c '.tree[] | select(.AnchorProdTagA | contains("LHC15o"))'| jq .MCProdNameA  # print prod name for selected entries anchored to LHC15o
 
 }
 
