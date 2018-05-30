@@ -65,6 +65,7 @@ fAODMCParticles(0),
 fmcHeader(0),
 fDPMjetHeader(0),
 fPythiaVersion(""),
+fVariableCPV(0),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -149,6 +150,7 @@ fSumUE_MC(0),
 fGenPromptPhotonSel(0),
 fEtaPhiClus(0),
 fEtaPhiClusAftSel(0),
+fPtvsDetavsDphi(0),
 fClusEvsClusT(0),
 fPT(0),
 fE(0),
@@ -157,6 +159,8 @@ fNLM2_NC_Acc(0),
 fNLM2_NC_Acc_noTcard(0),
 fVz(0),
 fEvents(0),
+fCutFlowEvents(0),
+fCutFlowClusters(0),
 fPtaftTime(0),
 fPtaftCell(0),
 fPtaftNLM(0),
@@ -269,6 +273,7 @@ fAODMCParticles(0),
 fmcHeader(0),
 fDPMjetHeader(0),
 fPythiaVersion(""),
+fVariableCPV(0),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -353,6 +358,7 @@ fSumUE_MC(0),
 fGenPromptPhotonSel(0),
 fEtaPhiClus(0),
 fEtaPhiClusAftSel(0),
+fPtvsDetavsDphi(0),
 fClusEvsClusT(0),
 fPT(0),
 fE(0),
@@ -361,6 +367,8 @@ fNLM2_NC_Acc(0),
 fNLM2_NC_Acc_noTcard(0),
 fVz(0),
 fEvents(0),
+fCutFlowEvents(0),
+fCutFlowClusters(0),
 fPtaftTime(0),
 fPtaftCell(0),
 fPtaftNLM(0),
@@ -937,9 +945,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fOutput->Add(fEtaPhiClus);
 
 	  fEtaPhiClusAftSel = new TH2F ("hEtaPhiClusAfterSelection", "", netabins, etamin, etamax, nphibins, phimin, phimax);
-	  // fEtaPhiClusAftSel->Sumw2();
 	  fOutput->Add(fEtaPhiClusAftSel);
 	}
+
+	fPtvsDetavsDphi = new TH3F("hPtvsDetavsDphi","Cluster-track matching vs. cluster energy", 200, 0., 100., 200, -0.1, 0.1, 200, -0.1, 0.1);
+	fPtvsDetavsDphi->Sumw2();
+	fOutput->Add(fPtvsDetavsDphi);
       }
         break;
     }
@@ -1048,19 +1059,40 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
   }
 
     // Initialization of all the common THistos for the 3 different outputs
-  fVz = new TH1F("hVz_NC","Vertex Z distribution",100,-50.,50.);
-  fVz->Sumw2();
-  fOutput->Add(fVz);
-
   if(fWho != 2){
-    fVzBeforecut = new TH1F("hVz_ALL", "Inclusive Vertex Z distribution",100,-50.,50.);
-    fVzBeforecut->Sumw2();
-    fOutput->Add(fVzBeforecut);
+    fVz = new TH1F("hVz_NC","Vertex Z distribution",100,-50.,50.);
+    fVz->Sumw2();
+    fOutput->Add(fVz);
   }
 
-  fEvents = new TH1F("hEvents_NC","Events",100,0.,100.);
+  fVzBeforecut = new TH1F("hVz_ALL", "Inclusive Vertex Z distribution",100,-50.,50.);
+  fVzBeforecut->Sumw2();
+  fOutput->Add(fVzBeforecut);
+
+  fEvents = new TH1F("hEvents_NC","Events",1,0.,1.);
   fEvents->Sumw2();
   fOutput->Add(fEvents);
+
+  fCutFlowEvents = new TH1F("hCutFlowEvents", "Effect of each cut on event number", 4, 0., 4.);
+  fCutFlowEvents->GetXaxis()->SetBinLabel(1, "Initial");
+  fCutFlowEvents->GetXaxis()->SetBinLabel(2, "Vertex cut");
+  fCutFlowEvents->GetXaxis()->SetBinLabel(3, "SPD pile-up cut");
+  fCutFlowEvents->GetXaxis()->SetBinLabel(4, "Trackless cut");
+  fCutFlowEvents->Sumw2();
+  fOutput->Add(fCutFlowEvents);
+
+  fCutFlowClusters = new TH1F("hCutFlowClusters", "Effect of each cut on candidate cluster number", 9, 0., 9.);
+  fCutFlowClusters->GetXaxis()->SetBinLabel(1, "Initial");
+  fCutFlowClusters->GetXaxis()->SetBinLabel(2, "IsEMCal cut");
+  fCutFlowClusters->GetXaxis()->SetBinLabel(3, "Time cut");
+  fCutFlowClusters->GetXaxis()->SetBinLabel(4, "Number of cells cut");
+  fCutFlowClusters->GetXaxis()->SetBinLabel(5, "NLM cut");
+  fCutFlowClusters->GetXaxis()->SetBinLabel(6, "CPV cut");
+  fCutFlowClusters->GetXaxis()->SetBinLabel(7, "DTBC cut");
+  fCutFlowClusters->GetXaxis()->SetBinLabel(8, "Fiducial cut");
+  fCutFlowClusters->GetXaxis()->SetBinLabel(9, "5 GeV lower cut");
+  fCutFlowClusters->Sumw2();
+  fOutput->Add(fCutFlowClusters);
 
   if(fWho != 2){
     fSPDclustVsSPDtracklets = new TH2F("hSPDclustVsSPDtracklets","Number of SPD clusters VS number of SPD tracklets in events with |Zvtx| < 10",100,0,200,250,0,1000);
@@ -1268,14 +1300,16 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   }
 
   fPtaftTime->Fill(vecCOI.Pt());
+  fCutFlowClusters->Fill(2.5);
 
   if((coi->GetNCells() < 2))
     return kFALSE;
 
   fPtaftCell->Fill(vecCOI.Pt());
+  fCutFlowClusters->Fill(3.5);
 
-  Int_t nlm=0;
-  AliVCaloCells * fCaloCells =InputEvent()->GetEMCALCells();
+  Int_t nlm = 0;
+  AliVCaloCells * fCaloCells = InputEvent()->GetEMCALCells();
   if(fCaloCells){
     nlm = GetNLM(coi,fCaloCells);
     AliDebug(1,Form("NLM = %d",nlm));
@@ -1296,6 +1330,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   }
 
   fPtaftNLM->Fill(vecCOI.Pt());
+  fCutFlowClusters->Fill(4.5);
 
   if(fTMClusterRejected){
     if(ClustTrackMatching(coi,kTRUE)){
@@ -1310,16 +1345,19 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   }
 
   fPtaftTM->Fill(vecCOI.Pt());
+  fCutFlowClusters->Fill(5.5);
 
   if((coi->GetDistanceToBadChannel() < 2))
     return kFALSE;
 
   fPtaftDTBC->Fill(vecCOI.Pt());
+  fCutFlowClusters->Fill(6.5);
 
   if(!CheckBoundaries(vecCOI))
     return kFALSE;
 
   fPtaftFC->Fill(vecCOI.Pt());
+  fCutFlowClusters->Fill(7.5);
 
   if(fQA && fWho != 2)
     fTestIndexE->Fill(vecCOI.Pt(),index);
@@ -1327,22 +1365,23 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   if(vecCOI.Pt()<5.)
     return kFALSE;
 
+  fCutFlowClusters->Fill(8.5);
+
   if(fQA && fWho == 1){
     fNLM2_NC_Acc->Fill(nlm,coi->E());
     
     if(fANnoSameTcard){
       if(nlm==2){
         Int_t rowdiff,coldiff;
-        if(!IsAbsIDsFromTCard(fAbsIDNLM[0],fAbsIDNLM[1],rowdiff,coldiff))
-        {
+        if(!IsAbsIDsFromTCard(fAbsIDNLM[0],fAbsIDNLM[1],rowdiff,coldiff)){
           fNLM2_NC_Acc_noTcard->Fill(nlm,coi->E());
           return kTRUE;
         }
         else
           return kFALSE;
       }
-    else
-      fNLM2_NC_Acc_noTcard->Fill(nlm,coi->E());
+      else
+	fNLM2_NC_Acc_noTcard->Fill(nlm,coi->E());
     }
   } //the flag fANnoSameTcard could be used also independently of fQA and fWho,
     //depending on the results of the analysis on full dataset.
@@ -1381,11 +1420,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
 
-  if(fWho != 2)
-    fVzBeforecut->Fill(fVertex[2]);
+  fCutFlowEvents->Fill(0.5);
+  fVzBeforecut->Fill(fVertex[2]);
 
   if(fVertex[2]>10. || fVertex[2]<-10.)
     return kFALSE;
+
+  fCutFlowEvents->Fill(1.5);
 
   if(fWho != 2){
     fSPDclustVsSPDtracklets->Fill(fVevent->GetMultiplicity()->GetNumberOfTracklets(),(fVevent->GetNumberOfITSClusters(0)+fVevent->GetNumberOfITSClusters(1)));
@@ -1396,12 +1437,16 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     }
   }
 
+  fCutFlowEvents->Fill(2.5);
+
   AliClusterContainer* clusters = GetClusterContainer(0);
   Int_t nbTracksEvent;
   nbTracksEvent = InputEvent()->GetNumberOfTracks();
 
   if(fRejectionEventWithoutTracks && (nbTracksEvent == 0))
     return kFALSE;
+
+  fCutFlowEvents->Fill(3.5);
 
   // Reject events below 2012 EGA threshold
   Bool_t isL1 = kFALSE;
@@ -1485,7 +1530,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       return kFALSE;
   }
 
-  fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
+  if(fWho != 2)
+    fVz->Fill(fVertex[2]); // Fill Vertex Z histogram
 
   if(!isL1 && fIsMC && f2012EGA){
     return kFALSE;
@@ -1499,8 +1545,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       AliError("No cluster found");
       return kFALSE;
     }
+
+    fCutFlowClusters->Fill(0.5);
+
     if(!coi->IsEMCAL())
       return kFALSE;
+
+    fCutFlowClusters->Fill(1.5);
 
     index=coi->GetID();
     TLorentzVector vecCOI;
@@ -1516,10 +1567,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
     Bool_t isSelected = SelectCandidate(coi);
 
-    if(fQA || (fWho == 2 && !fQA))
-      fEtaPhiClusAftSel->Fill(vecCOI.Eta(),vecCOI.Phi());
-
     if(isSelected){
+      if(fQA || (fWho == 2 && !fQA))
+	fEtaPhiClusAftSel->Fill(vecCOI.Eta(),vecCOI.Phi());
+
       for(auto it : tracksANA->accepted()){
 	AliVTrack *tr = static_cast<AliVTrack*>(it);
 	if(!tr){
@@ -1548,8 +1599,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	AliError("No cluster found");
 	return kFALSE;
       }
+
+      fCutFlowClusters->Fill(0.5);
+
       if(!coi->IsEMCAL())
 	return kFALSE;
+
+      fCutFlowClusters->Fill(1.5);
 
       index=coi->GetID();
       TLorentzVector vecCOI;
@@ -1588,12 +1644,6 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       }
     }
   }
-
-
-
-
-
-
 
   return kTRUE;
 }
@@ -1759,13 +1809,23 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       fDeltaPHIClusTrack->Fill(dphi);
     }
 
+    if(candidate){
+      fPtvsDetavsDphi->Fill(vecClust.Pt(), deta, dphi);
+    }
+
     distCT = TMath::Sqrt(deta*deta+dphi*dphi);
     if(distCT < maxdist)
       maxdist = distCT;
 
     if(candidate){
-      deltaEta = fdetacut;
-      deltaPhi = fdphicut;
+      if(fVariableCPV){
+	deltaEta = 0.010 + TMath::Power((vecClust.Pt() + 4.07), -2.5); // See https://alice-notes.web.cern.ch/node/813
+	deltaPhi = 0.015 + TMath::Power((vecClust.Pt() + 3.65), -2.);  // See https://alice-notes.web.cern.ch/node/813
+      }
+      else{
+	deltaEta = fdetacut;
+	deltaPhi = fdphicut;
+      }
     }
     else{
       deltaEta = fdetacutIso;
@@ -1782,6 +1842,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       matched = kTRUE;
     }
   }
+
   if(fWho != 2)
     fCTdistVSpTNC->Fill(vecClust.Pt(),distCT);
 
