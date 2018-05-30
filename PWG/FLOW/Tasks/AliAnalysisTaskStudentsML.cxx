@@ -35,7 +35,7 @@
 #include <vector>
 #include "TMath.h"
 #include "TF1.h"
-#include "AliMultSelection.h"
+
 
 
 using std::cout;
@@ -68,7 +68,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fParticles(0),
  fCentral(0),
  fMinCentrality(0.),
- fMaxCentrality(0.),
+ fMaxCentrality(100.),
  fAngles(NULL),
  fWeights(NULL),
  fBin(NULL),
@@ -135,7 +135,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fParticles(0), 
  fCentral(0.),
  fMinCentrality(0.),
- fMaxCentrality(0.), 
+ fMaxCentrality(100.), 
  fAngles(NULL),
  fWeights(NULL),
  fBin(NULL),
