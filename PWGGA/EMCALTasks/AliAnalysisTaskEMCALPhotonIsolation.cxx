@@ -4563,7 +4563,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::CalculateUEDensityMC(Double_t etaCand,
       case 4:{
 	if(fWho == 2 && fAreasPerEvent){
 	  ComputeConeAreaInEMCal(etaCand, phiCand, isoConeArea);
-	  perpConesArea = 2.*isoConeArea;
+	  ComputeConeAreaInTPC  (etaCand, perpConesArea);
+	  perpConesArea         *= 2.;
 	}
 
         sumUE = sumUE * (isoConeArea / perpConesArea);
