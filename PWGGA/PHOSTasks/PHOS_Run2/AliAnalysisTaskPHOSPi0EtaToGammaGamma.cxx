@@ -155,7 +155,6 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   for(Int_t i=0;i<10;i++){
     for(Int_t j=0;j<12;j++){
       fPHOSEvents[i][j] = 0x0;
-      fTrackArrayList[i][j] = 0x0;
     }
   }
 
@@ -210,11 +209,6 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
       if(fPHOSEvents[i][j]){
         delete fPHOSEvents[i][j];
         fPHOSEvents[i][j] = 0x0;
-      }
-
-      if(fTrackArrayList[i][j]){
-        delete fTrackArrayList[i][j];
-        fTrackArrayList[i][j] = 0x0;
       }
 
     }
@@ -830,6 +824,18 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     h1TrueAntiNeutron_PID->Sumw2();
     fOutputContainer->Add(h1TrueAntiNeutron_PID);
 
+    TH1F *h1TrueOthers_noPID = new TH1F("hPurityOthers_noPID","p_{T} of true Others in clusters for purity noPID;p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1TrueOthers_noPID->Sumw2();
+    fOutputContainer->Add(h1TrueOthers_noPID);
+
+    TH1F *h1TrueOthers_PID = new TH1F("hPurityOthers_PID","p_{T} of true Others in clusters for purity PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1TrueOthers_PID->Sumw2();
+    fOutputContainer->Add(h1TrueOthers_PID);
+
+    TH1F *h1gamma_K0S = new TH1F("hGammaFromK0S","#gamma from K^{0}_{S};p_{T} (GeV/c)",NpTgg-1,pTgg);
+    h1gamma_K0S->Sumw2();
+    fOutputContainer->Add(h1gamma_K0S);
+
     const TString Asym[] = {"","_asym08"};
     const Int_t Nasym = sizeof(Asym)/sizeof(Asym[0]);
 
@@ -1206,10 +1212,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   if(!fPHOSEvents[fZvtx][fEPBin]) fPHOSEvents[fZvtx][fEPBin] = new TList();
   TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
-  if(!fTrackArrayList[fZvtx][fEPBin]) fTrackArrayList[fZvtx][fEPBin] = new TList();
-  TList *prevTrack = fTrackArrayList[fZvtx][fEPBin];
-
-
   if(!fIsMC && fIsPHOSTriggerAnalysis){
     AliInfo(Form("PHOS trigger analysis is ON! RF method = %d",fTRFM));
     TriggerQA();
@@ -1256,24 +1258,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
       tmp = NULL;
     }
   }
-
-  if(fESDEvent){
-    //ESD event is not supported.
-  }//end of esd event
-  else if(fAODEvent){
-    TClonesArray *trackarray = (TClonesArray*)fAODEvent->GetTracks()->Clone();
-    if(fEvent->GetNumberOfTracks() > 0){
-
-      prevTrack->AddFirst(trackarray);
-      if(prevTrack->GetSize() > 3){//Remove redundant events
-        TClonesArray * tmp2 = static_cast<TClonesArray*>(prevTrack->Last());
-        prevTrack->RemoveLast();
-        delete tmp2;
-        tmp2 = NULL;
-      }
-
-    }
-  }//end of aod event
 
   if(fJJMCHandler){
     delete fJJMCHandler;
@@ -1762,8 +1746,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
   TF1 *f1trg = GetTriggerEfficiencyFunction();
   Double_t value[2] = {};
   Double_t sp1 = -999;
-
+  Int_t primary = -1;
   Double_t weight = 1.;
+  Double_t TrueK0SPt = 0;
 
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
@@ -1779,6 +1764,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
 
     weight = 1.;
     if(fIsMC){
+      primary = ph->GetPrimary();
       weight = ph->GetWeight();
     }
 
@@ -1810,6 +1796,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
       //dphi = phi;
       //sp1 = 0;
       value[1] = 0;
+    }
+
+    if(fIsMC){
+      if(IsFrom(primary,TrueK0SPt,310) && IsPhoton(primary)) FillHistogramTH1(fOutputContainer,"hGammaFromK0S",pT,weight); 
     }
 
     value[0] = pT;
@@ -2721,10 +2711,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       nsigmaKaon     = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
       nsigmaProton   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
 
-      if((nsigmaElectron < nsigmaPion)     && (nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaProton) && (-2 < nsigmaElectron && nsigmaElectron < 3)) pidElectron = kTRUE;
-      if((nsigmaPion     < nsigmaElectron) && (nsigmaPion     < nsigmaKaon) && (nsigmaPion     < nsigmaProton) && (nsigmaPion     < NsigmaCut)) pidPion = kTRUE;
-      if((nsigmaKaon     < nsigmaElectron) && (nsigmaKaon     < nsigmaPion) && (nsigmaKaon     < nsigmaProton) && (nsigmaKaon     < NsigmaCut)) pidKaon = kTRUE;
-      if((nsigmaProton   < nsigmaElectron) && (nsigmaProton   < nsigmaPion) && (nsigmaProton   < nsigmaKaon)   && (nsigmaProton   < NsigmaCut)) pidProton = kTRUE;
+      if((TMath::Abs(nsigmaElectron) < nsigmaPion)     && (TMath::Abs(nsigmaElectron) < nsigmaKaon) && (TMath::Abs(nsigmaElectron) < nsigmaProton) && (-2 < nsigmaElectron && nsigmaElectron < 3)) pidElectron = kTRUE;
+      if((nsigmaPion     < TMath::Abs(nsigmaElectron)) && (nsigmaPion     < nsigmaKaon) && (nsigmaPion     < nsigmaProton) && (nsigmaPion     < NsigmaCut)) pidPion = kTRUE;
+      if((nsigmaKaon     < TMath::Abs(nsigmaElectron)) && (nsigmaKaon     < nsigmaPion) && (nsigmaKaon     < nsigmaProton) && (nsigmaKaon     < NsigmaCut)) pidKaon = kTRUE;
+      if((nsigmaProton   < TMath::Abs(nsigmaElectron)) && (nsigmaProton   < nsigmaPion) && (nsigmaProton   < nsigmaKaon)   && (nsigmaProton   < NsigmaCut)) pidProton = kTRUE;
 
       if(ph->GetNsigmaCPV() < 1.0){//tight matching cut to evaluate dispersion cut efficiency for charged particle.
         if(pidElectron && (0.8 < cluE/trackP && cluE/trackP < 1.2))  FillHistogramTH1(fOutputContainer,"hMatchedElectron",pT,weight);
@@ -2761,6 +2751,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_noPID",pT,weight);
       else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_noPID",pT,weight);
       else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_noPID",pT,weight);
+      else                            FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
+
 
       if(fPHOSClusterCuts->AcceptPhoton(ph)){
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
@@ -2771,6 +2763,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
         else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_PID",pT,weight);
         else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_PID",pT,weight);
         else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_PID",pT,weight);
+        else                            FillHistogramTH1(fOutputContainer,"hPurityOthers_PID",pT,weight);
       }//end of PID
 
     }//end of M.C.
@@ -4275,46 +4268,14 @@ Bool_t AliAnalysisTaskPHOSPi0EtaToGammaGamma::Are2GammasInPHOSAcceptance(Int_t i
 //_______________________________________________________________________________
 void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
 {
-  const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
-  AliInfo(Form("Ncluster in current event = %d",multClust));
-
-  TList *prevTrack = fTrackArrayList[fZvtx][fEPBin];
-
-  if(!fESDEvent && !fAODEvent){
-    AliError("Neither AOD nor ESD was found.");
-    return;
-  }
-
-  if(fESDEvent && !fAODEvent){
-    AliInfo("ESD is not supported.");
-    return;
-  }
-
-  Double_t magF = 0.;
-  if(fESDEvent)      magF = fESDEvent->GetMagneticField();
-  else if(fAODEvent) magF = fAODEvent->GetMagneticField();
-
-  Double_t magSign = 1.0;
-  if(magF < 0) magSign = -1.0;
-
-  if(!TGeoGlobalMagField::Instance()->GetField()){
-    AliError("Margnetic filed was not initialized, use default");
-    AliMagF* field = new AliMagF("Maps","Maps", magSign, magSign, AliMagF::k5kG);
-    TGeoGlobalMagField::Instance()->SetField(field);
-  }
-
-
-  const Double_t kYmax   = 72.+10.; //Size of the module (with some reserve) in phi direction
-  const Double_t kZmax   = 64.+10.; //Size of the module (with some reserve) in z direction
-  const Double_t kAlpha0 = 330./180.*TMath::Pi(); //First PHOS module angular direction
-  const Double_t kAlpha  = 20./180.*TMath::Pi(); //PHOS module angular size
-  Double_t bz = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField();
-  bz = TMath::Sign(0.5*kAlmost0Field,bz) + bz;
-
-  Double_t pTcluster=0;
-  Int_t relId[4]={};
-  Int_t module=0;
-  Float_t position[3] = {};
+  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+  Float_t position[3] = {0,0,0};
+  Int_t relId[4]={0,0,0,0};
+  Double_t pTcluster = 0;
+  Double_t pttrack=0.;
+  Int_t charge=0;
+  Double_t cpv = 999;
+  Double_t dx=999.,dz=999.;
 
   AliPHOSTenderTask *PHOSTenderTask = dynamic_cast<AliPHOSTenderTask*>(AliAnalysisManager::GetAnalysisManager()->GetTask("PHOSTenderTask"));
   if(!PHOSTenderTask){
@@ -4326,106 +4287,45 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
     AliPHOSTenderSupply *supply = (AliPHOSTenderSupply*)PHOSTenderTask->GetPHOSTenderSupply();
     //track matching by AliPHOSTenderSupply
 
-    for(Int_t iph=0;iph<multClust;iph++){
-      AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
-      if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
-      if(!CheckMinimumEnergy(ph)) continue;
+    for(Int_t iev=0;iev<prevPHOS->GetSize();iev++){
+      TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(iev));
 
-      if(fIsPHOSTriggerAnalysis){
-        if( fIsMC && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//keep same TRU acceptance only in kRFE.
-        if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
-      }
+      for(Int_t iph=0;iph<mixPHOS->GetEntriesFast();iph++){
+        AliCaloPhoton *ph = (AliCaloPhoton*)mixPHOS->At(iph);
+        if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
+        if(!CheckMinimumEnergy(ph)) continue;
 
-      if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//criterion fTRFM == kRFE is not needed.
+        if(fIsPHOSTriggerAnalysis){
+          if( fIsMC && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kRFE && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//keep same TRU acceptance only in kRFE.
+          if(!fIsMC && !ph->IsTrig()) continue;//it is meaningless to focus on photon without fired trigger in PHOS triggered data.
+        }
 
-      pTcluster = ph->Pt();
-      if(fUseCoreEnergy) pTcluster = (ph->GetMomV2())->Pt();
+        if(fForceActiveTRU && !fPHOSTriggerHelper->IsOnActiveTRUChannel(ph)) continue;//criterion fTRFM == kRFE is not needed.
 
-      position[0] = ph->EMCx();
-      position[1] = ph->EMCy();
-      position[2] = ph->EMCz();
+        pTcluster = ph->Pt();
+        if(fUseCoreEnergy) pTcluster = (ph->GetMomV2())->Pt();
 
-      TVector3 global(position);
-      relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
-      fPHOSGeo->GlobalPos2RelId(global,relId);
-      module = relId[0];
-      TVector3 locPos;
-      fPHOSGeo->Global2Local(locPos,global,module);
+        position[0] = ph->EMCx();
+        position[1] = ph->EMCy();
+        position[2] = ph->EMCz();
 
-      //Calculate actual distance to PHOS module
-      TVector3 globaPos;
-      fPHOSGeo->Local2Global(module, 0.,0., globaPos);
-      const Double_t rPHOS = globaPos.Pt() ; //Distance to center of  PHOS module
-      // *** Start the matching
+        TVector3 global(position);
+        relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+        fPHOSGeo->GlobalPos2RelId(global,relId);
+        Int_t module = relId[0];
+        TVector3 locPos;
+        fPHOSGeo->Global2Local(locPos,global,module);
+        cpv = 999.; dx  = 999.; dz  = 999.;
+        Int_t itr = supply->FindTrackMatching(module,&locPos,dx,dz,pttrack,charge);
+        if(itr > 0) cpv = supply->TestCPV(dx,dz,pttrack,charge);
+        //AliInfo(Form("dx = %3.2f cm , dz = %3.2f cm , distance in sigma = %3.2f",dx,dz,cpv));
 
-      for(Int_t iev=0;iev<prevTrack->GetSize();iev++){
-
-        Double_t minDistance = 1.e6;
-        Double_t dx = 999, dz = 999;
-        Double_t pt = 0;
-        Int_t charge = 0;
-        Double_t gposTrack[3];
-        Double_t cpv = 999;
-        Double_t b[3]; 
-        Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
-
-        TClonesArray *trackarray = (TClonesArray*)prevTrack->At(iev);
-        const Int_t nt = trackarray->GetEntriesFast();
-        AliInfo(Form("Ntrack in previous event = %d",nt));
-        for(Int_t i=0; i<nt; i++){
-          AliAODTrack *aodTrack = (AliAODTrack*)trackarray->At(i);
-
-          //Continue extrapolation from TPC outer surface
-          AliExternalTrackParam outerParam;
-          if(aodTrack){            
-            aodTrack->GetPxPyPz(pxpypz);
-            aodTrack->GetXYZ(xyz);
-            aodTrack->GetCovarianceXYZPxPyPz(cv);
-            outerParam.Set(xyz,pxpypz,cv,aodTrack->Charge());
-          }
-
-          Double_t z; 
-          if(!outerParam.GetZAt(rPHOS,bz,z)) continue;
-
-          if(TMath::Abs(z) > kZmax) continue; // Some tracks miss the PHOS in Z
-
-          //Direction to the current PHOS module
-          Double_t phiMod = kAlpha0 - kAlpha * module;
-          if(!outerParam.RotateParamOnly(phiMod)) continue ; //RS use faster rotation if errors are not needed 
-
-          Double_t y;// Some tracks do not reach the PHOS
-          if (!outerParam.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
-
-          if(TMath::Abs(y) < kYmax){
-            outerParam.GetBxByBz(b) ;
-            outerParam.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
-            outerParam.GetXYZ(gposTrack) ;
-            TVector3 globalPositionTr(gposTrack) ;
-            TVector3 localPositionTr ;
-            fPHOSGeo->Global2Local(localPositionTr,globalPositionTr,module) ;
-            Double_t ddx = locPos.X()-localPositionTr.X();
-            Double_t ddz = locPos.Z()-localPositionTr.Z();
-            Double_t d2 = ddx*ddx + ddz*ddz;
-            if(d2 < minDistance) {
-              dx = ddx;
-              dz = ddz;
-              minDistance = d2;
-              pt = aodTrack->Pt();
-              charge = aodTrack->Charge();
-            }
-          }
-        }//Scanned all tracks
-
-        //compuete distance between a cluster position and a extrapolated track position.
-        cpv = supply->TestCPV(dx,dx,pt,charge);
-        AliInfo(Form("dx = %3.2f cm , dz = %3.2f cm , distance in sigma = %3.2f",dx,dz,cpv));
-        
-        FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt",pt,cpv);
+        FillHistogramTH2(fOutputContainer,"hMixRvsTrackPt",pttrack,cpv);
         FillHistogramTH2(fOutputContainer,"hMixRvsClusterPt",pTcluster,cpv);
 
-      }//end of mixed event loop
+      }//end of cluster loop
 
-    }//end of cluster loop
+    }//end of mixed event loop
 
   }//end of accessing PHOSTender
 
