@@ -41,7 +41,10 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void     SetJetEtaMax(Float_t eta){fJetEtaMax=eta;}
 	virtual void     SetJetHadronDeltaPhi(Float_t delta){fJetHadronDeltaPhi=delta;}
 	virtual void		 SetJetContName(TString cont){fJetContName=cont;}
+
 	virtual void		 SetRunAnaAzimuthalCorrelation(Bool_t b){fRunAnaAzimuthalCorrelation=b;}
+	virtual void		 SetFillTrackHistograms(Bool_t b){fFillTrackHistograms=b;}
+	virtual void		 SetFillJetHistograms(Bool_t b){fFillJetHistograms=b;}
 
 //  static AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
 //      const char *ntracks            = "usedefault",
@@ -100,6 +103,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Float_t fJetHadronDeltaPhi; ///<
 	TString fJetContName; ///<
 	Bool_t fRunAnaAzimuthalCorrelation; ///<
+	Bool_t fFillTrackHistograms; ///<
+	Bool_t fFillJetHistograms; ///<
 	//
 	TRandom3 *fRandom; ///<
 	//histograms to fill
@@ -122,7 +127,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 3);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 4);
   /// \endcond
 };
 #endif

@@ -65,6 +65,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fJetHadronDeltaPhi(0.6),
 	fJetContName(""),
 	fRunAnaAzimuthalCorrelation(kFALSE),
+	fFillTrackHistograms(kTRUE),
+	fFillJetHistograms(kTRUE),
 	fRandom(0),
 	fHistEvtSelection(0x0), 
 	fHJetSpec(0x0),
@@ -102,6 +104,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fJetHadronDeltaPhi(0.6),
 	fJetContName(""),
 	fRunAnaAzimuthalCorrelation(kFALSE),
+	fFillTrackHistograms(kTRUE),
+	fFillJetHistograms(kTRUE),
 	fRandom(0),
 	fHistEvtSelection(0x0), 
 	fHJetSpec(0x0),
@@ -134,10 +138,10 @@ void AliAnalysisTaskJetCoreEmcal::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  AllocateClusterHistograms();
-  AllocateTrackHistograms();
-  AllocateJetHistograms();
-  AllocateCellHistograms();
+  if(fFillTrackHistograms) AllocateTrackHistograms();
+  if(fFillJetHistograms) AllocateJetHistograms();
+  //AllocateClusterHistograms();
+  //AllocateCellHistograms();
   AllocateJetCoreHistograms();
 
   TIter next(fHistManager.GetListOfHistograms());
@@ -487,8 +491,8 @@ Bool_t AliAnalysisTaskJetCoreEmcal::FillHistograms()
 		return kTRUE;
 	}
 
-  DoJetLoop();
-  DoTrackLoop();
+  if(fFillJetHistograms) DoJetLoop();
+  if(fFillTrackHistograms) DoTrackLoop();
   //DoClusterLoop();
   //DoCellLoop();
 	DoJetCoreLoop();
