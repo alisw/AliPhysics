@@ -32,5 +32,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20180423: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC17i time calibrations
 - 20180504: Update of EMCALBadChannels.root with additional bad channels for LHC17n
 - 20180524: Update of EMCALBadChannels.root with new maps for LHC17r
+- 20180530: Update of EMCALTimeCalib.root with updated LHC17m and LHC17k time calibrations
 
 */
