@@ -21,9 +21,6 @@ class TF1;
 ////////////////////////////////////////////////////////////////////////////
 
 //_________________________________________________________________________________________________
-Double_t ComputeChi2(const TH1* hdata, const TH1* hfit, const Double_t xlow, const Double_t xhigh); //Macro to compute chi2
-
-//_________________________________________________________________________________________________
 Bool_t PerformFitWithTFF(TH1F* hData, TObjArray* mc, Double_t* range, Double_t* fitrange, TArrayD& fraction, TArrayD& fractionErr, TObjArray*& prediction);
 
 //_________________________________________________________________________________________________

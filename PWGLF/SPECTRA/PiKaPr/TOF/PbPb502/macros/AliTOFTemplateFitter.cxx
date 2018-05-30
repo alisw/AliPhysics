@@ -1,4 +1,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
+#include "AliTOFTemplateFitter.h"
+
+#include "TLatex.h"
 #include "TMath.h"
 #include "TSystem.h"
 #include <AliUtilTOFParams.h>
@@ -15,9 +18,7 @@
 #include <TFractionFitter.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TOFsignal.C>
 #include <TObjArray.h>
-#include <TPaveText.h>
 #include <UtilMessages.h>
 #include <UtilPlots.h>
 #ifdef USECDECONVOLUTION
@@ -37,31 +38,14 @@ using namespace RooFit;
 /// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
 ////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////
+//Internal variables
 TCanvas* cFit = 0x0; //TCanvas of the single fit
-
-//_________________________________________________________________________________________________
-Double_t ComputeChi2(const TH1* hdata, const TH1* hfit, const Double_t xlow, const Double_t xhigh)
-{ //Macro to compute chi2
-  if (xhigh < xlow) {
-    Warningmsg("ComputeChi2", Form("Range for Chi2 not well defined [%f, %f]", xlow, xhigh));
-    return -1;
-  }
-  TH1* h1 = (TH1*)hdata->Clone("h1");
-  TH1* h2 = (TH1*)hfit->Clone("h2");
-  for (Int_t bin = 1; bin < h1->GetXaxis()->FindBin(xlow); bin++)
-    h1->SetBinContent(bin, 0);
-  for (Int_t bin = h1->GetXaxis()->FindBin(xlow) + 1; bin <= h1->GetNbinsX(); bin++)
-    h1->SetBinContent(bin, 0);
-  for (Int_t bin = 1; bin < h2->GetXaxis()->FindBin(xlow); bin++)
-    h2->SetBinContent(bin, 0);
-  for (Int_t bin = h2->GetXaxis()->FindBin(xlow) + 1; bin <= h2->GetNbinsX(); bin++)
-    h2->SetBinContent(bin, 0);
-
-  const Double_t chi2 = h1->Chi2Test(h2, "UUCHI2/NDF");
-  delete h1;
-  delete h2;
-  return chi2;
-}
+///////////////////////////////////////
+//Internal functions
+void CreateFitCanvas(TString tag);//Function to create the standard fit canvas
+Double_t ComputeChi2(const TH1* hdata, const TH1* hfit, const Double_t xlow, const Double_t xhigh); //Function to compute chi2
+///////////////////////////////////////
 
 //_________________________________________________________________________________________________
 Bool_t PerformFitWithTFF(TH1F* hData, TObjArray* mc, Double_t* range, Double_t* fitrange, TArrayD& fraction, TArrayD& fractionErr, TObjArray*& prediction)
@@ -301,13 +285,9 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
     TLine linemax(maxx, 0, maxx, hData->GetMaximum());
     linemin.SetLineColor(kRed);
     linemax.SetLineColor(kRed);
-
-    if (cFit == 0x0) {
-      cFit = new TCanvas("TemplateRooFit", "Fit with roofit");
-    }
-    cFit->Clear();
-    cFit->Divide(2);
-
+    //
+    CreateFitCanvas("RooFit");
+    //
     cFit->cd(1);
     gPad->SetLogy();
     hData->DrawCopy()->GetXaxis()->SetRangeUser(minx, maxx);
@@ -564,7 +544,13 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
     htemp->SetLineColor(kMagenta);
     htemp->Scale(normtoone ? hData->GetEntries() : hData->GetBinWidth(hData->GetNbinsX() / 2));
     prediction->Add(htemp);
-
+    //
+    currpad = gPad;
+    if (showfit) {
+      cFit->cd(3);
+      hData->DrawCopy()->GetXaxis()->SetRangeUser(minx, maxx);
+      htemp->Draw("same");
+    }
     //     convolution->plotOn(dataFrame, LineColor(kGreen));
     for (Int_t temp = 0; temp < ntemplates; temp++) {
       //       convolution->plotOn(dataFrame, Components(*roohPdf[temp]), LineColor(htemplates[temp]->GetLineColor()));
@@ -573,6 +559,14 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
       htemp->Scale((normtoone ? hData->GetEntries() : 1) * frac[temp]->getVal());
       htemp->SetLineColor(htemplates[temp]->GetLineColor());
       prediction->Add(htemp);
+      if (showfit)
+        htemp->Draw("same");
+    }
+    if (showfit) {
+      cFit->cd(3);
+      cFit->Flush();
+      cFit->Update();
+      gSystem->ProcessEvents();
     }
   }
 
@@ -690,15 +684,13 @@ Bool_t PerformFitWithFunctions(TH1F* hData, TObjArray* func, TF1* funcsum, Doubl
     return kFALSE;
 
   TVirtualPad* currpad = gPad;
-  TCanvas* cFit = 0x0;
   if (showfit) { //TCanvas for debug purposes
     TLine* linemin = new TLine(minx, 0, minx, hData->GetMaximum());
     TLine* linemax = new TLine(maxx, 0, maxx, hData->GetMaximum());
     linemin->SetLineColor(kRed);
     linemax->SetLineColor(kRed);
 
-    cFit = new TCanvas("TemplateRooFit", "Fit with functions");
-    cFit->Divide(2);
+    CreateFitCanvas("Functions");
     cFit->cd(1);
     gPad->SetLogy();
     hData->DrawCopy()->GetXaxis()->SetRangeUser(minx, maxx);
@@ -974,4 +966,49 @@ Bool_t UseBinCounting(TH1F* hData, TObjArray* mc, Double_t* rangelol, TArrayD& f
     fractionErr[i] = 0;
   }
   return kFALSE;
+}
+
+////////////////////////////////
+///////////Internals////////////
+////////////////////////////////
+
+//_________________________________________________________________________________________________
+void CreateFitCanvas(TString tag)
+{
+  if (!cFit)
+    cFit = new TCanvas("cFit" + tag, "Fit with " + tag);
+  //
+  cFit->Clear();
+  cFit->Divide(3);
+  TLatex label;
+  cFit->cd(1);
+  label.DrawLatex(.9, .9, "Std.");
+  cFit->cd(2);
+  label.DrawLatex(.9, .9, "Std. Norm.");
+  cFit->cd(3);
+  label.DrawLatex(.9, .9, "Fit");
+}
+
+//_________________________________________________________________________________________________
+Double_t ComputeChi2(const TH1* hdata, const TH1* hfit, const Double_t xlow, const Double_t xhigh)
+{ //Macro to compute chi2
+  if (xhigh < xlow) {
+    Warningmsg("ComputeChi2", Form("Range for Chi2 not well defined [%f, %f]", xlow, xhigh));
+    return -1;
+  }
+  TH1* h1 = (TH1*)hdata->Clone("h1");
+  TH1* h2 = (TH1*)hfit->Clone("h2");
+  for (Int_t bin = 1; bin < h1->GetXaxis()->FindBin(xlow); bin++)
+    h1->SetBinContent(bin, 0);
+  for (Int_t bin = h1->GetXaxis()->FindBin(xlow) + 1; bin <= h1->GetNbinsX(); bin++)
+    h1->SetBinContent(bin, 0);
+  for (Int_t bin = 1; bin < h2->GetXaxis()->FindBin(xlow); bin++)
+    h2->SetBinContent(bin, 0);
+  for (Int_t bin = h2->GetXaxis()->FindBin(xlow) + 1; bin <= h2->GetNbinsX(); bin++)
+    h2->SetBinContent(bin, 0);
+
+  const Double_t chi2 = h1->Chi2Test(h2, "UUCHI2/NDF");
+  delete h1;
+  delete h2;
+  return chi2;
 }
