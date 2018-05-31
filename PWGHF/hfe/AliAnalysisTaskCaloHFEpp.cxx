@@ -102,6 +102,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fPhidiff(0),
 				fInv_pT_ULS(0),
 				fInv_pT_LS(0),
+				fHistPt_Inc(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -188,6 +189,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fPhidiff(0),
 				fInv_pT_ULS(0),
 				fInv_pT_LS(0),
+				fHistPt_Inc(0),
+				//==== Trigger or Calorimeter flag ====
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -292,6 +295,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHistMCorgB = new TH1F("fHistMCorgB","MC org B",60,0,60);
 				fHistPt_HFE_MC_D  = new TH1F("fHistPt_HFE_MC_D","HFE from D MC",60,0,60);
 				fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",60,0,60);
+				fHistPt_Inc = new TH1F("fHistPt_Inc","Inclusive electron",60,0,60);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",60,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",60,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",60,0,60);
@@ -367,6 +371,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fPhidiff);
 				fOutputList->Add(fInv_pT_ULS);
 				fOutputList->Add(fInv_pT_LS);
+				fOutputList->Add(fHistPt_Inc);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
 				fOutputList->Add(fCheckEtaMC);
@@ -862,6 +867,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																if(eop < 1.2&& eop > 0.8){
 																				if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
 																				if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt());
+																				fHistPt_Inc->Fill(track->Pt());
 																}
 																//if(ilabelM<NpureMC){fHistPt_HFE_PYTHIA -> Fill(track->Pt());}
 																//else {fHistPt_HFE_emb -> Fill(track->Pt());}
