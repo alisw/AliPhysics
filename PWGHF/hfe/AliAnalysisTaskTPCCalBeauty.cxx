@@ -46,6 +46,7 @@ fCentralityMin(0),
 fCentralityMax(100),
 fEMCEG1(kFALSE),
 fDCalDG1(kFALSE),
+fFlagApplySSCut(kTRUE),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fUseTender(kTRUE),
@@ -71,6 +72,7 @@ fTrkPhi(0),
 fTrkEta(0),
 fdEdx(0),
 fnSigma(0),
+fnSigmaAftTrkMatch(0),
 fCentCheck(0),
 fTrigCheck(0),
 fEMCTrkMatch(0),
@@ -106,8 +108,10 @@ fPhotonicDCA(0),
 fInclElecDCA(0),
 fInclElecDCAnoSign(0),
 fInclElecEoP(0),
+fTPCElecEoP(0),
 fHadronEoP(0),
 fHadronDCA(0),
+fHadronCamDCAHij(0),
 fHadronCamDCA(0),
 fPi0Weight(0),
 fEtaWeight(0),
@@ -201,6 +205,7 @@ fCentralityMin(0),
 fCentralityMax(100),
 fEMCEG1(kFALSE),
 fDCalDG1(kFALSE),
+fFlagApplySSCut(kTRUE),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fUseTender(kTRUE),
@@ -226,6 +231,7 @@ fTrkPhi(0),
 fTrkEta(0),
 fdEdx(0),
 fnSigma(0),
+fnSigmaAftTrkMatch(0),
 fCentCheck(0),
 fTrigCheck(0),
 fEMCTrkMatch(0),
@@ -261,8 +267,10 @@ fPhotonicDCA(0),
 fInclElecDCA(0),
 fInclElecDCAnoSign(0),
 fInclElecEoP(0),
+fTPCElecEoP(0),
 fHadronEoP(0),
 fHadronDCA(0),
+fHadronCamDCAHij(0),
 fHadronCamDCA(0),
 fPi0Weight(0),
 fEtaWeight(0),
@@ -420,6 +428,9 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fnSigma = new TH2F("fnSigma","Track fnSigma Distribution;pT;fnSigma",60,0,30,40,-10,10);
     fOutputList->Add(fnSigma);
     
+    fnSigmaAftTrkMatch = new TH2F("fnSigmaAftTrkMatch","Track fnSigma Distribution after track matching to cal;pT;fnSigma",60,0,30,40,-10,10);
+    fOutputList->Add(fnSigmaAftTrkMatch);
+    
     fCentCheck = new TH1F("fCentCheck","Event Centrality Distribution;Centrality;Counts",100,0,100);
     fOutputList->Add(fCentCheck);
     
@@ -533,13 +544,19 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fInclElecEoP = new TH2F("fInclElecEoP","Incl Elec E/p; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
     fOutputList->Add(fInclElecEoP);
     
+    fTPCElecEoP = new TH2F("fTPCElecEoP","Elec E/p, -0.1<nsig<3; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
+    fOutputList->Add(fTPCElecEoP);
+    
     fHadronEoP = new TH2F("fHadronEoP","Unscaled Hadron E/p; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
     fOutputList->Add(fHadronEoP);
     
     fHadronDCA = new TH2F("fHadronDCA","Unscaled Hadron DCA; p_{T}(GeV/c); DCAxMagFieldxSign; counts;", 60,0,30., 200,-0.2,0.2);
     fOutputList->Add(fHadronDCA);
     
-    fHadronCamDCA = new TH2F("fHadronCamDCA","Unscaled Hadron DCA, no E/p cut; p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., 400,-0.2,0.2);
+    fHadronCamDCAHij = new TH2F("fHadronCamDCAHij","Unscaled Hadron DCA, no E/p cut, Hijing; p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., 400,-0.2,0.2);
+    fOutputList->Add(fHadronCamDCAHij);
+    
+    fHadronCamDCA = new TH2F("fHadronCamDCA","Unscaled Hadron DCA, no E/p cut, Enh+Hij; p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., 400,-0.2,0.2);
     fOutputList->Add(fHadronCamDCA);
     
     
@@ -716,7 +733,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fDTemplateWeight = new TH2F("fDTemplateWeight","D Meson DCA template", 100,0,50., 200,-0.2,0.2);
     fOutputList->Add(fDTemplateWeight);
     
-    fDTemplateNoWeight = new TH2F("fDTemplateNoWeight","D Meson DCA template w/Weight", 100,0,50., 200,-0.2,0.2);
+    fDTemplateNoWeight = new TH2F("fDTemplateNoWeight","D Meson DCA template w/o Weight", 100,0,50., 200,-0.2,0.2);
     fOutputList->Add(fDTemplateNoWeight);
     
     fBTemplateWeight = new TH2F("fBTemplateWeight","B Meson DCA template w/Weight", 100,0,50., 200,-0.2,0.2);
@@ -864,6 +881,13 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 fAllElecStack->Fill(AODMCtrack->Pt());
                 eleinStack++;
             }
+            //
+            if (TrackPDG>500 && TrackPDG<599) {
+                fBMesonPt->Fill(AODMCtrack->Pt());
+            }
+            if (TrackPDG>5000 && TrackPDG<5999) {
+                fBBaryonPt->Fill(AODMCtrack->Pt());
+            }
             
             //Fill Charm species pT histos
             if (ilabelM>0) {
@@ -880,12 +904,10 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
                 
                 if (pidM==413) fromDStar = kTRUE;
-                if (TrackPDG>500 && TrackPDG<599) {
-                    fBMesonPt->Fill(AODMCtrack->Pt());
+                if (pidM>500 && pidM<599) {
                     continue; //reject beauty feed down
                 }
-                if (TrackPDG>5000 && TrackPDG<5999) {
-                    fBBaryonPt->Fill(AODMCtrack->Pt());
+                if (pidM>5000 && pidM<5999) {
                     continue; //reject beauty feed down
                 }
                 Int_t ilabelGM = momPart->GetMother();
@@ -899,24 +921,23 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                         continue; //reject beauty feed down
                     }
                 }
-                
-                if(TrackPDG>4000 && TrackPDG<4999) fCBaryonPt->Fill(AODMCtrack->Pt());
-                if(TrackPDG==4122)fLambdaCPt->Fill(AODMCtrack->Pt());
-                if(TrackPDG==4132)fEtaCPt->Fill(AODMCtrack->Pt());
-                
-                if (TrackPDG<400 || TrackPDG>499) {
-                    continue; //reject stuff that's not in charm meson range
-                }
-                DMesonPDG->Fill(TrackPDG);
-                fAllDMesonPt->Fill(AODMCtrack->Pt());
-                
-                if(TrackPDG==421) fD0MesonPt->Fill(AODMCtrack->Pt());
-                if(TrackPDG==421 && fromDStar==kTRUE) fD0MesonFromDStarPt->Fill(AODMCtrack->Pt());
-                if(TrackPDG==411) fDPlusMesonPt->Fill(AODMCtrack->Pt());
-                if(TrackPDG==431) fDsMesonPt->Fill(AODMCtrack->Pt());
-                if(TrackPDG==413) fDStarMesonPt->Fill(AODMCtrack->Pt());
-                // cout<<"Total Number of Particles = "<<fNtotMCpart<<endl;
             }
+            if(TrackPDG>4000 && TrackPDG<4999) fCBaryonPt->Fill(AODMCtrack->Pt());
+            if(TrackPDG==4122)fLambdaCPt->Fill(AODMCtrack->Pt());
+            if(TrackPDG==4132)fEtaCPt->Fill(AODMCtrack->Pt());
+            
+            if (TrackPDG<400 || TrackPDG>499) {
+                continue; //reject stuff that's not in charm meson range
+            }
+            DMesonPDG->Fill(TrackPDG);
+            fAllDMesonPt->Fill(AODMCtrack->Pt());
+            
+            if(TrackPDG==421) fD0MesonPt->Fill(AODMCtrack->Pt());
+            if(TrackPDG==421 && fromDStar==kTRUE) fD0MesonFromDStarPt->Fill(AODMCtrack->Pt());
+            if(TrackPDG==411) fDPlusMesonPt->Fill(AODMCtrack->Pt());
+            if(TrackPDG==431) fDsMesonPt->Fill(AODMCtrack->Pt());
+            if(TrackPDG==413) fDStarMesonPt->Fill(AODMCtrack->Pt());
+            // cout<<"Total Number of Particles = "<<fNtotMCpart<<endl;
         }
     }
     //cout << "Electron in stack -------------- " << eleinStack <<endl;
@@ -1051,6 +1072,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             
             if(TMath::Abs(fMCparticle->Eta()) > 0.6) continue;
             //cout<<"TESTING1234"<<endl;
+            
             //if electron--------------------------------
             if(pdg==11 && fMCparticle->IsPhysicalPrimary()){
                 eleinTrkLoop++;
@@ -1115,7 +1137,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         if(nsigma>-5.&&nsigma<-3.) {
             fHadronCamDCA->Fill(track->Pt(),d0z0[0]);
         }
-        
+        if(fMCarray)
+        {
+            if(TMath::Abs(fMCparticle->Eta()) > 0.6) continue;
+            //Fill Hijing Hadron DCA
+            if(ilabel<fNpureMC && nsigma>-5. && nsigma<-3.) {
+                fHadronCamDCAHij->Fill(track->Pt(),d0z0[0]);
+            }
+        }
         ///////////////////////////
         // Match tracks to EMCal //
         ///////////////////////////
@@ -1167,6 +1196,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if(kTruHFElec == kTRUE) fHFElecAftTrkMatch->Fill(track->Pt());
             if(kTruBElec == kTRUE) fBElecAftTrkMatch->Fill(track->Pt());
             
+            fnSigmaAftTrkMatch->Fill(track->Pt(),nsigma);
             fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
             fTrkClsPhi->Fill(fPhiDiff);
             fTrkClsEta->Fill(fEtaDiff);
@@ -1431,7 +1461,13 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             Double_t M20 = clustMatch->GetM20();
             Double_t M02 = clustMatch->GetM02();
             if(nsigma<-4.) {
-                if(M20>0.01 && M20<0.35) {
+                if(fFlagApplySSCut && M20>0.01 && M20<0.35) {
+                    fHadronEoP->Fill(track->Pt(),EovP);
+                    if(EovP>0.9 && EovP<1.2){
+                        fHadronDCA->Fill(track->Pt(),DCA);
+                    }
+                }
+                if(!fFlagApplySSCut) {
                     fHadronEoP->Fill(track->Pt(),EovP);
                     if(EovP>0.9 && EovP<1.2){
                         fHadronDCA->Fill(track->Pt(),DCA);
@@ -1445,12 +1481,18 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             ///////////////////
             // Electron Cuts //
             ///////////////////
+            if (nsigma>-0.1 && nsigma<3) {
+                fTPCElecEoP->Fill(track->Pt(),EovP);
+            }
+            
             if((nsigma<-1) || (nsigma>3)) continue;
             if(kTruElec == kTRUE) fElecAftTPCeID->Fill(track->Pt());
             if(kTruHFElec == kTRUE) fHFElecAftTPCeID->Fill(track->Pt());
             if(kTruBElec == kTRUE) fBElecAftTPCeID->Fill(track->Pt());
             
-            if((M20<0.01) || (M20>0.35)) continue;
+            if(fFlagApplySSCut){
+                if((M20<0.01) || (M20>0.35)) continue;
+            }
             fInclElecEoP->Fill(track->Pt(),EovP);
             
             if((EovP<0.9) || (EovP>1.2)) continue;
@@ -1790,6 +1832,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
             if(pidM>400 && pidM<499){
                 if(pidGM>500 && pidGM<599){
                     fpidSort = 1; //GMa is B
+                    momPt = partGM->Pt();
                 }
                 if(pidGM>5000 && pidGM<5999){
                     fpidSort = 10; //GMa is b baryon
@@ -1799,6 +1842,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
             if(pidM>4000 && pidM<4999){
                 if(pidGM>500 && pidGM<599){
                     fpidSort = 1; //GMa is B
+                    momPt = partGM->Pt();
                 }
                 if(pidGM>5000 && pidGM<5999){
                     fpidSort = 10; //GMa is b baryon
@@ -1813,6 +1857,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                 if(pidM>400 && pidM<499){
                     if(pidGGM>500 && pidGGM<599){
                         fpidSort = 1; //GGMa is B
+                        momPt = partGGM->Pt();
                     }
                     if(pidGGM>5000 && pidGGM<5999){
                         fpidSort = 10; //GGMa is b baryon
@@ -1822,6 +1867,7 @@ void AliAnalysisTaskTPCCalBeauty::FindMother(AliAODMCParticle* part, Int_t &fpid
                 if(pidM>4000 && pidM<4999){
                     if(pidGGM>500 && pidGGM<599){
                         fpidSort = 1; //GGMa is B
+                        momPt = partGGM->Pt();
                     }
                     if(pidGGM>5000 && pidGGM<5999){
                         fpidSort = 10; //GGMa is b baryon
