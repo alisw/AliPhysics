@@ -192,6 +192,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::TriggerSelection() const {
       }
     }
   } else {
+    if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
     if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
       // Simulation - do EMCAL trigger selection from trigger selection object
       auto mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
