@@ -53,7 +53,7 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef():
   fRequiredOverlaps(),
   fExcludedOverlaps()
 {
-
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef(const char * name):
@@ -64,6 +64,7 @@ AliAnalysisTaskEmcalRecalcPatchesRef::AliAnalysisTaskEmcalRecalcPatchesRef(const
   fRequiredOverlaps(),
   fExcludedOverlaps()
 {
+  SetCaloTriggerPatchInfoName("EmcalTriggers");
   fOnlineThresholds.Set(8);
 }
 

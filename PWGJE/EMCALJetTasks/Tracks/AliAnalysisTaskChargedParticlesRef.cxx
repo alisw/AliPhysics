@@ -85,7 +85,6 @@ AliAnalysisTaskChargedParticlesRef::AliAnalysisTaskChargedParticlesRef(const cha
     fStudyExoticTriggers(false)
 {
   SetNeedEmcalGeom(true);
-  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskChargedParticlesRef::~AliAnalysisTaskChargedParticlesRef() {
