@@ -42,6 +42,7 @@ public:
     Bool_t          GetEMCalTriggerDG1() { return fDCalDG1; };
     void            SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; };
     
+    void            SetSSCut(Bool_t applySSCut) {fFlagApplySSCut = applySSCut;}
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
     
@@ -71,6 +72,7 @@ private:
     
     Bool_t              fEMCEG1;         // EMCal Threshold EG1
     Bool_t              fDCalDG1;        // DCal Threshold DG1
+    Bool_t              fFlagApplySSCut; //switch to turn on SS cut
     Bool_t              fFlagClsTypeEMC; // switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;// switch to select DCAL clusters
     Bool_t              fUseTender;      // switch to add tender
@@ -99,6 +101,7 @@ private:
     TH1F                *fTrkEta;        //! track eta after track matching
     TH1F                *fdEdx;          //! track dEdx
     TH2F                *fnSigma;          //! track dEdx
+    TH2F                *fnSigmaAftTrkMatch;  //! track dEdx after matching cal
     TH1F                *fCentCheck;     //! event centrality
     TH1F                *fTrigCheck;     //! checking trigger used
     TH2F                *fEMCTrkMatch;   //! plots distance of cluster from closest track
@@ -139,8 +142,10 @@ private:
     TH2F                *fInclElecDCA;   //! Inclusive electron DCA vs. pT
     TH2F                *fInclElecDCAnoSign;   //! Inclusive electron DCA vs. pT, no sign
     TH2F                *fInclElecEoP;   //! Inclusive electron EoP vs. pT
+    TH2F                *fTPCElecEoP;   //! EoP vs. pT, -0.1<nsig<3 cut
     TH2F                *fHadronEoP;     //! Hadron EoP vs. pT
     TH2F                *fHadronDCA;     //! Hadron DCA vs. pT
+    TH2F                *fHadronCamDCAHij;     //! Hadron DCA vs. pT, no sign, no E/p cut
     TH2F                *fHadronCamDCA;     //! Hadron DCA vs. pT, no sign, no E/p cut
     
     TF1                 *fPi0Weight;    //! Function to weight enhanced pi0

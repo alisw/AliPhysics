@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TString ContNameExt = " ")
+AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bool_t applySSCut = kTRUE, TString ContNameExt = " ")
 {
     // get the manager via the static access member
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -29,6 +29,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TS
     if(!taskBFEemc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEemc);
+    taskBFEemc->SetSSCut(applySSCut);
     taskBFEemc->SetClusterTypeEMC(kTRUE);
     taskBFEemc->SetClusterTypeDCAL(kFALSE);
     taskBFEemc->SetCentralitySelection(centMin,centMax);
@@ -50,6 +51,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TS
     if(!taskBFEdc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEdc);
+    taskBFEdc->SetSSCut(applySSCut);
     taskBFEdc->SetClusterTypeEMC(kFALSE);
     taskBFEdc->SetClusterTypeDCAL(kTRUE);
     taskBFEdc->SetCentralitySelection(centMin,centMax);
@@ -100,6 +102,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TS
     if(!taskBFEeg01emc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEeg01emc);
+    taskBFEeg01emc->SetSSCut(applySSCut);
     taskBFEeg01emc->SetClusterTypeEMC(kTRUE);
     taskBFEeg01emc->SetClusterTypeDCAL(kFALSE);
     taskBFEeg01emc->SetCentralitySelection(centMin,centMax);
@@ -167,6 +170,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, TS
     if(!taskBFEdg01dc) return 0x0;
     // add your task to the manager
     mgr->AddTask(taskBFEdg01dc);
+    taskBFEdg01dc->SetSSCut(applySSCut);
     taskBFEdg01dc->SetClusterTypeEMC(kFALSE);
     taskBFEdg01dc->SetClusterTypeDCAL(kTRUE);
     taskBFEdg01dc->SetCentralitySelection(centMin,centMax);
