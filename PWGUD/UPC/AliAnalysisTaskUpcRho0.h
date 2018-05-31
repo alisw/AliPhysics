@@ -6,6 +6,7 @@
 #define ALIANALYSISTASKUPCRHO0_H
 
 class TClonesArray;
+class TFile;
 class TTree;
 class TList;
 class TH1;
@@ -22,7 +23,7 @@ class TBits;
 class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
   public:
   	AliAnalysisTaskUpcRho0();
-  	AliAnalysisTaskUpcRho0(const char *name);
+  	AliAnalysisTaskUpcRho0(const char *name, Bool_t);
 	virtual ~AliAnalysisTaskUpcRho0();
 
 	virtual void Init();
@@ -39,10 +40,11 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	// virtual void RunESDMC(AliESDEvent *esd);
 	virtual void Terminate(Option_t *){};
 
-
+	void SetIsMC(Bool_t _isMC){ isMC = _isMC; }
+	void SetEfficiencyFile(TFile *_fSPDfile){ fSPDfile = _fSPDfile; };
+ 
   private:
-
-	AliPIDResponse *fPIDResponse;
+  	Bool_t isMC;
   	// tree
   	TTree *fRhoTree;
 	// tree variables and branches
@@ -72,9 +74,19 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Float_t Phi_T;
 	Float_t TrackEta_T[2];
 	Float_t TrackPhi_T[2];
-
 	Bool_t ChipCut_T;
 	Int_t ITSModule_T;
+
+	// MC tree
+	TTree *fMCTree;
+	Int_t RunNum_MC_T;
+	Float_t Mass_MC_T;
+	Float_t Pt_MC_T;
+	Float_t Rapidity_MC_T;
+	Float_t Phi_MC_T;
+
+	AliPIDResponse *fPIDResponse;
+	TClonesArray *GenPart_T;
 
 	TList *fListHist;
 	TH1I *fHistTriggersPerRun;
@@ -87,10 +99,17 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	TH2F *EtaPhiP;
 	TH2F *EtaPhiN;
 
+	TH2F *fFOcorr;
+
+	// SPD effi
+	TFile *fSPDfile;
+	TH1D *hBCmod4;
+	TH2D *hSPDeff;
+
 	AliAnalysisTaskUpcRho0(const AliAnalysisTaskUpcRho0&); //not implemented
 	AliAnalysisTaskUpcRho0& operator =(const AliAnalysisTaskUpcRho0&); //not implemented
   
- 	ClassDef(AliAnalysisTaskUpcRho0, 1); 
+ 	ClassDef(AliAnalysisTaskUpcRho0, 7); 
 
 };
 
