@@ -184,7 +184,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               fTrackEfficiency;        ///< artificial tracking inefficiency (0...1)
   TObjArray             *fUtilities;              ///< jet utilities (gen subtractor, constituent subtractor etc.)
   Bool_t                 fTrackEfficiencyOnlyForEmbedding; ///< Apply aritificial tracking inefficiency only for embedded tracks
-  TF1                    fTrackEfficiencyFunction;///< Function that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
+  //TF1                    fTrackEfficiencyFunction;///< Function that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
   Bool_t                 fApplyArtificialTrackingEfficiency; ///< Flag to apply artificial tracking efficiency
   Bool_t                 fLocked;                 ///< true if lock is set
   Bool_t	          fFillConstituents;		 ///< If true jet consituents will be filled to the AliEmcalJet
