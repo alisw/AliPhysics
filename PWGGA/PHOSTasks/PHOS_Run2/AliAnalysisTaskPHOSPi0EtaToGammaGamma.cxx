@@ -146,9 +146,11 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fGlobalEScale(1.0),
   fEmin(0.2),
   fIsOAStudy(kFALSE),
+  fMatchingR(1.),
   fAnaOmega3Pi(kFALSE),
   fMinPtPi0(0),
-  fMinPtChPi(0)
+  fMinPtChPi(0),
+  fMaxR(999.)
 {
   // Constructor
 
@@ -512,8 +514,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
     const Int_t Ndim_omega = 4;
     const Int_t Nbin_omega[Ndim_omega]    = { 240, 500, 10, NbinQ};
-    const Double_t xmin_omega[Ndim_omega] = {0.24,   0,  0,  Qmin};
-    const Double_t xmax_omega[Ndim_omega] = { 1.2,  50,  1,  Qmax};
+    const Double_t xmin_omega[Ndim_omega] = { 0.4,   0,  0,  Qmin};
+    const Double_t xmax_omega[Ndim_omega] = {1.36,  50,  1,  Qmax};
 
     //same event
     THnSparseF *hs_M3pi = new THnSparseF("hSparseM3pi",Form("M_{#pi^{0}#pi^{+}#pi^{-}};M_{#pi^{0}#pi^{+}#pi^{-}} (GeV/c^{2});p_{T} (GeV/c);asymmetry;%s;",axistitle.Data()),Ndim_omega,Nbin_omega,xmin_omega,xmax_omega);
@@ -2187,6 +2189,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
   Int_t commonID = -1;
 
   Double_t m3pi=0,pt3pi=0;
+  Double_t phipi0 = 0, etapi0 = 0;
+  Double_t phipip = 0, etapip = 0;
+  Double_t phipim = 0, etapim = 0;
+  Double_t dphi_pp = 999, deta_pp = 999, dR = 999;
 
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -2217,7 +2223,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
       e1 = ph1->Energy();
       e2 = ph2->Energy();
       asym = TMath::Abs((ph1->Energy()-ph2->Energy())/(ph1->Energy()+ph2->Energy()));
-      phi  = p12.Phi();
 
       if(fUseCoreEnergy){
         p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
@@ -2231,7 +2236,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
         e1 = (ph1->GetMomV2())->Energy();
         e2 = (ph2->GetMomV2())->Energy();
         asym = TMath::Abs(e1 - e2) / (e1 + e2);
-        phi  = p12core.Phi();
       }
 
       eff1 = f1tof->Eval(e1);
@@ -2239,11 +2243,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
       eff12 = eff1 * eff2;
 
       if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP){
-
         trgeff1  = f1trg->Eval(e1);
         trgeff2  = f1trg->Eval(e2);
         trgeff12 = trgeff1 + trgeff2 - (trgeff1 * trgeff2);//logical OR//this is true only when occupancy is uniformed.
-
       }
 
       if(m12 < 0.12 || 0.15 < m12) continue;
@@ -2251,14 +2253,38 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
 
       Double_t pi0E = TMath::Sqrt(TMath::Power(pi0Px,2) + TMath::Power(pi0Py,2) + TMath::Power(pi0Pz,2) + TMath::Power(Mpi0,2));
       TLorentzVector *p1pi0 = new TLorentzVector(pi0Px,pi0Py,pi0Pz,pi0E);
+      phipi0 = p1pi0->Phi();
+      if(phipi0 < 0) phipi0 += TMath::TwoPi();
+      etapi0 = p1pi0->Eta();
 
       for(Int_t itrack1=0;itrack1<Npip;itrack1++){
         TLorentzVector *p1pip = (TLorentzVector*)array_pip->At(itrack1);
+        phipip = p1pip->Phi();
+        if(phipip < 0) phipip += TMath::TwoPi();
+        etapip = p1pip->Eta();
+
+        dphi_pp = phipip - phipi0;
+        if(dphi_pp > TMath::Pi()) dphi_pp -= TMath::TwoPi();
+        if(dphi_pp < TMath::Pi()) dphi_pp += TMath::TwoPi();
+        deta_pp = etapip - etapi0;
+        dR = TMath::Sqrt(TMath::Power(dphi_pp,2) + TMath::Power(deta_pp,2));
+        if(dR > fMaxR) continue;
 
         //printf("pip | px = %e , py = %e , pz = %e\n",p1pip->Px(),p1pip->Py(),p1pip->Pz());
 
         for(Int_t itrack2=0;itrack2<Npim;itrack2++){
           TLorentzVector *p1pim = (TLorentzVector*)array_pim->At(itrack2);
+          phipim = p1pim->Phi();
+          if(phipim < 0) phipim += TMath::TwoPi();
+          etapim = p1pim->Eta();
+
+          dphi_pp = phipim - phipi0;
+          if(dphi_pp > TMath::Pi()) dphi_pp -= TMath::TwoPi();
+          if(dphi_pp < TMath::Pi()) dphi_pp += TMath::TwoPi();
+          deta_pp = etapim - etapi0;
+          dR = TMath::Sqrt(TMath::Power(dphi_pp,2) + TMath::Power(deta_pp,2));
+          if(dR > fMaxR) continue;
+
           //printf("pim | px = %e , py = %e , pz = %e\n",p1pim->Px(),p1pim->Py(),p1pim->Pz());
           //printf("Mpi0 = %e , Mpip = %e , Mpim = %e\n",p1pi0->M(),p1pip->M(),p1pim->M());
 
@@ -2281,6 +2307,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
 
           }//end of if fIsMC
 
+          phi = p3pi.Phi();
           if(phi < 0) phi += TMath::TwoPi();
 
           TVector2 vgg(TMath::Cos(fHarmonics * phi),TMath::Sin(fHarmonics * phi));
@@ -2716,7 +2743,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       if((nsigmaKaon     < TMath::Abs(nsigmaElectron)) && (nsigmaKaon     < nsigmaPion) && (nsigmaKaon     < nsigmaProton) && (nsigmaKaon     < NsigmaCut)) pidKaon = kTRUE;
       if((nsigmaProton   < TMath::Abs(nsigmaElectron)) && (nsigmaProton   < nsigmaPion) && (nsigmaProton   < nsigmaKaon)   && (nsigmaProton   < NsigmaCut)) pidProton = kTRUE;
 
-      if(ph->GetNsigmaCPV() < 1.0){//tight matching cut to evaluate dispersion cut efficiency for charged particle.
+      if(ph->GetNsigmaCPV() < fMatchingR){//matching cut to evaluate dispersion cut efficiency for charged particle.
         if(pidElectron && (0.8 < cluE/trackP && cluE/trackP < 1.2))  FillHistogramTH1(fOutputContainer,"hMatchedElectron",pT,weight);
         else if(pidPion) FillHistogramTH1(fOutputContainer,"hMatchedPion",pT,weight);
         else if(pidKaon) FillHistogramTH1(fOutputContainer,"hMatchedKaon",pT,weight);
@@ -4287,7 +4314,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
     AliPHOSTenderSupply *supply = (AliPHOSTenderSupply*)PHOSTenderTask->GetPHOSTenderSupply();
     //track matching by AliPHOSTenderSupply
 
-    for(Int_t iev=0;iev<prevPHOS->GetSize();iev++){
+    Int_t Nev = prevPHOS->GetSize();
+    if(Nev > 2) Nev = 2;//set max 2 events.
+
+    for(Int_t iev=0;iev<Nev;iev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(iev));
 
       for(Int_t iph=0;iph<mixPHOS->GetEntriesFast();iph++){
