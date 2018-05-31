@@ -1136,12 +1136,16 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
    if(fgUsedVars[kPtMCfromLegs] || fgUsedVars[kPMCfromLegs] || 
       fgUsedVars[kPxMCfromLegs] || fgUsedVars[kPyMCfromLegs] || fgUsedVars[kPzMCfromLegs] ||
       fgUsedVars[kThetaMCfromLegs] || fgUsedVars[kEtaMCfromLegs] || fgUsedVars[kPhiMCfromLegs] ||
-      fgUsedVars[kMassMCfromLegs] || fgUsedVars[kRapMCfromLegs]) 
+      fgUsedVars[kMassMCfromLegs] || fgUsedVars[kRapMCfromLegs] ||
+      fgUsedVars[kPairLegPtMC] || fgUsedVars[kPairLegPtMC+1]) 
       requestMCfromLegs = kTRUE;
+   
    if(leg1 && leg2 && requestMCfromLegs) {
       values[kPxMCfromLegs] = leg1->MCmom(0) + leg2->MCmom(0);
       values[kPyMCfromLegs] = leg1->MCmom(1) + leg2->MCmom(1);
       values[kPzMCfromLegs] = leg1->MCmom(2) + leg2->MCmom(2);
+      values[kPairLegPtMC+0] = TMath::Sqrt(leg1->MCmom(0)*leg1->MCmom(0)+leg1->MCmom(1)*leg1->MCmom(1));
+      values[kPairLegPtMC+1] = TMath::Sqrt(leg2->MCmom(0)*leg2->MCmom(0)+leg2->MCmom(1)*leg2->MCmom(1));
       values[kPtMCfromLegs] = TMath::Sqrt(values[kPxMCfromLegs]*values[kPxMCfromLegs]+values[kPyMCfromLegs]*values[kPyMCfromLegs]);
       values[kPMCfromLegs] = TMath::Sqrt(values[kPtMCfromLegs]*values[kPtMCfromLegs]+values[kPzMCfromLegs]*values[kPzMCfromLegs]);
       values[kThetaMCfromLegs] = (values[kPMCfromLegs]>=1.0e-6 ? TMath::ACos(values[kPzMCfromLegs]/values[kPMCfromLegs]) : 0.0);
@@ -1595,7 +1599,9 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
 
   if(fgUsedVars[kRap])    values[kRap]    = p.Rapidity();
   if(fgUsedVars[kRapAbs]) values[kRapAbs] = TMath::Abs(p.Rapidity());
-
+  values[kPairLegPt+0] = t1->Pt();
+  values[kPairLegPt+1] = t2->Pt();
+  
   values[kMassV0]   = -999.0;
   values[kMassV0+1] = -999.0;
   values[kMassV0+2] = -999.0;
@@ -1882,13 +1888,15 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
     values[kPt] = p.Pt();
     if(fgUsedVars[kPtSquared]) values[kPtSquared] = values[kPt]*values[kPt];
   }
+  values[kPairLegPt] = t1->Pt();
+  values[kPairLegPt+1] = t2->Pt();
   if(fgUsedVars[kP])      values[kP]      = p.P();
   if(fgUsedVars[kEta])    values[kEta]    = p.Eta();
   if(fgUsedVars[kRap])    values[kRap]    = p.Rapidity();
   if(fgUsedVars[kRapAbs]) values[kRapAbs] = TMath::Abs(p.Rapidity());
   if(fgUsedVars[kPhi])    values[kPhi]    = p.Phi();
   if(fgUsedVars[kTheta])  values[kTheta]  = p.Theta();
-
+  
   if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
     Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]); //make sure the values[XVar] are filled for EM
     if(binX==0) binX = 1;
@@ -2587,7 +2595,11 @@ void AliReducedVarManager::SetDefaultVarNames() {
      fgVariableUnits[kPairLegTPCchi2+i] = "";
      fgVariableNames[kPairLegITSchi2+i] = Form("ITS #chi^{2}, leg %d", i+1);
      fgVariableUnits[kPairLegITSchi2+i] = "";
+     fgVariableNames[kPairLegPt+i] = Form("Leg%d p_{T}", i+1);
+     fgVariableNames[kPairLegPtMC+i] = Form("Leg%d p^{MC}_{T}", i+1);
+     fgVariableUnits[kPairLegPt+i] = "GeV/c^{2}"; fgVariableUnits[kPairLegPtMC+i] = "GeV/c^{2}";
   }
+  
   
   fgVariableNames[kPtTPC]             = "p_{T}^{TPC}";                  fgVariableUnits[kPtTPC] = "GeV/c";
   fgVariableNames[kPhiTPC]            = "#varphi^{TPC}";                fgVariableUnits[kPhiTPC] = "rad.";
