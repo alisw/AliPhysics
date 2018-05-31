@@ -499,9 +499,11 @@ class AliReducedVarManager : public TObject {
     kOneOverPairEffSq,             // 1 / pair efficiency squared (correction factor)
     kPairLegITSchi2,              // the ITS chi2 for the pair legs, used in correlations between pair legs
     kPairLegTPCchi2=kPairLegITSchi2+2,              // the TPC chi2 for the pair legs, used in correlations between pair legs
+    kPairLegPt=kPairLegTPCchi2+2,                 // pair leg pt
+    kPairLegPtMC=kPairLegPt+2,                      // MC truth pair leg pt
 
     // Track-only variables -------------------------------------
-    kPtTPC=kPairLegTPCchi2+2,     
+    kPtTPC=kPairLegPtMC+2,     
     kPhiTPC,    
     kEtaTPC,    
     kDcaXYTPC,    
