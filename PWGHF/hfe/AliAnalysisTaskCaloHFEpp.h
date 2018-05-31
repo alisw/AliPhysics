@@ -75,6 +75,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fITSNcls;
 		TH1F*                   fInvmassLS;
 		TH1F*                   fInvmassULS;
+		TH1F*                   fHistPt_Inc;
 		TH1F*                   fEtadiff;
 		TH1F*                   fPhidiff;
 		TH1F*                   fEop_electron;
