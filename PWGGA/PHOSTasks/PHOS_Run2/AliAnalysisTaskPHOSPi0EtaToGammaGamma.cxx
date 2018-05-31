@@ -2264,8 +2264,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
         etapip = p1pip->Eta();
 
         dphi_pp = phipip - phipi0;
-        if(dphi_pp > TMath::Pi()) dphi_pp -= TMath::TwoPi();
-        if(dphi_pp < TMath::Pi()) dphi_pp += TMath::TwoPi();
+        if(dphi_pp >  TMath::Pi()) dphi_pp -= TMath::TwoPi();
+        if(dphi_pp < -TMath::Pi()) dphi_pp += TMath::TwoPi();
         deta_pp = etapip - etapi0;
         dR = TMath::Sqrt(TMath::Power(dphi_pp,2) + TMath::Power(deta_pp,2));
         if(dR > fMaxR) continue;
@@ -2279,8 +2279,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillM3pi()
           etapim = p1pim->Eta();
 
           dphi_pp = phipim - phipi0;
-          if(dphi_pp > TMath::Pi()) dphi_pp -= TMath::TwoPi();
-          if(dphi_pp < TMath::Pi()) dphi_pp += TMath::TwoPi();
+          if(dphi_pp >  TMath::Pi()) dphi_pp -= TMath::TwoPi();
+          if(dphi_pp < -TMath::Pi()) dphi_pp += TMath::TwoPi();
           deta_pp = etapim - etapi0;
           dR = TMath::Sqrt(TMath::Power(dphi_pp,2) + TMath::Power(deta_pp,2));
           if(dR > fMaxR) continue;
