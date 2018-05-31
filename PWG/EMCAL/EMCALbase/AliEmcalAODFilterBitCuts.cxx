@@ -13,6 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 #include <bitset>
+#include <iostream>
 #include "AliAODTrack.h"
 #include "AliEmcalAODFilterBitCuts.h"
 #include "AliLog.h"
