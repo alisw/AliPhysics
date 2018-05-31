@@ -501,8 +501,7 @@ void AliGenParam::Init()
   // GetFirstDaughter(), GetLastDaughter(), GetMother() ... and the actual position in the C++ particle list.
   // That's the reason whe the offset fIncFortran = -1 is needed in this case but not for decayers based on
   // C++
-  
-  if (fDecayer->ClassName() != "AliDecayerPythia") fIncFortran=0;
+  if (strcmp(fDecayer->ClassName(), "AliDecayerPythia")) fIncFortran = 0;
   //Begin_Html
   /*
     <img src="picts/AliGenParam.gif">
@@ -854,7 +853,7 @@ void AliGenParam::GenerateN(Int_t ntimes)
               TParticle* iparticle = (TParticle *) particles->At(i);
               Int_t kf   = iparticle->GetPdgCode();
               Int_t ksc  = iparticle->GetStatusCode();
-              Int_t jpa  = iparticle->GetFirstMother()-1;
+              Int_t jpa  = iparticle->GetFirstMother() + fIncFortran;
               Double_t weight = iparticle->GetWeight();
               och[0] = origin0[0]+iparticle->Vx();
               och[1] = origin0[1]+iparticle->Vy();
