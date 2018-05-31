@@ -4937,7 +4937,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
         } else if( fCurrentMC==k16h8b ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.969944, -4.02916, -0.366743);
 
-        } else if( fCurrentMC==k16h3 ||fCurrentMC==k16k5a ||  fCurrentMC==k17e2 || fCurrentMC==k17l3b) {
+        } else if( fCurrentMC==k16h3 ||fCurrentMC==k16k5a ||  fCurrentMC==k17e2) {
           if(fClusterType==1){
             energy /= FunctionNL_kSDM(energy, 0.972156, -4.10515, -0.381273);
             energy /= FunctionNL_kSDM(energy, 0.979999, -4.39136, -0.102332);
@@ -4951,9 +4951,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
               energy /= FunctionNL_kSDM(energy, 0.986513, 0.430032, -10.99999);
               energy /= 0.9908118231;
             }
-            if(fCurrentMC==k17l3b) {
-              energy /= FunctionNL_kSDM(energy, 0.986976, 0.543314, -9.44295);
-            }
+          }
+        } else if(fCurrentMC==k17l3b) {
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 0.952721, -2.97226, -1.07402);
+          }
+          if(fClusterType==3){
+            energy /= FunctionNL_kSDM(energy, 0.986976, 0.543314, -9.44295);
           }
         } else if( fCurrentMC==k16k5b ) {
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.974173, -4.07732, -0.570223);
@@ -5015,14 +5019,18 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.960074, -3.31954, -1.14748);
 
         //pass3
-        } else if( fCurrentMC==k16h3 ||fCurrentMC==k16k5a ||  fCurrentMC==k17e2 || fCurrentMC==k17l3b) {
+        } else if( fCurrentMC==k16h3 ||fCurrentMC==k16k5a ||  fCurrentMC==k17e2) {
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.965224, -3.04336, -1.85638);
-          else if(fClusterType == 3) {
-            if(fCurrentMC==k16k5a ||  fCurrentMC==k17e2) energy /= 0.9835764493;
-            else if( fCurrentMC==k17l3b ) {
-              energy /= FunctionNL_kSDM(energy, 0.985133, -5.33698, -1.65732);
-            }
+          if(fClusterType==3) energy /= 0.9835764493;
+
+        } else if(fCurrentMC==k17l3b) {
+          if(fClusterType==1){
+            energy /= FunctionNL_kSDM(energy, 0.965126, -2.55597, -2.33834);
           }
+          if(fClusterType==3) {
+              energy /= FunctionNL_kSDM(energy, 0.985133, -5.33698, -1.65732);
+          }
+
         } else if( fCurrentMC==k16k5b ){
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.960074, -3.31954, -1.14748);
           if(fClusterType==3) energy /= FunctionNL_kSDM(energy, 0.981191, -1.93399, -2.60859);
