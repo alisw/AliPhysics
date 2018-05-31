@@ -271,7 +271,8 @@ AliEmcalTrackSelection *AliEmcalAnalysisFactory::TrackCutsFactory(TString cutstr
       if(cut == "standard"){
         auto filterbitcuts = new PWG::EMCAL::AliEmcalAODFilterBitCuts("globalcuts", "Global track cuts");
         filterbitcuts->SetFilterBits(AliAODTrack::kTrkGlobal);
-        cuts->Add(filterbitcuts);
+        std::cout << "Adding standard global track cuts" << std::endl;
+        trackcuts.Add(filterbitcuts);
 
         AliEMCalTriggerExtraCuts *crossedrowcut = FindTrackCuts(trackcuts);
         if(!crossedrowcut){
