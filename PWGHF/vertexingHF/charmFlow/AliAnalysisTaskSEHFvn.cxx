@@ -144,6 +144,9 @@ AliAnalysisTaskSE(),
   fPercentileq2(kFALSE),
   fEnableCentralityCorrCuts(kFALSE),
   fEnableCentralityMultiplicityCorrStrongCuts(kFALSE),
+  fOptD0FromDstar(0),
+  fUseFiltBit4SoftPion(kFALSE),
+  fCutsSoftPion(0x0),
   fFlowMethod(kEP)
 {
   // Default constructor
@@ -216,6 +219,9 @@ AliAnalysisTaskSEHFvn::AliAnalysisTaskSEHFvn(const char *name,AliRDHFCuts *rdCut
   fPercentileq2(kFALSE),
   fEnableCentralityCorrCuts(kFALSE),
   fEnableCentralityMultiplicityCorrStrongCuts(kFALSE),
+  fOptD0FromDstar(0),
+  fUseFiltBit4SoftPion(kFALSE),
+  fCutsSoftPion(0x0),
   fFlowMethod(kEP)
 {
   // standard constructor
@@ -313,6 +319,9 @@ AliAnalysisTaskSEHFvn::~AliAnalysisTaskSEHFvn()
   for(Int_t i=0; i<6; i++) {
     if(fq2SplinesList[i]) {delete fq2SplinesList[i];}
   }
+  if(fDecChannel==kD0toKpiFromDstar && fOptD0FromDstar==1 && !fUseFiltBit4SoftPion) {
+    delete fCutsSoftPion;
+  }
 }
 //_________________________________________________________________
 void  AliAnalysisTaskSEHFvn::SetMassLimits(Float_t range, Int_t pdg){
@@ -381,6 +390,19 @@ void AliAnalysisTaskSEHFvn::LocalInit()
   default:
     return;
   }
+  
+  if(fDecChannel==kD0toKpiFromDstar && fOptD0FromDstar==1 && !fUseFiltBit4SoftPion) {
+    fCutsSoftPion = new AliESDtrackCuts();
+    fCutsSoftPion->SetRequireSigmaToVertex(kFALSE);
+    //default
+    fCutsSoftPion->SetRequireTPCRefit(kFALSE);
+    fCutsSoftPion->SetRequireITSRefit(kTRUE);
+    fCutsSoftPion->SetMinNClustersITS(3);
+    fCutsSoftPion->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    fCutsSoftPion->SetPtRange(0.1,1.e10);
+    fCutsSoftPion->SetEtaRange(-0.8,0.8);
+  }
+
   return;
 }
 //________________________________________________________________________
@@ -663,7 +685,7 @@ void AliAnalysisTaskSEHFvn::UserCreateOutputObjects()
     fOutput->Add(hq2CandVsq2Event);
 
     //histo of number of Dstar built using from the same Dzero (only in case of Dzero<-Dstar analysis)
-    if(fDecChannel==kD0toKpiFromDstar) {
+    if(fDecChannel==kD0toKpiFromDstar && fOptD0FromDstar==0) {
       TH1F* hNumDstarCandFromSameDzeroCand = new TH1F("hNumDstarCandFromSameDzeroCand","Number of Dstar candidates built using same Dzero candidate",101,-0.5,100.5);
       fOutput->Add(hNumDstarCandFromSameDzeroCand);
     }
@@ -741,7 +763,12 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       }
       if(fDecChannel==4){
         absPdgMom=421;
-        arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+        if(fOptD0FromDstar==0) {
+          arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
+        }
+        else {
+          arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
+        }
       }
     }
   } else if(aod){
@@ -763,7 +790,12 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
     if(fDecChannel==4){
       absPdgMom=421;
-      arrayProng=(TClonesArray*)aod->GetList()->FindObject("Dstar");
+      if(fOptD0FromDstar==0) {
+        arrayProng=(TClonesArray*)aod->GetList()->FindObject("Dstar");
+      }
+      else {
+        arrayProng=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+      }
     }
   }
 
@@ -1114,17 +1146,17 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
   std::vector<Int_t> isSelectedCand;
 
   Int_t nSelCandInMassRange=0;
-  std::vector<Int_t> dzerodaulab1; //vector of labels of D0 daugheter 1 necessary if kD0toKpiFromDstar is used
-  std::vector<Int_t> dzerodaulab2; //vector of labels of D0 daugheter 2 necessary if kD0toKpiFromDstar is used
+  std::vector<Int_t> dzerodaulab1; //vector of labels of D0 daugheter 1 necessary if kD0toKpiFromDstar is used with fOptD0FromDstar==0
+  std::vector<Int_t> dzerodaulab2; //vector of labels of D0 daugheter 2 necessary if kD0toKpiFromDstar is used with fOptD0FromDstar==0
   Int_t nD0usedfordiffDstar=0;
   //Loop on D candidates
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     Bool_t isD0new = kTRUE;
-    if(fDecChannel!=4) {
+    if(!(fDecChannel==4 && fOptD0FromDstar==0)) {
       d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
       Bool_t isSelBit=kTRUE;
       if(fDecChannel==0) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDplusCuts);
-      if(fDecChannel==1) isSelBit=d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
+      if(fDecChannel==1 || fDecChannel==4) isSelBit=d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts);
       if(fDecChannel==2) isSelBit=kTRUE;
       if(fDecChannel==3) isSelBit=d->HasSelectionBit(AliRDHFCuts::kDsCuts);
       if(!isSelBit)continue;
@@ -1132,14 +1164,14 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       if(fDecChannel==0 || fDecChannel==3) {
         if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
       }
-      else if(fDecChannel == 1) {
+      else if(fDecChannel == 1 || fDecChannel==4) {
         if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
       }
       else if(fDecChannel == 2) {
         if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
       }
     }
-    else if (fDecChannel == 4) {
+    else if (fDecChannel == 4 && fOptD0FromDstar==0) {
       //Get the D* candidate, see if it is in the mass range and if it is the case assign the D0 daughter to d
       AliAODRecoDecayHF* dstar=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iCand);
       if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)dstar),kTRUE))continue;
@@ -1178,9 +1210,71 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
       Int_t isDsPhipiKK = isSelected&8;
       if(!isDsPhiKKpi & !isDsPhipiKK) continue;
     }
-    if(fDecChannel==4 && !isD0new) {
+    if(fDecChannel==4 && fOptD0FromDstar==0 && !isD0new) {
       nD0usedfordiffDstar++;
       continue; //if D0 candidate already used for previous Dstar candidates, continue (the same D0 candidate can build many D* candidates)
+    }
+    if(fDecChannel==4 && fOptD0FromDstar==1) {
+      
+      Double_t deltamassPDG=(TDatabasePDG::Instance()->GetParticle(413)->Mass())-(TDatabasePDG::Instance()->GetParticle(421)->Mass());
+      Int_t isD0fromDstar=kFALSE;
+      Double_t invmassD0=-1;
+
+      if(isSelected==1) {
+        Int_t pdgdaughtersD0[2]={211,321};//pi+,K-
+        invmassD0 = d->InvMass(2,(UInt_t*)pdgdaughtersD0); //D0
+      }
+      else if(isSelected==2) {
+        Int_t pdgdaughtersD0bar[2]={321,211};//K+,pi-
+        invmassD0 = d->InvMass(2,(UInt_t*)pdgdaughtersD0bar); //D0bar
+      }
+      
+      AliAODTrack* dautrack1 = (AliAODTrack*)d->GetDaughter(0);
+      AliAODTrack* dautrack2 = (AliAODTrack*)d->GetDaughter(1);
+      Double_t mpion=TDatabasePDG::Instance()->GetParticle(211)->Mass();
+      Double_t mkaon=TDatabasePDG::Instance()->GetParticle(321)->Mass();
+
+      for(Int_t iTrk=0; iTrk<aod->GetNumberOfTracks(); iTrk++) {
+        //check whether D0/D0bar comes from a Dstar, combining it with soft pions
+        AliAODTrack* track=(AliAODTrack*)aod->GetTrack(iTrk);
+        if(!track) continue;
+        Short_t charge = track->Charge();
+        //wrong charge sign --> continue
+        if(isSelected==1 && charge<0) continue;
+        if(isSelected==2 && charge>0) continue;
+        
+        //track does not pass soft pion selections --> continue
+        if(!IsSoftPionSelected(track)) continue;
+        
+        if(isSelected==3 && charge>0) {
+          Int_t pdgdaughtersD0[2]={211,321};//pi+,K-
+          invmassD0 = d->InvMass(2,(UInt_t*)pdgdaughtersD0); //D0
+        }
+        else if(isSelected==3 && charge<0) {
+          Int_t pdgdaughtersD0bar[2]={321,211};//K+,pi-
+          invmassD0 = d->InvMass(2,(UInt_t*)pdgdaughtersD0bar); //D0bar
+        }
+        
+        //compute invariant mass of D0 + soft pion
+        Double_t energysum = 0;
+        if(charge>0) {
+          energysum = track->E(mpion)+dautrack1->E(mpion)+dautrack2->E(mkaon);
+        }
+        else if(charge<0) {
+          energysum = track->E(mpion)+dautrack1->E(mkaon)+dautrack2->E(mpion);
+        }
+        Double_t psum2 = (track->Px()+dautrack1->Px()+dautrack2->Px())*(track->Px()+dautrack1->Px()+dautrack2->Px())+(track->Py()+dautrack1->Py()+dautrack2->Py())*(track->Py()+dautrack1->Py()+dautrack2->Py())+(track->Pz()+dautrack1->Pz()+dautrack2->Pz())*(track->Pz()+dautrack1->Pz()+dautrack2->Pz());
+        Double_t invmassDstar = TMath::Sqrt(energysum*energysum-psum2);
+        
+        Double_t deltainvmassKpipi = invmassDstar-invmassD0;
+        
+        Double_t sigma = 0.0008;
+        if(deltainvmassKpipi<deltamassPDG+3*sigma && deltainvmassKpipi>deltamassPDG-3*sigma) {
+          isD0fromDstar=kTRUE;
+          break;
+        }
+      }
+      if(!isD0fromDstar) continue;
     }
     isSelectedCand.push_back(isSelected);
     
@@ -1605,7 +1699,7 @@ void AliAnalysisTaskSEHFvn::UserExec(Option_t */*option*/)
     }
 
     //fill histo for number of Dstar built using the same Dzero (only in case of Dzero from Dstar analysis)
-    if(fDecChannel==kD0toKpiFromDstar) {
+    if(fDecChannel==kD0toKpiFromDstar && fOptD0FromDstar==0) {
       ((TH1F*)fOutput->FindObject("hNumDstarCandFromSameDzeroCand"))->Fill(nD0usedfordiffDstar);
     }
     
@@ -3002,6 +3096,21 @@ void AliAnalysisTaskSEHFvn::RemoveTracksInDeltaEtaFromOnTheFlyTPCq2(AliAODEvent*
       M--;
     }
   }
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskSEHFvn::IsSoftPionSelected(AliAODTrack* track)
+{
+  //track cuts
+  if(fUseFiltBit4SoftPion) {
+    if(!track->TestFilterBit(4)) return kFALSE;
+  }
+  else {
+    //applying ESDtrackCut
+    if(!fCutsSoftPion->IsSelected(track)) return kFALSE;
+  }
+  
+  return kTRUE;
 }
 
 //________________________________________________________________________

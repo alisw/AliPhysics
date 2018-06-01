@@ -1153,16 +1153,10 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliVEvent* event){
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliVEvent* event) {
   // This function flags events in which the TPC chamber HV is not at its nominal value
-  if (fMC) return kFALSE; // there are no dip events in MC
-  if (event->GetRunNumber()>197692) return kFALSE; // no dip events in run2
-  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-    AliWarning("IsHVdipTPCEvent method implemented for ESDs only");
-    return kFALSE;
-  }
-  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
-
-  if (!aEsd->IsDetectorOn(AliDAQ::kTPC)) return kTRUE;
-  return kFALSE;
+  // The function IsDetectorOn is implemented in AliESDEvent and AliAODEvent
+  //     by default it returns kTRUE (so also for MC). Therefore no extra treatment is required
+  //
+  return !event->IsDetectorOn(AliDAQ::kTPC);
 }
 
 

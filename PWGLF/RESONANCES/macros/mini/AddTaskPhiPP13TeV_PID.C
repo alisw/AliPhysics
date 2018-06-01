@@ -5,6 +5,17 @@
 //Allows basic configuration of pile-up check and event cuts
 ****************************************************************************/
 
+/*
+#include "AliRsnMiniAnalysisTask.h"
+#include "AliRsnMiniValue.h"
+#include "AliRsnCutPrimaryVertex.h"
+#include "AliRsnCutEventUtils.h"
+#include "AliRsnMiniPair.h"
+#include "AliRsnCutMiniPair.h"
+#include "AliRsnMiniOutput.h"
+#include "./ConfigPhiPP13TeV_PID.C"
+*/
+
 enum pairYCutSet { kPairDefault=0,
 		   kCentral //=1
                  };
@@ -15,12 +26,11 @@ enum eventCutSet { kEvtDefault=0,
 		   kDefaultVtx8, //=3
 		   kDefaultVtx5, //=4                    
 		   kMCEvtDefault, //=5                   
-		   kSpecial1, //=6                   
-		   kSpecial2, //=7
+		   kTriggered, //=6
+		   kNoVzCut, //=7
 		   kNoEvtSel, //=8
-		   kSpecial3, //=9
-		   kSpecial4, //=10
-		   kSpecial5 //=11
+		   kINEL10, //=9
+           kIGZ10 //10
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -68,7 +78,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm
   if(evtCutSetID==eventCutSet::kDefaultVtx5) vtxZcut=5.0; //cm
   if(evtCutSetID==eventCutSet::kNoPileUpCut) rejectPileUp=kFALSE;
-  if(evtCutSetID==eventCutSet::kSpecial2) vtxZcut=1.e6;//off
+  if(evtCutSetID==eventCutSet::kNoVzCut) vtxZcut=1.e6;//off
 
   if(!isPP || isMC || MultBins) rejectPileUp=kFALSE;
 
@@ -107,11 +117,12 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   }
 
   // create the task and configure 
-  TString taskName=Form("phi%s%s_%i%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
+  TString taskName=Form("phi%s%s_%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-  //if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
-  //if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->SelectCollisionCandidates(triggerMask); //AOD
-  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3) task->UseESDTriggerMask(triggerMask);
+  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kINEL10 && evtCutSetID!=eventCutSet::kIGZ10){
+    task->UseESDTriggerMask(triggerMask); //ESD
+    //task->SelectCollisionCandidates(triggerMask); //AOD
+  }
 
   if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
@@ -126,7 +137,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
   ::Info("AddTaskPhiPP13TeV_PID", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f", nmix, maxDiffVzMix, maxDiffMultMix));
-  task->SaveRsnTreeInFile(kTRUE);
+  //task->SaveRsnTreeInFile(kTRUE);
 
   mgr->AddTask(task);
 
@@ -136,26 +147,32 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
 
   AliRsnCutPrimaryVertex* cutVertex=0;
-  if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && (!MultBins || fabs(vtxZcut-10.)>1.e-10)){
-    cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
-    if(!MultBins && evtCutSetID!=eventCutSet::kSpecial3){
-      cutVertex->SetCheckZResolutionSPD();
-      cutVertex->SetCheckDispersionSPD();
-      cutVertex->SetCheckZDifferenceSPDTrack();
+  if(evtCutSetID!=eventCutSet::kTriggered && evtCutSetID!=eventCutSet::kNoEvtSel){
+    if(evtCutSetID==eventCutSet::kINEL10 || evtCutSetID==eventCutSet::kIGZ10){
+      cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+      cutVertex->SetCheckGeneratedVertexZ();
+
+    }else if(!MultBins || fabs(vtxZcut-10.)>1.e-10){
+      cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
+      if(!MultBins){
+        cutVertex->SetCheckZResolutionSPD();
+        cutVertex->SetCheckDispersionSPD();
+        cutVertex->SetCheckZDifferenceSPDTrack();
+      }
     }
-    if(evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
   }
 
   AliRsnCutEventUtils* cutEventUtils=0;
-  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3){
+  if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kINEL10){
     cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
-    if(!MultBins){
+    if(evtCutSetID==eventCutSet::kIGZ10) cutEventUtils->SetCheckInelGt0MC();
+    else if(!MultBins){
       cutEventUtils->SetCheckIncompleteDAQ();
       cutEventUtils->SetCheckSPDClusterVsTrackletBG();
     }else{
       //cutEventUtils->SetCheckInelGt0SPDtracklets();
       cutEventUtils->SetRemovePileUppA2013(kFALSE);
-      cutEventUtils->SetCheckAcceptedMultSelection();
+      if(evtCutSetID!=eventCutSet::kTriggered) cutEventUtils->SetCheckAcceptedMultSelection();
     }
   }
 
@@ -232,6 +249,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP13TeV_PID.C");
+  //gROOT->LoadMacro("./ConfigPhiPP13TeV_PID.C");
   if(!ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt,triggerMask)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------

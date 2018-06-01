@@ -251,6 +251,15 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     }
 
     void SetTriggerThreshold(Double_t energy) {fEnergyThreshold = energy;}
+    void SetAnaOmega(Bool_t flag, Double_t MinPtPi0, Double_t MinPtChPi, Double_t MaxR){
+      fAnaOmega3Pi = flag;
+      fMinPtPi0    = MinPtPi0;
+      fMinPtChPi   = MinPtChPi;
+      fMaxR        = MaxR;
+    }
+    void SetOAStudy(Bool_t flag) {fIsOAStudy = flag;}
+
+    void SetMatchingR(Double_t maxR) {fMatchingR = maxR;}//for matching between a track and a cluster
 
   protected:
     virtual void UserCreateOutputObjects();
@@ -264,6 +273,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     virtual void FillPhoton();
     virtual void FillMgg();
     virtual void FillMixMgg();
+    virtual void FillM3pi();//omega->pi0 pi+ pi-
     virtual void EstimatePIDCutEfficiency();
     void EstimateTOFCutEfficiency();
     void EstimateTriggerEfficiency();
@@ -367,6 +377,9 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       else return kTRUE;
     }
 
+    Bool_t Are2GammasInPHOSAcceptance(Int_t id);
+    void FillMixTrackMatching();
+
   protected:
     Bool_t fIsMC;
     Bool_t fIsJJMC;//jet jet MC
@@ -440,13 +453,18 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t fGlobalEScale;//only for NL study
     TF1 *fNonLin[7][7];
     Double_t fEmin;
-
+    Bool_t fIsOAStudy;
+    Double_t fMatchingR;//for photon purity
+    Bool_t fAnaOmega3Pi;
+    Double_t fMinPtPi0;//only for omega->3pi
+    Double_t fMinPtChPi;//only for omega->3pi
+    Double_t fMaxR;//only for omega->3pi
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 52);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 59);
 };
 
 #endif

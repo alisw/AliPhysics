@@ -62,6 +62,14 @@ void AliFemtoDreamPartCollection::SetEvent(
   return;
 }
 
+void AliFemtoDreamPartCollection::PrintEvent(int ZVtx,int Mult) {
+  auto itZVtx=fZVtxMultBuffer.begin();
+  itZVtx+=ZVtx;
+  auto itMult=itZVtx->begin();
+  itMult+=Mult;
+  return;
+}
+
 void AliFemtoDreamPartCollection::FindBin(float ZVtxPos,float Multiplicity,
                                           int *returnBins) {
   returnBins[0]=-99;

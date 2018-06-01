@@ -182,11 +182,24 @@ void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
 {  
   if ( !fAna->IsEventProcessed() ) return;
   
-  if ( (fLastEvent  > 0 && Entry() > fLastEvent )  || 
-       (fFirstEvent > 0 && Entry() < fFirstEvent)     ) return ;
+  Int_t eventN = Entry();
   
-  AliDebug(1,Form("Begin event %d", (Int_t) Entry()));
-    
+  // Entry() does not work for AODs
+  if ( eventN <= 0 )
+  {
+    if ( (AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler() )
+      eventN = ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()->GetReadEntry());
+  }
+  
+  if ( (fLastEvent  > 0 && eventN > fLastEvent )  || 
+       (fFirstEvent > 0 && eventN < fFirstEvent)     ) return ;
+  
+  AliDebug(1,Form("Begin: Event %d - Entry %d - (First,Last)=(%d,%d)", 
+                  eventN, (Int_t) Entry(), fFirstEvent, fLastEvent));
+
+  //printf("AliAnalysisTaskCaloTrackCorrelation::UserExec() - Event %d - Entry %d - (First,Last)=(%d,%d) \n", 
+  //       eventN, (Int_t) Entry(), fFirstEvent, fLastEvent);
+  
   // Get the type of data, check if type is correct
   Int_t  datatype = fAna->GetReader()->GetDataType();
   if(datatype != AliCaloTrackReader::kESD && datatype != AliCaloTrackReader::kAOD &&

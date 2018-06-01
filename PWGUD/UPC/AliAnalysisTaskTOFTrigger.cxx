@@ -22,6 +22,7 @@
 #include "TFile.h"
 #include "TColor.h"
 #include "TEfficiency.h"
+#include <TGeoMatrix.h>
 
 // aliroot headers
 #include "AliAnalysisManager.h"
@@ -39,6 +40,9 @@
 #include "AliExternalTrackParam.h"
 #include "AliTOFGeometry.h"
 #include "AliESDtrackCuts.h"
+#include "AliCDBManager.h"
+#include "AliCDBEntry.h"
+
 
 // my headers
 #include "AliAnalysisTaskTOFTrigger.h"
@@ -64,6 +68,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	eff_AverageTrackPt(0),
 	eff_MaxiPadLTM_Around(0),
 	eff_MaxiPadLTM_OnlyAround(0),
+	eff_MaxiPadLTM_Clusters(0),
 	hTrackDistributionLTM(0),
 	hTrackDistribution_Mu(0),
 	hTrackDistribution_El(0),
@@ -71,6 +76,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger()
 	hFiredMaxiPad(0),
 	hFiredMaxiPadOnlyAround(0),
 	hNotFiredMaxiPad(0),
+	hExtraFiredMaxiPad(0),
 	hTrackPadCorrPhi(0),
 	hTrackPadCorrEta(0),
 	hNoiseMaxiPad(0),
@@ -123,6 +129,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	eff_AverageTrackPt(0),
 	eff_MaxiPadLTM_Around(0),
 	eff_MaxiPadLTM_OnlyAround(0),
+	eff_MaxiPadLTM_Clusters(0),
 	hTrackDistributionLTM(0),
 	hTrackDistribution_Mu(0),
 	hTrackDistribution_El(0),
@@ -130,6 +137,7 @@ AliAnalysisTaskTOFTrigger::AliAnalysisTaskTOFTrigger(const char *name,Float_t lo
 	hFiredMaxiPad(0),
 	hFiredMaxiPadOnlyAround(0),
 	hNotFiredMaxiPad(0),
+	hExtraFiredMaxiPad(0),
 	hTrackPadCorrPhi(0),
 	hTrackPadCorrEta(0),
 	hNoiseMaxiPad(0),
@@ -226,6 +234,9 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(eff_MaxiPadLTM_Around);
   eff_MaxiPadLTM_OnlyAround = new TEfficiency("eff_MaxiPadLTM_OnlyAround"," ",72,0,72,23,0,23);
   fOutputList->Add(eff_MaxiPadLTM_OnlyAround);
+  
+  eff_MaxiPadLTM_Clusters = new TEfficiency("eff_MaxiPadLTM_Clusters"," ",72,0,72,23,0,23);
+  fOutputList->Add(eff_MaxiPadLTM_Clusters);
 
   hTrackDistributionLTM = new TH2F("hTrackDistributionLTM","hTrackDistributionLTM",72,0,72,23,0,23);
   fOutputList->Add(hTrackDistributionLTM);
@@ -241,6 +252,8 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hFiredMaxiPadOnlyAround);
   hNotFiredMaxiPad = new TH2F("hNotFiredMaxiPad","hNotFiredMaxiPad",72,0,72,23,0,23);
   fOutputList->Add(hNotFiredMaxiPad);
+  hExtraFiredMaxiPad = new TH2F("hExtraFiredMaxiPad","hExtraFiredMaxiPad",72,0,72,23,0,23);
+  fOutputList->Add(hExtraFiredMaxiPad);
   hTrackPadCorrPhi = new TH2F("hTrackPadCorrPhi","hTrackPadCorrPhi",1440,0,360,72,0,72);
   fOutputList->Add(hTrackPadCorrPhi);
   hTrackPadCorrEta = new TH2F("hTrackPadCorrEta","hTrackPadCorrEta",1000,-1,1,23,0,23);
@@ -275,7 +288,7 @@ void AliAnalysisTaskTOFTrigger::UserCreateOutputObjects()
   fOutputList->Add(hPadDistance);
   hTrackPt = new TH1F("hTrackPt","hTrackPt",500,0,50);
   fOutputList->Add(hTrackPt);
-  hNMaxiPadIn = new TH1I("hNMaxiPadIn","hNMaxiPadIn",13,-2.5,10.5);
+  hNMaxiPadIn = new TH1I("hNMaxiPadIn","hNMaxiPadIn",14,-3.5,10.5);
   fOutputList->Add(hNMaxiPadIn);
   hNCrossTracks = new TH1I("hNCrossTracks","hNCrossTracks",100,0.5,100.5);
   fOutputList->Add(hNCrossTracks);
@@ -298,38 +311,42 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
   TString fileName = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
   if(fileName.Contains("pass1") || fileName.Contains("pass5"))fIsPass1 = kTRUE;
   else fIsPass1 = kFALSE;
-
+  
+  Bool_t fBadMaxiPadMask[23][72];
   if(!fGeomLoaded){
-  	AliGeomManager::LoadGeometry();
-  	AliGeomManager::ApplyAlignObjsFromCDB("ITS TRD TOF");
+
+	AliCDBManager *cdb = AliCDBManager::Instance();
+	AliCDBEntry *cdbe = cdb->Get("TRIGGER/TOF/TriggerMask");
+        AliTOFTriggerMask *fOCDBmask = (AliTOFTriggerMask *)cdbe->GetObject();
+	
+	UInt_t BadLTMs[11] = {10,12,14,15,47,64,65,66,67,68,69};
+	UInt_t BadMaxiPads[5][2] = {{19,1}, {26,4}, {33,4}, {34,1}, {34,2}};
+	UInt_t fgFromTriggertoDCS[72] = {0,1,4,5, 8, 9,12,13,16,17,20,21,24,25,28,29,32,33,36,37,40,41,44,45,48,49,52,53,56,57,60,61,64,65,68,69,
+                                3,2,7,6,11,10,15,14,19,18,23,22,27,26,31,30,35,34,39,38,43,42,47,46,51,50,55,54,59,58,63,62,67,66,71,70};
+
+	for(Int_t indexLTM=0; indexLTM<72; ++indexLTM) {
+    		for(Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM) {
+			fBadMaxiPadMask[channelCTTM][indexLTM] = !fOCDBmask->IsON(fgFromTriggertoDCS[indexLTM],channelCTTM);
+			for(Int_t j = 0; j<11; j++)if(indexLTM == BadLTMs[j])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
+			for(Int_t j = 0; j<5; j++)if(indexLTM == BadMaxiPads[j][0] && channelCTTM == BadMaxiPads[j][1])fBadMaxiPadMask[channelCTTM][indexLTM] = 1;
+			}
+		}
+	Int_t nAliveChannels = 0;
+	for(Int_t channelCTTM=0; channelCTTM<23; ++channelCTTM){
+		for(Int_t indexLTM=0; indexLTM<72; ++indexLTM){
+			cout<<fBadMaxiPadMask[channelCTTM][indexLTM]<<",";
+			nAliveChannels += !fBadMaxiPadMask[channelCTTM][indexLTM];
+			}
+		cout<<endl;
+		}
+	cout<<"N Active channels = "<<nAliveChannels<<endl;
+	
+  	for (int i=0;i<18;i++) {
+   		AliGeomManager::GetOrigGlobalMatrix( Form("TOF/sm%02d",i) ,matOrig[i]);
+   		matCurr[i] = *AliGeomManager::GetMatrix( Form("TOF/sm%02d",i) );
+   		}
   	fGeomLoaded = kTRUE;
 	}
-
-//pass2,pass3  
-  Bool_t fBadMaxiPadMask[23][72] ={ 0,0,1,1,0,1,0,0,1,0,1,0,0,0,1,1,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,1,1,1,0,1,1,0,0,
-0,0,1,1,0,0,0,0,1,0,1,0,0,0,1,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,1,1,0,1,1,1,0,0,
-0,0,1,1,0,0,0,0,1,0,1,0,1,0,1,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,1,0,1,1,1,0,0,
-0,0,1,1,0,0,0,0,1,0,1,0,1,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,1,0,0,1,1,1,0,
-0,0,1,1,0,0,0,0,1,0,1,0,1,0,1,1,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,1,1,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,1,1,0,0,
-0,0,1,1,0,0,0,0,0,0,1,0,1,0,1,1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,1,0,1,1,0,0,
-0,0,1,1,1,1,0,0,0,0,1,1,1,0,1,1,1,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,1,1,1,0,0,
-0,0,1,1,0,0,0,0,0,1,1,1,1,0,1,1,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,0,
-0,0,1,1,0,0,0,0,0,1,1,1,1,0,1,1,0,1,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1,1,0,1,0,0,0,0,1,0,0,0,1,1,0,0,
-0,0,1,1,0,0,0,0,0,1,1,1,1,0,1,1,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,0,1,1,0,0,0,0,1,0,0,0,0,0,1,1,0,0,
-1,0,1,1,0,0,0,0,1,0,1,1,1,0,1,1,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,0,0,0,0,0,1,0,1,0,1,0,0,0,1,1,0,0,
-1,0,1,1,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,0,0,1,1,0,0,
-0,1,1,1,0,0,0,0,0,1,1,1,1,0,1,1,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,1,1,0,
-0,1,1,1,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,1,1,1,0,0,
-0,0,1,1,0,0,1,0,0,0,1,1,1,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,0,0,
-0,0,1,1,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1,1,0,1,
-0,0,1,1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,1,1,1,
-0,0,1,1,0,0,0,1,0,0,1,0,1,1,1,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,1,0,0,0,0,0,0,0,1,0,0,1,1,1,0,0,
-0,0,1,1,0,0,0,0,0,0,1,0,1,1,1,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,1,0,1,1,1,0,0,
-0,0,1,1,0,0,1,1,1,0,1,0,1,0,1,1,0,0,0,0,1,0,1,1,0,0,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,0,0,
-0,0,1,1,0,0,1,1,0,0,1,0,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,
-0,0,1,1,0,0,1,1,0,0,1,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,
-0,0,1,1,0,0,1,1,1,0,1,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,1,1,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,0,1,1,1,1,1,1,1,1,1,1,0,0}; 
-
 
   AliESDEvent *esd = (AliESDEvent*) InputEvent();
   if(!esd) return;
@@ -413,7 +430,38 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
       numElectronTracksPerMaxiPad[indexLTM][channelCTTM] = 0;
     }
   }
+  
+  TClonesArray* tofClusters = ((AliESDEvent*)fInputEvent)->GetESDTOFClusters();
+  
+  Int_t nTOFhits = 0;
+  for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
+     AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
+     nTOFhits+=cl->GetNTOFhits();
+   }
+   
+   TArrayI fTOFhits;
+   TArrayI fTrackIndices;
+   
+   fTOFhits.Reset();
+   fTrackIndices.Reset();
+   fTOFhits.Set(nTOFhits);
+   fTrackIndices.Set(nTOFhits);
+  
+  Int_t hitCounts = 0;
+   for (Int_t icl=0;icl<tofClusters->GetEntriesFast();icl++){
+     AliESDTOFCluster* cl = (AliESDTOFCluster*) tofClusters->At(icl);
+     for (Int_t ihit=0;ihit<cl->GetNTOFhits();ihit++){
+       AliESDTOFHit* hit = (AliESDTOFHit*) cl->GetTOFHit(ihit);
+       Int_t channel = hit->GetTOFchannel();
+       Int_t trackIndex = (cl->GetNMatchableTracks()==1) ? cl->GetTrackIndex(0) : -1;
+       fTOFhits.AddAt(channel,hitCounts);
+       fTrackIndices.AddAt(trackIndex,hitCounts);
+       hitCounts++;
+     }
+   }  
+  
   Double_t cv[21];
+   
   //Track loop
   for(Int_t iTrack=0; iTrack<esd->GetNumberOfTracks(); iTrack++) {
     AliESDtrack *esdTrackOrig = dynamic_cast<AliESDtrack*>(esd->GetTrack(iTrack));
@@ -422,6 +470,18 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     if(!fTrackCuts->AcceptTrack(esdTrackOrig))continue;
     hTrackPt->Fill(esdTrackOrig->Pt());
     if(esdTrackOrig->Pt()>fMaxPt || esdTrackOrig->Pt()<fMinPt)continue;
+    
+    Int_t detId[5] = {-1,-1,-1,-1,-1};
+    Int_t indexLTM[2] = {-1,-1};
+    for(Int_t i =0; i<fTrackIndices.GetSize(); i++){
+    	if(iTrack == fTrackIndices.GetAt(i)){
+		AliTOFGeometry::GetVolumeIndices(fTOFhits.GetAt(i),detId);
+		GetLTMIndex(detId,indexLTM);
+		UInt_t channelCTTM = indexLTM[1]/2;
+    		eff_MaxiPadLTM_Clusters->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),indexLTM[0],channelCTTM);
+		//cout<<"Track "<<iTrack<<" Trigger pad in LTM "<<indexLTM[0]<<" CTTM "<<channelCTTM<<" Fired = "<<fTOFmask->IsON(indexLTM[0],channelCTTM)<<endl;
+		}
+	}
     
     AliESDtrack *esdTrack = (AliESDtrack*)esdTrackOrig->Clone();
 
@@ -460,6 +520,8 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     if (cv[0]<0 || TMath::Sqrt(cv[0])>fMaxTrackError){hNMaxiPadIn->Fill(-2); continue;}
     if (cv[2]<0 || TMath::Sqrt(cv[2])>fMaxTrackError){hNMaxiPadIn->Fill(-2); continue;}
     if (cv[5]<0 || TMath::Sqrt(cv[5])>fMaxTrackError){hNMaxiPadIn->Fill(-2); continue;}
+    
+    if(esdTrackOrig->GetTOFsignal()>99998){hNMaxiPadIn->Fill(-3); continue;}
 
     //Fine propagation from TOF radius
     Bool_t isin = kFALSE;
@@ -468,6 +530,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
     Double_t pos[3]={0.0,0.0,0.0};
     Float_t posF_In[3]={0.0,0.0,0.0};
     Float_t posF_Out[3]={0.0,0.0,0.0};
+    Double_t locTmp[3]={0.0,0.0,0.0};
     UInt_t nFiredPads = 0;
     UInt_t instep = 0;
     
@@ -486,13 +549,17 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		}
 	
     	trc->GetXYZ(pos);
+	matCurr[sect].MasterToLocal(pos, locTmp); // go to sector local frame, accounting for misaligment
+	matOrig[sect].LocalToMaster(locTmp, pos); // go back to ideal lab frame
+	
 	posF_In[0] = pos[0];
 	posF_In[1] = pos[1];
 	posF_In[2] = pos[2];
 	dist3d[0] = AliTOFGeometry::GetPadDx(posF_In);
      	dist3d[1] = AliTOFGeometry::GetPadDy(posF_In);
      	dist3d[2] = AliTOFGeometry::GetPadDz(posF_In);
-	if(dist3d[0] != -2 && dist3d[1] != -2 && dist3d[2] != -2){
+	
+	if(TMath::Abs(dist3d[0]) < 1.25 && TMath::Abs(dist3d[1]) < 0.1 && TMath::Abs(dist3d[2]) < 1.75){
 		isin= kTRUE;
 		nFiredPads++;
 		hPadDistance->Fill(TMath::Sqrt(dist3d[0]*dist3d[0]+dist3d[1]*dist3d[1]+dist3d[2]*dist3d[2]));
@@ -514,6 +581,9 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 				}
 	
     			trc->GetXYZ(pos);
+			matCurr[sect].MasterToLocal(pos, locTmp); // go to sector local frame, accounting for misaligment
+			matOrig[sect].LocalToMaster(locTmp, pos); // go back to ideal lab frame
+			
 			posF_Out[0] = pos[0];
 			posF_Out[1] = pos[1];
 			posF_Out[2] = pos[2];
@@ -528,8 +598,6 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		}
 	if(isin){
 		isin = kFALSE;
-		Int_t detId[5] = {-1,-1,-1,-1,-1};
-		Int_t indexLTM[2] = {-1,-1};
 		detId[0]=AliTOFGeometry::GetSector(posF_In);
 		detId[1]=AliTOFGeometry::GetPlate(posF_In);
 		detId[2]=AliTOFGeometry::GetStrip(posF_In);
@@ -556,7 +624,7 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    }
 
 		if(!fBadMaxiPadMask[channelCTTM][indexLTM[0]])eff_AverageTrackPt->Fill(fTOFmask->IsON(indexLTM[0],channelCTTM),esdTrack->Pt());
-                if(nFiredPads<2)numTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
+                numTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
 
 		Float_t fPIDTPCMuon = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kMuon);
 		Float_t fPIDTPCElectron = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron);
@@ -568,8 +636,9 @@ void AliAnalysisTaskTOFTrigger::UserExec(Option_t *)
 		    hTrackDistribution_El->Fill(trc->Phi()*TMath::RadToDeg(),trc->Eta());
                     numElectronTracksPerMaxiPad[indexLTM[0]][channelCTTM] += 1;
 		    }
-		if(trigger.Contains("CCUP8-B")){
+		if(trigger.Contains("CCUP8-B") || trigger.Contains("CCUP4-B")){
 			if(!fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()< 2))hNotFiredMaxiPad->Fill(indexLTM[0],channelCTTM);
+			if(fTOFmask->IsON(indexLTM[0],channelCTTM) && (fTOFmask->GetNumberMaxiPadOn()> 6))hExtraFiredMaxiPad->Fill(indexLTM[0],channelCTTM);
 			}
 		}
      	}

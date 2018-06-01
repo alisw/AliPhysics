@@ -76,7 +76,7 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
   task->SetCollisionSystem(0);//colliions system : pp=0, PbPb=1, pPb (Pbp)=2;
   task->SetJetJetMC(kFALSE);
   task->SetMCType("MBMC");
-  task->SetNonLinearityStudy(NonLinStudy,1.012);
+  task->SetNonLinearityStudy(NonLinStudy,1.018);
   task->SetParticle(parname); 
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
@@ -107,6 +107,8 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
 
   //bunch space for TOF cut
   task->SetBunchSpace(bs);//in unit of ns.
+
+  printf("Your particle is %s\n",parname.Data());
 
   if(isMC){
     if(parname=="Pi0"){
@@ -139,12 +141,12 @@ AliAnalysisTaskPHOSSingleSim* AddTaskPHOSSingleSim(
       TObjArray *farray_Eta = new TObjArray(Ncen_Eta-1);
       TF1 *f1weightEta[Ncen_Eta-1];
 
-      const Double_t p0[Ncen_Eta-1] = {2.70};
-      const Double_t p1[Ncen_Eta-1] = {0.132};
-      const Double_t p2[Ncen_Eta-1] = {6.64};
+      const Double_t p0[Ncen_Eta-1] = {0.25};
+      const Double_t p1[Ncen_Eta-1] = {0.218};
+      const Double_t p2[Ncen_Eta-1] = {6.60};
 
       for(Int_t icen=0;icen<Ncen_Eta-1;icen++){
-        f1weightEta[icen] = new TF1(Form("f1weightEta_%d",icen),"0.48 * ([0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.547*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.547*0.547) - 0.547)/([2]*[1]),-[2]))",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
+        f1weightEta[icen] = new TF1(Form("f1weightEta_%d",icen),"[0]/TMath::TwoPi() * ([2]-1)*([2]-2)/([2]*[1]*([2]*[1] + 0.547*([2]-2) )) * TMath::Power(1+(TMath::Sqrt(x*x+0.547*0.547) - 0.547)/([2]*[1]),-[2])",0,100);//1/2pi x 1/Nev x 1/pT x d2N/dpTdy
         f1weightEta[icen]->SetNpx(1000);
         f1weightEta[icen]->SetParameters(p0[icen],p1[icen],p2[icen]);
         farray_Eta->Add(f1weightEta[icen]);

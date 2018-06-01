@@ -2,7 +2,7 @@
   .L $AliPhysics_SRC/PWGPP/TPC/macros/TPCQAWebpage/tpcCalibValidation.C+
   AliDrawStyle::SetDefaults();
   AliDrawStyle::ApplyStyle("figTemplate");
-  InitTPCMCValidation("LHC15o","pass1",3,1);
+  // InitTPCMCValidation("LHC15o","pass1",3,1);
   // InitTPCMCValidation("LHC17*","cpass1_pass1",3,1);
   RegisterDefaultCalibFitters();
   MakeGainFitsMinuit();
@@ -23,6 +23,7 @@
 #include "TGaxis.h"
 #include "TStyle.h"
 #include "AliDrawStyle.h"
+#include "AliPainter.h"
 #include "AliTreePlayer.h"
 #include "AliTMinuitToolkit.h"
 #include "TPaletteAxis.h"
@@ -57,14 +58,50 @@ Bool_t InitTPCMCValidation(TString pPeriod, TString pPass, Int_t verbose,  Int_t
   trendingDraw->SetDefaultStyle();
   gStyle->SetOptTitle(0);
   if (period.Contains("*")) {
-    treeCalib = externalInfo->GetChain("QA.rawTPC", period, pass, TString("QA.TPC;QA.EVS;Logbook"));
+    treeCalib = externalInfo->GetChain("QA.rawTPC", period, pass, TString("QA.TPC;QA.EVS;Logbook;Logbook.detector:TPC:detector==\"TPC\""));
   } else {
-    treeCalib = externalInfo->GetTree("QA.rawTPC", period, pass, TString("QA.TPC;QA.EVS;Logbook"));
+    treeCalib = externalInfo->GetTree("QA.rawTPC", period, pass, TString("QA.TPC;QA.EVS;Logbook;Logbook.detector:TPC:detector==\"TPC\""));
   }
   treeCalib->SetMarkerStyle(21);
   treeCalib->SetMarkerSize(0.4);
   RegisterDefaultCalibFitters();
   AddMetadata();
+}
+
+///
+
+/// Cache selected production trees
+/// List of production from MonaLISA
+/// \param select      - selection mask
+/// \param reject      - rejection mask
+/// \param sourceList  - list of detectors to cache
+/*!
+   Example usage:
+        MakeProductionCache(TPRegexp("LHC17.*"),TPRegexp("cpass0"),"QA.TPC;QA.EVS;QA.TRD;QA.rawTPC;QA.ITS;Logbook;QA.TOF;Logbook.detector");
+*/
+void CacheProduction(TPRegexp select, TPRegexp reject, TString sourceList){
+  AliExternalInfo info;
+  TTree* treeProd = info.GetTreeProdCycle();
+  Int_t entries=treeProd->GetEntries();
+  TObjArray * detectorArray=sourceList.Tokenize(";");
+  for (Int_t i=0; i<entries; i++){
+    treeProd->GetEntry(i);
+    char * productionTag= (char*)treeProd->GetLeaf("Tag")->GetValuePointer();
+    if (select.Match(productionTag)==0) continue;
+    if (reject.Match(productionTag)==1) continue;
+    printf("Caching\t%s\n",productionTag);
+    TString production(productionTag);
+    Int_t pos=production.First('_');
+    if (pos<0) continue;
+    if (pos>production.Length()-4) continue;
+    printf("Caching\t%s\n",productionTag);
+    TString period( production(0,pos));
+    TString pass(production(pos+1, production.Length()-pos-1));
+    printf("Caching\t%s\t%s\t%s\n",productionTag,period.Data(),pass.Data());
+    for (Int_t iDet=0;iDet<detectorArray->GetEntries(); iDet++) {
+      info.Cache(detectorArray->At(iDet)->GetName(), period.Data(), pass.Data());
+    }
+  }
 }
 
 
@@ -170,13 +207,13 @@ void MakeGainFitsMinuit(){
 
   // Draw results
   TCanvas * canvasGainFit = new TCanvas("canvasGaiFit","canvasGaiFit", 1600,1000);
-  AliDrawStyle::DivideTPad(canvasGainFit,"1,1,1,2");
+  AliPainter::DivideTPad(canvasGainFit,"[1,1,1,2]",0);
   canvasGainFit->cd(1);
   TLegend* legend = new TLegend(0.11,0.65,0.5,0.89, "TPC gain");
   legend->SetMargin(0.03); legend->SetBorderSize(0);
   legend->SetEntrySeparation(0.2);
   TMultiGraph *graph = TStatToolkit::MakeMultGraph(treeCalib, "",  "CGainMIP;CGainMIP_Fit4;CGainMIP_Bootstrap4:time:0.003;0.;0","isSelected", "25;21;21","1;2;4", 0,0.6,6,legend);
-  AliDrawStyle::SetMultiGraphTimeAxis(graph,"X");
+  AliPainter::SetMultiGraphTimeAxis(graph,"X");
   TStatToolkit::DrawMultiGraph(graph,"ap");
   legend->Draw();
   //
@@ -184,7 +221,7 @@ void MakeGainFitsMinuit(){
   legend = new TLegend(0.11,0.60,0.3,0.89, "TPC normalized gain");
   legend->SetMargin(0.2); legend->SetBorderSize(0); legend->SetNColumns(4); legend->SetEntrySeparation(0.5);
   graph = TStatToolkit::MakeMultGraph(treeCalib, "",  "CGainMIP_Norm;CGainMIP_FitRatio;co2_Norm;ptrel_Norm:time:0.001;0.001;0.001;0.001","QA.EVS.run==run", "25;25;21;21","1;2;3;4", 0,0.6,3,legend);
-  AliDrawStyle::SetMultiGraphTimeAxis(graph,"X");
+  AliPainter::SetMultiGraphTimeAxis(graph,"X");
   TStatToolkit::DrawMultiGraph(graph,"ap");
   legend->Draw();
   //
@@ -192,7 +229,7 @@ void MakeGainFitsMinuit(){
   legend = new TLegend(0.11,0.60,0.3,0.89, "TPC normalized gain");
   legend->SetMargin(0.1); legend->SetBorderSize(0); //legend->SetNColumns(3);
   graph = TStatToolkit::MakeMultGraph(treeCalib, "",  "ptrel0;attachMIP:time:0.001;0.001","QA.EVS.run==run", "25;21;21","1;2;4", 0,0.75,10,legend);
-  AliDrawStyle::SetMultiGraphTimeAxis(graph,"X");
+  AliPainter::SetMultiGraphTimeAxis(graph,"X");
   TStatToolkit::DrawMultiGraph(graph,"ap");
   legend->Draw();
   //
@@ -207,45 +244,49 @@ void MakeGainFitsMinuit(){
   canvasGainFit->SaveAs(period+"_"+pass+"GainFit.png");
 }
 
-void drawSomething(){
+///
+///
+void makeGaindEdxReport(){
   //
   treeCalib->SetAlias("runCut","QA.TPC.run==run&&QA.EVS.run==run");
   TCanvas *canvasTime=new TCanvas("canvasTime","canvasTime",1400,500);
   TCanvas *canvasDep=new TCanvas("canvasDep","canvasDep",800,500);
   TLegend * legend=0;AddMetadata();
   TMultiGraph *graph=0;
-  //
+  // 1.) Gain/CO2/N2 report
+  // 1.a) time evolution
   canvasTime->cd(0);
   legend = new TLegend(0.11,0.60,0.3,0.89, "TPC normalized gain");legend->SetNColumns(3); legend->SetEntrySeparation(0.5); legend->SetBorderSize(0);
   graph = TStatToolkit::MakeMultGraph(treeCalib, "",  "CGainMIP_Norm;co2_Norm;n2_Norm:time","QA.EVS.run==run&&CGainMIP>0", "25;21;21","1;2;4", 0,0.6,6,legend);
-  AliDrawStyle::SetMultiGraphTimeAxis(graph,"X");
+  AliPainter::SetMultiGraphTimeAxis(graph,"X");
   TStatToolkit::DrawMultiGraph(graph,"ap");legend->Draw();
   gPad->SaveAs("trendingGain_CO2_N2.png");
+  // 1.b) dependence (for different N2 concentration -different slope (2017)
   canvasDep->cd(0);
   treeCalib->Draw("CGainMIP_Norm:co2_Norm:n2_Norm","QA.TPC.run==run&&CGainMIP_Norm>0.5&&abs(n2_Norm-1)<0.03","colz");
   TStatToolkit::AdaptHistoMetadata(treeCalib,0,"colz");
   gPad->SaveAs("gain_VsCO2_N2.png");
-  //
+  // 2.) Vdrift/CO2/N2
+  // 2.a) time evolution
   canvasTime->cd(0);
   legend = new TLegend(0.11,0.60,0.3,0.89, "TPC vdrift correction");legend->SetNColumns(3); legend->SetEntrySeparation(0.5); legend->SetBorderSize(0);
   graph = TStatToolkit::MakeMultGraph(treeCalib, "",  "1+vdriftITS;co2_Norm;n2_Norm:time","QA.EVS.run==run&&CGainMIP>0.5", "25;21;21","1;2;4", 0,0.6,6,legend);
-  AliDrawStyle::SetMultiGraphTimeAxis(graph,"X");
+  AliPainter::SetMultiGraphTimeAxis(graph,"X");
   TStatToolkit::DrawMultiGraph(graph,"ap"); legend->Draw();
   gPad->SaveAs("trendingDriftCorr_CO2_N2.png");
+  // 2.b) dependence (for different N2 concentration -different slope (2017)
   canvasDep->cd(0);
   treeCalib->Draw("vdriftITS:co2_Norm:n2_Norm","QA.TPC.run==run&&CGainMIP_Norm>0.5&&abs(n2_Norm-1)<0.03","colz");
   TStatToolkit::AdaptHistoMetadata(treeCalib,0,"colz");
   gPad->SaveAs("vdriftCorr_VsCO2_N2.png");
-
   //
   canvasTime->cd(0);
   legend = new TLegend(0.11,0.60,0.3,0.89, "TPC PID");legend->SetNColumns(1); legend->SetEntrySeparation(0.5); legend->SetBorderSize(0);
   graph = TStatToolkit::MakeMultGraph(treeCalib, "",  "(meanMIPele/meanMIP)/1.6;(resolutionMIP/resolutionMIPele)/1.2;co2_Norm;CGainMIP_Norm:time","runCut&&CGainMIP>0&&interactionRate<300000", "25;25;21;21","1;2;4;6", 0,0.6,3,legend);
-  AliDrawStyle::SetMultiGraphTimeAxis(graph,"X");
+  AliPainter::SetMultiGraphTimeAxis(graph,"X");
   TStatToolkit::DrawMultiGraph(graph,"ap");legend->Draw();
   gPad->SaveAs("trendingPIDSeparation.png");
-
-
+  //
   canvasDep->cd(0);
   treeCalib->Draw("resolutionMIP/resolutionMIPele:CGainMIP_Norm:interactionRate","runCut&&meanMIP>40&&CGainMIP_Norm>0.5&&interactionRate<300000&&resolutionMIP/resolutionMIPele>1","colz");
   TStatToolkit::AdaptHistoMetadata(treeCalib,0,"colz");
@@ -264,4 +305,23 @@ void drawSomething(){
 
 }
 
+/// Logbook data volume studies
+void FitDataVolume(TTree * treeLogbook) {
+  // treeLogbook = externalInfo->GetChain("Logbook", "LHC17*", "cpass1_pass1", TString("QA.TPC;QA.EVS;Logbook;Logbook.detector:TPC:detector==\"TPC\";Logbook"));
+  // AliTMinuitToolkit::RegisterDefaultFitters();
+  treeLogbook->SetMarkerSize(0.5);treeLogbook->SetMarkerStyle(25);
+  gStyle->SetStatX(0.88); gStyle->SetStatY(0.88);
+  Int_t entries= treeLogbook->Draw("(bytesInjectedPhysics/eventCountPhysics):QA.EVS.interactionRate:run","Logbook.detector_TPC.run==run&&QA.EVS.run==run&&QA.EVS.interactionRate>10","colz");
+  TGraphErrors *gr = new TGraphErrors(entries, treeLogbook->GetV2(), treeLogbook->GetV1());
+  AliTMinuitToolkit::Fit(gr,"pol1R","bootstrap50", "","funOption(2,2,2)");  // fit robust linear - bootstrap20
+  TStatToolkit::AdaptHistoMetadata(treeLogbook,0,"colz");
+  gr->Draw("p");
+  //
+  treeLogbook->SetAlias("sizeFitRatio","(bytesInjectedPhysics/eventCountPhysics)/(400000+QA.EVS.interactionRate*40.69)"); // TODO get from Fit
+  treeLogbook->Draw("sizeFitRatio:time","Logbook.detector_TPC.run==run&&QA.EVS.run==run&&QA.EVS.interactionRate>10","",10000);
+  treeLogbook->GetHistogram()->GetXaxis()->SetTimeFormat("%d/%m");
+  TMultiGraph * graph = TStatToolkit::MakeMultGraph(treeLogbook, "",  "sizeFitRatio:time","Logbook.detector_TPC.run==run&&QA.EVS.run==run&&QA.EVS.interactionRate>10", "25;25;21;21","1;2;4;6", 0,0.6,3,0);
+  AliPainter::SetMultiGraphTimeAxis(graph,"X");
+  TStatToolkit::DrawMultiGraph(graph,"ap");
 
+}

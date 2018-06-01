@@ -10,6 +10,7 @@
 #include <TH3F.h>
 #include <THnSparse.h>
 #include <TList.h>
+#include <TRandom.h>
 #include <TLorentzVector.h>
 
 //
@@ -142,8 +143,10 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
+  fHistBGfrac(0),
   fPi0Weight(0),
   fEtaWeight(0),
+  generator(0),
   fJetsCont(0),
   fJetsContPart(0),
   fTracksCont(0),
@@ -256,8 +259,10 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
+  fHistBGfrac(0),
   fPi0Weight(0),
   fEtaWeight(0),
+  generator(0),
   fJetsCont(0),
   fJetsContPart(0),
   fTracksCont(0),
@@ -568,6 +573,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",1800,-0.9,0.9,630,0,6.3);
   fOutput->Add(fEMCClsEtaPhi);
 
+  fHistBGfrac = new TH1F("fHistBGfrac", "BG frac; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
+  fOutput->Add(fHistBGfrac);
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
   // pi0 & eta weight
@@ -575,6 +583,8 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
    fPi0Weight = new TF1("fPi0Weight","1.245*((7.331-1.)*(7.331-2.))/(7.331*0.1718*(7.331*0.1718+0.135*(7.331-2.)))*pow(1.+(sqrt(0.135*0.135+x*x)-0.135)/(7.331*0.1718),-7.331)",0,40);//p-Pb pi0 AllCent
   
    fEtaWeight = new TF1("fEtaWeight","0.48*((((7.331-1.)*(7.331-2.))/(7.331*0.1718*(7.331*0.1718+0.13498*(7.331-2.)))*pow(1.+(sqrt(0.13498*0.13498+25)-0.13498)/(7.331*0.1718),-7.331)) / (((7.331-1.)*(7.331-2.))/(7.331*0.1718*(7.331*0.1718+0.13498*(7.331-2.)))*pow(1.+(sqrt(0.54751*0.54751+25)-0.13498)/(7.331*0.1718),-7.331)))*(x/sqrt(x*x + 0.54751*0.54751 - 0.13498*0.13498))*1.245*((7.331-1.)*(7.331-2.))/(7.331*0.1718*(7.331*0.1718+0.13498*(7.331-2.)))*pow(1.+(sqrt(0.54751*0.54751+x*x)-0.13498)/(7.331*0.1718),-7.331)",0,40);//p-Pb eta0 from mT_scaling AllCent
+
+   generator = new TRandom();
 
 }
 
@@ -1265,6 +1275,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                if(idbHFEj)cout << "iTagHFjet = " << iTagHFjet << endl;
 	       //Float_t corrPt = jet->Pt() - fJetsCont->GetRhoVal() * jet->Area();
 	       Float_t pTeJet = jet->Pt();
+	       Float_t Phi_eJet = jet->Phi();
+	       Float_t Eta_eJet = jet->Eta();
+	       Float_t Area_eJet = jet->Area();
 	       Float_t pTeJetBG = rho * jet->Area();
                Float_t corrPt = pTeJet - pTeJetBG;
                Float_t efrac = pt/corrPt;
@@ -1284,7 +1297,11 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                     fHistIncjetBG->Fill(pt,pTeJetBG); 
                     fHistIncjet->Fill(pt,corrPt);
                     fHistIncjetFrac->Fill(pt,efrac);
-                   
+                    /*
+                    Double_t pTrand = CalRandomCone(Phi_eJet,Eta_eJet,Area_eJet);
+                    Double_t BGfrac = pTrand - pTeJetBG;
+                    fHistBGfrac->Fill(BGfrac);
+                    */
                     if(!fFlagULS)fHistHFjet->Fill(pt,corrPt);
                     if(fFlagULS) fHistULSjet->Fill(pt,corrPt);
                     if(fFlagLS)fHistLSjet->Fill(pt,corrPt);
@@ -1441,6 +1458,53 @@ void AliAnalysisHFjetTagHFE::SelectPhotonicElectron(Int_t itrack, AliVTrack *tra
     }
     fFlagPhotonicElec = flagPhotonicElec;
     fFlagConvinatElec = flagConvinatElec;
+}
+
+Double_t AliAnalysisHFjetTagHFE::CalRandomCone(Double_t HFjetPhi, Double_t HFjetEta, Double_t HFjetArea)
+{
+  Double_t dR = 0.0;
+
+  Double_t maxphi = 2.0*acos(-1.0);
+  Double_t PhiRand = generator->Uniform(0.0,maxphi);
+  Double_t EtaRand = generator->Uniform(-0.9,0.9);
+
+  do{  
+
+     Double_t dPhi_tmp = HFjetPhi - PhiRand;
+     Double_t dPhi = atan2(sin(dPhi_tmp),cos(dPhi_tmp));
+     Double_t dEta = HFjetEta - EtaRand;
+     dR = sqrt(pow(dPhi,2)+pow(dEta,2));
+
+    }while(dR<1.0);
+
+
+   Int_t ntracks = -999; 
+   ntracks = ftrack->GetEntries();
+   Double_t pTrand = 0.0;
+
+   AliVParticle* trackRcone = 0x0;
+
+   for (Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
+  
+        trackRcone = dynamic_cast<AliVTrack*>(ftrack->At(jtrack)); //take tracks from Tender list
+        AliAODTrack *trackR = dynamic_cast<AliAODTrack*>(trackRcone);
+
+        Double_t EtaR = trackR->Eta();
+        Double_t PhiR = trackR->Phi();
+
+        Double_t dPhiR_tmp = PhiRand - PhiR;
+        Double_t dPhiR = atan2(sin(dPhiR_tmp),cos(dPhiR_tmp));
+        Double_t dEtaR = EtaRand - EtaR;
+        Double_t dRcone = sqrt(pow(dPhiR,2)+pow(dEtaR,2));
+
+        if(dRcone<HFjetArea)
+          {
+           pTrand += trackR->Pt();
+          } 
+
+       }
+ return pTrand;
+
 }
 
 //Bool_t isHeavyFlavour(int Mompdg)

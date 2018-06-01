@@ -139,6 +139,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1():
 	hESDPi0MotherInvMassPt(NULL),
 	hESDPi0MotherDiffInvMassPt(NULL),
 	hESDPi0MotherDiffLimInvMassPt(NULL),
+	hESDEposEnegInvMassPi0MotherPt(NULL),
 	hESDMotherInvMassOpeningAngleGammaElectron(NULL),
 	sESDMotherInvMassPtZM(NULL),
 	hESDMotherBackInvMassPt(NULL),
@@ -359,6 +360,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
 	hESDPi0MotherInvMassPt(NULL),
 	hESDPi0MotherDiffInvMassPt(NULL),
 	hESDPi0MotherDiffLimInvMassPt(NULL),
+	hESDEposEnegInvMassPi0MotherPt(NULL),
 	hESDMotherInvMassOpeningAngleGammaElectron(NULL),
 	sESDMotherInvMassPtZM(NULL),
 	hESDMotherBackInvMassPt(NULL),
@@ -725,6 +727,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		hESDPi0MotherInvMassPt 				 	= new TH2F*[fnCuts];
 		hESDPi0MotherDiffInvMassPt				= new TH2F*[fnCuts];
 		hESDPi0MotherDiffLimInvMassPt				= new TH2F*[fnCuts];
+                hESDEposEnegInvMassPi0MotherPt                          = new TH2F*[fnCuts];
 	}
 	hESDMotherBackInvMassPt	= new TH2F*[fnCuts];
 
@@ -1014,12 +1017,14 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 											
 		
 		if( fDoChicAnalysis) {
-			hESDPi0MotherInvMassPt[iCut] = new TH2F("ESD_Pi0Mother_InvMass_Pt","ESD_Pi0Mother_InvMass_Pt",4000,0,4,250,0,25);
+			hESDPi0MotherInvMassPt[iCut] = new TH2F("ESD_Pi0Mother_InvMass_Pt","ESD_Pi0Mother_InvMass_Pt",4000,0,4,200,0,20);
 			fESDList[iCut]->Add(hESDPi0MotherInvMassPt[iCut]);
-			hESDPi0MotherDiffInvMassPt[iCut] = new TH2F("ESD_Pi0Mother_DiffInvMass_Pt","ESD_Pi0Mother_DiffInvMass_Pt",2000,0,2,250,0,25);
+			hESDPi0MotherDiffInvMassPt[iCut] = new TH2F("ESD_Pi0Mother_DiffInvMass_Pt","ESD_Pi0Mother_DiffInvMass_Pt",2000,0,2,200,0,20);
 			fESDList[iCut]->Add(hESDPi0MotherDiffInvMassPt[iCut]);
-			hESDPi0MotherDiffLimInvMassPt[iCut] = new TH2F("ESD_Pi0Mother_DiffLimInvMass_Pt","ESD_Pi0Mother_DiffLimInvMass_Pt",2000,0,2,250,0,25);
+			hESDPi0MotherDiffLimInvMassPt[iCut] = new TH2F("ESD_Pi0Mother_DiffLimInvMass_Pt","ESD_Pi0Mother_DiffLimInvMass_Pt",2000,0,2,200,0,20);
 			fESDList[iCut]->Add(hESDPi0MotherDiffLimInvMassPt[iCut]);
+                        hESDEposEnegInvMassPi0MotherPt[iCut] = new TH2F("ESD_EposEnegInvMass_Pi0MotherPt","ESD_EposEnegInvMass_Pi0MotherPt",4000,0,4,200,0,20);
+			fESDList[iCut]->Add(hESDEposEnegInvMassPi0MotherPt[iCut]);
 		}
 
 		hESDMotherBackInvMassPt[iCut] = new TH2F("ESD_DalitzBackground_InvMass_Pt","ESD_DalitzBackground_InvMass_Pt",800,0,0.8,250,0,25);
@@ -2511,7 +2516,9 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 				
 					if( fDoChicAnalysis) {
 					
-						hESDPi0MotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());						
+						hESDPi0MotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+                                                hESDEposEnegInvMassPi0MotherPt[fiCut]->Fill(Vgamma->M(),pi0cand->Pt());
+                                                
 						Double_t diffMass = pi0cand->M() - Vgamma->M();
 						hESDPi0MotherDiffInvMassPt[fiCut]->Fill( diffMass , pi0cand->Pt() );
 				

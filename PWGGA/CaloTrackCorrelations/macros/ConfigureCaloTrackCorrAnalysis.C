@@ -29,6 +29,7 @@
 #include <TROOT.h>
 
 #include "AliAnaPhoton.h"
+#include "AliAnaPi0.h"
 #include "AliAnaPi0EbE.h"
 #include "AliHistogramRanges.h"
 #include "AliAnaParticleIsolation.h"
@@ -518,6 +519,124 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   
   return  ana;
 }
+
+
+///
+/// Configure the task doing the 2 cluster invariant mass analysis
+/// from selected clusters by AliAnaPhoton
+///
+/// \param col : A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param bothCalo : Activate combination of photon pairs from different detectors (PHOS+EMCal)
+/// \param year : The year the data was taken, used to configure some histograms
+/// \param mixOn : bool to activate mixing analysis
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+/// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
+///
+AliAnaPi0* ConfigureInvariantMassAnalysis
+(TString col,           Bool_t simulation,
+ TString calorimeter,   Bool_t bothCalo,   
+ Int_t   year,          Bool_t mixOn,
+ Bool_t  printSettings, Int_t  debug, 
+ TString histoString )
+{
+  AliAnaPi0 *ana = new AliAnaPi0();
+  
+  ana->SetDebug(debug);
+  
+  // Input delta AOD settings
+  ana->SetInputAODName(Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data()));
+
+  if(bothCalo)
+  {
+    ana->SwitchOnPairWithOtherDetector();
+    
+    TString otherDetector = Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data());
+    
+    if ( calorimeter == "EMCAL" ) 
+      otherDetector.ReplaceAll("PhotonTrigger_EMCAL","PhotonTrigger_PHOS");
+    else    
+      otherDetector.ReplaceAll("PhotonTrigger_PHOS","PhotonTrigger_EMCAL");
+    
+    ana->SetOtherDetectorInputName(otherDetector);
+  }
+  
+  // Calorimeter settings
+  ana->SetCalorimeter(calorimeter);
+  
+  // Acceptance plots
+  //  ana->SwitchOnFiducialCut(); // Needed to fill acceptance plots with predefined calorimeter acceptances
+  //  ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 100, 180) ; 
+  //  ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);
+  
+  ana->SwitchOffFiducialCut();
+  ana->SwitchOnRealCaloAcceptance();
+  
+  // settings for pp collision mixing
+  if(mixOn) ana->SwitchOnOwnMix();
+  else      ana->SwitchOffOwnMix();
+  
+  // Cuts
+  if (calorimeter == "EMCAL" ) 
+  {
+    if(year < 2014) ana->SetPairTimeCut(50);
+    else            ana->SetPairTimeCut(200); // REMEMBER to remove this when time calib is on
+  }
+  
+  ana->SetNPIDBits(1);
+  ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
+                        // In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.
+  
+  if     (col == "pp"  )
+  {
+    ana->SetNCentrBin(1);
+    ana->SwitchOffTrackMultBins();
+    ana->SetNZvertBin(10);
+    ana->SetNRPBin(1);
+    ana->SetNMaxEvMix(100);
+    ana->SetMinPt(0.7);
+  }
+  else if(col == "PbPb")
+  {
+    ana->SetNCentrBin(10);
+    ana->SetNZvertBin(10);
+    ana->SetNRPBin(4);
+    ana->SetNMaxEvMix(10);
+    ana->SetMinPt(1.5);
+  }
+  else if(col =="pPb")
+  {
+    ana->SetNCentrBin(1);
+    ana->SetNZvertBin(10);
+    ana->SetNRPBin(4);
+    ana->SetNMaxEvMix(100);
+    ana->SetMinPt(0.7);
+  }
+  
+  // Angle cut, avoid pairs with too large angle
+  ana->SwitchOnAngleSelection(); 
+  ana->SetAngleMaxCut(TMath::DegToRad()*80.); // EMCal: 4 SM in phi, 2 full SMs in eta
+  ana->SetAngleCut(0.017); // Minimum angle open, cell size
+  
+  if ( kAnaCutsString.Contains("PerSM") ) //&& !bothCalo ) 
+    ana->SwitchOnSMCombinations();
+  
+  ana->SwitchOffMultipleCutAnalysis();
+  ana->SwitchOnFillAngleHisto();
+  ana->SwitchOnFillOriginHisto(); // MC
+  
+  // Set Histograms name tag, bins and ranges
+  if(!bothCalo) ana->AddToHistogramsName(Form("AnaPi0_"));
+  else          ana->AddToHistogramsName(Form("AnaPi0_2Det_"));
+  
+  SetAnalysisCommonParameters(ana,histoString,calorimeter,year,col,simulation,printSettings,debug); // see method below
+  if(printSettings) ana->Print("");
+  
+  return ana;
+}
+
 
 ///
 /// Configure the task doing the trigger particle isolation
@@ -1291,6 +1410,11 @@ void ConfigureCaloTrackCorrAnalysis
   {
     anaList->AddAt(ConfigurePhotonAnalysis
                    (col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); // Photon cluster selection
+    
+    if ( analysisString.Contains("InvMass") )
+      anaList->AddAt(ConfigureInvariantMassAnalysis
+                     (col,simulation,calorimeter,/*bothCalo*/kFALSE,
+                      year,/*mix*/kTRUE,printSettings,debug,histoString), n++);
     
     if ( analysisString.Contains("DecayPi0") )
     {

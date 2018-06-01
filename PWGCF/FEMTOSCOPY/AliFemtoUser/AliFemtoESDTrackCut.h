@@ -9,6 +9,8 @@
 #include "AliESDtrackCuts.h" //for enum with ITS layers
 #include "AliFemtoTrackCut.h"
 
+#include <utility>
+
 
 /// \class AliFemtoESDTrackCut
 /// \brief A basic track cut that used information from ALICE ESD to accept or reject the track.
@@ -67,6 +69,49 @@ public:
   void SetMomRangeTPCpidIs(const float& minp, const float& maxp);
   void SetMomRangeITSpidIs(const float& minp, const float& maxp);
   void SetElectronRejection(Bool_t);
+
+  int GetCharge() const { return fCharge; }
+  std::pair<float, float> GetPt() const { return std::make_pair(fPt[0], fPt[1]); }
+  std::pair<float, float> GetRapidity() const { return std::make_pair(fRapidity[0], fRapidity[1]); }
+  std::pair<float, float> GetEta() const { return std::make_pair(fEta[0], fEta[1]); }
+  std::pair<float, float> GetProbElectron() const { return std::make_pair(fPidProbElectron[0], fPidProbElectron[1]); }
+  std::pair<float, float> GetProbPion() const { return std::make_pair(fPidProbPion[0], fPidProbPion[1]); }
+  std::pair<float, float> GetProbKaon() const { return std::make_pair(fPidProbKaon[0], fPidProbKaon[1]); }
+  std::pair<float, float> GetProbProton() const { return std::make_pair(fPidProbProton[0], fPidProbProton[1]); }
+  std::pair<float, float> GetProbMuon() const { return std::make_pair(fPidProbMuon[0], fPidProbMuon[1]); }
+  bool GetLabel() const { return fLabel; }
+  long GetStatus() const { return fStatus; }
+  int GetPIDmethod() const { return fPIDMethod; }
+
+  int GetMinFindableClustersTPC() const { return fminTPCclsF; }
+  int GetMinNClustersTPC() const { return fminTPCncls; }
+  int GetMinNClustersITS() const { return fminITScls; }
+
+  float GetMaxITSchiNdof() const { return fMaxITSchiNdof; }
+  float GetMaxTPCchiNdof() const { return fMaxTPCchiNdof; }
+  float GetMaxSigmaToVertex() const { return fMaxSigmaToVertex; }
+
+  /// Use TPC & TOF information
+  bool GetDualNsigma() const { return fNsigmaTPCTOF; }
+  bool GetNsigmaTPConly() const { return fNsigmaTPConly; }
+  double GetNsigma() const { return fNsigma; }
+  bool GetRemoveKinks() const { return fRemoveKinks; }
+  bool GetRemoveITSFake() const { return fRemoveITSFake; }
+  int GetMostProbable() const { return fMostProbable; }
+
+  float GetMinImpactXY() const { return fMinImpactXY; }
+  float GetMaxImpactXY() const { return fMaxImpactXY; }
+  float GetMaxImpactZ() const { return fMaxImpactZ; }
+
+  float GetMaxImpactXyPtOff() const { return fMaxImpactXYPtOff; }   ///< Max XY DCA Pt dependent offset
+  float GetMaxImpactXYPtNrm() const { return fMaxImpactXYPtNrm; }  ///< Max XY DCA Pt dependent normalization
+  float GetMaxImpactXYPtPow() const { return fMaxImpactXYPtPow; }  ///< Max XY DCA Pt dependent power
+
+  std::pair<float, float> GetTOFpidMomentumRange() const { return std::make_pair(fMinPforTOFpid, fMaxPforTOFpid); }
+  std::pair<float, float> GetTPCpidMomentumRange() const { return std::make_pair(fMinPforTPCpid, fMaxPforTPCpid); }
+  std::pair<float, float> GetITSpidMomentumRange() const { return std::make_pair(fMinPforITSpid, fMaxPforITSpid); }
+
+  bool GetElectronRejection() const { return fElectronRejection; }
 
 protected:   // here are the quantities I want to cut on...
 

@@ -42,10 +42,6 @@ class CEPRawTrackBuffer : public TObject
     Double_t        fTrkPtOnEMCal;
     Double_t        fTrkPOnEMCal;    
 
-    // to double check if the same tracks have been saved
-    // we save a variable that is also stored in the trackbuffer
-    Double_t        fEta;
-
   public:
                     CEPRawTrackBuffer();
     virtual         ~CEPRawTrackBuffer() {};
@@ -83,10 +79,6 @@ class CEPRawTrackBuffer : public TObject
     void            SetTrkPtOnEMC  (Double_t ptOnEMC)   { fTrkPtOnEMCal  = ptOnEMC;  }
     void            SetTrkPOnEMC   (Double_t POnEMC)    { fTrkPOnEMCal   = POnEMC;   }
 
-    // comparison setter
-    // this variable is used to check the consistency with the CEPTrackBuffer
-    void            SetEta(Double_t eta) { fEta = eta; }
-
     /// Setting the setters
     void            SetTrackVariables(AliESDtrack* track, AliESDVertex* vertex);
     
@@ -121,9 +113,8 @@ class CEPRawTrackBuffer : public TObject
     Double_t        GetTrkPtOnEMC()   const { return fTrkPtOnEMCal;  }
     Double_t        GetTrkPOnEMC()    const { return fTrkPOnEMCal;   }
    
-    Double_t        GetEta() const { return fEta; }
 
-    ClassDef(CEPRawTrackBuffer,1);     // CEP raw track buffer
+    ClassDef(CEPRawTrackBuffer,1)     // CEP raw track buffer
 
 };
 

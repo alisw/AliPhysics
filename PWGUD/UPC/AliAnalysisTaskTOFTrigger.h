@@ -10,6 +10,7 @@ class AliTOFTriggerMask;
 class TEfficiency;
 class TH2F;
 class AliESDtrackCuts;
+class TGeoMatrix;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -44,6 +45,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TEfficiency *eff_AverageTrackPt;		//!
   TEfficiency *eff_MaxiPadLTM_Around;		//!
   TEfficiency *eff_MaxiPadLTM_OnlyAround;	//!
+  TEfficiency *eff_MaxiPadLTM_Clusters;		//!
   TH2F *hTrackDistributionLTM;			//!
   TH2F *hTrackDistribution_Mu;			//!
   TH2F *hTrackDistribution_El;			//!
@@ -51,6 +53,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TH2F *hFiredMaxiPad;				//!
   TH2F *hFiredMaxiPadOnlyAround;		//!
   TH2F *hNotFiredMaxiPad;			//!
+  TH2F *hExtraFiredMaxiPad;			//!
   TH2F *hTrackPadCorrPhi;			//!
   TH2F *hTrackPadCorrEta;			//!
   TH2F *hNoiseMaxiPad;				//!
@@ -72,6 +75,8 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
 
   Bool_t fIsPass1;
   Bool_t fGeomLoaded;
+  TGeoHMatrix matOrig[18]; 
+  TGeoHMatrix matCurr[18];
   Float_t fMaxPt;
   Float_t fMinPt;
   Int_t fMaxMulti;
@@ -87,7 +92,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
 
-  ClassDef(AliAnalysisTaskTOFTrigger, 12);
+  ClassDef(AliAnalysisTaskTOFTrigger, 15);
 };
 
 #endif

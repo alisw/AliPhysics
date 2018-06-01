@@ -20,17 +20,16 @@ AliAnalysisTask *AddTaskReducedTreeNuclei (TString prod="LHC16q")  {
    if(collSystem==3) task->SelectCollisionCandidates(AliVEvent::kMB+AliVEvent::kINT7+AliVEvent::kHighMultSPD+AliVEvent::kHighMultV0);
    mgr->AddTask(task);
 
-   TString Filename = "ReducedTreeNuclei.root"; //mgr->GetCommonFileName();
+   TString Filename = mgr->GetCommonFileName();
    AliAnalysisDataContainer *cQA = mgr->CreateContainer("QAHistograms", TList::Class(),AliAnalysisManager::kOutputContainer,Filename.Data());
-   AliAnalysisDataContainer *cOutput = mgr->CreateContainer("Results", TList::Class(),AliAnalysisManager::kOutputContainer,Filename.Data());
-
    Filename	+= ":Trees";
+   AliAnalysisDataContainer *cTreeEventSelection = mgr->CreateContainer("TreeEventSelection", TTree::Class(),AliAnalysisManager::kOutputContainer,Filename.Data());
    AliAnalysisDataContainer *cHeliumTree = mgr->CreateContainer("reducedTree_Helium", TTree::Class(),AliAnalysisManager::kOutputContainer,Filename.Data());
    AliAnalysisDataContainer *cHypertritonTree = mgr->CreateContainer("reducedTree_HyperTriton", TTree::Class(),AliAnalysisManager::kOutputContainer,Filename.Data());
    mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
 
    mgr->ConnectOutput(task, 1, cQA);
-	mgr->ConnectOutput(task, 2, cOutput);
+	mgr->ConnectOutput(task, 2, cTreeEventSelection);
    mgr->ConnectOutput(task, 3, cHeliumTree);
    mgr->ConnectOutput(task, 4, cHypertritonTree);
 

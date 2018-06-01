@@ -20,6 +20,7 @@ class TH3;
 class THnSparse;
 class AliPHOSGeometry;
 
+#include "AliEventCuts.h"
 #include "THistManager.h"
 #include "AliTLorentzVector.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -63,15 +64,31 @@ public:
   AliAnalysisTaskPWGJEQA();
   AliAnalysisTaskPWGJEQA(const char *name);
   virtual ~AliAnalysisTaskPWGJEQA();
+
+  static AliAnalysisTaskPWGJEQA* AddTaskPWGJEQA(
+                                         const char* ntracks            = "usedefault",
+                                         const char* nclusters          = "usedefault",
+                                         const char* ncells             = "usedefault",
+                                         const char *nGenLev            = "mcparticles",
+                                         Bool_t      doTrackQA          = kTRUE,
+                                         Bool_t      doCaloQA           = kTRUE,
+                                         Bool_t      doJetQA            = kTRUE,
+                                         Bool_t      doEventQA          = kTRUE,
+                                         Double_t    trackPtCut         = 0.15,
+                                         Double_t    clusECut           = 0.30,
+                                         const char* suffix             = ""
+   	   	                                       );
   
   void                        UserCreateOutputObjects();
 
+  void                        SetUseAliEventCuts(Bool_t b)                         { fUseAliEventCuts    = b          ; }
+  void                        SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input      ; }
   void                        SetCellEnergyCut(Float_t cut)                        { fCellEnergyCut      = cut        ; }
   void                        SetGeneratorLevelName(const char* name)              { fGeneratorLevelName = name       ; }
-  void                        SetDetectorLevelName(const char* name)               { fDetectorLevelName = name        ; }
+  void                        SetDetectorLevelName(const char* name)               { fDetectorLevelName  = name       ; }
   
   void                        SetDoTrackQA(Bool_t b) { fDoTrackQA = b; }
-  void                        SetDoCaloQA(Bool_t b) { fDoCaloQA = b; }
+  void                        SetDoCaloQA(Bool_t b)  { fDoCaloQA  = b; }
   void                        SetDoJetQA(Bool_t b)   { fDoJetQA   = b; }
   void                        SetDoEventQA(Bool_t b) { fDoEventQA = b; }
   void                        SetRejectOutlierEvents(Bool_t b) {fRejectOutlierEvents = b; }
@@ -80,6 +97,7 @@ public:
 protected:
   
   void                        ExecOnce()                                                    ;
+  Bool_t                      IsEventSelected()                                             ;
   Bool_t                      FillHistograms()                                              ;
   Bool_t                      RetrieveEventObjects()                                        ;
   Bool_t                      UserNotify()                                                  ;
@@ -105,7 +123,12 @@ protected:
   void                        FillGeneratorLevelTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt, Byte_t findable);
   void                        FillMatchedParticlesTHnSparse(Double_t cent, Double_t partEta, Double_t partPhi, Double_t partPt,
                                                             Double_t trackEta, Double_t trackPhi, Double_t trackPt, Byte_t trackType);
-  
+  // Event selection
+  Bool_t                      fUseAliEventCuts;          ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
+  AliEventCuts                fEventCuts;                ///< event selection utility
+  TList                      *fEventCutList;             //!<! Output list for event cut histograms
+  Bool_t                      fUseManualEventCuts;       ///< Flag to use manual event cuts
+
   Float_t                     fCellEnergyCut;            ///< Energy cell cut
   Float_t                     fMaxPt;                    ///< Histogram pt limit
   Int_t                       fNTotClusters[3];          //!<!Total number of accepted clusters in current event (DCal/EMCal)

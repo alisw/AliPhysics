@@ -29,7 +29,7 @@ AliJIaaHistograms::AliJIaaHistograms(AliJCard* cardP) :
 	//fhDEtaNear(),
 	//fhDEtaNearM(),
 	fhDphiDetaPta(),
-	fhResonanceCut(),
+	//fhResonanceCut(),
 	fhIphiTrigg(),
 	fhIetaTrigg(),
 	fhIphiAssoc(),
@@ -65,7 +65,7 @@ AliJIaaHistograms::AliJIaaHistograms(const AliJIaaHistograms& obj) :
 	//fhDEtaNear(obj.fhDEtaNear),
 	//fhDEtaNearM(obj.fhDEtaNearM),
 	fhDphiDetaPta(obj.fhDphiDetaPta),
-	fhResonanceCut(obj.fhResonanceCut),
+	//fhResonanceCut(obj.fhResonanceCut),
 	fhIphiTrigg(obj.fhIphiTrigg),
 	fhIetaTrigg(obj.fhIetaTrigg),
 	fhIphiAssoc(obj.fhIphiAssoc),
@@ -182,9 +182,9 @@ void AliJIaaHistograms::CreateCorrelationHistograms()
 		<< TH2D( "hDphiDetaPta", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -0.5*kJPi, 1.5*kJPi)
 		<<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
 
-	fhResonanceCut
-		<< TH2D( "hResonanceCut", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -0.5*kJPi, 1.5*kJPi)
-		<<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
+	//fhResonanceCut
+	//	<< TH2D( "hResonanceCut", "", 160, -2*fmaxEtaRange, 2*fmaxEtaRange, 80, -0.5*kJPi, 1.5*kJPi)
+	//	<<  fTypBin <<  fCentBin << fVtxBin << fPTtBin << fPTaBin  << "END";
 
 	delete [] uEBinBorders;
 }

@@ -1,5 +1,5 @@
 /************************************************************************************
- * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * Copyright (C) 2018, Copyright Holders of the ALICE Collaboration                 *
  * All rights reserved.                                                             *
  *                                                                                  *
  * Redistribution and use in source and binary forms, with or without               *
@@ -24,65 +24,33 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
-#ifndef __ALIANALYSISTASKMEMCALCLUSTERNOISETRIGGERS_H__
-#define __ALIANALYSISTASKMEMCALCLUSTERNOISETRIGGERS_H__
+#ifndef ALIANALYSISTASKEMCALTRIGGERCORRELATION_H
+#define ALIANALYSISTASKEMCALTRIGGERCORRELATION_H
 
-#include <vector>
 #include "AliAnalysisTaskEmcalTriggerBase.h"
-#include <TArrayI.h>
-
-class AliEMCALTriggerPatchInfo;
 
 namespace EMCalTriggerPtAnalysis {
 
-class AliAnalysisTaskEmcalClusterNoiseTriggers : public AliAnalysisTaskEmcalTriggerBase {
+class AliAnalysisTaskEmcalTriggerCorrelation : public AliAnalysisTaskEmcalTriggerBase {
 public:
-  enum ETriggerThreshold_t {
-    kThresholdEG1 = 0,
-    kThresholdEG2,
-    kThresholdDG1,
-    kThresholdDG2,
-    kThresholdEJ1,
-    kThresholdEJ2,
-    kThresholdDJ1,
-    kThresholdDJ2
-  };
-  enum EPatchType_t {
-    kEGApatches,
-    kDGApatches,
-    kEJEpatches,
-    kDJEpatches
-  };
-  AliAnalysisTaskEmcalClusterNoiseTriggers();
-  AliAnalysisTaskEmcalClusterNoiseTriggers(const char *name);
-  virtual ~AliAnalysisTaskEmcalClusterNoiseTriggers() {};
+  AliAnalysisTaskEmcalTriggerCorrelation();
+  AliAnalysisTaskEmcalTriggerCorrelation(const char *name);
+  virtual ~AliAnalysisTaskEmcalTriggerCorrelation();
 
-  void SetEnableSumw2(Bool_t doEnable) { fEnableSumw2 = doEnable; }
-  void SetOnlineThreshold(ETriggerThreshold_t trigger, Int_t value) { fOnlineThresholds[static_cast<int>(trigger)] = value; }
-
-  static AliAnalysisTaskEmcalClusterNoiseTriggers *AddTaskEmcalClusterNoiseTriggers(const char *suffix);
+  static AliAnalysisTaskEmcalTriggerCorrelation *AddTaskTriggerCorrelation(const char *name);
 
 protected:
+  virtual void CreateUserHistos() {}
   virtual void CreateUserObjects() {}
-  virtual void CreateUserHistos();
-  virtual bool Run();
-  virtual void UserFillHistosAfterEventSelection();
-  std::vector<const AliEMCALTriggerPatchInfo *> SelectAllPatchesByType(const TClonesArray &patches, EPatchType_t patchtype) const;
-  std::vector<const AliEMCALTriggerPatchInfo *> SelectFiredPatchesByTrigger(const TClonesArray &patches, ETriggerThreshold_t trigger) const;
-  std::vector<std::string> GetAcceptedTriggerClusters(const char *triggerstring) const;
-  int GetNumberNonOverlappingPatchAreas(const std::vector<const AliEMCALTriggerPatchInfo *> &diredpatches) const;
-  bool HasOverlap(const AliEMCALTriggerPatchInfo &ref, const AliEMCALTriggerPatchInfo &test) const;
-  bool InRange(int test, int includemin, int includemax) const { return test >= includemin && test <= includemax; }
 
 private:
-  Bool_t                fEnableSumw2;         ///< Enable sum of weights
-  TArrayI               fOnlineThresholds;    ///< Online thresholds
 
-  AliAnalysisTaskEmcalClusterNoiseTriggers(const AliAnalysisTaskEmcalClusterNoiseTriggers &);
-  AliAnalysisTaskEmcalClusterNoiseTriggers &operator=(const AliAnalysisTaskEmcalClusterNoiseTriggers &);
+  AliAnalysisTaskEmcalTriggerCorrelation(const AliAnalysisTaskEmcalTriggerCorrelation &);
+  AliAnalysisTaskEmcalTriggerCorrelation &operator=(const AliAnalysisTaskEmcalTriggerCorrelation &);
 
-  ClassDef(AliAnalysisTaskEmcalClusterNoiseTriggers, 1);
+  ClassDef(AliAnalysisTaskEmcalTriggerCorrelation, 1);
 };
 
 }
+
 #endif

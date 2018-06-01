@@ -14,18 +14,11 @@ using namespace std;
 
 ClassImp(AliPP13TagAndProbeSelection);
 
-
 //________________________________________________________________
-void AliPP13TagAndProbeSelection::FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags)
+void AliPP13TagAndProbeSelection::SelectTwoParticleCombinations(const TObjArray & photonCandidates, const EventFlags & flags)
 {
-	(void) pool;
-	// Ensure that we are not doing mixing
-	EventFlags flags = eflags;
-	flags.isMixing = kFALSE;
-
-	// Select photons
-	TObjArray photonCandidates;
-	SelectPhotonCandidates(clusArray, &photonCandidates, flags);
+	// NB: Nonlinearity is a function of photon energy
+	//     therefore the histograms should be filled for each photon.
 
 	// Consider N^2 - N combinations, excluding only same-same clusters.
 	for (Int_t i = 0; i < photonCandidates.GetEntriesFast(); i++)
@@ -43,10 +36,9 @@ void AliPP13TagAndProbeSelection::FillPi0Mass(TObjArray * clusArray, TList * poo
 			AliVCluster * proble = dynamic_cast<AliVCluster *> (photonCandidates.At(j));
 			ConsiderPair(tag, proble, flags);
 		} // second cluster loop
-	} // cluster loop
-
-	MixPhotons(photonCandidates, pool, flags);
+	} // cluster loop}
 }
+
 
 //________________________________________________________________
 void AliPP13TagAndProbeSelection::ConsiderPair(const AliVCluster * c1, const AliVCluster * c2, const EventFlags & eflags)

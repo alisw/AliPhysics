@@ -74,6 +74,7 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter() :
   fhL0TriggerInputMUL(0),
   fhL0TriggerInputMSL(0),
   fhL0TriggerInputTVX(0),
+  fhL2TriggerCINT7CENTNOTRD(0),
   fhNMu(0),
   fminContributorsPileUp(0)
 {
@@ -99,6 +100,7 @@ AliAnalysisTaskLMREventFilter::AliAnalysisTaskLMREventFilter(const Char_t *name,
   fhL0TriggerInputMUL(0),
   fhL0TriggerInputMSL(0),
   fhL0TriggerInputTVX(0),
+  fhL2TriggerCINT7CENTNOTRD(0),
   fhNMu(0),
   fminContributorsPileUp(0)
 {
@@ -131,6 +133,7 @@ AliAnalysisTaskLMREventFilter::~AliAnalysisTaskLMREventFilter()
   delete fhL0TriggerInputMUL;
   delete fhL0TriggerInputMSL;
   delete fhL0TriggerInputTVX;
+  delete fhL2TriggerCINT7CENTNOTRD;
   delete fhNMu;
   fhTriggers=NULL;
   fhNMu=NULL;
@@ -168,7 +171,8 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fEventTree = new TTree("Data","Data");
   fAliLMREvent = new AliLMREvent();
   fEventTree->Branch("fAliLMREvent", &fAliLMREvent);
- 
+  fEventTree->SetAutoSave(20000);
+    
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
  
@@ -177,21 +181,25 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fhTriggers->Sumw2();
 
 
-  fhL0TriggerInputMLL = new TH1D("fhL0TriggerInputMLL","",120,-0.5,119.5);
+  fhL0TriggerInputMLL = new TH1D("fhL0TriggerInputMLL","",121,-1.5,119.5);
   fOutputList->Add(fhL0TriggerInputMLL);
   fhL0TriggerInputMLL->Sumw2();
 
-  fhL0TriggerInputMUL = new TH1D("fhL0TriggerInputMUL","",120,-0.5,119.5);
+  fhL0TriggerInputMUL = new TH1D("fhL0TriggerInputMUL","",121,-1.5,119.5);
   fOutputList->Add(fhL0TriggerInputMUL);
   fhL0TriggerInputMUL->Sumw2();
 
-  fhL0TriggerInputMSL = new TH1D("fhL0TriggerInputMSL","",120,-0.5,119.5);
+  fhL0TriggerInputMSL = new TH1D("fhL0TriggerInputMSL","",121,-1.5,119.5);
   fOutputList->Add(fhL0TriggerInputMSL);
   fhL0TriggerInputMSL->Sumw2();
 
-  fhL0TriggerInputTVX = new TH1D("fhL0TriggerInputTVX","",120,-0.5,119.5);
+  fhL0TriggerInputTVX = new TH1D("fhL0TriggerInputTVX","",121,-1.5,119.5);
   fOutputList->Add(fhL0TriggerInputTVX);
   fhL0TriggerInputTVX->Sumw2();
+
+  fhL2TriggerCINT7CENTNOTRD = new TH1D("fhL2TriggerCINT7CENTNOTRD","",121,-1.5,119.5);
+  fOutputList->Add(fhL2TriggerCINT7CENTNOTRD);
+  fhL2TriggerCINT7CENTNOTRD->Sumw2();
 
   fhBeamType = new TH1D("fhBeamType","",4,-0.5,3.5);
   fhBeamType->Sumw2();
@@ -291,6 +299,9 @@ void AliAnalysisTaskLMREventFilter::NotifyRun()
   fhL0TriggerInputMUL->Fill(fL0TriggerInputMUL);
   fhL0TriggerInputMSL->Fill(fL0TriggerInputMSL);
   fhL0TriggerInputTVX->Fill(fL0TriggerInputTVX);
+
+  Int_t fL2TriggerCINT7CENTNOTRD = cfg -> GetClassIndexFromName("CINT7-B-NOPF-CENTNOTRD");
+  fhL2TriggerCINT7CENTNOTRD->Fill(fL2TriggerCINT7CENTNOTRD);
 }
 //====================================================================================================================================================
 
@@ -504,7 +515,7 @@ Bool_t AliAnalysisTaskLMREventFilter::IsSelectedTrigger(AliAODEvent *fAOD, UShor
     {
       if(trigStr.Contains(fTriggerClasses[i]))
 	{
-	  fhNMu->Fill(nmu,fTriggerClasses[i],1);
+	  fhNMu->Fill(nmu, fTriggerClasses[i].Data(),1);
 	  fhTriggers->Fill(fTriggerClasses[i].Data(),1);
 	}   
     }

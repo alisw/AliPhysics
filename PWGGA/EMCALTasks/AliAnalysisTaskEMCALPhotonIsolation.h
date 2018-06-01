@@ -124,6 +124,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         Set2012L1Analysis           ( Bool_t  is2012L1                             ) { f2012EGA = is2012L1;                                      }
   void                         SetANWithNoSameTcard        ( Bool_t  iNoSameTCard                         ) { fANnoSameTcard = iNoSameTCard;                            }
   void                         SetPythiaVersion            ( TString pythiaVersion                        ) { fPythiaVersion = pythiaVersion;                           }
+  void                         SetVariableCPV              ( Bool_t  variable                             ) { fVariableCPV = variable;                           }
   
  protected:
   
@@ -132,6 +133,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         EtIsoCellEtaBand          ( TLorentzVector c , Double_t &etIso      , Double_t &etaBand                                 ); // EIsoCone via Cells UE via EtaBand EMCal
   void                         EtIsoClusPhiBand          ( TLorentzVector c , Double_t m02candidate, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
   void                         EtIsoClusEtaBand          ( TLorentzVector c , Double_t m02candidate, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
+  void                         EtIsoClusExtraOrthCones   ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &cones  , Int_t index ); // EIsoCone via Clusters + Track but extrapolated charged UE with orthogonal cones
   void                         PtIsoTrackPhiBand         ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &phiBand              ); // PIsoCone via Track UE via PhiBand TPC
   void                         PtIsoTrackEtaBand         ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &etaBand              ); // PIsoCone via Track UE via EtaBand TPC
   void                         PtIsoTrackOrthCones       ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &cones                ); // PIsoCone via Tracks UE via Orthogonal Cones in Phi
@@ -180,6 +182,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAODMCHeader             * fmcHeader;                       ///<
   AliGenDPMjetEventHeader    * fDPMjetHeader;                   ///< DPMjet header for cocktail simulations
   TString                      fPythiaVersion;                  ///< May contain "6" or "8" to determine the Pythia version used
+  Bool_t                       fVariableCPV;                    ///<
   TClonesArray               * fTracksAna;                      ///< Hybrid track array in
   AliStack                   * fStack;                          ///<
   AliEMCALRecoUtils          * fEMCALRecoUtils;                 ///< EMCal utils for cluster rereconstruction.
@@ -275,6 +278,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH1F                       * fGenPromptPhotonSel;             //!<!
   TH2F                       * fEtaPhiClus;                     ///<  EMCal Cluster Distribution EtaPhi ---QA
   TH2F                       * fEtaPhiClusAftSel;               ///<  EMCal Cluster Distribution EtaPhi after cluster selection
+  TH3F                       * fPtvsDetavsDphi;                 ///<  Cluster-track matching vs. cluster energy
   TH2F                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
   TH1F                       * fPT;                             //!<! Pt distribution
   TH1F                       * fE;                              //!<! E distribution
@@ -283,6 +287,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F                       * fNLM2_NC_Acc_noTcard;            //!<! NLM (1,2) distribution for Neutral Clusters in Acceptance w/o NLM=2 in SameT
   TH1F                       * fVz;                             //!<! Vertex Z distribution
   TH1F                       * fEvents;                         //!<! Number of Events
+  TH1F                       * fCutFlowEvents;                  //!<! Effect of each cut on event number
+  TH1F                       * fCutFlowClusters;                //!<! Effect of each cut on candidate cluster number
   TH1F                       * fPtaftTime;                      //!<! E distribution for clusters after Cluster Time cut
   TH1F                       * fPtaftCell;                      //!<! Pt distribution for clusters after NCells cut
   TH1F                       * fPtaftNLM;                       //!<! Pt distribution for clusters after NLM cut
@@ -391,7 +397,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator = ( const AliAnalysisTaskEMCALPhotonIsolation & ); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 25);            // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 26);            // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif

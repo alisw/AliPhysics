@@ -43,7 +43,8 @@
 #pragma link C++ class AliAnalysisTaskNucleiYieldESD+;
 #pragma link C++ class AliAnalysisTaskNucleiPIDqa+;
 #pragma link C++ class AliAnalysisTaskSignalLoss+;
-
+/// * ReducedTreeNuclei
+#pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
 /// * Nucleipp
 #pragma link C++ class AliLnID+;
 #pragma link C++ class AliLnHistoMap+;

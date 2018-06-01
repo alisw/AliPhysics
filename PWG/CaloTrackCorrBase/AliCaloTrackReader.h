@@ -36,6 +36,7 @@ class TArrayI ;
 class AliVCaloCells;
 class AliHeader; 
 class AliGenEventHeader; 
+class AliGenPythiaEventHeader; 
 class AliAODEvent;
 class AliMCEvent;
 class AliMixedEvent;
@@ -654,8 +655,10 @@ public:
   
   // Kinematics and galice.root available
   
-  virtual AliHeader*         GetHeader()             const ;
-  virtual AliGenEventHeader* GetGenEventHeader()     const { return 0x0                    ; }
+  virtual AliHeader*         GetHeader()            const ;
+  virtual AliGenEventHeader* GetGenEventHeader()    const { return fGenEventHeader       ; }
+  virtual AliGenPythiaEventHeader* GetGenPythiaEventHeader() 
+                                                    const { return fGenPythiaEventHeader ; }
   // See implementation in AOD and ESD readers
   
   // Filtered kinematics in AOD
@@ -679,13 +682,13 @@ public:
   
   // Select generated events, depending on comparison of pT hard and jets
     
-  virtual Bool_t   ComparePtHardAndJetPt() ;
+  virtual Bool_t   ComparePtHardAndJetPt(Int_t process, TString processName) ;
   virtual Bool_t   IsPtHardAndJetPtComparisonSet()       const { return  fComparePtHardAndJetPt   ; }
   virtual void     SetPtHardAndJetPtComparison(Bool_t compare) { fComparePtHardAndJetPt = compare ; }	
   virtual Float_t  GetPtHardAndJetFactor()               const { return  fPtHardAndJetPtFactor    ; }
   virtual void     SetPtHardAndJetPtFactor(Float_t factor)     { fPtHardAndJetPtFactor = factor   ; }		
   
-  virtual Bool_t   ComparePtHardAndClusterPt() ;
+  virtual Bool_t   ComparePtHardAndClusterPt(Int_t process, TString processName) ;
   virtual Bool_t   IsPtHardAndClusterPtComparisonSet()       const { return  fComparePtHardAndClusterPt   ; }
   virtual void     SetPtHardAndClusterPtComparison(Bool_t compare) { fComparePtHardAndClusterPt = compare ; }	
   virtual Float_t  GetPtHardAndClusterFactor()               const { return  fPtHardAndClusterPtFactor    ; }
@@ -711,6 +714,8 @@ public:
 
   virtual void     SetNameOfMCEventHederGeneratorToAccept(TString name) { fMCGenerEventHeaderToAccept = name ; }
   virtual TString  GetNameOfMCEventHederGeneratorToAccept()       const { return fMCGenerEventHeaderToAccept ; }
+  
+  
   
   // MC reader methods, declared there to allow compilation, they are only used in the MC reader
   
@@ -991,6 +996,10 @@ public:
 
   TString          fMCGenerEventHeaderToAccept;    ///<  Accept events that contain at least this event header name
   
+  
+  AliGenEventHeader       * fGenEventHeader;       //!<! Event header
+  AliGenPythiaEventHeader * fGenPythiaEventHeader; //!<! Event header casted to pythia
+  
   /// Copy constructor not implemented.
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; 
   
@@ -998,7 +1007,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,79) ;
+  ClassDef(AliCaloTrackReader,80) ;
   /// \endcond
 
 } ;

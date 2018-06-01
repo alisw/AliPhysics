@@ -24,8 +24,12 @@ For selection of V0 particle, we typically set a wide range around the mass of t
 Lifetime cut should be quite intuitive. Set the value to a high value if not needed in the analysis. 
 */
 
-/*Switch to a pT dependent Mass Tolerance Cut has been added. fpT_Tolerance is a Boolean check to switch to this pT dependent version of the cut. fMassTolSigma is as it says, how strict you want the cut to be. 
-P.S: these values have been calculated for K* charged at different energies. For other analysis, it's recommended to stick to the fix Mass Tolerance Cut. By default, the cut will stay with the fix value cut as well. 
+/*Switch to a pT dependent Mass Tolerance Cut has been added. fpT_Tolerance is a flag to switch to this pT dependent version of the cut. fMassTolSigma is as it says, how strict you want the cut to be.
+ fpT_Tolerance takes values from 0-3.
+ The values go as follows:
+ fpT_Tolerance = 0 ; Default. Fixed cut for mass tolerance
+ fpT_Tolerance = 1, 2, 3; for 13 TeV, 8 TeV and 5.02 TeV respectively for K* charged analysis
+ P.S: these values have been calculated for K* charged at different energies. For other analysis, it's recommended to stick to the fix Mass Tolerance Cut (Date Modified: 4 May 2018 by Kunal Garg)
 
 */
 
@@ -284,32 +288,74 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
     }
     
    Double_t v0pT = TMath::Abs(TMath::Sqrt(tV0mom[0]*tV0mom[0] + tV0mom[1]*tV0mom[1]));    
-    Double_t upper_limit = (0.000299 + 0.00104*fMassTolSigma)*v0pT + 0.4949 + 0.00385*fMassTolSigma;
-    Double_t lower_limit = (0.000299 - 0.00104*fMassTolSigma)*v0pT + 0.4949 - 0.00385*fMassTolSigma;
+	
+	if(fpT_Tolerance==0)
+	{
+		
+		v0->ChangeMassHypothesis(fHypothesis);
+		if ((TMath::Abs(v0->GetEffMass() - fMass)) > fTolerance) {
+			AliDebugClass(2, "V0 is not in the expected inv mass range");
+			return kFALSE;
+		}
+	}
     
     
+	Double_t upper_limit =0, lower_limit =0;
+	
+    if(fpT_Tolerance==1 || fpT_Tolerance==2)		//Read the Note at the top of the code for more information .
+	 {
+		 v0->ChangeMassHypothesis(fHypothesis);
+		 
+		 
+		 if(v0pT<=1.5)
+		 {
+			 if(v0pT<0.15){v0pT = 0.15;}
+			 upper_limit = 0.49722 + 9.83285e-04* log(v0pT) + fMassTolSigma*(3.47153e-03 + 2.70453e-04* v0pT);
+			 lower_limit = 0.49722 + 9.83285e-04* log(v0pT) - fMassTolSigma*(3.47153e-03 + 2.70453e-04* v0pT);
+		}
+		 
+		 else if(v0pT > 1.5)
+		 {
+			 upper_limit = 0.49761 + fMassTolSigma*(3.47153e-03 + 2.70453e-04* v0pT);
+			 lower_limit = 0.49761 - fMassTolSigma*(3.47153e-03 + 2.70453e-04* v0pT);
+		 }
+		 
+		 if ((v0->GetEffMass() < lower_limit ) || (v0->GetEffMass() > upper_limit))
+		 {
+			 AliDebugClass(2, "V0 is not in the expected inv mass range");
+			 return kFALSE;
+		 }
+	 }
+	
+	if(fpT_Tolerance==3)
+	{
+		v0->ChangeMassHypothesis(fHypothesis);
+		Double_t upper_limit =0, lower_limit =0;
+		
+		if(v0pT<=1.5)
+		{
+			if(v0pT<0.15) {v0pT = 0.15;}
+			upper_limit = 0.49797 + 9.99398e-04* log(v0pT) + fMassTolSigma*(3.47153e-03 + 2.70453e-04* v0pT);
+			lower_limit = 0.49797 + 9.99398e-04* log(v0pT) - fMassTolSigma*(3.47153e-03 + 2.70453e-04* v0pT);
+		}
+		
+		
+		else if(v0pT > 1.5)
+		{
+			upper_limit = 0.498375 + fMassTolSigma*(3.47153e-03 + 2.70453e-04* v0pT);
+			lower_limit = 0.498375 - fMassTolSigma*(3.47153e-03 + 2.70453e-04* v0pT);
+		}
+		
+		if ((v0->GetEffMass() < lower_limit ) || (v0->GetEffMass() > upper_limit))
+		{
+			AliDebugClass(2, "V0 is not in the expected inv mass range");
+			return kFALSE;
+		}
+	}
+	
+	
     
-    
-    if(fpT_Tolerance){  
-    // check compatibility with expected species hypothesis
-    v0->ChangeMassHypothesis(fHypothesis);
-   if ((v0->GetEffMass() < lower_limit ) || (v0->GetEffMass() > upper_limit)) 
-   {
-      AliDebugClass(2, "V0 is not in the expected inv mass range");
-      return kFALSE;
-   }   
-        
-    }
-    
-    else if(!fpT_Tolerance)
-    {
-        
-        v0->ChangeMassHypothesis(fHypothesis);
-   if ((TMath::Abs(v0->GetEffMass() - fMass)) > fTolerance) {
-      AliDebugClass(2, "V0 is not in the expected inv mass range");
-      return kFALSE;
-        }
-    }
+	
    
     //Set Switch to kTRUE to use Competing V0 Rejection
     if(fSwitch){

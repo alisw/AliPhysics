@@ -18,6 +18,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <sstream>
 
 #include <TClonesArray.h>
 #include <TGrid.h>
@@ -36,6 +37,7 @@
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliEMCALTriggerMapping.h"
 #include "AliEmcalTriggerDecisionContainer.h"
+#include "AliEmcalTriggerStringDecoder.h"
 #include "AliESDEvent.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
@@ -50,12 +52,11 @@ namespace EMCalTriggerPtAnalysis {
 
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   AliAnalysisTaskEmcal(),
-  fTriggerSelection(nullptr),
+  fHistos(nullptr),
   fUseTriggerBits(kTRUE),
   fRequireBunchCrossing(kTRUE),
   fUseDownscaleCorrectionFormOCDB(kFALSE),
-  fHistos(nullptr),
-  fTriggerStringFromPatches(kFALSE),
+  fTriggerSelection(nullptr),
   fSelectedTriggers(),
   fNameClusterContainer(""),
   fRequireAnalysisUtils(kTRUE),
@@ -65,36 +66,26 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
   fNameDownscaleOADB(""),
   fDownscaleOADB(nullptr),
   fDownscaleFactors(nullptr),
-  fNameMaskedFastorOADB(),
-  fMaskedFastorOADB(nullptr),
-  fMaskedFastors(),
-  fOnlineTriggerThresholds(),
-  fNameAcceptanceOADB(),
   fNameTriggerSelectionContainer("EmcalTriggerDecision"),
-  fSelectNoiseEvents(false),
-  fRejectNoiseEvents(false),
   fEnableDCALTriggers(true),
-  fEnableCentralityTriggers(false),
   fEnableV0Triggers(true),
   fEnableT0Triggers(false),
   fEnableNoINTTriggers(false),
-  fRequireL0forL1(false),
+  fEnableCentralityTriggers(false),
   fExclusiveMinBias(false),
   fUseTriggerSelectionContainer(false)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
-  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *name):
   AliAnalysisTaskEmcal(name, true),
-  fTriggerSelection(nullptr),
+  fHistos(nullptr),
   fUseTriggerBits(kTRUE),
   fRequireBunchCrossing(kTRUE),
   fUseDownscaleCorrectionFormOCDB(kFALSE),
-  fHistos(nullptr),
-  fTriggerStringFromPatches(kFALSE),
+  fTriggerSelection(nullptr),
   fSelectedTriggers(),
   fNameClusterContainer(""),
   fRequireAnalysisUtils(kTRUE),
@@ -104,33 +95,22 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
   fNameDownscaleOADB(""),
   fDownscaleOADB(nullptr),
   fDownscaleFactors(nullptr),
-  fNameMaskedFastorOADB(),
-  fMaskedFastorOADB(nullptr),
-  fMaskedFastors(),
-  fOnlineTriggerThresholds(),
-  fNameAcceptanceOADB(),
   fNameTriggerSelectionContainer("EmcalTriggerDecision"),
-  fSelectNoiseEvents(false),
-  fRejectNoiseEvents(false),
   fEnableDCALTriggers(true),
-  fEnableCentralityTriggers(false),
   fEnableV0Triggers(true),
   fEnableT0Triggers(false),
   fEnableNoINTTriggers(false),
-  fRequireL0forL1(false),
+  fEnableCentralityTriggers(false),
   fExclusiveMinBias(false),
   fUseTriggerSelectionContainer(false)
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
-  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEmcalTriggerBase::~AliAnalysisTaskEmcalTriggerBase() {
   if(fTriggerSelection) delete fTriggerSelection;
   if(fHistos) delete fHistos;
-  if(fDownscaleOADB) delete fDownscaleOADB;
-  if(fMaskedFastorOADB) delete fMaskedFastorOADB;
   if(fDownscaleFactors) delete fDownscaleFactors;
 }
 
@@ -146,12 +126,29 @@ void AliAnalysisTaskEmcalTriggerBase::UserCreateOutputObjects() {
   fHistos = new THistManager(Form("Histos_%s", GetName()));
 
   // Create trigger correlation histogram
-  fHistos->CreateTH2("hTriggerCorrelation", "Correlation selected trigger classes", 6, -0.5, 5.5, 6, -0.5, 5.5);
-  std::array<TString, 6> binlabels = {"MB", "EMC7", "EG1", "EG2", "EJ1", "EJ2"};
+  std::vector<std::string> binlabels = {"MB"};
+  if(fEnableV0Triggers){
+    const std::array<const std::string, 5> vzlabels = {{"EMC7", "EG1", "EG2", "EJ1", "EJ2"}};
+    for(const auto & vlab : vzlabels) binlabels.emplace_back(vlab);
+    if(fEnableDCALTriggers){
+      const std::array<const std::string, 5> dclabels = {{"DMC7", "DG1", "DG2", "DJ1", "DJ2"}};
+      for(const auto & dlab : dclabels) binlabels.emplace_back(dlab);
+    }
+  }
+  if(fEnableT0Triggers) {
+    binlabels.emplace_back("MBT0");
+    const std::array<const std::string, 5> t0labels = {{"EMC8", "EMC8EG1", "EMC8EG2", "EMC8EJ1", "EMC8EJ2"}};
+    for(const auto & tlab : t0labels) binlabels.emplace_back(tlab);
+    if(fEnableDCALTriggers){
+      const std::array<const std::string, 5> dtclabels = {{"DMC8", "DMC8DG1", "DMC8DG2", "DMC8DJ1", "DMC8DJ2"}};
+      for(const auto & dtlab : dtclabels) binlabels.emplace_back(dtlab);
+    }
+  }
+  fHistos->CreateTH2("hTriggerCorrelation", "Correlation selected trigger classes", binlabels.size(), -0.5, binlabels.size() - 0.5, binlabels.size(), -0.5, binlabels.size() - 0.5);
   TH1 *correlationHist = static_cast<TH1 *>(fHistos->FindObject("hTriggerCorrelation"));
-  for(int ib = 0; ib < 6; ib++){
-    correlationHist->GetXaxis()->SetBinLabel(ib+1, binlabels[ib]);
-    correlationHist->GetYaxis()->SetBinLabel(ib+1, binlabels[ib]);
+  for(decltype(binlabels.size()) ib = 0; ib < binlabels.size(); ib++){
+    correlationHist->GetXaxis()->SetBinLabel(ib+1, binlabels[ib].data());
+    correlationHist->GetYaxis()->SetBinLabel(ib+1, binlabels[ib].data());
   }
 
   CreateUserObjects();
@@ -208,14 +205,15 @@ Bool_t AliAnalysisTaskEmcalTriggerBase::IsEventSelected(){
 
   // Fill histogram with trigger correlation
   // self-correlations included
-  std::array<TString, 6> kAbsTriggers = {"MB", "EMC7", "EG1", "EG2", "EJ1", "EJ2"};
-  for(int itrg = 0; itrg < 6; itrg++){
-    bool hasTriggerA = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), kAbsTriggers[itrg]) != fSelectedTriggers.end());
+  auto *corrhist = static_cast<TH2 *>(fHistos->GetListOfHistograms()->FindObject("hTriggerCorrelation"));
+  for(int itrg = 0; itrg < corrhist->GetXaxis()->GetNbins(); itrg++){
+    const char *xlabel = corrhist->GetXaxis()->GetBinLabel(itrg+1);
+    bool hasTriggerA = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), xlabel) != fSelectedTriggers.end());
     if(hasTriggerA) {
-      for(int jtrg = 0; jtrg < 6; jtrg++){
-        bool hasTriggerB = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), kAbsTriggers[jtrg]) != fSelectedTriggers.end());
-        if(hasTriggerB)
-          fHistos->FillTH2("hTriggerCorrelation", kAbsTriggers[itrg], kAbsTriggers[jtrg]);
+      for(int jtrg = 0; jtrg < corrhist->GetYaxis()->GetNbins(); jtrg++){
+        const char *ylabel = corrhist->GetYaxis()->GetBinLabel(jtrg+1);
+        bool hasTriggerB = (std::find(fSelectedTriggers.begin(), fSelectedTriggers.end(), ylabel) != fSelectedTriggers.end());
+        if(hasTriggerB) fHistos->FillTH2("hTriggerCorrelation", xlabel, ylabel);
       }
     }
   }
@@ -231,22 +229,14 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   fSelectedTriggers.clear();
   Bool_t isMC = MCEvent() != nullptr;
 
-  TString triggerstring = "";
-  if(fTriggerStringFromPatches){
-    triggerstring = GetFiredTriggerClassesFromPatches(fTriggerPatchInfo);
-  } else {
-    triggerstring = fInputEvent->GetFiredTriggerClasses();
-  }
-
-
   UInt_t selectionstatus = fInputHandler->IsEventSelected();
   Bool_t isMinBias = selectionstatus & AliVEvent::kINT7,
          isMinBiasT0 = selectionstatus & AliVEvent::kINT8,
          isCENT = selectionstatus & AliVEvent::kCentral,
          isSemiCENT = selectionstatus & AliVEvent::kSemiCentral,
-      emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn],
-      emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgn],
-      emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
+         emcalTriggers[AliEmcalTriggerOfflineSelection::kTrgn],
+         emc8Triggers[AliEmcalTriggerOfflineSelection::kTrgn],
+         emcNoIntTriggers[AliEmcalTriggerOfflineSelection::kTrgn];
 
   if(fExclusiveMinBias){
     AliDebugStream(1) << "Min bias mode\n";
@@ -275,10 +265,13 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
   for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcalTriggers[itrg] = true;
   if(fEnableT0Triggers) for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emc8Triggers[itrg] = true;
   if(fEnableNoINTTriggers) for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++) emcNoIntTriggers[itrg] = true;
+  const std::array<std::string, AliEmcalTriggerOfflineSelection::kTrgn> kEmcalSelectTriggerStrings = {
+    		"=CEMC7|CEMC8|C0EMC", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "=CDMC7|CDMC8|C0DMC", "DG1", "DG2", "DJ1", "DJ2"
+  };
   if(!isMC){
     // In case of data select events as bunch-bunch (-B-) events.
     // Cut not applied in simulations
-    if(fRequireBunchCrossing && ! (triggerstring.Contains("-B-") || triggerstring.Contains("-S-"))) return;
+    if(fRequireBunchCrossing && ! (fInputEvent->GetFiredTriggerClasses().Contains("-B-") || fInputEvent->GetFiredTriggerClasses().Contains("-S-"))) return;
 
     // In case of data use information from the physics selection and event record
     // Further cleanup of trigger events can be performed depending on the presence
@@ -288,92 +281,95 @@ void AliAnalysisTaskEmcalTriggerBase::TriggerSelection(){
       AliDebugStream(1) << "Require trigger bits" << std::endl;
       const std::array<ULong_t, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerBits = {
     	  AliVEvent::kEMC7|AliVEvent::kEMC8, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE,
-		  AliVEvent::kEMC7|AliVEvent::kEMC8, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE
+		    AliVEvent::kEMC7|AliVEvent::kEMC8, AliVEvent::kEMCEGA, AliVEvent::kEMCEGA, AliVEvent::kEMCEJE, AliVEvent::kEMCEJE
       };
       for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
-        emcalTriggers[iclass] &= bool(selectionstatus & kSelectTriggerBits[iclass]);
-        emc8Triggers[iclass] &= bool(selectionstatus & kSelectTriggerBits[iclass]);
-        if(fRequireL0forL1 && !bool(selectionstatus & (AliVEvent::kEMC7|AliVEvent::kEMC8))) {
-          emcalTriggers[iclass] = false;
-          emc8Triggers[iclass] = false;
+        if(!(selectionstatus & kSelectTriggerBits[iclass])) {
+          emcNoIntTriggers[iclass] = emc8Triggers[iclass] = emcalTriggers[iclass] = false;
         }
       }
     }
     
-    // Apply cut on the trigger string - this basically discriminates high- and low-threshold
-    // triggers
-    const std::array<TString, AliEmcalTriggerOfflineSelection::kTrgn> kSelectTriggerStrings = {
-    		"CEMC7-|CEMC8-|C0EMC-", "EG1|EGA", "EG2", "EJ1|EJE", "EJ2", "CDMC7-|CDMC8-|CDMC0-", "DG1", "DG2", "DJ1", "DJ2"
-    };
-    if(triggerstring.Contains("EMC")) AliDebugStream(1) << GetName() << ": Trigger string " << triggerstring << std::endl;
-    bool isT0trigger = triggerstring.Contains("INT8") || triggerstring.Contains("TVX") || triggerstring.Contains("EMC8") || triggerstring.Contains("DMC8"),
-         isVZEROtrigger = triggerstring.Contains("INT7") || triggerstring.Contains("EMC7") || triggerstring.Contains("DMC7");
-    for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
-      AliDebugStream(1) << "Next trigger: " << kSelectTriggerStrings[iclass] << std::endl;
-      bool selectionStatus = false;
-      if(kSelectTriggerStrings[iclass].Contains("|")){
-        std::unique_ptr<TObjArray> options(kSelectTriggerStrings[iclass].Tokenize("|"));
-        for(auto o : *options){
-          TObjString *optstring = static_cast<TObjString *>(o);
-          AliDebugStream(1) << "Checking trigger " << optstring->String() << std::endl;
-          if(triggerstring.Contains(optstring->String())){
-            AliDebugStream(1) << "Found " << optstring->String() << " ... " << std::endl;
-            selectionStatus = true;
-            if(fUseTriggerSelectionContainer){
-              AliDebugStream(1) << "Checking trigger patch container for additional online patch" << std::endl;
-              selectionStatus = selectionStatus && triggersel->IsEventSelected(optstring->String().Data());
+    if(fInputEvent->GetFiredTriggerClasses().Contains("EMC") || fInputEvent->GetFiredTriggerClasses().Contains("DMC")){
+      // Apply cut on the trigger string - this basically discriminates high- and low-threshold
+      // triggers
+      auto triggers = PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
+      std::map<int, std::array<bool, 3>> matchedTriggers;
+      for(auto t : triggers) {  
+        const auto &triggerclass = t.Triggerclass();
+        if((triggerclass.find("EMC") != std::string::npos) || (triggerclass.find("DMC") != std::string::npos)) 
+          AliDebugStream(1) << GetName() << ": Trigger string " << t.ExpandClassName() << std::endl;
+        else continue;    // No EMC / DMC trigger - not to be checked
+        bool isT0trigger = (triggerclass.find("EMC8") != std::string::npos) || (triggerclass.find("DMC8") != std::string::npos),
+             isVZEROtrigger = (triggerclass.find("EMC7") != std::string::npos) || (triggerclass.find("DMC7") != std::string::npos);
+        for(auto iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
+          AliDebugStream(1) << "Next trigger: " << kEmcalSelectTriggerStrings[iclass] << std::endl;
+          bool emcalSelectionStatus = MatchTriggerFromPattern(kEmcalSelectTriggerStrings[iclass], triggerclass);
+          if(fUseTriggerSelectionContainer) emcalSelectionStatus = emcalSelectionStatus & MatchTriggerFromContainer(kEmcalSelectTriggerStrings[iclass], triggersel);
+          if(emcalSelectionStatus) {
+            auto entry = matchedTriggers.find(iclass);
+            if(entry == matchedTriggers.end()) {
+              std::array<bool, 3> interactions = {{isVZEROtrigger, isT0trigger, !(isVZEROtrigger || isT0trigger)}};
+              matchedTriggers.insert(std::pair<int, std::array<bool, 3>>(iclass, interactions));
+            } else {
+              auto &interactions = entry->second;
+              if(isVZEROtrigger) interactions[0] = true;
+              if(isT0trigger) interactions[1] = true;
+              if(!(isVZEROtrigger || isT0trigger)) interactions[2] = true;
             }
           }
         }
-      } else {
-        selectionStatus = triggerstring.Contains(kSelectTriggerStrings[iclass]);
-        if(selectionStatus){
-          AliDebugStream(1) << "Found " << kSelectTriggerStrings[iclass] << " ... " << std::endl;
-          
-        }
-        if(fUseTriggerSelectionContainer){
-          AliDebugStream(1) << "Checking trigger patch container for additional online patch" << std::endl;
-          selectionStatus = selectionStatus && triggersel->IsEventSelected(kSelectTriggerStrings[iclass]);
-        }
       }
-      if(isT0trigger) {
-        emc8Triggers[iclass] &= selectionStatus;
-        emcalTriggers[iclass] = false;
-        emcNoIntTriggers[iclass] = false; 
-      } else if(isVZEROtrigger){
-        emcalTriggers[iclass] &= selectionStatus;
-        emc8Triggers[iclass] = false;
-        emcNoIntTriggers[iclass] = false; 
-      } else {
-        // No coincidence with interaction trigger
-        emcNoIntTriggers[iclass] &= selectionStatus; 
-        emcalTriggers[iclass] = false;
-        emc8Triggers[iclass] = false;
-      }
-      if(emcalTriggers[iclass])
-        AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << " (INT7 suite)" << std::endl;
-      if(emc8Triggers[iclass])
-        AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << " (INT8 suite)" << std::endl;
-      if(emcNoIntTriggers[iclass])
-        AliDebugStream(1) << GetName() << ": Event selected as trigger " << kSelectTriggerStrings[iclass] << " (No INT coincidence)" << std::endl;
-    }
 
-    // Online selection / rejection
-    if(fRejectNoiseEvents || fSelectNoiseEvents){
-      for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
-        if(emcalTriggers[itrg] || emc8Triggers[itrg]){
-          Bool_t onlinestatus = SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass(itrg));;
-          if(fRejectNoiseEvents){
-            if(emcalTriggers[itrg]) emcalTriggers[itrg] &= onlinestatus;
-            if(emc8Triggers[itrg]) emc8Triggers[itrg] &= onlinestatus;
-          } else {
-            if(emcalTriggers[itrg]) emcalTriggers[itrg] &= !onlinestatus;
-            if(emc8Triggers[itrg]) emc8Triggers[itrg] &= !onlinestatus;
-          }
+      for(auto iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
+        auto entry = matchedTriggers.find(iclass);
+        if(entry != matchedTriggers.end()){
+          // trigger selected among at least one L0 class
+          const auto &interactions = entry->second;
+          emcalTriggers[iclass] &= interactions[0];
+          emc8Triggers[iclass] &= interactions[1];
+          emcNoIntTriggers[iclass] &= interactions[2]; 
+        } else {
+          // trigger not selected - mark all cases as false
+          emcalTriggers[iclass] = false;
+          emc8Triggers[iclass] = false;
+          emcNoIntTriggers[iclass] = false; 
         }
+
+        if(emcalTriggers[iclass])
+          AliDebugStream(1) << GetName() << ": Event selected as trigger " << kEmcalSelectTriggerStrings[iclass] << " (INT7 suite)" << std::endl;
+        if(emc8Triggers[iclass])
+          AliDebugStream(1) << GetName() << ": Event selected as trigger " << kEmcalSelectTriggerStrings[iclass] << " (INT8 suite)" << std::endl;
+        if(emcNoIntTriggers[iclass])
+          AliDebugStream(1) << GetName() << ": Event selected as trigger " << kEmcalSelectTriggerStrings[iclass] << " (No INT coincidence)" << std::endl;
+      }
+    }
+  } else {
+    // MC: Use INT7/INT08 for VZERO/TZERO triggers, for EMCAL trigger use trigger selection container
+    bool isT0trigger = selectionstatus & AliVEvent::kINT7, isVZEROtrigger = selectionstatus & AliVEvent::kINT8;
+    if(fUseTriggerSelectionContainer){
+      for(int iclass = 0; iclass < AliEmcalTriggerOfflineSelection::kTrgn; iclass++){
+        auto emcalSelectionStatus = MatchTriggerFromContainer(kEmcalSelectTriggerStrings[iclass], triggersel);
+        if(isT0trigger) {
+          emc8Triggers[iclass] &= emcalSelectionStatus;
+        } 
+        if(isVZEROtrigger){
+          emcalTriggers[iclass] &= emcalSelectionStatus;
+        } 
+        if(!(isT0trigger || isVZEROtrigger)){
+          // No coincidence with interaction trigger
+          emcNoIntTriggers[iclass] &= emcalSelectionStatus; 
+        }
+        if(emcalTriggers[iclass])
+          AliDebugStream(1) << GetName() << ": Event selected as trigger " << kEmcalSelectTriggerStrings[iclass] << " (INT7 suite)" << std::endl;
+        if(emc8Triggers[iclass])
+          AliDebugStream(1) << GetName() << ": Event selected as trigger " << kEmcalSelectTriggerStrings[iclass] << " (INT8 suite)" << std::endl;
+        if(emcNoIntTriggers[iclass])
+          AliDebugStream(1) << GetName() << ": Event selected as trigger " << kEmcalSelectTriggerStrings[iclass] << " (No INT coincidence)" << std::endl;
       }
     }
   }
+
   // Apply offline trigger selection: In this case cuts are performed on the
   // patch energy from EMCAL cells after calibration. This method is most relevant
   // for simulations. It can have a special use case in data in case a stronger
@@ -576,83 +572,6 @@ void AliAnalysisTaskEmcalTriggerBase::ExecOnce(){
     fDownscaleOADB = new AliOADBContainer("AliEmcalDownscaleFactors");
     fDownscaleOADB->InitFromFile(fNameDownscaleOADB.Data(), "AliEmcalDownscaleFactors");
   }
-
-  if(!fExclusiveMinBias){
-    // Load EMCAL trigger OADB in case EMCAL triggers
-    // are enabled
-
-    // Load OADB container with masked fastors (in case fastor masking is switched on)
-    if(fNameMaskedFastorOADB.Length() && (fRejectNoiseEvents || fSelectNoiseEvents)){
-      if(fNameMaskedFastorOADB.Contains("alien://") && ! gGrid) TGrid::Connect("alien://");
-      fMaskedFastorOADB = new AliOADBContainer("AliEmcalMaskedFastors");
-      fMaskedFastorOADB->InitFromFile(fNameMaskedFastorOADB.Data(), "AliEmcalMaskedFastors");
-    }
-
-    // Setting online threshold for trigger
-    if(!OnlineThresholdsInitialized()){
-      if(fInputEvent->GetRunNumber() >= 15344 && fInputEvent->GetRunNumber() <= 197388){
-        if(!GetOnlineTriggerThresholdByName("EG1")) SetOnlineTriggerThreshold("EG1", 140);
-        if(!GetOnlineTriggerThresholdByName("EG2")) SetOnlineTriggerThreshold("EG2", 89);
-        if(!GetOnlineTriggerThresholdByName("EJ1")) SetOnlineTriggerThreshold("EJ1", 260);
-        if(!GetOnlineTriggerThresholdByName("EJ2")) SetOnlineTriggerThreshold("EJ2", 127);
-        SetOnlineTriggerThreshold("DG1", 0);
-        SetOnlineTriggerThreshold("DG2", 0);
-        SetOnlineTriggerThreshold("DJ1", 0);
-        SetOnlineTriggerThreshold("DJ2", 0);
-        SetOnlineTriggerThreshold("EMC7", 0);
-        SetOnlineTriggerThreshold("DMC7", 0);
-      }
-    }
-
-    // Load acceptance OADB
-    if(fNameAcceptanceOADB.Length() && fTriggerSelection){
-      AliDebugStream(1) << GetName() << ": Loading acceptance map from OADB file " <<  fNameAcceptanceOADB << std::endl;
-      AliOADBContainer acceptanceCont("AliEmcalTriggerAcceptance");
-      acceptanceCont.InitFromFile(fNameAcceptanceOADB.Data(), "AliEmcalTriggerAcceptance");
-      TObjArray *acceptanceMaps = dynamic_cast<TObjArray *>(acceptanceCont.GetObject(fInputEvent->GetRunNumber()));
-      TH2 *map(nullptr);
-      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG1")))){
-        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EG1" << std::endl;
-        map->SetDirectory(nullptr);
-        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG1, map);
-      }
-      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EG2")))){
-        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EG2" << std::endl;
-        map->SetDirectory(nullptr);
-        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEG2, map);
-      }
-      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG1")))){
-        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DG1" << std::endl;
-        map->SetDirectory(nullptr);
-        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
-      }
-      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DG2")))){
-        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DG2" << std::endl;
-        map->SetDirectory(nullptr);
-        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDG1, map);
-      }
-      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ1")))){
-        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EJ1" << std::endl;
-        map->SetDirectory(nullptr);
-        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ1, map);
-      }
-      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("EJ2")))){
-        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger EJ2" << std::endl;
-        map->SetDirectory(nullptr);
-        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgEJ2, map);
-      }
-      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ1")))){
-        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DJ1" << std::endl;
-        map->SetDirectory(nullptr);
-        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
-      }
-      if((map = dynamic_cast<TH2 *>(acceptanceMaps->FindObject("DJ2")))){
-        AliDebugStream(1) << GetName() << ": Found acceptance map for trigger DJ2" << std::endl;
-        map->SetDirectory(nullptr);
-        fTriggerSelection->SetAcceptanceMap(AliEmcalTriggerOfflineSelection::kTrgDJ1, map);
-      }
-    }
-  }
 }
 
 void AliAnalysisTaskEmcalTriggerBase::RunChanged(Int_t runnumber){
@@ -669,17 +588,6 @@ void AliAnalysisTaskEmcalTriggerBase::RunChanged(Int_t runnumber){
     for(auto e : *fDownscaleFactors){
       TParameter<double> *dfactor = static_cast<TParameter<double> *>(e);
       AliInfoStream() << GetName() << ": Trigger " << dfactor->GetName() << ", downscale factor " << dfactor->GetVal() << std::endl;
-    }
-  }
-
-  if(!fExclusiveMinBias){
-    if(fMaskedFastorOADB){
-      fMaskedFastors.clear();
-      TObjArray *ids = static_cast<TObjArray *>(fMaskedFastorOADB->GetObject(runnumber));
-      for(auto m : *ids){
-        TParameter<int> *id = static_cast<TParameter<int> *>(m);
-        fMaskedFastors.push_back(id->GetVal());
-      }
     }
   }
 }
@@ -746,18 +654,48 @@ std::vector<TString> AliAnalysisTaskEmcalTriggerBase::GetSupportedTriggers(Bool_
   return triggers;
 }
 
-bool AliAnalysisTaskEmcalTriggerBase::SelectOnlineTrigger(AliEmcalTriggerOfflineSelection::EmcalTriggerClass trigger) const{
-  AliDebugStream(1) << "Using V1 online trigger selector" << std::endl;
-  if(trigger == AliEmcalTriggerOfflineSelection::kTrgEL0 || trigger == AliEmcalTriggerOfflineSelection::kTrgDL0) return true;
-  int ngood(0);
-  for(auto p : *fTriggerPatchInfo){
-    AliEMCALTriggerPatchInfo *patch = static_cast<AliEMCALTriggerPatchInfo *>(p);
-    if((AliEmcalTriggerOfflineSelection::IsSingleShower(trigger) && patch->IsGammaLowRecalc()) ||
-        (!AliEmcalTriggerOfflineSelection::IsSingleShower(trigger) && patch->IsJetLowRecalc())){
-      if(patch->GetADCAmp() >= GetOnlineTriggerThresholdByIndex(trigger)) ngood++;
+bool AliAnalysisTaskEmcalTriggerBase::MatchTriggerFromPattern(const std::string &pattern, const std::string &trigger) const {
+  std::string patternstring = pattern;
+  bool isEqual = pattern[0] == '=';
+  if(pattern[0] == '=') patternstring = pattern.substr(1);
+  std::vector<std::string> classes;
+  if(patternstring.find("|") != std::string::npos){
+    std::stringstream decoder(patternstring);
+    std::string tmp;
+    while(std::getline(decoder, tmp, '|')) classes.emplace_back(tmp);
+  } else classes.emplace_back(patternstring);
+  bool found(false);
+  for(const auto &t : classes){
+    if(isEqual && (trigger == t)) {
+      found = true;
+      break;
+    }
+    if(!isEqual && (trigger.find(t) != std::string::npos)){
+      found = true;
+      break;
     }
   }
-  return ngood > 0;
+  return found;
+}
+
+bool AliAnalysisTaskEmcalTriggerBase::MatchTriggerFromContainer(const std::string &pattern, const PWG::EMCAL::AliEmcalTriggerDecisionContainer *trgsel) const {
+  if(!trgsel) return false;
+  std::string patternstring = pattern;
+  if(pattern[0] == '=') patternstring = pattern.substr(1);
+  std::vector<std::string> classes;
+  if(patternstring.find("|") != std::string::npos){
+    std::stringstream decoder(patternstring);
+    std::string tmp;
+    while(std::getline(decoder, tmp, '|')) classes.emplace_back(tmp);
+  } else classes.emplace_back(patternstring);
+  bool found(false);
+  for(const auto &t : classes) {
+    if(trgsel->IsEventSelected(t.data())) {
+      found = true;
+      break;
+    }
+  }
+  return found;
 }
 
 Double_t AliAnalysisTaskEmcalTriggerBase::GetTriggerWeight(const TString &triggerclass) const {
@@ -809,96 +747,6 @@ void AliAnalysisTaskEmcalTriggerBase::PrepareDownscaleFactorsFormOCDB(){
       AliErrorStream() << "No downscale factor found for trigger " << t << " for run " << fInputEvent->GetRunNumber() << std::endl;
     }
   }
-}
-
-void AliAnalysisTaskEmcalTriggerBase::SetOnlineTriggerThreshold(const TString &triggerclass, Int_t threshold){
-  TParameter<int> *threshpar(nullptr);
-  if((threshpar = static_cast<TParameter<int> *>(fOnlineTriggerThresholds.FindObject(triggerclass.Data())))){
-    threshpar->SetVal(threshold);
-  } else {
-    fOnlineTriggerThresholds.Add(new TParameter<int>(triggerclass.Data(), threshold));
-  }
-}
-
-Int_t AliAnalysisTaskEmcalTriggerBase::GetOnlineTriggerThresholdByName(const TString &name) const {
-  Int_t threshold(0);
-  TParameter<int> *val(nullptr);
-  if((val = static_cast<TParameter<int> *>(fOnlineTriggerThresholds.FindObject(name))))
-    threshold = val->GetVal();
-  return threshold;
-}
-
-Int_t AliAnalysisTaskEmcalTriggerBase::GetOnlineTriggerThresholdByIndex(AliEmcalTriggerOfflineSelection::EmcalTriggerClass trigger) const {
-  const TString triggernames[AliEmcalTriggerOfflineSelection::kTrgn] = {"EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7",
-      "DG1", "DG2", "DJ1", "DJ2"};
-  return GetOnlineTriggerThresholdByName(triggernames[trigger]);
-}
-
-Bool_t AliAnalysisTaskEmcalTriggerBase::OnlineThresholdsInitialized() const {
-  const TString triggernames[AliEmcalTriggerOfflineSelection::kTrgn] = {"EMC7", "EG1", "EG2", "EJ1", "EJ2", "DMC7",
-      "DG1", "DG2", "DJ1", "DJ2"};
-  bool isInitialized = true;
-  for(int itrg = 0; itrg < AliEmcalTriggerOfflineSelection::kTrgn; itrg++){
-    if(!fOnlineTriggerThresholds.FindObject(triggernames[itrg].Data())) {
-      isInitialized = false;
-      break;
-    }
-  }
-  return isInitialized;
-}
-
-Bool_t AliAnalysisTaskEmcalTriggerBase::SelectFiredPatch(const TString &triggerclass, Int_t adc) const {
-  return adc > GetOnlineTriggerThresholdByName(triggerclass);
-}
-
-TString AliAnalysisTaskEmcalTriggerBase::GetFiredTriggerClassesFromPatches(const TClonesArray* triggerpatches) const {
-  TString triggerstring = "";
-  Int_t nEJ1 = 0, nEJ2 = 0, nEG1 = 0, nEG2 = 0, nDJ1 = 0, nDJ2 = 0, nDG1 = 0, nDG2 = 0;
-  for(auto patchIter : *triggerpatches){
-    AliEMCALTriggerPatchInfo *patch = dynamic_cast<AliEMCALTriggerPatchInfo *>(patchIter);
-    if(!patch->IsRecalc()) continue;
-    if(patch->IsEMCal()){
-      if(patch->IsGammaLowRecalc() && SelectFiredPatch("EG1", patch->GetADCAmp())) nEG1++;
-      if(patch->IsGammaLowRecalc() && SelectFiredPatch("EG2", patch->GetADCAmp())) nEG2++;
-      if(patch->IsJetLowRecalc() && SelectFiredPatch("EJ1", patch->GetADCAmp())) nEJ1++;
-      if(patch->IsJetLowRecalc() && SelectFiredPatch("EJ2", patch->GetADCAmp())) nEJ2++;
-    } else {
-      if(patch->IsGammaLowRecalc() && SelectFiredPatch("DG1", patch->GetADCAmp())) nDG1++;
-      if(patch->IsGammaLowRecalc() && SelectFiredPatch("DG2", patch->GetADCAmp())) nDG2++;
-      if(patch->IsJetLowRecalc() && SelectFiredPatch("DJ1", patch->GetADCAmp())) nDJ1++;
-      if(patch->IsJetLowRecalc() && SelectFiredPatch("DJ2", patch->GetADCAmp())) nDJ2++;
-    }
-  }
-  if(nEJ1) triggerstring += "EJ1";
-  if(nEJ2){
-    if(triggerstring.Length()) triggerstring += ",";
-    triggerstring += "EJ2";
-  }
-  if(nEG1){
-    if(triggerstring.Length()) triggerstring += ",";
-    triggerstring += "EG1";
-  }
-  if(nEG2){
-    if(triggerstring.Length()) triggerstring += ",";
-    triggerstring += "EG2";
-  }
-  if(nDJ1){
-    if(triggerstring.Length()) triggerstring += ",";
-    triggerstring += "DJ2";
-  }
-  if(nDJ2){
-    if(triggerstring.Length()) triggerstring += ",";
-    triggerstring += "DJ2";
-  }
-  if(nDG1){
-    if(triggerstring.Length()) triggerstring += ",";
-    triggerstring += "DG1";
-  }
-  if(nDG2){
-    if(triggerstring.Length()) triggerstring += ",";
-    triggerstring += "DG2";
-  }
-  return triggerstring;
 }
 
 } /* namespace EMCalTriggerPtAnalysis */

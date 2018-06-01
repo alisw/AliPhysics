@@ -1,5 +1,5 @@
 /*=================================================================================
- Kunal Garg - last modified 10 May 2017
+ Kunal Garg - last modified 13 May 2018 (kgarg@cern.ch)
  
  *** Configuration script for K*+-->K0Short-Pi analysis ***
  =======================================================================================*/
@@ -21,12 +21,11 @@ Bool_t ConfigKStarPlusMinusRun2
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCpidphipp2015,
  Float_t                 pi_k0s_PIDCut,
  Int_t                   aodFilterBit,
- //Float_t               trackDCAcut,
  Bool_t                  enableMonitor=kTRUE  ,
  TString                 monitorOpt="",
  Float_t                 massTol,
  Float_t                 massTolVeto,
- Bool_t 				 tol_switch,
+ Int_t 				 	    tol_switch,
  Double_t                tol_sigma,
  Float_t                 pLife,
  Float_t                 radiuslow,
@@ -38,13 +37,11 @@ Bool_t ConfigKStarPlusMinusRun2
  const char             *suffix,
  AliRsnCutSet           *PairCutsSame,
  AliRsnCutSet           *PairCutsMix,
- Bool_t                  ptDep,
  Float_t                 DCAxy,
  Bool_t                  enableSys,
  Float_t                 crossedRows,
  Float_t                 rowsbycluster,
- Double_t                pt1,
- Double_t                pt2,
+ Float_t						 v0rapidity,
  Int_t                   Sys
  )
 //kTPCpidphipp2015
@@ -107,11 +104,7 @@ Bool_t ConfigKStarPlusMinusRun2
     esdTrackCuts->SetMinNCrossedRowsTPC(crossedRows);
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(rowsbycluster);
     esdTrackCuts->SetMaxChi2PerClusterTPC(100);
-    
-    if(ptDep){
-        esdTrackCuts->SetMinDCAToVertexXYPtDep(Form("%f+%f/pt^1.1", pt1, pt2));
-    }else
-        esdTrackCuts->SetMinDCAToVertexXY(DCAxy); //Use one of the two - pt dependent or fixed value cut.
+    esdTrackCuts->SetMinDCAToVertexXY(DCAxy); //Use one of the two - pt dependent or fixed value cut.
     
     //
     /////////////////////////////////////////////////
@@ -128,7 +121,7 @@ Bool_t ConfigKStarPlusMinusRun2
     cutK0s->SetfLife(pLife);
     cutK0s->SetfLowRadius(radiuslow);
     cutK0s->SetfHighRadius(200);
-    cutK0s->SetMaxRapidity(2.0);
+    cutK0s->SetMaxRapidity(v0rapidity);
     cutK0s->SetpT_Tolerance(tol_switch);
     cutK0s->SetMassTolSigma(tol_sigma);
     

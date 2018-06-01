@@ -100,11 +100,11 @@ void AliJFlowHistos::CreateEventTrackHistos(){
 		<< fHistCentBin << fBin_DetSet
 		<< fBin_hh
 		<< "END" ;
-	fhEPCorr2D
-		<< TH2D( "hEPCorr2D", "", 100,-TMath::Pi()/2, TMath::Pi()/2, 1000, -TMath::Pi()/2, TMath::Pi()/2)
-		<< fHistCentBin << fBin_DetSet
-		<< fBin_hh
-		<< "END" ;
+	//fhEPCorr2D
+	//	<< TH2D( "hEPCorr2D", "", 100,-TMath::Pi()/2, TMath::Pi()/2, 1000, -TMath::Pi()/2, TMath::Pi()/2)
+	//	<< fHistCentBin << fBin_DetSet
+	//	<< fBin_hh
+	//	<< "END" ;
 
 }
 

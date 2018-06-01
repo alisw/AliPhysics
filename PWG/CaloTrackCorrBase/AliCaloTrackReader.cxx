@@ -44,6 +44,7 @@
 // ---- CaloTrackCorr ---
 #include "AliCalorimeterUtils.h"
 #include "AliCaloTrackReader.h"
+#include "AliMCAnalysisUtils.h"
 
 // ---- Jets ----
 #include "AliAODJet.h"
@@ -136,7 +137,8 @@ fMomentum(),                 fOutputContainer(0x0),
 fhEMCALClusterEtaPhi(0),     fhEMCALClusterEtaPhiFidCut(0),     
 fhEMCALClusterTimeE(0),
 fEnergyHistogramNbins(0),
-fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept("")
+fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
+fGenEventHeader(0),          fGenPythiaEventHeader(0)
 {
   for(Int_t i = 0; i < 8; i++) fhEMCALClusterCutsE [i]= 0x0 ;    
   for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE  [i]= 0x0 ;  
@@ -628,32 +630,27 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
 /// pT-hard is much smaller than the jet pT, then,
 /// there can be a problem in the tails of the 
 /// distributions and the event should be rejected.
+/// Do this only for pythia gamma-jet or jet-jet events
+///
+/// \param process pythia process from AliMCAnalysisUtils::GetPythiaEventHeader()
+/// \param processName Jet-Jet or Gamma-Jet processes from AliMCAnalysisUtils::GetPythiaEventHeader()
 //________________________________________________
-Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
+Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(Int_t process, TString processName)
 {  
-  //printf("AliCaloTrackReader::ComparePtHardAndJetPt() - GenHeaderName : %s\n",GetGenEventHeader()->ClassName());
-  
-  if ( !GetGenEventHeader() ) 
+  if ( !fGenEventHeader ) 
   {
     AliError("Skip event, event header is not available!");
     return kFALSE;
   }
   
-  if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
-  {
-    AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
+  if ( fGenPythiaEventHeader )
+  {  
+    // Do this check only for jet-jet and gamma-jet productions
     
-    // Do this check only for gamma-jet or jet-jet productions
-    Int_t process =  pygeh->ProcessType();
-    //printf("Process %d \n", process);
-    if ( process != 14 && process != 18 && process != 29 && process != 114 && process != 115 && // prompt gamma 
-         process != 11 && process != 12 && process != 13 && process != 28  && process !=  53 && // jet-jet 
-         process != 68 && process != 96  // jet-jet
-       ) return kTRUE ;
-    //printf("\t yes \n");
+    if ( !processName.Contains("Jet") ) return kTRUE;
     
-    Int_t nTriggerJets =  pygeh->NTriggerJets();
-    Float_t ptHard = pygeh->GetPtHard();
+    Int_t nTriggerJets =  fGenPythiaEventHeader->NTriggerJets();
+    Float_t ptHard = fGenPythiaEventHeader->GetPtHard();
     TParticle * jet =  0;
 
     AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, ptHard));
@@ -661,7 +658,7 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
     Float_t tmpjet[]={0,0,0,0};
     for(Int_t ijet = 0; ijet< nTriggerJets; ijet++)
     {
-      pygeh->TriggerJet(ijet, tmpjet);
+      fGenPythiaEventHeader->TriggerJet(ijet, tmpjet);
       jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
       
       AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet->Pt()));
@@ -669,14 +666,14 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
       //Compare jet pT and pt Hard
       if(jet->Pt() > fPtHardAndJetPtFactor * ptHard)
       {
-        AliInfo(Form("Reject jet event with : process %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
-                     process, ptHard, jet->Pt(), fPtHardAndJetPtFactor));
+        AliInfo(Form("Reject jet event with : process %d <%s>, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
+                     process, processName.Data(), ptHard, jet->Pt(), fPtHardAndJetPtFactor));
         return kFALSE;
       }
-    }
+    } // jet loop
     
     if(jet) delete jet;
-  }
+  } // pythia header
   
   return kTRUE ;
 }
@@ -686,29 +683,25 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
 /// pT-hard is smaller than the calorimeter cluster E, 
 /// there can be a problem in the tails of the 
 /// distributions and the event should be rejected.
+/// Do this only for pythia gamma-jet events
+///
+/// \param process pythia process from AliMCAnalysisUtils::GetPythiaEventHeader()
+/// \param processName Jet-Jet or Gamma-Jet processes from AliMCAnalysisUtils::GetPythiaEventHeader()
 //____________________________________________________
-Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
+Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString processName)
 {  
-  if ( !GetGenEventHeader() ) 
+  if ( !fGenEventHeader ) 
   {
     AliError("Skip event, event header is not available!");
     return kFALSE;
   }
-  
-  if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
-  {
-    AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
-    
+
+  if ( fGenPythiaEventHeader )
+  {  
     // Do this check only for gamma-jet productions
-    Int_t process =  pygeh->ProcessType();
-    //printf("Process %d \n", process);
-    if ( process != 14 && process != 18 && process != 29 && process != 114 && process != 115 // && // prompt gamma 
-        //process != 11 && process != 12 && process != 13 && process != 28  && process !=  53 && // jet-jet 
-        //process != 68 && process != 96  // jet-jet
-       ) return kTRUE ;
-    //printf("\t yes \n");
+    if(processName !="Gamma-Jet") return kTRUE;
     
-    Float_t ptHard = pygeh->GetPtHard();
+    Float_t ptHard = fGenPythiaEventHeader->GetPtHard();
     
     Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
     for (Int_t iclus =  0; iclus <  nclusters; iclus++)
@@ -718,14 +711,14 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
       
       if(ecluster > fPtHardAndClusterPtFactor*ptHard)
       {
-        AliInfo(Form("Reject : process %d, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
-                     process, ecluster,clus->GetType(),fPtHardAndClusterPtFactor,ptHard));
+        AliInfo(Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
+                     process, processName.Data(), ecluster ,clus->GetType(), fPtHardAndClusterPtFactor,ptHard));
         
         return kFALSE;
       }
-    }
+    } // cluster loop
     
-  }
+  } // pythia header
   
   return kTRUE ;
 }
@@ -1413,53 +1406,94 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     fhNEventsAfterCut->Fill(14.5);
   }
-  
-  //----------------------------------------------------------------
-  // Reject the event if the event header name is not
-  // the one requested among the possible generators.
-  // Needed in case of cocktail MC generation with multiple options.
-  //----------------------------------------------------------------
-  if(fMCGenerEventHeaderToAccept!="") 
-  {
-    if(!GetGenEventHeader()) return kFALSE;
-    
-    AliDebug(1,"Pass Event header selection");
-    
-    fhNEventsAfterCut->Fill(15.5);
-  }
 
-  //---------------------------------------------------------------------------
-  // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
-  // To be used on for MC data in pT hard bins
-  //---------------------------------------------------------------------------
-  
-  if(fComparePtHardAndJetPt)
+  //----------------------------------------------------------------
+  // MC events selections
+  //----------------------------------------------------------------
+  if ( GetMC() )
   {
-    if(!ComparePtHardAndJetPt()) return kFALSE ;
+    //----------------------------------------------------------------
+    // Get the event headers
+    //----------------------------------------------------------------
     
-    AliDebug(1,"Pass Pt Hard - Jet rejection");
+    // Main header
+    // Init it first to 0 to tell the method to recover it.
+    fGenEventHeader = 0;
+    fGenEventHeader = GetGenEventHeader();
+
+    if ( fGenEventHeader )
+    {
+      AliDebug(1,Form("Selected event header class <%s>, name <%s>; cocktail %p",
+                      fGenEventHeader->ClassName(),
+                      fGenEventHeader->GetName(),
+                      GetMC()->GetCocktailList()));
+    }
+   
+    //----------------------------------------------------------------
+    // Reject the event if the event header name is not
+    // the one requested among the possible generators.
+    // Needed in case of cocktail MC generation with multiple options.
+    //----------------------------------------------------------------
+    if(fMCGenerEventHeaderToAccept!="") 
+    {
+      if ( !fGenEventHeader ) return kFALSE;
+      
+      AliDebug(1,"Pass Event header selection");
+      
+      fhNEventsAfterCut->Fill(15.5);
+    }
     
-    fhNEventsAfterCut->Fill(16.5);
-  }
-  
-  if(fComparePtHardAndClusterPt)
-  {
-    if(!ComparePtHardAndClusterPt()) return kFALSE ;
+    // Pythia header
+    TString pyGenName       = ""; 
+    TString pyProcessName   = "";  
+    Int_t   pyProcess       = 0;
+    Int_t   pyFirstGenPart  = 0; 
+    Int_t   pythiaVersion   = 0;
     
-    AliDebug(1,"Pass Pt Hard - Cluster rejection");
-    
-    fhNEventsAfterCut->Fill(17.5);
-  }
+    // Init it first to 0 to tell the method to recover it.
+    fGenPythiaEventHeader = 
+    AliMCAnalysisUtils::GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
+                                             pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
+
+    if(fGenPythiaEventHeader)
+    {
+      AliDebug(2,Form("Pythia v%d name <%s>, process %d <%s>, first generated particle %d",
+                   pythiaVersion, pyGenName.Data(), pyProcess, pyProcessName.Data(), pyFirstGenPart));
+      
+      //---------------------------------------------------------------------------
+      // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
+      // To be used on for MC data in pT hard bins
+      //---------------------------------------------------------------------------
+      
+      if(fComparePtHardAndJetPt)
+      {
+        if ( !ComparePtHardAndJetPt(pyProcess, pyProcessName) ) return kFALSE ;
+        
+        AliDebug(1,"Pass Pt Hard - Jet rejection");
+        
+        fhNEventsAfterCut->Fill(16.5);
+      }
+      
+      if(fComparePtHardAndClusterPt)
+      {
+        if ( !ComparePtHardAndClusterPt(pyProcess, pyProcessName) ) return kFALSE ;
+        
+        AliDebug(1,"Pass Pt Hard - Cluster rejection");
+        
+        fhNEventsAfterCut->Fill(17.5);
+      }
+    } // pythia header
+  } // MC
   
   //------------------------------------------------------------------
   // Recover the weight assigned to the event, if provided
-  // right now only for pT-hard bins and centrality depedent weights
+  // right now only for pT-hard bins and centrality dependent weights
   //------------------------------------------------------------------
   if ( fWeightUtils->IsWeightSettingOn() )
   {
     fWeightUtils->SetCentrality(cen);
     
-    fWeightUtils->SetPythiaEventHeader(((AliGenPythiaEventHeader*)GetGenEventHeader()));
+    fWeightUtils->SetPythiaEventHeader(fGenPythiaEventHeader);
       
     fEventWeight = fWeightUtils->GetWeight();
   }
@@ -3152,8 +3186,6 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
         AliDebug(1,Form("Reject event with ncells in SM%d %d, cut %d, trig %s",
                         ism,ncellsSM[ism],ncellcut,GetFiredTriggerClasses().Data()));
         
-        printf("Reject event with ncells in SM%d %d, cut %d, trig %s\n",
-               ism,ncellsSM[ism],ncellcut,GetFiredTriggerClasses().Data()); 
         return kTRUE;
       }
     }

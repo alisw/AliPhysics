@@ -215,10 +215,64 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
     fTrackSumPt[iptCut] = 0;
   }  
   
-  // In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
-  if(fComparePtHardAndJetPt && GetMC()) 
+  // Main header
+  fGenEventHeader = GetGenEventHeader();
+  
+  if ( fGenEventHeader )
   {
-    if(!ComparePtHardAndJetPt()) return kFALSE ;
+    AliInfo(Form("Selected event header class <%s>, name <%s>; cocktail %p",
+                 fGenEventHeader->ClassName(),
+                 fGenEventHeader->GetName(),
+                 GetMC()->GetCocktailList()));
+  }
+  
+  //----------------------------------------------------------------
+  // Reject the event if the event header name is not
+  // the one requested among the possible generators.
+  // Needed in case of cocktail MC generation with multiple options.
+  //----------------------------------------------------------------
+  if(fMCGenerEventHeaderToAccept!="") 
+  {
+    if ( !fGenEventHeader ) return kFALSE;
+    
+    AliDebug(1,"Pass Event header selection");
+    
+    fhNEventsAfterCut->Fill(15.5);
+  }
+  
+  // Pythia header
+  TString pyGenName       = ""; 
+  TString pyProcessName   = "";  
+  Int_t   pyProcess       = 0;
+  Int_t   pyFirstGenPart  = 0; 
+  Int_t   pythiaVersion   = 0;
+  
+  fGenPythiaEventHeader = 
+  AliMCAnalysisUtils::GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
+                                           pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
+  if(fGenPythiaEventHeader)
+  {
+    AliInfo(Form("Pythia v%d name <%s>, process %d <%s>, first generated particle %d",
+                 pythiaVersion, pyGenName.Data(), pyProcess, pyProcessName.Data(), pyFirstGenPart));
+  }
+  
+  //---------------------------------------------------------------------------
+  // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
+  // To be used on for MC data in pT hard bins
+  //---------------------------------------------------------------------------
+  
+  if(fComparePtHardAndJetPt)
+  {
+    if ( !ComparePtHardAndJetPt(pyProcess, pyProcessName) ) return kFALSE ;
+    
+    AliDebug(1,"Pass Pt Hard - Jet rejection");
+  }
+  
+  if(fComparePtHardAndClusterPt)
+  {
+    if ( !ComparePtHardAndClusterPt(pyProcess, pyProcessName) ) return kFALSE ;
+    
+    AliDebug(1,"Pass Pt Hard - Cluster rejection");    
   }
 	
   // Fill Vertex array

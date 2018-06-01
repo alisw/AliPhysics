@@ -20,6 +20,7 @@
 
 #include "AliAnalysisManager.h"
 #include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODInputHandler.h"
@@ -185,19 +186,19 @@ AliExtractedEvent::~AliExtractedEvent() {
 
 AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation() :
   AliAnalysisTaskSE(),
-  fOutputInc(0), fOutputIn(0), fOutputOut(0), fOutputM1(0), fOutputM2(0),
-  fInputHandler(0), fMCHandler(0), fHistZVertex(0), fHistPt(0), fHistPhi(0),fHistCent(0),
+  fInputHandler(0), fMCHandler(0), fMCEvent(0), fMCHeader(0), 
+  fHistZVertex(0), fHistPt(0), fHistPhi(0),fHistCent(0),
   fHistEta(0), fHistPos(0), fHistNeg(0), fHistEventPlaneV0A(0), fHistEventPlaneV0C(0),
-  fHistEventPlaneTPC(0), fPoolMgr(0), fPoolMgr_Highpt(0), fInputRoot(0), fInputTree(0),
-  fMCCorrection(0), bUseMixingPool(0), fMixingPoolSize(100), fDebug(0), fMinNumTrack(500),
+  fHistEventPlaneTPC(0), fPoolMgr(0), fInputRoot(0), fInputTree(0),
+  fMCCorrection(0), fMCTruth(0), bUseMixingPool(0), fMixingPoolSize(100), fDebug(0), fMinNumTrack(500),
   fEtaCut(0.9), fPhiCut(TMath::TwoPi()), fMinPtTrigCut(3.0), fTwoTrackEffCut(0.02), 
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
   fMinimumPtABinMerging(5), fResonancesVCut(0.02), fConversionsVCut(0.04),
-  fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
+  fHistNevtSame(0),
   fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
   fCentPercentile(0), fZVertex(0), fEventPlane(0), fEventPlaneV0A(0),
-  fEventPlaneV0C(0), fEventPlaneTPC(0), fCollision(kPbPb), fPeriod(k10h),
+  fEventPlaneV0C(0), fEventPlaneTPC(0), pi(TMath::Pi()), fCollision(kPbPb), fPeriod(k10h),
   flowQnVectorTask(0), fFlowQnVectorMgr(0)
 {
 
@@ -205,19 +206,19 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation() :
 
 AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char *name) :
   AliAnalysisTaskSE(name),
-  fOutputInc(0), fOutputIn(0), fOutputOut(0), fOutputM1(0), fOutputM2(0),
-  fInputHandler(0), fMCHandler(0), fHistZVertex(0), fHistPt(0), fHistPhi(0),fHistCent(0),
+  fInputHandler(0), fMCHandler(0), fMCEvent(0), fMCHeader(0), 
+  fHistZVertex(0), fHistPt(0), fHistPhi(0),fHistCent(0),
   fHistEta(0), fHistPos(0), fHistNeg(0), fHistEventPlaneV0A(0), fHistEventPlaneV0C(0),
-  fHistEventPlaneTPC(0), fPoolMgr(0), fPoolMgr_Highpt(0), fInputRoot(0), fInputTree(0),
-  fMCCorrection(0), bUseMixingPool(0), fMixingPoolSize(100), fDebug(0), fMinNumTrack(500),
+  fHistEventPlaneTPC(0), fPoolMgr(0), fInputRoot(0), fInputTree(0),
+  fMCCorrection(0), fMCTruth(0), bUseMixingPool(0), fMixingPoolSize(100), fDebug(0), fMinNumTrack(500),
   fEtaCut(0.9), fPhiCut(TMath::TwoPi()), fMinPtTrigCut(3.0), fTwoTrackEffCut(0.02), 
   fFilterBit(128), fTrackDepth(5000), fEventID(0), fIsFirstEvent(1),
   fMinimumPtABinMerging(5), fResonancesVCut(0.02), fConversionsVCut(0.04),
-  fHistNevtSame(0), fHistPtSame(0),  fHistPtSameIn(0), fHistPtSameOut(0),
+  fHistNevtSame(0), 
   fHistEtaSparse(0), fHistV2(0),
   fHistContamination(0), fHighPtMixing(0), fTreeStart(0), fTreeEnd(0),
   fCentPercentile(0), fZVertex(0), fEventPlane(0), fEventPlaneV0A(0),
-  fEventPlaneV0C(0), fEventPlaneTPC(0), fCollision(kPbPb), fPeriod(k10h),
+  fEventPlaneV0C(0), fEventPlaneTPC(0), pi(TMath::Pi()), fCollision(kPbPb), fPeriod(k10h),
   flowQnVectorTask(0), fFlowQnVectorMgr(0)
 {
   DefineInput(0, TChain::Class());
@@ -225,57 +226,35 @@ AliAnalysisTaskJetLikeCorrelation::AliAnalysisTaskJetLikeCorrelation(const char 
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
-//  DefineOutput(4, TList::Class());
-//  DefineOutput(5, TList::Class());
+  DefineOutput(4, TList::Class());
+  DefineOutput(5, TList::Class());
+  DefineOutput(6, TList::Class());
+  DefineOutput(7, TList::Class());
+//  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+//    DefineOutput(iplane+1, TList::Class());    //Incl, In, Out, M1, M2, M3, M4 : total 7
+//    cout << "DefineOutput " << iplane << endl;
+//  }
 }
 
 AliAnalysisTaskJetLikeCorrelation::~AliAnalysisTaskJetLikeCorrelation() {
 
-  if (fOutputInc && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fOutputInc;
-  }
-  if (fOutputIn && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fOutputIn;
-  }
-//  if (fOutputM1 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-//    delete fOutputM1;
-//  }
-//  if (fOutputM2 && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-//    delete fOutputM2;
-//  }
-  if (fOutputOut && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
-    delete fOutputOut;
+  for (int iin = 0; iin < fNumberOfPlanes; iin++) {
+    if (fOutput[iin] && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+      delete fOutput[iin];
+    }
   }
 }
 
 void AliAnalysisTaskJetLikeCorrelation::Terminate(Option_t *option) {
-  fOutputInc = dynamic_cast<TList*>(GetOutputData(1));
-  if (NULL == fOutputInc) {
-    AliFatal("fOutputIncList == NULL");
-    return;
+
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    fOutput[iplane] = dynamic_cast<TList*>(GetOutputData(iplane+1));
+    if (NULL == fOutput[iplane]) {
+      AliFatal(Form("fOutput%d == NULL", iplane));
+      return;
+    }
   }
   
-  fOutputIn = dynamic_cast<TList*>(GetOutputData(2));
-  if (NULL == fOutputIn) {
-    AliFatal("fOutputInList == NULL");
-    return;
-  }
-  fOutputOut = dynamic_cast<TList*>(GetOutputData(3));
-  if (NULL == fOutputOut) {
-    AliFatal("fOutputOutList == NULL");
-    return;
-  }
-//  fOutputM1 = dynamic_cast<TList*>(GetOutputData(4));
-//  if (NULL == fOutputM1) {
-//    AliFatal("fOutputM1List == NULL");
-//    return;
-//  }
-//  fOutputM2 = dynamic_cast<TList*>(GetOutputData(5));
-//  if (NULL == fOutputM2) {
-//    AliFatal("fOutputM2List == NULL");
-//    return;
-//  }
-
 }
 
 
@@ -283,30 +262,19 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
 //  fOutput = new TList();
 //  fOutput->SetOwner(kTRUE);
   fIsFirstEvent = 1;
-  fOutputInc = new TList();
-  fOutputInc->SetOwner(kTRUE);
-  fOutputIn = new TList();
-  fOutputIn->SetOwner(kTRUE);
-  fOutputOut = new TList();
-  fOutputOut->SetOwner(kTRUE);
-//  fOutputM1 = new TList();
-//  fOutputM1->SetOwner(kTRUE);
-//  fOutputM2 = new TList();
-//  fOutputM2->SetOwner(kTRUE);
-  
-//  fOutput->Add(fOutputInc);
-//  fOutput->Add(fOutputIn);
-//  fOutput->Add(fOutputOut);
-//  fOutput->Add(fOutputM1);
-//  fOutput->Add(fOutputM2);
+
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    fOutput[iplane] = new TList();
+    fOutput[iplane]->SetOwner(kTRUE);
+  }
 
   fHistZVertex = new TH1D("fHistZVertex", "fHistZVertex", 400, -20, 20);
-  fHistPt = new TH1D("fHistPt", "fHistPt", 20000, 0, 20);
+  fHistPt = new TH1D("fHistPt", "fHistPt", 200, 0, 20);
   fHistPhi = new TH1D("fHistPhi", "fHistPhi", 315*2 , 0, 3.15*2);
   fHistCent = new TH1D("fHistCent", "fHistCent", 100, 0, 100);
   fHistEta = new TH1D("fHistEta", "fHistEta", 200, -1, 1);
-  fHistPos = new TH1D("fHistPos", "fHistPos", 20000, 0, 20);
-  fHistNeg = new TH1D("fHistNeg", "fHistNeg", 20000, 0, 20);
+  fHistPos = new TH1D("fHistPos", "fHistPos", 200, 0, 20);
+  fHistNeg = new TH1D("fHistNeg", "fHistNeg", 200, 0, 20);
   fHistEventPlaneV0A = new TH1D("fHistEventPlaneV0A", "fHistEventPlaneV0A", 315 , 0, 3.15);
   fHistEventPlaneV0C = new TH1D("fHistEventPlaneV0C", "fHistEventPlaneV0C", 315 , 0, 3.15);
   fHistEventPlaneTPC = new TH1D("fHistEventPlaneTPC", "fHistEventPlaneTPC", 315 , 0, 3.15);
@@ -327,118 +295,45 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
   InitHistograms();
 
   
-  fOutputInc->Add(fHistZVertex);
-  fOutputInc->Add(fHistPt);
-  fOutputInc->Add(fHistPhi);
-  fOutputInc->Add(fHistCent);
-  fOutputInc->Add(fHistEta);
-  fOutputInc->Add(fHistPos);
-  fOutputInc->Add(fHistNeg);
-  fOutputInc->Add(fHistEtaSparse);
-  fOutputInc->Add(fHistEventPlaneV0A);
-  fOutputInc->Add(fHistEventPlaneV0C);
-  fOutputInc->Add(fHistEventPlaneTPC);
-  fOutputInc->Add(fHistV2);
-  fOutputInc->Add(fHistResolutionV2[0]);
-  fOutputInc->Add(fHistResolutionV2[1]);
-  fOutputInc->Add(fHistResolutionV2[2]);
-  fOutputInc->Add(fHistNevtSame);
+  fOutput[0]->Add(fHistZVertex);
+  fOutput[0]->Add(fHistPt);
+  fOutput[0]->Add(fHistPhi);
+  fOutput[0]->Add(fHistCent);
+  fOutput[0]->Add(fHistEta);
+  fOutput[0]->Add(fHistPos);
+  fOutput[0]->Add(fHistNeg);
+  fOutput[0]->Add(fHistEtaSparse);
+  fOutput[0]->Add(fHistEventPlaneV0A);
+  fOutput[0]->Add(fHistEventPlaneV0C);
+  fOutput[0]->Add(fHistEventPlaneTPC);
+  fOutput[0]->Add(fHistV2);
+  fOutput[0]->Add(fHistResolutionV2[0]);
+  fOutput[0]->Add(fHistResolutionV2[1]);
+  fOutput[0]->Add(fHistResolutionV2[2]);
+  fOutput[0]->Add(fHistNevtSame);
   if (fMCCorrection)
-    fOutputInc->Add(fHistContamination);
+    fOutput[0]->Add(fHistContamination);
 
-  fOutputInc->Add(fHistPtSame);
-  fOutputIn->Add(fHistPtSameIn);
-  fOutputOut->Add(fHistPtSameOut);
-//  fOutputM1->Add(fHistPtSameM1);
-//  fOutputM2->Add(fHistPtSameM2);
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    fOutput[iplane]->Add(fHistPtSame[iplane]);
+  }
 
-  int lMinPtBin = GetPtBin(fMinPtTrigCut);
+//  int lMinPtBin = GetPtBin(fMinPtTrigCut);
   
 
-  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-        if (iptt < lMinPtBin) continue;
-        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-          if (iptt < ipta) continue;
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
+      for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
+        for (int iptt = 0; iptt < fPttArray.GetSize() - 1; iptt++) {
+          for (int ipta = 0; ipta < fPtaArray.GetSize() - 1; ipta++) {
+            if (fPttArray[iptt] + 0.1 < fPtaArray[ipta] ) continue;
 
-          fOutputInc->Add(fHistdEtadPhiSame[icent][izvertex][iptt][ipta]);
-          fOutputInc->Add(fHistdEtadPhiMixed[icent][izvertex][iptt][ipta]);
-          if (fMCCorrection) {
-            fOutputInc->Add(fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta]);
-            fOutputInc->Add(fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta]);
-          }
-        }
-      }
-    }
-  }
-  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-        if (iptt < lMinPtBin) continue;
-        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-          if (iptt < ipta) continue;
-
-          fOutputIn->Add(fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta]);
-          fOutputIn->Add(fHistdEtadPhiMixedIn[icent][izvertex][iptt][ipta]);
-          if (fMCCorrection) {
-            fOutputIn->Add(fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta]);
-            fOutputIn->Add(fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta]);
-          }
-
-        }
-      }
-    }
-  }
-//  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-//    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-//      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-//        if (iptt < lMinPtBin) continue;
-//        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-//          if (iptt < ipta) continue;
-//
-//          fOutputM1->Add(fHistdEtadPhiSameM1[icent][izvertex][iptt][ipta]);
-//          fOutputM1->Add(fHistdEtadPhiMixedM1[icent][izvertex][iptt][ipta]);
-//
-//          if (fMCCorrection) {
-//            fOutputM1->Add(fHistdEtadPhiSameMCCorrPrimM1[icent][izvertex][iptt][ipta]);
-//            fOutputM1->Add(fHistdEtadPhiSameMCCorrContM1[icent][izvertex][iptt][ipta]);
-//          }
-//        }
-//      }
-//    }
-//  }
-//  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-//    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-//      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-//        if (iptt < lMinPtBin) continue;
-//        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-//          if (iptt < ipta) continue;
-//
-//          fOutputM2->Add(fHistdEtadPhiSameM2[icent][izvertex][iptt][ipta]);
-//          fOutputM2->Add(fHistdEtadPhiMixedM2[icent][izvertex][iptt][ipta]);
-//
-//          if (fMCCorrection) {
-//            fOutputM2->Add(fHistdEtadPhiSameMCCorrPrimM2[icent][izvertex][iptt][ipta]);
-//            fOutputM2->Add(fHistdEtadPhiSameMCCorrContM2[icent][izvertex][iptt][ipta]);
-//          }
-//        }
-//      }
-//    }
-//  }
-  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-        if (iptt < lMinPtBin) continue;
-        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-          if (iptt < ipta) continue;
-
-          fOutputOut->Add(fHistdEtadPhiSameOut[icent][izvertex][iptt][ipta]);
-          fOutputOut->Add(fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta]);
-
-          if (fMCCorrection) {
-            fOutputOut->Add(fHistdEtadPhiSameMCCorrPrimOut[icent][izvertex][iptt][ipta]);
-            fOutputOut->Add(fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta]);
+            fOutput[iplane]->Add(fHistdEtadPhiSame[iplane][icent][izvertex][iptt][ipta]);
+            fOutput[iplane]->Add(fHistdEtadPhiMixed[iplane][icent][izvertex][iptt][ipta]);
+            if (fMCCorrection) {
+              fOutput[iplane]->Add(fHistdEtadPhiSameMCCorrPrim[iplane][icent][izvertex][iptt][ipta]);
+              fOutput[iplane]->Add(fHistdEtadPhiSameMCCorrCont[iplane][icent][izvertex][iptt][ipta]);
+            }
           }
         }
       }
@@ -462,11 +357,10 @@ void AliAnalysisTaskJetLikeCorrelation::UserCreateOutputObjects() {
  
 //  ConnectInputHandler();
 
-  PostData(1, fOutputInc);
-  PostData(2, fOutputIn);
-  PostData(3, fOutputOut);
-//  PostData(4, fOutputM1);
-//  PostData(5, fOutputM2);
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    PostData(iplane+1, fOutput[iplane]);
+  }
+
 
 }
 
@@ -476,7 +370,7 @@ void AliAnalysisTaskJetLikeCorrelation::ConnectInputHandler() {
 }
 
 void AliAnalysisTaskJetLikeCorrelation::UserExec(Option_t *option) {
-  
+
   // Main loop executed for each event
   // Create Pointer to reconstructed event
   AliVEvent *event = InputEvent();
@@ -502,13 +396,13 @@ void AliAnalysisTaskJetLikeCorrelation::UserExec(Option_t *option) {
 
   if (fIsFirstEvent && bUseMixingPool) {
     TGrid::Connect("alien:");
-string  filename;
+    string  filename;
     if (fCollision == kPbPb)
       filename = Form("alien:///alice/cern.ch/user/h/hyeonjoo/MixingPool_10h/output/000%d/AnalysisResults.root", runnumber); // pbpb
     else 
       filename = Form("alien:///alice/cern.ch/user/h/hyeonjoo/MixingPool_11a/output/000%d/AnalysisResults.root", runnumber); // pbpb
-//    string filename = Form("alien:///alice/cern.ch/user/h/hyeonjoo/Hybrid_11aMixing/output/000%d/AnalysisResults.root", runnumber); // pp
-//    string filename = Form("./146858.root");
+    //    string filename = Form("alien:///alice/cern.ch/user/h/hyeonjoo/Hybrid_11aMixing/output/000%d/AnalysisResults.root", runnumber); // pp
+    //    string filename = Form("./146858.root");
     fInputRoot = TFile::Open(filename.c_str());
     if (!fInputRoot) {
       cout << "File : " << filename << " doesn't exist!" << endl;
@@ -533,9 +427,9 @@ string  filename;
         fPoolSize[icent][izvertex] = 0;
       }
     }
-//    TStopwatch stwa;
-//    stwa.Start();
-//    cout << "Start time : " << endl;
+    //    TStopwatch stwa;
+    //    stwa.Start();
+    //    cout << "Start time : " << endl;
     for (int ientry = fTreeStart; ientry < fTreeEnd; ientry++) {
       fInputTree->GetEntry(ientry);
       if (!fHighPtMixing) {
@@ -546,12 +440,10 @@ string  filename;
     }
   }
 
-  AliAODMCHeader *aodmcHeader;
-
-  if (fMCCorrection) 
+  if (fMCCorrection || fMCTruth) 
   {
     fMCEvent = MCEvent();
-    aodmcHeader = (AliAODMCHeader*)aodEvent->FindListObject(AliAODMCHeader::StdBranchName());
+    fMCHeader = (AliAODMCHeader*) aodEvent->FindListObject(AliAODMCHeader::StdBranchName());
   }
 
   UInt_t mask;
@@ -591,7 +483,6 @@ string  filename;
     fPeriod = k17p;
     fCollision = kpp;
 
-
   }
 
   fEventPlane = -999;
@@ -603,20 +494,12 @@ string  filename;
 
   AliCollisionGeometry *mcCollGeo;
   int nmctracks, label = -999;
-  if (fMCCorrection) {
-    mcCollGeo= dynamic_cast<AliCollisionGeometry*> (fMCEvent->GenEventHeader());
-    float rpAngle = -999;
-    if (mcCollGeo) {
-      rpAngle = mcCollGeo->ReactionPlaneAngle();
-      if (rpAngle < 0) rpAngle += TMath::Pi();   // V0 EP angle varies from -pi/2 to +pi/2
-    }
+  if (fMCCorrection || fMCTruth) {
     nmctracks = fMCEvent->GetNumberOfTracks();
   }
 
   TObjArray *lTrackArray = new TObjArray();
   lTrackArray->SetOwner(kTRUE);
-  TObjArray *lTrackArray_HighPt = new TObjArray();
-  lTrackArray_HighPt->SetOwner(kTRUE);
 
   float ldeltaEventPlane = -999;
   float lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso = -999;
@@ -647,629 +530,679 @@ string  filename;
   fHistEventPlaneTPC->Fill(fEventPlaneTPC);
   lCentBin = GetCentBin(fCentPercentile);
   lZVertexBin = GetZVertexBin(fZVertex);
-  
-  if (fEntry%1000 == 0) cout << "Entry : " << fEntry << " Centrality : " << fCentPercentile << " ZVertex : " << fZVertex << " Evp : " << fEventPlaneV0A << endl;
+
+    if (fEntry%1000 == 0 ) cout << "Entry : " << fEntry << " Centrality : " << fCentPercentile << " ZVertex : " << fZVertex << " Evp : " << fEventPlaneV0A << endl;
   if (lCentBin == -1 || lZVertexBin == -1) return;   //To reduce time for mixing
-  if (fCollision == kPbPb && bUseMixingPool) {
-    for (int itrack = 0; itrack < ntracks; itrack++) {
-      AliAODTrack *aodTrack = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrack));
-      AliAODMCParticle *lmcTrack, *lmcTrackAsso;
 
-      if (!aodTrack) {
-        AliError(Form("ERROR: No track pointer for track %d", itrack));
-        continue;
-      }
+  if (!fMCTruth) {
+    if (fCollision == kPbPb && bUseMixingPool) {
+      for (int itrack = 0; itrack < ntracks; itrack++) {
+        AliAODTrack *aodTrack = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrack));
+        AliAODMCParticle *lmcTrack, *lmcTrackAsso;
 
-      if (fFilterBit == 768){
-        if (!(aodTrack->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
-        //      if (!aodTrack->TestFilterBit(fFilterBit)) continue;
-      } else {
-        if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
-        if (!aodTrack->TestFilterBit(fFilterBit)) {
-          //     std::cout << "filterbit no" << std::endl;
-          continue; //TPC Only Track cut : 128 
-        }
-      }
-
-      lChargeTrig = aodTrack->Charge();
-
-      lpTTrig = aodTrack->Pt();
-
-      ldeltaEventPlane = lPhiTrig - fEventPlaneV0C;
-
-      if (lpTTrig > 0.5 && lpTTrig < 5) {
-        fHistV2->Fill(fCentPercentile, TMath::Cos(2*ldeltaEventPlane));
-      }
-
-      if (lpTTrig < 0.8) continue;
-      lEtaTrig = aodTrack->Eta();
-      lPhiTrig = aodTrack->Phi();
-      lpTTrigBin = GetPtBin(lpTTrig);
-      if (lpTTrigBin == -1) continue;
-
-
-      if (TMath::Abs(lEtaTrig) >= 0.8) continue;   
-
-      fHistPhi->Fill(lPhiTrig);
-      fHistPt->Fill(lpTTrig);
-      fHistEta->Fill(lEtaTrig);
-      if (lChargeTrig < 0) fHistPos->Fill(lpTTrig);
-      if (lChargeTrig > 0) fHistNeg->Fill(lpTTrig);
-
-//      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
-      if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
-      if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
-
-      if (fMCCorrection) {
-        label = TMath::Abs(aodTrack->GetLabel());
-        if (label > nmctracks) continue;
-        lmcTrack = (AliAODMCParticle*) fMCEvent->GetTrack(label);
-        kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
-      }
-
-      etavars[0] = 0;
-      etavars[3] = lEtaTrig;
-      etavars[4] = lpTTrig;
-
-      fHistPtSame->Fill(lCentBin, lZVertexBin, lpTTrig);
-      fHistEtaSparse->Fill(etavars);
-
-      if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-        fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 1;
-        etavars[0] = 1;
-        cont_inout = 1;
-      } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-        fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 1;
-        etavars[0] = 1;
-        cont_inout = 1;
-      } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-        fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 1;
-        etavars[0] = 1;
-        cont_inout = 1;
-      } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-        contvars[1] = 3;
-        etavars[0] = 3;
-        cont_inout = 3;
-      } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-        contvars[1] = 3;
-        etavars[0] = 3;
-        cont_inout = 3;
-      } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-        contvars[1] = 4;
-        etavars[0] = 4;
-        cont_inout = 4;
-      } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-        contvars[1] = 4;
-        etavars[0] = 4;
-        cont_inout = 4;
-      } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-        fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 2;
-        etavars[0] = 2;
-        cont_inout = 2;
-      } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-        fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 2;
-        etavars[0] = 2;
-        cont_inout = 2;
-      }
-
-      fHistEtaSparse->Fill(etavars);
-
-      if (fMCCorrection) {
-        // Inclusive & All Reco particles (contaminated + primary)
-
-        fHistContamination->Fill(contvars);
-        if (kPrimaryTrig) {
-          contvars[0] = 1;
-          fHistContamination->Fill(contvars);
-        } // In, out, m1, m2
-
-        contvars[1] = 0; // Inclusive
-        contvars[0] = 0; // contaminated + primary
-        fHistContamination->Fill(contvars);
-        if (kPrimaryTrig) {
-          contvars[0] = 1;
-          fHistContamination->Fill(contvars);
-        }
-      }
-      if (lpTTrig < fMinPtTrigCut) { 
-        //      lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-        continue;
-      }
-      else 
-        lTrackArray_HighPt->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-
-      for (int jtrack = 0; jtrack < ntracks; jtrack++) {
-        if (itrack == jtrack) continue;
-        AliAODTrack *aodTrackAsso = static_cast<AliAODTrack*>(aodEvent->GetTrack(jtrack));
-        if (!aodTrackAsso) {
+        if (!aodTrack) {
+          AliError(Form("ERROR: No track pointer for track %d", itrack));
           continue;
         }
 
         if (fFilterBit == 768){
-          if (!(aodTrackAsso->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
-          //        if (!(aodTrackAsso->TestFilterBit(fFilterBit))) continue;
+          if (!(aodTrack->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
+          //      if (!aodTrack->TestFilterBit(fFilterBit)) continue;
         } else {
-          if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
-          if (!aodTrackAsso->TestFilterBit(fFilterBit)) {
+          //          if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
+          if (!aodTrack->TestFilterBit(fFilterBit)) {
             //     std::cout << "filterbit no" << std::endl;
             continue; //TPC Only Track cut : 128 
           }
         }
 
-        lpTAsso = aodTrackAsso->Pt();
-        if (lpTAsso < 0.8 || lpTTrig < lpTAsso) continue;
-        lpTAssoBin = GetPtBin(lpTAsso);
-        if (lpTAssoBin == -1) continue;
+        lChargeTrig = aodTrack->Charge();
 
-        lEtaAsso = aodTrackAsso->Eta();
-        if (TMath::Abs(lEtaAsso) >= 0.8) continue;
-        lPhiAsso = aodTrackAsso->Phi();
-        lChargeAsso = aodTrackAsso->Charge();
+        lpTTrig = aodTrack->Pt();
 
+        ldeltaEventPlane = lPhiTrig - fEventPlaneV0C;
 
-        if (fConversionsVCut > 0 && lChargeAsso * lChargeTrig < 0)
-        {
-          Float_t mass = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.510e-3, 0.510e-3);
-
-          if (mass < fConversionsVCut * 5)
-          {
-            mass = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.510e-3, 0.510e-3);
-
-            if (mass < fConversionsVCut*fConversionsVCut) 
-              continue;
-          }
+        if (lpTTrig > 0.5 && lpTTrig < 5) {
+          fHistV2->Fill(fCentPercentile, TMath::Cos(2*ldeltaEventPlane));
         }
 
-        // K0s
-        if (fResonancesVCut > 0 && lChargeAsso * lChargeTrig < 0)
-        {
-          Float_t mass = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.1396);
-
-          const Float_t kK0smass = 0.4976;
-
-          if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
-          {
-            mass = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.1396);
-
-            if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
-              continue;
-          }
-        }
+        if (lpTTrig < 0.8) continue;
+        lEtaTrig = aodTrack->Eta();
+        lPhiTrig = aodTrack->Phi();
 
 
-        // Lambda
-        if (fResonancesVCut > 0 && lChargeAsso * lChargeTrig < 0)
-        {
-          Float_t mass1 = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.9383);
-          Float_t mass2 = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.9383, 0.1396);
+        if (TMath::Abs(lEtaTrig) >= 0.8) continue;   
 
-          const Float_t kLambdaMass = 1.115;
+        fHistPhi->Fill(lPhiTrig);
+        fHistPt->Fill(lpTTrig);
+        fHistEta->Fill(lEtaTrig);
+        if (lChargeTrig < 0) fHistPos->Fill(lpTTrig);
+        if (lChargeTrig > 0) fHistNeg->Fill(lpTTrig);
 
-          if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-          {
-            mass1 = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.9383);
-
-            if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-              continue;
-          }
-          if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-          {
-            mass2 = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.9383, 0.1396);
-
-            if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-              continue;
-          }
-        }
-
-        deltaEta = lEtaTrig - lEtaAsso;
-        deltaPhi = lPhiTrig - lPhiAsso;
-        if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
-        if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
-
-        ldPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, lChargeTrig, lChargeAsso, lpTTrig, lpTAsso, lBSign);
-        if (TMath::Abs(ldPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
-          continue;
+        //      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
+        if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
+        if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
 
         if (fMCCorrection) {
-          label = TMath::Abs(aodTrackAsso->GetLabel());
+          label = TMath::Abs(aodTrack->GetLabel());
           if (label > nmctracks) continue;
-          lmcTrackAsso = (AliAODMCParticle*) fMCEvent->GetTrack(label);
-          kPrimaryAsso = lmcTrackAsso->IsPhysicalPrimary();
+          lmcTrack = (AliAODMCParticle*) fMCEvent->GetTrack(label);
+          kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
+        }
 
+        etavars[0] = 0;
+        etavars[3] = lEtaTrig;
+        etavars[4] = lpTTrig;
 
-          fHistdEtadPhiSameMCCorrCont[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrContIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrContOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          if (kPrimaryAsso && kPrimaryTrig) {
-            fHistdEtadPhiSameMCCorrPrim[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrPrimIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrPrimOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+        fHistPtSame[0]->Fill(lCentBin, lZVertexBin, lpTTrig);
+
+        lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
+
+        lpTTrigBin = GetPttBin(lpTTrig);
+        if (lpTTrigBin == -1) continue;
+
+        fHistEtaSparse->Fill(etavars);
+
+        cont_inout = CheckInOut(ldeltaEventPlane);
+
+        fHistEtaSparse->Fill(etavars);
+
+        if (fMCCorrection) {
+          // Inclusive & All Reco particles (contaminated + primary)
+          fHistContamination->Fill(contvars);
+          if (kPrimaryTrig) {
+            contvars[0] = 1;
+            fHistContamination->Fill(contvars);
+          } // In, out, m1, m2
+
+          contvars[1] = 0; // Inclusive
+          contvars[0] = 0; // contaminated + primary
+          fHistContamination->Fill(contvars);
+          if (kPrimaryTrig) {
+            contvars[0] = 1;
+            fHistContamination->Fill(contvars);
           }
         }
 
-        fHistdEtadPhiSame[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-        if ( cont_inout == 1 ) fHistdEtadPhiSameIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-        else if ( cont_inout == 2 ) fHistdEtadPhiSameOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+        for (int jtrack = 0; jtrack < ntracks; jtrack++) {
+          if (itrack == jtrack) continue;
+          AliAODTrack *aodTrackAsso = static_cast<AliAODTrack*>(aodEvent->GetTrack(jtrack));
+          if (!aodTrackAsso) {
+            continue;
+          }
 
-      }
+          if (fFilterBit == 768){
+            if (!(aodTrackAsso->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
+            //        if (!(aodTrackAsso->TestFilterBit(fFilterBit))) continue;
+          } else {
+            //            if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
+            if (!aodTrackAsso->TestFilterBit(fFilterBit)) {
+              //     std::cout << "filterbit no" << std::endl;
+              continue; //TPC Only Track cut : 128 
+            }
+          }
 
-    }
-  } else if (fCollision == kPbPb && !bUseMixingPool) {
-    for (int itrack = 0; itrack < ntracks; itrack++) {
-      AliAODTrack *aodTrack = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrack));
-      AliAODMCParticle *lmcTrack, *lmcTrackAsso;
+          lpTAsso = aodTrackAsso->Pt();
+          if (lpTAsso < 0.8 || lpTTrig < lpTAsso) continue;
+          lpTAssoBin = GetPtaBin(lpTAsso);
+          if (lpTAssoBin == -1) continue;
 
-      if (!aodTrack) {
-        AliError(Form("ERROR: No track pointer for track %d", itrack));
-        continue;
-      }
+          lEtaAsso = aodTrackAsso->Eta();
+          if (TMath::Abs(lEtaAsso) >= 0.8) continue;
+          lPhiAsso = aodTrackAsso->Phi();
+          lChargeAsso = aodTrackAsso->Charge();
 
-      if (fFilterBit == 768){
-        if (!(aodTrack->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
-        //      if (!aodTrack->TestFilterBit(fFilterBit)) continue;
-      } else {
-        if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
-        if (!aodTrack->TestFilterBit(fFilterBit)) {
-          //     std::cout << "filterbit no" << std::endl;
-          continue; //TPC Only Track cut : 128 
+
+          if (fConversionsVCut > 0 && lChargeAsso * lChargeTrig < 0)
+          {
+            Float_t mass = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.510e-3, 0.510e-3);
+
+            if (mass < fConversionsVCut * 5)
+            {
+              mass = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.510e-3, 0.510e-3);
+
+              if (mass < fConversionsVCut*fConversionsVCut) 
+                continue;
+            }
+          }
+
+          // K0s
+          if (fResonancesVCut > 0 && lChargeAsso * lChargeTrig < 0)
+          {
+            Float_t mass = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.1396);
+
+            const Float_t kK0smass = 0.4976;
+
+            if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
+            {
+              mass = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.1396);
+
+              if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
+                continue;
+            }
+          }
+
+
+          // Lambda
+          if (fResonancesVCut > 0 && lChargeAsso * lChargeTrig < 0)
+          {
+            Float_t mass1 = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.9383);
+            Float_t mass2 = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.9383, 0.1396);
+
+            const Float_t kLambdaMass = 1.115;
+
+            if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+            {
+              mass1 = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.9383);
+
+              if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                continue;
+            }
+            if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+            {
+              mass2 = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.9383, 0.1396);
+
+              if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                continue;
+            }
+          }
+
+          deltaEta = lEtaTrig - lEtaAsso;
+          deltaPhi = lPhiTrig - lPhiAsso;
+          if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
+          if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
+
+          ldPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, lChargeTrig, lChargeAsso, lpTTrig, lpTAsso, lBSign);
+          if (TMath::Abs(ldPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
+            continue;
+
+          if (fMCCorrection) {
+            label = TMath::Abs(aodTrackAsso->GetLabel());
+            if (label > nmctracks) continue;
+            lmcTrackAsso = (AliAODMCParticle*) fMCEvent->GetTrack(label);
+            kPrimaryAsso = lmcTrackAsso->IsPhysicalPrimary();
+
+
+            fHistdEtadPhiSameMCCorrCont[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            if (cont_inout > 0)
+              fHistdEtadPhiSameMCCorrPrim[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            if (kPrimaryAsso && kPrimaryTrig) {
+              fHistdEtadPhiSameMCCorrPrim[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+              if (cont_inout > 0)
+                fHistdEtadPhiSameMCCorrPrim[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            }
+          }
+
+          fHistdEtadPhiSame[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+
+          if (cont_inout > 0) fHistdEtadPhiSame[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+
         }
+
       }
+    } else if (fCollision == kPbPb && !bUseMixingPool) {
+      for (int itrack = 0; itrack < ntracks; itrack++) {
+        AliAODTrack *aodTrack = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrack));
+        AliAODMCParticle *lmcTrack, *lmcTrackAsso;
 
-      lChargeTrig = aodTrack->Charge();
-
-      lpTTrig = aodTrack->Pt();
-      
-      ldeltaEventPlane = lPhiTrig - fEventPlaneV0C;
-
-      if (lpTTrig > 0.5 && lpTTrig < 5) {
-        fHistV2->Fill(fCentPercentile, TMath::Cos(2*ldeltaEventPlane));
-      }
-      if (lpTTrig < 0.8) continue;
-      lpTTrigBin = GetPtBin(lpTTrig);
-      if (lpTTrigBin == -1) continue;
-      lEtaTrig = aodTrack->Eta();
-      lPhiTrig = aodTrack->Phi();
-
-
-      if (TMath::Abs(lEtaTrig) >= 0.8) continue;   
-
-      fHistPhi->Fill(lPhiTrig);
-      fHistPt->Fill(lpTTrig);
-      fHistEta->Fill(lEtaTrig);
-      if (lChargeTrig < 0) fHistPos->Fill(lpTTrig);
-      if (lChargeTrig > 0) fHistNeg->Fill(lpTTrig);
-
-//      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
-      if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
-      if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
-
-      if (fMCCorrection) {
-        label = TMath::Abs(aodTrack->GetLabel());
-        if (label > nmctracks) continue;
-        lmcTrack = (AliAODMCParticle*) fMCEvent->GetTrack(label);
-        kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
-      }
-      etavars[0] = 0;
-
-      etavars[3] = lEtaTrig;
-      etavars[4] = lpTTrig;
-
-      fHistPtSame->Fill(lCentBin, lZVertexBin, lpTTrig);
-      fHistEtaSparse->Fill(etavars);
-
-      if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-        fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 1;
-        etavars[0] = 1;
-        cont_inout = 1;
-      } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-        fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 1;
-        etavars[0] = 1;
-        cont_inout = 1;
-      } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-        fHistPtSameIn->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 1;
-        etavars[0] = 1;
-        cont_inout = 1;
-      } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-        contvars[1] = 3;
-        etavars[0] = 3;
-        cont_inout = 3;
-      } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-        contvars[1] = 3;
-        etavars[0] = 3;
-        cont_inout = 3;
-      } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-        contvars[1] = 4;
-        etavars[0] = 4;
-        cont_inout = 4;
-      } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-        contvars[1] = 4;
-        etavars[0] = 4;
-        cont_inout = 4;
-      } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-        fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 2;
-        etavars[0] = 2;
-        cont_inout = 2;
-      } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-        fHistPtSameOut->Fill(lCentBin, lZVertexBin, lpTTrig);
-        contvars[1] = 2;
-        etavars[0] = 2;
-        cont_inout = 2;
-      }
-
-      fHistEtaSparse->Fill(etavars);
-
-      if (fMCCorrection) {
-        // Inclusive & All Reco particles (contaminated + primary)
-        contvars[0] = 0;
-        contvars[2] = fCentPercentile;
-        contvars[3] = fZVertex;
-        contvars[4] = lEtaTrig;
-        contvars[5] = lpTTrig;
-
-        fHistContamination->Fill(contvars);
-        if (kPrimaryTrig) {
-          contvars[0] = 1;
-          fHistContamination->Fill(contvars);
-        } // In, out, m1, m2
-
-        contvars[1] = 0; // Inclusive
-        contvars[0] = 0; // contaminated + primary
-        fHistContamination->Fill(contvars);
-        if (kPrimaryTrig) {
-          contvars[0] = 1;
-          fHistContamination->Fill(contvars);
-        }
-      }
-//      if (lpTTrig < fMinPtTrigCut) { 
-////        lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-//        continue;
-//      }
-//      else 
-        lTrackArray_HighPt->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-        if (lpTTrig < fMinPtTrigCut) continue;
-
-      for (int jtrack = 0; jtrack < ntracks; jtrack++) {
-        if (itrack == jtrack) continue;
-        AliAODTrack *aodTrackAsso = static_cast<AliAODTrack*>(aodEvent->GetTrack(jtrack));
-        if (!aodTrackAsso) {
+        if (!aodTrack) {
+          AliError(Form("ERROR: No track pointer for track %d", itrack));
           continue;
         }
 
         if (fFilterBit == 768){
-          if (!(aodTrackAsso->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
-          //        if (!(aodTrackAsso->TestFilterBit(fFilterBit))) continue;
+          if (!(aodTrack->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
+          //      if (!aodTrack->TestFilterBit(fFilterBit)) continue;
         } else {
-          if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
-          if (!aodTrackAsso->TestFilterBit(fFilterBit)) {
+          //          if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
+          if (!aodTrack->TestFilterBit(fFilterBit)) {
             //     std::cout << "filterbit no" << std::endl;
             continue; //TPC Only Track cut : 128 
           }
         }
 
-        lpTAsso = aodTrackAsso->Pt();
-        if (lpTAsso < 0.8 || lpTTrig < lpTAsso) continue;
-        lpTAssoBin = GetPtBin(lpTAsso);
-        if (lpTAssoBin == -1) continue;
+        lChargeTrig = aodTrack->Charge();
 
-        lEtaAsso = aodTrackAsso->Eta();
-        if (TMath::Abs(lEtaAsso) >= 0.8) continue;
-        lPhiAsso = aodTrackAsso->Phi();
-        lChargeAsso = aodTrackAsso->Charge();
+        lpTTrig = aodTrack->Pt();
 
+        ldeltaEventPlane = lPhiTrig - fEventPlaneV0C;
 
-        if (fConversionsVCut > 0 && lChargeAsso * lChargeTrig < 0)
-        {
-          Float_t mass = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.510e-3, 0.510e-3);
-
-          if (mass < fConversionsVCut * 5)
-          {
-            mass = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.510e-3, 0.510e-3);
-
-            if (mass < fConversionsVCut*fConversionsVCut) 
-              continue;
-          }
+        if (lpTTrig > 0.5 && lpTTrig < 5) {
+          fHistV2->Fill(fCentPercentile, TMath::Cos(2*ldeltaEventPlane));
         }
-
-        // K0s
-        if (fResonancesVCut > 0 && lChargeAsso * lChargeTrig < 0)
-        {
-          Float_t mass = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.1396);
-
-          const Float_t kK0smass = 0.4976;
-
-          if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
-          {
-            mass = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.1396);
-
-            if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
-              continue;
-          }
-        }
+        if (lpTTrig < 0.8) continue;
+        lpTTrigBin = GetPttBin(lpTTrig);
+        lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
+        lEtaTrig = aodTrack->Eta();
+        lPhiTrig = aodTrack->Phi();
 
 
-        // Lambda
-        if (fResonancesVCut > 0 && lChargeAsso * lChargeTrig < 0)
-        {
-          Float_t mass1 = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.9383);
-          Float_t mass2 = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.9383, 0.1396);
+        if (TMath::Abs(lEtaTrig) >= 0.8) continue;   
 
-          const Float_t kLambdaMass = 1.115;
+        fHistPhi->Fill(lPhiTrig);
+        fHistPt->Fill(lpTTrig);
+        fHistEta->Fill(lEtaTrig);
+        if (lChargeTrig < 0) fHistPos->Fill(lpTTrig);
+        if (lChargeTrig > 0) fHistNeg->Fill(lpTTrig);
 
-          if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-          {
-            mass1 = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.9383);
-
-            if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-              continue;
-          }
-          if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-          {
-            mass2 = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.9383, 0.1396);
-
-            if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-              continue;
-          }
-        }
-
-        deltaEta = lEtaTrig - lEtaAsso;
-        deltaPhi = lPhiTrig - lPhiAsso;
-        if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
-        if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
-
-        ldPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, lChargeTrig, lChargeAsso, lpTTrig, lpTAsso, lBSign);
-        if (TMath::Abs(ldPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
-          continue;
+        //      ldeltaEventPlane = lPhiTrig - fEventPlaneV0A;
+        if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
+        if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
 
         if (fMCCorrection) {
-          label = TMath::Abs(aodTrackAsso->GetLabel());
+          label = TMath::Abs(aodTrack->GetLabel());
+          if (label > nmctracks) continue;
+          lmcTrack = (AliAODMCParticle*) fMCEvent->GetTrack(label);
+          kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
+        }
+        etavars[0] = 0;
+
+        etavars[3] = lEtaTrig;
+        etavars[4] = lpTTrig;
+
+        fHistPtSame[0]->Fill(lCentBin, lZVertexBin, lpTTrig);
+        fHistEtaSparse->Fill(etavars);
+
+        cont_inout = CheckInOut(ldeltaEventPlane);
+        if (cont_inout > 0) {
+          contvars[1] = cont_inout;
+          etavars[0] = cont_inout;
+          fHistPtSame[cont_inout]->Fill(lCentBin, lZVertexBin, lpTTrig);
+        }
+
+        fHistEtaSparse->Fill(etavars);
+
+        if (fMCCorrection) {
+          // Inclusive & All Reco particles (contaminated + primary)
+          contvars[0] = 0;
+          contvars[2] = fCentPercentile;
+          contvars[3] = fZVertex;
+          contvars[4] = lEtaTrig;
+          contvars[5] = lpTTrig;
+
+          fHistContamination->Fill(contvars);
+          if (kPrimaryTrig) {
+            contvars[0] = 1;
+            fHistContamination->Fill(contvars);
+          } // In, out, m1, m2
+
+          contvars[1] = 0; // Inclusive
+          contvars[0] = 0; // contaminated + primary
+          fHistContamination->Fill(contvars);
+          if (kPrimaryTrig) {
+            contvars[0] = 1;
+            fHistContamination->Fill(contvars);
+          }
+        }
+
+        if (lpTTrigBin == -1) continue;
+
+        for (int jtrack = 0; jtrack < ntracks; jtrack++) {
+          if (itrack == jtrack) continue;
+          AliAODTrack *aodTrackAsso = static_cast<AliAODTrack*>(aodEvent->GetTrack(jtrack));
+          if (!aodTrackAsso) {
+            continue;
+          }
+
+          if (fFilterBit == 768){
+            if (!(aodTrackAsso->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
+            //        if (!(aodTrackAsso->TestFilterBit(fFilterBit))) continue;
+          } else {
+            //            if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
+            if (!aodTrackAsso->TestFilterBit(fFilterBit)) {
+              //     std::cout << "filterbit no" << std::endl;
+              continue; //TPC Only Track cut : 128 
+            }
+          }
+
+          lpTAsso = aodTrackAsso->Pt();
+          if (lpTAsso < 0.8 || lpTTrig < lpTAsso) continue;
+          lpTAssoBin = GetPtaBin(lpTAsso);
+          if (lpTAssoBin == -1) continue;
+
+          lEtaAsso = aodTrackAsso->Eta();
+          if (TMath::Abs(lEtaAsso) >= 0.8) continue;
+          lPhiAsso = aodTrackAsso->Phi();
+          lChargeAsso = aodTrackAsso->Charge();
+
+
+          if (fConversionsVCut > 0 && lChargeAsso * lChargeTrig < 0)
+          {
+            Float_t mass = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.510e-3, 0.510e-3);
+
+            if (mass < fConversionsVCut * 5)
+            {
+              mass = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.510e-3, 0.510e-3);
+
+              if (mass < fConversionsVCut*fConversionsVCut) 
+                continue;
+            }
+          }
+
+          // K0s
+          if (fResonancesVCut > 0 && lChargeAsso * lChargeTrig < 0)
+          {
+            Float_t mass = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.1396);
+
+            const Float_t kK0smass = 0.4976;
+
+            if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
+            {
+              mass = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.1396);
+
+              if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
+                continue;
+            }
+          }
+
+
+          // Lambda
+          if (fResonancesVCut > 0 && lChargeAsso * lChargeTrig < 0)
+          {
+            Float_t mass1 = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.9383);
+            Float_t mass2 = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.9383, 0.1396);
+
+            const Float_t kLambdaMass = 1.115;
+
+            if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+            {
+              mass1 = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.9383);
+
+              if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                continue;
+            }
+            if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+            {
+              mass2 = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.9383, 0.1396);
+
+              if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                continue;
+            }
+          }
+
+          deltaEta = lEtaTrig - lEtaAsso;
+          deltaPhi = lPhiTrig - lPhiAsso;
+          if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
+          if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
+
+          ldPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, lChargeTrig, lChargeAsso, lpTTrig, lpTAsso, lBSign);
+          if (TMath::Abs(ldPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
+            continue;
+
+//          cout << fMCCorrection << endl;
+          if (fMCCorrection) {
+            label = TMath::Abs(aodTrackAsso->GetLabel());
+            nmctracks = fMCEvent->GetNumberOfTracks();
+            if (label > nmctracks) continue;
+            lmcTrackAsso = (AliAODMCParticle*) fMCEvent->GetTrack(label);
+            kPrimaryAsso = lmcTrackAsso->IsPhysicalPrimary();
+            
+
+            fHistdEtadPhiSameMCCorrCont[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            if (cont_inout > 0) fHistdEtadPhiSameMCCorrCont[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+
+            if (kPrimaryAsso && kPrimaryTrig) {
+              fHistdEtadPhiSameMCCorrPrim[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+              if (cont_inout > 0) fHistdEtadPhiSameMCCorrPrim[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            }
+          }
+
+          fHistdEtadPhiSame[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+          if (cont_inout > 0) 
+            fHistdEtadPhiSame[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+
+        }
+
+      }
+
+    } else {
+      for (int itrack = 0; itrack < ntracks; itrack++) {
+        AliAODTrack *aodTrack = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrack));
+        AliAODMCParticle *lmcTrack, *lmcTrackAsso;
+
+        if (!aodTrack) {
+          AliError(Form("ERROR: No track pointer for track %d", itrack));
+          continue;
+        }
+
+        if (fFilterBit == 768){
+          if (!(aodTrack->IsHybridGlobalConstrainedGlobal())) {
+            continue; 
+          }// new version of hybrid selection
+          //      if (!aodTrack->TestFilterBit(fFilterBit)) continue;
+        } else {
+          //          if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
+          if (!aodTrack->TestFilterBit(fFilterBit)) {
+            //     std::cout << "filterbit no" << std::endl;
+            continue; //TPC Only Track cut : 128 
+          }
+        }
+
+        lChargeTrig = aodTrack->Charge();
+
+        lpTTrig = aodTrack->Pt();
+        if (lpTTrig < 0.8) continue;
+        lEtaTrig = aodTrack->Eta();
+        lPhiTrig = aodTrack->Phi();
+        lpTTrigBin = GetPttBin(lpTTrig);
+        lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
+        if (lpTTrigBin == -1) continue;
+
+
+        if (TMath::Abs(lEtaTrig) >= 0.8) continue;   
+
+        fHistPhi->Fill(lPhiTrig);
+        fHistPt->Fill(lpTTrig);
+        fHistEta->Fill(lEtaTrig);
+        if (lChargeTrig < 0) fHistPos->Fill(lpTTrig);
+        if (lChargeTrig > 0) fHistNeg->Fill(lpTTrig);
+
+        if (fMCCorrection) {
+          label = TMath::Abs(aodTrack->GetLabel());
           nmctracks = fMCEvent->GetNumberOfTracks();
           if (label > nmctracks) continue;
-          lmcTrackAsso = (AliAODMCParticle*) fMCEvent->GetTrack(label);
-          kPrimaryAsso = lmcTrackAsso->IsPhysicalPrimary();
+          lmcTrack = (AliAODMCParticle*) fMCEvent->GetTrack(label);
+          kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
+        }
 
+        etavars[0] = 0;
+        etavars[3] = lEtaTrig;
+        etavars[4] = lpTTrig;
 
-          fHistdEtadPhiSameMCCorrCont[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrContIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrContOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          if (kPrimaryAsso && kPrimaryTrig) {
-            fHistdEtadPhiSameMCCorrPrim[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            if ( cont_inout == 1 ) fHistdEtadPhiSameMCCorrPrimIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-            else if ( cont_inout == 2 ) fHistdEtadPhiSameMCCorrPrimOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+        fHistPtSame[0]->Fill(lCentBin, lZVertexBin, lpTTrig);
+        fHistEtaSparse->Fill(etavars);
+
+        if (fMCCorrection) {
+          // Inclusive & All Reco particles (contaminated + primary)
+          contvars[0] = 0;
+          contvars[2] = fCentPercentile;
+          contvars[3] = fZVertex;
+          contvars[4] = lEtaTrig;
+          contvars[5] = lpTTrig;
+
+          fHistContamination->Fill(contvars);
+          if (kPrimaryTrig) {
+            contvars[0] = 1;
+            fHistContamination->Fill(contvars);
+          } // In, out, m1, m2
+
+          contvars[1] = 0; // Inclusive
+          contvars[0] = 0; // contaminated + primary
+          fHistContamination->Fill(contvars);
+          if (kPrimaryTrig) {
+            contvars[0] = 1;
+            fHistContamination->Fill(contvars);
           }
         }
 
-        fHistdEtadPhiSame[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-        if ( cont_inout == 1 ) fHistdEtadPhiSameIn[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-        else if ( cont_inout == 2 ) fHistdEtadPhiSameOut[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+
+        for (int jtrack = 0; jtrack < ntracks; jtrack++) {
+          if (itrack == jtrack) continue;
+          AliAODTrack *aodTrackAsso = static_cast<AliAODTrack*>(aodEvent->GetTrack(jtrack));
+          if (!aodTrackAsso) {
+            continue;
+          }
+
+          if (fFilterBit == 768){
+            if (!(aodTrackAsso->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
+            //        if (!(aodTrackAsso->TestFilterBit(fFilterBit))) continue;
+          } else {
+            //            if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
+            if (!aodTrackAsso->TestFilterBit(fFilterBit)) {
+              //     std::cout << "filterbit no" << std::endl;
+              continue; //TPC Only Track cut : 128 
+            }
+          }
+
+          lpTAsso = aodTrackAsso->Pt();
+          if (lpTAsso < 0.8 || lpTTrig < lpTAsso) continue;
+          lpTAssoBin = GetPtaBin(lpTAsso);
+          if (lpTAssoBin == -1) continue;
+
+          lEtaAsso = aodTrackAsso->Eta();
+          if (TMath::Abs(lEtaAsso) >= 0.8) continue;
+          lPhiAsso = aodTrackAsso->Phi();
+          lChargeAsso = aodTrackAsso->Charge();
+
+
+          if (fConversionsVCut > 0 && lChargeAsso * lChargeTrig < 0)
+          {
+            Float_t mass = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.510e-3, 0.510e-3);
+
+            if (mass < fConversionsVCut * 5)
+            {
+              mass = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.510e-3, 0.510e-3);
+
+              if (mass < fConversionsVCut*fConversionsVCut) 
+                continue;
+            }
+          }
+
+          // K0s
+          if (fResonancesVCut > 0 && lChargeAsso * lChargeTrig < 0)
+          {
+            Float_t mass = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.1396);
+
+            const Float_t kK0smass = 0.4976;
+
+            if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
+            {
+              mass = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.1396);
+
+              if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
+                continue;
+            }
+          }
+
+
+          // Lambda
+          if (fResonancesVCut > 0 && lChargeAsso * lChargeTrig < 0)
+          {
+            Float_t mass1 = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.9383);
+            Float_t mass2 = GetInvMassSquaredCheap(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.9383, 0.1396);
+
+            const Float_t kLambdaMass = 1.115;
+
+            if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+            {
+              mass1 = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.1396, 0.9383);
+
+              if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                continue;
+            }
+            if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+            {
+              mass2 = GetInvMassSquared(lpTTrig, lEtaTrig, lPhiTrig, lpTAsso, lEtaAsso, lPhiAsso, 0.9383, 0.1396);
+
+              if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                continue;
+            }
+          }
+
+
+
+          deltaEta = lEtaTrig - lEtaAsso;
+          deltaPhi = lPhiTrig - lPhiAsso;
+          if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
+          if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
+
+          ldPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, lChargeTrig, lChargeAsso, lpTTrig, lpTAsso, lBSign);
+          if (TMath::Abs(ldPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
+            continue;
+
+          if (fMCCorrection) {
+            label = TMath::Abs(aodTrackAsso->GetLabel());
+            nmctracks = fMCEvent->GetNumberOfTracks();
+            if (label > nmctracks) continue;
+            lmcTrackAsso = (AliAODMCParticle*) fMCEvent->GetTrack(label);
+            kPrimaryAsso = lmcTrackAsso->IsPhysicalPrimary();
+
+
+            fHistdEtadPhiSameMCCorrCont[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            if (kPrimaryAsso && kPrimaryTrig) {
+              fHistdEtadPhiSameMCCorrPrim[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+            }
+          }
+
+          fHistdEtadPhiSame[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+        }
 
       }
-
-    }
-    
+    }  // fCollision = pp
   } else {
-    for (int itrack = 0; itrack < ntracks; itrack++) {
-      AliAODTrack *aodTrack = static_cast<AliAODTrack*>(aodEvent->GetTrack(itrack));
-      AliAODMCParticle *lmcTrack, *lmcTrackAsso;
 
-      if (!aodTrack) {
-        AliError(Form("ERROR: No track pointer for track %d", itrack));
-        continue;
-      }
+    for (int itrack = 0; itrack < nmctracks; itrack++) {
+      AliAODMCParticle *lmcTrack = (AliAODMCParticle*) fMCEvent->GetTrack(itrack);
+      if (!lmcTrack) continue;
+      lChargeTrig = lmcTrack->Charge();
+      if (!lChargeTrig) continue;
+      int pdg = TMath::Abs(lmcTrack->GetPdgCode());
+      if ( !((pdg >= 211 && pdg <= 533) || (pdg > 1000 && pdg < 6000))) continue; 
+      if (! (lmcTrack->IsPhysicalPrimary()) ) continue;
 
-      if (fFilterBit == 768){
-        if (!(aodTrack->IsHybridGlobalConstrainedGlobal())) {
-          continue; 
-        }// new version of hybrid selection
-        //      if (!aodTrack->TestFilterBit(fFilterBit)) continue;
-      } else {
-        if (aodTrack->GetType() != AliAODTrack::kPrimary) continue; // Check whether it's primary -> Leads to non flat phi distribution in hybrid tracks!
-        if (!aodTrack->TestFilterBit(fFilterBit)) {
-          //     std::cout << "filterbit no" << std::endl;
-          continue; //TPC Only Track cut : 128 
-        }
-      }
+      lEtaTrig = lmcTrack->Eta();
+      lpTTrig = lmcTrack->Pt();
+      lPhiTrig = lmcTrack->Phi();
+      ldeltaEventPlane = lPhiTrig - fEventPlaneV0C;
 
-      lChargeTrig = aodTrack->Charge();
-
-      lpTTrig = aodTrack->Pt();
-      if (lpTTrig < 0.8) continue;
-      lEtaTrig = aodTrack->Eta();
-      lPhiTrig = aodTrack->Phi();
-      lpTTrigBin = GetPtBin(lpTTrig);
+      if (TMath::Abs(lEtaTrig) >= 0.8) continue;
+      lpTTrigBin = GetPttBin(lpTTrig);
+      lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
       if (lpTTrigBin == -1) continue;
-
-
-      if (TMath::Abs(lEtaTrig) >= 0.8) continue;   
 
       fHistPhi->Fill(lPhiTrig);
       fHistPt->Fill(lpTTrig);
       fHistEta->Fill(lEtaTrig);
-      if (lChargeTrig < 0) fHistPos->Fill(lpTTrig);
-      if (lChargeTrig > 0) fHistNeg->Fill(lpTTrig);
+      if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
+      if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
 
-      if (fMCCorrection) {
-        label = TMath::Abs(aodTrack->GetLabel());
-        nmctracks = fMCEvent->GetNumberOfTracks();
-        if (label > nmctracks) continue;
-        lmcTrack = (AliAODMCParticle*) fMCEvent->GetTrack(label);
-        kPrimaryTrig = lmcTrack->IsPhysicalPrimary();
-      }
- 
-      etavars[0] = 0;
-      etavars[3] = lEtaTrig;
-      etavars[4] = lpTTrig;
-
-      fHistPtSame->Fill(lCentBin, lZVertexBin, lpTTrig);
-      fHistEtaSparse->Fill(etavars);
-
-      if (fMCCorrection) {
-        // Inclusive & All Reco particles (contaminated + primary)
-        contvars[0] = 0;
-        contvars[2] = fCentPercentile;
-        contvars[3] = fZVertex;
-        contvars[4] = lEtaTrig;
-        contvars[5] = lpTTrig;
-
-        fHistContamination->Fill(contvars);
-        if (kPrimaryTrig) {
-          contvars[0] = 1;
-          fHistContamination->Fill(contvars);
-        } // In, out, m1, m2
-
-        contvars[1] = 0; // Inclusive
-        contvars[0] = 0; // contaminated + primary
-        fHistContamination->Fill(contvars);
-        if (kPrimaryTrig) {
-          contvars[0] = 1;
-          fHistContamination->Fill(contvars);
-        }
+      fHistPtSame[0]->Fill(lCentBin, lZVertexBin, lpTTrig);
+      cont_inout = CheckInOut(ldeltaEventPlane);
+      if (cont_inout > 0) {
+        contvars[1] = cont_inout;
+        etavars[0] = cont_inout;
+        fHistPtSame[cont_inout]->Fill(lCentBin, lZVertexBin, lpTTrig);
       }
 
-//        //      lTrackArray->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-//        continue;
-//      }
-//      else 
-        lTrackArray_HighPt->Add(new MixedParticle(lpTTrig, lEtaTrig, lPhiTrig, lChargeTrig));
-      if (lpTTrig < fMinPtTrigCut)  
-        continue;
 
-      for (int jtrack = 0; jtrack < ntracks; jtrack++) {
+      for (int jtrack = 0; jtrack < nmctracks; jtrack++) {
         if (itrack == jtrack) continue;
-        AliAODTrack *aodTrackAsso = static_cast<AliAODTrack*>(aodEvent->GetTrack(jtrack));
-        if (!aodTrackAsso) {
-          continue;
-        }
+        AliAODMCParticle *lmcTrackAsso = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(jtrack));
+        if (!lmcTrackAsso) continue;
 
-        if (fFilterBit == 768){
-          if (!(aodTrackAsso->IsHybridGlobalConstrainedGlobal())) continue;  // new version of hybrid selection
-          //        if (!(aodTrackAsso->TestFilterBit(fFilterBit))) continue;
-        } else {
-          if (aodTrackAsso->GetType() != AliAODTrack::kPrimary) continue;
-          if (!aodTrackAsso->TestFilterBit(fFilterBit)) {
-            //     std::cout << "filterbit no" << std::endl;
-            continue; //TPC Only Track cut : 128 
-          }
-        }
+        if (!(lmcTrackAsso->IsPhysicalPrimary())) continue;
+        int pdgAsso = TMath::Abs(lmcTrackAsso->GetPdgCode());
+        if ( !((pdgAsso >= 211 && pdgAsso <= 533) || (pdgAsso > 1000 && pdgAsso < 6000))) continue; 
+        lChargeAsso = lmcTrackAsso->Charge();
+        if (!lChargeAsso) continue;
+        lEtaAsso = lmcTrackAsso->Eta();
+        lpTAsso = lmcTrackAsso->Pt();
+        lPhiAsso = lmcTrackAsso->Phi();
+        if (lpTTrig < lpTAsso) continue;
 
-        lpTAsso = aodTrackAsso->Pt();
-        if (lpTAsso < 0.8 || lpTTrig < lpTAsso) continue;
-        lpTAssoBin = GetPtBin(lpTAsso);
-        if (lpTAssoBin == -1) continue;
-
-        lEtaAsso = aodTrackAsso->Eta();
         if (TMath::Abs(lEtaAsso) >= 0.8) continue;
-        lPhiAsso = aodTrackAsso->Phi();
-        lChargeAsso = aodTrackAsso->Charge();
-
+        lpTAssoBin = GetPtaBin(lpTAsso);
+        if (lpTAssoBin == -1) continue;
 
         if (fConversionsVCut > 0 && lChargeAsso * lChargeTrig < 0)
         {
@@ -1325,8 +1258,6 @@ string  filename;
           }
         }
 
-
-
         deltaEta = lEtaTrig - lEtaAsso;
         deltaPhi = lPhiTrig - lPhiAsso;
         if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
@@ -1336,35 +1267,25 @@ string  filename;
         if (TMath::Abs(ldPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
           continue;
 
-        if (fMCCorrection) {
-          label = TMath::Abs(aodTrackAsso->GetLabel());
-          nmctracks = fMCEvent->GetNumberOfTracks();
-          if (label > nmctracks) continue;
-          lmcTrackAsso = (AliAODMCParticle*) fMCEvent->GetTrack(label);
-          kPrimaryAsso = lmcTrackAsso->IsPhysicalPrimary();
+        //        cout << lCentBin << " " << lZVertexBin << " " << lpTTrigBin << " " << lpTAssoBin << endl;
+        fHistdEtadPhiSame[0][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+        if (cont_inout > 0)
+          fHistdEtadPhiSame[cont_inout][lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
+      } // jtrack mc
 
 
-          fHistdEtadPhiSameMCCorrCont[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          if (kPrimaryAsso && kPrimaryTrig) {
-            fHistdEtadPhiSameMCCorrPrim[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-          }
-        }
+    }  //itrack mc
 
-        fHistdEtadPhiSame[lCentBin][lZVertexBin][lpTTrigBin][lpTAssoBin]->Fill(deltaEta, deltaPhi);
-      }
+  } // fMCTruth
 
-    }
-  }  // fCollision = pp
-
-
-  DoMixing(fCentPercentile, fZVertex, lTrackArray_HighPt, lTrackArray, fEventPlaneV0C, lBSign);
+  //  cout << "End of Event" << endl;
+  DoMixing(fCentPercentile, fZVertex, lTrackArray, fEventPlaneV0C, lBSign);
   fHistNevtSame->Fill(lCentBin, lZVertexBin);
 
-  PostData(1, fOutputInc);
-  PostData(2, fOutputIn);
-  PostData(3, fOutputOut);
- // PostData(4, fOutputM1);
-//  PostData(5, fOutputM2);
+
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    PostData(iplane+1, fOutput[iplane]);
+  }
 }
 
 int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
@@ -1376,7 +1297,6 @@ int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
   if (fCollision == kPbPb) {
     int poolsize = 100;
     fPoolMgr = new AliEventPoolManager(poolsize, fTrackDepth, nCentBin, centralityarr, nZVertBin, zVertexarr);
-    //    fPoolMgr_Highpt = new AliEventPoolManager(1000, fTrackDepth, nCentBin, centralityarr, nZVertBin, zVertexarr);
   } else if (fCollision == kpPb) {
     int poolsize = 150;
     fPoolMgr = new AliEventPoolManager(poolsize, fTrackDepth, nCentBin, centralityarr, nZVertBin, zVertexarr);
@@ -1392,666 +1312,618 @@ int AliAnalysisTaskJetLikeCorrelation::SetupMixing() {
 
 }
 
-int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVertex, TObjArray *lTracksTrig, TObjArray *lTracks_LowPt, float eventPlane, int lbSign) {
+int AliAnalysisTaskJetLikeCorrelation::DoMixing(float lCentrality, float fZVertex, TObjArray *lTracksTrig, float eventPlane, int lbSign) {
 
   //  cout << "Starting Do Mixing.. " << endl;
-  int lMinimumPtTBinMerging = GetPtBin(6.00);
+  int lMinimumPtTBinMerging = GetPttBin(6.00);
 
-  if (bUseMixingPool) {
-//    lTracksMixing->SetOwner();
-//    int lnEvent = fTreeEnd - fTreeStart + 1; // = pool->GetCurrentNEvents();
+  if (!fMCTruth) {
+    if (bUseMixingPool) {
+      //    lTracksMixing->SetOwner();
+      //    int lnEvent = fTreeEnd - fTreeStart + 1; // = pool->GetCurrentNEvents();
 
-    int lCentBin = GetCentBin(lCentrality);
-    int lZVertexBin = GetZVertexBin(fZVertex);
-    int lnEvent = fPoolSize[lCentBin][lZVertexBin];
-    long lnTracksMixing = 0;
-    long lnTracksTrig = 0;
+      int lCentBin = GetCentBin(lCentrality);
+      int lZVertexBin = GetZVertexBin(fZVertex);
+      int lnEvent = fPoolSize[lCentBin][lZVertexBin];
+      long lnTracksMixing = 0;
+      long lnTracksTrig = 0;
 
-    float trigpT, trigEta, trigPhi, trigCharge = -999;
-    float mixpT, mixEta, mixPhi, mixCharge = -999;
-    unsigned long mixFilterBit = 0;
-    float deltaPhi, deltaEta = -999;
-    float dPhiStar = -999;
-    float ldeltaEventPlane = -999;
-    int trigpTBin, mixpTBin;
-    int evp_inout = 0;
+      float trigpT, trigEta, trigPhi, trigCharge = -999;
+      float mixpT, mixEta, mixPhi, mixCharge = -999;
+      unsigned long mixFilterBit = 0;
+      float deltaPhi, deltaEta = -999;
+      float dPhiStar = -999;
+      float ldeltaEventPlane = -999;
+      int trigpTBin, mixpTBin;
+      int evp_inout = 0;
 
 
-    double tempcent, tempzvertex;
-    unsigned long long tempeventid;
+      double tempcent, tempzvertex;
+      unsigned long long tempeventid;
 
-    vector<AliExtractedTrack> ltracksmixing;
-    if (!fInputTree){
-      cout << "No Input Tree! returning! " << endl;
-      return 999;
-    }
-
-    for (int ientry = fTreeStart; ientry < fTreeEnd; ientry++) {
-      fInputTree->GetEntry(ientry);
-      if (!fHighPtMixing) {
-        cout << "No High Pt Mixing! " << endl;
-        return 998;
+      vector<AliExtractedTrack> ltracksmixing;
+      if (!fInputTree){
+        cout << "No Input Tree! returning! " << endl;
+        return 999;
       }
-      tempeventid = fHighPtMixing->GetEventID();
-      if (tempeventid == fEventID) lnEvent -= 1;
-    }
 
-
-    if (fCollision == kPbPb) {      
       for (int ientry = fTreeStart; ientry < fTreeEnd; ientry++) {
         fInputTree->GetEntry(ientry);
-
-        tempcent = fHighPtMixing->GetCentrality();
-        tempzvertex = fHighPtMixing->GetZVertex();
+        if (!fHighPtMixing) {
+          cout << "No High Pt Mixing! " << endl;
+          return 998;
+        }
         tempeventid = fHighPtMixing->GetEventID();
+        if (tempeventid == fEventID) lnEvent -= 1;
+      }
 
 
-        if (GetCentBin(tempcent) != lCentBin || GetZVertexBin(tempzvertex) != lZVertexBin || tempeventid == fEventID) continue;
-        ltracksmixing = fHighPtMixing->GetTracks();
-        lnTracksMixing = ltracksmixing.size();
-        //    if (lnTracksMixing < 1) continue;
-        lnTracksTrig = lTracksTrig->GetEntriesFast();
-        //    cout << lCentBin << " " << lZVertexBin << " " << lnTracksMixing << endl;
+      if (fCollision == kPbPb) {      
+        for (int ientry = fTreeStart; ientry < fTreeEnd; ientry++) {
+          fInputTree->GetEntry(ientry);
 
-        for (int itrack = 0; itrack < lnTracksTrig; itrack++) {
-          if (!(lTracksTrig->At(itrack))) return 20;
-          const MixedParticle *lParticleTrig = dynamic_cast<MixedParticle*>(lTracksTrig->At(itrack));
-          trigpT = lParticleTrig->Pt();
-          trigEta = lParticleTrig->Eta();
-          if (TMath::Abs(trigEta) >= 0.8) continue;
-          trigPhi = lParticleTrig->Phi();
-          trigCharge = lParticleTrig->Charge();
-          //        cout << ldeltaEventPlane << "\n";
-          trigpTBin = GetPtBin(trigpT);
-          if (trigpTBin == -1) continue;
+          tempcent = fHighPtMixing->GetCentrality();
+          tempzvertex = fHighPtMixing->GetZVertex();
+          tempeventid = fHighPtMixing->GetEventID();
 
-          ldeltaEventPlane = trigPhi - eventPlane;
-          if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
-          if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
 
-          if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-            evp_inout = 1;
-          } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-            evp_inout = 1;
-          } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-            evp_inout = 1;
-          } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-            evp_inout = 3;
-          } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-            evp_inout = 3;
-          } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-            evp_inout = 4;
-          } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-            evp_inout = 4;
-          } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-            evp_inout = 2;
-          } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-            evp_inout = 2;
+          if (GetCentBin(tempcent) != lCentBin || GetZVertexBin(tempzvertex) != lZVertexBin || tempeventid == fEventID) continue;
+          ltracksmixing = fHighPtMixing->GetTracks();
+          lnTracksMixing = ltracksmixing.size();
+          //    if (lnTracksMixing < 1) continue;
+          lnTracksTrig = lTracksTrig->GetEntriesFast();
+          //    cout << lCentBin << " " << lZVertexBin << " " << lnTracksMixing << endl;
+
+          for (int itrack = 0; itrack < lnTracksTrig; itrack++) {
+            if (!(lTracksTrig->At(itrack))) return 20;
+            const MixedParticle *lParticleTrig = dynamic_cast<MixedParticle*>(lTracksTrig->At(itrack));
+            trigpT = lParticleTrig->Pt();
+            trigEta = lParticleTrig->Eta();
+            if (TMath::Abs(trigEta) >= 0.8) continue;
+            trigPhi = lParticleTrig->Phi();
+            trigCharge = lParticleTrig->Charge();
+            //        cout << ldeltaEventPlane << "\n";
+            trigpTBin = GetPttBin(trigpT);
+            if (trigpTBin == -1) continue;
+
+            ldeltaEventPlane = trigPhi - eventPlane;
+            if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
+            if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
+
+            evp_inout = CheckInOut(ldeltaEventPlane);
+
+            for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
+              mixFilterBit = ltracksmixing[jtrack].GetFilterBit();
+              if (!(mixFilterBit & fFilterBit)) continue;       // Test filter bit
+//              if (mixFilterBit == 128 && !(ltracksmixing[jtrack].IsPrimary())) continue;     // Only for TPC only track primary check
+              mixpT = ltracksmixing[jtrack].GetPt();
+              if (mixpT < 3.0 ||  trigpT < mixpT) continue;  // for pbpb
+              //          if (trigpT < mixpT) continue;  // for pp
+              mixEta = ltracksmixing[jtrack].GetEta();
+              if (TMath::Abs(mixEta) >= 0.8) continue;
+              mixPhi = ltracksmixing[jtrack].GetPhi();
+              mixCharge = ltracksmixing[jtrack].GetCharge();
+              mixpTBin = GetPtaBin(mixpT);
+
+              if (mixpTBin == -1) continue;
+
+              if (fConversionsVCut > 0 && mixCharge * trigCharge < 0)
+              {
+                Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
+                if (mass < fConversionsVCut * 5)
+                {
+                  mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
+                  if (mass < fConversionsVCut*fConversionsVCut) 
+                    continue;
+                }
+              }
+
+              // K0s
+              if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
+              {
+                Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
+
+                const Float_t kK0smass = 0.4976;
+
+                if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
+                {
+                  mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
+
+                  if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
+                    continue;
+                }
+              }
+
+
+              // Lambda
+              if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
+              {
+                Float_t mass1 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
+                Float_t mass2 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
+
+                const Float_t kLambdaMass = 1.115;
+
+                if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+                {
+                  mass1 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
+
+                  if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                    continue;
+                }
+                if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+                {
+                  mass2 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
+
+                  if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                    continue;
+                }
+              }
+
+              deltaPhi = trigPhi - mixPhi;
+              deltaEta = trigEta - mixEta;
+
+              if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
+              if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
+
+              dPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, trigCharge, mixCharge, trigpT, mixpT, lbSign);
+              if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
+                continue;
+
+              if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0) fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+
+              } else {
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0) fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+
+              }
+            }
           }
+        }
+      }// fCollision == kPbPb 
+      else // fCollision == pp
+      {
+        for (int ientry = fTreeStart; ientry < fTreeEnd; ientry++) {
+          fInputTree->GetEntry(ientry);
 
-          for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
-            mixFilterBit = ltracksmixing[jtrack].GetFilterBit();
-            if (!(mixFilterBit & fFilterBit)) continue;       // Test filter bit
-            if (mixFilterBit == 128 && !(ltracksmixing[jtrack].IsPrimary())) continue;     // Only for TPC only track primary check
-            mixpT = ltracksmixing[jtrack].GetPt();
-            if (mixpT < 3.0 ||  trigpT < mixpT) continue;  // for pbpb
-            //          if (trigpT < mixpT) continue;  // for pp
-            mixEta = ltracksmixing[jtrack].GetEta();
-            if (TMath::Abs(mixEta) >= 0.8) continue;
-            mixPhi = ltracksmixing[jtrack].GetPhi();
-            mixCharge = ltracksmixing[jtrack].GetCharge();
-            mixpTBin = GetPtBin(mixpT);
+          tempcent = fHighPtMixing->GetCentrality();
+          tempzvertex = fHighPtMixing->GetZVertex();
+          tempeventid = fHighPtMixing->GetEventID();
 
-            if (mixpTBin == -1) continue;
+          if (GetCentBin(tempcent) != lCentBin || GetZVertexBin(tempzvertex) != lZVertexBin || tempeventid == fEventID) continue;
+          ltracksmixing = fHighPtMixing->GetTracks();
+          lnTracksMixing = ltracksmixing.size();
+          //    if (lnTracksMixing < 1) continue;
+          lnTracksTrig = lTracksTrig->GetEntriesFast();
+          //    cout << lCentBin << " " << lZVertexBin << " " << lnTracksMixing << endl;
+          for (int itrack = 0; itrack < lnTracksTrig; itrack++) {
+            if (!(lTracksTrig->At(itrack))) return 20;
+            const MixedParticle *lParticleTrig = dynamic_cast<MixedParticle*>(lTracksTrig->At(itrack));
+            trigpT = lParticleTrig->Pt();
+            trigEta = lParticleTrig->Eta();
+            if (TMath::Abs(trigEta) >= 0.8) continue;
+            trigPhi = lParticleTrig->Phi();
+            trigCharge = lParticleTrig->Charge();
 
-            if (fConversionsVCut > 0 && mixCharge * trigCharge < 0)
-            {
-              Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
-              if (mass < fConversionsVCut * 5)
+            //        cout << ldeltaEventPlane << "\n";
+            trigpTBin = GetPttBin(trigpT);
+            if (trigpTBin == -1) continue;
+
+            for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
+              mixFilterBit = ltracksmixing[jtrack].GetFilterBit();
+              if (!(mixFilterBit & fFilterBit)) continue;       // Test filter bit
+              if (mixFilterBit == 128 && !(ltracksmixing[jtrack].IsPrimary())) continue;     // Only for TPC only track primary check
+              mixpT = ltracksmixing[jtrack].GetPt();
+              //                    if (mixpT < 4.0 ||  trigpT < mixpT) continue;  // for pbpb
+              if (trigpT < mixpT || mixpT < 0.8) continue;  // for pp
+              mixEta = ltracksmixing[jtrack].GetEta();
+              if (TMath::Abs(mixEta) >= 0.8) continue;
+              mixPhi = ltracksmixing[jtrack].GetPhi();
+              mixCharge = ltracksmixing[jtrack].GetCharge();
+              mixpTBin = GetPtaBin(mixpT);
+
+              if (mixpTBin == -1) continue;
+
+              if (fConversionsVCut > 0 && mixCharge * trigCharge < 0)
               {
-                mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
-                if (mass < fConversionsVCut*fConversionsVCut) 
-                  continue;
+                Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
+                if (mass < fConversionsVCut * 5)
+                {
+                  mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
+                  if (mass < fConversionsVCut*fConversionsVCut) 
+                    continue;
+                }
               }
-            }
 
-            // K0s
-            if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
-            {
-              Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
-
-              const Float_t kK0smass = 0.4976;
-
-              if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
+              // K0s
+              if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
               {
-                mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
+                Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
 
-                if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
-                  continue;
+                const Float_t kK0smass = 0.4976;
+
+                if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
+                {
+                  mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
+
+                  if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
+                    continue;
+                }
               }
-            }
 
 
-            // Lambda
-            if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
-            {
-              Float_t mass1 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
-              Float_t mass2 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
-
-              const Float_t kLambdaMass = 1.115;
-
-              if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+              // Lambda
+              if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
               {
-                mass1 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
+                Float_t mass1 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
+                Float_t mass2 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
 
-                if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-                  continue;
+                const Float_t kLambdaMass = 1.115;
+
+                if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+                {
+                  mass1 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
+
+                  if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                    continue;
+                }
+                if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+                {
+                  mass2 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
+
+                  if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                    continue;
+                }
               }
-              if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-              {
-                mass2 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
 
-                if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-                  continue;
+              deltaPhi = trigPhi - mixPhi;
+              deltaEta = trigEta - mixEta;
+
+              if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
+              if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
+
+              dPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, trigCharge, mixCharge, trigpT, mixpT, lbSign);
+              if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
+                continue;
+
+              if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+              } else { 
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
               }
-            }
 
-            deltaPhi = trigPhi - mixPhi;
-            deltaEta = trigEta - mixEta;
-
-            if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
-            if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
-
-            dPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, trigCharge, mixCharge, trigpT, mixpT, lbSign);
-            if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
-              continue;
-
-            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
-              fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-
-            } else {
-              fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-
-              if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-              else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
             }
           }
         }
       }
-    }// fCollision == kPbPb 
-    else // fCollision == pp
-    {
-      for (int ientry = fTreeStart; ientry < fTreeEnd; ientry++) {
-        fInputTree->GetEntry(ientry);
+    } else {
+      AliEventPool *pool = fPoolMgr->GetEventPool(lCentrality, fZVertex);
+      if (!pool) return 1;
 
-        tempcent = fHighPtMixing->GetCentrality();
-        tempzvertex = fHighPtMixing->GetZVertex();
-        tempeventid = fHighPtMixing->GetEventID();
+      TObjArray *lTracksMixing;
+      int lnEvent = pool->GetCurrentNEvents();
 
-        if (GetCentBin(tempcent) != lCentBin || GetZVertexBin(tempzvertex) != lZVertexBin || tempeventid == fEventID) continue;
-        ltracksmixing = fHighPtMixing->GetTracks();
-        lnTracksMixing = ltracksmixing.size();
-        //    if (lnTracksMixing < 1) continue;
-        lnTracksTrig = lTracksTrig->GetEntriesFast();
-        //    cout << lCentBin << " " << lZVertexBin << " " << lnTracksMixing << endl;
-        for (int itrack = 0; itrack < lnTracksTrig; itrack++) {
-          if (!(lTracksTrig->At(itrack))) return 20;
-          const MixedParticle *lParticleTrig = dynamic_cast<MixedParticle*>(lTracksTrig->At(itrack));
-          trigpT = lParticleTrig->Pt();
-          trigEta = lParticleTrig->Eta();
-          if (TMath::Abs(trigEta) >= 0.8) continue;
-          trigPhi = lParticleTrig->Phi();
-          trigCharge = lParticleTrig->Charge();
+      int lCentBin = GetCentBin(lCentrality);
+      int lZVertexBin = GetZVertexBin(fZVertex);
+      long lnTracksMixing = 0;
+      long lnTracksTrig = 0;
 
-          //        cout << ldeltaEventPlane << "\n";
-          trigpTBin = GetPtBin(trigpT);
-          if (trigpTBin == -1) continue;
+      float trigpT, trigEta, trigPhi, trigCharge = -999;
+      float mixpT, mixEta, mixPhi, mixCharge = -999;
+      float deltaPhi, deltaEta = -999;
+      float dPhiStar = -999;
+      float ldeltaEventPlane = -999;
+      int trigpTBin, mixpTBin;
+      int evp_inout = 0;
 
-          for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
-            mixFilterBit = ltracksmixing[jtrack].GetFilterBit();
-            if (!(mixFilterBit & fFilterBit)) continue;       // Test filter bit
-            if (mixFilterBit == 128 && !(ltracksmixing[jtrack].IsPrimary())) continue;     // Only for TPC only track primary check
-            mixpT = ltracksmixing[jtrack].GetPt();
-            //                    if (mixpT < 4.0 ||  trigpT < mixpT) continue;  // for pbpb
-            if (trigpT < mixpT || mixpT < 0.8) continue;  // for pp
-            mixEta = ltracksmixing[jtrack].GetEta();
-            if (TMath::Abs(mixEta) >= 0.8) continue;
-            mixPhi = ltracksmixing[jtrack].GetPhi();
-            mixCharge = ltracksmixing[jtrack].GetCharge();
-            mixpTBin = GetPtBin(mixpT);
+      //  cout << "pool : " << lnEvent << " " << pool->IsReady() << endl;
 
-            if (mixpTBin == -1) continue;
+      if (pool->IsReady() || pool->GetCurrentNEvents() >= 5) {
+        if (fDebug > 4) pool->PrintInfo();
 
-            if (fConversionsVCut > 0 && mixCharge * trigCharge < 0)
-            {
-              Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
-              if (mass < fConversionsVCut * 5)
+        for (int ievent = 0; ievent < lnEvent; ievent++) {
+          lTracksMixing = pool->GetEvent(ievent);
+          //      cout << "lNEvt : " << lnEvent << endl;
+          if (!lTracksMixing) continue;
+          lnTracksMixing = lTracksMixing->GetEntriesFast();
+          lnTracksTrig = lTracksTrig->GetEntriesFast();
+          //      cout << "lNEvt : " << lnEvent << " MixingT " << lnTracksMixing << " Trig " << lnTracksTrig << endl;
+
+          for (int itrack = 0; itrack < lnTracksTrig; itrack++) {
+            if (!(lTracksTrig->At(itrack))) return 1;
+            const MixedParticle *lParticleTrig = dynamic_cast<MixedParticle*>(lTracksTrig->At(itrack));
+            trigpT = lParticleTrig->Pt();
+            if (trigpT < fMinPtTrigCut) continue;
+            trigEta = lParticleTrig->Eta();
+            if (TMath::Abs(trigEta) >= 0.8) continue;
+            trigPhi = lParticleTrig->Phi();
+            trigCharge = lParticleTrig->Charge();
+            ldeltaEventPlane = trigPhi - eventPlane;
+            if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
+            if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
+            //        cout << ldeltaEventPlane << "\n";
+            trigpTBin = GetPttBin(trigpT);
+
+            if (trigpTBin == -1) continue;
+            evp_inout = CheckInOut(ldeltaEventPlane);
+
+            for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
+              if (!(lTracksMixing->At(jtrack))) return 1;
+              const MixedParticle *lParticleMixing = dynamic_cast<MixedParticle*>(lTracksMixing->At(jtrack));
+              //          cout << "PROBLEM1 ?" << endl;
+              mixpT = lParticleMixing->Pt();
+              if (trigpT < mixpT) continue;
+              mixEta = lParticleMixing->Eta();
+              if (TMath::Abs(mixEta) >= 0.8) continue;
+              mixPhi = lParticleMixing->Phi();
+              mixCharge = lParticleMixing->Charge();
+              mixpTBin = GetPtaBin(mixpT);
+
+              if (mixpTBin == -1) continue;
+
+              if (fConversionsVCut > 0 && mixCharge * trigCharge < 0)
               {
-                mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
-                if (mass < fConversionsVCut*fConversionsVCut) 
-                  continue;
+                Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
+
+                if (mass < fConversionsVCut * 5)
+                {
+                  mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
+
+                  if (mass < fConversionsVCut*fConversionsVCut) 
+                    continue;
+                }
               }
-            }
 
-            // K0s
-            if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
-            {
-              Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
-
-              const Float_t kK0smass = 0.4976;
-
-              if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
+              // K0s
+              if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
               {
-                mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
+                Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
 
-                if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
-                  continue;
+                const Float_t kK0smass = 0.4976;
+
+                if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
+                {
+                  mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
+
+                  if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
+                    continue;
+                }
               }
-            }
 
 
-            // Lambda
-            if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
-            {
-              Float_t mass1 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
-              Float_t mass2 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
-
-              const Float_t kLambdaMass = 1.115;
-
-              if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+              // Lambda
+              if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
               {
-                mass1 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
+                Float_t mass1 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
+                Float_t mass2 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
 
-                if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-                  continue;
+                const Float_t kLambdaMass = 1.115;
+
+                if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+                {
+                  mass1 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
+
+                  if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                    continue;
+                }
+                if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+                {
+                  mass2 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
+
+                  if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                    continue;
+                }
               }
-              if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-              {
-                mass2 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
 
-                if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-                  continue;
+
+              deltaPhi = trigPhi - mixPhi;
+              deltaEta = trigEta - mixEta;
+
+//                        cout << evp_inout << " " << mixpTBin << " and " << trigpTBin << "  " << jtrack << "/" << lnTracksMixing << " and " << itrack << "/" << lnTracksTrig  <<  endl;
+
+              if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
+              if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
+
+              dPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, trigCharge, mixCharge, trigpT, mixpT, lbSign);
+              if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
+                continue;
+
+              if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0) fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+
+              } else {
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0)fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+
               }
-            }
+              //          cout << "Ho ! " << mixPhi <<"  " <<  mixCharge << "  " << mixEta << "  "<< endl;
 
-            deltaPhi = trigPhi - mixPhi;
-            deltaEta = trigEta - mixEta;
+            } // jtrack
 
-            if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
-            if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
+          } // itrack
+        }  // ievent
+        //    cout << "problem!" << endl;
+        pool->UpdatePool(lTracksTrig);
+      } else {
+        pool->UpdatePool(lTracksTrig);
+        //    cout << lTracksTrig->GetEntriesFast() << endl;
+      } // if pool is ready
 
-            dPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, trigCharge, mixCharge, trigpT, mixpT, lbSign);
-            if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
-              continue;
-
-            if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            } else { 
-                fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            }
-
-          }
-        }
-      }
-    }
+    } 
   } else {
-    AliEventPool *pool = fPoolMgr->GetEventPool(lCentrality, fZVertex);
-    if (!pool) return 1;
 
-    TObjArray *lTracksMixing;
-    int lnEvent = pool->GetCurrentNEvents();
+      AliEventPool *pool = fPoolMgr->GetEventPool(lCentrality, fZVertex);
+      if (!pool) return 1;
 
-    int lCentBin = GetCentBin(lCentrality);
-    int lZVertexBin = GetZVertexBin(fZVertex);
-    long lnTracksMixing = 0;
-    long lnTracksTrig = 0;
+      TObjArray *lTracksMixing;
+      int lnEvent = pool->GetCurrentNEvents();
 
-    float trigpT, trigEta, trigPhi, trigCharge = -999;
-    float mixpT, mixEta, mixPhi, mixCharge = -999;
-    float deltaPhi, deltaEta = -999;
-    float dPhiStar = -999;
-    float ldeltaEventPlane = -999;
-    int trigpTBin, mixpTBin;
-    int evp_inout = 0;
+      int lCentBin = GetCentBin(lCentrality);
+      int lZVertexBin = GetZVertexBin(fZVertex);
+      long lnTracksMixing = 0;
+      long lnTracksTrig = 0;
 
-//  cout << "pool : " << lnEvent << " " << pool->IsReady() << endl;
+      float trigpT, trigEta, trigPhi, trigCharge = -999;
+      float mixpT, mixEta, mixPhi, mixCharge = -999;
+      float deltaPhi, deltaEta = -999;
+      float dPhiStar = -999;
+      float ldeltaEventPlane = -999;
+      int trigpTBin, mixpTBin;
+      int evp_inout = 0;
 
-  if (pool->IsReady() || pool->GetCurrentNEvents() >= 5) {
-    if (fDebug > 4) pool->PrintInfo();
+//        cout << "pool : " << lnEvent << " " << pool->IsReady() << endl;
 
-    for (int ievent = 0; ievent < lnEvent; ievent++) {
-      lTracksMixing = pool->GetEvent(ievent);
-//      cout << "lNEvt : " << lnEvent << endl;
-      if (!lTracksMixing) continue;
-      lnTracksMixing = lTracksMixing->GetEntriesFast();
-      lnTracksTrig = lTracksTrig->GetEntriesFast();
-//      cout << "lNEvt : " << lnEvent << " MixingT " << lnTracksMixing << " Trig " << lnTracksTrig << endl;
+      if (pool->IsReady() || pool->GetCurrentNEvents() >= 5) {
+        if (fDebug > 4) pool->PrintInfo();
 
-      for (int itrack = 0; itrack < lnTracksTrig; itrack++) {
-        if (!(lTracksTrig->At(itrack))) return 1;
-        const MixedParticle *lParticleTrig = dynamic_cast<MixedParticle*>(lTracksTrig->At(itrack));
-        trigpT = lParticleTrig->Pt();
-        if (trigpT < fMinPtTrigCut) continue;
-        trigEta = lParticleTrig->Eta();
-        if (TMath::Abs(trigEta) >= 0.8) continue;
-        trigPhi = lParticleTrig->Phi();
-        trigCharge = lParticleTrig->Charge();
-        ldeltaEventPlane = trigPhi - eventPlane;
-        if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
-        if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
-        //        cout << ldeltaEventPlane << "\n";
-        trigpTBin = GetPtBin(trigpT);
-        
-        if (trigpTBin == -1) continue;
-        if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-          evp_inout = 1;
-        } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-          evp_inout = 1;
-        } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-          evp_inout = 1;
-        } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-          evp_inout = 3;
-        } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-          evp_inout = 3;
-        } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-          evp_inout = 4;
-        } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-          evp_inout = 4;
-        } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-          evp_inout = 2;
-        } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-          evp_inout = 2;
-        }
+        for (int ievent = 0; ievent < lnEvent; ievent++) {
+          lTracksMixing = pool->GetEvent(ievent);
+          if (!lTracksMixing) continue;
+          lnTracksMixing = lTracksMixing->GetEntriesFast();
+          lnTracksTrig = lTracksTrig->GetEntriesFast();
+          if (!lnTracksTrig) return 1;
+//          cout << "lNEvt : " << lnEvent << " MixingT " << lnTracksMixing << " Trig " << lnTracksTrig << " " << lCentBin << " " << lZVertexBin << endl;
 
-        for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
-          if (!(lTracksMixing->At(jtrack))) return 1;
-          const MixedParticle *lParticleMixing = dynamic_cast<MixedParticle*>(lTracksMixing->At(jtrack));
-//          cout << "PROBLEM1 ?" << endl;
-          mixpT = lParticleMixing->Pt();
-          if (trigpT < mixpT) continue;
-          mixEta = lParticleMixing->Eta();
-        if (TMath::Abs(mixEta) >= 0.8) continue;
-          mixPhi = lParticleMixing->Phi();
-          mixCharge = lParticleMixing->Charge();
-          mixpTBin = GetPtBin(mixpT);
+          for (int itrack = 0; itrack < lnTracksTrig; itrack++) {
+            if (!(lTracksTrig->At(itrack))) return 1;
+            const MixedParticle *lParticleTrig = dynamic_cast<MixedParticle*>(lTracksTrig->At(itrack));
+            trigpT = lParticleTrig->Pt();
+            if (trigpT < fMinPtTrigCut) continue;
+            trigEta = lParticleTrig->Eta();
+            if (TMath::Abs(trigEta) >= 0.8) continue;
+            trigPhi = lParticleTrig->Phi();
+            trigCharge = lParticleTrig->Charge();
+            ldeltaEventPlane = trigPhi - eventPlane;
+            if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
+            if (ldeltaEventPlane > TMath::TwoPi()) ldeltaEventPlane -= TMath::TwoPi();
+            //        cout << ldeltaEventPlane << "\n";
+            trigpTBin = GetPttBin(trigpT);
 
-          if (mixpTBin == -1) continue;
+            if (trigpTBin == -1) continue;
+            evp_inout = CheckInOut(ldeltaEventPlane);
 
-          if (fConversionsVCut > 0 && mixCharge * trigCharge < 0)
-          {
-            Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
+            for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
+              if (!(lTracksMixing->At(jtrack))) return 1;
+              const MixedParticle *lParticleMixing = dynamic_cast<MixedParticle*>(lTracksMixing->At(jtrack));
+              //          cout << "PROBLEM1 ?" << endl;
+              mixpT = lParticleMixing->Pt();
+              if (trigpT < mixpT) continue;
+              mixEta = lParticleMixing->Eta();
+              if (TMath::Abs(mixEta) >= 0.8) continue;
+              mixPhi = lParticleMixing->Phi();
+              mixCharge = lParticleMixing->Charge();
+              mixpTBin = GetPtaBin(mixpT);
 
-            if (mass < fConversionsVCut * 5)
-            {
-              mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
+              if (mixpTBin == -1) continue;
 
-              if (mass < fConversionsVCut*fConversionsVCut) 
+              if (fConversionsVCut > 0 && mixCharge * trigCharge < 0)
+              {
+                Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
+
+                if (mass < fConversionsVCut * 5)
+                {
+                  mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
+
+                  if (mass < fConversionsVCut*fConversionsVCut) 
+                    continue;
+                }
+              }
+
+              // K0s
+              if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
+              {
+                Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
+
+                const Float_t kK0smass = 0.4976;
+
+                if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
+                {
+                  mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
+
+                  if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
+                    continue;
+                }
+              }
+
+
+              // Lambda
+              if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
+              {
+                Float_t mass1 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
+                Float_t mass2 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
+
+                const Float_t kLambdaMass = 1.115;
+
+                if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+                {
+                  mass1 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
+
+                  if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                    continue;
+                }
+                if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
+                {
+                  mass2 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
+
+                  if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
+                    continue;
+                }
+              }
+
+
+              deltaPhi = trigPhi - mixPhi;
+              deltaEta = trigEta - mixEta;
+
+//              cout << mixpTBin << " and " << trigpTBin << "  " << jtrack << "/" << lnTracksMixing << " and " << itrack << "/" << lnTracksTrig  << "cent " << lCentBin " " << lZVertexBin << endl;
+
+              if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
+              if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
+
+              dPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, trigCharge, mixCharge, trigpT, mixpT, lbSign);
+              if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
                 continue;
-            }
-          }
 
-          // K0s
-          if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
-          {
-            Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
+              if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0) fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
-            const Float_t kK0smass = 0.4976;
+              } else {
+                fHistdEtadPhiMixed[0][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
+                if (evp_inout > 0)
+                fHistdEtadPhiMixed[evp_inout][lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
 
-            if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
-            {
-              mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
+              }
+              //          cout << "Ho ! " << mixPhi <<"  " <<  mixCharge << "  " << mixEta << "  "<< endl;
 
-              if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
-                continue;
-            }
-          }
+            } // jtrack
 
-
-          // Lambda
-          if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
-          {
-            Float_t mass1 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
-            Float_t mass2 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
-
-            const Float_t kLambdaMass = 1.115;
-
-            if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-            {
-              mass1 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
-
-              if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-                continue;
-            }
-            if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-            {
-              mass2 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
-
-              if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-                continue;
-            }
-          }
-
-
-          deltaPhi = trigPhi - mixPhi;
-          deltaEta = trigEta - mixEta;
-
-//          cout << mixpTBin << " and " << trigpTBin << "  " << jtrack << "/" << lnTracksMixing << " and " << itrack << "/" << lnTracksTrig  <<  endl;
-
-          if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
-          if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
-
-          dPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, trigCharge, mixCharge, trigpT, mixpT, lbSign);
-          if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
-            continue;
-
-          if (trigpTBin >= lMinimumPtTBinMerging && mixpTBin >= fMinimumPtABinMerging) {
-            fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][fMinimumPtABinMerging]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-
-          } else {
-            fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-
-            if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-            else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-          }
-//          cout << "Ho ! " << mixPhi <<"  " <<  mixCharge << "  " << mixEta << "  "<< endl;
-
-        } // jtrack
-
-      } // itrack
-    }  // ievent
-//    cout << "problem!" << endl;
-    pool->UpdatePool(lTracksTrig);
-  } else {
-    pool->UpdatePool(lTracksTrig);
-//    cout << lTracksTrig->GetEntriesFast() << endl;
-  } // if pool is ready
-
-  /*
-  AliEventPool *pool_lowpt = fPoolMgr->GetEventPool(lCentrality, fZVertex);
-  if (!pool_lowpt) return 1;
-
-  lnEvent = pool_lowpt->GetCurrentNEvents();
-//  cout << "pool_lowpt : " << lnEvent << endl;
-
-  if (pool_lowpt->IsReady() || pool_lowpt->NTracksInPool() > fMinNumTrack || pool_lowpt->GetCurrentNEvents() >= 5) {
-    if (fDebug > 4) pool_lowpt->PrintInfo();
-
-    lCentBin = GetCentBin(lCentrality);
-    lZVertexBin = GetZVertexBin(fZVertex);
-    lnTracksMixing = 0;
-    lnTracksTrig = 0;
-
-     evp_inout = 0;
-
-    for (int ievent = 0; ievent < lnEvent; ievent++) {
-      lTracksMixing = pool_lowpt->GetEvent(ievent);
-//      cout << "lNEvt : " << lnEvent << endl;
-      if (!lTracksMixing) continue;
-      lnTracksMixing = lTracksMixing->GetEntriesFast();
-      lnTracksTrig = lTracksTrig->GetEntriesFast();
-
-//      cout << "lNEvt : " << lnEvent << " MixingT " << lnTracksMixing << " Trig " << lnTracksTrig << endl;
-
-      for (int itrack = 0; itrack < lnTracksTrig; itrack++) {
-        if (!(lTracksTrig->At(itrack))) return 1;
-        const MixedParticle *lParticleTrig = dynamic_cast<MixedParticle*>(lTracksTrig->At(itrack));
-        trigpT = lParticleTrig->Pt();
-        trigEta = lParticleTrig->Eta();
-        if (TMath::Abs(trigEta) >= 0.8) continue;
-        trigPhi = lParticleTrig->Phi();
-        trigCharge = lParticleTrig->Charge();
-        ldeltaEventPlane = trigPhi - fEventPlane;
-        if (ldeltaEventPlane < 0) ldeltaEventPlane += TMath::TwoPi();
-        //        cout << ldeltaEventPlane << "\n";
-        trigpTBin = GetPtBin(trigpT);
-        
-        if (trigpTBin == -1) continue;
-        if ( (0 <= ldeltaEventPlane) && (ldeltaEventPlane < 1./6*TMath::Pi()) ) {
-          evp_inout = 1;
-        } else if ( (5./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 7./6*TMath::Pi()) ) {
-          evp_inout = 1;
-        } else if ( (11./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 12./6*TMath::Pi()) ) {
-          evp_inout = 1;
-        } else if ( (1./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 2./6*TMath::Pi()) ) {
-          evp_inout = 3;
-        } else if ( (7./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 8./6*TMath::Pi()) ) {
-          evp_inout = 3;
-        } else if ( (4./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 5./6*TMath::Pi()) ) {
-          evp_inout = 4;
-        } else if ( (10./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 11./6*TMath::Pi()) ) {
-          evp_inout = 4;
-        } else if ( (2./6*TMath::Pi()<= ldeltaEventPlane) && (ldeltaEventPlane < 4./6*TMath::Pi()) ) {
-          evp_inout = 2;
-        } else if ( (8./6*TMath::Pi() <= ldeltaEventPlane) && (ldeltaEventPlane < 10./6*TMath::Pi()) ) {
-          evp_inout = 2;
-        }
-
-        for (int jtrack = 0; jtrack < lnTracksMixing; jtrack++) {
-          if (!(lTracksMixing->At(jtrack))) return 1;
-          const MixedParticle *lParticleMixing = dynamic_cast<MixedParticle*>(lTracksMixing->At(jtrack));
-//          cout << "PROBLEM1 ?" << endl;
-          mixpT = lParticleMixing->Pt();
-          if (trigpT < mixpT) continue;
-          mixEta = lParticleMixing->Eta();
-        if (TMath::Abs(mixEta) >= 0.8) continue;
-          mixPhi = lParticleMixing->Phi();
-          mixCharge = lParticleMixing->Charge();
-          mixpTBin = GetPtBin(mixpT);
-
-          if (mixpTBin == -1) continue;
-
-          if (fConversionsVCut > 0 && mixCharge * trigCharge < 0)
-          {
-            Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
-
-            if (mass < fConversionsVCut * 5)
-            {
-              mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.510e-3, 0.510e-3);
-
-              if (mass < fConversionsVCut*fConversionsVCut) 
-                continue;
-            }
-          }
-
-          // K0s
-          if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
-          {
-            Float_t mass = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
-
-            const Float_t kK0smass = 0.4976;
-
-            if (TMath::Abs(mass - kK0smass*kK0smass) < fResonancesVCut * 5)
-            {
-              mass = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.1396);
-
-              if (mass > (kK0smass-fResonancesVCut)*(kK0smass-fResonancesVCut) && mass < (kK0smass+fResonancesVCut)*(kK0smass+fResonancesVCut))
-                continue;
-            }
-          }
-
-
-          // Lambda
-          if (fResonancesVCut > 0 && mixCharge * trigCharge < 0)
-          {
-            Float_t mass1 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
-            Float_t mass2 = GetInvMassSquaredCheap(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
-
-            const Float_t kLambdaMass = 1.115;
-
-            if (TMath::Abs(mass1 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-            {
-              mass1 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.1396, 0.9383);
-
-              if (mass1 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass1 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-                continue;
-            }
-            if (TMath::Abs(mass2 - kLambdaMass*kLambdaMass) < fResonancesVCut * 5)
-            {
-              mass2 = GetInvMassSquared(trigpT, trigEta, trigPhi, mixpT, mixEta, mixPhi, 0.9383, 0.1396);
-
-              if (mass2 > (kLambdaMass-fResonancesVCut)*(kLambdaMass-fResonancesVCut) && mass2 < (kLambdaMass+fResonancesVCut)*(kLambdaMass+fResonancesVCut))
-                continue;
-            }
-          }
-
-
-          deltaPhi = trigPhi - mixPhi;
-          deltaEta = trigEta - mixEta;
-
-//          cout << mixpTBin << " and " << trigpTBin << "  " << jtrack << "/" << lnTracksMixing << " and " << itrack << "/" << lnTracksTrig  <<  endl;
-
-          if (deltaPhi < -0.5*TMath::Pi()) deltaPhi += TMath::TwoPi();
-          if (deltaPhi > 1.5*TMath::Pi()) deltaPhi -= TMath::TwoPi();
-
-          dPhiStar = CalculatedPhiStar (deltaPhi, deltaEta, trigCharge, mixCharge, trigpT, mixpT, lbSign);
-          if (TMath::Abs(dPhiStar) < 0.02 && TMath::Abs(deltaEta) < 0.02) 
-            continue;
-
-          fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-//          cout << fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin] << " & " << fHistdEtadPhiMixed[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->GetEntries() << "\n";
-
-          if ( evp_inout == 1 ) fHistdEtadPhiMixedIn[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-          else if ( evp_inout == 2 ) fHistdEtadPhiMixedOut[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-          else if ( evp_inout == 3 ) fHistdEtadPhiMixedM1[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-          else if ( evp_inout == 4) fHistdEtadPhiMixedM2[lCentBin][lZVertexBin][trigpTBin][mixpTBin]->Fill(deltaEta, deltaPhi, 1.0/lnEvent);
-
-//          cout << "Ho ! " << mixPhi <<"  " <<  mixCharge << "  " << mixEta << "  "<< endl;
-
-        }
-
-      }
-    }
-//    cout << "problem!" << endl;
-    pool_lowpt->UpdatePool(lTracks_LowPt);
-
-  } else 
-    pool_lowpt->UpdatePool(lTracks_LowPt);
-*/       // Low PT part!
-
+          } // itrack
+        }  // ievent
+        //    cout << "problem!" << endl;
+        pool->UpdatePool(lTracksTrig);
+      } else {
+        pool->UpdatePool(lTracksTrig);
+        //    cout << lTracksTrig->GetEntriesFast() << endl;
+      } // if pool is ready
   }
+
+//  cout << "Domixing return" << endl;
+
+
   return 0;
 }
 
 void AliAnalysisTaskJetLikeCorrelation::InitHistogramVectors() {
 
-  fHistdEtadPhiSame = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiMixed = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiMixedIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiMixedOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
+  fHistdEtadPhiSame = vector <vector < vector <vector< vector<TH2D*> > > > > (fNumberOfPlanes, vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPttArray.GetSize() - 1, vector<TH2D*> (fPtaArray.GetSize() - 1) ) ) ) );
+  fHistdEtadPhiMixed = vector <vector < vector <vector< vector<TH2D*> > > > > (fNumberOfPlanes,  vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPttArray.GetSize() - 1, vector<TH2D*> (fPtaArray.GetSize() - 1) ) ) ) );
 
-  fHistdEtadPhiSameMCCorrCont = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrContIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrContOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
+  fHistdEtadPhiSameMCCorrCont = vector <vector < vector <vector< vector<TH2D*> > > > > (fNumberOfPlanes, vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPttArray.GetSize() - 1, vector<TH2D*> (fPtaArray.GetSize() - 1) ) ) ) );
   
-  fHistdEtadPhiSameMCCorrPrim = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrPrimIn = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
-  fHistdEtadPhiSameMCCorrPrimOut = vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPtArray.GetSize() - 1, vector<TH2D*> (fPtArray.GetSize() - 1) ) ) );
+  fHistdEtadPhiSameMCCorrPrim = vector <vector < vector <vector< vector<TH2D*> > > > > (fNumberOfPlanes, vector< vector< vector< vector<TH2D*> > > > (fCentArray.GetSize() - 1, vector< vector< vector<TH2D*> > > (fZVertexArray.GetSize() - 1, vector< vector<TH2D*> > (fPttArray.GetSize() - 1, vector<TH2D*> (fPtaArray.GetSize() - 1) ) ) ) );
+
   fPoolSize = vector< vector <int> > (fCentArray.GetSize() - 1, vector< int > (fZVertexArray.GetSize() - 1 ) );
 }
 
@@ -2062,108 +1934,54 @@ void AliAnalysisTaskJetLikeCorrelation::InitHistograms() {
   int lPtBin = 250;
   int lPtMin = 0;
   int lPtMax = 25;
-  int lMinPtBin = GetPtBin(fMinPtTrigCut);
+//  int lMinPtBin = GetPtBin(fMinPtTrigCut);
 
-  for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
-    for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
-      for (int iptt = 0; iptt < fPtArray.GetSize() - 1; iptt++) {
-        if (iptt < lMinPtBin) continue;
-        for (int ipta = 0; ipta < fPtArray.GetSize() - 1; ipta++) {
-          if (iptt < ipta) continue;
-          fHistdEtadPhiSame[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSame%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSame%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixed[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixed%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixed%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixedIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixedOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixedOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    for (int icent = 0; icent < fCentArray.GetSize() - 1; icent++) {
+      for (int izvertex = 0; izvertex < fZVertexArray.GetSize() - 1; izvertex++) {
+        for (int iptt = 0; iptt < fPttArray.GetSize() - 1; iptt++) {
+//          if (iptt < lMinPtBin) continue;
+          for (int ipta = 0; ipta < fPtaArray.GetSize() - 1; ipta++) {
+            if (fPttArray[iptt] + 0.1 < fPtaArray[ipta] ) continue;
+            fHistdEtadPhiSame[iplane][icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSame%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSame%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+            fHistdEtadPhiMixed[iplane][icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiMixed%02d%02d%02d%02d%02d",iplane, icent,izvertex, iptt, ipta), Form("fHistdEtadPhiMixed%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
-          fHistdEtadPhiSame[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameIn[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameOut[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiMixed[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiMixedIn[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiMixedOut[icent][izvertex][iptt][ipta]->Sumw2();
-          
-          if (fMCCorrection) {
-          fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrContOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrContOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+            fHistdEtadPhiSame[iplane][icent][izvertex][iptt][ipta]->Sumw2();
+            fHistdEtadPhiMixed[iplane][icent][izvertex][iptt][ipta]->Sumw2();
 
-          fHistdEtadPhiSameMCCorrCont[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrContIn[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrContOut[icent][izvertex][iptt][ipta]->Sumw2();
-          
-          fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimIn%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
-          fHistdEtadPhiSameMCCorrPrimOut[icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrimOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrimOut%02d%02d%02d%02d", icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+            if (fMCCorrection) {
+              fHistdEtadPhiSameMCCorrCont[iplane][icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrCont%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
 
-          fHistdEtadPhiSameMCCorrPrim[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrPrimIn[icent][izvertex][iptt][ipta]->Sumw2();
-          fHistdEtadPhiSameMCCorrPrimOut[icent][izvertex][iptt][ipta]->Sumw2();
+              fHistdEtadPhiSameMCCorrCont[iplane][icent][izvertex][iptt][ipta]->Sumw2();
 
-          }
-        } // ipta
-      } // iptt
-    } //izvertex 
-  }
+              fHistdEtadPhiSameMCCorrPrim[iplane][icent][izvertex][iptt][ipta] = new TH2D(Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), Form("fHistdEtadPhiSameMCCorrPrim%02d%02d%02d%02d%02d", iplane, icent,izvertex, iptt, ipta), int((fEtaCut+0.001)*8/0.1), -2*fEtaCut, 2*fEtaCut, 64, -0.25*fPhiCut, 0.75*fPhiCut);
+
+              fHistdEtadPhiSameMCCorrPrim[iplane][icent][izvertex][iptt][ipta]->Sumw2();
+
+            }
+          } // ipta
+        } // iptt
+      } //izvertex 
+    }
+  } // iplane
   
-//  fHistNevtMixed = new TH2D(Form("fHistNevtMixed"), Form("fHistNevtMixed"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//  fHistNevtMixed->GetXaxis()->SetTitle("CentBin");
-//  fHistNevtMixed->GetYaxis()->SetTitle("ZVertBin");
   fHistNevtSame = new TH2D(Form("fHistNevtSame"), Form("fHistNevtSame"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
   fHistNevtSame->GetXaxis()->SetTitle("CentBin");
   fHistNevtSame->GetYaxis()->SetTitle("ZVertBin");
-  
-//  fHistNevtMixedIn = new TH2D(Form("fHistNevtMixedIn"), Form("fHistNevtMixedIn"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//  fHistNevtMixedIn->GetXaxis()->SetTitle("CentBin");
-//  fHistNevtMixedIn->GetYaxis()->SetTitle("ZVertBin");
-//  fHistNevtSameIn = new TH2D(Form("fHistNevtSameIn"), Form("fHistNevtSameIn"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//  fHistNevtSameIn->GetXaxis()->SetTitle("CentBin");
-//  fHistNevtSameIn->GetYaxis()->SetTitle("ZVertBin");
-  //fHistNevtMixedM1 = new TH2D(Form("fHistNevtMixedM1"), Form("fHistNevtMixedM1"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-  //fHistNevtMixedM1->GetXaxis()->SetTitle("CentBin");
-  //fHistNevtMixedM1->GetYaxis()->SetTitle("ZVertBin");
-//fHistNevtSameM1 = new TH2D(Form("fHistNevtSameM1"), Form("fHistNevtSameM1"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//fHistNevtSameM1->GetXaxis()->SetTitle("CentBin");
-//fHistNevtSameM1->GetYaxis()->SetTitle("ZVertBin");
-  //fHistNevtMixedM2 = new TH2D(Form("fHistNevtMixedM2"), Form("fHistNevtMixedM2"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-  //fHistNevtMixedM2->GetXaxis()->SetTitle("CentBin");
-  //fHistNevtMixedM2->GetYaxis()->SetTitle("ZVertBin");
-//fHistNevtSameM2 = new TH2D(Form("fHistNevtSameM2"), Form("fHistNevtSameM2"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//fHistNevtSameM2->GetXaxis()->SetTitle("CentBin");
-//fHistNevtSameM2->GetYaxis()->SetTitle("ZVertBin");
-  //fHistNevtMixedOut = new TH2D(Form("fHistNevtMixedOut"), Form("fHistNevtMixedOut"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-  //fHistNevtMixedOut->GetXaxis()->SetTitle("CentBin");
-  //fHistNevtMixedOut->GetYaxis()->SetTitle("ZVertBin");
-//fHistNevtSameOut = new TH2D(Form("fHistNevtSameOut"), Form("fHistNevtSameOut"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-//fHistNevtSameOut->GetXaxis()->SetTitle("CentBin");
-//fHistNevtSameOut->GetYaxis()->SetTitle("ZVertBin");
 
-  /*
-  fHistPtMixed = new TH2I(Form("fHistPtMixed"), Form("fHistPtMixed"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5);
-  fHistPtMixed->GetXaxis()->SetTitle("CentBin");
-  fHistPtMixed->GetYaxis()->SetTitle("ZVertBin"); */
-  fHistPtSame = new TH3D(Form("fHistPtSame"), Form("fHistPtSame"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
-  fHistPtSame->GetXaxis()->SetTitle("CentBin");
-  fHistPtSame->GetYaxis()->SetTitle("ZVertBin");
-  fHistPtSame->GetZaxis()->SetTitle("Pt(GeV/c)");
-  
-  
-  fHistPtSameIn = new TH3D(Form("fHistPtSameIn"), Form("fHistPtSameIn"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
-  fHistPtSameIn->GetXaxis()->SetTitle("CentBin");
-  fHistPtSameIn->GetYaxis()->SetTitle("ZVertBin");
-  fHistPtSameIn->GetZaxis()->SetTitle("Pt(GeV/c)");
-  fHistPtSameOut = new TH3D(Form("fHistPtSameOut"), Form("fHistPtSameOut"), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
-  fHistPtSameOut->GetXaxis()->SetTitle("CentBin");
-  fHistPtSameOut->GetYaxis()->SetTitle("ZVertBin");
-  fHistPtSameOut->GetZaxis()->SetTitle("Pt(GeV/c)");
+  for (int iplane = 0; iplane < fNumberOfPlanes; iplane++) {
+    fHistPtSame[iplane] = new TH3D(Form("fHistPtSame%02d", iplane), Form("fHistPtSame%02d", iplane), fCentArray.GetSize() - 1, -0.5, fCentArray.GetSize() - 1.5, fZVertexArray.GetSize() - 1, -0.5, fZVertexArray.GetSize() - 1.5, lPtBin, lPtMin, lPtMax);
+    fHistPtSame[iplane]->GetXaxis()->SetTitle("CentBin");
+    fHistPtSame[iplane]->GetYaxis()->SetTitle("ZVertBin");
+    fHistPtSame[iplane]->GetZaxis()->SetTitle("Pt(GeV/c)");
 
+  }
 //  float lEtaMin = -0.9;
 //  float lEtaMax = 0.9;
 
-  int nbins[5] = {5, 20, 9, 20, 50};
+  int nbins[5] = {8, 20, 9, 20, 50};
   // In/out(5), Cent, ZVtx, Eta, Pt // total 5
-  double maxbin[5] = {4.5, 100, 9,1,25 };
+  double maxbin[5] = {7.5, 100, 9,1,25 };
   double minbin[5] = { -0.5, 0, -9, -1, 0};
   fHistEtaSparse = new THnSparseD("fHistEtaSparse", "fHistEtaSparse", 5, nbins, minbin, maxbin);
   fHistEtaSparse->Sumw2();
@@ -2234,16 +2052,49 @@ int AliAnalysisTaskJetLikeCorrelation::GetZVertexBin(double zvertex) {
       return -1;
 }
 
-int AliAnalysisTaskJetLikeCorrelation::GetPtBin(double pt) {
-    for (int iptbin = 0; iptbin < fPtArray.GetSize() - 1 ; iptbin++) {
-          if (pt >= fPtArray[iptbin] && pt < fPtArray[iptbin+1])
-                  return iptbin;
-            }
-      return -1;
+int AliAnalysisTaskJetLikeCorrelation::GetPttBin(double pt) {
+  for (int iptbin = 0; iptbin < fPttArray.GetSize() - 1 ; iptbin++) {
+    if (pt >= fPttArray[iptbin] && pt < fPttArray[iptbin+1])
+      return iptbin;
+  }
+  return -1;
+}
+
+int AliAnalysisTaskJetLikeCorrelation::GetPtaBin(double pt) {
+  for (int iptbin = 0; iptbin < fPtaArray.GetSize() - 1 ; iptbin++) {
+    if (pt >= fPtaArray[iptbin] && pt < fPtaArray[iptbin+1])
+      return iptbin;
+  }
+  return -1;
 }
 
 int AliAnalysisTaskJetLikeCorrelation::GetEventInformation(AliAODEvent *aodevent) {
 
+  if (fMCTruth) {
+    fZVertex = fMCHeader->GetVtxZ();
+    AliGenHijingEventHeader *lMCHeaderHijing = dynamic_cast<AliGenHijingEventHeader*>(fMCEvent->GenEventHeader());
+    if (lMCHeaderHijing) {
+      double lIP = lMCHeaderHijing->ImpactParameter();
+      fCentPercentile = GetCentralityFromIP(lIP);
+      if (fCentPercentile - 0.0001 < 0.0001) return 20;
+
+      float rpAngle = -999;
+      if (lMCHeaderHijing) {
+        rpAngle = lMCHeaderHijing->ReactionPlaneAngle();
+        if (rpAngle < 0) rpAngle += TMath::Pi();   // V0 EP angle varies from -pi/2 to +pi/2
+        fEventPlane = rpAngle;
+        fEventPlaneV0A = rpAngle;
+        fEventPlaneV0C = rpAngle;
+        fEventPlaneTPC = rpAngle;
+      }
+    }
+    if (fCollision == kpp) fCentPercentile = 1;
+
+    return 0;
+
+  }
+
+  
   const AliVVertex *vtxTrk = aodevent->GetPrimaryVertex();
   const AliVVertex *vtxSPD = aodevent->GetPrimaryVertexSPD();
 
@@ -2275,7 +2126,6 @@ int AliAnalysisTaskJetLikeCorrelation::GetEventInformation(AliAODEvent *aodevent
     const AliQnCorrectionsQnVector *myV0AQnVector;
     const AliQnCorrectionsQnVector *myV0CQnVector;
     const AliQnCorrectionsQnVector *myTPCQnVector;
- //   cout << fFlowQnVectorMgr << endl;
     myV0QnVector = fFlowQnVectorMgr->GetDetectorQnVector("VZERO");
     if (myV0QnVector != NULL) {
       fEventPlane = myV0QnVector->EventPlane(2);
@@ -2312,4 +2162,200 @@ int AliAnalysisTaskJetLikeCorrelation::GetEventInformation(AliAODEvent *aodevent
 
   return 0;
 
+}
+
+double AliAnalysisTaskJetLikeCorrelation::GetCentralityFromIP(double ip) {
+
+	//https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
+	static double bmin[12] = {0.0,1.60,2.27,3.72,5.23,7.31,8.88,10.20,11.38,12.47,14.51,100};
+	static double centmean[12] = {0.5,1.5,3.5,7.5,15,25,35,45,55,65,75,90};
+	for(UInt_t i = 0; i < 11; i++){
+		if(bmin[i+1] > ip)
+			return centmean[i];
+	}
+	return 0.0;
+
+}
+
+int AliAnalysisTaskJetLikeCorrelation::FillPt(double deltaevp, int centbin, int zvertbin, double trigpt) {
+
+  if (deltaevp < 1./12*pi && deltaevp >= 0) {
+    fHistPtSame[1]->Fill(centbin, zvertbin, trigpt); 
+    return 1;
+  } 
+  else if (deltaevp < 2./12*pi && deltaevp >= 1./12*pi) {
+    fHistPtSame[3]->Fill(centbin, zvertbin, trigpt); 
+    return 3;
+  } 
+  else if (deltaevp < 3./12*pi && deltaevp >= 2./12*pi) { 
+    fHistPtSame[4]->Fill(centbin, zvertbin, trigpt); 
+    return 4;
+  } 
+  else if (deltaevp < 4./12*pi && deltaevp >= 3./12*pi) { 
+    fHistPtSame[5]->Fill(centbin, zvertbin, trigpt); 
+    return 5;
+  } 
+  else if (deltaevp < 5./12*pi && deltaevp >= 4./12*pi) { 
+    fHistPtSame[6]->Fill(centbin, zvertbin, trigpt); 
+    return 6;
+  } 
+  else if (deltaevp < 7./12*pi && deltaevp >= 5./12*pi) { 
+    fHistPtSame[2]->Fill(centbin, zvertbin, trigpt); 
+    return 2;
+  } 
+  else if (deltaevp < 8./12*pi && deltaevp >= 7./12*pi) { 
+    fHistPtSame[6]->Fill(centbin, zvertbin, trigpt); 
+    return 6;
+  } 
+  else if (deltaevp < 9./12*pi && deltaevp >= 8./12*pi) { 
+    fHistPtSame[5]->Fill(centbin, zvertbin, trigpt); 
+    return 5;
+  } 
+  else if (deltaevp < 10./12*pi && deltaevp >= 9./12*pi) {
+    fHistPtSame[4]->Fill(centbin, zvertbin, trigpt); 
+    return 4;
+  } 
+  else if (deltaevp < 11./12*pi && deltaevp >= 10./12*pi) { 
+    fHistPtSame[3]->Fill(centbin, zvertbin, trigpt); 
+    return 3;
+  } 
+  else if (deltaevp < 13./12*pi && deltaevp >= 11./12*pi) { 
+    fHistPtSame[1]->Fill(centbin, zvertbin, trigpt); 
+    return 1;
+  } 
+  else if (deltaevp < 14./12*pi && deltaevp >= 13./12*pi) { 
+    fHistPtSame[3]->Fill(centbin, zvertbin, trigpt); 
+    return 3;
+  } 
+  else if (deltaevp < 15./12*pi && deltaevp >= 14./12*pi) { 
+    fHistPtSame[4]->Fill(centbin, zvertbin, trigpt); 
+    return 4;
+  } 
+  else if (deltaevp < 16./12*pi && deltaevp >= 15./12*pi) { 
+    fHistPtSame[5]->Fill(centbin, zvertbin, trigpt); 
+    return 5;
+  } 
+  else if (deltaevp < 17./12*pi && deltaevp >= 16./12*pi) { 
+    fHistPtSame[6]->Fill(centbin, zvertbin, trigpt); 
+    return 6;
+  } 
+  else if (deltaevp < 19./12*pi && deltaevp >= 17./12*pi) { 
+    fHistPtSame[2]->Fill(centbin, zvertbin, trigpt); 
+    return 2;
+  } 
+  else if (deltaevp < 20./12*pi && deltaevp >= 19./12*pi) { 
+    fHistPtSame[6]->Fill(centbin, zvertbin, trigpt); 
+    return 6;
+  } 
+  else if (deltaevp < 21./12*pi && deltaevp >= 20./12*pi) { 
+    fHistPtSame[5]->Fill(centbin, zvertbin, trigpt); 
+    return 5;
+  } 
+  else if (deltaevp < 22./12*pi && deltaevp >= 21./12*pi) { 
+    fHistPtSame[4]->Fill(centbin, zvertbin, trigpt); 
+    return 4;
+  } 
+  else if (deltaevp < 23./12*pi && deltaevp >= 22./12*pi) { 
+    fHistPtSame[3]->Fill(centbin, zvertbin, trigpt); 
+    return 3;
+  } 
+  else if (deltaevp < 24./12*pi && deltaevp >= 23./12*pi) { 
+    fHistPtSame[1]->Fill(centbin, zvertbin, trigpt); 
+    return 1;
+  } 
+
+  return -9;
+}
+
+int AliAnalysisTaskJetLikeCorrelation::CheckInOut(double deltaevp) {
+
+  if (fNumberOfPlanes > 2) {
+    if (deltaevp < 1./12*pi && deltaevp >= 0) {
+      return 1;
+    } 
+    else if (deltaevp < 2./12*pi && deltaevp >= 1./12*pi) {
+      return 3;
+    } 
+    else if (deltaevp < 3./12*pi && deltaevp >= 2./12*pi) { 
+      return 4;
+    } 
+    else if (deltaevp < 4./12*pi && deltaevp >= 3./12*pi) { 
+      return 5;
+    } 
+    else if (deltaevp < 5./12*pi && deltaevp >= 4./12*pi) { 
+      return 6;
+    } 
+    else if (deltaevp < 7./12*pi && deltaevp >= 5./12*pi) { 
+      return 2;
+    } 
+    else if (deltaevp < 8./12*pi && deltaevp >= 7./12*pi) { 
+      return 6;
+    } 
+    else if (deltaevp < 9./12*pi && deltaevp >= 8./12*pi) { 
+      return 5;
+    } 
+    else if (deltaevp < 10./12*pi && deltaevp >= 9./12*pi) {
+      return 4;
+    } 
+    else if (deltaevp < 11./12*pi && deltaevp >= 10./12*pi) { 
+      return 3;
+    } 
+    else if (deltaevp < 13./12*pi && deltaevp >= 11./12*pi) { 
+      return 1;
+    } 
+    else if (deltaevp < 14./12*pi && deltaevp >= 13./12*pi) { 
+      return 3;
+    } 
+    else if (deltaevp < 15./12*pi && deltaevp >= 14./12*pi) { 
+      return 4;
+    } 
+    else if (deltaevp < 16./12*pi && deltaevp >= 15./12*pi) { 
+      return 5;
+    } 
+    else if (deltaevp < 17./12*pi && deltaevp >= 16./12*pi) { 
+      return 6;
+    } 
+    else if (deltaevp < 19./12*pi && deltaevp >= 17./12*pi) { 
+      return 2;
+    } 
+    else if (deltaevp < 20./12*pi && deltaevp >= 19./12*pi) { 
+      return 6;
+    } 
+    else if (deltaevp < 21./12*pi && deltaevp >= 20./12*pi) { 
+      return 5;
+    } 
+    else if (deltaevp < 22./12*pi && deltaevp >= 21./12*pi) { 
+      return 4;
+    } 
+    else if (deltaevp < 23./12*pi && deltaevp >= 22./12*pi) { 
+      return 3;
+    } 
+    else if (deltaevp < 24./12*pi && deltaevp >= 23./12*pi) { 
+      return 1;
+    } 
+    return -9;
+  } 
+  else if (fNumberOfPlanes == 2) {
+    if (deltaevp < 1./12*pi && deltaevp >= 0) {
+      return 1;
+    } 
+    else if (deltaevp < 7./12*pi && deltaevp >= 5./12*pi) { 
+      return 2;
+    } 
+    else if (deltaevp < 13./12*pi && deltaevp >= 11./12*pi) { 
+      return 1;
+    } 
+    else if (deltaevp < 19./12*pi && deltaevp >= 17./12*pi) { 
+      return 2;
+    } 
+    else if (deltaevp < 24./12*pi && deltaevp >= 23./12*pi) { 
+      return 1;
+    } 
+
+    return -9;
+
+  }
+  else {
+    return -9;
+  }
 }

@@ -296,13 +296,19 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
   Double_t jetPt = jet->Pt()-jet->Area()*fJetsCont->GetRhoVal();
 
   // ### PT
-  if(jetPt >= fExtractionCutMaxPt || jetPt < 0)
+  if(jetPt >= fExtractionCutMaxPt)
+  {
+    FillHistogram("hJetPtAcceptance", jetPt, fCent);
     return kFALSE;
+  }
 
   if(jetPt < fExtractionCutMinPt && jetPt >= fUnderflowCutOff)
   {
     if(!fUnderflowNumBins) // If low-pT extraction is not active, discard jet
+    {
+      FillHistogram("hJetPtAcceptance", jetPt, fCent);
       return kFALSE;
+    }
     else // If active, put in underflow bin
     {
       if(fRandom->Rndm() >= fUnderflowPercentage)

@@ -58,7 +58,8 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
     //Analysis->SetStartEndCell(0,12288);       //..only EMCal
     //Analysis->SetStartEndCell(12288,17664);   //..only DCal
     //Analysis->SetQAChecks(1);                 //..1= Perform QA checks - takes a long time! Saves all good cells for cross check to pdf
-	//Analysis->SetPrintOutput(1);              //..1= prints more information about excluded cells
+    //Analysis->SetPrintOutput(1);              //..1= prints more information about excluded cells
+	Analysis->SetTrackCellRecord(1);            //..1= prints non-zero flag elements thoughout the routine
 	//Analysis->SetExternalBadMap("Version1OADB/LHC16s_INT7_Histograms_V1.root");
 
 	//. . . . . . . . . . . . . . . . . . . . . . . .
@@ -102,5 +103,8 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 
 	watch->Stop();
 	cout<<"Finished BC analysis "<<watch->RealTime()/60<<" min"<<endl;
-	watch->Continue();
+	cout<<"Canvases will pop up now - please wait"<<endl;
+
+	//if(watch)    delete watch;
+	//if(Analysis) delete Analysis; //..Delete Causes problems
 }

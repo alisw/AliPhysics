@@ -278,9 +278,8 @@ void AliJFFlucTask::UserExec(Option_t* /*option*/)
 		if(flags & FLUC_PHI_CORRECTION){
 			int cbin = AliJFFlucAnalysis::GetCentralityClass(fCent);
 			if(cbin != -1){
-				int tbin = AliJFFlucAnalysis::CentralityTranslationMap[cbin];
-				std::map<UInt_t, TH3D *>::const_iterator m = PhiWeightMap[tbin].find(fRunNum);
-				if(m != PhiWeightMap[tbin].end())
+				std::map<UInt_t, TH2D *>::const_iterator m = PhiWeightMap[cbin].find(fRunNum);
+				if(m != PhiWeightMap[cbin].end())
 					fFFlucAna->SetPhiWeights(m->second);
 			}
 		}
@@ -700,7 +699,7 @@ void AliJFFlucTask::EnablePhiModule(const TString fname){
 	}
 	for(UInt_t icent = 0; icent < CENTN_NAT; icent++){
 		for(UInt_t isub = 0; isub < 2; isub++){
-			h_ModuledPhi[icent][isub] = (TH1D*)pDataFile[0]->Get(Form("h_phi_moduleC%02dS%02d",icent,isub));//dynamic_cast<TH1D *>(pf->Get(Form("h_phi_moduleC%02dS%02d", icent, isub)));
+			h_ModuledPhi[icent][isub] = (TH1D*)pDataFile[0]->Get(Form("h_phi_moduleC%02dS%02d",icent,isub));
 		}
 	}
 }
@@ -714,17 +713,16 @@ void AliJFFlucTask::EnablePhiCorrection(const TString fname){
 		cout<<"Unable to open file: "<<fname.Data()<<endl;
 		return;
 	}
-	TList *plist = (TList*)pDataFile[1]->Get("CenPhiEta Weights");
+	TDirectory *pdir = (TDirectory*)pDataFile[1]->Get("PhiWeights");
+	TList *plist = (TList*)pdir->GetListOfKeys();
 	if(!plist){
 		cout<<"Unable to retrieve weight list"<<endl;
 		return;
 	}
 	for(const auto &&m: *plist){
 		UInt_t cent, run;
-		sscanf(m->GetName(),"CRCQVecPhiHistVtx[%u][%u]",&cent,&run);
-		//cout<<"phi weight map: "<<cent<<", "<<run<<endl;
-		if(cent < CENTN)
-			PhiWeightMap[cent][run] = (TH3D*)m;
+		sscanf(m->GetName(),"PhiWeights_%u_%02u",&run,&cent);
+		PhiWeightMap[cent][run] = (TH2D*)pDataFile[1]->Get(Form("PhiWeights/%s",m->GetName()));
 	}
 }
 

@@ -22,7 +22,7 @@ ClassImp(AliAodSkimTask)
 
 AliAodSkimTask::AliAodSkimTask() : 
   AliAnalysisTaskSE(), fClusMinE(-1), fCutMC(1), fYCutMC(0.7),
-  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
+  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
   fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0), fDoCopyZDC(1), fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), 
   fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
 {
@@ -30,7 +30,7 @@ AliAodSkimTask::AliAodSkimTask() :
 
 AliAodSkimTask::AliAodSkimTask(const char* name) : 
   AliAnalysisTaskSE(name), fClusMinE(-1), fCutMC(1), fYCutMC(0.7),
-  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
+  fDoCopyHeader(1),  fDoCopyVZERO(1),  fDoCopyTZERO(1),  fDoCopyVertices(1),  fDoCopyTOF(1), fDoCopyTracklets(1), fDoCopyTracks(1), fDoCopyTrigger(1), fDoCopyPTrigger(0), 
   fDoCopyCells(1), fDoCopyPCells(0), fDoCopyClusters(1), fDoCopyDiMuons(0), fDoCopyZDC(1), fDoCopyMC(1), fDoCopyMCHeader(1), fTrials(0), fPyxsec(0), 
   fPytrials(0), fPypthardbin(0), fAOD(0), fAODMcHeader(0), fOutputList(0), fHevs(0), fHclus(0)
 {
@@ -158,6 +158,11 @@ void AliAodSkimTask::UserExec(Option_t *)
       AliFatal(Form("%s: Previous event not deleted. This should not happen!",GetName()));
     }
     out->AbsorbObjects(in);
+  }
+  if (fDoCopyTracklets) { 
+    AliAODTracklets *out = eout->GetTracklets();
+    AliAODTracklets *in  = evin->GetTracklets();
+    *out = *in;
   }
   if (fDoCopyTrigger) { 
     AliAODCaloTrigger *out = eout->GetCaloTrigger("EMCAL");
@@ -388,7 +393,7 @@ Bool_t AliAodSkimTask::PythiaInfoFromFile(const char* currFile, Float_t &xsec, F
 
 const char *AliAodSkimTask::Str() const
 {
-  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
+  return Form("mine%.2f_%dycut%.2f_%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d%d",
 	      fClusMinE,
 	      fCutMC,
 	      fYCutMC,
@@ -397,6 +402,7 @@ const char *AliAodSkimTask::Str() const
 	      fDoCopyTZERO,
 	      fDoCopyVertices,
 	      fDoCopyTOF,
+	      fDoCopyTracklets,
 	      fDoCopyTracks,
 	      fDoCopyTrigger,
 	      fDoCopyPTrigger,

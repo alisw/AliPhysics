@@ -64,8 +64,6 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield__pp2016(Bool_t isMC = kFALSE,
   };
   deu->SetDCABins(52,dcabins);
 
-  deu->fEventCut.fCentralityFramework = !isMC;
-
   mgr->AddTask(deu);
 
   TString output = "AnalysisResults.root";

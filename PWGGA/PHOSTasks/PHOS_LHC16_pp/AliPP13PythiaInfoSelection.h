@@ -43,7 +43,7 @@ public:
 	virtual void CountMBEvent();
 
 	// Make these methods empty
-	virtual void FillPi0Mass(TObjArray * clusArray, TList * pool, const EventFlags & eflags);
+	virtual void FillHistograms(TObjArray * clusArray, TList * pool, const EventFlags & eflags);
 
 protected:
 	AliPP13PythiaInfoSelection(const AliPP13PythiaInfoSelection &);

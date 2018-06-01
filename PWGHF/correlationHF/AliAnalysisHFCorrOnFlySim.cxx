@@ -803,7 +803,7 @@ void AliAnalysisHFCorrOnFlySim::CalculateQQBarCorrelations(){
               Int_t pdgmothotherc = -1;
               AliVParticle *part1bmoth=(AliVParticle*)fMcEvent->GetTrack(part1b->GetMother());
               if(part1bmoth) pdgmothotherc = TMath::Abs(part1bmoth->PdgCode());
-              //printf("QUARK c %d (%d) with phi,eta %f,%f; MOTH %d, PDGMOTH = %d\n",ipart1,fArray1Part1->At(ipart1),part1b->Phi(),part1b->Eta(),part1b->GetMother(),pdgmothotherc);
+              if(fDebug > 1) printf("QUARK c #%d (%d) with phi,eta %f,%f; MOTH %d, PDGMOTH = %d\n",ipart1,fArray1Part1->At(ipart1),part1b->Phi(),part1b->Eta(),part1b->GetMother(),pdgmothotherc);
               if(pdgmothotherc!=4) countc++;
             }
             if(countc>1) fFlagSinglePair = kFALSE; 
@@ -812,7 +812,7 @@ void AliAnalysisHFCorrOnFlySim::CalculateQQBarCorrelations(){
               Int_t pdgmothothercbar = -1;
               AliVParticle *part2bmoth=(AliVParticle*)fMcEvent->GetTrack(part2b->GetMother());
               if(part2bmoth) pdgmothothercbar = TMath::Abs(part2bmoth->PdgCode());
-              //printf("QUARK cbar %d (%d) with phi,eta %f,%f; MOTH %d, PDGMOTH = %d\n",ipart2,fArray2Part2->At(ipart2),part2b->Phi(),part2b->Eta(),part2b->GetMother(),pdgmothothercbar);
+              if(fDebug > 1) printf("QUARK cbar #%d (%d) with phi,eta %f,%f; MOTH %d, PDGMOTH = %d\n",ipart2,fArray2Part2->At(ipart2),part2b->Phi(),part2b->Eta(),part2b->GetMother(),pdgmothothercbar);
               if(pdgmothothercbar!=4) countcbar++;
             }
             if(countcbar>1) fFlagSinglePair = kFALSE; 
@@ -825,7 +825,7 @@ void AliAnalysisHFCorrOnFlySim::CalculateQQBarCorrelations(){
             if(fFlagSinglePair == kTRUE) { //evaluate opening angle of 'mother' c and cbar (mother definition is a bit artificial...)
               if(AssignCorrectPhiRange_0toPiRefl(part1->Phi()-part2->Phi()) < fLimitSmallOpen) fFlagSmallOpen = kTRUE;
               if(AssignCorrectPhiRange_0toPiRefl(part1->Phi()-part2->Phi()) > fLimitLargeOpen) fFlagLargeOpen = kTRUE;
-              //printf("phi's = %f %f, dPhireduced = %f; The flags are sm,lg = %d,%d\n",part1->Phi(),part2->Phi(),AssignCorrectPhiRange_0toPiRefl(part1->Phi()-part2->Phi()),fFlagSmallOpen,fFlagLargeOpen);
+              if(fDebug > 1) printf("phi's = %f %f, dPhireduced = %f; The flags are sm,lg = %d,%d\n",part1->Phi(),part2->Phi(),AssignCorrectPhiRange_0toPiRefl(part1->Phi()-part2->Phi()),fFlagSmallOpen,fFlagLargeOpen);
             }
           }
 
@@ -1024,13 +1024,13 @@ void AliAnalysisHFCorrOnFlySim::DefineHistoNames(){
     //3b. D-Hadron Correlations
     if(fIsCorrOfHeavyFlavor){
         
-        Int_t     nbinsTrigHF[3] = {  15, 20,  20};
+        Int_t     nbinsTrigHF[3] = {  15, 36,  20};
         Double_t binlowTrigHF[3] = {-7.5, 0., -2.};
-        Double_t  binupTrigHF[3] = { 7.5, 20., 2.};
+        Double_t  binupTrigHF[3] = { 7.5, 36., 2.};
         
-        Int_t     nbinsCorrHF[8] = {  15, 20,  20, 10,   30,               32,   20,    11};
+        Int_t     nbinsCorrHF[8] = {  15, 36,  20, 10,   30,               32,   20,    11};
         Double_t binlowCorrHF[8] = {-7.5, 0., -2., 0., -15., -0.5*TMath::Pi(),  -5.,  -1.5};
-        Double_t  binupCorrHF[8] = { 7.5, 20., 2., 5.,  15.,  1.5*TMath::Pi(),   5.,   9.5};
+        Double_t  binupCorrHF[8] = { 7.5, 36., 2., 5.,  15.,  1.5*TMath::Pi(),   5.,   9.5};
         
         THnSparseD *trigDPartPr   = new THnSparseD("HFTrgiggerProp","fHFTrgiggerProp;pdg;ptTrig;etaTrig;",3,nbinsTrigHF,binlowTrigHF,binupTrigHF);
         THnSparseD *trigDPartCorr = new THnSparseD("2PCorrBtwn_HF-hadron","HFCorrelations;pdg;ptTrig;etaTrig;ptAss;etaAss;deltaPhi;deltaEta;pdgAss;",8,nbinsCorrHF,binlowCorrHF,binupCorrHF);

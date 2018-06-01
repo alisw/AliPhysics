@@ -19,17 +19,18 @@
 //
 // Class for cuts on AOD reconstructed B0->DStarPi->D0PiPi->KPiPiPi
 //
-// Author: Lennart van Doremalen, l.v.r.vandoremalen@uu.nl  
 //
-// Based on work by A.Grelli, alessandro.grelli@uu.nl
-// PID method implemented by   Y.Wang, yifei@physi.uni-heidelberg.de
+//                 Author Lennart van Doremalen
+//           Utrecht University - l.v.r.vandoremalen@uu.nl
+//
+//     Several AliPhysics classes have been used as a basis for this code
+//
 //           
 /////////////////////////////////////////////////////////////
 
 #include <TDatabasePDG.h>
 #include <Riostream.h>
 #include "AliAODRecoDecayHF2Prong.h"
-#include "AliAODRecoCascadeHF.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsB0toDStarPi.h"
 #include "AliAODTrack.h"
@@ -47,34 +48,70 @@ ClassImp(AliRDHFCutsB0toDStarPi);
 /// \endcond
 
 
+
 //--------------------------------------------------------------------------
 AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) : 
   AliRDHFCuts(name),
   fMaxPtPid(9999.),
   fTPCflag(999.),
   fCircRadius(0.),
-  fIsCutUsed(0),   
-  fCutsRDD0forD0ptbin(0),
+  fGetCutInfo(0),
+  fIsCutUsed(0),
+  fnVarsD0forD0ptbin(0),
   fnPtBinsD0forD0ptbin(1),
+  fGlobalIndexD0forD0ptbin(0),
+  fCutsRDD0forD0ptbin(0),
   fnPtBinLimitsD0forD0ptbin(1),
   fPtBinLimitsD0forD0ptbin(0),
   fIsUpperCutD0forD0ptbin(0),
   fIsCutUsedD0forD0ptbin(0),
   fVarNamesD0forD0ptbin(0),
+  fnVarsD0forDStarptbin(0),
+  fnPtBinsD0forDStarptbin(0),
+  fGlobalIndexD0forDStarptbin(0),
   fCutsRDD0forDStarptbin(0),
-  fnPtBinsD0forDStarptbin(1),
   fnPtBinLimitsD0forDStarptbin(1),
   fPtBinLimitsD0forDStarptbin(0),
   fIsUpperCutD0forDStarptbin(0),
   fIsCutUsedD0forDStarptbin(0),
   fVarNamesD0forDStarptbin(0),
-  fCutsRDDStarforDStarptbin(0),
+  fnVarsDStarforDStarptbin(0),
   fnPtBinsDStarforDStarptbin(1),
+  fGlobalIndexDStarforDStarptbin(0),
+  fCutsRDDStarforDStarptbin(0),
   fnPtBinLimitsDStarforDStarptbin(1),
   fPtBinLimitsDStarforDStarptbin(0),
   fIsUpperCutDStarforDStarptbin(0),
   fIsCutUsedDStarforDStarptbin(0),
-  fVarNamesDStarforDStarptbin(0)  
+  fVarNamesDStarforDStarptbin(0),
+  fMinITSNclsD0Pion(0),
+  fMinTPCNclsD0Pion(0),
+  fUseITSRefitD0Pion(0),
+  fUseTPCRefitD0Pion(0),
+  fUseFilterBitD0Pion(0),
+  fFilterBitD0Pion(0),
+  fMinPtD0Pion(0),
+  fMinITSNclsD0Kaon(0),
+  fMinTPCNclsD0Kaon(0),
+  fUseITSRefitD0Kaon(0),
+  fUseTPCRefitD0Kaon(0),
+  fUseFilterBitD0Kaon(0),
+  fFilterBitD0Kaon(0),
+  fMinPtD0Kaon(0),
+  fMinITSNclsDStarPion(0),
+  fMinTPCNclsDStarPion(0),
+  fUseITSRefitDStarPion(0),
+  fUseTPCRefitDStarPion(0),
+  fUseFilterBitDStarPion(0),
+  fFilterBitDStarPion(0),
+  fMinPtDStarPion(0),
+  fMinITSNclsB0Pion(0),
+  fMinTPCNclsB0Pion(0),
+  fUseITSRefitB0Pion(0),
+  fUseTPCRefitB0Pion(0),
+  fUseFilterBitB0Pion(0),
+  fFilterBitB0Pion(0),
+  fMinPtB0Pion(0)
 {
   //
   // Default Constructor
@@ -93,11 +130,11 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
   varNames[iterator++]=   /*-02-*/ "pointing angle [Cos(theta)]";
   varNames[iterator++]=   /*-03-*/ "dca [cm]";                   
   varNames[iterator++]=   /*-04-*/ "Pt D0 [GeV/c]";
-  varNames[iterator++]=   /*-05-*/ "Pt Kaon [GeV/c]";
-  varNames[iterator++]=   /*-06-*/ "Pt Pion [GeV/c]";
+  varNames[iterator++]=   /*-05-*/ "Pt first daughter [GeV/c]";
+  varNames[iterator++]=   /*-06-*/ "Pt second daughter [GeV/c]";
   varNames[iterator++]=   /*-07-*/ "d0 D0 [cm]";
-  varNames[iterator++]=   /*-08-*/ "d0 Kaon [cm]";                
-  varNames[iterator++]=   /*-09-*/ "d0 Pion [cm]";                
+  varNames[iterator++]=   /*-08-*/ "d0 first daughter [cm]";                
+  varNames[iterator++]=   /*-09-*/ "d0 second daughter [cm]";                
   varNames[iterator++]=   /*-10-*/ "d0d0 [cm^2]";
   varNames[iterator++]=   /*-11-*/ "d0d0 XY [cm^2]";
 
@@ -209,11 +246,11 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
   varNamesD0forD0ptbin[iterator++]=   /*-02-*/ "pointing angle [Cos(theta)]";
   varNamesD0forD0ptbin[iterator++]=   /*-03-*/ "dca [cm]";                   
   varNamesD0forD0ptbin[iterator++]=   /*-04-*/ "Pt D0 [GeV/c]";
-  varNamesD0forD0ptbin[iterator++]=   /*-05-*/ "Pt Kaon [GeV/c]";
-  varNamesD0forD0ptbin[iterator++]=   /*-06-*/ "Pt Pion [GeV/c]";
+  varNamesD0forD0ptbin[iterator++]=   /*-05-*/ "Pt first daughter [GeV/c]";
+  varNamesD0forD0ptbin[iterator++]=   /*-06-*/ "Pt second daughter [GeV/c]";
   varNamesD0forD0ptbin[iterator++]=   /*-07-*/ "d0 D0 [cm]";
-  varNamesD0forD0ptbin[iterator++]=   /*-08-*/ "d0 Kaon [cm]";                
-  varNamesD0forD0ptbin[iterator++]=   /*-09-*/ "d0 Pion [cm]";                
+  varNamesD0forD0ptbin[iterator++]=   /*-08-*/ "d0 first daughter [cm]";                
+  varNamesD0forD0ptbin[iterator++]=   /*-09-*/ "d0 second daughter [cm]";                
   varNamesD0forD0ptbin[iterator++]=   /*-10-*/ "d0d0 [cm^2]";
   varNamesD0forD0ptbin[iterator++]=   /*-11-*/ "d0d0 XY [cm^2]";
 
@@ -255,11 +292,11 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
   varNamesD0forDStarptbin[iterator++]=   /*-02-*/ "pointing angle [Cos(theta)]";
   varNamesD0forDStarptbin[iterator++]=   /*-03-*/ "dca [cm]";                   
   varNamesD0forDStarptbin[iterator++]=   /*-04-*/ "Pt D0 [GeV/c]";
-  varNamesD0forDStarptbin[iterator++]=   /*-05-*/ "Pt Kaon [GeV/c]";
-  varNamesD0forDStarptbin[iterator++]=   /*-06-*/ "Pt Pion [GeV/c]";
+  varNamesD0forDStarptbin[iterator++]=   /*-05-*/ "Pt first daughter [GeV/c]";
+  varNamesD0forDStarptbin[iterator++]=   /*-06-*/ "Pt second daughter [GeV/c]";
   varNamesD0forDStarptbin[iterator++]=   /*-07-*/ "d0 D0 [cm]";
-  varNamesD0forDStarptbin[iterator++]=   /*-08-*/ "d0 Kaon [cm]";                
-  varNamesD0forDStarptbin[iterator++]=   /*-09-*/ "d0 Pion [cm]";                
+  varNamesD0forDStarptbin[iterator++]=   /*-08-*/ "d0 first daughter [cm]";                
+  varNamesD0forDStarptbin[iterator++]=   /*-09-*/ "d0 second daughter [cm]";                
   varNamesD0forDStarptbin[iterator++]=   /*-10-*/ "d0d0 [cm^2]";
   varNamesD0forDStarptbin[iterator++]=   /*-11-*/ "d0d0 XY [cm^2]";
 
@@ -356,32 +393,141 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const AliRDHFCutsB0toDStarPi &sou
   fMaxPtPid(source.fMaxPtPid),
   fTPCflag(source.fTPCflag),
   fCircRadius(source.fCircRadius),
-  fIsCutUsed(source.fIsCutUsed),   
-  fCutsRDD0forD0ptbin(source.fCutsRDD0forD0ptbin),
+  fGetCutInfo(source.fGetCutInfo),
+  fIsCutUsed(0),
+  fnVarsD0forD0ptbin(source.fnVarsD0forD0ptbin),
   fnPtBinsD0forD0ptbin(source.fnPtBinsD0forD0ptbin),
-  fPtBinLimitsD0forD0ptbin(source.fPtBinLimitsD0forD0ptbin),
-  fIsUpperCutD0forD0ptbin(source.fIsUpperCutD0forD0ptbin),
-  fIsCutUsedD0forD0ptbin(source.fIsCutUsedD0forD0ptbin),
-  fVarNamesD0forD0ptbin(source.fVarNamesD0forD0ptbin),
-  fCutsRDD0forDStarptbin(source.fCutsRDD0forDStarptbin),
-  fnPtBinsD0forDStarptbin(source.fnPtBinsD0forDStarptbin),
-  fPtBinLimitsD0forDStarptbin(source.fPtBinLimitsD0forDStarptbin),
-  fIsUpperCutD0forDStarptbin(source.fIsUpperCutD0forDStarptbin),
-  fIsCutUsedD0forDStarptbin(source.fIsCutUsedD0forDStarptbin),
-  fVarNamesD0forDStarptbin(source.fVarNamesD0forDStarptbin),
-  fCutsRDDStarforDStarptbin(source.fCutsRDDStarforDStarptbin),
-  fnPtBinsDStarforDStarptbin(source.fnPtBinsDStarforDStarptbin),
-  fPtBinLimitsDStarforDStarptbin(source.fPtBinLimitsDStarforDStarptbin),
-  fIsUpperCutDStarforDStarptbin(source.fIsUpperCutDStarforDStarptbin),
-  fIsCutUsedDStarforDStarptbin(source.fIsCutUsedDStarforDStarptbin),
-  fVarNamesDStarforDStarptbin(source.fVarNamesDStarforDStarptbin),  
+  fGlobalIndexD0forD0ptbin(source.fGlobalIndexD0forD0ptbin),
+  fCutsRDD0forD0ptbin(0),
   fnPtBinLimitsD0forD0ptbin(source.fnPtBinLimitsD0forD0ptbin),
+  fPtBinLimitsD0forD0ptbin(0),
+  fIsUpperCutD0forD0ptbin(0),
+  fIsCutUsedD0forD0ptbin(0),
+  fVarNamesD0forD0ptbin(0),
+  fnVarsD0forDStarptbin(source.fnVarsD0forDStarptbin),
+  fnPtBinsD0forDStarptbin(source.fnPtBinsD0forDStarptbin),
+  fGlobalIndexD0forDStarptbin(source.fGlobalIndexD0forDStarptbin),
+  fCutsRDD0forDStarptbin(0),
   fnPtBinLimitsD0forDStarptbin(source.fnPtBinLimitsD0forDStarptbin),
-  fnPtBinLimitsDStarforDStarptbin(source.fnPtBinLimitsDStarforDStarptbin)
+  fPtBinLimitsD0forDStarptbin(0),
+  fIsUpperCutD0forDStarptbin(0),
+  fIsCutUsedD0forDStarptbin(0),
+  fVarNamesD0forDStarptbin(0),
+  fnVarsDStarforDStarptbin(source.fnVarsDStarforDStarptbin),
+  fnPtBinsDStarforDStarptbin(source.fnPtBinsDStarforDStarptbin),
+  fGlobalIndexDStarforDStarptbin(source.fGlobalIndexDStarforDStarptbin),
+  fCutsRDDStarforDStarptbin(0),
+  fnPtBinLimitsDStarforDStarptbin(source.fnPtBinLimitsDStarforDStarptbin),
+  fPtBinLimitsDStarforDStarptbin(0),
+  fIsUpperCutDStarforDStarptbin(0),
+  fIsCutUsedDStarforDStarptbin(0),
+  fVarNamesDStarforDStarptbin(0),
+  fMinITSNclsD0Pion(source.fMinITSNclsD0Pion),
+  fMinTPCNclsD0Pion(source.fMinTPCNclsD0Pion),
+  fUseITSRefitD0Pion(source.fUseITSRefitD0Pion),
+  fUseTPCRefitD0Pion(source.fUseTPCRefitD0Pion),
+  fUseFilterBitD0Pion(source.fUseFilterBitD0Pion),
+  fFilterBitD0Pion(source.fFilterBitD0Pion),
+  fMinPtD0Pion(source.fMinPtD0Pion),
+  fMinITSNclsD0Kaon(source.fMinITSNclsD0Kaon),
+  fMinTPCNclsD0Kaon(source.fMinTPCNclsD0Kaon),
+  fUseITSRefitD0Kaon(source.fUseITSRefitD0Kaon),
+  fUseTPCRefitD0Kaon(source.fUseTPCRefitD0Kaon),
+  fUseFilterBitD0Kaon(source.fUseFilterBitD0Kaon),
+  fFilterBitD0Kaon(source.fFilterBitD0Kaon),
+  fMinPtD0Kaon(source.fMinPtD0Kaon),
+  fMinITSNclsDStarPion(source.fMinITSNclsDStarPion),
+  fMinTPCNclsDStarPion(source.fMinTPCNclsDStarPion),
+  fUseITSRefitDStarPion(source.fUseITSRefitDStarPion),
+  fUseTPCRefitDStarPion(source.fUseTPCRefitDStarPion),
+  fUseFilterBitDStarPion(source.fUseFilterBitDStarPion),
+  fFilterBitDStarPion(source.fFilterBitDStarPion),
+  fMinPtDStarPion(source.fMinPtDStarPion),
+  fMinITSNclsB0Pion(source.fMinITSNclsB0Pion),
+  fMinTPCNclsB0Pion(source.fMinTPCNclsB0Pion),
+  fUseITSRefitB0Pion(source.fUseITSRefitB0Pion),
+  fUseTPCRefitB0Pion(source.fUseTPCRefitB0Pion),
+  fUseFilterBitB0Pion(source.fUseFilterBitB0Pion),
+  fFilterBitB0Pion(source.fFilterBitB0Pion),
+  fMinPtB0Pion(source.fMinPtB0Pion)
 {
   //
   // Copy constructor
   // 
+  if(source.fPtBinLimitsD0forD0ptbin) SetPtBinsD0forD0ptbin(source.fnPtBinLimitsD0forD0ptbin,source.fPtBinLimitsD0forD0ptbin);
+  if(source.fVarNamesD0forD0ptbin) SetVarNamesD0forD0ptbin(source.fnVarsD0forD0ptbin,source.fVarNamesD0forD0ptbin,source.fIsUpperCut);
+  if(source.fPtBinLimitsD0forDStarptbin) SetPtBinsD0forDStarptbin(source.fnPtBinLimitsD0forDStarptbin,source.fPtBinLimitsD0forDStarptbin);
+  if(source.fVarNamesD0forDStarptbin) SetVarNamesD0forDStarptbin(source.fnVarsD0forDStarptbin,source.fVarNamesD0forDStarptbin,source.fIsUpperCut);
+  if(source.fPtBinLimitsDStarforDStarptbin) SetPtBinsDStarforDStarptbin(source.fnPtBinLimitsDStarforDStarptbin,source.fPtBinLimitsDStarforDStarptbin);
+  if(source.fVarNamesDStarforDStarptbin) SetVarNamesDStarforDStarptbin(source.fnVarsDStarforDStarptbin,source.fVarNamesDStarforDStarptbin,source.fIsUpperCut);
+  if(source.fIsCutUsed) 
+  {
+    if(fIsCutUsed) {
+      delete [] fIsCutUsed;
+      fIsCutUsed = NULL;
+    }
+    fIsCutUsed = new Bool_t[(source.GetNPtBins())*(source.GetNVars())];
+
+    for (Int_t i = 0; i < source.fnVars; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBins; j++)
+      { 
+        Bool_t bUse = source.GetIsCutUsed(i,j);
+        SetIsCutUsed(i,j,bUse);
+      }
+    }
+  }
+  if(source.fIsCutUsedD0forD0ptbin) 
+  {
+    if(fIsCutUsedD0forD0ptbin) {
+      delete [] fIsCutUsedD0forD0ptbin;
+      fIsCutUsedD0forD0ptbin = NULL;
+    }
+    fIsCutUsedD0forD0ptbin = new Bool_t[(source.GetNPtBinsD0forD0ptbin())*(source.GetNVarsD0forD0ptbin())];
+    for (Int_t i = 0; i < source.fnVarsD0forD0ptbin; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBinsD0forD0ptbin; j++)
+      {
+        Bool_t bUse = source.GetIsCutUsedD0forD0ptbin(i,j);
+        SetIsCutUsedD0forD0ptbin(i,j,bUse);
+      }
+    }
+  }
+  if(source.fIsCutUsedD0forDStarptbin) 
+  {
+    if(fIsCutUsedD0forDStarptbin) {
+      delete [] fIsCutUsedD0forDStarptbin;
+      fIsCutUsedD0forDStarptbin = NULL;
+    }
+    fIsCutUsedD0forDStarptbin = new Bool_t[(source.GetNPtBinsD0forDStarptbin())*(source.GetNVarsD0forDStarptbin())];
+    for (Int_t i = 0; i < source.fnVarsD0forDStarptbin; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBinsD0forDStarptbin; j++)
+      {
+        Bool_t bUse = source.GetIsCutUsedD0forDStarptbin(i,j);
+        SetIsCutUsedD0forDStarptbin(i,j,bUse);
+      }
+    }
+  }
+  if(source.fIsCutUsedDStarforDStarptbin) 
+  {
+    if(fIsCutUsedDStarforDStarptbin) {
+      delete [] fIsCutUsedDStarforDStarptbin;
+      fIsCutUsedDStarforDStarptbin = NULL;
+    }
+    fIsCutUsedDStarforDStarptbin = new Bool_t[(source.GetNPtBinsDStarforDStarptbin())*(source.GetNVarsDStarforDStarptbin())];
+    for (Int_t i = 0; i < source.fnVarsDStarforDStarptbin; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBinsDStarforDStarptbin; j++)
+      {
+        Bool_t bUse = source.GetIsCutUsedDStarforDStarptbin(i,j);
+        SetIsCutUsedDStarforDStarptbin(i,j,bUse);
+      }
+    }
+  }      
+  if(source.fCutsRDD0forD0ptbin) SetCutsD0forD0ptbin(source.fGlobalIndexD0forD0ptbin,source.fCutsRDD0forD0ptbin);
+  if(source.fCutsRDD0forDStarptbin) SetCutsD0forDStarptbin(source.fGlobalIndexD0forDStarptbin,source.fCutsRDD0forDStarptbin);
+  if(source.fCutsRDDStarforDStarptbin) SetCutsDStarforDStarptbin(source.fGlobalIndexDStarforDStarptbin,source.fCutsRDDStarforDStarptbin);
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsB0toDStarPi::~AliRDHFCutsB0toDStarPi() {
@@ -439,13 +585,13 @@ Int_t AliRDHFCutsB0toDStarPi::IsSelected(TObject* obj,Int_t selectionLevel, AliA
     return 0;
   }
   
-  AliAODRecoCascadeHF* candidateB0 = (AliAODRecoCascadeHF*)obj;
+  AliAODRecoDecayHF2Prong* candidateB0 = (AliAODRecoDecayHF2Prong*)obj;
   if(!candidateB0){
     cout<<"candidateB0 null"<<endl;
     return 0;
   } 
 
-  AliAODRecoCascadeHF* candidateDStar = (AliAODRecoCascadeHF*)candidateB0->GetDaughter(1);  
+  AliAODRecoDecayHF2Prong* candidateDStar = (AliAODRecoDecayHF2Prong*)candidateB0->GetDaughter(1);  
   if(!candidateDStar){
     cout<<"candidateDStar null"<<endl;
     return 0;
@@ -778,13 +924,13 @@ Int_t AliRDHFCutsB0toDStarPi::IsDStarFromB0Selected(Double_t ptB0, TObject* obj,
     return 0;
   }
   
-  AliAODRecoCascadeHF* candidateDStar = (AliAODRecoCascadeHF*)obj;
+  AliAODRecoDecayHF2Prong* candidateDStar = (AliAODRecoDecayHF2Prong*)obj;
   if(!candidateDStar){
     cout<<"candidateDStar null"<<endl;
     return 0;
   }
   
-  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->Get2Prong();  
+  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->GetDaughter(1); 
   if(!candidateD0){
     cout<<"candidateD0 null"<<endl;
     return 0;
@@ -1114,13 +1260,13 @@ Int_t AliRDHFCutsB0toDStarPi::IsD0FromDStarSelected(Double_t ptB0, TObject* obj,
     return 0;
   }
   
-  AliAODRecoCascadeHF* candidateDStar = (AliAODRecoCascadeHF*)obj;
+  AliAODRecoDecayHF2Prong* candidateDStar = (AliAODRecoDecayHF2Prong*)obj;
   if(!candidateDStar){
     cout<<"candidateDStar null"<<endl;
     return 0;
   }
 
-  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->Get2Prong();  
+  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->GetDaughter(1);
   if(!candidateD0){
     cout<<"candidateD0 null"<<endl;
     return 0;
@@ -1173,8 +1319,23 @@ Int_t AliRDHFCutsB0toDStarPi::IsD0FromDStarSelected(Double_t ptB0, TObject* obj,
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   
     // Half width DStar mass
+    Int_t chargeDStar = candidateDStar->Charge();
     UInt_t prongs[2];
-    prongs[0] = 211; prongs[1] = 321;
+    if(chargeDStar==1)
+    {
+      prongs[0] = 211;
+      prongs[1] = 321;
+    } 
+    else if (chargeDStar==-1)
+    {
+      prongs[1] = 211;
+      prongs[0] = 321;
+    } 
+    else 
+    {
+      cout << "Wrong charge DStar." << endl;
+      return 0;
+    }
     Double_t invMassD0 = candidateD0->InvMass(2,prongs);
     Double_t invMassDifference = TMath::Abs(mD0PDG - invMassD0);
 
@@ -1888,13 +2049,13 @@ Int_t AliRDHFCutsB0toDStarPi::IsD0forDStarptbinSelected(TObject* obj,Int_t selec
     return 0;
   }
   
-  AliAODRecoCascadeHF* candidateDStar = (AliAODRecoCascadeHF*)obj;
+  AliAODRecoDecayHF2Prong* candidateDStar = (AliAODRecoDecayHF2Prong*)obj;
   if(!candidateDStar){
     cout<<"candidateDStar null"<<endl;
     return 0;
   }
 
-  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->Get2Prong();  
+  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->GetDaughter(1);
   if(!candidateD0){
     cout<<"candidateD0 null"<<endl;
     return 0;
@@ -2340,13 +2501,13 @@ Int_t AliRDHFCutsB0toDStarPi::IsDStarforDStarptbinSelected(TObject* obj,Int_t se
     return 0;
   }
   
-  AliAODRecoCascadeHF* candidateDStar = (AliAODRecoCascadeHF*)obj;
+  AliAODRecoDecayHF2Prong* candidateDStar = (AliAODRecoDecayHF2Prong*)obj;
   if(!candidateDStar){
     cout<<"candidateDStar null"<<endl;
     return 0;
   }
   
-  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->Get2Prong();  
+  AliAODRecoDecayHF2Prong* candidateD0 = (AliAODRecoDecayHF2Prong*)candidateDStar->GetDaughter(1); 
   if(!candidateD0){
     cout<<"candidateD0 null"<<endl;
     return 0;
@@ -2675,7 +2836,7 @@ Bool_t AliRDHFCutsB0toDStarPi::IsInFiducialAcceptance(Double_t pt, Double_t y) c
   // } else {    
   //   // appliying smooth cut for pt < 5 GeV
   //   Double_t maxFiducialY = -0.2/15*pt*pt+1.9/15*pt+0.5; 
-  //   Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;		
+  //   Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;    
   //   AliDebug(2,Form("pt of D* = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY)); 
   //   if (y < minFiducialY || y > maxFiducialY){
   //     return kFALSE;
@@ -2691,9 +2852,9 @@ Int_t AliRDHFCutsB0toDStarPi::IsSelectedPID(AliAODRecoDecayHF* obj)
   // PID method, n sigma approach default // not used for B0, done seperately for each daughter
   //
   
-  // AliAODRecoCascadeHF* dstar = (AliAODRecoCascadeHF*)obj;
+  // AliAODRecoDecayHF2Prong* dstar = (AliAODRecoDecayHF2Prong*)obj;
   // if(!dstar){
-  //   cout<<"AliAODRecoCascadeHF null"<<endl;
+  //   cout<<"AliAODRecoDecayHF2Prong null"<<endl;
   //   return 0;
   // } 
  
@@ -2745,14 +2906,14 @@ Int_t AliRDHFCutsB0toDStarPi::SelectPID(AliAODTrack *track, Int_t type)
 
     if (TPCon){//TPC
       if(fPidHF->CheckStatus(track,"TPC")){
-      	if(type==2) isTPC=fPidHF->IsPionRaw(track,"TPC");
-      	if(type==3) isTPC=fPidHF->IsKaonRaw(track,"TPC");
+        if(type==2) isTPC=fPidHF->IsPionRaw(track,"TPC");
+        if(type==3) isTPC=fPidHF->IsKaonRaw(track,"TPC");
       }
     }
     if (TOFon){//TOF
       if(fPidHF->CheckStatus(track,"TOF")){
-      	if(type==2) isTOF=fPidHF->IsPionRaw(track,"TOF");
-      	if(type==3) isTOF=fPidHF->IsKaonRaw(track,"TOF");
+        if(type==2) isTOF=fPidHF->IsPionRaw(track,"TOF");
+        if(type==3) isTOF=fPidHF->IsKaonRaw(track,"TOF");
       }
     }
 
@@ -2820,46 +2981,78 @@ Int_t AliRDHFCutsB0toDStarPi::SelectPID(AliAODTrack *track, Int_t type)
   
 }
 //-------------------------------------------------------------------------------------
-Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassDStarKpipi(AliAODRecoCascadeHF * DStar) const 
+Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong * DStar) const 
 {
   ///
   /// 3 prong invariant mass of the D0 daughters and the soft pion
   ///
+  Int_t chargeDStar = DStar->Charge();
+
   Double_t e[3];
-  e[0]=DStar->Get2Prong()->EProng(0,211);
-  e[1]=DStar->Get2Prong()->EProng(1,321);
+  UInt_t prongs[2];
+  if(chargeDStar==1){
+    e[0]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(0,211);
+    e[1]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(1,321);
+    prongs[0] = 211;
+    prongs[1] = 321;
+  } 
+  else if (chargeDStar==-1)
+  {
+    e[0]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(1,211);
+    e[1]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(0,321);
+    prongs[1] = 211;
+    prongs[0] = 321;
+  } 
+  else 
+  {
+    cout << "Wrong charge DStar." << endl;
+    return 0;
+  }
   e[2]=DStar->EProng(0,211);
 
   Double_t esum = e[0]+e[1]+e[2];
   Double_t invMassDStar = TMath::Sqrt(esum*esum-DStar->P()*DStar->P());
-
-  Double_t invMassD0 = DStar->Get2Prong()->InvMassD0();
+  Double_t invMassD0 = ((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->InvMass(2,prongs);
 
   return invMassDStar - invMassD0; 
 }
 //-------------------------------------------------------------------------------------
-Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoCascadeHF * B0) const 
+Double_t AliRDHFCutsB0toDStarPi::DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const 
 {
   ///
   /// 4 prong invariant mass of the D0 daughters, the soft pion, and the B0 pion
   ///
 
-  AliAODRecoCascadeHF * DStar = (AliAODRecoCascadeHF*)B0->GetDaughter(1);
+  AliAODRecoDecayHF2Prong * DStar = (AliAODRecoDecayHF2Prong*)B0->GetDaughter(1);
+  Int_t chargeDStar = DStar->Charge();
 
   Double_t e[4];
+  UInt_t prongs[2];
+  if(chargeDStar==1){
+    e[1]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(0,211);
+    e[2]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(1,321);
+    prongs[0] = 211;
+    prongs[1] = 321;
+  } 
+  else if (chargeDStar==-1)
+  {
+    e[1]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(1,211);
+    e[2]=((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->EProng(0,321);
+    prongs[1] = 211;
+    prongs[0] = 321;
+  } 
+  else 
+  {
+    cout << "Wrong charge DStar." << endl;
+    return 0;
+  }
   e[0]=DStar->EProng(0,211);
-  e[1]=DStar->Get2Prong()->EProng(0,211);
-  e[2]=DStar->Get2Prong()->EProng(1,321);
   e[3]=B0->EProng(0,211);
-  // cout << "energy 1: " << e[0] << "energy 2: " << e[1] << "energy 3: " << e[2] << "energy 4: " << e[3] << endl;
+
   Double_t esum = e[0]+e[1]+e[2]+e[3];
   Double_t invMassB0 = TMath::Sqrt(esum*esum-B0->P()*B0->P());
 
-  UInt_t prongs[2];
-  prongs[0] = 211;
-  prongs[1] = 421;
-  // Double_t invMassDStar = DStar->InvMass(2,prongs);
-  Double_t invMassD0 = DStar->Get2Prong()->InvMassD0();
+  Double_t invMassD0 = ((AliAODRecoDecayHF2Prong*)DStar->GetDaughter(1))->InvMass(2,prongs);
 
   return invMassB0 - invMassD0; 
 }
@@ -2905,6 +3098,22 @@ void AliRDHFCutsB0toDStarPi::SetCutsD0forD0ptbin(Int_t nVars,Int_t nPtBins,Float
     }
   }
 
+  return;
+}
+//---------------------------------------------------------------------------
+void AliRDHFCutsB0toDStarPi::SetCutsD0forD0ptbin(Int_t glIndex,Float_t *cutsRDD0forD0ptbin){
+  //
+  // store the cuts
+  //
+  if(glIndex != fGlobalIndexD0forD0ptbin){
+    cout<<"Wrong array size: it has to be "<<fGlobalIndexD0forD0ptbin<<endl;
+    AliFatal("exiting");
+  }
+  if(!fCutsRDD0forD0ptbin)  fCutsRDD0forD0ptbin = new Float_t[fGlobalIndexD0forD0ptbin];
+
+  for(Int_t iGl=0;iGl<fGlobalIndexD0forD0ptbin;iGl++){
+    fCutsRDD0forD0ptbin[iGl] = cutsRDD0forD0ptbin[iGl];
+  }
   return;
 }
 //---------------------------------------------------------------------------
@@ -2990,6 +3199,22 @@ void AliRDHFCutsB0toDStarPi::SetCutsD0forDStarptbin(Int_t nVars,Int_t nPtBins,Fl
   return;
 }
 //---------------------------------------------------------------------------
+void AliRDHFCutsB0toDStarPi::SetCutsD0forDStarptbin(Int_t glIndex,Float_t *cutsRDD0forDStarptbin){
+  //
+  // store the cuts
+  //
+  if(glIndex != fGlobalIndexD0forDStarptbin){
+    cout<<"Wrong array size: it has to be "<<fGlobalIndexD0forDStarptbin<<endl;
+    AliFatal("exiting");
+  }
+  if(!fCutsRDD0forDStarptbin)  fCutsRDD0forDStarptbin = new Float_t[fGlobalIndexD0forDStarptbin];
+
+  for(Int_t iGl=0;iGl<fGlobalIndexD0forDStarptbin;iGl++){
+    fCutsRDD0forDStarptbin[iGl] = cutsRDD0forDStarptbin[iGl];
+  }
+  return;
+}
+//---------------------------------------------------------------------------
 Int_t AliRDHFCutsB0toDStarPi::PtBinD0forDStarptbin(Double_t pt) const {
   //
   //give the pt bin where the pt lies.
@@ -3069,6 +3294,22 @@ void AliRDHFCutsB0toDStarPi::SetCutsDStarforDStarptbin(Int_t nVars,Int_t nPtBins
       fCutsRDDStarforDStarptbin[GetGlobalIndexDStarforDStarptbin(iv,ib)] = cutsRDDStarforDStarptbin[iv][ib];
 
     }
+  }
+  return;
+}
+//---------------------------------------------------------------------------
+void AliRDHFCutsB0toDStarPi::SetCutsDStarforDStarptbin(Int_t glIndex,Float_t *cutsRDDStarforDStarptbin){
+  //
+  // store the cuts
+  //
+  if(glIndex != fGlobalIndexDStarforDStarptbin){
+    cout<<"Wrong array size: it has to be "<<fGlobalIndexDStarforDStarptbin<<endl;
+    AliFatal("exiting");
+  }
+  if(!fCutsRDDStarforDStarptbin)  fCutsRDDStarforDStarptbin = new Float_t[fGlobalIndexDStarforDStarptbin];
+
+  for(Int_t iGl=0;iGl<fGlobalIndexDStarforDStarptbin;iGl++){
+    fCutsRDDStarforDStarptbin[iGl] = cutsRDDStarforDStarptbin[iGl];
   }
   return;
 }

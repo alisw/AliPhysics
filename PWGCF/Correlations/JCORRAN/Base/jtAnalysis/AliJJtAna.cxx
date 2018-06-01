@@ -414,6 +414,8 @@ void AliJJtAna::UserExec(){
 	int zBin        = fcard->GetBin(kZVertType, fZvert); //
 
 	fhistos->fhZVert[cBin]->Fill(fZvert);
+	fhistos->fhCentr->Fill(fcent);
+	fhistos->fhiCentr->Fill(cBin);
 
 	//------------------------------------------------------------------
 	// Triggers and associated

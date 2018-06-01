@@ -199,15 +199,105 @@ void Read(Int_t runNumber = 170387)
   
 }
 
+/*******************************************************************
+ *  NOTE: Sorting function to sort the final OADB file             *
+ *                  by ascending runnumber                         *
+ *******************************************************************/
+void Sort(const char *fileNameOADB=""){
+
+    TFile *f                                    = TFile::Open(fileNameOADB);
+    f->ls();
+    AliOADBContainer *con                       =(AliOADBContainer*)f->Get("AliEMCALRunDepTempCalibCorrections");
+    con->SetName("Old"); 
+
+    Int_t indexAdd                              = 0;
+    Int_t largerthan                            = 0;
+    Int_t currentvalue                          = 0;
+
+    AliOADBContainer *con2                      = new AliOADBContainer("AliEMCALRunDepTempCalibCorrections");
+    // First entry needs to be added before sorting loop
+    //con2->AddDefaultObject(con->GetObjectByIndex(0));
+    con2->AppendObject(con->GetObjectByIndex(0),con->LowerLimit(0),con->UpperLimit(0));
+    TString strTemp                             = "";
+
+    // sorting magic happens here
+    for(int i=1;i<con->GetNumberOfEntries();i++){
+        largerthan                              = con2->UpperLimit(con2->GetNumberOfEntries()-1);
+        currentvalue                            = -1;
+        indexAdd                                = 0;
+        for(int j=0;j<con->GetNumberOfEntries();j++){
+            if(con->UpperLimit(j)<=largerthan) 
+                continue;
+            if(currentvalue < 0){
+                currentvalue                    = con->UpperLimit(j);
+                indexAdd                        = j;
+            }
+            if(con->UpperLimit(j)<currentvalue){
+                currentvalue                    = con->UpperLimit(j);
+                indexAdd                        = j;
+            }
+        }
+        //con2->AddDefaultObject(con->GetObjectByIndex(indexAdd));
+        con2->AppendObject(con->GetObjectByIndex(indexAdd),con->LowerLimit(indexAdd),con->UpperLimit(indexAdd));
+    }
+
+    printf("\n\n");
+    Int_t nentries2                             = con2->GetNumberOfEntries();
+    for(int i=0;i<nentries2;i++){
+        printf("\n Entry2 --> %d/%d -->",i,nentries2);
+        printf("%d -- %d --> obj = %p , %s", con2->LowerLimit(i),con2->UpperLimit(i),con2->GetObjectByIndex(i),con2->GetObjectByIndex(i)->GetName());
+    }
+    printf("\n\n");
+
+    con2->WriteToFile("EMCALTemperatureCorrCalibNEW.root");
+}
+
 ///
 /// Main method
 ///
 /// \param opt: 0 just read; 1 create file
 /// \param runNumber: if opt=1, read content for this run
 ///
-void CreateEMCAL_OADB_RunByRunTemperatureECalibCorrection(Int_t opt = 1, Int_t runNumber = 170387)
+void CreateEMCAL_OADB_RunByRunTemperatureECalibCorrection(Int_t opt = 2, Int_t runNumber = 170387)
 {
+// const char *fileNameOADB                ="$ALICE_DATA/OADB/EMCAL/EMCALTemperatureCorrCalib.root";
+const char *fileNameOADB                ="EMCALTemperatureCorrCalib.root";
   if(opt == 0) Read(runNumber);
   if(opt == 1) Create();
+  //Sort(fileNameOADB);
+//   rebuildContainer("EMCALTemperatureCorrCalibNEW.root");
+  rebuildContainer("EMCALTemperatureCorrCalib.root");
 }
 
+
+TObjArray *CreatePeriodContainer(TObjArray *inputcont){
+  TObjArray *newcont = new TObjArray(inputcont->GetEntries());
+  newcont->SetName(inputcont->GetName());
+  for(int i = 0; i < inputcont->GetEntries(); i++){
+    newcont->AddAt(inputcont->At(i)->Clone(), i);
+  }
+  return newcont;
+}
+
+/*******************************************************************
+ *  NOTE: Function required to fix OADB ownership                  *
+ *                                                                 *
+ *******************************************************************/
+void rebuildContainer(const char *fileNameOADB=""){
+  TFile *reader = TFile::Open(fileNameOADB);
+  AliOADBContainer *cont = static_cast<AliOADBContainer *>(reader->Get("AliEMCALRunDepTempCalibCorrections"));
+  delete reader;
+
+  AliOADBContainer *newcont = new AliOADBContainer("AliEMCALRunDepTempCalibCorrections");
+  for(int irun = 0; irun < cont->GetNumberOfEntries(); irun++){
+//     newcont->AppendObject(CreatePeriodContainer(static_cast<TObjArray *>(cont->GetObjArray()->At(irun))), cont->LowerLimit(irun), cont->UpperLimit(irun));
+    newcont->AppendObject(static_cast<TObjArray *>(cont->GetObjArray()->At(irun)), cont->LowerLimit(irun), cont->UpperLimit(irun));
+  }
+
+  newcont->WriteToFile("EMCALTemperatureCorrCalibOADBfix.root");
+
+  TFile *reader = TFile::Open("EMCALTemperatureCorrCalibOADBfix.root", "READ");
+    AliOADBContainer *cont = static_cast<AliOADBContainer *>(reader->Get("AliEMCALRunDepTempCalibCorrections"));
+    delete reader;
+    delete cont;
+}

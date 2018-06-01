@@ -6257,8 +6257,8 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
 void AliAnaInsideClusterInvariantMass::GetMCIndex(AliVCluster* cluster,
                                                   Int_t & mcindex, Int_t & tag)
 {
-//tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(), cluster->GetNLabels(), GetReader(), GetCalorimeter());
-  tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(), cluster->GetNLabels(), GetMC());
+  tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(), cluster->GetNLabels(), GetMC(),
+                                          GetReader()->GetNameOfMCEventHederGeneratorToAccept());
   
   if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) &&
            !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPi0;

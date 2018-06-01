@@ -8,6 +8,7 @@
 #pragma link C++ class AliAnalysisTaskUpcPsi2s+;
 #pragma link C++ class AliAnalysisTaskUpcK0sK0s+;
 #pragma link C++ class AliAnalysisTaskUpcPhi+;
+#pragma link C++ class AliAnalysisTaskUpcRho0+;
 #pragma link C++ class AliUpcParticle+;
 #pragma link C++ class AliAnalysisTaskUpcTree+;
 #pragma link C++ class AliUPCTrack+;

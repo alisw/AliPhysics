@@ -1,3 +1,31 @@
+/*************** Tree Maker Class **********************
+*                                                      *
+* Created: 05.10.2016                                  *
+* Authors: Aaron Capon      (aaron.capon@cern.ch)      *
+*          Sebastian Lehner (sebastian.lehner@cern.ch) *
+*                                                      *
+*******************************************************/
+/**********************************************************************************
+*This analysis task is designed to create simple flat structured TTrees which     *
+*can then be worked on locally. The motivation for this was to create TTrees that *
+*could be easily used within TMVA.                                                *
+*                                                                                 *
+*The default track cuts are relatively loose, and the PID selects out electrons   *
+*within +-4 nSigma in the TPC. This value, as well as cuts on the other detector  *
+*response values, can be turned on and off via their relavent setter function.    *
+*                                                                                 *
+*The GRID PID number for each job is stored with each event along with a simple   *
+*event counter ID, so that after merging each event still has a unique label.     *
+*                                                                                 *
+*By default, the class will return a TTree focused on selecting electrons from    *
+*primary decays. There are setter functions which can be used to instead create a *
+*TTree filled with tracks originating from V0 decays. In this case the DCA cuts   *
+*are removed.  There is a futher option to create a TTree which contains all      *
+*generated particles, and, if reconstructed, their corresponding reconstructed    *
+*track features.                                                                  *
+*TODO: Speed up the creation of the generator TTree (very slow with multiple      *
+*loops over the same particles).                                                  *
+**********************************************************************************/
 #include "Riostream.h"
 #include "TChain.h"
 #include "TTree.h"
@@ -46,13 +74,6 @@
 #include <string>
 #include "AliAnalysisTaskSimpleTreeMaker.h"
 
-/*************** Tree Maker Class **********************
-*                                                      *
-* Created: 05.10.2016                                  *
-* Authors: Aaron Capon      (aaron.capon@cern.ch)      *
-*          Sebastian Lehner (sebastian.lehner@cern.ch) *
-*                                                      *
-*******************************************************/
 
 
 ClassImp(AliAnalysisTaskSimpleTreeMaker)
@@ -629,19 +650,19 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 			//DCAxy cut
 			//kImpactParXY
-			if(DCA[0] < -1.0 || DCA[0] >= 1.0){ continue;}
+			if(DCA[0] < -3.0 || DCA[0] >= 3.0){ continue;}
 			//DCAz cut
 			//kImpactParZ
-			if(DCA[1] < -3.0 || DCA[1] >= 3.0){ continue;}
+			if(DCA[1] < -4.0 || DCA[1] >= 4.0){ continue;}
 
 			//Get ITS information
 			//kNclsITS
 			nITS = track->GetNcls(0);
 
 			if(fHasSDD){
-				if(nITS < 4){ continue;}
+				if(nITS < 3){ continue;}
 			}else{
-				if(nITS < 2){ continue;}
+				if(nITS < 1){ continue;}
 			}
 			
 			chi2ITS = track->GetITSchi2();
@@ -947,6 +968,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			}
 			fITSshared /= nITS;
 
+			SPDfirst = (dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(0);
+
 			charge = posTrack->Charge();
 
 			//Fill with feature from positive track
@@ -1036,6 +1059,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				fITSshared += static_cast<Double_t>(negTrack->HasSharedPointOnITSLayer(d));
 			}
 			fITSshared /= nITS;
+
+			SPDfirst = (dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(0);
 
 			charge = negTrack->Charge(); 
 			//Write negative observales to tree (v0 information written twice. Filter by looking at only pos or neg charge)

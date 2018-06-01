@@ -53,7 +53,7 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title,
   fRatio(nullptr),
   fkTMonitor(nullptr),
 
-  tNumerator_RotatePar2(nullptr),
+  fNumerator_RotatePar2(nullptr),
 
   fDetaDphiscal(kFALSE),
   fPairKinematics(kFALSE),
@@ -89,7 +89,7 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title,
                         "kT Dependence; kT(GeV/c)",
                         DFLT_NbinskT, DFLT_kTMin, DFLT_kTMax);
 
-  tNumerator_RotatePar2 = new TH1D(TString::Format("Num_RotatePar2%s", fTitle.Data()),
+  fNumerator_RotatePar2 = new TH1D(TString::Format("Num_RotatePar2%s", fTitle.Data()),
                                    "KStar - Numerator - Rotate Particle 2; k*(GeV/c);",
                                     nbins, KStarLo, KStarHi);
 
@@ -99,7 +99,7 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const char* title,
   fRatio->Sumw2();
   fkTMonitor->Sumw2();
 
-  tNumerator_RotatePar2->Sumw2();
+  fNumerator_RotatePar2->Sumw2();
 }
 
 //____________________________
@@ -124,7 +124,7 @@ AliFemtoCorrFctnKStar::AliFemtoCorrFctnKStar(const AliFemtoCorrFctnKStar& aCorrF
   fRatio = (aCorrFctn.fRatio) ? new TH1D(*aCorrFctn.fRatio) : nullptr;
   fkTMonitor =(aCorrFctn.fkTMonitor) ? static_cast<TH1D*>(aCorrFctn.fkTMonitor->Clone()) : nullptr;
 
-  tNumerator_RotatePar2 =(aCorrFctn.tNumerator_RotatePar2) ? static_cast<TH1D*>(aCorrFctn.tNumerator_RotatePar2->Clone()) : nullptr;
+  fNumerator_RotatePar2 =(aCorrFctn.fNumerator_RotatePar2) ? static_cast<TH1D*>(aCorrFctn.fNumerator_RotatePar2->Clone()) : nullptr;
 
   if(aCorrFctn.fNumDEtaDPhiS) fNumDEtaDPhiS = new TH2D(*aCorrFctn.fNumDEtaDPhiS);
     else fNumDEtaDPhiS = 0;
@@ -164,7 +164,7 @@ AliFemtoCorrFctnKStar::~AliFemtoCorrFctnKStar()
   delete fDenominator;
   delete fRatio;
   delete fkTMonitor;
-  delete tNumerator_RotatePar2;
+  delete fNumerator_RotatePar2;
   delete fNumDEtaDPhiS;
   delete fDenDEtaDPhiS;
   delete fPairKStar;
@@ -208,8 +208,8 @@ AliFemtoCorrFctnKStar& AliFemtoCorrFctnKStar::operator=(const AliFemtoCorrFctnKS
   if(fkTMonitor) delete fkTMonitor;
     fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
 
-  if(tNumerator_RotatePar2) delete tNumerator_RotatePar2;
-    tNumerator_RotatePar2 = new TH1D(*aCorrFctn.tNumerator_RotatePar2);
+  if(fNumerator_RotatePar2) delete fNumerator_RotatePar2;
+    fNumerator_RotatePar2 = new TH1D(*aCorrFctn.fNumerator_RotatePar2);
 
   if(fNumDEtaDPhiS) delete fNumDEtaDPhiS;
     fNumDEtaDPhiS = new TH2D(*aCorrFctn.fNumDEtaDPhiS);
@@ -263,7 +263,7 @@ TList* AliFemtoCorrFctnKStar::GetOutputList()
   tOutputList->Add(fkTMonitor);
   tOutputList->Add(fRatio);
 
-  tOutputList->Add(tNumerator_RotatePar2);
+  tOutputList->Add(fNumerator_RotatePar2);
 
   if(fDetaDphiscal) {
     tOutputList->Add(fNumDEtaDPhiS);
@@ -304,7 +304,7 @@ void AliFemtoCorrFctnKStar::Write()
   fDenominator->Write();
   fkTMonitor->Write();
 
-  tNumerator_RotatePar2->Write();
+  fNumerator_RotatePar2->Write();
 
   if(fDetaDphiscal) {
     fNumDEtaDPhiS->Write();
@@ -343,13 +343,13 @@ void AliFemtoCorrFctnKStar::AddRealPair(AliFemtoPair* aPair)
   fNumerator->Fill(tKStar);
   fkTMonitor->Fill(aPair->KT());
 
-  tNumerator_RotatePar2->Fill(fabs(CalcKStar_RotatePar2(aPair)));
-
   if(fDetaDphiscal) FillDEtaDPhiS(fNumDEtaDPhiS,aPair);
   if(fBuildkTBinned) fNumerator_kT->Fill(aPair->KStar(), aPair->KT());
   if(fBuildmTBinned) fNumerator_mT->Fill(aPair->KStar(), CalcMt(aPair));
   if(fBuildmTBinned) fNumeratorv2_mT->Fill(aPair->KStar(), CalcMtv2(aPair));
   if(fBuild3d) fNumerator3d->Fill(aPair->KStarOut(),aPair->KStarSide(),aPair->KStarLong());
+
+  if(PassPairCut_RotatePar2(aPair)) fNumerator_RotatePar2->Fill(fabs(CalcKStar_RotatePar2(aPair)));
 }
 
 //____________________________
@@ -464,51 +464,180 @@ void AliFemtoCorrFctnKStar::Set3dBins(int aNbinsKStarOut,  double aKStarOutMin, 
 }
 
 //____________________________
+void AliFemtoCorrFctnKStar::RotateThreeVecBy180InTransversePlane(AliFemtoThreeVector &a3Vec)
+{
+  a3Vec.SetX(-1.*a3Vec.x());
+  a3Vec.SetY(-1.*a3Vec.y());
+}
+
+//____________________________
+bool AliFemtoCorrFctnKStar::PassPairCut_RotatePar2(const AliFemtoPair* aPair)
+{
+  if(!fPairCut) return true;
+
+  AliFemtoParticle *tPart1 = new AliFemtoParticle(*aPair->Track1());
+  AliFemtoParticle *tPart2 = new AliFemtoParticle(*aPair->Track2());
+
+  AliFemtoPair* tPair = new AliFemtoPair;
+  tPair->SetTrack1(tPart1);
+
+  //------------------------------
+  AliFemtoLorentzVector tFourMom2 = AliFemtoLorentzVector(tPart2->FourMomentum());
+  tFourMom2.SetPx(-1.*tFourMom2.px());
+  tFourMom2.SetPy(-1.*tFourMom2.py());
+  tPart2->ResetFourMomentum(tFourMom2);
+  //------------------------------
+
+  AliFemtoThreeVector tTpcThreeVec;
+
+  if(tPart2->Track()) //tPart2 is a track
+  {
+    double **tTpcPositions;
+    tTpcPositions = new double*[9];
+    for (int i = 0; i < 9; i++) tTpcPositions[i] = new double[3];
+
+    tTpcThreeVec = tPart2->Track()->NominalTpcEntrancePoint();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->Track()->SetNominalTPCEntrancePoint(tTpcThreeVec);
+
+    tTpcThreeVec = tPart2->Track()->NominalTpcExitPoint();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->Track()->SetNominalTPCExitPoint(tTpcThreeVec);
+
+    for (int i = 0; i < 9; i++)
+    {
+      tTpcThreeVec = tPart2->Track()->NominalTpcPoint(i);
+      tTpcPositions[i][0] = -1.*tTpcThreeVec.x();
+      tTpcPositions[i][1] = -1.*tTpcThreeVec.y();
+      tTpcPositions[i][2] = tTpcThreeVec.z();
+    }
+    tPart2->Track()->SetNominalTPCPoints(tTpcPositions);
+
+    for (int i = 0; i < 9; i++) delete [] tTpcPositions[i];
+    delete [] tTpcPositions;
+  }
+  else if(tPart2->V0()) //tPart2 is a V0
+  {
+    //-----Positive daughter
+    tTpcThreeVec = tPart2->V0()->NominalTpcEntrancePointPos();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->V0()->SetNominalTpcEntrancePointPos(tTpcThreeVec);
+
+    tTpcThreeVec = tPart2->V0()->NominalTpcExitPointPos();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->V0()->SetNominalTpcExitPointPos(tTpcThreeVec);
+
+    AliFemtoThreeVector tTpcThreeVecArr[9];
+    for (int i = 0; i < 9; i++)
+    {
+      tTpcThreeVecArr[i].SetX(-1.*tPart2->V0()->NominalTpcPointPos(i).x());
+      tTpcThreeVecArr[i].SetY(-1.*tPart2->V0()->NominalTpcPointPos(i).y());
+      tTpcThreeVecArr[i].SetZ(tPart2->V0()->NominalTpcPointPos(i).z());
+    }
+    tPart2->V0()->SetNominalTpcPointPos(tTpcThreeVecArr);
+
+    //-----Negative daughter
+    tTpcThreeVec = tPart2->V0()->NominalTpcEntrancePointNeg();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->V0()->SetNominalTpcEntrancePointNeg(tTpcThreeVec);
+
+    tTpcThreeVec = tPart2->V0()->NominalTpcExitPointNeg();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->V0()->SetNominalTpcExitPointNeg(tTpcThreeVec);
+
+    for (int i = 0; i < 9; i++)
+    {
+      tTpcThreeVecArr[i].SetX(-1.*tPart2->V0()->NominalTpcPointNeg(i).x());
+      tTpcThreeVecArr[i].SetY(-1.*tPart2->V0()->NominalTpcPointNeg(i).y());
+      tTpcThreeVecArr[i].SetZ(tPart2->V0()->NominalTpcPointNeg(i).z());
+    }
+    tPart2->V0()->SetNominalTpcPointNeg(tTpcThreeVecArr);
+  }
+  else if(tPart2->Xi()) //tPart2 is a Xi
+  {
+    //-----Positive V0-daughter
+    tTpcThreeVec = tPart2->Xi()->NominalTpcEntrancePointPos();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->Xi()->SetNominalTpcEntrancePointPos(tTpcThreeVec);
+
+    tTpcThreeVec = tPart2->Xi()->NominalTpcExitPointPos();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->Xi()->SetNominalTpcExitPointPos(tTpcThreeVec);
+
+    AliFemtoThreeVector tTpcThreeVecArr[9];
+    for (int i = 0; i < 9; i++)
+    {
+      tTpcThreeVecArr[i].SetX(-1.*tPart2->Xi()->NominalTpcPointPos(i).x());
+      tTpcThreeVecArr[i].SetY(-1.*tPart2->Xi()->NominalTpcPointPos(i).y());
+      tTpcThreeVecArr[i].SetZ(tPart2->Xi()->NominalTpcPointPos(i).z());
+    }
+    tPart2->Xi()->SetNominalTpcPointPos(tTpcThreeVecArr);
+
+    //-----Negative V0-daughter
+    tTpcThreeVec = tPart2->Xi()->NominalTpcEntrancePointNeg();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->Xi()->SetNominalTpcEntrancePointNeg(tTpcThreeVec);
+
+    tTpcThreeVec = tPart2->Xi()->NominalTpcExitPointNeg();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->Xi()->SetNominalTpcExitPointNeg(tTpcThreeVec);
+
+    for (int i = 0; i < 9; i++)
+    {
+      tTpcThreeVecArr[i].SetX(-1.*tPart2->Xi()->NominalTpcPointNeg(i).x());
+      tTpcThreeVecArr[i].SetY(-1.*tPart2->Xi()->NominalTpcPointNeg(i).y());
+      tTpcThreeVecArr[i].SetZ(tPart2->Xi()->NominalTpcPointNeg(i).z());
+    }
+    tPart2->Xi()->SetNominalTpcPointNeg(tTpcThreeVecArr);
+
+    //-----Bachelor daughter
+    tTpcThreeVec = tPart2->Xi()->NominalTpcEntrancePointBac();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->Xi()->SetNominalTpcEntrancePointBac(tTpcThreeVec);
+
+    tTpcThreeVec = tPart2->Xi()->NominalTpcExitPointBac();
+    RotateThreeVecBy180InTransversePlane(tTpcThreeVec);
+    tPart2->Xi()->SetNominalTpcExitPointBac(tTpcThreeVec);
+
+    for (int i = 0; i < 9; i++)
+    {
+      tTpcThreeVecArr[i].SetX(-1.*tPart2->Xi()->NominalTpcPointBac(i).x());
+      tTpcThreeVecArr[i].SetY(-1.*tPart2->Xi()->NominalTpcPointBac(i).y());
+      tTpcThreeVecArr[i].SetZ(tPart2->Xi()->NominalTpcPointBac(i).z());
+    }
+    tPart2->Xi()->SetNominalTpcPointBac(tTpcThreeVecArr);
+  }
+  else return false;
+
+  //------------------------------
+  tPair->SetTrack2(tPart2);
+  bool tPass = fPairCut->Pass(tPair);
+
+  delete tPart1;
+  delete tPart2;
+  delete tPair;
+
+  return tPass;
+}
+
+//____________________________
 double AliFemtoCorrFctnKStar::CalcKStar_RotatePar2(const AliFemtoPair* aPair)
 {
   double tKStarCalc = 0.;
 
-  AliFemtoParticle* tTrack1 = aPair->Track1();
-  AliFemtoParticle* tTrack2 = aPair->Track2();
+  const AliFemtoLorentzVector p1 = aPair->Track1()->FourMomentum();
+  const AliFemtoLorentzVector p2 = aPair->Track2()->FourMomentum();
 
-  double px1 = tTrack1->FourMomentum().vect().x();
-  double py1 = tTrack1->FourMomentum().vect().y();
-  double pz1 = tTrack1->FourMomentum().vect().z();
-  double pE1  = tTrack1->FourMomentum().e();
-  double tParticle1Mass;
-  if((pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1)>0)
-    tParticle1Mass = ::sqrt(pE1*pE1 - px1*px1 - py1*py1 - pz1*pz1);
-  else
-    tParticle1Mass = 0;
+  AliFemtoLorentzVector p2_Rot = AliFemtoLorentzVector(p2);
+  p2_Rot.SetPx(-1.*p2_Rot.px());
+  p2_Rot.SetPy(-1.*p2_Rot.py());
 
-  double px2 = -1.*tTrack2->FourMomentum().vect().x();
-  double py2 = -1.*tTrack2->FourMomentum().vect().y();
-  double pz2 = tTrack2->FourMomentum().vect().z();
-  double pE2  = tTrack2->FourMomentum().e();
-  double tParticle2Mass;
-  if((pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2)>0)
-    tParticle2Mass = ::sqrt(pE2*pE2 - px2*px2 - py2*py2 - pz2*pz2);
-  else
-    tParticle2Mass = 0;
+  const double p_inv = (p1 + p2_Rot).m2(),
+               q_inv = (p1 - p2_Rot).m2(),
+           mass_diff = p1.m2() - p2_Rot.m2();
 
-  double tPx = px1+px2;
-  double tPy = py1+py2;
-  double tPz = pz1+pz2;
-  double tPE = pE1+pE2;
-
-  double tPtrans = tPx*tPx + tPy*tPy;
-  double tMtrans = tPE*tPE - tPz*tPz;
-  double tPinv =   ::sqrt(tMtrans - tPtrans);
-  tMtrans = ::sqrt(tMtrans);
-  tPtrans = ::sqrt(tPtrans);
-
-  double tQinvL = (pE1-pE2)*(pE1-pE2) - (px1-px2)*(px1-px2) -
-    (py1-py2)*(py1-py2) - (pz1-pz2)*(pz1-pz2);
-
-  double tQ = (tParticle1Mass*tParticle1Mass - tParticle2Mass*tParticle2Mass)/tPinv;
-  tQ = sqrt ( tQ*tQ - tQinvL);
-
-  tKStarCalc = tQ/2;
+  const double tQ = ::pow(mass_diff, 2) / p_inv - q_inv;
+  tKStarCalc = ::sqrt(tQ) / 2.0;
 
   return tKStarCalc;
 }

@@ -73,6 +73,61 @@ void test(int runnumber=195345)
   cout<<"That's all folks!"<<endl;
 }
 
+/*******************************************************************
+ *  NOTE: Sorting function to sort the final OADB file             *
+ *                  by ascending runnumber                         *
+ *******************************************************************/
+void sortOutput(const char *fileNameOADB=""){
+
+    TFile *f                                    = TFile::Open(fileNameOADB);
+    AliOADBContainer *con                       =(AliOADBContainer*)f->Get("AliEMCALRecalib");
+    con->SetName("Old");
+
+    Int_t indexAdd                              = 0;
+    Int_t largerthan                            = 0;
+    Int_t currentvalue                          = 0;
+
+    AliOADBContainer *con2                      = new AliOADBContainer("AliEMCALRecalib");
+    // First entry needs to be added before sorting loop
+//     con2->AddDefaultObject(con->GetObjectByIndex(0));
+    con2->AppendObject(con->GetObjectByIndex(0),con->LowerLimit(0),con->UpperLimit(0));
+//     Int_t lowestRunIndex = con->GetIndexForRun(235716);
+//     con2->AddDefaultObject(con->GetObjectByIndex(lowestRunIndex));
+//     con2->AppendObject(con->GetObjectByIndex(lowestRunIndex),con->LowerLimit(lowestRunIndex),con->UpperLimit(lowestRunIndex));
+    // sorting magic happens here
+    for(int i=1;i<con->GetNumberOfEntries();i++){
+        largerthan                              = con2->UpperLimit(con2->GetNumberOfEntries()-1);
+        currentvalue                            = -1;
+        indexAdd                                = 0;
+        for(int j=0;j<con->GetNumberOfEntries();j++){
+            if(con->UpperLimit(j)<=largerthan) 
+                continue;
+            else if(currentvalue < 0){
+                currentvalue                    = con->UpperLimit(j);
+                indexAdd                        = j;
+            }
+            else if(con->UpperLimit(j)<currentvalue){
+                currentvalue                    = con->UpperLimit(j);
+                indexAdd                        = j;
+            }
+        }
+//         con2->AddDefaultObject(con->GetObjectByIndex(indexAdd));
+        con2->AppendObject(con->GetObjectByIndex(indexAdd),con->LowerLimit(indexAdd),con->UpperLimit(indexAdd));
+    }
+
+    printf("\n\n");
+    Int_t nentries2                             = con2->GetNumberOfEntries();
+    for(int i=0;i<nentries2;i++){
+        printf("\n Entry2 --> %d/%d -->",i,nentries2);
+        printf("%d -- %d --> obj = %p , %s", con2->LowerLimit(i),con2->UpperLimit(i),con2->GetObjectByIndex(i),con2->GetObjectByIndex(i)->GetName());
+    }
+    printf("\n\n");
+
+    con2->WriteToFile("EMCALRecalibNEW.root");
+    //gSystem->Exec(Form("rm %s",fileNameOADB));
+
+}
+
 ///
 /// Update OADB Container for EMCal energy recalibration factors
 /// from external file. 
@@ -86,6 +141,7 @@ void UpdateEMCAL_OADB_Recalib
  const char *fileName12  ="RecalDB/RecalibrationFactors2012_10SM_iter8.root"
 )
 {
+    /*
   gSystem->Load("libOADB");  
   
   Bool_t is2012=1;
@@ -141,7 +197,7 @@ void UpdateEMCAL_OADB_Recalib
   //**** Adding pass object to period Object ****/
   //When updating object that has already been created. For instance, adding pass2,3 etc.
   //Just get the object and add new array. Append of runnumber is already done in this case.
-  
+  /*
   TObjArray *array13b = (TObjArray*)con->GetObject(195345,"LHC13b");
   TObjArray *array13c = (TObjArray*)con->GetObject(195529,"LHC13c");          
   TObjArray *array13d = (TObjArray*)con->GetObject(195681,"LHC13d");
@@ -163,4 +219,40 @@ void UpdateEMCAL_OADB_Recalib
   con->WriteToFile("BetaRecalib.root");
   
   test(195935); // If someone wants to test container
+  */
+  sortOutput("EMCALRecalib.root");
+  rebuildContainer("EMCALRecalibNEW.root");
+}
+
+
+
+TObjArray *CreatePeriodContainer(TObjArray *inputcont){
+  TObjArray *newcont = new TObjArray(inputcont->GetEntries());
+  newcont->SetName(inputcont->GetName());
+  for(int i = 0; i < inputcont->GetEntries(); i++){
+    newcont->AddAt(inputcont->At(i)->Clone(), i);
+  }
+  return newcont;
+}
+
+/*******************************************************************
+ *  NOTE: Function required to fix OADB ownership                  *
+ *                                                                 *
+ *******************************************************************/
+void rebuildContainer(const char *fileNameOADB=""){
+  TFile *reader = TFile::Open(fileNameOADB);
+  AliOADBContainer *cont = static_cast<AliOADBContainer *>(reader->Get("AliEMCALRecalib"));
+  delete reader;
+
+  AliOADBContainer *newcont = new AliOADBContainer("AliEMCALRecalib");
+  for(int irun = 0; irun < cont->GetNumberOfEntries(); irun++){
+    newcont->AppendObject(CreatePeriodContainer(static_cast<TObjArray *>(cont->GetObjArray()->At(irun))), cont->LowerLimit(irun), cont->UpperLimit(irun));
+  }
+
+  newcont->WriteToFile("EMCALRecalibOADBfix.root");
+
+  TFile *reader = TFile::Open("EMCALRecalibOADBfix.root", "READ");
+    AliOADBContainer *cont = static_cast<AliOADBContainer *>(reader->Get("AliEMCALRecalib"));
+    delete reader;
+    delete cont;
 }

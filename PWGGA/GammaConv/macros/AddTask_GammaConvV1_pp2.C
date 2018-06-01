@@ -263,6 +263,8 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); // A. Marin alpha pT dependent and gamma asym cut
   } else if (trainConfig == 48){
     cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 49){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000"); // J. Luehder AOD Compare
 
   //----------------------------- configuration for run 2 analysis 5 TeV ----------------------------------------------------
   } else if (trainConfig == 50){

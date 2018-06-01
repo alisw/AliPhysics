@@ -100,7 +100,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "06000008400100001500000000";
+  TString cutnumberPhoton = "00000008400100001500000000";
   TString cutnumberEvent = "80000003";
   Bool_t doEtaShift = kFALSE;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -182,53 +182,53 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
 
   // standard configurations
   if(trainConfig == 1){
-    cuts.AddCut("80000113", "00200009327000008250404000", "0162103500900000"); // new standard pPb MB
+    cuts.AddCut("80010113", "00200009327000008250404000", "0162103500900000"); // new standard pPb MB
   } else if (trainConfig == 2) {
-    cuts.AddCut("80000113", "00200009327000008250400000", "0162103500900000"); // new standard pPb MB
+    cuts.AddCut("80010113", "00200009327000008250400000", "0162103500900000"); // new standard pPb MB
   } else if (trainConfig == 3) {
-    cuts.AddCut("80200113", "00200009327000008250404000", "0162103500900000"); // new standard pPb 0-20
+    cuts.AddCut("80210113", "00200009327000008250404000", "0162103500900000"); // new standard pPb 0-20
   } else if (trainConfig == 4) {
-    cuts.AddCut("80200113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 0-20
+    cuts.AddCut("80210113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 0-20
   } else if (trainConfig == 5) {
-    cuts.AddCut("82400113", "00200009327000008250404000", "0162103500900000"); // new standard pPb 20-40
+    cuts.AddCut("82410113", "00200009327000008250404000", "0162103500900000"); // new standard pPb 20-40
   } else if (trainConfig == 6) {
-    cuts.AddCut("82400113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 20-40
+    cuts.AddCut("82410113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 20-40
   } else if (trainConfig == 7) {
-    cuts.AddCut("84600113", "00200009327000008250404000", "0162103500900000"); // new standard pPb 40-60
+    cuts.AddCut("84610113", "00200009327000008250404000", "0162103500900000"); // new standard pPb 40-60
   } else if (trainConfig == 8) {
-    cuts.AddCut("84600113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 40-60
+    cuts.AddCut("84610113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 40-60
   } else if (trainConfig == 9) {
-    cuts.AddCut("86000113", "00200009327000008250404000", "0162103500900000"); // new standard pPb 60-80
+    cuts.AddCut("86010113", "00200009327000008250404000", "0162103500900000"); // new standard pPb 60-80
   } else if (trainConfig == 10) {
-    cuts.AddCut("86000113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
+    cuts.AddCut("86010113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
 
   // configurations with past future protection (2.25 \mus protected)
   } else if (trainConfig == 11){
-    cuts.AddCut("80000213", "00200009327000008250404000", "0162103500900000"); // new standard pPb MB
+    cuts.AddCut("80010213", "00200009327000008250404000", "0162103500900000"); // new standard pPb MB
   } else if (trainConfig == 12) {
-    cuts.AddCut("80000213", "00200009327000008250400000", "0162103500900000"); // new standard pPb MB
+    cuts.AddCut("80010213", "00200009327000008250400000", "0162103500900000"); // new standard pPb MB
   } else if (trainConfig == 13) {
-    cuts.AddCut("80200213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 0-20
+    cuts.AddCut("80210213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 0-20
   } else if (trainConfig == 14) {
-    cuts.AddCut("80200213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 0-20
+    cuts.AddCut("80210213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 0-20
   } else if (trainConfig == 15) {
-    cuts.AddCut("82400213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 20-40
+    cuts.AddCut("82410213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 20-40
   } else if (trainConfig == 16) {
-    cuts.AddCut("82400213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 20-40
+    cuts.AddCut("82410213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 20-40
   } else if (trainConfig == 17) {
-    cuts.AddCut("84600213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 40-60
+    cuts.AddCut("84610213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 40-60
   } else if (trainConfig == 18) {
-    cuts.AddCut("84600213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 40-60
+    cuts.AddCut("84610213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 40-60
   } else if (trainConfig == 19) {
-    cuts.AddCut("86000213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 60-80
+    cuts.AddCut("86010213", "00200009327000008250404000", "0162103500900000"); // new standard pPb 60-80
   } else if (trainConfig == 20) {
-    cuts.AddCut("86000213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
+    cuts.AddCut("86010213", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
 
   // configurations for eta cuts
   } else if (trainConfig == 21) {
-    cuts.AddCut("80000113", "0a200009327000008250400000", "0162103500000000"); //Eta cut -0.9 - -0.2 and 0.2 - 0.9
+    cuts.AddCut("80010113", "0a200009327000008250400000", "0162103500000000"); //Eta cut -0.9 - -0.2 and 0.2 - 0.9
   } else if (trainConfig == 22) {
-    cuts.AddCut("80000113", "0b200009327000008250400000", "0162103500000000"); //Eta cut -0.9 - -0.2 and 0.2 - 0.9 with LineCut
+    cuts.AddCut("80010113", "0b200009327000008250400000", "0162103500000000"); //Eta cut -0.9 - -0.2 and 0.2 - 0.9 with LineCut
 
   //Run 2 pPb
   } else if (trainConfig == 100) {

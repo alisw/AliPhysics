@@ -117,11 +117,11 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalClustersRef.cxx
     Tracks/AliAnalysisTaskEmcalClusterMatched.cxx
-    Tracks/AliAnalysisTaskEmcalClusterNoiseTriggers.cxx
     Tracks/AliAnalysisTaskEmcalPatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOnlinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalOfflinePatchesRef.cxx
     Tracks/AliAnalysisTaskEmcalRecalcPatchesRef.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerCorrelation.cxx
     Tracks/AliAnalysisTaskEventSelectionRef.cxx
     Tracks/AliAnalysisTaskEventFilter.cxx
     Tracks/AliAnalysisTaskEtaPhiEfficiency.cxx
@@ -132,13 +132,16 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalTriggerEmulation.cxx
     Tracks/AliAnalysisTaskEGAMonitor.cxx
     Tracks/AliAnalysisTaskEmcalPatchMasking.cxx
-    Tracks/AliAnalysisTaskEmcalNoiseTriggers.cxx
     Tracks/AliAnalysisTaskCountITStracks.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJets.cxx
     Tracks/AliAnalysisTaskEmcalTriggerJetsIDcorr.cxx
     Tracks/AliAnalysisTaskEmcalJetConstituentQA.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergyScale.cxx
     Tracks/AliAnalysisTaskEmcalJetEnergySpectrum.cxx
+    Tracks/AliAnalysisTaskEmcalPatchMultCorr.cxx
+    Tracks/AliAnalysisTaskEmcalClustersInJets.cxx
+    Tracks/AliAnalysisTaskEmcalTriggerCorrelationMC.cxx
+    Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx

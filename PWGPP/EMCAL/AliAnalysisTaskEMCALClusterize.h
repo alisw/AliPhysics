@@ -53,7 +53,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   // Event methods, settings
   
-  Bool_t         AcceptCell(Int_t absID);
+  Bool_t         AcceptCell(Int_t absID, Bool_t badmap = kTRUE);
   Bool_t         AcceptEventEMCAL();
   void           SwitchOnSelectEMCALEvent()                    { fSelectEMCALEvent   = kTRUE   ; }
   void           SwitchOffSelectEMCALEvent()                   { fSelectEMCALEvent   = kFALSE  ; }
@@ -126,6 +126,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   void           SetConfigFileName(TString name)                { fConfigName        = name    ; }
   void           SetMaxEvent(Int_t max)                         { fMaxEvent          = max     ; }
+  void           SetMinEvent(Int_t max)                         { fMinEvent          = max     ; }
   
   void           SwitchOnTrackMatching()                        { fDoTrackMatching   = kTRUE   ; }
   void           SwitchOffTrackMatching()                       { fDoTrackMatching   = kFALSE  ; } 
@@ -374,7 +375,8 @@ private:
 
   Bool_t                 fRecalibrateWithClusterTime;       ///<  Use fCellTime to store time of cells in cluster
   
-  Int_t                  fMaxEvent;                ///<  Set a maximum event
+  Int_t                  fMaxEvent;                ///<  Set a maximum event number, for testing
+  Int_t                  fMinEvent;                ///<  Set a minimum event number, for testing
   
   Bool_t                 fDoTrackMatching;         ///<  On/Off the matching recalculation to speed up analysis in PbPb
   Bool_t                 fUpdateCell;              ///<  On/Off the upate of the CaloCells container

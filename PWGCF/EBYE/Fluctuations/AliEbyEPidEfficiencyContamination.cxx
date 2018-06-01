@@ -1276,8 +1276,21 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   Double_t ptHighTPCTOF[5]   = { 0., 0., 2.0,  2.00,   2.0  };
   
 
+  //--------------------------------ITS PID--------------------------
+  if(fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk){
+    pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
+    
+    if(TMath::Abs(pid[0]) < fNSigmaMaxITS) isAcceptedITS = kTRUE;
+    
+    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
+    
+    if (TMath::Abs(pid[0]) > nSigma) isAcceptedITS = kFALSE;
+    
+  }
+  
   //--------------------------TPC PID----------------
   if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track) == AliPIDResponse::kDetPidOk) {
+
     pid[1] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTPC, track, fParticleSpecies);
     
     if(fParticleSpecies == 3){//for kaon only 
@@ -1305,19 +1318,10 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
       if (track->Pt() < fMaxPtForTPClow)         // if less than a pt when low nsigma should be applied
 	isAcceptedTPC = isAcceptedTPClow;        // --------nslow-----|ptlow|----------------nshigh------
     }
+
     Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
     if (TMath::Abs(pid[1]) > nSigma) isAcceptedTPC = kFALSE;
-  }
-  
-  //--------------------------------ITS PID--------------------------
-  if (fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kITS, track) == AliPIDResponse::kDetPidOk) {
-    pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
-    if (TMath::Abs(pid[0]) < fNSigmaMaxITS) 
-      isAcceptedITS = kTRUE;
-    
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
-    if (TMath::Abs(pid[0]) > nSigma)
-      isAcceptedITS = kFALSE;
+
   }
   
   
@@ -1386,8 +1390,17 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   }
   
   
-  if (fParticleSpecies == 2) {//for Pion: TPC+TOF
-    isAccepted = isAcceptedTPC && isAcceptedTOF;
+  if (fParticleSpecies == 2){//for Pion: TPC+TOF
+    if(fPidStrategy == 0){
+      isAccepted = isAcceptedTPC && isAcceptedTOF;
+    }
+    else if( fPidStrategy == 1){  
+      Double_t nsigCombined = TMath::Sqrt( pid[1]*pid[1] +  pid[2]*pid[2] );
+      if( nsigCombined < fNSigmaMaxTOF ) isAccepted = kTRUE;
+    }
+    else if( fPidStrategy == 2){
+      isAccepted = isAcceptedTOF;
+    } 
   }
   
   if( fParticleSpecies == 3){//for kaon: TPC and/or TOF

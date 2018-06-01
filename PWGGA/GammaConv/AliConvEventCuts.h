@@ -225,6 +225,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16P1Pyt8,       //!< anchored LHC16x pass 1 nom B-field - general purpose Pythia8
         kLHC16P1Pyt8LowB,   //!< anchored LHC16f pass 1 low B-field - general purpose Pythia8
         kLHC16P1EPOS,       //!< anchored LHC16x pass 1 nom B-field - general purpose EPOS
+        kLHC16P1PHO,        //!< anchored LHC16d pass 1 nom B- field - for MBW Phojet
         kLHC16P1JJ,         //!< anchored LHC16x pass 1 nom B-field - Pythia8 JJ
         kLHC16P1JJLowB,     //!< anchored LHC16f pass 1 low B-field - Pythia8 JJ
         kLHC17h8a,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
@@ -247,8 +248,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17f3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
         kLHC17f4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
         kLHC17f4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
-        kLHC17g8b,            //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
-        kLHC17g8c,            //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
+        kLHC16rP1JJ,          //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
+        kLHC16sP1JJ,          //!< anchored LHC16s pass 1 - jet-jet MC in EPOSLHC
 
         //heavy flavour MC pPb k17d2a_fast,
         kLHC17d2a,          //!< anchored LHC16q,t pass 1 - heavy flavour MC Hijing, fast only
@@ -260,9 +261,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17n,              //!< Xe-Xe 5.44 TeV
         kLHC17pq,             //!< pp 5 TeV
         kLHC17j7,             //!< MC for Xe-Xe 5.44 TeV HIJING
+        kLHC17XeXeHi,         //!< MC for Xe-Xe 5.44 TeV HIJING
         kLHC17l3b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT3,
         kLHC17l4b,            //!< anchored LHC17p/q pass 1 - general purpose w/GEANT4,
         kLHC18b8,             //!< anchored LHC17p/q pass 1 - jet-jet MC w/GEANT3,
+        kLHC17P1PHO,          //!< anchored LHC17p only low Intensity Phojet 5 TeV
         //13 TeV LHC2017
         kLHC17k1,               //!LHC17g added dielectrons from HF
         kLHC17k4,               //!LHC17i
@@ -495,9 +498,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    IsOutOfBunchPileupPastFuture(AliVEvent *event);
       Bool_t    IsPileUpV0MTPCout(AliVEvent *event);
       Bool_t    VertexZCut(AliVEvent *event);
-      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *event, Double_t& weight);
-      Float_t   GetPtHard(AliMCEvent *event);
-      void      GetXSectionAndNTrials(AliMCEvent *event, Float_t &XSection, Float_t &NTrials);
+      Bool_t    IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& weight, AliVEvent* event = 0x0);
+      Float_t   GetPtHard(AliMCEvent *mcEvent, AliVEvent* event = 0x0);
+      void      GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSection, Float_t &NTrials, AliVEvent* event = 0x0 );
       Float_t   GetMaxPtJet()                                                       { return fMaxPtJetMC                                        ; }
       Bool_t    MimicTrigger( AliVEvent *event,
                               Bool_t isMC );
@@ -644,7 +647,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,46)
+      ClassDef(AliConvEventCuts,48)
       /// \endcond
 };
 

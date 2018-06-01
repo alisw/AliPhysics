@@ -795,14 +795,19 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
     TString TriggerEG1 = "EG1", TriggerEG2 = "EG2", TriggerDG1 = "DG1", TriggerDG2 = "DG2";
     fVevent -> GetFiredTriggerClasses();
     if(fAOD) firedTrigger = fAOD -> GetFiredTriggerClasses();
-    // --- EMCAL + DCAL analysis --- //
-    if(fFlagEG2 && fFlagDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
-    if(fFlagEG1 && fFlagDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+    if(fFlagClsTypeEMCal && fFlagClsTypeDCal)
+    {
+      if(fFlagEG2 && fFlagDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
+      if(fFlagEG1 && fFlagDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
+    }
     // --- separate EMCAL and DCAL --- //
-    // if(fFlagEG1) if(!firedTrigger.Contains(TriggerEG1)) return;
-    // if(fFlagEG2) if(!firedTrigger.Contains(TriggerEG2)) return;
-    // if(fFlagDG1) if(!firedTrigger.Contains(TriggerDG1)) return;
-    // if(fFlagDG2) if(!firedTrigger.Contains(TriggerDG2)) return;
+    else
+    {
+      if(fFlagEG1) if(!firedTrigger.Contains(TriggerEG1)) return;
+      if(fFlagEG2) if(!firedTrigger.Contains(TriggerEG2)) return;
+      if(fFlagDG1) if(!firedTrigger.Contains(TriggerDG1)) return;
+      if(fFlagDG2) if(!firedTrigger.Contains(TriggerDG2)) return;
+    }
     fNevents -> Fill(1);
     //#######################################################################//
 

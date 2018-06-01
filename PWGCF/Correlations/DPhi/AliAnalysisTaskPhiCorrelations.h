@@ -79,6 +79,9 @@ public:
   virtual	void	SetCourseCentralityBinning(Bool_t flag) { fCourseCentralityBinning = flag; }
   virtual     void    SetSkipTrigger(Bool_t flag) { fSkipTrigger = flag; }
   virtual     void    SetInjectedSignals(Bool_t flag) { fInjectedSignals = flag; }
+  virtual     void    SetV0CL1PileUp(Bool_t flag) { fV0CL1PileUp = flag; }
+  virtual     void    SetESDTPCTrackPileUp(Bool_t flag) { fESDTPCTrackPileUp = flag; }
+  virtual     void    SetTPCITSTOFPileUp(Bool_t flag) { fTPCITSTOFPileUp = flag; }
   void SetRandomizeReactionPlane(Bool_t flag) { fRandomizeReactionPlane = flag; }
 
   // histogram settings
@@ -215,6 +218,9 @@ private:
   Bool_t		fSkipTrigger;		  // skip trigger selection
   Bool_t		fInjectedSignals;	  // check header to skip injected signals in MC
   Bool_t		fRandomizeReactionPlane;  // change the orientation of the RP by a random value by shifting all tracks
+  Bool_t		fV0CL1PileUp;  // Remove pile up events according to V0 CL1 correlation
+  Bool_t		fESDTPCTrackPileUp;  // Remove pile up events according ESD tracks and number of TPC only tracks correlation
+  Bool_t		fTPCITSTOFPileUp;  // Remove pile up events according to TPC+ITS tracks (FilterBit 32) and number of tracks matched to TOF with BCid=0 correlation
 
   AliHelperPID*     fHelperPID;      // points to class for PID
   AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities

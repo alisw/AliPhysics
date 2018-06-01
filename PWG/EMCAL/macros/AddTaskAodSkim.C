@@ -26,28 +26,29 @@ AliAodSkimTask *AddTaskAodSkim(const Double_t mine=5,
     cout << "-> name=0" << endl;
   cout << "Writing skimmed aod tree to " << fname.Data() << endl;
  
-  AliAODHandler *output = new AliAODHandler;
-  output->SetOutputFileName(fname);
-  output->SetFillAOD(1);
-  output->SetFillAODforRun(1);
-  output->SetFillExtension(0);
-  output->SetTreeBuffSize(30*1024*1024);
-  mgr->SetOutputEventHandler(output);
+  if (mgr->GetOutputEventHandler()==0) {
+    AliAODHandler *output = new AliAODHandler;
+    output->SetOutputFileName(fname);
+    output->SetFillAOD(1);
+    output->SetFillAODforRun(1);
+    output->SetFillExtension(0);
+    output->SetTreeBuffSize(30*1024*1024);
+    mgr->SetOutputEventHandler(output);
+  }
 
   AliAodSkimTask *task = new AliAodSkimTask(tname);
   task->SetClusMinE(mine);
   task->SelectCollisionCandidates(trigsel);
   cout << "Task configured with: " << task->Str() << endl;
-
-  
   mgr->AddTask(task);
+
   AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer()  ;
   TString contName(tname);
   contName += "_histos";
   AliAnalysisDataContainer *coutput = mgr->CreateContainer(contName.Data(), 
 							   TList::Class(),
 							   AliAnalysisManager::kOutputContainer,
-							   Form("%s", AliAnalysisManager::GetCommonFileName()));
+							   Form("%s_histos.root", tname.Data()));
   mgr->ConnectInput  (task, 0,  cinput );
   mgr->ConnectOutput (task, 1, coutput );
 

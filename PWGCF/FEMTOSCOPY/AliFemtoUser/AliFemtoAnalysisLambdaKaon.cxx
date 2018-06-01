@@ -1753,6 +1753,7 @@ void AliFemtoAnalysisLambdaKaon::SetAnalysis(AliFemtoEventCut* aEventCut, AliFem
   AliFemtoCorrFctnIterator iter;
   for(iter=fCollectionOfCfs->begin(); iter!=fCollectionOfCfs->end(); iter++)
   {
+    if(distance(fCollectionOfCfs->begin(), iter)==0) (*iter)->SetPairSelectionCut(tPairCut);  //only add for AliFemtoCorrFctnKStar
     AddCorrFctn(*iter);
   }
 }

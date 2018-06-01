@@ -165,7 +165,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_pp_5TeV_LHC
   if(!isMC && Trgcorrection){
     TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
     f1trg->SetNpx(1000);
-    f1trg->SetParameters(0.609,3.73,0.301);//from MB //acc x trigger efficiency 3-30GeV
+    f1trg->SetParameters(0.616,3.72,0.298);//from MB //acc x trigger efficiency 3-30GeV
+    //f1trg->SetParameters(0.609,3.73,0.301);//from MB //acc x trigger efficiency 3-30GeV//old
     task->SetTriggerEfficiency(f1trg);
   }
 

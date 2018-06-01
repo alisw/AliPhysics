@@ -134,7 +134,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
     cutVertex->SetCheckDispersionSPD();
     cutVertex->SetCheckZDifferenceSPDTrack();
     }
-   if (evtCutSetID==eventCutSet::kSpecial3 && kSpecial6) cutVertex->SetCheckGeneratedVertexZ();
+   if (evtCutSetID==eventCutSet::kSpecial3 || evtCutSetID==eventCutSet::kSpecial6) cutVertex->SetCheckGeneratedVertexZ(); 
   }
 
   AliRsnCutEventUtils* cutEventUtils=0;
@@ -146,8 +146,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
     }else{
       //cutEventUtils->SetCheckInelGt0SPDtracklets();
       cutEventUtils->SetRemovePileUppA2013(kFALSE);
-      cutEventUtils->SetCheckAcceptedMultSelection();
-      if (isMC && kSpecial6) cutEventUtils->SetCheckInelGt0MC();
+      if (evtCutSetID!=eventCutSet::kSpecial6) cutEventUtils->SetCheckAcceptedMultSelection();
+      if (isMC && evtCutSetID==eventCutSet::kSpecial6) cutEventUtils->SetCheckInelGt0MC();
     }
   }
 

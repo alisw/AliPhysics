@@ -1929,8 +1929,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         }
         
         //VZERO info
-        fAmplitudeV0A = ((AliMultEstimator*)MultSelection->GetEstimator("V0A"))->GetValue();
-        fAmplitudeV0C = ((AliMultEstimator*)MultSelection->GetEstimator("V0C"))->GetValue();
+        AliMultEstimator *fEstV0A = 0x0, *fEstV0C = 0x0;
+        fEstV0A = (AliMultEstimator*)MultSelection->GetEstimator("V0A");
+        fEstV0C = (AliMultEstimator*)MultSelection->GetEstimator("V0C");
+        if ( fEstV0A ) fAmplitudeV0A = fEstV0A->GetValue();
+        if ( fEstV0C ) fAmplitudeV0C = fEstV0C->GetValue();
         
         //FMD info
         AliAODEvent* aodEvent = AliForwardUtil::GetAODEvent(this);
@@ -6256,7 +6259,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         lCascadeResult[lN] = new AliCascadeResult( Form("%s_Central",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits);
         
         //This is MC: generate profile for G3/F (if ever needed)
-        lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+        lCascadeResult[lN] -> InitializeProtonProfile();
         
         //Setters for V0 Cuts
         lCascadeResult[lN]->SetCutDCANegToPV            ( lcuts[i][1][ 0] ) ;
@@ -6321,7 +6324,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
             lCascadeResult[lN] = new AliCascadeResult( Form("%s_Central_Full",lParticleName[i].Data() ),lMassHypo[i]);
             
             //This is MC: generate profile for G3/F (if ever needed)
-            lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+            lCascadeResult[lN] -> InitializeProtonProfile();
             
             //Setters for V0 Cuts
             lCascadeResult[lN]->SetCutDCANegToPV            ( lcuts[i][1][ 0] ) ;
@@ -6601,7 +6604,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         
         
         //This is MC: generate profile for G3/F (if ever needed)
-        lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+        lCascadeResult[lN] -> InitializeProtonProfile();
         
         //Default cuts: use vertexer level ones
         //Setters for V0 Cuts
@@ -6670,7 +6673,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddCascadeConfiguration276T
     for(Int_t i = 0 ; i < 4 ; i ++){
         //2.76 Config result, customized binning: the one to use, usually
         lCascadeResult[lN] = new AliCascadeResult( Form("%s_276TeV",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits);
-        lCascadeResult[lN] -> InitializeProtonProfile(lPtbinnumb,lPtbinlimits);
+        lCascadeResult[lN] -> InitializeProtonProfile();
         
         //Setters for V0 Cuts
         lCascadeResult[lN]->SetCutDCANegToPV            ( 0.1    ) ;

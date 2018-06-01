@@ -84,6 +84,8 @@ fUseRecalcPatches(false),
 fHistManager(),
 fRecevent(),
 fMCevent(),
+fGeneratorLevel(0),
+fMCJetContainer(nullptr),
 fRecoUtil(0x0),  fClusterEResolution(0x0), fVaryTrkPtRes(),
 fUseSumw2(),
 fHistNumbJets(),
@@ -92,7 +94,10 @@ fHistJetJetPatchE(),
 fHistJetGammaPatchE(),
 fHistJetJetPatchPt(),
 fHistJetGammaPatchPt(),
-fHistTriggerPatchE()
+fHistTriggerPatchE(),
+fhnMBJetSpectra(),
+fhnTrkQA(),
+fhnClusQA()
 
 {
     //Array Initiation
@@ -113,6 +118,8 @@ fUseRecalcPatches(false),
 fHistManager(name),
 fRecevent(NULL),
 fMCevent(NULL),
+fGeneratorLevel(0),
+fMCJetContainer(nullptr),
 fRecoUtil(0x0),  fClusterEResolution(0x0), fVaryTrkPtRes(0),
 fUseSumw2(0),
 fHistNumbJets(0),
@@ -121,7 +128,10 @@ fHistJetJetPatchE(0),
 fHistJetGammaPatchE(0),
 fHistJetJetPatchPt(0),
 fHistJetGammaPatchPt(0),
-fHistTriggerPatchE(0)
+fHistTriggerPatchE(0),
+fhnMBJetSpectra(0x0),
+fhnTrkQA(0x0),
+fhnClusQA(0x0)
 
 
 {
@@ -158,10 +168,28 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::UserCreateOutputObjects()
          fOutput->Add(fHistEMCalTowerMult[i]);
      }
     
+    // Get the MC particle branch, in case it exists
+    
+    AliJetContainer* jetMCCont = GetJetContainer();
+    TString jetMCContName = jetMCCont->GetName();
+    
+    fGeneratorLevel = GetMCParticleContainer("mcparticles");
+    if(fGeneratorLevel)
+    {
+        Printf("MCparticleContainer: %s", fGeneratorLevel->GetName());
+    }
+    if(jetMCContName.Contains("mcparticles"))
+    {
+        fMCJetContainer = jetMCCont;
+    }
+    
+    
     AllocateClusterHistograms();
     AllocateTrackHistograms();
     AllocateJetHistograms();
     AllocateCellHistograms();
+    //AllocateParticleHistograms();
+    
     
     TIter next(fHistManager.GetListOfHistograms());
     TObject* obj = 0;
@@ -171,6 +199,14 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::UserCreateOutputObjects()
     fOutput->Add(fHistNumbJets);
     fOutput->Add(fHistJetPt);
     
+    
+   // UInt_t SparseBit = 0;// Bit Code from GetDimParams()
+    
+ 
+    //SparseBit = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 |  1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16;
+    //fhnMBJetSpectra = NewTHnSparseF("fhnMBJetSpectra", SparseBit);
+    //fhnMBJetSpectra->Sumw2();
+   // fOutput->Add(fhnMBJetSpectra);
     
     if(fUseSumw2==0) {
         // =========== Switch on Sumw2 for all histos ===========
@@ -198,11 +234,20 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateClusterHistograms()
     TString histname;
     TString histtitle;
     TString groupname;
+    Double_t pi = TMath::Pi();
     AliClusterContainer* clusCont = 0;
     TIter next(&fClusterCollArray);
     while ((clusCont = static_cast<AliClusterContainer*>(next()))) {
         groupname = clusCont->GetName();
         fHistManager.CreateHistoGroup(groupname);
+        
+        histname = TString::Format("%s/fhnClusSparse", groupname.Data());
+        histtitle = histname + ";Multiplicity;#it{E}_{clus}{had.corr.} (GeV);#it{E}_{clus}^{non-lin.corr} (GeV); #it{E}_{clus}^{corr} (GeV);#it{p}_{trk,matched} (GeV/#it{c});E_{clus}^{non-lin.corr}/P_{trk}^{sum};#eta_{clus};#phi_{clus};M02;M20;Dumb}";
+        Int_t nbins10[11]  = {300, fNbins,fNbins,fNbins,fNbins,120,24,72,100,100,0};
+        Double_t min10[11] = {0,fMinBinPt,fMinBinPt,fMinBinPt,fMinBinPt,0,-1.2, -0.5*pi,0,0,0};
+        Double_t max10[11] = {300,fMaxBinPt,fMaxBinPt,fMaxBinPt,fMaxBinPt,1.2,1.2,1.5*pi,1,1,0};
+        fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data(), 11, nbins10, min10, max10, "s");
+        
         for (Int_t cent = 0; cent < fNcentBins; cent++) {
             histname = TString::Format("%s/histClusterEnergy_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;#it{E}_{cluster} (GeV);counts", histname.Data());
@@ -246,6 +291,40 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateClusterHistograms()
 }
 
 /*
+ *  This function allocate histograms to the particle level MC event
+ *  before the particles are propagated through GEANT.
+ *  This function also has adaptability for the jet finder.
+ *
+ */
+
+void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateParticleHistograms()
+{
+    // If MC, get the MC event
+    const AliMCEvent* mcevent = nullptr;
+    if (fGeneratorLevel) {
+        mcevent = MCEvent();
+    }
+    else {
+        return;
+    }
+    TString histname;
+    TString histtitle;
+    TString groupname;
+    Double_t pi = TMath::Pi();
+    AliParticleContainer* MCCont = 0;
+    MCCont = AddMCParticleContainer("mcparticles");
+    groupname = MCCont->GetName();
+    fHistManager.CreateHistoGroup(groupname);
+    
+    for (Int_t cent = 0; cent < fNcentBins; cent++) {
+      histname = TString::Format("%s/fHistParticleLvlpT_%d", groupname.Data(), cent);
+      histtitle = TString::Format("%s;#it{p}_{T} (GeV);counts", histname.Data());
+      fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt, "s");
+    }
+    
+}
+
+/*
  * This function allocates the histograms for basic EMCal QA.
  * One 2D histogram with the cell energy spectra and the number of cells
  * per event is allocated per each centrality bin.
@@ -284,11 +363,20 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateTrackHistograms()
     TString histname;
     TString histtitle;
     TString groupname;
+    Double_t pi = TMath::Pi();
     AliParticleContainer* partCont = 0;
     TIter next(&fParticleCollArray);
     while ((partCont = static_cast<AliParticleContainer*>(next()))) {
         groupname = partCont->GetName();
         fHistManager.CreateHistoGroup(groupname);
+        
+        histname = TString::Format("%s/fhnTrkSparse", groupname.Data());
+        histtitle = histname + ";Multiplicity;#it{p}_{T,trk} (GeV/#it{c});#it{p}_{trk} (GeV/#it{c});#eta_{trk};#phi_{trk};TPCnClusters}";
+        Int_t nbins6[6]  = {300, fNbins, fNbins,24,72,100};
+        Double_t min6[6] = {0,fMinBinPt,fMinBinPt,-1.2, -0.5*pi,0};
+        Double_t max6[6] = {300,fMaxBinPt,fMaxBinPt,1.2,1.5*pi,100};
+        fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data(), 6, nbins6, min6, max6, "s");
+        
         for (Int_t cent = 0; cent < fNcentBins; cent++) {
             histname = TString::Format("%s/histTrackPt_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;#it{p}_{T,track} (GeV/#it{c});counts", histname.Data());
@@ -342,12 +430,31 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
     TString histname;
     TString histtitle;
     TString groupname;
+    Double_t pi = TMath::Pi();
     AliJetContainer* jetCont = 0;
     TIter next(&fJetCollArray);
+    UInt_t SparseBit = 0;// Bit Code from GetDimParams()
+    SparseBit = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 |  1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16;
+    
     while ((jetCont = static_cast<AliJetContainer*>(next()))) {
         groupname = jetCont->GetName();
         fHistManager.CreateHistoGroup(groupname);
+        
+        //histname = TString::Format("%s/fhnJetSparse", groupname.Data());
+        //histtitle = histname + TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histname.Data());
+        //fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data());
+        
+        
+        histname = TString::Format("%s/fhnJetSparse", groupname.Data());
+        histtitle = histname + ";Multiplicity;#it{p}_{T,jet}^{uncorr} (GeV/#it{c});#it{p}_{T,leading} (GeV/#it{c};#it{E}_{leading} (GeV);#eta_{jet};#phi_{jet};#it{F}_{cross};#it{z}_{leading};#it{A}_{jet};#it{NEF};#it{N}_{constit};#it{N}_{neu};#it{N}_{chrg}";
+        Int_t nbins13[13]  = {300, fNbins, fNbins, fNbins,24,72,20,20,20,20,100,100,100};
+        Double_t min13[13] = {0,fMinBinPt,fMinBinPt,fMinBinPt,-1.2, -0.5*pi,0,0,0,0,0,0,0};
+        Double_t max13[13] = {300,fMaxBinPt, fMaxBinPt, fMaxBinPt,1.2,1.5*pi,1,1,1,1,1,1,1};
+        fHistManager.CreateTHnSparse(histname.Data(), histtitle.Data(), 13, nbins13, min13, max13, "s");
+        
+        
         for (Int_t cent = 0; cent < fNcentBins; cent++) {
+            
             histname = TString::Format("%s/histJetPt_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;#it{p}_{T,jet} (GeV/#it{c});counts", histname.Data());
             fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt, "s");
@@ -380,8 +487,19 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateJetHistograms()
             //histtitle = TString::Format("%s;#it{p}_{T,Jet};#it{p}_{T,NeutralConstituents}", histname.Data());
             //fHistManager.CreateTH2(histname, histtitle, 200, 0, 200, 200, 0, 200);
             
+            histname = TString::Format("%s/histFCrossvZleading_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;#it{z}_{leading};#it{F}_{Cross}", histname.Data());
+            fHistManager.CreateTH2(histname, histtitle, 100, 0, 1, 100, 0, 1);
             
             //Matched Trigger Histos
+            histname = TString::Format("%s/fHistNumbJETrigger_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;JE Trigger Normaliztion;counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, 1, 0, 1, "s");
+            
+            histname = TString::Format("%s/fHistNumbGATrigger_%d", groupname.Data(), cent);
+            histtitle = TString::Format("%s;GA Trigger Normaliztion;counts", histname.Data());
+            fHistManager.CreateTH1(histname, histtitle, 1, 0, 1, "s");
+            
             histname = TString::Format("%s/fHistJetJetPatchE_%d", groupname.Data(), cent);
             histtitle = TString::Format("%s;#it{E}_{JetGammaPatch} (GeV);counts", histname.Data());
             fHistManager.CreateTH1(histname, histtitle, fNbins, fMinBinPt, fMaxBinPt, "s");
@@ -469,6 +587,7 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::FillHistograms()
     DoTrackLoop();
     DoClusterLoop();
     DoCellLoop();
+    //DoParticleLoop();
     
     return kTRUE;
 }
@@ -494,6 +613,11 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
         for(auto jet : jetCont->accepted()) {
             if (!jet) continue;
             count++;
+
+            TLorentzVector leadPart;
+            jetCont->GetLeadingHadronMomentum(leadPart, jet);
+            Double_t z = GetParallelFraction(leadPart.Vect(), jet);
+            if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999;
             
             histname = TString::Format("%s/histJetPt_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, jet->Pt());
@@ -518,8 +642,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
             fHistManager.FillTH2(histname,jet->Pt(),jet->N());
             
             histname = TString::Format("%s/histJetFF_%d", groupname.Data(), fCentBin);
-            fHistManager.FillTH1(histname, jet->MaxTrackPt() / jet->Pt() );
-            
+            fHistManager.FillTH1(histname, z );
             
             Double_t MatchedEta = 0.04, MatchedPhi = 0.04;
            //Look at  emcal trigger patches in event and associate with jet
@@ -539,7 +662,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                 continue;
             }
             
-            AliEMCALTriggerPatchInfo *currentpatch(nullptr);
+            //AliEMCALTriggerPatchInfo *currentpatch(nullptr);
              for(auto p : *fTriggerPatchInfo){
                 AliEMCALTriggerPatchInfo *currentpatch = static_cast<AliEMCALTriggerPatchInfo *>(p);
                 
@@ -551,6 +674,8 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                     fHistManager.FillTH2(histname,jet->E(),currentpatch->GetPatchE());
                     
                     if(jet->Phi() - currentpatch->GetPhiGeo() <= MatchedPhi && jet->Eta() - currentpatch->GetEtaGeo() <= MatchedEta){
+                        histname = TString::Format("%s/fHistNumbGATrigger_%d", groupname.Data(), fCentBin);
+                        fHistManager.FillTH1(histname, 0.5);
                         histname = TString::Format("%s/fHistJetGammaPatchE_%d", groupname.Data(), fCentBin);
                         fHistManager.FillTH1(histname, currentpatch->GetPatchE());
                         histname = TString::Format("%s/fHistJetGammaPatchPt_%d", groupname.Data(), fCentBin);
@@ -566,6 +691,8 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                     fHistManager.FillTH2(histname,jet->E(),currentpatch->GetPatchE());
                     
                     if(jet->Phi() - currentpatch->GetPhiGeo() <= MatchedPhi && jet->Eta() - currentpatch->GetEtaGeo() <= MatchedEta){
+                        histname = TString::Format("%s/fHistNumbJETrigger_%d", groupname.Data(), fCentBin);
+                        fHistManager.FillTH1(histname, 0.5);
                         histname = TString::Format("%s/fHistJetJetPatchE_%d", groupname.Data(), fCentBin);
                         fHistManager.FillTH1(histname, currentpatch->GetPatchE());
                         histname = TString::Format("%s/fHistJetJetPatchPt_%d", groupname.Data(), fCentBin);
@@ -591,6 +718,13 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                         
                         histname = TString::Format("%s/histJetZvJetPt_%d", groupname.Data(), fCentBin);
                         fHistManager.FillTH2(histname,jet->Pt(),Z_part);
+                        
+                        //if(jetContName.Contains("mcparticles")){
+                        //  fMCJetContainer
+                        //  Double_t jetPID = 0;
+                        //  jetPID->PID();
+                       //   cout<<"PID of trk in Jet: "<<jetPID<<endl;
+                        //}
                     }
                 }
             }
@@ -601,15 +735,45 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                 for(auto cluster : JetCluster->accepted()) {
                     AliTLorentzVector nPart;
                     cluster->GetMomentum(nPart, fVertex);
+                    Double_t JetFCross = GetFcross(cluster, fCaloCells);
                     histname = TString::Format("%s/histJetClusterEnergy_%d", groupname.Data(), fCentBin);
                     fHistManager.FillTH1(histname, cluster->E());
                     histname = TString::Format("%s/histJetClusterPhi_%d", groupname.Data(), fCentBin);
                     fHistManager.FillTH1(histname, nPart.Phi_0_2pi());
                     histname = TString::Format("%s/histJetClusterEta_%d", groupname.Data(), fCentBin);
                     fHistManager.FillTH1(histname, nPart.Eta());
+                    histname = TString::Format("%s/histFCrossvZleading_%d", groupname.Data(), fCentBin);
+                    fHistManager.FillTH2(histname,jet->MaxTrackPt() / jet->Pt(), JetFCross);
                 }
+                
+                
             }
             
+            Double_t leadingtrackpT = 0.0;
+            Double_t leadingclusterE = 0.0;
+            Double_t JetFCrossLeading = 0.0;
+            //AliVParticle *leadingParticle = 0x0;
+            AliVCluster *leadingCluster = 0x0;
+            
+            
+            leadingCluster = jet->GetLeadingCluster();
+            if(leadingCluster){
+                leadingclusterE = leadingCluster->E();
+                JetFCrossLeading = GetFcross(leadingCluster, fCaloCells);
+            }
+            
+            AliVParticle* leadingTrk = jet->GetLeadingTrack();
+            if(leadingTrk){
+                leadingtrackpT = leadingTrk->Pt();
+           }
+            AliTrackContainer * Globaltracks = static_cast<AliTrackContainer * >(GetParticleContainer("tracks"));
+            Double_t TrackMultiplicity = Globaltracks->GetNTracks();
+            Double_t Numb = jet->N();
+            Double_t NumbNeu = jet->Nn();
+            Double_t NumbChrg = jet->Nch();
+            Double_t x[13]={TrackMultiplicity,jet->Pt(),leadingtrackpT,leadingclusterE,jet->Eta(),jet->Phi(),JetFCrossLeading,z,jet->Area(),jet->NEF(),Numb,NumbNeu,NumbChrg};
+            histname = TString::Format("%s/fhnJetSparse", groupname.Data());
+            fHistManager.FillTHnSparse(histname, x);
             
             if (jetCont->GetRhoParameter()) {
                 histname = TString::Format("%s/histJetCorrPt_%d", groupname.Data(), fCentBin);
@@ -661,6 +825,10 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoTrackLoop()
                 histname = TString::Format("%s/fHistDeltaPtvsPt_%d", groupname.Data(), fCentBin);
                 fHistManager.FillTH1(histname, track->Pt(), track->Pt() - track->GetTrackPtOnEMCal());
                 
+                Double_t x[6]={0.0,track->Pt(),track->P(),track->Eta(),track->Phi(),0.0};
+                histname = TString::Format("%s/fhnTrkSparse", groupname.Data());
+                fHistManager.FillTHnSparse(histname,x);
+                
                 if (clusCont) {
                     Int_t iCluster = track->GetEMCALcluster();
                     if (iCluster >= 0) {
@@ -668,6 +836,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoTrackLoop()
                         if (cluster) {
                             histname = TString::Format("%s/fHistEoverPvsP_%d", groupname.Data(), fCentBin);
                             fHistManager.FillTH2(histname, track->P(), cluster->GetNonLinCorrEnergy() / track->P());
+                            
                         }
                     }
                 }
@@ -685,6 +854,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoTrackLoop()
  */
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoClusterLoop()
 {
+    Double_t TrkPt = 0.0, EovP = 0.0, TrackMultiplicity =0.0, trkpSum = 0.0;
     TString histname;
     TString groupname;
     AliClusterContainer* clusCont = 0;
@@ -728,6 +898,28 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoClusterLoop()
             
             histname = TString::Format("%s/histClusterEta_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH1(histname, nPart.Eta());
+            
+            //Int_t nTracksMatched = 0;
+            const AliVTrack* track = 0x0;
+            
+            for (Int_t itrack=0; itrack < cluster->GetNTracksMatched(); itrack++){
+              track = dynamic_cast<AliVTrack*>(cluster->GetTrackMatched(itrack));
+              if(track){
+                TrkPt = track->Pt();
+                trkpSum += track->P();
+                EovP = cluster->GetNonLinCorrEnergy() / trkpSum;
+        
+              }
+            }
+            
+            
+              Double_t x[10]={TrackMultiplicity,cluster->GetHadCorrEnergy(),cluster->GetNonLinCorrEnergy(),cluster->E(),TrkPt,EovP,nPart.Eta(),nPart.Phi_0_2pi(),cluster->GetM02(),cluster->GetM20()};
+              histname = TString::Format("%s/fhnClusSparse", groupname.Data());
+              fHistManager.FillTHnSparse(histname, x);
+            
+            
+            
+            
         }
         
         histname = TString::Format("%s/histNClusters_%d", groupname.Data(), fCentBin);
@@ -759,6 +951,31 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoCellLoop()
 }
 
 /**
+ *  This function perform a loop ov generator level MC
+ *  particles in a current event and fills the relevent histograms.
+ *  Functionality still in development
+ */
+void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoParticleLoop()
+{
+    TString histname;
+    TString groupname;
+    AliParticleContainer* partMCCont = 0;
+    //TIter next(&fGeneratorLevel);
+    for(auto trk : partMCCont->all()){
+         groupname = partMCCont->GetName();
+         UInt_t count = 0;
+         for(auto part : partMCCont->accepted()) {
+             if (!part) continue;
+             
+             histname = TString::Format("%s/fHistParticleLvlpT_%d", groupname.Data(), fCent);
+             fHistManager.FillTH1(histname, part->Pt());
+         }
+     }
+    
+    
+}
+
+/**
  * This function is executed automatically for the first event.
  * Some extra initialization can be performed here.
  */
@@ -777,9 +994,11 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::ExecOnce()
  */
 Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Run()
 {
-    Int_t runNum = InputEvent()->GetRunNumber();
+    //Int_t runNum = InputEvent()->GetRunNumber();
     
     //Bool_t PileUp = AliVEvent::IsPileupFromSPD();
+    
+    //Double_t zVertex=fVertex[2];
     
     this->SetCaloTriggerPatchInfoName("EmcalTriggers");
     
@@ -802,8 +1021,8 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Run()
         }
     }
     
-    fClusterEResolution = new TF1("fClusterEResolution","sqrt([0]^2+[1]^2*x+([2]*x)^2)*0.01");
-    fClusterEResolution->SetParameters(4.35,9.07,1.63);
+    fClusterEResolution = new TF1("fClusterEResolution","sqrt([0]^2+[1]^2*x+([2]*x)^2)*0.01");// 2010 EMCal Test Beam Resolution
+    fClusterEResolution->SetParameters(4.35,9.07,1.63);//Fit to test beam
     
     
     
@@ -991,3 +1210,176 @@ Double_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetFcross(const AliVCluste
   //  return fRandomGen->Gaus(0, smear);
     
 //}
+THnSparse* AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::NewTHnSparseF(const char* name, UInt_t entries)
+{
+    Int_t count = 0;
+    UInt_t tmp = entries;
+    while(tmp!=0){
+        count++;
+        tmp = tmp &~ -tmp;  // clear lowest bit
+    }
+    
+    TString hnTitle(name);
+    const Int_t dim = count;
+    Int_t nbins[dim];
+    Double_t xmin[dim];
+    Double_t xmax[dim];
+    
+    Int_t i=0;
+    Int_t c=0;
+    while(c<dim && i<32){
+        if(entries&(1<<i)){
+            
+            TString label("");
+            GetDimParams(i, label, nbins[c], xmin[c], xmax[c]);
+            hnTitle += Form(";%s",label.Data());
+            c++;
+        }
+        
+        i++;
+    }
+    hnTitle += ";";
+    
+    return new THnSparseF(name, hnTitle.Data(), dim, nbins, xmin, xmax);
+}
+/**
+ * Stores labels and binning of axes for creating a new THnSparseF.
+ *
+ * @param[in] iEntry Which axis to pick out of the cases.
+ * @param[out] label Label of the axis.
+ * @param[out] nbins Number of bins for the axis.
+ * @param[out] xmin Minimum value of the axis.
+ * @param[out] xmax Maximum value of the axis.
+ */
+void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetDimParams(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
+{
+    const Double_t pi = TMath::Pi();
+    
+    switch(iEntry){
+            
+        case 0:
+            label = "V0 centrality (%)";
+            nbins = 30;
+            xmin = 0.;
+            xmax = 100.;
+            // Adjust for pp, since we are retrieving multiplicity instead
+            if (fForceBeamType == AliAnalysisTaskEmcal::kpp) {
+                label = "Multiplicity";
+                xmax = 300.;
+            }
+            break;
+            
+        case 1:
+            label = "Jet p_{T}";
+            nbins = 200;
+            xmin = 0.;
+            xmax = 200.;
+            break;
+            
+        case 2:
+            label = "Track p_{T}";
+            nbins = 100;
+            xmin = 0.;
+            xmax = 100;
+            break;
+            
+        case 3:
+            label = "Cluster E";
+            nbins = 100;
+            xmin = 0.;
+            xmax = 100;
+            break;
+            
+        case 4:
+            label = "Jet#eta";
+            nbins = 24;
+            xmin = -1.2;
+            xmax = 1.2;
+            break;
+            
+        case 5:
+            label = "Jet #phi";
+            nbins = 72;
+            xmin = -0.5*pi;
+            xmax = 1.5*pi;
+            break;
+            
+        case 6:
+            label = "#it{p}_{T,track}^{leading}";
+            nbins = 100;
+            xmin = 0;
+            xmax = 100;
+            break;
+            
+        case 7:
+            label = "Matched Trigger Amp";
+            nbins = 10;
+            xmin = 0;
+            xmax = 50;
+            break;
+            
+        case 8:
+            label = "#Delta#eta";
+            nbins = 48;
+            xmin = -1.2;
+            xmax = 1.2;
+            break;
+            
+        case 9:
+            label = "#Delta#phi";
+            nbins = 72;
+            xmin = 0;
+            xmax = 2*pi;
+            break;
+            
+        case 10:
+            label = "F_{cross}";
+            nbins = 20;
+            xmin = 0;
+            xmax = 1;
+            break;
+            
+        case 11:
+            label = "z_{leading}";
+            nbins = 20;
+            xmin = 0;
+            xmax = 1;
+            break;
+            
+        case 12:
+            label = "#it{A}_{jet}";
+            nbins = 20;
+            xmin = 0;
+            xmax = 1;
+            break;
+            
+        case 13:
+            label = "Jet NEF";
+            nbins = 20;
+            xmin = 0;
+            xmax = 1;
+            break;
+            
+        case 14:
+            label = "Numb Constit";
+            nbins = 50;
+            xmin = 0;
+            xmax = 50;
+            break;
+            
+        case 15:
+            label = "Numb Chrg Constit";
+            nbins = 50;
+            xmin = 0;
+            xmax = 50;
+            break;
+            
+        case 16:
+            label = "Numb Neu Constit";
+            nbins = 50;
+            xmin = 0;
+            xmax = 50;
+            break;
+    }
+}
+
