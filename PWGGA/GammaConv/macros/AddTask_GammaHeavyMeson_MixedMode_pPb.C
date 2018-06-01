@@ -207,7 +207,7 @@ void AddTask_GammaHeavyMeson_MixedMode_pPb( Int_t     selectedMeson             
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskHeavyNeutralMesonToGG *task=NULL;
-  task= new AliAnalysisTaskHeavyNeutralMesonToGG(Form("HeavyNeutralMesonToGG_%i",trainConfig));
+  task= new AliAnalysisTaskHeavyNeutralMesonToGG(Form("HeavyNeutralMesonToGG_%i_%i_%i", mesonRecoMode, selectedMeson, trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
