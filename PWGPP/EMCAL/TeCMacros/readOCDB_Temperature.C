@@ -15,7 +15,7 @@
 #include <TMap.h>
 #include <TNtuple.h>
 #include <stdio.h>
-#include "TInfo.C"
+#include "TInfo.h"
 
 TInfo *readOCDB_Temperature(Int_t runNb  = 286350, Bool_t debug=1)
 {
@@ -41,7 +41,7 @@ TInfo *readOCDB_Temperature(Int_t runNb  = 286350, Bool_t debug=1)
        << endl;
 
   // info for each sensor
-  const int kNumSens = 159;
+  const int kNumSens = 160;
   int np[kNumSens] = {0};
   double min[kNumSens] = {0};
   double max[kNumSens] = {0};
@@ -59,7 +59,8 @@ TInfo *readOCDB_Temperature(Int_t runNb  = 286350, Bool_t debug=1)
     UInt_t stopt = o->GetEndTime();
 
     if (debug)
-      cout << o->GetStringID() << ":" 
+      cout << "Sensor " << isensor 
+	   << " " << o->GetStringID() << ":" 
 	   << " side " << o->GetSide()
 	   << " sector " << o->GetSector()
 	   << " num " << o->GetNum()
@@ -123,14 +124,14 @@ TInfo *readOCDB_Temperature(Int_t runNb  = 286350, Bool_t debug=1)
 
 void testOCDB_Temperature(Int_t runNb  = 286350)
 {
-  TInfo *i = readOCDB_Temperature(runNb,0);
+  TInfo *i = readOCDB_Temperature(runNb,1);
   i->Print();
   return;
 }
 
 void read_LHC18d() 
 {
-  Int_t runs[] = {286350, 286349, 286348, 286345, 286341, 286340, 286337, 286336, 286314, 286313, 286312, 286311, 286310, 286309, 286308, 286289, 286288, 286287, 286284, 286282, 286263, 286261, 286258, 286257, 286256, 286255, 286254, 286231, 286230, 286229, 286203, 286202, 286201, 286198, 286159, 286157, 286154, 286130, 286129, 286127, 286124, 286064, 286030, 286027, 286026, 286025, 286018, 286014, 285980, 285979, 285978};
+  Int_t runs[] = {285978,285979,285980,286014,286018,286025,286026,286027,286030,286064,286124,286127,286129,286130,286154,286157,286159,286198,286201,286202,286203,286229,286230,286231,286254,286255,286256,286257,286258,286261,286263,286282,286284,286287,286288,286289,286308,286309,286310,286311,286312,286313,286314,286336,286337,286340,286341,286345,286348,286349,286350};
   Int_t nruns = sizeof(runs)/sizeof(Int_t);
 
   TObjArray arr;
