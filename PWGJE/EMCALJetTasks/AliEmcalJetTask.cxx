@@ -73,7 +73,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fTrackEfficiency(1.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
-  fTrackEfficiencyFunction(),
+  //fTrackEfficiencyFunction(),
   fApplyArtificialTrackingEfficiency(kFALSE),
   fLocked(0),
   fFillConstituents(kTRUE),
@@ -111,7 +111,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fTrackEfficiency(1.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
-  fTrackEfficiencyFunction(),
+  //fTrackEfficiencyFunction(),
   fApplyArtificialTrackingEfficiency(kFALSE),
   fLocked(0),
   fFillConstituents(kTRUE),
@@ -255,7 +255,7 @@ Int_t AliEmcalJetTask::FindJets()
       if (fApplyArtificialTrackingEfficiency) {
         if (fTrackEfficiencyOnlyForEmbedding == kFALSE || (fTrackEfficiencyOnlyForEmbedding == kTRUE && tracks->GetIsEmbedding())) {
           
-          Double_t trackEfficiency = fTrackEfficiencyFunction.Eval(it->first.Pt());
+          Double_t trackEfficiency = fTrackEfficiency; //fTrackEfficiencyFunction.Eval(it->first.Pt());
           Double_t rnd = gRandom->Rndm();
           if (trackEfficiency < rnd) {
             AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
@@ -389,8 +389,8 @@ void AliEmcalJetTask::ExecOnce()
       AliError(Form("%s: fTrackEfficiencyFunction was already loaded! Do not apply multiple artificial track efficiencies.", GetName()));
     }
     
-    fTrackEfficiencyFunction = TF1("trackEfficiencyFunction", "[0]", 0., fMaxBinPt);
-    fTrackEfficiencyFunction.SetParameter(0, fTrackEfficiency);
+    //fTrackEfficiencyFunction = TF1("trackEfficiencyFunction", "[0]", 0., fMaxBinPt);
+    //fTrackEfficiencyFunction.SetParameter(0, fTrackEfficiency);
     fApplyArtificialTrackingEfficiency = kTRUE;
   }
   
@@ -1000,7 +1000,7 @@ void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, cons
   }
   
   TF1* trackEffClone = static_cast<TF1*>(trackEff->Clone());
-  fTrackEfficiencyFunction = *trackEffClone;
+  //fTrackEfficiencyFunction = *trackEffClone;
   fApplyArtificialTrackingEfficiency = kTRUE;
   
   file->Close();
