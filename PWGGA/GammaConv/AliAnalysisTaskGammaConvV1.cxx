@@ -671,7 +671,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else if(i<301) arrClusPtBinning[i]      = 50.+1.0*(i-251);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
-  // Set special pt binning for pp 13TeV
+  // Set special pt binning for pp 13TeV and 5TeV
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV  ){
