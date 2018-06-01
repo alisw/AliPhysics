@@ -948,11 +948,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fOutput->Add(fEtaPhiClusAftSel);
 	}
 
-	fPtvsDetavsDphi = new TH3F("hPtvsDetavsDphi","Cluster-track matching vs. cluster energy", 200, 0., 100., 200, -0.1, 0.1, 200, -0.1, 0.1);
+	fPtvsDetavsDphi = new TH3F("hPtvsDetavsDphi","Cluster-track matching vs. cluster energy", 200, 0., 100., 200, -0.05, 0.05, 200, -0.05, 0.05);
 	fPtvsDetavsDphi->Sumw2();
 	fOutput->Add(fPtvsDetavsDphi);
       }
-        break;
+      break;
     }
   }
 
