@@ -130,6 +130,7 @@ class AliResonanceFits : public TObject {
     kChisqSideBands,     // chi2/ndf in the side bands around peak
     kChisqMCPeak,          // chi2/ndf wrt MC signal shape in the peak region
     kChisqMCTotal,     // chi2/ndf wrt MC signal shape
+    kFitProbability,        // probability from TFitResult::Prob()
     kMCYieldFraction,     // yield fraction in counting window
     kBkgScale,                     // scale factor for the bkg
     kBkgScaleErr,              // error on the scale factor
