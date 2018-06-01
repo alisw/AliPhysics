@@ -1047,10 +1047,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00010113","00200009327000008250400000","1111100067032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL INT7
   } else if (trainConfig == 501){ // EMCAL clusters
     cuts.AddCut("00052113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL EMC7
-    cuts.AddCut("00085113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL EG2
-    cuts.AddCut("00083113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL EG1
-  } else if (trainConfig == 502){ // EMCAL clusters
     cuts.AddCut("00052113","00200009327000008250400000","1111100067032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EMC7
+  } else if (trainConfig == 502){ // EMCAL clusters
     cuts.AddCut("00085113","00200009327000008250400000","1111100067032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EG2
     cuts.AddCut("00083113","00200009327000008250400000","1111100067032230000","0163103100000010"); // -50ns, 30ns timing cut, no NL EG1
   } else if (trainConfig == 503){ // EMCAL clusters NL vars
@@ -1073,9 +1071,9 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00083113","00200009327000008250400000","1111121067032230000","0163103100000010"); // -50ns, 30ns timing cut, NL3 EG1
     cuts.AddCut("00083113","00200009327000008250400000","1111112067032230000","0163103100000010"); // -50ns, 30ns timing cut, NL2 EG1
     cuts.AddCut("00083113","00200009327000008250400000","1111122067032230000","0163103100000010"); // -50ns, 30ns timing cut, NL4 EG1
-//   } else if (trainConfig == 507){ // EMCAL clusters
-//   } else if (trainConfig == 508){ // EMCAL clusters
-
+  } else if (trainConfig == 507){ // EMCAL clusters
+    cuts.AddCut("00085113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL EG2
+    cuts.AddCut("00083113","00200009327000008250400000","1111100017032230000","0163103100000010"); // 1000ns timing cut, no NL EG1
 
   //*****************************************************************************************************
   // pp 13 TeV DMC setup
