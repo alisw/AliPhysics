@@ -179,7 +179,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pPb(  Int_t     selectedMeson             
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskHeavyNeutralMesonToGG *task=NULL;
-  task= new AliAnalysisTaskHeavyNeutralMesonToGG(Form("HeavyNeutralMesonToGG_%i",trainConfig));
+  task= new AliAnalysisTaskHeavyNeutralMesonToGG(Form("HeavyNeutralMesonToGG_%i_%i_%i", mesonRecoMode, selectedMeson, trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
@@ -279,7 +279,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pPb(  Int_t     selectedMeson             
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     if (runLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
-    analysisMesonCuts[i]->SetRunningMode(2);
+    analysisMesonCuts[i]->SetRunningMode(0);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");

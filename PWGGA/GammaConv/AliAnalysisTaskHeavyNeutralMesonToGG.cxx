@@ -1764,10 +1764,11 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessClusters(){
         }
       }
     }
-    fHistoClusAllHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
-    if (!fIsFromDesiredHeader)
+    if (fIsMC > 0 && fHistoClusAllHeadersGammaPt[fiCut])
+      fHistoClusAllHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
+    if (!fIsFromDesiredHeader && fIsMC > 0 && fHistoClusRejectedHeadersGammaPt[fiCut])
       fHistoClusRejectedHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
-    if (fIsFromDesiredHeader && fIsOverlappingWithOtherHeader)
+    if (fIsFromDesiredHeader && fIsOverlappingWithOtherHeader && fIsMC > 0 && fHistoClusOverlapHeadersGammaPt[fiCut])
       fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
 
     if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders)){

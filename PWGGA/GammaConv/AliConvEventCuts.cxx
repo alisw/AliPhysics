@@ -3152,6 +3152,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     2.01, 1.75, 1.52, 2.01, 1.52, 1.85,
                                     3.2,
                                     /*2.01*/1.8,                // LHC13g
+                                    2000,                       // LS1
                                     1.8,                        // LHC15a-h
                                     5.0,                        // LHC15i-m
                                     5.0,                        // LHC15n
@@ -3164,8 +3165,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     3.5,                        // LHC16s (266405-267131)
                                     2.5,                        // LHC16t (267161-267166)
                                     2.5,                        // LHC17c-o (270531-281961)
-                                    2.5,                        // LHC17pq (282008-282441)
-                                    2.5                         // 2018
+                                    2.5                         // LHC17pq (282008-282441)
+//                                     2.5                         // 2018
                                   };
 
   Double_t spreadEMCalL0[51]    = { 0., 0., 0, 0,               // LHC11a 7TeV
@@ -3173,8 +3174,9 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     0., 0., 0., 0., 0.,         // LHC11b, LHC11c, LHC11d
                                     0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                                     0., 0., 0., 0., 0.2, 0.2,/*0.,0.,*/
-                                    0.1,                        // LHC14b-f
+                                    0.1,                        // LHC13b-f
                                     /*0.1*/0.12,                // LHC13g
+                                    0.,                          // LS1
                                     0.1,                        // LHC15a-h
                                     0.1,                        // LHC15i-m
                                     0.1,                        // LHC15n
@@ -3187,8 +3189,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     0.1,                        // LHC16s (266405-267131)
                                     0.1,                        // LHC16t (267161-267166)
                                     0.1,                        // LHC17c-o (270531-281961)
-                                    0.1,                        // LHC17pq (282008-282441)
-                                    0.1                         // 2018
+                                    0.1                         // LHC17pq (282008-282441)
+//                                     0.1                         // 2018
                                   };
 
   Int_t runRangesEMCalL1[21]     = {  179796,                     // LHC12c-i (EGA)
@@ -3213,10 +3215,11 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
   Double_t thresholdEMCalL1[20] = { 9.5/*8.398*/,               // LHC12c-i (EGA)
                                     11.5, /*6.*/                // LHC13b-f
                                     5.5,                        // LHC13g
-                                    1.8,                        // LHC15a-h
+                                    2000.0,                     // LS1
+                                    2000.0,                     // LHC15a-h
                                     5.0,                        // LHC15i-m
                                     5.0,                        // LHC15n
-                                    1.0, 10.0,                  // LHC15o
+                                    2000.0, 10.0,               // LHC15o
                                     8.8,                        // LHC16i-k  (255515-258574)
                                     5.5,                        // LHC16l (258883-260187)
                                     8.8,                        // LHC16m-p (260216-)
@@ -3225,29 +3228,30 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                     7.8,                        // LHC16s (266405-267131)
                                     7.8,                        // LHC16t (267161-267166)
                                     8.8,                        // LHC17c-o (270531-281961)
-                                    8.8,                        // LHC17pq (282008-282441)
-                                    8.8                         // 2018
+                                    8.8                         // LHC17pq (282008-282441)
+//                                     8.8                         // 2018
                                   };
   Double_t spreadEMCalL1[20]    = { 1.0/*0.*/,
                                     0.5,
                                     /*0.4*/ 0.6,
-                                    1.0,                        // LHC15a-h
+                                    0.0,                        // LS1
+                                    1.2, 0.8,                   // LHC16r (265589-266318)
+                                    0.0,                        // LHC15a-h
                                     1.0,                        // LHC15i-m
                                     1.0,                        // LHC15n
-                                    1.0, 1.0,                   // LHC15o
+                                    0.0, 1.0,                   // LHC15o
                                     1.0,                        // LHC16i-k  (255515-258574)
                                     0.8,                        // LHC16l (258883-260187)
                                     1.0,                        // LHC16m-p (260216-)
                                     1.0, 1.2,                   // LHC16q (265015-265525)
-                                    1.2, 0.8,                   // LHC16r (265589-266318)
                                     0.9,                        // LHC16s (266405-267131)
                                     0.9,                        // LHC16t (267161-267166)
                                     1.0,                        // LHC17c-o (270531-281961)
-                                    1.0,                        // LHC17pq (282008-282441)
-                                    1.0                         // 2018
+                                    1.0                         // LHC17pq (282008-282441)
+//                                     1.0                         // 2018
                                   };
 
-  Int_t runRangesEMCalL1G2[20]  = { 195180,                     // LHC13b-f
+  Int_t runRangesEMCalL1G2[21]  = { 195180,                     // LHC13b-f
                                     197469, 197692,             // LHC13g
                                     235195,                     // LHC15a-h
                                     244285,                     // LHC15i-LHC15m (235196-244284)
@@ -3267,10 +3271,11 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 
   Double_t thresholdEMCalL1G2[19] = { 7.2,                        // LHC13b-f
                                       /*3.9*/3.75,                // LHC13g
+                                      2000.0,                     // LS1
                                       1.8,                        // LHC15a-h
                                       5.0,                        // LHC15i-m
                                       5.0,                        // LHC15n
-                                      1.0, 10.0,                  // LHC15o
+                                      2000.0, 2000.0,             // LHC15o
                                       3.9,                        // LHC16i-k  (255515-258574)
                                       3.8,                        // LHC16l (258883-260187)
                                       3.9,                        // LHC16m-p (260216-)
@@ -3279,11 +3284,12 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                       5.3,                        // LHC16s (266405-267131)
                                       5.3,                        // LHC16t (267161-267166)
                                       3.9,                        // LHC17c-o (270531-281961)
-                                      3.9,                        // LHC17pq (282008-282441)
-                                      3.9                         // 2018
+                                      3.9                         // LHC17pq (282008-282441)
+//                                       3.9                         // 2018
                                     };
   Double_t spreadEMCalL1G2[19]    = { 0.3,                        // LHC13bf
                                       /*0.2*/0.25,                // LHC13g
+                                      0.,                         // LS1
                                       0.1,                        // LHC15a-h
                                       0.1,                        // LHC15i-m
                                       0.1,                        // LHC15n
@@ -3296,8 +3302,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
                                       0.3,                        // LHC16s (266405-267131)
                                       0.3,                        // LHC16t (267161-267166)
                                       0.3,                        // LHC17c-o (270531-281961)
-                                      0.3,                        // LHC17pq (282008-282441)
-                                      0.3                         // 2018
+                                      0.3                         // LHC17pq (282008-282441)
+//                                       0.3                         // 2018
                                     };
 
   Int_t runnumber = event->GetRunNumber();
@@ -3306,10 +3312,11 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     if (runnumber < runRangesEMCalL0[0]) return kTRUE;
     Int_t binRun = 0;
     while (!(runnumber >= runRangesEMCalL0[binRun] && runnumber < runRangesEMCalL0[binRun+1] ) && binRun < 51 ){
-//       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
+//       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << ":\t"<< thresholdEMCalL0[binRun] << "\t" << spreadEMCalL0[binRun] << endl;
       binRun++;
     }
     if (binRun==51) return kFALSE;
+//     cout << runnumber << "\t"<< binRun << "\t"<< thresholdEMCalL0[binRun] << "\t" << spreadEMCalL0[binRun] << endl;
     Double_t threshold = thresholdEMCalL0[binRun];
 
     if (isMC && spreadEMCalL0[binRun] != 0.){
@@ -3321,7 +3328,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       delete triggerSmearing;
     }
 
-//     cout << runnumber << "\t"<< binRun << "\t"<< threshold << endl;
+//     cout << "modified" << "\t"<< threshold << endl;
     Int_t nclus = 0;
     TClonesArray * arrClustersMimic = NULL;
     if(!fCorrTaskSetting.CompareTo("")){
@@ -3338,6 +3345,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     // Loop over EMCal clusters
     Bool_t eventIsAccepted = kFALSE;
     for(Int_t i = 0; i < nclus; i++){
+      if (eventIsAccepted) continue;
       AliVCluster* clus = NULL;
       if(event->IsA()==AliESDEvent::Class()){
         if(arrClustersMimic)
@@ -3383,8 +3391,8 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     if (fSpecialSubTriggerName.CompareTo("7EGA")==0 || fSpecialSubTriggerName.CompareTo("8EGA")==0 || fSpecialSubTriggerName.CompareTo("7EG1")==0 ||fSpecialSubTriggerName.CompareTo("8EG1")==0 ){
       if (runnumber < runRangesEMCalL1[0]) return kTRUE;
       Int_t binRun = 0;
-      while (!(runnumber >= runRangesEMCalL1[binRun] && runnumber < runRangesEMCalL1[binRun+1] ) && binRun < 3 ){
-  //       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
+      while (!(runnumber >= runRangesEMCalL1[binRun] && runnumber < runRangesEMCalL1[binRun+1] ) && binRun < 20 ){
+//         cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL1[binRun] << "\t" << runRangesEMCalL1[binRun+1] << ":\t"<< thresholdEMCalL1[binRun]<<"\t"<< spreadEMCalL1[binRun]<< endl;
         binRun++;
       }
       if (binRun==20) return kFALSE;
@@ -3417,6 +3425,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       // Loop over EMCal clusters
       Bool_t eventIsAccepted = kFALSE;
       for(Int_t i = 0; i < nclus; i++){
+        if (eventIsAccepted) continue;
         AliVCluster* clus = NULL;
         if(event->IsA()==AliESDEvent::Class()){
           if(arrClustersMimic)
@@ -3446,7 +3455,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
           continue;
         }
         if (clus->E() > threshold ){
-//           cout << "found L1G1" << endl;
+//           cout << "found L1G1\t" << clus->E() << endl;
           eventIsAccepted = kTRUE;
         }
         if(arrClustersMimic)
@@ -3456,10 +3465,11 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
     } else if ( fSpecialSubTriggerName.CompareTo("7EG2")==0 ||fSpecialSubTriggerName.CompareTo("8EG2")==0 ){
       if (runnumber < runRangesEMCalL1G2[0]) return kTRUE;
       Int_t binRun = 0;
-      while (!(runnumber >= runRangesEMCalL1G2[binRun] && runnumber < runRangesEMCalL1G2[binRun+1] ) && binRun < 2 ){
-  //       cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL0[binRun] << "\t" << runRangesEMCalL0[binRun+1] << endl;
+      while (!(runnumber >= runRangesEMCalL1G2[binRun] && runnumber < runRangesEMCalL1G2[binRun+1] ) && binRun < 19 ){
+//         cout << runnumber << "\t" << binRun << "\t" << runRangesEMCalL1G2[binRun] << "\t" << runRangesEMCalL1G2[binRun+1] << ":\t"<< thresholdEMCalL1G2[binRun]<<"\t"<< spreadEMCalL1G2[binRun]<< endl;
         binRun++;
       }
+//       cout << runnumber << "\t"<< binRun << "\t L2 \t"<< thresholdEMCalL1G2[binRun]<<"\t"<< spreadEMCalL1G2[binRun]<< endl;
       if (binRun==19) return kFALSE;
       Double_t threshold = thresholdEMCalL1G2[binRun];
       if (isMC && spreadEMCalL1G2[binRun] != 0.){
@@ -3470,7 +3480,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         threshold = triggerSmearing->GetRandom();
         delete triggerSmearing;
       }
-//       cout << runnumber << "\t"<< binRun << "\t L2 \t"<< threshold << endl;
+//       cout << "\t L2 mod\t"<< threshold << endl;
 
       Int_t nclus = 0;
       TClonesArray * arrClustersMimic = NULL;
@@ -3488,6 +3498,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
       // Loop over EMCal clusters
       Bool_t eventIsAccepted = kFALSE;
       for(Int_t i = 0; i < nclus; i++){
+        if (eventIsAccepted) continue;
         AliVCluster* clus = NULL;
         if(event->IsA()==AliESDEvent::Class()){
           if(arrClustersMimic)
