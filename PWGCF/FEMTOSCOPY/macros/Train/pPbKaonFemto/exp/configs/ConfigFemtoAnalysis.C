@@ -203,7 +203,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
             
             
     //----------------------2particle----------------------< KR 
-            dtc2etaphitpc[aniter] = new AliFemtoESDTrackCut();
+           // dtc2etaphitpc[aniter] = new AliFemtoESDTrackCut();
             dtc2etaphitpc[aniter]=new AliFemtoKKTrackCut();
             dtc2etaphitpc[aniter]->SetCharge(-1.0);
             dtc2etaphitpc[aniter]->SetPt(0.14,1.5);
