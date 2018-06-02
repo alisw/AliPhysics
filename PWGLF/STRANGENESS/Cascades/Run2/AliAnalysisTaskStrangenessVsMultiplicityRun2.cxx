@@ -127,7 +127,12 @@ using std::endl;
 ClassImp(AliAnalysisTaskStrangenessVsMultiplicityRun2)
 
 AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultiplicityRun2()
-: AliAnalysisTaskSE(), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
+: AliAnalysisTaskSE(), fListHist(0), fListV0(0),
+fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
+fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
+fPIDResponse(0), fESDtrackCuts(0),
+fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0),
+fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
@@ -391,7 +396,12 @@ fHistCentrality(0)
 }
 
 AliAnalysisTaskStrangenessVsMultiplicityRun2::AliAnalysisTaskStrangenessVsMultiplicityRun2(Bool_t lSaveEventTree, Bool_t lSaveV0Tree, Bool_t lSaveCascadeTree, const char *name, TString lExtraOptions)
-: AliAnalysisTaskSE(name), fListHist(0), fListV0(0), fListCascade(0), fTreeEvent(0), fTreeV0(0), fTreeCascade(0), fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
+: AliAnalysisTaskSE(name), fListHist(0), fListV0(0),
+fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
+fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
+fPIDResponse(0), fESDtrackCuts(0),
+fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0),
+fUtils(0), fRand(0),
 
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kFALSE ), //no downscaling in this tree so far
@@ -691,14 +701,17 @@ fHistCentrality(0)
     DefineOutput(1, TList::Class()); // Basic Histograms
     DefineOutput(2, TList::Class()); // V0 Histogram Output
     DefineOutput(3, TList::Class()); // Cascade Histogram Output
+    DefineOutput(4, TList::Class()); // Cascade Histogram Output
+    DefineOutput(5, TList::Class()); // Cascade Histogram Output
+    DefineOutput(6, TList::Class()); // Cascade Histogram Output
     
     //Optional output
     if (fkSaveEventTree)
-    DefineOutput(4, TTree::Class()); // Event Tree output
+    DefineOutput(7, TTree::Class()); // Event Tree output
     if (fkSaveV0Tree)
-    DefineOutput(5, TTree::Class()); // V0 Tree output
+    DefineOutput(8, TTree::Class()); // V0 Tree output
     if (fkSaveCascadeTree)
-    DefineOutput(6, TTree::Class()); // Cascade Tree output
+    DefineOutput(9, TTree::Class()); // Cascade Tree output
     
     //Special Debug Options (more to be added as needed)
     // A - Study Wrong PID for tracking bug
@@ -727,9 +740,21 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2::~AliAnalysisTaskStrangenessVsMulti
         delete fListV0;
         fListV0 = 0x0;
     }
-    if (fListCascade) {
-        delete fListCascade;
-        fListCascade = 0x0;
+    if (fListXiMinus) {
+        delete fListXiMinus;
+        fListXiMinus = 0x0;
+    }
+    if (fListXiPlus) {
+        delete fListXiPlus;
+        fListXiPlus = 0x0;
+    }
+    if (fListOmegaMinus) {
+        delete fListOmegaMinus;
+        fListOmegaMinus = 0x0;
+    }
+    if (fListOmegaPlus) {
+        delete fListOmegaPlus;
+        fListOmegaPlus = 0x0;
     }
     if (fTreeEvent) {
         delete fTreeEvent;
@@ -1075,32 +1100,62 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fListV0->SetOwner();
     }
     
-    if ( !fListCascade ){
-        //Superlight mode output
-        fListCascade = new TList();
-        fListCascade->SetOwner();
-    }
+    if ( !fListXiMinus ){ fListXiMinus = new TList();    fListXiMinus->SetOwner(); }
+    if ( !fListXiPlus  ){ fListXiPlus = new TList();     fListXiPlus->SetOwner();  }
+    if ( !fListOmegaMinus ){ fListOmegaMinus = new TList();    fListOmegaMinus->SetOwner(); }
+    if ( !fListOmegaPlus  ){ fListOmegaPlus = new TList();     fListOmegaPlus->SetOwner();  }
     
     //Initialize user objects of cascade type
-    Int_t lNbrConfigs = fListCascade->GetEntries();
-    //AliWarning(Form("[Cascade Analyses] Processing different configurations (%i detected)",lNumberOfConfigurationsCascade));
+    Int_t lNbrConfigs = 0, lTotalCfgs = 0;
     AliCascadeResult *lCscRslt = 0x0;
+    
+    //XiMinus configurations
+    lNbrConfigs = fListXiMinus->GetEntries();
+    lTotalCfgs += lNbrConfigs;
     for(Int_t lcfg=0; lcfg<lNbrConfigs; lcfg++){
-        lCscRslt = (AliCascadeResult*) fListCascade->At(lcfg);
+        lCscRslt = (AliCascadeResult*) fListXiMinus->At(lcfg);
         lCscRslt->InitializeHisto();
         lCscRslt->InitializeProtonProfile();
-        AliWarning( Form("Initizalized %i cascade output objects!", lcfg));
+    }
+    //XiPlus configurations
+    lNbrConfigs = fListXiPlus->GetEntries();
+    lTotalCfgs += lNbrConfigs;
+    for(Int_t lcfg=0; lcfg<lNbrConfigs; lcfg++){
+        lCscRslt = (AliCascadeResult*) fListXiPlus->At(lcfg);
+        lCscRslt->InitializeHisto();
+        lCscRslt->InitializeProtonProfile();
+    }
+    //OmegaMinus configurations
+    lNbrConfigs = fListOmegaMinus->GetEntries();
+    lTotalCfgs += lNbrConfigs;
+    for(Int_t lcfg=0; lcfg<lNbrConfigs; lcfg++){
+        lCscRslt = (AliCascadeResult*) fListOmegaMinus->At(lcfg);
+        lCscRslt->InitializeHisto();
+        lCscRslt->InitializeProtonProfile();
+    }
+    //OmegaPlus configurations
+    lNbrConfigs = fListOmegaPlus->GetEntries();
+    lTotalCfgs += lNbrConfigs;
+    for(Int_t lcfg=0; lcfg<lNbrConfigs; lcfg++){
+        lCscRslt = (AliCascadeResult*) fListOmegaPlus->At(lcfg);
+        lCscRslt->InitializeHisto();
+        lCscRslt->InitializeProtonProfile();
     }
     
-    //Regular Output: Slots 1, 2, 3
+    AliWarning( Form("Initizalized %i cascade output objects!", lNbrConfigs));
+    
+    //Regular Output: Slots 1-6
     PostData(1, fListHist    );
     PostData(2, fListV0      );
-    PostData(3, fListCascade );
+    PostData(3, fListXiMinus    );
+    PostData(4, fListXiPlus     );
+    PostData(5, fListOmegaMinus );
+    PostData(6, fListOmegaPlus  );
     
-    //TTree Objects: Slots 4, 5, 6
-    if(fkSaveEventTree)    PostData(4, fTreeEvent   );
-    if(fkSaveV0Tree)       PostData(5, fTreeV0      );
-    if(fkSaveCascadeTree)  PostData(6, fTreeCascade );
+    //TTree Objects: Slots 7-9
+    if(fkSaveEventTree)    PostData(7, fTreeEvent   );
+    if(fkSaveV0Tree)       PostData(8, fTreeV0      );
+    if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
     
 }// end UserCreateOutputObjects
 
@@ -1246,24 +1301,36 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     //===================================================================
     
     if( lEvSelCode != 0 ) {
+        //Regular Output: Slots 1-6
         PostData(1, fListHist    );
         PostData(2, fListV0      );
-        PostData(3, fListCascade );
-        if( fkSaveEventTree   ) PostData(4, fTreeEvent   );
-        if( fkSaveV0Tree      ) PostData(5, fTreeV0      );
-        if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
+        PostData(3, fListXiMinus    );
+        PostData(4, fListXiPlus     );
+        PostData(5, fListOmegaMinus );
+        PostData(6, fListOmegaPlus  );
+        
+        //TTree Objects: Slots 7-9
+        if(fkSaveEventTree)    PostData(7, fTreeEvent   );
+        if(fkSaveV0Tree)       PostData(8, fTreeV0      );
+        if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
         return;
     }
     
     AliVEvent *ev = InputEvent();
     if( fkDoExtraEvSels ) {
         if( !fEventCuts.AcceptEvent(ev) ) {
+            //Regular Output: Slots 1-6
             PostData(1, fListHist    );
             PostData(2, fListV0      );
-            PostData(3, fListCascade );
-            if( fkSaveEventTree   ) PostData(4, fTreeEvent   );
-            if( fkSaveV0Tree      ) PostData(5, fTreeV0      );
-            if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
+            PostData(3, fListXiMinus    );
+            PostData(4, fListXiPlus     );
+            PostData(5, fListOmegaMinus );
+            PostData(6, fListOmegaPlus  );
+            
+            //TTree Objects: Slots 7-9
+            if(fkSaveEventTree)    PostData(7, fTreeEvent   );
+            if(fkSaveV0Tree)       PostData(8, fTreeV0      );
+            if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
             return;
         }
     }
@@ -1835,7 +1902,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     Long_t ncascades = 0;
     ncascades = lESDevent->GetNumberOfCascades();
     
+    Bool_t lValidXiMinus, lValidXiPlus, lValidOmegaMinus, lValidOmegaPlus;
+    
     for (Int_t iXi = 0; iXi < ncascades; iXi++) {
+
         //------------------------------------------------
         // Initializations
         //------------------------------------------------
@@ -2460,18 +2530,61 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
             //Copy IR information for this event
             fTreeCascVarClosestNonEmptyBC = fClosestNonEmptyBC;
         }
+        //Valid or not valid
+        lValidXiMinus = kTRUE;
+        lValidXiPlus = kTRUE;
+        lValidOmegaMinus = kTRUE;
+        lValidOmegaPlus = kTRUE;
         
         if ( fkExtraCleanup ){
+            //Valid or not valid
+            lValidXiMinus = kFALSE;
+            lValidXiPlus = kFALSE;
+            lValidOmegaMinus = kFALSE;
+            lValidOmegaPlus = kFALSE;
             //Meant to provide extra level of cleanup
             if( TMath::Abs(fTreeCascVarPosEta)>0.8 || TMath::Abs(fTreeCascVarNegEta)>0.8 || TMath::Abs(fTreeCascVarBachEta)>0.8 ) continue;
             if( TMath::Abs(fTreeCascVarRapXi)>0.5 && TMath::Abs(fTreeCascVarRapOmega)>0.5 ) continue;
             if ( fkPreselectDedx ){
                 Bool_t lPassesPreFilterdEdx = kFALSE;
+                Double_t lWindow = 0.11;
                 //XiMinus Pre-selection
-                if( fTreeCascVarMassAsXi<1.32+0.250&&fTreeCascVarMassAsXi>1.32-0.250 && TMath::Abs(fTreeCascVarPosNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 5.0 && fTreeCascVarCharge == -1 ) lPassesPreFilterdEdx = kTRUE;
-                if( fTreeCascVarMassAsXi<1.32+0.250&&fTreeCascVarMassAsXi>1.32-0.250 && TMath::Abs(fTreeCascVarPosNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaPion) < 5.0 && fTreeCascVarCharge == +1 ) lPassesPreFilterdEdx = kTRUE;
-                if(fTreeCascVarMassAsOmega<1.68+0.250&&fTreeCascVarMassAsOmega>1.68-0.250 && TMath::Abs(fTreeCascVarPosNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 5.0 && fTreeCascVarCharge == -1  ) lPassesPreFilterdEdx = kTRUE;
-                if(fTreeCascVarMassAsOmega<1.68+0.250&&fTreeCascVarMassAsOmega>1.68-0.250 && TMath::Abs(fTreeCascVarPosNSigmaPion) < 5.0 && TMath::Abs(fTreeCascVarNegNSigmaProton) < 5.0 && TMath::Abs(fTreeCascVarBachNSigmaKaon) < 5.0 && fTreeCascVarCharge == +1) lPassesPreFilterdEdx = kTRUE;
+                if( fTreeCascVarMassAsXi<1.322+lWindow&&fTreeCascVarMassAsXi>1.322-lWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaProton) < 5.0 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaPion) < 5.0 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaPion) < 5.0 &&
+                   fTreeCascVarCharge == -1 )
+                {
+                    lPassesPreFilterdEdx = kTRUE;
+                    lValidXiMinus = kTRUE;
+                }
+                if( fTreeCascVarMassAsXi<1.322+lWindow&&fTreeCascVarMassAsXi>1.322-lWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaPion) < 5.0 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaProton) < 5.0 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaPion) < 5.0 &&
+                   fTreeCascVarCharge == +1 )
+                {
+                    lPassesPreFilterdEdx = kTRUE;
+                    lValidXiPlus = kTRUE; 
+                }
+                if(fTreeCascVarMassAsOmega<1.672+lWindow&&fTreeCascVarMassAsOmega>1.672-lWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaProton) < 5.0 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaPion) < 5.0 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaKaon) < 5.0 &&
+                   fTreeCascVarCharge == -1  )
+                {
+                    lPassesPreFilterdEdx = kTRUE;
+                    lValidOmegaMinus = kTRUE;
+                }
+                if(fTreeCascVarMassAsOmega<1.672+lWindow&&fTreeCascVarMassAsOmega>1.672-lWindow &&
+                   TMath::Abs(fTreeCascVarPosNSigmaPion) < 5.0 &&
+                   TMath::Abs(fTreeCascVarNegNSigmaProton) < 5.0 &&
+                   TMath::Abs(fTreeCascVarBachNSigmaKaon) < 5.0 &&
+                   fTreeCascVarCharge == +1)
+                {
+                    lPassesPreFilterdEdx = kTRUE;
+                    lValidOmegaPlus = kTRUE;
+                }
                 if( !lPassesPreFilterdEdx ) continue;
             }
         }
@@ -2521,13 +2634,37 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         // Superlight adaptive output mode
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
-        //Step 1: Sweep members of the output object TList and fill all of them as appropriate
-        Int_t lNumberOfConfigurationsCascade = fListCascade->GetEntries();
-        //AliWarning(Form("[Cascade Analyses] Processing different configurations (%i detected)",lNumberOfConfigurationsCascade));
+        //Step 1: Sweep members of the output object TLists and fill all of them as appropriate
         TH3F *histoout         = 0x0;
         AliCascadeResult *lCascadeResult = 0x0;
-        for(Int_t lcfg=0; lcfg<lNumberOfConfigurationsCascade; lcfg++){
-            lCascadeResult = (AliCascadeResult*) fListCascade->At(lcfg);
+        
+        //pointers to valid results
+        AliCascadeResult *lPointers[50000];
+        Long_t lValidConfigurations=0;
+        
+        if( lValidXiMinus )
+            for( Int_t icfg=0; icfg<fListXiMinus->GetEntries(); icfg++ ){
+                lPointers[lValidConfigurations] = (AliCascadeResult*) fListXiMinus->At(icfg);
+                lValidConfigurations++;
+            }
+        if( lValidXiPlus )
+            for( Int_t icfg=0; icfg<fListXiPlus->GetEntries(); icfg++ ){
+                lPointers[lValidConfigurations] = (AliCascadeResult*) fListXiPlus->At(icfg);
+                lValidConfigurations++;
+            }
+        if( lValidOmegaMinus )
+            for( Int_t icfg=0; icfg<fListOmegaMinus->GetEntries(); icfg++ ){
+                lPointers[lValidConfigurations] = (AliCascadeResult*) fListOmegaMinus->At(icfg);
+                lValidConfigurations++;
+            }
+        if( lValidOmegaPlus )
+            for( Int_t icfg=0; icfg<fListOmegaPlus->GetEntries(); icfg++ ){
+                lPointers[lValidConfigurations] = (AliCascadeResult*) fListOmegaPlus->At(icfg);
+                lValidConfigurations++;
+            }
+        
+        for(Int_t lcfg=0; lcfg<lValidConfigurations; lcfg++){
+            lCascadeResult = lPointers[lcfg];
             histoout  = lCascadeResult->GetHistogram();
             
             Float_t lMass = 0;
@@ -2841,12 +2978,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     }// end of the Cascade loop (ESD or AOD)
     
     // Post output data.
+    //Regular Output: Slots 1-6
     PostData(1, fListHist    );
     PostData(2, fListV0      );
-    PostData(3, fListCascade );
-    if( fkSaveEventTree   ) PostData(4, fTreeEvent   );
-    if( fkSaveV0Tree      ) PostData(5, fTreeV0      );
-    if( fkSaveCascadeTree ) PostData(6, fTreeCascade );
+    PostData(3, fListXiMinus    );
+    PostData(4, fListXiPlus     );
+    PostData(5, fListOmegaMinus );
+    PostData(6, fListOmegaPlus  );
+    
+    //TTree Objects: Slots 7-9
+    if(fkSaveEventTree)    PostData(7, fTreeEvent   );
+    if(fkSaveV0Tree)       PostData(8, fTreeV0      );
+    if(fkSaveCascadeTree)  PostData(9, fTreeCascade );
 }
 
 //________________________________________________________________________
@@ -2901,13 +3044,38 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliV0Result
 //________________________________________________________________________
 void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddConfiguration( AliCascadeResult *lCascadeResult )
 {
-    if (!fListCascade){
-        Printf("fListCascade does not exist. Creating...");
-        fListCascade = new TList();
-        fListCascade->SetOwner();
-        
+    if ( lCascadeResult->GetMassHypothesis () == AliCascadeResult::kXiMinus ){
+        if (!fListXiMinus){
+            Printf("fListXiMinus does not exist. Creating...");
+            fListXiMinus = new TList();
+            fListXiMinus->SetOwner();
+        }
+        fListXiMinus->Add(lCascadeResult);
     }
-    fListCascade->Add(lCascadeResult);
+    if ( lCascadeResult->GetMassHypothesis () == AliCascadeResult::kXiPlus ){
+        if (!fListXiPlus){
+            Printf("fListXiPlus does not exist. Creating...");
+            fListXiPlus = new TList();
+            fListXiPlus->SetOwner();
+        }
+        fListXiPlus->Add(lCascadeResult);
+    }
+    if ( lCascadeResult->GetMassHypothesis () == AliCascadeResult::kOmegaMinus ){
+        if (!fListOmegaMinus){
+            Printf("fListOmegaMinus does not exist. Creating...");
+            fListOmegaMinus = new TList();
+            fListOmegaMinus->SetOwner();
+        }
+        fListOmegaMinus->Add(lCascadeResult);
+    }
+    if ( lCascadeResult->GetMassHypothesis () == AliCascadeResult::kOmegaPlus ){
+        if (!fListOmegaPlus){
+            Printf("fListOmegaPlus does not exist. Creating...");
+            fListOmegaPlus = new TList();
+            fListOmegaPlus->SetOwner();
+        }
+        fListOmegaPlus->Add(lCascadeResult);
+    }
 }
 
 //________________________________________________________________________
@@ -3136,7 +3304,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
     Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
     
     // centrality binning
-    Double_t lCentbinlimits[] = {0, 10}; //optimize in 0-10%
+    //Double_t lCentbinlimits[] = {0, 10}; //optimize in 0-10%
+    Double_t lCentbinlimits[] = {0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90};
     Long_t lCentbinnumb = sizeof(lCentbinlimits)/sizeof(Double_t) - 1;
     
     //Just a counter and one array, please. Nothing else needed
