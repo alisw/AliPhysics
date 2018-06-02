@@ -1142,7 +1142,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         lCscRslt->InitializeProtonProfile();
     }
     
-    AliWarning( Form("Initizalized %i cascade output objects!", lNbrConfigs));
+    AliWarning( Form("Initialized %i cascade output objects!", lTotalCfgs));
     
     //Regular Output: Slots 1-6
     PostData(1, fListHist    );
