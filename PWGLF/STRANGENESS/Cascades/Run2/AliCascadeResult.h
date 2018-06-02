@@ -265,13 +265,13 @@ public:
     Double_t GetCutDCAPosToPVWeighted    () const { return fCutDCAPosToPVWeighted;     }
     Double_t GetCutDCABachToPVWeighted   () const { return fCutDCABachToPVWeighted;    }
     
-    Long_t      GetNPtBins()   const { return fhNPtBins;   }
-    Double_t*   GetPtBins()    const { return fhPtBins;    }
-    Long_t      GetNCentBins() const { return fhNCentBins; }
-    Double_t*   GetCentBins()  const { return fhCentBins;  }
-    Long_t      GetNMassBins() const { return fhNMassBins; }
-    Double_t    GetMinMass()   const { return fhMinMass;   }
-    Double_t    GetMaxMass()   const { return fhMaxMass;   }
+    Long_t      GetNPtBins()   const { return fhNPtBounds-1;   }
+    Double_t*   GetPtBins()    const { return fhPtBins;        }
+    Long_t      GetNCentBins() const { return fhNCentBounds-1; }
+    Double_t*   GetCentBins()  const { return fhCentBins;      }
+    Long_t      GetNMassBins() const { return fhNMassBins;     }
+    Double_t    GetMinMass()   const { return fhMinMass;       }
+    Double_t    GetMaxMass()   const { return fhMaxMass;       }
     
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
@@ -298,10 +298,10 @@ private:
 
     //------------------------------------------------------------------------
     //Histogram-controlling stuff
-    Int_t fhNCentBins;
-    Double_t *fhCentBins; //[fhNCentBins+1]
-    Int_t fhNPtBins;
-    Double_t *fhPtBins; //[fhNPtBins+1]
+    Int_t fhNCentBounds;
+    Double_t *fhCentBins; //[fhNCentBounds]
+    Int_t fhNPtBounds;
+    Double_t *fhPtBins; //[fhNPtBounds]
     Long_t fhNMassBins;
     Double_t fhMinMass;
     Double_t fhMaxMass;
@@ -402,7 +402,7 @@ private:
     Double_t fCutDCAPosToPVWeighted;
     Double_t fCutDCABachToPVWeighted;
     
-    ClassDef(AliCascadeResult, 31)
+    ClassDef(AliCascadeResult, 33)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -435,5 +435,6 @@ private:
     // 30 - implementation of variable DCA cascade daughters cut
     // 31 - implementation of TOF experimental cut (no weak decay trajectory correction)
     // 32 - streaming improvement
+    // 33 - streaming improvement 2 
 };
 #endif
