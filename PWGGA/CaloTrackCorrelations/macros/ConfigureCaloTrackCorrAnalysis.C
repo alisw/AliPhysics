@@ -215,7 +215,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   
   // cluster selection cuts
   
-  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOffRealCaloAcceptance();
   
   ana->SwitchOffFiducialCut();
   
@@ -572,7 +572,7 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   //  ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);
   
   ana->SwitchOffFiducialCut();
-  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOffRealCaloAcceptance();
   
   // settings for pp collision mixing
   if(mixOn) ana->SwitchOnOwnMix();
@@ -732,7 +732,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
   
   // Avoid borders of calorimeter
-  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOffRealCaloAcceptance();
   ana->SwitchOnFiducialCut();
   if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60,  86, 174) ;
   else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.60, 266, 314) ; 
@@ -1233,7 +1233,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   
   ana->SwitchOffCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
   
-  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOffRealCaloAcceptance();
   
   ana->SwitchOffFiducialCut();
   ana->SwitchOffFillAllTH3Histogram();
