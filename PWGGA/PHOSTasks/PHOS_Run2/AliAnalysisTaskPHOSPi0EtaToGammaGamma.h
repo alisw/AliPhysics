@@ -378,7 +378,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     }
 
     Bool_t Are2GammasInPHOSAcceptance(Int_t id);
-    void FillMixTrackMatching();
+    virtual void FillTrackMatching();
+    virtual void FillMixTrackMatching();
 
   protected:
     Bool_t fIsMC;
@@ -464,7 +465,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 59);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 60);
 };
 
 #endif
