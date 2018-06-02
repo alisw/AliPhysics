@@ -203,19 +203,11 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis = false) {
           //dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
           //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
           //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
-<<<<<<< HEAD
-          //dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);            
-            
-            
-    //----------------------2particle----------------------< KR 
-           // dtc2etaphitpc[aniter] = new AliFemtoESDTrackCut();
-=======
-          //dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
+
 
 
     //----------------------2particle----------------------< KR
             // dtc2etaphitpc[aniter] = new AliFemtoESDTrackCut();
->>>>>>> 9acb26891ccdfe6250f7ab9dc48728c70fa86552
             dtc2etaphitpc[aniter]=new AliFemtoKKTrackCut();
             dtc2etaphitpc[aniter]->SetCharge(-1.0);
             dtc2etaphitpc[aniter]->SetPt(0.14,1.5);
