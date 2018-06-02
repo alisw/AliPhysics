@@ -7914,7 +7914,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       // Consider only final state particles, but this depends on generator,
       // status 1 is the usual one, in case of not being ok, leave the possibility
       // to not consider this.
-      if( partInConeStatus  > 1 &&
+      if( partInConeStatus  != 1 &&
          GetMCAnalysisUtils()->GetMCGenerator()!= AliMCAnalysisUtils::kBoxLike ) continue ;
       
       // Protection against floating point exception
@@ -7941,7 +7941,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       // select only charged final particles and photons
       if(fSelectPrimariesInCone)
       {
-        if( partInConeCharge > 0) // charged pT cut and acceptance
+        if( partInConeCharge > 0 ) // charged pT cut and acceptance
         {
           if( GetIsolationCut()->GetParticleTypeInCone() == AliIsolationCut::kOnlyNeutral ) continue;
           
@@ -7966,8 +7966,9 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         }
       }
       
-      //printf("status %d, E %f, pt %f, pz %f, pdg %d, gamma eta %f, phi %f, par in cone eta %f phi %f\n",
-      //       partInConeStatus, partInConeE, partInConePt, mcisopAOD->Pz(), partInConePDG, photonEta, photonPhi, partInConeEta, partInConePhi);
+//      printf("Input status %d, E %f, pt %f, pz %f, pdg %d, gamma eta %f, phi %f, par in cone eta %f phi %f\n",
+//             partInConeStatus, partInConeE, partInConePt, mcisop->Pz(), partInConePDG, 
+//             photonEta, photonPhi, partInConeEta, partInConePhi);
       
       dR = GetIsolationCut()->Radius(photonEta, photonPhi, partInConeEta, partInConePhi);
 
@@ -7976,7 +7977,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       
       if(dR > GetIsolationCut()->GetConeSize())
         continue;
-      
+            
       if ( partInConeCharge > 0 &&  TMath::Abs(partInConePDG) != 11 ) // exclude electrons and neutrals
       {
         Int_t mcChTag = 3;
@@ -7991,13 +7992,16 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
 
         //printf("Selected particles pdg %d, status %d\n", partInConePDG, partInConeStatus);
       }
-      
-
+        
       if ( !physPrimary ) continue ; 
-          
+      
       sumPtInCone += partInConePt;
       if(partInConePt > GetIsolationCut()->GetPtThreshold() &&
          partInConePt < GetIsolationCut()->GetPtThresholdMax()) npart++;
+      
+//      printf("Selected: status %d, E %f, pt %f, pz %f, pdg %d, eta %f, phi %f, par in cone eta %f phi %f\n",
+//             partInConeStatus, partInConeE, partInConePt, mcisop->Pz(), partInConePDG, 
+//             photonEta, photonPhi, partInConeEta, partInConePhi);      
     }
     
     ///////END ISO MC/////////////////////////
@@ -8160,6 +8164,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
        (sumPtInCone < GetIsolationCut()->GetSumPtThreshold() ||
         sumPtInCone > GetIsolationCut()->GetSumPtThresholdMax()))
       isolated = kTRUE;
+   
+    //printf("Primary in cone n Part %d sum pT in cone %2.2f\n",npart, sumPtInCone);
     
     if(GetIsolationCut()->GetICMethod() == AliIsolationCut::kPtThresIC &&
        npart == 0)

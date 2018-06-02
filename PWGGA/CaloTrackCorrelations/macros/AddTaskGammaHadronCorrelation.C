@@ -747,7 +747,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   
   // cluster selection cuts
   
-  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOffRealCaloAcceptance();
   
   ana->SwitchOffFiducialCut();
   
@@ -1077,7 +1077,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
   
-  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOffRealCaloAcceptance();
   ana->SwitchOnFiducialCut();
   
   // Avoid borders of calorimeter
@@ -1423,7 +1423,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString col,           Bool_t  simulati
   
   ana->SwitchOffCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
   
-  ana->SwitchOnRealCaloAcceptance();
+  ana->SwitchOffRealCaloAcceptance();
   
   ana->SwitchOffFiducialCut();
   ana->SwitchOffFillAllTH3Histogram();
