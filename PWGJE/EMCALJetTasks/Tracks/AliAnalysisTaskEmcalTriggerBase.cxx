@@ -77,7 +77,6 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase():
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
-  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *name):
@@ -107,7 +106,6 @@ AliAnalysisTaskEmcalTriggerBase::AliAnalysisTaskEmcalTriggerBase(const char *nam
 {
   SetNeedEmcalGeom(true);
   SetMakeGeneralHistograms(kTRUE);
-  SetCaloTriggerPatchInfoName("EmcalTriggers");
 }
 
 AliAnalysisTaskEmcalTriggerBase::~AliAnalysisTaskEmcalTriggerBase() {
