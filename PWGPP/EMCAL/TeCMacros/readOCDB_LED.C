@@ -22,28 +22,10 @@
 #include <TMath.h>
 #include <TNtuple.h>
 #include <TTree.h>
+#include "LInfo.h"
 #endif
 
-// global EMCal numbers
-const Int_t kNSM = 20; 
-const Int_t kNSectors = 5;
-const Int_t kNSides = 2;
-
-// these other numbers are per SuperModule
-const Int_t kNCol = 48;
-const Int_t kNRow = 24;
-const Int_t kNStrip = kNCol / 2;
-
-// amplitude cut, in ADCs
-const Int_t kAmpCut = -1; // -1 => include everything for now..
- 
-// which gains to plot?
-const Int_t towerGain = 1;
-const Int_t stripGain = 0; 
-
-const Bool_t reverseCSstrips = kTRUE;
-
-Int_t readOCDB_LED(Int_t runNb  = 286350, Bool_t debug=1)
+LInfo *readOCDB_LED(Int_t runNb  = 286350, Bool_t debug=1)
 {
   TGrid::Connect("alien://");
 
@@ -51,9 +33,12 @@ Int_t readOCDB_LED(Int_t runNb  = 286350, Bool_t debug=1)
   cdb->SetDefaultStorage("raw://");
   cdb->SetRun(runNb);
 
-  AliCDBEntry *en=cdb->Get("EMCAL/Calib/LED/");
+  AliCDBEntry *en = 0;
+  try {
+    en=cdb->Get("EMCAL/Calib/LED/");
+  } catch (...) { ; }
   if (!en) {
-    printf("no entry found!\n");
+    printf("no entry found for run %d!\n", runNb);
     return 0;
   }
 
@@ -64,6 +49,8 @@ Int_t readOCDB_LED(Int_t runNb  = 286350, Bool_t debug=1)
   }
   //emcCalibSignal->Print();
 
+  LInfo *ret = new LInfo(runNb);
+
   TTree *treeAmp = emcCalibSignal->GetTreeAvgAmpVsTime();
   TTree *treeLEDAmp = emcCalibSignal->GetTreeLEDAvgAmpVsTime();
   Int_t tea = treeAmp->GetEntries();
@@ -73,42 +60,6 @@ Int_t readOCDB_LED(Int_t runNb  = 286350, Bool_t debug=1)
     cout << " TreeLEDMon entries " << tem << endl;
   }
 
-  // book some histograms
-  char id[100];
-  char title[100]; 
-  const char *sideStr[] = {"A", "C"};
-  TH1F *hStrip[kNSM][2];
-  TH1F *hStripCount[kNSM][2];
-  TH2F *h[kNSM][2];
-  TH2F *hCount[kNSM][2];   
-  TH2F *hAmpOverMon[kNSM][2];
-
-  for (Int_t iSM=0; iSM<kNSM; ++iSM) {
-    Int_t isector = iSM/2;
-    Int_t iside = iSM%2; 
-    for (Int_t igain=0; igain<2; ++igain) {
-      sprintf(id, "hStrip%02d%d", iSM, igain);
-      sprintf(title, "LEDMon Amplitude: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      hStrip[iSM][igain]= new TH1F(id, title, kNCol, -0.5, kNCol-0.5);
-
-      sprintf(id, "hStripCount%02d%d", iSM, igain);
-      sprintf(title, "LEDMon Entries: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      hStripCount[iSM][igain]= new TH1F(id, title, kNCol, -0.5, kNCol-0.5);
-
-      sprintf(id, "hAmpOverMon%02d%d", iSM, igain);
-      sprintf(title, "Tower LEDAmplitude over mon: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      hAmpOverMon[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);   
-
-      sprintf(id, "hCount%02d%d", iSM, igain);
-      sprintf(title, "Tower Entries: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      hCount[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);
-
-      sprintf(id, "h%02d%d", iSM, igain);
-      sprintf(title, "Tower Amplitude: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      h[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);
-    }
-  }
-  
   Int_t    fNum     = 0;
   Double_t fAvgAmp  = 0;
   Double_t fHour    = 0;
@@ -135,10 +86,7 @@ Int_t readOCDB_LED(Int_t runNb  = 286350, Bool_t debug=1)
     emcCalibSignal->DecodeRefNum(fNum, &mod, &strip, &gain);
     if (debug) 
       Printf("fRefNum = %d, mod = %d, strip = %d, amp = %f, gain = %d", fNum, mod, strip, fAvgAmp, gain);
-    hStrip[mod][gain]->Fill(2*strip, fAvgAmp);
-    hStrip[mod][gain]->Fill(2*strip+1, fAvgAmp);
-    hStripCount[mod][gain]->Fill(2*strip, fRMS);
-    hStripCount[mod][gain]->Fill(2*strip+1, fRMS);
+    ret->FillStrip(mod,gain,strip, fAvgAmp, fRMS);
   }
 
   for (Int_t i=0; i<tea; ++i) {
@@ -146,19 +94,63 @@ Int_t readOCDB_LED(Int_t runNb  = 286350, Bool_t debug=1)
     emcCalibSignal->DecodeChannelNum(fNum, &mod, &col, &row, &gain);
     if (debug)
       Printf("fChannelNum = %d, mod = %d, col = %d, amp = %f, gain = %d", fNum, mod, col, fAvgAmp, gain);
-    h[mod][gain]->Fill(col, row, fAvgAmp);  
-    hCount[mod][gain]->Fill(col, row, fRMS);
-    Double_t ledMonAmp = hStrip[mod][gain]->GetBinContent(col+1);
-    Double_t weightf   = 0;
-    if (ledMonAmp!=0)
-      weightf = fAvgAmp/ledMonAmp;  
-    hAmpOverMon[mod][gain]->Fill(col, row, weightf);
+    ret->FillLed(mod,gain,col, row, fAvgAmp, fRMS);
   }
 
-  return 1;
+  return ret;
+}
+
+void testOCDB_LED(Int_t runNb  = 286350)
+{
+  LInfo *i = readOCDB_LED(runNb,1);
+  i->Print();
+  return;
+}
+
+void read_LHC18d() 
+{
+  Int_t runs[] = {285978,285979,285980,286014,286018,286025,286026,286027,286030,286064,286124,286127,286129,286130,286154,286157,286159,286198,286201,286202,286203,286229,286230,286231,286254,286255,286256,286257,286258,286261,286263,286282,286284,286287,286288,286289,286308,286309,286310,286311,286312,286313,286314,286336,286337,286340,286341,286345,286348,286349,286350};
+  Int_t nruns = sizeof(runs)/sizeof(Int_t);
+
+  TObjArray arr;
+  arr.SetOwner(1);
+
+  for (Int_t i=nruns-3;i<nruns;++i) {
+    Int_t rn = runs[i];
+    cout << i << " " << rn << endl;
+    LInfo *ti = readOCDB_LED(rn,1);
+    if (!ti) 
+      continue;
+    ti->Print();
+    arr.Add(ti);
+  }
+
+  TFile *outf = TFile::Open("ledinfo.root","update");
+  arr.Write("led_lhc18d",TObject::kSingleKey);
+  outf->ls();
+  outf->Close();
 }
 
 #if 0
+// global EMCal numbers
+const Int_t kNSM = 20; 
+const Int_t kNSectors = 5;
+const Int_t kNSides = 2;
+
+// these other numbers are per SuperModule
+const Int_t kNCol = 48;
+const Int_t kNRow = 24;
+const Int_t kNStrip = kNCol / 2;
+
+// amplitude cut, in ADCs
+const Int_t kAmpCut = -1; // -1 => include everything for now..
+ 
+// which gains to plot?
+const Int_t towerGain = 1;
+const Int_t stripGain = 0; 
+
+const Bool_t reverseCSstrips = kTRUE;
+
 void createHistosFromLEDfiles_orig(const char *listfile = "filelistb.txt")
 
 {

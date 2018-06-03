@@ -1,48 +1,40 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <Riostream.h>
 #include <TArrayF.h>
+#include <TObject.h>
 #include <TString.h>
 
+class TH1;
 class TH2;
 
 #ifndef _LINFO_
 #define _LINFO_
+
 class LInfo : public TObject {
  public:
-#if 0
-  LInfo(Int_t rn=0) : fRunNo(rn), fMinT(160), fMaxT(160), fAvTime(0), fFirstTime(0), fLastTime(0) {;}
+ LInfo(Int_t rn=0) : fRunNo(rn) { CreateHistograms(); }
   virtual     ~LInfo() {;}
-  Float_t      AbsMinT(Int_t t=1)         const;
-  Float_t      AbsMaxT(Int_t t=2)         const;
-  UInt_t       AvTime()                   const { return fAvTime;}
-  Float_t      Diff(Int_t ns )            const { return fMaxT.At(ns)-fMinT.At(ns); }
-  UInt_t       FirstTime()                const { return fAvTime;}
-  TH2         *GetHist(Int_t type=1)      const;
+  //  TH2         *GetHist(Int_t type=1)      const;
   const char  *GetName()                  const { return Form("TempInfo_%d",fRunNo); }
-  UInt_t       LastTime()                 const { return fAvTime;}
-  Bool_t       IsValid(Int_t ns)          const { return ((fMinT.At(ns)!=0)&&(fMaxT.At(ns)!=0)); }
-  Int_t        RunNo()                    const { return fRunNo; }
-  Float_t      T(Int_t ns, Int_t t)       const;
-  Float_t      MinT(Int_t ns)             const { return fMinT.At(ns); } 
-  Float_t      MaxT(Int_t ns)             const { return fMaxT.At(ns); } 
-  TArrayF     &MinT()                           { return fMinT; }
-  TArrayF     &MaxT()                           { return fMaxT; }
-  Int_t        Nvalid()                   const { Int_t ret=0; for (Int_t i=0;i<160;++i) ret += IsValid(i); return ret;}
   void         Print(Option_t *option="") const;
-  void         Set(Int_t ns, Float_t min, Float_t max) { fMinT.SetAt(min,ns); fMaxT.SetAt(max,ns); }
-  void         SetTime(UInt_t av, UInt_t f, UInt_t l)  { fAvTime=av; fFirstTime=f; fLastTime=l;}
-  const char * Type(Int_t t)              const;
+  void         FillStrip(Int_t mod,Int_t gain, Int_t strip, Double_t amp, Double_t rms);
+  void         FillLed(Int_t mod,Int_t gain, Int_t col, Int_t row, Double_t amp, Double_t rms);
+  void         Compute();
+  static const Int_t kNSM = 20; 
+  static Int_t NSM()     { return kNSM; }
+  static Int_t NCol()    { return 48; }
+  static Int_t NRow()    { return 24; }
+  static Int_t NStrip()  { return NCol()/2; }
 
-  static       Int_t GetBin(Int_t ns);
-  static       Int_t SM(Int_t ns)               { return ns / 8;}
  protected:
-  Int_t        fRunNo;      // run number
-  TArrayF      fMinT;       // min temperature per sensor
-  TArrayF      fMaxT;       // max temperature per sensor 
-  UInt_t       fAvTime;     // average start time
-  UInt_t       fFirstTime;  // first time
-  UInt_t       fLastTime;   // last time
-#endif
+  void         CreateHistograms();
+  Int_t        fRunNo;                  // run number
+  TH1         *fhStrip[kNSM][2];        // Ledmon info
+  TH1         *fhStripCount[kNSM][2];   // Ledmon counts
+  TH2         *fhLed[kNSM][2];          // Led info
+  TH2         *fhLedCount[kNSM][2];     // Led counts
+  TH2         *fhAmpOverMon[kNSM][2];   //! Led/Ledmon ratio
+
   ClassDef(LInfo, 1); // LED info class
 };
 #endif
