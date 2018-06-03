@@ -40,18 +40,19 @@
 // Settings
 Bool_t  kMix        = kFALSE;              /// use mixed event to constrain combinatorial background
 Int_t   kPolN       = 1;                   /// polinomyal type for residual background under the peak
-Bool_t  kSumw2      = kTRUE;               /// Apply Root method Sumw2()
+Bool_t  kSumw2      = kTRUE;               /// Apply Root method Sumw2(), off for pT hard prod where already done before
 Float_t kNPairCut   = 20;                  /// Minimum number of cluster pairs in pi0 or eta window 
-TString kHistoStartName = "AnaPi0_";       /// Common starting name in histograms
+TString kHistoStartName = "AnaPi0";        /// Common starting name in histograms
 TString kProdName   = "LHC18c3_NystromOn"; /// Input production directory name where input file is located
 TString kFileName   = "AnalysisResults";   /// Name of file with input histograms
 TString kPlotFormat = "eps";               /// Automatic plots format
 TString kCalorimeter= "EMCAL";             /// Calorimeter, EMCAL, DCAL (PHOS)
 TString kParticle   = "Pi0";               /// Particle searched: "Pi0", "Eta"
 Bool_t  kTrunMixFunc= kTRUE;               /// Use a truncated function to get the mixed event scale
+Float_t kChi2NDFMax = 1000;                /// Maximum value of chi2/ndf to define a fit as good (set lower than 1e6)
 
 // Initializations
-Int_t   nEvt  = 0;
+Double_t nEvt = 0;
 TFile * fil   = 0;
 TFile * fout  = 0;
 TList * lis   = 0;
@@ -61,9 +62,8 @@ TDirectoryFile * direc =0;
 TF1 *tPolPi0 = 0;
 TF1 *tPolEta = 0;
 
-//                        - SM                       SM-Sector       - Side                 Side
-Int_t modColorIndex[]={1 , 2, 2, 3, 3, 4, 4, 7, 7, 6, 6, 2, 3, 4, 7, 6, 2, 2, 3, 3, 4, 4, 6, 6};
-Int_t modStyleIndex[]={20,24,25,24,25,24,25,24,25,24,25,21,21,21,21,21,22,26,22,26,22,26,22,26};
+Int_t modColorIndex[]={1 , 1, 2, 2, 3, 3, 4, 4, 7, 7, 6, 6, 2, 3, 4, 7, 6, 2, 2, 3, 3, 4, 4, 6, 6};
+Int_t modStyleIndex[]={24,25,25,24,25,24,25,24,25,24,25,21,21,21,21,21,22,26,22,26,22,26,22,26};
 
 ///
 /// Open the file and the list and the number of analyzed events
@@ -91,11 +91,11 @@ Bool_t GetFileAndEvents( TString dirName , TString listName )
   if ( !lis && listName != "") return kFALSE;
   
   if(!lis)
-    nEvt = ((TH1F*) fil->Get("hNEvents"))->GetEntries();
+    nEvt = ((TH1F*) fil->Get("hNEvents"))->GetBinContent(1);
   else
-    nEvt = ((TH1F*) lis->FindObject("hNEvents"))->GetEntries();
+    nEvt = ((TH1F*) lis->FindObject("hNEvents"))->GetBinContent(1);
   
-  printf("nEvt = %d\n",nEvt);
+  printf("nEvt = %2.3e\n",nEvt);
   //nEvt = 1;
   
   return kTRUE;
@@ -281,11 +281,63 @@ void SetFitFun()
 
 
 //-----------------------
+/// Get integral and its error within a bin range
+//-----------------------
+void GetRangeIntegralAndError(TH1D* h, Int_t binMin, Int_t binMax, 
+                              Double_t & integral, Double_t & integralErr )
+{
+  integral    = 0;
+  integralErr = 0;
+  for(Int_t ibin = binMin; ibin <= binMax; ibin++)
+  {
+    //if ( h->GetBinContent(ibin) == 0 ) continue ; 
+    
+    integral    += h->GetBinContent(ibin);//*h->GetBinContent(ibin);
+    integralErr += h->GetBinError  (ibin);//*h->GetBinContent(ibin);
+  }
+//  printf("\t bin range [%d,%d], n %d, sum %2.2e err %2.2e\n",
+//         binMin,binMax,n,integral,integralErr);
+}
+
+//-----------------------
+/// calculation of error of a fraction
+//-----------------------
+Double_t GetFractionError(Double_t aa, Double_t bb, Double_t aaE, Double_t bbE)
+{
+  if(aa == 0 || bb == 0) return 0;
+  
+  //printf("\t a %e b %e aE %e bE %e\n",aa,bb,aaE,bbE);
+  
+  return aa/bb * TMath::Sqrt(aaE*aaE/(aa+aa) + bbE*bbE/(bb*bb));
+}
+
+//____________________________________
+void ScaleBinBySize(TH1D* h)
+{
+  for(Int_t ibin = 1; ibin < h->GetNbinsX();ibin++)
+  {
+    Double_t width   = h->GetBinWidth(ibin);
+    Double_t content = h->GetBinContent(ibin);
+    //printf("bin %d, width %f, content %e\n",ibin,width,content);
+    h->SetBinContent(ibin,content/width);
+  }
+}
+
+//-----------------------
 /// Efficiency calculation called in ProjectAndFit()
 //-----------------------
-void Efficiency(Int_t nPt, TArrayD xPt, TArrayD exPt,
-                TArrayD mesonPt, TArrayD mesonPtBC, TString hname)
+void Efficiency
+(Int_t nPt, 
+ TArrayD xPt      , TArrayD exPt      ,
+ TArrayD mesonPt  , TArrayD emesonPt  , 
+ TArrayD mesonPtBC, TArrayD emesonPtBC,
+ TString hname)
 {
+  gStyle->SetOptTitle(1);
+  gStyle->SetTitleOffset(2,"Y");
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(000000);
+  
   TGraphErrors * gPrim    = (TGraphErrors*) fout->Get("Primary");
   TGraphErrors * gPrimAcc = (TGraphErrors*) fout->Get("PrimaryInAcceptance");
   if ( !gPrim || !gPrimAcc ) return ;
@@ -303,44 +355,46 @@ void Efficiency(Int_t nPt, TArrayD xPt, TArrayD exPt,
   {
     //printf("Bin %d \n",ibin);
     //printf("- Fit Reco %2.3e, Prim %2.3e, PrimAcc %2.3e\n",
-    //       mesonPt[ibin],gPrim->GetX()[ibin],gPrimAcc->GetX()[ibin]);
+    //       mesonPt[ibin],gPrim->GetY()[ibin],gPrimAcc->GetY()[ibin]);
     
-    if ( gPrim->GetX()[ibin] > 0 && mesonPt[ibin] > 0 )
+    if ( gPrim->GetY()[ibin] > 0 && mesonPt[ibin] > 0 )
     {
-      effPt[ibin] = mesonPt[ibin] / gPrim->GetX()[ibin];
-      effPtErr[ibin] = effPt[ibin] * TMath::Sqrt(1./(mesonPt[ibin]       * mesonPt[ibin])   +
-                                                 1./(gPrim->GetX()[ibin] * gPrim->GetX()[ibin]));
+      effPt   [ibin] = 100 * mesonPt[ibin] / gPrim->GetY()[ibin];
+      effPtErr[ibin] = 100 * GetFractionError( mesonPt[ibin], gPrim->GetY ()[ibin], 
+                                              emesonPt[ibin], gPrim->GetEY()[ibin]);
+      
       //printf("\t EffxAcc %f, err %f\n",effPt[ibin],effPtErr[ibin]);
     }
     else { effPt[ibin] = 0; effPtErr[ibin] = 0; }
     
-    if ( gPrimAcc->GetX()[ibin] > 0 && mesonPt[ibin] > 0 )
+    if ( gPrimAcc->GetY()[ibin] > 0 && mesonPt[ibin] > 0 )
     {
-      effPtAcc[ibin] = mesonPt[ibin] / gPrimAcc->GetX()[ibin];
-      effPtAccErr[ibin] = effPtAcc[ibin] * TMath::Sqrt(1./(mesonPt[ibin]          * mesonPt[ibin])   +
-                                                       1./(gPrimAcc->GetX()[ibin] * gPrimAcc->GetX()[ibin]));
+      effPtAcc   [ibin] = 100 * mesonPt[ibin] / gPrimAcc->GetY()[ibin];
+      effPtAccErr[ibin] = 100 * GetFractionError( mesonPt[ibin], gPrimAcc->GetY ()[ibin], 
+                                                 emesonPt[ibin], gPrimAcc->GetEY()[ibin]);
       //printf("\t Eff %f, err %f\n",effPtAcc[ibin],effPtAccErr[ibin]);
     }
     else { effPtAcc[ibin] = 0; effPtAccErr[ibin] = 0; }
     
-    if ( kMix )
+    if ( kMix || hname.Contains("MCpT") )
     {
       //printf("- BC  Reco %2.3e, Prim %2.3e, PrimAcc %2.3e\n",
-      // mesonPtBC[ibin],gPrim->GetX()[ibin],gPrimAcc->GetX()[ibin]);
-      if ( gPrim->GetX()[ibin] > 0 && mesonPtBC[ibin] > 0 )
+      //       mesonPtBC[ibin],gPrim->GetY()[ibin],gPrimAcc->GetY()[ibin]);
+      
+      if ( gPrim->GetY()[ibin] > 0 && mesonPtBC[ibin] > 0 )
       {
-        effBCPt[ibin] = mesonPtBC[ibin] / gPrim->GetX()[ibin];
-        effBCPtErr[ibin] = effBCPt[ibin] * TMath::Sqrt(1./(mesonPtBC[ibin]     * mesonPtBC[ibin])   +
-                                                       1./(gPrim->GetX()[ibin] * gPrim->GetX()[ibin]));
-        //printf("\t EffxAcc %f, err %f\n",effBCPt[ibin],effBCPtErr[ibin]);
+        effBCPt   [ibin] = 100 * mesonPtBC[ibin] / gPrim->GetY()[ibin];
+        effBCPtErr[ibin] = 100 * GetFractionError( mesonPtBC[ibin], gPrim->GetY ()[ibin], 
+                                                  emesonPtBC[ibin], gPrim->GetEY()[ibin]);
+       //printf("\t EffxAcc %f, err %f\n",effBCPt[ibin],effBCPtErr[ibin]);
       }
       else { effBCPt[ibin] = 0; effBCPtErr[ibin] = 0; }
       
-      if ( gPrimAcc->GetX()[ibin] > 0 && mesonPtBC[ibin] > 0 )
+      if ( gPrimAcc->GetY()[ibin] > 0 && mesonPtBC[ibin] > 0 )
       {
-        effBCPtAcc[ibin] = mesonPtBC[ibin] / gPrimAcc->GetX()[ibin];
-        effBCPtAccErr[ibin] = effBCPtAcc[ibin] * TMath::Sqrt(1./(mesonPtBC[ibin]     * mesonPtBC[ibin])   +
-                                                             1./(gPrimAcc->GetX()[ibin] * gPrimAcc->GetX()[ibin]));
+        effBCPtAcc   [ibin] = 100 * mesonPtBC[ibin] / gPrimAcc->GetY()[ibin];
+        effBCPtAccErr[ibin] = 100 * GetFractionError( mesonPtBC[ibin], gPrimAcc->GetY ()[ibin], 
+                                                     emesonPtBC[ibin], gPrimAcc->GetEY()[ibin]);
         //printf("\t EffxAcc %f, err %f\n",effBCPtAcc[ibin],effBCPtAccErr[ibin]);
       }
       else { effBCPtAcc[ibin] = 0; effBCPtAccErr[ibin] = 0; }
@@ -351,12 +405,27 @@ void Efficiency(Int_t nPt, TArrayD xPt, TArrayD exPt,
   
   TGraphErrors *gEff = new TGraphErrors(nPt,xPt.GetArray(),effPt.GetArray(),exPt.GetArray(),effPtErr.GetArray());
   gEff->SetName(Form("EfficiencyxAcceptance_%s",hname.Data()));
-  gEff->GetHistogram()->SetYTitle("#epsilon_{Reco #times PID #times Acc}");
+  gEff->GetHistogram()->SetYTitle("#epsilon_{Reco #times PID #times Acc} (%)");
+  gEff->GetHistogram()->SetTitleOffset(1.4,"Y"); 
+  gEff->GetHistogram()->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  gEff->GetHistogram()->SetTitleOffset(1.2,"X");
+  gEff->GetHistogram()->SetTitle("Reconstruction efficiency #times acceptance");
+  gEff->SetMarkerColor(1);
+  gEff->SetLineColor(1);
+  gEff->SetMarkerStyle(20);
   gEff->Write();
   
   TGraphErrors *gEffAcc = new TGraphErrors(nPt,xPt.GetArray(),effPtAcc.GetArray(),exPt.GetArray(),effPtAccErr.GetArray());
   gEffAcc->SetName(Form("Efficiency_%s",hname.Data()));
-  gEffAcc->GetHistogram()->SetYTitle("#epsilon_{Reco #times PID}");
+  gEffAcc->GetHistogram()->SetYTitle("#epsilon_{Reco #times PID} (%)");
+  gEffAcc->GetHistogram()->SetTitleOffset(1.5,"Y"); 
+  gEffAcc->GetHistogram()->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  gEffAcc->GetHistogram()->SetTitleOffset(1.2,"X");
+  gEffAcc->SetMarkerColor(1);
+  gEffAcc->SetLineColor(1);
+  gEffAcc->SetMarkerStyle(20);
+  gEffAcc->GetHistogram()->SetTitle("Reconstruction efficiency");
+
   gEffAcc->Write();    
   
   TGraphErrors *gBCEff    = 0;
@@ -366,11 +435,23 @@ void Efficiency(Int_t nPt, TArrayD xPt, TArrayD exPt,
     gBCEff = new TGraphErrors(nPt,xPt.GetArray(),effBCPt.GetArray(),exPt.GetArray(),effBCPtErr.GetArray());
     gBCEff->SetName(Form("EfficiencyxAcceptance_BC_%s",hname.Data()));
     gBCEff->GetHistogram()->SetYTitle("#epsilon_{Reco #times PID #times Acc}");
+    gBCEff->GetHistogram()->SetTitleOffset(1.5,"Y"); 
+    gBCEff->GetHistogram()->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    gBCEff->GetHistogram()->SetTitleOffset(1.2,"X");
+    gBCEff->SetMarkerColor(4);
+    gBCEff->SetLineColor(4);
+    gBCEff->SetMarkerStyle(24);
     gBCEff->Write();
     
     gBCEffAcc = new TGraphErrors(nPt,xPt.GetArray(),effBCPtAcc.GetArray(),exPt.GetArray(),effBCPtAccErr.GetArray());
     gBCEffAcc->SetName(Form("Efficiency_BC_%s",hname.Data()));
     gBCEffAcc->GetHistogram()->SetYTitle("#epsilon_{Reco #times PID}");
+    gBCEffAcc->GetHistogram()->SetTitleOffset(1.4,"Y"); 
+    gBCEffAcc->GetHistogram()->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    gBCEffAcc->GetHistogram()->SetTitleOffset(1.2,"X");
+    gBCEffAcc->SetMarkerColor(4);
+    gBCEffAcc->SetLineColor(4);
+    gBCEffAcc->SetMarkerStyle(24);
     gBCEffAcc->Write();   
   }
   
@@ -405,8 +486,8 @@ void Efficiency(Int_t nPt, TArrayD xPt, TArrayD exPt,
   gPad->SetGridy();
   //gPad->SetLogy();
   
-  //gEff->SetMaximum(1);
-  //gEff->SetMinimum(1e-8);
+  //gEffAcc->SetMaximum(1);
+  //gEffAcc->SetMinimum(1e-8);
   
   gEffAcc->Draw("AP");
   
@@ -454,8 +535,8 @@ void ProjectAndFit
 
   if(kParticle=="Pi0")
   {
-    mmin = 0.00;
-    mmax = 0.45;
+    mmin = 0.04;
+    mmax = 0.44;
     particleN = " #pi^{0}";
   }
   else // eta
@@ -500,14 +581,13 @@ void ProjectAndFit
   TF1 *line3[nPt];// = new TF1("line3", "[0]+[1]*x+[2]*x*x+[3]*x*x*x", 0.0, 1);
   
   TF1 * fitFunction = 0;
+  Bool_t ok = kFALSE;
   
   TCanvas  * cIMModi = new TCanvas(Form("c%s", hname.Data()), Form("%s", leg.Data()), 1200, 1200) ;
   cIMModi->Divide(col, col);
   
   for(Int_t i = 0; i < nPt; i++)
-  {
-    //if(icomb >10 && i > 8) continue; 
-    
+  {    
     cIMModi->cd(i+1) ; 
     //gPad->SetLogy();
     
@@ -528,21 +608,19 @@ void ProjectAndFit
       hIM[i]->Sumw2();
     
     hIM[i]->SetXTitle("M_{#gamma,#gamma} (GeV/c^{2})");
-    //hIM[i]->SetLineColor(modColorIndex);
     //printf("mmin %f, mmax %f\n",mmin,mmax);
     hIM[i]->SetAxisRange(mmin,mmax,"X");
     hIM[i]->SetLineWidth(2);
     hIM[i]->SetLineColor(4);
-    if ( !kMix ) hIM[i]->SetMinimum( 0.1);
-    else         hIM[i]->SetMinimum(-0.1);
-    Double_t mStep =  hIM[i]->GetBinWidth(1);
+    
+    Double_t mStep = hIM[i]->GetBinWidth(1);
     
     hSignal[i] = (TH1D*) hIM[i]->Clone();
         
     //--------------------------------------------------
-    //   Mix
+    //   Mix: Project, scale and subract to real pairs
     //--------------------------------------------------
-    if ( kMix && hMi )
+    if ( hMi )
     {
       hMix[i] = (TH1D*) hMi->ProjectionY(Form("MiMass_PtBin%d_%s",i,hname.Data()),
                                                        hMi->GetXaxis()->FindBin(ptMin), 
@@ -585,7 +663,7 @@ void ProjectAndFit
       // --- Subtract from signal ---
       hSignal[i] ->SetName(Form("Signal_PtBin%d_%s",i,hname.Data()));
 
-      if ( hMix[i]->GetEntries() > 100 )
+      if ( hMix[i]->GetEntries() > kNPairCut*3 )
       {
         hSignal[i] ->SetLineColor(kViolet);
 
@@ -637,11 +715,12 @@ void ProjectAndFit
           hSignal[i] ->Add(hMix[i],-1);
         }
       } // enough mixed entries
-    } // mixed event
+    } // mixed event histogtam exists
     
-    
+    //----------------------------
     // ---- Fit subtracted signal
-    Int_t nMax = 0;
+    //----------------------------
+    Double_t nMax = 0;
     if(kParticle=="Pi0")
     {
       nMax= hSignal[i]->Integral(hIM[i]->FindBin(0.1),
@@ -680,7 +759,13 @@ void ProjectAndFit
         //hSignal[i]->Fit("fitfun","QRL","",0.3,0.8);
       }
     }
+    else
+      printf("Skip bin %d: n max %2.3e < cut %2.3e\n",i, nMax, kNPairCut);
     
+    
+    //----------------------------
+    // ---- Put fit results in arrays
+    //----------------------------
     // Init results arrays
      mesonPt   .SetAt(-1,i);
     emesonPt   .SetAt(-1,i);    
@@ -693,6 +778,7 @@ void ProjectAndFit
     
     fitFunction = (TF1*) hSignal[i]->GetFunction("fitfun");
     
+    Float_t chi2ndf = 1e6;
     if ( fitFunction )
     {
       //            printf("ipt %d: Chi/NDF %f, Chi %f, NDF %d\n",i,
@@ -700,7 +786,11 @@ void ProjectAndFit
       //                   fitFunction->GetChisquare(),
       //                   fitFunction->GetNDF());
       
-      if(fitFunction->GetChisquare()/fitFunction->GetNDF()<1000)
+      Float_t chi2 = fitFunction->GetChisquare();
+      Int_t   ndf  = fitFunction->GetNDF();
+      if( ndf > 0 ) chi2ndf = chi2 / ndf;
+      
+      if ( chi2ndf < kChi2NDFMax )
       {
         Double_t A    = fitFunction->GetParameter(0);
         Double_t mean = fitFunction->GetParameter(1);
@@ -719,14 +809,15 @@ void ProjectAndFit
         //              Double_t ea2   = 0;
         //              if (kPolN == 2)
         //                ea2 = fitFunction->GetParError(5);
-        pLegendIM[i] = new TLegend(0.55,0.65,0.95,0.93);
+        pLegendIM[i] = new TLegend(0.48,0.65,0.95,0.93);
         pLegendIM[i]->SetTextSize(0.035);
         pLegendIM[i]->SetFillColor(10);
         pLegendIM[i]->SetBorderSize(1);
-        pLegendIM[i]->SetHeader(Form("#pi %s",leg.Data()));
-        pLegendIM[i]->AddEntry("",Form("A = %2.2f #pm %2.2f ",A,eA),"");
-        pLegendIM[i]->AddEntry("",Form("#mu = %2.3f #pm %2.3f ",mean,emean),"");
-        pLegendIM[i]->AddEntry("",Form("#sigma = %2.3f #pm %2.3f ",sigm,esigm),"");
+        pLegendIM[i]->SetHeader(Form(" %s - %s",particleN.Data(), leg.Data()));
+        pLegendIM[i]->AddEntry("",Form("A = %2.1e#pm%2.1e ",A,eA),"");
+        pLegendIM[i]->AddEntry("",Form("#mu = %3.1f #pm %3.1f GeV/#it{c}^{2}",mean*1000,emean*1000),"");
+        pLegendIM[i]->AddEntry("",Form("#sigma = %3.1f #pm %3.1f GeV/#it{c}^{2}",sigm*1000,esigm*1000),"");
+        
         //pLegendIM[i]->AddEntry("",Form("p_{0} = %2.1f #pm %2.1f ",a0,ea0),"");
         //pLegendIM[i]->AddEntry("",Form("p_{1} = %2.1f #pm %2.1f ",a1,ea1),"");
         //if(kPolN==2)pLegendIM[i]->AddEntry("",Form("p_{2} = %2.1f#pm %2.1f ",a2,ea2),"");
@@ -735,8 +826,8 @@ void ProjectAndFit
         Double_t eCounts =
         TMath::Power(eA/A,2) +
         TMath::Power(esigm/sigm,2);
-        eCounts = TMath::Sqrt(eCounts)* counts;
-        eCounts = TMath::Min(eCounts, TMath::Sqrt(counts));
+        eCounts = TMath::Sqrt(eCounts) * counts;
+        //eCounts = TMath::Min(eCounts, TMath::Sqrt(counts));
         
          counts/=(nEvt*(exPt.At(i)*2));
         eCounts/=(nEvt*(exPt.At(i)*2));
@@ -744,6 +835,8 @@ void ProjectAndFit
          mesonPt.SetAt( counts,i);
         emesonPt.SetAt(eCounts,i);
         
+        //printf("A %e Aerr %e; mu %f muErr %f; sig %f sigErr %f",
+        //       A,eA,mean,emean,sigm,esigm);
         //cout << "N(pi0) fit  = " <<  counts << "+-"<<  eCounts << " mstep " << mStep<<endl;
         
          mesonMass .SetAt( mean*1000.,i);
@@ -752,11 +845,19 @@ void ProjectAndFit
          mesonWidth.SetAt( sigm*1000.,i);
         emesonWidth.SetAt(esigm*1000.,i);
       } //Good fit
-     
+      else 
+      {
+        printf("Bin %d, Bad fit, Chi2 %f ndf %d, ratio %f!\n",
+             i,chi2,ndf,chi2ndf);
+      }
+      
     }
+    else printf("Bin %d, NO fit available!\n",i);
     
-    Double_t mass  = mesonMass [i];
-    Double_t width = mesonWidth[i];
+    // Set the integration window, depending on mass mean and width
+    // 2 sigma
+    Double_t mass  = mesonMass [i]/1000.;
+    Double_t width = mesonWidth[i]/1000.;
     Double_t mMinBin =   mass - 2 * width;
     Double_t mMaxBin =   mass + 2 * width;
     if(mass <= 0 || width <= 0)
@@ -765,44 +866,52 @@ void ProjectAndFit
       {
         mMinBin = 0.115; mMaxBin = 0.3 ;
       }
-      else{
+      else // eta
+      {
         mMinBin = 0.4;  mMaxBin = 0.9 ; 
       }
-      
     }
     
     //
     // Bin counting instead of fit 
     //
-    if ( kMix && hSignal[i] )
+    //printf("Signal %p, Mix %p, hname %s\n",hSignal[i], hMix[i], hname.Data());
+    if ( hSignal[i] && ( hMix[i] || hname.Contains("MCpT") ) )
     {
-      Double_t  countsBin = hSignal[i]->Integral(hSignal[i]->FindBin(mMinBin),  hSignal[i]->FindBin(mMaxBin)) ;
-      Double_t eCountsBin = TMath::Sqrt(countsBin);
-      
+      Double_t  countsBin = 0.;//hSignal[i]->Integral(hSignal[i]->FindBin(mMinBin),  hSignal[i]->FindBin(mMaxBin)) ;
+      Double_t eCountsBin = 0.;//TMath::Sqrt(countsBin);
+     
+      GetRangeIntegralAndError(hSignal[i], hSignal[i]->FindBin(mMinBin), hSignal[i]->FindBin(mMaxBin), countsBin, eCountsBin );
+
        countsBin/=(nEvt*(exPt.At(i)*2));
       eCountsBin/=(nEvt*(exPt.At(i)*2));
       
        mesonPtBC.SetAt( countsBin,i);
       emesonPtBC.SetAt(eCountsBin,i);
-      //printf("pt bin %d - N(pi0) BC = %2.3e +- %2.4e\n",i, countsBin, eCountsBin);
       
-      //printf("Bin %d, [%1.1f,%1.1f]\n",i,xPt[i],xPt[i+1]);
+      //printf("pt bin %d: [%2.1f,%2.1f] - Mass window [%2.2f, %2.2f] - N(pi0) BC = %2.3e +- %2.4e\n",
+      //       i, xPtLimits[i], xPtLimits[i+1], mMinBin, mMaxBin, countsBin, eCountsBin);      
     }
-    
-    if(nMax > kNPairCut)
+        
+    if ( nMax > kNPairCut && chi2ndf < kChi2NDFMax )
     {
-      if( kMix )
+      if( kMix && hMix[i] )
       {
+        //    if ( !kMix ) hIM[i]->SetMinimum( 0.1);
+        //    else         hIM[i]->SetMinimum(-0.1);
+        
+        hIM[i]->SetMaximum(hIM[i]->GetMaximum()*1.2);
+        hIM[i]->SetMinimum(hSignal[i]->GetMinimum()*0.2);
+        
         hIM[i]->Draw("HE");
-        pLegendIM[i]->AddEntry(hIM    [i],"Raw pairs"   ,"L");
+        pLegendIM[i]->AddEntry(hIM[i],"Raw pairs"   ,"L");
 
-        if ( hMix[i]->GetEntries() > 100 )
+        if ( hMix[i]->GetEntries() > kNPairCut*3 )
         {
           if ( kTrunMixFunc )
           {
             hMixCorrected[i]->Draw("same");
             pLegendIM[i]->AddEntry(hMixCorrected[i],"Mixed pairs" ,"L");
-            
           }
           else            
           {
@@ -810,16 +919,22 @@ void ProjectAndFit
             pLegendIM[i]->AddEntry(hMix[i],"Mixed pairs" ,"L");
           }
         }
-        
+
+        ok = kTRUE;
+
         hSignal[i] -> Draw("same");
         pLegendIM[i]->AddEntry(hSignal[i],"Signal pairs","L");
       }
       else 
       {
+        ok = kTRUE;
+        hSignal[i]->SetMaximum(hSignal[i]->GetMaximum()*1.2);
+        hSignal[i]->SetMinimum(hSignal[i]->GetMinimum()*0.8);
+        
         pLegendIM[i]->AddEntry(hSignal[i],"Raw pairs","L");
         hSignal[i] -> Draw("HE");
       }
-    
+
       // Plot mass from pairs originated from pi0/eta
       if ( hname.Contains("All") )
       {
@@ -837,18 +952,23 @@ void ProjectAndFit
 
       pLegendIM[i]->Draw();
     }
-    
+    else 
+    {
+      // Plot just raw pairs
+      hIM[i]->Draw("HE");
+    }
   } //pT bins
   
-  cIMModi->Print(Form("IMfigures/%s_%s_Mgg_%s_%s.%s",
-                      kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),/*kFileName.Data(),*/
-                      hname.Data(),kPlotFormat.Data()));
+  if ( ok ) 
+    cIMModi->Print(Form("IMfigures/%s_%s_Mgg_%s_%s.%s",
+                        kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),/*kFileName.Data(),*/
+                        hname.Data(),kPlotFormat.Data()));
   
   //xxxx Real / Mixxxxx
   if(kMix)
   {
     //printf("Do real/mix\n");
-    
+    Bool_t okR = kFALSE;
     TCanvas  * cRat = new TCanvas(Form("Ratio_%s\n",hname.Data()), Form("Ratio %s\n", leg.Data()), 1200, 1200) ;
     cRat->Divide(col, col);
     
@@ -871,19 +991,31 @@ void ProjectAndFit
         nMax = hRatio[i]->Integral(hRatio[i]->FindBin(0.4),
                                    hRatio[i]->FindBin(0.6));
       
+      if ( nMax <= 0 ) continue; 
+
+      //printf("Ratio nMax = %e \n",nMax);
+            
       hRatio[i]->SetMaximum(nMax/4);
       hRatio[i]->SetMinimum(1e-6);
       hRatio[i]->SetAxisRange(mmin,mmax,"X");
+      
+      okR = kTRUE;
+      
+      hRatio[i]->SetYTitle("Real pairs / Mixed pairs");
+      hRatio[i]->SetTitleOffset(1.5,"Y");
       
       hRatio[i]->Draw();
       
       //if(line3[i]) line3[i]->Draw("same");
     }
     
-    cRat->Print(Form("IMfigures/%s_%s_MggRatio_%s_%s.%s",
-                     kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),/*kFileName.Data(),*/ 
-                     hname.Data(),kPlotFormat.Data()));
-  }    
+    if ( okR )
+      cRat->Print(Form("IMfigures/%s_%s_MggRatio_%s_%s.%s",
+                       kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),/*kFileName.Data(),*/ 
+                       hname.Data(),kPlotFormat.Data()));
+  }   // Mix  
+  
+  if( !ok ) return ;
   
   //------------------------------
   // Fit parameters 
@@ -895,10 +1027,10 @@ void ProjectAndFit
   gPt->GetHistogram()->SetTitle(Form("p_{T} of reconstructed %s, %s ",particleN.Data(), comment.Data()));
   gPt->GetHistogram()->SetXTitle("p_{T} (GeV/c)    ");
   gPt->GetHistogram()->SetYTitle(Form("dN_{%s}/dp_{T} (GeV/c)^{-1}  / N_{events}  ",particleN.Data()));
-  gPt->GetHistogram()->SetAxisRange(0.,30);
+  //gPt->GetHistogram()->SetAxisRange(0.,30);
   gPt->GetHistogram()->SetTitleOffset(1.5,"Y");
   gPt->SetMarkerStyle(20);
-  gPt->SetMarkerSize(1);
+  //gPt->SetMarkerSize(1);
   gPt->SetMarkerColor(1);
   //   gPt->GetHistogram()->SetMaximum(1e8);
   //   gPt->GetHistogram()->SetMinimum(1e-8);
@@ -908,11 +1040,11 @@ void ProjectAndFit
   gPtBC->GetHistogram()->SetTitle(Form("p_{T} of reconstructed %s, %s ",particleN.Data(), comment.Data()));
   gPtBC->GetHistogram()->SetXTitle("p_{T} (GeV/c)    ");
   gPtBC->GetHistogram()->SetYTitle(Form("dN_{%s}/dp_{T} (GeV/c)^{-1}  / N_{events}  ",particleN.Data()));
-  gPtBC->GetHistogram()->SetAxisRange(0.,30);
+  //gPtBC->GetHistogram()->SetAxisRange(0.,30);
   gPtBC->GetHistogram()->SetTitleOffset(1.5,"Y");
   gPtBC->SetMarkerStyle(24);
-  gPtBC->SetMarkerSize(1);
-  gPtBC->SetMarkerColor(1);
+  //gPtBC->SetMarkerSize(1);
+  gPtBC->SetMarkerColor(4);
   //   gPtBC->GetHistogram()->SetMaximum(1e8);
   //   gPtBC->GetHistogram()->SetMinimum(1e-8);
   
@@ -924,7 +1056,7 @@ void ProjectAndFit
   //gMass->GetHistogram()->SetAxisRange(0.,30);
   gMass->GetHistogram()->SetTitleOffset(1.5,"Y");
   gMass->SetMarkerStyle(20);
-  gMass->SetMarkerSize(1);
+  //gMass->SetMarkerSize(1);
   gMass->SetMarkerColor(1);
   
   TGraphErrors* gWidth=  new TGraphErrors(nPt,xPt.GetArray(),mesonWidth.GetArray(),exPt.GetArray(),emesonWidth.GetArray());
@@ -935,7 +1067,7 @@ void ProjectAndFit
   //gWidth->GetHistogram()->SetAxisRange(0.,30);
   gWidth->GetHistogram()->SetTitleOffset(1.5,"Y");
   gWidth->SetMarkerStyle(20);
-  gWidth->SetMarkerSize(1);
+  //gWidth->SetMarkerSize(1);
   gWidth->SetMarkerColor(1);
   
   // Plot the fitted results
@@ -984,20 +1116,41 @@ void ProjectAndFit
   gPad->SetGridy();
   gPad->SetLogy();
   
-  gPt->SetMaximum(1);
-  gPt->SetMinimum(1e-8);
- 
   gPt->Draw("AP");
-    
+  
+  Double_t maximum = 0.1 ;//gPt->GetHistogram()->GetMaximum();
+  Double_t minimum = 1e-9;//gPt->GetHistogram()->GetMinimum();
+  //printf("A-maximum %e, minimum %e\n",maximum,minimum);
+  
+//  Double_t maximum = gPrim->GetHistogram()->GetMaximum();
+//  Double_t minimum = gPrim->GetHistogram()->GetMinimum();
+//  
+//  if ( gPrimAcc->GetMaximum() > maximum ) maximum = gPrimAcc->GetMaximum() ;
+//  if ( gPrimAcc->GetMinimum() > minimum ) minimum = gPrimAcc->GetMinimum() ;
+//  
+//  gPrim->SetMaximum(maximum*10);
+//  gPrim->SetMinimum(minimum/10);
+  
   if(kMix)
   {
     gPtBC ->Draw("P");
+    
+//    if(maximum < gPtBC->GetHistogram()->GetMaximum()) maximum = gPtBC->GetHistogram()->GetMaximum();
+//    if(minimum > gPtBC->GetHistogram()->GetMinimum()) minimum = gPtBC->GetHistogram()->GetMaximum();
+//    //printf("B-maximum %e, minimum %e\n",maximum,minimum);
+//    
+//    if(minimum < 0 ) minimum = 2.e-9 ;
+//    gPtBC->SetMaximum(maximum*2.);
+//    gPtBC->SetMinimum(minimum/2.);
     
     TLegend * legend =  new TLegend(0.5,0.7,0.9,0.9);
     legend->AddEntry(gPt  ,"From fit","P");
     legend->AddEntry(gPtBC,"From bin counting","P");
     legend->Draw();
   }
+  
+  gPt->SetMaximum(maximum*2.);
+  gPt->SetMinimum(minimum/2.);
   
   cFitGraph->Print(Form("IMfigures/%s_%s_MassWidthPtSpectra_%s_%s.%s",
                         kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),hname.Data(),
@@ -1011,28 +1164,24 @@ void ProjectAndFit
   
   for(Int_t ipt = 0; ipt < nPt; ipt++)
   {
-    //if(hIM[ipt]) { hIM[ipt]->Scale(1./nEvt); hIM[ipt]->Write(); }
-    if(hIM[ipt]) { hIM[ipt]->Write(); }
-    if(kMix)
+    if ( hIM[ipt] ) hIM[ipt]->Write(); 
+
+    if ( kMix )
     {
-      //        if(hMix         [ipt]) { hMix         [ipt]->Scale(1./nEvt); hMix         [ipt]->Write();}
-      //        if(hMixCorrected[ipt]) { hMixCorrected[ipt]->Scale(1./nEvt); hMixCorrected[ipt]->Write();}
-      //        if(hRatio       [ipt]) { hRatio       [ipt]->Scale(1./nEvt); hRatio       [ipt]->Write();}
-      //        if(hSignal      [ipt]) { hSignal      [ipt]->Scale(1./nEvt); hSignal      [ipt]->Write();}
-      if(hMix         [ipt]) { hMix         [ipt]->Write();}
-      if(hMixCorrected[ipt]) { hMixCorrected[ipt]->Write();}
-      if(hRatio       [ipt]) { hRatio       [ipt]->Write();}
-      if(hSignal      [ipt]) { hSignal      [ipt]->Write();}
+      if (hMix         [ipt] ) hMix         [ipt]->Write();
+      if (hMixCorrected[ipt] ) hMixCorrected[ipt]->Write();
+      if (hRatio       [ipt] ) hRatio       [ipt]->Write();
+      if (hSignal      [ipt] ) hSignal      [ipt]->Write();
     }
   }
   
   gPt   ->Write();
   gMass ->Write();
   gWidth->Write();  
-  if(kMix) gPtBC->Write();
+  if ( kMix ) gPtBC->Write();
 
   // Do some final efficiency calculations if MC   
-  Efficiency(nPt, xPt, exPt,mesonPt,mesonPtBC,hname);
+  Efficiency(nPt, xPt, exPt, mesonPt, emesonPt, mesonPtBC, emesonPtBC, hname);
 }
 
 ///
@@ -1042,13 +1191,19 @@ void ProjectAndFit
 //-----------------------------------------------------------------------------
 void PlotGraphs(TString opt, Int_t first, Int_t last)
 {
+  gStyle->SetOptTitle(1);
+  gStyle->SetTitleOffset(2,"Y");
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(000000);
+  
   const Int_t nCombi = last-first+1;
+  Int_t nCombiActive = 0;
   
   TGraphErrors* gPt   [nCombi];
   TGraphErrors* gPtBC [nCombi];
   TGraphErrors* gMass [nCombi];
   TGraphErrors* gWidth[nCombi];
-  
+    
   Float_t xmin = 0.7;
   Float_t ymin = 0.3;
   Float_t xmax = 0.9;
@@ -1075,6 +1230,10 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     gMass [icomb] = (TGraphErrors*) fout->Get(Form("gMass_%s%d" ,opt.Data(),icomb+first));
     gWidth[icomb] = (TGraphErrors*) fout->Get(Form("gWidth_%s%d",opt.Data(),icomb+first));
     //printf("\t %d %p %p %p %p\n",icomb,gPt[icomb],gPtBC[icomb],gMass[icomb],gWidth[icomb]);
+    
+    if ( !gPt[icomb] ) continue ;
+    
+    nCombiActive++;
     
     gPt   [icomb]->SetMarkerStyle(modStyleIndex[icomb]);
     gPt   [icomb]->SetMarkerColor(modColorIndex[icomb]);
@@ -1110,7 +1269,7 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     }
   }
   
- 
+  if ( !gMass[0] ) return ;
   
   TCanvas *cFitGraph = new TCanvas(Form("cFitGraph_%sCombinations",opt.Data()),
                                    Form("Fit Graphs for %s combinations",opt.Data()),600,600);
@@ -1126,7 +1285,9 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   
   gMass[0]->Draw("AP");
   for(Int_t icomb = 1; icomb < nCombi; icomb ++)
-    gMass[icomb]->Draw("P");
+  {
+    if ( gMass[icomb] ) gMass[icomb]->Draw("P");
+  }
   
   legend->Draw();
 
@@ -1139,8 +1300,10 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   
   gWidth[0]->Draw("AP");
   for(Int_t icomb = 1; icomb < nCombi; icomb ++)
-    gWidth[icomb]->Draw("P");
-
+  {
+   if ( gWidth[icomb] ) gWidth[icomb]->Draw("P");
+  }
+  
   legend->Draw();
 
   cFitGraph->cd(3);
@@ -1154,26 +1317,42 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   
   gPt[0]->Draw("AP");
   for(Int_t icomb = 1; icomb < nCombi; icomb ++)
-    gPt[icomb]->Draw("P");
+  {
+    if ( gPt[icomb] ) gPt[icomb]->Draw("P");
+  }
   
   legend->Draw();
 
-  if(kMix)
+  if ( kMix )
   {
     cFitGraph->cd(4);
 
+    gPad->SetGridx();
+    gPad->SetGridy();
+    gPad->SetLogy();
+    
 //    gPtBC[0]->SetMaximum(1);
 //    gPtBC[0]->SetMinimum(1e-8);
     
-    gPtBC[0]->Draw("P");
+    gPtBC[0]->Draw("AP");
     for(Int_t icomb = 1; icomb < nCombi; icomb ++)
-      gPtBC[icomb]->Draw("P");
+    {
+      if ( gPtBC[icomb] ) gPtBC[icomb]->Draw("P");
+    }
+    
     legend->Draw();
   }
   
   cFitGraph->Print(Form("IMfigures/%s_%s_MassWidthPtSpectra_%s_%sCombinations.%s",
                         kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),opt.Data(),
                         /*kFileName.Data(),*/kPlotFormat.Data()));
+  
+  
+//  // Ratio to average TO DO
+//  TGraphErrors* gRatPt   [nCombi];
+//  TGraphErrors* gRatPtBC [nCombi];
+//  TGraphErrors* gRatMass [nCombi];
+//  TGraphErrors* gRatWidth[nCombi];    
 }
 
 ///
@@ -1183,6 +1362,11 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
 //-----------------------------------------------------------------------------
 void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
 {
+  gStyle->SetOptTitle(1);
+  gStyle->SetTitleOffset(2,"Y");
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(000000);
+  
   TArrayD   primMesonPt   ;   primMesonPt   .Set(nPt); 
   TArrayD  eprimMesonPt   ;  eprimMesonPt   .Set(nPt); 
   TArrayD   primMesonPtAcc;   primMesonPtAcc.Set(nPt); 
@@ -1195,34 +1379,71 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
   
   if ( !h2PrimMesonPtY ) return ;
   
+  if(kSumw2)
+  {
+    h2PrimMesonPtY   ->Sumw2();
+    h2PrimMesonPtYAcc->Sumw2();
+  }
+  
+//  if ( nEvt < 1 )
+//  {
+//    h2PrimMesonPtY   ->Scale(1e10);
+//    h2PrimMesonPtYAcc->Scale(1e10);
+//  }
+//  else
+  {
+    h2PrimMesonPtY   ->Scale(1./nEvt);
+    h2PrimMesonPtYAcc->Scale(1./nEvt);
+  }
+  
+  h2PrimMesonPtY   ->Write();
+  h2PrimMesonPtYAcc->Write();
+  
   TH1D* hY = h2PrimMesonPtY->ProjectionY("Rapidity",-1,-1);
-  Int_t binYmin = hY->FindBin(+0.65);
-  Int_t binYmax = hY->FindBin(-0.65);
+  Int_t binYmin = hY->FindBin(-0.65);
+  Int_t binYmax = hY->FindBin(+0.65);
+  //printf("Y bin min %d, max %d\n",binYmin,binYmax);
   TH1D* hPrimMesonPt = (TH1D*) h2PrimMesonPtY->ProjectionX("PrimaryPt" ,binYmin   ,binYmax   );
   hPrimMesonPt->Write();
   
-  TH1D* hYAcc = h2PrimMesonPtY->ProjectionY("RapidityAcc",-1,-1);
-  binYmin = hYAcc->FindBin(+0.65);
-  binYmax = hYAcc->FindBin(-0.65);
+  TH1D* hYAcc = h2PrimMesonPtYAcc->ProjectionY("RapidityAcc",-1,-1);
+  binYmin = hYAcc->FindBin(-0.65);
+  binYmax = hYAcc->FindBin(+0.65);
+  //printf("Y bin min %d, max %d\n",binYmin,binYmax);
   TH1D* hPrimMesonPtAcc = (TH1D*) h2PrimMesonPtYAcc->ProjectionX("PrimaryPtAccepted" ,binYmin   ,binYmax   );
   hPrimMesonPtAcc->Write();
-  
+
+  ScaleBinBySize(hPrimMesonPt);
+  ScaleBinBySize(hPrimMesonPtAcc);
+
+  Double_t integralA    = 0;
+  Double_t integralAErr = 0;
+  Double_t integralB    = 0;
+  Double_t integralBErr = 0;  
+  Double_t ptMin = -1;
+  Double_t ptMax = -1;
+  Int_t    binMin= -1;
+  Int_t    binMax= -1;
   for(Int_t ibin = 0; ibin < nPt; ibin++ )
   {
-    Double_t ptMin = xPtLimits[ibin];
-    Double_t ptMax = xPtLimits[ibin+1];
+    ptMin  = xPtLimits[ibin];
+    ptMax  = xPtLimits[ibin+1];
+
+    binMin = hPrimMesonPt->FindBin(ptMin);
+    binMax = hPrimMesonPt->FindBin(ptMax)-1;
     
-     primMesonPt[ibin] = hPrimMesonPt->Integral(hPrimMesonPt->FindBin(ptMin), hPrimMesonPt->FindBin(ptMax));
-    eprimMesonPt[ibin] = TMath::Sqrt(primMesonPt[ibin]);
+    GetRangeIntegralAndError(hPrimMesonPt   , binMin, binMax, integralA, integralAErr );
+    GetRangeIntegralAndError(hPrimMesonPtAcc, binMin, binMax, integralB, integralBErr );
     
-     primMesonPtAcc[ibin] = hPrimMesonPt->Integral(hPrimMesonPtAcc->FindBin(ptMin), hPrimMesonPtAcc->FindBin(ptMax));
-    eprimMesonPtAcc[ibin] = TMath::Sqrt(primMesonPtAcc[ibin]);
+     primMesonPt   [ibin] = integralA;
+    eprimMesonPt   [ibin] = integralAErr;
+     primMesonPtAcc[ibin] = integralB;
+    eprimMesonPtAcc[ibin] = integralBErr;
     
-    if(primMesonPtAcc[ibin] && primMesonPt[ibin])
+    if ( integralA > 0 && integralB > 0 )
     {
-       primMesonAcc[ibin] = primMesonPtAcc[ibin] / primMesonPt[ibin] ;
-      eprimMesonAcc[ibin] =  primMesonAcc[ibin] * TMath::Sqrt(1./(primMesonPtAcc[ibin] * primMesonPtAcc[ibin]) + 
-                                                              1./ primMesonPt   [ibin] * primMesonPt   [ibin]) ;
+       primMesonAcc[ibin] = integralB / integralA ;
+      eprimMesonAcc[ibin] = GetFractionError(integralB,integralA,integralBErr,integralAErr);
     }
     else
     {
@@ -1230,10 +1451,11 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
       eprimMesonAcc[ibin] = 0;
     }
     
-    //printf("Bin %d, [%1.1f,%1.1f], content num %f, content den %f times evt %e, bin size %f\n",ibin,xPt[ibin],xPt[ibin+1],mesonPtBC[0][ibin],denBin,nEvt,exPt[ibin]*2);
+//    printf("Bin %d, [%1.1f,%1.1f] bin size %1.1f, content num %2.2e, content den %2.2e: frac %2.3f+%2.3f\n",
+//           ibin,xPtLimits[ibin],xPtLimits[ibin+1],2*exPt[ibin],primMesonPtAcc[ibin],primMesonPt[ibin],primMesonAcc[ibin],eprimMesonAcc[ibin] );
     
-     primMesonPt[ibin]/=(nEvt*(exPt[ibin]*2));
-    eprimMesonPt[ibin]/=(nEvt*(exPt[ibin]*2));
+    primMesonPt   [ibin]/=((exPt[ibin]*4)); // It should be 2 not 4???
+    primMesonPtAcc[ibin]/=((exPt[ibin]*4));
     
     //        // Scale biased production
     //        if(kFileName.Contains("pp_7TeV_Pi0"))
@@ -1254,14 +1476,17 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
   
   TGraphErrors * gPrim =  new TGraphErrors(nPt,xPt.GetArray(),primMesonPt.GetArray(),exPt.GetArray(),eprimMesonPt.GetArray());
   gPrim->SetName("Primary");
-  gPrim->GetHistogram()->SetYTitle("dN/d p_{T}");
-  gPrim->GetHistogram()->SetTitle("|Y| < 0.65");
+  gPrim->GetHistogram()->SetYTitle("d #it{N}/d #it{p}_{T}");
+  gPrim->GetHistogram()->SetTitleOffset(1.4,"Y"); 
+  gPrim->GetHistogram()->SetXTitle("#it{p}_{T,gen} (GeV/#it{c})");
+  gPrim->GetHistogram()->SetTitleOffset(1.2,"X");
+  gPrim->GetHistogram()->SetTitle("#it{p}_{T} spectra for |#it{Y}| < 0.65");
   gPrim->Write();
   
   TGraphErrors * gPrimAcc =  new TGraphErrors(nPt,xPt.GetArray(),primMesonPtAcc.GetArray(),exPt.GetArray(),eprimMesonPtAcc.GetArray());
   gPrimAcc->SetName("PrimaryInAcceptance");
-  gPrimAcc->GetHistogram()->SetYTitle("dN/d p_{T}");
-  gPrimAcc->GetHistogram()->SetTitle(Form("|Y| < 0.65 in %s",kCalorimeter.Data()));
+  gPrimAcc->GetHistogram()->SetYTitle("d#it{N}/d #it{p}_{T}");
+  gPrimAcc->GetHistogram()->SetTitle(Form("|#it{Y}| < 0.65 in %s",kCalorimeter.Data()));
   gPrimAcc->Write();    
 
   // Acceptance
@@ -1271,7 +1496,10 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
   TGraphErrors * gAcc =  new TGraphErrors(nPt,xPt.GetArray(),primMesonAcc.GetArray(),exPt.GetArray(),eprimMesonAcc.GetArray());
   gAcc->SetName("Acceptance");
   gAcc->GetHistogram()->SetYTitle("Acceptance");
-  gAcc->GetHistogram()->SetTitle(Form("Acceptance for |Y| < 0.65 in %s",kCalorimeter.Data()));
+  gAcc->GetHistogram()->SetTitleOffset(1.4,"Y"); 
+  gAcc->GetHistogram()->SetXTitle("#it{p}_{T,gen} (GeV/#it{c})");
+  gAcc->GetHistogram()->SetTitleOffset(1.2,"X");
+  gAcc->GetHistogram()->SetTitle(Form("Acceptance for |#it{Y}| < 0.65 in %s",kCalorimeter.Data()));
   gAcc->Write();    
  
   // Plot spectra and acceptance
@@ -1285,15 +1513,39 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
   //gPad->SetGridy();
   gPad->SetLogy();
   
-  //gPrim->SetMaximum(1);
-  //Prim->SetMinimum(1e-8);
+  Double_t maximum = gPrim->GetHistogram()->GetMaximum();
+  Double_t minimum = gPrim->GetHistogram()->GetMinimum();
+
+  if ( gPrimAcc->GetMaximum() > maximum ) maximum = gPrimAcc->GetMaximum() ;
+  if ( gPrimAcc->GetMinimum() > minimum ) minimum = gPrimAcc->GetMinimum() ;
+  
+  gPrim->SetMaximum(maximum*10);
+  gPrim->SetMinimum(minimum/10);
   
   gPrim   ->Draw("AP");
   gPrimAcc->Draw("P");
   
+  gPrim   ->SetMarkerColor(1);
+  gPrimAcc->SetMarkerColor(4);  
+  gPrim   ->SetLineColor(1);
+  gPrimAcc->SetLineColor(4); 
+  gPrim   ->SetMarkerStyle(24);
+  gPrimAcc->SetMarkerStyle(24);
+  
+  hPrimMesonPt   ->Draw("same");
+  hPrimMesonPtAcc->Draw("same");
+ 
+  hPrimMesonPt   ->Draw("Hsame");
+  hPrimMesonPtAcc->Draw("Hsame");
+  hPrimMesonPt   ->SetLineColor(1);
+  hPrimMesonPtAcc->SetLineColor(4); 
+  
   TLegend * legendS =  new TLegend(0.4,0.7,0.9,0.9);
-  legendS->AddEntry(hAcc,"|Y| < 0.65","P");
-  legendS->AddEntry(gAcc,Form("Both in %s",kCalorimeter.Data()),"P");
+  legendS->AddEntry(gPrim,"|Y| < 0.65","P");
+  legendS->AddEntry(gPrimAcc,Form("Both in %s",kCalorimeter.Data()),"P"); 
+  
+  legendS->AddEntry(hPrimMesonPt,"Histo |Y| < 0.65","L");
+  legendS->AddEntry(hPrimMesonPtAcc,Form("Histo Both in %s",kCalorimeter.Data()),"L");
   legendS->Draw();
   
   cAcc->cd(2);
@@ -1302,14 +1554,20 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
   //gPad->SetLogy();
   
   //gAcc->SetMaximum(1);
-  //gAcc->SetMinimum(1e-8);
+  gAcc->SetMaximum(gAcc->GetHistogram()->GetMaximum()*1.3);
+  gAcc->SetMinimum(0);
   
-  hAcc->Draw("HE");
-  gAcc->Draw("P");
+  gAcc->Draw("AP");
+  gAcc->SetMarkerColor(1);
+  gAcc->SetMarkerStyle(24);
   
-  TLegend * legendA =  new TLegend(0.5,0.15,0.9,0.3);
-  legendA->AddEntry(hAcc,"Histo","P");
+  hAcc->Draw("Hsame");
+  hAcc->SetLineColor(4);
+  
+  TLegend * legendA =  new TLegend(0.7,0.75,0.9,0.9);
   legendA->AddEntry(gAcc,"Graph","P");
+  legendA->AddEntry(hAcc,"Histo","L");
+
   legendA->Draw();
   
   cAcc->Print(Form("IMfigures/%s_%s_PrimarySpectraAcceptance_%s.%s",
@@ -1324,14 +1582,15 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
 /// \param filename   : histogram file name
 /// \param histoDir   : TDirectoryFile folder name
 /// \param histoList  : TList folder name
+/// \param histoStart : begining of histograms name
 /// \param calorimeter: "EMCAL","DCAL"
 /// \param particle   : "Pi0","Eta", define fitting and plotting ranges for particle
+/// \param nPairMin   : minimum number of entries un the pi0 or eta peak integral to do the fits and plotting. Careful in MC scaled productions.
+/// \param sumw2      : bool, apply the histograms Sumw2 method to get proper errors when not done before
 /// \param mixed      : bool, use mixed event to constrain combinatorial background
 /// \param truncmix   : bool, 1: use truncated function to constrain backgroun; 0: use factor from fixed bin
 /// \param pol        : int, polinomyal type for residual background under the peak
-/// \param ncomb      : total number of SM combinations (Single SM, same side 2 SM, same sector 2 SM)
 /// \param drawAllCombi: Plot also many SM combinations
-/// \param nPairMin   : minimum number of entries un the pi0 or eta peak integral to do the fits and plotting. Careful in MC scaled productions.
 /// \param plotFormat : define the type of figures: eps, pdf, etc.
 ///
 //-----------------------------------------------------------------------------
@@ -1340,16 +1599,18 @@ void InvMassFit
  TString filename     = "AnalysisResults",
  TString histoDir     = "Pi0IM_GammaTrackCorr_EMCAL", 
  TString histoList    = "default", 
+ TString histoStart   = "",
  TString calorimeter  = "EMCAL",
  TString particle     = "Pi0",
- Bool_t  mixed        = 1,
- Bool_t  truncmix     = 1,
- Int_t   pol          = 1,
- Int_t   ncomb        = 1,
- Bool_t  drawAllCombi = 0, 
  Float_t nPairMin     = 20, 
+ Bool_t  sumw2        = kTRUE,
+ Bool_t  mixed        = kTRUE,
+ Bool_t  truncmix     = kTRUE,
+ Int_t   pol          = 1,
+ Bool_t  drawAllCombi = kFALSE, 
  TString plotFormat   = "eps")
 {
+  kSumw2      = sumw2;
   kPolN       = pol;
   kMix        = mixed;
   kTrunMixFunc= truncmix;
@@ -1359,23 +1620,34 @@ void InvMassFit
   kPlotFormat = plotFormat;
   kCalorimeter= calorimeter;
   kNPairCut = nPairMin;
-  //  kNPairCut/=nEvt;
-  
-  if ( !drawAllCombi ) ncomb = 1;
-  
-  kHistoStartName = "AnaPi0_Calo0";
-  if(kCalorimeter=="DCAL") 
-    kHistoStartName = "AnaPi0_Calo1";
+    
+  if(histoStart !="")
+    kHistoStartName = histoStart;
+  else
+  {
+    kHistoStartName = "AnaPi0_Calo0";
+    if(kCalorimeter=="DCAL") 
+      kHistoStartName = "AnaPi0_Calo1";
+  }
   
   //---------------------------------------
   // Get input file
   //---------------------------------------
   Int_t ok = GetFileAndEvents(histoDir, histoList);
   
-  printf("Settings: prodname %s, filename %s, histoDir %s, histoList %s, particle %s, calorimeter %s, \n"
-         " \t mix %d, kPolN %d, n combi %d, n pairs cut %2.2e\n",
-         kProdName.Data(),kFileName.Data(),histoDir.Data(),histoList.Data(), kParticle.Data(), 
-         kCalorimeter.Data(), kMix, kPolN, ncomb, kNPairCut);
+//  kProdName.ReplaceAll("module/","");
+//  kProdName.ReplaceAll("TCardChannel","");
+//  kProdName.ReplaceAll("/","_");
+//  kProdName.ReplaceAll("2_","_");
+//  kProdName.ReplaceAll("__","_");
+//  if( kFileName !="AnalysisResults" && !kFileName.Contains("Scale") )
+//    kProdName+=kFileName;
+    
+  printf("Settings: prodname <%s>, filename <%s>, histoDir <%s>, histoList <%s>,\n"
+         " \t histo start name <%s>, particle <%s>, calorimeter <%s>, \n"
+         " \t mix %d, kPolN %d, sumw2 %d, n pairs cut %2.2e\n",
+         kProdName.Data(), kFileName.Data(),histoDir.Data(),histoList.Data(), kHistoStartName.Data(), 
+         kParticle.Data(), kCalorimeter.Data(), kMix, kPolN, kSumw2, kNPairCut);
   
   if ( !ok )
   {
@@ -1383,6 +1655,8 @@ void InvMassFit
     return ; 
   }
   
+  //  kNPairCut/=nEvt;
+
   //---------------------------------------
   // Set-up output file with processed histograms
   //---------------------------------------
@@ -1456,7 +1730,7 @@ void InvMassFit
   {
     // Get the generated primary pi0 spectra, for efficiency calculation 
     PrimarySpectra(nPt,xPtLimits, xPt, exPt);
-    
+
     // Reconstructed pT of real meson pairs
     //hRe = (TH2F *) fil->Get( Form("%s_hMCOrgMass_2", kHistoStartName.Data()) ); // Pi0
     //hRe = (TH2F *) fil->Get( Form("%s_hMCOrgMass_3", kHistoStartName.Data()) ); // Eta
@@ -1465,6 +1739,7 @@ void InvMassFit
     leg     = "MC pT reconstructed";
     hname   = "MCpTReco" ; 
     ProjectAndFit(nPt,comment,leg,hname,xPtLimits, xPt, exPt, hRe, 0x0 );    
+  
     
     // Reconstructed pT of real eta pairs
     hRe = (TH2F *) fil->Get( Form("%s_hMC%sMassPtTrue", kHistoStartName.Data(), kParticle.Data()) );
@@ -1473,7 +1748,7 @@ void InvMassFit
     hname   = "MCpTGener" ; 
     ProjectAndFit(nPt,comment,leg,hname,xPtLimits, xPt, exPt, hRe, 0x0 );    
   } // MC treatment
-  
+    
   //---------------------------------------
   // All SM
   //---------------------------------------
@@ -1552,7 +1827,7 @@ void InvMassFit
         hMi = (TH2F *) lis->FindObject(Form("%s_hMiMod_%d", kHistoStartName.Data(), imod));
       }
       
-      printf("histo mod %d Re %p - Mix %p\n",imod, hRe,hMi);
+      //printf("histo mod %d Re %p - Mix %p\n",imod, hRe,hMi);
       
       comment = Form("both clusters in SM %d",imod);
       leg     = Form("SM %d",imod);
@@ -1591,12 +1866,12 @@ void InvMassFit
         if(kMix) hMiSMGroups[0]->Add(hMi);
       }
     }
-    
+        
     // Group SMs in with particular behaviors
     for(Int_t imodgroup = 0; imodgroup<=2; imodgroup++)
     {
-      printf("histo modgroup %d Re %p - Mix %p\n",
-             imod, hReSMGroups[imodgroup], hMiSMGroups[imodgroup]);
+      //printf("histo modgroup %d Re %p - Mix %p\n",
+      //       imod, hReSMGroups[imodgroup], hMiSMGroups[imodgroup]);
       
       comment = Form("both clusters in same SM, group %d",imodgroup);
       leg     = Form("SMGroup %d",imodgroup);
@@ -1634,7 +1909,7 @@ void InvMassFit
         hMi = (TH2F *) lis->FindObject(Form("%s_hMiSameSectorEMCALMod_%d", kHistoStartName.Data(), isector));
       }
       
-      printf("histo sector %d Re %p - Mix %p\n",isector, hRe,hMi);
+      //printf("histo sector %d Re %p - Mix %p\n",isector, hRe,hMi);
       
       comment = Form("both clusters in Sector %d",isector);
       leg     = Form("Sector %d",isector);
@@ -1659,7 +1934,7 @@ void InvMassFit
         hMi = (TH2F *) lis->FindObject(Form("%s_hMiSameSideEMCALMod_%d", kHistoStartName.Data(), iside));
       }
       
-      printf("histo side %d Re %p - Mix %p\n",iside, hRe,hMi);
+      //printf("histo side %d Re %p - Mix %p\n",iside, hRe,hMi);
       
       comment = Form("both clusters in Side %d",iside);
       leg     = Form("Side %d",iside);
