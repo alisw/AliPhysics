@@ -10,7 +10,7 @@
 Float_t TInfo::AbsMinT(Int_t type) const
 {
   Float_t min=1e9;
-  for (Int_t i=0;i<160;++i) {
+  for (Int_t i=0;i<NSensors();++i) {
     if (!IsValid(i)) 
       continue;
     Float_t val = T(i,type);
@@ -23,7 +23,7 @@ Float_t TInfo::AbsMinT(Int_t type) const
 Float_t TInfo::AbsMaxT(Int_t type) const
 {
   Float_t max=-1e9;
-  for (Int_t i=0;i<160;++i) {
+  for (Int_t i=0;i<NSensors();++i) {
     if (!IsValid(i)) 
       continue;
     Float_t val = T(i,type);
@@ -43,7 +43,7 @@ TH2 *TInfo::GetHist(Int_t type) const
   Double_t max=AbsMaxT(type);
   h->SetMinimum(min);
   h->SetMaximum(max);
-  for (Int_t i=0;i<160;++i) {
+  for (Int_t i=0;i<NSensors();++i) {
     if (!IsValid(i))
       continue;
     Double_t val = T(i,type);
@@ -56,7 +56,7 @@ TH2 *TInfo::GetHist(Int_t type) const
 void TInfo::Print(Option_t *option) const 
 { 
   cout << "Runno: " << fRunNo << " with average time " << fAvTime << " and " << Nvalid() << " entries" << endl;
-  for (Int_t i=0;i<160;++i) {
+  for (Int_t i=0;i<NSensors();++i) {
     if (IsValid(i)) 
       cout << "  " << i << " minT=" << fMinT.At(i) << ", maxT=" << fMaxT.At(i) << ", diff=" << Diff(i) << endl;
   } 

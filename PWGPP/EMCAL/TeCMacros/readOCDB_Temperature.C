@@ -1,3 +1,4 @@
+#if !defined( __CINT__) || defined(__MAKECINT__)
 #include <AliCDBEntry.h>
 #include <AliCDBManager.h>
 #include <AliCDBMetaData.h>
@@ -10,12 +11,12 @@
 #include <AliLog.h>
 #include <TDatime.h>
 #include <TFile.h>
-#include <TFile.h>
 #include <TGrid.h>
 #include <TMap.h>
 #include <TNtuple.h>
 #include <stdio.h>
 #include "TInfo.h"
+#endif
 
 TInfo *readOCDB_Temperature(Int_t runNb  = 286350, Bool_t debug=1)
 {
