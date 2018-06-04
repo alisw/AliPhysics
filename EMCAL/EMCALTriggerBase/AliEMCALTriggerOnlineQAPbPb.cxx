@@ -19,6 +19,7 @@
  */
 
 #include <cstring>
+#include <iostream>
 
 #include <TH1D.h>
 #include <TH2D.h>
@@ -471,6 +472,17 @@ void AliEMCALTriggerOnlineQAPbPb::ProcessFastor(const AliEMCALTriggerFastOR* fas
 void AliEMCALTriggerOnlineQAPbPb::ComputeBackground()
 {
   AliDebug(2, Form("Entering AliEMCALTriggerQA::ComputeBackground"));
+
+  if (fPatchAreas[fBkgPatchType] == 0) {
+    if (fNBkgPatchesEMCal[0] > 0 || fNBkgPatchesEMCal[1] > 0 || fNBkgPatchesEMCal[2] > 0 ) {
+      AliErrorStream() << "Area of background patch not set, was expecting no background patches, but instead found non-zero number of patches!" << std::endl;
+    }
+    for (Int_t itype = 0; itype < 3; itype++) {
+      fBkgEMCal[itype] = 0;
+      fBkgDCal[itype] = 0;
+    }
+    return;
+  }
 
   for (Int_t itype = 0; itype < 3; itype++) {
     if (!IsPatchTypeEnabled(itype, EMCALTrigger::kTMEMCalBkg)) continue;
