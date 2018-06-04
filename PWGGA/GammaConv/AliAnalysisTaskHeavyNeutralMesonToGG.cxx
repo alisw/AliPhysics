@@ -1732,6 +1732,8 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessClusters(){
     // Flag Photon as CaloPhoton
     PhotonCandidate->SetIsCaloPhoton();
     PhotonCandidate->SetCaloClusterRef((Long_t)i);
+    PhotonCandidate->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent));
+
     // get MC label
     if(fIsMC>0){
       PhotonCandidate->SetNCaloPhotonMCLabels(clus->GetNLabels());
@@ -2525,7 +2527,6 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateMesonCandidates(){
     }
   } else if (fMesonRecoMode == 2){
     if(fClusterCandidates->GetEntries()>0){
-
       for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
         if (gamma0==NULL) continue;
