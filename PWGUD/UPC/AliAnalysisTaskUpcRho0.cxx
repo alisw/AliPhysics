@@ -203,15 +203,18 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	EtaPhiN = new TH2F("EtaPhiN","EtaPhiN",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiN);
 
 	// load SPD effi
-	// fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run244982.root");
-	// fSPDfile->Print();
-	// fSPDfile->Map();
-	hSPDeff = (TH2D*) fSPDfile->Get("hEff");
-	hSPDeff->SetDirectory(0);
-	TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
-	hBCmod4_2D->SetDirectory(0);
-	hBCmod4 = hBCmod4_2D->ProjectionY();
-	// fSPDfile->Close();
+	if (isMC){
+		// fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run244982.root");
+		std::cout<<std::endl<<" Efficinecy FILE: "<<fSPDfile<<std::endl;
+		fSPDfile->Print();
+		fSPDfile->Map();
+		hSPDeff = (TH2D*) fSPDfile->Get("hEff");
+		hSPDeff->SetDirectory(0);
+		TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
+		hBCmod4_2D->SetDirectory(0);
+		hBCmod4 = hBCmod4_2D->ProjectionY();
+		// fSPDfile->Close();
+	}
 
 	PostData(1, fRhoTree);
 	PostData(2, fListHist);
