@@ -23,9 +23,11 @@ AliAnalysisTaskUpcRho0 *AddTaskUpcRho0(){
   mgr->AddTask(task);
   task->SetIsMC(isMC);
   // load 0STP efficency
-  TFile *EffiFile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run244982.root");
-  task->SetEfficiencyFile(EffiFile);
-  // EffiFile->Close();
+  if(isMC){
+    TFile *EffiFile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run244982.root");
+    task->SetEfficiencyFile(EffiFile);
+    // EffiFile->Close();
+  }
 
    // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
