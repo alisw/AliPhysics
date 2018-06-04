@@ -9,7 +9,7 @@
 
 void LInfo::Print(Option_t *option) const 
 { 
-  //  cout << "Runno: " << fRunNo << " with average time " << fAvTime << " and " << Nvalid() << " entries" << endl;
+  cout << "Runno: " << fRunNo << endl;
 }
 
 void LInfo::Compute()  
@@ -27,7 +27,7 @@ void LInfo::Compute()
     for (Int_t igain=0; igain<2; ++igain) {
       if (!fhAmpOverMon[iSM][igain]) {
 	sprintf(id, "hAmpOverMon%02d%d", iSM, igain);
-	sprintf(title, "Tower LEDAmplitude over mon: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
+	sprintf(title, "LED amplitude over LEDMON: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
 	fhAmpOverMon[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);   
 	fhAmpOverMon[iSM][igain]->SetDirectory(0);
       } else 
@@ -40,10 +40,12 @@ void LInfo::Compute()
     Int_t iside = iSM%2; 
     for (Int_t igain=0; igain<2; ++igain) {
       for (Int_t col=0;col<kNCol;++col) {
-	Double_t ledMonAmp = fhStrip[iSM][igain]->GetBinContent(col+1);
+	Int_t strip = col / 2;
+	Int_t mbin = fhStrip[iSM][igain]->FindBin(strip);
+	Double_t ledMonAmp = fhStrip[iSM][igain]->GetBinContent(mbin);
 	for (Int_t row=0;row<kNRow;++row) {
-	  Int_t bin = fhLed[iSM][igain]->FindBin(col,row);
-	  Double_t ledAmp = fhLed[iSM][igain]->GetBinContent(bin);
+	  Int_t lbin = fhLed[iSM][igain]->FindBin(col,row);
+	  Double_t ledAmp = fhLed[iSM][igain]->GetBinContent(lbin);
 	  Double_t weightf   = 0;
 	  if (ledMonAmp!=0)
 	    weightf = ledAmp/ledMonAmp;  
@@ -70,12 +72,12 @@ void LInfo::CreateHistograms()
     for (Int_t igain=0; igain<2; ++igain) {
       sprintf(id, "hStrip%02d%d", iSM, igain);
       sprintf(title, "LEDMon Amplitude: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      fhStrip[iSM][igain] = new TH1F(id, title, kNCol, -0.5, kNCol-0.5);
+      fhStrip[iSM][igain] = new TH1F(id, title, kNStrip, -0.5, kNStrip-0.5);
       fhStrip[iSM][igain]->SetDirectory(0);
 
       sprintf(id, "hStripCount%02d%d", iSM, igain);
       sprintf(title, "LEDMon Entries: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-      fhStripCount[iSM][igain] = new TH1F(id, title, kNCol, -0.5, kNCol-0.5);
+      fhStripCount[iSM][igain] = new TH1F(id, title, kNStrip, -0.5, kNStrip-0.5);
       fhStripCount[iSM][igain]->SetDirectory(0);
 
       sprintf(id, "hLed%02d%d", iSM, igain);
@@ -95,10 +97,10 @@ void LInfo::CreateHistograms()
 
 void LInfo::FillStrip(Int_t mod, Int_t gain, Int_t strip, Double_t amp, Double_t rms)
 {
-  fhStrip[mod][gain]->Fill(2*strip, amp);
-  fhStrip[mod][gain]->Fill(2*strip+1, amp);
-  fhStripCount[mod][gain]->Fill(2*strip, rms);
-  fhStripCount[mod][gain]->Fill(2*strip+1, rms);
+  fhStrip[mod][gain]->Fill(strip, amp);
+  fhStrip[mod][gain]->Fill(strip, amp);
+  fhStripCount[mod][gain]->Fill(strip, rms);
+  fhStripCount[mod][gain]->Fill(strip, rms);
 }
 
 void LInfo::FillLed(Int_t mod,Int_t gain, Int_t col, Int_t row, Double_t amp, Double_t rms)

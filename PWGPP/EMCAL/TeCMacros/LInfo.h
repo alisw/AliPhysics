@@ -15,7 +15,7 @@ class LInfo : public TObject {
  LInfo(Int_t rn=0) : fRunNo(rn) { CreateHistograms(); }
   virtual     ~LInfo() {;}
   //  TH2         *GetHist(Int_t type=1)      const;
-  const char  *GetName()                  const { return Form("TempInfo_%d",fRunNo); }
+  const char  *GetName()                  const { return Form("LEDInfo_%d",fRunNo); }
   void         Print(Option_t *option="") const;
   void         FillStrip(Int_t mod,Int_t gain, Int_t strip, Double_t amp, Double_t rms);
   void         FillLed(Int_t mod,Int_t gain, Int_t col, Int_t row, Double_t amp, Double_t rms);

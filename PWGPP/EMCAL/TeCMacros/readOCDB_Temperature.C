@@ -16,9 +16,13 @@
 #include <TNtuple.h>
 #include <stdio.h>
 #include "TInfo.h"
+TInfo *readOCDB_Temperature(Int_t runNb  = 286350, Bool_t debug=1);
+void testOCDB_Temperature(Int_t runNb = 286350);
 #endif
 
-TInfo *readOCDB_Temperature(Int_t runNb  = 286350, Bool_t debug=1)
+#ifndef _tempfuncs_
+#define _tempfuncs_
+TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
 {
   TGrid::Connect("alien://");
 
@@ -26,9 +30,12 @@ TInfo *readOCDB_Temperature(Int_t runNb  = 286350, Bool_t debug=1)
   cdb->SetDefaultStorage("raw://");
   cdb->SetRun(runNb);
 
-  AliCDBEntry *en=cdb->Get("EMCAL/Calib/Temperature/");
+  AliCDBEntry *en=0;
+  try {
+    en=cdb->Get("EMCAL/Calib/Temperature/");
+  } catch (...) { ; }
   if (!en) {
-    printf("no entry found!\n");
+    printf("no entry found for run %d!\n", runNb);
     return 0;
   }
 
@@ -123,31 +130,10 @@ TInfo *readOCDB_Temperature(Int_t runNb  = 286350, Bool_t debug=1)
   return info;
 }
 
-void testOCDB_Temperature(Int_t runNb  = 286350)
+void testOCDB_Temperature(Int_t runNb)
 {
   TInfo *i = readOCDB_Temperature(runNb,1);
   i->Print();
   return;
 }
-
-void read_LHC18d() 
-{
-  Int_t runs[] = {285978,285979,285980,286014,286018,286025,286026,286027,286030,286064,286124,286127,286129,286130,286154,286157,286159,286198,286201,286202,286203,286229,286230,286231,286254,286255,286256,286257,286258,286261,286263,286282,286284,286287,286288,286289,286308,286309,286310,286311,286312,286313,286314,286336,286337,286340,286341,286345,286348,286349,286350};
-  Int_t nruns = sizeof(runs)/sizeof(Int_t);
-
-  TObjArray arr;
-  arr.SetOwner(1);
-
-  for (Int_t i=0;i<nruns;++i) {
-    Int_t rn = runs[i];
-    cout << i << " " << rn << endl;
-    TInfo *ti = readOCDB_Temperature(rn,0);
-    ti->Print();
-    arr.Add(ti);
-  }
-
-  TFile *outf = TFile::Open("temperatures.root","update");
-  arr.Write("temperatures_lhc18d",TObject::kSingleKey);
-  outf->ls();
-  outf->Close();
-}
+#endif
