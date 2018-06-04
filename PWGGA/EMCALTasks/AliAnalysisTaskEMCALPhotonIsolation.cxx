@@ -66,6 +66,7 @@ fmcHeader(0),
 fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
+fVariableCPVInCone(kFALSE),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -151,6 +152,8 @@ fGenPromptPhotonSel(0),
 fEtaPhiClus(0),
 fEtaPhiClusAftSel(0),
 fPtvsDetavsDphi(0),
+fPtvsTrackPtvsDeta(0),
+fPtvsTrackPtvsDphi(0),
 fClusEvsClusT(0),
 fPT(0),
 fE(0),
@@ -274,6 +277,7 @@ fmcHeader(0),
 fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
+fVariableCPVInCone(kFALSE),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -359,6 +363,8 @@ fGenPromptPhotonSel(0),
 fEtaPhiClus(0),
 fEtaPhiClusAftSel(0),
 fPtvsDetavsDphi(0),
+fPtvsTrackPtvsDeta(0),
+fPtvsTrackPtvsDphi(0),
 fClusEvsClusT(0),
 fPT(0),
 fE(0),
@@ -951,6 +957,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	fPtvsDetavsDphi = new TH3F("hPtvsDetavsDphi","Cluster-track matching vs. cluster energy", 200, 0., 100., 200, -0.05, 0.05, 200, -0.05, 0.05);
 	fPtvsDetavsDphi->Sumw2();
 	fOutput->Add(fPtvsDetavsDphi);
+
+	fPtvsTrackPtvsDeta = new TH3F("hPtvsTrackPtvsDeta","Cluster-track matching #Delta#eta vs. track #it{p}_{T} vs. cluster energy", 200, 0., 100., 200, 0., 100., 200, -0.05, 0.05);
+	fPtvsTrackPtvsDeta->Sumw2();
+	fOutput->Add(fPtvsTrackPtvsDeta);
+
+	fPtvsTrackPtvsDphi = new TH3F("hPtvsTrackPtvsDphi","Cluster-track matching #Delta#varphi vs. track #it{p}_{T} vs. cluster energy", 200, 0., 100., 200, 0., 100., 200, -0.05, 0.05);
+	fPtvsTrackPtvsDphi->Sumw2();
+	fOutput->Add(fPtvsTrackPtvsDphi);
       }
       break;
     }
@@ -1811,6 +1825,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
 
     if(candidate){
       fPtvsDetavsDphi->Fill(vecClust.Pt(), deta, dphi);
+      fPtvsTrackPtvsDeta->Fill(vecClust.Pt(), mt->Pt(), deta);
+      fPtvsTrackPtvsDphi->Fill(vecClust.Pt(), mt->Pt(), dphi);
     }
 
     distCT = TMath::Sqrt(deta*deta+dphi*dphi);
@@ -1819,8 +1835,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
 
     if(candidate){
       if(fVariableCPV){
-	deltaEta = 0.010 + TMath::Power((vecClust.Pt() + 4.07), -2.5); // See https://alice-notes.web.cern.ch/node/813
-	deltaPhi = 0.015 + TMath::Power((vecClust.Pt() + 3.65), -2.);  // See https://alice-notes.web.cern.ch/node/813
+	deltaEta = 0.010 + TMath::Power((mt->Pt() + 4.07), -2.5); // See https://alice-notes.web.cern.ch/node/813
+	deltaPhi = 0.015 + TMath::Power((mt->Pt() + 3.65), -2.);  // See https://alice-notes.web.cern.ch/node/813
       }
       else{
 	deltaEta = fdetacut;
@@ -1828,8 +1844,14 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       }
     }
     else{
-      deltaEta = fdetacutIso;
-      deltaPhi = fdphicutIso;
+      if(fVariableCPVInCone){
+	deltaEta = 0.010 + TMath::Power((mt->Pt() + 4.07), -2.5); // See https://alice-notes.web.cern.ch/node/813
+	deltaPhi = 0.015 + TMath::Power((mt->Pt() + 3.65), -2.);  // See https://alice-notes.web.cern.ch/node/813
+      }
+      else{
+	deltaEta = fdetacutIso;
+	deltaPhi = fdphicutIso;
+      }
     }
 
     if(TMath::Abs(dphi) < deltaPhi && TMath::Abs(deta) < deltaEta){
