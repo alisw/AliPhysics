@@ -34,20 +34,30 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-	AliJEbeHistos.cxx
-	AliJEbePercentile.cxx
-	AliJEbECORRTask.cxx
-	AliJJetTask.cxx
+	AliBSDiJetTask.cxx
 	AliJDiJetAnalysis.cxx
 	AliJDiJetTask.cxx
+	AliJEbECORRTask.cxx
+	AliJEbeHistos.cxx
+	AliJEbePercentile.cxx
+	AliJHSInterplayTask.cxx
+	AliJJetAnalysis.cxx
 	AliJJetCORRAnalysis.cxx
 	AliJJetCORRTask.cxx
 	AliJJetJtAnalysis.cxx
 	AliJJetJtTask.cxx
-	AliJJetAnalysis.cxx
-	AliJHSInterplayTask.cxx
-	AliBSDiJetTask.cxx
+	AliJJetTask.cxx
 )
+
+if(FASTJET_FOUND)
+    set(SRCS ${SRCS}
+        AliJCDijetHistos.cxx
+        AliJCDijetTask.cxx
+        )
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+endif(FASTJET_FOUND)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -55,7 +65,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES)
 set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW EMCALUtils PHOSUtils PWGJETFW PWGCFCorrelationsJCORRAN)
@@ -64,6 +74,17 @@ set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW EMCALUtils PHOSUtils PWGJETFW PWGC
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
+
+if(FASTJET_FOUND)
+  set(LIBDEPS
+    ${LIBDEPS}
+    fastjetcontribfragile
+    fastjetplugins
+    fastjettools
+    fastjet
+    )
+endif(FASTJET_FOUND)
+
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "Tracks UserTasks")

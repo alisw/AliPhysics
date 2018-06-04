@@ -14,4 +14,6 @@
 #pragma link C++ class AliJJetJtAnalysis+;
 #pragma link C++ class AliJJetAnalysis+;
 #pragma link C++ class AliBSDiJetTask+;
+#pragma link C++ class AliJCDijetTask+;
+#pragma link C++ class AliJCDijetHistos+;
 #endif /* __CINT__ */
