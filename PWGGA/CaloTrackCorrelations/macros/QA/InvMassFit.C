@@ -292,15 +292,16 @@ void GetRangeIntegralAndError(TH1D* h, Int_t binMin, Int_t binMax,
   {
     //if ( h->GetBinContent(ibin) == 0 ) continue ; 
     
-    integral    += h->GetBinContent(ibin);//*h->GetBinContent(ibin);
-    integralErr += h->GetBinError  (ibin);//*h->GetBinContent(ibin);
+    integral    += h->GetBinContent(ibin);
+    integralErr += h->GetBinError  (ibin) * h->GetBinError(ibin);
   }
 //  printf("\t bin range [%d,%d], n %d, sum %2.2e err %2.2e\n",
 //         binMin,binMax,n,integral,integralErr);
+  if ( integralErr > 0 ) integralErr = TMath::Sqrt(integralErr);
 }
 
 //-----------------------
-/// calculation of error of a fraction
+/// Calculation of error of a fraction
 //-----------------------
 Double_t GetFractionError(Double_t aa, Double_t bb, Double_t aaE, Double_t bbE)
 {
@@ -308,9 +309,11 @@ Double_t GetFractionError(Double_t aa, Double_t bb, Double_t aaE, Double_t bbE)
   
   //printf("\t a %e b %e aE %e bE %e\n",aa,bb,aaE,bbE);
   
-  return aa/bb * TMath::Sqrt(aaE*aaE/(aa+aa) + bbE*bbE/(bb*bb));
+  return aa/bb * TMath::Sqrt(aaE*aaE/(aa*aa) + bbE*bbE/(bb*bb));
 }
 
+//____________________________________
+/// Scale histogram bins by its size
 //____________________________________
 void ScaleBinBySize(TH1D* h)
 {
@@ -321,6 +324,54 @@ void ScaleBinBySize(TH1D* h)
     //printf("bin %d, width %f, content %e\n",ibin,width,content);
     h->SetBinContent(ibin,content/width);
   }
+}
+
+//____________________________________
+/// Divide 2 graphs
+//____________________________________
+TGraphErrors * DivideGraphs(TGraphErrors* gNum, TGraphErrors *gDen)
+{
+  if ( !gDen || !gNum ) 
+  {
+    printf("Graph num %p or graph den %p not available\n",gNum,gDen);
+    return 0x0;
+  }
+  const Int_t nBins = gNum->GetN();
+  if ( nBins != gDen->GetN() )
+  {
+    printf("Cannot divide %s with %d bins and %s with %d bins!\n",gNum->GetName(),nBins,gDen->GetName(),gDen->GetN());
+    return 0x0;
+  }
+  
+  Double_t ratio   [nBins];
+  Double_t ratioErr[nBins]; 
+  Double_t x       [nBins];
+  Double_t xErr    [nBins];
+  for (Int_t ibin = 0; ibin < nBins; ibin++) 
+  {
+    Double_t num    =  gNum->GetY ()[ibin];
+    Double_t den    =  gDen->GetY ()[ibin];
+    Double_t numErr =  gNum->GetEY()[ibin];
+    Double_t denErr =  gDen->GetEY()[ibin];
+    
+    x   [ibin]      =  gNum->GetX ()[ibin];
+    xErr[ibin]      =  gNum->GetEX()[ibin];
+
+    if ( num == 0 || den == 0 ) 
+    {
+      ratio   [ibin] = 0; 
+      ratioErr[ibin] = 0; 
+      continue;
+    }
+    
+    ratio   [ibin] = num / den ;
+    ratioErr[ibin] =  GetFractionError(num,den,numErr,denErr);  
+    
+//    printf("bin %d, x %f (%f) num %f (%f), den %f (%f), ratio %f (%f) \n",
+//           ibin,x[ibin],xErr[ibin],num,numErr,den,denErr,ratio[ibin],ratioErr[ibin]);
+  } // do the ratio to sum
+  
+  return new TGraphErrors(nBins,x,ratio,xErr,ratioErr);
 }
 
 //-----------------------
@@ -620,7 +671,7 @@ void ProjectAndFit
     //--------------------------------------------------
     //   Mix: Project, scale and subract to real pairs
     //--------------------------------------------------
-    if ( hMi )
+    if ( kMix && hMi )
     {
       hMix[i] = (TH1D*) hMi->ProjectionY(Form("MiMass_PtBin%d_%s",i,hname.Data()),
                                                        hMi->GetXaxis()->FindBin(ptMin), 
@@ -1118,8 +1169,8 @@ void ProjectAndFit
   
   gPt->Draw("AP");
   
-  Double_t maximum = 0.1 ;//gPt->GetHistogram()->GetMaximum();
-  Double_t minimum = 1e-9;//gPt->GetHistogram()->GetMinimum();
+  Double_t maximum = gPt->GetHistogram()->GetMaximum();
+  Double_t minimum = gPt->GetHistogram()->GetMinimum();
   //printf("A-maximum %e, minimum %e\n",maximum,minimum);
   
 //  Double_t maximum = gPrim->GetHistogram()->GetMaximum();
@@ -1135,13 +1186,13 @@ void ProjectAndFit
   {
     gPtBC ->Draw("P");
     
-//    if(maximum < gPtBC->GetHistogram()->GetMaximum()) maximum = gPtBC->GetHistogram()->GetMaximum();
-//    if(minimum > gPtBC->GetHistogram()->GetMinimum()) minimum = gPtBC->GetHistogram()->GetMaximum();
-//    //printf("B-maximum %e, minimum %e\n",maximum,minimum);
-//    
-//    if(minimum < 0 ) minimum = 2.e-9 ;
-//    gPtBC->SetMaximum(maximum*2.);
-//    gPtBC->SetMinimum(minimum/2.);
+    if(maximum < gPtBC->GetHistogram()->GetMaximum()) maximum = gPtBC->GetHistogram()->GetMaximum();
+    if(minimum > gPtBC->GetHistogram()->GetMinimum()) minimum = gPtBC->GetHistogram()->GetMaximum();
+    //printf("B-maximum %e, minimum %e\n",maximum,minimum);
+    
+    if(minimum < 0 ) minimum = 2.e-9 ;
+    gPtBC->SetMaximum(maximum*2.);
+    gPtBC->SetMinimum(minimum/2.);
     
     TLegend * legend =  new TLegend(0.5,0.7,0.9,0.9);
     legend->AddEntry(gPt  ,"From fit","P");
@@ -1199,11 +1250,6 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   const Int_t nCombi = last-first+1;
   Int_t nCombiActive = 0;
   
-  TGraphErrors* gPt   [nCombi];
-  TGraphErrors* gPtBC [nCombi];
-  TGraphErrors* gMass [nCombi];
-  TGraphErrors* gWidth[nCombi];
-    
   Float_t xmin = 0.7;
   Float_t ymin = 0.3;
   Float_t xmax = 0.9;
@@ -1214,6 +1260,12 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     xmin = 0.3;
     ymin = 0.7;
   }
+ 
+  if(opt.Contains("Sector"))
+  {
+    xmin = 0.65;
+    ymin = 0.5;
+  }
   
   TLegend * legend =  new TLegend(xmin,ymin,xmax,ymax);
   legend->SetTextSize(0.05);
@@ -1223,6 +1275,64 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   
   // recover the graphs from output file
   //printf("%s\n",opt.Data());
+  
+  
+  // Recover SUM
+  TString opt2 = opt;
+  if(opt.Contains("SMGroup")) opt2 = "SM";
+  
+  TGraphErrors* gSumPt    = (TGraphErrors*) fout->Get(Form("gPt_Same%s"   ,opt2.Data()));
+  TGraphErrors* gSumPtBC  = (TGraphErrors*) fout->Get(Form("gPtBC_Same%s" ,opt2.Data()));
+  TGraphErrors* gSumMass  = (TGraphErrors*) fout->Get(Form("gMass_Same%s" ,opt2.Data()));
+  TGraphErrors* gSumWidth = (TGraphErrors*) fout->Get(Form("gWidth_Same%s",opt2.Data()));
+  //printf("\t Sum %p %p %p %p\n",gSumPt,gSumPtBC,gSumMass,gSumWidth);
+  
+  if ( !gSumMass ) return ;
+  
+  gSumPt   ->SetMarkerStyle(20);
+  gSumPt   ->SetMarkerColor(1);
+  gSumPt   ->SetLineColor  (1);    
+  
+  gSumMass->SetMarkerStyle(20);
+  gSumMass->SetMarkerColor(1);
+  gSumMass->SetLineColor  (1);   
+  
+  gSumWidth->SetMarkerStyle(20);
+  gSumWidth->SetMarkerColor(1);
+  gSumWidth->SetLineColor  (1);
+  
+  if ( kMix )
+  {
+    gSumPtBC ->SetMarkerStyle(20);
+    gSumPtBC ->SetMarkerColor(1);
+    gSumPtBC ->SetLineColor  (1);   
+  }
+  
+  legend->AddEntry(gSumPt,"Sum","P");
+  
+  // Normalize to total number of SMs/Sectors/Sides
+  if ( opt != "SMGroup" )
+  {
+    for (Int_t ibin = 0; ibin < gSumPt->GetN(); ibin++) 
+    {
+      gSumPt->GetY ()[ibin] /= nCombi;  
+      gSumPt->GetEY()[ibin] /= nCombi;  
+      if ( kMix )
+      {
+        gSumPtBC->GetY ()[ibin] /= nCombi; 
+        gSumPtBC->GetEY()[ibin] /= nCombi; 
+      }
+    }
+  }
+  
+  //
+  // Get different combinations 
+  //
+  TGraphErrors* gPt   [nCombi];
+  TGraphErrors* gPtBC [nCombi];
+  TGraphErrors* gMass [nCombi];
+  TGraphErrors* gWidth[nCombi];
+  
   for(Int_t icomb = 0; icomb < nCombi; icomb ++)
   {
     gPt   [icomb] = (TGraphErrors*) fout->Get(Form("gPt_%s%d"   ,opt.Data(),icomb+first));
@@ -1271,6 +1381,9 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   
   if ( !gMass[0] ) return ;
   
+  //
+  // PLOT
+  //
   TCanvas *cFitGraph = new TCanvas(Form("cFitGraph_%sCombinations",opt.Data()),
                                    Form("Fit Graphs for %s combinations",opt.Data()),600,600);
   cFitGraph->Divide(2, 2);
@@ -1280,8 +1393,8 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   gPad->SetGridx();
   gPad->SetGridy();
   
-//  gMass[0]->SetMaximum(1);
-//  gMass[0]->SetMinimum(1e-8);
+  gMass[0]->SetMaximum(160);
+  gMass[0]->SetMinimum(120);
   
   gMass[0]->Draw("AP");
   for(Int_t icomb = 1; icomb < nCombi; icomb ++)
@@ -1289,20 +1402,25 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     if ( gMass[icomb] ) gMass[icomb]->Draw("P");
   }
   
+  gSumMass->Draw("P");
+
   legend->Draw();
 
   cFitGraph->cd(2);
   gPad->SetGridx();
   gPad->SetGridy();
   
-//  gWidth[0]->SetMaximum(1);
-//  gWidth[0]->SetMinimum(1e-8);
+  gWidth[0]->SetMaximum(16);
+  gWidth[0]->SetMinimum(8);
+  if(opt=="Side") gWidth[0]->SetMinimum(2);
   
   gWidth[0]->Draw("AP");
   for(Int_t icomb = 1; icomb < nCombi; icomb ++)
   {
    if ( gWidth[icomb] ) gWidth[icomb]->Draw("P");
   }
+  
+  gSumWidth->Draw("P");
   
   legend->Draw();
 
@@ -1312,8 +1430,8 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   gPad->SetGridy();
   gPad->SetLogy();
   
-//  gPt[0]->SetMaximum(1);
-//  gPt[0]->SetMinimum(1e-8);
+  gPt[0]->SetMaximum(1);
+  gPt[0]->SetMinimum(1e-8);
   
   gPt[0]->Draw("AP");
   for(Int_t icomb = 1; icomb < nCombi; icomb ++)
@@ -1321,6 +1439,8 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     if ( gPt[icomb] ) gPt[icomb]->Draw("P");
   }
   
+  gSumPt->Draw("P");
+
   legend->Draw();
 
   if ( kMix )
@@ -1331,28 +1451,170 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     gPad->SetGridy();
     gPad->SetLogy();
     
-//    gPtBC[0]->SetMaximum(1);
-//    gPtBC[0]->SetMinimum(1e-8);
+    gPtBC[0]->SetMaximum(1);
+    gPtBC[0]->SetMinimum(1e-8);
     
     gPtBC[0]->Draw("AP");
     for(Int_t icomb = 1; icomb < nCombi; icomb ++)
     {
       if ( gPtBC[icomb] ) gPtBC[icomb]->Draw("P");
     }
-    
+    gSumPtBC->Draw("P");
+
     legend->Draw();
   }
   
   cFitGraph->Print(Form("IMfigures/%s_%s_MassWidthPtSpectra_%s_%sCombinations.%s",
                         kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),opt.Data(),
                         /*kFileName.Data(),*/kPlotFormat.Data()));
+  //
+  // Calculate the ratio to the sum
+  //
+  TGraphErrors* gRatPt   [nCombi];
+  TGraphErrors* gRatPtBC [nCombi];
+  TGraphErrors* gRatMass [nCombi];
+  TGraphErrors* gRatWidth[nCombi];
   
+  TLegend * legendR =  new TLegend(xmin,ymin,xmax,ymax);
+  legendR->SetTextSize(0.05);
   
-//  // Ratio to average TO DO
-//  TGraphErrors* gRatPt   [nCombi];
-//  TGraphErrors* gRatPtBC [nCombi];
-//  TGraphErrors* gRatMass [nCombi];
-//  TGraphErrors* gRatWidth[nCombi];    
+  for(Int_t icomb = 0; icomb < nCombi; icomb ++)
+  {
+    //printf("icomb %d\n",icomb);
+    //printf("\t pt %p %p\n",gPt[icomb],gSumPt);
+    gRatPt   [icomb] = DivideGraphs(gPt   [icomb],gSumPt    );
+    //printf("\t ptBC %p %p\n",gPtBC[icomb],gSumPtBC);
+    gRatPtBC [icomb] = DivideGraphs(gPtBC [icomb],gSumPtBC  );
+    //printf("\t pt %p %p\n",gMass[icomb],gSumMass);
+    gRatMass [icomb] = DivideGraphs(gMass [icomb],gSumMass  );
+    //printf("\t pt %p %p\n",gWidth[icomb],gSumWidth);
+    gRatWidth[icomb] = DivideGraphs(gWidth[icomb],gSumWidth);
+    
+    if(!gRatMass[icomb]) continue;
+    
+    gRatPt   [icomb]->SetMarkerStyle(modStyleIndex[icomb]);
+    gRatPt   [icomb]->SetMarkerColor(modColorIndex[icomb]);
+    gRatPt   [icomb]->SetLineColor  (modColorIndex[icomb]);    
+    
+    gRatMass[icomb]->SetMarkerStyle(modStyleIndex[icomb]);
+    gRatMass[icomb]->SetMarkerColor(modColorIndex[icomb]);
+    gRatMass[icomb]->SetLineColor  (modColorIndex[icomb]);   
+    
+    gRatWidth[icomb]->SetMarkerStyle(modStyleIndex[icomb]);
+    gRatWidth[icomb]->SetMarkerColor(modColorIndex[icomb]);
+    gRatWidth[icomb]->SetLineColor  (modColorIndex[icomb]);
+    
+    gRatPt   [icomb]->GetHistogram()->SetTitle(Form("p_{T} of %s from fit, %s "   ,particleN.Data(), opt.Data()));
+    gRatWidth[icomb]->GetHistogram()->SetTitle(Form("%s mass #sigma vs p_{T}, %s ",particleN.Data(), opt.Data()));
+    gRatMass [icomb]->GetHistogram()->SetTitle(Form("%s mass #mu vs p_{T}, %s "   ,particleN.Data(), opt.Data()));
+    
+    gRatPt   [icomb]->GetHistogram()->SetYTitle("Ratio to sum");    
+    gRatWidth[icomb]->GetHistogram()->SetYTitle("Ratio to sum");    
+    gRatMass [icomb]->GetHistogram()->SetYTitle("Ratio to sum");    
+
+    gRatPt   [icomb]->GetHistogram()->SetTitleOffset(1.4,"Y"); 
+    gRatWidth[icomb]->GetHistogram()->SetTitleOffset(1.4,"Y"); 
+    gRatMass [icomb]->GetHistogram()->SetTitleOffset(1.4,"Y"); 
+    
+    if ( kMix )
+    {
+      gRatPtBC [icomb]->SetMarkerStyle(modStyleIndex[icomb]);
+      gRatPtBC [icomb]->SetMarkerColor(modColorIndex[icomb]);
+      gRatPtBC [icomb]->SetLineColor  (modColorIndex[icomb]);   
+      gRatPtBC [icomb]->GetHistogram()->SetTitle(Form("p_{T} of %s bin counted, %s ",particleN.Data(), opt.Data()));
+      gRatPtBC [icomb]->GetHistogram()->SetYTitle("Ratio to sum");    
+      gRatPtBC [icomb]->GetHistogram()->SetTitleOffset(1.5,"Y"); 
+    }
+    
+    if ( !opt.Contains("Group") )
+      legendR->AddEntry(gPt[icomb],Form("%s %d",opt.Data(),icomb),"P");
+    else
+    {
+      if(icomb == 0) legendR->AddEntry(gPt[icomb],"SM0+4+5+6+7+8+9","P");
+      if(icomb == 1) legendR->AddEntry(gPt[icomb],"SM1+2","P");
+      if(icomb == 2) legendR->AddEntry(gPt[icomb],"SM3+7","P");
+    }
+  } // combi loop
+
+  //
+  // PLOT
+  //
+  TCanvas *cFitGraphRatio = new TCanvas(Form("cFitGraphSumRatio_%sCombinations",opt.Data()),
+                                        Form("Fit Graphs ratio to sum for %s combinations",opt.Data()),600,600);
+  cFitGraphRatio->Divide(2, 2);
+  
+  // Mass  
+  cFitGraphRatio->cd(1);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  
+  gRatMass[0]->SetMaximum(1.05);
+  gRatMass[0]->SetMinimum(0.95);
+  
+  gRatMass[0]->Draw("AP");
+  for(Int_t icomb = 1; icomb < nCombi; icomb ++)
+  {
+    if ( gRatMass[icomb] ) gRatMass[icomb]->Draw("P");
+  }
+  
+  legendR->Draw();
+  
+  cFitGraphRatio->cd(2);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  
+  gRatWidth[0]->SetMaximum(1.5);
+  gRatWidth[0]->SetMinimum(0.5);
+  
+  gRatWidth[0]->Draw("AP");
+  for(Int_t icomb = 1; icomb < nCombi; icomb ++)
+  {
+    if ( gRatWidth[icomb] ) gRatWidth[icomb]->Draw("P");
+  }
+  
+  legendR->Draw();
+  
+  cFitGraphRatio->cd(3);
+  
+  gPad->SetGridx();
+  gPad->SetGridy();
+//  gPad->SetLogy();
+  
+  gRatPt[0]->SetMaximum(2);
+  gRatPt[0]->SetMinimum(0);
+  
+  gRatPt[0]->Draw("AP");
+  for(Int_t icomb = 1; icomb < nCombi; icomb ++)
+  {
+    if ( gRatPt[icomb] ) gRatPt[icomb]->Draw("P");
+  }
+  
+  legendR->Draw();
+  
+  if ( kMix )
+  {
+    cFitGraphRatio->cd(4);
+    
+    gPad->SetGridx();
+    gPad->SetGridy();
+//    gPad->SetLogy();
+    
+    gRatPtBC[0]->SetMaximum(2);
+    gRatPtBC[0]->SetMinimum(0);
+    
+    gRatPtBC[0]->Draw("AP");
+    for(Int_t icomb = 1; icomb < nCombi; icomb ++)
+    {
+      if ( gRatPtBC[icomb] ) gRatPtBC[icomb]->Draw("P");
+    }
+    
+    legendR->Draw();
+  }
+  
+  cFitGraphRatio->Print(Form("IMfigures/%s_%s_MassWidthPtSpectra_%s_%sCombinations_RatioToSum.%s",
+                             kProdName.Data(),kCalorimeter.Data(),kParticle.Data(),opt.Data(),
+                             /*kFileName.Data(),*/kPlotFormat.Data()));
+  
 }
 
 ///
@@ -1590,7 +1852,10 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
 /// \param mixed      : bool, use mixed event to constrain combinatorial background
 /// \param truncmix   : bool, 1: use truncated function to constrain backgroun; 0: use factor from fixed bin
 /// \param pol        : int, polinomyal type for residual background under the peak
-/// \param drawAllCombi: Plot also many SM combinations
+/// \param drawPerSM  : bool, activate plot per pair in same SM
+/// \param drawPerSMGr: bool, activate plot per pair in same SM adding SM: 3 groups [3,7], [1,2], [0,4,5,6,8,9], needs drawPerSM=kTRUE
+/// \param drawPerSector: bool, activate plot per pair in different continuous SM sectors
+/// \param drawPerSide: bool, activate plot per pair in different continuous SM sides 
 /// \param plotFormat : define the type of figures: eps, pdf, etc.
 ///
 //-----------------------------------------------------------------------------
@@ -1607,7 +1872,10 @@ void InvMassFit
  Bool_t  mixed        = kTRUE,
  Bool_t  truncmix     = kTRUE,
  Int_t   pol          = 1,
- Bool_t  drawAllCombi = kFALSE, 
+ Bool_t  drawPerSM    = kFALSE, 
+ Bool_t  drawPerSMGr  = kFALSE, 
+ Bool_t  drawPerSector= kFALSE, 
+ Bool_t  drawPerSide  = kFALSE, 
  TString plotFormat   = "eps")
 {
   kSumw2      = sumw2;
@@ -1630,18 +1898,20 @@ void InvMassFit
       kHistoStartName = "AnaPi0_Calo1";
   }
   
+  if(drawPerSMGr) drawPerSM = kTRUE;
+  
   //---------------------------------------
   // Get input file
   //---------------------------------------
   Int_t ok = GetFileAndEvents(histoDir, histoList);
   
-//  kProdName.ReplaceAll("module/","");
-//  kProdName.ReplaceAll("TCardChannel","");
-//  kProdName.ReplaceAll("/","_");
-//  kProdName.ReplaceAll("2_","_");
-//  kProdName.ReplaceAll("__","_");
-//  if( kFileName !="AnalysisResults" && !kFileName.Contains("Scale") )
-//    kProdName+=kFileName;
+  //kProdName.ReplaceAll("module/","");
+  //kProdName.ReplaceAll("TCardChannel","");
+  kProdName.ReplaceAll("/","_");
+  //kProdName.ReplaceAll("2_","_");
+  //kProdName.ReplaceAll("__","_");
+  if( kFileName !="AnalysisResults" && !kFileName.Contains("Scale") )
+    kProdName+=kFileName;
     
   printf("Settings: prodname <%s>, filename <%s>, histoDir <%s>, histoList <%s>,\n"
          " \t histo start name <%s>, particle <%s>, calorimeter <%s>, \n"
@@ -1676,6 +1946,9 @@ void InvMassFit
   
   const Int_t nPtPi0 = 12;
   Double_t xPtLimitsPi0[] = {2.,3.,4.,5.,6.,7.,8.,9.,10.,12.,14.,16.,18.};
+  
+//  const Int_t nPtPi0 = 23;
+//  Double_t xPtLimitsPi0[] = {1.6,1.8,2.,2.2,2.4,2.6,2.8,3.,3.4,3.8,4.2,4.6,5.,5.5,6.,6.5,7.,7.5,8.,9.,10.,12.,15.,17.,20.};
   
   Int_t nPt = nPtPi0;
   if(kParticle == "Eta") nPt = nPtEta;
@@ -1783,23 +2056,16 @@ void InvMassFit
   //
   // Pairs in same SM
   // 
-  if ( drawAllCombi )
+  if ( drawPerSM )
   {
     Int_t imod;
     Int_t firstMod = 0;
     Int_t lastMod  = 11;   
-    Int_t firstSide = 0;
-    Int_t lastSide  = 9;   
-    Int_t firstSector = 0;
-    Int_t lastSector  = 5;
+
     if ( kCalorimeter=="DCAL" )
     {
       firstMod  = 12;
       lastMod   = 19;
-      firstSide = 10;
-      lastSide  = 15;   
-      firstSector = 6;
-      lastSector  = 9;
     }
     
     // Initialize SM grouping histograms
@@ -1808,6 +2074,8 @@ void InvMassFit
     // 2 : SM 3+7 
     TH2F  * hReSMGroups[3] ;
     TH2F  * hMiSMGroups[3] ;
+    TH2F  * hReSM = 0;
+    TH2F  * hMiSM = 0;
     
     for(Int_t imodgroup = 0; imodgroup<=2; imodgroup++)
     {
@@ -1835,66 +2103,112 @@ void InvMassFit
       
       ProjectAndFit(nPt,comment,leg,hname,xPtLimits, xPt, exPt, hRe, hMi );    
       
-      if      ( imod == 0 )
+      // Add all SM
+      if( imod == firstMod )
       {
-        hReSMGroups[0] = (TH2F*) hRe->Clone("h2D_Re_IM_SM045689");
-        if(kMix) hMiSMGroups[0] = (TH2F*) hMi->Clone("h2D_Mi_IM_SM045689");
-      }
-      else if ( imod == 1 )
-      {
-        hReSMGroups[1] = (TH2F*) hRe->Clone("h2D_Re_IM_SM12");
-        if(kMix) hMiSMGroups[1] = (TH2F*) hMi->Clone("h2D_Mi_IM_SM12");
-      }
-      else if ( imod == 3 )
-      {
-        hReSMGroups[2] = (TH2F*) hRe->Clone("h2D_Re_IM_SM37");
-        if(kMix) hMiSMGroups[2] = (TH2F*) hMi->Clone("h2D_Mi_IM_SM37");
-      }     
-      else if ( imod == 2 )
-      {
-        hReSMGroups[1]->Add(hRe);
-        if(kMix) hMiSMGroups[1]->Add(hMi);
-      }     
-      else if ( imod == 7 )
-      {
-        hReSMGroups[2]->Add(hRe);
-        if(kMix) hMiSMGroups[2]->Add(hMi);
-      }
-      else if ( imod < 10 )
-      {
-        hReSMGroups[0]->Add(hRe);
-        if(kMix) hMiSMGroups[0]->Add(hMi);
-      }
-    }
-        
-    // Group SMs in with particular behaviors
-    for(Int_t imodgroup = 0; imodgroup<=2; imodgroup++)
-    {
-      //printf("histo modgroup %d Re %p - Mix %p\n",
-      //       imod, hReSMGroups[imodgroup], hMiSMGroups[imodgroup]);
-      
-      comment = Form("both clusters in same SM, group %d",imodgroup);
-      leg     = Form("SMGroup %d",imodgroup);
-      hname   = Form("SMGroup%d" ,imodgroup);
-      
-      if ( imodgroup != 0 )
-      {
-        hReSMGroups[imodgroup]->Scale(1./2.);
-        if ( kMix ) hMiSMGroups[imodgroup]->Scale(1./2.);
+        hReSM = (TH2F*) hRe->Clone("h2D_Re_IM_SM");
+        if(kMix) hMiSM = (TH2F*) hMi->Clone("h2D_Mi_IM_SM");
       }
       else
       {
-        hReSMGroups[imodgroup]->Scale(1./6.);
-        if ( kMix ) hMiSMGroups[imodgroup]->Scale(1./6.);
+        hReSM->Add( hRe );
+        if(kMix) hMiSM ->Add( hMi ); 
       }
       
-      ProjectAndFit(nPt, comment, leg, hname, xPtLimits, xPt, exPt, 
-                    hReSMGroups[imodgroup], hMiSMGroups[imodgroup] );    
+      // Group SMs in with particular behaviors
+      if ( drawPerSMGr )
+      {
+        if      ( imod == 0 )
+        {
+          hReSMGroups[0] = (TH2F*) hRe->Clone("h2D_Re_IM_SM045689");
+          if(kMix) 
+            hMiSMGroups[0] = (TH2F*) hMi->Clone("h2D_Mi_IM_SM045689");
+        }
+        else if ( imod == 1 )
+        {
+          hReSMGroups[1] = (TH2F*) hRe->Clone("h2D_Re_IM_SM12");
+          if(kMix) hMiSMGroups[1] = (TH2F*) hMi->Clone("h2D_Mi_IM_SM12");
+        }
+        else if ( imod == 3 )
+        {
+          hReSMGroups[2] = (TH2F*) hRe->Clone("h2D_Re_IM_SM37");
+          if(kMix) hMiSMGroups[2] = (TH2F*) hMi->Clone("h2D_Mi_IM_SM37");
+        }     
+        else if ( imod == 2 )
+        {
+          hReSMGroups[1]->Add(hRe);
+          if(kMix) hMiSMGroups[1]->Add(hMi);
+        }     
+        else if ( imod == 7 )
+        {
+          hReSMGroups[2]->Add(hRe);
+          if(kMix) hMiSMGroups[2]->Add(hMi);
+        }
+        else if ( imod < 10 )
+        {
+          hReSMGroups[0]->Add(hRe);
+          if(kMix) hMiSMGroups[0]->Add(hMi);
+        }
+      } // do SM groups addition
+    } // SM loop
+    
+    // Sum of pairs in same SM   
+    comment = "both clusters in same SM";
+    leg     = "Same SM";
+    hname   = "SameSM";
+    ProjectAndFit(nPt,comment,leg,hname,xPtLimits, xPt, exPt, hReSM, hMiSM );    
+
+    // Fit parameters final plotting    
+    PlotGraphs("SM"     ,firstMod   ,lastMod   );
+    
+    // Group SMs in with particular behaviors
+    if( drawPerSMGr )
+    {
+      for(Int_t imodgroup = 0; imodgroup<=2; imodgroup++)
+      {
+        //printf("histo modgroup %d Re %p - Mix %p\n",
+        //       imod, hReSMGroups[imodgroup], hMiSMGroups[imodgroup]);
+        
+        comment = Form("both clusters in same SM, group %d",imodgroup);
+        leg     = Form("SMGroup %d",imodgroup);
+        hname   = Form("SMGroup%d" ,imodgroup);
+        
+        if ( imodgroup != 0 )
+        {
+          hReSMGroups[imodgroup]->Scale(1./2.);
+          if ( kMix ) hMiSMGroups[imodgroup]->Scale(1./2.);
+        }
+        else
+        {
+          hReSMGroups[imodgroup]->Scale(1./6.);
+          if ( kMix ) hMiSMGroups[imodgroup]->Scale(1./6.);
+        }
+        
+        ProjectAndFit(nPt, comment, leg, hname, xPtLimits, xPt, exPt, 
+                      hReSMGroups[imodgroup], hMiSMGroups[imodgroup] );    
+      }
+      
+      // Fit parameters final plotting    
+      PlotGraphs("SMGroup",0          ,2         );
+    } // Per SM groups
+  
+  } // Per SM
+  
+  //
+  // Pairs in same sector
+  //
+  if(drawPerSector)
+  {
+    Int_t firstSector = 0;
+    Int_t lastSector  = 5;
+    if ( kCalorimeter=="DCAL" )
+    {
+      firstSector = 6;
+      lastSector  = 9;
     }
     
-    //
-    // Pairs in same sector
-    //
+    TH2F  * hReSector = 0;
+    TH2F  * hMiSector = 0;
     Int_t isector;
     for(isector = firstSector; isector<=lastSector; isector++)
     { 
@@ -1909,6 +2223,18 @@ void InvMassFit
         hMi = (TH2F *) lis->FindObject(Form("%s_hMiSameSectorEMCALMod_%d", kHistoStartName.Data(), isector));
       }
       
+      // Add all Sectors
+      if( isector == firstSector )
+      {
+        hReSector = (TH2F*) hRe->Clone("h2D_Re_IM_Sector");
+        if(kMix) hMiSector = (TH2F*) hMi->Clone("h2D_Mi_IM_Sector");
+      }
+      else
+      {
+        hReSector->Add( hRe );
+        if(kMix) hMiSector ->Add( hMi ); 
+      }
+      
       //printf("histo sector %d Re %p - Mix %p\n",isector, hRe,hMi);
       
       comment = Form("both clusters in Sector %d",isector);
@@ -1918,8 +2244,32 @@ void InvMassFit
       ProjectAndFit(nPt,comment,leg,hname,xPtLimits, xPt, exPt, hRe, hMi );    
     }
     
-    // Pairs in same side
-    //
+    // Sum of pairs in same Sector
+    comment = "both clusters in same Sector";
+    leg     = "Same Sector";
+    hname   = "SameSector";
+    ProjectAndFit(nPt,comment,leg,hname,xPtLimits, xPt, exPt, hReSector, hMiSector );  
+    
+    // Fit parameters final plotting
+    PlotGraphs("Sector" ,firstSector,lastSector);
+  } // Per sector
+  
+  
+  // Pairs in same side
+  //
+  if(drawPerSide)
+  {
+    Int_t firstSide = 0;
+    Int_t lastSide  = 9;   
+    
+    if ( kCalorimeter=="DCAL" )
+    {
+      firstSide = 10;
+      lastSide  = 15;   
+    }  
+    
+    TH2F  * hReSide = 0;
+    TH2F  * hMiSide = 0;
     Int_t iside;
     for(iside = firstSide; iside <= lastSide; iside++)
     { 
@@ -1934,6 +2284,18 @@ void InvMassFit
         hMi = (TH2F *) lis->FindObject(Form("%s_hMiSameSideEMCALMod_%d", kHistoStartName.Data(), iside));
       }
       
+      // Add all Sides
+      if( iside == firstSide )
+      {
+        hReSide = (TH2F*) hRe->Clone("h2D_Re_IM_Side");
+        if(kMix) hMiSide = (TH2F*) hMi->Clone("h2D_Mi_IM_Side");
+      }
+      else
+      {
+        hReSide->Add( hRe );
+        if(kMix) hMiSide ->Add( hMi ); 
+      }
+      
       //printf("histo side %d Re %p - Mix %p\n",iside, hRe,hMi);
       
       comment = Form("both clusters in Side %d",iside);
@@ -1943,16 +2305,16 @@ void InvMassFit
       ProjectAndFit(nPt,comment,leg,hname,xPtLimits, xPt, exPt, hRe, hMi );    
     }
     
-    //------------------------------
+    // Sum of pairs in same Side   
+    comment = "both clusters in same Side";
+    leg     = "Same Side";
+    hname   = "SameSide";
+    ProjectAndFit(nPt,comment,leg,hname,xPtLimits, xPt, exPt, hReSide, hMiSide );    
+    
     // Fit parameters final plotting
-    //------------------------------
-    
-    PlotGraphs("SM"     ,firstMod   ,lastMod   );
-    PlotGraphs("SMGroup",0          ,2         );
     PlotGraphs("Side"   ,firstSide  ,lastSide  );
-    PlotGraphs("Sector" ,firstSector,lastSector);
     
-  } // multiple combinations
+  } // per Side
   
   fout->Close();  
 }
