@@ -34,10 +34,9 @@ public:
 		{
 			for(Int_t ib = 0; ib < kNbinsSigma; ++ib)
 			{
-				AliPP13SelectionWeightsMC swi;
+				AliPP13SelectionWeightsMC & swi = fWeightsScan[ia][ib];
 				swi.fNonA = nona - fPrecisionA * kNbinsA / 2 + ia * fPrecisionA;
 				swi.fNonSigma = nonSigma - fPrecisionSigma * kNbinsSigma / 2 + ib * fPrecisionSigma;
-				fWeightsScan[ia][ib] = swi;
 			}
 		}
 	}
