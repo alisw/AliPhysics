@@ -52,7 +52,7 @@ AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 
 fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fGammaOrPi0(0),fSEvMEv(0),fDebug(0),
 fSavePool(0),
-fRtoD(0),
+fRtoD(0),fSubDetector(0),
 fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),
 fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),fPoolMgr(0x0),fTrackDepth(0),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
 fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),
@@ -82,7 +82,7 @@ AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
 
 fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fGammaOrPi0(0),fSEvMEv(0),fDebug(0),
 fSavePool(0),
-fRtoD(0),
+fRtoD(0),fSubDetector(0),
 fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),
 fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),fPoolMgr(0x0),fTrackDepth(0),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
 fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),
@@ -597,16 +597,17 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 
     Double_t mcStatusArray[7+1];
     if (fIsMC) {
-      printf("Adding MCStatus to THnSparse\n"); //FIXME
-      //..MC Status array: 0 - no Match, 1 - pair matched to pi0, 2 - pair match to eta
-      //  3 for gamma (PCM), 4 for same MC Part, 5 for eta common ancestor(not eta -> 2 gamma) 
-			// 6 for other common ancestor 
+      //..MC Status array:
+			// 0 - no Match, 1 - Single Particle to two clusters, 2 - pi0 to two gamma
+			// 3 - pi0 Dalitz, 4 - Eta to two gamma, 5 - Eta to three pi0
+			// 6 - eta to pi0pi+pi0 or pi0twogamma, 7 - eta to gammapi+pi- or gammaf+f-
+			// 8 - gamma to e+e-, 9 - other shared ancestor (not in previous categories
       titleThnPi0[dimThnPi0] = "MC Match Status";
-      nBinsThnPi0[dimThnPi0] = 7;
+      nBinsThnPi0[dimThnPi0] = 10;
       binEdgesThnPi0[dimThnPi0] = mcStatusArray;
-      GenerateFixedBinArray(7,0,7,mcStatusArray);
+      GenerateFixedBinArray(10,0,10,mcStatusArray);
       minThnPi0[dimThnPi0] = 0;
-      maxThnPi0[dimThnPi0] = 7;
+      maxThnPi0[dimThnPi0] = 10;
       dimThnPi0++;
     }
 
@@ -1697,18 +1698,6 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			Int_t iMCTreeHeight1 = -1;
 			if (fIsMC) {
 				iMCIndexClus1 = FindMCPartForClus(cluster);
-
-		//		iMCRootPartClus1 = FindMCRootPart(iMCIndexClus1,&iMCTreeHeight1);
-//				printf("MHO: Clus1 MCi = %6d\t, RootMCi,height = %6d,%2d",iMCIndexClus1,iMCRootPartClus1,iMCTreeHeight1);
-
-//				if (iMCIndexClus1 == iMCRootPartClus1) {
-//					printf(".  MC part is its own root\n");
-//				} else {
-//					AliAODMCParticle * rootPart = fMCParticles->GetMCParticle(iMCRootPartClus1);
-//					printf(".  root has pdg = %d\n",rootPart->GetPdgCode());
-
-//				}
-
 			}
 
 			TLorentzVector CaloClusterVec;
@@ -1923,13 +1912,13 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 
 
 
-	// MC STatus determination
+	// MC Status determination
 	Int_t MCMatchStatus = 0; // 0 for no matches, 1 for MC pi0
 	if (fIsMC && fMCParticles) {
 		if (mcIndex1 < 0 || mcIndex2 < 0) {
 		}
 		else if (mcIndex1 == mcIndex2) {
-			 MCMatchStatus = 4; // 2 clusters from 1 MC Part
+			 MCMatchStatus = 1; // 2 clusters from 1 MC Part
 		}
 		else {
 			AliAODMCParticle * mcPart1 = fMCParticles->GetMCParticle(mcIndex1);
@@ -1938,77 +1927,93 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 			Int_t iMother1 = mcPart1->GetMother();
 			Int_t iMother2 = mcPart2->GetMother();
 
-			if (iMother1 == iMother2 ) {
-				AliAODMCParticle * mcMother = fMCParticles->GetMCParticle(iMother1);
-				Int_t iPdgMother = 0;
-				if (mcMother) iPdgMother = mcMother->GetPdgCode();
+			Int_t aMCTreeHeight1 = 0;
+			Int_t aMCRootPartClus1 = FindMCRootPart(mcIndex1,&aMCTreeHeight1);
+			Int_t aMCTreeHeight2 = 0;
+			Int_t aMCRootPartClus2 = FindMCRootPart(mcIndex2,&aMCTreeHeight2);
 
-				if (iPdgMother == 111) {
-					MCMatchStatus = 1;  // Pi0
-					// Fill Pi0 Match Histos
-					if (fPlotQA == 1) {
-						Double_t fPi0_Pt = CaloClusterVecPi0.Pt();
-						Double_t fDeltaPt = fPi0_Pt - mcMother->Pt();
 
-						Double_t fDeltaPhi = DeltaPhi(CaloClusterVecPi0,mcMother->Phi());
-						Double_t fDeltaEta = CaloClusterVecPi0.Eta() - mcMother->Eta();
+			if (aMCRootPartClus1 == aMCRootPartClus2) { //The MC Parts still have a common ancestor
 
-						fHistPi0MCDPt->Fill(fPi0_Pt,fDeltaPt);
-						fHistPi0MCDPhiDEta->Fill(fDeltaPhi,fDeltaEta);
-					}
-				}
-				else if (iPdgMother == 221) {
-					MCMatchStatus = 2; // Eta
-					// Fill Pi0 Match Histos
-					if (fPlotQA == 1) {
-						Double_t fPi0_Pt = CaloClusterVecPi0.Pt();
-						Double_t fDeltaPt = fPi0_Pt - mcMother->Pt();
+				Int_t iLCA = FindMCLowComAnc(mcIndex1,mcIndex2); // Lowest Common Ancestor of clusters
+				if (iLCA != -1) {
+					AliAODMCParticle * pLCA = fMCParticles->GetMCParticle(iLCA);
+					Int_t iLCAPdg = pLCA->GetPdgCode();
+					if (iLCAPdg == 111) {
+						Int_t nLCADaughters = pLCA->GetNDaughters();
+						if (nLCADaughters == 2) { // 2 Gammas
+							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0));
+							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+1);
+							if (pDaughter1 && pDaughter2 && pDaughter1->GetPdgCode() == 22 && pDaughter2->GetPdgCode() == 22) {
+								MCMatchStatus = 2;
+								// Check Reconstructed Pi0 DeltaPt and DeltaPhiDeltaEta
+								Double_t fPi0_Pt = CaloClusterVecPi0.Pt();
+								Double_t fDeltaPt = fPi0_Pt - pLCA->Pt();
 
-						Double_t fDeltaPhi = DeltaPhi(CaloClusterVecPi0,mcMother->Phi());
-						Double_t fDeltaEta = CaloClusterVecPi0.Eta() - mcMother->Eta();
+								Double_t fDeltaPhi = DeltaPhi(CaloClusterVecPi0,pLCA->Phi());
+								Double_t fDeltaEta = CaloClusterVecPi0.Eta() - pLCA->Eta();
 
-						fHistEtaMCDPt->Fill(fPi0_Pt,fDeltaPt);
-						fHistEtaMCDPhiDEta->Fill(fDeltaPhi,fDeltaEta);
-					}
-				}	else if (iPdgMother == 22) {
-					MCMatchStatus = 3; // gamma (PC to pair)
-				}
-			} else { // Check for grandmothers
+								fHistPi0MCDPt->Fill(fPi0_Pt,fDeltaPt);
+								fHistPi0MCDPhiDEta->Fill(fDeltaPhi,fDeltaEta);
+							}
+						} else { // other pi0, most likely gamma,e+,e-
+							MCMatchStatus = 3;
+						}
+					} else if (iLCAPdg == 221) {
+						// Categorize Etas here
+						// Check daughters  2 gamma, 3 pi0, or 1pi0,1pi+,ipi-
+						Int_t nLCADaughters = pLCA->GetNDaughters();
+						if (nLCADaughters == 2) { // 2 Gammas
+							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0));
+							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+1);
+							if (pDaughter1 && pDaughter2 && pDaughter1->GetPdgCode() == 22 && pDaughter2->GetPdgCode() == 22) {
 
-				Int_t iMCTreeHeight1 = 0;
-				Int_t iMCRootPartClus1 = FindMCRootPart(mcIndex1,&iMCTreeHeight1);
-				Int_t iMCTreeHeight2 = 0;
-				Int_t iMCRootPartClus2 = FindMCRootPart(mcIndex2,&iMCTreeHeight2);
-
-				if (iMCRootPartClus1 == iMCRootPartClus2) { //The MC Parts still have a common ancestor
-					AliAODMCParticle * pRootPart = fMCParticles->GetMCParticle(iMCRootPartClus1);
-
-					if (pRootPart && (221 == pRootPart->GetPdgCode())) MCMatchStatus = 5;
-					else MCMatchStatus = 6;
-				}
-
-				if (false) {
-					AliAODMCParticle * mcMother1 = fMCParticles->GetMCParticle(iMother1);
-					AliAODMCParticle * mcMother2 = fMCParticles->GetMCParticle(iMother2);
-
-					if (mcMother1 && mcMother2) {
-						Int_t iGMother1 = mcMother1->GetMother();
-						Int_t iGMother2 = mcMother2->GetMother();
-						if (iGMother1 > -1 && iGMother1 == iGMother2) {
-							AliAODMCParticle * mcGMother = fMCParticles->GetMCParticle();
-							if (mcGMother) {
 								MCMatchStatus = 4;
+								// Check Reconstructed Eta DeltaPt and DeltaPhiDeltaEta
+								Double_t fPi0_Pt = CaloClusterVecPi0.Pt();
+								Double_t fDeltaPt = fPi0_Pt - pLCA->Pt();
+
+								Double_t fDeltaPhi = DeltaPhi(CaloClusterVecPi0,pLCA->Phi());
+								Double_t fDeltaEta = CaloClusterVecPi0.Eta() - pLCA->Eta();
+
+								fHistEtaMCDPt->Fill(fPi0_Pt,fDeltaPt);
+								fHistEtaMCDPhiDEta->Fill(fDeltaPhi,fDeltaEta);
+							}
+						} else if (nLCADaughters == 3) { // 3 pi0 or pi0,pi+,pi-
+							AliAODMCParticle * pDaughter1 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0));
+							AliAODMCParticle * pDaughter2 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+1);
+							AliAODMCParticle * pDaughter3 = fMCParticles->GetMCParticle(pLCA->GetDaughter(0)+2);
+							Int_t iPdg1 = pDaughter1->GetPdgCode();
+							Int_t iPdg2 = pDaughter2->GetPdgCode();
+							Int_t iPdg3 = pDaughter3->GetPdgCode();
+							if (iPdg1 == 111 && iPdg2 == 111 && iPdg3 == 111) MCMatchStatus = 5;
+								// eta -> 3pi0
+							else if (iPdg1 + iPdg2 + iPdg3 == 111 && iPdg1*iPdg2*iPdg3 == 111*211*(-211)) {
+								// eta -> pi0,pi+,pi-
+								MCMatchStatus = 6;
+							} else if (iPdg1 + iPdg2 + iPdg3 == 22) {
+								// eta -> gamma,pi+,pi-
+								// eta -> gamma,e+,e-
+								// eta -> gamma,mu+,mu-
+								MCMatchStatus = 7;
+							} else if (iPdg1 + iPdg2 + iPdg3 == 111+22+22 && iPdg1*iPdg2*iPdg3 == 111*22*22) {
+								// eta-> pi0,gamma,gamma
+								MCMatchStatus = 6; // similar to pi0,pi+,pi-
+							} else {
+								MCMatchStatus = 9; // group this with other shared ancestor (probably never happen)
 							}
 						}
 					}
+					else if (iLCAPdg == 22) MCMatchStatus = 8;
+					else MCMatchStatus = 9;
+
+				} else {
+					MCMatchStatus = 0;
 				}
-
-
 			}
 		}
 	}
 	valueArray[7] = MCMatchStatus;
-
 
 
 	fPi0Cands->Fill(valueArray,Weight);
@@ -2295,6 +2300,7 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 	Bool_t Accepted=1; //..By default accepted
 
 	//!!double check these cuts carefully with the experts!!
+
 	//-----------------------------
 	//..at least 2 cells in cluster
 	if(caloCluster->GetNCells()<2)
@@ -2326,12 +2332,22 @@ Bool_t AliAnalysisTaskGammaHadron::AccClusterForAna(AliClusterContainer* cluster
 	}
 	//-----------------------------
 	//..Fiducial volume cut. If it is located neither in EMCal nor in DCal reject
-	 if(!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kEMCAL) &&
-		!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kDCAL)
-	 )
-	 {
-		 return 0;
-	 }
+	//..Additionally, do we want all EMCal Clusters, ECal only, or DCal only?
+	//.. If fSubdetector = 0, accept from ECal and DCal.
+	//.. If fSubdetector = 1, accept from only ECal.
+	//.. If fSubdetector = 2, accept from only DCal.
+	switch (fSubDetector) {
+		case 2:
+			if(!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kDCAL)) return 0;
+			break;
+		case 1:
+			if(!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kEMCAL)) return 0;
+			break;
+		default:
+		case 0:
+			if(!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kEMCAL) &&
+			!fFiducialCuts->IsInFiducialCut(caloClusterVec.Eta(),caloClusterVec.Phi(),AliFiducialCut::kDCAL)) return 0;
+	}
 	 //-----------------------------
 	 //..Fiducial volume cut II. Cuts on the distance to the EMCal border last+first row and last+first collumn
 	 //fFiducialCellCut->SetNumberOfCellsFromEMCALBorder(1); //ELI this could be momentum dependent and also different for merged clusters!!!
@@ -2524,6 +2540,66 @@ Int_t AliAnalysisTaskGammaHadron::FindMCRootPart(Int_t iMCIndex, Int_t * iMCTree
 	}
 
 	return iCurrentAnswer;
+}
+
+// Return the id of the Lowest Common Ancestor (LCA) of the two given root particles.
+// Return -1 if they do not have an LCA.
+//________________________________________________________________________
+Int_t AliAnalysisTaskGammaHadron::FindMCLowComAnc(Int_t iMCIndex1, Int_t iMCIndex2) {
+	if (iMCIndex1 == -1 || iMCIndex2 == -1) return -1;
+	if (!fMCParticles) {
+		return -1;
+	}
+	AliAODMCParticle * mcPart1 = (AliAODMCParticle *) fMCParticles->GetMCParticle(iMCIndex1);
+	AliAODMCParticle * mcPart2 = (AliAODMCParticle *) fMCParticles->GetMCParticle(iMCIndex2);
+	if (!mcPart1 || !mcPart2) return -1;
+
+	// Lists of ancestors;
+	std::vector<Int_t> lAncPart_1 = {iMCIndex1};
+	std::vector<Int_t> lAncPart_2 = {iMCIndex2};
+
+	// Avoid infinite loops if MC particles aren't set up right
+	Int_t iCutOff = 50;
+	Int_t iMinHeight = 1;
+
+	// Building Ancestor Lists
+	AliAODMCParticle * fTempMC1 = mcPart1;
+	AliAODMCParticle * fTempMC2 = mcPart2;
+
+	for (Int_t i = 0; i < iCutOff; i++) {
+		Int_t iMother1 = -1;
+		Int_t iMother2 = -1;
+		if (fTempMC1) iMother1 = fTempMC1->GetMother();
+		if (fTempMC2) iMother2 = fTempMC2->GetMother();
+
+		if (iMother1 == -1) {
+			fTempMC1 = 0;
+    } else {
+			lAncPart_1.push_back(iMother1);
+			fTempMC1 = fMCParticles->GetMCParticle(iMother1);
+		}
+		if (iMother2 == -1) {
+			fTempMC2 = 0;
+		} else {
+			fTempMC2 = fMCParticles->GetMCParticle(iMother2);
+			lAncPart_2.push_back(iMother2);
+		}
+		if ((iMother1 == -1) && (iMother2 == -1)) break;
+	}
+
+	Int_t iSize1 = lAncPart_1.size();
+	Int_t iSize2 = lAncPart_2.size();
+
+	Int_t iLastCommonAncestor = -1;
+
+	iMinHeight = min(lAncPart_1.size(),lAncPart_2.size());
+	for (Int_t i = 0; i < iMinHeight; i++) {
+		if (lAncPart_1[iSize1-i] == lAncPart_2[iSize2-i]) {
+			iLastCommonAncestor = lAncPart_1[iSize1-i];
+		}
+	}
+
+	return iLastCommonAncestor;
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff)
