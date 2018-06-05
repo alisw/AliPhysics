@@ -348,16 +348,18 @@ void AliAnalysisTaskRecursiveSoftDrop::RecursiveParents(AliEmcalJet *fJet,AliJet
     }
   if(fAddMedScat){
     for(int i = 0; i < fAddMedScatN; i++){
-      TRandom3 rand1(0),rand2(0); //set range +- jet R
+      TRandom3 rand1(0),rand2(0),rand3(0); //set range +- jet R
       Double_t randN1 = 0.4*0.4*rand1.Rndm();
       Double_t randN2 = 2*TMath::Pi()*rand2.Rndm();
       Double_t phi_rand = (fJet->Phi())+TMath::Sqrt(randN1)*TMath::Sin(randN2);
       Double_t eta_rand = (fJet->Eta())+TMath::Sqrt(randN1)*TMath::Cos(randN2);
       Double_t fAddMedScatPt = (fAddMedScatPtFrac*fJet->Pt())/fAddMedScatN;
       PseudoTracks.reset(fAddMedScatPt*TMath::Cos(phi_rand),fAddMedScatPt*TMath::Sin(phi_rand),fAddMedScatPt/TMath::Tan(eta_rand),fAddMedScatPt);
+      PseudoTracks.set_user_index(i+fJet->GetNumberOfTracks()+100);
       fInputVectors.push_back(PseudoTracks);
     }
   }
+
 
 
 
