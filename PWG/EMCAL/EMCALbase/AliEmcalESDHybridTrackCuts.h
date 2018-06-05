@@ -30,6 +30,7 @@
 #include "AliEmcalCutBase.h"
 
 class AliESDtrackCuts;
+class AliVTrack;
 
 namespace PWG {
 
@@ -55,8 +56,9 @@ public:
    * @brief Definition of various hybrid track selections
    */
   enum HybridDefinition_t {
-    kDef2010,   //!< Definition used for 2010 pass1-2 and LHC11a
-    kDef2011    //!< Definition used since 2011 (LHC11h)
+    kDef2010,     //!< Definition used for 2010 pass1-2 and LHC11a
+    kDef2011,     //!< Definition used since 2011 (LHC11h)
+    kDef2018TRD   //!< Definition for the 2018 TRD reconstruction test
   };
 
   /**
@@ -98,7 +100,17 @@ public:
    * 
    * @param doUse If true non-ITS refit tracks will be used (independent of the hybrid track definition)
    */
-  void SetUseNoITSrefitTracks(bool doUse) { fSelectNonRefitTracks = doUse; }
+  void SetUseNoITSrefitTracks(bool doUse) { fSelectNonRefitTracks = doUse; }  
+
+  /**
+   * @brief Get the combined number of TPC crossed rows + TRD clusters
+   * 
+   * Only to be used for productions that include TRD refit in tracking!
+   * 
+   * @param trk Track for which to obtain the combined number of space points
+   * @return Number of TPC + TRD space points
+   */
+  Int_t  GetTPCTRDNumberOfClusters(const AliVTrack *const trk) const;
 
 protected:
 
@@ -128,7 +140,18 @@ protected:
    * - Constrained tracks with SPD requirement
    * - Complementary tracks (no SPD, no refit) - optional
    */
+
   void InitHybridTracks2011();
+
+  /**
+   * @brief Initialize hybrid track selection used for the TRD tracking test
+   * 
+   * Cuts same as for hybrid tracks 2011, but instead
+   * - No cut on the number of TPC crossed rows, instead cut on the combined
+   *   number of TPC + TRD space points, both for global and complementary
+   *   hybrid tracks
+   */
+  void InitHybridTracks2018TRD();
 
 private:
   bool                  fLocalInitialized;                  ///< Local init status flag steering lazy initialization
@@ -137,6 +160,9 @@ private:
   AliESDtrackCuts       *fHybridTrackCutsGlobal;            ///< Track cuts for global hybrid tracks
   AliESDtrackCuts       *fHybridTrackCutsConstrained;       ///< Track cuts for constrained hybrid tracks
   AliESDtrackCuts       *fHybridTrackCutsNoItsRefit;        ///< Track cuts for complementary hybrid tracks (constrained without ITSrefit)
+
+  Bool_t                fRequireTPCTRDClusters;             ///< Require TPC and TRD combined number of clusters
+  Int_t                 fMinClustersTPCTRD;                 ///< Minimum number of TPC+TRD combined clusters
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalESDHybridTrackCuts, 1);
