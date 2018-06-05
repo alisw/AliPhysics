@@ -497,6 +497,10 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
     } else if (fIsMC == 3){
       fDoTHnSparse      = kFALSE;
     }
+
+    if (fMesonRecoMode == 2)
+      fMoveParticleAccordingToVertex  = kFALSE;
+
     // Create histograms
     if(fOutputContainer != NULL){
       delete fOutputContainer;
@@ -3441,8 +3445,10 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackground(){
   if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
     for(Int_t nEventsInBG=0;nEventsInBG<currBGHandler->GetNBGEvents();nEventsInBG++){
       AliGammaConversionAODVector *previousEventV0s = currBGHandler->GetBGGoodV0s(zbin,mbin,nEventsInBG);
-      if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
-        bgEventVertex = currBGHandler->GetBGEventVertex(zbin,mbin,nEventsInBG);
+      if (fMesonRecoMode < 2){
+        if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0 ){
+          bgEventVertex = currBGHandler->GetBGEventVertex(zbin,mbin,nEventsInBG);
+        }
       }
       for(Int_t iCurrent=0;iCurrent<currPhotonList->GetEntries();iCurrent++){
         AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(currPhotonList->At(iCurrent));
@@ -3453,15 +3459,17 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackground(){
               MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
             }
           }
-          if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
-            if (bgEventVertex){
-              RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+          if (fMesonRecoMode < 2){
+            if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
+              if (bgEventVertex){
+                RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+              }
             }
           }
-
           AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
           backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate, kFALSE,
+            ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID())){
             if (fHistoMotherBackInvMassPt[fiCut]) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
             if(fDoTHnSparse){
               Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -3477,29 +3485,31 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackground(){
     for(Int_t nEventsInBG=0;nEventsInBG <currBGHandler->GetNBGEvents();nEventsInBG++){
       AliGammaConversionAODVector *previousEventV0s = currBGHandler->GetBGGoodV0s(zbin,mbin,nEventsInBG);
       if(previousEventV0s){
-        if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0 ){
-          bgEventVertex = currBGHandler->GetBGEventVertex(zbin,mbin,nEventsInBG);
+        if (fMesonRecoMode < 2){
+          if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0 ){
+            bgEventVertex = currBGHandler->GetBGEventVertex(zbin,mbin,nEventsInBG);
+          }
         }
         for(Int_t iCurrent=0;iCurrent<currPhotonList->GetEntries();iCurrent++){
           AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(currPhotonList->At(iCurrent));
           for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
-
             AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
-
             if(fMoveParticleAccordingToVertex == kTRUE){
               if (bgEventVertex){
                 MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
               }
             }
-            if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
-              if (bgEventVertex){
-                RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+            if (fMesonRecoMode < 2){
+              if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
+                if (bgEventVertex){
+                  RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+                }
               }
             }
-
             AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
             backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,
+                ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID())){
               if (fHistoMotherBackInvMassPt[fiCut]) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
               if(fDoTHnSparse){
                 Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -3657,7 +3667,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UpdateEventByEventData(){
                                       fV0Reader->GetNumberOfPrimaryTracks(), fEventPlaneAngle);
     }else { // means we use #V0s for multiplicity
       fBGClusHandler[fiCut]->AddEvent(fClusterCandidates, fInputEvent->GetPrimaryVertex()->GetX(), fInputEvent->GetPrimaryVertex()->GetY(), fInputEvent->GetPrimaryVertex()->GetZ(),
-                                      fGammaCandidates->GetEntries(), fEventPlaneAngle);
+                                      fClusterCandidates->GetEntries(), fEventPlaneAngle);
     }
   }
 }

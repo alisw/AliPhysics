@@ -157,7 +157,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton     = "00000008400000000100000000";
 
-  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0 
+  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0
       || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0   )
     cutnumberPhoton         = "00000088400000000100000000";
 
@@ -879,7 +879,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "002000q9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.032
     cuts.AddCut("00010113", "002000r9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.036
 
- 
+
   // Material studies Ana-----nomB
   } else if (trainConfig == 700) {
     cuts.AddCut("00010113", "00200009266300008854404000", "0152103500000000"); // Min Bias
@@ -898,7 +898,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   } else if (trainConfig == 703) {
     cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
   } else if (trainConfig == 704) {
-    cuts.AddCut("00010113", "00200049267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pt 0.075 
+    cuts.AddCut("00010113", "00200049267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pt 0.075
     cuts.AddCut("00010113", "00200019267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.1
     cuts.AddCut("00010113", "00200059267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.125
   } else if (trainConfig == 705) {
@@ -926,7 +926,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "002000n9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.09
 
 
- 
+
 
 
 
