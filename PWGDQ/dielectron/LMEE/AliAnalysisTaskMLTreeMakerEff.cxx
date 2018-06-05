@@ -770,6 +770,6 @@ Bool_t AliAnalysisTaskMLTreeMakerEff::IsFromBGEventAOD(AliMCEvent* fAOD, Int_t I
         return (0);
     }
     fNBG = hijingH->NProduced();
-    cout<<"hijingH->NProduced() = "<<fNBG<<endl;
+    std::cout<<"hijingH->NProduced() = "<<fNBG<<std::endl;
     return (Index < fNBG);
 }
