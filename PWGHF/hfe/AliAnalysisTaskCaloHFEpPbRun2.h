@@ -5,9 +5,11 @@
 #ifndef AliAnalysisTaskCaloHFEpPbRun2_H
 #define AliAnalysisTaskCaloHFEpPbRun2_H
 
+class AliMultSelection;
 // classes for MC
 class AliAODMCHeader;
 class AliAODMCParticle;
+
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -67,6 +69,8 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TClonesArray  *fTracks_tender;//Tender tracks
         TClonesArray  *fCaloClusters_tender;//Tender cluster
 
+        AliMultSelection *fMultSelection;
+
         AliAODMCParticle  *fMCparticle;
         AliAODMCHeader *fMCheader;
         TClonesArray  *fMCarray;//! MC array
@@ -103,6 +107,11 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TH1F *fvtxZ_NcontCut;
         TH2F *fNcont;
         TH2F *fVertexCorre;
+
+        //############//
+        // Centrality //
+        //############//
+        TH1F *fCent;
 
         //##############//
         // Cluster info //

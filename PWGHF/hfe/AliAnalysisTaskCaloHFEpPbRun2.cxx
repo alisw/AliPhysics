@@ -32,6 +32,7 @@
 #include "AliAODPid.h"
 #include "AliPID.h"
 #include "AliKFParticle.h"
+#include "AliMultSelection.h"
 
 //header for MC
 #include "AliAODMCParticle.h"
@@ -95,6 +96,8 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     //-----Tender------
     fTracks_tender(0),
     fCaloClusters_tender(0),
+    //-----MultiSelection-----
+    fMultSelection(0),
     //------for MC-----
     fMCparticle(0),
     fMCheader(0),
@@ -117,6 +120,8 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fvtxZ_NcontCut(0),
     fNcont(0),
     fVertexCorre(0),
+    //-----Centrality-----
+    fCent(0),
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE(0),
     fCaloClusterEAfterMatch(0),
@@ -239,6 +244,8 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     //-----Tender------
     fTracks_tender(0),
     fCaloClusters_tender(0),
+    //-----MultiSelection-----
+    fMultSelection(0),
     //------for MC-----
     fMCparticle(0),
     fMCheader(0),
@@ -261,6 +268,8 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fvtxZ_NcontCut(0),
     fNcont(0),
     fVertexCorre(0),
+    //-----Centrality-----
+    fCent(0),
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE(0),
     fCaloClusterEAfterMatch(0),
@@ -413,6 +422,10 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
 
     fNcont = new TH2F("fNcont","Number of contributors;Ncont (SPD);Ncont (primary)",500,0,500,500,0,500);
     fOutputList -> Add(fNcont);
+
+    //-----Centrality-----
+    fCent = new TH1F("fCent","Centrality;Centrality;counts",100,0,100);
+    fOutputList -> Add(fCent);
 
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE = new TH1F("fCaloClusterE", "cluster energy distribution;Energy (GeV.);counts",500,0,50);
@@ -795,6 +808,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
     TString TriggerEG1 = "EG1", TriggerEG2 = "EG2", TriggerDG1 = "DG1", TriggerDG2 = "DG2";
     fVevent -> GetFiredTriggerClasses();
     if(fAOD) firedTrigger = fAOD -> GetFiredTriggerClasses();
+    // --- EMCAL + DCAL analysis --- //
     if(fFlagClsTypeEMCal && fFlagClsTypeDCal)
     {
       if(fFlagEG2 && fFlagDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
@@ -810,6 +824,27 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
     }
     fNevents -> Fill(1);
     //#######################################################################//
+
+    //########################## Centrality ##########################//
+    Double_t centrality = -1;
+    AliCentrality *fCentrality = (AliCentrality*) fAOD->GetCentrality();
+    if(fAOD)fMultSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+    if(!fMultSelection)
+    {
+        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+        // AliWarning("AliMultSelection object not found!");
+        cout << "AliMultSelection object not found!" << endl;
+        // centrality = fCentrality->GetCentralityPercentile("V0M");
+        centrality = fCentrality->GetCentralityPercentile("ZNA");
+    }
+    else
+    {
+        //lPercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+        // centrality = fMultSelection->GetMultiplicityPercentile("V0M", false);
+        centrality = fMultSelection->GetMultiplicityPercentile("ZNA");
+    }
+    fCent -> Fill(centrality);
+    //################################################################//
 
     //########################## Event Selection ##########################//
     // --- SPD Vtx --- //
@@ -847,7 +882,6 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
     // remove Vtx with only TPC track //
     // if(!fEventCuts->GoodPrimaryAODVertex(fVevent)) return;
     //#####################################################################//
-
     if(Isdebug) cout << "event selection finished" << endl;
 
     // --- MC simulation data --- //
