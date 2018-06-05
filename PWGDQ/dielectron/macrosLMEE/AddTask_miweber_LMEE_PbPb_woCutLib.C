@@ -1,4 +1,9 @@
-AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TString outputFileName = "AnalysisResult.root", TString directoryBaseName = "miweber_LMEE_PbPb", Bool_t isNano = kFALSE, Bool_t bCutQA = kTRUE){
+AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
+        TString outputFileName = "AnalysisResult.root",
+        TString directoryBaseName = "miweber_LMEE_PbPb",
+        Bool_t isNano = kFALSE,
+        Bool_t bCutQA = kTRUE,
+        Bool_t useTPCCorr=kFALSE){
 
 
   //get the current analysis manager
@@ -56,7 +61,7 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0, TSt
   mgr->AddTask(task);
   
   //add dielectron analysis with selected cut to the task
-  AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA);
+  AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kTRUE,useTPCCorr);
   if(diel_low){
     AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
     if(cutDefinition!=672)

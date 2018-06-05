@@ -2,51 +2,45 @@
 #define LMEECutLib_slehner
 
 class LMEECutLib {
+    
+  
+private:
+      
+    
 public:
-
-  LMEECutLib() {pidFilterCuts        = new AliDielectronPID("PIDCuts","PIDCuts"); }
-
-  AliDielectronPID* pidFilterCuts;
-  AliDielectronPID* GetPIDCutsAna();
+  
+  LMEECutLib() {  
+  cout<<"CREATE NEW LMEECUTLIB slehner"<<endl;
+  }
+  static AliDielectronPID* GetPIDCutsAna();
 
   AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0);
   AliDielectronEventCuts* GetEventCuts(int sel);
-  void SetEtaCorrectionTPC(Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
+  TH3D SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
+  static AliDielectronPID* pidFilterCuts;
 };
 
-void LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise) {
+TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, int sel) {
      
-  //
-  // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
-  //
+  
+  
   std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
-  std::string file_name = "/home/sebaleh/output.root";
+  std::string file_name = "/home/sebaleh/Downloads/recalib_data_tpc_nsigmaele.root";
 
-  TFile* _file = TFile::Open(file_name.c_str(),"RECREATE");
-  std::cout << _file << std::endl;
-  if (_file == 0x0){
-    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/data/output.root .");
-    std::cout << "Copy TPC correction from Alien" << std::endl;
-    _file = TFile::Open("output.root");
-  }
+  gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/data/output.root .");
+  std::cout << "Copy TPC correction from Alien" << std::endl;
+  _file = TFile::Open("output.root");
+
+  TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
+  TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+  
+  if(mean)   std::cout << "Mean Correction Histo loaded, entries:"<<mean->GetEntries() << std::endl;
   else {
-    std::cout << "Correction loaded" << std::endl;
+    std::cout << "Mean Correction Histo not loaded!!!!"<<mean->GetEntries() << std::endl;
+    return 0;
   }
-  if (runwise){
-    TObjArray* arr_mean = dynamic_cast<TObjArray*>(_file->Get("mean_correction_arr"));
-    TObjArray* arr_width =dynamic_cast<TObjArray*>( _file->Get("width_correction_arr"));
-    std::cout << arr_mean << " " << arr_width << std::endl;
-
-    pidFilterCuts->SetWidthCorrArr(arr_width);
-    pidFilterCuts->SetCentroidCorrArr(arr_mean);
-  }
-  else{
-    TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
-    TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
-    pidFilterCuts->SetCentroidCorrFunction(mean);//, corrXdim, corrYdim, corrZdim);
-    pidFilterCuts->SetWidthCorrFunction(width);//, corrXdim, corrYdim, corrZdim);
-    
-  }
+  if(sel==1) return *mean;
+  else return *width;
 
 }
 
@@ -66,8 +60,10 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(int sel) {
 
 
 AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel) {
-  cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
+    
 
+  pidFilterCuts = new AliDielectronPID("PIDCuts1","PIDCuts1");
+  cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   //nanoAOD Prefilter cuts - should always be applied  if working on nanoAODs in real data, otherwise MC and real data might not use same cuts
   pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
   pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
@@ -92,7 +88,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID) {
   cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackSelectionAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
   AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("CutsAna","CutsAna",AliDielectronCutGroup::kCompAND);
     
-  //Add nanoAOD filter cuts
+  ////Add nanoAOD filter cuts
   AliDielectronVarCuts *varCutsFilter   = new AliDielectronVarCuts("VarCuts","VarCuts");
   AliDielectronTrackCuts *trkCutsFilter = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
 
@@ -105,29 +101,26 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID) {
   varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
-//  varCutsFilter->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster    // did not work on ESD when filtering nanoAODs
+//  //varCutsFilter->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster    // did not work on ESD when filtering nanoAODs
   varCutsFilter->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-
-  varCutsFilter->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
-  varCutsFilter->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
   varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
   
-//  switch (selTr) {
+////  switch (selTr) {
 
     std::cout<<"chose track cut "<<selTr<<endl;      
       
-//      case 0:
+// //     case 0:
 
             AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");     
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-//            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
+////            trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      4.0, 100.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      100.0, 160.0);
-//            trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
-//            trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
+// //           trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   4.0);
+//  //          trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    100.0, 160.0);
             trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
 
@@ -164,8 +157,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID) {
 //            trackCuts->AddCut(SharedClusterCut);
             
 
-//            break;
-//    }
+////            break;
+// //   }
   
   return trackCuts;
 }

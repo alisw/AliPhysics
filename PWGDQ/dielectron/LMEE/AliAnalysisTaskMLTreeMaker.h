@@ -46,6 +46,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   Bool_t CheckGenerator(int Index);
   
+  void SetCorrWidthMean(TH3D* width, TH3D* mean){
+      fmean=mean;
+      fwidth=width;
+  };
   void SetupTrackCuts(AliDielectronCutGroup* f);
   void SetupEventCuts(AliDielectronEventCuts* f);
   
@@ -129,6 +133,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   void StoreKaonSigmaValues( Bool_t answer = kFALSE){
     fKaonSigmas = answer;
     Printf("Kaon nSigma values for ITS, TPC and TOF will be written to tree");
+  }
+  
+  void SetUseCorr( Bool_t b){
+      fuseCorr=b;
   }
  private:
  
@@ -255,6 +263,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Int_t> label;
   std::vector<Int_t> motherlabel;
   
+  TH3D* fwidth;
+  TH3D* fmean;
+  
+  Bool_t fuseCorr;
   //TBits*            fUsedVars;                // used variables by AliDielectronVarManager
   
 //  Double_t probs[AliPID::kSPECIESC];

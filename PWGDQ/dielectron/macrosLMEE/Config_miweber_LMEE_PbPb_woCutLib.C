@@ -1,5 +1,6 @@
 void InitHistograms(AliDielectron *die, Int_t cutDefinition);
 void SetupCuts(AliDielectron *die, Int_t cutDefinition);
+void SetTPCCorr(AliDielectron *die);
 AliDielectronPID *SetPIDcuts(Int_t cutDefinition);
 AliDielectronPID *SetPreFilterPIDcuts(Int_t cutDefinition);
 const AliDielectronEventCuts *GetEventCuts();
@@ -15,7 +16,11 @@ TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 const Int_t nPF = 2; // use prefiltering for cuts lower than nPF
 
-AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1, Bool_t bESDANA = kFALSE, Bool_t bCutQA = kFALSE, Bool_t isRandomRej=kFALSE)
+AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
+        Bool_t bESDANA = kFALSE,
+        Bool_t bCutQA = kFALSE,
+        Bool_t isRandomRej=kFALSE,
+        Bool_t useTPCCorr=kFALSE)
 {
   //
   // Setup the instance of AliDielectron
@@ -79,7 +84,9 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1, Bool_t b
 
   // set track cuts
   SetupCuts(die,cutDefinition,bESDANA);
-
+  
+//  if(useTPCCorr)  SetTPCCorr(die);
+ 
  //
  // histogram setup
  // only if an AliDielectronHistos object is attached to the
@@ -781,7 +788,7 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
   pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
   pidCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
 
-  //Carsten's cuts
+  //Carsten's additional PID cuts: (Physics Forum 12.04.18)
   AliDielectronPID *pidCut_3        = new AliDielectronPID("PIDCuts","PIDCuts");
   pidCut_3->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
   pidCut_3->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.5 , 0. ,100., kTRUE);
@@ -847,11 +854,43 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
 
   cuts->AddCut(trackCuts);
   die->GetTrackFilter().AddCuts(trackCuts);
+  
+  
+
 
   cuts->Print();
 }
 
 
+
+void SetTPCCorr(AliDielectron *die){
+
+  std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
+  std::string file_name = "/home/cklein/LMeeAnaFW/005_TPC_Recalibration/summary/output.root";
+
+  TFile* _file = TFile::Open(file_name.c_str());
+  std::cout << _file << std::endl;
+  if (_file == 0x0){
+    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/data/output.root .");
+    std::cout << "Copy TPC correction from Alien: "<<file_name << std::endl;
+    _file = TFile::Open("output.root");
+    }
+  else {
+    std::cout << "Correction loaded" << std::endl;
+    }
+  
+    TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
+    TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+    
+  if(mean)   std::cout << "Mean Correction Histo loaded, entries:"<<mean->GetEntries() << std::endl;
+  else {
+    std::cout << "Mean Correction Histo not loaded!!!!"<< std::endl;
+    return 0;
+  }
+    die->SetCentroidCorrFunction(mean, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+    die->SetWidthCorrFunction(width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
+       
+}
 //______________________________________________________________________________________
 void InitHistograms(AliDielectron *die, Int_t cutDefinition)
 {

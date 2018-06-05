@@ -153,6 +153,9 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   hasmother(0),
   label(0),      
   motherlabel(0),
+  fmean(0),
+  fwidth(0), 
+  fuseCorr(kFALSE),      
   fTree(0),
   fQAHist(0)
 {
@@ -248,6 +251,9 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   hasmother(0),
   label(0),      
   motherlabel(0),
+  fmean(0),
+  fwidth(0), 
+  fuseCorr(kFALSE),              
   fTree(0),
   fQAHist(0)
 {
@@ -411,13 +417,15 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
     eventHandlerMC = eventHandler;
   }
      
-    if(hasMC){
-//    AliMCEventHandler* mchandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-//    fMcArray = mchandler->MCEvent();
+  if(hasMC){
     fMcArray = eventHandlerMC->MCEvent();
-    // get the accepted tracks in main event
   }   
   
+  if(fuseCorr){   
+    AliDielectronPID::SetCentroidCorrFunction( (TH1*) fmean->Clone());
+    AliDielectronPID::SetWidthCorrFunction( (TH1*) fwidth->Clone());    
+  }
+     
   Double_t lMultiplicityVar = -1;
   Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
 
@@ -573,33 +581,9 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
         else{
           fQAHist->Fill("After MC check, bef. Hij",1); 
-
           Rej=kFALSE;
-
-//                mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
-//                mcMTrack = dynamic_cast<AliAODMCParticle *>(fMcArray->GetTrack(TMath::Abs(track->GetLabel())));
-
-//                temppdg = mcMTrack->PdgCode(); 
-                
-//                if(!(mcMTrack->GetMother() < 0)){       //get direct mother
-//                    mcTrackIndex = mcMTrack->GetMother(); 
-//                    mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
-////                    tempmpdg= mcMTrack->PdgCode(); 
-//                }
-//                else tempmpdg=-9999;
-                  
-                  //going to mother particle is done in AliMCEvent::GetCocktailGenerator
-//                while(!(mcMTrack->GetMother() < 0)){        //get first mother in chain
-//                    mcTrackIndex = mcMTrack->GetMother(); 
-//                    mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
-//                }
-                
-                
-//                if(!(mcEvent->IsFromBGEvent(mcMTrack->GetLabel())))Rej=kTRUE;
-                if(!(CheckGenerator(TMath::Abs(track->GetLabel())))) Rej=kTRUE;
-//                cout<<"FOUND NON HiJing!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;}
+          if(!(CheckGenerator(TMath::Abs(track->GetLabel())))) Rej=kTRUE;
           }
-
 
         }
 
@@ -610,15 +594,13 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
           continue;
       }
       
-
       Double_t pttemp = track->Pt();
       Double_t etatemp = track->Eta();
- 
+       
+      //Get PID response for tree - this is w/o postcalibration - the PID response after postcalibration has to be taken from dielectron task
       Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 0);
       Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 0);
       Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 0);
-
-      
       
       fQAHist->Fill("Selected tracks",1); 
 
