@@ -179,7 +179,7 @@ void AliAnalysisTaskPHOSSingleSim::UserExec(Option_t *option)
 
   GetMCInfo();
 
-  if(!fMCArray){
+  if(!fMCArrayAOD){
     AliError("Could not retrieve AOD event!");
     return;
   }
@@ -215,6 +215,7 @@ void AliAnalysisTaskPHOSSingleSim::UserExec(Option_t *option)
   }
 
   EstimatePIDCutEfficiency();
+  if(fIsNonLinStudy) DoNonLinearityStudy();
 
   //Now we either add current events to stack or remove
   //If no photons in current event - no need to add it to mixed
@@ -255,7 +256,7 @@ void AliAnalysisTaskPHOSSingleSim::ProcessMC()
   else if(fParticleName.Contains("Eta"))   f1weight = GetAdditionalEtaPtWeightFunction(fCentralityMain);
   else if(fParticleName.Contains("Gamma")) f1weight = GetAdditionalGammaPtWeightFunction(fCentralityMain);
 
-  AliAODMCParticle *p_origin = (AliAODMCParticle*)fMCArray->At(0);//0 is always generated particle by AliGenBox.
+  AliAODMCParticle *p_origin = (AliAODMCParticle*)fMCArrayAOD->At(0);//0 is always generated particle by AliGenBox.
   Double_t pT_origin = p_origin->Pt();
 
   //printf("pT_orgin = %f GeV/c.\n",pT_origin);
@@ -270,10 +271,10 @@ void AliAnalysisTaskPHOSSingleSim::ProcessMC()
   TString parname = "";
   TString genname = "";
 
-  const Int_t Ntrack = fMCArray->GetEntriesFast();
+  const Int_t Ntrack = fMCArrayAOD->GetEntriesFast();
 
   for(Int_t i=0;i<Ntrack;i++){
-    AliAODMCParticle *p = (AliAODMCParticle*)fMCArray->At(i);
+    AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(i);
     //genID = p->GetGeneratorIndex();
     pT = p->Pt();
     rapidity = p->Y();
@@ -290,9 +291,20 @@ void AliAnalysisTaskPHOSSingleSim::ProcessMC()
 
     if(pdg==111){//pi0
       parname = "Pi0";
+      if(Are2GammasInPHOSAcceptance(i)){
+        FillHistogramTH1(fOutputContainer,Form("hGen%sPtACC"    ,parname.Data()),pT          ,weight);
+        FillHistogramTH2(fOutputContainer,Form("hGen%sEtaPhiACC",parname.Data()),phi,rapidity,weight);
+        FillHistogramTH2(fOutputContainer,Form("hGen%sEtaPtACC" ,parname.Data()),rapidity,pT ,weight);
+      }
     }
     else if(pdg==221){//eta
       parname = "Eta";
+
+      if(Are2GammasInPHOSAcceptance(i)){
+        FillHistogramTH1(fOutputContainer,Form("hGen%sPtACC"    ,parname.Data()),pT          ,weight);
+        FillHistogramTH2(fOutputContainer,Form("hGen%sEtaPhiACC",parname.Data()),phi,rapidity,weight);
+        FillHistogramTH2(fOutputContainer,Form("hGen%sEtaPtACC" ,parname.Data()),rapidity,pT ,weight);
+      }
 
     }
     else if(pdg==22){//gamma
@@ -320,7 +332,7 @@ void AliAnalysisTaskPHOSSingleSim::SetWeightToClusters()
   else if(fParticleName.Contains("Eta"))   f1weight = GetAdditionalEtaPtWeightFunction(fCentralityMain);
   else if(fParticleName.Contains("Gamma")) f1weight = GetAdditionalGammaPtWeightFunction(fCentralityMain);
 
-  AliAODMCParticle *p_origin = (AliAODMCParticle*)fMCArray->At(0);//0 is always generated particle by AliGenBox.
+  AliAODMCParticle *p_origin = (AliAODMCParticle*)fMCArrayAOD->At(0);//0 is always generated particle by AliGenBox.
   Double_t pT_origin = p_origin->Pt();
   Double_t weight = f1weight->Eval(pT_origin) * pT_origin;
 
@@ -338,7 +350,7 @@ Int_t AliAnalysisTaskPHOSSingleSim::FindCommonParent(Int_t iPart, Int_t jPart)
   //check if there is a common parent for particles i and j
   // -1: no common parent or wrong iPart/jPart
 
-  Int_t ntrack = fMCArray->GetEntriesFast();
+  Int_t ntrack = fMCArrayAOD->GetEntriesFast();
   if(iPart==-1 || iPart>=ntrack || jPart==-1 || jPart>=ntrack) return -1;
 
   Int_t iprim1 = iPart;
@@ -349,12 +361,12 @@ Int_t AliAnalysisTaskPHOSSingleSim::FindCommonParent(Int_t iPart, Int_t jPart)
     while(iprim2>-1){
       if(iprim1==iprim2) return iprim1;
       //iprim2 = GetParticle(iprim2)->GetMother();
-      iprim2 = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iprim2))->GetMother();
+      iprim2 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim2))->GetMother();
     }
 
     //iprim1 = GetParticle(iprim1)->GetMother();
     //iprim1 = (AliAODMCParticle*)(fMCArray->At(iprim1))->GetMother();
-    iprim1 = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iprim1))->GetMother();
+    iprim1 = dynamic_cast<AliAODMCParticle*>(fMCArrayAOD->At(iprim1))->GetMother();
   }
 
   return -1;
@@ -363,9 +375,9 @@ Int_t AliAnalysisTaskPHOSSingleSim::FindCommonParent(Int_t iPart, Int_t jPart)
 void AliAnalysisTaskPHOSSingleSim::GetMCInfo()
 {
   fMCArray = 0x0;
-  fMCArray = (TClonesArray*)GetMCInfoAOD();
+  fMCArrayAOD = (TClonesArray*)GetMCInfoAOD();
 
-  if(!fMCArray){
+  if(!fMCArrayAOD){
     AliError("Could not retrieve AOD event!");
     return;
   }
@@ -526,7 +538,6 @@ void AliAnalysisTaskPHOSSingleSim::FillMgg()
       if(fIsMC){
         w1 = ph1->GetWeight();
         weight = w1;//common weighting to all generated particles in embedding.
-
       }//end of if fIsMC
 
       if(phi < 0) phi += TMath::TwoPi();
@@ -549,6 +560,9 @@ void AliAnalysisTaskPHOSSingleSim::FillMgg()
       value[0] = m12;
       value[1] = pt12;
       value[2] = asym;
+
+      Double_t oa = TMath::Abs(ph1->Angle(ph2->Vect())) * 1e+3;//rad->mrad
+      FillHistogramTH3(fOutputContainer,"hMgg_OA",m12,pt12,oa,weight);
 
       if(m12 > 0.96) continue;//reduce entry in THnSparse
 

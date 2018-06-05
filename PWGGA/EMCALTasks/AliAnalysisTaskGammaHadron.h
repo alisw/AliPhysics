@@ -21,7 +21,7 @@ using std::vector;
 class AliAnalysisTaskGammaHadron : public AliAnalysisTaskEmcal {
 public:
 	AliAnalysisTaskGammaHadron();
-	AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Bool_t InputSameEventAnalysis);
+	AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Bool_t InputSameEventAnalysis,Bool_t InputMCorData);
 	virtual ~AliAnalysisTaskGammaHadron();
 
 	static AliAnalysisTaskGammaHadron* AddTaskGammaHadron(
@@ -91,13 +91,16 @@ public:
   Bool_t                      FillHistograms()                                              ;
   Int_t                       CorrelateClusterAndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
   Int_t                       CorrelatePi0AndTrack(AliParticleContainer* tracks,TObjArray* bgTracks,Bool_t SameMix, Double_t Weight);
-  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Bool_t isMixed);
+  void                        FillPi0CandsHist(AliTLorentzVector CaloClusterVec,AliTLorentzVector CaloClusterVec2,AliTLorentzVector CaloClusterVecPi0,Double_t fMaxClusM02,Double_t Weight,Bool_t isMixed, Int_t mcIndex1 = -1, Int_t mcIndex2 = -1);
   void                        FillTriggerHist(AliTLorentzVector ClusterVec, Double_t Weight);
   void                        FillGhHistograms(Int_t identifier,AliTLorentzVector ClusterVec,AliVParticle* TrackVec, Double_t Weight);
   void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t Weight=1);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
   Bool_t                      AccClusPairForAna(AliVCluster* cluster1, AliVCluster * cluster2, TLorentzVector vecPi0);
   Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff);
+
+  //..Functions for MC purposes
+  Int_t                       FindMCPartForClus(AliVCluster * caloCluster);
 
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
@@ -163,6 +166,8 @@ public:
   Bool_t                      fParticleLevel;            ///< Set particle level analysis
   Bool_t                      fIsMC;                     ///< Trigger, MC analysis
   UInt_t                      fAODfilterBits[2];         ///< AOD track filter bit map
+  AliMCParticleContainer     *fMCParticles;              ///< Container for MC Particles
+
 
   //..Other stuff
   TList                      *fEventCutList;           //!<! Output list for event cut histograms
@@ -188,6 +193,18 @@ public:
   Int_t           fNRotBkgSamples;             ///< How many samples to use in the rotational background
   THnSparseF      *fPi0Cands;                  //!<! Michael's THnSparse for pi0 Candidates
   TH2							*fEMCalMultvZvtx;            //!<! Histogram investigating z-vertex, EMCal Multiplicity for mixed cluster pairs
+
+	// Monte Carlo Histograms
+  TH2             *fHistClusMCDE;              //!<! Difference between detector Clus E and MC E (inclusive)
+  TH2             *fHistClusMCDEDRMatch;       //!<! Difference between detector Clus E and MC E (exclusive)
+  TH2             *fHistClusMCDPhiDEta;        //!<! 2D Angle Difference between det. Clus and MC Clus. (incl.)
+  TH2             *fHistClusMCDPhiDEtaMatchDE; //!<! 2D Angle Difference between det. Clus and MC Clus. (excl.)
+
+  TH2             *fHistPi0MCDPt;              //!<! Difference between detector pi0 pt and MC pt.
+  TH2             *fHistEtaMCDPt;              //!<! Difference between detector Eta pt and MC pt.
+  TH2             *fHistPi0MCDPhiDEta;         //!<! 2D Angle Difference between det. pi0 and MC pi0.
+  TH2             *fHistEtaMCDPhiDEta;         //!<! 2D Angle Difference between det. Eta and MC Eta.
+
 
   Bool_t          fUseParamMassSigma;          ///< Whether to use parametrized or fixed mass,sigma
   Double_t        fPi0MassFixed[kNoGammaBins]; ///< Fixed Mass Peak per pT bin

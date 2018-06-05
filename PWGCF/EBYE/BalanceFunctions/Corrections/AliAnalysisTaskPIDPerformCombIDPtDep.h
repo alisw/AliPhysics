@@ -60,6 +60,11 @@ class AliAnalysisTaskPIDPerformCombIDPtDep : public AliAnalysisTaskSE {
   void SetBayesThreshold3(Float_t bth3) {fbayesth3 = bth3;}
 
   void SetParticleOfInterest(AliPID::EParticleType partOfInterest) { fpartOfInterest = partOfInterest;}
+    
+  void SetRejectInjectedSignalsGenName(TString genToBeKept) {
+        fGenToBeKept = genToBeKept;
+        fRejectCheckGenName=kTRUE;
+  }
   
   private:
 
@@ -119,6 +124,9 @@ class AliAnalysisTaskPIDPerformCombIDPtDep : public AliAnalysisTaskSE {
   Float_t fbayesth1;
   Float_t fbayesth2;
   Float_t fbayesth3;
+    
+  TString fGenToBeKept;
+  Bool_t fRejectCheckGenName;
 
   ClassDef(AliAnalysisTaskPIDPerformCombIDPtDep, 1);
 

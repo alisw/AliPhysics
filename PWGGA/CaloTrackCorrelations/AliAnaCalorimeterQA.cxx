@@ -1146,7 +1146,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   Int_t charge  = 0;
   
   // Check the origin.
-  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, nLabels, GetMC());
+  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, nLabels, GetMC(),
+                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept());
   
   if ( !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown) )
   { 

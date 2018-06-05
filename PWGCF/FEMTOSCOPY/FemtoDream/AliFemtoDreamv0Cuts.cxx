@@ -7,6 +7,7 @@
 
 #include "AliFemtoDreamv0Cuts.h"
 #include "TDatabasePDG.h"
+#include "AliLog.h"
 ClassImp(AliFemtoDreamv0Cuts)
 AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts()
 :fHistList()
@@ -488,25 +489,25 @@ float AliFemtoDreamv0Cuts::CalculateInvMass(AliFemtoDreamv0 *v0,
 
   float EDaugP=TMath::Sqrt(
       massDP*massDP +
-      v0->GetPosDaughter()->GetMomentum()->X()*v0->GetPosDaughter()->GetMomentum()->X()+
-      v0->GetPosDaughter()->GetMomentum()->Y()*v0->GetPosDaughter()->GetMomentum()->Y()+
-      v0->GetPosDaughter()->GetMomentum()->Z()*v0->GetPosDaughter()->GetMomentum()->Z());
+      v0->GetPosDaughter()->GetMomentum().X()*v0->GetPosDaughter()->GetMomentum().X()+
+      v0->GetPosDaughter()->GetMomentum().Y()*v0->GetPosDaughter()->GetMomentum().Y()+
+      v0->GetPosDaughter()->GetMomentum().Z()*v0->GetPosDaughter()->GetMomentum().Z());
   float EDaugN=TMath::Sqrt(
       massDN*massDN +
-      v0->GetNegDaughter()->GetMomentum()->X()*v0->GetNegDaughter()->GetMomentum()->X()+
-      v0->GetNegDaughter()->GetMomentum()->Y()*v0->GetNegDaughter()->GetMomentum()->Y()+
-      v0->GetNegDaughter()->GetMomentum()->Z()*v0->GetNegDaughter()->GetMomentum()->Z());
+      v0->GetNegDaughter()->GetMomentum().X()*v0->GetNegDaughter()->GetMomentum().X()+
+      v0->GetNegDaughter()->GetMomentum().Y()*v0->GetNegDaughter()->GetMomentum().Y()+
+      v0->GetNegDaughter()->GetMomentum().Z()*v0->GetNegDaughter()->GetMomentum().Z());
 
   float energysum=EDaugP+EDaugN;
   float pSum2=
-      (v0->GetNegDaughter()->GetMomentum()->X()+v0->GetPosDaughter()->GetMomentum()->X())*
-      (v0->GetNegDaughter()->GetMomentum()->X()+v0->GetPosDaughter()->GetMomentum()->X())+
+      (v0->GetNegDaughter()->GetMomentum().X()+v0->GetPosDaughter()->GetMomentum().X())*
+      (v0->GetNegDaughter()->GetMomentum().X()+v0->GetPosDaughter()->GetMomentum().X())+
 
-      (v0->GetNegDaughter()->GetMomentum()->Y()+v0->GetPosDaughter()->GetMomentum()->Y())*
-      (v0->GetNegDaughter()->GetMomentum()->Y()+v0->GetPosDaughter()->GetMomentum()->Y())+
+      (v0->GetNegDaughter()->GetMomentum().Y()+v0->GetPosDaughter()->GetMomentum().Y())*
+      (v0->GetNegDaughter()->GetMomentum().Y()+v0->GetPosDaughter()->GetMomentum().Y())+
 
-      (v0->GetNegDaughter()->GetMomentum()->Z()+v0->GetPosDaughter()->GetMomentum()->Z())*
-      (v0->GetNegDaughter()->GetMomentum()->Z()+v0->GetPosDaughter()->GetMomentum()->Z());
+      (v0->GetNegDaughter()->GetMomentum().Z()+v0->GetPosDaughter()->GetMomentum().Z())*
+      (v0->GetNegDaughter()->GetMomentum().Z()+v0->GetPosDaughter()->GetMomentum().Z());
   invMass = TMath::Sqrt(energysum*energysum - pSum2);
   return invMass;
 }

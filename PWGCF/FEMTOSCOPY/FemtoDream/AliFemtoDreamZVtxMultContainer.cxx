@@ -56,7 +56,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamCorrHists *ResultsHist,int iMult,float cent)
 {
-  static float RelativeK = 0;
+  float RelativeK = 0;
   int HistCounter=0;
   //First loop over all the different Species
   auto itPDGPar1 = fPDGParticleSpecies.begin();
@@ -123,7 +123,7 @@ void AliFemtoDreamZVtxMultContainer::PairMCParticlesSE(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamCorrHists *ResultsHist,int iMult)
 {
-  static float RelativeK = 0;
+  float RelativeK = 0;
   int HistCounter=0;
   //First loop over all the different Species
   auto itPDGPar1 = fPDGParticleSpecies.begin();
@@ -165,7 +165,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
     AliFemtoDreamCorrHists *ResultsHist,int iMult,float cent)
 {
-  static float RelativeK = 0;
+  float RelativeK = 0;
   int HistCounter=0;
   auto itPDGPar1 = fPDGParticleSpecies.begin();
   //First loop over all the different Species
@@ -246,32 +246,28 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
     ++itPDGPar1;
   }
 }
-float AliFemtoDreamZVtxMultContainer::RelativePairMomentum(const TVector3 *Part1Momentum,
+float AliFemtoDreamZVtxMultContainer::RelativePairMomentum(TVector3 Part1Momentum,
                                                            int PDGPart1,
-                                                           const TVector3 *Part2Momentum,
+                                                           TVector3 Part2Momentum,
                                                            int PDGPart2)
 {
   if(PDGPart1 == 0 || PDGPart2== 0){
     AliError("Invalid PDG Code");
   }
-  static float results = 0.;
-  static TLorentzVector SPtrack;
-  static TLorentzVector TPProng;
-  static TLorentzVector trackSum;
-  static TLorentzVector SPtrackCMS;
-  static TLorentzVector TPProngCMS;
+  float results = 0.;
+  TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;
   //Even if the Daughter tracks were switched up during PID doesn't play a role here cause we are
   //only looking at the mother mass
-  SPtrack.SetXYZM(Part1Momentum->X(), Part1Momentum->Y(),Part1Momentum->Z(),
+  SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(),Part1Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
-  TPProng.SetXYZM(Part2Momentum->X(), Part2Momentum->Y(),Part2Momentum->Z(),
+  TPProng.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(),Part2Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
   trackSum = SPtrack + TPProng;
 
-  static float beta = trackSum.Beta();
-  static float betax = beta*cos(trackSum.Phi())*sin(trackSum.Theta());
-  static float betay = beta*sin(trackSum.Phi())*sin(trackSum.Theta());
-  static float betaz = beta*cos(trackSum.Theta());
+  float beta = trackSum.Beta();
+  float betax = beta*cos(trackSum.Phi())*sin(trackSum.Theta());
+  float betay = beta*sin(trackSum.Phi())*sin(trackSum.Theta());
+  float betaz = beta*cos(trackSum.Theta());
 
   SPtrackCMS = SPtrack;
   TPProngCMS = TPProng;
@@ -285,48 +281,40 @@ float AliFemtoDreamZVtxMultContainer::RelativePairMomentum(const TVector3 *Part1
   results = 0.5*trackRelK.P();
   return results;
 }
-float AliFemtoDreamZVtxMultContainer::RelativePairkT(const TVector3 *Part1Momentum,
+float AliFemtoDreamZVtxMultContainer::RelativePairkT(TVector3 Part1Momentum,
                                                      int PDGPart1,
-                                                     const TVector3 *Part2Momentum,
+                                                     TVector3 Part2Momentum,
                                                      int PDGPart2) {
   if(PDGPart1 == 0 || PDGPart2== 0){
     AliError("Invalid PDG Code");
   }
-  static float results = 0.;
-  static TLorentzVector SPtrack;
-  static TLorentzVector TPProng;
-  static TLorentzVector trackSum;
-  static TLorentzVector SPtrackCMS;
-  static TLorentzVector TPProngCMS;
+  float results = 0.;
+  TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;
   //Even if the Daughter tracks were switched up during PID doesn't play a role here cause we are
   //only looking at the mother mass
-  SPtrack.SetXYZM(Part1Momentum->X(), Part1Momentum->Y(),Part1Momentum->Z(),
+  SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(),Part1Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
-  TPProng.SetXYZM(Part2Momentum->X(), Part2Momentum->Y(),Part2Momentum->Z(),
+  TPProng.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(),Part2Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
   trackSum = SPtrack + TPProng;
 
   results=0.5*trackSum.Pt();
   return results;
 }
-float AliFemtoDreamZVtxMultContainer::RelativePairmT(const TVector3 *Part1Momentum,
+float AliFemtoDreamZVtxMultContainer::RelativePairmT(TVector3 Part1Momentum,
                                                      int PDGPart1,
-                                                     const TVector3 *Part2Momentum,
+                                                     TVector3 Part2Momentum,
                                                      int PDGPart2) {
   if(PDGPart1 == 0 || PDGPart2== 0){
     AliError("Invalid PDG Code");
   }
-  static float results = 0.;
-  static TLorentzVector SPtrack;
-  static TLorentzVector TPProng;
-  static TLorentzVector trackSum;
-  static TLorentzVector SPtrackCMS;
-  static TLorentzVector TPProngCMS;
+  float results = 0.;
+  TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;
   //Even if the Daughter tracks were switched up during PID doesn't play a role here cause we are
   //only looking at the mother mass
-  SPtrack.SetXYZM(Part1Momentum->X(), Part1Momentum->Y(),Part1Momentum->Z(),
+  SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(),Part1Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
-  TPProng.SetXYZM(Part2Momentum->X(), Part2Momentum->Y(),Part2Momentum->Z(),
+  TPProng.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(),Part2Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
   trackSum = SPtrack + TPProng;
   float pairKT=0.5*trackSum.Pt();

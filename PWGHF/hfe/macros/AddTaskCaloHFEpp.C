@@ -10,6 +10,8 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		                 TString dataname = "dataname",
 		                 Bool_t flagEG1 = kFALSE,
 		                 Bool_t flagEG2 = kFALSE,
+		                 Bool_t flagDG1 = kFALSE,
+		                 Bool_t flagDG2 = kFALSE,
 		                 Bool_t SetFlagClsTypeEMC = kFALSE,
 		                 Bool_t SetFlagClsTypeDCAL = kFALSE)
 {
@@ -32,6 +34,8 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     AliAnalysisTaskCaloHFEpp* task = new AliAnalysisTaskCaloHFEpp(name.Data());   
     task -> SetEG1(flagEG1);
     task -> SetEG2(flagEG2);
+    task -> SetDG1(flagDG1);
+    task -> SetDG2(flagDG2);
     task -> SetfFlagClsTypeEMC(SetFlagClsTypeEMC);
     task -> SetfFlagClsTypeDCAL(SetFlagClsTypeDCAL);
     if(!task) return 0x0;

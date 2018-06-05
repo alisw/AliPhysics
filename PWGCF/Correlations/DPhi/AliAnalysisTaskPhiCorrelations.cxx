@@ -434,7 +434,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   AddSettingsTree();
 
   // event mixing
-  Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemention of AliEventPoolManager
+  Int_t poolsize   = -1;  // Maximum number of events, -1 means no limit
    
   const Int_t kNZvtxBins  = 10+(1+10)*4;
   // bins for further buffers are shifted by 100 cm

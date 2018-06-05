@@ -63,7 +63,7 @@ public:
 	//==================================================
 
 	AliJTH2D fhDphiDetaPta;      // 2D histogram (deltaPhi-deltaEta plane) in [fTyp][fCentralityBin][fZBin][fpttBin][fptaBin] bins
-	AliJTH2D fhResonanceCut;     // DeltaEta histogram for resonance decays
+	//AliJTH2D fhResonanceCut;     // DeltaEta histogram for resonance decays
 
 	//==================================================
 	// Trigger and associated particle specra
@@ -85,7 +85,7 @@ public:
 	AliJTH1D fhIetaAssocFromFile;   // Associated inclusive eta distribution
 	AliJTH1D fhIphiTriggFromFile;   // Trigger inclusive phi distribution
 	AliJTH1D fhIphiAssocFromFile;   // Associated inclusive phi distribution
-	AliJTH1D fhResonanceInvMass;	// Invariant mass distribution of the cut-out resonances
+	//AliJTH1D fhResonanceInvMass;	// Invariant mass distribution of the cut-out resonances
 
 	//===================================================
 	// Event/Track histograms

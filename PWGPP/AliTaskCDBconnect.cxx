@@ -20,6 +20,7 @@
 #include <TRegexp.h>
 #include <TGeoGlobalMagField.h>
 #include "TGeoManager.h"
+#include <TInterpreter.h>
  
 #include "AliAnalysisManager.h"
 #include "AliGeomManager.h"
@@ -136,6 +137,10 @@ void AliTaskCDBconnect::InitGRP()
   if (cdb->GetRun()!=fRun) {    
     fLock = cdb->SetLock(kFALSE,fLock);
     cdb->SetRun(fRun);
+    if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {
+      // If we are using a specific storage override, this is the place to load it
+      gInterpreter->ProcessLine("localOCDBaccessConfig()");
+    }
     fLock = cdb->SetLock(kTRUE,fLock);
   }
   if (gSystem->AccessPathName("OCDB.root",kFileExists)==0) cdb->SetSnapshotMode("OCDB.root"); 

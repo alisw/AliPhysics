@@ -1,9 +1,7 @@
 /***************************************************************************
- //            Modified by Kishora Nayak - 14/06/2016
- //            Modified by Enrico Fragiacomo - 15/01/2014
- //            Modified by Kunal Garg - 04/02/2017
+ //          	Modified by Kunal Garg - 03/05/2018 (kgarg@cern.ch)
  //            Based on AddAnalysisTaskRsnMini
- //            pPb specific settings from AddTaskKStarPPB.C
+ //
  //
  // Macro to configure the KStarPlusMinus analysis task
  // It calls all configs desired by the user, by means
@@ -75,13 +73,11 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
  Float_t     k0sDaughDCA = 1.0,
  Int_t       NTPCcluster = 70,
  TString     outNameSuffix = "KStarPlusMinus_test_func",
- Bool_t      ptDep = kFALSE,
  Float_t     DCAxy = 0.06,
  Bool_t      enableSys = kFALSE,
  Float_t     crossedRows = 70,
  Float_t     rowsbycluster = 0.8,
- Double_t    pt1 = 0.0105,
- Double_t    pt2 = 0.0350,
+ Float_t		 v0rapidity= 0.8,
  Int_t       Sys= 0
  )
 {
@@ -97,56 +93,56 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
     if(evtCutSetID==eventCutSet::kDefaultVtx8) vtxZcut=8.0; //cm
     if(evtCutSetID==eventCutSet::kDefaultVtx5) vtxZcut=5.0; //cm
     if(evtCutSetID==eventCutSet::kNoPileUpCut) rejectPileUp=kFALSE;
-    
-    
+
+
     if(isMC) rejectPileUp=kFALSE;
-    
+
     //-------------------------------------------
     //mixing settings
     //-------------------------------------------
-    
+
     Int_t       nmix = 10;
     if (mixingConfigID == eventMixConfig::kMixDefault) nmix = 10;
     if (mixingConfigID == eventMixConfig::k5Evts)      nmix = 5;
     if (mixingConfigID == eventMixConfig::k5Cent)      maxDiffMultMix = 5;
-    
+
     //
     // -- INITIALIZATION ----------------------------------------------------------------------------
     // retrieve analysis manager
     //
-    
+
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
         ::Error("AddTaskKStarPlusMinus", "No analysis manager to connect to.");
         return NULL;
     }
-    
+
     // create the task and configure
     TString taskName = Form("KStarPlusMinus%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
-    
+
 	AliRsnMiniAnalysisTask* task = new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-	
+
 	if(evtCutSetID==eventCutSet::kSpecial4 || evtCutSetID==eventCutSet::kSpecial5) task->UseESDTriggerMask(triggerMask); //ESD ****** check this *****
 		//if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->SelectCollisionCandidates(triggerMask); //AOD
 	if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3 && evtCutSetID!=eventCutSet::kSpecial4) task->UseESDTriggerMask(triggerMask); //AOD
-	
+
 	if(isPP){
 		if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
 		else if(MultBins==2) task->UseMultiplicity("AliMultSelection_RefMult08");
 		else task->UseMultiplicity("QUALITY");
 	}else task->UseCentrality("V0M");
-    
-    
+
+
     // set event mixing options
     task->UseContinuousMix();
     //task->UseBinnedMix();
     task->SetNMix(nmix);
     task->SetMaxDiffVz(1.0);
-    task->SetMaxDiffMult(10);
+    task->SetMaxDiffMult(5.0);
     ::Info("AddAnalysisTaskKStarCharged", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %\5.3f", nmix, 1.0, 10.0));
-    
+
     mgr->AddTask(task);
-    
+
     //
     // -- EVENT CUTS (same for all configs) ---------------------------------------------------------
     //
@@ -154,7 +150,7 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
     // - 2nd argument --> |Vz| range
     // - 3rd argument --> minimum required number of contributors
     // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
-    
+
     AliRsnCutPrimaryVertex *cutVertex = 0;
     if(evtCutSetID!=eventCutSet::kSpecial1 && evtCutSetID!=eventCutSet::kNoEvtSel && (!MultBins || fabs(vtxZcut-10.)>1.e-10)){
         cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
@@ -165,9 +161,9 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
         }
         if(evtCutSetID==eventCutSet::kSpecial3) cutVertex->SetCheckGeneratedVertexZ();
     }
-    
-    
-    
+
+
+
     AliRsnCutEventUtils* cutEventUtils=0;
     if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kSpecial3){
         cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
@@ -181,19 +177,19 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
             cutEventUtils->SetCheckAcceptedMultSelection();
         }
     }
-    
-    
+
+
     if(!isMC){ //assume pp data
         cutVertex->SetCheckPileUp(rejectPileUp);// set the check for pileup
         ::Info("AddAnalysisTaskKStarCharged", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp)?"ON":"OFF"));
     }
-    
-    
+
+
     // define and fill cut set for event cut
     AliRsnCutSet* eventCuts=0;
     if(cutEventUtils || cutVertex){
         eventCuts=new AliRsnCutSet("eventCuts",AliRsnTarget::kEvent);
-        
+
         if(cutEventUtils && cutVertex){
             eventCuts->AddCut(cutEventUtils);
             eventCuts->AddCut(cutVertex);
@@ -205,47 +201,47 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
             eventCuts->AddCut(cutVertex);
             eventCuts->SetCutScheme(Form("%s",cutVertex->GetName()));
         }
-        
+
         task->SetEventCuts(eventCuts);
     }
-    
-    
+
+
     // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
     //vertex
     Int_t vtxID=task->CreateValue(AliRsnMiniValue::kVz,kFALSE);
     AliRsnMiniOutput* outVtx=task->CreateOutput("eventVtx","HIST","EVENT");
     outVtx->AddAxis(vtxID,240,-12.0,12.0);
-    
+
     //multiplicity
     Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
     AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");
     //if(isPP)
     outMult->AddAxis(multID,400,0.5,400.5);
     //else outMult->AddAxis(multID,100,0.,100.);
-    
+
     TH2F* hvz=new TH2F("hVzVsCent","",100,0.,100., 240,-12.0,12.0);
     task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
-    
+
     TH2F* hmc=new TH2F("MultiVsCent","", 100,0.,100., 400,0.5,400.5);
     hmc->GetYaxis()->SetTitle("QUALITY");
     task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
-    
+
     //
     // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
     Double_t    minYlab =  -0.5;
     Double_t    maxYlab =  0.5;
-    
+
     AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
     cutY->SetRangeD(-0.5,0.5);
-    
+
     AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
-    
+
     AliRsnCutSet* PairCutsSame=new AliRsnCutSet("PairCutsSame",AliRsnTarget::kMother);
     PairCutsSame->AddCut(cutY);
     PairCutsSame->AddCut(cutV0);
     PairCutsSame->SetCutScheme(TString::Format("%s&(!%s)",cutY->GetName(),cutV0->GetName()).Data());
     //note the use of the ! operator in this cut scheme
-    
+
     AliRsnCutSet* PairCutsMix=new AliRsnCutSet("PairCutsMix",AliRsnTarget::kMother);
     PairCutsMix->AddCut(cutY);
     PairCutsMix->SetCutScheme(cutY->GetName());
@@ -257,10 +253,10 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
         Printf("========================== MC analysis - PID cuts not used");
     } else
         Printf("========================== DATA analysis - PID cuts used");
-    
-    if (!ConfigKStarPlusMinusRun2016(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, ptDep, DCAxy, enableSys, crossedRows, rowsbycluster, pt1, pt2, Sys)) return 0x0;
 
-	
+    if (!ConfigKStarPlusMinusRun2016(task, isPP, isMC, isGT, piPIDCut,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
+
+
 
     //
     // -- CONTAINERS --------------------------------------------------------------------------------
@@ -268,12 +264,12 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinusRun2016
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
     //  outputFileName += ":Rsn";
     Printf("AddTaskKStarPlusMinus - Set OutputFileName : \n %s\n", outputFileName.Data() );
-    
-    
+
+
     AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%.1f_%.1f_%.2f_%.3f_%.f_%.f_%.f_%.1f_%.2f_%.1f_%.3f_%.1f", outNameSuffix.Data(),piPIDCut,customQualityCutsID,pi_k0s_PIDCut,massTol,massTolVeto,pLife,radiuslow, k0sDCA,k0sCosPoinAn,k0sDaughDCA, DCAxy, Sys), TList::Class(), AliAnalysisManager::kOutputContainer, outputFileName);
-    
+
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task, 1, output);
-    
+
     return task;
 }

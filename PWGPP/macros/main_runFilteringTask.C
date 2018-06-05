@@ -45,10 +45,6 @@ void main_runFilteringTask( const char* esdList,
 
     AddTaskCDBconnect(ocdb);
 
-    if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {
-      gInterpreter->ProcessLine("localOCDBaccessConfig()");
-    }
-
     // Create input chain
     //gROOT->LoadMacro("$ALICE_PHYSICS/PWGUD/macros/CreateESDChain.C");
     //TChain* chain = CreateESDChain(esdList, nFiles,firstFile);

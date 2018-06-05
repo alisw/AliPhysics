@@ -133,7 +133,7 @@ void AliJCIaaEPTask::UserExec(Option_t* /*option*/)
 	if(fJFlowBaseTask->IsMC()) {
 		TComplex Qvector;
 		Qvector = fJFlowBaseTask->GetQvectorsEP(fEPDetID, iH);
-		EP2 = Qvector.Theta()/double(iH);
+		EP2 = Qvector.Theta()/double(iH+2);
 	} else {
 		EP2 = fJFlowBaseTask->GetEventPlaneALICE(fEPDetID,iH);
 	}

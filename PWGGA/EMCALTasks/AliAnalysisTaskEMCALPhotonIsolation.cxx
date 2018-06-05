@@ -3858,7 +3858,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::FillGeneralHistograms(AliVCluster *c
   else
     IsolationAndUEinTPC(coi,isolation,ue,eTThreshold,index);
 
-  if(fIsMC)
+  if(fIsMC && fWho != 2)
     LookforParticle(coi->GetLabel(),vecCOI.Et(),vecCOI.Phi(),vecCOI.Eta(),coi->GetTOF()*1e9,m02COI,isolation);
 
   switch(fWho)

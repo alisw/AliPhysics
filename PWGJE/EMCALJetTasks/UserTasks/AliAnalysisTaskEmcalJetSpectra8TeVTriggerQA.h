@@ -33,11 +33,11 @@
  * \brief Declaration of class AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA
  *
  * In this header file the class AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA is declared.
- * This is a jet task that calculates the EMCal trigger spectra and does
+ * This is a jet task that calculates the EMCal triggered spectra and does
  * additional QA for the EMCal trigger for the 8 TeV jet spectra analysis
  *
  * \author Andrew Castro <andrew.john.castro@cern.ch>, University of Tennessee
- * \date April 18, 2018
+ * \date April 14, 2018
  */
 
 /* Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
@@ -114,15 +114,21 @@ protected:
     Bool_t                      FillHistograms()                                  ;
     Bool_t                      Run()                                             ;
 
-    void                        AllocateJetHistograms()                           ;
-    void                        AllocateTrackHistograms()                         ;
-    void                        AllocateClusterHistograms()                       ;
-    void                        AllocateCellHistograms()                          ;
+    void                        AllocateJetHistograms()                           ;///< Jet Histograms
+    void                        AllocateTrackHistograms()                         ;///< ITS-TPC Track Histograms
+    void                        AllocateClusterHistograms()                       ;///< EMCal Cluster Histograms
+    void                        AllocateCellHistograms()                          ;///< EMCal Tower Histograms
+    void                        AllocateParticleHistograms()                      ;///< Generator Level MC Histograms
+    //void                        AllocateMCJetHistograms()                         ;///< MC truth Jet Histograms
+    
+    
 
     void                        DoJetLoop()                                       ;
     void                        DoTrackLoop()                                     ;
     void                        DoClusterLoop()                                   ;
     void                        DoCellLoop()                                      ;
+    void                        DoParticleLoop()                                  ;
+    //void                        DoMCJetLoop()                                     ;
     Bool_t                      IsLEDEvent() const                                ;
     Bool_t                      fUseRecalcPatches                                 ;///<                  Switch between offline (FEE) and recalc (L1) patches
     Bool_t                      SelectSingleShowerPatch(const AliEMCALTriggerPatchInfo *patch) const;
@@ -141,26 +147,31 @@ protected:
     
     AliVEvent                   *fRecevent                                         ;//!<!                Reconstructed event
     AliMCEvent                  *fMCevent                                          ;//!<!                Monte-Carlo event
+    AliMCParticleContainer*     fGeneratorLevel                                    ;//!<!                generator level container
+    AliJetContainer*            fMCJetContainer                                    ;//!<!                truth-level jet container
 
 private:
     
-    //AliEMCALGeometry              *fGeom                     ;//!<!          EMCal goemetry utility
+  //AliEMCALGeometry              *fGeom                     ;//!<!          EMCal goemetry utility
     AliEMCALRecoUtils             *fRecoUtil                 ;//!<!          Reco utility
     TF1                           *fClusterEResolution       ;//!<!          Parameterization of cluster energy resolution from 2010 test beam results a = 4.35 b = 9.07 c = 1.63
-    Double_t                      fVaryTrkPtRes              ;//!<!         Variation of tracking momentum resolution
-    Bool_t                        fUseSumw2                  ;//!<!         activate sumw2 for output histograms
+    Double_t                      fVaryTrkPtRes              ;//!<!          Variation of tracking momentum resolution
+    Bool_t                        fUseSumw2                  ;//!<!          activate sumw2 for output histograms
 
-    TH1F                          *fHistNumbJets;//!<!                     Numb Jets Per Event
-    TH1F                          *fHistJetPt;//!<!                        Jet Pt Dist
-    TH1F                          *fHistJetJetPatchE;//!<!                 Jet - Jet Trigger Patch E
-    TH1F                          *fHistJetGammaPatchE;//!<!               Jet-Gamma Trigger Patch E
-    TH1F                          *fHistJetJetPatchPt;//!<!                Jet - Jet Trigger Patch Pt
-    TH1F                          *fHistJetGammaPatchPt;//!<!              Jet-Gamma Trigger Patch Pt
-    TH1F                          *fHistTriggerPatchE;//!<!                EMCal Trigger Patch E
+    TH1F                          *fHistNumbJets             ;//!<!          Numb Jets Per Event
+    TH1F                          *fHistJetPt                ;//!<!          Jet Pt Dist
+    TH1F                          *fHistJetJetPatchE         ;//!<!          Jet - Jet Trigger Patch E
+    TH1F                          *fHistJetGammaPatchE       ;//!<!          Jet - Gamma Trigger Patch E
+    TH1F                          *fHistJetJetPatchPt        ;//!<!          Jet - Jet Trigger Patch Pt
+    TH1F                          *fHistJetGammaPatchPt      ;//!<!          Jet - Gamma Trigger Patch Pt
+    TH1F                          *fHistTriggerPatchE        ;//!<!          EMCal Trigger Patch E
     
-    THnSparse                     *fhnMBJetSpectra;//!<!                   MB Jet Spectra sparse
+    THnSparse                     *fhnMBJetSpectra           ;//!<!          MB Jet Spectra sparse
+    THnSparse                     *fhnTrkQA                  ;//!<!          Charged Track QA Sparse
+    THnSparse                     *fhnClusQA                 ;//!<!          EMCal Cluster QA
     
-    TH1F                          *fHistEMCalTowerMult[9];//!<!            EMCal Tower Multiplicity by SM
+    
+    TH1F                          *fHistEMCalTowerMult[9]    ;//!<!          EMCal Tower Multiplicity by SM
 
     AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&)           ; // not implemented
     AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA &operator=(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&); // not implemented

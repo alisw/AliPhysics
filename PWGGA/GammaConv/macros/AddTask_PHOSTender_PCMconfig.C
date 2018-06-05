@@ -34,7 +34,7 @@ AliPHOSTenderTask* AddTask_PHOSTender_PCMconfig(
   if(isMC) //handle MC data
     PHOSSupply->SetMCProduction(options) ;
   if (isRun2 && !isMC)
-    PHOSSupply->ApplyZeroSuppression(0.020)
+    PHOSSupply->ApplyZeroSuppression(0.020);
 
   if (forceBadChannelMap==1){
     std::cout << "=============================================================" << std::endl;

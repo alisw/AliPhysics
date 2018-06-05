@@ -28,7 +28,7 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 ,fPairCleaner()
 ,fControlSample()
 ,fTrackBufferSize(0)
-,fGTI()
+,fGTI(0)
 ,fConfig(0)
 ,fPartColl(0)
 {
@@ -76,13 +76,14 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
   fAntiv0Cuts->Init();
   fCascCuts->Init();
   fAntiCascCuts->Init();
+  fGTI=new AliAODTrack*[fTrackBufferSize];
   fEvent=new AliFemtoDreamEvent(fMVPileUp,fEvtCutQA,trigger);
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
   bool MinBooking=
       !((!fConfig->GetMinimalBookingME())||(!fConfig->GetMinimalBookingSample()));
   fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinBooking);
 
-  if (!MinBooking) {
+  if (MinBooking) {
     fQA=new TList();
     fQA->SetOwner();
     fQA->SetName("QA");
@@ -101,8 +102,10 @@ void AliFemtoDreamAnalysis::ResetGlobalTrackReference(){
 
   // Sets all the pointers to zero. To be called at
   // the beginning or end of an event
-  fGTI.clear();
-  fGTI.resize(fTrackBufferSize);
+  for(UShort_t i=0;i<fTrackBufferSize;i++)
+  {
+    fGTI[i]=0;
+  }
 }
 void AliFemtoDreamAnalysis::StoreGlobalTrackReference(AliAODTrack *track){
   //This method was inherited form H. Beck analysis
@@ -144,80 +147,48 @@ void AliFemtoDreamAnalysis::StoreGlobalTrackReference(AliAODTrack *track){
   // }
 
   // Check that the id is positive
-
-  if(!track) return;
-
-  // Check that the id is positive
-  if(track->GetID()<0) return;
+  const int trackID = track->GetID();
+  if(trackID<0){
+    return;
+  }
 
   // Check id is not too big for buffer
-  if(track->GetID() >= static_cast<int>(fGTI.size())) fGTI.resize(track->GetID()+1);
+  if(trackID>=fTrackBufferSize){
+    printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n"
+        ,trackID,fTrackBufferSize);
+    return;
+  }
 
   // Warn if we overwrite a track
-  auto *trackRef = fGTI[track->GetID()];
-  if(trackRef) {
+  if(fGTI[trackID])
+  {
     // Seems like there are FilterMap 0 tracks
     // that have zero TPCNcls, don't store these!
-    if( (!track->GetFilterMap()) && (!track->GetTPCNcls())) return;
-
-
+    if( (!track->GetFilterMap()) && (!track->GetTPCNcls()) ){
+      return;
+    }
     // Imagine the other way around, the zero map zero clusters track
     // is stored and the good one wants to be added. We ommit the warning
     // and just overwrite the 'bad' track
-    if( fGTI[track->GetID()]->GetFilterMap() || fGTI[track->GetID()]->GetTPCNcls()) {
+    if( fGTI[trackID]->GetFilterMap() || fGTI[trackID]->GetTPCNcls()  ){
       // If we come here, there's a problem
-      std::cout << "Warning! global track info already there! ";
-      std::cout << "TPCNcls track1 " << (fGTI[track->GetID()])->GetTPCNcls() << " track2 " << track->GetTPCNcls();
-      std::cout << " FilterMap track1 " << (fGTI[track->GetID()])->GetFilterMap() << " track 2" << track->GetFilterMap() << "\n";
-      fGTI[track->GetID()] = nullptr;
+      printf("Warning! global track info already there!");
+      printf("         TPCNcls track1 %u track2 %u",
+             (fGTI[trackID])->GetTPCNcls(),track->GetTPCNcls());
+      printf("         FilterMap track1 %u track2 %u\n",
+             (fGTI[trackID])->GetFilterMap(),track->GetFilterMap());
     }
   } // Two tracks same id
 
-  // Assign the pointer
-  (fGTI.at(track->GetID())) = track;
+  // // There are tracks with filter bit 0,
+  // // do they have TPCNcls stored?
+  // if(!track->GetFilterMap()){
+  //   printf("Filter map is zero, TPCNcls: %u\n"
+  //     ,track->GetTPCNcls());
+  // }
 
-//  const int trackID = track->GetID();
-//    if(trackID<0){
-//      return;
-//    }
-//
-//    // Check id is not too big for buffer
-//    if(trackID>=fTrackBufferSize){
-//      printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n"
-//          ,trackID,fTrackBufferSize);
-//      return;
-//    }
-//
-//    // Warn if we overwrite a track
-//    if(fGTI[trackID])
-//    {
-//      // Seems like there are FilterMap 0 tracks
-//      // that have zero TPCNcls, don't store these!
-//      if( (!track->GetFilterMap()) && (!track->GetTPCNcls()) ){
-//        return;
-//      }
-//      // Imagine the other way around, the zero map zero clusters track
-//      // is stored and the good one wants to be added. We ommit the warning
-//      // and just overwrite the 'bad' track
-//      if( fGTI[trackID]->GetFilterMap() || fGTI[trackID]->GetTPCNcls()  ){
-//        // If we come here, there's a problem
-//        printf("Warning! global track info already there!");
-//        printf("         TPCNcls track1 %u track2 %u",
-//               (fGTI[trackID])->GetTPCNcls(),track->GetTPCNcls());
-//        printf("         FilterMap track1 %u track2 %u\n",
-//               (fGTI[trackID])->GetFilterMap(),track->GetFilterMap());
-//      }
-//    } // Two tracks same id
-//
-//    // // There are tracks with filter bit 0,
-//    // // do they have TPCNcls stored?
-//    // if(!track->GetFilterMap()){
-//    //   printf("Filter map is zero, TPCNcls: %u\n"
-//    //     ,track->GetTPCNcls());
-//    // }
-//
-//    // Assign the pointer
-//    (fGTI[trackID]) = track;
+  // Assign the pointer
+  (fGTI[trackID]) = track;
 }
 
 void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
@@ -237,11 +208,9 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
     }
     StoreGlobalTrackReference(track);
   }
-  static std::vector<AliFemtoDreamBasePart> Particles;
-  Particles.clear();
-  static std::vector<AliFemtoDreamBasePart> AntiParticles;
-  AntiParticles.clear();
-  fFemtoTrack->SetGlobalTrackInfo(&fGTI);
+  std::vector<AliFemtoDreamBasePart> Particles;
+  std::vector<AliFemtoDreamBasePart> AntiParticles;
+  fFemtoTrack->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
   for (int iTrack = 0;iTrack<evt->GetNumberOfTracks();++iTrack) {
     AliAODTrack *track=static_cast<AliAODTrack*>(evt->GetTrack(iTrack));
     if (!track) {
@@ -256,16 +225,14 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiParticles.push_back(*fFemtoTrack);
     }
   }
-  static std::vector<AliFemtoDreamBasePart> Decays;
-  Decays.clear();
-  static std::vector<AliFemtoDreamBasePart> AntiDecays;
-  AntiDecays.clear();
+  std::vector<AliFemtoDreamBasePart> Decays;
+  std::vector<AliFemtoDreamBasePart> AntiDecays;
   //  Look for the lambda, store it in an event
   //  Get a V0 from the event:
   TClonesArray *v01 = static_cast<TClonesArray*>(evt->GetV0s());
   //number of V0s:
 
-  fFemtov0->SetGlobalTrackInfo(&fGTI);
+  fFemtov0->SetGlobalTrackInfo(fGTI,fTrackBufferSize);
   int entriesV0= v01->GetEntriesFast();
   for (int iv0=0; iv0<entriesV0; iv0++) {
     AliAODv0 *v0 = evt->GetV0(iv0);
@@ -277,10 +244,8 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiDecays.push_back(*fFemtov0);
     }
   }
-  static std::vector<AliFemtoDreamBasePart> XiDecays;
-  XiDecays.clear();
-  static std::vector<AliFemtoDreamBasePart> AntiXiDecays;
-  AntiXiDecays.clear();
+  std::vector<AliFemtoDreamBasePart> XiDecays;
+  std::vector<AliFemtoDreamBasePart> AntiXiDecays;
   int numcascades = evt->GetNumberOfCascades();
   for (int iXi=0;iXi<numcascades;++iXi) {
     AliAODcascade *xi = evt->GetCascade(iXi);

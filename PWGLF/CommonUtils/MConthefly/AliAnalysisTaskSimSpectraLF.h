@@ -59,33 +59,24 @@ class AliAnalysisTaskSimSpectraLF : public AliAnalysisTaskSE { //
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
   
-  void SetEtaRange(Float_t eta){ fEta=eta; }
   void SetYRange(Float_t y){ fY=y; }
-  void SetPtRange(Float_t ptmin, Float_t ptmax){ fPtMin=ptmin; fPtMax=ptmax; }
 
-  Double_t myRap(Double_t rE, Double_t rPz) const;
-  
  private:
 
     void	EventSel(TObject* obj);
     void 	ParticleSel(TObject *obj);
-    Short_t	GetPidCode(Int_t pdgCode) const;
+    Int_t	GetPidCode(Int_t pdgCode) const;
 
  protected:
   
     Bool_t IsMCEventSelected(TObject* obj);
-    Bool_t IsMCParticleGenerated(TObject* obj, AliStack *fstack);
-    Bool_t IsMCParticleInKinematicRange(TObject* obj);
     
     AliMCEvent*              fMcEvent;    //!<! MC event
     AliInputEventHandler*    fMcHandler;  //!<! MCEventHandler
     
     AliStack* 	fStack;
 
-    Float_t	fEta;   	///< pseudorapidity cut
     Float_t	fY;     	///< rapidity cut
-    Float_t	fPtMin;    	///< minimum pt cut
-    Float_t	fPtMax;    	///< maximum pt cut
 
     void FillHisto(const char* objkey, Double_t x);
 

@@ -84,12 +84,13 @@ AliAnalysisTaskEmcalJetEnergySpectrum::~AliAnalysisTaskEmcalJetEnergySpectrum(){
 void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  TLinearBinning jetptbinning(200, 0., 200.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(5, -1.5, 3.5);
+  TLinearBinning jetptbinning(200, 0., 200.), etabinning(100, -1., 1.), phibinning(100., 0., 7.), nefbinning(100, 0., 1.), trgclusterbinning(kTrgClusterN + 1, -0.5, kTrgClusterN -0.5);
   const TBinning *binnings[5] = {&jetptbinning, &etabinning, &phibinning, &nefbinning, &trgclusterbinning};
   fHistos = new THistManager(Form("Histos_%s", GetName()));
   fHistos->CreateTH1("hEventCounter", "Event counter histogram", 1, 0.5, 1.5);
-  fHistos->CreateTH1("hClusterCounter", "Event counter histogram", 5, -1.5, 3.5);
+  fHistos->CreateTH1("hClusterCounter", "Event counter histogram", kTrgClusterN, -0.5, kTrgClusterN - 0.5);
   fHistos->CreateTHnSparse("hJetTHnSparse", "jet thnsparse", 5, binnings, "s");
+  fHistos->CreateTHnSparse("hMaxJetTHnSparse", "jet thnsparse", 5, binnings, "s");
 
   for(auto h : *fHistos->GetListOfHistograms()) fOutput->Add(h);
   PostData(1, fOutput);
@@ -105,12 +106,27 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
 
   auto trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses());
   fHistos->FillTH1("hEventCounter", 1);
+  AliEmcalJet *maxjet(nullptr);
   for(auto t : trgclusters) fHistos->FillTH1("hClusterCounter", t);
   for(auto j : datajets->accepted()){
+    if(!maxjet || (j->E() > maxjet->E())) maxjet = j;
     double datapoint[5] = {j->Pt(), j->Eta(), j->Phi(), j->NEF(), 0.};
     for(auto t : trgclusters){
       datapoint[4] = static_cast<double>(t);
       fHistos->FillTHnSparse("hJetTHnSparse", datapoint);
+    }
+  }
+
+  double maxdata[5];
+  memset(maxdata, 0., sizeof(double) * 5);
+  if(maxjet){
+    maxdata[0] = maxjet->Pt();
+    maxdata[1] = maxjet->Eta();
+    maxdata[2] = maxjet->Phi();
+    maxdata[3] = maxjet->NEF();
+    for(auto t : trgclusters){
+      maxdata[4] = static_cast<double>(t);
+      fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata);
     }
   }
   return true;
@@ -119,37 +135,41 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
 std::vector<AliAnalysisTaskEmcalJetEnergySpectrum::TriggerCluster_t> AliAnalysisTaskEmcalJetEnergySpectrum::GetTriggerClusterIndices(const TString &triggerstring) const {
   // decode trigger string in order to determine the trigger clusters
   std::vector<TriggerCluster_t> result;
-  std::vector<std::string> clusternames;
-  auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring.Data());
-  for(auto t : triggerinfos) {
-    if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
-  }
-  bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
-       isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
-       isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
-       isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
-  if(isCENT || isCENTNOTRD) {
-    if(isCENT) {
-      result.emplace_back(kTrgClusterCENT);
-      if(isCENTNOTRD) {
-        result.emplace_back(kTrgClusterCENTNOTRD);
-        result.emplace_back(kTrgClusterCENTBOTH);
-      } else result.emplace_back(kTrgClusterOnlyCENT);
-    } else {
-      result.emplace_back(kTrgClusterCENTNOTRD);
-      result.emplace_back(kTrgClusterOnlyCENTNOTRD);
+  result.emplace_back(kTrgClusterANY);      // cluster ANY always included 
+  if(!fIsMC){
+    // Data - separate trigger clusters
+    std::vector<std::string> clusternames;
+    auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(triggerstring.Data());
+    for(auto t : triggerinfos) {
+      if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
     }
-  }
-  if(isCALO || isCALOFAST) {
-    if(isCALO) {
-      result.emplace_back(kTrgClusterCALO);
-      if(isCALOFAST) {
+    bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
+         isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
+         isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
+         isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
+    if(isCENT || isCENTNOTRD) {
+      if(isCENT) {
+        result.emplace_back(kTrgClusterCENT);
+        if(isCENTNOTRD) {
+          result.emplace_back(kTrgClusterCENTNOTRD);
+          result.emplace_back(kTrgClusterCENTBOTH);
+        } else result.emplace_back(kTrgClusterOnlyCENT);
+      } else {
+        result.emplace_back(kTrgClusterCENTNOTRD);
+        result.emplace_back(kTrgClusterOnlyCENTNOTRD);
+      }
+    }
+    if(isCALO || isCALOFAST) {
+      if(isCALO) {
+        result.emplace_back(kTrgClusterCALO);
+        if(isCALOFAST) {
+          result.emplace_back(kTrgClusterCALOFAST);
+          result.emplace_back(kTrgClusterCALOBOTH);
+        } else result.emplace_back(kTrgClusterOnlyCALO);
+      } else {
         result.emplace_back(kTrgClusterCALOFAST);
-        result.emplace_back(kTrgClusterCALOBOTH);
-      } else result.emplace_back(kTrgClusterOnlyCALO);
-    } else {
-      result.emplace_back(kTrgClusterCALOFAST);
-      result.emplace_back(kTrgClusterOnlyCALOFAST);
+        result.emplace_back(kTrgClusterOnlyCALOFAST);
+      }
     }
   }
   return result;
@@ -265,6 +285,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   auto jetcont = task->AddJetContainer(jettype, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, radius, acctype, tracks, clusters);
   jetcont->SetName("datajets");
   task->SetNameJetContainer("datajets");
+  std::cout << "Adding jet container with underlying array:" << jetcont->GetArrayName() << std::endl;
 
   // Link input and output container
   outfilename << mgr->GetCommonFileName() << ":JetSpectrum_" << tag.str().data();

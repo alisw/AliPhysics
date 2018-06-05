@@ -167,6 +167,8 @@ AliGenEventHeader* AliCaloTrackAODReader::GetGenEventHeader() const
 {
   if ( !GetAODMCHeader() ) return 0x0;
   
+  if ( fGenEventHeader ) return fGenEventHeader;
+  
   Int_t nGenerators = GetAODMCHeader()->GetNCocktailHeaders();
   
   if ( nGenerators <= 0  ) return 0x0;

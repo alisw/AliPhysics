@@ -35,6 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
   )
 
 # Sources as introduced by the authors
@@ -66,6 +67,7 @@ set ( SRCS2
   global/AliAnalysisTaskCheckVertexAOD.cxx
   global/AliAnalysisTaskCheckESDTracks.cxx
   global/AliAnalysisTaskCheckAODTracks.cxx
+  global/AliAnalysisTaskCheckGenKine.cxx
   global/AliAnalysisTaskTrackingEffPID.cxx
   global/AliGlobalFBFqa.cxx
   )
@@ -229,6 +231,7 @@ set ( SRCS18
   AD/ADESDFriendUtils.cxx
   AD/AliAnalysisTaskADCalib.cxx
   AD/AliAnalysisTaskADChargeMonitoring.cxx
+  AD/AliAnalysisTaskADCent.cxx
   )
 #file ( GLOB SRCS19 "BeamGasMonitoring/*.cxx" )
 set ( SRCS19
@@ -360,6 +363,7 @@ install(FILES AD/AddTaskADQA.C
 	      AD/AddTaskADPilot.C
 	      AD/AddTaskADCalib.C
 	      AD/AddTaskADChargeMonitoring.C
+	      AD/AddTaskADCent.C
 	      DESTINATION PWGPP/AD)
 install(FILES AD/trending/DrawTrendingADQA.C
  	      AD/trending/MakeTrendingADQA.C

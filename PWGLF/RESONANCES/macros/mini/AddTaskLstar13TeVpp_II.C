@@ -4,7 +4,6 @@
    priyanka.sett@cern.ch - last modified on 27/10/2016
   
  
-
   for L* in pp 13 TeV analysis
 
 
@@ -56,17 +55,18 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
  Float_t     nsigmaKa = 2.0,
  Bool_t      enableMonitor = kTRUE,
  Bool_t      IsMcTrueOnly = kFALSE,
- UInt_t      triggerMask = AliVEvent::kINT7,
- Int_t       signedPdg = 3124,
- TString     monitorOpt = "NoSIGN",  //Flag for AddMonitorOutput.C e.g."NoSIGN"
- Bool_t      useCrossedRows = kTRUE,
- const char *yaxisVar = "",  //yaxisVar = "PtDaughter_PDaughter_cent"
- Bool_t      useMixLS = 0,
  TString     outNameSuffix = "Default"
  )
 
+{
 
-{  
+
+  UInt_t      triggerMask = AliVEvent::kINT7;
+  Int_t       signedPdg = 3124;
+  TString     monitorOpt = "NoSIGN";  //Flag for AddMonitorOutput.C e.g."NoSIGN"
+  Bool_t      useCrossedRows = kTRUE;
+  const char *yaxisVar = "";  //yaxisVar = "PtDaughter_PDaughter_cent"
+  Bool_t      useMixLS = 0;
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
@@ -117,7 +117,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
   
   
   task->UseESDTriggerMask(triggerMask);  // for ESD 
-  //task->SelectCollisionCandidates(triggerMask);  // Priyanka used for AODs
+  // task->SelectCollisionCandidates(triggerMask);  // Priyanka used for AODs
   
   if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
@@ -268,9 +268,8 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp
   //
   // -- CONTAINERS --------------------------------------------------------------------------------
   //
-  // TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  //  outputFileName += ":Rsn";
-  //Printf("AddAnalysisTaskTPCKStarSyst - Set OutputFileName : \n %s\n", outputFileName.Data() );
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  Printf("AddAnalysisTaskTPCKStarSyst - Set OutputFileName : \n %s\n", outputFileName.Data() );
   
   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()),TList::Class(),AliAnalysisManager::kOutputContainer, outputFileName);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

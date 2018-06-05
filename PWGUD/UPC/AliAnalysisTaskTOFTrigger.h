@@ -53,6 +53,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   TH2F *hFiredMaxiPad;				//!
   TH2F *hFiredMaxiPadOnlyAround;		//!
   TH2F *hNotFiredMaxiPad;			//!
+  TH2F *hExtraFiredMaxiPad;			//!
   TH2F *hTrackPadCorrPhi;			//!
   TH2F *hTrackPadCorrEta;			//!
   TH2F *hNoiseMaxiPad;				//!
@@ -91,7 +92,7 @@ class AliAnalysisTaskTOFTrigger : public AliAnalysisTaskSE {
   AliAnalysisTaskTOFTrigger(const AliAnalysisTaskTOFTrigger&); //not implemented
   AliAnalysisTaskTOFTrigger& operator =(const AliAnalysisTaskTOFTrigger&); //not implemented
 
-  ClassDef(AliAnalysisTaskTOFTrigger, 14);
+  ClassDef(AliAnalysisTaskTOFTrigger, 15);
 };
 
 #endif

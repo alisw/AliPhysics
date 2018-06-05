@@ -57,6 +57,18 @@ void AliFemtoDreamPartContainer::SetEvent(
   return;
 }
 
+void AliFemtoDreamPartContainer::PrintLastEvent() {
+  for (std::deque<std::vector<AliFemtoDreamBasePart>>::iterator itEvt=
+      fPartBuffer.begin(); itEvt!=fPartBuffer.end();++itEvt) {
+    std::cout << "Printing Last Event with size: "<<itEvt->size() << '\n';
+    for (std::vector<AliFemtoDreamBasePart>::iterator itPart=itEvt->begin();
+        itPart!=itEvt->end();++itPart) {
+      TVector3 P(itPart->GetMomentum());
+      std::cout<<"Px: "<<P.X()<<'\t'<<"Py: "<<P.Y()<<'\t'<<"Pz: "<<
+          P.Z()<<std::endl;
+    }
+  }
+}
 std::vector<AliFemtoDreamBasePart> &AliFemtoDreamPartContainer::GetEvent(int Depth) {
   std::deque<std::vector<AliFemtoDreamBasePart>>::iterator itEvt=
         fPartBuffer.begin()+Depth;

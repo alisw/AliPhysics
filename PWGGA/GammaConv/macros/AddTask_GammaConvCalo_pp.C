@@ -150,7 +150,7 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
   Printf("here \n");
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00000008400100001500000000";
+  TString cutnumberPhoton = "00000008400000000100000000";
   TString cutnumberEvent = "00000003";
   Bool_t doEtaShift = kFALSE;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -899,9 +899,8 @@ void AddTask_GammaConvCalo_pp(  Int_t     trainConfig                   = 1,    
     cuts.AddCut("00000113","00200009327000008250400000","2444400043013330000","0163103100000010"); // 100ns timing cut, M02<0.5
     cuts.AddCut("00000113","00200009327000008250400000","2444400043013320000","0163103100000010"); // 100ns timing cut, M02<0.7
   } else if (trainConfig == 353){
-    cuts.AddCut("00000113","00200009327000008250400000","2444400000013300000","0163103100000010"); // no NonLin
-    cuts.AddCut("00000113","00200009327000008250400000","2444401000013300000","0163103100000010"); // extern PHOS NonLin
-    cuts.AddCut("00000113","00200009327000008250400000","2444412000013300000","0163103100000010"); // own constant NonLin first iteration
+    cuts.AddCut("00000113","00200009327000008250400000","2444411000013300000","0163103100000010"); // own constant ConvCalo NonLin
+    cuts.AddCut("00000113","00200009327000008250400000","2444421000013300000","0163103100000010"); // ext. PHOS NonLin * correction
   // 13 TeV
   } else if (trainConfig == 361){ // INT7
     cuts.AddCut("00010113","00200009327000008250400000","2446600000013300000","0163103100000010"); // QA
