@@ -335,7 +335,7 @@ bool TestAliEmcalTrackSelectionAOD::TestHybridDef2010wRefit() const {
       AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
       nfailure++;
     } else {
-      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained) {
+      if(hybridcat->IsHybridTrackConstrained()) {
         AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
         nfailure++;
       }
@@ -408,7 +408,7 @@ bool TestAliEmcalTrackSelectionAOD::TestHybridDef2010woRefit() const {
       AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
       nfailure++;
     } else {
-      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained) {
+      if(hybridcat->IsHybridTrackConstrained()) {
         AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
         nfailure++;
       }
@@ -469,7 +469,7 @@ bool TestAliEmcalTrackSelectionAOD::TestHybridDef2011() const {
       AliErrorStream() << "No hybrid selection result found for CAT2 hybrid track" << std::endl;
       nfailure++;
     } else {
-      if(hybridcat->GetHybridTrackType() != AliEmcalTrackSelResultHybrid::kHybridConstrained) {
+      if(hybridcat->IsHybridTrackConstrained()) {
         AliErrorStream() << "Incorrect hybrid track type for CAT2 hybrid track: " << hybridcat->GetHybridTrackType() << std::endl;
         nfailure++;
       }

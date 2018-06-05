@@ -30,6 +30,7 @@
 #include "AliEmcalCutBase.h"
 
 class AliESDtrackCuts;
+class AliESDtrack;
 class AliVTrack;
 
 namespace PWG {
@@ -111,6 +112,15 @@ public:
    * @return Number of TPC + TRD space points
    */
   Int_t  GetTPCTRDNumberOfClusters(const AliVTrack *const trk) const;
+
+  /**
+   * @brief Check if ITS module in the layer is considerd as active
+   * 
+   * @param trk Track to check 
+   * @param layer Layer to check
+   * @return True if the module in the layer is considered as active, false otherwise
+   */
+  Bool_t IsActiveITSModule(const AliESDtrack *const trk, int layer) const;
 
 protected:
 

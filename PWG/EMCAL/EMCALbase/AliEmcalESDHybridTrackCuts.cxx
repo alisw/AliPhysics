@@ -97,7 +97,8 @@ AliEmcalTrackSelResultPtr AliEmcalESDHybridTrackCuts::IsSelected(TObject *o){
         if(fRequireTPCTRDClusters && (GetTPCTRDNumberOfClusters(esdtrack) < fMinClustersTPCTRD)) isSelected = false;
         if(isSelected){
           AliDebugStream(2) << "Track selected as constrained hybrid track" << std::endl;
-          tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrained;
+          if(IsActiveITSModule(esdtrack, 0) || IsActiveITSModule(esdtrack, 1)) tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrainedFake;
+          else tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrainedTrue;
         }
       } else if(fHybridTrackCutsNoItsRefit && fHybridTrackCutsNoItsRefit->AcceptTrack(esdtrack)) {
         // Temporary hack for TPC+TRD number of cluster cut which is not yet available in AliESDtrackCuts
@@ -133,6 +134,18 @@ void AliEmcalESDHybridTrackCuts::Init(){
 
 Int_t AliEmcalESDHybridTrackCuts::GetTPCTRDNumberOfClusters(const AliVTrack *const trk) const {
   return static_cast<Int_t>(trk->GetTPCCrossedRows()) + static_cast<Int_t>(trk->GetTRDncls());
+}
+
+Bool_t AliEmcalESDHybridTrackCuts::IsActiveITSModule(const AliESDtrack *const trk, int layer) const {
+  int det, status;
+  Float_t xloc, zloc;
+  trk->GetITSModuleIndexInfo(layer, det, status, xloc, zloc);
+  // dead status:
+  // - dead (2)
+  // - skipped (3)
+  // - outinz (4)
+  // - holeinz (7)
+  return !(status == 2 || status == 3 || status == 4 || status == 7);
 }
 
 void AliEmcalESDHybridTrackCuts::InitHybridTracks2010() {
