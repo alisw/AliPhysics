@@ -543,8 +543,8 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
           mcMTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));  
       }
  
-      if(!(mcEvent->IsFromBGEvent(abs(mcTrackIndex)))) Rej=kTRUE;
-
+//      if(!(mcEvent->IsFromBGEvent(abs(mcTrackIndex)))) Rej=kTRUE;
+      if(!(IsFromBGEventAOD(mcEvent,abs(mcTrackIndex)))) Rej=kTRUE;
       passtrcuts = 0;          
           
       //check if MC particle was reconstructed      
@@ -750,3 +750,26 @@ Int_t AliAnalysisTaskMLTreeMakerEff::GetAcceptedTracks(AliVEvent *event, Double_
   return acceptedTracks;  
 }
 
+
+Bool_t AliAnalysisTaskMLTreeMakerEff::IsFromBGEventAOD(AliMCEvent* fAOD, Int_t Index)
+{
+    //Check if the particle is from Hijing or Enhanced event
+    AliAODMCHeader *mcHeader;
+    Int_t fNBG =-1;
+    
+    mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if (!mcHeader) {
+        AliError("Could not find MC Header in AOD");
+        return (0);
+    }
+    
+    TList *List = mcHeader->GetCocktailHeaders();
+    AliGenHijingEventHeader* hijingH = dynamic_cast<AliGenHijingEventHeader*>(List->FindObject("Hijing"));
+    if (!hijingH){
+        AliError("no GenHijing header");
+        return (0);
+    }
+    fNBG = hijingH->NProduced();
+    cout<<"hijingH->NProduced() = "<<fNBG<<endl;
+    return (Index < fNBG);
+}
