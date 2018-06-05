@@ -1,6 +1,6 @@
 ///
 /// \file InvMassFit.C
-/// \ingroup CaloTrackCorrMacrosQA
+/// \ingroup CaloTrackCorrMacros
 /// \brief Fit invariant mass distributions
 ///
 /// Macro using as input the 2D histograms mass vs pT of AliAnaPi0
@@ -34,6 +34,8 @@
 #include <TList.h>
 #include <TArrayD.h>
 #include <TGaxis.h>
+#include <TROOT.h>
+#include "PlotUtils.C"
 
 #endif
 
@@ -102,106 +104,8 @@ Bool_t GetFileAndEvents( TString dirName , TString listName )
 }
 
 ///
-/// Gaussian plus polinomial order 3 function
-///
-//-----------------------------------------------------------------------------
-Double_t pi0massP3(Double_t *x, Double_t *par)
-{
-  Double_t gaus = par[0] * TMath::Exp( -(x[0]-par[1])*(x[0]-par[1]) /
-                                      (2*par[2]*par[2]) );
-  Double_t back = par[3] + par[4]*x[0] + par[5]*x[0]*x[0] + par[6]*x[0]*x[0]*x[0];
-  return gaus+back;
-}
-
-///
-/// Gaussian plus polinomial order 2 function
-///
-//-----------------------------------------------------------------------------
-Double_t pi0massP2(Double_t *x, Double_t *par)
-{
-  Double_t gaus = par[0] * TMath::Exp( -(x[0]-par[1])*(x[0]-par[1]) /
-                                      (2*par[2]*par[2]) );
-  Double_t back = par[3] + par[4]*x[0] + par[5]*x[0]*x[0];
-  return gaus+back;
-}
-
-///
-/// Gaussian plus polinomial order 1 function
-///
-//-----------------------------------------------------------------------------
-Double_t pi0massP1(Double_t *x, Double_t *par)
-{
-  Double_t gaus = par[0] * TMath::Exp( -(x[0]-par[1])*(x[0]-par[1]) /
-                                      (2*par[2]*par[2]) );
-  Double_t back = par[3] + par[4]*x[0];
-  return gaus+back;
-}
-
-///
-/// Gaussian plus constant function
-///
-//-----------------------------------------------------------------------------
-Double_t pi0massP0(Double_t *x, Double_t *par)
-{
-  Double_t gaus = par[0] * TMath::Exp( -(x[0]-par[1])*(x[0]-par[1]) /
-                                      (2*par[2]*par[2]) );
-  Double_t back = 0;//par[3];
-  return gaus+back;
-}
-
-///
-/// Truncated function in eta region
-///
-//-----------------------------------------------------------------------------
-Double_t truncatedPolEta(Double_t *x, Double_t *par)
-{
-  if ((x[0] > 0.425 && x[0] < 0.65) ) {
-    TF1::RejectPoint();
-    return 0;
-  }
-  
-  return par[0] + par[1]*x[0];// + x[0]*x[0]*par[2]  + x[0]*x[0]*x[0]*par[3];//+ x[0]*x[0]*x[0]*x[0]*par[4];
-}
-
-///
-/// Truncated function in pi0 region
-///
-//-----------------------------------------------------------------------------
-Double_t truncatedPolPi0(Double_t *x, Double_t *par)
-{
-  if ((x[0] > 0.07 && x[0] < 0.2)) {
-    TF1::RejectPoint();
-    return 0;
-  }
-  
-  return par[0] + par[1]*x[0];// + x[0]*x[0]*par[2] + x[0]*x[0]*x[0]*par[3] ;//+ x[0]*x[0]*x[0]*x[0]*par[4];
-}
-
-///
-/// Crystal ball function
-///
-//-----------------------------------------------------------------------------
-Double_t CrystalBall(Double_t *x, Double_t *par)
-{
-  Double_t N = par[0];
-  Double_t width = par[1];
-  
-  Double_t mean = par[2];
-  Double_t sigma = par[3];
-  Double_t alpha = par[4];
-  Double_t n = par[5];
-  
-  Double_t A = pow(n/fabs(alpha),n)*exp(-pow(alpha,2)/2);
-  Double_t B = n/fabs(alpha) - fabs(alpha);
-  
-  if ((x[0]-mean)/sigma>-alpha)
-    return N*width*TMath::Gaus(x[0],mean,sigma,1);
-  else
-    return N/(sqrt(TMath::TwoPi())*sigma)*width*A*pow(B-(x[0]-mean)/sigma,-n);
-}
-
-///
 /// Initialize the fitting function
+/// The function definitions are in PlotUtils.C
 ///
 //-----------------------------------------------------------------------------
 void SetFitFun()
@@ -212,17 +116,17 @@ void SetFitFun()
   if(kParticle == "Pi0")
   {
     if ( kPolN == 0)
-      fitfun = new TF1("fitfun",pi0massP0,0.100,0.250,4);
+      fitfun = new TF1("fitfun",FunctionGaussPol0,0.100,0.250,4);
     else if      (kPolN == 1)
-      fitfun = new TF1("fitfun",pi0massP1,0.100,0.250,5);
+      fitfun = new TF1("fitfun",FunctionGaussPol1,0.100,0.250,5);
     else if (kPolN == 2)
-      fitfun = new TF1("fitfun",pi0massP2,0.100,0.250,6);
+      fitfun = new TF1("fitfun",FunctionGaussPol2,0.100,0.250,6);
     else if (kPolN == 3)
-      fitfun = new TF1("fitfun",pi0massP3,0.100,0.250,7);
+      fitfun = new TF1("fitfun",FunctionGaussPol3,0.100,0.250,7);
     else
     {
       printf("*** <<< Set Crystal Ball!!! >>> ***\n");
-      fitfun = new TF1("fitfun",CrystalBall,0.100,0.250,6);
+      fitfun = new TF1("fitfun",FunctionCrystalBall,0.100,0.250,6);
     }
     
     if(kPolN < 4)
@@ -245,14 +149,15 @@ void SetFitFun()
   else  // Eta
   {
     if ( kPolN == 0)
-      fitfun = new TF1("fitfun",pi0massP0,0.400,0.650,4);
+      fitfun = new TF1("fitfun",FunctionGaussPol0,0.400,0.650,4);
     else if      (kPolN == 1)
-      fitfun = new TF1("fitfun",pi0massP1,0.400,0.650,5);
+      fitfun = new TF1("fitfun",FunctionGaussPol1,0.400,0.650,5);
     else if (kPolN == 2)
-      fitfun = new TF1("fitfun",pi0massP2,0.400,0.650,6);
+      fitfun = new TF1("fitfun",FunctionGaussPol2,0.400,0.650,6);
     else if (kPolN == 3)
-      fitfun = new TF1("fitfun",pi0massP3,0.400,0.650,7);
-    if(kPolN < 4){
+      fitfun = new TF1("fitfun",FunctionGaussPol3,0.400,0.650,7);
+    if(kPolN < 4)
+    {
       fitfun->SetParLimits(0,  kNPairCut/10,1.e+6);
       fitfun->SetParLimits(1,  0.20,0.80);
       fitfun->SetParLimits(2,  0.001,0.06);
@@ -275,103 +180,8 @@ void SetFitFun()
   }  
   
   //Mix fit func
-  tPolPi0 = new TF1("truncatedPolPi0", truncatedPolPi0, 0.02, 0.25, 2);
-  tPolEta = new TF1("truncatedPolEta", truncatedPolEta, 0.2, 1, 2);
-}
-
-
-//-----------------------
-/// Get integral and its error within a bin range
-//-----------------------
-void GetRangeIntegralAndError(TH1D* h, Int_t binMin, Int_t binMax, 
-                              Double_t & integral, Double_t & integralErr )
-{
-  integral    = 0;
-  integralErr = 0;
-  for(Int_t ibin = binMin; ibin <= binMax; ibin++)
-  {
-    //if ( h->GetBinContent(ibin) == 0 ) continue ; 
-    
-    integral    += h->GetBinContent(ibin);
-    integralErr += h->GetBinError  (ibin) * h->GetBinError(ibin);
-  }
-//  printf("\t bin range [%d,%d], n %d, sum %2.2e err %2.2e\n",
-//         binMin,binMax,n,integral,integralErr);
-  if ( integralErr > 0 ) integralErr = TMath::Sqrt(integralErr);
-}
-
-//-----------------------
-/// Calculation of error of a fraction
-//-----------------------
-Double_t GetFractionError(Double_t aa, Double_t bb, Double_t aaE, Double_t bbE)
-{
-  if(aa == 0 || bb == 0) return 0;
-  
-  //printf("\t a %e b %e aE %e bE %e\n",aa,bb,aaE,bbE);
-  
-  return aa/bb * TMath::Sqrt(aaE*aaE/(aa*aa) + bbE*bbE/(bb*bb));
-}
-
-//____________________________________
-/// Scale histogram bins by its size
-//____________________________________
-void ScaleBinBySize(TH1D* h)
-{
-  for(Int_t ibin = 1; ibin < h->GetNbinsX();ibin++)
-  {
-    Double_t width   = h->GetBinWidth(ibin);
-    Double_t content = h->GetBinContent(ibin);
-    //printf("bin %d, width %f, content %e\n",ibin,width,content);
-    h->SetBinContent(ibin,content/width);
-  }
-}
-
-//____________________________________
-/// Divide 2 graphs
-//____________________________________
-TGraphErrors * DivideGraphs(TGraphErrors* gNum, TGraphErrors *gDen)
-{
-  if ( !gDen || !gNum ) 
-  {
-    printf("Graph num %p or graph den %p not available\n",gNum,gDen);
-    return 0x0;
-  }
-  const Int_t nBins = gNum->GetN();
-  if ( nBins != gDen->GetN() )
-  {
-    printf("Cannot divide %s with %d bins and %s with %d bins!\n",gNum->GetName(),nBins,gDen->GetName(),gDen->GetN());
-    return 0x0;
-  }
-  
-  Double_t ratio   [nBins];
-  Double_t ratioErr[nBins]; 
-  Double_t x       [nBins];
-  Double_t xErr    [nBins];
-  for (Int_t ibin = 0; ibin < nBins; ibin++) 
-  {
-    Double_t num    =  gNum->GetY ()[ibin];
-    Double_t den    =  gDen->GetY ()[ibin];
-    Double_t numErr =  gNum->GetEY()[ibin];
-    Double_t denErr =  gDen->GetEY()[ibin];
-    
-    x   [ibin]      =  gNum->GetX ()[ibin];
-    xErr[ibin]      =  gNum->GetEX()[ibin];
-
-    if ( num == 0 || den == 0 ) 
-    {
-      ratio   [ibin] = 0; 
-      ratioErr[ibin] = 0; 
-      continue;
-    }
-    
-    ratio   [ibin] = num / den ;
-    ratioErr[ibin] =  GetFractionError(num,den,numErr,denErr);  
-    
-//    printf("bin %d, x %f (%f) num %f (%f), den %f (%f), ratio %f (%f) \n",
-//           ibin,x[ibin],xErr[ibin],num,numErr,den,denErr,ratio[ibin],ratioErr[ibin]);
-  } // do the ratio to sum
-  
-  return new TGraphErrors(nBins,x,ratio,xErr,ratioErr);
+  tPolPi0 = new TF1("truncatedPolPi0", FunctionTruncatedPolPi0, 0.02, 0.25, 2);
+  tPolEta = new TF1("truncatedPolEta", FunctionTruncatedPolEta, 0.2, 1, 2);
 }
 
 //-----------------------
@@ -412,7 +222,7 @@ void Efficiency
     {
       effPt   [ibin] = 100 * mesonPt[ibin] / gPrim->GetY()[ibin];
       effPtErr[ibin] = 100 * GetFractionError( mesonPt[ibin], gPrim->GetY ()[ibin], 
-                                              emesonPt[ibin], gPrim->GetEY()[ibin]);
+                                              emesonPt[ibin], gPrim->GetEY()[ibin]); // PlotUtils.C
       
       //printf("\t EffxAcc %f, err %f\n",effPt[ibin],effPtErr[ibin]);
     }
@@ -422,7 +232,7 @@ void Efficiency
     {
       effPtAcc   [ibin] = 100 * mesonPt[ibin] / gPrimAcc->GetY()[ibin];
       effPtAccErr[ibin] = 100 * GetFractionError( mesonPt[ibin], gPrimAcc->GetY ()[ibin], 
-                                                 emesonPt[ibin], gPrimAcc->GetEY()[ibin]);
+                                                 emesonPt[ibin], gPrimAcc->GetEY()[ibin]); // PlotUtils.C
       //printf("\t Eff %f, err %f\n",effPtAcc[ibin],effPtAccErr[ibin]);
     }
     else { effPtAcc[ibin] = 0; effPtAccErr[ibin] = 0; }
@@ -436,7 +246,7 @@ void Efficiency
       {
         effBCPt   [ibin] = 100 * mesonPtBC[ibin] / gPrim->GetY()[ibin];
         effBCPtErr[ibin] = 100 * GetFractionError( mesonPtBC[ibin], gPrim->GetY ()[ibin], 
-                                                  emesonPtBC[ibin], gPrim->GetEY()[ibin]);
+                                                  emesonPtBC[ibin], gPrim->GetEY()[ibin]); // PlotUtils.C
        //printf("\t EffxAcc %f, err %f\n",effBCPt[ibin],effBCPtErr[ibin]);
       }
       else { effBCPt[ibin] = 0; effBCPtErr[ibin] = 0; }
@@ -445,7 +255,7 @@ void Efficiency
       {
         effBCPtAcc   [ibin] = 100 * mesonPtBC[ibin] / gPrimAcc->GetY()[ibin];
         effBCPtAccErr[ibin] = 100 * GetFractionError( mesonPtBC[ibin], gPrimAcc->GetY ()[ibin], 
-                                                     emesonPtBC[ibin], gPrimAcc->GetEY()[ibin]);
+                                                     emesonPtBC[ibin], gPrimAcc->GetEY()[ibin]); // PlotUtils.C
         //printf("\t EffxAcc %f, err %f\n",effBCPtAcc[ibin],effBCPtAccErr[ibin]);
       }
       else { effBCPtAcc[ibin] = 0; effBCPtAccErr[ibin] = 0; }
@@ -574,7 +384,6 @@ void ProjectAndFit
     return;
   }
   
-  //gROOT->Macro("$MACROS/style.C");//Set different root style parameters
   gStyle->SetOptTitle(1);
   gStyle->SetTitleOffset(2,"Y");
   gStyle->SetOptStat(0);
@@ -932,6 +741,7 @@ void ProjectAndFit
       Double_t  countsBin = 0.;//hSignal[i]->Integral(hSignal[i]->FindBin(mMinBin),  hSignal[i]->FindBin(mMaxBin)) ;
       Double_t eCountsBin = 0.;//TMath::Sqrt(countsBin);
      
+      // PlotUtils.C
       GetRangeIntegralAndError(hSignal[i], hSignal[i]->FindBin(mMinBin), hSignal[i]->FindBin(mMaxBin), countsBin, eCountsBin );
 
        countsBin/=(nEvt*(exPt.At(i)*2));
@@ -1482,13 +1292,13 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   {
     //printf("icomb %d\n",icomb);
     //printf("\t pt %p %p\n",gPt[icomb],gSumPt);
-    gRatPt   [icomb] = DivideGraphs(gPt   [icomb],gSumPt    );
+    gRatPt   [icomb] = DivideGraphs(gPt   [icomb],gSumPt    ); // PlotUtils.C
     //printf("\t ptBC %p %p\n",gPtBC[icomb],gSumPtBC);
-    gRatPtBC [icomb] = DivideGraphs(gPtBC [icomb],gSumPtBC  );
+    gRatPtBC [icomb] = DivideGraphs(gPtBC [icomb],gSumPtBC  ); // PlotUtils.C
     //printf("\t pt %p %p\n",gMass[icomb],gSumMass);
-    gRatMass [icomb] = DivideGraphs(gMass [icomb],gSumMass  );
+    gRatMass [icomb] = DivideGraphs(gMass [icomb],gSumMass  ); // PlotUtils.C
     //printf("\t pt %p %p\n",gWidth[icomb],gSumWidth);
-    gRatWidth[icomb] = DivideGraphs(gWidth[icomb],gSumWidth);
+    gRatWidth[icomb] = DivideGraphs(gWidth[icomb],gSumWidth);  // PlotUtils.C
     
     if(!gRatMass[icomb]) continue;
     
@@ -1675,6 +1485,7 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
   TH1D* hPrimMesonPtAcc = (TH1D*) h2PrimMesonPtYAcc->ProjectionX("PrimaryPtAccepted" ,binYmin   ,binYmax   );
   hPrimMesonPtAcc->Write();
 
+  // PlotUtils.C
   ScaleBinBySize(hPrimMesonPt);
   ScaleBinBySize(hPrimMesonPtAcc);
 
@@ -1694,6 +1505,7 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
     binMin = hPrimMesonPt->FindBin(ptMin);
     binMax = hPrimMesonPt->FindBin(ptMax)-1;
     
+    // PlotUtils.C
     GetRangeIntegralAndError(hPrimMesonPt   , binMin, binMax, integralA, integralAErr );
     GetRangeIntegralAndError(hPrimMesonPtAcc, binMin, binMax, integralB, integralBErr );
     
@@ -1705,7 +1517,7 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
     if ( integralA > 0 && integralB > 0 )
     {
        primMesonAcc[ibin] = integralB / integralA ;
-      eprimMesonAcc[ibin] = GetFractionError(integralB,integralA,integralBErr,integralAErr);
+      eprimMesonAcc[ibin] = GetFractionError(integralB,integralA,integralBErr,integralAErr); // PlotUtils.C
     }
     else
     {
@@ -1873,11 +1685,15 @@ void InvMassFit
  Bool_t  truncmix     = kTRUE,
  Int_t   pol          = 1,
  Bool_t  drawPerSM    = kFALSE, 
- Bool_t  drawPerSMGr  = kFALSE, 
+ Bool_t  drawPerSMGr  = kTRUE, 
  Bool_t  drawPerSector= kFALSE, 
  Bool_t  drawPerSide  = kFALSE, 
  TString plotFormat   = "eps")
 {
+  // Load plotting utilities
+  //gROOT->Macro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/PlotUtils.C"); // Already in include
+  //gROOT->Macro("$MACROS/style.C");//Set different root style parameters
+
   kSumw2      = sumw2;
   kPolN       = pol;
   kMix        = mixed;
@@ -1905,11 +1721,11 @@ void InvMassFit
   //---------------------------------------
   Int_t ok = GetFileAndEvents(histoDir, histoList);
   
-  //kProdName.ReplaceAll("module/","");
-  //kProdName.ReplaceAll("TCardChannel","");
+//  kProdName.ReplaceAll("module/","");
+//  kProdName.ReplaceAll("TCardChannel","");
   kProdName.ReplaceAll("/","_");
-  //kProdName.ReplaceAll("2_","_");
-  //kProdName.ReplaceAll("__","_");
+//  kProdName.ReplaceAll("2_","_");
+//  kProdName.ReplaceAll("__","_");
   if( kFileName !="AnalysisResults" && !kFileName.Contains("Scale") )
     kProdName+=kFileName;
     
