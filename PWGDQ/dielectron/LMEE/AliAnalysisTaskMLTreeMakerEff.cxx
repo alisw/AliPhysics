@@ -756,13 +756,13 @@ Bool_t AliAnalysisTaskMLTreeMakerEff::IsFromBGEventAOD(AliMCEvent* fAOD, Int_t I
     //Check if the particle is from Hijing or Enhanced event
     AliAODMCHeader *mcHeader;
     Int_t fNBG =-1;
-    
+
     mcHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
     if (!mcHeader) {
         AliError("Could not find MC Header in AOD");
         return (0);
     }
-    
+
     TList *List = mcHeader->GetCocktailHeaders();
     AliGenHijingEventHeader* hijingH = dynamic_cast<AliGenHijingEventHeader*>(List->FindObject("Hijing"));
     if (!hijingH){
@@ -770,6 +770,6 @@ Bool_t AliAnalysisTaskMLTreeMakerEff::IsFromBGEventAOD(AliMCEvent* fAOD, Int_t I
         return (0);
     }
     fNBG = hijingH->NProduced();
-    cout<<"hijingH->NProduced() = "<<fNBG<<endl;
+    AliInfo(Form("hijingH->NProduced() = %d", fNBG));
     return (Index < fNBG);
 }
