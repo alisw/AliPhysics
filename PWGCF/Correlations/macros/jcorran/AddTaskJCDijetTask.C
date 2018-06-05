@@ -8,7 +8,7 @@ AliAnalysisTask *AddTaskJCDijetTask(TString taskName,Bool_t isMC){
 	//==== Set up the dijet task ====
 	AliJCDijetTask *dijetTask = new AliJCDijetTask(taskName.Data(),"AOD");
 	dijetTask->SetDebugLevel(5);
-  	dijetTask->SetJCatalystTaskName("JCatalystTaskEP");  // AliJCatalystTask has this name hard coded
+  	dijetTask->SetJCatalystTaskName("JCatalystTask");  // AliJCatalystTask has this name hard coded
 	dijetTask->SetIsMC(isMC);
 	cout << dijetTask->GetName() << endl;
 

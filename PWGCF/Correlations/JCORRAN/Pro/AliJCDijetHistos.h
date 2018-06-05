@@ -50,18 +50,31 @@ public:
 	//===================================================
 	// Event/Track histograms
 	//===================================================
-	AliJTH1D fh_pt;  //! // for pt dist of tracks
-	AliJTH1D fh_eta; //! // for eta dist of tracks
-	AliJTH1D fh_phi; //! // for phi dist of tracks
+	AliJTH1D fh_pt;     //! // for pt dist of tracks
+	AliJTH1D fh_eta;    //! // for eta dist of tracks
+	AliJTH2D fh_etaPhi; //! // for (eta,phi) dist of tracks
+	AliJTH1D fh_phi;    //! // for phi dist of tracks
 
-	AliJTH1D fh_jetPt;  //! // for pt dist of jets
-	AliJTH1D fh_jetEta; //! // for eta dist of jets
-	AliJTH1D fh_jetPhi; //! // for phi dist of jets
+	AliJTH1D fh_jetPt;      //! // for pt dist of jets
+	AliJTH1D fh_jetEta;     //! // for eta dist of jets
+	AliJTH1D fh_jetPhi;     //! // for phi dist of jets
+	AliJTH2D fh_jetEtaPhi;  //! // for (eta,phi) dist of jets
+	AliJTH1D fh_rho;        //! // for event pt density
+	AliJTH1D fh_rhom;       //! // for event mt density
+	AliJTH1D fh_jetArea;    //! // for jet area spectrum
+	AliJTH1D fh_jetAreaRho; //! // for jet area*pt spectrum
+	AliJTH1D fh_corrJetPt;  //! // for pt dist of bg subtracted jets
+	AliJTH1D fh_corrJetEta; //! // for eta dist of bg subtracted jets
+	AliJTH1D fh_corrJetPhi; //! // for phi dist of bg subtracted jets
 
-    AliJTH1D fh_DijetInvM;            //! // for dijet invariant mass
-    AliJTH1D fh_DijetPtPair;          //! // for dijet pt
-    AliJTH1D fh_DijetDeltaPhi;        //! // for dijet deltaPhi
-    AliJTH1D fh_DijetInvMDeltaPhiCut; //! // for dijet invariant mass after deltaPhi cut
+    AliJTH1D fh_dijetInvM;                //! // for dijet invariant mass
+    AliJTH1D fh_dijetPtPair;              //! // for dijet pt
+    AliJTH1D fh_dijetDeltaPhi;            //! // for dijet deltaPhi
+    AliJTH1D fh_dijetInvMDeltaPhiCut;     //! // for dijet invariant mass after deltaPhi cut
+    AliJTH1D fh_corrDijetInvM;            //! // for bg subtracted dijet invariant mass
+    AliJTH1D fh_corrDijetPtPair;          //! // for bg subtracted dijet pt
+    AliJTH1D fh_corrDijetDeltaPhi;        //! // for bg subtracted dijet deltaPhi
+    AliJTH1D fh_corrDijetInvMDeltaPhiCut; //! // for bg subtracted dijet invariant mass after deltaPhi cut
 
 
 };

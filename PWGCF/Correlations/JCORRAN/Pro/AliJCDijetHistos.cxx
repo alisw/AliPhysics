@@ -73,56 +73,121 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     // ============= CHARGED PARTICLE HISTOS ============= 
 	fh_pt
-		<< TH1D("hPtJacek", "hPtJacek", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek)
+		<< TH1D("h_ptJacek", "h_ptJacek", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek)
         //<< TH1D("hChargedPt","Charged particle pt",NBINS, LogBinsX )
 		<< fHistCentBin
 		<< "END" ;
 
 	fh_eta
-		<< TH1D("h_eta", "h_eta", 300, -10, 10 )
+		<< TH1D("h_eta", "h_eta", 100, -1.0, 1.0 )
 		<< fHistCentBin
 		<< "END" ;
 
 	fh_phi
-		<< TH1D("h_phi", "h_phi", 100, -10, 10)
+		<< TH1D("h_phi", "h_phi", 100, -TMath::Pi(), TMath::Pi())
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_etaPhi
+		<< TH2D("h_etaPhi", "h_etaPhi", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi())
 		<< fHistCentBin
 		<< "END" ;
 
     // ============= JET HISTOS ============= 
 	fh_jetPt
-		<< TH1D("hJetPtJacek", "hJetPtJacek", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek)
+		<< TH1D("h_jetPtJacek", "h_jetPtJacek", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek)
         //<< TH1D("hJetPt","Charged particle pt",NBINS, LogBinsX )
 		<< fHistCentBin
 		<< "END" ;
 
 	fh_jetEta
-		<< TH1D("h_jetEta", "h_jetEta", 300, -10, 10 )
+		<< TH1D("h_jetEta", "h_jetEta", 100, -1.0, 1.0)
 		<< fHistCentBin
 		<< "END" ;
 
 	fh_jetPhi
-		<< TH1D("h_jetPhi", "h_jetPhi", 100, -10, 10)
+		<< TH1D("h_jetPhi", "h_jetPhi", 100, -TMath::Pi(), TMath::Pi())
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_jetEtaPhi
+		<< TH2D("h_jetEtaPhi", "h_jetEtaPhi", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi())
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_rho
+		<< TH1D("h_rho", "h_rho", NBINS, LogBinsX)
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_rhom
+		<< TH1D("h_rhom", "h_rhom", NBINS, LogBinsX)
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_jetArea
+		<< TH1D("h_jetArea", "h_jetArea", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek)
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_jetAreaRho
+		<< TH1D("h_jetAreaRho", "h_jetAreaRho", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek)
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_corrJetPt
+		<< TH1D("h_corrJetPtJacek", "h_corrJetPtJacek", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek)
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_corrJetEta
+		<< TH1D("h_corrJetEta", "h_corrJetEta", 100, -1.0, 1.0 )
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_corrJetPhi
+		<< TH1D("h_corrJetPhi", "h_corrJetPhi", 100, -TMath::Pi(), TMath::Pi())
 		<< fHistCentBin
 		<< "END" ;
 
     // ============= DIJET HISTOS ============= 
-	fh_DijetInvM
-		<< TH1D("h_DijetInvM", "h_DijetInvM", NBINS, LogBinsX)
+	fh_dijetInvM
+		<< TH1D("h_dijetInvM", "h_dijetInvM", NBINS, LogBinsX)
 		<< fHistCentBin
 		<< "END" ;
 
-	fh_DijetPtPair
-		<< TH1D("h_DijetPtPair", "h_DijetPtPair", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek )
+	fh_dijetPtPair
+		<< TH1D("h_dijetPtPair", "h_dijetPtPair", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek )
 		<< fHistCentBin
 		<< "END" ;
 
-	fh_DijetDeltaPhi
-		<< TH1D("h_DijetDeltaPhi", "h_DijetDeltaPhi", 100, 0, 10)
+	fh_dijetDeltaPhi
+		<< TH1D("h_dijetDeltaPhi", "h_dijetDeltaPhi", 100, 0, 10)
 		<< fHistCentBin
 		<< "END" ;
 
-	fh_DijetInvMDeltaPhiCut
-		<< TH1D("h_DijetInvMDeltaPhiCut", "h_DijetInvMDeltaPhiCut", NBINS, LogBinsX)
+	fh_dijetInvMDeltaPhiCut
+		<< TH1D("h_dijetInvMDeltaPhiCut", "h_dijetInvMDeltaPhiCut", NBINS, LogBinsX)
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_corrDijetInvM
+		<< TH1D("h_corrDijetInvM", "h_corrDijetInvM", NBINS, LogBinsX)
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_corrDijetPtPair
+		<< TH1D("h_corrDijetPtPair", "h_corrDijetPtPair", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek )
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_corrDijetDeltaPhi
+		<< TH1D("h_corrDijetDeltaPhi", "h_corrDijetDeltaPhi", 100, 0, 10)
+		<< fHistCentBin
+		<< "END" ;
+
+	fh_corrDijetInvMDeltaPhiCut
+		<< TH1D("h_corrDijetInvMDeltaPhiCut", "h_corrDijetInvMDeltaPhiCut", NBINS, LogBinsX)
 		<< fHistCentBin
 		<< "END" ;
 }
