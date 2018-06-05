@@ -346,6 +346,8 @@ private:
     Float_t fTreeVariablePosTOFExpTDiff; //!
     Float_t fTreeVariableNegTOFSignal; //!
     Float_t fTreeVariablePosTOFSignal; //!
+    Int_t   fTreeVariableNegTOFBCid; //!
+    Int_t   fTreeVariablePosTOFBCid; //! 
     //Event info
     Float_t fTreeVariableAmplitudeV0A; //!
     Float_t fTreeVariableAmplitudeV0C; //!
@@ -495,6 +497,9 @@ private:
     Float_t fTreeCascVarNegTOFSignal; //!
     Float_t fTreeCascVarPosTOFSignal; //!
     Float_t fTreeCascVarBachTOFSignal; //!
+    Int_t   fTreeCascVarNegTOFBCid; //!
+    Int_t   fTreeCascVarPosTOFBCid; //!
+    Int_t   fTreeCascVarBachTOFBCid; //!
     //Event info
     Float_t fTreeCascVarAmplitudeV0A; //!
     Float_t fTreeCascVarAmplitudeV0C; //!
