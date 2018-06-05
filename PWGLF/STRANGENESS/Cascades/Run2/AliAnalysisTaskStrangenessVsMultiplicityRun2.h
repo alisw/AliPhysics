@@ -39,7 +39,6 @@ class AliESDtrackCuts;
 class AliAnalysisUtils;
 class AliESDEvent;
 class AliPhysicsSelection;
-class AliESDFMD;
 class AliCFContainer;
 class AliV0Result;
 class AliCascadeResult;
@@ -208,24 +207,6 @@ public:
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
 //---------------------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------------------
-    // A simple struct to handle FMD hits information
-    // Nothe: this struct is based on what is implemented in AliAnalysisTaskValidation
-    //        defined as 'Track' (thanks to C. Bourjau). It was slightly changed here and
-    //        renamed to 'FMDhit' in order to avoid any confusion.
-    struct FMDhit {
-        Float_t eta;
-        Float_t phi;
-        Float_t weight;
-        //Constructor
-        FMDhit(Float_t _eta, Float_t _phi, Float_t _weight)
-            :eta(_eta), phi(_phi), weight(_weight) {};
-    };
-    typedef std::vector<AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhit> FMDhits;
-//---------------------------------------------------------------------------------------
-   AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
-//---------------------------------------------------------------------------------------
-
 
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -310,10 +291,6 @@ private:
     Float_t fAmplitudeV0A; //!
     Float_t fAmplitudeV0C; //!
 
-    //FMD info for OOB pileup study
-    Float_t fNHitsFMDA; //!
-    Float_t fNHitsFMDC; //!
-
     //IR info for OOB pileup study
     Int_t fClosestNonEmptyBC; //!
 
@@ -372,8 +349,6 @@ private:
     //Event info
     Float_t fTreeVariableAmplitudeV0A; //!
     Float_t fTreeVariableAmplitudeV0C; //!
-    Float_t fTreeVariableNHitsFMDA; //!
-    Float_t fTreeVariableNHitsFMDC; //!
     Int_t   fTreeVariableClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
@@ -523,8 +498,6 @@ private:
     //Event info
     Float_t fTreeCascVarAmplitudeV0A; //!
     Float_t fTreeCascVarAmplitudeV0C; //!
-    Float_t fTreeCascVarNHitsFMDA; //!
-    Float_t fTreeCascVarNHitsFMDC; //!
     Int_t   fTreeCascVarClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
