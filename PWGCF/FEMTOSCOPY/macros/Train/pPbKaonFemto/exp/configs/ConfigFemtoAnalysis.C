@@ -203,7 +203,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis = false) {
           //dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
           //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
           //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
-          //dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
+
 
 
     //----------------------2particle----------------------< KR

@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKMLTREEMAKER_H
-#define ALIANALYSISTASKMLTREEMAKER_H
+#ifndef ALIANALYSISTASKMLTREEMAKERWOCUTLIB_H
+#define ALIANALYSISTASKMLTREEMAKERWOCUTLIB_H
 class TH1F;
 class TList;
 class TH2D;
@@ -20,11 +20,11 @@ class TH3D;
 // Authors: Sebastian Lehner (SMI Vienna) - selehner@cern.ch
 
 
-class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
+class AliAnalysisTaskMLTreeMakerwoCutlib : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskMLTreeMaker(const char *name);
-  AliAnalysisTaskMLTreeMaker();
-  ~AliAnalysisTaskMLTreeMaker(); 
+  AliAnalysisTaskMLTreeMakerwoCutlib(const char *name);
+  AliAnalysisTaskMLTreeMakerwoCutlib();
+  ~AliAnalysisTaskMLTreeMakerwoCutlib(); 
   
 
   AliDielectronEventCuts* eventCuts;
@@ -44,14 +44,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
-  Bool_t CheckGenerator(int Index);
+//~ 
   
-  void SetCorrWidthMean(TH3D* width, TH3D* mean){
-      fmean=mean;
-      fwidth=width;
-  };
-  void SetupTrackCuts(AliDielectronCutGroup* f);
-  void SetupEventCuts(AliDielectronEventCuts* f);
+  void SetupTrackCuts();
+  void SetupEventCuts();
   
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
@@ -134,10 +130,6 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
     fKaonSigmas = answer;
     Printf("Kaon nSigma values for ITS, TPC and TOF will be written to tree");
   }
-  
-  void SetUseCorr( Bool_t b){
-      fuseCorr=b;
-  }
  private:
  
   AliPIDResponse *fPIDResponse;     //! PID response object
@@ -156,7 +148,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Bool_t> HasSPDfirstHit; 
   std::vector<Double_t> RatioCrossedRowsFindableClusters;  
   std::vector<Int_t> NTPCSignal; 
-  std::vector<unsigned int> fGeneratorHashs; // will be filled with the TString hashes of the generators you want to be analyzed
+  
   Bool_t loCuts;        //loose cuts?
   
 //  std::vector<Int_t> IsBG;
@@ -169,9 +161,9 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   Int_t GetAcceptedTracks(AliVEvent *event, Double_t gCentrality);
   Bool_t GetDCA(const AliVEvent* event, const AliAODTrack *track, Double_t* d0z0, Double_t* covd0z0);
   
-  AliAnalysisTaskMLTreeMaker(const AliAnalysisTaskMLTreeMaker&); // not implemented
+  AliAnalysisTaskMLTreeMakerwoCutlib(const AliAnalysisTaskMLTreeMakerwoCutlib&); // not implemented
 
-  AliAnalysisTaskMLTreeMaker& operator=(const AliAnalysisTaskMLTreeMaker&); // not implemented
+  AliAnalysisTaskMLTreeMakerwoCutlib& operator=(const AliAnalysisTaskMLTreeMakerwoCutlib&); // not implemented
 
 
   TList *fList;//output list for QA histograms
@@ -208,8 +200,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   
   Int_t gMultiplicity;
   Int_t mcTrackIndex;
-  AliMCEvent* fMcArray;
-  AliMCEvent* mcEvent; 
+  AliMCEvent* fMcArray; 
 
   std::vector<Double_t> EsigTPC;
   std::vector<Double_t> EsigTOF;
@@ -263,10 +254,6 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Int_t> label;
   std::vector<Int_t> motherlabel;
   
-  TH3D* fwidth;
-  TH3D* fmean;
-  
-  Bool_t fuseCorr;
   //TBits*            fUsedVars;                // used variables by AliDielectronVarManager
   
 //  Double_t probs[AliPID::kSPECIESC];
@@ -279,7 +266,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
 //  TH3D* fHistEtaPhiPt;//QA histogram for eta/phi/pt distribution
 
 
-  ClassDef(AliAnalysisTaskMLTreeMaker, 1); //
+  ClassDef(AliAnalysisTaskMLTreeMakerwoCutlib, 1); //
 
 };
 

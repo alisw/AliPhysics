@@ -157,7 +157,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton     = "00000008400000000100000000";
 
-  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0 
+  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0
       || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0   )
     cutnumberPhoton         = "00000088400000000100000000";
 
@@ -834,6 +834,35 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00083113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG1
     cuts.AddCut("00085113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - EG2
     cuts.AddCut("00062113", "00200009227300008250404000", "0152103500000000"); // Std cut pp 5 TeV - PHI7
+  // systematic variations for 5 TeV 2017
+  } else if (trainConfig == 405){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // New standard cut for pp 5 TeV analysis VAND
+    cuts.AddCut("00010113", "00200079227300008250404000", "0152103500000000"); // min pT no cut
+    cuts.AddCut("00010113", "00200049227300008250404000", "0152103500000000"); // min pT 75 MeV
+    cuts.AddCut("00010113", "00200019227300008250404000", "0152103500000000"); // min pT 100 MeV
+    cuts.AddCut("00010113", "00200008227300008250404000", "0152103500000000"); // TPC cluster 35%
+    cuts.AddCut("00010113", "00200006227300008250404000", "0152103500000000"); // TPC cluster 70%
+  } else if (trainConfig == 406){
+    cuts.AddCut("00010113", "00200009327300008250404000", "0152103500000000"); // edEdx -4,5
+    cuts.AddCut("00010113", "00200009627300008250404000", "0152103500000000"); // edEdx -2.5,4
+    cuts.AddCut("00010113", "00200009257300008250404000", "0152103500000000"); // pidEdx 2,-10
+    cuts.AddCut("00010113", "00200009217300008250404000", "0152103500000000"); // pidEdx 0,-10
+    cuts.AddCut("00010113", "00200009226300008250404000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
+    cuts.AddCut("00010113", "00200009227600008250404000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
+  } else if (trainConfig == 407){
+    cuts.AddCut("00010113", "00200009227300002250404000", "0152103500000000"); // qT max 0.06 2D
+    cuts.AddCut("00010113", "00200009227300009250404000", "0152103500000000"); // qT max 0.03 2D
+    cuts.AddCut("00010113", "00200009227300008260404000", "0152103500000000"); // Psi pair 0.05 2D, chi2 30.
+    cuts.AddCut("00010113", "00200009227300008280404000", "0152103500000000"); // Psi pair 0.2  2D, chi2 30.
+    cuts.AddCut("00010113", "00200009227300008850404000", "0152103500000000"); // chi2 20. psi pair 0.1 2D
+    cuts.AddCut("00010113", "00200009227300008150404000", "0152103500000000"); // chi2 50. psi pair 0.1 2D
+  } else if (trainConfig == 408){
+    cuts.AddCut("00010113", "00200009227300008254404000", "0152103500000000"); // Photon Asymmetry Cut
+    cuts.AddCut("00010113", "00200009227300008250604000", "0152103500000000"); // CosPA 0.9
+    cuts.AddCut("00010113", "00200009227300008250004000", "0152103500000000"); // no CosPA
+    cuts.AddCut("00010113", "00200009227300008250400000", "0152103500000000"); // no double counting
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152101500000000"); // meson alpha pt dep
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152107500000000"); // meson alpha < 0.85
 
   } else if (trainConfig == 440){ // as 400 to be used MBW
    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
@@ -879,7 +908,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "002000q9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.032
     cuts.AddCut("00010113", "002000r9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.036
 
- 
+
   // Material studies Ana-----nomB
   } else if (trainConfig == 700) {
     cuts.AddCut("00010113", "00200009266300008854404000", "0152103500000000"); // Min Bias
@@ -898,7 +927,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   } else if (trainConfig == 703) {
     cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT
   } else if (trainConfig == 704) {
-    cuts.AddCut("00010113", "00200049267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pt 0.075 
+    cuts.AddCut("00010113", "00200049267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pt 0.075
     cuts.AddCut("00010113", "00200019267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.1
     cuts.AddCut("00010113", "00200059267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.125
   } else if (trainConfig == 705) {
@@ -926,7 +955,7 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "002000n9267300008254404000", "0152103500000000"); // Min Bias with photon asym and dedx at high pT, pT 0.09
 
 
- 
+
 
 
 
