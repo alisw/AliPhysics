@@ -82,3 +82,12 @@ rpm-tmp.*
 
 # compile_commands.json
 compile_commands.json
+
+
+*.cmake
+*.bin
+*CMake*
+*doxygen/Doxyfile
+nbproject*
+version/APVersion.h
+nbproject/private/private.xml
