@@ -64,7 +64,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fJetEtaMax(.5),
 	fJetHadronDeltaPhi(0.6),
 	fJetContName(""),
-	fRunAnaAzimuthalCorrelation(kFALSE),
+	fFillTrackHistograms(kTRUE),
+	fFillJetHistograms(kTRUE),
 	fRandom(0),
 	fHistEvtSelection(0x0), 
 	fHJetSpec(0x0),
@@ -101,7 +102,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fJetEtaMax(.5),
 	fJetHadronDeltaPhi(0.6),
 	fJetContName(""),
-	fRunAnaAzimuthalCorrelation(kFALSE),
+	fFillTrackHistograms(kTRUE),
+	fFillJetHistograms(kTRUE),
 	fRandom(0),
 	fHistEvtSelection(0x0), 
 	fHJetSpec(0x0),
@@ -134,10 +136,10 @@ void AliAnalysisTaskJetCoreEmcal::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  AllocateClusterHistograms();
-  AllocateTrackHistograms();
-  AllocateJetHistograms();
-  AllocateCellHistograms();
+  if(fFillTrackHistograms) AllocateTrackHistograms();
+  if(fFillJetHistograms) AllocateJetHistograms();
+  //AllocateClusterHistograms();
+  //AllocateCellHistograms();
   AllocateJetCoreHistograms();
 
   TIter next(fHistManager.GetListOfHistograms());
@@ -406,10 +408,10 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fh2RPTC10);
 	fOutput->Add(fh2RPTC20);
 
-	const Int_t dimSpec = 5;
-	const Int_t nBinsSpec[dimSpec]     = {100,100, 140, 50, fNRPBins};
-	const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0, 0};
-	const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,  static_cast<Double_t>(fNRPBins)};
+	const Int_t dimSpec = 6;
+	const Int_t nBinsSpec[dimSpec]     = {100,100, 280, 50,200, fNRPBins};
+	const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0,-0.5*TMath::Pi(), 0};
+	const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,1.5*TMath::Pi(),  static_cast<Double_t>(fNRPBins)};
 	fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
 
 	// comment out since I want finer binning in jet area, to make it easier
@@ -430,25 +432,16 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fHJetSpec);  
 
 	// azimuthal correlation
-	if(fRunAnaAzimuthalCorrelation) {
 
-		const Int_t dimCor = 5;
-		const Int_t nBinsCor[dimCor]     = {50, 200, 100,              100,   100};
-		const Double_t lowBinCor[dimCor] = {0,  -50, -0.5*TMath::Pi(), 0,   0};
-		const Double_t hiBinCor[dimCor]  = {50, 150, 1.5*TMath::Pi(),  1, 100};
-		fHJetPhiCorr = new THnSparseF("fHJetPhiCorr","TT p_{T} vs jet p_{T} vs dPhi vs area vs centrality",dimCor,nBinsCor,lowBinCor,hiBinCor);
+	fhDphiPtSig = new TH2F("hDphiPtS","recoil #Delta #phi vs jet pT signal",100,-2,5,250,-50,200);  
+	fhDphiPtSig->GetXaxis()->SetTitle("#Delta #phi"); 
+	fhDphiPtSig->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
+	fhDphiPtRef = new TH2F("hDphiPtR","recoil #Delta #phi vs jet pT reference",100,-2,5,250,-50,200);  
+	fhDphiPtRef->GetXaxis()->SetTitle("#Delta #phi"); 
+	fhDphiPtRef->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
 
-		fhDphiPtSig = new TH2F("hDphiPtS","recoil #Delta #phi vs jet pT signal",100,-2,5,250,-50,200);  
-		fhDphiPtSig->GetXaxis()->SetTitle("#Delta #phi"); 
-		fhDphiPtSig->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
-		fhDphiPtRef = new TH2F("hDphiPtR","recoil #Delta #phi vs jet pT reference",100,-2,5,250,-50,200);  
-		fhDphiPtRef->GetXaxis()->SetTitle("#Delta #phi"); 
-		fhDphiPtRef->GetYaxis()->SetTitle("p^{reco,ch}_{T,jet} (GeV/c)"); 
-
-		fOutput->Add(fHJetPhiCorr);
-		fOutput->Add(fhDphiPtRef);  
-		fOutput->Add(fhDphiPtSig);  
-	}
+	fOutput->Add(fhDphiPtRef);  
+	fOutput->Add(fhDphiPtSig);  
 
 	// =========== Switch on Sumw2 for all histos ===========
 	for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -487,8 +480,8 @@ Bool_t AliAnalysisTaskJetCoreEmcal::FillHistograms()
 		return kTRUE;
 	}
 
-  DoJetLoop();
-  DoTrackLoop();
+  if(fFillJetHistograms) DoJetLoop();
+  if(fFillTrackHistograms) DoTrackLoop();
   //DoClusterLoop();
   //DoCellLoop();
 	DoJetCoreLoop();
@@ -594,21 +587,18 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			if(fDebug) Printf("jet properties...\n\teta = %f \t phi = %f \t pt = %f \t relativephi = %f\t area = %f\t rho = %f",etabig,phibig,ptbig,dphi,areabig,rho);
 
 			// do azimuthal correlation analysis
-			if(fRunAnaAzimuthalCorrelation) {
+			// dPhi between -0.5 < dPhi < 1.5
+			Double_t dPhiShift=phibig-partback->Phi();
+			if(dPhiShift>2*TMath::Pi()) dPhiShift -= 2*TMath::Pi();
+			if(dPhiShift<-2*TMath::Pi()) dPhiShift += 2*TMath::Pi();
+			if(dPhiShift<-0.5*TMath::Pi()) dPhiShift += 2*TMath::Pi();
+			if(dPhiShift>1.5*TMath::Pi()) dPhiShift -= 2*TMath::Pi();
+			if(isSignal) fhDphiPtSig->Fill(dPhiShift,ptcorr);
+			else         fhDphiPtRef->Fill(dPhiShift,ptcorr);
 
-				// dPhi between -0.5 < dPhi < 1.5
-				Double_t dPhiShift=phibig-partback->Phi();
-				if(dPhiShift>2*TMath::Pi()) dPhiShift -= 2*TMath::Pi();
-				if(dPhiShift<-2*TMath::Pi()) dPhiShift += 2*TMath::Pi();
-				if(dPhiShift<-0.5*TMath::Pi()) dPhiShift += 2*TMath::Pi();
-				if(dPhiShift>1.5*TMath::Pi()) dPhiShift -= 2*TMath::Pi();
-				if(isSignal) fhDphiPtSig->Fill(dPhiShift,ptcorr);
-				else         fhDphiPtRef->Fill(dPhiShift,ptcorr);
-				Double_t fill[] = {partback->Pt(),ptcorr,dPhiShift,areabig,fCent};
-				fHJetPhiCorr->Fill(fill);
-			}
 			// selection on relative phi
-			if(TMath::Abs(dphi)<TMath::Pi()-fJetHadronDeltaPhi) continue;
+			if(fJetHadronDeltaPhi>0. &&
+					TMath::Abs(dphi)<TMath::Pi()-fJetHadronDeltaPhi) continue;
 
 			if(fCent<10.) fh2RPJetsC10->Fill(TMath::Abs(phiBin), ptcorr);
 			if(fCent<20.) fh2RPJetsC20->Fill(TMath::Abs(phiBin), ptcorr);
@@ -617,34 +607,9 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			if(phitt<0)phitt+=TMath::Pi()*2.; 
 			Int_t phiBintt = GetPhiBin(phitt-fEPV0);
 
-			Double_t fillspec[] = {fCent,jetbig->Area(),ptcorr,partback->Pt(), static_cast<Double_t>(phiBintt)};
+			Double_t fillspec[] = {fCent,areabig,ptcorr,partback->Pt(),dPhiShift, static_cast<Double_t>(phiBintt)};
 			fHJetSpec->Fill(fillspec);
 		}
-
-		//Implementation in old task
-//			if(fRunAnaAzimuthalCorrelation) {
-//				for(auto jetbig : jetCont->accepted()) {
-//					if (!jetbig) continue;
-//					Double_t jetPt   = jetbig->Pt();
-//					Double_t jetEta  = jetbig->Eta();
-//					Double_t jetPhi  = jetbig->Phi();
-//					if(jetPt==0) continue; 
-//					if((jetEta<fJetEtaMin)||(jetEta>fJetEtaMax)) continue;
-//					Double_t jetArea = jetbig->EffectiveAreaCharged();
-//					Double_t jetPtCorr=jetPt-rho*jetArea;
-//					Double_t dPhi=jetPhi-partback->Phi();
-//					if(dPhi>2*TMath::Pi()) dPhi -= 2*TMath::Pi();
-//					if(dPhi<-2*TMath::Pi()) dPhi += 2*TMath::Pi();
-//					if(dPhi<-0.5*TMath::Pi()) dPhi += 2*TMath::Pi();
-//					if(dPhi>1.5*TMath::Pi()) dPhi -= 2*TMath::Pi();
-//					if(fDebug) Printf("\t phi az = %f \tphi function = %f",dPhi,dphi);
-//					Double_t fill[] = {partback->Pt(),jetPtCorr,dPhi,jetArea,centValue};
-//					fHJetPhiCorr->Fill(fill);
-//				}
-//			}
-
-
-
 	}
 }
 
@@ -855,99 +820,6 @@ Bool_t AliAnalysisTaskJetCoreEmcal::Run()
  */
 void AliAnalysisTaskJetCoreEmcal::Terminate(Option_t *) 
 {
-}
-
-THnSparse* AliAnalysisTaskJetCoreEmcal::NewTHnSparseF(const char* name, UInt_t entries)
-{
-   // generate new THnSparseF, axes are defined in GetDimParams()
-
-   Int_t count = 0;
-   UInt_t tmp = entries;
-   while(tmp!=0){
-      count++;
-      tmp = tmp &~ -tmp;  // clear lowest bit
-   }
-
-   TString hnTitle(name);
-   const Int_t dim = count;
-   Int_t nbins[dim];
-   Double_t xmin[dim];
-   Double_t xmax[dim];
-
-   Int_t i=0;
-   Int_t c=0;
-   while(c<dim && i<32){
-      if(entries&(1<<i)){
-      
-         TString label("");
-         GetDimParams(i, label, nbins[c], xmin[c], xmax[c]);
-         hnTitle += Form(";%s",label.Data());
-         c++;
-      }
-      
-      i++;
-   }
-   hnTitle += ";";
-
-   return new THnSparseF(name, hnTitle.Data(), dim, nbins, xmin, xmax);
-}
-
-void AliAnalysisTaskJetCoreEmcal::GetDimParams(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax)
-{
-
-	// stores label and binning of axis for THnSparse
-
-	const Double_t pi = TMath::Pi();
-	switch(iEntry){
-		case 0:
-			label = "V0 centrality (%)";
-			nbins = 10;
-			xmin = 0.;
-			xmax = 100.;
-			break;
-		case 1:
-			label = "corrected jet pt";
-			nbins = 20;
-			xmin = 0.;
-			xmax = 200.;
-			break;
-		case 2:
-			label = "track pT";
-			nbins = 9;
-			xmin = 0.;
-			xmax = 150;
-			break;
-		case 3:
-			label = "deltaR";
-			nbins = 15;
-			xmin = 0.;
-			xmax = 1.5;
-			break;
-		case 4:
-			label = "deltaEta";
-			nbins = 8;
-			xmin = -1.6;
-			xmax = 1.6;
-			break;
-		case 5:
-			label = "deltaPhi";
-			nbins = 90;
-			xmin = -0.5*pi;
-			xmax = 1.5*pi;
-			break;   
-		case 6:
-			label = "leading track";
-			nbins = 13;
-			xmin = 0;
-			xmax = 50;
-			break;
-		case 7:
-			label = "trigger track";
-			nbins =10;
-			xmin = 0;
-			xmax = 50;
-			break;
-	}
 }
 
 Int_t  AliAnalysisTaskJetCoreEmcal::SelectTrigger(TList *list,Double_t minT,Double_t maxT,Int_t &number){
