@@ -1297,11 +1297,11 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                     fHistIncjetBG->Fill(pt,pTeJetBG); 
                     fHistIncjet->Fill(pt,corrPt);
                     fHistIncjetFrac->Fill(pt,efrac);
-                    /*
+                    
                     Double_t pTrand = CalRandomCone(Phi_eJet,Eta_eJet,Area_eJet);
                     Double_t BGfrac = pTrand - pTeJetBG;
                     fHistBGfrac->Fill(BGfrac);
-                    */
+               
                     if(!fFlagULS)fHistHFjet->Fill(pt,corrPt);
                     if(fFlagULS) fHistULSjet->Fill(pt,corrPt);
                     if(fFlagLS)fHistLSjet->Fill(pt,corrPt);
@@ -1475,6 +1475,11 @@ Double_t AliAnalysisHFjetTagHFE::CalRandomCone(Double_t HFjetPhi, Double_t HFjet
      Double_t dEta = HFjetEta - EtaRand;
      dR = sqrt(pow(dPhi,2)+pow(dEta,2));
 
+     //cout << "dR = " << dR << endl;
+
+     PhiRand = generator->Uniform(0.0,maxphi);
+     EtaRand = generator->Uniform(-0.9,0.9);
+
     }while(dR<1.0);
 
 
@@ -1596,9 +1601,9 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
               MCpTarray[0]=fMCparticle->Px(); 
               MCpTarray[1]=fMCparticle->Py(); 
               MCpTarray[2]=fMCparticle->Pz(); 
-              cout << MCpTarray[0] << endl;
+              //cout << MCpTarray[0] << endl;
               double MChfepT=fMCparticle->Pt(); 
-              cout << MChfepT << endl;
+              //cout << MChfepT << endl;
               fHistHfEleMC->Fill(MChfepT); 
 
               //if (fJetsCont) 
