@@ -9,7 +9,7 @@ class TH2;
 #define _TINFO_
 class TInfo : public TObject {
  public:
-  TInfo(Int_t rn=0) : fRunNo(rn), fMinT(160), fMaxT(160), fAvTime(0), fFirstTime(0), fLastTime(0) {;}
+  TInfo(Int_t rn=0) : fRunNo(rn), fMinT(160), fMaxT(160), fAvTime(0), fFirstTime(0), fLastTime(0), fNFaulty(25) {;}
   virtual     ~TInfo() {;}
   Float_t      AbsMinT(Int_t t=1)         const;
   Float_t      AbsMaxT(Int_t t=2)         const;
@@ -18,6 +18,9 @@ class TInfo : public TObject {
   UInt_t       FirstTime()                const { return fAvTime; }
   TH2         *GetHist(Int_t type=1)      const;
   const char  *GetName()                  const { return Form("TempInfo_%d",fRunNo); }
+  Int_t        GetRunNo()                 const { return fRunNo; }
+  Int_t        GetNFaulty()               const { return fNFaulty; }
+  Double_t     Fraction()                 const { return 1.*Nvalid()/(NSensors()-GetNFaulty()); }
   UInt_t       LastTime()                 const { return fAvTime; }
   Bool_t       IsValid(Int_t ns)          const { return ((fMinT.At(ns)!=0)&&(fMaxT.At(ns)!=0)); }
   Int_t        RunNo()                    const { return fRunNo; }
@@ -29,12 +32,13 @@ class TInfo : public TObject {
   Int_t        Nvalid()                   const { Int_t ret=0; for (Int_t i=0;i<160;++i) ret += IsValid(i); return ret;}
   void         Print(Option_t *option="") const;
   void         Set(Int_t ns, Float_t min, Float_t max) { fMinT.SetAt(min,ns); fMaxT.SetAt(max,ns); }
+  void         SetNFaulty(Int_t n)              { fNFaulty=n; }
   void         SetTime(UInt_t av, UInt_t f, UInt_t l)  { fAvTime=av; fFirstTime=f; fLastTime=l; }
-  const char * Type(Int_t t)              const;
 
-  static       Int_t GetBin(Int_t ns);
-  static       Int_t SM(Int_t ns)               { return ns / 8; }
-  static       Int_t NSensors()                 { return 160; }
+  static const char *Type(Int_t t);
+  static             Int_t GetBin(Int_t ns);
+  static             Int_t SM(Int_t ns)               { return ns/8; }
+  static             Int_t NSensors()                 { return 160; }
  protected:
   Int_t        fRunNo;      // run number
   TArrayF      fMinT;       // min temperature per sensor
@@ -42,7 +46,8 @@ class TInfo : public TObject {
   UInt_t       fAvTime;     // average start time
   UInt_t       fFirstTime;  // first time
   UInt_t       fLastTime;   // last time
-  ClassDef(TInfo, 2); // Temperature info class
+  Int_t        fNFaulty;    //!faulty sensors
+  ClassDef(TInfo, 3); // Temperature info class
 };
 #endif
 #endif

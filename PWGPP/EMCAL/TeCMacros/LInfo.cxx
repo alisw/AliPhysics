@@ -7,11 +7,6 @@
 #include <TMap.h>
 #include <TNtuple.h>
 
-void LInfo::Print(Option_t *option) const 
-{ 
-  cout << "Runno: " << fRunNo << endl;
-}
-
 void LInfo::Compute()  
 { 
   char id[100];
@@ -30,8 +25,19 @@ void LInfo::Compute()
 	sprintf(title, "LED amplitude over LEDMON: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
 	fhAmpOverMon[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);   
 	fhAmpOverMon[iSM][igain]->SetDirectory(0);
-      } else 
+	sprintf(id, "hStripRmsOverMean%02d%d", iSM, igain);
+	sprintf(title, "LedMon rms  over mean: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
+	fhStripRmsOverMean[iSM][igain] = new TH1F(id, title, kNCol, -0.5, kNCol-0.5);
+	fhStripRmsOverMean[iSM][igain]->SetDirectory(0);
+	sprintf(id, "hLedRmsOverMean%02d%d", iSM, igain);
+	sprintf(title, "Led rms  over mean: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
+	fhLedRmsOverMean[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNStrip, -0.5, kNStrip-0.5);
+	fhLedRmsOverMean[iSM][igain]->SetDirectory(0);
+      } else {
 	fhAmpOverMon[iSM][igain]->Reset();
+	fhStripRmsOverMean[iSM][igain]->Reset();
+	fhLedRmsOverMean[iSM][igain]->Reset();
+      }
     }
   }
 
@@ -46,11 +52,22 @@ void LInfo::Compute()
 	for (Int_t row=0;row<kNRow;++row) {
 	  Int_t lbin = fhLed[iSM][igain]->FindBin(col,row);
 	  Double_t ledAmp = fhLed[iSM][igain]->GetBinContent(lbin);
-	  Double_t weightf   = 0;
-	  if (ledMonAmp!=0)
-	    weightf = ledAmp/ledMonAmp;  
-	  fhAmpOverMon[iSM][igain]->Fill(col, row, weightf);
+	  if (ledMonAmp!=0) {
+	    Double_t weightf = ledAmp/ledMonAmp;  
+	    fhAmpOverMon[iSM][igain]->AddBinContent(lbin,weightf);
+	  }
+	  Double_t m = fhLed[iSM][igain]->GetBinContent(lbin);
+	  Double_t r = fhLedCount[iSM][igain]->GetBinContent(lbin);
+	  if (m>0)
+	    fhLedRmsOverMean[iSM][igain]->AddBinContent(lbin,r/m);
 	}
+      }
+      for (Int_t strip=0;strip<kNStrip;++strip) {
+	Int_t bin = fhStrip[iSM][igain]->FindBin(strip);
+	Double_t m = fhStrip[iSM][igain]->GetBinContent(bin);
+	Double_t r = fhStripCount[iSM][igain]->GetBinContent(bin);
+	if (m>0)
+	  fhLedRmsOverMean[iSM][igain]->SetBinContent(bin,r/m);
       }
     }
   }
@@ -90,7 +107,9 @@ void LInfo::CreateHistograms()
       fhLedCount[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);
       fhLedCount[iSM][igain]->SetDirectory(0);
 
-      fhAmpOverMon[iSM][igain] = 0;
+      fhAmpOverMon[iSM][igain]    = 0;
+      fhLedRmsOverMean[kNSM][2]   = 0;
+      fhStripRmsOverMean[kNSM][2] = 0;
     }
   }
 }
@@ -98,8 +117,6 @@ void LInfo::CreateHistograms()
 void LInfo::FillStrip(Int_t mod, Int_t gain, Int_t strip, Double_t amp, Double_t rms)
 {
   fhStrip[mod][gain]->Fill(strip, amp);
-  fhStrip[mod][gain]->Fill(strip, amp);
-  fhStripCount[mod][gain]->Fill(strip, rms);
   fhStripCount[mod][gain]->Fill(strip, rms);
 }
 
@@ -109,4 +126,28 @@ void LInfo::FillLed(Int_t mod,Int_t gain, Int_t col, Int_t row, Double_t amp, Do
   fhLedCount[mod][gain]->Fill(col, row, rms);
 }
 
+Double_t LInfo::FracStrips(Int_t sm, Int_t gain) const
+{
+  const Int_t kstripGain=gain;
+  Double_t ret=0,all=0;
+  for (Int_t iSM=0; iSM<kNSM; ++iSM) {
+    if (sm>=0&&iSM!=sm)
+      continue;
+    Int_t nstrips=NStrip();
+    if (iSM>11 && iSM<18) 
+      nstrips=32/2;
+    for (Int_t strip=1; strip<=NStrip(); ++strip) {
+      ++all;
+      if (fhStrip[iSM][kstripGain]->GetBinContent(strip)>0.)
+	++ret;
+    }
+  }
+  if (all>0)
+    return ret/all;
+  return 0;
+}
 
+void LInfo::Print(Option_t *option) const 
+{ 
+  cout << "Runno: " << fRunNo << endl;
+}

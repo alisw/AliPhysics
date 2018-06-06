@@ -1,15 +1,40 @@
+#include <AliEMCALGeometry.h>
 #include <TCanvas.h>
 #include <TDatime.h>
 #include <TFile.h>
 #include <TFile.h>
 #include <TGrid.h>
 #include <TH2F.h>
+#include <TLegend.h>
 #include <TMap.h>
 #include <TNtuple.h>
 #include <TProfile.h>
-#include <TLegend.h>
 #include <stdio.h>
 #include "LInfo.h"
+
+void plot_LHC18d() 
+{
+  TFile *inf = TFile::Open("ledinfo.root");
+  TObjArray *arr = dynamic_cast<TObjArray*>(inf->Get("led_lhc18d"));
+  if (!arr) 
+    return;
+  const Int_t rns=arr->GetEntries();
+  for (Int_t i=0;i<rns;++i) {
+    LInfo *linfo = dynamic_cast<LInfo*>(arr->At(i));
+    if (!linfo)
+      continue;
+    linfo->Print();
+    cout << "fraction bad ";
+    for (Int_t i=0;i<20;++i) 
+      cout << linfo->FracStrips(i) << " ";
+    cout << endl;
+  }
+}
+
+void plotOCDB_LED()
+{
+  plot_LHC18d();
+}
 
 #if 0
 TH2 *getT2D(TObjArray *arr, Int_t type=1)
@@ -120,11 +145,6 @@ void plot_LHC18d()
     }
     ci->Print(Form("%s.pdf]",ci->GetName()));
   }
-}
-
-void plotOCDB_Temperature()
-{
-  plot_LHC18d();
 }
 
 #endif

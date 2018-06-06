@@ -36,7 +36,7 @@ Float_t TInfo::AbsMaxT(Int_t type) const
 TH2 *TInfo::GetHist(Int_t type) const
 {
   TH2F *h = new TH2F(Form("h%dT%d_%s",fRunNo,type,Type(type)),";col;rows",8,-0.5,7.5,20,-0.5,19.5);
-  h->SetTitle(Form("%s for run %d",Type(type),fRunNo));
+  h->SetTitle(Form("%s for run %d (frac=%.1f%%, length=%.1fh)",Type(type),fRunNo,Fraction()*100,(fLastTime-fFirstTime)/3600.));
   h->SetDirectory(0);
   h->SetStats(0);
   Double_t min=AbsMinT(type);
@@ -74,18 +74,6 @@ Float_t TInfo::T(Int_t ns, Int_t type) const
   else 
     val = Diff(ns);
   return val;
-}
-
-const char *TInfo::Type(Int_t type) const
-{
-  TString title("MaxT-MinT");
-  if (type==1)
-    title="MinT";
-  else if (type==2)
-    title="MaxT";
-  else if (type==3)
-    title="AvgT";
-  return Form("%s",title.Data());
 }
 
 /*static*/
@@ -187,26 +175,35 @@ Int_t TInfo::GetBin(Int_t ns)
   case 81: return h->GetBin(1,10); break;
   case 82: return h->GetBin(2,9);  break;
   case 83: return h->GetBin(2,10); break;
+  case 84: return h->GetBin(3,9); break;
+  case 85: return h->GetBin(3,10); break;
+  case 86: return h->GetBin(4,9); break;
+  case 87: return h->GetBin(4,10); break;
   case 88: return h->GetBin(8,10); break;
   case 89: return h->GetBin(8,9);  break;
   case 90: return h->GetBin(7,10); break;
   case 91: return h->GetBin(7,9);  break;
+  case 92: return h->GetBin(6,10); break;
+  case 93: return h->GetBin(6,9);  break;
+  case 94: return h->GetBin(5,10); break;
+  case 95: return h->GetBin(5,9);  break;
 
-  case  96: return h->GetBin(1,13); break;
-  case  97: return h->GetBin(1,14); break;
-  case  98: return h->GetBin(2,13); break;
-  case 100: return h->GetBin(2,14); break;
-  case 101: return h->GetBin(3,13); break;
-  case 102: return h->GetBin(3,14); break;
-  case 103: return h->GetBin(4,13); break;
-  case 104: return h->GetBin(4,14); break;
-  case 105: return h->GetBin(8,14); break;
-  case 106: return h->GetBin(8,13); break;
-  case 107: return h->GetBin(7,14); break;
-  case 108: return h->GetBin(7,13); break;
-  case 109: return h->GetBin(6,14); break;
-  case 110: return h->GetBin(6,13); break;
-  case 111: return h->GetBin(5,14); break;
+  case  96: return h->GetBin(1,7); break;
+  case  97: return h->GetBin(1,8); break;
+  case  98: return h->GetBin(2,7); break;
+  case  99: return h->GetBin(2,8); break;
+  case 100: return h->GetBin(3,7); break;
+  case 101: return h->GetBin(3,8); break;
+  case 102: return h->GetBin(4,7); break;
+  case 103: return h->GetBin(4,8); break;
+  case 104: return h->GetBin(8,8); break;
+  case 105: return h->GetBin(8,7); break;
+  case 106: return h->GetBin(7,8); break;
+  case 107: return h->GetBin(7,7); break;
+  case 108: return h->GetBin(6,8); break;
+  case 109: return h->GetBin(6,7); break;
+  case 110: return h->GetBin(5,8); break;
+  case 111: return h->GetBin(5,7); break;
 
   case 112: return h->GetBin(1,5); break;
   case 113: return h->GetBin(1,6); break;
@@ -262,3 +259,14 @@ Int_t TInfo::GetBin(Int_t ns)
   return 0;
 } 
 
+const char *TInfo::Type(Int_t type)
+{
+  TString title("MaxT-MinT");
+  if (type==1)
+    title="MinT";
+  else if (type==2)
+    title="MaxT";
+  else if (type==3)
+    title="AvgT";
+  return Form("%s",title.Data());
+}

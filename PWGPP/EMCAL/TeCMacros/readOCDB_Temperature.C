@@ -49,22 +49,21 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
        << endl;
 
   // info for each sensor
-  const int kNumSens = 160;
-  int np[kNumSens] = {0};
-  double min[kNumSens] = {0};
-  double max[kNumSens] = {0};
+  const Int_t kNumSens = 160;
+  Int_t np[kNumSens] = {0};
+  Double_t min[kNumSens] = {0};
+  Double_t max[kNumSens] = {0};
 
   Double_t avTime = 0;
   UInt_t fTime = -1;
   UInt_t lTime = 0;
-
-  for (int isensor=0; isensor<kNumSens; isensor++) {
+  for (Int_t isensor=0; isensor<kNumSens; isensor++) {
     AliEMCALSensorTemp *o = arr->GetSensor(isensor);
     if (!o) 
       continue;
 
     UInt_t startt = o->GetStartTime();
-    UInt_t stopt = o->GetEndTime();
+    UInt_t stopt  = o->GetEndTime();
 
     if (debug)
       cout << "Sensor " << isensor 
@@ -76,11 +75,11 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
 	   << " endTime " << stopt
 	   << endl;
 
-    AliSplineFit *f = o->GetFit();
-    np[isensor] = 0;
+    np[isensor]  = 0;
     min[isensor] = +100;
     max[isensor] = -100;
 
+    AliSplineFit *f = o->GetFit();
     if (f) {
       np[isensor] = f->GetKnots();
       if (debug)
@@ -88,7 +87,7 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
       Double_t *x = f->GetX();
       Double_t *y0 = f->GetY0();
       Double_t *y1 = f->GetY1();
-      for (int i=0; i<np[isensor]; i++) {
+      for (Int_t i=0; i<np[isensor]; ++i) {
 	if (debug)
 	  cout << " i " << i
 	       << " x " << x[i]
@@ -99,7 +98,26 @@ TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
 	if (min[isensor]>y0[i]) min[isensor]=y0[i];
 	if (max[isensor]<y0[i]) max[isensor]=y0[i];
       }
+    } else {
+      TGraph *g = o->GetGraph();
+      if (g) {
+	np[isensor] = g->GetN();
+	if (debug)
+	  cout << " np " << np[isensor] << endl;
+	Double_t *x = g->GetX();
+	Double_t *y0 = g->GetY();
+	for (Int_t i=0; i<np[isensor]; i++) {
+	  if (debug)
+	    cout << " i " << i
+		 << " x " << x[i]
+	       << " y0 " << y0[i]
+		 << endl;
+	  if (min[isensor]>y0[i]) min[isensor]=y0[i];
+	  if (max[isensor]<y0[i]) max[isensor]=y0[i];
+	}
+      }
     }
+
     if (np[isensor]>0) {
       if (debug)
 	cout << "Min Temp: " << min[isensor] << " Max Temp: " << max[isensor] << endl;
