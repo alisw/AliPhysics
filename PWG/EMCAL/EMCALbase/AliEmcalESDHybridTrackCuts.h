@@ -114,6 +114,13 @@ public:
   Int_t  GetTPCTRDNumberOfClusters(const AliVTrack *const trk) const;
 
   /**
+   * @brief Get the \f$p_{t}\f$-dependent number of TPC+TRD clusters cut
+   * @param trk Track for which to evaluate the number of clusters cut
+   * @return Cut value to be applied for the given track based on its \f$p_{t}\f$
+   */
+  Double_t  GetPtDepCutTPCTRDNumberOfClusters(const AliVTrack *const trk) const;
+
+  /**
    * @brief Check if ITS module in the layer is considerd as active
    * 
    * @param trk Track to check 
@@ -173,6 +180,7 @@ private:
 
   Bool_t                fRequireTPCTRDClusters;             ///< Require TPC and TRD combined number of clusters
   Int_t                 fMinClustersTPCTRD;                 ///< Minimum number of TPC+TRD combined clusters
+  Double_t              fPtDepParamClusterCut;              ///< \f$p_{t}\f$ weight parameter for the \f$p_{t}\f$ dependent cluster cut
 
   /// \cond CLASSIMP
   ClassDef(AliEmcalESDHybridTrackCuts, 1);

@@ -432,9 +432,8 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
 
       if(fDoSeparateTRDrefit) {
         // Gold condition:
-        // - TRD refit 
-        // - at least 4 TRD tracklets
-        if(!((track->GetStatus() & AliVTrack::kTRDrefit) && (ntracklets >= 4))) type += 4;    // failed TRD gold condition
+        // - at least 3 TRD tracklets (with this cut track without TRD in global track fit is at % level)
+        if(ntracklets < 3) type += 4;    // failed TRD gold condition
       }
 
       Int_t label = TMath::Abs(track->GetLabel());

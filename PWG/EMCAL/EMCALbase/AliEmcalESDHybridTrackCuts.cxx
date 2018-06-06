@@ -24,6 +24,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <string>
@@ -50,7 +51,8 @@ AliEmcalESDHybridTrackCuts::AliEmcalESDHybridTrackCuts():
   fHybridTrackCutsConstrained(nullptr),
   fHybridTrackCutsNoItsRefit(nullptr),
   fRequireTPCTRDClusters(false),
-  fMinClustersTPCTRD(0)
+  fMinClustersTPCTRD(0),
+  fPtDepParamClusterCut(0.)
 {
 
 }
@@ -63,7 +65,8 @@ AliEmcalESDHybridTrackCuts::AliEmcalESDHybridTrackCuts(const char *name, HybridD
   fHybridTrackCutsConstrained(nullptr),
   fHybridTrackCutsNoItsRefit(nullptr),
   fRequireTPCTRDClusters(false),
-  fMinClustersTPCTRD(0)
+  fMinClustersTPCTRD(0),
+  fPtDepParamClusterCut(0.)
 {
 
 }
@@ -86,8 +89,9 @@ AliEmcalTrackSelResultPtr AliEmcalESDHybridTrackCuts::IsSelected(TObject *o){
       // Temporary hack for TPC+TRD number of cluster cut which is not yet available in AliESDtrackCuts
       bool isSelected = true;
       auto tracklength = GetTPCTRDNumberOfClusters(esdtrack);
-      AliDebugStream(3) << "Global: Combined track length: " << tracklength << "(" << esdtrack->GetTPCCrossedRows() << "/" << static_cast<Int_t>(esdtrack->GetTRDncls()) << ")" << std::endl;
-      if(fRequireTPCTRDClusters && (tracklength < fMinClustersTPCTRD)) isSelected = false;
+      auto tracklengthcut = GetPtDepCutTPCTRDNumberOfClusters(esdtrack);
+      AliDebugStream(3) << "Global: Combined track length: " << tracklength << "(" << esdtrack->GetTPCCrossedRows() << "/" << static_cast<Int_t>(esdtrack->GetTRDncls()) << "), cut " << tracklengthcut << std::endl;
+      if(fRequireTPCTRDClusters && (static_cast<Double_t>(tracklength) < tracklengthcut)) isSelected = false;
       if(isSelected){
         AliDebugStream(2) << "Track selected as global hybrid track" << std::endl;
         tracktype = AliEmcalTrackSelResultHybrid::kHybridGlobal;
@@ -97,8 +101,9 @@ AliEmcalTrackSelResultPtr AliEmcalESDHybridTrackCuts::IsSelected(TObject *o){
         // Temporary hack for TPC+TRD number of cluster cut which is not yet available in AliESDtrackCuts
         bool isSelected = true;
         auto tracklength = GetTPCTRDNumberOfClusters(esdtrack);
-        AliDebugStream(3) << "Constrained: Combined track length: " << tracklength << "(" << esdtrack->GetTPCCrossedRows() << "/" << static_cast<Int_t>(esdtrack->GetTRDncls()) << ")" << std::endl;
-        if(fRequireTPCTRDClusters && (tracklength < fMinClustersTPCTRD)) isSelected = false;
+        auto tracklengthcut = GetPtDepCutTPCTRDNumberOfClusters(esdtrack);
+        AliDebugStream(3) << "Constrained: Combined track length: " << tracklength << "(" << esdtrack->GetTPCCrossedRows() << "/" << static_cast<Int_t>(esdtrack->GetTRDncls()) << "), cut " << tracklengthcut << std::endl;
+        if(fRequireTPCTRDClusters && (tracklength < tracklengthcut)) isSelected = false;
         if(isSelected){
           AliDebugStream(2) << "Track selected as constrained hybrid track" << std::endl;
           if(IsActiveITSModule(esdtrack, 0) || IsActiveITSModule(esdtrack, 1)) tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrainedFake;
@@ -107,7 +112,7 @@ AliEmcalTrackSelResultPtr AliEmcalESDHybridTrackCuts::IsSelected(TObject *o){
       } else if(fHybridTrackCutsNoItsRefit && fHybridTrackCutsNoItsRefit->AcceptTrack(esdtrack)) {
         // Temporary hack for TPC+TRD number of cluster cut which is not yet available in AliESDtrackCuts
         bool isSelected = true;
-        if(fRequireTPCTRDClusters && (GetTPCTRDNumberOfClusters(esdtrack) < fMinClustersTPCTRD)) isSelected = false;
+        if(fRequireTPCTRDClusters && (GetTPCTRDNumberOfClusters(esdtrack) < GetPtDepCutTPCTRDNumberOfClusters(esdtrack))) isSelected = false;
         if(isSelected){
           AliDebugStream(2) << "Track selected as non-refit hybrid track" << std::endl;
           tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrainedNoITSrefit;
@@ -138,6 +143,10 @@ void AliEmcalESDHybridTrackCuts::Init(){
 
 Int_t AliEmcalESDHybridTrackCuts::GetTPCTRDNumberOfClusters(const AliVTrack *const trk) const {
   return static_cast<Int_t>(trk->GetTPCCrossedRows()) + static_cast<Int_t>(trk->GetTRDncls());
+}
+
+Double_t AliEmcalESDHybridTrackCuts::GetPtDepCutTPCTRDNumberOfClusters(const AliVTrack *trk) const {
+  return std::min(static_cast<Double_t>(fMinClustersTPCTRD), static_cast<Double_t>(fMinClustersTPCTRD) - fPtDepParamClusterCut / trk->Pt());
 }
 
 Bool_t AliEmcalESDHybridTrackCuts::IsActiveITSModule(const AliESDtrack *const trk, int layer) const {
