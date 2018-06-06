@@ -176,6 +176,10 @@ AliTPCcalibDB::AliTPCcalibDB():
   fExB(0),
   fPadGainFactor(0),
   fActiveChannelMap(0),
+  fMaskedChannelMapHV(0x0),
+  fMaskedChannelMapAltro(0x0),
+  fMaskedChannelMapDDL(0x0),
+  fMaskedChannelMapSCD(0x0),
   fDedxGainFactor(0),
   fPadTime0(0),
   fDistortionMap(0),
@@ -213,7 +217,8 @@ AliTPCcalibDB::AliTPCcalibDB():
   fBHasAlignmentOCDB(kFALSE),    // Flag  - has the alignment on the composed correction ?
   fDButil(0),
   fCTPTimeParams(0),
-  fMode(-1)
+  fMode(-1),
+  fFillQAInfo(kFALSE)
 {
   /// constructor
 
@@ -242,6 +247,10 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fExB(0),
   fPadGainFactor(0),
   fActiveChannelMap(0),
+  fMaskedChannelMapHV(0x0),
+  fMaskedChannelMapAltro(0x0),
+  fMaskedChannelMapDDL(0x0),
+  fMaskedChannelMapSCD(0x0),
   fDedxGainFactor(0),
   fPadTime0(0),
   fDistortionMap(0),
@@ -279,7 +288,8 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fBHasAlignmentOCDB(kFALSE),    // Flag  - has the alignment on the composed correction ?
   fDButil(0),
   fCTPTimeParams(0),
-  fMode(-1)
+  fMode(-1),
+  fFillQAInfo(kFALSE)
 {
   /// Copy constructor invalid -- singleton implementation
 
@@ -318,6 +328,10 @@ AliTPCcalibDB::~AliTPCcalibDB()
   /// delete fIonTailArray;
 
   delete fActiveChannelMap;
+  delete fMaskedChannelMapHV;
+  delete fMaskedChannelMapAltro;
+  delete fMaskedChannelMapDDL;
+  delete fMaskedChannelMapSCD;
   delete fGrRunState;
   fgInstance = 0;
 }
@@ -941,6 +955,14 @@ Int_t AliTPCcalibDB::InitDeadMap()
 
   if (!fActiveChannelMap) fActiveChannelMap=new AliTPCCalPad("ActiveChannelMap","ActiveChannelMap");
 
+  // in case of running in QA mode also fill the detailed information
+  if (fFillQAInfo && !fMaskedChannelMapHV) {
+    fMaskedChannelMapHV    = new AliTPCCalPad("MaskedChannelMapHV"   , "MaskedChannelMapHV"   );
+    fMaskedChannelMapAltro = new AliTPCCalPad("MaskedChannelMapAltro", "MaskedChannelMapAltro");
+    fMaskedChannelMapDDL   = new AliTPCCalPad("MaskedChannelMapDDL"  , "MaskedChannelMapDDL"  );
+    fMaskedChannelMapSCD   = new AliTPCCalPad("MaskedChannelMapSCD"  , "MaskedChannelMapSCD"  );
+  }
+
   if (!altroMap) {
     AliError("ALTRO dead channel map missing. ActiveChannelMap can only be created with parts of the information.");
     AliError(" -> Check existance of 'Masked' in the OCDB entry: 'TPC/Calib/AltroConfig'");
@@ -955,13 +977,35 @@ Int_t AliTPCcalibDB::InitDeadMap()
       continue;
     }
 
+    AliTPCCalROC *rocHV    = 0x0;
+    AliTPCCalROC *rocAltro = 0x0;
+    AliTPCCalROC *rocDDL   = 0x0;
+    AliTPCCalROC *rocSCD   = 0x0;
+    if (fFillQAInfo) {
+      rocHV    = fMaskedChannelMapHV   ->GetCalROC(iROC);
+      rocAltro = fMaskedChannelMapAltro->GetCalROC(iROC);
+      rocDDL   = fMaskedChannelMapDDL  ->GetCalROC(iROC);
+      rocSCD   = fMaskedChannelMapSCD  ->GetCalROC(iROC);
+
+      // reset all masked channel maps
+      rocHV   ->Multiply(0.f);
+      rocAltro->Multiply(0.f);
+      rocDDL  ->Multiply(0.f);
+      rocSCD  ->Multiply(0.f);
+    }
+
     // check for bad voltage
     // see UpdateChamberHighVoltageData()
     if (!fChamberHVStatus[iROC]){
       roc->Multiply(0.);
       AliWarning(Form("Turning off all channels of ROC %2d due to a bad HV status", iROC));
       AliWarning(" -> Check messages in UpdateChamberHighVoltageData()");
-      continue;
+      if (fFillQAInfo) {
+        rocHV->Add(1.f);
+      }
+      else {
+        continue;
+      }
     }
 
     AliTPCCalROC *masked=0x0;
@@ -973,18 +1017,29 @@ Int_t AliTPCcalibDB::InitDeadMap()
       const Int_t channel0 = tpcROC->GetRowIndexes(iROC)[irow];
 
       for (UInt_t ipad=0; ipad<roc->GetNPads(irow); ++ipad){
-        //per default the channel is on
-        roc->SetValue(irow,ipad,1);
+        //per default the channel is given by the chamber HV status
+        //   this is redundant with with the case above for a bad chamber status
+        //   but in case of fFillQAInfo we will not continue and set the proper state here
+        roc->SetValue(irow,ipad, fChamberHVStatus[iROC]);
 
         // apply altro dead channel mask (inverse logik, it is not active, but inactive channles)
-        if (masked && masked->GetValue(irow, ipad)) roc->SetValue(irow, ipad ,0);
+        if (masked && masked->GetValue(irow, ipad)) {
+          roc->SetValue(irow, ipad ,0);
+          if (fFillQAInfo) rocAltro->SetValue(irow, ipad, 1);
+        }
 
         // mask channels if a DDL is inactive
         Int_t ddlId=map.GetEquipmentID(iROC, irow, ipad)-768;
-        if (ddlId>=0 && !ddlMap[ddlId]) roc->SetValue(irow, ipad ,0);
+        if (ddlId>=0 && !ddlMap[ddlId]) {
+          roc->SetValue(irow, ipad ,0);
+          if (fFillQAInfo) rocDDL->SetValue(irow, ipad, 1);
+        }
 
         // mask channels if error on space point coorection is too large
-        if (maskedPads[iROC].TestBitNumber(channel0+ipad)) roc->SetValue(irow, ipad ,0);
+        if (maskedPads[iROC].TestBitNumber(channel0+ipad)){
+          roc->SetValue(irow, ipad ,0);
+          if (fFillQAInfo) rocSCD->SetValue(irow, ipad, 1);
+        }
 
         if (roc->GetValue(irow, ipad)<0.0001) {
           ++numberOfDeactivatedChannels;
