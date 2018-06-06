@@ -42,7 +42,6 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void     SetJetHadronDeltaPhi(Float_t delta){fJetHadronDeltaPhi=delta;}
 	virtual void		 SetJetContName(TString cont){fJetContName=cont;}
 
-	virtual void		 SetRunAnaAzimuthalCorrelation(Bool_t b){fRunAnaAzimuthalCorrelation=b;}
 	virtual void		 SetFillTrackHistograms(Bool_t b){fFillTrackHistograms=b;}
 	virtual void		 SetFillJetHistograms(Bool_t b){fFillJetHistograms=b;}
 
@@ -81,12 +80,10 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   void                        DoJetCoreLoop()                                      ;
 
 	Int_t												SelectTrigger(TList *list,Double_t minT,Double_t maxT,Int_t &number);
-	THnSparse*									NewTHnSparseF(const char* name, UInt_t entries);
-	void												GetDimParams(Int_t iEntry, TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
 	Double_t										RelativePhi(Double_t mphi,Double_t vphi);
 	Int_t												GetPhiBin(Double_t phi);
 
-  THistManager                fHistManager                                      ;///< Histogram manager
+  THistManager                fHistManager;///< Histogram manager
 
 	// flags and selection
 	AliEventCuts fEventCuts; ///< Event cuts
@@ -100,9 +97,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Float_t fFrac; ///<
 	Float_t fJetEtaMin; ///<
 	Float_t fJetEtaMax; ///<
-	Float_t fJetHadronDeltaPhi; ///<
+	Float_t fJetHadronDeltaPhi; ///< set 0 > f > pi for selection on jet hadron Dphi
 	TString fJetContName; ///<
-	Bool_t fRunAnaAzimuthalCorrelation; ///<
 	Bool_t fFillTrackHistograms; ///<
 	Bool_t fFillJetHistograms; ///<
 	//
