@@ -1694,8 +1694,6 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 
 			fClusEnergy->Fill(cluster->GetNonLinCorrEnergy(),Weight);
 			Int_t iMCIndexClus1 = -1;
-			Int_t iMCRootPartClus1 = -1;
-			Int_t iMCTreeHeight1 = -1;
 			if (fIsMC) {
 				iMCIndexClus1 = FindMCPartForClus(cluster);
 			}
@@ -1923,9 +1921,6 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 		else {
 			AliAODMCParticle * mcPart1 = fMCParticles->GetMCParticle(mcIndex1);
 			AliAODMCParticle * mcPart2 = fMCParticles->GetMCParticle(mcIndex2);
-
-			Int_t iMother1 = mcPart1->GetMother();
-			Int_t iMother2 = mcPart2->GetMother();
 
 			Int_t aMCTreeHeight1 = 0;
 			Int_t aMCRootPartClus1 = FindMCRootPart(mcIndex1,&aMCTreeHeight1);
@@ -2592,7 +2587,7 @@ Int_t AliAnalysisTaskGammaHadron::FindMCLowComAnc(Int_t iMCIndex1, Int_t iMCInde
 
 	Int_t iLastCommonAncestor = -1;
 
-	iMinHeight = min(lAncPart_1.size(),lAncPart_2.size());
+	iMinHeight = std::min(lAncPart_1.size(),lAncPart_2.size());
 	for (Int_t i = 0; i < iMinHeight; i++) {
 		if (lAncPart_1[iSize1-i] == lAncPart_2[iSize2-i]) {
 			iLastCommonAncestor = lAncPart_1[iSize1-i];
