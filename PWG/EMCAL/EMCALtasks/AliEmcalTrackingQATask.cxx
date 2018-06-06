@@ -295,6 +295,7 @@ void AliEmcalTrackingQATask::AllocateMatchedParticlesTHnSparse()
 void AliEmcalTrackingQATask::FillDetectorLevelTHnSparse(Double_t cent, Double_t trackEta, Double_t trackPhi, Double_t trackPt, 
     Double_t sigma1OverPt, Int_t mcGen, Byte_t trackType)
 {
+  AliDebugStream(10) << "Filling detector level THnSparse" << std::endl;
   std::vector<Double_t> contents(fTracks->GetNdimensions());
 
   for (Int_t i = 0; i < fTracks->GetNdimensions(); i++) {
@@ -392,10 +393,12 @@ void AliEmcalTrackingQATask::FillMatchedParticlesTHnSparse(Double_t cent, Double
  */
 Bool_t AliEmcalTrackingQATask::FillHistograms()
 {
+  AliDebugStream(1) << "Called: Tracks [" << fDetectorLevel->GetNTracks() << "], Accepted [" << fDetectorLevel->GetNAcceptedTracks() << "]\n";
   auto iterable = fDetectorLevel->accepted_momentum();
   for (auto trackIterator = iterable.begin(); trackIterator != iterable.end(); trackIterator++) {
     auto track = trackIterator->second;
     Byte_t type = fDetectorLevel->GetTrackType(track);
+    AliDebugStream(2) << "Next track of type " << static_cast<Int_t>(type) << std::endl;
     Byte_t ntracklets = 0;
     if (type <= 3) {
       Double_t sigma = 0;

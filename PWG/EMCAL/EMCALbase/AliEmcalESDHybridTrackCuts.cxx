@@ -85,7 +85,9 @@ AliEmcalTrackSelResultPtr AliEmcalESDHybridTrackCuts::IsSelected(TObject *o){
     if(fHybridTrackCutsGlobal && fHybridTrackCutsGlobal->AcceptTrack(esdtrack)){
       // Temporary hack for TPC+TRD number of cluster cut which is not yet available in AliESDtrackCuts
       bool isSelected = true;
-      if(fRequireTPCTRDClusters && (GetTPCTRDNumberOfClusters(esdtrack) < fMinClustersTPCTRD)) isSelected = false;
+      auto tracklength = GetTPCTRDNumberOfClusters(esdtrack);
+      AliDebugStream(3) << "Global: Combined track length: " << tracklength << "(" << esdtrack->GetTPCCrossedRows() << "/" << static_cast<Int_t>(esdtrack->GetTRDncls()) << ")" << std::endl;
+      if(fRequireTPCTRDClusters && (tracklength < fMinClustersTPCTRD)) isSelected = false;
       if(isSelected){
         AliDebugStream(2) << "Track selected as global hybrid track" << std::endl;
         tracktype = AliEmcalTrackSelResultHybrid::kHybridGlobal;
@@ -94,7 +96,9 @@ AliEmcalTrackSelResultPtr AliEmcalESDHybridTrackCuts::IsSelected(TObject *o){
       if(fHybridTrackCutsConstrained && fHybridTrackCutsConstrained->AcceptTrack(esdtrack)){
         // Temporary hack for TPC+TRD number of cluster cut which is not yet available in AliESDtrackCuts
         bool isSelected = true;
-        if(fRequireTPCTRDClusters && (GetTPCTRDNumberOfClusters(esdtrack) < fMinClustersTPCTRD)) isSelected = false;
+        auto tracklength = GetTPCTRDNumberOfClusters(esdtrack);
+        AliDebugStream(3) << "Constrained: Combined track length: " << tracklength << "(" << esdtrack->GetTPCCrossedRows() << "/" << static_cast<Int_t>(esdtrack->GetTRDncls()) << ")" << std::endl;
+        if(fRequireTPCTRDClusters && (tracklength < fMinClustersTPCTRD)) isSelected = false;
         if(isSelected){
           AliDebugStream(2) << "Track selected as constrained hybrid track" << std::endl;
           if(IsActiveITSModule(esdtrack, 0) || IsActiveITSModule(esdtrack, 1)) tracktype = AliEmcalTrackSelResultHybrid::kHybridConstrainedFake;
@@ -221,6 +225,7 @@ void AliEmcalESDHybridTrackCuts::InitHybridTracks2011() {
 }
 
 void AliEmcalESDHybridTrackCuts::InitHybridTracks2018TRD(){
+  std::cout << "Initialiing hybrid tracks based on the 2018 definition" <<std::endl;
   InitHybridTracks2011();
 
   // Deactivate TPC crossed rows cut

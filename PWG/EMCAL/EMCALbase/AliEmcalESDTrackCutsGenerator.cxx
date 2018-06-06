@@ -543,7 +543,7 @@ AliEmcalESDTrackCutsGenerator::EDataSet_t AliEmcalESDTrackCutsGenerator::SteerDa
     dataSet = kLHC11h;
   } else if (strPeriod == "lhc16t") {
     dataSet = kLHC11h;
-  } else if (strPeriod == "lhc17o_TRD") {
+  } else if (strPeriod == "lhc17o_trd") {
     dataSet = kLHC17o_TRD;
   } else if (strPeriod == "lhc12a15f") {
     dataSet = kLHC11h;
