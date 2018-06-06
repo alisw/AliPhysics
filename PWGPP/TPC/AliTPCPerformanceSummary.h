@@ -62,6 +62,8 @@ class AliTPCPerformanceSummary
     static Int_t AnalyzeQAPosNegDpT(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
     static Int_t AnalyzeQADCAFitParameter(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
     static Int_t AnalyzeOcc(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+
+    static void DrawSectors(const int side);
   
   static void  MakeMissingChambersAliases(TTree * tree); 
     static void MakeRawOCDBQAPlot(TTreeSRedirector *pcstream);
