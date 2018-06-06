@@ -659,16 +659,6 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedMC(TParticle *particle,AliMCEven
       return kFALSE;
     }
 
-    if(fDoAsymPtCut){
-      if((ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut2) && (ePos->Pt()<fSinglePtCut2 || eNeg->Pt()<fSinglePtCut) ){
-        return kFALSE; // no reconstruction below the Pt cut (both (pos and neg) require minimum pT)
-      }
-    } else {
-      if(ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut){
-        return kFALSE; // no reconstruction below the Pt cut
-      }
-    }
-
     if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ||
       eNeg->Eta() > (fEtaCut) || eNeg->Eta() < (-fEtaCut) )
       return kFALSE;
@@ -724,11 +714,6 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
     if(particle->GetMother() > -1 && (static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())))->GetPdgCode() == 22){
         return kFALSE; // no photon as mothers!
     }
-      // removed, decision on primary and secondary taken in main task
-//			Bool_t isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(aodmcArray->At(particle->GetMother())), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-//			if(!isPrimary){
-//				return kFALSE; // the gamma has a mother, and it is not a primary particle
-//			}
 
     if(!checkForConvertedGamma) return kTRUE; // return in case of accepted gamma
 
@@ -752,16 +737,6 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelectedAODMC(AliAODMCParticle *particle
 
     if(ePos == NULL || eNeg == NULL){ // means we do not have two daughters from pair production
       return kFALSE;
-    }
-
-    if(fDoAsymPtCut){
-      if((ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut2) && (ePos->Pt()<fSinglePtCut2 || eNeg->Pt()<fSinglePtCut) ){
-        return kFALSE; // no reconstruction below the Pt cut (both (pos and neg) require minimum pT)
-      }
-    } else {
-      if(ePos->Pt()<fSinglePtCut || eNeg->Pt()<fSinglePtCut){
-        return kFALSE; // no reconstruction below the Pt cut
-      }
     }
 
     if( ePos->Eta() > (fEtaCut) || ePos->Eta() < (-fEtaCut) ||
@@ -2138,7 +2113,7 @@ Bool_t AliConversionPhotonCuts::SetRCut(Int_t RCut){
   case 11:
     fMaxR = 72.;
     fMinR = 33.5;
-    break;  
+    break;
   case 12:
     fMaxR = 180.;
     fMinR = 72.;

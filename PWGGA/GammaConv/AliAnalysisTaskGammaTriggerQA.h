@@ -91,6 +91,8 @@ class AliAnalysisTaskGammaTriggerQA : public AliAnalysisTaskSE {
     TH2F**                fHistoNGoodESDTracksVsNGammaCandidates;               //! array of histos with number of good tracks vs gamma candidates
     TH2F**                fHistoSPDClusterTrackletBackground;                   //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1F**                fHistoNV0Tracks;                                      //! array of histos with V0 counts
+    TH1F**                fHistoNV0Trigger;                                     //! array of histos with V0 trigger
+    TH2F**                fHistoNV0TriggerTracks;                               //! array of histos with V0 trigger vs tracks
     TProfile**            fProfileEtaShift;                                     //! array of profiles with eta shift
     TProfile**            fProfileJetJetXSection;                               //! array of profiles with xsection for jetjet
     TH1F**                fHistoJetJetNTrials;                                  //! array of histos with ntrials for jetjet
@@ -110,7 +112,7 @@ class AliAnalysisTaskGammaTriggerQA : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaTriggerQA(const AliAnalysisTaskGammaTriggerQA&);                  // Prevent copy-construction
     AliAnalysisTaskGammaTriggerQA &operator=(const AliAnalysisTaskGammaTriggerQA&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaTriggerQA, 1);
+    ClassDef(AliAnalysisTaskGammaTriggerQA, 2);
 };
 
 #endif
