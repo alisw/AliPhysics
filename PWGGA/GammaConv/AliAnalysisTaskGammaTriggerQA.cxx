@@ -89,6 +89,8 @@ AliAnalysisTaskGammaTriggerQA::AliAnalysisTaskGammaTriggerQA(): AliAnalysisTaskS
   fHistoNGoodESDTracksVsNGammaCandidates(NULL),
   fHistoSPDClusterTrackletBackground(NULL),
   fHistoNV0Tracks(NULL),
+  fHistoNV0Trigger(NULL),
+  fHistoNV0TriggerTracks(NULL),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
@@ -133,6 +135,8 @@ AliAnalysisTaskGammaTriggerQA::AliAnalysisTaskGammaTriggerQA(const char *name):
   fHistoNGoodESDTracksVsNGammaCandidates(NULL),
   fHistoSPDClusterTrackletBackground(NULL),
   fHistoNV0Tracks(NULL),
+  fHistoNV0Trigger(NULL),
+  fHistoNV0TriggerTracks(NULL),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
@@ -217,7 +221,6 @@ void AliAnalysisTaskGammaTriggerQA::UserCreateOutputObjects(){
 
   fHistoNGoodESDTracks        = new TH1F*[fnCuts];
   fHistoCent                  = new TH1F*[fnCuts];
-
   fHistoVertexZ               = new TH1F*[fnCuts];
   fHistoNGammaCandidates      = new TH1F*[fnCuts];
   fHistoNGammaCandidatesBasic = new TH1F*[fnCuts];
@@ -225,6 +228,8 @@ void AliAnalysisTaskGammaTriggerQA::UserCreateOutputObjects(){
     fHistoNGoodESDTracksVsNGammaCandidates  = new TH2F*[fnCuts];
     fHistoSPDClusterTrackletBackground      = new TH2F*[fnCuts];
     fHistoNV0Tracks                         = new TH1F*[fnCuts];
+    fHistoNV0Trigger                        = new TH1F*[fnCuts];
+    fHistoNV0TriggerTracks                  = new TH2F*[fnCuts];
   }
   if(fIsHeavyIon==2) fProfileEtaShift          = new TProfile*[fnCuts];
 
@@ -308,7 +313,7 @@ void AliAnalysisTaskGammaTriggerQA::UserCreateOutputObjects(){
     fHistoNGoodESDTracks[iCut]->GetXaxis()->SetTitle("#primary tracks");
     fESDList[iCut]->Add(fHistoNGoodESDTracks[iCut]);
 
-    fHistoCent[iCut]             = new TH1F("Centrality", "Centrality; Centrality [%]", 100, -0.5, 99.5);
+    fHistoCent[iCut]             = new TH1F("Centrality", "Centrality; Centrality [%]", 100, 0, 100);
     fESDList[iCut]->Add(fHistoCent[iCut]);
 
     fHistoVertexZ[iCut]             = new TH1F("VertexZ", "VertexZ", 200, -10, 10);
@@ -345,17 +350,41 @@ void AliAnalysisTaskGammaTriggerQA::UserCreateOutputObjects(){
       fHistoNGoodESDTracksVsNGammaCandidates[iCut]->SetYTitle("#cluster candidates");
       fESDList[iCut]->Add(fHistoNGoodESDTracksVsNGammaCandidates[iCut]);
 
-      fHistoSPDClusterTrackletBackground[iCut]        = new TH2F("SPD tracklets vs SPD clusters", "SPD tracklets vs SPD clusters", 100, 0, 200, 250, 0, 1000);
+      if(fIsHeavyIon == 1)
+        fHistoSPDClusterTrackletBackground[iCut]        = new TH2F("SPD tracklets vs SPD clusters", "SPD tracklets vs SPD clusters", 500, 0, 1000, 1000, 0, 4000);
+      else if(fIsHeavyIon == 2)
+        fHistoSPDClusterTrackletBackground[iCut]        = new TH2F("SPD tracklets vs SPD clusters", "SPD tracklets vs SPD clusters", 200, 0, 400, 500, 0, 2000);
+      else
+        fHistoSPDClusterTrackletBackground[iCut]        = new TH2F("SPD tracklets vs SPD clusters", "SPD tracklets vs SPD clusters", 100, 0, 200, 250, 0, 1000);
       fESDList[iCut]->Add(fHistoSPDClusterTrackletBackground[iCut]);
 
       if(fIsHeavyIon == 1)
-        fHistoNV0Tracks[iCut]       = new TH1F("V0 Multiplicity", "V0 Multiplicity", 30000, 0, 30000);
+        fHistoNV0Tracks[iCut]       = new TH1F("V0 Multiplicity", "V0 Multiplicity", 40000, 0, 40000);
       else if(fIsHeavyIon == 2)
         fHistoNV0Tracks[iCut]       = new TH1F("V0 Multiplicity", "V0 Multiplicity", 2500, 0, 2500);
       else
         fHistoNV0Tracks[iCut]       = new TH1F("V0 Multiplicity", "V0 Multiplicity", 1500, 0, 1500);
       fHistoNV0Tracks[iCut]->SetXTitle("V0 amplitude");
       fESDList[iCut]->Add(fHistoNV0Tracks[iCut]);
+
+      if(fIsHeavyIon == 1)
+        fHistoNV0Trigger[iCut]       = new TH1F("V0 Trigger", "V0 Trigger", 40000, 0, 40000);
+      else if(fIsHeavyIon == 2)
+        fHistoNV0Trigger[iCut]       = new TH1F("V0 Trigger", "V0 Trigger", 2500, 0, 2500);
+      else
+        fHistoNV0Trigger[iCut]       = new TH1F("V0 Trigger", "V0 Trigger", 1500, 0, 1500);
+      fHistoNV0Trigger[iCut]->SetXTitle("V0 trigger amplitude");
+      fESDList[iCut]->Add(fHistoNV0Trigger[iCut]);
+
+      if(fIsHeavyIon == 1)
+        fHistoNV0TriggerTracks[iCut]        = new TH2F("V0 Trigger vs Mult", "V0 Trigger vs Mult", 1000, 0, 40000, 1000, 0, 40000);
+      else if(fIsHeavyIon == 2)
+        fHistoNV0TriggerTracks[iCut]        = new TH2F("V0 Trigger vs Mult", "V0 Trigger vs Mult", 250, 0, 2500, 250, 0, 2500);
+      else
+        fHistoNV0TriggerTracks[iCut]        = new TH2F("V0 Trigger vs Mult", "V0 Trigger vs Mult", 150, 0, 1500, 150, 0, 1500);
+      fESDList[iCut]->Add(fHistoNV0TriggerTracks[iCut]);
+
+
     }
 
     if(fIsHeavyIon==2) {
@@ -536,8 +565,23 @@ void AliAnalysisTaskGammaTriggerQA::UserExec(Option_t *)
       fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightJetJetMC);
       if(!fDoLightOutput){
         fHistoSPDClusterTrackletBackground[iCut]->Fill(fInputEvent->GetMultiplicity()->GetNumberOfTracklets(),(fInputEvent->GetNumberOfITSClusters(0)+fInputEvent->GetNumberOfITSClusters(1)), fWeightJetJetMC);
-        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)  fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(), fWeightJetJetMC);
-        else fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightJetJetMC);
+        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)
+          fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A(), fWeightJetJetMC);
+        else
+          fHistoNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightJetJetMC);
+
+        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)
+          fHistoNV0Trigger[iCut]->Fill(fInputEvent->GetVZEROData()->GetTriggerChargeA(), fWeightJetJetMC);
+        else
+          fHistoNV0Trigger[iCut]->Fill(fInputEvent->GetVZEROData()->GetTriggerChargeA()+fInputEvent->GetVZEROData()->GetTriggerChargeC(), fWeightJetJetMC);
+
+        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)
+          fHistoNV0TriggerTracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetTriggerChargeA(),
+                                             fInputEvent->GetVZEROData()->GetMTotV0A(), fWeightJetJetMC);
+        else
+          fHistoNV0TriggerTracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetTriggerChargeA()+fInputEvent->GetVZEROData()->GetTriggerChargeC(),
+                                             fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C(), fWeightJetJetMC);
+
       }
     }
     if(fIsMC> 0){
@@ -637,6 +681,8 @@ void AliAnalysisTaskGammaTriggerQA::ProcessClusters()
     PhotonCandidate->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent));
     fHistoClusGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
     fHistoClusGammaE[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+
+    fClusterCandidates->Add(PhotonCandidate); // if no second loop is required add to events good gammas
 
     delete clus;
     delete tmpvec;

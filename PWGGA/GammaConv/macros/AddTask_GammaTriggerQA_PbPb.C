@@ -190,7 +190,7 @@ void AddTask_GammaTriggerQA_PbPb( Int_t     trainConfig                     = 1,
     cuts.AddCut("50100013","1111100053032230000"); // 0-10%
     cuts.AddCut("52500013","1111100053032230000"); // 20-50%
   } else if (trainConfig == 2){ // EMCAL clusters
-    cuts.AddCut("10910113","1111100053032230000"); // 0-90%
+    cuts.AddCut("10910013","1111100053032230000"); // 0-90%
     cuts.AddCut("1093a013","1111100053032230000"); // 0-90%
     cuts.AddCut("1093b013","1111100053032230000"); // 0-90%
     cuts.AddCut("1093c013","1111100053032230000"); // 0-90%
