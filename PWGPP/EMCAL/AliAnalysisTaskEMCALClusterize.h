@@ -190,6 +190,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // T-Card correlation emulation, do on MC
   
   void           MakeCellTCardCorrelation() ;
+  void           CalculateInducedEnergyInTCardCell(Int_t absId, Int_t absIdRef, Int_t sm, Float_t ampRef, Int_t cellCase) ;
   void           AddNewTCardInducedCellsToDigit() ;
   
   /// Activate T-Card cells correlation, 
@@ -308,7 +309,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOffRandomizeTCardInducedEnergy()         { fRandomizeTCard = kFALSE  ; }  
 
   void           SetInducedTCardMinimumCellEnergy(Float_t mi)   { fTCardCorrMinAmp     = mi ; }
-  void           SeInducedTCardMaximum(Float_t ma)              { fTCardCorrMaxInduced = ma ; }
+  void           SetInducedTCardMaximum(Float_t ma)             { fTCardCorrMaxInduced = ma ; }
+  void           SetInducedTCardMinimum(Float_t mi)             { fTCardCorrMinInduced = mi ; }
   
   void           PrintTCardParam();
   
@@ -439,6 +441,7 @@ private:
   Bool_t                fRandomizeTCard ;          ///<  Use random induced energy
   
   Float_t               fTCardCorrMinAmp;          ///<  Minimum cell energy to induce signal on adjacent cells
+  Float_t               fTCardCorrMinInduced;      ///<  Minimum induced energy signal on adjacent cells, sum of induced plus original energy
   Float_t               fTCardCorrMaxInduced;      ///<  Maximum induced energy signal on adjacent cells
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
