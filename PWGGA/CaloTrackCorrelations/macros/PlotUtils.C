@@ -19,19 +19,26 @@
 #endif
 
 ///
-/// Truncated function in pi0 region. Fitting function.
+/// Crystal ball function. Fitting function.
 ///
 //-----------------------------------------------------------------------------
-static Double_t FunctionTruncatedPolPi0(Double_t *x, Double_t *par)
+static Double_t FunctionCrystalBall(Double_t *x, Double_t *par)
 {
-  if ( x[0] > 0.07 && x[0] < 0.2 )
-  {
-    TF1::RejectPoint();
-    return 0;
-  }
+  Double_t N = par[0];
+  Double_t width = par[1];
   
-  return par[0] + par[1]*x[0];
-  // + x[0]*x[0]*par[2] + x[0]*x[0]*x[0]*par[3] ;//+ x[0]*x[0]*x[0]*x[0]*par[4];
+  Double_t mean = par[2];
+  Double_t sigma = par[3];
+  Double_t alpha = par[4];
+  Double_t n = par[5];
+  
+  Double_t A = pow(n/fabs(alpha),n)*exp(-pow(alpha,2)/2);
+  Double_t B = n/fabs(alpha) - fabs(alpha);
+  
+  if ((x[0]-mean)/sigma>-alpha)
+    return N*width*TMath::Gaus(x[0],mean,sigma,1);
+  else
+    return N/(sqrt(TMath::TwoPi())*sigma)*width*A*pow(B-(x[0]-mean)/sigma,-n);
 }
 
 ///
@@ -99,26 +106,20 @@ static Double_t FunctionTruncatedPolEta(Double_t *x, Double_t *par)
 }
 
 ///
-/// Crystal ball function. Fitting function.
+/// Truncated function in pi0 region. Fitting function.
 ///
 //-----------------------------------------------------------------------------
-static Double_t FunctionCrystalBall(Double_t *x, Double_t *par)
+static Double_t FunctionTruncatedPolPi0(Double_t *x, Double_t *par)
 {
-  Double_t N = par[0];
-  Double_t width = par[1];
+  //if ( x[0] > 0.07 && x[0] < 0.2 )
+  if ( x[0] < 0.25 )
+  {
+    TF1::RejectPoint();
+    return 0;
+  }
   
-  Double_t mean = par[2];
-  Double_t sigma = par[3];
-  Double_t alpha = par[4];
-  Double_t n = par[5];
-  
-  Double_t A = pow(n/fabs(alpha),n)*exp(-pow(alpha,2)/2);
-  Double_t B = n/fabs(alpha) - fabs(alpha);
-  
-  if ((x[0]-mean)/sigma>-alpha)
-    return N*width*TMath::Gaus(x[0],mean,sigma,1);
-  else
-    return N/(sqrt(TMath::TwoPi())*sigma)*width*A*pow(B-(x[0]-mean)/sigma,-n);
+  return par[0] + par[1]*x[0];
+  // + x[0]*x[0]*par[2] + x[0]*x[0]*x[0]*par[3] ;//+ x[0]*x[0]*x[0]*x[0]*par[4];
 }
 
 //-----------------------------------------------------------------------------
