@@ -1723,8 +1723,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       if(iSelSM>-0.5)
          {
           Int_t idSM = GetSM(clustMatch);
-          cout << "idSM = " << idSM << endl;
-          if(iSelSM!=idSM)continue;
+          //cout << "idSM = " << idSM << endl;
+          if(iSelSM==idSM)continue;
          }
       //
  
@@ -2382,6 +2382,7 @@ Int_t AliAnalysisTaskBeautyCal::GetSM(AliVCluster *cluster)
         for(int icl=0; icl<NcellsInCluster; icl++)
         {
             int icell = cluster->GetCellAbsId(icl);
+            //cout << "icell = " << icell << endl;
             if(fEMCALGeo)
                 iSM = fEMCALGeo->GetSuperModuleNumber(icell);
         }
