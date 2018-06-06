@@ -168,7 +168,6 @@ void AliAnalysisTaskLMREventFilter::UserCreateOutputObjects()
   fEventTree = new TTree("Data","Data");
   fAliLMREvent = new AliLMREvent();
   fEventTree->Branch("fAliLMREvent", &fAliLMREvent);
-  fEventTree->SetAutoSave(20000);
     
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
