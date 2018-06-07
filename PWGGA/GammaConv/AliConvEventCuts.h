@@ -98,6 +98,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC10e20,        //!< anchored LHC10e pass 2
         kLHC10e21,        //!< anchored LHC10e pass 2
         kLHC14j4,         //!< anchored LHC10[b-g] pass 4
+        kLHC14b7,         //!< anchored LHC11 pass 1
         kLHC13d2,         //!< anchored LHC10h pass 2
         kLHC13d2b,        //!< anchored LHC10h pass 2
         kLHC12a11a,       //!< anchored LHC10h pass 2
@@ -647,7 +648,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,48)
+      ClassDef(AliConvEventCuts,49)
       /// \endcond
 };
 
