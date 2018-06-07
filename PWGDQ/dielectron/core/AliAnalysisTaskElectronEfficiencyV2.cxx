@@ -436,18 +436,18 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
     fResolutionList->SetName("Resolution");
     fResolutionList->SetOwner();
 
-      fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "", 500, 0., 10., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
-      fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "", 500, 0., 10., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
-      fPtGen_DeltaPtOverPtGen              = new TH2D("PtGen_DeltaPtOverPtGen",             "", 500, 0., 10., fNResolutionDeltaptBins, -1., +1.);
-      fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "", 500, 0., 10., fNResolutionRelptBins, fResolutionRelPtBins.data());
-      fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "", 500, 0., 10., fNResolutionRelptBins, fResolutionRelPtBins.data());
-      fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "", 500, 0., 10., fNResolutionetaBins, fResolutionEtaBins.data());
-      fPtGen_DeltaEta                      = new TH2D("PtGen_DeltaEta",                     "", 500, 0., 10., fNResolutionetaBins, fResolutionEtaBins.data());
-      fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "", 500, 0., 10., fNResolutionthetaBins, fResolutionThetaBins.data());
-      fPGen_DeltaPhi_Ele                   = new TH2D("PGen_DeltaPhi_Ele",                  "", 500, 0., 10., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPGen_DeltaPhi_Pos                   = new TH2D("PGen_DeltaPhi_Pos",                  "", 500, 0., 10., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPtGen_DeltaPhi_Ele                  = new TH2D("PtGen_DeltaPhi_Ele",                 "", 500, 0., 10., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPtGen_DeltaPhi_Pos                  = new TH2D("PtGen_DeltaPhi_Pos",                 "", 500, 0., 10., fNResolutionphiBins, fResolutionPhiBins.data());
+      fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPtGen_DeltaPtOverPtGen              = new TH2D("PtGen_DeltaPtOverPtGen",             "", 1000, 0., 20., fNResolutionDeltaptBins, -1., +1.);
+      fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "", 1000, 0., 20., fNResolutionetaBins, fResolutionEtaBins.data());
+      fPtGen_DeltaEta                      = new TH2D("PtGen_DeltaEta",                     "", 1000, 0., 20., fNResolutionetaBins, fResolutionEtaBins.data());
+      fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "", 1000, 0., 20., fNResolutionthetaBins, fResolutionThetaBins.data());
+      fPGen_DeltaPhi_Ele                   = new TH2D("PGen_DeltaPhi_Ele",                  "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
+      fPGen_DeltaPhi_Pos                   = new TH2D("PGen_DeltaPhi_Pos",                  "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
+      fPtGen_DeltaPhi_Ele                  = new TH2D("PtGen_DeltaPhi_Ele",                 "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
+      fPtGen_DeltaPhi_Pos                  = new TH2D("PtGen_DeltaPhi_Pos",                 "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
       fThetaGen_DeltaTheta                 = new TH2D("ThetaGen_DeltaTheta",                "", 220, -0.1*TMath::Pi(), 1.1*TMath::Pi(), fNResolutionthetaBins, fResolutionThetaBins.data());
       fPhiGen_DeltaPhi                     = new TH2D("PhiGen_DeltaPhi",                    "", 320, -0.1*TMath::Pi(), 2.1*TMath::Pi(), fNResolutionphiBins, fResolutionPhiBins.data());
 
