@@ -89,6 +89,7 @@
 #include "TTreeStream.h"
 #include "AliGRPObject.h"
 #include "AliSimulation.h"
+#include "AliMiscConstants.h"
 
 // for fast TMatrix operator()
 #include "AliFastContainerAccess.h"
@@ -1263,7 +1264,7 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
 	  if (q <= 0) continue;
 	  q *= 16;
 	  dig->SetDigitFast((Short_t)q,iTimeBin,iPad);
-	  ((AliSimDigits*)dig)->SetTrackIDFast( 3141593, iTimeBin,iPad,0); 
+	  ((AliSimDigits*)dig)->SetTrackIDFast( gkDummyLabel, iTimeBin,iPad,0); 
 	}
       }
       fDigitsArray->StoreRow(iSector,iRow);

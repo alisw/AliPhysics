@@ -5,6 +5,7 @@
 #include "Rtypes.h"
 #include "AliTOFcluster.h"
 #include "AliTOFClusterFinder.h"
+#include "AliMiscConstants.h"
 
 /**
  * @struct AliHLTTOFRawCluster
@@ -40,7 +41,7 @@ AliHLTTOFRawCluster()
     , fL0L1Latency(0)
     , fESDID(-1)
   {  
-  for (int ii=0; ii<3; ii++) fTracks[ii] = -3141593;
+  for (int ii=0; ii<3; ii++) fTracks[ii] = -gkDummyLabel;
   for (int ii=0; ii<5; ii++) fdetIndex[ii] = -1;
   }
 
@@ -89,7 +90,7 @@ AliHLTTOFRawCluster(short volId,
     fTracks[2] = lab[2];
   }
   else
-    fTracks[0]=fTracks[1]=fTracks[2]=-3141593;
+    fTracks[0]=fTracks[1]=fTracks[2]=-gkDummyLabel;
   
 }
 

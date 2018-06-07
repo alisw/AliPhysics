@@ -14,6 +14,7 @@
 #include "AliDetector.h"
 #include "AliITSTrigger.h"
 #include "AliITSDetTypeSim.h"
+#include "AliMiscConstants.h"
 
 
 class TString;
@@ -34,7 +35,6 @@ class AliITS : public AliDetector {
 
  public:
   enum {kSPD,kSDD,kSSD};
-  enum {kMaxLabel=3141593};  // default track label assigned to digits/clusters
 
     //================= Standard Classes ===============================
     AliITS();  // Default creator.

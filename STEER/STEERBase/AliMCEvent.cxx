@@ -38,6 +38,8 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
+#include "AliFastContainerAccess.h"
+#include "AliMiscConstants.h"
 
 
 Int_t AliMCEvent::fgkBgLabelOffset(10000000);
@@ -289,7 +291,7 @@ void AliMCEvent::DrawCheck(Int_t i, Int_t search)
 	printf("Found Hits at %5d\n", i);
     }
     TParticle* particle = fStack->Particle(i,kTRUE);
-    
+    if (!particle) return;
     TH2F*    h = new TH2F("", "", 100, -500, 500, 100, -500, 500);
     Float_t x0 = particle->Vx();
     Float_t y0 = particle->Vy();
@@ -564,9 +566,10 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
 
     // Out of range check
     if (i < 0 || i >= fNparticles) {
-	AliWarning(Form("AliMCEvent::GetEntry: Index out of range"));
-	mcParticle = 0;
-	return (mcParticle);
+      if (i==gkDummyLabel) return 0;
+      AliWarning(Form("AliMCEvent::GetEntry: Index out of range"));
+      mcParticle = 0;
+      return (mcParticle);
     }
 
     
