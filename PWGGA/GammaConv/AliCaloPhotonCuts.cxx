@@ -4958,6 +4958,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           }
           if(fClusterType==3){
             energy /= FunctionNL_kSDM(energy, 0.986976, 0.543314, -9.44295);
+            energy /= 0.9923266976;
           }
         } else if( fCurrentMC==k16k5b ) {
           if(fClusterType==1) energy /= FunctionNL_kSDM(energy, 0.974173, -4.07732, -0.570223);
@@ -5029,6 +5030,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
           }
           if(fClusterType==3) {
               energy /= FunctionNL_kSDM(energy, 0.985133, -5.33698, -1.65732);
+              energy /= FunctionNL_kSDM(energy, 0.998321, -5.07516, -1.43187);
           }
 
         } else if( fCurrentMC==k16k5b ){
@@ -5166,7 +5168,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
               energy /= FunctionNL_DPOW(energy, 1.0055560859, -0.0213391278, -0.4999999991, 1.1047136553, -0.1141567995, -0.1573142879);
               energy /= FunctionNL_DPOW(energy, 1.0275381918, -0.0400165029, -0.4999999995, 1.0703233524, -0.0855441426, -0.2099590700);
             } else if( fCurrentMC==k17l3b ) {
-              energy /= (FunctionNL_DExp(energy, 1.1563853519, -0.1656222651, -0.0800042235, 1.1175408324, -0.1395043486, -0.0800000849));
+              energy /= (FunctionNL_DPOW(energy, 1.1333460113, -0.1553929657, -0.0800000069, 1.1464748001, -0.1556499730, -0.0803418925));
             }
           }
         } else if( fCurrentMC==k16k5b ){
@@ -5226,7 +5228,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC)
             if(fCurrentMC==k17e2) energy /= 0.9825370234*0.9993152454;
             else if(fCurrentMC==k16k5a) energy /= 0.9825370234*0.9993152454;
             else if( fCurrentMC==k17l3b ) {
-              energy /= (FunctionNL_DExp(energy, 1.1426698159, -0.1999998741, -0.2221340015, 1.0526905005, -0.1227326443, -0.3403089298));
+              energy /= (FunctionNL_DPOW(energy, 1.0315161248, -0.1010368025, -0.4122158288, 1.1426924993, -0.1999998331, -0.2208794612));
             }
           }
         } else if( fCurrentMC==k16k5b ){
