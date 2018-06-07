@@ -110,9 +110,11 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   TString psnm2 = "vdriftSDD.ps]";
   if(!kNoDraw) c0->Print(psnm0.Data());
   Int_t cntpad = 0;
-  Int_t iGoodInj=0;
+  Int_t iGoodInj3=0;
+  Int_t iGoodInj4=0;
   Int_t iRescaledSpeed=0;
-  Int_t iAverSpeed=0;
+  Int_t iAverSpeed3=0;
+  Int_t iAverSpeed4=0;
   TLatex* tleft=new TLatex(0.2,0.82,"Side 0");
   tleft->SetNDC();
   tleft->SetTextColor(1);
@@ -159,12 +161,24 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     }
     Int_t statusInj0=vdriftarr0->GetInjectorStatus();
     Int_t statusInj1=vdriftarr1->GetInjectorStatus();
-    if(statusInj0>1) iGoodInj++;
+    if(statusInj0>1){
+      if(iMod<324) iGoodInj3++;
+      else iGoodInj4++;
+    }
     else if(statusInj0==1) iRescaledSpeed++;
-    else iAverSpeed++;
-    if(statusInj1>1) iGoodInj++;
+    else{
+      if(iMod<324) iAverSpeed3++;
+      else iAverSpeed4++;
+    }
+    if(statusInj1>1){
+      if(iMod<324) iGoodInj3++;
+      else iGoodInj4++;
+    }
     else if(statusInj1==1) iRescaledSpeed++;
-    else iAverSpeed++;
+    else{
+      if(iMod<324) iAverSpeed3++;
+      else iAverSpeed4++;
+    }
 
     printf(" Mod. %d \tStatusLR=%X %X \t TimeStamp=%d \t v(an 128l)= %f",iMod,statusInj0,statusInj1,vdrift0->GetEventTimestamp(),vdriftarr0->GetDriftSpeed(0,128));
     printf("        \t v(an 128r)= %f  Degree=%d %d\n",vdriftarr1->GetDriftSpeed(0,128),vdrift0->GetDegreeofPoly(),vdrift1->GetDegreeofPoly());
@@ -269,9 +283,11 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     c0->Update();
     c0->Print(psnm2.Data());
   }
-  printf("Number of half-modules with drift speed from injectors               = %d\n",iGoodInj);
+  printf("Number of half-modules with drift speed from injectors in Lay 3     = %d\n",iGoodInj3);
+  printf("Number of half-modules with drift speed from injectors in Lay 4     = %d\n",iGoodInj4);
   printf("Number of half-modules with drift speed rescaled from golden module = %d\n",iRescaledSpeed);
-  printf("Number of half-modules with average drift speed                      = %d\n",iAverSpeed);
+  printf("Number of half-modules with average drift speed in Lay 3            = %d\n",iAverSpeed3);
+  printf("Number of half-modules with average drift speed in Lay 4            = %d\n",iAverSpeed4);
 
   gStyle->SetPalette(59);
 
@@ -390,7 +406,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
 
 
 
-void ShowDriftSpeedSDD(Int_t nrun, Int_t year=2012, Int_t nv=-1){
+void ShowDriftSpeedSDD(Int_t nrun, Int_t year=2018, Int_t nv=-1){
   TGrid::Connect("alien:",0,0,"t");
   TString cmd=Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD\" \"Run%d*.root\" > run.txt",year,nrun);
   if(nv>0){
