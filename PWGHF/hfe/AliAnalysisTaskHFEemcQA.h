@@ -63,7 +63,8 @@ public:
     void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
     void GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
     
-    Bool_t ComparePropWithTPCAna(const AliVVertex *pVtx, AliAODTrack* atrack);
+    Bool_t  ComparePropWithTPCAna(const AliVVertex *pVtx, AliAODTrack* atrack);
+    void    SetFilterBitOption(Int_t bitOption){fBitOption = bitOption;};
     
 private:
     enum{
@@ -100,8 +101,10 @@ private:
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
     
-    Int_t fcentMim; // mim. centrality
-    Int_t fcentMax; // max. centrality
+    Int_t   fcentMim; // mim. centrality
+    Int_t   fcentMax; // max. centrality
+    
+    Int_t   fBitOption;// filter bit option - Global or ITSconstrained
     
     TString fCentralityEstimator;         // Centrality Estimator
     
