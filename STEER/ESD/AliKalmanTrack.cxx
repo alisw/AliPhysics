@@ -23,6 +23,7 @@
 #include <TGeoManager.h>
 
 #include "AliKalmanTrack.h"
+#include "AliMiscConstants.h"
 
 ClassImp(AliKalmanTrack)
 
@@ -31,7 +32,7 @@ ClassImp(AliKalmanTrack)
   fFakeRatio(0),
   fChi2(0),
   fMass(AliPID::ParticleMass(AliPID::kPion)),
-  fLab(-3141593),
+  fLab(-gkDummyLabel),
   fN(0),
   fStartTimeIntegral(kFALSE),
   fIntegratedLength(0)

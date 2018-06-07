@@ -16,6 +16,7 @@
 
 #include "AliHLTITSTrackPoint.h"
 #include "Riostream.h"
+#include "AliMiscConstants.h"
 
 ClassImp(AliITSSAPTracker)
 
@@ -57,7 +58,6 @@ const Int_t    AliITSSAPTracker::fgkLrDefBins[AliITSSAPTracker::kNLrActive][2] =
   { {20,20}, {20,20}, {20,20}, {20,20}, {20,20}, {20,20} };
 
 const Float_t AliITSSAPTracker::fgkDefMass = 0.14;
-const Int_t   AliITSSAPTracker::fgkDummyLabel = -3141593;
 
 #ifdef _TIMING_
 const char* AliITSSAPTracker::fgkSWNames[AliITSSAPTracker::kNSW] = {
@@ -765,7 +765,7 @@ Bool_t AliITSSAPTracker::FollowToLayer(AliITSSAPTracker::ITStrack_t& track, Int_
 void AliITSSAPTracker::CookLabel(AliITSSAPTracker::ITStrack_t& track)
 {
   // cook mc label for the track
-  track.label = fgkDummyLabel;
+  track.label = gkDummyLabel;
   if (!track.ncl) return;
   const int kMaxLbPerCl = 3;
   int lbID[kNLrActive*6],lbStat[kNLrActive*6];
@@ -800,7 +800,7 @@ void AliITSSAPTracker::CookLabel(AliITSSAPTracker::ITStrack_t& track)
 void AliITSSAPTracker::CookLabel(AliITSSAPTracker::SPDtracklet_t& tracklet)
 {
   // cook mc label for the tracklet
-  tracklet.label = fgkDummyLabel;
+  tracklet.label = gkDummyLabel;
   const int kMaxLbPerCl = 3;
   int lbID[kNLrActive*6],lbStat[kNLrActive*6];
   Int_t nLab=0;
@@ -1233,7 +1233,7 @@ void AliITSSAPTracker::FillRecoStat()
     //    PrintTracklet(itr);
     //
     int lbl = trlet.label;
-    if (lbl==fgkDummyLabel) continue;
+    if (lbl==gkDummyLabel) continue;
     int lblA = TMath::Abs(lbl);
     int bitoffs = lblA*kBitPerTrack;
     Bool_t isPrim = patternMC.TestBitNumber(bitoffs+kIsPrim);
@@ -1249,7 +1249,7 @@ void AliITSSAPTracker::FillRecoStat()
     CookLabel(track);
     //
     int lbl = track.label;
-    if (lbl==fgkDummyLabel) continue;
+    if (lbl==gkDummyLabel) continue;
     int lblA = TMath::Abs(lbl);
     int bitoffs = lblA*kBitPerTrack;
     Bool_t isPrim = patternMC.TestBitNumber(bitoffs+kIsPrim);

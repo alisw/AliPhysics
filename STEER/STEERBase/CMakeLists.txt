@@ -149,7 +149,8 @@ set(SRCS
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 set(HDRS ${HDRS}
-    AliSharedPtr.h
+  AliSharedPtr.h
+  AliMiscConstants.h
     )
 
 # Generate the dictionary

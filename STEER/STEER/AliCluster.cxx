@@ -34,6 +34,7 @@
 #include "AliCluster.h"
 #include "AliLog.h"
 #include "AliAlignObj.h"
+#include "AliMiscConstants.h"
 
 ClassImp(AliCluster)
 
@@ -50,7 +51,7 @@ AliCluster::AliCluster():
   fIsMisaligned(kFALSE)
 {
   // Default constructor
-  fTracks[0]=fTracks[1]=fTracks[2]=-3141593; 
+  fTracks[0]=fTracks[1]=fTracks[2] = -gkDummyLabel; 
 }
 
 //______________________________________________________________________________
@@ -76,7 +77,7 @@ AliCluster::AliCluster(UShort_t volId,
     fTracks[2] = lab[2];
   }
   else
-    fTracks[0]=fTracks[1]=fTracks[2]=-3141593; 
+    fTracks[0]=fTracks[1]=fTracks[2]=-gkDummyLabel; 
 }
 
 //______________________________________________________________________________
@@ -101,7 +102,7 @@ AliCluster::AliCluster(UShort_t volId,
     fTracks[2] = lab[2];
   }
   else
-    fTracks[0]=fTracks[1]=fTracks[2]=-3141593; 
+    fTracks[0]=fTracks[1]=fTracks[2]=-gkDummyLabel; 
 }
 
 //______________________________________________________________________________

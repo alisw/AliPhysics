@@ -34,6 +34,7 @@
 #include "AliVertexerTracks.h"
 #include "AliCDBEntry.h"
 #include "AliGRPRecoParam.h"
+#include "AliMiscConstants.h"
 //
 
 #include "HLT/ITS/trackingSAP/AliITSSAPAux.h"
@@ -416,7 +417,7 @@ void CheckRecStatus()
     //    PrintTracklet(itr);
     //
     int lbl = trlet.label;
-    if (lbl==-3141593) continue;
+    if (lbl==-gkDummyLabel) continue;
     int lblA = TMath::Abs(lbl);
     if (lblA==lbl) ntlCorr[lblA]++;
     else           ntlFake[lblA]++;
@@ -480,7 +481,7 @@ void CheckRecStatus()
     const AliITSSAPTracker::ITStrack_t &track = tracker->GetTrack(itr);
     //
     int lbl = track.label;
-    if (lbl==-3141593) continue;
+    if (lbl==-gkDummyLabel) continue;
     int lblA = TMath::Abs(lbl);
     if (lblA==lbl) ntrCorr[lblA]++;
     else           ntrFake[lblA]++;

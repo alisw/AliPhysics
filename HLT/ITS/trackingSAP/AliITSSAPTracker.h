@@ -208,7 +208,6 @@ class AliITSSAPTracker : public TObject
 
   static const Int_t   fgkLr2Active[kMaxLrITS]; // conversion from LrID to ActiveLr ID
   static const Int_t   fgkLrDefBins[kNLrActive][2]; // default binning for cluster navigator
-  static const Int_t   fgkDummyLabel;               // dummy MC label
   static const Float_t fgkDefMass;                  // default mass for tracking
   //
 #ifdef _TIMING_

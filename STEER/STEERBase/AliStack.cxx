@@ -38,6 +38,8 @@
 
 #include "AliLog.h"
 #include "AliStack.h"
+#include "AliMiscConstants.h"
+
 
 ClassImp(AliStack)
 
@@ -694,6 +696,7 @@ TParticle* AliStack::Particle(Int_t i, Bool_t useInEmbedding)
     if (!fgDummyParticle) fgDummyParticle = new TParticle(21,999,-1,-1,-1,-1,1,1,999,999,0,0,0,0);
     return fgDummyParticle;
   }
+  if (i==gkDummyLabel) return 0;
   
   if(!fParticleMap.At(i)) {
     Int_t nentries = fParticles.GetEntriesFast();
@@ -794,8 +797,8 @@ Int_t AliStack::GetPrimary(Int_t id, Bool_t useInEmbedding)
   parent=id;
   while (1) {
     current=parent;
-    parent=Particle(current,useInEmbedding)->GetFirstMother();
-    if(parent<0) return current;
+    TParticle* part = Particle(current,useInEmbedding);
+    if (!part || ( parent=part->GetFirstMother() )<0 ) return current;
   }
 }
  
@@ -1053,6 +1056,7 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index, Bool_t useInEmbedding)
     // particles.
     //
     TParticle* p = Particle(index,useInEmbedding);
+    if (!p) return kFALSE;
     Int_t ist = p->GetStatusCode();
     Int_t pdg = TMath::Abs(p->GetPdgCode());    
     //
@@ -1128,6 +1132,7 @@ Bool_t AliStack::IsSecondaryFromWeakDecay(Int_t index, Bool_t useInEmbedding) {
   if(IsPhysicalPrimary(index,useInEmbedding)) return kFALSE;
   
   TParticle* particle = Particle(index, useInEmbedding);
+  if (!particle) return kFALSE;
   Int_t uniqueID = particle->GetUniqueID();
 
   Int_t indexMoth = particle->GetFirstMother();
@@ -1158,6 +1163,7 @@ Bool_t AliStack::IsSecondaryFromMaterial(Int_t index, Bool_t useInEmbedding) {
   if(IsPhysicalPrimary(index,useInEmbedding)) return kFALSE;
   if(IsSecondaryFromWeakDecay(index,useInEmbedding)) return kFALSE;
   TParticle* particle = Particle(index,useInEmbedding);
+  if (!particle) return kFALSE;
   Int_t indexMoth = particle->GetFirstMother();
   if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
   return kTRUE;

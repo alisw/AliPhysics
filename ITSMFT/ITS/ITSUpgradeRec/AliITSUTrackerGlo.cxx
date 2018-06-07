@@ -54,7 +54,7 @@ AliITSUTrackerGlo::AliITSUTrackerGlo(AliITSUReconstructor* rec)
   ,fITS(0)
   ,fMatLUT(0)
   ,fCurrESDtrack(0)
-  ,fCurrESDtrMClb(kDummyLabel)
+  ,fCurrESDtrMClb(gkDummyLabel)
   ,fCurrMass(kPionMass)
   ,fCountProlongationTrials(0)
   ,fCountITSin(0)
@@ -1647,7 +1647,7 @@ void AliITSUTrackerGlo::CookMCLabel(AliITSUTrackHyp* hyp)
   } // loop over clusters
   // 
   AliESDtrack* esdTr = hyp->GetESDTrack();
-  int tpcLab = esdTr ? Abs(esdTr->GetTPCLabel()) : -kDummyLabel;
+  int tpcLab = esdTr ? Abs(esdTr->GetTPCLabel()) : -gkDummyLabel;
   if (nCl && nLab) {
     int maxLab=0,nTPCok=0;
     for (int ilb=nLab;ilb--;) {
@@ -1663,7 +1663,7 @@ void AliITSUTrackerGlo::CookMCLabel(AliITSUTrackHyp* hyp)
   //
   hyp->SetFakeRatio(-1.);
   hyp->SetLabel( -tpcLab );
-  hyp->SetITSLabel( kDummyLabel );
+  hyp->SetITSLabel( gkDummyLabel );
 }
 
 //__________________________________________________________________
