@@ -274,6 +274,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
 
   TH1F                       * fTrackMult;                      ///<  Track Multiplicity ---QA
+  TH2F                       * fPtvsSum_MC;                     //!<!
   TH2F                       * fPtvsSumUE_MC;                   //!<!
   TH1F                       * fSumEiso_MC;                     //!<!
   TH1F                       * fSumUE_MC;                       //!<!
