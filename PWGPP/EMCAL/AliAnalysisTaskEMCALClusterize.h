@@ -311,6 +311,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SetInducedTCardMinimumCellEnergy(Float_t mi)   { fTCardCorrMinAmp     = mi ; }
   void           SetInducedTCardMaximum(Float_t ma)             { fTCardCorrMaxInduced = ma ; }
   void           SetInducedTCardMinimum(Float_t mi)             { fTCardCorrMinInduced = mi ; }
+  void           SetInducedTCardMaximumLowE(Float_t ma)         { fTCardCorrMaxInducedLowE = ma ; }
   
   void           PrintTCardParam();
   
@@ -441,7 +442,8 @@ private:
   Bool_t                fRandomizeTCard ;          ///<  Use random induced energy
   
   Float_t               fTCardCorrMinAmp;          ///<  Minimum cell energy to induce signal on adjacent cells
-  Float_t               fTCardCorrMinInduced;      ///<  Minimum induced energy signal on adjacent cells, sum of induced plus original energy
+  Float_t               fTCardCorrMinInduced;      ///<  Minimum induced energy signal on adjacent cells, sum of induced plus original energy, use same as cell energy clusterization cut
+  Float_t               fTCardCorrMaxInducedLowE;  ///<  Maximum value of induced energy signal that is always accepted, order of ADC, tipically 10 MeV
   Float_t               fTCardCorrMaxInduced;      ///<  Maximum induced energy signal on adjacent cells
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
@@ -453,7 +455,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 42) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 43) ;
   /// \endcond
 
 };

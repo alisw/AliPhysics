@@ -96,7 +96,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fInputFromFilter(0) 
 , fTCardCorrEmulation(0), fTCardCorrClusEnerConserv(0)
 , fRandom(0),             fRandomizeTCard(1)
-, fTCardCorrMinAmp(0.01), fTCardCorrMinInduced(0),    fTCardCorrMaxInduced(100)
+, fTCardCorrMinAmp(0.01), fTCardCorrMinInduced(0) 
+, fTCardCorrMaxInducedLowE(0), fTCardCorrMaxInduced(100)
 , fPrintOnce(0)
 
 {
@@ -160,7 +161,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fInputFromFilter(0)
 , fTCardCorrEmulation(0),   fTCardCorrClusEnerConserv(0)
 , fRandom(0),               fRandomizeTCard(1)
-, fTCardCorrMinAmp(0.01),   fTCardCorrMinInduced(0),   fTCardCorrMaxInduced(100)
+, fTCardCorrMinAmp(0.01),   fTCardCorrMinInduced(0)
+, fTCardCorrMaxInducedLowE(0), fTCardCorrMaxInduced(100)
 , fPrintOnce(0)
 {
   for(Int_t i = 0; i < 22;    i++)  
@@ -1822,8 +1824,10 @@ void AliAnalysisTaskEMCALClusterize::CalculateInducedEnergyInTCardCell
   
   // Add the induced energy, check if cell existed
   // Check that the induced+amp is large enough to avoid extra linearity effects
+  // typically of the order of the clusterization cell energy cut
+  // But if it is below 1 ADC, typically 10 MeV, also do it, to match Beam test linearity
   Float_t amp = fCaloCells->GetCellAmplitude(absId) ;
-  if ( (amp+inducedE) > fTCardCorrMinInduced )
+  if ( (amp+inducedE) > fTCardCorrMinInduced || inducedE < fTCardCorrMaxInducedLowE )
   {
     fTCardCorrCellsEner[absId] += inducedE;
     
@@ -2007,8 +2011,8 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
   AliInfo(Form("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:",
                fTCardCorrClusEnerConserv,fRandomizeTCard));
   
-  AliInfo(Form("T-Card emulation super-modules fraction: Min cell E %2.2f; induced Min E %2.2f Max E %2.2f",
-               fTCardCorrMinAmp,fTCardCorrMinInduced,fTCardCorrMaxInduced));
+  AliInfo(Form("T-Card emulation super-modules fraction: Min cell E %2.2f; induced Min E %2.2f, Max at low E %2.2f Max E %2.2f",
+               fTCardCorrMinAmp,fTCardCorrMinInduced,fTCardCorrMaxInducedLowE,fTCardCorrMaxInduced));
   
   for(Int_t ism = 0; ism < 22; ism++)
   {
