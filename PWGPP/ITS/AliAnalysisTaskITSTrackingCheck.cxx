@@ -60,7 +60,6 @@
 #include "AliGenEventHeader.h" 
 #include "AliAnalysisTaskITSTrackingCheck.h"
 
-
 ClassImp(AliAnalysisTaskITSTrackingCheck)
 AliAnalysisTaskITSTrackingCheck::AliAnalysisTaskITSTrackingCheck() : 
 AliAnalysisTaskSE(), 
@@ -2043,7 +2042,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     //printf("# generated particles = %d\n",ngenpart);
     dNchdy=0;
     for(Int_t ip=0; ip<ngenpart; ip++) {
-      part = ((AliMCParticle*)mcEvent->GetTrack(ip))->Particle();
+      part = mcEvent->Particle(ip);
+      if (!part) continue;
       // keep only electrons, muons, pions, kaons and protons
       Int_t apdg = TMath::Abs(part->GetPdgCode());
       if(apdg!=11 && apdg!=13 && apdg!=211 && apdg!=321 && apdg!=2212) continue;      
@@ -2238,13 +2238,14 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     // check if it is primary
     if(fReadMC && mcEvent) {
       isPrimary = mcEvent->IsPhysicalPrimary(trkLabel);
-      part = ((AliMCParticle*)mcEvent->GetTrack(trkLabel))->Particle();
+      part = mcEvent->Particle(trkLabel);
+      if (!part) continue;
       rProdVtx = TMath::Sqrt((part->Vx()-mcVertex[0])*(part->Vx()-mcVertex[0])+(part->Vy()-mcVertex[1])*(part->Vy()-mcVertex[1]));
       zProdVtx = TMath::Abs(part->Vz()-mcVertex[2]);
       //if(rProdVtx<2.8) isPrimary=kTRUE; // this could be tried
       pdgTrk = TMath::Abs(part->GetPdgCode());
       if(part->GetFirstMother()>=0) {
-	TParticle* mm=((AliMCParticle*)mcEvent->GetTrack(part->GetFirstMother()))->Particle();
+	TParticle* mm = mcEvent->Particle(part->GetFirstMother());
 	if(mm) pdgMoth = TMath::Abs(mm->GetPdgCode());
       }
       if(pdgMoth==310 || pdgMoth==321 || pdgMoth==3122 || pdgMoth==3312) isFromStrange=kTRUE;
@@ -2806,7 +2807,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     Float_t ptMC=-999.,pdgMC=-999.,d0MC=-999.;
     Double_t d0z0MCv[2]={-999.,-999.},covd0z0MCv[3]={1.,1.,1.};
     if(fReadMC) {
-      part = ((AliMCParticle*)mcEvent->GetTrack(trkLabel))->Particle();
+      part = mcEvent->Particle(trkLabel);
+      if (!part) continue;
       ptMC=part->Pt();
       pdgMC=part->GetPdgCode();
       d0MC=ParticleImpParMC(part,vertexMC,0.1*fESD->GetMagneticField());
