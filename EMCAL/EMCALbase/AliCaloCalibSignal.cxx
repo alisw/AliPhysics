@@ -265,13 +265,16 @@ Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(const int *iAmpVal,
 						 int resultArray[]) const
 { 
   Bool_t returnCode = false;
-  
+
   int iTowerNum = 0;
   double fraction = 0;
   for (int i = 0; i<fModules; i++)
   {
     for (int j = 0; j<fColumns; j++) 
     {
+      Int_t nRows = fRows;
+      if (i==10 || i==11 || i==18 || i==19)
+	nRows=fRows/3;
       int nAbove = 0;
       for (int k = 0; k<fRows; k++) 
       {
@@ -286,7 +289,7 @@ Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(const int *iAmpVal,
       
       if (nAbove > 0) 
       {
-        fraction = (1.0*nAbove) / fRows;
+        fraction = (1.0*nAbove) / nRows;
         /*
          printf("DS mod %d col %d nAbove %d fraction %3.2f\n",
          i, j, nAbove, fraction);
