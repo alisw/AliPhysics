@@ -433,10 +433,11 @@ Int_t AliITSUTrackerGlo::LoadClusters(TTree * treeRP)
 {
   // read from tree (if pointer provided) or directly from the ITS reco interface
   //
-  return fReconstructor->LoadClusters(treeRP);
-  //
+  int ncl = fReconstructor->LoadClusters(treeRP);
   fITS->SortClusters(AliITSUClusterPix::SortModeIdTrkYZ());
   fITS->ProcessClusters();
+  return ncl;
+  //
 } 
 
 //_________________________________________________________________________
