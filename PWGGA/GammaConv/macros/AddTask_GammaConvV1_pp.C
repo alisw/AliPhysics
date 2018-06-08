@@ -157,8 +157,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton     = "00000008400000000100000000";
 
-  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0
-      || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0   )
+  if (  periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC18c")==0 ||
+        periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0 ||
+        periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0 ||
+        periodNameV0Reader.CompareTo("LHC17f8b") == 0 ||
+        periodNameV0Reader.CompareTo("LHC16P1JJLowB") == 0 || periodNameV0Reader.CompareTo("LHC16P1Pyt8LowB") == 0 )
     cutnumberPhoton         = "00000088400000000100000000";
 
   TString cutnumberEvent      = "00000003";
@@ -764,6 +767,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   } else if (trainConfig == 300) {
     cuts.AddCut("00010113", "00200009297000001280000000", "0152103500000000"); // Min Bias more open cuts
     cuts.AddCut("00010113", "00200009227300008250400000", "0152101500000000"); // Min Bias default cuts 2.76 TeV
+  } else if (trainConfig == 301) { // low B
+    cuts.AddCut("00010113", "00200089297000001280000000", "0152103500000000"); // Min Bias more open cuts
+    cuts.AddCut("00010113", "00200089227300008250400000", "0152101500000000"); // Min Bias default cuts 2.76 TeV
 
     // High mult triggers
   } else if (trainConfig == 310) {
@@ -771,6 +777,11 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00074013", "00200009227300008250404000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
     cuts.AddCut("00076113", "00200009227300008250404000", "0152103500000000"); // for V0 High-Mult trigger
     cuts.AddCut("00076013", "00200009227300008250404000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
+  } else if (trainConfig == 311) { // low B
+    cuts.AddCut("00074113", "00200089227300008250404000", "0152103500000000"); // for V0 High-Mult trigger
+    cuts.AddCut("00074013", "00200089227300008250404000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
+    cuts.AddCut("00076113", "00200089227300008250404000", "0152103500000000"); // for V0 High-Mult trigger
+    cuts.AddCut("00076013", "00200089227300008250404000", "0152103500000000"); // check # of entries w/ pileup rejection cut for V0HM
 
   // EMCal triggered sets
   } else if (trainConfig == 320) { // EMC triggers +-1000 ns
@@ -787,6 +798,20 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000","1111100067032220000"); //INT7
     cuts.AddCut("00085113", "00200009227300008250404000", "0163103100000000","1111100067032220000"); //EG2
     cuts.AddCut("00083113", "00200009227300008250404000", "0163103100000000","1111100067032220000"); //EG1
+  } else if (trainConfig == 323) { // EMC triggers +-1000 ns low B
+    cuts.AddCut("00010113", "00200089227300008250404000", "0163103100000000","1111100017032220000"); //INT7
+    cuts.AddCut("00052113", "00200089227300008250404000", "0163103100000000","1111100017032220000"); //EMC7
+    cuts.AddCut("00085113", "00200089227300008250404000", "0163103100000000","1111100017032220000"); //EG2
+    cuts.AddCut("00083113", "00200089227300008250404000", "0163103100000000","1111100017032220000"); //EG1
+  } else if (trainConfig == 324) { // EMC triggers -50, +30 ns low B
+    cuts.AddCut("00010113", "00200089227300008250404000", "0163103100000000","1111100067032220000"); //INT7
+    cuts.AddCut("00052113", "00200089227300008250404000", "0163103100000000","1111100067032220000"); //EMC7
+    cuts.AddCut("00085113", "00200089227300008250404000", "0163103100000000","1111100067032220000"); //EG2
+    cuts.AddCut("00083113", "00200089227300008250404000", "0163103100000000","1111100067032220000"); //EG1
+  } else if (trainConfig == 325) { // EMC triggers -50, +30 ns low B
+    cuts.AddCut("00010113", "00200089227300008250404000", "0163103100000000","1111100067032220000"); //INT7
+    cuts.AddCut("00085113", "00200089227300008250404000", "0163103100000000","1111100067032220000"); //EG2
+    cuts.AddCut("00083113", "00200089227300008250404000", "0163103100000000","1111100067032220000"); //EG1
 
   // DCal triggered sets
   } else if (trainConfig == 330){ //DCAL triggers +- 1000ns
@@ -799,11 +824,24 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00055113", "00200009227300008250404000", "0163103100000000","3885500067032220000"); //INT7
     cuts.AddCut("00089113", "00200009227300008250404000", "0163103100000000","3885500067032220000"); //INT7
     cuts.AddCut("0008b113", "00200009227300008250404000", "0163103100000000","3885500067032220000"); //INT7
+  } else if (trainConfig == 332){ //DCAL triggers +- 1000ns low B
+    cuts.AddCut("00010113", "00200089227300008250404000", "0163103100000000","3885500017032220000"); //INT7
+    cuts.AddCut("00055113", "00200089227300008250404000", "0163103100000000","3885500017032220000"); //INT7
+    cuts.AddCut("00089113", "00200089227300008250404000", "0163103100000000","3885500017032220000"); //INT7
+    cuts.AddCut("0008b113", "00200089227300008250404000", "0163103100000000","3885500017032220000"); //INT7
+  } else if (trainConfig == 333){ //DCAL triggers +- 1000ns low B
+    cuts.AddCut("00010113", "00200089227300008250404000", "0163103100000000","3885500067032220000"); //INT7
+    cuts.AddCut("00055113", "00200089227300008250404000", "0163103100000000","3885500067032220000"); //INT7
+    cuts.AddCut("00089113", "00200089227300008250404000", "0163103100000000","3885500067032220000"); //INT7
+    cuts.AddCut("0008b113", "00200089227300008250404000", "0163103100000000","3885500067032220000"); //INT7
 
   // PHOS trigered sets
   } else if (trainConfig == 340) { // PHOS triggers
     cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000","2444400000013300000"); //INT7
     cuts.AddCut("00062113", "00200009227300008250404000", "0163103100000000","2444400000013300000"); //PHI7
+  } else if (trainConfig == 341) { // PHOS triggers low B
+    cuts.AddCut("00010113", "00200089227300008250404000", "0163103100000000","2444400000013300000"); //INT7
+    cuts.AddCut("00062113", "00200089227300008250404000", "0163103100000000","2444400000013300000"); //PHI7
 
   } else if (trainConfig == 350) {
     cuts.AddCut("00010113", "00200009227300008250400000", "0152101500000000"); // Min Bias default cuts 2.76 TeV
