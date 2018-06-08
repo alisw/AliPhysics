@@ -3907,7 +3907,9 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
     AliTPCseed * seed = (AliTPCseed*) fSeeds->UncheckedAt(i);
     if (!seed) continue;
     if (seed->GetKinkIndex(0)>0)  UpdateKinkQualityD(seed);  // update quality informations for kinks
-    AliESDtrack *esd=event->GetTrack(i);
+    AliESDtrack *esd = seed->GetESD();
+    if (!esd) esd = event->GetTrack(i); // just in case the esd track pointer was not set in the seed
+    if (seed->GetTRDUpdate()) esd->SetStatus(AliESDtrack::kTRDupdate);
     //
     //RS: if needed, attach temporary cluster array
     const AliTPCclusterMI** seedClustersSave = seed->GetClusters();

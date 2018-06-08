@@ -165,7 +165,7 @@ class AliFlatESDTrack :public AliVTrack {
   // ---------------------------------------------------------------------------------
   // AliVParticle interface
   ULong_t  GetStatus() const ;
-  Bool_t IsOn(Int_t mask) const;
+  Bool_t IsOn(ULong_t mask) const;
   virtual Double_t Pt() const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetPt():kVeryBig;}
   virtual Double_t GetTgl()  const {const AliFlatExternalTrackParam* p=GetFlatTrackParam(); return (p)?p->GetTgl():kVeryBig;}
   using AliVTrack::GetImpactParameters;
@@ -312,7 +312,7 @@ inline ULong_t  AliFlatESDTrack::GetStatus() const {
   return x;
 }
 
-inline Bool_t AliFlatESDTrack::IsOn(Int_t mask) const {
+inline Bool_t AliFlatESDTrack::IsOn(ULong_t mask) const {
   return (GetStatus()&mask)>0;
 }
 

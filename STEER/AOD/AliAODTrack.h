@@ -189,7 +189,7 @@ class AliAODTrack : public AliVTrack {
     else {delete[] fPID; fPID = 0;}
   }
   
-  Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
+  Bool_t IsOn(ULong_t mask) const {return (fFlags&mask)>0;}
   ULong_t GetStatus() const { return GetFlags(); }
   ULong_t GetFlags() const { return fFlags; }
 

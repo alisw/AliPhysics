@@ -78,7 +78,7 @@ public:
   void GetESDpid(Double_t *p) const;
   virtual const Double_t *PID() const { return fR; }
 
-  Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
+  Bool_t IsOn(ULong_t mask) const {return (fFlags&mask)>0;}
   ULong_t GetStatus() const {return fFlags;}
   Int_t GetLabel() const {return fLabel;}
   void SetLabel(Int_t label) {fLabel = label;}

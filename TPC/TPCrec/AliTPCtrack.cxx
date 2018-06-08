@@ -49,6 +49,7 @@ AliTPCtrack::AliTPCtrack():
   fSdEdx(1e10),
   fNFoundable(0),
   fBConstrain(kFALSE),
+  fTRDUpdate(kFALSE),
   fLastPoint(-1),
   fFirstPoint(-1),
   fRemoval(0),
@@ -78,6 +79,7 @@ AliTPCtrack::AliTPCtrack(Double_t x, Double_t alpha, const Double_t p[5],
   fSdEdx(1e10),
   fNFoundable(0),
   fBConstrain(kFALSE),
+  fTRDUpdate(kFALSE),
   fLastPoint(0),
   fFirstPoint(0),
   fRemoval(0),
@@ -137,6 +139,7 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   fSdEdx(1e10),
   fNFoundable(0),
   fBConstrain(kFALSE),
+  fTRDUpdate(kFALSE),
   fLastPoint(0),
   fFirstPoint(0),
   fRemoval(0),
@@ -168,18 +171,28 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   const AliExternalTrackParam  *tpc=(tpcout)?tpcout:tpcin;
   Bool_t isBackProp = tpcout==0; // is this backpropagation?
   if (!tpc) tpc=&param;
+  Bool_t isOK = kFALSE;
 
-  Bool_t isOK = 
-    (recoParam->GetUseOuterDetectors() && t.IsOn(AliESDtrack::kTRDrefit)) || 
-    (isBackProp && t.IsOn(AliESDtrack::kITSout));
+  if (recoParam->GetUseOuterDetectors() && t.IsOn(AliESDtrack::kTRDrefit)) {
+    fTRDUpdate = isOK = kTRUE;
+  }
+  else if (isBackProp && t.IsOn(AliESDtrack::kITSout)) {
+    isOK = kTRUE;
+  }
+  
   if (isOK && 
       (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0] ||
        param.GetCovariance()[2]>kmaxC[1]*kmaxC[1] ||
        param.GetCovariance()[5]>kmaxC[2]*kmaxC[2] ||
        param.GetCovariance()[9]>kmaxC[3]*kmaxC[3])
-      ) isOK=kFALSE;
+      ) {
+    isOK = fTRDUpdate = kFALSE;
+  }
   //
-  if (isOK) isOK &= param.Rotate(tpc->GetAlpha()); // using external seed
+  if (isOK) {
+    isOK &= param.Rotate(tpc->GetAlpha()); // using external seed
+    if (!isOK) fTRDUpdate = kFALSE;
+  }
   Double_t oldX=param.GetX(),  oldY=param.GetY(),  oldZ=param.GetZ();
   if (!isOK ){
     param=*tpc;
@@ -192,14 +205,20 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
 	param.GetCovariance()[0]>kmaxC[0]*kmaxC[0] ||
 	param.GetCovariance()[2]>kmaxC[1]*kmaxC[1] ||
 	param.GetCovariance()[5]>kmaxC[2]*kmaxC[2] ||
-	param.GetCovariance()[9]>kmaxC[3]*kmaxC[3]) isOK=kFALSE;
+	param.GetCovariance()[9]>kmaxC[3]*kmaxC[3]) {
+      isOK=kFALSE;
+      fTRDUpdate = kFALSE;
+    }
   }
   Double_t chi2= param.GetPredictedChi2(tpc);
   if (isOK) {
     if (isBackProp) {
       if (chi2>recoParam->GetMaxChi2TPCITS()) isOK=kFALSE; // protection against outliers in the ITS
     }
-    else if (chi2>recoParam->GetMaxChi2TPCTRD()) isOK=kFALSE; // protection against outliers in the TRD
+    else if (chi2>recoParam->GetMaxChi2TPCTRD()) {
+      isOK=kFALSE; // protection against outliers in the TRD
+      fTRDUpdate = kFALSE;
+    }
   }
   //
   if (pcstream){
@@ -209,6 +228,7 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
     AliESDtrack *esd= (AliESDtrack *)&t;
     (*pcstream)<<"trackP"<<
       "isOK="<<isOK<<
+      "TRDupdate="<<fTRDUpdate<<
       "chi2="<<chi2<<       // chi2
       "reject="<<reject<<   // flag - rejection of current esd track parameters
       "esd.="<<esd<<        // original esd track
@@ -229,9 +249,8 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
     double ep4 = param.GetParameter()[4]*fgMatLarge[14];
     cov[14] = ep4*ep4;                               // q/pT error is relative
     if (fgMatLarge[15]>0) cov[14] += fgMatLarge[15]; // ensure minimum error on q/pt
+    fTRDUpdate = kFALSE;
   }
-  //
- 
 
   Set(param.GetX(),param.GetAlpha(),param.GetParameter(),param.GetCovariance());
 
@@ -256,6 +275,7 @@ AliTPCtrack::AliTPCtrack(const AliTPCtrack& t) :
   fSdEdx(t.fSdEdx),
   fNFoundable(t.fNFoundable),
   fBConstrain(t.fBConstrain),
+  fTRDUpdate(t.fTRDUpdate),
   fLastPoint(t.fLastPoint),
   fFirstPoint(t.fFirstPoint),
   fRemoval(t.fRemoval),
@@ -286,6 +306,7 @@ AliTPCtrack& AliTPCtrack::operator=(const AliTPCtrack& o){
     fSdEdx = o.fSdEdx;
     fNFoundable = o.fNFoundable;
     fBConstrain = o.fBConstrain;
+    fTRDUpdate     = o.fTRDUpdate;
     fLastPoint  = o.fLastPoint;
     fFirstPoint = o.fFirstPoint;
     fTrackType  = o.fTrackType;

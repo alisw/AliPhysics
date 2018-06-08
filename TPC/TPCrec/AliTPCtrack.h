@@ -88,6 +88,7 @@ public:
   Int_t GetRemoval() const {return fRemoval;}
   Int_t GetLab2() const {return fLab2;}
   Bool_t GetBConstrain() const {return fBConstrain;}
+  Bool_t GetTRDUpdate() const {return fTRDUpdate;}
   Int_t GetNShared() const {return fNShared;}
   Int_t GetNFoundable() const {return fNFoundable;}
   //
@@ -103,6 +104,7 @@ protected:
   //
   Int_t   fNFoundable;      //number of foundable clusters - dead zone taken to the account
   Bool_t  fBConstrain;   // indicate seeding with vertex constrain
+  Bool_t  fTRDUpdate;    // indicate that the TRD was used in the fit
   Int_t   fLastPoint;     // last  cluster position     
   Int_t   fFirstPoint;    // first cluster position
   Int_t fRemoval;         // removal factor
@@ -114,7 +116,7 @@ protected:
   Int_t    fKinkIndexes[3];     // kink indexes - minus = mother + daughter
   Int_t    fV0Indexes[3];     // kink indexes - minus = mother + daughter
   static double fgMatLarge[16]; // large initial cov. matrix (0-14) + optional additive term for p[4] error
-  ClassDef(AliTPCtrack,5)   // Time Projection Chamber reconstructed tracks
+  ClassDef(AliTPCtrack,6)   // Time Projection Chamber reconstructed tracks
 };
 
 #endif
