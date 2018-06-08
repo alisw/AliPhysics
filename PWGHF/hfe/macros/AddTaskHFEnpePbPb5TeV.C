@@ -1,6 +1,13 @@
+//////////////////////////////////////////////////////////////
+//                                                          //
+// filBIT x ---> at track level is tested the filterbit 2^x //
+//                                                          //
+//////////////////////////////////////////////////////////////
+Int_t filBIT;
+
 AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
-                                   Bool_t MCthere = kFALSE,                     // DATA
-                                   //Bool_t MCthere = kTRUE,                    // MC
+                                   //Bool_t MCthere = kFALSE,                     // DATA
+                                   Bool_t MCthere = kTRUE,                    // MC
                                    Bool_t isAOD = kTRUE,
 				   Bool_t kNPERef = kFALSE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
 				   Bool_t kNPEkAny = kFALSE,
@@ -10,17 +17,28 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
 				   Bool_t kNPETOFlast = kFALSE,
 				   Bool_t kNPEw      = kFALSE,
 				   Bool_t kNPEkf  = kFALSE,
-                                   Int_t  RunSyst = 0                            // switch statement useful for systematics (mfaggin, 06/07/2017)
-                                   ,Int_t centrMin = 0          // min centrality
-                                   ,Int_t centrMax = 10         // max centrality
+                                   Int_t  RunSyst = 1                            // switch statement useful for systematics (mfaggin, 06/07/2017)
+                                   //,Int_t centrMin = 0          // min centrality
+                                   //,Int_t centrMax = 10         // max centrality
+                                   ,Int_t centrMin = 30          // min centrality
+                                   ,Int_t centrMax = 50         // max centrality
                                    ,Bool_t kHadContSyst = kFALSE        // hadron contamination systematics
                                    ,Bool_t kPileUpIonutRejection = kFALSE
                                    ,Bool_t kCheckDCA = kFALSE    // additional check: set maximum value for DCA between inclusive and associated tracks (default: 3cm)
                                    ,Bool_t kPhiSystConsistentHadCont = kFALSE    // mfaggin, 13-Mar-2018
                                    ,Bool_t kRejectKinkParticles = kFALSE         // mfaggin, 12-Apr-2018
+                                   ,Int_t chosen_filBIT = 4     // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT) (mfaggin, 07-Jun-2018)
+                                   ,Bool_t kTestDifferentFilBIT = kTRUE        // test a different filterbit (mfaggin, 07-Jun-2018)
                                    )		   
   
 {
+        filBIT = chosen_filBIT;
+        // 
+        // NB:
+        //      - filBIT=2 : tested filterbit number 4  = kTrkITSConstraint 
+        //      - filBIT=4 : tested filterbit number 16 = kTrkGlobalNoDCA
+        //
+
         enum SystTipe
         {
                 // ----- TOFonly cases -----
@@ -74,9 +92,16 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
   // --- TPC nsigma max and min cut ---
   Double_t dEdxhm[12] = {3.11,3.11,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};  
   Double_t tpcl1[12]  = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};                              // my 46% (mfaggin)
-  Double_t tpcl2[12]  = {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1};                  // my 50% (mfaggin)
-  Double_t tpcl3[12]  = {0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18};                  // my 40% (mfaggin)
-  Double_t tpcl4[12]  = {-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38};      // my 60% (mfaggin)
+  //Double_t tpcl2[12]  = {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1};                  // my 50% (mfaggin) in 0-10%
+  Double_t tpcl3[12]  = {0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18};                  // my 40% (mfaggin) in 0-10%
+  Double_t tpcl4[12]  = {-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38};      // my 60% (mfaggin) in 0-10%
+
+  Double_t tpcl2[12];
+  for(UInt_t i_tpcl=0; i_tpcl<12; i_tpcl++){
+        if(centrMin==0  && centrMax==10) tpcl2[i_tpcl]=-0.1;
+        if(centrMin==30 && centrMax==50) tpcl2[i_tpcl]= 0; 
+  }
+
   // new case considered for ITS cut [-4,2] (mfaggin, 09 January 2018)
   Double_t dEdxhmALTERNATIVE[12] = {2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0};                   // with tpcl2: about 47.5% (mfaggin)
 
@@ -119,10 +144,20 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
     ,k16g1_2_systTiltDownUp = 66       // 66: tilting down-up charged pion weights
 
     ,k16g1_3 = 67               // 67: PbPb LHC16g1 minimum bias MC using pi0 data spectra (mfaggin, 06-Mar-2018)
+
+    ,k16g1_2_3050 = 70          // 70: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 30-50% centrality class (mfaggin, 07-Jun-2018)
+
   };
   //Int_t kWeightMC = k16g1;
-  Int_t kWeightMC = k16g1_2;
+  Int_t kWeightMC = 0;
+  if(centrMin==0  && centrMax==10)      kWeightMC=k16g1_2;
+  if(centrMin==30 && centrMax==50)      kWeightMC=k16g1_2_3050;
   
+  // check outputs
+  printf("\n\n===== Centrality: %d,%d\n",centrMin,centrMax);
+  printf("===== tpcl2[0] (lower edge TPC cut): %.3f\n",tpcl2[0]);
+  printf("===== kWeightMC (MC weight parameter): %d\n\n",kWeightMC);
+
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -516,6 +551,23 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+
+        if(kTestDifferentFilBIT){
+                const Int_t original_filBIT = filBIT;
+                if(original_filBIT==2)   filBIT=4;
+                if(original_filBIT==4)   filBIT=2;
+                // WITH WEIGHTS changed filBIT
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+                // NO WEIGHTS changed filBIT
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017 
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+        }
+        filBIT = chosen_filBIT; // original filBIT restored
    }
    else
    {
@@ -523,6 +575,17 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
         RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+        if(kTestDifferentFilBIT){
+                const Int_t original_filBIT = filBIT;
+                if(original_filBIT==2)   filBIT=4;
+                if(original_filBIT==4)   filBIT=2;
+                // NO WEIGHTS changed filBIT
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017 
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+        }
+        filBIT = chosen_filBIT; // original filBIT restored
                 if(kPhiSystConsistentHadCont){
                         // hadron contamination function used: phi [0,1.4] (mfaggin, 13-Mar-2018)
                         RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
@@ -1136,13 +1199,14 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
   //Int_t intmaxDCA = (Int_t) (dcaMAX*10);
   //if(dcaMAX<3.0)                appendix+=TString::Format("DCAmax%d",intmaxDCA);
 
+  appendix += TString::Format("_filBIT%d",filBIT);
   if(applyPileUpRejection)      appendix+="_PileUpRejIonutCut";
   if(hadcontsyst)               appendix+="_hadContSyst";
   if(rejkinks)                  appendix+="_kinksReject";
 
-  if(phisystconsistenthadcont==1)       appendix+="hadcontphi014";      // mfaggin, 13-Mar-2018
-  if(phisystconsistenthadcont==2)       appendix+="hadcontphi14326";    // mfaggin, 13-Mar-2018
-  if(phisystconsistenthadcont==3)       appendix+="hadcontphi3262pi";   // mfaggin, 13-Mar-2018
+  if(phisystconsistenthadcont==1)       appendix+="_hadcontphi014";      // mfaggin, 13-Mar-2018
+  if(phisystconsistenthadcont==2)       appendix+="_hadcontphi14326";    // mfaggin, 13-Mar-2018
+  if(phisystconsistenthadcont==3)       appendix+="_hadcontphi3262pi";   // mfaggin, 13-Mar-2018
 
 /*
   // ------- to manage containers name with negative TPC low cut --------
@@ -1180,6 +1244,7 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
                                               ,hadcontsyst      // had. cont. systematics
                                               ,phisystconsistenthadcont // phi variation with consistent hadron contamination function (mfaggin, 13-Mar-2018)
                                               ,rejkinks         // kink particles rejection
+                                              ,filBIT           // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT)
                                               );
   // old config file
   //AliAnalysisTaskHFE *task = ConfigHFEnpePbPb(useMC, isAOD, appendix, tpcCls, tpcClsPID, itsCls, dcaxy, dcaz, tpcdEdxcutlow, tpcdEdxcuthigh, tofs, 0, itss, itshitpixel, itschi2percluster, tpcsharedcluster, etacorr, multicorr, toflast, etaIncMin, etaIncMax,
@@ -1197,8 +1262,9 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
 
   //if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors(task,kFALSE,wei);//2;For default PbPb
   if(useMC&&(beauty || (weightlevelback>=0))){
-        if(wei==67)     ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_frompi0.root");
-        else            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);
+        if(wei==67)      ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_frompi0.root");
+        else if(wei==70) ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_3050.root");
+        else             ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);
   }
 
   // ----- centrality selection -----
