@@ -1481,9 +1481,9 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
-  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent);
+  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent, fWeightJetJetMC, kTRUE, fMCEvent);
   // match tracks to clusters also for mergedCutArray
-  ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent);
+  ((AliCaloPhotonCuts*)fClusterMergedCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent, fWeightJetJetMC, kTRUE, fMCEvent);
 
   // vertex
   Double_t vertex[3] = {0};
