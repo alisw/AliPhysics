@@ -279,7 +279,10 @@ private:
     // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
     TList  *fListHist;      //! List of Cascade histograms
     TList  *fListV0;        // List of Cascade histograms
-    TList  *fListCascade;   // List of Cascade histograms
+    TList  *fListXiMinus;   // List of XiMinus outputs
+    TList  *fListXiPlus;   // List of XiPlus outputs
+    TList  *fListOmegaMinus;   // List of XiMinus outputs
+    TList  *fListOmegaPlus;   // List of XiPlus outputs
     TTree  *fTreeEvent;              //! Output Tree, Events
     TTree  *fTreeV0;              //! Output Tree, V0s
     TTree  *fTreeCascade;              //! Output Tree, Cascades
