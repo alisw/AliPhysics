@@ -500,10 +500,12 @@ class AliReducedVarManager : public TObject {
     kPairLegITSchi2,              // the ITS chi2 for the pair legs, used in correlations between pair legs
     kPairLegTPCchi2=kPairLegITSchi2+2,              // the TPC chi2 for the pair legs, used in correlations between pair legs
     kPairLegPt=kPairLegTPCchi2+2,                 // pair leg pt
-    kPairLegPtMC=kPairLegPt+2,                      // MC truth pair leg pt
+    kPairLegPtSum=kPairLegPt+2,                   // sum of the pt of the two legs
+    kPairLegPtMC,                                // MC truth pair leg pt
+    kPairLegPtMCSum=kPairLegPtMC+2,               // sum of the MC truth leg pt's
 
     // Track-only variables -------------------------------------
-    kPtTPC=kPairLegPtMC+2,     
+    kPtTPC,     
     kPhiTPC,    
     kEtaTPC,    
     kDcaXYTPC,    

@@ -1137,7 +1137,7 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       fgUsedVars[kPxMCfromLegs] || fgUsedVars[kPyMCfromLegs] || fgUsedVars[kPzMCfromLegs] ||
       fgUsedVars[kThetaMCfromLegs] || fgUsedVars[kEtaMCfromLegs] || fgUsedVars[kPhiMCfromLegs] ||
       fgUsedVars[kMassMCfromLegs] || fgUsedVars[kRapMCfromLegs] ||
-      fgUsedVars[kPairLegPtMC] || fgUsedVars[kPairLegPtMC+1]) 
+      fgUsedVars[kPairLegPtMC] || fgUsedVars[kPairLegPtMC+1] || fgUsedVars[kPairLegPtMCSum]) 
       requestMCfromLegs = kTRUE;
    
    if(leg1 && leg2 && requestMCfromLegs) {
@@ -1146,6 +1146,7 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
       values[kPzMCfromLegs] = leg1->MCmom(2) + leg2->MCmom(2);
       values[kPairLegPtMC+0] = TMath::Sqrt(leg1->MCmom(0)*leg1->MCmom(0)+leg1->MCmom(1)*leg1->MCmom(1));
       values[kPairLegPtMC+1] = TMath::Sqrt(leg2->MCmom(0)*leg2->MCmom(0)+leg2->MCmom(1)*leg2->MCmom(1));
+      values[kPairLegPtMCSum] = values[kPairLegPtMC]+values[kPairLegPtMC+1];
       values[kPtMCfromLegs] = TMath::Sqrt(values[kPxMCfromLegs]*values[kPxMCfromLegs]+values[kPyMCfromLegs]*values[kPyMCfromLegs]);
       values[kPMCfromLegs] = TMath::Sqrt(values[kPtMCfromLegs]*values[kPtMCfromLegs]+values[kPzMCfromLegs]*values[kPzMCfromLegs]);
       values[kThetaMCfromLegs] = (values[kPMCfromLegs]>=1.0e-6 ? TMath::ACos(values[kPzMCfromLegs]/values[kPMCfromLegs]) : 0.0);
@@ -1601,6 +1602,7 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
   if(fgUsedVars[kRapAbs]) values[kRapAbs] = TMath::Abs(p.Rapidity());
   values[kPairLegPt+0] = t1->Pt();
   values[kPairLegPt+1] = t2->Pt();
+  values[kPairLegPtSum] = t1->Pt()+t2->Pt();
   
   values[kMassV0]   = -999.0;
   values[kMassV0+1] = -999.0;
@@ -1890,6 +1892,7 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
   }
   values[kPairLegPt] = t1->Pt();
   values[kPairLegPt+1] = t2->Pt();
+  values[kPairLegPtSum] = t1->Pt() + t2->Pt();
   if(fgUsedVars[kP])      values[kP]      = p.P();
   if(fgUsedVars[kEta])    values[kEta]    = p.Eta();
   if(fgUsedVars[kRap])    values[kRap]    = p.Rapidity();
@@ -2597,8 +2600,10 @@ void AliReducedVarManager::SetDefaultVarNames() {
      fgVariableUnits[kPairLegITSchi2+i] = "";
      fgVariableNames[kPairLegPt+i] = Form("Leg%d p_{T}", i+1);
      fgVariableNames[kPairLegPtMC+i] = Form("Leg%d p^{MC}_{T}", i+1);
-     fgVariableUnits[kPairLegPt+i] = "GeV/c^{2}"; fgVariableUnits[kPairLegPtMC+i] = "GeV/c^{2}";
+     fgVariableUnits[kPairLegPt+i] = "GeV/c"; fgVariableUnits[kPairLegPtMC+i] = "GeV/c";
   }
+  fgVariableNames[kPairLegPtSum] = "Pair leg p_{T,1} + p_{T,2}"; fgVariableUnits[kPairLegPtSum] = "GeV/c";
+  fgVariableNames[kPairLegPtMCSum] = "Pair leg p^{MC}_{T,1} + p^{MC}_{T,2}"; fgVariableUnits[kPairLegPtMCSum] = "GeV/c";
   
   
   fgVariableNames[kPtTPC]             = "p_{T}^{TPC}";                  fgVariableUnits[kPtTPC] = "GeV/c";
