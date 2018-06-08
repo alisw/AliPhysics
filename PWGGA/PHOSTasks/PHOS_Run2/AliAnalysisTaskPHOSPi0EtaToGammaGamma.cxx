@@ -336,16 +336,19 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t i=0;i<3;i++){
     fOutputContainer->Add(new TH2F(Form("hCentrality%svsEventPlane%s%s",fEstimator.Data(),fV0EPName[i].Data(),fQNormalization.Data()),Form("Centrality %s vs. EP %s %s;centrality (%%);#Psi_{EP}",fEstimator.Data(),fV0EPName[i].Data(),fQNormalization.Data()),100,0,100,30,0,Pi));
   }
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{1}} #upoint #vec{Q_{2}};centrality (%%);SP #vec{Q_{1}} #upoint #vec{Q_{2}}",fEstimator.Data()),100,0,100,400,-10,10));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ2Q3",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{2}} #upoint #vec{Q_{3}};centrality (%%);SP #vec{Q_{2}} #upoint #vec{Q_{3}}",fEstimator.Data()),100,0,100,400,-10,10));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ3Q1",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{3}} #upoint #vec{Q_{1}};centrality (%%);SP #vec{Q_{3}} #upoint #vec{Q_{1}}",fEstimator.Data()),100,0,100,400,-10,10));
 
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,200,-10,10));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,200,-10,10));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2x",fEstimator.Data()),Form("Centrality %s vs. Q_{2x};centrality (%%);Q_{2x}",fEstimator.Data()),100,0,100,200,-10,10));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2y",fEstimator.Data()),Form("Centrality %s vs. Q_{2y};centrality (%%);Q_{2y}",fEstimator.Data()),100,0,100,200,-10,10));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ3x",fEstimator.Data()),Form("Centrality %s vs. Q_{3x};centrality (%%);Q_{3x}",fEstimator.Data()),100,0,100,200,-10,10));
-  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ3y",fEstimator.Data()),Form("Centrality %s vs. Q_{3y};centrality (%%);Q_{3y}",fEstimator.Data()),100,0,100,200,-10,10));
+  const Double_t SPlimit = 0.01 * (fCentralityMin + fCentralityMax)/2. + 0.3;
+
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ1Q2",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{1}} #upoint #vec{Q_{2}};centrality (%%);SP #vec{Q_{1}} #upoint #vec{Q_{2}}",fEstimator.Data()),100,0,100,200,-0.1 * SPlimit,0.1 * SPlimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ2Q3",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{2}} #upoint #vec{Q_{3}};centrality (%%);SP #vec{Q_{2}} #upoint #vec{Q_{3}}",fEstimator.Data()),100,0,100,200,-0.1 * SPlimit,0.1 * SPlimit));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsSPQ3Q1",fEstimator.Data()),Form("Centrality %s vs. SP #vec{Q_{3}} #upoint #vec{Q_{1}};centrality (%%);SP #vec{Q_{3}} #upoint #vec{Q_{1}}",fEstimator.Data()),100,0,100,200,-0.1 * SPlimit,0.1 * SPlimit));
+
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1x",fEstimator.Data()),Form("Centrality %s vs. Q_{1x};centrality (%%);Q_{1x}",fEstimator.Data()),100,0,100,200,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ1y",fEstimator.Data()),Form("Centrality %s vs. Q_{1y};centrality (%%);Q_{1y}",fEstimator.Data()),100,0,100,200,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2x",fEstimator.Data()),Form("Centrality %s vs. Q_{2x};centrality (%%);Q_{2x}",fEstimator.Data()),100,0,100,200,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ2y",fEstimator.Data()),Form("Centrality %s vs. Q_{2y};centrality (%%);Q_{2y}",fEstimator.Data()),100,0,100,200,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ3x",fEstimator.Data()),Form("Centrality %s vs. Q_{3x};centrality (%%);Q_{3x}",fEstimator.Data()),100,0,100,200,-1,1));
+  fOutputContainer->Add(new TH2F(Form("hCentrality%svsQ3y",fEstimator.Data()),Form("Centrality %s vs. Q_{3y};centrality (%%);Q_{3y}",fEstimator.Data()),100,0,100,200,-1,1));
 
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane12",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
   fOutputContainer->Add(new TH2F(Form("hCentrality%svsCosDeltaEventPlane23",fEstimator.Data()),Form("Centrality %s vs. cos(%d #Delta#Psi_{EP});centrality (%%);cos(%d #Delta#Psi_{EP})",fEstimator.Data(),fHarmonics,fHarmonics),100,0,100,20,-1,1));
@@ -468,8 +471,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   }
   else if(fFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP){
     NbinQ = 40;
-    Qmin  = -10.0;
-    Qmax  = +10.0; 
+    Qmin  = -SPlimit;
+    Qmax  =  SPlimit; 
+    //Qmin  = -1.0;
+    //Qmax  = +1.0; 
     axistitle = Form("#vec{u} #upoint #vec{Q_{%d}}",fHarmonics);
   }
 
@@ -4396,7 +4401,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
     return;
   }
   else{
-    AliInfo("PHOSTenderTask exists in AliAnalysisManager!");
     AliPHOSTenderSupply *supply = (AliPHOSTenderSupply*)PHOSTenderTask->GetPHOSTenderSupply();
     //track matching by AliPHOSTenderSupply
 
