@@ -1724,7 +1724,7 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          {
           Int_t idSM = GetSM(clustMatch);
           //cout << "idSM = " << idSM << endl;
-          if(iSelSM==idSM)continue;
+          if(iSelSM!=idSM)continue;
          }
       //
  
