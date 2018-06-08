@@ -60,7 +60,9 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
   
   if ( year < 2009 && !simulation )
   {
-    if     (period.Contains("16")) year = 2016;
+    if     (period.Contains("18")) year = 2018;
+    else if(period.Contains("17")) year = 2017;
+    else if(period.Contains("16")) year = 2016;
     else if(period.Contains("15")) year = 2015;
     else if(period.Contains("13")) year = 2013;
     else if(period.Contains("12")) year = 2012;
@@ -72,23 +74,97 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
   if ( simulation && period=="" )
   {
     // 2011 MC productions
-   if ( prodType.Contains("14ka1")  || prodType.Contains("14k1b") || // 7 TeV jet-jet+gamma
-        prodType.Contains("12a15g") || prodType.Contains("13e4")  || // 7 TeV gamma-jet   
-        prodType.Contains("12f2a")  || prodType.Contains("12f2b") || // 7 TeV jet-jet+pi0, jet-jet+hadron
-        prodType.Contains("12a15f") || prodType.Contains("12a15a")|| // 7 TeV and 2.76 jet-jet
-        prodType.Contains("12a17")  || prodType.Contains("14a1")   ) // Pb-Pb LHC11h
-   {
-     year = 2011;
-     period = "LHC11";
-   }
+    if      ( prodType.Contains("14j") )
+    {
+      year = 2010;
+      period = "LHC10";
+    } 
+    
+    // 2011 MC productions
+    else if ( prodType.Contains("14ka1") || prodType.Contains("14k1b") || // 7 TeV jet-jet+gamma
+              prodType.Contains("12a15g")|| prodType.Contains("13e4")  || // 7 TeV gamma-jet   
+              prodType.Contains("13e5")  || // jet-jet pi0   
+              prodType.Contains("13d1")  || // MB+pi0
+              prodType.Contains("12f2a") || prodType.Contains("12f2b") || // 7 TeV jet-jet+pi0, jet-jet+hadron
+              prodType.Contains("12a15f")|| prodType.Contains("12a15a")|| // 7 TeV and 2.76 jet-jet
+              prodType.Contains("12a17") || prodType.Contains("14a1")   ) // Pb-Pb LHC11h
+    {
+      year = 2011;
+      period = "LHC11";
+    }
     
     // 2012 MC productions
-    if ( prodType.Contains("15h1") || // 8 TeV min bias
-         prodType.Contains("16c2") || // 8 TeV jet-jet   
-         prodType.Contains("17g5")  ) // 8 TeV jet-jet+gamma, gamma-jet
+    else if ( prodType.Contains("13d6")  || prodType.Contains("13d7")  ||
+              prodType.Contains("13d8")  || prodType.Contains("13d9")  || //MB
+              prodType.Contains("14i")   ||
+              prodType.Contains("15h1")  || // 8 TeV min bias PYTHIA8
+              prodType.Contains("15h2")  || // 8 TeV min bias PHOJET
+              prodType.Contains("16c2")  || // 8 TeV jet-jet   
+              prodType.Contains("17g5")   ) // 8 TeV jet-jet+gamma, gamma-jet
     {
       year = 2012;
       period = "LHC12";
+    }   
+    
+    // 2013 MC productions
+    else if ( prodType.Contains("LHC13") || prodType.Contains("LHC14") ||
+              prodType.Contains("15b1")  ||
+              prodType.Contains("15a3")  || // pp 2.76 GJ, JJ
+              prodType.Contains("15a1")  ||
+              prodType.Contains("16c3")  || // JJ+G, GJ Pythia6
+              prodType.Contains("17g6")  || // JJ+G, GJ, + BKG Pythia8
+              prodType.Contains("16k1a") ||
+              prodType.Contains("15g")    )
+    {
+      year = 2013;
+      period = "LHC13";
+    }
+   else if ( prodType.Contains("16k")    || prodType.Contains("16h")    ||
+             prodType.Contains("17d5")   || prodType.Contains("17d6")   || // general purpose and other 
+             prodType.Contains("17d7")   || prodType.Contains("17d8")   || // general purpose and other
+             prodType.Contains("17e2")   || prodType.Contains("17h5")   || // PbPb
+             prodType.Contains("LHC17i4")|| prodType.Contains("LHC17l1")||
+             prodType.Contains("18a5a")  || 
+             prodType.Contains("18a7")   || 
+             prodType.Contains("18b10")  || 
+             prodType.Contains("18b11")   ) // jet-jet PbPb
+   {
+     year = 2015;
+     period = "LHC15";
+   }
+  
+   // 2016 MC productions
+   else if ( prodType.Contains("17f")    || prodType.Contains("17e")  ||// general purpose and other
+             prodType.Contains("17d")    || prodType.Contains("17l2") ||  
+             prodType.Contains("17l6")   || prodType.Contains("17l7") || 
+             prodType.Contains("17h6")   || // pPb
+             prodType.Contains("17h2")   || // pp 13
+             prodType.Contains("17h10b") || 
+             prodType.Contains("17h4")   || prodType.Contains("17h8") || 
+             prodType.Contains("17h9")   || prodType.Contains("18b3_")||
+             prodType.Contains("17i3")    ) // pp 13 TeV jet-jet+gamma, gamma-jet
+   {
+     year = 2016;
+     period = "LHC16";
+   }
+    
+   // 2017 MC productions
+   else if ( prodType.Contains("17h")    || prodType.Contains("17l")  || 
+             prodType.Contains("17k")    ||
+             prodType.Contains("18b8")   || // Jet-Jet 5 TeV
+             prodType.Contains("18b10")  || // Gamma-Jet 5 TeV
+             prodType.Contains("18c12")  || prodType.Contains("18c13")|| 
+             prodType.Contains("18a1")   || prodType.Contains("18a3") || 
+             prodType.Contains("18a4")   || prodType.Contains("18a8") || 
+             prodType.Contains("18a9")    )
+   {
+     year = 2017;
+     period = "LHC17";
+   }
+    else
+    {
+      year = 2018;
+      period = "LHC18";
     }
   } // Prod MC names
   
