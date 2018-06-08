@@ -128,6 +128,7 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
                                      ,Bool_t hadcontsyst = kFALSE
                                      ,Int_t phisystconsistenthadcont    // mfaggin, 13-Mar-2018
                                      ,Bool_t RejKinks           // mfaggin, 12-Apr-2018
+                                     ,Int_t filBIT              // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT)
                                      )
 {
   Bool_t kAnalyseTaggedTracks = kFALSE;
@@ -167,7 +168,9 @@ AliAnalysisTaskHFE* ConfigHFEnpePbPb5TeV(Bool_t useMC, Bool_t isAOD, TString app
     hfecuts->SetRejectKinkDaughters();
   }
   else  hfecuts->SetAcceptKinkMothers();
-  if(isAOD) hfecuts->SetAODFilterBit(2);  
+  //if(isAOD) hfecuts->SetAODFilterBit(2);  
+  if(isAOD) hfecuts->SetAODFilterBit(filBIT);   // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT) (mfaggin, 07-Jun-2018)
+  printf("\n\n========= (ConfigHFEnpePbPb5TeV.C file) filBIT set: %d, namely FILTERBIT %d\n\n",filBIT,pow(2,filBIT));
 
   if((itshitpixel==AliHFEextraCuts::kAny) || (itshitpixel==AliHFEextraCuts::kSecond))     
   hfecuts->SetProductionVertex(0,7,0,7);
