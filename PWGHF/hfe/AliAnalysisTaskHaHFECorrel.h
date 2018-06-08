@@ -18,6 +18,7 @@
 
 class THnSparse;
 class TH2F;
+class TProfile;
 class TLorentzVector;
 
 class AliEMCALTrack;
@@ -42,7 +43,7 @@ class AliMultSelection;
 class AliEventPoolManager;
 class AliAODv0KineCuts;
 class AliESDv0KineCuts;
-
+class AliVertexingHFUtils;
 #include "AliAODv0KineCuts.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -152,39 +153,31 @@ public:
     void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
 
   
+    void SetRecEff(Bool_t RecEff) { 
+      fRecEff=RecEff;
+    }
+    void SetTagEff(Bool_t TagEff) {
+      fTagEff=TagEff;
+    }
     void SetHadronCorrelation(Bool_t CorrHadron) {
       fCorrHadron = CorrHadron;
-      if (CorrHadron) {
-	fTagEff=kFALSE;
-	fRecEff=kFALSE;
-	fHadCont=kFALSE;
-      }
     };
     void SetLPCorrelation(Bool_t CorrLP) {
       fCorrLParticle = CorrLP;
-      if (CorrLP) {
-	fTagEff=kFALSE;
-	fRecEff=kFALSE;
-	fHadCont=kFALSE;
-      }
     };
     void SetMCTruthCorrelation(Bool_t MCTruthCorr) {
       fMCTrueCorrelation = MCTruthCorr;
-      if (MCTruthCorr) {
-	fTagEff=kTRUE;
-	fRecEff=kTRUE;
-	fHadCont=kTRUE;
-      }
     };
 
     void SetOpeningAngleCut(Bool_t OpeningAngleCut) {fOpeningAngleCut=OpeningAngleCut;};
     void SetInvmassCut(Double_t InvmassCut) {fInvmassCut=InvmassCut;};
 
-
     void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
     void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
     void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");}
     void SetEleRecEff(TH2F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
+    void SetSPDnTrAvg(TProfile & SPDnTrAvg) {fSPDnTrAvg = SPDnTrAvg; fSPDnTrAvg.SetName("fSPDnTrAvg");}
+    
 
     Bool_t   ESDkTrkGlobalNoDCA(AliVTrack* Vtrack);
 
@@ -298,6 +291,20 @@ public:
     TH2F                  *fTrkpt;                  //! track pt for different cuts
     TH2F                  *fEtaVtxZ;                //! Eta vs Vtx z (check for ITS acceptance problem)
 
+    TH2F                  *fSPDVtxRes;              //
+    TH2F                  *fDiffSPDPrimVtx;         //!
+    TH2F                  *fSPDnTrAcc;              //!
+    TH2F                  *fSPDnTrGen;              //!
+    TH2F                  *fDiffSPDMCVtx;           //!
+    THnSparseF                  *fnTrAccMaxGen;           //!
+    THnSparseF                  *fnTrAccMinGen;           //!
+    THnSparseF                  *fnTrAccMeanGen;          //!
+    THnSparseF                  *fnTrAccMax;              //!
+    THnSparseF                  *fnTrAccMin;              //!
+    THnSparseF                  *fnTrAccMean;             //!
+
+
+    
     THnSparse             *fMultiplicity;	    //! multiplicity distribution
     TH3F                  *fSPDMultiplicity;        //!
     Int_t                 *fRunList;                //!
@@ -375,12 +382,13 @@ public:
     THnSparse             *fTagEffULSWoWeight;        //!
     THnSparse             *fTagTruePairsWoWeight;     //!
 
-    TH1F                  fCorrectPiontoData;    
+    TH1F                  fCorrectPiontoData;   
     Double_t              GetPionWeight(Double_t pt);
     TH1F                  fCorrectEtatoData;       
     Double_t              GetEtaWeight(Double_t pt);
     TH3F                  fHadRecEff;
     TH2F                  fEleRecEff;
+    TProfile              fSPDnTrAvg;
 
     Int_t                 fAssPtHad_Nbins;
     TArrayF               fAssPtHad_Xmin;
@@ -474,6 +482,8 @@ public:
     THnSparse             *fElecLPMixedEvent;       //!
     THnSparse             *fLSElecLPMixedEvent;     //!
     THnSparse             *fULSElecLPMixedEvent;    //!
+    THnSparse             *fTagLPMixedEvent; //!
+    THnSparse             *fNonTagLPMixedEvent; //!
    
     
     TH2F                  *fCheckMCVertex;           //!
