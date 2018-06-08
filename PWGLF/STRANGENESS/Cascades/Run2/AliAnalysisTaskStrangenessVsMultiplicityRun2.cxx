@@ -4266,7 +4266,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     Long_t lPtbinnumb = sizeof(lPtbinlimits)/sizeof(Double_t) - 1;
     
     // centrality binning
-    Double_t lCentbinlimits[] = {0, 1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90};
+    Double_t lCentbinlimits[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90};
     Long_t lCentbinnumb = sizeof(lCentbinlimits)/sizeof(Double_t) - 1;
     
     // TStrings for output names
