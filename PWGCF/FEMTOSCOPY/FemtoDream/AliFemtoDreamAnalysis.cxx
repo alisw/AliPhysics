@@ -298,5 +298,15 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
   if (!fEvtCuts->isSelected(fEvent)) {
     return;
   }
+  std::cout << "===================" << std::endl;
+  std::cout << "===================" << std::endl;
+  std::cout << "======new Event====" << std::endl;
+  std::cout << "===================" << std::endl;
+  std::cout << "===================" << std::endl;
+
+  for (int iTrack=0;evt->GetNumberOfTracks();++iTrack) {
+    AliESDtrack *track=static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
+    fFemtoTrack->SetTrack(track);
+  }
 }
 

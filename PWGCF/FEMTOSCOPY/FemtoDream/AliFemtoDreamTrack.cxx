@@ -87,6 +87,11 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
   }
 }
 
+void AliFemtoDreamTrack::SetTrack(AliESDtrack *track) {
+  this->Reset();
+  std::cout << track->GetID() << std::endl;
+}
+
 void AliFemtoDreamTrack::SetTrackingInformation() {
   this->fFilterMap=fTrack->GetFilterMap();
   this->SetEta(fTrack->Eta());

@@ -9,6 +9,7 @@
 #define ALIFEMTODREAMTRACK_H_
 
 #include <vector>
+#include "AliESDtrack.h"
 #include "AliFemtoDreamBasePart.h"
 #include "AliPIDResponse.h"
 class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
@@ -16,6 +17,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   AliFemtoDreamTrack();
   virtual ~AliFemtoDreamTrack();
   void SetTrack(AliAODTrack *track);
+  void SetTrack(AliESDtrack *track);
   UInt_t GetilterMap() const {return fFilterMap;};
   bool TestFilterBit(UInt_t filterBit)
   {return (bool) ((filterBit & fFilterMap) != 0);}

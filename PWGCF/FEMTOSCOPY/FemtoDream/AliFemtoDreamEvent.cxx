@@ -10,6 +10,7 @@
 #include "AliAODVertex.h"
 #include "AliAODVZERO.h"
 #include "AliMultSelection.h"
+#include "AliESDtrackCuts.h"
 
 ClassImp(AliFemtoDreamEvent)
 AliFemtoDreamEvent::AliFemtoDreamEvent()
@@ -169,8 +170,10 @@ void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
     this->fPassAliEvtSelection=false;
   }
   //!to do: Check event multiplicity estimation!
-  this->fSPDMult=evt->GetNumberOfTrdTracklets();
-  this->fRefMult08=evt->GetNumberOfITSClusters(1);
+  this->fSPDMult=evt->GetNumberOfITSClusters(1);
+  this->fRefMult08=
+      AliESDtrackCuts::GetReferenceMultiplicity(
+          evt,AliESDtrackCuts::kTrackletsITSTPC,0.8,0);
   this->fV0AMult=vZERO->GetMTotV0A();
   this->fV0CMult=vZERO->GetMTotV0C();
   float lPercentile = 300;
