@@ -10,7 +10,6 @@
 
 class TTree;
 
-#include <TBits.h>
 #include <TString.h>
 #include <TVectorF.h>
 #include "AliAODAD.h"
@@ -43,15 +42,17 @@ private:
   TString fEstimatorNames;
 
   // TTree branches
-  AliAODAD         fAD;             //!
-  TBits            fIR1Map;         //!
-  TBits            fIR2Map;         //!
+  TVectorF         fMultAD;         //!
+  Int_t            fPFBBAD[16];     //!
+  Int_t            fPFBGAD[16];     //!
+  Int_t            fClosestInteractions[2]; //! for IR1,IR2
   TVectorF         fMult;           //
   TVectorF         fCent;           //
-
+  Float_t          fVtxZ;           //!
+  Int_t            fNVtxContr;      //!
   // task output
   TTree *fTE;                    //!
 
-  ClassDef(AliAnalysisTaskADCent, 1);
+  ClassDef(AliAnalysisTaskADCent, 2);
 } ;
 #endif // _ALI_ANALYSIS_TASK_AD_CENT_H_
