@@ -93,7 +93,8 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(): AliAnalysisTas
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
-  fMaxY(2)
+  fMaxY(2),
+  fMaxEta(0)
 {
 
 }
@@ -138,7 +139,8 @@ AliAnalysisTaskGammaCocktailMC::AliAnalysisTaskGammaCocktailMC(const char *name)
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
-  fMaxY(2)
+  fMaxY(2),
+  fMaxEta(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -530,9 +532,14 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
     if( yPre <= 0 ) continue;
 
     Double_t y = 0.5*TMath::Log(yPre);
-    if (TMath::Abs(y) > fMaxY) continue;
-
+    
     if(particle->GetPdgCode()==22 && hasMother==kTRUE){
+      // additional condition to remove gammas out of eta range
+      if (fMaxEta>0){
+        if (TMath::Abs(particle->Eta()) > fMaxEta) continue;
+      } else {
+        if (TMath::Abs(y) > fMaxY) continue;
+      }
       if(motherIsPrimary && fHasMother[GetParticlePosLocal(motherParticle->GetPdgCode())]){
         fHistPtYGamma->Fill(particle->Pt(), particle->Y(), particle->GetWeight());
         fHistPtPhiGamma->Fill(particle->Pt(), particle->Phi(), particle->GetWeight());
@@ -652,7 +659,8 @@ void AliAnalysisTaskGammaCocktailMC::ProcessMCParticles(){
         }
       }
     }
-
+    // remove particles (not gammas) outside of defined rapidity range
+    if (TMath::Abs(y) > fMaxY) continue;
     if(particle->GetPdgCode()!=22 && particleIsPrimary && fHasMother[GetParticlePosLocal(particle->GetPdgCode())]){
 
       Double_t alpha    = -999;
