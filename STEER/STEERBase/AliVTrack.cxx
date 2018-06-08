@@ -26,6 +26,8 @@
 
 ClassImp(AliVTrack)
 
+const ULong64_t AliVTrack::kTRDupdate = 0x100000000; // Flag TRD updating the ESD kinematics
+
 AliVTrack::AliVTrack(const AliVTrack& vTrack) :
   AliVParticle(vTrack) { } // Copy constructor
 

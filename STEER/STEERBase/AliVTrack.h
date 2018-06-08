@@ -27,7 +27,7 @@ class AliTOFHeader;
 class AliVTrack: public AliVParticle {
 
 public:
-  enum {
+  enum  {
     kITSin        = 0x1
     ,kITSout      = 0x2
     ,kITSrefit    = 0x4
@@ -64,6 +64,9 @@ public:
     ,kESDpid      = 0x40000000
     ,kTIME        = 0x80000000
   };
+  // since with enum we cannot go above 32 bits, we have to define static constants here
+  static const ULong64_t kTRDupdate; // Flag TRD updating the ESD kinematics
+  
   enum {
     kTRDnPlanes = 6,
     kEMCALNoMatch = -4096,
@@ -231,7 +234,7 @@ public:
 
   virtual Int_t             GetKinkIndex(Int_t /*i*/) const { return 0;}
   virtual Double_t          GetSigned1Pt()         const { return 0;}
-  virtual Bool_t            IsOn(Int_t /*mask*/) const {return 0;}
+  virtual Bool_t            IsOn(ULong_t /*mask*/) const {return 0;}
   virtual Double_t          GetX()    const {return 0;}
   virtual Double_t          GetY()    const {return 0;}
   virtual Double_t          GetZ()    const {return 0;}
