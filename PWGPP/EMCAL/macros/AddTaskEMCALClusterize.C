@@ -327,7 +327,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
       clusterize->SetInducedEnergyLossMaximumFractionPerSM(mu1Max,ism);
     
     clusterize->SetInducedTCardMinimumCellEnergy(0) ;
-    clusterize->SeInducedTCardMaximum(100) ;
+    clusterize->SetInducedTCardMaximum(100) ;
     
     // No randomization of the previosly set parameters
     clusterize->SwitchOffRandomizeTCardInducedEnergy() ;
