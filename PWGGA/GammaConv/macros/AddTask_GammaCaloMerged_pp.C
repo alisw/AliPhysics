@@ -907,6 +907,34 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052113","1111111067032200000","1111111067022210002","0163302200000000"); // EMC7
     cuts.AddCut("00081113","1111111067032200000","1111111067022210002","0163302200000000"); // EMCEGA,
 
+    // use EOverP veto in track matching
+    // INT7
+  } else if (trainConfig == 171){  // default TM with different E/p cuts
+    cuts.AddCut("00010113","111111106c032200000","111111106c022700001","0163300000000000"); // no E/p cut, but reference histograms for variations
+    cuts.AddCut("00010113","111111106d032200000","111111106d022700001","0163300000000000"); // loosest cut: EOverPMax= 3.0
+    cuts.AddCut("00010113","111111106e032200000","111111106e022700001","0163300000000000"); // EOverPMax= 2.0
+  } else if (trainConfig == 172){  // default TM with different E/p cuts
+    cuts.AddCut("00010113","111111106f032200000","111111106f022700001","0163300000000000"); // EOverPMax= 1.75
+    cuts.AddCut("00010113","111111106g032200000","111111106g022700001","0163300000000000"); // EOverPMax= 1.5
+    cuts.AddCut("00010113","111111106h032200000","111111106h022700001","0163300000000000"); // hardest cut: EOverPMax= 1.25
+    // EMC7
+  } else if (trainConfig == 174){  // default TM with different E/p cuts
+    cuts.AddCut("00052113","111111106c032200000","111111106c022700001","0163300000000000"); // no E/p cut, but reference histograms for variations
+    cuts.AddCut("00052113","111111106d032200000","111111106d022700001","0163300000000000"); // loosest cut: EOverPMax= 3.0
+    cuts.AddCut("00052113","111111106e032200000","111111106e022700001","0163300000000000"); // EOverPMax= 2.0
+  } else if (trainConfig == 175){  // default TM with different E/p cuts
+    cuts.AddCut("00052113","111111106f032200000","111111106f022700001","0163300000000000"); // EOverPMax= 1.75
+    cuts.AddCut("00052113","111111106g032200000","111111106g022700001","0163300000000000"); // EOverPMax= 1.5
+    cuts.AddCut("00052113","111111106h032200000","111111106h022700001","0163300000000000"); // hardest cut: EOverPMax= 1.25
+    // EGA
+  } else if (trainConfig == 177){  // default TM with different E/p cuts
+    cuts.AddCut("00081113","111111106c032200000","111111106c022700001","0163300000000000"); // no E/p cut, but reference histograms for variations
+    cuts.AddCut("00081113","111111106d032200000","111111106d022700001","0163300000000000"); // loosest cut: EOverPMax= 3.0
+    cuts.AddCut("00081113","111111106e032200000","111111106e022700001","0163300000000000"); // EOverPMax= 2.0
+  } else if (trainConfig == 178){  // default TM with different E/p cuts
+    cuts.AddCut("00081113","111111106f032200000","111111106f022700001","0163300000000000"); // EOverPMax= 1.75
+    cuts.AddCut("00081113","111111106g032200000","111111106g022700001","0163300000000000"); // EOverPMax= 1.5
+    cuts.AddCut("00081113","111111106h032200000","111111106h022700001","0163300000000000"); // hardest cut: EOverPMax= 1.25
     
   // T0AND cuts
   } else if (trainConfig == 181){  // EMCAL clusters, different triggers with NonLinearity track matching to cluster
@@ -977,8 +1005,6 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00052113","1111112067032200000","1111112067022700001","0163300000000000"); // EMC7
     cuts.AddCut("00085113","1111112067032200000","1111112067022700001","0163300000000000"); // EG2
     cuts.AddCut("00083113","1111112067032200000","1111112067022700001","0163300000000000"); // EG1
-
-
     // all the cut variations
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

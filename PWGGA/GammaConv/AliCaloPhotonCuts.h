@@ -296,7 +296,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      ClusterQualityCuts(AliVCluster* cluster,AliVEvent *event, AliMCEvent *mcEvent, Int_t isMC, Double_t weight, Long_t clusterID);
 
     Bool_t      MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event, Double_t weight=1.);
-    void        MatchTracksToClusters(AliVEvent* event, Double_t weight=1., Bool_t isEMCalOnly = kTRUE);
+    void        MatchTracksToClusters(AliVEvent* event, Double_t weight=1., Bool_t isEMCalOnly = kTRUE, AliMCEvent *mcEvent = 0x0);
     Bool_t      CheckClusterForTrackMatch(AliVCluster* cluster);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
@@ -312,6 +312,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     std::vector<Int_t> GetVectorMatchedTracksToCluster(AliVEvent* event, AliVCluster* cluster);
     Bool_t      GetClosestMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
     Bool_t      GetHighestPtMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
+    Bool_t      IsClusterPi0(AliVEvent *event, AliMCEvent *mcEvent, AliVCluster *cluster);
 
     AliCaloTrackMatcher* GetCaloTrackMatcherInstance()          {return fCaloTrackMatcher;}
 
@@ -421,6 +422,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t    fUsePtDepTrackToCluster;                  // flag for switching on pT dependent matching parameters
     TF1*      fFuncPtDepEta;                            // TF1 for pT dep cutting in eta
     TF1*      fFuncPtDepPhi;                            // TF1 for pT dep cutting in phi
+    Bool_t    fUseEOverPVetoTM;                         // flag for switching on E/P veto (forbidding tracks to match clusters if clusterE/trackP > someValue
+    Double_t  fEOverPMax;                               // maximum value for E/P of a track to be considered for TM
     Int_t     fExtendedMatchAndQA;                      // switching on ext matching histograms (1) / ext QA_noCell (2) / ext matching + ext QA_noCell (3) / extQA + cell (4) / ext match + extQA + cell (5) or all off (0)
     Double_t  fExoticEnergyFracCluster;                 // exotic energy compared to E_cross cluster cut
     Double_t  fExoticMinEnergyCell;                     // minimum energy of cell to test for exotics
@@ -545,12 +548,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     // histograms for track matching efficiency
     TH2F*     fHistClusterTMEffiInput;                  //
-    TH2F*     fHistClusterElecEtaPhiBeforeTM_00_20;     //
-    TH2F*     fHistClusterElecEtaPhiBeforeTM_20_50;     //
-    TH2F*     fHistClusterElecEtaPhiBeforeTM_50_00;     //
-    TH2F*     fHistClusterElecEtaPhiAfterTM_00_20;      //
-    TH2F*     fHistClusterElecEtaPhiAfterTM_20_50;      //
-    TH2F*     fHistClusterElecEtaPhiAfterTM_50_00;      //
+    TH2F*     fHistClusterTrueElecEtaPhiBeforeTM_30_00; // electron clusters before track matching, only for E_clus > 30 GeV
+    TH2F*     fHistClusterTrueElecEtaPhiAfterTM_30_00;  // electron clusters after track matching, only for E_clus > 30 GeV
     TH2F*     fHistClusterEvsTrackECharged;             //
     TH2F*     fHistClusterEvsTrackEChargedLead;         //
     TH2F*     fHistClusterEvsTrackENeutral;             //
@@ -562,6 +561,14 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterENMatchesCharged;             //
     TH2F*     fHistClusterEvsTrackEPrimaryButNoElec;    //
     TH2F*     fHistClusterEvsTrackSumEPrimaryButNoElec; //
+
+    TH1F*     fHistClusETruePi0_BeforeTM;               // for checking the false positives: how much true pi0s are matched away?
+    TH1F*     fHistClusETruePi0_Matched;                //
+
+    // histograms for studying track matching veto with track momentum vs. cluster energy
+    TH2F*     fHistMatchedTrackPClusE;                // track P vs cluster E in case of matching with a cluster
+    TH2F*     fHistMatchedTrackPClusEAfterEOverPVeto; // track P vs cluster E for matched tracks surviving the E/P veto
+    TH2F*     fHistMatchedTrackPClusETruePi0Clus;     // track P vs cluster E in case of matching with a true pi0 cluster
 
     Int_t      fNMaxDCalModules;                        // max number of DCal Modules
     Int_t      fgkDCALCols;                             // Number of columns in DCal
