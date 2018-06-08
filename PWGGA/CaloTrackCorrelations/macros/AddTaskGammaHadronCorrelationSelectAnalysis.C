@@ -109,6 +109,9 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
   
   if ( !task ) return NULL;
   
+  // No need to continue configuration if event is not processed
+  if ( !task->GetAnalysisMaker()->IsEventProcessed() ) return task ;
+  
   TList * anaList = task->GetAnalysisMaker()->GetListOfAnalysisContainers();
   printf("TList name: %s\n",anaList->GetName());
   

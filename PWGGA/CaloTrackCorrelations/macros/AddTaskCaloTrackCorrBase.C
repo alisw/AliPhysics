@@ -29,6 +29,8 @@
 #include "AliESDtrackCuts.h"
 #include "CreateTrackCutsPWGJE.C"
 #include "GetAlienGlobalProductionVariables.C"
+#include "CheckActiveEMCalTriggerPerPeriod.C"
+
 #endif
 
 ///
@@ -451,16 +453,6 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   Bool_t  printGlobal = kTRUE;
   
   GetAlienGlobalProductionVariables(simulation,col,period,year,printGlobal);
-
-  printf("AddTaskCaloTrackCorrBase::Main() << settings:"
-         "\n calorimeter <%s>, simulation <%d>, year <%d>, col <%s>, "
-         "\n trigger <%s>, reject EMC <%d>, clustersArray <%s>, cuts <%s>"
-         "\n calibrate <%d>, non linearity <%d>, minCen <%d>, maxCen <%d>, "
-         "\n mixOn <%d>, outputfile <%s>, printSettings <%d>, debug <%d> >>\n",
-         calorimeter.Data(), simulation, year, col.Data(),
-         trigger.Data(), rejectEMCTrig, clustersArray.Data(), cutsString.Data(),
-         calibrate, nonLinOn, minCen, maxCen,
-         mixOn, outputfile.Data(), printSettings, debug);
   
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -478,9 +470,6 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     return NULL;
   }
   
-  // Make sure the B field is enabled for track selection, some cuts need it
-  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
-  
   // Name for containers
   
   TString anaCaloTrackCorrBase = Form("CTC_%s_Trig_%s",calorimeter.Data(),trigger.Data());
@@ -493,10 +482,76 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 
   printf("AddTaskCaloTrackCorrBase::Main() <<<< Folder name: %s >>>>>\n",
          anaCaloTrackCorrBase.Data());
+      
+  //
+  // Create task, pass the maker and add it to the manager
+  //
+  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("%s",anaCaloTrackCorrBase.Data()));
   
-  // #### Configure analysis ####
+  //  task->SetFirstEvent(1800);
+  //  task->SetLastEvent (2000);  
+  
+  task->SetDebugLevel(debug);
+  
+  //task->SetBranches("ESD:AliESDRun.,AliESDHeader");
+  //task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
+  
+  maker->SetAnaDebug(debug)  ;
+  
+  task->SetAnalysisMaker(maker);
+  
+  mgr->AddTask(task);
+
+  //
+  // Create containers
+  //
+  if(outputfile.Length()==0) outputfile = AliAnalysisManager::GetCommonFileName();
+  
+  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(anaCaloTrackCorrBase, TList::Class(),
+                                                             AliAnalysisManager::kOutputContainer,
+                                                             Form("%s",outputfile.Data()));
+  
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",anaCaloTrackCorrBase.Data()), TList::Class(),
+                                                             AliAnalysisManager::kParamContainer,
+                                                             "AnalysisParameters.root");
+  
+  // Create ONLY the output containers for the data produced by the task.
+  // Get and connect other common input/output containers via the manager as below
+  //==============================================================================
+  mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
+  //if(!kData.Contains("delta")   && outputAOD) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
+  mgr->ConnectOutput (task, 1, cout_pc);
+  mgr->ConnectOutput (task, 2, cout_cuts);
+  //==============================================================================
+  
+  // Do not configure the wagon for certain analysis combinations
+  // But create the task so that the sub-wagon train can run
+  //
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/CheckActiveEMCalTriggerPerPeriod.C");
+  Bool_t doAnalysis = CheckActiveEMCalTriggerPerPeriod(simulation,trigger,period,year);
+  if(!doAnalysis) 
+  {
+    maker->SwitchOffProcessEvent();
+    return task;
+  }
+  
+  // #### Start analysis configuration ####
+  // Print settings
+  //
+  printf("AddTaskCaloTrackCorrBase::Main() << settings:"
+         "\n calorimeter <%s>, simulation <%d>, year <%d>, col <%s>, "
+         "\n trigger <%s>, reject EMC <%d>, clustersArray <%s>, cuts <%s>"
+         "\n calibrate <%d>, non linearity <%d>, minCen <%d>, maxCen <%d>, "
+         "\n mixOn <%d>, outputfile <%s>, printSettings <%d>, debug <%d> >>\n",
+         calorimeter.Data(), simulation, year, col.Data(),
+         trigger.Data(), rejectEMCTrig, clustersArray.Data(), cutsString.Data(),
+         calibrate, nonLinOn, minCen, maxCen,
+         mixOn, outputfile.Data(), printSettings, debug);
+  
+  // Make sure the B field is enabled for track selection, some cuts need it
+  ((AliInputEventHandler*)mgr->GetInputEventHandler())->SetNeedField(kTRUE);
   
   //
   // General frame setting and configuration
@@ -507,8 +562,6 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   
   maker->SetCaloUtils( ConfigureCaloUtils(col,simulation,calorimeter,nonLinOn,calibrate,year,
                                           printSettings,debug) );
-  
-  maker->SetAnaDebug(debug)  ;
   
   maker->SwitchOnHistogramsMaker()  ;
   maker->SwitchOnAODsMaker()  ;
@@ -528,6 +581,15 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     // Just fill cross section and trials histograms.
     maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionHistoFill(); 
     
+    // For productions where the cross sections and trials are not stored in separate file
+    TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
+    printf("AddTaskCaloTrackCorrBase() - MC production name: %s\n",prodType.Data());
+    if ( prodType.Contains("LHC16c") ) // add here any other affected periods, for the moment jet-jet 8 TeV
+    {   
+      printf("\t use the cross section from EventHeader per Event\n");
+      maker->GetReader()->GetWeightUtils()->SwitchOnMCCrossSectionFromEventHeader() ;
+    } 
+    
     // Add control histogram with pT hard to control aplication of weights 
     maker->SwitchOnPtHardHistogram();
   }
@@ -536,24 +598,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   
   // Set the list name for later recovery in macros 
   maker->GetListOfAnalysisContainers()->SetName(anaCaloTrackCorrBase);
-
-  printf("AddTaskCaloTrackCorrBase::Main() << End Base Task Configuration for %s >>\n",anaCaloTrackCorrBase.Data());
   
-  //
-  // Create task, pass the maker and add it to the manager
-  //
-  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("%s",anaCaloTrackCorrBase.Data()));
-  
-  task->SetDebugLevel(debug);
-  
-  //task->SetBranches("ESD:AliESDRun.,AliESDHeader");
-  //task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
-  
-  task->SetAnalysisMaker(maker);
-  
-  mgr->AddTask(task);
-
-  //
   // Select events trigger depending on trigger
   //
   maker->GetReader()->SwitchOnEventTriggerAtSE(); // on is default case
@@ -584,27 +629,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
     }
   }
   
-  //
-  // Create containers
-  //
-  if(outputfile.Length()==0) outputfile = AliAnalysisManager::GetCommonFileName();
-  
-  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(anaCaloTrackCorrBase, TList::Class(),
-                                                             AliAnalysisManager::kOutputContainer,
-                                                             Form("%s",outputfile.Data()));
-  
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("Param_%s",anaCaloTrackCorrBase.Data()), TList::Class(),
-                                                             AliAnalysisManager::kParamContainer,
-                                                             "AnalysisParameters.root");
-  
-  // Create ONLY the output containers for the data produced by the task.
-  // Get and connect other common input/output containers via the manager as below
-  //==============================================================================
-  mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
-  //if(!kData.Contains("delta")   && outputAOD) mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());
-  mgr->ConnectOutput (task, 1, cout_pc);
-  mgr->ConnectOutput (task, 2, cout_cuts);
-  
+  printf("AddTaskCaloTrackCorrBase::Main() << End Base Task Configuration for %s >>\n",anaCaloTrackCorrBase.Data());
+
   return task;
 }
 
