@@ -943,7 +943,7 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
 
 
-  Double_t fillSparse[3]={spdVtx->GetZ(), nTrAcc,1};
+  Double_t fillSparse[3]={spdVtx->GetZ(), 1.*nTrAcc,1.};
   fillSparse[2]=nTrAccCorrMax;
   fnTrAccMax->Fill(fillSparse);
   fillSparse[2]=nTrAccCorrMin;
