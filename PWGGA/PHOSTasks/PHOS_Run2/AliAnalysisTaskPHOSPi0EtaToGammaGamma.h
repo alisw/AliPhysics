@@ -216,6 +216,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       }
     }
 
+    void SetQnStep(Int_t step) {fQnStep = step;}
+
     void SetTRFMethod(Int_t id) {fTRFM = id;}//trigger rejection factor
     void SetPHOSTriggerAnalysis(TString selection, Bool_t isMC){
       //obsolete
@@ -439,6 +441,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     TString fV0EPName[3]; 
     Double_t fEventPlane;
     TVector2 fQVector1;//x,y
+    Int_t fQnStep;
     Int_t fNHybridTrack;
     Bool_t fIsPHOSTriggerAnalysis;
     Double_t fEnergyThreshold;
@@ -465,7 +468,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 60);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 61);
 };
 
 #endif
