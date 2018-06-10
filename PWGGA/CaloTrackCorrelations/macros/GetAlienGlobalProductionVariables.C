@@ -33,7 +33,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
   TString prodTag  = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
   TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
     
-  if(col=="") // Check the alien environment 
+  if ( col == "" ) // Check the alien environment 
   {
     if      (colType.Contains( "PbPb")) col = "PbPb"; 
     else if (colType.Contains( "XeXe")) col = "PbPb"; 
@@ -51,7 +51,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
     if   ( !simulation && period!="" ) period = prodTag;
     
     // print check on global settings once
-    if(print) 
+    if ( print ) 
       printf("GetAlienGlobalProductionVariables() - Get the data features from global parameters: "
              "collision <%s> (<%s>), period <%s>, tag <%s>, type <%s>, MC bool <%d> \n",
              colType.Data(),col.Data(),
@@ -68,6 +68,9 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
     else if(period.Contains("12")) year = 2012;
     else if(period.Contains("11")) year = 2011;
     else if(period.Contains("10")) year = 2010;
+    
+    if ( print ) 
+      printf("GetAlienGlobalProductionVariables() -  Data year <%d> \n", year);
   } 
   
   // Check MC production tag name to match with data year and production name
@@ -76,7 +79,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
     // 2011 MC productions
     if      ( prodType.Contains("14j") )
     {
-      year = 2010;
+      year   = 2010;
       period = "LHC10";
     } 
     
@@ -89,7 +92,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
               prodType.Contains("12a15f")|| prodType.Contains("12a15a")|| // 7 TeV and 2.76 jet-jet
               prodType.Contains("12a17") || prodType.Contains("14a1")   ) // Pb-Pb LHC11h
     {
-      year = 2011;
+      year   = 2011;
       period = "LHC11";
     }
     
@@ -102,7 +105,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
               prodType.Contains("16c2")  || // 8 TeV jet-jet   
               prodType.Contains("17g5")   ) // 8 TeV jet-jet+gamma, gamma-jet
     {
-      year = 2012;
+      year   = 2012;
       period = "LHC12";
     }   
     
@@ -116,7 +119,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
               prodType.Contains("16k1a") ||
               prodType.Contains("15g")    )
     {
-      year = 2013;
+      year   = 2013;
       period = "LHC13";
     }
    else if ( prodType.Contains("16k")    || prodType.Contains("16h")    ||
@@ -129,7 +132,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
              prodType.Contains("18b10")  || 
              prodType.Contains("18b11")   ) // jet-jet PbPb
    {
-     year = 2015;
+     year   = 2015;
      period = "LHC15";
    }
   
@@ -144,7 +147,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
              prodType.Contains("17h9")   || prodType.Contains("18b3_")||
              prodType.Contains("17i3")    ) // pp 13 TeV jet-jet+gamma, gamma-jet
    {
-     year = 2016;
+     year   = 2016;
      period = "LHC16";
    }
     
@@ -157,15 +160,19 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
              prodType.Contains("18a1")   || prodType.Contains("18a3") || 
              prodType.Contains("18a4")   || prodType.Contains("18a8") || 
              prodType.Contains("18a9")    )
-   {
-     year = 2017;
-     period = "LHC17";
-   }
+    {
+      year   = 2017;
+      period = "LHC17";
+    }
     else
     {
-      year = 2018;
+      year   = 2018;
       period = "LHC18";
     }
+    
+    if ( print ) 
+      printf("GetAlienGlobalProductionVariables() -  Simulation period <%s>, year <%d> \n",
+             period.Data(),year);
   } // Prod MC names
   
 }
