@@ -7,6 +7,7 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 				       Bool_t DCAext = kFALSE,
 				       Bool_t PID = kFALSE,
 				       Bool_t UseRapidity = kFALSE,
+				       TString MCorData = "data",
 				       TString centEstim = "V0M",
 				       AliAnalysisTaskAccCont::kSystem systemType = AliAnalysisTaskAccCont::kPbPb,
 				       AliAnalysisTaskAccCont::kCentralityBinning nCenBins = AliAnalysisTaskAccCont::kFull,
@@ -107,9 +108,11 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   
   if(systemType == AliAnalysisTaskAccCont::kPbPb)
   task[iCentralityBin]->UsePileUpCutsPbPb();
-  else if(systemType == AliAnalysisTaskAccCont::kpPb)
+  else if(systemType == AliAnalysisTaskAccCont::kpPb){
+  if (MCorData == "data")
   task[iCentralityBin]->UsePileUpCutspPb();
- 
+  }
+
   if(UseRapidity)
   task[iCentralityBin]->SetUseRapidity(); 
  
