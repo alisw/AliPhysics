@@ -52,7 +52,8 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   void Reset();
   float GetBeta(AliAODTrack *track);
   bool CheckGlobalTrack(const Int_t TrackID);
-  void SetTrackingInformation();
+  void SetAODTrackingInformation();
+  void SetESDTrackingInformation();
   void SetPhiAtRadii();
   void SetPIDInformation();
   void SetMCInformation();
@@ -78,10 +79,15 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   std::vector<bool> fITSHit;
   bool fTOFTiming;
   bool fTPCRefit;
-  AliAODTrack *fTrack;
-  AliAODTrack *fGlobalTrack;
+  AliESDtrack *fESDTrack;
+  AliAODTrack *fAODTrack;
+  AliAODTrack *fAODGlobalTrack;
   float fnSigmaTPC[5];
   float fnSigmaTOF[5];
+  UInt_t fESDStatus;
+  int fESDnClusterITS;
+  int fESDnClustersTPC;
+  float fESDnCrossedRowsTPC;
   ClassDef(AliFemtoDreamTrack,3)
 };
 
