@@ -100,8 +100,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fEopPt_had(0),
 				fEtadiff(0),
 				fPhidiff(0),
-				fInv_pT_ULS(0),
 				fInv_pT_LS(0),
+				fInv_pT_ULS(0),
 				fHistPt_Inc(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
@@ -187,10 +187,9 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fEopPt_had(0),
 				fEtadiff(0),
 				fPhidiff(0),
-				fInv_pT_ULS(0),
 				fInv_pT_LS(0),
+				fInv_pT_ULS(0),
 				fHistPt_Inc(0),
-				//==== Trigger or Calorimeter flag ====
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -369,8 +368,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fEopPt_had);
 				fOutputList->Add(fEtadiff);
 				fOutputList->Add(fPhidiff);
-				fOutputList->Add(fInv_pT_ULS);
 				fOutputList->Add(fInv_pT_LS);
+				fOutputList->Add(fInv_pT_ULS);
 				fOutputList->Add(fHistPt_Inc);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
@@ -877,7 +876,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												}
 								}
 
-								}                                                   // continue until all the tracks are processed
+								}                                         // continue until all the tracks are processed
 				PostData(1, fOutputList);                           // stream the results the analysis of this event to
 				// the output manager which will take care of writing
 				// it to a file
