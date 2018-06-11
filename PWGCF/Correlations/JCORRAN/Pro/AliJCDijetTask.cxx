@@ -29,18 +29,7 @@
 #include "AliJCDijetTask.h" 
 
 // Fastjet includes
-#include <fastjet/config.h>
-#include <fastjet/PseudoJet.hh>
-#include <fastjet/JetDefinition.hh>
-// These will be added later
-//#include <fastjet/ClusterSequence.hh>
-#include <fastjet/ClusterSequenceArea.hh>
-#include <fastjet/AreaDefinition.hh>
-#include <fastjet/Selector.hh>
-//#include <fastjet/FunctionOfPseudoJet.hh>
-#include <fastjet/tools/JetMedianBackgroundEstimator.hh>
-//#include <fastjet/tools/BackgroundEstimatorBase.hh>
-#include <fastjet/tools/Subtractor.hh>
+#include <FJ_includes.h>
 
 //______________________________________________________________________________
 AliJCDijetTask::AliJCDijetTask() :   

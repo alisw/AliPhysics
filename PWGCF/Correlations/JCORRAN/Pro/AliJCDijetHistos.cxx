@@ -30,7 +30,26 @@ AliJCDijetHistos::AliJCDijetHistos() :
 	fHistCentBin(),
 	fh_pt(),
 	fh_eta(),
-	fh_phi()
+	fh_phi(),
+	fh_jetPt(),
+	fh_jetEta(),
+	fh_jetPhi(),
+	fh_jetEtaPhi(),
+	fh_rho(),
+	fh_rhom(),
+	fh_jetArea(),
+	fh_jetAreaRho(),
+	fh_corrJetPt(),
+	fh_corrJetEta(),
+	fh_corrJetPhi(),
+    fh_dijetInvM(),
+    fh_dijetPtPair(),
+    fh_dijetDeltaPhi(),
+    fh_dijetInvMDeltaPhiCut(),
+    fh_corrDijetInvM(),
+    fh_corrDijetPtPair(),
+    fh_corrDijetDeltaPhi(),
+    fh_corrDijetInvMDeltaPhiCut()
 {
 	
 }
@@ -41,7 +60,26 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
 	fHistCentBin(obj.fHistCentBin),
 	fh_pt(obj.fh_pt),
 	fh_eta(obj.fh_eta),
-	fh_phi(obj.fh_phi)
+	fh_phi(obj.fh_phi),
+	fh_jetPt(obj.fh_jetPt),
+	fh_jetEta(obj.fh_jetEta),
+	fh_jetPhi(obj.fh_jetPhi),
+	fh_jetEtaPhi(obj.fh_jetEtaPhi),
+	fh_rho(obj.fh_rho),
+	fh_rhom(obj.fh_rhom),
+	fh_jetArea(obj.fh_jetArea),
+	fh_jetAreaRho(obj.fh_jetAreaRho),
+	fh_corrJetPt(obj.fh_corrJetPt),
+	fh_corrJetEta(obj.fh_corrJetEta),
+	fh_corrJetPhi(obj.fh_corrJetPhi),
+    fh_dijetInvM(obj.fh_dijetInvM),
+    fh_dijetPtPair(obj.fh_dijetPtPair),
+    fh_dijetDeltaPhi(obj.fh_dijetDeltaPhi),
+    fh_dijetInvMDeltaPhiCut(obj.fh_dijetInvMDeltaPhiCut),
+    fh_corrDijetInvM(obj.fh_corrDijetInvM),
+    fh_corrDijetPtPair(obj.fh_corrDijetPtPair),
+    fh_corrDijetDeltaPhi(obj.fh_corrDijetDeltaPhi),
+    fh_corrDijetInvMDeltaPhiCut(obj.fh_corrDijetInvMDeltaPhiCut)
 {
 	// copy constructor
 }

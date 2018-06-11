@@ -30,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
   )
 
 # Sources - alphabetical order
@@ -57,6 +58,7 @@ if(FASTJET_FOUND)
     include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
     link_directories(${FASTJET_LIBS_DIR})
     add_definitions(${FASTJET_DEFINITIONS})
+    list(APPEND HDRS FJ_includes.h)
 endif(FASTJET_FOUND)
 
 # Headers from sources
@@ -73,18 +75,18 @@ set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW EMCALUtils PHOSUtils PWGJETFW PWGC
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
-generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
-
 if(FASTJET_FOUND)
   set(LIBDEPS
     ${LIBDEPS}
     fastjetcontribfragile
     fastjetplugins
+    siscone_spherical
+    siscone
     fastjettools
     fastjet
     )
 endif(FASTJET_FOUND)
-
+generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}" "Tracks UserTasks")
