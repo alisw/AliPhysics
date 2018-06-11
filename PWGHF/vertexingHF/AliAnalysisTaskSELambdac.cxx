@@ -1898,8 +1898,14 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
       AliVertexingHFUtils *util = new AliVertexingHFUtils();
       //      IsInjected = util->IsCandidateInjected(part,mcHeader2,arrayMC)?1:0;
    
-      labDp = MatchToMCLambdac(part,arrayMC);
-      if(labDp>0){
+			Int_t pdgCand =4122;
+			Int_t pdgDaughter[3]={-1,-1,-1};
+			pdgDaughter[0]=2212;
+			pdgDaughter[1]=321;
+			pdgDaughter[2]=211;   
+			//labDp = MatchToMCLambdac(part,arrayMC);
+      labDp = part->MatchToMC(pdgCand,arrayMC,3,pdgDaughter);
+      if(labDp>=0){
 	IsLc = 1;
 	AliAODMCParticle *partDp = (AliAODMCParticle*)arrayMC->At(labDp);
 	AliAODMCParticle *dg0 = (AliAODMCParticle*)arrayMC->At(partDp->GetDaughter(0));
@@ -2313,7 +2319,7 @@ void AliAnalysisTaskSELambdac::FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3
       }
 
       if(fReadMC){
-	if(labDp>0) {
+	if(labDp>=0) {
 	  index=GetSignalHistoIndex(iPtBin);
 	  if(invMasspiKp>0. && invMasspKpi>0.){
 	    if(invMasspiKp>0.) fMassHist[index]->Fill(invMasspiKp,0.5);
@@ -2550,7 +2556,7 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
   Bool_t IsLcfromc=0;
   if(fReadMC){
     lab=part->MatchToMC(4122,arrMC,3,pdgDgLctopKpi); //return MC particle label if the array corresponds to a Lc, -1 if not (cf. AliAODRecoDecay.cxx)
-    if(lab>0){
+    if(lab>=0){
       AliAODMCParticle *partDp = (AliAODMCParticle*)arrMC->At(lab);
       AliVertexingHFUtils *util = new AliVertexingHFUtils();
       Int_t pdgMom=util->CheckOrigin(arrMC,partDp,kFALSE);
@@ -2622,7 +2628,7 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
   }
   if(fReadMC && selectionTrack>0) { // 3prongs candidate x Lc (only track selection) Jaime
     Int_t isReal=0;
-    if(lab>0 &&  IsLcfromc){ // Signal
+    if(lab>=0 &&  IsLcfromc){ // Signal
       for (Int_t iprong=0; iprong<3; iprong++) {
 	switch (pdgProngMC[iprong]) {
 	case 2212:
@@ -2678,7 +2684,7 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
   //cuts->SetUsePID(kTRUE); //PAOLA
   Int_t selection=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod);
 
-  if ( (lab>0 && fReadMC && IsLcfromc) ||             // signal X MC
+  if ( (lab>=0 && fReadMC && IsLcfromc) ||             // signal X MC
        (isSelectedPID>0 && !fReadMC) ) { // signal+bkg X real data
 
     fillthis="hMass";
@@ -2927,7 +2933,7 @@ void AliAnalysisTaskSELambdac::FillVarHists(AliAODRecoDecayHF3Prong *part,
 
     } // end if (selection)
 
-  }else if( lab<=0 && fReadMC && !IsInjected ) { // bkg x MC
+  }else if( lab<0 && fReadMC && !IsInjected ) { // bkg x MC
 
     fillthis="hbMass";
 
@@ -3390,7 +3396,7 @@ void AliAnalysisTaskSELambdac::MultiplicityStudies(AliAODRecoDecayHF3Prong *part
 
   if(isSelected3ProngByLc>0 && fReadMC) {
     flag1 = kTRUE;
-    if (lab>0) {
+    if (lab>=0) {
       flag3 = kTRUE;
     }
 
@@ -3455,7 +3461,7 @@ void AliAnalysisTaskSELambdac::MultiplicityStudies(AliAODRecoDecayHF3Prong *part
 	break;
       }
 
-      if (lab>0) {
+      if (lab>=0) {
 	switch (TMath::Abs(mcprongTest->GetPdgCode())) {
 	case 11:
 	  fillthis="hElIn3Prong1";
