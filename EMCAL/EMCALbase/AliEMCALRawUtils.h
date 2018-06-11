@@ -35,6 +35,7 @@ class AliCaloCalibPedestal;
 class AliCaloRawAnalyzer;
 class AliEMCALTriggerRawDigitMaker;
 class AliEMCALTriggerData;
+class AliCaloBunchInfo;
 class TClonesArray;
 
 #include "AliCaloConstants.h"
@@ -52,7 +53,7 @@ public:
   void     Raw2Digits(AliRawReader *reader, TClonesArray *digitsArr, const AliCaloCalibPedestal* pedbadmap,
 				      TClonesArray *digitsTRG=0x0, TClonesArray *trgData=0x0);
   
-  void     AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, Float_t amp, Float_t time, Float_t chi2, Int_t ndf);
+  void     AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, const std::vector<AliCaloBunchInfo> &bunchlist, Float_t amp, Float_t time, Float_t chi2, Int_t ndf);
   
   void     TrimDigits(TClonesArray *digitsArr);
   

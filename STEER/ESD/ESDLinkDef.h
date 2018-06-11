@@ -10,6 +10,7 @@
  
 #pragma link C++ enum   AliESDEvent::ESDListIndex;
 
+#pragma link C++ class std::map<std::pair<int, int>, int>;
 
 #pragma link C++ class  AliESD+;
 #pragma link C++ class  AliESDEvent+;
@@ -113,6 +114,7 @@ code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPE
 #pragma link C++ class  AliESDV0Params+;
 #pragma link C++ class  AliV0HypSel+;
 #pragma link C++ class  AliESDCaloCluster+;
+#pragma link C++ class  AliESDCalofriend+;
 #pragma link C++ class  AliESDMuonCluster+;
 #pragma link C++ class  AliESDMuonPad+;
 

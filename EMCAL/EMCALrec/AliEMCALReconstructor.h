@@ -46,6 +46,7 @@ class AliEMCALCalibTime ;
 class AliCaloCalibPedestal ;
 class AliEMCALTriggerElectronics;
 class AliEMCALTriggerData;
+class AliESDCalofriend;
 
 class AliEMCALReconstructor : public AliReconstructor {
   
@@ -55,7 +56,7 @@ class AliEMCALReconstructor : public AliReconstructor {
   
   virtual ~AliEMCALReconstructor() ; //dtor
   
-  virtual  void  Init() {;}
+  virtual  void  Init();
   
   virtual  void  InitClusterizer() const;
   
@@ -148,9 +149,12 @@ class AliEMCALReconstructor : public AliReconstructor {
 
   //Track matching
   TList                      * fMatches;          //!<! Collection of matches between tracks and clusters
-  
+
+protected:
+  AliESDCalofriend *fESDCalofriend; //
+
   /// \cond CLASSIMP
-  ClassDef(AliEMCALReconstructor,14) ; // Reconstruction algorithm class (Base Class)
+  ClassDef(AliEMCALReconstructor,15) ; // Reconstruction algorithm class (Base Class)
   /// \endcond
 
 }; 

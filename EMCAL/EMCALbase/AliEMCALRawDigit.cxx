@@ -68,6 +68,28 @@ void AliEMCALRawDigit::Clear(Option_t *)
   fSamples = NULL;
 }
 
+//____________________________________________________________________________
+Bool_t AliEMCALRawDigit::GetSamples(Int_t samples[], Int_t ns) const
+{
+  //
+  if (ns <= 0) return kFALSE;
+  
+  int smax=TMath::Min(ns,fNSamples);
+  for (int i=0;i<smax;i++) samples[i]=fSamples[i];
+  return kTRUE;
+}
+
+//____________________________________________________________________________
+Bool_t AliEMCALRawDigit::GetTimeSample(const Int_t iSample, Int_t& sample) const
+{
+  // returns the time and amplitude of a given time sample and if the sample was ok
+  if (iSample > fNSamples || iSample < 0) return kFALSE;
+
+  sample = fSamples[iSample];
+
+  return kTRUE;
+}
+
 ///
 /// \return the time and amplitude of a given time sample and if the sample was ok
 //____________________________________________________________________________

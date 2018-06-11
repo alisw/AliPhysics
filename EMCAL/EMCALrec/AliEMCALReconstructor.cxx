@@ -58,6 +58,7 @@
 #include "AliEMCALTriggerRawDigit.h"
 #include "AliEMCALTriggerPatch.h"
 #include "AliEMCALTriggerTypes.h"
+#include "AliESDCalofriend.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEMCALReconstructor) ;
@@ -84,7 +85,7 @@ TClonesArray               *AliEMCALReconstructor::fgTriggerData      = 0x0;
 ///
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
-  : fGeom(0),fCalibData(0),fCalibTime(0),fPedestalData(0), fMatches(0x0)
+  : fGeom(0),fCalibData(0),fCalibTime(0),fPedestalData(0), fMatches(0x0), fESDCalofriend(0x0)
 {      
   // OCDB initialization, do it here to recover run number 
   // for geometry
@@ -226,8 +227,17 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   
   if(fMatches) { fMatches->Delete(); delete fMatches; fMatches = 0;}
   
+  if (fESDCalofriend) delete fESDCalofriend;
+  
   AliCodeTimer::Instance()->Print();
 } 
+
+//_____________________________________________________________________________
+void AliEMCALReconstructor::Init()
+{
+  //
+  fESDCalofriend = new AliESDCalofriend;
+}
 
 ///
 /// @brief Init the fgTriggerProcessor
@@ -376,6 +386,8 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   if(fgDigitsArr) fgDigitsArr->Clear("C");
   
+  fESDCalofriend->DeAllocate();
+  
   const int kNTRU = fGeom->GetNTotalTRU();
   TClonesArray *digitsTrg = new TClonesArray("AliEMCALTriggerRawDigit", kNTRU * 96);
   
@@ -476,7 +488,9 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   // Fill ESD
   AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("EMCAL");
-  
+  Int_t totalSize = fgTriggerDigits->GetEntriesFast()+2*fgDigitsArr->GetEntriesFast(); //LG/HG
+  fESDCalofriend->Allocate(totalSize);
+
   if (trgESD) 
   {
     trgESD->Allocate(fgTriggerDigits->GetEntriesFast());
@@ -495,6 +509,12 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
         trgESD->Add(px, py, a, t, times, rdig->GetNL0Times(), rdig->GetL1TimeSum(), rdig->GetL1SubRegion(), rdig->GetTriggerBits());
         trgBitWord |= rdig->GetTriggerBits();
         if (rdig->GetNL0Times()) trgBitWord |= 1 << 5; // Overwrite L0 id from STU payload
+        
+        const Int_t nSamples = 64;
+        Int_t samples[nSamples]={0};
+        if (rdig->GetNSamples() && rdig->GetSamples(samples,nSamples)) {
+          fESDCalofriend->Add(rdig->GetId(),5,nSamples,samples);
+        }
       }
     }
     
@@ -582,7 +602,21 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
     if( dig->GetType() == AliEMCALDigit::kHG ) highGain = kTRUE;
         
     emcCells.SetCell(idignew,dig->GetId(),energy, time,digLabel,0.,highGain);
-        
+
+    const Int_t nSamples = 64;//rdig->GetNSamples();
+    Int_t samples[nSamples]={0};
+
+    if (dig->GetNALTROSamplesLG()) {
+       dig->GetALTROSamplesLG(samples); fESDCalofriend->Add(dig->GetId(),1,nSamples,samples);
+    }
+    
+    //Reset
+    for (int idig=0;idig<nSamples;idig++) samples[idig]=0;
+
+    if (dig->GetNALTROSamplesHG()) {
+       dig->GetALTROSamplesHG(samples); fESDCalofriend->Add(dig->GetId(),0,nSamples,samples);
+    }
+    
     mapDigitAndCellIndex[idignew] = idig; // needed to pack cell MC labels in cluster 
         
     idignew++;
@@ -836,6 +870,14 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   // Store EMCAL misalignment matrixes
   FillMisalMatrixes(esd) ;
   
+  //add calo friends
+  if (esd) {
+    AliESDfriend *fr = (AliESDfriend*)esd->FindListObject("AliESDfriend");
+    if (fr) {
+      AliDebug(1, Form("Writing Calo friend data to ESD tree"));
+      fr->SetCalofriend(fESDCalofriend);
+    }
+  }
 }
 
 ///

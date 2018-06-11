@@ -258,7 +258,7 @@ void AliEMCALRawUtils::Digits2Raw()
 ///
 /// Create the digit from raw fit  and add it to the list of digits
 ///
-void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain,
+void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain, const std::vector<AliCaloBunchInfo> &bunchlist,
                                 Float_t amp, Float_t time, Float_t chi2, Int_t ndf)
 {
   AliEMCALDigit *digit = 0, *tmpdigit = 0;
@@ -267,6 +267,21 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
   while (digit == 0 && (tmpdigit = (AliEMCALDigit*) nextdigit())) 
   {
     if (tmpdigit->GetId() == id) digit = tmpdigit;
+  }
+  
+  Int_t timeSamples[64]; for (Int_t i=0; i<64; i++) timeSamples[i] = 0;	
+  Int_t nSamples = 0;
+  for (UInt_t i = 0; i < bunchlist.size(); i++) {
+    AliCaloBunchInfo bunch = bunchlist.at(i);
+
+    const UShort_t* sig = bunch.GetData();
+    Int_t startBin = bunch.GetStartBin();
+
+    for (Int_t iS = 0; iS < bunch.GetLength(); iS++) {
+      Int_t time = startBin--;
+      Int_t amp  = sig[iS];
+      if (amp) timeSamples[nSamples++] = ((time << 16) & 0xFF0000) | (amp & 0xFFFF);
+    }
   }
   
   // No digit existed for this tower; create one.
@@ -284,6 +299,11 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
     
     new((*digitsArr)[idigit]) AliEMCALDigit( -1, -1, id, amp, time, type, idigit, chi2, ndf);
 
+    if (lowGain) 
+      ((AliEMCALDigit*)digitsArr->At(idigit))->SetALTROSamplesLG(64,timeSamples);
+    else
+      ((AliEMCALDigit*)digitsArr->At(idigit))->SetALTROSamplesHG(64,timeSamples);
+    
     AliDebug(2,Form("Add digit Id %d for the first time, type %d", id, type));
   }// digit added first time.
   
@@ -293,6 +313,8 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
   {
     if (lowGain)
     {
+      digit->SetALTROSamplesLG(64,timeSamples);
+      
       // New digit is low gain
       if ( digit->GetAmplitude() >  OVERFLOWCUT ) 
       {
@@ -306,6 +328,8 @@ void AliEMCALRawUtils::AddDigit(TClonesArray *digitsArr, Int_t id, Int_t lowGain
     } // New low gain digit
     else
     {
+      digit->SetALTROSamplesHG(64,timeSamples);
+      
       // New digit is high gain
       if ( amp <  OVERFLOWCUT  )
       {
@@ -425,7 +449,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
                 
         if(res.GetAmp() >= fNoiseThreshold )
         {          
-          AddDigit(digitsArr, id, lowGain, res.GetAmp(),  res.GetTime()+bcTimePhaseCorr, res.GetChi2(),  res.GetNdf() );
+          AddDigit(digitsArr, id, lowGain, bunchlist, res.GetAmp(),  res.GetTime()+bcTimePhaseCorr, res.GetChi2(),  res.GetNdf() );
         }
       }// ALTRO
       else if ( fUseFALTRO )

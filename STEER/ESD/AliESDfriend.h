@@ -17,6 +17,7 @@
 
 class AliESDTZEROfriend;
 class AliESDADfriend;
+class AliESDCalofriend;
 
 //_____________________________________________________________________________
 class AliESDfriend : public AliVfriendEvent {
@@ -64,6 +65,8 @@ public:
   AliESDTZEROfriend *GetTZEROfriend(){ return fESDTZEROfriend; }
   void SetADfriend(AliESDADfriend * obj);
   AliESDADfriend *GetADfriend(){ return fESDADfriend; }
+  void SetCalofriend(AliESDCalofriend * obj);
+  AliESDCalofriend *GetCalofriend(){ return fESDCalofriend; }
 
   void Ls() const {
 	  return fTracks.ls();
@@ -92,6 +95,7 @@ protected:
   AliESDVZEROfriend *fESDVZEROfriend; // VZERO object containing complete raw data
   AliESDTZEROfriend *fESDTZEROfriend; // TZERO calibration object
   AliESDADfriend *fESDADfriend; // AD object containing complete raw data
+  AliESDCalofriend *fESDCalofriend; // Calo object containing complete raw data
   
   Int_t fNclustersTPC[72]; //cluster occupancy per sector per sector
   Int_t fNclustersTPCused[72]; //number of clusters used in tracking per sector

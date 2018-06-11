@@ -85,8 +85,10 @@ class AliEMCALDigit : public AliDigitNew
   // ALTRO
   Int_t    GetNALTROSamplesLG() const {if(fDigitType==kLG)      return fNSamples;   else return 0 ; }
   Bool_t   GetALTROSampleLG(const Int_t iSample, Int_t& timeBin, Int_t& amp) const;
+  void     GetALTROSamplesLG(Int_t samples[64]) const;
   Int_t    GetNALTROSamplesHG() const {if(fDigitType==kHG)      return fNSamplesHG; else return 0 ; }
   Bool_t   GetALTROSampleHG(const Int_t iSample, Int_t& timeBin, Int_t& amp) const;
+  void     GetALTROSamplesHG(Int_t samples[64]) const;
   
   // FALTRO, trigger. Same data members as Low Gain	
   Int_t    GetNFALTROSamples()  const {if(fDigitType==kTrigger) return fNSamples;   else return 0 ; }
@@ -119,12 +121,12 @@ class AliEMCALDigit : public AliDigitNew
   Int_t    fNSamples;     ///< Number of time samples, Low Gain for ALTRO, used also for FALTRO 
   
   /// List of time bin constents, Low Gain for ALTRO, used also for FALTRO
-  Int_t   *fSamples;	    //[fNSamples]  
+  Int_t    fSamples[64];	    //[fNSamples]  
   
   Int_t    fNSamplesHG;   ///< Number of time samples, High Gain for ALTRO
   
   /// List of time bin constents, High Gain for ALTRO, used also for FALTRO 
-  Int_t   *fSamplesHG;	  //[fNSamples] 
+  Int_t    fSamplesHG[64];	  //[fNSamples] 
 	
   Int_t    fNprimary ;    ///< Number of primaries
   

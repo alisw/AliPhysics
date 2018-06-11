@@ -36,6 +36,7 @@ set(SRCS
     AliESDCaloCells.cxx
     AliESDCaloCluster.cxx
     AliESDCaloTrigger.cxx
+    AliESDCalofriend.cxx
     AliESDcascade.cxx
     AliESDCosmicTrack.cxx
     AliESD.cxx
