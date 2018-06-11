@@ -283,25 +283,26 @@ public:
     AliHFEpidQAmanager    *fPIDqa;                  //! PID QA manager
         
     TList                 *fOutputList;             //! output list
-    TList                 *fOutputListMain;          //!
-    TList                 *fOutputListLP;           //
+    TList                 *fOutputListMain;         //!
+    TList                 *fOutputListLP;           //!
     TList                 *fOutputListHadron;       //!
     TList                 *fOutputListQA;           //!
     TH1F                  *fNoEvents;               //! no of events for different cuts
     TH2F                  *fTrkpt;                  //! track pt for different cuts
     TH2F                  *fEtaVtxZ;                //! Eta vs Vtx z (check for ITS acceptance problem)
 
-    TH2F                  *fSPDVtxRes;              //
+    TH2F                  *fSPDVtxRes;              //!
     TH2F                  *fDiffSPDPrimVtx;         //!
     TH2F                  *fSPDnTrAcc;              //!
+    TH2F                  *fSPDnTrCorrMax;          //!
     TH2F                  *fSPDnTrGen;              //!
     TH2F                  *fDiffSPDMCVtx;           //!
-    THnSparseF                  *fnTrAccMaxGen;           //!
-    THnSparseF                  *fnTrAccMinGen;           //!
-    THnSparseF                  *fnTrAccMeanGen;          //!
-    THnSparseF                  *fnTrAccMax;              //!
-    THnSparseF                  *fnTrAccMin;              //!
-    THnSparseF                  *fnTrAccMean;             //!
+    THnSparseF            *fnTrAccMaxGen;           //!
+    THnSparseF            *fnTrAccMinGen;           //!
+    THnSparseF            *fnTrAccMeanGen;          //!
+    THnSparseF            *fnTrAccMax;              //!
+    THnSparseF            *fnTrAccMin;              //!
+    THnSparseF            *fnTrAccMean;             //!
 
 
     
@@ -473,6 +474,7 @@ public:
     THnSparse             *fElecLPHa;               //!
     THnSparse             *fElecLPLSNoPartner;      //! 
     THnSparse             *fElecLPULSNoPartner;     //! 
+
     THnSparse             *fMCElecLPTruePartner;    //! 
     THnSparse             *fMCElecLPNoPartner;      //! 
     THnSparse             *fMCElecLPRemovedPartner; //!
@@ -558,7 +560,7 @@ public:
     AliAnalysisTaskHaHFECorrel(const AliAnalysisTaskHaHFECorrel&);
     AliAnalysisTaskHaHFECorrel& operator=(const AliAnalysisTaskHaHFECorrel&);
     
-    ClassDef(AliAnalysisTaskHaHFECorrel, 3);
+    ClassDef(AliAnalysisTaskHaHFECorrel, 4);
 };
 
 
