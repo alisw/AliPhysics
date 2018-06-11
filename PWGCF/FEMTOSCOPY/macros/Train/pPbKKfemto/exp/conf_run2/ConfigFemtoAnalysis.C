@@ -197,10 +197,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	   dtc1etaphitpc[aniter]->SetPt(0.14,1.5);
 	   dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 
-	  //PID method
-	   dtc1etaphitpc[aniter]->SetMass(KaonMass);
-	   dtc1etaphitpc[aniter]->SetMostProbableKaon();
-	  //dtc1etaphitpc[aniter]->SetPIDMethod(AliFemtoESDTrackCut::kContour);
+	   //PID method
+	   //dtc1etaphitpc[aniter]->SetMass(KaonMass);
+	   //dtc1etaphitpc[aniter]->SetMostProbableKaon();
+	   //dtc1etaphitpc[aniter]->SetPIDMethod(AliFemtoESDTrackCut::kContour);
 //------------------- November 2013 -----------------------------------< 
 	  // new cuts to remove electron (do not take into analysis if 400<p<500) 
 	   dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
