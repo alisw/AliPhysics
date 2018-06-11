@@ -16,6 +16,7 @@ class AliNDFormulaBrowser : public TObject{
   //  RQ_OBJECT("AliNDFormulaBrowser")
 
 public:
+  Int_t fVerbose;                       // verbosity
   TGTransientFrame  *fMain;
   TGVerticalFrame   *fVframeFormula;
   TGLayoutHints     *fBly, *fBfly1;
