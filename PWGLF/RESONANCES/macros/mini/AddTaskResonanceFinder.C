@@ -190,22 +190,22 @@ AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
   cerr<<"configuring"<<endl;
   if(d1==AliRsnDaughter::kPion && d2==AliRsnDaughter::kPhi){
     Config_piphi(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
-  }else if(d2==AliRsnDaughter::kPhi && d1==AliRsnDaughter::kPion){
+  }else if(d2==AliRsnDaughter::kPion && d1==AliRsnDaughter::kPhi){
     Config_piphi(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
         
   }else if(d1==AliRsnDaughter::kKaon && d2==AliRsnDaughter::kPhi){
     Config_kxphi(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
-  }else if(d2==AliRsnDaughter::kPhi && d1==AliRsnDaughter::kKaon){
+  }else if(d2==AliRsnDaughter::kKaon && d1==AliRsnDaughter::kPhi){
     Config_kxphi(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
       
   }else if(d1==AliRsnDaughter::kKaon0 && d2==AliRsnDaughter::kPhi){
     Config_k0phi(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
-  }else if(d2==AliRsnDaughter::kPhi && d1==AliRsnDaughter::kKaon0){
+  }else if(d2==AliRsnDaughter::kKaon0 && d1==AliRsnDaughter::kPhi){
     Config_k0phi(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
 
   }else if(d1==AliRsnDaughter::kProton && d2==AliRsnDaughter::kPhi){
     Config_pphi(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
-  }else if(d2==AliRsnDaughter::kPhi && d1==AliRsnDaughter::kProton){
+  }else if(d2==AliRsnDaughter::kProton && d1==AliRsnDaughter::kPhi){
     Config_pphi(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
       
   }else if(d1==AliRsnDaughter::kPhi && d2==AliRsnDaughter::kPhi){
@@ -213,7 +213,7 @@ AliRsnMiniAnalysisTask* AddTaskResonanceFinder(
 
   }else if(d1==AliRsnDaughter::kLambda && d2==AliRsnDaughter::kPhi){
     Config_Lambdaphi(task,lname,isMC,system,EventCuts,TrackCuts1,TrackCuts2);
-  }else if(d2==AliRsnDaughter::kPhi && d1==AliRsnDaughter::kLambda){
+  }else if(d2==AliRsnDaughter::kLambda && d1==AliRsnDaughter::kPhi){
     Config_Lambdaphi(task,lname,isMC,system,EventCuts,TrackCuts2,TrackCuts1);
 
   }
