@@ -136,12 +136,14 @@ class AliCheb3D: public TNamed
   void         EvalUsrFunction(const Float_t  *x, Float_t  *res);
   TH1*         TestRMS(int idim,int npoints = 1000,TH1* histo=0);
   static Int_t CalcChebCoefs(const Float_t  *funval,int np, Float_t  *outCoefs, Float_t  prec=-1);
+  const Float_t* GetBScale()     const {return fBScale;}
+  const Float_t* GetBOffset()    const {return fBOffset;}
+  void         PrepareBoundaries(const Float_t  *bmin,const Float_t  *bmax);
 #endif
   //
  protected:
   void         Clear(const Option_t* option = "");
   void         SetDimOut(const int d, const float* prec=0);
-  void         PrepareBoundaries(const Float_t  *bmin,const Float_t  *bmax);
   //
 #ifdef _INC_CREATION_ALICHEB3D_
   void         EvalUsrFunction();
