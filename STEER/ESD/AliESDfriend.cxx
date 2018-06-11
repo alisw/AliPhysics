@@ -24,6 +24,7 @@
 #include "AliESDVZEROfriend.h"
 #include "AliESDTZEROfriend.h"
 #include "AliESDADfriend.h"
+#include "AliESDCalofriend.h"
 
 ClassImp(AliESDfriend)
 
@@ -32,7 +33,8 @@ AliESDfriend::AliESDfriend(): AliVfriendEvent(),
   fTracks("AliESDfriendTrack",1),
   fESDVZEROfriend(NULL),
   fESDTZEROfriend(NULL),
-  fESDADfriend(NULL)
+  fESDADfriend(NULL),
+  fESDCalofriend(NULL)
 {
  //
  // Default constructor
@@ -48,7 +50,8 @@ AliESDfriend::AliESDfriend(const AliESDfriend &f) :
   fTracks(f.fTracks),
   fESDVZEROfriend(f.fESDVZEROfriend ? new AliESDVZEROfriend(*f.fESDVZEROfriend) : NULL),
   fESDTZEROfriend(f.fESDTZEROfriend ? new AliESDTZEROfriend(*f.fESDTZEROfriend) : NULL),
-  fESDADfriend(f.fESDADfriend ? new AliESDADfriend(*f.fESDADfriend) : NULL)
+  fESDADfriend(f.fESDADfriend ? new AliESDADfriend(*f.fESDADfriend) : NULL),
+  fESDCalofriend(f.fESDCalofriend ? new AliESDCalofriend(*f.fESDCalofriend) : NULL)
 {
  //
  // Copy constructor
@@ -88,6 +91,12 @@ AliESDfriend& AliESDfriend::operator=(const AliESDfriend& esd)
     fESDADfriend=0;
     if(esd.fESDADfriend)
       fESDADfriend = new AliESDADfriend(*esd.fESDADfriend);
+
+    if(fESDCalofriend)
+      delete fESDCalofriend;
+    fESDCalofriend=0;
+    if(esd.fESDCalofriend)
+      fESDCalofriend = new AliESDCalofriend(*esd.fESDCalofriend);
  
     memcpy(fNclustersTPC,esd.fNclustersTPC,sizeof(fNclustersTPC));
     memcpy(fNclustersTPCused,esd.fNclustersTPCused,sizeof(fNclustersTPCused));
@@ -113,6 +122,9 @@ AliESDfriend::~AliESDfriend() {
   if(fESDADfriend)
     delete fESDADfriend;
   fESDADfriend=0;
+  if(fESDCalofriend)
+    delete fESDCalofriend;
+  fESDCalofriend=0;
 }
 
 void AliESDfriend::DeleteTracksSafe()
@@ -139,6 +151,10 @@ void AliESDfriend::ResetSoft()
   delete fESDVZEROfriend; fESDVZEROfriend=0;
   delete fESDTZEROfriend; fESDTZEROfriend=0;
   delete fESDADfriend; fESDADfriend=0;
+  if (fESDCalofriend) {
+    fESDCalofriend->DeAllocate(); 
+    delete fESDCalofriend; fESDCalofriend=0;
+  }
 }
 
 
@@ -157,6 +173,10 @@ void AliESDfriend::Reset()
   delete fESDVZEROfriend; fESDVZEROfriend=0;
   delete fESDTZEROfriend; fESDTZEROfriend=0;
   delete fESDADfriend; fESDADfriend=0;
+  if (fESDCalofriend) {
+    fESDCalofriend->DeAllocate(); 
+    delete fESDCalofriend; fESDCalofriend=0;
+  }
 }  
 
 void AliESDfriend::SetVZEROfriend(const AliESDVZEROfriend * obj)
@@ -166,6 +186,14 @@ void AliESDfriend::SetVZEROfriend(const AliESDVZEROfriend * obj)
   // (complete raw data)
   if (!fESDVZEROfriend) fESDVZEROfriend = new AliESDVZEROfriend();
   if (obj) *fESDVZEROfriend = *obj;
+}
+void AliESDfriend::SetCalofriend(AliESDCalofriend * obj)
+{
+  //
+  // Set the Calo friend data object
+  // (complete raw data)
+  if (!fESDCalofriend) fESDCalofriend = new AliESDCalofriend();
+  if (obj) *fESDCalofriend = *obj;
 }
 void AliESDfriend::SetTZEROfriend(AliESDTZEROfriend * obj)
 {

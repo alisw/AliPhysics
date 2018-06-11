@@ -37,9 +37,7 @@ AliEMCALDigit::AliEMCALDigit() :
 AliDigitNew(), 
   fAmpFloat(0.),
   fNSamples(0),
-  fSamples(0x0),
   fNSamplesHG(0),
-  fSamplesHG(0x0),
   fNprimary(0),
   fNMaxPrimary(5),
   fPrimary(0x0),
@@ -96,9 +94,7 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id,
   : AliDigitNew(),
     fAmpFloat(digEnergy),
     fNSamples(0),
-    fSamples(0x0),
     fNSamplesHG(0),
-    fSamplesHG(0x0),
     fNprimary(0),
     fNMaxPrimary(25),
     fPrimary(0x0),
@@ -115,6 +111,10 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id,
     fDigitType(type),
     fAmpCalib(-1)
 {  
+  // ctor with all data 
+
+  for (int i=0;i<64;i++) fSamples[i]=fSamplesHG[i]=0;
+
   // data members of the base class (AliNewDigit)
   fAmp         = 0;
   fId          = id ;
@@ -167,9 +167,7 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
   : AliDigitNew(digit),
     fAmpFloat(digit.fAmpFloat),	
     fNSamples(digit.fNSamples),
-    fSamples(),
     fNSamplesHG(digit.fNSamplesHG),
-    fSamplesHG(),
     fNprimary(digit.fNprimary),
     fNMaxPrimary(digit.fNMaxPrimary),
     fPrimary(),
@@ -192,8 +190,6 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
   fIndexInList = digit.fIndexInList ; 
   
   // data members  
-  if (fSamples )   delete [] fSamples ;   fSamples   = NULL ;
-  if (fSamplesHG ) delete [] fSamplesHG ; fSamplesHG = NULL ;
   if (fPrimary  )  delete [] fPrimary ;   fPrimary   = NULL ;
   if (fDEPrimary)  delete [] fDEPrimary ; fDEPrimary = NULL ;
   if (fIparent )   delete [] fIparent ;   fIparent   = NULL ;
@@ -201,13 +197,11 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
   
   if (fNSamples)
   {
-    fSamples     = new Int_t[fNSamples]; 
     for (Int_t i=0; i < digit.fNSamples; i++) fSamples[i] = digit.fSamples[i];
   }
   
   if (fNSamplesHG)
   {
-    fSamplesHG   = new Int_t[fNSamplesHG]; 
     for (Int_t i=0; i < digit.fNSamplesHG; i++) fSamplesHG[i] = digit.fSamplesHG[i];
   }
   
@@ -243,8 +237,6 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
 //____________________________________________________________________________
 AliEMCALDigit::~AliEMCALDigit() 
 {
-  if (fSamples )   delete [] fSamples ;   fSamples   = NULL ;
-  if (fSamplesHG ) delete [] fSamplesHG ; fSamplesHG = NULL ;
   if (fPrimary  )  delete [] fPrimary ;   fPrimary   = NULL ;
   if (fDEPrimary)  delete [] fDEPrimary ; fDEPrimary = NULL ;
   if (fIparent )   delete [] fIparent ;   fIparent   = NULL ;
@@ -257,8 +249,6 @@ AliEMCALDigit::~AliEMCALDigit()
 //____________________________________________________________________________
 void AliEMCALDigit::Clear(Option_t*) 
 {
-  if (fSamples )   delete [] fSamples ;   fSamples   = NULL ;
-  if (fSamplesHG ) delete [] fSamplesHG ; fSamplesHG = NULL ;
   if (fPrimary  )  delete [] fPrimary ;   fPrimary   = NULL ;
   if (fDEPrimary)  delete [] fDEPrimary ; fDEPrimary = NULL ;
   if (fIparent )   delete [] fIparent ;   fIparent   = NULL ;
@@ -305,10 +295,10 @@ Float_t AliEMCALDigit::GetPhi() const
 //____________________________________________________________________________
 Bool_t AliEMCALDigit::GetFALTROSample(const Int_t iSample, Int_t& timeBin, Int_t& amp) const
 {
-  if (iSample >= fNSamples || iSample < 0 || fDigitType==kTrigger) return kFALSE;
+  if (iSample >= fNSamples || iSample < 0 || fDigitType!=kTrigger) return kFALSE;
   
-  amp     =  fSamples[iSample] & 0xFFF;
-  timeBin = (fSamples[iSample] >> 12) & 0xFF;
+  amp     =  fSamples[iSample] & 0xFFFF;
+  timeBin = (fSamples[iSample] >> 16) & 0xFF;
   
   return kTRUE;
 }
@@ -324,12 +314,20 @@ Bool_t AliEMCALDigit::GetFALTROSample(const Int_t iSample, Int_t& timeBin, Int_t
 //____________________________________________________________________________
 Bool_t AliEMCALDigit::GetALTROSampleLG(const Int_t iSample, Int_t& timeBin, Int_t& amp) const
 {
-  if (iSample >= fNSamples || iSample < 0 || fDigitType==kLG) return kFALSE;
+  if (iSample >= fNSamples || iSample < 0 || fDigitType!=kLG) return kFALSE;
   
-  amp     =  fSamples[iSample] & 0xFFF;
-  timeBin = (fSamples[iSample] >> 12) & 0xFF;
+  amp     =  fSamples[iSample] & 0xFFFF;
+  timeBin = (fSamples[iSample] >> 16) & 0xFF;
   
   return kTRUE;
+}
+
+//____________________________________________________________________________
+void AliEMCALDigit::GetALTROSamplesLG(Int_t samples[64]) const
+{
+  //
+  Int_t nsamples = (fNSamples >= 64) ? 64 : fNSamples;
+  for (int i=0;i<nsamples;i++) samples[i]=fSamples[i];
 }
 
 ///
@@ -338,8 +336,6 @@ Bool_t AliEMCALDigit::GetALTROSampleLG(const Int_t iSample, Int_t& timeBin, Int_
 void AliEMCALDigit::SetALTROSamplesLG(const Int_t nSamples, Int_t *samples)
 {
   fNSamples = nSamples;
-  
-  fSamples  = new Int_t[fNSamples]; 
   
   for (Int_t i=0; i < fNSamples; i++) fSamples[i] = samples[i];
 }
@@ -350,8 +346,6 @@ void AliEMCALDigit::SetALTROSamplesLG(const Int_t nSamples, Int_t *samples)
 void AliEMCALDigit::SetALTROSamplesHG(const Int_t nSamples, Int_t *samples)
 {
   fNSamplesHG = nSamples;
-  
-  fSamplesHG  = new Int_t[fNSamplesHG]; 
   
   for (Int_t i=0; i < fNSamplesHG; i++) fSamplesHG[i] = samples[i];
 }
@@ -367,12 +361,20 @@ void AliEMCALDigit::SetALTROSamplesHG(const Int_t nSamples, Int_t *samples)
 //____________________________________________________________________________
 Bool_t AliEMCALDigit::GetALTROSampleHG(const Int_t iSample, Int_t& timeBin, Int_t& amp) const
 {
-  if (iSample >= fNSamplesHG || iSample < 0 || fDigitType==kHG) return kFALSE;
+  if (iSample >= fNSamplesHG || iSample < 0 || fDigitType!=kHG) return kFALSE;
   
-  amp     =  fSamplesHG[iSample] & 0xFFF;
-  timeBin = (fSamplesHG[iSample] >> 12) & 0xFF;
+  amp     =  fSamplesHG[iSample] & 0xFFFF;
+  timeBin = (fSamplesHG[iSample] >> 16) & 0xFF;
   
   return kTRUE;
+}
+
+//____________________________________________________________________________
+void AliEMCALDigit::GetALTROSamplesHG(Int_t samples[64]) const
+{
+  //
+  Int_t nsamples = (fNSamplesHG >= 64) ? 64 : fNSamplesHG;
+  for (int i=0;i<nsamples;i++) samples[i]=fSamplesHG[i];
 }
 
 ///
@@ -458,8 +460,6 @@ AliEMCALDigit& AliEMCALDigit::operator= (const AliEMCALDigit &digit)
   fIndexInList = digit.fIndexInList ; 
   
   // data members  
-  if (fSamples )   delete [] fSamples ;   fSamples   = NULL ;
-  if (fSamplesHG ) delete [] fSamplesHG ; fSamplesHG = NULL ;
   if (fPrimary  )  delete [] fPrimary ;   fPrimary   = NULL ;
   if (fDEPrimary)  delete [] fDEPrimary ; fDEPrimary = NULL ;
   if (fIparent )   delete [] fIparent ;   fIparent   = NULL ;
@@ -467,13 +467,11 @@ AliEMCALDigit& AliEMCALDigit::operator= (const AliEMCALDigit &digit)
   
   if (fNSamples)
   {
-    fSamples     = new Int_t[fNSamples]; 
     for (Int_t i=0; i < digit.fNSamples; i++) fSamples[i] = digit.fSamples[i];
   }
   
   if (fNSamplesHG)
   {
-    fSamplesHG   = new Int_t[fNSamplesHG]; 
     for (Int_t i=0; i < digit.fNSamplesHG; i++) fSamplesHG[i] = digit.fSamplesHG[i];
   }
   

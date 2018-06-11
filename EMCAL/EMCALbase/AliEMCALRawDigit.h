@@ -43,6 +43,8 @@ public:
   Float_t GetAmplitude() const { return fAmplitude ; }
   Float_t GetTime()      const { return fTime      ; }
   Int_t   GetNSamples()  const { return fNSamples  ; }
+  Bool_t  GetSamples(Int_t samples[64], Int_t ns) const;
+  Bool_t  GetTimeSample(const Int_t iSample, Int_t& sample) const;
   
   Bool_t  GetTimeSample(const Int_t iSample, Int_t& timeBin, Int_t& amp) const;
   Bool_t  GetMaximum(Int_t& amplitude, Int_t& time) const;
