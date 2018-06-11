@@ -631,10 +631,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   //for photon purity by DDA
 
-  const TString PIDName[] = {"Electron","Pion","Kaon","Proton","AntiProton"};//AntiProton is needed for antineutron study.
+  const TString PIDName[] = {"Electron","Pion","Kaon","Proton","AntiProton","K0L","Neutron","AntiNeutron","Gamma","Others"};//AntiProton is needed for antineutron study.
   const Int_t Npid = sizeof(PIDName)/sizeof(PIDName[0]);
 
-  for(Int_t ip=0;ip<Npid;ip++){
+  for(Int_t ip=0;ip<5;ip++){
     TH1F *h1noPID = new TH1F(Form("hMatched%s",PIDName[ip].Data()),Form("p_{T} of %s in clusters for purity no PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
     h1noPID->Sumw2();
     fOutputContainer->Add(h1noPID);
@@ -817,57 +817,27 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
     }//end of particle loop
 
+
     //for purity based on MC truth
-    TH1F *h1TrueGamma_noPID = new TH1F("hPurityGamma_noPID","p_{T} of true photon in clusters for purity no PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueGamma_noPID->Sumw2();
-    fOutputContainer->Add(h1TrueGamma_noPID);
-
-    TH1F *h1TrueGamma_PID = new TH1F("hPurityGamma_PID","p_{T} of true photon in clusters for purity PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueGamma_PID->Sumw2();
-    fOutputContainer->Add(h1TrueGamma_PID);
-
     for(Int_t ip=0;ip<Npid;ip++){
       TH1F *h1noPID = new TH1F(Form("hPurity%s_noPID",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity no PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
       h1noPID->Sumw2();
       fOutputContainer->Add(h1noPID);
+
+      TH1F *h1CPV = new TH1F(Form("hPurity%s_CPV",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity CPV;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+      h1CPV->Sumw2();
+      fOutputContainer->Add(h1CPV);
+
+      TH1F *h1Disp = new TH1F(Form("hPurity%s_Disp",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity Disp;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+      h1Disp->Sumw2();
+      fOutputContainer->Add(h1Disp);
 
       TH1F *h1PID = new TH1F(Form("hPurity%s_PID",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
       h1PID->Sumw2();
       fOutputContainer->Add(h1PID);
     };
 
-    TH1F *h1TrueK0L_noPID = new TH1F("hPurityK0L_noPID","p_{T} of true K0L in clusters for purity noPID;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueK0L_noPID->Sumw2();
-    fOutputContainer->Add(h1TrueK0L_noPID);
-
-    TH1F *h1TrueK0L_PID = new TH1F("hPurityK0L_PID","p_{T} of true K0L in clusters for purity PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueK0L_PID->Sumw2();
-    fOutputContainer->Add(h1TrueK0L_PID);
-
-    TH1F *h1TrueNeutron_noPID = new TH1F("hPurityNeutron_noPID","p_{T} of true Neutron in clusters for purity no PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueNeutron_noPID->Sumw2();
-    fOutputContainer->Add(h1TrueNeutron_noPID);
-
-    TH1F *h1TrueNeutron_PID = new TH1F("hPurityNeutron_PID","p_{T} of true Neutron in clusters for purity PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueNeutron_PID->Sumw2();
-    fOutputContainer->Add(h1TrueNeutron_PID);
-
-    TH1F *h1TrueAntiNeutron_noPID = new TH1F("hPurityAntiNeutron_noPID","p_{T} of true AntiNeutron in clusters for purity noPID;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueAntiNeutron_noPID->Sumw2();
-    fOutputContainer->Add(h1TrueAntiNeutron_noPID);
-
-    TH1F *h1TrueAntiNeutron_PID = new TH1F("hPurityAntiNeutron_PID","p_{T} of true AntiNeutron in clusters for purity PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueAntiNeutron_PID->Sumw2();
-    fOutputContainer->Add(h1TrueAntiNeutron_PID);
-
-    TH1F *h1TrueOthers_noPID = new TH1F("hPurityOthers_noPID","p_{T} of true Others in clusters for purity noPID;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueOthers_noPID->Sumw2();
-    fOutputContainer->Add(h1TrueOthers_noPID);
-
-    TH1F *h1TrueOthers_PID = new TH1F("hPurityOthers_PID","p_{T} of true Others in clusters for purity PID;p_{T} (GeV/c)",NpTgg-1,pTgg);
-    h1TrueOthers_PID->Sumw2();
-    fOutputContainer->Add(h1TrueOthers_PID);
-
+    //for feed down correction
     TH1F *h1gamma_K0S = new TH1F("hGammaFromK0S","#gamma from K^{0}_{S};p_{T} (GeV/c)",NpTgg-1,pTgg);
     h1gamma_K0S->Sumw2();
     fOutputContainer->Add(h1gamma_K0S);
@@ -2836,6 +2806,31 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_noPID",pT,weight);
       else                            FillHistogramTH1(fOutputContainer,"hPurityOthers_noPID",pT,weight);
 
+      if(fPHOSClusterCuts->IsNeutral(ph)){
+        if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 11)  FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_CPV",pT,weight);
+        else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_CPV",pT,weight);
+        else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_CPV",pT,weight);
+        else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_CPV",pT,weight);
+        else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_CPV",pT,weight);
+        else                            FillHistogramTH1(fOutputContainer,"hPurityOthers_CPV",pT,weight);
+      }//end of CPV
+
+      if(fPHOSClusterCuts->AcceptDisp(ph)){
+        if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 11)  FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_Disp",pT,weight);
+        else if(pdg ==  2212)           FillHistogramTH1(fOutputContainer,"hPurityProton_Disp",pT,weight);
+        else if(pdg == -2212)           FillHistogramTH1(fOutputContainer,"hPurityAntiProton_Disp",pT,weight);
+        else if(pdg ==  2112)           FillHistogramTH1(fOutputContainer,"hPurityNeutron_Disp",pT,weight);
+        else if(pdg == -2112)           FillHistogramTH1(fOutputContainer,"hPurityAntiNeutron_Disp",pT,weight);
+        else                            FillHistogramTH1(fOutputContainer,"hPurityOthers_Disp",pT,weight);
+      }//end of Disp
 
       if(fPHOSClusterCuts->AcceptPhoton(ph)){
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
