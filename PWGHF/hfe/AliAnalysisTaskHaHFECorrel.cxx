@@ -182,7 +182,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel(const char *name)
 ,fEtaVtxZ(0)
 ,fSPDVtxRes(0)              
 ,fDiffSPDPrimVtx(0)         
-,fSPDnTrAcc(0)              
+,fSPDnTrAcc(0)    
+,fSPDnTrCorrMax(0)
 ,fSPDnTrGen(0)              
 ,fDiffSPDMCVtx(0)           
 ,fnTrAccMaxGen(0)           
@@ -481,7 +482,8 @@ AliAnalysisTaskHaHFECorrel::AliAnalysisTaskHaHFECorrel()
 ,fEtaVtxZ(0)
 ,fSPDVtxRes(0)              
 ,fDiffSPDPrimVtx(0)         
-,fSPDnTrAcc(0)              
+,fSPDnTrAcc(0)  
+,fSPDnTrCorrMax(0)            
 ,fSPDnTrGen(0)              
 ,fDiffSPDMCVtx(0)           
 ,fnTrAccMaxGen(0)           
@@ -931,9 +933,9 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
 
   // Corrected SPDTracklets
-  Double_t RefMinSPD = 10;
-  Double_t RefMaxSPD= 10;
-  Double_t RefMeanSPD = 10;
+  Double_t RefMinSPD = 8.;
+  Double_t RefMaxSPD= 12.25;
+  Double_t RefMeanSPD = 11.;
   //fSPDnTrackAvg - only temporary, adjust per run, period  mc 
   Double_t nTrAccCorrMin=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMinSPD); 
   Double_t nTrAccCorrMax=AliVertexingHFUtils::GetCorrectedNtracklets(&fSPDnTrAvg,nTrAcc*1.,spdVtx->GetZ(),RefMaxSPD); 
@@ -941,25 +943,25 @@ void AliAnalysisTaskHaHFECorrel::UserExec(Option_t*)
 
     //  cout << "nTrAcc " << nTrAcc << "\t" << nTrAccCorrMin << endl;
 
-
+  fSPDnTrCorrMax->Fill(spdVtx->GetZ(), 1.*nTrAccCorrMax);
 
   Double_t fillSparse[3]={spdVtx->GetZ(), 1.*nTrAcc,1.};
-  fillSparse[2]=nTrAccCorrMax;
+  fillSparse[2]=1.*nTrAccCorrMax;
   fnTrAccMax->Fill(fillSparse);
-  fillSparse[2]=nTrAccCorrMin;
-  fnTrAccMin->Fill(fillSparse);
-  fillSparse[2]=nTrAccCorrMean;
-  fnTrAccMean->Fill(fillSparse);
+  fillSparse[2]=1.*nTrAccCorrMin;
+  // fnTrAccMin->Fill(fillSparse);
+  fillSparse[2]=1.*nTrAccCorrMean;
+  // fnTrAccMean->Fill(fillSparse);
 
 
   if (fIsMC) {
-    fillSparse[1]=nTrMCAcc;
-    fillSparse[2]=nTrAccCorrMax;
+    fillSparse[1]=1.*nTrMCAcc;
+    fillSparse[2]=1.*nTrAccCorrMax;
     fnTrAccMaxGen->Fill(fillSparse);
-    fillSparse[2]=nTrAccCorrMin;
-    fnTrAccMinGen->Fill(fillSparse);
-    fillSparse[2]=nTrAccCorrMean;
-    fnTrAccMeanGen->Fill(fillSparse);
+    fillSparse[2]=1.*nTrAccCorrMin;
+    // fnTrAccMinGen->Fill(fillSparse);
+    fillSparse[2]=1.*nTrAccCorrMean;
+    //  fnTrAccMeanGen->Fill(fillSparse);
   }
  
 
@@ -1204,13 +1206,13 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   Int_t    NBinsElectron =46;
   Double_t XminElectron=0.25;
   Double_t XmaxElectron=6.;
-  const Int_t    NBinsElectronRed = 20;
+  const Int_t    NBinsElectronRed = 19;
   Double_t XBinsElectronRed[]={0.25,0.5,0.75, 1., 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75, 4, 5, 6, 10, 100};
 
   Int_t     NBinsHadron=200 ;
   Double_t  XminHadron=0.0;
   Double_t  XmaxHadron=100;
-  const Int_t   NBinsHadRed=9;
+  const Int_t   NBinsHadRed=8;
   Double_t  XBinsHadRed[]={0., 0.5, 1., 2., 5., 10, 15, 50, 100}; 
 
   const  Int_t     NMultBins=4;
@@ -1236,43 +1238,46 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
   // Multiplicity Sparse
   fSPDVtxRes = new TH2F("fSPDVtxRes", "fSPDVtxRes",  300, -0.5, 299.5, 500, 0., 10.);
   fOutputListQA->Add(fSPDVtxRes);
+ 
   fDiffSPDPrimVtx = new TH2F("fDiffSPDPrimVtx", "fDiffSPDPrimVtx", 300, -0.5, 299.5, 500, -5., 5.);
   fOutputListQA->Add(fDiffSPDPrimVtx);
 
   fSPDnTrAcc = new TH2F("fSPDnTrAcc", "fSPDnTrAcc", 220, -11, 11, 300, -0.5, 299.5);
   fOutputListQA->Add(fSPDnTrAcc);
 
+  fSPDnTrCorrMax = new TH2F("fSPDnTrCorrMax", "fSPDnTrCorrMax", 220, -11,11,300, -0.5, 299.5);
+  fOutputListQA->Add(fSPDnTrCorrMax);
 
-  Int_t    nBinsSPD[3]={220, 200, 200};
-  Double_t xminSPD[3]={-11,-0.5,-0.5};
-  Double_t xmaxSPD[3]={11,199.5, 199.5};
+  Int_t    nBinsSPD[3]={10, 200, 200};
+  Double_t xminSPD[3]={-10,-0.5,-0.5};
+  Double_t xmaxSPD[3]={10,199.5, 199.5};
 
   if (fIsMC) {
     fSPDnTrGen = new TH2F("fSPDnTrGen", "fSPDnTrGen", 220, -11, 11, 300, -0.5, 299.5);
-    fOutputListQA->Add(fSPDnTrAcc);
+    fOutputListQA->Add(fSPDnTrGen);
 
     fDiffSPDMCVtx = new TH2F("fDiffSPDMCVtx", "fDiffSPDMCVtx", 200, -0.5, 199.5, 500, -5., 5.);
     fOutputListQA->Add(fDiffSPDMCVtx);
 
-    fnTrAccMaxGen = new THnSparseF("fnTrAccMacGen", "fnTrAccMaxGen", 3, nBinsSPD, xminSPD, xmaxSPD);
+    fnTrAccMaxGen = new THnSparseF("fnTrAccMaxGen", "fnTrAccMaxGen", 3, nBinsSPD, xminSPD, xmaxSPD);
     fOutputListQA->Add(fnTrAccMaxGen);
 
-    fnTrAccMinGen = new THnSparseF("fnTrAccMinGen", "fnTrAccMinGen", 3, nBinsSPD, xminSPD, xmaxSPD);
-    fOutputListQA->Add(fnTrAccMinGen);
+    // fnTrAccMinGen = new THnSparseF("fnTrAccMinGen", "fnTrAccMinGen", 3, nBinsSPD, xminSPD, xmaxSPD);
+    //  fOutputListQA->Add(fnTrAccMinGen);
   
-    fnTrAccMeanGen = new THnSparseF("fnTrAccMenGen", "fnTrAccMeanGen",  3, nBinsSPD, xminSPD, xmaxSPD);
-    fOutputListQA->Add(fnTrAccMeanGen);
+    //  fnTrAccMeanGen = new THnSparseF("fnTrAccMenGen", "fnTrAccMeanGen",  3, nBinsSPD, xminSPD, xmaxSPD);
+    //  fOutputListQA->Add(fnTrAccMeanGen);
 
   }
 
   fnTrAccMax = new THnSparseF("fnTrAccMax", "fnTrAccMax", 3, nBinsSPD, xminSPD, xmaxSPD);
   fOutputListQA->Add(fnTrAccMax);
 
-  fnTrAccMin = new THnSparseF("fnTrAccMin", "fnTrAccMin",  3, nBinsSPD, xminSPD, xmaxSPD);
-  fOutputListQA->Add(fnTrAccMin);
+  //fnTrAccMin = new THnSparseF("fnTrAccMin", "fnTrAccMin",  3, nBinsSPD, xminSPD, xmaxSPD);
+  // fOutputListQA->Add(fnTrAccMin);
 
-  fnTrAccMean = new THnSparseF("fnTrAccMean", "fnTrAccMean",  3, nBinsSPD, xminSPD, xmaxSPD);
-  fOutputListQA->Add(fnTrAccMean);
+  // fnTrAccMean = new THnSparseF("fnTrAccMean", "fnTrAccMean",  3, nBinsSPD, xminSPD, xmaxSPD);
+  // fOutputListQA->Add(fnTrAccMean);
 
   Int_t    nBinsMult[4]={20, 20, 50, 50};
   Double_t xminMult[4]={0,0,0,0};
@@ -1743,7 +1748,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
       fTagHaMixedEvent->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListHadron->Add(fTagHaMixedEvent);
       
-      fNonTagHaMixedEvent = new THnSparseF("fNonTagMixedEv", "Sparse for ULSEle-Had MixEvent: PtH, PtE, Dphi, Deta", 5, bin, xmin, xmax);
+      fNonTagHaMixedEvent = new THnSparseF("fNonTagHaMixedEv", "Sparse for ULSEle-Had MixEvent: PtH, PtE, Dphi, Deta", 5, bin, xmin, xmax);
       fNonTagHaMixedEvent->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fNonTagHaMixedEvent->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListHadron->Add(fNonTagHaMixedEvent);
@@ -1827,7 +1832,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
     fOutputListLP->Add(fElecLPHa);
 
     if (fIsMC) {
-      fMCElecLPTruePartner = new THnSparseF("fMCElecLPTruePartner", "Sparse for MC true photonics with no Partner: PtH, PtE, Dphi, Deta", 5, bin, xmin, xmax);
+      fMCElecLPTruePartner = new THnSparseF("fMCElecLPTruePartner", "Sparse for MC true photonics with true Partner: PtH, PtE, Dphi, Deta", 5, bin, xmin, xmax);
       fMCElecLPTruePartner->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fMCElecLPTruePartner->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListLP->Add(fMCElecLPTruePartner);
@@ -1859,7 +1864,7 @@ void AliAnalysisTaskHaHFECorrel::UserCreateOutputObjects()
       fTagLPMixedEvent->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListLP->Add(fTagLPMixedEvent);
       
-      fNonTagLPMixedEvent = new THnSparseF("fNonTagMixedEv", "Sparse for NonTag-LP MixEvent: PtH, PtE, Dphi, Deta", 5, bin, xmin, xmax);
+      fNonTagLPMixedEvent = new THnSparseF("fNonTagLPMixedEv", "Sparse for NonTag-LP MixEvent: PtH, PtE, Dphi, Deta", 5, bin, xmin, xmax);
       fNonTagLPMixedEvent->GetAxis(0)->Set(NBinsHadRed, XBinsHadRed);
       fNonTagLPMixedEvent->GetAxis(4)->Set(NVertexBins, XVertexBins);
       fOutputListLP->Add(fNonTagLPMixedEvent);
