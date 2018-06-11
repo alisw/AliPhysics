@@ -8,25 +8,24 @@
     To do ? 
         Interface THn and TTree ?
 
-  Example usage:   
-  TFormula * formula = new TFormula("formula","[0]+[1]*(sin([2]*exp([3])))")
-  TFormula * formula2 = new TFormula("formula","[0]+2*[1]*(sin([2]*exp([3])))")
-  TFormula * formula3 = new TFormula("formula","[0]+3*[1]*(sin([2]*exp([3])))")
-  formula->SetParName(0,"Offset");
-  formula->SetParName(1,"Slope");
-  formula->SetParName(2,"Freq.");
-  formula->SetParName(3,"Exp. slope");
-  formula->SetParameter(0,0);
-  formula->SetParameter(1,1.);  formula->SetParameter(2,1.);
-  formula->SetParameter(3,1.);
-
-  AliNDFormulaBrowser::fgkFormulaMap["formula2"]=formula2;
-  AliNDFormulaBrowser::fgkFormulaMap["formula3"]=formula3;
-
-  AliNDFormulaBrowser::SetDefaultStyle()
-  AliNDFormulaBrowser *browser = new AliNDFormulaBrowser(0, 0, formula, 1200, 1000); 
-
-
+  Example usage:
+  {
+    TFormula * formula = new TFormula("formula","[0]+[1]*(sin([2]*exp([3])))");
+    TFormula * formula2 = new TFormula("formula","[0]+2*[1]*(sin([2]*exp([3])))");
+    TFormula * formula3 = new TFormula("formula","[0]+3*[1]*(sin([2]*exp([3])))");
+    formula->SetParName(0,"Offset");
+    formula->SetParName(1,"Slope");
+    formula->SetParName(2,"Freq.");
+    formula->SetParName(3,"Exp. slope");
+    formula->SetParameter(0,0);
+    formula->SetParameter(1,1.);  formula->SetParameter(2,1.);
+    formula->SetParameter(3,1.);
+    AliNDFormulaBrowser::fgkFormulaMap["formula"]=formula;
+    AliNDFormulaBrowser::fgkFormulaMap["formula2"]=formula2;
+    AliNDFormulaBrowser::fgkFormulaMap["formula3"]=formula3;
+    AliNDFormulaBrowser::SetDefaultStyle();
+  }
+  formulaBrowser = new AliNDFormulaBrowser( gClient->GetRoot(), 0, 0, 1200, 1000);
 */
 
 #include <THn.h>
@@ -38,9 +37,9 @@
 #include <TCanvas.h>
 #include <TRootEmbeddedCanvas.h>
 #include <TGWindow.h>
-#include <TGDoubleSlider.h> 
+#include <TGDoubleSlider.h>
 #include <TGSlider.h>
-#include <TROOT.h> 
+#include <TROOT.h>
 #include "TGTextBuffer.h"
 #include "TGTextEntry.h"
 #include "TGLabel.h"
@@ -66,7 +65,7 @@ TLatex *AliNDFormulaBrowser::fgkLatex = 0;
 TLegend *AliNDFormulaBrowser::fgkLegend = 0;
 std::map<std::string,TFormula*>   AliNDFormulaBrowser::fgkFormulaMap;   // map of registered formulas 
 
-
+/// To be replaced by CSS
 void AliNDFormulaBrowser::SetDefaultStyle(){
   //  fgkFormulaMap= new map<std::string,TFormula*>;
   fgkLatex=new TLatex;
@@ -79,23 +78,31 @@ void AliNDFormulaBrowser::SetDefaultStyle(){
 
 }
 
+///
+/// \param p              - by default this should be gClient->GetRoot()
+/// \param main           - needed in case of include to other filed
+/// \param formula        - not needed - all registered fromula could be used
+/// \param width          - with of window
+/// \param height         - height of window
 AliNDFormulaBrowser::AliNDFormulaBrowser(const TGWindow *p, const TGWindow *main,TFormula *formula,
 					 UInt_t width, UInt_t height):
+  fVerbose(0),// verbosity
   fFormula(formula),
   fFormulaParams(0)
 {
    // Dialog used to test the different supported sliders.
   if (formula==NULL) return;
+  if (p==NULL)  p=gClient->GetRoot();
   fMain = new TGTransientFrame(p, main, width, height);
   fMain->Connect("CloseWindow()", "AliNDFormulaBrowser", this, "CloseWindow()");
   fMain->DontCallClose(); // to avoid double deletions.
   // use hierarchical cleaning
   fMain->SetCleanup(kDeepCleanup);
   fMain->ChangeOptions((fMain->GetOptions() & ~kVerticalFrame) | kVerticalFrame);
-  fCanvas = new TRootEmbeddedCanvas("Ecanvas",fMain,200,200);
+  fCanvas = new TRootEmbeddedCanvas("fCanvas",fMain,200,200);
   fMain->AddFrame(fCanvas, new TGLayoutHints(kLHintsLeft | kLHintsExpandX| kLHintsExpandY, 0, 0, 3, 0));
   //
-  
+
   fVframeFormula = new TGVerticalFrame(fMain, 0, 0, 0);
   fMain->AddFrame(fVframeFormula,  new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 3, 0));
   //
@@ -112,35 +119,35 @@ AliNDFormulaBrowser::AliNDFormulaBrowser(const TGWindow *p, const TGWindow *main
   //
   fFormulaFrame  = new TGGroupFrame(fVframeFormula,"Formula",kHorizontalFrame);
   fDrawFormula   = new TGTextEntry(fFormulaFrame,new TGTextBuffer(15) , TString(1+formula->GetName()).Hash());
-  fDrawFormula->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)"); 
+  fDrawFormula->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)");
   fFormulaFrame->AddFrame(fDrawFormula,   new TGLayoutHints(kLHintsNormal | kLHintsExpandX,2,2,0,0));
   //
   TGLabel *fLabelOption =new TGLabel(fFormulaFrame, "Option:");
   fFormulaFrame->AddFrame(fLabelOption,   new TGLayoutHints(kLHintsNormal,2,2,0,0));
   fDrawOption   = new TGTextEntry(fFormulaFrame,new TGTextBuffer(5) , TString(2+formula->GetName()).Hash());
-  fDrawOption->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)"); 
+  fDrawOption->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)");
   fFormulaFrame->AddFrame(fDrawOption,   new TGLayoutHints(kLHintsNormal,2,2,0,0));
   //
   TGLabel *fLabelEval =new TGLabel(fFormulaFrame, "Eval function:");
   fFormulaFrame->AddFrame(fLabelEval,   new TGLayoutHints(kLHintsNormal,2,2,0,0));
   fFormulaEval   = new TGTextEntry(fFormulaFrame,new TGTextBuffer(5) , TString(3+formula->GetName()).Hash());
   fFormulaEval->SetState(0);
-  fFormulaEval->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)"); 
+  fFormulaEval->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)");
   fFormulaFrame->AddFrame(fFormulaEval,   new TGLayoutHints(kLHintsNormal,2,2,0,0));
   //
   TGLabel *fLabelNPoints =new TGLabel(fFormulaFrame, "N points");
   fFormulaFrame->AddFrame(fLabelNPoints,   new TGLayoutHints(kLHintsNormal,2,2,0,0));
   fFormulaNPoints   = new TGTextEntry(fFormulaFrame,new TGTextBuffer(3) , TString(4+formula->GetName()).Hash());
-  fFormulaEval->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)"); 
+  fFormulaEval->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)");
   fFormulaFrame->AddFrame(fFormulaNPoints,   new TGLayoutHints(kLHintsNormal,2,2,0,0));
   //
   TGLabel *fLabelNLines =new TGLabel(fFormulaFrame, "N graphs");
   fFormulaFrame->AddFrame(fLabelNLines,   new TGLayoutHints(kLHintsNormal,2,2,0,0));
   fFormulaNLines        =new TGTextEntry(fFormulaFrame,new TGTextBuffer(3) , TString(5+formula->GetName()).Hash());
-  fFormulaEval->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)"); 
+  fFormulaEval->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)");
   fFormulaFrame->AddFrame(fFormulaNLines,   new TGLayoutHints(kLHintsNormal,2,2,0,0));
-  
-  
+
+
   //
   for (Int_t iPar=0; iPar<nPars; iPar++){
     TGTextBuffer * buffer = 0;
@@ -150,7 +157,7 @@ AliNDFormulaBrowser::AliNDFormulaBrowser(const TGWindow *p, const TGWindow *main
      TGHorizontalFrame *hframe=new TGHorizontalFrame(fVframeFormula,20,20);
      //
      TGLabel *label           =new TGLabel(hframe, TString::Format("p[%d]: %s", iPar, formula->GetParName(iPar)).Data());
-     label->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)");
+   //  label->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)");
      hframe->AddFrame(label,   new TGLayoutHints(kLHintsNormal,2,2,0,0));
      //
      TGLabel *labelMin           =new TGLabel(hframe, "Min:");
@@ -160,7 +167,7 @@ AliNDFormulaBrowser::AliNDFormulaBrowser(const TGWindow *p, const TGWindow *main
      hframe->AddFrame(textMin, new TGLayoutHints(kLHintsNormal,2,2,0,0));
      TGLabel *labelMax           =new TGLabel(hframe, "Max:");
      hframe->AddFrame(labelMax,   new TGLayoutHints(kLHintsNormal,2,2,0,0));
-     
+
      TGTextEntry * textMax    =new TGTextEntry(hframe,new TGTextBuffer(5) , parID+3);
      textMax->Connect("TextChanged(char*)", "AliNDFormulaBrowser", this, "DoText(char*)");
      hframe->AddFrame(textMax, new TGLayoutHints(kLHintsNormal,2,2,0,0));
@@ -194,9 +201,9 @@ AliNDFormulaBrowser::AliNDFormulaBrowser(const TGWindow *p, const TGWindow *main
      fMinEntry->AddAt(textMin,iPar);
      fMaxEntry->AddAt(textMax,iPar);
      fCurrentEntry->AddAt(text,iPar);
-     fSliders->AddAt(slider,iPar); 
+     fSliders->AddAt(slider,iPar);
      //
-   } 
+   }
    fVframeFormula->Resize(100, 100);
    //--- layout for buttons: top align, equally expand horizontally
    fBly = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX, 0, 0, 3, 0);
@@ -214,6 +221,9 @@ AliNDFormulaBrowser::AliNDFormulaBrowser(const TGWindow *p, const TGWindow *main
    fMain->SetWindowName("AliNDFromulaBrower");
    TGDimension size = fMain->GetDefaultSize();
    fMain->Resize(size);
+   fMain->Resize(width,height);
+
+
 
    fMain->SetWMSize(size.fWidth, size.fHeight);
    fMain->SetWMSizeHints(size.fWidth, size.fHeight, size.fWidth, size.fHeight, 0, 0);
@@ -227,7 +237,7 @@ AliNDFormulaBrowser::AliNDFormulaBrowser(const TGWindow *p, const TGWindow *main
    fMain->CenterOnParent();
    fMain->MapSubwindows();
    fMain->MapWindow();
-   gClient->WaitFor(fMain);
+   //gClient->WaitFor(fMain);   /// Add waiting for dialog as an option ???
 }
 
 AliNDFormulaBrowser::~AliNDFormulaBrowser()
@@ -302,7 +312,7 @@ void AliNDFormulaBrowser::DoSlider(Int_t pos)
        Double_t minPosT=atof(textMin->GetBuffer()->GetString());
        Double_t maxPosT=atof(textMax->GetBuffer()->GetString());
        Double_t valueS=(slider->GetPosition()-minPosS)/(maxPosS-minPosS);
-       Double_t valueR=minPosT+valueS*(maxPosT-minPosT);       
+       Double_t valueR=minPosT+valueS*(maxPosT-minPosT);
        sprintf(buf, "%.4f", valueR);
        buffer->Clear();
        buffer->AddText(0, buf);
@@ -327,7 +337,7 @@ void AliNDFormulaBrowser::UpdateFormula(){
   Double_t value= fFormula->EvalPar(0,fFormulaParams->GetMatrixArray());
   TGTextBuffer * buffer = fFormulaEval->GetBuffer();
   buffer->Clear();
-  buffer->AddText(0, TString::Format("%f",value).Data()); 
+  buffer->AddText(0, TString::Format("%f",value).Data());
   fFormulaEval->Deselect();
   gClient->NeedRedraw(fFormulaEval);
 }
@@ -340,7 +350,10 @@ void  AliNDFormulaBrowser::UpdateCanvas(){
   Int_t nLines=3;
   const Int_t kMinPoints=100;
   const Int_t kMinGraphs=2;
-  TLegend *legend = (TLegend*)fgkLegend->Clone(); // 
+  //TLegend *legend = (TLegend*)fgkLegend->Clone(); //
+  TLegend *legend= new TLegend(0.75,0.75,0.89,0.89,"N-dim formula browser");    //here is an memory leak
+  legend->SetBorderSize(0);
+
   //
   if (fFormulaNPoints->GetBuffer()->GetString()){
     Int_t nPoints2=atoi(fFormulaNPoints->GetBuffer()->GetString());
@@ -393,7 +406,7 @@ void  AliNDFormulaBrowser::UpdateCanvas(){
 	    if (jPar>0) (fFormulaParams->GetMatrixArray())[jPar]=parZ;
 	    vecY[i]=drawFormula->EvalPar(0,fFormulaParams->GetMatrixArray());
 	  }
-	  TGraph *gr = new TGraph(nPoints, vecX.GetMatrixArray(), vecY.GetMatrixArray()); 
+	  TGraph *gr = new TGraph(nPoints, vecX.GetMatrixArray(), vecY.GetMatrixArray());
 	  fCanvas->GetCanvas()->cd();
 	  gr->SetLineWidth(2.);
 	  gr->SetLineColor(igr+1);
@@ -403,7 +416,7 @@ void  AliNDFormulaBrowser::UpdateCanvas(){
 	    maxF=TMath::MaxElement(gr->GetN(),  vecY.GetMatrixArray());
 	  }else{
 	    minF=TMath::Min(TMath::MinElement(gr->GetN(),  vecY.GetMatrixArray()),minF);
-	    maxF=TMath::Max(TMath::MaxElement(gr->GetN(),  vecY.GetMatrixArray()),maxF);	  
+	    maxF=TMath::Max(TMath::MaxElement(gr->GetN(),  vecY.GetMatrixArray()),maxF);
 	  }
 	  if (igr==0&&iForm==0) {
 	    gr->Draw("al");
@@ -423,40 +436,41 @@ void  AliNDFormulaBrowser::UpdateCanvas(){
   Int_t iRow=0;
   for (Int_t iParam=0; iParam<nParams; iParam++){
     if (iParam!=iPar &&iParam!=jPar) {
-      fgkLatex->DrawLatexNDC(fgkLatex->GetX(), fgkLatex->GetY()-fgkLatex->GetTextSize()*1.2*iRow, 
-			     TString::Format("p_{%d} %s=%.5f", iParam, fFormula->GetParName(iParam),(*fFormulaParams)[iParam]).Data());      
+      fgkLatex->DrawLatexNDC(fgkLatex->GetX(), fgkLatex->GetY()-fgkLatex->GetTextSize()*1.2*iRow,
+			     TString::Format("p_{%d} %s=%.5f", iParam, fFormula->GetParName(iParam),(*fFormulaParams)[iParam]).Data());
       iRow++;
-    }	
+    }
     TGTextEntry * textMin = (TGTextEntry *)fMinEntry->At(iParam);
     TGTextEntry * textMax = (TGTextEntry *)fMaxEntry->At(iParam);
-    
+
     if (iParam==iPar) {
-      fgkLatex->DrawLatexNDC(fgkLatex->GetX(), fgkLatex->GetY()-fgkLatex->GetTextSize()*1.2*iRow, 
-			     TString::Format("x=p_{%d}: %s <%s,%s>", iParam, fFormula->GetParName(iParam),textMin->GetBuffer()->GetString() ,textMax->GetBuffer()->GetString()).Data());  
+
+      fgkLatex->DrawLatexNDC(fgkLatex->GetX(), fgkLatex->GetY()-fgkLatex->GetTextSize()*1.2*iRow,
+			     TString::Format("x=p_{%d}: %s <%s,%s>", iParam, fFormula->GetParName(iParam),textMin->GetBuffer()->GetString() ,textMax->GetBuffer()->GetString()).Data());
       gr0->GetXaxis()->SetTitle(fFormula->GetParName(iParam));
       iRow++;
     }
     if (iParam==jPar) {
-      fgkLatex->DrawLatexNDC(fgkLatex->GetX(), fgkLatex->GetY()-fgkLatex->GetTextSize()*1.2*iRow, 
-			     TString::Format("z=p_{%d}: %s <%s,%s>", iParam, fFormula->GetParName(iParam),textMin->GetBuffer()->GetString(),textMax->GetBuffer()->GetString()).Data());      
-      iRow++;      
+      fgkLatex->DrawLatexNDC(fgkLatex->GetX(), fgkLatex->GetY()-fgkLatex->GetTextSize()*1.2*iRow,
+			     TString::Format("z=p_{%d}: %s <%s,%s>", iParam, fFormula->GetParName(iParam),textMin->GetBuffer()->GetString(),textMax->GetBuffer()->GetString()).Data());
+      iRow++;
     }
   }
   if (jPar>0){
     for (Int_t igr=0; igr<nGraphs; igr++){
       fgkLatex->SetTextColor(igr+1);
       Double_t value= minPosT2+(maxPosT2-minPosT2)*igr/Double_t(nGraphs);
-      fgkLatex->DrawLatexNDC(fgkLatex->GetX()+0.05, fgkLatex->GetY()-fgkLatex->GetTextSize()*1.2*iRow, 
-			     TString::Format("gr[%d]=%.4f", igr, value).Data());      
+      fgkLatex->DrawLatexNDC(fgkLatex->GetX()+0.05, fgkLatex->GetY()-fgkLatex->GetTextSize()*1.2*iRow,
+			     TString::Format("gr[%d]=%.4f", igr, value).Data());
       iRow++;
     }
     fgkLatex->SetTextColor(1);
   }
   legend->Draw();
-  
+
   gPad->Update();
   gClient->NeedRedraw(fCanvas);
-  delete formulaArray; 
+  delete formulaArray;
 }
 
 
