@@ -1988,7 +1988,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     }
 
     //Determine location of file to open: default OADB
-    TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
+    TString fileName = (Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
     AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),lPeriodName.Data()));
 
     TString lOADBref = lPeriodName.Data();
@@ -2670,6 +2670,11 @@ TString AliMultSelectionTask::GetExceptionMapping( TString lProductionName ) con
     if ( lProductionName.Contains("LHC17g8b") ) lReturnString = "LHC16r-DefaultMC-EPOSLHC";
     if ( lProductionName.Contains("LHC17g8c") ) lReturnString = "LHC16s-DefaultMC-EPOSLHC";
     if ( lProductionName.Contains("LHC17g8a") ) lReturnString = "LHC16t-DefaultMC-EPOSLHC";
+
+    if ( lProductionName.Contains("LHC17d13") || lProductionName.Contains("LHC17d15") ) {
+        if ( fCurrentRun >= 265115 && fCurrentRun <= 265525 ) lReturnString = "LHC16q-DefaultMC-EPOSLHC";
+        if ( fCurrentRun >= 267161 && fCurrentRun <= 267166 ) lReturnString = "LHC16t-DefaultMC-EPOSLHC";
+    }
    
    //Header mistakes
    if ( lProductionName.EqualTo("LHC17i2a") ) lReturnString = "LHC17i2";
