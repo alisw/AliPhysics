@@ -177,7 +177,7 @@ void AliGenQEDBg::Generate()
     p[1] = ptElectron*TMath::Sin(phiElectron);
     p[2] = mt*TMath::SinH(yElectron);
     id =  11;
-    PushTrack(fTrackIt,-1, id,p,origin,polar,time,kPPrimary,nt,1);    
+    PushTrack(fTrackIt,-1, id,p,origin,polar,time,kPPrimary,nt,1,1);    
     //
     // Produce positron
     mt = TMath::Sqrt(ptPositron*ptPositron + ms2);
@@ -185,7 +185,7 @@ void AliGenQEDBg::Generate()
     p[1] = ptPositron*TMath::Sin(phiPositron);
     p[2] = mt*TMath::SinH(yPositron);
     id = -11;
-    PushTrack(fTrackIt,-1, id,p,origin,polar,time,kPPrimary,nt,1);
+    PushTrack(fTrackIt,-1, id,p,origin,polar,time,kPPrimary,nt,1,1);
     //
   }
   fEvent++;
