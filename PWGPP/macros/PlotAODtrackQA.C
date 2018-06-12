@@ -4,6 +4,7 @@
 #include <TH1F.h>
 #include <TFile.h>
 #include <TF1.h>
+#include <TProfile.h>
 #include <TSystem.h>
 #include <TMath.h>
 #include "TTree.h"
@@ -759,16 +760,19 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefPrim->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefPrim->Draw("colz");
     cps2->cd(2);
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefSecDec->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefSecDec->Draw("colz");
     cps2->cd(3);
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefSecMat->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefSecMat->Draw("colz");
     cps2->cd(4);
     gPad->SetLeftMargin(0.13);
@@ -790,10 +794,13 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gMeanPrim->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
     gMeanSecDec->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
     gMeanSecMat->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
-    gMeanSecMat->GetYaxis()->SetTitleOffset(1.6);
-    gMeanSecMat->GetXaxis()->SetTitleOffset(1.2);
-    gMeanSecMat->Draw("AP");
-    gMeanPrim->Draw("psame");
+    gMeanPrim->GetYaxis()->SetTitleOffset(1.6);
+    gMeanPrim->GetXaxis()->SetTitleOffset(1.2);
+    gMeanPrim->SetMinimum(-0.04);
+    gMeanPrim->SetMaximum(0.04);
+    gMeanPrim->GetXaxis()->SetLimits(0.,20.);
+    gMeanPrim->Draw("AP");
+    gMeanSecMat->Draw("psame");
     gMeanSecDec->Draw("psame");
     cps2->cd(5);
     gPad->SetLeftMargin(0.13);
@@ -809,17 +816,19 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gRmsSecMat->SetMarkerStyle(28);
     gRmsSecMat->SetMarkerColor(kBlue+1);
     gRmsSecMat->SetLineColor(kBlue+1);
+    gRmsPrim->SetMinimum(0.);
+    gRmsPrim->SetMaximum(0.4);
     gRmsPrim->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
     gRmsSecDec->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
     gRmsSecMat->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
     gRmsPrim->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
     gRmsSecDec->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
     gRmsSecMat->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
-    gRmsSecMat->GetYaxis()->SetTitleOffset(1.6);
-    gRmsSecMat->GetXaxis()->SetTitleOffset(1.2);
-    gRmsSecMat->Draw("AP");
-    gRmsSecMat->Draw("AP");
-    gRmsPrim->Draw("psame");
+    gRmsPrim->GetYaxis()->SetTitleOffset(1.6);
+    gRmsPrim->GetXaxis()->SetTitleOffset(1.2);
+    gRmsPrim->GetXaxis()->SetLimits(0.,20.);
+    gRmsPrim->Draw("AP");
+    gRmsSecMat->Draw("psame");
     gRmsSecDec->Draw("psame");
     TLegend* legps=new TLegend(0.2,0.7,0.4,0.89);
     legps->AddEntry(gRmsPrim,"Primary","P");
@@ -849,8 +858,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelPrim->GetYaxis()->SetTitle("#sigma(p_{T} (1/p_{T,reco}-1/p_{T,gen}))");
       gRelPrim->GetYaxis()->SetTitleOffset(1.6);
       gRelPrim->GetXaxis()->SetTitleOffset(1.2);
+      gRelPrim->GetXaxis()->SetLimits(0.,20.);
       gRelPrim->SetMinimum(0.);
-      gRelPrim->SetMaximum(0.05);
+      gRelPrim->SetMaximum(0.04);
       gRelPrim->Draw("AP");
       gRelSecMat->Draw("psame");
       gRelSecDec->Draw("psame");
@@ -958,6 +968,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefPion->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefPion->Draw("colz");
     // TLatex* tpi=new TLatex(0.45,0.93,"Pions");
     // tpi->SetNDC();
@@ -966,6 +977,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefKaon->Draw("colz");
     // TLatex* tk=new TLatex(0.45,0.93,"Kaons");
     // tk->SetNDC();
@@ -974,6 +986,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefProton->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefProton->Draw("colz");
     // TLatex* tpr=new TLatex(0.43,0.93,"Protons");
     // tpr->SetNDC();
@@ -1000,6 +1013,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gMeanProt->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
     gMeanProt->GetYaxis()->SetTitleOffset(1.6);
     gMeanProt->GetXaxis()->SetTitleOffset(1.2);
+    gMeanProt->SetMinimum(-0.04);
+    gMeanProt->SetMaximum(0.04);
+    gMeanProt->GetXaxis()->SetLimits(0.,20.);
     gMeanProt->Draw("AP");
     gMeanPi->Draw("psame");
     gMeanK->Draw("psame");
@@ -1025,7 +1041,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gRmsProt->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
     gRmsProt->GetYaxis()->SetTitleOffset(1.6);
     gRmsProt->GetXaxis()->SetTitleOffset(1.2);
-    gRmsProt->Draw("AP");
+    gRmsProt->SetMinimum(0.);
+    gRmsProt->SetMaximum(0.4);
+    gRmsProt->GetXaxis()->SetLimits(0.,20.);
     gRmsProt->Draw("AP");
     gRmsPi->Draw("psame");
     gRmsK->Draw("psame");
@@ -1058,7 +1076,8 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelPi->GetYaxis()->SetTitleOffset(1.6);
       gRelPi->GetXaxis()->SetTitleOffset(1.2);
       gRelPi->SetMinimum(0.);
-      gRelPi->SetMaximum(0.05);
+      gRelPi->SetMaximum(0.04);
+      gRelPi->GetXaxis()->SetLimits(0.,20.);
       gRelPi->Draw("AP");
       gRelProt->Draw("psame");
       gRelK->Draw("psame");
@@ -1077,6 +1096,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gMeanPiTPC->SetMarkerStyle(26);
     gMeanPiTPC->SetMarkerColor(kMagenta+1);
     gMeanPiTPC->SetLineColor(kMagenta+1);
+    gMeanPi->GetYaxis()->SetTitleOffset(1.6);
+    gMeanPi->GetXaxis()->SetTitleOffset(1.2);
+    gMeanPi->SetMinimum(-0.04);
+    gMeanPi->SetMaximum(0.04);
     gMeanPi->Draw("AP");
     gMeanPiTPC->Draw("psame");
     c2p->cd(2);
@@ -1087,6 +1110,11 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gRmsPiTPC->SetMarkerStyle(26);
     gRmsPiTPC->SetMarkerColor(kMagenta+1);
     gRmsPiTPC->SetLineColor(kMagenta+1);
+    gRmsPi->SetMinimum(-0.04);
+    gRmsPi->SetMaximum(0.4);
+    gRmsPi->GetYaxis()->SetTitleOffset(1.6);
+    gRmsPi->GetXaxis()->SetTitleOffset(1.2);
+    gRmsPi->GetXaxis()->SetLimits(0.,20.);
     gRmsPi->Draw("AP");
     gRmsPiTPC->Draw("psame");
     TLegend* legpit=new TLegend(0.2,0.7,0.5,0.89);
@@ -1102,6 +1130,11 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelPiTPC->SetMarkerStyle(26);
       gRelPiTPC->SetMarkerColor(kMagenta+1);
       gRelPiTPC->SetLineColor(kMagenta+1);
+      gRelPi->GetYaxis()->SetTitleOffset(1.6);
+      gRelPi->GetXaxis()->SetTitleOffset(1.2);
+      gRelPi->SetMinimum(0.);
+      gRelPi->SetMaximum(0.04);
+      gRelPi->GetXaxis()->SetLimits(0.,20.);
       gRelPi->Draw("AP");
       gRelPiTPC->Draw("psame");
     }
@@ -1143,6 +1176,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       vecForTrend[2*jbit+1]=cntj/cnt0;
     }
   }
+
+  TDirectory* curDir=gDirectory;
+  TFile* outfb=new TFile("FiltBitsHistos.root","recreate");
+  curDir->cd();
 
   TCanvas* cip=new TCanvas("cip","FiltBits",1100,900);
   cip->Divide(2,2);
@@ -1202,6 +1239,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       hpt1->Draw("same");
     }
     leg2->Draw();
+    outfb->cd();
+    hphi->Write();
+    hpt1->Write();
+    curDir->cd();
   }
   plotFileName=Form("FilterBits.%s",outputForm.Data());
   cip->SaveAs(plotFileName.Data());
@@ -1217,30 +1258,50 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hdist1->SetStats(0);
     hdist1->SetTitle(Form("Filter bit %d",jb ));
     hdist1->Draw("colz");
+    TProfile* hpr1=hdist1->ProfileX(Form("%s-Profile",hdist1->GetName()));
+    hpr1->SetMarkerStyle(21);
+    hpr1->SetMarkerSize(0.8);
+    hpr1->Draw("same");
     ccc->cd(2);
     gPad->SetLogz();
     TH2F* hdist2=(TH2F*)l->FindObject(Form("hSPDcluPtFiltBit%d",jb));
     hdist2->SetTitle(Form("Filter bit %d",jb ));
     hdist2->SetStats(0);
     hdist2->Draw("colz");
+    TProfile* hpr2=hdist2->ProfileX(Form("%s-Profile",hdist2->GetName()));
+    hpr2->SetMarkerStyle(21);
+    hpr2->SetMarkerSize(0.8);
+    hpr2->Draw("same");
     ccc->cd(3);
     gPad->SetLogz();
     TH2F* hdist3=(TH2F*)l->FindObject(Form("hTPCcluPtFiltBit%d",jb));
     hdist3->SetTitle(Form("Filter bit %d",jb ));
     hdist3->SetStats(0);
     hdist3->Draw("colz");
+    TProfile* hpr3=hdist3->ProfileX(Form("%s-Profile",hdist3->GetName()));
+    hpr3->SetMarkerStyle(21);
+    hpr3->SetMarkerSize(0.8);
+    hpr3->Draw("same");
     ccc->cd(4);
     gPad->SetLogz();
     TH2F* hdist4=(TH2F*)l->FindObject(Form("hTPCcrrowsPtFiltBit%d",jb));
     hdist4->SetTitle(Form("Filter bit %d",jb ));
     hdist4->SetStats(0);
     hdist4->Draw("colz");
+    TProfile* hpr4=hdist4->ProfileX(Form("%s-Profile",hdist4->GetName()));
+    hpr4->SetMarkerStyle(21);
+    hpr4->SetMarkerSize(0.8);
+    hpr4->Draw("same");
     ccc->cd(5);
     gPad->SetLogz();
     TH2F* hdist5=(TH2F*)l->FindObject(Form("hTPCCrowOverFindPtFiltBit%d",jb));
     hdist5->SetTitle(Form("Filter bit %d",jb ));
     hdist5->SetStats(0);
     hdist5->Draw("colz");
+    TProfile* hpr5=hdist5->ProfileX(Form("%s-Profile",hdist5->GetName()));
+    hpr5->SetMarkerStyle(21);
+    hpr5->SetMarkerSize(0.8);
+    hpr5->Draw("same");
     ccc->cd(6);
     gPad->SetLogz();
     TH2F* hdist6=(TH2F*)l->FindObject(Form("hTPCChi2ndfPtFiltBit%d",jb));
@@ -1248,12 +1309,25 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hdist6->SetTitle(Form("Filter bit %d",jb ));
     hdist6->SetStats(0);
     hdist6->Draw("colz");
-    gPad->SetLogz();
+    TProfile* hpr6=hdist6->ProfileX(Form("%s-Profile",hdist6->GetName()));
+    hpr6->SetMarkerStyle(21);
+    hpr6->SetMarkerSize(0.8);
+    hpr6->Draw("same");
+    outfb->cd();
+    hpr1->Write();
+    hpr2->Write();
+    hpr3->Write();
+    hpr4->Write();
+    hpr5->Write();
+    hpr6->Write();
+    curDir->cd();
+
     plotFileName=Form("VarDistFiltBit%d.%s",jb,outputForm.Data());
     ccc->SaveAs(plotFileName.Data());
     if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
-
+  outfb->Close();
+  
   TH3F*	hInvMassK0s3d=(TH3F*)l->FindObject("hInvMassK0s");
   TH3F*	hInvMassLambda3d=(TH3F*)l->FindObject("hInvMassLambda");
   TH3F*	hInvMassAntiLambda3d=(TH3F*)l->FindObject("hInvMassAntiLambda");
@@ -1534,18 +1608,30 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
   Int_t jptr=0;
   for(Int_t j=1; j<=h2d->GetNbinsX(); j++){
     Double_t pt=h2d->GetXaxis()->GetBinCenter(j);
-    Double_t ept=0;
+    Double_t ept=h2d->GetXaxis()->GetBinWidth(j)/2.;
     Int_t ji=j;
     Int_t jf=j;
     if(pt>5 && pt<=10){
       ji=j;
-      jf=j+2;
+      jf=j+1;
       j=jf;
       pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
       ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
-    }else if(pt>10){
+    }else if(pt>10 && pt<=16){
       ji=j;
-      jf=j+5;
+      jf=j+3;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+    }else if(pt>16 && pt<=20){
+      ji=j;
+      jf=j+7;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+     }else if(pt>20){
+      ji=j;
+      jf=j+19;
       j=jf;
       pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
       ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
@@ -1554,14 +1640,14 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
     if(htmp->Integral()>40){
       htmp->Fit("gaus","Q0");
       TF1* fg=(TF1*)htmp->GetListOfFunctions()->FindObject("gaus");      
-      Double_t m=htmp->GetMean();
-      Double_t em=htmp->GetMeanError();
-      gMean->SetPoint(jpt,pt,m);
-      gMean->SetPointError(jpt,ept,em);
-      ++jpt;
+      Double_t m=fg->GetParameter(1);//htmp->GetMean();
+      Double_t em=fg->GetParError(1);//htmp->GetMeanError();
       Double_t r=fg->GetParameter(2);//htmp->GetRMS();
       Double_t er=fg->GetParError(2);//=htmp->GetRMSError();
       if(er/r<0.35){
+	gMean->SetPoint(jpt,pt,m);
+	gMean->SetPointError(jpt,ept,em);
+	++jpt;
 	gRms->SetPoint(jptr,pt,r);
 	gRms->SetPointError(jptr,ept,er);
 	++jptr;
