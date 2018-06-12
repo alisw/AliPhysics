@@ -85,7 +85,7 @@ AliDielectron* Config_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition=1,
   // set track cuts
   SetupCuts(die,cutDefinition,bESDANA);
   
-//  if(useTPCCorr)  SetTPCCorr(die);
+  if(useTPCCorr)  SetTPCCorr(die);
  
  //
  // histogram setup
@@ -775,18 +775,15 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
 //  varCutsFilter->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster    // did not work on ESD when filtering nanoAODs
   varCutsFilter->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-
-  varCutsFilter->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
-  varCutsFilter->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
   varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCutsFilter->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
 
   //PID Cuts as used in nanoAOD Filtering
-  AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
-  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
-  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
-  pidCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
+//  AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
+//  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
+//  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
+//  pidCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
 
   //Carsten's additional PID cuts: (Physics Forum 12.04.18)
   AliDielectronPID *pidCut_3        = new AliDielectronPID("PIDCuts","PIDCuts");
@@ -837,56 +834,41 @@ void SetupAODtrackCutsCarsten1(AliDielectron *die)
   //Add nanoAOD prefiltering cuts
   
   //cuts->AddCut(trkFilter);    //not used on ESDs in ConfigLMEE_nano_PbPb2015.C
+  cuts->AddCut(trackCuts);
+  cuts->AddCut(pidCut_3);
+  cuts->Print();
+  
   
   trackCuts->AddCut(varCutsFilter);
   trackCuts->AddCut(trkCutsFilter);
-  cuts->AddCut(pidCuts);
-  die->GetTrackFilter().AddCuts(pidCuts);
   
-  //Add Carsten Cut set 3 cuts
-
   trackCuts->AddCut(trackCutsDiel);
   trackCuts->AddCut(trackCutsAOD);
-//  trackCuts->AddCut(SharedClusterCut);
-  
-  cuts->AddCut(pidCut_3);
-  die->GetTrackFilter().AddCuts(pidCut_3);
 
-  cuts->AddCut(trackCuts);
+  trackCuts->AddCut(pidCut_3);
+  
+  
   die->GetTrackFilter().AddCuts(trackCuts);
-  
-  
-
-
-  cuts->Print();
 }
 
 
 
 void SetTPCCorr(AliDielectron *die){
-
-  std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
-  std::string file_name = "/home/cklein/LMeeAnaFW/005_TPC_Recalibration/summary/output.root";
-
-  TFile* _file = TFile::Open(file_name.c_str());
-  std::cout << _file << std::endl;
-  if (_file == 0x0){
-    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/data/output.root .");
-    std::cout << "Copy TPC correction from Alien: "<<file_name << std::endl;
-    _file = TFile::Open("output.root");
-    }
-  else {
-    std::cout << "Correction loaded" << std::endl;
-    }
+  ::Info("Config_miweber_LMEE_PbPb_woCutLib","starting LMEECutLib::SetEtaCorrectionTPC()\n");
+  TString path="alien:///alice/cern.ch/user/s/selehner/recal/recalib_data_tpc_nsigmaele.root";
+  gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
+  ::Info("Config_miweber_LMEE_PbPb_woCutLib","Copy TPC correction from Alien: %s",path.Data());
+  _file = TFile::Open("recalib_data_tpc_nsigmaele.root");
   
-    TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
-    TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
-    
-  if(mean)   std::cout << "Mean Correction Histo loaded, entries:"<<mean->GetEntries() << std::endl;
+  TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
+  TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
+
+  if(mean)   ::Info("Config_miweber_LMEE_PbPb_woCutLib","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
   else {
-    std::cout << "Mean Correction Histo not loaded!!!!"<< std::endl;
+    ::Info("Config_miweber_LMEE_PbPb_woCutLib","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
     return 0;
   }
+
     die->SetCentroidCorrFunction(mean, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
     die->SetWidthCorrFunction(width, AliDielectronVarManager::kP, AliDielectronVarManager::kEta, AliDielectronVarManager::kRefMultTPConly);
        
