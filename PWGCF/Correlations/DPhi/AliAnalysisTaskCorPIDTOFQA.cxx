@@ -102,8 +102,8 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
     
 //  m2_pt_pos(0),                  //  3
 //  m2_pt_neg(0),                  //  4
-//  m2_pt_pos_TPC(0),              //  5
-//  m2_pt_neg_TPC(0),              //  6
+    m2_pt_pos_TPC(0),              //  5
+    m2_pt_neg_TPC(0),              //  6
     m2_pt_pos_cut_T(0),            //  7
     m2_pt_neg_cut_T(0),            //  8
     m2_pt_pos_cut_G(0),            //  9
@@ -233,8 +233,8 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
     
 //  m2_pt_pos(0),                  //  3
 //  m2_pt_neg(0),                  //  4
-//  m2_pt_pos_TPC(0),              //  5
-//  m2_pt_neg_TPC(0),              //  6
+    m2_pt_pos_TPC(0),              //  5
+    m2_pt_neg_TPC(0),              //  6
     m2_pt_pos_cut_T(0),            //  7
     m2_pt_neg_cut_T(0),            //  8
     m2_pt_pos_cut_G(0),            //  9
@@ -502,8 +502,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     
 //  m2_pt_pos                  = new TH2F("m2_pt_pos",                  "m2_pt_pos",                    18, coarse_binning,    2400,    -1.0,     7.0);   //  3
 //  m2_pt_neg                  = new TH2F("m2_pt_neg",                  "m2_pt_neg",                    18, coarse_binning,    2400,    -1.0,     7.0);   //  4
-//  m2_pt_pos_TPC              = new TH2F("m2_pt_pos_TPC",              "m2_pt_pos_TPC",                18, coarse_binning,    2400,    -1.0,     7.0);   //  5
-//  m2_pt_neg_TPC              = new TH2F("m2_pt_neg_TPC",              "m2_pt_neg_TPC",                18, coarse_binning,    2400,    -1.0,     7.0);   //  6
+    m2_pt_pos_TPC              = new TH2F("m2_pt_pos_TPC",              "m2_pt_pos_TPC",                18, coarse_binning,    2400,    -1.0,     7.0);   //  5
+    m2_pt_neg_TPC              = new TH2F("m2_pt_neg_TPC",              "m2_pt_neg_TPC",                18, coarse_binning,    2400,    -1.0,     7.0);   //  6
     m2_pt_pos_cut_T            = new TH2F("m2_pt_pos_cut_T",            "m2_pt_pos_cut_T",              18, coarse_binning,    2400,    -1.0,     7.0);   //  7
     m2_pt_neg_cut_T            = new TH2F("m2_pt_neg_cut_T",            "m2_pt_neg_cut_T",              18, coarse_binning,    2400,    -1.0,     7.0);   //  8
     m2_pt_pos_cut_G            = new TH2F("m2_pt_pos_cut_G",            "m2_pt_pos_cut_G",              18, coarse_binning,    2400,    -1.0,     7.0);   //  9
@@ -638,8 +638,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     
 //  fOutputList->Add(m2_pt_pos);                    //  3
 //  fOutputList->Add(m2_pt_neg);                    //  4
-//  fOutputList->Add(m2_pt_pos_TPC);                //  5
-//  fOutputList->Add(m2_pt_neg_TPC);                //  6
+    fOutputList->Add(m2_pt_pos_TPC);                //  5
+    fOutputList->Add(m2_pt_neg_TPC);                //  6
     fOutputList->Add(m2_pt_pos_cut_T);              //  7
     fOutputList->Add(m2_pt_neg_cut_T);              //  8
     fOutputList->Add(m2_pt_pos_cut_G);              //  9
@@ -850,13 +850,13 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	int is_global = 0;
 	if(!track->IsGlobalConstrained())                                               {    is_global=1; }
 
+	if(run_mode == 6  && track->IsGlobalConstrained())                              {    continue;    }
 
-	
-	
+
 	Float_t phi           = track->Phi();
 	if(phi <  -pio2){    phi = phi + twopi; }	if(phi <  -pio2){    phi = phi + twopi;   }
 	if(phi > 3*pio2){    phi = phi - twopi;	}       if(phi > 3*pio2){    phi = phi - twopi;   }
-	
+
 
 	Float_t fraction = 0.0;
 	fraction = track->GetTPCFoundFraction();
@@ -928,7 +928,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
 	    if(TMath::Abs(nSigmaTPCDeut) < TPC_PID)
 	    {
-//		m2_pt_pos_TPC     ->Fill(pt,  m2tof);
+		m2_pt_pos_TPC     ->Fill(pt,  m2tof);
 		m2_pt_pos_TPC_fine->Fill(pt,  m2tof);
 			
 		if(pt >= 1.0  &&  pt < 4.4)
@@ -1054,7 +1054,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    Double_t nSigmaTPCDeut = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)5);  // 5 = deuteron
 	    if(TMath::Abs(nSigmaTPCDeut) < TPC_PID)
 	    {
-//		m2_pt_neg_TPC     ->Fill(pt, m2tof);
+		m2_pt_neg_TPC     ->Fill(pt, m2tof);
 		m2_pt_neg_TPC_fine->Fill(pt, m2tof);
 
 		if(pt >= 1.0  &&  pt < 4.4)
