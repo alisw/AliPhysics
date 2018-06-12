@@ -27,6 +27,13 @@ class AliFemtoDreamEventHist {
   void FillMultV0A(int i, float val){fMultDistV0A[i]->Fill(val);};
   void FillMultV0C(int i, float val){fMultDistV0C[i]->Fill(val);};
   void FillMultRef08(int i, float val){fMultDistRef08[i]->Fill(val);};
+  void FillSPDTrackletsVsCluster(int i,int spdTrkl,int spdCls) {
+    fSPDTrklCls[i]->Fill(spdTrkl,spdCls);
+  }
+  void FillEvtVtxZTrackvsSPD(int i, float zVtxSPD,float zVtxTracks) {
+    fSPDTrackZVtx[i]->Fill(zVtxSPD,zVtxTracks);
+    fSPDTrkZVtxDispl[i]->Fill(TMath::Abs(zVtxSPD-zVtxTracks));
+  }
   void FillCentVsMultV0A(float cent,float mult){
     if (fCentVsMultPlots) fCentVsV0A->Fill(cent,mult);
   }
@@ -53,6 +60,9 @@ class AliFemtoDreamEventHist {
   TH1F *fMultDistV0A[2];    //!
   TH1F *fMultDistV0C[2];    //!
   TH1F *fMultDistRef08[2];  //!
+  TH2F *fSPDTrklCls[2];     //!
+  TH2F *fSPDTrackZVtx[2];   //!
+  TH1F *fSPDTrkZVtxDispl[2];//!
   bool fCentVsMultPlots;    //!
   TH2F *fCentVsV0A;         //!
   TH2F *fCentVsV0M;         //!

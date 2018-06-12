@@ -35,8 +35,12 @@ class AliFemtoDreamEvent {
   float GetYVertex() const {return fyVtx;};
   void SetZVertex(float zvtx){fzVtx=zvtx;};
   float GetZVertex() const {return fzVtx;};
+  float GetZVertexSPD() const {return fzVtxSPD;};
+  float GetZVertexTracks() const {return fzVtxTracks;};
   void SetSPDMult(int spdMult){fSPDMult=spdMult;};
   int GetSPDMult() const {return fSPDMult;};
+  void SetSPDCluster(int spdCluster) {fNSPDCluster=spdCluster;};
+  int GetSPDCluster() const {return fNSPDCluster;};
   void SetRefMult08(int refMult){fRefMult08=refMult;};
   int GetRefMult08() const {return fRefMult08;};
   void SetV0AMult(int v0AMult){fV0AMult=v0AMult;};
@@ -67,10 +71,13 @@ class AliFemtoDreamEvent {
   AliAnalysisUtils *fUtils;   //!
   AliEventCuts *fEvtCuts;     //!
   TList *fEvtCutList;         //!
-  float fxVtx;               //!
-  float fyVtx;               //!
-  float fzVtx;               //!
+  float fxVtx;                //!
+  float fyVtx;                //!
+  float fzVtx;                //!
+  float fzVtxTracks;          //!
+  float fzVtxSPD;             //!
   int fSPDMult;               //!
+  int fNSPDCluster;           //!
   int fRefMult08;             //!
   int fV0AMult;               //!
   int fV0CMult;               //!

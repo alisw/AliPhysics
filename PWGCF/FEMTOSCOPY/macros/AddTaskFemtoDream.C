@@ -61,6 +61,11 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
 	AliFemtoDreamTrackCuts *TrackCuts=
 			AliFemtoDreamTrackCuts::PrimProtonCuts(
 					isMC,DCAPlots,CombSigma,ContributionSplitting);
+	if (isESD) {
+	  TrackCuts->SetCheckFilterBit(false);
+	  TrackCuts->SetCheckESDFiltering(true);
+	  TrackCuts->SetDCAReCalculation(false);
+	}
 	TrackCuts->SetCutCharge(1);
 	AliFemtoDreamTrackCuts *AntiTrackCuts=
 			AliFemtoDreamTrackCuts::PrimProtonCuts(

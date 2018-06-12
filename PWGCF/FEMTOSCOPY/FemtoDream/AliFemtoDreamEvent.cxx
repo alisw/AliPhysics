@@ -20,7 +20,10 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
 ,fxVtx(0)
 ,fyVtx(0)
 ,fzVtx(0)
+,fzVtxSPD(0)
+,fzVtxTracks(0)
 ,fSPDMult(0)
+,fNSPDCluster(0)
 ,fRefMult08(0)
 ,fV0AMult(0)
 ,fV0CMult(0)
@@ -43,7 +46,10 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(
 ,fxVtx(0)
 ,fyVtx(0)
 ,fzVtx(0)
+,fzVtxSPD(0)
+,fzVtxTracks(0)
 ,fSPDMult(0)
+,fNSPDCluster(0)
 ,fRefMult08(0)
 ,fV0AMult(0)
 ,fV0CMult(0)
@@ -126,6 +132,7 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
     this->fPassAliEvtSelection=false;
   }
   this->fSPDMult=CalculateITSMultiplicity(evt);
+  this->fNSPDCluster=evt->GetMultiplicity()->GetNumberOfSPDClusters();
   this->fV0AMult=vZERO->GetMTotV0A();
   this->fV0CMult=vZERO->GetMTotV0C();
   this->fRefMult08=header->GetRefMultiplicityComb08();
@@ -143,6 +150,10 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
 
 void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
   const AliVVertex *vtx = evt->GetPrimaryVertex();
+  const AliVVertex* vtxSPD = evt->GetPrimaryVertexSPD();
+  fzVtxSPD=vtxSPD->GetZ();
+  const AliESDVertex* vtxTrk = evt->GetPrimaryVertexTracks();
+  fzVtxTracks=vtxTrk->GetZ();
   AliESDVZERO *vZERO=evt->GetVZEROData();
   AliESDHeader *header=dynamic_cast<AliESDHeader*>(evt->GetHeader());
   if (!vtx) {
@@ -170,7 +181,13 @@ void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
     this->fPassAliEvtSelection=false;
   }
   //!to do: Check event multiplicity estimation!
-  this->fSPDMult=evt->GetNumberOfITSClusters(1);
+  if (evt->GetMultiplicity()) {
+    this->fSPDMult=evt->GetMultiplicity()->GetNumberOfTracklets();
+    this->fNSPDCluster=evt->GetMultiplicity()->GetNumberOfITSClusters(0,1);
+  } else {
+    this->fSPDMult=evt->GetNumberOfITSClusters(1);
+    this->fNSPDCluster=0;
+  }
   this->fRefMult08=
       AliESDtrackCuts::GetReferenceMultiplicity(
           evt,AliESDtrackCuts::kTrackletsITSTPC,0.8,0);
