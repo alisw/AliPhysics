@@ -24,17 +24,17 @@ TString configLMEECutLibPath(configBasePath+configLMEECutLib);
 //LOAD CUTLIB
 if(gSystem->Exec(Form("ls %s", configLMEECutLibPath.Data()))==0){
 
-    std::cout << "loading LMEECutLib: " << configLMEECutLibPath.Data() << std::endl;
+    ::Info("AddTask_slehner_TreeMakeWCutLib","loading LMEECutLib: %s",configLMEECutLibPath.Data());
     gROOT->LoadMacro(configLMEECutLibPath.Data());
 } 
 else{
-    std::cout << "LMEECutLib not found: " << configLMEECutLibPath.Data() << std::endl;
+    ::Info("AddTask_slehner_TreeMakeWCutLib","LMEECutLib not found: %s", configLMEECutLibPath.Data());
     return 0; // if return is not called, the job will fail instead of running wihout this task... (good for local tests, bad for train)
 }
 
 //Do we have an MC handler?
 Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
-std::cout << "hasMC = " << hasMC << std::endl;
+::Info("AddTask_slehner_TreeMakeWCutLib","hasMC = %d",hasMC);
 
 
 LMEECutLib* cutlib = new LMEECutLib();      

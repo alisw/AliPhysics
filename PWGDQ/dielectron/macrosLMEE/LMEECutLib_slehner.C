@@ -10,43 +10,104 @@ private:
 public:
   
   LMEECutLib() {  
-  cout<<"CREATE NEW LMEECUTLIB slehner"<<endl;
+  ::Info("LMEECutLib","CREATE NEW LMEECUTLIB slehner");
+    pidFilterCuts = new AliDielectronPID("PIDCuts1","PIDCuts1");
+    fUsedVars= new TBits(AliDielectronVarManager::kNMaxValues);
+    
   }
   static AliDielectronPID* GetPIDCutsAna();
 
   AliDielectronCutGroup* GetTrackCuts(int trsel=0, int pidsel=0);
   AliDielectronEventCuts* GetEventCuts(int sel);
-  TH3D SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
+  static TH3D SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
   static AliDielectronPID* pidFilterCuts;
+  static TBits *fUsedVars;               // used variables
+  TH1 *fPostPIDCntrdCorr;   // post pid correction object for electron sigma centroids in TPC
 };
 
-TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, int sel) {
-     
-  
-  
-  std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
-  std::string file_name = "/home/sebaleh/Downloads/recalib_data_tpc_nsigmaele.root";
+static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, int sel) {
 
-  gSystem->Exec("alien_cp alien:///alice/cern.ch/user/c/cklein/data/output.root .");
-  std::cout << "Copy TPC correction from Alien" << std::endl;
-  _file = TFile::Open("output.root");
-
+    
+  ::Info("LMEECutLib::SetEtaCorrectionTPC","starting LMEECutLib::SetEtaCorrectionTPC()\n");
+  TString path="alien:///alice/cern.ch/user/s/selehner/recal/recalib_data_tpc_nsigmaele.root";
+  gSystem->Exec(TString::Format("alien_cp %s .",path.Data()));
+  ::Info("LMEECutLib::SetEtaCorrectionTPC","Copy TPC correction from Alien: %s",path.Data());
+  _file = TFile::Open("recalib_data_tpc_nsigmaele.root");
+  
   TH3D* mean = dynamic_cast<TH3D*>(_file->Get("sum_mean_correction"));
   TH3D* width= dynamic_cast<TH3D*>(_file->Get("sum_width_correction"));
   
-  if(mean)   std::cout << "Mean Correction Histo loaded, entries:"<<mean->GetEntries() << std::endl;
-  else {
-    std::cout << "Mean Correction Histo not loaded!!!!"<<mean->GetEntries() << std::endl;
-    return 0;
+  // AliDielectron::SetCentroidCorrFunction
+  UInt_t valType[20] = {0};
+  valType[0]=corrXdim;     valType[1]=corrYdim;     valType[2]=corrZdim;
+  AliDielectronHistos::StoreVariables(mean, valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("cntrd%d%d%d",corrXdim,corrYdim,corrZdim);
+  fPostPIDCntrdCorr = (TH1*)mean->Clone(key.Data());
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDCntrdCorr)  {
+    printf("POST TPC PID CORRECTION added for centroids:  ");
+    switch(fPostPIDCntrdCorr->GetDimension()) {
+    case 3: printf(" %s, ",fPostPIDCntrdCorr->GetZaxis()->GetName());
+    case 2: printf(" %s, ",fPostPIDCntrdCorr->GetYaxis()->GetName());
+    case 1: printf(" %s ",fPostPIDCntrdCorr->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(corrXdim, kTRUE);
+    fUsedVars->SetBitNumber(corrYdim, kTRUE);
+    fUsedVars->SetBitNumber(corrZdim, kTRUE);
   }
-  if(sel==1) return *mean;
-  else return *width;
+  
+  if(fPostPIDCntrdCorr)     AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
+  
+  
+  
+  // AliDielectron::SetWidthCorrFunction
+  {
+  UInt_t valType[20] = {0};
+  valType[0]=corrXdim;     valType[1]=corrYdim;     valType[2]=corrZdim;
+  AliDielectronHistos::StoreVariables(width, valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("wdth%d%d%d",corrXdim,corrYdim,corrZdim);
+  fPostPIDWdthCorr = (TH1*)width->Clone(key.Data());
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDWdthCorr)  {
+    printf("POST TPC PID CORRECTION added for widths:  ");
+    switch(fPostPIDWdthCorr->GetDimension()) {
+    case 3: printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());
+    case 2: printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());
+    case 1: printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(corrXdim, kTRUE);
+    fUsedVars->SetBitNumber(corrYdim, kTRUE);
+    fUsedVars->SetBitNumber(corrZdim, kTRUE);
+        }
+    }
+  
+  if(fPostPIDWdthCorr)      AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
 
-}
+  if(sel==1){
+        if(mean)   ::Info("LMEECutLib::SetEtaCorrectionTPC","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
+        else {
+        ::Info("LMEECutLib::SetEtaCorrectionTPC","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
+        return 0;
+        }
+      return *mean;
+  }
+  else{
+        if(width)   ::Info("LMEECutLib::SetEtaCorrectionTPC","Width Correction Histo loaded, entries: %f",width->GetEntries());
+        else {
+        ::Info("LMEECutLib::SetEtaCorrectionTPC","Width Correction Histo not loaded! entries: %f",width->GetEntries());
+        return 0;
+        }
+      return *width;
+  }
+}  
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 AliDielectronEventCuts* LMEECutLib::GetEventCuts(int sel) {
-  cout<<"setting event cuts"<<endl;
+  ::Info("AddTask_slehner_TreeMakeWCutLib","setting event cuts");
   
   AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCuts","evcuts");
   
@@ -62,15 +123,15 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(int sel) {
 AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel) {
     
 
-  pidFilterCuts = new AliDielectronPID("PIDCuts1","PIDCuts1");
-  cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
+//  pidFilterCuts = new AliDielectronPID("PIDCuts1","PIDCuts1");
+  ::Info("AddTask_slehner_TreeMakeWCutLib"," >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsAna() >>>>>>>>>>>>>>>>>>>>>> ");
   //nanoAOD Prefilter cuts - should always be applied  if working on nanoAODs in real data, otherwise MC and real data might not use same cuts
-  pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
-  pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
-  pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
+//  pidFilterCuts->AddCut(AliDielectronPID::<kTPC,AliPID::kElectron,-4.,4.);
+//  pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
+//  pidFilterCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
 
 //  switch (sel) {
-      cout<<"chose PID cut "<<sel<<endl; 
+      ::Info("AddTask_slehner_TreeMakeWCutLib","chose PID cut %d",sel); 
 //      case 0:
       // additional PID cuts: carsten analysis PID cut (Physics Forum 12.04.18)
       pidFilterCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -2, 3.0 , 0. ,100., kFALSE);
@@ -85,7 +146,7 @@ AliDielectronPID* LMEECutLib::GetPIDCutsAna(int sel) {
 }
 
 AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID) {
-  cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackSelectionAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
+  ::Info("AddTask_slehner_TreeMakeWCutLib"," >>>>>>>>>>>>>>>>>>>>>> GetTrackSelectionAna() >>>>>>>>>>>>>>>>>>>>>> ");
   AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("CutsAna","CutsAna",AliDielectronCutGroup::kCompAND);
     
   ////Add nanoAOD filter cuts
@@ -110,7 +171,7 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID) {
   
 ////  switch (selTr) {
 
-    std::cout<<"chose track cut "<<selTr<<endl;      
+    ::Info("AddTask_slehner_TreeMakeWCutLib","chose track cut %d");      
       
 // //     case 0:
 
@@ -151,14 +212,12 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(int selTr, int selPID) {
 
             trackCuts->AddCut(varCutsFilter);
             trackCuts->AddCut(trkCutsFilter);
-            trackCuts->AddCut(GetPIDCutsAna(selPID));            
+            
             trackCuts->AddCut(trackCutsDiel);
             trackCuts->AddCut(trackCutsAOD);
-//            trackCuts->AddCut(SharedClusterCut);
             
+            trackCuts->AddCut(GetPIDCutsAna(selPID));
 
-////            break;
-// //   }
   
   return trackCuts;
 }

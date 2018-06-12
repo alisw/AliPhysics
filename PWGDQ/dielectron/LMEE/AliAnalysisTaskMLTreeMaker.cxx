@@ -423,7 +423,8 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   
   if(fuseCorr){   
     AliDielectronPID::SetCentroidCorrFunction( (TH1*) fmean->Clone());
-    AliDielectronPID::SetWidthCorrFunction( (TH1*) fwidth->Clone());    
+    AliDielectronPID::SetWidthCorrFunction( (TH1*) fwidth->Clone());
+    ::Info("AliAnalysisTaskMLTreeMaker::UserExec","Setting Correction Histos");
   }
      
   Double_t lMultiplicityVar = -1;
@@ -599,6 +600,12 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
        
       //Get PID response for tree - this is w/o postcalibration - the PID response after postcalibration has to be taken from dielectron task
       Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 0);
+
+        if (fuseCorr){
+            tempEsigTPC-=AliDielectronPID::GetCntrdCorr(track);
+            tempEsigTPC/=AliDielectronPID::GetWdthCorr(track);
+        }
+
       Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 0);
       Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 0);
       
