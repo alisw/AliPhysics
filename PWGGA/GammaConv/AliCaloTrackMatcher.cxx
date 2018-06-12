@@ -206,7 +206,12 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
     nClus = event->GetNumberOfCaloClusters();
   } else {
     arrClusters = dynamic_cast<TClonesArray*>(event->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
-    nClus = arrClusters->GetEntries();
+    if(arrClusters){
+      nClus = arrClusters->GetEntries();
+    }else{
+      AliError(Form("Could not find %sClustersBranch despite correction framework being used!",fCorrTaskSetting.Data()));
+      return;
+    }
   }
   Int_t nModules = 0;
   if(fClusterType == 1 || fClusterType == 3) nModules = fGeomEMCAL->GetNumberOfSuperModules();
