@@ -204,8 +204,8 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 
 	// load SPD effi
 	if (isMC){
-		// fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run244982.root");
-		std::cout<<std::endl<<" Efficinecy FILE: "<<fSPDfile<<std::endl;
+		fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run244982.root");
+		std::cout<<std::endl<<" Efficinecy FILE loaded: "<<fSPDfile<<std::endl;
 		fSPDfile->Print();
 		fSPDfile->Map();
 		hSPDeff = (TH2D*) fSPDfile->Get("hEff");
@@ -213,7 +213,7 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 		TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
 		hBCmod4_2D->SetDirectory(0);
 		hBCmod4 = hBCmod4_2D->ProjectionY();
-		// fSPDfile->Close();
+		fSPDfile->Close();
 	}
 
 	PostData(1, fRhoTree);
