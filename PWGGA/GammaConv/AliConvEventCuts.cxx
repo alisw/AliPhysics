@@ -1378,6 +1378,13 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       fNSpecialSubTriggerOptions=1;
       fSpecialSubTriggerName="CV0L7";
       break;
+    case 14: // 0STC
+      fOfflineTriggerMask=AliVEvent::kINT7;
+      fTriggerSelectedManually = kTRUE;
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="C0STC";
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
