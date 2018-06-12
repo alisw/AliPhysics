@@ -32,9 +32,26 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
   TString colType  = gSystem->Getenv("ALIEN_JDL_LPMINTERACTIONTYPE");
   TString prodTag  = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTAG");
   TString prodType = gSystem->Getenv("ALIEN_JDL_LPMPRODUCTIONTYPE");
-    
+      
   if ( col == "" ) // Check the alien environment 
   {
+    
+    if ( colType == "" )
+    {
+      printf("GetAlienGlobalProductionVariables() - Default environment not found? check childs\n");
+      for(Int_t ichild = 0; ichild < 100; ichild++)
+      {
+        colType  = gSystem->Getenv(Form("ALIEN_JDL_child_%d_LPMINTERACTIONTYPE",ichild));
+        prodTag  = gSystem->Getenv(Form("ALIEN_JDL_child_%d_LPMPRODUCTIONTAG"  ,ichild));
+        prodType = gSystem->Getenv(Form("ALIEN_JDL_child_%d_LPMPRODUCTIONTYPE" ,ichild));
+        
+        printf("\t child %d col <%s>, tag <%s>, type <%s>\n",
+               ichild,colType.Data(),prodTag.Data(),prodType.Data());
+        
+        if ( colType != "" ) break;
+      }
+    }
+    
     if      (colType.Contains( "PbPb")) col = "PbPb"; 
     else if (colType.Contains( "XeXe")) col = "PbPb"; 
     else if (colType.Contains( "AA"  )) col = "PbPb"; 
