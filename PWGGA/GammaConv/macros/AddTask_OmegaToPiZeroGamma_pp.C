@@ -417,6 +417,10 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
+    //------------------------------------ 13 TeV ----------------------------------------------
+  } else if( trainConfig == 601) {
+    //std MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111017032230000","0153503000000000","0153503000000000");
   } else {
     Error(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
