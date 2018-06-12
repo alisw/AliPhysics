@@ -13,6 +13,7 @@
 
 class AliJetContainer;
 class AliEmcalJet;
+#include "AliEventCuts.h"
 #include "THistManager.h"
 #include "AliYAMLConfiguration.h"
 #include "AliAnalysisTaskEmcalJet.h"
@@ -69,6 +70,7 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
 
  private:
 
+  Bool_t IsEventSelected();
   Bool_t Run();
 
   // Configuration
@@ -87,20 +89,22 @@ class AliAnalysisTaskEmcalJetHPerformance : public AliAnalysisTaskEmcalJet {
   ResponseMatrixFillWrapper CreateResponseMatrixFillWrapper(AliEmcalJet * jet) const;
 
   // Basic configuration
-  PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file
-  std::string fConfigurationPath;     ///<  Path to the YAML configuration file
-  bool fConfigurationInitialized;     ///<  True if the task configuration has been successfully initialized
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< YAML configuration file.
+  std::string fConfigurationPath;     ///<  Path to the YAML configuration file.
+  bool fConfigurationInitialized;     ///<  True if the task configuration has been successfully initialized.
+  AliEventCuts fEventCuts;            ///<  AliEventCuts to handle event selection.
 
   // Histograms
-  THistManager fHistManager;          ///<  Histogram manager
-  AliEmcalEmbeddingQA fEmbeddingQA;   //!<! Embedding QA hists (will only be added if embedding)
+  THistManager fHistManager;          ///<  Histogram manager.
+  AliEmcalEmbeddingQA fEmbeddingQA;   //!<! Embedding QA hists (will only be added if embedding).
 
   // Configuration options
-  bool fCreateQAHists;                ///<  If true, create QA histograms
-  bool fCreateResponseMatrix;         ///<  If true, create a response matrix with the available jet collections
+  bool fUseAliEventCuts;              ///<  If true, use AliEventCuts for event selection instead of IsEventSelected.
+  bool fCreateQAHists;                ///<  If true, create QA histograms.
+  bool fCreateResponseMatrix;         ///<  If true, create a response matrix with the available jet collections.
 
   // QA variables
-  // None
+  std::string fEmbeddedCellsName;     ///<  Set the embedded cells collection name
 
   // Response matrix variables
   // Response matrix fill map
