@@ -132,14 +132,14 @@ Bool_t ConfigKStarPlusMinusRun2
         else if(Sys==2){cutK0s->SetPIDCutPion(pi_k0s_PIDCut-1.0);}
         else if(Sys==3){cutK0s->SetMaxDaughtersDCA(k0sDaughDCA-0.25);}
         else if(Sys==4){cutK0s->SetMaxDaughtersDCA(k0sDaughDCA+0.25);}
-        else if(Sys==5){SetMinCosPointingAngle(k0sCosPoinAn-0.02);}
-        else if(Sys==6){SetMinCosPointingAngle(k0sCosPoinAn+0.02);}
-        else if(Sys==7){SetTolerance(massTol+1);}
-        else if(Sys==8){SetTolerance(massTol+2);}
-        else if(Sys==9){SetTolerance(massTol-1);}
-        else if(Sys==10){SetfLife(pLife-8);}
-        else if(Sys==11){SetfLowRadius(radiuslow-0.2);}
-        else if(Sys==12){SetfLowRadius(radiuslow+0.2);}
+        else if(Sys==5){cutK0s->SetMinCosPointingAngle(k0sCosPoinAn-0.02);}
+        else if(Sys==6){cutK0s->SetMinCosPointingAngle(k0sCosPoinAn+0.02);}
+        else if(Sys==7){cutK0s->SetTolerance(massTol+1);}
+        else if(Sys==8){cutK0s->SetTolerance(massTol+2);}
+        else if(Sys==9){cutK0s->SetTolerance(massTol-1);}
+        else if(Sys==10){cutK0s->SetfLife(pLife-8);}
+        else if(Sys==11){cutK0s->SetfLowRadius(radiuslow-0.2);}
+        else if(Sys==12){cutK0s->SetfLowRadius(radiuslow+0.2);}
         else if(Sys==13){cutK0s->SetMaxRapidity(v0rapidity-0.1);}
         else if(Sys==14){cutK0s->SetMaxRapidity(v0rapidity+0.1);}
         else if(Sys==15){cutK0s->SetToleranceVeto(massTolVeto-0.0011);}
