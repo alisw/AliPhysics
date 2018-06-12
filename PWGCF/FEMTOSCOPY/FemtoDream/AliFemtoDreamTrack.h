@@ -10,6 +10,7 @@
 
 #include <vector>
 #include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 #include "AliFemtoDreamBasePart.h"
 #include "AliPIDResponse.h"
 class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
@@ -21,7 +22,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   UInt_t GetilterMap() const {return fFilterMap;};
   bool TestFilterBit(UInt_t filterBit)
   {return (bool) ((filterBit & fFilterMap) != 0);}
-
+  bool PassESDFiltering() const {return fPassFiltering;};
   float GetDCAXY() const {  return fdcaXY;};
   float GetDCAXYProp() const {return fdcaXYProp;};
   float GetDCAZ() const {return fdcaZ;};
@@ -51,16 +52,20 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
  private:
   void Reset();
   float GetBeta(AliAODTrack *track);
+  float GetBeta(AliESDtrack *track);
   bool CheckGlobalTrack(const Int_t TrackID);
   void SetAODTrackingInformation();
+  void ApplyESDtoAODFilter();
   void SetESDTrackingInformation();
   void SetPhiAtRadii();
-  void SetPIDInformation();
+  void SetAODPIDInformation();
+  void SetESDPIDInformation();
   void SetMCInformation();
   AliPIDResponse *fPIDResponse;
   AliPIDResponse::EDetPidStatus fstatusTPC;
   AliPIDResponse::EDetPidStatus fstatusTOF;
   UInt_t fFilterMap;
+  bool fPassFiltering;
   float fdcaXY;
   float fdcaZ;
   float fdcaXYProp;
@@ -70,7 +75,10 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float fRatioCR;
   bool fnoSharedClst;
   float fTPCClsS;
+  float fTPCClsSRatio;
   float fChi2;
+  float fChi2TPC;
+  float fChi2ITS;
   std::vector<bool> fSharedClsITSLayer;
   bool fHasSharedClsITSLayer;
   float fdEdxTPC;
@@ -79,15 +87,16 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   std::vector<bool> fITSHit;
   bool fTOFTiming;
   bool fTPCRefit;
-  AliESDtrack *fESDTrack;
-  AliAODTrack *fAODTrack;
-  AliAODTrack *fAODGlobalTrack;
   float fnSigmaTPC[5];
   float fnSigmaTOF[5];
-  UInt_t fESDStatus;
+  ULong_t fESDStatus;
   int fESDnClusterITS;
-  int fESDnClustersTPC;
-  float fESDnCrossedRowsTPC;
+  int fESDnClusterTPC;
+  AliESDtrack *fESDTrack;
+  AliESDtrack *fESDTPCOnlyTrack;
+  AliESDtrackCuts *fESDTrackCuts;
+  AliAODTrack *fAODTrack;
+  AliAODTrack *fAODGlobalTrack;
   ClassDef(AliFemtoDreamTrack,3)
 };
 

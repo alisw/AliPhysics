@@ -49,6 +49,7 @@ class AliFemtoDreamTrackCuts {
   //Setters for the Track Cuts
   void SetCheckFilterBit(bool check){fCheckFilterBit = check;};
   void SetFilterBit(UInt_t FilterBit){fFilterBit = FilterBit; fCheckFilterBit = kTRUE;};
+  void SetCheckESDFiltering(bool check) {fCheckESDFiltering=check;};
   void SetPtRange(float pmin, float pmax){fpTmin = pmin; fpTmax = pmax; fcutPt = kTRUE;};
   void SetEtaRange(float etamin, float etamax){fetamin=etamin; fetamax=etamax; fcutEta = kTRUE;};
   float GetEtaMin() {return fetamin;}
@@ -87,7 +88,7 @@ class AliFemtoDreamTrackCuts {
   void SetMCName(TString name){if(fMCHists)fMCHists->SetName(name.Data());};
  private:
   bool TrackingCuts(AliFemtoDreamTrack *Track);
-  bool PIDAODCuts(AliFemtoDreamTrack *Track);
+  bool PIDCuts(AliFemtoDreamTrack *Track);
   bool SmallestNSig(AliFemtoDreamTrack *Track);
   bool DCACuts(AliFemtoDreamTrack *Track);
   void BookTrackCuts();
@@ -100,7 +101,8 @@ class AliFemtoDreamTrackCuts {
   bool fCombSigma;                    //
   bool fContribSplitting;             //
   bool fFillQALater;                  //
-  bool fCheckFilterBit;               //
+  bool fCheckFilterBit;               // This one is used for AODs
+  bool fCheckESDFiltering;            // This one checks if the filtering of ESDs to AODs with FB128 passes
   bool fCheckPileUpITS;               //
   bool fCheckPileUpTOF;               //
   bool fCheckPileUp;                  //  Should only be used for Daughters of v0s
