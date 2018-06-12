@@ -591,14 +591,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   }
 
   //for PID cut efficiency
-  const TString PIDtype[3] = {"CPV","Disp","PID"};//str PID is for main PID cut efficiency used in this analysis
-  TH2F *h2_p_PID     = new TH2F(Form("hMgg_Probe_%s"          ,PIDtype[2].Data()),Form("Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"            ,PIDtype[2].Data()),180,0,0.72,NpTgg-1,pTgg);
+  const TString PIDtype[4] = {"noPID","CPV","Disp","PID"};//str PID is for main PID cut efficiency used in this analysis
+  TH2F *h2_p_PID     = new TH2F(Form("hMgg_Probe_%s"          ,PIDtype[3].Data()),Form("Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"            ,PIDtype[3].Data()),180,0,0.72,NpTgg-1,pTgg);
   h2_p_PID->Sumw2();
   fOutputContainer->Add(h2_p_PID);
-  TH2F *h2mix_p_PID  = new TH2F(Form("hMixMgg_Probe_%s"       ,PIDtype[2].Data()),Form("Mix Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"        ,PIDtype[2].Data()),180,0,0.72,NpTgg-1,pTgg);
+  TH2F *h2mix_p_PID  = new TH2F(Form("hMixMgg_Probe_%s"       ,PIDtype[3].Data()),Form("Mix Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"        ,PIDtype[3].Data()),180,0,0.72,NpTgg-1,pTgg);
   h2mix_p_PID->Sumw2();
   fOutputContainer->Add(h2mix_p_PID);
-  for(Int_t ip=0;ip<3;ip++){
+  for(Int_t ip=1;ip<4;ip++){
 
     TH2F *h2_pp_PID    = new TH2F(Form("hMgg_PassingProbe_%s"   ,PIDtype[ip].Data()),Form("Passing Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"    ,PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
     TH2F *h2mix_pp_PID = new TH2F(Form("hMixMgg_PassingProbe_%s",PIDtype[ip].Data()),Form("Mix Passing Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
@@ -610,7 +610,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     fOutputContainer->Add(h2mix_pp_PID);
 
   }//end of PID loop
-
 
   //for TOF cut efficiency
   TH2F *h2_p_TOF = new TH2F("hMgg_Probe_TOF"              ,"Probe #gamma TOF;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV)"            ,60,0,0.24,NpTgg-1,pTgg);
@@ -630,6 +629,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   fOutputContainer->Add(h2mix_pp_TOF);
 
   //for photon purity by DDA
+
+  for(Int_t ip=0;ip<4;ip++){
+    TH1F *h1PhotonPt = new TH1F(Form("hPhotonPt_%s",PIDtype[ip].Data()),Form("#gamma p_{T} %s;p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),NpTgg-1,pTgg);
+    h1PhotonPt->Sumw2();
+    fOutputContainer->Add(h1PhotonPt);
+  }//end of PID loop
 
   const TString PIDName[] = {"Electron","Pion","Kaon","Proton","AntiProton","K0L","Neutron","AntiNeutron","Gamma","Others"};//AntiProton is needed for antineutron study.
   const Int_t Npid = sizeof(PIDName)/sizeof(PIDName[0]);
@@ -1752,7 +1757,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
 
   for(Int_t iph=0;iph<multClust;iph++){
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(iph);
-    if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
     if(!CheckMinimumEnergy(ph)) continue;
 
     if(fIsPHOSTriggerAnalysis){
@@ -1780,6 +1784,15 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
 
     eff = f1tof->Eval(energy);
     if(!fIsMC && fIsPHOSTriggerAnalysis && fTRFM == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTAP) trgeff = f1trg->Eval(energy);
+
+    if(fIsMC || (!fIsMC && ph->IsTOFOK())){
+                                             FillHistogramTH1(fOutputContainer,"hPhotonPt_noPID",pT,1/eff * weight * 1/trgeff);
+      if(fPHOSClusterCuts->IsNeutral(ph))    FillHistogramTH1(fOutputContainer,"hPhotonPt_CPV"  ,pT,1/eff * weight * 1/trgeff);
+      if(fPHOSClusterCuts->AcceptDisp(ph))   FillHistogramTH1(fOutputContainer,"hPhotonPt_Disp" ,pT,1/eff * weight * 1/trgeff);
+      if(fPHOSClusterCuts->AcceptPhoton(ph)) FillHistogramTH1(fOutputContainer,"hPhotonPt_PID"  ,pT,1/eff * weight * 1/trgeff);
+    }
+
+    if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
 
     //0 < photon phi < 2pi
     if(phi < 0) phi += TMath::TwoPi();
