@@ -30,6 +30,7 @@
 #include "AliPIDResponse.h"
 #include "AliHFJetsTaggingVertex.h"
 #include "AliRDHFJetsCutsVertex.h"
+#include "AliAnalysisTaskWeakDecayVertexer.h"
 #include <vector>
 #include <algorithm>
 
@@ -2902,13 +2903,11 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 					fOutput->Add(fhistJetProbability_bLogThird);
 				}
 				if(fDoSVAnalysis){
-					fOutput->Add(fhistJetProbabilityLogSVHE);
 					fOutput->Add(fhistJetProbability_UnidentifiedLogSVHE);
 					fOutput->Add(fhistJetProbability_udsgLogSVHE);
 					fOutput->Add(fhistJetProbability_cLogSVHE);
 					fOutput->Add(fhistJetProbability_bLogSVHE);
 
-					fOutput->Add(fhistJetProbabilityLogSVHP);
 					fOutput->Add(fhistJetProbability_UnidentifiedLogSVHP);
 					fOutput->Add(fhistJetProbability_udsgLogSVHP);
 					fOutput->Add(fhistJetProbability_cLogSVHP);
@@ -3237,7 +3236,9 @@ Bool_t AliAnalysisTaskBJetTC::CalculateJetSignedTrackImpactParameter(AliAODTrack
 		Double_t bcv[21] = { 0 };
 		AliExternalTrackParam bjetparam(bpos, bpxpypz, bcv, (Short_t)0);
 		Double_t xa = 0., xb = 0.;
-		bjetparam.GetDCA(&etp, fAODIn->GetMagneticField(), xa, xb);
+		//bjetparam.GetDCA(&etp, fAODIn->GetMagneticField(), xa, xb);
+		AliAnalysisTaskWeakDecayVertexer* DecayVertex = new AliAnalysisTaskWeakDecayVertexer();
+		DecayVertex->GetDCAV0Dau(&bjetparam, &etp, xa, xb, fAODIn->GetMagneticField() );
 		Double_t xyz[3] = { 0., 0., 0. };
 		Double_t xyzb[3] = { 0., 0., 0. };
 		bjetparam.GetXYZAt(xa, fAODIn->GetMagneticField(), xyz);
