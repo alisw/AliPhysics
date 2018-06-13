@@ -54,12 +54,12 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 	//Analysis->AddMaskSM(9);                     //..switch off entire SMs
 	//Analysis->AddMaskSM(11);                    //..switch off entire SMs
 	Analysis->SetLowerBound(1);                 //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
-	//Analysis->SetLowerBound(0.4);                 //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
+	//Analysis->SetLowerBound(0.4);             //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
     //Analysis->SetStartEndCell(0,12288);       //..only EMCal
     //Analysis->SetStartEndCell(12288,17664);   //..only DCal
     //Analysis->SetQAChecks(1);                 //..1= Perform QA checks - takes a long time! Saves all good cells for cross check to pdf
     //Analysis->SetPrintOutput(1);              //..1= prints more information about excluded cells
-	Analysis->SetTrackCellRecord(1);            //..1= prints non-zero flag elements thoughout the routine
+	Analysis->SetTrackCellRecord(0);            //..1= prints non-zero flag elements thoughout the routine
 	//Analysis->SetExternalBadMap("Version1OADB/LHC16s_INT7_Histograms_V1.root");
 
 	//. . . . . . . . . . . . . . . . . . . . . . . .
@@ -72,26 +72,30 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
     sigmaE_hit=4.5;
 	//..the range of sigmas should be selected such
 	//..that one does not cut into the natural fluctuation over the modules
-	Analysis->AddPeriodAnalysis(2, sigmaNHits,0.1,0.3);  // hits in cell in range Emin Emax
+	Analysis->AddPeriodAnalysis(5, sigmaNHits,0.1,0.3);  // hits in cell in range Emin Emax
 	Analysis->AddPeriodAnalysis(1, sigmaE_hit,0.1,0.3);  // energy/hit in range Emin Emax
-	Analysis->AddPeriodAnalysis(2, sigmaNHits,0.2,0.5);  // hits in cell range Emin Emax
+	Analysis->AddPeriodAnalysis(5, sigmaNHits,0.2,0.5);  // hits in cell range Emin Emax
 	Analysis->AddPeriodAnalysis(1, sigmaE_hit,0.2,0.5);  // energy/hit in range Emin Emax
-	Analysis->AddPeriodAnalysis(2, sigmaNHits,0.5,1.0);  // hits in cell range Emin Emax
+	Analysis->AddPeriodAnalysis(5, sigmaNHits,0.5,1.0);  // hits in cell range Emin Emax
 	Analysis->AddPeriodAnalysis(1, sigmaE_hit,0.5,1.0);  // energy/hit in range Emin Emax
-	Analysis->AddPeriodAnalysis(2, sigmaNHits,1.0,4.0);  // hits in cell range Emin Emax
+	Analysis->AddPeriodAnalysis(5, sigmaNHits,1.0,4.0);  // hits in cell range Emin Emax
     Analysis->AddPeriodAnalysis(1, sigmaE_hit,1.0,4.0);  // mean energy in range Emin Emax
-	Analysis->AddPeriodAnalysis(2, sigmaNHits,1.0,10.0); // hits in cell in range Emin Emax
+	Analysis->AddPeriodAnalysis(5, sigmaNHits,1.0,10.0); // hits in cell in range Emin Emax
 	Analysis->AddPeriodAnalysis(1, sigmaE_hit,1.0,10.0); // energy/hit in range Emin Emax
-	Analysis->AddPeriodAnalysis(2, sigmaNHits,0.11,0.29);  // hits in cell in range Emin Emax
+	Analysis->AddPeriodAnalysis(5, sigmaNHits,0.11,0.29);  // hits in cell in range Emin Emax
 
 
 	//..special test for extra high energy fluctuations
 	Analysis->AddPeriodAnalysis(1, 4.0,3.0,40.0); // energy/hit in cell in range Emin Emax
-//	Analysis->AddPeriodAnalysis(2, 4.0,3.0,40.0); // hits in cell range Emin Emax
+//	Analysis->AddPeriodAnalysis(5, 4.0,3.0,40.0); // hits in cell range Emin Emax
 	//Analysis->AddPeriodAnalysis(1, 4.5,3.0,5.0);  // mean energy in range Emin Emax - cliff
-	//Analysis->AddPeriodAnalysis(2, 5.5,3.0,5.0);  // hits in cell range Emin Emax   - cliff
+	//Analysis->AddPeriodAnalysis(5, 5.5,3.0,5.0);  // hits in cell range Emin Emax   - cliff
 	//Analysis->AddPeriodAnalysis(1, 4.5,5,20);     // energy/hit in range Emin Emax
-	//Analysis->AddPeriodAnalysis(2, 5.5,5,20);     // hits in range Emin Emax
+	//Analysis->AddPeriodAnalysis(5, 5.5,5,20);     // hits in range Emin Emax
+
+	//..Add a cut on the time distribution
+//	Analysis->AddPeriodAnalysis(3, 6,-20,+20); // energy/hit in cell in range Emin Emax
+	Analysis->AddPeriodAnalysis(3, 4,550,750); // energy/hit in cell in range Emin Emax
 
 	//*test time stuff*/	Analysis->AddPeriodAnalysis(3, 6,-20,+20);// energy/hit in range Emin Emax
 
