@@ -14,11 +14,15 @@
 #include "AliFemtoDreamTrack.h"
 #include "AliAODEvent.h"
 #include "AliAODcascade.h"
+#include "AliESDEvent.h"
+#include "AliESDcascade.h"
+
 class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
  public:
   AliFemtoDreamCascade();
   virtual ~AliFemtoDreamCascade();
   void SetCascade(AliAODEvent *evt,AliAODcascade *casc);
+  void SetCascade(AliESDEvent *evt,AliESDcascade *casc);
   TString ClassName(){return "Cascade";};
   float GetXiMass() {return fXiMass;};
   float GetOmegaMass() {return fOmegaMass;};

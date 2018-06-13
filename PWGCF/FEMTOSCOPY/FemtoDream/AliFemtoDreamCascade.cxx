@@ -322,3 +322,74 @@ void AliFemtoDreamCascade::SetMCMotherInfo(
     this->fIsSet=false;
   }
 }
+
+void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt,AliESDcascade *casc) {
+  Reset();
+  fIsReset=false;
+
+  int idxPosFromV0Dghter  = casc->GetPindex();
+  int idxNegFromV0Dghter  = casc->GetNindex();
+  int idxBachFromCascade  = casc->GetBindex();
+
+  AliESDtrack *esdCascadePos  = evt->GetTrack( idxPosFromV0Dghter);
+  fPosDaug->SetTrack(esdCascadePos);
+  AliESDtrack *esdCascadeNeg  = evt->GetTrack( idxNegFromV0Dghter);
+  fNegDaug->SetTrack(esdCascadeNeg);
+  AliESDtrack *esdCascadeBach = evt->GetTrack( idxBachFromCascade);
+  fBach->SetTrack(esdCascadeBach);
+  // Identification of the V0 within the esdCascade (via both daughter track indices)
+  AliESDv0 * currentV0   = 0x0;
+  int idxV0FromCascade = -1;
+  for (int iV0=0; iV0<evt->GetNumberOfV0s(); ++iV0) {
+    currentV0 = evt->GetV0(iV0);
+    int posCurrentV0 = currentV0->GetPindex();
+    int negCurrentV0 = currentV0->GetNindex();
+    if (posCurrentV0==idxPosFromV0Dghter && negCurrentV0==idxNegFromV0Dghter) {
+      idxV0FromCascade = iV0;
+      break;
+    }
+  }
+  if(idxV0FromCascade < 0){
+    AliWarning("Cascade - no matching for the V0, skipping ... \n");
+    continue;
+  }// a priori, useless check, but safer ... in case of pb with tracks "out of bounds"
+
+
+  double PrimVtx[3]={99.,99.,99};
+  double decayPosXi[3] ={ 0. };
+  casc->GetXYZcascade(decayPosXi[0], decayPosXi[1], decayPosXi[2]);
+
+  fXiMass=casc->MassXi();
+  fOmegaMass=casc->MassOmega();
+  fDCAXiDaug=casc->DcaXiDaughters();
+  evt->GetPrimaryVertex()->GetXYZ(PrimVtx);
+  this->SetEvtNumber(evt->GetRunNumber());
+  fCPA=casc->CosPointingAngleXi(PrimVtx[0],PrimVtx[1],PrimVtx[2]);
+  fTransRadius=TMath::Sqrt(
+      decayPosXi[0]*decayPosXi[0]+decayPosXi[1]*decayPosXi[1]);
+  this->SetCharge(casc->ChargeXi());
+  this->SetMomentum(casc->MomXiX(),casc->MomXiY(),casc->MomXiZ());
+  this->SetPt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY());
+  fRapXi=casc->RapXi();
+  fRapOmega=casc->RapOmega();
+  this->SetEta(casc->Eta());
+  this->SetTheta(casc->Theta());
+  this->SetPhi(casc->Phi());
+  fAlphaXi=casc->AlphaXi();
+  fPtArmXi=casc->PtArmXi();
+  fDCAXiPrimVtx=casc->DcaXiToPrimVertex(PrimVtx[0],PrimVtx[1],PrimVtx[2]);
+  fXiLength=TMath::Sqrt(TMath::Power((decayPosXi[0]-PrimVtx[0]),2)+
+                        TMath::Power((decayPosXi[1]-PrimVtx[1]),2)+
+                        TMath::Power((decayPosXi[2]-PrimVtx[2]),2));
+  fOmegaLength=fXiLength;
+  float XiPDGMass=1.321;
+  float OmegaPDGMass=1.672;
+  if (this->GetMomentum().Mag()>0) {
+    fXiLength=fXiLength*XiPDGMass/this->GetMomentum().Mag()>0;
+    fOmegaLength=fOmegaLength*OmegaPDGMass/this->GetMomentum().Mag()>0;
+  } else {
+    fXiLength=-1.;
+  }
+
+  return;
+}

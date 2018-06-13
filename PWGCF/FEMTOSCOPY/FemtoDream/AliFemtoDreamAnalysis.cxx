@@ -309,5 +309,9 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
     fFemtoTrack->SetTrack(track);
     fTrackCuts->isSelected(fFemtoTrack);
   }
+  for (Int_t nCascade = 0; nCascade < evt->GetNumberOfCascades(); ++nCascade) {
+    AliESDcascade *esdCascade = evt->GetCascade(nCascade);
+    fFemtoCasc->SetCascade(evt,esdCascade);
+  }
 }
 
