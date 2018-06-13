@@ -18,9 +18,9 @@
 
 #include "yaml-cpp/yaml.h"
 #include "AliAnalysisTaskEmcalEmbeddingHelper.h"
-#include "AliEmcalContainerUtils.h"
 #include "AliTrackContainer.h"
 #include "AliClusterContainer.h"
+#include "AliEmcalContainerUtils.h"
 #include "AliJetContainer.h"
 #include "AliEmcalJet.h"
 
@@ -114,13 +114,19 @@ AliAnalysisTaskEmcalJetHPerformance & AliAnalysisTaskEmcalJetHPerformance::opera
 }
 
 /**
- * Retrieve task properties from the YAML configuration
+ * Retrieve task properties from the YAML configuration.
  */
 void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLConfig()
 {
   // Base class options
   // Recycle unused embedded events
   fYAMLConfig.GetProperty("recycleUnusedEmbeddedEventsMode", fRecycleUnusedEmbeddedEventsMode, false);
+  // Task physics (trigger) selection.
+  std::vector<std::string> physicsSelection;
+  bool res = fYAMLConfig.GetProperty(std::vector<std::string>({"eventCuts", "physicsSelection"}), physicsSelection, false);
+  if (res) {
+    fOfflineTriggerMask = AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(physicsSelection);
+  }
 
   // Same ordering as in the constructor (for consistency)
   std::string baseName = "enable";
@@ -132,65 +138,7 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
 
   // Event cuts
   baseName = "eventCuts";
-  // TODO: Move to utils so we can use this for correlations too
-  // Physics selection
-  std::vector<std::string> physicsSelection;
-  bool res = fYAMLConfig.GetProperty({baseName, "physicsSelection"}, physicsSelection, false);
-  if (res) {
-    fOfflineTriggerMask = AliEmcalContainerUtils::DeterminePhysicsSelectionFromYAML(physicsSelection);
-  }
-  // Trigger selection
-  bool useEventCutsAutomaticTriggerSelection = false;
-  res = fYAMLConfig.GetProperty(std::vector<std::string>({baseName, "useAutomaticTriggerSelection"}), useEventCutsAutomaticTriggerSelection, false);
-  if (res && useEventCutsAutomaticTriggerSelection) {
-    // Use the autmoatic selection. Nothing to be done.
-    AliDebugStream(1) << "Using the automatic trigger selection from AliEventCuts.\n";
-  }
-  else {
-    // Use the cuts selected by SelectCollisionCandidates()
-    AliDebugStream(1) << "Using the trigger selection specified with SelectCollisionCandidates()\n.";
-    fEventCuts.OverrideAutomaticTriggerSelection(fOfflineTriggerMask);
-  }
-
-  // Centrality
-  // TODO: Implement in this class
-  std::pair<double, double> centRange;
-  res = fYAMLConfig.GetProperty("centralityRange", centRange, false);
-  if (res) {
-    //SetCentRange(centRange.first, centRange.second);
-  }
-  bool manualMode = false;
-  fYAMLConfig.GetProperty({baseName, "manualMode"}, manualMode, false);
-  if (manualMode) {
-    fEventCuts.SetManualMode();
-    // Confgure manual mode via YAML
-    // MC
-    bool mc = false;
-    fYAMLConfig.GetProperty({baseName, "MC"}, mc, false);
-    fEventCuts.fMC = mc;
-
-    // Select the period
-    typedef void (AliEventCuts::*MFP)();
-    std::map <std::string, MFP> eventCutsPeriods = {
-      std::make_pair("11h", &AliEventCuts::SetupRun1PbPb),
-      std::make_pair("15o", &AliEventCuts::SetupLHC15o)
-    };
-    std::string manualCutsPeriod = "";
-    fYAMLConfig.GetProperty({baseName, "manualCutsPeriod"}, manualCutsPeriod, true);
-    auto eventCutsPeriod = eventCutsPeriods.find(manualCutsPeriod);
-    if (eventCutsPeriod != eventCutsPeriods.end()) {
-      // Call event cuts period setup.
-      (fEventCuts.*eventCutsPeriod->second)();
-    }
-    else {
-      AliFatalF("Period %s was not found in the event cuts period map.", manualCutsPeriod.c_str());
-    }
-
-    // Set the 15o pileup cuts.
-    bool enablePileupCuts = false;
-    fYAMLConfig.GetProperty({baseName, "enablePileupCuts"}, manualCutsPeriod, true);
-    fEventCuts.fUseVariablesCorrelationCuts = enablePileupCuts;
-  }
+  AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, GetName());
 
   // QA options
   baseName = "QA";
@@ -211,7 +159,7 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
 }
 
 /**
- * Create jet containers based on the jet values defined in the YAML config
+ * Create jet containers based on the jet values defined in the YAML config.
  */
 void AliAnalysisTaskEmcalJetHPerformance::SetupJetContainersFromYAMLConfig()
 {
@@ -479,7 +427,7 @@ void AliAnalysisTaskEmcalJetHPerformance::QAHists()
 void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
 {
   // Embedded cells
-  // Need to be retrieved manually
+  // Need to be retrieved manually since the base class only retrieves the cells in the internal event.
   auto embeddedCells = dynamic_cast<AliVCaloCells *>(AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->FindListObject(fEmbeddedCellsName.c_str()));
   if (embeddedCells)
   {
