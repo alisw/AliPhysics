@@ -2011,8 +2011,8 @@ void AliAnalysisTaskEMCALClusterize::PrintTCardParam()
   AliInfo(Form("T-Card emulation activated, energy conservation <%d>, randomize E <%d>, induced energy parameters:",
                fTCardCorrClusEnerConserv,fRandomizeTCard));
   
-  AliInfo(Form("T-Card emulation super-modules fraction: Min cell E %2.2f; induced Min E %2.2f, Max at low E %2.2f Max E %2.2f",
-               fTCardCorrMinAmp,fTCardCorrMinInduced,fTCardCorrMaxInducedLowE,fTCardCorrMaxInduced));
+  AliInfo(Form("T-Card emulation super-modules fraction: Min cell E %2.1f MeV; induced Min E %2.1f MeV; Max at low E %2.1f MeV; Max E %2.2f GeV",
+               fTCardCorrMinAmp*1000,fTCardCorrMinInduced*1000,fTCardCorrMaxInducedLowE*1000,fTCardCorrMaxInduced));
   
   for(Int_t ism = 0; ism < 22; ism++)
   {
