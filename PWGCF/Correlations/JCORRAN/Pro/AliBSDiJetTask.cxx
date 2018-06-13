@@ -491,7 +491,7 @@ Bool_t AliBSDiJetTask::Run(){
  
 	TLorentzVector1D RecJets; 
 	Bool_t gooddijet = this -> MeasureJets(jetContainer, RecJets, false);
-	std::sort(RecJets.begin(), RecJets.end(), [&](const TLorentzVector& x, TLorentzVector& y) { return x.Pt() > y.Pt() ;});
+	std::sort(RecJets.begin(), RecJets.end(), [&](const TLorentzVector& x, const TLorentzVector& y) { return x.Pt() > y.Pt() ;});
 	for (auto j : RecJets){
 			//cout<<"corrected rec jet eta phi  pt  = "<< j.Eta()<<"     "<<TVector2::Phi_0_2pi(j.Phi())<<"     " <<j.Pt() <<endl;
 	}
@@ -507,7 +507,7 @@ Bool_t AliBSDiJetTask::Run(){
 			//cout<<"True jet eta phi  pt  = "<< j.Eta()<<"     "<<TVector2::Phi_0_2pi(j.Phi())<<"     " <<j.Pt() <<endl;
 		}
 		if (!gooddijetkine) return false;
-		std::sort(TrueJets.begin(), TrueJets.end(), [&](const TLorentzVector& x, TLorentzVector& y) { return x.Pt() > y.Pt(); });
+		std::sort(TrueJets.begin(), TrueJets.end(), [&](const TLorentzVector& x, const TLorentzVector& y) { return x.Pt() > y.Pt(); });
 	}
 
 	//cout<<"pjet size : "<<TrueJets.size()<<endl;
