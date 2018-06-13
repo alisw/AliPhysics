@@ -90,6 +90,7 @@ def plotPWGJEQA(inputFile, outputDir, referenceFile, fileFormat):
   qaListRef = ""
   trackTHnSparseRef = ""
   clusterQAListRef = ""
+  cellQAListRef = ""
   chargedJetListRef = ""
   fullJetListRef = ""
   if referenceFile:
@@ -103,6 +104,8 @@ def plotPWGJEQA(inputFile, outputDir, referenceFile, fileFormat):
     trackTHnSparseRef.SetName("trackRef")
     clusterQAListRef = qaListRef.FindObject("caloClusters")
     clusterQAListRef.SetName("caloClustersRef")
+    cellQAListRef = qaListRef.FindObject("emcalCells")
+    cellQAListRef.SetName("emcalCellsRef")
     chargedJetListRef = qaListRef.FindObject("Jet_AKTChargedR020_tracks_pT0150_pt_scheme")
     chargedJetListRef.SetName("chargedJetListRef")
     fullJetListRef = qaListRef.FindObject("Jet_AKTFullR020_tracks_pT0150_caloClusters_E0300_pt_scheme")
@@ -153,7 +156,7 @@ def plotPWGJEQA(inputFile, outputDir, referenceFile, fileFormat):
   if trackTHnSparse:
     plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackThnName, qaList, nEvents, outputDir, qaListRef, trackTHnSparseRef, nEventsRef, fileFormat)
   if clusterQAList:
-    plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, outputDir, clusterQAListRef, nEventsRef, fileFormat)
+    plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, outputDir, clusterQAListRef, cellQAListRef, nEventsRef, fileFormat)
   if chargedJetList:
     plotChargedJetQA(ispp, chargedJetList, outputDir, chargedJetListRef, nEvents, nEventsRef, fileFormat)
   if fullJetList:
@@ -654,7 +657,7 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
 ########################################################################################################
 # Plot cluster histograms ##############################################################################
 ########################################################################################################
-def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, outputDir, clusterQAListRef, nEventsRef, fileFormat):
+def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, outputDir, clusterQAListRef, cellQAListRef, nEventsRef, fileFormat):
   
   # Create subdirectory for Cells, Clusters
   outputDirCells = outputDir + "Cells/"
@@ -937,7 +940,50 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
 
   profCellAbsIdTime = cellQAList.FindObject("fProfCellAbsIdTime")
   outputFilename = os.path.join(outputDirCells, "profCellAbsIdTime" + fileFormat)
+  profCellAbsIdTime.GetYaxis().SetRangeUser(-0.2e-6,0.2e-6)
   plotHist(profCellAbsIdTime, outputFilename)
+
+  # Plot the CELL energy spectrum with and without timing cuts
+  hCellEnergyTall = cellQAList.FindObject("fHistCellEvsTime")
+  hCellEnergyTall = hCellEnergyTall.ProjectionY()
+  hCellEnergyTall.SetName("cell_Allproj_energy")
+  hCellEnergyTall.GetXaxis().SetTitle("E_{Cell} [GeV]")
+  outputFilename = os.path.join(outputDirCells, "hCellEnergyTall" + fileFormat)
+  plotHist(hCellEnergyTall, outputFilename, "hist E", True)
+
+  hCellEnergyTsel = cellQAList.FindObject("fHistCellEvsTime")
+  hCellEnergyTsel.GetXaxis().SetRangeUser(-50e-9,50e-9) #recomended time cut
+  hCellEnergyTsel = hCellEnergyTsel.ProjectionY()
+  hCellEnergyTsel.SetName("cell_Selproj_energy")
+  hCellEnergyTsel.GetXaxis().SetTitle("E_{Cell} |t_{cell}|<50ns [GeV]")
+  outputFilename = os.path.join(outputDirCells, "hCellEnergyTsel" + fileFormat)
+  plotHist(hCellEnergyTsel, outputFilename, "hist E", True)
+
+  #refernce histograms
+  if cellQAListRef:
+    hCellEnergyTallRef = cellQAListRef.FindObject("fHistCellEvsTime")
+    hCellEnergyTallRef = hCellEnergyTallRef.ProjectionY()
+    hCellEnergyTallRef.SetName("cellRef_Allproj_energy")
+
+    hCellEnergyTselRef = cellQAListRef.FindObject("fHistCellEvsTime")
+    hCellEnergyTselRef.GetXaxis().SetRangeUser(-50e-9,50e-9)
+    hCellEnergyTselRef = hCellEnergyTselRef.ProjectionY()
+    hCellEnergyTselRef.SetName("cellRef_Selproj_energy")
+
+    xRangeMax = 100
+    if ispp:
+      xRangeMax = 80
+    yAxisTitle = "#frac{1}{N_{evts}}#frac{dN}{dE_{Cell}} [GeV^{-1}]"
+    legendTitle = "EMCal Cells"
+    legendRunLabel = "Current run"
+    legendRefLabel = "All runs"
+    ratioYAxisTitle = "Ratio: run / all runs"
+    outputFilename = os.path.join(outputDirCells, "hCellEnergyTallRatio" + fileFormat)
+    plotSpectra(hCellEnergyTall, hCellEnergyTallRef, 0, 0, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename, "width")
+
+    outputFilename = os.path.join(outputDirCells, "hCellEnergyTselRatio" + fileFormat)
+    plotSpectra(hCellEnergyTsel, hCellEnergyTselRef, 0, 0, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename, "width")
+
 
 ########################################################################################################
 # Plot charged jet histograms    #######################################################################
@@ -1723,7 +1769,8 @@ def plotSpectra(h, hRef, h2, h3, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitl
     hRatio = h.Clone()
     hRatio.Divide(hRef)
     
-    hRatio.SetMarkerStyle(21)
+    hRatio.SetMarkerStyle(20)
+    hRatio.SetMarkerSize(0.5)
     hRatio.SetMarkerColor(1)
 
     if h2:

@@ -63,13 +63,14 @@ plotQA=false
 generatePresentation=false
 
 analysisFile="AnalysisResults.root"   # For pt-hard, set to "AnalysisResultsFinal.root"
-#referenceFile="../AnalysisResultsReference.root"
 referenceFile="AllRuns/AnalysisResults.root"
 
 #-----------------------------------------
 # Preparations
-if [ ! -d "$plotDir" ]; then
-  mkdir -p $plotDir/"AllRuns"
+dir=$plotDir/"AllRuns"
+if [ ! -d "$dir" ]; then
+  mkdir -p $dir
+  echo "created directory" $dir
 fi
 echo "output dir: $plotDir"
 
@@ -81,16 +82,14 @@ if [ "$downloadData" = true ]; then
 
   for RUN in $RUNLIST
   do
-    if [ ! -d $plotDir/$RUN ]; then
-      mkdir "$plotDir"/"$RUN"
+    dir=$plotDir/$RUN
+    if [ ! -d "$dir" ]; then
+      mkdir $dir
+      echo "created directory" $dir
     fi
-  done
-
-  for RUN in $RUNLIST
-  do
     echo "- - - - - - - - - - - - - - - - -"
     echo "Downloading run " $RUN
-    alien_cp alien://$PREFIX$RUN$SUFFIX $plotDir/$RUN
+    alien_cp alien://$PREFIX$RUN$SUFFIX $dir
   done
 fi
 
