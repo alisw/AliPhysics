@@ -70,6 +70,9 @@ class AliLHCData : public TObject
 	kALILumiTotalDeliveredStabBeam,
 	kALILumiBunchInst,
 	kALIBackground,
+	kALILumiSourceName,
+	kLHCBetaStarActive,
+	kLHCBetaStarTargetOptic,	
 	kNRecordTypes};
   //
   //le
@@ -116,7 +119,10 @@ class AliLHCData : public TObject
   //
   Int_t GetNLumiAlice()                           const {return fLumiAlice[kNStor];}
   Int_t GetNLumiAliceSBDelivered()                const {return fLumiAliceStB[kNStor];}
-  Int_t GetNLumiAliceBunch()                      const {return fLumiAliceBbB[kNStor];}  
+  Int_t GetNLumiAliceBunch()                      const {return fLumiAliceBbB[kNStor];}
+  Int_t GetNLumiAliceSrc()                        const {return fLumiAliceSrc[kNStor];}
+  Int_t GetNLHCBetaStarTargetOptic()              const {return fLHCBetaStarTargetOptic[kNStor];}
+  Int_t GetNLHCBetaStarActive()                   const {return fLHCBetaStarActive[kNStor];}
   //
   Int_t GetNBckgAlice(int bg)                     const {return (bg>-1&&bg<kNBGs) ? fBckgAlice[bg][kNStor] : -1;}
   //
@@ -152,7 +158,12 @@ class AliLHCData : public TObject
   AliLHCDipValF* GetLumiAlice(int i=0)                    const; 
   AliLHCDipValF* GetLumiAliceSBDelivered(int i=0)         const; 
   AliLHCDipValF* GetLumiAliceBunch(int i=0)               const; 
-  AliLHCDipValF* GetBckgAlice(int bg, int i=0)            const; 
+  AliLHCDipValF* GetBckgAlice(int bg, int i=0)            const;
+
+  AliLHCDipValC* GetLumiAliceSrc(int i=0)                 const;
+  AliLHCDipValC* GetLHCBetaStarTargetOptic(int i=0)       const;
+  AliLHCDipValI* GetLHCBetaStarActive(int i=0)            const; 
+  
   //
   AliLHCDipValF* GetBPTXdeltaTB1B2(int i=0)               const;
   AliLHCDipValF* GetBPTXdeltaTRMSB1B2(int i=0)            const;
@@ -228,6 +239,7 @@ class AliLHCData : public TObject
   void                  PrintAux(Bool_t full,const Int_t refs[2],const Option_t *opt="") const;
   TObjArray*            GetDCSEntry(const char* key,int &entry,int &last,double tmin,double tmax) const;
   Int_t                 FillScalarRecord(  int refs[2], const char* rec, const char* recErr=0, Double_t maxAbsVal=1.e30);
+  Int_t                 FillScalarRecordInt(int refs[2], const char* rec, Int_t maxAbsVal=0x7fffffff);
   Int_t                 FillBunchConfig(   int refs[2], const char* rec);
   Int_t                 FillStringRecord(  int refs[2], const char* rec);
   Int_t                 FillAcqMode(       int refs[2], const char* rec);
@@ -280,6 +292,9 @@ class AliLHCData : public TObject
   Int_t           fLumiAlice[2];                      // luminosity measured by Alice, Total_Inst      : Float  |kALILumiTotalInst
   Int_t           fLumiAliceStB[2];                   // luminosity measured by Alice, Deli.StabBeam   : Float  |kALILumiTotalDeliveredStabBeam
   Int_t           fLumiAliceBbB[2];                   // luminosity measured by Alice, B-by-B          : Float  |kALILumiBunchInst
+  Int_t           fLumiAliceSrc[2];                   // Alice luminosity source name                  : String |kALILumiSourceName
+  Int_t           fLHCBetaStarTargetOptic[2];         // beta* leveling target                         : String |kLHCBetaStarTargetOptic
+  Int_t           fLHCBetaStarActive[2];              // Flag for beta* leveling                       : Int    |kLHCBetaStarActive
   //
   Int_t           fBckgAlice[kNBGs][2];               // backgrounds measured by Alice                 : Float  |kALIBackground1,2,3
   //
@@ -302,7 +317,7 @@ class AliLHCData : public TObject
   const Char_t*   fkFile2Process;                      //! name of DCS file
   const TMap*     fkMap2Process;                       //! DCS map to process 
 
-  ClassDef(AliLHCData,4)
+  ClassDef(AliLHCData,5)
 };
 
 
@@ -396,6 +411,19 @@ inline AliLHCDipValF* AliLHCData::GetLumiAlice(int i) const { // get record on i
   return (i>=0 && i<fLumiAlice[kNStor]) ? (AliLHCDipValF*)fData[fLumiAlice[kStart]+i]:0;
 }
 
+inline AliLHCDipValC* AliLHCData::GetLumiAliceSrc(int i) const { // get record
+  return (i>=0 && i<fLumiAliceSrc[kNStor]) ? (AliLHCDipValC*)fData[fLumiAliceSrc[kStart]+i]:0;
+}
+
+inline AliLHCDipValC* AliLHCData::GetLHCBetaStarTargetOptic(int i) const { // get record
+  return (i>=0 && i<fLHCBetaStarTargetOptic[kNStor]) ? (AliLHCDipValC*)fData[fLHCBetaStarTargetOptic[kStart]+i]:0;
+}
+
+inline AliLHCDipValI* AliLHCData::GetLHCBetaStarActive(int i) const { // get record
+  return (i>=0 && i<fLHCBetaStarActive[kNStor]) ? (AliLHCDipValI*)fData[fLHCBetaStarActive[kStart]+i]:0;
+}
+
+
 inline AliLHCDipValF* AliLHCData::GetLumiAliceSBDelivered(int i) const { // get record on st.beam delivered luminosity
   return (i>=0 && i<fLumiAliceStB[kNStor]) ? (AliLHCDipValF*)fData[fLumiAliceStB[kStart]+i]:0;
 }
@@ -463,6 +491,7 @@ inline Int_t AliLHCData::GetBCId(int bucket, int beamID) const
   if (IsRun2()) offs -= 2; // constants were changed (Martino)
   return (TMath::Abs(bucket)/10 + offs)%kMaxBSlots;
 }
+
 
 
 #endif
