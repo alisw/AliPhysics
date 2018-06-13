@@ -138,7 +138,10 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
 
   // Event cuts
   baseName = "eventCuts";
-  AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, GetName());
+  // Need to include the namespace so that AliDebug will work properly...
+  std::string taskName = "PWGJE::EMCALJetTasks::";
+  taskName += GetName();
+  AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(fEventCuts, fYAMLConfig, fOfflineTriggerMask, baseName, taskName);
 
   // QA options
   baseName = "QA";
@@ -164,7 +167,7 @@ void AliAnalysisTaskEmcalJetHPerformance::RetrieveAndSetTaskPropertiesFromYAMLCo
 void AliAnalysisTaskEmcalJetHPerformance::SetupJetContainersFromYAMLConfig()
 {
   std::string baseName = "jets";
-  std::vector <std::string> jetNames = {"hybridLevelJets", "detLevelJets", "partLevelJets"};
+  std::vector <std::string> jetNames = {"hybridLevelJets", "detLevelJets", "partLevelJets", "analysisJets"};
   for (const auto & jetName : jetNames) {
     // Retrieve the node just to see if it is exists. If so, then we can proceed
     YAML::Node node;
@@ -296,6 +299,7 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
   std::string title = name + ";E_{time} (s);counts";
   fHistManager.CreateTH1(name.c_str(), title.c_str(), 1000, -10e-6, 10e-6);
 
+  // Clusters
   AliEmcalContainer* cont = 0;
   TIter nextClusColl(&fClusterCollArray);
   while ((cont = static_cast<AliClusterContainer*>(nextClusColl()))) {
@@ -303,6 +307,15 @@ void AliAnalysisTaskEmcalJetHPerformance::SetupQAHists()
     std::string name = "QA/%s/fHistClusterEnergyVsTime";
     std::string title = name + ";E_{cluster} (GeV);t_{cluster} (s)";
     fHistManager.CreateTH2(TString::Format(name.c_str(), cont->GetName()), TString::Format(title.c_str(), cont->GetName()), 1000, 0, 100, 300, -300e-9, 300e-9);
+  }
+
+  // Jets
+  TIter nextJetColl(&fJetCollArray);
+  while ((cont = static_cast<AliJetContainer*>(nextJetColl()))) {
+    // Jet pT
+    std::string name = "QA/%s/fHistJetPt";
+    std::string title = name + ";p_{T} (GeV)";
+    fHistManager.CreateTH1(TString::Format(name.c_str(), cont->GetName()), TString::Format(title.c_str(), cont->GetName()), 500, 0, 250);
   }
 }
 
@@ -428,25 +441,30 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
 {
   // Embedded cells
   // Need to be retrieved manually since the base class only retrieves the cells in the internal event.
-  auto embeddedCells = dynamic_cast<AliVCaloCells *>(AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent()->FindListObject(fEmbeddedCellsName.c_str()));
-  if (embeddedCells)
-  {
-    AliDebugStream(4) << "Found embedded cells. N cells:" << embeddedCells->GetNumberOfCells() << "\n";
-    short absId = -1;
-    double eCell = 0;
-    double tCell = 0;
-    double eFrac = 0;
-    int mcLabel = -1;
+  auto embeddingInstance = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
+  if (embeddingInstance) {
+    auto embeddedCells = dynamic_cast<AliVCaloCells*>(
+     embeddingInstance->GetExternalEvent()->FindListObject(fEmbeddedCellsName.c_str()));
+    if (embeddedCells) {
+      AliDebugStream(4) << "Found embedded cells. N cells:" << embeddedCells->GetNumberOfCells() << "\n";
+      short absId = -1;
+      double eCell = 0;
+      double tCell = 0;
+      double eFrac = 0;
+      int mcLabel = -1;
 
-    std::string histName = "QA/embedding/cells/fHistCellTime";
-    for (unsigned int iCell = 0; iCell < embeddedCells->GetNumberOfCells(); iCell++) {
-      embeddedCells->GetCell(iCell, absId, eCell, tCell, mcLabel, eFrac);
+      std::string histName = "QA/embedding/cells/fHistCellTime";
+      for (unsigned int iCell = 0; iCell < embeddedCells->GetNumberOfCells(); iCell++) {
+        embeddedCells->GetCell(iCell, absId, eCell, tCell, mcLabel, eFrac);
 
-      AliDebugStream(5) << "Cell " << iCell << ": absId: " << absId << ", E: " << eCell << ", t: " << tCell << ", mcLabel: " << mcLabel << ", eFrac: " << eFrac << "\n";
-      fHistManager.FillTH1(histName.c_str(), tCell);
+        AliDebugStream(5) << "Cell " << iCell << ": absId: " << absId << ", E: " << eCell << ", t: " << tCell
+                 << ", mcLabel: " << mcLabel << ", eFrac: " << eFrac << "\n";
+        fHistManager.FillTH1(histName.c_str(), tCell);
+      }
     }
   }
 
+  // Clusters
   AliClusterContainer* clusCont = 0;
   TIter nextClusColl(&fClusterCollArray);
   AliVCluster * cluster = 0;
@@ -456,6 +474,16 @@ void AliAnalysisTaskEmcalJetHPerformance::FillQAHists()
       cluster = clusIter.second;
       // Intentionally plotting against raw energy
       fHistManager.FillTH2(TString::Format("QA/%s/fHistClusterEnergyVsTime", clusCont->GetName()), cluster->E(), cluster->GetTOF());
+    }
+  }
+
+  // Jets
+  AliJetContainer * jetCont = 0;
+  TIter nextJetColl(&fJetCollArray);
+  while ((jetCont = static_cast<AliJetContainer*>(nextJetColl()))) {
+    for (auto jet : jetCont->accepted())
+    {
+      fHistManager.FillTH1(TString::Format("QA/%s/fHistJetPt", jetCont->GetName()), jet->Pt());
     }
   }
 }
@@ -656,6 +684,8 @@ std::string AliAnalysisTaskEmcalJetHPerformance::toString() const
   while ((jetCont = static_cast<AliJetContainer *>(next()))) {
     tempSS << "\t" << jetCont->GetName() << ": " << jetCont->GetArrayName() << "\n";
   }
+  tempSS << "AliEventCuts\n";
+  tempSS << "\tEnabled: " << fUseAliEventCuts << "\n";
   tempSS << "QA Hists:\n";
   tempSS << "\tEnabled: " << fCreateQAHists << "\n";
   tempSS << "Response matrix:\n";

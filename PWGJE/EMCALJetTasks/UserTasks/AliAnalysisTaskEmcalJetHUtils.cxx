@@ -124,7 +124,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
   }
   else {
     // Use the cuts selected by SelectCollisionCandidates() (or via YAML)
-    AliInfoGeneralStream(taskName.c_str()) << "Using the trigger selection specified with SelectCollisionCandidates()\n.";
+    AliInfoGeneralStream(taskName.c_str()) << "Using the trigger selection specified with SelectCollisionCandidates().\n";
     eventCuts.OverrideAutomaticTriggerSelection(offlineTriggerMask);
   }
 
@@ -132,6 +132,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
   bool manualMode = false;
   yamlConfig.GetProperty({baseName, "manualMode"}, manualMode, false);
   if (manualMode) {
+    AliInfoGeneralStream(taskName.c_str()) << "Configuring manual event cuts.\n";
     // Confgure manual mode via YAML
     // Select the period
     typedef void (AliEventCuts::*MFP)();
@@ -143,6 +144,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
     if (eventCutsPeriod != eventCutsPeriods.end()) {
       // Call event cuts period setup.
       (eventCuts.*eventCutsPeriod->second)();
+      AliDebugGeneralStream(taskName.c_str(), 3) << "Configuring event cuts with period \"" << manualCutsPeriod << "\"\n";
     } else {
       AliFatalGeneralF(taskName.c_str(), "Period %s was not found in the event cuts period map.", manualCutsPeriod.c_str());
     }
@@ -152,6 +154,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
     std::pair<double, double> centRange;
     res = yamlConfig.GetProperty("centralityRange", centRange, false);
     if (res) {
+      AliDebugGeneralStream(taskName.c_str(), 3) << "Setting centrality range of (" << centRange.first << ", " << centRange.second << ").\n";
       eventCuts.SetCentralityRange(centRange.first, centRange.second);
     }
 
@@ -164,6 +167,7 @@ void AliAnalysisTaskEmcalJetHUtils::ConfigureEventCuts(AliEventCuts & eventCuts,
     if (manualCutsPeriod == "LHC15o") {
       bool enablePileupCuts = true;
       yamlConfig.GetProperty({ baseName, "enablePileupCuts" }, manualCutsPeriod, true);
+      AliDebugGeneralStream(taskName.c_str(), 3) << "Setting 15o pileup cuts to " << std::boolalpha << enablePileupCuts << ".\n";
       eventCuts.fUseVariablesCorrelationCuts = enablePileupCuts;
     }
   }
