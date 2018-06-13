@@ -66,11 +66,11 @@ class AliAnalysisTaskLNNntuple : public AliAnalysisTaskSE {
   TH2F *fhBBH3;
   TH2F *fhBBH3TofSel;
   TH2F *fhTestNsigma;
+  TH2F *fTPCclusPID;
   TH2F *fhTestQ;
  
   
   TNtupleD *fNt; //! 
-   
   AliPIDResponse *fPIDResponse;     //! pointer to PID response
 
   AliAnalysisTaskLNNntuple(const AliAnalysisTaskLNNntuple&);            // not implemented

@@ -142,7 +142,7 @@ void Getoutput::ClearInputData(){
   if(fInputList){
     //printf("pointer to the list %p \n",fInputList);
     fInputList->Clear();
-   delete fInputList;
+   //delete fInputList;
   } else return;
 }
 
@@ -297,7 +297,7 @@ void Getoutput::BookOutputData(){
   fOutputList->AddLast(hV0P[k]);
  }
 
- triTOFmass = new TH2F ("hTOFmass","#Delta m (m_{TOF}-m_{3H}) with TPC ID ^3H TOF mass", 100, 0,10, 500, 0, 5);
+ triTOFmass = new TH2F ("hTOFmass","", 100, 0,10, 500, 0, 10);
  fOutputList->AddLast(triTOFmass);
  hDcaD = new TH1F ("hDcaD", "dca duaghter tracks", 240, 0, 1.2);
  fOutputList->AddLast(hDcaD);
@@ -318,12 +318,21 @@ void Getoutput::BookOutputData(){
   fOutputList->AddLast(hArmPlotSel[j]);
  }
 
- hTPCsignalPi = new TH2F ("hTPCsignalPi", "", 200, -2, 2, 600, 0, 600);
+ hTPCsignalPi = new TH2F ("hTPCsignalPi", "", 240, -0.6, 0.6, 800, 0, 400);
  fOutputList->AddLast(hTPCsignalPi);
- hTPCsignalTri = new TH2F ("hTPCsignalTri", "", 600, -6, 6, 600, 0, 600);
+ hTPCsignalTri = new TH2F ("hTPCsignalTri", "", 1600, -8, 8, 600, 0, 600);
  fOutputList->AddLast(hTPCsignalTri);
- hTPCsignalTri91Lim = new TH2F ("hTPCsignalTri91Lim", "", 600, -6, 6, 600, 0, 600);
+ hTPCsignalTriAll = new TH2F ("hTPCsignalTriAll", "", 800, 0, 8, 600, 0, 600);
+ fOutputList->AddLast(hTPCsignalTriAll);
+ hTPCsignalPiClean = new TH2F ("hTPCsignalPiClean", "", 200, -0.5, 0.5, 800, 0, 400);
+ fOutputList->AddLast(hTPCsignalPiClean);
+ hTPCsignalTriClean = new TH2F ("hTPCsignalTriClean", "", 1600, -8, 8, 600, 0, 600);
+ fOutputList->AddLast(hTPCsignalTriClean);
+
+ hTPCsignalTri91Lim = new TH2F ("hTPCsignalTri91Lim", "", 1600, -8, 8, 600, 0, 600);
  fOutputList->AddLast(hTPCsignalTri91Lim);
+ hTPCsignalTriTrd = new TH2F ("hTPCsignalTriTrd", "",1600, -8, 8, 600, 0, 600);
+ fOutputList->AddLast(hTPCsignalTriTrd);
 
  const Int_t nPossible = 34;
 
@@ -376,8 +385,10 @@ void Getoutput::BookOutputData(){
 
 void Getoutput::LoopOverV0(Int_t Hcharge){
  f3Hsign = Hcharge;
- Double_t tofMassUpperLimit = 7.929 - param[kParNsigmaTOFmass]*0.03634;	//see https://aliceinfo.cern.ch/Notes/node/471 
- Double_t tofMassLimit = 7.929 + param[kParNsigmaTOFmass]*0.03634;	// pag 12 of 44 of 2016-Nov-28-analysis_note-alice-frontpage_analysis_notes-2.pdf
+ //Double_t tofMassUpperLimit = 7.929 - param[kParNsigmaTOFmass]*0.3634;	//see https://aliceinfo.cern.ch/Notes/node/471 
+ //Double_t tofMassLimit = 7.929 + param[kParNsigmaTOFmass]*0.3634;	// pag 12 of 44 of 2016-Nov-28-analysis_note-alice-frontpage_analysis_notes-2.pdf
+ Double_t tofMassUpperLimit = 7.929 - param[kParNsigmaTOFmass]*0.6;	//see https://aliceinfo.cern.ch/Notes/node/471 
+ Double_t tofMassLimit = 7.929 + param[kParNsigmaTOFmass]*0.6;	// pag 12 of 44 of 2016-Nov-28-analysis_note-alice-frontpage_analysis_notes-2.pdf
  Double_t mass[2] = { 0., 0. };
  Int_t nv0 = 0;
  Bool_t isPrint = kFALSE;
@@ -394,6 +405,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
  Double_t pionMom, tritonMom, v0Mom;
  Int_t countTri=0;
  Int_t countPi=0;
+   TF1 *fiveSigmaSpl = new TF1("fiveSigma","173/(x*x)+41",0,2.0); 
 
  for (Int_t iv0 = 0; iv0 < hn->GetEntries (); iv0++)
  {
@@ -440,8 +452,12 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   if (nsigmapi > param[kParNsigmaPID]) continue;
  hMonitorPlot->Fill(3);
   if(nsigmatri > param[kParNsigmaPID]) continue;
+   if(tritonMom<2 && arr[kTriTPCsignal] < fiveSigmaSpl->Eval(tritonMom)) {
+   continue; 
+}
+   //if(arr[kNSTri]<-1) continue; 
  hMonitorPlot->Fill(4);
- //printf("AFTER : nsigmapi %f , nsigmaTri %f, limit %f \n",nsigmapi,nsigmatri,param[kParNsigmaPID]);
+ //if(nsigmatri>2.999) printf("AFTER : nsigmapi %f , nsigmaTri %f, limit %f \n",nsigmapi,nsigmatri,param[kParNsigmaPID]);
   if (!EventSelectionAOD(arr)) continue;
   v0Mom = arr[kV0mom];
   hArmPlot->Fill (arr[kAlphaArm], arr[kPtArm]);
@@ -450,7 +466,6 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
 
 
   hDcaD->Fill (arr[kV0dcaD]);
-
 
   Int_t signPi = 999, signTri = 999;
   if (arr[kSign] == 9)       {signTri =  1; signPi = -1;}
@@ -463,14 +478,16 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
    printf(" (triCharge %i) : 3H sign %i | pion sign %i (stored %i) \n", f3Hsign, signTri, signPi, (Int_t) arr[kSign]);
    isPrint = kFALSE;
   }
-
+  //if(arr[kTriTPCsignal]<-55*tritonMom+200) printf("nsigma triton %3.3f \n",arr[kNSTri]);
   hTPCsignalPi->Fill (pionMom * signPi, arr[kPiTPCsignal]);
   hTPCsignalTri->Fill (tritonMom * signTri, arr[kTriTPCsignal]);
+  hTPCsignalTriAll->Fill (tritonMom, arr[kTriTPCsignal]);
   mass[0] = fgPionMass;
   mass[1] = fgLH3Mass;
 
   Double_t lambdaDecay[2] = {fgPionMass,fgProtMass };
 
+	 if(arr[kIsTrdEle]>0.5)hTPCsignalTriTrd->Fill(tritonMom * signTri,arr[kTriTPCsignal]);
     if (fIncludePidTOF)
     {
      if (tritonMom < 4 && TMath::Abs (arr[kSigPrTof]) < 3)  continue; // reject 3H identified by TOF as p
@@ -494,7 +511,6 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
 
     else if(tritonMom>f3HPcut){
          hMonitorPlot->Fill(7);
-
     Double_t mTof2 = arr[kTriTOFmass] * arr[kTriTOFmass];
     triTOFmass->Fill(tritonMom,mTof2);
     if (mTof2 < tofMassUpperLimit) continue;
@@ -504,9 +520,13 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
 
     }  
    
-   else hMonitorPlot->Fill(9);
+    else {
+      hMonitorPlot->Fill(9);
+    }
    // else continue;
   // inv Mass electrons 
+  hTPCsignalPiClean->Fill (pionMom * signPi, arr[kPiTPCsignal]);
+  hTPCsignalTriClean->Fill (tritonMom * signTri, arr[kTriTPCsignal]);
   Double_t gamma = GetInvMass (pPion, pTriton, fgEleMass, fgEleMass);
   hMassGamma->Fill (gamma);
   // inv Mass Lambda
@@ -623,7 +643,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
 
 
   hMass[0]->Fill(LNN);
-  if(arr[kIsTrdEle] <0.5) hMassTrd[0]->Fill(LNN); // triton not misidentified
+  if(arr[kIsTrdEle] >0.5) hMassTrd[0]->Fill(LNN); // triton not misidentified
   hArmPlotSel[0]->Fill (arr[kAlphaArm], arr[kPtArm]);
 
   hDecayLength[0]->Fill (arr[kDecayPathXY]);
@@ -656,7 +676,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   }
   hArmPlotSel[1]->Fill (arr[kAlphaArm], arr[kPtArm]);
   hMass[1]->Fill (LNN);
-  if(arr[kIsTrdEle] <0.5) hMassTrd[1]->Fill(LNN); // triton not misidentified
+  if(arr[kIsTrdEle] >0.5) hMassTrd[1]->Fill(LNN); // triton not misidentified
   hDecayLength[1]->Fill (arr[kDecayPathXY]);
   hTriP[1]->Fill (tritonMom);
   hPiP[1]->Fill (pionMom);
@@ -671,7 +691,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   }
   hArmPlotSel[2]->Fill (arr[kAlphaArm], arr[kPtArm]);
   hMass[2]->Fill (LNN);
-  if(arr[kIsTrdEle] <0.5) hMassTrd[2]->Fill(LNN); // triton not misidentified
+  if(arr[kIsTrdEle] >0.5) hMassTrd[2]->Fill(LNN); // triton not misidentified
   hDecayLength[2]->Fill (arr[kDecayPathXY]);
   hTriP[2]->Fill (tritonMom);
   hPiP[2]->Fill (pionMom);
@@ -687,7 +707,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
   //  if(arr[kPtArm]>0.12) continue; //rm pt arm to reduce the bkg
   // if(TMath::Abs(arr[20])<0.5) continue; //continue; rm pt arm to reduce the bkg
   hMass[3]->Fill (LNN);
-  if(arr[kIsTrdEle] <0.5) hMassTrd[3]->Fill(LNN); // triton not misidentified
+  if(arr[kIsTrdEle] >0.5) hMassTrd[3]->Fill(LNN); // triton not misidentified
   hArmPlotSel[3]->Fill (arr[kAlphaArm], arr[kPtArm]);
   hDecayLength[3]->Fill (arr[kDecayPathXY]);
   hTriP[3]->Fill (tritonMom);
@@ -697,6 +717,7 @@ void Getoutput::LoopOverV0(Int_t Hcharge){
 
 
   }
+   delete fiveSigmaSpl;
 
 
 

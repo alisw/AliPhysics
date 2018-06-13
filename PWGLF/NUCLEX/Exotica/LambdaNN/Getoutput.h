@@ -71,7 +71,11 @@ class Getoutput {
   TH2F *hArmPlotSel[5];
   TH2F *hTPCsignalPi;
   TH2F *hTPCsignalTri;
+  TH2F *hTPCsignalTriAll;
+  TH2F *hTPCsignalPiClean;
+  TH2F *hTPCsignalTriClean;
   TH2F* hTPCsignalTri91Lim;
+  TH2F* hTPCsignalTriTrd;
   TH2F *hMumCheck[2];
   TH1I *hMonitorPlot;
  
