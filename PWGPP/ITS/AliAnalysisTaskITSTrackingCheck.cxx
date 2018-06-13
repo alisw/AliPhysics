@@ -2237,9 +2237,9 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 
     // check if it is primary
     if(fReadMC && mcEvent) {
-      isPrimary = mcEvent->IsPhysicalPrimary(trkLabel);
       part = mcEvent->Particle(trkLabel);
       if (!part) continue;
+      isPrimary = mcEvent->IsPhysicalPrimary(trkLabel);
       rProdVtx = TMath::Sqrt((part->Vx()-mcVertex[0])*(part->Vx()-mcVertex[0])+(part->Vy()-mcVertex[1])*(part->Vy()-mcVertex[1]));
       zProdVtx = TMath::Abs(part->Vz()-mcVertex[2]);
       //if(rProdVtx<2.8) isPrimary=kTRUE; // this could be tried
