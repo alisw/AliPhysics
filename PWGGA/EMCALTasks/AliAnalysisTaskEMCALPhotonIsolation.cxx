@@ -1647,10 +1647,10 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
       Bool_t isSelected = SelectCandidate(coi);
 
-      if(fQA || (fWho == 2 && !fQA))
-	fEtaPhiClusAftSel->Fill(vecCOI.Eta(),vecCOI.Phi());
-
       if(isSelected){
+	if(fQA || (fWho == 2 && !fQA))
+	  fEtaPhiClusAftSel->Fill(vecCOI.Eta(),vecCOI.Phi());
+
 	for(auto it : tracksANA->accepted()){
 	  AliVTrack *tr = static_cast<AliVTrack*>(it);
 	  if(!tr){
@@ -1835,7 +1835,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
       fDeltaPHIClusTrack->Fill(dphi);
     }
 
-    if(candidate){
+    if(candidate && fWho == 2){
       fPtvsDetavsDphi->Fill(vecClust.Pt(), deta, dphi);
       fPtvsTrackPtvsDeta->Fill(vecClust.Pt(), mt->Pt(), deta);
       fPtvsTrackPtvsDphi->Fill(vecClust.Pt(), mt->Pt(), dphi);
