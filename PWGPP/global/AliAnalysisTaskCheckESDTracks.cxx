@@ -840,6 +840,7 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Int_t isPhysPrim=-999;
     if(fReadMC){
       TParticle* part = mcEvent->Particle(TMath::Abs(trlabel));
+      if (!part) continue;
       ptgen=part->Pt();
       pgen=part->P();
       pxgen=part->Px();
