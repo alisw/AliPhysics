@@ -265,7 +265,7 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
     analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
 
     analysisCuts[i]               = new AliConversionPhotonCuts();
-    analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
+    analysisCuts[i]->SetIsHeavyIon(IsHeavyIon);
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
