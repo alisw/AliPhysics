@@ -81,7 +81,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2 *AddTaskStrangenessVsMultiplicity
     mgr->ConnectInput (taskAuxiliary, 0, mgr->GetCommonInputContainer());
     for(Int_t ilist=0;ilist<6;ilist++){
         mgr->ConnectOutput(taskAuxiliary, ilist+1, coutputLists[ilist]);
-    
+    }
     if ( lSaveEventTree ) mgr->ConnectOutput(taskAuxiliary, 7, coutputTree);
     if ( lSaveV0 )        mgr->ConnectOutput(taskAuxiliary, 8, coutputTreeV0);
     if ( lSaveCascade )   mgr->ConnectOutput(taskAuxiliary, 9, coutputTreeCascade);
