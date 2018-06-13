@@ -94,6 +94,10 @@ const Char_t* AliLHCData::fgkDCSNames[] = {
   ,"ALI_Lumi_Total_Delivered_StabBeam"
   ,"ALI_Lumi_Bunch_Inst"
   ,"ALI_Background%1d"
+  //
+  ,"ALI_Lumi_Source_Name"
+  ,"LHC_BetaStar_Active"
+  ,"LHC_BetaStar_TargetOptic"
 };
 
 const Char_t* AliLHCData::fgkDCSColNames[] = {
@@ -249,7 +253,12 @@ Bool_t AliLHCData::FillData(double tmin, double tmax)
   FillScalarRecord(fBPTXdTRMSB1B2, fgkDCSNames[kBPTXdeltaTRMSB1B2]);
   FillScalarRecord(fLumiAlice,     fgkDCSNames[kALILumiTotalInst]);
   FillScalarRecord(fLumiAliceStB,  fgkDCSNames[kALILumiTotalDeliveredStabBeam]);  
-  FillBCLuminosities(fLumiAliceBbB,fgkDCSNames[kALILumiBunchInst],0,0);  
+  FillBCLuminosities(fLumiAliceBbB,fgkDCSNames[kALILumiBunchInst],0,0);
+  //
+  FillStringRecord(fLumiAliceSrc, fgkDCSNames[kALILumiSourceName]);
+  FillStringRecord(fLHCBetaStarTargetOptic, fgkDCSNames[kLHCBetaStarTargetOptic]);  
+  FillScalarRecordInt(fLHCBetaStarActive, fgkDCSNames[kLHCBetaStarActive], 1); // Bool
+
   //
   return kTRUE;
 }
@@ -426,6 +435,44 @@ Int_t AliLHCData::FillScalarRecord(int refs[2], const char* rec, const char* rec
   if (fkFile2Process) {
     delete arr;
     delete arrE;
+  }
+  return refs[kNStor];
+}
+
+//___________________________________________________________________
+Int_t AliLHCData::FillScalarRecordInt(int refs[2], const char* rec, Int_t maxAbsVal)
+{
+  // fill record for integer scalar value
+  //
+  AliInfo(Form("Acquiring record: %s",rec));
+  //
+  TObjArray *arr=0;
+  Int_t iLast=0,iFirst=0;
+  //
+  refs[kStart] = fData.GetEntriesFast();
+  refs[kNStor] = 0;
+  //
+  if ( !(arr=GetDCSEntry(rec,iFirst,iLast,fTMin,fTMax)) ) return -1;
+  //
+  // Bool_t last = kFALSE;
+  while (iFirst<=iLast) {
+    AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iFirst++);
+    double tstamp = dcsVal->GetTimeStamp();
+    //
+    AliLHCDipValI* curValI = new AliLHCDipValI(1,tstamp);  // start new period
+    int vcheck = ExtractInt(dcsVal,0);     // value
+    if (TMath::Abs(vcheck) > maxAbsVal) {
+      AliError(Form("ANOMALOUS VALUE %d for slot %d of %s: exceeds %d",vcheck, 0, rec, maxAbsVal));
+      vcheck = 0.;
+    }    
+    (*curValI)[0] = vcheck;
+    //
+    fData.Add(curValI);
+    refs[kNStor]++;
+  }
+  //
+  if (fkFile2Process) {
+    delete arr;
   }
   return refs[kNStor];
 }
@@ -717,6 +764,7 @@ Int_t AliLHCData::ExtractInt(AliDCSArray* dcsArray,Int_t el) const
     else AliError(Form("DCSArray TObjString for element %d is missing",el));
   }
   else if (dcsArray->GetType()==AliDCSArray::kUInt) val = dcsArray->GetUInt(el);
+  else if (dcsArray->GetType()==AliDCSArray::kBool) val = dcsArray->GetBool(el);
   else AliError(Form("Integer requested from DCSArray of type %d",dcsArray->GetType()));
   return val;
 }
@@ -938,6 +986,21 @@ void AliLHCData::Print(const Option_t* opt) const
       PrintAux(full,fBckgAlice[ib],opts);
     }
   }
+  //
+  if (fLumiAliceSrc[kNStor] || includeMissing) {
+    printf("* %-38s","Alice luminosity source name");
+    PrintAux(full,fLumiAliceSrc,opts);
+  }  
+  //
+  if (fLHCBetaStarTargetOptic[kNStor] || includeMissing) {
+    printf("* %-38s","LHC Beta* Target Optic");
+    PrintAux(full,fLHCBetaStarTargetOptic,opts);
+  }  
+  //
+  if (fLHCBetaStarActive[kNStor] || includeMissing) {
+    printf("* %-38s","LHC Beta* Leveling Active");
+    PrintAux(full,fLHCBetaStarActive,opts);
+  }    
   //
   if (fBPTXdTB1B2[kNStor] || includeMissing) {
     printf("* %-38s","BPTX DeltaT Beam1 Beam2");
