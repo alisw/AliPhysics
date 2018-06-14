@@ -29,7 +29,8 @@ add_library(${MODULE}-object OBJECT ${SRCS})
 add_library(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 
 # Make sure efficient binaries are generated
-set(MAGFAST_FLAGS "-O3 -march=native -ffast-math")
+#set(MAGFAST_FLAGS "-O3 -march=native -ffast-math")  # -march=native creates problems on some VMs
+set(MAGFAST_FLAGS "-O3 -ffast-math")
 set_target_properties(${MODULE}-object PROPERTIES COMPILE_FLAGS ${MAGFAST_FLAGS})
 
 # Linking the library, not the object
