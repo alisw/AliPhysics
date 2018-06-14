@@ -172,8 +172,7 @@ public:
   virtual void           SetCalorimeter(Int_t calo) ;
 
   virtual Bool_t         IsDataMC()                        const { return fDataMC                ; }
-  virtual void           SwitchOnDataMC()                        { fDataMC = kTRUE ;
-                                                                   if(!fMCUtils) fMCUtils = new AliMCAnalysisUtils() ; }
+  virtual void           SwitchOnDataMC()                        { fDataMC = kTRUE               ; }
   virtual void           SwitchOffDataMC()                       { fDataMC = kFALSE              ; }
   
   virtual Bool_t         IsFiducialCutOn()                 const { return fCheckFidCut           ; }
@@ -335,7 +334,7 @@ public:
   
   virtual AliIsolationCut          * GetIsolationCut()           { if(!fIC)      fIC      = new AliIsolationCut();          return  fIC      ; }
   
-  virtual AliMCAnalysisUtils       * GetMCAnalysisUtils()        { if(!fMCUtils) fMCUtils = new AliMCAnalysisUtils();       return  fMCUtils ; }
+  virtual AliMCAnalysisUtils       * GetMCAnalysisUtils()        { return GetReader()->GetMCAnalysisUtils() ; }
   
   virtual AliNeutralMesonSelection * GetNeutralMesonSelection()  { if(!fNMS)     fNMS     = new AliNeutralMesonSelection(); return  fNMS     ; }
   
@@ -354,9 +353,7 @@ public:
   virtual void                       SetHistogramRanges(AliHistogramRanges * hr)                    { delete fHisto;   fHisto   = hr      ; }
   
   virtual void                       SetIsolationCut(AliIsolationCut * ic)                          { delete fIC;      fIC      = ic      ; }
-  
-  virtual void                       SetMCAnalysisUtils(AliMCAnalysisUtils * mcutils)               { delete fMCUtils; fMCUtils = mcutils ; }
-  
+    
   virtual void                       SetNeutralMesonSelection(AliNeutralMesonSelection * const nms) { delete fNMS;     fNMS     = nms     ; }
   
   virtual void                       SetReader(AliCaloTrackReader * reader)                         { fReader = reader                    ; }
@@ -435,7 +432,6 @@ private:
   AliFiducialCut           * fFidCut;              ///< Acceptance cuts detector dependent.
   AliHistogramRanges       * fHisto ;              ///< Histogram ranges container.
   AliIsolationCut          * fIC;                  ///< Isolation cut utils. 
-  AliMCAnalysisUtils       * fMCUtils;             ///< MonteCarlo Analysis utils. 
   AliNeutralMesonSelection * fNMS;                 ///< Neutral Meson Selection utities.
   AliCaloTrackReader       * fReader;              ///< Access to ESD/AOD/MC data and other utilities.
 

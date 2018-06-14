@@ -82,6 +82,9 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     // Event rejection more suitable for gamma-jet simulations, do not use in other
     // reader->SetPtHardAndClusterPtComparison(kTRUE);
     // reader->SetPtHardAndClusterPtFactor(1.5);
+    
+    // Set here generator name, default pythia
+    //reader->GetMCAnalysisUtils()->SetMCGenerator("");
   }
   
   //---------------------------
