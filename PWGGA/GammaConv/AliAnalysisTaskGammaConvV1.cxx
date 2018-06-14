@@ -1522,7 +1522,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
       if(fDoPhotonQA == 3 && fIsMC < 2){
         if(fIsHeavyIon == 1){
-          fHistoCombinatorialMothersPt[iCut]           = new TH3F("ESD_TrueCombinatorialMothers_Pt", "ESD_TrueCombinatorialMothers_Pt", 6, 0, 6, 13, 0, 13, nBinsPt, arrPtBinning);
+          fHistoCombinatorialMothersPt[iCut]           = new TH3F("ESD_TrueCombinatorialMothers_Pt", "ESD_TrueCombinatorialMothers_Pt", 6, 0, 6, 13, 0, 13, 250, 0., 25);
           fHistoCombinatorialMothersPt[iCut]->GetXaxis()->SetBinLabel( 1,"Elec");
           fHistoCombinatorialMothersPt[iCut]->GetXaxis()->SetBinLabel( 2,"Pion");
           fHistoCombinatorialMothersPt[iCut]->GetXaxis()->SetBinLabel( 3,"Kaon");
