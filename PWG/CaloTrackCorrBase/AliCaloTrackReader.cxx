@@ -77,7 +77,7 @@ fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),
 fDCALClusters(0x0),          fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
-fInputEvent(0x0),            fOutputEvent(0x0),fMC(0x0),
+fInputEvent(0x0),            fOutputEvent(0x0),               fMC(0x0),
 fFillCTS(0),                 fFillEMCAL(0),
 fFillDCAL(0),                fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0),
@@ -97,7 +97,7 @@ fEventTrigEMCALL1Jet1(0),    fEventTrigEMCALL1Jet2(0),
 fBitEGA(0),                  fBitEJE(0),
 
 fEventType(-1),
-fTaskName(""),               fCaloUtils(0x0),
+fTaskName(""),               fCaloUtils(0x0),                 fMCUtils(0x0), 
 fWeightUtils(0x0),           fEventWeight(1),
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
 fListMixedTracksEvents(),    fListMixedCaloEvents(),
@@ -223,6 +223,8 @@ void AliCaloTrackReader::DeletePointers()
   
   if ( fWeightUtils ) delete fWeightUtils ;
     
+  if ( fMCUtils     ) delete fMCUtils ; 
+
   //  Pointers not owned, done by the analysis frame
   //  if(fInputEvent)  delete fInputEvent ;
   //  if(fOutputEvent) delete fOutputEvent ;
@@ -1019,9 +1021,19 @@ Int_t AliCaloTrackReader::GetTrackID(AliVTrack* track)
 //_____________________________
 void AliCaloTrackReader::Init()
 {  
+  // Activate debug level in reader
+  if( fDebug >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
+  
   // Activate debug level in AliAnaWeights
   if( fWeightUtils->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fWeightUtils->ClassName(), fWeightUtils->GetDebug());
+  
+  // Activate debug level in AliMCAnalysisUtils
+  if( GetMCAnalysisUtils()->GetDebug() >= 0 )
+  (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetMCAnalysisUtils()->ClassName(),GetMCAnalysisUtils()->GetDebug());
+  
+  //printf("Debug levels: Reader %d, Neutral Sel %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),fWeightUtils->GetDebug());
 }
 
 //_______________________________________
@@ -1151,9 +1163,11 @@ void AliCaloTrackReader::InitParameters()
   fSmearNLMMin = 1;
   fSmearNLMMax = 1;
   
+  fMCUtils     = new AliMCAnalysisUtils() ;
+
   fWeightUtils = new AliAnaWeights() ;
   fEventWeight = 1 ;
-    
+      
   fTrackMultNPtCut = 8;
   fTrackMultPtCut[0] = 0.15; fTrackMultPtCut[1] = 0.5;  fTrackMultPtCut[2] = 1.0; 
   fTrackMultPtCut[3] = 2.0 ; fTrackMultPtCut[4] = 4.0;  fTrackMultPtCut[5] = 6.0;  
@@ -1452,8 +1466,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     // Init it first to 0 to tell the method to recover it.
     fGenPythiaEventHeader = 
-    AliMCAnalysisUtils::GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
-                                             pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
+    GetMCAnalysisUtils()->GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
+                                               pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
 
     if(fGenPythiaEventHeader)
     {
