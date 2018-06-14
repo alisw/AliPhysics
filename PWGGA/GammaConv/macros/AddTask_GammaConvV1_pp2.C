@@ -281,7 +281,21 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     cuts.AddCut("00010113", "00b00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
   } else if (trainConfig == 54){
     cuts.AddCut("00010113", "00c00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
-
+  } else if (trainConfig == 55){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500700000"); //test cosPA scan
+  } else if (trainConfig == 56){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500800000"); //test cosPA scan
+  } else if (trainConfig == 57){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500900000"); //test cosPA scan
+  } else if (trainConfig == 58){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500a00000"); //test cosPA scan
+  } else if (trainConfig == 59){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500a00020"); //test cosPA dca 
+  } else if (trainConfig == 60){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500a00040"); //test dcaPA
+  } else if (trainConfig == 61){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000040"); //test dcaPA 
+  
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
