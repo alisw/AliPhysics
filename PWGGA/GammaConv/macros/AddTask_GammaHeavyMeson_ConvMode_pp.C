@@ -435,7 +435,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(   Int_t     selectedMeson             
   task->SetCorrectionTaskSetting(corrTaskSetting);
   if (enableClustersForTrigger){
     task->SetDoClusterSelectionForTriggerNorm(enableClustersForTrigger);
-    task->SetClusterCutList(numberOfCuts,ClusterCutList);
+    task->SetCaloCutList(numberOfCuts,ClusterCutList);
     task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
     if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   }
