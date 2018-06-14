@@ -220,6 +220,34 @@ fTreeVariablePosTrackStatus(0),
 fTreeVariableNegDCAz(-1),
 fTreeVariablePosDCAz(-1),
 
+fTreeVariablePosITSClusters0(0),
+fTreeVariablePosITSClusters1(0),
+fTreeVariablePosITSClusters2(0),
+fTreeVariablePosITSClusters3(0),
+fTreeVariablePosITSClusters4(0),
+fTreeVariablePosITSClusters5(0),
+
+fTreeVariableNegITSClusters0(0),
+fTreeVariableNegITSClusters1(0),
+fTreeVariableNegITSClusters2(0),
+fTreeVariableNegITSClusters3(0),
+fTreeVariableNegITSClusters4(0),
+fTreeVariableNegITSClusters5(0),
+
+fTreeVariablePosITSSharedClusters0(0),
+fTreeVariablePosITSSharedClusters1(0),
+fTreeVariablePosITSSharedClusters2(0),
+fTreeVariablePosITSSharedClusters3(0),
+fTreeVariablePosITSSharedClusters4(0),
+fTreeVariablePosITSSharedClusters5(0),
+
+fTreeVariableNegITSSharedClusters0(0),
+fTreeVariableNegITSSharedClusters1(0),
+fTreeVariableNegITSSharedClusters2(0),
+fTreeVariableNegITSSharedClusters3(0),
+fTreeVariableNegITSSharedClusters4(0),
+fTreeVariableNegITSSharedClusters5(0),
+
 fTreeVariableNegTOFExpTDiff(99999),
 fTreeVariablePosTOFExpTDiff(99999),
 fTreeVariableNegTOFSignal(99999),
@@ -327,6 +355,48 @@ fTreeCascVarBachDCAz(-1),
 //fTreeCascVarPosTotMom(-1),
 //fTreeCascVarNegTotMom(-1),
 //fTreeCascVarBachTotMom(-1),
+
+fTreeCascVarPosITSClusters0(0),
+fTreeCascVarPosITSClusters1(0),
+fTreeCascVarPosITSClusters2(0),
+fTreeCascVarPosITSClusters3(0),
+fTreeCascVarPosITSClusters4(0),
+fTreeCascVarPosITSClusters5(0),
+
+fTreeCascVarNegITSClusters0(0),
+fTreeCascVarNegITSClusters1(0),
+fTreeCascVarNegITSClusters2(0),
+fTreeCascVarNegITSClusters3(0),
+fTreeCascVarNegITSClusters4(0),
+fTreeCascVarNegITSClusters5(0),
+
+fTreeCascVarBachITSClusters0(0),
+fTreeCascVarBachITSClusters1(0),
+fTreeCascVarBachITSClusters2(0),
+fTreeCascVarBachITSClusters3(0),
+fTreeCascVarBachITSClusters4(0),
+fTreeCascVarBachITSClusters5(0),
+
+fTreeCascVarPosITSSharedClusters0(0),
+fTreeCascVarPosITSSharedClusters1(0),
+fTreeCascVarPosITSSharedClusters2(0),
+fTreeCascVarPosITSSharedClusters3(0),
+fTreeCascVarPosITSSharedClusters4(0),
+fTreeCascVarPosITSSharedClusters5(0),
+
+fTreeCascVarNegITSSharedClusters0(0),
+fTreeCascVarNegITSSharedClusters1(0),
+fTreeCascVarNegITSSharedClusters2(0),
+fTreeCascVarNegITSSharedClusters3(0),
+fTreeCascVarNegITSSharedClusters4(0),
+fTreeCascVarNegITSSharedClusters5(0),
+
+fTreeCascVarBachITSSharedClusters0(0),
+fTreeCascVarBachITSSharedClusters1(0),
+fTreeCascVarBachITSSharedClusters2(0),
+fTreeCascVarBachITSSharedClusters3(0),
+fTreeCascVarBachITSSharedClusters4(0),
+fTreeCascVarBachITSSharedClusters5(0),
 
 //Variables for debugging the invariant mass bump
 //Full momentum information
@@ -488,6 +558,34 @@ fTreeVariablePosTrackStatus(0),
 fTreeVariableNegDCAz(-1),
 fTreeVariablePosDCAz(-1),
 
+fTreeVariablePosITSClusters0(0),
+fTreeVariablePosITSClusters1(0),
+fTreeVariablePosITSClusters2(0),
+fTreeVariablePosITSClusters3(0),
+fTreeVariablePosITSClusters4(0),
+fTreeVariablePosITSClusters5(0),
+
+fTreeVariableNegITSClusters0(0),
+fTreeVariableNegITSClusters1(0),
+fTreeVariableNegITSClusters2(0),
+fTreeVariableNegITSClusters3(0),
+fTreeVariableNegITSClusters4(0),
+fTreeVariableNegITSClusters5(0),
+
+fTreeVariablePosITSSharedClusters0(0),
+fTreeVariablePosITSSharedClusters1(0),
+fTreeVariablePosITSSharedClusters2(0),
+fTreeVariablePosITSSharedClusters3(0),
+fTreeVariablePosITSSharedClusters4(0),
+fTreeVariablePosITSSharedClusters5(0),
+
+fTreeVariableNegITSSharedClusters0(0),
+fTreeVariableNegITSSharedClusters1(0),
+fTreeVariableNegITSSharedClusters2(0),
+fTreeVariableNegITSSharedClusters3(0),
+fTreeVariableNegITSSharedClusters4(0),
+fTreeVariableNegITSSharedClusters5(0),
+
 fTreeVariableNegTOFExpTDiff(99999),
 fTreeVariablePosTOFExpTDiff(99999),
 fTreeVariableNegTOFSignal(99999),
@@ -596,6 +694,47 @@ fTreeCascVarBachDCAz(-1),
 //fTreeCascVarNegTotMom(-1),
 //fTreeCascVarBachTotMom(-1),
 
+fTreeCascVarPosITSClusters0(0),
+fTreeCascVarPosITSClusters1(0),
+fTreeCascVarPosITSClusters2(0),
+fTreeCascVarPosITSClusters3(0),
+fTreeCascVarPosITSClusters4(0),
+fTreeCascVarPosITSClusters5(0),
+
+fTreeCascVarNegITSClusters0(0),
+fTreeCascVarNegITSClusters1(0),
+fTreeCascVarNegITSClusters2(0),
+fTreeCascVarNegITSClusters3(0),
+fTreeCascVarNegITSClusters4(0),
+fTreeCascVarNegITSClusters5(0),
+
+fTreeCascVarBachITSClusters0(0),
+fTreeCascVarBachITSClusters1(0),
+fTreeCascVarBachITSClusters2(0),
+fTreeCascVarBachITSClusters3(0),
+fTreeCascVarBachITSClusters4(0),
+fTreeCascVarBachITSClusters5(0),
+
+fTreeCascVarPosITSSharedClusters0(0),
+fTreeCascVarPosITSSharedClusters1(0),
+fTreeCascVarPosITSSharedClusters2(0),
+fTreeCascVarPosITSSharedClusters3(0),
+fTreeCascVarPosITSSharedClusters4(0),
+fTreeCascVarPosITSSharedClusters5(0),
+
+fTreeCascVarNegITSSharedClusters0(0),
+fTreeCascVarNegITSSharedClusters1(0),
+fTreeCascVarNegITSSharedClusters2(0),
+fTreeCascVarNegITSSharedClusters3(0),
+fTreeCascVarNegITSSharedClusters4(0),
+fTreeCascVarNegITSSharedClusters5(0),
+
+fTreeCascVarBachITSSharedClusters0(0),
+fTreeCascVarBachITSSharedClusters1(0),
+fTreeCascVarBachITSSharedClusters2(0),
+fTreeCascVarBachITSSharedClusters3(0),
+fTreeCascVarBachITSSharedClusters4(0),
+fTreeCascVarBachITSSharedClusters5(0),
 
 //Variables for debugging the invariant mass bump
 //Full momentum information
@@ -847,6 +986,34 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeV0->Branch("fTreeVariablePosDCAz",&fTreeVariablePosDCAz,"fTreeVariablePosDCAz/F");
         }
         if ( fkDebugOOBPileup ) {
+            fTreeV0->Branch("fTreeVariablePosITSClusters0",&fTreeVariablePosITSClusters0,"fTreeVariablePosITSClusters0/O");
+            fTreeV0->Branch("fTreeVariablePosITSClusters1",&fTreeVariablePosITSClusters1,"fTreeVariablePosITSClusters1/O");
+            fTreeV0->Branch("fTreeVariablePosITSClusters2",&fTreeVariablePosITSClusters2,"fTreeVariablePosITSClusters2/O");
+            fTreeV0->Branch("fTreeVariablePosITSClusters3",&fTreeVariablePosITSClusters3,"fTreeVariablePosITSClusters3/O");
+            fTreeV0->Branch("fTreeVariablePosITSClusters4",&fTreeVariablePosITSClusters4,"fTreeVariablePosITSClusters4/O");
+            fTreeV0->Branch("fTreeVariablePosITSClusters5",&fTreeVariablePosITSClusters5,"fTreeVariablePosITSClusters5/O");
+            
+            fTreeV0->Branch("fTreeVariableNegITSClusters0",&fTreeVariableNegITSClusters0,"fTreeVariableNegITSClusters0/O");
+            fTreeV0->Branch("fTreeVariableNegITSClusters1",&fTreeVariableNegITSClusters1,"fTreeVariableNegITSClusters1/O");
+            fTreeV0->Branch("fTreeVariableNegITSClusters2",&fTreeVariableNegITSClusters2,"fTreeVariableNegITSClusters2/O");
+            fTreeV0->Branch("fTreeVariableNegITSClusters3",&fTreeVariableNegITSClusters3,"fTreeVariableNegITSClusters3/O");
+            fTreeV0->Branch("fTreeVariableNegITSClusters4",&fTreeVariableNegITSClusters4,"fTreeVariableNegITSClusters4/O");
+            fTreeV0->Branch("fTreeVariableNegITSClusters5",&fTreeVariableNegITSClusters5,"fTreeVariableNegITSClusters5/O");
+            
+            fTreeV0->Branch("fTreeVariablePosITSSharedClusters0",&fTreeVariablePosITSSharedClusters0,"fTreeVariablePosITSSharedClusters0/O");
+            fTreeV0->Branch("fTreeVariablePosITSSharedClusters1",&fTreeVariablePosITSSharedClusters1,"fTreeVariablePosITSSharedClusters1/O");
+            fTreeV0->Branch("fTreeVariablePosITSSharedClusters2",&fTreeVariablePosITSSharedClusters2,"fTreeVariablePosITSSharedClusters2/O");
+            fTreeV0->Branch("fTreeVariablePosITSSharedClusters3",&fTreeVariablePosITSSharedClusters3,"fTreeVariablePosITSSharedClusters3/O");
+            fTreeV0->Branch("fTreeVariablePosITSSharedClusters4",&fTreeVariablePosITSSharedClusters4,"fTreeVariablePosITSSharedClusters4/O");
+            fTreeV0->Branch("fTreeVariablePosITSSharedClusters5",&fTreeVariablePosITSSharedClusters5,"fTreeVariablePosITSSharedClusters5/O");
+            
+            fTreeV0->Branch("fTreeVariableNegITSSharedClusters0",&fTreeVariableNegITSSharedClusters0,"fTreeVariableNegITSSharedClusters0/O");
+            fTreeV0->Branch("fTreeVariableNegITSSharedClusters1",&fTreeVariableNegITSSharedClusters1,"fTreeVariableNegITSSharedClusters1/O");
+            fTreeV0->Branch("fTreeVariableNegITSSharedClusters2",&fTreeVariableNegITSSharedClusters2,"fTreeVariableNegITSSharedClusters2/O");
+            fTreeV0->Branch("fTreeVariableNegITSSharedClusters3",&fTreeVariableNegITSSharedClusters3,"fTreeVariableNegITSSharedClusters3/O");
+            fTreeV0->Branch("fTreeVariableNegITSSharedClusters4",&fTreeVariableNegITSSharedClusters4,"fTreeVariableNegITSSharedClusters4/O");
+            fTreeV0->Branch("fTreeVariableNegITSSharedClusters5",&fTreeVariableNegITSSharedClusters5,"fTreeVariableNegITSSharedClusters5/O");
+            
             fTreeV0->Branch("fTreeVariableNegTOFExpTDiff",&fTreeVariableNegTOFExpTDiff,"fTreeVariableNegTOFExpTDiff/F");
             fTreeV0->Branch("fTreeVariablePosTOFExpTDiff",&fTreeVariablePosTOFExpTDiff,"fTreeVariablePosTOFExpTDiff/F");
             fTreeV0->Branch("fTreeVariableNegTOFSignal",&fTreeVariableNegTOFSignal,"fTreeVariableNegTOFSignal/F");
@@ -1003,6 +1170,48 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
             fTreeCascade->Branch("fTreeCascVarPrimVertexZ",&fTreeCascVarPrimVertexZ,"fTreeCascVarPrimVertexZ/F");
         }
         if ( fkDebugOOBPileup ) {
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters0",&fTreeCascVarPosITSClusters0,"fTreeCascVarPosITSClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters1",&fTreeCascVarPosITSClusters1,"fTreeCascVarPosITSClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters2",&fTreeCascVarPosITSClusters2,"fTreeCascVarPosITSClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters3",&fTreeCascVarPosITSClusters3,"fTreeCascVarPosITSClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters4",&fTreeCascVarPosITSClusters4,"fTreeCascVarPosITSClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSClusters5",&fTreeCascVarPosITSClusters5,"fTreeCascVarPosITSClusters5/O");
+            
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters0",&fTreeCascVarNegITSClusters0,"fTreeCascVarNegITSClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters1",&fTreeCascVarNegITSClusters1,"fTreeCascVarNegITSClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters2",&fTreeCascVarNegITSClusters2,"fTreeCascVarNegITSClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters3",&fTreeCascVarNegITSClusters3,"fTreeCascVarNegITSClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters4",&fTreeCascVarNegITSClusters4,"fTreeCascVarNegITSClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSClusters5",&fTreeCascVarNegITSClusters5,"fTreeCascVarNegITSClusters5/O");
+            
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters0",&fTreeCascVarBachITSClusters0,"fTreeCascVarBachITSClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters1",&fTreeCascVarBachITSClusters1,"fTreeCascVarBachITSClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters2",&fTreeCascVarBachITSClusters2,"fTreeCascVarBachITSClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters3",&fTreeCascVarBachITSClusters3,"fTreeCascVarBachITSClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters4",&fTreeCascVarBachITSClusters4,"fTreeCascVarBachITSClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSClusters5",&fTreeCascVarBachITSClusters5,"fTreeCascVarBachITSClusters5/O");
+            
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters0",&fTreeCascVarPosITSSharedClusters0,"fTreeCascVarPosITSSharedClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters1",&fTreeCascVarPosITSSharedClusters1,"fTreeCascVarPosITSSharedClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters2",&fTreeCascVarPosITSSharedClusters2,"fTreeCascVarPosITSSharedClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters3",&fTreeCascVarPosITSSharedClusters3,"fTreeCascVarPosITSSharedClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters4",&fTreeCascVarPosITSSharedClusters4,"fTreeCascVarPosITSSharedClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarPosITSSharedClusters5",&fTreeCascVarPosITSSharedClusters5,"fTreeCascVarPosITSSharedClusters5/O");
+            
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters0",&fTreeCascVarNegITSSharedClusters0,"fTreeCascVarNegITSSharedClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters1",&fTreeCascVarNegITSSharedClusters1,"fTreeCascVarNegITSSharedClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters2",&fTreeCascVarNegITSSharedClusters2,"fTreeCascVarNegITSSharedClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters3",&fTreeCascVarNegITSSharedClusters3,"fTreeCascVarNegITSSharedClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters4",&fTreeCascVarNegITSSharedClusters4,"fTreeCascVarNegITSSharedClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarNegITSSharedClusters5",&fTreeCascVarNegITSSharedClusters5,"fTreeCascVarNegITSSharedClusters5/O");
+            
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters0",&fTreeCascVarBachITSSharedClusters0,"fTreeCascVarBachITSSharedClusters0/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters1",&fTreeCascVarBachITSSharedClusters1,"fTreeCascVarBachITSSharedClusters1/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters2",&fTreeCascVarBachITSSharedClusters2,"fTreeCascVarBachITSSharedClusters2/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters3",&fTreeCascVarBachITSSharedClusters3,"fTreeCascVarBachITSSharedClusters3/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters4",&fTreeCascVarBachITSSharedClusters4,"fTreeCascVarBachITSSharedClusters4/O");
+            fTreeCascade->Branch("fTreeCascVarBachITSSharedClusters5",&fTreeCascVarBachITSSharedClusters5,"fTreeCascVarBachITSSharedClusters5/O");
+            
             fTreeCascade->Branch("fTreeCascVarNegTOFExpTDiff",&fTreeCascVarNegTOFExpTDiff,"fTreeCascVarNegTOFExpTDiff/F");
             fTreeCascade->Branch("fTreeCascVarPosTOFExpTDiff",&fTreeCascVarPosTOFExpTDiff,"fTreeCascVarPosTOFExpTDiff/F");
             fTreeCascade->Branch("fTreeCascVarBachTOFExpTDiff",&fTreeCascVarBachTOFExpTDiff,"fTreeCascVarBachTOFExpTDiff/F");
@@ -1481,6 +1690,36 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         }
         fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
         fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
+
+        //Check its clusters
+        fTreeVariablePosITSClusters0 = pTrack->HasPointOnITSLayer(0);
+        fTreeVariablePosITSClusters1 = pTrack->HasPointOnITSLayer(1);
+        fTreeVariablePosITSClusters2 = pTrack->HasPointOnITSLayer(2);
+        fTreeVariablePosITSClusters3 = pTrack->HasPointOnITSLayer(3);
+        fTreeVariablePosITSClusters4 = pTrack->HasPointOnITSLayer(4);
+        fTreeVariablePosITSClusters5 = pTrack->HasPointOnITSLayer(5);
+        
+        fTreeVariableNegITSClusters0 = nTrack->HasPointOnITSLayer(0);
+        fTreeVariableNegITSClusters1 = nTrack->HasPointOnITSLayer(1);
+        fTreeVariableNegITSClusters2 = nTrack->HasPointOnITSLayer(2);
+        fTreeVariableNegITSClusters3 = nTrack->HasPointOnITSLayer(3);
+        fTreeVariableNegITSClusters4 = nTrack->HasPointOnITSLayer(4);
+        fTreeVariableNegITSClusters5 = nTrack->HasPointOnITSLayer(5);
+        
+        //Check its clusters, shared
+        fTreeVariablePosITSSharedClusters0 = pTrack->HasSharedPointOnITSLayer(0);
+        fTreeVariablePosITSSharedClusters1 = pTrack->HasSharedPointOnITSLayer(1);
+        fTreeVariablePosITSSharedClusters2 = pTrack->HasSharedPointOnITSLayer(2);
+        fTreeVariablePosITSSharedClusters3 = pTrack->HasSharedPointOnITSLayer(3);
+        fTreeVariablePosITSSharedClusters4 = pTrack->HasSharedPointOnITSLayer(4);
+        fTreeVariablePosITSSharedClusters5 = pTrack->HasSharedPointOnITSLayer(5);
+        
+        fTreeVariableNegITSSharedClusters0 = nTrack->HasSharedPointOnITSLayer(0);
+        fTreeVariableNegITSSharedClusters1 = nTrack->HasSharedPointOnITSLayer(1);
+        fTreeVariableNegITSSharedClusters2 = nTrack->HasSharedPointOnITSLayer(2);
+        fTreeVariableNegITSSharedClusters3 = nTrack->HasSharedPointOnITSLayer(3);
+        fTreeVariableNegITSSharedClusters4 = nTrack->HasSharedPointOnITSLayer(4);
+        fTreeVariableNegITSSharedClusters5 = nTrack->HasSharedPointOnITSLayer(5);
         
         const AliExternalTrackParam *innernegv0=nTrack->GetInnerParam();
         const AliExternalTrackParam *innerposv0=pTrack->GetInnerParam();
@@ -2038,6 +2277,50 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarPosEta = pTrackXi->Eta();
         fTreeCascVarNegEta = nTrackXi->Eta();
         fTreeCascVarBachEta = bachTrackXi->Eta();
+        
+        //Check its clusters
+        fTreeCascVarPosITSClusters0 = pTrackXi->HasPointOnITSLayer(0);
+        fTreeCascVarPosITSClusters1 = pTrackXi->HasPointOnITSLayer(1);
+        fTreeCascVarPosITSClusters2 = pTrackXi->HasPointOnITSLayer(2);
+        fTreeCascVarPosITSClusters3 = pTrackXi->HasPointOnITSLayer(3);
+        fTreeCascVarPosITSClusters4 = pTrackXi->HasPointOnITSLayer(4);
+        fTreeCascVarPosITSClusters5 = pTrackXi->HasPointOnITSLayer(5);
+        
+        fTreeCascVarNegITSClusters0 = nTrackXi->HasPointOnITSLayer(0);
+        fTreeCascVarNegITSClusters1 = nTrackXi->HasPointOnITSLayer(1);
+        fTreeCascVarNegITSClusters2 = nTrackXi->HasPointOnITSLayer(2);
+        fTreeCascVarNegITSClusters3 = nTrackXi->HasPointOnITSLayer(3);
+        fTreeCascVarNegITSClusters4 = nTrackXi->HasPointOnITSLayer(4);
+        fTreeCascVarNegITSClusters5 = nTrackXi->HasPointOnITSLayer(5);
+        
+        fTreeCascVarBachITSClusters0 = bachTrackXi->HasPointOnITSLayer(0);
+        fTreeCascVarBachITSClusters1 = bachTrackXi->HasPointOnITSLayer(1);
+        fTreeCascVarBachITSClusters2 = bachTrackXi->HasPointOnITSLayer(2);
+        fTreeCascVarBachITSClusters3 = bachTrackXi->HasPointOnITSLayer(3);
+        fTreeCascVarBachITSClusters4 = bachTrackXi->HasPointOnITSLayer(4);
+        fTreeCascVarBachITSClusters5 = bachTrackXi->HasPointOnITSLayer(5);
+        
+        //Check its clusters, shared
+        fTreeCascVarPosITSSharedClusters0 = pTrackXi->HasSharedPointOnITSLayer(0);
+        fTreeCascVarPosITSSharedClusters1 = pTrackXi->HasSharedPointOnITSLayer(1);
+        fTreeCascVarPosITSSharedClusters2 = pTrackXi->HasSharedPointOnITSLayer(2);
+        fTreeCascVarPosITSSharedClusters3 = pTrackXi->HasSharedPointOnITSLayer(3);
+        fTreeCascVarPosITSSharedClusters4 = pTrackXi->HasSharedPointOnITSLayer(4);
+        fTreeCascVarPosITSSharedClusters5 = pTrackXi->HasSharedPointOnITSLayer(5);
+        
+        fTreeCascVarNegITSSharedClusters0 = nTrackXi->HasSharedPointOnITSLayer(0);
+        fTreeCascVarNegITSSharedClusters1 = nTrackXi->HasSharedPointOnITSLayer(1);
+        fTreeCascVarNegITSSharedClusters2 = nTrackXi->HasSharedPointOnITSLayer(2);
+        fTreeCascVarNegITSSharedClusters3 = nTrackXi->HasSharedPointOnITSLayer(3);
+        fTreeCascVarNegITSSharedClusters4 = nTrackXi->HasSharedPointOnITSLayer(4);
+        fTreeCascVarNegITSSharedClusters5 = nTrackXi->HasSharedPointOnITSLayer(5);
+        
+        fTreeCascVarBachITSSharedClusters0 = bachTrackXi->HasSharedPointOnITSLayer(0);
+        fTreeCascVarBachITSSharedClusters1 = bachTrackXi->HasSharedPointOnITSLayer(1);
+        fTreeCascVarBachITSSharedClusters2 = bachTrackXi->HasSharedPointOnITSLayer(2);
+        fTreeCascVarBachITSSharedClusters3 = bachTrackXi->HasSharedPointOnITSLayer(3);
+        fTreeCascVarBachITSSharedClusters4 = bachTrackXi->HasSharedPointOnITSLayer(4);
+        fTreeCascVarBachITSSharedClusters5 = bachTrackXi->HasSharedPointOnITSLayer(5);
         
         //GetKinkIndex condition
         if( bachTrackXi->GetKinkIndex(0)>0 ) fTreeCascVarBachIsKink = kTRUE;

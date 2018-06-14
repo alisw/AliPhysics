@@ -388,7 +388,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pp(   Int_t     selectedMeson             
 
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
-    if ( trainConfig == 301 || trainConfig == 401 || trainConfig == 302   ){
+    if ( trainConfig == 301 || trainConfig == 401 || trainConfig == 402   ){
       TString caloCutPos = cuts.GetClusterCut(i);
       caloCutPos.Resize(1);
       TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());

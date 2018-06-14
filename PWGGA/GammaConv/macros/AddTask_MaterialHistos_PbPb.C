@@ -20,30 +20,30 @@
 //no specification of the variable 'numberOfCuts' needed anymore.
 //***************************************************************************************
 
-class CutHandlerConvMaterialMaterial{
+class CutHandlerConvMaterial{
   public:
-    CutHandlerConvMaterialMaterial(Int_t nMax=10){
+    CutHandlerConvMaterial(Int_t nMax=10){
       nCuts=0; nMaxCuts=nMax; validCuts = true;
       eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts];
       for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; clusterCutArray[i] = "";}
     }
     void AddCut(TString eventCut, TString photonCut){
-      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvMaterialMaterial: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || photonCut.Length()!=26  ) {cout << "ERROR in CutHandlerConvMaterialMaterial: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvMaterial: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26  ) {cout << "ERROR in CutHandlerConvMaterial: Incorrect length of cut string!" << endl; validCuts = false; return;}
       eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=""; clusterCutArray[nCuts]="";
       nCuts++;
       return;
     }
     void AddCut(TString eventCut, TString photonCut, TString mesonCut){
-      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvMaterialMaterial: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConvMaterialMaterial: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvMaterial: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerConvMaterial: Incorrect length of cut string!" << endl; validCuts = false; return;}
       eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]="";
       nCuts++;
       return;
     }
     void AddCut(TString eventCut, TString photonCut, TString mesonCut, TString clusterCut){
-      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvMaterialMaterial: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
-      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerConvMaterialMaterial: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerConvMaterial: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerConvMaterial: Incorrect length of cut string!" << endl; validCuts = false; return;}
       eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]=clusterCut;
       nCuts++;
       return;
@@ -51,10 +51,10 @@ class CutHandlerConvMaterialMaterial{
 
     Bool_t AreValid(){return validCuts;}
     Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
-    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConvMaterialMaterial: GetEventCut wrong index i" << endl;return "";}}
-    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConvMaterialMaterial: GetPhotonCut wrong index i" << endl;return "";}}
-    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConvMaterialMaterial: GetMesonCut wrong index i" << endl;return "";}}
-    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConvMaterialMaterial: GetClusterCut wrong index i" << endl;return "";}}
+    TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerConvMaterial: GetEventCut wrong index i" << endl;return "";}}
+    TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerConvMaterial: GetPhotonCut wrong index i" << endl;return "";}}
+    TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerConvMaterial: GetMesonCut wrong index i" << endl;return "";}}
+    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerConvMaterial: GetClusterCut wrong index i" << endl;return "";}}
   private:
     Bool_t validCuts;
     Int_t nCuts; Int_t nMaxCuts;
@@ -75,7 +75,7 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
                                     TString periodname              = "LHC10b", // period name
                                     TString periodNameV0Reader      = "",
                                     TString periodNameAnchor        = "",
-                                    Bool_t 	enableV0findingEffi 	= kFALSE,    // enables V0finding efficiency histograms
+                                    Bool_t 	enableV0EffiStudies 	= kFALSE,    // enables V0finding efficiency histograms
                                     TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
                                 ){
 
@@ -265,7 +265,7 @@ void AddTask_MaterialHistos_PbPb(	Int_t   trainConfig             = 1,        //
     analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
 
     analysisCuts[i]               = new AliConversionPhotonCuts();
-    analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
+    analysisCuts[i]->SetIsHeavyIon(IsHeavyIon);
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);

@@ -708,7 +708,7 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     Float_t etagen=-999.;
     Float_t phigen=-999.;
     if(fReadMC){
-      TParticle* part = mcEvent->Particle(trlabel);
+      TParticle* part = mcEvent->Particle(TMath::Abs(trlabel));
       if (!part) continue;
       ptgen=part->Pt();
       //     pgen=part->P();

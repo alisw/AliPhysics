@@ -1857,7 +1857,7 @@ Double_t AliAnalysisTaskBJetTC::CalculateTrackProb(Double_t significance, Int_t 
   //switch resolution function based on track pt;
   if(TMath::Abs(significance) >100) significance =99.9; //Limit to function definition range
   trackprob = fResolutionFunction[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunction[trclass]->Integral(-100,0);
-  //trackprob=TMath::Max(trackprob,0.001);
+  trackprob=TMath::Max(trackprob,0.1);
   return trackprob;
 }
 // ######################################################################################## Jet Probability Function

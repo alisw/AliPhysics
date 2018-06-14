@@ -3121,6 +3121,15 @@ Bool_t AliConversionPhotonCuts::SetCosPAngleCut(Int_t cosCut) {
   case 7:
     fCosPAngleCut = 0.95;
     break;
+  case 8:
+    fCosPAngleCut = 0.98;
+    break;
+  case 9:
+    fCosPAngleCut = 0.99;
+    break;
+  case 10:
+    fCosPAngleCut = 0.995;
+    break;
   default:
     AliError(Form("Cosine Pointing Angle cut not defined %d",cosCut));
     return kFALSE;

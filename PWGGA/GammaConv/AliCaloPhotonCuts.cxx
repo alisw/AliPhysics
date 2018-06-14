@@ -3917,12 +3917,6 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fMinDistTrackToClusterPhi = -0.13;//-0.02;
       fMaxDistTrackToClusterPhi = 0.08;//0.05;//0.15
       break;
-//    case 6:
-//      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-//      fMaxDistTrackToClusterEta = 0.022;//0.015;
-//      fMinDistTrackToClusterPhi = -0.15;//-0.02;
-//      fMaxDistTrackToClusterPhi = 0.10;//0.055;//0.2;
-//      break;
     // pT dependent matching parameters
     case 6:
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;

@@ -399,6 +399,36 @@ private:
     Float_t fTreeVariableNegDCAz; //!
     Float_t fTreeVariablePosDCAz; //!
     
+    //Cluster information for all daughter tracks
+    Bool_t fTreeVariablePosITSClusters0;
+    Bool_t fTreeVariablePosITSClusters1;
+    Bool_t fTreeVariablePosITSClusters2;
+    Bool_t fTreeVariablePosITSClusters3;
+    Bool_t fTreeVariablePosITSClusters4;
+    Bool_t fTreeVariablePosITSClusters5;
+    
+    Bool_t fTreeVariableNegITSClusters0;
+    Bool_t fTreeVariableNegITSClusters1;
+    Bool_t fTreeVariableNegITSClusters2;
+    Bool_t fTreeVariableNegITSClusters3;
+    Bool_t fTreeVariableNegITSClusters4;
+    Bool_t fTreeVariableNegITSClusters5;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeVariablePosITSSharedClusters0;
+    Bool_t fTreeVariablePosITSSharedClusters1;
+    Bool_t fTreeVariablePosITSSharedClusters2;
+    Bool_t fTreeVariablePosITSSharedClusters3;
+    Bool_t fTreeVariablePosITSSharedClusters4;
+    Bool_t fTreeVariablePosITSSharedClusters5;
+    
+    Bool_t fTreeVariableNegITSSharedClusters0;
+    Bool_t fTreeVariableNegITSSharedClusters1;
+    Bool_t fTreeVariableNegITSSharedClusters2;
+    Bool_t fTreeVariableNegITSSharedClusters3;
+    Bool_t fTreeVariableNegITSSharedClusters4;
+    Bool_t fTreeVariableNegITSSharedClusters5;
+
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeVariableNegTOFExpTDiff;      //!
     Float_t fTreeVariablePosTOFExpTDiff;      //!
