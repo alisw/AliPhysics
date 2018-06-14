@@ -80,7 +80,7 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
                                 Bool_t  doMultiplicityWeighting      = kFALSE,                          //
                                 TString fileNameInputForMultWeighing = "Multiplicity.root",             //
                                 TString periodNameAnchor             = "",                              //
-                                Bool_t   runLightOutput              = kFALSE,                          // switch to run light output (only essential histograms for afterburner)
+                                Bool_t   runLightOutput             = kFALSE,                          // switch to run light output (only essential histograms for afterburner)
                                 TString  additionalTrainConfig       = "0"                              // additional counter for trainconfig, this has to be always the last parameter
                            ) {
 
@@ -282,19 +282,19 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   } else if (trainConfig == 54){
     cuts.AddCut("00010113", "00c00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
   } else if (trainConfig == 55){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500700000"); //test cosPA scan
+    cuts.AddCut("00010113", "00200009227300008250704000", "0152103500000000"); //test cosPA scan
   } else if (trainConfig == 56){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500800000"); //test cosPA scan
+    cuts.AddCut("00010113", "00200009227300008250804000", "0152103500000000"); //test cosPA scan
   } else if (trainConfig == 57){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500900000"); //test cosPA scan
+    cuts.AddCut("00010113", "00200009227300008250904000", "0152103500000000"); //test cosPA scan
   } else if (trainConfig == 58){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500a00000"); //test cosPA scan
+    cuts.AddCut("00010113", "00200009227300008250a04000", "0152103500000000"); //test cosPA scan
   } else if (trainConfig == 59){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500a00020"); //test cosPA dca 
+    cuts.AddCut("00010113", "00200009227300008250a04020", "0152103500000000"); //test cosPA dca
   } else if (trainConfig == 60){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500a00040"); //test dcaPA
+    cuts.AddCut("00010113", "00200009227300008250a04040", "0152103500000000"); //test dcaPA
   } else if (trainConfig == 61){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000040"); //test dcaPA 
+    cuts.AddCut("00010113", "00200009227300008250404040", "0152103500000000"); //test dcaPA
   
 
   } else {
