@@ -464,18 +464,18 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
   
   fhPtPerTCardIndex[0] = 0;
   fhPtPerTCardIndex[1] = 0;
-  for(Int_t ism =0; ism < 20; ism++)
+  for(Int_t itc =0; itc < 16; itc++)
   {
-    fhPtLambda0PerTCardIndex    [0][ism] = 0;
-    fhPtLambda0PerTCardIndex    [1][ism] = 0;
+    fhPtLambda0PerTCardIndex    [0][itc] = 0;
+    fhPtLambda0PerTCardIndex    [1][itc] = 0;
     
-    fhConeSumPtPerTCardIndex       [ism] = 0;
-    fhConeSumPtClusterPerTCardIndex[ism] = 0;
-    fhConeSumPtTrackPerTCardIndex  [ism] = 0;
+    fhConeSumPtPerTCardIndex       [itc] = 0;
+    fhConeSumPtClusterPerTCardIndex[itc] = 0;
+    fhConeSumPtTrackPerTCardIndex  [itc] = 0;
     
-    fhPtInConePerTCardIndex        [ism] = 0;
-    fhPtClusterInConePerTCardIndex [ism] = 0;
-    fhPtTrackInConePerTCardIndex   [ism] = 0;
+    fhPtInConePerTCardIndex        [itc] = 0;
+    fhPtClusterInConePerTCardIndex [itc] = 0;
+    fhPtTrackInConePerTCardIndex   [itc] = 0;
   }
 }
 
