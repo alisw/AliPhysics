@@ -44,18 +44,20 @@ set(SRCS
     AliHLTTRDPreprocessorComponent.cxx
     AliHLTTRDTracklet.cxx
     AliTRDonlineTrackingDataContainer.cxx
-    tracking/AliHLTTRDTrack.cxx
-    tracking/AliHLTTRDTracker.cxx
-    tracking/AliHLTTRDTrackerComponent.cxx
-    tracking/AliHLTTRDTrackletReaderComponent.cxx
-    tracking/AliHLTTRDTrackletWord.cxx
    )
+
+if(DEFINED ALITPCCOMMON_DIR)
+    add_definitions(-DHAVE_ALITPCCOMMON)
+    include_directories(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
+                        ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger
+                        ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/TRDTracking
+    )
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS}
     AliHLTTRDTrackletWordArray.h
-    tracking/AliHLTTRDTrackPoint.h
 )
 
 # Generate the dictionary

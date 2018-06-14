@@ -34,10 +34,12 @@
 AliHLTTRDAgent gAliHLTTRDAgent;
 
 // component headers
-#include "tracking/AliHLTTRDTrackerComponent.h"
+#ifdef HAVE_ALITPCCOMMON
+#include "AliHLTTRDTrackerComponent.h"
+#include "AliHLTTRDTrackletReaderComponent.h"
+#endif
 #include "AliHLTTRDPreprocessorComponent.h"
 #include "AliHLTTRDMonitorComponent.h"
-#include "tracking/AliHLTTRDTrackletReaderComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTRDAgent)
@@ -115,10 +117,12 @@ int AliHLTTRDAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 {
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
+#ifdef HAVE_ALITPCCOMMON  
   pHandler->AddComponent(new AliHLTTRDTrackerComponent);
+  pHandler->AddComponent(new AliHLTTRDTrackletReaderComponent);
+#endif
   pHandler->AddComponent(new AliHLTTRDPreprocessorComponent);
   pHandler->AddComponent(new AliHLTTRDMonitorComponent);
-  pHandler->AddComponent(new AliHLTTRDTrackletReaderComponent);
   return 0;
 }
 
@@ -168,4 +172,3 @@ int AliHLTTRDAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
   delete pInstance;
   return 0;
 }
-
