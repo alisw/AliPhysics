@@ -401,10 +401,13 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 				      }
 				    }
 				    
+ 				    if (fCheckPileUp){
 				    if(fUtils->IsPileUpEvent(gAOD)){ 
 				      fHistEventStats->Fill(6,gCentrality);
 				      return;
 				    }
+				    }
+
     				    fHistEventStats->Fill(5,gCentrality); 	    
 				    
 
