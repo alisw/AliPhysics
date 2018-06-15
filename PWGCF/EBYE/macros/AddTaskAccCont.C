@@ -37,11 +37,18 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   }
   
   }
+
+  else if(nCenBins == AliAnalysisTaskAccCont::kMCgen){
+
+  gCentrality[0]=0;
+  gCentrality[1]=100;
+
+  }
   //===========================================================================
 
 
   Int_t nCentralities = 2;
-  if(nCenBins == AliAnalysisTaskAccCont::kFull) nCentralities = 2;
+  if(nCenBins == AliAnalysisTaskAccCont::kFull || nCenBins == AliAnalysisTaskAccCont::kMCgen) nCentralities = 2;
   else if(nCenBins == AliAnalysisTaskAccCont::kBins) nCentralities = nCentralitiesMax;
 
   AliAnalysisTaskAccCont *task[nCentralitiesMax];
@@ -72,6 +79,8 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
     suffixName[iCentralityBin] += "_full";
     else if(nCenBins == AliAnalysisTaskAccCont::kBins)
     suffixName[iCentralityBin] += "_bins";
+    else if(nCenBins == AliAnalysisTaskAccCont::kMCgen)
+    suffixName[iCentralityBin] += "_MCgen";
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -106,11 +115,17 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   task[iCentralityBin]->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
   task[iCentralityBin]->SetCentralityPercentileRange(gCentrality[iCentralityBin],gCentrality[iCentralityBin+1]);
   
-  if(systemType == AliAnalysisTaskAccCont::kPbPb)
+  if(systemType == AliAnalysisTaskAccCont::kPbPb){
+  if (MCorData == "data"){
+  task[iCentralityBin]->CheckPileUp();
   task[iCentralityBin]->UsePileUpCutsPbPb();
+  }
+  }
   else if(systemType == AliAnalysisTaskAccCont::kpPb){
-  if (MCorData == "data")
+  if (MCorData == "data"){
+  task[iCentralityBin]->CheckPileUp();
   task[iCentralityBin]->UsePileUpCutspPb();
+  }
   }
 
   if(UseRapidity)
