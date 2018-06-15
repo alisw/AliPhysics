@@ -61,6 +61,7 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
 
   fFemtoCasc=new AliFemtoDreamCascade();
   fFemtoCasc->SetUseMCInfo(isMonteCarlo);
+  //PDG Codes should be set assuming Xi- to also work for Xi+
   fFemtoCasc->SetPDGCode(fCascCuts->GetPDGCodeCasc());
   fFemtoCasc->SetPDGDaugPos(fCascCuts->GetPDGCodePosDaug());
   fFemtoCasc->GetPosDaug()->SetUseMCInfo(isMonteCarlo);
@@ -312,6 +313,7 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
   for (Int_t nCascade = 0; nCascade < evt->GetNumberOfCascades(); ++nCascade) {
     AliESDcascade *esdCascade = evt->GetCascade(nCascade);
     fFemtoCasc->SetCascade(evt,esdCascade);
+    fCascCuts->isSelected(fFemtoCasc);
   }
 }
 
