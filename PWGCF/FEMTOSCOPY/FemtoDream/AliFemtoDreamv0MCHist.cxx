@@ -39,8 +39,7 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist()
     fMCInvMass[i] = 0;
     fMCBachDCAToPV[i]=0;
     fMCv0DecayLength[i]=0;
-    fMCXiDecayLength[i]=0;
-    fMCOmegaDecayLength[i]=0;
+    fMCDecayLength[i]=0;
     fMCXiRapidity[i]=0;
     fMCOmegaRapidity[i]=0;
     fMCPodolanski[i]=0;
@@ -200,15 +199,10 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(
                                ptBins,ptmin,ptmax,400,0.85,1.001);
       fMCQAPlots[i]->Add(fMCv0CPA[i]);
 
-      TString MCXiDecayLength=Form("MCXiDecayLength%s",MCModes[i].Data());
-      fMCXiDecayLength[i]= new TH2F(MCXiDecayLength.Data(),MCXiDecayLength.Data(),
+      TString MCXiDecayLength=Form("MCDecayLength%s",MCModes[i].Data());
+      fMCDecayLength[i]= new TH2F(MCXiDecayLength.Data(),MCXiDecayLength.Data(),
                                ptBins,ptmin,ptmax,200,0,10);
-      fMCQAPlots[i]->Add(fMCXiDecayLength[i]);
-
-      TString MCOmegaDecayLength=Form("MCOmegaDecayLength%s",MCModes[i].Data());
-      fMCOmegaDecayLength[i]= new TH2F(MCOmegaDecayLength.Data(),MCOmegaDecayLength.Data(),
-                                  ptBins,ptmin,ptmax,200,0,10);
-      fMCQAPlots[i]->Add(fMCOmegaDecayLength[i]);
+      fMCQAPlots[i]->Add(fMCDecayLength[i]);
 
       TString MCXiRapidity=Form("MCXiRapidity%s",MCModes[i].Data());
       fMCXiRapidity[i]= new TH2F(MCXiRapidity.Data(),MCXiRapidity.Data(),
@@ -256,8 +250,7 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(
       fMCInvMass[i] = 0;
       fMCBachDCAToPV[i]=0;
       fMCv0DecayLength[i]=0;
-      fMCXiDecayLength[i]=0;
-      fMCOmegaDecayLength[i]=0;
+      fMCDecayLength[i]=0;
       fMCXiRapidity[i]=0;
       fMCOmegaRapidity[i]=0;
       fMCPodolanski[i]=0;

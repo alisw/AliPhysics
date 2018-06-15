@@ -71,6 +71,8 @@ class AliFemtoDreamTrackHist {
   void SetName(TString name){fHistList->SetName(name.Data());};
   TList *GetHistList(){return fHistList;};
  private:
+  AliFemtoDreamTrackHist &operator=(const AliFemtoDreamTrackHist &obj);
+  AliFemtoDreamTrackHist(const AliFemtoDreamTrackHist&);
   bool fMinimalBooking;     //!
   TList *fHistList;         //!
   TList *fTrackCutQA[2];    //!

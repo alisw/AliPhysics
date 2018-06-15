@@ -63,6 +63,8 @@ class AliFemtoDreamTrackMCHist {
   TList *GetHistList() const {return fMCList;};
   TString ClassName() {return "AliFemtoDreamTrackMCHist";};
  private:
+  AliFemtoDreamTrackMCHist &operator=(const AliFemtoDreamTrackMCHist &obj);
+  AliFemtoDreamTrackMCHist(const AliFemtoDreamTrackMCHist&);
   float fpTmin;                  //!
   float fpTmax;                  //!
   float fpTbins;                 //!

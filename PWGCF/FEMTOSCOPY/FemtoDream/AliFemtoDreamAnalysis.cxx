@@ -61,6 +61,7 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
 
   fFemtoCasc=new AliFemtoDreamCascade();
   fFemtoCasc->SetUseMCInfo(isMonteCarlo);
+  //PDG Codes should be set assuming Xi- to also work for Xi+
   fFemtoCasc->SetPDGCode(fCascCuts->GetPDGCodeCasc());
   fFemtoCasc->SetPDGDaugPos(fCascCuts->GetPDGCodePosDaug());
   fFemtoCasc->GetPosDaug()->SetUseMCInfo(isMonteCarlo);
@@ -83,12 +84,14 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
       !((!fConfig->GetMinimalBookingME())||(!fConfig->GetMinimalBookingSample()));
   fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinBooking);
 
-  if (MinBooking) {
+  if (!MinBooking) {
     fQA=new TList();
     fQA->SetOwner();
     fQA->SetName("QA");
     fQA->Add(fPairCleaner->GetHistList());
-    if (fEvtCutQA) fQA->Add(fEvent->GetEvtCutList());
+    if (fEvtCutQA) {
+      fQA->Add(fEvent->GetEvtCutList());
+    }
   }
   fPartColl=
       new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
@@ -284,6 +287,33 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   if (fConfig->GetUsePhiSpinning()) {
     fControlSample->SetEvent(
         fPairCleaner->GetCleanParticles(), fEvent->GetMultiplicity());
+  }
+}
+
+
+void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
+  if (!evt) {
+    AliFatal("No Input Event");
+  }
+  fEvent->SetEvent(evt);
+  if (!fEvtCuts->isSelected(fEvent)) {
+    return;
+  }
+//  std::cout << "===================" << std::endl;
+//  std::cout << "===================" << std::endl;
+//  std::cout << "======new Event====" << std::endl;
+//  std::cout << "===================" << std::endl;
+//  std::cout << "===================" << std::endl;
+
+  for (int iTrack=0;iTrack<evt->GetNumberOfTracks();++iTrack) {
+    AliESDtrack *track=static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
+    fFemtoTrack->SetTrack(track);
+    fTrackCuts->isSelected(fFemtoTrack);
+  }
+  for (Int_t nCascade = 0; nCascade < evt->GetNumberOfCascades(); ++nCascade) {
+    AliESDcascade *esdCascade = evt->GetCascade(nCascade);
+    fFemtoCasc->SetCascade(evt,esdCascade);
+    fCascCuts->isSelected(fFemtoCasc);
   }
 }
 

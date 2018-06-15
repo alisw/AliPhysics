@@ -20,6 +20,7 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
 ,fContribSplitting(false)
 ,fFillQALater(false)
 ,fCheckFilterBit(false)
+,fCheckESDFiltering(false)
 ,fCheckPileUpITS(false)
 ,fCheckPileUpTOF(false)
 ,fCheckPileUp(false)
@@ -82,7 +83,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
     }
   }
   if (pass&&fCutPID) {
-    if (!PIDAODCuts(Track)) {
+    if (!PIDCuts(Track)) {
       pass=false;
     } else {
       if (!fMinimalBooking) fHists->FillTrackCounter(21);
@@ -94,7 +95,7 @@ bool AliFemtoDreamTrackCuts::isSelected(AliFemtoDreamTrack *Track) {
     }
   }
   Track->SetUse(pass);
-  if (!fFillQALater) {
+  if (!fFillQALater&&Track->IsSet()) {
       BookQA(Track);
       if (fMCData&&!fMinimalBooking) {
         BookMC(Track);
@@ -110,6 +111,13 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
   if (fCheckFilterBit) {
     if (!Track->TestFilterBit(fFilterBit)) {
       //if there is Filterbit -1 .. see Prong cuts! Daughters don't check for FB
+      pass=false;
+    } else {
+      if (!fMinimalBooking) fHists->FillTrackCounter(1);
+    }
+  }
+  if (fCheckESDFiltering) {
+    if (!Track->PassESDFiltering()) {
       pass=false;
     } else {
       if (!fMinimalBooking) fHists->FillTrackCounter(1);
@@ -210,7 +218,7 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
   return pass;
 }
 
-bool AliFemtoDreamTrackCuts::PIDAODCuts(AliFemtoDreamTrack *Track) {
+bool AliFemtoDreamTrackCuts::PIDCuts(AliFemtoDreamTrack *Track) {
   bool pass=true;
   //PID Method with an nSigma cut, just use the TPC below threshold,
   //and above TPC and TOF Combined
@@ -454,7 +462,6 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
             }
           }
         }
-
         fHists->FillTPCdedx(i,p,Track->GetdEdxTPC());
         fHists->FillTOFbeta(i,p,Track->GetbetaTOF());
         fHists->FillNSigTPC(i,p,(Track->GetnSigmaTPC(fParticleID)));
@@ -602,7 +609,6 @@ void AliFemtoDreamTrackCuts::BookTrackCuts() {
     } else {
       fHists->FillConfig(6, -1);
     }
-
     if (fMCData) {
       fHists->FillConfig(7, 1);
     }
@@ -659,6 +665,9 @@ void AliFemtoDreamTrackCuts::BookTrackCuts() {
     if(fCutChi2) {
       fHists->FillConfig(22,fMinCutChi2);
       fHists->FillConfig(23,fMaxCutChi2);
+    }
+    if (fCheckESDFiltering) {
+      fHists->FillConfig(24,1);
     }
   }
 }
