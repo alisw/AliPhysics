@@ -436,8 +436,8 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 (
  TString  calorimeter   = "EMCAL", // "DCAL", "PHOS"
  Bool_t   simulation    = kFALSE,
- Int_t    year          = 2011,
- TString  col           = "pp",
+ Int_t    year          = -1, // 2011,
+ TString  col           = "", // pp
  Int_t    rejectEMCTrig = 0,
  TString  clustersArray = "",
  TString  cutsString    = "", // "Smearing","SPDPileUp"
@@ -458,7 +458,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C");
   
-  TString period      = "LHC17";
+  TString period      = "";
   Bool_t  printGlobal = kTRUE;
   
   GetAlienGlobalProductionVariables(simulation,col,period,year,printGlobal);
