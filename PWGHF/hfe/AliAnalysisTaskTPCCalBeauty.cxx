@@ -1490,7 +1490,13 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 fTPCElecEoP->Fill(track->Pt(),EovP);
             }
             
-            fElecEoPnoSig->Fill(track->Pt(),EovP);
+            
+            if(fFlagApplySSCut && M20>0.01 && M20<0.35) {
+                fElecEoPnoSig->Fill(track->Pt(),EovP);
+            }
+            if(!fFlagApplySSCut) {
+                fElecEoPnoSig->Fill(track->Pt(),EovP);
+            }
             
             if((nsigma<-1) || (nsigma>3)) continue;
             if(kTruElec == kTRUE) fElecAftTPCeID->Fill(track->Pt());
