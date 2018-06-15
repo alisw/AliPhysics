@@ -146,7 +146,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   Bool_t tagHFjet(AliEmcalJet* jet, double *epT, int MCpid, double &maxpT_e);
   //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
   void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
-  Double_t CalRandomCone(Double_t HFjetPhi, Double_t HFjetEta, Double_t HFjetArea);
+  Double_t CalRandomCone(Double_t HFjetPhi[], Double_t HFjetEta[], Double_t HFjetArea);
   Bool_t isHeavyFlavour(int Mompdg);
   Bool_t isPhotonic(int Mompdg);
   //void MakeParticleLevelJet(THnSparse *pJet);
