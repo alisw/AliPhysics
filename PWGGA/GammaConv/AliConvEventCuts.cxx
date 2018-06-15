@@ -90,6 +90,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fSpecialTrigger(0),
   fSpecialSubTrigger(0),
   fRemovePileUp(kFALSE),
+  fRemovePileUpSPD(kFALSE),
   fPastFutureRejectionLow(0),
   fPastFutureRejectionHigh(0),
   fDoPileUpRejectV0MTPCout(0),
@@ -204,6 +205,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fSpecialTrigger(ref.fSpecialTrigger),
   fSpecialSubTrigger(ref.fSpecialSubTrigger),
   fRemovePileUp(ref.fRemovePileUp),
+  fRemovePileUpSPD(ref.fRemovePileUpSPD),
   fPastFutureRejectionLow(ref.fPastFutureRejectionLow),
   fPastFutureRejectionHigh(ref.fPastFutureRejectionHigh),
   fDoPileUpRejectV0MTPCout(ref.fDoPileUpRejectV0MTPCout),
@@ -369,11 +371,17 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
   }
 
   if(!fDoLightOutput){
-    hSPDClusterTrackletBackgroundBefore = new TH2F(Form("SPD tracklets vs SPD clusters %s before Pileup Cut",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
-    fHistograms->Add(hSPDClusterTrackletBackgroundBefore);
-
-    hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
-    fHistograms->Add(hSPDClusterTrackletBackground);
+    if (fIsHeavyIon == 1){
+      hSPDClusterTrackletBackgroundBefore = new TH2F(Form("SPD tracklets vs SPD clusters %s before Pileup Cut",GetCutNumber().Data()),"SPD tracklets vs SPD clusters", 200, 0, 6000, 200, 0, 20000);
+      fHistograms->Add(hSPDClusterTrackletBackgroundBefore);
+      hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters", 200, 0, 6000, 200, 0, 20000);
+      fHistograms->Add(hSPDClusterTrackletBackground);
+    } else{
+      hSPDClusterTrackletBackgroundBefore = new TH2F(Form("SPD tracklets vs SPD clusters %s before Pileup Cut",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
+      fHistograms->Add(hSPDClusterTrackletBackgroundBefore);
+      hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
+      fHistograms->Add(hSPDClusterTrackletBackground);
+    }
   }
 
   if(fIsHeavyIon > 0){
@@ -629,7 +637,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
         fEventQuality = 6;
         return kFALSE;
       }
-      if(fRemovePileUp){
+      if(fRemovePileUpSPD){
         if(fUtils->IsPileUpEvent(event)){
           if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
           if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
@@ -644,7 +652,7 @@ Bool_t AliConvEventCuts::EventIsSelected(AliVEvent *event, AliMCEvent *mcEvent){
         }
       }
     }
-  } else if(fRemovePileUp){
+  } else if(fRemovePileUpSPD){
     if(event->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       if(fHistoEventCuts)fHistoEventCuts->Fill(cutindex);
       if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
@@ -1041,8 +1049,14 @@ void AliConvEventCuts::PrintCutsWithValues() {
 
   if (fRemovePileUp ==1 ) {
      printf("\t Doing pile up removal  \n");
+     if (fRemovePileUpSPD ==1 ){
+       printf("\t Doing pile up removal using SPD \n");
+     }
      if (fDoPileUpRejectV0MTPCout ==1 ){
        printf("\t Doing extra pile up removal V0M vs TPCout  \n");
+     }
+     if (fPastFutureRejectionLow !=0 && fPastFutureRejectionHigh !=0 ){
+       printf("\t Doing extra past-future pile up removal\n");
      }
   }
 
@@ -1778,29 +1792,35 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
     break;
   case 1:
     fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
     break;
   case 2:
     fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
     fPastFutureRejectionLow =-89;
     fPastFutureRejectionHigh= 89;
     break;
   case 3:
     fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
     fPastFutureRejectionLow = -4;
     fPastFutureRejectionHigh=  7;
     break;
   case 4:
     fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
     fPastFutureRejectionLow = -10;
     fPastFutureRejectionHigh=  13;
     break;
   case 5:
     fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
     fPastFutureRejectionLow = -40;
     fPastFutureRejectionHigh=  43;
     break;
   case 6:
     fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
     fDoPileUpRejectV0MTPCout = kTRUE;
     fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
     fFPileUpRejectV0MTPCout->SetParameter(0,0.);
@@ -1827,6 +1847,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
    break;
   case 7:
     fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
     fDoPileUpRejectV0MTPCout = kTRUE;
     fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
     fFPileUpRejectV0MTPCout->SetParameter(0,0.);
@@ -1853,6 +1874,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
     break;
   case 8:
     fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
     fDoPileUpRejectV0MTPCout = kTRUE;
     fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
     fFPileUpRejectV0MTPCout->SetParameter(0,0.);
@@ -1879,6 +1901,7 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
    break;
   case 9:
     fRemovePileUp           = kTRUE;
+    fRemovePileUpSPD        = kTRUE;
     fPastFutureRejectionLow =-89;
     fPastFutureRejectionHigh= 89;
     fDoPileUpRejectV0MTPCout = kTRUE;
@@ -1905,6 +1928,24 @@ Bool_t AliConvEventCuts::SetRemovePileUp(Int_t removePileUp)
        break;
     }
    break;
+ case 10:            // for Pb-Pb
+    fRemovePileUp     = kTRUE;
+    fRemovePileUpSPD  = kTRUE;
+    fUtils->SetASPDCvsTCut(200.);
+    fUtils->SetBSPDCvsTCut(7.);
+    fDoPileUpRejectV0MTPCout = kTRUE;
+    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
+    fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
+    fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
+    break;
+ case 11:            // for Pb-Pb
+    fRemovePileUp     = kTRUE;
+    fRemovePileUpSPD  = kFALSE;
+    fDoPileUpRejectV0MTPCout = kTRUE;
+    fFPileUpRejectV0MTPCout = new TF1("fFPileUpRejectV0MTPCout","[0] + [1]*x",0.,10000.);
+    fFPileUpRejectV0MTPCout->SetParameter(0,-2500.);
+    fFPileUpRejectV0MTPCout->SetParameter(1,5.0);
+    break;
   default:
     AliError("RemovePileUpCut not defined");
     return kFALSE;
@@ -4293,7 +4334,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       return 12;
   }
 
-  if( isHeavyIon != 2 && GetIsFromPileup()){
+  if( isHeavyIon != 2 && GetIsFromPileupSPD()){
     if(event->IsPileupFromSPD(3,0.8,3.,2.,5.) ){
       if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
@@ -4303,7 +4344,7 @@ Int_t AliConvEventCuts::IsEventAcceptedByCut(AliConvEventCuts *ReaderCuts, AliVE
       return 11; // Check Pileup --> Not Accepted => eventQuality = 11
     }
   }
-  if(isHeavyIon == 2 && GetIsFromPileup()){
+  if(isHeavyIon == 2 && GetIsFromPileupSPD()){
     if(fUtils->IsPileUpEvent(event) ){
       if (hPileupVertexToPrimZSPDPileup) hPileupVertexToPrimZSPDPileup->Fill(distZMax);
       return 6; // Check Pileup --> Not Accepted => eventQuality = 6
