@@ -595,9 +595,10 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   ana->SetNPIDBits(1);
   ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
                         // In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.
-  
+
   if     (col == "pp"  )
   {
+    printf("ConfigureInvariantMassAnalysis() - Set pp configuration\n");
     ana->SetNCentrBin(1);
     ana->SwitchOffTrackMultBins();
     ana->SetNZvertBin(10);
@@ -607,6 +608,7 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   }
   else if(col == "PbPb")
   {
+    printf("ConfigureInvariantMassAnalysis() - Set PbPb configuration\n");
     ana->SetNCentrBin(10);
     ana->SetNZvertBin(10);
     ana->SetNRPBin(4);
@@ -615,6 +617,7 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   }
   else if(col =="pPb")
   {
+    printf("ConfigureInvariantMassAnalysis() - Set pPb configuration\n");
     ana->SetNCentrBin(1);
     ana->SetNZvertBin(10);
     ana->SetNRPBin(4);
