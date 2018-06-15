@@ -107,6 +107,7 @@ fULSEnhPhoton(0),
 fPhotonicDCA(0),
 fInclElecDCA(0),
 fInclElecDCAnoSign(0),
+fElecEoPnoSig(0),
 fInclElecEoP(0),
 fTPCElecEoP(0),
 fHadronEoP(0),
@@ -266,6 +267,7 @@ fULSEnhPhoton(0),
 fPhotonicDCA(0),
 fInclElecDCA(0),
 fInclElecDCAnoSign(0),
+fElecEoPnoSig(0),
 fInclElecEoP(0),
 fTPCElecEoP(0),
 fHadronEoP(0),
@@ -425,10 +427,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fdEdx = new TH1F("fdEdx","Track dE/dx Distribution;dE/dx;Counts",160,0,160);
     fOutputList->Add(fdEdx);
     
-    fnSigma = new TH2F("fnSigma","Track fnSigma Distribution;pT;fnSigma",60,0,30,40,-10,10);
+    fnSigma = new TH2F("fnSigma","Track fnSigma Distribution;pT;fnSigma",30,0,30,100,-10,10);
     fOutputList->Add(fnSigma);
     
-    fnSigmaAftTrkMatch = new TH2F("fnSigmaAftTrkMatch","Track fnSigma Distribution after track matching to cal;pT;fnSigma",60,0,30,40,-10,10);
+    fnSigmaAftTrkMatch = new TH2F("fnSigmaAftTrkMatch","Track fnSigma Distribution after track matching to cal;pT;fnSigma",30,0,30,100,-10,10);
     fOutputList->Add(fnSigmaAftTrkMatch);
     
     fCentCheck = new TH1F("fCentCheck","Event Centrality Distribution;Centrality;Counts",100,0,100);
@@ -540,6 +542,9 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fInclElecDCAnoSign = new TH2F("fInclElecDCAnoSign","Incl Elec DCA (no Charge); p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., 200,-0.2,0.2);
     fOutputList->Add(fInclElecDCAnoSign);
+    
+    fElecEoPnoSig = new TH2F("fElecEoPnoSig","Elec E/p, no nSig cut; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
+    fOutputList->Add(fElecEoPnoSig);
     
     fInclElecEoP = new TH2F("fInclElecEoP","Incl Elec E/p; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
     fOutputList->Add(fInclElecEoP);
@@ -1484,6 +1489,8 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             if (nsigma>-0.1 && nsigma<3) {
                 fTPCElecEoP->Fill(track->Pt(),EovP);
             }
+            
+            fElecEoPnoSig->Fill(track->Pt(),EovP);
             
             if((nsigma<-1) || (nsigma>3)) continue;
             if(kTruElec == kTRUE) fElecAftTPCeID->Fill(track->Pt());
