@@ -91,7 +91,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
   } 
   
   // Check MC production tag name to match with data year and production name
-  if ( simulation && period == "" )
+  if ( simulation )
   {
     // 2011 MC productions
     if      ( prodType.Contains("14j") )
