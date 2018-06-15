@@ -1,4 +1,4 @@
-configurationName: "EMCal MC Correction Cluster V1 Run1 with cross talk emulation"
+configurationName: "EMCal MC Correction Cluster V1 Run1 with cross talk emulation, 100 MeV induced cut"
 pass: "pass1"
 CellEnergy:
     enabled: false
@@ -41,7 +41,7 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     randomizeTCardInducedEnergy: true               # Randomize the energy fraction induced by the TCard
     inducedTCardMinimumCellEnergy: 0.01             # Minimum cell energy induced by the TCard
     inducedTCardMaximum: 100                        # Maximum energy induced by the TCard
-    inducedTCardMinimum: 0.0                        # Minimum energy induced by the TCard + cell energy, IMPORTANT use the same value as the clusterization cell E threshold or not too far from it
+    inducedTCardMinimum: 0.1                        # Minimum energy induced by the TCard + cell energy, IMPORTANT use the same value as the clusterization cell E threshold or not too far from it
     inducedTCardMaximumELeak: 0                     # Maximum energy that is going to be leaked independently of what is set with inducedTCardMinimum    
     inducedEnergyLossConstant:                      # Constant energy lost by max energy cell in one of T-Card cells
         enabled: false                              # Enable setting these values

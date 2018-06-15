@@ -71,6 +71,8 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     randomizeTCardInducedEnergy: true               # Randomize the energy fraction induced by the TCard
     inducedTCardMinimumCellEnergy: 0.01             # Minimum cell energy induced by the TCard
     inducedTCardMaximum: 100                        # Maximum energy induced by the TCard
+    inducedTCardMinimum: 0.05                       # Minimum energy induced by the TCard + cell energy, IMPORTANT use the same value as the clusterization cell E threshold or not too far from it
+    inducedTCardMaximumELeak: 0                     # Maximum energy that is going to be leaked independently of what is set with inducedTCardMinimum
     # Note on using the following section:
     # Each setting can be enabled or disabled. If disabled, the settings will _not_ be applied
     # The values are formatted as a map, with the keys as either "all", correspoding to all SMs
