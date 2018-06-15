@@ -213,6 +213,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoArmenterosbefore(NULL),
   fHistoInvMassafter(NULL),
   fHistoArmenterosafter(NULL),
+  fHistoAsymmetrybefore(NULL),
   fHistoAsymmetryafter(NULL),
   fHistoAcceptanceCuts(NULL),
   fHistoCutIndex(NULL),
@@ -350,6 +351,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoArmenterosbefore(NULL),
   fHistoInvMassafter(NULL),
   fHistoArmenterosafter(NULL),
+  fHistoAsymmetrybefore(NULL),
   fHistoAsymmetryafter(NULL),
   fHistoAcceptanceCuts(NULL),
   fHistoCutIndex(NULL),
@@ -461,6 +463,7 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   }
 
   if(!fDoLightOutput){
+
     if(preCut){
       fHistoInvMassbefore=new TH1F(Form("InvMass_before %s",GetCutNumber().Data()),"InvMass_before",1000,0,0.3);
       fHistograms->Add(fHistoInvMassbefore);
@@ -468,16 +471,18 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(fHistoArmenterosbefore);
       fHistoEtaDistV0s = new TH1F(Form("Eta_before %s",GetCutNumber().Data()),"Eta_before",2000,-2,2);
       fHistograms->Add(fHistoEtaDistV0s);
-
+      fHistoAsymmetrybefore=new TH2F(Form("Asymmetry_before %s",GetCutNumber().Data()),"Asymmetry_before",150,0.03,20.,200,0,1.);
+      fHistograms->Add(fHistoAsymmetrybefore);
     }
     fHistoInvMassafter=new TH1F(Form("InvMass_after %s",GetCutNumber().Data()),"InvMass_after",1000,0,0.3);
     fHistograms->Add(fHistoInvMassafter);
     fHistoArmenterosafter=new TH2F(Form("Armenteros_after %s",GetCutNumber().Data()),"Armenteros_after",200,-1,1,250,0,0.25);
     fHistograms->Add(fHistoArmenterosafter);
-    if(fDoPhotonAsymmetryCut){
-      fHistoAsymmetryafter=new TH2F(Form("Asymmetry_after %s",GetCutNumber().Data()),"Asymmetry_after",150,0.03,20.,200,0,1.);
-      fHistograms->Add(fHistoAsymmetryafter);
-    }
+    // AM - save always to see distribution after selections cut
+    //    if(fDoPhotonAsymmetryCut){
+    fHistoAsymmetryafter=new TH2F(Form("Asymmetry_after %s",GetCutNumber().Data()),"Asymmetry_after",150,0.03,20.,200,0,1.);
+    fHistograms->Add(fHistoAsymmetryafter);
+      //    }
   }
 
   fHistoAcceptanceCuts=new TH2F(Form("PhotonAcceptanceCuts %s",GetCutNumber().Data()),"PhotonAcceptanceCuts vs p_{T,#gamma}",11,-0.5,10.5,250,0,50);
@@ -513,6 +518,8 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
     TAxis *AxisBeforeTOF = NULL;
     TAxis *AxisBeforeTOFSig = NULL;
     TAxis *AxisBeforeITSSig = NULL;
+    TAxis *AxisBeforeAsymmetry = NULL;
+
     if(preCut){
       fHistoTPCdEdxbefore=new TH2F(Form("Gamma_dEdx_before %s",GetCutNumber().Data()),"dEdx Gamma before" ,150,0.03,20,800,0,200);
       fHistograms->Add(fHistoTPCdEdxbefore);
@@ -531,6 +538,8 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistoITSSigbefore=new TH2F(Form("Gamma_ITSSig_before %s",GetCutNumber().Data()),"ITS Sigma Gamma before" ,150,0.03,20,400,-10,10);
       fHistograms->Add(fHistoITSSigbefore);
       AxisBeforeITSSig = fHistoITSSigbefore->GetXaxis();
+
+      AxisBeforeAsymmetry = fHistoAsymmetrybefore->GetXaxis();
     }
 
     fHistoTPCdEdxSigafter=new TH2F(Form("Gamma_dEdxSig_after %s",GetCutNumber().Data()),"dEdx Sigma Gamma after" ,150,0.03,20,400, -10,10);
@@ -571,16 +580,17 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
     AxisAfter->Set(bins, newBins);
     AxisAfter = fHistoITSSigafter->GetXaxis();
     AxisAfter->Set(bins, newBins);
-    if(fDoPhotonAsymmetryCut){
-      AxisAfter = fHistoAsymmetryafter->GetXaxis();
-      AxisAfter->Set(bins, newBins);
-    }
+    //    if(fDoPhotonAsymmetryCut){
+    AxisAfter = fHistoAsymmetryafter->GetXaxis();
+    AxisAfter->Set(bins, newBins);
+      //    }
     if(preCut){
       AxisBeforedEdx->Set(bins, newBins);
       AxisBeforeTOF->Set(bins, newBins);
       AxisBeforedEdxSig->Set(bins, newBins);
       AxisBeforeTOFSig->Set(bins, newBins);
       AxisBeforeITSSig->Set(bins, newBins);
+      AxisBeforeAsymmetry->Set(bins, newBins);
     }
     delete [] newBins;
 
@@ -787,10 +797,15 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
   if(fHistoPhotonCuts)fHistoPhotonCuts->Fill(cutIndex, photon->GetPhotonPt());
   cutIndex++;
 
+  AliVTrack * electronCandidate = GetTrack(event,photon->GetTrackLabelNegative());
+  AliVTrack * positronCandidate = GetTrack(event,photon->GetTrackLabelPositive());
+
   // Fill Histos before Cuts
   if(fHistoInvMassbefore)fHistoInvMassbefore->Fill(photon->GetMass());
   if(fHistoArmenterosbefore)fHistoArmenterosbefore->Fill(photon->GetArmenterosAlpha(),photon->GetArmenterosQt());
-
+  if(fHistoAsymmetrybefore){
+    if(photon->GetPhotonP()!=0 && electronCandidate->P()!=0)fHistoAsymmetrybefore->Fill(photon->GetPhotonP(),electronCandidate->P()/photon->GetPhotonP());
+  }
   // Gamma selection based on QT from Armenteros
   if(fDoQtGammaSelection == kTRUE){
     if(!ArmenterosQtCut(photon)){
@@ -844,8 +859,6 @@ Bool_t AliConversionPhotonCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVE
     magField =  -1.0;
   }
 
-  AliVTrack * electronCandidate = GetTrack(event,photon->GetTrackLabelNegative());
-  AliVTrack * positronCandidate = GetTrack(event,photon->GetTrackLabelPositive());
   Double_t deltaPhi = magField * TVector2::Phi_mpi_pi( electronCandidate->Phi()-positronCandidate->Phi());
 
   cutIndex++; //7
@@ -1404,7 +1417,7 @@ Bool_t AliConversionPhotonCuts::KappaCuts(AliConversionPhotonBase * photon,AliVE
 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::AsymmetryCut(AliConversionPhotonBase * photon,AliVEvent *event) {
-  // Cut on Energy Assymetry
+  // Cut on Energy Asymmetry
 
   for(Int_t ii=0;ii<2;ii++){
 
