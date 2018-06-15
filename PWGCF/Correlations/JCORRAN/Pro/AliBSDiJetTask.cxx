@@ -667,6 +667,7 @@ void AliBSDiJetTask::MeasureBgDensity(AliJetContainer* ktContainer){
 
 		for( int it=0; it<j->GetNumberOfTracks(); it++ ) {
 			auto trk =  j->Track(it);
+			if( ! ((AliAODTrack*) trk)->TestFilterBit(768)) continue;
 			TLorentzVector temp;
 			temp.SetXYZM(trk->Px(),trk->Py(),trk->Pz(),pionmass);
 			if( lpt < temp.Pt() )  lpt = temp.Pt();
@@ -809,6 +810,7 @@ Bool_t AliBSDiJetTask::MeasureJets(AliJetContainer *jetContainer, TLorentzVector
 
 		for( int it=0; it<j->GetNumberOfTracks(); it++ ) {
 			auto trk =  j->Track(it);
+			if( ! ((AliAODTrack*) trk)->TestFilterBit(768)) continue;
 			//cout<<"trk : "<<trk->GetLabel()<<endl;
 			if (!istruth && fOption.Contains("MBTR")){
 				if (fBSRandom->Uniform(0,100)<5.) continue;
