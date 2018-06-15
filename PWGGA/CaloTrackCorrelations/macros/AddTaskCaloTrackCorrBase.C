@@ -419,6 +419,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(TString col,         Bool_t simulation,
 /// \param simulation : A bool identifying the data as simulation
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param col: A string with the colliding system
+/// \param period: A string with the data period
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param cutsString : A string with additional cuts (Smearing, SPDPileUp)
@@ -438,6 +439,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
  Bool_t   simulation    = kFALSE,
  Int_t    year          = -1, // 2011,
  TString  col           = "", // pp
+ TString  period        = "", // LHC11d
  Int_t    rejectEMCTrig = 0,
  TString  clustersArray = "",
  TString  cutsString    = "", // "Smearing","SPDPileUp"
@@ -455,13 +457,6 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskCaloTrackCorrBase
   // Check the global variables, and reset the provided ones if empty.
   //
   TString trigger = trigSuffix;
-
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C");
-  
-  TString period      = "";
-  Bool_t  printGlobal = kTRUE;
-  
-  GetAlienGlobalProductionVariables(simulation,col,period,year,printGlobal);
   
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

@@ -65,7 +65,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
     if   ( prodType.Contains("MC") ) simulation = kTRUE;
     else                             simulation = kFALSE;
     
-    if   ( !simulation && period!="" ) period = prodTag;
+    if   ( !simulation && period == "" ) period = prodTag;
     
     // print check on global settings once
     if ( print ) 
@@ -91,7 +91,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
   } 
   
   // Check MC production tag name to match with data year and production name
-  if ( simulation && period=="" )
+  if ( simulation )
   {
     // 2011 MC productions
     if      ( prodType.Contains("14j") )
