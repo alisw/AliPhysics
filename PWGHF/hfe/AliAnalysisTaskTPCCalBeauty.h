@@ -139,9 +139,9 @@ private:
     TH1F                *fULSEnhPhoton;    //! ULS for all photon e
     
     TH2F                *fPhotonicDCA;   //! Photonic DCA using MC PID
-    TH2F                *fElecEoPnoSig;  //! Elec EoP w/o sigma cut
     TH2F                *fInclElecDCA;   //! Inclusive electron DCA vs. pT
     TH2F                *fInclElecDCAnoSign;   //! Inclusive electron DCA vs. pT, no sign
+    TH2F                *fElecEoPnoSig;  //! Elec EoP w/o sigma cut
     TH2F                *fInclElecEoP;   //! Inclusive electron EoP vs. pT
     TH2F                *fTPCElecEoP;   //! EoP vs. pT, -0.1<nsig<3 cut
     TH2F                *fHadronEoP;     //! Hadron EoP vs. pT
