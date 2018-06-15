@@ -386,7 +386,13 @@ void AliAnalysisTaskEMCALClusterize::AccessOADB()
   } // Recalibration on
   
   // Energy Recalibration, apply on top of previous calibration factors
-  if(fRecoUtils->IsRunDepRecalibrationOn())
+  if ( fRun > 200000 )
+  {
+    AliInfo(Form("Switch off Temperature corrections for Run %d (remember to remove when Run2 T corrections available!)",fRun)); 
+    fRecoUtils->SwitchOffRunDepCorrection();
+  }
+  
+  if ( fRecoUtils->IsRunDepRecalibrationOn() )
   {
     AliOADBContainer *contRFTD=new AliOADBContainer("");
     
