@@ -1849,7 +1849,7 @@ void AliAnalysisTaskEMCALClusterize::CalculateInducedEnergyInTCardCell
 
 //_______________________________________________________
 /// Recover each cell amplitude and absId and induce energy 
-/// in cells in cross of the same T-Card
+/// in cells around of the same T-Card, up to second row
 //_______________________________________________________
 void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
 {
@@ -1879,9 +1879,9 @@ void AliAnalysisTaskEMCALClusterize::MakeCellTCardCorrelation()
       
       if ( rand > fTCardCorrInduceEnerProb[imod] )
       {
-        continue;
         AliDebug(1,Form("Do not difuse E of cell %d, sm %d, amp %2.2f: SM fraction %2.2f > %2.2f",
                         id,imod,amp,fTCardCorrInduceEnerProb[imod],rand));
+        continue;
       }
     }
     
