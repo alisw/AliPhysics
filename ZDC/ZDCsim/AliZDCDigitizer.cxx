@@ -185,7 +185,7 @@ Bool_t AliZDCDigitizer::Init()
   // Setting beam type for spectator generator and RELDIS generator
   if(((fBeamType.CompareTo("UNKNOWN")) == 0) || fIsRELDISgen){
      fBeamType = "A-A";
-     AliInfo(" AliZDCDigitizer -> Manually setting beam type to A-A\n");
+     AliInfo("\n AliZDCDigitizer -> Manually setting beam type to A-A\n");
   }
   printf("\n\t  AliZDCDigitizer ->  beam type %s  - beam energy = %f GeV\n", fBeamType.Data(), fBeamEnergy);
   if(fSpectators2Track) printf("\n\t  AliZDCDigitizer ->  spectator signal added at digit level\n\n");
@@ -213,11 +213,8 @@ Bool_t AliZDCDigitizer::Init()
 void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 {
   // Execute digitization
-
   // ------------------------------------------------------------
   // !!! 2nd ZDC set added
-  // *** 1st 3 arrays are digits from REAL (simulated) hits
-  // *** last 2 are copied from simulated digits
   // --- pm[0][...] = light in ZN side C  [C, Q1, Q2, Q3, Q4]
   // --- pm[1][...] = light in ZP side C [C, Q1, Q2, Q3, Q4]
   // --- pm[2][...] = light in ZEM [x, 1, 2, x, x]
@@ -225,11 +222,12 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
   // --- pm[4][...] = light in ZP side A [C, Q1, Q2, Q3, Q4] ->NEW!
   // ------------------------------------------------------------
   Float_t pm[5][5];
-  for(Int_t iSector1=0; iSector1<5; iSector1++)
+  for(Int_t iSector1=0; iSector1<5; iSector1++){
     for(Int_t iSector2=0; iSector2<5; iSector2++){
-      pm[iSector1][iSector2] = 0;
+      pm[iSector1][iSector2] = 0.;
     }
-
+  }
+  
   // ------------------------------------------------------------
   // ### Out of time ADC added (22 channels)
   // --- same codification as for signal PTMs (see above)
@@ -283,6 +281,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 	  fIsSignalInADCGate = kFALSE;
 	  // Vedi quaderno per spiegazione approx. usata nel calcolo della fraz. di segnale perso
 	  fFracLostSignal = (sdigit.GetTrackTime()-30)*(sdigit.GetTrackTime()-30)/280.;
+	  printf("     ******** ZDC ADC signal NOT in ADC gate -> lost signal fraction %f! \n\n",fFracLostSignal);
 	}
       }
 
@@ -295,11 +294,9 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 
       pm[(sdigit.GetSector(0))-1][sdigit.GetSector(1)] += sdigit.GetLightPM();
       //Ch. debug
-      /*printf("\t Detector %d, Tower %d -> pm[%d][%d] = %.0f \n",
+      /*printf("\t det %d PM %d -> pm[%d][%d] = %.0f \n",
       	  sdigit.GetSector(0), sdigit.GetSector(1),sdigit.GetSector(0)-1,
-      	  sdigit.GetSector(1), pm[sdigit.GetSector(0)-1][sdigit.GetSector(1)]);
-      */
-
+      	  sdigit.GetSector(1), pm[sdigit.GetSector(0)-1][sdigit.GetSector(1)]);*/
     }
 
     loader->UnloadSDigits();
@@ -320,8 +317,8 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 	  AliGenEventHeader *currHeader = dynamic_cast <AliGenEventHeader *> (listOfHeaders->At(iH));
 	  if (currHeader && currHeader->InheritsFrom(AliGenHijingEventHeader::Class())) {
 	    hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (currHeader);
-                isCocktail =  kTRUE;
-	        break;
+            isCocktail =  kTRUE;
+	    break;
 	  }
 	}
       }
@@ -330,7 +327,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
       }
     }
     if(!hijingHeader){
-        printf(" No HIJING header found in list of headers from generator\n");
+      printf(" No HIJING header found in list of headers from generator\n");
     }
 
     if(hijingHeader && (!hijingHeader->GetSpectatorsInTheStack()) && !isCocktail){
@@ -369,7 +366,6 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
     }
   }
 
-
   // get the output run loader and loader
   AliRunLoader* runLoader =
     AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
@@ -398,14 +394,13 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
         if((sector[0]==3) && ((sector[1]<1) || (sector[1]>2))) continue;
         for(Int_t res=0; res<2; res++){
            digi[res] = Phe2ADCch(sector[0], sector[1], pm[sector[0]-1][sector[1]], res)
-	            + Pedestal(sector[0], sector[1], res);
+	            + Pedestal(sector[0], sector[1], res); 
       	}
 	new(pdigit) AliZDCDigit(sector, digi);
         treeD->Fill();
 
 	//Ch. debug
-	//printf("\t DIGIT added -> det %d quad %d - digi[0,1] = [%d, %d]\n",
-	  //   sector[0], sector[1], digi[0], digi[1]); // Chiara debugging!
+	//printf("\t AliZDCDigitizer::Digitize() -> DIGIT added: det %d quad %d - phe %f digit[%d, %d]\n", 	sector[0], sector[1],pm[sector[0]-1][sector[1]], digi[0], digi[1]); // Chiara debugging!
 
     }
   } // Loop over detector
@@ -903,9 +898,10 @@ Int_t AliZDCDigitizer::Phe2ADCch(Int_t Det, Int_t Quad, Float_t Light,
   // Evaluation of the ADC channel corresponding to the light yield Light
   Int_t vADCch = (Int_t) (Light * fPMGain[Det-1][Quad] * fADCRes[Res]);
   // Ch. debug
-  //printf("\t Phe2ADCch -> det %d quad %d - PMGain[%d][%d] %1.0f phe %1.2f  ADC %d\n",
-  //	Det,Quad,Det-1,Quad,fPMGain[Det-1][Quad],Light,vADCch);
-
+  /*if(Res==0){
+    printf(" AliZDCDigitizer::Phe2ADCch: det %d quad %d phe %f ADCres %f ADC %f %d\n", Det, Quad, Light, fADCRes[Res], Light * fPMGain[Det-1][Quad] * fADCRes[Res], vADCch);
+  }*/
+  
   return vADCch;
 }
 
@@ -932,9 +928,9 @@ Int_t AliZDCDigitizer::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
       Float_t pedWidth = fPedData->GetMeanPedWidth(index);
       pedValue = gRandom->Gaus(meanPed,pedWidth);
       //
-      /*printf("\t  AliZDCDigitizer::Pedestal -> det %d quad %d res %d - Ped[%d] = %d\n",
-    	Det, Quad, Res, index,(Int_t) pedValue); // Chiara debugging!
-      */
+      //if(Res==0) printf("\t  AliZDCDigitizer::Pedestal: det %d PM %d  OCDB(%f, %f)-> Ped[%d] = %d\n",
+    	//Det, Quad, meanPed, pedWidth, index,(Int_t) pedValue); // Chiara debugging!
+      
     }
     else{
       printf("  AliZDCDigitizer::Pedestal -> No valid pedestal calibration object loaded!\n\n");
