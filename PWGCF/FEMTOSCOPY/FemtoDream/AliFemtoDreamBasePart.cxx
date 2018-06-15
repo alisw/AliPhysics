@@ -41,6 +41,36 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart()
 AliFemtoDreamBasePart::~AliFemtoDreamBasePart() {
 }
 
+AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(const AliFemtoDreamBasePart &obj){
+  if(this == &obj){
+    return *this;
+  }
+  fIsReset=obj.fIsReset;
+  fGTI=0;
+  fTrackBufferSize=obj.fTrackBufferSize;
+  fP=obj.fP;
+  fMCPt=obj.fMCPt;
+  fP_TPC=obj.fP_TPC;
+  fEta=obj.fEta;
+  fTheta=obj.fTheta;
+  fMCTheta=obj.fMCTheta;
+  fPhi=obj.fPhi;
+  fPhiAtRadius=obj.fPhiAtRadius;
+  fMCPhi=obj.fMCPhi;
+  fIDTracks=obj.fIDTracks;
+  fCharge=obj.fCharge;
+  fCPA=obj.fCPA;
+  fOrigin=obj.fOrigin;
+  fPDGCode=obj.fPDGCode;
+  fMCPDGCode=obj.fMCPDGCode;
+  fPDGMotherWeak=obj.fPDGMotherWeak;
+  fMotherID=obj.fMotherID;
+  fEvtNumber=obj.fEvtNumber;
+  fIsMC=obj.fIsMC;
+  fUse=obj.fUse;
+  fIsSet=obj.fIsSet;
+  return (*this);
+}
 
 void AliFemtoDreamBasePart::SetMCParticle(
     AliAODMCParticle *mcPart,AliMCEvent *evt)

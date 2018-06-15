@@ -16,12 +16,12 @@ ClassImp(AliFemtoDreamEvent)
 AliFemtoDreamEvent::AliFemtoDreamEvent()
 :fUtils(new AliAnalysisUtils())
 ,fEvtCuts(new AliEventCuts())
-,fEvtCutList()
+,fEvtCutList(nullptr)
 ,fxVtx(0)
 ,fyVtx(0)
 ,fzVtx(0)
-,fzVtxSPD(0)
 ,fzVtxTracks(0)
+,fzVtxSPD(0)
 ,fSPDMult(0)
 ,fNSPDCluster(0)
 ,fRefMult08(0)
@@ -43,11 +43,12 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(
     bool mvPileUp,bool EvtCutQA, UInt_t trigger)
 :fUtils(new AliAnalysisUtils())
 ,fEvtCuts(new AliEventCuts())
+,fEvtCutList(nullptr)
 ,fxVtx(0)
 ,fyVtx(0)
 ,fzVtx(0)
-,fzVtxSPD(0)
 ,fzVtxTracks(0)
+,fzVtxSPD(0)
 ,fSPDMult(0)
 ,fNSPDCluster(0)
 ,fRefMult08(0)
@@ -89,12 +90,6 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(
 }
 
 AliFemtoDreamEvent::~AliFemtoDreamEvent() {
-  if (fEvtCutList) {
-    delete fEvtCutList;
-  }
-  if (fEvtCutList) {
-    delete fEvtCutList;
-  }
   if (fEvtCuts) {
     delete fEvtCuts;
   }
@@ -102,6 +97,33 @@ AliFemtoDreamEvent::~AliFemtoDreamEvent() {
 //    delete fUtils;
 //  }
 }
+
+AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(const AliFemtoDreamEvent &obj){
+  if(this == &obj){
+    return *this;
+  }
+  fEvtCutList=obj.fEvtCutList;
+  fxVtx=obj.fxVtx;
+  fyVtx=obj.fyVtx;
+  fzVtx=obj.fzVtx;
+  fzVtxTracks=obj.fzVtxTracks;
+  fzVtxSPD=obj.fzVtxSPD;
+  fSPDMult=obj.fSPDMult;
+  fNSPDCluster=obj.fNSPDCluster;
+  fRefMult08=obj.fRefMult08;
+  fV0AMult=obj.fV0AMult;
+  fV0CMult=obj.fV0CMult;
+  fV0MCentrality=obj.fV0MCentrality;
+  fnContrib=obj.fnContrib;
+  fPassAliEvtSelection=obj.fPassAliEvtSelection;
+  fisPileUp=obj.fisPileUp;
+  fHasVertex=obj.fHasVertex;
+  fHasMagField=obj.fHasMagField;
+  fisSelected=obj.fisSelected;
+  fEstimator=obj.fEstimator;
+  return (*this);
+}
+
 
 void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   AliAODVertex *vtx=evt->GetPrimaryVertex();
@@ -136,7 +158,6 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fV0AMult=vZERO->GetMTotV0A();
   this->fV0CMult=vZERO->GetMTotV0C();
   this->fRefMult08=header->GetRefMultiplicityComb08();
-  float lPercentile = 300;
   AliMultSelection *MultSelection = 0x0;
   MultSelection = (AliMultSelection * ) evt->FindListObject("MultSelection");
   if( !MultSelection) {
@@ -155,7 +176,6 @@ void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
   const AliESDVertex* vtxTrk = evt->GetPrimaryVertexTracks();
   fzVtxTracks=vtxTrk->GetZ();
   AliESDVZERO *vZERO=evt->GetVZEROData();
-  AliESDHeader *header=dynamic_cast<AliESDHeader*>(evt->GetHeader());
   if (!vtx) {
     this->fHasVertex=false;
   } else {
@@ -193,7 +213,6 @@ void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
           evt,AliESDtrackCuts::kTrackletsITSTPC,0.8,0);
   this->fV0AMult=vZERO->GetMTotV0A();
   this->fV0CMult=vZERO->GetMTotV0C();
-  float lPercentile = 300;
   AliMultSelection *MultSelection = 0x0;
   MultSelection = (AliMultSelection * ) evt->FindListObject("MultSelection");
   if( !MultSelection) {

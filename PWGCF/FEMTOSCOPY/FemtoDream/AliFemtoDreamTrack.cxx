@@ -51,11 +51,10 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
 ,fESDnClusterTPC(0)
 ,fESDTrack(0)
 ,fESDTPCOnlyTrack(0)
+,fESDTrackCuts(AliESDtrackCuts::GetStandardTPCOnlyTrackCuts())
 ,fAODTrack(0)
 ,fAODGlobalTrack(0)
 {
-  //These track cuts are used to mirror the behaviour of filterbit 128
-  fESDTrackCuts=AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
   for (int i=0;i<5;++i) {
     fnSigmaTPC[i]=0;
     fnSigmaTOF[i]=0;
@@ -149,10 +148,9 @@ void AliFemtoDreamTrack::SetESDTrackingInformation() {
   Double_t rDCA[3] = { 0. }; // position at DCA
   Float_t  dDCA[2] = {0.};    // DCA to the vertex d and z
   Float_t  cDCA[3] = {0.};    // covariance of impact parameters
-  Int_t    tofLabel[3] = {0};
   // Loop over the ESD trcks and pick out the tracks passing TPC only cuts
   const AliESDVertex *vtxSPD = fESDTrack->GetESDEvent()->GetPrimaryVertexSPD();
-  const AliESDVertex *vtx = fESDTrack->GetESDEvent()->GetPrimaryVertex();
+//  const AliESDVertex *vtx = fESDTrack->GetESDEvent()->GetPrimaryVertex();
 
   if (fESDTPCOnlyTrack->Pt() > 0) {
     AliExternalTrackParam exParam;
@@ -195,8 +193,6 @@ void AliFemtoDreamTrack::SetESDTrackingInformation() {
 
   this->fdcaXY=dDCA[0];
   this->fdcaZ=dDCA[1];
-
-
   fESDnClusterITS=fESDTrack->GetITSclusters(0);
   if (fESDnClusterITS!=0) {
     fChi2ITS = fESDTrack->GetITSchi2()/Float_t(fESDnClusterITS);

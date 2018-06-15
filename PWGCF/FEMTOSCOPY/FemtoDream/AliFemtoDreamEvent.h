@@ -25,6 +25,7 @@ class AliFemtoDreamEvent {
   };
   AliFemtoDreamEvent();
   AliFemtoDreamEvent(bool mvPileUp,bool EvtCutQA, UInt_t trigger);
+  AliFemtoDreamEvent &operator=(const AliFemtoDreamEvent &obj);
   virtual ~AliFemtoDreamEvent();
   void SetEvent(AliAODEvent *evt);
   void SetEvent(AliESDEvent *evt);
@@ -67,6 +68,7 @@ class AliFemtoDreamEvent {
   int GetMultiplicity();
   TString ClassName() {return "AliFemtoDreamEvent";};
  private:
+  AliFemtoDreamEvent(const AliFemtoDreamEvent&);
   int CalculateITSMultiplicity(AliAODEvent *evt);
   AliAnalysisUtils *fUtils;   //!
   AliEventCuts *fEvtCuts;     //!

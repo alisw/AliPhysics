@@ -464,7 +464,7 @@ void AliFemtoDreamCorrHists::FillSameEventkTCentDist(
     int i,float kT,float RelK,float cent) {
   int centBin=-1;
   if (0 < cent) {
-    for (int iCent=0; iCent<fCentBins.size(); ++iCent) {
+    for (unsigned int iCent=0; iCent<fCentBins.size(); ++iCent) {
       if (cent < fCentBins[iCent]) {
         centBin=iCent;
         break;
@@ -480,7 +480,7 @@ void AliFemtoDreamCorrHists::FillMixedEventkTCentDist(
     int i,float kT,float RelK,float cent) {
   int centBin=-1;
   if (0 < cent) {
-    for (int iCent=0; iCent<fCentBins.size(); ++iCent) {
+    for (unsigned int iCent=0; iCent<fCentBins.size(); ++iCent) {
       if (cent < fCentBins[iCent]) {
         centBin=iCent;
         break;

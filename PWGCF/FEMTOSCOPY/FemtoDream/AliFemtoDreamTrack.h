@@ -50,6 +50,8 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   float GetnSigmaTOF(Int_t i) const {return fnSigmaTOF[i];};
   TString ClassName(){return "TrackCuts";};
  private:
+  AliFemtoDreamTrack &operator=(const AliFemtoDreamTrack &obj);
+  AliFemtoDreamTrack(const AliFemtoDreamTrack&);
   void Reset();
   float GetBeta(AliAODTrack *track);
   float GetBeta(AliESDtrack *track);

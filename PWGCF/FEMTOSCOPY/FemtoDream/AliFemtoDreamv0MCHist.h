@@ -56,8 +56,7 @@ class AliFemtoDreamv0MCHist {
   void FillMCBachDCAToPV(int i, float pT, float val){fMCBachDCAToPV[i]->Fill(pT,val);};
   void FillMCv0DecayLength(int i, float pT, float val){fMCv0DecayLength[i]->Fill(pT,val);};
   void FillMCv0CPA(int i, float pT, float val){fMCv0CPA[i]->Fill(pT,val);};
-  void FillMCXiDecayLength(int i, float pT, float val){fMCXiDecayLength[i]->Fill(pT,val);};
-  void FillMCOmegaDecayLength(int i, float pT, float val){fMCOmegaDecayLength[i]->Fill(pT,val);};
+  void FillMCDecayLength(int i, float pT, float val){fMCDecayLength[i]->Fill(pT,val);};
   void FillMCXiRapidity(int i, float p, float val){fMCXiRapidity[i]->Fill(val,p);};
   void FillMCOmegaRapidity(int i, float p, float val){fMCOmegaRapidity[i]->Fill(val,p);};
   void FillMCPodolanski(int i, float pT, float alpha){fMCPodolanski[i]->Fill(alpha,pT);};
@@ -66,6 +65,8 @@ class AliFemtoDreamv0MCHist {
   TList *GetHistList(){return fMCList;};
   TString ClassName() {return "AliFemtoDreamv0MCHist";};
  private:
+  AliFemtoDreamv0MCHist &operator=(const AliFemtoDreamv0MCHist &obj);
+  AliFemtoDreamv0MCHist(const AliFemtoDreamv0MCHist&);
   TList *fMCList;
   TList *fCPAPlots;
   TList *fMCQAPlots[5];
@@ -91,8 +92,7 @@ class AliFemtoDreamv0MCHist {
   TH2F *fMCBachDCAToPV[5];
   TH2F *fMCv0DecayLength[5];
   TH2F *fMCv0CPA[5];
-  TH2F *fMCXiDecayLength[5];
-  TH2F *fMCOmegaDecayLength[5];
+  TH2F *fMCDecayLength[5];
   TH2F *fMCXiRapidity[5];
   TH2F *fMCOmegaRapidity[5];
   TH2F *fMCPodolanski[5];
