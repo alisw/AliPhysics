@@ -251,7 +251,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
     }
   }
   if (pass) {
-    fHist->FillInvMassPtXi(casc->GetPt(),casc->GetXiMass());
+    fHist->FillInvMassPt(casc->GetPt(),casc->GetMass());
     if (fRunNumberQA) {
       fHist->FillInvMassPerRunNumber(casc->GetEvtNumber(),casc->GetXiMass());
     }
@@ -335,16 +335,21 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
   if (!fMinimalBooking) {
     for (int i=0;i<2;++i) {
       if (i==0||(i==1&&casc->UseParticle())) {
-        fHist->FillInvMassXi(i,casc->GetXiMass());
+        fHist->FillInvMass(i,casc->GetMass());
         fHist->FillInvMassLambda(i,casc->Getv0Mass());
         fHist->FillXiPt(i,casc->GetMomentum().Pt());
         fHist->FillMomRapXi(i,casc->GetXiRapidity(),casc->GetMomentum().Mag());
+        fHist->FillMomRapOmega(i,casc->GetOmegaRapidity(),casc->GetMomentum().Mag());
+        fHist->FillDCAXiPrimVtx(i,casc->GetDCAXiPrimVtx());
         fHist->FillDCAXiDaug(i,casc->GetXiDCADaug());
         fHist->FillMinDistPrimVtxBach(i,casc->BachDCAPrimVtx());
         fHist->FillCPAXi(i,casc->GetCPA());
+        fHist->FillDecayLength(i,casc->GetDecayLength());
+        fHist->Fillv0DecayLength(i,casc->Getv0DecayLength());
         fHist->FillTransverseRadiusXi(i,casc->GetXiTransverseRadius());
         fHist->FillMaxDCAv0Daug(i,casc->Getv0DCADaug());
         fHist->FillCPAv0(i,casc->Getv0CPA());
+        fHist->FillCPAv0Xi(i,casc->Getv0XiPointingAngle());
         fHist->Fillv0Pt(i,casc->Getv0Pt());
         fHist->FillTransverseRadiusv0(i,casc->Getv0TransverseRadius());
         fHist->FillMinDistPrimVtxv0(i,casc->Getv0DCAPrimVtx());
@@ -354,9 +359,9 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
       }
     }
   }
-  fNegCuts->BookQA(casc->GetNegDaug());
-  fPosCuts->BookQA(casc->GetPosDaug());
-  fBachCuts->BookQA(casc->GetBach());
+  if (casc->GetNegDaug()->IsSet()) fNegCuts->BookQA(casc->GetNegDaug());
+  if (casc->GetPosDaug()->IsSet()) fPosCuts->BookQA(casc->GetPosDaug());
+  if (casc->GetBach()->IsSet()) fBachCuts->BookQA(casc->GetBach());
   return;
 }
 
@@ -439,8 +444,7 @@ void AliFemtoDreamCascadeCuts::FillMCContributions(AliFemtoDreamCascade *casc) {
       fMCHist->FillMCBachDCAToPV(iFill,pT,casc->BachDCAPrimVtx());
       fMCHist->FillMCv0DecayLength(iFill,pT,casc->Getv0DecayLength());
       fMCHist->FillMCv0CPA(iFill,pT,casc->Getv0CPA());
-      fMCHist->FillMCXiDecayLength(iFill,pT,casc->GetXiDecayLength());
-      fMCHist->FillMCOmegaDecayLength(iFill,pT,casc->GetOmegaDecayLength());
+      fMCHist->FillMCDecayLength(iFill,pT,casc->GetDecayLength());
       fMCHist->FillMCXiRapidity(iFill,casc->GetMomentum().Mag(),casc->GetXiRapidity());
       fMCHist->FillMCOmegaRapidity(iFill,casc->GetMomentum().Mag(),casc->GetOmegaRapidity());
       fMCHist->FillMCTransverseRadius(iFill,pT,casc->GetXiTransverseRadius());
