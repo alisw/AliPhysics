@@ -112,114 +112,98 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
     m2_pt_neg_cut_A(0),            // 12
     m2_pt_pos_cut_B(0),            // 13
     m2_pt_neg_cut_B(0),            // 14
-
-    m2_pt_pos_cut_T_prot(0),       //  7a
-    m2_pt_neg_cut_T_prot(0),       //  8a
+    m2_pt_pos_cut_C(0),            // 15
+    m2_pt_neg_cut_C(0),            // 16
+    m2_pt_pos_cut_D(0),            // 17
+    m2_pt_neg_cut_D(0),            // 18
+    m2_pt_pos_cut_T_prot(0),       // 19
+    m2_pt_neg_cut_T_prot(0),       // 20
 	
-//  m2_pt_pos_cut_with_trig_04(0), // 15
-//  m2_pt_neg_cut_with_trig_04(0), // 16
-    m2_pt_pos_cut_with_trig_05(0), // 17
-    m2_pt_neg_cut_with_trig_05(0), // 18
-//  m2_pt_pos_cut_with_trig_06(0), // 19
-//  m2_pt_neg_cut_with_trig_06(0), // 20
+    m2_pt_pos_cut_with_trig_05(0), // 21
+    m2_pt_neg_cut_with_trig_05(0), // 22
 
-    deut_phi_pt_pos_T(0),          // 21
-    deut_phi_pt_neg_T(0),          // 22
+    deut_phi_pt_pos_T(0),          // 23
+    deut_phi_pt_neg_T(0),          // 24
 
-    prot_phi_pt_pos_T(0),          // 21a
-    prot_phi_pt_neg_T(0),          // 22a
+    prot_phi_pt_pos_T(0),          // 25
+    prot_phi_pt_neg_T(0),          // 26
     
-    deut_phi_pt_pos_A(0),          // 23
-    deut_phi_pt_neg_A(0),          // 24
-    deut_phi_pt_pos_B(0),          // 25
-    deut_phi_pt_neg_B(0),          // 26
+    deut_phi_pt_pos_A(0),          // 27
+    deut_phi_pt_neg_A(0),          // 28
+    deut_phi_pt_pos_B(0),          // 29
+    deut_phi_pt_neg_B(0),          // 30
+    deut_phi_pt_pos_C(0),          // 31
+    deut_phi_pt_neg_C(0),          // 32
+    deut_phi_pt_pos_D(0),          // 33
+    deut_phi_pt_neg_D(0),          // 34
+    deut_per_event(0),             // 35
+    prot_per_event(0),             // 36
 
-    deut_per_event(0),             // 27
-    prot_per_event(0),             // 27a
-//  trig_04_per_event(0),          // 28
-    trig_05_per_event(0),          // 29
-//  trig_06_per_event(0),          // 30
+    trig_05_per_event(0),          // 37
     
-//  trig_04_phi_pt_pos(0),         // 31
-//  trig_04_phi_pt_neg(0),         // 32    
-    trig_05_phi_pt_pos(0),         // 33
-    trig_05_phi_pt_neg(0),         // 34
-//  trig_06_phi_pt_pos(0),         // 35
-//  trig_06_phi_pt_neg(0),         // 36
+    trig_05_phi_pt_pos(0),         // 38
+    trig_05_phi_pt_neg(0),         // 39
     
-    tof_phi_eta_pos(0),            // 37
-    tof_phi_eta_neg(0),            // 38
-    tof_phi_eta_pos_deut(0),       // 39
-    tof_phi_eta_neg_deut(0),       // 40
+    tof_phi_eta_pos(0),            // 40
+    tof_phi_eta_neg(0),            // 41
+    tof_phi_eta_pos_deut(0),       // 42
+    tof_phi_eta_neg_deut(0),       // 43
 
-    deut_pt_compare_pos(0),        // 41
-    deut_pt_compare_neg(0),        // 42
-    tpc_sector_fraction(0),        // 43
-    primary_vertex_z(0),           // 44
-    primary_vertex_z_cut1(0),      // 45
-    primary_vertex_z_cut2(0),      // 46
+    deut_pt_compare_pos(0),        // 44
+    deut_pt_compare_neg(0),        // 45
+    tpc_sector_fraction(0),        // 46
+    primary_vertex_z(0),           // 47
+    primary_vertex_z_cut1(0),      // 48
+    primary_vertex_z_cut2(0),      // 49
 	
-//  deut_dphi_pt_pos_pos_04_T(0),  // 47
-//  deut_dphi_pt_pos_neg_04_T(0),  // 48
-//  deut_dphi_pt_neg_neg_04_T(0),  // 49
     deut_dphi_pt_pos_pos_05_T(0),  // 50
     deut_dphi_pt_pos_neg_05_T(0),  // 51
     deut_dphi_pt_neg_neg_05_T(0),  // 52
-
-//  deut_dphi_pt_pos_pos_06_T(0),  // 53
-//  deut_dphi_pt_pos_neg_06_T(0),  // 54
-//  deut_dphi_pt_neg_neg_06_T(0),  // 55
     
-    prot_dphi_pt_pos_pos_05_T(0),  // 50a
-    prot_dphi_pt_pos_neg_05_T(0),  // 51a
-    prot_dphi_pt_neg_neg_05_T(0),  // 52a
-    
-//  deut_dphi_pt_pos_pos_04_A(0),  // 56
-//  deut_dphi_pt_pos_neg_04_A(0),  // 57
-//  deut_dphi_pt_neg_neg_04_A(0),  // 58
-    deut_dphi_pt_pos_pos_05_A(0),  // 59
-    deut_dphi_pt_pos_neg_05_A(0),  // 60
-    deut_dphi_pt_neg_neg_05_A(0),  // 61
-//  deut_dphi_pt_pos_pos_06_A(0),  // 62
-//  deut_dphi_pt_pos_neg_06_A(0),  // 63
-//  deut_dphi_pt_neg_neg_06_A(0),  // 64
- 
-//  deut_dphi_pt_pos_pos_04_B(0),  // 65
-//  deut_dphi_pt_pos_neg_04_B(0),  // 66
-//  deut_dphi_pt_neg_neg_04_B(0),  // 67
-    deut_dphi_pt_pos_pos_05_B(0),  // 68
-    deut_dphi_pt_pos_neg_05_B(0),  // 69
-    deut_dphi_pt_neg_neg_05_B(0),  // 70
-//  deut_dphi_pt_pos_pos_06_B(0),  // 71
-//  deut_dphi_pt_pos_neg_06_B(0),  // 72
-//  deut_dphi_pt_neg_neg_06_B(0),  // 73
+    prot_dphi_pt_pos_pos_05_T(0),  // 53
+    prot_dphi_pt_pos_neg_05_T(0),  // 54
+    prot_dphi_pt_neg_neg_05_T(0),  // 55
 
-    DCAxy_pos(0),                  // 74
-    DCAxy_neg(0),                  // 75
-    DCAz_pos(0),                   // 76
-    DCAz_neg(0),                   // 77
+    deut_dphi_pt_pos_pos_05_A(0),  // 56
+    deut_dphi_pt_pos_neg_05_A(0),  // 57
+    deut_dphi_pt_neg_neg_05_A(0),  // 58
     
-    m2_pt_pos_fine(0),             // 78
-    m2_pt_neg_fine(0),             // 79
-    m2_pt_pos_TPC_fine(0),         // 80
-    m2_pt_neg_TPC_fine(0),         // 81 
-    m2_pt_pos_cut_T_fine(0),       // 82
-    m2_pt_neg_cut_T_fine(0),       // 83
-    m2_pt_pos_cut_A_fine(0),       // 84
-    m2_pt_neg_cut_A_fine(0),       // 85
-    m2_pt_pos_cut_B_fine(0),       // 86
-    m2_pt_neg_cut_B_fine(0),       // 87
+    deut_dphi_pt_pos_pos_05_B(0),  // 59
+    deut_dphi_pt_pos_neg_05_B(0),  // 60
+    deut_dphi_pt_neg_neg_05_B(0),  // 61
 
-    deut_m2_dphi_04_pt1(0),        // 88
-    deut_m2_dphi_04_pt2(0),        // 89
-    deut_m2_dphi_04_pt3(0),        // 90
-    deut_m2_dphi_04_pt4(0),        // 91
+    deut_dphi_pt_pos_pos_05_C(0),  // 62
+    deut_dphi_pt_pos_neg_05_C(0),  // 63
+    deut_dphi_pt_neg_neg_05_C(0),  // 64
+    deut_dphi_pt_pos_pos_05_D(0),  // 65
+    deut_dphi_pt_pos_neg_05_D(0),  // 66
+    deut_dphi_pt_neg_neg_05_D(0),  // 67
     
-    m2_pt_pos_TPC_prot_fine(0),    // 92
-    m2_pt_neg_TPC_prot_fine(0),    // 93
+    DCAxy_pos(0),                  // 68
+    DCAxy_neg(0),                  // 69
+    DCAz_pos(0),                   // 70
+    DCAz_neg(0),                   // 71
+    
+    m2_pt_pos_fine(0),             // 72
+    m2_pt_neg_fine(0),             // 73
+    m2_pt_pos_TPC_fine(0),         // 74
+    m2_pt_neg_TPC_fine(0),         // 75 
+    m2_pt_pos_cut_T_fine(0),       // 76
+    m2_pt_neg_cut_T_fine(0),       // 77
+    m2_pt_pos_cut_A_fine(0),       // 78
+    m2_pt_neg_cut_A_fine(0),       // 79
+    m2_pt_pos_cut_B_fine(0),       // 80
+    m2_pt_neg_cut_B_fine(0),       // 81
+    m2_pt_pos_cut_C_fine(0),       // 82
+    m2_pt_neg_cut_C_fine(0),       // 83
+    m2_pt_pos_cut_D_fine(0),       // 84
+    m2_pt_neg_cut_D_fine(0),       // 85
+    
+    m2_pt_pos_TPC_prot_fine(0),    // 86
+    m2_pt_neg_TPC_prot_fine(0),    // 87
 
-    m2_pt_pos_cut_T_prot_fine(0),  // 94
-    m2_pt_neg_cut_T_prot_fine(0)   // 95
+    m2_pt_pos_cut_T_prot_fine(0),  // 88
+    m2_pt_neg_cut_T_prot_fine(0)   // 89
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
@@ -243,114 +227,97 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
     m2_pt_neg_cut_A(0),            // 12
     m2_pt_pos_cut_B(0),            // 13
     m2_pt_neg_cut_B(0),            // 14
-
-    m2_pt_pos_cut_T_prot(0),       //  7a
-    m2_pt_neg_cut_T_prot(0),       //  8a
+    m2_pt_pos_cut_C(0),            // 15
+    m2_pt_neg_cut_C(0),            // 16
+    m2_pt_pos_cut_D(0),            // 17
+    m2_pt_neg_cut_D(0),            // 18
+    m2_pt_pos_cut_T_prot(0),       // 19
+    m2_pt_neg_cut_T_prot(0),       // 20
 	
-//  m2_pt_pos_cut_with_trig_04(0), // 15
-//  m2_pt_neg_cut_with_trig_04(0), // 16
-    m2_pt_pos_cut_with_trig_05(0), // 17
-    m2_pt_neg_cut_with_trig_05(0), // 18
-//  m2_pt_pos_cut_with_trig_06(0), // 19
-//  m2_pt_neg_cut_with_trig_06(0), // 20
+    m2_pt_pos_cut_with_trig_05(0), // 21
+    m2_pt_neg_cut_with_trig_05(0), // 22
 
-    deut_phi_pt_pos_T(0),          // 21
-    deut_phi_pt_neg_T(0),          // 22
+    deut_phi_pt_pos_T(0),          // 23
+    deut_phi_pt_neg_T(0),          // 24
 
-    prot_phi_pt_pos_T(0),          // 21a
-    prot_phi_pt_neg_T(0),          // 22a
+    prot_phi_pt_pos_T(0),          // 25
+    prot_phi_pt_neg_T(0),          // 26
     
-    deut_phi_pt_pos_A(0),          // 23
-    deut_phi_pt_neg_A(0),          // 24
-    deut_phi_pt_pos_B(0),          // 25
-    deut_phi_pt_neg_B(0),          // 26
+    deut_phi_pt_pos_A(0),          // 27
+    deut_phi_pt_neg_A(0),          // 28
+    deut_phi_pt_pos_B(0),          // 29
+    deut_phi_pt_neg_B(0),          // 30
+    deut_phi_pt_pos_C(0),          // 31
+    deut_phi_pt_neg_C(0),          // 32
+    deut_phi_pt_pos_D(0),          // 33
+    deut_phi_pt_neg_D(0),          // 34
+    deut_per_event(0),             // 35
+    prot_per_event(0),             // 36
 
-    deut_per_event(0),             // 27
-    prot_per_event(0),             // 27a
-//  trig_04_per_event(0),          // 28
-    trig_05_per_event(0),          // 29
-//  trig_06_per_event(0),          // 30
+    trig_05_per_event(0),          // 37
     
-//  trig_04_phi_pt_pos(0),         // 31
-//  trig_04_phi_pt_neg(0),         // 32    
-    trig_05_phi_pt_pos(0),         // 33
-    trig_05_phi_pt_neg(0),         // 34
-//  trig_06_phi_pt_pos(0),         // 35
-//  trig_06_phi_pt_neg(0),         // 36
+    trig_05_phi_pt_pos(0),         // 38
+    trig_05_phi_pt_neg(0),         // 39
     
-    tof_phi_eta_pos(0),            // 37
-    tof_phi_eta_neg(0),            // 38
-    tof_phi_eta_pos_deut(0),       // 39
-    tof_phi_eta_neg_deut(0),       // 40
+    tof_phi_eta_pos(0),            // 40
+    tof_phi_eta_neg(0),            // 41
+    tof_phi_eta_pos_deut(0),       // 42
+    tof_phi_eta_neg_deut(0),       // 43
 
-    deut_pt_compare_pos(0),        // 41
-    deut_pt_compare_neg(0),        // 42
-    tpc_sector_fraction(0),        // 43
-    primary_vertex_z(0),           // 44
-    primary_vertex_z_cut1(0),      // 45
-    primary_vertex_z_cut2(0),      // 46
+    deut_pt_compare_pos(0),        // 44
+    deut_pt_compare_neg(0),        // 45
+    tpc_sector_fraction(0),        // 46
+    primary_vertex_z(0),           // 47
+    primary_vertex_z_cut1(0),      // 48
+    primary_vertex_z_cut2(0),      // 49
 	
-//  deut_dphi_pt_pos_pos_04_T(0),  // 47
-//  deut_dphi_pt_pos_neg_04_T(0),  // 48
-//  deut_dphi_pt_neg_neg_04_T(0),  // 49
     deut_dphi_pt_pos_pos_05_T(0),  // 50
     deut_dphi_pt_pos_neg_05_T(0),  // 51
     deut_dphi_pt_neg_neg_05_T(0),  // 52
-
-//  deut_dphi_pt_pos_pos_06_T(0),  // 53
-//  deut_dphi_pt_pos_neg_06_T(0),  // 54
-//  deut_dphi_pt_neg_neg_06_T(0),  // 55
     
-    prot_dphi_pt_pos_pos_05_T(0),  // 50a
-    prot_dphi_pt_pos_neg_05_T(0),  // 51a
-    prot_dphi_pt_neg_neg_05_T(0),  // 52a
-    
-//  deut_dphi_pt_pos_pos_04_A(0),  // 56
-//  deut_dphi_pt_pos_neg_04_A(0),  // 57
-//  deut_dphi_pt_neg_neg_04_A(0),  // 58
-    deut_dphi_pt_pos_pos_05_A(0),  // 59
-    deut_dphi_pt_pos_neg_05_A(0),  // 60
-    deut_dphi_pt_neg_neg_05_A(0),  // 61
-//  deut_dphi_pt_pos_pos_06_A(0),  // 62
-//  deut_dphi_pt_pos_neg_06_A(0),  // 63
-//  deut_dphi_pt_neg_neg_06_A(0),  // 64
- 
-//  deut_dphi_pt_pos_pos_04_B(0),  // 65
-//  deut_dphi_pt_pos_neg_04_B(0),  // 66
-//  deut_dphi_pt_neg_neg_04_B(0),  // 67
-    deut_dphi_pt_pos_pos_05_B(0),  // 68
-    deut_dphi_pt_pos_neg_05_B(0),  // 69
-    deut_dphi_pt_neg_neg_05_B(0),  // 70
-//  deut_dphi_pt_pos_pos_06_B(0),  // 71
-//  deut_dphi_pt_pos_neg_06_B(0),  // 72
-//  deut_dphi_pt_neg_neg_06_B(0),  // 73
+    prot_dphi_pt_pos_pos_05_T(0),  // 53
+    prot_dphi_pt_pos_neg_05_T(0),  // 54
+    prot_dphi_pt_neg_neg_05_T(0),  // 55
 
-    DCAxy_pos(0),                  // 74
-    DCAxy_neg(0),                  // 75
-    DCAz_pos(0),                   // 76
-    DCAz_neg(0),                   // 77
+    deut_dphi_pt_pos_pos_05_A(0),  // 56
+    deut_dphi_pt_pos_neg_05_A(0),  // 57
+    deut_dphi_pt_neg_neg_05_A(0),  // 58
     
-    m2_pt_pos_fine(0),             // 78
-    m2_pt_neg_fine(0),             // 79
-    m2_pt_pos_TPC_fine(0),         // 80
-    m2_pt_neg_TPC_fine(0),         // 81 
-    m2_pt_pos_cut_T_fine(0),       // 82
-    m2_pt_neg_cut_T_fine(0),       // 83
-    m2_pt_pos_cut_A_fine(0),       // 84
-    m2_pt_neg_cut_A_fine(0),       // 85
-    m2_pt_pos_cut_B_fine(0),       // 86
-    m2_pt_neg_cut_B_fine(0),       // 87
+    deut_dphi_pt_pos_pos_05_B(0),  // 59
+    deut_dphi_pt_pos_neg_05_B(0),  // 60
+    deut_dphi_pt_neg_neg_05_B(0),  // 61
 
-    deut_m2_dphi_04_pt1(0),        // 88
-    deut_m2_dphi_04_pt2(0),        // 89
-    deut_m2_dphi_04_pt3(0),        // 90
-    deut_m2_dphi_04_pt4(0),        // 91
+    deut_dphi_pt_pos_pos_05_C(0),  // 62
+    deut_dphi_pt_pos_neg_05_C(0),  // 63
+    deut_dphi_pt_neg_neg_05_C(0),  // 64
+    deut_dphi_pt_pos_pos_05_D(0),  // 65
+    deut_dphi_pt_pos_neg_05_D(0),  // 66
+    deut_dphi_pt_neg_neg_05_D(0),  // 67
     
-    m2_pt_pos_TPC_prot_fine(0),    // 92
-    m2_pt_neg_TPC_prot_fine(0),    // 93
+    DCAxy_pos(0),                  // 68
+    DCAxy_neg(0),                  // 69
+    DCAz_pos(0),                   // 70
+    DCAz_neg(0),                   // 71
+    
+    m2_pt_pos_fine(0),             // 72
+    m2_pt_neg_fine(0),             // 73
+    m2_pt_pos_TPC_fine(0),         // 74
+    m2_pt_neg_TPC_fine(0),         // 75 
+    m2_pt_pos_cut_T_fine(0),       // 76
+    m2_pt_neg_cut_T_fine(0),       // 77
+    m2_pt_pos_cut_A_fine(0),       // 78
+    m2_pt_neg_cut_A_fine(0),       // 79
+    m2_pt_pos_cut_B_fine(0),       // 80
+    m2_pt_neg_cut_B_fine(0),       // 81
+    m2_pt_pos_cut_C_fine(0),       // 82
+    m2_pt_neg_cut_C_fine(0),       // 83
+    m2_pt_pos_cut_D_fine(0),       // 84
+    m2_pt_neg_cut_D_fine(0),       // 85
+    m2_pt_pos_TPC_prot_fine(0),    // 86
+    m2_pt_neg_TPC_prot_fine(0),    // 87
 
-    m2_pt_pos_cut_T_prot_fine(0),  // 94
-    m2_pt_neg_cut_T_prot_fine(0)   // 95
+    m2_pt_pos_cut_T_prot_fine(0),  // 88
+    m2_pt_neg_cut_T_prot_fine(0)   // 89
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -377,12 +344,6 @@ AliAnalysisTaskCorPIDTOFQA::~AliAnalysisTaskCorPIDTOFQA()
 //_____________________________________________________________________________
 void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
 {
-    // 2.88465 0.0761582 0.709281 0.124386 0.017642 -0.0316078 2.65738 0.115151 0.918566 0.0986592 0.0187545 0.00346519    // pp 2016 untriggered
-
-    //3.38661   0.0499084  0.200357   0.00351171 -0.0019421  0.101265
-    //0.668755 -0.313122  -0.639249   0.0563519   0          0.359363
-    //3.45988   0.0545625  0.0827224 -0.0253765   0.00486567 0.15201
-    //0.636145 -0.288126  -0.632198   0.0523836   0          0.368737
 
     deut_curves[0][0][0] = 3.38661;     // pos deut mean curve
     deut_curves[0][0][1] = 0.0499084;
@@ -434,45 +395,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     prot_curves[1][1][3] = 0.000118412;
 
     
-    /*
-    deut_curves[0][0][0] = 2.88465;     // pos deut mean curve
-    deut_curves[0][0][1] = 0.0761582;
-    deut_curves[0][0][2] = 0.709281;
 
-    deut_curves[0][1][0] = 0.124386;    // pos deut sigma curve
-    deut_curves[0][1][1] = 0.017642;
-    deut_curves[0][1][2] = -0.0316078;
-
-    deut_curves[1][0][0] = 2.65738;     // neg deut mean curve
-    deut_curves[1][0][1] = 0.115151;
-    deut_curves[1][0][2] = 0.918566;
-
-    deut_curves[1][1][0] = 0.0986592;   // neg deut sigma curve
-    deut_curves[1][1][1] = 0.0187545;
-    deut_curves[1][1][2] = 0.00346519;
-    */
-
-    
-//2.6836 0.09 0.92872 -0.445429 0.121074 0.452984 2.69467 0.09 0.92872 -0.121833 0.06763 0.179748  // p+Pb 2013 untriggered
-
-/*
-    deut_curves[0][0][0] =  2.6836;     // pos deut mean curve
-    deut_curves[0][0][1] =  0.09;
-    deut_curves[0][0][2] =  0.92872;
-
-    deut_curves[0][1][0] = -0.445429;   // pos deut sigma curve
-    deut_curves[0][1][1] =  0.121074;
-    deut_curves[0][1][2] =  0.452984;
-
-    deut_curves[1][0][0] =  2.69467;    // neg deut mean curve
-    deut_curves[1][0][1] =  0.09;
-    deut_curves[1][0][2] =  0.92872;
-
-    deut_curves[1][1][0] = -0.121833;   // neg deut sigma curve
-    deut_curves[1][1][1] =  0.06763;
-    deut_curves[1][1][2] =  0.179748;
-*/  
-    
     fAnalysisUtils = new AliAnalysisUtils;
 
     fOutputList = new TList();          // this is a list which will contain all of your histograms
@@ -512,89 +435,75 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     m2_pt_neg_cut_A            = new TH2F("m2_pt_neg_cut_A",            "m2_pt_neg_cut_A",              18, coarse_binning,    2400,    -1.0,     7.0);   // 12
     m2_pt_pos_cut_B            = new TH2F("m2_pt_pos_cut_B",            "m2_pt_pos_cut_B",              18, coarse_binning,    2400,    -1.0,     7.0);   // 13
     m2_pt_neg_cut_B            = new TH2F("m2_pt_neg_cut_B",            "m2_pt_neg_cut_B",              18, coarse_binning,    2400,    -1.0,     7.0);   // 14
-
-    m2_pt_pos_cut_T_prot       = new TH2F("m2_pt_pos_cut_T_prot",       "m2_pt_pos_cut_T_prot",         18,coarse_binning2,    2400,    -1.0,     7.0);   //  7a
-    m2_pt_neg_cut_T_prot       = new TH2F("m2_pt_neg_cut_T_prot",       "m2_pt_neg_cut_T_prot",         18,coarse_binning2,    2400,    -1.0,     7.0);   //  8a
+    m2_pt_pos_cut_C            = new TH2F("m2_pt_pos_cut_C",            "m2_pt_pos_cut_C",              18, coarse_binning,    2400,    -1.0,     7.0);   // 15
+    m2_pt_neg_cut_C            = new TH2F("m2_pt_neg_cut_C",            "m2_pt_neg_cut_C",              18, coarse_binning,    2400,    -1.0,     7.0);   // 16
+    m2_pt_pos_cut_D            = new TH2F("m2_pt_pos_cut_D",            "m2_pt_pos_cut_D",              18, coarse_binning,    2400,    -1.0,     7.0);   // 17
+    m2_pt_neg_cut_D            = new TH2F("m2_pt_neg_cut_D",            "m2_pt_neg_cut_D",              18, coarse_binning,    2400,    -1.0,     7.0);   // 18
+    m2_pt_pos_cut_T_prot       = new TH2F("m2_pt_pos_cut_T_prot",       "m2_pt_pos_cut_T_prot",         18,coarse_binning2,    2400,    -1.0,     7.0);   // 19
+    m2_pt_neg_cut_T_prot       = new TH2F("m2_pt_neg_cut_T_prot",       "m2_pt_neg_cut_T_prot",         18,coarse_binning2,    2400,    -1.0,     7.0);   // 20
     
-//  m2_pt_pos_cut_with_trig_04 = new TH2F("m2_pt_pos_cut_with_trig_04", "m2_pt_pos_cut_with_trig_04",   18, coarse_binning,    2400,    -1.0,     7.0);   // 15
-//  m2_pt_neg_cut_with_trig_04 = new TH2F("m2_pt_neg_cut_with_trig_04", "m2_pt_neg_cut_with_trig_04",   18, coarse_binning,    2400,    -1.0,     7.0);   // 16
-    m2_pt_pos_cut_with_trig_05 = new TH2F("m2_pt_pos_cut_with_trig_05", "m2_pt_pos_cut_with_trig_05",   18, coarse_binning,    2400,    -1.0,     7.0);   // 17
-    m2_pt_neg_cut_with_trig_05 = new TH2F("m2_pt_neg_cut_with_trig_05", "m2_pt_neg_cut_with_trig_05",   18, coarse_binning,    2400,    -1.0,     7.0);   // 18
-//  m2_pt_pos_cut_with_trig_06 = new TH2F("m2_pt_pos_cut_with_trig_06", "m2_pt_pos_cut_with_trig_06",   18, coarse_binning,    2400,    -1.0,     7.0);   // 19
-//  m2_pt_neg_cut_with_trig_06 = new TH2F("m2_pt_neg_cut_with_trig_06", "m2_pt_neg_cut_with_trig_06",   18, coarse_binning,    2400,    -1.0,     7.0);   // 20
+    m2_pt_pos_cut_with_trig_05 = new TH2F("m2_pt_pos_cut_with_trig_05", "m2_pt_pos_cut_with_trig_05",   18, coarse_binning,    2400,    -1.0,     7.0);   // 21
+    m2_pt_neg_cut_with_trig_05 = new TH2F("m2_pt_neg_cut_with_trig_05", "m2_pt_neg_cut_with_trig_05",   18, coarse_binning,    2400,    -1.0,     7.0);   // 22
     
-    deut_phi_pt_pos_T          = new TH2F("deut_phi_pt_pos_T",          "deut_phi_pt_pos_T",            18, coarse_binning,     288,   lower,   upper);   // 21
-    deut_phi_pt_neg_T          = new TH2F("deut_phi_pt_neg_T",          "deut_phi_pt_neg_T",            18, coarse_binning,     288,   lower,   upper);   // 22
-    deut_phi_pt_pos_A          = new TH2F("deut_phi_pt_pos_A",          "deut_phi_pt_pos_A",            18, coarse_binning,     288,   lower,   upper);   // 23
-    deut_phi_pt_neg_A          = new TH2F("deut_phi_pt_neg_A",          "deut_phi_pt_neg_A",            18, coarse_binning,     288,   lower,   upper);   // 24
-    deut_phi_pt_pos_B          = new TH2F("deut_phi_pt_pos_B",          "deut_phi_pt_pos_B",            18, coarse_binning,     288,   lower,   upper);   // 25
-    deut_phi_pt_neg_B          = new TH2F("deut_phi_pt_neg_B",          "deut_phi_pt_neg_B",            18, coarse_binning,     288,   lower,   upper);   // 26
-    prot_phi_pt_pos_T          = new TH2F("prot_phi_pt_pos_T",          "prot_phi_pt_pos_T",            18,coarse_binning2,     288,   lower,   upper);   // 21a
-    prot_phi_pt_neg_T          = new TH2F("prot_phi_pt_neg_T",          "prot_phi_pt_neg_T",            18,coarse_binning2,     288,   lower,   upper);   // 22a
-    
-    deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",                4,      0,      4);                              // 27
-    prot_per_event             = new TH1I("prot_per_event",             "prot_per_event",               20,      0,     20);                              // 27
-//  trig_04_per_event          = new TH1I("trig_04_per_event",          "trig_04_per_event",            10,      0,     10);                              // 28
-    trig_05_per_event          = new TH1I("trig_05_per_event",          "trig_05_per_event",            10,      0,     10);                              // 29
-//  trig_06_per_event          = new TH1I("trig_06_per_event",          "trig_06_per_event",            10,      0,     10);                              // 30
+    deut_phi_pt_pos_T          = new TH2F("deut_phi_pt_pos_T",          "deut_phi_pt_pos_T",            18, coarse_binning,     288,   lower,   upper);   // 23
+    deut_phi_pt_neg_T          = new TH2F("deut_phi_pt_neg_T",          "deut_phi_pt_neg_T",            18, coarse_binning,     288,   lower,   upper);   // 24
+    prot_phi_pt_pos_T          = new TH2F("prot_phi_pt_pos_T",          "prot_phi_pt_pos_T",            18,coarse_binning2,     288,   lower,   upper);   // 25
+    prot_phi_pt_neg_T          = new TH2F("prot_phi_pt_neg_T",          "prot_phi_pt_neg_T",            18,coarse_binning2,     288,   lower,   upper);   // 26
+    deut_phi_pt_pos_A          = new TH2F("deut_phi_pt_pos_A",          "deut_phi_pt_pos_A",            18, coarse_binning,     288,   lower,   upper);   // 27
+    deut_phi_pt_neg_A          = new TH2F("deut_phi_pt_neg_A",          "deut_phi_pt_neg_A",            18, coarse_binning,     288,   lower,   upper);   // 28
+    deut_phi_pt_pos_B          = new TH2F("deut_phi_pt_pos_B",          "deut_phi_pt_pos_B",            18, coarse_binning,     288,   lower,   upper);   // 29
+    deut_phi_pt_neg_B          = new TH2F("deut_phi_pt_neg_B",          "deut_phi_pt_neg_B",            18, coarse_binning,     288,   lower,   upper);   // 30
+    deut_phi_pt_pos_C          = new TH2F("deut_phi_pt_pos_C",          "deut_phi_pt_pos_C",            18, coarse_binning,     288,   lower,   upper);   // 31
+    deut_phi_pt_neg_C          = new TH2F("deut_phi_pt_neg_C",          "deut_phi_pt_neg_C",            18, coarse_binning,     288,   lower,   upper);   // 32
+    deut_phi_pt_pos_D          = new TH2F("deut_phi_pt_pos_D",          "deut_phi_pt_pos_D",            18, coarse_binning,     288,   lower,   upper);   // 33
+    deut_phi_pt_neg_D          = new TH2F("deut_phi_pt_neg_D",          "deut_phi_pt_neg_D",            18, coarse_binning,     288,   lower,   upper);   // 34
+    deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",                4,      0,      4);                              // 35
+    prot_per_event             = new TH1I("prot_per_event",             "prot_per_event",               20,      0,     20);                              // 36
 
-//  trig_04_phi_pt_pos         = new TH2F("trig_04_phi_pt_pos",         "trig_04_phi_pt_pos",          170,    3.0,   20.0,     288,   lower,   upper);   // 31
-//  trig_04_phi_pt_neg         = new TH2F("trig_04_phi_pt_neg",         "trig_04_phi_pt_neg",          170,    3.0,   20.0,     288,   lower,   upper);   // 32
-    trig_05_phi_pt_pos         = new TH2F("trig_05_phi_pt_pos",         "trig_05_phi_pt_pos",          170,    3.0,   20.0,     288,   lower,   upper);   // 33
-    trig_05_phi_pt_neg         = new TH2F("trig_05_phi_pt_neg",         "trig_05_phi_pt_neg",          170,    3.0,   20.0,     288,   lower,   upper);   // 34
-//  trig_06_phi_pt_pos         = new TH2F("trig_06_phi_pt_pos",         "trig_06_phi_pt_pos",          170,    3.0,   20.0,     288,   lower,   upper);   // 35
-//  trig_06_phi_pt_neg         = new TH2F("trig_06_phi_pt_neg",         "trig_06_phi_pt_neg",          170,    3.0,   20.0,     288,   lower,   upper);   // 36
+    trig_05_per_event          = new TH1I("trig_05_per_event",          "trig_05_per_event",            10,      0,     10);                              // 37
+    trig_05_phi_pt_pos         = new TH2F("trig_05_phi_pt_pos",         "trig_05_phi_pt_pos",          170,    3.0,   20.0,     288,   lower,   upper);   // 38
+    trig_05_phi_pt_neg         = new TH2F("trig_05_phi_pt_neg",         "trig_05_phi_pt_neg",          170,    3.0,   20.0,     288,   lower,   upper);   // 39
 
-    tof_phi_eta_pos            = new TH2F("tof_phi_eta_pos",            "tof_phi_eta_pos",             190,  lower,  upper,      60,   -0.92,    0.92);   // 37
-    tof_phi_eta_neg            = new TH2F("tof_phi_eta_neg",            "tof_phi_eta_neg",             190,  lower,  upper,      60,   -0.92,    0.92);   // 38
-    tof_phi_eta_pos_deut       = new TH2F("tof_phi_eta_pos_deut",       "tof_phi_eta_pos_deut",        190,  lower,  upper,      60,   -0.92,    0.92);   // 39
-    tof_phi_eta_neg_deut       = new TH2F("tof_phi_eta_neg_deut",       "tof_phi_eta_neg_deut",        190,  lower,  upper,      60,   -0.92,    0.92);   // 40
+    tof_phi_eta_pos            = new TH2F("tof_phi_eta_pos",            "tof_phi_eta_pos",             190,  lower,  upper,      60,   -0.92,    0.92);   // 40
+    tof_phi_eta_neg            = new TH2F("tof_phi_eta_neg",            "tof_phi_eta_neg",             190,  lower,  upper,      60,   -0.92,    0.92);   // 41
+    tof_phi_eta_pos_deut       = new TH2F("tof_phi_eta_pos_deut",       "tof_phi_eta_pos_deut",        190,  lower,  upper,      60,   -0.92,    0.92);   // 42
+    tof_phi_eta_neg_deut       = new TH2F("tof_phi_eta_neg_deut",       "tof_phi_eta_neg_deut",        190,  lower,  upper,      60,   -0.92,    0.92);   // 43
 
-    deut_pt_compare_pos        = new TH1F("deut_pt_compare_pos",        "deut_pt_compare_pos",         100,   -0.2,    0.2);                              // 41
-    deut_pt_compare_neg        = new TH1F("deut_pt_compare_neg",        "deut_pt_compare_neg",         100,   -0.2,    0.2);                              // 42
-    tpc_sector_fraction        = new TH1F("tpc_sector_fraction",        "tpc_sector_fraction",         100,    0.0,    1.0);                              // 43
-    primary_vertex_z           = new TH1F("primary_vertex_z",           "primary_vertex_z",            400,  -20.0,   20.0);                              // 44
-    primary_vertex_z_cut1      = new TH1F("primary_vertex_z_cut1",      "primary_vertex_z_cut1",       400,  -20.0,   20.0);                              // 45
-    primary_vertex_z_cut2      = new TH1F("primary_vertex_z_cut2",      "primary_vertex_z_cut2",       400,  -20.0,   20.0);                              // 46
+    deut_pt_compare_pos        = new TH1F("deut_pt_compare_pos",        "deut_pt_compare_pos",         100,   -0.2,    0.2);                              // 44
+    deut_pt_compare_neg        = new TH1F("deut_pt_compare_neg",        "deut_pt_compare_neg",         100,   -0.2,    0.2);                              // 45
+    tpc_sector_fraction        = new TH1F("tpc_sector_fraction",        "tpc_sector_fraction",         100,    0.0,    1.0);                              // 46
+    primary_vertex_z           = new TH1F("primary_vertex_z",           "primary_vertex_z",            400,  -20.0,   20.0);                              // 47
+    primary_vertex_z_cut1      = new TH1F("primary_vertex_z_cut1",      "primary_vertex_z_cut1",       400,  -20.0,   20.0);                              // 48
+    primary_vertex_z_cut2      = new TH1F("primary_vertex_z_cut2",      "primary_vertex_z_cut2",       400,  -20.0,   20.0);                              // 49
 
-//  deut_dphi_pt_pos_pos_04_T  = new TH2F("deut_dphi_pt_pos_pos_04_T",  "deut_dphi_pt_pos_pos_04_T",    18, coarse_binning,     288,   lower,   upper);   // 47
-//  deut_dphi_pt_pos_neg_04_T  = new TH2F("deut_dphi_pt_pos_neg_04_T",  "deut_dphi_pt_pos_neg_04_T",    18, coarse_binning,     288,   lower,   upper);   // 48
-//  deut_dphi_pt_neg_neg_04_T  = new TH2F("deut_dphi_pt_neg_neg_04_T",  "deut_dphi_pt_neg_neg_04_T",    18, coarse_binning,     288,   lower,   upper);   // 49
     deut_dphi_pt_pos_pos_05_T  = new TH2F("deut_dphi_pt_pos_pos_05_T",  "deut_dphi_pt_pos_pos_05_T",    18, coarse_binning,     288,   lower,   upper);   // 50
     deut_dphi_pt_pos_neg_05_T  = new TH2F("deut_dphi_pt_pos_neg_05_T",  "deut_dphi_pt_pos_neg_05_T",    18, coarse_binning,     288,   lower,   upper);   // 51
     deut_dphi_pt_neg_neg_05_T  = new TH2F("deut_dphi_pt_neg_neg_05_T",  "deut_dphi_pt_neg_neg_05_T",    18, coarse_binning,     288,   lower,   upper);   // 52
-//  deut_dphi_pt_pos_pos_06_T  = new TH2F("deut_dphi_pt_pos_pos_06_T",  "deut_dphi_pt_pos_pos_06_T",    18, coarse_binning,     288,   lower,   upper);   // 53
-//  deut_dphi_pt_pos_neg_06_T  = new TH2F("deut_dphi_pt_pos_neg_06_T",  "deut_dphi_pt_pos_neg_06_T",    18, coarse_binning,     288,   lower,   upper);   // 54
-//  deut_dphi_pt_neg_neg_06_T  = new TH2F("deut_dphi_pt_neg_neg_06_T",  "deut_dphi_pt_neg_neg_06_T",    18, coarse_binning,     288,   lower,   upper);   // 55
-    prot_dphi_pt_pos_pos_05_T  = new TH2F("prot_dphi_pt_pos_pos_05_T",  "prot_dphi_pt_pos_pos_05_T",    18,coarse_binning2,     288,   lower,   upper);   // 50a
-    prot_dphi_pt_pos_neg_05_T  = new TH2F("prot_dphi_pt_pos_neg_05_T",  "prot_dphi_pt_pos_neg_05_T",    18,coarse_binning2,     288,   lower,   upper);   // 51a
-    prot_dphi_pt_neg_neg_05_T  = new TH2F("prot_dphi_pt_neg_neg_05_T",  "prot_dphi_pt_neg_neg_05_T",    18,coarse_binning2,     288,   lower,   upper);   // 52a
-    
-    
-//  deut_dphi_pt_pos_pos_04_A  = new TH2F("deut_dphi_pt_pos_pos_04_A",  "deut_dphi_pt_pos_pos_04_A",    18, coarse_binning,     288,   lower,   upper);   // 56
-//  deut_dphi_pt_pos_neg_04_A  = new TH2F("deut_dphi_pt_pos_neg_04_A",  "deut_dphi_pt_pos_neg_04_A",    18, coarse_binning,     288,   lower,   upper);   // 57
-//  deut_dphi_pt_neg_neg_04_A  = new TH2F("deut_dphi_pt_neg_neg_04_A",  "deut_dphi_pt_neg_neg_04_A",    18, coarse_binning,     288,   lower,   upper);   // 58
-    deut_dphi_pt_pos_pos_05_A  = new TH2F("deut_dphi_pt_pos_pos_05_A",  "deut_dphi_pt_pos_pos_05_A",    18, coarse_binning,     288,   lower,   upper);   // 59
-    deut_dphi_pt_pos_neg_05_A  = new TH2F("deut_dphi_pt_pos_neg_05_A",  "deut_dphi_pt_pos_neg_05_A",    18, coarse_binning,     288,   lower,   upper);   // 60
-    deut_dphi_pt_neg_neg_05_A  = new TH2F("deut_dphi_pt_neg_neg_05_A",  "deut_dphi_pt_neg_neg_05_A",    18, coarse_binning,     288,   lower,   upper);   // 61
-//  deut_dphi_pt_pos_pos_06_A  = new TH2F("deut_dphi_pt_pos_pos_06_A",  "deut_dphi_pt_pos_pos_06_A",    18, coarse_binning,     288,   lower,   upper);   // 62
-//  deut_dphi_pt_pos_neg_06_A  = new TH2F("deut_dphi_pt_pos_neg_06_A",  "deut_dphi_pt_pos_neg_06_A",    18, coarse_binning,     288,   lower,   upper);   // 63
-//  deut_dphi_pt_neg_neg_06_A  = new TH2F("deut_dphi_pt_neg_neg_06_A",  "deut_dphi_pt_neg_neg_06_A",    18, coarse_binning,     288,   lower,   upper);   // 64
-    
-//  deut_dphi_pt_pos_pos_04_B  = new TH2F("deut_dphi_pt_pos_pos_04_B",  "deut_dphi_pt_pos_pos_04_B",    18, coarse_binning,     288,   lower,   upper);   // 65
-//  deut_dphi_pt_pos_neg_04_B  = new TH2F("deut_dphi_pt_pos_neg_04_B",  "deut_dphi_pt_pos_neg_04_B",    18, coarse_binning,     288,   lower,   upper);   // 66
-//  deut_dphi_pt_neg_neg_04_B  = new TH2F("deut_dphi_pt_neg_neg_04_B",  "deut_dphi_pt_neg_neg_04_B",    18, coarse_binning,     288,   lower,   upper);   // 67
-    deut_dphi_pt_pos_pos_05_B  = new TH2F("deut_dphi_pt_pos_pos_05_B",  "deut_dphi_pt_pos_pos_05_B",    18, coarse_binning,     288,   lower,   upper);   // 68
-    deut_dphi_pt_pos_neg_05_B  = new TH2F("deut_dphi_pt_pos_neg_05_B",  "deut_dphi_pt_pos_neg_05_B",    18, coarse_binning,     288,   lower,   upper);   // 69
-    deut_dphi_pt_neg_neg_05_B  = new TH2F("deut_dphi_pt_neg_neg_05_B",  "deut_dphi_pt_neg_neg_05_B",    18, coarse_binning,     288,   lower,   upper);   // 70
-//  deut_dphi_pt_pos_pos_06_B  = new TH2F("deut_dphi_pt_pos_pos_06_B",  "deut_dphi_pt_pos_pos_06_B",    18, coarse_binning,     288,   lower,   upper);   // 71
-//  deut_dphi_pt_pos_neg_06_B  = new TH2F("deut_dphi_pt_pos_neg_06_B",  "deut_dphi_pt_pos_neg_06_B",    18, coarse_binning,     288,   lower,   upper);   // 72
-//  deut_dphi_pt_neg_neg_06_B  = new TH2F("deut_dphi_pt_neg_neg_06_B",  "deut_dphi_pt_neg_neg_06_B",    18, coarse_binning,     288,   lower,   upper);   // 73
 
-    DCAxy_pos                  = new TH1F("DCAxy_pos",                  "DCAxy_pos",                   100,   -1.2,    1.2);                              // 74
-    DCAxy_neg                  = new TH1F("DCAxy_neg",                  "DCAxy_neg",                   100,   -1.2,    1.2);                              // 75
-    DCAz_pos                   = new TH1F("DCAz_pos",                   "DCAz_pos",                    100,   -1.2,    1.2);                              // 76
-    DCAz_neg                   = new TH1F("DCAz_neg",                   "DCAz_neg",                    100,   -1.2,    1.2);                              // 77
+    prot_dphi_pt_pos_pos_05_T  = new TH2F("prot_dphi_pt_pos_pos_05_T",  "prot_dphi_pt_pos_pos_05_T",    18,coarse_binning2,     288,   lower,   upper);   // 53
+    prot_dphi_pt_pos_neg_05_T  = new TH2F("prot_dphi_pt_pos_neg_05_T",  "prot_dphi_pt_pos_neg_05_T",    18,coarse_binning2,     288,   lower,   upper);   // 54
+    prot_dphi_pt_neg_neg_05_T  = new TH2F("prot_dphi_pt_neg_neg_05_T",  "prot_dphi_pt_neg_neg_05_T",    18,coarse_binning2,     288,   lower,   upper);   // 55
+    
+    deut_dphi_pt_pos_pos_05_A  = new TH2F("deut_dphi_pt_pos_pos_05_A",  "deut_dphi_pt_pos_pos_05_A",    18, coarse_binning,     288,   lower,   upper);   // 56
+    deut_dphi_pt_pos_neg_05_A  = new TH2F("deut_dphi_pt_pos_neg_05_A",  "deut_dphi_pt_pos_neg_05_A",    18, coarse_binning,     288,   lower,   upper);   // 57
+    deut_dphi_pt_neg_neg_05_A  = new TH2F("deut_dphi_pt_neg_neg_05_A",  "deut_dphi_pt_neg_neg_05_A",    18, coarse_binning,     288,   lower,   upper);   // 58
+
+    deut_dphi_pt_pos_pos_05_B  = new TH2F("deut_dphi_pt_pos_pos_05_B",  "deut_dphi_pt_pos_pos_05_B",    18, coarse_binning,     288,   lower,   upper);   // 59
+    deut_dphi_pt_pos_neg_05_B  = new TH2F("deut_dphi_pt_pos_neg_05_B",  "deut_dphi_pt_pos_neg_05_B",    18, coarse_binning,     288,   lower,   upper);   // 60
+    deut_dphi_pt_neg_neg_05_B  = new TH2F("deut_dphi_pt_neg_neg_05_B",  "deut_dphi_pt_neg_neg_05_B",    18, coarse_binning,     288,   lower,   upper);   // 61
+
+    deut_dphi_pt_pos_pos_05_C  = new TH2F("deut_dphi_pt_pos_pos_05_C",  "deut_dphi_pt_pos_pos_05_C",    18, coarse_binning,     288,   lower,   upper);   // 62
+    deut_dphi_pt_pos_neg_05_C  = new TH2F("deut_dphi_pt_pos_neg_05_C",  "deut_dphi_pt_pos_neg_05_C",    18, coarse_binning,     288,   lower,   upper);   // 63
+    deut_dphi_pt_neg_neg_05_C  = new TH2F("deut_dphi_pt_neg_neg_05_C",  "deut_dphi_pt_neg_neg_05_C",    18, coarse_binning,     288,   lower,   upper);   // 64
+    
+    deut_dphi_pt_pos_pos_05_D  = new TH2F("deut_dphi_pt_pos_pos_05_D",  "deut_dphi_pt_pos_pos_05_D",    18, coarse_binning,     288,   lower,   upper);   // 65
+    deut_dphi_pt_pos_neg_05_D  = new TH2F("deut_dphi_pt_pos_neg_05_D",  "deut_dphi_pt_pos_neg_05_D",    18, coarse_binning,     288,   lower,   upper);   // 66
+    deut_dphi_pt_neg_neg_05_D  = new TH2F("deut_dphi_pt_neg_neg_05_D",  "deut_dphi_pt_neg_neg_05_D",    18, coarse_binning,     288,   lower,   upper);   // 67
+    
+    DCAxy_pos                  = new TH1F("DCAxy_pos",                  "DCAxy_pos",                   100,   -1.2,    1.2);                              // 68
+    DCAxy_neg                  = new TH1F("DCAxy_neg",                  "DCAxy_neg",                   100,   -1.2,    1.2);                              // 69
+    DCAz_pos                   = new TH1F("DCAz_pos",                   "DCAz_pos",                    100,   -1.2,    1.2);                              // 70
+    DCAz_neg                   = new TH1F("DCAz_neg",                   "DCAz_neg",                    100,   -1.2,    1.2);                              // 71
 
     Double_t fine_binning[2001];
 
@@ -606,28 +515,27 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     }
     // display plots
 
-    m2_pt_pos_fine             = new TH2F("m2_pt_pos_fine",             "m2_pt_pos_fine",              800,   fine_binning,    2400,    -1.0,     7.0);   // 78
-    m2_pt_neg_fine             = new TH2F("m2_pt_neg_fine",             "m2_pt_neg_fine",              800,   fine_binning,    2400,    -1.0,     7.0);   // 79
-    m2_pt_pos_TPC_fine         = new TH2F("m2_pt_pos_TPC_fine",         "m2_pt_pos_TPC_fine",          800,   fine_binning,    2400,    -1.0,     7.0);   // 80
-    m2_pt_neg_TPC_fine         = new TH2F("m2_pt_neg_TPC_fine",         "m2_pt_neg_TPC_fine",          800,   fine_binning,    2400,    -1.0,     7.0);   // 81
-    m2_pt_pos_cut_T_fine       = new TH2F("m2_pt_pos_cut_T_fine",       "m2_pt_pos_cut_T_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 82
-    m2_pt_neg_cut_T_fine       = new TH2F("m2_pt_neg_cut_T_fine",       "m2_pt_neg_cut_T_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 83
-    m2_pt_pos_cut_A_fine       = new TH2F("m2_pt_pos_cut_A_fine",       "m2_pt_pos_cut_A_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 84
-    m2_pt_neg_cut_A_fine       = new TH2F("m2_pt_neg_cut_A_fine",       "m2_pt_neg_cut_A_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 85
-    m2_pt_pos_cut_B_fine       = new TH2F("m2_pt_pos_cut_B_fine",       "m2_pt_pos_cut_B_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 86
-    m2_pt_neg_cut_B_fine       = new TH2F("m2_pt_neg_cut_B_fine",       "m2_pt_neg_cut_B_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 87
+    m2_pt_pos_fine             = new TH2F("m2_pt_pos_fine",             "m2_pt_pos_fine",              800,   fine_binning,    2400,    -1.0,     7.0);   // 72
+    m2_pt_neg_fine             = new TH2F("m2_pt_neg_fine",             "m2_pt_neg_fine",              800,   fine_binning,    2400,    -1.0,     7.0);   // 73
+    m2_pt_pos_TPC_fine         = new TH2F("m2_pt_pos_TPC_fine",         "m2_pt_pos_TPC_fine",          800,   fine_binning,    2400,    -1.0,     7.0);   // 74
+    m2_pt_neg_TPC_fine         = new TH2F("m2_pt_neg_TPC_fine",         "m2_pt_neg_TPC_fine",          800,   fine_binning,    2400,    -1.0,     7.0);   // 75
+    m2_pt_pos_cut_T_fine       = new TH2F("m2_pt_pos_cut_T_fine",       "m2_pt_pos_cut_T_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 76
+    m2_pt_neg_cut_T_fine       = new TH2F("m2_pt_neg_cut_T_fine",       "m2_pt_neg_cut_T_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 77
+    m2_pt_pos_cut_A_fine       = new TH2F("m2_pt_pos_cut_A_fine",       "m2_pt_pos_cut_A_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 78
+    m2_pt_neg_cut_A_fine       = new TH2F("m2_pt_neg_cut_A_fine",       "m2_pt_neg_cut_A_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 79
+    m2_pt_pos_cut_B_fine       = new TH2F("m2_pt_pos_cut_B_fine",       "m2_pt_pos_cut_B_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 80
+    m2_pt_neg_cut_B_fine       = new TH2F("m2_pt_neg_cut_B_fine",       "m2_pt_neg_cut_B_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 81
+    m2_pt_pos_cut_C_fine       = new TH2F("m2_pt_pos_cut_C_fine",       "m2_pt_pos_cut_C_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 82
+    m2_pt_neg_cut_C_fine       = new TH2F("m2_pt_neg_cut_C_fine",       "m2_pt_neg_cut_C_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 83
+    m2_pt_pos_cut_D_fine       = new TH2F("m2_pt_pos_cut_D_fine",       "m2_pt_pos_cut_D_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 84
+    m2_pt_neg_cut_D_fine       = new TH2F("m2_pt_neg_cut_D_fine",       "m2_pt_neg_cut_D_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 85
 
+   
+    m2_pt_pos_TPC_prot_fine    = new TH2F("m2_pt_pos_TPC_prot_fine",    "m2_pt_pos_TPC_prot_fine",     800,   fine_binning,    2400,    -1.0,     7.0);   // 86
+    m2_pt_neg_TPC_prot_fine    = new TH2F("m2_pt_neg_TPC_prot_fine",    "m2_pt_neg_TPC_prot_fine",     800,   fine_binning,    2400,    -1.0,     7.0);   // 87
 
-    deut_m2_dphi_04_pt1        = new TH2F("deut_m2_dphi_04_pt1",        "deut_m2_dphi_04_pt1",          75,    2.5,    5.0,      36,   lower,   upper);   // 88
-    deut_m2_dphi_04_pt2        = new TH2F("deut_m2_dphi_04_pt2",        "deut_m2_dphi_04_pt2",          75,    2.5,    5.0,      36,   lower,   upper);   // 89
-    deut_m2_dphi_04_pt3        = new TH2F("deut_m2_dphi_04_pt3",        "deut_m2_dphi_04_pt3",          75,    2.5,    5.0,      36,   lower,   upper);   // 90
-    deut_m2_dphi_04_pt4        = new TH2F("deut_m2_dphi_04_pt4",        "deut_m2_dphi_04_pt4",          75,    2.5,    5.0,      36,   lower,   upper);   // 91
-    
-    m2_pt_pos_TPC_prot_fine    = new TH2F("m2_pt_pos_TPC_prot_fine",    "m2_pt_pos_TPC_prot_fine",     800,   fine_binning,    2400,    -1.0,     7.0);   // 92
-    m2_pt_neg_TPC_prot_fine    = new TH2F("m2_pt_neg_TPC_prot_fine",    "m2_pt_neg_TPC_prot_fine",     800,   fine_binning,    2400,    -1.0,     7.0);   // 93
-
-    m2_pt_pos_cut_T_prot_fine  = new TH2F("m2_pt_pos_cut_T_prot_fine",  "m2_pt_pos_cut_T_prot_fine",   800,   fine_binning,    2400,    -1.0,     7.0);   // 94
-    m2_pt_neg_cut_T_prot_fine  = new TH2F("m2_pt_neg_cut_T_prot_fine",  "m2_pt_neg_cut_T_prot_fine",   800,   fine_binning,    2400,    -1.0,     7.0);   // 95
+    m2_pt_pos_cut_T_prot_fine  = new TH2F("m2_pt_pos_cut_T_prot_fine",  "m2_pt_pos_cut_T_prot_fine",   800,   fine_binning,    2400,    -1.0,     7.0);   // 88
+    m2_pt_neg_cut_T_prot_fine  = new TH2F("m2_pt_neg_cut_T_prot_fine",  "m2_pt_neg_cut_T_prot_fine",   800,   fine_binning,    2400,    -1.0,     7.0);   // 89
 
 
     
@@ -648,127 +556,114 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(m2_pt_neg_cut_A);              // 12
     fOutputList->Add(m2_pt_pos_cut_B);              // 13
     fOutputList->Add(m2_pt_neg_cut_B);              // 14
+    fOutputList->Add(m2_pt_pos_cut_C);              // 15
+    fOutputList->Add(m2_pt_neg_cut_C);              // 16
+    fOutputList->Add(m2_pt_pos_cut_D);              // 17
+    fOutputList->Add(m2_pt_neg_cut_D);              // 18
+    if(run_mode == 0)
+    {
+    fOutputList->Add(m2_pt_pos_cut_T_prot);         // 19
+    fOutputList->Add(m2_pt_neg_cut_T_prot);         // 20
+    }
+    
+    fOutputList->Add(m2_pt_pos_cut_with_trig_05);   // 21
+    fOutputList->Add(m2_pt_neg_cut_with_trig_05);   // 22
+
+    fOutputList->Add(deut_phi_pt_pos_T);            // 23
+    fOutputList->Add(deut_phi_pt_neg_T);            // 24
 
     if(run_mode == 0)
     {
-	fOutputList->Add(m2_pt_pos_cut_T_prot);  //  7a
-	fOutputList->Add(m2_pt_neg_cut_T_prot);  //  8a
+    fOutputList->Add(prot_phi_pt_pos_T);            // 25
+    fOutputList->Add(prot_phi_pt_neg_T);            // 26
     }
     
-//  fOutputList->Add(m2_pt_pos_cut_with_trig_04);   // 15
-//  fOutputList->Add(m2_pt_neg_cut_with_trig_04);   // 16
-    fOutputList->Add(m2_pt_pos_cut_with_trig_05);   // 17
-    fOutputList->Add(m2_pt_neg_cut_with_trig_05);   // 18
-//  fOutputList->Add(m2_pt_pos_cut_with_trig_06);   // 19
-//  fOutputList->Add(m2_pt_neg_cut_with_trig_06);   // 20
-
-    fOutputList->Add(deut_phi_pt_pos_T);            // 21
-    fOutputList->Add(deut_phi_pt_neg_T);            // 22
-
+    fOutputList->Add(deut_phi_pt_pos_A);            // 27
+    fOutputList->Add(deut_phi_pt_neg_A);            // 28
+    fOutputList->Add(deut_phi_pt_pos_B);            // 29
+    fOutputList->Add(deut_phi_pt_neg_B);            // 30
+    fOutputList->Add(deut_phi_pt_pos_C);            // 31
+    fOutputList->Add(deut_phi_pt_neg_C);            // 32
+    fOutputList->Add(deut_phi_pt_pos_D);            // 33
+    fOutputList->Add(deut_phi_pt_neg_D);            // 34
+    fOutputList->Add(deut_per_event);               // 35
     if(run_mode == 0)
     {
-	fOutputList->Add(prot_phi_pt_pos_T);            // 21a
-	fOutputList->Add(prot_phi_pt_neg_T);            // 22a
+    fOutputList->Add(prot_per_event);               // 36
     }
     
-    fOutputList->Add(deut_phi_pt_pos_A);            // 23
-    fOutputList->Add(deut_phi_pt_neg_A);            // 24
-    fOutputList->Add(deut_phi_pt_pos_B);            // 25
-    fOutputList->Add(deut_phi_pt_neg_B);            // 26
+    fOutputList->Add(trig_05_per_event);            // 37
+   
+    fOutputList->Add(trig_05_phi_pt_pos);           // 38
+    fOutputList->Add(trig_05_phi_pt_neg);           // 39
 
-    fOutputList->Add(deut_per_event);               // 27
-    if(run_mode == 0)
-    {
-	fOutputList->Add(prot_per_event);               // 27a
-    }
-    
-//  fOutputList->Add(trig_04_per_event);            // 28
-    fOutputList->Add(trig_05_per_event);            // 29
-//  fOutputList->Add(trig_06_per_event);            // 30
 
-//  fOutputList->Add(trig_04_phi_pt_pos);           // 31
-//  fOutputList->Add(trig_04_phi_pt_neg);           // 32    
-    fOutputList->Add(trig_05_phi_pt_pos);           // 33
-    fOutputList->Add(trig_05_phi_pt_neg);           // 34
-//  fOutputList->Add(trig_06_phi_pt_pos);           // 35
-//  fOutputList->Add(trig_06_phi_pt_neg);           // 36
+    fOutputList->Add(tof_phi_eta_pos);              // 40
+    fOutputList->Add(tof_phi_eta_neg);              // 41
+    fOutputList->Add(tof_phi_eta_pos_deut);         // 42
+    fOutputList->Add(tof_phi_eta_neg_deut);         // 43
 
-    fOutputList->Add(tof_phi_eta_pos);              // 37
-    fOutputList->Add(tof_phi_eta_neg);              // 38
-    fOutputList->Add(tof_phi_eta_pos_deut);         // 39
-    fOutputList->Add(tof_phi_eta_neg_deut);         // 40
+    fOutputList->Add(deut_pt_compare_pos);          // 44
+    fOutputList->Add(deut_pt_compare_neg);          // 45
+    fOutputList->Add(tpc_sector_fraction);          // 46
+    fOutputList->Add(primary_vertex_z);             // 47
+    fOutputList->Add(primary_vertex_z_cut1);        // 48
+    fOutputList->Add(primary_vertex_z_cut2);        // 49
 
-    fOutputList->Add(deut_pt_compare_pos);          // 41
-    fOutputList->Add(deut_pt_compare_neg);          // 42
-    fOutputList->Add(tpc_sector_fraction);          // 43
-    fOutputList->Add(primary_vertex_z);             // 44
-    fOutputList->Add(primary_vertex_z_cut1);        // 45
-    fOutputList->Add(primary_vertex_z_cut2);        // 46
-	
-//  fOutputList->Add(deut_dphi_pt_pos_pos_04_T);    // 47
-//  fOutputList->Add(deut_dphi_pt_pos_neg_04_T);    // 48
-//  fOutputList->Add(deut_dphi_pt_neg_neg_04_T);    // 49
     fOutputList->Add(deut_dphi_pt_pos_pos_05_T);    // 50
     fOutputList->Add(deut_dphi_pt_pos_neg_05_T);    // 51
     fOutputList->Add(deut_dphi_pt_neg_neg_05_T);    // 52
-//  fOutputList->Add(deut_dphi_pt_pos_pos_06_T);    // 53
-//  fOutputList->Add(deut_dphi_pt_pos_neg_06_T);    // 54
-//  fOutputList->Add(deut_dphi_pt_neg_neg_06_T);    // 55
+
 
     if(run_mode == 0)
     {
-	fOutputList->Add(prot_dphi_pt_pos_pos_05_T);    // 50
-	fOutputList->Add(prot_dphi_pt_pos_neg_05_T);    // 51
-	fOutputList->Add(prot_dphi_pt_neg_neg_05_T);    // 52
+    fOutputList->Add(prot_dphi_pt_pos_pos_05_T);    // 53
+    fOutputList->Add(prot_dphi_pt_pos_neg_05_T);    // 54
+    fOutputList->Add(prot_dphi_pt_neg_neg_05_T);    // 55
     }
-//  fOutputList->Add(deut_dphi_pt_pos_pos_04_A);    // 56
-//  fOutputList->Add(deut_dphi_pt_pos_neg_04_A);    // 57
-//  fOutputList->Add(deut_dphi_pt_neg_neg_04_A);    // 58
-    fOutputList->Add(deut_dphi_pt_pos_pos_05_A);    // 59
-    fOutputList->Add(deut_dphi_pt_pos_neg_05_A);    // 60
-    fOutputList->Add(deut_dphi_pt_neg_neg_05_A);    // 61
-//  fOutputList->Add(deut_dphi_pt_pos_pos_06_A);    // 62
-//  fOutputList->Add(deut_dphi_pt_pos_neg_06_A);    // 63
-//  fOutputList->Add(deut_dphi_pt_neg_neg_06_A);    // 64
- 
-//  fOutputList->Add(deut_dphi_pt_pos_pos_04_B);    // 65
-//  fOutputList->Add(deut_dphi_pt_pos_neg_04_B);    // 66
-//  fOutputList->Add(deut_dphi_pt_neg_neg_04_B);    // 67
-    fOutputList->Add(deut_dphi_pt_pos_pos_05_B);    // 68
-    fOutputList->Add(deut_dphi_pt_pos_neg_05_B);    // 69
-    fOutputList->Add(deut_dphi_pt_neg_neg_05_B);    // 70
-//  fOutputList->Add(deut_dphi_pt_pos_pos_06_B);    // 71
-//  fOutputList->Add(deut_dphi_pt_pos_neg_06_B);    // 72
-//  fOutputList->Add(deut_dphi_pt_neg_neg_06_B);    // 73
 
-    fOutputList->Add(DCAxy_pos);                    // 74
-    fOutputList->Add(DCAxy_neg);                    // 75
-    fOutputList->Add(DCAz_pos);                     // 76
-    fOutputList->Add(DCAz_neg);                     // 77
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_A);    // 56
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_A);    // 57
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_A);    // 58
 
-    fOutputList->Add(m2_pt_pos_fine);               // 78
-    fOutputList->Add(m2_pt_neg_fine);               // 79
-    fOutputList->Add(m2_pt_pos_TPC_fine);           // 80
-    fOutputList->Add(m2_pt_neg_TPC_fine);           // 81 
-    fOutputList->Add(m2_pt_pos_cut_T_fine);         // 82
-    fOutputList->Add(m2_pt_neg_cut_T_fine);         // 83
-    fOutputList->Add(m2_pt_pos_cut_A_fine);         // 84
-    fOutputList->Add(m2_pt_neg_cut_A_fine);         // 85
-    fOutputList->Add(m2_pt_pos_cut_B_fine);         // 86
-    fOutputList->Add(m2_pt_neg_cut_B_fine);         // 87
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_B);    // 59
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_B);    // 60
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_B);    // 61
 
-    fOutputList->Add(deut_m2_dphi_04_pt1);          // 88
-    fOutputList->Add(deut_m2_dphi_04_pt2);          // 89
-    fOutputList->Add(deut_m2_dphi_04_pt3);          // 90
-    fOutputList->Add(deut_m2_dphi_04_pt4);          // 91
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_C);    // 62
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_C);    // 63
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_C);    // 64
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_D);    // 65
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_D);    // 66
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_D);    // 67
+    
+    fOutputList->Add(DCAxy_pos);                    // 68
+    fOutputList->Add(DCAxy_neg);                    // 69
+    fOutputList->Add(DCAz_pos);                     // 70
+    fOutputList->Add(DCAz_neg);                     // 71
+
+    fOutputList->Add(m2_pt_pos_fine);               // 72
+    fOutputList->Add(m2_pt_neg_fine);               // 73
+    fOutputList->Add(m2_pt_pos_TPC_fine);           // 74
+    fOutputList->Add(m2_pt_neg_TPC_fine);           // 75 
+    fOutputList->Add(m2_pt_pos_cut_T_fine);         // 76
+    fOutputList->Add(m2_pt_neg_cut_T_fine);         // 77
+    fOutputList->Add(m2_pt_pos_cut_A_fine);         // 78
+    fOutputList->Add(m2_pt_neg_cut_A_fine);         // 79
+    fOutputList->Add(m2_pt_pos_cut_B_fine);         // 80
+    fOutputList->Add(m2_pt_neg_cut_B_fine);         // 81
+    fOutputList->Add(m2_pt_pos_cut_C_fine);         // 82
+    fOutputList->Add(m2_pt_neg_cut_C_fine);         // 83
+    fOutputList->Add(m2_pt_pos_cut_D_fine);         // 84
+    fOutputList->Add(m2_pt_neg_cut_D_fine);         // 85
 
     if(run_mode == 0)
     {
-    fOutputList->Add(m2_pt_pos_TPC_prot_fine);      // 92
-    fOutputList->Add(m2_pt_neg_TPC_prot_fine);      // 93
+    fOutputList->Add(m2_pt_pos_TPC_prot_fine);      // 86
+    fOutputList->Add(m2_pt_neg_TPC_prot_fine);      // 87
 
-    fOutputList->Add(m2_pt_pos_cut_T_prot_fine);    // 94
-    fOutputList->Add(m2_pt_neg_cut_T_prot_fine);    // 95
+    fOutputList->Add(m2_pt_pos_cut_T_prot_fine);    // 88
+    fOutputList->Add(m2_pt_neg_cut_T_prot_fine);    // 89
     }
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -816,20 +711,18 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     int deut_track_num_T[200];     int deut_count_T            = 0;
     int deut_track_num_A[200];     int deut_count_A            = 0;
     int deut_track_num_B[200];     int deut_count_B            = 0;
+    int deut_track_num_C[200];     int deut_count_C            = 0;
+    int deut_track_num_D[200];     int deut_count_D            = 0;
     int deut_track_num_W[200];     int deut_count_W            = 0;
     int prot_track_num_T[500];     int prot_count_T            = 0;
     
-//  int trig_04_track_num[200];    int trig_04_track_count     = 0;
     int trig_05_track_num[200];    int trig_05_track_count     = 0;
-//  int trig_06_track_num[200];    int trig_06_track_count     = 0;
 
     // loop over all these tracks
     //
     // pull out track numbers for high-pt triggers and also deutons
 
-//  Float_t max_04_pt = 0.0;    Int_t   max_04    = 0;
     Float_t max_05_pt = 0.0;    Int_t   max_05    = 0;
-//  Float_t max_06_pt = 0.0;    Int_t   max_06    = 0;
 
     for(Int_t i(0); i < iTracks; i++)
     {
@@ -850,7 +743,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	int is_global = 0;
 	if(!track->IsGlobalConstrained())                                               {    is_global=1; }
 
-	if(run_mode == 6  && track->IsGlobalConstrained())                              {    continue;    }
+
 
 
 	Float_t phi           = track->Phi();
@@ -867,18 +760,14 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 	// markA
 	
-//	if(pt >= 4.0  &&  pt < 6.0)	{   trig_04_track_num[trig_04_track_count] = i;	  if(pt>max_04_pt){ max_04_pt = pt; max_04 = trig_04_track_count;   }   trig_04_track_count++;   }
 	if(pt >= 5.0              )	{   trig_05_track_num[trig_05_track_count] = i;	  if(pt>max_05_pt){ max_05_pt = pt; max_05 = trig_05_track_count;   }   trig_05_track_count++;   }
-//	if(pt >= 6.0              )	{   trig_06_track_num[trig_06_track_count] = i;	  if(pt>max_06_pt){ max_06_pt = pt; max_06 = trig_06_track_count;   }   trig_06_track_count++;   }
 
 	Short_t charge        = track->Charge();
-//	if(pt >= 4.0  &&  pt < 6.0)	{   if(charge > 0)   trig_04_phi_pt_pos->Fill(pt, phi);	    else if(charge < 0)   trig_04_phi_pt_neg->Fill(pt, phi);	}
 	if(pt >= 5.0              )	{   if(charge > 0)   trig_05_phi_pt_pos->Fill(pt, phi);	    else if(charge < 0)   trig_05_phi_pt_neg->Fill(pt, phi);	}
-//	if(pt >= 6.0              )	{   if(charge > 0)   trig_06_phi_pt_pos->Fill(pt, phi);	    else if(charge < 0)   trig_06_phi_pt_neg->Fill(pt, phi);	}
 
 
-//	if(!(track->IsHybridGlobalConstrainedGlobal()))                                 {    continue;    }
 	
+	if(run_mode == 6  && track->IsGlobalConstrained())                              {    continue;    }
 
 	
 	Double_t nsigmaTPC = 999.0;	Double_t nsigmaTOF = 999.0;
@@ -986,6 +875,28 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_B->Fill(pt, deut_phi);
 		    }
+		    if(run_mode != 5  &&  m2tof < deut_mean + 6.0 * deut_sigma  &&   m2tof > deut_mean + 3.0 * deut_sigma)
+		    {
+			deut_track_num_C[deut_count_C] = i;
+			deut_count_C++;
+			m2_pt_pos_cut_C->Fill(pt,m2tof);
+			m2_pt_pos_cut_C_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_pos_C->Fill(pt, deut_phi);
+		    }
+		    if(run_mode != 5  &&  m2tof < deut_mean - 3.0 * deut_sigma  &&   m2tof > deut_mean - 6.0 * deut_sigma)
+		    {
+			deut_track_num_D[deut_count_D] = i;
+			deut_count_D++;
+			m2_pt_pos_cut_D->Fill(pt,m2tof);
+			m2_pt_pos_cut_D_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_pos_D->Fill(pt, deut_phi);
+		    }
 		    if(run_mode == 5  &&  m2tof >=2.5  &&  m2tof < 3.0)
 		    {
 			deut_track_num_A[deut_count_A] = i;
@@ -1047,7 +958,6 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    
 	else if(charge < 0)
 	{
-//	    m2_pt_neg     ->Fill(pt, m2tof);
 	    m2_pt_neg_fine->Fill(pt, m2tof);
 	    if(pt >= 1.0  &&  pt < 2.0)   tof_phi_eta_neg->Fill(phi, eta);
 
@@ -1113,6 +1023,28 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_B->Fill(pt, deut_phi);
 		    }
+		    if(run_mode != 5  &&  m2tof < deut_mean + 6.0 * deut_sigma  &&   m2tof > deut_mean + 3.0 * deut_sigma)
+		    {
+			deut_track_num_C[deut_count_C] = i;
+			deut_count_C++;
+			m2_pt_neg_cut_C->Fill(pt,m2tof);
+			m2_pt_neg_cut_C_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_neg_C->Fill(pt, deut_phi);
+		    }
+		    if(run_mode != 5  &&  m2tof < deut_mean - 3.0 * deut_sigma  &&   m2tof > deut_mean - 6.0 * deut_sigma)
+		    {
+			deut_track_num_D[deut_count_D] = i;
+			deut_count_D++;
+			m2_pt_neg_cut_D->Fill(pt,m2tof);
+			m2_pt_neg_cut_D_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_neg_D->Fill(pt, deut_phi);
+		    }
 		    if(run_mode == 5  &&  m2tof >=2.5  &&  m2tof < 3.0)
 		    {
 			deut_track_num_A[deut_count_A] = i;
@@ -1176,47 +1108,12 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
     deut_per_event->Fill(deut_count_T);
     prot_per_event->Fill(prot_count_T);
-//  if(trig_04_track_count > 0)    {	trig_04_per_event->Fill(trig_04_track_count);    }
+
     if(trig_05_track_count > 0)    {	trig_05_per_event->Fill(trig_05_track_count);    }
-//  if(trig_06_track_count > 0)    {	trig_06_per_event->Fill(trig_06_track_count);    }
+
 
     int begin = 0;
-    /*
-    if(deut_count_W > 0  &&  trig_04_track_count > 0)
-    {
-	// check if the >3.0 GeV trigger coincices with the deuteron
-	int matcher         = 0;
-	int unique_trigger  = 0;
-	for(int i=begin; i<trig_04_track_count; i++)  // trigger loop
-	{
-	    matcher = 0;
-	    int H = trig_04_track_num[i];
-	    for(int j=0; j<deut_count_W; j++)
-	    {
-		int A = deut_track_num_W[j];
-		if(A == H)  matcher = 1;
-	    }
-	    if(matcher == 0){   unique_trigger = 1;   }
-	}
 
-	if(unique_trigger == 1)
-	{
-	    for(int j=0; j<deut_count_W; j++)
-	    {
-		int A = deut_track_num_W[j];
-		AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
-		if(trackA)
-		{
-		    Float_t m2tof       = get_mass_squared(trackA);		    
-		    Short_t charge_A    = trackA->Charge();
-		    Float_t pt_A        = trackA->Pt();
-		    if     (charge_A > 0){   m2_pt_pos_cut_with_trig_04->Fill(pt_A, m2tof);	}
-		    else if(charge_A < 0){   m2_pt_neg_cut_with_trig_04->Fill(pt_A, m2tof);	}
-		}
-	    }
-	}
-    }
-    */
     if(deut_count_W > 0  &&  trig_05_track_count > 0)
     {
 	for(int j=0; j<deut_count_W; j++)
@@ -1232,105 +1129,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 		else if(charge_A < 0){   m2_pt_neg_cut_with_trig_05->Fill(pt_A, m2tof);	}
     }   }   }
 
-    /*
-    if(deut_count_W > 0  &&  trig_06_track_count > 0)
-    {
-	for(int j=0; j<deut_count_W; j++)
-	{
-	    int A               = deut_track_num_W[j];
-	    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
-	    if(trackA)
-	    {
-		Float_t m2tof       = get_mass_squared(trackA);		    
-		Short_t charge_A    = trackA->Charge();
-		Float_t pt_A        = trackA->Pt();
-		if     (charge_A > 0){   m2_pt_pos_cut_with_trig_06->Fill(pt_A, m2tof);	}
-		else if(charge_A < 0){   m2_pt_neg_cut_with_trig_06->Fill(pt_A, m2tof);	}
-    }   }   }    
-    */
-
-    // mark
-////////////////////////////////////////////////////////////////////////////////////////////////////    
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-    if(deut_count_W > 0  &&  trig_04_track_count > 0)
-    {
-	for(int i=begin; i<trig_04_track_count; i++)  // trigger loop
-	{
-	    int H               = trig_04_track_num[i];
-	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-	    Float_t phi_H       = trackH->Phi();	    
-	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
-	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
-	    
-	    for(int j=0; j<deut_count_W; j++)
-	    {
-		int A               = deut_track_num_W[j];
-		if(A != H)
-		{
-		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
-		    if(trackA)
-		    {
-			Float_t pt_A        = trackA->Pt();
-			Float_t phi_A       = trackA->Phi();
-			if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }
-			if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }
-			Float_t Sdphi       =  phi_A - phi_H;
-			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
-			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
-
-			Float_t m2tof_A     = get_mass_squared(trackA);
-			if     (pt_A >= 1.0  &&  pt_A < 1.5  &&  TMath::Abs(Sdphi) < 0.698){   deut_m2_dphi_04_pt1->Fill(m2tof_A, Sdphi);   }
-			else if(pt_A >= 1.5  &&  pt_A < 2.0  &&  TMath::Abs(Sdphi) < 0.698){   deut_m2_dphi_04_pt2->Fill(m2tof_A, Sdphi);   }
-			else if(pt_A >= 2.0  &&  pt_A < 3.0  &&  TMath::Abs(Sdphi) < 0.698){   deut_m2_dphi_04_pt3->Fill(m2tof_A, Sdphi);   }
-			else if(pt_A >= 3.0  &&  pt_A < 4.0  &&  TMath::Abs(Sdphi) < 0.698){   deut_m2_dphi_04_pt4->Fill(m2tof_A, Sdphi);   }			    
-    }   }   }   }   }
-*/			  
-
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////    
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /*
-    begin = 0;
-    if(deut_count_T > 0  &&  trig_04_track_count > 0  &&  do_lead_only == 1)    {	begin = max_04;   trig_04_track_count = max_04 + 1;    }
-    if(deut_count_T > 0  &&  trig_04_track_count > 0)
-    {
-	for(int i=begin; i<trig_04_track_count; i++)  // trigger loop
-	{
-	    int H               = trig_04_track_num[i];
-	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-	    Float_t pt_H        = trackH->Pt();
-	    Short_t charge_H    = trackH->Charge();
-	    Float_t phi_H       = trackH->Phi();	    
-	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
-	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
-	    
-	    for(int j=0; j<deut_count_T; j++)
-	    {
-		int A               = deut_track_num_T[j];
-		if(A != H)
-		{
-		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
-		    if(trackA)
-		    {
-		    Short_t charge_A    = trackA->Charge();
-		    Float_t pt_A        = trackA->Pt();
-		    Float_t phi_A       = trackA->Phi();
-		    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }
-		    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }
-		    Float_t Sdphi       =  phi_A - phi_H;
-		    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
-		    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
-		    if     (charge_H > 0){  if     (charge_A > 0){    deut_dphi_pt_pos_pos_04_T->Fill(pt_A, Sdphi);      }
-			                    else if(charge_A < 0){    deut_dphi_pt_pos_neg_04_T->Fill(pt_A, Sdphi);	 }    }
-		    else if(charge_H < 0){  if     (charge_A > 0){    deut_dphi_pt_pos_neg_04_T->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_neg_neg_04_T->Fill(pt_A, Sdphi);	 }    }
-    }   }   }   }   }
-    */
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-
     begin = 0;
     if(deut_count_T > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
     if(deut_count_T > 0  &&  trig_05_track_count > 0)
@@ -1367,6 +1168,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			                    else if(charge_A < 0){    deut_dphi_pt_neg_neg_05_T->Fill(pt_A, Sdphi);	 }    }
     }   }   }   }   }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    
     if(run_mode == 0)
     {
     begin = 0;
@@ -1405,82 +1209,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			                    else if(charge_A < 0){    prot_dphi_pt_neg_neg_05_T->Fill(pt_A, Sdphi);	 }    }
     }   }   }   }   }
     }
-/*
-    begin = 0;
-    if(deut_count_T > 0  &&  trig_06_track_count > 0  &&  do_lead_only == 1)    {   begin = max_06;   trig_06_track_count = max_06 + 1;    }
-    if(deut_count_T > 0  &&  trig_06_track_count > 0)
-    {
-	for(int i=begin; i<trig_06_track_count; i++)  // trigger loop
-	{
-	    int H               = trig_06_track_num[i];
-	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-	    Float_t pt_H        = trackH->Pt();
-	    Short_t charge_H    = trackH->Charge();
-	    Float_t phi_H       = trackH->Phi();	    
-	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
-	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
 
-	    for(int j=0; j<deut_count_T; j++)
-	    {
-		int A               = deut_track_num_T[j];
-		if(A != H)
-		{
-		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
-		    if(trackA)
-		    {
-		    Short_t charge_A    = trackA->Charge();
-		    Float_t pt_A        = trackA->Pt();
-		    Float_t phi_A       = trackA->Phi();
-		    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }
-		    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }
-		    Float_t Sdphi       =  phi_A - phi_H;
-		    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
-		    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
-		    if     (charge_H > 0){  if     (charge_A > 0){    deut_dphi_pt_pos_pos_06_T->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_pos_neg_06_T->Fill(pt_A, Sdphi);	 }    }
-		    else if(charge_H < 0){  if     (charge_A > 0){    deut_dphi_pt_pos_neg_06_T->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_neg_neg_06_T->Fill(pt_A, Sdphi);	 }    }
-    }   }   }   }   }
-*/
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-    begin = 0;
-    if(deut_count_A > 0  &&  trig_04_track_count > 0  &&  do_lead_only == 1)    {	begin = max_04;   trig_04_track_count = max_04 + 1;    }
-    if(deut_count_A > 0  &&  trig_04_track_count > 0)
-    {
-	for(int i=begin; i<trig_04_track_count; i++)  // trigger loop
-	{
-	    int H               = trig_04_track_num[i];
-	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-	    Float_t pt_H        = trackH->Pt();
-	    Short_t charge_H    = trackH->Charge();
-	    Float_t phi_H       = trackH->Phi();	    
-	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
-	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
-
-	    for(int j=0; j<deut_count_A; j++)
-	    {
-		int A               = deut_track_num_A[j];
-		if(A != H)
-		{
-		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
-		    if(trackA)
-		    {
-		    Short_t charge_A    = trackA->Charge();
-		    Float_t pt_A        = trackA->Pt();
-		    Float_t phi_A       = trackA->Phi();
-		    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }
-		    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }
-		    Float_t Sdphi       =  phi_A - phi_H;
-		    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
-		    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
-		    if(     charge_H > 0){  if     (charge_A > 0){    deut_dphi_pt_pos_pos_04_A->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_pos_neg_04_A->Fill(pt_A, Sdphi);	 }    }
-		    else if(charge_H < 0){  if     (charge_A > 0){    deut_dphi_pt_pos_neg_04_A->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_neg_neg_04_A->Fill(pt_A, Sdphi);	 }    }
-    }   }   }   }   }
-*/
-    
+   
 
     begin = 0;
     if(deut_count_A > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
@@ -1518,82 +1249,9 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			                    else if(charge_A < 0){    deut_dphi_pt_neg_neg_05_A->Fill(pt_A, Sdphi);	 }    }
     }   }   }   }   }
 
-/*
-    begin = 0;
-    if(deut_count_A > 0  &&  trig_06_track_count > 0  &&  do_lead_only == 1)    {   begin = max_06;   trig_06_track_count = max_06 + 1;    }
-    if(deut_count_A > 0  &&  trig_06_track_count > 0)
-    {
-	for(int i=begin; i<trig_06_track_count; i++)  // trigger loop
-	{
-	    int H               = trig_06_track_num[i];
-	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-	    Float_t pt_H        = trackH->Pt();
-	    Short_t charge_H    = trackH->Charge();
-	    Float_t phi_H       = trackH->Phi();	    
-	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
-	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
 
-	    for(int j=0; j<deut_count_A; j++)
-	    {
-		int A               = deut_track_num_A[j];
-		if(A != H)
-		{
-		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
-		    if(trackA)
-		    {
-		    Short_t charge_A    = trackA->Charge();
-		    Float_t pt_A        = trackA->Pt();
-		    Float_t phi_A       = trackA->Phi();
-		    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }
-		    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }
-		    Float_t Sdphi       =  phi_A - phi_H;
-		    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
-		    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
-		    if     (charge_H > 0){  if     (charge_A > 0){    deut_dphi_pt_pos_pos_06_A->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_pos_neg_06_A->Fill(pt_A, Sdphi);	 }    }
-		    else if(charge_H < 0){  if     (charge_A > 0){    deut_dphi_pt_pos_neg_06_A->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_neg_neg_06_A->Fill(pt_A, Sdphi);	 }    }
-    }   }   }   }   }    
-*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-    begin = 0;
-    if(deut_count_B > 0  &&  trig_04_track_count > 0  &&  do_lead_only == 1)    {	begin = max_04;   trig_04_track_count = max_04 + 1;    }
-    if(deut_count_B > 0  &&  trig_04_track_count > 0)
-    {
-	for(int i=begin; i<trig_04_track_count; i++)  // trigger loop
-	{
-	    int H               = trig_04_track_num[i];
-	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
-	    Float_t pt_H        = trackH->Pt();
-	    Short_t charge_H    = trackH->Charge();
-	    Float_t phi_H       = trackH->Phi();	    
-	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
-	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
 
-	    for(int j=0; j<deut_count_B; j++)
-	    {
-		int A               = deut_track_num_B[j];
-		if(A != H)
-		{
-		    if(AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A)))
-//		    if(trackA)
-		    {
-		    Short_t charge_A    = trackA->Charge();
-		    Float_t pt_A        = trackA->Pt();
-		    Float_t phi_A       = trackA->Phi();
-		    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }
-		    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }
-		    Float_t Sdphi       =  phi_A - phi_H;
-		    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
-		    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
-		    if     (charge_H > 0){  if     (charge_A > 0){    deut_dphi_pt_pos_pos_04_B->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_pos_neg_04_B->Fill(pt_A, Sdphi);	 }    }
-		    else if(charge_H < 0){  if     (charge_A > 0){    deut_dphi_pt_pos_neg_04_B->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_neg_neg_04_B->Fill(pt_A, Sdphi);	 }    }
-    }   }   }   }   }
-*/
-    
 
     begin = 0;
     if(deut_count_B > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
@@ -1631,14 +1289,15 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			                    else if(charge_A < 0){    deut_dphi_pt_neg_neg_05_B->Fill(pt_A, Sdphi);	 }    }
     }   }   }   }   }
 
-/*
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
     begin = 0;
-    if(deut_count_B > 0  &&  trig_06_track_count > 0  &&  do_lead_only == 1)    {   begin = max_06;   trig_06_track_count = max_06 + 1;    }
-    if(deut_count_B > 0  &&  trig_06_track_count > 0)
+    if(deut_count_C > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_C > 0  &&  trig_05_track_count > 0)
     {
-	for(int i=begin; i<trig_06_track_count; i++)  // trigger loop
+	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
 	{
-	    int H               = trig_06_track_num[i];
+	    int H               = trig_05_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
 	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
@@ -1646,28 +1305,67 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
 	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
 
-	    for(int j=0; j<deut_count_B; j++)
+	    for(int j=0; j<deut_count_C; j++)
 	    {
-		int A               = deut_track_num_B[j];
+		int A               = deut_track_num_C[j];
 		if(A != H)
 		{
 		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
 		    if(trackA)
 		    {
-		    Short_t charge_A    = trackA->Charge();
-		    Float_t pt_A        = trackA->Pt();
-		    Float_t phi_A       = trackA->Phi();
-		    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }    if(phi_A <  -pio2){    phi_A = phi_A + twopi;   }
-		    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }    if(phi_A > 3*pio2){    phi_A = phi_A - twopi;   }
-		    Float_t Sdphi       =  phi_A - phi_H;
+		    Short_t charge_C    = trackA->Charge();
+		    Float_t pt_C        = trackA->Pt();
+		    Float_t phi_C       = trackA->Phi();
+		    if(phi_C <  -pio2){    phi_C = phi_C + twopi;   }    if(phi_C <  -pio2){    phi_C = phi_C + twopi;   }
+		    if(phi_C > 3*pio2){    phi_C = phi_C - twopi;   }    if(phi_C > 3*pio2){    phi_C = phi_C - twopi;   }
+		    Float_t Sdphi       =  phi_C - phi_H;
 		    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
 		    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
-		    if     (charge_H > 0){  if     (charge_A > 0){    deut_dphi_pt_pos_pos_06_B->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_pos_neg_06_B->Fill(pt_A, Sdphi);	 }    }
-		    else if(charge_H < 0){  if     (charge_A > 0){    deut_dphi_pt_pos_neg_06_B->Fill(pt_A, Sdphi);	 }
-			                    else if(charge_A < 0){    deut_dphi_pt_neg_neg_06_B->Fill(pt_A, Sdphi);	 }    }
+		    if     (charge_H > 0){  if     (charge_C > 0){    deut_dphi_pt_pos_pos_05_C->Fill(pt_C, Sdphi);	 }
+			                    else if(charge_C < 0){    deut_dphi_pt_pos_neg_05_C->Fill(pt_C, Sdphi);	 }    }
+		    else if(charge_H < 0){  if     (charge_C > 0){    deut_dphi_pt_pos_neg_05_C->Fill(pt_C, Sdphi);	 }
+			                    else if(charge_C < 0){    deut_dphi_pt_neg_neg_05_C->Fill(pt_C, Sdphi);	 }    }
     }   }   }   }   }
-*/
+    
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    begin = 0;
+    if(deut_count_D > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_D > 0  &&  trig_05_track_count > 0)
+    {
+	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{
+	    int H               = trig_05_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
+	    Float_t phi_H       = trackH->Phi();	    
+	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
+	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
+
+	    for(int j=0; j<deut_count_D; j++)
+	    {
+		int A               = deut_track_num_D[j];
+		if(A != H)
+		{
+		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		    if(trackA)
+		    {
+		    Short_t charge_D    = trackA->Charge();
+		    Float_t pt_D        = trackA->Pt();
+		    Float_t phi_D       = trackA->Phi();
+		    if(phi_D <  -pio2){    phi_D = phi_D + twopi;   }    if(phi_D <  -pio2){    phi_D = phi_D + twopi;   }
+		    if(phi_D > 3*pio2){    phi_D = phi_D - twopi;   }    if(phi_D > 3*pio2){    phi_D = phi_D - twopi;   }
+		    Float_t Sdphi       =  phi_D - phi_H;
+		    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+		    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+		    if     (charge_H > 0){  if     (charge_D > 0){    deut_dphi_pt_pos_pos_05_D->Fill(pt_D, Sdphi);	 }
+			                    else if(charge_D < 0){    deut_dphi_pt_pos_neg_05_D->Fill(pt_D, Sdphi);	 }    }
+		    else if(charge_H < 0){  if     (charge_D > 0){    deut_dphi_pt_pos_neg_05_D->Fill(pt_D, Sdphi);	 }
+			                    else if(charge_D < 0){    deut_dphi_pt_neg_neg_05_D->Fill(pt_D, Sdphi);	 }    }
+    }   }   }   }   }
+    
+
                                                         // continue until all the tracks are processed
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
@@ -1678,7 +1376,8 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 
 
 
-
+    if(run_mode == 0)
+    {
     
     AliAODHandler *oh = (AliAODHandler*)AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
     if (oh)
@@ -1715,7 +1414,7 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	if (1) {   AliAODCaloCells *out =                           eout->GetEMCALCells();       AliAODCaloCells *in =                evin->GetEMCALCells();    new (out) AliAODCaloCells(*in);  }
     }
 
-
+    }
     
 }
 
