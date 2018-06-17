@@ -49,6 +49,10 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
         TList*                fOutputList;        //! output list
 	AliPIDResponse*       fPIDResponse;
 	AliAnalysisUtils*     fAnalysisUtils;
+
+
+
+
 	
 	TH1F*                 fHistPt;                     //  1
 	TH2F*                 cent_ntracks;                //  2
@@ -65,110 +69,103 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 m2_pt_neg_cut_A;             // 12
 	TH2F*                 m2_pt_pos_cut_B;             // 13
 	TH2F*                 m2_pt_neg_cut_B;             // 14
-//	TH2F*                 m2_pt_pos_TPC_prot;          //  5a
-//	TH2F*                 m2_pt_neg_TPC_prot;          //  6a
-	TH2F*                 m2_pt_pos_cut_T_prot;        //  7a
-	TH2F*                 m2_pt_neg_cut_T_prot;        //  8a
-//      TH2F*                 m2_pt_pos_cut_with_trig_04;  // 15
-//      TH2F*                 m2_pt_neg_cut_with_trig_04;  // 16
-	TH2F*                 m2_pt_pos_cut_with_trig_05;  // 17
-	TH2F*                 m2_pt_neg_cut_with_trig_05;  // 18
-//      TH2F*                 m2_pt_pos_cut_with_trig_06;  // 19
-//      TH2F*                 m2_pt_neg_cut_with_trig_06;  // 20
+	TH2F*                 m2_pt_pos_cut_C;             // 15
+	TH2F*                 m2_pt_neg_cut_C;             // 16
+	TH2F*                 m2_pt_pos_cut_D;             // 17
+	TH2F*                 m2_pt_neg_cut_D;             // 18	
+	TH2F*                 m2_pt_pos_cut_T_prot;        // 19
+	TH2F*                 m2_pt_neg_cut_T_prot;        // 20
 	
-	TH2F*                 deut_phi_pt_pos_T;           // 21
-	TH2F*                 deut_phi_pt_neg_T;           // 22
-	TH2F*                 prot_phi_pt_pos_T;           // 21a
-	TH2F*                 prot_phi_pt_neg_T;           // 22a
-	TH2F*                 deut_phi_pt_pos_A;           // 23
-	TH2F*                 deut_phi_pt_neg_A;           // 24
-	TH2F*                 deut_phi_pt_pos_B;           // 25
-	TH2F*                 deut_phi_pt_neg_B;           // 26
+	TH2F*                 m2_pt_pos_cut_with_trig_05;  // 21
+	TH2F*                 m2_pt_neg_cut_with_trig_05;  // 22
+	
+	TH2F*                 deut_phi_pt_pos_T;           // 23
+	TH2F*                 deut_phi_pt_neg_T;           // 24
+	
+	TH2F*                 prot_phi_pt_pos_T;           // 25
+	TH2F*                 prot_phi_pt_neg_T;           // 26
+	
+	TH2F*                 deut_phi_pt_pos_A;           // 27
+	TH2F*                 deut_phi_pt_neg_A;           // 28
+	TH2F*                 deut_phi_pt_pos_B;           // 29
+	TH2F*                 deut_phi_pt_neg_B;           // 30
+	TH2F*                 deut_phi_pt_pos_C;           // 31
+	TH2F*                 deut_phi_pt_neg_C;           // 32
+	TH2F*                 deut_phi_pt_pos_D;           // 33
+	TH2F*                 deut_phi_pt_neg_D;           // 34
+	
+	TH1I*                 deut_per_event;              // 35
+	TH1I*                 prot_per_event;              // 36
+	
+	TH1I*                 trig_05_per_event;           // 37
 
-	TH1I*                 deut_per_event;              // 27
-	TH1I*                 prot_per_event;              // 27
-//      TH1I*                 trig_04_per_event;           // 28
-	TH1I*                 trig_05_per_event;           // 29
-//      TH1I*                 trig_06_per_event;           // 30
-		
- //      TH2F*                 trig_04_phi_pt_pos;          // 31
-//      TH2F*                 trig_04_phi_pt_neg;          // 32
- 	TH2F*                 trig_05_phi_pt_pos;          // 33
-	TH2F*                 trig_05_phi_pt_neg;          // 34
-//      TH2F*                 trig_06_phi_pt_pos;          // 35
-//      TH2F*                 trig_06_phi_pt_neg;          // 36
+ 	TH2F*                 trig_05_phi_pt_pos;          // 38
+	TH2F*                 trig_05_phi_pt_neg;          // 39
 
-	TH2F*                 tof_phi_eta_pos;             // 37
-	TH2F*                 tof_phi_eta_neg;             // 38
-	TH2F*                 tof_phi_eta_pos_deut;        // 39
-	TH2F*                 tof_phi_eta_neg_deut;        // 40
+	TH2F*                 tof_phi_eta_pos;             // 40
+	TH2F*                 tof_phi_eta_neg;             // 41
+	TH2F*                 tof_phi_eta_pos_deut;        // 42
+	TH2F*                 tof_phi_eta_neg_deut;        // 43
 	
-	TH1F*                 deut_pt_compare_pos;         // 41
-	TH1F*                 deut_pt_compare_neg;         // 42
-	TH1F*                 tpc_sector_fraction;         // 43
-	TH1F*                 primary_vertex_z;            // 44
-	TH1F*                 primary_vertex_z_cut1;       // 45
-	TH1F*                 primary_vertex_z_cut2;       // 46
+	TH1F*                 deut_pt_compare_pos;         // 44
+	TH1F*                 deut_pt_compare_neg;         // 45
+	TH1F*                 tpc_sector_fraction;         // 46
+	TH1F*                 primary_vertex_z;            // 47
+	TH1F*                 primary_vertex_z_cut1;       // 48
+	TH1F*                 primary_vertex_z_cut2;       // 49
 	
-//      TH2F*                 deut_dphi_pt_pos_pos_04_T;   // 47
-//      TH2F*                 deut_dphi_pt_pos_neg_04_T;   // 48
-//      TH2F*                 deut_dphi_pt_neg_neg_04_T;   // 49
 	TH2F*                 deut_dphi_pt_pos_pos_05_T;   // 50
 	TH2F*                 deut_dphi_pt_pos_neg_05_T;   // 51
 	TH2F*                 deut_dphi_pt_neg_neg_05_T;   // 52
-//      TH2F*                 deut_dphi_pt_pos_pos_06_T;   // 53
-//      TH2F*                 deut_dphi_pt_pos_neg_06_T;   // 54
-//      TH2F*                 deut_dphi_pt_neg_neg_06_T;   // 55
-	TH2F*                 prot_dphi_pt_pos_pos_05_T;   // 50a
-	TH2F*                 prot_dphi_pt_pos_neg_05_T;   // 51a
-	TH2F*                 prot_dphi_pt_neg_neg_05_T;   // 52a
+
+	TH2F*                 prot_dphi_pt_pos_pos_05_T;   // 53
+	TH2F*                 prot_dphi_pt_pos_neg_05_T;   // 54
+	TH2F*                 prot_dphi_pt_neg_neg_05_T;   // 55
+
+	TH2F*                 deut_dphi_pt_pos_pos_05_A;   // 56
+	TH2F*                 deut_dphi_pt_pos_neg_05_A;   // 57
+	TH2F*                 deut_dphi_pt_neg_neg_05_A;   // 58
+
+	TH2F*                 deut_dphi_pt_pos_pos_05_B;   // 59
+	TH2F*                 deut_dphi_pt_pos_neg_05_B;   // 60
+	TH2F*                 deut_dphi_pt_neg_neg_05_B;   // 61
+
+
 	
-//      TH2F*                 deut_dphi_pt_pos_pos_04_A;   // 56
-//      TH2F*                 deut_dphi_pt_pos_neg_04_A;   // 57
-//      TH2F*                 deut_dphi_pt_neg_neg_04_A;   // 58
-	TH2F*                 deut_dphi_pt_pos_pos_05_A;   // 59
-	TH2F*                 deut_dphi_pt_pos_neg_05_A;   // 60
-	TH2F*                 deut_dphi_pt_neg_neg_05_A;   // 61
-//      TH2F*                 deut_dphi_pt_pos_pos_06_A;   // 62
-//      TH2F*                 deut_dphi_pt_pos_neg_06_A;   // 63
-//      TH2F*                 deut_dphi_pt_neg_neg_06_A;   // 64
-
-//      TH2F*                 deut_dphi_pt_pos_pos_04_B;   // 65
-//      TH2F*                 deut_dphi_pt_pos_neg_04_B;   // 66
-//      TH2F*                 deut_dphi_pt_neg_neg_04_B;   // 67
-	TH2F*                 deut_dphi_pt_pos_pos_05_B;   // 68
-	TH2F*                 deut_dphi_pt_pos_neg_05_B;   // 69
-	TH2F*                 deut_dphi_pt_neg_neg_05_B;   // 70
-//      TH2F*                 deut_dphi_pt_pos_pos_06_B;   // 71
-//      TH2F*                 deut_dphi_pt_pos_neg_06_B;   // 72
-//      TH2F*                 deut_dphi_pt_neg_neg_06_B;   // 73
-
-	TH1F*                 DCAxy_pos;                   // 74
-	TH1F*                 DCAz_pos;                    // 75
-	TH1F*                 DCAxy_neg;                   // 76
-	TH1F*                 DCAz_neg;                    // 77
-
-	TH2F*                 m2_pt_pos_fine;              // 78
-	TH2F*                 m2_pt_neg_fine;              // 79
-	TH2F*                 m2_pt_pos_TPC_fine;          // 80
-	TH2F*                 m2_pt_neg_TPC_fine;          // 81
-	TH2F*                 m2_pt_pos_cut_T_fine;        // 82
-	TH2F*                 m2_pt_neg_cut_T_fine;        // 83
-	TH2F*                 m2_pt_pos_cut_A_fine;        // 84
-	TH2F*                 m2_pt_neg_cut_A_fine;        // 85
-	TH2F*                 m2_pt_pos_cut_B_fine;        // 86
-	TH2F*                 m2_pt_neg_cut_B_fine;        // 87
-
-	TH2F*                 deut_m2_dphi_04_pt1;         // 88
-	TH2F*                 deut_m2_dphi_04_pt2;         // 89
-	TH2F*                 deut_m2_dphi_04_pt3;         // 90
-	TH2F*                 deut_m2_dphi_04_pt4;         // 91
+	TH2F*                 deut_dphi_pt_pos_pos_05_C;   // 62
+	TH2F*                 deut_dphi_pt_pos_neg_05_C;   // 63
+	TH2F*                 deut_dphi_pt_neg_neg_05_C;   // 64
 	
-	TH2F*                 m2_pt_pos_TPC_prot_fine;     // 92
-	TH2F*                 m2_pt_neg_TPC_prot_fine;     // 93
-	TH2F*                 m2_pt_pos_cut_T_prot_fine;   // 94
-	TH2F*                 m2_pt_neg_cut_T_prot_fine;   // 95
+	TH2F*                 deut_dphi_pt_pos_pos_05_D;   // 65
+	TH2F*                 deut_dphi_pt_pos_neg_05_D;   // 66
+	TH2F*                 deut_dphi_pt_neg_neg_05_D;   // 67
 	
+	TH1F*                 DCAxy_pos;                   // 68
+	TH1F*                 DCAz_pos;                    // 69
+	TH1F*                 DCAxy_neg;                   // 70
+	TH1F*                 DCAz_neg;                    // 71
+
+	TH2F*                 m2_pt_pos_fine;              // 72
+	TH2F*                 m2_pt_neg_fine;              // 73
+	TH2F*                 m2_pt_pos_TPC_fine;          // 74
+	TH2F*                 m2_pt_neg_TPC_fine;          // 75
+	TH2F*                 m2_pt_pos_cut_T_fine;        // 76
+	TH2F*                 m2_pt_neg_cut_T_fine;        // 77
+	TH2F*                 m2_pt_pos_cut_A_fine;        // 78
+	TH2F*                 m2_pt_neg_cut_A_fine;        // 79
+	TH2F*                 m2_pt_pos_cut_B_fine;        // 80
+	TH2F*                 m2_pt_neg_cut_B_fine;        // 81
+
+	TH2F*                 m2_pt_pos_cut_C_fine;        // 82
+	TH2F*                 m2_pt_neg_cut_C_fine;        // 83
+	TH2F*                 m2_pt_pos_cut_D_fine;        // 84
+	TH2F*                 m2_pt_neg_cut_D_fine;        // 85
+	
+	TH2F*                 m2_pt_pos_TPC_prot_fine;     // 86
+	TH2F*                 m2_pt_neg_TPC_prot_fine;     // 87
+	TH2F*                 m2_pt_pos_cut_T_prot_fine;   // 88
+	TH2F*                 m2_pt_neg_cut_T_prot_fine;   // 89
+
         AliAnalysisTaskCorPIDTOFQA(const AliAnalysisTaskCorPIDTOFQA&);                        // not implemented
         AliAnalysisTaskCorPIDTOFQA& operator=(const AliAnalysisTaskCorPIDTOFQA&);             // not implemented
 
