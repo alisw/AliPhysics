@@ -15,7 +15,7 @@
 //
 class AliPP13NonlinearityScanSelection : public AliPP13PhysPhotonSelectionMC
 {
-	enum ScanSize {kNbinsA = 11, kNbinsSigma = 11};
+	enum ScanSize {kNbinsA = 9, kNbinsSigma = 9};
 public:
 	AliPP13NonlinearityScanSelection(): AliPP13PhysPhotonSelectionMC() {}
 	AliPP13NonlinearityScanSelection(const char * name, const char * title, AliPP13ClusterCuts cuts, 
