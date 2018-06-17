@@ -285,6 +285,11 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
 
   AliDebug(3, Form("The candidate has pt = %f, y = %f", fmcPartCandidate->Pt(), fmcPartCandidate->Y()));
 
+  if(fConfiguration == AliCFTaskVertexingHF::kESE) {
+    AliAODRecoCascadeHF* cascade = (AliAODRecoCascadeHF*)fRecoCandidate;
+    fLocalMultiplicity = ComputeLocalMultiplicity(cascade->Eta(), cascade->Phi(), 0.1, 0.1);
+  }
+
   switch (fConfiguration){
   case AliCFTaskVertexingHF::kSnail:
     vectorMC[0] = fmcPartCandidate->Pt();
@@ -319,6 +324,14 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
     vectorMC[1] = fmcPartCandidate->Y() ;
     vectorMC[2] = fCentValue;   // dummy value for dca, meaningless in MC
     vectorMC[3] = fMultiplicity;   // dummy value for d0pi, meaningless in MC, in micron
+    break;
+  case AliCFTaskVertexingHF::kESE:
+    vectorMC[0] = fmcPartCandidate->Pt();
+    vectorMC[1] = fmcPartCandidate->Y() ;
+    vectorMC[2] = fCentValue;   // centrality
+    vectorMC[3] = fMultiplicity;   // multiplicity (diff estimators can be used)
+    vectorMC[4] = fLocalMultiplicity;   // local multiplicity (Ntracks in DeltaEta<0.1 and DeltaPhi<0.1)
+    vectorMC[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
     break;
   }
 
@@ -418,6 +431,14 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
     vectorReco[1] = rapidity;
     vectorReco[2] = fCentValue;
     vectorReco[3] = fMultiplicity; 
+    break;
+  case AliCFTaskVertexingHF::kESE:
+    vectorReco[0] = pt;
+    vectorReco[1] = rapidity;
+    vectorReco[2] = fCentValue;   // centrality
+    vectorReco[3] = fMultiplicity;   // multiplicity (diff estimators can be used)
+    vectorReco[4] = fLocalMultiplicity;   // local multiplicity (Ntracks in DeltaEta<0.1 and DeltaPhi<0.1)
+    vectorReco[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
     break;
   }
 

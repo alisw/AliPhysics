@@ -336,6 +336,11 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	AliAODRecoDecayHF* decay = new AliAODRecoDecayHF(vertD,vertDec,nprongs,charge,px,py,pz,d0);
 	Double_t cT = decay->Ct(pdgCand);
 	
+  if(fConfiguration == AliCFTaskVertexingHF::kESE) {
+    AliAODRecoDecayHF3Prong *decay3 = (AliAODRecoDecayHF3Prong*)fRecoCandidate;
+    fLocalMultiplicity = ComputeLocalMultiplicity(decay3->Eta(), decay3->Phi(), 0.1, 0.1);
+  }
+
 	switch (fConfiguration){
 	case AliCFTaskVertexingHF::kSnail:
 		vectorMC[0] = fmcPartCandidate->Pt();
@@ -374,12 +379,20 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 		vectorMC[6] = 1. ;  // fake: always filling with 1 at MC level 
 		vectorMC[7] = fMultiplicity;   // dummy value for d0pi, meaningless in MC, in micron
 		break;
-	case AliCFTaskVertexingHF::kFalcon:
-		vectorMC[0] = fmcPartCandidate->Pt();
-		vectorMC[1] = fmcPartCandidate->Y() ;
-		vectorMC[2] = fCentValue;   // dummy value for dca, meaningless in MC
-		vectorMC[3] = fMultiplicity;   // dummy value for d0pi, meaningless in MC, in micron
-		break;
+  case AliCFTaskVertexingHF::kFalcon:
+    vectorMC[0] = fmcPartCandidate->Pt();
+    vectorMC[1] = fmcPartCandidate->Y() ;
+    vectorMC[2] = fCentValue;   // dummy value for dca, meaningless in MC
+    vectorMC[3] = fMultiplicity;   // dummy value for d0pi, meaningless in MC, in micron
+    break;
+  case AliCFTaskVertexingHF::kESE:
+    vectorMC[0] = fmcPartCandidate->Pt();
+    vectorMC[1] = fmcPartCandidate->Y() ;
+    vectorMC[2] = fCentValue;   // centrality
+    vectorMC[3] = fMultiplicity;   // multiplicity (diff estimators can be used)
+    vectorMC[4] = fLocalMultiplicity;   // local multiplicity (Ntracks in DeltaEta<0.1 and DeltaPhi<0.1)
+    vectorMC[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
+    break;
 	}
 	delete decay;	
 	bGenValues = kTRUE;
@@ -496,6 +509,14 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
 		vectorReco[2] = fCentValue;   
 		vectorReco[3] = fMultiplicity;  
 		break;
+  case AliCFTaskVertexingHF::kESE:
+    vectorReco[0] = pt;
+    vectorReco[1] = rapidity;
+    vectorReco[2] = fCentValue;   // centrality
+    vectorReco[3] = fMultiplicity;   // multiplicity (diff estimators can be used)
+    vectorReco[4] = fLocalMultiplicity;   // local multiplicity (Ntracks in DeltaEta<0.1 and DeltaPhi<0.1)
+    vectorReco[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
+    break;
 	}
 
 	bFillRecoValues = kTRUE;

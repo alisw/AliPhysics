@@ -67,7 +67,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   enum {
     kSnail = 0,    /// slow configuration, all variables
     kCheetah = 1,   /// fast configuration, only a subset of variables
-    kFalcon = 2   /// super fast configuration, only (pt,y,centrality)
+    kFalcon = 2,   /// super fast configuration, only (pt,y,centrality)
+    kESE = 3   /// configuration with variables for ESE analysis (pt,y,centrality,q2,mult)
   };
 
   enum {
@@ -273,6 +274,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
 
   void SetCutOnMomConservation(Float_t cut) {fCutOnMomConservation = cut;}
   Bool_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
+
+  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const;
 
  protected:
   AliCFManager   *fCFManager;   ///  pointer to the CF manager
