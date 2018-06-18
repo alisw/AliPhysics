@@ -140,14 +140,14 @@ void AliFemtoDreamTrack::SetESDTrackingInformation() {
     this->fIsSet = false;
     return;
   }
-  Double_t pos[3] = { 0. };
-  Double_t covTr[21]={0.};
+  double pos[3] = { 0. };
+  double covTr[21]={0.};
   //  Double_t pid[10]={0.};
-  Double_t p[3] = { 0. };
-  Double_t pDCA[3] = { 0. }; // momentum at DCA
-  Double_t rDCA[3] = { 0. }; // position at DCA
-  Float_t  dDCA[2] = {0.};    // DCA to the vertex d and z
-  Float_t  cDCA[3] = {0.};    // covariance of impact parameters
+  double p[3] = { 0. };
+  double pDCA[3] = { 0. }; // momentum at DCA
+  double rDCA[3] = { 0. }; // position at DCA
+  float  dDCA[2] = {0.};    // DCA to the vertex d and z
+  float  cDCA[3] = {0.};    // covariance of impact parameters
   // Loop over the ESD trcks and pick out the tracks passing TPC only cuts
   const AliESDVertex *vtxSPD = fESDTrack->GetESDEvent()->GetPrimaryVertexSPD();
 //  const AliESDVertex *vtx = fESDTrack->GetESDEvent()->GetPrimaryVertex();
