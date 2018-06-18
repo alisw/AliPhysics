@@ -480,6 +480,19 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 
 }
 
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskMaterialHistos::Notify()
+{
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){
+        ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }
+  }
+  return kTRUE;
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskMaterialHistos::UserExec(Option_t *){
 

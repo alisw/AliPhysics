@@ -28,6 +28,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		virtual ~AliAnalysisTaskMaterialHistos();
 
 		virtual void   UserCreateOutputObjects();
+        virtual Bool_t Notify();
 		virtual void   UserExec(Option_t *option);
         virtual void   SetLogBinningXTH2(TH2* histoRebin);
 		virtual void   Terminate(Option_t *);
