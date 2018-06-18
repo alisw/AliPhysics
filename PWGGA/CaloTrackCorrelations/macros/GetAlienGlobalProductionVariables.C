@@ -29,7 +29,7 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
                                        TString & col, TString & period, Int_t & year, 
                                        Bool_t print = kFALSE)
 {
-  if ( col == "" || year < 2009 )
+  if ( col != "" && year >= 2009 )
   {
     printf("GetAlienGlobalProductionVariables() - Use values set via configuration:"
            " collision <%s>, period <%s>, year %d, MC %d\n",
