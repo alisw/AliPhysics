@@ -412,6 +412,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
       Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
+      Bool_t    GetIsFromPileupSPD()                                                { return fRemovePileUpSPD                                   ; }
       Int_t     GetPastFutureLowBC()                                                { return fPastFutureRejectionLow                            ; }
       Int_t     GetPastFutureHighBC()                                               { return fPastFutureRejectionHigh                           ; }
       Bool_t    GetDoPileUpRejectV0MTPCout()                                        { return fDoPileUpRejectV0MTPCout                           ; }
@@ -555,10 +556,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fMultiplicityMethod;                    ///< selected multiplicity method
       Int_t                       fSpecialTrigger;                        ///< flag
       Int_t                       fSpecialSubTrigger;                     ///< flag
-      Bool_t                      fRemovePileUp;                          ///< flag
+      Bool_t                      fRemovePileUp;                          ///< flag specifies if any pileup cut is applied
+      Bool_t                      fRemovePileUpSPD;                       ///< flag specifies if SPD pileup cuts are applied
       Int_t                       fPastFutureRejectionLow;                ///< sets bunch crossing event rejection in past
-      Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future
-      Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V=M mult
+      Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future. If both are 0, the cut is not applied
+      Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V0M mult
       TF1 *                       fFPileUpRejectV0MTPCout;                ///< Pol1 function to compute the cut
       Int_t                       fRejectExtraSignals;                    ///<
       UInt_t                      fOfflineTriggerMask;                    ///< Task processes collision candidates only
@@ -649,7 +651,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,50)
+      ClassDef(AliConvEventCuts,51)
       /// \endcond
 };
 

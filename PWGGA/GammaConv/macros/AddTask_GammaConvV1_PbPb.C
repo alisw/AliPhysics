@@ -1745,6 +1745,13 @@ void AddTask_GammaConvV1_PbPb(  Int_t     trainConfig                     = 1,  
     cuts.AddCut("18910623", "00200009247602008250404000", "0652501500000000"); // 80-90%
     cuts.AddCut("18010623", "00200009247602008250404000", "0652501500000000"); // 80-100%
     cuts.AddCut("10910623", "00200009247602008250404000", "0652501500000000"); //  0-90%
+  } else if (trainConfig == 282){ // LHC15o, kINT7, test Pileup cuts
+    cuts.AddCut("10910013", "00200009247602008250404000", "0652501500000000"); // no pileup rejection
+    cuts.AddCut("10910113", "00200009247602008250404000", "0652501500000000"); // pileup rejection using SPD (strict cut)
+    cuts.AddCut("10910613", "00200009247602008250404000", "0652501500000000"); // pileup rejection using SPD (strict cut) and V0+TPC
+    cuts.AddCut("10910a13", "00200009247602008250404000", "0652501500000000"); // pileup rejection using SPD (open cut) and V0+TPC
+    cuts.AddCut("10910b13", "00200009247602008250404000", "0652501500000000"); // pileup rejection using V0+TPC
+
 
   } else  if (trainConfig == 300){ // LHC10h standard, eta 0.65, y = 0.6
     cuts.AddCut("60100013", "03200009300002003220000000", "0152304500900000"); // 0-5%
