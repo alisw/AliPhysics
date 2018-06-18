@@ -1314,7 +1314,7 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   }
   
   gSumMass->Draw("P");
-  if ( kFirstTRDSM && opt == "SM" )
+  if ( kFirstTRDSM > 0 && opt == "SM" )
   {
     gSumTRDnotMass->Draw("P");
     gSumTRDyesMass->Draw("P"); 
@@ -1345,7 +1345,7 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   }
   
   gSumWidth->Draw("P");
-  if ( kFirstTRDSM && opt == "SM" )
+  if ( kFirstTRDSM > 0 && opt == "SM" )
   {
     gSumTRDnotWidth->Draw("P");
     gSumTRDyesWidth->Draw("P"); 
@@ -1369,7 +1369,7 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
   }
   
   gSumPt->Draw("P");
-  if ( kFirstTRDSM && opt == "SM" )
+  if ( kFirstTRDSM > 0 && opt == "SM" )
   {
     gSumTRDnotPt->Draw("P");
     gSumTRDyesPt->Draw("P"); 
@@ -1396,7 +1396,7 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
     }
     
     gSumPtBC->Draw("P");
-    if ( kFirstTRDSM && opt == "SM" )
+    if ( kFirstTRDSM > 0 && opt == "SM" )
     {
       gSumTRDnotPtBC->Draw("P");
       gSumTRDyesPtBC->Draw("P"); 
@@ -1562,7 +1562,7 @@ void PlotGraphs(TString opt, Int_t first, Int_t last)
  
   
   // Ratio to corresponding TRD case
-  if ( kFirstTRDSM && opt == "SM" ) // it could be extended for Sector/Side
+  if ( kFirstTRDSM > 0 && opt == "SM" ) // it could be extended for Sector/Side
   {
     //
     // Calculate the ratio to the sum
