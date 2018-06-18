@@ -93,9 +93,9 @@ AliFemtoDreamEvent::~AliFemtoDreamEvent() {
   if (fEvtCuts) {
     delete fEvtCuts;
   }
-  if (fUtils) {
-    delete fUtils;
-  }
+//  if (fUtils) {
+//    delete fUtils;
+//  }
 }
 
 AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(const AliFemtoDreamEvent &obj){
