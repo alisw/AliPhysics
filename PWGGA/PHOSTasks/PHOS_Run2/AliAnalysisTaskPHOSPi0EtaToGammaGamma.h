@@ -260,8 +260,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fMaxR        = MaxR;
     }
     void SetOAStudy(Bool_t flag) {fIsOAStudy = flag;}
-
     void SetMatchingR(Double_t maxR) {fMatchingR = maxR;}//for matching between a track and a cluster
+    void SetNMixForTrackMatching(Int_t nev) {fNMixTrack = nev;}
 
   protected:
     virtual void UserCreateOutputObjects();
@@ -458,6 +458,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     TF1 *fNonLin[7][7];
     Double_t fEmin;
     Bool_t fIsOAStudy;
+    Int_t fNMixTrack;
     Double_t fMatchingR;//for photon purity
     Bool_t fAnaOmega3Pi;
     Double_t fMinPtPi0;//only for omega->3pi
@@ -468,7 +469,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 61);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 62);
 };
 
 #endif
