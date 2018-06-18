@@ -294,9 +294,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 
       pm[(sdigit.GetSector(0))-1][sdigit.GetSector(1)] += sdigit.GetLightPM();
       //Ch. debug
-      /*printf("\t det %d PM %d -> pm[%d][%d] = %.0f \n",
-      	  sdigit.GetSector(0), sdigit.GetSector(1),sdigit.GetSector(0)-1,
-      	  sdigit.GetSector(1), pm[sdigit.GetSector(0)-1][sdigit.GetSector(1)]);*/
+      //printf("\t det %d PM %d -> pm[%d][%d] = %.0f \n", sdigit.GetSector(0), sdigit.GetSector(1),sdigit.GetSector(0)-1, sdigit.GetSector(1), pm[sdigit.GetSector(0)-1][sdigit.GetSector(1)]);
     }
 
     loader->UnloadSDigits();
@@ -896,9 +894,9 @@ Int_t AliZDCDigitizer::Phe2ADCch(Int_t Det, Int_t Quad, Float_t Light,
                                  Int_t Res) const
 {
   // Evaluation of the ADC channel corresponding to the light yield Light
-  Int_t vADCch = (Int_t) (Light * fPMGain[Det-1][Quad] * fADCRes[Res]);
+  Int_t vADCch = (Int_t) ((Light * fPMGain[Det-1][Quad] * fADCRes[Res])+0.5);
   // Ch. debug
-  /*if(Res==0){
+  /*if(Res==0 && Det==4){
     printf(" AliZDCDigitizer::Phe2ADCch: det %d quad %d phe %f ADCres %f ADC %f %d\n", Det, Quad, Light, fADCRes[Res], Light * fPMGain[Det-1][Quad] * fADCRes[Res], vADCch);
   }*/
   
