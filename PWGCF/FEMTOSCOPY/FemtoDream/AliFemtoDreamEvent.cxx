@@ -14,8 +14,8 @@
 
 ClassImp(AliFemtoDreamEvent)
 AliFemtoDreamEvent::AliFemtoDreamEvent()
-:fUtils(new AliAnalysisUtils())
-,fEvtCuts(new AliEventCuts())
+:fUtils(nullptr)
+,fEvtCuts(nullptr)
 ,fEvtCutList(nullptr)
 ,fxVtx(0)
 ,fyVtx(0)
@@ -93,9 +93,9 @@ AliFemtoDreamEvent::~AliFemtoDreamEvent() {
   if (fEvtCuts) {
     delete fEvtCuts;
   }
-//  if (fUtils) {
-//    delete fUtils;
-//  }
+  if (fUtils) {
+    delete fUtils;
+  }
 }
 
 AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(const AliFemtoDreamEvent &obj){
