@@ -112,10 +112,27 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
     m2_pt_neg_cut_A(0),            // 12
     m2_pt_pos_cut_B(0),            // 13
     m2_pt_neg_cut_B(0),            // 14
-    m2_pt_pos_cut_C(0),            // 15
-    m2_pt_neg_cut_C(0),            // 16
-    m2_pt_pos_cut_D(0),            // 17
-    m2_pt_neg_cut_D(0),            // 18
+    m2_pt_pos_cut_sb0(0),          //
+    m2_pt_neg_cut_sb0(0),          //
+    m2_pt_pos_cut_sb1(0),          // 15
+    m2_pt_neg_cut_sb1(0),          // 16
+    m2_pt_pos_cut_sb2(0),          //
+    m2_pt_neg_cut_sb2(0),          //
+    m2_pt_pos_cut_sb3(0),          //
+    m2_pt_neg_cut_sb3(0),          //
+    m2_pt_pos_cut_sb4(0),          //
+    m2_pt_neg_cut_sb4(0),          //
+    m2_pt_pos_cut_sb5(0),          //
+    m2_pt_neg_cut_sb5(0),          //
+    m2_pt_pos_cut_sb6(0),          //
+    m2_pt_neg_cut_sb6(0),          //
+    m2_pt_pos_cut_sb7(0),          //
+    m2_pt_neg_cut_sb7(0),          //
+    m2_pt_pos_cut_sb8(0),          //
+    m2_pt_neg_cut_sb8(0),          //
+    m2_pt_pos_cut_sb9(0),          //
+    m2_pt_neg_cut_sb9(0),          //
+    
     m2_pt_pos_cut_T_prot(0),       // 19
     m2_pt_neg_cut_T_prot(0),       // 20
 	
@@ -132,10 +149,27 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
     deut_phi_pt_neg_A(0),          // 28
     deut_phi_pt_pos_B(0),          // 29
     deut_phi_pt_neg_B(0),          // 30
-    deut_phi_pt_pos_C(0),          // 31
-    deut_phi_pt_neg_C(0),          // 32
-    deut_phi_pt_pos_D(0),          // 33
-    deut_phi_pt_neg_D(0),          // 34
+    deut_phi_pt_pos_sb0(0),        //
+    deut_phi_pt_neg_sb0(0),        //
+    deut_phi_pt_pos_sb1(0),        // 31
+    deut_phi_pt_neg_sb1(0),        // 32
+    deut_phi_pt_pos_sb2(0),        // 33
+    deut_phi_pt_neg_sb2(0),        // 34
+    deut_phi_pt_pos_sb3(0),        //
+    deut_phi_pt_neg_sb3(0),        //
+    deut_phi_pt_pos_sb4(0),        //
+    deut_phi_pt_neg_sb4(0),        //
+    deut_phi_pt_pos_sb5(0),        //
+    deut_phi_pt_neg_sb5(0),        //
+    deut_phi_pt_pos_sb6(0),        //
+    deut_phi_pt_neg_sb6(0),        //
+    deut_phi_pt_pos_sb7(0),        //
+    deut_phi_pt_neg_sb7(0),        //
+    deut_phi_pt_pos_sb8(0),        //
+    deut_phi_pt_neg_sb8(0),        //
+    deut_phi_pt_pos_sb9(0),        //
+    deut_phi_pt_neg_sb9(0),        //
+    
     deut_per_event(0),             // 35
     prot_per_event(0),             // 36
 
@@ -172,12 +206,36 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
     deut_dphi_pt_pos_neg_05_B(0),  // 60
     deut_dphi_pt_neg_neg_05_B(0),  // 61
 
-    deut_dphi_pt_pos_pos_05_C(0),  // 62
-    deut_dphi_pt_pos_neg_05_C(0),  // 63
-    deut_dphi_pt_neg_neg_05_C(0),  // 64
-    deut_dphi_pt_pos_pos_05_D(0),  // 65
-    deut_dphi_pt_pos_neg_05_D(0),  // 66
-    deut_dphi_pt_neg_neg_05_D(0),  // 67
+    deut_dphi_pt_pos_pos_05_sb0(0),//
+    deut_dphi_pt_pos_neg_05_sb0(0),//
+    deut_dphi_pt_neg_neg_05_sb0(0),//
+    deut_dphi_pt_pos_pos_05_sb1(0),// 62
+    deut_dphi_pt_pos_neg_05_sb1(0),// 63
+    deut_dphi_pt_neg_neg_05_sb1(0),// 64
+    deut_dphi_pt_pos_pos_05_sb2(0),// 65
+    deut_dphi_pt_pos_neg_05_sb2(0),// 66
+    deut_dphi_pt_neg_neg_05_sb2(0),// 67
+    deut_dphi_pt_pos_pos_05_sb3(0),//
+    deut_dphi_pt_pos_neg_05_sb3(0),//
+    deut_dphi_pt_neg_neg_05_sb3(0),//
+    deut_dphi_pt_pos_pos_05_sb4(0),//
+    deut_dphi_pt_pos_neg_05_sb4(0),//
+    deut_dphi_pt_neg_neg_05_sb4(0),//
+    deut_dphi_pt_pos_pos_05_sb5(0),//
+    deut_dphi_pt_pos_neg_05_sb5(0),//
+    deut_dphi_pt_neg_neg_05_sb5(0),//
+    deut_dphi_pt_pos_pos_05_sb6(0),//
+    deut_dphi_pt_pos_neg_05_sb6(0),//
+    deut_dphi_pt_neg_neg_05_sb6(0),//
+    deut_dphi_pt_pos_pos_05_sb7(0),//
+    deut_dphi_pt_pos_neg_05_sb7(0),//
+    deut_dphi_pt_neg_neg_05_sb7(0),//
+    deut_dphi_pt_pos_pos_05_sb8(0),//
+    deut_dphi_pt_pos_neg_05_sb8(0),//
+    deut_dphi_pt_neg_neg_05_sb8(0),//
+    deut_dphi_pt_pos_pos_05_sb9(0),//
+    deut_dphi_pt_pos_neg_05_sb9(0),//
+    deut_dphi_pt_neg_neg_05_sb9(0),//
     
     DCAxy_pos(0),                  // 68
     DCAxy_neg(0),                  // 69
@@ -194,10 +252,27 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA() : AliAnalysisTaskSE(),
     m2_pt_neg_cut_A_fine(0),       // 79
     m2_pt_pos_cut_B_fine(0),       // 80
     m2_pt_neg_cut_B_fine(0),       // 81
-    m2_pt_pos_cut_C_fine(0),       // 82
-    m2_pt_neg_cut_C_fine(0),       // 83
-    m2_pt_pos_cut_D_fine(0),       // 84
-    m2_pt_neg_cut_D_fine(0),       // 85
+
+    m2_pt_pos_cut_sb0_fine(0),     //
+    m2_pt_neg_cut_sb0_fine(0),     //
+    m2_pt_pos_cut_sb1_fine(0),     // 82
+    m2_pt_neg_cut_sb1_fine(0),     // 83
+    m2_pt_pos_cut_sb2_fine(0),     // 84
+    m2_pt_neg_cut_sb2_fine(0),     // 85
+    m2_pt_pos_cut_sb3_fine(0),     //
+    m2_pt_neg_cut_sb3_fine(0),     //
+    m2_pt_pos_cut_sb4_fine(0),     //
+    m2_pt_neg_cut_sb4_fine(0),     //
+    m2_pt_pos_cut_sb5_fine(0),     //
+    m2_pt_neg_cut_sb5_fine(0),     //
+    m2_pt_pos_cut_sb6_fine(0),     //
+    m2_pt_neg_cut_sb6_fine(0),     //
+    m2_pt_pos_cut_sb7_fine(0),     //
+    m2_pt_neg_cut_sb7_fine(0),     //
+    m2_pt_pos_cut_sb8_fine(0),     //
+    m2_pt_neg_cut_sb8_fine(0),     //
+    m2_pt_pos_cut_sb9_fine(0),     //
+    m2_pt_neg_cut_sb9_fine(0),     //
     
     m2_pt_pos_TPC_prot_fine(0),    // 86
     m2_pt_neg_TPC_prot_fine(0),    // 87
@@ -227,10 +302,27 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
     m2_pt_neg_cut_A(0),            // 12
     m2_pt_pos_cut_B(0),            // 13
     m2_pt_neg_cut_B(0),            // 14
-    m2_pt_pos_cut_C(0),            // 15
-    m2_pt_neg_cut_C(0),            // 16
-    m2_pt_pos_cut_D(0),            // 17
-    m2_pt_neg_cut_D(0),            // 18
+    m2_pt_pos_cut_sb0(0),          //
+    m2_pt_neg_cut_sb0(0),          //
+    m2_pt_pos_cut_sb1(0),          // 15
+    m2_pt_neg_cut_sb1(0),          // 16
+    m2_pt_pos_cut_sb2(0),          //
+    m2_pt_neg_cut_sb2(0),          //
+    m2_pt_pos_cut_sb3(0),          //
+    m2_pt_neg_cut_sb3(0),          //
+    m2_pt_pos_cut_sb4(0),          //
+    m2_pt_neg_cut_sb4(0),          //
+    m2_pt_pos_cut_sb5(0),          //
+    m2_pt_neg_cut_sb5(0),          //
+    m2_pt_pos_cut_sb6(0),          //
+    m2_pt_neg_cut_sb6(0),          //
+    m2_pt_pos_cut_sb7(0),          //
+    m2_pt_neg_cut_sb7(0),          //
+    m2_pt_pos_cut_sb8(0),          //
+    m2_pt_neg_cut_sb8(0),          //
+    m2_pt_pos_cut_sb9(0),          //
+    m2_pt_neg_cut_sb9(0),          //
+    
     m2_pt_pos_cut_T_prot(0),       // 19
     m2_pt_neg_cut_T_prot(0),       // 20
 	
@@ -247,10 +339,27 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
     deut_phi_pt_neg_A(0),          // 28
     deut_phi_pt_pos_B(0),          // 29
     deut_phi_pt_neg_B(0),          // 30
-    deut_phi_pt_pos_C(0),          // 31
-    deut_phi_pt_neg_C(0),          // 32
-    deut_phi_pt_pos_D(0),          // 33
-    deut_phi_pt_neg_D(0),          // 34
+    deut_phi_pt_pos_sb0(0),        //
+    deut_phi_pt_neg_sb0(0),        //
+    deut_phi_pt_pos_sb1(0),        // 31
+    deut_phi_pt_neg_sb1(0),        // 32
+    deut_phi_pt_pos_sb2(0),        // 33
+    deut_phi_pt_neg_sb2(0),        // 34
+    deut_phi_pt_pos_sb3(0),        //
+    deut_phi_pt_neg_sb3(0),        //
+    deut_phi_pt_pos_sb4(0),        //
+    deut_phi_pt_neg_sb4(0),        //
+    deut_phi_pt_pos_sb5(0),        //
+    deut_phi_pt_neg_sb5(0),        //
+    deut_phi_pt_pos_sb6(0),        //
+    deut_phi_pt_neg_sb6(0),        //
+    deut_phi_pt_pos_sb7(0),        //
+    deut_phi_pt_neg_sb7(0),        //
+    deut_phi_pt_pos_sb8(0),        //
+    deut_phi_pt_neg_sb8(0),        //
+    deut_phi_pt_pos_sb9(0),        //
+    deut_phi_pt_neg_sb9(0),        //
+    
     deut_per_event(0),             // 35
     prot_per_event(0),             // 36
 
@@ -287,12 +396,36 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
     deut_dphi_pt_pos_neg_05_B(0),  // 60
     deut_dphi_pt_neg_neg_05_B(0),  // 61
 
-    deut_dphi_pt_pos_pos_05_C(0),  // 62
-    deut_dphi_pt_pos_neg_05_C(0),  // 63
-    deut_dphi_pt_neg_neg_05_C(0),  // 64
-    deut_dphi_pt_pos_pos_05_D(0),  // 65
-    deut_dphi_pt_pos_neg_05_D(0),  // 66
-    deut_dphi_pt_neg_neg_05_D(0),  // 67
+    deut_dphi_pt_pos_pos_05_sb0(0),//
+    deut_dphi_pt_pos_neg_05_sb0(0),//
+    deut_dphi_pt_neg_neg_05_sb0(0),//
+    deut_dphi_pt_pos_pos_05_sb1(0),// 62
+    deut_dphi_pt_pos_neg_05_sb1(0),// 63
+    deut_dphi_pt_neg_neg_05_sb1(0),// 64
+    deut_dphi_pt_pos_pos_05_sb2(0),// 65
+    deut_dphi_pt_pos_neg_05_sb2(0),// 66
+    deut_dphi_pt_neg_neg_05_sb2(0),// 67
+    deut_dphi_pt_pos_pos_05_sb3(0),//
+    deut_dphi_pt_pos_neg_05_sb3(0),//
+    deut_dphi_pt_neg_neg_05_sb3(0),//
+    deut_dphi_pt_pos_pos_05_sb4(0),//
+    deut_dphi_pt_pos_neg_05_sb4(0),//
+    deut_dphi_pt_neg_neg_05_sb4(0),//
+    deut_dphi_pt_pos_pos_05_sb5(0),//
+    deut_dphi_pt_pos_neg_05_sb5(0),//
+    deut_dphi_pt_neg_neg_05_sb5(0),//
+    deut_dphi_pt_pos_pos_05_sb6(0),//
+    deut_dphi_pt_pos_neg_05_sb6(0),//
+    deut_dphi_pt_neg_neg_05_sb6(0),//
+    deut_dphi_pt_pos_pos_05_sb7(0),//
+    deut_dphi_pt_pos_neg_05_sb7(0),//
+    deut_dphi_pt_neg_neg_05_sb7(0),//
+    deut_dphi_pt_pos_pos_05_sb8(0),//
+    deut_dphi_pt_pos_neg_05_sb8(0),//
+    deut_dphi_pt_neg_neg_05_sb8(0),//
+    deut_dphi_pt_pos_pos_05_sb9(0),//
+    deut_dphi_pt_pos_neg_05_sb9(0),//
+    deut_dphi_pt_neg_neg_05_sb9(0),//
     
     DCAxy_pos(0),                  // 68
     DCAxy_neg(0),                  // 69
@@ -309,15 +442,34 @@ AliAnalysisTaskCorPIDTOFQA::AliAnalysisTaskCorPIDTOFQA(const char* name) : AliAn
     m2_pt_neg_cut_A_fine(0),       // 79
     m2_pt_pos_cut_B_fine(0),       // 80
     m2_pt_neg_cut_B_fine(0),       // 81
-    m2_pt_pos_cut_C_fine(0),       // 82
-    m2_pt_neg_cut_C_fine(0),       // 83
-    m2_pt_pos_cut_D_fine(0),       // 84
-    m2_pt_neg_cut_D_fine(0),       // 85
+
+    m2_pt_pos_cut_sb0_fine(0),     //
+    m2_pt_neg_cut_sb0_fine(0),     //
+    m2_pt_pos_cut_sb1_fine(0),     // 82
+    m2_pt_neg_cut_sb1_fine(0),     // 83
+    m2_pt_pos_cut_sb2_fine(0),     // 84
+    m2_pt_neg_cut_sb2_fine(0),     // 85
+    m2_pt_pos_cut_sb3_fine(0),     //
+    m2_pt_neg_cut_sb3_fine(0),     //
+    m2_pt_pos_cut_sb4_fine(0),     //
+    m2_pt_neg_cut_sb4_fine(0),     //
+    m2_pt_pos_cut_sb5_fine(0),     //
+    m2_pt_neg_cut_sb5_fine(0),     //
+    m2_pt_pos_cut_sb6_fine(0),     //
+    m2_pt_neg_cut_sb6_fine(0),     //
+    m2_pt_pos_cut_sb7_fine(0),     //
+    m2_pt_neg_cut_sb7_fine(0),     //
+    m2_pt_pos_cut_sb8_fine(0),     //
+    m2_pt_neg_cut_sb8_fine(0),     //
+    m2_pt_pos_cut_sb9_fine(0),     //
+    m2_pt_neg_cut_sb9_fine(0),     //
+    
     m2_pt_pos_TPC_prot_fine(0),    // 86
     m2_pt_neg_TPC_prot_fine(0),    // 87
 
     m2_pt_pos_cut_T_prot_fine(0),  // 88
     m2_pt_neg_cut_T_prot_fine(0)   // 89
+
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -435,10 +587,28 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     m2_pt_neg_cut_A            = new TH2F("m2_pt_neg_cut_A",            "m2_pt_neg_cut_A",              18, coarse_binning,    2400,    -1.0,     7.0);   // 12
     m2_pt_pos_cut_B            = new TH2F("m2_pt_pos_cut_B",            "m2_pt_pos_cut_B",              18, coarse_binning,    2400,    -1.0,     7.0);   // 13
     m2_pt_neg_cut_B            = new TH2F("m2_pt_neg_cut_B",            "m2_pt_neg_cut_B",              18, coarse_binning,    2400,    -1.0,     7.0);   // 14
-    m2_pt_pos_cut_C            = new TH2F("m2_pt_pos_cut_C",            "m2_pt_pos_cut_C",              18, coarse_binning,    2400,    -1.0,     7.0);   // 15
-    m2_pt_neg_cut_C            = new TH2F("m2_pt_neg_cut_C",            "m2_pt_neg_cut_C",              18, coarse_binning,    2400,    -1.0,     7.0);   // 16
-    m2_pt_pos_cut_D            = new TH2F("m2_pt_pos_cut_D",            "m2_pt_pos_cut_D",              18, coarse_binning,    2400,    -1.0,     7.0);   // 17
-    m2_pt_neg_cut_D            = new TH2F("m2_pt_neg_cut_D",            "m2_pt_neg_cut_D",              18, coarse_binning,    2400,    -1.0,     7.0);   // 18
+
+    m2_pt_pos_cut_sb0          = new TH2F("m2_pt_pos_cut_sb0",          "m2_pt_pos_cut_sb0",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb0          = new TH2F("m2_pt_neg_cut_sb0",          "m2_pt_neg_cut_sb0",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb1          = new TH2F("m2_pt_pos_cut_sb1",          "m2_pt_pos_cut_sb1",            18, coarse_binning,    2400,    -1.0,     7.0);   // 15
+    m2_pt_neg_cut_sb1          = new TH2F("m2_pt_neg_cut_sb1",          "m2_pt_neg_cut_sb1",            18, coarse_binning,    2400,    -1.0,     7.0);   // 16
+    m2_pt_pos_cut_sb2          = new TH2F("m2_pt_pos_cut_sb2",          "m2_pt_pos_cut_sb2",            18, coarse_binning,    2400,    -1.0,     7.0);   // 17
+    m2_pt_neg_cut_sb2          = new TH2F("m2_pt_neg_cut_sb2",          "m2_pt_neg_cut_sb2",            18, coarse_binning,    2400,    -1.0,     7.0);   // 18
+    m2_pt_pos_cut_sb3          = new TH2F("m2_pt_pos_cut_sb3",          "m2_pt_pos_cut_sb3",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb3          = new TH2F("m2_pt_neg_cut_sb3",          "m2_pt_neg_cut_sb3",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb4          = new TH2F("m2_pt_pos_cut_sb4",          "m2_pt_pos_cut_sb4",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb4          = new TH2F("m2_pt_neg_cut_sb4",          "m2_pt_neg_cut_sb4",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb5          = new TH2F("m2_pt_pos_cut_sb5",          "m2_pt_pos_cut_sb5",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb5          = new TH2F("m2_pt_neg_cut_sb5",          "m2_pt_neg_cut_sb5",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb6          = new TH2F("m2_pt_pos_cut_sb6",          "m2_pt_pos_cut_sb6",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb6          = new TH2F("m2_pt_neg_cut_sb6",          "m2_pt_neg_cut_sb6",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb7          = new TH2F("m2_pt_pos_cut_sb7",          "m2_pt_pos_cut_sb7",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb7          = new TH2F("m2_pt_neg_cut_sb7",          "m2_pt_neg_cut_sb7",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb8          = new TH2F("m2_pt_pos_cut_sb8",          "m2_pt_pos_cut_sb8",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb8          = new TH2F("m2_pt_neg_cut_sb8",          "m2_pt_neg_cut_sb8",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb9          = new TH2F("m2_pt_pos_cut_sb9",          "m2_pt_pos_cut_sb9",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb9          = new TH2F("m2_pt_neg_cut_sb9",          "m2_pt_neg_cut_sb9",            18, coarse_binning,    2400,    -1.0,     7.0);   //
+    
     m2_pt_pos_cut_T_prot       = new TH2F("m2_pt_pos_cut_T_prot",       "m2_pt_pos_cut_T_prot",         18,coarse_binning2,    2400,    -1.0,     7.0);   // 19
     m2_pt_neg_cut_T_prot       = new TH2F("m2_pt_neg_cut_T_prot",       "m2_pt_neg_cut_T_prot",         18,coarse_binning2,    2400,    -1.0,     7.0);   // 20
     
@@ -453,10 +623,28 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     deut_phi_pt_neg_A          = new TH2F("deut_phi_pt_neg_A",          "deut_phi_pt_neg_A",            18, coarse_binning,     288,   lower,   upper);   // 28
     deut_phi_pt_pos_B          = new TH2F("deut_phi_pt_pos_B",          "deut_phi_pt_pos_B",            18, coarse_binning,     288,   lower,   upper);   // 29
     deut_phi_pt_neg_B          = new TH2F("deut_phi_pt_neg_B",          "deut_phi_pt_neg_B",            18, coarse_binning,     288,   lower,   upper);   // 30
-    deut_phi_pt_pos_C          = new TH2F("deut_phi_pt_pos_C",          "deut_phi_pt_pos_C",            18, coarse_binning,     288,   lower,   upper);   // 31
-    deut_phi_pt_neg_C          = new TH2F("deut_phi_pt_neg_C",          "deut_phi_pt_neg_C",            18, coarse_binning,     288,   lower,   upper);   // 32
-    deut_phi_pt_pos_D          = new TH2F("deut_phi_pt_pos_D",          "deut_phi_pt_pos_D",            18, coarse_binning,     288,   lower,   upper);   // 33
-    deut_phi_pt_neg_D          = new TH2F("deut_phi_pt_neg_D",          "deut_phi_pt_neg_D",            18, coarse_binning,     288,   lower,   upper);   // 34
+    
+    deut_phi_pt_pos_sb0        = new TH2F("deut_phi_pt_pos_sb0",        "deut_phi_pt_pos_sb0",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_neg_sb0        = new TH2F("deut_phi_pt_neg_sb0",        "deut_phi_pt_neg_sb0",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_pos_sb1        = new TH2F("deut_phi_pt_pos_sb1",        "deut_phi_pt_pos_sb1",          18, coarse_binning,     288,   lower,   upper);   // 31
+    deut_phi_pt_neg_sb1        = new TH2F("deut_phi_pt_neg_sb1",        "deut_phi_pt_neg_sb1",          18, coarse_binning,     288,   lower,   upper);   // 32
+    deut_phi_pt_pos_sb2        = new TH2F("deut_phi_pt_pos_sb2",        "deut_phi_pt_pos_sb2",          18, coarse_binning,     288,   lower,   upper);   // 33
+    deut_phi_pt_neg_sb2        = new TH2F("deut_phi_pt_neg_sb2",        "deut_phi_pt_neg_sb2",          18, coarse_binning,     288,   lower,   upper);   // 34
+    deut_phi_pt_pos_sb3        = new TH2F("deut_phi_pt_pos_sb3",        "deut_phi_pt_pos_sb3",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_neg_sb3        = new TH2F("deut_phi_pt_neg_sb3",        "deut_phi_pt_neg_sb3",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_pos_sb4        = new TH2F("deut_phi_pt_pos_sb4",        "deut_phi_pt_pos_sb4",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_neg_sb4        = new TH2F("deut_phi_pt_neg_sb4",        "deut_phi_pt_neg_sb4",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_pos_sb5        = new TH2F("deut_phi_pt_pos_sb5",        "deut_phi_pt_pos_sb5",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_neg_sb5        = new TH2F("deut_phi_pt_neg_sb5",        "deut_phi_pt_neg_sb5",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_pos_sb6        = new TH2F("deut_phi_pt_pos_sb6",        "deut_phi_pt_pos_sb6",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_neg_sb6        = new TH2F("deut_phi_pt_neg_sb6",        "deut_phi_pt_neg_sb6",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_pos_sb7        = new TH2F("deut_phi_pt_pos_sb7",        "deut_phi_pt_pos_sb7",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_neg_sb7        = new TH2F("deut_phi_pt_neg_sb7",        "deut_phi_pt_neg_sb7",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_pos_sb8        = new TH2F("deut_phi_pt_pos_sb8",        "deut_phi_pt_pos_sb8",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_neg_sb8        = new TH2F("deut_phi_pt_neg_sb8",        "deut_phi_pt_neg_sb8",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_pos_sb9        = new TH2F("deut_phi_pt_pos_sb9",        "deut_phi_pt_pos_sb9",          18, coarse_binning,     288,   lower,   upper);   //
+    deut_phi_pt_neg_sb9        = new TH2F("deut_phi_pt_neg_sb9",        "deut_phi_pt_neg_sb9",          18, coarse_binning,     288,   lower,   upper);   //
+    
     deut_per_event             = new TH1I("deut_per_event",             "deut_per_event",                4,      0,      4);                              // 35
     prot_per_event             = new TH1I("prot_per_event",             "prot_per_event",               20,      0,     20);                              // 36
 
@@ -492,13 +680,45 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     deut_dphi_pt_pos_neg_05_B  = new TH2F("deut_dphi_pt_pos_neg_05_B",  "deut_dphi_pt_pos_neg_05_B",    18, coarse_binning,     288,   lower,   upper);   // 60
     deut_dphi_pt_neg_neg_05_B  = new TH2F("deut_dphi_pt_neg_neg_05_B",  "deut_dphi_pt_neg_neg_05_B",    18, coarse_binning,     288,   lower,   upper);   // 61
 
-    deut_dphi_pt_pos_pos_05_C  = new TH2F("deut_dphi_pt_pos_pos_05_C",  "deut_dphi_pt_pos_pos_05_C",    18, coarse_binning,     288,   lower,   upper);   // 62
-    deut_dphi_pt_pos_neg_05_C  = new TH2F("deut_dphi_pt_pos_neg_05_C",  "deut_dphi_pt_pos_neg_05_C",    18, coarse_binning,     288,   lower,   upper);   // 63
-    deut_dphi_pt_neg_neg_05_C  = new TH2F("deut_dphi_pt_neg_neg_05_C",  "deut_dphi_pt_neg_neg_05_C",    18, coarse_binning,     288,   lower,   upper);   // 64
+    deut_dphi_pt_pos_pos_05_sb0  = new TH2F("deut_dphi_pt_pos_pos_05_sb0",  "deut_dphi_pt_pos_pos_05_sb0",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_pos_neg_05_sb0  = new TH2F("deut_dphi_pt_pos_neg_05_sb0",  "deut_dphi_pt_pos_neg_05_sb0",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_neg_neg_05_sb0  = new TH2F("deut_dphi_pt_neg_neg_05_sb0",  "deut_dphi_pt_neg_neg_05_sb0",    18, coarse_binning,     288,   lower,   upper);   //
     
-    deut_dphi_pt_pos_pos_05_D  = new TH2F("deut_dphi_pt_pos_pos_05_D",  "deut_dphi_pt_pos_pos_05_D",    18, coarse_binning,     288,   lower,   upper);   // 65
-    deut_dphi_pt_pos_neg_05_D  = new TH2F("deut_dphi_pt_pos_neg_05_D",  "deut_dphi_pt_pos_neg_05_D",    18, coarse_binning,     288,   lower,   upper);   // 66
-    deut_dphi_pt_neg_neg_05_D  = new TH2F("deut_dphi_pt_neg_neg_05_D",  "deut_dphi_pt_neg_neg_05_D",    18, coarse_binning,     288,   lower,   upper);   // 67
+    deut_dphi_pt_pos_pos_05_sb1  = new TH2F("deut_dphi_pt_pos_pos_05_sb1",  "deut_dphi_pt_pos_pos_05_sb1",    18, coarse_binning,     288,   lower,   upper);   // 62
+    deut_dphi_pt_pos_neg_05_sb1  = new TH2F("deut_dphi_pt_pos_neg_05_sb1",  "deut_dphi_pt_pos_neg_05_sb1",    18, coarse_binning,     288,   lower,   upper);   // 63
+    deut_dphi_pt_neg_neg_05_sb1  = new TH2F("deut_dphi_pt_neg_neg_05_sb1",  "deut_dphi_pt_neg_neg_05_sb1",    18, coarse_binning,     288,   lower,   upper);   // 64
+    
+    deut_dphi_pt_pos_pos_05_sb2  = new TH2F("deut_dphi_pt_pos_pos_05_sb2",  "deut_dphi_pt_pos_pos_05_sb2",    18, coarse_binning,     288,   lower,   upper);   // 65
+    deut_dphi_pt_pos_neg_05_sb2  = new TH2F("deut_dphi_pt_pos_neg_05_sb2",  "deut_dphi_pt_pos_neg_05_sb2",    18, coarse_binning,     288,   lower,   upper);   // 66
+    deut_dphi_pt_neg_neg_05_sb2  = new TH2F("deut_dphi_pt_neg_neg_05_sb2",  "deut_dphi_pt_neg_neg_05_sb2",    18, coarse_binning,     288,   lower,   upper);   // 67
+
+    deut_dphi_pt_pos_pos_05_sb3  = new TH2F("deut_dphi_pt_pos_pos_05_sb3",  "deut_dphi_pt_pos_pos_05_sb3",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_pos_neg_05_sb3  = new TH2F("deut_dphi_pt_pos_neg_05_sb3",  "deut_dphi_pt_pos_neg_05_sb3",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_neg_neg_05_sb3  = new TH2F("deut_dphi_pt_neg_neg_05_sb3",  "deut_dphi_pt_neg_neg_05_sb3",    18, coarse_binning,     288,   lower,   upper);   //
+    
+    deut_dphi_pt_pos_pos_05_sb4  = new TH2F("deut_dphi_pt_pos_pos_05_sb4",  "deut_dphi_pt_pos_pos_05_sb4",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_pos_neg_05_sb4  = new TH2F("deut_dphi_pt_pos_neg_05_sb4",  "deut_dphi_pt_pos_neg_05_sb4",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_neg_neg_05_sb4  = new TH2F("deut_dphi_pt_neg_neg_05_sb4",  "deut_dphi_pt_neg_neg_05_sb4",    18, coarse_binning,     288,   lower,   upper);   //
+
+    deut_dphi_pt_pos_pos_05_sb5  = new TH2F("deut_dphi_pt_pos_pos_05_sb5",  "deut_dphi_pt_pos_pos_05_sb5",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_pos_neg_05_sb5  = new TH2F("deut_dphi_pt_pos_neg_05_sb5",  "deut_dphi_pt_pos_neg_05_sb5",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_neg_neg_05_sb5  = new TH2F("deut_dphi_pt_neg_neg_05_sb5",  "deut_dphi_pt_neg_neg_05_sb5",    18, coarse_binning,     288,   lower,   upper);   //
+
+    deut_dphi_pt_pos_pos_05_sb6  = new TH2F("deut_dphi_pt_pos_pos_05_sb6",  "deut_dphi_pt_pos_pos_05_sb6",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_pos_neg_05_sb6  = new TH2F("deut_dphi_pt_pos_neg_05_sb6",  "deut_dphi_pt_pos_neg_05_sb6",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_neg_neg_05_sb6  = new TH2F("deut_dphi_pt_neg_neg_05_sb6",  "deut_dphi_pt_neg_neg_05_sb6",    18, coarse_binning,     288,   lower,   upper);   //
+
+    deut_dphi_pt_pos_pos_05_sb7  = new TH2F("deut_dphi_pt_pos_pos_05_sb7",  "deut_dphi_pt_pos_pos_05_sb7",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_pos_neg_05_sb7  = new TH2F("deut_dphi_pt_pos_neg_05_sb7",  "deut_dphi_pt_pos_neg_05_sb7",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_neg_neg_05_sb7  = new TH2F("deut_dphi_pt_neg_neg_05_sb7",  "deut_dphi_pt_neg_neg_05_sb7",    18, coarse_binning,     288,   lower,   upper);   //
+
+    deut_dphi_pt_pos_pos_05_sb8  = new TH2F("deut_dphi_pt_pos_pos_05_sb8",  "deut_dphi_pt_pos_pos_05_sb8",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_pos_neg_05_sb8  = new TH2F("deut_dphi_pt_pos_neg_05_sb8",  "deut_dphi_pt_pos_neg_05_sb8",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_neg_neg_05_sb8  = new TH2F("deut_dphi_pt_neg_neg_05_sb8",  "deut_dphi_pt_neg_neg_05_sb8",    18, coarse_binning,     288,   lower,   upper);   //
+
+    deut_dphi_pt_pos_pos_05_sb9  = new TH2F("deut_dphi_pt_pos_pos_05_sb9",  "deut_dphi_pt_pos_pos_05_sb9",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_pos_neg_05_sb9  = new TH2F("deut_dphi_pt_pos_neg_05_sb9",  "deut_dphi_pt_pos_neg_05_sb9",    18, coarse_binning,     288,   lower,   upper);   //
+    deut_dphi_pt_neg_neg_05_sb9  = new TH2F("deut_dphi_pt_neg_neg_05_sb9",  "deut_dphi_pt_neg_neg_05_sb9",    18, coarse_binning,     288,   lower,   upper);   //
     
     DCAxy_pos                  = new TH1F("DCAxy_pos",                  "DCAxy_pos",                   100,   -1.2,    1.2);                              // 68
     DCAxy_neg                  = new TH1F("DCAxy_neg",                  "DCAxy_neg",                   100,   -1.2,    1.2);                              // 69
@@ -525,12 +745,28 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     m2_pt_neg_cut_A_fine       = new TH2F("m2_pt_neg_cut_A_fine",       "m2_pt_neg_cut_A_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 79
     m2_pt_pos_cut_B_fine       = new TH2F("m2_pt_pos_cut_B_fine",       "m2_pt_pos_cut_B_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 80
     m2_pt_neg_cut_B_fine       = new TH2F("m2_pt_neg_cut_B_fine",       "m2_pt_neg_cut_B_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 81
-    m2_pt_pos_cut_C_fine       = new TH2F("m2_pt_pos_cut_C_fine",       "m2_pt_pos_cut_C_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 82
-    m2_pt_neg_cut_C_fine       = new TH2F("m2_pt_neg_cut_C_fine",       "m2_pt_neg_cut_C_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 83
-    m2_pt_pos_cut_D_fine       = new TH2F("m2_pt_pos_cut_D_fine",       "m2_pt_pos_cut_D_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 84
-    m2_pt_neg_cut_D_fine       = new TH2F("m2_pt_neg_cut_D_fine",       "m2_pt_neg_cut_D_fine",        800,   fine_binning,    2400,    -1.0,     7.0);   // 85
 
-   
+    m2_pt_pos_cut_sb0_fine     = new TH2F("m2_pt_pos_cut_sb0_fine",     "m2_pt_pos_cut_sb0_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb0_fine     = new TH2F("m2_pt_neg_cut_sb0_fine",     "m2_pt_neg_cut_sb0_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //    
+    m2_pt_pos_cut_sb1_fine     = new TH2F("m2_pt_pos_cut_sb1_fine",     "m2_pt_pos_cut_sb1_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   // 82
+    m2_pt_neg_cut_sb1_fine     = new TH2F("m2_pt_neg_cut_sb1_fine",     "m2_pt_neg_cut_sb1_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   // 83
+    m2_pt_pos_cut_sb2_fine     = new TH2F("m2_pt_pos_cut_sb2_fine",     "m2_pt_pos_cut_sb2_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   // 84
+    m2_pt_neg_cut_sb2_fine     = new TH2F("m2_pt_neg_cut_sb2_fine",     "m2_pt_neg_cut_sb2_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   // 85
+    m2_pt_pos_cut_sb3_fine     = new TH2F("m2_pt_pos_cut_sb3_fine",     "m2_pt_pos_cut_sb3_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb3_fine     = new TH2F("m2_pt_neg_cut_sb3_fine",     "m2_pt_neg_cut_sb3_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb4_fine     = new TH2F("m2_pt_pos_cut_sb4_fine",     "m2_pt_pos_cut_sb4_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb4_fine     = new TH2F("m2_pt_neg_cut_sb4_fine",     "m2_pt_neg_cut_sb4_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb5_fine     = new TH2F("m2_pt_pos_cut_sb5_fine",     "m2_pt_pos_cut_sb5_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb5_fine     = new TH2F("m2_pt_neg_cut_sb5_fine",     "m2_pt_neg_cut_sb5_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb6_fine     = new TH2F("m2_pt_pos_cut_sb6_fine",     "m2_pt_pos_cut_sb6_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb6_fine     = new TH2F("m2_pt_neg_cut_sb6_fine",     "m2_pt_neg_cut_sb6_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb7_fine     = new TH2F("m2_pt_pos_cut_sb7_fine",     "m2_pt_pos_cut_sb7_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb7_fine     = new TH2F("m2_pt_neg_cut_sb7_fine",     "m2_pt_neg_cut_sb7_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb8_fine     = new TH2F("m2_pt_pos_cut_sb8_fine",     "m2_pt_pos_cut_sb8_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb8_fine     = new TH2F("m2_pt_neg_cut_sb8_fine",     "m2_pt_neg_cut_sb8_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_pos_cut_sb9_fine     = new TH2F("m2_pt_pos_cut_sb9_fine",     "m2_pt_pos_cut_sb9_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    m2_pt_neg_cut_sb9_fine     = new TH2F("m2_pt_neg_cut_sb9_fine",     "m2_pt_neg_cut_sb9_fine",      800,   fine_binning,    2400,    -1.0,     7.0);   //
+    
     m2_pt_pos_TPC_prot_fine    = new TH2F("m2_pt_pos_TPC_prot_fine",    "m2_pt_pos_TPC_prot_fine",     800,   fine_binning,    2400,    -1.0,     7.0);   // 86
     m2_pt_neg_TPC_prot_fine    = new TH2F("m2_pt_neg_TPC_prot_fine",    "m2_pt_neg_TPC_prot_fine",     800,   fine_binning,    2400,    -1.0,     7.0);   // 87
 
@@ -556,12 +792,31 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(m2_pt_neg_cut_A);              // 12
     fOutputList->Add(m2_pt_pos_cut_B);              // 13
     fOutputList->Add(m2_pt_neg_cut_B);              // 14
-    fOutputList->Add(m2_pt_pos_cut_C);              // 15
-    fOutputList->Add(m2_pt_neg_cut_C);              // 16
-    fOutputList->Add(m2_pt_pos_cut_D);              // 17
-    fOutputList->Add(m2_pt_neg_cut_D);              // 18
+
+    
     if(run_mode == 0)
     {
+    fOutputList->Add(m2_pt_pos_cut_sb0);              //
+    fOutputList->Add(m2_pt_neg_cut_sb0);              //
+    fOutputList->Add(m2_pt_pos_cut_sb1);              // 15
+    fOutputList->Add(m2_pt_neg_cut_sb1);              // 16
+    fOutputList->Add(m2_pt_pos_cut_sb2);              // 17
+    fOutputList->Add(m2_pt_neg_cut_sb2);              // 18
+    fOutputList->Add(m2_pt_pos_cut_sb3);              //
+    fOutputList->Add(m2_pt_neg_cut_sb3);              //
+    fOutputList->Add(m2_pt_pos_cut_sb4);              //
+    fOutputList->Add(m2_pt_neg_cut_sb4);              //
+    fOutputList->Add(m2_pt_pos_cut_sb5);              //
+    fOutputList->Add(m2_pt_neg_cut_sb5);              //
+    fOutputList->Add(m2_pt_pos_cut_sb6);              //
+    fOutputList->Add(m2_pt_neg_cut_sb6);              //
+    fOutputList->Add(m2_pt_pos_cut_sb7);              //
+    fOutputList->Add(m2_pt_neg_cut_sb7);              //
+    fOutputList->Add(m2_pt_pos_cut_sb8);              //
+    fOutputList->Add(m2_pt_neg_cut_sb8);              //
+    fOutputList->Add(m2_pt_pos_cut_sb9);              //
+    fOutputList->Add(m2_pt_neg_cut_sb9);              //
+    
     fOutputList->Add(m2_pt_pos_cut_T_prot);         // 19
     fOutputList->Add(m2_pt_neg_cut_T_prot);         // 20
     }
@@ -582,13 +837,30 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(deut_phi_pt_neg_A);            // 28
     fOutputList->Add(deut_phi_pt_pos_B);            // 29
     fOutputList->Add(deut_phi_pt_neg_B);            // 30
-    fOutputList->Add(deut_phi_pt_pos_C);            // 31
-    fOutputList->Add(deut_phi_pt_neg_C);            // 32
-    fOutputList->Add(deut_phi_pt_pos_D);            // 33
-    fOutputList->Add(deut_phi_pt_neg_D);            // 34
+    
     fOutputList->Add(deut_per_event);               // 35
     if(run_mode == 0)
     {
+    fOutputList->Add(deut_phi_pt_pos_sb0);            //
+    fOutputList->Add(deut_phi_pt_neg_sb0);            //
+    fOutputList->Add(deut_phi_pt_pos_sb1);            // 31
+    fOutputList->Add(deut_phi_pt_neg_sb1);            // 32
+    fOutputList->Add(deut_phi_pt_pos_sb2);            // 33
+    fOutputList->Add(deut_phi_pt_neg_sb2);            // 34
+    fOutputList->Add(deut_phi_pt_pos_sb3);            //
+    fOutputList->Add(deut_phi_pt_neg_sb3);            //
+    fOutputList->Add(deut_phi_pt_pos_sb4);            //
+    fOutputList->Add(deut_phi_pt_neg_sb4);            //
+    fOutputList->Add(deut_phi_pt_pos_sb5);            //
+    fOutputList->Add(deut_phi_pt_neg_sb5);            //
+    fOutputList->Add(deut_phi_pt_pos_sb6);            //
+    fOutputList->Add(deut_phi_pt_neg_sb6);            //
+    fOutputList->Add(deut_phi_pt_pos_sb7);            //
+    fOutputList->Add(deut_phi_pt_neg_sb7);            //
+    fOutputList->Add(deut_phi_pt_pos_sb8);            //
+    fOutputList->Add(deut_phi_pt_neg_sb8);            //
+    fOutputList->Add(deut_phi_pt_pos_sb9);            //
+    fOutputList->Add(deut_phi_pt_neg_sb9);            //
     fOutputList->Add(prot_per_event);               // 36
     }
     
@@ -629,13 +901,40 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(deut_dphi_pt_pos_pos_05_B);    // 59
     fOutputList->Add(deut_dphi_pt_pos_neg_05_B);    // 60
     fOutputList->Add(deut_dphi_pt_neg_neg_05_B);    // 61
-
-    fOutputList->Add(deut_dphi_pt_pos_pos_05_C);    // 62
-    fOutputList->Add(deut_dphi_pt_pos_neg_05_C);    // 63
-    fOutputList->Add(deut_dphi_pt_neg_neg_05_C);    // 64
-    fOutputList->Add(deut_dphi_pt_pos_pos_05_D);    // 65
-    fOutputList->Add(deut_dphi_pt_pos_neg_05_D);    // 66
-    fOutputList->Add(deut_dphi_pt_neg_neg_05_D);    // 67
+    
+    if(run_mode == 0)
+    {
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_sb0);    //
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_sb0);    //
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_sb0);    //
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_sb1);    // 62
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_sb1);    // 63
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_sb1);    // 64
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_sb2);    // 65
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_sb2);    // 66
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_sb2);    // 67
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_sb3);    //
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_sb3);    //
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_sb3);    //
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_sb4);    //
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_sb4);    //
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_sb4);    //
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_sb5);    //
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_sb5);    //
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_sb5);    //
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_sb6);    //
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_sb6);    //
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_sb6);    //
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_sb7);    //
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_sb7);    //
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_sb7);    //
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_sb8);    //
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_sb8);    //
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_sb8);    //
+    fOutputList->Add(deut_dphi_pt_pos_pos_05_sb9);    //
+    fOutputList->Add(deut_dphi_pt_pos_neg_05_sb9);    //
+    fOutputList->Add(deut_dphi_pt_neg_neg_05_sb9);    //
+    }
     
     fOutputList->Add(DCAxy_pos);                    // 68
     fOutputList->Add(DCAxy_neg);                    // 69
@@ -652,10 +951,30 @@ void AliAnalysisTaskCorPIDTOFQA::UserCreateOutputObjects()
     fOutputList->Add(m2_pt_neg_cut_A_fine);         // 79
     fOutputList->Add(m2_pt_pos_cut_B_fine);         // 80
     fOutputList->Add(m2_pt_neg_cut_B_fine);         // 81
-    fOutputList->Add(m2_pt_pos_cut_C_fine);         // 82
-    fOutputList->Add(m2_pt_neg_cut_C_fine);         // 83
-    fOutputList->Add(m2_pt_pos_cut_D_fine);         // 84
-    fOutputList->Add(m2_pt_neg_cut_D_fine);         // 85
+
+    if(run_mode == 0)
+    {
+    fOutputList->Add(m2_pt_pos_cut_sb0_fine);       //
+    fOutputList->Add(m2_pt_neg_cut_sb0_fine);       //
+    fOutputList->Add(m2_pt_pos_cut_sb1_fine);       // 82
+    fOutputList->Add(m2_pt_neg_cut_sb1_fine);       // 83
+    fOutputList->Add(m2_pt_pos_cut_sb2_fine);       // 84
+    fOutputList->Add(m2_pt_neg_cut_sb2_fine);       // 85
+    fOutputList->Add(m2_pt_pos_cut_sb3_fine);       //
+    fOutputList->Add(m2_pt_neg_cut_sb3_fine);       //
+    fOutputList->Add(m2_pt_pos_cut_sb4_fine);       //
+    fOutputList->Add(m2_pt_neg_cut_sb4_fine);       //
+    fOutputList->Add(m2_pt_pos_cut_sb5_fine);       //
+    fOutputList->Add(m2_pt_neg_cut_sb5_fine);       //
+    fOutputList->Add(m2_pt_pos_cut_sb6_fine);       //
+    fOutputList->Add(m2_pt_neg_cut_sb6_fine);       //
+    fOutputList->Add(m2_pt_pos_cut_sb7_fine);       //
+    fOutputList->Add(m2_pt_neg_cut_sb7_fine);       //
+    fOutputList->Add(m2_pt_pos_cut_sb8_fine);       //
+    fOutputList->Add(m2_pt_neg_cut_sb8_fine);       //
+    fOutputList->Add(m2_pt_pos_cut_sb9_fine);       //
+    fOutputList->Add(m2_pt_neg_cut_sb9_fine);       //
+    }
 
     if(run_mode == 0)
     {
@@ -711,8 +1030,16 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
     int deut_track_num_T[200];     int deut_count_T            = 0;
     int deut_track_num_A[200];     int deut_count_A            = 0;
     int deut_track_num_B[200];     int deut_count_B            = 0;
-    int deut_track_num_C[200];     int deut_count_C            = 0;
-    int deut_track_num_D[200];     int deut_count_D            = 0;
+    int deut_track_num_sb0[200];   int deut_count_sb0          = 0;
+    int deut_track_num_sb1[200];   int deut_count_sb1          = 0;
+    int deut_track_num_sb2[200];   int deut_count_sb2          = 0;
+    int deut_track_num_sb3[200];   int deut_count_sb3          = 0;
+    int deut_track_num_sb4[200];   int deut_count_sb4          = 0;
+    int deut_track_num_sb5[200];   int deut_count_sb5          = 0;
+    int deut_track_num_sb6[200];   int deut_count_sb6          = 0;
+    int deut_track_num_sb7[200];   int deut_count_sb7          = 0;
+    int deut_track_num_sb8[200];   int deut_count_sb8          = 0;
+    int deut_track_num_sb9[200];   int deut_count_sb9          = 0;
     int deut_track_num_W[200];     int deut_count_W            = 0;
     int prot_track_num_T[500];     int prot_count_T            = 0;
     
@@ -875,28 +1202,117 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_pos_B->Fill(pt, deut_phi);
 		    }
-		    if(run_mode != 5  &&  m2tof < deut_mean + 6.0 * deut_sigma  &&   m2tof > deut_mean + 3.0 * deut_sigma)
+		    if(run_mode == 0  &&  m2tof < deut_mean - 5.0 * deut_sigma  &&   m2tof > deut_mean - 6.0 * deut_sigma)
 		    {
-			deut_track_num_C[deut_count_C] = i;
-			deut_count_C++;
-			m2_pt_pos_cut_C->Fill(pt,m2tof);
-			m2_pt_pos_cut_C_fine->Fill(pt,m2tof);
+			deut_track_num_sb0[deut_count_sb0] = i;
+			deut_count_sb0++;
+			m2_pt_pos_cut_sb0->Fill(pt,m2tof);
+			m2_pt_pos_cut_sb0_fine->Fill(pt,m2tof);
 			Float_t deut_phi = track->Phi();
 			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
-			deut_phi_pt_pos_C->Fill(pt, deut_phi);
+			deut_phi_pt_pos_sb0->Fill(pt, deut_phi);
 		    }
-		    if(run_mode != 5  &&  m2tof < deut_mean - 3.0 * deut_sigma  &&   m2tof > deut_mean - 6.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 4.0 * deut_sigma  &&   m2tof > deut_mean - 5.0 * deut_sigma)
 		    {
-			deut_track_num_D[deut_count_D] = i;
-			deut_count_D++;
-			m2_pt_pos_cut_D->Fill(pt,m2tof);
-			m2_pt_pos_cut_D_fine->Fill(pt,m2tof);
+			deut_track_num_sb1[deut_count_sb1] = i;
+			deut_count_sb1++;
+			m2_pt_pos_cut_sb1->Fill(pt,m2tof);
+			m2_pt_pos_cut_sb1_fine->Fill(pt,m2tof);
 			Float_t deut_phi = track->Phi();
 			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
-			deut_phi_pt_pos_D->Fill(pt, deut_phi);
+			deut_phi_pt_pos_sb1->Fill(pt, deut_phi);
 		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 3.0 * deut_sigma  &&   m2tof > deut_mean - 4.0 * deut_sigma)
+		    {
+			deut_track_num_sb2[deut_count_sb2] = i;
+			deut_count_sb2++;
+			m2_pt_pos_cut_sb2->Fill(pt,m2tof);
+			m2_pt_pos_cut_sb2_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_pos_sb2->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 2.0 * deut_sigma  &&   m2tof > deut_mean - 3.0 * deut_sigma)
+		    {
+			deut_track_num_sb3[deut_count_sb3] = i;
+			deut_count_sb3++;
+			m2_pt_pos_cut_sb3->Fill(pt,m2tof);
+			m2_pt_pos_cut_sb3_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_pos_sb3->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 3.0 * deut_sigma  &&   m2tof > deut_mean + 2.0 * deut_sigma)
+		    {
+			deut_track_num_sb4[deut_count_sb4] = i;
+			deut_count_sb4++;
+			m2_pt_pos_cut_sb4->Fill(pt,m2tof);
+			m2_pt_pos_cut_sb4_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_pos_sb4->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 4.0 * deut_sigma  &&   m2tof > deut_mean + 3.0 * deut_sigma)
+		    {
+			deut_track_num_sb5[deut_count_sb5] = i;
+			deut_count_sb5++;
+			m2_pt_pos_cut_sb5->Fill(pt,m2tof);
+			m2_pt_pos_cut_sb5_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_pos_sb5->Fill(pt, deut_phi);
+		    }	    
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 5.0 * deut_sigma  &&   m2tof > deut_mean + 4.0 * deut_sigma)
+		    {
+			deut_track_num_sb6[deut_count_sb6] = i;
+			deut_count_sb6++;
+			m2_pt_pos_cut_sb6->Fill(pt,m2tof);
+			m2_pt_pos_cut_sb6_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_pos_sb6->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 6.0 * deut_sigma  &&   m2tof > deut_mean + 5.0 * deut_sigma)
+		    {
+			deut_track_num_sb7[deut_count_sb7] = i;
+			deut_count_sb7++;
+			m2_pt_pos_cut_sb7->Fill(pt,m2tof);
+			m2_pt_pos_cut_sb7_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_pos_sb7->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 7.0 * deut_sigma  &&   m2tof > deut_mean + 6.0 * deut_sigma)
+		    {
+			deut_track_num_sb8[deut_count_sb8] = i;
+			deut_count_sb8++;
+			m2_pt_pos_cut_sb8->Fill(pt,m2tof);
+			m2_pt_pos_cut_sb8_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_pos_sb8->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 8.0 * deut_sigma  &&   m2tof > deut_mean + 7.0 * deut_sigma)
+		    {
+			deut_track_num_sb9[deut_count_sb9] = i;
+			deut_count_sb9++;
+			m2_pt_pos_cut_sb9->Fill(pt,m2tof);
+			m2_pt_pos_cut_sb9_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_pos_sb9->Fill(pt, deut_phi);
+		    }
+		    
 		    if(run_mode == 5  &&  m2tof >=2.5  &&  m2tof < 3.0)
 		    {
 			deut_track_num_A[deut_count_A] = i;
@@ -1023,28 +1439,128 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
 			deut_phi_pt_neg_B->Fill(pt, deut_phi);
 		    }
-		    if(run_mode != 5  &&  m2tof < deut_mean + 6.0 * deut_sigma  &&   m2tof > deut_mean + 3.0 * deut_sigma)
+
+
+
+
+		    
+		    if(run_mode == 0  &&  m2tof < deut_mean - 5.0 * deut_sigma  &&   m2tof > deut_mean - 6.0 * deut_sigma)
 		    {
-			deut_track_num_C[deut_count_C] = i;
-			deut_count_C++;
-			m2_pt_neg_cut_C->Fill(pt,m2tof);
-			m2_pt_neg_cut_C_fine->Fill(pt,m2tof);
+			deut_track_num_sb0[deut_count_sb0] = i;
+			deut_count_sb0++;
+			m2_pt_neg_cut_sb0->Fill(pt,m2tof);
+			m2_pt_neg_cut_sb0_fine->Fill(pt,m2tof);
 			Float_t deut_phi = track->Phi();
 			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
-			deut_phi_pt_neg_C->Fill(pt, deut_phi);
+			deut_phi_pt_neg_sb0->Fill(pt, deut_phi);
 		    }
-		    if(run_mode != 5  &&  m2tof < deut_mean - 3.0 * deut_sigma  &&   m2tof > deut_mean - 6.0 * deut_sigma)
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 4.0 * deut_sigma  &&   m2tof > deut_mean - 5.0 * deut_sigma)
 		    {
-			deut_track_num_D[deut_count_D] = i;
-			deut_count_D++;
-			m2_pt_neg_cut_D->Fill(pt,m2tof);
-			m2_pt_neg_cut_D_fine->Fill(pt,m2tof);
+			deut_track_num_sb1[deut_count_sb1] = i;
+			deut_count_sb1++;
+			m2_pt_neg_cut_sb1->Fill(pt,m2tof);
+			m2_pt_neg_cut_sb1_fine->Fill(pt,m2tof);
 			Float_t deut_phi = track->Phi();
 			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
 			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
-			deut_phi_pt_neg_D->Fill(pt, deut_phi);
+			deut_phi_pt_neg_sb1->Fill(pt, deut_phi);
 		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 3.0 * deut_sigma  &&   m2tof > deut_mean - 4.0 * deut_sigma)
+		    {
+			deut_track_num_sb2[deut_count_sb2] = i;
+			deut_count_sb2++;
+			m2_pt_neg_cut_sb2->Fill(pt,m2tof);
+			m2_pt_neg_cut_sb2_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_neg_sb2->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean - 2.0 * deut_sigma  &&   m2tof > deut_mean - 3.0 * deut_sigma)
+		    {
+			deut_track_num_sb3[deut_count_sb3] = i;
+			deut_count_sb3++;
+			m2_pt_neg_cut_sb3->Fill(pt,m2tof);
+			m2_pt_neg_cut_sb3_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_neg_sb3->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 3.0 * deut_sigma  &&   m2tof > deut_mean + 2.0 * deut_sigma)
+		    {
+			deut_track_num_sb4[deut_count_sb4] = i;
+			deut_count_sb4++;
+			m2_pt_neg_cut_sb4->Fill(pt,m2tof);
+			m2_pt_neg_cut_sb4_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_neg_sb4->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 4.0 * deut_sigma  &&   m2tof > deut_mean + 3.0 * deut_sigma)
+		    {
+			deut_track_num_sb5[deut_count_sb5] = i;
+			deut_count_sb5++;
+			m2_pt_neg_cut_sb5->Fill(pt,m2tof);
+			m2_pt_neg_cut_sb5_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_neg_sb5->Fill(pt, deut_phi);
+		    }	    
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 5.0 * deut_sigma  &&   m2tof > deut_mean + 4.0 * deut_sigma)
+		    {
+			deut_track_num_sb6[deut_count_sb6] = i;
+			deut_count_sb6++;
+			m2_pt_neg_cut_sb6->Fill(pt,m2tof);
+			m2_pt_neg_cut_sb6_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_neg_sb6->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 6.0 * deut_sigma  &&   m2tof > deut_mean + 5.0 * deut_sigma)
+		    {
+			deut_track_num_sb7[deut_count_sb7] = i;
+			deut_count_sb7++;
+			m2_pt_neg_cut_sb7->Fill(pt,m2tof);
+			m2_pt_neg_cut_sb7_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_neg_sb7->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 7.0 * deut_sigma  &&   m2tof > deut_mean + 6.0 * deut_sigma)
+		    {
+			deut_track_num_sb8[deut_count_sb8] = i;
+			deut_count_sb8++;
+			m2_pt_neg_cut_sb8->Fill(pt,m2tof);
+			m2_pt_neg_cut_sb8_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_neg_sb8->Fill(pt, deut_phi);
+		    }
+		    else if(run_mode == 0  &&  m2tof < deut_mean + 8.0 * deut_sigma  &&   m2tof > deut_mean + 7.0 * deut_sigma)
+		    {
+			deut_track_num_sb9[deut_count_sb9] = i;
+			deut_count_sb9++;
+			m2_pt_neg_cut_sb9->Fill(pt,m2tof);
+			m2_pt_neg_cut_sb9_fine->Fill(pt,m2tof);
+			Float_t deut_phi = track->Phi();
+			if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }	if(deut_phi <  -pio2){    deut_phi = deut_phi + twopi;   }
+			if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }	if(deut_phi > 3*pio2){    deut_phi = deut_phi - twopi;   }
+			deut_phi_pt_neg_sb9->Fill(pt, deut_phi);
+		    }
+
+
+
+
+
+
+		    
 		    if(run_mode == 5  &&  m2tof >=2.5  &&  m2tof < 3.0)
 		    {
 			deut_track_num_A[deut_count_A] = i;
@@ -1292,12 +1808,10 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     begin = 0;
-    if(deut_count_C > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
-    if(deut_count_C > 0  &&  trig_05_track_count > 0)
-    {
-	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
-	{
-	    int H               = trig_05_track_num[i];
+    if(deut_count_sb0 > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_sb0 > 0  &&  trig_05_track_count > 0)
+    {	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{   int H               = trig_05_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
 	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
@@ -1305,37 +1819,30 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
 	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
 
-	    for(int j=0; j<deut_count_C; j++)
-	    {
-		int A               = deut_track_num_C[j];
+	    for(int j=0; j<deut_count_sb0; j++)
+	    {	int A               = deut_track_num_sb0[j];
 		if(A != H)
-		{
-		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		{   AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
 		    if(trackA)
-		    {
-		    Short_t charge_C    = trackA->Charge();
-		    Float_t pt_C        = trackA->Pt();
-		    Float_t phi_C       = trackA->Phi();
-		    if(phi_C <  -pio2){    phi_C = phi_C + twopi;   }    if(phi_C <  -pio2){    phi_C = phi_C + twopi;   }
-		    if(phi_C > 3*pio2){    phi_C = phi_C - twopi;   }    if(phi_C > 3*pio2){    phi_C = phi_C - twopi;   }
-		    Float_t Sdphi       =  phi_C - phi_H;
-		    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
-		    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
-		    if     (charge_H > 0){  if     (charge_C > 0){    deut_dphi_pt_pos_pos_05_C->Fill(pt_C, Sdphi);	 }
-			                    else if(charge_C < 0){    deut_dphi_pt_pos_neg_05_C->Fill(pt_C, Sdphi);	 }    }
-		    else if(charge_H < 0){  if     (charge_C > 0){    deut_dphi_pt_pos_neg_05_C->Fill(pt_C, Sdphi);	 }
-			                    else if(charge_C < 0){    deut_dphi_pt_neg_neg_05_C->Fill(pt_C, Sdphi);	 }    }
+		    {	Short_t charge_sb0    = trackA->Charge();			Float_t pt_sb0        = trackA->Pt();			Float_t phi_sb0       = trackA->Phi();
+			if(phi_sb0 <  -pio2){    phi_sb0 = phi_sb0 + twopi;   }    if(phi_sb0 <  -pio2){    phi_sb0 = phi_sb0 + twopi;   }
+			if(phi_sb0 > 3*pio2){    phi_sb0 = phi_sb0 - twopi;   }    if(phi_sb0 > 3*pio2){    phi_sb0 = phi_sb0 - twopi;   }
+			Float_t Sdphi       =  phi_sb0 - phi_H;
+			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+			if     (charge_H > 0){  if     (charge_sb0 > 0){    deut_dphi_pt_pos_pos_05_sb0->Fill(pt_sb0, Sdphi);	 }
+			                        else if(charge_sb0 < 0){    deut_dphi_pt_pos_neg_05_sb0->Fill(pt_sb0, Sdphi);	 }    }
+			else if(charge_H < 0){  if     (charge_sb0 > 0){    deut_dphi_pt_pos_neg_05_sb0->Fill(pt_sb0, Sdphi);	 }
+			                        else if(charge_sb0 < 0){    deut_dphi_pt_neg_neg_05_sb0->Fill(pt_sb0, Sdphi);	 }    }
     }   }   }   }   }
     
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     begin = 0;
-    if(deut_count_D > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
-    if(deut_count_D > 0  &&  trig_05_track_count > 0)
-    {
-	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
-	{
-	    int H               = trig_05_track_num[i];
+    if(deut_count_sb1 > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_sb1 > 0  &&  trig_05_track_count > 0)
+    {	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{   int H               = trig_05_track_num[i];
 	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
 	    Float_t pt_H        = trackH->Pt();
 	    Short_t charge_H    = trackH->Charge();
@@ -1343,29 +1850,273 @@ void AliAnalysisTaskCorPIDTOFQA::UserExec(Option_t *)
 	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
 	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
 
-	    for(int j=0; j<deut_count_D; j++)
-	    {
-		int A               = deut_track_num_D[j];
+	    for(int j=0; j<deut_count_sb1; j++)
+	    {	int A               = deut_track_num_sb1[j];
 		if(A != H)
-		{
-		    AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		{   AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
 		    if(trackA)
-		    {
-		    Short_t charge_D    = trackA->Charge();
-		    Float_t pt_D        = trackA->Pt();
-		    Float_t phi_D       = trackA->Phi();
-		    if(phi_D <  -pio2){    phi_D = phi_D + twopi;   }    if(phi_D <  -pio2){    phi_D = phi_D + twopi;   }
-		    if(phi_D > 3*pio2){    phi_D = phi_D - twopi;   }    if(phi_D > 3*pio2){    phi_D = phi_D - twopi;   }
-		    Float_t Sdphi       =  phi_D - phi_H;
-		    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
-		    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
-		    if     (charge_H > 0){  if     (charge_D > 0){    deut_dphi_pt_pos_pos_05_D->Fill(pt_D, Sdphi);	 }
-			                    else if(charge_D < 0){    deut_dphi_pt_pos_neg_05_D->Fill(pt_D, Sdphi);	 }    }
-		    else if(charge_H < 0){  if     (charge_D > 0){    deut_dphi_pt_pos_neg_05_D->Fill(pt_D, Sdphi);	 }
-			                    else if(charge_D < 0){    deut_dphi_pt_neg_neg_05_D->Fill(pt_D, Sdphi);	 }    }
+		    {	Short_t charge_sb1    = trackA->Charge();			Float_t pt_sb1        = trackA->Pt();			Float_t phi_sb1       = trackA->Phi();
+			if(phi_sb1 <  -pio2){    phi_sb1 = phi_sb1 + twopi;   }    if(phi_sb1 <  -pio2){    phi_sb1 = phi_sb1 + twopi;   }
+			if(phi_sb1 > 3*pio2){    phi_sb1 = phi_sb1 - twopi;   }    if(phi_sb1 > 3*pio2){    phi_sb1 = phi_sb1 - twopi;   }
+			Float_t Sdphi       =  phi_sb1 - phi_H;
+			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+			if     (charge_H > 0){  if     (charge_sb1 > 0){    deut_dphi_pt_pos_pos_05_sb1->Fill(pt_sb1, Sdphi);	 }
+			                        else if(charge_sb1 < 0){    deut_dphi_pt_pos_neg_05_sb1->Fill(pt_sb1, Sdphi);	 }    }
+			else if(charge_H < 0){  if     (charge_sb1 > 0){    deut_dphi_pt_pos_neg_05_sb1->Fill(pt_sb1, Sdphi);	 }
+			                        else if(charge_sb1 < 0){    deut_dphi_pt_neg_neg_05_sb1->Fill(pt_sb1, Sdphi);	 }    }
     }   }   }   }   }
     
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    begin = 0;
+    if(deut_count_sb2 > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_sb2 > 0  &&  trig_05_track_count > 0)
+    {	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{   int H               = trig_05_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
+	    Float_t phi_H       = trackH->Phi();	    
+	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
+	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
 
+	    for(int j=0; j<deut_count_sb2; j++)
+	    {	int A               = deut_track_num_sb2[j];
+		if(A != H)
+		{   AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		    if(trackA)
+		    {	Short_t charge_sb2    = trackA->Charge();			Float_t pt_sb2        = trackA->Pt();			Float_t phi_sb2       = trackA->Phi();
+			if(phi_sb2 <  -pio2){    phi_sb2 = phi_sb2 + twopi;   }    if(phi_sb2 <  -pio2){    phi_sb2 = phi_sb2 + twopi;   }
+			if(phi_sb2 > 3*pio2){    phi_sb2 = phi_sb2 - twopi;   }    if(phi_sb2 > 3*pio2){    phi_sb2 = phi_sb2 - twopi;   }
+			Float_t Sdphi       =  phi_sb2 - phi_H;
+			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+			if     (charge_H > 0){  if     (charge_sb2 > 0){    deut_dphi_pt_pos_pos_05_sb2->Fill(pt_sb2, Sdphi);	 }
+			                        else if(charge_sb2 < 0){    deut_dphi_pt_pos_neg_05_sb2->Fill(pt_sb2, Sdphi);	 }    }
+			else if(charge_H < 0){  if     (charge_sb2 > 0){    deut_dphi_pt_pos_neg_05_sb2->Fill(pt_sb2, Sdphi);	 }
+			                        else if(charge_sb2 < 0){    deut_dphi_pt_neg_neg_05_sb2->Fill(pt_sb2, Sdphi);	 }    }
+    }   }   }   }   }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    begin = 0;
+    if(deut_count_sb3 > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_sb3 > 0  &&  trig_05_track_count > 0)
+    {	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{   int H               = trig_05_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
+	    Float_t phi_H       = trackH->Phi();	    
+	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
+	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
+
+	    for(int j=0; j<deut_count_sb3; j++)
+	    {	int A               = deut_track_num_sb3[j];
+		if(A != H)
+		{   AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		    if(trackA)
+		    {	Short_t charge_sb3    = trackA->Charge();			Float_t pt_sb3        = trackA->Pt();			Float_t phi_sb3       = trackA->Phi();
+			if(phi_sb3 <  -pio2){    phi_sb3 = phi_sb3 + twopi;   }    if(phi_sb3 <  -pio2){    phi_sb3 = phi_sb3 + twopi;   }
+			if(phi_sb3 > 3*pio2){    phi_sb3 = phi_sb3 - twopi;   }    if(phi_sb3 > 3*pio2){    phi_sb3 = phi_sb3 - twopi;   }
+			Float_t Sdphi       =  phi_sb3 - phi_H;
+			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+			if     (charge_H > 0){  if     (charge_sb3 > 0){    deut_dphi_pt_pos_pos_05_sb3->Fill(pt_sb3, Sdphi);	 }
+			                        else if(charge_sb3 < 0){    deut_dphi_pt_pos_neg_05_sb3->Fill(pt_sb3, Sdphi);	 }    }
+			else if(charge_H < 0){  if     (charge_sb3 > 0){    deut_dphi_pt_pos_neg_05_sb3->Fill(pt_sb3, Sdphi);	 }
+			                        else if(charge_sb3 < 0){    deut_dphi_pt_neg_neg_05_sb3->Fill(pt_sb3, Sdphi);	 }    }
+    }   }   }   }   }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    begin = 0;
+    if(deut_count_sb4 > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_sb4 > 0  &&  trig_05_track_count > 0)
+    {	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{   int H               = trig_05_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
+	    Float_t phi_H       = trackH->Phi();	    
+	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
+	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
+
+	    for(int j=0; j<deut_count_sb4; j++)
+	    {	int A               = deut_track_num_sb4[j];
+		if(A != H)
+		{   AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		    if(trackA)
+		    {	Short_t charge_sb4    = trackA->Charge();			Float_t pt_sb4        = trackA->Pt();			Float_t phi_sb4       = trackA->Phi();
+			if(phi_sb4 <  -pio2){    phi_sb4 = phi_sb4 + twopi;   }    if(phi_sb4 <  -pio2){    phi_sb4 = phi_sb4 + twopi;   }
+			if(phi_sb4 > 3*pio2){    phi_sb4 = phi_sb4 - twopi;   }    if(phi_sb4 > 3*pio2){    phi_sb4 = phi_sb4 - twopi;   }
+			Float_t Sdphi       =  phi_sb4 - phi_H;
+			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+			if     (charge_H > 0){  if     (charge_sb4 > 0){    deut_dphi_pt_pos_pos_05_sb4->Fill(pt_sb4, Sdphi);	 }
+			                        else if(charge_sb4 < 0){    deut_dphi_pt_pos_neg_05_sb4->Fill(pt_sb4, Sdphi);	 }    }
+			else if(charge_H < 0){  if     (charge_sb4 > 0){    deut_dphi_pt_pos_neg_05_sb4->Fill(pt_sb4, Sdphi);	 }
+			                        else if(charge_sb4 < 0){    deut_dphi_pt_neg_neg_05_sb4->Fill(pt_sb4, Sdphi);	 }    }
+    }   }   }   }   }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    begin = 0;
+    if(deut_count_sb5 > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_sb5 > 0  &&  trig_05_track_count > 0)
+    {	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{   int H               = trig_05_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
+	    Float_t phi_H       = trackH->Phi();	    
+	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
+	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
+
+	    for(int j=0; j<deut_count_sb5; j++)
+	    {	int A               = deut_track_num_sb5[j];
+		if(A != H)
+		{   AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		    if(trackA)
+		    {	Short_t charge_sb5    = trackA->Charge();			Float_t pt_sb5        = trackA->Pt();			Float_t phi_sb5       = trackA->Phi();
+			if(phi_sb5 <  -pio2){    phi_sb5 = phi_sb5 + twopi;   }    if(phi_sb5 <  -pio2){    phi_sb5 = phi_sb5 + twopi;   }
+			if(phi_sb5 > 3*pio2){    phi_sb5 = phi_sb5 - twopi;   }    if(phi_sb5 > 3*pio2){    phi_sb5 = phi_sb5 - twopi;   }
+			Float_t Sdphi       =  phi_sb5 - phi_H;
+			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+			if     (charge_H > 0){  if     (charge_sb5 > 0){    deut_dphi_pt_pos_pos_05_sb5->Fill(pt_sb5, Sdphi);	 }
+			                        else if(charge_sb5 < 0){    deut_dphi_pt_pos_neg_05_sb5->Fill(pt_sb5, Sdphi);	 }    }
+			else if(charge_H < 0){  if     (charge_sb5 > 0){    deut_dphi_pt_pos_neg_05_sb5->Fill(pt_sb5, Sdphi);	 }
+			                        else if(charge_sb5 < 0){    deut_dphi_pt_neg_neg_05_sb5->Fill(pt_sb5, Sdphi);	 }    }
+    }   }   }   }   }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    begin = 0;
+    if(deut_count_sb6 > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_sb6 > 0  &&  trig_05_track_count > 0)
+    {	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{   int H               = trig_05_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
+	    Float_t phi_H       = trackH->Phi();	    
+	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
+	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
+
+	    for(int j=0; j<deut_count_sb6; j++)
+	    {	int A               = deut_track_num_sb6[j];
+		if(A != H)
+		{   AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		    if(trackA)
+		    {	Short_t charge_sb6    = trackA->Charge();			Float_t pt_sb6        = trackA->Pt();			Float_t phi_sb6       = trackA->Phi();
+			if(phi_sb6 <  -pio2){    phi_sb6 = phi_sb6 + twopi;   }    if(phi_sb6 <  -pio2){    phi_sb6 = phi_sb6 + twopi;   }
+			if(phi_sb6 > 3*pio2){    phi_sb6 = phi_sb6 - twopi;   }    if(phi_sb6 > 3*pio2){    phi_sb6 = phi_sb6 - twopi;   }
+			Float_t Sdphi       =  phi_sb6 - phi_H;
+			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+			if     (charge_H > 0){  if     (charge_sb6 > 0){    deut_dphi_pt_pos_pos_05_sb6->Fill(pt_sb6, Sdphi);	 }
+			                        else if(charge_sb6 < 0){    deut_dphi_pt_pos_neg_05_sb6->Fill(pt_sb6, Sdphi);	 }    }
+			else if(charge_H < 0){  if     (charge_sb6 > 0){    deut_dphi_pt_pos_neg_05_sb6->Fill(pt_sb6, Sdphi);	 }
+			                        else if(charge_sb6 < 0){    deut_dphi_pt_neg_neg_05_sb6->Fill(pt_sb6, Sdphi);	 }    }
+    }   }   }   }   }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    begin = 0;
+    if(deut_count_sb7 > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_sb7 > 0  &&  trig_05_track_count > 0)
+    {	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{   int H               = trig_05_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
+	    Float_t phi_H       = trackH->Phi();	    
+	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
+	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
+
+	    for(int j=0; j<deut_count_sb7; j++)
+	    {	int A               = deut_track_num_sb7[j];
+		if(A != H)
+		{   AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		    if(trackA)
+		    {	Short_t charge_sb7    = trackA->Charge();			Float_t pt_sb7        = trackA->Pt();			Float_t phi_sb7       = trackA->Phi();
+			if(phi_sb7 <  -pio2){    phi_sb7 = phi_sb7 + twopi;   }    if(phi_sb7 <  -pio2){    phi_sb7 = phi_sb7 + twopi;   }
+			if(phi_sb7 > 3*pio2){    phi_sb7 = phi_sb7 - twopi;   }    if(phi_sb7 > 3*pio2){    phi_sb7 = phi_sb7 - twopi;   }
+			Float_t Sdphi       =  phi_sb7 - phi_H;
+			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+			if     (charge_H > 0){  if     (charge_sb7 > 0){    deut_dphi_pt_pos_pos_05_sb7->Fill(pt_sb7, Sdphi);	 }
+			                        else if(charge_sb7 < 0){    deut_dphi_pt_pos_neg_05_sb7->Fill(pt_sb7, Sdphi);	 }    }
+			else if(charge_H < 0){  if     (charge_sb7 > 0){    deut_dphi_pt_pos_neg_05_sb7->Fill(pt_sb7, Sdphi);	 }
+			                        else if(charge_sb7 < 0){    deut_dphi_pt_neg_neg_05_sb7->Fill(pt_sb7, Sdphi);	 }    }
+    }   }   }   }   }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    begin = 0;
+    if(deut_count_sb8 > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_sb8 > 0  &&  trig_05_track_count > 0)
+    {	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{   int H               = trig_05_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
+	    Float_t phi_H       = trackH->Phi();	    
+	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
+	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
+
+	    for(int j=0; j<deut_count_sb8; j++)
+	    {	int A               = deut_track_num_sb8[j];
+		if(A != H)
+		{   AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		    if(trackA)
+		    {	Short_t charge_sb8    = trackA->Charge();			Float_t pt_sb8        = trackA->Pt();			Float_t phi_sb8       = trackA->Phi();
+			if(phi_sb8 <  -pio2){    phi_sb8 = phi_sb8 + twopi;   }    if(phi_sb8 <  -pio2){    phi_sb8 = phi_sb8 + twopi;   }
+			if(phi_sb8 > 3*pio2){    phi_sb8 = phi_sb8 - twopi;   }    if(phi_sb8 > 3*pio2){    phi_sb8 = phi_sb8 - twopi;   }
+			Float_t Sdphi       =  phi_sb8 - phi_H;
+			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+			if     (charge_H > 0){  if     (charge_sb8 > 0){    deut_dphi_pt_pos_pos_05_sb8->Fill(pt_sb8, Sdphi);	 }
+			                        else if(charge_sb8 < 0){    deut_dphi_pt_pos_neg_05_sb8->Fill(pt_sb8, Sdphi);	 }    }
+			else if(charge_H < 0){  if     (charge_sb8 > 0){    deut_dphi_pt_pos_neg_05_sb8->Fill(pt_sb8, Sdphi);	 }
+			                        else if(charge_sb8 < 0){    deut_dphi_pt_neg_neg_05_sb8->Fill(pt_sb8, Sdphi);	 }    }
+    }   }   }   }   }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    begin = 0;
+    if(deut_count_sb9 > 0  &&  trig_05_track_count > 0  &&  do_lead_only == 1)    {	begin = max_05;   trig_05_track_count = max_05 + 1;    }
+    if(deut_count_sb9 > 0  &&  trig_05_track_count > 0)
+    {	for(int i=begin; i<trig_05_track_count; i++)  // trigger loop
+	{   int H               = trig_05_track_num[i];
+	    AliAODTrack* trackH = static_cast<AliAODTrack*>(fAOD->GetTrack(H));
+	    Float_t pt_H        = trackH->Pt();
+	    Short_t charge_H    = trackH->Charge();
+	    Float_t phi_H       = trackH->Phi();	    
+	    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }    if(phi_H <  -pio2){  phi_H = phi_H + twopi; }
+	    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }    if(phi_H > 3*pio2){  phi_H = phi_H - twopi; }
+
+	    for(int j=0; j<deut_count_sb9; j++)
+	    {	int A               = deut_track_num_sb9[j];
+		if(A != H)
+		{   AliAODTrack* trackA = static_cast<AliAODTrack*>(fAOD->GetTrack(A));
+		    if(trackA)
+		    {	Short_t charge_sb9    = trackA->Charge();			Float_t pt_sb9        = trackA->Pt();			Float_t phi_sb9       = trackA->Phi();
+			if(phi_sb9 <  -pio2){    phi_sb9 = phi_sb9 + twopi;   }    if(phi_sb9 <  -pio2){    phi_sb9 = phi_sb9 + twopi;   }
+			if(phi_sb9 > 3*pio2){    phi_sb9 = phi_sb9 - twopi;   }    if(phi_sb9 > 3*pio2){    phi_sb9 = phi_sb9 - twopi;   }
+			Float_t Sdphi       =  phi_sb9 - phi_H;
+			if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }    if(Sdphi <  -pio2){    Sdphi = Sdphi + twopi;   }
+			if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }    if(Sdphi > 3*pio2){    Sdphi = Sdphi - twopi;   }
+			if     (charge_H > 0){  if     (charge_sb9 > 0){    deut_dphi_pt_pos_pos_05_sb9->Fill(pt_sb9, Sdphi);	 }
+			                        else if(charge_sb9 < 0){    deut_dphi_pt_pos_neg_05_sb9->Fill(pt_sb9, Sdphi);	 }    }
+			else if(charge_H < 0){  if     (charge_sb9 > 0){    deut_dphi_pt_pos_neg_05_sb9->Fill(pt_sb9, Sdphi);	 }
+			                        else if(charge_sb9 < 0){    deut_dphi_pt_neg_neg_05_sb9->Fill(pt_sb9, Sdphi);	 }    }
+    }   }   }   }   }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
                                                         // continue until all the tracks are processed
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing

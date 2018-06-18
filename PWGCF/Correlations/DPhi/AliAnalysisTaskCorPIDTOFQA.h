@@ -50,9 +50,6 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	AliPIDResponse*       fPIDResponse;
 	AliAnalysisUtils*     fAnalysisUtils;
 
-
-
-
 	
 	TH1F*                 fHistPt;                     //  1
 	TH2F*                 cent_ntracks;                //  2
@@ -69,10 +66,28 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 m2_pt_neg_cut_A;             // 12
 	TH2F*                 m2_pt_pos_cut_B;             // 13
 	TH2F*                 m2_pt_neg_cut_B;             // 14
-	TH2F*                 m2_pt_pos_cut_C;             // 15
-	TH2F*                 m2_pt_neg_cut_C;             // 16
-	TH2F*                 m2_pt_pos_cut_D;             // 17
-	TH2F*                 m2_pt_neg_cut_D;             // 18	
+
+	TH2F*                 m2_pt_pos_cut_sb0;           //
+	TH2F*                 m2_pt_neg_cut_sb0;           //
+	TH2F*                 m2_pt_pos_cut_sb1;           //
+	TH2F*                 m2_pt_neg_cut_sb1;           //
+	TH2F*                 m2_pt_pos_cut_sb2;           //
+	TH2F*                 m2_pt_neg_cut_sb2;           //
+	TH2F*                 m2_pt_pos_cut_sb3;           //
+	TH2F*                 m2_pt_neg_cut_sb3;           //
+	TH2F*                 m2_pt_pos_cut_sb4;           //
+	TH2F*                 m2_pt_neg_cut_sb4;           //
+	TH2F*                 m2_pt_pos_cut_sb5;           //
+	TH2F*                 m2_pt_neg_cut_sb5;           //
+	TH2F*                 m2_pt_pos_cut_sb6;           //
+	TH2F*                 m2_pt_neg_cut_sb6;           //
+	TH2F*                 m2_pt_pos_cut_sb7;           //
+	TH2F*                 m2_pt_neg_cut_sb7;           //
+	TH2F*                 m2_pt_pos_cut_sb8;           //
+	TH2F*                 m2_pt_neg_cut_sb8;           //
+	TH2F*                 m2_pt_pos_cut_sb9;           //
+	TH2F*                 m2_pt_neg_cut_sb9;           //
+	
 	TH2F*                 m2_pt_pos_cut_T_prot;        // 19
 	TH2F*                 m2_pt_neg_cut_T_prot;        // 20
 	
@@ -89,10 +104,26 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 deut_phi_pt_neg_A;           // 28
 	TH2F*                 deut_phi_pt_pos_B;           // 29
 	TH2F*                 deut_phi_pt_neg_B;           // 30
-	TH2F*                 deut_phi_pt_pos_C;           // 31
-	TH2F*                 deut_phi_pt_neg_C;           // 32
-	TH2F*                 deut_phi_pt_pos_D;           // 33
-	TH2F*                 deut_phi_pt_neg_D;           // 34
+	TH2F*                 deut_phi_pt_pos_sb0;         //
+	TH2F*                 deut_phi_pt_neg_sb0;         //
+	TH2F*                 deut_phi_pt_pos_sb1;         //
+	TH2F*                 deut_phi_pt_neg_sb1;         //
+	TH2F*                 deut_phi_pt_pos_sb2;         //
+	TH2F*                 deut_phi_pt_neg_sb2;         //
+	TH2F*                 deut_phi_pt_pos_sb3;         //
+	TH2F*                 deut_phi_pt_neg_sb3;         //
+	TH2F*                 deut_phi_pt_pos_sb4;         //
+	TH2F*                 deut_phi_pt_neg_sb4;         //
+	TH2F*                 deut_phi_pt_pos_sb5;         //
+	TH2F*                 deut_phi_pt_neg_sb5;         //
+	TH2F*                 deut_phi_pt_pos_sb6;         //
+	TH2F*                 deut_phi_pt_neg_sb6;         //
+	TH2F*                 deut_phi_pt_pos_sb7;         //
+	TH2F*                 deut_phi_pt_neg_sb7;         //
+	TH2F*                 deut_phi_pt_pos_sb8;         //
+	TH2F*                 deut_phi_pt_neg_sb8;         //
+	TH2F*                 deut_phi_pt_pos_sb9;         //
+	TH2F*                 deut_phi_pt_neg_sb9;         //
 	
 	TH1I*                 deut_per_event;              // 35
 	TH1I*                 prot_per_event;              // 36
@@ -132,13 +163,45 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 
 
 	
-	TH2F*                 deut_dphi_pt_pos_pos_05_C;   // 62
-	TH2F*                 deut_dphi_pt_pos_neg_05_C;   // 63
-	TH2F*                 deut_dphi_pt_neg_neg_05_C;   // 64
+	TH2F*                 deut_dphi_pt_pos_pos_05_sb0; // 62
+	TH2F*                 deut_dphi_pt_pos_neg_05_sb0; // 63
+	TH2F*                 deut_dphi_pt_neg_neg_05_sb0; // 64
 	
-	TH2F*                 deut_dphi_pt_pos_pos_05_D;   // 65
-	TH2F*                 deut_dphi_pt_pos_neg_05_D;   // 66
-	TH2F*                 deut_dphi_pt_neg_neg_05_D;   // 67
+	TH2F*                 deut_dphi_pt_pos_pos_05_sb1; // 65
+	TH2F*                 deut_dphi_pt_pos_neg_05_sb1; // 66
+	TH2F*                 deut_dphi_pt_neg_neg_05_sb1; // 67
+
+	TH2F*                 deut_dphi_pt_pos_pos_05_sb2; //
+	TH2F*                 deut_dphi_pt_pos_neg_05_sb2; //
+	TH2F*                 deut_dphi_pt_neg_neg_05_sb2; //
+
+	TH2F*                 deut_dphi_pt_pos_pos_05_sb3; //
+	TH2F*                 deut_dphi_pt_pos_neg_05_sb3; //
+	TH2F*                 deut_dphi_pt_neg_neg_05_sb3; //
+	
+	TH2F*                 deut_dphi_pt_pos_pos_05_sb4; //
+	TH2F*                 deut_dphi_pt_pos_neg_05_sb4; //
+	TH2F*                 deut_dphi_pt_neg_neg_05_sb4; //
+	
+	TH2F*                 deut_dphi_pt_pos_pos_05_sb5; //
+	TH2F*                 deut_dphi_pt_pos_neg_05_sb5; //
+	TH2F*                 deut_dphi_pt_neg_neg_05_sb5; //
+	
+	TH2F*                 deut_dphi_pt_pos_pos_05_sb6; //
+	TH2F*                 deut_dphi_pt_pos_neg_05_sb6; //
+	TH2F*                 deut_dphi_pt_neg_neg_05_sb6; //
+	
+	TH2F*                 deut_dphi_pt_pos_pos_05_sb7; //
+	TH2F*                 deut_dphi_pt_pos_neg_05_sb7; //
+	TH2F*                 deut_dphi_pt_neg_neg_05_sb7; //
+	
+	TH2F*                 deut_dphi_pt_pos_pos_05_sb8; //
+	TH2F*                 deut_dphi_pt_pos_neg_05_sb8; //
+	TH2F*                 deut_dphi_pt_neg_neg_05_sb8; //
+	
+	TH2F*                 deut_dphi_pt_pos_pos_05_sb9; //
+	TH2F*                 deut_dphi_pt_pos_neg_05_sb9; //
+	TH2F*                 deut_dphi_pt_neg_neg_05_sb9; //
 	
 	TH1F*                 DCAxy_pos;                   // 68
 	TH1F*                 DCAz_pos;                    // 69
@@ -156,10 +219,27 @@ class AliAnalysisTaskCorPIDTOFQA : public AliAnalysisTaskSE
 	TH2F*                 m2_pt_pos_cut_B_fine;        // 80
 	TH2F*                 m2_pt_neg_cut_B_fine;        // 81
 
-	TH2F*                 m2_pt_pos_cut_C_fine;        // 82
-	TH2F*                 m2_pt_neg_cut_C_fine;        // 83
-	TH2F*                 m2_pt_pos_cut_D_fine;        // 84
-	TH2F*                 m2_pt_neg_cut_D_fine;        // 85
+	TH2F*                 m2_pt_pos_cut_sb0_fine;      // 82
+	TH2F*                 m2_pt_neg_cut_sb0_fine;      // 83
+	TH2F*                 m2_pt_pos_cut_sb1_fine;      // 84
+	TH2F*                 m2_pt_neg_cut_sb1_fine;      // 85
+
+	TH2F*                 m2_pt_pos_cut_sb2_fine;      //
+	TH2F*                 m2_pt_neg_cut_sb2_fine;      //
+	TH2F*                 m2_pt_pos_cut_sb3_fine;      //
+	TH2F*                 m2_pt_neg_cut_sb3_fine;      //
+	TH2F*                 m2_pt_pos_cut_sb4_fine;      //
+	TH2F*                 m2_pt_neg_cut_sb4_fine;      //
+	TH2F*                 m2_pt_pos_cut_sb5_fine;      //
+	TH2F*                 m2_pt_neg_cut_sb5_fine;      //
+	TH2F*                 m2_pt_pos_cut_sb6_fine;      //
+	TH2F*                 m2_pt_neg_cut_sb6_fine;      //
+	TH2F*                 m2_pt_pos_cut_sb7_fine;      //
+	TH2F*                 m2_pt_neg_cut_sb7_fine;      //
+	TH2F*                 m2_pt_pos_cut_sb8_fine;      //
+	TH2F*                 m2_pt_neg_cut_sb8_fine;      //
+	TH2F*                 m2_pt_pos_cut_sb9_fine;      //
+	TH2F*                 m2_pt_neg_cut_sb9_fine;      //
 	
 	TH2F*                 m2_pt_pos_TPC_prot_fine;     // 86
 	TH2F*                 m2_pt_neg_TPC_prot_fine;     // 87
