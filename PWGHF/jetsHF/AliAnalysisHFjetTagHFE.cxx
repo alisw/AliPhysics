@@ -134,6 +134,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistDiJetMomBalance(0), 
   fInvmassULS(0),
   fInvmassLS(0),
+  fInvmassHF(0),
   HFjetCorr0(0),
   HFjetCorr1(0),
   HFjetParticle(0),
@@ -253,6 +254,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistDiJetMomBalance(0), 
   fInvmassULS(0),
   fInvmassLS(0),//my
+  fInvmassHF(0),//my
   HFjetCorr0(0),
   HFjetCorr1(0),
   HFjetParticle(0),
@@ -541,6 +543,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fInvmassLS = new TH2F("fInvmassLS","LS mass;p_{T};mass",20,0,20,150,0.,0.3);
   fOutput->Add(fInvmassLS);
+
+  fInvmassHF = new TH2F("fInvmassHF","HF mass;p_{T};mass",100,0,100,500,0.,5);
+  fOutput->Add(fInvmassHF);
 
   // jet
   Int_t jetpTMax = 300;
@@ -1364,7 +1369,37 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                       {
                        double HFjetVals[7];
                        HFjetVals[0]=track->Pt(); HFjetVals[1]=0.0; HFjetVals[2] = corrPt; HFjetVals[3] = pTeJet; HFjetVals[4] = pTeJetTrue; HFjetVals[5] = 0.0; HFjetVals[6] = 0.0;
-                       HFjetCorr1->Fill(HFjetVals);
+                       HFjetCorr1->Fill(HFjetVals); 
+ 
+                       
+                       for (unsigned j = 0; j< jet->GetNumberOfTracks(); j++) 
+                           {
+                            AliVParticle *HFjetcont;
+                            HFjetcont = static_cast<AliVParticle*>(jet->TrackAt(j, fTracks));
+                            if(!HFjetcont) continue;
+                            AliAODTrack *aHFjetcont = dynamic_cast<AliAODTrack*>(HFjetcont);
+
+                            if(track->Pt()==aHFjetcont->Pt())continue;                            
+
+                            AliKFParticle::SetField(fVevent->GetMagneticField());
+                            AliKFParticle hfe1 = AliKFParticle(*track, 11);
+                            AliKFParticle hfe2 = AliKFParticle(*aHFjetcont, 321);
+                            AliKFParticle recgHF(hfe1, hfe2);
+                            if(recgHF.GetNDF()<1) continue;
+                            Double_t chi2recg = recgHF.GetChi2()/recgHF.GetNDF();
+                            if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
+                          
+                            Int_t MassHFcorr;
+                            Double_t HFmass,HFwidth;
+                            MassHFcorr = recgHF.GetMass(HFmass,HFwidth);
+
+                            if(track->Charge()*aHFjetcont->Charge()>0)
+                               {
+                                if(track->Pt()>3.0)fInvmassHF->Fill(corrPt,HFmass);
+                               }
+
+                           }
+
                       }
                    } // teg by e
 
