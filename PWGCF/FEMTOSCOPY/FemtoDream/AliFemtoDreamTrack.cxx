@@ -121,6 +121,9 @@ void AliFemtoDreamTrack::SetTrack(AliESDtrack *track) {
 //        this->SetMCInformation();
 //      }
     }
+    if (fESDTPCOnlyTrack) {
+      delete fESDTPCOnlyTrack;
+    }
   }
 }
 
