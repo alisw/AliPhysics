@@ -969,7 +969,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
            {
             ExJetEta[Njet] = jetEta; 
             ExJetPhi[Njet] = jetPhi; 
-            ExJetPt[Njet] = jetpT; 
+            ExJetPt[Njet] = jetpTsub; 
            }
 
          if(idbHFEj)cout << "Ncont = " << Ncont << endl;
@@ -1353,7 +1353,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                          {
                           Double_t dPhiHFjet_tmp = Phi_eJet - ExJetPhi[1];
                           Double_t dPhiHFjet = atan2(sin(dPhiHFjet_tmp),cos(dPhiHFjet_tmp));
-                          fHistDiJetPhi->Fill(corrPt,dPhiHFjet);
+                          if(ExJetPt[1]>10.0)fHistDiJetPhi->Fill(corrPt,dPhiHFjet);
                           fHistDiJetMomBalance->Fill(corrPt,corrPt-ExJetPt[1]);
                          }
                       }
