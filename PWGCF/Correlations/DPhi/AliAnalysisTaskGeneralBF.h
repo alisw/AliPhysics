@@ -172,7 +172,8 @@ public:
   AliHelperPID                   * GetHelperPID()          { return fHelperPID; }
   void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid;  }
   
-  void SetParticleSpecies( int species )            { particleSpecies = species; }
+  void SetParticleSpecies_1( int species )            { particleSpecies_1 = species; }
+  void SetParticleSpecies_2( int species )            { particleSpecies_2 = species; }
   
   void SetAnalysisType( const char * analysisType ) { fAnalysisType = analysisType; }
   void SetSystemType( const char * systemType )     { fSystemType = systemType; }
@@ -243,7 +244,8 @@ protected:
   double   _dedxMax;
   int      _nClusterMin;
   int      _trackFilterBit;
-  Double_t particleSpecies;
+  Double_t particleSpecies_1;
+  Double_t particleSpecies_2;
   
   TString      fAnalysisType;
   TString      fSystemType;
