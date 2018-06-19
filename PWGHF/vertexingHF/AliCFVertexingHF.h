@@ -118,10 +118,6 @@ class AliCFVertexingHF : public TObject {
 	void SetMultiplicity(Double_t multiplicity) {fMultiplicity = multiplicity;}
   void Setq2Value(Double_t q2) {fq2 = q2;}
   void SetTrackArray(TClonesArray* trkarray) {
-    if(fTrackArray) {
-      delete fTrackArray;
-      fTrackArray=0x0;
-    }
     fTrackArray = trkarray;
     fTrackArray->SetOwner();
   }
