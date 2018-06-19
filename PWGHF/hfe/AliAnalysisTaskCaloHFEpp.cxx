@@ -117,6 +117,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fInv_pT_LS(0),
 				fInv_pT_ULS(0),
 				fHistPt_Inc(0),
+				fHistPt_Iso(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -218,6 +219,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fInv_pT_LS(0),
 				fInv_pT_ULS(0),
 				fHistPt_Inc(0),
+				fHistPt_Iso(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -323,6 +325,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHistPt_HFE_MC_D  = new TH1F("fHistPt_HFE_MC_D","HFE from D MC",60,0,60);
 				fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",60,0,60);
 				fHistPt_Inc = new TH1F("fHistPt_Inc","Inclusive electron",60,0,60);
+				fHistPt_Iso = new TH1F("fHistPt_Iso","Isolated electron",60,0,60);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",60,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",60,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",60,0,60);
@@ -399,6 +402,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fInv_pT_LS);
 				fOutputList->Add(fInv_pT_ULS);
 				fOutputList->Add(fHistPt_Inc);
+				fOutputList->Add(fHistPt_Iso);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
 				fOutputList->Add(fCheckEtaMC);
@@ -861,6 +865,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																///////-----Identify Non-HFE////////////////////////////
 																SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt);
 																IsolationCut(Matchphi,Matcheta,clE,fFlagIsolation);
+																if(fFlagIsolation)fHistPt_Iso->Fill(track->Pt());
+
 																if(pid_eleP)
 																{
 																				fHistPhoReco0->Fill(track->Pt()); // reco pho
