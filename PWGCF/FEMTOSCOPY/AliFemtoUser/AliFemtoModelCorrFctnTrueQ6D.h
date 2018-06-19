@@ -28,6 +28,8 @@ class TRandom;
 class AliFemtoModelCorrFctnTrueQ6D : public AliFemtoCorrFctn {
 public:
 
+  typedef THnSparseI HistType;
+
   struct Builder {
     UInt_t bin_count;
     Double_t qmin;
@@ -100,6 +102,12 @@ public:
   ///
   AliFemtoModelCorrFctnTrueQ6D();
 
+  /// Construct from data
+  AliFemtoModelCorrFctnTrueQ6D(const HistType &, AliFemtoModelManager *m=nullptr);
+
+  /// Building using pointer
+  AliFemtoModelCorrFctnTrueQ6D(HistType *&, AliFemtoModelManager *m=nullptr);
+
   /// Custom title
   ///
   /// Use default binning parameters
@@ -157,10 +165,17 @@ protected:
   AliFemtoModelManager *fManager; //!<! Link back to the manager to retrieve weights
 
   /// Histogram of data
-  THnSparseS *fHistogram;
+  HistType *fHistogram;
 
   /// Random number generator used for randomizing order of pair momentums
   TRandom *fRng;
+
+  std::pair<double, double> fQlimits[3];
+
+  void UpdateQlimits();
+
+private:
+  void AddPair(const AliFemtoParticle &, const AliFemtoParticle &);
 };
 
 inline
