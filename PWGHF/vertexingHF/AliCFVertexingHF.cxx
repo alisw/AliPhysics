@@ -135,10 +135,7 @@ AliCFVertexingHF::~AliCFVertexingHF()
 	  	delete [] fEtaAccCut;
 	  	fEtaAccCut = 0x0;
 	}
-  if(fTrackArray) {
-    delete fTrackArray;
-    fTrackArray = 0x0;
-  }
+  if(fTrackArray) fTrackArray = 0x0;
 }
 
 //_____________________________________________________
@@ -1037,7 +1034,7 @@ void AliCFVertexingHF::SetAccCut()
 }
 
 //___________________________________________________________
-Int_t AliCFVertexingHF::ComputeLocalMultiplicity(Double_t etaD, Double_t phiD, Double_t deltaEta, Double_t deltaPhi) const {
+Int_t AliCFVertexingHF::ComputeLocalMultiplicity(Double_t etaD, Double_t phiD, Double_t R) const {
   
   Int_t mult=0;
   if(!fTrackArray) {
@@ -1050,7 +1047,7 @@ Int_t AliCFVertexingHF::ComputeLocalMultiplicity(Double_t etaD, Double_t phiD, D
     if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9))) continue;
     Double_t eta=track->Eta();
     Double_t phi=track->Phi();
-    if(TMath::Abs(eta-etaD)<deltaEta && TMath::Abs(phi-phiD)<deltaPhi) mult++;
+    if(TMath::Sqrt((eta-etaD)*(eta-etaD)+(phi-phiD)*(phi-phiD))<R) mult++;
   }
   
   return mult;

@@ -857,7 +857,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
   Double_t q2=0;
   if(fConfiguration==kESE) {
     //set q2 in case of kESE configuration
-    q2=ComputeTPCq2(aodEvent,-0.8,0.8,0.2,5.);
+    q2=ComputeTPCq2(aodEvent,mcHeader,-0.8,0.8,0.2,5.);
     cfVtxHF->Setq2Value(q2);
 
     //set track array in case of kESE configuration
@@ -1503,7 +1503,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     titles[1]="rapidity";
     titles[2]="centrality";
     titles[3]="multiplicity";
-    titles[4]="N_{tracks} (#Delta#eta<0.1,#Delta#varphi<0.1)";
+    titles[4]="N_{tracks} (R<0.4)";
     titles[5]="q_{2}";
   }
 
@@ -2229,9 +2229,8 @@ TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
 }
 
 //________________________________________________________________________
-Double_t AliCFTaskVertexingHF::ComputeTPCq2(AliAODEvent* aod, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const {
+Double_t AliCFTaskVertexingHF::ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const {
   /// Compute the q2 for ESE starting from TPC tracks
-  /// TO BE ADDED: use only HIJING tracks
   
   Int_t nTracks=aod->GetNumberOfTracks();
   Double_t nHarmonic=2.;
@@ -2241,16 +2240,19 @@ Double_t AliCFTaskVertexingHF::ComputeTPCq2(AliAODEvent* aod, Double_t etamin, D
   for(Int_t it=0; it<nTracks; it++){
     AliAODTrack* track=(AliAODTrack*)aod->GetTrack(it);
     if(!track) continue;
-    if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
-      Double_t pt=track->Pt();
-      Double_t eta=track->Eta();
-      Double_t phi=track->Phi();
-      Double_t qx=TMath::Cos(nHarmonic*phi);
-      Double_t qy=TMath::Sin(nHarmonic*phi);
-      if(eta<etamax && eta>etamin && pt>ptmin && pt<ptmax) {
-        q2Vec[0]+=qx;
-        q2Vec[1]+=qy;
-        multQvec++;
+    TString genname = AliVertexingHFUtils::GetGenerator(track->GetLabel(),mcHeader);
+    if(genname.Contains("Hijing")) {
+      if(track->TestFilterBit(BIT(8))||track->TestFilterBit(BIT(9))) {
+        Double_t pt=track->Pt();
+        Double_t eta=track->Eta();
+        Double_t phi=track->Phi();
+        Double_t qx=TMath::Cos(nHarmonic*phi);
+        Double_t qy=TMath::Sin(nHarmonic*phi);
+        if(eta<etamax && eta>etamin && pt>ptmin && pt<ptmax) {
+          q2Vec[0]+=qx;
+          q2Vec[1]+=qy;
+          multQvec++;
+        }
       }
     }
   }
