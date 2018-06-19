@@ -324,6 +324,8 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
       AntiParticles.push_back(*fFemtoTrack);
     }
   }
+  std::vector<AliFemtoDreamBasePart> DummyDecays;
+  std::vector<AliFemtoDreamBasePart> AntiDummyDecays;
   std::vector<AliFemtoDreamBasePart> XiDecays;
   std::vector<AliFemtoDreamBasePart> AntiXiDecays;
   for (Int_t nCascade = 0; nCascade < evt->GetNumberOfCascades(); ++nCascade) {
@@ -345,6 +347,8 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
 
   fPairCleaner->StoreParticle(Particles);
   fPairCleaner->StoreParticle(AntiParticles);
+  fPairCleaner->StoreParticle(DummyDecays); //Spaceholders for Lambdas to not crash the task.
+  fPairCleaner->StoreParticle(AntiDummyDecays);
   fPairCleaner->StoreParticle(XiDecays);
   fPairCleaner->StoreParticle(AntiXiDecays);
 
