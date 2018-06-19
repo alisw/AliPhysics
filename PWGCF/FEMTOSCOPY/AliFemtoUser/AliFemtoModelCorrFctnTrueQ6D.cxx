@@ -10,9 +10,22 @@
 #include <TList.h>
 #include <TString.h>
 #include <TRandom.h>
+#include <TAxis.h>
 
 #include <tuple>
 #include <iostream>
+
+void
+AliFemtoModelCorrFctnTrueQ6D::UpdateQlimits()
+{
+  const auto aout = fHistogram->GetAxis(3),
+             aside = fHistogram->GetAxis(4),
+             along = fHistogram->GetAxis(5);
+
+  fQlimits[0] = make_pair(aout->GetXmin(), aout->GetXmax());
+  fQlimits[1] = make_pair(aside->GetXmin(), aside->GetXmax());
+  fQlimits[2] = make_pair(along->GetXmin(), along->GetXmax());
+}
 
 AliFemtoModelCorrFctnTrueQ6D::Builder::Builder(AliFemtoConfigObject cfg)
   : Builder()
@@ -23,10 +36,32 @@ AliFemtoModelCorrFctnTrueQ6D::Builder::Builder(AliFemtoConfigObject cfg)
     ("qmax", qmax)
     ("nbins", bin_count);
 }
+
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D()
   : AliFemtoModelCorrFctnTrueQ6D("CF_TrueQ6D")
 {
 }
+
+AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const HistType &hist, AliFemtoModelManager *mgr)
+  : AliFemtoCorrFctn()
+  , fManager(mgr)
+  , fHistogram(reinterpret_cast<HistType*>(hist.Clone()))
+  , fRng(new TRandom())
+{
+  UpdateQlimits();
+}
+
+AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(HistType *&hist, AliFemtoModelManager *mgr)
+  : AliFemtoCorrFctn()
+  , fManager(mgr)
+  , fHistogram(hist)
+  , fRng(new TRandom())
+{
+  // take ownership of the pointer
+  hist = nullptr;
+  UpdateQlimits();
+}
+
 
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title)
   : AliFemtoModelCorrFctnTrueQ6D(title, 56, 0.14)
@@ -51,7 +86,8 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title,
 {
   std::vector<Int_t> nbins_v(6, static_cast<Int_t>(nbins));
   std::vector<double> hist_min(6, qmin), hist_max(6, qmax);
-  fHistogram = new THnSparseS(title +"_Histogram", "Histogram", 6, nbins_v.data(), hist_min.data(), hist_max.data());
+  fHistogram = new HistType(title +"_Histogram", "Histogram; ", 6, nbins_v.data(), hist_min.data(), hist_max.data());
+  UpdateQlimits();
 }
 
 
@@ -59,6 +95,7 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const Builder &params
   : AliFemtoModelCorrFctnTrueQ6D(params.title.Data(), params.bin_count, params.qmin, params.qmax)
 {
   SetManager(params.mc_manager);
+  UpdateQlimits();
 }
 
 
@@ -68,6 +105,7 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const AliFemtoModelCo
   , fHistogram(reinterpret_cast<decltype(fHistogram)>(orig.fHistogram->Clone()))
   , fRng(new TRandom())
 {
+  UpdateQlimits();
 }
 
 
@@ -123,12 +161,22 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
 }
 
 
-static void
-AddPair(const AliFemtoParticle &particle1, const AliFemtoParticle &particle2, THnSparseS &hist)
+void
+AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1, const AliFemtoParticle &particle2)
 {
   // Fill reconstructed histogram with "standard" particle momentum
   Double_t q_out, q_side, q_long;
   std::tie(q_out, q_side, q_long) = Qcms(particle1.FourMomentum(), particle2.FourMomentum());
+
+  auto out_of_bounds = [] (double q, const std::pair<double,double> limit) {
+    return q < limit.first || limit.second < q;
+  };
+
+  if (out_of_bounds(q_out, fQlimits[0]) ||
+      out_of_bounds(q_side, fQlimits[1]) ||
+      out_of_bounds(q_long, fQlimits[2])) {
+    return;
+  }
 
   // Get generated momentum from hidden info
   const AliFemtoModelHiddenInfo
@@ -161,7 +209,7 @@ AddPair(const AliFemtoParticle &particle1, const AliFemtoParticle &particle2, TH
   std::tie(true_q_out, true_q_side, true_q_long) = Qcms(p1, p2);
 
   Double_t q[6] = {true_q_out, true_q_side, true_q_long, q_out, q_side, q_long};
-  hist.Fill(q);
+  fHistogram->Fill(q);
 }
 
 void
@@ -174,7 +222,7 @@ AliFemtoModelCorrFctnTrueQ6D::AddRealPair(AliFemtoPair *pair)
   if (fRng->Uniform() >= 0.5) {
     std::swap(p1, p2);
   }
-  AddPair(*p1, *p2, *fHistogram);
+  AddPair(*p1, *p2);
 }
 
 void
@@ -188,13 +236,12 @@ AliFemtoModelCorrFctnTrueQ6D::AddMixedPair(AliFemtoPair *pair)
     std::swap(p1, p2);
   }
 
-  AddPair(*p1, *p2, *fHistogram);
+  AddPair(*p1, *p2);
 }
-
 
 AliFemtoString
 AliFemtoModelCorrFctnTrueQ6D::Report()
 {
   TString report;
-  return AliFemtoString((const char *)report);
+  return AliFemtoString(report.Data());
 }
