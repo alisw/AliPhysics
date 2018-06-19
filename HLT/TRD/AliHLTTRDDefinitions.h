@@ -43,9 +43,6 @@ public:
   static const AliHLTComponentDataType fgkTRDTrackDataType; // tracks
 
   static const AliHLTComponentDataType fgkSimpleIntegerDataType;//Sample
-
-  ClassDef(AliHLTTRDDefinitions, 0)
-
 };
 
 #endif
