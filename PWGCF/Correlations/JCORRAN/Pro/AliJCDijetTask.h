@@ -46,8 +46,14 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t* );
   AliJCatalystTask *GetJCatalystTask() {return fJCatalystTask;}
+  void    SetCentralityBins( vector<double> centralityBins ) {fcentralityBins=centralityBins; }
+  void    SetJetConeSize(double jetCone) {fjetCone=jetCone; }
   Bool_t  IsMC()const{ return fIsMC; }
-  void    SetIsMC(Bool_t b){ fIsMC=b; }
+  void    SetIsMC(Bool_t b) { fIsMC=b; }
+  void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi;}
+  //double  GetLeadingJetCut() {return fleadingJetCut;}
+  //double  GetSubleadingJetCut() {return fsubleadingJetCut;}
+  //double  GetConstituentCut() {return fconstituentCut;}
   void CalculateJetsDijets(TClonesArray *inList);
 
   // Methods specific for this class
@@ -57,7 +63,16 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
 
   AliJCatalystTask *fJCatalystTask;  //
   TString           fJCatalystTaskName; // Name for JCatalyst task
+  vector<double> fcentralityBins;
+  double fjetCone;
   Bool_t      fIsMC;       // MC data or real data
+  double fparticleEtaCut;
+  double fparticlePtCut;
+  double fleadingJetCut;
+  double fsubleadingJetCut;
+  double fconstituentCut;
+  double fdeltaPhiCut;
+  enum jetClasses {iRaw, iBGSubtr, iConstCut, jetClassesSize};
   AliJCDijetHistos *fhistos;
   int fCBin;
   TDirectory     *fOutput; // Output directory
