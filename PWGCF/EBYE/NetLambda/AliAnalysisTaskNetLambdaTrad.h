@@ -60,7 +60,10 @@ protected:
     TH2F*  f2fHistmassctAntiLambda;
     TH2F*  f2fHistLambdaSecFromWeakDecay;
     TH2F*  f2fHistAntiLambdaSecFromWeakDecay;
-
+    TH2F*  f2fHistLRecstat;
+    TH2F*  f2fHistARecstat;
+    TH2F*  f2fHistLGenstat;
+    TH2F*  f2fHistAGenstat;
     
     Float_t fCentrality;
     Int_t fTreeVariablePID;
@@ -83,11 +86,10 @@ protected:
     
     THnSparse *fPtBinNplusNminusCh;
     THnSparse *fPtBinNplusNminusChTruth;
+    Double_t MyRapidity(Double_t rE, Double_t rPz) const;
     Int_t    GetPtBin(Double_t pt);
 
-   
   
-    
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);
 };
 
