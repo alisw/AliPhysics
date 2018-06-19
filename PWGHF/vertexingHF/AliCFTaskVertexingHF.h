@@ -275,7 +275,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetCutOnMomConservation(Float_t cut) {fCutOnMomConservation = cut;}
   Bool_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
 
-  Double_t ComputeTPCq2(AliAODEvent* aod, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const;
+  Double_t ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const;
 
  protected:
   AliCFManager   *fCFManager;   ///  pointer to the CF manager

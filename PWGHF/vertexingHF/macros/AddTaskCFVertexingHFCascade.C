@@ -487,14 +487,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "DStarto
     const UInt_t ilocalmultESE = 4;
     const UInt_t iq2ESE = 5;
     
-    Int_t iBinESE[nvarESE];
-    iBinESE[ipTESE] = iBin[ipT];
-    iBinESE[iyESE] = iBin[iy];
-    iBinESE[icentESE] = 100;
-    iBinESE[imultESE] = 100;
-    iBinESE[ilocalmultESE] = 20;
-    iBinESE[iq2ESE] = 250;
-    
+    const Int_t iBinESE[nvarESE] = {iBin[ipT],iBin[iy],100,100,100,250};
+
     Double_t binLimcentESE[iBinESE[icentESE]+1];
     for(Int_t iCent=0; iCent<iBinESE[icentESE]+1; iCent++) {
       binLimcentESE[iCent] = iCent;

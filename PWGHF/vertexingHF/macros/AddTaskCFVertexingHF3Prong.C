@@ -57,9 +57,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	else if (configuration == AliCFTaskVertexingHF::kCheetah){
 		printf("The configuration is set to be FAST --> using only pt, y, ct, phi, zvtx, centrality, fake, multiplicity to fill the CF\n");
 	}
-	else if (configuration == AliCFTaskVertexingHF::kFalcon){
-		printf("The configuration is set to be FAST --> using only pt, y, centrality, multiplicity to fill the CF\n");
-	}
+  else if (configuration == AliCFTaskVertexingHF::kFalcon){
+    printf("The configuration is set to be FAST --> using only pt, y, centrality, multiplicity to fill the CF\n");
+  }
+  else if (configuration == AliCFTaskVertexingHF::kESE){
+    printf("The configuration is set to be for ESE analysis --> using pt, y, centrality, multiplicity, local multiplicity and q2 to fill the CF\n");
+  }
 	else{
 		printf("The configuration is not defined! returning\n");
 		return;
@@ -537,13 +540,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
     const UInt_t ilocalmultESE = 4;
     const UInt_t iq2ESE = 5;
 
-    Int_t iBinESE[nvarESE];
-    iBinESE[ipTESE] = iBin[ipT];
-    iBinESE[iyESE] = iBin[iy];
-    iBinESE[icentESE] = 100;
-    iBinESE[imultESE] = 100;
-    iBinESE[ilocalmultESE] = 20;
-    iBinESE[iq2ESE] = 250;
+    const Int_t iBinESE[nvarESE] = {iBin[ipT],iBin[iy],100,100,100,250};
 
     Double_t binLimcentESE[iBinESE[icentESE]+1];
     for(Int_t iCent=0; iCent<iBinESE[icentESE]+1; iCent++) {

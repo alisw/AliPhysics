@@ -117,10 +117,13 @@ class AliCFVertexingHF : public TObject {
 
 	void SetMultiplicity(Double_t multiplicity) {fMultiplicity = multiplicity;}
   void Setq2Value(Double_t q2) {fq2 = q2;}
-  void SetTrackArray(TClonesArray* trkarray) {fTrackArray = trkarray;}
+  void SetTrackArray(TClonesArray* trkarray) {
+    fTrackArray = trkarray;
+    fTrackArray->SetOwner();
+  }
   void SetConfiguration(Int_t configuration) {fConfiguration = configuration;}
 
-  Int_t ComputeLocalMultiplicity(Double_t etaD, Double_t phiD, Double_t deltaEta, Double_t deltaPhi) const;
+  Int_t ComputeLocalMultiplicity(Double_t etaD, Double_t phiD, Double_t R) const;
 
 	protected:
   TClonesArray      *fmcArray;               /// mcArray candidate

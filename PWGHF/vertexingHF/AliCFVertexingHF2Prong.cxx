@@ -199,8 +199,7 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	}
 	
   if(fConfiguration == AliCFTaskVertexingHF::kESE) {
-    AliAODRecoDecayHF2Prong *d0toKpi = (AliAODRecoDecayHF2Prong*)fRecoCandidate;
-    fLocalMultiplicity = ComputeLocalMultiplicity(d0toKpi->Eta(), d0toKpi->Phi(), 0.1, 0.1);
+    fLocalMultiplicity = ComputeLocalMultiplicity(decay->Eta(), decay->Phi(), 0.4);
   }
   
 	switch (fConfiguration){
@@ -243,7 +242,7 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
     vectorMC[1] = fmcPartCandidate->Y() ;
     vectorMC[2] = fCentValue;   // centrality
     vectorMC[3] = fMultiplicity;   // multiplicity (diff estimators can be used)
-    vectorMC[4] = fLocalMultiplicity;   // local multiplicity (Ntracks in DeltaEta<0.1 and DeltaPhi<0.1)
+    vectorMC[4] = fLocalMultiplicity;   // local multiplicity (Ntracks in R<0.4)
     vectorMC[5] = fq2;   // magnitude of reduced flow vector (computed using TPC tracks)
     break;
 	}
