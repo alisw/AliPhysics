@@ -34,7 +34,8 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
                                       Bool_t  enableQAMesonTask         = kFALSE, //enable QA in AliAnalysisTaskGammaConvDalitzV1
                                       Bool_t  enableDoMesonChic         = kFALSE, // enable additional Chic analysis
                                       TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                                      Bool_t  doWeighting               = kFALSE,  //enable Weighting
+				      Bool_t  doWeighting               = kFALSE,  //enable Weighting
+				      Bool_t  enableUseTHnSparse        = kTRUE,                          // enable THnSparse for mixed event BG
                                       TString cutnumberAODBranch        = "0000000060084001001500000",
                                       TString   periodName                      = "LHC13d2",
                                       Int_t     enableV0EffiStudies             = 0,
@@ -197,6 +198,8 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
     cuts.AddCut("12410113", "00200009327000008250400000", "10885400233102227610", "0263103500900000"); // 20-40
     cuts.AddCut("10410113", "00200009327000008250400000", "10885400233102227610", "0263103500900000"); // 0-40
     cuts.AddCut("14810113", "00200009327000008250400000", "10885400233102227610", "0263103500900000"); // 40-80
+  } else if ( trainConfig == 3 ) { //XeXe configurations, only 40-80 for testing purposes
+    cuts.AddCut("14810113", "00200009327000008250400000", "10885400233102227610", "0263103500900000"); // 0-20 // NOTE Check electron
   }
 
   if(!cuts.AreValid()){
@@ -411,6 +414,7 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
   task->SetMoveParticleAccordingToVertex(kTRUE);
   if(enableQAMesonTask) task->SetDoMesonQA(kTRUE);
   if(enableDoMesonChic) task->SetDoChicAnalysis(kTRUE);
+  task->SetDoTHnSparse(enableUseTHnSparse);
 
   //connect containers
   AliAnalysisDataContainer *coutput =
