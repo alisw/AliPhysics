@@ -13,7 +13,20 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		                 Bool_t flagDG1 = kFALSE,
 		                 Bool_t flagDG2 = kFALSE,
 		                 Bool_t SetFlagClsTypeEMC = kFALSE,
-		                 Bool_t SetFlagClsTypeDCAL = kFALSE)
+		                 Bool_t SetFlagClsTypeDCAL = kFALSE,
+										 Double_t TrackEtaMin,
+										 Double_t TrackEtaMax,
+										 Int_t NTPCClust,
+										 Int_t NITSClust,
+										 Int_t NCrossedRow,
+										 Double_t DCAxy,
+										 Double_t DCAz,
+										 Double_t NsigmaMin,
+										 Double_t NsigmaMax,
+										 Double_t M20Min,
+										 Double_t M20Max,
+										 Double_t EopMin,
+										 Double_t EopMax)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -38,6 +51,13 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     task -> SetDG2(flagDG2);
     task -> SetfFlagClsTypeEMC(SetFlagClsTypeEMC);
     task -> SetfFlagClsTypeDCAL(SetFlagClsTypeDCAL);
+
+		task -> SetTrackEta(TrackEtaMin,TrackEtaMax);
+		task -> SetTrackClust(NTPCClust,NITSClust,NCrossedRow);
+		task -> SetDCA(DCAxy,DCAz);
+		task -> SetNsigma(NsigmaMin,NsigmaMax);
+		task -> SetM20(M20Min,M20Max);
+		task -> SetEop(EopMin,EopMax);
     if(!task) return 0x0;
 
     // add your task to the manager

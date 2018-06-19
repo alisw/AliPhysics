@@ -66,6 +66,20 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fUseTender(kTRUE),
 				fTracks_tender(0),
 				fCaloClusters_tender(0),
+				//==== cut parameters ====
+				TrackEtaMin(0),
+				TrackEtaMax(0),
+				NTPCClust(0), 
+				NITSClust(0), 
+				NCrossedRow(0),
+				DCAxy(0), 
+				DCAz(0),
+				NsigmaMin(0),
+				NsigmaMax(0),
+				M20Min(0), 
+				M20Max(0),
+				EopMin(0),
+				EopMax(0),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -108,7 +122,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fEMCEG2(kFALSE),
 				fDCDG1(kFALSE),
 				fDCDG2(kFALSE),
-				fFlagClsTypeEMC(kTRUE),
+				fFlagClsTypeEMC(kFALSE),
 				fFlagClsTypeDCAL(kFALSE),
 				//==== MC output ===
 				fMCcheckMother(0),
@@ -153,6 +167,20 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fUseTender(kTRUE),
 				fTracks_tender(0),
 				fCaloClusters_tender(0),
+				//==== cut parameters ====
+				TrackEtaMin(0),
+				TrackEtaMax(0),
+				NTPCClust(0), 
+				NITSClust(0), 
+				NCrossedRow(0),
+				DCAxy(0), 
+				DCAz(0),
+				NsigmaMin(0),
+				NsigmaMax(0),
+				M20Min(0), 
+				M20Max(0),
+				EopMin(0),
+				EopMax(0),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -195,7 +223,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fEMCEG2(kFALSE),
 				fDCDG1(kFALSE),
 				fDCDG2(kFALSE),
-				fFlagClsTypeEMC(kTRUE),
+				fFlagClsTypeEMC(kFALSE),
 				fFlagClsTypeDCAL(kFALSE),
 				//==== MC output ===
 				fMCcheckMother(0),
@@ -400,22 +428,22 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 {
 
-				UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-				////////////////////
-				//cuts initialised//
-				////////////////////
-				AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
-				esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
-				esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
-				esdTrackCutsH->SetDCAToVertex2D(kTRUE);
-				esdTrackCutsH->SetMinNClustersTPC(80);
-				esdTrackCutsH->SetMinNClustersITS(3);
-				esdTrackCutsH->SetRequireTPCRefit(kTRUE);
-				esdTrackCutsH->SetRequireITSRefit(kTRUE);
-				esdTrackCutsH->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-				esdTrackCutsH->SetAcceptKinkDaughters(kFALSE);
-				esdTrackCutsH->SetMaxChi2PerClusterITS(6); //test.....
+				//##################### Systematic Parameters ##################### //
+				//---Track Cut
+				Double_t CutTrackEta[2] = {TrackEtaMin,TrackEtaMax};
+				Int_t CutTPCNCls = NTPCClust;
+				Int_t CutITSNCls = NITSClust; 
+				Int_t CutTPCNCrossedRow = NCrossedRow;
+				Double_t CutDCAxy = DCAxy;
+				Double_t CutDCAz  = DCAz;
+				//---PID Cut
+				Double_t CutNsigma[2] = {NsigmaMin,NsigmaMax};
+				Double_t CutM20[2] = {M20Min,M20Max};
+				Double_t CutEop[2] = {EopMin,EopMax};
+				Double_t CutEopHad = -3.5;
+				//################################################################# //
 
+				UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
 				// user exec
 				// this function is called once for each event
@@ -662,23 +690,23 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								//==== 2.AOD filter bit required ====
 								if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
 								//==== 3.TPC cluster cut ====
-								if(track->GetTPCNcls() < 80) continue; 
+								if(track->GetTPCNcls() < CutTPCNCls) continue; 
 								//==== 4.ITS cluster cut ====
-								if(track->GetITSNcls() < 3) continue;  
+								if(track->GetITSNcls() < CutITSNCls) continue;  
 								//==== 5.SPD hit cut ====
 								if(!(track -> HasPointOnITSLayer(0) || track -> HasPointOnITSLayer(1))) continue;
 								//==== 6.Eta cut ====
-								if(track->Eta()>0.6 || track->Eta()<-0.6) continue; 
+								if(track->Eta()>CutTrackEta[1] || track->Eta()<CutTrackEta[0]) continue; 
 								//==== 7.DCA cut ====
 								Double_t DCA[2] = {-999.,-999.}, covar[3];
 								if(track -> PropagateToDCA(pVtx,fVevent -> GetMagneticField(),20.,DCA,covar))
 								{
-												if(TMath::Abs(DCA[0]) > 2.4 || TMath::Abs(DCA[1]) > 3.2) continue;
+												if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz) continue;
 								}
 								//==== 8.chi2 cut ====
 								if((ITSchi2 >= 25) || (TPCchi2NDF >= 4)) continue;
 								//==== 9.NCrossedRow cut ====
-								if(track -> GetTPCCrossedRows() < 100) continue;
+								if(track -> GetTPCCrossedRows() < CutTPCNCrossedRow) continue;
 
 
 
@@ -742,14 +770,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 								if(pid_eleB || pid_eleD) {
 												fHist_eff_HFE->Fill(TrkPt);
-												if(fTPCnSigma<3 && fTPCnSigma>-1) fHist_eff_TPC->Fill(TrkPt);
+												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1]) fHist_eff_TPC->Fill(TrkPt);
 								}				
-
-
-								//if(pid_ele==1.0)cout << "pidM = " << pidM << " ; " << pid_eleP << endl;  
-								//if(pid_eleD)fHistDCAde->Fill(track->Pt(),DCAxy);
-								//if(pid_eleB)fHistDCAbe->Fill(track->Pt(),DCAxy);
-								//if(pid_eleP)fHistDCApe->Fill(track->Pt(),DCAxy);
 
 
 								//////////////////////////////////////
@@ -813,7 +835,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												}
 
 
-												if(fTPCnSigma<3 && fTPCnSigma>-1){
+												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1]){
 																if(pid_eleB || pid_eleD) fHist_eff_match->Fill(TrkPt);
 												}
 
@@ -830,13 +852,15 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												fM20->Fill(TrkPt,m20);
 
 												Bool_t fFlagNonHFE=kFALSE; 
+												Bool_t fFlagIsolation=kFALSE; 
 												//if(fTPCnSigma<6 && fTPCnSigma>-6 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){ //for MC
-												if(fTPCnSigma<3 && fTPCnSigma>-1 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){
+												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && eop>CutEop[0] && eop<CutEop[1] && m20>CutM20[0] && m20<CutM20[1]){
 																fM02_2->Fill(TrkPt,m02);
 																fM20_2->Fill(TrkPt,m20);
 
 																///////-----Identify Non-HFE////////////////////////////
 																SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt);
+																IsolationCut(Matchphi,Matcheta,clE,fFlagIsolation);
 																if(pid_eleP)
 																{
 																				fHistPhoReco0->Fill(track->Pt()); // reco pho
@@ -858,12 +882,12 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 
 
-												if(fTPCnSigma<3 && fTPCnSigma>-3 && m20>0.02 && m20<0.25){
+												if(fTPCnSigma<3 && fTPCnSigma>-3 && m20>CutM20[0] && m20<CutM20[1]){
 																fEopPt_ele_loose -> Fill(TrkPt,eop);
 												}
-												if(fTPCnSigma<3 && fTPCnSigma>-1 && m20>0.02 && m20<0.25){
+												if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && m20>CutM20[0] && m20<CutM20[1]){
 																fEopPt_ele_tight -> Fill(TrkPt,eop);
-																if(eop < 1.2&& eop > 0.8){
+																if(eop>CutEop[0] && eop<CutEop[1]){
 																				if(pid_eleB) fHistPt_HFE_MC_B -> Fill(track->Pt());
 																				if(pid_eleD) fHistPt_HFE_MC_D -> Fill(track->Pt());
 																				fHistPt_Inc->Fill(track->Pt());
@@ -871,7 +895,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																//if(ilabelM<NpureMC){fHistPt_HFE_PYTHIA -> Fill(track->Pt());}
 																//else {fHistPt_HFE_emb -> Fill(track->Pt());}
 												}
-												if(fTPCnSigma<-3.5 && m20>0.02 && m20<0.25){
+												if(fTPCnSigma< CutEopHad && m20>CutM20[0] && m20<CutM20[1]){
 																fEopPt_had -> Fill(TrkPt,eop);
 												}
 								}
@@ -949,7 +973,6 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 								//------track cuts applied
 								if(fAOD) {
 												if(!aAssotrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-												//if(aAssotrack->GetTPCNcls() < 70) continue;
 												if(aAssotrack->GetTPCNcls() < 80) continue;
 												if(aAssotrack->GetITSNcls() < 3 ) continue;
 												if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
@@ -988,23 +1011,6 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 												if(track->Pt()>1){fInv_pT_ULS->Fill(TrkPt,mass);}
 								}
 
-								if(iMC>0)
-								{
-												Int_t iMCbin = -999;
-												if(iMC == 111) 
-												{
-																iMCbin = 1;
-												}
-												else if(iMC == 221)
-												{
-																iMCbin = 2;
-												}
-												else
-												{
-																iMCbin = -999;
-												}  
-
-								}
 
 								if(mass<0.1 && fFlagULS && !flagPhotonicElec)
 												flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised) 
@@ -1178,4 +1184,69 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader)
      }
 
  return;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskCaloHFEpp::IsolationCut(Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t &fFlagIso)
+{
+				//////////////////////////////
+				// EMCal cluster loop
+				//////////////////////////////
+				Int_t NclustIso = -999;
+				Bool_t flagIso = kFALSE;
+				Bool_t fFlagEMCalCorrection = kTRUE;
+
+				if(!fFlagEMCalCorrection)NclustIso =  fVevent->GetNumberOfCaloClusters();
+				if(fFlagEMCalCorrection) NclustIso =  fCaloClusters_tender->GetEntries();
+
+				Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;;
+				Double_t riso = 0.;
+				Double_t ConeR = 999.;
+
+				for(Int_t jcl=0; jcl<NclustIso; jcl++)
+				{
+								AliVCluster *Assoclust = 0x0;     
+								if(!fFlagEMCalCorrection)Assoclust = (AliVCluster*)fVevent->GetCaloCluster(jcl); // address cluster matched to track
+								if(fFlagEMCalCorrection)Assoclust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(jcl)); 
+
+								fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
+								ConeR = 999.;
+
+								if(Assoclust && Assoclust->IsEMCAL())
+								{
+												Float_t Assoclpos[3] = {0.};
+												Assoclust->GetPosition(Assoclpos);
+
+												TVector3 Assocpos(Assoclpos);
+
+												Double_t AssoPhi =  Assocpos.Phi();
+												Double_t AssoEta =  Assocpos.Eta();
+												Double_t AssoclE =  Assoclust->E();
+
+												//------reject same track
+												if(AssoclE==MatchclE && AssoPhi==MatchPhi && AssoEta==MatchEta) continue;
+
+
+												if(AssoPhi > 1.39 && AssoPhi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
+												if(AssoPhi > 4.53 && AssoPhi < 5.708) fClsTypeDCAL = kTRUE; //DCAL  : 260 < phi < 327
+
+												//----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
+												if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
+																if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
+												if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+																if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+
+
+												ConeR = sqrt(pow(AssoPhi-MatchPhi,2.)+pow(AssoEta-MatchEta,2.));
+												if(ConeR>0.4) continue;
+
+												riso += AssoclE;
+								}
+				}
+
+				riso = riso/MatchclE;
+				if(riso<0.1) flagIso = kTRUE;
+
+				fFlagIso = flagIso;
+
 }

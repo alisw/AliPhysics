@@ -29,6 +29,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            UserExec(Option_t* option);
 		virtual void            Terminate(Option_t* option);
 		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt);
+		virtual void            IsolationCut(Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t &fFlagIso);
 		virtual void            CheckMCgen(AliAODMCHeader* fMCheader);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
     virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
@@ -48,6 +49,14 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetfFlagClsTypeEMC(Bool_t fEMC){fFlagClsTypeDCAL = fEMC;};
 		void                    SetfFlagClsTypeDCAL(Bool_t fDCAL){fFlagClsTypeDCAL = fDCAL;};
 
+
+		void                    SetTrackEta(Double_t min, Double_t max) {TrackEtaMin = min, TrackEtaMax = max;};
+		void                    SetTrackClust(Int_t TPC, Int_t ITS, Int_t Crossed) {NTPCClust = TPC, NITSClust = ITS, NCrossedRow = Crossed;};
+		void                    SetDCA(Double_t xy, Double_t z) {DCAxy = xy, DCAz = z;};
+		void                    SetNsigma(Double_t min, Double_t max) {NsigmaMin = min, NsigmaMax = max;};
+		void                    SetM20(Double_t min, Double_t max) {M20Min = min, M20Max = max;};
+		void                    SetEop(Double_t min, Double_t max) {EopMin = min, EopMax = max;};
+
 	private:
 		AliAODEvent*            fAOD;           //! input event
 		TList*                  fOutputList;    //! output list
@@ -59,6 +68,14 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Bool_t                  fUseTender;// switch to add tender
 		TClonesArray*           fTracks_tender;
 		TClonesArray*           fCaloClusters_tender;
+
+		//==== cut parameters ====
+		Double_t TrackEtaMin, TrackEtaMax;
+		Double_t NTPCClust, NITSClust, NCrossedRow;
+		Double_t DCAxy, DCAz;
+		Double_t NsigmaMin, NsigmaMax;
+		Double_t M20Min, M20Max;
+		Double_t EopMin, EopMax;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
