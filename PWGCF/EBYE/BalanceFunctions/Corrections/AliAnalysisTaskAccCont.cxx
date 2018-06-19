@@ -79,6 +79,7 @@ AliAnalysisTaskAccCont::AliAnalysisTaskAccCont(const char *name)
   fUseOfflineTrigger(kFALSE),
   fPbPb(kFALSE),
   fpPb(kFALSE),
+  fCheckPileUp(kFALSE),
   fPileupLHC15oSlope(3.38),
   fPileupLHC15oOffset(15000),
   fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
