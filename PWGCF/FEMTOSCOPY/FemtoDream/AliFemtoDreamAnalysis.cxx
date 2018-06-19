@@ -311,21 +311,51 @@ void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
   if (!fEvtCuts->isSelected(fEvent)) {
     return;
   }
-//  std::cout << "===================" << std::endl;
-//  std::cout << "===================" << std::endl;
-//  std::cout << "======new Event====" << std::endl;
-//  std::cout << "===================" << std::endl;
-//  std::cout << "===================" << std::endl;
-
+  std::vector<AliFemtoDreamBasePart> Particles;
+  std::vector<AliFemtoDreamBasePart> AntiParticles;
   for (int iTrack=0;iTrack<evt->GetNumberOfTracks();++iTrack) {
     AliESDtrack *track=static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
     fFemtoTrack->SetTrack(track);
-    fTrackCuts->isSelected(fFemtoTrack);
+    fFemtoTrack->SetTrack(track);
+    if (fTrackCuts->isSelected(fFemtoTrack)) {
+      Particles.push_back(*fFemtoTrack);
+    }
+    if (fAntiTrackCuts->isSelected(fFemtoTrack)) {
+      AntiParticles.push_back(*fFemtoTrack);
+    }
   }
+  std::vector<AliFemtoDreamBasePart> XiDecays;
+  std::vector<AliFemtoDreamBasePart> AntiXiDecays;
   for (Int_t nCascade = 0; nCascade < evt->GetNumberOfCascades(); ++nCascade) {
     AliESDcascade *esdCascade = evt->GetCascade(nCascade);
     fFemtoCasc->SetCascade(evt,esdCascade);
-    fCascCuts->isSelected(fFemtoCasc);
+    if (fCascCuts->isSelected(fFemtoCasc) ) {
+      XiDecays.push_back(*fFemtoCasc);
+    }
+    if (fAntiCascCuts->isSelected(fFemtoCasc)) {
+      AntiXiDecays.push_back(*fFemtoCasc);
+    }
+  }
+  fPairCleaner->ResetArray();
+  fPairCleaner->CleanTrackAndDecay(&Particles,&XiDecays,2);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles,&AntiXiDecays,3);
+
+  fPairCleaner->CleanDecay(&XiDecays,2);
+  fPairCleaner->CleanDecay(&AntiXiDecays,3);
+
+  fPairCleaner->StoreParticle(Particles);
+  fPairCleaner->StoreParticle(AntiParticles);
+  fPairCleaner->StoreParticle(XiDecays);
+  fPairCleaner->StoreParticle(AntiXiDecays);
+
+  if (fConfig->GetUseEventMixing()) {
+    fPartColl->SetEvent(
+        fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
+        fEvent->GetMultiplicity(),fEvent->GetV0MCentrality());
+  }
+  if (fConfig->GetUsePhiSpinning()) {
+    fControlSample->SetEvent(
+        fPairCleaner->GetCleanParticles(), fEvent->GetMultiplicity());
   }
 }
 
