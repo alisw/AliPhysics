@@ -36,6 +36,9 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 }
 
 AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
+  if (fEvent) {
+    delete fEvent;
+  }
   if (fFemtoTrack) {
     delete fFemtoTrack;
   }
@@ -44,6 +47,15 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
   }
   if (fFemtoCasc) {
     delete fFemtoCasc;
+  }
+  if (fPairCleaner) {
+    delete fPairCleaner;
+  }
+  if (fPartColl) {
+    delete fPartColl;
+  }
+  if (fControlSample) {
+    delete fControlSample;
   }
 }
 

@@ -14,8 +14,8 @@
 
 ClassImp(AliFemtoDreamEvent)
 AliFemtoDreamEvent::AliFemtoDreamEvent()
-:fUtils(new AliAnalysisUtils())
-,fEvtCuts(new AliEventCuts())
+:fUtils(nullptr)
+,fEvtCuts(nullptr)
 ,fEvtCutList(nullptr)
 ,fxVtx(0)
 ,fyVtx(0)
