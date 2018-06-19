@@ -122,7 +122,7 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
     
   void CalculateInvMasses(AliAODRecoDecayHF* d,Float_t* &masses,Int_t& nmasses);
     
-  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t charge,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]);
+  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t charge,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]);
   void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses, Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]);
   void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]);
   void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]);
