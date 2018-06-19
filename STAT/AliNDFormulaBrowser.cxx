@@ -436,6 +436,10 @@ void  AliNDFormulaBrowser::UpdateCanvas(){
   Int_t iRow=0;
   for (Int_t iParam=0; iParam<nParams; iParam++){
     if (iParam!=iPar &&iParam!=jPar) {
+      if (fVerbose&0x2){
+        printf("iParam = %d\n",iParam);
+        printf("formula  = %d\n",fFormula->GetParName(iParam));
+      }
       fgkLatex->DrawLatexNDC(fgkLatex->GetX(), fgkLatex->GetY()-fgkLatex->GetTextSize()*1.2*iRow,
                              TString::Format("p_{%d} %s=%.5f", iParam, fFormula->GetParName(iParam),(*fFormulaParams)[iParam]).Data());
       iRow++;
