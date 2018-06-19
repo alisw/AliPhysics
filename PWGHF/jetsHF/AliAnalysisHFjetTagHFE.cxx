@@ -134,7 +134,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistDiJetMomBalance(0), 
   fInvmassULS(0),
   fInvmassLS(0),
-  fInvmassHF(0),
+  fInvmassHFuls(0),
+  fInvmassHFls(0),
   HFjetCorr0(0),
   HFjetCorr1(0),
   HFjetParticle(0),
@@ -254,7 +255,8 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistDiJetMomBalance(0), 
   fInvmassULS(0),
   fInvmassLS(0),//my
-  fInvmassHF(0),//my
+  fInvmassHFuls(0),//my
+  fInvmassHFls(0),//my
   HFjetCorr0(0),
   HFjetCorr1(0),
   HFjetParticle(0),
@@ -535,7 +537,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistDiJetPhi = new TH2F("fHistDiJetPhi","HF dijet;p_{T}(GeV/c);#delta #phi",100,0,100,320,-3.2,3.2);
   fOutput->Add(fHistDiJetPhi);
 
-  fHistDiJetMomBalance = new TH2F("fHistDiJetMomBalance","HF dijet;p_{T}(GeV/c);#delta p_{T}",100,0,100,100,0,100);
+  fHistDiJetMomBalance = new TH2F("fHistDiJetMomBalance","HF dijet;p_{T}(GeV/c);#delta p_{T}",100,0,100,100,0,1);
   fOutput->Add(fHistDiJetMomBalance);
 
   fInvmassULS = new TH2F("fInvmassULS","ULS mass;p_{T};mass",20,0,20,150,0.,0.3);
@@ -544,8 +546,11 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fInvmassLS = new TH2F("fInvmassLS","LS mass;p_{T};mass",20,0,20,150,0.,0.3);
   fOutput->Add(fInvmassLS);
 
-  fInvmassHF = new TH2F("fInvmassHF","HF mass;p_{T};mass",100,0,100,500,0.,5);
-  fOutput->Add(fInvmassHF);
+  fInvmassHFuls = new TH2F("fInvmassHFuls","HF mass;p_{T};mass",100,0,100,500,0.,5);
+  fOutput->Add(fInvmassHFuls);
+
+  fInvmassHFls = new TH2F("fInvmassHFls","HF mass;p_{T};mass",100,0,100,500,0.,5);
+  fOutput->Add(fInvmassHFls);
 
   // jet
   Int_t jetpTMax = 300;
@@ -1358,8 +1363,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                          {
                           Double_t dPhiHFjet_tmp = Phi_eJet - ExJetPhi[1];
                           Double_t dPhiHFjet = atan2(sin(dPhiHFjet_tmp),cos(dPhiHFjet_tmp));
-                          if(ExJetPt[1]>10.0)fHistDiJetPhi->Fill(corrPt,dPhiHFjet);
-                          fHistDiJetMomBalance->Fill(corrPt,corrPt-ExJetPt[1]);
+                          if(ExJetPt[1]>10.0)
+                             {
+                              fHistDiJetPhi->Fill(corrPt,dPhiHFjet);
+                              Double_t MomBalance = (corrPt-ExJetPt[1])/(corrPt+ExJetPt[1]);
+                              fHistDiJetMomBalance->Fill(corrPt,MomBalance);
+                             }
                          }
                       }
                     if(fFlagULS) fHistULSjet->Fill(pt,corrPt);
@@ -1381,6 +1390,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
                             if(track->Pt()==aHFjetcont->Pt())continue;                            
 
+                            if(aHFjetcont->Pt()<0.5)continue;
+
                             AliKFParticle::SetField(fVevent->GetMagneticField());
                             AliKFParticle hfe1 = AliKFParticle(*track, 11);
                             AliKFParticle hfe2 = AliKFParticle(*aHFjetcont, 321);
@@ -1395,7 +1406,11 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
                             if(track->Charge()*aHFjetcont->Charge()>0)
                                {
-                                if(track->Pt()>3.0)fInvmassHF->Fill(corrPt,HFmass);
+                                if(track->Pt()>3.0)fInvmassHFls->Fill(corrPt,HFmass);
+                               }
+                            if(track->Charge()*aHFjetcont->Charge()<0)
+                               {
+                                if(track->Pt()>3.0)fInvmassHFuls->Fill(corrPt,HFmass);
                                }
 
                            }

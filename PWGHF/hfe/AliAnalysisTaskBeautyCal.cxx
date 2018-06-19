@@ -1632,13 +1632,14 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
          if(centrality>=0 && centrality<10)
            { 
             //cout << "iCorr = " << iCorr << endl;
-            if(iCorr==0)
+            if(iCorr==0)  // standard yaml file
               {
                eop += (Eop010Corr_data0->Eval(track->Pt()) - Eop010Corr_mc0->Eval(track->Pt())); 
               }
             else
               {
-               eop += (Eop010Corr_data1->Eval(track->Pt()) - Eop010Corr_mc1->Eval(track->Pt())); 
+               //eop += (Eop010Corr_data1->Eval(track->Pt()) - Eop010Corr_mc1->Eval(track->Pt()));  // test yaml file
+               eop += 0.0;
               } 
            }
          else if(centrality>=30 && centrality<50)
@@ -1698,12 +1699,15 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       
       //Double_t mimSig = -0.5;
       Double_t fmaxSig =  3.0;
+      /*
       if(fMCarray) // nSigma cut in MC
         {
          fmimSig = -10.0;
          fmaxSig =  10.0;
         }
+        // tempolary not use the cut vAN20180619 to ...
 
+      */ 
 
         fHistIncTPCchi2->Fill(track->Pt(),atrack->GetTPCchi2());
         fHistIncITSchi2->Fill(track->Pt(),atrack->GetITSchi2());
