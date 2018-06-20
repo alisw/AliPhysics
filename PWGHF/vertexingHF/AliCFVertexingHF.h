@@ -150,13 +150,12 @@ class AliCFVertexingHF : public TObject {
 	Float_t fFake;              /// variable to indicate whether the D0 was a fake or not: 0 --> fake, 1 --> MC, 2 --> non-fake
 	Bool_t fRejectIfNoQuark;  /// flag to remove events not geenrated with PYTHIA
   Double_t fMultiplicity;    /// multiplicity of the event
-  Int_t fLocalMultiplicity;    /// multiplicity of the event
   Double_t fq2; /// magnitude of the reduced flow vector (computed using TPC tracks)
   TClonesArray      *fTrackArray;               /// array of tracks
   Int_t fConfiguration;    /// configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 
     /// \cond CLASSIMP    
-	ClassDef(AliCFVertexingHF, 8);
+	ClassDef(AliCFVertexingHF, 9);
     /// \endcond
 };
 
