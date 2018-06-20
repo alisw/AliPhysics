@@ -540,7 +540,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
     const UInt_t ilocalmultESE = 4;
     const UInt_t iq2ESE = 5;
 
-    const Int_t iBinESE[nvarESE] = {iBin[ipT],iBin[iy],100,100,100,250};
+    const Int_t iBinESE[nvar] = {iBin[ipT],iBin[iy],100,100,100,250};
 
     Double_t binLimcentESE[iBinESE[icentESE]+1];
     for(Int_t iCent=0; iCent<iBinESE[icentESE]+1; iCent++) {
@@ -548,15 +548,15 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
     }
     Double_t binLimmultESE[iBinESE[imultESE]+1];
     for(Int_t iMult=0; iMult<iBinESE[imultESE]+1; iMult++) {
-      binLimmultESE[iMult] = -0.5+iMult*5000/iBinESE[imultESE];
+      binLimmultESE[iMult] = -0.5+iMult*5000./iBinESE[imultESE];
     }
     Double_t binLimlocalmultESE[iBinESE[ilocalmultESE]+1];
     for(Int_t iLocalMult=0; iLocalMult<iBinESE[ilocalmultESE]+1; iLocalMult++) {
-      binLimlocalmultESE[iLocalMult] = -0.5+iLocalMult*100/iBinESE[ilocalmultESE];
+      binLimlocalmultESE[iLocalMult] = -0.5+iLocalMult*200./iBinESE[ilocalmultESE];
     }
     Double_t binLimq2ESE[iBinESE[iq2ESE]+1];
     for(Int_t iq2=0; iq2<iBinESE[iq2ESE]+1; iq2++) {
-      binLimq2ESE[iq2] = iq2*5/iBinESE[iq2ESE];
+      binLimq2ESE[iq2] = iq2*5./iBinESE[iq2ESE];
     }
 
     container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinESE);

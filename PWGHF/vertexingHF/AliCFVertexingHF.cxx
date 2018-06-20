@@ -62,7 +62,6 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fFake(1.), // setting to MC value
 	fRejectIfNoQuark(kFALSE),
   fMultiplicity(0.),
-  fLocalMultiplicity(0),
   fq2(0.),
   fTrackArray(0x0),
 	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
@@ -100,7 +99,6 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fFake(1.), // setting to MC value
 	fRejectIfNoQuark(kFALSE),
 	fMultiplicity(0.),
-  fLocalMultiplicity(0),
   fq2(0.),
   fTrackArray(0x0),
 	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
@@ -181,7 +179,6 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 			}
 		}
     fMultiplicity=c.fMultiplicity;
-    fLocalMultiplicity=c.fLocalMultiplicity;
     fq2=c.fq2;
     delete fTrackArray;
     fTrackArray = new TClonesArray(*(c.fTrackArray));
@@ -215,7 +212,6 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fFake(c.fFake),
 	fRejectIfNoQuark(c.fRejectIfNoQuark),	
   fMultiplicity(c.fMultiplicity),
-  fLocalMultiplicity(c.fLocalMultiplicity),
   fq2(c.fq2),
   fTrackArray(0),
 	fConfiguration(c.fConfiguration)
@@ -1039,7 +1035,7 @@ Int_t AliCFVertexingHF::ComputeLocalMultiplicity(Double_t etaD, Double_t phiD, D
   Int_t mult=0;
   if(!fTrackArray) {
     AliWarning("Track array not found, local multiplicity not computed\n");
-    return 0;
+    return -1;
   }
   for(Int_t it=0; it<fTrackArray->GetEntriesFast(); it++) {
     AliAODTrack* track=(AliAODTrack*)fTrackArray->UncheckedAt(it);
