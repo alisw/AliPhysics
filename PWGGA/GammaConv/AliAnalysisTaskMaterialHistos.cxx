@@ -95,6 +95,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hMCTrueConversionRPhi(NULL),
   hMCTrueConversionRZ(NULL),
   hMCTrueConversionRPt(NULL),
+  hMCTrueConversionRPtMCRPt(NULL),
   hMCTrueConversionREta(NULL),
   hMCTrueConversionDCA(NULL),
   hMCTrueConversionPsiPair(NULL),
@@ -176,6 +177,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCTrueConversionRPhi(NULL),
   hMCTrueConversionRZ(NULL),
   hMCTrueConversionRPt(NULL),
+  hMCTrueConversionRPtMCRPt(NULL),
   hMCTrueConversionREta(NULL),
   hMCTrueConversionDCA(NULL),
   hMCTrueConversionPsiPair(NULL),
@@ -259,6 +261,7 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   hMCTrueConversionRPhi     = new TH2F*[fnCuts];
   hMCTrueConversionRZ       = new TH2F*[fnCuts];
   hMCTrueConversionRPt      = new TH2F*[fnCuts];
+  hMCTrueConversionRPtMCRPt = new TH2F*[fnCuts];
   hMCTrueConversionREta     = new TH2F*[fnCuts];
   hMCTrueConversionDCA      = new TH1F*[fnCuts];
   hMCTrueConversionPsiPair  = new TH1F*[fnCuts];
@@ -407,6 +410,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
         fTrueList[iCut]->Add(hMCTrueConversionREta[iCut]);
         hMCTrueConversionRPt[iCut]  = new TH2F("ESD_TrueConversion_RPt","ESD_TrueConversion_RPt",nBinsPt,0.,20.,nBinsR,0.,200.);
         fTrueList[iCut]->Add(hMCTrueConversionRPt[iCut]);
+ 	hMCTrueConversionRPtMCRPt[iCut]  = new TH2F("ESD_TrueConversion_RPtMCRPt","ESD_TrueConversion_RPtMCRPt",nBinsPt,0.,20.,nBinsR,0.,200.);
+        fTrueList[iCut]->Add(hMCTrueConversionRPtMCRPt[iCut]);
         hMCTrueConversionRZ[iCut]   = new TH2F("ESD_TrueConversion_RZ","ESD_TrueConversion_RZ",nBinsZ,-180.,180.,nBinsR,0.,200.);
         fTrueList[iCut]->Add(hMCTrueConversionRZ[iCut]);
 
@@ -716,6 +721,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 
       TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCEvent);
       TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCEvent);
+      TParticle *Photon = gamma->GetMCParticle(fMCEvent);
       //cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
 
       if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
@@ -776,6 +782,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
         hMCTrueConversionRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());
         hMCTrueConversionREta[fiCut]->Fill(gamma->GetPhotonEta(),gamma->GetConversionRadius());
         hMCTrueConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius());
+        hMCTrueConversionRPtMCRPt[fiCut]->Fill(Photon->Pt(),negDaughter->R());
 
         if(gamma->GetConversionRadius() < 75. || gamma->GetConversionRadius() > 85.) hMCTrueConversionRRejSmall[fiCut]->Fill(gamma->GetConversionRadius());
         if(gamma->GetConversionRadius() < 70. || gamma->GetConversionRadius() > 90.) hMCTrueConversionRRejLarge[fiCut]->Fill(gamma->GetConversionRadius());
