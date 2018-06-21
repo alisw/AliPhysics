@@ -89,13 +89,18 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHistPhi_EMcal;        //! dummy histogram
 		TH2F*                   fHistScatter_EMcal;        //! dummy histogram
 		TH2F*                   fHistScatter_EMcal_aftMatch;        //! dummy histogram
-		TH1F*                   fTPCNcls;
-		TH1F*                   fITSNcls;
 		TH2F*                   fHistoNCells;
 		TH2F*                   fM02;
 		TH2F*                   fM20;
+
+				//==== check cut parameters ====
+		TH1F*                   fTPCNcls;
+		TH1F*                   fITSNcls;
+		TH1F*                   fTPCCrossedRow;
+		TH1F*                   fTPCnsig_ele;
 		TH2F*                   fM02_2;
 		TH2F*                   fM20_2;
+		TH1F*                   fEop_ele;
 
 		//==== Real data output ====
 		TH1F*                   fHist_trackPt;        //! dummy histogram
