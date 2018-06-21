@@ -373,6 +373,8 @@ private:
     Bool_t fTreeVariableNegITSSharedClusters3;
     Bool_t fTreeVariableNegITSSharedClusters4;
     Bool_t fTreeVariableNegITSSharedClusters5;
+    
+    Bool_t fTreeVariableIsCowboy; //store if V0 is cowboy-like or sailor-like in XY plane
 
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeVariableNegTOFExpTDiff; //!

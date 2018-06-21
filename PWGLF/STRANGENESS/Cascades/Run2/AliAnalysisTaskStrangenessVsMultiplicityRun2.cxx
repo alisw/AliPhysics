@@ -248,6 +248,8 @@ fTreeVariableNegITSSharedClusters3(0),
 fTreeVariableNegITSSharedClusters4(0),
 fTreeVariableNegITSSharedClusters5(0),
 
+fTreeVariableIsCowboy(0),
+
 fTreeVariableNegTOFExpTDiff(99999),
 fTreeVariablePosTOFExpTDiff(99999),
 fTreeVariableNegTOFSignal(99999),
@@ -585,6 +587,8 @@ fTreeVariableNegITSSharedClusters2(0),
 fTreeVariableNegITSSharedClusters3(0),
 fTreeVariableNegITSSharedClusters4(0),
 fTreeVariableNegITSSharedClusters5(0),
+
+fTreeVariableIsCowboy(0),
 
 fTreeVariableNegTOFExpTDiff(99999),
 fTreeVariablePosTOFExpTDiff(99999),
@@ -973,6 +977,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
         fTreeV0->Branch("fTreeVariableMVPileupFlag",&fTreeVariableMVPileupFlag,"fTreeVariableMVPileupFlag/O");
         //------------------------------------------------
+        fTreeV0->Branch("fTreeVariableIsCowboy",&fTreeVariableIsCowboy,"fTreeVariableIsCowboy/O");
         if ( fkDebugWrongPIDForTracking ){
             fTreeV0->Branch("fTreeVariablePosPIDForTracking",&fTreeVariablePosPIDForTracking,"fTreeVariablePosPIDForTracking/I");
             fTreeV0->Branch("fTreeVariableNegPIDForTracking",&fTreeVariableNegPIDForTracking,"fTreeVariableNegPIDForTracking/I");
@@ -1677,6 +1682,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
         Double_t lMomNeg[3];
         v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
+        
+        //Provisions for cowboy/sailor check
+        Double_t lModp1 = TMath::Sqrt( lMomPos[0]*lMomPos[0] + lMomPos[1]*lMomPos[1] );
+        Double_t lModp2 = TMath::Sqrt( lMomNeg[0]*lMomNeg[0] + lMomNeg[1]*lMomNeg[1] );
+        
+        //Calculate vec prod with momenta projected to xy plane
+        Double_t lVecProd = (lMomPos[0]*lMomNeg[1] - lMomPos[1]*lMomNeg[0]) / (lModp1*lModp2);
+        
+        if ( lMagneticField < 0 ) lVecProd *= -1; //invert sign
+        
+        fTreeVariableIsCowboy = kFALSE;
+        if (lVecProd < 0) fTreeVariableIsCowboy = kTRUE; 
         
         AliESDtrack *pTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyPos);
         AliESDtrack *nTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyNeg);
