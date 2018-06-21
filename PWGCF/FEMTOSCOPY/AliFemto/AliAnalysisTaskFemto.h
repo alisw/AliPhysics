@@ -108,7 +108,7 @@ public:
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
-  
+
   void Set4DCorrectionsPions(THnSparse *h1);
   void Set4DCorrectionsKaons(THnSparse *h1);
   void Set4DCorrectionsProtons(THnSparse *h1);
@@ -134,7 +134,7 @@ protected:
   TString              fConfigMacro;   ///<  Config macro location
   TString              fConfigParams;  ///<  Config macro parameters
   Bool_t               fVerbose;
-  
+
   TH1D                 *f1DcorrectionsPions; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsKaons; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsProtons; //file with corrections, pT dependant

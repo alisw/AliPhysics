@@ -14,6 +14,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
+  AliAnalysisTaskFemto.cxx
+  AliAnalysisTaskFemtoMJ.cxx
+  AliAnalysisTaskFemtoNu.cxx
   AliFemtoSimpleAnalysis.cxx
   AliFemtoEventAnalysis.cxx
   AliFemtoSpatialSeparationFunction.cxx
@@ -77,8 +80,6 @@ set(SRCS
   AliFemtoAODTrackCut.cxx
   AliFemtoCutMonitor.cxx
   AliFemtoCorrFctn.cxx
-  AliAnalysisTaskFemto.cxx
-  AliAnalysisTaskFemtoMJ.cxx
   AliTwoTrackRes.cxx
   AliFemtoMCTrackCut.cxx
   AliFemtoEventReaderKinematicsChain.cxx
@@ -113,7 +114,6 @@ set(SRCS
   AliFemtoTrioFctn.cxx
   AliFemtoTrioMinvFctn.cxx
   AliFemtoTrioDEtaDPhiFctn.cxx
-
   )
 
 # Headers from sources
