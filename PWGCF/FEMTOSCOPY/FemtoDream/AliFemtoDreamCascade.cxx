@@ -430,7 +430,6 @@ void AliFemtoDreamCascade::SetMCMotherInfo(
           //both daughters exist as an MC Particle, therfore this can only
           //be a fake v0, and therefore a fake candidate overall
           this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
-          std::cout << "Fake v0 \n";
         } else {
           //          std::cout <<"Potential weakling with ID: " << labelv0 << " found \n";
           AliAODMCParticle* mcv0=(AliAODMCParticle*)mcarray->At(labelv0);
@@ -463,30 +462,24 @@ void AliFemtoDreamCascade::SetMCMotherInfo(
                   this->SetMCTheta(mcPart->Theta());
                   if (mcPart->IsPhysicalPrimary()&&!(mcPart->IsSecondaryFromWeakDecay())) {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
-                    std::cout << "Primary Casc \n";
                   } else if (mcPart->IsSecondaryFromWeakDecay()&&
                       !(mcPart->IsSecondaryFromMaterial())) {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
                     this->SetPDGMotherWeak(((AliAODMCParticle*)mcarray->At(
                         mcPart->GetMother()))->PdgCode());
-                    std::cout << "Weak Casc: " << this->GetMotherWeak() << std::endl;
                   } else if (mcPart->IsSecondaryFromMaterial()) {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
-                    std::cout << "Cascade from Material \n";
                   } else {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
-                    std::cout << "Unknown Cascade \n";
                   }
                 } else {
                   //combinatorial background
                   this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
-                  std::cout << "Fake Cascade, missmatching v0 and bach \n";
                 }
               }
             } else {
               //if its not from a secondary decay, this cant be a candidate
               this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
-              std::cout << "Primary Lambda, why are you in here!? \n";
             }
           }
         }
@@ -494,7 +487,6 @@ void AliFemtoDreamCascade::SetMCMotherInfo(
     } else {
       //if the bachlor is not from a weak decay, then it is a ...
       this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
-      std::cout << "Primary Bachelor \n" ;
     }
   } else {
     //this means the bachelor and daughter tracks have no corresponding MC Particle
