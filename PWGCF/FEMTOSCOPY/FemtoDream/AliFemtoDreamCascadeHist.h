@@ -46,6 +46,7 @@ class AliFemtoDreamCascadeHist {
   void FillPodolandski(int iBin,float alpha,float qt){if(!fMinimalBooking)fPodolandski[iBin]->Fill(alpha,qt);};
   void FillInvMassPerRunNumber(int RunNumber,float mass){
     if(!fMinimalBooking)fInvMassPerRunNumber->Fill(RunNumber,mass);};
+  void SetName(TString name){fHistList->SetName(name.Data());};
   TList *GetHistList() {return fHistList;};
  private:
   AliFemtoDreamCascadeHist &operator=(const AliFemtoDreamCascadeHist &obj);

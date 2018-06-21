@@ -62,6 +62,7 @@ class AliFemtoDreamv0MCHist {
   void FillMCPodolanski(int i, float pT, float alpha){fMCPodolanski[i]->Fill(alpha,pT);};
   void FillMCXiInvMass(int i, float pT, float mass){fMCXiInvMass[i]->Fill(pT,mass);};
   void FillMCOmegaInvMass(int i, float pT, float mass){fMCOmegaInvMass[i]->Fill(pT,mass);};
+  void SetName(TString name){fMCList->SetName(name.Data());};
   TList *GetHistList(){return fMCList;};
   TString ClassName() {return "AliFemtoDreamv0MCHist";};
  private:
