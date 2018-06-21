@@ -1270,8 +1270,12 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	AliESDtrack *tESD = pESD->GetTrack( esdID );	
 	if (!tESD) continue;
 
-	//tESD->UpdateTrackParams(&trdTrack,AliESDtrack::kTRDout);
+  // ESD track misses TRD chi2 and TRD track label
+	tESD->Set(trdTrack.GetX(), trdTrack.GetAlpha(), trdTrack.GetParameter(), trdTrack.GetCovariance());
 	tESD->SetStatus(AliESDtrack::kTRDin);
+  if (!trdTrack.GetIsStopped()) {
+    tESD->SetStatus(AliESDtrack::kTRDout);
+  }
 	tESD->SetTRDpid(TRDpid);
 	tESD->SetTRDntracklets(trdTrack.GetNtracklets() << 3);
 
