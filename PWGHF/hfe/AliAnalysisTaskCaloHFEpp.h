@@ -30,7 +30,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            Terminate(Option_t* option);
 		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt);
 		virtual void            IsolationCut(Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t &fFlagIso);
-		virtual void            CheckMCgen(AliAODMCHeader* fMCheader);
+		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
     virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
 
@@ -89,13 +89,18 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHistPhi_EMcal;        //! dummy histogram
 		TH2F*                   fHistScatter_EMcal;        //! dummy histogram
 		TH2F*                   fHistScatter_EMcal_aftMatch;        //! dummy histogram
-		TH1F*                   fTPCNcls;
-		TH1F*                   fITSNcls;
 		TH2F*                   fHistoNCells;
 		TH2F*                   fM02;
 		TH2F*                   fM20;
+
+				//==== check cut parameters ====
+		TH1F*                   fTPCNcls;
+		TH1F*                   fITSNcls;
+		TH1F*                   fTPCCrossedRow;
+		TH1F*                   fTPCnsig_ele;
 		TH2F*                   fM02_2;
 		TH2F*                   fM20_2;
+		TH1F*                   fEop_ele;
 
 		//==== Real data output ====
 		TH1F*                   fHist_trackPt;        //! dummy histogram
