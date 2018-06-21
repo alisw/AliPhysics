@@ -79,6 +79,8 @@ class AliFemtoDreamCascadeCuts {
   void BookCuts();
   void BookMCQA(AliFemtoDreamCascade *casc);
   void FillMCContributions(AliFemtoDreamCascade *casc);
+  void SetName(TString OutputName) {if(fHistList)fHistList->SetName(OutputName.Data());};
+  void SetMCName(TString OutputName) {if(fMCHistList)fMCHistList->SetName(OutputName.Data());};
   TList *GetQAHists() {return fHistList;};
   TList *GetMCQAHists() {return fMCHistList;};
  private:

@@ -19,6 +19,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   AliFemtoDreamCollConfig(const char *name, const char *title);
   virtual ~AliFemtoDreamCollConfig();
   void SetMultBinning(bool doIt){fMultBinning=doIt;};
+  void SetCentBinning(bool doIt){fCentBinning=doIt;};
   void SetkTBinning(bool doIt){fkTBinning=doIt;};
   void SetmTBinning(bool doIt){fmTBinning=doIt;};
   void SetMomentumResolution(bool doIt){fMomentumResolution=doIt;};
@@ -45,6 +46,7 @@ class AliFemtoDreamCollConfig : public TNamed {
     fEst=est;
   }
   bool GetDoMultBinning() {return fMultBinning;};
+  bool GetDoCentBinning() {return fCentBinning;};
   bool GetDokTBinning() {return fkTBinning;};
   bool GetDomTBinning() {return fmTBinning;};
   bool GetDoMomResolution() {return fMomentumResolution;};
@@ -76,6 +78,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   int GetSpinningDepth(){return fSpinningDepth;};
  private:
   bool fMultBinning;            //
+  bool fCentBinning;            //
   bool fkTBinning;              //
   bool fmTBinning;              //
   bool fMomentumResolution;     //

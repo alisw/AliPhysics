@@ -508,6 +508,11 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
       if (!fcutCharge) {
         if (TMath::Abs(Track->GetMCPDGCode())==TMath::Abs(PDGcode[fParticleID])) {
           fMCHists->FillMCCorr(pT);
+          if (tmpOrg==AliFemtoDreamBasePart::kPhysPrimary) {
+            fMCHists->FillMCPtResolution(Track->GetMCPt(),Track->GetPt());
+            fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetTheta().at(0),Track->GetMCPt());
+            fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),Track->GetPhi().at(0),Track->GetMCPt());
+          }
         } else {
           Track->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
         }
@@ -515,6 +520,11 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
         Int_t sign = (Int_t)fCharge/TMath::Abs(fCharge);
         if (Track->GetMCPDGCode() == sign*PDGcode[fParticleID]) {
           fMCHists->FillMCCorr(pT);
+          if (tmpOrg==AliFemtoDreamBasePart::kPhysPrimary) {
+            fMCHists->FillMCPtResolution(Track->GetMCPt(),Track->GetPt());
+            fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetTheta().at(0),Track->GetMCPt());
+            fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),Track->GetPhi().at(0),Track->GetMCPt());
+          }
         } else {
           Track->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
         }

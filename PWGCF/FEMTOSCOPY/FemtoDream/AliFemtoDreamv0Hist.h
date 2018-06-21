@@ -46,6 +46,7 @@ class AliFemtoDreamv0Hist {
   void FillCPAPtBins(float pT,float cpa){if(!fMinimalBooking)fCPAPtBins->Fill(pT,cpa);};
   void FillInvMassPerRunNumber(int RunNumber,float mass){
     if(!fMinimalBooking)fInvMassPerRunNumber->Fill(RunNumber,mass);};
+  void SetName(TString name){fHistList->SetName(name.Data());};
   TList *GetHistList(){return fHistList;};
  private:
   bool fMinimalBooking;
