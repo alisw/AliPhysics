@@ -295,6 +295,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     config->SetMultBins(MultBins);
   }
   config->SetMultBinning(true);
+  if (notpp) config->SetCentBinning(true);
   config->SetkTBinning(mTkTPlot);
   config->SetmTBinning(mTkTPlot);
   config->SetkTCentralityBinning(kTCentPlot);

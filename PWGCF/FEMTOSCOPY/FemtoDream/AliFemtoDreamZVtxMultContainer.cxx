@@ -81,6 +81,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
           if (ResultsHist->GetDoMultBinning()) {
             ResultsHist->FillSameEventMultDist(HistCounter,iMult+1,RelativeK);
           }
+          if (ResultsHist->GetDoCentBinning()) {
+            ResultsHist->FillSameEventCentDist(HistCounter,cent,RelativeK);
+          }
           if (ResultsHist->GetDokTBinning()) {
             ResultsHist->FillSameEventkTDist(
                 HistCounter,
@@ -193,6 +196,9 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesME(
             ResultsHist->FillMixedEventDist(HistCounter,RelativeK);
             if (ResultsHist->GetDoMultBinning()) {
               ResultsHist->FillMixedEventMultDist(HistCounter,iMult+1,RelativeK);
+            }
+            if (ResultsHist->GetDoCentBinning()) {
+              ResultsHist->FillMixedEventCentDist(HistCounter,cent,RelativeK);
             }
             if (ResultsHist->GetDokTBinning()) {
               ResultsHist->FillMixedEventkTDist(
