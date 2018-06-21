@@ -62,6 +62,9 @@ class AliFemtoDreamv0MCHist {
   void FillMCPodolanski(int i, float pT, float alpha){fMCPodolanski[i]->Fill(alpha,pT);};
   void FillMCXiInvMass(int i, float pT, float mass){fMCXiInvMass[i]->Fill(pT,mass);};
   void FillMCOmegaInvMass(int i, float pT, float mass){fMCOmegaInvMass[i]->Fill(pT,mass);};
+  void FillMCPtResolution(float pTTrue, float pTReco);
+  void FillMCThetaResolution(float ThetaTrue, float ThetaReco, float pTTrue);
+  void FillMCPhiResolution(float PhiTrue, float PhiReco, float pTTrue);
   void SetName(TString name){fMCList->SetName(name.Data());};
   TList *GetHistList(){return fMCList;};
   TString ClassName() {return "AliFemtoDreamv0MCHist";};
@@ -103,6 +106,9 @@ class AliFemtoDreamv0MCHist {
   TH2F *fMCMaterialCPAPtBins;
   TH2F *fMCSecondaryCPAPtBins;
   TH2F *fMCContCPAPtBins;
+  TH2F *fPtResolution;            //!
+  TH2F *fThetaResolution;         //!
+  TH2F *fPhiResolution;           //!
 
   ClassDef(AliFemtoDreamv0MCHist,2)
 };

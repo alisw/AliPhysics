@@ -59,6 +59,9 @@ class AliFemtoDreamTrackMCHist {
   void FillMCNSigTOF(int i, float mom, float nSigTOF){
     fMCNSigTOF[i]->Fill(mom, nSigTOF);
   };
+  void FillMCPtResolution(float pTTrue, float pTReco);
+  void FillMCThetaResolution(float ThetaTrue, float ThetaReco, float pTTrue);
+  void FillMCPhiResolution(float PhiTrue, float PhiReco, float pTTrue);
   void SetName(TString name){fMCList->SetName(name.Data());};
   TList *GetHistList() const {return fMCList;};
   TString ClassName() {return "AliFemtoDreamTrackMCHist";};
@@ -103,6 +106,10 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fMCTOFbeta[4];            //!
   TH2F *fMCNSigTPC[4];            //!
   TH2F *fMCNSigTOF[4];            //!
+
+  TH2F *fPtResolution;            //!
+  TH2F *fThetaResolution;         //!
+  TH2F *fPhiResolution;           //!
   ClassDef(AliFemtoDreamTrackMCHist,2);
 };
 

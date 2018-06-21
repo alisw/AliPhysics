@@ -28,6 +28,9 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist()
 ,fMCSecondaryDCAXYPtBins(0)
 ,fMCSecLambdaDCAXYPtBins(0)
 ,fMCSecSigmaDCAXYPtBins(0)
+,fPtResolution(0)
+,fThetaResolution(0)
+,fPhiResolution(0)
 {
   for (int i=0;i<4;++i) {
     fMCQAPlots[i]=0;
@@ -83,6 +86,26 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,bool DC
   fMCGenPt->GetXaxis()->SetTitle("p_{T}");
   fMCList->Add(fMCGenPt);
 
+  fPtResolution=new TH2F("DeltaPtRecoTruevsPtReco","DeltaPtRecoTruevsPtReco",
+                         1000,0,10,1000,-9,1);
+  fPtResolution->Sumw2();
+  fPtResolution->GetXaxis()->SetTitle("P_{T,True}");
+  fPtResolution->GetYaxis()->SetTitle("(P_{T,True}-P_{T,Reco})/P_{T,True}");
+  fMCList->Add(fPtResolution);
+
+  fThetaResolution=new TH2F("DeltaThetaRecoTruevsPtReco","DeltaThetaRecoTruevsPtReco",
+                         1000,0,10,400,-0.8,0.8);
+  fThetaResolution->Sumw2();
+  fThetaResolution->GetXaxis()->SetTitle("P_{T,True}");
+  fThetaResolution->GetYaxis()->SetTitle("(P_{T,True}-P_{T,Reco})/P_{T,True}");
+  fMCList->Add(fThetaResolution);
+
+  fPhiResolution=new TH2F("DeltaPhiRecoTruevsPtReco","DeltaPhiRecoTruevsPtReco",
+                         1000,0,10,200,-0.4,0.4);
+  fPhiResolution->Sumw2();
+  fPhiResolution->GetXaxis()->SetTitle("P_{T,True}");
+  fPhiResolution->GetYaxis()->SetTitle("(P_{T,True}-P_{T,Reco})/P_{T,True}");
+  fMCList->Add(fPhiResolution);
 
   if (contribSplitting) {
     fMCContPt=new TH1F("ContPt","ContPt",ptBins,ptmin,ptmax);
@@ -293,4 +316,16 @@ void AliFemtoDreamTrackMCHist::FillMCDCAXYPtBins(
     AliFatal("Particle Origin not implemented");
   }
   return;
+}
+
+void AliFemtoDreamTrackMCHist::FillMCPtResolution(float pTTrue, float pTReco) {
+  fPtResolution->Fill(pTTrue,(pTTrue-pTReco)/pTTrue);
+}
+
+void AliFemtoDreamTrackMCHist::FillMCThetaResolution(float ThetaTrue, float ThetaReco, float pTTrue) {
+  fThetaResolution->Fill(pTTrue,ThetaTrue-ThetaReco);
+}
+
+void AliFemtoDreamTrackMCHist::FillMCPhiResolution(float PhiTrue, float PhiReco, float pTTrue) {
+  fPhiResolution->Fill(pTTrue,PhiTrue-PhiReco);
 }

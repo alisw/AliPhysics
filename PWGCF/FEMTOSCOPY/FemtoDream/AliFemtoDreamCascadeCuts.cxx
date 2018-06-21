@@ -383,10 +383,16 @@ void AliFemtoDreamCascadeCuts::BookMCQA(AliFemtoDreamCascade *casc) {
     //  }
     if (casc->UseParticle()) {
       fMCHist->FillMCIdent(pT);
+      fMCHist->FillMCIdent(pT);
       AliFemtoDreamBasePart::PartOrigin tmpOrg=casc->GetParticleOrigin();
       if (casc->GetParticleOrigin()!=AliFemtoDreamBasePart::kFake) {
         if (casc->GetMCPDGCode()==fPDGCasc) {
           fMCHist->FillMCCorr(pT);
+          if (tmpOrg==AliFemtoDreamBasePart::kPhysPrimary) {
+            fMCHist->FillMCPtResolution(casc->GetMCPt(),casc->GetPt());
+            fMCHist->FillMCThetaResolution(casc->GetMCTheta().at(0),casc->GetTheta().at(0),casc->GetMCPt());
+            fMCHist->FillMCPhiResolution(casc->GetMCPhi().at(0),casc->GetPhi().at(0),casc->GetMCPt());
+          }
         } else {
           casc->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
         }
