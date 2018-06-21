@@ -95,8 +95,8 @@ CellEmulateCrosstalk:                               # Component to emulate cross
                  7 : [1.20e-02, 1.20e-02, 1.20e-02, 0], 
                  8 : [0.80e-02, 0.80e-02, 0.80e-02, 0],  
                  9 : [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 10: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
-                 11: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
+                 10: [1.20e-02, 1.20e-02, 1.20e-02, 0], 
+                 11: [1.20e-02, 1.20e-02, 1.20e-02, 0], 
                  12: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
                  13: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
                  14: [0.80e-02, 0.80e-02, 0.80e-02, 0], 
@@ -116,7 +116,7 @@ CellEmulateCrosstalk:                               # Component to emulate cross
     inducedEnergyLossMinimumFraction:               # Minimum induced energy fraction when linear dependency is set
         enabled: true                               # Enable setting these values
         values: {0 : [3.5e-3], 1 : [5.0e-3], 2 : [4.5e-3], 3 : [6.0e-3], 4 : [3.5e-3], 5 : [3.5e-3], 6 : [3.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3], 
-                 10: [3.5e-3], 11: [3.5e-3], 12: [3.5e-3], 13: [3.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [3.5e-3], 17: [3.5e-3], 18: [3.5e-3], 19: [3.5e-3], 
+                 10: [5.0e-3], 11: [5.0e-3], 12: [3.5e-3], 13: [3.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [3.5e-3], 17: [3.5e-3], 18: [3.5e-3], 19: [3.5e-3], 
                  20: [3.5e-3], 21: [3.5e-3]} 
        #values: {"all" : [0.008]}                   # Values are [minimum fraction]
     inducedEnergyLossMaximumFraction:               # Maximum induced energy fraction when linear dependency is set
