@@ -55,6 +55,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fIsMC(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
+  fRequireSubsetMB(false),
+  fMinBiasTrigger(AliVEvent::kAny),
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fUseTriggerSelectionForData(false),
   fUseDownscaleWeight(false),
@@ -69,6 +71,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(con
   fIsMC(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
+  fRequireSubsetMB(false),
+  fMinBiasTrigger(AliVEvent::kAny),
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fUseTriggerSelectionForData(false),
   fUseDownscaleWeight(false),
@@ -181,7 +185,8 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::TriggerSelection() const {
     if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
     if(fTriggerSelectionString.Length()) {
       if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
-      if(fTriggerSelectionString.Contains("EJ") && fUseTriggerSelectionForData) {
+      if(fRequireSubsetMB && !(fInputHandler->IsEventSelected() & fMinBiasTrigger)) return false;   // Require EMCAL trigger to be subset of the min. bias trigger (for efficiency studies)
+      if((fTriggerSelectionString.Contains("EJ") || fTriggerSelectionString.Contains("EG") || fTriggerSelectionString.Contains("DJ") || fTriggerSelectionString.Contains("DG")) && fUseTriggerSelectionForData) {
         auto trgselresult = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
         AliDebugStream(1) << "Found trigger decision object: " << (trgselresult ? "yes" : "no") << std::endl;
         if(!trgselresult){
