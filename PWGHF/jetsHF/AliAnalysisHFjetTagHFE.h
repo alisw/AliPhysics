@@ -127,6 +127,8 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fInvmassLS;
   TH2F                        *fInvmassHFuls;
   TH2F                        *fInvmassHFls;
+  TH1F                        *fLxy_uls;
+  TH1F                        *fLxy_ls;
   THnSparse                   *HFjetCorr0;
   THnSparse                   *HFjetCorr1;
   THnSparse                   *HFjetParticle;
@@ -140,6 +142,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustEtime;
   TH2F                        *fEMCClsEtaPhi;
   TH1F                        *fHistBGfrac;
+  TH1F                        *fHistBGfracHFEev;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
   TRandom                     *generator;
