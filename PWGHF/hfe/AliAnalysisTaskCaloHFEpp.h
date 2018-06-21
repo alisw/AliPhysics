@@ -30,7 +30,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            Terminate(Option_t* option);
 		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt);
 		virtual void            IsolationCut(Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t &fFlagIso);
-		virtual void            CheckMCgen(AliAODMCHeader* fMCheader);
+		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
     virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
 

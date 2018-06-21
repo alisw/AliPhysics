@@ -447,6 +447,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 {
 
+
 				//##################### Systematic Parameters ##################### //
 				//---Track Cut
 				Double_t CutTrackEta[2] = {TrackEtaMin,TrackEtaMax};
@@ -611,7 +612,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 
 
-				if(fMCarray)CheckMCgen(fMCheader);
+				if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
 
 				//////////////////////////////
 				// EMCal cluster loop
@@ -1104,7 +1105,7 @@ void AliAnalysisTaskCaloHFEpp::FindMother(AliAODMCParticle* part, int &label, in
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader)
+void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta)
 {
  TList *lh=fMCheader->GetCocktailHeaders();
  Int_t NpureMC = 0;
@@ -1163,7 +1164,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader)
 			}
 
 			//cout << "fetarange = " << fetarange << endl;
-			if(TMath::Abs(pdgEta)>0.6)continue;
+			if(TMath::Abs(pdgEta)>CutEta)continue;
 
 			fCheckEtaMC->Fill(pdgEta);
 
