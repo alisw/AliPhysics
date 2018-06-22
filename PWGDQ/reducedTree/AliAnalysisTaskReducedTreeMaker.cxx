@@ -100,10 +100,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker() :
   fRejectPileup(kFALSE),
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(kTRUE),
-  fWriteEventsWithNoSelectedTracks(kTRUE),
-  fMinSelectedTracks(1),
-  fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(kTRUE),
-  fScaleDownEventsWithNoSelectedTracks(0.0),
+  fMinSelectedTracks(0),
+  fMinSelectedBaseTracks(0),
+  fScaleDownEvents(0.0),
   fWriteSecondTrackArray(kFALSE),
   fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
@@ -171,10 +170,9 @@ AliAnalysisTaskReducedTreeMaker::AliAnalysisTaskReducedTreeMaker(const char *nam
   fRejectPileup(kFALSE),
   fTreeWritingOption(kBaseEventsWithBaseTracks),
   fWriteTree(writeTree),
-  fWriteEventsWithNoSelectedTracks(kTRUE),
-  fMinSelectedTracks(1),
-  fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(kTRUE),
-  fScaleDownEventsWithNoSelectedTracks(0.0),
+  fMinSelectedTracks(0),
+  fMinSelectedBaseTracks(0),
+  fScaleDownEvents(0.0),
   fWriteSecondTrackArray(kFALSE),
   fSetTrackFilterUsed(kFALSE),
   fWriteBaseTrack(),
@@ -363,17 +361,26 @@ void AliAnalysisTaskReducedTreeMaker::UserCreateOutputObjects()
   AliDielectronVarManager::SetFillMap(fUsedVars);
 
   // event statistics histogram
-  fEventsHistogram = new TH2I("EventStatistics", "Event statistics", 9, -0.5,8.5,32,-0.5,31.5);
-  const Char_t* offlineTriggerNames[32] = {"MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
+  fEventsHistogram = new TH2I("EventStatistics", "Event statistics", 14, -0.5,13.5,34,-2.5,31.5);
+  const Char_t* offlineTriggerNames[34] = {"Total", "No Phys Sel", "MB/INT1", "INT7", "MUON", "HighMult/HighMultSPD", "EMC1", "CINT5/INT5", "CMUS5/MUSPB/INT7inMUON",
      "MuonSingleHighPt7/MUSH7/MUSHPB", "MuonLikeLowPt7/MUL7/MuonLikePB", "MuonUnlikeLowPt7/MUU7/MuonUnlikePB", "EMC7/EMC8", 
      "MUS7/MuonSingleLowPt7", "PHI1", "PHI7/PHI8/PHOSPb", "EMCEJE", "EMCEGA", "Central/HighMultV0", "SemiCentral", "DG/DG5", "ZED", 
      "SPI7/SPI", "INT8", "MuonSingleLowPt8", "MuonSingleHighPt8", "MuonLikeLowPt8", "MuonUnlikeLowPt8", "MuonUnlikeLowPt0/INT6", "UserDefined", 
      "TRD", "N/A", "FastOnly", "N/A"
   };  
-  const Char_t* selectionNames[9] = {"All PS", "PS and trigger selected", "Event cuts selected", "Rejected (event cuts)", "Rejected (no tracks)", "Rejected (no tracks and no assoc tracks)", "Written (has tracks)", "Written (no tracks, has assoc tracks)", "Written (no tracks, no assoc tracks)"};
-  for(Int_t i=1;i<=32;++i)
+  const Char_t* selectionNames[14] = {"All events", 
+     "Physics Selection events (PS)", "Rejected due to PS",
+     "PE and trigger selected (TS)", "Rejected due to TS",
+     "TS and pileup checked (PC)", "Rejected due to PC", 
+     "PC and event cuts checked (EC)", "Rejected due to EC", 
+     Form("Written ev. (>=%d tracks, >=%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks), 
+     Form("Written ev. (<%d tracks, >=%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks), 
+     Form("Written ev. (<%d tracks, <%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks),
+     Form("Not written (<%d tracks and >=%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks), 
+     Form("Not written (<%d tracks and <%d base tracks)", fMinSelectedTracks, fMinSelectedBaseTracks)};
+  for(Int_t i=1;i<=34;++i)
      fEventsHistogram->GetYaxis()->SetBinLabel(i, offlineTriggerNames[i-1]);
-  for(Int_t i=1;i<=9;++i)
+  for(Int_t i=1;i<=14;++i)
      fEventsHistogram->GetXaxis()->SetBinLabel(i, selectionNames[i-1]);
   
   // track statistics histogram
@@ -436,58 +443,101 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   }
 
   // Was event selected ?
-  UInt_t isSelected = AliVEvent::kAny;
-  // event statistics before any cuts
-  for(Int_t i=0;i<32;++i) 
-     if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
+  UInt_t isPhysSel = AliVEvent::kAny;
+  UInt_t isPhysAndTrigSel = AliVEvent::kAny;
   
   if(inputHandler) {
     if((isESD && inputHandler->GetEventSelection()) || isAOD){
-      isSelected = inputHandler->IsEventSelected();
-      isSelected&=fTriggerMask;
+      isPhysSel = inputHandler->IsEventSelected();
+      isPhysAndTrigSel = isPhysSel & fTriggerMask;
     }
   }
-  
-  // event statistics after physics selection
-  if(isSelected) {
-     for(Int_t i=0;i<32;++i) 
-        if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
+
+  // event statistics before any selection
+  if(isPhysSel) {
+    for(Int_t i=0;i<32;++i) 
+       if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(0.,Double_t(i));
   }
-     
-  if(!fSelectPhysics) isSelected = AliVEvent::kAny;
+  else fEventsHistogram->Fill(0.,-1.);
+  fEventsHistogram->Fill(0.,-2.);
   
-  if(isSelected==0) {
+  if(fSelectPhysics && !isPhysSel) {
+     fEventsHistogram->Fill(2., -1.);
+     fEventsHistogram->Fill(2., -2.);
      PostData(3, fEventsHistogram);
      return;
   }
   
-  //event filter
-  if (fEventFilter) {
-    if (!fEventFilter->IsSelected(InputEvent())) {
-       // event statistics for events failing selection cuts
-       for(Int_t i=0;i<32;++i) 
-          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
-
-       PostData(3, fEventsHistogram);
-       return;
-    }
+  // event statistics after physics selection
+  // NOTE: if physics selection was not applied (as requested by user) then we can still have events with PS not fulfilled 
+  if(isPhysSel) {
+     for(Int_t i=0;i<32;++i) 
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(1.,Double_t(i));
   }
-
-  //pileup
-  if (fRejectPileup){
-    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) {
-       // event statistics for events failing selection cuts
-       for(Int_t i=0;i<32;++i) 
-          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
-       
-       PostData(3, fEventsHistogram);
-       return;
-    }
-  }
+  else fEventsHistogram->Fill(1.,-1.);
+  fEventsHistogram->Fill(1.,-2.);
   
-  // event statistics after event selection cuts
-  for(Int_t i=0;i<32;++i) 
-     if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(2.,Double_t(i));
+  // event statistics after physics selection and trigger selection
+  if(isPhysAndTrigSel) {
+     for(Int_t i=0;i<32;++i) 
+        if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(3.,Double_t(i));
+     fEventsHistogram->Fill(3.,-2.);   
+  }
+  else {
+     // reject events which do not fulfill the requested trigger mask
+     if(isPhysSel) {
+        for(Int_t i=0;i<32;++i) 
+           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
+     }
+     else fEventsHistogram->Fill(4.,-1.);
+     fEventsHistogram->Fill(4.,-2.);
+     
+     PostData(3, fEventsHistogram);
+     return;
+  }
+
+  // standard pileup selection
+  if(fRejectPileup && InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)){
+     if(isPhysSel) {
+        for(Int_t i=0;i<32;++i) 
+           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
+     }
+     else fEventsHistogram->Fill(6.,-1.);
+     fEventsHistogram->Fill(6.,-2.);   
+     
+     PostData(3, fEventsHistogram);
+     return;
+  }
+  else {
+     if(isPhysSel) {
+        for(Int_t i=0;i<32;++i) 
+           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
+     }
+     else fEventsHistogram->Fill(5.,-1.);
+     fEventsHistogram->Fill(5.,-2.);
+  }  
+  
+  // user defined event filter
+  if(fEventFilter && !fEventFilter->IsSelected(InputEvent())) {
+     // event statistics for events failing selection cuts
+     if(isPhysSel) {
+        for(Int_t i=0;i<32;++i) 
+           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
+     }
+     else fEventsHistogram->Fill(8.,-1.);
+     fEventsHistogram->Fill(8.,-2.);
+     
+     PostData(3, fEventsHistogram);
+     return;
+  }
+  else {
+     if(isPhysSel) {
+        for(Int_t i=0;i<32;++i) 
+           if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
+     }
+     else fEventsHistogram->Fill(7.,-1.);
+     fEventsHistogram->Fill(7.,-2.);
+  }
   
   if(fFillMCInfo) {
      Bool_t hasMC=AliDielectronMC::Instance()->HasMC();
@@ -511,59 +561,60 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   if(fFillMCInfo) FillMCTruthInfo();
   if(fFillV0Info && isESD) FillV0PairInfo();
   if(fFillTrackInfo) FillTrackInfo();
- 
+     
   if(fWriteTree) {
     Bool_t writeEvent = kFALSE;
     Int_t nTracks = fReducedEvent->fTracks->GetEntries();
     Int_t nTracks2 = fReducedEvent->fTracks2->GetEntries();
-    if(nTracks>=fMinSelectedTracks) {
-       writeEvent = kTRUE;
-       // event statistics, event with tracks -> written
-       for(Int_t i=0;i<32;++i) 
-          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(6.,Double_t(i));
-    }
-    else {
-       if(nTracks2>0) {
-          if(fWriteEventsWithNoSelectedTracks) {
-             writeEvent = kTRUE;
-             // event statistics, event with no POI tracks, but with base tracks -> written
-             for(Int_t i=0;i<32;++i) 
-                if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
-          }
-          else if(gRandom->Rndm()<fScaleDownEventsWithNoSelectedTracks) {
-             writeEvent = kTRUE;
-             fReducedEvent->fEventTag |= (ULong64_t(1)<<14);                    // mark unbiased events
-             // event statistics, event with no POI tracks, but with assoc tracks -> written
-             for(Int_t i=0;i<32;++i) 
-                if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(7.,Double_t(i));
-          }
-      }
-      else {
-         if(fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks) {
-            writeEvent = kTRUE;
-            // event statistics, event with no POI tracks, and no assoc tracks -> written
-            for(Int_t i=0;i<32;++i) 
-               if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
-         }
-         else if(gRandom->Rndm()<fScaleDownEventsWithNoSelectedTracks) {
-            writeEvent = kTRUE;
-            fReducedEvent->fEventTag |= (ULong64_t(1)<<14);                    // mark unbiased events
-            // event statistics, event with no POI tracks, and no assoc tracks -> written (random selection)
-            for(Int_t i=0;i<32;++i) 
-               if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(8.,Double_t(i));
-         }
-      }  // end else (nTracks2==0)
-    }  // end else(nTracks==0)
     
-    if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2==0) {
-       // event statistics, event with no POI tracks, and no assoc tracks -> NOT written
-       for(Int_t i=0;i<32;++i) 
-          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(5.,Double_t(i));
+    // write a random sample of events with a downscale of fScaleDownEvents
+    if(gRandom->Rndm()<fScaleDownEvents) {
+       writeEvent = kTRUE;
+       fReducedEvent->fEventTag |= (ULong64_t(1)<<14);                    // mark unbiased events
+       
+       Int_t binToFill = 11;
+       if(nTracks>=fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) binToFill = 9;
+       if(nTracks<fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) binToFill = 10;
+       
+       if(isPhysSel) {
+          for(Int_t i=0;i<32;++i) 
+             if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(Double_t(binToFill),Double_t(i));
+       }
+       else
+          fEventsHistogram->Fill(Double_t(binToFill), -1.);
+       fEventsHistogram->Fill(Double_t(binToFill),-2.);
     }
-    if(!writeEvent && nTracks<fMinSelectedTracks) {
-       // event statistics, event with no POI tracks (may have assoc tracks) -> NOT written
-       for(Int_t i=0;i<32;++i) 
-          if(inputHandler->IsEventSelected() & (UInt_t(1)<<i)) fEventsHistogram->Fill(4.,Double_t(i));
+    
+    // if the event was not already selected to be written, check that it fullfills the conditions
+    if(!writeEvent && nTracks>=fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) {
+       writeEvent = kTRUE;
+       if(isPhysSel) {
+          for(Int_t i=0;i<32;++i) 
+             if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(9.,Double_t(i));
+       }
+       else 
+          fEventsHistogram->Fill(9., -1.);
+       fEventsHistogram->Fill(9.,-2.);
+    }
+    
+    // count the events not to be written
+    if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2>=fMinSelectedBaseTracks) {
+       if(isPhysSel) {
+          for(Int_t i=0;i<32;++i) 
+             if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(12.,Double_t(i));
+       }
+       else 
+          fEventsHistogram->Fill(12., -1.);
+       fEventsHistogram->Fill(12.,-2.);
+    }
+    if(!writeEvent && nTracks<fMinSelectedTracks && nTracks2<fMinSelectedBaseTracks) {
+       if(isPhysSel) {
+          for(Int_t i=0;i<32;++i) 
+             if(isPhysSel & (UInt_t(1)<<i)) fEventsHistogram->Fill(13.,Double_t(i));
+       }
+       else 
+          fEventsHistogram->Fill(13., -1.);
+       fEventsHistogram->Fill(13.,-2.);
     }
     
     if(writeEvent) fTree->Fill();
@@ -888,7 +939,8 @@ void AliAnalysisTaskReducedTreeMaker::FillEventInfo()
   
   eventInfo->fBC          = event->GetBunchCrossNumber();
   eventInfo->fEventType   = event->GetEventType();
-  //eventInfo->fTriggerMask = event->GetTriggerMask();
+  eventInfo->fOnlineTriggerMask = event->GetTriggerMask();
+  eventInfo->fOnlineTriggerMaskNext50 = event->GetTriggerMaskNext50();
   eventInfo->fTriggerMask = inputHandler->IsEventSelected();
   eventInfo->fIsPhysicsSelection = (isSelected!=0 ? kTRUE : kFALSE);
   eventInfo->fIsSPDPileup = event->IsPileupFromSPD(3,0.8,3.,2.,5.);
