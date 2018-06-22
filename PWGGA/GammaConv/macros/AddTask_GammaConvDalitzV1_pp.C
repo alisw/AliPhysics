@@ -302,6 +302,27 @@ void AddTask_GammaConvDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
     cuts.AddCut("00074113", "00200009360300007800004000", "0263103100900000", "20475400253203221710");
     cuts.AddCut("00074113", "00200009360300007800004000", "0263103100900000", "20475400253202121710");
     cuts.AddCut("00074113", "00200009360300007800004000", "0263103100900000", "20475400253202321710");
+
+
+    //  6XX for lowB,    65X  lowB and MBW
+  } else if (trainConfig == 606) {  // low B   eta<0.8
+    cuts.AddCut("00010113", "0d200089266300008850404000", "0263103100900000", "10477400234202361710"); //prim electron Pt > 0.05 GeV & sec. electrons pt > 0.02 GeV
+  } else if ( trainConfig ==607 ) { // low B
+    cuts.AddCut("00010113", "0da00089266300008850404000", "0263103100900000", "10477400234202361710"); //prim electron Pt > 
+    cuts.AddCut("00010113", "0db00089266300008850404000", "0263103100900000", "10477400234202361710"); //prim electron Pt
+    cuts.AddCut("00010113", "0dc00089266300008850404000", "0263103100900000", "10477400234202361710"); 
+
+
+    // to be used with weights
+  } else if (trainConfig == 656) {  // low B   eta<0.8
+    cuts.AddCut("00010113", "0d200089266300008850404000", "0263103100900000", "10477400234202361710"); //prim electron Pt > 0.05 GeV & sec. electrons pt > 0.02 GeV
+  } else if ( trainConfig ==657 ) { // low B
+    cuts.AddCut("00010113", "0da00089266300008850404000", "0263103100900000", "10477400234202361710"); //prim electron Pt > 
+    cuts.AddCut("00010113", "0db00089266300008850404000", "0263103100900000", "10477400234202361710"); //prim electron Pt
+    cuts.AddCut("00010113", "0dc00089266300008850404000", "0263103100900000", "10477400234202361710"); 
+
+
+    //  7XX for NomB,    75X  nomB and MBW
   } else if (trainConfig == 706) {   // Nominal eta<0.8 for primary and secondary electrons
     cuts.AddCut("00010113", "0d200009266300008854404000", "0263103100900000", "20475400254202321710");
   } else if (trainConfig == 707) {    // R scan
