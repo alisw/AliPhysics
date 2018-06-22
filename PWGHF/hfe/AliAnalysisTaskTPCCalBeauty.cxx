@@ -345,7 +345,7 @@ fBElecAftTPCeID(0),
 
 fElecAftEMCeID(0),
 fHFElecAftEMCeID(0),
-fBElecAftEMCeID(0).
+fBElecAftEMCeID(0),
 fElectronSprs(0)
 {
     DefineInput(0, TChain::Class());
@@ -926,7 +926,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 Int_t ilabelGM = momPart->GetMother();
                 if (ilabelGM>0) {
                     AliAODMCParticle *gmomPart = (AliAODMCParticle*)fMCarray->At(ilabelGM);//get grandma particle
-                    Int_t pidGM = TMath::Abs(momPart->GetPdgCode());
+                    Int_t pidGM = TMath::Abs(gmomPart->GetPdgCode());
                     if (pidGM>500 && pidGM<599) {
                         continue; //reject beauty feed down
                     }
