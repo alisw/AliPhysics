@@ -147,7 +147,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fGlobalEScale(1.0),
   fEmin(0.2),
   fIsOAStudy(kFALSE),
-  fNMixTrack(5),
+  fNMixTrack(2),
   fMatchingR(2.),
   fAnaOmega3Pi(kFALSE),
   fMinPtPi0(0),
@@ -425,6 +425,12 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCluNXZTOFM%d",imod) ,Form("Cluster N(X,Z) M%d TOF",imod) ,64,0.5,64.5, 56,0.5,56.5));
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCluEXZTOFM%d",imod) ,Form("Cluster E(X,Z) M%d TOF",imod) ,64,0.5,64.5, 56,0.5,56.5));
 
+  for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCluBadNegTNXZM%d",imod)    ,Form("Cluster N(X,Z) M%d bad",imod)     ,64,0.5,64.5, 56,0.5,56.5));
+  for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCluBadNegTEXZM%d",imod)    ,Form("Cluster E(X,Z) M%d bad",imod)     ,64,0.5,64.5, 56,0.5,56.5));
+  for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCluBadPosTNXZM%d",imod)    ,Form("Cluster N(X,Z) M%d bad",imod)     ,64,0.5,64.5, 56,0.5,56.5));
+  for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hCluBadPosTEXZM%d",imod)    ,Form("Cluster E(X,Z) M%d bad",imod)     ,64,0.5,64.5, 56,0.5,56.5));
+
+
   for(Int_t imod=1;imod<Nmod;imod++) fOutputContainer->Add(new TH2F(Form("hClusterEvsTM%d",imod),Form("Cluster E vs TOF M%d;E (GeV);TOF (ns)",imod)     ,500,0,50, 1000,-500,500));
 
   fOutputContainer->Add(new TH2F("hClusterEvsN","Cluster E vs N_{cell};E (GeV);N_{cell}",500,0,50,100,0.5,100.5));
@@ -589,6 +595,24 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
       fOutputContainer->Add(h2);
     }
   }
+  //for PID cut study
+
+
+  const Int_t Ndim_PID = 5;
+  const Int_t Nbin_PID[Ndim_PID]    = { 180, 100,  20,50,50};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
+  const Double_t xmin_PID[Ndim_PID] = {   0,   0, 0.5, 0, 0};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
+  const Double_t xmax_PID[Ndim_PID] = {0.72,  10,20.5, 5, 5};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
+
+  //same event for PID study at low pT
+  THnSparseF *hs_Mgg_PID = new THnSparseF("hSparseMgg_PID","M_{#gamma#gamma} for PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV);N_{cell};M20 (cm);M02 (cm)",Ndim_PID,Nbin_PID,xmin_PID,xmax_PID);
+  hs_Mgg_PID->Sumw2();
+  fOutputContainer->Add(hs_Mgg_PID);
+
+  //mixed event for PID study at low pT
+  THnSparseF *hs_MixMgg_PID = new THnSparseF("hSparseMixMgg_PID","M_{#gamma#gamma}^{mix} for PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV);N_{cell};M02 (cm);M20(cm)",Ndim_PID,Nbin_PID,xmin_PID,xmax_PID);
+  hs_MixMgg_PID->Sumw2();
+  fOutputContainer->Add(hs_MixMgg_PID);
+
 
   //for PID cut efficiency
   const TString PIDtype[4] = {"noPID","CPV","Disp","PID"};//str PID is for main PID cut efficiency used in this analysis
@@ -1659,6 +1683,20 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::ClusterQA()
       return;
     }
 
+
+
+    if(energy > 0.5 && tof*1e+9 < -100){
+      FillHistogramTH2(fOutputContainer,Form("hCluBadNegTNXZM%d",module),cellx,cellz);
+      FillHistogramTH2(fOutputContainer,Form("hCluBadNegTEXZM%d",module),cellx,cellz,energy);
+    }
+    if(energy > 0.5 && tof*1e+9 > 150){
+      FillHistogramTH2(fOutputContainer,Form("hCluBadPosTNXZM%d",module),cellx,cellz);
+      FillHistogramTH2(fOutputContainer,Form("hCluBadPosTEXZM%d",module),cellx,cellz,energy);
+    }
+
+
+
+
     if(ph->IsTOFOK()){
       FillHistogramTH1(fOutputContainer,"hAllClusterEnergy",energy);//only for trigger efficiency in MB in data
     }
@@ -2510,10 +2548,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
   TLorentzVector p12, p12core;
   Double_t m12=0;
   Double_t pT=0;
+  Double_t energy=0;
   Double_t weight = 1., w1 = 1., w2 = 1.;
   Int_t primary1 = -1;
   Int_t primary2 = -1;
   Int_t commonID = -1;
+
+  Double_t value[5] = {0,0,0,0,0};
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -2523,7 +2564,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
     //if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
 
     //apply tight cut to photon1
-    if(ph1->GetNsigmaCPV() < 3 || ph1->GetNsigmaCoreDisp() > 2) continue;
+    if(ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
@@ -2534,11 +2575,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
       p12 = *ph1 + *ph2;
       m12 = p12.M();
       pT = ph2->Pt();
+      energy = ph2->Energy();
 
       if(fUseCoreEnergy){
         p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
         m12 = p12core.M();
         pT = (ph2->GetMomV2())->Pt();
+        energy = (ph2->GetMomV2())->Energy();
       }
 
       weight = 1.;
@@ -2554,6 +2597,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
         else weight = w1*w2;
 
       }//end of if fIsMC
+
+
+      value[0] = m12;
+      value[1] = energy;
+      value[2] = ph2->GetNCells();
+      value[3] = ph2->GetLambda1();
+      value[4] = ph2->GetLambda2();
+      FillSparse(fOutputContainer,"hSparseMgg_PID",value,weight);
 
       FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,pT,weight);
 
@@ -2588,11 +2639,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
         p12 = *ph1 + *ph2;
         m12 = p12.M();
         pT = ph2->Pt();
+        energy = ph2->Energy();
 
         if(fUseCoreEnergy){
           p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
           m12 = p12core.M();
           pT = (ph2->GetMomV2())->Pt();
+          energy = (ph2->GetMomV2())->Energy();
         }
 
         weight = 1.;
@@ -2601,6 +2654,14 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
           w2 = ph2->GetWeight();
           weight = w1*w2;
         }//end of if fIsMC
+
+
+        value[0] = m12;
+        value[1] = energy;
+        value[2] = ph2->GetNCells();
+        value[3] = ph2->GetLambda1();
+        value[4] = ph2->GetLambda2();
+        FillSparse(fOutputContainer,"hSparseMixMgg_PID",value,weight);
 
         FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,pT,weight);
         if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_CPV" ,m12,pT,weight);
