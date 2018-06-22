@@ -43,6 +43,7 @@ public:
     void            SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; };
     
     void            SetSSCut(Bool_t applySSCut) {fFlagApplySSCut = applySSCut;}
+    void            SetFillSprs(Bool_t fillElecSprs) {fFlagFillSprs = fillElecSprs;}
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
     
@@ -73,6 +74,7 @@ private:
     Bool_t              fEMCEG1;         // EMCal Threshold EG1
     Bool_t              fDCalDG1;        // DCal Threshold DG1
     Bool_t              fFlagApplySSCut; //switch to turn on SS cut
+    Bool_t              fFlagFillSprs; //switch to fill electron eid sparse
     Bool_t              fFlagClsTypeEMC; // switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;// switch to select DCAL clusters
     Bool_t              fUseTender;      // switch to add tender
@@ -238,7 +240,8 @@ private:
     TH1F                *fHFElecAftEMCeID; //!
     TH1F                *fBElecAftEMCeID; //!
     
-    //THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
+    THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
+    
     //Double_t            *fvalueElectron; //! Electron info
     
     AliAnalysisTaskTPCCalBeauty(const AliAnalysisTaskTPCCalBeauty&); // not implemented???
