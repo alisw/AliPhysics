@@ -109,7 +109,7 @@ set(SRCS
    )
 
 if(DEFINED ALITPCCOMMON_DIR)
-  add_definitions(-DHAVE_ALITPCCOMMON)
+  add_definitions(-DHAVE_ALITPCCOMMON -DHLTCA_BUILD_ALIROOT_LIB)
   set(SRCS ${SRCS} AliHLTGlobalPromptRecoQAComponent.cxx)
   include_directories(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker)
 endif()
