@@ -91,7 +91,7 @@ fCentMin(0),
 fCentMax(10),
 fOneConstSelectOn(kFALSE),
 fDerivSubtrOrder(0),
-fJetShapeTree(0),
+fMCweight(0),
 fAssPtCut(0.1),
 fITSncut(3),
 fAssTPCnCut(60),
@@ -111,6 +111,10 @@ fEtaJetCorr6(0x0),
 fEtaJetCorr7(0x0),
 fPtJetCorr(0x0),
 fPtJet(0x0),
+fPtGenJet(0),
+fPhiJet(0x0),
+fEtaJet(0x0),
+fJetEfficiency(0x0),
 fhpTjetpT(0x0),
 fhPt(0x0),
 fhPhi(0x0),
@@ -120,8 +124,6 @@ fnTPCnocut(0),
 fnTOFnocut(0),
 fnTPCcut(0),
 fnULSmLSpairsPerElectron(0),
-fInvmassLS(0),
-fInvmassULS(0),
 fnPartPerJet(0),
 fnElecOverPartPerJet(0),
 fnInclElecPerJet(0),
@@ -132,17 +134,38 @@ fnTrueHFElecPerJet(0),
 fnTruePElecPerJet(0),
 fPi0Pt(0),
 fEtaPt(0),
-fUlsLsElecPt(0),
-fTotElecPt(0),
+fGenHfePt(0),
+fGenPePt(0),
 fPtP(0),
+fptJetIE(0),
+fptJetPE(0),
+fptJetHFE(0),
+fptRecPE(0),
+fptTruePE(0),
+fptWrongPE(0),
+fPhiTrack(0x0),
+fEtaTrack(0x0),
+fPhiElec(0x0),
+fEtaElec(0x0),
 fTreeObservableTagging(0)
 
 {
     for(Int_t i=0;i<21;i++){
         fShapesVar[i]=0;
     }
-    for(Int_t i=0;i<15;i++){
-        fnTPCTrueParticles[i] = NULL;
+    
+    for(Int_t i=0;i<4;i++){
+        fptTrueHFE[i] = NULL;
+    }
+    
+    for(Int_t i=0;i<5;i++){
+        fInvmassLS[i] = NULL;
+        fInvmassULS[i] = NULL;
+        fUlsLsElecPt[i] = NULL;
+        fTotElecPt[i] = NULL;
+        for(Int_t j=0;j<18;j++){
+            fnTPCTrueParticles[i][j] = NULL;
+        }
     }
     SetMakeGeneralHistograms(kTRUE);
     DefineOutput(1, TList::Class());
@@ -183,7 +206,7 @@ fCentMin(0),
 fCentMax(10),
 fOneConstSelectOn(kFALSE),
 fDerivSubtrOrder(0),
-fJetShapeTree(0),
+fMCweight(0),
 fAssPtCut(0.1),
 fITSncut(3),
 fAssTPCnCut(60),
@@ -203,6 +226,10 @@ fEtaJetCorr6(0x0),
 fEtaJetCorr7(0x0),
 fPtJetCorr(0x0),
 fPtJet(0x0),
+fPtGenJet(0),
+fPhiJet(0x0),
+fEtaJet(0x0),
+fJetEfficiency(0x0),
 fhpTjetpT(0x0),
 fhPt(0x0),
 fhPhi(0x0),
@@ -212,8 +239,6 @@ fnTPCnocut(0),
 fnTOFnocut(0),
 fnTPCcut(0),
 fnULSmLSpairsPerElectron(0),
-fInvmassLS(0),
-fInvmassULS(0),
 fnPartPerJet(0),
 fnElecOverPartPerJet(0),
 fnInclElecPerJet(0),
@@ -224,9 +249,19 @@ fnTrueHFElecPerJet(0),
 fnTruePElecPerJet(0),
 fPi0Pt(0),
 fEtaPt(0),
-fUlsLsElecPt(0),
-fTotElecPt(0),
+fGenHfePt(0),
+fGenPePt(0),
 fPtP(0),
+fptJetIE(0),
+fptJetPE(0),
+fptJetHFE(0),
+fptRecPE(0),
+fptTruePE(0),
+fptWrongPE(0),
+fPhiTrack(0x0),
+fEtaTrack(0x0),
+fPhiElec(0x0),
+fEtaElec(0x0),
 fTreeObservableTagging(0)
 
 {
@@ -234,8 +269,19 @@ fTreeObservableTagging(0)
     for(Int_t i=0;i<21;i++){
         fShapesVar[i]=0;
     }
-    for(Int_t i=0;i<15;i++){
-        fnTPCTrueParticles[i] = NULL;
+    
+    for(Int_t i=0;i<4;i++){
+        fptTrueHFE[i] = NULL;
+    }
+    
+    for(Int_t i=0;i<5;i++){
+        fInvmassLS[i] = NULL;
+        fInvmassULS[i] = NULL;
+        fUlsLsElecPt[i] = NULL;
+        fTotElecPt[i] = NULL;
+        for(Int_t j=0;j<18;j++){
+            fnTPCTrueParticles[i][j] = NULL;
+        }
     }
     SetMakeGeneralHistograms(kTRUE);
     
@@ -276,13 +322,25 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     fPtJetCorr= new TH2F("fPtJetCorr", "fPtJetCorr", 100, 0, 200,  100, 0, 200);
     fOutput->Add(fPtJetCorr);
+    
     fPtJet= new TH1F("fPtJet", "fPtJet", 100, 0, 200);
     fOutput->Add(fPtJet);
     
+    fPtGenJet= new TH1F("fPtGenJet", "fPtGenJet", 100, 0, 200);
+    fOutput->Add(fPtGenJet);
+    
+    fPhiJet= new TH2F("fPhiJet", "fPhiJet", 100, 0, 200, 100, 0, TMath::TwoPi());
+    fOutput->Add(fPhiJet);
+    
+    fEtaJet= new TH2F("fEtaJet", "fEtaJet", 100, 0, 200, 100, -1,1);
+    fOutput->Add(fEtaJet);
+    
     fhpTjetpT= new TH2F("fhpTjetpT", "fhpTjetpT", 200, 0, 200,  200, 0, 200);
     fOutput->Add(fhpTjetpT);
+    
     fhPt= new TH1F("fhPt", "fhPt", 200, 0, 200);
     fOutput->Add(fhPt);
+    
     fhPhi= new TH1F("fhPhi", "fhPhi", 100, -TMath::Pi(), TMath::Pi());
     fOutput->Add(fhPhi);
     
@@ -304,12 +362,6 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fnULSmLSpairsPerElectron =new TH2F("fnULSmLSpairsPerElectron", "fnULSmLSpairsPerElectron", 50, 0, 5, 100, 0, 100);
     fOutput->Add(fnULSmLSpairsPerElectron);
     
-    fInvmassLS =new TH2F("fInvmassLS", "fInvmassLS", 50, 0, 5, 250, 0, 0.5);
-    fOutput->Add(fInvmassLS);
-    
-    fInvmassULS=new TH2F("fInvmassULS", "fInvmassULS", 50, 0, 5, 250, 0, 0.5);
-    fOutput->Add(fInvmassULS);
-    
     fnPartPerJet=new TH1F("fnPartPerJet", "fnPartPerJet", 500,0,500);
     fOutput->Add(fnPartPerJet);
     
@@ -327,33 +379,90 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     fnTrueElecPerJet=new TH1F("fnTrueElecPerJet", "fnTrueElecPerJet", 100,0,100);
     fOutput->Add(fnTrueElecPerJet);
-
+    
     fnTrueHFElecPerJet=new TH1F("fnTrueHFElecPerJet", "fnTrueHFElecPerJet", 100,0,100);
     fOutput->Add(fnTrueHFElecPerJet);
-
+    
     fnTruePElecPerJet=new TH1F("fnTruePElecPerJet", "fnTruePElecPerJet", 100,0,100);
     fOutput->Add(fnTruePElecPerJet);
     
-    fPi0Pt = new TH2F("fPi0Pt","fPi0Pt",4,0,4,100,0,50);
+    int nbin = 59;
+    double xbins[60] =  {0.01,0.1,0.12,0.14,0.16,0.18,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,
+        0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4,4.5,5,
+        5.5,6,6.5,7,8,9,10,11,12,13,14,15,16,18,20};
+    
+    fPi0Pt = new TH2F("fPi0Pt","fPi0Pt",4,0,4,nbin,xbins);
     fOutput->Add(fPi0Pt);
     
-    fEtaPt = new TH2F("fEtaPt", "fEtaPt",4,0,4,100,0,50);
+    fEtaPt = new TH2F("fEtaPt", "fEtaPt",4,0,4,nbin,xbins);
     fOutput->Add(fEtaPt);
     
-    Double_t ptRange[16] = {0.5,0.7,0.9,1.1,1.3,1.5,1.9,2.1,2.3,2.5,2.9,3.1,3.3,3.5,3.9,5};
+    fGenHfePt = new TH1F("fGenHfePt","fGenHfePt",nbin,xbins);
+    fOutput->Add(fGenHfePt);
     
-    fUlsLsElecPt=new TH1F("fUlsLsElecPt", "fUlsLsElecPt", 15,ptRange);
-    fOutput->Add(fUlsLsElecPt);
-    fTotElecPt=new TH1F("fTotElecPt", "fTotElecPt", 15,ptRange);
-    fOutput->Add(fTotElecPt);
+    fGenPePt = new TH1F("fGenPePt", "fGenPePt",nbin,xbins);
+    fOutput->Add(fGenPePt);
     
-    fPtP=new TH2F("fPtP", "fPtP", 15,ptRange,15,ptRange);
+    Double_t ptRange[19] = {0.5,0.7,0.9,1.1,1.3,1.5,1.7,1.9,2.1,2.3,2.5,2.7,2.9,3.1,3.3,3.5,3.7,3.9,5};
+    
+    fPtP=new TH2F("fPtP", "fPtP", 18,ptRange,18,ptRange);
     fOutput->Add(fPtP);
     
-    for(Int_t i=0; i<15; i++) {
-        fnTPCTrueParticles[i] = new TH2F(Form("fnTPCTrueParticles%d",i),Form("fnTPCTrueParticles%d",i), 7,0,7,200,-10,10);
-        fOutput->Add(fnTPCTrueParticles[i]);
+    for(Int_t i=0;i<5;i++){
+        
+        fInvmassLS[i] = new TH2F(Form("fInvmassLS%d",i), Form("fInvmassLS%d",i), 50, 0, 5, 100, 0, 0.5);
+        fOutput->Add(fInvmassLS[i]);
+        
+        fInvmassULS[i] = new TH2F(Form("fInvmassULS%d",i), Form("fInvmassULS%d",i), 50, 0, 5, 100, 0, 0.5);
+        fOutput->Add(fInvmassULS[i]);
+        
+        fUlsLsElecPt[i] = new TH1F(Form("fUlsLsElecPt%d",i), Form("fUlsLsElecPt%d",i), 18,ptRange);
+        fOutput->Add(fUlsLsElecPt[i]);
+        
+        fTotElecPt[i] = new TH1F(Form("fTotElecPt%d",i), Form("fTotElecPt%d",i), 18,ptRange);
+        fOutput->Add(fTotElecPt[i]);
+        
+        
+        for(Int_t j=0;j<18;j++){
+            fnTPCTrueParticles[i][j] = new TH2F(Form("fnTPCTrueParticles%d%d",i,j),Form("fnTPCTrueParticles%d%d",i,j), 7,0,7,100,-15,15);
+            fOutput->Add(fnTPCTrueParticles[i][j]);
+        }
     }
+    
+    for(Int_t i=0;i<4;i++){
+        fptTrueHFE[i] = new TH1F(Form("fptTrueHFE%d",i), Form("fptTrueHFE%d",i), 18,ptRange);
+        fOutput->Add(fptTrueHFE[i]);
+    }
+    
+    fptJetIE= new TH1F("fptJetIE", "fptJetIE", 100, 0, 200);
+    fOutput->Add(fptJetIE);
+    
+    fptJetPE= new TH1F("fptJetPE", "fptJetPE", 100, 0, 200);
+    fOutput->Add(fptJetPE);
+    
+    fptJetHFE= new TH1F("fptJetHFE", "fptJetHFE", 100, 0, 200);
+    fOutput->Add(fptJetHFE);
+    
+    fptRecPE= new TH1F("fptRecPE", "fptRecPE", 100, 0, 50);
+    fOutput->Add(fptRecPE);
+    
+    fptTruePE= new TH1F("fptTruePE", "fptTruePE", 100, 0, 50);
+    fOutput->Add(fptTruePE);
+    
+    fptWrongPE= new TH1F("fptWrongPE", "fptWrongPE", 100, 0, 50);
+    fOutput->Add(fptWrongPE);
+    
+    fPhiTrack= new TH2F("fPhiTrack", "fPhiTrack", 100, 0, 50, 100, 0, TMath::TwoPi());
+    fOutput->Add(fPhiTrack);
+    
+    fEtaTrack= new TH2F("fEtaTrack", "fEtaTrack", 100, 0, 50, 100, -1,1);
+    fOutput->Add(fEtaTrack);
+    
+    fPhiElec= new TH2F("fPhiElec", "fPhiElec", 100, 0, 50, 100, 0, TMath::TwoPi());
+    fOutput->Add(fPhiElec);
+    
+    fEtaElec= new TH2F("fEtaElec", "fEtaElec", 100, 0, 50, 100, -1,1);
+    fOutput->Add(fEtaElec);
     
     // =========== Switch on Sumw2 for all histos ===========
     for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
@@ -368,7 +477,7 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     
     
     TH1::AddDirectory(oldStatus);
-    const Int_t nVar = 21;
+    const Int_t nVar = 24;
     
     fTreeObservableTagging = new TTree(GetOutputSlot(2)->GetContainer()->GetName(), GetOutputSlot(2)->GetContainer()->GetName());
     
@@ -399,6 +508,10 @@ void AliAnalysisTaskEmcalHfeTagging::UserCreateOutputObjects()
     fShapesVarNames[18]="ptUnsub";
     fShapesVarNames[19]="pElec";
     fShapesVarNames[20]="ptElec";
+    fShapesVarNames[21]="nInclElec";
+    fShapesVarNames[22]="nPhotElec";
+    fShapesVarNames[23]="hasElec";
+    
     
     for(Int_t ivar=0; ivar < nVar; ivar++){
         //cout<<"looping over variables"<<endl;
@@ -445,7 +558,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::Run()
         }
     }
     // pileup rejection with SPD multiple vertices and track multivertexer (using default configuration)
-
+    
     Bool_t isPileupfromSPDmulbins = kFALSE, isPileupFromMV = kFALSE;
     isPileupfromSPDmulbins = fAOD->IsPileupFromSPDInMultBins();
     if (isPileupfromSPDmulbins) return kFALSE;
@@ -462,6 +575,9 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::Run()
     
     Bool_t isPrimary = kFALSE, isFromLMdecay = kTRUE, isFromHFdecay=kTRUE;
     
+    Double_t MCweight = 1.;
+    Int_t iDecay = 0;
+    
     if(fMCarray){
         Int_t nParticles = fMCarray->GetEntries();
         for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
@@ -473,11 +589,27 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::Run()
             if(iParticle>=NpureMC)iEnhance = kTRUE;
             
             Double_t etaMC = particle->Eta();
-            if (TMath::Abs(etaMC)>1.2)continue;
+            //if (TMath::Abs(etaMC)>1.2)continue;
             
             isPrimary = IsPrimary(particle);
             isFromLMdecay = IsFromLMdecay(particle);
             isFromHFdecay = IsFromHFdecay(particle);
+            
+            MCweight = 1.;
+            iDecay = 0;
+            
+            GetWeightAndDecay(particle,iDecay,MCweight);
+            
+            
+            if (TMath::Abs(etaMC)<0.8 && TMath::Abs(fPDG)==11){
+                
+                if (isFromHFdecay) fGenHfePt->Fill(pTMC);
+                if (iDecay>0 && iDecay<7) fGenPePt->Fill(pTMC);
+            }
+            
+            
+            Double_t yMC = particle->Y();
+            if (TMath::Abs(yMC)>1.0)continue;
             
             if (isPrimary){
                 if(fPDG==111) fPi0Pt->Fill(iEnhance,pTMC); //pi0
@@ -594,6 +726,8 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             AliEmcalJet* jet2 = 0x0;
             AliEmcalJet* jet3 = 0x0;
             fPtJet->Fill(jet1->Pt());
+            fPhiJet->Fill(jet1->Pt(),jet1->Phi());
+            fEtaJet->Fill(jet1->Pt(),jet1->Eta());
             AliEmcalJet *jetUS = NULL;
             Int_t ifound=0, jfound=0;
             Int_t ilab=-1, jlab=-1;
@@ -715,6 +849,9 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
                 
                 
                 fh2ResponseUW->Fill(jet1->Pt(),jet3->Pt());
+                
+                Double_t eff = (jet3->Pt()-jet1->Pt())/jet1->Pt();
+                fJetEfficiency->Fill(eff,jet1->Pt());
                 
                 
             }
@@ -845,27 +982,45 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::FillHistograms()
             
             Int_t nInclusiveElectrons = 0, nPhotonicElectrons = 0, nTrueElectronsMC, nTrueHFElecMC;
             Double_t pElec = 0., ptElec = 0.;
-            Bool_t hasElectrons;
+            Bool_t hasElectrons = kFALSE;
             
-            GetNumberOfElectrons(jet1, 0,nMotherKink,listofmotherkink,nInclusiveElectrons,nPhotonicElectrons,pElec,ptElec,hasElectrons);
+            
+            if(fJetShapeType != kMCTrue){
+                GetNumberOfElectrons(jet1, 0,nMotherKink,listofmotherkink,nInclusiveElectrons,nPhotonicElectrons,pElec,ptElec,hasElectrons);
+                GetNumberOfTrueElectrons(jet1, 0,nMotherKink,listofmotherkink,nTrueElectronsMC,nTrueHFElecMC);
+            }
+            
+            
+            // generated HFE jets
+            
+            AliVParticle *vp1 = 0x0;
+            Int_t pdgCode = 0;
+            Int_t elecCounter = 0;
+            
+            if(fMCarray){
+                for(UInt_t i = 0; i < jet1->GetNumberOfTracks(); i++) {
+                    vp1 = static_cast<AliVParticle*>(jet1->TrackAt(i, jetCont->GetParticleContainer()->GetArray()));
+                    
+                    if (!vp1){
+                        Printf("AliVParticle associated to constituent not found");
+                        continue;
+                    }
+                    
+                    pdgCode = vp1->PdgCode();
+                    if (TMath::Abs(pdgCode)==11) elecCounter++;
+                }
+                if (elecCounter==1) fPtGenJet->Fill(jet1->Pt());
+            }
             
             fShapesVar[19] = pElec;
             fShapesVar[20] = ptElec;
             
-            if (fJetShapeTree == AliAnalysisTaskEmcalHfeTagging::kAll)
-                fTreeObservableTagging->Fill();
+            fShapesVar[21] = nInclusiveElectrons;
+            fShapesVar[22] = nPhotonicElectrons;
+            fShapesVar[23] = hasElectrons;
             
-            if (fJetShapeTree == AliAnalysisTaskEmcalHfeTagging::kInclElec)
-                if (nInclusiveElectrons==1) fTreeObservableTagging->Fill();
+            fTreeObservableTagging->Fill();
             
-            if (fJetShapeTree == AliAnalysisTaskEmcalHfeTagging::kPhotElec)
-                if (nInclusiveElectrons==1 && nPhotonicElectrons==1) fTreeObservableTagging->Fill();
-            
-            if (fJetShapeTree == AliAnalysisTaskEmcalHfeTagging::kNoElec)
-                if (hasElectrons==kFALSE) fTreeObservableTagging->Fill();
-
-            if(fMCarray)
-                GetNumberOfTrueElectrons(jet1, 0,nMotherKink,listofmotherkink,nTrueElectronsMC,nTrueHFElecMC);
             
         }//jet loop
     }
@@ -885,16 +1040,16 @@ Float_t AliAnalysisTaskEmcalHfeTagging::GetJetMass(AliEmcalJet *jet,Int_t jetCon
 //________________________________________________________________________
 void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_t jetContNb , Int_t nMother, Double_t listMother[] ,  Int_t &nIncElec,  Int_t &nPhotElec, Double_t &pElec, Double_t &ptElec, Bool_t &hasElec){
     // count the number of inclusive electrons per jet and per event
-
+    
     AliVParticle *vp1 = 0x0;
     Int_t nIE=0, nPairs=0, nPE=0, sub = -1;
     Float_t ratioElec = -1.;
     Double_t pte=0., pe=0.;
     Bool_t hasElecCand = kFALSE;
-
+    
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
     if (jet->GetNumberOfTracks()){
-
+        
         fnPartPerJet->Fill(jet->GetNumberOfTracks());
         fpidResponse = fInputHandler->GetPIDResponse();
         if(!fpidResponse){
@@ -917,6 +1072,8 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             
             AliAODTrack *track = dynamic_cast<AliAODTrack*>(vtrack);
             
+            if (!track) continue;
+            
             // track cuts
             Bool_t passTrackCut = kFALSE;
             passTrackCut = InclElecTrackCuts(pVtx,track,nMother,listMother);
@@ -924,9 +1081,14 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             
             nPairs=0;
             
-            Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99.;
+            Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., phi = -9., eta = -99.;
             p = track->P();
             pt = track->Pt();
+            phi = track->Phi();
+            eta = track->Eta();
+            
+            fPhiTrack->Fill(pt,phi);
+            fEtaTrack->Fill(pt,eta);
             
             fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
             fTOFnSigma = fpidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
@@ -942,10 +1104,13 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfElectrons(AliEmcalJet *jet, Int_
             
             if ((fTPCnSigma>fSigmaTPCcut)  && (fTPCnSigma<3) && TMath::Abs(fTOFnSigma)<fSigmaTOFcut){
                 fPtP->Fill(pt,p);
+                fPhiElec->Fill(pt,phi);
+                fEtaElec->Fill(pt,eta);
+                
                 nIE++;
                 pte=pt;
                 pe=p;
-                nPairs = GetNumberOfPairs(track,pVtx,nMother,listMother);
+                nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother);
                 if (nPairs>0) nPE++;
             }
             
@@ -971,10 +1136,14 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
     AliVParticle *vp1 = 0x0;
     Int_t nIE=0, nHFE=0, nPE=0, PartId=0, nPairs=0, iDecay = 0;
     Double_t p=-9., pt=-9., fTPCnSigma=-99., fTOFnSigma=-99., MCweight = 1.;
-    Double_t ptRange[16] = {0.5,0.7,0.9,1.1,1.3,1.5,1.9,2.1,2.3,2.5,2.9,3.1,3.3,3.5,3.9,5};
+    Double_t ptRange[19] = {0.5,0.7,0.9,1.1,1.3,1.5,1.7,1.9,2.1,2.3,2.5,2.7,2.9,3.1,3.3,3.5,3.7,3.9,5};
+    Double_t ptJetRange[6] = {5,15,25,35,45,60};
     
     Bool_t isFromHFdecay=kFALSE;
     Bool_t isFromLMdecay=kFALSE;
+    Bool_t passTrackCut = kFALSE;
+    
+    Double_t jetPt = jet->Pt();
     
     AliJetContainer *jetCont = GetJetContainer(jetContNb);
     if (jet->GetNumberOfTracks()){
@@ -993,20 +1162,16 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
             }
             
             AliAODTrack *track = dynamic_cast<AliAODTrack*>(vtrack);
-
-            // track cuts
-            Bool_t passTrackCut = kFALSE;
-            passTrackCut = InclElecTrackCuts(pVtx,track,nMother,listMother);
-            if (!passTrackCut) continue;
+            
+            passTrackCut = kFALSE;
+            isFromHFdecay=kFALSE;
+            isFromLMdecay=kFALSE;
             
             p = track->P();
             pt = track->Pt();
             
             fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
             fTOFnSigma = fpidResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
-
-            isFromHFdecay=kFALSE;
-            isFromLMdecay=kFALSE;
             
             nPairs=0;
             MCweight = 1.;
@@ -1019,6 +1184,18 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                     if(fMCparticle){
                         Int_t partPDG = fMCparticle->GetPdgCode();
                         
+                        GetWeightAndDecay(fMCparticle,iDecay,MCweight);
+                        isFromHFdecay = IsFromHFdecay(fMCparticle);
+                        isFromLMdecay = IsFromLMdecay(fMCparticle);
+                        
+                        if (TMath::Abs(partPDG)==11 && isFromHFdecay) fptTrueHFE[0]->Fill(pt);
+                        
+                        // track cuts
+                        passTrackCut = InclElecTrackCuts(pVtx,track,nMother,listMother);
+                        if (!passTrackCut) continue;
+                        
+                        if (TMath::Abs(partPDG)==11 && isFromHFdecay) fptTrueHFE[1]->Fill(pt);
+                        
                         //check sigma_TPC in MC for different particles
                         if (TMath::Abs(fTOFnSigma)<fSigmaTOFcut){
                             if (TMath::Abs(partPDG)==11) PartId = 1; // electrons
@@ -1027,37 +1204,49 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
                             if (TMath::Abs(partPDG)==2212) PartId = 4; // protons
                             if (TMath::Abs(partPDG)==211) PartId = 5; // pions
                             
-                            for(Int_t k=0;k<15;k++){// pt range
-                                if (p>=ptRange[k] && p<ptRange[k+1]) fnTPCTrueParticles[k]->Fill(PartId,fTPCnSigma);
+                            for (Int_t l=0;l<5;l++){// pt jet range
+                                for(Int_t k=0;k<18;k++){// pt electron range
+                                    if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1] && p>=ptRange[k] && p<ptRange[k+1]) fnTPCTrueParticles[l][k]->Fill(PartId,fTPCnSigma);
+                                }
                             }
                         }
                         
+                        if (TMath::Abs(partPDG)!=11) continue;
                         
-                        if ((fTPCnSigma>fSigmaTPCcut) && (fTPCnSigma<3) && (TMath::Abs(fTOFnSigma)<fSigmaTOFcut) && (TMath::Abs(partPDG)==11)){
-                            GetWeightAndDecay(fMCparticle,iDecay,MCweight);
-                            nPairs = GetNumberOfPairs(track,pVtx,nMother,listMother);
-                            
-                            if (iDecay==1 || iDecay==2 || iDecay==3 || iDecay==4){
-                                fTotElecPt->Fill(pt,MCweight);
-                                if (nPairs>0) fUlsLsElecPt->Fill(pt,MCweight);
-                            }
-                        }
+                        if (isFromHFdecay && (fTPCnSigma>fSigmaTPCcut) && (fTPCnSigma<3)) fptTrueHFE[2]->Fill(pt);
+                        if (isFromHFdecay && (fTPCnSigma>fSigmaTPCcut) && (fTPCnSigma<3) && (TMath::Abs(fTOFnSigma)<fSigmaTOFcut)) fptTrueHFE[3]->Fill(pt);
                         
                         
-                        //count inclusive, photonic anf HF electrons
-                        if (TMath::Abs(partPDG)==11){
-                            nIE++;
+                        nIE++;
+                        if (isFromHFdecay) nHFE++;
+                        if (isFromLMdecay) nPE++;
+                        
+                        if ((fTPCnSigma>fSigmaTPCcut) && (fTPCnSigma<3) && (TMath::Abs(fTOFnSigma)<fSigmaTOFcut)){
                             
-                            isFromHFdecay = IsFromHFdecay(fMCparticle);
-                            if (isFromHFdecay) nHFE++;
+                            nPairs = GetNumberOfPairs(jet,track,pVtx,nMother,listMother);
+                            if (nPairs>0) fptRecPE->Fill(pt,MCweight);
+                            if (nPairs>0 && (iDecay<1 || iDecay>6)) fptWrongPE->Fill(pt,MCweight);
                             
-                            isFromLMdecay = IsFromLMdecay(fMCparticle);
-                            if (isFromLMdecay) nPE++;
-                        }
+                            if (iDecay>0 && iDecay<7){
+                                fptTruePE->Fill(pt,MCweight);
+                                for (Int_t l=0;l<5;l++){// pt jet range
+                                    
+                                    if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1]){
+                                        fTotElecPt[l]->Fill(pt,MCweight);
+                                        if (nPairs>0) fUlsLsElecPt[l]->Fill(pt,MCweight);
+                                    }
+                                }//jet pt
+                            } // decay channels
+                        }// PID cuts
                     }
                 }
             }
         }//track loop
+        
+        if (nIE==1) fptJetIE->Fill(jet->Pt());
+        if (nIE==1 && nPE==1) fptJetPE->Fill(jet->Pt());
+        if (nIE==1 && nHFE==1) fptJetHFE->Fill(jet->Pt());
+        
         fnTrueElecPerJet->Fill(nIE);
         fnTrueHFElecPerJet->Fill(nHFE);
         fnTruePElecPerJet->Fill(nPE);
@@ -1068,7 +1257,7 @@ void AliAnalysisTaskEmcalHfeTagging::GetNumberOfTrueElectrons(AliEmcalJet *jet, 
 }
 
 //_________________________________________
-Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[])
+Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliEmcalJet *jet, AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[])
 {
     //Get number of ULS and LS pairs per event
     
@@ -1078,6 +1267,9 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliAODTrack *track,const 
     Int_t nULSpairs = 0;
     Int_t nLSpairs = 0;
     Int_t sub = -1;
+    
+    Double_t ptJetRange[6] = {5,15,25,35,45,60};
+    Double_t jetPt = jet->Pt();
     
     for(Int_t jTracks = 0; jTracks < ntracks; jTracks++){
         
@@ -1151,12 +1343,10 @@ Int_t AliAnalysisTaskEmcalHfeTagging::GetNumberOfPairs(AliAODTrack *track,const 
         Int_t MassCorrect=-9;
         MassCorrect = recg.GetMass(mass,width);
         
-        
-        if (fFlagULS)
-            fInvmassULS->Fill(pt,mass);
-        
-        if (fFlagLS)
-            fInvmassLS->Fill(pt,mass);
+        for (Int_t l=0;l<5;l++){// pt jet range
+            if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1] && fFlagULS) fInvmassULS[l]->Fill(pt,mass);
+            if (jetPt>=ptJetRange[l] && jetPt<ptJetRange[l+1] && fFlagLS)  fInvmassLS[l]->Fill(pt,mass);
+        }
         
         if(mass<fIMcut && fFlagULS)
             nULSpairs++;
@@ -1230,9 +1420,9 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::IsPrimary(AliAODMCParticle *particle)
     // Check if  particle is primary
     Bool_t isprimary = kFALSE;
     
-    Int_t idMother = particle->GetMother();
-    if (idMother==-1) isprimary = kTRUE;
-    //if (particle->IsPrimary()) isprimary = kTRUE;
+    //Int_t idMother = particle->GetMother();
+    //if (idMother==-1) isprimary = kTRUE;
+    if (particle->IsPrimary()) isprimary = kTRUE;
     
     return isprimary;
 }
@@ -1241,9 +1431,9 @@ Double_t AliAnalysisTaskEmcalHfeTagging::GetPi0weight(Double_t mcPi0pT) const
 {
     //Get Pi0 weight
     double weight = 1.0;
-    double parPi0[5] = {0.530499,0.732775,0.000997414,3.46894,4.84342};
     
-    weight = parPi0[0] / TMath::Power((exp(parPi0[1]*mcPi0pT - parPi0[2]*mcPi0pT*mcPi0pT) + (mcPi0pT/parPi0[3])), parPi0[4]);
+    double parPi0_enh[5] = {0.530499,0.732775,0.000997414,3.46894,4.84342};
+    if (fMCweight==1) weight = parPi0_enh[0] / TMath::Power((exp(parPi0_enh[1]*mcPi0pT - parPi0_enh[2]*mcPi0pT*mcPi0pT) + (mcPi0pT/parPi0_enh[3])) , parPi0_enh[4]);
     
     return weight;
 }
@@ -1252,9 +1442,9 @@ Double_t AliAnalysisTaskEmcalHfeTagging::GetEtaweight(Double_t mcEtapT) const
 {
     //Get Pi0 weight
     double weight = 1.0;
-    double parEta[5] = {0.78512,-0.606822,0.0326254,3.13959,4.83715};
     
-    weight = parEta[0] / TMath::Power((exp(parEta[1]*mcEtapT - parEta[2]*mcEtapT*mcEtapT) + (mcEtapT/parEta[3])), parEta[4]);
+    double parEta_enh[5] = {0.78512,-0.606822,0.0326254,3.13959,4.83715};
+    if (fMCweight==1) weight = parEta_enh[0] / TMath::Power((exp(parEta_enh[1]*mcEtapT - parEta_enh[2]*mcEtapT*mcEtapT) + (mcEtapT/parEta_enh[3])), parEta_enh[4]);
     
     return weight;
 }
@@ -1446,10 +1636,6 @@ Float_t AliAnalysisTaskEmcalHfeTagging::GetJetCoronna(AliEmcalJet *jet, Int_t je
     
 }
 
-
-
-
-
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalHfeTagging::PTD(AliEmcalJet *jet, Int_t jetContNb = 0){
     
@@ -1563,9 +1749,6 @@ Float_t AliAnalysisTaskEmcalHfeTagging::Circularity(AliEmcalJet *jet, Int_t jetC
     
     
 }
-
-
-
 
 //________________________________________________________________________
 Float_t AliAnalysisTaskEmcalHfeTagging::GetJetCircularity(AliEmcalJet *jet, Int_t jetContNb =0 ){
@@ -1830,7 +2013,7 @@ Bool_t AliAnalysisTaskEmcalHfeTagging::InclElecTrackCuts(const AliVVertex *pViet
     if(!ietrack->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
     if(!(ietrack->HasPointOnITSLayer(0) && ietrack->HasPointOnITSLayer(1))) return kFALSE;
     if ((ietrack->Pt()<0.5) || (ietrack->Pt()>4)) return kFALSE;
-
+    
     Bool_t kinkmotherpass = kTRUE;
     for(Int_t kinkmother = 0; kinkmother < nMother; kinkmother++) {
         if(ietrack->GetID() == listMother[kinkmother]) {
