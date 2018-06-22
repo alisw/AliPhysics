@@ -41,14 +41,18 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	virtual void Terminate(Option_t *){};
 
 	void SetIsMC(Bool_t _isMC){ isMC = _isMC; }
-	void SetEfficiencyFile(TFile *_fSPDfile){ fSPDfile = _fSPDfile; };
  
   private:
+  	Bool_t Is0STPfired(Int_t *, Int_t *);
+
   	Bool_t isMC;
   	// tree
   	TTree *fRhoTree;
 	// tree variables and branches
 	Int_t RunNum_T;
+	UShort_t BunchCrossNumber_T;
+	UInt_t OrbitNumber_T;
+	UInt_t PeriodNumber_T;
 	Bool_t LikeSign_T;
 	Float_t Mass_T;
 	Float_t Pt_T;
@@ -74,8 +78,12 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Float_t Phi_T;
 	Float_t TrackEta_T[2];
 	Float_t TrackPhi_T[2];
+	Float_t TrackPx_T[2];
+	Float_t TrackPy_T[2];
+	Float_t TrackPz_T[2];
 	Bool_t ChipCut_T;
-	Int_t ITSModule_T;
+	Int_t ITSModuleInner_T[2];
+	Int_t ITSModuleOuter_T[2];
 
 	// MC tree
 	TTree *fMCTree;

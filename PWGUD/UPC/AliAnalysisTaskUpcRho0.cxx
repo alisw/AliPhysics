@@ -53,10 +53,11 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
   : AliAnalysisTaskSE(),
     fPIDResponse(0), isMC(0),
   	fRhoTree(0), fMCTree(0),
+	BunchCrossNumber_T(0), OrbitNumber_T(0), PeriodNumber_T(0),
   	RunNum_T(0), LikeSign_T(0), Mass_T(0), Pt_T(0), Rapidity_T(0), V0Adecision_T(0), 
   	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), ZNAenergy_T(0), ZNCenergy_T(0), 
   	ZPAenergy_T(0), ZPCenergy_T(0), DeltaPhi_T(0),
-  	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), ITSModule_T(0), GenPart_T(0),
+  	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), GenPart_T(0),
   	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
 	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), 
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
@@ -69,10 +70,11 @@ AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
   : AliAnalysisTaskSE(name),
     fPIDResponse(0), isMC(0),
   	fRhoTree(0), fMCTree(0),
+  	BunchCrossNumber_T(0), OrbitNumber_T(0), PeriodNumber_T(0),
   	RunNum_T(0), LikeSign_T(0), Mass_T(0), Pt_T(0), Rapidity_T(0), V0Adecision_T(0), 
   	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), ZNAenergy_T(0), ZNCenergy_T(0), 
   	ZPAenergy_T(0), ZPCenergy_T(0), DeltaPhi_T(0),
-  	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), ITSModule_T(0), GenPart_T(0),
+  	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), GenPart_T(0),
   	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
 	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), 
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
@@ -134,6 +136,9 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fRhoTree = new TTree("Selected","Selected Rho0 events");
 	//define branches
 	fRhoTree->Branch("RunNum_T",&RunNum_T,"RunNum_T/I");
+	fRhoTree->Branch("PeriodNumber_T",&PeriodNumber_T,"PeriodNumber_T/i");
+	fRhoTree->Branch("OrbitNumber_T",&OrbitNumber_T,"OrbitNumber_T/i");
+	fRhoTree->Branch("BunchCrossNumber_T",&BunchCrossNumber_T,"BunchCrossNumber_T/s");
 	fRhoTree->Branch("LikeSign_T",&LikeSign_T,"LikeSign_T/O");
 	fRhoTree->Branch("Mass_T",&Mass_T,"Mass_T/F");
 	fRhoTree->Branch("Pt_T",&Pt_T,"Pt_T/F");
@@ -147,10 +152,13 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fRhoTree->Branch("ZDCCtime_T",&ZDCCtime_T,"ZDCCtime_T[4]/F");
 	fRhoTree->Branch("PIDTPCPion_T",&PIDTPCPion_T,"PIDTPCPion_T[2]/F");
 	fRhoTree->Branch("PIDTPCElectron_T",&PIDTPCElectron_T,"PIDTPCElectron_T[2]/F");
-	// fRhoTree->Branch("TPCsignal_T",&TPCsignal_T,"TPCsignal_T[2]/I");
+	fRhoTree->Branch("TPCsignal_T",&TPCsignal_T,"TPCsignal_T[2]/I");
 	// fRhoTree->Branch("TrackP_T",&TrackP_T,"TrackP_T[2]/F");
 	// fRhoTree->Branch("TrackEta_T",&TrackEta_T,"TrackEta_T[2]/F");
 	// fRhoTree->Branch("TrackPhi_T",&TrackPhi_T,"TrackPhi_T[2]/F");
+	fRhoTree->Branch("TrackPx_T",&TrackPx_T,"TrackPx_T[2]/F");
+	fRhoTree->Branch("TrackPy_T",&TrackPy_T,"TrackPy_T[2]/F");
+	fRhoTree->Branch("TrackPz_T",&TrackPz_T,"TrackPz_T[2]/F");
 	fRhoTree->Branch("VtxX_T",&Vertex_T[0],"VtxX_T/F");
 	fRhoTree->Branch("VtxY_T",&Vertex_T[1],"VtxY_T/F");
 	fRhoTree->Branch("VtxZ_T",&Vertex_T[2],"VtxZ_T/F");
@@ -203,15 +211,18 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	EtaPhiN = new TH2F("EtaPhiN","EtaPhiN",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiN);
 
 	// load SPD effi
-	// fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run244982.root");
-	// fSPDfile->Print();
-	// fSPDfile->Map();
-	hSPDeff = (TH2D*) fSPDfile->Get("hEff");
-	hSPDeff->SetDirectory(0);
-	TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
-	hBCmod4_2D->SetDirectory(0);
-	hBCmod4 = hBCmod4_2D->ProjectionY();
-	// fSPDfile->Close();
+	if (isMC){
+		fSPDfile = AliDataFile::OpenOADB("PWGUD/UPC/SPDFOEfficiency_run244982.root");
+		std::cout<<std::endl<<" Efficinecy FILE loaded: "<<fSPDfile<<std::endl;
+		fSPDfile->Print();
+		fSPDfile->Map();
+		hSPDeff = (TH2D*) fSPDfile->Get("hEff");
+		hSPDeff->SetDirectory(0);
+		TH2D *hBCmod4_2D = (TH2D*) fSPDfile->Get("hCounts");
+		hBCmod4_2D->SetDirectory(0);
+		hBCmod4 = hBCmod4_2D->ProjectionY();
+		fSPDfile->Close();
+	}
 
 	PostData(1, fRhoTree);
 	PostData(2, fListHist);
@@ -267,6 +278,9 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 
   // data
   RunNum_T = esd->GetRunNumber();
+  OrbitNumber_T = esd->GetOrbitNumber();
+  PeriodNumber_T = esd->GetPeriodNumber();
+  BunchCrossNumber_T = esd->GetBunchCrossNumber();
 
   // trigger
   TString trigger = esd->GetFiredTriggerClasses();
@@ -302,19 +316,9 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 			nOuter += isFired;
 		}
 		}
-		Int_t fired(0);
-	 	for (Int_t i(0); i<10; ++i) {
-	 	for (Int_t j(0); j<2; ++j) {
-			const Int_t k(2*i+j);
-	 		fired += ((   vPhiOuter[k]    || vPhiOuter[k+1]       ||
-	                    vPhiOuter[k+2]      )
-	                && (vPhiOuter[k+20] || vPhiOuter[(k+21)%40] ||
-	                    vPhiOuter[(k+22)%40])
-	                && (vPhiInner[i]    || vPhiInner[i+1]       )
-	                && (vPhiInner[i+10] || vPhiInner[(i+11)%20]));
-	    }
-	  	}
-	if (fired != 0) STP = kTRUE;
+
+	STP = Is0STPfired(vPhiInner,vPhiOuter);
+
 	V0A = esd->GetHeader()->IsTriggerInputFired("0VBA");;
 	V0C = esd->GetHeader()->IsTriggerInputFired("0VBC");;
 	ADA = esd->GetHeader()->IsTriggerInputFired("0UBA");;
@@ -367,12 +371,12 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
     AliESDtrack *trk = esd->GetTrack(itr);
     if( !trk ) continue;
- 
+ 	if( trk->IsOn(AliESDtrack::kITSpureSA) ) continue;
     if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
     if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
     if(trk->GetTPCNcls() < 50)continue;
     // if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
-    if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
+    if(!((trk->HasPointOnITSLayer(0))&&(trk->HasPointOnITSLayer(1)))) continue;
     Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
     if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
     trk->GetImpactParameters(dca[0],dca[1]);
@@ -389,6 +393,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   }//Track loop end
 
   if(nGoodTracks == 2){
+  	// std::cout<<"PeriodNumber: "<<PeriodNumber_T<<" OrbitNumber: "<<OrbitNumber_T<<" BunchCrossNumber_T: "<<BunchCrossNumber_T<<" Chip matched: "<<!ChipCut_T<<std::endl;
 
   	TDatabasePDG *pdgdat = TDatabasePDG::Instance(); 
   	TParticlePDG *partPion = pdgdat->GetParticle( 211 );
@@ -410,10 +415,14 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	// loop over two good tracks
   	for(Int_t i=0; i<2; i++){
 	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
+	  	// std::cout<<"P = ("<<trk->Px()<<","<<trk->Py()<<","<<trk->Pz()<<")"<<std::endl<<std::endl;
+
+		ITSModuleInner_T[i] = trk->GetITSModuleIndex(0)/1000000;
+		ITSModuleOuter_T[i] = trk->GetITSModuleIndex(1)/1000000;
 
 	  	// chips cut
-	  	// if (fFOmodules[trk->GetITSModuleIndex(0)/1000000] == 0) return;
-	  	// if (fFOmodules[trk->GetITSModuleIndex(1)/1000000] == 0) return;
+	  	// if (fFOmodules[ITSModuleInner_T[i]] == 0) return;
+	  	// if (fFOmodules[ITSModuleOuter_T[i]] == 0) return;
 		
 		// contributor to Vertex
 		// if(fESDVertex->UsesTrack(TrackIndex[i]))fIsVtxContributor[i] = kTRUE;
@@ -428,15 +437,17 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		TrackP_T[i] = trk->P();
 		TrackPhi_T[i] = trk->Phi();
 		TrackEta_T[i] = trk->Eta();
-		ITSModule_T = trk->GetITSModuleIndex(0);
+		TrackPx_T[i] = trk->Px();
+		TrackPy_T[i] = trk->Py();
+		TrackPz_T[i] = trk->Pz();
 
-		fITSmodule->Fill(trk->GetITSModuleIndex(0)/1000000);
-		fITSmodule->Fill(trk->GetITSModuleIndex(1)/1000000);
+		fITSmodule->Fill(ITSModuleInner_T[i]);
+		fITSmodule->Fill(ITSModuleOuter_T[i]);
 
 		for(Int_t i=0;i<240;i++){
 			if (fFOmodules[i] > 0){
-				fFOcorr->Fill(trk->GetITSModuleIndex(0)/1000000,i);
-				fFOcorr->Fill(trk->GetITSModuleIndex(1)/1000000,i);
+				fFOcorr->Fill(ITSModuleInner_T[i],i);
+				fFOcorr->Fill(ITSModuleOuter_T[i],i);
 			}
 		}
 
@@ -463,13 +474,19 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	Phi_T = lvSum.Phi();
 
 	// virtual cut on FO chip matching
-	ChipCut_T = 0;
-	if ((fFOmodules[esd->GetTrack(TrackIndex[0])->GetITSModuleIndex(0)/1000000] == 0)
-		||(fFOmodules[esd->GetTrack(TrackIndex[0])->GetITSModuleIndex(1)/1000000] == 0)
-		||(fFOmodules[esd->GetTrack(TrackIndex[1])->GetITSModuleIndex(0)/1000000] == 0)
-		||(fFOmodules[esd->GetTrack(TrackIndex[1])->GetITSModuleIndex(1)/1000000] == 0)
-		) ChipCut_T = 1;
+	Int_t SPDInner[20]; for (Int_t i=0; i<20; ++i) SPDInner[i]=0;
+	Int_t SPDOuter[40]; for (Int_t i=0; i<40; ++i) SPDOuter[i]=0;
+
+	SPDInner[ITSModuleInner_T[0]/4]++;
+	SPDInner[ITSModuleInner_T[1]/4]++;
+	SPDOuter[(ITSModuleOuter_T[0]-80)/4]++;
+	SPDOuter[(ITSModuleOuter_T[1]-80)/4]++;
   
+	ChipCut_T = 0;
+	if ((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
+		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
+		|| !Is0STPfired(SPDInner,SPDOuter)) ChipCut_T = 1;
+
     Int_t fFOcounter = 0;
   	for(Int_t chipkey=0;chipkey<1200;chipkey++){
   		if (esd->GetMultiplicity()->TestFastOrFiredChips(chipkey)){
@@ -491,3 +508,22 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   
 
 }//UserExec
+
+// fuction that get two arrays and return if 0STP trigger was fired
+Bool_t AliAnalysisTaskUpcRho0::Is0STPfired(Int_t *vPhiInner, Int_t *vPhiOuter) // array 20, 40
+{
+	Int_t fired(0);
+	 for (Int_t i(0); i<10; ++i) {
+	 	for (Int_t j(0); j<2; ++j) {
+			const Int_t k(2*i+j);
+	 		fired += ((   vPhiOuter[k]    || vPhiOuter[k+1]       ||
+	                    vPhiOuter[k+2]      )
+	                && (vPhiOuter[k+20] || vPhiOuter[(k+21)%40] ||
+	                    vPhiOuter[(k+22)%40])
+	                && (vPhiInner[i]    || vPhiInner[i+1]       )
+	                && (vPhiInner[i+10] || vPhiInner[(i+11)%20]));
+	    }
+	  	}
+	if (fired != 0) return kTRUE;
+	else return kFALSE;
+}
