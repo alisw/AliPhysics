@@ -6,8 +6,8 @@
 Int_t filBIT;
 
 AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
-                                   //Bool_t MCthere = kFALSE,                     // DATA
-                                   Bool_t MCthere = kTRUE,                    // MC
+                                   Bool_t MCthere = kFALSE,                     // DATA
+                                   //Bool_t MCthere = kTRUE,                    // MC
                                    Bool_t isAOD = kTRUE,
 				   Bool_t kNPERef = kFALSE,                      // PID: TOF+TPC   ---> hardcoded kTRUE in AddTask_hfe_HFEnpePbPb5TeV.C
 				   Bool_t kNPEkAny = kFALSE,
@@ -21,14 +21,16 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    //,Int_t centrMin = 0          // min centrality
                                    //,Int_t centrMax = 10         // max centrality
                                    ,Int_t centrMin = 30          // min centrality
-                                   ,Int_t centrMax = 50         // max centrality
+                                   //,Int_t centrMax = 50         // max centrality
+                                   //,Int_t centrMin = 60          // min centrality
+                                   ,Int_t centrMax = 80         // max centrality
                                    ,Bool_t kHadContSyst = kFALSE        // hadron contamination systematics
                                    ,Bool_t kPileUpIonutRejection = kFALSE
                                    ,Bool_t kCheckDCA = kFALSE    // additional check: set maximum value for DCA between inclusive and associated tracks (default: 3cm)
                                    ,Bool_t kPhiSystConsistentHadCont = kFALSE    // mfaggin, 13-Mar-2018
                                    ,Bool_t kRejectKinkParticles = kFALSE         // mfaggin, 12-Apr-2018
-                                   ,Int_t chosen_filBIT = 4     // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT) (mfaggin, 07-Jun-2018)
-                                   ,Bool_t kTestDifferentFilBIT = kTRUE        // test a different filterbit (mfaggin, 07-Jun-2018)
+                                   ,Int_t chosen_filBIT = 2     // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT) (mfaggin, 07-Jun-2018)
+                                   ,Bool_t kTestDifferentFilBIT = kFALSE        // test a different filterbit (mfaggin, 07-Jun-2018)
                                    )		   
   
 {
@@ -100,6 +102,15 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
   for(UInt_t i_tpcl=0; i_tpcl<12; i_tpcl++){
         if(centrMin==0  && centrMax==10) tpcl2[i_tpcl]=-0.1;
         if(centrMin==30 && centrMax==50) tpcl2[i_tpcl]= 0; 
+        if(centrMin==60 && centrMax==80) tpcl2[i_tpcl]=0.2;     // (mfaggin, 20-Jun-2018)
+        if(centrMin==30 && centrMax==80){       // cases 30-50% and 60-80% merged in 1 file (mfaggin, 22-Jun-2018)
+                printf("\nCase centrality 30-80%\n");
+                tpcl2[i_tpcl]=0;                // NB: it MUST trigger a function present in the had_cont_functions file, even if it is not the right one for the specific centrality, otherwise even for the correct cases the contamination function is not passed to the task (the Bool_t returned by the ReadContaminationFunctions function is kFALSE if AT LEAST 1 function is not read)
+                if(i_tpcl==0 || i_tpcl==1)      tpcl2[i_tpcl]=-0.1;
+                if(i_tpcl==4 || i_tpcl==5)      tpcl2[i_tpcl]= 0;
+                if(i_tpcl==7 || i_tpcl==8)      tpcl2[i_tpcl]=0.2;
+        }
+        printf("i_tpcl=%d, tpcl2[%d]=%.2f\n",i_tpcl,i_tpcl,tpcl2[i_tpcl]);
   }
 
   // new case considered for ITS cut [-4,2] (mfaggin, 09 January 2018)
@@ -146,16 +157,25 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
     ,k16g1_3 = 67               // 67: PbPb LHC16g1 minimum bias MC using pi0 data spectra (mfaggin, 06-Mar-2018)
 
     ,k16g1_2_3050 = 70          // 70: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 30-50% centrality class (mfaggin, 07-Jun-2018)
+    ,k16g1_2_6080 = 71          // 71: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 60-80% centrality class (mfaggin, 20-Jun-2018)
+    ,k16g1_2_all = 72           // 72: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 0-10%, 30-50% and 60-80% centrality classes, all in one file (mfaggin, 22-Jun-2018)
 
   };
   //Int_t kWeightMC = k16g1;
   Int_t kWeightMC = 0;
   if(centrMin==0  && centrMax==10)      kWeightMC=k16g1_2;
   if(centrMin==30 && centrMax==50)      kWeightMC=k16g1_2_3050;
+  if(centrMin==60 && centrMax==80)      kWeightMC=k16g1_2_6080;
+  if(centrMin==30 && centrMax==80)      kWeightMC=k16g1_2_all;  // (mfaggin, 22-Jun-2018)
   
   // check outputs
   printf("\n\n===== Centrality: %d,%d\n",centrMin,centrMax);
-  printf("===== tpcl2[0] (lower edge TPC cut): %.3f\n",tpcl2[0]);
+  printf("===== tpcl2[] (lower edge TPC cut) = {");
+        for(UInt_t ilowtpc=0; ilowtpc<12; ilowtpc++){
+                if(ilowtpc==11) printf("%.2f",tpcl2[ilowtpc]);
+                else            printf("%.2f,",tpcl2[ilowtpc]);
+        }
+  printf("}\n");
   printf("===== kWeightMC (MC weight parameter): %d\n\n",kWeightMC);
 
 
@@ -466,6 +486,7 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
   }
 
+/*
   if(kNPEkAny){
     // **************************************************************
     // 
@@ -475,10 +496,11 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,
         printf("\n#####\n");
         printf("##### kNPEkAny case");
         printf("\n#####\n");
-    RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
-kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl1, dEdxhm, kDefTOFs,0.,0., AliHFEextraCuts::kAny, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
-			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017 
+                kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs, kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kAny, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
   }
+*/
 
   if(kNPEw && MCthere){
     // **************************************************************
@@ -568,6 +590,21 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
         }
         filBIT = chosen_filBIT; // original filBIT restored
+
+        if(kNPEkAny){
+        // **************************************************************
+        // 
+        // task for kAny instead of kBoth
+        //
+        // **************************************************************
+                printf("\n#####\n");
+                printf("##### kNPEkAny case (in addition to kBoth one) for MC");
+                printf("\n#####\n");
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017 
+                kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs, kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kAny, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+        }
+
    }
    else
    {
@@ -584,7 +621,7 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
 			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
-        }
+                }
         filBIT = chosen_filBIT; // original filBIT restored
                 if(kPhiSystConsistentHadCont){
                         // hadron contamination function used: phi [0,1.4] (mfaggin, 13-Mar-2018)
@@ -599,6 +636,19 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
                         RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
                         kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs,kDefITSsMin,kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 	                kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC,0.1,kFALSE,kFALSE,kPhi_326_2pi);
+                }
+        if(kNPEkAny){
+        // **************************************************************
+        // 
+        // task for kAny instead of kBoth
+        //
+        // **************************************************************
+                printf("\n#####\n");
+                printf("##### kNPEkAny case (in addition to kBoth one) for DATA");
+                printf("\n#####\n");
+                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017 
+                kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs, kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kAny, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
                 }
    }
 
@@ -1262,9 +1312,10 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
 
   //if(useMC&&(beauty || (weightlevelback>=0))) ConfigWeightFactors(task,kFALSE,wei);//2;For default PbPb
   if(useMC&&(beauty || (weightlevelback>=0))){
-        if(wei==67)      ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_frompi0.root");
-        else if(wei==70) ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_3050.root");
-        else             ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);
+        if(wei==67)                 ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_frompi0.root");
+        else if(wei==70 || wei==71) ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_3050.root");
+        else if(wei==72)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_allCentr.root");
+        else                        ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);
   }
 
   // ----- centrality selection -----
