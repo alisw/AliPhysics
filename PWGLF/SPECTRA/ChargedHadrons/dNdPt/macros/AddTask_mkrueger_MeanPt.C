@@ -29,11 +29,12 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
   Double_t centBinEdgesUsed[9] = {0., 5., 10., 20., 40., 60., 80., 90., 100.};
   Double_t* centBinEdges = centBinEdgesDummy;
 
-
   if(controlstring.Contains("pp")){
     if(controlstring.Contains("performanceHistos")) includeCrosscheckHistos = kTRUE;
     if(controlstring.Contains("5TeV")) is2015Data = kTRUE;
     if(controlstring.Contains("7TeV")) offlineTriggerMask = AliVEvent::kMB;
+    if(controlstring.Contains("2TeV")) offlineTriggerMask = AliVEvent::kMB;
+    if(controlstring.Contains("09TeV")) offlineTriggerMask = AliVEvent::kMB;
   }
   if(controlstring.Contains("XeXe"))  {
     colsys = "XeXe";
@@ -59,8 +60,10 @@ AliMeanPtAnalysisTask* AddTask_mkrueger_MeanPt(TString controlstring, Int_t cutM
     multSteps[2] = 0;    multBinWidth[2] = 1;
     nBinsCent = 8;
     centBinEdges = centBinEdgesUsed;
+    if(controlstring.Contains("2TeV")){offlineTriggerMask = AliVEvent::kMB; is2015Data = kFALSE;}
   }
   if(controlstring.Contains("excludeSigmas")) includeSigmas = kFALSE;
+  if(controlstring.Contains("oldTrigger")){offlineTriggerMask = AliVEvent::kMB;}
 
   // Binning in Multiplicity
   const Int_t nBinsMult = multSteps[0]+ multSteps[1] + multSteps[2] + 1;

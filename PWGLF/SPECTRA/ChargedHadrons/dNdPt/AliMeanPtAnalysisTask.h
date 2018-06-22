@@ -78,7 +78,9 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     /// Set bins in Zv using number of bins and array of bin edges
     void SetBinsZv(Int_t nBins, Double_t* binEdges){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(nBins+1,binEdges);}
 
-    void SetBinsPtReso(Int_t nBins, Double_t* binEdges){if(fBinsPtReso) delete fBinsPt; fBinsPtReso = new TArrayD(nBins+1,binEdges);}
+    void SetBinsPtReso(Int_t nBins, Double_t* binEdges){if(fBinsPtReso) delete fBinsPtReso; fBinsPtReso = new TArrayD(nBins+1,binEdges);}
+    void SetBins1Pt(Int_t nBins, Double_t* binEdges){if(fBins1Pt) delete fBins1Pt; fBins1Pt = new TArrayD(nBins+1,binEdges);}
+    void SetBinsSigma1Pt(Int_t nBins, Double_t* binEdges){if(fBinsSigma1Pt) delete fBinsSigma1Pt; fBinsSigma1Pt = new TArrayD(nBins+1,binEdges);}
 
     // Acceptance cuts
     /// Set the minimum Eta cut
@@ -131,6 +133,7 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
 
     void InitESDTrackCuts();
     void InitdNdPtEventCuts();
+    void SetFixedBinEdges(Double_t* array, Double_t lowerEdge, Double_t upperEdge, Int_t nBins);
 
 
   private:
@@ -190,7 +193,9 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     TArrayD*      fBinsPt;			///< Array of bins in pt
     TArrayD*      fBinsEta;		///< Array of bins in eta
     TArrayD*      fBinsZv;			///< Array of bins in Zv (Z-position of primary vtx)
-    TArrayD*      fBinsPtReso;			///< Array of bins for relative pt resoulution
+    TArrayD*      fBinsPtReso;			   ///< Array of bins for relative pt resoulution
+    TArrayD*      fBins1Pt;			       ///< Array of bins for 1/pt
+    TArrayD*      fBinsSigma1Pt;			///< Array of bins for 1/pt resoulution
 
 
     // Output Histograms
