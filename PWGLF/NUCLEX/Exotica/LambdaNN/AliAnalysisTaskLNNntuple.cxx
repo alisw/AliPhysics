@@ -242,10 +242,10 @@ void AliAnalysisTaskLNNntuple::UserCreateOutputObjects ()
     {
       if(!fMC){
 
-	fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDcaZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus");
+	fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDcaZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:triTRDsig");
 	fListHist->Add (fNt);
       } else {
-	fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDCAZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:piPdgCode:triPdgCode:piMumPdgCode:triMumPdgCode");
+	fNt = new TNtupleD ("nt", "V0 ntuple","piPx:piPy:piPz:triPx:triPy:triPz:nSpi:nStri:triTOFmass:piTPCsig:triTPCsig:v0P:ptArm:alphaArm:triDcaXY:triDCAZ:v0DcaD:decayL:decayLxy:v0Dca:CosP:v0VtxErrSum:sign:dcaPi:is3Hele:nSPiFromPiTof:nSPrTof:nSPiTof:nITSclus:piPdgCode:triPdgCode:piMumPdgCode:triMumPdgCode:triTRDsig");
 	fListHist->Add (fNt);
 
       }
@@ -471,22 +471,22 @@ AliAnalysisTaskLNNntuple::UserExec (Option_t *)
 	  pdgTritonMum = stack->Particle(mum)->GetPdgCode();
 	}
       }
-      Double_t ntuple[33] =
+      Double_t ntuple[34] =
 	{ momPi[0], momPi[1], momPi[2], momTri[0], momTri[1],momTri[2], nSPi, nSTri,
 	  tofMass,pion->GetTPCsignal (), triton->GetTPCsignal (),
 	  v0s->P (), ptArm, alphaArm, dcaTri[0], dcaTri[1],v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
 	  v0s->GetD (vtx->GetX (), vtx->GetY (), vtx->GetZ ()),v0s->GetV0CosineOfPointingAngle (), err, pion->GetSign () + triton->GetSign ()*10,
 	  dcaPi,isHele,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters(),
-	  pdgPion,pdgTriton,pdgPionMum,pdgTritonMum};
+	  pdgPion,pdgTriton,pdgPionMum,pdgTritonMum,triton->GetTRDsignal()};
 
       fNt->Fill (ntuple);
     } else {
-      Double_t ntuple[29] =
+      Double_t ntuple[30] =
 	{ momPi[0], momPi[1], momPi[2], momTri[0], momTri[1],momTri[2], nSPi, nSTri,
 	  tofMass,pion->GetTPCsignal (), triton->GetTPCsignal (),
 	  v0s->Pt(), ptArm, alphaArm, dcaTri[0], dcaTri[1], v0s->GetDcaV0Daughters (), decayL.Mag(), decayLXY,
 	  v0s->GetD (vtx->GetX (), vtx->GetY (), vtx->GetZ ()),v0s->GetV0CosineOfPointingAngle (), err, pion->GetSign () + triton->GetSign ()*10,
-	  dcaPi,isHele,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters()};
+	  dcaPi,isHele,nSPiFromPiTof,nSPrTof,nSPiTof,pion->GetNumberOfITSClusters()+100.*triton->GetNumberOfITSClusters(),triton->GetTRDsignal()};
       fNt->Fill (ntuple);
     }
   } // loop over V0s
