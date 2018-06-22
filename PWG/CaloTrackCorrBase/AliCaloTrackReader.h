@@ -53,6 +53,7 @@ class AliVCluster;
 #include "AliFiducialCut.h"
 class AliCalorimeterUtils;
 #include "AliAnaWeights.h"
+#include "AliMCAnalysisUtils.h"
 
 // Jets
 class AliAODJetEventBackground;
@@ -648,7 +649,11 @@ public:
   
   Float_t               RadToDeg(Float_t rad)        const { rad *= TMath::RadToDeg(); return rad ; }
 
-  
+  virtual AliMCAnalysisUtils * GetMCAnalysisUtils()        { return           fMCUtils ; } 
+  virtual void                 SetMCAnalysisUtils(AliMCAnalysisUtils * mcutils) { 
+                                                             if (  fMCUtils ) delete fMCUtils; 
+                                                             fMCUtils = mcutils ; }
+
   //------------------------------------------------
   // MC analysis specific methods
   //-------------------------------------------------
@@ -872,6 +877,7 @@ public:
   TString          fTaskName;                      ///<  Name of task that executes the analysis.
 	
   AliCalorimeterUtils * fCaloUtils ;               ///<  Pointer to AliCalorimeterUtils.
+  AliMCAnalysisUtils  * fMCUtils;                  ///<  MonteCarlo Analysis utils. Initialized in SetMC()
 
   AliAnaWeights  * fWeightUtils ;                  ///<  Pointer to AliAnaWeights.
   Double_t         fEventWeight ;                  ///<  Weight assigned to the event when filling histograms.
@@ -1007,7 +1013,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,80) ;
+  ClassDef(AliCaloTrackReader,81) ;
   /// \endcond
 
 } ;

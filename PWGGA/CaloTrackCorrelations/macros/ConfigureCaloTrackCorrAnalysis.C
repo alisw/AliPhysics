@@ -182,9 +182,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
   
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
-  
   //
   // Debug
   //
@@ -217,7 +214,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   
   ana->SwitchOffRealCaloAcceptance();
   
-  ana->SwitchOffFiducialCut();
+  ana->SwitchOnFiducialCut(); 
+  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC  
+  
+  if ( calorimeter.Contains("CAL") ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
   
   ana->SetCalorimeter(calorimeter);
   if(calorimeter == "DCAL") 
@@ -565,13 +566,19 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   
   // Calorimeter settings
   ana->SetCalorimeter(calorimeter);
+  if(calorimeter == "DCAL") 
+  {
+    TString calo = "EMCAL";
+    ana->SetCalorimeter(calo);
+  }
   
   // Acceptance plots
-  //  ana->SwitchOnFiducialCut(); // Needed to fill acceptance plots with predefined calorimeter acceptances
-  //  ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 100, 180) ; 
-  //  ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);
+  ana->SwitchOnFiducialCut(); 
+  if      ( calorimeter == "EMCAL" ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7,  80, 187) ; // EMC 
+  else if ( calorimeter == "DCAL"  ) ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.7, 260, 327) ; // DMC  
   
-  ana->SwitchOffFiducialCut();
+  if ( calorimeter.Contains("CAL") ) ana->GetFiducialCut()->DoEMCALFiducialCut(kTRUE);  
+
   ana->SwitchOffRealCaloAcceptance();
   
   // settings for pp collision mixing
@@ -588,9 +595,10 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   ana->SetNPIDBits(1);
   ana->SetNAsymCuts(1); // no asymmetry cut, previous studies showed small effect.
                         // In EMCAL assymetry cut prevents combination of assymetric decays which is the main source of pi0 at high E.
-  
+
   if     (col == "pp"  )
   {
+    printf("ConfigureInvariantMassAnalysis() - Set pp configuration\n");
     ana->SetNCentrBin(1);
     ana->SwitchOffTrackMultBins();
     ana->SetNZvertBin(10);
@@ -600,6 +608,7 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   }
   else if(col == "PbPb")
   {
+    printf("ConfigureInvariantMassAnalysis() - Set PbPb configuration\n");
     ana->SetNCentrBin(10);
     ana->SetNZvertBin(10);
     ana->SetNRPBin(4);
@@ -608,6 +617,7 @@ AliAnaPi0* ConfigureInvariantMassAnalysis
   }
   else if(col =="pPb")
   {
+    printf("ConfigureInvariantMassAnalysis() - Set pPb configuration\n");
     ana->SetNCentrBin(1);
     ana->SetNZvertBin(10);
     ana->SetNRPBin(4);

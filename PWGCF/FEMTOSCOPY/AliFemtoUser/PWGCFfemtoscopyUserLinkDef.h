@@ -136,8 +136,8 @@
 
 #pragma link C++ class AliFemtoV0PurityBgdEstimator+;
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ3D+;
+#pragma link C++ class AliFemtoModelCorrFctnTrueQ6D+;
 
 #pragma link C++ class AliFemtoPairCutRadialDistanceKKdist;
 // AliFemtoKKTrackCutTest class:
 #pragma link C++ class AliFemtoKKTrackCutTest;
-

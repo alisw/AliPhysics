@@ -28,6 +28,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		virtual ~AliAnalysisTaskMaterialHistos();
 
 		virtual void   UserCreateOutputObjects();
+        virtual Bool_t Notify();
 		virtual void   UserExec(Option_t *option);
         virtual void   SetLogBinningXTH2(TH2* histoRebin);
 		virtual void   Terminate(Option_t *);
@@ -99,7 +100,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hESDConversionMass;           //!
 		TH1F**            hESDConversionRRejSmall;      //!
 		TH1F**            hESDConversionRRejLarge;      //!
-
+		TH2F**            hESDConversionAsymP;          //!  
         TH2F**            hElectronRdEdx;               //!
         TH2F**            hElectronRNSigmadEdx;         //!
         TH2F**            hPositronRdEdx;               //!
@@ -111,14 +112,18 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
  		TH1F**            hMCConversionRRejSmall;       //!
  		TH1F**            hMCConversionRRejLarge;       //!
 		TH1F**            hMCAllGammaPt;                //!
+
+
 		TH2F**            hMCTrueConversionRPhi;        //!
 		TH2F**            hMCTrueConversionRZ;          //!
 		TH2F**            hMCTrueConversionRPt;         //!
+		TH2F**            hMCTrueConversionRPtMCRPt;    //!
 		TH2F**            hMCTrueConversionREta;        //!
 		TH1F**            hMCTrueConversionDCA;         //!
 		TH1F**            hMCTrueConversionPsiPair;     //!
 		TH1F**            hMCTrueConversionChi2;        //!
 		TH1F**            hMCTrueConversionMass;        //!
+		TH2F**            hMCTrueConversionAsymP;          //!
  		TH1F**            hMCTrueConversionRRejSmall;   //!
  		TH1F**            hMCTrueConversionRRejLarge;   //!
 
@@ -134,7 +139,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 12);
+        ClassDef(AliAnalysisTaskMaterialHistos, 14);
 };
 
 #endif

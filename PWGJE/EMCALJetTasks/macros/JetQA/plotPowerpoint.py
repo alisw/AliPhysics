@@ -129,16 +129,22 @@ def plotPowerpoint(runList, plotDir):
   totalRuns=0
   for run in runList.split():
     inputFile= plotDir + str(run) + "/AnalysisResults.root"
-    f = ROOT.TFile(inputFile)
-    qaTaskName = determineQATaskName("AliAnalysisTaskPWGJEQA", f, isPtHard)
-    #print("Found qaTaskName \"{0}\"".format(qaTaskName))
-    qaList = f.Get(qaTaskName)
-    histNEvent = qaList.FindObject("fHistEventCount")
-    nEvents = histNEvent.GetBinContent(1)
-    totalEvents=totalEvents+nEvents
-    totalRuns=totalRuns+1
-    p = tf.add_paragraph()
-    p.text = str(run)+" with "+str(nEvents)+" Evts "
+    #if downloading the file did fail at some point (=zero bytes) you can check this here:
+    size = os.stat(inputFile).st_size
+    #print("size of root file: %s" % size)
+    if size!=0:
+      f = ROOT.TFile(inputFile)
+      qaTaskName = determineQATaskName("AliAnalysisTaskPWGJEQA", f, isPtHard)
+      #print("Found qaTaskName \"{0}\"".format(qaTaskName))
+      qaList = f.Get(qaTaskName)
+      histNEvent = qaList.FindObject("fHistEventCount")
+      nEvents = histNEvent.GetBinContent(1)
+      totalEvents=totalEvents+nEvents
+      totalRuns=totalRuns+1
+      p = tf.add_paragraph()
+      p.text = str(run)+" with "+str(nEvents)+" Evts "
+    else:
+      print("!!!!!!! Root file for run %s is empty - please check download" % str(run))
   p = tf.add_paragraph()
   p.text = "Total number of used runs period: "+str(totalRuns)
   p = tf.add_paragraph()
@@ -363,6 +369,14 @@ def plotClusterSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, isAl
       top = Inches(topEdge)
       width = Inches(imgWidth)
       slide.shapes.add_picture(img_path, left, top, width=width)
+  if not isAllRuns and not includePHOS:
+    #img_path = plotDir + str(run) + "/QAoutput/Cells/profCellAbsIdTime.png"  #this is helpful in case there is an increased cluster/event yield
+    img_path = plotDir + str(run) + "/QAoutput/Cells/hCellEnergyTselRatio.png" #This checks the cluster yield after timing cuts
+    left = Inches(rightEdge)
+    top = Inches(topEdge)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
 
   img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusPhiEta.png"
   left = Inches(leftEdge)
@@ -489,12 +503,6 @@ def plotChargedJetSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, i
 # Plot Full jet slides
 ####################################################################################################
 def plotFullJetSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, isAllRuns, run):
-  
-  print("Plot cluster slide")
-  print("Is pT hard: %s" % isPtHard)
-  print("Is PbPb data: %s" % isPbPb)
-  print("Includes PHOS info: %s" % includePHOS)
-  print("Is all run: %s" % isAllRuns)
   
   # columns
   leftEdge = 0.1

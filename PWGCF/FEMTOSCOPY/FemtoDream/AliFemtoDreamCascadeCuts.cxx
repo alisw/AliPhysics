@@ -144,61 +144,25 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
       if (!fMinimalBooking)fHist->FillCutCounter(6);
     }
   }
-  if (pass) {
-    if (!fBachCuts->isSelected(casc->GetBach())) {
-      pass=false;
-    } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(7);
-    }
-  }
-  if (pass&&fcutDCAXiDaug) {
-    if (casc->GetXiDCADaug()>fMaxDCAXiDaug) {
-      pass=false;
-    } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(8);
-    }
-  }
-  if (pass&&fcutMinDistVtxBach) {
-    if (casc->BachDCAPrimVtx()<fMinDistVtxBach) {
-      pass=false;
-    } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(9);
-    }
-  }
-  if (pass&&fcutCPAXi) {
-    if (casc->GetCPA()<fCPAXi) {
-      pass=false;
-    } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(10);
-    }
-  }
-  if (pass&&fcutXiTransRadius) {
-    if ((casc->GetXiTransverseRadius()<fMinXiTransRadius)||
-        (casc->GetXiTransverseRadius()>fMaxXiTransRadius)) {
-      pass=false;
-    } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(11);
-    }
-  }
   if (pass&&fcutv0MaxDCADaug) {
     if (casc->Getv0DCADaug()>fv0MaxDCADaug) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(12);
+      if (!fMinimalBooking)fHist->FillCutCounter(7);
     }
   }
   if (pass&&fcutCPAv0) {
     if (casc->Getv0CPA()<fCPAv0) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(13);
+      if (!fMinimalBooking)fHist->FillCutCounter(8);
     }
   }
   if (pass&&fCutPtv0) {
     if ((casc->Getv0Pt()<fPtMinv0) || (fPtMaxv0<casc->Getv0Pt())) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(14);
+      if (!fMinimalBooking)fHist->FillCutCounter(9);
     }
   }
   if (pass&&fcutv0TransRadius) {
@@ -206,14 +170,14 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->Getv0TransverseRadius()>fMaxv0TransRadius)) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(15);
+      if (!fMinimalBooking)fHist->FillCutCounter(10);
     }
   }
   if (pass&&fcutv0MinDistVtx) {
     if (casc->Getv0DCAPrimVtx()<fv0MinDistVtx) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(16);
+      if (!fMinimalBooking)fHist->FillCutCounter(11);
     }
   }
   if (pass&&fcutv0DaugMinDistVtx) {
@@ -221,7 +185,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
         (casc->Getv0NegToPrimVtx()<fv0DaugMinDistVtx)) {
       pass=false;
     } else {
-      if (!fMinimalBooking)fHist->FillCutCounter(17);
+      if (!fMinimalBooking)fHist->FillCutCounter(12);
     }
   }
   if (pass) {
@@ -230,6 +194,42 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
   if (pass&&fcutv0Mass) {
     if ((casc->Getv0Mass()<(fv0Mass-fv0Width))||
         (casc->Getv0Mass()>(fv0Mass+fv0Width))) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(13);
+    }
+  }
+  if (pass) {
+    if (!fBachCuts->isSelected(casc->GetBach())) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(14);
+    }
+  }
+  if (pass&&fcutDCAXiDaug) {
+    if (casc->GetXiDCADaug()>fMaxDCAXiDaug) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(15);
+    }
+  }
+  if (pass&&fcutMinDistVtxBach) {
+    if (casc->BachDCAPrimVtx()<fMinDistVtxBach) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(16);
+    }
+  }
+  if (pass&&fcutCPAXi) {
+    if (casc->GetCPA()<fCPAXi) {
+      pass=false;
+    } else {
+      if (!fMinimalBooking)fHist->FillCutCounter(17);
+    }
+  }
+  if (pass&&fcutXiTransRadius) {
+    if ((casc->GetXiTransverseRadius()<fMinXiTransRadius)||
+        (casc->GetXiTransverseRadius()>fMaxXiTransRadius)) {
       pass=false;
     } else {
       if (!fMinimalBooking)fHist->FillCutCounter(18);
@@ -251,7 +251,7 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
     }
   }
   if (pass) {
-    fHist->FillInvMassPtXi(casc->GetPt(),casc->GetXiMass());
+    fHist->FillInvMassPt(casc->GetPt(),casc->GetMass());
     if (fRunNumberQA) {
       fHist->FillInvMassPerRunNumber(casc->GetEvtNumber(),casc->GetXiMass());
     }
@@ -335,16 +335,21 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
   if (!fMinimalBooking) {
     for (int i=0;i<2;++i) {
       if (i==0||(i==1&&casc->UseParticle())) {
-        fHist->FillInvMassXi(i,casc->GetXiMass());
+        fHist->FillInvMass(i,casc->GetMass());
         fHist->FillInvMassLambda(i,casc->Getv0Mass());
         fHist->FillXiPt(i,casc->GetMomentum().Pt());
         fHist->FillMomRapXi(i,casc->GetXiRapidity(),casc->GetMomentum().Mag());
+        fHist->FillMomRapOmega(i,casc->GetOmegaRapidity(),casc->GetMomentum().Mag());
+        fHist->FillDCAXiPrimVtx(i,casc->GetDCAXiPrimVtx());
         fHist->FillDCAXiDaug(i,casc->GetXiDCADaug());
         fHist->FillMinDistPrimVtxBach(i,casc->BachDCAPrimVtx());
         fHist->FillCPAXi(i,casc->GetCPA());
+        fHist->FillDecayLength(i,casc->GetDecayLength());
+        fHist->Fillv0DecayLength(i,casc->Getv0DecayLength());
         fHist->FillTransverseRadiusXi(i,casc->GetXiTransverseRadius());
         fHist->FillMaxDCAv0Daug(i,casc->Getv0DCADaug());
         fHist->FillCPAv0(i,casc->Getv0CPA());
+        fHist->FillCPAv0Xi(i,casc->Getv0XiPointingAngle());
         fHist->Fillv0Pt(i,casc->Getv0Pt());
         fHist->FillTransverseRadiusv0(i,casc->Getv0TransverseRadius());
         fHist->FillMinDistPrimVtxv0(i,casc->Getv0DCAPrimVtx());
@@ -354,9 +359,9 @@ void AliFemtoDreamCascadeCuts::BookQA(AliFemtoDreamCascade *casc) {
       }
     }
   }
-  fNegCuts->BookQA(casc->GetNegDaug());
-  fPosCuts->BookQA(casc->GetPosDaug());
-  fBachCuts->BookQA(casc->GetBach());
+  if (casc->GetNegDaug()->IsSet()) fNegCuts->BookQA(casc->GetNegDaug());
+  if (casc->GetPosDaug()->IsSet()) fPosCuts->BookQA(casc->GetPosDaug());
+  if (casc->GetBach()->IsSet()) fBachCuts->BookQA(casc->GetBach());
   return;
 }
 
@@ -378,10 +383,16 @@ void AliFemtoDreamCascadeCuts::BookMCQA(AliFemtoDreamCascade *casc) {
     //  }
     if (casc->UseParticle()) {
       fMCHist->FillMCIdent(pT);
+      fMCHist->FillMCIdent(pT);
       AliFemtoDreamBasePart::PartOrigin tmpOrg=casc->GetParticleOrigin();
       if (casc->GetParticleOrigin()!=AliFemtoDreamBasePart::kFake) {
         if (casc->GetMCPDGCode()==fPDGCasc) {
           fMCHist->FillMCCorr(pT);
+          if (tmpOrg==AliFemtoDreamBasePart::kPhysPrimary) {
+            fMCHist->FillMCPtResolution(casc->GetMCPt(),casc->GetPt());
+            fMCHist->FillMCThetaResolution(casc->GetMCTheta().at(0),casc->GetTheta().at(0),casc->GetMCPt());
+            fMCHist->FillMCPhiResolution(casc->GetMCPhi().at(0),casc->GetPhi().at(0),casc->GetMCPt());
+          }
         } else {
           casc->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
         }
@@ -439,8 +450,7 @@ void AliFemtoDreamCascadeCuts::FillMCContributions(AliFemtoDreamCascade *casc) {
       fMCHist->FillMCBachDCAToPV(iFill,pT,casc->BachDCAPrimVtx());
       fMCHist->FillMCv0DecayLength(iFill,pT,casc->Getv0DecayLength());
       fMCHist->FillMCv0CPA(iFill,pT,casc->Getv0CPA());
-      fMCHist->FillMCXiDecayLength(iFill,pT,casc->GetXiDecayLength());
-      fMCHist->FillMCOmegaDecayLength(iFill,pT,casc->GetOmegaDecayLength());
+      fMCHist->FillMCDecayLength(iFill,pT,casc->GetDecayLength());
       fMCHist->FillMCXiRapidity(iFill,casc->GetMomentum().Mag(),casc->GetXiRapidity());
       fMCHist->FillMCOmegaRapidity(iFill,casc->GetMomentum().Mag(),casc->GetOmegaRapidity());
       fMCHist->FillMCTransverseRadius(iFill,pT,casc->GetXiTransverseRadius());

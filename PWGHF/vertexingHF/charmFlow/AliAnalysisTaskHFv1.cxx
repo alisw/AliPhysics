@@ -486,6 +486,10 @@ void AliAnalysisTaskHFv1::UserCreateOutputObjects()
             Int_t nBins[5] = {100,fNMassBins,50,nETABins,3};
             Double_t xmin[5] = {-fScalProdLimit,fLowmasslimit,0.,-0.8,0.};
             Double_t xmax[5] = {fScalProdLimit,fUpmasslimit,50.,0.8,3.};
+            if(fDecChannel==kDplustoKpipi) {
+              xmin[4] = -1.5;
+              xmax[4] = 1.5;
+            }
             THnSparseD* hMassScalProd1 = new THnSparseD(Form("hMassScalProd%s_%s",SPsuffix1.Data(),centrname.Data()),Form("Mass vs hScalProd%s ;%s;M (GeV/c^{2})",SPsuffix1.Data(),centrname.Data()),5,nBins,xmin,xmax);
             hMassScalProd1->SetBinEdges(3, binsEta);
             hMassScalProd1->Sumw2();
@@ -940,12 +944,13 @@ void AliAnalysisTaskHFv1::UserExec(Option_t */*option*/)
         Double_t phi=d->Phi();
         Double_t eta=d->Eta();
         Double_t pt=d->Pt();
+        Int_t charge=d->GetCharge();
         if(fReadMC&&fUseAfterBurner)phi=fAfterBurner->GetNewAngle(d,arrayMC);
         Float_t deltaphi  = GetPhiInRange(phi-eventplane);
         
         //fill the histograms with the appropriate method
         if(fFlowMethod!=kEvShape) {
-            if(fDecChannel==0)FillDplus(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,pt,QA,QB);
+            if(fDecChannel==0)FillDplus(d,arrayMC,ptbin,deltaphi,invMass,isSelected,charge,icentr,phi,eta,pt,QA,QB);
             else if(fDecChannel==1)FillD02p(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,pt,QA,QB);
             else if(fDecChannel==2)FillDstar(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,pt,QA,QB);
             else if(fDecChannel==3)FillDs(d,arrayMC,ptbin,deltaphi,invMass,isSelected,icentr,phi,eta,pt,QA,QB);
@@ -1114,7 +1119,7 @@ void AliAnalysisTaskHFv1::CalculateInvMasses(AliAODRecoDecayHF* d,Float_t*& mass
 //NB: the implementation for each candidate is responsibility of the corresponding developer
 
 //******************************************************************************
-void AliAnalysisTaskHFv1::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]){
+void AliAnalysisTaskHFv1::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t charge,Int_t icentr, Double_t phiD, Double_t etaD, Double_t ptD, Double_t QA[2], Double_t QB[2]){
     //D+ channel
     if(!isSel){
         if(fDebug>3)AliWarning("Candidate not selected\n");
@@ -1128,7 +1133,7 @@ void AliAnalysisTaskHFv1::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,I
     if(fFlowMethod==kSP) {
         Double_t scalprod[2]={-2.,-2.};
         scalprod[0] = TMath::Cos(fHarmonic*phiD)*QB[0]+TMath::Sin(fHarmonic*phiD)*QB[1];
-        Double_t sparsearray[5] = {scalprod[0],masses[0],ptD,etaD,0.5};
+        Double_t sparsearray[5] = {scalprod[0],masses[0],ptD,etaD,(Double_t)charge};
         ((THnSparseD*)fOutput->FindObject(Form("hMassScalProduQA_centr%d_%d",icentrmin,icentr)))->Fill(sparsearray);
         scalprod[1] = TMath::Cos(fHarmonic*phiD)*QA[0]+TMath::Sin(fHarmonic*phiD)*QA[1];
         sparsearray[0] = scalprod[1];

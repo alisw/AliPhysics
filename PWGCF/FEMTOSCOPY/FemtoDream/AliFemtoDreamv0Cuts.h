@@ -65,6 +65,8 @@ class AliFemtoDreamv0Cuts {
   void SetCutCPA(float cpa) {fMinCPA=cpa;fCutCPA=true;};
   void SetCutInvMass(float width){fInvMassCutWidth=width;fCutInvMass=true;};
   void Init();
+  void SetName(TString OutputName) {if(fHistList)fHistList->SetName(OutputName.Data());};
+  void SetMCName(TString OutputName) {if(fMCHistList)fMCHistList->SetName(OutputName.Data());};
   TList *GetQAHists() {return fHistList;};
 //  TList *GetQAHistsPosDaug() {return fPosCuts->GetQAHists();};
 //  TList *GetQAHistsNegDaug() {return fNegCuts->GetQAHists();};

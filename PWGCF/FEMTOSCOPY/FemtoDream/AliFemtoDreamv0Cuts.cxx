@@ -379,6 +379,11 @@ void AliFemtoDreamv0Cuts::BookMC(AliFemtoDreamv0 *v0) {
       AliFemtoDreamBasePart::PartOrigin tmpOrg=v0->GetParticleOrigin();
       if (v0->GetMCPDGCode()==fPDGv0) {
         fMCHist->FillMCCorr(pT);
+        if (tmpOrg==AliFemtoDreamBasePart::kPhysPrimary) {
+          fMCHist->FillMCPtResolution(v0->GetMCPt(),v0->GetPt());
+          fMCHist->FillMCThetaResolution(v0->GetMCTheta().at(0),v0->GetTheta().at(0),v0->GetMCPt());
+          fMCHist->FillMCPhiResolution(v0->GetMCPhi().at(0),v0->GetPhi().at(0),v0->GetMCPt());
+        }
       } else {
         v0->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
       }

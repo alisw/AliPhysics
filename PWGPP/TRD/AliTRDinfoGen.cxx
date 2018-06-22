@@ -643,6 +643,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     if(HasMCdata()){
       label = esdTrack->GetLabel(); 
       alab = TMath::Abs(label);
+      if (alab>=nTracksMC) continue; // bg track?
       // register the track
       // RS: this check makes no sense for events with embedding
       //      if(alab < UInt_t(nTracksMC)){ 

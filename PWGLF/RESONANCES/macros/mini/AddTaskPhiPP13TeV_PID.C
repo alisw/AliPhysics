@@ -14,7 +14,7 @@
 #include "AliRsnCutMiniPair.h"
 #include "AliRsnMiniOutput.h"
 #include "./ConfigPhiPP13TeV_PID.C"
-*/
+ */
 
 enum pairYCutSet { kPairDefault=0,
 		   kCentral //=1
@@ -218,8 +218,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   int j,nmult=0;
   for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
   for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+  for(j=1;j<50;j++){multbins[nmult]=0.01*j; nmult++;}
+  for(j=5;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
   for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
   nmult--;
   TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti","",nmult,multbins);
@@ -249,7 +249,6 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP13TeV_PID.C");
-  //gROOT->LoadMacro("./ConfigPhiPP13TeV_PID.C");
   if(!ConfigPhiPP13TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt,triggerMask)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------

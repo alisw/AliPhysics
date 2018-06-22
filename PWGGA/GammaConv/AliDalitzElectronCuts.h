@@ -33,8 +33,8 @@ class AliAnalysisManager;
 using namespace std;
 
 class AliDalitzElectronCuts : public AliAnalysisCuts {
-	
- public: 
+
+ public:
 
 
   enum cutIds {
@@ -71,15 +71,15 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
  };
 
 
-  Bool_t SetCutIds(TString cutString); 
+  Bool_t SetCutIds(TString cutString);
   Int_t fCuts[kNCuts];
   Bool_t SetCut(cutIds cutID, Int_t cut);
-  Bool_t UpdateCutString(cutIds cutID, Int_t value);
+  Bool_t UpdateCutString();
   static const char * fgkCutNames[kNCuts];
 
 
-  Bool_t InitializeCutsFromCutString(const TString analysisCutSelection); 
-  
+  Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
+
 
   AliDalitzElectronCuts(const char *name="ElectronCuts", const char * title="Electron Cuts");
   virtual ~AliDalitzElectronCuts();                            //virtual destructor
@@ -97,10 +97,10 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   static AliDalitzElectronCuts * GetStandardCuts2010PbPb();
   static AliDalitzElectronCuts * GetStandardCuts2010pp();
   Bool_t InitPIDResponse();
-  
+
   void SetPIDResponse(AliPIDResponse * pidResponse) {fPIDResponse = pidResponse;}
   AliPIDResponse * GetPIDResponse() { return fPIDResponse;}
-  
+
   void PrintCuts();
 
   void InitCutHistograms(TString name="",Bool_t preCut = kTRUE,TString cutName="");
@@ -109,7 +109,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
 
   static AliVTrack * GetTrack(AliVEvent * event, Int_t label);
 
-  
+
 
   ///Cut functions
   Bool_t dEdxCuts(AliVTrack * track);
@@ -144,7 +144,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t SetDoWeights(Int_t opc);
   Bool_t SetUseVPhotonMCPmearing(Int_t useMCPSmearing);
   void SetUseCrossedRows(Bool_t opc){fUseCrossedRows = opc;};
-  
+
   // Request Flags
 
   Double_t GetEtaCut(){ return  fEtaCut;}
@@ -161,9 +161,9 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Bool_t   DoWeights(){return fDoWeights;}
   Bool_t   GetUseVPhotonMCPmearing(){return fUseVPhotonMCPSmearing; }
   Bool_t   GetUseElectronMCSmearing(){ return fUseElectronMCPSmearing;}
-  
 
-  
+
+
   protected:
 
   TList *fHistograms;
@@ -192,7 +192,7 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fPIDnSigmaAbovePionLineTPC;
   Double_t fPIDnSigmaAbovePionLineTPCHighPt;
   Double_t fTofPIDnSigmaAboveElectronLine; // sigma cut RRnewTOF
-  Double_t fTofPIDnSigmaBelowElectronLine; // sigma cut RRnewTOF 
+  Double_t fTofPIDnSigmaBelowElectronLine; // sigma cut RRnewTOF
   Double_t fPIDMinPnSigmaAbovePionLineTPC; // sigma cut
   Double_t fPIDMaxPnSigmaAbovePionLineTPC; // sigma cut
   Double_t fDoKaonRejectionLowP;   // Kaon rejection at low p
@@ -243,8 +243,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   TH1F *hTrackNegEtabeforeDedx;
   TH1F *hTrackPosEtaafterDedx;
   TH1F *hTrackNegEtaafterDedx;
-  
-  
+
+
 
 private:
 
@@ -266,7 +266,7 @@ inline void AliDalitzElectronCuts::InitAODpidUtil(Int_t type) {
   alephParameters[3] = 1.96178e+00;
   alephParameters[4] = 3.91720e+00;
   fPIDResponse->GetTOFResponse().SetTimeResolution(80.);
-  
+
   // data
   if (type==1){
     alephParameters[0] = 0.0283086/0.97;
@@ -277,11 +277,11 @@ inline void AliDalitzElectronCuts::InitAODpidUtil(Int_t type) {
     fPIDResponse->GetTOFResponse().SetTimeResolution(130.);
     fPIDResponse->GetTPCResponse().SetMip(50.);
   }
-  
+
   fPIDResponse->GetTPCResponse().SetBetheBlochParameters(
     alephParameters[0],alephParameters[1],alephParameters[2],
     alephParameters[3],alephParameters[4]);
-  
+
   fPIDResponse->GetTPCResponse().SetSigma(3.79301e-03, 2.21280e+04);
 }
 

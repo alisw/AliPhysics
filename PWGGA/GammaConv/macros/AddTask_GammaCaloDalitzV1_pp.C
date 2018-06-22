@@ -33,6 +33,13 @@ void AddTask_GammaCaloDalitzV1_pp(  Int_t trainConfig = 1,  //change different s
   //=========  Set Cutnumber for V0Reader ================================
             //06000078400100001500000000
   TString cutnumberPhoton 	= "00000008400100001500000000";
+  if (  periodname.CompareTo("LHC16f") == 0 || periodname.CompareTo("LHC17g")==0 || periodname.CompareTo("LHC18c")==0 ||
+        periodname.CompareTo("LHC17d1") == 0  || periodname.CompareTo("LHC17d12")==0 ||
+        periodname.CompareTo("LHC17h3")==0 || periodname.CompareTo("LHC17k1")==0 ||
+        periodname.CompareTo("LHC17f8b") == 0 ||
+        periodname.CompareTo("LHC16P1JJLowB") == 0 || periodname.CompareTo("LHC16P1Pyt8LowB") == 0 )
+    cutnumberPhoton         = "00000088400000000100000000";
+
   TString cutnumberEvent 		= "00000003";
   TString cutnumberElectron   = "90005400000002000000";            //Electron Cuts
 

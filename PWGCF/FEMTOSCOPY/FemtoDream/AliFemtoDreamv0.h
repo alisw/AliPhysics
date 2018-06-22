@@ -37,6 +37,8 @@ class AliFemtoDreamv0 : public AliFemtoDreamBasePart {
   float GetTransverseRadius() const {return fTransRadius;};
   TString ClassName(){return "v0Class";};
  private:
+  AliFemtoDreamv0 &operator=(const AliFemtoDreamv0 &obj);
+  AliFemtoDreamv0(const AliFemtoDreamv0&);
   void Reset();
   void SetDaughter(AliAODv0 *v0);
   void SetDaughterInfo(AliAODv0 *v0);

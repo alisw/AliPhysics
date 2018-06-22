@@ -43,7 +43,8 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
  double dcaXYMin                = -2.4,
  double dcaXYMax                =  2.4,
  int nCentrality                =  6,
- int particleID                 =  1,   // Pion=0, Kaon=1, Proton=2
+ int particleID_1               =  0,   // Pion=0, Kaon=1, Proton=2
+ int particleID_2               =  1,   // Pion=0, Kaon=1, Proton=2
  bool Use_CircularCutPID        =  1,   // 0: Not Use_CircularCutPID     1: Use_CircularCutPID TPC+TOF
  double nSigmaCut               =  2.0,
  double nSigmaCut_veto          =  3.0,
@@ -54,9 +55,6 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
  double ptMax                   =  3.0, // pt range upper limit for histos; NOT pt cut!!!
  double ptWidthBin              =  0.1, // pt bin width in histos
  int nBinsPhi                   =  36,  // 36 is default value
- Bool_t NoResonances            = kTRUE, // only for MCAOD
- Bool_t NoElectron              = kTRUE, // only for MCAOD
- bool   PurePIDinMC             = 0,   // 0: Contamination in MCAODreco;       1: No Contamination in MCAODreco
  const char* taskname           = "ChPM",
  char *inputHistogramFileName   = "alien:///alice/cern.ch/user/j/jipan/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2/TUNE_rHJ_2eCut_8vZ32_G162_4C4_NOwCut_08y16_36phi_02pt2_pi_Pos_S1S2.root" )
 
@@ -66,7 +64,7 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
   int    debugLevel             = 0;
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
-  int    sameFilter             = 1;
+  int    sameFilter             = 0;
   int    centralityMethod       = 4;
   Bool_t trigger                = kFALSE;
   Bool_t remove_Tracks_T0       = 1;
@@ -77,6 +75,10 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
   int pidType                   =  2;  // kNSigmaTPC,kNSigmaTOF, kNSigmaTPCTOF // for AliHelperPID
   Bool_t requestTOFPID          =  1;  // for AliHelperPID
   Bool_t isMC                   =  0;  // for AliHelperPID
+  Bool_t NoResonances           = kTRUE; // only for MCAOD
+  Bool_t NoElectron             = kTRUE; // only for MCAOD
+  bool   PurePIDinMC            = 0;   // 0: Contamination in MCAODreco;       1: No Contamination in MCAODreco
+  
   
   
   if      ( System == "PbPb" )                { centralityMethod = 4; trigger = kFALSE; }
@@ -314,10 +316,10 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
   {
     switch ( chargeSet )
     {
-      case 0: part1Name = "P_"; part2Name = "P_"; requestedCharge1 =  1; requestedCharge2 =  1; sameFilter = 1;   break;
-      case 1: part1Name = "P_"; part2Name = "M_"; requestedCharge1 =  1; requestedCharge2 = -1; sameFilter = 0;   break;
-      case 2: part1Name = "M_"; part2Name = "P_"; requestedCharge1 = -1; requestedCharge2 =  1; sameFilter = 0;   break;
-      case 3: part1Name = "M_"; part2Name = "M_"; requestedCharge1 = -1; requestedCharge2 = -1; sameFilter = 1;   break;
+      case 0: part1Name = "P_"; part2Name = "P_"; requestedCharge1 =  1; requestedCharge2 =  1;   break;
+      case 1: part1Name = "P_"; part2Name = "M_"; requestedCharge1 =  1; requestedCharge2 = -1;   break;
+      case 2: part1Name = "M_"; part2Name = "P_"; requestedCharge1 = -1; requestedCharge2 =  1;   break;
+      case 3: part1Name = "M_"; part2Name = "M_"; requestedCharge1 = -1; requestedCharge2 = -1;   break;
     }
     
     part1Name += "eta";
@@ -354,7 +356,8 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     baseName     +=  part2Name;
     baseName     +=  eventName;
     baseName     +=  "_";
-    baseName     +=  particleID;
+    baseName     +=  particleID_1;
+    baseName     +=  particleID_2;
     listName     =   baseName;
     taskName     =   baseName;
     
@@ -466,7 +469,8 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     task->SetRequestedCharge_2(   requestedCharge2);
     task->SetWeigth_1(            weight_1        );
     task->SetWeigth_2(            weight_2        );
-    task->SetParticleSpecies(     particleID      );
+    task->SetParticleSpecies_1(    particleID_1   );
+    task->SetParticleSpecies_2(    particleID_2   );
     task->SetAnalysisType(        AnalysisDataType);
     task->SetSystemType(          System          );
     task->SetResonancesCut(       NoResonances    );

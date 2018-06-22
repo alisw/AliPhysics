@@ -52,7 +52,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
   fHistList->SetName("TrackCuts");
   fHistList->SetOwner();
 
-  fConfig = new TProfile("TrackCutConfig", "Track Cut Config", 24, 0, 24);
+  fConfig = new TProfile("TrackCutConfig", "Track Cut Config", 25, 0, 25);
   fConfig->SetStats(0);
   fConfig->GetXaxis()->SetBinLabel(1, "pT_{min}");
   fConfig->GetXaxis()->SetBinLabel(2, "pT_{max}");
@@ -78,6 +78,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist,bool CombSig)
   fConfig->GetXaxis()->SetBinLabel(22, "TPC Refit");
   fConfig->GetXaxis()->SetBinLabel(23, "#chi2 min");
   fConfig->GetXaxis()->SetBinLabel(24, "#chi2 max");
+  fConfig->GetXaxis()->SetBinLabel(25, "ESDFiltering");
 
   fHistList->Add(fConfig);
 

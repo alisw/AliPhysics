@@ -161,7 +161,9 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
          kHadronEtaRange07 = 13,
          kHadronEtaRange06 = 14,
          kHadronEtaRange05 = 15,
-         kHadronTPCMinus1_Old = 16
+         kHadronTPCMinus1_Old = 16,
+         
+         kHadronTPConly05 = 20
       };
 
       // First hadron contamination fit for 5TeV  by Sebastian Hornung, March 9, 2017
@@ -171,16 +173,24 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
       if(TOFs==0){
          // Default of the TPC-TOF - TO-BE-UPDATED
          switch (HadronContFunc) {
-            default:
-               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3] * TMath::Gaus(x, [4], [5])", 0., 30);
-               hBackground->SetParameter(0,4.75194e+00);
-               hBackground->SetParameter(1,1.10742e+01);
-               hBackground->SetParameter(2,2.77476e+00);
+                case kHadronTPConly05:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])",0. ,30.);
+               hBackground->SetParameter(0,3.71214e-01);
+               hBackground->SetParameter(1,3.71374e-01);
+               hBackground->SetParameter(2,3.69801e-01);
 
-               hBackground->SetParameter(3,2.00000e-02);
-               hBackground->SetParameter(4,8.78639e-01);
-               hBackground->SetParameter(5,2.62453e-02);
+               hBackground->SetParameter(3,-3.22647e+00);
                break;
+
+            default:
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])",0. ,30.);
+               hBackground->SetParameter(0,1.22510e-01);
+               hBackground->SetParameter(1,1.22542e-01);
+               hBackground->SetParameter(2,3.36116e-01);
+
+               hBackground->SetParameter(3,-3.24241e+00);
+               break;
+
          }
       }else{
          switch (HadronContFunc) {

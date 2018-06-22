@@ -1,0 +1,41 @@
+//_____________________________________________________________________
+AliAnalysisTask *AddTaskJCDijetTask(TString taskName,
+                                    Bool_t isMC,
+                                    vector<double> centBins  = {0.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0},
+                                    double jetCone           = 0.4,
+                                    double particleEtaCut    = 0.8,
+                                    double particlePtCut     = 0.15,
+                                    double leadingJetCut     = 20.0,
+                                    double subleadingJetCut  = 20.0,
+                                    double constituentCut    = 5.0,
+                                    double deltaPhiCut       = 2.0){
+	// Load Custom Configuration and parameters
+	// override values with parameters
+
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+	//==== Set up the dijet task ====
+	AliJCDijetTask *dijetTask = new AliJCDijetTask(taskName.Data(),"AOD");
+	dijetTask->SetDebugLevel(5);
+  	dijetTask->SetJCatalystTaskName("JCatalystTask");  // AliJCatalystTask has this name hard coded
+	dijetTask->SetCentralityBins(centBins);
+	dijetTask->SetJetConeSize(jetCone);
+	dijetTask->SetIsMC(isMC);
+	dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut);
+	cout << dijetTask->GetName() << endl;
+
+
+	mgr->AddTask((AliAnalysisTask*) dijetTask);
+
+	// Create containers for input/output
+	AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+
+
+	// Connect input/output
+	mgr->ConnectInput(dijetTask, 0, cinput);
+	AliAnalysisDataContainer *jHist = mgr->CreateContainer(Form("%scontainer",dijetTask->GetName()),  TDirectory::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",AliAnalysisManager::GetCommonFileName(), dijetTask->GetName()));
+	mgr->ConnectOutput(dijetTask, 1, jHist );
+
+	return dijetTask;
+}
+

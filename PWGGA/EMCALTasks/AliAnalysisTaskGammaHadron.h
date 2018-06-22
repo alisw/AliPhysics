@@ -46,6 +46,7 @@ public:
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input; }
+  void                        SetSubDetector(Int_t input)                           { fSubDetector     = input; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
   void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin     = input;}
   void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input;}
@@ -102,6 +103,7 @@ public:
   //..Functions for MC purposes
   Int_t                       FindMCPartForClus(AliVCluster * caloCluster);
   Int_t                       FindMCRootPart(Int_t iMCIndex, Int_t * iMCTreeHeight);
+  Int_t                       FindMCLowComAnc(Int_t iMCIndex1, Int_t iMCIndex2);
 
 
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
@@ -140,6 +142,7 @@ public:
   Double_t                    fArrayNVertBins[21];       ///< 21=kNvertBins+1
 
   //..cuts
+	Int_t                       fSubDetector;              ///< Whether to use all clusters, ECal only, or DCal only
   Double_t                    fTriggerPtCut;             ///< Cut of 5 GeV/c on Trigger Pt
   Double_t                    fClShapeMin;               ///< Minimum cluster shape
   Double_t                    fClShapeMax;               ///< Maximum cluster shape

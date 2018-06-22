@@ -708,7 +708,8 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     Float_t etagen=-999.;
     Float_t phigen=-999.;
     if(fReadMC){
-      TParticle* part = ((AliMCParticle*)mcEvent->GetTrack(TMath::Abs(trlabel)))->Particle();
+      TParticle* part = mcEvent->Particle(TMath::Abs(trlabel));
+      if (!part) continue;
       ptgen=part->Pt();
       //     pgen=part->P();
       pxgen=part->Px();
@@ -831,7 +832,8 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
     Int_t hadronSpecie=-1;
     if(fReadMC && fUseMCId){
       if(trlabel>=0){
-	TParticle* part = ((AliMCParticle*)mcEvent->GetTrack(trlabel))->Particle();
+	TParticle* part = mcEvent->Particle(trlabel);
+	if (!part) continue;	
 	Int_t pdg=TMath::Abs(part->GetPdgCode());
 	if(pdg==211) hadronSpecie=kPion;
 	else if(pdg==321) hadronSpecie=kKaon;
@@ -883,7 +885,8 @@ void AliAnalysisTaskITSsaTracks::UserExec(Option_t *)
 	
       if(fReadMC){  
 	if(trlabel>=0){
-	  TParticle* part =  ((AliMCParticle*)mcEvent->GetTrack(trlabel))->Particle();
+	  TParticle* part = mcEvent->Particle(trlabel);
+	  if (!part) continue;
 	  ptgen=part->Pt();
 	  Float_t invpttrack=track->OneOverPt();
 	  Float_t invptgen=0.;

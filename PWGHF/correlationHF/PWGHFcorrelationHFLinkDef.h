@@ -25,6 +25,7 @@
 #pragma link C++ class AliDPlushCutOptim+;
 #pragma link C++ class AliAnalysisTaskDStarCorrelations+;
 #pragma link C++ class AliAnalysisTaskSED0Correlations+;
+#pragma link C++ class AliAnalysisTaskSED0CorrelationsVsMult+;
 #pragma link C++ class AliAnalysisTaskSEDplusCorrelations+;
 #pragma link C++ class AliAnalysisTaskSEmcCorr+;	
 #pragma link C++ class AliAnalysisTaskSEHFCJqa+;

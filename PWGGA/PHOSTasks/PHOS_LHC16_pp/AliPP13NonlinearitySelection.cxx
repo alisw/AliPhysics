@@ -55,7 +55,7 @@ void AliPP13NonlinearitySelection::ConsiderPair(const AliVCluster * c1, const Al
 
 
 	// NB: This is the data cut
-	if (dynamic_cast<AliPP13SelectionWeights *>(fWeights))
+	if (dynamic_cast<AliPP13SelectionWeightsTOF *>(fWeights))
 	{
 		Float_t eff = fWeights->TofEfficiency(p1.E()) * fWeights->TofEfficiency(p2.E());
 		fMassPt[int(eflags.isMixing)]->FillAll(sm1, sm2, m12, p1.E(), 1. / eff);	

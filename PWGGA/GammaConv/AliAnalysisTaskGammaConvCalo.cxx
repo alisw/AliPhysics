@@ -1189,9 +1189,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     fHistoVertexZ[iCut]             = new TH1F("VertexZ", "VertexZ", 200, -10, 10);
     fESDList[iCut]->Add(fHistoVertexZ[iCut]);
     if(!fDoLightOutput){
-      fHistoVertexX[iCut]             = new TH1F("VertexX", "VertexX", 100, -5, 5);
+      fHistoVertexX[iCut]             = new TH1F("VertexX", "VertexX", 100, -0.5, 0.5);
       fESDList[iCut]->Add(fHistoVertexX[iCut]);
-      fHistoVertexY[iCut]             = new TH1F("VertexY", "VertexY", 100, -5, 5);
+      fHistoVertexY[iCut]             = new TH1F("VertexY", "VertexY", 100, -0.1, 0.9);
       fESDList[iCut]->Add(fHistoVertexY[iCut]);
     }
 

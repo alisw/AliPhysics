@@ -838,19 +838,29 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
     Int_t hadronSpecies=-1;
     Float_t invptgen=-999.;
     Int_t isPhysPrim=-999;
+    Int_t pdgCode=0;
     if(fReadMC){
       TParticle* part = mcEvent->Particle(TMath::Abs(trlabel));
-      ptgen=part->Pt();
-      pgen=part->P();
-      pxgen=part->Px();
-      pygen=part->Py();
-      pzgen=part->Pz();
-      if(ptgen>0.) invptgen=1./ptgen;
-      etagen=part->Eta();
-      phigen=part->Phi();
-      if(mcEvent->IsPhysicalPrimary(TMath::Abs(trlabel))) isPhysPrim=1;
-      else if(mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(trlabel))) isPhysPrim=0;
-      else if(mcEvent->IsSecondaryFromMaterial(TMath::Abs(trlabel))) isPhysPrim=-1;
+      if (part){
+	ptgen=part->Pt();
+	pgen=part->P();
+	pxgen=part->Px();
+	pygen=part->Py();
+	pzgen=part->Pz();
+	if(ptgen>0.) invptgen=1./ptgen;
+	etagen=part->Eta();
+	phigen=part->Phi();
+	pdgCode=part->GetPdgCode();
+	if(mcEvent->IsPhysicalPrimary(TMath::Abs(trlabel))) isPhysPrim=1;
+	else if(mcEvent->IsSecondaryFromWeakDecay(TMath::Abs(trlabel))) isPhysPrim=0;
+	else if(mcEvent->IsSecondaryFromMaterial(TMath::Abs(trlabel))) isPhysPrim=-1;
+	if (fUseMCId) {
+	  int pdg = TMath::Abs(part->GetPdgCode());
+	  for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
+	    if (pdg == AliPID::ParticleCode(iS)) hadronSpecies=iS;
+	  }
+	}
+      }
       fTreeVarFloat[27]=pxgen;
       fTreeVarFloat[28]=pygen;
       fTreeVarFloat[29]=pzgen;
@@ -858,14 +868,8 @@ void AliAnalysisTaskCheckESDTracks::UserExec(Option_t *)
       fTreeVarFloat[31]=pgen;
       fTreeVarFloat[32]=etagen;
       fTreeVarFloat[33]=phigen;
-      if (fUseMCId) {
-        int pdg = TMath::Abs(part->GetPdgCode());
-        for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
-          if (pdg == AliPID::ParticleCode(iS)) hadronSpecies=iS;
-        }
-      }
       fTreeVarInt[8]=trlabel;
-      fTreeVarInt[9]=part->GetPdgCode();
+      fTreeVarInt[9]=pdgCode;
     }
 
     if(pidtr>=0 && pidtr<9) fHistdEdxVsP[pidtr]->Fill(ptrackTPC,dedx);

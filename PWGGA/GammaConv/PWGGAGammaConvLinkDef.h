@@ -46,6 +46,7 @@
 #pragma link C++ class AliAnalysisTaskOmegaToPiZeroGamma+;
 #pragma link C++ class AliAnalysisTaskHeavyNeutralMesonToGG+;
 #pragma link C++ class AliAnalysisTaskK0toPi0Pi0+;
+#pragma link C++ class AliAnalysisTaskGammaTriggerQA+;
 
 // Old tasks
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;

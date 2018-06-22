@@ -122,7 +122,11 @@ protected:
 struct AliPP13SelectionWeightsMC: public AliPP13SelectionWeights
 {
 	// NB: One needs default constructor for IO readsons
-	AliPP13SelectionWeightsMC(Double_t a = -0.014719244288611932, Double_t s = 0.8017501954719543, Double_t g = 1.050000000000015):
+	AliPP13SelectionWeightsMC(
+	    Double_t a = -0.023207895974126137,
+	    Double_t s = 0.5 * 2.1705074159914495,
+	    Double_t g = 1.0178019980200619
+	):
 		AliPP13SelectionWeights(),
 		fNonGlobal(g),
 		fNonA(a),

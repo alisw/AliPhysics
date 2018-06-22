@@ -45,6 +45,7 @@
 #include "AliAODTrack.h"
 #include "AliVCaloTrigger.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenEventHeader.h"
 #include "AliAODMCHeader.h"
 #include "AliMCEvent.h"
 #include "AliEMCALTriggerPatchInfo.h"
@@ -71,6 +72,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fCentBins(),
   fCentralityEstimation(kNewCentrality),
   fIsPythia(kFALSE),
+  fIsMonteCarlo(kFALSE),
+  fMCEventHeaderName(),
   fCaloCellsName(),
   fCaloTriggersName(),
   fCaloTriggerPatchInfoName(),
@@ -115,6 +118,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fFiredTriggerBitMap(0),
   fFiredTriggerClasses(),
   fBeamType(kNA),
+  fMCHeader(0),
   fPythiaHeader(0),
   fPtHardBin(0),
   fPtHard(0),
@@ -152,6 +156,8 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fCentBins(6),
   fCentralityEstimation(kNewCentrality),
   fIsPythia(kFALSE),
+  fIsMonteCarlo(kFALSE),
+  fMCEventHeaderName(),
   fCaloCellsName(),
   fCaloTriggersName(),
   fCaloTriggerPatchInfoName(),
@@ -196,6 +202,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fFiredTriggerBitMap(0),
   fFiredTriggerClasses(),
   fBeamType(kNA),
+  fMCHeader(0),
   fPythiaHeader(0),
   fPtHardBin(0),
   fPtHard(0),
@@ -289,7 +296,7 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
 
   TH1* h = nullptr;
 
-  if (fIsPythia) {
+  if (fIsMonteCarlo) {
     auto weight_bins = GenerateLogFixedBinArray(1000, fMinimumEventWeight, fMaximumEventWeight, true);
 
     h = new TH1F("fHistEventsVsPtHard", "fHistEventsVsPtHard", 1000, 0, 1000);
@@ -484,16 +491,13 @@ void AliAnalysisTaskEmcalLight::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
 {
   if (eventSelected) {
-    if (fIsPythia) {
+    if (fIsMonteCarlo) {
       GetGeneralTH1("fHistEventsVsPtHard", true)->Fill(fPtHard);
       GetGeneralTH1("fHistTrialsVsPtHard", true)->Fill(fPtHard, fNTrials);
       GetGeneralTH1("fHistEventWeights", true)->Fill(fEventWeight);
       GetGeneralTH2("fHistEventWeightsVsPtHard", true)->Fill(fPtHard, fEventWeight);
       GetGeneralTH1("fHistXsectionDistribution", true)->Fill(fXsection);
-
-      TProfile* hXsection = GetGeneralTProfile("fHistXsection", true);
-      hXsection->SetBinEntries(fPtHardBin + 1, hXsection->GetBinEntries(fPtHardBin + 1) + 1);
-      hXsection->SetBinContent(fPtHardBin + 1, fXsection * hXsection->GetBinEntries(fPtHardBin + 1));
+      GetGeneralTProfile("fHistXsection", true)->Fill(fPtHardBin, fXsection);
     }
 
     GetGeneralTH1("fHistZVertex")->Fill(fVertex[2]);
@@ -508,7 +512,7 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
     for (auto fired_trg : fFiredTriggerClasses) hTriggerClasses->Fill(fired_trg.c_str(), 1);
   }
   else {
-    if (fIsPythia) {
+    if (fIsMonteCarlo) {
       GetGeneralTH1("fHistEventsVsPtHardNoSel", true)->Fill(fPtHard);
       GetGeneralTH1("fHistTrialsVsPtHardNoSel", true)->Fill(fPtHard, fNTrials);
       GetGeneralTH1("fHistEventWeightsNoSel", true)->Fill(fEventWeight);
@@ -694,8 +698,7 @@ Bool_t AliAnalysisTaskEmcalLight::PythiaInfoFromFile(const char* currFile, Float
  */
 Bool_t AliAnalysisTaskEmcalLight::UserNotify()
 {
-  if (!fIsPythia || !fGeneralHistograms || !fCreateHisto)
-    return kTRUE;
+  if (!fIsPythia) return kTRUE;
 
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   if (!tree) {
@@ -724,10 +727,12 @@ Bool_t AliAnalysisTaskEmcalLight::UserNotify()
 
   if (!res) return kTRUE;
 
-  GetGeneralTH1("fHistTrialsExternalFile", true)->Fill(fPtHardBin, trials);
-  GetGeneralTProfile("fHistXsectionExternalFile", true)->Fill(fPtHardBin, xsection);
-  GetGeneralTH1("fHistEventsExternalFile", true)->Fill(fPtHardBin, nevents);
-
+  if (fGeneralHistograms  && fCreateHisto) {
+    GetGeneralTH1("fHistTrialsExternalFile", true)->Fill(fPtHardBin, trials);
+    GetGeneralTProfile("fHistXsectionExternalFile", true)->Fill(fPtHardBin, xsection);
+    GetGeneralTH1("fHistEventsExternalFile", true)->Fill(fPtHardBin, nevents);
+  }
+  
   return kTRUE;
 }
 
@@ -1093,26 +1098,34 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
     }
   }
 
-  if (fIsPythia) {
-    if (MCEvent()) {
-      AliGenEventHeader* header = MCEvent()->GenEventHeader();
-      if (header->InheritsFrom("AliGenPythiaEventHeader")) {
-        fPythiaHeader = static_cast<AliGenPythiaEventHeader*>(header);
+  if (fIsMonteCarlo && MCEvent()) {
+    AliGenEventHeader* header = MCEvent()->GenEventHeader();
+    if (fMCEventHeaderName.IsNull()) {
+      fMCHeader = header;
+    }
+    else {
+      if (header->InheritsFrom(fMCEventHeaderName)) {
+        fMCHeader = header;
       }
       else if (header->InheritsFrom("AliGenCocktailEventHeader")) {
         AliGenCocktailEventHeader* cocktailHeader = static_cast<AliGenCocktailEventHeader*>(header);
         TList* headers = cocktailHeader->GetHeaders();
         for (auto obj : *headers) { // @suppress("Symbol is not resolved")
-          fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(obj);
-          if (fPythiaHeader) break;
+          if (obj->InheritsFrom(fMCEventHeaderName)){
+            fMCHeader = static_cast<AliGenEventHeader*>(obj);
+            break;
+          }
         }
       }
     }
-    if (fPythiaHeader) {
-      fPtHard = fPythiaHeader->GetPtHard();
-      fXsection = fPythiaHeader->GetXsection();
-      fNTrials = fPythiaHeader->Trials();
-      fEventWeight = fPythiaHeader->EventWeight();
+    if (fMCHeader) {
+      fEventWeight = fMCHeader->EventWeight();
+      if (fIsPythia) {
+        fPythiaHeader = static_cast<AliGenPythiaEventHeader*>(fMCHeader);
+        fPtHard = fPythiaHeader->GetPtHard();
+        fXsection = fPythiaHeader->GetXsection();
+        fNTrials = fPythiaHeader->Trials();
+      }
     }
   }
 
@@ -1584,4 +1597,29 @@ TH2* AliAnalysisTaskEmcalLight::GetGeneralTH2(const char* name, bool warn)
 TProfile* AliAnalysisTaskEmcalLight::GetGeneralTProfile(const char* name, bool warn)
 {
   return static_cast<TProfile*>(GetGeneralTH1(name, warn));
+}
+
+void AliAnalysisTaskEmcalLight::SetIsPythia(Bool_t i)
+{ 
+  fIsPythia = i;
+  if (fIsPythia) { 
+    fIsMonteCarlo = kTRUE; 
+    fMCEventHeaderName = "AliGenPythiaEventHeader"; 
+  }
+  else {
+    if (fMCEventHeaderName == "AliGenPythiaEventHeader") {
+      fMCEventHeaderName = "";
+    }
+  }
+}
+
+void AliAnalysisTaskEmcalLight::SetMCEventHeaderName(const char* name)
+{ 
+  TClass gen_header_class(name);
+  if (gen_header_class.InheritsFrom("AliGenEventHeader")) {
+    fMCEventHeaderName = name;
+  }
+  else {
+    AliWarningStream() << "Class name '" << name << "' does not inherit from 'AliGenEventHeader'. Not setting it." << std::endl;
+  }
 }

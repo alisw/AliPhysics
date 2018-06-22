@@ -72,9 +72,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	else if (configuration == AliCFTaskVertexingHF::kCheetah){
 		printf("The configuration is set to be FAST --> using only pt, y, ct, phi, zvtx, centrality, fake, multiplicity to fill the CF\n");
 	}
-	else if (configuration == AliCFTaskVertexingHF::kFalcon){
-		printf("The configuration is set to be FAST --> using only pt, y, centrality, multiplicity to fill the CF\n");
-	}
+  else if (configuration == AliCFTaskVertexingHF::kFalcon){
+    printf("The configuration is set to be FAST --> using only pt, y, centrality, multiplicity to fill the CF\n");
+  }
+  else if (configuration == AliCFTaskVertexingHF::kESE){
+    printf("The configuration is set to be for ESE analysis --> using pt, y, centrality, multiplicity, local multiplicity and q2 to fill the CF\n");
+  }
 	else{
 		printf("The configuration is not defined! returning\n");
 		return;
@@ -562,6 +565,57 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		container -> SetVarTitle(icentSuperFast, "centrality");
 		container -> SetVarTitle(imultSuperFast, "multiplicity");
 	}
+  else if (configuration == AliCFTaskVertexingHF::kESE){
+    //arrays for the number of bins in each dimension
+    const Int_t nvar = 6;
+    
+    const UInt_t ipTESE = 0;
+    const UInt_t iyESE = 1;
+    const UInt_t icentESE = 2;
+    const UInt_t imultESE = 3;
+    const UInt_t ilocalmultESE = 4;
+    const UInt_t iq2ESE = 5;
+    
+    const Int_t iBinESE[nvar] = {iBin[ipT],iBin[iy],100,100,100,250};
+    
+    Double_t binLimcentESE[iBinESE[icentESE]+1];
+    for(Int_t iCent=0; iCent<iBinESE[icentESE]+1; iCent++) {
+      binLimcentESE[iCent] = iCent;
+    }
+    Double_t binLimmultESE[iBinESE[imultESE]+1];
+    for(Int_t iMult=0; iMult<iBinESE[imultESE]+1; iMult++) {
+      binLimmultESE[iMult] = -0.5+iMult*5000./iBinESE[imultESE];
+    }
+    Double_t binLimlocalmultESE[iBinESE[ilocalmultESE]+1];
+    for(Int_t iLocalMult=0; iLocalMult<iBinESE[ilocalmultESE]+1; iLocalMult++) {
+      binLimlocalmultESE[iLocalMult] = -0.5+iLocalMult*200./iBinESE[ilocalmultESE];
+    }
+    Double_t binLimq2ESE[iBinESE[iq2ESE]+1];
+    for(Int_t iq2=0; iq2<iBinESE[iq2ESE]+1; iq2++) {
+      binLimq2ESE[iq2] = iq2*5./iBinESE[iq2ESE];
+    }
+    
+    container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinESE);
+    printf("pt\n");
+    container -> SetBinLimits(ipTESE,binLimpT);
+    printf("y\n");
+    container -> SetBinLimits(iyESE,binLimy);
+    printf("centrality\n");
+    container -> SetBinLimits(icentESE,binLimcentESE);
+    printf("multiplicity\n");
+    container -> SetBinLimits(imultESE,binLimmultESE);
+    printf("local multiplicity\n");
+    container -> SetBinLimits(ilocalmultESE,binLimlocalmultESE);
+    printf("q2\n");
+    container -> SetBinLimits(iq2ESE,binLimq2ESE);
+    
+    container -> SetVarTitle(ipTESE,"pt");
+    container -> SetVarTitle(iyESE,"y");
+    container -> SetVarTitle(icentESE, "centrality");
+    container -> SetVarTitle(imultESE, "multiplicity");
+    container -> SetVarTitle(ilocalmultESE, "local multiplicity");
+    container -> SetVarTitle(iq2ESE, "q2");
+  }
 
 	container -> SetStepTitle(0, "MCLimAcc");
 	container -> SetStepTitle(1, "MC");
