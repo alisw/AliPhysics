@@ -260,6 +260,11 @@ public:
   void             SwitchOnClusterELinearityCorrection()   { fCorrectELinearity = kTRUE    ; }
   void             SwitchOffClusterELinearityCorrection()  { fCorrectELinearity = kFALSE   ; }
 
+  void             SwitchOnClusterEScalePerSMCorrection()  { fScaleEPerSM = kTRUE          ; }
+  void             SwitchOffClusterEScalePerSMCorrection() { fScaleEPerSM = kFALSE         ; }
+  void             SetScaleFactorPerSM(Int_t ism, Float_t factor)          
+                                                           { if ( ism < 22 && ism >= 0 ) fScaleFactorPerSM[ism] = factor ; }
+   
   Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
   void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
   void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
@@ -834,6 +839,9 @@ public:
   Bool_t           fRecalculateClusters;           ///<  Correct clusters, recalculate them if recalibration parameters is given.
   Bool_t           fCorrectELinearity;             ///<  Correct cluster linearity, always on.
   Bool_t           fSelectEmbeddedClusters;        ///<  Use only simulated clusters that come from embedding.
+  
+  Bool_t           fScaleEPerSM ;                  ///<  Scale cluster energy by a constant factor, depending on SM 
+  Float_t          fScaleFactorPerSM[22];          ///<  Scale factor depending on SM number to be applied to cluster energy
   
   Bool_t           fSmearShowerShape;              ///<  Smear shower shape (use in MC).
   Float_t          fSmearShowerShapeWidth;         ///<  Smear shower shape landau function "width" (use in MC).
