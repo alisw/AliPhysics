@@ -2829,7 +2829,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                  ( lV0Result->GetMassHypothesis() == AliV0Result::kK0Short ||
                   ( lBaryonPt > 1.0 || TMath::Abs(lBaryondEdxFromProton)<3.0 )
                   )
+                 )&&
+                
+                //Check 14: has at least one track with some TOF info, please (reject pileup)
+                //          warning: this is still to be studied in more detail!
+                (
+                 lV0Result->GetCutAtLeastOneTOF() == kFALSE ||
+                 (
+                  TMath::Abs(fTreeVariableNegTOFSignal) < 100 ||
+                  TMath::Abs(fTreeVariablePosTOFSignal) < 100
+                  )
                  )
+                
                 )
             {
                 //Regular fill histogram here
@@ -5180,17 +5191,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                  (TMath::Sqrt(fTreeCascVarCascDCAtoPVz*fTreeCascVarCascDCAtoPVz + fTreeCascVarCascDCAtoPVxy*fTreeCascVarCascDCAtoPVxy)<lCascadeResult->GetCutDCACascadeToPV() )
                  )&&
                 
-                //Check 14a: Negative track DCA to PV, weighted
-                ( lCascadeResult->GetCutDCANegToPVWeighted() < 0 ||
-                 (fTreeCascVarDCANegToPrimVtx/TMath::Sqrt(fTreeCascVarNegDCAPVSigmaX2*fTreeCascVarNegDCAPVSigmaX2 + fTreeCascVarNegDCAPVSigmaY2*fTreeCascVarNegDCAPVSigmaY2+1e-6)>lCascadeResult->GetCutDCANegToPVWeighted() )
-                 )&&
-                //Check 14a: Negative track DCA to PV, weighted
-                ( lCascadeResult->GetCutDCAPosToPVWeighted() < 0 ||
-                 (fTreeCascVarDCAPosToPrimVtx/TMath::Sqrt(fTreeCascVarPosDCAPVSigmaX2*fTreeCascVarPosDCAPVSigmaX2 + fTreeCascVarPosDCAPVSigmaY2*fTreeCascVarPosDCAPVSigmaY2+1e-6)>lCascadeResult->GetCutDCAPosToPVWeighted() )
-                 )&&
-                //Check 14a: Negative track DCA to PV, weighted
-                ( lCascadeResult->GetCutDCABachToPVWeighted() < 0 ||
-                 (fTreeCascVarDCABachToPrimVtx/TMath::Sqrt(fTreeCascVarBachDCAPVSigmaX2*fTreeCascVarBachDCAPVSigmaX2 + fTreeCascVarBachDCAPVSigmaY2*fTreeCascVarBachDCAPVSigmaY2+1e-6)>lCascadeResult->GetCutDCABachToPVWeighted() )
+                //Check 14: has at least one track with some TOF info, please (reject pileup)
+                //          warning: this is still to be studied in more detail!
+                (
+                 lCascadeResult->GetCutAtLeastOneTOF() == kFALSE ||
+                 (
+                  TMath::Abs(fTreeCascVarNegTOFSignal) < 100 ||
+                  TMath::Abs(fTreeCascVarPosTOFSignal) < 100 ||
+                  TMath::Abs(fTreeCascVarBachTOFSignal) < 100
+                  )
                  )
                 )
             {
