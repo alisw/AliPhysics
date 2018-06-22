@@ -29,9 +29,9 @@ using namespace std;
 void CheckFileQuality();
 void DrawDhCorr_STE_3DEfficiency_in_pTEtaZvtx(){
     
-    TFile* f = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
+    TFile* f = new TFile("AnalysisResults_pp2017_TrackEff.root");
     TDirectoryFile* d = (TDirectoryFile*)f->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data = (AliCFContainer*) (d->Get("containerprelSQM_pi"));
+    AliCFContainer *data = (AliCFContainer*) (d->Get("containerpp2017_pi"));
     
     AliCFGridSparse* gridSparsenum = (AliCFGridSparse*)data->GetGrid(1); // GenAcc
     THnSparse* numData = (THnSparse*)gridSparsenum->GetGrid();
@@ -39,9 +39,9 @@ void DrawDhCorr_STE_3DEfficiency_in_pTEtaZvtx(){
     THnSparse* denData = (THnSparse*)gridSparseden->GetGrid();
 
 
-    TFile* f2 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
+    TFile* f2 = new TFile("AnalysisResults_pp2017_TrackEff.root");
     TDirectoryFile* d2 = (TDirectoryFile*)f2->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data2 = (AliCFContainer*) (d2->Get("containerprelSQM_k"));
+    AliCFContainer *data2 = (AliCFContainer*) (d2->Get("containerpp2017_k"));
     
     AliCFGridSparse* gridSparsenum2 = (AliCFGridSparse*)data2->GetGrid(1); // GenAcc
     THnSparse* numData2 = (THnSparse*)gridSparsenum2->GetGrid();
@@ -49,9 +49,9 @@ void DrawDhCorr_STE_3DEfficiency_in_pTEtaZvtx(){
     THnSparse* denData2 = (THnSparse*)gridSparseden2->GetGrid();
     
     
-    TFile* f3 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
+    TFile* f3 = new TFile("AnalysisResults_pp2017_TrackEff.root");
     TDirectoryFile* d3 = (TDirectoryFile*)f3->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data3 = (AliCFContainer*) (d3->Get("containerprelSQM_p"));
+    AliCFContainer *data3 = (AliCFContainer*) (d3->Get("containerpp2017_p"));
     
     AliCFGridSparse* gridSparsenum3 = (AliCFGridSparse*)data3->GetGrid(1); // GenAcc
     THnSparse* numData3 = (THnSparse*)gridSparsenum3->GetGrid();
@@ -59,9 +59,9 @@ void DrawDhCorr_STE_3DEfficiency_in_pTEtaZvtx(){
     THnSparse* denData3 = (THnSparse*)gridSparseden3->GetGrid();
     
     
-    TFile* f4 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
+    TFile* f4 = new TFile("AnalysisResults_pp2017_TrackEff.root");
     TDirectoryFile* d4 = (TDirectoryFile*)f4->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data4 = (AliCFContainer*) (d4->Get("containerprelSQM_e"));
+    AliCFContainer *data4 = (AliCFContainer*) (d4->Get("containerpp2017_e"));
     
     AliCFGridSparse* gridSparsenum4 = (AliCFGridSparse*)data4->GetGrid(1); // GenAcc
     THnSparse* numData4 = (THnSparse*)gridSparsenum4->GetGrid();
@@ -69,9 +69,9 @@ void DrawDhCorr_STE_3DEfficiency_in_pTEtaZvtx(){
     THnSparse* denData4 = (THnSparse*)gridSparseden4->GetGrid();
     
     
-    TFile* f5 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
+    TFile* f5 = new TFile("AnalysisResults_pp2017_TrackEff.root");
     TDirectoryFile* d5 = (TDirectoryFile*)f5->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data5 = (AliCFContainer*) (d5->Get("containerprelSQM_mu"));
+    AliCFContainer *data5 = (AliCFContainer*) (d5->Get("containerpp2017_mu"));
     
     AliCFGridSparse* gridSparsenum5 = (AliCFGridSparse*)data5->GetGrid(1); // GenAcc
     THnSparse* numData5 = (THnSparse*)gridSparsenum5->GetGrid();
@@ -130,14 +130,14 @@ void DrawDhCorr_STE_3DEfficiency_in_pTEtaZvtx(){
     newLimits[10]  = 1.60;
     newLimits[11]  = 1.80;
     newLimits[12]  = 2.00;
-    newLimits[13]  = 2.25;
-    newLimits[14]  = 2.50;
-    newLimits[15]  = 2.75;
-    newLimits[16]  = 3.00;
-    newLimits[17]  = 3.50;
-    newLimits[18]  = 4.00;
-    newLimits[19]  = 4.50;
-    newLimits[20]  = 5.50;
+    newLimits[13]  = 2.33;
+    newLimits[14]  = 2.66;
+    newLimits[15]  = 3.00;
+    newLimits[16]  = 3.50;
+    newLimits[17]  = 4.00;
+    newLimits[18]  = 4.40;
+    newLimits[19]  = 4.80;
+    newLimits[20]  = 5.20;
     newLimits[21]  = 6.00;
     newLimits[22]  = 7.00;
     newLimits[23]  = 8.00;
@@ -326,45 +326,45 @@ void CheckFileQuality(){
 
 void DrawDhCorr_STE_1DEfficiency_in_pT(){
     
-    TFile* f = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
+    TFile* f = new TFile("AnalysisResults_pp2017_TrackEff.root");
     TDirectoryFile* d = (TDirectoryFile*)f->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data = (AliCFContainer*) (d->Get("containerprelSQM_pi"));
+    AliCFContainer *data = (AliCFContainer*) (d->Get("containerpp2017_pi"));
     
     AliCFGridSparse* gridSparsenum = (AliCFGridSparse*)data->GetGrid(1); // GenAcc
     THnSparse* numData = (THnSparse*)gridSparsenum->GetGrid();
     AliCFGridSparse* gridSparseden = (AliCFGridSparse*)data->GetGrid(6); // Reco
     THnSparse* denData = (THnSparse*)gridSparseden->GetGrid();
     
-    TFile* f2 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
+    TFile* f2 = new TFile("AnalysisResults_pp2017_TrackEff.root");
     TDirectoryFile* d2 = (TDirectoryFile*)f2->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data2 = (AliCFContainer*) (d2->Get("containerprelSQM_k"));
+    AliCFContainer *data2 = (AliCFContainer*) (d2->Get("containerpp2017_k"));
     
     AliCFGridSparse* gridSparsenum2 = (AliCFGridSparse*)data2->GetGrid(1); // GenAcc
     THnSparse* numData2 = (THnSparse*)gridSparsenum2->GetGrid();
     AliCFGridSparse* gridSparseden2 = (AliCFGridSparse*)data2->GetGrid(6); // Reco
     THnSparse* denData2 = (THnSparse*)gridSparseden2->GetGrid();
     
-    TFile* f3 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
+    TFile* f3 = new TFile("AnalysisResults_pp2017_TrackEff.root");
     TDirectoryFile* d3 = (TDirectoryFile*)f3->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data3 = (AliCFContainer*) (d3->Get("containerprelSQM_p"));
+    AliCFContainer *data3 = (AliCFContainer*) (d3->Get("containerpp2017_p"));
     
     AliCFGridSparse* gridSparsenum3 = (AliCFGridSparse*)data3->GetGrid(1); // GenAcc
     THnSparse* numData3 = (THnSparse*)gridSparsenum3->GetGrid();
     AliCFGridSparse* gridSparseden3 = (AliCFGridSparse*)data3->GetGrid(6); // Reco
     THnSparse* denData3 = (THnSparse*)gridSparseden3->GetGrid();
     
-    TFile* f4 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
+    TFile* f4 = new TFile("AnalysisResults_pp2017_TrackEff.root");
     TDirectoryFile* d4 = (TDirectoryFile*)f4->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data4 = (AliCFContainer*) (d4->Get("containerprelSQM_e"));
+    AliCFContainer *data4 = (AliCFContainer*) (d4->Get("containerpp2017_e"));
     
     AliCFGridSparse* gridSparsenum4 = (AliCFGridSparse*)data4->GetGrid(1); // GenAcc
     THnSparse* numData4 = (THnSparse*)gridSparsenum4->GetGrid();
     AliCFGridSparse* gridSparseden4 = (AliCFGridSparse*)data4->GetGrid(6); // Reco
     THnSparse* denData4 = (THnSparse*)gridSparseden4->GetGrid();
     
-    TFile* f5 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
+    TFile* f5 = new TFile("AnalysisResults_pp2017_TrackEff.root");
     TDirectoryFile* d5 = (TDirectoryFile*)f5->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data5 = (AliCFContainer*) (d5->Get("containerprelSQM_mu"));
+    AliCFContainer *data5 = (AliCFContainer*) (d5->Get("containerpp2017_mu"));
     
     AliCFGridSparse* gridSparsenum5 = (AliCFGridSparse*)data5->GetGrid(1); // GenAcc
     THnSparse* numData5 = (THnSparse*)gridSparsenum5->GetGrid();
@@ -387,7 +387,7 @@ void DrawDhCorr_STE_1DEfficiency_in_pT(){
     TH1D* hden5 = (TH1D*)denData5->Projection(0);                    
 
 
-    TCanvas *c = new TCanvas("c", "pT, Eta, Zvtx Efficiency distrubution", 400,900);
+    TCanvas *c = new TCanvas("c", "pT, Eta, Zvtx Efficiency distrubution", 800,900);
     c->Divide(1,2);
     
     TH1D* hnumTot = (TH1D*)hnum->Clone("hnumtot");
@@ -404,6 +404,8 @@ void DrawDhCorr_STE_1DEfficiency_in_pT(){
     heff->Divide(hdenTot,hnumTot,1,1,"B");
     
     c->cd(1);
+    heff->SetMarkerStyle(21);
+    heff->SetMarkerSize(0.8);
     heff->Draw();
     //Rebinning
     const Int_t newLimitsBins = 26;
@@ -421,14 +423,14 @@ void DrawDhCorr_STE_1DEfficiency_in_pT(){
     newLimits[10]  = 1.60;
     newLimits[11]  = 1.80;
     newLimits[12]  = 2.00;
-    newLimits[13]  = 2.25;
-    newLimits[14]  = 2.50;
-    newLimits[15]  = 2.75;
-    newLimits[16]  = 3.00;
-    newLimits[17]  = 3.50;
-    newLimits[18]  = 4.00;
-    newLimits[19]  = 4.50;
-    newLimits[20]  = 5.50;
+    newLimits[13]  = 2.33;
+    newLimits[14]  = 2.66;
+    newLimits[15]  = 3.00;
+    newLimits[16]  = 3.50;
+    newLimits[17]  = 4.00;
+    newLimits[18]  = 4.40;
+    newLimits[19]  = 4.80;
+    newLimits[20]  = 5.20;
     newLimits[21]  = 6.00;
     newLimits[22]  = 7.00;
     newLimits[23]  = 8.00;
@@ -542,6 +544,8 @@ void DrawDhCorr_STE_1DEfficiency_in_pT(){
     Rbheff->Divide(RbhdenTot,RbhnumTot,1,1,"B");
     gStyle->SetOptStat(kTRUE);
     c->cd(2);
+    Rbheff->SetMarkerStyle(21);
+    Rbheff->SetMarkerSize(0.8);
     Rbheff->Draw();    
     
     // Num bins checking
@@ -610,7 +614,7 @@ void UserBins_DrawDhCorr_STE_1DEfficiency_in_pT(){
     
     TFile* f = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
     TDirectoryFile* d = (TDirectoryFile*)f->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data = (AliCFContainer*) (d->Get("containerprelSQM_pi"));
+    AliCFContainer *data = (AliCFContainer*) (d->Get("containerpp2017_pi"));
     
     AliCFGridSparse* gridSparsenum = (AliCFGridSparse*)data->GetGrid(1); // GenAcc
     THnSparse* numData = (THnSparse*)gridSparsenum->GetGrid();
@@ -619,7 +623,7 @@ void UserBins_DrawDhCorr_STE_1DEfficiency_in_pT(){
     
     TFile* f2 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
     TDirectoryFile* d2 = (TDirectoryFile*)f2->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data2 = (AliCFContainer*) (d2->Get("containerprelSQM_k"));
+    AliCFContainer *data2 = (AliCFContainer*) (d2->Get("containerpp2017_k"));
     
     AliCFGridSparse* gridSparsenum2 = (AliCFGridSparse*)data2->GetGrid(1); // GenAcc
     THnSparse* numData2 = (THnSparse*)gridSparsenum2->GetGrid();
@@ -628,7 +632,7 @@ void UserBins_DrawDhCorr_STE_1DEfficiency_in_pT(){
     
     TFile* f3 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
     TDirectoryFile* d3 = (TDirectoryFile*)f3->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data3 = (AliCFContainer*) (d3->Get("containerprelSQM_p"));
+    AliCFContainer *data3 = (AliCFContainer*) (d3->Get("containerpp2017_p"));
     
     AliCFGridSparse* gridSparsenum3 = (AliCFGridSparse*)data3->GetGrid(1); // GenAcc
     THnSparse* numData3 = (THnSparse*)gridSparsenum3->GetGrid();
@@ -637,7 +641,7 @@ void UserBins_DrawDhCorr_STE_1DEfficiency_in_pT(){
     
     TFile* f4 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
     TDirectoryFile* d4 = (TDirectoryFile*)f4->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data4 = (AliCFContainer*) (d4->Get("containerprelSQM_e"));
+    AliCFContainer *data4 = (AliCFContainer*) (d4->Get("containerpp2017_e"));
     
     AliCFGridSparse* gridSparsenum4 = (AliCFGridSparse*)data4->GetGrid(1); // GenAcc
     THnSparse* numData4 = (THnSparse*)gridSparsenum4->GetGrid();
@@ -646,7 +650,7 @@ void UserBins_DrawDhCorr_STE_1DEfficiency_in_pT(){
     
     TFile* f5 = new TFile("AnalysisResults_f2b_CENT_woSDD.root");
     TDirectoryFile* d5 = (TDirectoryFile*)f5->Get("PWGPP_CFSingleTrack");
-    AliCFContainer *data5 = (AliCFContainer*) (d5->Get("containerprelSQM_mu"));
+    AliCFContainer *data5 = (AliCFContainer*) (d5->Get("containerpp2017_mu"));
     
     AliCFGridSparse* gridSparsenum5 = (AliCFGridSparse*)data5->GetGrid(1); // GenAcc
     THnSparse* numData5 = (THnSparse*)gridSparsenum5->GetGrid();
@@ -847,6 +851,107 @@ void UserBins_DrawDhCorr_STE_1DEfficiency_in_pT(){
 
     }
     else Printf(" ======> rebin Failed");
+
     
+}
+
+
+void DrawRelativeAbundances_VsPt(){
     
+    TFile* ftot = new TFile("AnalysisResults_pp2017_TrackEff.root");
+    TDirectoryFile* dtot = (TDirectoryFile*)ftot->Get("PWGPP_CFSingleTrack");
+    AliCFContainer *datatot = (AliCFContainer*) (dtot->Get("containerpp2017"));
+    
+    AliCFGridSparse* gridSparsenum_tot = (AliCFGridSparse*)datatot->GetGrid(1); // GenAcc
+    THnSparse* numData_tot = (THnSparse*)gridSparsenum_tot->GetGrid();
+
+    TFile* f = new TFile("AnalysisResults_pp2017_TrackEff.root");
+    TDirectoryFile* d = (TDirectoryFile*)f->Get("PWGPP_CFSingleTrack");
+    AliCFContainer *data = (AliCFContainer*) (d->Get("containerpp2017_pi"));
+    
+    AliCFGridSparse* gridSparsenum = (AliCFGridSparse*)data->GetGrid(1); // GenAcc
+    THnSparse* numData = (THnSparse*)gridSparsenum->GetGrid();
+    
+    TFile* f2 = new TFile("AnalysisResults_pp2017_TrackEff.root");
+    TDirectoryFile* d2 = (TDirectoryFile*)f2->Get("PWGPP_CFSingleTrack");
+    AliCFContainer *data2 = (AliCFContainer*) (d2->Get("containerpp2017_k"));
+    
+    AliCFGridSparse* gridSparsenum2 = (AliCFGridSparse*)data2->GetGrid(1); // GenAcc
+    THnSparse* numData2 = (THnSparse*)gridSparsenum2->GetGrid();
+    
+    TFile* f3 = new TFile("AnalysisResults_pp2017_TrackEff.root");
+    TDirectoryFile* d3 = (TDirectoryFile*)f3->Get("PWGPP_CFSingleTrack");
+    AliCFContainer *data3 = (AliCFContainer*) (d3->Get("containerpp2017_p"));
+    
+    AliCFGridSparse* gridSparsenum3 = (AliCFGridSparse*)data3->GetGrid(1); // GenAcc
+    THnSparse* numData3 = (THnSparse*)gridSparsenum3->GetGrid();
+    
+    TFile* f4 = new TFile("AnalysisResults_pp2017_TrackEff.root");
+    TDirectoryFile* d4 = (TDirectoryFile*)f4->Get("PWGPP_CFSingleTrack");
+    AliCFContainer *data4 = (AliCFContainer*) (d4->Get("containerpp2017_e"));
+    
+    AliCFGridSparse* gridSparsenum4 = (AliCFGridSparse*)data4->GetGrid(1); // GenAcc
+    THnSparse* numData4 = (THnSparse*)gridSparsenum4->GetGrid();
+    
+    TFile* f5 = new TFile("AnalysisResults_pp2017_TrackEff.root");
+    TDirectoryFile* d5 = (TDirectoryFile*)f5->Get("PWGPP_CFSingleTrack");
+    AliCFContainer *data5 = (AliCFContainer*) (d5->Get("containerpp2017_mu"));
+    
+    AliCFGridSparse* gridSparsenum5 = (AliCFGridSparse*)data5->GetGrid(1); // GenAcc
+    THnSparse* numData5 = (THnSparse*)gridSparsenum5->GetGrid();
+            
+    TH1D* hnum_total = (TH1D*)numData_tot->Projection(0);
+    TH1D* hnum_pi = (TH1D*)numData->Projection(0); 
+    TH1D* hnum_k  = (TH1D*)numData2->Projection(0);    
+    TH1D* hnum_p  = (TH1D*)numData3->Projection(0);    
+    TH1D* hnum_e  = (TH1D*)numData4->Projection(0);    
+    TH1D* hnum_mu = (TH1D*)numData5->Projection(0);
+
+    TCanvas *c = new TCanvas();
+    hnum_pi->Divide(hnum_pi,hnum_total,1,1,"B");
+    hnum_pi->SetMarkerColor(kRed);
+    hnum_pi->SetLineColor(kRed);
+    hnum_pi->SetMarkerStyle(21);
+    hnum_pi->SetMarkerSize(0.8);
+    hnum_pi->SetMinimum(0.0001);
+    hnum_pi->SetMaximum(1.8);
+    hnum_pi->Draw();
+    hnum_k->Divide(hnum_k,hnum_total,1,1,"B");
+    hnum_k->SetMarkerColor(kBlue);
+    hnum_k->SetLineColor(kBlue);
+    hnum_k->SetMarkerStyle(21);
+    hnum_k->SetMarkerSize(0.8);    
+    hnum_k->Draw("same");
+    hnum_p->Divide(hnum_p,hnum_total,1,1,"B");
+    hnum_p->SetMarkerColor(kGreen+1);
+    hnum_p->SetLineColor(kGreen+1);
+    hnum_p->SetMarkerStyle(21);
+    hnum_p->SetMarkerSize(0.8);    
+    hnum_p->Draw("same");
+    hnum_e->Divide(hnum_e,hnum_total,1,1,"B");
+    hnum_e->SetMarkerColor(kMagenta);
+    hnum_e->SetLineColor(kMagenta);
+    hnum_e->SetMarkerStyle(21);
+    hnum_e->SetMarkerSize(0.8);    
+    hnum_e->Draw("same");
+    hnum_mu->Divide(hnum_mu,hnum_total,1,1,"B");
+    hnum_mu->SetMarkerColor(kCyan+1);
+    hnum_mu->SetLineColor(kCyan+1);
+    hnum_mu->SetMarkerStyle(21);
+    hnum_mu->SetMarkerSize(0.8);    
+    hnum_mu->Draw("same");
+
+    TLegend* leg=new TLegend(0.65,0.15,0.95,0.40);
+    leg->SetFillStyle(0);
+    leg->SetBorderSize(0);
+    leg->AddEntry(hnum_pi,"pions","epl");
+    leg->AddEntry(hnum_k,"kaons","epl");
+    leg->AddEntry(hnum_p,"protons","epl");
+    leg->AddEntry(hnum_e,"electrons","epl");
+    leg->AddEntry(hnum_mu,"muons","epl");
+    leg->Draw(); 
+
+    c->SetLogy();
+    c->Draw();
+
 }
