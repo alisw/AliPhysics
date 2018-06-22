@@ -60,7 +60,7 @@ lastVal_y = cutoff value for the y-axis (to remove low-stat fluctuating bins). A
 */
 
 void DrawEfficiency_2D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString outFileName="EfficiencyMap_2D_Dzero_c.root", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0, Int_t yVar=7, Double_t lastVal_y=-1);
-void DrawEfficiency_1D(TString fileName="z.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_fromC_WeigMult", TString contName="CFHFccontainer0_fromC_WeigMult", TString outFileName="EfficiencyMap_2D_Dzero_c_WeigMult.root", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0);
+void DrawEfficiency_1D(TString fileName="AnalysisResults.root", TString dirFileName="PWG3_D2H_CFtaskD0toKpi_c", TString contName="CFHFccontainer0_c", TString outFileName="EfficiencyMap_1D_Dzero_c.root", Int_t numStep=9, Int_t denStep=0, Int_t xVar=0);
 void PlotEfficiency_2D(TString fileName="EfficiencyMap_2D_Dzero_c.root", TString fileNameOut="EfficiencyMap_2D_Dzero_c_Plot", Double_t xMin=0, Double_t xMax=24, Double_t yMin=0, Double_t yMax=90);
 void PlotEfficiency_1D(TString fileName="EfficiencyMap_1D_Dzero_c.root", TString fileNameOut="EfficiencyMap_1D_Dzero_c_Plot", Double_t xMin=0, Double_t xMax=24);
 void Apply_GenAccLimAcc_Factor_2D(TString inputEffFile="EfficiencyMap_2D_Dzero_c.root", TString MCtoyfile="Acceptance_Toy_D0Kpi_yfidPtDep_etaDau08_ptDau300_FONLL7ptshape.root", TString fileNameOut="EfficiencyMap_2D_Dzero_c_wLimAcc.root");
