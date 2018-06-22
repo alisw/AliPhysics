@@ -6196,9 +6196,29 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardV0Configuration(
     //Explore Use MC Properties vs Use Reconstructed Properties
     for(Int_t i = 0 ; i < lNPart ; i ++){
         //Create a new object from default
-        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_Central_MCUseRecoProp",lParticleNameV0[i].Data() ) );
+        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_MCUseRecoProp",lParticleNameV0[i].Data() ) );
         
         lV0Result[lNV0]->SetCutMCUseMCProperties(kFALSE);
+        
+        //Add result to pool
+        lNV0++;
+    }
+    
+    //Explore TOF information use
+    for(Int_t i = 0 ; i < lNPart ; i ++){
+        //Create a new object from default
+        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_AtLeastOneTOF",lParticleNameV0[i].Data() ) );
+        lV0Result[lNV0]->SetCutAtLeastOneTOF(kTRUE);
+        
+        //Add result to pool
+        lNV0++;
+    }
+    
+    //Explore ITS refit requirement
+    for(Int_t i = 0 ; i < lNPart ; i ++){
+        //Create a new object from default
+        lV0Result[lNV0] = new AliV0Result( lV0Result[i], Form("%s_ITSRefitTracks",lParticleNameV0[i].Data() ) );
+        lV0Result[lNV0]->SetCutUseITSRefitTracks(kTRUE);
         
         //Add result to pool
         lNV0++;
@@ -6788,6 +6808,22 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         lCascadeResult[lN] -> SetCutMinRapidity(-0.3);
         lCascadeResult[lN] -> SetCutMaxRapidity(+0.3);
         
+        //Add result to pool
+        lN++;
+    }
+    
+    //Explore TOF info use
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_AtLeastOneTOF",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutAtLeastOneTOF(kTRUE);
+        //Add result to pool
+        lN++;
+    }
+    
+    //Require ITS refit (will lose tons of signal)
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitTracks",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitTracks(kTRUE);
         //Add result to pool
         lN++;
     }
