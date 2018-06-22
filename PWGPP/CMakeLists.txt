@@ -71,6 +71,7 @@ set ( SRCS2
   global/AliAnalysisTaskTrackingEffPID.cxx
   global/AliGlobalFBFqa.cxx
   global/AliAnalysisTaskTrackRefsChecksMultipleSpecies.cxx
+  global/AliAnalysisTaskTrackRefsChecks.cxx
   )
 #file ( GLOB SRCS3 "cosmic/*.cxx" )
 set ( SRCS3
