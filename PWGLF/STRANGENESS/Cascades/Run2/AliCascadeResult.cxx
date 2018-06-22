@@ -94,7 +94,8 @@ fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
-fCutDCABachToPVWeighted(-1)
+fCutDCABachToPVWeighted(-1),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Dummy Constructor - not to be used!
     fhNCentBounds = 21;
@@ -194,7 +195,8 @@ fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
-fCutDCABachToPVWeighted(-1)
+fCutDCABachToPVWeighted(-1),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Named constructor
     fhNCentBounds = 21;
@@ -294,7 +296,8 @@ fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
-fCutDCABachToPVWeighted(-1)
+fCutDCABachToPVWeighted(-1),
+fCutAtLeastOneTOF(kFALSE)
 {
     //centrality binning assignment
     fhNCentBounds = lNCentBins+1;
@@ -394,7 +397,8 @@ fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
-fCutDCABachToPVWeighted(-1)
+fCutDCABachToPVWeighted(-1),
+fCutAtLeastOneTOF(kFALSE)
 {
     //centrality binning assignment
     fhNCentBounds = lNCentBins+1;
@@ -496,7 +500,8 @@ fCutVarDCACascDau_Const(lCopyMe.fCutVarDCACascDau_Const),
 fCutDCACascadeToPV(lCopyMe.fCutDCACascadeToPV),
 fCutDCANegToPVWeighted(lCopyMe.fCutDCANegToPVWeighted),
 fCutDCAPosToPVWeighted(lCopyMe.fCutDCAPosToPVWeighted),
-fCutDCABachToPVWeighted(lCopyMe.fCutDCABachToPVWeighted)
+fCutDCABachToPVWeighted(lCopyMe.fCutDCABachToPVWeighted),
+fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF)
 
 {
     SetName( lNewName.Data() );
@@ -627,6 +632,8 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutDCANegToPVWeighted  = lCopyMe -> GetCutDCANegToPVWeighted();
     fCutDCAPosToPVWeighted  = lCopyMe -> GetCutDCAPosToPVWeighted();
     fCutDCABachToPVWeighted = lCopyMe -> GetCutDCABachToPVWeighted();
+    
+    fCutAtLeastOneTOF = lCopyMe -> GetCutAtLeastOneTOF();
     
     // Constructor
     Double_t lThisMass = GetMass();
@@ -773,6 +780,8 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutDCANegToPVWeighted  = lCopyMe.GetCutDCANegToPVWeighted();
     fCutDCAPosToPVWeighted  = lCopyMe.GetCutDCAPosToPVWeighted();
     fCutDCABachToPVWeighted = lCopyMe.GetCutDCABachToPVWeighted();
+    
+    fCutAtLeastOneTOF = lCopyMe.GetCutAtLeastOneTOF();
     
     if (fhCentBins) {
         delete [] fhCentBins;
@@ -938,6 +947,8 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     if ( TMath::Abs(fCutDCAPosToPVWeighted   - lCompareCascade->GetCutDCAPosToPVWeighted()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutDCABachToPVWeighted  - lCompareCascade->GetCutDCABachToPVWeighted()) > 1e-6 ) lReturnValue = kFALSE;
     
+    if ( TMath::Abs(fCutAtLeastOneTOF - lCompareCascade->GetCutAtLeastOneTOF()) > 1e-6 ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -1038,6 +1049,7 @@ void AliCascadeResult::Print()
     cout<<" wDCA Neg to PV.....: "<<fCutDCANegToPVWeighted<<endl;
     cout<<" wDCA Pos to PV.....: "<<fCutDCAPosToPVWeighted<<endl;
     cout<<" wDCA Bach to PV....: "<<fCutDCABachToPVWeighted<<endl;
+    cout<<" At least 1 tof.....: "<<fCutAtLeastOneTOF<<endl;
     cout<<"========================================"<<endl;
     return;
 }
