@@ -93,6 +93,7 @@ public:
     kUserDefined       = BIT(27), // Set when custom trigger classes are set in AliPhysicsSelection
     kTRD               = BIT(28), // TRD trigger
     kMuonCalo          = BIT(29), // Muon-calo triggers
+    kCaloOnly          = BIT(29), // MB, EMCAL and PHOS triggers in CALO or CALOFAST cluster
     // Bits 30 and above are reserved for FLAGS
     kFastOnly          = BIT(30), // The fast cluster fired. This bit is set in to addition another trigger bit, e.g. kMB
     kAny               = 0xffffffff, // to accept any defined trigger
