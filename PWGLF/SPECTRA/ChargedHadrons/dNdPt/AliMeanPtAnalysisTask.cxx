@@ -83,6 +83,8 @@ AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char* name) : AliAnalysisTask
   fBinsEta(0),
   fBinsZv(0),
   fBinsPtReso(0),
+  fBins1Pt(0),
+  fBinsSigma1Pt(0),
   //Event-Histograms
   fEventCount(0),
   fHistMCTrackParticle(0),
@@ -113,14 +115,24 @@ AliMeanPtAnalysisTask::AliMeanPtAnalysisTask(const char* name) : AliAnalysisTask
   //  Double_t binsPtDefault[69] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
   //  Double_t binsEtaDefault[31] = {-1.5,-1.4,-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5};
 
-  Double_t minPtReso = 0.;
-  Double_t maxPtReso = 0.3;
-  Int_t nBinsPtReso = 300;
-  Double_t binsPtReso[301];
-  for (Int_t i = 0; i <= nBinsPtReso; i++) {
-    binsPtReso[i] = minPtReso + i*(maxPtReso-minPtReso)/nBinsPtReso;
-  }
+  // binning for relative pT resolution
+  const Int_t nBinsPtReso = 300;
+  Double_t binsPtReso[nBinsPtReso+1];
+  SetFixedBinEdges(binsPtReso, 0., 0.3, nBinsPtReso);
   SetBinsPtReso(nBinsPtReso, binsPtReso);
+
+  // binning for 1/pt
+  const Int_t nBins1Pt = 200;
+  Double_t bins1Pt[nBins1Pt+1];
+  SetFixedBinEdges(bins1Pt, 0., 10., nBins1Pt);
+  SetBins1Pt(nBins1Pt, bins1Pt);
+
+  // binning for sigma 1/pt
+  const Int_t nBinsSigma1Pt = 200;
+  Double_t binsSigma1Pt[nBinsSigma1Pt+1];
+  SetFixedBinEdges(binsSigma1Pt, 0., 0.1, nBinsSigma1Pt);
+  SetBinsSigma1Pt(nBinsSigma1Pt, binsSigma1Pt);
+
 
   SetBinsMult(1,binsMultDefault);
   SetBinsCent(1,binsCentDefault);
@@ -193,7 +205,6 @@ void AliMeanPtAnalysisTask::UserCreateOutputObjects(){
   fHistRelPtResoFromCov ->GetAxis(1)->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fHistRelPtResoFromCov ->GetAxis(2)->SetTitle("Centrality (%)");
   fHistRelPtResoFromCov -> Sumw2();
-
 
 
   if(fIsMC){
@@ -739,4 +750,10 @@ Bool_t AliMeanPtAnalysisTask::IsVertexOK(AliVEvent* event){
     // TODO: AOD code goes here
   }
   return kTRUE;
+}
+
+void AliMeanPtAnalysisTask::SetFixedBinEdges(Double_t* array, Double_t lowerEdge, Double_t upperEdge, Int_t nBins){
+  for(Int_t i = 0; i <= nBins; i++){
+    array[i] = lowerEdge + i*(upperEdge - lowerEdge)/nBins;
+  }
 }
