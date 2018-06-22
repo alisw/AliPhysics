@@ -647,8 +647,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												if(Phi > 1.39 && Phi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187     
 												if(Phi > 4.53 && Phi < 5.708) fClsTypeDCAL = kTRUE; //DCAL  : 260 < phi < 327
 
-												if(fClsTypeDCAL)
-
 												//----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
 												if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
 																if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
@@ -844,20 +842,20 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												if(Matchphi>1.39 && Matchphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187     
 												if(Matchphi>4.53 && Matchphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
 
-												cout<< "======================================== "<<endl;
-												cout<< "fFlagClsTypeEMC == "<< fFlagClsTypeEMC << "  fFlagClsTypeDCAL == "<< fFlagClsTypeDCAL<<endl;
-												cout<< "fClsTypeEMC     == "<< fClsTypeEMC     << "  fClsTypeDCAL     == "<< fClsTypeDCAL<<endl;
-												cout<< "MachPhi         == "<< Matchphi <<endl ;
-												cout<< "======================================== "<<endl;
+												//cout<< "======================================== "<<endl;
+												//cout<< "fFlagClsTypeEMC == "<< fFlagClsTypeEMC << "  fFlagClsTypeDCAL == "<< fFlagClsTypeDCAL<<endl;
+												//cout<< "fClsTypeEMC     == "<< fClsTypeEMC     << "  fClsTypeDCAL     == "<< fClsTypeDCAL<<endl;
+												//cout<< "MachPhi         == "<< Matchphi <<endl ;
+												//cout<< "======================================== "<<endl;
 
 												//----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
 												if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
 																if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
-																cout<<"!!!!!!!!!!!!!!!!!! EMCAL !!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+																//cout<<"!!!!!!!!!!!!!!!!!! EMCAL !!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
 
 												if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
 																if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
-																cout<<"!!!!!!!!!!!!!!!!!! DCAL !!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+																//cout<<"!!!!!!!!!!!!!!!!!! DCAL !!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
 
 												fHistSelectPt->Fill(TrkPt);
 
