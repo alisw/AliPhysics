@@ -62,6 +62,9 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,bool DC
 ,fpTbins(20)
 ,fDoSplitting(contribSplitting)
 ,fDoDCAPlots(DCADist)
+,fPtResolution()
+,fThetaResolution()
+,fPhiResolution()
 {
   float ptmin=0;
   float ptmax=5;

@@ -253,12 +253,12 @@ bool AliFemtoDreamCascadeCuts::isSelected(AliFemtoDreamCascade *casc) {
   if (pass) {
     fHist->FillInvMassPt(casc->GetPt(),casc->GetMass());
     if (fRunNumberQA) {
-      fHist->FillInvMassPerRunNumber(casc->GetEvtNumber(),casc->GetXiMass());
+      fHist->FillInvMassPerRunNumber(casc->GetEvtNumber(),casc->GetMass());
     }
   }
   if (pass&&fcutXiMass) {
-    if ((casc->GetXiMass()<(fXiMass-fXiMassWidth))||
-        (casc->GetXiMass()>(fXiMass+fXiMassWidth))) {
+    if ((casc->GetMass()<(fXiMass-fXiMassWidth))||
+        (casc->GetMass()>(fXiMass+fXiMassWidth))) {
       pass=false;
     } else {
       if (!fMinimalBooking)fHist->FillCutCounter(21);
