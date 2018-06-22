@@ -643,8 +643,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 												Double_t Phi =  pos.Phi();
 												if(Phi <0){Phi += 2*TMath::Pi();}
-												//fHistEta_EMcal->Fill(pos.Eta());                     // plot the pt value of the track in a histogram
-												//fHistPhi_EMcal->Fill(pos.Phi());                     // plot the pt value of the track in a histogram
 
 												if(Phi > 1.39 && Phi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187     
 												if(Phi > 4.53 && Phi < 5.708) fClsTypeDCAL = kTRUE; //DCAL  : 260 < phi < 327
@@ -820,6 +818,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								if(clustMatch && clustMatch->IsEMCAL())
 								{
 												fHistMatchPt->Fill(TrkPt);
+												fHistScatter_EMcal_aftMatch->Fill(track->Eta(),track->Phi());	
 
 												///////get position of clustMatch/////////
 												Float_t clustMatchpos[3] = {0.};
@@ -835,18 +834,28 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												phidiff = TVector2::Phi_mpi_pi(track->GetTrackPhiOnEMCal()-Matchphi);
 												fEtadiff->Fill(etadiff); 
 												fPhidiff->Fill(phidiff); 
-												Matchphi=TVector2::Phi_mpi_pi(Matchphi);
+												//Matchphi=TVector2::Phi_mpi_pi(Matchphi);
+												if(Matchphi <0){Matchphi += 2*TMath::Pi();}
+
 
 												if(TMath::Abs(etadiff)>0.05 || TMath::Abs(phidiff)>0.05) continue;
 												if(Matchphi>1.39 && Matchphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187     
 												if(Matchphi>4.53 && Matchphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
 
+												//cout<< "======================================== "<<endl;
+												//cout<< "fFlagClsTypeEMC == "<< fFlagClsTypeEMC << "  fFlagClsTypeDCAL == "<< fFlagClsTypeDCAL<<endl;
+												//cout<< "fClsTypeEMC     == "<< fClsTypeEMC     << "  fClsTypeDCAL     == "<< fClsTypeDCAL<<endl;
+												//cout<< "MachPhi         == "<< Matchphi <<endl ;
+												//cout<< "======================================== "<<endl;
+
 												//----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
 												if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
 																if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
+																//cout<<"!!!!!!!!!!!!!!!!!! EMCAL !!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
 
 												if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
 																if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+																//cout<<"!!!!!!!!!!!!!!!!!! DCAL !!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
 
 												fHistSelectPt->Fill(TrkPt);
 
@@ -860,7 +869,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 																if(pid_eleB || pid_eleD) fHist_eff_match->Fill(TrkPt);
 												}
 
-												fHistScatter_EMcal_aftMatch->Fill(track->Eta(),track->Phi());	
 
 												Double_t eop = -1.0;
 												Double_t clE = clustMatch->E();
@@ -1245,6 +1253,7 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Double_t MatchPhi, Double_t MatchEta
 												TVector3 Assocpos(Assoclpos);
 
 												Double_t AssoPhi =  Assocpos.Phi();
+												if(AssoPhi <0){AssoPhi += 2*TMath::Pi();}
 												Double_t AssoEta =  Assocpos.Eta();
 												Double_t AssoclE =  Assoclust->E();
 
