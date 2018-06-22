@@ -1237,9 +1237,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterdPhidPtPosTracksBeforeQA->Sumw2();
         fHistClusterdPhidPtNegTracksBeforeQA->Sumw2();
         fHistClusterdPhidPtAfterQA->Sumw2();
-        fHistClusterdEtadPtTrueMatched->Sumw2();
-        fHistClusterdPhidPtPosTracksTrueMatched->Sumw2();
-        fHistClusterdPhidPtNegTracksTrueMatched->Sumw2();
+        if(fIsPureCalo == 0){
+          fHistClusterdEtadPtTrueMatched->Sumw2();
+          fHistClusterdPhidPtPosTracksTrueMatched->Sumw2();
+          fHistClusterdPhidPtNegTracksTrueMatched->Sumw2();
+        }
         fHistClusterM20M02BeforeQA->Sumw2();
         fHistClusterM20M02AfterQA->Sumw2();
         if(fUseEOverPVetoTM){
