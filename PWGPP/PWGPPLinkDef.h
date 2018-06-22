@@ -95,6 +95,8 @@
 
 #pragma link C++ class AliTaskConfigOCDB+;
 
+#pragma link C++ class AliAnalysisTaskTrackRefsChecksMultipleSpecies+;
+#pragma link C++ class AliAnalysisTaskTrackRefsChecks+;
 
 // TRD performance classes
 #pragma link C++ class  AliTenderSupplyTRD+;
