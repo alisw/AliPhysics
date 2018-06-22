@@ -36,6 +36,8 @@ AliReducedEventInfo::AliReducedEventInfo() :
   fTimeStamp(0),
   fEventType(0),
   fTriggerMask(0),
+  fOnlineTriggerMask(0),
+  fOnlineTriggerMaskNext50(0),
   fMultiplicityEstimators(),
   fMultiplicityEstimatorPercentiles(),
   fIsPhysicsSelection(kTRUE),
@@ -114,6 +116,8 @@ AliReducedEventInfo::AliReducedEventInfo(const Char_t* name, Int_t trackOption /
   fTimeStamp(0),
   fEventType(0),
   fTriggerMask(0),
+  fOnlineTriggerMask(0),
+  fOnlineTriggerMaskNext50(0),
   fMultiplicityEstimators(),
   fMultiplicityEstimatorPercentiles(),
   fIsPhysicsSelection(kTRUE),
@@ -208,6 +212,8 @@ void AliReducedEventInfo::CopyEventHeader(const AliReducedEventInfo* other) {
    fTimeStamp = other->fTimeStamp;
    fEventType = other->fEventType;
    fTriggerMask = other->fTriggerMask;
+   fOnlineTriggerMask = other->fOnlineTriggerMask;
+   fOnlineTriggerMaskNext50 = other->fOnlineTriggerMaskNext50;
    for(Int_t i=0; i<10; ++i) {
       fMultiplicityEstimators[i] = other->fMultiplicityEstimators[i];
       fMultiplicityEstimatorPercentiles[i] = other->fMultiplicityEstimatorPercentiles[i];
@@ -260,6 +266,7 @@ void AliReducedEventInfo::ClearEvent() {
   AliReducedBaseEvent::ClearEvent();
   
   if(fCaloClusters) fCaloClusters->Clear("C");
+  fNCaloClusters = 0;
   if(fFMD) fFMD->Clear("C");
   fEventNumberInFile = -999;
   fL0TriggerInputs=0;
@@ -271,6 +278,8 @@ void AliReducedEventInfo::ClearEvent() {
   fTimeStamp = 0;
   fEventType = 0;
   fTriggerMask = 0;
+  fOnlineTriggerMask = 0;
+  fOnlineTriggerMaskNext50 = 0;
   fIsPhysicsSelection = kTRUE;
   fIsSPDPileup = kFALSE;
   fIsSPDPileupMultBins = kFALSE;
@@ -281,9 +290,12 @@ void AliReducedEventInfo::ClearEvent() {
   fNPMDtracks=0;
   fNTRDtracks=0;
   fNTRDtracklets=0;
+  fNTPCclusters=0;
   fNtracks[0] = 0; fNtracks[1] = 0;
+  fSPDntracklets = 0;
   for(Int_t i=0; i<32; ++i) fSPDntrackletsEta[i] = 0;
   fSPDnSingle = 0;
+  for(Int_t i=0; i<6; ++i) fVtxCovMatrix[i]=0;
   for(Int_t i=0; i<2; ++i) fSPDFiredChips[i]=0;
   for(Int_t i=0; i<6; ++i) fITSClusters[i]=0;
   for(Int_t i=0; i<32; ++i) fNtracksPerTrackingFlag[i] = 0;
@@ -291,8 +303,8 @@ void AliReducedEventInfo::ClearEvent() {
   for(Int_t i=0; i<3; ++i) fVtxTPC[i]=-999.;
   for(Int_t i=0; i<3; ++i) fVtxSPD[i]=-999.;
   for(Int_t i=0; i<3; ++i) fVtxMC[i]=-999.;
-  for(Int_t i=0; i<10; ++i) fMultiplicityEstimators[i]=-999.;
-  for(Int_t i=0; i<10; ++i) fMultiplicityEstimatorPercentiles[i]=-999.;
+  for(Int_t i=0; i<13; ++i) fMultiplicityEstimators[i]=-999.;
+  for(Int_t i=0; i<13; ++i) fMultiplicityEstimatorPercentiles[i]=-999.;
   for(Int_t i=0; i<64; ++i) fVZEROMult[i] = 0.0;
   for(Int_t i=0; i<2; ++i) fVZEROTotalMult[i] = 0.0;
   for(Int_t i=0; i<10; ++i) fZDCnEnergy[i]=0.0;
