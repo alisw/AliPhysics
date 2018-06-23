@@ -1,6 +1,8 @@
+#include <array>
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <utility>
 
 #include <TCanvas.h>
 #include <TEfficiency.h>
@@ -33,7 +35,8 @@ bool endsWith(const std::string &mainStr, const std::string &&toMatch)
 			return false;
 }
 
-void ComputeLFefficiencies(std::string filename = "AnalysisResults") {
+std::pair<std::array<std::vector<TH1D*>,AliPID::kSPECIESC * 2 - 4>,std::array<std::vector<TH1D*>,AliPID::kSPECIESC * 2 - 4>>
+ComputeLFefficiencies(std::string filename = "AnalysisResults") {
   if (endsWith(filename,".root")) {
     for (int i = 0; i < 5; ++i) filename.pop_back();
   }
@@ -44,7 +47,7 @@ void ComputeLFefficiencies(std::string filename = "AnalysisResults") {
     ::Fatal("ComputeLFefficiencies","Missing input list, check the input file.");
   }
 
-
+  std::pair<std::array<std::vector<TH1D*>,AliPID::kSPECIESC * 2 - 4>,std::array<std::vector<TH1D*>,AliPID::kSPECIESC * 2 - 4>> vec;
   TCanvas cv("canvas");
   TCanvas cv_eta("canvas_eta");
   TCanvas cv_rec("reconstructed");
@@ -53,6 +56,7 @@ void ComputeLFefficiencies(std::string filename = "AnalysisResults") {
   cv_eta.Print((filename + "_eta.pdf[").data(),"pdf");
 
   TFile output_file((filename + "_out.root").data(),"recreate");
+
 
   for (int iSpecies = 2; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
@@ -72,6 +76,8 @@ void ComputeLFefficiencies(std::string filename = "AnalysisResults") {
         TH1D* eff = rec3D->ProjectionZ(Form("Eff_%s_%s_%i",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data(),iCut),3,7);
         DivideBinomial(eff,gen);
         eff->Draw("same PLC PMC");
+        vec.first[(iSpecies - 2) * 2 + iCharge].push_back(static_cast<TH1D*>(eff->Clone()));
+        vec.first[(iSpecies - 2) * 2 + iCharge].back()->SetDirectory(0);
 
         cv_eta.cd();
         TH3D* rec3Deta = static_cast<TH3D*>(input_list->FindObject(Form("RecEta_%s_%s_%i",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data(),iCut)));
@@ -82,6 +88,8 @@ void ComputeLFefficiencies(std::string filename = "AnalysisResults") {
         output_file.cd();
         eff->Write();
         effEta->Write();
+        vec.second[(iSpecies - 2) * 2 + iCharge].push_back(static_cast<TH1D*>(eff->Clone()));
+        vec.second[(iSpecies - 2) * 2 + iCharge].back()->SetDirectory(0);
       }
       cv.cd();
       cv.BuildLegend();
@@ -96,4 +104,48 @@ void ComputeLFefficiencies(std::string filename = "AnalysisResults") {
   cv_rec.Print((filename + "_eta.pdf]").data(),"pdf");
 
   output_file.Close();
+  return vec;
+}
+
+void ComputeLFefficiencies(std::string filename0, std::string filename1) {
+  std::array<std::string, 2> filenames { filename0, filename1 };
+  std::pair<std::array<std::vector<TH1D*>,AliPID::kSPECIESC * 2 - 4>,std::array<std::vector<TH1D*>,AliPID::kSPECIESC * 2 - 4>> efficiencies[2];
+
+  for (size_t iFile = 0; iFile < filenames.size(); ++iFile) {
+    std::string& fname = filenames[iFile];
+    efficiencies[iFile] = ComputeLFefficiencies(fname);
+  }
+
+  TCanvas cv_y("canvas_y");
+  TCanvas cv_eta("canvas_eta");
+  cv_y.Print("Comparison_y.pdf[","pdf");
+  cv_eta.Print("Comparison_eta.pdf[","pdf");
+
+  for (int iSpecies = 2; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
+    for (int iCharge = 0; iCharge < 2; ++iCharge) {
+      cv_y.cd();
+      cv_y.DrawFrame(0.,0.,6.,2.1,Form("%s %s;#it{p}_{T} (GeV/#it{c}); Ratio",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
+      cv_eta.cd();
+      cv_eta.DrawFrame(0.,0.,6.,2.1,Form("%s %s |#eta|<0.8;#it{p}_{T} (GeV/#it{c}); Ratio",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
+      
+      for (size_t iHist = 0; iHist < efficiencies[0].first[(iSpecies-2)*2+iCharge].size(); ++iHist) {
+        cv_y.cd();
+        efficiencies[0].first[(iSpecies-2)*2+iCharge][iHist]->Divide(efficiencies[1].first[(iSpecies-2)*2+iCharge][iHist]);
+        efficiencies[0].first[(iSpecies-2)*2+iCharge][iHist]->Draw("PMC PLC same");
+
+        cv_eta.cd();
+        efficiencies[0].second[(iSpecies-2)*2+iCharge][iHist]->Divide(efficiencies[1].second[(iSpecies-2)*2+iCharge][iHist]);
+        efficiencies[0].second[(iSpecies-2)*2+iCharge][iHist]->Draw("PMC PLC same");
+
+      }
+      cv_y.BuildLegend();
+      cv_eta.BuildLegend();
+      cv_y.Print("Comparison_y.pdf","pdf");
+      cv_eta.Print("Comparison_eta.pdf","pdf");
+
+    }
+  }
+
+  cv_y.Print("Comparison_y.pdf]","pdf");
+  cv_eta.Print("Comparison_eta.pdf]","pdf");
 }
