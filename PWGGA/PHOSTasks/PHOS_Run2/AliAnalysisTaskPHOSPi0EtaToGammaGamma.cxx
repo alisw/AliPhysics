@@ -604,7 +604,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     fOutputContainer->Add(hs_Mgg_PID);
 
     //mixed event for PID study at low pT
-    THnSparseF *hs_MixMgg_PID = new THnSparseF("hSparseMixMgg_PID","M_{#gamma#gamma}^{mix} for PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV);N_{cell};M02 (cm);M20(cm);",Ndim_PID,Nbin_PID,xmin_PID,xmax_PID);
+    THnSparseF *hs_MixMgg_PID = new THnSparseF("hSparseMixMgg_PID","M_{#gamma#gamma}^{mix} for PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV);N_{cell};M020 (cm);M02 (cm);",Ndim_PID,Nbin_PID,xmin_PID,xmax_PID);
     hs_MixMgg_PID->Sumw2();
     fOutputContainer->Add(hs_MixMgg_PID);
   }
