@@ -3,6 +3,7 @@
 #include <stdio.h>
 AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     bool isMC=false,
+    bool isESD=false,
     TString CentEst="kInt7",
     bool notpp=true,//1
     bool PileUpRej=true,//2
@@ -559,7 +560,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
 
   TString TaskName=Form("FemtoDream_%s",suffix.Data());
   AliAnalysisTaskFemtoDream *task=
-      new AliAnalysisTaskFemtoDream(TaskName.Data(),isMC);
+      new AliAnalysisTaskFemtoDream(TaskName.Data(),isESD,isMC);
   if(CentEst == "kInt7"){
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     task->SetMVPileUp(kTRUE);
