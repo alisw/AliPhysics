@@ -63,6 +63,36 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(HistType *&hist, AliF
   UpdateQlimits();
 }
 
+template <typename T>
+std::array<T, 6> sort_q(AliFemtoModelCorrFctnTrueQ6D::BinMethod bm,
+   T q_out, T q_side, T q_long, T true_q_out, T true_q_side, T true_q_long)
+{
+  using Method = AliFemtoModelCorrFctnTrueQ6D::BinMethod;
+
+  std::array<T, 6> result;
+
+  switch (bm) {
+  case Method::kGenRec:
+    result = {{true_q_out, true_q_side, true_q_long, q_out, q_side, q_long}};
+    break;
+  case Method::kRecGen:
+    result = {{q_long, q_side, q_out, true_q_long, true_q_side, true_q_out}};
+    break;
+  case Method::kRecGenOSL:
+    result = {{q_long, q_side, q_out, true_q_out, true_q_side, true_q_long}};
+    break;
+  case Method::kGroupedAxis:
+    result = {{q_long, true_q_long, q_side, true_q_side, q_out, true_q_out}};
+    break;
+  case Method::kGroupedAxisReverse:
+    result = {{true_q_out, q_out, true_q_side, q_side, true_q_long, q_long}};
+    break;
+  default:
+    result = {{q_out, true_q_out, q_side, true_q_side, q_long, true_q_long}};
+  }
+
+  return result;
+}
 
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title)
   : AliFemtoModelCorrFctnTrueQ6D(title, 120, 0.3)
@@ -76,7 +106,7 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title,
 {
 }
 
-AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title,
+AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &name,
                                                            UInt_t nbins,
                                                            Double_t qmin,
                                                            Double_t qmax)
@@ -88,20 +118,17 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title,
   std::vector<Int_t> nbins_v(6, static_cast<Int_t>(nbins));
   std::vector<double> hist_min(6, qmin), hist_max(6, qmax);
 
-  TString axis_titles
-    = (fBinMethod == kGenRec)
-        ? "q_{t,o}; q_{t,s}; q_{t,l}; q_{o}; q_{s}; q_{l}"
-    : (fBinMethod == kRecGen)
-        ? "q_{l}; q_{s}; q_{o}; q_{t,l}; q_{t,s}; q_{t,o}"
-    : (fBinMethod == kRecGenOSL)
-        ? "q_{l}; q_{s}; q_{o}; q_{t,o}; q_{t,s}; q_{t,l}"
-    : (fBinMethod == kGroupedAxis)
-        ? "q_{l}; q_{t,l}; q_{s}; q_{t,s}; q_{o}; q_{t,o}"
-    : (fBinMethod == kGroupedAxisReverse)
-        ? "q_{t,o}; q_{o}; q_{t,s}; q_{s}; q_{t,l}; q_{l}"
-        : "q_{o}; q_{t,o}; q_{s}; q_{t,s}; q_{l}; q_{t,l}";
+  auto axis_titles = sort_q(fBinMethod,
+      "q_{o}", "q_{s}", "q_{l}",
+      "q_{t,o}", "q_{t,s}", "q_{t,l}");
 
-  fHistogram = new HistType(title +"_Histogram", "Histogram; ", 6, nbins_v.data(), hist_min.data(), hist_max.data());
+  TString title = "Momentum Correction Hypercube Histogram ";
+
+  for (const TString &axis_title : axis_titles) {
+    title += "; " + axis_title;
+  }
+
+  fHistogram = new HistType(name +"_Histogram", title, 6, nbins_v.data(), hist_min.data(), hist_max.data());
   UpdateQlimits();
 }
 
@@ -222,28 +249,9 @@ AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1, const A
   Double_t true_q_out, true_q_side, true_q_long;
   std::tie(true_q_out, true_q_side, true_q_long) = Qcms(p1, p2);
 
-  std::array<Double_t, 6> q;
-
-  switch (fBinMethod) {
-  case kGenRec:
-    q = {{true_q_out, true_q_side, true_q_long, q_out, q_side, q_long}};
-    break;
-  case kRecGen:
-    q = {{q_long, q_side, q_out, true_q_long, true_q_side, true_q_out}};
-    break;
-  case kRecGenOSL:
-    q = {{q_long, q_side, q_out, true_q_out, true_q_side, true_q_long}};
-    break;
-  case kGroupedAxis:
-    q = {{q_long, true_q_long, q_side, true_q_side, q_out, true_q_out}};
-    break;
-  case kGroupedAxisReverse:
-    q = {{true_q_out, q_out, true_q_side, q_side, true_q_long, q_long}};
-    break;
-  default:
-    q = {{q_out, true_q_out, q_side, true_q_side, q_long, true_q_long}};
-  }
-
+  auto q = sort_q(fBinMethod,
+                  q_out, q_side, q_long,
+                  true_q_out, true_q_side, true_q_long);
   fHistogram->Fill(q.data());
 }
 
