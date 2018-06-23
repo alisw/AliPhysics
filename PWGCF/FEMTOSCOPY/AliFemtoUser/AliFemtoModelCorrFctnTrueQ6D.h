@@ -30,10 +30,19 @@ public:
 
   typedef THnSparseI HistType;
 
+  enum BinMethod {
+    kGenRec,
+    kRecGen,
+    kRecGenOSL,
+    kGroupedAxis,
+    kGroupedAxisReverse
+  };
+
   struct Builder {
     UInt_t bin_count;
     Double_t qmin;
     Double_t qmax;
+    BinMethod bin_method;
     TString title;
     AliFemtoModelManager *mc_manager;
 
@@ -41,6 +50,7 @@ public:
       : bin_count(56)
       , qmin(-0.24)
       , qmax(0.24)
+      , bin_method(kGenRec)
       , title("CF_TrueQ6D")
       , mc_manager(NULL)
     {
@@ -67,6 +77,13 @@ public:
       Builder b(*this);
       b.qmax = std::abs(q);
       b.qmin = -b.qmax;
+      return b;
+    }
+
+    Builder Binning(BinMethod bm) const
+    {
+      Builder b(*this);
+      b.bin_method = bm;
       return b;
     }
 
@@ -161,6 +178,9 @@ public:
   //Special MC analysis for K selected by PDG code -->
   void SetKaonPDG(Bool_t aSetKaonAna);
 
+  /// set q range
+  void SetQrange(const double out[2], const double s[2], const double l[2]);
+
 protected:
   AliFemtoModelManager *fManager; //!<! Link back to the manager to retrieve weights
 
@@ -169,6 +189,8 @@ protected:
 
   /// Random number generator used for randomizing order of pair momentums
   TRandom *fRng;
+
+  BinMethod fBinMethod;
 
   std::pair<double, double> fQlimits[3];
 

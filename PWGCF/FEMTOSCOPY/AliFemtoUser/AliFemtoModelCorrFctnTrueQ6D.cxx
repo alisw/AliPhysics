@@ -12,6 +12,7 @@
 #include <TRandom.h>
 #include <TAxis.h>
 
+#include <array>
 #include <tuple>
 #include <iostream>
 
@@ -64,7 +65,7 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(HistType *&hist, AliF
 
 
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title)
-  : AliFemtoModelCorrFctnTrueQ6D(title, 56, 0.14)
+  : AliFemtoModelCorrFctnTrueQ6D(title, 120, 0.3)
 {
 }
 
@@ -86,6 +87,20 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &title,
 {
   std::vector<Int_t> nbins_v(6, static_cast<Int_t>(nbins));
   std::vector<double> hist_min(6, qmin), hist_max(6, qmax);
+
+  TString axis_titles
+    = (fBinMethod == kGenRec)
+        ? "q_{t,o}; q_{t,s}; q_{t,l}; q_{o}; q_{s}; q_{l}"
+    : (fBinMethod == kRecGen)
+        ? "q_{l}; q_{s}; q_{o}; q_{t,l}; q_{t,s}; q_{t,o}"
+    : (fBinMethod == kRecGenOSL)
+        ? "q_{l}; q_{s}; q_{o}; q_{t,o}; q_{t,s}; q_{t,l}"
+    : (fBinMethod == kGroupedAxis)
+        ? "q_{l}; q_{t,l}; q_{s}; q_{t,s}; q_{o}; q_{t,o}"
+    : (fBinMethod == kGroupedAxisReverse)
+        ? "q_{t,o}; q_{o}; q_{t,s}; q_{s}; q_{t,l}; q_{l}"
+        : "q_{o}; q_{t,o}; q_{s}; q_{t,s}; q_{l}; q_{t,l}";
+
   fHistogram = new HistType(title +"_Histogram", "Histogram; ", 6, nbins_v.data(), hist_min.data(), hist_max.data());
   UpdateQlimits();
 }
@@ -160,7 +175,6 @@ Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
   return std::make_tuple(qout, qside, qlong);
 }
 
-
 void
 AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1, const AliFemtoParticle &particle2)
 {
@@ -208,8 +222,29 @@ AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1, const A
   Double_t true_q_out, true_q_side, true_q_long;
   std::tie(true_q_out, true_q_side, true_q_long) = Qcms(p1, p2);
 
-  Double_t q[6] = {true_q_out, true_q_side, true_q_long, q_out, q_side, q_long};
-  fHistogram->Fill(q);
+  std::array<Double_t, 6> q;
+
+  switch (fBinMethod) {
+  case kGenRec:
+    q = {{true_q_out, true_q_side, true_q_long, q_out, q_side, q_long}};
+    break;
+  case kRecGen:
+    q = {{q_long, q_side, q_out, true_q_long, true_q_side, true_q_out}};
+    break;
+  case kRecGenOSL:
+    q = {{q_long, q_side, q_out, true_q_out, true_q_side, true_q_long}};
+    break;
+  case kGroupedAxis:
+    q = {{q_long, true_q_long, q_side, true_q_side, q_out, true_q_out}};
+    break;
+  case kGroupedAxisReverse:
+    q = {{true_q_out, q_out, true_q_side, q_side, true_q_long, q_long}};
+    break;
+  default:
+    q = {{q_out, true_q_out, q_side, true_q_side, q_long, true_q_long}};
+  }
+
+  fHistogram->Fill(q.data());
 }
 
 void
@@ -244,4 +279,12 @@ AliFemtoModelCorrFctnTrueQ6D::Report()
 {
   TString report;
   return AliFemtoString(report.Data());
+}
+
+void
+AliFemtoModelCorrFctnTrueQ6D::SetQrange(const double o[2], const double s[2], const double l[2])
+{
+  fQlimits[0] = {o[0], o[1]};
+  fQlimits[1] = {s[0], s[1]};
+  fQlimits[2] = {l[0], l[1]};
 }
