@@ -263,6 +263,9 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     void SetMatchingR(Double_t maxR) {fMatchingR = maxR;}//for matching between a track and a cluster
     void SetNMixForTrackMatching(Int_t nev) {fNMixTrack = nev;}
 
+    void SetPIDStudy(Bool_t flag) {fPIDStudy = flag;}
+
+
   protected:
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
@@ -464,12 +467,14 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t fMinPtPi0;//only for omega->3pi
     Double_t fMinPtChPi;//only for omega->3pi
     Double_t fMaxR;//only for omega->3pi
+    Bool_t fPIDStudy;
+
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 62);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 63);
 };
 
 #endif
