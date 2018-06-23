@@ -2608,7 +2608,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
     //if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
 
     //apply tight cut to photon1
-    if(ph1->GetNsigmaCPV() < 3 || ph1->GetNsigmaCoreDisp() > 2) continue;
+    if(ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
