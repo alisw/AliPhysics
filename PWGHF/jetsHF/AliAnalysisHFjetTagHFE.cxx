@@ -1382,14 +1382,32 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                       {
                        fHistHFjet->Fill(pt,corrPt);
                        fHistHFjetOrder->Fill(corrPt,Njet);
-                       if(Njet==0)
+                       if(Njet==0 || Njet==1)
                          {
-                          Double_t dPhiHFjet_tmp = Phi_eJet - ExJetPhi[1];
+                          Double_t dPhiHFjet_tmp = 0.0;
+                          if(Njet==0)
+                             {
+                              dPhiHFjet_tmp = Phi_eJet - ExJetPhi[1];
+                             }
+                          else 
+                             {
+                              dPhiHFjet_tmp = Phi_eJet - ExJetPhi[0];
+                             }
+                             
                           Double_t dPhiHFjet = atan2(sin(dPhiHFjet_tmp),cos(dPhiHFjet_tmp));
+
                           if(ExJetPt[1]>10.0)
                              {
                               fHistDiJetPhi->Fill(corrPt,dPhiHFjet);
-                              Double_t MomBalance = (corrPt-ExJetPt[1])/(corrPt+ExJetPt[1]);
+                              Double_t MomBalance = -1.0;
+                               if(Njet==0)
+                                  {
+                                   MomBalance = (corrPt-ExJetPt[1])/(corrPt+ExJetPt[1]);
+                                  }
+                               else
+                                  {
+                                   MomBalance = (ExJetPt[0]-corrPt)/(ExJetPt[0]+corrPt);
+                                  }
                               fHistDiJetMomBalance->Fill(corrPt,MomBalance);
                              }
                          }
