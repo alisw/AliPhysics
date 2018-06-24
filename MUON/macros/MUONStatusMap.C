@@ -46,6 +46,7 @@
 #include "TGraph.h"
 #include "TBox.h"
 #include "TH2F.h"
+#include "TLine.h"
 #include "TStyle.h"
 #include "TText.h"
 #include <vector>
@@ -295,12 +296,18 @@ void DrawPeriod(int runmin, int runmax, int run1, int run2, double ymin, double 
   if ( run1 < runmin || run1 > runmax || run2 < runmin || run2 > runmax ) return;
 
   TBox* b = new TBox(run1,ymin,run2,ymax);
-  b->SetFillColor(5);
+  b->SetFillColor(kYellow-9);
   b->Draw();
   TText* text = new TText((run1+run2)/2.0,ymax*0.6,label);
   text->SetTextAlign(22);
   text->SetTextSize(0.02);
   text->Draw();
+  TLine* l1 = new TLine(run1,ymin,run1,ymax);
+  TLine* l2 = new TLine(run2,ymin,run2,ymax);
+  l1->SetLineStyle(9);
+  l2->SetLineStyle(9);
+  l1->Draw();
+  l2->Draw();
 }
 
 //______________________________________________________________________________
@@ -407,9 +414,45 @@ void DrawEvolution(const char* file, bool normalized=true)
   DrawPeriod(runmin,runmax,258883,260187,0,ymax,"16l");
   DrawPeriod(runmin,runmax,260216,260647,0,ymax,"16m");
   DrawPeriod(runmin,runmax,260649,261812,0,ymax,"16n");
-  DrawPeriod(runmin,runmax,262394,262858,0,ymax,"16o");
+  DrawPeriod(runmin, runmax, 262394, 264035, 0, ymax, "16o");
+  DrawPeriod(runmin, runmax, 264076, 264347, 0, ymax, "16p");
+  DrawPeriod(runmin, runmax, 264896, 265533, 0, ymax, "16q");
+  DrawPeriod(runmin, runmax, 265589, 266318, 0, ymax, "16r");
+  DrawPeriod(runmin, runmax, 266405, 267131, 0, ymax, "16s");
+  DrawPeriod(runmin, runmax, 267161, 267166, 0, ymax, "16t");
 
-  Draw(f,"nbad",l,normalized);
+  // 2017
+  DrawPeriod(runmin,runmax,268198,269628,0,ymax,"17a");
+  DrawPeriod(runmin,runmax,269629,270435,0,ymax,"17b");
+  DrawPeriod(runmin,runmax,270436,270743,0,ymax,"17c");
+  DrawPeriod(runmin,runmax,270744,270802,0,ymax,"17d");
+  DrawPeriod(runmin,runmax,270803,270853,0,ymax,"17e");
+  DrawPeriod(runmin,runmax,270854,270870,0,ymax,"17f");
+  DrawPeriod(runmin,runmax,270871,271785,0,ymax,"17g");
+  DrawPeriod(runmin,runmax,271786,273471,0,ymax,"17h");
+  DrawPeriod(runmin,runmax,273472,274518,0,ymax,"17i");
+  DrawPeriod(runmin,runmax,274678,276533,0,ymax,"17k");
+  DrawPeriod(runmin,runmax,276534,278765,0,ymax,"17l");
+  DrawPeriod(runmin,runmax,278766,280154,0,ymax,"17m");
+  DrawPeriod(runmin,runmax,280155,280246,0,ymax,"17n");
+  DrawPeriod(runmin,runmax,280247,281969,0,ymax,"17o");
+  DrawPeriod(runmin,runmax,281970,282350,0,ymax,"17p");
+  DrawPeriod(runmin,runmax,282351,282444,0,ymax,"17q");
+  DrawPeriod(runmin,runmax,282445,283360,0,ymax,"17r");
+
+  // 2018
+  DrawPeriod(runmin,runmax,283361,284704,0,ymax,"18a");
+  DrawPeriod(runmin,runmax,284705,285451,0,ymax,"18b");
+  DrawPeriod(runmin,runmax,285452,285965,0,ymax,"18c");
+  DrawPeriod(runmin,runmax,285966,286358,0,ymax,"18d");
+  DrawPeriod(runmin,runmax,286359,286969,0,ymax,"18e");
+  DrawPeriod(runmin,runmax,286970,288387,0,ymax,"18f");
+  DrawPeriod(runmin,runmax,288388,288537,0,ymax,"18g");
+
+  // DrawPeriod(runmin,runmax,XXXXXX,XXXXXX,0,ymax,"18h");
+  // DrawPeriod(runmin,runmax,XXXXXX,XXXXXX,0,ymax,"18i");
+
+  Draw(f, "nbad", l, normalized);
   Draw(f,"nbadped",l,normalized);
   Draw(f,"nbadocc",l,normalized);
   Draw(f,"nbadhv",l,normalized);
@@ -425,7 +468,7 @@ void DrawEvolution(const char* file, bool normalized=true)
 }
 
 //______________________________________________________________________________
-void MUONStatusMapEvolution(const char* runlist, const char* outfile)
+void MUONStatusMapEvolution(const char* runlist, const char* outfile, TString defaultOCDB="")
 {
   // Compute the number of bad pads (because of bad ped, bad hv, bad lv,
   // or missing in configuration)
@@ -450,23 +493,32 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
     return;
   }
 
-  int year(2016);
+  int year(2018);
 
-  if ( runs[0] <= 139699 ) year=2010;
-
-  if ( runs[0] <= 176000 ) year=2011;
-
-  if ( runs[0] <= 195344 ) year = 2012;
-
-  if ( runs[0] <= 198000 ) year = 2013;
-
+  if ( runs[0] <= 282704 ) year = 2017;
+  if ( runs[0] <= 267166 ) year = 2016;
   if ( runs[0] <= 246994 ) year = 2015;
+  if ( runs[0] <= 198000 ) year = 2013;
+  if ( runs[0] <= 195344 ) year = 2012;
+  if ( runs[0] <= 176000 ) year = 2011;
+  if ( runs[0] <= 139699 ) year = 2010;
 
-  TString defaultOCDB;
 
-  defaultOCDB.Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB",year);
+  if (defaultOCDB.Length()==0) {
 
-//  defaultOCDB.Form("alien://folder=/alice/data/%d/OCDB?cacheFold=/local/cdb",year);
+   TString p;
+
+   p.Form("/alice/data/%d/OCDB",year);
+
+   if (gSystem->AccessPathName(p)==kFALSE) {
+     defaultOCDB.Form("local://%s",p.Data());
+   }
+
+  }
+
+  if (defaultOCDB.Length()==0) {
+     defaultOCDB.Form("alien://folder=/alice/data/%d/OCDB?cacheFold=/local/cdb",year);
+  }
 
   AliCDBManager::Instance()->SetDefaultStorage(defaultOCDB.Data());
   AliCDBManager::Instance()->SetRun(0);
