@@ -153,7 +153,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fMinPtPi0(0),
   fMinPtChPi(0),
   fMaxR(999.),
-  fPIDStudy(kTRUE)
+  fPIDStudy(kFALSE)
 {
   // Constructor
 
@@ -594,9 +594,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   if(fPIDStudy){
     const Int_t Ndim_PID = 5;
-    const Int_t Nbin_PID[Ndim_PID]    = {  60, 100,   20, 50, 50};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
+    const Int_t Nbin_PID[Ndim_PID]    = { 180, 500,   50, 50, 50};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
     const Double_t xmin_PID[Ndim_PID] = {   0,   0,  0.5,  0,  0};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
-    const Double_t xmax_PID[Ndim_PID] = {0.24,  10, 20.5,  5,  5};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
+    const Double_t xmax_PID[Ndim_PID] = {0.72,  50, 50.5,  5,  5};//Mgg vs. pT vs. Ncell vs. M02 vs. M20
 
     //same event for PID study at low pT
     THnSparseF *hs_Mgg_PID = new THnSparseF("hSparseMgg_PID","M_{#gamma#gamma} for PID;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV);N_{cell};M20 (cm);M02 (cm);",Ndim_PID,Nbin_PID,xmin_PID,xmax_PID);
@@ -2585,7 +2585,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
       value[2] = ph2->GetNCells();
       value[3] = ph2->GetLambda1();
       value[4] = ph2->GetLambda2();
-      if(fPIDStudy) FillSparse(fOutputContainer,"hSparseMgg_PID",value,weight);
+      if(fPIDStudy && ph1->Energy() > 0.5 && m12 < 0.72) FillSparse(fOutputContainer,"hSparseMgg_PID",value,weight);
 
       FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,pT,weight);
 
@@ -2641,7 +2641,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
         value[2] = ph2->GetNCells();
         value[3] = ph2->GetLambda1();
         value[4] = ph2->GetLambda2();
-        if(fPIDStudy) FillSparse(fOutputContainer,"hSparseMixMgg_PID",value,weight);
+        if(fPIDStudy && ph1->Energy() > 0.5 && m12 < 0.72) FillSparse(fOutputContainer,"hSparseMixMgg_PID",value,weight);
 
         FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,pT,weight);
         if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_CPV" ,m12,pT,weight);
