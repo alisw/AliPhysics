@@ -1470,8 +1470,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fAODIn = dynamic_cast<AliAODEvent*>(InputEvent()); // input AOD
   if(!fAODIn)
   {
-    AliError("No input AOD found!");
-    return kFALSE;
+    AliWarning("Input AOD not available from InputEvent() trying with AODEvent().");
+    // Assume that the AOD is in the general output.
+    fAODIn = AODEvent();
+    if(!fAODIn)
+    {
+      AliError("No input AOD found!");
+      return kFALSE;
+    }
   }
   if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Loading AOD OK");
 
