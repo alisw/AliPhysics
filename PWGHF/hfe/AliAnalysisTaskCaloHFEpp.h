@@ -46,7 +46,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
     void                    SetEG2(Bool_t flagEG2) { fEMCEG2= flagEG2;};
     void                    SetDG1(Bool_t flagDG1) { fDCDG1= flagDG1;};
     void                    SetDG2(Bool_t flagDG2) { fDCDG2= flagDG2;};
-		void                    SetfFlagClsTypeEMC(Bool_t fEMC){fFlagClsTypeDCAL = fEMC;};
+		void                    SetfFlagClsTypeEMC(Bool_t fEMC){fFlagClsTypeEMC = fEMC;};
 		void                    SetfFlagClsTypeDCAL(Bool_t fDCAL){fFlagClsTypeDCAL = fDCAL;};
 
 

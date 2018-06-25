@@ -649,10 +649,14 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 												//----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
 												if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
+												{
 																if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
-
-												if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+												}
+												else if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+												{
 																if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+												}
+												else{};
 
 
 												fHistScatter_EMcal->Fill(Phi,pos.Eta());                     // plot the pt value of the track in a histogram
@@ -818,7 +822,6 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 								if(clustMatch && clustMatch->IsEMCAL())
 								{
 												fHistMatchPt->Fill(TrkPt);
-												fHistScatter_EMcal_aftMatch->Fill(track->Eta(),track->Phi());	
 
 												///////get position of clustMatch/////////
 												Float_t clustMatchpos[3] = {0.};
@@ -842,22 +845,26 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 												if(Matchphi>1.39 && Matchphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187     
 												if(Matchphi>4.53 && Matchphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
 
-												//cout<< "======================================== "<<endl;
-												//cout<< "fFlagClsTypeEMC == "<< fFlagClsTypeEMC << "  fFlagClsTypeDCAL == "<< fFlagClsTypeDCAL<<endl;
-												//cout<< "fClsTypeEMC     == "<< fClsTypeEMC     << "  fClsTypeDCAL     == "<< fClsTypeDCAL<<endl;
-												//cout<< "MachPhi         == "<< Matchphi <<endl ;
-												//cout<< "======================================== "<<endl;
+												cout<< "======================================== "<<endl;
+												cout<< "fFlagClsTypeEMC == "<< fFlagClsTypeEMC << "  fFlagClsTypeDCAL == "<< fFlagClsTypeDCAL<<endl;
+												cout<< "fClsTypeEMC     == "<< fClsTypeEMC     << "  fClsTypeDCAL     == "<< fClsTypeDCAL<<endl;
+												cout<< "MachPhi         == "<< Matchphi <<endl ;
+												cout<< "======================================== "<<endl;
 
 												//----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
 												if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
+												{
 																if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
-																//cout<<"!!!!!!!!!!!!!!!!!! EMCAL !!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
-
-												if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+												}
+												else if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+												{
 																if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+												}
+												else{};
 																//cout<<"!!!!!!!!!!!!!!!!!! DCAL !!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
 
 												fHistSelectPt->Fill(TrkPt);
+												fHistScatter_EMcal_aftMatch->Fill(track->Eta(),track->Phi());	
 
 												if(TrkPt>1.0){
 												fHistEta_EMcal->Fill(track->Eta()); 
