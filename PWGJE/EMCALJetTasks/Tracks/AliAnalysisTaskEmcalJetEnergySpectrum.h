@@ -63,7 +63,7 @@ public:
   }
   void SetUseDownscaleWeight(bool doUse) { fUseDownscaleWeight = doUse; }
   void SetUseTriggerSelectionForData(bool doUse) { fUseTriggerSelectionForData = doUse; }
-  void SetRequireSubsetMB(bool doRequire, ULong_t minbiastrigger = AliVEvent::kAny) { fRequireSubsetMB = doRequire; fMinBiasRefTrigger = minbiastrigger; }
+  void SetRequireSubsetMB(bool doRequire, ULong_t minbiastrigger = AliVEvent::kAny) { fRequireSubsetMB = doRequire; fMinBiasTrigger = minbiastrigger; }
 
   static AliAnalysisTaskEmcalJetEnergySpectrum *AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, double radius, const char *trigger, const char *suffix = "");
 
