@@ -540,7 +540,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
     const UInt_t ilocalmultESE = 4;
     const UInt_t iq2ESE = 5;
 
-    const Int_t iBinESE[nvar] = {iBin[ipT],iBin[iy],100,100,100,250};
+    const Int_t iBinESE[nvar] = {iBin[ipT],iBin[iy],100,50,50,100};
 
     Double_t binLimcentESE[iBinESE[icentESE]+1];
     for(Int_t iCent=0; iCent<iBinESE[icentESE]+1; iCent++) {
