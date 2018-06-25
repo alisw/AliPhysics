@@ -83,7 +83,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // Geometry methods
     
   void           InitGeometry();
-  void           SetGeometryName(TString &name)                 { fGeomName = name             ; }
+  void           SetGeometryName(TString name)                  { fGeomName = name             ; }
   TString        GeometryName()                          const  { return fGeomName             ; }  
   void           SwitchOnLoadOwnGeometryMatrices()              { fLoadGeomMatrices = kTRUE    ; }
   void           SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE   ; } 
@@ -94,9 +94,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
                                                                   fImportGeometryFilePath = pa ; }    
   // Outout AOD branch methods
     
-  void           SetAODBranchName(TString &name)                { fOutputAODBranchName = name  ; }
-  void           SetAODCellsName(TString &name)                 { fOutputAODCellsName  = name  ; }
-  void           SetInputCaloCellsName(TString &name)           { fInputCaloCellsName  = name  ; }
+  void           SetAODBranchName(TString name)                 { fOutputAODBranchName = name  ; }
+  void           SetAODCellsName(TString name)                  { fOutputAODCellsName  = name  ; }
+  void           SetInputCaloCellsName(TString name)            { fInputCaloCellsName  = name  ; }
   void           FillAODFile(Bool_t yesno)                      { fFillAODFile         = yesno ; }
   void           FillAODCaloCells();
   void           FillAODHeader();
