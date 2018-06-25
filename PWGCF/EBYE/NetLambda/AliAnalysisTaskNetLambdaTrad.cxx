@@ -199,7 +199,7 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
         
         f2fHistAGenstat = new TH2F("f2fHistAGenstat","f2fHistAGenstat", 80, 0, 80, 1900, -0.5, 1899.5);
         fListHist->Add(f2fHistAGenstat);
-      
+        
         fTreeV0->Branch("fTreeVariablePID",&fTreeVariablePID);
         fTreeV0->Branch("fTreeVariablePIDPositive",&fTreeVariablePIDPositive);
         fTreeV0->Branch("fTreeVariablePIDNegative",&fTreeVariablePIDNegative);
@@ -285,14 +285,14 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     
     
     Int_t nGen = 0;
-    Double_t nRecL = 0;
-    Double_t nRecA = 0;
-    Double_t nGenL = 0;
-    Double_t nGenA = 0;
+    Double_t lRap = 0.0;
+    Double_t nRecL = 0.0;
+    Double_t nRecA = 0.0;
+    Double_t nGenL = 0.0;
+    Double_t nGenA = 0.0;
     
     if(fIsMC)
     {
-        
         
         if(fIsAOD) nGen = fMCEvent->GetNumberOfTracks();
         else nGen = stack->GetNtrack();
@@ -319,12 +319,11 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                 genpid = mctrack->GetPdgCode();
                 gpt = mctrack->Pt();
                 eta = mctrack->Eta();
+                lRap = MyRapidity(mctrack->Energy(), mctrack->Pz());
             }
             
             abseta = TMath::Abs(eta);
-            Double_t lRap = 0;  
-//          if(abseta > 0.8) continue;
-            lRap = MyRapidity(mctrack->Energy(), mctrack->Pz());
+            // if(abseta > 0.8) continue;
             if (TMath::Abs (lRap) >0.5) continue;
             
             Int_t iptbinMC = GetPtBin(gpt);
@@ -348,8 +347,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             
         } // end loop over generated particles
         
-       f2fHistLGenstat->Fill(fCentrality, nGenL);
-       f2fHistAGenstat->Fill(fCentrality, nGenA);
+        f2fHistLGenstat->Fill(fCentrality, nGenL);
+        f2fHistAGenstat->Fill(fCentrality, nGenA);
         
         
         Double_t ptContainerMC[dim+1];
@@ -537,9 +536,9 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         
         Float_t v0Radius = TMath::Sqrt(vertx[0]*vertx[0]+vertx[1]*vertx[1]);
-//         if(TMath::Abs(eta) > 0.8) continue;
-//         if(!(TMath::Abs(peta) < 1.)) continue;
-//         if(!(TMath::Abs(neta) < 1.)) continue;
+        //         if(TMath::Abs(eta) > 0.8) continue;
+        //         if(!(TMath::Abs(peta) < 1.)) continue;
+        //         if(!(TMath::Abs(neta) < 1.)) continue;
         if(TMath::Abs(peta) > 0.8) continue;
         if(TMath::Abs(neta) > 0.8) continue;
         if(cosPointingAngle < 0.999) continue;
@@ -690,8 +689,8 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
     }// end of V0 loop
     
     
-   f2fHistLRecstat->Fill(fCentrality, nRecL);
-   f2fHistARecstat->Fill(fCentrality, nRecA);
+    f2fHistLRecstat->Fill(fCentrality, nRecL);
+    f2fHistARecstat->Fill(fCentrality, nRecA);
     
     Double_t ptContainer[dim+1];
     ptContainer[0] = (Double_t)fCentrality;
