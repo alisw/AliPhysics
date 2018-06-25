@@ -10,12 +10,9 @@ class TFile;
 class TTree;
 class TList;
 class TH1;
-// class TH2;
 class TList;
 class AliPIDResponse;
-// class AliAODEvent;
 class AliESDEvent;
-// class AliTOFTriggerMask;
 class TBits;
 
 #include "AliAnalysisTaskSE.h"
@@ -29,23 +26,18 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	virtual void Init();
 	virtual void UserCreateOutputObjects();
 	virtual void UserExec(Option_t *option);
-	// virtual void RunAODtrig();
-	// virtual void RunAODhist();
-	// virtual void RunAODtree();
-	// virtual void RunAODMC(AliAODEvent *aod);
-	// virtual void RunAODsystematics(AliAODEvent *aod);
-	// virtual void RunESDtrig();
-	// virtual void RunESDhist();
-	// virtual void RunESDtree();
-	// virtual void RunESDMC(AliESDEvent *esd);
 	virtual void Terminate(Option_t *){};
 
 	void SetIsMC(Bool_t _isMC){ isMC = _isMC; }
- 
+	void SetEfficiencyFileName(TString _fEfficiencyFileName){ fEfficiencyFileName = _fEfficiencyFileName; isUsingEffi = kTRUE; }
+ 	void SetTrigger(TString _fTriggerName){ fTriggerName = _fTriggerName; }
+
   private:
   	Bool_t Is0STPfired(Int_t *, Int_t *);
+  	Bool_t IsTriggered(AliESDEvent *);
 
   	Bool_t isMC;
+  	TString fTriggerName;
   	// tree
   	TTree *fRhoTree;
 	// tree variables and branches
@@ -72,8 +64,10 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Int_t TPCsignal_T[2];
 	Float_t TrackP_T[2];
 	Float_t Vertex_T[3];
+	Int_t VtxContrib_T;
+	Float_t VtxChi2_T,VtxNDF_T;
 	Float_t SpdVertex_T[3];
-	Float_t DeltaPhi_T;
+	Int_t SpdVtxContrib_T;
 	Int_t Ntracklets_T;
 	Float_t Phi_T;
 	Float_t TrackEta_T[2];
@@ -110,6 +104,8 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	TH2F *fFOcorr;
 
 	// SPD effi
+	Bool_t isUsingEffi;
+	TString fEfficiencyFileName;
 	TFile *fSPDfile;
 	TH1D *hBCmod4;
 	TH2D *hSPDeff;
