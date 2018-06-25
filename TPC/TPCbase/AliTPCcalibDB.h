@@ -200,6 +200,11 @@ class AliTPCcalibDB : public TObject
   // Dead channel map functions
   //
   Int_t GetMaskedChannelsFromCorrectionMaps(TBits maskedPads[72]);
+  // for QA stuff
+  AliTPCCalPad* GetMaskedChannelMapHV()    const { return fMaskedChannelMapHV;    }
+  AliTPCCalPad* GetMaskedChannelMapAltro() const { return fMaskedChannelMapAltro; }
+  AliTPCCalPad* GetMaskedChannelMapDDL()   const { return fMaskedChannelMapDDL;   }
+  AliTPCCalPad* GetMaskedChannelMapSCD()   const { return fMaskedChannelMapSCD;   }
   //
   //
   //
@@ -211,6 +216,11 @@ class AliTPCcalibDB : public TObject
   static Bool_t CreateGUITree(Int_t run, const char* filename="");
   static Bool_t CreateRefFile(Int_t run, const char* filename="");
   //
+  void SetFillQAInfo(Bool_t fillQA=true) { fFillQAInfo = fillQA; }
+  Bool_t GetFillQAInfo() const { return fFillQAInfo; }
+  //
+  void FillQAInfo() { fFillQAInfo = kTRUE; InitDeadMap(); }
+
 protected:
   
   AliCDBEntry* GetCDBEntry(const char* cdbPath);   
@@ -227,6 +237,10 @@ protected:
   //
   AliTPCCalPad* fPadGainFactor;   ///< Gain calibration entry
   AliTPCCalPad* fActiveChannelMap; ///< Map of active channels calculated on the fly
+  AliTPCCalPad* fMaskedChannelMapHV;    //!< Channels masked due to bad HV status, only filled in QA mode
+  AliTPCCalPad* fMaskedChannelMapAltro; //!< Channels masked due to the Altro status, only filled in QA mode
+  AliTPCCalPad* fMaskedChannelMapDDL;   //!< Channels masked due to the DDL status, only filled in QA mode
+  AliTPCCalPad* fMaskedChannelMapSCD;   //!< Channels masked due to the space charge distortion calibration, only filled in QA mode
   AliTPCCalPad* fDedxGainFactor;   ///< Gain calibration entry - for dEdx
   AliTPCCalPad* fPadTime0;        ///< Time0 calibration entry
   TObjArray   *fDistortionMap;    ///< distortion map
@@ -294,6 +308,7 @@ protected:
   //ctp info
   AliCTPTimeParams *fCTPTimeParams;   ///< CTP timing parameters
   Int_t            fMode;             ///< RCU trigger config mode
+  Bool_t           fFillQAInfo;       //!< Fill QA information
 
  private:
    AliTPCcalibDB (const AliTPCcalibDB& );
