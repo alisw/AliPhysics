@@ -2858,7 +2858,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
   }
 
   ptIso = sumEnergyConeClus + sumpTConeCharged;
-  cones = 1.369*sumpTPerpConeTrack; // Scaling charged-only UE to neutral + charged UE
+  cones = 1.352*sumpTPerpConeTrack; // Scaling charged-only UE to neutral + charged UE
 
   Double_t isoConeArea   = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t perpConesArea = 0.; // Cluster (eta, phi)-dependent perpendicular cones area
@@ -4508,7 +4508,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AddParticleToUEMC(Double_t& sumUE, Ali
              TMath::Sqrt(TMath::Power(etap-etacone2,2)+TMath::Power(phip-phicone2,2)) < fIsoConeRadius)
             sumUE += mcpp->Pt();
 	  
-	  sumUE *= 1.369; // Neutral + charged extrapolation
+	  sumUE *= 1.352; // Neutral + charged extrapolation
 
           break;
         }
