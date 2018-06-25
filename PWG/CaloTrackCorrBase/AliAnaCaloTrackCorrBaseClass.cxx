@@ -248,7 +248,7 @@ AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, Int
 //______________________________________________________________________________________
 /// Recover ouput and input AOD pointers for each event in AliCaloTrackMaker.
 //______________________________________________________________________________________
-TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(const TString & aodName) const
+TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(TString & aodName) const
 {
 	AliDebug(3,Form("AliAnaCaloTrackCorrBaseClass::GetAODBranch() - Get Input Branch with name: <%s>; \n",aodName.Data()));
 	
@@ -887,7 +887,7 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
 //_______________________________________________________________
 /// Set the calorimeter for the analysis. A string.
 //_______________________________________________________________
-void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(TString & calo)
+void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(TString calo)
 {
   fCalorimeterString = calo;
   

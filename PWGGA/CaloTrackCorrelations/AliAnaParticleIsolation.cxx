@@ -8666,7 +8666,7 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
 //_____________________________________________________________
 /// Set the detector for the analysis.
 //_____________________________________________________________
-void AliAnaParticleIsolation::SetTriggerDetector(TString & det)
+void AliAnaParticleIsolation::SetTriggerDetector(TString det)
 {
   fIsoDetectorString = det;
   

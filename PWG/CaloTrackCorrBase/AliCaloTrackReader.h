@@ -104,7 +104,7 @@ public:
   // Delta AODs
   
   virtual TList * GetAODBranchList()                 const { return fAODBranchList         ; }
-  void            SetDeltaAODFileName(TString name )       { fDeltaAODFileName = name      ; }
+  void            SetDeltaAODFileName(TString name)        { fDeltaAODFileName = name      ; }
   TString         GetDeltaAODFileName()              const { return fDeltaAODFileName      ; }
   void            SwitchOnWriteDeltaAOD()                  { fWriteOutputDeltaAOD = kTRUE  ; }
   void            SwitchOffWriteDeltaAOD()                 { fWriteOutputDeltaAOD = kFALSE ; }
@@ -296,10 +296,10 @@ public:
   Int_t            GetV0Signal(Int_t i)              const { return fV0ADC[i]               ; }
   Int_t            GetV0Multiplicity(Int_t i)        const { return fV0Mul[i]               ; }
   
-  void             SetEMCALClusterListName(TString &name)  { fEMCALClustersListName = name  ; }
+  void             SetEMCALClusterListName(TString name)   { fEMCALClustersListName = name  ; }
   TString          GetEMCALClusterListName()         const { return fEMCALClustersListName  ; }
 
-  void             SetEMCALCellsListName(TString &name)    { fEMCALCellsListName = name     ; }
+  void             SetEMCALCellsListName(TString name)     { fEMCALCellsListName = name     ; }
   TString          GetEMCALCellsListName()           const { return fEMCALCellsListName     ; }
   
   // Arrays with clusters/track/cells access method
@@ -335,7 +335,7 @@ public:
   Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
   Bool_t           RejectLEDEvents();
   
-  void             SetFiredTriggerClassName(TString name ) { fFiredTriggerClassName = name   ; }
+  void             SetFiredTriggerClassName(TString name)  { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
   TString          GetFiredTriggerClasses()          const { return GetInputEvent()->GetFiredTriggerClasses() ; }
   

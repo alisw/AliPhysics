@@ -291,7 +291,7 @@ void  AliAnaRandomTrigger::MakeAnalysisFillHistograms()
 //_________________________________________________________
 /// Set the detrimeter for the analysis.
 //_________________________________________________________
-void AliAnaRandomTrigger::SetTriggerDetector(TString & det)
+void AliAnaRandomTrigger::SetTriggerDetector(TString det)
 {
   fTriggerDetectorString = det;
   
