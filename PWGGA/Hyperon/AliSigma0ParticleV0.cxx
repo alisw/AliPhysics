@@ -1,11 +1,9 @@
 #include "AliSigma0ParticleV0.h"
 
-#include <iostream>
-
 ClassImp(AliSigma0ParticleV0)
 
-//____________________________________________________________________________________________________
-AliSigma0ParticleV0::AliSigma0ParticleV0()
+    //____________________________________________________________________________________________________
+    AliSigma0ParticleV0::AliSigma0ParticleV0()
     : AliSigma0ParticleBase(),
       fTrackLabelPos(-1),
       fTrackLabelNeg(-1),
@@ -17,76 +15,10 @@ AliSigma0ParticleV0::AliSigma0ParticleV0()
       fRecMass(0),
       fPDGMass(0),
       fPID() {}
-
 //____________________________________________________________________________________________________
-AliSigma0ParticleV0::AliSigma0ParticleV0(
-    const AliAODv0 &v0, const AliVTrack &pos, const AliVTrack &neg,
-    const AliVVertex *vertex, const int pdg, const int pid,
-    const float magneticField, AliMCEvent *mcEvent)
-    : AliSigma0ParticleBase(),
-      fTrackLabelPos(-1),
-      fTrackLabelNeg(-1),
-      fMCLabelPos(-1),
-      fMCLabelNeg(-1),
-      fTrackPos(),
-      fTrackNeg(),
-      fCosAlpha(0),
-      fRecMass(0),
-      fPDGMass(0),
-      fPID() {
-  fP[0] = v0.Px();
-  fP[1] = v0.Py();
-  fP[2] = v0.Pz();
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
-
-  fPDGCode = pdg;
-  fPt = v0.Pt();
-  fTrackLabel = v0.GetID();
-  fPhi = v0.Phi();
-  fEta = v0.Eta();
-  fMass = (pid > 0) ? v0.MassLambda() : v0.MassAntiLambda();
-  fRecMass = (pid > 0) ? v0.MassLambda() : v0.MassAntiLambda();
-  fPID = pid;
-
-  fTrackLabelPos = pos.GetID();
-  fTrackLabelNeg = neg.GetID();
-
-  Double_t xPV = vertex->GetX();
-  Double_t yPV = vertex->GetY();
-  Double_t zPV = vertex->GetZ();
-  Double_t PV[3] = {xPV, yPV, zPV};
-  fCosAlpha = v0.CosPointingAngle(PV);
-
-  AliSigma0ParticleBase *fCandidatePos =
-      new AliSigma0ParticleBase(pos, 0, magneticField);
-  AliSigma0ParticleBase *fCandidateNeg =
-      new AliSigma0ParticleBase(neg, 0, magneticField);
-  if (mcEvent) {
-    AliMCParticle *mcParticlePos =
-        static_cast<AliMCParticle *>(mcEvent->GetTrack(pos.GetLabel()));
-    if (mcParticlePos) fCandidatePos->ProcessMCInfo(mcParticlePos, mcEvent);
-    fMCLabelPos = pos.GetLabel();
-    AliMCParticle *mcParticleNeg =
-        static_cast<AliMCParticle *>(mcEvent->GetTrack(neg.GetLabel()));
-    if (mcParticleNeg) fCandidateNeg->ProcessMCInfo(mcParticleNeg, mcEvent);
-    fMCLabelNeg = neg.GetLabel();
-  }
-
-  fTrackPos = *fCandidatePos;
-  fTrackNeg = *fCandidateNeg;
-
-  delete fCandidatePos;
-  delete fCandidateNeg;
-
-  fUse = true;
-}
-
-//____________________________________________________________________________________________________
-AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 &v0, const AliVTrack &pos,
-                                         const AliVTrack &neg,
-                                         const AliVVertex *vertex,
+AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
+                                         const AliESDtrack *neg,
+                                         const AliESDVertex *vertex,
                                          const int pdg, const int pid,
                                          const float magneticField,
                                          AliMCEvent *mcEvent)
@@ -101,53 +33,49 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 &v0, const AliVTrack &pos,
       fRecMass(0),
       fPDGMass(0),
       fPID() {
-  fP[0] = v0.Px();
-  fP[1] = v0.Py();
-  fP[2] = v0.Pz();
+  fP[0] = v0->Px();
+  fP[1] = v0->Py();
+  fP[2] = v0->Pz();
   fPMC[0] = -1.;
   fPMC[1] = -1.;
   fPMC[2] = -1.;
 
   fPDGCode = pdg;
-  fPt = v0.Pt();
-  fTrackLabel = v0.GetLabel();
-  fPhi = v0.Phi();
-  fEta = v0.Eta();
+  fPt = v0->Pt();
+  fTrackLabel = v0->GetLabel();
+  fPhi = v0->Phi();
+  fEta = v0->Eta();
   if (pid == 1)
-    v0.ChangeMassHypothesis(3122);
+    v0->ChangeMassHypothesis(3122);
   else
-    v0.ChangeMassHypothesis(-3122);
-  fMass = v0.GetEffMass();
-  fRecMass = v0.GetEffMass();
+    v0->ChangeMassHypothesis(-3122);
+  fMass = v0->GetEffMass();
+  fRecMass = v0->GetEffMass();
   fPID = pid;
 
-  fTrackLabelPos = pos.GetID();
-  fTrackLabelNeg = neg.GetID();
+  fTrackLabelPos = pos->GetID();
+  fTrackLabelNeg = neg->GetID();
 
   Double_t xPV = vertex->GetX();
   Double_t yPV = vertex->GetY();
   Double_t zPV = vertex->GetZ();
-  fCosAlpha = v0.GetV0CosineOfPointingAngle(xPV, yPV, zPV);
+  fCosAlpha = v0->GetV0CosineOfPointingAngle(xPV, yPV, zPV);
 
-  AliSigma0ParticleBase *fCandidatePos =
-      new AliSigma0ParticleBase(pos, 0, magneticField);
-  AliSigma0ParticleBase *fCandidateNeg =
-      new AliSigma0ParticleBase(neg, 0, magneticField);
+  AliSigma0ParticleBase fCandidatePos(pos, 0, magneticField);
+  AliSigma0ParticleBase fCandidateNeg(neg, 0, magneticField);
   if (mcEvent) {
     AliMCParticle *mcParticlePos =
-        static_cast<AliMCParticle *>(mcEvent->GetTrack(pos.GetLabel()));
-    if (mcParticlePos) fCandidatePos->ProcessMCInfo(mcParticlePos, mcEvent);
-    fMCLabelPos = pos.GetLabel();
+        static_cast<AliMCParticle *>(mcEvent->GetTrack(pos->GetLabel()));
+    if (mcParticlePos) fCandidatePos.ProcessMCInfo(mcParticlePos, mcEvent);
+    fMCLabelPos = pos->GetLabel();
     AliMCParticle *mcParticleNeg =
-        static_cast<AliMCParticle *>(mcEvent->GetTrack(neg.GetLabel()));
-    if (mcParticleNeg) fCandidateNeg->ProcessMCInfo(mcParticleNeg, mcEvent);
-    fMCLabelNeg = neg.GetLabel();
+        static_cast<AliMCParticle *>(mcEvent->GetTrack(neg->GetLabel()));
+    if (mcParticleNeg) fCandidateNeg.ProcessMCInfo(mcParticleNeg, mcEvent);
+    fMCLabelNeg = neg->GetLabel();
   }
 
-  fTrackPos = *fCandidatePos;
-  fTrackNeg = *fCandidateNeg;
-  delete fCandidatePos;
-  delete fCandidateNeg;
+  fTrackPos = fCandidatePos;
+  fTrackNeg = fCandidateNeg;
 
   fUse = true;
 }

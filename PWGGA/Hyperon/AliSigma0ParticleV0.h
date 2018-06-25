@@ -2,7 +2,8 @@
 #define AliSigma0ParticleV0_H
 
 #include "AliAODConversionPhoton.h"
-#include "AliAODv0.h"
+#include "AliESDVertex.h"
+#include "AliESDv0.h"
 #include "AliSigma0ParticleBase.h"
 #include "Riostream.h"
 #include "TObject.h"
@@ -11,13 +12,10 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
  public:
   AliSigma0ParticleV0();
   virtual ~AliSigma0ParticleV0() {}
-  AliSigma0ParticleV0(const AliAODv0 &v0, const AliVTrack &pos,
-                      const AliVTrack &neg, const AliVVertex *vertex,
+  AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
+                      const AliESDtrack *neg, const AliESDVertex *vertex,
                       const int pdg, const int pid, const float magneticField,
                       AliMCEvent *mcEvent);
-  AliSigma0ParticleV0(AliESDv0 &v0, const AliVTrack &pos, const AliVTrack &neg,
-                      const AliVVertex *vertex, const int pdg, const int pid,
-                      const float magneticField, AliMCEvent *mcEvent);
   AliSigma0ParticleV0(const AliAODConversionPhoton &gamma,
                       const AliVEvent *inputEvent);
   AliSigma0ParticleV0 &operator=(const AliSigma0ParticleV0 &obj);

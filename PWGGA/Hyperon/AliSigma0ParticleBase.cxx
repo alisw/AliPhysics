@@ -1,12 +1,11 @@
 #include "AliSigma0ParticleBase.h"
-
 #include <iostream>
 #include "TLorentzVector.h"
 
 ClassImp(AliSigma0ParticleBase)
 
-//____________________________________________________________________________________________________
-AliSigma0ParticleBase::AliSigma0ParticleBase()
+    //____________________________________________________________________________________________________
+    AliSigma0ParticleBase::AliSigma0ParticleBase()
     : fP(),
       fPMC(),
       fPDGCode(0),
@@ -25,11 +24,11 @@ AliSigma0ParticleBase::AliSigma0ParticleBase()
       fPhistar() {}
 
 //____________________________________________________________________________________________________
-AliSigma0ParticleBase::AliSigma0ParticleBase(const AliVTrack &track, int pdg,
+AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
                                              const float magneticField,
                                              int filterbit) {
   double trackMom[3];
-  track.GetPxPyPz(trackMom);
+  track->GetPxPyPz(trackMom);
   fP[0] = trackMom[0];
   fP[1] = trackMom[1];
   fP[2] = trackMom[2];
@@ -37,19 +36,14 @@ AliSigma0ParticleBase::AliSigma0ParticleBase(const AliVTrack &track, int pdg,
   fPMC[1] = -1.;
   fPMC[2] = -1.;
 
-  fCharge = track.Charge();
+  fCharge = track->Charge();
   fPDGCode = pdg;
-  fQ = track.Charge();
-  fPt = track.Pt();
-  fTrackLabel = (filterbit == 128) ? -track.GetID() - 1 : track.GetID();
-  fPhi = track.Phi();
-  fEta = track.Eta();
+  fQ = track->Charge();
+  fPt = track->Pt();
+  fTrackLabel = (filterbit == 128) ? -track->GetID() - 1 : track->GetID();
+  fPhi = track->Phi();
+  fEta = track->Eta();
   fUse = true;
-
-  for (float i = 0; i < 9; ++i) {
-    fPhistar[static_cast<int>(i)] =
-        ComputePhiStar(track, magneticField, 85.f + i * 20.f);
-  }
 }
 
 //____________________________________________________________________________________________________

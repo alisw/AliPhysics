@@ -1,9 +1,9 @@
 #ifndef AliSigma0ParticleBase_H
 #define AliSigma0ParticleBase_H
 
+#include "AliESDtrack.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
-#include "AliVTrack.h"
 #include "Riostream.h"
 #include "TObject.h"
 
@@ -12,7 +12,7 @@ class AliSigma0ParticleBase {
   AliSigma0ParticleBase();
   virtual ~AliSigma0ParticleBase() {}
   AliSigma0ParticleBase &operator=(const AliSigma0ParticleBase &obj);
-  AliSigma0ParticleBase(const AliVTrack &track, int pdg,
+  AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
                         const float magneticField, int filterbit = 128);
 
   double ComputeRelK(const AliSigma0ParticleBase &part2,
