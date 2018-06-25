@@ -137,7 +137,7 @@ public:
   
   virtual TClonesArray * GetInputAODBranch()               const { return fInputAODBranch  ; }
   virtual TClonesArray * GetOutputAODBranch()              const { if(fNewAOD) return fOutputAODBranch; else return fInputAODBranch ; }
-  virtual TClonesArray * GetAODBranch(const TString & aodBranchName) const ;
+  virtual TClonesArray * GetAODBranch(TString & aodBranchName) const ;
 	
   // Track cluster arrays access methods
   
@@ -168,7 +168,7 @@ public:
 
   virtual Int_t          GetCalorimeter()                 const  { return fCalorimeter          ; }
   virtual TString        GetCalorimeterString()           const  { return fCalorimeterString    ; }
-  virtual void           SetCalorimeter(TString & calo);
+  virtual void           SetCalorimeter(TString calo);
   virtual void           SetCalorimeter(Int_t calo) ;
 
   virtual Bool_t         IsDataMC()                        const { return fDataMC                ; }
