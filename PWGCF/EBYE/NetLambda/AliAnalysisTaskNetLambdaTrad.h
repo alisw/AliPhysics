@@ -46,7 +46,7 @@ protected:
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
-
+    
     
     TH2F*  f2fHistGenCentVsPtLambda;
     TH2F*  f2fHistGenCentVsPtAntiLambda;
@@ -71,14 +71,14 @@ protected:
     Int_t fTreeVariablePIDNegative;
     Int_t fTreeVariableLeastNbrCrossedRows;
     Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;
-
+    
     Float_t fTreeVariableInvMassLambda;
     Float_t fTreeVariableInvMassAntiLambda;
     Float_t fTreeVariableDcaV0Daughters;
     Float_t fTreeVariableDcaV0ToPrimVertex;
     Float_t fTreeVariableDcaPosToPrimVertex;
-    Float_t fTreeVariableDcaNegToPrimVertex; 
-
+    Float_t fTreeVariableDcaNegToPrimVertex;
+    
     Bool_t fIsMC;
     Bool_t fIsAOD;
     UInt_t fEvSel;
@@ -88,12 +88,13 @@ protected:
     THnSparse *fPtBinNplusNminusChTruth;
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
     Int_t    GetPtBin(Double_t pt);
-
-  
+    
+    
     ClassDef(AliAnalysisTaskNetLambdaTrad,5);
 };
 
 
 #endif
+
 
 
