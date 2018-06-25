@@ -90,24 +90,24 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,bool DC
   fMCList->Add(fMCGenPt);
 
   fPtResolution=new TH2F("DeltaPtRecoTruevsPtReco","DeltaPtRecoTruevsPtReco",
-                         100,0,5,1000,-9,1);
+                         100,0,5,750,-3,1);
   fPtResolution->Sumw2();
   fPtResolution->GetXaxis()->SetTitle("P_{T,True}");
   fPtResolution->GetYaxis()->SetTitle("(P_{T,True}-P_{T,Reco})/P_{T,True}");
   fMCList->Add(fPtResolution);
 
   fThetaResolution=new TH2F("DeltaThetaRecoTruevsPtReco","DeltaThetaRecoTruevsPtReco",
-                         100,0,5,400,-0.8,0.8);
+                         100,0,5,400,-0.25,0.25);
   fThetaResolution->Sumw2();
   fThetaResolution->GetXaxis()->SetTitle("P_{T,True}");
-  fThetaResolution->GetYaxis()->SetTitle("(P_{T,True}-P_{T,Reco})/P_{T,True}");
+  fThetaResolution->GetYaxis()->SetTitle("(#Theta_{T,True}-#Theta_{T,Reco})");
   fMCList->Add(fThetaResolution);
 
   fPhiResolution=new TH2F("DeltaPhiRecoTruevsPtReco","DeltaPhiRecoTruevsPtReco",
-                         100,0,5,200,-0.4,0.4);
+                         100,0,5,200,-0.2,0.2);
   fPhiResolution->Sumw2();
   fPhiResolution->GetXaxis()->SetTitle("P_{T,True}");
-  fPhiResolution->GetYaxis()->SetTitle("(P_{T,True}-P_{T,Reco})/P_{T,True}");
+  fPhiResolution->GetYaxis()->SetTitle("(#Phi_{T,True}-#Phi_{T,Reco})");
   fMCList->Add(fPhiResolution);
 
   if (contribSplitting) {
