@@ -16,7 +16,11 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00200008400020002282000000";
+  TString cutnumberPhoton;
+  cutnumberPhoton = "00200008400020002282000000";
+  if(suffix == "10") cutnumberPhoton = "00000008800020002282000000";
+  if(suffix == "11") cutnumberPhoton = "00000088400020002282000000";
+  if(suffix == "12") cutnumberPhoton = "00000008400020002282000000";
   //      00000008800020002282000000 tighter TPC dEdx cut
   //      00000088400020002282000000 pt,ele > 0.02
   //      00000008400020002282000000 pt,ele > 0.05
@@ -83,6 +87,32 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   AliSigma0V0Cuts *v0Cuts = AliSigma0V0Cuts::DefaultCuts();
   v0Cuts->SetIsMC(isMC);
   if (suffix != "0") v0Cuts->SetLightweight(true);
+  if (suffix == "1") v0Cuts->SetV0PtMin(0);
+  if (suffix == "2") v0Cuts->SetV0CosPAMin(0.97);
+  if (suffix == "3") v0Cuts->SetV0CosPAMin(0.95);
+  if (suffix == "4") {
+    v0Cuts->SetTPCclusterMin(0);
+    v0Cuts->SetTPCRatioFindable(0.8);
+  }
+  if (suffix == "5") {
+    v0Cuts->SetTPCclusterMin(0);
+    v0Cuts->SetTPCRatioFindable(0.6);
+  }
+  if (suffix == "6") {
+    v0Cuts->SetTPCclusterMin(0);
+    v0Cuts->SetTPCRatioFindable(0.6);
+  }
+  if (suffix == "7") {
+    v0Cuts->SetV0RadiusMax(200.f);
+    v0Cuts->SetV0RadiusMin(0.);
+    v0Cuts->SetV0DecayVertexMax(200.f);
+  }
+  if (suffix == "8") {
+    v0Cuts->SetK0Rejection(0., 0.);
+  }
+  if (suffix == "9") {
+    v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
+  }
   v0Cuts->InitCutHistograms();
 
   AliSigma0PhotonMotherCuts *photonMotherCuts =
