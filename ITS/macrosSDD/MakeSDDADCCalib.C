@@ -152,6 +152,9 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     hdEdxvsDrTime = (TH2F*)cOutput->FindObject(Form("hSDDdEdxvsDrTime%i",imod));
     //        chdEdxproj->Clear("D");
     printf("Mod. # %i \n",imod);
+    hmpv->Reset("ICESM");
+    hsig->Reset("ICESM");
+    hsigl->Reset("ICESM");
     hmpv->SetTitle(Form("MPV Mod. # %i",imod));
     hmpv->SetName(Form("MPVModule%i",imod));
     hsig->SetTitle(Form("Gauss sigma Mod. # %i",imod));
@@ -163,14 +166,18 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     hsig->GetYaxis()->SetTitle("Gaussian #sigma (keV)");
     hsigl->GetYaxis()->SetTitle("Landau #sigma (keV)");
     TH1F *hdEdxproj[nDrTimeBin];
-        
+    Bool_t isTBfilled[nDrTimeBin];
     for(Int_t idEdx = 0; idEdx < nDrTimeBin; idEdx++){//loop on DrTime Bin
             
       int minTimeBin = hdEdxvsDrTime->GetXaxis()->FindBin(drTimeLim[idEdx]);
       int maxTimeBin = hdEdxvsDrTime->GetXaxis()->FindBin(drTimeLim[idEdx+1]);
       hdEdxproj[idEdx] = (TH1F*)hdEdxvsDrTime->ProjectionY(Form("%i",idEdx),minTimeBin,maxTimeBin);
       hdEdxproj[idEdx]->SetTitle(hdEdxvsDrTime->GetTitle());
-            
+      if(hdEdxproj[idEdx]->GetEntries()<50){
+	printf("Module %d, time bin %d, too few entries, SKIP\n",imod,idEdx);
+	isTBfilled[idEdx]=kFALSE;
+	continue;
+      }
       lfun = new TF1(Form("LangausFun%d",imod),LangausFun,50.,300.,4); //Langaus fit on a DrTime slice
       lfun->SetLineWidth(2);
       lfun->SetParameter(0,5.);
@@ -188,7 +195,7 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
       Float_t esig  = lfun->GetParError(3);
       Float_t sigl  = lfun->GetParameter(0);
       Float_t esigl = lfun->GetParError(0);
-            
+      //      printf(" Entries =%.0f  mpv=%f  sig=%f\n",hdEdxproj[idEdx]->GetEntries(),mpv,sig);
       //filling histos mpv vs DrTime for each module
       hmpv->SetBinContent(idEdx+1,mpv);
       hmpv->SetBinError(hmpv->FindBin(0.5*(drTimeLim[idEdx]+drTimeLim[idEdx+1])),empv);
@@ -196,16 +203,32 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
       hsig->SetBinError(hsig->FindBin(0.5*(drTimeLim[idEdx]+drTimeLim[idEdx+1])),esig);
       hsigl->SetBinContent(idEdx+1,sigl);
       hsigl->SetBinError(hsigl->FindBin(0.5*(drTimeLim[idEdx]+drTimeLim[idEdx+1])),esigl);
-            
+      isTBfilled[idEdx]=kTRUE;
+
       //            chdEdxproj->cd(idEdx+1);
       //            hdEdxproj[idEdx]->Draw();
       //            lfun->Draw("same");
       //            chdEdxproj->Update();
     }//end loop on DrTime slices
-        
+
+    Double_t maxFit=5400;
+    Double_t minFit=1000;
+    if(!isTBfilled[7]) maxFit=4600.;
+    if(!isTBfilled[6]) maxFit=3800.;
+    if(!isTBfilled[5]) maxFit=3000.;
+    if(!isTBfilled[2]) minFit=1800.;
+    if(!isTBfilled[3]) minFit=2600.;
+
     TF1 *pol1mpv = new TF1("pol1mpv","pol1mpv",0,6400);
-    if(imod!=469) hmpv->Fit(pol1mpv,"0NQLR","",1000,5400);
-    else hmpv->Fit(pol1mpv,"0NQLR","",1000,3000); //Mod 469 only one part of the dr Time region is full
+    //Mod 469 only one part of the dr Time region is full 
+    if(imod==469 && maxFit>3000) maxFit=3000;
+    if(imod!=469 && (maxFit<3500 || hmpv->GetEntries()<=3)) pol1mpv->FixParameter(1,0);
+    if(hmpv->GetEntries()>2){
+      hmpv->Fit(pol1mpv,"0NQ","",minFit,maxFit);
+    }else{
+      pol1mpv->SetParameter(0,84);
+      pol1mpv->SetParameter(1,0);
+    }
     if(imod==376) {//Hard coded, bad module
       pol1mpv->SetParameter(0,84);
       pol1mpv->SetParameter(1,0);
@@ -216,7 +239,7 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     hmpvModpar1->SetBinError(hmpvModpar1->FindBin(imod),pol1mpv->GetParError(1));
     hmpvModpar0->Fill(imod,pol1mpv->GetParameter(0));
     hmpvModpar0->SetBinError(hmpvModpar0->FindBin(imod),pol1mpv->GetParError(0));
-    //Printf("Par0_mpv:%f Err_Par0_mpv:%f    Par1_mpv:%f Err_Par1_mpv:%f",pol1mpv->GetParameter(0),pol1mpv->GetParError(0),pol1mpv->GetParameter(1),pol1mpv->GetParError(1));
+    Printf("Par0_mpv:%f Err_Par0_mpv:%f    Par1_mpv:%f Err_Par1_mpv:%f",pol1mpv->GetParameter(0),pol1mpv->GetParError(0),pol1mpv->GetParameter(1),pol1mpv->GetParError(1));
         
     //        cmod->cd(1);
     //        hmpv->Draw();
@@ -225,7 +248,9 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     //        hmpv->Reset("M");
         
     TF1 *pol1sig = new TF1("pol1sig","pol1sig",0,6400);
-    hsig->Fit(pol1sig,"0NQLR");
+    if(hsig->GetEntries()>2){
+      hsig->Fit(pol1sig,"0NQ","",minFit,maxFit);
+    }
     hsigModpar0->Fill(imod,pol1sig->GetParameter(0));
     hsigModpar0->SetBinError(hsigModpar0->FindBin(imod),pol1sig->GetParError(0));
     hsigModpar1->Fill(imod,pol1sig->GetParameter(1));
@@ -238,7 +263,9 @@ void MakeSDDADCCalib(Int_t run = 245705,TString foldname = "15o_Bunch4",TString 
     //        hsig->Reset("M");
         
     TF1 *pol1sigl = new TF1("pol1sigl","pol1sigl",0,6400);
-    hsigl->Fit(pol1sigl,"0NQLR");
+    if(hsigl->GetEntries()>2){
+      hsigl->Fit(pol1sigl,"0NQ","",minFit,maxFit);
+    }
     hsiglModpar0->Fill(imod,pol1sigl->GetParameter(0));
     hsiglModpar0->SetBinError(hsiglModpar0->FindBin(imod),pol1sigl->GetParError(0));
     hsiglModpar1->Fill(imod,pol1sigl->GetParameter(1));
