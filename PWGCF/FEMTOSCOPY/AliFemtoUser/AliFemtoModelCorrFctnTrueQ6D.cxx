@@ -15,6 +15,8 @@
 #include <array>
 #include <tuple>
 #include <iostream>
+#include <exception>
+
 
 void
 AliFemtoModelCorrFctnTrueQ6D::UpdateQlimits()
@@ -72,23 +74,35 @@ std::array<T, 6> sort_q(AliFemtoModelCorrFctnTrueQ6D::BinMethod bm,
   std::array<T, 6> result;
 
   switch (bm) {
-  case Method::kGenRec:
+  case Method::kGenRecLSO:
+    result = {{true_q_long, true_q_side, true_q_out, q_long, q_side, q_out}};
+    break;
+  case Method::kGenRecOSL:
     result = {{true_q_out, true_q_side, true_q_long, q_out, q_side, q_long}};
     break;
-  case Method::kRecGen:
+  case Method::kGenLSORecOSL:
+    result = {{true_q_long, true_q_side, true_q_out, q_out, q_side, q_long}};
+    break;
+
+  case Method::kRecGenLSO:
     result = {{q_long, q_side, q_out, true_q_long, true_q_side, true_q_out}};
     break;
   case Method::kRecGenOSL:
+    result = {{q_out, q_side, q_long, true_q_out, true_q_side, true_q_long}};
+    break;
+  case Method::kRecLSOGenOSL:
     result = {{q_long, q_side, q_out, true_q_out, true_q_side, true_q_long}};
     break;
-  case Method::kGroupedAxis:
+
+  case Method::kGroupedAxisLSO:
     result = {{q_long, true_q_long, q_side, true_q_side, q_out, true_q_out}};
     break;
-  case Method::kGroupedAxisReverse:
+  case Method::kGroupedAxisOSL:
     result = {{true_q_out, q_out, true_q_side, q_side, true_q_long, q_long}};
     break;
+
   default:
-    result = {{q_out, true_q_out, q_side, true_q_side, q_long, true_q_long}};
+    throw std::invalid_argument(std::string(Form("Uknown binning method %d", bm)));
   }
 
   return result;
@@ -114,6 +128,8 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &name,
   , fManager(nullptr)
   , fHistogram(nullptr)
   , fRng(new TRandom())
+  , fBinMethod(kRecGenOSL)
+  , fIgnoreZeroMassParticles(true)
 {
   std::vector<Int_t> nbins_v(6, static_cast<Int_t>(nbins));
   std::vector<double> hist_min(6, qmin), hist_max(6, qmax);
@@ -136,8 +152,14 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const TString &name,
 AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const Builder &params)
   : AliFemtoModelCorrFctnTrueQ6D(params.title.Data(), params.bin_count, params.qmin, params.qmax)
 {
+  fIgnoreZeroMassParticles = params.ignore_zeromass;
   SetManager(params.mc_manager);
   UpdateQlimits();
+  std::array<double, 2> a = {params.qout_range_min, params.qout_range_max},
+                        b = {params.qside_range_min, params.qside_range_max},
+                        c = {params.qlong_range_min, params.qlong_range_max};
+
+  SetQrange(a.data(), b.data(), c.data());
 }
 
 
@@ -146,8 +168,12 @@ AliFemtoModelCorrFctnTrueQ6D::AliFemtoModelCorrFctnTrueQ6D(const AliFemtoModelCo
   , fManager(orig.fManager)
   , fHistogram(reinterpret_cast<decltype(fHistogram)>(orig.fHistogram->Clone()))
   , fRng(new TRandom())
+  , fBinMethod(orig.fBinMethod)
+  , fIgnoreZeroMassParticles(orig.fIgnoreZeroMassParticles)
 {
-  UpdateQlimits();
+  fQlimits[0] = orig.fQlimits[0];
+  fQlimits[1] = orig.fQlimits[1];
+  fQlimits[2] = orig.fQlimits[2];
 }
 
 
@@ -174,7 +200,7 @@ AliFemtoModelCorrFctnTrueQ6D::AppendOutputList(TList &list)
   return &list;
 }
 
-//Double_t
+
 static
 std::tuple<Double_t, Double_t, Double_t>
 Qcms(const AliFemtoLorentzVector &p1, const AliFemtoLorentzVector &p2)
@@ -232,7 +258,7 @@ AliFemtoModelCorrFctnTrueQ6D::AddPair(const AliFemtoParticle &particle1, const A
                 mass2 = info2->GetMass();
 
   // block all zero-mass particles from the correlation function
-  if (mass1 == 0.0 || mass2 == 0.0) {
+  if (fIgnoreZeroMassParticles && (mass1 == 0.0 || mass2 == 0.0)) {
     return;
   }
 

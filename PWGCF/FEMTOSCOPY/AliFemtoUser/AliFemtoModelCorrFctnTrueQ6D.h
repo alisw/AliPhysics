@@ -31,11 +31,14 @@ public:
   typedef THnSparseI HistType;
 
   enum BinMethod {
-    kGenRec,
-    kRecGen,
+    kGenRecLSO,
+    kGenRecOSL,
+    kGenLSORecOSL,
+    kRecGenLSO,
     kRecGenOSL,
-    kGroupedAxis,
-    kGroupedAxisReverse
+    kRecLSOGenOSL,
+    kGroupedAxisOSL,
+    kGroupedAxisLSO
   };
 
   struct Builder {
@@ -46,13 +49,29 @@ public:
     TString title;
     AliFemtoModelManager *mc_manager;
 
+    Double_t qout_range_min;
+    Double_t qout_range_max;
+    Double_t qside_range_min;
+    Double_t qside_range_max;
+    Double_t qlong_range_min;
+    Double_t qlong_range_max;
+
+    bool ignore_zeromass;
+
     Builder()
-      : bin_count(56)
-      , qmin(-0.24)
-      , qmax(0.24)
-      , bin_method(kGenRec)
+      : bin_count(120)
+      , qmin(-0.3)
+      , qmax(0.3)
+      , bin_method(kGenRecOSL)
       , title("CF_TrueQ6D")
       , mc_manager(NULL)
+      , qout_range_min(0.0)
+      , qout_range_max(0.0)
+      , qside_range_min(0.0)
+      , qside_range_max(0.0)
+      , qlong_range_min(0.0)
+      , qlong_range_max(0.0)
+      , ignore_zeromass(true)
     {
     }
 
@@ -80,13 +99,6 @@ public:
       return b;
     }
 
-    Builder Binning(BinMethod bm) const
-    {
-      Builder b(*this);
-      b.bin_method = bm;
-      return b;
-    }
-
     Builder Qmin(double q) const
     {
       Builder b(*this);
@@ -101,9 +113,40 @@ public:
       return b;
     }
 
-    operator AliFemtoModelCorrFctnTrueQ6D*()
+    #define CREATE_SETTER_METHOD(__name, __target)    \
+      Builder __name(double low, double high) const { \
+        Builder b(*this);                             \
+        b. __target ## _range_min = low;              \
+        b. __target ## _range_max = high;             \
+        return b; }
+
+    CREATE_SETTER_METHOD(QoutRange, qout);
+    CREATE_SETTER_METHOD(QsideRange, qside);
+    CREATE_SETTER_METHOD(QlongRange, qlong);
+
+    #undef CREATE_SETTER_METHOD
+
+
+    #define CREATE_SETTER_METHOD(__name, __type, __target) \
+      Builder __name(__type x) const {                     \
+        Builder b(*this); b. __target = x; return b; }
+
+    CREATE_SETTER_METHOD(NBins, Int_t, bin_count);
+    CREATE_SETTER_METHOD(IgnoreZeroMass, Bool_t, ignore_zeromass);
+    CREATE_SETTER_METHOD(Binning, BinMethod, bin_method);
+
+    #undef CREATE_SETTER_METHOD
+
+
+    AliFemtoModelCorrFctnTrueQ6D* IntoCF()
     {
       return new AliFemtoModelCorrFctnTrueQ6D(*this);
+    }
+
+    operator AliFemtoModelCorrFctnTrueQ6D*()
+    {
+      return IntoCF();
+
     }
   };
 
@@ -191,6 +234,7 @@ protected:
   TRandom *fRng;
 
   BinMethod fBinMethod;
+  Bool_t fIgnoreZeroMassParticles;
 
   std::pair<double, double> fQlimits[3];
 
