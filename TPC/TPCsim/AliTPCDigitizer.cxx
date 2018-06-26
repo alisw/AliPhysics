@@ -799,6 +799,9 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     for (Int_t ires = 0;ires<20;ires++) timeResArr->AddAt(graphRes[ires],ires);
     timeResFunc.AddAt(timeResArr,isec); // Fill all trfs into a single TObjArray 
     nIonTailBins = graphRes[3]->GetN();
+    delete [] graphRes;
+    delete trfIndexArr;
+    delete timeResArr;
   }
 
   //
@@ -1174,4 +1177,8 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   delete []ptr;
   delete []active;
   delete []digarr;
+  for (Int_t sector=0; sector<nROCs; sector++){
+    TMatrixD *crossTalkSignal = (TMatrixD*)crossTalkSignalArray.At(sector);
+    delete crossTalkSignal;
+  }
 }
