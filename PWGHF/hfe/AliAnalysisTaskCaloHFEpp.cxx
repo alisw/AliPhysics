@@ -122,6 +122,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fInv_pT_ULS(0),
 				fHistPt_Inc(0),
 				fHistPt_Iso(0),
+				fHistPt_R_Iso(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -228,6 +229,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fInv_pT_ULS(0),
 				fHistPt_Inc(0),
 				fHistPt_Iso(0),
+				fHistPt_R_Iso(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -335,6 +337,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",60,0,60);
 				fHistPt_Inc = new TH1F("fHistPt_Inc","Inclusive electron",60,0,60);
 				fHistPt_Iso = new TH1F("fHistPt_Iso","Isolated electron",60,0,60);
+				fHistPt_R_Iso = new TH2F("fHistPt_R_Iso","Pt vs riso ",100,0,100,50,0.,0.5);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",60,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",60,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",60,0,60);
@@ -418,6 +421,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fInv_pT_ULS);
 				fOutputList->Add(fHistPt_Inc);
 				fOutputList->Add(fHistPt_Iso);
+				fOutputList->Add(fHistPt_R_Iso);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
 				fOutputList->Add(fCheckEtaMC);
@@ -896,7 +900,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 																///////-----Identify Non-HFE////////////////////////////
 																SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt);
-																IsolationCut(Matchphi,Matcheta,clE,fFlagIsolation);
+																IsolationCut(track->Pt(),Matchphi,Matcheta,clE,fFlagIsolation);
 																if(fFlagIsolation)fHistPt_Iso->Fill(track->Pt());
 
 																if(pid_eleP)
@@ -1227,7 +1231,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::IsolationCut(Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t &fFlagIso)
+void AliAnalysisTaskCaloHFEpp::IsolationCut(Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t &fFlagIso)
 {
 				//////////////////////////////
 				// EMCal cluster loop
@@ -1286,7 +1290,9 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Double_t MatchPhi, Double_t MatchEta
 				}
 
 				riso = riso/MatchclE;
-				if(riso<0.1) flagIso = kTRUE;
+				fHistPt_R_Iso->Fill(TrackPt,riso);
+
+				if(riso<0.05) flagIso = kTRUE;
 
 				fFlagIso = flagIso;
 
