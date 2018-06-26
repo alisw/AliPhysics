@@ -51,5 +51,6 @@
 #pragma link C++ class AliAnalysisTaskCMEV0PID+;
 #pragma link C++ class AliAnalysisTaskStudentsCM+;
 #pragma link C++ class AliAnalysisTaskStudentsML+;
+#pragma link C++ class AliAnalysisTaskTwoMultiCorrelations+;
 #endif
 
