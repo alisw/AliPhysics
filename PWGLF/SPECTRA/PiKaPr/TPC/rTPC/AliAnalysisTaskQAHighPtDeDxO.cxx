@@ -95,16 +95,27 @@ const Int_t nCent = 10;
 const Double_t CentMin[nCent] = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0};
 const Double_t CentMax[nCent] = {5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
 
+/*
+   const Double_t aPos[nCent] = {50.1883 ,49.9572 ,49.7871 ,49.7054 ,49.7656 ,49.9296 ,50.1327 ,50.321  ,50.4451,50.4451};
+   const Double_t bPos[nCent] = {-6.0014 ,-4.36728,-2.35402,0.285188,2.87048 ,5.13634 ,6.90494 ,8.1185  ,8.86493,8.86493};
+   const Double_t cPos[nCent] = {15.4352 ,11.5677 ,6.70805 ,0.187806,-6.02079,-11.4942,-15.9147,-19.0587,-20.9267,-20.9267};
+   const Double_t dPos[nCent] = {-9.03677,-6.79377,-4.00441,-0.09845,3.61243 ,6.9567  ,9.75612 ,11.7897 ,12.9734,12.9734};
 
-const Double_t aPos[nCent] = {50.1883 ,49.9572 ,49.7871 ,49.7054 ,49.7656 ,49.9296 ,50.1327 ,50.321  ,50.4451,50.4451};
-const Double_t bPos[nCent] = {-6.0014 ,-4.36728,-2.35402,0.285188,2.87048 ,5.13634 ,6.90494 ,8.1185  ,8.86493,8.86493};
-const Double_t cPos[nCent] = {15.4352 ,11.5677 ,6.70805 ,0.187806,-6.02079,-11.4942,-15.9147,-19.0587,-20.9267,-20.9267};
-const Double_t dPos[nCent] = {-9.03677,-6.79377,-4.00441,-0.09845,3.61243 ,6.9567  ,9.75612 ,11.7897 ,12.9734,12.9734};
+   const Double_t aNeg[nCent] = {50.2722,50.0062,49.7896,49.6449 ,49.6859 ,49.7989 ,49.9737 ,50.1402 ,50.2317 ,50.2317};
+   const Double_t bNeg[nCent] = {5.36029,3.93499,2.06901,-0.39638,-2.62542,-4.90592,-6.54086,-7.69069,-8.72625,-8.72625};
+   const Double_t cNeg[nCent] = {15.8322,12.1534,7.22903,0.720813,-4.97944,-10.8818,-15.0851,-18.1422,-20.9271,-20.9271};
+   const Double_t dNeg[nCent] = {9.9955 ,7.76649,4.74416,0.6475  ,-2.839  ,-6.66448,-9.36794,-11.3715,-13.2891,-13.2891};
+ */
 
-const Double_t aNeg[nCent] = {50.2722,50.0062,49.7896,49.6449 ,49.6859 ,49.7989 ,49.9737 ,50.1402 ,50.2317 ,50.2317};
-const Double_t bNeg[nCent] = {5.36029,3.93499,2.06901,-0.39638,-2.62542,-4.90592,-6.54086,-7.69069,-8.72625,-8.72625};
-const Double_t cNeg[nCent] = {15.8322,12.1534,7.22903,0.720813,-4.97944,-10.8818,-15.0851,-18.1422,-20.9271,-20.9271};
-const Double_t dNeg[nCent] = {9.9955 ,7.76649,4.74416,0.6475  ,-2.839  ,-6.66448,-9.36794,-11.3715,-13.2891,-13.2891};
+const Double_t aPos[nCent] = {49.8594  ,49.8542  ,49.8594  ,49.8545  ,49.8473   ,49.8589  ,49.8542   ,49.8569  ,49.8461   ,49.8512};
+const Double_t bPos[nCent] = {-0.19737 ,-0.157422,-0.185804,-0.140537,-0.0502213,-0.155494,-0.0575582,-0.149527,-0.0901908,-0.0571605};
+const Double_t cPos[nCent] = {0.936921 ,0.840229 ,0.856222 ,0.789579 ,0.508899  ,0.782057 ,0.577245  ,0.788935 ,0.688114  ,0.591065};
+const Double_t dPos[nCent] = {-0.387464,-0.312826,-0.302875,-0.260128,-0.0490301 ,-0.23182,-0.125936 ,-0.262908,-0.211082 ,-0.152547};
+
+const Double_t aNeg[nCent] = {49.8292  ,49.8493 ,49.8388  ,49.8413   ,49.8384  ,49.8436   ,49.8476  ,49.8336   ,49.8438 ,49.8446};
+const Double_t bNeg[nCent] = {-0.122292,0.11876 ,0.0060856,-0.0200841,0.0228002,0.00971686,0.0146653,-0.0481027,0.077598,-0.0379178};
+const Double_t cNeg[nCent] = {0.748659 ,1.39121 ,1.05511  ,0.972488  ,1.09636  ,1.04173   ,1.06027  ,0.924111  ,1.30225 ,0.852475};
+const Double_t dNeg[nCent] = {0.415989 ,0.894481,0.617493 ,0.550473  ,0.645483 ,0.599914  ,0.615319 ,0.522093  ,0.840085,0.424588};
 
 
 const Bool_t CloseDCAxy = kTRUE;
@@ -419,7 +430,7 @@ void AliAnalysisTaskQAHighPtDeDxO::UserCreateOutputObjects()
 	//	fListOfObjects->Add(fn1);
 
 	hEvents=new TH1F("hEvents","hEvents",15,-1,14);
-	fListOfObjects->Add(hEvents);
+	//	fListOfObjects->Add(hEvents);
 
 	fcent=new TH1F("fcent","fcent",13,0,13);
 	fListOfObjects->Add(fcent);
@@ -1330,15 +1341,15 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 			if ( ( lengthtrack != 0 ) && ( timeTOF != 0) )
 				beta = inttime[0] / timeTOF;
 
-	cout << "momentum  " << momentum << endl; 
-//	cout << "time[0]/timeTOF  " << inttime[0]/timeTOF << endl; 
-//	cout << "time[1]/timeTOF  " << inttime[1]/timeTOF << endl; 
-//	cout << "time[2]/timeTOF  " << inttime[2]/timeTOF << endl; 
-//	cout << "time[3]/timeTOF  " << inttime[3]/timeTOF << endl; 
-//	cout << "time[4]/timeTOF  " << inttime[4]/timeTOF << endl; 
+			cout << "momentum  " << momentum << endl; 
+			//	cout << "time[0]/timeTOF  " << inttime[0]/timeTOF << endl; 
+			//	cout << "time[1]/timeTOF  " << inttime[1]/timeTOF << endl; 
+			//	cout << "time[2]/timeTOF  " << inttime[2]/timeTOF << endl; 
+			//	cout << "time[3]/timeTOF  " << inttime[3]/timeTOF << endl; 
+			//	cout << "time[4]/timeTOF  " << inttime[4]/timeTOF << endl; 
 
-	cout << "timeTOF  " << timeTOF << endl; 
-}
+			cout << "timeTOF  " << timeTOF << endl; 
+		}
 
 
 
@@ -1447,12 +1458,16 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 				}
 			}
 
-			if(TMath::Abs(beta-1)<0.05){
-//			if( dedx > 70 && dedx < 90 )
-				if(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion)>2.0)
-				if(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron)<2.0)
-					histElTof[cent][nh]->Fill(momentum, dedx);
-			}
+			//			if(TMath::Abs(beta-1)<0.05){
+			//			if( dedx > 70 && dedx < 90 )
+			//				if(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion)>2.0)
+			//				if(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron)<2.0)
+			//					histElTof[cent][nh]->Fill(momentum, dedx);
+			//			}
+			if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron),2)+TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron),2)) < 3){
+				cout << " Momentum  " << momentum <<"dedx ::  " << dedx  << endl; 
+				histElTof[cent][nh]->Fill(momentum, dedx);
+			}    
 
 
 			if( momentum <= 0.6 && momentum >= 0.4  ){
