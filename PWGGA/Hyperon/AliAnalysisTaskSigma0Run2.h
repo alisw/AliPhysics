@@ -30,12 +30,14 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   void SetV0Percentile(float v0perc) { fV0PercentileMax = v0perc; }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
   void SetV0Cuts(AliSigma0V0Cuts *cuts) { fV0Cuts = cuts; }
-  void SetPhotonMotherCuts(AliSigma0PhotonMotherCuts *cuts) {
-    fPhotonMotherCuts = cuts;
+  void SetAntiV0Cuts(AliSigma0V0Cuts *cuts) { fAntiV0Cuts = cuts; }
+  void SetSigmaCuts(AliSigma0PhotonMotherCuts *cuts) { fSigmaCuts = cuts; }
+  void SetAntiSigmaCuts(AliSigma0PhotonMotherCuts *cuts) {
+    fAntiSigmaCuts = cuts;
   }
 
   bool AcceptEvent(AliVEvent *event);
-  void CastToVector();
+  void CastToVector(std::vector<AliAODConversionPhoton> &container);
   void FillTriggerHisto(TH1F *histo);
 
   AliEventCuts fAliEventCuts;
@@ -44,12 +46,14 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   AliAnalysisTaskSigma0Run2(const AliAnalysisTaskSigma0Run2 &task);
   AliAnalysisTaskSigma0Run2 &operator=(const AliAnalysisTaskSigma0Run2 &task);
 
-  AliVEvent *fInputEvent;                        // current event
-  AliMCEvent *fMCEvent;                          // corresponding MC event
-  AliV0ReaderV1 *fV0Reader;                      //! basic photon Selection Task
-  TString fV0ReaderName;                         //
-  AliSigma0V0Cuts *fV0Cuts;                      //
-  AliSigma0PhotonMotherCuts *fPhotonMotherCuts;  //
+  AliVEvent *fInputEvent;                     // current event
+  AliMCEvent *fMCEvent;                       // corresponding MC event
+  AliV0ReaderV1 *fV0Reader;                   //! basic photon Selection Task
+  TString fV0ReaderName;                      //
+  AliSigma0V0Cuts *fV0Cuts;                   //
+  AliSigma0V0Cuts *fAntiV0Cuts;               //
+  AliSigma0PhotonMotherCuts *fSigmaCuts;      //
+  AliSigma0PhotonMotherCuts *fAntiSigmaCuts;  //
 
   bool fIsMC;              //
   bool fIsHeavyIon;        //
@@ -66,7 +70,7 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   TList *fQA;                               //!
   TH1F *fHistCutQA;                         //
   TProfile *fHistRunNumber;                 //
-  TProfile *fHistCuts;                      //
+  TProfile *fHistCutBooking;                      //
   TH1F *fHistCentralityProfileBefore;       //
   TH1F *fHistCentralityProfileAfter;        //
   TH1F *fHistCentralityProfileCoarseAfter;  //

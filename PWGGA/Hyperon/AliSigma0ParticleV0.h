@@ -14,7 +14,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   virtual ~AliSigma0ParticleV0() {}
   AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
                       const AliESDtrack *neg, const AliESDVertex *vertex,
-                      const int pdg, const int pid, const float magneticField,
+                      const int pdg, const float magneticField,
                       AliMCEvent *mcEvent);
   AliSigma0ParticleV0(const AliAODConversionPhoton &gamma,
                       const AliVEvent *inputEvent);
@@ -47,7 +47,6 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   double GetCosineAlpha() const { return fCosAlpha; }
   double GetRecMass() const { return fRecMass; }
   double GetPDGMass() const { return fPDGMass; }
-  short GetPID() const { return fPID; }
 
   void SetPDGMass(float mass) { fPDGMass = mass; }
 
@@ -67,7 +66,6 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   double fCosAlpha;
   double fRecMass;
   double fPDGMass;
-  short fPID;
 
   ClassDef(AliSigma0ParticleV0, 1)
 };

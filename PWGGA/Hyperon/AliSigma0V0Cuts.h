@@ -5,6 +5,7 @@
 #include "AliPIDResponse.h"
 #include "AliSigma0ParticleV0.h"
 #include "Riostream.h"
+#include "TDatabasePDG.h"
 #include "TObject.h"
 
 #include "TProfile.h"
@@ -34,13 +35,15 @@ class AliSigma0V0Cuts : public TObject {
   AliSigma0V0Cuts &operator=(const AliSigma0V0Cuts &);
   virtual ~AliSigma0V0Cuts();
 
-  static AliSigma0V0Cuts *DefaultCuts();
+  static AliSigma0V0Cuts *LambdaCuts();
+  static AliSigma0V0Cuts *PhotonCuts();
 
-  void SelectV0s(AliVEvent *inputEvent, AliMCEvent *mcEvent,
-                 std::vector<AliSigma0ParticleV0> &V0Container,
-                 std::vector<AliSigma0ParticleV0> &AntiV0Container,
-                 AliPID::EParticleType particle1,
-                 AliPID::EParticleType particle2);
+  void SelectLambda(AliVEvent *inputEvent, AliMCEvent *mcEvent,
+                    std::vector<AliSigma0ParticleV0> &V0Container);
+  void SelectPhoton(AliVEvent *inputEvent, AliMCEvent *mcEvent,
+                    std::vector<AliSigma0ParticleV0> &V0Container,
+                    AliPID::EParticleType particle1,
+                    AliPID::EParticleType particle2);
   bool V0QualityCuts(const AliESDv0 *v0);
   bool V0PID(const AliESDv0 *v0, const AliESDtrack *pos, const AliESDtrack *neg,
              AliPID::EParticleType particle,
@@ -62,6 +65,9 @@ class AliSigma0V0Cuts : public TObject {
   void SetPileUpRejectionMode(PileUpRejectionMode pileUpRej) {
     fPileUpRejectionMode = pileUpRej;
   }
+  void SetPID(int pid) { fPID = pid; }
+  void SetPosPID(AliPID::EParticleType pid) { fPosPID = pid; }
+  void SetNegPID(AliPID::EParticleType pid) { fNegPID = pid; }
   void SetV0OnFlyStatus(bool onFly) { fV0OnFly = onFly; }
   void SetV0PtMin(float ptMin) { fV0PtMin = ptMin; }
   void SetV0PtMax(float ptMax) { fV0PtMax = ptMax; }
@@ -102,24 +108,15 @@ class AliSigma0V0Cuts : public TObject {
 
  protected:
   TList *fHistograms;
-  TList *fHistogramsV0;
-  TList *fHistogramsV0MC;
-  TList *fHistogramsV0Before;
-  TList *fHistogramsV0After;
-  TList *fHistogramsV0Pos;
-  TList *fHistogramsV0Neg;
-  TList *fHistogramsAntiV0;
-  TList *fHistogramsAntiV0MC;
-  TList *fHistogramsAntiV0Before;
-  TList *fHistogramsAntiV0After;
-  TList *fHistogramsAntiV0Pos;
-  TList *fHistogramsAntiV0Neg;
+  TList *fHistogramsMC;
+  TList *fHistogramsBefore;
+  TList *fHistogramsAfter;
+  TList *fHistogramsPos;
+  TList *fHistogramsNeg;
 
-  AliESDEvent *fInputEvent;  //!
-  AliMCEvent *fMCEvent;      //!
-
-  std::vector<AliSigma0ParticleV0> fV0Vector;      //!
-  std::vector<AliSigma0ParticleV0> fAntiV0Vector;  //!
+  AliESDEvent *fInputEvent;   //!
+  AliMCEvent *fMCEvent;       //!
+  TDatabasePDG fPDGDatabase;  //!
 
   bool fIsLightweight;  //
 
@@ -129,6 +126,8 @@ class AliSigma0V0Cuts : public TObject {
 
   bool fIsMC;
   PileUpRejectionMode fPileUpRejectionMode;
+  AliPID::EParticleType fPosPID;
+  AliPID::EParticleType fNegPID;
   bool fV0OnFly;
   bool fK0Rejection;
   bool fUsePID;
@@ -160,37 +159,37 @@ class AliSigma0V0Cuts : public TObject {
 
   // Histograms
   // =====================================================================
-  TProfile *fHistCuts;  //
+  TProfile *fHistCutBooking;  //
 
-  TH1F *fHistV0Cuts;  //
-  TH1F *fHistNV0;     //
+  TH1F *fHistCuts;  //
+  TH1F *fHistNV0;   //
 
-  TH1F *fHistV0LambdaMass;       //
-  TH1F *fHistV0LambdaPt;         //
-  TH2F *fHistV0LambdaPtY[20];    //
-  TH2F *fHistV0LambdaMassPt;     //
-  TH1F *fHistV0LambdaMassK0Rej;  //
-  TH1F *fHistV0K0Mass;           //
-  TH1F *fHistV0K0MassAfter;      //
-  TH2F *fHistV0CosPA;            //
-  TH2F *fHistV0EtaPhi;           //
+  TH1F *fHistLambdaMass;       //
+  TH1F *fHistLambdaPt;         //
+  TH2F *fHistLambdaPtY[20];    //
+  TH2F *fHistLambdaMassPt;     //
+  TH1F *fHistLambdaMassK0Rej;  //
+  TH1F *fHistK0Mass;           //
+  TH1F *fHistK0MassAfter;      //
+  TH2F *fHistCosPA;            //
+  TH2F *fHistEtaPhi;           //
 
-  TH1F *fHistV0DecayVertexXBefore;      //
-  TH1F *fHistV0DecayVertexYBefore;      //
-  TH1F *fHistV0DecayVertexZBefore;      //
-  TH1F *fHistV0DecayVertexXAfter;       //
-  TH1F *fHistV0DecayVertexYAfter;       //
-  TH1F *fHistV0DecayVertexZAfter;       //
-  TH1F *fHistV0TransverseRadiusBefore;  //
-  TH1F *fHistV0TransverseRadiusAfter;   //
-  TH1F *fHistV0CosPABefore;             //
-  TH1F *fHistV0CosPAAfter;              //
-  TH1F *fHistV0DCADaughtersBefore;      //
-  TH1F *fHistV0DCADaughtersAfter;       //
-  TH1F *fHistV0DCA;                     //
-  TH1F *fHistV0DecayLength;             //
-  TH2F *fHistV0ArmenterosBefore;        //
-  TH2F *fHistV0ArmenterosAfter;         //
+  TH1F *fHistDecayVertexXBefore;      //
+  TH1F *fHistDecayVertexYBefore;      //
+  TH1F *fHistDecayVertexZBefore;      //
+  TH1F *fHistDecayVertexXAfter;       //
+  TH1F *fHistDecayVertexYAfter;       //
+  TH1F *fHistDecayVertexZAfter;       //
+  TH1F *fHistTransverseRadiusBefore;  //
+  TH1F *fHistTransverseRadiusAfter;   //
+  TH1F *fHistCosPABefore;             //
+  TH1F *fHistCosPAAfter;              //
+  TH1F *fHistDCADaughtersBefore;      //
+  TH1F *fHistDCADaughtersAfter;       //
+  TH1F *fHistDCA;                     //
+  TH1F *fHistDecayLength;             //
+  TH2F *fHistArmenterosBefore;        //
+  TH2F *fHistArmenterosAfter;         //
 
   TH1F *fHistMCTruthV0Pt;               //
   TH2F *fHistMCTruthV0PtY;              //
@@ -199,81 +198,24 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistMCTruthV0ProtonPionPtY;    //
   TH2F *fHistMCTruthV0ProtonPionPtEta;  //
 
-  TH1F *fHistAntiV0Cuts;  //
-  TH1F *fHistNAntiV0;     //
-
-  TH1F *fHistAntiV0LambdaMass;       //
-  TH1F *fHistAntiV0LambdaPt;         //
-  TH2F *fHistAntiV0LambdaPtY[20];    //
-  TH2F *fHistAntiV0LambdaMassPt;     //
-  TH1F *fHistAntiV0LambdaMassK0Rej;  //
-  TH1F *fHistAntiV0K0Mass;           //
-  TH1F *fHistAntiV0K0MassAfter;      //
-  TH2F *fHistAntiV0CosPA;            //
-  TH2F *fHistAntiV0EtaPhi;           //
-
-  TH1F *fHistAntiV0DecayVertexXBefore;      //
-  TH1F *fHistAntiV0DecayVertexYBefore;      //
-  TH1F *fHistAntiV0DecayVertexZBefore;      //
-  TH1F *fHistAntiV0DecayVertexXAfter;       //
-  TH1F *fHistAntiV0DecayVertexYAfter;       //
-  TH1F *fHistAntiV0DecayVertexZAfter;       //
-  TH1F *fHistAntiV0TransverseRadiusBefore;  //
-  TH1F *fHistAntiV0TransverseRadiusAfter;   //
-  TH1F *fHistAntiV0CosPABefore;             //
-  TH1F *fHistAntiV0CosPAAfter;              //
-  TH1F *fHistAntiV0DCADaughtersBefore;      //
-  TH1F *fHistAntiV0DCADaughtersAfter;       //
-  TH1F *fHistAntiV0DCA;                     //
-  TH1F *fHistAntiV0DecayLength;             //
-  TH2F *fHistAntiV0ArmenterosBefore;        //
-  TH2F *fHistAntiV0ArmenterosAfter;         //
-
-  TH1F *fHistMCTruthAntiV0Pt;     //
-  TH2F *fHistMCTruthAntiV0PtY;    //
-  TH2F *fHistMCTruthAntiV0PtEta;  //
-
-  TH1F *fHistMCTruthAntiV0ProtonPionPt;     //
-  TH2F *fHistMCTruthAntiV0ProtonPionPtY;    //
-  TH2F *fHistMCTruthAntiV0ProtonPionPtEta;  //
-
-  TH1F *fHistV0SingleParticleCuts[2];                        //
-  TH1F *fHistV0SingleParticlePt[2];                          //
-  TH1F *fHistV0SingleParticleEtaBefore[2];                   //
-  TH1F *fHistV0SingleParticleEtaAfter[2];                    //
-  TH1F *fHistV0SingleParticleNclsTPCBefore[2];               //
-  TH1F *fHistV0SingleParticleNclsTPCAfter[2];                //
-  TH1F *fHistV0SingleParticleNclsTPCFindableBefore[2];       //
-  TH1F *fHistV0SingleParticleNclsTPCFindableAfter[2];        //
-  TH1F *fHistV0SingleParticleNclsTPCRatioFindableBefore[2];  //
-  TH1F *fHistV0SingleParticleNclsTPCRatioFindableAfter[2];   //
-  TH1F *fHistV0SingleParticleNcrossedTPCBefore[2];           //
-  TH1F *fHistV0SingleParticleNcrossedTPCAfter[2];            //
-  TH1F *fHistV0SingleParticleNclsTPCShared[2];               //
-  TH1F *fHistV0SingleParticleNclsITSShared[2];               //
-  TH1F *fHistV0SingleParticleDCAtoPVBefore[2];               //
-  TH1F *fHistV0SingleParticleDCAtoPVAfter[2];                //
-  TH2F *fHistV0SingleParticlePileUp[2];                      //
-  TH2F *fHistV0SingleParticlePID[2];                         //
-
-  TH1F *fHistAntiV0SingleParticleCuts[2];                        //
-  TH1F *fHistAntiV0SingleParticlePt[2];                          //
-  TH1F *fHistAntiV0SingleParticleEtaBefore[2];                   //
-  TH1F *fHistAntiV0SingleParticleEtaAfter[2];                    //
-  TH1F *fHistAntiV0SingleParticleNclsTPCBefore[2];               //
-  TH1F *fHistAntiV0SingleParticleNclsTPCAfter[2];                //
-  TH1F *fHistAntiV0SingleParticleNclsTPCFindableBefore[2];       //
-  TH1F *fHistAntiV0SingleParticleNclsTPCFindableAfter[2];        //
-  TH1F *fHistAntiV0SingleParticleNclsTPCRatioFindableBefore[2];  //
-  TH1F *fHistAntiV0SingleParticleNclsTPCRatioFindableAfter[2];   //
-  TH1F *fHistAntiV0SingleParticleNcrossedTPCBefore[2];           //
-  TH1F *fHistAntiV0SingleParticleNcrossedTPCAfter[2];            //
-  TH1F *fHistAntiV0SingleParticleNclsTPCShared[2];               //
-  TH1F *fHistAntiV0SingleParticleNclsITSShared[2];               //
-  TH1F *fHistAntiV0SingleParticleDCAtoPVBefore[2];               //
-  TH1F *fHistAntiV0SingleParticleDCAtoPVAfter[2];                //
-  TH2F *fHistAntiV0SingleParticlePileUp[2];                      //
-  TH2F *fHistAntiV0SingleParticlePID[2];                         //
+  TH1F *fHistSingleParticleCuts[2];                        //
+  TH1F *fHistSingleParticlePt[2];                          //
+  TH1F *fHistSingleParticleEtaBefore[2];                   //
+  TH1F *fHistSingleParticleEtaAfter[2];                    //
+  TH1F *fHistSingleParticleNclsTPCBefore[2];               //
+  TH1F *fHistSingleParticleNclsTPCAfter[2];                //
+  TH1F *fHistSingleParticleNclsTPCFindableBefore[2];       //
+  TH1F *fHistSingleParticleNclsTPCFindableAfter[2];        //
+  TH1F *fHistSingleParticleNclsTPCRatioFindableBefore[2];  //
+  TH1F *fHistSingleParticleNclsTPCRatioFindableAfter[2];   //
+  TH1F *fHistSingleParticleNcrossedTPCBefore[2];           //
+  TH1F *fHistSingleParticleNcrossedTPCAfter[2];            //
+  TH1F *fHistSingleParticleNclsTPCShared[2];               //
+  TH1F *fHistSingleParticleNclsITSShared[2];               //
+  TH1F *fHistSingleParticleDCAtoPVBefore[2];               //
+  TH1F *fHistSingleParticleDCAtoPVAfter[2];                //
+  TH2F *fHistSingleParticlePileUp[2];                      //
+  TH2F *fHistSingleParticlePID[2];                         //
 
  private:
   ClassDef(AliSigma0V0Cuts, 3)

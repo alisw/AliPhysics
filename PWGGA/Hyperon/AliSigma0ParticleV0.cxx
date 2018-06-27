@@ -13,13 +13,12 @@ ClassImp(AliSigma0ParticleV0)
       fTrackNeg(),
       fCosAlpha(0),
       fRecMass(0),
-      fPDGMass(0),
-      fPID() {}
+      fPDGMass(0) {}
 //____________________________________________________________________________________________________
 AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
                                          const AliESDtrack *neg,
                                          const AliESDVertex *vertex,
-                                         const int pdg, const int pid,
+                                         const int pdg,
                                          const float magneticField,
                                          AliMCEvent *mcEvent)
     : AliSigma0ParticleBase(),
@@ -31,8 +30,7 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
       fTrackNeg(),
       fCosAlpha(0),
       fRecMass(0),
-      fPDGMass(0),
-      fPID() {
+      fPDGMass(0) {
   fP[0] = v0->Px();
   fP[1] = v0->Py();
   fP[2] = v0->Pz();
@@ -45,13 +43,9 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
   fTrackLabel = v0->GetLabel();
   fPhi = v0->Phi();
   fEta = v0->Eta();
-  if (pid == 1)
-    v0->ChangeMassHypothesis(3122);
-  else
-    v0->ChangeMassHypothesis(-3122);
+  v0->ChangeMassHypothesis(pdg);
   fMass = v0->GetEffMass();
   fRecMass = v0->GetEffMass();
-  fPID = pid;
 
   fTrackLabelPos = pos->GetID();
   fTrackLabelNeg = neg->GetID();
@@ -92,8 +86,7 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton &gamma,
       fTrackNeg(),
       fCosAlpha(0),
       fRecMass(0),
-      fPDGMass(0),
-      fPID(0) {
+      fPDGMass(0) {
   fP[0] = gamma.GetPx();
   fP[1] = gamma.GetPy();
   fP[2] = gamma.GetPz();

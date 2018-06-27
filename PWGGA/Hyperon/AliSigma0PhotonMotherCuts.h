@@ -26,20 +26,17 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   void SelectPhotonMother(
       AliVEvent *inputEvent, AliMCEvent *mcEvent,
-      std::vector<AliAODConversionPhoton> &photonCandidates,
-      std::vector<AliSigma0ParticleV0> &lambdaCandidates,
-      std::vector<AliSigma0ParticleV0> &antiLambdaCandidates);
+      const std::vector<AliAODConversionPhoton> &photonCandidates,
+      const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void SigmaToLambdaGamma(
-      std::vector<AliAODConversionPhoton> &photonCandidates,
-      std::vector<AliSigma0ParticleV0> &lambdaCandidates,
-      std::vector<AliSigma0ParticleV0> &antiLambdaCandidates);
+      const std::vector<AliAODConversionPhoton> &photonCandidates,
+      const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void SigmaToLambdaGammaMixedEvent(
-      std::vector<AliAODConversionPhoton> &photonCandidates,
-      std::vector<AliSigma0ParticleV0> &lambdaCandidates,
-      std::vector<AliSigma0ParticleV0> &antiLambdaCandidates);
-  void FillEventBuffer(std::vector<AliAODConversionPhoton> &photonCandidates,
-                       std::vector<AliSigma0ParticleV0> &lambdaCandidates,
-                       std::vector<AliSigma0ParticleV0> &antiLambdaCandidates);
+      const std::vector<AliAODConversionPhoton> &photonCandidates,
+      const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
+  void FillEventBuffer(
+      const std::vector<AliAODConversionPhoton> &photonCandidates,
+      const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   int GetRapidityBin(float rapidity) const;
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
@@ -66,10 +63,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
  protected:
   TList *fHistograms;
-  TList *fHistogramsSigma;
-  TList *fHistogramsSigmaMC;
-  TList *fHistogramsAntiSigma;
-  TList *fHistogramsAntiSigmaMC;
+  TList *fHistogramsMC;
 
   bool fIsMC;
   bool fIsLightweight;
@@ -77,9 +71,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
   AliVEvent *fInputEvent;  //!
   AliMCEvent *fMCEvent;    //!
 
-  deque<vector<AliSigma0ParticleV0> > fLambdaMixed;      //!
-  deque<vector<AliSigma0ParticleV0> > fAntiLambdaMixed;  //!
-  deque<vector<AliAODConversionPhoton> > fPhotonMixed;   //!
+  deque<vector<AliSigma0ParticleV0> > fLambdaMixed;     //!
+  deque<vector<AliAODConversionPhoton> > fPhotonMixed;  //!
 
   short fMixingDepth;
 
@@ -96,43 +89,26 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   // Histograms
   // =====================================================================
-  TProfile *fHistCuts;  //
+  TProfile *fHistCutBooking;  //
 
-  TH1F *fHistNSigma;                 //
-  TH1F *fHistSigmaPt;                //
-  TH1F *fHistSigmaMassCutPt;         //
-  TH1F *fHistSigmaInvMass;           //
-  TH1F *fHistSigmaInvMassRec;        //
-  TH2F *fHistSigmaInvMassPt;         //
-  TH2F *fHistSigmaInvMassEta;        //
-  TH2F *fHistSigmaEtaPhi;            //
-  TH1F *fHistSigmaRapidity;          //
-  TH2F *fHistSigmaPtY[22];           //
-  TH2F *fHistSigmaArmenterosBefore;  //
-  TH2F *fHistSigmaArmenterosAfter;   //
-  TH1F *fHistSigmaMixedPt;           //
-  TH1F *fHistSigmaMixedInvMass;      //
-  TH2F *fHistSigmaMixedPtY[22];      //
-  TH2F *fHistSigmaMixedInvMassPt;    //
-  TH2F *fHistSigmaMixedInvMassEta;   //
-
-  TH1F *fHistNAntiSigma;                 //
-  TH1F *fHistAntiSigmaPt;                //
-  TH1F *fHistAntiSigmaMassCutPt;         //
-  TH1F *fHistAntiSigmaInvMass;           //
-  TH1F *fHistAntiSigmaInvMassRec;        //
-  TH2F *fHistAntiSigmaInvMassPt;         //
-  TH2F *fHistAntiSigmaInvMassEta;        //
-  TH2F *fHistAntiSigmaEtaPhi;            //
-  TH1F *fHistAntiSigmaRapidity;          //
-  TH2F *fHistAntiSigmaPtY[22];           //
-  TH2F *fHistAntiSigmaArmenterosBefore;  //
-  TH2F *fHistAntiSigmaArmenterosAfter;   //
-  TH1F *fHistAntiSigmaMixedPt;           //
-  TH1F *fHistAntiSigmaMixedInvMass;      //
-  TH2F *fHistAntiSigmaMixedPtY[22];      //
-  TH2F *fHistAntiSigmaMixedInvMassPt;    //
-  TH2F *fHistAntiSigmaMixedInvMassEta;   //
+  TH1F *fHistNSigma;                   //
+  TH1F *fHistPt;                       //
+  TH1F *fHistMassCutPt;                //
+  TH1F *fHistInvMass;                  //
+  TH1F *fHistInvMassBeforeArmenteros;  //
+  TH1F *fHistInvMassRec;               //
+  TH2F *fHistInvMassPt;                //
+  TH2F *fHistInvMassEta;               //
+  TH2F *fHistEtaPhi;                   //
+  TH1F *fHistRapidity;                 //
+  TH2F *fHistPtY[22];                  //
+  TH2F *fHistArmenterosBefore;         //
+  TH2F *fHistArmenterosAfter;          //
+  TH1F *fHistMixedPt;                  //
+  TH1F *fHistMixedInvMass;             //
+  TH2F *fHistMixedPtY[22];             //
+  TH2F *fHistMixedInvMassPt;           //
+  TH2F *fHistMixedInvMassEta;          //
 
   TH1F *fHistMCSigmaMassCutPt;                   //
   TH1F *fHistMCTruthSigma0PhotonConvPt;          //
@@ -153,26 +129,6 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH1F *fHistMCTruthSigma0PhotonPt;              //
   TH2F *fHistMCTruthSigma0PhotonPtY;             //
   TH2F *fHistMCTruthSigma0PhotonPtEta;           //
-
-  TH1F *fHistMCAntiSigmaMassCutPt;                   //
-  TH1F *fHistMCTruthAntiSigma0PhotonConvPt;          //
-  TH1F *fHistMCTruthAntiSigma0PhotonConvP;           //
-  TH1F *fHistMCTruthAntiSigma0PhotonConvInvMass;     //
-  TH2F *fHistMCTruthAntiSigma0PhotonConvInvMassPt;   //
-  TH2F *fHistMCTruthAntiSigma0PhotonConvPtEta;       //
-  TH2F *fHistMCTruthAntiSigma0PhotonConvR;           //
-  TH1F *fHistMCTruthAntiSigma0PhotonConvConvPointX;  //
-  TH1F *fHistMCTruthAntiSigma0PhotonConvConvPointY;  //
-  TH1F *fHistMCTruthAntiSigma0PhotonConvConvPointZ;  //
-  TH1F *fHistMCTruthAntiSigma0PhotonConvEleP;        //
-  TH1F *fHistMCTruthAntiSigma0PhotonConvElePt;       //
-  TH2F *fHistMCTruthAntiSigma0PhotonConvPtY;         //
-  TH1F *fHistMCTruthAntiSigma0Pt;                    //
-  TH2F *fHistMCTruthAntiSigma0PtY;                   //
-  TH2F *fHistMCTruthAntiSigma0PtEta;                 //
-  TH1F *fHistMCTruthAntiSigma0PhotonPt;              //
-  TH2F *fHistMCTruthAntiSigma0PhotonPtY;             //
-  TH2F *fHistMCTruthAntiSigma0PhotonPtEta;           //
 
  private:
   ClassDef(AliSigma0PhotonMotherCuts, 2)
