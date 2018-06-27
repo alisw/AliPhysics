@@ -928,9 +928,17 @@ Double_t AliESDv0::GetKFInfo(UInt_t p1, UInt_t p2, Int_t type) const{
   return 0;
 }
 
-
-Double_t AliESDv0::GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1pt, Double_t s1pt) const{
-  // Used for fast numerical studies  of impact of residula miscalibration
+/// Calculate  numerical derivative of V0 properties
+/// \param p1     -particle type (0-el,1-mu, 2-pi, 3-K, 4-Proton)
+/// \param p2     - particle type (0-el,1-mu, 2-pi, 3-K, 4-Proton)
+/// \param type   - return value type (0=mass, 1-err mass, 2-chi2, 3 - pt of V0
+/// \param d1pt   - detla q/pt  (1/GeV)
+/// \param s1pt   - momentum scale  (fraction)
+/// \param eLoss  - delta of energy loss  (MIP==1) ///
+/// \[aram flag   - apply derivative for track 1 (flag -1) track 2(flag 2) or both (flag=3)
+/// \return       - value of given type
+Double_t AliESDv0::GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1pt, Double_t s1pt, Double_t eLoss, Int_t flag) const{
+  // Used for fast numerical studies  of impact of residual miscalibration
   // Input:
   // p1,p2 - particle type (0-el,1-mu, 2-pi, 3-K, 4-Proton)
   // type
@@ -959,21 +967,29 @@ Double_t AliESDv0::GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1p
     ratioLambdaShifted0015.Divide(hisLambdaShifted0);
    */
   const Int_t spdg[5]={kPositron,kMuonPlus,kPiPlus, kKPlus, kProton};
+  if (p1>4 || p2>4)return 0;
   AliExternalTrackParam paramP;
   AliExternalTrackParam paramN;
-  if (paramP.GetParameter()[4]<0){
+  if (GetParamP()->GetParameter()[4]<0){
     paramP=*(GetParamN());
     paramN=*(GetParamP());
   }else{
     paramP=*(GetParamP());
     paramN=*(GetParamN());
   }
+  // calculate delta of energy loss
+  Double_t bg1=paramP.P()  /TDatabasePDG::Instance()->GetParticle(spdg[p1])->Mass();
+  Double_t bg2=paramN.P()  /TDatabasePDG::Instance()->GetParticle(spdg[p2])->Mass();
+  Double_t dP1=AliExternalTrackParam::BetheBlochGeant(bg1)/AliExternalTrackParam::BetheBlochGeant(3.); ///relative energu loss
+  Double_t dP2=AliExternalTrackParam::BetheBlochGeant(bg2)/AliExternalTrackParam::BetheBlochGeant(3.);
+
   Double_t *pparam1 = (Double_t*)paramP.GetParameter();
   Double_t *pparam2 = (Double_t*)paramN.GetParameter();
-  pparam1[4]+=d1pt;
-  pparam2[4]+=d1pt;
-  pparam1[4]*=(1+s1pt);
-  pparam2[4]*=(1+s1pt);
+  if (flag&0x1) pparam1[4]+=d1pt;
+  if (flag&0x2) pparam2[4]+=d1pt;
+  if (flag&0x1) pparam1[4]*=(1+s1pt)*(1.+eLoss*dP1/paramP.P());   /// TODO   - use relative energy loss
+  if (flag&0x2) pparam2[4]*=(1+s1pt)*(1.+eLoss*dP2/paramN.P());   ///
+
   //
   AliKFParticle kfp1( paramP, spdg[p1] *TMath::Sign(1,p1) );
   AliKFParticle kfp2( paramN, spdg[p2] *TMath::Sign(1,p2) );
