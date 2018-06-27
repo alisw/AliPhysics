@@ -106,7 +106,6 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     AliErrorStream() << "Jet container " << fNameJetContainer << " not found" << std::endl;
     return false;
   }
-  if(!TriggerSelection()) return false;
 
   auto trgclusters = GetTriggerClusterIndices(fInputEvent->GetFiredTriggerClasses());
   fHistos->FillTH1("hEventCounter", 1);
@@ -179,7 +178,7 @@ std::vector<AliAnalysisTaskEmcalJetEnergySpectrum::TriggerCluster_t> AliAnalysis
   return result;
 }
 
-bool AliAnalysisTaskEmcalJetEnergySpectrum::TriggerSelection() const {
+bool AliAnalysisTaskEmcalJetEnergySpectrum::IsTriggerSelected() {
   if(!fIsMC){
     // Pure data - do EMCAL trigger selection from selection string
     if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;

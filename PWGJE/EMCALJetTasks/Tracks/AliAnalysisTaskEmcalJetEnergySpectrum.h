@@ -70,7 +70,7 @@ public:
 protected:
   virtual void UserCreateOutputObjects();
   virtual bool Run();
-  bool TriggerSelection() const;
+  virtual bool IsTriggerSelected();
   std::vector<TriggerCluster_t> GetTriggerClusterIndices(const TString &triggerstring) const;
   bool IsSelectEmcalTriggers(const std::string &triggerstring) const;
 
