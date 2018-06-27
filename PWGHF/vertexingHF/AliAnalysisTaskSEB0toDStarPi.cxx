@@ -68,6 +68,7 @@
 #include <TVector3.h>
 #include <TArrayI.h>
 #include <bitset>
+#include <TH3F.h>
 
 // #include "TObjectTable.h" 
 
@@ -82,8 +83,8 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi():
   fEvents(0),
   fUseMCInfo(kFALSE),
   fOutput(0),
-  fOutputD0Pion(0),
-  fOutputD0Kaon(0),
+  fOutputD0FirstDaughter(0),
+  fOutputD0SecondDaughter(0),
   fOutputDStarPion(0),
   fOutputB0Pion(0),
   fOutputD0(0),
@@ -119,7 +120,10 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi():
   fDaughterHistogramArrayExtra(),
   fMotherHistogramArray(),
   fMotherHistogramArray2D(),
-  fMotherHistogramArrayExtra()
+  fMotherHistogramArrayExtra(), 
+  fMotherHistogramArray3D(),
+
+  fUse3DHistograms(0)
 {
   //
   /// Default ctor
@@ -132,8 +136,8 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, A
   fEvents(0),
   fUseMCInfo(kFALSE),
   fOutput(0),
-  fOutputD0Pion(0),
-  fOutputD0Kaon(0),
+  fOutputD0FirstDaughter(0),
+  fOutputD0SecondDaughter(0),
   fOutputDStarPion(0),
   fOutputB0Pion(0),
   fOutputD0(0),
@@ -169,7 +173,9 @@ AliAnalysisTaskSEB0toDStarPi::AliAnalysisTaskSEB0toDStarPi(const Char_t* name, A
   fDaughterHistogramArrayExtra(),
   fMotherHistogramArray(),
   fMotherHistogramArray2D(),
-  fMotherHistogramArrayExtra()
+  fMotherHistogramArrayExtra(),
+  fMotherHistogramArray3D(),
+  fUse3DHistograms(0)
 {
   //
   /// Constructor. Initialization of Inputs and Outputs
@@ -202,8 +208,8 @@ AliAnalysisTaskSEB0toDStarPi::~AliAnalysisTaskSEB0toDStarPi() {
   Info("~AliAnalysisTaskSEB0toDStarPi","Calling Destructor");
 
   delete fOutput;
-  delete fOutputD0Pion;
-  delete fOutputD0Kaon;
+  delete fOutputD0FirstDaughter;
+  delete fOutputD0SecondDaughter;
   delete fOutputDStarPion;
   delete fOutputB0Pion;
   delete fOutputD0;
@@ -382,8 +388,8 @@ void AliAnalysisTaskSEB0toDStarPi::UserExec(Option_t *){
   //==================================================================================
 
   PostData(1,fOutput);
-  PostData(3,fOutputD0Pion);
-  PostData(4,fOutputD0Kaon);
+  PostData(3,fOutputD0FirstDaughter);
+  PostData(4,fOutputD0SecondDaughter);
   PostData(5,fOutputDStarPion);
   PostData(6,fOutputB0Pion);
   PostData(7,fOutputD0);
@@ -422,14 +428,14 @@ void AliAnalysisTaskSEB0toDStarPi::Terminate(Option_t*){
     return;
   }
 
-  fOutputD0Pion = dynamic_cast<TList*> (GetOutputData(3));
-  if (!fOutputD0Pion) {
-    printf("ERROR: fOutputD0Pion not available\n");
+  fOutputD0FirstDaughter = dynamic_cast<TList*> (GetOutputData(3));
+  if (!fOutputD0FirstDaughter) {
+    printf("ERROR: fOutputD0FirstDaughter not available\n");
     return;
   }
-  fOutputD0Kaon = dynamic_cast<TList*> (GetOutputData(4));
-  if (!fOutputD0Kaon) {
-    printf("ERROR: fOutputD0Kaon not available\n");
+  fOutputD0SecondDaughter = dynamic_cast<TList*> (GetOutputData(4));
+  if (!fOutputD0SecondDaughter) {
+    printf("ERROR: fOutputD0SecondDaughter not available\n");
     return;
   }
   fOutputDStarPion = dynamic_cast<TList*> (GetOutputData(5));
@@ -491,13 +497,13 @@ void AliAnalysisTaskSEB0toDStarPi::UserCreateOutputObjects() {
   fOutput->SetOwner();
   fOutput->SetName("chist0");
 
-  fOutputD0Pion = new TList();
-  fOutputD0Pion->SetOwner();
-  fOutputD0Pion->SetName("listD0Pion");
+  fOutputD0FirstDaughter = new TList();
+  fOutputD0FirstDaughter->SetOwner();
+  fOutputD0FirstDaughter->SetName("listD0FirstDaughter");
 
-  fOutputD0Kaon = new TList();
-  fOutputD0Kaon->SetOwner();
-  fOutputD0Kaon->SetName("listD0Kaon");
+  fOutputD0SecondDaughter = new TList();
+  fOutputD0SecondDaughter->SetOwner();
+  fOutputD0SecondDaughter->SetName("listD0SecondDaughter");
 
   fOutputDStarPion = new TList();
   fOutputDStarPion->SetOwner();
@@ -556,43 +562,33 @@ void AliAnalysisTaskSEB0toDStarPi::UserCreateOutputObjects() {
   fPtBinLimitsD0forDStarptbin = fCuts->GetPtBinLimitsD0forDStarptbin();
   fPtBinLimitsDStarforDStarptbin = fCuts->GetPtBinLimitsDStarforDStarptbin();
 
-  std::cout << "bins" <<  fCuts->GetNPtBins() << std::endl;
-  std::cout << "bins" <<  fCuts->GetNPtBinsD0forD0ptbin() << std::endl;
-  std::cout << "bins" <<  fCuts->GetNPtBinsD0forDStarptbin() << std::endl;
-  std::cout << "bins" <<  fCuts->GetNPtBinsDStarforDStarptbin() << std::endl;
-
-  std::cout << "bins" <<  fnPtBins + 1 << std::endl;
-  std::cout << "bins" <<  fnPtBinsD0forD0ptbin + 1 << std::endl;
-  std::cout << "bins" <<  fnPtBinsD0forDStarptbin + 1 << std::endl;
-  std::cout << "bins" <<  fnPtBinsDStarforDStarptbin + 1 << std::endl;
-
-  std::cout << "bins" <<  fCuts->GetPtBinLimits() << std::endl;
-  std::cout << "bins" <<  fCuts->GetPtBinLimitsD0forD0ptbin() << std::endl;
-  std::cout << "bins" <<  fCuts->GetPtBinLimitsD0forDStarptbin() << std::endl;
-  std::cout << "bins" <<  fCuts->GetPtBinLimitsDStarforDStarptbin() << std::endl;
-
+  std::cout << "Nr. of B0 meson bins: " <<  fCuts->GetNPtBins() << " limits: " << std::endl;
   for (int i = 0; i < fnPtBinLimits; ++i)
   {
-    std::cout << "limit " << i << " " << fPtBinLimits[i] << std::endl;
+    std::cout << fPtBinLimits[i] << " " << std::endl;
   }
-
+  std::cout << std::endl;
+  std::cout << "Nr. of D0 meson bins: " <<  fCuts->GetNPtBinsD0forD0ptbin() << " limits: " << std::endl;
   for (int i = 0; i < fnPtBinsD0forD0ptbinLimits; ++i)
   {
-    std::cout << "limit " << i << " " << fPtBinLimitsD0forD0ptbin[i] << std::endl;
+    std::cout << fPtBinLimitsD0forD0ptbin[i] << " " << std::endl;
   }
-
+  std::cout << std::endl;
+  std::cout << "Nr. of D0-D* meson bins: " <<  fCuts->GetNPtBinsD0forDStarptbin() << " limits: " << std::endl;
   for (int i = 0; i < fnPtBinsD0forDStarptbinLimits; ++i)
   {
-    std::cout << "limit " << i << " " << fPtBinLimitsD0forDStarptbin[i] << std::endl;
+    std::cout << fPtBinLimitsD0forDStarptbin[i] << " " << std::endl;
   }
-
+  std::cout << std::endl;
+  std::cout << "Nr. of D* meson bins: " <<  fCuts->GetNPtBinsDStarforDStarptbin() << " limits: " << std::endl;
   for (int i = 0; i < fnPtBinsDStarforDStarptbinLimits; ++i)
   {
-    std::cout << "limit " << i << " " << fPtBinLimitsDStarforDStarptbin[i] << std::endl;
+    std::cout << fPtBinLimitsDStarforDStarptbin[i] << " " << std::endl;
   }  
+  std::cout << std::endl;
 
   // we create an array of pointers for the histograms. This method is more CPU efficient than looking up each histogram by name.
-  // Automatic option is not yet complete, the arrays are now set manualy in the header file
+  // Automatic option is not implemented/complete, the arrays are set manualy in the header file. The array is large enough to accommodate 1 GeV/c pt bins.
 
   // const Int_t numberOfDaughters = 4;
   // const Int_t numberOfDaughterHistogramSets = 5;
@@ -618,8 +614,8 @@ void AliAnalysisTaskSEB0toDStarPi::UserCreateOutputObjects() {
   DefineHistograms();
 
   PostData(1,fOutput);
-  PostData(3,fOutputD0Pion);
-  PostData(4,fOutputD0Kaon);
+  PostData(3,fOutputD0FirstDaughter);
+  PostData(4,fOutputD0SecondDaughter);
   PostData(5,fOutputDStarPion);
   PostData(6,fOutputB0Pion);
   PostData(7,fOutputD0);
@@ -754,6 +750,16 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
   TH1F* histogram_dca_DStarPion_B0Pion = (TH1F*)hist_dca_DStarPion_B0Pion->Clone();
   fOutputB0MC->Add(histogram_dca_DStarPion_B0Pion);
 
+  TString name_dca_Combined ="dca_Combined";
+  TH1F* hist_dca_Combined = new TH1F(name_dca_Combined.Data(),"dca_Combined; DCA [cm]; Entries",1000,0,0.2);
+  hist_dca_Combined->Sumw2();
+  hist_dca_Combined->SetLineColor(6);
+  hist_dca_Combined->SetMarkerStyle(20);
+  hist_dca_Combined->SetMarkerSize(0.6);
+  hist_dca_Combined->SetMarkerColor(6);
+  TH1F* histogram_dca_Combined = (TH1F*)hist_dca_Combined->Clone();
+  fOutputB0MC->Add(histogram_dca_Combined);
+
   TString name_dca_Signal_D0_DStarPion ="dca_Signal_D0_DStarPion";
   TH1F* hist_dca_Signal_D0_DStarPion = new TH1F(name_dca_Signal_D0_DStarPion.Data(),"dca_Signal_D0_DStarPion; DCA [cm]; Entries",1000,0,0.2);
   hist_dca_Signal_D0_DStarPion->Sumw2();
@@ -783,6 +789,16 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
   hist_dca_Signal_DStarPion_B0Pion->SetMarkerColor(4);
   TH1F* histogram_dca_Signal_DStarPion_B0Pion = (TH1F*)hist_dca_Signal_DStarPion_B0Pion->Clone();
   fOutputB0MC->Add(histogram_dca_Signal_DStarPion_B0Pion);
+
+  TString name_dca_Signal_Combined ="dca_Signal_Combined";
+  TH1F* hist_dca_Signal_Combined = new TH1F(name_dca_Signal_Combined.Data(),"dca_Signal_Combined; DCA [cm]; Entries",1000,0,0.2);
+  hist_dca_Signal_Combined->Sumw2();
+  hist_dca_Signal_Combined->SetLineColor(6);
+  hist_dca_Signal_Combined->SetMarkerStyle(20);
+  hist_dca_Signal_Combined->SetMarkerSize(0.6);
+  hist_dca_Signal_Combined->SetMarkerColor(6);
+  TH1F* histogram_dca_Signal_Combined = (TH1F*)hist_dca_Signal_Combined->Clone();
+  fOutputB0MC->Add(histogram_dca_Signal_Combined);
 
  //==================================================
 
@@ -825,8 +841,8 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
     
     TString add_name = "";
     TList * listout;
-    if(i==0) listout = fOutputD0Pion;
-    if(i==1) listout = fOutputD0Kaon;
+    if(i==0) listout = fOutputD0FirstDaughter;
+    if(i==1) listout = fOutputD0SecondDaughter;
     if(i==2) listout = fOutputDStarPion;
     if(i==3) listout = fOutputB0Pion;
 
@@ -1029,7 +1045,7 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
       Double_t lowerBoundTwo = 0.0;
       Double_t upperBoundTwo = 0.0;
 
-      for (Int_t k = 0; k < 40; ++k)
+      for (Int_t k = 0; k < 43; ++k)
       {
         if(k==0){name_Histogram = "ptMother"; discription_Histogram = "pt mother; p_{T} [GeV/c]; Entries"; numberOfBins = 300; lowerBound = 0; upperBound = 30;}
         if(k==1){name_Histogram = "ptFirstDaughter"; discription_Histogram = "pt first daughter; p_{T} [GeV/c]; Entries"; numberOfBins = 300; lowerBound = 0; upperBound = 30;}
@@ -1086,6 +1102,10 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         if(k==37){name_Histogram = "topomaticSecondDaughter"; discription_Histogram = "topomatic d0 second daughter; [cm]; Entries"; numberOfBins = 500; lowerBound = 0; upperBound = 20;}
         if(k==38){name_Histogram = "topomaticMax"; discription_Histogram = "Max topomatic; [cm]; Entries"; numberOfBins = 500; lowerBound = 0; upperBound = 20;}
         if(k==39){name_Histogram = "topomaticMin"; discription_Histogram = "Min topomatic; [cm]; Entries"; numberOfBins = 500; lowerBound = 0; upperBound = 20;}
+        if(k==40){name_Histogram = "pointingAngleMotherXY"; discription_Histogram = "pointing angle XY;  [Cos(#theta)]; Entries"; numberOfBins = 1000; lowerBound = -1; upperBound = 1;}
+        if(k==41){name_Histogram = "vertexDistanceXY"; discription_Histogram = "vertex distance between mother and primary vertex XY; distance [cm]; Entries"; numberOfBins = 1000; lowerBound = 0; upperBound = 10;}
+        if(k==42){name_Histogram = "normDecayLengthXY"; discription_Histogram = "Normalized decay length w.r.t primary vertex XY; [cm]; Entries"; numberOfBins = 100; lowerBound = 0; upperBound = 50;}
+
        
         name_Histogram += add_name;
         TH1F* histogram = new TH1F(name_Histogram.Data(),discription_Histogram.Data(),numberOfBins,lowerBound,upperBound);
@@ -1114,14 +1134,14 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
       //we make the 2D histograms for the reconstructed particles
       Int_t nFirst = 0;
       Int_t nSecond = 1;
-      Int_t nVariables = 8;
+      Int_t nVariables = 10;
       Int_t nHistograms = nVariables * (nVariables - 1) / 2;
 
       TList * list2D = new TList();   
       list2D->SetOwner();   
       TString name2D = "2D_Histograms";   
       name2D += add_name;   
-      list2D->SetName(name2D);    
+      list2D->SetName(name2D.Data());    
       listout->Add(list2D);
       
       for (Int_t k = 0; k < nHistograms; ++k)
@@ -1135,7 +1155,9 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         if(nFirst==5){name_Histogram = "impactProductXY"; discription_Histogram = "impact product XY [cm^{2}];"; lowerBound = 0; upperBound = 0.5;}
         if(nFirst==6){name_Histogram = "vertexDistance"; discription_Histogram = "vertex distance between mother and primary vertex  [cm];"; lowerBound = 0; upperBound = 1;}
         if(nFirst==7){name_Histogram = "normDecayLength"; discription_Histogram = "Normalized decay length w.r.t primary vertex [cm];"; lowerBound = 0; upperBound = 50;}
-        if(nFirst==8){name_Histogram = "pseudoProperDecayTime"; discription_Histogram = "Pseudo Proper Decay Time w.r.t primary vertex [a.u.];"; lowerBound = -10; upperBound = 10;}
+        if(nFirst==8){name_Histogram = "pointingAngleMotherXY"; discription_Histogram = "pointing angle XY [Cos(#theta)];"; lowerBound = -1; upperBound = 1;}
+        if(nFirst==9){name_Histogram = "vertexDistanceXY"; discription_Histogram = "vertex distance between mother and primary vertex XY [cm];"; lowerBound = 0; upperBound = 1;}
+        if(nFirst==10){name_Histogram = "normDecayLengthXY"; discription_Histogram = "Normalized decay length w.r.t primary vertex XY [cm];"; lowerBound = 0; upperBound = 50;}
 
         if(nSecond==0){name_Histogram += "d0FirstDaughter"; discription_Histogram += "d0 first daughter [cm];"; lowerBoundTwo = 0; upperBoundTwo = 1;}
         if(nSecond==1){name_Histogram += "d0SecondDaughter"; discription_Histogram += "d0 second daughter [cm];"; lowerBoundTwo = 0; upperBoundTwo = 1;}
@@ -1145,7 +1167,9 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         if(nSecond==5){name_Histogram += "impactProductXY"; discription_Histogram += "impact product XY [cm^{2}];"; lowerBoundTwo = 0; upperBoundTwo = 0.5;}
         if(nSecond==6){name_Histogram += "vertexDistance"; discription_Histogram += "vertex distance between mother and primary vertex  [cm];"; lowerBoundTwo = 0; upperBoundTwo = 1;}
         if(nSecond==7){name_Histogram += "normDecayLength"; discription_Histogram += "Normalized decay length w.r.t primary vertex [cm];"; lowerBoundTwo = 0; upperBoundTwo = 50;}
-        if(nSecond==8){name_Histogram += "pseudoProperDecayTime"; discription_Histogram += "Pseudo Proper Decay Time w.r.t primary vertex [a.u.];"; lowerBoundTwo = -10; upperBoundTwo = 10;}
+        if(nSecond==8){name_Histogram += "_pointingAngleMotherXY"; discription_Histogram += "pointing angle XY [Cos(#theta)];"; lowerBoundTwo = -1; upperBoundTwo = 1;}
+        if(nSecond==9){name_Histogram += "_vertexDistanceXY"; discription_Histogram += "vertex distance between mother and primary vertex XY [cm];"; lowerBoundTwo = 0; upperBoundTwo = 1;}
+        if(nSecond==10){name_Histogram += "_normDecayLengthXY"; discription_Histogram += "Normalized decay length w.r.t primary vertex XY [cm];"; lowerBoundTwo = 0; upperBoundTwo = 50;}
   
         name_Histogram += add_name;
         TH2F* histogram = new TH2F(name_Histogram.Data(),discription_Histogram.Data(),numberOfBins,lowerBound,upperBound,numberOfBinsTwo,lowerBoundTwo,upperBoundTwo);
@@ -1164,6 +1188,103 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
         {
           nFirst++;
           nSecond = nFirst + 1;
+        }
+      }
+
+      if(fUse3DHistograms)
+      {
+        name_Histogram = "";
+        discription_Histogram  = "";
+        numberOfBins = 0;
+        lowerBound = 0.0;
+        upperBound = 0.0;
+        numberOfBinsTwo = 0;
+        lowerBoundTwo = 0.0;
+        upperBoundTwo = 0.0;
+        Int_t numberOfBinsThree = 0;
+        Int_t lowerBoundThree = 0.0;
+        Int_t upperBoundThree = 0.0;
+
+        //we make the 3D histograms for the reconstructed particles
+        nFirst = 0;
+        nSecond = 1;
+        Int_t nThird = 2;
+        nVariables = 10;
+        nHistograms = nVariables * (nVariables - 1) * (nVariables - 2) / 6;
+
+        TList * list3D = new TList();   
+        list3D->SetOwner();   
+        TString name3D = "3D_Histograms";   
+        name3D += add_name;   
+        list3D->SetName(name2D.Data());    
+        listout->Add(list3D);
+        
+        for (Int_t k = 0; k < nHistograms; ++k)
+        {
+          numberOfBins = 50; numberOfBinsTwo = 50;
+          if(nFirst==0){name_Histogram = "d0FirstDaughter"; discription_Histogram = "d0 first daughter [cm];"; lowerBound = 0; upperBound = 1;}
+          if(nFirst==1){name_Histogram = "d0SecondDaughter"; discription_Histogram = "d0 second daughter [cm];"; lowerBound = 0; upperBound = 1;}
+          if(nFirst==2){name_Histogram = "d0Mother"; discription_Histogram = "d0 mother [cm];"; lowerBound = 0; upperBound = 1;}
+          if(nFirst==3){name_Histogram = "pointingAngleMother"; discription_Histogram = "pointing angle [Cos(#theta)];"; lowerBound = -1; upperBound = 1;}
+          if(nFirst==4){name_Histogram = "impactProduct"; discription_Histogram = "impact product [cm^{2}];"; lowerBound = -0.01; upperBound = 0.01;}
+          if(nFirst==5){name_Histogram = "impactProductXY"; discription_Histogram = "impact product XY [cm^{2}];"; lowerBound = 0; upperBound = 0.5;}
+          if(nFirst==6){name_Histogram = "vertexDistance"; discription_Histogram = "vertex distance between mother and primary vertex  [cm];"; lowerBound = 0; upperBound = 1;}
+          if(nFirst==7){name_Histogram = "normDecayLength"; discription_Histogram = "Normalized decay length w.r.t primary vertex [cm];"; lowerBound = 0; upperBound = 50;}
+          if(nFirst==8){name_Histogram = "pointingAngleMotherXY"; discription_Histogram = "pointing angle XY [Cos(#theta)];"; lowerBound = -1; upperBound = 1;}
+          if(nFirst==9){name_Histogram = "vertexDistanceXY"; discription_Histogram = "vertex distance between mother and primary vertex XY [cm];"; lowerBound = 0; upperBound = 1;}
+          if(nFirst==10){name_Histogram = "normDecayLengthXY"; discription_Histogram = "Normalized decay length w.r.t primary vertex XY [cm];"; lowerBound = 0; upperBound = 50;}
+
+          if(nSecond==0){name_Histogram += "_d0FirstDaughter"; discription_Histogram += "d0 first daughter [cm];"; lowerBoundTwo = 0; upperBoundTwo = 1;}
+          if(nSecond==1){name_Histogram += "_d0SecondDaughter"; discription_Histogram += "d0 second daughter [cm];"; lowerBoundTwo = 0; upperBoundTwo = 1;}
+          if(nSecond==2){name_Histogram += "_d0Mother"; discription_Histogram += "d0 mother [cm];"; lowerBoundTwo = 0; upperBoundTwo = 1;}
+          if(nSecond==3){name_Histogram += "_pointingAngleMother"; discription_Histogram += "pointing angle [Cos(#theta)];"; lowerBoundTwo = -1; upperBoundTwo = 1;}
+          if(nSecond==4){name_Histogram += "_impactProduct"; discription_Histogram += "impact product [cm^{2}];"; lowerBoundTwo = -0.01; upperBoundTwo = 0.01;}
+          if(nSecond==5){name_Histogram += "_impactProductXY"; discription_Histogram += "impact product XY [cm^{2}];"; lowerBoundTwo = 0; upperBoundTwo = 0.5;}
+          if(nSecond==6){name_Histogram += "_vertexDistance"; discription_Histogram += "vertex distance between mother and primary vertex  [cm];"; lowerBoundTwo = 0; upperBoundTwo = 1;}
+          if(nSecond==7){name_Histogram += "_normDecayLength"; discription_Histogram += "Normalized decay length w.r.t primary vertex [cm];"; lowerBoundTwo = 0; upperBoundTwo = 50;}
+          if(nSecond==8){name_Histogram += "_pointingAngleMotherXY"; discription_Histogram += "pointing angle XY [Cos(#theta)];"; lowerBoundTwo = -1; upperBoundTwo = 1;}
+          if(nSecond==9){name_Histogram += "_vertexDistanceXY"; discription_Histogram += "vertex distance between mother and primary vertex XY [cm];"; lowerBoundTwo = 0; upperBoundTwo = 1;}
+          if(nSecond==10){name_Histogram += "_normDecayLengthXY"; discription_Histogram += "Normalized decay length w.r.t primary vertex XY [cm];"; lowerBoundTwo = 0; upperBoundTwo = 50;}
+
+          if(nThird==0){name_Histogram += "_d0FirstDaughter"; discription_Histogram += "d0 first daughter [cm];"; lowerBoundThree = 0; upperBoundThree = 1;}
+          if(nThird==1){name_Histogram += "_d0SecondDaughter"; discription_Histogram += "d0 second daughter [cm];"; lowerBoundThree = 0; upperBoundThree = 1;}
+          if(nThird==2){name_Histogram += "_d0Mother"; discription_Histogram += "d0 mother [cm];"; lowerBoundThree = 0; upperBoundThree = 1;}
+          if(nThird==3){name_Histogram += "_pointingAngleMother"; discription_Histogram += "pointing angle [Cos(#theta)];"; lowerBoundThree = -1; upperBoundThree = 1;}
+          if(nThird==4){name_Histogram += "_impactProduct"; discription_Histogram += "impact product [cm^{2}];"; lowerBoundThree = -0.01; upperBoundThree = 0.01;}
+          if(nThird==5){name_Histogram += "_impactProductXY"; discription_Histogram += "impact product XY [cm^{2}];"; lowerBoundThree = 0; upperBoundThree = 0.5;}
+          if(nThird==6){name_Histogram += "_vertexDistance"; discription_Histogram += "vertex distance between mother and primary vertex  [cm];"; lowerBoundThree = 0; upperBoundThree = 1;}
+          if(nThird==7){name_Histogram += "_normDecayLength"; discription_Histogram += "Normalized decay length w.r.t primary vertex [cm];"; lowerBoundThree = 0; upperBoundThree = 50;}
+          if(nThird==8){name_Histogram += "_pointingAngleMotherXY"; discription_Histogram += "pointing angle XY [Cos(#theta)];"; lowerBoundThree = -1; upperBoundThree = 1;}
+          if(nThird==9){name_Histogram += "_vertexDistanceXY"; discription_Histogram += "vertex distance between mother and primary vertex XY [cm];"; lowerBoundThree = 0; upperBoundThree = 1;}
+          if(nThird==10){name_Histogram += "_normDecayLengthXY"; discription_Histogram += "Normalized decay length w.r.t primary vertex XY [cm];"; lowerBoundThree = 0; upperBoundThree = 50;}
+
+
+          name_Histogram += add_name;
+          TH3F* histogram3D = new TH3F(name_Histogram.Data(),discription_Histogram.Data(),numberOfBins,lowerBound,upperBound,numberOfBinsTwo,lowerBoundTwo,upperBoundTwo,numberOfBinsThree,lowerBoundThree,upperBoundThree);
+          histogram3D->Sumw2();
+          if(j%2==0) histogram3D->SetLineColor(6);
+          if(j%2==1) histogram3D->SetLineColor(4);
+          histogram3D->SetMarkerStyle(20);
+          histogram3D->SetMarkerSize(0.6);
+          histogram3D->SetMarkerColor(6);
+          TH3F* histogram_Clone3D = (TH3F*)histogram3D->Clone();
+          list3D->Add(histogram_Clone3D);
+          fMotherHistogramArray3D[i][j][k] = histogram_Clone3D;
+
+
+          nThird++;
+          if(nThird>nVariables)
+          {
+            nSecond++;
+            nThird = nSecond + 1;
+            if(nSecond>nVariables)
+            {
+              nFirst++;
+              nSecond = nFirst + 1;
+              nThird = nFirst + 2;
+
+            }
+          }
         }
       }
     }
@@ -1394,6 +1515,277 @@ void  AliAnalysisTaskSEB0toDStarPi::DefineHistograms(){
   hist_totalSigmaPIDSignal->SetMarkerColor(6);
   TH1F* histogram_totalSigmaPIDSignal = (TH1F*)hist_totalSigmaPIDSignal->Clone();
   fOutputB0MC->Add(histogram_totalSigmaPIDSignal);
+
+  TString name_particle_pdgB0Pion ="particle_pdgB0Pion";
+  TH2F* hist_particle_pdgB0Pion = new TH2F(name_particle_pdgB0Pion.Data(),"Pdg code particle; pdg code; Entries",5000,-0.5,4999.5,10,0,10);
+  hist_particle_pdgB0Pion->Sumw2();
+  hist_particle_pdgB0Pion->SetLineColor(6);
+  hist_particle_pdgB0Pion->SetMarkerStyle(20);
+  hist_particle_pdgB0Pion->SetMarkerSize(0.6);
+  hist_particle_pdgB0Pion->SetMarkerColor(6);
+  TH2F* histogram_particle_pdgB0Pion = (TH2F*)hist_particle_pdgB0Pion->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgB0Pion); 
+
+  TString name_particle_pdgDStarPion ="particle_pdgDStarPion";
+  TH2F* hist_particle_pdgDStarPion = new TH2F(name_particle_pdgDStarPion.Data(),"Pdg code particle; pdg code; Entries",5000,-0.5,4999.5,10,0,10);
+  hist_particle_pdgDStarPion->Sumw2();
+  hist_particle_pdgDStarPion->SetLineColor(6);
+  hist_particle_pdgDStarPion->SetMarkerStyle(20);
+  hist_particle_pdgDStarPion->SetMarkerSize(0.6);
+  hist_particle_pdgDStarPion->SetMarkerColor(6);
+  TH2F* histogram_particle_pdgDStarPion = (TH2F*)hist_particle_pdgDStarPion->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgDStarPion); 
+
+  TString name_particle_pdgD0First ="particle_pdgD0First";
+  TH2F* hist_particle_pdgD0First = new TH2F(name_particle_pdgD0First.Data(),"Pdg code particle; pdg code; Entries",5000,-0.5,4999.5,10,0,10);
+  hist_particle_pdgD0First->Sumw2();
+  hist_particle_pdgD0First->SetLineColor(6);
+  hist_particle_pdgD0First->SetMarkerStyle(20);
+  hist_particle_pdgD0First->SetMarkerSize(0.6);
+  hist_particle_pdgD0First->SetMarkerColor(6);
+  TH2F* histogram_particle_pdgD0First = (TH2F*)hist_particle_pdgD0First->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgD0First); 
+
+  TString name_particle_pdgD0Second ="particle_pdgD0Second";
+  TH2F* hist_particle_pdgD0Second = new TH2F(name_particle_pdgD0Second.Data(),"Pdg code particle; pdg code; Entries",5000,-0.5,4999.5,10,0,10);
+  hist_particle_pdgD0Second->Sumw2();
+  hist_particle_pdgD0Second->SetLineColor(6);
+  hist_particle_pdgD0Second->SetMarkerStyle(20);
+  hist_particle_pdgD0Second->SetMarkerSize(0.6);
+  hist_particle_pdgD0Second->SetMarkerColor(6);
+  TH2F* histogram_particle_pdgD0Second = (TH2F*)hist_particle_pdgD0Second->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgD0Second); 
+
+  TString name_particle_pdgAll ="particle_pdgAll";
+  TH1F* hist_particle_pdgAll = new TH1F(name_particle_pdgAll.Data(),"Pdg code particle; pdg code; Entries",5000,-0.5,4999.5);
+  hist_particle_pdgAll->Sumw2();
+  hist_particle_pdgAll->SetLineColor(6);
+  hist_particle_pdgAll->SetMarkerStyle(20);
+  hist_particle_pdgAll->SetMarkerSize(0.6);
+  hist_particle_pdgAll->SetMarkerColor(6);
+  TH1F* histogram_particle_pdgAll = (TH1F*)hist_particle_pdgAll->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgAll); 
+
+  TString name_particle_pdgAllSecond ="particle_pdgAllSecond";
+  TH1F* hist_particle_pdgAllSecond = new TH1F(name_particle_pdgAllSecond.Data(),"Pdg code particle; pdg code; Entries",5000,-0.5,4999.5);
+  hist_particle_pdgAllSecond->Sumw2();
+  hist_particle_pdgAllSecond->SetLineColor(6);
+  hist_particle_pdgAllSecond->SetMarkerStyle(20);
+  hist_particle_pdgAllSecond->SetMarkerSize(0.6);
+  hist_particle_pdgAllSecond->SetMarkerColor(6);
+  TH1F* histogram_particle_pdgAllSecond = (TH1F*)hist_particle_pdgAllSecond->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgAllSecond); 
+
+  TString name_particle_pdgAllThird ="particle_pdgAllThird";
+  TH1F* hist_particle_pdgAllThird = new TH1F(name_particle_pdgAllThird.Data(),"Pdg code particle; pdg code; Entries",5000,-0.5,4999.5);
+  hist_particle_pdgAllThird->Sumw2();
+  hist_particle_pdgAllThird->SetLineColor(6);
+  hist_particle_pdgAllThird->SetMarkerStyle(20);
+  hist_particle_pdgAllThird->SetMarkerSize(0.6);
+  hist_particle_pdgAllThird->SetMarkerColor(6);
+  TH1F* histogram_particle_pdgAllThird = (TH1F*)hist_particle_pdgAllThird->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgAllThird); 
+
+  TString name_particle_pdgAllFourth ="particle_pdgAllFourth";
+  TH1F* hist_particle_pdgAllFourth = new TH1F(name_particle_pdgAllFourth.Data(),"Pdg code particle; pdg code; Entries",5000,-0.5,4999.5);
+  hist_particle_pdgAllFourth->Sumw2();
+  hist_particle_pdgAllFourth->SetLineColor(6);
+  hist_particle_pdgAllFourth->SetMarkerStyle(20);
+  hist_particle_pdgAllFourth->SetMarkerSize(0.6);
+  hist_particle_pdgAllFourth->SetMarkerColor(6);
+  TH1F* histogram_particle_pdgAllFourth = (TH1F*)hist_particle_pdgAllFourth->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgAllFourth); 
+
+  TString name_particle_pdgAllFifth ="particle_pdgAllFifth";
+  TH1F* hist_particle_pdgAllFifth = new TH1F(name_particle_pdgAllFifth.Data(),"Pdg code particle; pdg code; Entries",5000,-0.5,4999.5);
+  hist_particle_pdgAllFifth->Sumw2();
+  hist_particle_pdgAllFifth->SetLineColor(6);
+  hist_particle_pdgAllFifth->SetMarkerStyle(20);
+  hist_particle_pdgAllFifth->SetMarkerSize(0.6);
+  hist_particle_pdgAllFifth->SetMarkerColor(6);
+  TH1F* histogram_particle_pdgAllFifth = (TH1F*)hist_particle_pdgAllFifth->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgAllFifth); 
+
+  TString name_particle_pdgAllInvMass ="particle_pdgAllInvMass";
+  TH2F* hist_particle_pdgAllInvMass = new TH2F(name_particle_pdgAllInvMass.Data(),"Pdg code particle; pdg code; BPlus Inv. Mass",5000,-0.5,4999.5,500,4.0,6.0);
+  hist_particle_pdgAllInvMass->Sumw2();
+  hist_particle_pdgAllInvMass->SetLineColor(6);
+  hist_particle_pdgAllInvMass->SetMarkerStyle(20);
+  hist_particle_pdgAllInvMass->SetMarkerSize(0.6);
+  hist_particle_pdgAllInvMass->SetMarkerColor(6);
+  TH2F* histogram_particle_pdgAllInvMass = (TH2F*)hist_particle_pdgAllInvMass->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgAllInvMass); 
+
+  TString name_particle_pdgAllInvMassSecond ="particle_pdgAllInvMassSecond";
+  TH2F* hist_particle_pdgAllInvMassSecond = new TH2F(name_particle_pdgAllInvMassSecond.Data(),"Pdg code particle; pdg code; BPlus Inv. Mass",5000,-0.5,4999.5,500,4.0,6.0);
+  hist_particle_pdgAllInvMassSecond->Sumw2();
+  hist_particle_pdgAllInvMassSecond->SetLineColor(6);
+  hist_particle_pdgAllInvMassSecond->SetMarkerStyle(20);
+  hist_particle_pdgAllInvMassSecond->SetMarkerSize(0.6);
+  hist_particle_pdgAllInvMassSecond->SetMarkerColor(6);
+  TH2F* histogram_particle_pdgAllInvMassSecond = (TH2F*)hist_particle_pdgAllInvMassSecond->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgAllInvMassSecond);  
+
+  TString name_particle_pdgAllInvMassThird ="particle_pdgAllInvMassThird";
+  TH2F* hist_particle_pdgAllInvMassThird = new TH2F(name_particle_pdgAllInvMassThird.Data(),"Pdg code particle; pdg code; BPlus Inv. Mass",5000,-0.5,4999.5,500,4.0,6.0);
+  hist_particle_pdgAllInvMassThird->Sumw2();
+  hist_particle_pdgAllInvMassThird->SetLineColor(6);
+  hist_particle_pdgAllInvMassThird->SetMarkerStyle(20);
+  hist_particle_pdgAllInvMassThird->SetMarkerSize(0.6);
+  hist_particle_pdgAllInvMassThird->SetMarkerColor(6);
+  TH2F* histogram_particle_pdgAllInvMassThird = (TH2F*)hist_particle_pdgAllInvMassThird->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgAllInvMassThird);  
+
+  TString name_particle_pdgAllInvMassFourth ="particle_pdgAllInvMassFourth";
+  TH2F* hist_particle_pdgAllInvMassFourth = new TH2F(name_particle_pdgAllInvMassFourth.Data(),"Pdg code particle; pdg code; BPlus Inv. Mass",5000,-0.5,4999.5,500,4.0,6.0);
+  hist_particle_pdgAllInvMassFourth->Sumw2();
+  hist_particle_pdgAllInvMassFourth->SetLineColor(6);
+  hist_particle_pdgAllInvMassFourth->SetMarkerStyle(20);
+  hist_particle_pdgAllInvMassFourth->SetMarkerSize(0.6);
+  hist_particle_pdgAllInvMassFourth->SetMarkerColor(6);
+  TH2F* histogram_particle_pdgAllInvMassFourth = (TH2F*)hist_particle_pdgAllInvMassFourth->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgAllInvMassFourth);  
+
+  TString name_particle_pdgAllInvMassFifth ="particle_pdgAllInvMassFifth";
+  TH2F* hist_particle_pdgAllInvMassFifth = new TH2F(name_particle_pdgAllInvMassFifth.Data(),"Pdg code particle; pdg code; BPlus Inv. Mass",5000,-0.5,4999.5,500,4.0,6.0);
+  hist_particle_pdgAllInvMassFifth->Sumw2();
+  hist_particle_pdgAllInvMassFifth->SetLineColor(6);
+  hist_particle_pdgAllInvMassFifth->SetMarkerStyle(20);
+  hist_particle_pdgAllInvMassFifth->SetMarkerSize(0.6);
+  hist_particle_pdgAllInvMassFifth->SetMarkerColor(6);
+  TH2F* histogram_particle_pdgAllInvMassFifth = (TH2F*)hist_particle_pdgAllInvMassFifth->Clone();
+  fOutputB0MC->Add(histogram_particle_pdgAllInvMassFifth);  
+
+  TString name_particle_daughterPdgOneStep511a ="particle_daughterPdgOneStep511a";
+  TH2F* hist_particle_daughterPdgOneStep511a = new TH2F(name_particle_daughterPdgOneStep511a.Data(),"Pdg daughters; n daughter; Pdg daughter",50,-0.5,49.5,5000,-0.5,4999.5);
+  hist_particle_daughterPdgOneStep511a->Sumw2();
+  hist_particle_daughterPdgOneStep511a->SetLineColor(6);
+  hist_particle_daughterPdgOneStep511a->SetMarkerStyle(20);
+  hist_particle_daughterPdgOneStep511a->SetMarkerSize(0.6);
+  hist_particle_daughterPdgOneStep511a->SetMarkerColor(6);
+  TH2F* histogram_particle_daughterPdgOneStep511a = (TH2F*)hist_particle_daughterPdgOneStep511a->Clone();
+  fOutputB0MC->Add(histogram_particle_daughterPdgOneStep511a); 
+
+  TString name_particle_daughterPdgOneStep521a ="particle_daughterPdgOneStep521a";
+  TH2F* hist_particle_daughterPdgOneStep521a = new TH2F(name_particle_daughterPdgOneStep521a.Data(),"Pdg daughters; n daughter; Pdg daughter",50,-0.5,49.5,5000,-0.5,4999.5);
+  hist_particle_daughterPdgOneStep521a->Sumw2();
+  hist_particle_daughterPdgOneStep521a->SetLineColor(6);
+  hist_particle_daughterPdgOneStep521a->SetMarkerStyle(20);
+  hist_particle_daughterPdgOneStep521a->SetMarkerSize(0.6);
+  hist_particle_daughterPdgOneStep521a->SetMarkerColor(6);
+  TH2F* histogram_particle_daughterPdgOneStep521a = (TH2F*)hist_particle_daughterPdgOneStep521a->Clone();
+  fOutputB0MC->Add(histogram_particle_daughterPdgOneStep521a); 
+
+  TString name_particle_daughterPdgOneStep511b ="particle_daughterPdgOneStep511b";
+  TH2F* hist_particle_daughterPdgOneStep511b = new TH2F(name_particle_daughterPdgOneStep511b.Data(),"Pdg daughters; n daughter; Pdg daughter",50,-0.5,49.5,5000,-0.5,4999.5);
+  hist_particle_daughterPdgOneStep511b->Sumw2();
+  hist_particle_daughterPdgOneStep511b->SetLineColor(6);
+  hist_particle_daughterPdgOneStep511b->SetMarkerStyle(20);
+  hist_particle_daughterPdgOneStep511b->SetMarkerSize(0.6);
+  hist_particle_daughterPdgOneStep511b->SetMarkerColor(6);
+  TH2F* histogram_particle_daughterPdgOneStep511b = (TH2F*)hist_particle_daughterPdgOneStep511b->Clone();
+  fOutputB0MC->Add(histogram_particle_daughterPdgOneStep511b); 
+
+  TString name_particle_daughterPdgOneStep521b ="particle_daughterPdgOneStep521b";
+  TH2F* hist_particle_daughterPdgOneStep521b = new TH2F(name_particle_daughterPdgOneStep521b.Data(),"Pdg daughters; n daughter; Pdg daughter",50,-0.5,49.5,5000,-0.5,4999.5);
+  hist_particle_daughterPdgOneStep521b->Sumw2();
+  hist_particle_daughterPdgOneStep521b->SetLineColor(6);
+  hist_particle_daughterPdgOneStep521b->SetMarkerStyle(20);
+  hist_particle_daughterPdgOneStep521b->SetMarkerSize(0.6);
+  hist_particle_daughterPdgOneStep521b->SetMarkerColor(6);
+  TH2F* histogram_particle_daughterPdgOneStep521b = (TH2F*)hist_particle_daughterPdgOneStep521b->Clone();
+  fOutputB0MC->Add(histogram_particle_daughterPdgOneStep521b); 
+
+  TString name_particle_daughterPdgTwoStep511a ="particle_daughterPdgTwoStep511a";
+  TH2F* hist_particle_daughterPdgTwoStep511a = new TH2F(name_particle_daughterPdgTwoStep511a.Data(),"Pdg daughters; n daughter; Pdg daughter",50,-0.5,49.5,5000,-0.5,4999.5);
+  hist_particle_daughterPdgTwoStep511a->Sumw2();
+  hist_particle_daughterPdgTwoStep511a->SetLineColor(6);
+  hist_particle_daughterPdgTwoStep511a->SetMarkerStyle(20);
+  hist_particle_daughterPdgTwoStep511a->SetMarkerSize(0.6);
+  hist_particle_daughterPdgTwoStep511a->SetMarkerColor(6);
+  TH2F* histogram_particle_daughterPdgTwoStep511a = (TH2F*)hist_particle_daughterPdgTwoStep511a->Clone();
+  fOutputB0MC->Add(histogram_particle_daughterPdgTwoStep511a); 
+
+  TString name_particle_daughterPdgTwoStep521a ="particle_daughterPdgTwoStep521a";
+  TH2F* hist_particle_daughterPdgTwoStep521a = new TH2F(name_particle_daughterPdgTwoStep521a.Data(),"Pdg daughters; n daughter; Pdg daughter",50,-0.5,49.5,5000,-0.5,4999.5);
+  hist_particle_daughterPdgTwoStep521a->Sumw2();
+  hist_particle_daughterPdgTwoStep521a->SetLineColor(6);
+  hist_particle_daughterPdgTwoStep521a->SetMarkerStyle(20);
+  hist_particle_daughterPdgTwoStep521a->SetMarkerSize(0.6);
+  hist_particle_daughterPdgTwoStep521a->SetMarkerColor(6);
+  TH2F* histogram_particle_daughterPdgTwoStep521a = (TH2F*)hist_particle_daughterPdgTwoStep521a->Clone();
+  fOutputB0MC->Add(histogram_particle_daughterPdgTwoStep521a); 
+
+  TString name_particle_daughterPdgTwoStep511b ="particle_daughterPdgTwoStep511b";
+  TH2F* hist_particle_daughterPdgTwoStep511b = new TH2F(name_particle_daughterPdgTwoStep511b.Data(),"Pdg daughters; n daughter; Pdg daughter",50,-0.5,49.5,5000,-0.5,4999.5);
+  hist_particle_daughterPdgTwoStep511b->Sumw2();
+  hist_particle_daughterPdgTwoStep511b->SetLineColor(6);
+  hist_particle_daughterPdgTwoStep511b->SetMarkerStyle(20);
+  hist_particle_daughterPdgTwoStep511b->SetMarkerSize(0.6);
+  hist_particle_daughterPdgTwoStep511b->SetMarkerColor(6);
+  TH2F* histogram_particle_daughterPdgTwoStep511b = (TH2F*)hist_particle_daughterPdgTwoStep511b->Clone();
+  fOutputB0MC->Add(histogram_particle_daughterPdgTwoStep511b); 
+
+  TString name_particle_daughterPdgTwoStep521b ="particle_daughterPdgTwoStep521b";
+  TH2F* hist_particle_daughterPdgTwoStep521b = new TH2F(name_particle_daughterPdgTwoStep521b.Data(),"Pdg daughters; n daughter; Pdg daughter",50,-0.5,49.5,5000,-0.5,4999.5);
+  hist_particle_daughterPdgTwoStep521b->Sumw2();
+  hist_particle_daughterPdgTwoStep521b->SetLineColor(6);
+  hist_particle_daughterPdgTwoStep521b->SetMarkerStyle(20);
+  hist_particle_daughterPdgTwoStep521b->SetMarkerSize(0.6);
+  hist_particle_daughterPdgTwoStep521b->SetMarkerColor(6);
+  TH2F* histogram_particle_daughterPdgTwoStep521b = (TH2F*)hist_particle_daughterPdgTwoStep521b->Clone();
+  fOutputB0MC->Add(histogram_particle_daughterPdgTwoStep521b); 
+
+  TString name_particle_daughterPdgTwoStep511c ="particle_daughterPdgTwoStep511c";
+  TH2F* hist_particle_daughterPdgTwoStep511c = new TH2F(name_particle_daughterPdgTwoStep511c.Data(),"Pdg daughters; n daughter; Pdg daughter",50,-0.5,49.5,5000,-0.5,4999.5);
+  hist_particle_daughterPdgTwoStep511c->Sumw2();
+  hist_particle_daughterPdgTwoStep511c->SetLineColor(6);
+  hist_particle_daughterPdgTwoStep511c->SetMarkerStyle(20);
+  hist_particle_daughterPdgTwoStep511c->SetMarkerSize(0.6);
+  hist_particle_daughterPdgTwoStep511c->SetMarkerColor(6);
+  TH2F* histogram_particle_daughterPdgTwoStep511c = (TH2F*)hist_particle_daughterPdgTwoStep511c->Clone();
+  fOutputB0MC->Add(histogram_particle_daughterPdgTwoStep511c); 
+
+  TString name_particle_daughterPdgTwoStep521c ="particle_daughterPdgTwoStep521c";
+  TH2F* hist_particle_daughterPdgTwoStep521c = new TH2F(name_particle_daughterPdgTwoStep521c.Data(),"Pdg daughters; n daughter; Pdg daughter",50,-0.5,49.5,5000,-0.5,4999.5);
+  hist_particle_daughterPdgTwoStep521c->Sumw2();
+  hist_particle_daughterPdgTwoStep521c->SetLineColor(6);
+  hist_particle_daughterPdgTwoStep521c->SetMarkerStyle(20);
+  hist_particle_daughterPdgTwoStep521c->SetMarkerSize(0.6);
+  hist_particle_daughterPdgTwoStep521c->SetMarkerColor(6);
+  TH2F* histogram_particle_daughterPdgTwoStep521c = (TH2F*)hist_particle_daughterPdgTwoStep521c->Clone();
+  fOutputB0MC->Add(histogram_particle_daughterPdgTwoStep521c); 
+
+  TString name_invariantMassB0Signal_BA ="invariantMassB0Signal_BA";
+  TH1F* hist_invariantMassB0Signal_BA = new TH1F(name_invariantMassB0Signal_BA.Data(),"mass mother candidate; m [GeV/c^2]; Entries",2000,0,20);
+  hist_invariantMassB0Signal_BA->Sumw2();
+  hist_invariantMassB0Signal_BA->SetLineColor(6);
+  hist_invariantMassB0Signal_BA->SetMarkerStyle(20);
+  hist_invariantMassB0Signal_BA->SetMarkerSize(0.6);
+  hist_invariantMassB0Signal_BA->SetMarkerColor(6);
+  TH1F* histogram_invariantMassB0Signal_BA = (TH1F*)hist_invariantMassB0Signal_BA->Clone();
+  fOutputB0MC->Add(histogram_invariantMassB0Signal_BA);
+
+  TString name_invariantMassB0Correlated_BA ="invariantMassB0Correlated_BA";
+  TH1F* hist_invariantMassB0Correlated_BA = new TH1F(name_invariantMassB0Correlated_BA.Data(),"mass mother candidate; m [GeV/c^2]; Entries",2000,0,20);
+  hist_invariantMassB0Correlated_BA->Sumw2();
+  hist_invariantMassB0Correlated_BA->SetLineColor(6);
+  hist_invariantMassB0Correlated_BA->SetMarkerStyle(20);
+  hist_invariantMassB0Correlated_BA->SetMarkerSize(0.6);
+  hist_invariantMassB0Correlated_BA->SetMarkerColor(6);
+  TH1F* histogram_invariantMassB0Correlated_BA = (TH1F*)hist_invariantMassB0Correlated_BA->Clone();
+  fOutputB0MC->Add(histogram_invariantMassB0Correlated_BA);
+
+  TString name_invariantMassB0Background_BA ="invariantMassB0Background_BA";
+  TH1F* hist_invariantMassB0Background_BA = new TH1F(name_invariantMassB0Background_BA.Data(),"mass mother candidate; m [GeV/c^2]; Entries",2000,0,20);
+  hist_invariantMassB0Background_BA->Sumw2();
+  hist_invariantMassB0Background_BA->SetLineColor(6);
+  hist_invariantMassB0Background_BA->SetMarkerStyle(20);
+  hist_invariantMassB0Background_BA->SetMarkerSize(0.6);
+  hist_invariantMassB0Background_BA->SetMarkerColor(6);
+  TH1F* histogram_invariantMassB0Background_BA = (TH1F*)hist_invariantMassB0Background_BA->Clone();
+  fOutputB0MC->Add(histogram_invariantMassB0Background_BA);
+
   return;
 }
 //-------------------------------------------------------------------------------------
@@ -1633,6 +2025,434 @@ void AliAnalysisTaskSEB0toDStarPi::B0toDStarPiSignalTracksInMC(TClonesArray * mc
   return;
 }
 //-------------------------------------------------------------------------------------
+Bool_t AliAnalysisTaskSEB0toDStarPi::D0FirstDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix){
+  
+  // we select the D0 pion and save its information
+  if(!aodTrack) AliFatal("Not a standard AOD");
+
+  //quick quality cut
+  if(aodTrack->GetITSNcls() < 1) return kFALSE;
+  if(aodTrack->GetTPCNcls() < 1) return kFALSE;
+  if(aodTrack->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
+  if(!(aodTrack->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
+  if(aodTrack->GetID() < 0) return kFALSE;
+  Double_t covtest[21];
+  if(!aodTrack->GetCovarianceXYZPxPyPz(covtest)) return kFALSE;
+
+  Int_t mcLabelParticle = -1;
+  Int_t pdgParticle = -1;
+  mcLabelParticle = aodTrack->GetLabel();
+
+  // we fill histograms with information of the track
+  Double_t pt_track = aodTrack->Pt();
+  Double_t momentum_track = aodTrack->P();
+  Int_t numberOfITS = aodTrack->GetITSNcls(); 
+  Int_t numberOfTPC = aodTrack->GetTPCNcls();
+
+  AliExternalTrackParam particleTrack;
+  particleTrack.CopyFromVTrack(aodTrack);
+  Double_t d0[2],covd0[3];
+  particleTrack.PropagateToDCA(primaryVertex,bz,100.,d0,covd0);
+
+  //we check if the particle is a signal track, we look at both daughter options therefore the signal will be too high in the D0 daughter signal histograms
+  Bool_t isDesiredCandidate = kFALSE;
+  if(fUseMCInfo){
+    TMatrix &particleMatrix = *B0toDStarPiLabelMatrix;
+    for (Int_t k = 0; k < B0toDStarPiLabelMatrix->GetNrows(); ++k){
+      if(mcLabelParticle == (Int_t)particleMatrix(k,2) || mcLabelParticle == (Int_t)particleMatrix(k,3)){
+        isDesiredCandidate = kTRUE;
+        break;
+      }
+    }
+  }
+
+  Int_t daughterType = 0;
+
+
+  Int_t histType = 0;
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
+
+  for (Int_t j = 0; j < 10; ++j)
+  {
+    if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
+      
+  }
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][8])->Fill(d0[0]);
+
+  if(isDesiredCandidate)
+  {
+    histType = 1;
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
+
+    for (Int_t j = 0; j < 10; ++j)
+    {
+      if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
+        
+    }
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][8])->Fill(d0[0]);
+  }
+
+  //we apply a number of cuts on the particle
+   Bool_t bCut = kFALSE;
+
+  //We do not apply a PID cut at this stage since we don't know if we are dealing with a kaon or a pion
+
+  if(aodTrack->GetITSNcls() < fCuts->GetMinITSNclsD0FirstDaughter()){
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(3);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(3);
+    bCut = kTRUE;
+  }
+
+  if(aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsD0FirstDaughter()){ 
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(4);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(4);
+    bCut = kTRUE;
+  }
+
+  if(fCuts->UseITSRefitD0FirstDaughter()==kTRUE){
+    if(!(aodTrack->GetStatus()&AliESDtrack::kITSrefit)) {
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(5);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(5);
+      bCut = kTRUE;
+    }
+  }
+
+  if(fCuts->UseTPCRefitD0FirstDaughter()==kTRUE){
+    if((!(aodTrack->GetStatus()&AliESDtrack::kTPCrefit))) {
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(6);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(6);
+      bCut = kTRUE;
+    }
+  }
+
+  if(fCuts->UseFilterBitD0FirstDaughter()==kTRUE){
+    if(!(aodTrack->TestFilterMask(BIT(fCuts->GetFilterBitD0FirstDaughter())))) {
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(7);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(7);
+      bCut = kTRUE;
+    }
+  }
+
+  if(aodTrack->Pt() < fCuts->GetMinPtD0FirstDaughter()){ 
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(8);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(8);
+    bCut = kTRUE;
+  }
+
+  if(TMath::Abs(aodTrack->Eta()) > fCuts->GetMaxAbsEtaD0FirstDaughter()){ 
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(9);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(9);
+    bCut = kTRUE;
+  }
+
+  Bool_t bHardSelectionArrayITS[7] = {kFALSE};
+  fCuts->GetHardSelectionArrayITSD0FirstDaughter(bHardSelectionArrayITS);
+  Bool_t bSoftSelectionArrayITS[7] = {kFALSE};
+  fCuts->GetSoftSelectionArrayITSD0FirstDaughter(bSoftSelectionArrayITS);
+
+  Bool_t bHardITSPass = kTRUE;
+  for (Int_t j = 0; j < 7; ++j)
+  {
+    if(bHardSelectionArrayITS[j]) 
+    {
+      if(!aodTrack->HasPointOnITSLayer(j)) bHardITSPass = kFALSE;
+    }
+  }
+
+  Int_t nCounterSoftSelection = 0;
+  Bool_t bSoftITSPass = kTRUE;
+  for (Int_t j = 0; j < 7; ++j)
+  {
+    if(bSoftSelectionArrayITS[j]) 
+    {
+      if(!aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
+    }
+  }    
+  if(nCounterSoftSelection < fCuts->GetNSoftITSCutD0FirstDaughter()) bSoftITSPass = kFALSE;
+
+  if(!bHardITSPass){ 
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(10);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(10);
+    bCut = kTRUE;
+  }
+
+  if(!bSoftITSPass){ 
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(11);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(11);
+    bCut = kTRUE;
+  }
+
+  if(!isDesiredCandidate && fQuickSignalAnalysis) bCut = kTRUE;
+
+  if(bCut) {
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[0][1])->Fill(0);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[0][0])->Fill(0);
+    return kFALSE;
+  }
+
+  //we fill histograms with track information of the tracks that pass the cuts
+  histType = 2;
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
+
+  for (Int_t j = 0; j < 10; ++j)
+  {
+    if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
+      
+  }
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][8])->Fill(d0[0]);
+
+  if(isDesiredCandidate)
+  {
+    histType = 3;
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
+
+    for (Int_t j = 0; j < 10; ++j)
+    {
+      if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
+        
+    }
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][8])->Fill(d0[0]);
+  }
+
+  return kTRUE;
+}
+//-------------------------------------------------------------------------------------
+Bool_t AliAnalysisTaskSEB0toDStarPi::D0SecondDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix){
+  
+  // we select the D0 pion and save its information
+  if(!aodTrack) AliFatal("Not a standard AOD");
+
+  //quick quality cut
+  if(aodTrack->GetITSNcls() < 1) return kFALSE;
+  if(aodTrack->GetTPCNcls() < 1) return kFALSE;
+  if(aodTrack->GetStatus()&AliESDtrack::kITSpureSA) return kFALSE;
+  if(!(aodTrack->GetStatus()&AliESDtrack::kITSin)) return kFALSE;
+  if(aodTrack->GetID() < 0) return kFALSE;
+  Double_t covtest[21];
+  if(!aodTrack->GetCovarianceXYZPxPyPz(covtest)) return kFALSE;
+
+  Int_t mcLabelParticle = -1;
+  Int_t pdgParticle = -1;
+  mcLabelParticle = aodTrack->GetLabel();
+
+  // we fill histograms with information of the track
+  Double_t pt_track = aodTrack->Pt();
+  Double_t momentum_track = aodTrack->P();
+  Int_t numberOfITS = aodTrack->GetITSNcls(); 
+  Int_t numberOfTPC = aodTrack->GetTPCNcls();
+
+  AliExternalTrackParam particleTrack;
+  particleTrack.CopyFromVTrack(aodTrack);
+  Double_t d0[2],covd0[3];
+  particleTrack.PropagateToDCA(primaryVertex,bz,100.,d0,covd0);
+
+  //we check if the particle is a signal track, we look at both daughter options therefore the signal will be too high in the D0 daughter signal histograms
+  Bool_t isDesiredCandidate = kFALSE;
+  if(fUseMCInfo){
+    TMatrix &particleMatrix = *B0toDStarPiLabelMatrix;
+    for (Int_t k = 0; k < B0toDStarPiLabelMatrix->GetNrows(); ++k){
+      if(mcLabelParticle == (Int_t)particleMatrix(k,2) || mcLabelParticle == (Int_t)particleMatrix(k,3)){
+        isDesiredCandidate = kTRUE;
+        break;
+      }
+    }
+  }
+
+  Int_t daughterType = 0;
+
+
+  Int_t histType = 0;
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
+
+  for (Int_t j = 0; j < 10; ++j)
+  {
+    if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
+      
+  }
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][8])->Fill(d0[0]);
+
+  if(isDesiredCandidate)
+  {
+    histType = 1;
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
+
+    for (Int_t j = 0; j < 10; ++j)
+    {
+      if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
+        
+    }
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][8])->Fill(d0[0]);
+  }
+
+  //we apply a number of cuts on the particle
+   Bool_t bCut = kFALSE;
+
+  //We do not apply a PID cut at this stage since we don't know if we are dealing with a kaon or a pion
+
+  if(aodTrack->GetITSNcls() < fCuts->GetMinITSNclsD0SecondDaughter()){
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(3);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(3);
+    bCut = kTRUE;
+  }
+
+  if(aodTrack->GetTPCNcls() < fCuts->GetMinTPCNclsD0SecondDaughter()){ 
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(4);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(4);
+    bCut = kTRUE;
+  }
+
+  if(fCuts->UseITSRefitD0SecondDaughter()==kTRUE){
+    if(!(aodTrack->GetStatus()&AliESDtrack::kITSrefit)) {
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(5);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(5);
+      bCut = kTRUE;
+    }
+  }
+
+  if(fCuts->UseTPCRefitD0SecondDaughter()==kTRUE){
+    if((!(aodTrack->GetStatus()&AliESDtrack::kTPCrefit))) {
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(6);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(6);
+      bCut = kTRUE;
+    }
+  }
+
+  if(fCuts->UseFilterBitD0SecondDaughter()==kTRUE){
+    if(!(aodTrack->TestFilterMask(BIT(fCuts->GetFilterBitD0SecondDaughter())))) {
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(7);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(7);
+      bCut = kTRUE;
+    }
+  }
+
+  if(aodTrack->Pt() < fCuts->GetMinPtD0SecondDaughter()){ 
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(8);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(8);
+    bCut = kTRUE;
+  }
+
+  if(TMath::Abs(aodTrack->Eta()) > fCuts->GetMaxAbsEtaD0SecondDaughter()){ 
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(9);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(9);
+    bCut = kTRUE;
+  }
+
+  Bool_t bHardSelectionArrayITS[7] = {kFALSE};
+  fCuts->GetHardSelectionArrayITSD0SecondDaughter(bHardSelectionArrayITS);
+  Bool_t bSoftSelectionArrayITS[7] = {kFALSE};
+  fCuts->GetSoftSelectionArrayITSD0SecondDaughter(bSoftSelectionArrayITS);
+
+  Bool_t bHardITSPass = kTRUE;
+  for (Int_t j = 0; j < 7; ++j)
+  {
+    if(bHardSelectionArrayITS[j]) 
+    {
+      if(!aodTrack->HasPointOnITSLayer(j)) bHardITSPass = kFALSE;
+    }
+  }
+
+  Int_t nCounterSoftSelection = 0;
+  Bool_t bSoftITSPass = kTRUE;
+  for (Int_t j = 0; j < 7; ++j)
+  {
+    if(bSoftSelectionArrayITS[j]) 
+    {
+      if(!aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
+    }
+  }    
+  if(nCounterSoftSelection < fCuts->GetNSoftITSCutD0SecondDaughter()) bSoftITSPass = kFALSE;
+
+  if(!bHardITSPass){ 
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(10);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(10);
+    bCut = kTRUE;
+  }
+
+  if(!bSoftITSPass){ 
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(11);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(11);
+    bCut = kTRUE;
+  }
+
+  if(!isDesiredCandidate && fQuickSignalAnalysis) bCut = kTRUE;
+
+  if(bCut) {
+    if(isDesiredCandidate) {
+      ((TH1F*)fDaughterHistogramArrayExtra[1][1])->Fill(0);
+    } else ((TH1F*)fDaughterHistogramArrayExtra[1][0])->Fill(0);
+    return kFALSE;
+  }
+
+  //we fill histograms with track information of the tracks that pass the cuts
+  histType = 2;
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
+
+  for (Int_t j = 0; j < 10; ++j)
+  {
+    if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
+      
+  }
+  ((TH1F*)fDaughterHistogramArray[daughterType][histType][8])->Fill(d0[0]);
+
+  if(isDesiredCandidate)
+  {
+    histType = 3;
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][0])->Fill(pt_track);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][1])->Fill(momentum_track);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][2])->Fill(numberOfITS);
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][3])->Fill(numberOfTPC);
+
+    for (Int_t j = 0; j < 10; ++j)
+    {
+      if(aodTrack->HasPointOnITSLayer(j)) ((TH1F*)fDaughterHistogramArray[daughterType][histType][4])->Fill(j);
+        
+    }
+    ((TH1F*)fDaughterHistogramArray[daughterType][histType][8])->Fill(d0[0]);
+  }
+
+  return kTRUE;
+}
+//-------------------------------------------------------------------------------------
 void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix){
   
   //we keep track of the number of particles we could use and how many we actually use after cuts
@@ -1791,6 +2611,52 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
       if(isDesiredCandidate) {
         ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(8);
       } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(8);
+      bCut = kTRUE;
+    }
+
+    if(TMath::Abs(aodTrack->Eta()) > fCuts->GetMaxAbsEtaDStarPion()){ 
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(9);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(9);
+      bCut = kTRUE;
+    }
+
+    Bool_t bHardSelectionArrayITS[7] = {kFALSE};
+    fCuts->GetHardSelectionArrayITSDStarPion(bHardSelectionArrayITS);
+    Bool_t bSoftSelectionArrayITS[7] = {kFALSE};
+    fCuts->GetSoftSelectionArrayITSDStarPion(bSoftSelectionArrayITS);
+
+    Bool_t bHardITSPass = kTRUE;
+    for (Int_t j = 0; j < 7; ++j)
+    {
+      if(bHardSelectionArrayITS[j]) 
+      {
+        if(!aodTrack->HasPointOnITSLayer(j)) bHardITSPass = kFALSE;
+      }
+    }
+
+    Int_t nCounterSoftSelection = 0;
+    Bool_t bSoftITSPass = kTRUE;
+    for (Int_t j = 0; j < 7; ++j)
+    {
+      if(bSoftSelectionArrayITS[j]) 
+      {
+        if(!aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
+      }
+    }    
+    if(nCounterSoftSelection < fCuts->GetNSoftITSCutDStarPion()) bSoftITSPass = kFALSE;
+
+    if(!bHardITSPass){ 
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(10);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(10);
+      bCut = kTRUE;
+    }
+
+    if(!bSoftITSPass){ 
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[2][1])->Fill(11);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[2][0])->Fill(11);
       bCut = kTRUE;
     }
 
@@ -2012,6 +2878,53 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
       bCut = kTRUE;
     }
 
+    if(TMath::Abs(aodTrack->Eta()) > fCuts->GetMaxAbsEtaB0Pion()){ 
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(9);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(9);
+      bCut = kTRUE;
+    }
+
+    Bool_t bHardSelectionArrayITS[7] = {kFALSE};
+    fCuts->GetHardSelectionArrayITSB0Pion(bHardSelectionArrayITS);
+    Bool_t bSoftSelectionArrayITS[7] = {kFALSE};
+    fCuts->GetSoftSelectionArrayITSB0Pion(bSoftSelectionArrayITS);
+
+    Bool_t bHardITSPass = kTRUE;
+    for (Int_t j = 0; j < 7; ++j)
+    {
+      if(bHardSelectionArrayITS[j]) 
+      {
+        if(!aodTrack->HasPointOnITSLayer(j)) bHardITSPass = kFALSE;
+      }
+    }
+
+    Int_t nCounterSoftSelection = 0;
+    Bool_t bSoftITSPass = kTRUE;
+    for (Int_t j = 0; j < 7; ++j)
+    {
+      if(bSoftSelectionArrayITS[j]) 
+      {
+        if(!aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
+      }
+    }    
+    if(nCounterSoftSelection < fCuts->GetNSoftITSCutB0Pion()) bSoftITSPass = kFALSE;
+
+    if(!bHardITSPass){ 
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(10);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(10);
+      bCut = kTRUE;
+    }
+
+    if(!bSoftITSPass){ 
+      if(isDesiredCandidate) {
+        ((TH1F*)fDaughterHistogramArrayExtra[3][1])->Fill(11);
+      } else ((TH1F*)fDaughterHistogramArrayExtra[3][0])->Fill(11);
+      bCut = kTRUE;
+    }
+
+
     if(!isDesiredCandidate && fQuickSignalAnalysis) bCut = kTRUE;
 
     if(bCut) {
@@ -2092,7 +3005,10 @@ void AliAnalysisTaskSEB0toDStarPi::D0Selection(AliAODEvent* aodEvent, AliAODVert
 
     AliAODTrack * trackFirstDaughter = (AliAODTrack*)(trackD0->GetDaughter(0));
     AliAODTrack * trackSecondDaughter = (AliAODTrack*)(trackD0->GetDaughter(1));
-  
+    if(!D0FirstDaughterSelection(trackFirstDaughter, primaryVertex, bz, mcTrackArray, B0toDStarPiLabelMatrix)) continue; 
+    if(!D0SecondDaughterSelection(trackSecondDaughter, primaryVertex, bz, mcTrackArray, B0toDStarPiLabelMatrix)) continue; 
+
+
     AliAODVertex *vertexMother = (AliAODVertex*)trackD0->GetSecondaryVtx();
 
     //we save the pdgcode of the used particle and its mother and check if it is a desired candidate
@@ -2144,7 +3060,7 @@ void AliAnalysisTaskSEB0toDStarPi::D0Selection(AliAODEvent* aodEvent, AliAODVert
       // Here we apply cuts on the particle 
       Bool_t cutMother = kFALSE;
 
-      Bool_t bCutArray[25] = {0};
+      Bool_t bCutArray[29] = {0};
       Int_t cutReturnValue = fCuts->IsD0forD0ptbinSelected(trackD0, 0, aodEvent, bCutArray);
       if(cutReturnValue == -1) cutMother = kTRUE;
       if(cutReturnValue == 0) cutMother = kTRUE;
@@ -2152,7 +3068,7 @@ void AliAnalysisTaskSEB0toDStarPi::D0Selection(AliAODEvent* aodEvent, AliAODVert
 
       if(fGetCutInfo == kTRUE)
       {
-        for (Int_t k = 0; k < 25; ++k)
+        for (Int_t k = 0; k < 29; ++k)
         {
           if (bCutArray[k] == kTRUE){
             if(isDesiredCandidate){
@@ -2280,7 +3196,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
 
       //we use a mass window twice the size of the final cut.
       Int_t nCutIndex = 35;
-      Bool_t bCutArrayTemp[25];
+      Bool_t bCutArrayTemp[29];
       Double_t cutVariableValue = TMath::Abs(invMassDStarTest-pdgMassDStar)/2.0;
       Bool_t bPassedCut = fCuts->ApplyCutOnVariableDStarforDStarptbin(nCutIndex,0,cutVariableValue,bCutArrayTemp);
       if(!bPassedCut) continue;
@@ -2375,16 +3291,33 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         d0DStar[1] = d0z0DStar[0];
         d0errDStar[1] = TMath::Sqrt(covd0z0DStar[0]); 
 
-
+        //Apply cuts on DCA
         Double_t dcaDStarPionD0 = secondTrack.GetDCA(&firstTrack,bz,xdummyDStar,ydummyDStar);
         Double_t dcaDStarPionB0Pion = secondTrack.GetDCA(&thirdTrack,bz,xdummyDStar,ydummyDStar);     
         Double_t dcaB0PionD0 = thirdTrack.GetDCA(&firstTrack,bz,xdummyDStar,ydummyDStar);  
 
-        // if(dcaDStarPionD0 > 0.01 || dcaDStarPionB0Pion > 0.003 || dcaB0PionD0 > 0.01 ) 
-        // {
-        //   delete vertexMother; vertexMother = NULL; 
-        //   continue;
-        // }
+        if(dcaDStarPionD0 > fCuts->GetMaxDCADStarPionD0())
+        {
+          delete vertexMother; vertexMother = NULL; 
+          continue;
+        }
+        if(dcaDStarPionB0Pion > fCuts->GetMaxDCADStarPionB0Pion())
+        {
+          delete vertexMother; vertexMother = NULL; 
+          continue;
+        }
+        if(dcaB0PionD0 > fCuts->GetMaxDCAB0PionD0())
+        {
+          delete vertexMother; vertexMother = NULL; 
+          continue;
+        }
+
+        Double_t dcaCombined = TMath::Sqrt(TMath::Abs(dcaDStarPionD0) + TMath::Abs(dcaDStarPionB0Pion) + TMath::Abs(dcaB0PionD0));
+        if(dcaCombined > fCuts->GetMaxDCACombined())
+        {
+          delete vertexMother; vertexMother = NULL; 
+          continue;
+        }
 
         Short_t chargeDStar = trackFirstDaughter->Charge() + trackSecondDaughter->Charge();
         AliAODVertex * vertexDStar = new AliAODVertex(*vertexMother);
@@ -2542,12 +3475,12 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         // We apply cuts on the DStar
         Bool_t cutDStar = kFALSE;
 
-        Bool_t bCutArrayDStar[25] = {0};
+        Bool_t bCutArrayDStar[29] = {0};
         Int_t cutReturnValueDStar = fCuts->IsDStarforDStarptbinSelected(trackDStar, 0, aodEvent, bCutArrayDStar);
         if(cutReturnValueDStar == -1) cutDStar = kTRUE;
         if(cutReturnValueDStar == 0) cutDStar = kTRUE;
 
-        Bool_t bCutArrayD0[35] = {0};
+        Bool_t bCutArrayD0[39] = {0};
         Int_t cutReturnValueD0 = fCuts->IsD0forDStarptbinSelected(trackDStar, 0, aodEvent, bCutArrayD0);
         if(cutReturnValueD0 == -1) cutDStar = kTRUE;
         if(cutReturnValueD0 == 0) cutDStar = kTRUE;
@@ -2556,7 +3489,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         if(fGetCutInfo == kTRUE)
         {
 
-          for (Int_t n = 0; n < 25; ++n)
+          for (Int_t n = 0; n < 29; ++n)
           {
             if(bCutArrayDStar[n] == kTRUE){
               if(isDesiredCandidate){
@@ -2566,12 +3499,12 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
             }
           }
 
-          for (Int_t n = 0; n < 35; ++n)
+          for (Int_t n = 0; n < 39; ++n)
           {
             if(bCutArrayD0[n] == kTRUE){
               if(isDesiredCandidate){
-                ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(n+1+35);
-              } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(n+1+35);
+                ((TH1F*)fMotherHistogramArrayExtra[motherType][1])->Fill(n+1+39);
+              } else ((TH1F*)fMotherHistogramArrayExtra[motherType][0])->Fill(n+1+39);
               cutDStar = kTRUE;
             }
           }
@@ -2645,8 +3578,8 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         // We apply cuts
         Bool_t cutMother = kFALSE;
 
-        Bool_t bCutArray[85] = {0};
-        Int_t numberOfCuts = 85;
+        Bool_t bCutArray[97] = {0};
+        Int_t numberOfCuts = 97;
         Int_t cutReturnValue = fCuts->IsSelected(trackB0, 0, aodEvent, bCutArray);
         if(cutReturnValue == -1) cutMother = kTRUE;
         if(cutReturnValue == 0) cutMother = kTRUE;
@@ -2659,7 +3592,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         Double_t massWindow = 0.125; //75; //GeV/c^2
         if(fGetCutInfo == kTRUE)
         {
-          for (Int_t n = 0; n < 85; ++n)
+          for (Int_t n = 0; n < 97; ++n)
           {
             if(bCutArray[n] == kTRUE){
               if(isDesiredCandidate){
@@ -2732,19 +3665,361 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
         TString name_dca_DStarPion_B0Pion ="dca_DStarPion_B0Pion";
         ((TH1F*)(fOutputB0MC->FindObject(name_dca_DStarPion_B0Pion)))->Fill(dcaDStarPionB0Pion);
 
+        TString name_dca_Combined ="dca_Combined";
+        ((TH1F*)(fOutputB0MC->FindObject(name_dca_Combined)))->Fill(dcaCombined);
+
         if(isDesiredCandidate && fUseMCInfo)
         {
-          TString name_dca_MC_D0_DStarPion ="dca_Signal_D0_DStarPion";
-          ((TH1F*)(fOutputB0MC->FindObject(name_dca_MC_D0_DStarPion)))->Fill(dcaDStarPionD0);
+          TString name_dca_Signal_D0_DStarPion ="dca_Signal_D0_DStarPion";
+          ((TH1F*)(fOutputB0MC->FindObject(name_dca_Signal_D0_DStarPion)))->Fill(dcaDStarPionD0);
 
-          TString name_dca_MC_D0_B0Pion ="dca_Signal_D0_B0Pion";
-          ((TH1F*)(fOutputB0MC->FindObject(name_dca_MC_D0_B0Pion)))->Fill(dcaB0PionD0);
+          TString name_dca_Signal_D0_B0Pion ="dca_Signal_D0_B0Pion";
+          ((TH1F*)(fOutputB0MC->FindObject(name_dca_Signal_D0_B0Pion)))->Fill(dcaB0PionD0);
 
-          TString name_dca_MC_DStarPion_B0Pion ="dca_Signal_DStarPion_B0Pion";
-          ((TH1F*)(fOutputB0MC->FindObject(name_dca_MC_DStarPion_B0Pion)))->Fill(dcaDStarPionB0Pion);
+          TString name_dca_Signal_DStarPion_B0Pion ="dca_Signal_DStarPion_B0Pion";
+          ((TH1F*)(fOutputB0MC->FindObject(name_dca_Signal_DStarPion_B0Pion)))->Fill(dcaDStarPionB0Pion);
+
+          TString name_dca_Signal_Combined ="dca_Signal_Combined";
+          ((TH1F*)(fOutputB0MC->FindObject(name_dca_Signal_Combined)))->Fill(dcaCombined);
         }
 
 
+        // Background analysis
+        Bool_t bIsCorrelatedBackground = kFALSE;
+        if(!bSameSign && fUseMCInfo && !isDesiredCandidate) 
+        {
+          Int_t mcLabelB0Pion = trackB0Pion->GetLabel();
+          Int_t mcLabelDStarPion = trackFirstDaughter->GetLabel();
+          Int_t mcLabelD0first = ((AliAODTrack*)trackSecondDaughter->GetDaughter(0))->GetLabel();
+          Int_t mcLabelD0second = ((AliAODTrack*)trackSecondDaughter->GetDaughter(1))->GetLabel();
+
+          AliAODMCParticle * mcB0Pion = (AliAODMCParticle*)mcTrackArray->At(mcLabelB0Pion);
+          AliAODMCParticle * mcDStarPion = (AliAODMCParticle*)mcTrackArray->At(mcLabelDStarPion);
+          AliAODMCParticle * mcD0first = (AliAODMCParticle*)mcTrackArray->At(mcLabelD0first);
+          AliAODMCParticle * mcD0second = (AliAODMCParticle*)mcTrackArray->At(mcLabelD0second);
+
+          if(mcB0Pion)
+          {
+            Int_t iterator = 0;
+            while(mcB0Pion->GetMother() >= 0)
+            {
+              mcB0Pion = (AliAODMCParticle*)mcTrackArray->At(mcB0Pion->GetMother());
+              fillthis="particle_pdgB0Pion";
+              ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(mcB0Pion->GetPdgCode()),iterator++);
+            } 
+          }
+
+          if(mcDStarPion)
+          {
+            Int_t iterator = 0;
+            while(mcDStarPion->GetMother() >= 0)
+            {
+              mcDStarPion = (AliAODMCParticle*)mcTrackArray->At(mcDStarPion->GetMother());
+              fillthis="particle_pdgB0Pion";
+              ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(mcDStarPion->GetPdgCode()),iterator++);
+            } 
+          }
+
+          if(mcD0first)
+          {
+            Int_t iterator = 0;
+            while(mcD0first->GetMother() >= 0)
+            {
+              mcD0first = (AliAODMCParticle*)mcTrackArray->At(mcD0first->GetMother());
+              fillthis="particle_pdgD0First";
+              ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(mcD0first->GetPdgCode()),iterator++);
+            }
+          }
+
+          if(mcD0second)
+          {
+            Int_t iterator = 0;
+            while(mcD0second->GetMother() >= 0)
+            {
+              mcD0second = (AliAODMCParticle*)mcTrackArray->At(mcD0second->GetMother());
+              fillthis="particle_pdgD0Second";
+              ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(mcD0second->GetPdgCode()),iterator++);
+            }
+          }
+
+          mcB0Pion = (AliAODMCParticle*)mcTrackArray->At(mcLabelB0Pion);
+          mcDStarPion = (AliAODMCParticle*)mcTrackArray->At(mcLabelDStarPion);
+          mcD0first = (AliAODMCParticle*)mcTrackArray->At(mcLabelD0first);
+          mcD0second = (AliAODMCParticle*)mcTrackArray->At(mcLabelD0second);
+
+          if(mcB0Pion && mcDStarPion && mcD0first && mcD0second)
+          {
+            // B -> DStar + pion -> D0 + pion
+            if(mcD0first->GetMother() == mcD0second->GetMother() && mcD0first->GetMother() >= 0)
+            {
+              AliAODMCParticle * D0Mother = (AliAODMCParticle*)mcTrackArray->At(mcD0first->GetMother());
+              AliAODMCParticle * D0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetMother());
+              if(D0Mother->GetMother() == mcDStarPion->GetMother() && D0Mother->GetMother() >= 0 && D0GrandMother->GetMother() == mcB0Pion->GetMother() && D0GrandMother->GetMother() >= 0)
+              {
+                AliAODMCParticle * finalMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetMother());
+                fillthis="particle_pdgAllFirst";
+                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(finalMother->GetPdgCode()));
+                fillthis="particle_pdgAllInvMassFirst";
+                ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(finalMother->GetPdgCode()),invariantMassMother);
+                if(finalMother->GetPdgCode()==511)
+                {
+                  bIsCorrelatedBackground = kTRUE;
+                  for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep511a";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgOneStep511";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgOneStep511";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
+                  }
+                }
+                if(finalMother->GetPdgCode()==521)
+                {
+                  bIsCorrelatedBackground = kTRUE;
+                  for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep521a";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep521a";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep521a";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
+                  }
+                }
+              }
+            }
+
+            // B -> D0 + (B0) pion
+            if(mcD0first->GetMother() == mcD0second->GetMother() && mcD0first->GetMother() >= 0)
+            {
+              AliAODMCParticle * D0Mother = (AliAODMCParticle*)mcTrackArray->At(mcD0first->GetMother());
+              if(D0Mother->GetMother() == mcB0Pion->GetMother() && D0Mother->GetMother() >= 0)
+              {
+                AliAODMCParticle * finalMother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetMother());
+                fillthis="particle_pdgAllSecond";
+                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(finalMother->GetPdgCode()));
+                fillthis="particle_pdgAllInvMassSecond";
+                ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(finalMother->GetPdgCode()),invariantMassMother);
+                if(finalMother->GetPdgCode()==511)
+                {
+                  bIsCorrelatedBackground = kTRUE;
+                  for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgOneStep511a";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgOneStep511a";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0Mother->GetPdgCode()));
+                  }
+                }
+                if(finalMother->GetPdgCode()==521)
+                {
+                  bIsCorrelatedBackground = kTRUE;
+                  for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgOneStep521a";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgOneStep521a";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0Mother->GetPdgCode()));
+                  }
+                }
+              }
+            }
+
+            // B -> D0 + (DStar) pion
+            if(mcD0first->GetMother() == mcD0second->GetMother() && mcD0first->GetMother() >= 0)
+            {
+              AliAODMCParticle * D0Mother = (AliAODMCParticle*)mcTrackArray->At(mcD0first->GetMother());
+              if(D0Mother->GetMother() == mcDStarPion->GetMother() && D0Mother->GetMother() >= 0)
+              {
+                AliAODMCParticle * finalMother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetMother());
+                fillthis="particle_pdgAllThird";
+                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(finalMother->GetPdgCode()));
+                fillthis="particle_pdgAllInvMassThird";
+                ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(finalMother->GetPdgCode()),invariantMassMother);
+                if(finalMother->GetPdgCode()==511)
+                {
+                  bIsCorrelatedBackground = kTRUE;
+                  for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgOneStep511b";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgOneStep511b";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0Mother->GetPdgCode()));
+                  }
+                }
+                if(finalMother->GetPdgCode()==521)
+                {
+                  bIsCorrelatedBackground = kTRUE;
+                  for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgOneStep521b";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgOneStep521b";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0Mother->GetPdgCode()));
+                  }
+                }
+              }
+            }
+
+            // B -> X + (B0) pion -> D0 
+            if(mcD0first->GetMother() == mcD0second->GetMother() && mcD0first->GetMother() >= 0)
+            {
+              AliAODMCParticle * D0Mother = (AliAODMCParticle*)mcTrackArray->At(mcD0first->GetMother());
+              AliAODMCParticle * D0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetMother());
+              if(D0GrandMother->GetMother() == mcB0Pion->GetMother() && D0GrandMother->GetMother() >= 0)
+              {
+                AliAODMCParticle * finalMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetMother());
+                fillthis="particle_pdgAllFourth";
+                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(finalMother->GetPdgCode()));
+                fillthis="particle_pdgAllInvMassFourth";
+                ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(finalMother->GetPdgCode()),invariantMassMother);
+                if(finalMother->GetPdgCode()==511)
+                {
+                  bIsCorrelatedBackground = kTRUE;
+                  for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep511b";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep511b";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep511b";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
+                  }
+                }
+                if(finalMother->GetPdgCode()==521)
+                {
+                  bIsCorrelatedBackground = kTRUE;
+                  for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep521b";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep521b";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep521b";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
+                  }
+                }
+              }
+            }
+
+            // B -> X + (DStar) pion -> D0 
+            if(mcD0first->GetMother() == mcD0second->GetMother() && mcD0first->GetMother() >= 0)
+            {
+              AliAODMCParticle * D0Mother = (AliAODMCParticle*)mcTrackArray->At(mcD0first->GetMother());
+              AliAODMCParticle * D0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetMother());
+              if(D0GrandMother->GetMother() == mcDStarPion->GetMother() && D0GrandMother->GetMother() >= 0)
+              {
+                AliAODMCParticle * finalMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetMother());
+                fillthis="particle_pdgAllFifth";
+                ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(finalMother->GetPdgCode()));
+                fillthis="particle_pdgAllInvMassFifth";
+                ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(TMath::Abs(finalMother->GetPdgCode()),invariantMassMother);
+                if(finalMother->GetPdgCode()==511)
+                {
+                  bIsCorrelatedBackground = kTRUE;
+                  for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep511c";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep511c";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep511c";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
+                  }
+                }
+                if(finalMother->GetPdgCode()==521)
+                {
+                  bIsCorrelatedBackground = kTRUE;
+                  for (Int_t iDaughter = 0; iDaughter < finalMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterfinalMother = (AliAODMCParticle*)mcTrackArray->At(finalMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep521c";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter,TMath::Abs(daughterfinalMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0GrandMother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0GrandMother = (AliAODMCParticle*)mcTrackArray->At(D0GrandMother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep521c";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+10,TMath::Abs(daughterD0GrandMother->GetPdgCode()));
+                  }
+                  for (Int_t iDaughter = 0; iDaughter < D0Mother->GetNDaughters(); ++iDaughter) //will work up to ten daughters
+                  {
+                    AliAODMCParticle* daughterD0Mother = (AliAODMCParticle*)mcTrackArray->At(D0Mother->GetDaughter(0)+iDaughter);
+                    fillthis="particle_daughterPdgTwoStep521c";
+                    ((TH2F*)(fOutputB0MC->FindObject(fillthis)))->Fill(iDaughter+20,TMath::Abs(daughterD0Mother->GetPdgCode()));
+                  }
+                }
+              }
+            }
+          }
+        }
+      
         if(!bSameSign)
         {
           histType = 2;
@@ -2861,6 +4136,15 @@ void AliAnalysisTaskSEB0toDStarPi::DStarAndB0Selection(AliAODEvent* aodEvent, Al
           fillthis="invariantMassB0";
           fillthis += ptBinMother + "_SignSum";
           ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother,1);
+
+          fillthis = "invariantMassB0Signal_BA";
+          if(isDesiredCandidate) ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+
+          fillthis = "invariantMassB0Correlated_BA";
+          if(bIsCorrelatedBackground) ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
+
+          fillthis = "invariantMassB0Background_BA";
+          if(!isDesiredCandidate && !bIsCorrelatedBackground) ((TH1F*)(fOutputB0MC->FindObject(fillthis)))->Fill(invariantMassMother);
         }
 
         if(trackB0->Pt() > 6.0)
@@ -3515,6 +4799,10 @@ void AliAnalysisTaskSEB0toDStarPi::FillD0Histograms(AliAODRecoDecayHF2Prong * se
   Double_t vertexMotherY = vertexMother->GetY();
   Double_t vertexMotherZ = vertexMother->GetZ();
 
+  Double_t cosPointingAngleXY = selectedMother->CosPointingAngleXY();
+  Double_t distanceXYToVertex = vertexMother->DistanceXYToVertex(primaryVertex);
+  Double_t normalizedDecayLengthXY = selectedMother->NormalizedDecayLengthXY();
+
   ((TH1F*)fMotherHistogramArray[motherType][histType][0])->Fill(ptMother); 
   ((TH1F*)fMotherHistogramArray[motherType][histType][1])->Fill(ptFirstDaughter); 
   ((TH1F*)fMotherHistogramArray[motherType][histType][2])->Fill(ptSecondDaughter);
@@ -3548,12 +4836,14 @@ void AliAnalysisTaskSEB0toDStarPi::FillD0Histograms(AliAODRecoDecayHF2Prong * se
   ((TH1F*)fMotherHistogramArray[motherType][histType][38])->Fill(TMath::Abs(dd0max));
   ((TH1F*)fMotherHistogramArray[motherType][histType][39])->Fill(TMath::Abs(dd0min));
 
-
+  ((TH1F*)fMotherHistogramArray[motherType][histType][40])->Fill(cosPointingAngleXY);
+  ((TH1F*)fMotherHistogramArray[motherType][histType][41])->Fill(distanceXYToVertex);
+  ((TH1F*)fMotherHistogramArray[motherType][histType][42])->Fill(normalizedDecayLengthXY);
 
   //we fill the 2D histograms
   Int_t nFirst = 0;
   Int_t nSecond = 1;
-  Int_t nVariables = 8;
+  Int_t nVariables = 10;
   Int_t nHistograms = nVariables * (nVariables - 1) / 2;
   for (Int_t k = 0; k < nHistograms; ++k)
   {
@@ -3568,7 +4858,9 @@ void AliAnalysisTaskSEB0toDStarPi::FillD0Histograms(AliAODRecoDecayHF2Prong * se
     if(nFirst==5) firstVariable = impactProductXY;
     if(nFirst==6) firstVariable = vertexDistance;
     if(nFirst==7) firstVariable = normDecayLength;
-    if(nFirst==8) firstVariable = pseudoProperDecayTime;
+    if(nFirst==8) firstVariable = cosPointingAngleXY;
+    if(nFirst==9) firstVariable = distanceXYToVertex;
+    if(nFirst==10) firstVariable = normalizedDecayLengthXY;
 
     if(nSecond==0) secondVariable = d0firstTrack;
     if(nSecond==1) secondVariable = d0secondTrack;
@@ -3578,7 +4870,9 @@ void AliAnalysisTaskSEB0toDStarPi::FillD0Histograms(AliAODRecoDecayHF2Prong * se
     if(nSecond==5) secondVariable = impactProductXY;
     if(nSecond==6) secondVariable = vertexDistance;
     if(nSecond==7) secondVariable = normDecayLength;
-    if(nSecond==8) secondVariable = pseudoProperDecayTime;
+    if(nSecond==8) secondVariable = cosPointingAngleXY;
+    if(nSecond==9) secondVariable = distanceXYToVertex;
+    if(nSecond==10) secondVariable = normalizedDecayLengthXY;
 
     ((TH2F*)fMotherHistogramArray2D[motherType][histType][k])->Fill(firstVariable,secondVariable);
 
@@ -3587,6 +4881,74 @@ void AliAnalysisTaskSEB0toDStarPi::FillD0Histograms(AliAODRecoDecayHF2Prong * se
     {
       nFirst++;
       nSecond = nFirst + 1;
+    }
+  }
+
+  if(fUse3DHistograms)
+  {
+    //we fill the 3D histograms
+    nFirst = 0;
+    nSecond = 1;
+    Int_t nThird = 2;
+    nVariables = 10;
+    nHistograms = nVariables * (nVariables - 1) * (nVariables - 2) / 6;
+    for (Int_t k = 0; k < nHistograms; ++k)
+    {
+      Double_t firstVariable = 0.0;
+      Double_t secondVariable = 0.0;
+      Double_t thirdVariable = 0.0;
+
+      if(nFirst==0) firstVariable = d0firstTrack;
+      if(nFirst==1) firstVariable = d0secondTrack;
+      if(nFirst==2) firstVariable = d0Mother;
+      if(nFirst==3) firstVariable = pointingAngle;
+      if(nFirst==4) firstVariable = impactProduct;
+      if(nFirst==5) firstVariable = impactProductXY;
+      if(nFirst==6) firstVariable = vertexDistance;
+      if(nFirst==7) firstVariable = normDecayLength;
+      if(nFirst==8) firstVariable = cosPointingAngleXY;
+      if(nFirst==9) firstVariable = distanceXYToVertex;
+      if(nFirst==10) firstVariable = normalizedDecayLengthXY;
+
+      if(nSecond==0) secondVariable = d0firstTrack;
+      if(nSecond==1) secondVariable = d0secondTrack;
+      if(nSecond==2) secondVariable = d0Mother;
+      if(nSecond==3) secondVariable = pointingAngle;
+      if(nSecond==4) secondVariable = impactProduct;
+      if(nSecond==5) secondVariable = impactProductXY;
+      if(nSecond==6) secondVariable = vertexDistance;
+      if(nSecond==7) secondVariable = normDecayLength;
+      if(nSecond==8) secondVariable = cosPointingAngleXY;
+      if(nSecond==9) secondVariable = distanceXYToVertex;
+      if(nSecond==10) secondVariable = normalizedDecayLengthXY;
+
+      if(nThird==0) thirdVariable = d0firstTrack;
+      if(nThird==1) thirdVariable = d0secondTrack;
+      if(nThird==2) thirdVariable = d0Mother;
+      if(nThird==3) thirdVariable = pointingAngle;
+      if(nThird==4) thirdVariable = impactProduct;
+      if(nThird==5) thirdVariable = impactProductXY;
+      if(nThird==6) thirdVariable = vertexDistance;
+      if(nThird==7) thirdVariable = normDecayLength;
+      if(nThird==8) thirdVariable = cosPointingAngleXY;
+      if(nThird==9) thirdVariable = distanceXYToVertex;
+      if(nThird==10) thirdVariable = normalizedDecayLengthXY;
+
+      ((TH3F*)fMotherHistogramArray3D[motherType][histType][k])->Fill(firstVariable,secondVariable,thirdVariable);
+
+      nThird++;
+      if(nThird>nVariables)
+      {
+        nSecond++;
+        nThird = nSecond + 1;
+        if(nSecond>nVariables)
+        {
+          nFirst++;
+          nSecond = nFirst + 1;
+          nThird = nFirst + 2;
+
+        }
+      }
     }
   }
 
@@ -3731,6 +5093,10 @@ void AliAnalysisTaskSEB0toDStarPi::FillDStarAndB0Histograms(AliAODRecoDecayHF2Pr
   Double_t vertexMotherY = vertexMother->GetY();
   Double_t vertexMotherZ = vertexMother->GetZ();
 
+  Double_t cosPointingAngleXY = selectedMother->CosPointingAngleXY();
+  Double_t distanceXYToVertex = vertexMother->DistanceXYToVertex(primaryVertex);
+  Double_t normalizedDecayLengthXY = selectedMother->NormalizedDecayLengthXY();
+
   ((TH1F*)fMotherHistogramArray[motherType][histType][0])->Fill(ptMother); 
   ((TH1F*)fMotherHistogramArray[motherType][histType][1])->Fill(ptFirstDaughter); 
   ((TH1F*)fMotherHistogramArray[motherType][histType][2])->Fill(ptSecondDaughter);
@@ -3764,10 +5130,14 @@ void AliAnalysisTaskSEB0toDStarPi::FillDStarAndB0Histograms(AliAODRecoDecayHF2Pr
   ((TH1F*)fMotherHistogramArray[motherType][histType][38])->Fill(TMath::Abs(dd0max));
   ((TH1F*)fMotherHistogramArray[motherType][histType][39])->Fill(TMath::Abs(dd0min));
 
+  ((TH1F*)fMotherHistogramArray[motherType][histType][40])->Fill(cosPointingAngleXY);
+  ((TH1F*)fMotherHistogramArray[motherType][histType][41])->Fill(distanceXYToVertex);
+  ((TH1F*)fMotherHistogramArray[motherType][histType][42])->Fill(normalizedDecayLengthXY);
+
   //we fill the 2D histograms
   Int_t nFirst = 0;
   Int_t nSecond = 1;
-  Int_t nVariables = 8;
+  Int_t nVariables = 10;
   Int_t nHistograms = nVariables * (nVariables - 1) / 2;
   for (Int_t k = 0; k < nHistograms; ++k)
   {
@@ -3782,7 +5152,9 @@ void AliAnalysisTaskSEB0toDStarPi::FillDStarAndB0Histograms(AliAODRecoDecayHF2Pr
     if(nFirst==5) firstVariable = impactProductXY;
     if(nFirst==6) firstVariable = vertexDistance;
     if(nFirst==7) firstVariable = normDecayLength;
-    if(nFirst==8) firstVariable = pseudoProperDecayTime;
+    if(nFirst==8) firstVariable = cosPointingAngleXY;
+    if(nFirst==9) firstVariable = distanceXYToVertex;
+    if(nFirst==10) firstVariable = normalizedDecayLengthXY;
 
     if(nSecond==0) secondVariable = d0firstTrack;
     if(nSecond==1) secondVariable = d0secondTrack;
@@ -3792,7 +5164,9 @@ void AliAnalysisTaskSEB0toDStarPi::FillDStarAndB0Histograms(AliAODRecoDecayHF2Pr
     if(nSecond==5) secondVariable = impactProductXY;
     if(nSecond==6) secondVariable = vertexDistance;
     if(nSecond==7) secondVariable = normDecayLength;
-    if(nSecond==8) secondVariable = pseudoProperDecayTime;
+    if(nSecond==8) secondVariable = cosPointingAngleXY;
+    if(nSecond==9) secondVariable = distanceXYToVertex;
+    if(nSecond==10) secondVariable = normalizedDecayLengthXY;
 
     ((TH2F*)fMotherHistogramArray2D[motherType][histType][k])->Fill(firstVariable,secondVariable);
 
@@ -3801,6 +5175,74 @@ void AliAnalysisTaskSEB0toDStarPi::FillDStarAndB0Histograms(AliAODRecoDecayHF2Pr
     {
       nFirst++;
       nSecond = nFirst + 1;
+    }
+  }
+
+  if(fUse3DHistograms)
+  {
+    //we fill the 3D histograms
+    nFirst = 0;
+    nSecond = 1;
+    Int_t nThird = 2;
+    nVariables = 10;
+    nHistograms = nVariables * (nVariables - 1) * (nVariables - 2) / 6;
+    for (Int_t k = 0; k < nHistograms; ++k)
+    {
+      Double_t firstVariable = 0.0;
+      Double_t secondVariable = 0.0;
+      Double_t thirdVariable = 0.0;
+
+      if(nFirst==0) firstVariable = d0firstTrack;
+      if(nFirst==1) firstVariable = d0secondTrack;
+      if(nFirst==2) firstVariable = d0Mother;
+      if(nFirst==3) firstVariable = pointingAngle;
+      if(nFirst==4) firstVariable = impactProduct;
+      if(nFirst==5) firstVariable = impactProductXY;
+      if(nFirst==6) firstVariable = vertexDistance;
+      if(nFirst==7) firstVariable = normDecayLength;
+      if(nFirst==8) firstVariable = cosPointingAngleXY;
+      if(nFirst==9) firstVariable = distanceXYToVertex;
+      if(nFirst==10) firstVariable = normalizedDecayLengthXY;
+
+      if(nSecond==0) secondVariable = d0firstTrack;
+      if(nSecond==1) secondVariable = d0secondTrack;
+      if(nSecond==2) secondVariable = d0Mother;
+      if(nSecond==3) secondVariable = pointingAngle;
+      if(nSecond==4) secondVariable = impactProduct;
+      if(nSecond==5) secondVariable = impactProductXY;
+      if(nSecond==6) secondVariable = vertexDistance;
+      if(nSecond==7) secondVariable = normDecayLength;
+      if(nSecond==8) secondVariable = cosPointingAngleXY;
+      if(nSecond==9) secondVariable = distanceXYToVertex;
+      if(nSecond==10) secondVariable = normalizedDecayLengthXY;
+
+      if(nThird==0) thirdVariable = d0firstTrack;
+      if(nThird==1) thirdVariable = d0secondTrack;
+      if(nThird==2) thirdVariable = d0Mother;
+      if(nThird==3) thirdVariable = pointingAngle;
+      if(nThird==4) thirdVariable = impactProduct;
+      if(nThird==5) thirdVariable = impactProductXY;
+      if(nThird==6) thirdVariable = vertexDistance;
+      if(nThird==7) thirdVariable = normDecayLength;
+      if(nThird==8) thirdVariable = cosPointingAngleXY;
+      if(nThird==9) thirdVariable = distanceXYToVertex;
+      if(nThird==10) thirdVariable = normalizedDecayLengthXY;
+
+      ((TH3F*)fMotherHistogramArray3D[motherType][histType][k])->Fill(firstVariable,secondVariable,thirdVariable);
+
+      nThird++;
+      if(nThird>nVariables)
+      {
+        nSecond++;
+        nThird = nSecond + 1;
+        if(nSecond>nVariables)
+        {
+          nFirst++;
+          nSecond = nFirst + 1;
+          nThird = nFirst + 2;
+
+        }
+      }
     }
   }
 
