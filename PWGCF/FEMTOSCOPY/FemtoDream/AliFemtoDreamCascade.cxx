@@ -408,8 +408,8 @@ void AliFemtoDreamCascade::SetMCMotherInfo(
     int labelBachMother=-1;
     if (fBach->GetParticleOrigin()==AliFemtoDreamBasePart::kWeak) {
       //      std::cout << "Bachelor ID" << fBach->GetIDTracks().at(0) << "\n";
-      int labelBach=dynamic_cast<AliAODTrack*>(
-          casc->GetDecayVertexXi()->GetDaughter(0))->GetLabel();
+      AliAODTrack* bachTrk = dynamic_cast<AliAODTrack*>(casc->GetDecayVertexXi()->GetDaughter(0));
+      int labelBach=bachTrk->GetLabel();
       labelBachMother=((AliAODMCParticle*)mcarray->At(labelBach))->GetMother();
       //      std::cout << "PDG Bach: "<<((AliAODMCParticle*)mcarray->At(labelBach))->GetPdgCode() << "\n";
       //      std::cout << "PDG Mother: "<<((AliAODMCParticle*)mcarray->At(labelBachMother))->GetPdgCode() << "\n";
