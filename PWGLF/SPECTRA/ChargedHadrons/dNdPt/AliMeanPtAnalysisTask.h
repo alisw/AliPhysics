@@ -78,6 +78,10 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     /// Set bins in Zv using number of bins and array of bin edges
     void SetBinsZv(Int_t nBins, Double_t* binEdges){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(nBins+1,binEdges);}
 
+    void SetBinsPtReso(Int_t nBins, Double_t* binEdges){if(fBinsPtReso) delete fBinsPtReso; fBinsPtReso = new TArrayD(nBins+1,binEdges);}
+    void SetBins1Pt(Int_t nBins, Double_t* binEdges){if(fBins1Pt) delete fBins1Pt; fBins1Pt = new TArrayD(nBins+1,binEdges);}
+    void SetBinsSigma1Pt(Int_t nBins, Double_t* binEdges){if(fBinsSigma1Pt) delete fBinsSigma1Pt; fBinsSigma1Pt = new TArrayD(nBins+1,binEdges);}
+
     // Acceptance cuts
     /// Set the minimum Eta cut
     void SetMinEta(Double_t minEta){fMinEta = minEta;}
@@ -129,6 +133,7 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
 
     void InitESDTrackCuts();
     void InitdNdPtEventCuts();
+    void SetFixedBinEdges(Double_t* array, Double_t lowerEdge, Double_t upperEdge, Int_t nBins);
 
 
   private:
@@ -188,6 +193,9 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     TArrayD*      fBinsPt;			///< Array of bins in pt
     TArrayD*      fBinsEta;		///< Array of bins in eta
     TArrayD*      fBinsZv;			///< Array of bins in Zv (Z-position of primary vtx)
+    TArrayD*      fBinsPtReso;			   ///< Array of bins for relative pt resoulution
+    TArrayD*      fBins1Pt;			       ///< Array of bins for 1/pt
+    TArrayD*      fBinsSigma1Pt;			///< Array of bins for 1/pt resoulution
 
 
     // Output Histograms
@@ -200,6 +208,7 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     THnSparseF*   fHistMCResponseMatTracks;    	///<  Histogram for Detector Response N_ch vs. N_acc
 
     THnF*         fHistTrack;			///<  Histogram for tracks (pt,eta,Zv,mult/cent)
+    THnF*         fHistRelPtResoFromCov;			///<  Histogram for relative pT resolution of tracks from covariance matrix
 
     THnF*         fHistMCRecTrack;		///<  Histogram for reconstructed MC tracks (pt,eta,mult/cent)
     THnF*         fHistMCGenPrimTrack;		///<  Histogram for generated MC tracks (pt,eta,mult/cent)
@@ -210,6 +219,7 @@ class AliMeanPtAnalysisTask : public AliAnalysisTaskSE {
     THnSparseF*   fHistMCTrackMultGen;		///<  Histogram for true tracks vs multiplicity (pt,Nacc,Nch)
 
     THnF*         fHistMCPtRes;                    ///<  Histogram for pT_gen vs pT_rec for resolution chrosschecks
+    THnF*         fHistMCRelPtReso;                    ///<  Histogram for relative pt resolution vs pT_gen vs pT_rec vs cent
     THnF*         fHistMCEtaRes;                    ///<  Histogram for eta_gen vs eta_rec for resolution chrosschecks
     THnSparseF*   fHistMCMultRes;                    ///<  Histogram for Nacc vs Nrec for resolution chrosschecks
 

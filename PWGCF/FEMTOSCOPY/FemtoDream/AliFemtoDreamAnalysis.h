@@ -9,6 +9,7 @@
 #define ALIFEMTODREAMANALYSIS_H_
 
 #include "AliAODEvent.h"
+#include "AliESDEvent.h"
 #include "AliAODTrack.h"
 #include "AliFemtoDreamEvent.h"
 #include "AliFemtoDreamEventCuts.h"
@@ -47,16 +48,17 @@ class AliFemtoDreamAnalysis {
   void SetAntiCascadeCuts(AliFemtoDreamCascadeCuts *cuts){fAntiCascCuts=cuts;};
   TList *GetAntiCascadeMCHist(){return fAntiCascCuts->GetMCQAHists();};
   TList *GetAntiCascadeCutHist(){return fAntiCascCuts->GetQAHists();};
-  TList *GetResultList() {return fPartColl->GetHistList();};
-  TList *GetResultQAList() {return fPartColl->GetQAList();};
-  TList *GetResultSampleList() {return fControlSample->GetHistList();};
-  TList *GetResultSampleQAList() {return fControlSample->GetQAList();};
+  TList *GetResultList() {return fPartColl?fPartColl->GetHistList():nullptr;};
+  TList *GetResultQAList() {return fPartColl?fPartColl->GetQAList():nullptr;};
+  TList *GetResultSampleList() {return fControlSample?fControlSample->GetHistList():nullptr;};
+  TList *GetResultSampleQAList() {return fControlSample?fControlSample->GetQAList():nullptr;};
   TList *GetQAList() {return fQA;};
   void SetTrackBufferSize(int size){fTrackBufferSize=size;};
   void SetCollectionConfig(AliFemtoDreamCollConfig *conf) {fConfig=conf;};
   void Init(bool isMonteCarlo, UInt_t trigger);
   TString ClassName() {return "AliFemtoDreamAnalysis";};
   void Make(AliAODEvent *evt);
+  void Make(AliESDEvent *evt);
   virtual ~AliFemtoDreamAnalysis();
  private:
   void ResetGlobalTrackReference();

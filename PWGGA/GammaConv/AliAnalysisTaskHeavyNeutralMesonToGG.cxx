@@ -208,7 +208,8 @@ AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(): Al
   fDoInvMassShowerShapeTree(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fAllowOverlapHeaders(kTRUE)
+  fAllowOverlapHeaders(kTRUE),
+  fEnableClusterCutsForTrigger(kFALSE)
 {
 
 }
@@ -361,7 +362,8 @@ AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(const
   fDoInvMassShowerShapeTree(kFALSE),
   tBrokenFiles(NULL),
   fFileNameBroken(NULL),
-  fAllowOverlapHeaders(kTRUE)
+  fAllowOverlapHeaders(kTRUE),
+  fEnableClusterCutsForTrigger(kFALSE)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -419,7 +421,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::InitBack(){
       TString cutstringConvGamma    = "";
       TString cutstringCaloGamma    = "";
       if (fMesonRecoMode < 2) cutstringConvGamma    = ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber();
-      if (fMesonRecoMode > 0) cutstringCaloGamma    = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber();
+      if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger ) cutstringCaloGamma    = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber();
       TString cutstringMeson        = ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
 
       TString fullCutString         = "";
@@ -497,6 +499,10 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
     } else if (fIsMC == 3){
       fDoTHnSparse      = kFALSE;
     }
+
+    if (fMesonRecoMode == 2)
+      fMoveParticleAccordingToVertex  = kFALSE;
+
     // Create histograms
     if(fOutputContainer != NULL){
       delete fOutputContainer;
@@ -543,7 +549,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
         fHistoConvGammaPt                       = new TH1F*[fnCuts];
     }
 
-    if (fMesonRecoMode > 0) {
+    if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger) {
       fHistoNGammaCaloCandidates      = new TH1F*[fnCuts];
       if (!fDoLightOutput ){
         fHistoClusGammaPt                   = new TH1F*[fnCuts];
@@ -786,7 +792,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
     TString cutstringConvGamma    = "";
     TString cutstringCaloGamma    = "";
     if (fMesonRecoMode < 2) cutstringConvGamma    = ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber();
-    if (fMesonRecoMode > 0) cutstringCaloGamma    = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber();
+    if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger) cutstringCaloGamma    = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber();
     TString cutstringMeson        = ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
 
     TString fullCutString         = "";
@@ -885,7 +891,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
         fHistoNGammaConvCandidates[iCut]  = new TH1F("GammaConvCandidates", "GammaConvCandidates; # accepted #gamma_{conv}", 50, 0, 50);
       fESDList[iCut]->Add(fHistoNGammaConvCandidates[iCut]);
     }
-    if (fMesonRecoMode > 0){
+    if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
       if(fIsHeavyIon == 1)
         fHistoNGammaCaloCandidates[iCut]  = new TH1F("GammaCaloCandidates", "GammaCaloCandidates; # accepted #gamma_{conv}", 100, 0, 100);
       else if(fIsHeavyIon == 2)
@@ -911,7 +917,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
         fHistoConvGammaPt[iCut]         = new TH1F("ESD_ConvGamma_Pt", "ESD_ConvGamma_Pt; p_{T,conv}(GeV/c)", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
         fESDList[iCut]->Add(fHistoConvGammaPt[iCut]);
       }
-      if (fMesonRecoMode > 0){
+      if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
         fHistoClusGammaPt[iCut]         = new TH1F("ClusGamma_Pt", "ClusGamma_Pt; p_{T,clus} (GeV/c)", nBinsClusterPt, arrClusPtBinning);
         fESDList[iCut]->Add(fHistoClusGammaPt[iCut]);
         fHistoClusGammaE[iCut]          = new TH1F("ClusGamma_E", "ClusGamma_E; E_{clus} (GeV)", nBinsClusterPt, arrClusPtBinning);
@@ -939,19 +945,22 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
       fHistoNEvents[iCut]->Sumw2();
       fHistoNGoodESDTracks[iCut]->Sumw2();
       fHistoVertexZ[iCut]->Sumw2();
-      if (fHistoNGammaConvCandidates[iCut]) fHistoNGammaConvCandidates[iCut]->Sumw2();
-      if (fHistoNGammaCaloCandidates[iCut]) fHistoNGammaCaloCandidates[iCut]->Sumw2();
+      if (fMesonRecoMode < 2) fHistoNGammaConvCandidates[iCut]->Sumw2();
+      if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger)  fHistoNGammaCaloCandidates[iCut]->Sumw2();
       if(!fDoLightOutput){
         fHistoVertexX[iCut]->Sumw2();
         fHistoVertexY[iCut]->Sumw2();
         fHistoSPDClusterTrackletBackground[iCut]->Sumw2();
         fHistoNV0Tracks[iCut]->Sumw2();
-        if (fHistoConvGammaPt[iCut]) fHistoConvGammaPt[iCut]->Sumw2();
-        if (fHistoClusGammaPt[iCut]) fHistoClusGammaPt[iCut]->Sumw2();
-        if (fHistoClusGammaE[iCut]) fHistoClusGammaE[iCut]->Sumw2();
-        if (fHistoClusOverlapHeadersGammaPt[iCut]) fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
-        if (fHistoClusAllHeadersGammaPt[iCut]) fHistoClusAllHeadersGammaPt[iCut]->Sumw2();
-        if (fHistoClusRejectedHeadersGammaPt[iCut]) fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
+        if (fMesonRecoMode < 2)
+          fHistoConvGammaPt[iCut]->Sumw2();
+        if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
+          if (fHistoClusGammaPt[iCut]) fHistoClusGammaPt[iCut]->Sumw2();
+          if (fHistoClusGammaE[iCut]) fHistoClusGammaE[iCut]->Sumw2();
+          if (fHistoClusOverlapHeadersGammaPt[iCut]) fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
+          if (fHistoClusAllHeadersGammaPt[iCut]) fHistoClusAllHeadersGammaPt[iCut]->Sumw2();
+          if (fHistoClusRejectedHeadersGammaPt[iCut]) fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
+        }
       }
     }
 
@@ -1017,7 +1026,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
         fHistoTruePrimaryConvGammaPt                    = new TH1F*[fnCuts];
       }
 
-      if (fMesonRecoMode > 0){
+      if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
         fHistoTrueClusGammaPt                           = new TH1F*[fnCuts];
         fHistoTrueClusConvGammaPt                       = new TH1F*[fnCuts];
         fHistoTruePrimaryClusGammaPt                    = new TH1F*[fnCuts];
@@ -1088,7 +1097,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
       TString cutstringConvGamma    = "";
       TString cutstringCaloGamma    = "";
       if (fMesonRecoMode < 2) cutstringConvGamma    = ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber();
-      if (fMesonRecoMode > 0) cutstringCaloGamma    = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber();
+      if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger) cutstringCaloGamma    = ((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutNumber();
       TString cutstringMeson        = ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
 
       TString fullCutString         = "";
@@ -1161,18 +1170,18 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
 
       if(!fDoLightOutput){
         if (fMesonRecoMode < 2){
-          fHistoTrueConvGammaPt[iCut]               = new TH1F("ESD_TrueConvGamma_Pt", "ESD_TrueConvGamma_Pt; p_{T,clus} (GeV/c); counts",
+          fHistoTrueConvGammaPt[iCut]               = new TH1F("ESD_TrueConvGamma_Pt", "ESD_TrueConvGamma_Pt; p_{T,conv} (GeV/c); counts",
                                                             (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
           fTrueList[iCut]->Add(fHistoTrueConvGammaPt[iCut]);
-          fHistoDoubleCountTrueConvGammaRPt[iCut]   = new TH2F("ESD_TrueDoubleCountConvGamma_R_Pt", "ESD_TrueDoubleCountConvGamma_R_Pt; R (cm); p_{T,clus} (GeV/c)",
+          fHistoDoubleCountTrueConvGammaRPt[iCut]   = new TH2F("ESD_TrueDoubleCountConvGamma_R_Pt", "ESD_TrueDoubleCountConvGamma_R_Pt; R (cm); p_{T,conv} (GeV/c)",
                                                             800, 0, 200, (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
           fTrueList[iCut]->Add(fHistoDoubleCountTrueConvGammaRPt[iCut]);
           fHistoMultipleCountTrueConvGamma[iCut]    = new TH1F("ESD_TrueMultipleCountConvGamma", "ESD_TrueMultipleCountConvGamma", 10, 1, 11);
           fTrueList[iCut]->Add(fHistoMultipleCountTrueConvGamma[iCut]);
-          fHistoTruePrimaryConvGammaPt[iCut]        = new TH1F("ESD_TruePrimaryConvGamma_Pt", "ESD_TruePrimaryConvGamma_Pt;p_{T,clus} (GeV/c); counts", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
+          fHistoTruePrimaryConvGammaPt[iCut]        = new TH1F("ESD_TruePrimaryConvGamma_Pt", "ESD_TruePrimaryConvGamma_Pt;p_{T,conv} (GeV/c); counts", (Int_t)((maxPt-minPt)/binWidthPt), minPt, maxPt);
           fTrueList[iCut]->Add(fHistoTruePrimaryConvGammaPt[iCut]);
         }
-        if (fMesonRecoMode > 0){
+        if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
           fHistoTrueClusGammaPt[iCut]               = new TH1F("TrueClusGamma_Pt", "ESD_TrueClusGamma_Pt; p_{T,clus} (GeV/c); counts", nBinsClusterPt, arrClusPtBinning);
           fTrueList[iCut]->Add(fHistoTrueClusGammaPt[iCut]);
           fHistoTruePrimaryClusGammaPt[iCut]        = new TH1F("TruePrimaryClusGamma_Pt", "ESD_TruePrimaryClusGamma_Pt; p_{T,clus} (GeV/c); counts", nBinsClusterPt, arrClusPtBinning);
@@ -1202,7 +1211,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
             fHistoDoubleCountTrueConvGammaRPt[iCut]->Sumw2();
             fHistoMultipleCountTrueConvGamma[iCut]->Sumw2();
           }
-          if (fMesonRecoMode > 0){
+          if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
             fHistoTruePrimaryConvGammaPt[iCut]->Sumw2();
             fHistoTruePrimaryClusGammaPt[iCut]->Sumw2();
             fHistoTrueNLabelsInClusPt[iCut]->Sumw2();
@@ -1385,7 +1394,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
         fCutFolder[iCut]->Add(((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutHistograms());
       }
     }
-    if (fMesonRecoMode > 0){
+    if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
       if(!((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))) continue;
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutHistograms()){
         fCutFolder[iCut]->Add(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutHistograms());
@@ -1493,7 +1502,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserExec(Option_t *){
 
       fiCut = iCut;
       Bool_t isRunningEMCALrelAna = kFALSE;
-      if (fMesonRecoMode > 0){
+      if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger){
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 1) isRunningEMCALrelAna = kTRUE;
       }
 
@@ -1595,13 +1604,13 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserExec(Option_t *){
       if (triggered==kFALSE) continue;
 
       // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
-      if (fMesonRecoMode > 0) // process calo clusters
+      if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger) // process calo clusters
         ProcessClusters();
       if (fMesonRecoMode < 2) // Process this cuts gammas
         ProcessPhotonCandidates();
 
       if (fMesonRecoMode < 2) fHistoNGammaConvCandidates[iCut]->Fill(fGammaCandidates->GetEntries(),fWeightJetJetMC);
-      if (fMesonRecoMode > 0) fHistoNGammaCaloCandidates[iCut]->Fill(fClusterCandidates->GetEntries(),fWeightJetJetMC);
+      if (fMesonRecoMode > 0 || fEnableClusterCutsForTrigger) fHistoNGammaCaloCandidates[iCut]->Fill(fClusterCandidates->GetEntries(),fWeightJetJetMC);
 
       if (fMesonRecoMode < 2){
         if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseMCPSmearing() && fIsMC>0){
@@ -1732,6 +1741,8 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessClusters(){
     // Flag Photon as CaloPhoton
     PhotonCandidate->SetIsCaloPhoton();
     PhotonCandidate->SetCaloClusterRef((Long_t)i);
+    PhotonCandidate->SetLeadingCellID(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(clus,fInputEvent));
+
     // get MC label
     if(fIsMC>0){
       PhotonCandidate->SetNCaloPhotonMCLabels(clus->GetNLabels());
@@ -1764,10 +1775,11 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessClusters(){
         }
       }
     }
-    fHistoClusAllHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
-    if (!fIsFromDesiredHeader)
+    if (fIsMC > 0 && fHistoClusAllHeadersGammaPt[fiCut])
+      fHistoClusAllHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
+    if (!fIsFromDesiredHeader && fIsMC > 0 && fHistoClusRejectedHeadersGammaPt[fiCut])
       fHistoClusRejectedHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
-    if (fIsFromDesiredHeader && fIsOverlappingWithOtherHeader)
+    if (fIsFromDesiredHeader && fIsOverlappingWithOtherHeader && fIsMC > 0 && fHistoClusOverlapHeadersGammaPt[fiCut])
       fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(),fWeightJetJetMC);
 
     if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders)){
@@ -2524,7 +2536,6 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateMesonCandidates(){
     }
   } else if (fMesonRecoMode == 2){
     if(fClusterCandidates->GetEntries()>0){
-
       for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
         AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
         if (gamma0==NULL) continue;
@@ -3439,8 +3450,10 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackground(){
   if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseTrackMultiplicity()){
     for(Int_t nEventsInBG=0;nEventsInBG<currBGHandler->GetNBGEvents();nEventsInBG++){
       AliGammaConversionAODVector *previousEventV0s = currBGHandler->GetBGGoodV0s(zbin,mbin,nEventsInBG);
-      if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
-        bgEventVertex = currBGHandler->GetBGEventVertex(zbin,mbin,nEventsInBG);
+      if (fMesonRecoMode < 2){
+        if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0 ){
+          bgEventVertex = currBGHandler->GetBGEventVertex(zbin,mbin,nEventsInBG);
+        }
       }
       for(Int_t iCurrent=0;iCurrent<currPhotonList->GetEntries();iCurrent++){
         AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(currPhotonList->At(iCurrent));
@@ -3451,15 +3464,17 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackground(){
               MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
             }
           }
-          if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
-            if (bgEventVertex){
-              RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+          if (fMesonRecoMode < 2){
+            if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
+              if (bgEventVertex){
+                RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+              }
             }
           }
-
           AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
           backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate, kFALSE,
+            ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID())){
             if (fHistoMotherBackInvMassPt[fiCut]) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
             if(fDoTHnSparse){
               Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -3475,29 +3490,31 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackground(){
     for(Int_t nEventsInBG=0;nEventsInBG <currBGHandler->GetNBGEvents();nEventsInBG++){
       AliGammaConversionAODVector *previousEventV0s = currBGHandler->GetBGGoodV0s(zbin,mbin,nEventsInBG);
       if(previousEventV0s){
-        if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0 ){
-          bgEventVertex = currBGHandler->GetBGEventVertex(zbin,mbin,nEventsInBG);
+        if (fMesonRecoMode < 2){
+          if(fMoveParticleAccordingToVertex == kTRUE || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0 ){
+            bgEventVertex = currBGHandler->GetBGEventVertex(zbin,mbin,nEventsInBG);
+          }
         }
         for(Int_t iCurrent=0;iCurrent<currPhotonList->GetEntries();iCurrent++){
           AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(currPhotonList->At(iCurrent));
           for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
-
             AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
-
             if(fMoveParticleAccordingToVertex == kTRUE){
               if (bgEventVertex){
                 MoveParticleAccordingToVertex(&previousGoodV0,bgEventVertex);
               }
             }
-            if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
-              if (bgEventVertex){
-                RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+            if (fMesonRecoMode < 2){
+              if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetInPlaneOutOfPlaneCut() != 0){
+                if (bgEventVertex){
+                  RotateParticleAccordingToEP(&previousGoodV0,bgEventVertex->fEP,fEventPlaneAngle);
+                }
               }
             }
-
             AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0,&previousGoodV0);
             backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
-            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+            if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,
+                ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()), currentEventGoodV0.GetLeadingCellID(), previousGoodV0.GetLeadingCellID())){
               if (fHistoMotherBackInvMassPt[fiCut]) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(),fWeightJetJetMC);
               if(fDoTHnSparse){
                 Double_t sparesFill[4] = {backgroundCandidate->M(),backgroundCandidate->Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -3655,7 +3672,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UpdateEventByEventData(){
                                       fV0Reader->GetNumberOfPrimaryTracks(), fEventPlaneAngle);
     }else { // means we use #V0s for multiplicity
       fBGClusHandler[fiCut]->AddEvent(fClusterCandidates, fInputEvent->GetPrimaryVertex()->GetX(), fInputEvent->GetPrimaryVertex()->GetY(), fInputEvent->GetPrimaryVertex()->GetZ(),
-                                      fGammaCandidates->GetEntries(), fEventPlaneAngle);
+                                      fClusterCandidates->GetEntries(), fEventPlaneAngle);
     }
   }
 }

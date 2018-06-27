@@ -77,12 +77,13 @@ fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),
 fDCALClusters(0x0),          fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
-fInputEvent(0x0),            fOutputEvent(0x0),fMC(0x0),
+fInputEvent(0x0),            fOutputEvent(0x0),               fMC(0x0),
 fFillCTS(0),                 fFillEMCAL(0),
 fFillDCAL(0),                fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0),
 fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
 fSelectEmbeddedClusters(kFALSE),
+fScaleEPerSM(kFALSE),       
 fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
 fSmearingFunction(0),        fSmearNLMMin(0),                 fSmearNLMMax(0),
 fTrackStatus(0),             fSelectSPDHitTracks(0),
@@ -97,7 +98,7 @@ fEventTrigEMCALL1Jet1(0),    fEventTrigEMCALL1Jet2(0),
 fBitEGA(0),                  fBitEJE(0),
 
 fEventType(-1),
-fTaskName(""),               fCaloUtils(0x0),
+fTaskName(""),               fCaloUtils(0x0),                 fMCUtils(0x0), 
 fWeightUtils(0x0),           fEventWeight(1),
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
 fListMixedTracksEvents(),    fListMixedCaloEvents(),
@@ -223,6 +224,8 @@ void AliCaloTrackReader::DeletePointers()
   
   if ( fWeightUtils ) delete fWeightUtils ;
     
+  if ( fMCUtils     ) delete fMCUtils ; 
+
   //  Pointers not owned, done by the analysis frame
   //  if(fInputEvent)  delete fInputEvent ;
   //  if(fOutputEvent) delete fOutputEvent ;
@@ -1019,9 +1022,19 @@ Int_t AliCaloTrackReader::GetTrackID(AliVTrack* track)
 //_____________________________
 void AliCaloTrackReader::Init()
 {  
+  // Activate debug level in reader
+  if( fDebug >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
+  
   // Activate debug level in AliAnaWeights
   if( fWeightUtils->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fWeightUtils->ClassName(), fWeightUtils->GetDebug());
+  
+  // Activate debug level in AliMCAnalysisUtils
+  if( GetMCAnalysisUtils()->GetDebug() >= 0 )
+  (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetMCAnalysisUtils()->ClassName(),GetMCAnalysisUtils()->GetDebug());
+  
+  //printf("Debug levels: Reader %d, Neutral Sel %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),fWeightUtils->GetDebug());
 }
 
 //_______________________________________
@@ -1151,14 +1164,18 @@ void AliCaloTrackReader::InitParameters()
   fSmearNLMMin = 1;
   fSmearNLMMax = 1;
   
+  fMCUtils     = new AliMCAnalysisUtils() ;
+
   fWeightUtils = new AliAnaWeights() ;
   fEventWeight = 1 ;
-    
+      
   fTrackMultNPtCut = 8;
   fTrackMultPtCut[0] = 0.15; fTrackMultPtCut[1] = 0.5;  fTrackMultPtCut[2] = 1.0; 
   fTrackMultPtCut[3] = 2.0 ; fTrackMultPtCut[4] = 4.0;  fTrackMultPtCut[5] = 6.0;  
   fTrackMultPtCut[6] = 8.0 ; fTrackMultPtCut[7] = 10.;  
   fTrackMultPtCut[8] = 15.0; fTrackMultPtCut[9] = 20.;  
+  
+  for(Int_t ism = 0; ism < 22; ism++) fScaleFactorPerSM[ism] = 1. ;    
 }
 
 //__________________________________________________________________________
@@ -1452,8 +1469,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     
     // Init it first to 0 to tell the method to recover it.
     fGenPythiaEventHeader = 
-    AliMCAnalysisUtils::GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
-                                             pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
+    GetMCAnalysisUtils()->GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
+                                               pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
 
     if(fGenPythiaEventHeader)
     {
@@ -1916,9 +1933,21 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // No correction/cut applied yet
   fhEMCALClusterCutsE[0]->Fill(clus->E());
 
+  // Get the maximum cell energy, its SM number and its col, row location, needed in 
+  // different places of this method, although not active by default, one can consider
+  // deactivate this and only activate it when requiered.
+  Int_t absIdMax= -1;
+  Int_t iSupMod = -1;
+  Int_t iphiMax = -1;
+  Int_t ietaMax = -1;
+  Bool_t shared = kFALSE;
+  GetCaloUtils()->GetEMCALRecoUtils()->GetMaxEnergyCell(GetCaloUtils()->GetEMCALGeometry(), 
+                                                        GetEMCALCells(),clus,absIdMax,iSupMod,
+                                                        ietaMax,iphiMax,shared);
+  
   //if( (fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10 )
-  AliDebug(2,Form("Input cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, nCells %d",
-                  fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(), clus->GetNCells()));
+  AliDebug(2,Form("Input cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, nCells %d, SM %d",
+                  fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(), clus->GetNCells(), iSupMod));
 
   //---------------------------
   // Embedding case
@@ -1962,16 +1991,12 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
     if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
     {
       Double_t tof      = clus->GetTOF();
-      Float_t  frac     =-1;
-      Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
-      
       GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
       
       //additional L1 phase shift
       if(GetCaloUtils()->GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn())
       {
-        GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absIdMax), 
-                                                                        fInputEvent->GetBunchCrossNumber(), tof);
+        GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(iSupMod,fInputEvent->GetBunchCrossNumber(), tof);
       }
 
       clus->SetTOF(tof);
@@ -2005,27 +2030,38 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   //clus->GetPosition(pos);
   //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
   
-  //--------------------------------------
-  // Correct non linearity or smear energy
+  //-----------------------------------------------------
+  // Correct non linearity, smear energy or scale per SM
   //
-  if(fCorrectELinearity && GetCaloUtils()->IsCorrectionOfClusterEnergyOn())
+  if ( fCorrectELinearity && GetCaloUtils()->IsCorrectionOfClusterEnergyOn() )
   {
     GetCaloUtils()->CorrectClusterEnergy(clus) ;
     
     AliDebug(5,Form("Correct Non Lin: Old E %3.2f, New E %3.2f",
                     fMomentum.E(),clus->E()));
-
-    // In case of MC analysis, to match resolution/calibration in real data
-    // Not needed anymore, just leave for MC studies on systematics
-    if( GetCaloUtils()->GetEMCALRecoUtils()->IsClusterEnergySmeared() )
-    {
-      Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
-      
-      AliDebug(5,Form("Smear energy: Old E %3.2f, New E %3.2f",clus->E(),rdmEnergy));
-    
-      clus->SetE(rdmEnergy);
-    }
   }
+  
+  // In case of MC analysis, to match resolution/calibration in real data
+  // Not needed anymore, just leave for MC studies on systematics
+  if( GetCaloUtils()->GetEMCALRecoUtils()->IsClusterEnergySmeared() )
+  {
+    Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
+    
+    AliDebug(5,Form("Smear energy: Old E %3.2f, New E %3.2f",clus->E(),rdmEnergy));
+    
+    clus->SetE(rdmEnergy);
+  }
+
+  // In case of uncalibrated data, or non final non linearity for MC
+  // or calibration of MC for SMs behind TRD, apply a global scale factor per SM  
+  if ( fScaleEPerSM && iSupMod < 22 && iSupMod >=0)
+  {
+    Float_t scale = fScaleFactorPerSM[iSupMod];
+    
+    AliDebug(5,Form("Scale energy for SM %d: Old E %3.2f, scale factor %1.5f",iSupMod,clus->E(),scale));
+    
+    clus->SetE(clus->E()*scale);
+  }  
   
   clus->GetMomentum(fMomentum, fVertex[vindex]);
   fhEMCALClusterEtaPhi->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
@@ -2067,20 +2103,12 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   //---------------------------------------------------------------------
   // Mask all cells in collumns facing ALICE thick material if requested
   //
-  if(GetCaloUtils()->GetNMaskCellColumns())
+  if ( GetCaloUtils()->GetNMaskCellColumns() )
   {
-    Int_t absId   = -1;
-    Int_t iSupMod = -1;
-    Int_t iphi    = -1;
-    Int_t ieta    = -1;
-    Bool_t shared = kFALSE;
-    GetCaloUtils()->GetEMCALRecoUtils()->GetMaxEnergyCell(GetCaloUtils()->GetEMCALGeometry(), GetEMCALCells(),clus,absId,iSupMod,ieta,iphi,shared);
-    
     AliDebug(2,Form("Masked collumn: cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
                     fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
     
-    
-    if(GetCaloUtils()->MaskFrameCluster(iSupMod, ieta))
+    if ( GetCaloUtils()->MaskFrameCluster(iSupMod, ietaMax) )
     {
       AliDebug(2,"Mask cluster");
       return;
@@ -2146,7 +2174,6 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   
   // Check effect of time cut
   fhEMCALClusterCutsE[7]->Fill(clus->E());
-
   
   //----------------------------------------------------
   // Smear the SS to try to match data and simulations,

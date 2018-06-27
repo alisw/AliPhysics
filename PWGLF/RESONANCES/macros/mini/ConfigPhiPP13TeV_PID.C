@@ -4,6 +4,8 @@
 *** Configuration script for phi analysis of 2015-2016 pp 13-TeV data ***
 ****************************************************************************/
 
+//Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0);
+
 Bool_t ConfigPhiPP13TeV_PID
 (  
  AliRsnMiniAnalysisTask *task, 
@@ -92,14 +94,14 @@ Bool_t ConfigPhiPP13TeV_PID
   int j,nmult=0;
   if(isMC){
     for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-    for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<50;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=5;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
     for(j=1;j<10;j++){multbins[nmult]=j; nmult++;}
     for(j=2;j<=20;j++){multbins[nmult]=5.*j; nmult++;}
   }else if(triggerMask==AliVEvent::kHighMultV0){
     for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-    for(j=1;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<50;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=5;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
   }else{
     for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
     for(j=1;j<10;j++){multbins[nmult]=j; nmult++;}

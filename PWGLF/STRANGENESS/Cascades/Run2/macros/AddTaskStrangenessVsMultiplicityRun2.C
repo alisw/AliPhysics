@@ -28,54 +28,47 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2 *AddTaskStrangenessVsMultiplicityRu
     
     Printf("Set OutputFileName : \n %s\n", outputFileName.Data() );
     
-    TString lC1 = "cList";
-    TString lC2 = "cListV0";
-    TString lC3 = "cListCascade";
-    TString lC4 = "cTreeEvent";
-    TString lC5 = "cTreeV0";
-    TString lC6 = "cTreeCascade";
+    TString lC[9];
+    lC[0] = "cList";
+    lC[1] = "cListV0";
+    lC[2] = "cListXiMinus";
+    lC[3] = "cListXiPlus";
+    lC[4] = "cListOmegaMinus";
+    lC[5] = "cListOmegaPlus";
+    lC[6] = "cTreeEvent";
+    lC[7] = "cTreeV0";
+    lC[8] = "cTreeCascade";
     
-    lC1 += lExtraOutputName.Data();
-    lC2 += lExtraOutputName.Data();
-    lC3 += lExtraOutputName.Data();
-    lC4 += lExtraOutputName.Data();
-    lC5 += lExtraOutputName.Data();
-    lC6 += lExtraOutputName.Data();
+    for(Int_t iname=0;iname<9;iname++)
+    lC[iname] += lExtraOutputName.Data();
     
-    AliAnalysisDataContainer *coutputList = mgr->CreateContainer(lC1.Data(),
+    AliAnalysisDataContainer *coutputLists[6];
+    for(Int_t ilist=0;ilist<6;ilist++){
+        coutputLists[ilist] = mgr->CreateContainer(lC[ilist].Data(),
                                                                  TList::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileName );
-    AliAnalysisDataContainer *coutputListV0 = mgr->CreateContainer(lC2.Data(),
-                                                                 TList::Class(),
-                                                                 AliAnalysisManager::kOutputContainer,
-                                                                 outputFileName );
-    coutputListV0->SetSpecialOutput();
-    AliAnalysisDataContainer *coutputListCascade = mgr->CreateContainer(lC3.Data(),
-                                                                 TList::Class(),
-                                                                 AliAnalysisManager::kOutputContainer,
-                                                                 outputFileName );
-    coutputListCascade->SetSpecialOutput();
+    }
     
     AliAnalysisDataContainer *coutputTree = 0x0;
     AliAnalysisDataContainer *coutputTreeV0 = 0x0;
     AliAnalysisDataContainer *coutputTreeCascade = 0x0;
     if( lSaveEventTree ){
-        coutputTree = mgr->CreateContainer(lC4.Data(),
+        coutputTree = mgr->CreateContainer(lC[6].Data(),
                                                                      TTree::Class(),
                                                                      AliAnalysisManager::kOutputContainer,
                                                                      outputFileName );
         coutputTree->SetSpecialOutput();
     }
     if( lSaveV0 ){
-        coutputTreeV0 = mgr->CreateContainer(lC5.Data(),
+        coutputTreeV0 = mgr->CreateContainer(lC[7].Data(),
                                                                        TTree::Class(),
                                                                        AliAnalysisManager::kOutputContainer,
                                                                        outputFileName );
         coutputTreeV0->SetSpecialOutput();
     }
     if (lSaveCascade){
-        coutputTreeCascade = mgr->CreateContainer(lC6.Data(),
+        coutputTreeCascade = mgr->CreateContainer(lC[8].Data(),
                                                                             TTree::Class(),
                                                                             AliAnalysisManager::kOutputContainer,
                                                                             outputFileName );
@@ -85,13 +78,12 @@ AliAnalysisTaskStrangenessVsMultiplicityRun2 *AddTaskStrangenessVsMultiplicityRu
     
     //Recommendation: Tree as a single output slot
     mgr->ConnectInput (taskAuxiliary, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskAuxiliary, 1, coutputList);
-    mgr->ConnectOutput(taskAuxiliary, 2, coutputListV0);
-    mgr->ConnectOutput(taskAuxiliary, 3, coutputListCascade);
-    
-    if ( lSaveEventTree ) mgr->ConnectOutput(taskAuxiliary, 4, coutputTree);
-    if ( lSaveV0 )        mgr->ConnectOutput(taskAuxiliary, 5, coutputTreeV0);
-    if ( lSaveCascade )   mgr->ConnectOutput(taskAuxiliary, 6, coutputTreeCascade);
+    for(Int_t ilist=0;ilist<6;ilist++){
+        mgr->ConnectOutput(taskAuxiliary, ilist+1, coutputLists[ilist]);
+    }
+    if ( lSaveEventTree ) mgr->ConnectOutput(taskAuxiliary, 7, coutputTree);
+    if ( lSaveV0 )        mgr->ConnectOutput(taskAuxiliary, 8, coutputTreeV0);
+    if ( lSaveCascade )   mgr->ConnectOutput(taskAuxiliary, 9, coutputTreeCascade);
     
     return taskAuxiliary;
 }   

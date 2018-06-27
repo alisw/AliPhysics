@@ -65,6 +65,8 @@ public:
     
     void SetEpCorr(Int_t Corr){iCorr = Corr;};
 
+    void SetSM(Int_t SelSM){iSelSM = SelSM;};
+
     Bool_t ProcessCutStep(Int_t cutStep, AliVParticle *track);
     //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec);
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagULSElec, Bool_t &fFlagLSElec, Bool_t EmbPi0, Bool_t EmbEta, Double_t weight, Double_t dcaxy);
@@ -72,6 +74,7 @@ public:
     void ElectronAway(Int_t itrack, AliVTrack *track);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
+    Int_t GetSM(AliVCluster *cluster);
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
     void CheckMCgen(AliAODMCHeader* fMCheader);
@@ -94,6 +97,7 @@ private:
     AliQnCorrectionsManager *fFlowQnVectorMgr; //! new ep
     AliAODMCHeader *fMCheader; 
     AliPIDResponse *fpidResponse; //!pid response
+    AliEMCALGeometry *fEMCALGeo;
     AliCFManager 	   	*fCFM;                  //!Correction Framework Manager
     
     Bool_t      fFlagSparse;// switch to THnspare
@@ -131,6 +135,7 @@ private:
     Bool_t fEnablePileupRejVZEROTPCout;   
     Int_t fEPana;  
     Int_t iCorr;  
+    Int_t iSelSM;  
 
     Int_t NpureMCproc; // # of process in MC (no GEANT process)
     Int_t NembMCpi0; // # of process in MC (no GEANT process)

@@ -64,7 +64,7 @@ fOutputAODName(""),           fOutputAODClassName(""),
 fAODObjArrayName(""),         fAddToHistogramsName(""),
 fCaloPID(0x0),                fCaloUtils(0x0),
 fFidCut(0x0),                 fHisto(0x0),
-fIC(0x0),                     fMCUtils(0x0),                
+fIC(0x0),                                    
 fNMS(0x0),                    fReader(0x0),
 fStudyClusterOverlapsPerGenerator(0),
 fNCocktailGenNames(0)
@@ -83,7 +83,6 @@ AliAnaCaloTrackCorrBaseClass::~AliAnaCaloTrackCorrBaseClass()
   delete fCaloPID ; 
   delete fFidCut  ;  
   delete fIC      ;      
-  delete fMCUtils ; 
   delete fNMS     ;     
   delete fHisto   ;    
 }
@@ -249,7 +248,7 @@ AliVCluster * AliAnaCaloTrackCorrBaseClass::FindCluster(TObjArray* clusters, Int
 //______________________________________________________________________________________
 /// Recover ouput and input AOD pointers for each event in AliCaloTrackMaker.
 //______________________________________________________________________________________
-TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(const TString & aodName) const
+TClonesArray * AliAnaCaloTrackCorrBaseClass::GetAODBranch(TString & aodName) const
 {
 	AliDebug(3,Form("AliAnaCaloTrackCorrBaseClass::GetAODBranch() - Get Input Branch with name: <%s>; \n",aodName.Data()));
 	
@@ -683,16 +682,13 @@ void AliAnaCaloTrackCorrBaseClass::InitDebug()
   if( fDebug >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
   
-  if( GetMCAnalysisUtils()->GetDebug() >= 0 )
-    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetMCAnalysisUtils()->ClassName(),GetMCAnalysisUtils()->GetDebug());
-  
   if( GetIsolationCut()->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetIsolationCut()->ClassName(),GetIsolationCut()->GetDebug());
 
   if( GetNeutralMesonSelection()->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetNeutralMesonSelection()->ClassName(),GetNeutralMesonSelection()->GetDebug());
     
-  //printf("Debug levels: Ana %d, MC %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),GetIsolationCut()->GetDebug());
+  //printf("Debug levels: Ana %d, Neutral Sel %d, Iso %d\n",fDebug,GetNeutralMesonSelection()->GetDebug(),GetIsolationCut()->GetDebug());
 }
 
 //_________________________________________________
@@ -891,7 +887,7 @@ void AliAnaCaloTrackCorrBaseClass::Print(const Option_t * opt) const
 //_______________________________________________________________
 /// Set the calorimeter for the analysis. A string.
 //_______________________________________________________________
-void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(TString & calo)
+void AliAnaCaloTrackCorrBaseClass::SetCalorimeter(TString calo)
 {
   fCalorimeterString = calo;
   

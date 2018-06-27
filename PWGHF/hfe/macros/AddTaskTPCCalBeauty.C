@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bool_t applySSCut = kTRUE, TString ContNameExt = " ")
+AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bool_t applySSCut = kTRUE, Bool_t fillElecSprs = kFALSE, TString ContNameExt = " ")
 {
     // get the manager via the static access member
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -30,6 +30,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bo
     // add your task to the manager
     mgr->AddTask(taskBFEemc);
     taskBFEemc->SetSSCut(applySSCut);
+    taskBFEemc->SetFillSprs(fillElecSprs);
     taskBFEemc->SetClusterTypeEMC(kTRUE);
     taskBFEemc->SetClusterTypeDCAL(kFALSE);
     taskBFEemc->SetCentralitySelection(centMin,centMax);
@@ -52,6 +53,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bo
     // add your task to the manager
     mgr->AddTask(taskBFEdc);
     taskBFEdc->SetSSCut(applySSCut);
+    taskBFEdc->SetFillSprs(fillElecSprs);
     taskBFEdc->SetClusterTypeEMC(kFALSE);
     taskBFEdc->SetClusterTypeDCAL(kTRUE);
     taskBFEdc->SetCentralitySelection(centMin,centMax);
@@ -103,6 +105,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bo
     // add your task to the manager
     mgr->AddTask(taskBFEeg01emc);
     taskBFEeg01emc->SetSSCut(applySSCut);
+    taskBFEeg01emc->SetFillSprs(fillElecSprs);
     taskBFEeg01emc->SetClusterTypeEMC(kTRUE);
     taskBFEeg01emc->SetClusterTypeDCAL(kFALSE);
     taskBFEeg01emc->SetCentralitySelection(centMin,centMax);
@@ -171,6 +174,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bo
     // add your task to the manager
     mgr->AddTask(taskBFEdg01dc);
     taskBFEdg01dc->SetSSCut(applySSCut);
+    taskBFEdg01dc->SetFillSprs(fillElecSprs);
     taskBFEdg01dc->SetClusterTypeEMC(kFALSE);
     taskBFEdg01dc->SetClusterTypeDCAL(kTRUE);
     taskBFEdg01dc->SetCentralitySelection(centMin,centMax);

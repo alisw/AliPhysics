@@ -123,6 +123,7 @@ public:
   void   SetTriggerRestrictEta(Float_t eta) { fTriggerRestrictEta = eta; }
   void   SetEtaOrdering(Bool_t flag) { fEtaOrdering = flag; }
   void   SetPairCuts(Float_t conversions = 0.004, Float_t resonances = 0.005) { fCutConversionsV = conversions; fCutResonancesV = resonances; }
+  void   SetCutOnPhi(bool cutOnPhi) { fCutOnPhi = cutOnPhi; }
   void   SetRejectResonanceDaughters(Int_t value) { fRejectResonanceDaughters = value; }
   void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
   void   SetFillpT(Bool_t flag) { fFillpT = flag; }
@@ -285,6 +286,7 @@ private:
   Bool_t fEtaOrdering;           // eta ordering, see AliUEHistograms.h for documentation
   Float_t fCutConversionsV;        // cut on conversions (inv mass)
   Float_t fCutResonancesV;         // cut on resonances (inv mass)
+  Float_t fCutOnPhi;             // cut on Phi as well with the same resonance cut as for the others
   Int_t fRejectResonanceDaughters; // reject all daughters of all resonance candidates (1: test method (cut at m_inv=0.9); 2: k0; 3: lambda)
   Bool_t fFillOnlyStep0; 	   // fill only step 0
   Bool_t fSkipStep6;		   // skip step 6 when filling

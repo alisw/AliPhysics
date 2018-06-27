@@ -50,16 +50,13 @@ void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 	}
 
 
-	for (Int_t i = 0; i < fListOfHistos->GetEntries(); ++i)
-	{
-		TH1 * hist = dynamic_cast<TH1 *>(fListOfHistos->At(i));
-		if (!hist) continue;
-		hist->Sumw2();
-	}
-
-// These histograms are needed only to check the performance
-// Don't do any analysis with these histograms.
-//
+	// NB: Reduce the selection size
+	// for (Int_t i = 0; i < fListOfHistos->GetEntries(); ++i)
+	// {
+	// 	TH1 * hist = dynamic_cast<TH1 *>(fListOfHistos->At(i));
+	// 	if (!hist) continue;
+	// 	hist->Sumw2();
+	// }
 }
 
 

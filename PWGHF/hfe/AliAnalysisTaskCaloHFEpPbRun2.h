@@ -2,12 +2,27 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
+/////////////////////////////////////////////////////////////////////////////
+//   Task for heavy-flavour electrons analysis in p-Pb collisions
+//   at 8.16 TeV with TPC + EMCal + DCal
+//
+//   - [Preliminary] Nuclear modification factor RpPb
+//   - Multiplicity dependence (QpPb)
+//   - HFe-h correlation
+//
+//   Author : Daichi Kawana (daichi.kawana@cern.ch)
+//
+/////////////////////////////////////////////////////////////////////////////
+
 #ifndef AliAnalysisTaskCaloHFEpPbRun2_H
 #define AliAnalysisTaskCaloHFEpPbRun2_H
 
+class AliMultSelection;
 // classes for MC
 class AliAODMCHeader;
 class AliAODMCParticle;
+// classed for correlation
+class AliEventPoolManager;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -46,6 +61,16 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         void SetEop(Double_t low, Double_t high) {EopLow = low, EopHigh = high;};
         void SetMassPara(Double_t mimpt, Int_t TPC, Double_t mass) {AssoMinpT = mimpt, AssoNTPCClust = TPC, MassCut = mass;};
 
+        //--- centrality, Multiplicity ---//
+        void CheckCentrality(AliAODEvent* fAOD, Bool_t &IsCentPass);
+
+        //--- two particles correlation ---//
+        void ElectronHadCorrel(Int_t itrack, AliAODTrack *Trigtrack, THnSparse *SparseEHCorrl);
+        void ElectronHadCorrelNopartner(Int_t itrack, Int_t pairtrack, AliAODTrack *Trigtrack, THnSparse *SparseEHCorrl);
+        void MixedEvent(AliAODTrack *Trigtrack, THnSparse *SparseMixEHCorrl);
+        TObjArray* CloneAndReduceTrackList();
+        Bool_t PassHadronCuts(AliAODTrack *HadTrack);
+
         void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
         Bool_t ConversionCheck(Int_t &pidM);
         Bool_t DalitzCheck(Int_t &pidM);
@@ -66,6 +91,8 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
 
         TClonesArray  *fTracks_tender;//Tender tracks
         TClonesArray  *fCaloClusters_tender;//Tender cluster
+
+        AliMultSelection *fMultSelection;
 
         AliAODMCParticle  *fMCparticle;
         AliAODMCHeader *fMCheader;
@@ -103,6 +130,15 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TH1F *fvtxZ_NcontCut;
         TH2F *fNcont;
         TH2F *fVertexCorre;
+
+        //############//
+        // Centrality //
+        //############//
+        Double_t fCentrality;
+        Double_t fMultiplicity;
+        TH1F *fCent;
+        TH1F *fMulti;
+        TH2F *fCentMultiCorrl;
 
         //##############//
         // Cluster info //
@@ -151,12 +187,38 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TH1F *fPHEpTLS;
         TH1F *fPHEpTULS;
 
+        //##########################//
+        // two particle correlation //
+        //##########################//
+        //--- for event mixing ---//
+        AliEventPoolManager *fPoolMgr;
+        TH2F *fMixStatCent;
+        TH2F *fMixStatVtxZ;
+        TH2F *fMixStatCentVtxZCorrl;
+        //--- particles correlation ---//
+        TH1F *fTrigpTAllHadHCorrl;
+        THnSparse *fSprsAllHadHCorrl;
+        THnSparse *fSprsMixAllHadHCorrl;
+        TH1F *fTrigpTHadHCorrl;
+        THnSparse *fSprsHadHCorrl;
+        THnSparse *fSprsMixHadHCorrl;
+        TH1F *fTrigpTInclusiveEHCorrl;
+        THnSparse *fSprsInclusiveEHCorrl;
+        THnSparse *fSprsMixInclusiveEHCorrl;
+        TH1F *fTrigpTTagULSEHCorrl;
+        THnSparse *fSprsTagULSEHCorrl;
+        THnSparse *fSprsMixTagULSEHCorrl;
+        THnSparse *fSprsTagULSEHCorrl_Noparter;
+
         //#########//
         // MC info //
         //#########//
         //--- particle information --//
         TH1F *fMCPDGcodeM;
         TH1F *fMCPDGcodeGM;
+        //--- hadron efficiency ---//
+        TH2F *fMCchtrack_gene;
+        TH2F *fMCchtrack_reco;
         //--- effeciency correction ---//
         TH1F *fMCTrackPtelectron;
         TH1F *fMCTrackPtelectron_reco;
@@ -209,6 +271,55 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         AliAnalysisTaskCaloHFEpPbRun2& operator=(const AliAnalysisTaskCaloHFEpPbRun2&); // not implemented
 
         ClassDef(AliAnalysisTaskCaloHFEpPbRun2, 1);
+};
+
+
+class AliehDPhiBasicParticlepPbRun2 : public AliVParticle
+{
+  public:
+    AliehDPhiBasicParticlepPbRun2(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
+      : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
+    {
+    }
+    ~AliehDPhiBasicParticlepPbRun2() {}
+
+    // kinematics
+    virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Pt() const { return fpT; }
+    virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
+    virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+
+    virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
+    virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+
+    virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Phi()        const { return fPhi; }
+    virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
+
+
+    virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
+
+    virtual Double_t Eta()        const { return fEta; }
+    virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
+
+    virtual Short_t Charge()      const { return fCharge; }
+    virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
+    // PID
+    virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
+    virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
+
+    private:
+    Float_t fEta;      // eta
+    Float_t fPhi;      // phi
+    Float_t fpT;       // pT
+    Short_t fCharge;   // charge
+
+    ClassDef( AliehDPhiBasicParticlepPbRun2, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
 };
 
 #endif

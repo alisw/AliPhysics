@@ -216,6 +216,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       }
     }
 
+    void SetQnStep(Int_t step) {fQnStep = step;}
+
     void SetTRFMethod(Int_t id) {fTRFM = id;}//trigger rejection factor
     void SetPHOSTriggerAnalysis(TString selection, Bool_t isMC){
       //obsolete
@@ -258,8 +260,11 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fMaxR        = MaxR;
     }
     void SetOAStudy(Bool_t flag) {fIsOAStudy = flag;}
-
     void SetMatchingR(Double_t maxR) {fMatchingR = maxR;}//for matching between a track and a cluster
+    void SetNMixForTrackMatching(Int_t nev) {fNMixTrack = nev;}
+
+    void SetPIDStudy(Bool_t flag) {fPIDStudy = flag;}
+
 
   protected:
     virtual void UserCreateOutputObjects();
@@ -378,7 +383,8 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     }
 
     Bool_t Are2GammasInPHOSAcceptance(Int_t id);
-    void FillMixTrackMatching();
+    virtual void FillTrackMatching();
+    virtual void FillMixTrackMatching();
 
   protected:
     Bool_t fIsMC;
@@ -438,6 +444,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     TString fV0EPName[3]; 
     Double_t fEventPlane;
     TVector2 fQVector1;//x,y
+    Int_t fQnStep;
     Int_t fNHybridTrack;
     Bool_t fIsPHOSTriggerAnalysis;
     Double_t fEnergyThreshold;
@@ -454,17 +461,20 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     TF1 *fNonLin[7][7];
     Double_t fEmin;
     Bool_t fIsOAStudy;
+    Int_t fNMixTrack;
     Double_t fMatchingR;//for photon purity
     Bool_t fAnaOmega3Pi;
     Double_t fMinPtPi0;//only for omega->3pi
     Double_t fMinPtChPi;//only for omega->3pi
     Double_t fMaxR;//only for omega->3pi
+    Bool_t fPIDStudy;
+
 
   private:
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 59);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 63);
 };
 
 #endif

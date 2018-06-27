@@ -83,7 +83,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // Geometry methods
     
   void           InitGeometry();
-  void           SetGeometryName(TString &name)                 { fGeomName = name             ; }
+  void           SetGeometryName(TString name)                  { fGeomName = name             ; }
   TString        GeometryName()                          const  { return fGeomName             ; }  
   void           SwitchOnLoadOwnGeometryMatrices()              { fLoadGeomMatrices = kTRUE    ; }
   void           SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE   ; } 
@@ -94,9 +94,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
                                                                   fImportGeometryFilePath = pa ; }    
   // Outout AOD branch methods
     
-  void           SetAODBranchName(TString &name)                { fOutputAODBranchName = name  ; }
-  void           SetAODCellsName(TString &name)                 { fOutputAODCellsName  = name  ; }
-  void           SetInputCaloCellsName(TString &name)           { fInputCaloCellsName  = name  ; }
+  void           SetAODBranchName(TString name)                 { fOutputAODBranchName = name  ; }
+  void           SetAODCellsName(TString name)                  { fOutputAODCellsName  = name  ; }
+  void           SetInputCaloCellsName(TString name)            { fInputCaloCellsName  = name  ; }
   void           FillAODFile(Bool_t yesno)                      { fFillAODFile         = yesno ; }
   void           FillAODCaloCells();
   void           FillAODHeader();
@@ -190,6 +190,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   // T-Card correlation emulation, do on MC
   
   void           MakeCellTCardCorrelation() ;
+  void           CalculateInducedEnergyInTCardCell(Int_t absId, Int_t absIdRef, Int_t sm, Float_t ampRef, Int_t cellCase) ;
   void           AddNewTCardInducedCellsToDigit() ;
   
   /// Activate T-Card cells correlation, 
@@ -308,7 +309,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOffRandomizeTCardInducedEnergy()         { fRandomizeTCard = kFALSE  ; }  
 
   void           SetInducedTCardMinimumCellEnergy(Float_t mi)   { fTCardCorrMinAmp     = mi ; }
-  void           SeInducedTCardMaximum(Float_t ma)              { fTCardCorrMaxInduced = ma ; }
+  void           SetInducedTCardMaximum(Float_t ma)             { fTCardCorrMaxInduced = ma ; }
+  void           SetInducedTCardMinimum(Float_t mi)             { fTCardCorrMinInduced = mi ; }
+  void           SetInducedTCardMaximumLowE(Float_t ma)         { fTCardCorrMaxInducedLowE = ma ; }
   
   void           PrintTCardParam();
   
@@ -439,6 +442,8 @@ private:
   Bool_t                fRandomizeTCard ;          ///<  Use random induced energy
   
   Float_t               fTCardCorrMinAmp;          ///<  Minimum cell energy to induce signal on adjacent cells
+  Float_t               fTCardCorrMinInduced;      ///<  Minimum induced energy signal on adjacent cells, sum of induced plus original energy, use same as cell energy clusterization cut
+  Float_t               fTCardCorrMaxInducedLowE;  ///<  Maximum value of induced energy signal that is always accepted, order of ADC, tipically 10 MeV
   Float_t               fTCardCorrMaxInduced;      ///<  Maximum induced energy signal on adjacent cells
   
   Bool_t                fPrintOnce;                ///< Print once analysis parameters
@@ -450,7 +455,7 @@ private:
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&) ;
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALClusterize, 42) ;
+  ClassDef(AliAnalysisTaskEMCALClusterize, 43) ;
   /// \endcond
 
 };

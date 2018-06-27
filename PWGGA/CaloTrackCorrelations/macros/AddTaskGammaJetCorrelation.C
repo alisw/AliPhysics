@@ -799,9 +799,6 @@ void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana,Bool_t simulation = kFALSE)
 {
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else            ana->SwitchOffDataMC() ;
-
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 }  
 
 ///

@@ -25,6 +25,7 @@ class AliFemtoDreamBasePart {
     kContamination=4,
     kUnknown=5
   };
+  AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
   void SetMCParticle(AliAODMCParticle *mcPart,AliMCEvent *evt);
   void ResetMCInfo();
   void SetMomentum(float px,float py,float pz) {fP.SetXYZ(px,py,pz);};
@@ -102,6 +103,8 @@ class AliFemtoDreamBasePart {
   bool fIsMC;
   bool fUse;    //passes cuts
   bool fIsSet;  //has all the attributes set properly
+ private:
+//  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
   ClassDef(AliFemtoDreamBasePart,2);
 };
 

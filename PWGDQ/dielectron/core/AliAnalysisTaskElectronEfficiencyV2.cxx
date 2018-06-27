@@ -71,7 +71,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
                                                                               , fPtGen_DeltaPhi_Pos(0x0), fThetaGen_DeltaTheta(0x0), fPhiGen_DeltaPhi(0x0)
                                                                               , fPtBins(), fEtaBins(), fPhiBins(), fThetaBins()
                                                                               , fResolutionDeltaPtBins(), fResolutionRelPtBins(), fResolutionEtaBins(), fResolutionPhiBins(), fResolutionThetaBins()
-                                                                              , fMassBins(), fPairPtBins()
+                                                                              , fMassBins(), fPairPtBins(), fDoGenSmearing(false)
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
                                                                               , fSingleLegMCSignal(), fPairMCSignal()
@@ -103,7 +103,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
                                                                               , fPtGen_DeltaPhi_Pos(0x0), fThetaGen_DeltaTheta(0x0), fPhiGen_DeltaPhi(0x0)
                                                                               , fPtBins(), fEtaBins(), fPhiBins(), fThetaBins()
                                                                               , fResolutionDeltaPtBins(), fResolutionRelPtBins(), fResolutionEtaBins(), fResolutionPhiBins(), fResolutionThetaBins()
-                                                                              , fMassBins(), fPairPtBins()
+                                                                              , fMassBins(), fPairPtBins(), fDoGenSmearing(false)
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
                                                                               , fSingleLegMCSignal(), fPairMCSignal()
@@ -329,8 +329,33 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
           th3_tmp_neg->SetDirectory(0x0);
           fHistRecNegPart.push_back(th3_tmp_neg);
           list->Add(th3_tmp_neg);
+
         }
         fSingleElectronList->Add(list);
+      }
+      if (fDoGenSmearing == kTRUE){
+        for (unsigned int list_i = 0; list_i < fTrackCuts.size(); ++list_i){
+          TList* list = new TList();
+          std::string gen_smeared_name = fTrackCuts.at(list_i)->GetName();
+          gen_smeared_name += "_gen_smeared";
+          list->SetName(gen_smeared_name.c_str());
+          list->SetOwner();
+
+          for (unsigned int i = 0; i < fSingleLegMCSignal.size(); ++i){
+            TH3D* th3_tmp_pos_gen_smeared = new TH3D(Form("Nrec_Pos_%s_gen_smeared", fSingleLegMCSignal.at(i).GetName()),";p_{T};#eta;#varphi",fNptBins,fPtBins.data(),fNetaBins,fEtaBins.data(),fNphiBins,fPhiBins.data());
+            th3_tmp_pos_gen_smeared->Sumw2();
+            th3_tmp_pos_gen_smeared->SetDirectory(0x0);
+            fHistRecPosPart.push_back(th3_tmp_pos_gen_smeared);
+            list->Add(th3_tmp_pos_gen_smeared);
+            TH3D* th3_tmp_neg_gen_smeared = new TH3D(Form("Nrec_Neg_%s_gen_smeared", fSingleLegMCSignal.at(i).GetName()),";p_{T};#eta;#varphi",fNptBins,fPtBins.data(),fNetaBins,fEtaBins.data(),fNphiBins,fPhiBins.data());
+            th3_tmp_neg_gen_smeared->Sumw2();
+            th3_tmp_neg_gen_smeared->SetDirectory(0x0);
+            fHistRecNegPart.push_back(th3_tmp_neg_gen_smeared);
+            list->Add(th3_tmp_neg_gen_smeared);
+
+          }
+          fSingleElectronList->Add(list);
+        }
       }
 
 
@@ -436,18 +461,18 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
     fResolutionList->SetName("Resolution");
     fResolutionList->SetOwner();
 
-      fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "", 500, 0., 10., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
-      fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "", 500, 0., 10., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
-      fPtGen_DeltaPtOverPtGen              = new TH2D("PtGen_DeltaPtOverPtGen",             "", 500, 0., 10., fNResolutionDeltaptBins, -1., +1.);
-      fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "", 500, 0., 10., fNResolutionRelptBins, fResolutionRelPtBins.data());
-      fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "", 500, 0., 10., fNResolutionRelptBins, fResolutionRelPtBins.data());
-      fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "", 500, 0., 10., fNResolutionetaBins, fResolutionEtaBins.data());
-      fPtGen_DeltaEta                      = new TH2D("PtGen_DeltaEta",                     "", 500, 0., 10., fNResolutionetaBins, fResolutionEtaBins.data());
-      fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "", 500, 0., 10., fNResolutionthetaBins, fResolutionThetaBins.data());
-      fPGen_DeltaPhi_Ele                   = new TH2D("PGen_DeltaPhi_Ele",                  "", 500, 0., 10., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPGen_DeltaPhi_Pos                   = new TH2D("PGen_DeltaPhi_Pos",                  "", 500, 0., 10., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPtGen_DeltaPhi_Ele                  = new TH2D("PtGen_DeltaPhi_Ele",                 "", 500, 0., 10., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPtGen_DeltaPhi_Pos                  = new TH2D("PtGen_DeltaPhi_Pos",                 "", 500, 0., 10., fNResolutionphiBins, fResolutionPhiBins.data());
+      fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPtGen_DeltaPtOverPtGen              = new TH2D("PtGen_DeltaPtOverPtGen",             "", 1000, 0., 20., fNResolutionDeltaptBins, -1., +1.);
+      fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "", 1000, 0., 20., fNResolutionetaBins, fResolutionEtaBins.data());
+      fPtGen_DeltaEta                      = new TH2D("PtGen_DeltaEta",                     "", 1000, 0., 20., fNResolutionetaBins, fResolutionEtaBins.data());
+      fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "", 1000, 0., 20., fNResolutionthetaBins, fResolutionThetaBins.data());
+      fPGen_DeltaPhi_Ele                   = new TH2D("PGen_DeltaPhi_Ele",                  "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
+      fPGen_DeltaPhi_Pos                   = new TH2D("PGen_DeltaPhi_Pos",                  "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
+      fPtGen_DeltaPhi_Ele                  = new TH2D("PtGen_DeltaPhi_Ele",                 "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
+      fPtGen_DeltaPhi_Pos                  = new TH2D("PtGen_DeltaPhi_Pos",                 "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
       fThetaGen_DeltaTheta                 = new TH2D("ThetaGen_DeltaTheta",                "", 220, -0.1*TMath::Pi(), 1.1*TMath::Pi(), fNResolutionthetaBins, fResolutionThetaBins.data());
       fPhiGen_DeltaPhi                     = new TH2D("PhiGen_DeltaPhi",                    "", 320, -0.1*TMath::Pi(), 2.1*TMath::Pi(), fNResolutionphiBins, fResolutionPhiBins.data());
 
@@ -702,15 +727,16 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
       TLorentzVector smearedVec = ApplyResolution(part.fPt, part.fEta, part.fPhi, part.fCharge);
       part.fPt_smeared  = smearedVec.Pt();
       part.fEta_smeared = smearedVec.Eta();
-      part.fPhi_smeared = smearedVec.Phi()+ pi;
+      if (smearedVec.Phi() < 0) part.fPhi_smeared = smearedVec.Phi()+ 2 * pi;
+      else part.fPhi_smeared = smearedVec.Phi();
 
       for (unsigned int i = 0; i < part.isMCSignal.size(); ++i){
         if (part.isMCSignal[i]) {
           if      (part.fCharge < 0){
-            dynamic_cast<TH3D*>(fHistGenSmearedNegPart.at(i))->Fill(smearedVec.Pt(), smearedVec.Eta(), smearedVec.Phi() + pi, centralityWeight);
+            dynamic_cast<TH3D*>(fHistGenSmearedNegPart.at(i))->Fill(part.fPt_smeared, part.fEta_smeared, part.fPhi_smeared , centralityWeight);
           }
           else if (part.fCharge > 0) {
-            dynamic_cast<TH3D*>(fHistGenSmearedPosPart.at(i))->Fill(smearedVec.Pt(), smearedVec.Eta(), smearedVec.Phi() + pi, centralityWeight);
+            dynamic_cast<TH3D*>(fHistGenSmearedPosPart.at(i))->Fill(part.fPt_smeared, part.fEta_smeared, part.fPhi_smeared , centralityWeight);
           }
         }
       }
@@ -779,6 +805,22 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     if      (fDoPairing == true && part.fCharge < 0) fRecNegPart.push_back(part);
     else if (fDoPairing == true && part.fCharge > 0) fRecPosPart.push_back(part);
 
+    if (fDoGenSmearing == true && fArrResoPt){
+      AliVParticle* genTrack = fMC->GetTrack(abslabel);
+      double pt_temp  = genTrack->Pt();
+      double eta_temp = genTrack->Eta();
+      double phi_temp = genTrack->Phi();
+
+      TLorentzVector smearedVec = ApplyResolution(pt_temp, eta_temp, phi_temp, part.fCharge);
+      part.fPt_smeared  = smearedVec.Pt();
+      part.fEta_smeared = smearedVec.Eta();
+      // part.fPhi_smeared = smearedVec.Phi();
+      if (smearedVec.Phi() < 0) part.fPhi_smeared = smearedVec.Phi() + 2 * pi;
+      else part.fPhi_smeared = smearedVec.Phi();
+
+      // std::cout << "pt_rec: " << part.fPt << "  pt_gen: " << pt_temp << "  phi_rec:" << part.fPhi << "  phi_gen:" << phi_temp << "  phi_gen_smeared:" << part.fPhi_smeared << "  pdgCode:" << genTrack->PdgCode() << std::endl;
+    }
+
 
     // ##########################################################
     // Filling generated particle histograms according to MCSignals
@@ -791,6 +833,15 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             }
             else if (part.fCharge > 0) {
               dynamic_cast<TH3D*>(fHistRecPosPart.at(j * part.isMCSignal.size() + i))->Fill(part.fPt, part.fEta, part.fPhi, centralityWeight);
+            }
+            if (fDoGenSmearing == true && fArrResoPt){
+              if      (part.fCharge < 0) {
+                dynamic_cast<TH3D*>(fHistRecNegPart.at(j * part.isMCSignal.size() + i + part.isMCSignal.size() * part.isReconstructed.size()))->Fill(part.fPt_smeared, part.fEta_smeared, part.fPhi_smeared, centralityWeight);
+              }
+              else if (part.fCharge > 0) {
+                dynamic_cast<TH3D*>(fHistRecPosPart.at(j * part.isMCSignal.size() + i + part.isMCSignal.size() * part.isReconstructed.size()))->Fill(part.fPt_smeared, part.fEta_smeared, part.fPhi_smeared, centralityWeight);
+              }
+
             }
 
           }// is selected by cutsetting
@@ -1496,7 +1547,7 @@ double AliAnalysisTaskElectronEfficiencyV2::GetWeight(Particle part1, Particle p
     }
   }
 
-  std::cout << "weight from " << pdgMother << " for pt = " << motherpt << "  weight: " << weight << "  bin: " << bin << std::endl;
+  // std::cout << "weight from " << pdgMother << " for pt = " << motherpt << "  weight: " << weight << "  bin: " << bin << std::endl;
 
   return weight;
 }

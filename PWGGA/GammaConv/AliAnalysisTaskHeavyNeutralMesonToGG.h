@@ -39,6 +39,7 @@ public:
   }
   // Function to set correction task setting
   void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
+  void SetDoClusterSelectionForTriggerNorm(Bool_t flag)         { fEnableClusterCutsForTrigger= flag    ;}
 
   // base functions for selecting photon and meson candidates in reconstructed data
   void ProcessClusters();
@@ -316,12 +317,13 @@ protected:
   TTree*                  tBrokenFiles;                                       // tree for keeping track of broken files
   TObjString*             fFileNameBroken;                                    // string object for broken file name
   Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
+  Bool_t                  fEnableClusterCutsForTrigger;                       // enable CLusterCuts output for trigger only
 
 private:
   AliAnalysisTaskHeavyNeutralMesonToGG(const AliAnalysisTaskHeavyNeutralMesonToGG&); // Prevent copy-construction
   AliAnalysisTaskHeavyNeutralMesonToGG &operator=(const AliAnalysisTaskHeavyNeutralMesonToGG&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskHeavyNeutralMesonToGG, 1);
+  ClassDef(AliAnalysisTaskHeavyNeutralMesonToGG, 2);
 };
 
 #endif // ALIANALYSISTASKHEAVYNEUTRALMESONTOGG_H

@@ -1502,9 +1502,6 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *
     if( eNeg->R() <= ((TMath::Abs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
     }
-    if (ePos->Pt() < 0.05 || eNeg->Pt() < 0.05){
-      return kFALSE;
-    }
 
     return kTRUE;
   }

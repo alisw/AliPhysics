@@ -15,6 +15,7 @@ class AliVCaloCells;
 class TH1;
 class TProfile;
 class AliEMCALGeometry;
+class AliGenEventHeader;
 class AliGenPythiaEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
@@ -123,7 +124,9 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetCaloTriggerPatchInfoName(const char *n)            { fCaloTriggerPatchInfoName = n                       ; }
   void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
-  void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
+  void                        SetIsMonteCarlo(Bool_t i)                             { fIsMonteCarlo      = i                              ; }
+  void                        SetIsPythia(Bool_t i);
+  void                        SetMCEventHeaderName(const char* name);
   void                        SetForceBeamType(EBeamType_t f)                       { fForceBeamType     = f                              ; }
 
   // Task configuration
@@ -220,6 +223,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
 
   // Input data
   Bool_t                      fIsPythia;                   ///< if it is a PYTHIA production
+  Bool_t                      fIsMonteCarlo;               ///< if it is a MC production
+  TString                     fMCEventHeaderName;          ///< Looks for MC event properties in a particular MC event type (useful for a MC cocktail production)
   TString                     fCaloCellsName;              ///< name of calo cell collection
   TString                     fCaloTriggersName;           ///< name of calo triggers collection
   TString                     fCaloTriggerPatchInfoName;   ///< trigger patch info array name
@@ -273,6 +278,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   ULong_t                     fFiredTriggerBitMap;         //!<!bit map of fired triggers
   std::vector<std::string>    fFiredTriggerClasses;        //!<!trigger classes fired by the current event
   EBeamType_t                 fBeamType;                   //!<!event beam type
+  AliGenEventHeader          *fMCHeader;                   //!<!event MC header
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
   Int_t                       fPtHardBin;                  //!<!event pt hard bin
   Double_t                    fPtHard;                     //!<!event pt hard
@@ -294,7 +300,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcalLight &operator=(const AliAnalysisTaskEmcalLight&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalLight, 4);
+  ClassDef(AliAnalysisTaskEmcalLight, 5);
   /// \endcond
 };
 

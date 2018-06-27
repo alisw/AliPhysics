@@ -24,7 +24,7 @@
 /// Main method
 ///
 /// The parameters for the analysis are:
-/// \param arrayName: TString name of new cluster branch.
+/// \param clusArrTit: char string with default name of new clusters container, not needed but leave for backward compatibility 
 /// \param bFillAOD: Bool, keep the new clusters in output file.
 /// \param bMC: Bool, simulation or data.
 /// \param exotic: Bool, remove exotic clusters.
@@ -50,8 +50,7 @@
 /// \param tCardMimic: option for TCard correlation emulation, MC only. Options: 0 - no emulation; 1 - just add energy to adjacent cells; >1 - add energy to adjacent cells and subtract added energy to reference cell
 /// \param cellUpd: update cells list with cuts
 ///
-AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
-                                                       TString & arrayName,
+AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(const char  * clusArrTit = "EMCAL_Clusters_New",
                                                        const Bool_t  bFillAOD   = kFALSE,                                                
                                                        const Int_t   bMC        = kFALSE,
                                                        const Bool_t  exotic     = kTRUE,
@@ -104,7 +103,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
          bRecalE,bBad,bRecalT,bNonLine,minCen,maxCen,nRowDiff,nColDiff,tCardMimic,cellUpd);
 
   // Create name of task and AOD branch depending on different settings
-  
+  TString arrayName = clusArrTit;
   if(name.Contains("NxN")) arrayName = Form("%dx%d_Ecell%d_Eseed%d_DT%d_WT%d",2*nRowDiff+1,2*nColDiff+1,minEcell,minEseed,maxDeltaT,timeWindow);
   else                     arrayName = Form(   "%s_Ecell%d_Eseed%d_DT%d_WT%d",              name.Data(),minEcell,minEseed,maxDeltaT,timeWindow);
   
@@ -327,7 +326,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
       clusterize->SetInducedEnergyLossMaximumFractionPerSM(mu1Max,ism);
     
     clusterize->SetInducedTCardMinimumCellEnergy(0) ;
-    clusterize->SeInducedTCardMaximum(100) ;
+    clusterize->SetInducedTCardMaximum(100) ;
     
     // No randomization of the previosly set parameters
     clusterize->SwitchOffRandomizeTCardInducedEnergy() ;

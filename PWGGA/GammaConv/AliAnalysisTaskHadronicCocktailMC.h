@@ -24,6 +24,7 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
 
     // setters
     void SetMaxY(Double_t maxy){fMaxY = maxy;}
+    void SetMaxEta(Double_t maxeta){fMaxEta = maxeta;}
     void SetLightOutput(Bool_t flag) {fDoLightOutput = flag;}
     void SetAnalyzedParticle(Int_t flag);
     void SetHasMother(UInt_t selectedMothers);
@@ -95,13 +96,14 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     TTree*                      fOutputTree;
     Int_t                       fIsMC;                            // MC flag
     Double_t                    fMaxY;                            // Max y
+    Double_t                    fMaxEta;                          // Max Eta
 
   
   private:
     AliAnalysisTaskHadronicCocktailMC(const AliAnalysisTaskHadronicCocktailMC&);              // Prevent copy-construction
     AliAnalysisTaskHadronicCocktailMC &operator=(const AliAnalysisTaskHadronicCocktailMC&);   // Prevent assignment
   
-    ClassDef(AliAnalysisTaskHadronicCocktailMC, 8);
+    ClassDef(AliAnalysisTaskHadronicCocktailMC, 9);
 };
 
 #endif

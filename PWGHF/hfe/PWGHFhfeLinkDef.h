@@ -113,6 +113,7 @@
 
 #pragma link C++ class  AliBasicParticleHaHFE+;
 #pragma link C++ class  AliehDPhiBasicParticle+;
+#pragma link C++ class  AliehDPhiBasicParticlepPbRun2+;
 
 #pragma link C++ class  AliAnalysisTaskTPCCalBeauty+;
 #pragma link C++ class  AliAnalysisHFETPCTOFNew+;

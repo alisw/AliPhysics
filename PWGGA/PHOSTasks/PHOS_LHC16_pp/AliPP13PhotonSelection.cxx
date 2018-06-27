@@ -139,23 +139,65 @@ void AliPP13PhotonSelection::InitSummaryHistograms()
 	InitSelectionHistograms();
 	
 	TString cuts = Form(
-		 	            ";\nCuts: |Z_{vtx}| < 10 cm, no pileup spd, E_{min}^{clu} = %.2g GeV, A =  %.2g, N_{min}^{cell} = %d, t_{clus} = %0.3g ns", 
+		 	            ";Cuts: |Z_{vtx}| < 10 cm, no pileup spd, E_{min}^{clu} = %.2g GeV, A =  %.2g, N_{min}^{cell} = %d, t_{clus} = %0.3g ns", 
 						fCuts.fClusterMinE,
 						fCuts.fAsymmetryCut,
 						fCuts.fNCellsCut,
 						fCuts.fTimingCut * 1e+9
 					   );
 
+
+	TString weights = "";
+	AliPP13SelectionWeightsTOF * tof = dynamic_cast<AliPP13SelectionWeightsTOF *>(fWeights);
+	if(tof)
+	{
+		weights += Form(
+			"TOF logA = %.4g, logB = %.4g, logS = %.4g, ExpA = %.4g, ExpB = %.4g",
+			tof->fLogA,
+			tof->fLogB,
+			tof->fLogScale,
+			tof->fExpA,
+			tof->fExpAlpha
+		);
+	}
+
+	AliPP13SelectionWeightsMC * mc = dynamic_cast<AliPP13SelectionWeightsMC *>(fWeights);
+	if(mc)
+	{
+		weights += Form(
+			"Nonlin NonGlobal = %.4g, NonA = %.4g, NonSigma = %.4g",
+			mc->fNonGlobal,
+			mc->fNonA,
+			mc->fNonSigma
+		);
+	}	
+
+	AliPP13SelectionWeightsSPMC * spmc = dynamic_cast<AliPP13SelectionWeightsSPMC *>(fWeights);
+	if(spmc)
+	{
+		weights += Form(
+			";Tsallis fW0 = %.4g, fW1 = %.4g, fW2 = %.4g, fW3 = %.4g, fW4 = %.4g; Single Particle",
+			spmc->fW0,
+			spmc->fW1,
+			spmc->fW2,
+			spmc->fW3,
+			spmc->fW4
+		);
+	}
+
 	this->SetTitle(this->GetTitle() + cuts);
 
 	cout << "Adding " << this->GetName() << ": " << this->GetTitle() << endl;
 
-
+	if (!weights.IsNull())
+	{
+		TH1C * dweights = new TH1C(TString("h_weighs_") + this->GetName(), weights, 1, 0, 1);
+		fListOfHistos->AddFirst(dweights); // Very important!!! Description, dummy way
+	}
 	// This histogram should't be modified, therefore 
 	// there is only local pointer to it 
-	TH1C * description = new TH1C(TString("h_description_") + this->GetName(), this->GetTitle(), 1, 0, 0);
+	TH1C * description = new TH1C(TString("h_description_") + this->GetName(), this->GetTitle(), 1, 0, 1);
 	fListOfHistos->AddFirst(description); // Very important!!! Description, dummy way
-
 
 	// The true event counter
 	fEventCounter = new TH1F("EventCounter", "Event cuts", 5, 0, 5);

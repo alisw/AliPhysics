@@ -1576,9 +1576,27 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
     Double_t ept=0;
     Int_t ji=j;
     Int_t jf=j;
-    if(pt>10){
+    if(pt>5 && pt<=10){
       ji=j;
-      jf=j+5;
+      jf=j+1;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+    }else if(pt>10 && pt<=16){
+      ji=j;
+      jf=j+3;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+    }else if(pt>16 && pt<=20){
+      ji=j;
+      jf=j+7;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+     }else if(pt>20){
+      ji=j;
+      jf=j+19;
       j=jf;
       pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
       ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
@@ -1587,14 +1605,14 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
     if(htmp->Integral()>40){
       htmp->Fit("gaus","Q0");
       TF1* fg=(TF1*)htmp->GetListOfFunctions()->FindObject("gaus");      
-      Double_t m=htmp->GetMean();
-      Double_t em=htmp->GetMeanError();
-      gMean->SetPoint(jpt,pt,m);
-      gMean->SetPointError(jpt,ept,em);
-      ++jpt;
+      Double_t m=fg->GetParameter(1);//htmp->GetMean();
+      Double_t em=fg->GetParError(1);//htmp->GetMeanError();
       Double_t r=fg->GetParameter(2);//htmp->GetRMS();
       Double_t er=fg->GetParError(2);//=htmp->GetRMSError();
       if(er/r<0.35){
+	gMean->SetPoint(jpt,pt,m);
+	gMean->SetPointError(jpt,ept,em);
+	++jpt;
 	gRms->SetPoint(jptr,pt,r);
 	gRms->SetPointError(jptr,ept,er);
 	++jptr;

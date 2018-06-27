@@ -80,7 +80,7 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
                                 Bool_t  doMultiplicityWeighting      = kFALSE,                          //
                                 TString fileNameInputForMultWeighing = "Multiplicity.root",             //
                                 TString periodNameAnchor             = "",                              //
-                                Bool_t   runLightOutput              = kFALSE,                          // switch to run light output (only essential histograms for afterburner)
+                                Bool_t   runLightOutput             = kFALSE,                          // switch to run light output (only essential histograms for afterburner)
                                 TString  additionalTrainConfig       = "0"                              // additional counter for trainconfig, this has to be always the last parameter
                            ) {
 
@@ -108,9 +108,13 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   }
 
   //=========  Set Cutnumber for V0Reader ================================
- 
+
   TString cutnumberPhoton = "00000008400000000100000000";
-  if (periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0   )
+  if (  periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC18c")==0 ||
+        periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0 ||
+        periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0 ||
+        periodNameV0Reader.CompareTo("LHC17f8b") == 0 ||
+        periodNameV0Reader.CompareTo("LHC16P1JJLowB") == 0 || periodNameV0Reader.CompareTo("LHC16P1Pyt8LowB") == 0 )
     cutnumberPhoton         = "00000088400000000100000000";
   TString cutnumberEvent = "00000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -277,7 +281,21 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     cuts.AddCut("00010113", "00b00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
   } else if (trainConfig == 54){
     cuts.AddCut("00010113", "00c00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
-
+  } else if (trainConfig == 55){
+    cuts.AddCut("00010113", "00200009227300008250704000", "0152103500000000"); //test cosPA scan
+  } else if (trainConfig == 56){
+    cuts.AddCut("00010113", "00200009227300008250804000", "0152103500000000"); //test cosPA scan
+  } else if (trainConfig == 57){
+    cuts.AddCut("00010113", "00200009227300008250904000", "0152103500000000"); //test cosPA scan
+  } else if (trainConfig == 58){
+    cuts.AddCut("00010113", "00200009227300008250a04000", "0152103500000000"); //test cosPA scan
+  } else if (trainConfig == 59){
+    cuts.AddCut("00010113", "00200009227300008250a04020", "0152103500000000"); //test cosPA dca
+  } else if (trainConfig == 60){
+    cuts.AddCut("00010113", "00200009227300008250a04040", "0152103500000000"); //test dcaPA
+  } else if (trainConfig == 61){
+    cuts.AddCut("00010113", "00200009227300008250404040", "0152103500000000"); //test dcaPA
+  
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

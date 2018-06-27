@@ -77,32 +77,15 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
                                 TString periodname              = "LHC10b",           // period name
                                 TString periodNameV0Reader      = "",
                                 TString periodNameAnchor        = "",
-                                Bool_t 	enableV0findingEffi     = kFALSE              // enables V0finding efficiency histograms
-      ){
-
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
-
+                                Bool_t 	enableV0findingEffi     = kFALSE,    // enables V0finding efficiency histograms
+                                TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
+                              ){
 
   Int_t IsHeavyIon = 0;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -277,8 +260,12 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00000103", "00000009266300008884404000");
     cuts.AddCut("00000103", "00000009266300008854404000");
     cuts.AddCut("00000103", "00000009266370008854404000");
+ } else if (trainConfig == 23) {
+    //    cuts.AddCut("00010103", "00000009266300008884404000"); //- AM 28.03.18
+    cuts.AddCut("00010103", "0c000009266300008850404000");
+    cuts.AddCut("00010103", "0d000009266300008850404000");
 
-    // Offline V0Finder is used
+   // Offline V0Finder is used
 
   } else  if(trainConfig == 101){
     cuts.AddCut("00000103", "10000009266302004204400000");
@@ -327,11 +314,15 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00010103", "10000009266300008850404000");
     cuts.AddCut("00010103", "10000009266300008254404000");
     cuts.AddCut("00010103", "10000009227300008854404000");
- 
+
  } else if (trainConfig == 122) {
     cuts.AddCut("00000103", "10000009266300008884404000");
     cuts.AddCut("00000103", "10000009266300008854404000");
     cuts.AddCut("00000103", "10000009266370008854404000");
+ } else if (trainConfig == 123) {
+    cuts.AddCut("00010103", "1c000009266300008850404000");
+    cuts.AddCut("00010103", "1d000009266300008850404000");
+
 
 
   } else  if(trainConfig == 111){

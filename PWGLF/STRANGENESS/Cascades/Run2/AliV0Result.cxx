@@ -50,7 +50,8 @@ fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
-fCut276TeVLikedEdx(kFALSE)
+fCut276TeVLikedEdx(kFALSE),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Dummy Constructor - not to be used! 
     //Main output histogram: Centrality, mass, transverse momentum
@@ -97,7 +98,8 @@ fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
-fCut276TeVLikedEdx(kFALSE)
+fCut276TeVLikedEdx(kFALSE),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -151,7 +153,8 @@ fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
-fCut276TeVLikedEdx(kFALSE)
+fCut276TeVLikedEdx(kFALSE),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -210,7 +213,8 @@ fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
 fUseOnTheFly(kFALSE),
-fCut276TeVLikedEdx(kFALSE)
+fCut276TeVLikedEdx(kFALSE),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Constructor
     Double_t lMassWindow = (lMaxMass-lMinMass)/2.0 ;
@@ -265,7 +269,8 @@ fCutVarV0CosPA_Exp1Const(lCopyMe.fCutVarV0CosPA_Exp1Const),
 fCutVarV0CosPA_Exp1Slope(lCopyMe.fCutVarV0CosPA_Exp1Slope),
 fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const),
 fUseOnTheFly(lCopyMe.fUseOnTheFly),
-fCut276TeVLikedEdx(lCopyMe.fCut276TeVLikedEdx)
+fCut276TeVLikedEdx(lCopyMe.fCut276TeVLikedEdx),
+fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF)
 {
     SetName( lNewName.Data() ); 
     
@@ -342,6 +347,8 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     
     //special dedx
     fCut276TeVLikedEdx = lCopyMe -> GetCut276TeVLikedEdx();
+    
+    fCutAtLeastOneTOF = lCopyMe -> GetCutAtLeastOneTOF();
     
     // Constructor
     Double_t lThisMass = GetMass();
@@ -430,6 +437,8 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     
     //special dedx
     fCut276TeVLikedEdx = lCopyMe.GetCut276TeVLikedEdx();
+    
+    fCutAtLeastOneTOF = lCopyMe.GetCutAtLeastOneTOF();
     
     if (fHisto) {
         delete fHisto;
@@ -551,6 +560,8 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     
     //special dedx
     if( fCut276TeVLikedEdx != lCompareV0->GetCut276TeVLikedEdx() ) lReturnValue = kFALSE;
+    
+    if( fCutAtLeastOneTOF != lCompareV0->GetCutAtLeastOneTOF() ) lReturnValue = kFALSE;
     
     return lReturnValue;
 }

@@ -86,6 +86,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   HasSPDfirstHit(0),        
   RatioCrossedRowsFindableClusters(0), 
   NTPCSignal(0),
+  fGeneratorHashs(0x0),      
   loCuts(kTRUE),        
   runn(0),      
   n(0),
@@ -112,6 +113,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   gMultiplicity(-999),
   mcTrackIndex(0),
   fMcArray(0x0),
+  mcEvent(0x0),      
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
@@ -151,6 +153,9 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   hasmother(0),
   label(0),      
   motherlabel(0),
+  fmean(0),
+  fwidth(0), 
+  fuseCorr(kFALSE),      
   fTree(0),
   fQAHist(0)
 {
@@ -179,11 +184,12 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   HasSPDfirstHit(0),        
   RatioCrossedRowsFindableClusters(0), 
   NTPCSignal(0),
+  fGeneratorHashs(0x0),        
   loCuts(kTRUE),        
   runn(0),      
   n(0),
   cent(0),
-  fList(0x0),        
+  fList(0x0), 
   fCentralityPercentileMin(0),
   fCentralityPercentileMax(100),         
   fPtMin(0),
@@ -205,6 +211,7 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   gMultiplicity(-999),
   mcTrackIndex(0),
   fMcArray(0x0),
+  mcEvent(0x0),      
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
@@ -244,12 +251,15 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   hasmother(0),
   label(0),      
   motherlabel(0),
+  fmean(0),
+  fwidth(0), 
+  fuseCorr(kFALSE),              
   fTree(0),
   fQAHist(0)
 {
- SetupTrackCuts(); 
- SetupEventCuts(); 
- AliInfo("Track & Event cuts were set"); 
+// SetupTrackCuts(); 
+// SetupEventCuts(); 
+// AliInfo("Track & Event cuts were set"); 
    
  DefineOutput(1, TList::Class());
 }
@@ -363,6 +373,17 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   AliInfo("Finished setting up the Output");
   TH1::AddDirectory(oldStatus);
+  
+  TString generatorName = "Hijing_0";//;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia B_8;Pythia BB_8";
+ 
+
+  TObjArray arr = *(generatorName.Tokenize(";"));
+  std::cout << "Used Generators: " << std::endl;
+  for (int i = 0; i < arr.GetEntries(); ++i){
+    TString temp = arr.At(i)->GetName();
+    std::cout << "--- " << temp << std::endl;
+    fGeneratorHashs.push_back(temp.Hash());
+  }
 }
 
 //________________________________________________________________________
@@ -388,11 +409,24 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   
   fQAHist->Fill("Events_accepted",1);
   
-  if(hasMC){
-    AliMCEventHandler* mchandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    fMcArray = mchandler->MCEvent();
-    // get the accepted tracks in main event
+     AliInputEventHandler *eventHandler = nullptr;
+     AliInputEventHandler *eventHandlerMC = nullptr;
+  
+    if ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliAODInputHandler::Class()){
+    eventHandler = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    eventHandlerMC = eventHandler;
   }
+     
+  if(hasMC){
+    fMcArray = eventHandlerMC->MCEvent();
+  }   
+  
+  if(fuseCorr){   
+    AliDielectronPID::SetCentroidCorrFunction( (TH1*) fmean->Clone());
+    AliDielectronPID::SetWidthCorrFunction( (TH1*) fwidth->Clone());
+    ::Info("AliAnalysisTaskMLTreeMaker::UserExec","Setting Correction Histos");
+  }
+     
   Double_t lMultiplicityVar = -1;
   Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
 
@@ -548,69 +582,41 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
         else{
           fQAHist->Fill("After MC check, bef. Hij",1); 
-
           Rej=kFALSE;
-
-                mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
-//                temppdg = mcMTrack->PdgCode(); 
-                
-                if(!(mcMTrack->GetMother() < 0)){       //get direct mother
-                    mcTrackIndex = mcMTrack->GetMother(); 
-                    mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
-//                    tempmpdg= mcMTrack->PdgCode(); 
-                }
-//                else tempmpdg=-9999;
-                    
-                while(!(mcMTrack->GetMother() < 0)){        //get first mother in chain
-                    mcTrackIndex = mcMTrack->GetMother(); 
-                    mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
-                }
-
-                if(!(mcEvent->IsFromBGEvent(abs(mcTrackIndex)))) Rej=kTRUE;
-
+          if(!(CheckGenerator(TMath::Abs(track->GetLabel())))) Rej=kTRUE;
           }
-
 
         }
 
       fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1); 
-
+      
       UInt_t selectedMask=(1<<filter->GetCuts()->GetEntries())-1;
       if(selectedMask!=(filter->IsSelected((AliVParticle*)track))){
           continue;
       }
       
-//      // Kinematic cuts
       Double_t pttemp = track->Pt();
       Double_t etatemp = track->Eta();
-//      
-//      if( pttemp > fPtMax || pttemp < fPtMin ) continue;
-//      if( etatemp > fEtaMax || etatemp < fEtaMin ) continue;
-// 
+       
+      //Get PID response for tree - this is w/o postcalibration - the PID response after postcalibration has to be taken from dielectron task
       Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 0);
+
+        if (fuseCorr){
+            tempEsigTPC-=AliDielectronPID::GetCntrdCorr(track);
+            tempEsigTPC/=AliDielectronPID::GetWdthCorr(track);
+        }
+
       Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 0);
       Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 0);
-//      
-//      if(fUsePionPIDTPC){
-//        if (fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2) > fPSigTPCMin &&  fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2)  < fPSigTPCMax){ continue;} //exclude pions in TPC
-//      }
-//
-//      if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track)==AliPIDResponse::kDetPidOk && (tempEsigTOF < fESigTOFMin || tempEsigTOF > fESigTOFMax)) continue;  
-//      if (tempEsigITS < fESigITSMin || tempEsigITS > fESigITSMax) continue;  
-//      if (tempEsigTPC < fESigTPCMin || tempEsigTPC > fESigTPCMax) continue;
-      
       
       fQAHist->Fill("Selected tracks",1); 
 
-//      printf("Found %d with Mother %d originated from %d generated by %s  \n",temppdg,tempmpdg,mcMTrack->PdgCode(),(mcEvent->GetGenerator(mcTrackIndex)).Data()); 
-      //Fill Tree with MC data
       if(hasMC){ 
         AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
 
         pdg.push_back( mcTrack->PdgCode());
         if(Rej) enh.push_back(1);
         else enh.push_back(0);
-        
         
         MCpt.push_back(mcTrack->Pt());
         MCeta.push_back(mcTrack->Eta());
@@ -776,139 +782,39 @@ Bool_t AliAnalysisTaskMLTreeMaker::GetDCA(const AliVEvent* event, const AliAODTr
 }
 
 
-void AliAnalysisTaskMLTreeMaker::SetupTrackCuts()
+void AliAnalysisTaskMLTreeMaker::SetupTrackCuts(AliDielectronCutGroup* f)
 {
-  
-filter   = new AliAnalysisFilter("filter","filter");
-varManager = new AliDielectronVarManager;  
-
-cuts     = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);    
-
-AliDielectronVarCuts* trackCutsAOD =new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
-AliDielectronPID *PIDcut_3 = new AliDielectronPID("PIDcut_3","PIDcut_3");
-AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-
-
-//Cuts used for nano AOD filtering (taken from ConfigLMEE_nano_PbPb2015.C on 22082018) - redundant for nano AODs but necessary for MC
-
-//  AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");    
-//  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
-
-  AliDielectronVarCuts *varCuts   = new AliDielectronVarCuts("VarCuts","VarCuts");
-  AliDielectronTrackCuts *trkCuts = new AliDielectronTrackCuts("TrkCuts","TrkCuts");
-  // specific cuts
-  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
-  trkCuts->SetRequireITSRefit(kTRUE);
-  trkCuts->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
-
-  // standard cuts
-  varCuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
-  varCuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
-  varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
-//  varCuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster    // did not work on ESD when filtering nanoAODs
-  varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
-  varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-
-  varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
-  varCuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-  varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
-
-
-  AliDielectronPID *pidCuts        = new AliDielectronPID("PIDCuts","PIDCuts");
-  // TOF
-  // pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-4.,4.,0.,0.,kFALSE, AliDielectronPID::kIfAvailable);   //tighter TOF if cut applied below
-  // TPC
-  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
-  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
-  // ITS
-  pidCuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
-
-
-//Define Carsten's Cut set 3 (as specified in e mail from Carsten from 10.01.2018) - if cuts from NanoAOD were tighter they were implemented here (and are commented above)
-
-PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kElectron, -1.5, 3.0 , 0. ,100., kFALSE);
-PIDcut_3->AddCut(AliDielectronPID::kTPC,AliPID::kPion, -100, 4.0 , 0. ,100., kTRUE);
-PIDcut_3->AddCut(AliDielectronPID::kITS,AliPID::kElectron, -3.0, 1.0 , 0. ,100., kFALSE);
-PIDcut_3->AddCut(AliDielectronPID::kTOF,AliPID::kElectron, -3.0 , 3.0 , 0. ,100., kFALSE, AliDielectronPID::kIfAvailable);
-
-trackCutsAOD->AddCut(AliDielectronVarManager::kPt,           0.2, 8.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,      5.0, 100.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   5.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    120.0, 160.0);
-trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross,     0.95, 1.05);
-
-AliDielectronCutGroup* SharedClusterCut = new AliDielectronCutGroup("SharedClusterCut","SharedClusterCut",AliDielectronCutGroup::kCompOR);
-double delta = 0.00001;
-AliDielectronVarCuts* trackCutsSharedCluster0 = new AliDielectronVarCuts("trackCutsSharedCluster0", "trackCutsSharedCluster0");
-trackCutsSharedCluster0->AddCut(AliDielectronVarManager::kNclsSMapITS, 0-delta, 0+delta);
-AliDielectronVarCuts* trackCutsSharedCluster2 = new AliDielectronVarCuts("trackCutsSharedCluster2", "trackCutsSharedCluster2");
-trackCutsSharedCluster2->AddCut(AliDielectronVarManager::kNclsSMapITS, 2-delta, 2+delta);
-AliDielectronVarCuts* trackCutsSharedCluster4 = new AliDielectronVarCuts("trackCutsSharedCluster4", "trackCutsSharedCluster4");
-trackCutsSharedCluster4->AddCut(AliDielectronVarManager::kNclsSMapITS, 4-delta, 4+delta);
-AliDielectronVarCuts* trackCutsSharedCluster8 = new AliDielectronVarCuts("trackCutsSharedCluster8", "trackCutsSharedCluster8");
-trackCutsSharedCluster8->AddCut(AliDielectronVarManager::kNclsSMapITS, 8-delta, 8+delta);
-AliDielectronVarCuts* trackCutsSharedCluster16 = new AliDielectronVarCuts("trackCutsSharedCluster16", "trackCutsSharedCluster16");
-trackCutsSharedCluster16->AddCut(AliDielectronVarManager::kNclsSMapITS, 16-delta, 16+delta);
-AliDielectronVarCuts* trackCutsSharedCluster32 = new AliDielectronVarCuts("trackCutsSharedCluster32", "trackCutsSharedCluster32");
-trackCutsSharedCluster32->AddCut(AliDielectronVarManager::kNclsSMapITS, 32-delta, 32+delta);
-SharedClusterCut->AddCut(trackCutsSharedCluster0);
-SharedClusterCut->AddCut(trackCutsSharedCluster2);
-SharedClusterCut->AddCut(trackCutsSharedCluster4);
-SharedClusterCut->AddCut(trackCutsSharedCluster8);
-SharedClusterCut->AddCut(trackCutsSharedCluster16);
-SharedClusterCut->AddCut(trackCutsSharedCluster32);
-
-
-trackCutsDiel->SetAODFilterBit(AliDielectronTrackCuts::kGlobalNoDCA);//(1<<4) -> error
-trackCutsDiel->SetClusterRequirementITS(AliDielectronTrackCuts::Detector(0),AliDielectronTrackCuts::ITSClusterRequirement(3));//(AliESDtrackCuts::kSPD,AliESDtrackCuts::kFirst) -> error
-
-//Add desired cuts to cutgroup//
-
-//NanoAOD filter cuts
-
-//cuts->AddCut(trkFilter);    //not used on ESDs in ConfigLMEE_nano_PbPb2015.C
-
-cuts->AddCut(varCuts);
-cuts->AddCut(trkCuts);
-cuts->AddCut(pidCuts);
-
-
-//Carsten cut set 3
-cuts->AddCut(PIDcut_3);
-cuts->AddCut(trackCutsDiel);
-cuts->AddCut(trackCutsAOD);
-cuts->AddCut(SharedClusterCut);
-
-cuts->Print();
-
-filter->AddCuts(cuts);
+filter   = new AliAnalysisFilter("filter","filter");  
+filter->AddCuts(f);
 }
 
 
-void AliAnalysisTaskMLTreeMaker::SetupEventCuts()
+void AliAnalysisTaskMLTreeMaker::SetupEventCuts(AliDielectronEventCuts* f)
 {
   evfilter   = new AliAnalysisFilter("evfilter","evfilter");  
-   
-  //Event cuts as in NanoAOD filtering (as from ConfigLMEE_nano_PbPb2015.C on 22082018)
-  
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","eventCuts");
-  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-  eventCuts->SetRequireVertex();
-  eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,+10.);
-  // eventCuts->SetCentralityRange(10., 50., kTRUE);
-  eventCuts->Print();
-  evfilter->AddCuts(eventCuts);
+  evfilter->AddCuts(f);
+}
 
-  AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
-  eventplaneCuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
-  eventplaneCuts->Print();
 
-  evfilter->AddCuts(eventplaneCuts);
 
+bool AliAnalysisTaskMLTreeMaker::CheckGenerator(Int_t trackID){     //check if the generator is on the list of generators
+  if (fGeneratorHashs.size() == 0) return true;
+  TString genname;
+  Bool_t hasGenerator = fMcArray->GetCocktailGenerator(TMath::Abs(trackID), genname); // fMC is AliMCEvent
+  // std::cout << genname << std::endl;
+    if(!hasGenerator) {
+
+    Printf("no cocktail header list was found for this track");
+    return false;
+  }
+  else{
+
+    for (unsigned int i = 0; i < fGeneratorHashs.size(); ++i){
+      // std::cout << genname.Hash() << " " << fGeneratorHashs[i] << std::endl;
+      if (genname.Hash() == fGeneratorHashs[i]) return true;
+
+    }
+    return false;
+  }
+  return false; // should not happen
 }

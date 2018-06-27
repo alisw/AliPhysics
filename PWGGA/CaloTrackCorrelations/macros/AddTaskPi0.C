@@ -860,9 +860,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   
   if(col.Contains("PbPb")) ana->SwitchOnFillHighMultiplicityHistograms();
   else                     ana->SwitchOffFillHighMultiplicityHistograms();
-  
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 
   //
   // Debug

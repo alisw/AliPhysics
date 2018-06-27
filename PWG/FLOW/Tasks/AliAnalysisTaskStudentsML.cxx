@@ -60,7 +60,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML(const char *name, Bool_t us
  fMaxCorrelator(8),
  bUseWeights(kFALSE),
  kNumber(4),  //number of correlation
- kh1(-2), kh2(2), kh3(-2), kh4(2), kh5(0), kh6(0), kh7(0), kh8(0),  //harmonics
+ kh1(-3), kh2(-2), kh3(3), kh4(2), kh5(0), kh6(0), kh7(0), kh8(0),  //harmonics
  kSum((kh1<0?-1*kh1:kh1)+(kh2<0?-1*kh2:kh2)+(kh3<0?-1*kh3:kh3)+(kh4<0?-1*kh4:kh4)
                 + (kh5<0?-1*kh5:kh5)+(kh6<0?-1*kh6:kh6)+(kh7<0?-1*kh7:kh7)+(kh8<0?-1*kh8:kh8)), // We will not go beyond 8-p correlations
  kMaxHarmonic(kSum+1),
@@ -127,7 +127,7 @@ AliAnalysisTaskStudentsML::AliAnalysisTaskStudentsML():
  fMaxCorrelator(8),
  bUseWeights(kFALSE),
  kNumber(4),  //number of correlation
- kh1(-2), kh2(2), kh3(-2), kh4(2), kh5(0), kh6(0), kh7(0), kh8(0),  //harmonics
+ kh1(-3), kh2(-2), kh3(3), kh4(2), kh5(0), kh6(0), kh7(0), kh8(0),  //harmonics
  kSum((kh1<0?-1*kh1:kh1)+(kh2<0?-1*kh2:kh2)+(kh3<0?-1*kh3:kh3)+(kh4<0?-1*kh4:kh4)
                 + (kh5<0?-1*kh5:kh5)+(kh6<0?-1*kh6:kh6)+(kh7<0?-1*kh7:kh7)+(kh8<0?-1*kh8:kh8)), // We will not go beyond 8-p correlations
  kMaxHarmonic(kSum+1),
@@ -504,7 +504,7 @@ void AliAnalysisTaskStudentsML::BookFinalResultsHistograms()
 {
  // Book all histograms to hold the final results.
   
- fCentrality = new TProfile("","",80,0.,80.); //histogram for multiplicity
+ fCentrality = new TProfile("fCentrality","Result Analysis Centrality Dependence",80,0.,80.); //histogram for multiplicity
  fCentrality->GetXaxis()->SetTitle("Centrality");
  fCentrality->GetYaxis()->SetTitle("flow");
  fFinalResultsList->Add(fCentrality);

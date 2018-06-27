@@ -19,6 +19,7 @@
   * 18 dec 2017: several trigger settings
   * 04 jan 2018: changed back to old trigger method
   * 17 may 2018: last debugging&cleaning -> zvtx is now ok in local tests 
+  * 26 jun 2018: change logic to use AODEvent() if InputEvent() didn't work
 
   Remiders:
   * For pp: remove pile up thing
@@ -341,14 +342,24 @@ void AliAnalysisTaskHighPtDeDx::UserExec(Option_t *)
       this->Dump();
       return;
     }    
-  } else {
-    fAOD = dynamic_cast<AliAODEvent*>(event);
-    if(!fAOD){
-      Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
-      this->Dump();
-      return;
-    }    
-
+  } else {//changes 26jun2018
+    // fAOD = dynamic_cast<AliAODEvent*>(event);
+    // if(!fAOD){
+    //   Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
+    //   this->Dump();
+    //   return;
+    //   }
+    // }
+    fAOD = dynamic_cast<AliAODEvent*>( InputEvent() );
+    if (!fAOD) {
+      AliWarning("ERROR: fAOD not available from InputEvent() trying with AODEvent()");
+      //  assume that the AOD is in the general output...
+      fAOD  = AODEvent();
+      if(!fAOD){
+	AliWarning("ERROR: fAOD not available from AODEvent() Aborting event!");
+        return;
+      }  
+    }
   }
 
  

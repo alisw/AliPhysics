@@ -733,17 +733,18 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ){
-    binWidthPt                = 0.05;
-    nBinsPt                   = 351;
+    nBinsPt                   = 335;
     minPt                     = 0;
     maxPt                     = 100;
+    binWidthPt                = 0.05;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.5*i;
-      else if(i<51) arrPtBinning[i]           = 0.5+0.05*(i-1);
-      else if(i<221) arrPtBinning[i]          = 3.+0.1*(i-51);
-      else if(i<261) arrPtBinning[i]          = 20.+0.25*(i-221);
-      else if(i<301) arrPtBinning[i]          = 30.+0.5*(i-261);
-      else if(i<351) arrPtBinning[i]          = 50.+1.0*(i-301);
+      if (i < 1) arrPtBinning[i]              = 0.3*i;
+      else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
+      else if(i<225) arrPtBinning[i]          = 3.+0.1*(i-55);
+      else if(i<265) arrPtBinning[i]          = 20.+0.25*(i-225);
+      else if(i<305) arrPtBinning[i]          = 30.+0.5*(i-265);
+      else if(i<325) arrPtBinning[i]          = 50.+1.0*(i-305);
+      else if(i<335) arrPtBinning[i]          = 70.+2.5*(i-325);
       else  arrPtBinning[i]                   = maxPt;
     }
     nBinsQAPt                 = 270;
@@ -756,16 +757,17 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       else if(i<270) arrQAPtBinning[i]        = 40.+1.0*(i-210);
       else arrQAPtBinning[i]                  = maxQAPt;
     }
-    nBinsClusterPt            = 355;
+    nBinsClusterPt            = 335;
     minClusterPt              = 0;
     maxClusterPt              = 100;
     for(Int_t i=0; i<nBinsClusterPt+1;i++){
       if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-      else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
-      else if(i<225) arrPtBinning[i]          = 3.+0.1*(i-55);
-      else if(i<265) arrPtBinning[i]          = 20.+0.25*(i-225);
-      else if(i<305) arrPtBinning[i]          = 30.+0.5*(i-265);
-      else if(i<355) arrPtBinning[i]          = 50.+1.0*(i-305);
+      else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
+      else if(i<225) arrClusPtBinning[i]      = 3.+0.1*(i-55);
+      else if(i<265) arrClusPtBinning[i]      = 20.+0.25*(i-225);
+      else if(i<305) arrClusPtBinning[i]      = 30.+0.5*(i-265);
+      else if(i<325) arrClusPtBinning[i]      = 50.+1.0*(i-305);
+      else if(i<335) arrClusPtBinning[i]      = 70.+2.5*(i-325);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
@@ -2439,6 +2441,7 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
   if(fIsMC> 0) fMCEvent = MCEvent();
 
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
+
   if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
   if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete
     // write out name of broken file for first event

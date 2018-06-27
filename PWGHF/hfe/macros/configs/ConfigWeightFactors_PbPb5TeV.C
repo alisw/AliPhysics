@@ -20,12 +20,12 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
   }
 
   const Char_t *backNameMC[9] = {"pion","eta","omega","phi","etap","rho","kaon","k0s","lambda"};
-
+/*
         // GSI version
-  //printf("Take the weights from %s\n",Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
-  //printf("collType %d\n",collType);
-  //TFile *weightFile = TFile::Open(Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
-
+  printf("Take the weights from %s\n",Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
+  printf("collType %d\n",collType);
+  TFile *weightFile = TFile::Open(Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
+*/
         // GRID version
     printf("Take the weights from %s\n",Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
   printf("collType %d\n",collType);
@@ -67,6 +67,7 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
     }
 
     for(Int_t iCent = 0; iCent < 11; iCent++){//centrality bins
+      printf("\n\n====================\n   Centrality bin: %d\n====================\n\n",iCent);
       for(Int_t iSpecies = 0; iSpecies < nSpec; iSpecies++){//species of decaying mesons
         TH1F *hRatio = 0x0;
         if(collType == 1){
@@ -224,7 +225,36 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
           cout << "-------------------------------------------------------------------------------------\n";
           cout << hRatio->GetName() << endl;
         }
-
+        // 70: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 30-50% centrality class (mfaggin, 07-Jun-2018)
+        else if(collType == 70){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_fromchpions_3050_%s",backNameMC[iSpecies]));
+          cout << "\n----------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 minimum bias MC weights read for 30-50% centrality class (charged pion data spectra used)      ";
+          cout << "\n------------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        // 71: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 60-80% centrality class (mfaggin, 20-Jun-2018)
+        else if(collType == 71){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_fromchpions_6080_%s",backNameMC[iSpecies]));
+          cout << "\n----------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 minimum bias MC weights read for 60-80% centrality class (charged pion data spectra used)      ";
+          cout << "\n------------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        // 72: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 0-10%, 30-50% and 60-80% centrality classes, all in one file (mfaggin, 22-Jun-2018)
+        else if(collType == 72){
+          hRatio = (TH1F*)weightFile->Get(Form("hRatio_g1_chpions_%s_%d",backNameMC[iSpecies],iCent));
+          cout << "\n----------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------\n";
+          cout << "      PbPb LHC16g1 minimum bias MC weights read for all centrality classes (charged pion data spectra used)      ";
+          cout << "\n------------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
 
         else if(collType == 2){
           if((iCent == 1)||(iCent == 4)){ 

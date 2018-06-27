@@ -120,8 +120,15 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistHFjet;
   TH2F                        *fHistULSjet;
   TH2F                        *fHistLSjet;
+  TH2F                        *fHistHFjetOrder;
+  TH2F                        *fHistDiJetPhi; 
+  TH2F                        *fHistDiJetMomBalance; 
   TH2F                        *fInvmassULS;
   TH2F                        *fInvmassLS;
+  TH2F                        *fInvmassHFuls;
+  TH2F                        *fInvmassHFls;
+  TH1F                        *fLxy_uls;
+  TH1F                        *fLxy_ls;
   THnSparse                   *HFjetCorr0;
   THnSparse                   *HFjetCorr1;
   THnSparse                   *HFjetParticle;
@@ -135,6 +142,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistClustEtime;
   TH2F                        *fEMCClsEtaPhi;
   TH1F                        *fHistBGfrac;
+  TH1F                        *fHistBGfracHFEev;
   TF1                         *fPi0Weight;
   TF1                         *fEtaWeight;
   TRandom                     *generator;
@@ -146,7 +154,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   Bool_t tagHFjet(AliEmcalJet* jet, double *epT, int MCpid, double &maxpT_e);
   //void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec);
   void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec);
-  Double_t CalRandomCone(Double_t HFjetPhi, Double_t HFjetEta, Double_t HFjetArea);
+  Double_t CalRandomCone(Double_t HFjetPhi[], Double_t HFjetEta[], Double_t HFjetArea);
   Bool_t isHeavyFlavour(int Mompdg);
   Bool_t isPhotonic(int Mompdg);
   //void MakeParticleLevelJet(THnSparse *pJet);

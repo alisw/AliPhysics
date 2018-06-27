@@ -9,6 +9,8 @@
 #include "AliAODTrack.h"
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
+#include "AliESDEvent.h"
+#include "AliESDVertex.h"
 #include "AliInputEventHandler.h"
 #include "AliFemtoDreamTrack.h"
 #include "AliLog.h"
@@ -22,6 +24,7 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
 ,fstatusTPC(AliPIDResponse::kDetNoParams)
 ,fstatusTOF(AliPIDResponse::kDetNoParams)
 ,fFilterMap(0)
+,fPassFiltering(false)
 ,fdcaXY(-99)
 ,fdcaZ(-99)
 ,fdcaXYProp(-99)
@@ -31,7 +34,10 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
 ,fRatioCR(0)
 ,fnoSharedClst(0)
 ,fTPCClsS(0)
-,fChi2(0.f)
+,fTPCClsSRatio(0)
+,fChi2(0)
+,fChi2TPC(0)
+,fChi2ITS(0)
 ,fSharedClsITSLayer(0)
 ,fHasSharedClsITSLayer(false)
 ,fdEdxTPC(0)
@@ -40,8 +46,14 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
 ,fITSHit(0)
 ,fTOFTiming(false)
 ,fTPCRefit(false)
-,fTrack(0)
-,fGlobalTrack(0)
+,fESDStatus(0)
+,fESDnClusterITS(0)
+,fESDnClusterTPC(0)
+,fESDTrack(0)
+,fESDTPCOnlyTrack(0)
+,fESDTrackCuts(AliESDtrackCuts::GetStandardTPCOnlyTrackCuts())
+,fAODTrack(0)
+,fAODGlobalTrack(0)
 {
   for (int i=0;i<5;++i) {
     fnSigmaTPC[i]=0;
@@ -50,35 +62,40 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
 }
 
 AliFemtoDreamTrack::~AliFemtoDreamTrack() {
-  // TODO Auto-generated destructor stub
+  if (fESDTrackCuts) {
+    delete fESDTrackCuts;
+  }
+  if (fESDTPCOnlyTrack) {
+    delete fESDTPCOnlyTrack;
+  }
 }
 
 void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
   this->Reset();
-  fTrack=track;
-  int trackID=fTrack->GetID();
+  fAODTrack=track;
+  int trackID=fAODTrack->GetID();
   if (trackID<0) {
     if(!fGTI){
       AliFatal("AliFemtoSPTrack::SetTrack No fGTI Set");
-      fGlobalTrack=NULL;
+      fAODGlobalTrack=NULL;
     }else if(-trackID-1 >= fTrackBufferSize){
-//      AliFatal("Buffer Size too small");
+      //      AliFatal("Buffer Size too small");
       this->fIsSet=false;
       fIsReset=false;
-      fGlobalTrack=NULL;
+      fAODGlobalTrack=NULL;
     }else if(!CheckGlobalTrack(trackID)){
-      fGlobalTrack=NULL;
+      fAODGlobalTrack=NULL;
     }else{
-      fGlobalTrack=fGTI[-trackID-1];
+      fAODGlobalTrack=fGTI[-trackID-1];
     }
   }else{
-    fGlobalTrack=track;
+    fAODGlobalTrack=track;
   }
   fIsReset=false;
-  if (fGlobalTrack&&fTrack) {
-    this->SetIDTracks(fGlobalTrack->GetID());
-    this->SetTrackingInformation();
-    this->SetPIDInformation();
+  if (fAODGlobalTrack&&fAODTrack) {
+    this->SetIDTracks(fAODGlobalTrack->GetID());
+    this->SetAODTrackingInformation();
+    this->SetAODPIDInformation();
     if (fIsMC) {
       this->SetMCInformation();
     }
@@ -87,21 +104,204 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
   }
 }
 
-void AliFemtoDreamTrack::SetTrackingInformation() {
-  this->fFilterMap=fTrack->GetFilterMap();
-  this->SetEta(fTrack->Eta());
-  this->SetPhi(fTrack->Phi());
-  this->SetTheta(fTrack->Theta());
-  this->SetCharge(fTrack->Charge());
-  this->SetMomentum(fTrack->Px(), fTrack->Py(), fTrack->Pz());
-  this->SetMomTPC(fGlobalTrack->GetTPCmomentum());
-  this->SetPt(fTrack->Pt());
-  this->fdcaXY=fTrack->DCA();
-  this->fdcaZ=fTrack->ZAtDCA();
-  this->fChi2=fTrack->Chi2perNDF();
+void AliFemtoDreamTrack::SetTrack(AliESDtrack *track) {
+  this->Reset();
+  fESDTrack=track;
+  if (fESDTrack) {
+    this->fIsReset=false;
+    int trackID=fESDTrack->GetID();
+    if (trackID < 0) {
+      AliWarning("Negative ID for ESD tracks");
+    }
+    this->SetIDTracks(trackID);
+    this->SetESDTrackingInformation();
+    if (this->fIsSet) {
+      this->SetESDPIDInformation();
+//      if (fIsMC) {
+//        this->SetMCInformation();
+//      }
+    }
+    if (fESDTPCOnlyTrack) {
+      delete fESDTPCOnlyTrack;
+    }
+  }
+}
+
+void AliFemtoDreamTrack::ApplyESDtoAODFilter() {
+  if (fESDTrackCuts->IsSelected(fESDTrack)) {
+    fPassFiltering=true;
+  } else {
+    fPassFiltering=false;
+  }
+  fESDTPCOnlyTrack=
+      AliESDtrackCuts::GetTPCOnlyTrack(fESDTrack->GetESDEvent(),fESDTrack->GetID());
+}
+void AliFemtoDreamTrack::SetESDTrackingInformation() {
+  fESDStatus=fESDTrack->GetStatus();
+  this->ApplyESDtoAODFilter();
+  if (!fESDTPCOnlyTrack) {
+    this->fIsSet = false;
+    return;
+  }
+  double pos[3] = { 0. };
+  double covTr[21]={0.};
+  //  Double_t pid[10]={0.};
+  double p[3] = { 0. };
+  double pDCA[3] = { 0. }; // momentum at DCA
+  double rDCA[3] = { 0. }; // position at DCA
+  float  dDCA[2] = {0.};    // DCA to the vertex d and z
+  float  cDCA[3] = {0.};    // covariance of impact parameters
+  // Loop over the ESD trcks and pick out the tracks passing TPC only cuts
+  const AliESDVertex *vtxSPD = fESDTrack->GetESDEvent()->GetPrimaryVertexSPD();
+//  const AliESDVertex *vtx = fESDTrack->GetESDEvent()->GetPrimaryVertex();
+
+  if (fESDTPCOnlyTrack->Pt() > 0) {
+    AliExternalTrackParam exParam;
+    Bool_t relate = false;
+    relate =
+        fESDTPCOnlyTrack->RelateToVertexTPC(
+            vtxSPD,
+            fESDTrack->GetESDEvent()->GetMagneticField(),
+            1e30,
+            &exParam);
+    if(!relate){
+      this->fIsSet = false;
+      return;
+    }
+    // fetch the track parameters at the DCA (unconstraint)
+    if(fESDTPCOnlyTrack->GetTPCInnerParam()){
+      fESDTPCOnlyTrack->GetTPCInnerParam()->GetPxPyPz(pDCA);
+      fESDTPCOnlyTrack->GetTPCInnerParam()->GetXYZ(rDCA);
+    }
+    // get the DCA to the vertex:
+    fESDTPCOnlyTrack->GetImpactParametersTPC(dDCA,cDCA);
+    // set the constrained parameters to the track
+    fESDTPCOnlyTrack->Set(
+        exParam.GetX(),exParam.GetAlpha(),
+        exParam.GetParameter(),exParam.GetCovariance());
+    fESDTPCOnlyTrack->GetPxPyPz(p);
+    fESDTPCOnlyTrack->GetXYZ(pos);
+    fESDTPCOnlyTrack->GetCovarianceXYZPxPyPz(covTr);
+  } else {
+    this->fIsSet = false;
+    return;
+  }
+  this->SetEta(fESDTPCOnlyTrack->Eta());
+  this->SetPhi(fESDTPCOnlyTrack->Phi());
+  this->SetTheta(fESDTPCOnlyTrack->Theta());
+  this->SetCharge(fESDTPCOnlyTrack->Charge());
+  this->SetMomTPC(fESDTPCOnlyTrack->GetTPCmomentum());
+  this->SetMomentum(p[0],p[1],p[2]);
+  this->SetPt(fESDTPCOnlyTrack->Pt());
+
+  this->fdcaXY=dDCA[0];
+  this->fdcaZ=dDCA[1];
+  fESDnClusterITS=fESDTrack->GetITSclusters(0);
+  if (fESDnClusterITS!=0) {
+    fChi2ITS = fESDTrack->GetITSchi2()/Float_t(fESDnClusterITS);
+  }
+
+  fESDnClusterTPC = fESDTrack->GetTPCclusters(0);
+  fTPCCrossedRows = fESDTrack->GetTPCCrossedRows();
+  if (fESDTrack->GetTPCNclsF()>0) {
+    fRatioCR = fTPCCrossedRows / fESDTrack->GetTPCNclsF();
+  }
+  fTPCClsS=fESDTrack->GetTPCnclsS();
+  if (fESDnClusterTPC!=0) {
+    fChi2TPC = fESDTrack->GetTPCchi2()/Float_t(fESDnClusterTPC);
+    fTPCClsSRatio = Float_t(fTPCClsS)/Float_t(fESDnClusterTPC);
+  }
+  fNClsTPC = fESDTrack->GetTPCNcls();
+  if ( fNClsTPC > 5) {
+    fChi2=fESDTrack->GetTPCchi2()/Float_t(fNClsTPC - 5);
+  } else {
+    fChi2= -1.;
+  }
+  //loop over the 6 ITS Layrs and check for a hit!
+  for (int i=0;i<6;++i) {
+    fITSHit.push_back(fESDTrack->HasPointOnITSLayer(i));
+    if (fESDTrack->HasPointOnITSLayer(i)) {
+      this->fHasITSHit=true;
+    }
+  }
+  if (fESDTrack->IsOn(AliESDtrack::kTPCrefit)) {
+    fTPCRefit=true;
+  }
+  if (fESDTrack->GetTOFBunchCrossing()==0) {
+    this->fTOFTiming=true;
+  } else {
+    this->fTOFTiming=false;
+  }
+  const TBits sharedMap=fESDTrack->GetTPCSharedMap();
+  if ((sharedMap.CountBits()) >= 1) {
+    // Bad Track, has too many shared clusters!
+    this->fnoSharedClst=false;
+  }else{
+    this->fnoSharedClst=true;
+  }
+  for (int i=0;i<6;++i) {
+    fSharedClsITSLayer.push_back(fESDTrack->HasSharedPointOnITSLayer(i));
+    if (fSharedClsITSLayer.at(i)) {
+      fHasSharedClsITSLayer=true;
+    }
+  }
+}
+void AliFemtoDreamTrack::SetESDPIDInformation() {
+  AliPID::EParticleType particleID[5] = {AliPID::kElectron,AliPID::kMuon,
+      AliPID::kPion,AliPID::kKaon,AliPID::kProton};
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  if (man) {
+    AliInputEventHandler* inputHandler=
+        (AliInputEventHandler*)(man->GetInputEventHandler());
+    if (inputHandler) {
+      fPIDResponse=inputHandler->GetPIDResponse();
+      if (!fPIDResponse) {
+        AliFatal("No PID Response, did you run your PID Task?");
+      }
+    } else {
+      AliFatal("No Input Handler");
+    }
+  }else{
+    AliFatal("No PID Response");
+  }
+  AliPIDResponse::EDetPidStatus statusTPC =
+      fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,fESDTrack);
+  AliPIDResponse::EDetPidStatus statusTOF =
+      fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,fESDTrack);
+  this->fstatusTPC=statusTPC;
+  this->fstatusTOF=statusTOF;
+  this->fdEdxTPC=fESDTrack->GetTPCsignal();
+  this->fbetaTOF=GetBeta(fESDTrack);
+  for (int i=0;i<5;++i) {
+    if(statusTPC == AliPIDResponse::kDetPidOk){
+      (this->fnSigmaTPC)[i] =
+          fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,fESDTrack,particleID[i]);
+    }else{
+      (this->fnSigmaTPC)[i] = -999.;
+    }
+    if(statusTOF == AliPIDResponse::kDetPidOk){
+      (this->fnSigmaTOF)[i] =
+          fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF,fESDTrack,particleID[i]);
+    }else{
+      (this->fnSigmaTOF)[i] = -999.;
+    }
+  }
+}
+void AliFemtoDreamTrack::SetAODTrackingInformation() {
+  this->fFilterMap=fAODTrack->GetFilterMap();
+  this->SetEta(fAODTrack->Eta());
+  this->SetPhi(fAODTrack->Phi());
+  this->SetTheta(fAODTrack->Theta());
+  this->SetCharge(fAODTrack->Charge());
+  this->SetMomentum(fAODTrack->Px(), fAODTrack->Py(), fAODTrack->Pz());
+  this->SetMomTPC(fAODGlobalTrack->GetTPCmomentum());
+  this->SetPt(fAODTrack->Pt());
+  this->fdcaXY=fAODTrack->DCA();
+  this->fdcaZ=fAODTrack->ZAtDCA();
+  this->fChi2=fAODTrack->Chi2perNDF();
   double dcaVals[2] = {-99., -99.};
   double covar[3]={0.,0.,0.};
-  AliAODTrack copy(*fGlobalTrack);
+  AliAODTrack copy(*fAODGlobalTrack);
   if (copy.PropagateToDCA(copy.GetAODEvent()->GetPrimaryVertex(),
                           copy.GetAODEvent()->GetMagneticField(),
                           10, dcaVals, covar))
@@ -114,21 +314,21 @@ void AliFemtoDreamTrack::SetTrackingInformation() {
   }
   //loop over the 6 ITS Layrs and check for a hit!
   for (int i=0;i<6;++i) {
-    fITSHit.push_back(fGlobalTrack->HasPointOnITSLayer(i));
-    if (fGlobalTrack->HasPointOnITSLayer(i)) {
+    fITSHit.push_back(fAODGlobalTrack->HasPointOnITSLayer(i));
+    if (fAODGlobalTrack->HasPointOnITSLayer(i)) {
       this->fHasITSHit=true;
     }
   }
-  if (fTrack->IsOn(AliAODTrack::kTPCrefit)) {
+  if (fAODTrack->IsOn(AliAODTrack::kTPCrefit)) {
     fTPCRefit=true;
   }
-  if (fGlobalTrack->GetTOFBunchCrossing()==0) {
+  if (fAODGlobalTrack->GetTOFBunchCrossing()==0) {
     this->fTOFTiming=true;
   } else {
     this->fTOFTiming=false;
   }
 
-  this->fNClsTPC=fTrack->GetTPCNcls();
+  this->fNClsTPC=fAODTrack->GetTPCNcls();
   //This method was inherited from H. Beck analysis
   // In the documents
   // https://alisoft.cern.ch/AliRoot/trunk/TPC/doc/Definitions/Definitions.pdf
@@ -149,14 +349,14 @@ void AliFemtoDreamTrack::SetTrackingInformation() {
   // one sees that it's just an alias (with additional caching) for
   // GetTPCClusterInfo(2, 1); The identical function exists in the
   // AliAODTrack.cxx
-  this->fTPCCrossedRows=fTrack->GetTPCClusterInfo(2, 1);
-  if (!fTrack->GetTPCNclsF()) {
+  this->fTPCCrossedRows=fAODTrack->GetTPCClusterInfo(2, 1);
+  if (!(fAODTrack->GetTPCNclsF()>0)) {
     this->fRatioCR=0.;
   } else {
     this->fRatioCR=
-        fTrack->GetTPCClusterInfo(2, 1)/float(fTrack->GetTPCNclsF());
+        fTPCCrossedRows/float(fAODTrack->GetTPCNclsF());
   }
-  const TBits sharedMap=fTrack->GetTPCSharedMap();
+  const TBits sharedMap=fAODTrack->GetTPCSharedMap();
   if ((sharedMap.CountBits()) >= 1) {
     // Bad Track, has too many shared clusters!
     this->fnoSharedClst=false;
@@ -164,12 +364,12 @@ void AliFemtoDreamTrack::SetTrackingInformation() {
     this->fnoSharedClst=true;
   }
   for (int i=0;i<6;++i) {
-    fSharedClsITSLayer.push_back(fTrack->HasSharedPointOnITSLayer(i));
-    if (fTrack->HasSharedPointOnITSLayer(i)) {
+    fSharedClsITSLayer.push_back(fAODTrack->HasSharedPointOnITSLayer(i));
+    if (fAODTrack->HasSharedPointOnITSLayer(i)) {
       fHasSharedClsITSLayer=true;
     }
   }
-  this->fTPCClsS=fTrack->GetTPCnclsS();
+  this->fTPCClsS=fAODTrack->GetTPCnclsS();
   if (fIsMC) {
     SetPhiAtRadii();
   }
@@ -179,8 +379,8 @@ void AliFemtoDreamTrack::SetPhiAtRadii() {
   float phi0=GetPhi().at(0);
   float pt=GetPt();
   float chg=GetCharge().at(0);
-  float bfield=fTrack->GetAODEvent()->GetMagneticField();
-  this->SetEvtNumber(fTrack->GetAODEvent()->GetRunNumber());
+  float bfield=fAODTrack->GetAODEvent()->GetMagneticField();
+  this->SetEvtNumber(fAODTrack->GetAODEvent()->GetRunNumber());
   std::vector<float> phiatRadius;
   for(int radius=0;radius<9;radius++)
   {
@@ -190,7 +390,7 @@ void AliFemtoDreamTrack::SetPhiAtRadii() {
   fPhiAtRadius.push_back(phiatRadius);
   return;
 }
-void AliFemtoDreamTrack::SetPIDInformation() {
+void AliFemtoDreamTrack::SetAODPIDInformation() {
   AliPID::EParticleType particleID[5] = {AliPID::kElectron,AliPID::kMuon,
       AliPID::kPion,AliPID::kKaon,AliPID::kProton};
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
@@ -209,23 +409,23 @@ void AliFemtoDreamTrack::SetPIDInformation() {
     AliFatal("No PID Response");
   }
   AliPIDResponse::EDetPidStatus statusTPC =
-      fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,fGlobalTrack);
+      fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC,fAODGlobalTrack);
   AliPIDResponse::EDetPidStatus statusTOF =
-      fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,fGlobalTrack);
+      fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,fAODGlobalTrack);
   this->fstatusTPC=statusTPC;
   this->fstatusTOF=statusTOF;
-  this->fdEdxTPC=fGlobalTrack->GetTPCsignal();
-  this->fbetaTOF=GetBeta(fGlobalTrack);
+  this->fdEdxTPC=fAODGlobalTrack->GetTPCsignal();
+  this->fbetaTOF=GetBeta(fAODGlobalTrack);
   for (int i=0;i<5;++i) {
     if(statusTPC == AliPIDResponse::kDetPidOk){
       (this->fnSigmaTPC)[i] =
-          fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,fGlobalTrack,particleID[i]);
+          fPIDResponse->NumberOfSigmas(AliPIDResponse::kTPC,fAODGlobalTrack,particleID[i]);
     }else{
       (this->fnSigmaTPC)[i] = -999.;
     }
     if(statusTOF == AliPIDResponse::kDetPidOk){
       (this->fnSigmaTOF)[i] =
-          fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF,fGlobalTrack,particleID[i]);
+          fPIDResponse->NumberOfSigmas(AliPIDResponse::kTOF,fAODGlobalTrack,particleID[i]);
     }else{
       (this->fnSigmaTOF)[i] = -999.;
     }
@@ -236,13 +436,13 @@ void AliFemtoDreamTrack::SetMCInformation() {
   //Set the phi at radii at the TPC information
   //      SetPhiStar(track,fphiAtRadius);
   TClonesArray *mcarray =
-      dynamic_cast<TClonesArray*>(fGlobalTrack->GetAODEvent()
+      dynamic_cast<TClonesArray*>(fAODGlobalTrack->GetAODEvent()
           ->FindListObject(AliAODMCParticle::StdBranchName()));
   if (!mcarray) {
     AliError("SPTrack: MC Array not found");
   }
-  if (fGlobalTrack->GetLabel()>0) {
-    AliAODMCParticle * mcPart = (AliAODMCParticle*)mcarray->At(fGlobalTrack->GetLabel());
+  if (fAODGlobalTrack->GetLabel()>0) {
+    AliAODMCParticle * mcPart = (AliAODMCParticle*)mcarray->At(fAODGlobalTrack->GetLabel());
     if (!(mcPart)) {
       this->fIsSet=false;
     } else {
@@ -288,6 +488,25 @@ float AliFemtoDreamTrack::GetBeta(AliAODTrack *track) {
   return beta;
 }
 
+float AliFemtoDreamTrack::GetBeta(AliESDtrack *track) {
+  float beta = -999;
+  double integratedTimes[9] = {-1.0,-1.0,-1.0,-1.0,-1.0, -1.0, -1.0, -1.0, -1.0};
+
+  track->GetIntegratedTimes(integratedTimes);
+
+  const float c = 2.99792457999999984e-02;
+  float p = track->P();
+  float l = integratedTimes[0]*c;
+
+  float trackT0 = fPIDResponse->GetTOFResponse().GetStartTime(p);
+
+  float timeTOF = track->GetTOFsignal()- trackT0;
+  if(timeTOF > 0){
+    beta  = l/timeTOF/c;
+  }
+  return beta;
+}
+
 bool AliFemtoDreamTrack::CheckGlobalTrack(const Int_t TrackID) {
   //This method was inherited from H. Beck analysis
   //Checks if to the corresponding track a global track exists
@@ -314,18 +533,25 @@ void AliFemtoDreamTrack::Reset() {
     fRatioCR=0;
     fnoSharedClst=0;
     fTPCClsS=0;
+    fTPCClsSRatio=0;
+    fChi2=0;
+    fChi2TPC=0;
+    fChi2ITS=0;
     fSharedClsITSLayer.clear();
     fHasSharedClsITSLayer=false;
     fdEdxTPC=-999;
     fbetaTOF=1.1;
-    for (int i=0;i<5;++i) {
-      fnSigmaTPC[i]=99;
-      fnSigmaTOF[i]=99;
-    }
     fHasITSHit=false;
     fITSHit.clear();
     fTOFTiming=false;
     fTPCRefit=false;
+    for (int i=0;i<5;++i) {
+      fnSigmaTPC[i]=99;
+      fnSigmaTOF[i]=99;
+    }
+    fESDStatus=0;
+    fESDnClusterITS=0;
+    fESDnClusterTPC=0;
     fP.SetXYZ(0,0,0);
     fMCP.SetXYZ(0,0,0);
     fPt=0;

@@ -237,8 +237,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     massD0Task->SetNPtBinsCorr(14);
     massD0Task->SetPtBinsLimsCorr(ptlimits);
   }
-  Double_t pttreshlow[15] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-  Double_t pttreshup[15] = {999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.};
+  Double_t pttreshlow[20] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  Double_t pttreshup[20] = {999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.};
   massD0Task->SetPtTreshLow(pttreshlow);
   massD0Task->SetPtTreshUp(pttreshup);
 

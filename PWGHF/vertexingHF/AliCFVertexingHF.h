@@ -116,11 +116,17 @@ class AliCFVertexingHF : public TObject {
 	void SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
 
 	void SetMultiplicity(Double_t multiplicity) {fMultiplicity = multiplicity;}
-	void SetConfiguration(Int_t configuration) {fConfiguration = configuration;}
+  void Setq2Value(Double_t q2) {fq2 = q2;}
+  void SetTrackArray(TClonesArray* trkarray) {
+    fTrackArray = trkarray;
+    fTrackArray->SetOwner();
+  }
+  void SetConfiguration(Int_t configuration) {fConfiguration = configuration;}
+
+  Int_t ComputeLocalMultiplicity(Double_t etaD, Double_t phiD, Double_t R) const;
 
 	protected:
-	
-	TClonesArray      *fmcArray;               /// mcArray candidate
+  TClonesArray      *fmcArray;               /// mcArray candidate
 	AliAODRecoDecayHF *fRecoCandidate;         /// Reconstructed HF candidate
 	AliAODMCParticle  *fmcPartCandidate;
 	Int_t fNDaughters;
@@ -143,11 +149,13 @@ class AliCFVertexingHF : public TObject {
 	Int_t fFakeSelection; /// fakes selection: 0 --> all, 1 --> non-fake, 2 --> fake
 	Float_t fFake;              /// variable to indicate whether the D0 was a fake or not: 0 --> fake, 1 --> MC, 2 --> non-fake
 	Bool_t fRejectIfNoQuark;  /// flag to remove events not geenrated with PYTHIA
-	Double_t fMultiplicity;    /// multiplicity of the event
-	Int_t fConfiguration;    /// configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
+  Double_t fMultiplicity;    /// multiplicity of the event
+  Double_t fq2; /// magnitude of the reduced flow vector (computed using TPC tracks)
+  TClonesArray      *fTrackArray;               /// array of tracks
+  Int_t fConfiguration;    /// configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 
     /// \cond CLASSIMP    
-	ClassDef(AliCFVertexingHF, 7);
+	ClassDef(AliCFVertexingHF, 9);
     /// \endcond
 };
 

@@ -73,8 +73,9 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fTrackEfficiency(1.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
-  fTrackEfficiencyFunction(),
+  fTrackEfficiencyFunction(nullptr),
   fApplyArtificialTrackingEfficiency(kFALSE),
+  fRandom(0),
   fLocked(0),
   fFillConstituents(kTRUE),
   fJetsName(),
@@ -111,8 +112,9 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fTrackEfficiency(1.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
-  fTrackEfficiencyFunction(),
+  fTrackEfficiencyFunction(nullptr),
   fApplyArtificialTrackingEfficiency(kFALSE),
+  fRandom(0),
   fLocked(0),
   fFillConstituents(kTRUE),
   fJetsName(),
@@ -254,9 +256,8 @@ Int_t AliEmcalJetTask::FindJets()
       // Apply artificial track inefficiency, if supplied (either constant or pT-dependent)
       if (fApplyArtificialTrackingEfficiency) {
         if (fTrackEfficiencyOnlyForEmbedding == kFALSE || (fTrackEfficiencyOnlyForEmbedding == kTRUE && tracks->GetIsEmbedding())) {
-          
-          Double_t trackEfficiency = fTrackEfficiencyFunction.Eval(it->first.Pt());
-          Double_t rnd = gRandom->Rndm();
+          Double_t trackEfficiency = fTrackEfficiencyFunction->Eval(it->first.Pt());
+          Double_t rnd = fRandom.Rndm();
           if (trackEfficiency < rnd) {
             AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
             continue;
@@ -389,17 +390,14 @@ void AliEmcalJetTask::ExecOnce()
       AliError(Form("%s: fTrackEfficiencyFunction was already loaded! Do not apply multiple artificial track efficiencies.", GetName()));
     }
     
-    fTrackEfficiencyFunction = TF1("trackEfficiencyFunction", "[0]", 0., fMaxBinPt);
-    fTrackEfficiencyFunction.SetParameter(0, fTrackEfficiency);
+    fTrackEfficiencyFunction = new TF1("trackEfficiencyFunction", "[0]", 0., fMaxBinPt);
+    fTrackEfficiencyFunction->SetParameter(0, fTrackEfficiency);
     fApplyArtificialTrackingEfficiency = kTRUE;
   }
   
   // If artificial tracking efficiency is enabled (either constant or pT-depdendent), set up random number generator
   if (fApplyArtificialTrackingEfficiency) {
-    if (gRandom) {
-      delete gRandom;
-    }
-    gRandom = new TRandom3(0);
+    fRandom.SetSeed(0);
   }
 
   fJetsName = AliJetContainer::GenerateJetName(fJetType, fJetAlgo, fRecombScheme, fRadius, GetParticleContainer(0), GetClusterContainer(0), fJetsTag);
@@ -999,8 +997,7 @@ void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, cons
     return;
   }
   
-  TF1* trackEffClone = static_cast<TF1*>(trackEff->Clone());
-  fTrackEfficiencyFunction = *trackEffClone;
+  fTrackEfficiencyFunction = static_cast<TF1*>(trackEff->Clone());
   fApplyArtificialTrackingEfficiency = kTRUE;
   
   file->Close();

@@ -17,9 +17,9 @@ ClassImp(AliCascadeResult);
 AliCascadeResult::AliCascadeResult() :
   AliVWeakResult(),
 fMassHypo(AliCascadeResult::kXiMinus),
-fhNCentBins(-1),
+fhNCentBounds(-1),
 fhCentBins(0x0),
-fhNPtBins(-1),
+fhNPtBounds(-1),
 fhPtBins(0x0),
 fhNMassBins(-1),
 fhMinMass(-1),
@@ -94,19 +94,20 @@ fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
-fCutDCABachToPVWeighted(-1)
+fCutDCABachToPVWeighted(-1),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Dummy Constructor - not to be used!
-    fhNCentBins = 20;
-    fhCentBins = new Double_t[fhNCentBins+1];
-    for(Long_t ibin=0; ibin<fhNCentBins+1; ibin++)
-        fhCentBins[ibin] = ibin*100./fhNCentBins;
+    fhNCentBounds = 21;
+    fhCentBins = new Double_t[fhNCentBounds];
+    for(Long_t ibin=0; ibin<fhNCentBounds; ibin++)
+        fhCentBins[ibin] = ibin*100./(fhNCentBounds-1);
     
     //momentum binning assignment
-    fhNPtBins = 200;
-    fhPtBins = new Double_t[fhNPtBins+1];
-    for(Long_t ibin=0; ibin<fhNPtBins+1; ibin++)
-        fhPtBins[ibin] = ibin*100./fhNPtBins;
+    fhNPtBounds = 201;
+    fhPtBins = new Double_t[fhNPtBounds];
+    for(Long_t ibin=0; ibin<fhNPtBounds; ibin++)
+        fhPtBins[ibin] = ibin*100./(fhNPtBounds-1);
     
     //Invariant mass assignment
     fhNMassBins = 400;
@@ -117,9 +118,9 @@ fCutDCABachToPVWeighted(-1)
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
-fhNCentBins(-1),
+fhNCentBounds(-1),
 fhCentBins(0x0),
-fhNPtBins(-1),
+fhNPtBounds(-1),
 fhPtBins(0x0),
 fhNMassBins(-1),
 fhMinMass(-1),
@@ -194,19 +195,20 @@ fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
-fCutDCABachToPVWeighted(-1)
+fCutDCABachToPVWeighted(-1),
+fCutAtLeastOneTOF(kFALSE)
 {
-    // Named constructor (OK)
-    fhNCentBins = 20;
-    fhCentBins = new Double_t[fhNCentBins+1];
-    for(Long_t ibin=0; ibin<fhNCentBins+1; ibin++)
-        fhCentBins[ibin] = ibin*100./fhNCentBins;
+    // Named constructor
+    fhNCentBounds = 21;
+    fhCentBins = new Double_t[fhNCentBounds];
+    for(Long_t ibin=0; ibin<fhNCentBounds; ibin++)
+        fhCentBins[ibin] = ibin*100./(fhNCentBounds-1);
     
     //momentum binning assignment
-    fhNPtBins = 200;
-    fhPtBins = new Double_t[fhNPtBins+1];
-    for(Long_t ibin=0; ibin<fhNPtBins+1; ibin++)
-        fhPtBins[ibin] = ibin*100./fhNPtBins;
+    fhNPtBounds = 201;
+    fhPtBins = new Double_t[fhNPtBounds];
+    for(Long_t ibin=0; ibin<fhNPtBounds; ibin++)
+        fhPtBins[ibin] = ibin*100./(fhNPtBounds-1);
     
     //Invariant mass assignment
     fhNMassBins = 400;
@@ -217,9 +219,9 @@ fCutDCABachToPVWeighted(-1)
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
-fhNCentBins(-1),
+fhNCentBounds(-1),
 fhCentBins(0x0),
-fhNPtBins(-1),
+fhNPtBounds(-1),
 fhPtBins(0x0),
 fhNMassBins(-1),
 fhMinMass(-1),
@@ -294,18 +296,19 @@ fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
-fCutDCABachToPVWeighted(-1)
+fCutDCABachToPVWeighted(-1),
+fCutAtLeastOneTOF(kFALSE)
 {
     //centrality binning assignment
-    fhNCentBins = lNCentBins;
-    fhCentBins = new Double_t[lNCentBins+1];
-    for(Long_t ibin=0; ibin<lNCentBins+1; ibin++)
+    fhNCentBounds = lNCentBins+1;
+    fhCentBins = new Double_t[fhNCentBounds];
+    for(Long_t ibin=0; ibin<fhNCentBounds; ibin++)
         fhCentBins[ibin] = lCentBins[ibin];
     
     //momentum binning assignment
-    fhNPtBins = lNPtBins;
-    fhPtBins = new Double_t[lNPtBins+1];
-    for(Long_t ibin=0; ibin<lNPtBins+1; ibin++)
+    fhNPtBounds = lNPtBins+1;
+    fhPtBins = new Double_t[fhNPtBounds];
+    for(Long_t ibin=0; ibin<fhNPtBounds; ibin++)
         fhPtBins[ibin] = lPtBins[ibin];
     
     //Invariant mass assignment
@@ -317,9 +320,9 @@ fCutDCABachToPVWeighted(-1)
 AliCascadeResult::AliCascadeResult(const char * name, AliCascadeResult::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
-fhNCentBins(-1),
+fhNCentBounds(-1),
 fhCentBins(0x0),
-fhNPtBins(-1),
+fhNPtBounds(-1),
 fhPtBins(0x0),
 fhNMassBins(-1),
 fhMinMass(-1),
@@ -394,18 +397,19 @@ fCutVarDCACascDau_Const(1),
 fCutDCACascadeToPV(1e+3),
 fCutDCANegToPVWeighted(-1),
 fCutDCAPosToPVWeighted(-1),
-fCutDCABachToPVWeighted(-1)
+fCutDCABachToPVWeighted(-1),
+fCutAtLeastOneTOF(kFALSE)
 {
     //centrality binning assignment
-    fhNCentBins = lNCentBins;
-    fhCentBins = new Double_t[lNCentBins+1];
-    for(Long_t ibin=0; ibin<lNCentBins+1; ibin++)
+    fhNCentBounds = lNCentBins+1;
+    fhCentBins = new Double_t[fhNCentBounds];
+    for(Long_t ibin=0; ibin<fhNCentBounds; ibin++)
         fhCentBins[ibin] = lCentBins[ibin];
     
     //momentum binning assignment
-    fhNPtBins = lNPtBins;
-    fhPtBins = new Double_t[lNPtBins+1];
-    for(Long_t ibin=0; ibin<lNPtBins+1; ibin++)
+    fhNPtBounds = lNPtBins+1;
+    fhPtBins = new Double_t[fhNPtBounds];
+    for(Long_t ibin=0; ibin<fhNPtBounds; ibin++)
         fhPtBins[ibin] = lPtBins[ibin];
     
     //Invariant mass assignment
@@ -418,8 +422,8 @@ AliCascadeResult::AliCascadeResult(const AliCascadeResult& lCopyMe, TString lNew
 : AliVWeakResult(lCopyMe),
 fMassHypo(lCopyMe.fMassHypo),
 //Binning matters
-fhNCentBins( lCopyMe.fhNCentBins),
-fhNPtBins( lCopyMe.fhNPtBins),
+fhNCentBounds( lCopyMe.fhNCentBounds),
+fhNPtBounds( lCopyMe.fhNPtBounds),
 fhNMassBins( lCopyMe.fhNMassBins),
 fhMinMass(lCopyMe.fhMinMass),
 fhMaxMass(lCopyMe.fhMaxMass),
@@ -496,7 +500,8 @@ fCutVarDCACascDau_Const(lCopyMe.fCutVarDCACascDau_Const),
 fCutDCACascadeToPV(lCopyMe.fCutDCACascadeToPV),
 fCutDCANegToPVWeighted(lCopyMe.fCutDCANegToPVWeighted),
 fCutDCAPosToPVWeighted(lCopyMe.fCutDCAPosToPVWeighted),
-fCutDCABachToPVWeighted(lCopyMe.fCutDCABachToPVWeighted)
+fCutDCABachToPVWeighted(lCopyMe.fCutDCABachToPVWeighted),
+fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF)
 
 {
     SetName( lNewName.Data() );
@@ -507,14 +512,14 @@ fCutDCABachToPVWeighted(lCopyMe.fCutDCABachToPVWeighted)
     //Clone objects, if they exist
     if ( lCopyMe.fhCentBins ){
         //centrality binning assignment
-        fhCentBins = new Double_t[fhNCentBins+1];
-        for(Long_t ibin=0; ibin<fhNCentBins+1; ibin++)
+        fhCentBins = new Double_t[fhNCentBounds];
+        for(Long_t ibin=0; ibin<fhNCentBounds; ibin++)
             fhCentBins[ibin] = lCopyMe.fhCentBins[ibin];
     }
     if ( lCopyMe.fhPtBins){
         //momentum binning assignment
-        fhPtBins = new Double_t[fhNPtBins+1];
-        for(Long_t ibin=0; ibin<fhNPtBins+1; ibin++)
+        fhPtBins = new Double_t[fhNPtBounds];
+        for(Long_t ibin=0; ibin<fhNPtBounds; ibin++)
             fhPtBins[ibin] = lCopyMe.fhPtBins[ibin];
     }
     if (lCopyMe.GetHistogramToCopy() ){
@@ -534,11 +539,11 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     SetName(lNewName.Data());
     fMassHypo = lCopyMe->GetMassHypothesis();
     //Binning matters
-    fhNCentBins = lCopyMe->GetNCentBins(),
-    fhNPtBins = lCopyMe->GetNPtBins(),
-    fhNMassBins = lCopyMe->GetNMassBins(),
-    fhMinMass = lCopyMe->GetMinMass(),
-    fhMaxMass = lCopyMe->GetMaxMass(),
+    fhNCentBounds = lCopyMe->GetNCentBins()+1;
+    fhNPtBounds = lCopyMe->GetNPtBins()+1;
+    fhNMassBins = lCopyMe->GetNMassBins();
+    fhMinMass = lCopyMe->GetMinMass();
+    fhMaxMass = lCopyMe->GetMaxMass();
     //Acceptance Cuts
     fCutMinRapidity     = lCopyMe->GetCutMinRapidity();
     fCutMaxRapidity     = lCopyMe->GetCutMaxRapidity();
@@ -628,20 +633,22 @@ AliCascadeResult::AliCascadeResult(AliCascadeResult *lCopyMe, TString lNewName)
     fCutDCAPosToPVWeighted  = lCopyMe -> GetCutDCAPosToPVWeighted();
     fCutDCABachToPVWeighted = lCopyMe -> GetCutDCABachToPVWeighted();
     
+    fCutAtLeastOneTOF = lCopyMe -> GetCutAtLeastOneTOF();
+    
     // Constructor
     Double_t lThisMass = GetMass();
     
     //Clone objects, if they exist
     if ( lCopyMe->GetCentBins() ){
         //centrality binning assignment
-        fhCentBins = new Double_t[fhNCentBins+1];
-        for(Long_t ibin=0; ibin<fhNCentBins+1; ibin++)
+        fhCentBins = new Double_t[fhNCentBounds];
+        for(Long_t ibin=0; ibin<fhNCentBounds; ibin++)
             fhCentBins[ibin] = (lCopyMe->GetCentBins())[ibin];
     }
     if ( lCopyMe->GetPtBins()){
         //momentum binning assignment
-        fhPtBins = new Double_t[fhNPtBins+1];
-        for(Long_t ibin=0; ibin<fhNPtBins+1; ibin++)
+        fhPtBins = new Double_t[fhNPtBounds];
+        for(Long_t ibin=0; ibin<fhNPtBounds; ibin++)
             fhPtBins[ibin] = (lCopyMe->GetPtBins())[ibin];
     }
     if (lCopyMe->GetHistogramToCopy() ){
@@ -680,17 +687,17 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
 
     fMassHypo = lCopyMe.GetMassHypothesis();
     //Binning matters
-    fhNCentBins = lCopyMe.GetNCentBins(),
-    fhNPtBins = lCopyMe.GetNPtBins(),
-    fhNMassBins = lCopyMe.GetNMassBins(),
-    fhMinMass = lCopyMe.GetMinMass(),
-    fhMaxMass = lCopyMe.GetMaxMass(),
+    fhNCentBounds = lCopyMe.GetNCentBins()+1;
+    fhNPtBounds = lCopyMe.GetNPtBins()+1;
+    fhNMassBins = lCopyMe.GetNMassBins();
+    fhMinMass = lCopyMe.GetMinMass();
+    fhMaxMass = lCopyMe.GetMaxMass();
     //Acceptance cuts
     fCutMinRapidity = lCopyMe.GetCutMinRapidity();
-    fCutMaxRapidity = lCopyMe.GetCutMaxRapidity(),
+    fCutMaxRapidity = lCopyMe.GetCutMaxRapidity();
     //V0 Cuts
     fCutDCANegToPV = lCopyMe.GetCutDCANegToPV();
-    fCutDCAPosToPV = lCopyMe.GetCutDCAPosToPV(),
+    fCutDCAPosToPV = lCopyMe.GetCutDCAPosToPV();
     fCutDCAV0Daughters = lCopyMe.GetCutDCAV0Daughters();
     fCutV0CosPA = lCopyMe.GetCutV0CosPA();
     fCutV0Radius = lCopyMe.GetCutV0Radius();
@@ -774,6 +781,8 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fCutDCAPosToPVWeighted  = lCopyMe.GetCutDCAPosToPVWeighted();
     fCutDCABachToPVWeighted = lCopyMe.GetCutDCABachToPVWeighted();
     
+    fCutAtLeastOneTOF = lCopyMe.GetCutAtLeastOneTOF();
+    
     if (fhCentBins) {
         delete [] fhCentBins;
     }
@@ -794,14 +803,14 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     //Clone objects, if they exist
     if ( lCopyMe.GetCentBins() ){
         //centrality binning assignment
-        fhCentBins = new Double_t[fhNCentBins+1];
-        for(Long_t ibin=0; ibin<fhNCentBins+1; ibin++)
+        fhCentBins = new Double_t[fhNCentBounds];
+        for(Long_t ibin=0; ibin<fhNCentBounds; ibin++)
             fhCentBins[ibin] = (lCopyMe.GetCentBins())[ibin];
     }
     if ( lCopyMe.GetPtBins()){
         //momentum binning assignment
-        fhPtBins = new Double_t[fhNPtBins+1];
-        for(Long_t ibin=0; ibin<fhNPtBins+1; ibin++)
+        fhPtBins = new Double_t[fhNPtBounds];
+        for(Long_t ibin=0; ibin<fhNPtBounds; ibin++)
             fhPtBins[ibin] = (lCopyMe.GetPtBins())[ibin];
     }
     if (lCopyMe.GetHistogramToCopy() ){
@@ -938,6 +947,8 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     if ( TMath::Abs(fCutDCAPosToPVWeighted   - lCompareCascade->GetCutDCAPosToPVWeighted()) > 1e-6 ) lReturnValue = kFALSE;
     if ( TMath::Abs(fCutDCABachToPVWeighted  - lCompareCascade->GetCutDCABachToPVWeighted()) > 1e-6 ) lReturnValue = kFALSE;
     
+    if ( TMath::Abs(fCutAtLeastOneTOF - lCompareCascade->GetCutAtLeastOneTOF()) > 1e-6 ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -950,7 +961,8 @@ void AliCascadeResult::Print()
     cout<<"    AliCascadeResult Configuration      "<<endl;
     cout<<"========================================"<<endl;
     cout<<" Object Name........: "<<this->GetName()<<endl;
-    cout<<" Histogram Name.....: "<<fHisto->GetName()<<endl;
+    if( fHisto)
+        cout<<" Histogram Name.....: "<<fHisto->GetName()<<endl;
     if( fProtonProfile )
         cout<<" Proton profile.....: will be saved"<<endl;
     if( fMassHypo == AliCascadeResult::kXiMinus      ) cout<<" Mass Hypothesis....: XiMinus"<<endl;
@@ -1037,6 +1049,7 @@ void AliCascadeResult::Print()
     cout<<" wDCA Neg to PV.....: "<<fCutDCANegToPVWeighted<<endl;
     cout<<" wDCA Pos to PV.....: "<<fCutDCAPosToPVWeighted<<endl;
     cout<<" wDCA Bach to PV....: "<<fCutDCABachToPVWeighted<<endl;
+    cout<<" At least 1 tof.....: "<<fCutAtLeastOneTOF<<endl;
     cout<<"========================================"<<endl;
     return;
 }
@@ -1075,10 +1088,10 @@ void AliCascadeResult::InitializeHisto ()
 //Initialize the main output histogram
 {
     if( fHisto ) return; // do nothing
-    AliWarning( Form("Initializing output histogram named %s", GetName() ) ) ;
+    //AliWarning( Form("Initializing output histogram named %s", GetName() ) ) ;
     //=============================================================
     //Nothing determined
-    if ( fhNCentBins < 0 && fhNPtBins < 0 && fhNMassBins < 0 ){
+    if ( fhNCentBounds < 0 && fhNPtBounds < 0 && fhNMassBins < 0 ){
         //Main output histogram: Centrality, pt, mass
         Double_t lThisMass = GetMass();
         fHisto = new TH3F(Form("fHisto_%s",GetName()),"", 20,0,100, 200,0,20, 400,lThisMass-0.1,lThisMass+0.1 );
@@ -1086,7 +1099,7 @@ void AliCascadeResult::InitializeHisto ()
     }
     //=============================================================
     //centrality, pT determined, but mass not
-    if ( fhNCentBins > 0 && fhNPtBins > 0 && fhNMassBins < 0 ){
+    if ( fhNCentBounds > 0 && fhNPtBounds > 0 && fhNMassBins < 0 ){
         Double_t lThisMass = GetMass();
         
         //Construct binning in invariant mass as standard: 400 bins from lThisMass-0.1 to lThisMass+1
@@ -1099,12 +1112,12 @@ void AliCascadeResult::InitializeHisto ()
         for( Long_t ibound = 0; ibound<lNMassBins+1; ibound++) lMassBins[ibound] = (lThisMass-0.1) + ( ( (Double_t) ibound )*lMassDelta );
         
         //Main output histogram: Centrality, mass, transverse momentum: Variable binning
-        fHisto = new TH3F(Form("fHisto_%s",GetName()),"", fhNCentBins, fhCentBins, fhNPtBins, fhPtBins, lNMassBins, lMassBins );
+        fHisto = new TH3F(Form("fHisto_%s",GetName()),"", fhNCentBounds-1, fhCentBins, fhNPtBounds-1, fhPtBins, lNMassBins, lMassBins );
         fHisto->Sumw2();
     }
     //=============================================================
     //Fully custom: centrality + pT + mass
-    if ( fhNCentBins > 0 && fhNPtBins > 0 && fhNMassBins > 0 ){
+    if ( fhNCentBounds > 0 && fhNPtBounds > 0 && fhNMassBins > 0 ){
         const Long_t lNMassBinsConst = fhNMassBins;
         
         Double_t lMassWindow = (fhMaxMass - fhMinMass)/2.0 ;
@@ -1112,19 +1125,19 @@ void AliCascadeResult::InitializeHisto ()
         Double_t lMassBins[lNMassBinsConst+1];
         
         for( Long_t ibound = 0; ibound<fhNMassBins+1; ibound++) lMassBins[ibound] = fhMinMass + ( ( (Double_t) ibound )*lMassDelta );
-        
+        /*
         cout<<"Centrality binning: "<<flush;
-        for( Long_t ibound = 0; ibound<fhNCentBins+1; ibound++) cout<<fhCentBins[ibound]<<" "<<flush;
+        for( Long_t ibound = 0; ibound<fhNCentBounds; ibound++) cout<<fhCentBins[ibound]<<" "<<flush;
         cout<<endl;
         cout<<"Pt binning: "<<flush;
-        for( Long_t ibound = 0; ibound<fhNPtBins+1; ibound++) cout<<fhPtBins[ibound]<<" "<<flush;
+        for( Long_t ibound = 0; ibound<fhNPtBounds; ibound++) cout<<fhPtBins[ibound]<<" "<<flush;
         cout<<endl;
         cout<<"Mass binning: "<<flush;
         for( Long_t ibound = 0; ibound<fhNMassBins+1; ibound++) cout<<lMassBins[ibound]<<" "<<flush;
         cout<<endl;
-        
+        */
         //Main output histogram: Centrality, mass, transverse momentum: Variable binning
-        fHisto = new TH3F(Form("fHisto_%s",GetName()),"", fhNCentBins, fhCentBins, fhNPtBins, fhPtBins, fhNMassBins, lMassBins );
+        fHisto = new TH3F(Form("fHisto_%s",GetName()),"", fhNCentBounds-1, fhCentBins, fhNPtBounds-1, fhPtBins, fhNMassBins, lMassBins );
         fHisto->Sumw2();
     }
     //=============================================================
@@ -1134,7 +1147,7 @@ void AliCascadeResult::InitializeHisto ()
 void AliCascadeResult::InitializeProtonProfile () 
 //Initialize TProfile to do bookkeeping of proton momenta
 {
-    if(!fProtonProfile) fProtonProfile = new TProfile( Form("fProtonProfile_%s",GetName()), "", fhNPtBins, fhPtBins);
+    if(!fProtonProfile) fProtonProfile = new TProfile( Form("fProtonProfile_%s",GetName()), "", fhNPtBounds-1, fhPtBins);
 }
 
 //________________________________________________________________

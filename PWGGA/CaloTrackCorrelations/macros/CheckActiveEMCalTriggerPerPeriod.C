@@ -152,11 +152,31 @@ Bool_t CheckActiveEMCalTriggerPerPeriod(Bool_t simulation, TString trigger, TStr
     return kFALSE;
   }
   
-  // Run2: L1 trigger not used again until LHC15o period
+  // Run2: L0 and L2 trigger not used in LHC15o period
   //
   if ( year == 2015 && period == "LHC15o" && ( trigger.Contains("L0") || trigger.Contains("L2") ) )
   { 
     printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal for period %s, SKIP \n", 
+           trigger.Data(),period.Data());
+    
+    return kFALSE;
+  }
+
+  // Run2: triggers not used in LHC17n period XeXe
+  //
+  if ( year == 2017 && period == "LHC17n" && trigger.Contains("L") ) 
+  { 
+    printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal triggers for period %s XeXe, SKIP \n", 
+           trigger.Data(),period.Data());
+    
+    return kFALSE;
+  }
+  
+  // Run2: L1 trigger not used in LHC17pq period
+  //
+  if ( year == 2017 && ( period == "LHC17p" || period == "LHC17q" ) && ( trigger.Contains("L1") ) )
+  { 
+    printf("CheckActiveEMCalTriggerPerPeriod() - REMARK! : No %s triggered events by EMCal L1 trigger for period %s, SKIP \n", 
            trigger.Data(),period.Data());
     
     return kFALSE;

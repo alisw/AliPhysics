@@ -47,6 +47,7 @@ fCentralityMax(100),
 fEMCEG1(kFALSE),
 fDCalDG1(kFALSE),
 fFlagApplySSCut(kTRUE),
+fFlagFillSprs(kFALSE),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fUseTender(kTRUE),
@@ -107,6 +108,7 @@ fULSEnhPhoton(0),
 fPhotonicDCA(0),
 fInclElecDCA(0),
 fInclElecDCAnoSign(0),
+fElecEoPnoSig(0),
 fInclElecEoP(0),
 fTPCElecEoP(0),
 fHadronEoP(0),
@@ -184,9 +186,9 @@ fBElecAftTPCeID(0),
 
 fElecAftEMCeID(0),
 fHFElecAftEMCeID(0),
-fBElecAftEMCeID(0)
+fBElecAftEMCeID(0),
 
-//fElectronSprs(0)
+fElectronSprs(0)
 {
     //Root IO constructor, don't allocate memory here
 }
@@ -206,6 +208,7 @@ fCentralityMax(100),
 fEMCEG1(kFALSE),
 fDCalDG1(kFALSE),
 fFlagApplySSCut(kTRUE),
+fFlagFillSprs(kFALSE),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fUseTender(kTRUE),
@@ -266,6 +269,7 @@ fULSEnhPhoton(0),
 fPhotonicDCA(0),
 fInclElecDCA(0),
 fInclElecDCAnoSign(0),
+fElecEoPnoSig(0),
 fInclElecEoP(0),
 fTPCElecEoP(0),
 fHadronEoP(0),
@@ -341,8 +345,8 @@ fBElecAftTPCeID(0),
 
 fElecAftEMCeID(0),
 fHFElecAftEMCeID(0),
-fBElecAftEMCeID(0)
-//fElectronSprs(0)
+fBElecAftEMCeID(0),
+fElectronSprs(0)
 {
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -425,10 +429,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fdEdx = new TH1F("fdEdx","Track dE/dx Distribution;dE/dx;Counts",160,0,160);
     fOutputList->Add(fdEdx);
     
-    fnSigma = new TH2F("fnSigma","Track fnSigma Distribution;pT;fnSigma",60,0,30,40,-10,10);
+    fnSigma = new TH2F("fnSigma","Track fnSigma Distribution;pT;fnSigma",30,0,30,100,-10,10);
     fOutputList->Add(fnSigma);
     
-    fnSigmaAftTrkMatch = new TH2F("fnSigmaAftTrkMatch","Track fnSigma Distribution after track matching to cal;pT;fnSigma",60,0,30,40,-10,10);
+    fnSigmaAftTrkMatch = new TH2F("fnSigmaAftTrkMatch","Track fnSigma Distribution after track matching to cal;pT;fnSigma",30,0,30,100,-10,10);
     fOutputList->Add(fnSigmaAftTrkMatch);
     
     fCentCheck = new TH1F("fCentCheck","Event Centrality Distribution;Centrality;Counts",100,0,100);
@@ -540,6 +544,9 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     
     fInclElecDCAnoSign = new TH2F("fInclElecDCAnoSign","Incl Elec DCA (no Charge); p_{T}(GeV/c); DCAxMagField; counts;", 60,0,30., 200,-0.2,0.2);
     fOutputList->Add(fInclElecDCAnoSign);
+    
+    fElecEoPnoSig = new TH2F("fElecEoPnoSig","Elec E/p, no nSig cut; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
+    fOutputList->Add(fElecEoPnoSig);
     
     fInclElecEoP = new TH2F("fInclElecEoP","Incl Elec E/p; p_{T}(GeV/c); E/p; counts;", 60,0,30., 100,0.,2.);
     fOutputList->Add(fInclElecEoP);
@@ -814,6 +821,12 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     fBElecAftEMCeID->Sumw2();
     fOutputList->Add(fBElecAftEMCeID);
     
+    Int_t bins1[5]=  {/*280*/60,  160, 100, 100,  200}; // pT;nSigma;eop;m20;DCA
+    Double_t xmin1[5]={ /*2*/0,   -8,   0,   0, -0.2};
+    Double_t xmax1[5]={30,    8,   2,   1,  0.2};
+    fElectronSprs = new THnSparseD("Electron","Electron;pT;nSigma;eop;m20;DCA;",5,bins1,xmin1,xmax1);
+    fOutputList->Add(fElectronSprs);
+    
     //add the list to our output file
     PostData(1, fOutputList);
 }
@@ -913,7 +926,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 Int_t ilabelGM = momPart->GetMother();
                 if (ilabelGM>0) {
                     AliAODMCParticle *gmomPart = (AliAODMCParticle*)fMCarray->At(ilabelGM);//get grandma particle
-                    Int_t pidGM = TMath::Abs(momPart->GetPdgCode());
+                    Int_t pidGM = TMath::Abs(gmomPart->GetPdgCode());
                     if (pidGM>500 && pidGM<599) {
                         continue; //reject beauty feed down
                     }
@@ -1452,14 +1465,27 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
                 
             }
+            /////////////////////
+            // Electron sparse //
+            /////////////////////
+            Double_t EovP = (clustMatch->E())/(track->P());
+            Double_t M20 = clustMatch->GetM20();
+            Double_t M02 = clustMatch->GetM02();
             
+            Double_t fvalueElectron[5] = {-999,-999,-999,-999,-999};
+            fvalueElectron[0] = track->Pt();
+            fvalueElectron[1] = nsigma;
+            fvalueElectron[2] = EovP;
+            fvalueElectron[3] = M20;
+            fvalueElectron[4] = DCA;
+            
+            if (fFlagFillSprs) {
+                fElectronSprs->Fill(fvalueElectron);
+            }
             
             ///////////////////////////
             // Hadron Contam. Histos //
             ///////////////////////////
-            Double_t EovP = (clustMatch->E())/(track->P());
-            Double_t M20 = clustMatch->GetM20();
-            Double_t M02 = clustMatch->GetM02();
             if(nsigma<-4.) {
                 if(fFlagApplySSCut && M20>0.01 && M20<0.35) {
                     fHadronEoP->Fill(track->Pt(),EovP);
@@ -1483,6 +1509,14 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             ///////////////////
             if (nsigma>-0.1 && nsigma<3) {
                 fTPCElecEoP->Fill(track->Pt(),EovP);
+            }
+            
+            
+            if(fFlagApplySSCut && M20>0.01 && M20<0.35) {
+                fElecEoPnoSig->Fill(track->Pt(),EovP);
+            }
+            if(!fFlagApplySSCut) {
+                fElecEoPnoSig->Fill(track->Pt(),EovP);
             }
             
             if((nsigma<-1) || (nsigma>3)) continue;
@@ -1574,7 +1608,6 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
         }
         
     }
-    //cout << "Electron in the track loop================: " << eleinTrkLoop <<endl;
     
     //save the data gathered in this iteration
     PostData(1,fOutputList);

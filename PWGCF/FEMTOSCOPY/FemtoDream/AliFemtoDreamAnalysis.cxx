@@ -14,28 +14,31 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 :fMVPileUp(false)
 ,fEvtCutQA(false)
 ,fQA()
-,fFemtoTrack()
-,fFemtov0()
-,fFemtoCasc()
-,fEvent()
-,fEvtCuts()
-,fTrackCuts()
-,fAntiTrackCuts()
-,fv0Cuts()
-,fAntiv0Cuts()
-,fCascCuts()
-,fAntiCascCuts()
-,fPairCleaner()
-,fControlSample()
+,fFemtoTrack(nullptr)
+,fFemtov0(nullptr)
+,fFemtoCasc(nullptr)
+,fEvent(nullptr)
+,fEvtCuts(nullptr)
+,fTrackCuts(nullptr)
+,fAntiTrackCuts(nullptr)
+,fv0Cuts(nullptr)
+,fAntiv0Cuts(nullptr)
+,fCascCuts(nullptr)
+,fAntiCascCuts(nullptr)
+,fPairCleaner(nullptr)
+,fControlSample(nullptr)
 ,fTrackBufferSize(0)
-,fGTI(0)
-,fConfig(0)
-,fPartColl(0)
+,fGTI(nullptr)
+,fConfig(nullptr)
+,fPartColl(nullptr)
 {
 
 }
 
 AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
+  if (fEvent) {
+    delete fEvent;
+  }
   if (fFemtoTrack) {
     delete fFemtoTrack;
   }
@@ -44,6 +47,15 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
   }
   if (fFemtoCasc) {
     delete fFemtoCasc;
+  }
+  if (fPairCleaner) {
+    delete fPairCleaner;
+  }
+  if (fPartColl) {
+    delete fPartColl;
+  }
+  if (fControlSample) {
+    delete fControlSample;
   }
 }
 
@@ -61,6 +73,7 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
 
   fFemtoCasc=new AliFemtoDreamCascade();
   fFemtoCasc->SetUseMCInfo(isMonteCarlo);
+  //PDG Codes should be set assuming Xi- to also work for Xi+
   fFemtoCasc->SetPDGCode(fCascCuts->GetPDGCodeCasc());
   fFemtoCasc->SetPDGDaugPos(fCascCuts->GetPDGCodePosDaug());
   fFemtoCasc->GetPosDaug()->SetUseMCInfo(isMonteCarlo);
@@ -83,17 +96,23 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
       !((!fConfig->GetMinimalBookingME())||(!fConfig->GetMinimalBookingSample()));
   fPairCleaner=new AliFemtoDreamPairCleaner(4,4,MinBooking);
 
-  if (MinBooking) {
+  if (!MinBooking) {
     fQA=new TList();
     fQA->SetOwner();
     fQA->SetName("QA");
     fQA->Add(fPairCleaner->GetHistList());
-    if (fEvtCutQA) fQA->Add(fEvent->GetEvtCutList());
+    if (fEvtCutQA) {
+      fQA->Add(fEvent->GetEvtCutList());
+    }
   }
-  fPartColl=
+  if (fConfig->GetUseEventMixing()) {
+    fPartColl=
       new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
-  fControlSample=
+  }
+  if (fConfig->GetUsePhiSpinning()) {
+    fControlSample=
       new AliFemtoDreamControlSample(fConfig,fConfig->GetMinimalBookingSample());
+  }
   return;
 }
 
@@ -273,6 +292,67 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   fPairCleaner->StoreParticle(AntiParticles);
   fPairCleaner->StoreParticle(Decays);
   fPairCleaner->StoreParticle(AntiDecays);
+  fPairCleaner->StoreParticle(XiDecays);
+  fPairCleaner->StoreParticle(AntiXiDecays);
+
+  if (fConfig->GetUseEventMixing()) {
+    fPartColl->SetEvent(
+        fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),
+        fEvent->GetMultiplicity(),fEvent->GetV0MCentrality());
+  }
+  if (fConfig->GetUsePhiSpinning()) {
+    fControlSample->SetEvent(
+        fPairCleaner->GetCleanParticles(), fEvent->GetMultiplicity());
+  }
+}
+
+
+void AliFemtoDreamAnalysis::Make(AliESDEvent *evt) {
+  if (!evt) {
+    AliFatal("No Input Event");
+  }
+  fEvent->SetEvent(evt);
+  if (!fEvtCuts->isSelected(fEvent)) {
+    return;
+  }
+  std::vector<AliFemtoDreamBasePart> Particles;
+  std::vector<AliFemtoDreamBasePart> AntiParticles;
+  for (int iTrack=0;iTrack<evt->GetNumberOfTracks();++iTrack) {
+    AliESDtrack *track=static_cast<AliESDtrack *>(evt->GetTrack(iTrack));
+    fFemtoTrack->SetTrack(track);
+    fFemtoTrack->SetTrack(track);
+    if (fTrackCuts->isSelected(fFemtoTrack)) {
+      Particles.push_back(*fFemtoTrack);
+    }
+    if (fAntiTrackCuts->isSelected(fFemtoTrack)) {
+      AntiParticles.push_back(*fFemtoTrack);
+    }
+  }
+  std::vector<AliFemtoDreamBasePart> DummyDecays;
+  std::vector<AliFemtoDreamBasePart> AntiDummyDecays;
+  std::vector<AliFemtoDreamBasePart> XiDecays;
+  std::vector<AliFemtoDreamBasePart> AntiXiDecays;
+  for (Int_t nCascade = 0; nCascade < evt->GetNumberOfCascades(); ++nCascade) {
+    AliESDcascade *esdCascade = evt->GetCascade(nCascade);
+    fFemtoCasc->SetCascade(evt,esdCascade);
+    if (fCascCuts->isSelected(fFemtoCasc) ) {
+      XiDecays.push_back(*fFemtoCasc);
+    }
+    if (fAntiCascCuts->isSelected(fFemtoCasc)) {
+      AntiXiDecays.push_back(*fFemtoCasc);
+    }
+  }
+  fPairCleaner->ResetArray();
+  fPairCleaner->CleanTrackAndDecay(&Particles,&XiDecays,2);
+  fPairCleaner->CleanTrackAndDecay(&AntiParticles,&AntiXiDecays,3);
+
+  fPairCleaner->CleanDecay(&XiDecays,2);
+  fPairCleaner->CleanDecay(&AntiXiDecays,3);
+
+  fPairCleaner->StoreParticle(Particles);
+  fPairCleaner->StoreParticle(AntiParticles);
+  fPairCleaner->StoreParticle(DummyDecays); //Spaceholders for Lambdas to not crash the task.
+  fPairCleaner->StoreParticle(AntiDummyDecays);
   fPairCleaner->StoreParticle(XiDecays);
   fPairCleaner->StoreParticle(AntiXiDecays);
 
