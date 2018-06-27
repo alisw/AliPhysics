@@ -48,7 +48,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
 	TString TriggerName="";
 	if     (trigger == (UInt_t)AliVEvent::kAny)  TriggerName = "kAny";
 	else if(trigger == (UInt_t)AliVEvent::kINT7) TriggerName = "kINT7";
-	else if(trigger == (UInt_t)AliVEvent::kPHI7) TriggerName = "kPHI7";
+	else if(trigger & AliVEvent::kPHI7) TriggerName = "kPHI7";
 
   //if(trigger == (UInt_t)AliVEvent::kPHI7){
   //  if(triggerinput.Contains("L1") || triggerinput.Contains("L0")){
@@ -60,7 +60,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   //    return NULL;
   //  }
   //}
-  if(trigger == (UInt_t)AliVEvent::kPHI7){
+  if(trigger & AliVEvent::kPHI7){
     if(L1input > 0){
       if(L1input == 7)      TriggerName = TriggerName + "_" + "L1H";
       else if(L1input == 6) TriggerName = TriggerName + "_" + "L1M";
@@ -115,7 +115,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   }
   else taskname = Form("%s_%s_%s_Cen%d_%d%s_BS%dns_DBC%dcell_Emin%dMeV",name,CollisionSystem.Data(),TriggerName.Data(),(Int_t)CenMin,(Int_t)CenMax,PIDname.Data(),(Int_t)bs,(Int_t)(distBC),(Int_t)(Emin*1e+3));
 
-  if(trigger == (UInt_t)AliVEvent::kPHI7 && ApplyTOFTrigger) taskname += "_TOFTrigger";
+  if((trigger & AliVEvent::kPHI7) && ApplyTOFTrigger) taskname += "_TOFTrigger";
 
   if(ForceActiveTRU) taskname += "_ForceActiveTRU";
 
@@ -127,8 +127,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   else if(L1input == 5)  Ethre = 4.0;
   else if(L0input == 9)  Ethre = 0.0;//LHC15n
   else if(L0input == 17) Ethre = 0.0;//LHC17p
-  if(trigger == (UInt_t)AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
-  if(kMC && trigger == (UInt_t)AliVEvent::kPHI7) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
+  if(trigger & AliVEvent::kPHI7) task->SetPHOSTriggerAnalysis(L1input,L0input,Ethre,isMC,ApplyTOFTrigger,-1);
+  if(kMC && (trigger & AliVEvent::kPHI7)) trigger = AliVEvent::kINT7;//change trigger selection in MC when you do PHOS trigger analysis.
   if(ForceActiveTRU) task->SetForceActiveTRU(L1input,L0input,Ethre,isMC);//this is to measure rejection factor from cluster energy kPHI7/kINT7 with same acceptance.
   task->SelectCollisionCandidates(trigger);
   task->SetTriggerThreshold(Ethre);

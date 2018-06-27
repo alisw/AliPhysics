@@ -988,16 +988,36 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
   //reject pile up by physics selection
   if(!fIsPHOSTriggerAnalysis && !isINT7selected){
-    AliInfo("INT7 Event is rejected by IsEventSelected()");
+    AliInfo("INT7 Event is rejected by physics selection.");
     return;
   }
 
-  Bool_t isPHI7selected = fSelectMask & AliVEvent::kPHI7;
+  Bool_t isPHI7selected = fSelectMask & (AliVEvent::kPHI7|AliVEvent::kMuonCalo);
   if(!fIsMC && fIsPHOSTriggerAnalysis && !isPHI7selected){
-    AliInfo("PHI7 Event is rejected by IsEventSelected()");
+    AliInfo("PHI7 Event is rejected by physics selection.");
     return;
   }
 
+  Int_t L0input  = 17;//for LHC17
+  Int_t L1Hinput = 7;
+  Int_t L1Minput = 6;
+  Int_t L1Linput = 5;
+  if(fRunNumber <= 246994)  L0input = 9;//for LHC15
+
+  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (L0input  - 1);//trigger input -1
+  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Hinput - 1);//trigger input -1
+  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Minput - 1);//trigger input -1
+  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Linput - 1);//trigger input -1
+
+  //As of 20180617, PHI7 in [CALO/CALOFAST] is moved AliVEvent::kMuonCalo.
+  //EMC triggers and PHOS triggers are merged to 1 bit.
+  //First, select PHOS triggered event by bit operation
+  if(!fIsMC && fIsPHOSTriggerAnalysis && 
+      (!Is0PH0fired && !Is1PHHfired && !Is1PHMfired && !Is1PHLfired)
+    ){
+    AliInfo("PHI7 Event is rejected by bit operation.");
+    return;
+  }
 
   const AliVVertex *vVertex = fEvent->GetPrimaryVertex();
   fVertex[0] = vVertex->GetX();
@@ -1153,12 +1173,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
 
   }
 
-  //event selection
-  if(!(fPHOSEventCuts->AcceptEvent(fEvent))){
-    AliInfo("event is rejected.");
-    return;
-  }
-
   if(fIsFlowTask){
     Bool_t QnOK = ExtractQnVector();
     if(!QnOK){
@@ -1168,18 +1182,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   }
   else fEPBin = 0;
 
+  //event selection
+  if(!(fPHOSEventCuts->AcceptEvent(fEvent))){
+    AliInfo("event is rejected.");
+    return;
+  }
+
   //fill fired trigger statistics right after basic event selection, but before PHI7 event selection.
-  Int_t L0input  = 17;//for LHC17
-  Int_t L1Hinput = 7;
-  Int_t L1Minput = 6;
-  Int_t L1Linput = 5;
-  if(fRunNumber <= 246994)  L0input = 9;//for LHC15
-
-  Bool_t Is0PH0fired = fEvent->GetHeader()->GetL0TriggerInputs() & 1 << (L0input  - 1);//trigger input -1
-  Bool_t Is1PHHfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Hinput - 1);//trigger input -1
-  Bool_t Is1PHMfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Minput - 1);//trigger input -1
-  Bool_t Is1PHLfired = fEvent->GetHeader()->GetL1TriggerInputs() & 1 << (L1Linput - 1);//trigger input -1
-
   if(Is0PH0fired) FillHistogramTH1(fOutputContainer,"hEventSummary",3);//0PH0
   if(Is1PHLfired) FillHistogramTH1(fOutputContainer,"hEventSummary",4);//1PHL
   if(Is1PHMfired) FillHistogramTH1(fOutputContainer,"hEventSummary",5);//1PHM
