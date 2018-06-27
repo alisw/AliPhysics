@@ -89,14 +89,14 @@ AliFemtoDreamCascadeCuts* AliFemtoDreamCascadeCuts::XiCuts(
   XiCuts->SetCutXiDaughterDCA(1.6);
   XiCuts->SetCutXiMinDistBachToPrimVtx(0.05);
 
-  XiCuts->SetCutXiCPA(0.97);
+  XiCuts->SetCutXiCPA(0.98);
   XiCuts->SetCutXiTransverseRadius(0.8,200);
   XiCuts->Setv0MassRange(1.116,0.006);
-  XiCuts->SetCutv0MaxDaughterDCA(1.6);
+  XiCuts->SetCutv0MaxDaughterDCA(1.5);
   XiCuts->SetCutv0CPA(0.97);
   XiCuts->SetCutv0TransverseRadius(1.4,200);
   XiCuts->SetCutv0MinDistToPrimVtx(0.07);
-  XiCuts->SetCutv0MinDaugDistToPrimVtx(0.04);
+  XiCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
   XiCuts->SetRejectOmegas(1672,0.005);
   XiCuts->SetPtRangeXi(0.3,999.9);
   return XiCuts;

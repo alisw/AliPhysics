@@ -5,21 +5,22 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool isESD=false,
     TString CentEst="kInt7",
     bool notpp=true,//1
-    bool DCAPlots=false,//2
-    bool CPAPlots=false,//3
-    bool MomReso=false,//4
-    bool etaPhiPlotsAtTPCRadii=false,//5
-    bool CombSigma=false,//6
-    bool PileUpRej=true,//7
-    bool mTkTPlot=false,//8
-    bool kTCentPlot=false,//9
-    bool MultvsCentPlot=false,//10
-    bool dPhidEtaPlots=false,//11
-    bool eventMixing=true,//12
-    bool phiSpin=true,//13
-    bool ContributionSplitting=false,//14
-    bool ContributionSplittingDaug=false,//15
-    bool RunNumberQA=false)//16
+    bool fineBinning=true,//2
+    bool DCAPlots=false,//3
+    bool CPAPlots=false,//4
+    bool MomReso=false,//5
+    bool etaPhiPlotsAtTPCRadii=false,//6
+    bool CombSigma=false,//7
+    bool PileUpRej=true,//8
+    bool mTkTPlot=false,//9
+    bool kTCentPlot=false,//10
+    bool MultvsCentPlot=false,//11
+    bool dPhidEtaPlots=false,//12
+    bool eventMixing=true,//13
+    bool phiSpin=true,//14
+    bool ContributionSplitting=false,//15
+    bool ContributionSplittingDaug=false,//16
+    bool RunNumberQA=false)//17
 {
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -176,30 +177,52 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   ZVtxBins.push_back(6);
   ZVtxBins.push_back(8);
   ZVtxBins.push_back(10);
-  //std::vector<int> NBins= {750,750,150,150,150,150,750,150,150,150,150,150,150,150,150,150,150,150,150,150,150};
   std::vector<int> NBins;
-  NBins.push_back(750);
-  NBins.push_back(750);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(750);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  NBins.push_back(150);
-  //std::vector<double> kMin= {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  if (fineBinning) {
+    NBins.push_back(750); // p p
+    NBins.push_back(750); // p barp
+    NBins.push_back(750); // p Lambda
+    NBins.push_back(750); // p barLambda
+    NBins.push_back(750); // p Xi
+    NBins.push_back(750); // p barXi
+    NBins.push_back(750); // barp barp
+    NBins.push_back(750); // barp Lambda
+    NBins.push_back(750); // barp barLambda
+    NBins.push_back(750); // barp Xi
+    NBins.push_back(750); // barp barXi
+    NBins.push_back(750); // Lambda Lambda
+    NBins.push_back(750); // Lambda barLambda
+    NBins.push_back(750); // Lambda Xi
+    NBins.push_back(750); // Lambda barXi
+    NBins.push_back(750); // barLambda barLambda
+    NBins.push_back(750); // barLambda Xi
+    NBins.push_back(750); // barLambda barXi
+    NBins.push_back(750); // Xi Xi
+    NBins.push_back(750); // Xi barXi
+    NBins.push_back(750); // barXi barXi
+  } else { //standard binning Run1
+    NBins.push_back(750); // p p
+    NBins.push_back(750); // p barp
+    NBins.push_back(150); // p Lambda
+    NBins.push_back(150); // p barLambda
+    NBins.push_back(150); // p Xi
+    NBins.push_back(150); // p barXi
+    NBins.push_back(750); // barp barp
+    NBins.push_back(150); // barp Lambda
+    NBins.push_back(150); // barp barLambda
+    NBins.push_back(150); // barp Xi
+    NBins.push_back(150); // barp barXi
+    NBins.push_back(150); // Lambda Lambda
+    NBins.push_back(150); // Lambda barLambda
+    NBins.push_back(150); // Lambda Xi
+    NBins.push_back(150); // Lambda barXi
+    NBins.push_back(150); // barLambda barLambda
+    NBins.push_back(150); // barLambda Xi
+    NBins.push_back(150); // barLambda barXi
+    NBins.push_back(150); // Xi Xi
+    NBins.push_back(150); // Xi barXi
+    NBins.push_back(150); // barXi barXi
+  }
   std::vector<float> kMin;
   kMin.push_back(0.);
   kMin.push_back(0.);
@@ -222,7 +245,6 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   kMin.push_back(0.);
   kMin.push_back(0.);
   kMin.push_back(0.);
-  //std::vector<double> kMax= {3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.,3.};
   std::vector<float> kMax;
   kMax.push_back(3.);
   kMax.push_back(3.);
@@ -247,7 +269,6 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   kMax.push_back(3.);
   AliFemtoDreamCollConfig *config=new AliFemtoDreamCollConfig("Femto","Femto");
   if (notpp) {
-    //std::vector<int> MultBins = {0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,80};
     std::vector<int> MultBins;
     MultBins.push_back(0);
     MultBins.push_back(4);
@@ -277,7 +298,6 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     MultBins.push_back(100);
     config->SetMultBins(MultBins);
   } else {
-    //std::vector<int> MultBins = {0,4,8,12,16,20,24,28,32,36,40,60,80};
     std::vector<int> MultBins;
     MultBins.push_back(0);
     MultBins.push_back(4);
@@ -370,10 +390,6 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   task->SetAntiCascadeCuts(AntiCascadeCuts);
   task->SetCollectionConfig(config);
   mgr->AddTask(task);
-  //  TString QAOutput="AnalysisQA.root";
-  //  TString TrackOutput="AnalysisQATracks.root";
-  //  TString v0Output="AnalysisQAv0.root";
-  //  TString CascadeOutput="AnalysisQACascade.root";
 
   TString file = AliAnalysisManager::GetCommonFileName();
 
