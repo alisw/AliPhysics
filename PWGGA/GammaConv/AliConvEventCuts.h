@@ -229,13 +229,14 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16P1PHO,        //!< anchored LHC16d pass 1 nom B- field - for MBW Phojet
         kLHC16P1JJ,         //!< anchored LHC16x pass 1 nom B-field - Pythia8 JJ
         kLHC16P1JJLowB,     //!< anchored LHC16f pass 1 low B-field - Pythia8 JJ
-        kLHC17h8a,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
-        kLHC17h8b,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
-        kLHC17h8c,             //!< anchored LHC16i,j,o,p pass 1 - heavy flavour MC Pythia6
-        kLHC17c3b1,            //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
-        kLHC17c3a1,            //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
-        kLHC17c3b2,            //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
-        kLHC17c3a2,            //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17h8a,          //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17h8b,          //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17h8c,          //!< anchored LHC16i,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17c3b1,         //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
+        kLHC17c3a1,         //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
+        kLHC17c3b2,         //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17c3a2,         //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17i3a1,         //!< anchored LHC16i,j,k,l,o,p GammaJet - EMCal triggered
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
