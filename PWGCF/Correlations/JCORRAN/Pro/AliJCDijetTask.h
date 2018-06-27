@@ -54,7 +54,18 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
   //double  GetLeadingJetCut() {return fleadingJetCut;}
   //double  GetSubleadingJetCut() {return fsubleadingJetCut;}
   //double  GetConstituentCut() {return fconstituentCut;}
-  void CalculateJetsDijets(TClonesArray *inList);
+  void CalculateJetsDijets(TClonesArray *inList,
+                           int lDebug,
+                           int lCBin,
+                           double lParticleEtaCut,
+                           double lParticlePtCut,
+                           double lJetCone,
+                           double lConstituentCut,
+                           double lLeadingJetCut,
+                           double lSubleadingJetCut,
+                           double lDeltaPhiCut);
+
+
 
   // Methods specific for this class
   void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
@@ -72,7 +83,6 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
   double fsubleadingJetCut;
   double fconstituentCut;
   double fdeltaPhiCut;
-  enum jetClasses {iRaw, iBGSubtr, iConstCut, jetClassesSize};
   AliJCDijetHistos *fhistos;
   int fCBin;
   TDirectory     *fOutput; // Output directory

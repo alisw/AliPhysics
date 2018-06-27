@@ -21,7 +21,7 @@
 #include <TList.h>
 #include <TLorentzVector.h>
 
-#include <AliJHistogramInterface.h>
+#include "AliJHistogramInterface.h"
 
 
 using namespace std;
@@ -52,7 +52,9 @@ public:
 	//===================================================
 	// Event/Track histograms
 	//===================================================
-	AliJTH1D fh_events; //! // for counting events, jets, dijets and so on.
+	AliJTH1D fh_events;     //! // for counting events, jets, dijets and so on.
+	AliJTH1D fh_centrality; //! // centrality histogram
+	AliJTH1D fh_zvtx;       //! // z-vertex histogram
 
 	AliJTH1D fh_pt;     //! // for pt dist of tracks
 	AliJTH1D fh_eta;    //! // for eta dist of tracks

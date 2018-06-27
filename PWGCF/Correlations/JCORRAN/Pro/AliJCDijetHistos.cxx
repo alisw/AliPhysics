@@ -30,6 +30,8 @@ AliJCDijetHistos::AliJCDijetHistos() :
 	fHistCentBin(),
 	fJetBin(),
 	fh_events(),
+	fh_centrality(),
+	fh_zvtx(),
 	fh_pt(),
 	fh_eta(),
 	fh_phi(),
@@ -55,6 +57,8 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
 	fHistCentBin(obj.fHistCentBin),
 	fJetBin(obj.fJetBin),
 	fh_events(obj.fh_events),
+	fh_centrality(obj.fh_centrality),
+	fh_zvtx(obj.fh_zvtx),
 	fh_pt(obj.fh_pt),
 	fh_eta(obj.fh_eta),
 	fh_phi(obj.fh_phi),
@@ -114,6 +118,14 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 	fh_events
 		<< TH1D("h_events", "h_events", 20, 0.0, 20.0 )
 		<< fHistCentBin
+		<< "END" ;
+
+	fh_centrality
+		<< TH1D("h_centrality", "h_centrality", 100, 0.0, 100.0 )
+		<< "END" ;
+
+	fh_zvtx
+		<< TH1D("h_zvtx", "h_zvtx", 40, -20.0, 20.0 )
 		<< "END" ;
 
     int NBINSJet=150;
