@@ -1087,6 +1087,7 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
 
 Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 {
+  AliDebugStream(1) << "Using default event selection" << std::endl;
   if (fOffTrigger != AliVEvent::kAny) {
     UInt_t res = 0;
     const AliESDEvent *eev = dynamic_cast<const AliESDEvent*>(InputEvent());
@@ -1106,6 +1107,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
 
   if(!IsTriggerSelected()) {
     if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
+    return kFALSE;
   }
 
   if (fTriggerTypeSel != kND) {
@@ -1241,6 +1243,7 @@ Bool_t AliAnalysisTaskEmcal::IsTriggerSelected(){
   // to trigger selection). Users should re-implement
   // this function in case they have certain needs, in
   // particular for EMCAL triggers
+  AliDebugStream(1) << "Using default trigger selection" << std::endl;
   if (!fTrigClass.IsNull()) {
     TString fired = InputEvent()->GetFiredTriggerClasses();
     if (!fired.Contains("-B-")) return kFALSE;
