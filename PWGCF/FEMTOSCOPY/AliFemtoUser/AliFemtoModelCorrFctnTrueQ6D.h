@@ -62,7 +62,7 @@ public:
       : bin_count(120)
       , qmin(-0.3)
       , qmax(0.3)
-      , bin_method(kGenRecOSL)
+      , bin_method(kRecLSOGenOSL)
       , title("CF_TrueQ6D")
       , mc_manager(NULL)
       , qout_range_min(0.0)
@@ -79,6 +79,7 @@ public:
 
     Builder Title(const TString& title) const
     {
+
       Builder b(*this);
       b.title = title;
       return b;
@@ -118,6 +119,11 @@ public:
         Builder b(*this);                             \
         b. __target ## _range_min = low;              \
         b. __target ## _range_max = high;             \
+        return b; }                                   \
+      Builder __name(double r[2]) const {             \
+        Builder b(*this);                             \
+        b. __target ## _range_min = r[0];             \
+        b. __target ## _range_max = r[1];             \
         return b; }
 
     CREATE_SETTER_METHOD(QoutRange, qout);
