@@ -105,10 +105,14 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
       fQA->Add(fEvent->GetEvtCutList());
     }
   }
-  fPartColl=
+  if (fConfig->GetUseEventMixing()) {
+    fPartColl=
       new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
-  fControlSample=
+  }
+  if (fConfig->GetUsePhiSpinning()) {
+    fControlSample=
       new AliFemtoDreamControlSample(fConfig,fConfig->GetMinimalBookingSample());
+  }
   return;
 }
 

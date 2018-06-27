@@ -22,6 +22,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool ContributionSplittingDaug=false,//16
     bool RunNumberQA=false)//17
 {
+  // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
+  //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
   // the manager is static, so get the existing manager via the static method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
