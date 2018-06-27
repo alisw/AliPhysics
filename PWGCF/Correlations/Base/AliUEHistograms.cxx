@@ -71,6 +71,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fEtaOrdering(kFALSE),
   fCutConversionsV(-1),
   fCutResonancesV(-1),
+  fCutOnPhi(kFALSE),
   fRejectResonanceDaughters(-1),
   fOnlyOneEtaSide(0),
   fOnlyOneAssocEtaSide(0),
@@ -209,7 +210,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   
   fITSClusterMap = new TH3F("fITSClusterMap", "; its cluster map; centrality; pT", 256, -0.5, 255.5, 20, 0, 100.001, 100, 0, 20);
   
-  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 3, -0.5, 2.5, 100, -0.1, 0.1);
+  fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 4, -0.5, 3.5, 100, -0.1, 0.1);
   
   TH1::AddDirectory(oldStatus);
 }
@@ -820,7 +821,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	      continue;
 	  }
 	}
-	
+
 	// Lambda
 	if (fCutResonancesV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
@@ -848,6 +849,27 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	      continue;
 	  }
 	}
+
+        // Phi
+        if (fCutOnPhi)
+        {
+          if (fCutResonancesV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+          {
+            Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
+  
+            const Float_t kPhimass = 1.195;
+
+            if (TMath::Abs(mass - kPhimass*kPhimass) < fCutResonancesV * 5)
+            {
+              mass = GetInvMassSquared(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
+
+              fControlConvResoncances->Fill(3, mass - kPhimass*kPhimass);
+
+              if (mass > (kPhimass-fCutResonancesV)*(kPhimass-fCutResonancesV) && mass < (kPhimass+fCutResonancesV)*(kPhimass+fCutResonancesV))
+                continue;
+            }
+          }
+        }	
 
 	if (twoTrackEfficiencyCut)
 	{
