@@ -77,6 +77,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         UserCreateOutputObjects();
   virtual AliHistogramRanges * GetHistogramRangesAndBinning()                                               { if(!fHistoRangeContainer) fHistoRangeContainer = new AliHistogramRanges(); return fHistoRangeContainer; }
   
+  void                         SetMinClusterEnergy         ( Float_t minE                                 ) { fMinClusterEnergy = minE ;                                }
   void                         SetIsoConeRadius            ( Float_t r                                    ) { fIsoConeRadius = r ;                                      }
   void                         SetEtIsoThreshold           ( Float_t r                                    ) { fEtIsoThreshold = r ;                                     }
   void                         SetCTMdeltaEta              ( Float_t r                                    ) { fdetacut = r ;                                            }
@@ -126,6 +127,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         SetPythiaVersion            ( TString pythiaVersion                        ) { fPythiaVersion = pythiaVersion;                           }
   void                         SetVariableCPV              ( Bool_t  variable                             ) { fVariableCPV = variable;                                  }
   void                         SetVariableCPVInCone        ( Bool_t  variable                             ) { fVariableCPVInCone = variable;                            }
+  void                         SetNonLinRecoEnergyScaling  ( Float_t scaling                              ) { fNonLinRecoEnergyScaling = scaling;                       }
   
  protected:
   
@@ -185,6 +187,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TString                      fPythiaVersion;                  ///< May contain "6" or "8" to determine the Pythia version used
   Bool_t                       fVariableCPV;                    ///<
   Bool_t                       fVariableCPVInCone;              ///<
+  Float_t                      fNonLinRecoEnergyScaling;        ///< Set a scaling factor for reconstructed energy (regarding non-linearity correction)
   TClonesArray               * fTracksAna;                      ///< Hybrid track array in
   AliStack                   * fStack;                          ///<
   AliEMCALRecoUtils          * fEMCALRecoUtils;                 ///< EMCal utils for cluster rereconstruction.
@@ -200,6 +203,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   /* TList       * fOutputList;                                     ///< Output list */
   /* TGeoHMatrix * fGeomMatrix[12];                                 ///< Geometry misalignment matrices for EMCal */
   
+  Float_t                      fMinClusterEnergy;               ///< Minimal cut on cluster energy (by default at 5 GeV)
   Float_t                      fIsoConeRadius;                  ///< Radius for the isolation cone
   Int_t                        fEtIsoMethod;                    ///< Isolation definition ( 0 = SumEt<EtThr, 1 = SumEt<%Ephoton, 2 = Etmax<EtThr )
   Double_t                     fEtIsoThreshold;                 ///< Et isolation threshold, supposed to be a percentage ( < 1 ) if method one is chosen ( fEtIsoMethod = 1 )
