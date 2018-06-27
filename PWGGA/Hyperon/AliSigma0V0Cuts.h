@@ -66,8 +66,14 @@ class AliSigma0V0Cuts : public TObject {
     fPileUpRejectionMode = pileUpRej;
   }
   void SetPID(int pid) { fPID = pid; }
-  void SetPosPID(AliPID::EParticleType pid) { fPosPID = pid; }
-  void SetNegPID(AliPID::EParticleType pid) { fNegPID = pid; }
+  void SetPosPID(AliPID::EParticleType pid, const int pdg) {
+    fPosPID = pid;
+    fPosPDG = pdg;
+  }
+  void SetNegPID(AliPID::EParticleType pid, const int pdg) {
+    fNegPID = pid;
+    fNegPDG = pdg;
+  }
   void SetV0OnFlyStatus(bool onFly) { fV0OnFly = onFly; }
   void SetV0PtMin(float ptMin) { fV0PtMin = ptMin; }
   void SetV0PtMax(float ptMax) { fV0PtMax = ptMax; }
@@ -103,6 +109,9 @@ class AliSigma0V0Cuts : public TObject {
     fLambdaSelectionLow = low, fLambdaSelectionUp = up;
   }
 
+  void ProcessMC() const;
+  bool CheckDaughters(const AliMCParticle *particle) const;
+
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const { return fHistograms; }
 
@@ -121,8 +130,9 @@ class AliSigma0V0Cuts : public TObject {
   bool fIsLightweight;  //
 
   short fV0cut;
-  short fAntiV0cut;
-  short fPID;
+  int fPID;
+  int fPosPDG;
+  int fNegPDG;
 
   bool fIsMC;
   PileUpRejectionMode fPileUpRejectionMode;
@@ -194,9 +204,9 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistMCTruthV0Pt;               //
   TH2F *fHistMCTruthV0PtY;              //
   TH2F *fHistMCTruthV0PtEta;            //
-  TH1F *fHistMCTruthV0ProtonPionPt;     //
-  TH2F *fHistMCTruthV0ProtonPionPtY;    //
-  TH2F *fHistMCTruthV0ProtonPionPtEta;  //
+  TH1F *fHistMCTruthV0DaughterPt;     //
+  TH2F *fHistMCTruthV0DaughterPtY;    //
+  TH2F *fHistMCTruthV0DaughterPtEta;  //
 
   TH1F *fHistSingleParticleCuts[2];                        //
   TH1F *fHistSingleParticlePt[2];                          //

@@ -19,8 +19,9 @@ ClassImp(AliSigma0V0Cuts)
       fPDGDatabase(),
       fIsLightweight(false),
       fV0cut(0),
-      fAntiV0cut(0),
       fPID(0),
+      fPosPDG(0),
+      fNegPDG(0),
       fIsMC(false),
       fPileUpRejectionMode(PileUpRejectionMode::BothDaughtersCombined),
       fPosPID(AliPID::kProton),
@@ -83,9 +84,9 @@ ClassImp(AliSigma0V0Cuts)
       fHistMCTruthV0Pt(nullptr),
       fHistMCTruthV0PtY(nullptr),
       fHistMCTruthV0PtEta(nullptr),
-      fHistMCTruthV0ProtonPionPt(nullptr),
-      fHistMCTruthV0ProtonPionPtY(nullptr),
-      fHistMCTruthV0ProtonPionPtEta(nullptr),
+      fHistMCTruthV0DaughterPt(nullptr),
+      fHistMCTruthV0DaughterPtY(nullptr),
+      fHistMCTruthV0DaughterPtEta(nullptr),
       fHistSingleParticleCuts(),
       fHistSingleParticlePt(),
       fHistSingleParticleEtaBefore(),
@@ -119,8 +120,9 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fPDGDatabase(),
       fIsLightweight(false),
       fV0cut(0),
-      fAntiV0cut(0),
       fPID(0),
+      fPosPDG(0),
+      fNegPDG(0),
       fIsMC(false),
       fPileUpRejectionMode(PileUpRejectionMode::BothDaughtersCombined),
       fPosPID(AliPID::kProton),
@@ -183,9 +185,9 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistMCTruthV0Pt(nullptr),
       fHistMCTruthV0PtY(nullptr),
       fHistMCTruthV0PtEta(nullptr),
-      fHistMCTruthV0ProtonPionPt(nullptr),
-      fHistMCTruthV0ProtonPionPtY(nullptr),
-      fHistMCTruthV0ProtonPionPtEta(nullptr),
+      fHistMCTruthV0DaughterPt(nullptr),
+      fHistMCTruthV0DaughterPtY(nullptr),
+      fHistMCTruthV0DaughterPtEta(nullptr),
       fHistSingleParticleCuts(),
       fHistSingleParticlePt(),
       fHistSingleParticleEtaBefore(),
@@ -251,6 +253,7 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::PhotonCuts() {
   v0Cuts->SetEtaMax(0.8);
   v0Cuts->SetDaughterDCAMax(1.5);
   v0Cuts->SetDaughterDCAtoPV(0.05);
+  v0Cuts->SetArmenterosCut(0, 0.06, -1, 1);
   v0Cuts->SetPileUpRejectionMode(None);
   return v0Cuts;
 }
@@ -267,6 +270,10 @@ void AliSigma0V0Cuts::SelectLambda(
   fMCEvent = mcEvent;
 
   V0Container.clear();
+
+  if (fIsMC) {
+    ProcessMC();
+  }
 
   fInputEvent = static_cast<AliESDEvent *>(inputEvent);
   for (int iV0 = 0; iV0 < fInputEvent->GetNumberOfV0s(); ++iV0) {
@@ -308,6 +315,16 @@ void AliSigma0V0Cuts::SelectLambda(
                                     fInputEvent->GetMagneticField(), fMCEvent);
 
     if (fIsMC) {
+      int label = v0Candidate.MatchToMC(fMCEvent, fPID, {{fPosPDG, fNegPDG}});
+      if (label < 0) {
+        // no mc info assigned to this track - don't use it
+        v0Candidate.SetUse(false);
+      }
+
+      AliMCParticle *mcParticle =
+          static_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
+      if (!mcParticle) continue;
+      v0Candidate.ProcessMCInfo(mcParticle, fMCEvent);
     }
 
     v0Candidate.SetPDGMass(fPDGDatabase.GetParticle(fPID)->Mass());
@@ -349,7 +366,6 @@ void AliSigma0V0Cuts::SelectPhoton(
     }
 
     // PID
-    /// DO BE DONE - DO PROPER PID
     if (!V0PID(v0, pos, neg, particle1, particle2)) continue;
 
     // Single Particle Quality
@@ -372,6 +388,16 @@ void AliSigma0V0Cuts::SelectPhoton(
                                     fInputEvent->GetMagneticField(), fMCEvent);
 
     if (fIsMC) {
+      int label = v0Candidate.MatchToMC(fMCEvent, fPID, {{fPosPDG, fNegPDG}});
+      if (label < 0) {
+        // no mc info assigned to this track - don't use it
+        v0Candidate.SetUse(false);
+      }
+
+      AliMCParticle *mcParticle =
+          static_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
+      if (!mcParticle) continue;
+      v0Candidate.ProcessMCInfo(mcParticle, fMCEvent);
     }
 
     v0Candidate.SetPDGMass(fPDGDatabase.GetParticle(fPID)->Mass());
@@ -482,10 +508,7 @@ void AliSigma0V0Cuts::PlotSingleParticlePID(
 
   // TPC signal must be available
   if (!(AliPIDResponse::kDetPidOk == statusPosTPC)) return;
-
-  const float nSigma =
-      std::abs(fPIDResponse->NumberOfSigmasTPC(track, particle));
-
+  const float nSigma = fPIDResponse->NumberOfSigmasTPC(track, particle);
   const int charge = track->Charge();
   const int histoPrefix = (charge > 0) ? 0 : 1;
   if (!fIsLightweight)
@@ -741,9 +764,6 @@ bool AliSigma0V0Cuts::V0TopologicalSelection(const AliESDv0 *v0) {
 
 //____________________________________________________________________________________________________
 bool AliSigma0V0Cuts::LambdaSelection(AliESDv0 *v0) {
-  const float armAlpha = v0->AlphaV0();
-  const float armQt = v0->PtArmV0();
-
   v0->ChangeMassHypothesis(fPID);
   const float massLambda = v0->GetEffMass();
   v0->ChangeMassHypothesis(310);
@@ -786,6 +806,59 @@ float AliSigma0V0Cuts::ComputeRapidity(float pt, float pz, float m) const {
   if (energy != std::fabs(pz))
     return 0.5 * std::log((energy + pz) / (energy - pz));
   return (pz >= 0) ? 1.e30 : -1.e30;
+}
+
+//____________________________________________________________________________________________________
+void AliSigma0V0Cuts::ProcessMC() const {
+  // Loop over the MC tracks
+  for (int iPart = 1; iPart < (fMCEvent->GetNumberOfTracks()); iPart++) {
+    AliMCParticle *mcParticle =
+        static_cast<AliMCParticle *>(fMCEvent->GetTrack(iPart));
+    if (!mcParticle) continue;
+    if (!mcParticle->IsPhysicalPrimary()) continue;
+    if (mcParticle->PdgCode() != fPID) continue;
+      fHistMCTruthV0Pt->Fill(mcParticle->Pt());
+      fHistMCTruthV0PtY->Fill(
+          ComputeRapidity(mcParticle->Pt(), mcParticle->Pz(), mcParticle->M()),
+          mcParticle->Pt());
+      fHistMCTruthV0PtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
+
+      if(!CheckDaughters(mcParticle)) continue;
+      fHistMCTruthV0DaughterPt->Fill(mcParticle->Pt());
+      fHistMCTruthV0DaughterPtY->Fill(
+          ComputeRapidity(mcParticle->Pt(), mcParticle->Pz(), mcParticle->M()),
+          mcParticle->Pt());
+      fHistMCTruthV0DaughterPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
+  }
+}
+
+//____________________________________________________________________________________________________
+bool AliSigma0V0Cuts::CheckDaughters(const AliMCParticle *particle) const {
+  AliMCParticle *posDaughter = nullptr;
+  AliMCParticle *negDaughter = nullptr;
+
+  if (particle->GetNDaughters() != 2) return false;
+
+  for (int daughterIndex = particle->GetFirstDaughter();
+       daughterIndex <= particle->GetLastDaughter(); ++daughterIndex) {
+    if (daughterIndex < 0) continue;
+    AliMCParticle *tmpDaughter =
+        static_cast<AliMCParticle *>(fMCEvent->GetTrack(daughterIndex));
+    const int pdgCode = tmpDaughter->PdgCode();
+    if (pdgCode == fPosPDG)
+      posDaughter = tmpDaughter;
+    else if (pdgCode == fNegPDG)
+      negDaughter = tmpDaughter;
+  }
+
+  if (!posDaughter || !negDaughter) return false;
+
+  if (particle->PdgCode() == 22 &&
+      (posDaughter->GetUniqueID() != 5 || negDaughter->GetUniqueID() != 5)) {
+    return false;
+  }
+
+  return true;
 }
 
 //____________________________________________________________________________________________________
@@ -1076,21 +1149,21 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistMCTruthV0PtEta =
         new TH2F("fHistMCTruthV0PtEta", "; #eta; #it{p}_{T} (GeV/#it{c})", 500,
                  -10, 10, 500, 0, 10);
-    fHistMCTruthV0ProtonPionPt =
-        new TH1F("fHistMCTruthV0ProtonPionPt",
+    fHistMCTruthV0DaughterPt =
+        new TH1F("fHistMCTruthV0DaughterPt",
                  "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
-    fHistMCTruthV0ProtonPionPtY =
-        new TH2F("fHistMCTruthV0ProtonPionPtY", "; y; #it{p}_{T} (GeV/#it{c})",
+    fHistMCTruthV0DaughterPtY =
+        new TH2F("fHistMCTruthV0DaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})",
                  500, -10, 10, 500, 0, 10);
-    fHistMCTruthV0ProtonPionPtEta =
-        new TH2F("fHistMCTruthV0ProtonPionPtEta",
+    fHistMCTruthV0DaughterPtEta =
+        new TH2F("fHistMCTruthV0DaughterPtEta",
                  "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
     fHistogramsMC->Add(fHistMCTruthV0Pt);
     fHistogramsMC->Add(fHistMCTruthV0PtY);
     fHistogramsMC->Add(fHistMCTruthV0PtEta);
-    fHistogramsMC->Add(fHistMCTruthV0ProtonPionPt);
-    fHistogramsMC->Add(fHistMCTruthV0ProtonPionPtY);
-    fHistogramsMC->Add(fHistMCTruthV0ProtonPionPtEta);
+    fHistogramsMC->Add(fHistMCTruthV0DaughterPt);
+    fHistogramsMC->Add(fHistMCTruthV0DaughterPtY);
+    fHistogramsMC->Add(fHistMCTruthV0DaughterPtEta);
     fHistograms->Add(fHistogramsMC);
   }
 

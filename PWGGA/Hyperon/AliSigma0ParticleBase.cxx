@@ -9,7 +9,7 @@ ClassImp(AliSigma0ParticleBase)
     : fP(),
       fPMC(),
       fPDGCode(0),
-      fPDGCodeMother(0),
+      fPDGCodeMother(-1),
       fMass(0),
       fQ(0),
       fPt(0),
@@ -26,7 +26,23 @@ ClassImp(AliSigma0ParticleBase)
 //____________________________________________________________________________________________________
 AliSigma0ParticleBase::AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
                                              const float magneticField,
-                                             int filterbit) {
+                                             int filterbit)
+    : fP(),
+      fPMC(),
+      fPDGCode(0),
+      fPDGCodeMother(-1),
+      fMass(0),
+      fQ(0),
+      fPt(0),
+      fTrackLabel(0),
+      fMClabel(0),
+      fPhi(0),
+      fEta(0),
+      fCharge(0),
+      fDCAz(0.f),
+      fDCAr(0.f),
+      fUse(true),
+      fPhistar() {
   double trackMom[3];
   track->GetPxPyPz(trackMom);
   fP[0] = trackMom[0];
@@ -158,11 +174,11 @@ void AliSigma0ParticleBase::ProcessMCInfo(AliMCParticle *mcParticle,
   fPMC[1] = mcParticle->Py();
   fPMC[2] = mcParticle->Pz();
   fPDGCode = mcParticle->PdgCode();
+  fMClabel = mcParticle->GetLabel();
 
   if (mcParticle->GetMother() != 0) {
     AliMCParticle *mcMother = static_cast<AliMCParticle *>(
         mcEvent->GetTrack(mcParticle->GetMother()));
     fPDGCodeMother = mcMother->PdgCode();
-    fMClabel = mcParticle->GetLabel();
   }
 }

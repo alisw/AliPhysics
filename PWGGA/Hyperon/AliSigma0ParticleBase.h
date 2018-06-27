@@ -13,7 +13,7 @@ class AliSigma0ParticleBase {
   virtual ~AliSigma0ParticleBase() {}
   AliSigma0ParticleBase &operator=(const AliSigma0ParticleBase &obj);
   AliSigma0ParticleBase(const AliESDtrack *track, int pdg,
-                        const float magneticField, int filterbit = 128);
+                        const float magneticField, int filterbit = 0);
 
   double ComputeRelK(const AliSigma0ParticleBase &part2,
                      bool debug = false) const;

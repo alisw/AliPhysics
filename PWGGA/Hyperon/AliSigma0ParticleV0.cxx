@@ -184,3 +184,93 @@ float AliSigma0ParticleV0::GetArmenterosQt() const {
   TVector3 sigmaP(GetPx(), GetPy(), GetPz());
   return lambdaP.Perp(sigmaP);
 }
+
+//____________________________________________________________________________________________________
+int AliSigma0ParticleV0::MatchToMC(AliMCEvent *mcEvent, const int PIDmother,
+                                   const std::vector<int> PIDdaughters) {
+  // Adopted from the function in AliAODRecoDecay
+
+  std::vector<int> trackLabels = {{fMCLabelPos, fMCLabelNeg}};
+  std::vector<int> labMom = {{0, 0}};
+  std::vector<bool> pdgUsed = {{false, false}};
+  int lab, labMother, pdgMother, pdgPart;
+  AliMCParticle *part = nullptr;
+  AliMCParticle *mother = nullptr;
+  double pxSumDgs = 0., pySumDgs = 0., pzSumDgs = 0.;
+
+  // loop on daughter labels
+  for (int i = 0; i < 2; ++i) {
+    labMom[i] = -1;
+    lab = std::abs(trackLabels[i]);
+    if (lab < 0) {
+      return -1;
+    }
+    part = static_cast<AliMCParticle *>(mcEvent->GetTrack(lab));
+    if (!part) {
+      return -1;
+    }
+
+    // check the PDG of the daughter, if requested
+    pdgPart = part->PdgCode();
+    for (int j = 0; j < 2; ++j) {
+      if (!pdgUsed[j] && pdgPart == PIDdaughters[j]) {
+        pdgUsed[j] = true;
+        break;
+      }
+    }
+
+    mother = part;
+    while (mother->GetMother() >= 0) {
+      labMother = mother->GetMother();
+      mother = static_cast<AliMCParticle *>(mcEvent->GetTrack(labMother));
+      if (!mother) {
+        break;
+      }
+      pdgMother = mother->PdgCode();
+      if (pdgMother == PIDmother) {
+        labMom[i] = labMother;
+        // keep sum of daughters' momenta, to check for mom conservation
+        pxSumDgs += part->Px();
+        pySumDgs += part->Py();
+        pzSumDgs += part->Pz();
+        break;
+      } else if (pdgMother > PIDmother || pdgMother < 10) {
+        break;
+      }
+    }
+    if (labMom[i] == -1) {
+    	return -1;
+    }
+  }
+
+  // check if the candidate is signal
+  labMother = labMom[0];
+  // all labels have to be the same and !=-1
+  for (int i = 0; i < 2; ++i) {
+    if (labMom[i] == -1) return -1;
+    if (labMom[i] != labMother) return -1;
+  }
+
+  // check that all daughter PDGs are matched
+  for (int i = 0; i < 2; ++i) {
+    if (pdgUsed[i] == false) return -1;
+  }
+
+  // the above works only for non-resonant decays,
+  // it's better to check for mom conservation
+  mother = static_cast<AliMCParticle *>(mcEvent->GetTrack(labMother));
+  Double_t pxMother = mother->Px();
+  Double_t pyMother = mother->Py();
+  Double_t pzMother = mother->Pz();
+  // within 0.1%
+  if ((std::abs(pxMother - pxSumDgs) / (std::abs(pxMother) + 1.e-13)) >
+          0.00001 &&
+      (std::abs(pyMother - pySumDgs) / (std::abs(pyMother) + 1.e-13)) >
+          0.00001 &&
+      (std::abs(pzMother - pzSumDgs) / (std::abs(pzMother) + 1.e-13)) >
+          0.00001) {
+    return -1;
+  }
+
+  return labMother;
+}

@@ -87,13 +87,13 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   AliSigma0V0Cuts *v0Cuts = AliSigma0V0Cuts::LambdaCuts();
   v0Cuts->SetIsMC(isMC);
   v0Cuts->SetPID(3122);
-  v0Cuts->SetPosPID(AliPID::kProton);
-  v0Cuts->SetNegPID(AliPID::kPion);
+  v0Cuts->SetPosPID(AliPID::kProton, 2212);
+  v0Cuts->SetNegPID(AliPID::kPion, -211);
   AliSigma0V0Cuts *antiv0Cuts = AliSigma0V0Cuts::LambdaCuts();
   antiv0Cuts->SetIsMC(isMC);
   antiv0Cuts->SetPID(-3122);
-  antiv0Cuts->SetPosPID(AliPID::kPion);
-  antiv0Cuts->SetNegPID(AliPID::kProton);
+  antiv0Cuts->SetPosPID(AliPID::kPion, 211);
+  antiv0Cuts->SetNegPID(AliPID::kProton, -2212);
 
   if (suffix != "0") {
     v0Cuts->SetLightweight(true);

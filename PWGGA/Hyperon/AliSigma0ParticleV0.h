@@ -56,6 +56,9 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   AliSigma0ParticleBase GetNegDaughter() const { return fTrackNeg; }
   AliSigma0ParticleBase GetPosDaughter() const { return fTrackPos; }
 
+  int MatchToMC(AliMCEvent *mcEvent, const int PIDmother,
+                const std::vector<int> PIDdaughters);
+
  private:
   int fTrackLabelPos;
   int fTrackLabelNeg;
