@@ -2178,7 +2178,7 @@ Bool_t AliAnalysisTaskSEB0toDStarPi::D0FirstDaughterSelection(AliAODTrack* aodTr
   {
     if(bSoftSelectionArrayITS[j]) 
     {
-      if(!aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
+      if(aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
     }
   }    
   if(nCounterSoftSelection < fCuts->GetNSoftITSCutD0FirstDaughter()) bSoftITSPass = kFALSE;
@@ -2392,7 +2392,7 @@ Bool_t AliAnalysisTaskSEB0toDStarPi::D0SecondDaughterSelection(AliAODTrack* aodT
   {
     if(bSoftSelectionArrayITS[j]) 
     {
-      if(!aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
+      if(aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
     }
   }    
   if(nCounterSoftSelection < fCuts->GetNSoftITSCutD0SecondDaughter()) bSoftITSPass = kFALSE;
@@ -2641,7 +2641,7 @@ void AliAnalysisTaskSEB0toDStarPi::DStarPionSelection(AliAODEvent* aodEvent, Ali
     {
       if(bSoftSelectionArrayITS[j]) 
       {
-        if(!aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
+        if(aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
       }
     }    
     if(nCounterSoftSelection < fCuts->GetNSoftITSCutDStarPion()) bSoftITSPass = kFALSE;
@@ -2905,7 +2905,7 @@ void AliAnalysisTaskSEB0toDStarPi::B0PionSelection(AliAODEvent* aodEvent, AliAOD
     {
       if(bSoftSelectionArrayITS[j]) 
       {
-        if(!aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
+        if(aodTrack->HasPointOnITSLayer(j)) nCounterSoftSelection++;
       }
     }    
     if(nCounterSoftSelection < fCuts->GetNSoftITSCutB0Pion()) bSoftITSPass = kFALSE;
