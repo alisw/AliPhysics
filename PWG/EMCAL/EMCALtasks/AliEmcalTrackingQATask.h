@@ -34,7 +34,7 @@ class AliEmcalTrackingQATask : public AliAnalysisTaskEmcalLight {
   void                   SetDoSigmaPtOverPtGen(Bool_t s)  {fDoSigmaPtOverPtGen = s; }
   void                   SetDoSeparateTRDrefit(Bool_t s)  {fDoSeparateTRDrefit = s; }
 
-  static AliEmcalTrackingQATask* AddTaskTrackingQA(Bool_t isMC);
+  static AliEmcalTrackingQATask* AddTaskTrackingQA(Bool_t isMC, const char *suffix = "");
 
  protected:
   Bool_t                 FillHistograms()                               ;
