@@ -1017,6 +1017,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111111066032220000","01631031000000d0"); // tm pt dependent var 1
     cuts.AddCut("00010113","1111111068032220000","01631031000000d0"); // tm pt dependent var 2
     cuts.AddCut("00010113","1111111069032220000","01631031000000d0"); // tm pt dependent var 3
+  } else if (trainConfig == 456){ // EMCAL syst 5/5
+    cuts.AddCut("00010113","1111111037032230000","01631031000000d0"); // +-10ns timing cut
+    cuts.AddCut("00010113","1111111047032230000","01631031000000d0"); // +-20ns timing cut
+    cuts.AddCut("00010113","1111111057032230000","01631031000000d0"); // +-50ns timing cut
+    cuts.AddCut("00010113","1111111077032230000","01631031000000d0"); // +-30ns timing cut
 
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations
