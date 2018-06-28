@@ -217,7 +217,7 @@ void AliVertexerTracksTest(TString outname="AliVertexerTracksTest.root",
     // count ITS tracks
     for(Int_t itrk=0; itrk<ntracks; itrk++) {
       AliESDtrack *esdtrack = (AliESDtrack*)esd->GetTrack(itrk);
-      UInt_t status = esdtrack->GetStatus();
+      ULong64_t status = esdtrack->GetStatus();
       // only tracks found also in ITS
       if(! (status&AliESDtrack::kITSin) ) continue;      
       nitstracks++;
@@ -397,7 +397,7 @@ void VertexForOneEvent(Int_t iev=0,
   // count ITS tracks
   for(Int_t itrk=0; itrk<ntracks; itrk++) {
     AliESDtrack *esdtrack = (AliESDtrack*)esd->GetTrack(itrk);
-    UInt_t status = esdtrack->GetStatus();
+    ULong64_t status = esdtrack->GetStatus();
     // only tracks found also in ITS
     if(! (status&AliESDtrack::kITSrefit) ) continue;      
     nitstracks++;

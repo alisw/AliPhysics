@@ -66,7 +66,7 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
    Int_t i;
    for (i=0; i<nentr; i++) {
      AliESDtrack *esdTrack=event->GetTrack(i);
-     ULong_t status=esdTrack->GetStatus();
+     ULong64_t status=esdTrack->GetStatus();
 
      //if ((status&AliESDtrack::kITSrefit)==0)//not to accept the ITS SA tracks
         if ((status&AliESDtrack::kTPCrefit)==0) continue;

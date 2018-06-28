@@ -79,7 +79,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
    int trk[nentr], ntr=0;
    for (i=0; i<nentr; i++) {
      AliESDtrack *esdtr=event->GetTrack(i);
-     ULong_t status=esdtr->GetStatus();
+     ULong64_t status=esdtr->GetStatus();
      if (status&AliESDtrack::kITSpureSA) continue;
      if ((status&AliESDtrack::kITSrefit)==0)
        if ((status&AliESDtrack::kTPCrefit)==0) continue;

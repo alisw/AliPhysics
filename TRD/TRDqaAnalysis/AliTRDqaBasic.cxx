@@ -200,7 +200,7 @@ void AliTRDqaBasic::Exec(Option_t *)
     if (!paramIn) continue;
     if (!paramOut) continue;
     
-    UInt_t status = track->GetStatus();
+    ULong64_t status = track->GetStatus();
     if (!(status & AliESDtrack::kTPCrefit)) continue;
 
     //if (!fTrackCuts->AcceptTrack(track)) continue;

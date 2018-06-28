@@ -56,7 +56,7 @@ Bool_t AliAODITSsaTrackCuts::AcceptTrack(const AliAODTrack* aodTrack)
 
   if ( !( aodTrack->HasPointOnITSLayer(AliESDtrackCuts::kSPD*2) || aodTrack->HasPointOnITSLayer(AliESDtrackCuts::kSPD*2+1) ) ) return kFALSE; //at least one point in the SPD
 
-  UInt_t status = aodTrack->GetStatus();
+  ULong64_t status = aodTrack->GetStatus();
   if ((status&AliESDtrack::kITSrefit)==0) return kFALSE;
 
   if ((status & AliESDtrack::kITSin) == 0 || (status & AliESDtrack::kTPCin)) return kFALSE;  else if(!(status & AliESDtrack::kITSpureSA)) return kFALSE;

@@ -411,7 +411,7 @@ void AliAnalysisTaskPIDqa::FillITSqa()
   Int_t ntracks=event->GetNumberOfTracks();
   for(Int_t itrack = 0; itrack < ntracks; itrack++){
     AliVTrack *track=(AliVTrack*)event->GetTrack(itrack);
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     // ITS refit + ITS pid selection
     if (!( ( (status & AliVTrack::kITSrefit)==AliVTrack::kITSrefit ) ||
@@ -1039,7 +1039,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit + TPC pid
     if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
@@ -1097,7 +1097,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
       //
       //basic track cuts
       //
-      ULong_t status=track->GetStatus();
+      ULong64_t status=track->GetStatus();
       // not that nice. status bits not in virtual interface
       // TPC refit + ITS refit + TPC pid
       if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
@@ -1130,7 +1130,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
       //
       //basic track cuts
       //
-      ULong_t status=track->GetStatus();
+      ULong64_t status=track->GetStatus();
       // not that nice. status bits not in virtual interface
       // TPC refit + ITS refit + TPC pid
       if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
@@ -1164,7 +1164,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
       //
       //basic track cuts
       //
-      ULong_t status=track->GetStatus();
+      ULong64_t status=track->GetStatus();
       // not that nice. status bits not in virtual interface
       // TPC refit + ITS refit + TPC pid
       if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
@@ -1197,7 +1197,7 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
       //
       //basic track cuts
       //
-      ULong_t status=track->GetStatus();
+      ULong64_t status=track->GetStatus();
       // not that nice. status bits not in virtual interface
       // TPC refit + ITS refit + TPC pid
       if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
@@ -1240,7 +1240,7 @@ Bool_t TrackIsAccepted(AliVTrack* track)
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit + TPC pid + TRD out
     if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
@@ -1892,7 +1892,7 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // TPC refit + ITS refit +
     // TOF out + kTIME
     // kTIME
@@ -1986,7 +1986,7 @@ void AliAnalysisTaskPIDqa::FillT0qa()
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // TPC refit + ITS refit +
     if (!((status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
         !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ) continue;
@@ -2044,7 +2044,7 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     if (!( (status & AliVTrack::kEMCALmatch) == AliVTrack::kEMCALmatch) ) continue;
 
@@ -2065,7 +2065,7 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     if (!( (status & AliVTrack::kEMCALmatch) == AliVTrack::kEMCALmatch) ) continue;
 
@@ -2105,7 +2105,7 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     if (!( (status & AliVTrack::kEMCALmatch) == AliVTrack::kEMCALmatch) ) continue;
 
@@ -2145,7 +2145,7 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     if (!( (status & AliVTrack::kEMCALmatch) == AliVTrack::kEMCALmatch) ) continue;
 
@@ -2200,7 +2200,7 @@ void AliAnalysisTaskPIDqa::FillHMPIDqa()
     //
     //basic track cuts
     //
-    const ULong_t status=track->GetStatus();
+    const ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit +
     // TOF out + TOFpid +
@@ -2251,7 +2251,7 @@ void AliAnalysisTaskPIDqa::FillTOFHMPIDqa()
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit +
     // TOF out + TOFpid +
@@ -2308,7 +2308,7 @@ void AliAnalysisTaskPIDqa::FillTPCTOFqa()
     //
     //basic track cuts
     //
-    ULong_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit +
     // TOF out + TOFpid +

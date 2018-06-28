@@ -5127,7 +5127,7 @@ Bool_t AliReconstruction::DecideFriendsStorage()
   for (Int_t itrk=0; itrk<ntrk; ++itrk) {
     //	  
     AliESDtrack * trk = fesd->GetTrack(itrk);
-    ULong_t status = trk->GetStatus();
+    ULong64_t status = trk->GetStatus();
     //
     // tag high pt tracks
     Bool_t isHighPt = kFALSE;

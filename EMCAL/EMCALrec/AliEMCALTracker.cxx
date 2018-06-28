@@ -291,7 +291,7 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
       Int_t nClustersITS = esdTrack->GetITSclusters(0);
       Int_t nClustersTPC = esdTrack->GetTPCclusters(0);
 
-      ULong_t status = esdTrack->GetStatus();
+      ULong64_t status = esdTrack->GetStatus();
 
       //Bool_t  tpcIn  = (status&AliESDtrack::kTPCin )==AliESDtrack::kTPCin ;
       //Bool_t  itsIn  = (status&AliESDtrack::kITSin )==AliESDtrack::kITSin ;

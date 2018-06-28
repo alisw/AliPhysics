@@ -43,8 +43,8 @@ void CompareESD() {
       for (Int_t j=0; j<ntnew; j++) {
 	  AliESDtrack *to=eold->GetTrack(j);
 	  AliESDtrack *tn=enew->GetTrack(j);
-          UInt_t so=to->GetStatus();
-          UInt_t sn=tn->GetStatus();
+          ULong64_t so=to->GetStatus();
+          ULong64_t sn=tn->GetStatus();
           if (so != sn) {
 	     cout<<"Track status is different !"<<endl;
 	     return;

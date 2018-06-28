@@ -189,9 +189,9 @@ class AliAODTrack : public AliVTrack {
     else {delete[] fPID; fPID = 0;}
   }
   
-  Bool_t IsOn(ULong_t mask) const {return (fFlags&mask)>0;}
-  ULong_t GetStatus() const { return GetFlags(); }
-  ULong_t GetFlags() const { return fFlags; }
+  Bool_t IsOn(ULong64_t mask) const {return (fFlags&mask)>0;}
+  ULong64_t GetStatus() const { return GetFlags(); }
+  ULong64_t GetFlags() const { return fFlags; }
 
   Int_t   GetID() const { return (Int_t)fID; }
   Int_t   GetLabel() const { return fLabel; } 
@@ -374,9 +374,9 @@ class AliAODTrack : public AliVTrack {
   void  Print(const Option_t *opt = "") const;
 
   // setters
-  void SetFlags(ULong_t flags) { fFlags = flags; }
-  void SetStatus(ULong_t flags) { fFlags|=flags; }
-  void ResetStatus(ULong_t flags) { fFlags&=~flags; }
+  void SetFlags(ULong64_t flags) { fFlags = flags; }
+  void SetStatus(ULong64_t flags) { fFlags|=flags; }
+  void ResetStatus(ULong64_t flags) { fFlags&=~flags; }
 
   void SetID(Short_t id) { fID = id; }
   void SetLabel(Int_t label) { fLabel = label; }
@@ -474,7 +474,7 @@ class AliAODTrack : public AliVTrack {
   Double32_t    fChi2TPCConstrainedVsGlobal; // chi2 of constrained TPC vs global track (Golden chi2)
   Double32_t    fITSchi2;           // ITS chi2
 
-  ULong_t       fFlags;             // reconstruction status flags 
+  ULong64_t     fFlags;             // reconstruction status flags 
   Int_t         fLabel;             // track label, points back to MC track
   Int_t         fTOFLabel[3];       // TOF label
   Double32_t    fTrackLength;       // Track length
@@ -536,7 +536,7 @@ class AliAODTrack : public AliVTrack {
   Int_t GetNumberOfTPCClusters() const { return GetTPCncls();}  
   Int_t GetNumberOfTRDClusters() const { return GetTRDncls();}  
 
-  ClassDef(AliAODTrack, 26);
+  ClassDef(AliAODTrack, 27);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

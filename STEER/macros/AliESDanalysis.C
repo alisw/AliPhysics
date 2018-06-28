@@ -56,7 +56,7 @@ Int_t AliESDanalysis() {
      Int_t nk=0;
      while (ntrk--) {
         AliESDtrack *track=event->GetTrack(ntrk);
-        UInt_t status=track->GetStatus();
+        ULong64_t status=track->GetStatus();
 
 	//select only tracks with the "combined PID"
         if ((status&AliESDtrack::kESDpid)==0) continue;

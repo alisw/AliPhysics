@@ -321,7 +321,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
     Float_t p4  = seed->GetC(seed->GetBz());
   
     // Check the seed status
-    ULong_t status = seed->GetStatus();
+    ULong64_t status = seed->GetStatus();
     if ((status & AliESDtrack::kTRDout) != 0) continue;
     if ((status & AliESDtrack::kTPCout)){
       AliDebug(3, Form("Prolongate seed[%2d] which is TPC.", iSeed));
@@ -502,7 +502,7 @@ Int_t AliTRDtrackerV1::RefitInward(AliESDEvent *event)
   AliTRDtrackV1 track;
   for (Int_t itrack = 0; itrack < event->GetNumberOfTracks(); itrack++) {
     AliESDtrack *seed = event->GetTrack(itrack);
-    ULong_t status = seed->GetStatus();
+    ULong64_t status = seed->GetStatus();
 
     new(&track) AliTRDtrackV1(*seed);
     if (track.GetX() < 270.0) {

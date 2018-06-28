@@ -2776,7 +2776,7 @@ void AliAnalysisTaskESDfilter::AdjustCutsForEvent(const AliESDEvent& esd, TList&
   // check if this event is affected, i.e. it has no ITScomplementary tracks but has SA tracks
   for (int i=esd.GetNumberOfTracks();i--;) {
     AliESDtrack* tr = esd.GetTrack(i);
-    ULong_t flags = tr->GetStatus();
+    ULong64_t flags = tr->GetStatus();
     if ( flags & AliESDtrack::kTPCin ) continue;
     if ( flags & AliESDtrack::kITSpureSA ) {
       nPureSA++;

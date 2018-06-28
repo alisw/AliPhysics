@@ -132,7 +132,7 @@ void AliESDpid::MakeITSPID(AliESDtrack *track) const
     Double_t dedx=track->GetITSsignal();
     Bool_t isSA=kTRUE;
     Double_t momITS=mom;
-    ULong_t trStatus=track->GetStatus();
+    ULong64_t trStatus=track->GetStatus();
     if(trStatus&AliESDtrack::kTPCin) isSA=kFALSE;
     UChar_t clumap=track->GetITSClusterMap();
     Int_t nPointsForPid=0;

@@ -424,7 +424,7 @@ void AliTPCcalibGainMult::Process(AliVEvent *event) {
     // exclude tracks which do not look like primaries or are simply too short or on wrong sectors
     if (TMath::Abs(trackIn->Eta()) > fCutEtaWindow) continue;
 
-    UInt_t status = track->GetStatus();
+    ULong64_t status = track->GetStatus();
     if ((status&AliVTrack::kTPCrefit)==0) continue;
     if ((status&AliVTrack::kITSrefit)==0 && fCutRequireITSrefit) continue; // ITS cluster
     //
@@ -1852,7 +1852,7 @@ void AliTPCcalibGainMult::DumpHPT(const AliVEvent *event){
     AliVTrack *track = event->GetVTrack(i);
     if (!track) continue;
     if (track->Pt()<4) continue; 
-    UInt_t status = track->GetStatus();
+    ULong64_t status = track->GetStatus();
     //   
 
     AliExternalTrackParam trckIn;

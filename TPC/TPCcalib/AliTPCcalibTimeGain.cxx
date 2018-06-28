@@ -468,7 +468,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliVEvent *event) {
     if (nCrossedRows < fCutCrossRows) continue;     
     if (TMath::Abs(trackIn->Eta()) > fCutEtaWindow) continue;
     //
-    UInt_t status = track->GetStatus();
+    ULong64_t status = track->GetStatus();
     if ((status&AliVTrack::kTPCrefit)==0) continue;
     if ((status&AliVTrack::kITSrefit)==0 && fCutRequireITSrefit) continue; // ITS cluster
     //

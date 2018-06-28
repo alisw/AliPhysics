@@ -73,7 +73,7 @@ public:
   virtual const Double_t *PID() const = 0; // return PID object (to be defined, still)
 
   // Not possible GetStatus(), Long in AliVTrack, Int in AliMCParticle  
-//virtual UInt_t  GetStatus()    const { return 0  ; }
+  virtual ULong64_t  GetStatus()    const { return 0  ; }
   virtual UInt_t  MCStatusCode() const { return 0  ; }
   
   virtual TParticle *Particle()  const { return NULL ; }

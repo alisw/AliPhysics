@@ -62,7 +62,7 @@ public:
   void UpdateESDtrack(ULong_t flags) const;
   
   AliESDtrack *GetESDtrack() const {return fESDtrack;}
-  virtual ULong_t  GetStatus() const {
+  virtual ULong64_t  GetStatus() const {
     if(fESDtrack){return fESDtrack->GetStatus();} 
     else { AliWarning("null ESD track pointer - status 0"); return 0;} }
 

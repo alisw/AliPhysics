@@ -244,7 +244,7 @@ public:
   void CookdEdx(AliITStrackMI* track);
 
   Int_t GetParticleId(const AliESDtrack* track) const{
-    ULong_t trStatus=track->GetStatus();  
+    ULong64_t trStatus=track->GetStatus();  
     Bool_t isSA=kTRUE; if(trStatus&AliESDtrack::kTPCin) isSA=kFALSE;
     return fITSPid->GetParticleIdFromdEdxVsP(track->P(),track->GetITSsignal(),isSA);
   }

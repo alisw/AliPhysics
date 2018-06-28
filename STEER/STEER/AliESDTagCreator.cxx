@@ -1053,7 +1053,7 @@ void AliESDTagCreator::FillEventTag(TTree *chain, AliEventTag *evTag, Int_t iEve
     AliESDtrack * esdTrack = esd->GetTrack(iTrackNumber);
     if(esdTrack->GetLabel() != 0) fIsSim = kTRUE;
     else if(esdTrack->GetLabel() == 0) fIsSim = kFALSE;
-    UInt_t status = esdTrack->GetStatus();
+    ULong64_t status = esdTrack->GetStatus();
     
     //select only tracks with ITS refit
     if ((status&AliESDtrack::kITSrefit)==0) continue;
