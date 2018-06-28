@@ -3631,7 +3631,7 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityAOD(AliAODConversionPhoto
 }
 
 ///__________________________________________________________________________________________
-Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TString filename, TString periodName = ""){
+Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TString filename, TString periodName){
 
     TString nameProfile;
     if      (flag==1){
