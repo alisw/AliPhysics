@@ -18,8 +18,11 @@ ClassImp(AliAnalysisTaskSigma0Run2)
       fV0ReaderName("NoInit"),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
+      fPhotonV0Cuts(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
+      fSigmaPhotonCuts(nullptr),
+      fAntiSigmaPhotonCuts(nullptr),
       fIsMC(false),
       fIsHeavyIon(false),
       fIsLightweight(false),
@@ -27,7 +30,7 @@ ClassImp(AliAnalysisTaskSigma0Run2)
       fTrigger(AliVEvent::kINT7),
       fLambdaContainer(),
       fAntiLambdaContainer(),
-      fGammaContainer(),
+      fPhotonV0Container(),
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
@@ -50,8 +53,11 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fV0ReaderName("NoInit"),
       fV0Cuts(nullptr),
       fAntiV0Cuts(nullptr),
+      fPhotonV0Cuts(nullptr),
       fSigmaCuts(nullptr),
       fAntiSigmaCuts(nullptr),
+      fSigmaPhotonCuts(nullptr),
+      fAntiSigmaPhotonCuts(nullptr),
       fIsMC(false),
       fIsHeavyIon(false),
       fIsLightweight(false),
@@ -59,7 +65,7 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fTrigger(AliVEvent::kINT7),
       fLambdaContainer(),
       fAntiLambdaContainer(),
-      fGammaContainer(),
+      fPhotonV0Container(),
       fGammaArray(nullptr),
       fOutputContainer(nullptr),
       fQA(nullptr),
@@ -91,13 +97,8 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
     return;
   }
 
-  if (!fV0Cuts) {
-    AliError("No V0 Cuts");
-    return;
-  }
-
-  if (!fAntiV0Cuts) {
-    AliError("No Anti V0 Cuts");
+  if (!fV0Cuts || !fAntiV0Cuts || !fPhotonV0Cuts) {
+    AliError("V0 Cuts missing");
     return;
   }
 
@@ -109,13 +110,9 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
     return;
   }
 
-  if (!fSigmaCuts) {
-    AliError("No Sigma0 Cuts");
-    return;
-  }
-
-  if (!fAntiSigmaCuts) {
-    AliError("No Anti-Sigma0 Cuts");
+  if (!fSigmaCuts || !fAntiSigmaCuts || !fSigmaPhotonCuts ||
+      !fAntiSigmaPhotonCuts) {
+    AliError("Sigma0 Cuts missing");
     return;
   }
 
@@ -123,15 +120,18 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
   if (!AcceptEvent(fInputEvent)) return;
 
   // LAMBDA SELECTION
-  fV0Cuts->SelectLambda(fInputEvent, fMCEvent, fLambdaContainer);
+  fV0Cuts->SelectV0(fInputEvent, fMCEvent, fLambdaContainer);
 
   // LAMBDA SELECTION
-  fAntiV0Cuts->SelectLambda(fInputEvent, fMCEvent, fAntiLambdaContainer);
+  fAntiV0Cuts->SelectV0(fInputEvent, fMCEvent, fAntiLambdaContainer);
+
+  // PHOTON V0 SELECTION
+  fPhotonV0Cuts->SelectV0(fInputEvent, fMCEvent, fPhotonV0Container);
 
   // PHOTON SELECTION
   fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
-  std::vector<AliAODConversionPhoton> gammaConvContainer;
-  CastToVector(gammaConvContainer);
+  std::vector<AliSigma0ParticleV0> gammaConvContainer;
+  CastToVector(gammaConvContainer, fInputEvent);
 
   // Sigma0 selection
   fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
@@ -141,6 +141,13 @@ void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
   fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
                                      fAntiLambdaContainer);
 
+  // Sigma0 selection
+  fSigmaPhotonCuts->SelectPhotonMother(fInputEvent, fMCEvent,
+                                       fPhotonV0Container, fLambdaContainer);
+
+  // Sigma0 selection
+  fAntiSigmaPhotonCuts->SelectPhotonMother(
+      fInputEvent, fMCEvent, fPhotonV0Container, fAntiLambdaContainer);
   // flush the data
   PostData(1, fOutputContainer);
 }
@@ -188,12 +195,13 @@ bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
 
 //____________________________________________________________________________________________________
 void AliAnalysisTaskSigma0Run2::CastToVector(
-    std::vector<AliAODConversionPhoton> &container) {
+    std::vector<AliSigma0ParticleV0> &container, const AliVEvent *inputEvent) {
   for (int iGamma = 0; iGamma < fGammaArray->GetEntriesFast(); ++iGamma) {
     auto photonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
     if (!photonCandidate) continue;
-    container.push_back(*photonCandidate);
+    AliSigma0ParticleV0 phot(photonCandidate, inputEvent);
+    container.push_back(phot);
   }
 }
 
@@ -393,14 +401,24 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fOutputContainer->Add(fAntiV0Cuts->GetCutHistograms());
   }
 
-  // Sigma selection
+  if (fPhotonV0Cuts && fPhotonV0Cuts->GetCutHistograms()) {
+    fOutputContainer->Add(fPhotonV0Cuts->GetCutHistograms());
+  }
+
   if (fSigmaCuts && fSigmaCuts->GetCutHistograms()) {
     fOutputContainer->Add(fSigmaCuts->GetCutHistograms());
   }
 
-  // Anti-Sigma selection
   if (fAntiSigmaCuts && fAntiSigmaCuts->GetCutHistograms()) {
     fOutputContainer->Add(fAntiSigmaCuts->GetCutHistograms());
+  }
+
+  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetCutHistograms()) {
+    fOutputContainer->Add(fSigmaPhotonCuts->GetCutHistograms());
+  }
+
+  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetCutHistograms()) {
+    fOutputContainer->Add(fAntiSigmaPhotonCuts->GetCutHistograms());
   }
 
   PostData(1, fOutputContainer);

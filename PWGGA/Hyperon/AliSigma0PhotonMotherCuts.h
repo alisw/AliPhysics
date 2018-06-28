@@ -26,16 +26,16 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   void SelectPhotonMother(
       AliVEvent *inputEvent, AliMCEvent *mcEvent,
-      const std::vector<AliAODConversionPhoton> &photonCandidates,
+      const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void SigmaToLambdaGamma(
-      const std::vector<AliAODConversionPhoton> &photonCandidates,
+      const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void SigmaToLambdaGammaMixedEvent(
-      const std::vector<AliAODConversionPhoton> &photonCandidates,
+      const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   void FillEventBuffer(
-      const std::vector<AliAODConversionPhoton> &photonCandidates,
+      const std::vector<AliSigma0ParticleV0> &photonCandidates,
       const std::vector<AliSigma0ParticleV0> &lambdaCandidates);
   int GetRapidityBin(float rapidity) const;
 
@@ -72,7 +72,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   AliMCEvent *fMCEvent;    //!
 
   deque<vector<AliSigma0ParticleV0> > fLambdaMixed;     //!
-  deque<vector<AliAODConversionPhoton> > fPhotonMixed;  //!
+  deque<vector<AliSigma0ParticleV0> > fPhotonMixed;  //!
 
   short fMixingDepth;
 

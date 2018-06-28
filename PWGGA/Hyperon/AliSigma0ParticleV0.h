@@ -49,6 +49,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   double GetPDGMass() const { return fPDGMass; }
 
   void SetPDGMass(float mass) { fPDGMass = mass; }
+  void SetRecMass(float mass) { fRecMass = mass; }
 
   float GetArmenterosAlpha() const;
   float GetArmenterosQt() const;

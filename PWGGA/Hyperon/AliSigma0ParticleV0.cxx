@@ -43,9 +43,11 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
   fTrackLabel = v0->GetLabel();
   fPhi = v0->Phi();
   fEta = v0->Eta();
-  v0->ChangeMassHypothesis(pdg);
-  fMass = v0->GetEffMass();
-  fRecMass = v0->GetEffMass();
+  if (pdg != 22) {
+    v0->ChangeMassHypothesis(pdg);
+    fMass = v0->GetEffMass();
+    fRecMass = v0->GetEffMass();
+  }
 
   fTrackLabelPos = pos->GetID();
   fTrackLabelNeg = neg->GetID();
@@ -100,7 +102,7 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton &gamma,
   fPhi = gamma.GetPhotonPhi();
   fEta = gamma.GetPhotonEta();
   fMass = gamma.GetPhotonMass();
-  fRecMass = gamma.GetMass();
+  fRecMass = gamma.M();
 
   fTrackLabelPos = gamma.GetTrackLabelPositive();
   fTrackLabelNeg = gamma.GetTrackLabelNegative();
@@ -239,7 +241,7 @@ int AliSigma0ParticleV0::MatchToMC(AliMCEvent *mcEvent, const int PIDmother,
       }
     }
     if (labMom[i] == -1) {
-    	return -1;
+      return -1;
     }
   }
 

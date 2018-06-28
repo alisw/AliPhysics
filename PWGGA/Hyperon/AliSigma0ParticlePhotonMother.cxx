@@ -14,6 +14,46 @@ ClassImp(AliSigma0ParticlePhotonMother)
 //____________________________________________________________________________________________________
 AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother(
     const AliSigma0ParticleV0 &lambdaCandidate,
+    const AliSigma0ParticleV0 &photonCandidate, const AliVEvent *inputEvent)
+    : AliSigma0ParticleBase(),
+      fType(1),
+      fRecMass(0),
+      fV0(),
+      fPhoton(),
+      fPhoton2() {
+  TLorentzVector track1, track2;
+  track1.SetXYZM(lambdaCandidate.GetPx(), lambdaCandidate.GetPy(),
+                 lambdaCandidate.GetPz(), lambdaCandidate.GetRecMass());
+  track2.SetXYZM(photonCandidate.GetPx(), photonCandidate.GetPy(),
+                 photonCandidate.GetPz(), photonCandidate.GetRecMass());
+  TLorentzVector trackSum = track1 + track2;
+
+  fP[0] = trackSum.Px();
+  fP[1] = trackSum.Py();
+  fP[2] = trackSum.Pz();
+  fPMC[0] = -1.;
+  fPMC[1] = -1.;
+  fPMC[2] = -1.;
+
+  //  fPDGCode = pdg;
+  fPt = std::sqrt(fP[0] * fP[0] + fP[1] * fP[1]);
+  //  fTrackLabel = v0.GetID();
+  fPhi = trackSum.Phi();
+  fEta = trackSum.Eta();
+  fRecMass = trackSum.M();
+  // see https://arxiv.org/pdf/1703.04639.pdf
+  fMass = trackSum.M() - lambdaCandidate.GetRecMass() +
+          lambdaCandidate.GetPDGMass();
+
+  fUse = true;
+
+  fV0 = lambdaCandidate;
+  fPhoton = photonCandidate;
+}
+
+//____________________________________________________________________________________________________
+AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother(
+    const AliSigma0ParticleV0 &lambdaCandidate,
     const AliAODConversionPhoton &photonCandidate, const AliVEvent *inputEvent)
     : AliSigma0ParticleBase(),
       fType(1),

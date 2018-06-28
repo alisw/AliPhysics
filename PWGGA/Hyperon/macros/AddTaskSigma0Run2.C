@@ -149,6 +149,14 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   v0Cuts->InitCutHistograms(TString("Lambda"));
   antiv0Cuts->InitCutHistograms(TString("AntiLambda"));
 
+  AliSigma0V0Cuts *photonV0Cuts = AliSigma0V0Cuts::PhotonCuts();
+  photonV0Cuts->SetIsMC(isMC);
+  photonV0Cuts->SetPID(22);
+  photonV0Cuts->SetPosPID(AliPID::kElectron, 11);
+  photonV0Cuts->SetNegPID(AliPID::kElectron, -11);
+  if (suffix != "0") photonV0Cuts->SetLightweight(true);
+  photonV0Cuts->InitCutHistograms(TString("Photon"));
+
   AliSigma0PhotonMotherCuts *sigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
@@ -167,6 +175,24 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   if (suffix != "0") antiSigmaCuts->SetLightweight(true);
   antiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
 
+  AliSigma0PhotonMotherCuts *sigmaPhotonCuts =
+      AliSigma0PhotonMotherCuts::DefaultCuts();
+  sigmaPhotonCuts->SetIsMC(isMC);
+  sigmaPhotonCuts->SetSigmaMass(1.192642);
+  sigmaPhotonCuts->SetSigmaMassCut(0.005);
+  sigmaPhotonCuts->SetSigmaSideband(0.015, 0.05);
+  if (suffix != "0") sigmaPhotonCuts->SetLightweight(true);
+  sigmaPhotonCuts->InitCutHistograms(TString("Sigma0Photon"));
+
+  AliSigma0PhotonMotherCuts *antiSigmaPhotonCuts =
+      AliSigma0PhotonMotherCuts::DefaultCuts();
+  antiSigmaPhotonCuts->SetIsMC(isMC);
+  antiSigmaPhotonCuts->SetSigmaMass(1.192642);
+  antiSigmaPhotonCuts->SetSigmaMassCut(0.005);
+  antiSigmaPhotonCuts->SetSigmaSideband(0.015, 0.05);
+  if (suffix != "0") antiSigmaPhotonCuts->SetLightweight(true);
+  antiSigmaPhotonCuts->InitCutHistograms(TString("AntiSigma0Photon"));
+
   AliAnalysisTaskSigma0Run2 *task =
       new AliAnalysisTaskSigma0Run2("AnalysisTaskSigma0");
   if (trigger == "kINT7") {
@@ -180,8 +206,11 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   task->SetIsMC(isMC);
   task->SetV0Cuts(v0Cuts);
   task->SetAntiV0Cuts(antiv0Cuts);
+  task->SetPhotonV0Cuts(photonV0Cuts);
   task->SetSigmaCuts(sigmaCuts);
   task->SetAntiSigmaCuts(antiSigmaCuts);
+  task->SetSigmaPhotonCuts(sigmaPhotonCuts);
+  task->SetAntiSigmaPhotonCuts(antiSigmaPhotonCuts);
 
   if (suffix != "0") task->SetLightweight(true);
 

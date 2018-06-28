@@ -14,6 +14,9 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   AliSigma0ParticlePhotonMother(const AliSigma0ParticleV0 &lambdaCandidate,
                                 const AliAODConversionPhoton &photonCandidate,
                                 const AliVEvent *inputEvent);
+  AliSigma0ParticlePhotonMother(const AliSigma0ParticleV0 &lambdaCandidate,
+                                const AliSigma0ParticleV0 &photonCandidate,
+                                const AliVEvent *inputEvent);
   AliSigma0ParticlePhotonMother &operator=(
       const AliSigma0ParticlePhotonMother &obj);
   bool IsTrueSigma(AliMCEvent *mcEvent) const;

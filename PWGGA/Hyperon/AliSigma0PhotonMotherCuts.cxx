@@ -143,7 +143,7 @@ AliSigma0PhotonMotherCuts *AliSigma0PhotonMotherCuts::DefaultCuts() {
 //____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::SelectPhotonMother(
     AliVEvent *inputEvent, AliMCEvent *mcEvent,
-    const std::vector<AliAODConversionPhoton> &photonCandidates,
+    const std::vector<AliSigma0ParticleV0> &photonCandidates,
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   fMCEvent = mcEvent;
 
@@ -157,7 +157,7 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
 
 //____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
-    const std::vector<AliAODConversionPhoton> &photonCandidates,
+    const std::vector<AliSigma0ParticleV0> &photonCandidates,
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   // SAME EVENT
   for (const auto &photon : photonCandidates) {
@@ -212,7 +212,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
 
 //____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
-    const std::vector<AliAODConversionPhoton> &photonCandidates,
+    const std::vector<AliSigma0ParticleV0> &photonCandidates,
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   // photons from this event with mixed lambdas
   for (const auto &LambdaContainer : fLambdaMixed) {
@@ -273,7 +273,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
 
 //____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::FillEventBuffer(
-    const std::vector<AliAODConversionPhoton> &photonCandidates,
+    const std::vector<AliSigma0ParticleV0> &photonCandidates,
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   // ++++++++++++++
   // Photon

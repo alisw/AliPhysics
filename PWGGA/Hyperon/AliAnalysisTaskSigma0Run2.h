@@ -31,13 +31,21 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
   void SetV0Cuts(AliSigma0V0Cuts *cuts) { fV0Cuts = cuts; }
   void SetAntiV0Cuts(AliSigma0V0Cuts *cuts) { fAntiV0Cuts = cuts; }
+  void SetPhotonV0Cuts(AliSigma0V0Cuts *cuts) { fPhotonV0Cuts = cuts; }
   void SetSigmaCuts(AliSigma0PhotonMotherCuts *cuts) { fSigmaCuts = cuts; }
   void SetAntiSigmaCuts(AliSigma0PhotonMotherCuts *cuts) {
     fAntiSigmaCuts = cuts;
   }
+  void SetSigmaPhotonCuts(AliSigma0PhotonMotherCuts *cuts) {
+    fSigmaPhotonCuts = cuts;
+  }
+  void SetAntiSigmaPhotonCuts(AliSigma0PhotonMotherCuts *cuts) {
+    fAntiSigmaPhotonCuts = cuts;
+  }
 
   bool AcceptEvent(AliVEvent *event);
-  void CastToVector(std::vector<AliAODConversionPhoton> &container);
+  void CastToVector(std::vector<AliSigma0ParticleV0> &container,
+                    const AliVEvent *inputEvent);
   void FillTriggerHisto(TH1F *histo);
 
   AliEventCuts fAliEventCuts;
@@ -46,14 +54,17 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   AliAnalysisTaskSigma0Run2(const AliAnalysisTaskSigma0Run2 &task);
   AliAnalysisTaskSigma0Run2 &operator=(const AliAnalysisTaskSigma0Run2 &task);
 
-  AliVEvent *fInputEvent;                     // current event
-  AliMCEvent *fMCEvent;                       // corresponding MC event
-  AliV0ReaderV1 *fV0Reader;                   //! basic photon Selection Task
-  TString fV0ReaderName;                      //
-  AliSigma0V0Cuts *fV0Cuts;                   //
-  AliSigma0V0Cuts *fAntiV0Cuts;               //
-  AliSigma0PhotonMotherCuts *fSigmaCuts;      //
-  AliSigma0PhotonMotherCuts *fAntiSigmaCuts;  //
+  AliVEvent *fInputEvent;                       //! current event
+  AliMCEvent *fMCEvent;                         //! corresponding MC event
+  AliV0ReaderV1 *fV0Reader;                     //! basic photon Selection Task
+  TString fV0ReaderName;                        //
+  AliSigma0V0Cuts *fV0Cuts;                     //
+  AliSigma0V0Cuts *fAntiV0Cuts;                 //
+  AliSigma0V0Cuts *fPhotonV0Cuts;               //
+  AliSigma0PhotonMotherCuts *fSigmaCuts;        //
+  AliSigma0PhotonMotherCuts *fAntiSigmaCuts;    //
+  AliSigma0PhotonMotherCuts *fSigmaPhotonCuts;  //
+  AliSigma0PhotonMotherCuts *fAntiSigmaPhotonCuts;  //
 
   bool fIsMC;              //
   bool fIsHeavyIon;        //
@@ -63,14 +74,14 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
 
   std::vector<AliSigma0ParticleV0> fLambdaContainer;
   std::vector<AliSigma0ParticleV0> fAntiLambdaContainer;
-  std::vector<AliAODConversionPhoton> fGammaContainer;
+  std::vector<AliSigma0ParticleV0> fPhotonV0Container;
   TClonesArray *fGammaArray;
 
   TList *fOutputContainer;                  //!
   TList *fQA;                               //!
   TH1F *fHistCutQA;                         //
   TProfile *fHistRunNumber;                 //
-  TProfile *fHistCutBooking;                      //
+  TProfile *fHistCutBooking;                //
   TH1F *fHistCentralityProfileBefore;       //
   TH1F *fHistCentralityProfileAfter;        //
   TH1F *fHistCentralityProfileCoarseAfter;  //
