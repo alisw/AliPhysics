@@ -40,7 +40,7 @@ public:
   void SetPidProbProton(const float& lo, const float& hi);
   void SetPidProbMuon(const float& lo, const float& hi);
   void SetLabel(const bool& flag);
-  void SetStatus(const long& w);
+  void SetStatus(const ULong64_t w);
   void SetminTPCclsF(const short& s);
   void SetminTPCncls(const short& s);
   void SetminITScls(const int& s);
@@ -80,7 +80,7 @@ public:
   std::pair<float, float> GetProbProton() const { return std::make_pair(fPidProbProton[0], fPidProbProton[1]); }
   std::pair<float, float> GetProbMuon() const { return std::make_pair(fPidProbMuon[0], fPidProbMuon[1]); }
   bool GetLabel() const { return fLabel; }
-  long GetStatus() const { return fStatus; }
+  ULong64_t GetStatus() const { return fStatus; }
   int GetPIDmethod() const { return fPIDMethod; }
 
   int GetMinFindableClustersTPC() const { return fminTPCclsF; }
@@ -127,7 +127,7 @@ protected:   // here are the quantities I want to cut on...
 
   AliESDtrackCuts::ITSClusterRequirement fCutClusterRequirementITS[3];  ///< detailed ITS cluster requirements for (SPD, SDD, SSD) - from AliESDtrackcuts!
   bool              fLabel;              ///< if true label<0 will not pass throught
-  long              fStatus;             ///< staus flag
+  ULong64_t         fStatus;             ///< staus flag
   ReadPIDMethodType fPIDMethod;          ///< which PID mehod to use. 0 - nsgima, 1 - contour
   Bool_t            fNsigmaTPCTOF;       ///< true if squared nsigma from TPC and TOF, false if separately from TPC and TOF
   Bool_t            fNsigmaTPConly;      ///< true if nsigma from TPC only
@@ -186,7 +186,7 @@ protected:   // here are the quantities I want to cut on...
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoESDTrackCut, 1);
+  ClassDef(AliFemtoESDTrackCut, 2);
   /// \endcond
 #endif
 };
@@ -203,7 +203,7 @@ inline void AliFemtoESDTrackCut::SetPidProbProton
 (const float& lo,const float& hi){fPidProbProton[0]=lo; fPidProbProton[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbMuon(const float& lo,const float& hi){fPidProbMuon[0]=lo; fPidProbMuon[1]=hi;}
 inline void AliFemtoESDTrackCut::SetLabel(const bool& flag){fLabel=flag;}
-inline void AliFemtoESDTrackCut::SetStatus(const long& status){fStatus=status;}
+inline void AliFemtoESDTrackCut::SetStatus(const ULong64_t status){fStatus=status;}
 inline void AliFemtoESDTrackCut::SetminTPCclsF(const short& minTPCclsF){fminTPCclsF=minTPCclsF;}
 inline void AliFemtoESDTrackCut::SetminTPCncls(const short& s){fminTPCncls=s;}
 inline void AliFemtoESDTrackCut::SetminITScls(const int& minITScls){fminITScls=minITScls;}
