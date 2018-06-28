@@ -852,6 +852,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
   // ---------------------------------- cut selection for pp 5 TeV 2017 ------------------------------------
   } else if (trainConfig == 400){
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+    cuts.AddCut("00010113", "0c200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+    cuts.AddCut("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
   } else if (trainConfig == 401){
     cuts.AddCut("00010113", "00200009257300008250404000", "0152103500000000"); // pidEdx 2,-10
     cuts.AddCut("00010113", "00200009247300008250404000", "0152103500000000"); // pidEdx 3, 1
@@ -904,6 +906,8 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
 
   } else if (trainConfig == 440){ // as 400 to be used MBW
    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+   cuts.AddCut("00010113", "0c200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
+   cuts.AddCut("00010113", "0d200009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND
   } else if (trainConfig == 441){
    cuts.AddCut("00010113", "00a00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND, R 5-33.5
    cuts.AddCut("00010113", "00b00009227300008250404000", "0152103500000000"); // Standard cut for pp 5 TeV analysis VAND  R 33.5-72
@@ -950,15 +954,15 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "0d2000p9267300008250404000", "0152103500000000"); // min pT 30 MeV
     cuts.AddCut("00010113", "0d2000s9267300008250404000", "0152103500000000"); // min pT 40 MeV
     cuts.AddCut("00010113", "0d200009267300008250404000", "0152103500000000"); // min pT 50 MeV
-  } else if (trainConfig == 609) {  
+  } else if (trainConfig == 609) {
     cuts.AddCut("00010113", "0d200088267300008250404000", "0152103500000000"); // TPC cluster 35%
     cuts.AddCut("00010113", "0d200086267300008250404000", "0152103500000000"); // TPC cluster 70%
-  } else if (trainConfig == 610) {  
+  } else if (trainConfig == 610) {
     cuts.AddCut("00010113", "0d200089367300008250404000", "0152103500000000"); // edEdx -4,5
     cuts.AddCut("00010113", "0d200089667300008250404000", "0152103500000000"); // edEdx -2.5,4
     cuts.AddCut("00010113", "0d200089257300008250404000", "0152103500000000"); // pidEdx 2,-10
     cuts.AddCut("00010113", "0d200089217300008250404000", "0152103500000000"); // pidEdx 0,-10
-  } else if (trainConfig == 611) {  
+  } else if (trainConfig == 611) {
     cuts.AddCut("00010113", "0d200089260300008250404000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
     cuts.AddCut("00010113", "0d200089266300008250404000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
     cuts.AddCut("00010113", "0d200089267600008250404000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
@@ -999,15 +1003,15 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "0d2000p9267300008250404000", "0152103500000000"); // min pT 30 MeV
     cuts.AddCut("00010113", "0d2000s9267300008250404000", "0152103500000000"); // min pT 40 MeV
     cuts.AddCut("00010113", "0d200009267300008250404000", "0152103500000000"); // min pT 50 MeV
-  } else if (trainConfig == 659) {  
+  } else if (trainConfig == 659) {
     cuts.AddCut("00010113", "0d200088267300008250404000", "0152103500000000"); // TPC cluster 35%
     cuts.AddCut("00010113", "0d200086267300008250404000", "0152103500000000"); // TPC cluster 70%
-  } else if (trainConfig == 660) {  
+  } else if (trainConfig == 660) {
     cuts.AddCut("00010113", "0d200089367300008250404000", "0152103500000000"); // edEdx -4,5
     cuts.AddCut("00010113", "0d200089667300008250404000", "0152103500000000"); // edEdx -2.5,4
     cuts.AddCut("00010113", "0d200089257300008250404000", "0152103500000000"); // pidEdx 2,-10
     cuts.AddCut("00010113", "0d200089217300008250404000", "0152103500000000"); // pidEdx 0,-10
-  } else if (trainConfig == 661) {  
+  } else if (trainConfig == 661) {
     cuts.AddCut("00010113", "0d200089260300008250404000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
     cuts.AddCut("00010113", "0d200089266300008250404000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
     cuts.AddCut("00010113", "0d200089267600008250404000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
@@ -1060,15 +1064,15 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "0d200069267300008250404000", "0152103500000000"); // min pT 40 MeV
     cuts.AddCut("00010113", "0d200049267300008250404000", "0152103500000000"); // min pT 75 MeV
     cuts.AddCut("00010113", "0d200019267300008250404000", "0152103500000000"); // min pT 100 MeV
-  } else if (trainConfig == 709) {  
+  } else if (trainConfig == 709) {
     cuts.AddCut("00010113", "0d200008267300008250404000", "0152103500000000"); // TPC cluster 35%
     cuts.AddCut("00010113", "0d200006267300008250404000", "0152103500000000"); // TPC cluster 70%
-  } else if (trainConfig == 710) {  
+  } else if (trainConfig == 710) {
     cuts.AddCut("00010113", "0d200009367300008250404000", "0152103500000000"); // edEdx -4,5
     cuts.AddCut("00010113", "0d200009667300008250404000", "0152103500000000"); // edEdx -2.5,4
     cuts.AddCut("00010113", "0d200009257300008250404000", "0152103500000000"); // pidEdx 2,-10
     cuts.AddCut("00010113", "0d200009217300008250404000", "0152103500000000"); // pidEdx 0,-10
-  } else if (trainConfig == 711) {  
+  } else if (trainConfig == 711) {
     cuts.AddCut("00010113", "0d200009260300008250404000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
     cuts.AddCut("00010113", "0d200009266300008250404000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
     cuts.AddCut("00010113", "0d200009267600008250404000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
@@ -1110,15 +1114,15 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("00010113", "0d200069267300008250404000", "0152103500000000"); // min pT 40 MeV
     cuts.AddCut("00010113", "0d200049267300008250404000", "0152103500000000"); // min pT 75 MeV
     cuts.AddCut("00010113", "0d200019267300008250404000", "0152103500000000"); // min pT 100 MeV
-  } else if (trainConfig == 759) {  
+  } else if (trainConfig == 759) {
     cuts.AddCut("00010113", "0d200008267300008250404000", "0152103500000000"); // TPC cluster 35%
     cuts.AddCut("00010113", "0d200006267300008250404000", "0152103500000000"); // TPC cluster 70%
-  } else if (trainConfig == 760) {  
+  } else if (trainConfig == 760) {
     cuts.AddCut("00010113", "0d200009367300008250404000", "0152103500000000"); // edEdx -4,5
     cuts.AddCut("00010113", "0d200009667300008250404000", "0152103500000000"); // edEdx -2.5,4
     cuts.AddCut("00010113", "0d200009257300008250404000", "0152103500000000"); // pidEdx 2,-10
     cuts.AddCut("00010113", "0d200009217300008250404000", "0152103500000000"); // pidEdx 0,-10
-  } else if (trainConfig == 761) {  
+  } else if (trainConfig == 761) {
     cuts.AddCut("00010113", "0d200009260300008250404000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
     cuts.AddCut("00010113", "0d200009266300008250404000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
     cuts.AddCut("00010113", "0d200009267600008250404000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
