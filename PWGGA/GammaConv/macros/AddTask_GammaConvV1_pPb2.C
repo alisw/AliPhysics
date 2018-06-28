@@ -290,7 +290,10 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     HeaderList->Add(Header3);
   }
 
-
+  if (periodNameV0Reader.Contains("LHC18b9")){
+    TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
+    HeaderList->Add(HeaderP8J);
+  }
   Bool_t doWeighting = kFALSE;
   if (doWeightingPart == 1 || doWeightingPart == 2 || doWeightingPart == 3) doWeighting = kTRUE;
 
