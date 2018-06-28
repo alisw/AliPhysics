@@ -143,7 +143,7 @@ public:
   //virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
   virtual void     SetID(Short_t /*id*/) {;}
   Double_t GetKFInfo(UInt_t p1, UInt_t p2, Int_t type) const;
-  Double_t GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1pt, Double_t s1pt) const;
+  Double_t GetKFInfoScale(UInt_t p1, UInt_t p2, Int_t type, Double_t d1pt, Double_t s1pt, Double_t eLoss=0, Int_t flag=0x3) const;
   //
   void SetUsedByCascade(Bool_t v) {SetBit(kUsedByCascadeBit,v);}
   Bool_t GetUsedByCascade() const {return TestBit(kUsedByCascadeBit);}

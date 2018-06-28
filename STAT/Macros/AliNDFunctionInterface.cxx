@@ -160,7 +160,7 @@ Int_t  AliNDFunctionInterface::FitMVA(TTree *tree, const char *varFit, TCut cut,
   loader.AddTarget(varFit);
   /// 3.) Setup DataSet
   loader.AddRegressionTree(tree, 1.0);   // link the TTree to the loader, weight for each event  = 1
-  Int_t entries = tree->Draw("1","cut","goff");
+  Int_t entries = tree->Draw("1",cut,"goff");
   loader.PrepareTrainingAndTestTree(cut, TString::Format("nTrain_Regression=%d:nTest_Regression=%d:SplitMode=Random:NormMode=NumEvents:!V",entries/2,entries/2));
   /// 4.) Book regression methods from the methods list
   TObjArray *methodList = TString(methods).Tokenize(":");

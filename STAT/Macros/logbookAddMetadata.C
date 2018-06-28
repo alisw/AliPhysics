@@ -1,21 +1,34 @@
 /*
-  Append logbook metadata decribing tree structure,  and annotating varaibles
+  Append logbook metadata describing tree structure,  and annotating variables
   
   Usage:
-     1.) Metadata can be setup infoking macro:
+     1.) Metadata can be setup invoking macro:
          AliExternalInfo info;
          TTree * tree = info.GetTree("Logbook","LHC15o","cpass1_pass1","QA.TRD;QA.TOF;QA.TPC;Logbook.detector");     
          //
          metadataMacro="$ALICE_ROOT/STAT/Macros/logbookAddMetadata.C";
          gROOT->ProcessLine(TString::Format(".x %s((TTree*)%p,0);",metadataMacro,tree).Data());
-     2.) Macro can be executed automatically if proper configuation file leaded AliExternalInfo.cfg
-     
-
+         tree->GetUserInfo()->ls()
+         // Example print class metadata
+         AliTreePlayer::selectMetadata(tree, "[class==\"\"]",0)->Print();
+         // Example print axis description metadata
+         AliTreePlayer::selectMetadata(tree, "[Axis==\"\"]",0)->Print();
+     2.) Macro can be executed automatically if configuration file loaded in AliExternalInfo.cfg
+         (see line in default AliRoot_SRC/STAT/Macros/AliExternalInfo.cfg)
+         Logbook.metadataMacro $ALICE_ROOT/STAT/Macros/logbookAddMetadata.C+
 */
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TTree.h"
+#include "TPRegexp.h"
+#include "TList.h"
+#include "AliTreePlayer.h"
+#include "TStatToolkit.h"
+#endif
 
 void logbookAddMetadata(TTree*tree, Int_t verbose=0){
   //
-  // Set metadata infomation 
+  // Set metadata information
   //
   if (tree==NULL) {
     ::Error("logbookAddMetadata","Start processing. Emtpy tree");
@@ -92,7 +105,7 @@ void logbookAddMetadata(TTree*tree, Int_t verbose=0){
     mlist->Print();
   }
   if (verbose==2){
-    // AliTreeToolkit::printMetadata(treeLogbook, "[class]",0);  // not yet comitted
+     AliTreePlayer::selectMetadata(tree, "[class==\"\"]",0)->Print();
   }
   ::Info("logbookAddMetadata","End");
 
