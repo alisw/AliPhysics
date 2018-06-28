@@ -14,23 +14,23 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 :fMVPileUp(false)
 ,fEvtCutQA(false)
 ,fQA()
-,fFemtoTrack()
-,fFemtov0()
-,fFemtoCasc()
-,fEvent()
-,fEvtCuts()
-,fTrackCuts()
-,fAntiTrackCuts()
-,fv0Cuts()
-,fAntiv0Cuts()
-,fCascCuts()
-,fAntiCascCuts()
-,fPairCleaner()
-,fControlSample()
+,fFemtoTrack(nullptr)
+,fFemtov0(nullptr)
+,fFemtoCasc(nullptr)
+,fEvent(nullptr)
+,fEvtCuts(nullptr)
+,fTrackCuts(nullptr)
+,fAntiTrackCuts(nullptr)
+,fv0Cuts(nullptr)
+,fAntiv0Cuts(nullptr)
+,fCascCuts(nullptr)
+,fAntiCascCuts(nullptr)
+,fPairCleaner(nullptr)
+,fControlSample(nullptr)
 ,fTrackBufferSize(0)
-,fGTI(0)
-,fConfig(0)
-,fPartColl(0)
+,fGTI(nullptr)
+,fConfig(nullptr)
+,fPartColl(nullptr)
 {
 
 }
@@ -105,10 +105,14 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
       fQA->Add(fEvent->GetEvtCutList());
     }
   }
-  fPartColl=
+  if (fConfig->GetUseEventMixing()) {
+    fPartColl=
       new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
-  fControlSample=
+  }
+  if (fConfig->GetUsePhiSpinning()) {
+    fControlSample=
       new AliFemtoDreamControlSample(fConfig,fConfig->GetMinimalBookingSample());
+  }
   return;
 }
 

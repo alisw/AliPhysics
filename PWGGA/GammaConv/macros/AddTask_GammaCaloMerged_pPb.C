@@ -249,7 +249,6 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
   // run 2 data
   } else if (trainConfig == 101){ // pp 2.76TeV paper cuts : open timing, TB nonlin
     cuts.AddCut("80010113","1111101017032200000","1111101017022700001","0163300000000000"); // INT7
-    cuts.AddCut("80052113","1111101017032200000","1111101017022700001","0163300000000000"); // EMC7
     cuts.AddCut("80085113","1111101017032200000","1111101017022700001","0163300000000000"); // EG2
     cuts.AddCut("80083113","1111101017032200000","1111101017022700001","0163300000000000"); // EG1
   } else if (trainConfig == 102){  // pp 2.76TeV paper cuts:  w/o mass, open timing, TB nonlin
@@ -269,9 +268,16 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     cuts.AddCut("80083113","1111100017032200000","1111100017022000001","0163300000000000"); // EG1
   } else if (trainConfig == 105){ // pp 2.76TeV paper cuts : open timing, TB nonlin, no TM
     cuts.AddCut("80010113","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
-    cuts.AddCut("80052113","1111101010032200000","1111101010022700001","0163300000000000"); // EMC7
     cuts.AddCut("80085113","1111101010032200000","1111101010022700001","0163300000000000"); // EG2
     cuts.AddCut("80083113","1111101010032200000","1111101010022700001","0163300000000000"); // EG1
+  } else if (trainConfig == 106){ // pp 2.76TeV paper cuts : open timing, TB nonlin, no TM
+    cuts.AddCut("80010103","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+    cuts.AddCut("80085103","1111101010032200000","1111101010022700001","0163300000000000"); // EG2
+    cuts.AddCut("80083103","1111101010032200000","1111101010022700001","0163300000000000"); // EG1
+  } else if (trainConfig == 107){ // pp 2.76TeV paper cuts : open timing, TB nonlin, no TM
+    cuts.AddCut("80010123","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+    cuts.AddCut("80085123","1111101010032200000","1111101010022700001","0163300000000000"); // EG2
+    cuts.AddCut("80083123","1111101010032200000","1111101010022700001","0163300000000000"); // EG1
 
     // pPb 8 TeV LHC16 periods
   } else if (trainConfig == 200){ // open timing, TB nonlin, no TM
@@ -322,6 +328,10 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     HeaderList->Add(Header1);
     TObjString *Header3         = new TObjString("eta_2");
     HeaderList->Add(Header3);
+  }
+  if (periodNameV0Reader.Contains("LHC18b9")){
+    TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
+    HeaderList->Add(HeaderP8J);
   }
 
   EventCutList->SetOwner(kTRUE);
