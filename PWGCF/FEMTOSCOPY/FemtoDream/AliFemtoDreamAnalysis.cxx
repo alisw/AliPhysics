@@ -8,6 +8,8 @@
 #include "AliLog.h"
 #include "AliFemtoDreamAnalysis.h"
 #include "TClonesArray.h"
+#include "AliAODInputHandler.h"
+#include "AliAnalysisManager.h"
 #include <iostream>
 ClassImp(AliFemtoDreamAnalysis)
 AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
@@ -263,6 +265,24 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiDecays.push_back(*fFemtov0);
     }
   }
+//  std::cout << "=====================================\n" ;
+//  std::cout << "=====================================\n" ;
+//  std::cout << "==========New event==================\n" ;
+//  std::cout << "=====================================\n" ;
+//  std::cout << "=====================================\n" ;
+//  AliAODInputHandler *eventHandler =
+//      dynamic_cast<AliAODInputHandler*>(
+//          AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+//  AliMCEvent* fMC = eventHandler->MCEvent();
+//
+//  for(int iPart = 1; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+//    AliAODMCParticle *mcPart  = (AliAODMCParticle*)fMC->GetTrack(iPart);
+//    if (TMath::Abs(mcPart->GetPdgCode()) == 3312) {
+//      std::cout << "Found a xi with Label: " << mcPart->GetLabel() << std::endl;
+//      std::cout << "Xi Eta" << mcPart->Eta() << std::endl;
+//      std::cout << " Daughter 0: " << mcPart->GetDaughterLabel(0) << " Daughter 1: " << mcPart->GetDaughterLabel(1) << std::endl;
+//    }
+//  }
   std::vector<AliFemtoDreamBasePart> XiDecays;
   std::vector<AliFemtoDreamBasePart> AntiXiDecays;
   int numcascades = evt->GetNumberOfCascades();
