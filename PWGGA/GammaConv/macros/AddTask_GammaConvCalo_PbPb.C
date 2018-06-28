@@ -535,6 +535,19 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     cuts.AddCut("51210613","00200009327000008250400000","1111185057032230000","0163103100000010"); // 10-20 calo correction cent dep
     cuts.AddCut("52510613","00200009327000008250400000","1111186057032230000","0163103100000010"); // 20-50 calo correction cent dep
     cuts.AddCut("55910613","00200009327000008250400000","1111187057032230000","0163103100000010"); // 50-90 calo correction cent dep
+  } else if (trainConfig == 250){ // EMCAL clusters - 0-90% centrality for PbPb EMCal cluster QA
+    cuts.AddCut("10910013","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("10910a13","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
+  } else if (trainConfig == 251){ // EMCAL clusters - 0-90% centrality for PbPb EMCal cluster QA
+    cuts.AddCut("10110013","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("11210013","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("12510013","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("15910013","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
+  } else if (trainConfig == 252){ // EMCAL clusters - 0-90% centrality for PbPb EMCal cluster QA
+    cuts.AddCut("10110a13","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("11210a13","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("12510a13","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("15910a13","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
 
 
   } else if (trainConfig == 290){ // EMCAL clusters - correction convcalo f1

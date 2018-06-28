@@ -751,6 +751,19 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     cuts.AddCut("51210613","1111185057032230000","0163103100000050"); // 10-20 calo correction cent dep
     cuts.AddCut("52510613","1111186057032230000","0163103100000050"); // 20-50 calo correction cent dep
     cuts.AddCut("55910613","1111187057032230000","0163103100000050"); // 50-90 calo correction cent dep
+  } else if (trainConfig == 250){ // EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCut("10910013","1111183051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("10910a13","1111183051032230000","0163103100000050"); //  0-90 calo correction
+  } else if (trainConfig == 251){ // EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCut("10110013","1111183051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("11210013","1111183051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("12510013","1111183051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("15910013","1111183051032230000","0163103100000050"); //  0-90 calo correction
+  } else if (trainConfig == 252){ // EMCAL clusters - centrality selection for PbPb EMCal
+    cuts.AddCut("10110a13","1111183051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("11210a13","1111183051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("12510a13","1111183051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("15910a13","1111183051032230000","0163103100000050"); //  0-90 calo correction
 
 
 
