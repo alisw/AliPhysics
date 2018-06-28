@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 
 #include <THnSparse.h>
@@ -489,7 +490,7 @@ Bool_t AliEmcalTrackingQATask::FillHistograms()
  * @param isMC Whether it is an MC analysis
  * @return Pointer to the newly created object
  */
-AliEmcalTrackingQATask* AliEmcalTrackingQATask::AddTaskTrackingQA(Bool_t isMC)
+AliEmcalTrackingQATask* AliEmcalTrackingQATask::AddTaskTrackingQA(Bool_t isMC, const char *suffix)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -523,6 +524,7 @@ AliEmcalTrackingQATask* AliEmcalTrackingQATask::AddTaskTrackingQA(Bool_t isMC)
 
   // Init the task and do settings
   TString name("AliEmcalTrackingQATask");
+  if(strlen(suffix)) name += TString::Format("_%s", suffix);
   AliInfoClassStream() << "Allocating task." << std::endl;
   AliEmcalTrackingQATask *qaTask = new AliEmcalTrackingQATask(name);
   qaTask->SetVzRange(-10,10);
