@@ -857,7 +857,10 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     TObjString *Header3 = new TObjString("eta_2");
     HeaderList->Add(Header3);
   }
-
+  if (periodNameV0Reader.Contains("LHC18b9")){
+    TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
+    HeaderList->Add(HeaderP8J);
+  }
 
   Bool_t doWeighting = kFALSE;
   if (doWeightingPart == 1 || doWeightingPart == 2 || doWeightingPart == 3) doWeighting = kTRUE;
@@ -962,7 +965,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
 
     if (enableMatBudWeightsPi0 > 0){
       if (isMC > 0){
-        if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
+        if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights,periodNameV0Reader)){
           initializedMatBudWeigths_existing = kTRUE;}
         else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
       } else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}

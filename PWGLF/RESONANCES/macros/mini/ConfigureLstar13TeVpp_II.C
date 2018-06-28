@@ -1,6 +1,6 @@
 /***************************************************************************
   priyanka.sett@cern.ch - last modified on 27/10/2016
-  himani.bhatt@cern.ch  - last modified on 30/04/2018
+  himani.bhatt@cern.ch  - last modified on 13/05/2018
 // *** Configuration script for L*, anti-L*, syst. analysis for 13 TeV pp data  ***
 // 
 // A configuration script for RSN package needs to define the followings:
@@ -121,8 +121,9 @@ Bool_t ConfigureLstar13TeVpp_II
   TString name    [12] = {"UnlikePM","UnlikeMP","MixingPM","MixingMP","LikePP","LikeMM","MCGenPM","MCGenMP","TruesPM","TruesMP","ResPM" ,"ResMP" };
   TString comp    [12] = {"PAIR"    ,"PAIR"    ,"MIX"     ,"MIX"     ,"PAIR"  ,"PAIR"  ,"MOTHER" ,"MOTHER" ,"TRUE"   ,"TRUE"   ,"TRUE"  ,"TRUE"  };
   //TString output  [12] = {"HIST"    ,"HIST"    ,"HIST"    ,"HIST"    ,"HIST"  ,"HIST"  ,"HIST"   ,"HIST"   ,"HIST"   ,"HIST"   ,"HIST"  ,"HIST"  };
-  //TString output  [12] = {"SPARSE"  ,"SPARSE"  ,"SPARSE"  ,"SPARSE"  ,"SPARSE","SPARSE","SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE","SPARSE"};
+  // TString output  [12] = {"SPARSE"  ,"SPARSE"  ,"SPARSE"  ,"SPARSE"  ,"SPARSE","SPARSE","SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE" ,"SPARSE","SPARSE"};
   TString output  [12] = {"HIST"  ,"HIST"  ,"HIST"  ,"HIST"  ,"HIST","HIST","HIST" ,"HIST" ,"HIST" ,"HIST" ,"HIST","HIST"};
+  // TString output [12] = {"HIST",  "HIST",   "HIST",  "HIST",   "HIST",   "HIST",  "HIST",  "HIST",  "HIST",  "HIST",  "HIST",  "HIST"}
   Char_t  charge1 [12] = {'+'       ,'-'       ,'+'       ,'-'       ,'+'     ,'-'     ,'+'      ,'-'      ,'+'      ,'-'      ,'+'     ,'-'     };
   Char_t  charge2 [12] = {'-'       ,'+'       ,'-'       ,'+'       ,'+'     ,'-'     ,'-'      ,'+'      ,'_'      ,'+'      ,'-'     ,'+'     };
   Int_t   cutID1  [12] = {iCutP     ,iCutP     ,iCutP    ,iCutP      ,iCutP   ,iCutP   ,iCutP    ,iCutP    ,iCutP    ,iCutP    ,iCutP   ,iCutP   };
@@ -181,7 +182,18 @@ Bool_t ConfigureLstar13TeVpp_II
   if (isMC){
     cout<<"here###################################################################"<<endl;
 
-    AliRsnMiniOutput* outm=task->CreateOutput(Form("LStar_Mother%s", suffix),"HIST","MOTHER");
+    /*  AliRsnMiniOutput* outm_al=task->CreateOutput(Form("AntiLStar_Resolution%s", suffix),"SPARSE","TRUE");
+    outm_al->SetDaughter(0,AliRsnDaughter::kProton);
+    outm_al->SetDaughter(1,AliRsnDaughter::kKaon);
+    outm_al->SetMotherPDG(-3124);
+    outm_al->SetMotherMass(1.51953);
+    outm_al->SetPairCuts(cutsPair);
+    outm_al->AddAxis(imID,215,0.985,1.2);
+    outm_al->AddAxis(ptID,200,0.,20.);
+    outm_al->AddAxis(IMdif, 1000, -0.5, 0.5);// mass diff (true -reco)
+
+
+    AliRsnMiniOutput* outm=task->CreateOutput(Form("LStar_Resolution%s", suffix),"SPARSE","TRUE");
     outm->SetDaughter(0,AliRsnDaughter::kProton);
     outm->SetDaughter(1,AliRsnDaughter::kKaon);
     outm->SetMotherPDG(3124);
@@ -189,25 +201,15 @@ Bool_t ConfigureLstar13TeVpp_II
     outm->SetPairCuts(cutsPair);
     outm->AddAxis(imID,215,0.985,1.2);
     outm->AddAxis(ptID,200,0.,20.);
-    //outm->AddAxis(centID,nmult,multbins);
     outm->AddAxis(IMdif, 1000, -0.5, 0.5);// mass diff (true -reco)
 
-    AliRsnMiniOutput* outm1=task->CreateOutput(Form("AntiLStar_Mother%s", suffix),"HIST","MOTHER");
-    outm1->SetDaughter(0,AliRsnDaughter::kProton);
-    outm1->SetDaughter(1,AliRsnDaughter::kKaon);
-    outm1->SetMotherPDG(-3124);
-    outm1->SetMotherMass(1.51953);
-    outm1->SetPairCuts(cutsPair);
-    outm1->AddAxis(imID,215,0.985,1.2);
-    outm1->AddAxis(ptID,200,0.,20.);
-    //outm->AddAxis(centID,nmult,multbins);
-    outm1->AddAxis(IMdif, 1000, -0.5, 0.5);// mass diff (true -reco)
+    */
 
-    AliRsnMiniOutput* outps=task->CreateOutput(Form("lambda_phaseSpace%s", suffix),"HIST","TRUE");
+    
+
+    AliRsnMiniOutput* outps=task->CreateOutput(Form("lambda_phaseSpace%s", suffix),"SPARSE","TRUE");
     outps->SetDaughter(0,AliRsnDaughter::kProton);
     outps->SetDaughter(1,AliRsnDaughter::kKaon);
-    outps->SetCutID(0, cutID1[i]);
-    outps->SetCutID(1, cutID2[i]);
     outps->SetMotherPDG(3124);
     outps->SetMotherMass(1.51953);
     outps->SetPairCuts(cutsPair);
@@ -216,11 +218,9 @@ Bool_t ConfigureLstar13TeVpp_II
     outps->AddAxis(sdpt,100,0.,10.);
    
 
-    AliRsnMiniOutput* outpsf=task->CreateOutput(Form("antilambda_phaseSpace%s", suffix),"HIST","TRUE");
+    AliRsnMiniOutput* outpsf=task->CreateOutput(Form("antilambda_phaseSpace%s", suffix),"SPARSE","TRUE");
     outpsf->SetDaughter(0,AliRsnDaughter::kProton);
     outpsf->SetDaughter(1,AliRsnDaughter::kKaon);
-    outpsf->SetCutID(0, cutID1[i]);
-    outpsf->SetCutID(1, cutID2[i]);
     outpsf->SetMotherPDG(-3124);
     outpsf->SetMotherMass(1.59153);
     outpsf->SetPairCuts(cutsPair);
@@ -229,30 +229,26 @@ Bool_t ConfigureLstar13TeVpp_II
     outpsf->AddAxis(sdpt,100,0.,10.);
    
 
-    AliRsnMiniOutput* outps1=task->CreateOutput(Form("lambda_phaseSpace_gen%s", suffix),"HIST","MOTHER");
-    outps1->SetDaughter(0,AliRsnDaughter::kProton);
-    outps1->SetDaughter(1,AliRsnDaughter::kKaon);
-    outps1->SetCutID(0, cutID1[i]);
-    outps1->SetCutID(1, cutID2[i]);
-    outps1->SetMotherPDG(3124);
-    outps1->SetMotherMass(1.51953);
-    outps1->SetPairCuts(cutsPair);
-    outps1->AddAxis(ptID,200,0.,20.);
-    outps1->AddAxis(fdpt,100,0.,10.);
-    outps1->AddAxis(sdpt,100,0.,10.);
+    AliRsnMiniOutput* outps_g=task->CreateOutput(Form("lambda_phaseSpace_gen%s", suffix),"SPARSE","MOTHER");
+    outps_g->SetDaughter(0,AliRsnDaughter::kProton);
+    outps_g->SetDaughter(1,AliRsnDaughter::kKaon);
+    outps_g->SetMotherPDG(3124);
+    outps_g->SetMotherMass(1.51953);
+    outps_g->SetPairCuts(cutsPair);
+    outps_g->AddAxis(ptID,200,0.,20.);
+    outps_g->AddAxis(fdpt,100,0.,10.);
+    outps_g->AddAxis(sdpt,100,0.,10.);
    
 
-    AliRsnMiniOutput* outpsf1=task->CreateOutput(Form("antilambda_phaseSpace_gen%s", suffix),"HIST","MOTHER");
-    outpsf1->SetDaughter(0,AliRsnDaughter::kProton);
-    outpsf1->SetDaughter(1,AliRsnDaughter::kKaon);
-    outpsf1->SetCutID(0, cutID1[i]);
-    outpsf1->SetCutID(1, cutID2[i]);
-    outpsf1->SetMotherPDG(-3124);
-    outpsf1->SetMotherMass(1.59153);
-    outpsf1->SetPairCuts(cutsPair);
-    outpsf1->AddAxis(ptID,200,0.,20.);
-    outpsf1->AddAxis(fdpt,100,0.,10.);
-    outpsf1->AddAxis(sdpt,100,0.,10.);
+    AliRsnMiniOutput* outpsf_g=task->CreateOutput(Form("antilambda_phaseSpace_gen%s", suffix),"SPARSE","MOTHER");
+    outpsf_g->SetDaughter(0,AliRsnDaughter::kProton);
+    outpsf_g->SetDaughter(1,AliRsnDaughter::kKaon);
+    outpsf_g->SetMotherPDG(-3124);
+    outpsf_g->SetMotherMass(1.59153);
+    outpsf_g->SetPairCuts(cutsPair);
+    outpsf_g->AddAxis(ptID,200,0.,20.);
+    outpsf_g->AddAxis(fdpt,100,0.,10.);
+    outpsf_g->AddAxis(sdpt,100,0.,10.);
     
   }  // isMC
   

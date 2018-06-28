@@ -1,4 +1,4 @@
-AliEmcalTrackingQATask* AddTaskTrackingQA(Bool_t isMC)
+AliEmcalTrackingQATask* AddTaskTrackingQA(Bool_t isMC, const char *suffix = "")
 {
-  return AliEmcalTrackingQATask::AddTaskTrackingQA(isMC);
+  return AliEmcalTrackingQATask::AddTaskTrackingQA(isMC, suffix);
 }

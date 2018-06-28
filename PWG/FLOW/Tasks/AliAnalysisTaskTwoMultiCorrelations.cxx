@@ -21,6 +21,7 @@
 *******************************************************************************/
 
 #include "Riostream.h"
+#include <vector>
 #include "AliAnalysisTaskTwoMultiCorrelations.h"
 #include "AliLog.h"
 #include "AliAODEvent.h"
@@ -392,7 +393,7 @@ TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateQvector(Int_t n, Int_t p,
   for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
   {
     pWeightPowerP = pow(particleWeight[iParticle], p);
-    qVectorNp += pWeightPowerP * TComplex::Exp(n*(TComplex::I())*phi[iParticle]);
+    qVectorNp += pWeightPowerP * TComplex::Exp(static_cast<double>(n)*(TComplex::I())*phi[iParticle]);
   } // End of for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
 
 // 3.) Application of the property Q_(-n,p) = Q_(n,p)* and return of the result
@@ -476,8 +477,10 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithQvectors(Int_t 
   // 3.) Computation of the m-particle correlation
 
 // 1.) Declaration of the local variables
-  Int_t numeratorHarmonics[nCorr] = {0};   // Harmonics with values from harmonics array
-  Int_t denominatorHarmonics[nCorr] = {0}; // Harmonics with value 0 for the denominator
+  std::vector<Int_t> numeratorHarmonics(nCorr);   // Harmonics with values from harmonics array
+  std::vector<Int_t> denominatorHarmonics(nCorr); // Harmonics with value 0 for the denominator
+  memset(numeratorHarmonics.data(), 0, sizeof(Int_t) * numeratorHarmonics.size());
+  memset(denominatorHarmonics.data(), 0, sizeof(Int_t) * denominatorHarmonics.size());
   //Int_t denominatorHarmonics[14] = {0};
   Double_t denominator = 0.;           // Denominator of <m>_(n1...nm) and event weight for the TProfile
   TComplex mParticleCorrelation = TComplex(0,0);  // m-particle correlation
@@ -490,8 +493,8 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithQvectors(Int_t 
   } // End of for (Int_t iCorr = 0; iCorr < nCorr; iCorr++)
 
 // 3.) Computation of the m-particle correlation
-  denominator = (CalculateRecursionWithQvectors(nParticles, phi, particleWeight, nCorr, denominatorHarmonics)).Re();
-  mParticleCorrelation = CalculateRecursionWithQvectors(nParticles, phi, particleWeight, nCorr, numeratorHarmonics)/denominator;
+  denominator = (CalculateRecursionWithQvectors(nParticles, phi, particleWeight, nCorr, denominatorHarmonics.data())).Re();
+  mParticleCorrelation = CalculateRecursionWithQvectors(nParticles, phi, particleWeight, nCorr, numeratorHarmonics.data())/denominator;
   //eventWeight = (CalculateRecursionWithQvectors(nParticles, phi, particleWeight, nCorr, denominatorHarmonics)).Re();
 
 // 4.) Filling of the TProfile

@@ -95,6 +95,7 @@ void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TStri
   //
   TFile * origf=0x0;
   if(detList.Contains("ALL")){
+    origf = new TFile("trending.root", "recreate");
     fTree=new TTree("trending","tree of trending variables");
     fTree->Branch("nrun",&runNumber,"nrun/I");
     fTree->Fill();
@@ -103,12 +104,12 @@ void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TStri
     if(origf){
       TList* l=(TList*)origf->GetListOfKeys();
       for(Int_t j=0; j<l->GetEntries(); j++){
-	TKey* o=(TKey*)l->At(j);
-	TString cname=o->GetClassName();
-	if(cname.Contains("TTree")){
-	  fTree=(TTree*)origf->Get(o->GetName());
-	  break;
-	}
+	      TKey* o=(TKey*)l->At(j);
+	      TString cname=o->GetClassName();
+	      if(cname.Contains("TTree")){
+	        fTree=(TTree*)origf->Get(o->GetName());
+	        break;
+	      }
       }
     }
   }
@@ -223,11 +224,11 @@ void MakeTrendingPIDQA(const char* inputFile, TString dirInFile = "PIDqa", TStri
   delete fCanvas;
 
   if(detList.Contains("ALL")){
-    if(fTree){
-      TFile* fouttree=new TFile("trending.root","recreate");
+    if(origf && fTree){
+      origf->cd();
       fTree->Write();
-      fouttree->Close();
-      delete fouttree;
+      origf->Close();
+      delete origf;
     }
   }else{
     if(origf && fTree){
@@ -406,6 +407,7 @@ void CheckPIDInTracking(TList* qaListTPC,const char* listname){
       ctrpidall->cd(j+1);
       SetupPadStyle();
       histo->Draw("colz");
+      ctrpidall->Update();
     }
   }
   if(saveCan){

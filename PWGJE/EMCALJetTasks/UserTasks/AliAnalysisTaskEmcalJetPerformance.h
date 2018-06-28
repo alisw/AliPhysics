@@ -106,6 +106,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void UserCreateOutputObjects()                                                ;
   
   // Setters
+  void SetMinPt(Double_t d)                                 { fMinPt = d; }
   void SetMaxPt(Double_t d)                                 { fMaxPt = d; }
   void SetUseAliEventCuts(Bool_t b)                         { fUseAliEventCuts = b; }
   void SetUseManualEvtCuts(Bool_t input)                    { fUseManualEventCuts = input;}
@@ -170,7 +171,8 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   Bool_t                      fPlotDCal;                            ///< Set whether to enable several DCal-specific histograms
   
   // Plotting parameters
-  Float_t                     fMaxPt;                               ///< Histogram pt limit
+  Double_t                    fMinPt;                               ///< Histogram min pT limit
+  Double_t                    fMaxPt;                               ///< Histogram max pT limit
   Int_t                       fNEtaBins;                            ///< Number of eta bins
   Int_t                       fNPhiBins;                            ///< Number of phi bins
   Int_t                       fNCentHistBins;                       //!<! number of cent bins
@@ -216,7 +218,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 12);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 13);
   /// \endcond
 };
 #endif
