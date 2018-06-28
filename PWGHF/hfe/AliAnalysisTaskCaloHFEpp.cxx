@@ -123,6 +123,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				fHistPt_Inc(0),
 				fHistPt_Iso(0),
 				fHistPt_R_Iso(0),
+				fRiso_phidiff(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -230,6 +231,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				fHistPt_Inc(0),
 				fHistPt_Iso(0),
 				fHistPt_R_Iso(0),
+				fRiso_phidiff(0),
 				//==== Trigger or Calorimeter flag ====
 				fEMCEG1(kFALSE),
 				fEMCEG2(kFALSE),
@@ -337,7 +339,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fHistPt_HFE_MC_B  = new TH1F("fHistPt_HFE_MC_B","HFE fron B MC",60,0,60);
 				fHistPt_Inc = new TH1F("fHistPt_Inc","Inclusive electron",60,0,60);
 				fHistPt_Iso = new TH1F("fHistPt_Iso","Isolated electron",60,0,60);
-				fHistPt_R_Iso = new TH2F("fHistPt_R_Iso","Pt vs riso ",100,0,100,50,0.,0.5);
+				fHistPt_R_Iso = new TH2F("fHistPt_R_Iso","Pt vs riso ",100,0,100,500,0.,0.5);
+				fRiso_phidiff = new TH2F("fRiso_phidiff","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 				fHist_eff_HFE     = new TH1F("fHist_eff_HFE","efficiency :: HFE",60,0,60);
 				fHist_eff_match   = new TH1F("fHist_eff_match","efficiency :: matched cluster",60,0,60);
 				fHist_eff_TPC     = new TH1F("fHist_eff_TPC","efficiency :: TPC cut",60,0,60);
@@ -422,6 +425,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 				fOutputList->Add(fHistPt_Inc);
 				fOutputList->Add(fHistPt_Iso);
 				fOutputList->Add(fHistPt_R_Iso);
+				fOutputList->Add(fRiso_phidiff);
 				//==== MC output ====
 				fOutputList->Add(fMCcheckMother);
 				fOutputList->Add(fCheckEtaMC);
@@ -900,7 +904,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
 																///////-----Identify Non-HFE////////////////////////////
 																SelectPhotonicElectron(iTracks,track,fFlagNonHFE,pidM,TrkPt);
-																IsolationCut(track->Pt(),Matchphi,Matcheta,clE,fFlagIsolation);
+																IsolationCut(iTracks,track,track->Pt(),Matchphi,Matcheta,clE,fFlagIsolation);
 																if(fFlagIsolation)fHistPt_Iso->Fill(track->Pt());
 
 																if(pid_eleP)
@@ -1231,7 +1235,7 @@ void AliAnalysisTaskCaloHFEpp::CheckMCgen(AliAODMCHeader* fMCheader,Double_t Cut
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskCaloHFEpp::IsolationCut(Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t &fFlagIso)
+void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE, Bool_t &fFlagIso)
 {
 				//////////////////////////////
 				// EMCal cluster loop
@@ -1268,7 +1272,7 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Double_t TrackPt, Double_t MatchPhi,
 												Double_t AssoEta =  Assocpos.Eta();
 												Double_t AssoclE =  Assoclust->E();
 
-												//------reject same track
+												//------reject same Cluster
 												if(AssoclE==MatchclE && AssoPhi==MatchPhi && AssoEta==MatchEta) continue;
 
 
@@ -1292,8 +1296,105 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Double_t TrackPt, Double_t MatchPhi,
 				riso = riso/MatchclE;
 				fHistPt_R_Iso->Fill(TrackPt,riso);
 
+				 if(TrackPt >= 30.)CheckCorrelation(itrack,track,TrackPt,riso);
+				
+				
 				if(riso<0.05) flagIso = kTRUE;
 
 				fFlagIso = flagIso;
+
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso)
+{
+
+				//##################### Systematic Parameters ##################### //
+				//---Track Cut
+				Double_t CutTrackEtaW[2] = {TrackEtaMin,TrackEtaMax};
+				Int_t CutTPCNClsW = NTPCClust;
+				Int_t CutITSNClsW = NITSClust; 
+				Int_t CutTPCNCrossedRowW = NCrossedRow;
+				Double_t CutDCAxyW = DCAxy;
+				Double_t CutDCAzW  = DCAz;
+				//################################################################# //
+
+				Bool_t fFlagEMCalCorrection = kTRUE;
+
+				Int_t nWassotracks = -999;
+				if(!fFlagEMCalCorrection)nWassotracks = fVevent->GetNumberOfTracks();
+				if(fFlagEMCalCorrection) nWassotracks = fTracks_tender->GetEntries();
+
+				const AliVVertex *WpVtx = fVevent->GetPrimaryVertex();
+
+				//////////////////////////////
+				// Track loop
+				//////////////////////////////
+				for (Int_t jtrack = 0; jtrack < nWassotracks; jtrack++) {
+								AliVParticle* VWassotrack = 0x0;
+								if(!fFlagEMCalCorrection) VWassotrack  = fVevent->GetTrack(jtrack);
+								if(fFlagEMCalCorrection)  VWassotrack = dynamic_cast<AliVTrack*>(fTracks_tender->At(jtrack)); //take tracks from Tender list
+
+								if (!VWassotrack) {
+												printf("ERROR: Could not receive track %d\n", jtrack);
+												continue;
+								}
+
+								AliVTrack   *Wassotrack  = dynamic_cast<AliVTrack*>(VWassotrack);
+								AliESDtrack *eWassotrack = dynamic_cast<AliESDtrack*>(VWassotrack);
+								AliAODTrack *aWassotrack = dynamic_cast<AliAODTrack*>(VWassotrack);
+
+								if(!aWassotrack) continue;                            // if we failed, skip this track
+
+								//------reject same track
+								if(jtrack==itrack) continue;
+								if(aWassotrack->Px()==track->Px() && aWassotrack->Py()==track->Py() && aWassotrack->Pz()==track->Pz())continue;
+
+								Double_t ptWasso = -999., phiWasso = -999., etaWasso = -999.;
+								Double_t ITSchi2Wasso = -999., TPCchi2NDFWasso = -999.;
+								Double_t Wphidiff = -999., TrackPhi = -999.;
+
+								ptWasso         = aWassotrack->Pt();
+								phiWasso        = aWassotrack->Phi();
+								etaWasso        = aWassotrack->Eta();
+								ITSchi2Wasso    = aWassotrack -> GetITSchi2();
+								TPCchi2NDFWasso = aWassotrack -> Chi2perNDF();
+								TrackPhi        = track->Phi();
+
+								if(ptWasso <0.5) continue;
+
+								/////////////////////////
+								// track cut
+								/////////////////////////
+								//==== 1.TPC and ITS refit cut ====
+								if(!(aWassotrack->GetStatus()&AliAODTrack::kITSrefit) || !(aWassotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
+								//==== 2.AOD filter bit required ====
+								if(!aWassotrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
+								//==== 3.TPC cluster cut ====
+								if(aWassotrack->GetTPCNcls() < CutTPCNClsW) continue; 
+								//==== 4.ITS cluster cut ====
+								if(aWassotrack->GetITSNcls() < CutITSNClsW) continue;  
+								//==== 5.SPD hit cut ====
+								if(!(aWassotrack -> HasPointOnITSLayer(0) || aWassotrack -> HasPointOnITSLayer(1))) continue;
+								//==== 6.Eta cut ====
+								if(etaWasso>CutTrackEtaW[1] || etaWasso<CutTrackEtaW[0]) continue; 
+								//==== 7.DCA cut ====
+								Double_t WassoDCA[2] = {-999.,-999.}, Wassocovar[3];
+								if(aWassotrack -> PropagateToDCA(WpVtx,fVevent -> GetMagneticField(),20.,WassoDCA,Wassocovar))
+								{
+												if(TMath::Abs(WassoDCA[0]) > CutDCAxyW || TMath::Abs(WassoDCA[1]) > CutDCAzW) continue;
+								}
+								//==== 8.chi2 cut ====
+								if((ITSchi2Wasso >= 25) || (TPCchi2NDFWasso >= 4)) continue;
+								//==== 9.NCrossedRow cut ====
+								if(aWassotrack -> GetTPCCrossedRows() < CutTPCNCrossedRowW) continue;
+
+
+								Wphidiff = phiWasso - TrackPhi; 
+								Wphidiff = TMath::ATan2(TMath::Sin(Wphidiff),TMath::Cos(Wphidiff)); 
+								if(Wphidiff < -TMath::Pi()/2) Wphidiff += 2*TMath::Pi();
+
+								fRiso_phidiff -> Fill(Wphidiff,Riso);
+				}
 
 }
