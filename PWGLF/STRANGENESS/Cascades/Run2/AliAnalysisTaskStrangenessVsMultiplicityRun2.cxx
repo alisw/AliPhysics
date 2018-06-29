@@ -1901,21 +1901,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeVariableCentrality = fCentrality;
         
         //Info for pileup studies
-        if( fkDebugOOBPileup ) {
-            fTreeVariableNegTOFExpTDiff = nTrack->GetTOFExpTDiff( lESDevent->GetMagneticField() );
-            fTreeVariablePosTOFExpTDiff = pTrack->GetTOFExpTDiff( lESDevent->GetMagneticField() );
-            fTreeVariableNegTOFSignal = nTrack->GetTOFsignal() * 1.e-3; // in ns 
-            fTreeVariablePosTOFSignal = pTrack->GetTOFsignal() * 1.e-3; // in ns
-            fTreeVariableNegTOFBCid = nTrack->GetTOFBunchCrossing( lESDevent->GetMagneticField() ); 
-            fTreeVariablePosTOFBCid = pTrack->GetTOFBunchCrossing( lESDevent->GetMagneticField() ); 
-            //Copy OOB pileup flag for this event
-            fTreeVariableOOBPileupFlag = fOOBPileupFlag;
-            //Copy VZERO information for this event
-            fTreeVariableAmplitudeV0A = fAmplitudeV0A;
-            fTreeVariableAmplitudeV0C = fAmplitudeV0C;
-            //Copy IR information for this event
-            fTreeVariableClosestNonEmptyBC = fClosestNonEmptyBC;
-        }
+        fTreeVariableNegTOFExpTDiff = nTrack->GetTOFExpTDiff( lESDevent->GetMagneticField() );
+        fTreeVariablePosTOFExpTDiff = pTrack->GetTOFExpTDiff( lESDevent->GetMagneticField() );
+        fTreeVariableNegTOFSignal = nTrack->GetTOFsignal() * 1.e-3; // in ns
+        fTreeVariablePosTOFSignal = pTrack->GetTOFsignal() * 1.e-3; // in ns
+        fTreeVariableNegTOFBCid = nTrack->GetTOFBunchCrossing( lESDevent->GetMagneticField() );
+        fTreeVariablePosTOFBCid = pTrack->GetTOFBunchCrossing( lESDevent->GetMagneticField() );
+        //Copy OOB pileup flag for this event
+        fTreeVariableOOBPileupFlag = fOOBPileupFlag;
+        //Copy VZERO information for this event
+        fTreeVariableAmplitudeV0A = fAmplitudeV0A;
+        fTreeVariableAmplitudeV0C = fAmplitudeV0C;
+        //Copy IR information for this event
+        fTreeVariableClosestNonEmptyBC = fClosestNonEmptyBC;
         
         
         //------------------------------------------------
@@ -2802,24 +2800,23 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
         fTreeCascVarDistOverTotMom /= (lXiTotMom+1e-13);
         
         //Info for pileup studies
-        if( fkDebugOOBPileup ) {
-            fTreeCascVarBachTOFExpTDiff = bachTrackXi->GetTOFExpTDiff( bMag );
-            fTreeCascVarNegTOFExpTDiff = nTrackXi->GetTOFExpTDiff( bMag );
-            fTreeCascVarPosTOFExpTDiff = pTrackXi->GetTOFExpTDiff( bMag );
-            fTreeCascVarBachTOFSignal = bachTrackXi->GetTOFsignal() * 1.e-3; // in ns
-            fTreeCascVarNegTOFSignal = nTrackXi->GetTOFsignal() * 1.e-3; // in ns 
-            fTreeCascVarPosTOFSignal = pTrackXi->GetTOFsignal() * 1.e-3; // in ns
-            fTreeCascVarBachTOFBCid = bachTrackXi->GetTOFBunchCrossing( bMag );
-            fTreeCascVarNegTOFBCid = nTrackXi->GetTOFBunchCrossing( bMag );
-            fTreeCascVarPosTOFBCid = pTrackXi->GetTOFBunchCrossing( bMag );
-            //Copy OOB pileup flag for this event
-            fTreeCascVarOOBPileupFlag = fOOBPileupFlag;
-            //Copy VZERO information for this event
-            fTreeCascVarAmplitudeV0A = fAmplitudeV0A;
-            fTreeCascVarAmplitudeV0C = fAmplitudeV0C;
-            //Copy IR information for this event
-            fTreeCascVarClosestNonEmptyBC = fClosestNonEmptyBC;
-        }
+        fTreeCascVarBachTOFExpTDiff = bachTrackXi->GetTOFExpTDiff( bMag );
+        fTreeCascVarNegTOFExpTDiff = nTrackXi->GetTOFExpTDiff( bMag );
+        fTreeCascVarPosTOFExpTDiff = pTrackXi->GetTOFExpTDiff( bMag );
+        fTreeCascVarBachTOFSignal = bachTrackXi->GetTOFsignal() * 1.e-3; // in ns
+        fTreeCascVarNegTOFSignal = nTrackXi->GetTOFsignal() * 1.e-3; // in ns
+        fTreeCascVarPosTOFSignal = pTrackXi->GetTOFsignal() * 1.e-3; // in ns
+        fTreeCascVarBachTOFBCid = bachTrackXi->GetTOFBunchCrossing( bMag );
+        fTreeCascVarNegTOFBCid = nTrackXi->GetTOFBunchCrossing( bMag );
+        fTreeCascVarPosTOFBCid = pTrackXi->GetTOFBunchCrossing( bMag );
+        //Copy OOB pileup flag for this event
+        fTreeCascVarOOBPileupFlag = fOOBPileupFlag;
+        //Copy VZERO information for this event
+        fTreeCascVarAmplitudeV0A = fAmplitudeV0A;
+        fTreeCascVarAmplitudeV0C = fAmplitudeV0C;
+        //Copy IR information for this event
+        fTreeCascVarClosestNonEmptyBC = fClosestNonEmptyBC;
+        
         //Valid or not valid
         lValidXiMinus = kTRUE;
         lValidXiPlus = kTRUE;
