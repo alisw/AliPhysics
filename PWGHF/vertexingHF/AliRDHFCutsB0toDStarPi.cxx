@@ -1460,7 +1460,7 @@ Int_t AliRDHFCutsB0toDStarPi::IsD0FromDStarSelected(Double_t ptB0, TObject* obj,
     // D0mass
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   
-    // Half width DStar mass
+    // D0 window - invariant mass
     Int_t chargeDStar = candidateDStar->Charge();
     UInt_t prongs[2];
     if(chargeDStar==1)
@@ -1952,11 +1952,18 @@ Int_t AliRDHFCutsB0toDStarPi::IsD0forD0ptbinSelected(TObject* obj,Int_t selectio
     // D0mass
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   
-    // Half width DStar mass
+    // D0 window - invariant mass
     UInt_t prongs[2];
     prongs[0] = 211; prongs[1] = 321;
     Double_t invMassD0 = candidateD0->InvMass(2,prongs);
     Double_t invMassDifference = TMath::Abs(mD0PDG - invMassD0);
+
+    UInt_t prongs2[2];
+    prongs2[1] = 211; prongs2[0] = 321;
+    Double_t invMassD02 = candidateD0->InvMass(2,prongs2);
+    Double_t invMassDifference2 = TMath::Abs(mD0PDG - invMassD02);
+
+    if(invMassDifference > invMassDifference2) invMassDifference = invMassDifference2;
 
     Double_t pointingAngle = candidateD0->CosPointingAngle();
     Double_t dcaMother = candidateD0->GetDCA();
@@ -2315,12 +2322,28 @@ Int_t AliRDHFCutsB0toDStarPi::IsD0forDStarptbinSelected(TObject* obj,Int_t selec
     
     Int_t ptbin=PtBinD0forDStarptbin(candidateDStar->Pt());       
     if(ptbin==-1) return -1;    
+
     // D0mass
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
   
-    // Half width DStar mass
+    // D0 window - invariant mass
+    Int_t chargeDStar = candidateDStar->Charge();
     UInt_t prongs[2];
-    prongs[0] = 211; prongs[1] = 321;
+    if(chargeDStar==1)
+    {
+      prongs[0] = 211;
+      prongs[1] = 321;
+    } 
+    else if (chargeDStar==-1)
+    {
+      prongs[1] = 211;
+      prongs[0] = 321;
+    } 
+    else 
+    {
+      cout << "Wrong charge DStar." << endl;
+      return 0;
+    }
     Double_t invMassD0 = candidateD0->InvMass(2,prongs);
     Double_t invMassDifference = TMath::Abs(mD0PDG - invMassD0);
 
