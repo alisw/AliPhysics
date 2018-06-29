@@ -63,7 +63,7 @@ class AliAnalysisTaskQAHighPtDeDxO : public AliAnalysisTaskSE {
   virtual void  SetCentralityEstimator(const char * centEst) {fCentEst = centEst;}
   virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
-  virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
+//  virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
   virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
   virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}   
   virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
@@ -141,18 +141,6 @@ class AliAnalysisTaskQAHighPtDeDxO : public AliAnalysisTaskSE {
   Float_t      fMinCent; //minimum centrality
   Float_t      fMaxCent; //maximum centrality
   Bool_t       fStoreMcIn;          // Store MC input tracks
-  Bool_t       fdEdxCalibrated;
-  Bool_t       fMakePid;
-/*  Double_t     aNeg[10];
-  Double_t     bNeg[10];
-  Double_t     cNeg[10];
-  Double_t     dNeg[10];
-  Double_t     aPos[10];
-  Double_t     bPos[10];
-  Double_t     cPos[10];
-  Double_t     dPos[10];
-*/
-
 
   //
   // Help variables
@@ -172,10 +160,12 @@ class AliAnalysisTaskQAHighPtDeDxO : public AliAnalysisTaskSE {
   TH1I*         fEvents;            //! No of accepted events
   TH1I*         fVtx;               //! Event vertex info
   TH1F*         fVtxMC;             //! Event vertex info for ALL MC events
-  TH1F*         fVtxBeforeCuts;     //! Vertex z dist before cuts
-  TH1F*         fVtxAfterCuts;      //! Vertex z dist after cuts
-  TH1F* fn1;
-  TH1F* hEvents;
+//  TH1F*         fVtxBeforeCuts;     //! Vertex z dist before cuts
+//  TH1F*         fVtxAfterCuts;      //! Vertex z dist after cuts
+//  TH1F* fn1;
+//  TH1F* hEvents;
+  Bool_t       fdEdxCalibrated;
+  Bool_t       fMakePid;
   TH1F* fcent;
 
 
