@@ -6,7 +6,8 @@ AliAnalysisTaskSEB0toDStarPi *AddTaskB0toDStarPi(
                                 Bool_t bUseQuickSignalAnalysis=kFALSE,
                                 Bool_t bGetCutInfo=kTRUE, 
                                 Bool_t bShowRejection=kFALSE, 
-                                Bool_t bShowMask=kFALSE, 
+                                Bool_t bShowMask=kFALSE,
+                                Bool_t bUse3DHistograms=kFALSE, 
                                 Int_t nDebugLevel=0)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -62,6 +63,8 @@ AliAnalysisTaskSEB0toDStarPi *AddTaskB0toDStarPi(
   task->SetShowRejection(bShowRejection);
   task->SetShowMask(bShowMask);
 
+  task->SetUse3DHistograms(bUse3DHistograms);
+
   mgr->AddTask(task);
 
   // Create and connect containers for input/output
@@ -81,9 +84,9 @@ AliAnalysisTaskSEB0toDStarPi *AddTaskB0toDStarPi(
   // output2 += usercomment;
   TString output2 = "cuts";
   output2 += usercomment;
-  TString output3 = "D0Pion";
+  TString output3 = "D0FirstDaughter";
   output3 += usercomment;
-  TString output4 = "D0Kaon";
+  TString output4 = "D0SecondDaughter";
   output4 += usercomment;
   TString output5 = "DStarPion";
   output5 += usercomment;
@@ -112,8 +115,8 @@ AliAnalysisTaskSEB0toDStarPi *AddTaskB0toDStarPi(
 
   // AliAnalysisDataContainer *coutputNormalization = mgr->CreateContainer(output2,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
   AliAnalysisDataContainer *coutputCuts = mgr->CreateContainer(output2,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts
-  AliAnalysisDataContainer *coutputD0Pion = mgr->CreateContainer(output3,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
-  AliAnalysisDataContainer *coutputD0Kaon = mgr->CreateContainer(output4,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutputD0FirstDaughter = mgr->CreateContainer(output3,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutputD0SecondDaughter = mgr->CreateContainer(output4,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
   AliAnalysisDataContainer *coutputDStarPion = mgr->CreateContainer(output5,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
   AliAnalysisDataContainer *coutputB0Pion = mgr->CreateContainer(output6,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
   AliAnalysisDataContainer *coutputD0 = mgr->CreateContainer(output7,TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
@@ -129,8 +132,8 @@ AliAnalysisTaskSEB0toDStarPi *AddTaskB0toDStarPi(
   mgr->ConnectOutput(task,1,coutput1);
   // mgr->ConnectOutput(task,2,coutputNormalization);
   mgr->ConnectOutput(task,2,coutputCuts);
-  mgr->ConnectOutput(task,3,coutputD0Pion);
-  mgr->ConnectOutput(task,4,coutputD0Kaon);
+  mgr->ConnectOutput(task,3,coutputD0FirstDaughter);
+  mgr->ConnectOutput(task,4,coutputD0SecondDaughter);
   mgr->ConnectOutput(task,5,coutputDStarPion);
   mgr->ConnectOutput(task,6,coutputB0Pion);
   mgr->ConnectOutput(task,7,coutputD0);
