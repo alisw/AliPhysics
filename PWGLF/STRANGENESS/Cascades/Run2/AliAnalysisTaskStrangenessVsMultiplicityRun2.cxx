@@ -3252,8 +3252,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
                   TMath::Abs(fTreeCascVarPosTOFSignal) < 100 ||
                   TMath::Abs(fTreeCascVarBachTOFSignal) < 100
                   )
+                 )&&
+                
+                //Check 15: check each prong for ITS refit
+                (
+                 ( lCascadeResult->GetCutUseITSRefitNegative()==kFALSE || fTreeCascVarNegTrackStatus & AliESDtrack::kITSrefit ) &&
+                 ( lCascadeResult->GetCutUseITSRefitPositive()==kFALSE || fTreeCascVarPosTrackStatus & AliESDtrack::kITSrefit ) &&
+                 ( lCascadeResult->GetCutUseITSRefitBachelor()==kFALSE || fTreeCascVarBachTrackStatus & AliESDtrack::kITSrefit )
                  )
-                )
+                
+                )//end major if
             {
                 //This satisfies all my conditionals! Fill histogram
                 histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
@@ -4873,6 +4881,40 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         lN++;
     }
     
+    //ITS refit requirement map:
+    //  [NPB]
+    //1  100
+    //2  010
+    //3  001
+    //4  110
+    //5  101
+    //6  011
+    
+    //Require ITS refit (will lose tons of signal)
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB100",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitNegative(kTRUE);
+        lN++;
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB010",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitPositive(kTRUE);
+        lN++;
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB001",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitBachelor(kTRUE);
+        lN++;
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB110",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitNegative(kTRUE);
+        lCascadeResult[lN] -> SetCutUseITSRefitPositive(kTRUE);
+        lN++;
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB101",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitNegative(kTRUE);
+        lCascadeResult[lN] -> SetCutUseITSRefitBachelor(kTRUE);
+        lN++;
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB011",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitPositive(kTRUE);
+        lCascadeResult[lN] -> SetCutUseITSRefitBachelor(kTRUE);
+        lN++;
+    }
+    
     Float_t lLowRap = -0.6;
     Float_t lHighRap = -0.5;
     for(Int_t i=0;i<4;i++){
@@ -5073,7 +5115,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lMass[1] = 1.322;
     lMass[2] = 1.672;
     lMass[3] = 1.672;
-    
+    /*
     //Old vertexer-level configuration for cross-checks
     for(Int_t i = 0 ; i < 4 ; i ++){
         //Central result, customized binning: the one to use, usually
@@ -5108,7 +5150,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         //Add result to pool
         lN++;
     }
-    
+    */
     for (Int_t iconf = 0; iconf<lN; iconf++){
         cout<<"["<<iconf<<"/"<<lN<<"] Adding config named "<<lCascadeResult[iconf]->GetName()<<endl;
         AddConfiguration(lCascadeResult[iconf]);

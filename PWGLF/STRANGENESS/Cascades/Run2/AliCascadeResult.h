@@ -93,6 +93,9 @@ public:
     
     //Track Quality
     void SetCutUseITSRefitTracks    ( Bool_t lCut ) { fCutUseITSRefitTracks    = lCut; }
+    void SetCutUseITSRefitNegative    ( Bool_t lCut ) { fCutUseITSRefitNegative    = lCut; }
+    void SetCutUseITSRefitPositive    ( Bool_t lCut ) { fCutUseITSRefitPositive    = lCut; }
+    void SetCutUseITSRefitBachelor    ( Bool_t lCut ) { fCutUseITSRefitBachelor    = lCut; }
     void SetCutLeastNumberOfClusters ( Double_t lCut ) { fCutLeastNumberOfClusters = lCut; }
     void SetCutMinEtaTracks ( Double_t lCut ) { fCutMinEtaTracks = lCut; }
     void SetCutMaxEtaTracks ( Double_t lCut ) { fCutMaxEtaTracks = lCut; }
@@ -223,6 +226,9 @@ public:
     
     //Track Quality
     Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
+    Bool_t GetCutUseITSRefitNegative    () const { return fCutUseITSRefitNegative; }
+    Bool_t GetCutUseITSRefitPositive    () const { return fCutUseITSRefitNegative; }
+    Bool_t GetCutUseITSRefitBachelor    () const { return fCutUseITSRefitBachelor; }
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
     Double_t GetCutMinEtaTracks () const { return fCutMinEtaTracks; }
     Double_t GetCutMaxEtaTracks () const { return fCutMaxEtaTracks; }
@@ -359,6 +365,9 @@ private:
     
     //Track selections
     Bool_t fCutUseITSRefitTracks; //Use ITS refit tracks (will kill efficiency at high pT!)
+    Bool_t fCutUseITSRefitNegative;
+    Bool_t fCutUseITSRefitPositive;
+    Bool_t fCutUseITSRefitBachelor;
     Double_t fCutLeastNumberOfClusters; //min number of TPC clusters
     Double_t fCutMinEtaTracks; //Minimum eta value for daughter tracks (usually -0.8)
     Double_t fCutMaxEtaTracks; //Maximum eta value for daughter tracks (usually +0.8)
@@ -408,7 +417,7 @@ private:
     
     Bool_t fCutAtLeastOneTOF;
     
-    ClassDef(AliCascadeResult, 34)
+    ClassDef(AliCascadeResult, 35)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -443,5 +452,6 @@ private:
     // 32 - streaming improvement
     // 33 - streaming improvement 2
     // 34 - TOF cut: at-least-one type
+    // 35 - provision for prong-wise ITS refit requirement
 };
 #endif
