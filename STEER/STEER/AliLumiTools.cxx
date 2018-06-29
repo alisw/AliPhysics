@@ -30,17 +30,20 @@ TGraph* AliLumiTools::GetLumiGraph(Int_t tp, Int_t run, const char * ocdbPathDef
   // get lumi graph of requested type, relying on preconfigured CDB
   TGraph* gr = 0;
   switch(tp) {
-  case kLumiCTP: gr = GetLumiFromCTP(run,ocdbPathDef); break;
-  case kLumiDIP: gr = GetLumiFromDIP(run,ocdbPathDef); break;
+  case kLumiCTP:    gr = GetLumiFromCTP(run,ocdbPathDef); break;
+  case kLumiDIP:    gr = GetLumiFromDIP(run,ocdbPathDef); break;
+  case kLumiDIPInst:    gr = GetLumiFromDIPInst(run,ocdbPathDef); break;
+  case kLumiDIPDel:     gr = GetLumiFromDIPDel(run,ocdbPathDef); break;
   default: AliFatalClassF("Unknown luminosity type %d",tp);
   };
   return gr;
 }
 
 //___________________________________________________________________
-TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
+TGraph* AliLumiTools::GetLumiFromDIPDel(Int_t run, const char * ocdbPathDef)
 {
-  //  Get TGraph with luminosity vs time using LHC DIP data stored in the GRP/GRP/LHCData object
+  // Get TGraph with luminosity vs time using delivered Lumi record from the LHC DIP
+  // data stored in the GRP/GRP/LHCData object
   //
   fgMuEst = -1.;
   fgXSecEst = -1.;
@@ -93,13 +96,58 @@ TGraph* AliLumiTools::GetLumiFromDIP(Int_t run, const char * ocdbPathDef)
     double t = tref + t0 + dt/2;
     if (dt&0x1) t += 0.5;
     vecRateT[nRateAcc] = t;
-    vecRate[nRateAcc] = (rate1-rate0)/dt*1e6*fgScaleFactor; // convert from Hz/b to Hz/ub
+    vecRate[nRateAcc] = (rate1-rate0)/dt*1e6*fgScaleFactor; // convert from Hz/b to Hz/mb
     //    printf("%lld %lld -> %lld %lld %e\n",t0,t1, tref + t0 + dt/2,dt,rate1);
     t0 = t1;
     rate0 = rate1;
     nRateAcc++;
   }
   TGraph* grLumi=new TGraph(nRateAcc,vecRateT, vecRate);
+  grLumi->SetTitle(Form("Rate estimator Run %d",run));
+  grLumi->GetXaxis()->SetTitle("time");
+  grLumi->GetXaxis()->SetTimeDisplay(1);
+  grLumi->GetYaxis()->SetTitle("Inst Lumi (Hz/mb)");
+  grLumi->SetMarkerStyle(25);
+  grLumi->SetMarkerSize(0.4);
+  grLumi->SetUniqueID(run);
+  return grLumi;
+}
+
+//___________________________________________________________________
+TGraph* AliLumiTools::GetLumiFromDIPInst(Int_t run, const char * ocdbPathDef)
+{
+  //  Get TGraph with luminosity vs time using Alice T0 measurements stored in the GRP/GRP/LHCData object
+  //
+  fgMuEst = -1.;
+  fgXSecEst = -1.;
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man->IsDefaultStorageSet()) {
+    man->SetDefaultStorage(ocdbPathDef);
+    if (run>=0) man->SetRun(run);
+    else {
+      AliErrorClass("OCDB cannot be configured since run number is not provided"); return 0;
+    }
+  }
+  if (run<0) run = man->GetRun();
+  //
+  // use explicit run number since we may query for run other than in CDB cache
+  AliLHCData* lhcData = (AliLHCData*)GetCDBObjectForRun(run,"GRP/GRP/LHCData",ocdbPathDef);
+
+  Int_t nRec = lhcData->GetNLumiAlice();
+  Double_t vecRate[nRec];
+  Double_t vecTime[nRec];
+  Double_t vecRateT[nRec];
+
+  int nRecAcc = 0;
+
+  for (int iRec=0;iRec<nRec;iRec++) {
+    AliLHCDipValF *value=lhcData->GetLumiAlice(iRec);
+    vecRate[nRecAcc]=value->GetValue()*fgScaleFactor*1e3;
+    vecTime[nRecAcc]=value->GetTimeStamp();
+    nRecAcc++;
+  }
+  //
+  TGraph* grLumi=new TGraph(nRecAcc,vecTime, vecRate);
   grLumi->SetTitle(Form("Rate estimator Run %d",run));
   grLumi->GetXaxis()->SetTitle("time");
   grLumi->GetXaxis()->SetTimeDisplay(1);
