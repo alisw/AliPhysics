@@ -123,7 +123,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
   CascadeCuts->SetBachCuts(XiBachCuts);
-  CascadeCuts->SetPDGCodeCasc(-3312);
+  CascadeCuts->SetPDGCodeCasc(3312);
   CascadeCuts->SetPDGCodev0(3122);
   CascadeCuts->SetPDGCodePosDaug(2212);
   CascadeCuts->SetPDGCodeNegDaug(-211);
@@ -144,7 +144,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
   AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
   AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
-  AntiCascadeCuts->SetPDGCodeCasc(3312);
+  AntiCascadeCuts->SetPDGCodeCasc(-3312);
   AntiCascadeCuts->SetPDGCodev0(-3122);
   AntiCascadeCuts->SetPDGCodePosDaug(211);
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
