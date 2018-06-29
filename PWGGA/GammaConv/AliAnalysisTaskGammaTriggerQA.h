@@ -44,7 +44,7 @@ class AliAnalysisTaskGammaTriggerQA : public AliAnalysisTaskSE {
 
     // switches for additional analysis streams or outputs
     void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
-
+    void SetDetailedQAFlag (Int_t flag) {fQADetailed  = flag;}
 
     // Setting the cut lists for the conversion photons
     void SetEventCutList(Int_t nCuts, TList *CutArray){
@@ -97,6 +97,18 @@ class AliAnalysisTaskGammaTriggerQA : public AliAnalysisTaskSE {
     TProfile**            fProfileJetJetXSection;                               //! array of profiles with xsection for jetjet
     TH1F**                fHistoJetJetNTrials;                                  //! array of histos with ntrials for jetjet
 
+    // tree
+    TList**               fTreeList;                                            // array for lists with Tree
+    TTree**               fTreeTriggInfo;                                       //! Array of lists with tree
+    Float_t               fCent;                                                // cent
+    Short_t               fT0Trigg;                                             // T0 trigg info
+    UInt_t                fV0Mult;                                              // offline V0 multiplicity
+    UInt_t                fV0Trigg;                                             // online V0 multiplicity
+    UInt_t                fTPCMult;                                             // TPC multiplicity
+    UInt_t                fSPDHit;                                              // SPD hit multiplicity
+    UInt_t                fSPDTracklet;                                         // SPD tracklet multiplicity
+    Float_t               fZVertex;                                             // Z vertex position
+
     // additional variables
     Double_t              fEventPlaneAngle;                                     // EventPlaneAngle
     TRandom3              fRandom;                                              // random
@@ -104,6 +116,7 @@ class AliAnalysisTaskGammaTriggerQA : public AliAnalysisTaskSE {
     Int_t                 fiCut;                                                // current cut
     Int_t                 fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
     Bool_t                fDoLightOutput;                                       // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t                 fQADetailed;                                          // switch for detailed QA
     Int_t                 fIsMC;                                                // flag for MC information
     Double_t              fWeightJetJetMC;                                      // weight for Jet-Jet MC
     Int_t                 fNCurrentClusterBasic;                                // current number of cluster without minE
@@ -112,7 +125,7 @@ class AliAnalysisTaskGammaTriggerQA : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaTriggerQA(const AliAnalysisTaskGammaTriggerQA&);                  // Prevent copy-construction
     AliAnalysisTaskGammaTriggerQA &operator=(const AliAnalysisTaskGammaTriggerQA&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaTriggerQA, 2);
+    ClassDef(AliAnalysisTaskGammaTriggerQA, 3);
 };
 
 #endif
