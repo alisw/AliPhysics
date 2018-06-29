@@ -1082,7 +1082,7 @@ void AliAnalysisTaskCEP::UserExec(Option_t *)
     if (fCEPUtil->checkstatus(fAnalysisStatus,
       AliCEPBase::kBitRawBuffer,AliCEPBase::kBitRawBuffer)) {
       
-      fCEPRawEvent->SetEventVariables(fESDEvent);
+      fCEPRawEvent->SetEventVariables(fESDEvent,TTindices);
       
     }
     
