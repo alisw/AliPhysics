@@ -108,6 +108,7 @@ fSignalCorrelMC_c(0x0),
 fSignalCorrelMC_b(0x0),
 fReflUnderSCorrel(0x0),
 fReflUnderSBCorrel(0x0),
+fRoverSinFitRange(0x0),
 fIntegratePtBins(kFALSE),
 fDebug(0),
 fMassFit(0x0),
@@ -205,6 +206,7 @@ fSignalCorrelMC_c(source.fSignalCorrelMC_c),
 fSignalCorrelMC_b(source.fSignalCorrelMC_b),
 fReflUnderSCorrel(source.fReflUnderSCorrel),
 fReflUnderSBCorrel(source.fReflUnderSBCorrel),
+fRoverSinFitRange(source.fRoverSinFitRange),
 fIntegratePtBins(source.fIntegratePtBins),
 fDebug(source.fDebug),
 fMassFit(source.fMassFit),
@@ -371,6 +373,7 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
   fScaleFactor = new Double_t[fNpTbins];
   fReflUnderSCorrel = new Double_t[fNpTbins]; 
   fReflUnderSBCorrel = new Double_t[fNpTbins];
+  fRoverSinFitRange = new Double_t[fNpTbins];
 
   fMassFit = new TF1*[fNpTbins];
   fBkgFit = new TF1*[fNpTbins];
@@ -2223,6 +2226,7 @@ void AliDhCorrelationExtraction::PrintSandBForNormal() {
     printf("  Signal = %1.1f\n",fSignalCorrel[i]);
     printf("  Background = %1.1f\n",fBackgrCorrel[i]);
     if(fUseRefl) printf("  Reflections under S = %1.1f\n",fReflUnderSCorrel[i]);
+    if(fUseRefl) printf("  R/S in fit range = %1.3f\n",fRoverSinFitRange[i]);
     printf("  SB scaling factor = %1.4f\n",fScaleFactor[i]);
   }
   printf("******************************************\n\n");
@@ -2270,6 +2274,7 @@ Bool_t AliDhCorrelationExtraction::SetReflectionInfo(AliHFInvMassFitter* &fitter
   fitter->SetTemplateReflections(histRefl,"template",fLeftFitRange,fRightFitRange);
   Double_t RoverS = histRefl->Integral(histRefl->FindBin(fLeftFitRange),histRefl->FindBin(fRightFitRange))/histSign->Integral(histSign->FindBin(fLeftFitRange),histSign->FindBin(fRightFitRange));
   printf("R/S ratio in fit range for bin %d = %1.3f\n",iBin,RoverS);
+  fRoverSinFitRange[iBin-fFirstpTbin] = RoverS;
   fitter->SetFixReflOverS(RoverS);
   return kTRUE;
 
@@ -2458,6 +2463,7 @@ void AliDhCorrelationExtraction::ClearObjects() {
   if(fScaleFactor) delete[] fScaleFactor;
   if(fReflUnderSCorrel) delete[] fReflUnderSCorrel; 
   if(fReflUnderSBCorrel) delete[] fReflUnderSBCorrel; 
+  if(fRoverSinFitRange) delete[] fRoverSinFitRange; 
 
   if(fMassFit) delete[] fMassFit; 
   if(fBkgFit) delete[] fBkgFit;

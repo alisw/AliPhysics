@@ -255,6 +255,7 @@ private:
     Double_t *fSignalCorrelMC_b;    
     Double_t *fReflUnderSCorrel;
     Double_t *fReflUnderSBCorrel;
+    Double_t *fRoverSinFitRange;
 
     Bool_t fIntegratePtBins;
 
@@ -270,7 +271,7 @@ private:
     std::vector<Int_t>    fMCOriginType;      //container of specificators of origins
     MCmode		  fMCmode;	      //kine or reco analysis (changes just the filenames for output, for now)
 
-    ClassDef(AliDhCorrelationExtraction,5); // class for plotting HF correlations
+    ClassDef(AliDhCorrelationExtraction,6); // class for plotting HF correlations
 
 };
 
