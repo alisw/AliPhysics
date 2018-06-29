@@ -83,6 +83,7 @@ class AliFemtoDreamCascadeCuts {
   void SetMCName(TString OutputName) {if(fMCHistList)fMCHistList->SetName(OutputName.Data());};
   TList *GetQAHists() {return fHistList;};
   TList *GetMCQAHists() {return fMCHistList;};
+  void FillGenerated(float pT) {if (fMCHist) fMCHist->FillMCGen(pT);};
  private:
   AliFemtoDreamCascadeHist *fHist;            //!
   AliFemtoDreamv0MCHist *fMCHist;             //!

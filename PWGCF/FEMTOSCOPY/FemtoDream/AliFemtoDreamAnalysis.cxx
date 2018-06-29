@@ -33,6 +33,7 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 ,fGTI(nullptr)
 ,fConfig(nullptr)
 ,fPartColl(nullptr)
+,fIsMC(false)
 {
 
 }
@@ -62,6 +63,7 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
 }
 
 void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
+  fIsMC=isMonteCarlo;
   fFemtoTrack=new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(isMonteCarlo);
 
@@ -109,11 +111,11 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
   }
   if (fConfig->GetUseEventMixing()) {
     fPartColl=
-      new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
+        new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
   }
   if (fConfig->GetUsePhiSpinning()) {
     fControlSample=
-      new AliFemtoDreamControlSample(fConfig,fConfig->GetMinimalBookingSample());
+        new AliFemtoDreamControlSample(fConfig,fConfig->GetMinimalBookingSample());
   }
   return;
 }
@@ -265,24 +267,12 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiDecays.push_back(*fFemtov0);
     }
   }
-//  std::cout << "=====================================\n" ;
-//  std::cout << "=====================================\n" ;
-//  std::cout << "==========New event==================\n" ;
-//  std::cout << "=====================================\n" ;
-//  std::cout << "=====================================\n" ;
-//  AliAODInputHandler *eventHandler =
-//      dynamic_cast<AliAODInputHandler*>(
-//          AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-//  AliMCEvent* fMC = eventHandler->MCEvent();
-//
-//  for(int iPart = 1; iPart < (fMC->GetNumberOfTracks()); iPart++) {
-//    AliAODMCParticle *mcPart  = (AliAODMCParticle*)fMC->GetTrack(iPart);
-//    if (TMath::Abs(mcPart->GetPdgCode()) == 3312) {
-//      std::cout << "Found a xi with Label: " << mcPart->GetLabel() << std::endl;
-//      std::cout << "Xi Eta" << mcPart->Eta() << std::endl;
-//      std::cout << " Daughter 0: " << mcPart->GetDaughterLabel(0) << " Daughter 1: " << mcPart->GetDaughterLabel(1) << std::endl;
-//    }
-//  }
+  //  std::cout << "=====================================\n" ;
+  //  std::cout << "=====================================\n" ;
+  //  std::cout << "==========New event==================\n" ;
+  //  std::cout << "=====================================\n" ;
+  //  std::cout << "=====================================\n" ;
+
   std::vector<AliFemtoDreamBasePart> XiDecays;
   std::vector<AliFemtoDreamBasePart> AntiXiDecays;
   int numcascades = evt->GetNumberOfCascades();
@@ -295,6 +285,32 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
     }
     if (fAntiCascCuts->isSelected(fFemtoCasc)) {
       AntiXiDecays.push_back(*fFemtoCasc);
+    }
+  }
+  //loop once over the MC stack to calculate Efficiency/Purity
+  if (fIsMC) {
+    AliAODInputHandler *eventHandler =
+        dynamic_cast<AliAODInputHandler*>(
+            AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    AliMCEvent* fMC = eventHandler->MCEvent();
+
+    for(int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+      AliAODMCParticle *mcPart  = (AliAODMCParticle*)fMC->GetTrack(iPart);
+      if (TMath::Abs(mcPart->Eta()) < 0.8 && mcPart->IsPhysicalPrimary()) {
+        if (mcPart->GetPdgCode() == fTrackCuts->GetPDGCode()) {
+          fTrackCuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiTrackCuts->GetPDGCode()) {
+          fAntiTrackCuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fv0Cuts->GetPDGv0()) {
+          fv0Cuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiv0Cuts->GetPDGv0()) {
+          fAntiv0Cuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fCascCuts->GetPDGCodeCasc()) {
+          fCascCuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiCascCuts->GetPDGCodeCasc()) {
+          fAntiCascCuts->FillGenerated(mcPart->Pt());
+        }
+      }
     }
   }
   fPairCleaner->ResetArray();

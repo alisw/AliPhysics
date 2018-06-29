@@ -83,6 +83,7 @@ class AliFemtoDreamAnalysis {
   AliAODTrack           **fGTI;             //!
   AliFemtoDreamCollConfig *fConfig;         //!
   AliFemtoDreamPartCollection *fPartColl;   //!
+  bool fIsMC;                               //!
   ClassDef(AliFemtoDreamAnalysis,3)
 };
 

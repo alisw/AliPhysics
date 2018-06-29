@@ -10,8 +10,8 @@
 #include "AliLog.h"
 ClassImp(AliFemtoDreamCascadeCuts)
 AliFemtoDreamCascadeCuts::AliFemtoDreamCascadeCuts()
-:fHist(0)
-,fMCHist(0)
+:fHist(nullptr)
+,fMCHist(nullptr)
 ,fNegCuts(0)
 ,fPosCuts(0)
 ,fBachCuts(0)
@@ -392,8 +392,8 @@ void AliFemtoDreamCascadeCuts::BookMCQA(AliFemtoDreamCascade *casc) {
       AliFemtoDreamBasePart::PartOrigin tmpOrg=casc->GetParticleOrigin();
       if (casc->GetParticleOrigin()!=AliFemtoDreamBasePart::kFake) {
         if (casc->GetMCPDGCode()==fPDGCasc) {
-          fMCHist->FillMCCorr(pT);
           if (tmpOrg==AliFemtoDreamBasePart::kPhysPrimary) {
+            fMCHist->FillMCCorr(pT);
             fMCHist->FillMCPtResolution(casc->GetMCPt(),casc->GetPt());
             fMCHist->FillMCThetaResolution(casc->GetMCTheta().at(0),casc->GetTheta().at(0),casc->GetMCPt());
             fMCHist->FillMCPhiResolution(casc->GetMCPhi().at(0),casc->GetPhi().at(0),casc->GetMCPt());
