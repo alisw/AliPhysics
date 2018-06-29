@@ -19,7 +19,6 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
                                 const AliVEvent *inputEvent);
   AliSigma0ParticlePhotonMother &operator=(
       const AliSigma0ParticlePhotonMother &obj);
-  bool IsTrueSigma(AliMCEvent *mcEvent) const;
 
   double GetPx() const { return AliSigma0ParticleBase::GetPx(); }
   double GetPy() const { return AliSigma0ParticleBase::GetPy(); }
@@ -58,7 +57,7 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   AliSigma0ParticleV0 fPhoton;
   AliSigma0ParticleV0 fPhoton2;
 
-  ClassDef(AliSigma0ParticlePhotonMother, 1)
+  ClassDef(AliSigma0ParticlePhotonMother, 2)
 };
 
 #endif

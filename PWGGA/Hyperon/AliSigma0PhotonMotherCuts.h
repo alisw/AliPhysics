@@ -133,7 +133,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH1F *fHistMCV0Mass;  //
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 2)
+  ClassDef(AliSigma0PhotonMotherCuts, 3)
 };
 
 #endif

@@ -73,7 +73,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   double fRecMass;
   double fPDGMass;
 
-  ClassDef(AliSigma0ParticleV0, 1)
+  ClassDef(AliSigma0ParticleV0, 2)
 };
 
 #endif

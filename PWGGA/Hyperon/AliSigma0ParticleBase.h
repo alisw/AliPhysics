@@ -83,7 +83,7 @@ class AliSigma0ParticleBase {
   double fPhistar[9];
 
  private:
-  ClassDef(AliSigma0ParticleBase, 1)
+  ClassDef(AliSigma0ParticleBase, 2)
 };
 
 #endif

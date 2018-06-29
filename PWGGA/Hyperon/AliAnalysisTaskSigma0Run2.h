@@ -91,6 +91,6 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   // Histograms
   // =====================================================================
 
-  ClassDef(AliAnalysisTaskSigma0Run2, 2)
+  ClassDef(AliAnalysisTaskSigma0Run2, 3)
 };
 #endif
