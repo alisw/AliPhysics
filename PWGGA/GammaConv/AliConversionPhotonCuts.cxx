@@ -3652,7 +3652,7 @@ Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TStr
         AliError(Form("Histogram %s not found in file",nameProfile.Data()));
         return kFALSE;
     }
-    if(fIsHeavyIon == 1 && periodName.Contains("LHC14a1") ){
+    if(periodName.Contains("LHC14a1")){
         // scaling weights by gas factor for PbPb if pp ones are used (= at R=120cm w=1)
         if(fProfileContainingMaterialBudgetWeights->GetBinContent(fProfileContainingMaterialBudgetWeights->GetXaxis()->FindBin(120.)) == 1){
             fProfileContainingMaterialBudgetWeights->Scale(0.960035693454);
