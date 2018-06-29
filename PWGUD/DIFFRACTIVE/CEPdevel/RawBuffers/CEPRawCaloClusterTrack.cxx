@@ -108,7 +108,7 @@ void CEPRawCaloClusterTrack::SetCaloClusterVariables(AliESDCaloCluster* ClusterO
         // -------------- get the distance to the nearest track ------------------------
         // contruct the track-TObjArray here
         TObjArray* track_arr = new TObjArray();
-        track_arr->SetOwner(kTRUE);
+        track_arr->SetOwner(kFALSE);
         AliESDtrack* trk = 0x0;
         for (Int_t kk(0); kk<ESDobj->GetNumberOfTracks(); kk++){
             trk = (AliESDtrack*) ESDobj->GetTrack(kk); 
