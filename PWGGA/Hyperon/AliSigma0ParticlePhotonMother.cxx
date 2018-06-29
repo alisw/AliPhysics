@@ -126,42 +126,43 @@ AliSigma0ParticlePhotonMother &AliSigma0ParticlePhotonMother::operator=(
 }
 
 //____________________________________________________________________________________________________
-bool AliSigma0ParticlePhotonMother::IsTrueSigma(AliMCEvent *mcEvent) const {
-  // get photon mother
-  AliMCParticle *photonElePos =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(fPhoton.GetMCLabelPos()));
-  AliMCParticle *photonEleNeg =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(fPhoton.GetMCLabelNeg()));
-  if (photonElePos == nullptr || photonEleNeg == nullptr) return false;
-  if (photonElePos->GetMother() != photonEleNeg->GetMother()) return false;
-  AliMCParticle *photonMC = static_cast<AliMCParticle *>(
-      mcEvent->GetTrack(photonEleNeg->GetMother()));
-  if (photonMC == nullptr) return false;
-  AliMCParticle *photonMother =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(photonMC->GetMother()));
-  if (photonMother == nullptr) return false;
+int AliSigma0ParticlePhotonMother::MatchToMC(
+    const AliMCEvent *mcEvent, const int PIDmother,
+    const std::vector<int> PIDdaughters) const {
+  const int labV0 = fV0.GetMCLabelV0();
+  const int labPhoton = fPhoton.GetMCLabelV0();
+  if (labV0 < 0 || labPhoton < 0) return -1;
 
-  // get lambda mother
-  AliMCParticle *lambdaPos =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(fV0.GetMCLabelPos()));
-  AliMCParticle *lambdaNeg =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(fV0.GetMCLabelNeg()));
-  if (lambdaPos == nullptr || lambdaNeg == nullptr) return false;
-  if (!(std::abs(lambdaPos->GetMother()) == 211 &&
-        std::abs(lambdaNeg->GetMother()) == 2212) ||
-      !(std::abs(lambdaPos->GetMother()) == 2211 &&
-        std::abs(lambdaNeg->GetMother()) == 211))
-    return false;
-  AliMCParticle *lambdaMC =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(lambdaPos->GetMother()));
-  if (lambdaMC == nullptr) return false;
-  AliMCParticle *lambdaMother =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(lambdaMC->GetMother()));
-  if (lambdaMother == nullptr) return false;
+  AliMCParticle *partV0 =
+      static_cast<AliMCParticle *>(mcEvent->GetTrack(labV0));
+  AliMCParticle *partPhoton =
+      static_cast<AliMCParticle *>(mcEvent->GetTrack(labPhoton));
+  if (!partV0 || !partPhoton) return -1;
 
-  if (photonMother->PdgCode() != lambdaMother->PdgCode()) return false;
-  if (std::abs(photonMother->PdgCode()) != 3212) return false;
-  return true;
+  const int pidV0 = partV0->PdgCode();
+  const int pidPhoton = partPhoton->PdgCode();
+  if (!((pidV0 == PIDdaughters[0] && pidPhoton == PIDdaughters[1]) ||
+        (pidV0 == PIDdaughters[1] && pidPhoton == PIDdaughters[0]))) {
+    return -1;
+  }
+
+  const int labMotherV0 = partV0->GetMother();
+  const int labMotherPhoton = partPhoton->GetMother();
+  if (labMotherV0 < 0 || labMotherPhoton < 0) return -1;
+
+  AliMCParticle *partMotherV0 =
+      static_cast<AliMCParticle *>(mcEvent->GetTrack(labMotherV0));
+  AliMCParticle *partMotherPhoton =
+      static_cast<AliMCParticle *>(mcEvent->GetTrack(labMotherPhoton));
+  if (!partMotherV0 || !partMotherPhoton) return -1;
+
+  const int pdgMotherV0 = partMotherV0->PdgCode();
+  const int pdgMotherPhoton = partMotherPhoton->PdgCode();
+  if ((pdgMotherV0 != pdgMotherPhoton) || pdgMotherV0 != PIDmother) {
+    return -1;
+  }
+
+  return labMotherV0;
 }
 
 //____________________________________________________________________________________________________

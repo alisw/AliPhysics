@@ -48,6 +48,9 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   AliSigma0ParticleV0 GetPhoton() const { return fPhoton; }
   AliSigma0ParticleV0 GetPhoton2() const { return fPhoton2; }
 
+  int MatchToMC(const AliMCEvent *mcEvent, const int PIDmother,
+                const std::vector<int> PIDdaughters) const;
+
  private:
   short fType;
   double fRecMass;

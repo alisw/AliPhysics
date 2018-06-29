@@ -44,6 +44,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   int GetTrackLabelNeg() const { return fTrackLabelNeg; }
   int GetMCLabelPos() const { return fTrackPos.GetMCLabel(); }
   int GetMCLabelNeg() const { return fTrackNeg.GetMCLabel(); }
+  int GetMCLabelV0() const { return fMCLabelV0; }
   double GetCosineAlpha() const { return fCosAlpha; }
   double GetRecMass() const { return fRecMass; }
   double GetPDGMass() const { return fPDGMass; }
@@ -57,7 +58,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   AliSigma0ParticleBase GetNegDaughter() const { return fTrackNeg; }
   AliSigma0ParticleBase GetPosDaughter() const { return fTrackPos; }
 
-  int MatchToMC(AliMCEvent *mcEvent, const int PIDmother,
+  int MatchToMC(const AliMCEvent *mcEvent, const int PIDmother,
                 const std::vector<int> PIDdaughters);
 
  private:
@@ -65,6 +66,7 @@ class AliSigma0ParticleV0 : public AliSigma0ParticleBase {
   int fTrackLabelNeg;
   int fMCLabelPos;
   int fMCLabelNeg;
+  int fMCLabelV0;
   AliSigma0ParticleBase fTrackPos;
   AliSigma0ParticleBase fTrackNeg;
   double fCosAlpha;

@@ -15,6 +15,9 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fLambdaMixed(),
       fPhotonMixed(),
       fMixingDepth(10),
+      fPDG(0),
+      fPDGDaughter1(0),
+      fPDGDaughter2(0),
       fMassSigma(0),
       fSigmaMassCut(0),
       fSigmaSidebandLow(0),
@@ -43,25 +46,14 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMixedPtY(),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassEta(nullptr),
-      fHistMCSigmaMassCutPt(nullptr),
-      fHistMCTruthSigma0PhotonConvPt(nullptr),
-      fHistMCTruthSigma0PhotonConvP(nullptr),
-      fHistMCTruthSigma0PhotonConvInvMass(nullptr),
-      fHistMCTruthSigma0PhotonConvInvMassPt(nullptr),
-      fHistMCTruthSigma0PhotonConvPtEta(nullptr),
-      fHistMCTruthSigma0PhotonConvR(nullptr),
-      fHistMCTruthSigma0PhotonConvConvPointX(nullptr),
-      fHistMCTruthSigma0PhotonConvConvPointY(nullptr),
-      fHistMCTruthSigma0PhotonConvConvPointZ(nullptr),
-      fHistMCTruthSigma0PhotonConvEleP(nullptr),
-      fHistMCTruthSigma0PhotonConvElePt(nullptr),
-      fHistMCTruthSigma0PhotonConvPtY(nullptr),
-      fHistMCTruthSigma0Pt(nullptr),
-      fHistMCTruthSigma0PtY(nullptr),
-      fHistMCTruthSigma0PtEta(nullptr),
-      fHistMCTruthSigma0PhotonPt(nullptr),
-      fHistMCTruthSigma0PhotonPtY(nullptr),
-      fHistMCTruthSigma0PhotonPtEta(nullptr) {}
+      fHistMCTruthPt(nullptr),
+      fHistMCTruthPtY(nullptr),
+      fHistMCTruthPtEta(nullptr),
+      fHistMCTruthDaughterPt(nullptr),
+      fHistMCTruthDaughterPtY(nullptr),
+      fHistMCTruthDaughterPtEta(nullptr),
+      fHistMCV0Pt(nullptr),
+      fHistMCV0Mass(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
@@ -76,6 +68,9 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fLambdaMixed(),
       fPhotonMixed(),
       fMixingDepth(10),
+      fPDG(0),
+      fPDGDaughter1(0),
+      fPDGDaughter2(0),
       fMassSigma(0),
       fSigmaMassCut(0),
       fSigmaSidebandLow(0),
@@ -104,25 +99,14 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMixedPtY(),
       fHistMixedInvMassPt(nullptr),
       fHistMixedInvMassEta(nullptr),
-      fHistMCSigmaMassCutPt(nullptr),
-      fHistMCTruthSigma0PhotonConvPt(nullptr),
-      fHistMCTruthSigma0PhotonConvP(nullptr),
-      fHistMCTruthSigma0PhotonConvInvMass(nullptr),
-      fHistMCTruthSigma0PhotonConvInvMassPt(nullptr),
-      fHistMCTruthSigma0PhotonConvPtEta(nullptr),
-      fHistMCTruthSigma0PhotonConvR(nullptr),
-      fHistMCTruthSigma0PhotonConvConvPointX(nullptr),
-      fHistMCTruthSigma0PhotonConvConvPointY(nullptr),
-      fHistMCTruthSigma0PhotonConvConvPointZ(nullptr),
-      fHistMCTruthSigma0PhotonConvEleP(nullptr),
-      fHistMCTruthSigma0PhotonConvElePt(nullptr),
-      fHistMCTruthSigma0PhotonConvPtY(nullptr),
-      fHistMCTruthSigma0Pt(nullptr),
-      fHistMCTruthSigma0PtY(nullptr),
-      fHistMCTruthSigma0PtEta(nullptr),
-      fHistMCTruthSigma0PhotonPt(nullptr),
-      fHistMCTruthSigma0PhotonPtY(nullptr),
-      fHistMCTruthSigma0PhotonPtEta(nullptr) {}
+      fHistMCTruthPt(nullptr),
+      fHistMCTruthPtY(nullptr),
+      fHistMCTruthPtEta(nullptr),
+      fHistMCTruthDaughterPt(nullptr),
+      fHistMCTruthDaughterPtY(nullptr),
+      fHistMCTruthDaughterPtEta(nullptr),
+      fHistMCV0Pt(nullptr),
+      fHistMCV0Mass(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliSigma0PhotonMotherCuts &AliSigma0PhotonMotherCuts::operator=(
@@ -147,6 +131,10 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
     const std::vector<AliSigma0ParticleV0> &lambdaCandidates) {
   fMCEvent = mcEvent;
 
+  if (fIsMC) {
+    ProcessMC();
+  }
+
   fInputEvent = inputEvent;
 
   // Particle pairing
@@ -162,7 +150,6 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
   // SAME EVENT
   for (const auto &photon : photonCandidates) {
     int nSigma = 0;
-    // Sigmas
     for (const auto &lambda : lambdaCandidates) {
       /// Candidates with lambdas with shared daughter tracks are not used
       if (!lambda.GetIsUse()) continue;
@@ -200,8 +187,11 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         }
         ++nSigma;
         if (fIsMC) {
-          if (sigma.IsTrueSigma(fMCEvent)) {
-            fHistMCSigmaMassCutPt->Fill(sigma.GetPt());
+          const int label =
+              sigma.MatchToMC(fMCEvent, fPDG, {{fPDGDaughter1, fPDGDaughter2}});
+          if (label > 0) {
+            fHistMCV0Pt->Fill(sigma.GetPt());
+            fHistMCV0Mass->Fill(invMass);
           }
         }
       }
@@ -296,6 +286,68 @@ void AliSigma0PhotonMotherCuts::FillEventBuffer(
       fLambdaMixed.push_back(lambdaCandidates);
     }
   }
+}
+
+//____________________________________________________________________________________________________
+float AliSigma0PhotonMotherCuts::ComputeRapidity(float pt, float pz,
+                                                 float m) const {
+  // calculates rapidity keeping the sign in case E == pz
+
+  float energy = std::sqrt(pt * pt + pz * pz + m * m);
+  if (energy != std::fabs(pz))
+    return 0.5 * std::log((energy + pz) / (energy - pz));
+  return (pz >= 0) ? 1.e30 : -1.e30;
+}
+
+//____________________________________________________________________________________________________
+void AliSigma0PhotonMotherCuts::ProcessMC() const {
+  // Loop over the MC tracks
+  for (int iPart = 1; iPart < (fMCEvent->GetNumberOfTracks()); iPart++) {
+    AliMCParticle *mcParticle =
+        static_cast<AliMCParticle *>(fMCEvent->GetTrack(iPart));
+    if (!mcParticle) continue;
+    //    if (!mcParticle->IsPhysicalPrimary()) continue;
+    if (mcParticle->GetNDaughters() != 2) continue;
+    if (mcParticle->PdgCode() != fPDG) continue;
+    fHistMCTruthPt->Fill(mcParticle->Pt());
+    fHistMCTruthPtY->Fill(
+        ComputeRapidity(mcParticle->Pt(), mcParticle->Pz(), mcParticle->M()),
+        mcParticle->Pt());
+    fHistMCTruthPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
+
+    if (!CheckDaughters(mcParticle)) continue;
+    fHistMCTruthDaughterPt->Fill(mcParticle->Pt());
+    fHistMCTruthDaughterPtY->Fill(
+        ComputeRapidity(mcParticle->Pt(), mcParticle->Pz(), mcParticle->M()),
+        mcParticle->Pt());
+    fHistMCTruthDaughterPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
+  }
+}
+
+//____________________________________________________________________________________________________
+bool AliSigma0PhotonMotherCuts::CheckDaughters(
+    const AliMCParticle *particle) const {
+  AliMCParticle *posDaughter = nullptr;
+  AliMCParticle *negDaughter = nullptr;
+
+  if (particle->GetNDaughters() != 2) return false;
+
+  for (int daughterIndex = particle->GetFirstDaughter();
+       daughterIndex <= particle->GetLastDaughter(); ++daughterIndex) {
+    if (daughterIndex < 0) continue;
+    AliMCParticle *tmpDaughter =
+        static_cast<AliMCParticle *>(fMCEvent->GetTrack(daughterIndex));
+    if (!tmpDaughter) continue;
+    const int pdgCode = tmpDaughter->PdgCode();
+    if (pdgCode == fPDGDaughter1)
+      posDaughter = tmpDaughter;
+    else if (pdgCode == fPDGDaughter2)
+      negDaughter = tmpDaughter;
+  }
+
+  if (!posDaughter || !negDaughter) return false;
+
+  return true;
 }
 
 //____________________________________________________________________________________________________
@@ -491,86 +543,39 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
       fHistogramsMC->SetName("MC");
     }
 
-    fHistMCTruthSigma0PhotonConvPt =
-        new TH1F("fHistMCTruthSigma0PhotonConvPt",
-                 "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
-    fHistMCTruthSigma0PhotonConvP =
-        new TH1F("fHistMCTruthSigma0PhotonConvP",
-                 "; #it{p} (GeV/#it{c}); Entries", 500, 0, 10);
-    fHistMCTruthSigma0PhotonConvInvMass =
-        new TH1F("fHistMCTruthSigma0PhotonConvInvMass",
-                 "; Invariant mass (GeV/#it{c}^{2}); Entries", 500, 0, 1);
-    fHistMCTruthSigma0PhotonConvInvMassPt =
-        new TH2F("fHistMCTruthSigma0PhotonConvInvMassPt",
-                 "; #it{p}_{T} (GeV/#it{c}); Invariant mass (GeV/#it{c}^{2})",
-                 500, 0, 10, 500, 0, 1);
-    fHistMCTruthSigma0PhotonConvPtEta =
-        new TH2F("fHistMCTruthSigma0PhotonConvInvMassEta",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
-    fHistMCTruthSigma0PhotonConvR =
-        new TH2F("fHistMCTruthSigma0PhotonConvR",
-                 "; #it{p}_{T} (GeV/#it{c}); Conversion radius", 500, 0, 10,
-                 500, 0, 200);
-    fHistMCTruthSigma0PhotonConvConvPointX =
-        new TH1F("fHistMCTruthSigma0PhotonConvConvPointX",
-                 "; Conv. point x [cm]; Entries", 500, -200, 200);
-    fHistMCTruthSigma0PhotonConvConvPointY =
-        new TH1F("fHistMCTruthSigma0PhotonConvConvPointY",
-                 "; Conv. point y [cm]; Entries", 500, -200, 200);
-    fHistMCTruthSigma0PhotonConvConvPointZ =
-        new TH1F("fHistMCTruthSigma0PhotonConvConvPointZ",
-                 "; Conv. point z [cm]; Entries", 500, -200, 200);
-    fHistMCTruthSigma0PhotonConvEleP =
-        new TH1F("fHistMCTruthSigma0PhotonConvEleP",
-                 "; #it{p} (GeV/#it{c}); Entries", 500, 0, 10);
-    fHistMCTruthSigma0PhotonConvElePt =
-        new TH1F("fHistMCTruthSigma0PhotonConvElePt",
-                 "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
-    fHistMCTruthSigma0PhotonConvPtY =
-        new TH2F("fHistMCTruthSigma0PhotonConvPtY",
-                 "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10, 10, 500, 0, 10);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvPt);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvP);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvInvMass);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvInvMassPt);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvPtEta);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvR);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvConvPointX);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvConvPointY);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvConvPointZ);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvEleP);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvElePt);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonConvPtY);
-
-    fHistMCTruthSigma0Pt =
-        new TH1F("fHistMCTruthSigma0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries",
-                 500, 0, 10);
-    fHistMCTruthSigma0PtY =
-        new TH2F("fHistMCTruthSigma0PtY", "; y; #it{p}_{T} (GeV/#it{c})", 1000,
+    fHistMCTruthPt = new TH1F("fHistMCTruthPt",
+                              "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
+    fHistMCTruthPtY =
+        new TH2F("fHistMCTruthPtY", "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10,
+                 10, 500, 0, 10);
+    fHistMCTruthPtEta =
+        new TH2F("fHistMCTruthPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})", 500,
                  -10, 10, 500, 0, 10);
-    fHistMCTruthSigma0PtEta =
-        new TH2F("fHistMCTruthSigma0PtEta", "; #eta; #it{p}_{T} (GeV/#it{c})",
-                 500, -10, 10, 500, 0, 10);
-    fHistMCTruthSigma0PhotonPt =
-        new TH1F("fHistMCTruthSigma0PhotonPt",
-                 "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
-    fHistMCTruthSigma0PhotonPtY =
-        new TH2F("fHistMCTruthSigma0PhotonPtY", "; y; #it{p}_{T} (GeV/#it{c})",
+    fHistMCTruthDaughterPt =
+        new TH1F("fHistMCTruthDaughterPt", "; #it{p}_{T} (GeV/#it{c}); Entries",
+                 500, 0, 10);
+    fHistMCTruthDaughterPtY =
+        new TH2F("fHistMCTruthDaughterPtY", "; y; #it{p}_{T} (GeV/#it{c})",
                  1000, -10, 10, 500, 0, 10);
-    fHistMCTruthSigma0PhotonPtEta =
-        new TH2F("fHistMCTruthSigma0PhotonPtEta",
-                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
-    fHistogramsMC->Add(fHistMCTruthSigma0Pt);
-    fHistogramsMC->Add(fHistMCTruthSigma0PtY);
-    fHistogramsMC->Add(fHistMCTruthSigma0PtEta);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonPt);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonPtY);
-    fHistogramsMC->Add(fHistMCTruthSigma0PhotonPtEta);
+    fHistMCTruthDaughterPtEta =
+        new TH2F("fHistMCTruthDaughterPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})",
+                 500, -10, 10, 500, 0, 10);
+    fHistMCV0Pt = new TH1F("fHistMCV0Pt",
+                           "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
+                           500, 0, 20);
+    fHistMCV0Mass =
+        new TH1F("fHistMCV0Mass",
+                 "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 2000, 1., 2.);
 
-    fHistMCSigmaMassCutPt = new TH1F(
-        "fHistMCSigmaMassCutPt",
-        "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries", 500, 0, 10);
-    fHistogramsMC->Add(fHistMCSigmaMassCutPt);
+    fHistogramsMC->Add(fHistMCTruthPt);
+    fHistogramsMC->Add(fHistMCTruthPtY);
+    fHistogramsMC->Add(fHistMCTruthPtEta);
+    fHistogramsMC->Add(fHistMCTruthDaughterPt);
+    fHistogramsMC->Add(fHistMCTruthDaughterPtY);
+    fHistogramsMC->Add(fHistMCTruthDaughterPtEta);
+    fHistogramsMC->Add(fHistMCV0Pt);
+    fHistogramsMC->Add(fHistMCV0Mass);
+
     fHistograms->Add(fHistogramsMC);
   }
 }

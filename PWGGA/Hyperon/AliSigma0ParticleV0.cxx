@@ -9,6 +9,7 @@ ClassImp(AliSigma0ParticleV0)
       fTrackLabelNeg(-1),
       fMCLabelPos(-1),
       fMCLabelNeg(-1),
+      fMCLabelV0(-1),
       fTrackPos(),
       fTrackNeg(),
       fCosAlpha(0),
@@ -26,6 +27,7 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
       fTrackLabelNeg(-1),
       fMCLabelPos(-1),
       fMCLabelNeg(-1),
+      fMCLabelV0(-1),
       fTrackPos(),
       fTrackNeg(),
       fCosAlpha(0),
@@ -84,6 +86,7 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton &gamma,
       fTrackLabelNeg(-1),
       fMCLabelPos(-1),
       fMCLabelNeg(-1),
+      fMCLabelV0(-1),
       fTrackPos(),
       fTrackNeg(),
       fCosAlpha(0),
@@ -188,7 +191,8 @@ float AliSigma0ParticleV0::GetArmenterosQt() const {
 }
 
 //____________________________________________________________________________________________________
-int AliSigma0ParticleV0::MatchToMC(AliMCEvent *mcEvent, const int PIDmother,
+int AliSigma0ParticleV0::MatchToMC(const AliMCEvent *mcEvent,
+                                   const int PIDmother,
                                    const std::vector<int> PIDdaughters) {
   // Adopted from the function in AliAODRecoDecay
 
@@ -274,5 +278,6 @@ int AliSigma0ParticleV0::MatchToMC(AliMCEvent *mcEvent, const int PIDmother,
     return -1;
   }
 
+  fMCLabelV0 = labMother;
   return labMother;
 }
