@@ -7,13 +7,19 @@
 class AliLumiTools : public TObject
 {
  public:
-  enum {kLumiCTP,kLumiDIP,kNLumiTypes};
+  enum {kLumiCTP, // use CTP scalers
+	kLumiDIP, // extract from Alice delivered lumi record (based on the same T0)
+	kLumiDIPInst, // use Alice lumi from T0, communicated to LHC and extracted from the DIP file
+	kLumiDIPDel,  // use Alice delivered lumi, communicated to LHC and extracted from the DIP file
+	kNLumiTypes};
  public:
   AliLumiTools() {}
   virtual ~AliLumiTools() {}
   //
   static TGraph* GetLumiFromCTP(Int_t run=-1, const char * ocdbPathDef="raw://", TString refClassName="", Double_t refSigma=-1);
-  static TGraph* GetLumiFromDIP(Int_t run=-1, const char * ocdbPathDef="raw://");
+  static TGraph* GetLumiFromDIPDel(Int_t run=-1, const char * ocdbPathDef="raw://");
+  static TGraph* GetLumiFromDIPInst(Int_t run=-1, const char * ocdbPathDef="raw://");
+  static TGraph* GetLumiFromDIP(Int_t run=-1, const char * ocdbPathDef="raw://") { return GetLumiFromDIPDel(run, ocdbPathDef); }
   static TGraph* GetLumiGraph(int tp,Int_t run=-1, const char * ocdbPathDef="raw://");
   //
   static Double_t GetMuEstimate()    {return fgMuEst;}
