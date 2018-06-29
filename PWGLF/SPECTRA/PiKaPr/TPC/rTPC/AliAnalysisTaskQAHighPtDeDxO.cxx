@@ -95,18 +95,6 @@ const Int_t nCent = 10;
 const Double_t CentMin[nCent] = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0};
 const Double_t CentMax[nCent] = {5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0};
 
-/*
-   const Double_t aPos[nCent] = {50.1883 ,49.9572 ,49.7871 ,49.7054 ,49.7656 ,49.9296 ,50.1327 ,50.321  ,50.4451,50.4451};
-   const Double_t bPos[nCent] = {-6.0014 ,-4.36728,-2.35402,0.285188,2.87048 ,5.13634 ,6.90494 ,8.1185  ,8.86493,8.86493};
-   const Double_t cPos[nCent] = {15.4352 ,11.5677 ,6.70805 ,0.187806,-6.02079,-11.4942,-15.9147,-19.0587,-20.9267,-20.9267};
-   const Double_t dPos[nCent] = {-9.03677,-6.79377,-4.00441,-0.09845,3.61243 ,6.9567  ,9.75612 ,11.7897 ,12.9734,12.9734};
-
-   const Double_t aNeg[nCent] = {50.2722,50.0062,49.7896,49.6449 ,49.6859 ,49.7989 ,49.9737 ,50.1402 ,50.2317 ,50.2317};
-   const Double_t bNeg[nCent] = {5.36029,3.93499,2.06901,-0.39638,-2.62542,-4.90592,-6.54086,-7.69069,-8.72625,-8.72625};
-   const Double_t cNeg[nCent] = {15.8322,12.1534,7.22903,0.720813,-4.97944,-10.8818,-15.0851,-18.1422,-20.9271,-20.9271};
-   const Double_t dNeg[nCent] = {9.9955 ,7.76649,4.74416,0.6475  ,-2.839  ,-6.66448,-9.36794,-11.3715,-13.2891,-13.2891};
- */
-
 const Double_t aPos[nCent] = {49.8594  ,49.8542  ,49.8594  ,49.8545  ,49.8473   ,49.8589  ,49.8542   ,49.8569  ,49.8461   ,49.8512};
 const Double_t bPos[nCent] = {-0.19737 ,-0.157422,-0.185804,-0.140537,-0.0502213,-0.155494,-0.0575582,-0.149527,-0.0901908,-0.0571605};
 const Double_t cPos[nCent] = {0.936921 ,0.840229 ,0.856222 ,0.789579 ,0.508899  ,0.782057 ,0.577245  ,0.788935 ,0.688114  ,0.591065};
@@ -136,10 +124,10 @@ ClassImp(AliAnalysisTaskQAHighPtDeDxO)
 		fMC(0x0),
 		fMCStack(0x0),
 		fMCArray(0x0),
+		fPIDResponse(0x0),
 		fTrackFilter2015PbPb(0x0),
 		fTrackFilterGolden(0x0),
 		fTrackFilterTPC(0x0),
-		fPIDResponse(0x0),
 		fCentEst("V0M"),
 		fAnalysisType("ESD"),
 		fAnalysisMC(kFALSE),
@@ -147,7 +135,6 @@ ClassImp(AliAnalysisTaskQAHighPtDeDxO)
 		ftrigBit(0x0),
 		fRandom(0x0),
 		fPileUpRej(kFALSE),
-		fVtxCut(10.0),
 		fEtaCut(0.9),
 		cent(0x0),
 		fMinCent(0.0),
@@ -161,17 +148,13 @@ ClassImp(AliAnalysisTaskQAHighPtDeDxO)
 		fRun(-999),
 		fEventId(-999),
 		fListOfObjects(0),
-		fEvents(0x0), fVtx(0x0), fVtxMC(0x0), fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
-		fn1(0x0),
-		hEvents(0x0),
+		fEvents(0x0), fVtx(0x0), fVtxMC(0x0),// fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
+		fdEdxCalibrated(0x0),
+		fMakePid(0x0),
 		fcent(0x0),
-		//		fDeDxVsEtaPos(0x0),
-		//		fDeDxVsEtaNeg(0x0),
 		fEtaCalibrationNeg(0x0),
 		fEtaCalibration(0x0),
-		fcutDCAxy(0x0),
-		fdEdxCalibrated(0x0),
-		fMakePid(0x0)
+		fcutDCAxy(0x0)
 
 
 {
@@ -267,10 +250,10 @@ AliAnalysisTaskQAHighPtDeDxO::AliAnalysisTaskQAHighPtDeDxO(const char *name):
 	fMC(0x0),
 	fMCStack(0x0),
 	fMCArray(0x0),
+	fPIDResponse(0x0),
 	fTrackFilter2015PbPb(0x0),
 	fTrackFilterGolden(0x0),
 	fTrackFilterTPC(0x0),
-	fPIDResponse(0x0),
 	fCentEst("V0M"),
 	fAnalysisType("ESD"),
 	fAnalysisMC(kFALSE),
@@ -278,12 +261,11 @@ AliAnalysisTaskQAHighPtDeDxO::AliAnalysisTaskQAHighPtDeDxO(const char *name):
 	ftrigBit(0x0),
 	fRandom(0x0),
 	fPileUpRej(kFALSE),
-	fVtxCut(10.0),
 	fEtaCut(0.9),
 	cent(0x0),
 	fMinCent(0.0),
 	fMaxCent(100.0),
-	fStoreMcIn(kFALSE),//
+	fStoreMcIn(kFALSE),
 	fMcProcessType(-999),
 	fTriggeredEventMB(-999),
 	fVtxStatus(-999),
@@ -292,17 +274,13 @@ AliAnalysisTaskQAHighPtDeDxO::AliAnalysisTaskQAHighPtDeDxO(const char *name):
 	fRun(-999),
 	fEventId(-999),
 	fListOfObjects(0),
-	fEvents(0x0), fVtx(0x0), fVtxMC(0x0), fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
-	fn1(0x0),
-	hEvents(0x0),
+	fEvents(0x0), fVtx(0x0), fVtxMC(0x0),// fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
+	fdEdxCalibrated(0x0),
+	fMakePid(0x0),
 	fcent(0x0),
-	//	fDeDxVsEtaPos(0x0),
-	//	fDeDxVsEtaNeg(0x0),
 	fEtaCalibrationNeg(0x0),
 	fEtaCalibration(0x0),
-	fcutDCAxy(0x0),
-	fdEdxCalibrated(0x0),
-	fMakePid(0x0)
+	fcutDCAxy(0x0)
 
 {
 
@@ -426,10 +404,10 @@ void AliAnalysisTaskQAHighPtDeDxO::UserCreateOutputObjects()
 	fEvents = new TH1I("fEvents","Number of analyzed events; Events; Counts", 3, 0, 3);
 	//	fListOfObjects->Add(fEvents);
 
-	fn1=new TH1F("fn1","fn1",11,-1,10);
+	//fn1=new TH1F("fn1","fn1",11,-1,10);
 	//	fListOfObjects->Add(fn1);
 
-	hEvents=new TH1F("hEvents","hEvents",15,-1,14);
+	//hEvents=new TH1F("hEvents","hEvents",15,-1,14);
 	//	fListOfObjects->Add(hEvents);
 
 	fcent=new TH1F("fcent","fcent",13,0,13);
@@ -438,11 +416,11 @@ void AliAnalysisTaskQAHighPtDeDxO::UserCreateOutputObjects()
 	fVtx = new TH1I("fVtx","Vtx info (0=no, 1=yes); Vtx; Counts", 2, -0.5, 1.5);
 	//	fListOfObjects->Add(fVtx);
 
-	fVtxBeforeCuts = new TH1F("fVtxBeforeCuts", "Vtx distribution (before cuts); Vtx z [cm]; Counts", 120, -30, 30);
+	//fVtxBeforeCuts = new TH1F("fVtxBeforeCuts", "Vtx distribution (before cuts); Vtx z [cm]; Counts", 120, -30, 30);
 	//	fListOfObjects->Add(fVtxBeforeCuts);
 
-	fVtxAfterCuts = new TH1F("fVtxAfterCuts", "Vtx distribution (before cuts); Vtx z [cm]; Counts", 120, -30, 30);
-	fListOfObjects->Add(fVtxAfterCuts);
+	//fVtxAfterCuts = new TH1F("fVtxAfterCuts", "Vtx distribution (before cuts); Vtx z [cm]; Counts", 120, -30, 30);
+	//fListOfObjects->Add(fVtxAfterCuts);
 
 	const Int_t nPtBins = 63;
 	Double_t ptBins[nPtBins+1] = {
@@ -712,7 +690,7 @@ void AliAnalysisTaskQAHighPtDeDxO::UserExec(Option_t *)
 
 	AliVEvent *event = InputEvent();
 
-	hEvents->Fill(0);
+//	hEvents->Fill(0);
 	if (!event) {
 		Error("UserExec", "Could not retrieve event");
 		return;
@@ -875,7 +853,7 @@ void AliAnalysisTaskQAHighPtDeDxO::AnalyzeAOD(AliAODEvent* aodEvent)
 	if(fPileUpRej)
 		if(isPileup)
 			return;
-	fn1->Fill(4);
+	//fn1->Fill(4);
 
 
 
@@ -1341,14 +1319,14 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 			if ( ( lengthtrack != 0 ) && ( timeTOF != 0) )
 				beta = inttime[0] / timeTOF;
 
-			cout << "momentum  " << momentum << endl; 
+			//cout << "momentum  " << momentum << endl; 
 			//	cout << "time[0]/timeTOF  " << inttime[0]/timeTOF << endl; 
 			//	cout << "time[1]/timeTOF  " << inttime[1]/timeTOF << endl; 
 			//	cout << "time[2]/timeTOF  " << inttime[2]/timeTOF << endl; 
 			//	cout << "time[3]/timeTOF  " << inttime[3]/timeTOF << endl; 
 			//	cout << "time[4]/timeTOF  " << inttime[4]/timeTOF << endl; 
 
-			cout << "timeTOF  " << timeTOF << endl; 
+			//cout << "timeTOF  " << timeTOF << endl; 
 		}
 
 
@@ -1518,7 +1496,7 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 //__________________________________________________________________
 void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksAOD( AliAODEvent *AODevent ){
 
-	Bool_t OfficialCalibration = kTRUE;
+	//Bool_t OfficialCalibration = kTRUE;
 	Int_t nAODTracks = AODevent->GetNumberOfTracks();
 	Int_t multTPC = 0;
 
@@ -1734,7 +1712,7 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 	Double_t  lPrimaryVtxCov[6];
 	myBestPrimaryVertex->GetCovMatrix(lPrimaryVtxCov);
 	Double_t  lPrimaryVtxChi2 = myBestPrimaryVertex->GetChi2toNDF();
-	const Char_t *vtxName = "Vertex";
+//	const Char_t *vtxName = "Vertex";
 
 	AliAODVertex* myPrimaryVertex = new AliAODVertex(lPrimaryVtxPosition, lPrimaryVtxCov, lPrimaryVtxChi2, NULL, -1, AliAODVertex::kPrimary);
 
@@ -1964,7 +1942,7 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 					       Bool_t fillNeg = kFALSE;
 
 
-					       if((dmassK>0.1) && (dmassL>0.1) && (dmassAL>0.1)) {
+					       if((TMath::Abs(dmassK)>0.1) && (TMath::Abs(dmassL)>0.1) && (TMath::Abs(dmassAL)>0.1)) {
 						       if((dmassG<0.01) && (dmassG>0.0001)) {
 
 							       if(pTrack->Eta() > 0)
@@ -2464,7 +2442,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[0]);
 			fEtaCalibration->SetParameter(3,dPos[0]);
 			fEtaCalibration->FixParameter(3,dPos[0]);
-			cout<<"Using 0-5% Parameters"<<endl;
+//			cout<<"Using 0-5% Parameters"<<endl;
 			break;
 
 		case 1:
@@ -2476,7 +2454,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[1]);
 			fEtaCalibration->SetParameter(3,dPos[1]);
 			fEtaCalibration->FixParameter(3,dPos[1]);
-			cout<<"Using 5-10% Parameters"<<endl;
+//			cout<<"Using 5-10% Parameters"<<endl;
 			break;
 
 		case 2:
@@ -2488,7 +2466,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[2]);
 			fEtaCalibration->SetParameter(3,dPos[2]);
 			fEtaCalibration->FixParameter(3,dPos[2]);
-			cout<<"Using 10-20% Parameters"<<endl;
+//			cout<<"Using 10-20% Parameters"<<endl;
 			break;
 
 		case 3:
@@ -2500,7 +2478,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[3]);
 			fEtaCalibration->SetParameter(3,dPos[3]);
 			fEtaCalibration->FixParameter(3,dPos[3]);
-			cout<<"Using 20-30% Parameters"<<endl;
+//			cout<<"Using 20-30% Parameters"<<endl;
 			break;
 
 		case 4:
@@ -2512,7 +2490,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[4]);
 			fEtaCalibration->SetParameter(3,dPos[4]);
 			fEtaCalibration->FixParameter(3,dPos[4]);
-			cout<<"Using 30-40% Parameters"<<endl;
+//			cout<<"Using 30-40% Parameters"<<endl;
 			break;
 
 		case 5:
@@ -2524,7 +2502,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[5]);
 			fEtaCalibration->SetParameter(3,dPos[5]);
 			fEtaCalibration->FixParameter(3,dPos[5]);
-			cout<<"Using 40-50% Parameters"<<endl;
+//			cout<<"Using 40-50% Parameters"<<endl;
 			break;
 
 		case 6:
@@ -2536,7 +2514,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[6]);
 			fEtaCalibration->SetParameter(3,dPos[6]);
 			fEtaCalibration->FixParameter(3,dPos[6]);
-			cout<<"Using 50-60% Parameters"<<endl;
+//			cout<<"Using 50-60% Parameters"<<endl;
 			break;
 
 		case 7:
@@ -2548,7 +2526,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[7]);
 			fEtaCalibration->SetParameter(3,dPos[7]);
 			fEtaCalibration->FixParameter(3,dPos[7]);
-			cout<<"Using 60-70% Parameters"<<endl;
+//			cout<<"Using 60-70% Parameters"<<endl;
 			break;
 
 		case 8:
@@ -2560,7 +2538,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[8]);
 			fEtaCalibration->SetParameter(3,dPos[8]);
 			fEtaCalibration->FixParameter(3,dPos[8]);
-			cout<<"Using 70-80% Parameters"<<endl;
+//			cout<<"Using 70-80% Parameters"<<endl;
 			break;
 
 		case 9:
@@ -2572,7 +2550,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[9]);
 			fEtaCalibration->SetParameter(3,dPos[9]);
 			fEtaCalibration->FixParameter(3,dPos[9]);
-			cout<<"Using 80-90% Parameters"<<endl;
+//			cout<<"Using 80-90% Parameters"<<endl;
 			break;
 
 		default:
