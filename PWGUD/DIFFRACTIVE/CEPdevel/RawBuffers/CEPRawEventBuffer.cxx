@@ -188,7 +188,7 @@ Bool_t CEPRawEventBuffer::RemoveCaloCluster(UInt_t ind)
 }
 
 //______________________________________________________________________________
-void CEPRawEventBuffer::SetEventVariables(AliESDEvent* ESDobj)
+void CEPRawEventBuffer::SetEventVariables(AliESDEvent* ESDobj, TArrayI* TTindices)
 {
     this->Reset();
     // Set event number
@@ -243,7 +243,8 @@ void CEPRawEventBuffer::SetEventVariables(AliESDEvent* ESDobj)
         // get calo cluster from the ESD object
         aliCluster = (AliESDCaloCluster*)ESDobj->GetCaloCluster(i);
         // fill raw calo-cluster buffer
-        caloTrk->SetCaloClusterVariables(aliCluster, (AliESDCaloCells*)ESDobj->GetEMCALCells());
+        caloTrk->SetCaloClusterVariables(aliCluster, (AliESDCaloCells*)ESDobj->GetEMCALCells(),
+                                         ESDobj, TTindices);
         // add track to the 
         AddCaloTrack(caloTrk);
     }
