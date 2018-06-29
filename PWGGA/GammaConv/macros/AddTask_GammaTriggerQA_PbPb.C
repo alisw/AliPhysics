@@ -62,6 +62,7 @@ void AddTask_GammaTriggerQA_PbPb( Int_t     trainConfig                     = 1,
                                   Int_t     enableExtMatchAndQA             = 0,                    // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
                                   Bool_t    runLightOutput                  = kFALSE,               // switch to run light output (only essential histograms for afterburner)
                                   Bool_t    doFlattening                    = kFALSE,               // switch on centrality flattening for LHC11h
+                                  Int_t     QAflag                          = 0,                    // switch for QA
                                   TString   fileNameInputForCentFlattening  = "",                   // file name for centrality flattening
                                   TString   additionalTrainConfig           = "0"                   // additional counter for trainconfig
                 ) {
@@ -186,9 +187,9 @@ void AddTask_GammaTriggerQA_PbPb( Int_t     trainConfig                     = 1,
   // ***************************** EMCAL configurations *******************************************************
   // **********************************************************************************************************
   if (trainConfig == 1){ // EMCAL clusters
-    cuts.AddCut("60100013","1111100053032230000"); // 0-5%
-    cuts.AddCut("50100013","1111100053032230000"); // 0-10%
-    cuts.AddCut("52500013","1111100053032230000"); // 20-50%
+    cuts.AddCut("30100013","1111100053032230000"); // 0-5%
+    cuts.AddCut("150100013","1111100053032230000"); // 0-10%
+    cuts.AddCut("12500013","1111100053032230000"); // 20-50%
   } else if (trainConfig == 2){ // EMCAL clusters
     cuts.AddCut("10910013","1111100053032230000"); // 0-90%
     cuts.AddCut("1093a013","1111100053032230000"); // 0-90%
@@ -217,15 +218,17 @@ void AddTask_GammaTriggerQA_PbPb( Int_t     trainConfig                     = 1,
     cuts.AddCut("1353c013","1111100053032230000"); // 30-50%
     cuts.AddCut("1353d013","1111100053032230000"); // 30-50%
     cuts.AddCut("1353e013","1111100053032230000"); // 30-50%
-  // **********************************************************************************************************
+  } else if (trainConfig == 6){ // EMCAL clusters
+    cuts.AddCut("10910013","1111100053032230000"); // 0-90%
+    // **********************************************************************************************************
   // ***************************** PHOS configurations ********************************************************
   // **********************************************************************************************************
   } else if (trainConfig == 101){ // PHOS clusters
-    cuts.AddCut("60100013","2444400040033200000"); // 0-5%
-    cuts.AddCut("50100013","2444400040033200000"); // 0-10%
-    cuts.AddCut("52500013","2444400040033200000"); // 20-50%
+    cuts.AddCut("30100013","2444400040033200000"); // 0-5%
+    cuts.AddCut("10100013","2444400040033200000"); // 0-10%
+    cuts.AddCut("12500013","2444400040033200000"); // 20-50%
   } else if (trainConfig == 107){ // PHOS clusters with TM
-    cuts.AddCut("50900013","2444400002033200000"); // 0-90%
+    cuts.AddCut("10900013","2444400002033200000"); // 0-90%
 
 
   } else {
@@ -301,6 +304,7 @@ void AddTask_GammaTriggerQA_PbPb( Int_t     trainConfig                     = 1,
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
   task->SetCorrectionTaskSetting(corrTaskSetting);
+  task->SetDetailedQAFlag(QAflag);
 
   //connect containers
   TString outputName                        = Form("GammaTriggerQA_%i",trainConfig);
@@ -308,7 +312,7 @@ void AddTask_GammaTriggerQA_PbPb( Int_t     trainConfig                     = 1,
     outputName                              = Form("GammaTriggerQA_%i_%s",trainConfig,corrTaskSetting.Data());
 
   AliAnalysisDataContainer *coutput =  mgr->CreateContainer(outputName.Data(), TList::Class(),
-                                                            AliAnalysisManager::kOutputContainer,Form("GammaTriggerQA.root:%s",outputName.Data()) );
+                                                            AliAnalysisManager::kOutputContainer,"GammaTriggerQA.root" );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);

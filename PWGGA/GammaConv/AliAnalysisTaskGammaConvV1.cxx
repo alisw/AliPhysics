@@ -1092,7 +1092,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         tESDConvGammaPtDcazCat[iCut]->Branch("photonMCInfo",&iPhotonMCInfo,"iPhotonMCInfo/b");
       }
       if (fIsMC > 1){
-        tESDConvGammaPtDcazCat[iCut]->Branch("weightEvent",&fWeightJetJetMC,"fWeightJetJetMC/b");
+        tESDConvGammaPtDcazCat[iCut]->Branch("weightEvent",&fWeightJetJetMC,"fWeightJetJetMC/F");
       }
 
       fPhotonDCAList[iCut]->Add(tESDConvGammaPtDcazCat[iCut]);

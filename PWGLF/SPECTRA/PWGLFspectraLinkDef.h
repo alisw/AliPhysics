@@ -26,8 +26,8 @@
 #pragma link C++ class AlimPtMatrix+;
 #pragma link C++ class AlimPtMatrixZDC+;
 #pragma link C++ class AliAnalysisTaskSEITSsaSpectra+;
-#pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTaskQAHighPtDeDxO+;
+#pragma link C++ class AliAnalysisCombinedHadronSpectra+;
 #pragma link C++ class AliAnalysisTPCTOFpA+;
 #pragma link C++ class TOFSpectrappAnalysis+;
 #pragma link C++ class AliAnTOFtrack+;

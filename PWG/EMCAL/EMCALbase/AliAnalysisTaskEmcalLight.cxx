@@ -890,8 +890,16 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
   Bool_t acceptedTrgClassFound = kFALSE;
   if (fAcceptedTriggerClasses.size() > 0) {
     for (auto acc_trg : fAcceptedTriggerClasses) {
+      std::string teststring(acc_trg);
+      bool fullmatch(false);
+      auto posexact = acc_trg.find("EXACT");
+      if(posexact != std::string::npos) {
+        fullmatch = true;
+        teststring.erase(posexact, 5);
+      }
       for (auto fired_trg : fFiredTriggerClasses) {
-        if (fired_trg.find(acc_trg) != std::string::npos) {
+        bool classmatch = fullmatch ? teststring == fired_trg : fired_trg.find(teststring) != std::string::npos;
+        if (classmatch) {
           acceptedTrgClassFound = kTRUE;
           break;
         }
@@ -907,8 +915,16 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
 
   if (fRejectedTriggerClasses.size() > 0) {
     for (auto rej_trg : fRejectedTriggerClasses) {
+      std::string teststring(rej_trg);
+      bool fullmatch(false);
+      auto posexact = rej_trg.find("EXACT");
+      if(posexact != std::string::npos) {
+        fullmatch = true;
+        teststring.erase(posexact, 5);
+      }
       for (auto fired_trg : fFiredTriggerClasses) {
-        if (fired_trg.find(rej_trg) != std::string::npos) {
+        bool classmatch = fullmatch ? teststring == fired_trg : fired_trg.find(teststring) != std::string::npos;
+        if (classmatch) {
           if (fGeneralHistograms) hEventRejection->Fill("Trg class (rej)",1);
           return kFALSE;
         }
