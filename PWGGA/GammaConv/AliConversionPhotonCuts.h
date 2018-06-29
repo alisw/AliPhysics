@@ -152,9 +152,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TString GetCutNumber();
 
     Float_t GetKappaTPC(AliConversionPhotonBase *gamma, AliVEvent *event);
-
+    Float_t GetKappaTPC2(AliAODConversionPhoton *gamma, AliVEvent *event);
     // Cut Selection
     Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
+    Bool_t PhotonIsSelected2(AliAODConversionPhoton * photon, AliVEvent  * event);
     Bool_t PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
     Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
     //Bool_t ElectronIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent);
@@ -186,6 +187,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg);
     Bool_t PhiSectorCut(AliConversionPhotonBase * photon);
     Bool_t dEdxCuts(AliVTrack * track);
+    Bool_t dEdxCuts2(AliVTrack * track,AliAODConversionPhoton * photon);
     Bool_t KappaCuts(AliConversionPhotonBase * photon,AliVEvent *event);
     Bool_t ArmenterosQtCut(AliConversionPhotonBase *photon);
     Bool_t AsymmetryCut(AliConversionPhotonBase *photon,AliVEvent *event);
@@ -250,6 +252,9 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
+    Bool_t   InitializePostCalibration(TString filename);
+    Double_t GetCorrectedTPCResponseN(Double_t nsig,Double_t P,Double_t Eta,Double_t R);
+    Double_t GetCorrectedTPCResponseP(Double_t nsig,Double_t P,Double_t Eta,Double_t R);
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
@@ -383,10 +388,13 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
     TProfile*         fProfileContainingMaterialBudgetWeights;
-
+    TH2F**            fHistoEleMapMean;
+    TH2F**            fHistoEleMapWidth;
+    TH2F**            fHistoPosMapMean;
+    TH2F**            fHistoPosMapWidth;
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,16)
+    ClassDef(AliConversionPhotonCuts,17)
     /// \endcond
 };
 
