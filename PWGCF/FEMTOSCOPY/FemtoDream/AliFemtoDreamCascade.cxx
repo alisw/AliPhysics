@@ -80,8 +80,8 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   fRapXi=casc->RapXi();
   fRapOmega=casc->RapOmega();
   this->SetEta(casc->Eta());
-  this->SetTheta(casc->Theta());
-  this->SetPhi(casc->Phi());
+  this->SetTheta(fP.Theta());
+  this->SetPhi(fP.Phi());
   fAlphaXi=casc->AlphaXi();
   fPtArmXi=casc->PtArmXi();
   fDCAXiPrimVtx=casc->DcaXiToPrimVertex(PrimVtx[0],PrimVtx[1],PrimVtx[2]);
