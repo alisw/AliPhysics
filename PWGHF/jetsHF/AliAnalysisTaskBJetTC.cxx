@@ -306,6 +306,7 @@ fhistJetProbability_UnidentifiedLogSVHP(0x0),
 fhistJetProbability_udsgLogSVHP(0x0),
 fhistJetProbability_cLogSVHP(0x0),
 fhistJetProbability_bLogSVHP(0x0),
+fMinTrackProb(0.0),
 //__________
 // V0Reconstruction
 fh1V0CounterCentK0s(0x0),
@@ -650,6 +651,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fhistJetProbability_udsgLogSVHP(0x0),
 		fhistJetProbability_cLogSVHP(0x0),
 		fhistJetProbability_bLogSVHP(0x0),
+		fMinTrackProb(0.0),
 		//__________V0 Reconstruction
 		fh1V0CounterCentK0s(0x0),
 		fh1V0CounterCentLambda(0x0),
@@ -1857,7 +1859,7 @@ Double_t AliAnalysisTaskBJetTC::CalculateTrackProb(Double_t significance, Int_t 
   //switch resolution function based on track pt;
   if(TMath::Abs(significance) >100) significance =99.9; //Limit to function definition range
   trackprob = fResolutionFunction[trclass]->Integral(-100,-TMath::Abs(significance))/fResolutionFunction[trclass]->Integral(-100,0);
-  trackprob=TMath::Max(trackprob,0.1);
+  if(fMinTrackProb)  trackprob=TMath::Max(trackprob,fMinTrackProb);
   return trackprob;
 }
 // ######################################################################################## Jet Probability Function
@@ -2414,15 +2416,15 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 			fh2dJetSignedImpParXYZSignificance_Class4 = new TH2D("fh2dJetSignedImpParXYZSignificance_Class4","Tracks with chi2/NDF<2.5 and 4 ITS hits sIP_{xyz};pt (GeV/c); sIP3D",200,0,100,2000,-100,100);
 		}else{	
 			fhistJetProbability = new TH2D("fhistJetProbability","JetProbability;p_{T,jet};JP",250,0,250,1000,0,1);
-			fhistJetProbabilityLog = new TH2D("fhistJetProbabilityLog","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
+			fhistJetProbabilityLog = new TH2D("fhistJetProbabilityLog","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
 			if(fDoTrackCountingAnalysis){
-				fhistJetProbabilityLogFirst = new TH2D("fhistJetProbabilityLogFirst","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-				fhistJetProbabilityLogSecond = new TH2D("fhistJetProbabilityLogSecond","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-				fhistJetProbabilityLogThird = new TH2D("fhistJetProbabilityLogThird","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
+				fhistJetProbabilityLogFirst = new TH2D("fhistJetProbabilityLogFirst","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+				fhistJetProbabilityLogSecond = new TH2D("fhistJetProbabilityLogSecond","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+				fhistJetProbabilityLogThird = new TH2D("fhistJetProbabilityLogThird","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
 			}
 			if(fDoSVAnalysis){
-				fhistJetProbabilityLogSVHE = new TH2D("fhistJetProbabilityLogSVHE","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-				fhistJetProbabilityLogSVHP = new TH2D("fhistJetProbabilityLogSVHP","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
+				fhistJetProbabilityLogSVHE = new TH2D("fhistJetProbabilityLogSVHE","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+				fhistJetProbabilityLogSVHP = new TH2D("fhistJetProbabilityLogSVHP","JetProbability Logarithmic;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
 			}
 
 			if(fIsPythia){
@@ -2431,37 +2433,37 @@ void AliAnalysisTaskBJetTC::UserCreateOutputObjects(){
 				fhistJetProbability_c = new TH2D("fhistJetProbability_c","JetProbability_c;p_{T,jet};JP",250,0,250,1000,0,1);
 				fhistJetProbability_b = new TH2D("fhistJetProbability_b","JetProbability_b;p_{T,jet};JP",250,0,250,1000,0,1);
 
-				fhistJetProbability_UnidentifiedLog = new TH2D("fhistJetProbability_UnidentifiedLog","JetProbability_Unidentified;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-				fhistJetProbability_udsgLog = new TH2D("fhistJetProbability_udsgLog","JetProbability_udsg;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-				fhistJetProbability_cLog = new TH2D("fhistJetProbability_cLog","JetProbability_c;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-				fhistJetProbability_bLog = new TH2D("fhistJetProbability_bLog","JetProbability_b;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
+				fhistJetProbability_UnidentifiedLog = new TH2D("fhistJetProbability_UnidentifiedLog","JetProbability_Unidentified;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+				fhistJetProbability_udsgLog = new TH2D("fhistJetProbability_udsgLog","JetProbability_udsg;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+				fhistJetProbability_cLog = new TH2D("fhistJetProbability_cLog","JetProbability_c;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+				fhistJetProbability_bLog = new TH2D("fhistJetProbability_bLog","JetProbability_b;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
 
 				if(fDoTrackCountingAnalysis){
-					fhistJetProbability_UnidentifiedLogFirst = new TH2D("fhistJetProbability_UnidentifiedLogFirst","JetProbability_Unidentified N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_udsgLogFirst = new TH2D("fhistJetProbability_udsgLogFirst","JetProbability_udsg N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_cLogFirst = new TH2D("fhistJetProbability_cLogFirst","JetProbability_c N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_bLogFirst = new TH2D("fhistJetProbability_bLogFirst","JetProbability_b N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
+					fhistJetProbability_UnidentifiedLogFirst = new TH2D("fhistJetProbability_UnidentifiedLogFirst","JetProbability_Unidentified N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_udsgLogFirst = new TH2D("fhistJetProbability_udsgLogFirst","JetProbability_udsg N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_cLogFirst = new TH2D("fhistJetProbability_cLogFirst","JetProbability_c N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_bLogFirst = new TH2D("fhistJetProbability_bLogFirst","JetProbability_b N=1 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
 
-					fhistJetProbability_UnidentifiedLogSecond = new TH2D("fhistJetProbability_UnidentifiedLogSecond","JetProbability_Unidentified N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_udsgLogSecond = new TH2D("fhistJetProbability_udsgLogSecond","JetProbability_udsg N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_cLogSecond = new TH2D("fhistJetProbability_cLogSecond","JetProbability_c N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_bLogSecond = new TH2D("fhistJetProbability_bLogSecond","JetProbability_b N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
+					fhistJetProbability_UnidentifiedLogSecond = new TH2D("fhistJetProbability_UnidentifiedLogSecond","JetProbability_Unidentified N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_udsgLogSecond = new TH2D("fhistJetProbability_udsgLogSecond","JetProbability_udsg N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_cLogSecond = new TH2D("fhistJetProbability_cLogSecond","JetProbability_c N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_bLogSecond = new TH2D("fhistJetProbability_bLogSecond","JetProbability_b N=2 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
 
-					fhistJetProbability_UnidentifiedLogThird = new TH2D("fhistJetProbability_UnidentifiedLogThird","JetProbability_Unidentified N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_udsgLogThird = new TH2D("fhistJetProbability_udsgLogThird","JetProbability_udsg N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_cLogThird = new TH2D("fhistJetProbability_cLogThird","JetProbability_c N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_bLogThird = new TH2D("fhistJetProbability_bLogThird","JetProbability_b N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
+					fhistJetProbability_UnidentifiedLogThird = new TH2D("fhistJetProbability_UnidentifiedLogThird","JetProbability_Unidentified N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_udsgLogThird = new TH2D("fhistJetProbability_udsgLogThird","JetProbability_udsg N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_cLogThird = new TH2D("fhistJetProbability_cLogThird","JetProbability_c N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_bLogThird = new TH2D("fhistJetProbability_bLogThird","JetProbability_b N=3 Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
 				}
 				if(fDoSVAnalysis){
-					fhistJetProbability_UnidentifiedLogSVHE = new TH2D("fhistJetProbability_UnidentifiedLogSVHE","JetProbability_Unidentified SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_udsgLogSVHE = new TH2D("fhistJetProbability_udsgLogSVHE","JetProbability_udsg SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_cLogSVHE = new TH2D("fhistJetProbability_cLogSVHE","JetProbability_c SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_bLogSVHE = new TH2D("fhistJetProbability_bLogSVHE","JetProbability_b SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
+					fhistJetProbability_UnidentifiedLogSVHE = new TH2D("fhistJetProbability_UnidentifiedLogSVHE","JetProbability_Unidentified SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_udsgLogSVHE = new TH2D("fhistJetProbability_udsgLogSVHE","JetProbability_udsg SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_cLogSVHE = new TH2D("fhistJetProbability_cLogSVHE","JetProbability_c SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_bLogSVHE = new TH2D("fhistJetProbability_bLogSVHE","JetProbability_b SVHE Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
 
-					fhistJetProbability_UnidentifiedLogSVHP = new TH2D("fhistJetProbability_UnidentifiedLogSVHP","JetProbability_Unidentified SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_udsgLogSVHP = new TH2D("fhistJetProbability_udsgLogSVHP","JetProbability_udsg SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_cLogSVHP = new TH2D("fhistJetProbability_cLogSVHP","JetProbability_c SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
-					fhistJetProbability_bLogSVHP = new TH2D("fhistJetProbability_bLogSVHP","JetProbability_b SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,5);
+					fhistJetProbability_UnidentifiedLogSVHP = new TH2D("fhistJetProbability_UnidentifiedLogSVHP","JetProbability_Unidentified SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_udsgLogSVHP = new TH2D("fhistJetProbability_udsgLogSVHP","JetProbability_udsg SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_cLogSVHP = new TH2D("fhistJetProbability_cLogSVHP","JetProbability_c SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
+					fhistJetProbability_bLogSVHP = new TH2D("fhistJetProbability_bLogSVHP","JetProbability_b SVHP Tagged;p_{T,jet};-ln(JP)",250,0,250,250,0,20);
 				}
 			}
 		}
