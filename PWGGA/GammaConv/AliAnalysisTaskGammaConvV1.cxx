@@ -77,6 +77,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fMesonDCAList(NULL),
   fTrueList(NULL),
   fMCList(NULL),
+  fGammaTrkQAList(NULL),
   fHeaderNameList(NULL),
   fOutputContainer(0),
   fReaderGammas(NULL),
@@ -259,12 +260,37 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fIsFromSelectedHeader(kTRUE),
   fIsMC(0),
   fDoTHnSparse(kTRUE),
+  fDoGammaTrkQA(kTRUE),
   fWeightJetJetMC(1),
   fWeightCentrality(NULL),
   fEnableClusterCutsForTrigger(kFALSE),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  sGammaPtEtaPhi(NULL),
+  sGammaAPMassPt(NULL),
+  sGammaCat1CosDCARPt(NULL),
+  sGammaCat2CosDCARPt(NULL),
+  sGammaCat3CosDCARPt(NULL),
+  sGammaXYZR(NULL),
+  sElePtEtaPhi(NULL),
+  sElenSigPEtaR(NULL),
+  sElenSigPiKPrP(NULL),
+  sEleTOFnSigP(NULL),
+  sPosPtEtaPhi(NULL),
+  sPosnSigPEtaR(NULL),
+  sPosnSigPiKPrP(NULL),
+  sPosTOFnSigP(NULL),
+  sCorElenSigPEtaR(NULL),
+  sCorPosnSigPEtaR(NULL),
+  fHistoEleNfindableClsTPC(NULL),
+  fHistoEleClsTPC(NULL),
+  fHistoPosNfindableClsTPC(NULL),
+  fHistoPosClsTPC(NULL),
+  fHistoGammaChi2PsiPair(NULL),  
+  fHistoITSClusterPhi(NULL),
+  fHistoNBunch(NULL)
+
 {
 
 }
@@ -287,6 +313,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fMesonDCAList(NULL),
   fTrueList(NULL),
   fMCList(NULL),
+  fGammaTrkQAList(NULL),
   fHeaderNameList(NULL),
   fOutputContainer(0),
   fReaderGammas(NULL),
@@ -469,12 +496,37 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fIsFromSelectedHeader(kTRUE),
   fIsMC(0),
   fDoTHnSparse(kTRUE),
+  fDoGammaTrkQA(kTRUE),
   fWeightJetJetMC(1),
   fWeightCentrality(NULL),
   fEnableClusterCutsForTrigger(kFALSE),
   fDoMaterialBudgetWeightingOfGammasForTrueMesons(kFALSE),
   tBrokenFiles(NULL),
-  fFileNameBroken(NULL)
+  fFileNameBroken(NULL),
+  sGammaPtEtaPhi(NULL),
+  sGammaAPMassPt(NULL),
+  sGammaCat1CosDCARPt(NULL),
+  sGammaCat2CosDCARPt(NULL),
+  sGammaCat3CosDCARPt(NULL),
+  sGammaXYZR(NULL),
+  sElePtEtaPhi(NULL),
+  sElenSigPEtaR(NULL),
+  sElenSigPiKPrP(NULL),
+  sEleTOFnSigP(NULL),
+  sPosPtEtaPhi(NULL),
+  sPosnSigPEtaR(NULL),
+  sPosnSigPiKPrP(NULL),
+  sPosTOFnSigP(NULL),
+  sCorElenSigPEtaR(NULL),
+  sCorPosnSigPEtaR(NULL),
+  fHistoEleNfindableClsTPC(NULL),
+  fHistoEleClsTPC(NULL),
+  fHistoPosNfindableClsTPC(NULL),
+  fHistoPosClsTPC(NULL),
+  fHistoGammaChi2PsiPair(NULL),  
+  fHistoITSClusterPhi(NULL),
+  fHistoNBunch(NULL)
+
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -817,6 +869,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fMotherList             = new TList*[fnCuts];
   }
 
+  if(fDoGammaTrkQA){
+    fGammaTrkQAList         = new TList*[fnCuts];
+  }
+  
   fHistoNEvents             = new TH1F*[fnCuts];
   if (fIsMC > 1){
     fHistoNEventsWOWeight   = new TH1F*[fnCuts];
@@ -883,8 +939,35 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoCaloGammaPt           = new TH1F*[fnCuts];
     fHistoCaloGammaE            = new TH1F*[fnCuts];
   }
+  if(fDoGammaTrkQA){
+   
+    sGammaPtEtaPhi         = new THnSparse*[fnCuts];
+    sGammaAPMassPt         = new THnSparse*[fnCuts];
+    sGammaCat1CosDCARPt    = new THnSparse*[fnCuts];
+    sGammaCat2CosDCARPt    = new THnSparse*[fnCuts];
+    sGammaCat3CosDCARPt    = new THnSparse*[fnCuts];
+    sGammaXYZR             = new THnSparse*[fnCuts];
+    sElePtEtaPhi           = new THnSparse*[fnCuts];
+    sElenSigPEtaR          = new THnSparse*[fnCuts];
+    sElenSigPiKPrP         = new THnSparse*[fnCuts];
+    sEleTOFnSigP           = new THnSparse*[fnCuts];
+    sPosPtEtaPhi           = new THnSparse*[fnCuts];
+    sPosnSigPEtaR          = new THnSparse*[fnCuts];
+    sPosnSigPiKPrP         = new THnSparse*[fnCuts];
+    sPosTOFnSigP           = new THnSparse*[fnCuts];
+    sCorElenSigPEtaR       = new THnSparse*[fnCuts];
+    sCorPosnSigPEtaR       = new THnSparse*[fnCuts];
+    fHistoEleNfindableClsTPC = new TH1F*[fnCuts];
+    fHistoEleClsTPC          = new TH1F*[fnCuts];
+    fHistoPosNfindableClsTPC = new TH1F*[fnCuts];
+    fHistoPosClsTPC          = new TH1F*[fnCuts];
+    fHistoGammaChi2PsiPair   = new TH2F*[fnCuts];
+    fHistoITSClusterPhi      = new TH2F*[fnCuts];
+    fHistoNBunch             = new TH1F*[fnCuts];
+  }
 
 
+  
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
 
     TString cutstringEvent      = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
@@ -1175,6 +1258,122 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
 
 
+    if(fDoGammaTrkQA){
+      fGammaTrkQAList[iCut] = new TList();
+      fGammaTrkQAList[iCut]->SetName("GammaTrkQA");
+      fGammaTrkQAList[iCut]->SetOwner(kTRUE);
+      fCutFolder[iCut]->Add(fGammaTrkQAList[iCut]);
+            
+      fHistoGammaChi2PsiPair[iCut] = new TH2F("Gamma_Chi2PsiPair","",60,0,30,100,-0.2,0.2); 
+      fGammaTrkQAList[iCut]->Add(fHistoGammaChi2PsiPair[iCut]);
+      fHistoITSClusterPhi[iCut] = new TH2F("ITSClusterPhi","",72,0,2*TMath::Pi(),5,-0.5,4.5); 
+      fGammaTrkQAList[iCut]->Add(fHistoITSClusterPhi[iCut]);
+      
+      //_______________________Pt___Eta____Phi__________
+      Int_t bins_base[3] =    {250, 180,   360};//pt,eta,phi
+      Double_t xmin_base[3] = {0., -0.9,   0.};
+      Double_t xmax_base[3] = {25., 0.9,   2*TMath::Pi()};
+      sGammaPtEtaPhi[iCut] = new THnSparseF("Gamma_PtEtaPhi","",3,bins_base,xmin_base,xmax_base);
+      sGammaPtEtaPhi[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sGammaPtEtaPhi[iCut]);
+      
+      //___________________________Arm__Pod__Mass__Pt____
+      Int_t bins_base_cut[4]    = {200, 100,  200, 250};//Arm,Pod,Mass,Pt
+      Double_t xmin_base_cut[4] = {-1.0, 0.,   0.,   0.};
+      Double_t xmax_base_cut[4] = { 1.0,0.1,  0.2,  25.};
+      sGammaAPMassPt[iCut] = new THnSparseF("Gamma_APMassPt","",4,bins_base_cut,xmin_base_cut,xmax_base_cut);
+      sGammaAPMassPt[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sGammaAPMassPt[iCut]);
+      
+      //________________________________CosPA___DCAz___R____Pt___
+      Int_t bins_base_cut2_cat[4]    = {250,   160,   360, 250};//cat,CosPA,DCAz,Pt
+      Double_t xmin_base_cut2_cat[4] = {0.995,    -8,    0, 0.};
+      Double_t xmax_base_cut2_cat[4] = {    1.,    8, 180, 25.};
+      //cat1
+      sGammaCat1CosDCARPt[iCut] = new THnSparseF("Gamma_Cat1CosDCARPt","",4,bins_base_cut2_cat,xmin_base_cut2_cat,xmax_base_cut2_cat);
+      sGammaCat1CosDCARPt[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sGammaCat1CosDCARPt[iCut]);
+      //cat2
+      sGammaCat2CosDCARPt[iCut] = new THnSparseF("Gamma_Cat2CosDCARPt","",4,bins_base_cut2_cat,xmin_base_cut2_cat,xmax_base_cut2_cat);
+      sGammaCat2CosDCARPt[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sGammaCat2CosDCARPt[iCut]);       
+      //cat3
+      sGammaCat3CosDCARPt[iCut] = new THnSparseF("Gamma_Cat3CosDCARPt","",4,bins_base_cut2_cat,xmin_base_cut2_cat,xmax_base_cut2_cat);
+      sGammaCat3CosDCARPt[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sGammaCat3CosDCARPt[iCut]);
+      
+      //______________________________X_____Y_____Z____R___
+      Int_t bins_base_conv[4]    = { 240,  240,  300, 360};//XYZR
+      Double_t xmin_base_conv[4] = {-120, -120, -150, 0.};
+      Double_t xmax_base_conv[4] = { 120,  120,  150, 180};
+      sGammaXYZR[iCut] = new THnSparseF("Gamma_ConvXYZR","",4,bins_base_conv,xmin_base_conv,xmax_base_conv);
+      sGammaXYZR[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sGammaXYZR[iCut]);
+      
+      //___________________ElePos_____Pt_____Eta___Phi_________
+      Int_t bins_base_ele[3]    = {250, 180,   360};//pt,eta,phi
+      Double_t xmin_base_ele[3] = {0., -0.9,   0.};
+      Double_t xmax_base_ele[3] = {25., 0.9,   2*TMath::Pi()};
+      sElePtEtaPhi[iCut] = new THnSparseF("Ele_PtEtaPhi","",3,bins_base_ele,xmin_base_ele,xmax_base_ele);
+      sElePtEtaPhi[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sElePtEtaPhi[iCut]);
+      sPosPtEtaPhi[iCut] = new THnSparseF("Pos_PtEtaPhi","",3,bins_base_ele,xmin_base_ele,xmax_base_ele);
+      sPosPtEtaPhi[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sPosPtEtaPhi[iCut]);
+      
+      //___________________ElePos______nSig_P_Eta_R_________
+      Int_t bins_base_ele_PID[4]    = {100, 250,  180,   180};//nSigma, P, Eta, R
+      Double_t xmin_base_ele_PID[4] = { -5,  0., -0.9,    0.};
+      Double_t xmax_base_ele_PID[4] = {  5, 25.,  0.9,   180};
+      sElenSigPEtaR[iCut] = new THnSparseF("Ele_nSigPEtaR","",4,bins_base_ele_PID,xmin_base_ele_PID,xmax_base_ele_PID);
+      sElenSigPEtaR[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sElenSigPEtaR[iCut]);
+      sPosnSigPEtaR[iCut] = new THnSparseF("Pos_nSigPEtaR","",4,bins_base_ele_PID,xmin_base_ele_PID,xmax_base_ele_PID);
+      sPosnSigPEtaR[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sPosnSigPEtaR[iCut]);
+      sCorElenSigPEtaR[iCut] = new THnSparseF("CorEle_nSigPEtaR","",4,bins_base_ele_PID,xmin_base_ele_PID,xmax_base_ele_PID);
+      sCorElenSigPEtaR[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sCorElenSigPEtaR[iCut]);
+      sCorPosnSigPEtaR[iCut] = new THnSparseF("CorPos_nSigPEtaR","",4,bins_base_ele_PID,xmin_base_ele_PID,xmax_base_ele_PID);
+      sCorPosnSigPEtaR[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sCorPosnSigPEtaR[iCut]);
+      
+      //___________________ElePos___nSig___Pi______K_____Pr_____P_________
+      Int_t bins_base_ele_PID_PiKPr[4]    = {150,    150,  150,    100};//nSigma, P, Eta, R
+      Double_t xmin_base_ele_PID_PiKPr[4] = { -15,  -15., -15.,   0.05};
+      Double_t xmax_base_ele_PID_PiKPr[4] = {  15,   15.,  15,      20};
+      sElenSigPiKPrP[iCut] = new THnSparseF("Ele_nSigPiKPrP","",4,bins_base_ele_PID_PiKPr,xmin_base_ele_PID_PiKPr,xmax_base_ele_PID_PiKPr);
+      sElenSigPiKPrP[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sElenSigPiKPrP[iCut]);
+      sPosnSigPiKPrP[iCut] = new THnSparseF("Pos_nSigPiKPrP","",4,bins_base_ele_PID_PiKPr,xmin_base_ele_PID_PiKPr,xmax_base_ele_PID_PiKPr);
+      sPosnSigPiKPrP[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sPosnSigPiKPrP[iCut]);
+      
+      //elepos_cls
+      fHistoEleNfindableClsTPC[iCut] = new TH1F("Ele_findableClusterTPC","",100,0,1);
+      fGammaTrkQAList[iCut]->Add(fHistoEleNfindableClsTPC[iCut] );
+      fHistoEleClsTPC[iCut] = new TH1F("Ele_ClusterTPC","",200,0,200);
+      fGammaTrkQAList[iCut]->Add(fHistoEleClsTPC[iCut]);
+      fHistoPosNfindableClsTPC[iCut] = new TH1F("Pos_findableClusterTPC","",100,0,1);
+      fGammaTrkQAList[iCut]->Add(fHistoPosNfindableClsTPC[iCut] );
+      fHistoPosClsTPC[iCut] = new TH1F("Pos_ClusterTPC","",200,0,200);
+      fGammaTrkQAList[iCut]->Add(fHistoPosClsTPC[iCut]);
+      
+      //___________________ElePos_______________TOF____nSig____P_________
+      Int_t bins_base_ele_PID_TOF[3]    = {600,     100,   100};//TOF, nSig, P
+      Double_t xmin_base_ele_PID_TOF[3] = {-1000,   -5.,  0.05};
+      Double_t xmax_base_ele_PID_TOF[3] = {29000,    5.,    20};
+      sEleTOFnSigP[iCut] = new THnSparseF("Ele_TOFnSigP","",3,bins_base_ele_PID_TOF,xmin_base_ele_PID_TOF,xmax_base_ele_PID_TOF);
+      sEleTOFnSigP[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sEleTOFnSigP[iCut]);
+      sPosTOFnSigP[iCut] = new THnSparseF("Pos_TOFnSigP","",3,bins_base_ele_PID_TOF,xmin_base_ele_PID_TOF,xmax_base_ele_PID_TOF);
+      sPosTOFnSigP[iCut]->Sumw2();
+      fGammaTrkQAList[iCut]->Add(sPosTOFnSigP[iCut]);
+      
+      fHistoNBunch[iCut] = new TH1F("NBunch","NBunch",4000,-0.5,3999.5);
+      fGammaTrkQAList[iCut]->Add(fHistoNBunch[iCut]);
+    }
+    
   }
   if(fDoMesonAnalysis){
     InitBack(); // Init Background Handler
@@ -2063,6 +2262,9 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 
 
     if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
+
+    PhotonCandidatesQA(PhotonCandidate);//added to create correction map
+    
     if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fEventPlaneAngle)) continue;
     if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
       !((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
@@ -4337,4 +4539,182 @@ void AliAnalysisTaskGammaConvV1::ProcessClusters(){
     delete clus;
     delete tmpvec;
   }
+}
+//________________________________________________________________________
+void AliAnalysisTaskGammaConvV1::PhotonCandidatesQA(AliAODConversionPhoton *gamma)
+{
+
+  AliPIDResponse* fPIDResponse = ((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
+  //  cout << gamma->GetPhotonPt() << endl;
+  Double_t cont[3];
+  cont[0]=gamma->GetPhotonPt();
+  cont[1]=gamma->Eta();
+  cont[2]=gamma->Phi();
+  sGammaPtEtaPhi[fiCut]->Fill(cont);
+
+  fHistoGammaChi2PsiPair[fiCut]->Fill(gamma->GetChi2perNDF(),gamma->GetPsiPair());
+  
+  Double_t cont_cutvar[4];
+  cont_cutvar[0]=gamma->GetArmenterosAlpha();
+  cont_cutvar[1]=gamma->GetArmenterosQt();
+  cont_cutvar[2]=gamma->GetInvMassPair();
+  cont_cutvar[3]=gamma->GetPhotonPt();
+  sGammaAPMassPt[fiCut]->Fill(cont_cutvar);
+
+  Int_t Qual = gamma->GetPhotonQuality();
+  Double_t cont_cutvar2[4];
+  cont_cutvar2[0]=((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetCosineOfPointingAngle(gamma,fInputEvent);
+  cont_cutvar2[1]=gamma->GetDCAzToPrimVtx();
+  cont_cutvar2[2]=gamma->GetConversionRadius();
+  cont_cutvar2[3]=gamma->GetPhotonPt();
+    
+  if(Qual==1){
+    sGammaCat1CosDCARPt[fiCut]->Fill(cont_cutvar2);
+  }else if(Qual==2){
+    sGammaCat2CosDCARPt[fiCut]->Fill(cont_cutvar2);
+  }else if(Qual==3){
+    sGammaCat3CosDCARPt[fiCut]->Fill(cont_cutvar2);
+  }
+
+  Double_t cont_convvar[4];
+  cont_convvar[0]=gamma->GetConversionX();
+  cont_convvar[1]=gamma->GetConversionY();
+  cont_convvar[2]=gamma->GetConversionZ();
+  cont_convvar[3]=gamma->GetConversionRadius();
+  sGammaXYZR[fiCut]->Fill(cont_convvar);
+  
+  AliVTrack* negTrack = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelNegative());
+  AliVTrack* posTrack = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelPositive());
+  if(!negTrack||!posTrack)return;
+  Int_t nPosClusterITS = 0;
+  Int_t nNegClusterITS = 0;
+  for(Int_t itsLayer = 0; itsLayer<6;itsLayer++){
+    if(TESTBIT(negTrack->GetITSClusterMap(),itsLayer)){
+      nNegClusterITS++;
+    }
+    if(TESTBIT(posTrack->GetITSClusterMap(),itsLayer)){
+      nPosClusterITS++;
+    }
+  }
+
+  fHistoITSClusterPhi[fiCut]->Fill(negTrack->Phi(),nNegClusterITS);
+  fHistoITSClusterPhi[fiCut]->Fill(posTrack->Phi(),nPosClusterITS);
+
+  Double_t cont_ele[3];
+  cont_ele[0] = negTrack->Pt(); 
+  cont_ele[1] = negTrack->Eta();
+  cont_ele[2] = negTrack->Phi();
+  sElePtEtaPhi[fiCut]->Fill(cont_ele);
+
+  Double_t cont_pos[3];
+  cont_pos[0] = posTrack->Pt();
+  cont_pos[1] = posTrack->Eta();
+  cont_pos[2] = posTrack->Phi();
+  sPosPtEtaPhi[fiCut]->Fill(cont_pos);
+
+  
+  fHistoEleClsTPC[fiCut]->Fill(negTrack->GetNcls(1));
+  fHistoPosClsTPC[fiCut]->Fill(posTrack->GetNcls(1));
+
+  fHistoEleNfindableClsTPC[fiCut]->Fill((Float_t)negTrack->GetTPCClusterInfo(2,0,((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetFirstTPCRow(gamma->GetConversionRadius())));
+  fHistoPosNfindableClsTPC[fiCut]->Fill((Float_t)posTrack->GetTPCClusterInfo(2,0,((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetFirstTPCRow(gamma->GetConversionRadius())));
+
+  Double_t cont_ele_PID[4];
+  cont_ele_PID[0] = fPIDResponse->NumberOfSigmasTPC(negTrack, AliPID::kElectron);
+  cont_ele_PID[1] = negTrack->P();
+  cont_ele_PID[2] = negTrack->Eta(); 
+  cont_ele_PID[3] = gamma->GetConversionRadius();
+  sElenSigPEtaR[fiCut]->Fill(cont_ele_PID);
+
+  Double_t cont_pos_PID[4];
+  cont_pos_PID[0] = fPIDResponse->NumberOfSigmasTPC(posTrack, AliPID::kElectron);
+  cont_pos_PID[1] = posTrack->P();
+  cont_pos_PID[2] = posTrack->Eta(); 
+  cont_pos_PID[3] = gamma->GetConversionRadius();
+  sPosnSigPEtaR[fiCut]->Fill(cont_pos_PID);
+
+  Double_t cont_ele_PID_PiKPr[4];
+  cont_ele_PID_PiKPr[0] =fPIDResponse->NumberOfSigmasTPC(negTrack, AliPID::kPion);
+  cont_ele_PID_PiKPr[1] =fPIDResponse->NumberOfSigmasTPC(negTrack, AliPID::kKaon);
+  cont_ele_PID_PiKPr[2] =fPIDResponse->NumberOfSigmasTPC(negTrack, AliPID::kProton);
+  cont_ele_PID_PiKPr[3] =negTrack->P();
+  sElenSigPiKPrP[fiCut]->Fill(cont_ele_PID_PiKPr);
+
+  Double_t cont_pos_PID_PiKPr[4];
+  cont_pos_PID_PiKPr[0] =fPIDResponse->NumberOfSigmasTPC(posTrack, AliPID::kPion);
+  cont_pos_PID_PiKPr[1] =fPIDResponse->NumberOfSigmasTPC(posTrack, AliPID::kKaon);
+  cont_pos_PID_PiKPr[2] =fPIDResponse->NumberOfSigmasTPC(posTrack, AliPID::kProton);
+  cont_pos_PID_PiKPr[3] =posTrack->P();
+  sPosnSigPiKPrP[fiCut]->Fill(cont_pos_PID_PiKPr);
+
+  // Double_t CentrnSig[2] ={-1,-1};
+  // Double_t P[2]         ={-1,-1};
+  // Double_t Eta[2]       ={-1,-1};
+  // Double_t R         =-1;
+  // CentrnSig[0]=fPIDResponse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
+  // CentrnSig[1]=fPIDResponse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
+  // P[0]        =negTrack->P();
+  // P[1]        =posTrack->P();
+  // Eta[0]      =negTrack->Eta();
+  // Eta[1]      =posTrack->Eta();
+  // R           =gamma->GetConversionRadius();
+  // cout << "\x1b[32m     "<< ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetCorrectednSigmaN(CentrnSig[0],P[0],Eta[0],R) << " \x1b[39m" <<endl;
+  // cout << "\x1b[33m     "<< ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetCorrectednSigmaP(CentrnSig[1],P[1],Eta[1],R) << " \x1b[39m" <<endl; 
+
+  /*   for the moment comment out
+  Double_t cont_ele_corPID[4];
+  cont_ele_corPID[0] = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetCorrectednSigmaN(fPIDResponse->NumberOfSigmasTPC(negTrack,AliPID::kElectron),negTrack->P(),negTrack->Eta(),gamma->GetConversionRadius());
+  cont_ele_corPID[1] = negTrack->P();
+  cont_ele_corPID[2] = negTrack->Eta(); 
+  cont_ele_corPID[3] = gamma->GetConversionRadius();
+  sCorElenSigPEtaR[fiCut]->Fill(cont_ele_corPID);
+
+  Double_t cont_pos_corPID[4];
+  cont_pos_corPID[0] = ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetCorrectednSigmaP(fPIDResponse->NumberOfSigmasTPC(posTrack,AliPID::kElectron),posTrack->P(),posTrack->Eta(),gamma->GetConversionRadius());
+  cont_pos_corPID[1] = posTrack->P();
+  cont_pos_corPID[2] = posTrack->Eta(); 
+  cont_pos_corPID[3] = gamma->GetConversionRadius();
+  sCorPosnSigPEtaR[fiCut]->Fill(cont_pos_corPID);
+  */
+  
+  //____________________________TOF dEdx____________________________
+  Bool_t nTOFisthere = kFALSE;
+  //  Bool_t nTOFNoSignal = kFALSE;
+  //  Bool_t nTOFMismatch = kFALSE;
+
+  AliPIDResponse::EDetPidStatus statusnTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,negTrack);
+  if(statusnTOF == AliPIDResponse::kDetPidOk) nTOFisthere = kTRUE;
+  //  if(statusnTOF == AliPIDResponse::kDetNoSignal) nTOFNoSignal = kTRUE;
+  //  if(statusnTOF == AliPIDResponse::kDetMismatch) nTOFMismatch = kTRUE;
+
+  //  if((negTrack->GetStatus() & AliESDtrack::kTOFfPID)==0 && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  if(nTOFisthere){
+    Double_t timesNeg[9];
+    negTrack->GetIntegratedTimes(timesNeg,9);
+    Double_t dTneg = negTrack->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(negTrack->P()) - timesNeg[0];
+    Double_t cont_ele_TOF[2];
+    cont_ele_TOF[0] = dTneg;
+    cont_ele_TOF[1] = fPIDResponse->NumberOfSigmasTOF(negTrack, AliPID::kElectron);
+    sEleTOFnSigP[fiCut]->Fill(cont_ele_TOF);   
+  }
+
+  Bool_t pTOFisthere = kFALSE;
+  //  Bool_t pTOFNoSignal = kFALSE;
+  //  Bool_t pTOFMismatch = kFALSE;
+  AliPIDResponse::EDetPidStatus statuspTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,posTrack);
+  if(statuspTOF == AliPIDResponse::kDetPidOk) pTOFisthere = kTRUE;
+  //  if(statuspTOF == AliPIDResponse::kDetNoSignal) pTOFNoSignal = kTRUE;
+  //  if(statuspTOF == AliPIDResponse::kDetMismatch) pTOFMismatch = kTRUE;
+
+  //  if((posTrack->GetStatus() & AliESDtrack::kTOFfPID)==0 && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+  if(pTOFisthere){
+    Double_t timesPos[9];
+    posTrack->GetIntegratedTimes(timesPos,9);
+    Double_t dTpos = posTrack->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(posTrack->P()) - timesPos[0];
+    Double_t cont_pos_TOF[2];
+    cont_pos_TOF[0] = dTpos;
+    cont_pos_TOF[1] = fPIDResponse->NumberOfSigmasTOF(posTrack, AliPID::kElectron);
+    sPosTOFnSigP[fiCut]->Fill(cont_pos_TOF);   
+  }
+  
 }

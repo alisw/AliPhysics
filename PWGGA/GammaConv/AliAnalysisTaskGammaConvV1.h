@@ -42,6 +42,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void SetDoChargedPrimary(Bool_t flag)                         { fDoChargedPrimary           = flag    ;}
     void SetDoPlotVsCentrality(Bool_t flag)                       { fDoPlotVsCentrality         = flag    ;}
     void SetDoTHnSparse(Bool_t flag)                              { fDoTHnSparse                = flag    ;}
+    void SetDoGammaTrkQA(Bool_t flag)                             { fDoGammaTrkQA               = flag    ;}
     void SetDoCentFlattening(Int_t flag)                          { fDoCentralityFlat           = flag    ;}
     void ProcessPhotonCandidates();
     void ProcessClusters();
@@ -83,8 +84,10 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
-    
-  protected:
+
+    void PhotonCandidatesQA(AliAODConversionPhoton *gamma);
+
+ protected:
     AliV0ReaderV1*                    fV0Reader;                                  //
     TString                           fV0ReaderName;
     Bool_t                            fDoLightOutput;                             // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
@@ -100,6 +103,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TList**                           fMesonDCAList;                              //
     TList**                           fTrueList;                                  //
     TList**                           fMCList;                                    //
+    TList**                           fGammaTrkQAList;                            //
     TList**                           fHeaderNameList;                            //
     TList*                            fOutputContainer;                           //
     TClonesArray*                     fReaderGammas;                              //
@@ -296,6 +300,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Bool_t                            fIsFromSelectedHeader;                      //
     Int_t                             fIsMC;                                      //
     Bool_t                            fDoTHnSparse;                               // flag for using THnSparses for background estimation
+    Bool_t                            fDoGammaTrkQA;                               // flag for using THnSparses for background estimation
     Double_t                          fWeightJetJetMC;                            // weight for Jet-Jet MC
     Double_t*                         fWeightCentrality;                          //[fnCuts], weight for centrality flattening
     Bool_t                            fEnableClusterCutsForTrigger;               //enables ClusterCuts for Trigger
@@ -303,6 +308,33 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TTree*                            tBrokenFiles;                               // tree for keeping track of broken files
     TObjString*                       fFileNameBroken;                            // string object for broken file name
 
+    THnSparse**                       sGammaPtEtaPhi;                 //!
+    THnSparse**                       sGammaAPMassPt;                 //!
+    THnSparse**                       sGammaCat1CosDCARPt;            //!
+    THnSparse**                       sGammaCat2CosDCARPt;            //!
+    THnSparse**                       sGammaCat3CosDCARPt;            //!
+    THnSparse**                       sGammaXYZR;                     //!   
+    THnSparse**                       sElePtEtaPhi;                   //! track e-
+    THnSparse**                       sElenSigPEtaR;                  //! track e-
+    THnSparse**                       sElenSigPiKPrP;                 //! track e-
+    THnSparse**                       sEleTOFnSigP;                   //! track e-
+    THnSparse**                       sPosPtEtaPhi;                   //! track e+
+    THnSparse**                       sPosnSigPEtaR;                  //! track e+
+    THnSparse**                       sPosnSigPiKPrP;                 //! track e+
+    THnSparse**                       sPosTOFnSigP;                   //! track e+
+
+    THnSparse**                       sCorElenSigPEtaR;               //! track e-
+    THnSparse**                       sCorPosnSigPEtaR;               //! track e+
+
+    TH1F**                            fHistoEleNfindableClsTPC;       //! track e-
+    TH1F**                            fHistoEleClsTPC;                //! track e-
+    TH1F**                            fHistoPosNfindableClsTPC;       //! track e+
+    TH1F**                            fHistoPosClsTPC;                //! track e+
+    TH2F**                            fHistoGammaChi2PsiPair;         //!
+    TH2F**                            fHistoITSClusterPhi;            //! track e+e-
+    TH1F**                            fHistoNBunch;                   //!
+
+    
   private:
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
