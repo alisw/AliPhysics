@@ -11,8 +11,8 @@
 #include <iostream>
 ClassImp(AliFemtoDreamTrackCuts)
 AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
-:fMCHists(0)
-,fHists(0)
+:fMCHists(nullptr)
+,fHists(nullptr)
 ,fMinimalBooking(false)
 ,fMCData(false)
 ,fDCAPlots(false)
@@ -810,3 +810,12 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::XiBachPionCuts(
   trackCuts->SetPID(AliPID::kPion, 999.,4);
   return trackCuts;
 }
+
+int AliFemtoDreamTrackCuts::GetPDGCode() {
+    int PDGcode[5] = {11,13,211,321,2212};
+    if (fParticleID<5) {
+      return fCharge*PDGcode[fParticleID];
+    } else {
+      return 0;
+    }
+  };
