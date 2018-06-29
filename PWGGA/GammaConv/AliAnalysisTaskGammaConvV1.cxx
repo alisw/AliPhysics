@@ -696,17 +696,17 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       else if(i<200) arrQAPtBinning[i]        = 20.+1.0*(i-170);
       else arrQAPtBinning[i]                  = maxQAPt;
     }
-    nBinsClusterPt            = 301;
+    nBinsClusterPt            = 335;
     minClusterPt              = 0;
     maxClusterPt              = 100;
     for(Int_t i=0; i<nBinsClusterPt+1;i++){
       if (i < 1) arrClusPtBinning[i]          = 0.3*i;
       else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
-      else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
-      else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
-      else if(i<211) arrClusPtBinning[i]      = 16.+0.25*(i-155);
-      else if(i<251) arrClusPtBinning[i]      = 30.+0.5*(i-211);
-      else if(i<301) arrClusPtBinning[i]      = 50.+1.0*(i-251);
+      else if(i<225) arrClusPtBinning[i]      = 3.+0.1*(i-55);
+      else if(i<265) arrClusPtBinning[i]      = 20.+0.25*(i-225);
+      else if(i<305) arrClusPtBinning[i]      = 30.+0.5*(i-265);
+      else if(i<325) arrClusPtBinning[i]      = 50.+1.0*(i-305);
+      else if(i<335) arrClusPtBinning[i]      = 70.+2.5*(i-325);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   // Set special pt binning for XeXe 5.44TeV
