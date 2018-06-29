@@ -21,6 +21,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   if (suffix == "10") cutnumberPhoton = "00000008800020002282000000";
   if (suffix == "11") cutnumberPhoton = "00000088400020002282000000";
   if (suffix == "12") cutnumberPhoton = "00000008400020002282000000";
+  if (suffix == "13") cutnumberPhoton = "00200008400000002282000000";
+  if (suffix == "14") cutnumberPhoton = "10200008400000002282000000";
   //      00000008800020002282000000 tighter TPC dEdx cut
   //      00000088400020002282000000 pt,ele > 0.02
   //      00000008400020002282000000 pt,ele > 0.05
