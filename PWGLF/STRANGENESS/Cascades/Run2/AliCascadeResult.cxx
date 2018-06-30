@@ -859,7 +859,9 @@ Long64_t AliCascadeResult::Merge(TCollection *hlist)
         while ((xh = (AliCascadeResult *) nxh())) {
             // Check if you're not committing a crime
             if( ! HasSameCuts( xh ) ){
-                AliFatal("FATAL: you're trying to sum output that was obtained with different selections!");
+                
+                AliFatal(Form("FATAL: you're trying to sum output that was obtained with different selections! Offending object: %s",GetName()));
+                
             }
             //... if all fine, add this histogram
             if ( GetHistogram() && xh->GetHistogram() )

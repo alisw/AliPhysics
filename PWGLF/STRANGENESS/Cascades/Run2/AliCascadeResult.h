@@ -227,7 +227,7 @@ public:
     //Track Quality
     Bool_t GetCutUseITSRefitTracks    () const { return fCutUseITSRefitTracks; }
     Bool_t GetCutUseITSRefitNegative    () const { return fCutUseITSRefitNegative; }
-    Bool_t GetCutUseITSRefitPositive    () const { return fCutUseITSRefitNegative; }
+    Bool_t GetCutUseITSRefitPositive    () const { return fCutUseITSRefitPositive; }
     Bool_t GetCutUseITSRefitBachelor    () const { return fCutUseITSRefitBachelor; }
     Double_t GetCutLeastNumberOfClusters () const { return fCutLeastNumberOfClusters; }
     Double_t GetCutMinEtaTracks () const { return fCutMinEtaTracks; }
