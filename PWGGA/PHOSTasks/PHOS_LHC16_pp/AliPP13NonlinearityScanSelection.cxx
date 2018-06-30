@@ -42,7 +42,7 @@ void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 			Float_t b = fWeightsScan[ia][ib].fNonSigma;
 
 			fInvariantMass[ia][ib] = new TH2F(Form("hMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), nM, mMin, mMax, nPt, ptMin, ptMax);
-			fMixInvariantMass[ia][ib] = new TH2F(Form("hMixMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), nM, mMin, mMax, nPt, ptMin, ptMax);
+			fMixInvariantMass[ia][ib] = new TH2F(Form("hMixMassPt_%d_%d", ia, ib), Form("%f %f; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", a, b), 10, mMin, mMax, 10, ptMin, ptMax);
 
 			fListOfHistos->Add(fInvariantMass[ia][ib]);
 			fListOfHistos->Add(fMixInvariantMass[ia][ib]);
@@ -51,12 +51,12 @@ void AliPP13NonlinearityScanSelection::InitSelectionHistograms()
 
 
 	// NB: Reduce the selection size
-	// for (Int_t i = 0; i < fListOfHistos->GetEntries(); ++i)
-	// {
-	// 	TH1 * hist = dynamic_cast<TH1 *>(fListOfHistos->At(i));
-	// 	if (!hist) continue;
-	// 	hist->Sumw2();
-	// }
+	for (Int_t i = 0; i < fListOfHistos->GetEntries(); ++i)
+	{
+		TH1 * hist = dynamic_cast<TH1 *>(fListOfHistos->At(i));
+		if (!hist) continue;
+		hist->Sumw2();
+	}
 }
 
 

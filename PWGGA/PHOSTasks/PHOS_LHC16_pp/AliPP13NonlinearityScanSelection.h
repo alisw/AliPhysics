@@ -54,7 +54,7 @@ protected:
 private:
 
 	// Set of weights that are need for NonlinearityScan
-	AliPP13SelectionWeightsMC fWeightsScan[kNbinsA][kNbinsSigma];//!
+	AliPP13SelectionWeightsMC fWeightsScan[kNbinsA][kNbinsSigma];
 
 	// Parameters of nonlinearity parametrization
 	TH1 * fInvariantMass[kNbinsA][kNbinsSigma];    //!
