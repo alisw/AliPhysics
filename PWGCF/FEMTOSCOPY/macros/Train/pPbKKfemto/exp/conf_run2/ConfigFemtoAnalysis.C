@@ -61,8 +61,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double KaonMass = 0.493677;
 	
   //multiplicity bins
-  int runmults[3] = {1, 1, 1};
-  int multbins[4] = {0.01, 200, 400, 900};
+  int runmults[6] = {1, 1, 1, 1, 1, 1};
+  int multbins[7] = {0.01, 50, 100, 200, 400, 600, 900};
 
   int runch[2] = {1, 1};
   const char *chrgs[2] = { "Kp", "Km"};
@@ -157,11 +157,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   // *** Begin pion-pion analysis ***
   int aniter = 0;
 
-  for (int imult=0; imult<3; imult++) {
+  for (int imult=0; imult<6; imult++) {
     if (runmults[imult]) {
       for (int ichg=0; ichg<2; ichg++) {
 	if (runch[ichg]) {
-	  aniter = ichg*3+imult;
+	  aniter = ichg*6+imult;
 
 	  //anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(20, -10.0, 10.0, 20, multbins[imult], multbins[imult+1]);
 	  anetaphitpc[aniter] = new AliFemtoVertexMultAnalysis(10, -10.0, 10.0, 4, multbins[imult], multbins[imult+1]);
@@ -305,7 +305,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //3D cartesian (without kT bins)
 	  if(run3d){
 	    //cq3dlcmskttpc[aniter] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%i", chrgs[ichg], imult),60,0.5);
-	    cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult),100,-2.0,2.0);
+	    cq3dlcmskttpc[aniter] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult),80,-2.0,2.0);
 	    anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[aniter]);
 	    
 	  }
@@ -343,7 +343,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      if (run3d) {
 		//		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
 		//cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,0.5);
-		cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),100,-2.0,2.0);
+		cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctnKK(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),80,-2.0,2.0);
 		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
 	      }
