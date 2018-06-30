@@ -2659,19 +2659,24 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
                (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short &&
                 (!fkPreselectDedx || (fkPreselectDedx&&TMath::Abs(fTreeVariableNSigmasNegPion)   < 7.0 && TMath::Abs(fTreeVariableNSigmasPosPion) < 7.0) ) &&
                 (!fkPreselectPID || fTreeVariablePID == 310 )
-                ) ) {
-                   //Pre-selection in case this is AA...
-                   
-                   //Random denial
-                   Bool_t lKeepV0 = kTRUE;
-                   if(fkDownScaleV0 && ( fRand->Uniform() > fDownScaleFactorV0 )) lKeepV0 = kFALSE;
-                   
-                   //pT window
-                   if( fTreeVariablePt < fMinPtToSave ) lKeepV0 = kFALSE;
-                   if( fTreeVariablePt > fMaxPtToSave ) lKeepV0 = kFALSE;
-                   
-                   if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree && lKeepV0 ) fTreeV0->Fill();
-               }
+                )
+               ||
+               //Case 4: Hypertriton experimental
+               TMath::Abs(fTreeVariablePID) == 1010010030
+               ) {
+                //Pre-selection in case this is AA...
+                
+                //Random denial unless hypertriton (hypertriton experiment)
+                Bool_t lKeepV0 = kTRUE;
+                if(fkDownScaleV0 && ( fRand->Uniform() > fDownScaleFactorV0 )) lKeepV0 = kFALSE;
+                if(TMath::Abs(fTreeVariablePID) == 1010010030) lKeepV0 = kTRUE;
+                
+                //pT window
+                if( fTreeVariablePt < fMinPtToSave ) lKeepV0 = kFALSE;
+                if( fTreeVariablePt > fMaxPtToSave ) lKeepV0 = kFALSE;
+                
+                if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree && lKeepV0 ) fTreeV0->Fill();
+            }
         }
         
         //------------------------------------------------
