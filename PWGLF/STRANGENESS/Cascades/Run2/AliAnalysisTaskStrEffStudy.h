@@ -578,7 +578,11 @@ private:
     TH3D *fHistGeneratedPtVsYVsCentralityXiPlus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaMinus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaPlus;
-
+    
+    //Hypertriton
+    TH3D *fHistGeneratedPtVsYVsCentralityHypTrit;
+    TH3D *fHistGeneratedPtVsYVsCentralityAntiHypTrit;
+    
     AliAnalysisTaskStrEffStudy(const AliAnalysisTaskStrEffStudy&);            // not implemented
     AliAnalysisTaskStrEffStudy& operator=(const AliAnalysisTaskStrEffStudy&); // not implemented
 
