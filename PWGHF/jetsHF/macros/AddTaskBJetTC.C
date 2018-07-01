@@ -14,7 +14,7 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 		Bool_t DoJetProb 		= kFALSE,
 		TString pathToResolFunc		= "",
 		Bool_t V0PhotonRejection 	= kFALSE,
-		TString cutnumberAODBranch 	= "";  // cutnumber for AOD branch
+		TString cutnumberAODBranch 	= "",  // cutnumber for AOD branch
   		Int_t       ptHardBin           = -999,
 		const char* suffix 		= "")
 {
