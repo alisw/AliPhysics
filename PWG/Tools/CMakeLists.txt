@@ -112,9 +112,6 @@ set(HISTMGRTESTS
     fill_grouped
     )
 foreach(TEST_HMGR ${HISTMGRTESTS})
-    add_test (histmgr_${TEST_HMGR}
-        env 
-        LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
-        DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
-        root -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/tools/test/histmgr/runtest.C(\"${TEST_HMGR}\")")
+    add_test (NAME histmgr_${TEST_HMGR} COMMAND ${ROOTSYS}/bin/root -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/tools/test/histmgr/runtest.C(\"${TEST_HMGR}\")")
+    set_property(TEST histmgr_${TEST_HMGR} PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${ALIROOT}/lib")
 endforeach()

@@ -109,24 +109,8 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Unit tests
 
-add_test(func_PWGEMCALbase_AliEmcalTrackSelResultPtr
-    env
-    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
-    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
-    ROOT_HIST=0
-    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalTrackSelResultPtr.C)")
-
-add_test(func_PWGEMCALbase_AliEmcalAODHybridTrackCuts
-    env
-    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
-    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
-    ROOT_HIST=0
-    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalAODHybridTrackCuts.C)")
-
-add_test(func_PWGEMCALbase_AliEmcalTrackSelectionAOD
-    env
-    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
-    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
-    ROOT_HIST=0
-    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalTrackSelectionAOD.C)")
-    
+foreach(tm in AliEmcalTrackSelResultPtr;AliEmcalAODHybridTrackCuts;AliEmcalTrackSelectionAOD)
+  add_test(NAME func_PWGEMCALbase_${tm} COMMAND ${ROOTSYS}/bin/root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/Test${tm}.C)")
+  set_property(TEST func_PWGEMCALbase_${tm} PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib")
+  set_property(TEST func_PWGEMCALbase_${tm} APPEND PROPERTY ENVIRONMENT "ROOT_HIST=0")
+endforeach()

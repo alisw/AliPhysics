@@ -87,7 +87,7 @@ if (ROOT_VERSION_MAJOR LESS 6)
                        DEPENDS ${LIBNAME}
                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} VERBATIM
                       )
-    add_custom_target(lib${LIBNAME}.rootmap ALL DEPENDS  ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap)
+    add_custom_target(target-lib${LIBNAME}.rootmap ALL DEPENDS  ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}.rootmap DESTINATION lib)
 
 endif (ROOT_VERSION_MAJOR LESS 6)

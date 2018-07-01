@@ -290,10 +290,16 @@ endif(DEFINED DOXYGEN_ONLY AND DOXYGEN_ONLY)
 #   ctest --output-on-failure -R load_library -j 8
 install(DIRECTORY test DESTINATION ${CMAKE_INSTALL_PREFIX})
 foreach(TEST_LIB ${ALILIBSTESTED})
-  add_test(load_library_${TEST_LIB}
-    env
-    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
-    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
-    ROOT_HIST=0
-    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
+  add_test(NAME load_library_${TEST_LIB} COMMAND ${ROOTSYS}/bin/root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/test/load_library/LoadLib.C(\"lib${TEST_LIB}\")")
+  list(FIND ${TEST_LIB}_LIB_DEPENDS CGAL has_cgal)
+  set(EXTRA "")
+  if(${has_cgal} GREATER 0)
+    set(EXTRA "${CGAL}/lib")
+  endif()
+  list(FIND ${TEST_LIB}_LIB_DEPENDS fastjet has_fastjet)
+  if(${has_fastjet} GREATER 0)
+    set(EXTRA "${EXTRA}:${FASTJET}/lib")
+  endif()
+  set_property(TEST load_library_${TEST_LIB} APPEND PROPERTY ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:${ALIROOT}/lib:${EXTRA}")
+  set_property(TEST load_library_${TEST_LIB} APPEND PROPERTY ENVIRONMENT "ROOT_HIST=0")
 endforeach()
