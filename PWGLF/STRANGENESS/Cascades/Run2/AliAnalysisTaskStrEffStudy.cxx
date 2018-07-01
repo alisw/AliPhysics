@@ -328,7 +328,10 @@ fHistGeneratedPtVsYVsCentralityAntiLambda(0),
 fHistGeneratedPtVsYVsCentralityXiMinus(0),
 fHistGeneratedPtVsYVsCentralityXiPlus(0),
 fHistGeneratedPtVsYVsCentralityOmegaMinus(0),
-fHistGeneratedPtVsYVsCentralityOmegaPlus(0)
+fHistGeneratedPtVsYVsCentralityOmegaPlus(0),
+//Hypertriton
+fHistGeneratedPtVsYVsCentralityHypTrit(0),
+fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
 //------------------------------------------------
 // Tree Variables
 {
@@ -550,7 +553,11 @@ fHistGeneratedPtVsYVsCentralityAntiLambda(0),
 fHistGeneratedPtVsYVsCentralityXiMinus(0),
 fHistGeneratedPtVsYVsCentralityXiPlus(0),
 fHistGeneratedPtVsYVsCentralityOmegaMinus(0),
-fHistGeneratedPtVsYVsCentralityOmegaPlus(0)
+fHistGeneratedPtVsYVsCentralityOmegaPlus(0),
+//Hypertriton
+fHistGeneratedPtVsYVsCentralityHypTrit(0),
+fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
+
 {
     
     //Re-vertex: Will only apply for cascade candidates
@@ -951,6 +958,16 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",500,0,25,40,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaPlus);
     }
+    if(! fHistGeneratedPtVsYVsCentralityHypTrit ) {
+        //Histogram Output: Efficiency Denominator
+        fHistGeneratedPtVsYVsCentralityHypTrit = new TH3D( "fHistGeneratedPtVsYVsCentralityHypTrit", ";pT;y;centrality",500,0,25,40,-1.0,1.0,100,0,100);
+        fListHist->Add(fHistGeneratedPtVsYVsCentralityHypTrit);
+    }
+    if(! fHistGeneratedPtVsYVsCentralityAntiHypTrit ) {
+        //Histogram Output: Efficiency Denominator
+        fHistGeneratedPtVsYVsCentralityAntiHypTrit = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiHypTrit", ";pT;y;centrality",500,0,25,40,-1.0,1.0,100,0,100);
+        fListHist->Add(fHistGeneratedPtVsYVsCentralityAntiHypTrit);
+    }
     
     //Superlight mode output
     if ( !fListV0 ){
@@ -1154,7 +1171,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         lThisPDG = lPart->GetPdgCode();
         
         //This if is necessary in some situations (rapidity calculation and PYTHIA junctions, etc)
-        if ( (TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) || (TMath::Abs(lThisPDG) == 3122) || lThisPDG == 310 )
+        if ( (TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) || (TMath::Abs(lThisPDG) == 3122) || lThisPDG == 310 || TMath::Abs(lThisPDG)==1010010030 )
         {
             lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
             lThisPt    = lPart->Pt();
@@ -1183,6 +1200,12 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             if( lThisPDG == -3334 ) {
                 fHistGeneratedPtVsYVsCentralityOmegaPlus       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection);
             }
+            if( lThisPDG ==  1010010030 ) {
+                fHistGeneratedPtVsYVsCentralityHypTrit       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection);
+            }
+            if( lThisPDG == -1010010030 ) {
+                fHistGeneratedPtVsYVsCentralityAntiHypTrit       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection);
+            }
         }
     }//End of loop on tracks
     //----- End Loop on Cascades ------------------------------------------------------------
@@ -1210,9 +1233,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     //-------------------------------------------------
     
     //Particles of interest
-    Int_t lV0Types[3]          = { 310, 3122, -3122};
-    Int_t lV0TypesPDau[3]      = { 211, 2212,   211};
-    Int_t lV0TypesNDau[3]      = {-211, -211, -2212};
+    const Int_t lNV0Types = 5;
+    Int_t lV0Types[lNV0Types]          = { 310, 3122, -3122,  1010010030, -1010010030};
+    Int_t lV0TypesPDau[lNV0Types]      = { 211, 2212,   211,  1000010030, -211};
+    Int_t lV0TypesNDau[lNV0Types]      = {-211, -211, -2212, -1000010030,  211};
     
     //Number of tracks
     Long_t lNTracks = lESDevent->GetNumberOfTracks();
@@ -1246,7 +1270,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         if ( lParticleMother->GetNDaughters()!=2 ) continue;
         
         Bool_t lOfDesiredType = kFALSE;
-        for(Int_t iType=0; iType<3; iType++){
+        for(Int_t iType=0; iType<lNV0Types; iType++){
             if( lParticleMotherPDG == lV0Types[iType] ) lOfDesiredType = kTRUE;
         }
         if( !lOfDesiredType ) continue;
