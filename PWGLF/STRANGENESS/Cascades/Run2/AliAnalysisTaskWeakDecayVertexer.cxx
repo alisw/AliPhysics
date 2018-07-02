@@ -1591,6 +1591,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
     Double_t p2[8]; pt->GetHelixParameters(p2,b);
     p2[6]=TMath::Sin(p2[2]); p2[7]=TMath::Cos(p2[2]);
     
+    //Minimum X: allow for negative X if it means we're still *after* the primary vertex in the track ref frame
+    Double_t lMinimumX = -3; //
+    //Maximum X: some very big value, should not be a problem
+    Double_t lMaximumX = 300;
+    
     if( fkDoImprovedDCAV0DauPropagation){
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         // V0 preprocessing: analytical estimate of DCAxy position
@@ -1672,7 +1677,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             Double_t snPos=TMath::Sin(pt->GetAlpha());
             Double_t xThisPos=xPosOptPosition*csPos + yPosOptPosition*snPos;
             
-            if( xThisNeg < fV0VertexerSels[6] && xThisPos < fV0VertexerSels[6] && xThisNeg > 0.0 && xThisPos > 0.0){
+            if( xThisNeg < lMaximumX && xThisPos < lMaximumX && xThisNeg > lMinimumX && xThisPos > lMinimumX){
                 Double_t lCase1NegR[3]; nt->GetXYZAt(xThisNeg,b, lCase1NegR);
                 Double_t lCase1PosR[3]; pt->GetXYZAt(xThisPos,b, lCase1PosR);
                 lPreprocessDCAxy = TMath::Sqrt(
@@ -1742,7 +1747,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             //Test the two cases, please
             
             //Case 2a
-            if( xThisNeg[0] < fV0VertexerSels[6] && xThisPos[0] < fV0VertexerSels[6] && xThisNeg[0] > 0.0 && xThisPos[0] > 0.0 ){
+            if( xThisNeg[0] < lMaximumX && xThisPos[0] < lMaximumX && xThisNeg[0] > lMinimumX && xThisPos[0] > lMinimumX ){
                 Double_t lCase2aNegR[3]; nt->GetXYZAt(xThisNeg[0],b, lCase2aNegR);
                 Double_t lCase2aPosR[3]; pt->GetXYZAt(xThisPos[0],b, lCase2aPosR);
                 lCase2aDCA = TMath::Sqrt(
@@ -1753,7 +1758,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
             }
             
             //Case 2b
-            if( xThisNeg[1] < fV0VertexerSels[6] && xThisPos[1] < fV0VertexerSels[6] && xThisNeg[1] > 0.0 && xThisPos[1] > 0.0 ){
+            if( xThisNeg[1] < lMaximumX && xThisPos[1] < lMaximumX && xThisNeg[1] > lMinimumX && xThisPos[1] > lMinimumX ){
                 Double_t lCase2bNegR[3]; nt->GetXYZAt(xThisNeg[1],b, lCase2bNegR);
                 Double_t lCase2bPosR[3]; pt->GetXYZAt(xThisPos[1],b, lCase2bPosR);
                 lCase2bDCA = TMath::Sqrt(
