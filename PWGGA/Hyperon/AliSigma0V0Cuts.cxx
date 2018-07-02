@@ -63,7 +63,7 @@ ClassImp(AliSigma0V0Cuts)
       fHistPhotonMass(nullptr),
       fHistK0Mass(nullptr),
       fHistV0Pt(nullptr),
-	  fHistV0Mass(nullptr),
+      fHistV0Mass(nullptr),
       fHistV0PtY(),
       fHistV0MassPt(nullptr),
       fHistLambdaMassK0Rej(nullptr),
@@ -173,7 +173,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistPhotonMass(nullptr),
       fHistK0Mass(nullptr),
       fHistV0Pt(nullptr),
-	  fHistV0Mass(nullptr),
+      fHistV0Mass(nullptr),
       fHistV0PtY(),
       fHistV0MassPt(nullptr),
       fHistLambdaMassK0Rej(nullptr),
@@ -773,7 +773,7 @@ bool AliSigma0V0Cuts::LambdaSelection(AliESDv0 *v0) const {
     fHistEtaPhi->Fill(v0->Eta(), v0->Phi());
   }
 
-  fHistV0Mass->Fill(massLambda);
+  if (!fIsLightweight) fHistV0Mass->Fill(massLambda);
 
   // Lambda selection cut
   if (massLambda < fLambdaSelectionLow || massLambda > fLambdaSelectionUp) {
@@ -820,9 +820,11 @@ bool AliSigma0V0Cuts::PhotonSelection(AliESDv0 *v0) const {
     return false;
   }
 
-  fHistV0Mass->Fill(massPhoton);
+  if (!fIsLightweight) {
+    fHistV0Mass->Fill(massPhoton);
+    fHistV0Pt->Fill(v0->Pt());
+  }
 
-  if (!fIsLightweight) fHistV0Pt->Fill(v0->Pt());
   fHistCuts->Fill(18);
   return true;
 }
