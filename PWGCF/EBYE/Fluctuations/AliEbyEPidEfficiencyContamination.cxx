@@ -820,15 +820,17 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
     
     Int_t icharge = track->Charge() < 0 ? 0 : 1;    
     Float_t lPt  = (Float_t)track->Pt();
+    Float_t lP   = (Float_t)track->P();
     Float_t lEta = (Float_t)track->Eta();
     Float_t lPhi = (Float_t)track->Phi();
     
-    Int_t iptbin = GetPtBin(lPt);
+    //Int_t iptbin = GetPtBin(lPt);
+    Int_t iptbin = GetPtBin(lP);
     if( iptbin < 0 || iptbin > fNptBins-1 ) continue;
     Bool_t isPid = kFALSE;
     
     if (fPidType == 0 ) {
-      fHistERec[icharge][0]->Fill(fCentrality,lPt); 
+      fHistERec[icharge][0]->Fill(fCentrality,lP);  //p or pT
       fHistERec[icharge][1]->Fill(fCentrality,lEta); 
       fHistERec[icharge][2]->Fill(fCentrality,lPhi);
       nRec[icharge] += 1.;
@@ -846,7 +848,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
       isPid = IsPidPassed(track);
       if(isPid){
 	nPidRec[icharge] += 1.;
-	fHistERec[icharge][0]->Fill(fCentrality,lPt); 
+	fHistERec[icharge][0]->Fill(fCentrality,lP); 
 	fHistERec[icharge][1]->Fill(fCentrality,lEta); 
 	fHistERec[icharge][2]->Fill(fCentrality,lPhi);
 	nRec[icharge] += 1.;
@@ -889,6 +891,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
       
 
       Float_t fpTRec   = particle->Pt();
+      Float_t fPRec    = particle->P(); //p
       Float_t fEtaRec  = particle->Eta();
       Float_t fPhiRec  = particle->Phi();
       Int_t pdg        = TMath::Abs(particle->PdgCode());
@@ -900,7 +903,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	if (fPidType == 0) { // For Charge
 	  if (!isLep) {
 	    nPidRecP[icharge] += 1.;
-	    fHistERecPri[icharge][0]->Fill(fCentrality,fpTRec); 
+	    fHistERecPri[icharge][0]->Fill(fCentrality,fPRec);  //pT or p
 	    fHistERecPri[icharge][1]->Fill(fCentrality,fEtaRec); 
 	    fHistERecPri[icharge][2]->Fill(fCentrality,fPhiRec); 
 	  } else {
@@ -917,26 +920,26 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	if(isPhysicalPrimary){
 	  if ( pdg == fMcPid ) {// For PID
 	    nPidRecP[icharge] += 1.;
-	    fHistERecPri[icharge][0]->Fill(fCentrality,fpTRec); 
+	    fHistERecPri[icharge][0]->Fill(fCentrality,fPRec);  //pT or p
 	    fHistERecPri[icharge][1]->Fill(fCentrality,fEtaRec); 
 	    fHistERecPri[icharge][2]->Fill(fCentrality,fPhiRec); 
 	  }
 	  else {
 	    nPidRecMid[icharge] += 1.;
-	    fHistCMisId[icharge][0]->Fill(fCentrality,fpTRec); 
+	    fHistCMisId[icharge][0]->Fill(fCentrality,fPRec); //pT or p
 	    fHistCMisId[icharge][1]->Fill(fCentrality,fEtaRec); 
 	    fHistCMisId[icharge][2]->Fill(fCentrality,fPhiRec); 
 	  }
 	}//------------isPhysics Primary -------------
 	else if (isSecondaryFromWeakDecay) {
 	  nPidRecWD[icharge] += 1.;
-	  fHistCSec[icharge][0]->Fill(fCentrality,fpTRec); 
+	  fHistCSec[icharge][0]->Fill(fCentrality,fPRec); //pT or p
 	  fHistCSec[icharge][1]->Fill(fCentrality,fEtaRec); 
 	  fHistCSec[icharge][2]->Fill(fCentrality,fPhiRec); 
 	}//------isSecondaryFromWeakDecay--------------
 	else if (isSecondaryFromMaterial) {
 	  nPidRecSec[icharge] += 1.;
-	  fHistCMat[icharge][0]->Fill(fCentrality,fpTRec); 
+	  fHistCMat[icharge][0]->Fill(fCentrality,fPRec); //pT or p
 	  fHistCMat[icharge][1]->Fill(fCentrality,fEtaRec); 
 	  fHistCMat[icharge][2]->Fill(fCentrality,fPhiRec); 
 	}//------isSecondaryFromMaterial--------------------
@@ -963,9 +966,9 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
   
   fPtBinNplusNminusCh->Fill(ptContainer);
   
-  //cout << "In centrality " << fCentrality << " total +ve Rec =" << nPidRec[0] << " and check_total (pri + misId + mat + WD)= " << nPidRecP[0] + nPidRecMid[0] + nPidRecSec[0] + nPidRecWD[0]  << endl;
+  cout << "In centrality " << fCentrality << " total +ve Rec =" << nPidRec[0] << " and check_total (pri + misId + mat + WD)= " << nPidRecP[0] + nPidRecMid[0] + nPidRecSec[0] + nPidRecWD[0]  << endl;
   
-  //cout << "In centrality " << fCentrality << " total -ve Rec =" << nPidRec[1] << " total (pri + misId + mat + WD)= " << nPidRecP[1] + nPidRecMid[1] + nPidRecSec[1] + nPidRecWD[1]  << endl;
+  cout << "In centrality " << fCentrality << " total -ve Rec =" << nPidRec[1] << " total (pri + misId + mat + WD)= " << nPidRecP[1] + nPidRecMid[1] + nPidRecSec[1] + nPidRecWD[1]  << endl;
     
   fEventCounter->Fill(7);
   //---- - -- - - - - -   -  -- - - - ---- - - - ---
@@ -982,6 +985,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	Int_t icharge = (particle->PdgCode() < 0) ? 0 : 1;
 
 	Float_t fpTGen   = particle->Pt();
+	Float_t fpGen    = particle->P();
 	Float_t fEtaGen  = particle->Eta();
 	Float_t fPhiGen  = particle->Phi();
 
@@ -993,12 +997,14 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	  if (pdg == 11 || pdg == 13) continue;
 	}
 	
-	fHistEGen[icharge][0]->Fill(fCentrality,fpTGen); 
+	fHistEGen[icharge][0]->Fill(fCentrality,fpGen); //pT or p
 	fHistEGen[icharge][1]->Fill(fCentrality,fEtaGen); 
 	fHistEGen[icharge][2]->Fill(fCentrality,fPhiGen);
 	nGen[icharge] += 1.;
 
-	Int_t iptbinMC = GetPtBin(fpTGen);
+	//Int_t iptbinMC = GetPtBin(fpTGen);
+	Int_t iptbinMC = GetPtBin(fpGen); // p bin
+	
 	if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
 	
 	if(icharge == 1){
@@ -1023,6 +1029,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	Int_t icharge = (particle->PdgCode() < 0) ? 0 : 1;
 	
 	Float_t fpTGen   = particle->Pt();
+	Float_t fpGen    = particle->P();
 	Float_t fEtaGen  = particle->Eta();
 	Float_t fPhiGen  = particle->Phi();
 	Int_t pdg = TMath::Abs(particle->PdgCode());
@@ -1033,12 +1040,13 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	  if (pdg == 11 || pdg == 13) continue;
 	}
 	
-	fHistEGen[icharge][0]->Fill(fCentrality,fpTGen); 
+	fHistEGen[icharge][0]->Fill(fCentrality,fpGen); 
 	fHistEGen[icharge][1]->Fill(fCentrality,fEtaGen); 
 	fHistEGen[icharge][2]->Fill(fCentrality,fPhiGen); 
 	nGen[icharge] += 1.;
 	
-	Int_t iptbinMC = GetPtBin(fpTGen);
+	//Int_t iptbinMC = GetPtBin(fpTGen);
+	Int_t iptbinMC = GetPtBin(fpGen);
 	if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
 	
 	if(icharge == 1){
@@ -1058,7 +1066,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 
     
     
-    //cout << " Gen positve " << nGen[1] <<" and -ve particle " << nGen[0] << endl;
+    cout << " Gen positve " << nGen[1] <<" and -ve particle " << nGen[0] << endl;
    
     if(fIsQA){
       Double_t fContainerCh[3] = { (double)fCentrality, nGen[1], nGen[0] };
@@ -1098,8 +1106,8 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
   }
   
   Double_t ptot = track->P();
-  //if( ptot < 0.6 || ptot > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
-  if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE;
+  if( ptot < fPtMin || ptot > fPtMax )  return kFALSE; //cut on momentum (to compare with Identity method result)
+  //if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE;
 
   //cout << "Track --" << track->Pt() << endl;
 
@@ -1128,10 +1136,11 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
 //___________________________________________________________
 Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle) const {
   if(!particle) return kFALSE;
-  if (particle->Charge() == 0.0) return kFALSE; 
+  if (particle->Charge() == 0.0) return kFALSE;
+  
   Double_t ptotMC = particle->P();
-  //if ( ptotMC < 0.6 || ptotMC > 1.5 )  return kFALSE; //cut on momentum (to compare with Anar's result)
-  if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
+  if ( ptotMC < fPtMin || ptotMC > fPtMax )  return kFALSE; //cut on momentum (to compare with Identity method result)
+  //if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
 
   //rapidity cut
   Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
@@ -1311,12 +1320,7 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
       
       if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
 	isAcceptedTPC = kTRUE;
-      
-      if (TMath::Abs(pid[1]) < fNSigmaMaxTPClow)  // Anywhere withing Mim Nsigma TPC
-	isAcceptedTPClow = kTRUE;                 // extra identifier
-      
-      if (track->Pt() < fMaxPtForTPClow)         // if less than a pt when low nsigma should be applied
-	isAcceptedTPC = isAcceptedTPClow;        // --------nslow-----|ptlow|----------------nshigh------
+  
     }
 
     Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
@@ -1390,7 +1394,8 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   }
   
   
-  if (fParticleSpecies == 2){//for Pion: TPC+TOF
+  if (fParticleSpecies == 2){//for Pion: TPC+TOF---
+    
     if(fPidStrategy == 0){
       isAccepted = isAcceptedTPC && isAcceptedTOF;
     }
@@ -1416,14 +1421,19 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
       else isAccepted = isAcceptedTPC && isAcceptedTOF;
     }
     else if( fPidStrategy == 1){
-      //ITS+TPC, TPC , TPC+TOF
-      if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
-      else if( pt >= 0.825 && pt <= 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
-      else isAccepted =  isAcceptedTPC;
+      
+      if( pt >= ptLowITS[fParticleSpecies] && pt <= ptHighITS[fParticleSpecies] ) {
+	Double_t nsigCompITSTPC = TMath::Sqrt( pid[1]*pid[1] +  pid[0]*pid[0] );
+	if( nsigCompITSTPC < fNSigmaMaxTPC ) isAccepted = kTRUE;
+      }
+      else {
+	Double_t nsigCompTPCTOF = TMath::Sqrt( pid[1]*pid[1] +  pid[2]*pid[2] );
+	if( nsigCompTPCTOF < fNSigmaMaxTPC ) isAccepted = kTRUE;
+      }
     }
     else if( fPidStrategy == 2){
       //ITS+TPC
-      isAccepted = isAcceptedITS && isAcceptedTPC;
+      isAccepted = isAcceptedTOF && isAcceptedTPC;
     }
     
   }//for proton
