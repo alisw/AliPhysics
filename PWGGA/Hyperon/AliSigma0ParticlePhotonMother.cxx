@@ -1,17 +1,55 @@
 #include "AliSigma0ParticlePhotonMother.h"
 
-#include <iostream>
-
 ClassImp(AliSigma0ParticlePhotonMother)
 
-//____________________________________________________________________________________________________
-AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother()
+    //____________________________________________________________________________________________________
+    AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother()
     : AliSigma0ParticleBase(),
       fType(-1),
       fRecMass(0),
       fV0(),
       fPhoton(),
       fPhoton2() {}
+
+//____________________________________________________________________________________________________
+AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother(
+    const AliSigma0ParticleV0 &lambdaCandidate,
+    const AliSigma0ParticleV0 &photonCandidate, const AliVEvent *inputEvent)
+    : AliSigma0ParticleBase(),
+      fType(1),
+      fRecMass(0),
+      fV0(),
+      fPhoton(),
+      fPhoton2() {
+  TLorentzVector track1, track2;
+  track1.SetXYZM(lambdaCandidate.GetPx(), lambdaCandidate.GetPy(),
+                 lambdaCandidate.GetPz(), lambdaCandidate.GetRecMass());
+  track2.SetXYZM(photonCandidate.GetPx(), photonCandidate.GetPy(),
+                 photonCandidate.GetPz(), photonCandidate.GetRecMass());
+  TLorentzVector trackSum = track1 + track2;
+
+  fP[0] = trackSum.Px();
+  fP[1] = trackSum.Py();
+  fP[2] = trackSum.Pz();
+  fPMC[0] = -1.;
+  fPMC[1] = -1.;
+  fPMC[2] = -1.;
+
+  //  fPDGCode = pdg;
+  fPt = std::sqrt(fP[0] * fP[0] + fP[1] * fP[1]);
+  //  fTrackLabel = v0.GetID();
+  fPhi = trackSum.Phi();
+  fEta = trackSum.Eta();
+  fRecMass = trackSum.M();
+  // see https://arxiv.org/pdf/1703.04639.pdf
+  fMass = trackSum.M() - lambdaCandidate.GetRecMass() +
+          lambdaCandidate.GetPDGMass();
+
+  fUse = true;
+
+  fV0 = lambdaCandidate;
+  fPhoton = photonCandidate;
+}
 
 //____________________________________________________________________________________________________
 AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother(
@@ -50,60 +88,8 @@ AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother(
   fUse = true;
 
   fV0 = lambdaCandidate;
-  AliSigma0ParticleV0 *phot =
-      new AliSigma0ParticleV0(photonCandidate, inputEvent);
-  fPhoton = *phot;
-  delete phot;
-}
-
-//____________________________________________________________________________________________________
-AliSigma0ParticlePhotonMother::AliSigma0ParticlePhotonMother(
-    const AliSigma0ParticleV0 &lambdaCandidate,
-    const AliAODConversionPhoton &photonCandidate1,
-    const AliAODConversionPhoton &photonCandidate2, const AliVEvent *inputEvent)
-    : AliSigma0ParticleBase(),
-      fType(2),
-      fRecMass(0),
-      fV0(),
-      fPhoton(),
-      fPhoton2() {
-  TLorentzVector track1, track2, track3;
-  track1.SetXYZM(lambdaCandidate.GetPx(), lambdaCandidate.GetPy(),
-                 lambdaCandidate.GetPz(), lambdaCandidate.GetRecMass());
-  track2.SetXYZM(photonCandidate1.GetPx(), photonCandidate1.GetPy(),
-                 photonCandidate1.GetPz(), photonCandidate1.M());
-  track3.SetXYZM(photonCandidate2.GetPx(), photonCandidate2.GetPy(),
-                 photonCandidate2.GetPz(), photonCandidate2.M());
-  TLorentzVector trackSum = track1 + track2 + track3;
-
-  fP[0] = trackSum.Px();
-  fP[1] = trackSum.Py();
-  fP[2] = trackSum.Pz();
-  fPMC[0] = -1.;
-  fPMC[1] = -1.;
-  fPMC[2] = -1.;
-
-  //  fPDGCode = pdg;
-  fPt = std::sqrt(fP[0] * fP[0] + fP[1] * fP[1]);
-  //  fTrackLabel = v0.GetID();
-  fPhi = trackSum.Phi();
-  fEta = trackSum.Eta();
-  fRecMass = trackSum.M();
-  // see https://arxiv.org/pdf/1703.04639.pdf
-  fMass = trackSum.M() - lambdaCandidate.GetRecMass() +
-          lambdaCandidate.GetPDGMass();
-
-  fUse = true;
-
-  fV0 = lambdaCandidate;
-  AliSigma0ParticleV0 *phot1 =
-      new AliSigma0ParticleV0(photonCandidate1, inputEvent);
-  fPhoton = *phot1;
-  AliSigma0ParticleV0 *phot2 =
-      new AliSigma0ParticleV0(photonCandidate2, inputEvent);
-  fPhoton = *phot2;
-  delete phot1;
-  delete phot2;
+  AliSigma0ParticleV0 phot(photonCandidate, inputEvent);
+  fPhoton = phot;
 }
 
 //____________________________________________________________________________________________________
@@ -140,42 +126,43 @@ AliSigma0ParticlePhotonMother &AliSigma0ParticlePhotonMother::operator=(
 }
 
 //____________________________________________________________________________________________________
-bool AliSigma0ParticlePhotonMother::IsTrueSigma(AliMCEvent *mcEvent) const {
-  // get photon mother
-  AliMCParticle *photonElePos =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(fPhoton.GetMCLabelPos()));
-  AliMCParticle *photonEleNeg =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(fPhoton.GetMCLabelNeg()));
-  if (photonElePos == nullptr || photonEleNeg == nullptr) return false;
-  if (photonElePos->GetMother() != photonEleNeg->GetMother()) return false;
-  AliMCParticle *photonMC = static_cast<AliMCParticle *>(
-      mcEvent->GetTrack(photonEleNeg->GetMother()));
-  if (photonMC == nullptr) return false;
-  AliMCParticle *photonMother =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(photonMC->GetMother()));
-  if (photonMother == nullptr) return false;
+int AliSigma0ParticlePhotonMother::MatchToMC(
+    const AliMCEvent *mcEvent, const int PIDmother,
+    const std::vector<int> PIDdaughters) const {
+  const int labV0 = fV0.GetMCLabelV0();
+  const int labPhoton = fPhoton.GetMCLabelV0();
+  if (labV0 < 0 || labPhoton < 0) return -1;
 
-  // get lambda mother
-  AliMCParticle *lambdaPos =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(fV0.GetMCLabelPos()));
-  AliMCParticle *lambdaNeg =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(fV0.GetMCLabelNeg()));
-  if (lambdaPos == nullptr || lambdaNeg == nullptr) return false;
-  if (!(std::abs(lambdaPos->GetMother()) == 211 &&
-        std::abs(lambdaNeg->GetMother()) == 2212) ||
-      !(std::abs(lambdaPos->GetMother()) == 2211 &&
-        std::abs(lambdaNeg->GetMother()) == 211))
-    return false;
-  AliMCParticle *lambdaMC =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(lambdaPos->GetMother()));
-  if (lambdaMC == nullptr) return false;
-  AliMCParticle *lambdaMother =
-      static_cast<AliMCParticle *>(mcEvent->GetTrack(lambdaMC->GetMother()));
-  if (lambdaMother == nullptr) return false;
+  AliMCParticle *partV0 =
+      static_cast<AliMCParticle *>(mcEvent->GetTrack(labV0));
+  AliMCParticle *partPhoton =
+      static_cast<AliMCParticle *>(mcEvent->GetTrack(labPhoton));
+  if (!partV0 || !partPhoton) return -1;
 
-  if (photonMother->PdgCode() != lambdaMother->PdgCode()) return false;
-  if (std::abs(photonMother->PdgCode()) != 3212) return false;
-  return true;
+  const int pidV0 = partV0->PdgCode();
+  const int pidPhoton = partPhoton->PdgCode();
+  if (!((pidV0 == PIDdaughters[0] && pidPhoton == PIDdaughters[1]) ||
+        (pidV0 == PIDdaughters[1] && pidPhoton == PIDdaughters[0]))) {
+    return -1;
+  }
+
+  const int labMotherV0 = partV0->GetMother();
+  const int labMotherPhoton = partPhoton->GetMother();
+  if (labMotherV0 < 0 || labMotherPhoton < 0) return -1;
+
+  AliMCParticle *partMotherV0 =
+      static_cast<AliMCParticle *>(mcEvent->GetTrack(labMotherV0));
+  AliMCParticle *partMotherPhoton =
+      static_cast<AliMCParticle *>(mcEvent->GetTrack(labMotherPhoton));
+  if (!partMotherV0 || !partMotherPhoton) return -1;
+
+  const int pdgMotherV0 = partMotherV0->PdgCode();
+  const int pdgMotherPhoton = partMotherPhoton->PdgCode();
+  if ((pdgMotherV0 != pdgMotherPhoton) || pdgMotherV0 != PIDmother) {
+    return -1;
+  }
+
+  return labMotherV0;
 }
 
 //____________________________________________________________________________________________________
@@ -204,4 +191,13 @@ float AliSigma0ParticlePhotonMother::GetArmenterosQt() const {
   TVector3 lambdaP(fV0.GetPx(), fV0.GetPy(), fV0.GetPz());
   TVector3 sigmaP(GetPx(), GetPy(), GetPz());
   return lambdaP.Perp(sigmaP);
+}
+
+//____________________________________________________________________________________________________
+double AliSigma0ParticlePhotonMother::GetRapidity() const {
+  double energy =
+      std::sqrt(GetPt() * GetPt() + GetPz() * GetPz() + GetMass() * GetMass());
+  if (energy != std::fabs(GetPz()))
+    return 0.5 * std::log((energy + GetPz()) / (energy - GetPz()));
+  return (GetPz() >= 0) ? 1.e30 : -1.e30;
 }

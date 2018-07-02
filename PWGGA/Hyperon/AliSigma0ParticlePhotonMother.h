@@ -15,12 +15,10 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
                                 const AliAODConversionPhoton &photonCandidate,
                                 const AliVEvent *inputEvent);
   AliSigma0ParticlePhotonMother(const AliSigma0ParticleV0 &lambdaCandidate,
-                                const AliAODConversionPhoton &photonCandidate1,
-                                const AliAODConversionPhoton &photonCandidate2,
+                                const AliSigma0ParticleV0 &photonCandidate,
                                 const AliVEvent *inputEvent);
   AliSigma0ParticlePhotonMother &operator=(
       const AliSigma0ParticlePhotonMother &obj);
-  bool IsTrueSigma(AliMCEvent *mcEvent) const;
 
   double GetPx() const { return AliSigma0ParticleBase::GetPx(); }
   double GetPy() const { return AliSigma0ParticleBase::GetPy(); }
@@ -40,6 +38,7 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   bool GetIsUse() const { return AliSigma0ParticleBase::GetIsUse(); }
 
   double GetRecMass() const { return fRecMass; }
+  double GetRapidity() const;
 
   float GetArmenterosAlpha() const;
   float GetArmenterosQt() const;
@@ -48,6 +47,9 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   AliSigma0ParticleV0 GetPhoton() const { return fPhoton; }
   AliSigma0ParticleV0 GetPhoton2() const { return fPhoton2; }
 
+  int MatchToMC(const AliMCEvent *mcEvent, const int PIDmother,
+                const std::vector<int> PIDdaughters) const;
+
  private:
   short fType;
   double fRecMass;
@@ -55,7 +57,7 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   AliSigma0ParticleV0 fPhoton;
   AliSigma0ParticleV0 fPhoton2;
 
-  ClassDef(AliSigma0ParticlePhotonMother, 1)
+  ClassDef(AliSigma0ParticlePhotonMother, 2)
 };
 
 #endif
