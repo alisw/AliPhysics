@@ -20,7 +20,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool phiSpin=true,//14
     bool ContributionSplitting=false,//15
     bool ContributionSplittingDaug=false,//16
-    bool RunNumberQA=false)//17
+    bool RunNumberQA=false,//17
+    int FilterBit=128)//18
 {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
@@ -68,6 +69,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     TrackCuts->SetCheckFilterBit(false);
     TrackCuts->SetCheckESDFiltering(true);
     TrackCuts->SetDCAReCalculation(false);
+  } else {
+    TrackCuts->SetFilterBit(FilterBit);
   }
   TrackCuts->SetCutCharge(1);
   AliFemtoDreamTrackCuts *AntiTrackCuts=
@@ -77,6 +80,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     AntiTrackCuts->SetCheckFilterBit(false);
     AntiTrackCuts->SetCheckESDFiltering(true);
     AntiTrackCuts->SetDCAReCalculation(false);
+  } else {
+    AntiTrackCuts->SetFilterBit(FilterBit);
   }
   AntiTrackCuts->SetCutCharge(-1);
   AliFemtoDreamv0Cuts *v0Cuts;
