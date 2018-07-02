@@ -11,6 +11,7 @@ class AliTOFT0v1;
 class AliTOFHeader;
 class AliTOFChannelOnlineStatusArray;
 class AliTOFcalib;
+class AliESDpid;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -46,7 +47,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   void    SetExpTimeBinWidth(Float_t width) { fExpTimeBinWidth = width; return;};
   Bool_t  SetSelectMCspecies(Bool_t enableMC, Int_t absPdgCode) {fIsMC = enableMC; fSelectedPdg = absPdgCode; return kTRUE;};
   TString GetSpeciesName(Int_t absPdgCode);
-  void    HistogramMakeUp(TH1* hist, Color_t color, Int_t markerStyle,  TString drawOpt, TString newName, TString newTitle, TString xTitle, TString yTitle);
+  void    HistogramMakeUp(TH1* hist, Color_t color =-1, Int_t markerStyle = -1,  TString drawOpt = "", TString newName = "", TString newTitle = "", TString xTitle = "", TString yTitle = "");
   Double_t GetPhiAtTPCouterRadius(AliESDtrack * track);
   void    SetOCDBInfo(const char *cdbLocation, UInt_t runN) {fOCDBLocation=cdbLocation; fRunNumber=runN;}
 
@@ -74,7 +75,7 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   Bool_t  IsInTRD(AliESDtrack * track);
   Bool_t  IsEventSelected(AliESDEvent * event);
   void    LoadChannelMapsFromOCDB();
-  Bool_t  IsChannelGood(Int_t channel);
+  Bool_t  IsChannelGood(Int_t channel = -1);
 
  private:
   Int_t               fRunNumber; //run number
