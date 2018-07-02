@@ -24,9 +24,6 @@
 
 #include "AliHLTTRDDefinitions.h"
 
-
-ClassImp(AliHLTTRDDefinitions)
-
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkDigitsDataType = { sizeof(AliHLTComponentDataType), {'A','L','I','T','R','E','E','D'},{'T','R','D',' '}};;
 
 const AliHLTComponentDataType AliHLTTRDDefinitions::fgkClusterDataType = { sizeof(AliHLTComponentDataType), {'C','L','U','S','T','E','R','S'},{'T','R','D',' '}};;
@@ -67,4 +64,3 @@ AliHLTTRDDefinitions::~AliHLTTRDDefinitions()
 {
   // see header file for class documentation
 }
-
