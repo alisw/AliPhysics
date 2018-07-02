@@ -144,8 +144,8 @@ fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
 fkSaveGoodTracks( kTRUE ),
-fkSandboxV0( kFALSE ),
-fkSandboxCascade( kTRUE ),
+fkSandboxV0( kTRUE ),
+fkSandboxCascade( kFALSE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -376,8 +376,8 @@ fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
 fkSaveGoodTracks( kTRUE ),
-fkSandboxV0( kFALSE ),
-fkSandboxCascade( kTRUE ),
+fkSandboxV0( kTRUE ),
+fkSandboxCascade( kFALSE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
