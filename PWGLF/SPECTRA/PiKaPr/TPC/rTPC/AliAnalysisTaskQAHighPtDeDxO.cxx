@@ -809,8 +809,7 @@ void AliAnalysisTaskQAHighPtDeDxO::AnalyzeESD(AliESDEvent* esdEvent)
 	else{
 		ProduceArrayTrksESD( esdEvent );
 		ProduceArrayV0ESD( esdEvent );
-	}
-
+	
 	Float_t centrality = -10;
 
 	if(fAnalysisPbPb){
@@ -831,6 +830,7 @@ void AliAnalysisTaskQAHighPtDeDxO::AnalyzeESD(AliESDEvent* esdEvent)
 		fcent->Fill(11);
 
 	}
+}
 
 
 }
