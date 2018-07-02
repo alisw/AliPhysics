@@ -137,7 +137,7 @@ class AliExternalTrackParam: public AliVTrack {
   // additional functions from AliVTrack
   virtual Int_t    GetID() const { return -999; }
   virtual UChar_t  GetITSClusterMap() const {return 0; }
-  virtual ULong_t  GetStatus() const { return 0; }
+  virtual ULong64_t GetStatus() const { return 0; }
 
   Double_t GetSign() const {return (fP[4]>0) ? 1 : -1;}
   Double_t GetP() const;

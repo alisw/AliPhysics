@@ -69,17 +69,17 @@ public:
   Int_t GetID() const { return fID;}
   void SetVertexID(Char_t id) { fVertexID=id;}
   Char_t GetVertexID() const { return fVertexID;}
-  void SetStatus(ULong_t flags) {fFlags|=flags;}
-  void ResetStatus(ULong_t flags) {fFlags&=~flags;}
-  Bool_t UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags);
+  void SetStatus(ULong64_t flags) {fFlags|=flags;}
+  void ResetStatus(ULong64_t flags) {fFlags&=~flags;}
+  Bool_t UpdateTrackParams(const AliKalmanTrack *t, ULong64_t flags);
   void SetIntegratedLength(Double_t l) {fTrackLength=l;}
   void SetIntegratedTimes(const Double_t *times);
   void SetESDpid(const Double_t *p);
   void GetESDpid(Double_t *p) const;
   virtual const Double_t *PID() const { return fR; }
 
-  Bool_t IsOn(ULong_t mask) const {return (fFlags&mask)>0;}
-  ULong_t GetStatus() const {return fFlags;}
+  Bool_t IsOn(ULong64_t mask) const {return (fFlags&mask)>0;}
+  ULong64_t GetStatus() const {return fFlags;}
   Int_t GetLabel() const {return fLabel;}
   void SetLabel(Int_t label) {fLabel = label;}
 
@@ -563,7 +563,7 @@ protected:
 
   UShort_t fFrTrackID;             // id of friend in the ESDfriend
 
-  ULong_t   fFlags;          // Reconstruction status flags 
+  ULong64_t   fFlags;        // Reconstruction status flags 
   Int_t     fID;             // Unique ID of the track
   Int_t     fLabel;          // Track label
   Int_t     fITSLabel;       // label according ITS
@@ -694,7 +694,7 @@ protected:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
   static Bool_t fgTrackEMuAsPi; // when true, track mu and e with pion mass (run 2)
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,73)  //ESDtrack 
+  ClassDef(AliESDtrack,74)  //ESDtrack 
 };
 
 

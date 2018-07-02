@@ -292,7 +292,7 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
       AliESDtrack *esdTrack=fESD->GetTrack(i);
 
       // Skip the tracks having "wrong" status (has to be checked/tuned)
-      ULong_t status = esdTrack->GetStatus();
+      ULong64_t status = esdTrack->GetStatus();
       if ((status & AliESDtrack::kTPCout)   == 0) continue;
 //     if ((status & AliESDtrack::kTRDout)   == 0) continue;
 //     if ((status & AliESDtrack::kTRDrefit) == 1) continue;

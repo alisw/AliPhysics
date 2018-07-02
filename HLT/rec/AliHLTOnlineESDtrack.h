@@ -61,7 +61,7 @@ class AliHLTOnlineESDtrack : public AliExternalTrackParam {
   const AliExternalTrackParam * GetTPCInnerParam() const {return fTPCInner;}
   const AliExternalTrackParam * GetOuterParam() const { return fOp;}
 
-  ULong_t   GetStatus() const {return fFlags;}
+  ULong64_t GetStatus() const {return fFlags;}
   Int_t     GetID() const { return fID;}
   Int_t     GetLabel() const {return fLabel;}
   Int_t     GetTPCLabel() const {return fTPCLabel;}
@@ -95,7 +95,7 @@ private:
   AliExternalTrackParam *fTPCInner; // Track parameters estimated at the inner wall of TPC using the TPC stand-alone 
   AliExternalTrackParam *fOp; // Track parameters estimated at the point of maximal radial coordinate reached during the tracking
 
-  ULong_t   fFlags;          // Reconstruction status flags 
+  ULong64_t fFlags;          // Reconstruction status flags 
   Int_t     fID;             // Unique ID of the track
   Int_t     fLabel;          // Track label
   Int_t     fITSLabel;       // label according ITS
@@ -128,7 +128,7 @@ private:
   UChar_t   fTRDncls;        // number of clusters assigned in the TRD
   UChar_t   fTRDncls0;       // number of clusters assigned in the TRD before first material cross
 
-  ClassDef(AliHLTOnlineESDtrack, 1); // AliESDtrack instance optimized for HLT
+  ClassDef(AliHLTOnlineESDtrack, 2); // AliESDtrack instance optimized for HLT
 };
 
 #endif

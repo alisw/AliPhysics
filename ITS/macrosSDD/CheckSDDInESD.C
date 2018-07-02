@@ -106,7 +106,7 @@ void CheckSDDInESD(TString filename="AliESDs.root", Int_t optTracks=kAll){
       }
       //      track->PropagateTo(4.,5.);
       htpccl->Fill(track->GetNcls(1));
-      Int_t status=track->GetStatus();
+      ULong64_t status=track->GetStatus();
       Bool_t tpcin=0;
       hStatus->Fill(-1.);
       if(status & AliESDtrack::kTPCin){

@@ -268,7 +268,7 @@ void AliTRDqaJPsi::Exec(Option_t *)
 
     Int_t step    = 0;
     Int_t charge  = (track->Charge() > 0) ? 1 : 0;
-    UInt_t status = track->GetStatus();
+    ULong64_t status = track->GetStatus();
     Double_t pt   = track->Pt();
     Double_t pid  = track->GetTRDpid(AliPID::kElectron);
     
@@ -369,7 +369,7 @@ void AliTRDqaJPsi::FillHist(AliESDtrack *track, Int_t step) {
   //
 
   Int_t charge  = (track->Charge() > 0) ? 1 : 0;
-  UInt_t status = track->GetStatus();
+  ULong64_t status = track->GetStatus();
   Double_t pt   = track->Pt();
   Double_t pid  = track->GetTRDpid(AliPID::kElectron);
   

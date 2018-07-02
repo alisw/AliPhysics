@@ -332,7 +332,7 @@ Bool_t  AliAODv0KineCuts::SingleTrackCuts(AliAODv0 * const v0) const
     if(!d[i]) return kFALSE;
     
     // status word
-    ULong_t status = d[i]->GetStatus();
+    ULong64_t status = d[i]->GetStatus();
 
     // No. of TPC clusters leave to the users
     if(d[i]->GetTPCNcls() < 1) return kFALSE;

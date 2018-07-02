@@ -247,7 +247,7 @@ Bool_t AliTRDonlineTrackMatching::AcceptTrack(const AliESDtrack* esdTrack, const
   if (!esdTrack)
     return kFALSE;
 
-  UInt_t status = esdTrack->GetStatus();
+  ULong64_t status = esdTrack->GetStatus();
 
   if (fEsdTrackCutMinimal){
     return ((status & AliESDtrack::kTPCout) > 0);

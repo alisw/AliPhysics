@@ -783,7 +783,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
     // Get ESD track
     fkEsdTrack = fESD->GetTrack(itrk);
     if(!fkEsdTrack) continue;
-    ULong_t status = fkEsdTrack->GetStatus(); 
+    ULong64_t status = fkEsdTrack->GetStatus(); 
     if(status&(AliESDtrack::kTPCout)) ++nbtrackTPC;
     
     // Fix suggested by Alex
@@ -800,7 +800,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
     Bool_t good = kTRUE;
     Bool_t standalonetrack = kFALSE;
     Bool_t offlinetrack = kFALSE;
-    //ULong_t status = fkEsdTrack->GetStatus();
+    //ULong64_t status = fkEsdTrack->GetStatus();
     
     //////////////////////////////////////
     // Loop on calibration objects
@@ -850,7 +850,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
 
     // ITS or TOF
     if(fRejectPileUpWithTOFOrITS) {
-      ULong_t statusits = fkEsdTrack->GetStatus();
+      ULong64_t statusits = fkEsdTrack->GetStatus();
       UChar_t itsPixel = fkEsdTrack->GetITSClusterMap();
       Bool_t itskany = kFALSE;
       if(((statusits & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) && ((TESTBIT(itsPixel, 0) || TESTBIT(itsPixel, 1)))) itskany = kTRUE;

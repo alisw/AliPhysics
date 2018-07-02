@@ -416,11 +416,11 @@ UChar_t  AliAODRecoDecay::GetITSClusterMap() const {
   return map;
 }
 //--------------------------------------------------------------------------
-ULong_t AliAODRecoDecay::GetStatus() const {
+ULong64_t AliAODRecoDecay::GetStatus() const {
   // 
   // Same as for ITSClusterMap
   //
-  ULong_t status=0;
+  ULong64_t status=0;
 
   if(!GetNDaughters()) {
     AliError("No daughters available");

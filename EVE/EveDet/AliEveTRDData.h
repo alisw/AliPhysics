@@ -134,13 +134,13 @@ public:
   void    Print(Option_t *opt="a") const; // *MENU*
   void    Load(const Char_t *what="all") const; // *MENU*
   void    SetStatus(UChar_t s=0);         // *MENU*
-  void    SetESDstatus(ULong_t stat) {fESDStatus = stat;} 
+  void    SetESDstatus(ULong64_t stat) {fESDStatus = stat;} 
 private:
   AliEveTRDTrack(const AliEveTRDTrack&);            // Not implemented
   AliEveTRDTrack& operator=(const AliEveTRDTrack&); // Not implemented
 
   UChar_t        fTrackState;   // bit map for the track drawing state
-  ULong_t        fESDStatus;    // ESD status bit for this track
+  ULong64_t      fESDStatus;    // ESD status bit for this track
   Float_t        fAlpha;        // sector angle for this track  
   AliTrackPoint *fPoints;       // track crossing points
   AliRieman     *fRim;          // rieman fitter

@@ -1588,7 +1588,7 @@ Double_t AliESDtrack::Y() const
 }
 
 //_______________________________________________________________________
-Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
+Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong64_t flags){
   //
   // This function updates track's running parameters 
   //

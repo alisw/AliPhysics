@@ -537,7 +537,7 @@ void AliTRDQADataMakerRec::MakeESDs(AliESDEvent * esd)
     Int_t stack = GetStack(paramOut);
 
     UInt_t u = 1;
-    UInt_t status = track->GetStatus();
+    ULong64_t status = track->GetStatus();
     for(Int_t bit=0; bit<32; bit++) 
       if (u<<bit & status) FillESDsData(2,bit);
 

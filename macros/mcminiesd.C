@@ -111,7 +111,7 @@ void selectMiniESD(AliESD* esdIn, AliESD* &esdOut) {
   for (Int_t itrk=0; itrk<ntrk; itrk++) {
     
     AliESDtrack * trackIn = esdIn->GetTrack(itrk);
-    UInt_t status=trackIn->GetStatus();
+    ULong64_t status=trackIn->GetStatus();
 
     //select only tracks with TPC or ITS refit
     if ((status&AliESDtrack::kTPCrefit)==0

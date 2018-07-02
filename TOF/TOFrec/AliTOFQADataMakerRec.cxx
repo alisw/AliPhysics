@@ -971,7 +971,7 @@ void AliTOFQADataMakerRec::MakeESDs(AliESDEvent * esd)
       Double_t tofTimeRaw=track->GetTOFsignalRaw();//in ps
       Double_t tofToT=track->GetTOFsignalToT(); //in ps
       
-      UInt_t status=track->GetStatus();
+      ULong64_t status=track->GetStatus();
       if (track->IsOn(AliESDtrack::kTPCrefit)) {
 	ntpc++;
 	Double_t y=track->Eta();

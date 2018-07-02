@@ -193,7 +193,7 @@ Int_t AliITSUComparison
         Int_t cnt=0;
         for (Int_t i=0; i<nentr; i++) {
            AliESDtrack *t=event->GetTrack(i);
-	   UInt_t status=t->GetStatus();
+	   ULong64_t status=t->GetStatus();
 
            if ((status&AliESDtrack::kITSrefit)==0) continue;
 

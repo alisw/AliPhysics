@@ -162,7 +162,7 @@ void AliAODMCParticle::Print(const Option_t */*opt*/) const {
     Printf(">>> PDG (%d) : %s",fPdgCode,"Unknown");
   }
   Printf(">>  P(%3.3f,%3.3f,%3.3f) V((%3.3f,%3.3f,%3.3f,%3.3f)",fPx,fPy,fPz,fVx,fVy,fVz,fVt);  
-  Printf(">   Mother %d, First Daughter %d Last Daughter %d , Status %d, PhysicalPrimary %d",
+  Printf(">   Mother %d, First Daughter %d Last Daughter %d , Status %llu, PhysicalPrimary %d",
 	 fMother,fDaughter[0],fDaughter[1],GetStatus(),
 	 IsPhysicalPrimary());
 }

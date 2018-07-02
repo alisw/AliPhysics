@@ -147,7 +147,7 @@ void AliTRDqaESDFriends::Exec(Option_t *)
     if (!paramIn) continue;
     if (!paramOut) continue;
     
-    UInt_t status = track->GetStatus();
+    ULong64_t status = track->GetStatus();
     if (!(status & AliESDtrack::kTRDrefit)) continue;
     if (!(status & AliESDtrack::kTRDpid)) continue;
     if (track->GetTRDntrackletsPID() < 6) continue;

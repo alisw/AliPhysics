@@ -156,8 +156,8 @@ public:
   virtual Int_t  GetPIDForTracking() const {return -999;}
   
   //pid info
-  virtual void     SetStatus(ULong_t /*flags*/) {;}
-  virtual void     ResetStatus(ULong_t /*flags*/) {;}
+  virtual void     SetStatus(ULong64_t /*flags*/) {;}
+  virtual void     ResetStatus(ULong64_t /*flags*/) {;}
 
   virtual Double_t  GetITSsignal()       const {return 0.;}
   virtual Double_t  GetITSsignalTunedOnData() const {return 0.;}
@@ -197,7 +197,7 @@ public:
   virtual void      GetHMPIDpid(Double_t */*p*/) const {;}
   virtual Double_t  GetIntegratedLength() const { return 0.;}
   
-  virtual ULong_t  GetStatus() const = 0;
+  virtual ULong64_t  GetStatus() const = 0;
   virtual Bool_t   GetXYZ(Double_t *p) const = 0;
   virtual Bool_t   GetXYZAt(Double_t /*x*/, Double_t /*b*/, Double_t* /*r*/ ) const;
   virtual Double_t GetBz() const;
@@ -234,7 +234,7 @@ public:
 
   virtual Int_t             GetKinkIndex(Int_t /*i*/) const { return 0;}
   virtual Double_t          GetSigned1Pt()         const { return 0;}
-  virtual Bool_t            IsOn(ULong_t /*mask*/) const {return 0;}
+  virtual Bool_t            IsOn(ULong64_t /*mask*/) const {return 0;}
   virtual Double_t          GetX()    const {return 0;}
   virtual Double_t          GetY()    const {return 0;}
   virtual Double_t          GetZ()    const {return 0;}

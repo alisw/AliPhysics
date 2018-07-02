@@ -1267,7 +1267,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
   //
   // esdEvent is only required for the MaxChi2TPCConstrainedVsGlobal
 
-  UInt_t status = esdTrack->GetStatus();
+  ULong64_t status = esdTrack->GetStatus();
 
   // getting quality parameters from the ESD track
   Int_t nClustersITS = esdTrack->GetITSclusters(0);
@@ -1778,7 +1778,7 @@ Bool_t AliESDtrackCuts::AcceptVTrack(const AliVTrack* vTrack)
   //The track is not an AliESDtrack.  Perform a more limited
   //set of cuts
 
-  UInt_t status = vTrack->GetStatus();
+  ULong64_t status = vTrack->GetStatus();
 
   // getting quality parameters from the ESD track
   // Int_t nClustersITS = vTrack->GetITSclusters(0);

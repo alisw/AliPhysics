@@ -394,7 +394,7 @@ Int_t AliITSUTrackerGlo::RefitInward(AliESDEvent *esdEv)
     fCurrESDtrack = esdEv->GetTrack(itr);
     fCurrESDtrMClb = fCurrESDtrack->GetLabel();
     // Start time integral and add distance from current position to vertex 
-    UInt_t trStat = fCurrESDtrack->GetStatus();
+    ULong64_t trStat = fCurrESDtrack->GetStatus();
     if ( !(trStat & AliESDtrack::kITSout) ) continue;
     if (   trStat & AliESDtrack::kITSrefit ) continue; // already done
     if ( !(trStat & AliESDtrack::kTPCin)   ) continue; // skip ITS s.a.

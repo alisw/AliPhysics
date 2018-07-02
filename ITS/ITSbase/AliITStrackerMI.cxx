@@ -2545,7 +2545,7 @@ Bool_t AliITStrackerMI::RefitAt(Double_t xx,AliITStrackMI *track,
     }
   }
   Int_t evsp=repa->GetEventSpecie();
-  ULong_t trStatus=0;
+  ULong64_t trStatus=0;
   if(track->GetESDtrack()) trStatus=track->GetStatus();
   Int_t innermostlayer=0;
   if((evsp&AliRecoParam::kCosmic) || (trStatus&AliESDtrack::kTPCin))  {
@@ -4113,7 +4113,7 @@ void AliITStrackerMI::CookLabel(AliITStrackMI *track,Float_t wrong) const {
      
   if (track->GetESDtrack()){
     tpcLabel = track->GetESDtrack()->GetTPCLabel();
-    ULong_t trStatus=track->GetESDtrack()->GetStatus();
+    ULong64_t trStatus=track->GetESDtrack()->GetStatus();
     if(!(trStatus&AliESDtrack::kTPCin)) tpcLabel=track->GetLabel(); // for ITSsa tracks
   }
    track->SetChi2MIP(9,0);

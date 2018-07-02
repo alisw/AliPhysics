@@ -95,9 +95,9 @@ class AliAODMCParticle: public AliVParticle {
       fFlag &= 0xffff;    // reset the upper bins keep the lower bins
       fFlag |= (((UInt_t)status)<<16); // bit shift by 16
     }
-    virtual UInt_t GetStatus() const {
+    virtual ULong64_t GetStatus() const {
       // bit shift by 16
-      return fFlag>>16;
+      return ULong64_t(fFlag>>16);
     }
 
     void        SetMCStatusCode(Int_t status) { SetStatus(status)  ; }

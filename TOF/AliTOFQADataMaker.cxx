@@ -611,7 +611,7 @@ void AliTOFQADataMaker::MakeESDs(AliESDEvent * esd)
     FillESDsData(2,tofTimeRaw); 
     FillESDsData(3,tofToT);
     //check how many tracks where ESD PID is ok 
-    UInt_t status=track->GetStatus();
+    ULong64_t status=track->GetStatus();
     if (((status&AliESDtrack::kESDpid)==0) || 
 	((status&AliESDtrack::kTOFpid)==0)) continue;
     ntofpid++;
