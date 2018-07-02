@@ -120,17 +120,17 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   this->SetIDTracks(pTrackXi->GetID());
   this->SetIDTracks(bachTrackXi->GetID());
 
-  this->SetEta(nTrackXi->Eta());
-  this->SetEta(pTrackXi->Eta());
-  this->SetEta(bachTrackXi->Eta());
+  this->SetEta(fNegDaug->GetMomentum().Eta());
+  this->SetEta(fPosDaug->GetMomentum().Eta());
+  this->SetEta(fBach->GetMomentum().Eta());
 
-  this->SetTheta(nTrackXi->Theta());
-  this->SetTheta(pTrackXi->Theta());
-  this->SetTheta(bachTrackXi->Theta());
+  this->SetTheta(fNegDaug->GetMomentum().Theta());
+  this->SetTheta(fPosDaug->GetMomentum().Theta());
+  this->SetTheta(fBach->GetMomentum().Theta());
 
-  this->SetPhi(nTrackXi->Phi());
-  this->SetPhi(pTrackXi->Phi());
-  this->SetPhi(bachTrackXi->Phi());
+  this->SetPhi(fNegDaug->GetMomentum().Phi());
+  this->SetPhi(fPosDaug->GetMomentum().Phi());
+  this->SetPhi(fBach->GetMomentum().Phi());
 
   this->SetCharge(nTrackXi->Charge());
   this->SetCharge(pTrackXi->Charge());

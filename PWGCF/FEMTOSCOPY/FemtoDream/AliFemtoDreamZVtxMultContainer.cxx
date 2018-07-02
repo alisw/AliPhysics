@@ -100,7 +100,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
                     itPart2->GetMomentum(),*itPDGPar2),
                     RelativeK);
           }
-          if (ResultsHist->GetEtaPhiPlots()) {
+          if (ResultsHist->GetEtaPhiPlots() && (RelativeK < 0.2)) {
             DeltaEtaDeltaPhi(HistCounter,&(*itPart1),&(*itPart2),true,ResultsHist);
           }
           if (ResultsHist->GetDodPhidEtaPlots()) {

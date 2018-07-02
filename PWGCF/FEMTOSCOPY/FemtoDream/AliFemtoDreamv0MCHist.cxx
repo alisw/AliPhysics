@@ -89,14 +89,14 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(
                             100,0,5,500,-0.3,0.3);
   fThetaResolution->Sumw2();
   fThetaResolution->GetXaxis()->SetTitle("P_{T,True}");
-  fThetaResolution->GetYaxis()->SetTitle("(P_{T,True}-P_{T,Reco})/P_{T,True}");
+  fThetaResolution->GetYaxis()->SetTitle("#Theta_{T,True}-#Theta_{T,Reco}");
   fMCList->Add(fThetaResolution);
 
   fPhiResolution=new TH2F("DeltaPhiRecoTruevsPtReco","DeltaPhiRecoTruevsPtReco",
                           100,0,5,500,-0.3,0.3);
   fPhiResolution->Sumw2();
   fPhiResolution->GetXaxis()->SetTitle("P_{T,True}");
-  fPhiResolution->GetYaxis()->SetTitle("(P_{T,True}-P_{T,Reco})/P_{T,True}");
+  fPhiResolution->GetYaxis()->SetTitle("#Phi_{T,True}-#Phi_{T,Reco}");
   fMCList->Add(fPhiResolution);
 
   if (contribSplitting) {
