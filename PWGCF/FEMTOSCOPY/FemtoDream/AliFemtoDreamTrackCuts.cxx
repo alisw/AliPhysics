@@ -510,8 +510,8 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
           fMCHists->FillMCCorr(pT);
           if (tmpOrg==AliFemtoDreamBasePart::kPhysPrimary) {
             fMCHists->FillMCPtResolution(Track->GetMCPt(),Track->GetPt());
-            fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetTheta().at(0),Track->GetMCPt());
-            fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),Track->GetPhi().at(0),Track->GetMCPt());
+            fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetMomentum().Theta(),Track->GetMCPt());
+            fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),Track->GetMomentum().Phi(),Track->GetMCPt());
           }
         } else {
           Track->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
@@ -522,8 +522,8 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
           fMCHists->FillMCCorr(pT);
           if (tmpOrg==AliFemtoDreamBasePart::kPhysPrimary) {
             fMCHists->FillMCPtResolution(Track->GetMCPt(),Track->GetPt());
-            fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetTheta().at(0),Track->GetMCPt());
-            fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),Track->GetPhi().at(0),Track->GetMCPt());
+            fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetMomentum().Theta(),Track->GetMCPt());
+            fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),Track->GetMomentum().Theta(),Track->GetMCPt());
           }
         } else {
           Track->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
