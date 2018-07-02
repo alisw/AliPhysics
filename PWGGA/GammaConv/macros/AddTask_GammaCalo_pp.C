@@ -864,6 +864,16 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 383){ // PHOS clusters with larger acceptance
     cuts.AddCut("00010113","2446600040013300000","0163103100000010"); // INT7
     cuts.AddCut("00062113","2446600040013300000","0163103100000010"); // PHI7
+  } else if (trainConfig == 384){ // Default cut, No TM
+    cuts.AddCut("00010113","2446651040013300000","0163103100000010"); // INT7
+    cuts.AddCut("00062113","2446651040013300000","0163103100000010"); // PHI7
+  } else if (trainConfig == 385){ // Default cut, with TM
+    cuts.AddCut("00010113","2446651044013300000","0163103100000010"); // INT7
+    cuts.AddCut("00062113","2446651044013300000","0163103100000010"); // PHI7
+  } else if(trainConfig == 386){ // NL variations
+    cuts.AddCut("00010113","2446651044013300000","0163103100000010"); // INT7
+    cuts.AddCut("00010113","2446652044013300000","0163103100000010"); // PHOS calo NL
+    cuts.AddCut("00010113","2446601044013300000","0163103100000010"); // PHOS people NL
 
   // *********************************************************************************************************
   // 5 TeV  pp Run2 - EMC configurations
