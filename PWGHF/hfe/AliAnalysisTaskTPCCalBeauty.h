@@ -44,6 +44,8 @@ public:
     
     void            SetSSCut(Bool_t applySSCut) {fFlagApplySSCut = applySSCut;}
     void            SetFillSprs(Bool_t fillElecSprs) {fFlagFillSprs = fillElecSprs;}
+    void            SetMC(Bool_t fillMChistos) {fFlagFillMCHistos = fillMChistos;}
+    void            SetTPCClus(Int_t nTPCclusters) {fNclusTPC = nTPCclusters;}
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
     
@@ -75,6 +77,8 @@ private:
     Bool_t              fDCalDG1;        // DCal Threshold DG1
     Bool_t              fFlagApplySSCut; //switch to turn on SS cut
     Bool_t              fFlagFillSprs; //switch to fill electron eid sparse
+    Bool_t              fFlagFillMCHistos; // switch to fill histos that require MC pid
+    Int_t               fNclusTPC;       // set number of TPC clusters
     Bool_t              fFlagClsTypeEMC; // switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;// switch to select DCAL clusters
     Bool_t              fUseTender;      // switch to add tender
