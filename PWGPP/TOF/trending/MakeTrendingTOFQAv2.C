@@ -8,28 +8,27 @@
  *  A feature that displays the plots in canvases must be enable when needed.
  */
 
-
 #if !defined(__CINT__) || defined(__MAKECINT__)
-#include "TCanvas.h"
-#include "TStyle.h"
-#include "TLegend.h"
-#include "TGrid.h"
-#include "TGaxis.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TF1.h"
-#include "TPaveText.h"
-#include "AliTOFcalib.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
-#include "TProfile.h"
 #include "AliTOFChannelOnlineStatusArray.h"
+#include "AliTOFcalib.h"
 #include "AliTOFcalibHisto.h"
+#include "TCanvas.h"
+#include "TF1.h"
+#include "TFile.h"
+#include "TGaxis.h"
+#include "TGrid.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "THashList.h"
+#include "TLegend.h"
 #include "TMath.h"
 #include "TNamed.h"
-#include "THashList.h"
+#include "TPaveText.h"
+#include "TProfile.h"
+#include "TStyle.h"
+#include "TTree.h"
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -392,7 +391,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
     fraction = 0.0;
   }
   hFractionEventsWhits->Fill(fraction * 100.);
-    CheckAndWrite(hMulti);
+  CheckAndWrite(hMulti);
 
   //--------------------------------- T0F signal ----------------------------------//
 #define FitForTime(Hname, fun, av, peak, spread, peakErr, spreadErr, col, mar) \
@@ -421,7 +420,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   //
   FitForTime(hTot, "gaus", avTot, peakTot, spreadTot, peakTotErr, spreadTotErr, kViolet - 3, 8);
 #undef FitForTime
- 
+
   if (hTot->GetEntries() > 1)
     orphansRatio = hTot->GetBinContent(1) / hTot->GetEntries();
   //
@@ -432,8 +431,8 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
     avL = hL->GetMean();
     negLratio = hL->Integral(1, 750) / hL->GetEntries();
   }
-  MakeUpHisto(hL, "", "matched tracks", 1, kBlue+2, 1);
-  TPaveText *tLength = GetPave(0.15,0.83,0.65,0.87, kOrange-3, Form("trk with L<350cm /matched = %4.2f%%", negLratio*100.));
+  MakeUpHisto(hL, "", "matched tracks", 1, kBlue + 2, 1);
+  TPaveText* tLength = GetPave(0.15, 0.83, 0.65, 0.87, kOrange - 3, Form("trk with L<350cm /matched = %4.2f%%", negLratio * 100.));
 
   CheckAndWrite(hRawTime);
   CheckAndWrite(hTime);
@@ -452,16 +451,16 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   const Double_t maxPtEff2Fit = 10.0;
   const Double_t minPtEff2Fit = 1.0;
 
-  TH1F * hMatchingVsPt = NULL;
-  TH2F * hMatchingVsEtaPhiOut = NULL;
-  TH1F * hMatchingVsEta = NULL;
-  TH1F * hMatchingVsPhiOut = NULL;
-  TH1F * hMatchingVsPhi = NULL;
+  TH1F* hMatchingVsPt = NULL;
+  TH2F* hMatchingVsEtaPhiOut = NULL;
+  TH1F* hMatchingVsEta = NULL;
+  TH1F* hMatchingVsPhiOut = NULL;
+  TH1F* hMatchingVsPhi = NULL;
 
-  TH1F * hDenom = (TH1F*)generalList->FindObject("hPrimaryPt_all");
+  TH1F* hDenom = (TH1F*)generalList->FindObject("hPrimaryPt_all");
   if (hDenom) {
     hDenom->Sumw2();
-    hMatchingVsPt = (TH1F*) ((TH1F*) generalList->FindObject("hMatchedPt_all"))->Clone("hMatchingVsPt");
+    hMatchingVsPt = (TH1F*)((TH1F*)generalList->FindObject("hMatchedPt_all"))->Clone("hMatchingVsPt");
     //set underflow bin to the matching efficiency integrated in 1-10 GeV/c
     Int_t imin = hMatchingVsPt->GetXaxis()->FindBin(minPtEff2Fit);
     Int_t imax = hMatchingVsPt->GetXaxis()->FindBin(maxPtEff2Fit);
@@ -476,28 +475,28 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
     hMatchingVsPt->Sumw2();
     hMatchingVsPt->Divide(hMatchingVsPt, hDenom, 1., 1., "B");
     hMatchingVsPt->SetTitle("TOF matching efficiency as function of transverse momentum");
-    hMatchingVsPt->GetYaxis()->SetRangeUser(0,1.2);
+    hMatchingVsPt->GetYaxis()->SetRangeUser(0, 1.2);
   }
 
-  if (hMatchingVsPt->GetEntries()>0){
-    hMatchingVsPt->Fit("pol0","","", minPtEff2Fit, maxPtEff2Fit);
+  if (hMatchingVsPt->GetEntries() > 0) {
+    hMatchingVsPt->Fit("pol0", "", "", minPtEff2Fit, maxPtEff2Fit);
     hMatchingVsPt->Draw();
-    if (hMatchingVsPt->GetFunction("pol0")){
-      matchEffLinFit1Gev=(hMatchingVsPt->GetFunction("pol0"))->GetParameter(0);
-      matchEffLinFit1GevErr=(hMatchingVsPt->GetFunction("pol0"))->GetParError(0);
+    if (hMatchingVsPt->GetFunction("pol0")) {
+      matchEffLinFit1Gev = (hMatchingVsPt->GetFunction("pol0"))->GetParameter(0);
+      matchEffLinFit1GevErr = (hMatchingVsPt->GetFunction("pol0"))->GetParError(0);
     }
   } else {
     printf("WARNING: matching efficiency plot has 0 entries. Skipped!\n");
   }
-  MakeUpHisto(hMatchingVsPt, "#it{p}_{T} (GeV/#it{c})", "matching efficiency", 1, kBlue+2, 2);
-  
-  TH2F * hDenom2D = (TH2F*) generalList->FindObject("hPrimaryEtaVsOutPhi_all");  
+  MakeUpHisto(hMatchingVsPt, "#it{p}_{T} (GeV/#it{c})", "matching efficiency", 1, kBlue + 2, 2);
+
+  TH2F* hDenom2D = (TH2F*)generalList->FindObject("hPrimaryEtaVsOutPhi_all");
   if (!hDenom2D) {
     //matching as function of eta
     hDenom = (TH1F*)generalList->FindObject("hPrimaryEta_all");
     if (hDenom) {
       hDenom->Sumw2();
-      hMatchingVsEta = (TH1F*) ((TH1F*) generalList->FindObject("hMatchedEta_all"))->Clone("hMatchingVsEta");
+      hMatchingVsEta = (TH1F*)((TH1F*)generalList->FindObject("hMatchedEta_all"))->Clone("hMatchingVsEta");
       hMatchingVsEta->Sumw2();
       hMatchingVsEta->Divide(hMatchingVsEta, hDenom, 1., 1., "B");
     }
@@ -530,13 +529,13 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   hDenom = (TH1F*)generalList->FindObject("hPrimaryPhi_all");
   if (hDenom) {
     hDenom->Sumw2();
-    hMatchingVsPhi = (TH1F*) ((TH1F*) generalList->FindObject("hMatchedPhi_all"))->Clone("hMatchingVsPhi");
+    hMatchingVsPhi = (TH1F*)((TH1F*)generalList->FindObject("hMatchedPhi_all"))->Clone("hMatchingVsPhi");
     hMatchingVsPhi->Sumw2();
     hMatchingVsPhi->Divide(hMatchingVsPhi, hDenom, 1., 1., "B");
     hMatchingVsPhi->SetTitle("TOF matching efficiency as function of phi");
-    hMatchingVsPhi->GetYaxis()->SetRangeUser(0,1.2);
+    hMatchingVsPhi->GetYaxis()->SetRangeUser(0, 1.2);
   }
-  MakeUpHisto(hMatchingVsPhi, "#phi (deg)", "matching efficiency", 1, kBlue+2, 2);
+  MakeUpHisto(hMatchingVsPhi, "#phi (deg)", "matching efficiency", 1, kBlue + 2, 2);
 
   CheckAndWrite(hMatchingVsPt);
   CheckAndWrite(hMatchingVsEta);
@@ -545,33 +544,34 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   CheckAndWrite(hMatchingVsEtaPhiOut);
 
   //--------------------------------- t-texp ----------------------------------//
-  TH2F * hBetaP=(TH2F*)pidList->FindObject("hMatchedBetaVsP_all");
-  if (hBetaP) hBetaP->GetYaxis()->SetRangeUser(0.,1.2);
+  TH2F* hBetaP = (TH2F*)pidList->FindObject("hMatchedBetaVsP_all");
+  if (hBetaP)
+    hBetaP->GetYaxis()->SetRangeUser(0., 1.2);
 
-  TH1F * hMass=(TH1F*)pidList->FindObject("hMatchedMass_all");
-  MakeUpHisto(hMass, "", "tracks", 1, kBlue+2, 1);
+  TH1F* hMass = (TH1F*)pidList->FindObject("hMatchedMass_all");
+  MakeUpHisto(hMass, "", "tracks", 1, kBlue + 2, 1);
   // hMass->SetFillColor(kAzure+10);
   // hMass->SetFillStyle(1001);
   hMass->Rebin(2);
 
   //pions
-  TH1F * hPionDiff=(TH1F*)pidList->FindObject("hExpTimePi_all");
-  if ((hPionDiff)&&(hPionDiff->GetEntries()>0)) {
-    avPiDiffTime=hPionDiff->GetMean();
-    hPionDiff->Fit("gaus","","",-1000.,500.);
-    if (hPionDiff->GetFunction("gaus")){
-      peakPiDiffTime=(hPionDiff->GetFunction("gaus"))->GetParameter(1);
-      spreadPiDiffTime=(hPionDiff->GetFunction("gaus"))->GetParameter(2);
-      peakPiDiffTimeErr=(hPionDiff->GetFunction("gaus"))->GetParError(1);
-      spreadPiDiffTimeErr=(hPionDiff->GetFunction("gaus"))->GetParError(2);
+  TH1F* hPionDiff = (TH1F*)pidList->FindObject("hExpTimePi_all");
+  if ((hPionDiff) && (hPionDiff->GetEntries() > 0)) {
+    avPiDiffTime = hPionDiff->GetMean();
+    hPionDiff->Fit("gaus", "", "", -1000., 500.);
+    if (hPionDiff->GetFunction("gaus")) {
+      peakPiDiffTime = (hPionDiff->GetFunction("gaus"))->GetParameter(1);
+      spreadPiDiffTime = (hPionDiff->GetFunction("gaus"))->GetParameter(2);
+      peakPiDiffTimeErr = (hPionDiff->GetFunction("gaus"))->GetParError(1);
+      spreadPiDiffTimeErr = (hPionDiff->GetFunction("gaus"))->GetParError(2);
     }
   }
-  TCanvas *cTimeCalib = new TCanvas("cTimeCalib","cTimeCalib",800,600);
+  TCanvas* cTimeCalib = new TCanvas("cTimeCalib", "cTimeCalib", 800, 600);
   gStyle->SetOptStat(10);
   gStyle->SetOptFit();
   cTimeCalib->cd();
   gPad->SetLogy();
-  MakeUpHisto(hPionDiff, "", "", 1, kBlue+1, 1);
+  MakeUpHisto(hPionDiff, "", "", 1, kBlue + 1, 1);
   hPionDiff->Draw();
   TString plotDir(".");
   CheckAndPrint(cTimeCalib, "TOFtime");
@@ -605,104 +605,109 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   Int_t min = hDiffTimeT0TOFPion1GeV->GetXaxis()->FindBin(RangeTrksForTOFResMin);
   Int_t max = hDiffTimeT0TOFPion1GeV->GetXaxis()->FindBin(RangeTrksForTOFResMax);
   TH1D* hResTOF = (TH1D*)hDiffTimeT0TOFPion1GeV->ProjectionY("hTOFres1GeV", min, max);
-  hResTOF->Fit("gaus","","",-200.,100.);
+  hResTOF->Fit("gaus", "", "", -200., 100.);
   if (hResTOF->GetFunction("gaus")) {
-    meanResTOF=(hResTOF->GetFunction("gaus"))->GetParameter(1);
-    spreadResTOF=(hResTOF->GetFunction("gaus"))->GetParameter(2);
-    meanResTOFerr=(hResTOF->GetFunction("gaus"))->GetParError(1);
-    spreadResTOFerr=(hResTOF->GetFunction("gaus"))->GetParError(2);
+    meanResTOF = (hResTOF->GetFunction("gaus"))->GetParameter(1);
+    spreadResTOF = (hResTOF->GetFunction("gaus"))->GetParameter(2);
+    meanResTOFerr = (hResTOF->GetFunction("gaus"))->GetParError(1);
+    spreadResTOFerr = (hResTOF->GetFunction("gaus"))->GetParError(2);
   }
 
-  TCanvas *cTOFresolution = new TCanvas("cTOFresolution","TOFresolution",1200,500);
+  TCanvas* cTOFresolution = new TCanvas("cTOFresolution", "TOFresolution", 1200, 500);
   gStyle->SetOptStat(10);
   gStyle->SetOptFit();
-  cTOFresolution->Divide(2,1);
+  cTOFresolution->Divide(2, 1);
   cTOFresolution->cd(1);
   gPad->SetLogz();
-  hDiffTimeT0TOFPion1GeV->GetXaxis()->SetRangeUser(0.,50.);
+  hDiffTimeT0TOFPion1GeV->GetXaxis()->SetRangeUser(0., 50.);
   hDiffTimeT0TOFPion1GeV->Draw("colz");
   cTOFresolution->cd(2);
-  hResTOF->GetXaxis()->SetRangeUser(-1000,1000);
-  MakeUpHisto(hResTOF, "", "", 1, kBlue+1, 1);
+  hResTOF->GetXaxis()->SetRangeUser(-1000, 1000);
+  MakeUpHisto(hResTOF, "", "", 1, kBlue + 1, 1);
   hResTOF->Draw();
 
   CheckAndPrint(cTOFresolution, "TOFresolution");
   CheckAndWrite(hResTOF);
 
   //--------------------------------- T0 vs multiplicity plots ----------------------------------//
-  TList *ListOfOutput_T0 = new TList();///List of output for all plots related to T0
-  
-  TH2F * hT0TOFvsNtracks=(TH2F*)timeZeroList->FindObject("hT0TOFvsNtrk");
+  TList* ListOfOutput_T0 = new TList(); ///List of output for all plots related to T0
+
+  TH2F* hT0TOFvsNtracks = (TH2F*)timeZeroList->FindObject("hT0TOFvsNtrk");
   TProfile* hT0TOFProfile = 0x0;
-  if(!hT0TOFvsNtracks) cout<<"Cannot find TH2F hT0TOFvsNtrk in the input list"<<endl;
-  else{
+  if (!hT0TOFvsNtracks)
+    cout << "Cannot find TH2F hT0TOFvsNtrk in the input list" << endl;
+  else {
     Int_t binmin1 = hT0TOFvsNtracks->GetYaxis()->FindBin(-50.);
     Int_t binmax1 = hT0TOFvsNtracks->GetYaxis()->FindBin(50.);
-    hT0TOFProfile = (TProfile*)hT0TOFvsNtracks->ProfileX("hT0TOFProfile",binmin1,binmax1);
+    hT0TOFProfile = (TProfile*)hT0TOFvsNtracks->ProfileX("hT0TOFProfile", binmin1, binmax1);
     hT0TOFProfile->SetLineWidth(3);
     hT0TOFProfile->SetLineColor(1);
-    
+
     //Add result to output list
     ListOfOutput_T0->Add(hT0TOFvsNtracks);
     ListOfOutput_T0->Add(hT0TOFProfile);
   }
 
-  TH2F * hT0ACvsNtracks=(TH2F*)timeZeroList->FindObject("hT0ACvsNtrk");
+  TH2F* hT0ACvsNtracks = (TH2F*)timeZeroList->FindObject("hT0ACvsNtrk");
   TProfile* hT0ACProfile = 0x0;
-  if(!hT0ACvsNtracks) cout<<"Cannot find TH2F hT0ACvsNtrk in the input list"<<endl;
-  else{
+  if (!hT0ACvsNtracks)
+    cout << "Cannot find TH2F hT0ACvsNtrk in the input list" << endl;
+  else {
     Int_t binmin2 = hT0ACvsNtracks->GetYaxis()->FindBin(-50.);
     Int_t binmax2 = hT0ACvsNtracks->GetYaxis()->FindBin(50.);
-    hT0ACProfile = (TProfile*)hT0ACvsNtracks->ProfileX("hT0ACProfile",binmin2,binmax2);
+    hT0ACProfile = (TProfile*)hT0ACvsNtracks->ProfileX("hT0ACProfile", binmin2, binmax2);
     hT0ACProfile->SetLineWidth(3);
     hT0ACProfile->SetLineColor(1);
-    
+
     //Add result to output list
     ListOfOutput_T0->Add(hT0ACvsNtracks);
     ListOfOutput_T0->Add(hT0ACProfile);
-	}
+  }
 
-  TH2F * hT0AvsNtracks=(TH2F*)timeZeroList->FindObject("hT0AvsNtrk");
+  TH2F* hT0AvsNtracks = (TH2F*)timeZeroList->FindObject("hT0AvsNtrk");
   TProfile* hT0AProfile = 0x0;
-  if(!hT0AvsNtracks) cout<<"Cannot find TH2F hT0AvsNtrk in the input list"<<endl;
-  else{
+  if (!hT0AvsNtracks)
+    cout << "Cannot find TH2F hT0AvsNtrk in the input list" << endl;
+  else {
     Int_t binmin3 = hT0AvsNtracks->GetYaxis()->FindBin(-50.);
     Int_t binmax3 = hT0AvsNtracks->GetYaxis()->FindBin(50.);
-    hT0AProfile = (TProfile*)hT0AvsNtracks->ProfileX("hT0AProfile",binmin3,binmax3);
+    hT0AProfile = (TProfile*)hT0AvsNtracks->ProfileX("hT0AProfile", binmin3, binmax3);
     hT0AProfile->SetLineWidth(3);
     hT0AProfile->SetLineColor(1);
-    
+
     //Add result to output list
     ListOfOutput_T0->Add(hT0AvsNtracks);
     ListOfOutput_T0->Add(hT0AProfile);
   }
 
-  TH2F * hT0CvsNtracks=(TH2F*)timeZeroList->FindObject("hT0CvsNtrk");
+  TH2F* hT0CvsNtracks = (TH2F*)timeZeroList->FindObject("hT0CvsNtrk");
   TProfile* hT0CProfile = 0x0;
-  if(!hT0CvsNtracks) cout<<"Cannot find TH2F hT0CvsNtrk in the input list"<<endl;
-  else{
+  if (!hT0CvsNtracks)
+    cout << "Cannot find TH2F hT0CvsNtrk in the input list" << endl;
+  else {
     Int_t binmin4 = hT0CvsNtracks->GetYaxis()->FindBin(-50.);
     Int_t binmax4 = hT0CvsNtracks->GetYaxis()->FindBin(50.);
-    hT0CProfile = (TProfile*)hT0CvsNtracks->ProfileX("hT0CProfile",binmin4,binmax4);
+    hT0CProfile = (TProfile*)hT0CvsNtracks->ProfileX("hT0CProfile", binmin4, binmax4);
     hT0CProfile->SetLineWidth(3);
     hT0CProfile->SetLineColor(1);
-    
+
     //Add result to output list
     ListOfOutput_T0->Add(hT0CvsNtracks);
     ListOfOutput_T0->Add(hT0CProfile);
   }
 
-  TH2F * hStartTime=(TH2F*)timeZeroList->FindObject("hStartTime");
+  TH2F* hStartTime = (TH2F*)timeZeroList->FindObject("hStartTime");
   TProfile* hStartTimeProfile = 0x0;
-  if(!hStartTime) cout<<"Cannot find TH2F hStartTime in the input list"<<endl;
-  else{
+  if (!hStartTime)
+    cout << "Cannot find TH2F hStartTime in the input list" << endl;
+  else {
     Int_t binminst = hStartTime->GetXaxis()->FindBin(-600.);
     Int_t binmaxst = hStartTime->GetXaxis()->FindBin(600.);
-    hStartTimeProfile = (TProfile*) hStartTime->ProfileY("hStartTimeProfile",binminst,binmaxst);
+    hStartTimeProfile = (TProfile*)hStartTime->ProfileY("hStartTimeProfile", binminst, binmaxst);
     hStartTimeProfile->SetFillStyle(0);
     hStartTimeProfile->SetLineWidth(3);
     hStartTimeProfile->SetLineColor(1);
-    
+
     //Add result to output list
     ListOfOutput_T0->Add(hStartTime);
     ListOfOutput_T0->Add(hStartTimeProfile);
@@ -724,17 +729,18 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
 #undef GetT0Info
   }
 
-  TH2F * hStartTimeRes=(TH2F*)timeZeroList->FindObject("hStartTimeRes");
+  TH2F* hStartTimeRes = (TH2F*)timeZeroList->FindObject("hStartTimeRes");
   TProfile* hStartTimeResProfile = 0x0;
-  if(!hStartTimeRes) cout<<"Cannot find TH2F hStartTimeRes in the input list"<<endl;
-  else{
+  if (!hStartTimeRes)
+    cout << "Cannot find TH2F hStartTimeRes in the input list" << endl;
+  else {
     Int_t binminstRes = hStartTimeRes->GetXaxis()->FindBin(-600.);
     Int_t binmaxstRes = hStartTimeRes->GetXaxis()->FindBin(600.);
-    hStartTimeResProfile = (TProfile*) hStartTimeRes->ProfileY("hStartTimeResProfile",binminstRes,binmaxstRes);
+    hStartTimeResProfile = (TProfile*)hStartTimeRes->ProfileY("hStartTimeResProfile", binminstRes, binmaxstRes);
     hStartTimeResProfile->SetFillStyle(0);
     hStartTimeResProfile->SetLineWidth(3);
     hStartTimeResProfile->SetLineColor(1);
-    
+
     //Add result to output list
     ListOfOutput_T0->Add(hStartTimeRes);
     ListOfOutput_T0->Add(hStartTimeResProfile);
@@ -775,7 +781,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   // cout << "Res StartTimeT0C  " << StartTime_pT0CT0_Res << " ps" << endl;
 
   //Drawing section
-  TCanvas *cT0vsMultiplicity = new TCanvas("cT0vsMultiplicity","T0TOF,T0C,T0A,TOAC vs N_TOF,",1200,800);
+  TCanvas* cT0vsMultiplicity = new TCanvas("cT0vsMultiplicity", "T0TOF,T0C,T0A,TOAC vs N_TOF,", 1200, 800);
   cT0vsMultiplicity->Divide(2, 2);
 
   cT0vsMultiplicity->cd(1);
@@ -798,7 +804,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   SetupPad("SetLogz SetGridx SetGridy");
   CheckAndDraw(hStartTime, nullptr, "COLZ");
 
-  TCanvas *cStartTimeRes = new TCanvas("cStartTimeRes","Resolution of start time methods",1200,800);
+  TCanvas* cStartTimeRes = new TCanvas("cStartTimeRes", "Resolution of start time methods", 1200, 800);
   SetupPad("SetLogz SetGridx SetGridy");
   CheckAndDraw(hStartTimeRes, nullptr, "COLZ");
 
@@ -835,19 +841,19 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   }
 
   //--------------------------------- NSigma PID from TOF QA ----------------------------------//
-  TF1* f = new TF1("f", "gaus", RangeFitNsigmaPIDmin, RangeFitNsigmaPIDmax);//Normal gaussian
-  const Float_t ModelRangeFitNsigmaPIDmin = 2 * RangeFitNsigmaPIDmin;       //-1.0
-  const Float_t ModelRangeFitNsigmaPIDmax = 2 * RangeFitNsigmaPIDmax;       //+2.0
+  TF1* f = new TF1("f", "gaus", RangeFitNsigmaPIDmin, RangeFitNsigmaPIDmax); //Normal gaussian
+  const Float_t ModelRangeFitNsigmaPIDmin = 2 * RangeFitNsigmaPIDmin;        //-1.0
+  const Float_t ModelRangeFitNsigmaPIDmax = 2 * RangeFitNsigmaPIDmax;        //+2.0
   TF1* fSignalModel = nullptr;
   if (fitSignalModel)
-   fSignalModel = TOFsignal(ModelRangeFitNsigmaPIDmin, ModelRangeFitNsigmaPIDmax); //Gaussian + tail
+    fSignalModel = TOFsignal(ModelRangeFitNsigmaPIDmin, ModelRangeFitNsigmaPIDmax); //Gaussian + tail
 
   //----- PION ------//
   TList* lparPi = FitNSigma(pidList, "Pi", f, fSignalModel);
 
   //----- KAON ------//
   TList* lparKa = FitNSigma(pidList, "Ka", f, fSignalModel);
-  
+
   //----- PROTON ------//
   TList* lparPro = FitNSigma(pidList, "Pro", f, fSignalModel);
 
@@ -944,24 +950,17 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   if ((hT0fillRes) && (hT0fillRes->GetEntries() > 0)) {
     avT0fillRes = hT0fillRes->GetMean();
   }
-  TH1F*hT0T0Res=(TH1F*)timeZeroList->FindObject("hT0T0Res");
+  TH1F* hT0T0Res = (TH1F*)timeZeroList->FindObject("hT0T0Res");
   if ((hT0T0Res) && (hT0T0Res->GetEntries() > 0)) {
     avT0T0Res = hT0T0Res->GetMean();
   }
 
   if (saveHisto) {
-    trendFile->cd();
     CheckAndWrite(hT0AC);
     CheckAndWrite(hT0A);
     CheckAndWrite(hT0C);
     CheckAndWrite(hT0DetRes);
   }
-  //Fill tree and save to file
-  ttree->Fill();
-  printf("============== Saving trending quantities in tree for run %i ==============\n",runNumber);
-  trendFile->cd();
-  ttree->Write();
-  trendFile->Close();
 
   //close input file
   fin->Close();
@@ -1014,17 +1013,17 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
     CheckAndPrint(cT0detector, "T0Detector");
   }
 
-  TCanvas *cProfile = new TCanvas("cProfile","cProfile",50,50,750,550);
+  TCanvas* cProfile = new TCanvas("cProfile", "cProfile", 50, 50, 750, 550);
   gPad->SetLogz();
   hTOFmatchedDzVsStrip->Draw("colz");
   Int_t binmin = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(-3);
   Int_t binmax = hTOFmatchedDzVsStrip->GetYaxis()->FindBin(3);
-  TProfile* hDzProfile = (TProfile*)hTOFmatchedDzVsStrip->ProfileX("hDzProfile",binmin, binmax);
+  TProfile* hDzProfile = (TProfile*)hTOFmatchedDzVsStrip->ProfileX("hDzProfile", binmin, binmax);
   hDzProfile->SetLineWidth(3);
   hDzProfile->Draw("same");
 
   TCanvas* cMatchingPerformance = new TCanvas("cMatchingPerformance", "summary of matching performance", 1200, 500);
-  cMatchingPerformance->Divide(3,1);
+  cMatchingPerformance->Divide(3, 1);
   cMatchingPerformance->cd(1);
   hMatchingVsPt->Draw();
   cMatchingPerformance->cd(2);
@@ -1033,7 +1032,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   hMatchingVsPhi->Draw();
 
   TCanvas* cPidPerformance2 = new TCanvas("cPidPerformance2", "summary of pid performance - expected times", 1200, 500);
-  cPidPerformance2->Divide(3,1);
+  cPidPerformance2->Divide(3, 1);
   cPidPerformance2->cd(1);
   gPad->SetLogz();
   hDiffTimePi->Draw("colz");
@@ -1049,77 +1048,82 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
     cProfile->Print(Form("%s/%i%s_ProfileDZvsStripNumber.png", plotDir.Data(), runNumber, dirsuffix.Data()));
     cPidPerformance2->Print(Form("%s/%i%s_PID_ExpTimes.png", plotDir.Data(), runNumber, dirsuffix.Data()));
   }
+  //Fill tree and save to file
+  ttree->Fill();
+  printf("============== Saving trending quantities in tree for run %i ==============\n", runNumber);
+  trendFile->cd();
+  ttree->Write();
+  trendFile->Close();
   return 0;
 }
 
-
 //----------------------------------------------------------
-Double_t GetGoodTOFChannelsRatio(Int_t run, Bool_t saveMap , TString OCDBstorage , Bool_t inEta08)
+Double_t GetGoodTOFChannelsRatio(Int_t run, Bool_t saveMap, TString OCDBstorage, Bool_t inEta08)
 {
   /*
    *    It retrieves from OCDB the number of good (= efficient && not noisy && HW ok) TOF channels.
    *    Optionally is saves the channel map
    */
-  if (run<=0) {
+  if (run <= 0) {
     printf("MakeTrendingTOFqa.C - ERROR in CheckCalibStatus(): invalid run number. Please set a run number.\n");
     return 0.0;
   }
 
-  AliCDBManager *cdb = AliCDBManager::Instance();
+  AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetDefaultStorage(OCDBstorage.Data());
   cdb->SetRun(run);
 
-  AliCDBEntry *cdbe = cdb->Get("TOF/Calib/Status");
+  AliCDBEntry* cdbe = cdb->Get("TOF/Calib/Status");
   if (!cdbe) {
     printf("MakeTrendingTOFqa.C - ERROR in CheckCalibStatus(): OCDB entry not available. Please, try again.\n");
     return 0.0;
   }
 
-  AliTOFChannelOnlineStatusArray *array = (AliTOFChannelOnlineStatusArray *)cdbe->GetObject();
-  TH2F *hOkMap = new TH2F("hOkMap", "Ok map (!noisy & !problematic & efficient);sector;strip", 72, 0., 18., 91, 0., 91.);
-  TH2F *hOkMapInAcceptance = new TH2F("hOkMapInAcceptance",Form( "Good channels in |#eta|<0.8 - run %i;sector;strip",run), 72, 0., 18., 91, 0., 91.);
+  AliTOFChannelOnlineStatusArray* array = (AliTOFChannelOnlineStatusArray*)cdbe->GetObject();
+  TH2F* hOkMap = new TH2F("hOkMap", "Ok map (!noisy & !problematic & efficient);sector;strip", 72, 0., 18., 91, 0., 91.);
+  TH2F* hOkMapInAcceptance = new TH2F("hOkMapInAcceptance", Form("Good channels in |#eta|<0.8 - run %i;sector;strip", run), 72, 0., 18., 91, 0., 91.);
   AliTOFcalibHisto calibHisto;
   calibHisto.LoadCalibHisto();
   AliTOFcalib calib;
   calib.Init();
   Int_t sector, sectorStrip, padx, fea;
   Float_t hitmapx, hitmapy;
-  for (Int_t i = 0; i <  array->GetSize(); i++) {
+  for (Int_t i = 0; i < array->GetSize(); i++) {
     sector = calibHisto.GetCalibMap(AliTOFcalibHisto::kSector, i);
     sectorStrip = calibHisto.GetCalibMap(AliTOFcalibHisto::kSectorStrip, i);
     padx = calibHisto.GetCalibMap(AliTOFcalibHisto::kPadX, i);
     fea = padx / 12;
     hitmapx = sector + ((Double_t)(3 - fea) + 0.5) / 4.;
     hitmapy = sectorStrip;
-    if ( !(array->GetNoiseStatus(i) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad)   &&
-	 (calib.IsChannelEnabled(i,kTRUE,kTRUE))) {
-      hOkMap->Fill(hitmapx,hitmapy);
+    if (!(array->GetNoiseStatus(i) == AliTOFChannelOnlineStatusArray::kTOFNoiseBad) && (calib.IsChannelEnabled(i, kTRUE, kTRUE))) {
+      hOkMap->Fill(hitmapx, hitmapy);
       /* 3 strips / side excluded from norm. factor to consider |eta|<0.8 */
-      if (sectorStrip>2 && sectorStrip<89) hOkMapInAcceptance->Fill(hitmapx,hitmapy);
+      if (sectorStrip > 2 && sectorStrip < 89)
+        hOkMapInAcceptance->Fill(hitmapx, hitmapy);
     }
   }
-  Int_t nOk = (Int_t) hOkMap->GetEntries();
-  Int_t nOkInAcc = (Int_t) hOkMapInAcceptance->GetEntries();
-  Double_t ratioOk = nOk/152928.;
+  Int_t nOk = (Int_t)hOkMap->GetEntries();
+  Int_t nOkInAcc = (Int_t)hOkMapInAcceptance->GetEntries();
+  Double_t ratioOk = nOk / 152928.;
   /* 96 channels * 6 strips * 18 modules excluded from norm. factor to consider |eta|<0.8 */
-  Double_t ratioOkInAcc = nOkInAcc/(152928.-6.*18.*96.);
+  Double_t ratioOkInAcc = nOkInAcc / (152928. - 6. * 18. * 96.);
   if (saveMap) {
-    hOkMap->SaveAs(Form("run%i_OKChannelsMap.root",run));
-    hOkMapInAcceptance->SaveAs(Form("run%i_OKChannelsInAccMap.root",run));
+    hOkMap->SaveAs(Form("run%i_OKChannelsMap.root", run));
+    hOkMapInAcceptance->SaveAs(Form("run%i_OKChannelsInAccMap.root", run));
   }
-  cout << "###    Run " << run << ": TOF channels ok = " << nOk << "/ total 152928 channels = " << ratioOk*100. << "% of whole TOF" << endl;
-  cout << "###    Run " << run << ": TOF channels in acc. ok = " << nOkInAcc << "/ total 142560 channels = " << ratioOkInAcc*100. << "% of whole TOF" << endl;
+  cout << "###    Run " << run << ": TOF channels ok = " << nOk << "/ total 152928 channels = " << ratioOk * 100. << "% of whole TOF" << endl;
+  cout << "###    Run " << run << ": TOF channels in acc. ok = " << nOkInAcc << "/ total 142560 channels = " << ratioOkInAcc * 100. << "% of whole TOF" << endl;
   if (inEta08)
     return ratioOkInAcc;
   else
     return ratioOk;
-
 }
 
 //----------------------------------------------------------
 void MakeUpHisto(TH1* histo, TString titleX, TString titleY, Int_t marker, Color_t color, Int_t lineWidth)
 {
-  if (!histo) return;
+  if (!histo)
+    return;
   histo->SetMarkerStyle(marker);
   histo->SetMarkerSize(0.7);
   histo->SetMarkerColor(color);
@@ -1127,17 +1131,20 @@ void MakeUpHisto(TH1* histo, TString titleX, TString titleY, Int_t marker, Color
   histo->SetLineWidth(lineWidth);
   histo->SetFillColor(kWhite);
   histo->SetFillStyle(0);
-  if (!titleX.IsNull()) histo->GetXaxis()->SetTitle(titleX.Data());
-  if (!titleY.IsNull()) histo->GetYaxis()->SetTitle(titleY.Data());
+  if (!titleX.IsNull())
+    histo->GetXaxis()->SetTitle(titleX.Data());
+  if (!titleY.IsNull())
+    histo->GetYaxis()->SetTitle(titleY.Data());
   histo->GetYaxis()->SetTitleOffset(1.35);
   histo->GetXaxis()->SetLabelSize(0.03);
   return;
 }
 
 //----------------------------------------------------------
-void MakeUpHisto(TH2* histo, TString titleX, TString titleY,  TString titleZ, Int_t marker, Color_t color, Int_t lineWidth)
+void MakeUpHisto(TH2* histo, TString titleX, TString titleY, TString titleZ, Int_t marker, Color_t color, Int_t lineWidth)
 {
-  if (!histo) return;
+  if (!histo)
+    return;
   histo->SetMarkerStyle(marker);
   histo->SetMarkerSize(0.7);
   histo->SetMarkerColor(color);
@@ -1145,17 +1152,21 @@ void MakeUpHisto(TH2* histo, TString titleX, TString titleY,  TString titleZ, In
   histo->SetLineWidth(lineWidth);
   histo->SetFillColor(kWhite);
   histo->SetFillStyle(0);
-  if (!titleX.IsNull()) histo->GetXaxis()->SetTitle(titleX.Data());
-  if (!titleY.IsNull()) histo->GetYaxis()->SetTitle(titleY.Data());
-  if (!titleZ.IsNull()) histo->GetZaxis()->SetTitle(titleZ.Data());
+  if (!titleX.IsNull())
+    histo->GetXaxis()->SetTitle(titleX.Data());
+  if (!titleY.IsNull())
+    histo->GetYaxis()->SetTitle(titleY.Data());
+  if (!titleZ.IsNull())
+    histo->GetZaxis()->SetTitle(titleZ.Data());
   histo->GetYaxis()->SetTitleOffset(1.35);
   histo->GetXaxis()->SetLabelSize(0.03);
   return;
 }
 
 //----------------------------------------------------------
-void AddMissingLabel(const TString histoname){
-  TPaveText missing(0.3, 0.5, 0.7, 0.8, "NDC NB");//For canvases missing plots
+void AddMissingLabel(const TString histoname)
+{
+  TPaveText missing(0.3, 0.5, 0.7, 0.8, "NDC NB"); //For canvases missing plots
   missing.SetFillColor(0);
   missing.SetFillStyle(0);
   missing.SetLineColor(0);
@@ -1237,7 +1248,7 @@ void CheckAndDraw(TH1* h, TProfile* prof, const TString opt)
 }
 
 //----------------------------------------------------------
-Double_t TOFsignal(Double_t *x, Double_t *par)
+Double_t TOFsignal(Double_t* x, Double_t* par)
 {
   //Define function to fit TOF signal t-texp
   //as a gaussian + exponential tail
@@ -1295,8 +1306,10 @@ TList* FitNSigma(TList* l, TString part, TF1* f, TF1* f2, const TString name, co
 
   //fit with signal model = gaussian + exponential tail
   if (f2) {
-    f2->SetParLimits(4, 0., h->GetMaximum() * 0.5);
+    f2->SetParameter(0, h->GetMaximum() * 0.6);
     f2->SetParLimits(0, 0., h->GetMaximum() * 1.2);
+    f2->SetParameter(4, h->GetMaximum() * 0.25);
+    f2->SetParLimits(4, 0., h->GetMaximum() * 0.5);
     h->FitSlicesY(f2, 0, -1, 0, "QR");
     Int_t i = 1;
     lpars->Add((TH1D*)gDirectory->Get(Form("%s_%i", h->GetName(), i))->Clone(Form("%s_%s", h->GetName(), f2->GetParName(i))));
