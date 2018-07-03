@@ -950,18 +950,11 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   }
 
   if (saveHisto) {
-    trendFile->cd();
     CheckAndWrite(hT0AC);
     CheckAndWrite(hT0A);
     CheckAndWrite(hT0C);
     CheckAndWrite(hT0DetRes);
   }
-  //Fill tree and save to file
-  ttree->Fill();
-  printf("============== Saving trending quantities in tree for run %i ==============\n",runNumber);
-  trendFile->cd();
-  ttree->Write();
-  trendFile->Close();
 
   //close input file
   fin->Close();
@@ -1049,6 +1042,12 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
     cProfile->Print(Form("%s/%i%s_ProfileDZvsStripNumber.png", plotDir.Data(), runNumber, dirsuffix.Data()));
     cPidPerformance2->Print(Form("%s/%i%s_PID_ExpTimes.png", plotDir.Data(), runNumber, dirsuffix.Data()));
   }
+  //Fill tree and save to file
+  ttree->Fill();
+  printf("============== Saving trending quantities in tree for run %i ==============\n", runNumber);
+  trendFile->cd();
+  ttree->Write();
+  trendFile->Close();
   return 0;
 }
 
@@ -1295,8 +1294,10 @@ TList* FitNSigma(TList* l, TString part, TF1* f, TF1* f2, const TString name, co
 
   //fit with signal model = gaussian + exponential tail
   if (f2) {
-    f2->SetParLimits(4, 0., h->GetMaximum() * 0.5);
+    f2->SetParameter(0, h->GetMaximum() * 0.6);
     f2->SetParLimits(0, 0., h->GetMaximum() * 1.2);
+    f2->SetParameter(4, h->GetMaximum() * 0.25);
+    f2->SetParLimits(4, 0., h->GetMaximum() * 0.5);
     h->FitSlicesY(f2, 0, -1, 0, "QR");
     Int_t i = 1;
     lpars->Add((TH1D*)gDirectory->Get(Form("%s_%i", h->GetName(), i))->Clone(Form("%s_%s", h->GetName(), f2->GetParName(i))));
