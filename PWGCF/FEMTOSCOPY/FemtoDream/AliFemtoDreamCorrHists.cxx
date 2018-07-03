@@ -11,35 +11,36 @@
 #include "AliLog.h"
 ClassImp(AliFemtoDreamCorrHists)
 AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
-:fQA(0)
-,fResults(0)
-,fPairs(0)
-,fPairQA(0)
+:fQA(nullptr)
+,fResults(nullptr)
+,fPairs(nullptr)
+,fPairQA(nullptr)
 ,fMinimalBooking(false)
 ,fMomentumResolution(false)
 ,fPhiEtaPlots(false)
-,fSameEventDist(0)
-,fSameEventCommonAncestDist(0)
-,fSameEventNonCommonAncestDist(0)
-,fSameEventMultDist(0)
-,fSameEventCentDist(0)
-,fSameEventmTDist(0)
-,fSameEventkTDist(0)
-,fSameEventkTCentDist(0)
-,fPairCounterSE(0)
-,fMixedEventDist(0)
-,fMixedEventMultDist(0)
-,fMixedEventCentDist(0)
-,fMixedEventmTDist(0)
-,fMixedEventkTDist(0)
-,fMixedEventkTCentDist(0)
-,fPairCounterME(0)
-,fMomResolution(0)
-,fRadiiEtaPhiSE(0)
-,fRadiiEtaPhiME(0)
-,fdEtadPhiSE(0)
-,fdEtadPhiME(0)
-,fEffMixingDepth(0)
+,fSameEventDist(nullptr)
+,fSameEventCommonAncestDist(nullptr)
+,fSameEventNonCommonAncestDist(nullptr)
+,fSameEventMultDist(nullptr)
+,fSameEventCentDist(nullptr)
+,fSameEventmTDist(nullptr)
+,fSameEventkTDist(nullptr)
+,fSameEventkTCentDist(nullptr)
+,fPairCounterSE(nullptr)
+,fMixedEventDist(nullptr)
+,fMixedEventMultDist(nullptr)
+,fMixedEventCentDist(nullptr)
+,fMixedEventmTDist(nullptr)
+,fMixedEventkTDist(nullptr)
+,fMixedEventkTCentDist(nullptr)
+,fPairCounterME(nullptr)
+,fMomResolution(nullptr)
+,fMomResolutionDist(nullptr)
+,fRadiiEtaPhiSE(nullptr)
+,fRadiiEtaPhiME(nullptr)
+,fdEtadPhiSE(nullptr)
+,fdEtadPhiME(nullptr)
+,fEffMixingDepth(nullptr)
 ,fDoMultBinning(false)
 ,fDoCentBinning(false)
 ,fDokTBinning(false)
@@ -112,26 +113,28 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     fEffMixingDepth=new TH1F*[nHists];
     if (fMomentumResolution) {
       fMomResolution=new TH2F*[nHists];
+      fMomResolutionDist=new TH2F*[nHists];
     } else {
-      fMomResolution = 0;
+      fMomResolution = nullptr;
+      fMomResolutionDist = nullptr;
     }
     if (fPhiEtaPlots) {
       fRadiiEtaPhiSE=new TH2F***[nHists];
       fRadiiEtaPhiME=new TH2F***[nHists];
     } else {
-      fRadiiEtaPhiSE=0;
-      fRadiiEtaPhiME=0;
+      fRadiiEtaPhiSE=nullptr;
+      fRadiiEtaPhiME=nullptr;
     }
   } else {
-    fQA=0;
-    fPairQA=0;
-    fPairCounterSE=0;
-    fPairCounterME=0;
-    fEffMixingDepth=0;
-    fMomResolution=0;
-    fMomResolution = 0;
-    fRadiiEtaPhiSE=0;
-    fRadiiEtaPhiME=0;
+    fQA=nullptr;
+    fPairQA=nullptr;
+    fPairCounterSE=nullptr;
+    fPairCounterME=nullptr;
+    fEffMixingDepth=nullptr;
+    fMomResolution=nullptr;
+    fMomResolutionDist = nullptr;
+    fRadiiEtaPhiSE=nullptr;
+    fRadiiEtaPhiME=nullptr;
   }
   //we always want to do this, regardless of the booking type!
   fPairs=new TList*[nHists];
@@ -141,50 +144,50 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
     fSameEventMultDist=new TH2F*[nHists];
     fMixedEventMultDist=new TH2F*[nHists];
   } else {
-    fSameEventMultDist=0;
-    fMixedEventMultDist=0;
+    fSameEventMultDist=nullptr;
+    fMixedEventMultDist=nullptr;
   }
   if (fDoCentBinning) {
     fSameEventCentDist=new TH2F*[nHists];
     fMixedEventCentDist=new TH2F*[nHists];
   } else {
-    fSameEventCentDist=0;
-    fMixedEventCentDist=0;
+    fSameEventCentDist=nullptr;
+    fMixedEventCentDist=nullptr;
   }
   if (fDokTBinning) {
     fSameEventkTDist=new TH2F*[nHists];
     fMixedEventkTDist=new TH2F*[nHists];
   } else {
-    fSameEventkTDist=0;
-    fMixedEventkTDist=0;
+    fSameEventkTDist=nullptr;
+    fMixedEventkTDist=nullptr;
   }
   if (fDokTCentralityBins) {
     fSameEventkTCentDist=new TH2F**[nHists];
     fMixedEventkTCentDist=new TH2F**[nHists];
   } else {
-    fSameEventkTCentDist=0;
-    fMixedEventkTCentDist=0;
+    fSameEventkTCentDist=nullptr;
+    fMixedEventkTCentDist=nullptr;
   }
   if (fDomTBinning) {
     fSameEventmTDist=new TH2F*[nHists];
     fMixedEventmTDist=new TH2F*[nHists];
   } else {
-    fSameEventmTDist=0;
-    fMixedEventmTDist=0;
+    fSameEventmTDist=nullptr;
+    fMixedEventmTDist=nullptr;
   }
   if (fDoMCCommonAncest) {
     fSameEventCommonAncestDist=new TH1F*[nHists];
     fSameEventNonCommonAncestDist=new TH1F*[nHists];
   } else {
-    fSameEventCommonAncestDist=0;
-    fSameEventNonCommonAncestDist=0;
+    fSameEventCommonAncestDist=nullptr;
+    fSameEventNonCommonAncestDist=nullptr;
   }
   if (fdPhidEtaPlots) {
     fdEtadPhiSE=new TH2F*[nHists];
     fdEtadPhiME=new TH2F*[nHists];
   } else {
-    fdEtadPhiSE=0;
-    fdEtadPhiME=0;
+    fdEtadPhiSE=nullptr;
+    fdEtadPhiME=nullptr;
   }
   int Counter=0;
   for (int iPar1 = 0; iPar1 < nParticles; ++iPar1) {
@@ -410,6 +413,19 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
           fMomResolution[Counter]->GetXaxis()->SetTitle("k_{Generated}");
           fMomResolution[Counter]->GetYaxis()->SetTitle("k_{Reco}");
           fPairQA[Counter]->Add(fMomResolution[Counter]);
+
+          TString MomResoDistName=
+              Form("MomentumResolutionDist_Particle%d_Particle%d",iPar1,iPar2);
+          fMomResolutionDist[Counter]=
+              new TH2F(MomResoDistName.Data(),MomResoDistName.Data(),
+                       500,-0.3,0.3,nBims,0,1);
+          fMomResolutionDist[Counter]->Sumw2();
+          fMomResolutionDist[Counter]->GetXaxis()->SetTitle("k_{Reco}-k_{Generated}");
+          fMomResolutionDist[Counter]->GetYaxis()->SetTitle("k_{Reco}");
+          fPairQA[Counter]->Add(fMomResolutionDist[Counter]);
+
+
+
         }
         if (fPhiEtaPlots) {
           fRadiiEtaPhiSE[Counter]=new TH2F**[3];
