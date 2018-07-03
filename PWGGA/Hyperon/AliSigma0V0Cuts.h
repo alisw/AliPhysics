@@ -59,6 +59,7 @@ class AliSigma0V0Cuts : public TObject {
   int GetRapidityBin(float rapidity) const;
 
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
+  void SetCheckCutsMC(bool checkCuts) { fCheckCutsMC = checkCuts; }
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetPileUpRejectionMode(PileUpRejectionMode pileUpRej) {
@@ -111,6 +112,7 @@ class AliSigma0V0Cuts : public TObject {
   void SetPsiPairMax(float max) { fPsiPairMax = max; }
 
   void ProcessMC() const;
+  void CheckCutsMC() const;
   bool CheckDaughters(const AliMCParticle *particle) const;
 
   void InitCutHistograms(TString appendix = TString(""));
@@ -129,6 +131,7 @@ class AliSigma0V0Cuts : public TObject {
   TDatabasePDG fDataBasePDG;  //!
 
   bool fIsLightweight;  //
+  bool fCheckCutsMC;    //
 
   short fV0cut;
   int fPID;
@@ -189,7 +192,7 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistK0MassAfter;      //
   TH2F *fHistCosPA;            //
   TH2F *fHistEtaPhi;           //
-  TH2F *fHistPsiPair;		//
+  TH2F *fHistPsiPair;          //
 
   TH2F *fHistDecayVertexXBefore;      //
   TH2F *fHistDecayVertexYBefore;      //
@@ -214,6 +217,62 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistMCTruthV0DaughterPt;     //
   TH2F *fHistMCTruthV0DaughterPtY;    //
   TH2F *fHistMCTruthV0DaughterPtEta;  //
+
+  TH2F *fHistV0Mother;                                        //
+  TH2F *fHistV0MassPtTrue;                                    //
+  TH2F *fHistDecayVertexXTrue;                                //
+  TH2F *fHistDecayVertexYTrue;                                //
+  TH2F *fHistDecayVertexZTrue;                                //
+  TH2F *fHistTransverseRadiusTrue;                            //
+  TH2F *fHistCosPATrue;                                       //
+  TH2F *fHistDCADaughtersTrue;                                //
+  TH2F *fHistArmenterosTrue;                                  //
+  TH2F *fHistPsiPairTrue;                                     //
+  TH1F *fHistSingleParticlePtTrue[2];                         //
+  TH2F *fHistSingleParticleDCAtoPVTrue[2];                    //
+  TH2F *fHistSingleParticleNclsTPCTrue[2];                    //
+  TH2F *fHistSingleParticleNclsTPCFindableTrue[2];            //
+  TH2F *fHistSingleParticleNclsTPCRatioFindableTrue[2];       //
+  TH2F *fHistSingleParticleNcrossedTPCTrue[2];                //
+  TH2F *fHistSingleParticleNclsTPCSharedTrue[2];              //
+  TH2F *fHistSingleParticleNclsITSSharedTrue[2];              //
+  TH2F *fHistSingleParticleChi2True[2];                       //
+  TH2F *fHistV0MassPtTrueSigma;                               //
+  TH2F *fHistDecayVertexXTrueSigma;                           //
+  TH2F *fHistDecayVertexYTrueSigma;                           //
+  TH2F *fHistDecayVertexZTrueSigma;                           //
+  TH2F *fHistTransverseRadiusTrueSigma;                       //
+  TH2F *fHistCosPATrueSigma;                                  //
+  TH2F *fHistDCADaughtersTrueSigma;                           //
+  TH2F *fHistArmenterosTrueSigma;                             //
+  TH2F *fHistPsiPairTrueSigma;                                //
+  TH1F *fHistSingleParticlePtTrueSigma[2];                    //
+  TH2F *fHistSingleParticleDCAtoPVTrueSigma[2];               //
+  TH2F *fHistSingleParticleNclsTPCTrueSigma[2];               //
+  TH2F *fHistSingleParticleNclsTPCFindableTrueSigma[2];       //
+  TH2F *fHistSingleParticleNclsTPCRatioFindableTrueSigma[2];  //
+  TH2F *fHistSingleParticleNcrossedTPCTrueSigma[2];           //
+  TH2F *fHistSingleParticleNclsTPCSharedTrueSigma[2];         //
+  TH2F *fHistSingleParticleNclsITSSharedTrueSigma[2];         //
+  TH2F *fHistSingleParticleChi2TrueSigma[2];                  //
+  TH2F *fHistV0MassPtBkg;                                     //
+  TH2F *fHistDecayVertexXBkg;                                 //
+  TH2F *fHistDecayVertexYBkg;                                 //
+  TH2F *fHistDecayVertexZBkg;                                 //
+  TH2F *fHistTransverseRadiusBkg;                             //
+  TH2F *fHistCosPABkg;                                        //
+  TH2F *fHistDCADaughtersBkg;                                 //
+  TH2F *fHistArmenterosBkg;                                   //
+  TH2F *fHistPsiPairBkg;                                      //
+  TH1F *fHistSingleParticlePtBkg[2];                          //
+  TH2F *fHistSingleParticleDCAtoPVBkg[2];                     //
+  TH2F *fHistSingleParticleNclsTPCBkg[2];                     //
+  TH2F *fHistSingleParticleNclsTPCFindableBkg[2];             //
+  TH2F *fHistSingleParticleNclsTPCRatioFindableBkg[2];        //
+  TH2F *fHistSingleParticleNcrossedTPCBkg[2];                 //
+  TH2F *fHistSingleParticleNclsTPCSharedBkg[2];               //
+  TH2F *fHistSingleParticleNclsITSSharedBkg[2];               //
+  TH2F *fHistSingleParticleChi2Bkg[2];                        //
 
   TH1F *fHistMCV0Pt;  //
 

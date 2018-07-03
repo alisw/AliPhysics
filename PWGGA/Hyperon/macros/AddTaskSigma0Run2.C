@@ -127,9 +127,9 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   }
   if (suffix == "6") {
     v0Cuts->SetTPCclusterMin(0);
-    v0Cuts->SetTPCRatioFindable(0.6);
+    v0Cuts->SetTPCRatioFindable(0.35);
     antiv0Cuts->SetTPCclusterMin(0);
-    antiv0Cuts->SetTPCRatioFindable(0.6);
+    antiv0Cuts->SetTPCRatioFindable(0.35);
   }
   if (suffix == "7") {
     v0Cuts->SetV0RadiusMax(200.f);
@@ -147,7 +147,12 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
     antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
   }
-
+  if (suffix == "15") {
+    v0Cuts->SetCheckCutsMC(true);
+    antiv0Cuts->SetCheckCutsMC(true);
+    v0Cuts->SetLightweight(false);
+    antiv0Cuts->SetLightweight(false);
+  }
   v0Cuts->InitCutHistograms(TString("Lambda"));
   antiv0Cuts->InitCutHistograms(TString("AntiLambda"));
 
@@ -157,6 +162,10 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   photonV0Cuts->SetPosPID(AliPID::kElectron, 11);
   photonV0Cuts->SetNegPID(AliPID::kElectron, -11);
   if (suffix != "0") photonV0Cuts->SetLightweight(true);
+  if (suffix == "15") {
+    photonV0Cuts->SetCheckCutsMC(true);
+    photonV0Cuts->SetLightweight(false);
+  }
   photonV0Cuts->InitCutHistograms(TString("Photon"));
 
   AliSigma0PhotonMotherCuts *sigmaCuts =
