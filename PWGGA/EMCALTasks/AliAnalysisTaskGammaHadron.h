@@ -52,7 +52,7 @@ public:
   void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input;}
   void                        SetNLM(Int_t input)                                   { fMaxNLM          = input;}
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
-  void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;}
+  void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;} // dEta, dPhi = -1 or 0 will use pt parametrized cut
   void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts= input;}
   void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg          = input;}
   void                        SetDoClusMixing(Bool_t input)                         { fDoClusMixing      = input;}
