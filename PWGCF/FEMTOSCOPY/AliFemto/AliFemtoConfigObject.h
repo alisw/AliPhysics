@@ -268,7 +268,7 @@ public:
   /// \brief helper class for building a mapping object
   class BuildMap {
   public:
-    BuildMap() {}
+    BuildMap(): fMap() {}
 
 #ifdef ENABLE_MOVE_SEMANTICS
     #define IMPL_BUILDITEM(__type, __a, __b) \
@@ -588,13 +588,13 @@ public:
 
   public:
     /// construct from config object
-    list_iterator(AliFemtoConfigObject &obj): fParent(&obj), fIsArray(obj.is_array()) {
+    list_iterator(AliFemtoConfigObject &obj): fParent(&obj), fIsArray(obj.is_array()), fInternal() {
       if (fIsArray) {
         fInternal = obj.fValueArray.begin();
       }
     }
 
-    list_iterator(const list_iterator &orig): fParent(orig.fParent), fIsArray(orig.fParent) {
+    list_iterator(const list_iterator &orig): fParent(orig.fParent), fIsArray(orig.fParent), fInternal() {
       if (fIsArray) {
         fInternal = orig.fInternal;
       }
@@ -688,7 +688,7 @@ public:
 
   public:
     /// construct from config object
-    map_iterator(AliFemtoConfigObject &obj): fParent(&obj), fIsMap(obj.is_map()) {
+    map_iterator(AliFemtoConfigObject &obj): fParent(&obj), fIsMap(obj.is_map()), fInternal() {
       if (fIsMap) {
         fInternal = obj.fValueMap.begin();
       }
@@ -698,9 +698,17 @@ public:
       return *fInternal;
     }
 
-    map_iterator& operator++(int) {
+    // prefix-increment (++it)
+    map_iterator& operator++() {
       fInternal++;
       return *this;
+    }
+
+    // postfix-increment (it++)
+    map_iterator operator++(int) {
+      map_iterator tmp(*this);
+      fInternal++;
+      return tmp;
     }
 
     bool operator!=(map_iterator const &rhs) const {
@@ -762,6 +770,9 @@ public:
       src->WarnOfRemainingItems();
       return *this;
     }
+
+    Popper(const Popper &orig): src(orig.src) {}
+    Popper& operator=(const Popper &rhs) { src = rhs.src; return *this; }
   };
 
   Popper pop_all() const { return Popper(*this); }
@@ -928,17 +939,32 @@ private:
 /// \brief Responsible for painting routines
 ///
 class AliFemtoConfigObject::Painter {
-protected:
-  AliFemtoConfigObject *fData; //!
-
 public:
-  /// Construct with a
+  /// Construct with parent configuration object
   Painter(AliFemtoConfigObject &data);
+  /// Copy constructor
+  Painter(const Painter &o)
+    : fData(o.fData)
+    , fTitle(o.fTitle)
+    , fBody(o.fBody)
+  {}
+
+  Painter& operator=(const Painter &r)
+  {
+    if (this != &r) {
+      fData = r.fData;
+      fTitle = r.fTitle;
+      fBody = r.fBody;
+    }
+    return *this;
+  }
 
   void Paint();
   void ExecuteEvent(int, int, int);
 
 protected:
+  AliFemtoConfigObject *fData; //!
+
   TText fTitle;
   TPaveText fBody;
 };
