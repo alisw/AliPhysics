@@ -66,7 +66,7 @@ AliAnalysisTaskElectronEfficiencyV2::~AliAnalysisTaskElectronEfficiencyV2(){
 AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliAnalysisTaskSE(), fEventFilter(0x0)
                                                                               , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
                                                                               , fOutputList(0x0), fSingleElectronList(0x0), fPairList(0x0), fResolutionList(0x0)
-                                                                              , fPGen_DeltaP(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPGen_PrecOverPGen(0x0), fPtGen_PtRecOverPtGen(0x0)
+                                                                              , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
                                                                               , fPGen_DeltaEta(0x0), fPtGen_DeltaEta(0x0), fPGen_DeltaTheta(0x0), fPGen_DeltaPhi_Ele(0x0), fPGen_DeltaPhi_Pos(0x0), fPtGen_DeltaPhi_Ele(0x0)
                                                                               , fPtGen_DeltaPhi_Pos(0x0), fThetaGen_DeltaTheta(0x0), fPhiGen_DeltaPhi(0x0)
                                                                               , fPtBins(), fEtaBins(), fPhiBins(), fThetaBins()
@@ -98,7 +98,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
 AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const char * name) : AliAnalysisTaskSE(name), fEventFilter(0x0)
                                                                               , fResoFile(0x0), fResoFilename(""), fResoFilenameFromAlien(""), fArrResoPt(0x0), fArrResoEta(0x0), fArrResoPhi_Pos(0x0), fArrResoPhi_Neg(0x0)
                                                                               , fOutputList(0x0), fSingleElectronList(0x0), fPairList(0x0), fResolutionList(0x0)
-                                                                              , fPGen_DeltaP(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPGen_PrecOverPGen(0x0), fPtGen_PtRecOverPtGen(0x0)
+                                                                              , fPGen_DeltaP(0x0), fPGen_PrecOverPGen(0x0), fPtGen_DeltaPt(0x0), fPtGen_DeltaPtOverPtGen(0x0), fPtGen_PtRecOverPtGen(0x0), fPtGen_DeltaPt_wGenSmeared(0x0), fPtGen_DeltaPtOverPtGen_wGenSmeared(0x0), fPtGen_PtRecOverPtGen_wGenSmeared(0x0)
                                                                               , fPGen_DeltaEta(0x0), fPtGen_DeltaEta(0x0), fPGen_DeltaTheta(0x0), fPGen_DeltaPhi_Ele(0x0), fPGen_DeltaPhi_Pos(0x0), fPtGen_DeltaPhi_Ele(0x0)
                                                                               , fPtGen_DeltaPhi_Pos(0x0), fThetaGen_DeltaTheta(0x0), fPhiGen_DeltaPhi(0x0)
                                                                               , fPtBins(), fEtaBins(), fPhiBins(), fThetaBins()
@@ -462,10 +462,13 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
     fResolutionList->SetOwner();
 
       fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
       fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
       fPtGen_DeltaPtOverPtGen              = new TH2D("PtGen_DeltaPtOverPtGen",             "", 1000, 0., 20., fNResolutionDeltaptBins, -1., +1.);
-      fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
       fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPtGen_DeltaPt_wGenSmeared           = new TH2D("PtGen_DeltaPt_wGenSmeared",          "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPtGen_DeltaPtOverPtGen_wGenSmeared  = new TH2D("PtGen_DeltaPtOverPtGen_wGenSmeared", "", 1000, 0., 20., fNResolutionDeltaptBins, -1., +1.);
+      fPtGen_PtRecOverPtGen_wGenSmeared    = new TH2D("PtGen_PtRecOverPtGen_wGenSmeared",   "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
       fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "", 1000, 0., 20., fNResolutionetaBins, fResolutionEtaBins.data());
       fPtGen_DeltaEta                      = new TH2D("PtGen_DeltaEta",                     "", 1000, 0., 20., fNResolutionetaBins, fResolutionEtaBins.data());
       fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "", 1000, 0., 20., fNResolutionthetaBins, fResolutionThetaBins.data());
@@ -477,11 +480,14 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
       fPhiGen_DeltaPhi                     = new TH2D("PhiGen_DeltaPhi",                    "", 320, -0.1*TMath::Pi(), 2.1*TMath::Pi(), fNResolutionphiBins, fResolutionPhiBins.data());
 
       fPGen_DeltaP                         ->Sumw2();
+      fPGen_DeltaEta                       ->Sumw2();
       fPtGen_DeltaPt                       ->Sumw2();
       fPtGen_DeltaPtOverPtGen              ->Sumw2();
+      fPtGen_DeltaPt_wGenSmeared           ->Sumw2();
+      fPtGen_DeltaPtOverPtGen_wGenSmeared  ->Sumw2();
+      fPtGen_PtRecOverPtGen_wGenSmeared    ->Sumw2();
       fPGen_PrecOverPGen                   ->Sumw2();
       fPtGen_PtRecOverPtGen                ->Sumw2();
-      fPGen_DeltaEta                       ->Sumw2();
       fPtGen_DeltaEta                      ->Sumw2();
       fPGen_DeltaTheta                     ->Sumw2();
       fPGen_DeltaPhi_Ele                   ->Sumw2();
@@ -493,14 +499,20 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
 
       fPGen_DeltaP                         ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
       fPGen_DeltaP                         ->GetYaxis()->SetTitle("p^{rec} - p^{gen} (GeV/c)");
+      fPGen_PrecOverPGen                   ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
+      fPGen_PrecOverPGen                   ->GetYaxis()->SetTitle("p^{rec} / p^{gen} (GeV/c)");
       fPtGen_DeltaPt                       ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
       fPtGen_DeltaPt                       ->GetYaxis()->SetTitle("p^{rec}_{T} - p^{gen}_{T} (GeV/c)");
       fPtGen_DeltaPtOverPtGen              ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
       fPtGen_DeltaPtOverPtGen              ->GetYaxis()->SetTitle("(p^{gen}_{T} - p^{rec}_{T}) / p^{gen}_{T} (GeV/c)");
-      fPGen_PrecOverPGen                   ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
-      fPGen_PrecOverPGen                   ->GetYaxis()->SetTitle("p^{rec} / p^{gen} (GeV/c)");
       fPtGen_PtRecOverPtGen                ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
       fPtGen_PtRecOverPtGen                ->GetYaxis()->SetTitle("p^{rec}_{T} / p^{gen}_{T} (GeV/c)");
+      fPtGen_DeltaPt_wGenSmeared           ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
+      fPtGen_DeltaPt_wGenSmeared           ->GetYaxis()->SetTitle("p^{gen+smeared}_{T} - p^{gen}_{T} (GeV/c)");
+      fPtGen_DeltaPtOverPtGen_wGenSmeared  ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
+      fPtGen_DeltaPtOverPtGen_wGenSmeared  ->GetYaxis()->SetTitle("(p^{gen}_{T} - p^{gen+smeared}_{T}) / p^{gen}_{T} (GeV/c)");
+      fPtGen_PtRecOverPtGen_wGenSmeared    ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
+      fPtGen_PtRecOverPtGen_wGenSmeared    ->GetYaxis()->SetTitle("p^{gen+smeared}_{T} / p^{gen}_{T} (GeV/c)");
       fPGen_DeltaEta                       ->GetXaxis()->SetTitle("p^{gen} (GeV/c)");
       fPGen_DeltaEta                       ->GetYaxis()->SetTitle("#eta^{rec} - #eta^{gen}");
       fPtGen_DeltaEta                      ->GetXaxis()->SetTitle("p^{gen}_{T} (GeV/c)");
@@ -520,10 +532,13 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
       fPhiGen_DeltaPhi                     ->GetXaxis()->SetTitle("#varphi^{gen} (rad)");
       fPhiGen_DeltaPhi                     ->GetYaxis()->SetTitle("#varphi^{rec} - #varphi^{gen} (rad)");
       fResolutionList->Add(fPGen_DeltaP);
+      fResolutionList->Add(fPGen_PrecOverPGen);
       fResolutionList->Add(fPtGen_DeltaPt);
       fResolutionList->Add(fPtGen_DeltaPtOverPtGen);
-      fResolutionList->Add(fPGen_PrecOverPGen);
       fResolutionList->Add(fPtGen_PtRecOverPtGen);
+      fResolutionList->Add(fPtGen_DeltaPt_wGenSmeared);
+      fResolutionList->Add(fPtGen_DeltaPtOverPtGen_wGenSmeared);
+      fResolutionList->Add(fPtGen_PtRecOverPtGen_wGenSmeared);
       fResolutionList->Add(fPGen_DeltaEta);
       fResolutionList->Add(fPtGen_DeltaEta);
       fResolutionList->Add(fPGen_DeltaTheta);
@@ -860,36 +875,49 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
       // ##########################################################
       // Fill resolution histograms
       // ##########################################################
-      double mcP = mcPart1->P();
-      double mcPt = mcPart1->Pt();
-      double mcEta = mcPart1->Eta();
-      double mcPhi = mcPart1->Phi();
+      double mcP     = mcPart1->P();
+      double mcPt    = mcPart1->Pt();
+      double mcEta   = mcPart1->Eta();
+      double mcPhi   = mcPart1->Phi();
       double mcTheta = mcPart1->Theta();
+      double P     = track->P();
+      double Pt    = part.fPt;
+      double Phi   = part.fPhi;
+      double Eta   = part.fEta;
+      double Theta = track->Theta();
 
       if(TMath::Abs(mcEta) < 1.0) {
         // fPGen                ->Fill(mcP);
         // fPRec                ->Fill(recP);
-        fPGen_DeltaP           ->Fill(mcP,  track->P() - mcP, centralityWeight);
-        fPtGen_DeltaPt         ->Fill(mcPt, part.fPt - mcPt, centralityWeight);
-        fPtGen_DeltaPtOverPtGen->Fill(mcPt, (mcPt - part.fPt) / mcPt, centralityWeight);
-        fPGen_PrecOverPGen     ->Fill(mcP,  track->P() / mcP, centralityWeight);
-        fPtGen_PtRecOverPtGen  ->Fill(mcPt, part.fPt / mcPt, centralityWeight);
+        fPGen_DeltaP           ->Fill(mcP,  P - mcP, centralityWeight);
+        fPtGen_DeltaPt         ->Fill(mcPt, Pt - mcPt, centralityWeight);
+        fPtGen_DeltaPtOverPtGen->Fill(mcPt, (mcPt - Pt) / mcPt, centralityWeight);
+        fPtGen_PtRecOverPtGen  ->Fill(mcPt, Pt / mcPt, centralityWeight);
+
+        if (fDoGenSmearing == true && fArrResoPt){
+          double Pt_genSmeared = part.fPt_smeared;
+          fPtGen_DeltaPt_wGenSmeared         ->Fill(mcPt, Pt_genSmeared - mcPt, centralityWeight);
+          fPtGen_DeltaPtOverPtGen_wGenSmeared->Fill(mcPt, (mcPt - Pt_genSmeared) / mcPt, centralityWeight);
+          fPtGen_PtRecOverPtGen_wGenSmeared  ->Fill(mcPt, Pt_genSmeared / mcPt, centralityWeight);
+        }
+
+        fPGen_PrecOverPGen     ->Fill(mcP,  P / mcP, centralityWeight);
         if (part.fCharge<0) {
-          fPGen_DeltaPhi_Ele   ->Fill(mcP,  part.fPhi - mcPhi, centralityWeight);
-          fPtGen_DeltaPhi_Ele  ->Fill(mcPt, mcPhi - part.fPhi, centralityWeight);
+          fPGen_DeltaPhi_Ele   ->Fill(mcP,  Phi - mcPhi, centralityWeight);
+          fPtGen_DeltaPhi_Ele  ->Fill(mcPt, mcPhi - Phi, centralityWeight);
         }
         else {
-          fPGen_DeltaPhi_Pos   ->Fill(mcP,  part.fPhi - mcPhi, centralityWeight);
-          fPtGen_DeltaPhi_Pos  ->Fill(mcPt, mcPhi - part.fPhi, centralityWeight);
+          fPGen_DeltaPhi_Pos   ->Fill(mcP,  Phi - mcPhi, centralityWeight);
+          fPtGen_DeltaPhi_Pos  ->Fill(mcPt, mcPhi - Phi, centralityWeight);
         }
-        fPhiGen_DeltaPhi       ->Fill(mcPhi, part.fPhi - mcPhi, centralityWeight);
+        fPhiGen_DeltaPhi       ->Fill(mcPhi, Phi - mcPhi, centralityWeight);
       }
 
       if(mcPt > fPtMinGen){
-        fPGen_DeltaEta       ->Fill(mcP,     part.fEta - mcEta, centralityWeight);
-        fPtGen_DeltaEta      ->Fill(mcPt,    part.fEta - mcEta, centralityWeight);
-        fPGen_DeltaTheta     ->Fill(mcP,     track->Theta() - mcTheta, centralityWeight);
-        fThetaGen_DeltaTheta ->Fill(mcTheta, track->Theta() - mcTheta, centralityWeight);
+        fPGen_DeltaEta       ->Fill(mcP,     Eta - mcEta, centralityWeight);
+        fPtGen_DeltaEta      ->Fill(mcPt,    Eta - mcEta, centralityWeight);
+        fPGen_DeltaTheta     ->Fill(mcP,     Theta - mcTheta, centralityWeight);
+        fThetaGen_DeltaTheta ->Fill(mcTheta, Theta - mcTheta, centralityWeight);
       }
     }
   }
@@ -1270,6 +1298,7 @@ void    AliAnalysisTaskElectronEfficiencyV2::FillTrackHistograms(AliVParticle* t
   (dynamic_cast<TH2D *>(fOutputListSupportHistos->At(20)))->Fill(values[AliDielectronVarManager::kPt], values[AliDielectronVarManager::kNFclsTPCr]);
   // (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(21)))->Fill(values[AliDielectronVarManager::kPdgCode]);
   (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(21)))->Fill(mcTrack->PdgCode());
+  (dynamic_cast<TH1D *>(fOutputListSupportHistos->At(22)))->Fill( (fMC->GetTrack(TMath::Abs(mcTrack->GetMother())))->PdgCode());
 }
 
 
@@ -1403,6 +1432,9 @@ void AliAnalysisTaskElectronEfficiencyV2::CreateSupportHistos()
 
   TH1D* hPDGCode = new TH1D("PDGCode","PDGCode;#tracks",10001, -5000, 5000);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
   fOutputListSupportHistos->AddAt(hPDGCode, 21);
+
+  TH1D* hPDGCodeMother = new TH1D("PDGCodeMother","PDGCodeMother;#tracks",10001, -5000, 5000);//.,AliDielectronVarManager::kTPCsignalN); //kNclsTPCdEdx
+  fOutputListSupportHistos->AddAt(hPDGCodeMother, 22);
   // TH2D* hPDGCode_PDGCodeMother = new TH2D("PDGCode_PDGCodeMother",";PDG code;PDG code Mother",
   // 10001,-5000,5000,10001,-5000,5000);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
   // fOutputListSupportHistos->AddAt(hPDGCode_PDGCodeMother, 21);
