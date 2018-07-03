@@ -2624,9 +2624,16 @@ Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluste
 		//?   if (fDoTrackClus && (cid != icluster)) return energyclus;
 
 		//..check if the track was matched within a stricter criteria
-		if(TMath::Abs(etadiff)<fTrackMatchEta && TMath::Abs(phidiff)<fTrackMatchPhi)
+		Double_t etaCut = fTrackMatchEta;
+		Double_t phiCut = fTrackMatchPhi;
+		//
+		// For input -1 or 0, use the parametrized track matching cuts given in https://alice-notes.web.cern.ch/node/813
+		if (etaCut <= 0) etaCut = 0.010 + TMath::Power((track->Pt() + 4.07), -2.5);
+		if (phiCut <= 0) phiCut = 0.015 + TMath::Power((track->Pt() + 3.65), -2.);
+
+		if(TMath::Abs(etadiff)<etaCut && TMath::Abs(phidiff)<phiCut)
 		{
-			if (track->GetLabel() > fMinMCLabel)
+			if (!fIsMC || (fMinMCLabel <= 0 || TMath::Abs(track->GetLabel()) > fMinMCLabel)) // label check copied from AliClusterContainer
 			{
 				foundTrackMatched=1;
 				break;
