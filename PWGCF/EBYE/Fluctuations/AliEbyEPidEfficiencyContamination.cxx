@@ -966,9 +966,9 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
   
   fPtBinNplusNminusCh->Fill(ptContainer);
   
-  cout << "In centrality " << fCentrality << " total +ve Rec =" << nPidRec[0] << " and check_total (pri + misId + mat + WD)= " << nPidRecP[0] + nPidRecMid[0] + nPidRecSec[0] + nPidRecWD[0]  << endl;
+  //cout << "In centrality " << fCentrality << " total +ve Rec =" << nPidRec[0] << " and check_total (pri + misId + mat + WD)= " << nPidRecP[0] + nPidRecMid[0] + nPidRecSec[0] + nPidRecWD[0]  << endl;
   
-  cout << "In centrality " << fCentrality << " total -ve Rec =" << nPidRec[1] << " total (pri + misId + mat + WD)= " << nPidRecP[1] + nPidRecMid[1] + nPidRecSec[1] + nPidRecWD[1]  << endl;
+  //cout << "In centrality " << fCentrality << " total -ve Rec =" << nPidRec[1] << " total (pri + misId + mat + WD)= " << nPidRecP[1] + nPidRecMid[1] + nPidRecSec[1] + nPidRecWD[1]  << endl;
     
   fEventCounter->Fill(7);
   //---- - -- - - - - -   -  -- - - - ---- - - - ---
@@ -1066,7 +1066,7 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 
     
     
-    cout << " Gen positve " << nGen[1] <<" and -ve particle " << nGen[0] << endl;
+    //cout << " Gen positve " << nGen[1] <<" and -ve particle " << nGen[0] << endl;
    
     if(fIsQA){
       Double_t fContainerCh[3] = { (double)fCentrality, nGen[1], nGen[0] };
