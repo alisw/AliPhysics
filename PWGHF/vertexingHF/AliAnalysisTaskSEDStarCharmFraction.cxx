@@ -187,9 +187,10 @@ void AliAnalysisTaskSEDStarCharmFraction::UserCreateOutputObjects()
   fNEvents->GetXaxis()->SetBinLabel(5, "Candidates");
   fNEvents->GetXaxis()->SetBinLabel(6, "Passed track cuts");
   fNEvents->GetXaxis()->SetBinLabel(7, "Passed fiducial acc cuts");
-  fNEvents->GetXaxis()->SetBinLabel(8, "Pass daught imppar cut");
-  fNEvents->GetXaxis()->SetBinLabel(9, "Real D* (MC)");
-  fNEvents->GetXaxis()->SetBinLabel(10, "Skip from Hijing (MC)");
+  fNEvents->GetXaxis()->SetBinLabel(8, "Calc D* vtx");
+  fNEvents->GetXaxis()->SetBinLabel(9, "Pass daught imppar cut");
+  fNEvents->GetXaxis()->SetBinLabel(10, "Real D* (MC)");
+  fNEvents->GetXaxis()->SetBinLabel(11, "Skip from Hijing (MC)");
   fListCandidate = new TList();
   fListCandidate->SetOwner();
   fListCandidate->SetName("listCandidate");
@@ -642,12 +643,12 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
       if (mcLabel >= 0) {
         fIsSignal = kTRUE;
 
-        fNEvents->Fill(9);
+        fNEvents->Fill(10);
 
         partDSt = (AliAODMCParticle*) mcArray->At(mcLabel);
 
         if (fSkipHijing && IsFromHijing(mcArray, partDSt)) {
-          fNEvents->Fill(10);
+          fNEvents->Fill(11);
           continue;
         }
 
@@ -698,14 +699,17 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
       delete fNewPrimVtx; fNewPrimVtx = 0;
       continue;
     }
-    fNewPrimVtx = cand->GetOwnPrimaryVtx();
+    fNewPrimVtx = new AliAODVertex(*cand->GetOwnPrimaryVtx());
     
-    fDStarVtx = ReconstructDStarVtx(cand); 
+    //D* vertexing
+    fDStarVtx = ReconstructDStarVtx(cand);
     if (!fDStarVtx) {
       delete fNewPrimVtx; fNewPrimVtx = 0;
       continue;
     }
-      
+
+    fNEvents->Fill(8);
+
     Double_t d0, d0Err;
     if (CalculateImpactParameter(candSoftPi, d0, d0Err)) {
       d0 = TMath::Abs(d0*1.e4);
@@ -732,7 +736,7 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
       }
     }
 
-    fNEvents->Fill(8);
+    fNEvents->Fill(9);
 
     fTrueImpParForTree = fReadMC && fIsSignal ? CalculateTrueImpactParameterDStar(mcHeader, mcArray, cand) : -9998.;
 
