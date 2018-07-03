@@ -1329,7 +1329,8 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         }
       fCheckEta->Fill(atrack->Eta());
 
-      if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+      //if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+      // not apply vAN20180703 to ...
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
 
       Double_t TPCfound = atrack->GetTPCNclsF();
@@ -1699,15 +1700,15 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       
       //Double_t mimSig = -0.5;
       Double_t fmaxSig =  3.0;
-      /*
+      
       if(fMCarray) // nSigma cut in MC
         {
          fmimSig = -10.0;
          fmaxSig =  10.0;
         }
-        // tempolary not use the cut vAN20180619 to ...
+        // tempolary not use the cut vAN20180619 to vAN20180703
 
-      */ 
+    
 
         fHistIncTPCchi2->Fill(track->Pt(),atrack->GetTPCchi2());
         fHistIncITSchi2->Fill(track->Pt(),atrack->GetITSchi2());
