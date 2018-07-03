@@ -481,7 +481,7 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithQvectors(Int_t 
   std::vector<Int_t> denominatorHarmonics(nCorr); // Harmonics with value 0 for the denominator
   memset(numeratorHarmonics.data(), 0, sizeof(Int_t) * numeratorHarmonics.size());
   memset(denominatorHarmonics.data(), 0, sizeof(Int_t) * denominatorHarmonics.size());
-  //Int_t denominatorHarmonics[14] = {0};
+
   Double_t denominator = 0.;           // Denominator of <m>_(n1...nm) and event weight for the TProfile
   TComplex mParticleCorrelation = TComplex(0,0);  // m-particle correlation
   TComplex eventWeight = TComplex(0,0);// Event weight
@@ -490,6 +490,7 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithQvectors(Int_t 
   for (Int_t iCorr = 0; iCorr < nCorr; iCorr++)
   {
     numeratorHarmonics[iCorr] = harmonics[iCorr];
+    denominatorHarmonics[iCorr] = 0;
   } // End of for (Int_t iCorr = 0; iCorr < nCorr; iCorr++)
 
 // 3.) Computation of the m-particle correlation
@@ -499,7 +500,6 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithQvectors(Int_t 
 
 // 4.) Filling of the TProfile
   fCorrelationWithQvectorsProfile->Fill(0.5, mParticleCorrelation.Re(), denominator);
-
 } // End of void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithQvectors(Int_t n, Int_t nParticles, Double_t *phi[], Double_t *particleWeight[], Int_t *harmonics[], Int_t nCorr)
 
 //******************************************************************************
