@@ -183,10 +183,13 @@ private:
   TList* fResolutionList;
 
   TH2D* fPGen_DeltaP;
+  TH2D* fPGen_PrecOverPGen;
   TH2D* fPtGen_DeltaPt;
   TH2D* fPtGen_DeltaPtOverPtGen;
-  TH2D* fPGen_PrecOverPGen;
   TH2D* fPtGen_PtRecOverPtGen;
+  TH2D* fPtGen_DeltaPt_wGenSmeared;
+  TH2D* fPtGen_DeltaPtOverPtGen_wGenSmeared;
+  TH2D* fPtGen_PtRecOverPtGen_wGenSmeared;
   TH2D* fPGen_DeltaEta;
   TH2D* fPtGen_DeltaEta;
   TH2D* fPGen_DeltaTheta;
