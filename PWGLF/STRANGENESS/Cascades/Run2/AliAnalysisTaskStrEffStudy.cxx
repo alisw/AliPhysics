@@ -213,6 +213,8 @@ fTreeVariablePVx(0),
 fTreeVariablePVy(0),
 fTreeVariablePVz(0),
 
+fTreeVariableRun(0),
+
 //---> Variables for fTreeCascade
 fTreeCascVarCentrality(0),
 fTreeCascVarPosLength(0),
@@ -444,6 +446,8 @@ fTreeVariableNegOriginalX(0),
 fTreeVariablePVx(0),
 fTreeVariablePVy(0),
 fTreeVariablePVz(0),
+
+fTreeVariableRun(0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCentrality(0),
@@ -740,6 +744,8 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePVy",&fTreeVariablePVy,"fTreeVariablePVy/F");
         fTreeV0->Branch("fTreeVariablePVz",&fTreeVariablePVz,"fTreeVariablePVz/F");
     }
+    
+    fTreeV0->Branch("fTreeVariableRun",&fTreeVariableRun,"fTreeVariableRun/I");
     //------------------------------------------------
     
     //------------------------------------------------
@@ -1070,6 +1076,8 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
+    
+    fTreeVariableRun = lESDevent->GetRunNumber();
     
     //sandbox info
     fTreeCascVarPVx = lBestPrimaryVtxPos[0];
