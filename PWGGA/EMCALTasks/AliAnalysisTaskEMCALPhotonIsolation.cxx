@@ -757,12 +757,14 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	}
 
 	if(fAreasPerEvent){
+	  if(fUEMethod == 1){
 	    fPtVsConeVsEtaBand = new TH3F("hPtVsConeVsEtaBand","Cluster energy vs. cone energy vs. eta band energy (not normalised)",200,0.,100.,250,0.,100.,250,0.,100.);
 	    fPtVsConeVsEtaBand->SetXTitle("#it{p}_{T}^{cluster}");
 	    fPtVsConeVsEtaBand->SetYTitle("#sum^{cone} #it{p}_{T}");
 	    fPtVsConeVsEtaBand->SetZTitle("#sum^{eta-band} #it{p}_{T}");
 	    fPtVsConeVsEtaBand->Sumw2();
 	    fOutput->Add(fPtVsConeVsEtaBand);
+	  }
 
 	  if(fQA){
 	    fEtaBandVsConeArea = new TH2F("hEtaBandVsConeArea","Eta-band vs. cone area (depending on the cluster position)", 140, 0.16, 0.51, 200, 0.30, 0.80);
