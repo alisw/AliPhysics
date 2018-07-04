@@ -40,6 +40,7 @@ AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists(
     //this is tuned to look for the H Dibaryon, if neccessary setters need to be
     //introduced.
     fPairInvMass[i]=new TH1F(histName.Data(),histName.Data(),1000,2.25,2.5);
+    fPairInvMass[i]->Sumw2();
     fOutput->Add(fPairInvMass[i]);
   }
 }
