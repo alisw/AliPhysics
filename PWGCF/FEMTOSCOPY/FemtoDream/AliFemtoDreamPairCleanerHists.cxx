@@ -39,7 +39,7 @@ AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists(
     TString histName=Form("InvMassPair_%d",i);
     //this is tuned to look for the H Dibaryon, if neccessary setters need to be
     //introduced.
-    fPairInvMass[i]=new TH1F(histName.Data(),histName.Data(),1000,2250,2500);
+    fPairInvMass[i]=new TH1F(histName.Data(),histName.Data(),1000,2.25,2.5);
     fOutput->Add(fPairInvMass[i]);
   }
 }
