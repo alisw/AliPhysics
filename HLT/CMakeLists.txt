@@ -13,8 +13,8 @@
 # * provided "as is" without express or implied warranty.                  *
 # **************************************************************************
 
-option(HLT_CUDA   "Build HLT GPU tracker using CUDA"   OFF)
-option(HLT_OPENCL "Build HLT GPU tracker using OpenCL" OFF)
+option(ENABLE_CUDA   "Build HLT GPU tracker using CUDA"   OFF)
+option(ENABLE_OPENCL "Build HLT GPU tracker using OpenCL" OFF)
 
 add_definitions(-Duse_aliroot -DUSE_ROOT -DROWHOUGHPARAMS)
 
