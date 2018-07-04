@@ -19,7 +19,7 @@ AliFemtoDreamPairCleaner::AliFemtoDreamPairCleaner(
   fMinimalBooking=MinimalBooking;
   if (!fMinimalBooking) {
     fHists=new AliFemtoDreamPairCleanerHists(
-        nTrackDecayChecks,nDecayDecayChecks);
+        nTrackDecayChecks,nDecayDecayChecks,2);
   }
 }
 
@@ -145,3 +145,20 @@ void AliFemtoDreamPairCleaner::StoreParticle(
 void AliFemtoDreamPairCleaner::ResetArray() {
   fParticles.clear();
 }
+
+void AliFemtoDreamPairCleaner::FillInvMassPair(
+    std::vector<AliFemtoDreamBasePart> &Part1, int PDGCode1,
+    std::vector<AliFemtoDreamBasePart> &Part2, int PDGCode2,
+    int histnumber)
+{
+  for (const auto &it1:Part1) {
+    for (const auto &it2:Part2) {
+      float invMass=InvMassPair(it1.GetMomentum(),PDGCode1,
+                                 it2.GetMomentum(),PDGCode2);
+//      std::cout << invMass << std::endl;
+      fHists->FillPairInvMass(histnumber,invMass);
+    }
+  }
+}
+
+

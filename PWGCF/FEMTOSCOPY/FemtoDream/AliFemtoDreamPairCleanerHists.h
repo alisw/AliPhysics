@@ -13,7 +13,7 @@
 class AliFemtoDreamPairCleanerHists {
  public:
   AliFemtoDreamPairCleanerHists();
-  AliFemtoDreamPairCleanerHists(int nTrackDecays,int nDecayDecays);
+  AliFemtoDreamPairCleanerHists(int nTrackDecays,int nDecayDecays,int nInvMassPairs);
   virtual ~AliFemtoDreamPairCleanerHists();
   void FillDaughtersSharedTrack(int Hist,int counter) {
     fTrackDecays[Hist]->Fill(counter);
@@ -21,9 +21,13 @@ class AliFemtoDreamPairCleanerHists {
   void FillDaughtersSharedDaughter(int Hist,int counter) {
     fDecayDecays[Hist]->Fill(counter);
   };
+  void FillPairInvMass(int Hist, float mass) {
+    fPairInvMass[Hist]->Fill(mass);
+  }
   TList *GetHistList(){return fOutput;};
   TH1F **fTrackDecays;
   TH1F **fDecayDecays;
+  TH1F **fPairInvMass;
   TList *fOutput;
   ClassDef(AliFemtoDreamPairCleanerHists,2)
 };
