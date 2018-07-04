@@ -21,7 +21,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool ContributionSplitting=false,//15
     bool ContributionSplittingDaug=false,//16
     bool RunNumberQA=false,//17
-    int FilterBit=128)//18
+    int FilterBit=128,//18
+    bool InvMassPairs=false)//19
 {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
@@ -326,6 +327,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   config->SetkTBinning(mTkTPlot);
   config->SetmTBinning(mTkTPlot);
   config->SetkTCentralityBinning(kTCentPlot);
+  config->SetInvMassPairs(InvMassPairs);
   if (kTCentPlot) {
     std::vector<float> centBins;
     centBins.push_back(20);

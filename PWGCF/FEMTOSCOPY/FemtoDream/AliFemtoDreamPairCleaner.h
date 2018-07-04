@@ -52,7 +52,7 @@ inline double AliFemtoDreamPairCleaner::E2(int pdgCode, double Ptot2) {
 inline double AliFemtoDreamPairCleaner::InvMassPair(
     TVector3 Part1, int PDG1, TVector3 Part2, int PDG2) {
   double EPart1 = ::sqrt(E2(PDG1,Part1.Mag2()));
-  double EPart2 = ::sqrt(E2(PDG1,Part1.Mag2()));
+  double EPart2 = ::sqrt(E2(PDG1,Part2.Mag2()));
   return ::sqrt((EPart1+EPart2)*(EPart1+EPart2)-(Part1+Part2).Mag2());
 }
 

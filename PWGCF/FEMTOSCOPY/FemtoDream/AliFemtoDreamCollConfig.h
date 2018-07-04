@@ -40,11 +40,13 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMixingDepth(int MixingDepth){fMixingDepth=MixingDepth;};
   void SetSpinningDepth(int SpinningDepth){fSpinningDepth=SpinningDepth;};
   void SetSECommonAncestor(bool doit) {fMCCommonAncestor=doit;};
+  void SetInvMassPairs(bool doIt) {fInvMassPairs=doIt;};
   void SetMinimalBookingME(bool doIt) {fMinimalBookingME=doIt;};
   void SetMinimalBookingSample(bool doIt) {fMinimalBookingSample=doIt;};
   void SetMultiplicityEstimator(AliFemtoDreamEvent::MultEstimator est) {
     fEst=est;
   }
+
   bool GetDoMultBinning() {return fMultBinning;};
   bool GetDoCentBinning() {return fCentBinning;};
   bool GetDokTBinning() {return fkTBinning;};
@@ -56,6 +58,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetUseEventMixing(){return fMixedEventStatistics;};
   bool GetUsePhiSpinning(){return fGetTheControlSampel;};
   bool GetdPhidEtaPlots() {return fdPhidEtaPlots;};
+  bool GetInvMassPairs() {return fInvMassPairs;};
   bool GetMinimalBookingME() {return fMinimalBookingME;};
   bool GetMinimalBookingSample() {return fMinimalBookingSample;};
   AliFemtoDreamEvent::MultEstimator GetMultiplicityEstimator() {
@@ -86,6 +89,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fdPhidEtaPlots;          //
   bool fMixedEventStatistics;   //
   bool fGetTheControlSampel;    //
+  bool fInvMassPairs;           //
   bool fMinimalBookingME;       //
   bool fMinimalBookingSample;   //
   int fNumberRadii;             //

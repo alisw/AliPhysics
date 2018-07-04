@@ -155,9 +155,7 @@ void AliFemtoDreamPairCleaner::FillInvMassPair(
     for (const auto &it2:Part2) {
       double invMass=InvMassPair(it1.GetMomentum(),PDGCode1,
                                  it2.GetMomentum(),PDGCode2);
-      std::cout << invMass << '\n';
       fHists->FillPairInvMass(histnumber,invMass);
-
     }
   }
 }
