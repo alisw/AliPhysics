@@ -757,7 +757,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	}
 
 	if(fAreasPerEvent){
-
 	  if(fUEMethod == 1){
 	    fPtVsConeVsEtaBand = new TH3F("hPtVsConeVsEtaBand","Cluster energy vs. cone energy vs. eta band energy (not normalised)",200,0.,100.,250,0.,100.,250,0.,100.);
 	    fPtVsConeVsEtaBand->SetXTitle("#it{p}_{T}^{cluster}");
@@ -2490,7 +2489,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     phiBandclus = sumEnergyPhiBandClus;
   }
 
-  Double_t stdConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius; // Standard (full) cone area
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t phiBandArea = 0.; // Cluster phi-dependent eta-band area
 
@@ -2502,8 +2500,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
     fPhiBandUETracks->Fill(c.Pt(), sumpTPhiBandTracks/phiBandArea);  // Charged UE energy vs. candidate energy (area normalised)
 
     if(fAnalysispPb){
-      fPtVsNormConeVsNormPhiBand->Fill(c.Pt(), ptIso/isoConeArea, phiBandclus/phiBandArea);                                                // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
-      fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, (ptIso - phiBandclus * (isoConeArea / phiBandArea)) * (stdConeArea / isoConeArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
+      fPtVsNormConeVsNormPhiBand->Fill(c.Pt(), ptIso/isoConeArea, phiBandclus/phiBandArea);                // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
+      fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - phiBandclus * (isoConeArea / phiBandArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
     }
   }
 }
@@ -2697,7 +2695,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     etaBandclus = sumEnergyEtaBandClus;
   }
 
-  Double_t stdConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius; // Standard (full) cone area
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t etaBandArea = 0.; // Cluster phi-dependent eta-band area
 
@@ -2713,8 +2710,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     fEtaBandUETracks->Fill(c.Pt(), sumpTEtaBandTracks/etaBandArea);  // Charged UE energy vs. candidate energy (area normalised)
 
     if(fAnalysispPb){
-      fPtVsNormConeVsNormEtaBand->Fill(c.Pt(), ptIso/isoConeArea, etaBandclus/etaBandArea);                                                // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
-      fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, (ptIso - etaBandclus * (isoConeArea / etaBandArea)) * (stdConeArea / isoConeArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
+      fPtVsNormConeVsNormEtaBand->Fill(c.Pt(), ptIso/isoConeArea, etaBandclus/etaBandArea);                // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
+      fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - etaBandclus * (isoConeArea / etaBandArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
     }
   }
 }
@@ -2877,7 +2874,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
   ptIso = sumEnergyConeClus + sumpTConeCharged;
   cones = 1.347*sumpTPerpConeTrack; // Scaling charged-only UE to neutral + charged UE
 
-  Double_t stdConeArea   = TMath::Pi()*fIsoConeRadius*fIsoConeRadius; // Standard (full) cone area
   Double_t isoConeArea   = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t perpConesArea = 0.; // Cluster (eta, phi)-dependent perpendicular cones area
 
@@ -2887,7 +2883,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
     perpConesArea         *= 2.;
 
     fPerpConesUETracks->Fill(c.Pt(), sumpTPerpConeTrack/perpConesArea);
-    if(fAnalysispPb) fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, (ptIso - cones * (isoConeArea / perpConesArea)) * (stdConeArea / isoConeArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
+    if(fAnalysispPb) fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - cones * (isoConeArea / perpConesArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
   }
 }
 
@@ -2991,7 +2987,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
   ptIso        = sumpTConeCharged;
   phiBandtrack = sumpTPhiBandTrack;
 
-  Double_t stdConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius; // Standard (full) cone area
   Double_t isoConeArea = 0.;
   Double_t phiBandArea = 0.;
 
@@ -3002,8 +2997,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackPhiBand(TLorentzVector c, Do
     fPhiBandUETracks->Fill(c.Pt(), phiBandtrack/phiBandArea);
 
     if(fAnalysispPb){
-      fPtVsNormConeVsNormPhiBand->Fill(c.Pt(), ptIso/isoConeArea, phiBandtrack/phiBandArea);                                                // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
-      fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, (ptIso - phiBandtrack * (isoConeArea / phiBandArea)) * (stdConeArea / isoConeArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
+      fPtVsNormConeVsNormPhiBand->Fill(c.Pt(), ptIso/isoConeArea, phiBandtrack/phiBandArea);                // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
+      fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - phiBandtrack * (isoConeArea / phiBandArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
     }
   }
 }
@@ -3109,7 +3104,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
   ptIso        = sumpTConeCharged;
   etaBandtrack = sumpTEtaBandTrack;
 
-  Double_t stdConeArea = TMath::Pi()*fIsoConeRadius*fIsoConeRadius; // Standard (full) cone area
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t etaBandArea = 0.; // Cluster phi-dependent eta-band area
 
@@ -3120,8 +3114,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackEtaBand(TLorentzVector c, Do
     fEtaBandUETracks->Fill(c.Pt(), etaBandtrack/etaBandArea);
 
     if(fAnalysispPb){
-      fPtVsNormConeVsNormEtaBand->Fill(c.Pt(), ptIso/isoConeArea, etaBandtrack/etaBandArea);                                                // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
-      fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, (ptIso - etaBandtrack * (isoConeArea / etaBandArea)) * (stdConeArea / isoConeArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
+      fPtVsNormConeVsNormEtaBand->Fill(c.Pt(), ptIso/isoConeArea, etaBandtrack/etaBandArea);                // Cone energy    vs. UE energy    vs. candidate energy (area normalised)
+      fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - etaBandtrack * (isoConeArea / etaBandArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
     }
   }
 }
@@ -3218,7 +3212,6 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
   ptIso = sumpTConeCharged;
   cones = sumpTPerpConeTrack;
 
-  Double_t stdConeArea   = TMath::Pi()*fIsoConeRadius*fIsoConeRadius; // Standard (full) cone area
   Double_t isoConeArea   = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t perpConesArea = 0.; // Cluster (eta, phi)-dependent perpendicular cones area
 
@@ -3227,7 +3220,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::PtIsoTrackOrthCones(TLorentzVector c, 
     perpConesArea       = 2.*isoConeArea;
 
     fPerpConesUETracks->Fill(c.Pt(), cones/perpConesArea);
-    if(fAnalysispPb) fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, (ptIso - cones * (isoConeArea / perpConesArea)) * (stdConeArea / isoConeArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
+    if(fAnalysispPb) fPtvsM02vsSumUE_Norm->Fill(c.Pt(), m02candidate, ptIso - cones * (isoConeArea / perpConesArea)); // Cone-UE energy vs. shower shape vs. candidate energy (area normalised)
   }
 }
 
