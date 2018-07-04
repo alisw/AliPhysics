@@ -10,7 +10,7 @@
 /// ---------------------
 /// use root -b to speed up (no canvas drawn)                                                  <br>
 /// root [1] .L $ALICE_WORK_DIR/../ali-master/AliPhysics/PWGPP/EMCAL/BCMacros/runAnalysisBC.C++                                                    <br>
-/// root [2] runAnalysisBC(0,"LHC15o","Train_771","INT7",244918,"","GloballyGood.txt")           //for merging to one runblock   <br>
+/// root [2] runAnalysisBC(0,"LHC15o","Train_771","INT7",244918,"","AllRuns.txt")           //for merging to one runblock   <br>
 /// root [2] runAnalysisBC(-1,"LHC15o","Train_771","INT7",244918,"244918_INT7Filtered.root","")  //for single files              <br>
 ///
 /// \author Eliane Epple <eliane.epple@yale.edu>, Yale University
@@ -53,13 +53,13 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 	//Analysis->AddMaskSM(7);                     //..switch off entire SMs
 	//Analysis->AddMaskSM(9);                     //..switch off entire SMs
 	//Analysis->AddMaskSM(11);                    //..switch off entire SMs
-	Analysis->SetLowerBound(1);                 //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
-	//Analysis->SetLowerBound(0.4);             //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
+	//Analysis->SetLowerBound(1);                 //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
+	Analysis->SetLowerBound(0.4);               //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
     //Analysis->SetStartEndCell(0,12288);       //..only EMCal
     //Analysis->SetStartEndCell(12288,17664);   //..only DCal
     //Analysis->SetQAChecks(1);                 //..1= Perform QA checks - takes a long time! Saves all good cells for cross check to pdf
     //Analysis->SetPrintOutput(1);              //..1= prints more information about excluded cells
-	Analysis->SetTrackCellRecord(0);            //..1= prints non-zero flag elements thoughout the routine
+	//Analysis->SetTrackCellRecord(1);          //..1= prints non-zero flag elements thoughout the routine
 	//Analysis->SetExternalBadMap("Version1OADB/LHC16s_INT7_Histograms_V1.root");
 
 	//. . . . . . . . . . . . . . . . . . . . . . . .
@@ -94,8 +94,9 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 	//Analysis->AddPeriodAnalysis(5, 5.5,5,20);     // hits in range Emin Emax
 
 	//..Add a cut on the time distribution
-//	Analysis->AddPeriodAnalysis(3, 6,-20,+20); // energy/hit in cell in range Emin Emax
-	Analysis->AddPeriodAnalysis(3, 4,550,750); // energy/hit in cell in range Emin Emax
+//	Analysis->AddPeriodAnalysis(3, 6,-20,+20);  // hits with time -20-20ns/all times
+	Analysis->AddPeriodAnalysis(3, 4,550,750); // hits with time 550-750ns/all times
+//	Analysis->AddPeriodAnalysis(3, 40,550,750); // if there are some problems with the fit hits with time 550-750ns/all times
 
 	//*test time stuff*/	Analysis->AddPeriodAnalysis(3, 6,-20,+20);// energy/hit in range Emin Emax
 
