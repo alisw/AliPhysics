@@ -11,6 +11,9 @@
 #include "Rtypes.h"
 #include "AliFemtoDreamBasePart.h"
 #include "AliFemtoDreamPairCleanerHists.h"
+#include "TDatabasePDG.h"
+#include "TVector3.h"
+
 class AliFemtoDreamPairCleaner {
  public:
   AliFemtoDreamPairCleaner();
@@ -24,16 +27,34 @@ class AliFemtoDreamPairCleaner {
   void CleanDecayAndDecay(std::vector<AliFemtoDreamBasePart> *Decay1,
                           std::vector<AliFemtoDreamBasePart> *Decay2,
                           int histnumber);
+  void FillInvMassPair(std::vector<AliFemtoDreamBasePart> &Part1, int PDGCode1,
+                       std::vector<AliFemtoDreamBasePart> &Part2, int PDGCode2,
+                       int histnumber);
   void StoreParticle(std::vector<AliFemtoDreamBasePart> Particles);
   TList* GetHistList(){return fHists->GetHistList();};
   std::vector<std::vector<AliFemtoDreamBasePart>>& GetCleanParticles()
       {return fParticles;};
   void ResetArray();
  private:
+  double InvMassPair(TVector3 Part1, int PDG1, TVector3 Part2, int PDG2);
+  double E2(int pdgCode, double Ptot2);
   bool fMinimalBooking;
   std::vector<std::vector<AliFemtoDreamBasePart>> fParticles;
   AliFemtoDreamPairCleanerHists *fHists;
   ClassDef(AliFemtoDreamPairCleaner,2)
 };
+
+inline double AliFemtoDreamPairCleaner::E2(int pdgCode, double Ptot2) {
+  double mass = TDatabasePDG::Instance()->GetParticle(pdgCode)->Mass();
+  return mass*mass + Ptot2;
+}
+
+inline double AliFemtoDreamPairCleaner::InvMassPair(
+    TVector3 Part1, int PDG1, TVector3 Part2, int PDG2) {
+  double EPart1 = ::sqrt(E2(PDG1,Part1.Mag2()));
+  double EPart2 = ::sqrt(E2(PDG1,Part1.Mag2()));
+  return ::sqrt((EPart1+EPart2)*(EPart1+EPart2)-(Part1+Part2).Mag2());
+}
+
 
 #endif /* ALIFEMTODREAMPAIRCLEANER_H_ */
