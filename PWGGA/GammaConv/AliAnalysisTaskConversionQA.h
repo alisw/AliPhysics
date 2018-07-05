@@ -124,6 +124,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     TH2F*                       hPositronNSigmaITSP;        //
     TH2F*                       hPositronNSigmaTOFP;        //
     TH2F*                       hInvMassPair;               //
+    UShort_t                    fBunch;                     //
     Float_t                     fGammaPt;                   //
     Float_t                     fGammaTheta;                //
     Float_t                     fGammaChi2NDF;              //
@@ -135,8 +136,9 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     Int_t                       fnGammaCandidates;          //
     Int_t*                      fMCStackPos;                //[fnGammaCandidates]
     Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
+
     
-    ClassDef(AliAnalysisTaskConversionQA, 8);
+    ClassDef(AliAnalysisTaskConversionQA, 9);
 };
 
 #endif

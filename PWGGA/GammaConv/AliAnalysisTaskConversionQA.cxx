@@ -118,9 +118,9 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   fGammaPt(0),
   fGammaTheta(0),
   fGammaChi2NDF(0),
-  fGammaPhotonProp(5),
+  fGammaPhotonProp(7),
   fGammaConvCoord(5),
-  fDaughterProp(24),
+  fDaughterProp(36),
   fKind(0),
   fIsMC(kFALSE),
   fnGammaCandidates(1),
@@ -211,9 +211,9 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   fGammaPt(0),
   fGammaTheta(0),
   fGammaChi2NDF(0),
-  fGammaPhotonProp(5),
+  fGammaPhotonProp(7),
   fGammaConvCoord(5),
-  fDaughterProp(24),
+  fDaughterProp(36),
   fKind(0),
   fIsMC(kFALSE),
   fnGammaCandidates(1),
@@ -427,6 +427,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
 
     fTreeQA = new TTree("PhotonQA","PhotonQA");   
     
+    fTreeQA->Branch("Bunch",&fBunch,"fBunch/s");
     fTreeQA->Branch("daughterProp",&fDaughterProp);
     fTreeQA->Branch("recCords",&fGammaConvCoord);
     fTreeQA->Branch("photonProp",&fGammaPhotonProp);
@@ -488,6 +489,8 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
   if(eventNotAccepted) return; // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
 
   fConversionGammas=fV0Reader->GetReconstructedGammas();
+
+  fBunch          = fInputEvent->GetBunchCrossNumber();
 
   if(fMCEvent){
     if(fEventCuts->GetSignalRejection() != 0){
@@ -574,7 +577,9 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
   fGammaPhotonProp(2)  = gamma->GetPsiPair();
   fGammaPhotonProp(3) = fConversionCuts->GetCosineOfPointingAngle(gamma,event);
   fGammaPhotonProp(4) = gamma->GetInvMassPair();
-  
+  fGammaPhotonProp(5) = gamma->GetDCAzToPrimVtx();
+  fGammaPhotonProp(6) = gamma->GetDCArToPrimVtx();
+
   fGammaConvCoord(0) = gamma->GetConversionX();
   fGammaConvCoord(1) = gamma->GetConversionY();
   fGammaConvCoord(2) = gamma->GetConversionZ();
@@ -618,8 +623,8 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
   }
   
   // ITS signal
-  fDaughterProp(14) =  (Float_t)nPosClusterITS;
-  fDaughterProp(15) =  (Float_t)nNegClusterITS;
+  // fDaughterProp(14) =  (Float_t)nPosClusterITS;
+  // fDaughterProp(15) =  (Float_t)nNegClusterITS;
   if (nPosClusterITS > 0 ){
     fDaughterProp(16) =  posTrack->GetITSsignal();
     fDaughterProp(20) =  pidResonse->NumberOfSigmasITS(posTrack,AliPID::kElectron);
@@ -635,6 +640,35 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
     fDaughterProp(21) =  20;
   }
 
+
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+    fDaughterProp(24)    = (Float_t)(dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(0);
+    fDaughterProp(25)    = (Float_t)(dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(1);
+    fDaughterProp(26)    = (Float_t)(dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(2);
+    fDaughterProp(27)    = (Float_t)(dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(3);
+    fDaughterProp(28)    = (Float_t)(dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(4);
+    fDaughterProp(29)    = (Float_t)(dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(5);
+    fDaughterProp(30)    = (Float_t)(dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(0);
+    fDaughterProp(31)    = (Float_t)(dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(1);
+    fDaughterProp(32)    = (Float_t)(dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(2);
+    fDaughterProp(33)    = (Float_t)(dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(3);
+    fDaughterProp(34)    = (Float_t)(dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(4);
+    fDaughterProp(35)    = (Float_t)(dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(5);
+  }else if ( fInputEvent->IsA()==AliAODEvent::Class()){
+    fDaughterProp(24)    = (Float_t)(dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(0);
+    fDaughterProp(25)    = (Float_t)(dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(1);
+    fDaughterProp(26)    = (Float_t)(dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(2);
+    fDaughterProp(27)    = (Float_t)(dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(3);
+    fDaughterProp(28)    = (Float_t)(dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(4);
+    fDaughterProp(29)    = (Float_t)(dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(5);
+    fDaughterProp(30)    = (Float_t)(dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(0);
+    fDaughterProp(31)    = (Float_t)(dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(1);
+    fDaughterProp(32)    = (Float_t)(dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(2);
+    fDaughterProp(33)    = (Float_t)(dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(3);
+    fDaughterProp(34)    = (Float_t)(dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(4);
+    fDaughterProp(35)    = (Float_t)(dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(5);
+  }
+  
   // TOF 
   if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
     Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
