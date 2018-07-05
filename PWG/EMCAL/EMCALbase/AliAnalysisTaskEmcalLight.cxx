@@ -518,10 +518,7 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
       GetGeneralTH1("fHistEventWeightsNoSel", true)->Fill(fEventWeight);
       GetGeneralTH2("fHistEventWeightsVsPtHardNoSel", true)->Fill(fPtHard, fEventWeight);
       GetGeneralTH1("fHistXsectionDistributionNoSel", true)->Fill(fXsection);
-
-      TProfile* hXsection = GetGeneralTProfile("fHistXsectionNoSel", true);
-      hXsection->SetBinEntries(fPtHardBin + 1, hXsection->GetBinEntries(fPtHardBin + 1) + 1);
-      hXsection->SetBinContent(fPtHardBin + 1, fXsection * hXsection->GetBinEntries(fPtHardBin + 1));
+      GetGeneralTProfile("fHistXsectionNoSel", true)->Fill(fPtHardBin, fXsection);
     }
 
     GetGeneralTH1("fHistZVertexNoSel", true)->Fill(fVertex[2]);
