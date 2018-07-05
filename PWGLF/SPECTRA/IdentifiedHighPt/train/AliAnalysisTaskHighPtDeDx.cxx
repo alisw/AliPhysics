@@ -20,6 +20,7 @@
   * 04 jan 2018: changed back to old trigger method
   * 17 may 2018: last debugging&cleaning -> zvtx is now ok in local tests 
   * 26 jun 2018: change logic to use AODEvent() if InputEvent() didn't work
+  * 05 jul 2018: change type to AOD
 
   Remiders:
   * For pp: remove pile up thing
@@ -104,7 +105,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx():
   fTrackFilter(0x0),
   fTrackFilterGolden(0x0),
   fTrackFilterTPC(0x0),
-  fAnalysisType("ESD"),
+  fAnalysisType("AOD"),
   fAnalysisMC(kFALSE),
   fAnalysisPbPb(kFALSE),
   fVZEROBranch(kFALSE),
@@ -168,7 +169,7 @@ AliAnalysisTaskHighPtDeDx::AliAnalysisTaskHighPtDeDx(const char *name):
   fTrackFilter(0x0),
   fTrackFilterGolden(0x0),
   fTrackFilterTPC(0x0),
-  fAnalysisType("ESD"),
+  fAnalysisType("AOD"),
   fAnalysisMC(kFALSE),
   fAnalysisPbPb(kFALSE),
   fVZEROBranch(kFALSE),
