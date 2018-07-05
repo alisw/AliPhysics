@@ -627,7 +627,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             
             if( fkDoImprovedDCAV0DauPropagation ){
                 //Improved: use own call
-                dca=GetDCAV0Dau(ptp, ntp, xp, xn, b);
+                dca=GetDCAV0Dau(ptp, ntp, xp, xn, b, lNegMassForTracking, lPosMassForTracking);
             }else{
                 //Old: use old call
                 dca=nt.GetDCA(&pt,b,xn,xp);
@@ -637,30 +637,6 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
             if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
             
-            /* FIXME: this correction is not implemented
-             Bool_t corrected=kFALSE;
-             if ((nt.GetX() > 3.) && (xn < 3.)) {
-             //correct for the beam pipe material
-             corrected=kTRUE;
-             }
-             if ((pt.GetX() > 3.) && (xp < 3.)) {
-             //correct for the beam pipe material
-             corrected=kTRUE;
-             }
-             if (corrected) {
-             
-             if( fkDoImprovedDCAV0DauPropagation ){
-             //Improved: use own call
-             dca=GetDCAV0Dau(&pt, &nt, xp, xn, b);
-             }else{
-             //Old: use old call
-             dca=nt.GetDCA(&pt,b,xn,xp);
-             }
-             if (dca > fV0VertexerSels[3]) continue;
-             if ((xn+xp) > 2*fV0VertexerSels[6]) continue;
-             if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
-             }
-             */
             if(!fkDoMaterialCorrection){
                 nt.PropagateTo(xn,b);
                 pt.PropagateTo(xp,b);
