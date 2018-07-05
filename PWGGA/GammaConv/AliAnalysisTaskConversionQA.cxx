@@ -505,10 +505,11 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
   }
 
   if(ffillHistograms){
-    CountTracks();
+    //CountTracks();
     hVertexZ->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
     hNContributorsVertex->Fill(fEventCuts->GetNumberOfContributorsVtx(fInputEvent));
-    hNGoodESDTracks->Fill(fNumberOfESDTracks);
+    //hNGoodESDTracks->Fill(fNumberOfESDTracks);
+    hNGoodESDTracks->Fill(fV0Reader->GetNumberOfPrimaryTracks());
     hNV0Tracks->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
   }
 
