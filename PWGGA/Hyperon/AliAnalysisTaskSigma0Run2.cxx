@@ -41,7 +41,8 @@ ClassImp(AliAnalysisTaskSigma0Run2)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr) {}
+      fHistTriggerAfter(nullptr),
+      fOutputTree(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
@@ -76,9 +77,11 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr) {
+      fHistTriggerAfter(nullptr),
+      fOutputTree(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________________________________________
@@ -197,10 +200,10 @@ bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
 void AliAnalysisTaskSigma0Run2::CastToVector(
     std::vector<AliSigma0ParticleV0> &container, const AliVEvent *inputEvent) {
   for (int iGamma = 0; iGamma < fGammaArray->GetEntriesFast(); ++iGamma) {
-    auto photonCandidate =
+    auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
-    if (!photonCandidate) continue;
-    AliSigma0ParticleV0 phot(photonCandidate, inputEvent);
+    if (!PhotonCandidate) continue;
+    AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
     container.push_back(phot);
   }
 }
@@ -393,6 +396,16 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
 
   fOutputContainer->Add(fQA);
 
+  if (fV0Cuts) fV0Cuts->InitCutHistograms(TString("Lambda"));
+  if (fAntiV0Cuts) fAntiV0Cuts->InitCutHistograms(TString("AntiLambda"));
+  if (fPhotonV0Cuts) fPhotonV0Cuts->InitCutHistograms(TString("Photon"));
+  if (fSigmaCuts) fSigmaCuts->InitCutHistograms(TString("Sigma0"));
+  if (fAntiSigmaCuts) fAntiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
+  if (fSigmaPhotonCuts)
+    fSigmaPhotonCuts->InitCutHistograms(TString("Sigma0Photon"));
+  if (fAntiSigmaPhotonCuts)
+    fAntiSigmaPhotonCuts->InitCutHistograms(TString("AntiSigma0Photon"));
+
   if (fV0Cuts && fV0Cuts->GetCutHistograms()) {
     fOutputContainer->Add(fV0Cuts->GetCutHistograms());
   }
@@ -421,7 +434,33 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fOutputContainer->Add(fAntiSigmaPhotonCuts->GetCutHistograms());
   }
 
+  if (fOutputTree != nullptr) {
+    delete fOutputTree;
+    fOutputTree = nullptr;
+  }
+  if (fOutputTree == nullptr) {
+    fOutputTree = new TList();
+    fOutputTree->SetOwner(kTRUE);
+  }
+
+  if (fSigmaCuts && fSigmaCuts->GetSigmaTree()) {
+    fOutputTree->Add(fSigmaCuts->GetSigmaTree());
+  }
+
+  if (fAntiSigmaCuts && fAntiSigmaCuts->GetSigmaTree()) {
+    fOutputTree->Add(fAntiSigmaCuts->GetSigmaTree());
+  }
+
+  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetSigmaTree()) {
+    fOutputTree->Add(fSigmaPhotonCuts->GetSigmaTree());
+  }
+
+  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetSigmaTree()) {
+    fOutputTree->Add(fAntiSigmaPhotonCuts->GetSigmaTree());
+  }
+
   PostData(1, fOutputContainer);
+  PostData(2, fOutputTree);
 }
 
 //____________________________________________________________________________________________________

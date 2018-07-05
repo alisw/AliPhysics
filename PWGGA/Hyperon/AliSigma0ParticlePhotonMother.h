@@ -12,9 +12,6 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   AliSigma0ParticlePhotonMother();
   virtual ~AliSigma0ParticlePhotonMother() {}
   AliSigma0ParticlePhotonMother(const AliSigma0ParticleV0 &lambdaCandidate,
-                                const AliAODConversionPhoton &photonCandidate,
-                                const AliVEvent *inputEvent);
-  AliSigma0ParticlePhotonMother(const AliSigma0ParticleV0 &lambdaCandidate,
                                 const AliSigma0ParticleV0 &photonCandidate,
                                 const AliVEvent *inputEvent);
   AliSigma0ParticlePhotonMother &operator=(
@@ -45,7 +42,6 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
 
   AliSigma0ParticleV0 GetV0() const { return fV0; }
   AliSigma0ParticleV0 GetPhoton() const { return fPhoton; }
-  AliSigma0ParticleV0 GetPhoton2() const { return fPhoton2; }
 
   int MatchToMC(const AliMCEvent *mcEvent, const int PIDmother,
                 const std::vector<int> PIDdaughters) const;
@@ -55,7 +51,6 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   double fRecMass;
   AliSigma0ParticleV0 fV0;
   AliSigma0ParticleV0 fPhoton;
-  AliSigma0ParticleV0 fPhoton2;
 
   ClassDef(AliSigma0ParticlePhotonMother, 2)
 };

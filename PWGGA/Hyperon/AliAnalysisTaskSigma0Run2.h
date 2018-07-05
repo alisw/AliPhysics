@@ -72,25 +72,27 @@ class AliAnalysisTaskSigma0Run2 : public AliAnalysisTaskSE {
   float fV0PercentileMax;  //
   UInt_t fTrigger;         //
 
-  std::vector<AliSigma0ParticleV0> fLambdaContainer;
-  std::vector<AliSigma0ParticleV0> fAntiLambdaContainer;
-  std::vector<AliSigma0ParticleV0> fPhotonV0Container;
-  TClonesArray *fGammaArray;
-
-  TList *fOutputContainer;                  //!
-  TList *fQA;                               //!
-  TH1F *fHistCutQA;                         //
-  TProfile *fHistRunNumber;                 //
-  TProfile *fHistCutBooking;                //
-  TH1F *fHistCentralityProfileBefore;       //
-  TH1F *fHistCentralityProfileAfter;        //
-  TH1F *fHistCentralityProfileCoarseAfter;  //
-  TH1F *fHistTriggerBefore;                 //
-  TH1F *fHistTriggerAfter;                  //
+  std::vector<AliSigma0ParticleV0> fLambdaContainer;      //!
+  std::vector<AliSigma0ParticleV0> fAntiLambdaContainer;  //!
+  std::vector<AliSigma0ParticleV0> fPhotonV0Container;    //!
+  TClonesArray *fGammaArray;                              //!
 
   // Histograms
   // =====================================================================
 
-  ClassDef(AliAnalysisTaskSigma0Run2, 3)
+  TList *fOutputContainer;                  //!
+  TList *fQA;                               //!
+  TH1F *fHistCutQA;                         //!
+  TProfile *fHistRunNumber;                 //!
+  TProfile *fHistCutBooking;                //!
+  TH1F *fHistCentralityProfileBefore;       //!
+  TH1F *fHistCentralityProfileAfter;        //!
+  TH1F *fHistCentralityProfileCoarseAfter;  //!
+  TH1F *fHistTriggerBefore;                 //!
+  TH1F *fHistTriggerAfter;                  //!
+
+  TList *fOutputTree;  //!
+
+  ClassDef(AliAnalysisTaskSigma0Run2, 5)
 };
 #endif
