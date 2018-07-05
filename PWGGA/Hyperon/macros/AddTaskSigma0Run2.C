@@ -18,11 +18,11 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton;
   cutnumberPhoton = "00200008400020002282000000";
-  if (suffix == "10") cutnumberPhoton = "00000008800020002282000000";
-  if (suffix == "11") cutnumberPhoton = "00000088400020002282000000";
-  if (suffix == "12") cutnumberPhoton = "00000008400020002282000000";
-  if (suffix == "13") cutnumberPhoton = "00200008400000002282000000";
-  if (suffix == "14") cutnumberPhoton = "10200008400000002282000000";
+  if (suffix == "14") cutnumberPhoton = "00000008800020002282000000";
+  if (suffix == "15") cutnumberPhoton = "00000088400020002282000000";
+  if (suffix == "16") cutnumberPhoton = "00000008400020002282000000";
+  if (suffix == "17") cutnumberPhoton = "00200008400000002282000000";
+  if (suffix == "18") cutnumberPhoton = "10200008400000002282000000";
   //      00000008800020002282000000 tighter TPC dEdx cut
   //      00000088400020002282000000 pt,ele > 0.02
   //      00000008400020002282000000 pt,ele > 0.05
@@ -147,7 +147,15 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     v0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
     antiv0Cuts->SetLambdaSelection(1.115683 - 0.008, 1.115683 + 0.008);
   }
-  if (suffix == "15") {
+  if (suffix == "10") {
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+  }
+  if (suffix == "11") {
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::None);
+    antiv0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::None);
+  }
+  if (suffix == "999") {
     v0Cuts->SetCheckCutsMC(true);
     antiv0Cuts->SetCheckCutsMC(true);
     v0Cuts->SetLightweight(false);
@@ -160,7 +168,13 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   photonV0Cuts->SetPosPID(AliPID::kElectron, 11);
   photonV0Cuts->SetNegPID(AliPID::kElectron, -11);
   if (suffix != "0") photonV0Cuts->SetLightweight(true);
-  if (suffix == "15") {
+  if (suffix == "12") {
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::OneDaughterCombined);
+  }
+  if (suffix == "13") {
+    v0Cuts->SetPileUpRejectionMode(AliSigma0V0Cuts::BothDaughtersCombined);
+  }
+  if (suffix == "999") {
     photonV0Cuts->SetCheckCutsMC(true);
     photonV0Cuts->SetLightweight(false);
   }
