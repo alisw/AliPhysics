@@ -334,7 +334,7 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     HeaderList->Add(Header3);
   }
 
-  if (periodNameV0Reader.Contains("LHC18b9")){
+  if (periodNameV0Reader.Contains("LHC18b9")||periodNameV0Reader.Contains("LHC17g8")){
     TObjString *HeaderPMB = new TObjString("EPOSLHC_0");
     TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
     if (doWeightingPart==4) {
