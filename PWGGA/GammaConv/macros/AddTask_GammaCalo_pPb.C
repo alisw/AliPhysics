@@ -954,6 +954,12 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 227){ // same as 201 but with all headers
     cuts.AddCut("80010103","1111100017032230000","01631031000000d0"); // INT7
   } else if (trainConfig == 228){ // same as 201 but with special header(s)
+    cuts.AddCut("80010103","1111100017032230000","01631031000000d0"); // INT7
+    cuts.AddCut("80010113","1111100017032230000","01631031000000d0"); // INT7
+    cuts.AddCut("80010123","1111100017032230000","01631031000000d0"); // INT7
+  } else if (trainConfig == 229){ // same as 201 but with special header(s)
+    cuts.AddCut("80010103","1111100017032230000","01631031000000d0"); // INT7
+    cuts.AddCut("80010113","1111100017032230000","01631031000000d0"); // INT7
     cuts.AddCut("80010123","1111100017032230000","01631031000000d0"); // INT7
   //-----------------------------------------------------------------------------------------------
   // Systematics variations MB run 2 EMC pPb std cut: cuts.AddCut("80010113","1111141057032230000","01631031000000d0"); // 0-100
@@ -1294,8 +1300,14 @@ void AddTask_GammaCalo_pPb(
     HeaderList->Add(Header3);
   }
   if (periodNameV0Reader.Contains("LHC18b9")){
+    TObjString *HeaderPMB = new TObjString("EPOSLHC_0");
     TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
-    HeaderList->Add(HeaderP8J);
+    if (doWeightingPart==4) {
+      HeaderList->Add(HeaderPMB);
+      HeaderList->Add(HeaderP8J);
+    } else {
+      HeaderList->Add(HeaderP8J);
+    }
   }
 
   EventCutList->SetOwner(kTRUE);

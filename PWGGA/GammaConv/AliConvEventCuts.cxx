@@ -1063,6 +1063,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
   printf("MC event cuts: \n");
   if (fRejectExtraSignals == 0) printf("\t no rejection was applied \n");
     else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
+    else if (fRejectExtraSignals == 4) printf("\t special handling for Jets embedded in MB events \n");
     else if (fRejectExtraSignals > 1) printf("\t special header have been selected \n");
   printf("\t maximum factor between jet and pt hard = %2.2f \n", fMaxFacPtHard);
 }
@@ -1969,6 +1970,9 @@ Bool_t AliConvEventCuts::SetRejectExtraSignalsCut(Int_t extraSignal) {
   case 3:
     fRejectExtraSignals = 3;
     break; // Rejection for Gamma Correction only
+  case 4:
+    fRejectExtraSignals = 4;
+    break; // Special handling of Jet weights for Jets embedded in MB events
   default:
     AliError(Form("Extra Signal Rejection not defined %d",extraSignal));
     return kFALSE;
