@@ -92,6 +92,19 @@ class AliAODv0;
 #include "AliCascadeResult.h"
 #include "AliAnalysisTaskWeakDecayVertexer.h"
 
+//stuff for mat corr
+#include <TChain.h>
+#include <TGeoGlobalMagField.h>
+#include "TGeoManager.h"
+#include <TRegexp.h>
+
+#include "AliGeomManager.h"
+#include "AliCDBManager.h"
+#include "AliGRPManager.h"
+#include "AliESDInputHandler.h"
+#include "AliLog.h"
+#include "AliTrackerBase.h"
+
 using std::cout;
 using std::endl;
 
@@ -119,6 +132,8 @@ fkXYCase1 ( kTRUE ),
 fkXYCase2 ( kTRUE ),
 fkResetInitialPositions ( kFALSE ),
 fkDoImprovedDCAV0DauPropagation( kFALSE ),
+fkDoMaterialCorrection( kFALSE ),
+fRunNumber(-1),
 //________________________________________________
 //Flags for cascade vertexer
 fkRunCascadeVertexer    ( kFALSE ),
@@ -167,6 +182,8 @@ fkXYCase1 ( kTRUE ),
 fkXYCase2 ( kTRUE ),
 fkResetInitialPositions ( kFALSE ),
 fkDoImprovedDCAV0DauPropagation( kFALSE ),
+fkDoMaterialCorrection( kFALSE ),
+fRunNumber(-1), 
 //________________________________________________
 //Flags for cascade vertexer
 fkRunCascadeVertexer    ( kFALSE ),
@@ -316,6 +333,29 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
     
     //Event taken for analysis! 
     fHistEventCounter->Fill(0.5);
+    
+    if(fkDoMaterialCorrection) {
+        if( lESDevent->GetRunNumber() != fRunNumber){
+            fRunNumber = lESDevent->GetRunNumber();
+            AliWarning(Form("Material corrections enabled! New run detected: %i, loading geometry...",fRunNumber));
+            if (!gGeoManager) {
+                AliCDBManager::Instance()->SetRaw(1);
+                AliCDBManager::Instance()->SetRun(fRunNumber);
+                AliGeomManager::LoadGeometry();
+                AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD");
+            }
+            if (!TGeoGlobalMagField::Instance()->GetField()) {
+                AliGRPManager gm;
+                if(!gm.ReadGRPEntry()) {
+                    AliWarning("Cannot get GRP entry");
+                }
+                if( !gm.SetMagField() ) {
+                    AliWarning("Problem with magnetic field setup");
+                }
+            }
+            AliWarning("Geometry loaded for this run. ");
+        }
+    }
     
     //------------------------------------------------
     // Primary Vertex Requirements Section:
@@ -557,6 +597,9 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             Int_t pidx=pos[k];
             AliESDtrack *ptrk=event->GetTrack(pidx);
             
+            Double_t lNegMassForTracking = ntrk->GetMassForTracking();
+            Double_t lPosMassForTracking = ptrk->GetMassForTracking();
+            
             //Pre-select dE/dx: only proceed if at least one of these tracks looks like a proton
             /*
              if(fkPreselectDedxLambda){
@@ -618,8 +661,14 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
              if ((xn+xp) < 2*fV0VertexerSels[5]) continue;
              }
              */
-            
-            nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
+            if(!fkDoMaterialCorrection){
+                nt.PropagateTo(xn,b);
+                pt.PropagateTo(xp,b);
+            }else{
+                AliExternalTrackParam *ntp=&nt, *ptp=&pt;
+                AliTrackerBase::PropagateTrackTo(ntp, xn, lNegMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                AliTrackerBase::PropagateTrackTo(ptp, xp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+            }
             
             //select maximum eta range (after propagation)
             if (TMath::Abs(nt.Eta())>0.8&&fkExtraCleanup) continue;
@@ -1572,7 +1621,7 @@ void AliAnalysisTaskWeakDecayVertexer::CheckChargeV0(AliESDv0 *v0)
     return;
 }
 
-Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b) {
+Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking, Double_t lPosMassForTracking) {
     //--------------------------------------------------------------
     // Propagates this track and the argument track to the position of the
     // distance of closest approach.
@@ -1808,8 +1857,13 @@ Double_t AliAnalysisTaskWeakDecayVertexer::GetDCAV0Dau( AliExternalTrackParam *p
         //End of preprocessing stage!
         //at this point lPreprocessxp, lPreprocessxn are already good starting points: update helixparams
         if( lPreprocessDCAxy < 999 ) { //some improvement... otherwise discard in all cases, please
-            nt->PropagateTo(lPreprocessxn, b);
-            pt->PropagateTo(lPreprocessxp, b);
+            if(fkDoMaterialCorrection) {
+                AliTrackerBase::PropagateTrackTo(nt, lPreprocessxn, lNegMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                AliTrackerBase::PropagateTrackTo(pt, lPreprocessxp, lPosMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+            }else{
+                nt->PropagateTo(lPreprocessxn, b);
+                pt->PropagateTo(lPreprocessxp, b);
+            }
         }
         
         //don't redefine!

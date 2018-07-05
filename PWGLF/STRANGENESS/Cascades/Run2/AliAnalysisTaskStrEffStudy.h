@@ -428,8 +428,8 @@ private:
     Float_t fTreeVariableNegSigmaZ2;
     
     //Sandbox mode
-    AliExternalTrackParam *fTreeVariablePosTrack;
-    AliExternalTrackParam *fTreeVariableNegTrack;
+    AliESDtrack *fTreeVariablePosTrack;
+    AliESDtrack *fTreeVariableNegTrack;
     
     AliESDv0 *fTreeVariableOTFV0;
     
@@ -544,9 +544,9 @@ private:
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     //Save full info for full re-vertex offline replay ('sandbox mode')
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    AliExternalTrackParam *fTreeCascVarBachTrack;
-    AliExternalTrackParam *fTreeCascVarPosTrack;
-    AliExternalTrackParam *fTreeCascVarNegTrack;
+    AliESDtrack *fTreeCascVarBachTrack;
+    AliESDtrack *fTreeCascVarPosTrack;
+    AliESDtrack *fTreeCascVarNegTrack;
     
     //Sandbox on-the-fly V0 for comparison, please
     AliESDv0 *fTreeCascVarOTFV0;
