@@ -695,11 +695,11 @@ void AliAnalysisTaskSEDStarCharmFraction::UserExec(Option_t */*option*/)
     }
     fNEvents->Fill(7);
     
-    if(!cand->GetOwnPrimaryVtx()){
+    if(!aodEvent->GetPrimaryVertex()){
       delete fNewPrimVtx; fNewPrimVtx = 0;
       continue;
     }
-    fNewPrimVtx = new AliAODVertex(*cand->GetOwnPrimaryVtx());
+    fNewPrimVtx = new AliAODVertex(*aodEvent->GetPrimaryVertex());
     
     //D* vertexing
     fDStarVtx = ReconstructDStarVtx(cand);
