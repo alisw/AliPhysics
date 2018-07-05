@@ -1,7 +1,9 @@
 /*
   Last update (new version): 
-  20 aug 2015: clean up
-  22 aug 2015: match pre defined output
+  * 20 aug 2015: clean up
+  * 22 aug 2015: match pre defined output
+  * [...]
+  * 05 jul 2018: change type to AOD for heavy ion (TODO:change the other typeruns too)
 
 */
 
@@ -109,8 +111,10 @@ AliAnalysisTask* AddTask(Bool_t AnalysisMC, const Char_t* taskname, Int_t typeru
     sprintf(TaskName,"%s_%1.0f_%1.0f",taskname,minc,maxc);
     
     taskHighPtDeDx = new AliAnalysisTaskHighPtDeDx(TaskName);
-    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-    taskHighPtDeDx->SetAnalysisType(type);
+    //    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+    //    taskHighPtDeDx->SetAnalysisType(type);
+    // Run AOD even when filtered from LF_PbPb or LF_PbPb_MC. (Or change back to the lines above)
+    taskHighPtDeDx->SetAnalysisType("AOD");
     taskHighPtDeDx->SetAnalysisMC(AnalysisMC);
     taskHighPtDeDx->SetAnalysisPbPb(kTRUE);
     taskHighPtDeDx->SetProduceVZEROBranch(kTRUE);
