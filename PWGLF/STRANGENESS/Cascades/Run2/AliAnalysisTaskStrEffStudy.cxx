@@ -1336,6 +1336,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeVariableNegOriginalX = esdTrackNeg->GetX();
         fTreeVariablePosOriginalX = esdTrackPos->GetX();
         
+        //store original esd tracks
+        fTreeVariableNegTrack = esdTrackNeg;
+        fTreeVariablePosTrack = esdTrackPos;
+        
         //-----------------------------------------------------------------
         //3a: get basic track characteristics
         fTreeVariablePosLength = -1;
@@ -1397,8 +1401,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeVariableNegPropagStatus = nt.PropagateTo(xn,lMagneticField);
         fTreeVariablePosPropagStatus = pt.PropagateTo(xp,lMagneticField);
         
-        fTreeVariableNegTrack = pointnt;
-        fTreeVariablePosTrack = pointpt;
+
         
         //=================================================================================
         //OTF loop: try to find equivalent OTF V0, store empty object if not found
@@ -1629,6 +1632,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         AliESDtrack *esdTrackNeg  = lESDevent->GetTrack( lCascNegTrackArray[iCasc] );
         AliESDtrack *esdTrackBach = lESDevent->GetTrack( lCascBachTrackArray[iCasc] );
         
+        //Sandbox information: always, regardless of status
+        fTreeCascVarBachTrack = esdTrackBach;
+        fTreeCascVarPosTrack = esdTrackPos;
+        fTreeCascVarNegTrack = esdTrackNeg;
+        
         //=================================================================================
         //OTF loop: try to find equivalent OTF V0, store empty object if not found
         fTreeCascVarOTFV0 = 0x0;
@@ -1795,11 +1803,6 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         AliESDv0 *pv0=&v0;
         AliExternalTrackParam bt(*esdTrackBach), *pbt=&bt;
         Double_t cascdca = PropagateToDCA(pv0,pbt,lESDevent,lMagneticField);
-        
-        //Sandbox information: always, regardless of status
-        fTreeCascVarBachTrack = pbt;
-        fTreeCascVarPosTrack = ptp;
-        fTreeCascVarNegTrack = ntp;
         
         fTreeCascVarDCACascDaughters = 1e+10;
         fTreeCascVarCascPropagation = kFALSE;

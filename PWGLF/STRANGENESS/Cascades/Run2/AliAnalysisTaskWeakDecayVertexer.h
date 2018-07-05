@@ -62,6 +62,10 @@ public:
         //Highly experimental, use with care!
         fkDoImprovedDCAV0DauPropagation = lOpt;
     }
+    void SetDoMaterialCorrections( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoMaterialCorrection = lOpt;
+    }
     void SetXYCase1Preoptimization( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkXYCase1 = lOpt;
@@ -219,7 +223,7 @@ public:
     void CheckChargeV0(AliESDv0 *v0);
     //---------------------------------------------------------------------------------------
     //Improved DCA V0 Dau
-    Double_t GetDCAV0Dau ( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b);
+    Double_t GetDCAV0Dau ( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking=0.139, Double_t lPosMassForTracking=0.139);
     void GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], Double_t b);
     //---------------------------------------------------------------------------------------
 
@@ -253,6 +257,8 @@ private:
     Bool_t fkXYCase2; //Circles-touch case pre-optimization switch (cowboy/sailor duality resolution)
     Bool_t fkResetInitialPositions; 
     Bool_t fkDoImprovedDCAV0DauPropagation;
+    Bool_t fkDoMaterialCorrection; //Replace AliExternalTrackParam::PropagateTo with AliTrackerBase::PropagateTrackTo
+    Int_t fRunNumber; //keep track of run number, needed to load geometry + invoke AliTrackerBase 
     
     Bool_t fkRunCascadeVertexer;      // if true, re-run cascade vertexer
     Bool_t fkUseUncheckedChargeCascadeVertexer; //if true, use cascade vertexer that does not check bachelor charge
