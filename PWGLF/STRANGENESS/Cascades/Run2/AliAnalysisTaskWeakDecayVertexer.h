@@ -215,7 +215,7 @@ public:
     Double_t Det(Double_t a00,Double_t a01,Double_t a02,
                  Double_t a10,Double_t a11,Double_t a12,
                  Double_t a20,Double_t a21,Double_t a22) const;
-    Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk, AliESDEvent *event, Double_t b);
+    Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk, AliESDEvent *event, Double_t b, Double_t lBachMassForTracking=0.139);
     void Evaluate(const Double_t *h, Double_t t,
                   Double_t r[3],  //radius vector
                   Double_t g[3],  //first defivatives
