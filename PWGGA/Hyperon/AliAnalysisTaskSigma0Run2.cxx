@@ -393,6 +393,16 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
 
   fOutputContainer->Add(fQA);
 
+  if (fV0Cuts) fV0Cuts->InitCutHistograms(TString("Lambda"));
+  if (fAntiV0Cuts) fAntiV0Cuts->InitCutHistograms(TString("AntiLambda"));
+  if (fPhotonV0Cuts) fPhotonV0Cuts->InitCutHistograms(TString("Photon"));
+  if (fSigmaCuts) fSigmaCuts->InitCutHistograms(TString("Sigma0"));
+  if (fAntiSigmaCuts) fAntiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
+  if (fSigmaPhotonCuts)
+    fSigmaPhotonCuts->InitCutHistograms(TString("Sigma0Photon"));
+  if (fAntiSigmaPhotonCuts)
+    fAntiSigmaPhotonCuts->InitCutHistograms(TString("AntiSigma0Photon"));
+
   if (fV0Cuts && fV0Cuts->GetCutHistograms()) {
     fOutputContainer->Add(fV0Cuts->GetCutHistograms());
   }

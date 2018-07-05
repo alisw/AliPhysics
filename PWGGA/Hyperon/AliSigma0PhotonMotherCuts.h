@@ -71,8 +71,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TList *GetCutHistograms() const { return fHistograms; }
 
  protected:
-  TList *fHistograms;
-  TList *fHistogramsMC;
+  TList *fHistograms;    //!
+  TList *fHistogramsMC;  //!
 
   bool fIsMC;
   bool fIsLightweight;
@@ -83,57 +83,57 @@ class AliSigma0PhotonMotherCuts : public TObject {
   deque<vector<AliSigma0ParticleV0> > fLambdaMixed;  //!
   deque<vector<AliSigma0ParticleV0> > fPhotonMixed;  //!
 
-  short fMixingDepth;
-  int fPDG;
-  int fPDGDaughter1;
-  int fPDGDaughter2;
+  short fMixingDepth;  //
+  int fPDG;            //
+  int fPDGDaughter1;   //
+  int fPDGDaughter2;   //
 
-  float fMassSigma;
-  float fSigmaMassCut;
-  float fSigmaSidebandLow;
-  float fSigmaSidebandUp;
+  float fMassSigma;         //
+  float fSigmaMassCut;      //
+  float fSigmaSidebandLow;  //
+  float fSigmaSidebandUp;   //
 
-  float fArmenterosCut;
-  float fArmenterosQtLow;
-  float fArmenterosQtUp;
-  float fArmenterosAlphaLow;
-  float fArmenterosAlphaUp;
+  float fArmenterosCut;       //
+  float fArmenterosQtLow;     //
+  float fArmenterosQtUp;      //
+  float fArmenterosAlphaLow;  //
+  float fArmenterosAlphaUp;   //
 
   // Histograms
   // =====================================================================
-  TProfile *fHistCutBooking;  //
+  TProfile *fHistCutBooking;  //!
 
-  TH1F *fHistNSigma;                   //
-  TH1F *fHistPt;                       //
-  TH1F *fHistMassCutPt;                //
-  TH1F *fHistInvMass;                  //
-  TH1F *fHistInvMassBeforeArmenteros;  //
-  TH1F *fHistInvMassRec;               //
-  TH2F *fHistInvMassPt;                //
-  TH2F *fHistInvMassEta;               //
-  TH2F *fHistEtaPhi;                   //
-  TH1F *fHistRapidity;                 //
-  TH2F *fHistPtY[22];                  //
-  TH2F *fHistArmenterosBefore;         //
-  TH2F *fHistArmenterosAfter;          //
-  TH1F *fHistMixedPt;                  //
-  TH1F *fHistMixedInvMass;             //
-  TH2F *fHistMixedPtY[22];             //
-  TH2F *fHistMixedInvMassPt;           //
-  TH2F *fHistMixedInvMassEta;          //
+  TH1F *fHistNSigma;                   //!
+  TH1F *fHistPt;                       //!
+  TH1F *fHistMassCutPt;                //!
+  TH1F *fHistInvMass;                  //!
+  TH1F *fHistInvMassBeforeArmenteros;  //!
+  TH1F *fHistInvMassRec;               //!
+  TH2F *fHistInvMassPt;                //!
+  TH2F *fHistInvMassEta;               //!
+  TH2F *fHistEtaPhi;                   //!
+  TH1F *fHistRapidity;                 //!
+  TH2F *fHistPtY[22];                  //!
+  TH2F *fHistArmenterosBefore;         //!
+  TH2F *fHistArmenterosAfter;          //!
+  TH1F *fHistMixedPt;                  //!
+  TH1F *fHistMixedInvMass;             //!
+  TH2F *fHistMixedPtY[22];             //!
+  TH2F *fHistMixedInvMassPt;           //!
+  TH2F *fHistMixedInvMassEta;          //!
 
-  TH1F *fHistMCTruthPt;             //
-  TH2F *fHistMCTruthPtY;            //
-  TH2F *fHistMCTruthPtEta;          //
-  TH1F *fHistMCTruthDaughterPt;     //
-  TH2F *fHistMCTruthDaughterPtY;    //
-  TH2F *fHistMCTruthDaughterPtEta;  //
+  TH1F *fHistMCTruthPt;             //!
+  TH2F *fHistMCTruthPtY;            //!
+  TH2F *fHistMCTruthPtEta;          //!
+  TH1F *fHistMCTruthDaughterPt;     //!
+  TH2F *fHistMCTruthDaughterPtY;    //!
+  TH2F *fHistMCTruthDaughterPtEta;  //!
 
-  TH1F *fHistMCV0Pt;    //
-  TH1F *fHistMCV0Mass;  //
+  TH1F *fHistMCV0Pt;    //!
+  TH1F *fHistMCV0Mass;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 3)
+  ClassDef(AliSigma0PhotonMotherCuts, 4)
 };
 
 #endif

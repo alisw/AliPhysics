@@ -153,8 +153,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     v0Cuts->SetLightweight(false);
     antiv0Cuts->SetLightweight(false);
   }
-  v0Cuts->InitCutHistograms(TString("Lambda"));
-  antiv0Cuts->InitCutHistograms(TString("AntiLambda"));
 
   AliSigma0V0Cuts *photonV0Cuts = AliSigma0V0Cuts::PhotonCuts();
   photonV0Cuts->SetIsMC(isMC);
@@ -166,7 +164,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     photonV0Cuts->SetCheckCutsMC(true);
     photonV0Cuts->SetLightweight(false);
   }
-  photonV0Cuts->InitCutHistograms(TString("Photon"));
 
   AliSigma0PhotonMotherCuts *sigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
@@ -176,7 +173,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   sigmaCuts->SetSigmaMassCut(0.005);
   sigmaCuts->SetSigmaSideband(0.015, 0.05);
   if (suffix != "0") sigmaCuts->SetLightweight(true);
-  sigmaCuts->InitCutHistograms(TString("Sigma0"));
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
@@ -186,7 +182,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   antiSigmaCuts->SetSigmaMassCut(0.005);
   antiSigmaCuts->SetSigmaSideband(0.015, 0.05);
   if (suffix != "0") antiSigmaCuts->SetLightweight(true);
-  antiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
 
   AliSigma0PhotonMotherCuts *sigmaPhotonCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
@@ -196,7 +191,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   sigmaPhotonCuts->SetSigmaMassCut(0.005);
   sigmaPhotonCuts->SetSigmaSideband(0.015, 0.05);
   if (suffix != "0") sigmaPhotonCuts->SetLightweight(true);
-  sigmaPhotonCuts->InitCutHistograms(TString("Sigma0Photon"));
 
   AliSigma0PhotonMotherCuts *antiSigmaPhotonCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
@@ -206,7 +200,6 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   antiSigmaPhotonCuts->SetSigmaMassCut(0.005);
   antiSigmaPhotonCuts->SetSigmaSideband(0.015, 0.05);
   if (suffix != "0") antiSigmaPhotonCuts->SetLightweight(true);
-  antiSigmaPhotonCuts->InitCutHistograms(TString("AntiSigma0Photon"));
 
   AliAnalysisTaskSigma0Run2 *task =
       new AliAnalysisTaskSigma0Run2("AnalysisTaskSigma0");
