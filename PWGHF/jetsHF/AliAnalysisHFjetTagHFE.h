@@ -118,11 +118,15 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistIncjetOrg;
   TH2F                        *fHistIncjetBG;
   TH2F                        *fHistHFjet;
+  TH1F                        *fHistHFdijet;
   TH2F                        *fHistULSjet;
   TH2F                        *fHistLSjet;
   TH2F                        *fHistHFjetOrder;
   TH2F                        *fHistDiJetPhi; 
   TH2F                        *fHistDiJetMomBalance; 
+  TH2F                        *fHistDiJetMomBalance_All; 
+  TH2F                        *fHistDiJetPhi_MC; 
+  TH2F                        *fHistDiJetMomBalance_MC; 
   TH2F                        *fInvmassULS;
   TH2F                        *fInvmassLS;
   TH2F                        *fInvmassHFuls;
