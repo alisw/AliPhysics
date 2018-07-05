@@ -31,13 +31,13 @@
 
 
 
-class AliAnalysisTaskQAHighPtDeDxO : public AliAnalysisTaskSE {
+class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
  public:
  
 
-  AliAnalysisTaskQAHighPtDeDxO();
-  AliAnalysisTaskQAHighPtDeDxO(const char *name);
-  virtual ~AliAnalysisTaskQAHighPtDeDxO();
+  AliAnalysisTaskQAHighPtDeDxTest();
+  AliAnalysisTaskQAHighPtDeDxTest(const char *name);
+  virtual ~AliAnalysisTaskQAHighPtDeDxTest();
 
 
 
@@ -124,7 +124,6 @@ class AliAnalysisTaskQAHighPtDeDxO : public AliAnalysisTaskSE {
   TString       fAnalysisType;        //  "ESD" or "AOD"
   Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
   Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
-//  Boolt_t       fAnalysisTask;
   UInt_t        ftrigBit;
   TRandom*      fRandom;              //! random number generator
   Bool_t        fPileUpRej;           // kTRUE is pile-up is rejected
@@ -157,13 +156,7 @@ class AliAnalysisTaskQAHighPtDeDxO : public AliAnalysisTaskSE {
   // Output objects
   //
   TList*        fListOfObjects;     //! Output list of objects
-  TH1I*         fEvents;            //! No of accepted events
-  TH1I*         fVtx;               //! Event vertex info
   TH1F*         fVtxMC;             //! Event vertex info for ALL MC events
-//  TH1F*         fVtxBeforeCuts;     //! Vertex z dist before cuts
-//  TH1F*         fVtxAfterCuts;      //! Vertex z dist after cuts
-//  TH1F* fn1;
-//  TH1F* hEvents;
   Bool_t       fdEdxCalibrated;
   Bool_t       fMakePid;
   TH1F* fcent;
@@ -239,17 +232,17 @@ class AliAnalysisTaskQAHighPtDeDxO : public AliAnalysisTaskSE {
 
   TF1* fEtaCalibrationNeg;
   TF1* fEtaCalibration;
-//  TF1* fDeDxVsEtaNeg;
-//  TF1* fDeDxVsEtaPos;
+  TF1* felededxfitPos;
+  TF1* felededxfitNeg;
   TF1* fcutDCAxy;
 
 
-  AliAnalysisTaskQAHighPtDeDxO(const AliAnalysisTaskQAHighPtDeDxO&);            // not implemented
-  AliAnalysisTaskQAHighPtDeDxO& operator=(const AliAnalysisTaskQAHighPtDeDxO&); // not implemented
+  AliAnalysisTaskQAHighPtDeDxTest(const AliAnalysisTaskQAHighPtDeDxTest&);            // not implemented
+  AliAnalysisTaskQAHighPtDeDxTest& operator=(const AliAnalysisTaskQAHighPtDeDxTest&); // not implemented
 
   //TTree*        fTree;              //! Debug tree 
 
-  ClassDef(AliAnalysisTaskQAHighPtDeDxO, 1);    //Analysis task for high pt analysis 
+  ClassDef(AliAnalysisTaskQAHighPtDeDxTest, 1);    //Analysis task for high pt analysis 
 };
 
 #endif

@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  * **************************************************************************/
 
 
-#include "AliAnalysisTaskQAHighPtDeDxO.h"
+#include "AliAnalysisTaskQAHighPtDeDxTest.h"
 
 // ROOT includes
 #include <TList.h>
@@ -78,7 +78,7 @@ using namespace std;
 
 
 
-const Double_t AliAnalysisTaskQAHighPtDeDxO::fgkClight = 2.99792458e-2;
+const Double_t AliAnalysisTaskQAHighPtDeDxTest::fgkClight = 2.99792458e-2;
 Float_t magf = -1;
 TF1* cutLow  = new TF1("StandardPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 50);
 TF1* cutHigh = new TF1("StandardPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 50);
@@ -105,6 +105,15 @@ const Double_t bNeg[nCent] = {-0.122292,0.11876 ,0.0060856,-0.0200841,0.0228002,
 const Double_t cNeg[nCent] = {0.748659 ,1.39121 ,1.05511  ,0.972488  ,1.09636  ,1.04173   ,1.06027  ,0.924111  ,1.30225 ,0.852475};
 const Double_t dNeg[nCent] = {0.415989 ,0.894481,0.617493 ,0.550473  ,0.645483 ,0.599914  ,0.615319 ,0.522093  ,0.840085,0.424588};
 
+const Double_t aPosEl[nCent] = {78.7401 ,78.583   ,78.6193 ,78.5886,78.8275 ,78.6249 ,78.6817  ,78.5971,78.433  ,78.433};
+const Double_t bPosEl[nCent] = {2.98839 ,2.04009  ,3.36522 ,2.58982,0.595512,3.50901 ,1.66237  ,2.80526,4.38372 ,4.38372 };
+const Double_t cPosEl[nCent] = {-7.83643,-0.972868,-7.10595,-5.1087,0.45588 ,-9.23427,-0.980859,-6.0588,-9.11186,-9.11186 };
+const Double_t dPosEl[nCent] = {4.1571  ,-2.85664 ,2.94706 ,2.01079,-2.98313,5.55299 ,-2.39829 ,2.8525 ,4.2765  ,4.2765};
+
+const Double_t aNegEl[nCent]={78.5643  ,78.6004  ,78.2853 ,78.3675 ,78.3426 ,78.5809    ,78.2088 ,78.3638 ,78.1972,78.1972};
+const Double_t bNegEl[nCent]={-1.62327 ,-0.662359,-3.78407,-3.31185,-3.7269 ,-1.19542  ,-5.41726,-3.44326,-4.20979,-4.20979};
+const Double_t cNegEl[nCent]={-2.77851 ,1.53235  ,-7.07994,-6.34969,-7.29292,-0.00395374,-11.227,-6.04591,-6.53041,-6.53041};
+const Double_t dNegEl[nCent]={-0.787795,3.57675  ,-3.2976 ,-2.87936,-3.32353,2.74549    ,-6.12438,-1.991  ,-1.802  ,-1.802};
 
 const Bool_t CloseDCAxy = kTRUE;
 Int_t nDeltaPiBins   = 80;
@@ -113,10 +122,10 @@ Double_t deltaPiHigh = 100;
 const Double_t dEdxHigh = 200;
 const Double_t dEdxLow  = 40;
 const Char_t *Pid[7]={"Ch","Pion","Kaon","Proton","Electron","Muon","Oher"};
-ClassImp(AliAnalysisTaskQAHighPtDeDxO)
+ClassImp(AliAnalysisTaskQAHighPtDeDxTest)
 	//_____________________________________________________________________________
 	//AliAnalysisTaskQAHighPtDeDx::AliAnalysisTaskQAHighPtDeDx(const char *name):
-	AliAnalysisTaskQAHighPtDeDxO::AliAnalysisTaskQAHighPtDeDxO():
+	AliAnalysisTaskQAHighPtDeDxTest::AliAnalysisTaskQAHighPtDeDxTest():
 		AliAnalysisTaskSE(),
 		fESD(0x0),
 		fAOD(0x0),
@@ -148,14 +157,14 @@ ClassImp(AliAnalysisTaskQAHighPtDeDxO)
 		fRun(-999),
 		fEventId(-999),
 		fListOfObjects(0),
-		//fEvents(0x0), 
-		//fVtx(0x0),
-		fVtxMC(0x0),// fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
+		fVtxMC(0x0),
 		fdEdxCalibrated(0x0),
 		fMakePid(0x0),
 		fcent(0x0),
 		fEtaCalibrationNeg(0x0),
 		fEtaCalibration(0x0),
+		felededxfitPos(0x0),
+		felededxfitNeg(0x0),
 		fcutDCAxy(0x0)
 
 
@@ -244,7 +253,7 @@ ClassImp(AliAnalysisTaskQAHighPtDeDxO)
 }
 
 
-AliAnalysisTaskQAHighPtDeDxO::AliAnalysisTaskQAHighPtDeDxO(const char *name):
+AliAnalysisTaskQAHighPtDeDxTest::AliAnalysisTaskQAHighPtDeDxTest(const char *name):
 	AliAnalysisTaskSE(name),
 	fESD(0x0),
 	fAOD(0x0),
@@ -275,15 +284,15 @@ AliAnalysisTaskQAHighPtDeDxO::AliAnalysisTaskQAHighPtDeDxO(const char *name):
 	fZvtxMC(-999),
 	fRun(-999),
 	fEventId(-999),
-	fListOfObjects(0),
-//	fEvents(0x0), 
-	//fVtx(0x0),
-	fVtxMC(0x0),// fVtxBeforeCuts(0x0), fVtxAfterCuts(0x0),
+	fListOfObjects(0), 
+	fVtxMC(0x0),
 	fdEdxCalibrated(0x0),
 	fMakePid(0x0),
 	fcent(0x0),
 	fEtaCalibrationNeg(0x0),
 	fEtaCalibration(0x0),
+	felededxfitPos(0x0),
+	felededxfitNeg(0x0),
 	fcutDCAxy(0x0)
 
 {
@@ -370,7 +379,7 @@ AliAnalysisTaskQAHighPtDeDxO::AliAnalysisTaskQAHighPtDeDxO(const char *name):
 
 
 
-AliAnalysisTaskQAHighPtDeDxO::~AliAnalysisTaskQAHighPtDeDxO() {
+AliAnalysisTaskQAHighPtDeDxTest::~AliAnalysisTaskQAHighPtDeDxTest() {
 	//
 	// Destructor
 	//
@@ -383,7 +392,7 @@ AliAnalysisTaskQAHighPtDeDxO::~AliAnalysisTaskQAHighPtDeDxO() {
 
 
 
-void AliAnalysisTaskQAHighPtDeDxO::UserCreateOutputObjects()
+void AliAnalysisTaskQAHighPtDeDxTest::UserCreateOutputObjects()
 {
 	// This method is called once per worker node
 	// Here we define the output: histograms and debug tree if requested
@@ -405,26 +414,9 @@ void AliAnalysisTaskQAHighPtDeDxO::UserCreateOutputObjects()
 	//
 	// Histograms
 	//
-	//fEvents = new TH1I("fEvents","Number of analyzed events; Events; Counts", 3, 0, 3);
-	//	fListOfObjects->Add(fEvents);
-
-	//fn1=new TH1F("fn1","fn1",11,-1,10);
-	//	fListOfObjects->Add(fn1);
-
-	//hEvents=new TH1F("hEvents","hEvents",15,-1,14);
-	//	fListOfObjects->Add(hEvents);
 
 	fcent=new TH1F("fcent","fcent",13,0,13);
 	fListOfObjects->Add(fcent);
-
-	//fVtx = new TH1I("fVtx","Vtx info (0=no, 1=yes); Vtx; Counts", 2, -0.5, 1.5);
-	//	fListOfObjects->Add(fVtx);
-
-	//fVtxBeforeCuts = new TH1F("fVtxBeforeCuts", "Vtx distribution (before cuts); Vtx z [cm]; Counts", 120, -30, 30);
-	//	fListOfObjects->Add(fVtxBeforeCuts);
-
-	//fVtxAfterCuts = new TH1F("fVtxAfterCuts", "Vtx distribution (before cuts); Vtx z [cm]; Counts", 120, -30, 30);
-	//fListOfObjects->Add(fVtxAfterCuts);
 
 	const Int_t nPtBins = 63;
 	Double_t ptBins[nPtBins+1] = {
@@ -466,7 +458,10 @@ void AliAnalysisTaskQAHighPtDeDxO::UserCreateOutputObjects()
 
 
 	fEtaCalibrationNeg = new TF1("fDeDxVsEtaNeg", "pol3", -1.0, 0.0);
-	fEtaCalibration = new TF1("fDeDxVsEtaPos", "pol3", 0.0, 1.0);
+	fEtaCalibration    = new TF1("fDeDxVsEtaPos", "pol3", 0.0, 1.0);
+
+	felededxfitPos     = new TF1("felededxfitPos", "pol3", 0.0, 1.0);
+	felededxfitNeg     = new TF1("felededxfitNeg", "pol3", -1.0, 0.0);
 
 
 	Int_t nPhiBins = 36;
@@ -684,7 +679,7 @@ void AliAnalysisTaskQAHighPtDeDxO::UserCreateOutputObjects()
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskQAHighPtDeDxO::UserExec(Option_t *)
+void AliAnalysisTaskQAHighPtDeDxTest::UserExec(Option_t *)
 {
 	// Main loop
 
@@ -802,7 +797,7 @@ void AliAnalysisTaskQAHighPtDeDxO::UserExec(Option_t *)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskQAHighPtDeDxO::AnalyzeESD(AliESDEvent* esdEvent)
+void AliAnalysisTaskQAHighPtDeDxTest::AnalyzeESD(AliESDEvent* esdEvent)
 {
 
 
@@ -813,7 +808,7 @@ void AliAnalysisTaskQAHighPtDeDxO::AnalyzeESD(AliESDEvent* esdEvent)
 	else{
 		ProduceArrayTrksESD( esdEvent );
 		ProduceArrayV0ESD( esdEvent );
-	}	
+	}
 
 	Float_t centrality = -10;
 
@@ -841,7 +836,7 @@ void AliAnalysisTaskQAHighPtDeDxO::AnalyzeESD(AliESDEvent* esdEvent)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskQAHighPtDeDxO::AnalyzeAOD(AliAODEvent* aodEvent)
+void AliAnalysisTaskQAHighPtDeDxTest::AnalyzeAOD(AliAODEvent* aodEvent)
 {
 	fRun  = aodEvent->GetRunNumber();
 	fEventId = 0;
@@ -883,7 +878,7 @@ void AliAnalysisTaskQAHighPtDeDxO::AnalyzeAOD(AliAODEvent* aodEvent)
 }
 
 //_____________________________________________________________________________
-Float_t AliAnalysisTaskQAHighPtDeDxO::GetVertex(const AliVEvent* event) const
+Float_t AliAnalysisTaskQAHighPtDeDxTest::GetVertex(const AliVEvent* event) const
 {
 	Float_t zvtx = -999;
 
@@ -896,7 +891,7 @@ Float_t AliAnalysisTaskQAHighPtDeDxO::GetVertex(const AliVEvent* event) const
 }
 
 //_____________________________________________________________________________
-Short_t AliAnalysisTaskQAHighPtDeDxO::GetPidCode(Int_t pdgCode) const
+Short_t AliAnalysisTaskQAHighPtDeDxTest::GetPidCode(Int_t pdgCode) const
 {
 	// return our internal code for pions, kaons, and protons
 
@@ -926,7 +921,7 @@ Short_t AliAnalysisTaskQAHighPtDeDxO::GetPidCode(Int_t pdgCode) const
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskQAHighPtDeDxO::ProcessMCTruthESD()
+void AliAnalysisTaskQAHighPtDeDxTest::ProcessMCTruthESD()
 {
 	// Fill the special MC histogram with the MC truth info
 
@@ -973,7 +968,7 @@ void AliAnalysisTaskQAHighPtDeDxO::ProcessMCTruthESD()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskQAHighPtDeDxO::ProcessMCTruthAOD()
+void AliAnalysisTaskQAHighPtDeDxTest::ProcessMCTruthAOD()
 {
 	// Fill the special MC histogram with the MC truth info
 
@@ -1026,7 +1021,7 @@ void AliAnalysisTaskQAHighPtDeDxO::ProcessMCTruthAOD()
 
 
 //_____________________________________________________________________________
-Short_t AliAnalysisTaskQAHighPtDeDxO::GetPythiaEventProcessType(Int_t pythiaType) {
+Short_t AliAnalysisTaskQAHighPtDeDxTest::GetPythiaEventProcessType(Int_t pythiaType) {
 	//
 	// Get the process type of the event.  PYTHIA
 	//
@@ -1048,7 +1043,7 @@ Short_t AliAnalysisTaskQAHighPtDeDxO::GetPythiaEventProcessType(Int_t pythiaType
 }
 
 //_____________________________________________________________________________
-Short_t AliAnalysisTaskQAHighPtDeDxO::GetDPMjetEventProcessType(Int_t dpmJetType) {
+Short_t AliAnalysisTaskQAHighPtDeDxTest::GetDPMjetEventProcessType(Int_t dpmJetType) {
 	//
 	// get the process type of the event.  PHOJET
 	//
@@ -1069,7 +1064,7 @@ Short_t AliAnalysisTaskQAHighPtDeDxO::GetDPMjetEventProcessType(Int_t dpmJetType
 }
 
 //_____________________________________________________________________________
-ULong64_t AliAnalysisTaskQAHighPtDeDxO::GetEventIdAsLong(AliVHeader* header) const
+ULong64_t AliAnalysisTaskQAHighPtDeDxTest::GetEventIdAsLong(AliVHeader* header) const
 {
 	// To have a unique id for each event in a run!
 	// Modified from AliRawReader.h
@@ -1080,7 +1075,7 @@ ULong64_t AliAnalysisTaskQAHighPtDeDxO::GetEventIdAsLong(AliVHeader* header) con
 
 
 //____________________________________________________________________
-TParticle* AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMother(AliStack* stack, Int_t label)
+TParticle* AliAnalysisTaskQAHighPtDeDxTest::FindPrimaryMother(AliStack* stack, Int_t label)
 {
 	//
 	// Finds the first mother among the primary particles of the particle identified by <label>,
@@ -1097,7 +1092,7 @@ TParticle* AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMother(AliStack* stack, Int_
 }
 
 //____________________________________________________________________
-Int_t AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMotherLabel(AliStack* stack, Int_t label)
+Int_t AliAnalysisTaskQAHighPtDeDxTest::FindPrimaryMotherLabel(AliStack* stack, Int_t label)
 {
 	//
 	// Finds the first mother among the primary particles of the particle identified by <label>,
@@ -1134,7 +1129,7 @@ Int_t AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMotherLabel(AliStack* stack, Int_
 }
 
 //____________________________________________________________________
-AliAODMCParticle* AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMotherAOD(AliAODMCParticle* startParticle)
+AliAODMCParticle* AliAnalysisTaskQAHighPtDeDxTest::FindPrimaryMotherAOD(AliAODMCParticle* startParticle)
 {
 	//
 	// Finds the first mother among the primary particles of the particle identified by <label>,
@@ -1162,7 +1157,7 @@ AliAODMCParticle* AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMotherAOD(AliAODMCPar
 
 //V0______________________________________
 //____________________________________________________________________
-TParticle* AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMotherV0(AliStack* stack, Int_t label)
+TParticle* AliAnalysisTaskQAHighPtDeDxTest::FindPrimaryMotherV0(AliStack* stack, Int_t label)
 {
 	//
 	// Finds the first mother among the primary particles of the particle identified by <label>,
@@ -1181,7 +1176,7 @@ TParticle* AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMotherV0(AliStack* stack, In
 }
 
 //____________________________________________________________________
-Int_t AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps)
+Int_t AliAnalysisTaskQAHighPtDeDxTest::FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps)
 {
 	//
 	// Finds the first mother among the primary particles of the particle identified by <label>,
@@ -1221,7 +1216,7 @@ Int_t AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMotherLabelV0(AliStack* stack, In
 }
 
 //____________________________________________________________________
-AliAODMCParticle* AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMotherAODV0(AliAODMCParticle* startParticle, Int_t& nSteps)
+AliAODMCParticle* AliAnalysisTaskQAHighPtDeDxTest::FindPrimaryMotherAODV0(AliAODMCParticle* startParticle, Int_t& nSteps)
 {
 	//
 	// Finds the first mother among the primary particles of the particle identified by <label>,
@@ -1252,7 +1247,7 @@ AliAODMCParticle* AliAnalysisTaskQAHighPtDeDxO::FindPrimaryMotherAODV0(AliAODMCP
 
 
 //__________________________________________________________________
-void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
+void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 
 	const Int_t nESDTracks = ESDevent->GetNumberOfTracks();
 
@@ -1301,12 +1296,20 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 		Double_t pt = esdTrack->Pt();
 		Float_t  dedx    = esdTrack->GetTPCsignal();
 
+		Float_t dcaxy = 0.;
+		Float_t dcaz = 0.;
+		esdTrack->GetImpactParameters(dcaxy,dcaz);
+
+
 		if(fdEdxCalibrated){
 			if(eta < 0)
 				dedx *= 50/EtaCalibrationNeg(cent,eta);
 			else
 				dedx *= 50/EtaCalibrationPos(cent,eta);
 		}
+
+		if( TMath::Abs(dcaxy) > GetMaxDCApTDep(fcutDCAxy,pt) )
+			continue;
 
 		if(!PhiCut(esdTrack->Pt(), phi, esdTrack->Charge(), magf, cutLow, cutHigh))
 			continue;
@@ -1323,19 +1326,7 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 		if ( !IsTOFout ){
 			if ( ( lengthtrack != 0 ) && ( timeTOF != 0) )
 				beta = inttime[0] / timeTOF;
-
-			//cout << "momentum  " << momentum << endl; 
-			//	cout << "time[0]/timeTOF  " << inttime[0]/timeTOF << endl; 
-			//	cout << "time[1]/timeTOF  " << inttime[1]/timeTOF << endl; 
-			//	cout << "time[2]/timeTOF  " << inttime[2]/timeTOF << endl; 
-			//	cout << "time[3]/timeTOF  " << inttime[3]/timeTOF << endl; 
-			//	cout << "time[4]/timeTOF  " << inttime[4]/timeTOF << endl; 
-
-			//cout << "timeTOF  " << timeTOF << endl; 
 		}
-
-
-
 
 		Short_t pidCode     = 0;
 
@@ -1367,11 +1358,6 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 				}
 			}
 		}
-
-		Float_t dcaxy = 0.;
-		Float_t dcaz = 0.;
-		esdTrack->GetImpactParameters(dcaxy,dcaz);
-
 
 		hPtAll[cent]->Fill(pt);
 
@@ -1424,71 +1410,73 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 			}
 		}
 
-		for(Int_t nh = 0; nh < nHists; nh++) {
+		Int_t nh = -1;
 
-			if((TMath::Abs(eta)<(EtaHigh[nh]/10.0)) && (TMath::Abs(eta)>=(EtaLow[nh]/10.0)))
-				continue;
+		if(TMath::Abs(eta)<0.2)
+			nh = 0; 
+		else if(TMath::Abs(eta)>=0.2 && TMath::Abs(eta)<0.4)
+			nh = 1; 
+		else if(TMath::Abs(eta)>=0.4 && TMath::Abs(eta)<0.6)
+			nh = 2; 
+		else if(TMath::Abs(eta)>=0.6 && TMath::Abs(eta)<0.8)
+			nh = 3; 
 
-			if(fAnalysisMC){
-				hMcOut[0][nh]->Fill(esdTrack->Pt());
-				hMcOut[pidCode][nh]->Fill(esdTrack->Pt());
+		if(nh<0)
+			continue;
+
+
+		if(fAnalysisMC){
+			hMcOut[0][nh]->Fill(esdTrack->Pt());
+			hMcOut[pidCode][nh]->Fill(esdTrack->Pt());
+		}
+
+		if(beta>1){
+			if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion),2)+TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion),2))<3.0){
+				histPiTof[cent][nh]->Fill(momentum, dedx);
 			}
+		}
 
-			if(beta>1){
-				if(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion)<2.0){
-					histPiTof[cent][nh]->Fill(momentum, dedx);
-					//				histpPiTof[cent][nh]->Fill(momentum);
+		if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron),2)+TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron),2)) < 3){
+			histElTof[cent][nh]->Fill(momentum, dedx);
+		}    
+
+
+		if( momentum <= 0.6 && momentum >= 0.4  ){
+
+			if( dedx < DeDxMIPMax && dedx > DeDxMIPMin ){
+				hMIPVsPhi[cent][nh]->Fill(phi,dedx);
+				pMIPVsPhi[cent][nh]->Fill(phi,dedx);
+
+				hMIPVsNch[cent][nh]->Fill(multTPC,dedx);
+				pMIPVsNch[cent][nh]->Fill(multTPC,dedx);
+
+			}
+			if( dedx > 70 && dedx < 90 ){
+				if(TMath::Abs(beta-1)<0.1){
+					hPlateauVsPhi[cent][nh]->Fill(phi,dedx);
+					pPlateauVsPhi[cent][nh]->Fill(phi,dedx);
+
 				}
 			}
+		}
 
-			//			if(TMath::Abs(beta-1)<0.05){
-			//			if( dedx > 70 && dedx < 90 )
-			//				if(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion)>2.0)
-			//				if(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron)<2.0)
-			//					histElTof[cent][nh]->Fill(momentum, dedx);
-			//			}
-			if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron),2)+TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron),2)) < 3){
-				cout << " Momentum  " << momentum <<"dedx ::  " << dedx  << endl; 
-				histElTof[cent][nh]->Fill(momentum, dedx);
-			}    
+		hPtVsP[cent][nh]->Fill(momentum,pt);
+		hDeDxVsP[cent][nh]->Fill(momentum,dedx);
 
+		if(esdTrack->Charge() < 0.){
+			hPtNeg[cent][nh]->Fill(pt);
 
-			if( momentum <= 0.6 && momentum >= 0.4  ){
-				if( dedx < DeDxMIPMax && dedx > DeDxMIPMin ){
-					hMIPVsPhi[cent][nh]->Fill(phi,dedx);
-					pMIPVsPhi[cent][nh]->Fill(phi,dedx);
+			hnSigmaPiNeg[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
+			hnSigmaKNeg[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
+			hnSigmaPNeg[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
+		}
+		else{
+			hPtPos[cent][nh]->Fill(pt);
 
-					hMIPVsNch[cent][nh]->Fill(multTPC,dedx);
-					pMIPVsNch[cent][nh]->Fill(multTPC,dedx);
-
-				}
-				if( dedx > 70 && dedx < 90 ){
-					if(TMath::Abs(beta-1)<0.1){
-						hPlateauVsPhi[cent][nh]->Fill(phi,dedx);
-						pPlateauVsPhi[cent][nh]->Fill(phi,dedx);
-
-					}
-				}
-			}
-
-			hPtVsP[cent][nh]->Fill(momentum,pt);
-			hDeDxVsP[cent][nh]->Fill(momentum,dedx);
-
-			if(esdTrack->Charge() < 0.){
-				hPtNeg[cent][nh]->Fill(pt);
-
-				hnSigmaPiNeg[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
-				hnSigmaKNeg[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
-				hnSigmaPNeg[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
-			}
-			else{
-				hPtPos[cent][nh]->Fill(pt);
-
-				hnSigmaPiPos[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
-				hnSigmaKPos[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
-				hnSigmaPPos[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
-			}
-		}//end loop over eta intervals
+			hnSigmaPiPos[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion));
+			hnSigmaKPos[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon));
+			hnSigmaPPos[cent][nh]->Fill(pt,fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton));
+		}
 
 
 
@@ -1499,7 +1487,7 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksESD( AliESDEvent *ESDevent ){
 
 }
 //__________________________________________________________________
-void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksAOD( AliAODEvent *AODevent ){
+void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksAOD( AliAODEvent *AODevent ){
 
 	//Bool_t OfficialCalibration = kTRUE;
 	Int_t nAODTracks = AODevent->GetNumberOfTracks();
@@ -1704,20 +1692,22 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayTrksAOD( AliAODEvent *AODevent ){
 
 
 
-void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
+void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 
 	Int_t nv0s = ESDevent->GetNumberOfV0s();
 
 	const AliESDVertex *myBestPrimaryVertex = ESDevent->GetPrimaryVertex();
-	if (!myBestPrimaryVertex) return;
-	if (!(myBestPrimaryVertex->GetStatus())) return;
+
+	if ( !myBestPrimaryVertex ) 
+		return;
+	if ( !(myBestPrimaryVertex->GetStatus()) )
+		return;
 
 	Double_t  lPrimaryVtxPosition[3];
 	myBestPrimaryVertex->GetXYZ(lPrimaryVtxPosition);
 	Double_t  lPrimaryVtxCov[6];
 	myBestPrimaryVertex->GetCovMatrix(lPrimaryVtxCov);
 	Double_t  lPrimaryVtxChi2 = myBestPrimaryVertex->GetChi2toNDF();
-	//	const Char_t *vtxName = "Vertex";
 
 	AliAODVertex* myPrimaryVertex = new AliAODVertex(lPrimaryVtxPosition, lPrimaryVtxCov, lPrimaryVtxChi2, NULL, -1, AliAODVertex::kPrimary);
 
@@ -1746,18 +1736,17 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 		if (pTrack->GetSign() == nTrack->GetSign())
 			continue;
 
-		// TrackCuts 2015 Pb-Pb Open DCA
 		UInt_t selectDebug_p = 0;
-		if (fTrackFilterTPC) {
-			selectDebug_p = fTrackFilterTPC->IsSelected(pTrack);
+		if (fTrackFilterGolden) {
+			selectDebug_p = fTrackFilterGolden->IsSelected(pTrack);
 			if (!selectDebug_p) {
 				continue;
 			}
 		}
 
 		UInt_t selectDebug_n = 0;
-		if (fTrackFilterTPC) {
-			selectDebug_n = fTrackFilterTPC->IsSelected(nTrack);
+		if (fTrackFilterGolden) {
+			selectDebug_n = fTrackFilterGolden->IsSelected(nTrack);
 			if (!selectDebug_n) {
 				continue;
 			}
@@ -1772,22 +1761,6 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 			nTrack = pTrack;
 			pTrack = helpTrack;
 		}
-
-
-		//	         esdV0->ChangeMassHypothesis(-3122);
-		//                Float_t lInvMassAntiLambda = esdV0->GetEffMass();
-
-		//                esdV0->ChangeMassHypothesis(3122);
-		//                Float_t lInvMassLambda = esdV0->GetEffMass();
-		//                Float_t YLambda = esdV0->RapLambda();
-
-		//                esdV0->ChangeMassHypothesis(310);
-		//                Float_t lInvMassK0s = esdV0->GetEffMass();
-		//                Float_t YK0s = esdV0->RapK0Short();
-
-		//Double_t  lV0Position[3];
-		//esdV0->GetXYZ(lV0Position[0], lV0Position[1], lV0Position[2]);
-
 
 		AliKFVertex primaryVtxKF( *myPrimaryVertex );
 		AliKFParticle::SetField(ESDevent->GetMagneticField());
@@ -1918,24 +1891,33 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 							       }
 						       }
 
-						       for(Int_t nh = 0; nh < nHists; nh++) {
+						       Int_t nh = -1;
 
-							       if((TMath::Abs(eta)<(EtaHigh[nh]/10.0)) && (TMath::Abs(eta)>=(EtaLow[nh]/10.0)))
-								       continue;
+						       if(TMath::Abs(eta)<0.2)
+							       nh = 0; 
+						       else if(TMath::Abs(eta)>=0.2 && TMath::Abs(eta)<0.4)
+							       nh = 1; 
+						       else if(TMath::Abs(eta)>=0.4 && TMath::Abs(eta)<0.6)
+							       nh = 2; 
+						       else if(TMath::Abs(eta)>=0.6 && TMath::Abs(eta)<0.8)
+							       nh = 3; 
 
-							       if(fillPos&&fillNeg){
+						       if(nh<0)
+							       continue;
 
-								       histPiV0[cent][nh]->Fill(momentum, dedx);
-								       histpPiV0[cent][nh]->Fill(momentum);
 
-							       }
-							       else{
+						       if(fillPos&&fillNeg){
 
-								       histPV0[cent][nh]->Fill(momentum, dedx);
-								       histpPV0[cent][nh]->Fill(momentum);
+							       histPiV0[cent][nh]->Fill(momentum, dedx);
+							       histpPiV0[cent][nh]->Fill(momentum);
 
-							       }
-						       }//end loop over eta gaps
+						       }
+						       else{
+
+							       histPV0[cent][nh]->Fill(momentum, dedx);
+							       histpPV0[cent][nh]->Fill(momentum);
+
+						       }
 					       }//end loop over two tracks
 
 				       };
@@ -1950,12 +1932,12 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 					       if((TMath::Abs(dmassK)>0.1) && (TMath::Abs(dmassL)>0.1) && (TMath::Abs(dmassAL)>0.1)) {
 						       if((dmassG<0.01) && (dmassG>0.0001)) {
 
-							       if(pTrack->Eta() > 0)
-								       if( TMath::Abs(pTrack->GetTPCsignal() - 80.0) < 5)
+							       if(nTrack->Eta() > 0)
+								       if( TMath::Abs(nTrack->GetTPCsignal()-felededxfitPos->Eval(nTrack->Eta())) < 5)
 									       fillPos = kTRUE;
 
-							       if(pTrack->Eta() < 0)
-								       if( TMath::Abs(pTrack->GetTPCsignal() - 80.0) < 5)
+							       if(nTrack->Eta() < 0)
+								       if( TMath::Abs(nTrack->GetTPCsignal()-felededxfitNeg->Eval(nTrack->Eta())) < 5)
 									       fillPos = kTRUE;
 
 						       } else {
@@ -1986,18 +1968,31 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 							       dedx *= 50/EtaCalibrationPos(cent,eta);
 					       }
 
+
 					       if(track->GetTPCsignalN()<=70)continue;
 
 					       if(!PhiCut(track->Pt(), phi, track->Charge(), magf, cutLow, cutHigh))
 						       continue;
 
-					       for(Int_t nh = 0; nh < nHists; nh++) {
+					       Int_t nh = -1;
 
-						       if((TMath::Abs(eta)<(EtaHigh[nh]/10.0)) && (TMath::Abs(eta)>=(EtaLow[nh]/10.0)))
-							       continue;
-						       histEV0[cent][nh]->Fill(momentum, dedx);
+					       if(TMath::Abs(eta)<0.2)
+						       nh = 0; 
+					       else if(TMath::Abs(eta)>=0.2 && TMath::Abs(eta)<0.4)
+						       nh = 1; 
+					       else if(TMath::Abs(eta)>=0.4 && TMath::Abs(eta)<0.6)
+						       nh = 2; 
+					       else if(TMath::Abs(eta)>=0.6 && TMath::Abs(eta)<0.8)
+						       nh = 3; 
 
-					       }
+					       if(nh<0)
+						       continue;
+
+
+					       histEV0[cent][nh]->Fill(momentum, dedx);
+
+					       cout << "Cent   "<<cent<<"DE/DX :: "<<dedx<<"Eta ::  "<<eta<< endl;
+
 
 				       };
 				       break;
@@ -2031,7 +2026,7 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0ESD( AliESDEvent *ESDevent ){
 
 
 
-void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0AOD( AliAODEvent *AODevent ){
+void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayV0AOD( AliAODEvent *AODevent ){
 	Int_t nv0s = AODevent->GetNumberOfV0s();
 	/*
 	   if(nv0s<1){
@@ -2263,7 +2258,7 @@ void AliAnalysisTaskQAHighPtDeDxO::ProduceArrayV0AOD( AliAODEvent *AODevent ){
 }
 
 //-------------------------------------------------------------------------
-Bool_t AliAnalysisTaskQAHighPtDeDxO::PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh)
+Bool_t AliAnalysisTaskQAHighPtDeDxTest::PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh)
 
 {
 	if(pt < 2.0)
@@ -2289,7 +2284,7 @@ Bool_t AliAnalysisTaskQAHighPtDeDxO::PhiCut(Double_t pt, Double_t phi, Double_t 
 
 //-------------------------------------------------------------------------
 
-Float_t AliAnalysisTaskQAHighPtDeDxO::GetMaxDCApTDep( TF1 *fMaxDCAxy, Double_t ptI){
+Float_t AliAnalysisTaskQAHighPtDeDxTest::GetMaxDCApTDep( TF1 *fMaxDCAxy, Double_t ptI){
 
 	Double_t maxDCAxy = 10;
 	maxDCAxy = fMaxDCAxy->Eval(ptI);
@@ -2300,11 +2295,13 @@ Float_t AliAnalysisTaskQAHighPtDeDxO::GetMaxDCApTDep( TF1 *fMaxDCAxy, Double_t p
 
 //-------------------------------------------------------------------------
 
-Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t eta){
+Double_t AliAnalysisTaskQAHighPtDeDxTest::EtaCalibrationNeg( Int_t Cent, Double_t eta){
 
 
-	for(Int_t i=0; i<4; ++i)
+	for(Int_t i=0; i<4; ++i){
 		fEtaCalibrationNeg->SetParameter(i,0);
+		felededxfitNeg->SetParameter(i,0);
+	}
 
 	switch(Cent){
 
@@ -2317,6 +2314,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 			fEtaCalibrationNeg->FixParameter(2,cNeg[0]);
 			fEtaCalibrationNeg->SetParameter(3,dNeg[0]);
 			fEtaCalibrationNeg->FixParameter(3,dNeg[0]);
+
+			felededxfitNeg->SetParameter(0,aNegEl[0]);
+			felededxfitNeg->FixParameter(0,aNegEl[0]);
+			felededxfitNeg->SetParameter(1,bNegEl[0]);
+			felededxfitNeg->FixParameter(1,bNegEl[0]);
+			felededxfitNeg->SetParameter(2,cNegEl[0]);
+			felededxfitNeg->FixParameter(2,cNegEl[0]);
+			felededxfitNeg->SetParameter(3,dNegEl[0]);
+			felededxfitNeg->FixParameter(3,dNegEl[0]);
 			break;
 
 		case 1:
@@ -2328,6 +2334,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 			fEtaCalibrationNeg->FixParameter(2,cNeg[1]);
 			fEtaCalibrationNeg->SetParameter(3,dNeg[1]);
 			fEtaCalibrationNeg->FixParameter(3,dNeg[1]);
+
+			felededxfitNeg->SetParameter(0,aNegEl[1]);
+			felededxfitNeg->FixParameter(0,aNegEl[1]);
+			felededxfitNeg->SetParameter(1,bNegEl[1]);
+			felededxfitNeg->FixParameter(1,bNegEl[1]);
+			felededxfitNeg->SetParameter(2,cNegEl[1]);
+			felededxfitNeg->FixParameter(2,cNegEl[1]);
+			felededxfitNeg->SetParameter(3,dNegEl[1]);
+			felededxfitNeg->FixParameter(3,dNegEl[1]);
 			break;
 
 		case 2:
@@ -2339,6 +2354,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 			fEtaCalibrationNeg->FixParameter(2,cNeg[2]);
 			fEtaCalibrationNeg->SetParameter(3,dNeg[2]);
 			fEtaCalibrationNeg->FixParameter(3,dNeg[2]);
+
+			felededxfitNeg->SetParameter(0,aNegEl[2]);
+			felededxfitNeg->FixParameter(0,aNegEl[2]);
+			felededxfitNeg->SetParameter(1,bNegEl[2]);
+			felededxfitNeg->FixParameter(1,bNegEl[2]);
+			felededxfitNeg->SetParameter(2,cNegEl[2]);
+			felededxfitNeg->FixParameter(2,cNegEl[2]);
+			felededxfitNeg->SetParameter(3,dNegEl[2]);
+			felededxfitNeg->FixParameter(3,dNegEl[2]);
 			break;
 
 		case 3:
@@ -2350,6 +2374,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 			fEtaCalibrationNeg->FixParameter(2,cNeg[3]);
 			fEtaCalibrationNeg->SetParameter(3,dNeg[3]);
 			fEtaCalibrationNeg->FixParameter(3,dNeg[3]);
+
+			felededxfitNeg->SetParameter(0,aNegEl[3]);
+			felededxfitNeg->FixParameter(0,aNegEl[3]);
+			felededxfitNeg->SetParameter(1,bNegEl[3]);
+			felededxfitNeg->FixParameter(1,bNegEl[3]);
+			felededxfitNeg->SetParameter(2,cNegEl[3]);
+			felededxfitNeg->FixParameter(2,cNegEl[3]);
+			felededxfitNeg->SetParameter(3,dNegEl[3]);
+			felededxfitNeg->FixParameter(3,dNegEl[3]);
 			break;
 
 		case 4:
@@ -2361,6 +2394,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 			fEtaCalibrationNeg->FixParameter(2,cNeg[4]);
 			fEtaCalibrationNeg->SetParameter(3,dNeg[4]);
 			fEtaCalibrationNeg->FixParameter(3,dNeg[4]);
+
+			felededxfitNeg->SetParameter(0,aNegEl[4]);
+			felededxfitNeg->FixParameter(0,aNegEl[4]);
+			felededxfitNeg->SetParameter(1,bNegEl[4]);
+			felededxfitNeg->FixParameter(1,bNegEl[4]);
+			felededxfitNeg->SetParameter(2,cNegEl[4]);
+			felededxfitNeg->FixParameter(2,cNegEl[4]);
+			felededxfitNeg->SetParameter(3,dNegEl[4]);
+			felededxfitNeg->FixParameter(3,dNegEl[4]);
 			break;
 
 		case 5:
@@ -2372,6 +2414,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 			fEtaCalibrationNeg->FixParameter(2,cNeg[5]);
 			fEtaCalibrationNeg->SetParameter(3,dNeg[5]);
 			fEtaCalibrationNeg->FixParameter(3,dNeg[5]);
+
+			felededxfitNeg->SetParameter(0,aNegEl[5]);
+			felededxfitNeg->FixParameter(0,aNegEl[5]);
+			felededxfitNeg->SetParameter(1,bNegEl[5]);
+			felededxfitNeg->FixParameter(1,bNegEl[5]);
+			felededxfitNeg->SetParameter(2,cNegEl[5]);
+			felededxfitNeg->FixParameter(2,cNegEl[5]);
+			felededxfitNeg->SetParameter(3,dNegEl[5]);
+			felededxfitNeg->FixParameter(3,dNegEl[5]);
 			break;
 
 		case 6:
@@ -2383,6 +2434,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 			fEtaCalibrationNeg->FixParameter(2,cNeg[6]);
 			fEtaCalibrationNeg->SetParameter(3,dNeg[6]);
 			fEtaCalibrationNeg->FixParameter(3,dNeg[6]);
+
+			felededxfitNeg->SetParameter(0,aNegEl[6]);
+			felededxfitNeg->FixParameter(0,aNegEl[6]);
+			felededxfitNeg->SetParameter(1,bNegEl[6]);
+			felededxfitNeg->FixParameter(1,bNegEl[6]);
+			felededxfitNeg->SetParameter(2,cNegEl[6]);
+			felededxfitNeg->FixParameter(2,cNegEl[6]);
+			felededxfitNeg->SetParameter(3,dNegEl[6]);
+			felededxfitNeg->FixParameter(3,dNegEl[6]);
 			break;
 
 		case 7:
@@ -2394,6 +2454,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 			fEtaCalibrationNeg->FixParameter(2,cNeg[7]);
 			fEtaCalibrationNeg->SetParameter(3,dNeg[7]);
 			fEtaCalibrationNeg->FixParameter(3,dNeg[7]);
+
+			felededxfitNeg->SetParameter(0,aNegEl[7]);
+			felededxfitNeg->FixParameter(0,aNegEl[7]);
+			felededxfitNeg->SetParameter(1,bNegEl[7]);
+			felededxfitNeg->FixParameter(1,bNegEl[7]);
+			felededxfitNeg->SetParameter(2,cNegEl[7]);
+			felededxfitNeg->FixParameter(2,cNegEl[7]);
+			felededxfitNeg->SetParameter(3,dNegEl[7]);
+			felededxfitNeg->FixParameter(3,dNegEl[7]);
 			break;
 
 		case 8:
@@ -2405,6 +2474,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 			fEtaCalibrationNeg->FixParameter(2,cNeg[8]);
 			fEtaCalibrationNeg->SetParameter(3,dNeg[8]);
 			fEtaCalibrationNeg->FixParameter(3,dNeg[8]);
+
+			felededxfitNeg->SetParameter(0,aNegEl[8]);
+			felededxfitNeg->FixParameter(0,aNegEl[8]);
+			felededxfitNeg->SetParameter(1,bNegEl[8]);
+			felededxfitNeg->FixParameter(1,bNegEl[8]);
+			felededxfitNeg->SetParameter(2,cNegEl[8]);
+			felededxfitNeg->FixParameter(2,cNegEl[8]);
+			felededxfitNeg->SetParameter(3,dNegEl[8]);
+			felededxfitNeg->FixParameter(3,dNegEl[8]);
 			break;
 
 		case 9:
@@ -2416,6 +2494,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 			fEtaCalibrationNeg->FixParameter(2,cNeg[9]);
 			fEtaCalibrationNeg->SetParameter(3,dNeg[9]);
 			fEtaCalibrationNeg->FixParameter(3,dNeg[9]);
+
+			felededxfitNeg->SetParameter(0,aNegEl[9]);
+			felededxfitNeg->FixParameter(0,aNegEl[9]);
+			felededxfitNeg->SetParameter(1,bNegEl[9]);
+			felededxfitNeg->FixParameter(1,bNegEl[9]);
+			felededxfitNeg->SetParameter(2,cNegEl[9]);
+			felededxfitNeg->FixParameter(2,cNegEl[9]);
+			felededxfitNeg->SetParameter(3,dNegEl[9]);
+			felededxfitNeg->FixParameter(3,dNegEl[9]);
 			break;
 
 		default:
@@ -2430,7 +2517,7 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationNeg( Int_t Cent, Double_t e
 
 //-------------------------------------------------------------------------
 
-Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t eta){
+Double_t AliAnalysisTaskQAHighPtDeDxTest::EtaCalibrationPos( Int_t Cent, Double_t eta){
 
 
 	for(Int_t i=0; i<4; ++i)
@@ -2447,7 +2534,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[0]);
 			fEtaCalibration->SetParameter(3,dPos[0]);
 			fEtaCalibration->FixParameter(3,dPos[0]);
-			//			cout<<"Using 0-5% Parameters"<<endl;
+
+			felededxfitPos->SetParameter(0,aPosEl[0]);
+			felededxfitPos->FixParameter(0,aPosEl[0]);
+			felededxfitPos->SetParameter(1,bPosEl[0]);
+			felededxfitPos->FixParameter(1,bPosEl[0]);
+			felededxfitPos->SetParameter(2,cPosEl[0]);
+			felededxfitPos->FixParameter(2,cPosEl[0]);
+			felededxfitPos->SetParameter(3,dPosEl[0]);
+			felededxfitPos->FixParameter(3,dPosEl[0]);
 			break;
 
 		case 1:
@@ -2459,7 +2554,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[1]);
 			fEtaCalibration->SetParameter(3,dPos[1]);
 			fEtaCalibration->FixParameter(3,dPos[1]);
-			//			cout<<"Using 5-10% Parameters"<<endl;
+
+			felededxfitPos->SetParameter(0,aPosEl[1]);
+			felededxfitPos->FixParameter(0,aPosEl[1]);
+			felededxfitPos->SetParameter(1,bPosEl[1]);
+			felededxfitPos->FixParameter(1,bPosEl[1]);
+			felededxfitPos->SetParameter(2,cPosEl[1]);
+			felededxfitPos->FixParameter(2,cPosEl[1]);
+			felededxfitPos->SetParameter(3,dPosEl[1]);
+			felededxfitPos->FixParameter(3,dPosEl[1]);
 			break;
 
 		case 2:
@@ -2471,7 +2574,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[2]);
 			fEtaCalibration->SetParameter(3,dPos[2]);
 			fEtaCalibration->FixParameter(3,dPos[2]);
-			//			cout<<"Using 10-20% Parameters"<<endl;
+
+			felededxfitPos->SetParameter(0,aPosEl[2]);
+			felededxfitPos->FixParameter(0,aPosEl[2]);
+			felededxfitPos->SetParameter(1,bPosEl[2]);
+			felededxfitPos->FixParameter(1,bPosEl[2]);
+			felededxfitPos->SetParameter(2,cPosEl[2]);
+			felededxfitPos->FixParameter(2,cPosEl[2]);
+			felededxfitPos->SetParameter(3,dPosEl[2]);
+			felededxfitPos->FixParameter(3,dPosEl[2]);
 			break;
 
 		case 3:
@@ -2483,7 +2594,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[3]);
 			fEtaCalibration->SetParameter(3,dPos[3]);
 			fEtaCalibration->FixParameter(3,dPos[3]);
-			//			cout<<"Using 20-30% Parameters"<<endl;
+
+			felededxfitPos->SetParameter(0,aPosEl[3]);
+			felededxfitPos->FixParameter(0,aPosEl[3]);
+			felededxfitPos->SetParameter(1,bPosEl[3]);
+			felededxfitPos->FixParameter(1,bPosEl[3]);
+			felededxfitPos->SetParameter(2,cPosEl[3]);
+			felededxfitPos->FixParameter(2,cPosEl[3]);
+			felededxfitPos->SetParameter(3,dPosEl[3]);
+			felededxfitPos->FixParameter(3,dPosEl[3]);
 			break;
 
 		case 4:
@@ -2495,7 +2614,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[4]);
 			fEtaCalibration->SetParameter(3,dPos[4]);
 			fEtaCalibration->FixParameter(3,dPos[4]);
-			//			cout<<"Using 30-40% Parameters"<<endl;
+
+			felededxfitPos->SetParameter(0,aPosEl[4]);
+			felededxfitPos->FixParameter(0,aPosEl[4]);
+			felededxfitPos->SetParameter(1,bPosEl[4]);
+			felededxfitPos->FixParameter(1,bPosEl[4]);
+			felededxfitPos->SetParameter(2,cPosEl[4]);
+			felededxfitPos->FixParameter(2,cPosEl[4]);
+			felededxfitPos->SetParameter(3,dPosEl[4]);
+			felededxfitPos->FixParameter(3,dPosEl[4]);
 			break;
 
 		case 5:
@@ -2507,7 +2634,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[5]);
 			fEtaCalibration->SetParameter(3,dPos[5]);
 			fEtaCalibration->FixParameter(3,dPos[5]);
-			//			cout<<"Using 40-50% Parameters"<<endl;
+
+			felededxfitPos->SetParameter(0,aPosEl[5]);
+			felededxfitPos->FixParameter(0,aPosEl[5]);
+			felededxfitPos->SetParameter(1,bPosEl[5]);
+			felededxfitPos->FixParameter(1,bPosEl[5]);
+			felededxfitPos->SetParameter(2,cPosEl[5]);
+			felededxfitPos->FixParameter(2,cPosEl[5]);
+			felededxfitPos->SetParameter(3,dPosEl[5]);
+			felededxfitPos->FixParameter(3,dPosEl[5]);
 			break;
 
 		case 6:
@@ -2519,7 +2654,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[6]);
 			fEtaCalibration->SetParameter(3,dPos[6]);
 			fEtaCalibration->FixParameter(3,dPos[6]);
-			//			cout<<"Using 50-60% Parameters"<<endl;
+
+			felededxfitPos->SetParameter(0,aPosEl[6]);
+			felededxfitPos->FixParameter(0,aPosEl[6]);
+			felededxfitPos->SetParameter(1,bPosEl[6]);
+			felededxfitPos->FixParameter(1,bPosEl[6]);
+			felededxfitPos->SetParameter(2,cPosEl[6]);
+			felededxfitPos->FixParameter(2,cPosEl[6]);
+			felededxfitPos->SetParameter(3,dPosEl[6]);
+			felededxfitPos->FixParameter(3,dPosEl[6]);
 			break;
 
 		case 7:
@@ -2531,7 +2674,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[7]);
 			fEtaCalibration->SetParameter(3,dPos[7]);
 			fEtaCalibration->FixParameter(3,dPos[7]);
-			//			cout<<"Using 60-70% Parameters"<<endl;
+
+			felededxfitPos->SetParameter(0,aPosEl[7]);
+			felededxfitPos->FixParameter(0,aPosEl[7]);
+			felededxfitPos->SetParameter(1,bPosEl[7]);
+			felededxfitPos->FixParameter(1,bPosEl[7]);
+			felededxfitPos->SetParameter(2,cPosEl[7]);
+			felededxfitPos->FixParameter(2,cPosEl[7]);
+			felededxfitPos->SetParameter(3,dPosEl[7]);
+			felededxfitPos->FixParameter(3,dPosEl[7]);
 			break;
 
 		case 8:
@@ -2543,7 +2694,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[8]);
 			fEtaCalibration->SetParameter(3,dPos[8]);
 			fEtaCalibration->FixParameter(3,dPos[8]);
-			//			cout<<"Using 70-80% Parameters"<<endl;
+
+			felededxfitPos->SetParameter(0,aPosEl[8]);
+			felededxfitPos->FixParameter(0,aPosEl[8]);
+			felededxfitPos->SetParameter(1,bPosEl[8]);
+			felededxfitPos->FixParameter(1,bPosEl[8]);
+			felededxfitPos->SetParameter(2,cPosEl[8]);
+			felededxfitPos->FixParameter(2,cPosEl[8]);
+			felededxfitPos->SetParameter(3,dPosEl[8]);
+			felededxfitPos->FixParameter(3,dPosEl[8]);
 			break;
 
 		case 9:
@@ -2555,7 +2714,15 @@ Double_t AliAnalysisTaskQAHighPtDeDxO::EtaCalibrationPos( Int_t Cent, Double_t e
 			fEtaCalibration->FixParameter(2,cPos[9]);
 			fEtaCalibration->SetParameter(3,dPos[9]);
 			fEtaCalibration->FixParameter(3,dPos[9]);
-			//			cout<<"Using 80-90% Parameters"<<endl;
+
+			felededxfitPos->SetParameter(0,aPosEl[9]);
+			felededxfitPos->FixParameter(0,aPosEl[9]);
+			felededxfitPos->SetParameter(1,bPosEl[9]);
+			felededxfitPos->FixParameter(1,bPosEl[9]);
+			felededxfitPos->SetParameter(2,cPosEl[9]);
+			felededxfitPos->FixParameter(2,cPosEl[9]);
+			felededxfitPos->SetParameter(3,dPosEl[9]);
+			felededxfitPos->FixParameter(3,dPosEl[9]);
 			break;
 
 		default:
