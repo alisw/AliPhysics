@@ -2606,7 +2606,6 @@ void AliAnalysisTaskGammaCalo::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskGammaCalo::ProcessClusters()
 {
-  Double_t tempClusterWeight        = fWeightJetJetMC;
   Int_t nclus                       = 0;
   TClonesArray * arrClustersProcess = NULL;
   fNCurrentClusterBasic             = 0;
@@ -2624,7 +2623,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
-  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,tempClusterWeight);
+  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC);
 
   // vertex
   Double_t vertex[3] = {0};
@@ -2636,6 +2635,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   map<Long_t,Int_t> mapIsClusterAcceptedWithoutTrackMatch;
   // Loop over EMCal clusters
   for(Long_t i = 0; i < nclus; i++){
+    Double_t tempClusterWeight        = fWeightJetJetMC;
     Double_t tempPhotonWeight         = fWeightJetJetMC;
     AliVCluster* clus = NULL;
     if(fInputEvent->IsA()==AliESDEvent::Class()){

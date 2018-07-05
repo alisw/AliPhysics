@@ -333,11 +333,17 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     TObjString *Header3         = new TObjString("eta_2");
     HeaderList->Add(Header3);
   }
-  if (periodNameV0Reader.Contains("LHC18b9")){
-    TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
-    HeaderList->Add(HeaderP8J);
-  }
 
+  if (periodNameV0Reader.Contains("LHC18b9")){
+    TObjString *HeaderPMB = new TObjString("EPOSLHC_0");
+    TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
+    if (doWeightingPart==4) {
+      HeaderList->Add(HeaderPMB);
+      HeaderList->Add(HeaderP8J);
+    } else {
+      HeaderList->Add(HeaderP8J);
+    }
+  }
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts          = new AliConvEventCuts*[numberOfCuts];
   ClusterCutList->SetOwner(kTRUE);
