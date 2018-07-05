@@ -200,10 +200,10 @@ bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
 void AliAnalysisTaskSigma0Run2::CastToVector(
     std::vector<AliSigma0ParticleV0> &container, const AliVEvent *inputEvent) {
   for (int iGamma = 0; iGamma < fGammaArray->GetEntriesFast(); ++iGamma) {
-    auto photonCandidate =
+    auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
-    if (!photonCandidate) continue;
-    AliSigma0ParticleV0 phot(photonCandidate, inputEvent);
+    if (!PhotonCandidate) continue;
+    AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
     container.push_back(phot);
   }
 }
