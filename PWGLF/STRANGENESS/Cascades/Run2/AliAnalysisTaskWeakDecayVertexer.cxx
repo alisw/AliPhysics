@@ -853,13 +853,14 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (bidx==v0.GetIndex(0)) continue; //Bo:  consistency 0 for neg
             
             AliESDtrack *btrk=event->GetTrack(bidx);
+            Float_t lBachMassForTracking=btrk->GetMassForTracking();
             
             if (btrk->GetSign()>0) continue;  // bachelor's charge
             
             AliESDv0 *pv0=&v0;
             AliExternalTrackParam bt(*btrk), *pbt=&bt;
             
-            Double_t dca=PropagateToDCA(pv0,pbt,event,b);
+            Double_t dca=PropagateToDCA(pv0,pbt,event,b,lBachMassForTracking);
             if (dca > fCascadeVertexerSels[4]) continue;
             
             //eta cut - test
@@ -925,13 +926,14 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
             if (bidx==v0.GetIndex(1)) continue; //Bo:  consistency 1 for pos
             
             AliESDtrack *btrk=event->GetTrack(bidx);
+            Float_t lBachMassForTracking=btrk->GetMassForTracking();
             
             if (btrk->GetSign()<0) continue;  // bachelor's charge
             
             AliESDv0 *pv0=&v0;
             AliExternalTrackParam bt(*btrk), *pbt=&bt;
             
-            Double_t dca=PropagateToDCA(pv0,pbt,event,b);
+            Double_t dca=PropagateToDCA(pv0,pbt,event,b,lBachMassForTracking);
             if (dca > fCascadeVertexerSels[4]) continue;
             
             //eta cut - test
@@ -1160,12 +1162,13 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
             if (v0.GetIndex(0)==v0.GetIndex(1)) continue; //Bo:  consistency 0 for neg
             
             AliESDtrack *btrk=event->GetTrack(bidx);
+            Float_t lBachMassForTracking=btrk->GetMassForTracking();
             
             //Do not check charges!
             AliESDv0 *pv0=&v0;
             AliExternalTrackParam bt(*btrk), *pbt=&bt;
             
-            Double_t dca=PropagateToDCA(pv0,pbt,event,b);
+            Double_t dca=PropagateToDCA(pv0,pbt,event,b,lBachMassForTracking);
             if (dca > fCascadeVertexerSels[4]) continue;
             
             //eta cut - test
@@ -1220,7 +1223,7 @@ Double_t AliAnalysisTaskWeakDecayVertexer::Det(Double_t a00,Double_t a01,Double_
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b) {
+Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExternalTrackParam *t, AliESDEvent *event, Double_t b, Double_t lBachMassForTracking) {
     //--------------------------------------------------------------------
     // This function returns the DCA between the V0 and the track
     //--------------------------------------------------------------------
@@ -1346,7 +1349,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
                 Double_t lPreprocessX = bX*cs + bY*sn;
                 
                 //Propagate bachelor track: already know where to!
-                t->PropagateTo(lPreprocessX,b);
+                if( !fkDoMaterialCorrection ){
+                    t->PropagateTo(lPreprocessX,b);
+                }else{
+                    AliTrackerBase::PropagateTrackTo(t, lPreprocessX, lBachMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                }
                 
             }else{
                 //test two points in which DCAxy=0 for their DCA3D, pick smallest
@@ -1402,7 +1409,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
                         for(Int_t icoord = 0; icoord<3; icoord++) {
                             xyz[icoord] = lV0xyzptA[icoord];
                         }
-                        t->PropagateTo( xBachA , b );
+                        if( !fkDoMaterialCorrection ){
+                            t->PropagateTo(xBachA,b);
+                        }else{
+                            AliTrackerBase::PropagateTrackTo(t, xBachA, lBachMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                        }
                     }
                 }else{
                     //B is the better point! move there, if DCA isn't crazy + x is OK
@@ -1410,7 +1421,11 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
                         for(Int_t icoord = 0; icoord<3; icoord++) {
                             xyz[icoord] = lV0xyzptB[icoord];
                         }
-                        t->PropagateTo( xBachB , b );
+                        if( !fkDoMaterialCorrection ){
+                            t->PropagateTo(xBachB,b);
+                        }else{
+                            AliTrackerBase::PropagateTrackTo(t, xBachB, lBachMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
+                        }
                     }
                 }
             }
@@ -1514,11 +1529,15 @@ Double_t AliAnalysisTaskWeakDecayVertexer::PropagateToDCA(AliESDv0 *v, AliExtern
         Double_t xthis=r1[0]*cs + r1[1]*sn;
         
         //Propagate bachelor to the point of DCA
-        if (!t->PropagateTo(xthis,b)) {
-            //AliWarning(" propagation failed !";
-            //Count curved propagation failures
-            fHistV0ToBachelorPropagationStatus->Fill(8.5);
-            return 1e+33;
+        if( !fkDoMaterialCorrection ){
+            if (!t->PropagateTo(xthis,b)) {
+                //AliWarning(" propagation failed !";
+                //Count curved propagation failures
+                fHistV0ToBachelorPropagationStatus->Fill(8.5);
+                return 1e+33;
+            }
+        }else{
+            AliTrackerBase::PropagateTrackTo(t, xthis, lBachMassForTracking, 3, kFALSE, 0.75, kFALSE, kTRUE );
         }
         
         //V0 distance to bachelor: the desired distance
