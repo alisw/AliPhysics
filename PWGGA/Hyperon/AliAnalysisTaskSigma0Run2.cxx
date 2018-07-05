@@ -41,7 +41,8 @@ ClassImp(AliAnalysisTaskSigma0Run2)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr) {}
+      fHistTriggerAfter(nullptr),
+      fOutputTree(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
@@ -76,9 +77,11 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr) {
+      fHistTriggerAfter(nullptr),
+      fOutputTree(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________________________________________
@@ -431,7 +434,33 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fOutputContainer->Add(fAntiSigmaPhotonCuts->GetCutHistograms());
   }
 
+  if (fOutputTree != nullptr) {
+    delete fOutputTree;
+    fOutputTree = nullptr;
+  }
+  if (fOutputTree == nullptr) {
+    fOutputTree = new TList();
+    fOutputTree->SetOwner(kTRUE);
+  }
+
+  if (fSigmaCuts && fSigmaCuts->GetSigmaTree()) {
+    fOutputTree->Add(fSigmaCuts->GetSigmaTree());
+  }
+
+  if (fAntiSigmaCuts && fAntiSigmaCuts->GetSigmaTree()) {
+    fOutputTree->Add(fAntiSigmaCuts->GetSigmaTree());
+  }
+
+  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetSigmaTree()) {
+    fOutputTree->Add(fSigmaPhotonCuts->GetSigmaTree());
+  }
+
+  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetSigmaTree()) {
+    fOutputTree->Add(fAntiSigmaPhotonCuts->GetSigmaTree());
+  }
+
   PostData(1, fOutputContainer);
+  PostData(2, fOutputTree);
 }
 
 //____________________________________________________________________________________________________

@@ -217,6 +217,7 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistMCTruthV0DaughterPt;     //!
   TH2F *fHistMCTruthV0DaughterPtY;    //!
   TH2F *fHistMCTruthV0DaughterPtEta;  //!
+  TH1F *fHistMCV0Pt;                  //!
 
   TH2F *fHistV0Mother;                                        //!
   TH2F *fHistV0MassPtTrue;                                    //!
@@ -273,8 +274,6 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticleNclsTPCSharedBkg[2];               //!
   TH2F *fHistSingleParticleNclsITSSharedBkg[2];               //!
   TH2F *fHistSingleParticleChi2Bkg[2];                        //! .
-
-  TH1F *fHistMCV0Pt;  //!
 
   TH1F *fHistSingleParticleCuts[2];                        //!
   TH1F *fHistSingleParticlePt[2];                          //!

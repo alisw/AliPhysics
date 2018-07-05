@@ -44,6 +44,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
+  void SetTreeOutput(bool isTreeOutput) { fIsTreeOutput = isTreeOutput; }
 
   void SetSigmaMass(float mass) { fMassSigma = mass; }
   void SetMixingDepth(short mixDepth) { fMixingDepth = mixDepth; }
@@ -69,6 +70,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const { return fHistograms; }
+  TTree *GetSigmaTree() const { return fOutputTree; }
 
  protected:
   TList *fHistograms;    //!
@@ -76,12 +78,14 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   bool fIsMC;
   bool fIsLightweight;
+  bool fIsTreeOutput;
 
   AliVEvent *fInputEvent;  //!
   AliMCEvent *fMCEvent;    //!
 
   deque<vector<AliSigma0ParticleV0> > fLambdaMixed;  //!
   deque<vector<AliSigma0ParticleV0> > fPhotonMixed;  //!
+  float fTreeVariables[4];                           //!
 
   short fMixingDepth;  //
   int fPDG;            //
@@ -132,8 +136,10 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH1F *fHistMCV0Pt;    //!
   TH1F *fHistMCV0Mass;  //!
 
+  TTree *fOutputTree;  //!
+
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 4)
+  ClassDef(AliSigma0PhotonMotherCuts, 5)
 };
 
 #endif

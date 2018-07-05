@@ -233,8 +233,14 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
       name, TList::Class(), AliAnalysisManager::kOutputContainer,
       containerName.Data());
 
+  name = "tree_" + suffix;
+  AliAnalysisDataContainer *cOutputTree = mgr->CreateContainer(
+      name, TList::Class(), AliAnalysisManager::kOutputContainer,
+      containerName.Data());
+
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, cOutputList);
+  mgr->ConnectOutput(task, 2, cOutputTree);
 
   return task;
 }
