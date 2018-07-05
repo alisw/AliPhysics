@@ -290,7 +290,7 @@ BadChannelAna::~BadChannelAna()
 //________________________________________________________________________
 void BadChannelAna::Run(Bool_t mergeOnly)
 {
-	gStyle->SetPalette(kRainBow);
+	gStyle->SetPalette(55); //kRainBow==55
 	//	cout<<"fired trigger class"<<AliAODEvent::GetFiredTriggerClasses()<<endl;
 	PrintCellInfo(1);
 	if(fExternalFileName=="")
@@ -2662,8 +2662,8 @@ Bool_t BadChannelAna::IsCoveredByTRD(Int_t row, Int_t collumn)
 //_________________________________________________________________________
 void BadChannelAna::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd)
 {
-	gStyle->SetPalette(kRainBow);
-	gStyle->SetPalette(kPastel);
+	gStyle->SetPalette(55);     //kRainBow==55
+	gStyle->SetPalette(91);     //kPastel==91
 	//..build two dimensional histogram with values row vs. column
 	TString histoName;
 	histoName = Form("2DChannelMap_Flag%d_V%i",flagBegin,fTrial);
