@@ -564,11 +564,14 @@ void AliAnalysisTaskFlavourJetCorrelations::CreateResponseMatrix(AliEmcalJet* je
         Double_t zRec = Z(Drec,jet,rho);
         Double_t zGen = Z(Dgen,MCjet,0);
         Double_t JetPtRec = jet->Pt() - rho*jet->Area();
+        Double_t JetPtGen = MCjet->Pt();
         Double_t etaRec = jet->Eta();
         Double_t etaGen = MCjet->Eta();
         Double_t DYRec = -999;
         AliAODMCParticle* DTrk=(AliAODMCParticle*)Dgen;
         Double_t DYGen = DTrk->Y();
+        Double_t pTRes = JetPtGen ? ((JetPtRec - JetPtGen) / JetPtGen) : -999;
+        Double_t zRes = zGen ? ((zRec - zGen) / zGen) : -999;
 
         Int_t pdgMeson = 413;
         if (fCandidateType == kD0toKpi) pdgMeson = 421;
@@ -586,7 +589,7 @@ void AliAnalysisTaskFlavourJetCorrelations::CreateResponseMatrix(AliEmcalJet* je
 
         }
 
-        Double_t fillRM[10] = {zRec,JetPtRec,Drec->Pt(),DYRec,etaRec,zGen,MCjet->Pt(),Dgen->Pt(),DYGen,etaGen};
+        Double_t fillRM[12] = {zRec,JetPtRec,Drec->Pt(),DYRec,etaRec,zGen,JetPtGen,Dgen->Pt(),DYGen,etaGen,pTRes,zRes};
         fResponseMatrix->Fill(fillRM,1.);
     }
 }
@@ -611,6 +614,8 @@ void AliAnalysisTaskFlavourJetCorrelations::CreateMCResponseMatrix(AliEmcalJet* 
     Double_t JetEtaRec = -999;
     Double_t DPtRec = -999;
     Double_t DYRec = -999;
+    Double_t pTRes = -999;
+    Double_t zRes = -999;
 
     AliJetContainer* JetContRec = GetJetContainer(0);
     if(JetContRec){
@@ -631,6 +636,8 @@ void AliAnalysisTaskFlavourJetCorrelations::CreateMCResponseMatrix(AliEmcalJet* 
             JetPtRec = jet->Pt() - rho*jet->Area();
             JetEtaRec = jet->Eta();
             DPtRec = Drec->Pt();
+            pTRes = JetPtGen ? ((JetPtRec - JetPtGen) / JetPtGen) : -999;
+            zRes = zGen ? ((zRec - zGen) / zGen) : -999;
 
             Int_t pdgMeson = 413;
             if (fCandidateType == kD0toKpi) pdgMeson = 421;
@@ -665,7 +672,7 @@ void AliAnalysisTaskFlavourJetCorrelations::CreateMCResponseMatrix(AliEmcalJet* 
         } // if HF reco jet
     } // if jet cont reco
 
-    Double_t fillRM[10] = {zRec,JetPtRec,DPtRec,DYRec,JetEtaRec,zGen,JetPtGen,DPtGen,DYGen,JetEtaGen};
+    Double_t fillRM[12] = {zRec,JetPtRec,DPtRec,DYRec,JetEtaRec,zGen,JetPtGen,DPtGen,DYGen,JetEtaGen,pTRes,zRes};
     fResponseMatrix->Fill(fillRM,1.);
 
 }
@@ -984,7 +991,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
 
       if(fCandidateType==kDstartoKpipi)
       {
-	 if(fAnalyseDBkg){
+	       if(fAnalyseDBkg){
       	    fhDiffSideBand = new TH2F("hDiffSideBand","M(kpipi)-M(kpi) Side Band Background",nbinsmass,fMinMass,fMaxMass,nbinsptD, ptDlims[0],ptDlims[1]);
       	    fhDiffSideBand->SetStats(kTRUE);
       	    fhDiffSideBand->GetXaxis()->SetTitle("M(kpipi)-M(Kpi) GeV");
@@ -1012,7 +1019,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       fOutput->Add(fhInvMassptD);
 
       if(fUseMCInfo){
-	 fhInvMassptDbg = new TH2F("hInvMassptDbg","Background D (Delta R < Rjet) invariant mass distribution p_{T}^{j} > threshold",nbinsmass,fMinMass,fMaxMass,nbinsptD,ptDlims[0],ptDlims[1]);
+	       fhInvMassptDbg = new TH2F("hInvMassptDbg","Background D (Delta R < Rjet) invariant mass distribution p_{T}^{j} > threshold",nbinsmass,fMinMass,fMaxMass,nbinsptD,ptDlims[0],ptDlims[1]);
       	 fhInvMassptDbg->GetXaxis()->SetTitle(Form("%s (GeV)",(fCandidateType==kDstartoKpipi) ? "M(Kpipi)" : "M(Kpi)"));
       	 fhInvMassptDbg->GetYaxis()->SetTitle("p_{t}^{D} (GeV/c)");
       	 fhInvMassptDbg->Sumw2();
@@ -1024,16 +1031,6 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
 
     if(fUseMCInfo){
         if(fCandidateType==kDstartoKpipi){
-          AliInfo("Creating a 11 axes container (MB background candidates)");
-          const Int_t nAxis=11;
-          const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,nbinsSpsy,nbinsSpsy,nbinsSpsmass,nbinsSpsmass, 2, 2, 2};
-          const Double_t minSparse[nAxis]={zlims[0],ptjetlims[0],ptDlims[0],fMinMass,etalims[0],etalims[0],fMinMass,fMinMass, -0.5,-0.5,-0.5};
-          const Double_t maxSparse[nAxis]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass,etalims[1],etalims[1],fMaxMass,fMaxMass, 1.5, 1.5 , 1.5};
-          fNAxesBigSparse=nAxis;
-          fhsDphiz=new THnSparseF("hsDphiz","Z, p_{T}^{jet}, p_{T}^{D}, mass., y^{D}, #eta^{jet}, mass_{true}, mass_{refl}, Bkg?, D in EMCal acc?, jet in EMCal acc?", nAxis, nbinsSparse, minSparse, maxSparse);
-
-        }
-        else{
           AliInfo("Creating a 9 axes container (MB background candidates)");
           const Int_t nAxis=9;
           const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,nbinsSpsy,nbinsSpsy, 2, 2, 2};
@@ -1041,6 +1038,15 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
           const Double_t maxSparse[nAxis]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass,etalims[1],etalims[1], 1.5, 1.5 , 1.5};
           fNAxesBigSparse=nAxis;
           fhsDphiz=new THnSparseF("hsDphiz","Z, p_{T}^{jet}, p_{T}^{D}, mass., y^{D}, #eta^{jet}, Bkg?, D in EMCal acc?, jet in EMCal acc?", nAxis, nbinsSparse, minSparse, maxSparse);
+
+        }
+        else{
+          const Int_t nAxis=11;
+          const Int_t nbinsSparse[nAxis]={nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsmass,nbinsSpsy,nbinsSpsy,nbinsSpsmass,nbinsSpsmass, 2, 2, 2};
+          const Double_t minSparse[nAxis]={zlims[0],ptjetlims[0],ptDlims[0],fMinMass,etalims[0],etalims[0],fMinMass,fMinMass, -0.5,-0.5,-0.5};
+          const Double_t maxSparse[nAxis]={zlims[1],ptjetlims[1],ptDlims[1],fMaxMass,etalims[1],etalims[1],fMaxMass,fMaxMass, 1.5, 1.5 , 1.5};
+          fNAxesBigSparse=nAxis;
+          fhsDphiz=new THnSparseF("hsDphiz","Z, p_{T}^{jet}, p_{T}^{D}, mass., y^{D}, #eta^{jet}, mass_{true}, mass_{refl}, Bkg?, D in EMCal acc?, jet in EMCal acc?", nAxis, nbinsSparse, minSparse, maxSparse);
         }
 
     } else{
@@ -1060,11 +1066,11 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
 
     if(fBuildRM == kTRUE || fBuildRMEff == kTRUE)
     {
-        const Int_t nRMAxis=10;
-        const Int_t RMnbins[nRMAxis] = {nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsy,nbinsSpsy,nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsy,nbinsSpsy};
-        const Double_t RMmin[nRMAxis]={zlims[0],ptjetlims[0],ptDlims[0],etalims[0],etalims[0],zlims[0],ptjetlims[0],ptDlims[0],etalims[0],etalims[0]};
-        const Double_t RMmax[nRMAxis]={zlims[1],ptjetlims[1],ptDlims[1],etalims[1],etalims[1],zlims[1],ptjetlims[1],ptDlims[1],etalims[1],etalims[1]};
-        fResponseMatrix = new THnSparseF("ResponseMatrix","z, p_{T}^{jet}, p_{T}^{D}, y^{D}, #eta^{jet}: Rec and Gen",nRMAxis,RMnbins,RMmin,RMmax);
+        const Int_t nRMAxis=12;
+        const Int_t RMnbins[nRMAxis] = {nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsy,nbinsSpsy,nbinsSpsz,nbinsSpsptjet,nbinsSpsptD,nbinsSpsy,nbinsSpsy,100,100};
+        const Double_t RMmin[nRMAxis]={zlims[0],ptjetlims[0],ptDlims[0],etalims[0],etalims[0],zlims[0],ptjetlims[0],ptDlims[0],etalims[0],etalims[0],-1,-1};
+        const Double_t RMmax[nRMAxis]={zlims[1],ptjetlims[1],ptDlims[1],etalims[1],etalims[1],zlims[1],ptjetlims[1],ptDlims[1],etalims[1],etalims[1],1,1};
+        fResponseMatrix = new THnSparseF("ResponseMatrix","z, p_{T}^{jet}, p_{T}^{D}, y^{D}, #eta^{jet}: Rec and Gen, p_{T}^{res}, z^{res}",nRMAxis,RMnbins,RMmin,RMmax);
         fResponseMatrix->Sumw2();
         fOutput->Add(fResponseMatrix);
     }
@@ -1162,7 +1168,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
       }
 
     }
-    
+
     delete[] point;
 }
 
