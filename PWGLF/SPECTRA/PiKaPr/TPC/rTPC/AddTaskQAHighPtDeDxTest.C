@@ -39,12 +39,12 @@ AliAnalysisTaskQAHighPtDeDxTest* AddTaskQAHighPtDeDxTest(
 
 	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
 	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
- 	esdTrackCutsGolden->SetMaxDCAToVertexXY(2.4);
-    	esdTrackCutsGolden->SetMaxDCAToVertexZ(3.2);
-    	esdTrackCutsGolden->SetDCAToVertex2D(kTRUE);
-    	esdTrackCutsGolden->SetMaxChi2TPCConstrainedGlobal(36);
-    	esdTrackCutsGolden->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
-    	esdTrackCutsGolden->SetMaxFractionSharedTPCClusters(0.4);
+// 	esdTrackCutsGolden->SetMaxDCAToVertexXY(2.4);
+//    	esdTrackCutsGolden->SetMaxDCAToVertexZ(3.2);
+//    	esdTrackCutsGolden->SetDCAToVertex2D(kTRUE);
+//    	esdTrackCutsGolden->SetMaxChi2TPCConstrainedGlobal(36);
+//    	esdTrackCutsGolden->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
+//    	esdTrackCutsGolden->SetMaxFractionSharedTPCClusters(0.4);
 	trackFilterGolden->AddCuts(esdTrackCutsGolden);
 
 	AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");

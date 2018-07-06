@@ -806,6 +806,7 @@ void AliAnalysisTaskQAHighPtDeDxTest::AnalyzeESD(AliESDEvent* esdEvent)
 		return;
 	}
 	else{
+
 		ProduceArrayTrksESD( esdEvent );
 		ProduceArrayV0ESD( esdEvent );
 	}
@@ -1431,15 +1432,12 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 		}
 
 		if(beta>1){
-			if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion),2)+TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion),2))<3.0){
-				histPiTof[cent][nh]->Fill(momentum, dedx);
-			}
+			histPiTof[cent][nh]->Fill(momentum, dedx);
 		}
 
-		if(TMath::Sqrt(TMath::Power(fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kElectron),2)+TMath::Power(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron),2)) < 3){
+		if(fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron)< 2){
 			histElTof[cent][nh]->Fill(momentum, dedx);
 		}    
-
 
 		if( momentum <= 0.6 && momentum >= 0.4  ){
 
@@ -1737,16 +1735,16 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayV0ESD( AliESDEvent *ESDevent )
 			continue;
 
 		UInt_t selectDebug_p = 0;
-		if (fTrackFilterGolden) {
-			selectDebug_p = fTrackFilterGolden->IsSelected(pTrack);
+		if (fTrackFilter2015PbPb) {
+			selectDebug_p = fTrackFilter2015PbPb->IsSelected(pTrack);
 			if (!selectDebug_p) {
 				continue;
 			}
 		}
 
 		UInt_t selectDebug_n = 0;
-		if (fTrackFilterGolden) {
-			selectDebug_n = fTrackFilterGolden->IsSelected(nTrack);
+		if (fTrackFilter2015PbPb) {
+			selectDebug_n = fTrackFilter2015PbPb->IsSelected(nTrack);
 			if (!selectDebug_n) {
 				continue;
 			}
@@ -1809,10 +1807,18 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayV0ESD( AliESDEvent *ESDevent )
 		v0AntiLambdaKF+=(*negAPKF);
 		v0AntiLambdaKF.SetProductionVertex(primaryVtxKF);
 
-		Double_t dmassG     = v0GKF.GetMass();
-		Double_t dmassK     = v0K0sKF.GetMass()-0.498;
-		Double_t dmassL     = v0LambdaKF.GetMass()-1.116;
-		Double_t dmassAL    = v0AntiLambdaKF.GetMass()-1.116;
+		Double_t dmassG     = TMath::Abs(v0GKF.GetMass());
+		Double_t dmassK     = TMath::Abs(v0K0sKF.GetMass()-0.498);
+		Double_t dmassL     = TMath::Abs(v0LambdaKF.GetMass()-1.116);
+		Double_t dmassAL    = TMath::Abs(v0AntiLambdaKF.GetMass()-1.116);
+
+		if( dmassG  > 0.1 &&   
+				dmassK  > 0.1 &&   
+				dmassL  > 0.1 &&   
+				dmassAL > 0.1
+		  )    
+			continue;
+
 
 		for( Int_t case_v0 = 0; case_v0 < 2; ++case_v0 ){
 
@@ -1929,8 +1935,8 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayV0ESD( AliESDEvent *ESDevent )
 					       Bool_t fillNeg = kFALSE;
 
 
-					       if((TMath::Abs(dmassK)>0.1) && (TMath::Abs(dmassL)>0.1) && (TMath::Abs(dmassAL)>0.1)) {
-						       if((dmassG<0.01) && (dmassG>0.0001)) {
+					       if( dmassK>0.01 && dmassL>0.01 && dmassAL>0.01 ) {
+						       if( dmassG<0.01 && dmassG>0.0001 ) {
 
 							       if(nTrack->Eta() > 0)
 								       if( TMath::Abs(nTrack->GetTPCsignal()-felededxfitPos->Eval(nTrack->Eta())) < 5)
@@ -1989,9 +1995,9 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayV0ESD( AliESDEvent *ESDevent )
 						       continue;
 
 
+					       cout<<"Cent :: "<<cent<<"Eta  :: "<<eta<<"dedx :: "<<dedx<<endl;
 					       histEV0[cent][nh]->Fill(momentum, dedx);
 
-					       cout << "Cent   "<<cent<<"DE/DX :: "<<dedx<<"Eta ::  "<<eta<< endl;
 
 
 				       };
