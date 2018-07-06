@@ -46,7 +46,9 @@ public:
     
     void SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
-    
+ 
+    void SetRefit(Bool_t Refit){fRefit = Refit;};
+   
     void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
     void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
 
@@ -124,6 +126,8 @@ private:
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
     
+    Bool_t fRefit;
+  
     Int_t fcentMim; // mim. centrality
     Int_t fcentMax; // max. centrality
     Int_t fitschi2; // max. centrality

@@ -102,6 +102,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  fRefit(kTRUE),
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
@@ -274,6 +275,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  fRefit(kTRUE),
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
@@ -1329,8 +1331,13 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         }
       fCheckEta->Fill(atrack->Eta());
 
-      //if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
-      // not apply vAN20180703 to ...
+      if(fRefit)
+        { 
+         //cout << "fRefit = " << fRefit << endl; 
+         if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+        }
+      // not apply vAN20180703 to vAN20180705
+      
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
 
       Double_t TPCfound = atrack->GetTPCNclsF();
