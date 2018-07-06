@@ -103,7 +103,7 @@ EOF
   N_BAD=$(grep -c "E-Ali" AliPainterTest.log)
 
   TEST_STATUS=0
-  if [[ $N_GOOD != 18 ]]; then
+  if [[ $N_GOOD != 27 ]]; then
     alilog_error "statTest.AliPainterTest: Test FAILED"
     ((TEST_STATUS++))
   fi
