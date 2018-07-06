@@ -1277,8 +1277,8 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 				if(fFlagEMCalCorrection) NclustIso =  fCaloClusters_tender->GetEntries();
 
 				Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;;
-				Double_t riso = 0.;
-				Double_t ConeR = 999.;
+				Double_t riso =  -999.;
+				Double_t ConeR = -999.;
 
 				for(Int_t jcl=0; jcl<NclustIso; jcl++)
 				{
@@ -1328,12 +1328,11 @@ void AliAnalysisTaskCaloHFEpp::IsolationCut(Int_t itrack, AliVTrack *track, Doub
 				}
 
 				riso = riso/MatchclE;
-				fHistPt_R_Iso->Fill(TrackPt,riso);
+				if(riso>=0.0)fHistPt_R_Iso->Fill(TrackPt,riso);
 
-				 if(TrackPt >= 30.)CheckCorrelation(itrack,track,TrackPt,riso,fFlagPhoto);
-				
-				
-				if(riso<0.05) flagIso = kTRUE;
+				if(TrackPt >= 30. && riso>=0.0)CheckCorrelation(itrack,track,TrackPt,riso,fFlagPhoto);
+
+				if(riso<0.05 && riso>=0.0) flagIso = kTRUE;
 
 				fFlagIso = flagIso;
 
@@ -1395,7 +1394,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 								TPCchi2NDFWasso = aWassotrack -> Chi2perNDF();
 								TrackPhi        = track->Phi();
 
-								if(ptWasso <0.5) continue;
+								if(ptWasso <1.) continue;
 
 								/////////////////////////
 								// track cut
