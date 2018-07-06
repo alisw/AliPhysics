@@ -131,6 +131,18 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     TVectorF                    fGammaPhotonProp;           //
     TVectorF                    fGammaConvCoord;            //
     TVectorF                    fDaughterProp;              //
+    Bool_t                      feleSPD1;                    //
+    Bool_t                      feleSPD2;                    //
+    Bool_t                      feleSDD1;                    //
+    Bool_t                      feleSDD2;                    //
+    Bool_t                      feleSSD1;                    //
+    Bool_t                      feleSSD2;                    //
+    Bool_t                      fposSPD1;                    //
+    Bool_t                      fposSPD2;                    //
+    Bool_t                      fposSDD1;                    //
+    Bool_t                      fposSDD2;                    //
+    Bool_t                      fposSSD1;                    //
+    Bool_t                      fposSSD2;                    //
     UInt_t                      fKind;                      //
     Bool_t                      fIsMC;                      //
     Int_t                       fnGammaCandidates;          //
