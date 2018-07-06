@@ -58,7 +58,7 @@ std::vector<TString> AliPainter::rangesVec;
 /*!
 *  #### Example use:
 *
-*  1. Let's load tutorial data:
+*  1. Let's load tutorial data and register style:
 *       For this you can use
 *       \code
 *         TFile::SetCacheFileDir(".");
@@ -70,6 +70,7 @@ std::vector<TString> AliPainter::rangesVec;
 *           TObject *o = finput->Get(TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
 *           hisArray->AddLast(o);
 *         }
+*         AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/test/figTemplateHex.css"));
 *        \endcode
 *  2. Then create the canvas and divide it:
 *       \code
@@ -80,6 +81,7 @@ std::vector<TString> AliPainter::rangesVec;
 *         AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E)");
+*         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *       \endcode
 *         In this simple case we have four vertical pads:
 *         ![<horizontal>\[1b,1t,1,1\]](AliPainter_cxx_example1.png)
@@ -93,6 +95,7 @@ std::vector<TString> AliPainter::rangesVec;
 *         AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E)");
+*         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *        \endcode
 *        ![<vertical>\[1r,1l,1r,1l\]](AliPainter_cxx_example2.png)
  * 4. You can specify more than one pads in one raw:
@@ -106,6 +109,7 @@ std::vector<TString> AliPainter::rangesVec;
 *         AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1, drawOpt=E,class=PtAll)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(div=1,class=Mass,dOption=E)");
 *         AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1, drawOpt=E,class=PtAll)");
+*         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *       \endcode
 *       ![<horizontal>\[1,3,2,1\]](AliPainter_cxx_example3.png)
 *  5. You can specify special flag "m" if you want to join middle pads in column:
@@ -119,6 +123,7 @@ std::vector<TString> AliPainter::rangesVec;
 *         AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(div=1,class=Mass,dOption=E)");
 *         AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
+*         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *       \endcode
 *       ![<vertical>\[1,3m,2m,1\]](AliPainter_cxx_example4.png)
 *  6. All previous case set chosen margin equal 0, but you can set your own value in absolute units,
@@ -131,6 +136,7 @@ std::vector<TString> AliPainter::rangesVec;
 *         AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E)");
+*         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *       \endcode
 *       ![<horizontal>\[1rpx200,1,1,1\]](AliPainter_cxx_example5.png)
 */
@@ -405,7 +411,7 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 /// \return
 /*!
 *   #### Example usage:
-*    Data preparation:
+*    Data preparation and style register:
 *       \code
 *         TFile::SetCacheFileDir(".");
 *         TFile *finput = TFile::Open("http://aliqatrkeos.web.cern.ch/aliqatrkeos/performance/AliPainterTest.root","CACHEREAD");
@@ -415,6 +421,7 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 *         for (Int_t iKey = 0; iKey<keys->GetEntries();iKey++) {
 *           TObject *o = finput->Get(TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
 *           hisArray->AddLast(o);
+*           AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/test/figTemplateHex.css"));
 *         }
 *        \endcode
 *   Behaviour by default:
@@ -449,15 +456,17 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 *         AliPainter::DivideTPad(canvasQA, "<horizontal>[1,1]", "Canvas1");
 *         canvasQA->cd(1);
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[0,], div=1)");
+*         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *       \endcode
 *       ![Few graphs on the different pad](AliPainter_cxx_example9.png)
 *     2.3 Limitations to y-axis
-*         You can set the ranges to yaxis with using second parameter of drawOption.
-*         /code
+*         You can set the ranges to yaxis with using second parameter of drawOption. Available statistical units are - <min>, <max>, <mean>, <median>, <rms>.
+*         \code
 *         TCanvas *canvasQA1 = new TCanvas("canvasQA", "canvasQA", 1200, 800);
 *         AliPainter::DivideTPad(canvasQA1, "<horizontal>[1,1]", "Canvas1");
 *         canvasQA1->cd(1);
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[<min>+0.5*<mean>,<max>-0.5*<mean>], div=1)");
+*         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *       \endcode
 *       ![Expressions for statistic limits](AliPainter_cxx_example10.png)
 *     2.4 Using of standard root draw options
@@ -600,8 +609,8 @@ std::vector<TString> AliPainter::ParseString(const char *inpString, const char *
 
   if (verbose == 4) {
     TString infoString = "";
-    for (auto const& value: atts)
-      infoString += value + "|";
+    for (std::vector<TString>::iterator it = atts.begin(); it != atts.end(); ++it)
+      infoString += *it + "|";
     ::Info("AliPainter::ParseString", "Input string \"%s\" was parsed to %s", inpString, infoString.Data());
   }
 
@@ -622,12 +631,12 @@ std::vector<TString> AliPainter::ParseOptionString(const char *inputExpr, Int_t 
     return atts;
   }
   TString inputTStr = TString(inputExpr);
-  auto arg = 0, startIndex = 0;
+  Int_t arg = 0, startIndex = 0;
   if (defSize == 0) defSize = inputTStr.CountChar(sep) + 1;
   if (defSize == 0) atts.push_back(inputTStr);
-  for (auto i = 0; i < defSize; i++) atts.push_back(TString(""));
+  for (UShort_t i = 0; i < defSize; i++) atts.push_back(TString(""));
 
-  for (auto i = 0; i <= inputTStr.Length(); i++) {
+  for (UShort_t i = 0; i <= inputTStr.Length(); i++) {
     if (arg >= defSize) {
       ::Warning("AliPainter::ParseString", "AliPainter::ParseString(\"%s\", \'%c\', \"%s\") more than %d parameters in input string", inputExpr, sep, ignoreBrackets, defSize);
       break;
@@ -644,8 +653,8 @@ std::vector<TString> AliPainter::ParseOptionString(const char *inputExpr, Int_t 
 
   if (verbose == 4) {
     TString infoString = "";
-    for (auto const& value: atts)
-      infoString += value + "|";
+    for (std::vector<TString>::iterator it = atts.begin(); it != atts.end(); ++it)
+      infoString += *it + "|";
     ::Info("AliPainter::ParseString", "Input string \"%s\" was parsed to %s", inputExpr, infoString.Data());
   }
 
@@ -692,17 +701,16 @@ void AliPainter::FillAll(const char *expression, Int_t verbose) {
   AliPainter::ParsePandasString(initAtts[4], AliPainter::drawValues, ',', "[]", verbose);
   if (verbose == 4) {
     TString rangesString = "";
-    //TODO: don't use c++11 constructions
-    for (auto const& value: AliPainter::rangesVec)
-      rangesString += value + "\n";
+    for (std::vector<TString>::iterator it = AliPainter::rangesVec.begin(); it != AliPainter::rangesVec.end(); ++it)
+      rangesString += *it + "\n";
     TString genString = "";
-    for (auto it=AliPainter::genValues.begin(); it!=AliPainter::genValues.end(); ++it)
+    for (std::map<TString, TString>::iterator it=AliPainter::genValues.begin(); it!=AliPainter::genValues.end(); ++it)
       genString += "\"" + it->first + "\"" + "=" "\"" + it->second + "\"" + ",";
     TString fitString = "";
-    for (auto it=AliPainter::fitValues.begin(); it!=AliPainter::fitValues.end(); ++it)
+    for (std::map<TString, TString>::iterator it=AliPainter::fitValues.begin(); it!=AliPainter::fitValues.end(); ++it)
       fitString += "\"" + it->first + "\"" + "=" "\"" + it->second + "\"" + ",";
     TString drawString = "";
-    for (auto it=AliPainter::drawValues.begin(); it!=AliPainter::drawValues.end(); ++it)
+    for (std::map<TString, TString>::iterator it=AliPainter::drawValues.begin(); it!=AliPainter::drawValues.end(); ++it)
       drawString += "\"" + it->first + "\"" + "=" "\"" + it->second + "\"" + ",";
 
     ::Info("AliPainter::FillAll", "Input string \"%s\" was parsed to: \n general             values: \"%s\"; \n ragnes: \n \"%s\"; \n fit values: \"%s\"; \n draw                values: \"%s\";", expression, genString.Data(), rangesString.Data(),             fitString.Data(), drawString.Data());
@@ -768,7 +776,7 @@ template <typename T>
                           AliPainter::fitValues["ranges"].Index(")") - AliPainter::fitValues["ranges"].Index(",")-1)).Atof();
   TString fitStr = "";
   if (verbose == 4) {
-    for (auto it = AliPainter::fitValues.begin(); it != AliPainter::fitValues.end(); ++it)
+    for (std::map<TString, TString>::iterator it = AliPainter::fitValues.begin(); it != AliPainter::fitValues.end(); ++it)
       fitStr += "\"" + it->first + "\"" + "=" "\"" + it->second + "\"" + ",";
   }
 
@@ -807,7 +815,7 @@ void AliPainter::SaveToKeepArray(TObject *obj, TObjArray *&keepArray, Int_t verb
 
 void AliPainter::SaveToKeepArray(TObjArray *objArr, TObjArray *&keepArray, Int_t verbose) {
   if (keepArray != nullptr) {
-    for (auto i = 0; objArr->GetEntriesFast(); i++) {
+    for (Int_t i = 0; objArr->GetEntriesFast(); i++) {
       keepArray->AddLast(objArr->At(i));
       if (verbose == 4)
         ::Info("AliPainter::SaveToKeepArray", "Object %s saved to keepArray %s", objArr->At(i)->GetName(), keepArray->GetName());
