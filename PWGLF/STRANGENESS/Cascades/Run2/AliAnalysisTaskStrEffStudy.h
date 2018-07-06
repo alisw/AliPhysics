@@ -408,6 +408,9 @@ private:
     Float_t fTreeVariableDecayX;
     Float_t fTreeVariableDecayY;
     Float_t fTreeVariableDecayZ;
+    Float_t fTreeVariableDecayXMC;
+    Float_t fTreeVariableDecayYMC;
+    Float_t fTreeVariableDecayZMC;
     Float_t fTreeVariableInvMassK0s; //!
     Float_t fTreeVariableInvMassLambda; //!
     Float_t fTreeVariableInvMassAntiLambda; //!

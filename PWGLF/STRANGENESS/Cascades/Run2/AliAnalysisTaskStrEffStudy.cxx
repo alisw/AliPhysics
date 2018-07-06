@@ -186,6 +186,9 @@ fTreeVariableV0CosineOfPointingAngle(0),
 fTreeVariableDecayX(0),
 fTreeVariableDecayY(0),
 fTreeVariableDecayZ(0),
+fTreeVariableDecayXMC(0),
+fTreeVariableDecayYMC(0),
+fTreeVariableDecayZMC(0),
 fTreeVariableInvMassK0s(0),
 fTreeVariableInvMassLambda(0),
 fTreeVariableInvMassAntiLambda(0),
@@ -420,6 +423,9 @@ fTreeVariableV0CosineOfPointingAngle(0),
 fTreeVariableDecayX(0),
 fTreeVariableDecayY(0),
 fTreeVariableDecayZ(0),
+fTreeVariableDecayXMC(0),
+fTreeVariableDecayYMC(0),
+fTreeVariableDecayZMC(0),
 fTreeVariableInvMassK0s(0),
 fTreeVariableInvMassLambda(0),
 fTreeVariableInvMassAntiLambda(0),
@@ -713,6 +719,9 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariableDecayX",&fTreeVariableDecayX,"fTreeVariableDecayX/F");
     fTreeV0->Branch("fTreeVariableDecayY",&fTreeVariableDecayY,"fTreeVariableDecayY/F");
     fTreeV0->Branch("fTreeVariableDecayZ",&fTreeVariableDecayZ,"fTreeVariableDecayZ/F");
+    fTreeV0->Branch("fTreeVariableDecayXMC",&fTreeVariableDecayXMC,"fTreeVariableDecayXMC/F");
+    fTreeV0->Branch("fTreeVariableDecayYMC",&fTreeVariableDecayYMC,"fTreeVariableDecayYMC/F");
+    fTreeV0->Branch("fTreeVariableDecayZMC",&fTreeVariableDecayZMC,"fTreeVariableDecayZMC/F");
     fTreeV0->Branch("fTreeVariableInvMassK0s",       &fTreeVariableInvMassK0s,       "fTreeVariableInvMassK0s/F");
     fTreeV0->Branch("fTreeVariableInvMassLambda",    &fTreeVariableInvMassLambda,    "fTreeVariableInvMassLambda/F");
     fTreeV0->Branch("fTreeVariableInvMassAntiLambda",&fTreeVariableInvMassAntiLambda,"fTreeVariableInvMassAntiLambda/F");
@@ -1496,6 +1505,12 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
         TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
+        
+        //-----------------------------------------------------------------
+        //3c: Get perfect MC information for bookkeeping
+        fTreeVariableDecayXMC = mcPosV0Dghter->Vx();
+        fTreeVariableDecayYMC = mcPosV0Dghter->Vy();
+        fTreeVariableDecayZMC = mcPosV0Dghter->Vz();
         
         fTreeVariablePIDPositive = mcPosV0Dghter -> GetPdgCode();
         fTreeVariablePIDNegative = mcNegV0Dghter -> GetPdgCode();
