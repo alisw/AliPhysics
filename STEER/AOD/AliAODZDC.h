@@ -66,6 +66,10 @@ public:
   //
   virtual Bool_t  IsZNAfired() {return fIsZNAfired;}
   virtual Bool_t  IsZNCfired() {return fIsZNCfired;}
+  virtual Bool_t  IsZPAfired() {return fIsZPAfired;}
+  virtual Bool_t  IsZPCfired() {return fIsZPCfired;}
+  virtual Bool_t  IsZEM1fired() {return fIsZEM1fired;}
+  virtual Bool_t  IsZEM2fired() {return fIsZEM2fired;}
   virtual Bool_t  IsZNANDfired() {if(IsZNAfired() &&IsZNCfired()) return kTRUE;
   				  else return kFALSE;}
 
