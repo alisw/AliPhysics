@@ -102,11 +102,15 @@ public:
   void  SetZNCfired() {fIsZNCfired = kTRUE;}
   void  SetZPAfired() {fIsZPAfired = kTRUE;}
   void  SetZPCfired() {fIsZPCfired = kTRUE;}
+  void  SetZEM1fired() {fIsZEM1fired = kTRUE;}
+  void  SetZEM2fired() {fIsZEM2fired = kTRUE;}
   //
   void  ResetZNAfired() {fIsZNAfired = kFALSE;}
   void  ResetZNCfired() {fIsZNCfired = kFALSE;}
   void  ResetZPAfired() {fIsZPAfired = kFALSE;}
   void  ResetZPCfired() {fIsZPCfired = kFALSE;}
+  void  ResetZEM1fired() {fIsZEM1fired = kFALSE;}
+  void  ResetZEM2fired() {fIsZEM2fired = kFALSE;}
 
 protected:
 
@@ -142,18 +146,19 @@ protected:
   Float_t   fZPATDC;     	   // ZNA TDC in ns corrected 4 phase shift;
   //
   // Jan.2016: propagating multi-hit structure of TDC hits to AODs
-  Float_t   fZNCTDCm[4];	// true if ZNC TDC has at least 1 hit
-  Float_t   fZNATDCm[4];	// true if ZNA TDC has at least 1 hit
-  Float_t   fZPCTDCm[4];	// true if ZPC TDC has at least 1 hit
-  Float_t   fZPATDCm[4];	// true if ZPA TDC has at least 1 hit
+  Float_t   fZNCTDCm[4];	// ZNC TDC 4 hit
+  Float_t   fZNATDCm[4];	// ZNA TDC 4 hit
+  Float_t   fZPCTDCm[4];	// ZPC TDC 4 hit
+  Float_t   fZPATDCm[4];	// ZPA TDC 4 hit
   //
   Bool_t    fIsZNAfired;	// if true ZNA is fired in the event
   Bool_t    fIsZNCfired;	// if true ZNC is fired in the event
   Bool_t    fIsZPAfired;	// if true ZPA is fired in the event
   Bool_t    fIsZPCfired;	// if true ZPC is fired in the event
+  Bool_t    fIsZEM1fired;	// if true ZEM1 is fired in the event
+  Bool_t    fIsZEM2fired;	// if true ZEM2 is fired in the event
 
-
-  ClassDef(AliAODZDC,4)
+  ClassDef(AliAODZDC,5)
 };
 
 #endif
