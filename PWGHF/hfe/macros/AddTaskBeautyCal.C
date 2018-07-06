@@ -7,6 +7,7 @@ AliAnalysisTask *AddTaskBeautyCal(
                                  Int_t MimCent = -1, Int_t MaxCent = -1, 
                                  Double_t nSig = -1.0,
                                  Int_t epana = 0,
+                                 Bool_t refit = kTRUE,
                                  Int_t eopcorr = 0,
                                  Int_t EtaRange = 0,
                                  Int_t ITSchi2 = 26,
@@ -65,34 +66,6 @@ AliAnalysisTask *AddTaskBeautyCal(
     if(!ClsTypeEMC && ClsTypeDCAL)ContNameExt+="_DCAL";
 
     // +++ EMCal MB
-    // INT8
-    /*
-    AliAnalysisTaskBeautyCal *hfecalqa = new AliAnalysisTaskBeautyCal("emcqa");
-    mgr->AddTask(hfecalqa);
-    hfecalqa->SelectCollisionCandidates(AliVEvent::kINT8);
-    hfecalqa->SetElecIDsparse(FillElecSparse);
-    hfecalqa->SetElecSys(FillElec);
-    hfecalqa->SetTenderSwitch(UseTender);
-    hfecalqa->SetThresholdEG1(thEG1ADC);
-    hfecalqa->SetThresholdEG2(thEG2ADC);
-    hfecalqa->SetClusterTypeEMC(ClsTypeEMC);
-    hfecalqa->SetClusterTypeDCAL(ClsTypeDCAL);
-    hfecalqa->SetCentralityMim(MimCent);
-    hfecalqa->SetCentralityMax(MaxCent);
-    hfecalqa->SetInvMassCut0(mass);
-    hfecalqa->SetInvMassCut1(ptAss);
-    hfecalqa->SetEtaRange(EtaRange);
-    
-    TString containerName = mgr->GetCommonFileName();
-    containerName += ":PWGHF_hfeBeautyCalINT8";
-    containerName += ContNameExt;
-    TString SubcontainerName = Form("BeautyCalINT8_%s",calib);
-    SubcontainerName += ContNameExt;
-    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName, TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
-    mgr->ConnectInput(hfecalqa, 0, cinput);
-    mgr->ConnectOutput(hfecalqa, 1, coutput1);
-    */
     // INT7
     AliAnalysisTaskBeautyCal *hfecalqa7 = new AliAnalysisTaskBeautyCal("emcqa");
     mgr->AddTask(hfecalqa7);
@@ -116,6 +89,7 @@ AliAnalysisTask *AddTaskBeautyCal(
     hfecalqa7->SetPileUpCut(pileup);
     hfecalqa7->SetEPana(epana);
     hfecalqa7->SetEpCorr(eopcorr);
+    hfecalqa7->SetRefit(refit);
     
     TString containerName7 = mgr->GetCommonFileName();
     containerName7 += ":PWGHF_hfeBeautyCalINT7";
@@ -309,6 +283,7 @@ AliAnalysisTask *AddTaskBeautyCal(
         hfecalqaTrig0->SetPileUpCut(pileup);
         hfecalqaTrig0->SetEPana(epana);
         hfecalqaTrig0->SetEpCorr(eopcorr);
+        hfecalqaTrig0->SetRefit(refit);
 
         TString containerName1 = mgr->GetCommonFileName();
         containerName1 += ":PWGHF_hfeBeautyCalTrigGA";
@@ -344,6 +319,7 @@ AliAnalysisTask *AddTaskBeautyCal(
     hfecalqaMB->SetPileUpCut(pileup);     
     hfecalqaMB->SetEPana(epana);
     hfecalqaMB->SetEpCorr(eopcorr);
+    hfecalqaMB->SetRefit(refit);
 
     TString containerName2 = mgr->GetCommonFileName();
     containerName2 += ":PWGHF_hfeBeautyCalMB";
