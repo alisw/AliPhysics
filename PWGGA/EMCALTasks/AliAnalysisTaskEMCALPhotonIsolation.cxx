@@ -756,16 +756,16 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fOutput->Add(fPtvsM02vsSumUE);
 	}
 
-	if(fAreasPerEvent){
-	  if(fUEMethod == 1){
-	    fPtVsConeVsEtaBand = new TH3F("hPtVsConeVsEtaBand","Cluster energy vs. cone energy vs. eta band energy (not normalised)",200,0.,100.,250,0.,100.,250,0.,100.);
-	    fPtVsConeVsEtaBand->SetXTitle("#it{p}_{T}^{cluster}");
-	    fPtVsConeVsEtaBand->SetYTitle("#sum^{cone} #it{p}_{T}");
-	    fPtVsConeVsEtaBand->SetZTitle("#sum^{eta-band} #it{p}_{T}");
-	    fPtVsConeVsEtaBand->Sumw2();
-	    fOutput->Add(fPtVsConeVsEtaBand);
-	  }
+	if(!fAreasPerEvent && fUEMethod == 1){
+	  fPtVsConeVsEtaBand = new TH3F("hPtVsConeVsEtaBand","Cluster energy vs. cone energy vs. eta band energy (not normalised)",200,0.,100.,250,0.,100.,250,0.,100.);
+	  fPtVsConeVsEtaBand->SetXTitle("#it{p}_{T}^{cluster}");
+	  fPtVsConeVsEtaBand->SetYTitle("#sum^{cone} #it{p}_{T}");
+	  fPtVsConeVsEtaBand->SetZTitle("#sum^{eta-band} #it{p}_{T}");
+	  fPtVsConeVsEtaBand->Sumw2();
+	  fOutput->Add(fPtVsConeVsEtaBand);
+	}
 
+	if(fAreasPerEvent){
 	  if(fQA){
 	    fEtaBandVsConeArea = new TH2F("hEtaBandVsConeArea","Eta-band vs. cone area (depending on the cluster position)", 140, 0.16, 0.51, 200, 0.30, 0.80);
 	    fEtaBandVsConeArea->Sumw2();
@@ -2698,7 +2698,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     etaBandclus = sumEnergyEtaBandClus;
   }
 
-  fPtVsConeVsEtaBand->Fill(c.Pt(), ptIso, etaBandclus);
+  if(!fAreasPerEvent)
+    fPtVsConeVsEtaBand->Fill(c.Pt(), ptIso, etaBandclus);
 
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t etaBandArea = 0.; // Cluster phi-dependent eta-band area
