@@ -15,7 +15,7 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No analysis manager found.");
+    Error("AddTask_PhotonQA", "No analysis manager found.");
     return ;
   }
 
@@ -101,7 +101,6 @@ void AddTask_PhotonQA(  TString   V0ReaderEventCutNumber        = "00000003",
   fQA->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fQA);
 
-  AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
   if (runBasicQAWithStandardOutput){
     AliAnalysisDataContainer *coutput =
       mgr->CreateContainer(Form("GammaConv_V1QA_%s_%s", TaskEventCutnumber.Data(), TaskPhotonCutnumber.Data()), TList::Class(),

@@ -124,19 +124,33 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     TH2F*                       hPositronNSigmaITSP;        //
     TH2F*                       hPositronNSigmaTOFP;        //
     TH2F*                       hInvMassPair;               //
+    UShort_t                    fBunch;                     //
     Float_t                     fGammaPt;                   //
     Float_t                     fGammaTheta;                //
     Float_t                     fGammaChi2NDF;              //
     TVectorF                    fGammaPhotonProp;           //
     TVectorF                    fGammaConvCoord;            //
     TVectorF                    fDaughterProp;              //
+    Bool_t                      feleSPD1;                    //
+    Bool_t                      feleSPD2;                    //
+    Bool_t                      feleSDD1;                    //
+    Bool_t                      feleSDD2;                    //
+    Bool_t                      feleSSD1;                    //
+    Bool_t                      feleSSD2;                    //
+    Bool_t                      fposSPD1;                    //
+    Bool_t                      fposSPD2;                    //
+    Bool_t                      fposSDD1;                    //
+    Bool_t                      fposSDD2;                    //
+    Bool_t                      fposSSD1;                    //
+    Bool_t                      fposSSD2;                    //
     UInt_t                      fKind;                      //
     Bool_t                      fIsMC;                      //
     Int_t                       fnGammaCandidates;          //
     Int_t*                      fMCStackPos;                //[fnGammaCandidates]
     Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
+
     
-    ClassDef(AliAnalysisTaskConversionQA, 8);
+    ClassDef(AliAnalysisTaskConversionQA, 9);
 };
 
 #endif

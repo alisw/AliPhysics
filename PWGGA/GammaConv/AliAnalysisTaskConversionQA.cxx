@@ -118,9 +118,21 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   fGammaPt(0),
   fGammaTheta(0),
   fGammaChi2NDF(0),
-  fGammaPhotonProp(5),
+  fGammaPhotonProp(7),
   fGammaConvCoord(5),
   fDaughterProp(24),
+  feleSPD1(kFALSE),
+  feleSPD2(kFALSE),
+  feleSDD1(kFALSE),
+  feleSDD2(kFALSE),
+  feleSSD1(kFALSE),
+  feleSSD2(kFALSE),
+  fposSPD1(kFALSE),
+  fposSPD2(kFALSE),
+  fposSDD1(kFALSE),
+  fposSDD2(kFALSE),
+  fposSSD1(kFALSE),
+  fposSSD2(kFALSE),
   fKind(0),
   fIsMC(kFALSE),
   fnGammaCandidates(1),
@@ -211,9 +223,21 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   fGammaPt(0),
   fGammaTheta(0),
   fGammaChi2NDF(0),
-  fGammaPhotonProp(5),
+  fGammaPhotonProp(7),
   fGammaConvCoord(5),
   fDaughterProp(24),
+  feleSPD1(kFALSE),
+  feleSPD2(kFALSE),
+  feleSDD1(kFALSE),
+  feleSDD2(kFALSE),
+  feleSSD1(kFALSE),
+  feleSSD2(kFALSE),
+  fposSPD1(kFALSE),
+  fposSPD2(kFALSE),
+  fposSDD1(kFALSE),
+  fposSDD2(kFALSE),
+  fposSSD1(kFALSE),
+  fposSSD2(kFALSE),
   fKind(0),
   fIsMC(kFALSE),
   fnGammaCandidates(1),
@@ -427,12 +451,25 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
 
     fTreeQA = new TTree("PhotonQA","PhotonQA");   
     
+    fTreeQA->Branch("Bunch",&fBunch,"fBunch/s");
     fTreeQA->Branch("daughterProp",&fDaughterProp);
     fTreeQA->Branch("recCords",&fGammaConvCoord);
     fTreeQA->Branch("photonProp",&fGammaPhotonProp);
     fTreeQA->Branch("pt",&fGammaPt,"fGammaPt/F");
     fTreeQA->Branch("theta",&fGammaTheta,"fGammaTheta/F");
     fTreeQA->Branch("chi2ndf",&fGammaChi2NDF,"fGammaChi2NDF/F");
+    fTreeQA->Branch("eleSPD1",&feleSPD1,"feleSPD1/O");
+    fTreeQA->Branch("eleSPD2",&feleSPD2,"feleSPD2/O");
+    fTreeQA->Branch("eleSDD1",&feleSPD1,"feleSDD1/O");
+    fTreeQA->Branch("eleSDD2",&feleSPD2,"feleSDD2/O");
+    fTreeQA->Branch("eleSSD1",&feleSPD1,"feleSSD1/O");
+    fTreeQA->Branch("eleSSD2",&feleSPD2,"feleSSD2/O");
+    fTreeQA->Branch("posSPD1",&fposSPD1,"fposSPD1/O");
+    fTreeQA->Branch("posSPD2",&fposSPD2,"fposSPD2/O");
+    fTreeQA->Branch("posSDD1",&fposSPD1,"fposSDD1/O");
+    fTreeQA->Branch("posSDD2",&fposSPD2,"fposSDD2/O");
+    fTreeQA->Branch("posSSD1",&fposSPD1,"fposSSD1/O");
+    fTreeQA->Branch("posSSD2",&fposSPD2,"fposSSD2/O");
     if (fIsMC) {
       fTreeQA->Branch("kind",&fKind,"fKind/b");
     }   
@@ -489,6 +526,8 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
 
   fConversionGammas=fV0Reader->GetReconstructedGammas();
 
+  fBunch          = fInputEvent->GetBunchCrossNumber();
+
   if(fMCEvent){
     if(fEventCuts->GetSignalRejection() != 0){
       if(fInputEvent->IsA()==AliESDEvent::Class()){
@@ -505,10 +544,11 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
   }
 
   if(ffillHistograms){
-    CountTracks();
+    //CountTracks();
     hVertexZ->Fill(fInputEvent->GetPrimaryVertex()->GetZ());
     hNContributorsVertex->Fill(fEventCuts->GetNumberOfContributorsVtx(fInputEvent));
-    hNGoodESDTracks->Fill(fNumberOfESDTracks);
+    //hNGoodESDTracks->Fill(fNumberOfESDTracks);
+    hNGoodESDTracks->Fill(fV0Reader->GetNumberOfPrimaryTracks());
     hNV0Tracks->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
   }
 
@@ -573,7 +613,9 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
   fGammaPhotonProp(2)  = gamma->GetPsiPair();
   fGammaPhotonProp(3) = fConversionCuts->GetCosineOfPointingAngle(gamma,event);
   fGammaPhotonProp(4) = gamma->GetInvMassPair();
-  
+  fGammaPhotonProp(5) = gamma->GetDCAzToPrimVtx();
+  fGammaPhotonProp(6) = gamma->GetDCArToPrimVtx();
+
   fGammaConvCoord(0) = gamma->GetConversionX();
   fGammaConvCoord(1) = gamma->GetConversionY();
   fGammaConvCoord(2) = gamma->GetConversionZ();
@@ -617,8 +659,8 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
   }
   
   // ITS signal
-  fDaughterProp(14) =  (Float_t)nPosClusterITS;
-  fDaughterProp(15) =  (Float_t)nNegClusterITS;
+  // fDaughterProp(14) =  (Float_t)nPosClusterITS;
+  // fDaughterProp(15) =  (Float_t)nNegClusterITS;
   if (nPosClusterITS > 0 ){
     fDaughterProp(16) =  posTrack->GetITSsignal();
     fDaughterProp(20) =  pidResonse->NumberOfSigmasITS(posTrack,AliPID::kElectron);
@@ -634,6 +676,35 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
     fDaughterProp(21) =  20;
   }
 
+
+  if(fInputEvent->IsA()==AliESDEvent::Class()){
+    feleSPD1    = (dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(0);
+    feleSPD2    = (dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(1);
+    feleSDD1    = (dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(2);
+    feleSDD2    = (dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(3);
+    feleSSD1    = (dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(4);
+    feleSSD2    = (dynamic_cast<AliESDtrack*>(negTrack))->HasPointOnITSLayer(5);
+    fposSPD1    = (dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(0);
+    fposSPD2    = (dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(1);
+    fposSDD1    = (dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(2);
+    fposSDD2    = (dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(3);
+    fposSSD1    = (dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(4);
+    fposSSD2    = (dynamic_cast<AliESDtrack*>(posTrack))->HasPointOnITSLayer(5);
+  }else if ( fInputEvent->IsA()==AliAODEvent::Class()){
+    feleSPD1    = (dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(0);
+    feleSPD2    = (dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(1);
+    feleSDD1    = (dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(2);
+    feleSDD2    = (dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(3);
+    feleSSD1    = (dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(4);
+    feleSSD2    = (dynamic_cast<AliAODTrack*>(negTrack))->HasPointOnITSLayer(5);
+    fposSPD1    = (dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(0);
+    fposSPD2    = (dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(1);
+    fposSDD1    = (dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(2);
+    fposSDD2    = (dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(3);
+    fposSSD1    = (dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(4);
+    fposSSD2    = (dynamic_cast<AliAODTrack*>(posTrack))->HasPointOnITSLayer(5);
+  }
+  
   // TOF 
   if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
     Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
