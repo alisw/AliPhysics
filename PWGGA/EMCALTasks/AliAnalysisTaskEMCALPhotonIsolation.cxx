@@ -972,9 +972,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	  fOutput->Add(fEtaPhiClusAftSel);
 	}
 
-	fPtvsDetavsDphi = new TH3F("hPtvsDetavsDphi","Cluster-track matching vs. cluster energy", 120, 0., 60., 200, -0.05, 0.05, 200, -0.05, 0.05);
-	fPtvsDetavsDphi->Sumw2();
-	fOutput->Add(fPtvsDetavsDphi);
+	if(fQA){
+	  fPtvsDetavsDphi = new TH3F("hPtvsDetavsDphi","Cluster-track matching vs. cluster energy", 120, 0., 60., 200, -0.05, 0.05, 200, -0.05, 0.05);
+	  fPtvsDetavsDphi->Sumw2();
+	  fOutput->Add(fPtvsDetavsDphi);
+	}
 
 	fPtvsTrackPtvsDeta = new TH3F("hPtvsTrackPtvsDeta","Cluster-track matching #Delta#eta vs. track #it{p}_{T} vs. cluster energy", 120, 0., 60., 100, 0., 100., 200, -0.05, 0.05);
 	fPtvsTrackPtvsDeta->Sumw2();
@@ -1842,7 +1844,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     }
 
     if(candidate && fWho == 2){
-      fPtvsDetavsDphi->Fill(vecClust.Pt(), deta, dphi);
+      if(fQA)
+	fPtvsDetavsDphi->Fill(vecClust.Pt(), deta, dphi);
       fPtvsTrackPtvsDeta->Fill(vecClust.Pt(), mt->Pt(), deta);
       fPtvsTrackPtvsDphi->Fill(vecClust.Pt(), mt->Pt(), dphi);
     }
@@ -2695,12 +2698,12 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
     etaBandclus = sumEnergyEtaBandClus;
   }
 
+  fPtVsConeVsEtaBand->Fill(c.Pt(), ptIso, etaBandclus);
+
   Double_t isoConeArea = 0.; // Cluster (eta, phi)-dependent cone area
   Double_t etaBandArea = 0.; // Cluster phi-dependent eta-band area
 
   if(fWho == 2 && fAreasPerEvent){
-    fPtVsConeVsEtaBand->Fill(c.Pt(), ptIso, etaBandclus);
-
     ComputeConeAreaInEMCal   (c.Eta(), c.Phi()    , isoConeArea);
     ComputeEtaBandAreaInEMCal(c.Phi(), isoConeArea, etaBandArea);
 
