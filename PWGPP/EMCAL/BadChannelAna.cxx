@@ -91,6 +91,7 @@ TObject(),
 	fWorkdir          = ".";
 	fRunListFileName  = "runList.txt";
 	fTrial            = 0;
+	fRunBRunMap       = 0;
 
 	Init();
 	PrintCellInfo(0);
@@ -100,7 +101,7 @@ TObject(),
 /// Constructor
 ///
 //________________________________________________________________________
-BadChannelAna::BadChannelAna(TString period, TString train, TString trigger, Int_t runNumber,Int_t trial, TString workDir, TString listName):
+BadChannelAna::BadChannelAna(TString period, TString train, TString trigger, Int_t runNumber,Int_t trial, TString workDir, TString listName, Bool_t runByRun):
 	TObject(),
 	fCurrentRunNumber(-1),
 	fPeriod(),
@@ -146,6 +147,7 @@ BadChannelAna::BadChannelAna(TString period, TString train, TString trigger, Int
 	fWorkdir          = workDir;
 	fRunListFileName  = listName;
 	fTrial            = trial;
+	fRunBRunMap       = runByRun; //..will create a folder with a compact storage of run-by-run output
 
 	Init();
 	PrintCellInfo(0);
@@ -167,6 +169,7 @@ void BadChannelAna::Init()
 	// TO BE CHANGED
 	fAnalysisInput  =Form("AnalysisInput/%s",fPeriod.Data());
 	fAnalysisOutput =Form("AnalysisOutput/%s/%s/Version%i",fPeriod.Data(),fTrainNo.Data(),fTrial);
+	if(fRunBRunMap)fAnalysisOutputRbR =Form("AnalysisOutput/%s/%sRbR/Version%i",fPeriod.Data(),fTrainNo.Data(),fTrial);
 
 	//..Make output directory if it doesn't exist
 	//..first the general output folder, in case you run this analysis for the very first time
@@ -174,8 +177,10 @@ void BadChannelAna::Init()
 	//..first the period folder
 	gSystem->mkdir(Form("%s/AnalysisOutput/%s",fWorkdir.Data(),fPeriod.Data()));
 	//..then the Train folder
+	if(fRunBRunMap)gSystem->mkdir(Form("%s/AnalysisOutput/%s/%sRbR",fWorkdir.Data(),fPeriod.Data(),fTrainNo.Data()));
 	gSystem->mkdir(Form("%s/AnalysisOutput/%s/%s",fWorkdir.Data(),fPeriod.Data(),fTrainNo.Data()));
 	//..then the version folder
+	if(fRunBRunMap)gSystem->mkdir(Form("%s/%s",fWorkdir.Data(),fAnalysisOutputRbR.Data()));
 	gSystem->mkdir(Form("%s/%s",fWorkdir.Data(),fAnalysisOutput.Data()));
 
 	fMergedFileName= Form("%s/%s/%s/MergedRuns_%s.root",fWorkdir.Data(),fAnalysisInput.Data(),fTrainNo.Data(),fTrigger.Data());
@@ -285,6 +290,7 @@ BadChannelAna::~BadChannelAna()
 //________________________________________________________________________
 void BadChannelAna::Run(Bool_t mergeOnly)
 {
+	gStyle->SetPalette(55); //kRainBow==55
 	//	cout<<"fired trigger class"<<AliAODEvent::GetFiredTriggerClasses()<<endl;
 	PrintCellInfo(1);
 	if(fExternalFileName=="")
@@ -1025,30 +1031,36 @@ TH1F* BadChannelAna::BuildTimeMean(Int_t crit, Double_t tmin, Double_t tmax)
 	TH1F *histogram = NULL;
 	histogram = new TH1F(Form("timeMax_t%.2f-%.2f",tmin,tmax),Form("Maximum of time distr., %.2f < t < %.2f ns",tmin,tmax), fNoOfCells,0,fNoOfCells);
 	histogram->SetXTitle("Abs. Cell Id");
-	histogram->SetYTitle("time max");
+	histogram->SetYTitle(Form("N_{cells}^{%.0f<t<%.0f}/N_{cells}^{all}",tmin,tmax));
 	histogram->GetXaxis()->SetNdivisions(510);
 
 	//..Time information
 	Double_t dHits = 0.;
-        Double_t dIn = 0.;
-        Double_t dAll = 0.;
-        for(int iCell = 1; iCell <= fNoOfCells; iCell ++){
-            if(fFlag[iCell - 1] != 0) { continue; }
-            dIn = 0.;
-            dAll = 0.;
-            for(int iTime = 1; iTime <= fCellTime->GetNbinsX(); iTime++){
-                dHits =  fCellTime->GetBinContent(iTime, iCell);
-                if(fCellTime->GetXaxis()->GetBinCenter(iTime) > tmin && fCellTime->GetXaxis()->GetBinCenter(iTime) < tmax){
-                    dIn += dHits;
-                }
-                    dAll += dHits;
-            }
-            if(dIn > 0.){
-                histogram->SetBinContent(iCell, dAll/dIn);
-            } else {
-                histogram->SetBinContent(iCell, 0.);
-            }
-        }
+	Double_t dIn = 0.;
+	Double_t dAll = 0.;
+	for(int iCell = 1; iCell <= fNoOfCells; iCell ++)
+	{
+		if(fFlag[iCell - 1] != 0) { continue; }
+		dIn = 0.;
+		dAll = 0.;
+		for(int iTime = 1; iTime <= fCellTime->GetNbinsX(); iTime++)
+		{
+			dHits =  fCellTime->GetBinContent(iTime, iCell);
+			if(fCellTime->GetXaxis()->GetBinCenter(iTime) > tmin && fCellTime->GetXaxis()->GetBinCenter(iTime) < tmax)
+			{
+				dIn += dHits;
+			}
+			dAll += dHits;
+		}
+		if(dIn > 0.)
+		{
+			histogram->SetBinContent(iCell, dAll/dIn);
+		}
+		else
+		{
+			histogram->SetBinContent(iCell, 0.);
+		}
+	}
 	return histogram;
 }
 
@@ -1130,60 +1142,71 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 	Double_t dminVal = inhisto->GetMinimum(0);
 	Double_t dmaxVal = inhisto->GetMaximum();
 	Double_t inputBins=dnbins;
-        Double_t medianOfHisto = 0.;
+	Double_t medianOfHisto = 0.;
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//. . .determine settings for the histograms (range and binning)
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	//cout<<"max value: "<<dmaxVal<<", min value: "<<dminVal<<endl;
-	//
-	if((crit==2 || crit == 5) && inputBins==-1)	dnbins=dmaxVal-dminVal;
-	if((crit==1 || crit == 4) && inputBins==-1)	dnbins=200; //100 or lower, if you have problems with low statistic
 
-    //..For histograms with lower statistic (typically higher energy ranges)
-	//..find a proper binning automatically (mostly done to avoid steplike structures, 0 entries in bins etc)
-	if(inputBins!=-1)
+	//- - - - - - - - - - - -
+	//..Determine good min and max range for histograms
+	//..calculate and print the "median"
+	//..
+	Int_t numBins = inhisto->GetXaxis()->GetNbins();
+
+	numBins-=fStartCell;
+	Double_t *x = new Double_t[numBins];
+	Double_t* y = new Double_t[numBins];
+	for (int i = 0; i < numBins; i++)
 	{
-		//..calculate and print the "median"
-		Int_t numBins = inhisto->GetXaxis()->GetNbins();
+		x[i] = inhisto->GetBinContent(i+fStartCell);
+		y[i] = 1; //each value with weight 1
+		if(x[i]==0)y[i] = 0;
+	}
+	medianOfHisto = TMath::Median(numBins,x,y);
 
-		numBins-=fStartCell;
-		Double_t *x = new Double_t[numBins];
-		Double_t* y = new Double_t[numBins];
-		for (int i = 0; i < numBins; i++)
+	//..if dmaxVal is too far away from medianOfHisto the histogram
+	//..range will be too large -> reduce the range
+	//cout<<"max value: "<<dmaxVal<<", min: "<<dminVal<<" median of histogram: "<<medianOfHisto<<endl;
+	if(medianOfHisto*10<dmaxVal)
+	{
+		if(medianOfHisto*100<dmaxVal)
 		{
-			x[i] = inhisto->GetBinContent(i+fStartCell);
-			y[i] = 1; //each value with weight 1
-			if(x[i]==0)y[i] = 0;
+			dmaxVal=medianOfHisto+0.02*(dmaxVal-medianOfHisto);  //..reduce the distance between max and mean drastically to cut out the outliers
 		}
-		medianOfHisto = TMath::Median(numBins,x,y);
-
-		//..if dmaxVal is too far away from medianOfHisto the histogram
-		//..range will be too large -> reduce the range
-		//cout<<"max value: "<<dmaxVal<<", min: "<<dminVal<<" median of histogram: "<<medianOfHisto<<endl;
-		if(medianOfHisto*10<dmaxVal)
+		else
 		{
-			//cout<<"- - - median too far away from max range"<<endl;
 			dmaxVal=medianOfHisto+0.2*(dmaxVal-medianOfHisto);  //..reduce the distance between max and mean drastically to cut out the outliers
 		}
-
-		if(crit==2 || crit == 5)
-		{
-			dnbins=dmaxVal-dminVal;
-			if(dnbins>100)
-			{
-				if(dnbins>2000)dnbins=0.01*(dmaxVal-dminVal); //..maximum 5000 bins. changed to 3000 .. lets see..
-				if(dnbins>2000)dnbins=0.001*(dmaxVal-dminVal);//..maximum 5000 bins.
-				if(dnbins<100) dnbins=0.02*(dmaxVal-dminVal); //..minimum 100 bins.
-			}
-		}
-		if(crit==1 || crit == 4)
-		{
-			dnbins=(dmaxVal-dminVal)*500;  //300 if you have problems with low statistic
-		}
-		if(x) delete []x;
-		if(y) delete []y;
+		//cout<<"- - - median too far away from max range"<<endl;
+		//cout<<"corrected max value: "<<dmaxVal<<endl;
 	}
-	//cout<<"number of bins: "<<dnbins<<endl;
+
+	//- - - - - - - - - - - -
+	//..Determine number of bins for the histogram
+	//..find a proper binning automatically (mostly done to avoid steplike structures, 0 entries in bins etc)
+	//cout<<"max value: "<<dmaxVal<<", min value: "<<dminVal<<endl;
+	if(crit==2 || crit == 5)//..hits in cell
+	{
+		dnbins=dmaxVal-dminVal;
+		if(dnbins>100)
+		{
+			if(dnbins>2000)dnbins=0.01*(dmaxVal-dminVal); //..maximum 5000 bins. changed to 3000 .. lets see..
+			if(dnbins>2000)dnbins=0.001*(dmaxVal-dminVal);//..maximum 5000 bins.
+			if(dnbins<100) dnbins=0.02*(dmaxVal-dminVal); //..minimum 100 bins.
+		}
+	}
+	if(crit==1 || crit == 4) //..energy/hit
+	{
+		dnbins=(dmaxVal-dminVal)*150;  //150 if you have problems with low statistic 500 normal stat
+		if(dnbins<25)dnbins=50;        //..this is the min. binning for E/hit distr.
+		if(inputBins==-1)
+		{
+			//dnbins=200;
+			dnbins=(dmaxVal-dminVal)*40;
+		}
+	}
+	if(x) delete []x;
+	if(y) delete []y;
 
 	if(crit==3)
 	{
@@ -1193,6 +1216,14 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 		dminVal= fCellTime->GetXaxis()->GetBinCenter(1)-(binWidth*1.0)/2.0;
 		dmaxVal= fCellTime->GetXaxis()->GetBinCenter(dnbins)+(binWidth*1.0)/2.0;
 		cout<<"set the new histo with following settings- bins: "<<dnbins<<", min val = "<<dminVal<<", max val:"<<dmaxVal<<endl;
+	}
+
+	if(dmaxVal<dminVal || dnbins<1)
+	{
+		cout<<"###############################"<<endl;
+		cout<<"Big problem: min:"<<dminVal<<", dmaxVal"<<dmaxVal<<endl;
+		cout<<"dnbins:"<<dnbins<<endl;
+		cout<<"###############################"<<endl;
 	}
 	//..build histos
 	TH1F *distrib = new TH1F(Form("%sDistr",(const char*)histoName), "", dnbins, dminVal, dmaxVal);
@@ -1458,25 +1489,76 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 //.. 
 /// \param crit    -- flag with channel criteria to be filled (only 3 is used here)
 /// \param inhisto -- input histogram;
-/// \param tCut    -- upper limit
+/// \param nSig    -- number of sigmas of the time dirst to acc for selection
 
-void BadChannelAna::FlagAsBad_Time(Int_t crit, TH1F* inhisto, Double_t tCut)
+void BadChannelAna::FlagAsBad_Time(Int_t crit, TH1F* inhisto, Double_t nSig)
 {  
 	Int_t cellColumn=0,cellRow=0;
 	Int_t cellColumnAbs=0,cellRowAbs=0;
 	Int_t trash;
 
+	//..set a user range so that the min and max is only found in a certain range
+	inhisto->GetXaxis()->SetRangeUser(fStartCell,fNoOfCells);//..
+	Double_t dminVal = inhisto->GetMinimum(0);
+	Double_t dmaxVal = inhisto->GetMaximum();
+	//Double_t dnbins;
+    Double_t medianOfHisto = 0.;
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	//. . .determine settings for the histograms (range and binning)
+	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+	//..Determine good min and max range for histograms
+	//..A. calculate and print the "median"
+	Int_t numBins = inhisto->GetXaxis()->GetNbins();
+
+	numBins-=fStartCell;
+	Double_t *x = new Double_t[numBins];
+	Double_t* y = new Double_t[numBins];
+	for (int i = 0; i < numBins; i++)
+	{
+		x[i] = inhisto->GetBinContent(i+fStartCell);
+		y[i] = 1; //each value with weight 1
+		if(x[i]==0)y[i] = 0;
+	}
+	medianOfHisto = TMath::Median(numBins,x,y);
+
+	//..B. if dmaxVal is too far away from medianOfHisto the histogram
+	//..range will be too large -> reduce the range
+	cout<<"max value: "<<dmaxVal<<", min: "<<dminVal<<" median of histogram: "<<medianOfHisto<<endl;
+	if(medianOfHisto*10<dmaxVal)
+	{
+		if(medianOfHisto*100<dmaxVal)
+		{
+			dmaxVal=medianOfHisto+0.002*(dmaxVal-medianOfHisto);  //..reduce the distance between max and mean drastically to cut out the outliers
+		}
+		else
+		{
+			dmaxVal=medianOfHisto+0.02*(dmaxVal-medianOfHisto);  //..reduce the distance between max and mean drastically to cut out the outliers
+		}
+		//cout<<"- - - median too far away from max range"<<endl;
+		//cout<<"corrected max value: "<<dmaxVal<<endl;
+	}
+	cout<<"max value: "<<dmaxVal<<", min: "<<dminVal<<" median of histogram: "<<medianOfHisto<<endl;
+	if(dmaxVal<dminVal)
+	{
+		cout<<"###############################"<<endl;
+		cout<<"Big problem: min:"<<dminVal<<", dmaxVal"<<dmaxVal<<endl;
+		cout<<"###############################"<<endl;
+	}
+
 	TString histoName=inhisto->GetName();
-
-
-	TH1F *distrib = new TH1F(Form("%sDistr",(const char*)histoName), "", 100, 1., 3.);
-	TH1F *distrib_wTRDStruc = new TH1F(Form("%sDistr",(const char*)histoName), "", 100, 1., 3.);
-	TH1F *distrib_woTRDStruc = new TH1F(Form("%sDistr",(const char*)histoName), "", 100, 1., 3.);
+	TH1F *distrib = new TH1F(Form("%sDistr",(const char*)histoName), "", 300, dminVal, dmaxVal);
+	distrib->SetXTitle(inhisto->GetYaxis()->GetTitle());
+	distrib->SetYTitle("Entries");
+	TH1F *distrib_wTRDStruc = new TH1F(Form("%sDistrWtrd",(const char*)histoName), "", 300, dminVal, dmaxVal);
+	TH1F *distrib_woTRDStruc = new TH1F(Form("%sDistrWoTRD",(const char*)histoName), "", 300, dminVal, dmaxVal);
 	//..build two dimensional histogram with values row vs. column
 	TH2F *plot2D = new TH2F(Form("%s_HitRowColumn",(const char*)histoName),Form("%s_HitRowColumn",(const char*)histoName),fNMaxColsAbs+1,-0.5,fNMaxColsAbs+0.5, fNMaxRowsAbs+1,-0.5,fNMaxRowsAbs+0.5);
 	plot2D->GetXaxis()->SetTitle("cell column (#eta direction)");
 	plot2D->GetYaxis()->SetTitle("cell row (#phi direction)");
 
+//	cout<<"histoName: "<<histoName<<endl;
+//	cout<<"distrib: "<<distrib->GetName()<<endl;
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//. . .build the distribution of average values
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -1533,12 +1615,14 @@ void BadChannelAna::FlagAsBad_Time(Int_t crit, TH1F* inhisto, Double_t tCut)
 	inhisto->SetLineColor(kBlue+1);
 	inhisto->Draw();
 
+	//- - - - - - - - - - - - - - - - - - - -
 	lowerPadRight->cd();
 	lowerPadRight->SetLeftMargin(0.09);
 	lowerPadRight->SetRightMargin(0.12);
 	plot2D->GetYaxis()->SetTitleOffset(1.3);
 	plot2D->Draw("colz");
 
+	//- - - - - - - - - - - - - - - - - - - -
 	lowerPadLeft->cd();
 	lowerPadLeft->SetLeftMargin(0.09);
 	lowerPadLeft->SetRightMargin(0.07);
@@ -1551,15 +1635,53 @@ void BadChannelAna::FlagAsBad_Time(Int_t crit, TH1F* inhisto, Double_t tCut)
 	distrib_woTRDStruc->SetLineColor(kMagenta+1);
 	distrib_woTRDStruc->DrawCopy("same");
 
+	//- - - - - - - - - - - - - - - - - - - -
+	//...fit time distr
+	Double_t maxDistr  = distrib->GetMaximum();
+	Int_t    maxBin    = distrib->GetMaximumBin();
+	Double_t maxCenter = distrib->GetBinCenter(maxBin);
+	Double_t sig=0;
+	Double_t mean=0;
 
+	Double_t minFitRange=dminVal;
+	Double_t maxFitRange=dmaxVal;
+	//cout<<"max bin:    "<<maxBin<<", max value: "<<maxDistr<<endl;
+	//cout<<"start mean: "<<maxCenter<<", mean range: 0-"<<dmaxVal<<endl;
+	//cout<<"fit range:  "<<minFitRange<<" - "<<maxFitRange<<endl;
+
+	TF1 *fitTime = new TF1("fitTime", "gaus",minFitRange,maxFitRange);
+	//..start the fit with a mean of the highest value
+	fitTime->SetParLimits(0,maxDistr*0.5,maxDistr*1.2); //..do not allow negative ampl values
+	fitTime->SetParameter(1,maxCenter);  //..set the start value for the mean
+	fitTime->SetParLimits(1,dminVal,dmaxVal);  //..do not allow negative mean values
+
+	distrib->Fit(fitTime, "0LEM", "", minFitRange, maxFitRange);
+	mean    = fitTime->GetParameter(1);
+	sig     = fitTime->GetParameter(2);
+
+	//cout<<"mean:"<<mean<<endl;
+	//cout<<"sig: "<<sig<<endl;
+
+	Double_t tCutMax=mean+nSig*sig;
+	Double_t tCutMin=mean-nSig*sig;
+
+
+	cout<<"Determined time cut: "<<tCutMin<<" - "<<tCutMax<<endl;
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//. . .Add info to histogram
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-	TLine *line = new TLine(tCut, 0, tCut, distrib->GetMaximum());
+	TLine *line = new TLine(tCutMax, 0, tCutMax, distrib->GetMaximum());
 	line->SetLineColor(kGreen+2);
 	line->SetLineStyle(7);
 	line->Draw();
+	TLine *line2 = new TLine(tCutMin, 0, tCutMin, distrib->GetMaximum());
+	line2->SetLineColor(kGreen+2);
+	line2->SetLineStyle(7);
+	line2->Draw();
 
+	fitTime->SetLineColor(kOrange-3);
+	fitTime->SetLineStyle(1);//7
+	fitTime->Draw("same");
 
 	TLegend *leg = new TLegend(0.60,0.70,0.9,0.85);
 	leg->AddEntry(line,"upper limit","l");
@@ -1568,21 +1690,24 @@ void BadChannelAna::FlagAsBad_Time(Int_t crit, TH1F* inhisto, Double_t tCut)
 	leg->SetBorderSize(0);
 	leg->Draw("same");
 
-
-
 	TLatex* text = 0x0;
-	text = new TLatex(0.12,0.85,Form("Good range: %.2f-%.2f",0.,tCut));
+	text = new TLatex(0.12,0.85,Form("Good range: %.3f-%.3f",tCutMin,tCutMax));
 	text->SetTextSize(0.06);
 	text->SetNDC();
 	text->SetTextColor(1);
 	text->Draw();
 
+	//- - - - -
 	upperPad->cd();
-	TLine *uline = new TLine(0, tCut,fNoOfCells,tCut);
+	TLine *uline = new TLine(0, tCutMax,fNoOfCells,tCutMax);
 	uline->SetLineColor(kGreen+2);
 	uline->SetLineStyle(7);
 	uline->Draw();
 
+	TLine *lline = new TLine(0, tCutMin,fNoOfCells,tCutMin);
+	lline->SetLineColor(kGreen+2);
+	lline->SetLineStyle(7);
+	lline->Draw();
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	//. . .Save histogram
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -1605,13 +1730,14 @@ void BadChannelAna::FlagAsBad_Time(Int_t crit, TH1F* inhisto, Double_t tCut)
 	{
 		//..cell=0 and bin=1, cell=1 and bin=2
 		//.. <= throws out zeros, might not be a dead cell but still have zero entries in a given energy range
-		if(inhisto->GetBinContent(cell+1) > tCut && fFlag[cell]==0)
+		if(inhisto->GetBinContent(cell+1) > tCutMax && fFlag[cell]==0)
 		{
 			fFlag[cell]=fCriterionCounter;
 		}
 	}
 	if(fPrint==1)cout<<"    o o o o o o o o o o o o o o o o o o o o o o o"<<endl;
 
+	/*
 	delete distrib;
 	delete distrib_wTRDStruc;
 	delete distrib_woTRDStruc;
@@ -1621,6 +1747,7 @@ void BadChannelAna::FlagAsBad_Time(Int_t crit, TH1F* inhisto, Double_t tCut)
 	delete leg;
 	delete text;
 	delete uline;
+	*/
 }
 
 
@@ -1711,6 +1838,7 @@ void BadChannelAna::SummarizeResults()
 	Double_t perDeadEMCal,perDeadDCal,perBadEMCal,perBadDCal,perWarmEMCal,perWarmDCal;
 	TString aliceTwikiTable, cellSummaryFile, deadPdfName, badPdfName, ratioOfBad,goodCells,goodCellsRatio,cellProp;
 	TString OADBFile_bad, OADBFile_dead, OADBFile_warm;
+	TString OADBFile_badRbR, OADBFile_deadRbR, OADBFile_warmRbR;
 	TH2F* cellAmp_masked = (TH2F*)fCellAmplitude->Clone("hcellAmp_masked");
 	TH2F* cellTime_masked= (TH2F*)fCellTime->Clone("fCellTime");
 
@@ -1723,6 +1851,9 @@ void BadChannelAna::SummarizeResults()
 	OADBFile_bad    = Form("%s/%s/%s_%s_OADBFile_Bad_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
 	OADBFile_dead   = Form("%s/%s/%s_%s_OADBFile_Dead_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
 	OADBFile_warm   = Form("%s/%s/%s_%s_OADBFile_Warm_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
+	if(fRunBRunMap)OADBFile_badRbR  = Form("%s/%s/%s_%s_OADBFile_Bad_V%i.txt",fWorkdir.Data(), fAnalysisOutputRbR.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
+	if(fRunBRunMap)OADBFile_deadRbR = Form("%s/%s/%s_%s_OADBFile_Dead_V%i.txt",fWorkdir.Data(), fAnalysisOutputRbR.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
+	if(fRunBRunMap)OADBFile_warmRbR = Form("%s/%s/%s_%s_OADBFile_Warm_V%i.txt",fWorkdir.Data(), fAnalysisOutputRbR.Data(),fPeriod.Data(), fTrigger.Data() ,fTrial); ;
 	aliceTwikiTable = Form("%s/%s/%s_TwikiTable_V%i.txt",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial); ;
 	cellProp        = Form("%s/%s/%s_CellProp_V%i.pdf",fWorkdir.Data(), fAnalysisOutput.Data(), fTrigger.Data() ,fTrial);
 
@@ -1948,6 +2079,15 @@ void BadChannelAna::SummarizeResults()
 	ofstream fileBad(OADBFile_bad, ios::out | ios::trunc);
 	ofstream fileDead(OADBFile_dead, ios::out | ios::trunc);
 	ofstream fileWarm(OADBFile_warm, ios::out | ios::trunc);
+	/*ofstream fileBadRbR;
+	ofstream fileDeadRbR;
+	ofstream fileWarmRbR;
+	if(fRunBRunMap)
+	{*/
+		ofstream fileBadRbR(OADBFile_badRbR, ios::out | ios::trunc);
+		ofstream fileDeadRbR(OADBFile_deadRbR, ios::out | ios::trunc);
+		ofstream fileWarmRbR(OADBFile_warmRbR, ios::out | ios::trunc);
+	//}
 	if(file)
 	{
 		file<<"Dead cells : "<<endl;
@@ -1971,6 +2111,8 @@ void BadChannelAna::SummarizeResults()
 			}
 			if(fFlag[cellID]==1)fileDead<<cellID<<endl;
 			if(fFlag[cellID]>1)fileBad<<cellID<<endl;
+			if(fRunBRunMap==1 && fFlag[cellID]==1)fileDeadRbR<<cellID<<endl;
+			if(fRunBRunMap==1 && fFlag[cellID]>1)fileBadRbR<<cellID<<endl;
 		}
 		file<<"\n"<<endl;
 		perDeadEMCal=100*nDeadEMCalCells/(1.0*fCellStartDCal);
@@ -2025,6 +2167,7 @@ void BadChannelAna::SummarizeResults()
 		fhCellFlag->SetBinContent(cell+1,fFlag[cell]);
 		fhCellWarm->SetBinContent(cell+1,fWarmCell[cell]);
 		if(fWarmCell[cell]==1)fileWarm<<cell<<endl;
+		if(fRunBRunMap==1 && fWarmCell[cell]==1)fileWarmRbR<<cell<<endl;
 	}
 	TCanvas *c2 = new TCanvas("CellFlag","summary of cell flags",1200,800);
 	c2->ToggleEventStatus();
@@ -2519,6 +2662,8 @@ Bool_t BadChannelAna::IsCoveredByTRD(Int_t row, Int_t collumn)
 //_________________________________________________________________________
 void BadChannelAna::PlotFlaggedCells2D(Int_t flagBegin,Int_t flagEnd)
 {
+	gStyle->SetPalette(55);     //kRainBow==55
+	gStyle->SetPalette(91);     //kPastel==91
 	//..build two dimensional histogram with values row vs. column
 	TString histoName;
 	histoName = Form("2DChannelMap_Flag%d_V%i",flagBegin,fTrial);
