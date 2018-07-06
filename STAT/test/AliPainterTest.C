@@ -34,6 +34,7 @@ void AliPainterTest_DivideTPad();
 //void AliPainterTest_SetMultiGraphTimeAxisTest();
 void AliPainterTest_DrawHistogram();
 void AliPainterTest_SetLimits();
+void AliPainterTest_GenerateDoxyImages();
 
 
 void AliPainterTest() {
@@ -46,6 +47,7 @@ void AliPainterTest() {
 //  AliPainterTest_SetMultiGraphTimeAxisTest();
   AliPainterTest_DrawHistogram();
   AliPainterTest_SetLimits();
+  AliPainterTest_GenerateDoxyImages();
 }
 
 void AliPainterTest_ParseOptionString() {
@@ -416,4 +418,103 @@ void AliPainterTest_SetLimits() {
             "AliPainter::SetLimits()- FAILED");
   }
 
+}
+
+void AliPainterTest_GenerateDoxyImages() {
+  TFile::SetCacheFileDir(".");
+  TFile *finput = TFile::Open("http://aliqatrkeos.web.cern.ch/aliqatrkeos/performance/AliPainterTest.root","CACHEREAD");
+  TTree *tree = (TTree *) finput->Get("hisPtAll");
+  TObjArray *hisArray = new TObjArray();
+  TList *keys = finput->GetListOfKeys();
+  for (Int_t iKey = 0; iKey<keys->GetEntries();iKey++) {
+    TObject *o = finput->Get(TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
+    hisArray->AddLast(o);
+  }
+  TCanvas *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
+
+  AliPainter::DivideTPad(canvasQA, "<horizontal>[1,1,1,1]", "Canvas41");
+  canvasQA->cd(1);
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E)");
+  AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
+  canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example1.png");
+  canvasQA->Clear();
+
+  AliPainter::DivideTPad(canvasQA, "<horizontal>[1,1,1,1]", "Canvas41", "");
+  canvasQA->cd(1);
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)");
+  AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
+  AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
+  canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example2.png");
+  canvasQA->Clear();
+
+  AliPainter::DivideTPad(canvasQA, "<vertical>[1r,1l,1r,1l]", "Raw,Error", "");
+  canvasQA->cd(1);
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)");
+  AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
+  AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
+  canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example3.png");
+  canvasQA->Clear();
+
+  AliPainter::DivideTPad(canvasQA, "<vertical>[1,3m,2m,1]", "Raw,Error", "");
+  canvasQA->cd(1);
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)");
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(div=1,class=Mass,dOption=E)");
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)");
+  AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
+  AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
+  canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example4.png");
+  canvasQA->Clear();
+
+  AliPainter::DivideTPad(canvasQA, "<horizontal>[1rpx200,1,1,1]", "Raw,Error", "");
+  canvasQA->cd(1);
+  AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)");
+  AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)");
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(gaus,W)(class=Mass,dOption=E)");
+  AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
+  AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
+  canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example5.png");
+  canvasQA->Clear();
+
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl()(0)()()");
+  canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example6.png");
+  canvasQA->Clear();
+
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80)(0)()()");
+  canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example7.png");
+  canvasQA->Clear();
+
+  AliPainter::DivideTPad(canvasQA, "<horizontal>[1]", "Canvas1");
+  canvasQA->cd(1);
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[0,])");
+  AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
+  AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
+  canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example8.png");
+  canvasQA->Clear();
+
+  AliPainter::DivideTPad(canvasQA, "<horizontal>[1,1]", "Canvas1");
+  canvasQA->cd(1);
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[0,], div=1)");
+  AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
+  canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example9.png");
+  canvasQA->Clear();
+
+  AliPainter::DivideTPad(canvasQA, "<horizontal>[1,1]", "Canvas1");
+  canvasQA->cd(1);
+  AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[<min>+0.5*<mean>,<max>-0.5*<mean>], div=1)");
+  AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
+  canvasQA->SaveAs("$AliRoot_SRC/STAT/imgdoc/AliPainter_cxx_example10.png");
+  canvasQA->Clear();
 }
