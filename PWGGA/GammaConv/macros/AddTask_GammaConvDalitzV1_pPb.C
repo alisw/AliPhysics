@@ -40,6 +40,7 @@ void AddTask_GammaConvDalitzV1_pPb(     Int_t trainConfig = 1,
                                         Bool_t enableV0findingEffi = kFALSE,
                                         Int_t   enableMatBudWeightsPi0          = 0,              // 1 = three radial bins, 2 = 10 radial bins
                                         TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
+                                        TString periodName                      = "",
                                         TString   additionalTrainConfig       = "0"
 
                                   ) {
@@ -528,7 +529,7 @@ void AddTask_GammaConvDalitzV1_pPb(     Int_t trainConfig = 1,
     analysisCuts[i] = new AliConversionPhotonCuts();
     if (enableMatBudWeightsPi0 > 0){
       if (isMC > 0){
-      if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
+      if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights,periodName)){
       initializedMatBudWeigths_existing = kTRUE;}
       else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
     }
