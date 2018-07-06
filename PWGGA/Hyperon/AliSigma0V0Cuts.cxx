@@ -164,8 +164,10 @@ ClassImp(AliSigma0V0Cuts)
       fHistSingleParticleNclsTPCRatioFindableAfter(),
       fHistSingleParticleNcrossedTPCBefore(),
       fHistSingleParticleNcrossedTPCAfter(),
-      fHistSingleParticleNclsTPCShared(),
-      fHistSingleParticleNclsITSShared(),
+      fHistSingleParticleNclsTPCSharedBefore(),
+      fHistSingleParticleNclsITSSharedBefore(),
+      fHistSingleParticleNclsTPCSharedAfter(),
+      fHistSingleParticleNclsITSSharedAfter(),
       fHistSingleParticleDCAtoPVBefore(),
       fHistSingleParticleDCAtoPVAfter(),
       fHistSingleParticlePileUp(),
@@ -330,8 +332,10 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistSingleParticleNclsTPCRatioFindableAfter(),
       fHistSingleParticleNcrossedTPCBefore(),
       fHistSingleParticleNcrossedTPCAfter(),
-      fHistSingleParticleNclsTPCShared(),
-      fHistSingleParticleNclsITSShared(),
+      fHistSingleParticleNclsTPCSharedBefore(),
+      fHistSingleParticleNclsITSSharedBefore(),
+      fHistSingleParticleNclsTPCSharedAfter(),
+      fHistSingleParticleNclsITSSharedAfter(),
       fHistSingleParticleDCAtoPVBefore(),
       fHistSingleParticleDCAtoPVAfter(),
       fHistSingleParticlePileUp(),
@@ -367,6 +371,7 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
   v0Cuts->SetK0Rejection(0.48, 0.515);
   v0Cuts->SetLambdaSelection(1.115683 - 0.004, 1.115683 + 0.004);
   v0Cuts->SetPileUpRejectionMode(BothDaughtersCombined);
+  v0Cuts->SetChi2Max(4);
   return v0Cuts;
 }
 
@@ -388,6 +393,7 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::PhotonCuts() {
   v0Cuts->SetLambdaSelection(0., 0.);
   v0Cuts->SetPsiPairMax(0.2);
   v0Cuts->SetPileUpRejectionMode(None);
+  v0Cuts->SetChi2Max(4);
   return v0Cuts;
 }
 
@@ -593,11 +599,16 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
   const short nClsTPC = track->GetTPCNcls();
   const float nCrossedRows = track->GetTPCClusterInfo(2, 1);
   const short nFindable = track->GetTPCNclsF();
+  const short nClsSharedTPC = track->GetTPCnclsS();
   const float ratioFindable =
       nCrossedRows / (static_cast<float>(nFindable) + 1.e-3);
   const float chi2 =
       (nClsTPC > 5) ? (track->GetTPCchi2() / float(nClsTPC - 5)) : -1.;
   /// see AliAnalysisTaskESDfilter::Chi2perNDF
+  int nClsSharedITS = 0;
+  for (int i = 0; i < 6; ++i) {
+    if (track->HasSharedPointOnITSLayer(i)) ++nClsSharedITS;
+  }
 
   const float magField = fInputEvent->GetMagneticField();
   const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
@@ -613,6 +624,10 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
     fHistSingleParticleChi2Before[histoPrefix]->Fill(pt, chi2);
     fHistSingleParticleNclsTPCBefore[histoPrefix]->Fill(pt, nClsTPC);
     fHistSingleParticleNclsTPCFindableBefore[histoPrefix]->Fill(pt, nFindable);
+    fHistSingleParticleNclsTPCSharedBefore[histoPrefix]->Fill(pt,
+                                                              nClsSharedTPC);
+    fHistSingleParticleNclsITSSharedBefore[histoPrefix]->Fill(pt,
+                                                              nClsSharedITS);
     fHistSingleParticleNclsTPCRatioFindableBefore[histoPrefix]->Fill(
         pt, ratioFindable);
     fHistSingleParticleNcrossedTPCBefore[histoPrefix]->Fill(pt, nCrossedRows);
@@ -644,24 +659,12 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
   fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // TPC nCls Shared
-  const int nClsSharedTPC = track->GetTPCnclsS();
   if (nClsSharedTPC > fTPCnSharedMax) return false;
   fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // Minimal distance of daughters to primary vertex
   if (dcaDaughterToPV < fDaughterDCAPV) return false;
   fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
-
-  // Keep track of shared clusters
-  if (!fIsLightweight) {
-    int nClsSharedITS = 0;
-    for (int i = 0; i < 6; ++i) {
-      if (track->HasSharedPointOnITSLayer(i)) ++nClsSharedITS;
-    }
-    const int histoPrefix = (charge > 0) ? 0 : 1;
-    fHistSingleParticleNclsTPCShared[histoPrefix]->Fill(pt, nClsSharedTPC);
-    fHistSingleParticleNclsITSShared[histoPrefix]->Fill(pt, nClsSharedITS);
-  }
 
   if (!(track->GetStatus() & AliESDtrack::kTPCrefit)) return false;
   fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
@@ -675,6 +678,8 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
     fHistSingleParticleChi2After[histoPrefix]->Fill(pt, chi2);
     fHistSingleParticleNclsTPCAfter[histoPrefix]->Fill(pt, nClsTPC);
     fHistSingleParticleNclsTPCFindableAfter[histoPrefix]->Fill(pt, nFindable);
+    fHistSingleParticleNclsTPCSharedAfter[histoPrefix]->Fill(pt, nClsSharedTPC);
+    fHistSingleParticleNclsITSSharedAfter[histoPrefix]->Fill(pt, nClsSharedITS);
     fHistSingleParticleNclsTPCRatioFindableAfter[histoPrefix]->Fill(
         pt, ratioFindable);
     fHistSingleParticleNcrossedTPCAfter[histoPrefix]->Fill(pt, nCrossedRows);
@@ -1555,8 +1560,8 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
                  0, 10, 1000, 0.9, 1);
     fHistograms->Add(fHistCosPA);
 
-    fHistEtaPhi = new TH2F("fHistEtaPhi", "; #eta; #phi", 200, -1, 1, 200, 0,
-                           2 * pi);
+    fHistEtaPhi =
+        new TH2F("fHistEtaPhi", "; #eta; #phi", 200, -1, 1, 200, 0, 2 * pi);
     fHistograms->Add(fHistEtaPhi);
 
     if (fPID == 22) {
@@ -1804,17 +1809,29 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
         new TH2F("fHistSingleParticleNcrossedTPCAfter_neg",
                  "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed", 100, 0, 10,
                  170, 0, 170);
-    fHistSingleParticleNclsTPCShared[0] = new TH2F(
-        "fHistSingleParticleNclsTPCShared_pos",
+    fHistSingleParticleNclsTPCSharedBefore[0] = new TH2F(
+        "fHistSingleParticleNclsTPCSharedBefore_pos",
         "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared", 100, 0, 10, 170, 0, 170);
-    fHistSingleParticleNclsTPCShared[1] = new TH2F(
-        "fHistSingleParticleNclsTPCShared_neg",
+    fHistSingleParticleNclsTPCSharedBefore[1] = new TH2F(
+        "fHistSingleParticleNclsTPCSharedBefore_neg",
         "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared", 100, 0, 10, 170, 0, 170);
-    fHistSingleParticleNclsITSShared[0] = new TH2F(
-        "fHistSingleParticleNclsITSShared_pos",
+    fHistSingleParticleNclsITSSharedBefore[0] = new TH2F(
+        "fHistSingleParticleNclsITSSharedBefore_pos",
         "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared", 100, 0, 10, 6, 0, 6);
-    fHistSingleParticleNclsITSShared[1] = new TH2F(
-        "fHistSingleParticleNclsITSShared_neg",
+    fHistSingleParticleNclsITSSharedBefore[1] = new TH2F(
+        "fHistSingleParticleNclsITSSharedBefore_neg",
+        "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared", 100, 0, 10, 6, 0, 6);
+    fHistSingleParticleNclsTPCSharedAfter[0] = new TH2F(
+        "fHistSingleParticleNclsTPCSharedAfter_pos",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared", 100, 0, 10, 170, 0, 170);
+    fHistSingleParticleNclsTPCSharedAfter[1] = new TH2F(
+        "fHistSingleParticleNclsTPCSharedAfter_neg",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared", 100, 0, 10, 170, 0, 170);
+    fHistSingleParticleNclsITSSharedAfter[0] = new TH2F(
+        "fHistSingleParticleNclsITSSharedAfter_pos",
+        "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared", 100, 0, 10, 6, 0, 6);
+    fHistSingleParticleNclsITSSharedAfter[1] = new TH2F(
+        "fHistSingleParticleNclsITSSharedAfter_neg",
         "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared", 100, 0, 10, 6, 0, 6);
     fHistSingleParticleDCAtoPVBefore[0] = new TH2F(
         "fHistSingleParticleDCAtoPVBefore_pos",
@@ -1864,10 +1881,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistogramsNeg->Add(fHistSingleParticleNclsTPCRatioFindableBefore[1]);
     fHistogramsPos->Add(fHistSingleParticleNcrossedTPCBefore[0]);
     fHistogramsNeg->Add(fHistSingleParticleNcrossedTPCBefore[1]);
-    fHistogramsPos->Add(fHistSingleParticleNclsTPCShared[0]);
-    fHistogramsNeg->Add(fHistSingleParticleNclsTPCShared[1]);
-    fHistogramsPos->Add(fHistSingleParticleNclsITSShared[0]);
-    fHistogramsNeg->Add(fHistSingleParticleNclsITSShared[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsTPCSharedBefore[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsTPCSharedBefore[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsITSSharedBefore[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsITSSharedBefore[1]);
     fHistogramsPos->Add(fHistSingleParticleDCAtoPVBefore[0]);
     fHistogramsNeg->Add(fHistSingleParticleDCAtoPVBefore[1]);
     fHistogramsPos->Add(fHistSingleParticleEtaAfter[0]);
@@ -1882,6 +1899,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistogramsNeg->Add(fHistSingleParticleNclsTPCRatioFindableAfter[1]);
     fHistogramsPos->Add(fHistSingleParticleNcrossedTPCAfter[0]);
     fHistogramsNeg->Add(fHistSingleParticleNcrossedTPCAfter[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsTPCSharedAfter[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsTPCSharedAfter[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsITSSharedAfter[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsITSSharedAfter[1]);
     fHistogramsPos->Add(fHistSingleParticleDCAtoPVAfter[0]);
     fHistogramsNeg->Add(fHistSingleParticleDCAtoPVAfter[1]);
     fHistogramsPos->Add(fHistSingleParticlePileUp[0]);
@@ -2132,9 +2153,9 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
                    " ; #alpha; #it{q}_{T} (GeV/#it{c})", 500, -1, 1, 500, 0, 1);
       fHistogramsMC->Add(fHistArmenterosTrueSigma);
 
-      fHistPsiPairTrueSigma = new TH2F(
-          "fHistPsiPairTrueSigma", "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}",
-          1000, 0, 10, 1000, -pi, pi);
+      fHistPsiPairTrueSigma = new TH2F("fHistPsiPairTrueSigma",
+                                       "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}",
+                                       1000, 0, 10, 1000, -pi, pi);
       fHistogramsMC->Add(fHistPsiPairTrueSigma);
 
       fHistSingleParticlePtTrueSigma[0] =
