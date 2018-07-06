@@ -529,12 +529,12 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
             fMCHists->FillMCPtResolution(Track->GetMCPt(),Track->GetPt());
             fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetMomentum().Theta(),Track->GetMCPt());
             float phi = Track->GetMomentum().Phi();
-            std::cout << phi << '\t' << Track->GetMCPhi().at(0) << std::endl;
+//            std::cout << phi << '\t' << Track->GetMCPhi().at(0) << std::endl;
             if (phi < 0 ) {
               //Root handles phi from - pi to + pi, while AliROOT handles it from 0 to 2 pi
               phi+=2*TMath::Pi();
             }
-            std::cout << phi << '\t' << Track->GetMCPhi().at(0) << std::endl;
+//            std::cout << phi << '\t' << Track->GetMCPhi().at(0) << std::endl;
             fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),phi,Track->GetMCPt());
           }
         } else {
