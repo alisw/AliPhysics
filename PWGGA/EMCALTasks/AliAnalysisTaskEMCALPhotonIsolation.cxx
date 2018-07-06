@@ -1207,15 +1207,15 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
     fEtaTracksVSclustPt  = new TH2F("hEtaTracks_vs_clustPT","Tracks eta distr vs pT Candidate",70, 0.,70., 90,-0.9,0.9);
     fEtaTracksVSclustPt->Sumw2();
     fOutput->Add(fEtaTracksVSclustPt);
+
+    fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 40, 0., 40., 100, 0., TMath::TwoPi());
+    fTracksPhiVsPt->Sumw2();
+    fOutput->Add(fTracksPhiVsPt);
+
+    fTracksEtaVsPt = new TH2F("hTracksEtaVsPt", "Tracks #eta vs #it{p}_{T}", 40, 0., 40., 90, -0.9, 0.9);
+    fTracksEtaVsPt->Sumw2();
+    fOutput->Add(fTracksEtaVsPt);
   }
-
-  fTracksPhiVsPt = new TH2F("hTracksPhiVsPt", "Tracks #varphi vs #it{p}_{T}", 40, 0., 40., 100, 0., TMath::TwoPi());
-  fTracksPhiVsPt->Sumw2();
-  fOutput->Add(fTracksPhiVsPt);
-
-  fTracksEtaVsPt = new TH2F("hTracksEtaVsPt", "Tracks #eta vs #it{p}_{T}", 40, 0., 40., 90, -0.9, 0.9);
-  fTracksEtaVsPt->Sumw2();
-  fOutput->Add(fTracksEtaVsPt);
 
   if(fWho != 2){
     fCTdistVSpTNC = new TH2F ("hDistanceC_TrackVSpT","Distance between Neutral Clust and closest Track vs pT Candidate",70,0.,70.,210,-0.1,2.);
@@ -1615,9 +1615,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	if(fWho != 2){
 	  fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
 	  fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	  fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
+	  fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
 	}
-	fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
-	fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
       }
 
       FillGeneralHistograms(coi,vecCOI,index);
@@ -1669,9 +1669,9 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 	  if(fWho != 2){
 	    fPhiTracksVSclustPt->Fill(vecCOI.Pt(),tr->Phi());
 	    fEtaTracksVSclustPt->Fill(vecCOI.Pt(),tr->Eta());
+	    fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
+	    fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
 	  }
-	  fTracksPhiVsPt->Fill(tr->Pt(),tr->Phi());
-	  fTracksEtaVsPt->Fill(tr->Pt(),tr->Eta());
 	}
 
 	FillGeneralHistograms(coi,vecCOI,index);
