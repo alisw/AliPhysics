@@ -168,24 +168,25 @@ bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
 
   if (!fIsLightweight) FillTriggerHisto(fHistTriggerAfter);
 
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
+  if (!MultSelection) {
+    // If you get this warning (and lPercentiles 300) please check that the
+    // AliMultSelectionTask actually ran (before your task)
+    AliWarning("AliMultSelection object not found!");
+  } else {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+  if (!fIsLightweight) fHistCentralityProfileBefore->Fill(lPercentile);
+
   // MULTIPLICITY SELECTION
   if (fTrigger == AliVEvent::kHighMultV0 && fV0PercentileMax < 100.f) {
-    Float_t lPercentile = 300;
-    AliMultSelection *MultSelection = 0x0;
-    MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
-    if (!MultSelection) {
-      // If you get this warning (and lPercentiles 300) please check that the
-      // AliMultSelectionTask actually ran (before your task)
-      AliWarning("AliMultSelection object not found!");
-    } else {
-      lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-    }
-    if (!fIsLightweight) fHistCentralityProfileBefore->Fill(lPercentile);
     if (lPercentile > fV0PercentileMax) return false;
-    if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
     if (!fIsLightweight) fHistCentralityProfileAfter->Fill(lPercentile);
     fHistCutQA->Fill(2);
   }
+  if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
 
   bool isConversionEventSelected =
       ((AliConvEventCuts *)fV0Reader->GetEventCuts())
