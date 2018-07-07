@@ -2,6 +2,7 @@
 #define Lifetimes_MiniV0_h
 
 #include <cmath>
+#include <cstdlib>
 #include <limits>
 
 namespace Lifetimes {
@@ -9,9 +10,9 @@ namespace Lifetimes {
 template <typename F, typename I>
 F getBinCenter(I bin, F binw, F min, F max, bool checkF = false,
                bool checkL = false) {
-  if (checkF && std::numeric_limits<I>::min())
+  if (checkF && bin == std::numeric_limits<I>::min())
     return -1.e32;
-  else if (checkL && std::numeric_limits<I>::max())
+  else if (checkL && bin == std::numeric_limits<I>::max())
     return 1.e32;
   else
     return min + (bin + 0.5) * binw;

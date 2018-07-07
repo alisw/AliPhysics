@@ -9,7 +9,7 @@ const float MiniV0::fgkV0cosPA_w =
     (MiniV0::fgkV0cosPA_l - MiniV0::fgkV0cosPA_f) /
     MiniV0::fgkV0cosPA_n;
 
-const int MiniV0::fgkV0chi2_n = 250;
+const int MiniV0::fgkV0chi2_n = 100;
 const float MiniV0::fgkV0chi2_f = 0.f;
 const float MiniV0::fgkV0chi2_l = 10.f;
 const float MiniV0::fgkV0chi2_w =
