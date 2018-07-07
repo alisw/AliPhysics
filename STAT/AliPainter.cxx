@@ -70,7 +70,7 @@ std::vector<TString> AliPainter::rangesVec;
 *           TObject *o = finput->Get(TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
 *           hisArray->AddLast(o);
 *         }
-*         AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/test/figTemplateHex.css"));
+*         AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
 *        \endcode
 *  2. Then create the canvas and divide it:
 *       \code
@@ -91,9 +91,9 @@ std::vector<TString> AliPainter::rangesVec;
 *         TCanvas * canvasQA = new TCanvas("canvasQA","canvasQA", 1200,800);
 *         AliPainter::DivideTPad(canvasQA, "<vertical>[1r,1l,1r,1l]", "Raw,Error", "");
 *         canvasQA->cd(1);
-*         AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,dOption=E,class=PtAll)");
-*         AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,dOption=E,class=PtIts)");
-*         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,dOption=E,class=Tgl)");
+*         AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
+*         AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
+*         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E)");
 *         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *        \endcode
@@ -107,7 +107,7 @@ std::vector<TString> AliPainter::rangesVec;
 *         AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1, drawOpt=E,class=PtIts)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1, drawOpt=E,class=Tgl)");
 *         AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1, drawOpt=E,class=PtAll)");
-*         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(div=1,class=Mass,dOption=E)");
+*         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(div=1,class=Mass,drawOpt=E)");
 *         AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1, drawOpt=E,class=PtAll)");
 *         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *       \endcode
@@ -121,7 +121,7 @@ std::vector<TString> AliPainter::rangesVec;
 *         AliPainter::DrawHistogram(hisArray, "hisPtITS(0,10)(0)()(div=1,drawOpt=E,class=PtIts)");
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(1,1)(2)()(div=1,drawOpt=E,class=Tgl)");
 *         AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
-*         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(div=1,class=Mass,dOption=E)");
+*         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(div=1,class=Mass,drawOpt=E)");
 *         AliPainter::DrawHistogram(hisArray, "hisPtAll(0,10)(0)()(div=1,drawOpt=E,class=PtAll)");
 *         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *       \endcode
@@ -384,7 +384,7 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 ///                             - range - {x0min,x0max,x1min,xm1max,...} in case not specified - range is not set
 ///                           - intitialParam{not yet} - {p0,p1;p2,...;ep0,ep1,...;minp0,minp1,...; maxp0,maxp1 ...} errors, min and max are optionals
 /// TODO: may be we should also use TVectorD or TMatrix instead enumeration? @Boris
-///                           - drawing string: (padDiv, lims, className, dOption)
+///                           - drawing string: (padDiv, lims, className, drawOpt)
 ///                             - padDiv - allows to choose wich pad use for drawing:
 ///                               - divFlag = 0 - use the same pad for drawing; (default value)
 ///                               - divFlag = 1 - use differents pads for drawing;
@@ -397,7 +397,7 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 ///                               - class = [Raw,Error] - in the end of name of object will add ".class(Raw,Error)"
 ///                               - class = Raw - also as class=[Raw] will add .class(Raw)
 ///                               - class = [] - in this case nothing will add to the end of the name of object (default)
-///                             - dOption - root standard draw options [see docs](https://root.cern.ch/root/htmldoc/guides/users-guide/Histograms.html#draw-options)
+///                             - drawOpt - root standard draw options [see docs](https://root.cern.ch/root/htmldoc/guides/users-guide/Histograms.html#draw-options)
 /// \param histogramArray   - array of input objects
 ///                         - Object to draw - histogramArray->FindObject(histogramName)
 ///                         - in case histogramArray is nullptr or histogram not found gROOT->FindObject()
@@ -421,8 +421,8 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 *         for (Int_t iKey = 0; iKey<keys->GetEntries();iKey++) {
 *           TObject *o = finput->Get(TString::Format("%s;%d", keys->At(iKey)->GetName(), ((TKey *) keys->At(iKey))->GetCycle()).Data());
 *           hisArray->AddLast(o);
-*           AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/test/figTemplateHex.css"));
 *         }
+*         AliDrawStyle::RegisterCssStyle("figTemplateHex", AliDrawStyle::ReadCSSFile("$AliRoot_SRC/STAT/test/figTemplateHex.css"));
 *        \endcode
 *   Behaviour by default:
 *    \code
@@ -445,6 +445,7 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 *         AliPainter::DivideTPad(canvasQA, "<horizontal>[1]", "Canvas1");
 *         canvasQA->cd(1);
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[0,])");
+*         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *       \endcode
 *       ![Few graphs on the same pad](AliPainter_cxx_example8.png)
 *     2.2 Using AliPainter::DivideTPad();
@@ -462,9 +463,9 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 *     2.3 Limitations to y-axis
 *         You can set the ranges to yaxis with using second parameter of drawOption. Available statistical units are - <min>, <max>, <mean>, <median>, <rms>.
 *         \code
-*         TCanvas *canvasQA1 = new TCanvas("canvasQA", "canvasQA", 1200, 800);
-*         AliPainter::DivideTPad(canvasQA1, "<horizontal>[1,1]", "Canvas1");
-*         canvasQA1->cd(1);
+*         TCanvas *canvasQA = new TCanvas("canvasQA", "canvasQA", 1200, 800);
+*         AliPainter::DivideTPad(canvasQA, "<horizontal>[1,1]", "Canvas1");
+*         canvasQA->cd(1);
 *         AliPainter::DrawHistogram(hisArray, "hisK0DMassQPtTgl(20,80,40:80:20:20,0,10)(0)(name=gaus,option=W)(class=Mass,drawOpt=E,ylim=[<min>+0.5*<mean>,<max>-0.5*<mean>], div=1)");
 *         AliDrawStyle::ApplyCssStyle(canvasQA, "figTemplateHex");
 *       \endcode
@@ -570,9 +571,19 @@ void AliPainter::DrawHistogram(THnBase *hisN, const char *expression, TPad *pad,
 }
 //TODO: think how to combine  AliPainter::ParseString and AliPainter::ParseOptionString @Boris
 //NOTE: we can provide list of brackets and remove ignoreBrackets from arguments add just flag about do you want to ignore brackets or not.
-///
+/// \brief ParseString function parse content of any type of brackets(sep) in input string to std::vector<TString>
+/// Example usage:
+/// \code
+///   TString input="(20,80,0:80:20:20,0,10)(0)(name=gaus,drawOpt=W)(class=Mass,drawOpt=E)";
+///   std::vector<TString> args = AliPainter::ParseString(input, "()", 4);
+///   // output: I-AliPainter::ParseString: Input string "(20,80,0:80:20:20,0,10)(0)(name=gaus,drawOpt=W)(class=Mass,drawOpt=E)" was parsed to 20,80,0:80:20:20,0,10|0|name=gaus,drawOpt=W|class=Mass,drawOpt=E|
+///   args.clear();
+///   input = "<max>+3*<rms>";
+///   args = AliPainter::ParseString(input.Data(), "<>", 4);
+///   // output: I-AliPainter::ParseString: Input string "<max>+3*<rms>" was parsed to max|rms|
+/// \endcode
 /// \param inpString
-/// \param sep - separator
+/// \param sep - separator by default is "()"
 /// \param verbose
 /// \return - array of input strings
 std::vector<TString> AliPainter::ParseString(const char *inpString, const char *sep, Int_t verbose) {
@@ -582,17 +593,17 @@ std::vector<TString> AliPainter::ParseString(const char *inpString, const char *
     ::Error("AliPainter::DrawHistogram", "check brackets in %s", exprsn.Data());
     return atts;
   }
-
-  atts.push_back(exprsn(0, exprsn.Index("(", 0)));
+  if (!exprsn.Contains(sep[0]))
+    atts.push_back(exprsn);
 
   TString verbStr = "";
   Int_t match = 0, startIndex = 0, finishIndex = 0;
   Bool_t isChange = kFALSE;
   for (Int_t i = 0; i < exprsn.Length(); i++) {
     if (exprsn(i) == sep[0] && match == 0) {
-    match++;
-    startIndex = i;
-    isChange = kTRUE;
+      match++;
+      startIndex = i;
+      isChange = kTRUE;
     }
     else if (exprsn(i) == sep[0] && match > 0) match++;
     else if (exprsn(i) == sep[1] && match == 1) {
@@ -617,11 +628,22 @@ std::vector<TString> AliPainter::ParseString(const char *inpString, const char *
   return atts;
 }
 
+/// \brief ParseOptionString function parse input string to array according to any delimeter and also it will ignore this delimeter inside of specified brackets.
+/// Example usage:
+/// \code
+///  TString input="gaus,W,fitFunction(1,2,3),E,10,200";
+///  AliPainter::ParseOptionString(input.Data(), 6, ',', "()", 4);
+///  // output: I-AliPainter::ParseString: Input string "gaus,W,fitFunction(1,2,3),E,10,200" was parsed to gaus|W|fitFunction(1,2,3)|E|10|200|
+///  // the same reslult if just AliPainter::ParseOptionString(input.Data(), 6)
+///  input="div=0,class=Mass,drawOpt=E,xlim=[0,10000]";
+///  AliPainter::ParseOptionString(input,6, ',', "[]",4);
+///   // output: I-AliPainter::ParseString: Input string "div=0,class=Mass,drawOpt=E,xlim=[0,10000]" was parsed to div=0|class=Mass|drawOpt=E|xlim=[0,10000]|||
+/// \endcode
 ///
 /// \param inputExpr
 /// \param defSize - size of output vector
-/// \param sep - separator
-/// \param ignoreBrackets - inside this bracket separators will be ignored a,a,a,b(1,2,3),a,a
+/// \param sep - separator by default is ','
+/// \param ignoreBrackets - inside this bracket separators will be ignored a,a,a,b(1,2,3),a,a. By default is "()"
 /// \param verbose
 /// \return - array of input strings
 std::vector<TString> AliPainter::ParseOptionString(const char *inputExpr, Int_t defSize, const char sep, const char ignoreBrackets[2], Int_t verbose) {
@@ -661,9 +683,32 @@ std::vector<TString> AliPainter::ParseOptionString(const char *inputExpr, Int_t 
   return atts;
 }
 
-/// \brief Private method for parsing draw options in AliPainter::DrawHistogram
-/// \param drawStr - string with draw options
-/// \return array of values from inputOptions
+/// \brief Function for parsing pandas options in AliPainter::DrawHistogram into the map:
+///
+/// Example usage:
+/// \code
+///  TString input="div=0";
+///  std::map<TString,TString> dMap;
+///  AliPainter::ParsePandasString(input, dMap, ',', "()", 4)
+///  dMap["div"]
+///  //output:  (class TString)"0"
+///  input="zlim=[], xlim=[10.123,20.435], ylim=, class=Mass";
+///  root [26] dMap.clear()
+///  AliPainter::ParsePandasString(input, dMap);
+///  dMap["zlim"]
+///  //(class TString)"[]"
+///  dMap["xlim"]
+///  //(class TString)"[10.123,20.435]"
+///  dMap["ylim"]
+///  //(class TString)""
+///  dMap["class"]
+///  //(class TString)"Mass"
+/// \endcode
+/// \param optionsStr
+/// \param optMap
+/// \param sep - ',' by default
+/// \param ignoreBrackets - "[]" by default
+/// \param verbose
 void AliPainter::ParsePandasString(const TString optionsStr, std::map<TString, TString> &optMap, const char sep, const char ignoreBrackets[2], Int_t verbose) {
   std::vector<TString> options = AliPainter::ParseOptionString(optionsStr.Data(), optionsStr.CountChar('=') , sep, ignoreBrackets, verbose);
   for (UShort_t i = 0; i < options.size(); i++) {
@@ -692,13 +737,13 @@ void AliPainter::ParsePandasString(const TString optionsStr, std::map<TString, T
 void AliPainter::FillAll(const char *expression, Int_t verbose) {
 
   std::vector<TString> initAtts = AliPainter::ParseString(expression, "()", verbose);
-
+  TString exprsn = TString(expression);
   AliPainter::RegisterDefaultOptions();
-  AliPainter::genValues["hisName"] = initAtts[0];
-  AliPainter::genValues["projections"] =initAtts[2];
-  AliPainter::ParseRanges(initAtts[1], verbose);
-  AliPainter::ParsePandasString(initAtts[3], AliPainter::fitValues, ',', "()", verbose);
-  AliPainter::ParsePandasString(initAtts[4], AliPainter::drawValues, ',', "[]", verbose);
+  AliPainter::genValues["hisName"] = exprsn(0, exprsn.Index("(", 0)); // initAtts[0];
+  AliPainter::genValues["projections"] =initAtts[1];
+  AliPainter::ParseRanges(initAtts[0], verbose);
+  AliPainter::ParsePandasString(initAtts[2], AliPainter::fitValues, ',', "()", verbose);
+  AliPainter::ParsePandasString(initAtts[3], AliPainter::drawValues, ',', "[]", verbose);
   if (verbose == 4) {
     TString rangesString = "";
     for (std::vector<TString>::iterator it = AliPainter::rangesVec.begin(); it != AliPainter::rangesVec.end(); ++it)
@@ -958,7 +1003,7 @@ Double_t AliPainter::GetStatVal(Double_t *valuesArray, Long64_t commonSize, cons
   std::vector<TString> statUnits = AliPainter::ParseString(expression.Data(), "<>", verbose);
   std::set<TString> uniqueStatUnits(statUnits.begin(), statUnits.end());
   statUnits.assign(uniqueStatUnits.begin(), uniqueStatUnits.end());
-  statUnits.erase(statUnits.begin());
+ // statUnits.erase(statUnits.begin());
   Double_t parameters[statUnits.size()];
   TString exrForm = expression;
   for (ULong_t i = 0; i < statUnits.size(); i++) {
