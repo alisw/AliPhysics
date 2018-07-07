@@ -1,6 +1,7 @@
 #include "AliAnalysisTaskStrangenessLifetimes.h"
 
 #include <Riostream.h>
+#include <TChain.h>
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -17,9 +18,6 @@
 #include "AliLightV0vertexer.h"
 #include "AliPIDResponse.h"
 #include "AliV0vertexer.h"
-
-#include "AliAnalysisUtils.h"
-#include "AliEventCuts.h"
 
 using Lifetimes::MiniV0;
 using std::cout;
@@ -49,6 +47,7 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fV0vector{},
       fMultiplicity{} {
   // Standard output
+  DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());  // Basic Histograms
   DefineOutput(2, TTree::Class());  // V0 Tree output
 }
