@@ -2,6 +2,7 @@
 #define Lifetimes_MiniV0_h
 
 #include <cmath>
+#include <cstdlib>
 #include <limits>
 
 namespace Lifetimes {
