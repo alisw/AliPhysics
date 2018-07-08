@@ -1261,9 +1261,13 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
     AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 
+    /*
+    // up to vAN20180708
     double m20mim = 0.03;
-    //double m20max = 0.3;
     double m20max = 0.28;
+    */
+    double m20mim = 0.01;
+    double m20max = 0.35;
 
     ////////////////////
     //Apply track cuts//
@@ -1331,8 +1335,11 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         }
       fCheckEta->Fill(atrack->Eta());
 
+
+     cout << "<-------------- fRefit 0 = " << fRefit << endl; 
       if(fRefit)
         { 
+          cout << "<-------------- fRefit 1 = " << fRefit << endl; 
          //cout << "fRefit = " << fRefit << endl; 
          if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         }
