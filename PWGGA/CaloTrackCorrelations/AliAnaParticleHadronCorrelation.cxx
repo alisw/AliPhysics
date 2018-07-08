@@ -3513,7 +3513,7 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fMakeAbsoluteLeading  = kTRUE;
   fMakeNearSideLeading  = kFALSE;
   
-  fNAssocPtBins         = 9   ;
+  fNAssocPtBins         = 9cd ..   ;
   fAssocPtBinLimit[0]   = 0.2 ;
   fAssocPtBinLimit[1]   = 0.5 ;
   fAssocPtBinLimit[2]   = 1.0 ;
@@ -3533,19 +3533,19 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fAssocPtBinLimit[16]  = 30.0 ;
   fAssocPtBinLimit[17]  = 40.0 ;
   fAssocPtBinLimit[18]  = 50.0 ;
-  fAssocPtBinLimit[19]  = 200.0 ;
+  fAssocPtBinLimit[19]  = 100.0 ;
   
-  fNTrigPtBins         = 4  ;
-  fTrigPtBinLimit[0]   = 10 ;
-  fTrigPtBinLimit[1]   = 12 ;
-  fTrigPtBinLimit[2]   = 16 ;
-  fTrigPtBinLimit[3]   = 20 ;
-  fTrigPtBinLimit[4]   = 25 ;
-  fTrigPtBinLimit[5]   = 30 ;
-  fTrigPtBinLimit[6]   = 40 ;
-  fTrigPtBinLimit[7]   = 50 ;
-  fTrigPtBinLimit[8]   = 75 ;
-  fTrigPtBinLimit[9]   = 100 ;
+  fNTrigPtBins         = 4.  ;
+  fTrigPtBinLimit[0]   = 10. ;
+  fTrigPtBinLimit[1]   = 12. ;
+  fTrigPtBinLimit[2]   = 16. ;
+  fTrigPtBinLimit[3]   = 20. ;
+  fTrigPtBinLimit[4]   = 25. ;
+  fTrigPtBinLimit[5]   = 30. ;
+  fTrigPtBinLimit[6]   = 40. ;
+  fTrigPtBinLimit[7]   = 50. ;
+  fTrigPtBinLimit[8]   = 75. ;
+  fTrigPtBinLimit[9]   = 100. ;
 
   
   fUseMixStoredInReader = kTRUE;
