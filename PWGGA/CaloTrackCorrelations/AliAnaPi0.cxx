@@ -515,7 +515,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhPrimEtaE     = new TH1F("hPrimEtaE","Primary eta E",
                               nptbins,ptmin,ptmax) ;
     fhPrimEtaE   ->SetXTitle("#it{E} (GeV)");
-    outputContainer->Add(fhPrimEtaAccE) ;
+    outputContainer->Add(fhPrimEtaE) ;
 
     fhPrimEtaPt     = new TH1F("hPrimEtaPt","Primary #eta #it{p}_{T}",
                                nptbins,ptmin,ptmax) ;
