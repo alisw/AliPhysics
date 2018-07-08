@@ -669,7 +669,7 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(Int_t process, TString processN
       //Compare jet pT and pt Hard
       if(jet->Pt() > fPtHardAndJetPtFactor * ptHard)
       {
-        AliInfo(Form("Reject jet event with : process %d <%s>, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
+        AliInfo(Form("Reject jet event with : process %d <%s>, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f",
                      process, processName.Data(), ptHard, jet->Pt(), fPtHardAndJetPtFactor));
         return kFALSE;
       }
@@ -1591,7 +1591,7 @@ Int_t AliCaloTrackReader::GetEventCentrality() const
     else if(fCentralityOpt ==  20) return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
     else
     {
-      AliInfo(Form("Unknown centrality option %d, use 10, 20 or 100\n",fCentralityOpt));
+      AliInfo(Form("Unknown centrality option %d, use 10, 20 or 100",fCentralityOpt));
       return -1;
     }
   }
@@ -1625,14 +1625,14 @@ Double_t AliCaloTrackReader::GetEventPlaneAngle() const
   
   if(GetEventPlaneMethod()=="Q" && (ep < 0 || ep > TMath::Pi()))
   {
-    AliDebug(1,Form("Bad EP for <Q> method : %f\n",ep));
+    AliDebug(1,Form("Bad EP for <Q> method : %f",ep));
     return -1000;
   }
   else if(GetEventPlaneMethod().Contains("V0")  )
   {
     if((ep > TMath::Pi()/2 || ep < -TMath::Pi()/2))
     {
-      AliDebug(1,Form("Bad EP for <%s> method : %f\n",GetEventPlaneMethod().Data(), ep));
+      AliDebug(1,Form("Bad EP for <%s> method : %f",GetEventPlaneMethod().Data(), ep));
       return -1000;
     }
     
@@ -1715,7 +1715,7 @@ void AliCaloTrackReader::FillVertexArray()
       fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
     }
     
-    AliDebug(1,Form("Single Event Vertex : %f,%f,%f\n",fVertex[0][0],fVertex[0][1],fVertex[0][2]));
+    AliDebug(1,Form("Single Event Vertex : %f,%f,%f",fVertex[0][0],fVertex[0][1],fVertex[0][2]));
     
   } else
   { // MultiEvent analysis
@@ -2186,7 +2186,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
 
     if (  nMaxima >= fSmearNLMMin && nMaxima <= fSmearNLMMax )
     {
-      AliDebug(2,Form("Smear shower shape - Original: %2.4f\n", clus->GetM02()));
+      AliDebug(2,Form("Smear shower shape - Original: %2.4f", clus->GetM02()));
       if(fSmearingFunction == kSmearingLandau)
       {
         clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
@@ -2200,7 +2200,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
         clus->SetM02( clus->GetM02() );
       }
       //clus->SetM02( fRandom.Landau(clus->GetM02(), fSmearShowerShapeWidth) );
-      AliDebug(2,Form("Width %2.4f         Smeared : %2.4f\n", fSmearShowerShapeWidth,clus->GetM02()));
+      AliDebug(2,Form("Width %2.4f         Smeared : %2.4f", fSmearShowerShapeWidth,clus->GetM02()));
     }
   }
   
