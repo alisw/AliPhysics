@@ -77,6 +77,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
                                 TString periodname              = "LHC10b",           // period name
                                 TString periodNameV0Reader      = "",
                                 TString periodNameAnchor        = "",
+				Int_t   doDeDxMaps              =  0,
                                 Bool_t 	enableV0findingEffi     = kFALSE,    // enables V0finding efficiency histograms
                                 TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
                               ){
@@ -205,7 +206,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   fMaterialHistos->SetIsMC(isMC);
   fMaterialHistos->SetIsHeavyIon(IsHeavyIon);
   fMaterialHistos->SetV0ReaderName(V0ReaderName);
-
+  fMaterialHistos->SetDoDeDxMaps(doDeDxMaps);
   CutHandlerConvMaterial cuts;
   if(trainConfig == 1){
     cuts.AddCut("00000103", "00000009266302004204400000");
