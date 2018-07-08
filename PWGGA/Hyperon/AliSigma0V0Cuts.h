@@ -289,8 +289,10 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticleNclsTPCRatioFindableAfter[2];   //!
   TH2F *fHistSingleParticleNcrossedTPCBefore[2];           //!
   TH2F *fHistSingleParticleNcrossedTPCAfter[2];            //!
-  TH2F *fHistSingleParticleNclsTPCShared[2];               //!
-  TH2F *fHistSingleParticleNclsITSShared[2];               //!
+  TH2F *fHistSingleParticleNclsTPCSharedBefore[2];         //!
+  TH2F *fHistSingleParticleNclsITSSharedBefore[2];         //!
+  TH2F *fHistSingleParticleNclsTPCSharedAfter[2];          //!
+  TH2F *fHistSingleParticleNclsITSSharedAfter[2];          //!
   TH2F *fHistSingleParticleDCAtoPVBefore[2];               //!
   TH2F *fHistSingleParticleDCAtoPVAfter[2];                //!
   TH2F *fHistSingleParticlePileUp[2];                      //!

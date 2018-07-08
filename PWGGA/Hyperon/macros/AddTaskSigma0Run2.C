@@ -17,11 +17,11 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
 
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton;
-  cutnumberPhoton = "00200008400020002282000000";
-  if (suffix == "14") cutnumberPhoton = "00000008800020002282000000";
-  if (suffix == "15") cutnumberPhoton = "00000088400020002282000000";
-  if (suffix == "16") cutnumberPhoton = "00000008400020002282000000";
-  if (suffix == "17") cutnumberPhoton = "00200008400000002282000000";
+  cutnumberPhoton = "10200008400020002282000000";
+  if (suffix == "14") cutnumberPhoton = "10000008800020002282000000";
+  if (suffix == "15") cutnumberPhoton = "10000088400020002282000000";
+  if (suffix == "16") cutnumberPhoton = "10000008400020002282000000";
+  if (suffix == "17") cutnumberPhoton = "10200008400000002282000000";
   if (suffix == "18") cutnumberPhoton = "10200008400000002282000000";
   //      00000008800020002282000000 tighter TPC dEdx cut
   //      00000088400020002282000000 pt,ele > 0.02
