@@ -204,6 +204,9 @@ public:
   
   void         SwitchOnFillBradHistograms()      { fFillBradHisto       = kTRUE  ; }
   void         SwitchOffFillBradHistograms()     { fFillBradHisto       = kFALSE ; }
+ 
+  void         SwitchOnFillDeltaEtaPhiPtTrigHistograms()  { fFillDeltaPhiDeltaEtaAssocPt = kTRUE  ; }
+  void         SwitchOffFillDeltaEtaPhiPtTrigHistograms() { fFillDeltaPhiDeltaEtaAssocPt = kFALSE ; }
   
   Bool_t       OnlyIsolated()              const { return fSelectIsolated        ; }
   void         SelectIsolated(Bool_t s)          { fSelectIsolated   = s         ; }
@@ -288,6 +291,8 @@ private:
   Int_t        fNBkgBin;                                 ///<  Number of bins on pt content in cone.
   Float_t      fBkgBinLimit[20];                         ///<  Pt bin limits on pt content in the cone.
   
+  //
+
   Bool_t       fMakeAbsoluteLeading ;                    ///<  Requesting absolute leading triggers.
   Bool_t       fMakeNearSideLeading ;                    ///<  Requesting near side leading (+-90º from trigger particle) triggers.
   
@@ -296,7 +301,7 @@ private:
   Bool_t       fHMPIDCorrelation    ;                    ///<  Correlate with particles on HMPID or its acceptance.
   
   Bool_t       fFillBradHisto ;                          ///<  DPhi histograms calculated differently.
-  
+  Bool_t       fFillDeltaPhiDeltaEtaAssocPt;             ///<  In angular correlation fill histograms with TH3 Delta Eta vs Delta Phi vs Trigger pT for different associated pT bins, and do not fill other histograms to reduce output size.
   Int_t        fNAssocPtBins ;                           ///<  Number of associated pT bins under study.
   Float_t      fAssocPtBinLimit[20] ;                    ///<  Associated pT under study.
   

@@ -973,15 +973,27 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
   
-  ana->SetNAssocPtBins(8);
-  ana->SetAssocPtBinLimit(0, 1) ;
-  ana->SetAssocPtBinLimit(1, 2) ;
-  ana->SetAssocPtBinLimit(2, 3) ;
-  ana->SetAssocPtBinLimit(3, 4) ;
-  ana->SetAssocPtBinLimit(4, 5) ;
-  ana->SetAssocPtBinLimit(5, 8) ;
-  ana->SetAssocPtBinLimit(6, 10) ;
-  ana->SetAssocPtBinLimit(7, 100);
+  ana->SwitchOnFillDeltaEtaPhiPtTrigHistograms();
+  
+  ana->SetNAssocPtBins(16); // set last bin [20,30] GeV/c
+  // See AliAnaParticleCorrelation::InitParameters();
+  // Default bins{0.2,0.5,1,2,3,4,5,6,7,8,9,10,12,14,16,20,30,40,50,100} GeV/c
+  // If you want to change it:
+  //  ana->SetAssocPtBinLimit(0, 1) ;
+  //  ana->SetAssocPtBinLimit(1, 2) ;
+  //  ana->SetAssocPtBinLimit(2, 3) ;
+  //  ana->SetAssocPtBinLimit(3, 4) ;
+  //  ana->SetAssocPtBinLimit(4, 5) ;
+  //  ana->SetAssocPtBinLimit(5, 8) ;
+  //  ana->SetAssocPtBinLimit(6, 10) ;
+  //  ana->SetAssocPtBinLimit(7, 100);
+  
+  ana->SetNTriggerPtBins(5); // set last bin [25,30] GeV/c
+  // See AliAnaParticleCorrelation::InitParameters();
+  // Default bins{10,12,16,20,25,30,40,50,75,100} GeV/c
+  // If you want to change it:
+  //  ana->SetTriggerPtBinLimit(0,  5) ;
+  //  ana->SetTriggerPtBinLimit(1, 10) ;
   
   ana->SelectIsolated(bIsolated); // do correlation with isolated photons
   
