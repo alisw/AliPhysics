@@ -734,6 +734,10 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SetAssocPtBinLimit(3, 10) ;
   ana->SetAssocPtBinLimit(4, 20) ;
 
+  ana->SetNTriggerPtBins(1); 
+  ana->SetTriggerPtBinLimit(0, 10) ;
+  ana->SetTriggerPtBinLimit(1, 20) ;
+  
   ana->SelectIsolated(kFALSE); // do correlation with isolated photons
 
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
