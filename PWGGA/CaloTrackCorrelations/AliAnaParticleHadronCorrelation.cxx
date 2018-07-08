@@ -3513,7 +3513,7 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fMakeAbsoluteLeading  = kTRUE;
   fMakeNearSideLeading  = kFALSE;
   
-  fNAssocPtBins         = 9cd ..   ;
+  fNAssocPtBins         = 9   ;
   fAssocPtBinLimit[0]   = 0.2 ;
   fAssocPtBinLimit[1]   = 0.5 ;
   fAssocPtBinLimit[2]   = 1.0 ;
