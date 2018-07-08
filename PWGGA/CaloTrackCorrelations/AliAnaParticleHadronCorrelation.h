@@ -215,6 +215,9 @@ public:
   void         SetNAssocPtBins(Int_t n) ;
   void         SetAssocPtBinLimit(Int_t ibin, Float_t pt) ;
   
+  void         SetNTriggerPtBins(Int_t n) ;
+  void         SetTriggerPtBinLimit(Int_t ibin, Float_t pt) ;
+  
   Bool_t       IsMixStoredInReaderOn()     const { return fUseMixStoredInReader  ; }
   void         SwitchOnUseMixStoredInReader()    { fUseMixStoredInReader = kTRUE ; }
   void         SwitchOffUseMixStoredInReader()   { fUseMixStoredInReader = kFALSE; }
@@ -295,8 +298,10 @@ private:
   Bool_t       fFillBradHisto ;                          ///<  DPhi histograms calculated differently.
   
   Int_t        fNAssocPtBins ;                           ///<  Number of associated pT bins under study.
-  
   Float_t      fAssocPtBinLimit[20] ;                    ///<  Associated pT under study.
+  
+  Int_t        fNTrigPtBins ;                            ///<  Number of bins for deltaEta-deltaPhi histogram.
+  Float_t      fTrigPtBinLimit[20] ;                     ///<  Trigger pT bins for deltaEta-deltaPhi histogram.
   
   Bool_t       fCorrelVzBin ;                            ///<  Fill one histogram per vz bin.
   
@@ -498,7 +503,7 @@ private:
   TH2F *       fhAssocPtBkg;                             //!<! Trigger pT vs associated pT for background.
   
   /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins.
-  TH2F **      fhDeltaPhiDeltaEtaAssocPtBin;             //![fNAssocPtBins*GetNZvertBin()]
+  TH3F **      fhDeltaPhiDeltaEtaAssocPtBin;             //![fNAssocPtBins*GetNZvertBin()]
   
   /// Trigger pT vs dPhi for different associated pt and vz bins.
   TH2F **      fhDeltaPhiAssocPtBin;                     //![fNAssocPtBins*GetNZvertBin()]
@@ -625,7 +630,7 @@ private:
   TH2F **      fhMixDeltaPhiChargedAssocPtBinDEta0;      //![fNAssocPtBins*GetNZvertBin()]
   
   /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different associated bins.
-  TH2F **      fhMixDeltaPhiDeltaEtaChargedAssocPtBin;   //![fNAssocPtBins*GetNZvertBin()]
+  TH3F **      fhMixDeltaPhiDeltaEtaChargedAssocPtBin;   //![fNAssocPtBins*GetNZvertBin()]
   
   TH1I *       fhEventBin;                               //!<! Number of triggers in a particular event bin (cen,vz,rp).
   TH1I *       fhEventMixBin;                            //!<! Number of triggers mixed in a particular bin (cen,vz,rp).
