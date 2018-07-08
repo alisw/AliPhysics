@@ -86,7 +86,7 @@
 
 
 using namespace std;            // std namespace: so you can do things like 'cout'
-using namespace BSchaefer_devel;
+//using namespace BSchaefer_devel;
 
 //ofstream file_output("output.txt");
 
