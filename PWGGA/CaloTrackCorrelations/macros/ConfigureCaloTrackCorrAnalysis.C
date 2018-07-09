@@ -46,7 +46,8 @@
 TString kAnaCaloTrackCorr = "";
 
 /// Global name to be composed of the analysis components chain and some internal settings
-TString kAnaCutsString = ""; // "Photon_MergedPi0_DecayPi0_Isolation_Correlation_Bkg_QA_Charged",
+// Some examples of strings: "Photon_MergedPi0_DecayPi0_Isolation_Correlation_Bkg_QA_Charged_HighMult_MultiIso_PerSM_PerTCard",
+TString kAnaCutsString = ""; 
 
 ///
 /// Set common histograms binning
@@ -76,7 +77,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   if ( histoString != "" ) 
     ana->AddToHistogramsName(Form("%s_%s",  histoString.Data(), (ana->GetAddedHistogramsStringToName()).Data()) );
 
-  
   histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")
@@ -181,6 +181,15 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
+  
+ 
+  //
+  // Specialized histograms on multiplicity
+  //
+  if ( kAnaCutsString.Contains("HighMult") ) 
+    ana->SwitchOnFillHighMultiplicityHistograms();
+  else
+    ana->SwitchOnFillHighMultiplicityHistograms();
   
   //
   // Debug
@@ -921,9 +930,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOffFillPtImbalancePerPtABinHistograms();
   ana->SwitchOffCorrelationVzBin() ;
   ana->SwitchOffFillEtaGapHistograms();
-  
-  ana->SwitchOffFillHighMultiplicityHistograms();
-  
+    
   ana->SwitchOffPi0TriggerDecayCorr();
   
   if(particle.Contains("Photon"))

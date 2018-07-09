@@ -1416,8 +1416,10 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if ( fCentralityBin[0] >= 0 && fCentralityBin[1] >= 0 )
   {
     cen = GetEventCentrality();
-      
-    if(cen > fCentralityBin[1] || cen <= fCentralityBin[0]) return kFALSE; //reject events out of bin.
+    
+    AliDebug(1,Form("Centrality %d in [%d,%d]?", cen, fCentralityBin[0], fCentralityBin[1]));
+
+    if ( cen >= fCentralityBin[1] || cen <  fCentralityBin[0]   )  return kFALSE; //reject events out of bin.
     
     AliDebug(1,"Pass centrality rejection");
     
