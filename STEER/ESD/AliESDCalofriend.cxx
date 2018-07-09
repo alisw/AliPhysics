@@ -131,6 +131,7 @@ void AliESDCalofriend::Allocate(Int_t size)
   }
   
   fSamples->Set(fNEntries * kNSamples);
+  fCurrent = -1;
 }
 
 //_______________
