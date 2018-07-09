@@ -56,7 +56,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
 
     void SetTenderFlag(Bool_t tender) {fUsePHOSTender = tender;}
     void SetMCFlag(Bool_t mc) {fIsMC = mc;}
-    void SetCoreEnergyFlag(Bool_t iscore) {fUseCoreEnergy = iscore;}
+//    void SetCoreEnergyFlag(Bool_t iscore) {fUseCoreEnergy = iscore;}
     void SetBunchSpace(Double_t bs) {fBunchSpace = bs;}
     void SetCollisionSystem(Int_t id) {fCollisionSystem = id;}
     void SetQnVectorTask(Bool_t flag) {fIsFlowTask = flag;}
@@ -95,9 +95,11 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
       fPHOSEventCuts->SetPileupFinder(pf);
     }
 
-    void SetClusterCuts(Bool_t useCoreDisp, Double_t NsigmaCPV, Double_t NsigmaDisp, Double_t distBC){
+    void SetClusterCuts(Bool_t useCoreDisp, Double_t NsigmaCPV, Double_t NsigmaDisp, Bool_t useCoreE, Double_t distBC){
+      fUseCoreEnergy = useCoreE;
       fPHOSClusterCuts = new AliPHOSClusterCuts("PHOSClusterCuts");
       fPHOSClusterCuts->SetUseCoreDispersion(useCoreDisp);
+      fPHOSClusterCuts->SetUseCoreEnergy(useCoreE);
       fPHOSClusterCuts->SetNsigmaCPV(NsigmaCPV);
       fPHOSClusterCuts->SetNsigmaDisp(NsigmaDisp);
       fPHOSClusterCuts->SetMinDistanceFromBC(distBC);
@@ -474,7 +476,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 63);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 64);
 };
 
 #endif

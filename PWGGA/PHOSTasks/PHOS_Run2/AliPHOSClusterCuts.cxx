@@ -15,6 +15,7 @@ AliPHOSClusterCuts::AliPHOSClusterCuts(const char *name):
   fNsigmaCPV(-1),
   fNsigmaDisp(-1),
   fIsCore(kFALSE),
+  fUseCoreEnergy(kFALSE),
   fMinDistBC(0.)
 {
   //Constructor
@@ -56,6 +57,8 @@ Bool_t AliPHOSClusterCuts::AcceptDisp(AliCaloPhoton *ph)
   //be careful! criteria of CPV and Disp is opposite sign of inequality.
   Double_t sigma = 999;
   Double_t e     = ph->Energy();
+  if(fUseCoreEnergy) e = (ph->GetMomV2())->Energy();
+
   Int_t Ncell    = ph->GetNCells();
   Double_t M02   = ph->GetLambda2();
 

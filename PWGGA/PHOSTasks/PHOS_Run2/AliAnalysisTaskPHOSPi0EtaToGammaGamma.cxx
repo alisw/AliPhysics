@@ -2555,7 +2555,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
     //if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
 
     //apply tight cut to photon1
-    if(ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
+    if(ph1->Energy() < 0.5 || ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
@@ -2595,7 +2595,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
       value[2] = ph2->GetNCells();
       value[3] = ph2->GetLambda1();
       value[4] = ph2->GetLambda2();
-      if(fPIDStudy && ph1->Energy() > 0.5 && m12 < 0.72) FillSparse(fOutputContainer,"hSparseMgg_PID",value,weight);
+      if(fPIDStudy) FillSparse(fOutputContainer,"hSparseMgg_PID",value,weight);
 
       FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,pT,weight);
 
@@ -2618,7 +2618,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
     //if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
 
     //apply tight cut to photon1
-    if(ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
+    if(ph1->Energy() < 0.5 || ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -2651,7 +2651,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
         value[2] = ph2->GetNCells();
         value[3] = ph2->GetLambda1();
         value[4] = ph2->GetLambda2();
-        if(fPIDStudy && ph1->Energy() > 0.5 && m12 < 0.72) FillSparse(fOutputContainer,"hSparseMixMgg_PID",value,weight);
+        if(fPIDStudy) FillSparse(fOutputContainer,"hSparseMixMgg_PID",value,weight);
 
         FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,pT,weight);
         if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_CPV" ,m12,pT,weight);

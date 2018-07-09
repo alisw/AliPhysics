@@ -141,10 +141,10 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
  
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
-  task->SetCoreEnergyFlag(useCoreE);
+//  task->SetCoreEnergyFlag(useCoreE);
 
   task->SetEventCuts(isMC,pf);
-  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,distBC);
+  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,useCoreE,distBC);
 
   task->SetCentralityMin(CenMin);
   task->SetCentralityMax(CenMax);
