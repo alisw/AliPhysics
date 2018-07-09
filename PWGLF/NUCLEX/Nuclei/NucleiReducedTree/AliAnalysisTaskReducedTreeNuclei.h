@@ -25,9 +25,12 @@ public:
    virtual void   UserCreateOutputObjects();
    virtual void   UserExec (Option_t *option);
    
+   void useTritonCandidates(Bool_t useTri){ fUseTri=useTri; }
+
    Bool_t   GetInputEvent ();
    Bool_t   PassedBasicTrackQualityCuts (AliAODTrack *track);
    Bool_t   IsHeliumCandidate           (AliAODTrack *track);
+   Bool_t   IsTritonCandidate           (AliAODTrack *track);
    Bool_t   IsHyperTritonCandidate      (AliAODTrack *track1,AliAODTrack *track2);
    Double_t    GetDCAxy                    (AliAODTrack *track);
    Double_t    GetDCAz                     (AliAODTrack *track);
@@ -40,16 +43,19 @@ private:
    AliEventCuts   fAODeventCuts;// Event cuts
    AliAnalysisUtils *fUtils;//!
    
-   TList          *fQAList;//!
+   // globle varibles
+   Bool_t fUseTri;
+   
+   TList *fQAList;//!
    // Event Selection Tree
    TTree *TreeEventSelection;//!
    //Reduced Trees
    TTree *reducedTree_Helium;//!
    TTree *reducedTree_HyperTriton;//!
    
-   //Variables (Helium)
+   // tree variables (Helium)
    Int_t magFieldSign;//
-
+   
    Int_t SelectionStep;
    //check for more estimators, e.g. SPD, TPC track multiplicity ...
    Double_t multPercentile_V0M;//
