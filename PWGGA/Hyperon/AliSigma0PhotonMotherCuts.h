@@ -49,10 +49,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
   void SetSigmaMass(float mass) { fMassSigma = mass; }
   void SetMixingDepth(short mixDepth) { fMixingDepth = mixDepth; }
   void SetSigmaMassCut(float cut) { fSigmaMassCut = cut; }
-  void SetSigmaSideband(float low, float up) {
-    fSigmaSidebandLow = low;
-    fSigmaSidebandUp = up;
-  }
+  void SetPhotonMinPt(float minpT) { fPhotonPtMin = minpT; }
+  void SetPhotonMaxPt(float maxpT) { fPhotonPtMax = maxpT; }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
                         float alphaUp) {
     fArmenterosCut = true;
@@ -94,8 +92,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
 
   float fMassSigma;         //
   float fSigmaMassCut;      //
-  float fSigmaSidebandLow;  //
-  float fSigmaSidebandUp;   //
+  float fPhotonPtMin;  //
+  float fPhotonPtMax;   //
 
   float fArmenterosCut;       //
   float fArmenterosQtLow;     //

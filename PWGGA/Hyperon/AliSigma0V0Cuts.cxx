@@ -379,11 +379,12 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
 AliSigma0V0Cuts *AliSigma0V0Cuts::PhotonCuts() {
   AliSigma0V0Cuts *v0Cuts = new AliSigma0V0Cuts();
   v0Cuts->SetV0OnFlyStatus(false);
-  v0Cuts->SetV0PtMin(0.1);
+  v0Cuts->SetV0PtMin(0.2);
+  v0Cuts->SetV0PtMax(2.f);
   v0Cuts->SetV0CosPAMin(0.99);
-  v0Cuts->SetV0RadiusMax(200.f);
-  v0Cuts->SetV0RadiusMin(5.f);
-  v0Cuts->SetPIDnSigma(5.f);
+  v0Cuts->SetV0DecayVertexMax(150.f);
+  v0Cuts->SetV0RadiusMax(100.f);
+  v0Cuts->SetV0RadiusMin(1.f);
   v0Cuts->SetTPCRatioFindable(0.6f);
   v0Cuts->SetEtaMax(0.8);
   v0Cuts->SetDaughterDCAMax(1.5);

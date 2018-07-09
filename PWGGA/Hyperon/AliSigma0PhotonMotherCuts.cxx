@@ -23,8 +23,8 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fPDGDaughter2(0),
       fMassSigma(0),
       fSigmaMassCut(0),
-      fSigmaSidebandLow(0),
-      fSigmaSidebandUp(0),
+      fPhotonPtMin(0),
+      fPhotonPtMax(1e30),
       fArmenterosCut(true),
       fArmenterosQtLow(0.f),
       fArmenterosQtUp(0.f),
@@ -79,8 +79,8 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fPDGDaughter2(0),
       fMassSigma(0),
       fSigmaMassCut(0),
-      fSigmaSidebandLow(0),
-      fSigmaSidebandUp(0),
+      fPhotonPtMin(0),
+      fPhotonPtMax(1e30),
       fArmenterosCut(true),
       fArmenterosQtLow(0.f),
       fArmenterosQtUp(0.f),
@@ -128,6 +128,7 @@ AliSigma0PhotonMotherCuts &AliSigma0PhotonMotherCuts::operator=(
 AliSigma0PhotonMotherCuts *AliSigma0PhotonMotherCuts::DefaultCuts() {
   AliSigma0PhotonMotherCuts *photonMotherCuts = new AliSigma0PhotonMotherCuts();
   photonMotherCuts->SetArmenterosCut(0., 0.12, -1., -0.6);
+  photonMotherCuts->SetPhotonMaxPt(2);
   return photonMotherCuts;
 }
 
@@ -166,6 +167,8 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
   // SAME EVENT
   for (const auto &photon : photonCandidates) {
     int nSigma = 0;
+    if (photon.GetPt() > fPhotonPtMax || photon.GetPt() < fPhotonPtMin)
+      continue;
     for (const auto &lambda : lambdaCandidates) {
       /// Candidates with lambdas with shared daughter tracks are not used
       if (!lambda.GetIsUse()) continue;
@@ -208,7 +211,7 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         fTreeVariables[1] = pT;
         fTreeVariables[2] = rap;
         fTreeVariables[3] = lPercentile;
-        if (fIsTreeOutput && invMass < 1.25) fOutputTree->Fill();
+        if (fIsTreeOutput) fOutputTree->Fill();
 
         if (fIsMC) {
           const int label =
@@ -233,6 +236,8 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
     for (const auto &Lambda : LambdaContainer) {
       if (!Lambda.GetIsUse()) continue;
       for (auto Photon : photonCandidates) {
+        if (Photon.GetPt() > fPhotonPtMax || Photon.GetPt() < fPhotonPtMin)
+          continue;
         const AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
         // Armenteros cut
         const float armAlpha = sigma.GetArmenterosAlpha();
@@ -260,6 +265,8 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
   // lambdas from this event with mixed photons
   for (const auto &PhotonContainer : fPhotonMixed) {
     for (const auto &Photon : PhotonContainer) {
+      if (Photon.GetPt() > fPhotonPtMax || Photon.GetPt() < fPhotonPtMin)
+        continue;
       for (const auto &Lambda : lambdaCandidates) {
         if (!Lambda.GetIsUse()) continue;
         const AliSigma0ParticlePhotonMother sigma(Lambda, Photon, fInputEvent);
@@ -432,9 +439,8 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
             << " PHOTON MOTHER CUT CONFIGURATION \n"
             << " Sigma0 mass     " << fMassSigma << "\n"
             << " Sigma0 select   " << fSigmaMassCut << "\n"
-            << " Sigma0 sideb    " << fSigmaSidebandLow << " "
-            << fSigmaSidebandUp << "\n"
-            << " Mixing depth    " << fMixingDepth << "\n"
+            << " Photon pT min   " << fPhotonPtMin << "\n"
+            << " Photon pT max   " << fPhotonPtMax << "\n"
             << "============================\n";
 
   std::vector<float> rapBins = {
@@ -456,8 +462,8 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
 
   fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 10, 0, 10);
   fHistCutBooking->GetXaxis()->SetBinLabel(1, "#Sigma^{0} selection");
-  fHistCutBooking->GetXaxis()->SetBinLabel(2, "#Sigma^{0} sideband low");
-  fHistCutBooking->GetXaxis()->SetBinLabel(3, "#Sigma^{0} sideband up");
+  fHistCutBooking->GetXaxis()->SetBinLabel(2, "#gamma #it{p}_{T} min");
+  fHistCutBooking->GetXaxis()->SetBinLabel(3, "#gamma #it{p}_{T} max");
   fHistCutBooking->GetXaxis()->SetBinLabel(4, "#Sigma^{0} mixing depth");
   fHistCutBooking->GetXaxis()->SetBinLabel(5, "Armenteros q_{T} low");
   fHistCutBooking->GetXaxis()->SetBinLabel(6, "Armenteros q_{T} up");
@@ -466,8 +472,8 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   fHistograms->Add(fHistCutBooking);
 
   fHistCutBooking->Fill(0.f, fSigmaMassCut);
-  fHistCutBooking->Fill(1.f, fSigmaSidebandLow);
-  fHistCutBooking->Fill(2.f, fSigmaSidebandUp);
+  fHistCutBooking->Fill(1.f, fPhotonPtMin);
+  fHistCutBooking->Fill(2.f, fPhotonPtMax);
   fHistCutBooking->Fill(3.f, fMixingDepth);
   fHistCutBooking->Fill(4.f, fArmenterosQtLow);
   fHistCutBooking->Fill(5.f, fArmenterosQtUp);

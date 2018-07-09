@@ -184,36 +184,44 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   sigmaCuts->SetIsMC(isMC);
   sigmaCuts->SetPDG(3212, 3122, 22);
   sigmaCuts->SetSigmaMass(1.192642);
-  sigmaCuts->SetSigmaMassCut(0.005);
-  sigmaCuts->SetSigmaSideband(0.015, 0.05);
-  if (suffix != "0") sigmaCuts->SetLightweight(true);
+  sigmaCuts->SetSigmaMassCut(0.2);
+  if (suffix != "0") {
+    sigmaCuts->SetLightweight(true);
+    sigmaCuts->SetTreeOutput(false);
+  }
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   antiSigmaCuts->SetIsMC(isMC);
   antiSigmaCuts->SetPDG(3212, 3122, 22);
   antiSigmaCuts->SetSigmaMass(1.192642);
-  antiSigmaCuts->SetSigmaMassCut(0.005);
-  antiSigmaCuts->SetSigmaSideband(0.015, 0.05);
-  if (suffix != "0") antiSigmaCuts->SetLightweight(true);
+  antiSigmaCuts->SetSigmaMassCut(0.2);
+  if (suffix != "0") {
+    antiSigmaCuts->SetLightweight(true);
+    antiSigmaCuts->SetTreeOutput(false);
+  }
 
   AliSigma0PhotonMotherCuts *sigmaPhotonCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   sigmaPhotonCuts->SetIsMC(isMC);
   sigmaPhotonCuts->SetPDG(3212, 3122, 22);
   sigmaPhotonCuts->SetSigmaMass(1.192642);
-  sigmaPhotonCuts->SetSigmaMassCut(0.005);
-  sigmaPhotonCuts->SetSigmaSideband(0.015, 0.05);
-  if (suffix != "0") sigmaPhotonCuts->SetLightweight(true);
+  sigmaPhotonCuts->SetSigmaMassCut(0.2);
+  if (suffix != "0") {
+    sigmaPhotonCuts->SetLightweight(true);
+    sigmaPhotonCuts->SetTreeOutput(false);
+  }
 
   AliSigma0PhotonMotherCuts *antiSigmaPhotonCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   antiSigmaPhotonCuts->SetIsMC(isMC);
   antiSigmaPhotonCuts->SetPDG(-3212, -3122, 22);
   antiSigmaPhotonCuts->SetSigmaMass(1.192642);
-  antiSigmaPhotonCuts->SetSigmaMassCut(0.005);
-  antiSigmaPhotonCuts->SetSigmaSideband(0.015, 0.05);
-  if (suffix != "0") antiSigmaPhotonCuts->SetLightweight(true);
+  antiSigmaPhotonCuts->SetSigmaMassCut(0.2);
+  if (suffix != "0") {
+    antiSigmaPhotonCuts->SetLightweight(true);
+    antiSigmaPhotonCuts->SetTreeOutput(false);
+  }
 
   AliAnalysisTaskSigma0Run2 *task =
       new AliAnalysisTaskSigma0Run2("AnalysisTaskSigma0");
