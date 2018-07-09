@@ -36,6 +36,8 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassBeforeArmenteros(nullptr),
+      fHistInvMassRecPhoton(nullptr),
+      fHistInvMassRecLambda(nullptr),
       fHistInvMassRec(nullptr),
       fHistInvMassPt(nullptr),
       fHistInvMassEta(nullptr),
@@ -92,6 +94,8 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassBeforeArmenteros(nullptr),
+      fHistInvMassRecPhoton(nullptr),
+      fHistInvMassRecLambda(nullptr),
       fHistInvMassRec(nullptr),
       fHistInvMassPt(nullptr),
       fHistInvMassEta(nullptr),
@@ -193,7 +197,9 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
         fHistArmenterosAfter->Fill(armAlpha, armQt);
         fHistPt->Fill(pT);
         fHistInvMass->Fill(invMass);
-        fHistInvMassRec->Fill(sigma.GetRecMass());
+        fHistInvMassRecPhoton->Fill(pT, sigma.GetRecMassPhoton());
+        fHistInvMassRecLambda->Fill(pT, sigma.GetRecMassLambda());
+        fHistInvMassRec->Fill(pT, sigma.GetRecMass());
         fHistRapidity->Fill(rap);
         if (rapBin > -1) fHistPtY[rapBin]->Fill(pT, invMass);
         fHistInvMassEta->Fill(sigma.GetEta(), invMass);
@@ -506,9 +512,18 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistInvMassBeforeArmenteros =
         new TH1F("fHistInvMassBeforeArmenteros",
                  "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 2000, 1., 2.);
-    fHistInvMassRec =
-        new TH1F("fHistInvMassRec",
-                 "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 2000, 1., 2.);
+    fHistInvMassRecPhoton = new TH2F("fHistInvMassRecPhoton",
+                                     "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
+                                     "M_{#Lambda#gamma_{rec}} (GeV/#it{c}^{2})",
+                                     1000, 0, 20, 2000, 1., 2.);
+    fHistInvMassRecLambda = new TH2F("fHistInvMassRecLambda",
+                                     "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
+                                     "M_{#Lambda_{rec}#gamma} (GeV/#it{c}^{2})",
+                                     1000, 0, 20, 2000, 1., 2.);
+    fHistInvMassRec = new TH2F("fHistInvMassRec",
+                               "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
+                               "M_{#Lambda_{rec}#gamma_{rec}} (GeV/#it{c}^{2})",
+                               1000, 0, 20, 2000, 1., 2.);
     fHistInvMassEta = new TH2F("fHistInvMassEta",
                                "; #eta; M_{#Lambda#gamma} (GeV/#it{c}^{2})",
                                1000, 0, 1, 2000, 1., 2.);
@@ -536,6 +551,8 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms->Add(fHistMassCutPt);
     fHistograms->Add(fHistInvMass);
     fHistograms->Add(fHistInvMassBeforeArmenteros);
+    fHistograms->Add(fHistInvMassRecPhoton);
+    fHistograms->Add(fHistInvMassRecLambda);
     fHistograms->Add(fHistInvMassRec);
     fHistograms->Add(fHistInvMassEta);
     fHistograms->Add(fHistEtaPhi);

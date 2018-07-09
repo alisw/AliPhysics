@@ -34,6 +34,8 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
   double GetEta() const { return AliSigma0ParticleBase::GetEta(); }
   bool GetIsUse() const { return AliSigma0ParticleBase::GetIsUse(); }
 
+  double GetRecMassPhoton() const { return fRecMassPhoton; }
+  double GetRecMassLambda() const { return fRecMassLambda; }
   double GetRecMass() const { return fRecMass; }
   double GetRapidity() const;
 
@@ -48,6 +50,8 @@ class AliSigma0ParticlePhotonMother : public AliSigma0ParticleBase {
 
  private:
   short fType;
+  double fRecMassPhoton;
+  double fRecMassLambda;
   double fRecMass;
   AliSigma0ParticleV0 fV0;
   AliSigma0ParticleV0 fPhoton;

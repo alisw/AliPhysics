@@ -110,7 +110,9 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH1F *fHistMassCutPt;                //!
   TH1F *fHistInvMass;                  //!
   TH1F *fHistInvMassBeforeArmenteros;  //!
-  TH1F *fHistInvMassRec;               //!
+  TH2F *fHistInvMassRecPhoton;         //!
+  TH2F *fHistInvMassRecLambda;         //!
+  TH2F *fHistInvMassRec;               //!
   TH2F *fHistInvMassPt;                //!
   TH2F *fHistInvMassEta;               //!
   TH2F *fHistEtaPhi;                   //!
