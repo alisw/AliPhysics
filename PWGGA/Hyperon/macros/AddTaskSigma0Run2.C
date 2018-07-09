@@ -188,6 +188,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     sigmaCuts->SetLightweight(true);
     sigmaCuts->SetTreeOutput(false);
   }
+  if (suffix == "19") sigmaCuts->SetPhotonMaxPt(1.5);
+  if (suffix == "20") sigmaCuts->SetPhotonMaxPt(1.);
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
@@ -198,6 +200,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     antiSigmaCuts->SetLightweight(true);
     antiSigmaCuts->SetTreeOutput(false);
   }
+  if (suffix == "19") antiSigmaCuts->SetPhotonMaxPt(1.5);
+  if (suffix == "20") antiSigmaCuts->SetPhotonMaxPt(1.);
 
   AliSigma0PhotonMotherCuts *sigmaPhotonCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
@@ -208,6 +212,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     sigmaPhotonCuts->SetLightweight(true);
     sigmaPhotonCuts->SetTreeOutput(false);
   }
+  if (suffix == "19") sigmaPhotonCuts->SetPhotonMaxPt(1.5);
+  if (suffix == "20") sigmaPhotonCuts->SetPhotonMaxPt(1.);
 
   AliSigma0PhotonMotherCuts *antiSigmaPhotonCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
@@ -218,6 +224,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
     antiSigmaPhotonCuts->SetLightweight(true);
     antiSigmaPhotonCuts->SetTreeOutput(false);
   }
+  if (suffix == "19") antiSigmaPhotonCuts->SetPhotonMaxPt(1.5);
+  if (suffix == "20") antiSigmaPhotonCuts->SetPhotonMaxPt(1.);
 
   AliAnalysisTaskSigma0Run2 *task =
       new AliAnalysisTaskSigma0Run2("AnalysisTaskSigma0");
