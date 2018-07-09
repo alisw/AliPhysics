@@ -26,7 +26,8 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 										 Double_t M20Min,
 										 Double_t M20Max,
 										 Double_t EopMin,
-										 Double_t EopMax)
+										 Double_t EopMax,
+										 Double_t coneR)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -58,6 +59,7 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 		task -> SetNsigma(NsigmaMin,NsigmaMax);
 		task -> SetM20(M20Min,M20Max);
 		task -> SetEop(EopMin,EopMax);
+		task -> SetConeR(coneR);
     if(!task) return 0x0;
 
     // add your task to the manager

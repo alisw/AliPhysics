@@ -58,6 +58,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetNsigma(Double_t min, Double_t max) {NsigmaMin = min, NsigmaMax = max;};
 		void                    SetM20(Double_t min, Double_t max) {M20Min = min, M20Max = max;};
 		void                    SetEop(Double_t min, Double_t max) {EopMin = min, EopMax = max;};
+		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
 
 	private:
 		AliAODEvent*            fAOD;           //! input event
@@ -78,6 +79,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t NsigmaMin, NsigmaMax;
 		Double_t M20Min, M20Max;
 		Double_t EopMin, EopMax;
+		Double_t MaxConeR;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
@@ -103,6 +105,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fM02_2;
 		TH2F*                   fM20_2;
 		TH1F*                   fEop_ele;
+		TH1F*                   fConeR;
 
 		//==== Real data output ====
 		TH1F*                   fHist_trackPt;        //! dummy histogram
