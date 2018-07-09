@@ -3982,7 +3982,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     Int_t firstindexA         = 0;
     Int_t lastindexA          = -1;
     if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
-    if(rejection == 2){ // TList of Headers Names
+    if(rejection == 2 || rejection == 4){ // TList of Headers Names
       for(Int_t i = 0; i<genHeaders->GetEntries();i++){
         gh                    = (AliGenEventHeader*)genHeaders->At(i);
         TString GeneratorName = gh->GetName();

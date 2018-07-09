@@ -951,16 +951,18 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 226){
     cuts.AddCut("80010113","1111151017032230000","01631031000000d0"); // 0-100
   // pPb 8 TeV EPOS+PythiaJets JJ simulation QA
-  } else if (trainConfig == 227){ // same as 201 but with all headers
-    cuts.AddCut("80010103","1111100017032230000","01631031000000d0"); // INT7
-  } else if (trainConfig == 228){ // same as 201 but with special header(s)
-    cuts.AddCut("80010103","1111100017032230000","01631031000000d0"); // INT7
-    cuts.AddCut("80010113","1111100017032230000","01631031000000d0"); // INT7
+  } else if (trainConfig == 227){ // variations when using special JJ case (Jets+MB)
+    cuts.AddCut("80010143","1111100017032230000","01631031000000d0"); // INT7
+    cuts.AddCut("80083143","1111100017032230000","01631031000000d0"); // EG1
+    cuts.AddCut("80085143","1111100017032230000","01631031000000d0"); // EG2
+  } else if (trainConfig == 228){ // variations for JJ MC (all, MB only and special headers)
+    cuts.AddCut("80010103","1111100017032230000","01631031000000d0"); // all headers
+    cuts.AddCut("80010113","1111100017032230000","01631031000000d0"); // MB only
+    cuts.AddCut("80010123","1111100017032230000","01631031000000d0"); // special header
+  } else if (trainConfig == 229){ // variations when using special JJ case (Jets only)
     cuts.AddCut("80010123","1111100017032230000","01631031000000d0"); // INT7
-  } else if (trainConfig == 229){ // same as 201 but with special header(s)
-    cuts.AddCut("80010103","1111100017032230000","01631031000000d0"); // INT7
-    cuts.AddCut("80010113","1111100017032230000","01631031000000d0"); // INT7
-    cuts.AddCut("80010123","1111100017032230000","01631031000000d0"); // INT7
+    cuts.AddCut("80083123","1111100017032230000","01631031000000d0"); // EG1
+    cuts.AddCut("80085123","1111100017032230000","01631031000000d0"); // EG2
   //-----------------------------------------------------------------------------------------------
   // Systematics variations MB run 2 EMC pPb std cut: cuts.AddCut("80010113","1111141057032230000","01631031000000d0"); // 0-100
   //-----------------------------------------------------------------------------------------------

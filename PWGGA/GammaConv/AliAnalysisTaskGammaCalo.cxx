@@ -2652,7 +2652,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     if(!clus) continue;
   
     // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
-    if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+    if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
       if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(clus->GetLabelAt(0), fMCEvent, fInputEvent) == 2)
         tempClusterWeight = 1;
     }
@@ -2709,7 +2709,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     // test whether largest contribution to cluster orginates in added signals
     if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
       // Set the jetjet weight to 1 in case the photon candidate orignated from the minimum bias header
-      if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempPhotonWeight = 1;
+      if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempPhotonWeight = 1;
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 0) fIsFromDesiredHeader = kFALSE;
       if (clus->GetNLabels()>1){
         Int_t* mclabelsCluster = clus->GetLabels();
@@ -2985,7 +2985,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
     return;
   }
   // Set the jetjet weight to 1 in case the photon orignated from the minimum bias header
-  if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+  if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
     if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempPhotonWeight = 1;
   }
 
@@ -3160,7 +3160,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
   TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fInputEvent, fEnableSortForClusMC);
 
   // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
-  if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+  if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
     if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempPhotonWeight = 1;
   }
 
@@ -3329,7 +3329,7 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
         isMCFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
         // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
-        if(isMCFromMBHeader == 2) tempParticleWeight = 1;
+        if(isMCFromMBHeader == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempParticleWeight = 1;
       }
 
       if(!fDoLightOutput){
@@ -3455,7 +3455,7 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles()
       if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
         isMCFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
-        if(isMCFromMBHeader == 2) tempParticleWeight = 1;
+        if(isMCFromMBHeader == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempParticleWeight = 1;
       }
 
       if(!fDoLightOutput) {
@@ -3535,7 +3535,7 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
         isMCFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
         // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
-        if(isMCFromMBHeader == 2) tempParticleWeight = 1;
+        if(isMCFromMBHeader == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempParticleWeight = 1;
       }
 
       if(!fDoLightOutput){
@@ -3669,7 +3669,7 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles()
         isMCFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
         // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
-        if(isMCFromMBHeader == 2) tempParticleWeight = 1;
+        if(isMCFromMBHeader == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempParticleWeight = 1;
       }
 
       if(!fDoLightOutput) {
@@ -3748,7 +3748,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         
         Double_t tempPi0CandWeight       = fWeightJetJetMC;
         // Set the pi0 candidate jetjet weight to 1 in case both photons orignated from the minimum bias header
-        if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+        if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
           if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma0->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 &&
               ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(gamma1->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2)
             tempPi0CandWeight = 1;
@@ -3911,7 +3911,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
   }
   
   // Set the pi0 candidate jetjet weight to 1 in case both photons orignated from the minimum bias header
-  if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+  if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
     if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TrueGammaCandidate0->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 &&
         ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TrueGammaCandidate1->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2)
       tempTruePi0CandWeight = 1;
@@ -4348,7 +4348,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
   }
   
   // Set the pi0 candidate jetjet weight to 1 in case both photons orignated from the minimum bias header
-  if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+  if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
     if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TrueGammaCandidate0->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 &&
         ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TrueGammaCandidate1->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2)
       tempTruePi0CandWeight = 1;
@@ -4618,7 +4618,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
           backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
           
           // Set the BG candidate jetjet weight to 1 in case both photons orignated from the minimum bias header
-          if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+          if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
             if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(previousGoodV0.GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 &&
                 ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(currentEventGoodV0.GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2)
               tempBGCandidateWeight = 1;
@@ -4697,7 +4697,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
               backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
               
               // Set the BG candidate jetjet weight to 1 in case both photons orignated from the minimum bias header
-              if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+              if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
                 if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(previousGoodV0.GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 &&
                     ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(currentEventGoodV0.GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2)
                   tempBGCandidateWeight = 1;
@@ -4728,7 +4728,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
 
             if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate,kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(),currentEventGoodV0.GetLeadingCellID(),previousGoodV0.GetLeadingCellID()))){
               // Set the BG candidate jetjet weight to 1 in case both photons orignated from the minimum bias header
-              if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+              if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
                 if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(previousGoodV0.GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 &&
                     ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(currentEventGoodV0.GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2)
                   tempBGCandidateWeight = 1;
@@ -4790,7 +4790,9 @@ void AliAnalysisTaskGammaCalo::FillPhotonBackgroundHist(AliAODConversionPhoton *
   if(!fDoLightOutput){
     if(fIsFromDesiredHeader){
       // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
-      if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempParticleWeight = 1;
+      if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
+        if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempParticleWeight = 1;
+      }
       if(TMath::Abs(pdgCode) == 11)        fHistoClusPhotonBGPt[fiCut]->Fill(TruePhotonCandidate->Pt(),0., tempParticleWeight);
       else if( TMath::Abs(pdgCode)==211)   fHistoClusPhotonBGPt[fiCut]->Fill(TruePhotonCandidate->Pt(),1., tempParticleWeight);
       else if( TMath::Abs(pdgCode)==2212)  fHistoClusPhotonBGPt[fiCut]->Fill(TruePhotonCandidate->Pt(),2., tempParticleWeight);
@@ -4813,7 +4815,9 @@ void AliAnalysisTaskGammaCalo::FillPhotonPlusConversionBackgroundHist(AliAODConv
   if(!fDoLightOutput && fHistoClusPhotonPlusConvBGPt[fiCut]){
     if(fIsFromDesiredHeader){
       // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
-      if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempParticleWeight = 1;
+      if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
+        if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempParticleWeight = 1;
+      }
       if(TMath::Abs(pdgCode) == 11)        fHistoClusPhotonPlusConvBGPt[fiCut]->Fill(TruePhotonCandidate->Pt(),0., tempParticleWeight);
       else if( TMath::Abs(pdgCode)==211)   fHistoClusPhotonPlusConvBGPt[fiCut]->Fill(TruePhotonCandidate->Pt(),1., tempParticleWeight);
       else if( TMath::Abs(pdgCode)==2212)  fHistoClusPhotonPlusConvBGPt[fiCut]->Fill(TruePhotonCandidate->Pt(),2., tempParticleWeight);
@@ -4836,7 +4840,9 @@ void AliAnalysisTaskGammaCalo::FillPhotonBackgroundM02Hist(AliAODConversionPhoto
   if(!fDoLightOutput && fDoClusterQA > 1){
     if(fIsFromDesiredHeader){
       // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
-      if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempParticleWeight = 1;
+      if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
+        if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempParticleWeight = 1;
+      }
       if(TMath::Abs(pdgCode) == 11 )          fHistoClustPhotonElectronBGPtM02[fiCut]->Fill(TruePhotonCandidate->Pt(),clus->GetM02(), tempParticleWeight);
       else if( TMath::Abs(pdgCode)==211 )     fHistoClustPhotonPionBGPtM02[fiCut]->Fill(    TruePhotonCandidate->Pt(),clus->GetM02(), tempParticleWeight);
       else if( TMath::Abs(pdgCode)==2212 )    fHistoClustPhotonNeutronBGPtM02[fiCut]->Fill( TruePhotonCandidate->Pt(),clus->GetM02(), tempParticleWeight);
@@ -4855,7 +4861,9 @@ void AliAnalysisTaskGammaCalo::FillPhotonPlusConversionBackgroundM02Hist(AliAODC
   if(!fDoLightOutput  && fDoClusterQA > 1){
     if(fIsFromDesiredHeader){
       // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
-      if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempParticleWeight = 1;
+      if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
+        if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempParticleWeight = 1;
+      }
       if(TMath::Abs(pdgCode) == 11 )          fHistoClustPhotonPlusConvElectronBGPtM02[fiCut]->Fill(TruePhotonCandidate->Pt(),clus->GetM02(), tempParticleWeight);
       else if( TMath::Abs(pdgCode)==211 )     fHistoClustPhotonPlusConvPionBGPtM02[fiCut]->Fill(    TruePhotonCandidate->Pt(),clus->GetM02(), tempParticleWeight);
       else if( TMath::Abs(pdgCode)==2212)     fHistoClustPhotonPlusConvNeutronBGPtM02[fiCut]->Fill( TruePhotonCandidate->Pt(),clus->GetM02(), tempParticleWeight);

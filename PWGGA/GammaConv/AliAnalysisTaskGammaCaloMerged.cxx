@@ -1516,7 +1516,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     }
     
     // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
-    if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+    if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
       if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(clus->GetLabelAt(0), fMCEvent, fInputEvent) == 2)
         tempClusterWeight = 1;
     }
@@ -1575,7 +1575,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessClusters(){
     // test whether largest contribution to cluster orginates in added signals
     if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
       // Set the jetjet weight to 1 in case the photon candidate orignated from the minimum bias header
-      if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempPhotonWeight = 1;
+      if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempPhotonWeight = 1;
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 0) fIsFromMBHeader = kFALSE;
       if (clus->GetNLabels()>1){
         Int_t* mclabelsCluster = clus->GetLabels();
@@ -1843,7 +1843,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidates(AliAODConversi
       if (fEnableDetailedPrintOut) cout << endl;
     }
     // Set the jetjet weight to 1 in case the photon orignated from the minimum bias header
-    if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+    if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(motherLab, fMCEvent, fInputEvent) == 2) tempClusterWeight = 1;
     }
 
@@ -2154,7 +2154,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessTrueClusterCandidatesAOD(AliAODConve
     }
     
     // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
-    if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
+    if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(motherLab, fMCEvent, fInputEvent) == 2) tempClusterWeight = 1;
     }
     
@@ -2380,7 +2380,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
         isMCFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
         // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
-        if(isMCFromMBHeader == 2) tempParticleWeight = 1;
+        if(isMCFromMBHeader == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempParticleWeight = 1;
       }
 
       Double_t mesonY = 1.e30;
@@ -2555,7 +2555,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessMCParticles()
         isMCFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
         // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
-        if(isMCFromMBHeader == 2) tempParticleWeight = 1;
+        if(isMCFromMBHeader == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempParticleWeight = 1;
       }
 
       // check if particle is pi0 from di-photon decay
@@ -2650,7 +2650,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
         isMCFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
         // Set the jetjet weight to 1 in case the particle orignated from the minimum bias header
-        if(isMCFromMBHeader == 2) tempParticleWeight = 1;
+        if(isMCFromMBHeader == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempParticleWeight = 1;
       }
 
       Double_t mesonY = 1.e30;
@@ -2824,7 +2824,7 @@ void AliAnalysisTaskGammaCaloMerged::ProcessAODMCParticles()
       if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
         isMCFromMBHeader = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(i, fMCEvent, fInputEvent);
         if(isMCFromMBHeader == 0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 3) continue;
-        if(isMCFromMBHeader == 2) tempParticleWeight = 1;
+        if(isMCFromMBHeader == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempParticleWeight = 1;
       }
 
       // check if particle is pi0 from di-photon decay
