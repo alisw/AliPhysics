@@ -12,6 +12,7 @@ class AliAODTrack;
 class AliAnalysisUtils;
 class TList;
 class TTree;
+class TH1F;
 
 #include "AliEventCuts.h"
 
@@ -41,8 +42,10 @@ private:
    AliAnalysisUtils *fUtils;//!
    
    TList          *fQAList;//!
-   // Event Selection Tree
-   TTree *TreeEventSelection;//!
+   TList          *fOutputList;//!
+   // Event histograms
+   TH1F *histoEventSelection; //!
+   TH1F *histoEventMultiplicity; //!
    //Reduced Trees
    TTree *reducedTree_Helium;//!
    TTree *reducedTree_HyperTriton;//!
@@ -50,7 +53,6 @@ private:
    //Variables (Helium)
    Int_t magFieldSign;//
 
-   Int_t SelectionStep;
    //check for more estimators, e.g. SPD, TPC track multiplicity ...
    Double_t multPercentile_V0M;//
    Double_t multPercentile_V0A;//
@@ -302,6 +304,6 @@ private:
    AliAnalysisTaskReducedTreeNuclei(const AliAnalysisTaskReducedTreeNuclei&);
    AliAnalysisTaskReducedTreeNuclei& operator=(const AliAnalysisTaskReducedTreeNuclei&);
    
-   ClassDef(AliAnalysisTaskReducedTreeNuclei, 2);
+   ClassDef(AliAnalysisTaskReducedTreeNuclei, 3);
 };
 #endif
