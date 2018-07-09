@@ -248,14 +248,19 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":AnalysisTaskSigma0_";
+  if (trigger == "kHighMultV0") containerName += "HighMultV0_";
   containerName += suffix;
 
-  TString name = "histo_" + suffix;
+  TString name = "histo_";
+  if (trigger == "kHighMultV0") name += "HighMultV0_";
+  name += suffix;
   AliAnalysisDataContainer *cOutputList = mgr->CreateContainer(
       name, TList::Class(), AliAnalysisManager::kOutputContainer,
       containerName.Data());
 
-  name = "tree_" + suffix;
+  name = "tree_";
+  if (trigger == "kHighMultV0") name += "HighMultV0_";
+  name += suffix;
   AliAnalysisDataContainer *cOutputTree = mgr->CreateContainer(
       name, TList::Class(), AliAnalysisManager::kOutputContainer,
       containerName.Data());
