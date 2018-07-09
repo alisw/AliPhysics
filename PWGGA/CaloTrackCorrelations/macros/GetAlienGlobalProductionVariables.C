@@ -143,7 +143,8 @@ void GetAlienGlobalProductionVariables(Bool_t & simulation,
       year   = 2013;
       period = "LHC13";
     }
-   else if ( prodTag.Contains("16k")    || prodTag.Contains("16h")    ||
+   else if ( prodTag.Contains("16k")    || prodTag.Contains("16h")    || // LHC15o,n
+             prodTag.Contains("16g")    || // LHC15o
              prodTag.Contains("17d5")   || prodTag.Contains("17d6")   || // general purpose and other 
              prodTag.Contains("17d7")   || prodTag.Contains("17d8")   || // general purpose and other
              prodTag.Contains("17e2")   || prodTag.Contains("17h5")   || // PbPb
