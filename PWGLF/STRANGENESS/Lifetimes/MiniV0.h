@@ -10,33 +10,34 @@ namespace Lifetimes {
 template <typename F, typename I>
 F getBinCenter(I bin, F binw, F min, F max, bool checkF = false,
                bool checkL = false) {
-  if (checkF && bin == std::numeric_limits<I>::min())
+  if (checkF && bin == 0)
     return -1.e32;
   else if (checkL && bin == std::numeric_limits<I>::max())
     return 1.e32;
-  else
-    return min + (bin + 0.5) * binw;
+  else {
+    return min + (bin - 0.5) * binw;
+  }
 }
 
 template <typename I, typename F>
 I getBinnedValue(F val, F binw) {
-  return I(std::round(val / binw));
+  return 1 + I(std::floor(val / binw));
 }
 
 template <typename I, typename F>
 I getBinnedValue(F val, F binw, F max) {
   return (val > max) ? std::numeric_limits<I>::max()
-                     : I(std::round(val / binw));
+                     : 1 + I(std::floor(val / binw));
 }
 
 template <typename I, typename F>
 I getBinnedValue(F val, F binw, F min, F max) {
   if (val < min)
-    return std::numeric_limits<I>::min();
+    return 0;
   else if (val > max)
     return std::numeric_limits<I>::max();
   else
-    return I(std::round(val / binw));
+    return 1 + I(std::floor((val - min) / binw));
 }
 
 class MiniV0 {
@@ -63,7 +64,7 @@ class MiniV0 {
   float GetPosProngTPCnsigmaProton() const;
   float GetNegProngEta() const;
   float GetPosProngEta() const;
-  bool IsCowboy() const { return fChi2V0 < 0; }
+  bool IsCowboy() const { return fChi2V0 & (1 << 7); }
 
   void SetV0radius(float r) { fV0radius = r; }
   void SetV0pt(float pt) { fV0pt = pt; }
@@ -135,34 +136,33 @@ class MiniV0 {
   static const float fgkEta_w;
 
  private:
-
-  float fV0radius;                      // 1
-  float fV0pt;                          // 1
-  float fV0eta;                         // 2 (remove different rapidities)
-  float fInvMassK0s;                    // 1
-  float fInvMassLambda;                 // 2 (remove antilambda)
-  float fDistOverTotMom;                // 1
-  unsigned short fV0CosPA;              // 2 (50k bins between 0.95 and 1)
-  char fChi2V0;                         // 2 (if negative it's cowboy)
-  unsigned char fDcaNeg2PrimaryVertex;  //(250,0,0.250)
-  unsigned char fDcaPos2PrimaryVertex;  //(250,0,0.250)
-  unsigned char fDcaV0daughters;        //(250,0,2.5)
-  char fV0armAlpha;                     // 4 (240,-60,60)
-  unsigned char fV0armPt;               // 4 (254,0,0.254)
-  unsigned char fLeastNxedRows;         // 4
-  unsigned char fLeastXedOverFindable;  // 4 (200,0,1)
-  unsigned char fMaxChi2PerCluster;     // 4
-  unsigned char fNsigmaPos;             // 8
-  unsigned char fNsigmaNeg;             // 8
-  char fEtaPos;                         // 4
-  char fEtaNeg;                         // 4
+  float fV0radius;                      // V0 decay vertex radius
+  float fV0pt;                          // V0 transverse momentum
+  float fV0eta;                         // V0 pseudorapidity
+  float fInvMassK0s;                    // Invariant mass for K0s
+  float fInvMassLambda;                 // Invariant mass for (anti-)Lambda
+  float fDistOverTotMom;                // L/p
+  unsigned short fV0CosPA;              // V0 cosine of pointing angle
+  unsigned char fChi2V0;                // V0 fit chi2
+  unsigned char fDcaNeg2PrimaryVertex;  // DCA of the negative prong to the PV
+  unsigned char fDcaPos2PrimaryVertex;  // DCA of the positive prong to the PV
+  unsigned char fDcaV0daughters;        // DCA between the two prongs
+  unsigned char fV0armAlpha;            // Armenteros alpha
+  unsigned char fV0armPt;               // Armenteros pt
+  unsigned char fLeastNxedRows;         // Min number of xed roads
+  unsigned char fLeastXedOverFindable;  // Min xed roads/findable clusters
+  unsigned char fMaxChi2PerCluster;     // Max chi2 per cluster in TPC
+  unsigned char fNsigmaPos;  // # sigma TPC pion/proton for the positive prong
+  unsigned char fNsigmaNeg;  // # sigma TPC pion/proton for the negative prong
+  unsigned char fEtaPos;     // Pseudorapidity of the positive prong
+  unsigned char fEtaNeg;     // Pseudorapidity of the negative prong
 };
 
 inline float MiniV0::GetV0CosPA() const {
   return getBinCenter(fV0CosPA, fgkV0cosPA_w, fgkV0cosPA_f, fgkV0cosPA_l);
 }
 inline float MiniV0::GetV0chi2() const {
-  return getBinCenter(std::abs(fChi2V0), fgkV0chi2_w, fgkV0chi2_f, fgkV0chi2_l);
+  return getBinCenter(fChi2V0 & 0x7F, fgkV0chi2_w, fgkV0chi2_f, fgkV0chi2_l);
 }
 inline float MiniV0::GetNegProngPvDCA() const {
   return getBinCenter(fDcaNeg2PrimaryVertex, fgkDCAProng2PV_w, fgkDCAProng2PV_f,
@@ -201,16 +201,20 @@ inline float MiniV0::GetPosProngEta() const {
 }
 
 inline float MiniV0::GetNegProngTPCnsigmaPion() const {
-  return getBinCenter((fNsigmaNeg & 0xF0) >> 4, fgkTPCsigma_w, fgkTPCsigma_f, fgkTPCsigma_l, false, true);
+  return getBinCenter((fNsigmaNeg & 0xF0) >> 4, fgkTPCsigma_w, fgkTPCsigma_f,
+                      fgkTPCsigma_l, false, true);
 }
 inline float MiniV0::GetNegProngTPCnsigmaProton() const {
-  return getBinCenter((fNsigmaNeg & 0x0F), fgkTPCsigma_w, fgkTPCsigma_f, fgkTPCsigma_l, false, true);
+  return getBinCenter((fNsigmaNeg & 0x0F), fgkTPCsigma_w, fgkTPCsigma_f,
+                      fgkTPCsigma_l, false, true);
 }
 inline float MiniV0::GetPosProngTPCnsigmaPion() const {
-  return getBinCenter((fNsigmaPos & 0xF0) >> 4, fgkTPCsigma_w, fgkTPCsigma_f, fgkTPCsigma_l, false, true);
+  return getBinCenter((fNsigmaPos & 0xF0) >> 4, fgkTPCsigma_w, fgkTPCsigma_f,
+                      fgkTPCsigma_l, false, true);
 }
 inline float MiniV0::GetPosProngTPCnsigmaProton() const {
-  return getBinCenter((fNsigmaPos & 0x0F), fgkTPCsigma_w, fgkTPCsigma_f, fgkTPCsigma_l, false, true);
+  return getBinCenter((fNsigmaPos & 0x0F), fgkTPCsigma_w, fgkTPCsigma_f,
+                      fgkTPCsigma_l, false, true);
 }
 
 inline void MiniV0::SetInvMasses(float k0s, float lam) {
@@ -219,12 +223,13 @@ inline void MiniV0::SetInvMasses(float k0s, float lam) {
 }
 
 inline void MiniV0::SetV0CosPA(float cospa) {
-  fV0CosPA = getBinnedValue<unsigned short>(cospa, fgkV0cosPA_w);
+  fV0CosPA = getBinnedValue<unsigned short>(cospa, fgkV0cosPA_w, fgkV0cosPA_f,
+                                            fgkV0cosPA_l);
 }
 
 inline void MiniV0::SetV0Chi2andCowBoy(float chi2, bool cow) {
-  fChi2V0 =
-      (cow ? -1 : 1) * getBinnedValue<char>(chi2, fgkV0chi2_w, fgkV0cosPA_l);
+  fChi2V0 = getBinnedValue<char>(chi2, fgkV0chi2_w, fgkV0chi2_l);
+  if (cow) fChi2V0 += 1 << 7;
 }
 
 inline void MiniV0::SetProngsPvDCA(float posD, float negD) {
@@ -240,8 +245,8 @@ inline void MiniV0::SetProngsDCA(float dca) {
 }
 
 inline void MiniV0::SetArmenterosVariables(float alpha, float pt) {
-  fV0armAlpha =
-      getBinnedValue<char>(alpha, fgkArmAlpha_w, fgkArmAlpha_f, fgkArmAlpha_l);
+  fV0armAlpha = getBinnedValue<unsigned char>(alpha, fgkArmAlpha_w,
+                                              fgkArmAlpha_f, fgkArmAlpha_l);
   fV0armPt = getBinnedValue<unsigned char>(pt, fgkArmPt_w, fgkArmPt_l);
 }
 
@@ -251,7 +256,7 @@ inline void MiniV0::SetLeastNumberOfXedRows(unsigned char xedrows) {
 
 inline void MiniV0::SetLeastXedRowsOverFindable(float ratio) {
   fLeastXedOverFindable =
-      getBinnedValue<unsigned char>(ratio, fgkXedOverFindable_w);
+      getBinnedValue<unsigned char>(ratio, fgkXedOverFindable_w, fgkXedOverFindable_l);
 }
 
 inline void MiniV0::SetMaxChi2perCluster(float chi2) {
@@ -279,8 +284,8 @@ inline void MiniV0::SetProngsTPCnsigmas(float pPi, float pP, float nPi,
 }
 
 inline void MiniV0::SetProngsEta(float posEta, float negEta) {
-  fEtaNeg = getBinnedValue<char>(negEta, fgkEta_w);
-  fEtaPos = getBinnedValue<char>(posEta, fgkEta_w);
+  fEtaNeg = getBinnedValue<unsigned char>(negEta, fgkEta_w, fgkEta_f, fgkEta_l);
+  fEtaPos = getBinnedValue<unsigned char>(posEta, fgkEta_w, fgkEta_f, fgkEta_l);
 }
 
 }  // namespace Lifetimes

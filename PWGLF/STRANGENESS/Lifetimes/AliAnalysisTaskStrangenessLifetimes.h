@@ -111,6 +111,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   TH1D* fHistNsigmaNegProton;       // # sigma TPC proton for the negative prong
   TH1D* fHistEtaPos;                // Pseudorapidity of the positive prong
   TH1D* fHistEtaNeg;                // Pseudorapidity of the negative prong
+  TH2D* fHistArmenteros;            // Pseudorapidity of the negative prong
 
   double fV0VertexerSels[7];  // Array to store the 7 values for the different
                               // selections V0 related
