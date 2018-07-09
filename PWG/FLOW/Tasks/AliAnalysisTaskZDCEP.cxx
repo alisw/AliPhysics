@@ -504,9 +504,18 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
 
   // get primary vertex position
   Double_t fVtxPos[3]={0.,0.,0.};
-  fVtxPos[0] = ((AliVVertex*)aod->GetPrimaryVertexSPD())->GetX();
-  fVtxPos[1] = ((AliVVertex*)aod->GetPrimaryVertexSPD())->GetY();
-  fVtxPos[2] = ((AliVVertex*)aod->GetPrimaryVertexSPD())->GetZ();
+  switch(fDataSet) {
+    case k2015o_pass1_pass1pidfix:
+    fVtxPos[0] = ((AliVVertex*)aod->GetPrimaryVertex())->GetX();
+    fVtxPos[1] = ((AliVVertex*)aod->GetPrimaryVertex())->GetY();
+    fVtxPos[2] = ((AliVVertex*)aod->GetPrimaryVertex())->GetZ();
+    break;
+    case k2015o_muon_calo_pass1:
+    fVtxPos[0] = ((AliVVertex*)aod->GetPrimaryVertexSPD())->GetX();
+    fVtxPos[1] = ((AliVVertex*)aod->GetPrimaryVertexSPD())->GetY();
+    fVtxPos[2] = ((AliVVertex*)aod->GetPrimaryVertexSPD())->GetZ();
+    break;
+  }
   Double_t fVtxPosCor[3] = {fVtxPos[0]-fAvVtxPosX[RunBin],fVtxPos[1]-fAvVtxPosY[RunBin],fVtxPos[2]-fAvVtxPosZ[RunBin]};
 
   // zdc selection
@@ -549,6 +558,7 @@ void AliAnalysisTaskZDCEP::UserExec(Option_t *)
       if(fZNATower[RunBin][i]) fZNATower[RunBin][i]->Fill(Centrality,towZNA[i]);
     }
   }
+
 
   for(Int_t i=0; i<5; i++) {
     fZNCTowerSpec[i]->Fill(Centrality,towZNC[i]);
