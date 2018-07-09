@@ -1,6 +1,6 @@
 /***************************************************************************
               Anders Knospe - last modified on 26 March 2016
-              Sushanta Tripathy - last modified on 14 April 2018
+              Sushanta Tripathy - last modified on 06 July 2018
 //Lauches phi analysis with rsn mini package
 //Allows basic configuration of pile-up check and event cuts
 ****************************************************************************/
@@ -33,6 +33,7 @@ enum eventMixConfig { kDisabled = -1,
 
 AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
 (
+ Bool_t      HIST = kTRUE,
  Bool_t      isMC=kFALSE,
  Bool_t      isPP=kTRUE,
  TString     outNameSuffix="tpc2stof3sveto",
@@ -207,8 +208,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP5TeV_PID.C");
-  if(!ConfigPhiPP5TeV_PID(task,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt)) return 0x0;
+  gROOT->LoadMacro("ConfigPhiPP5TeV_PID.C");
+  if(!ConfigPhiPP5TeV_PID(task,HIST,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------
 
