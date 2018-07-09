@@ -51,6 +51,7 @@ fV0ReaderName("V0ReaderV1"),   fReaderGammas(NULL),
 fHFJetUtils(0x0),
 fRespoPID(0x0),
 fPythiaEventWeight(1.0),
+fDoImprovedDCACut(kTRUE),
 fDoJetProbabilityAnalysis(kFALSE),
 fDoPtRelAnalysis(0),
 fDoSelectionPtRel(0),
@@ -396,6 +397,7 @@ AliAnalysisTaskBJetTC::AliAnalysisTaskBJetTC(const char *name): AliAnalysisTaskE
 		fHFJetUtils(0x0),
 		fRespoPID(0x0),
 		fPythiaEventWeight(1.0),
+		fDoImprovedDCACut(kTRUE),
 		//Bjet Cuts
 		fTCMinTrackPt(0.5),
 		fTCMinClusTPC(80),
@@ -3238,9 +3240,13 @@ Bool_t AliAnalysisTaskBJetTC::CalculateJetSignedTrackImpactParameter(AliAODTrack
 		Double_t bcv[21] = { 0 };
 		AliExternalTrackParam bjetparam(bpos, bpxpypz, bcv, (Short_t)0);
 		Double_t xa = 0., xb = 0.;
-		//bjetparam.GetDCA(&etp, fAODIn->GetMagneticField(), xa, xb);
-		AliAnalysisTaskWeakDecayVertexer* DecayVertex = new AliAnalysisTaskWeakDecayVertexer();
-		DecayVertex->GetDCAV0Dau(&bjetparam, &etp, xa, xb, fAODIn->GetMagneticField() );
+		if(!fDoImprovedDCACut){
+			bjetparam.GetDCA(&etp, fAODIn->GetMagneticField(), xa, xb);
+		}else{
+			AliAnalysisTaskWeakDecayVertexer* DecayVertex = new AliAnalysisTaskWeakDecayVertexer();
+			DecayVertex->SetDoImprovedDCAV0DauPropagation(kTRUE);
+			DecayVertex->GetDCAV0Dau(&bjetparam, &etp, xa, xb, fAODIn->GetMagneticField() );
+		}
 		Double_t xyz[3] = { 0., 0., 0. };
 		Double_t xyzb[3] = { 0., 0., 0. };
 		bjetparam.GetXYZAt(xa, fAODIn->GetMagneticField(), xyz);
