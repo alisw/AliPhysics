@@ -353,7 +353,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   for(Int_t i = 0; i<numberOfCuts; i++){
 
     analysisEventCuts[i] = new AliConvEventCuts();
-    if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 || trainConfig == 19 || trainConfig == 20 || trainConfig == 22 || ( trainconfig > 39 && trainconfig < 50 )){
+    if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 || trainConfig == 19 || trainConfig == 20 || trainConfig == 22 || ( trainConfig > 39 && trainConfig < 50 )) {
       if (doWeighting){
         if (generatorName.CompareTo("DPMJET")==0){
           analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -364,7 +364,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
         }
       }
     }
-    if ( trainConfig == 14 || trainConfig == 16 || trainConfig == 18 || trainConfig == 21 || trainConfig == 23 || ( trainconfig > 29 && trainconfig < 40 ) ){
+    if ( trainConfig == 14 || trainConfig == 16 || trainConfig == 18 || trainConfig == 21 || trainConfig == 23 || ( trainConfig > 29 && trainConfig < 40 ) ){
       if (doWeighting){
         analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
                                       "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
