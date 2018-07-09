@@ -881,7 +881,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   if(fReadMC && fUseNtrklWeight) {
     Int_t nTracklets = static_cast<Int_t>(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
     fWeight *= GetNtrklWeight(nTracklets);
-    printf("Using Ntrkl weights, tracklets=%d, Weight=%f\n",nTracklets,fWeight);
+    if(fDebug > 1) printf("Using Ntrkl weights, tracklets=%d, Weight=%f\n",nTracklets,fWeight);
   }
 
   //***** Loop over D0 candidates *****
@@ -1335,7 +1335,7 @@ Int_t AliAnalysisTaskSED0Correlations::CheckD0Origin(TClonesArray* arrayMC, AliA
   //
   // checking whether the mother of the particles come from a charm or a bottom quark
   //
-  printf("AliAnalysisTaskSED0Correlations::CheckD0Origin() \n");
+  if(fDebug > 2) printf("AliAnalysisTaskSED0Correlations::CheckD0Origin() \n");
 	
   Int_t pdgGranma = 0;
   Int_t mother = 0;
@@ -2046,11 +2046,11 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
 
   if(fPurityStudies) {
     
-    TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
-    TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+    TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+    TString namebinAss[5] = {"03to99","03to1","1to99","1to3","3to99"};
 
-    for(int i=0; i<4; i++) { //pTD
-      for(int j=0; j<6; j++) { //pTass
+    for(int i=0; i<5; i++) { //pTD
+      for(int j=0; j<5; j++) { //pTass
 	namePlot=Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
         TH1F *hpurity_prim = new TH1F(namePlot.Data(), "Prim accepted",1,-0.5,0.5);
         hpurity_prim->SetMinimum(0);
@@ -2187,10 +2187,18 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
       if(fReadMC) {
         AliAODMCParticle* trkKine = (AliAODMCParticle*)mcArray->At(track->GetLabel());
         if (!trkKine) continue;
+        //remove secondary tracks (for MC closure test, but obviously not for purity studies)
         if (!trkKine->IsPhysicalPrimary()) {
  	  ((TH1F*)fOutputStudy->FindObject(Form("hPhysPrim_Bin%d",ptbin)))->Fill(1.);  
   	  if(!fPurityStudies) continue; //reject the Reco track if correspondent Kine track is not primary
         } else ((TH1F*)fOutputStudy->FindObject(Form("hPhysPrim_Bin%d",ptbin)))->Fill(0.);
+        //remove tracks not being pi/K/p/e/mu (for MC closure studies, but not for purity studies
+        // --> the sense is that in the purity correction we also remove primary reco particles not being pi/K/p/e/mu
+        // --> (we don't want them in the MC closure instead, since there we don't apply purity)
+        if(!fPurityStudies) {
+          Int_t pdg = TMath::Abs(trkKine->GetPdgCode());
+          if(!((pdg==321)||(pdg==211)||(pdg==2212)||(pdg==13)||(pdg==11))) continue;
+        }
       }
 
       Double_t effTr = track->GetWeight(); //extract track efficiency
@@ -3186,7 +3194,7 @@ void AliAnalysisTaskSED0Correlations::FillTreeD0ForCutOptim(AliAODRecoDecayHF2Pr
     else if(TMath::Abs(normdd0)>TMath::Abs(dd0max)) dd0max=normdd0;
   }
 
-// printf("Centralità = %f, %f (ZNA), %f (V0M)\n",fCutsD0->GetCentrality(aod),fCutsD0->GetCentrality(aod,AliRDHFCuts::kCentZNA),fCutsD0->GetCentrality(aod,AliRDHFCuts::kCentV0M)); getchar();
+// if(fDebug > 2) printf("Centralità = %f, %f (ZNA), %f (V0M)\n",fCutsD0->GetCentrality(aod),fCutsD0->GetCentrality(aod,AliRDHFCuts::kCentZNA),fCutsD0->GetCentrality(aod,AliRDHFCuts::kCentV0M)); getchar();
 
   //Fill TTree for accepted candidates
   //if both hypotheses are ok, the TTree is filled 2 times, with the different cut values
@@ -3317,8 +3325,8 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
 
   if(!fReadMC || !fRecoD0 || !fRecoTr) return;
 
-  TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
-  TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+  TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+  TString namebinAss[5] = {"03to99","03to1","1to99","1to3","3to99"};
 
   AliAODMCParticle* trkKine = (AliAODMCParticle*)mcArray->At(track->GetLabel());
   if (!trkKine) return;
@@ -3326,23 +3334,23 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
   Bool_t primTrack = trkKine->IsPhysicalPrimary();
   Double_t pTtr = track->Pt();
 
-  Bool_t fillAssocRange[6] = {kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+  Bool_t fillAssocRange[5] = {kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
   TString stringpTD = "";
   Bool_t okpTD = kFALSE;
-  if(fBinLimsCorr.at(ptbin) >= 3 && fBinLimsCorr.at(ptbin) < 5)   {stringpTD = namebinD[0]; okpTD = kTRUE;}
-  if(fBinLimsCorr.at(ptbin) >= 5 && fBinLimsCorr.at(ptbin) < 8)   {stringpTD = namebinD[1]; okpTD = kTRUE;}
-  if(fBinLimsCorr.at(ptbin) >= 8 && fBinLimsCorr.at(ptbin) < 16)  {stringpTD = namebinD[2]; okpTD = kTRUE;}
-  if(fBinLimsCorr.at(ptbin) >= 16 && fBinLimsCorr.at(ptbin) < 24) {stringpTD = namebinD[3]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 2 && fBinLimsCorr.at(ptbin) < 3)   {stringpTD = namebinD[0]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 3 && fBinLimsCorr.at(ptbin) < 5)   {stringpTD = namebinD[1]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 5 && fBinLimsCorr.at(ptbin) < 8)   {stringpTD = namebinD[2]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 8 && fBinLimsCorr.at(ptbin) < 16)  {stringpTD = namebinD[3]; okpTD = kTRUE;}
+  if(fBinLimsCorr.at(ptbin) >= 16 && fBinLimsCorr.at(ptbin) < 24) {stringpTD = namebinD[4]; okpTD = kTRUE;}
 
   if(pTtr >= 0.3) fillAssocRange[0] = kTRUE;
   if(pTtr >= 0.3 && pTtr < 1) fillAssocRange[1] = kTRUE;
   if(pTtr >= 1) fillAssocRange[2] = kTRUE;
-  if(pTtr >= 1 && pTtr < 2) fillAssocRange[3] = kTRUE;
-  if(pTtr >= 2 && pTtr < 3) fillAssocRange[4] = kTRUE;
-  if(pTtr >= 3) fillAssocRange[5] = kTRUE;
+  if(pTtr >= 1 && pTtr < 3) fillAssocRange[3] = kTRUE;
+  if(pTtr >= 3) fillAssocRange[4] = kTRUE;
 
   if(!okpTD) return;
-  for(int j=0; j<6; j++) {
+  for(int j=0; j<5; j++) {
     if(fillAssocRange[j]==kTRUE) {
       if(primTrack) {
         ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
