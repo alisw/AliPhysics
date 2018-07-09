@@ -67,7 +67,7 @@ Bool_t ConfigPhiPP5TeV_PID
   /* IM difference    */ Int_t diffID = task->CreateValue(AliRsnMiniValue::kInvMassDiff,kTRUE);
   /* transv. momentum */ Int_t ptID   = task->CreateValue(AliRsnMiniValue::kPt,kFALSE);
   /* centrality       */ Int_t centID = task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
-  /* centrality       */ Int_t SpherocityID = task->CreateValue(AliRsnMiniValue::kSpherocity,kFALSE);
+  ///* centrality       */ Int_t SpherocityID = task->CreateValue(AliRsnMiniValue::kSpherocity,kFALSE);
   /* pseudorapidity   */ Int_t etaID  = task->CreateValue(AliRsnMiniValue::kEta,kFALSE);
   /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY,kFALSE);
   /* 1st daughter pt  */ Int_t fdpt   = task->CreateValue(AliRsnMiniValue::kFirstDaughterPt,kFALSE);
