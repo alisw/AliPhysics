@@ -14,6 +14,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fIsTreeOutput(true),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
+      fDataBasePDG(),
       fLambdaMixed(),
       fPhotonMixed(),
       fTreeVariables(),
@@ -72,6 +73,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fIsTreeOutput(true),
       fInputEvent(nullptr),
       fMCEvent(nullptr),
+      fDataBasePDG(),
       fLambdaMixed(),
       fPhotonMixed(),
       fTreeVariables(),
@@ -441,6 +443,8 @@ int AliSigma0PhotonMotherCuts::GetRapidityBin(float rapidity) const {
 
 //____________________________________________________________________________________________________
 void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
+  fMassSigma = fDataBasePDG.GetParticle(fPDG)->Mass();
+
   std::cout << "============================\n"
             << " PHOTON MOTHER CUT CONFIGURATION \n"
             << " Sigma0 mass     " << fMassSigma << "\n"

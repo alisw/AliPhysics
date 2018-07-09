@@ -2,7 +2,6 @@
 #define AliSigma0PhotonMotherCuts_H
 
 #include <deque>
-#include "AliAODConversionPhoton.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliSigma0ParticleBase.h"
@@ -11,6 +10,7 @@
 #include "AliVEvent.h"
 #include "Riostream.h"
 #include "TObject.h"
+#include "TDatabasePDG.h"
 #include "TProfile.h"
 
 class AliPIDResponse;
@@ -78,8 +78,9 @@ class AliSigma0PhotonMotherCuts : public TObject {
   bool fIsLightweight;
   bool fIsTreeOutput;
 
-  AliVEvent *fInputEvent;  //!
-  AliMCEvent *fMCEvent;    //!
+  AliVEvent *fInputEvent;     //!
+  AliMCEvent *fMCEvent;       //!
+  TDatabasePDG fDataBasePDG;  //!
 
   deque<vector<AliSigma0ParticleV0> > fLambdaMixed;  //!
   deque<vector<AliSigma0ParticleV0> > fPhotonMixed;  //!
@@ -90,9 +91,9 @@ class AliSigma0PhotonMotherCuts : public TObject {
   int fPDGDaughter1;   //
   int fPDGDaughter2;   //
 
-  float fMassSigma;         //
-  float fSigmaMassCut;      //
-  float fPhotonPtMin;  //
+  float fMassSigma;     //
+  float fSigmaMassCut;  //
+  float fPhotonPtMin;   //
   float fPhotonPtMax;   //
 
   float fArmenterosCut;       //
