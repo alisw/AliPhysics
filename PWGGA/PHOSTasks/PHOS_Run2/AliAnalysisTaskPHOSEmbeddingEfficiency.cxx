@@ -822,15 +822,18 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
 
   TLorentzVector p12, p12core;
   Double_t m12=0;
-  Double_t energy=0;
+  Double_t pT=0;
   Double_t weight = 1., w1 = 1., w2 = 1.;
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!fIsMC && fIsPHOSTriggerAnalysis && !ph1->IsTrig()) continue;//take trigger bias into account.
 
-    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+    //if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
+
+    //apply tight cut to photon1
+    if(ph1->Energy() < 0.5 || ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
@@ -840,14 +843,13 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
 
       p12 = *ph1 + *ph2;
       m12 = p12.M();
-      energy = ph2->Energy();
+      pT = ph2->Pt();
 
       if(fUseCoreEnergy){
         p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
         m12 = p12core.M();
-        energy = (ph2->GetMomV2())->Energy();
+        pT = (ph2->GetMomV2())->Pt();
       }
-
 
       weight = 1.;
       if(fIsMC){
@@ -856,9 +858,10 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
         weight = w1;//common weighting to all generated particles in embedding.
       }//end of if fIsMC
 
-      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,energy,weight);
-      if(fPHOSClusterCuts->AcceptPhoton(ph2))
-        FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID",m12,energy,weight);
+      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,pT,weight);
+      if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_CPV" ,m12,pT,weight);
+      if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_Disp",m12,pT,weight);
+      if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID" ,m12,pT,weight);
 
     }//end of ph2
 
@@ -869,8 +872,10 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
-    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
+
     if(!CheckMinimumEnergy(ph1)) continue;
+    //apply tight cut to photon1
+    if(ph1->Energy() < 0.5 || ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
       TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
@@ -881,12 +886,12 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
-        energy = ph2->Energy();
+        pT = ph2->Pt();
 
         if(fUseCoreEnergy){
           p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
           m12 = p12core.M();
-          energy = (ph2->GetMomV2())->Energy();
+          pT = (ph2->GetMomV2())->Pt();
         }
 
         weight = 1.;
@@ -896,9 +901,11 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
           weight = w1*w2;
         }//end of if fIsMC
 
-        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,energy,weight);
-        if(fPHOSClusterCuts->AcceptPhoton(ph2))
-          FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID",m12,energy,weight);
+        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,pT,weight);
+        if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_CPV" ,m12,pT,weight);
+        if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_Disp",m12,pT,weight);
+        if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID" ,m12,pT,weight);
+
 
       }//end of mix
 
