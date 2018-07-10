@@ -1073,6 +1073,15 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
   for (int iV0 = 0; iV0 < fInputEvent->GetNumberOfV0s(); ++iV0) {
     AliESDv0 *v0 = fInputEvent->GetV0(iV0);
 
+    // On-fly status
+    if (fV0OnFly) {
+      // online v0
+      if (!(v0->GetOnFlyStatus())) continue;
+    } else {
+      // offline v0
+      if (v0->GetOnFlyStatus()) continue;
+    }
+
     // Daughter tracks
     AliESDtrack *pos = fInputEvent->GetTrack(v0->GetPindex());
     AliESDtrack *neg = fInputEvent->GetTrack(v0->GetNindex());
