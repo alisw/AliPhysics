@@ -224,12 +224,10 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
   fQA->SetName("EventCuts");
   fQA->SetOwner(true);
 
-  if (fTrigger != AliVEvent::kINT7) {
-    fAliEventCuts.SetManualMode();
-    if (!fIsHeavyIon) fAliEventCuts.SetupRun2pp();
-    fAliEventCuts.fTriggerMask = fTrigger;
-    fAliEventCuts.fRequireExactTriggerMask = true;
-  }
+  fAliEventCuts.SetManualMode();
+  if (!fIsHeavyIon) fAliEventCuts.SetupRun2pp();
+  fAliEventCuts.fTriggerMask = fTrigger;
+  fAliEventCuts.fRequireExactTriggerMask = true;
 
   fHistRunNumber = new TProfile("fHistRunNumber", ";;Run Number", 1, 0, 1);
   fQA->Add(fHistRunNumber);

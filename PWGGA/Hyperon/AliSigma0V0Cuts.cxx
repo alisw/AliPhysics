@@ -114,6 +114,7 @@ ClassImp(AliSigma0V0Cuts)
       fHistSingleParticleNclsTPCSharedTrue(),
       fHistSingleParticleNclsITSSharedTrue(),
       fHistSingleParticleChi2True(),
+      fHistSingleParticlePIDTrue(),
       fHistV0MassPtTrueSigma(nullptr),
       fHistDecayVertexXTrueSigma(nullptr),
       fHistDecayVertexYTrueSigma(nullptr),
@@ -132,6 +133,7 @@ ClassImp(AliSigma0V0Cuts)
       fHistSingleParticleNclsTPCSharedTrueSigma(),
       fHistSingleParticleNclsITSSharedTrueSigma(),
       fHistSingleParticleChi2TrueSigma(),
+      fHistSingleParticlePIDTrueSigma(),
       fHistV0MassPtBkg(nullptr),
       fHistDecayVertexXBkg(nullptr),
       fHistDecayVertexYBkg(nullptr),
@@ -150,6 +152,7 @@ ClassImp(AliSigma0V0Cuts)
       fHistSingleParticleNclsTPCSharedBkg(),
       fHistSingleParticleNclsITSSharedBkg(),
       fHistSingleParticleChi2Bkg(),
+      fHistSingleParticlePIDBkg(),
       fHistSingleParticleCuts(),
       fHistSingleParticlePt(),
       fHistSingleParticleEtaBefore(),
@@ -282,6 +285,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistSingleParticleNclsTPCSharedTrue(),
       fHistSingleParticleNclsITSSharedTrue(),
       fHistSingleParticleChi2True(),
+      fHistSingleParticlePIDTrue(),
       fHistV0MassPtTrueSigma(nullptr),
       fHistDecayVertexXTrueSigma(nullptr),
       fHistDecayVertexYTrueSigma(nullptr),
@@ -300,6 +304,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistSingleParticleNclsTPCSharedTrueSigma(),
       fHistSingleParticleNclsITSSharedTrueSigma(),
       fHistSingleParticleChi2TrueSigma(),
+      fHistSingleParticlePIDTrueSigma(),
       fHistV0MassPtBkg(nullptr),
       fHistDecayVertexXBkg(nullptr),
       fHistDecayVertexYBkg(nullptr),
@@ -318,6 +323,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistSingleParticleNclsTPCSharedBkg(),
       fHistSingleParticleNclsITSSharedBkg(),
       fHistSingleParticleChi2Bkg(),
+      fHistSingleParticlePIDBkg(),
       fHistSingleParticleCuts(),
       fHistSingleParticlePt(),
       fHistSingleParticleEtaBefore(),
@@ -379,11 +385,12 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
 AliSigma0V0Cuts *AliSigma0V0Cuts::PhotonCuts() {
   AliSigma0V0Cuts *v0Cuts = new AliSigma0V0Cuts();
   v0Cuts->SetV0OnFlyStatus(false);
-  v0Cuts->SetV0PtMin(0.1);
+  v0Cuts->SetV0PtMin(0.2);
+  v0Cuts->SetV0PtMax(2.f);
   v0Cuts->SetV0CosPAMin(0.99);
-  v0Cuts->SetV0RadiusMax(200.f);
-  v0Cuts->SetV0RadiusMin(5.f);
-  v0Cuts->SetPIDnSigma(5.f);
+  v0Cuts->SetV0DecayVertexMax(150.f);
+  v0Cuts->SetV0RadiusMax(100.f);
+  v0Cuts->SetV0RadiusMin(1.f);
   v0Cuts->SetTPCRatioFindable(0.6f);
   v0Cuts->SetEtaMax(0.8);
   v0Cuts->SetDaughterDCAMax(1.5);
@@ -1066,6 +1073,15 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
   for (int iV0 = 0; iV0 < fInputEvent->GetNumberOfV0s(); ++iV0) {
     AliESDv0 *v0 = fInputEvent->GetV0(iV0);
 
+    // On-fly status
+    if (fV0OnFly) {
+      // online v0
+      if (!(v0->GetOnFlyStatus())) continue;
+    } else {
+      // offline v0
+      if (v0->GetOnFlyStatus()) continue;
+    }
+
     // Daughter tracks
     AliESDtrack *pos = fInputEvent->GetTrack(v0->GetPindex());
     AliESDtrack *neg = fInputEvent->GetTrack(v0->GetNindex());
@@ -1114,6 +1130,9 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
       if (pos->HasSharedPointOnITSLayer(i)) ++nClsSharedITSPos;
       if (neg->HasSharedPointOnITSLayer(i)) ++nClsSharedITSNeg;
     }
+
+    const float pidPos = fPIDResponse->NumberOfSigmasTPC(pos, fPosPID);
+    const float pidNeg = fPIDResponse->NumberOfSigmasTPC(neg, fNegPID);
 
     Double_t xPV = vertex->GetX();
     Double_t yPV = vertex->GetY();
@@ -1177,6 +1196,8 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
       fHistSingleParticleNclsITSSharedTrue[1]->Fill(negPt, nClsSharedITSNeg);
       fHistSingleParticleChi2True[0]->Fill(posPt, chi2Pos);
       fHistSingleParticleChi2True[1]->Fill(negPt, chi2Neg);
+      fHistSingleParticlePIDTrue[0]->Fill(pos->P(), pidPos);
+      fHistSingleParticlePIDTrue[1]->Fill(neg->P(), pidNeg);
 
       AliMCParticle *mcParticle =
           static_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
@@ -1223,6 +1244,8 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
                                                            nClsSharedITSNeg);
         fHistSingleParticleChi2TrueSigma[0]->Fill(posPt, chi2Pos);
         fHistSingleParticleChi2TrueSigma[1]->Fill(negPt, chi2Neg);
+        fHistSingleParticlePIDTrueSigma[0]->Fill(pos->P(), pidPos);
+        fHistSingleParticlePIDTrueSigma[1]->Fill(neg->P(), pidNeg);
       }
     } else {
       fHistV0MassPtBkg->Fill(pt, invMass);
@@ -1255,6 +1278,8 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
       fHistSingleParticleNclsITSSharedBkg[1]->Fill(negPt, nClsSharedITSNeg);
       fHistSingleParticleChi2Bkg[0]->Fill(posPt, chi2Pos);
       fHistSingleParticleChi2Bkg[1]->Fill(negPt, chi2Neg);
+      fHistSingleParticlePIDBkg[0]->Fill(pos->P(), pidPos);
+      fHistSingleParticlePIDBkg[1]->Fill(neg->P(), pidNeg);
     }
   }
 }
@@ -1575,9 +1600,9 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
       fHistV0PtY[i] =
           new TH2F(Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
                    Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
-                        "mass p#pi hypothesis (GeV/#it{c}^{2})",
+                        "mass (GeV/#it{c}^{2})",
                         rapBins[i], rapBins[i + 1]),
-                   500, 0, 10, 400, 1., 1.2);
+                   500, 0, 10, 2400, 0., 1.2);
       fHistograms->Add(fHistV0PtY[i]);
     }
   }
@@ -2104,6 +2129,15 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
       fHistogramsMC->Add(fHistSingleParticleChi2True[0]);
       fHistogramsMC->Add(fHistSingleParticleChi2True[1]);
 
+      fHistSingleParticlePIDTrue[0] = new TH2F(
+          "fHistSingleParticlePIDTrue_pos",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistSingleParticlePIDTrue[1] = new TH2F(
+          "fHistSingleParticlePIDTrue_neg",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistogramsMC->Add(fHistSingleParticlePIDTrue[0]);
+      fHistogramsMC->Add(fHistSingleParticlePIDTrue[1]);
+
       // TRUE SIGMA DAUGHTER
       fHistV0MassPtTrueSigma =
           new TH2F("fHistV0MassPtTrueSigma",
@@ -2253,6 +2287,15 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
       fHistogramsMC->Add(fHistSingleParticleChi2TrueSigma[0]);
       fHistogramsMC->Add(fHistSingleParticleChi2TrueSigma[1]);
 
+      fHistSingleParticlePIDTrueSigma[0] = new TH2F(
+          "fHistSingleParticlePIDTrueSigma_pos",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistSingleParticlePIDTrueSigma[1] = new TH2F(
+          "fHistSingleParticlePIDTrueSigma_neg",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistogramsMC->Add(fHistSingleParticlePIDTrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticlePIDTrueSigma[1]);
+
       // BACKGROUND
       fHistV0MassPtBkg =
           new TH2F("fHistV0MassPtBkg",
@@ -2397,6 +2440,15 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
           "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
       fHistogramsMC->Add(fHistSingleParticleChi2Bkg[0]);
       fHistogramsMC->Add(fHistSingleParticleChi2Bkg[1]);
+
+      fHistSingleParticlePIDBkg[0] = new TH2F(
+          "fHistSingleParticlePIDBkg_pos",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistSingleParticlePIDBkg[1] = new TH2F(
+          "fHistSingleParticlePIDBkg_neg",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistogramsMC->Add(fHistSingleParticlePIDBkg[0]);
+      fHistogramsMC->Add(fHistSingleParticlePIDBkg[1]);
     }
 
     fHistograms->Add(fHistogramsMC);

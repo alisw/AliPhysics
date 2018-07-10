@@ -238,6 +238,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticleNclsTPCSharedTrue[2];              //!
   TH2F *fHistSingleParticleNclsITSSharedTrue[2];              //!
   TH2F *fHistSingleParticleChi2True[2];                       //!
+  TH2F *fHistSingleParticlePIDTrue[2];                        //!
   TH2F *fHistV0MassPtTrueSigma;                               //!
   TH2F *fHistDecayVertexXTrueSigma;                           //!
   TH2F *fHistDecayVertexYTrueSigma;                           //!
@@ -256,6 +257,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticleNclsTPCSharedTrueSigma[2];         //!
   TH2F *fHistSingleParticleNclsITSSharedTrueSigma[2];         //!
   TH2F *fHistSingleParticleChi2TrueSigma[2];                  //!
+  TH2F *fHistSingleParticlePIDTrueSigma[2];                   //!
   TH2F *fHistV0MassPtBkg;                                     //!
   TH2F *fHistDecayVertexXBkg;                                 //!
   TH2F *fHistDecayVertexYBkg;                                 //!
@@ -274,6 +276,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticleNclsTPCSharedBkg[2];               //!
   TH2F *fHistSingleParticleNclsITSSharedBkg[2];               //!
   TH2F *fHistSingleParticleChi2Bkg[2];                        //! .
+  TH2F *fHistSingleParticlePIDBkg[2];                         //!
 
   TH1F *fHistSingleParticleCuts[2];                        //!
   TH1F *fHistSingleParticlePt[2];                          //!

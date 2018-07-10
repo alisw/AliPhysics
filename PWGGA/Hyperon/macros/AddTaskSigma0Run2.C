@@ -183,37 +183,49 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
       AliSigma0PhotonMotherCuts::DefaultCuts();
   sigmaCuts->SetIsMC(isMC);
   sigmaCuts->SetPDG(3212, 3122, 22);
-  sigmaCuts->SetSigmaMass(1.192642);
-  sigmaCuts->SetSigmaMassCut(0.005);
-  sigmaCuts->SetSigmaSideband(0.015, 0.05);
-  if (suffix != "0") sigmaCuts->SetLightweight(true);
+  sigmaCuts->SetSigmaMassCut(0.2);
+  if (suffix != "0") {
+    sigmaCuts->SetLightweight(true);
+    sigmaCuts->SetTreeOutput(false);
+  }
+  if (suffix == "19") sigmaCuts->SetPhotonMaxPt(1.5);
+  if (suffix == "20") sigmaCuts->SetPhotonMaxPt(1.);
 
   AliSigma0PhotonMotherCuts *antiSigmaCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   antiSigmaCuts->SetIsMC(isMC);
   antiSigmaCuts->SetPDG(3212, 3122, 22);
-  antiSigmaCuts->SetSigmaMass(1.192642);
-  antiSigmaCuts->SetSigmaMassCut(0.005);
-  antiSigmaCuts->SetSigmaSideband(0.015, 0.05);
-  if (suffix != "0") antiSigmaCuts->SetLightweight(true);
+  antiSigmaCuts->SetSigmaMassCut(0.2);
+  if (suffix != "0") {
+    antiSigmaCuts->SetLightweight(true);
+    antiSigmaCuts->SetTreeOutput(false);
+  }
+  if (suffix == "19") antiSigmaCuts->SetPhotonMaxPt(1.5);
+  if (suffix == "20") antiSigmaCuts->SetPhotonMaxPt(1.);
 
   AliSigma0PhotonMotherCuts *sigmaPhotonCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   sigmaPhotonCuts->SetIsMC(isMC);
   sigmaPhotonCuts->SetPDG(3212, 3122, 22);
-  sigmaPhotonCuts->SetSigmaMass(1.192642);
-  sigmaPhotonCuts->SetSigmaMassCut(0.005);
-  sigmaPhotonCuts->SetSigmaSideband(0.015, 0.05);
-  if (suffix != "0") sigmaPhotonCuts->SetLightweight(true);
+  sigmaPhotonCuts->SetSigmaMassCut(0.2);
+  if (suffix != "0") {
+    sigmaPhotonCuts->SetLightweight(true);
+    sigmaPhotonCuts->SetTreeOutput(false);
+  }
+  if (suffix == "19") sigmaPhotonCuts->SetPhotonMaxPt(1.5);
+  if (suffix == "20") sigmaPhotonCuts->SetPhotonMaxPt(1.);
 
   AliSigma0PhotonMotherCuts *antiSigmaPhotonCuts =
       AliSigma0PhotonMotherCuts::DefaultCuts();
   antiSigmaPhotonCuts->SetIsMC(isMC);
   antiSigmaPhotonCuts->SetPDG(-3212, -3122, 22);
-  antiSigmaPhotonCuts->SetSigmaMass(1.192642);
-  antiSigmaPhotonCuts->SetSigmaMassCut(0.005);
-  antiSigmaPhotonCuts->SetSigmaSideband(0.015, 0.05);
-  if (suffix != "0") antiSigmaPhotonCuts->SetLightweight(true);
+  antiSigmaPhotonCuts->SetSigmaMassCut(0.2);
+  if (suffix != "0") {
+    antiSigmaPhotonCuts->SetLightweight(true);
+    antiSigmaPhotonCuts->SetTreeOutput(false);
+  }
+  if (suffix == "19") antiSigmaPhotonCuts->SetPhotonMaxPt(1.5);
+  if (suffix == "20") antiSigmaPhotonCuts->SetPhotonMaxPt(1.);
 
   AliAnalysisTaskSigma0Run2 *task =
       new AliAnalysisTaskSigma0Run2("AnalysisTaskSigma0");
@@ -240,14 +252,19 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
 
   TString containerName = mgr->GetCommonFileName();
   containerName += ":AnalysisTaskSigma0_";
+  if (trigger == "kHighMultV0") containerName += "HighMultV0_";
   containerName += suffix;
 
-  TString name = "histo_" + suffix;
+  TString name = "histo_";
+  if (trigger == "kHighMultV0") name += "HighMultV0_";
+  name += suffix;
   AliAnalysisDataContainer *cOutputList = mgr->CreateContainer(
       name, TList::Class(), AliAnalysisManager::kOutputContainer,
       containerName.Data());
 
-  name = "tree_" + suffix;
+  name = "tree_";
+  if (trigger == "kHighMultV0") name += "HighMultV0_";
+  name += suffix;
   AliAnalysisDataContainer *cOutputTree = mgr->CreateContainer(
       name, TList::Class(), AliAnalysisManager::kOutputContainer,
       containerName.Data());

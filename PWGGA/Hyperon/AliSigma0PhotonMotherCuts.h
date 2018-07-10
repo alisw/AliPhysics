@@ -2,7 +2,6 @@
 #define AliSigma0PhotonMotherCuts_H
 
 #include <deque>
-#include "AliAODConversionPhoton.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliSigma0ParticleBase.h"
@@ -11,6 +10,7 @@
 #include "AliVEvent.h"
 #include "Riostream.h"
 #include "TObject.h"
+#include "TDatabasePDG.h"
 #include "TProfile.h"
 
 class AliPIDResponse;
@@ -49,10 +49,8 @@ class AliSigma0PhotonMotherCuts : public TObject {
   void SetSigmaMass(float mass) { fMassSigma = mass; }
   void SetMixingDepth(short mixDepth) { fMixingDepth = mixDepth; }
   void SetSigmaMassCut(float cut) { fSigmaMassCut = cut; }
-  void SetSigmaSideband(float low, float up) {
-    fSigmaSidebandLow = low;
-    fSigmaSidebandUp = up;
-  }
+  void SetPhotonMinPt(float minpT) { fPhotonPtMin = minpT; }
+  void SetPhotonMaxPt(float maxpT) { fPhotonPtMax = maxpT; }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
                         float alphaUp) {
     fArmenterosCut = true;
@@ -80,8 +78,9 @@ class AliSigma0PhotonMotherCuts : public TObject {
   bool fIsLightweight;
   bool fIsTreeOutput;
 
-  AliVEvent *fInputEvent;  //!
-  AliMCEvent *fMCEvent;    //!
+  AliVEvent *fInputEvent;     //!
+  AliMCEvent *fMCEvent;       //!
+  TDatabasePDG fDataBasePDG;  //!
 
   deque<vector<AliSigma0ParticleV0> > fLambdaMixed;  //!
   deque<vector<AliSigma0ParticleV0> > fPhotonMixed;  //!
@@ -92,10 +91,10 @@ class AliSigma0PhotonMotherCuts : public TObject {
   int fPDGDaughter1;   //
   int fPDGDaughter2;   //
 
-  float fMassSigma;         //
-  float fSigmaMassCut;      //
-  float fSigmaSidebandLow;  //
-  float fSigmaSidebandUp;   //
+  float fMassSigma;     //
+  float fSigmaMassCut;  //
+  float fPhotonPtMin;   //
+  float fPhotonPtMax;   //
 
   float fArmenterosCut;       //
   float fArmenterosQtLow;     //
@@ -112,7 +111,9 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH1F *fHistMassCutPt;                //!
   TH1F *fHistInvMass;                  //!
   TH1F *fHistInvMassBeforeArmenteros;  //!
-  TH1F *fHistInvMassRec;               //!
+  TH2F *fHistInvMassRecPhoton;         //!
+  TH2F *fHistInvMassRecLambda;         //!
+  TH2F *fHistInvMassRec;               //!
   TH2F *fHistInvMassPt;                //!
   TH2F *fHistInvMassEta;               //!
   TH2F *fHistEtaPhi;                   //!
