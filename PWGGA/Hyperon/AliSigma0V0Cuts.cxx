@@ -1591,9 +1591,9 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
       fHistV0PtY[i] =
           new TH2F(Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
                    Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
-                        "mass p#pi hypothesis (GeV/#it{c}^{2})",
+                        "mass (GeV/#it{c}^{2})",
                         rapBins[i], rapBins[i + 1]),
-                   500, 0, 10, 400, 1., 1.2);
+                   500, 0, 10, 2400, 0., 1.2);
       fHistograms->Add(fHistV0PtY[i]);
     }
   }
