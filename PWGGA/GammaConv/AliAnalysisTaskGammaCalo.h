@@ -155,6 +155,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoMotherEtaPtOpenAngle;                           //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, openAngle
     TH2F**                fHistoMotherPi0NGoodESDTracksPt;                 //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, ngoodtrakcs, pt
     TH2F**                fHistoMotherEtaNGoodESDTracksPt;                 //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, ngoodtrakcs, pt
+    TH2F**		  fHistoMotherInvMassECalib;				//! array of histogram with alpha cut of 0.1 for inv mass vs energy of cluster
+    TH2F**		  fHistoMotherBackInvMassECalib;			//! array of histogram with BG for mixed event photon pairs with alpha cut of 0.1, inv mass, energy of cluster
 
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
