@@ -102,16 +102,8 @@ int AliSigma0ParticlePhotonMother::MatchToMC(
       static_cast<AliMCParticle *>(mcEvent->GetTrack(labPhoton));
   if (!partV0 || !partPhoton) return -1;
 
-  const int pidV0 = partV0->PdgCode();
-  const int pidPhoton = partPhoton->PdgCode();
-  if (!((pidV0 == PIDdaughters[0] && pidPhoton == PIDdaughters[1]) ||
-        (pidV0 == PIDdaughters[1] && pidPhoton == PIDdaughters[0]))) {
-    return -1;
-  }
-
   const int labMotherV0 = partV0->GetMother();
   const int labMotherPhoton = partPhoton->GetMother();
-  if (labMotherV0 < 0 || labMotherPhoton < 0) return -1;
 
   AliMCParticle *partMotherV0 =
       static_cast<AliMCParticle *>(mcEvent->GetTrack(labMotherV0));
@@ -121,7 +113,7 @@ int AliSigma0ParticlePhotonMother::MatchToMC(
 
   const int pdgMotherV0 = partMotherV0->PdgCode();
   const int pdgMotherPhoton = partMotherPhoton->PdgCode();
-  if ((pdgMotherV0 != pdgMotherPhoton) || pdgMotherV0 != PIDmother) {
+  if ((pdgMotherV0 != PIDmother) || pdgMotherV0 != PIDmother) {
     return -1;
   }
 
