@@ -12,6 +12,7 @@
 #include <RooFitResult.h>
 #include <RooGaussianTail.h>
 #include <RooHistPdf.h>
+#include <RooPlot.h>
 #include <RooRealVar.h>
 #include <TCanvas.h>
 #include <TFile.h>
@@ -42,9 +43,12 @@ using namespace RooFit;
 //Internal variables
 TCanvas* cFit = 0x0; //TCanvas of the single fit
 ///////////////////////////////////////
-//Internal functions
-void CreateFitCanvas(TString tag);//Function to create the standard fit canvas
-Double_t ComputeChi2(const TH1* hdata, const TH1* hfit, const Double_t xlow, const Double_t xhigh); //Function to compute chi2
+///Internal functions//
+///////////////////////
+//Function to create the standard fit canvas
+void CreateFitCanvas(TString tag);
+//Function to compute chi2
+Double_t ComputeChi2(const TH1* hdata, const TH1* hfit, const Double_t xlow, const Double_t xhigh);
 ///////////////////////////////////////
 
 //_________________________________________________________________________________________________
@@ -273,6 +277,9 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
       f->GetRange(r[0], r[1]);
       Int_t n = f->GetNpar();
       Infomsgcolor("PerformFitWithRooFit", Form("Template function #%i/%i summary: name (%s)  first bin (%.3f) last bin (%.3f) #parameters %i", c + 1, ntemplates, f->GetName(), r[0], r[1], n), cyanTxt);
+    } else if (cname.BeginsWith("Roo")) {
+      templatetype[c] = 2;
+      Infomsgcolor("PerformFitWithRooFit", Form("Template Roo function #%i/%i summary: name (%s)", c + 1, ntemplates, mc->At(c)->GetName()), cyanTxt);
     } else
       Fatalmsg("PerformFitWithRooFit", Form("Input class %s for template %i is not recognized!", cname.Data(), c));
   }
@@ -339,7 +346,7 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
         cFit->Update();
         gSystem->ProcessEvents();
       }
-    } else { //RooAbsPdf
+    } else if (templatetype[temp] == 1) { //TF1
       TF1* f = (TF1*)mc->At(temp);
       if (npar != f->GetNpar())
         Fatalmsg("PerformFitWithRooFit", "Different number of parameters");
@@ -362,7 +369,24 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
         cFit->cd(2);
         f->DrawCopy("same");
       }
-    }
+    } else if (templatetype[temp] == 2) { //Roo function
+      TString cname = mc->At(temp)->ClassName();
+      if (cname.EqualTo("RooqGaussian")) {
+        ftemplates[temp] = new RooqGaussian((RooqGaussian*)mc->At(temp), x);
+        // ftemplates[temp] = new RooqGaussian(*(RooqGaussian*)mc->At(temp));
+        ftemplates[temp]->SetTitle(Form("Input template %i", temp));
+      } else
+        Fatalmsg("PerformFitWithRooFit", "Function not implemented");
+      if (showfit) {
+        RooPlot* pdfplot = x.frame();
+        ftemplates[temp]->plotOn(pdfplot);
+        cFit->cd(1);
+        pdfplot->Draw("same");
+        cFit->cd(2);
+        pdfplot->Draw("same");
+      }
+    } else
+      ::Fatal("PerformFitWithRooFit", "Template type undefined");
   }
   if (hData->Integral() < min) { //Check on data
     Warningmsg("PerformFitWithRooFit", Form("%s does NOT have sufficient entries (%.0f/%.0f) but it has %.0f entries", hData->GetName(), hData->Integral(), min, hData->GetEntries()));
@@ -432,9 +456,9 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
       roohPdf[temp] = new RooHistPdf(Form("PDF%s", htemplates[temp]->GetName()), Form("PDF%s", htemplates[temp]->GetTitle()), x, *roohtemplates[temp]);
       break;
     }
-    case 1: {
+    case 1:
+    case 2:
       break;
-    }
     default:
       Fatalmsg("PerformFitWithRooFit", "Cannot find good histogram type");
       break;
@@ -502,14 +526,13 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
     } else {
       for (Int_t temp = 0; temp < ntemplates; temp++) {
         switch ((templatetype[temp])) {
-        case 0: {
+        case 0:
           templist.add(*roohPdf[temp]);
           break;
-        }
-        case 1: {
+        case 1:
+        case 2:
           templist.add(*ftemplates[temp]);
           break;
-        }
         default:
           Fatalmsg("PerformFitWithRooFit", "Cannot find good histogram type");
           break;
@@ -553,7 +576,15 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
     }
     //     convolution->plotOn(dataFrame, LineColor(kGreen));
     for (Int_t temp = 0; temp < ntemplates; temp++) {
+      if (!roohPdf[temp]) {
+        htemp = (TH1F*)ftemplates[temp]->createHistogram(x.GetName(), hData->GetNbinsX());
+        htemp->SetName(Form("roofitprediction%s%i", hData->GetName(), temp));
+        htemp->Scale((normtoone ? hData->GetEntries() : 1) * frac[temp]->getVal());
+        prediction->Add(htemp);
+        continue;
+      }
       //       convolution->plotOn(dataFrame, Components(*roohPdf[temp]), LineColor(htemplates[temp]->GetLineColor()));
+      Printf("Creating histogram from %s", roohPdf[temp]->GetName());
       htemp = (TH1F*)roohPdf[temp]->createHistogram(Form("roofitprediction%s%i", hData->GetName(), temp), x);
       htemp->SetTitle(Form("Fitted Template %i", temp));
       htemp->Scale((normtoone ? hData->GetEntries() : 1) * frac[temp]->getVal());
@@ -583,6 +614,8 @@ Bool_t PerformFitWithRooFit(TH1F* hData, TObjArray* mc, Double_t* range, Double_
   TString f;
 
   for (Int_t temp = 0; temp < ntemplates; temp++) {
+    if (!htemplates[temp])
+      continue;
     htemplates[temp]->SetLineStyle(2);
     htemplates[temp]->DrawCopy("same");
 

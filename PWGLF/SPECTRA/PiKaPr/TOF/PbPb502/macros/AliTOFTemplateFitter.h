@@ -1,7 +1,7 @@
 #ifndef ALITOFTEMPLATEFITTER_H
 #define ALITOFTEMPLATEFITTER_H
 //Flags to set the modes to be used
-#define USECDECONVOLUTION//Cholesky-like
+// #define USECDECONVOLUTION//Cholesky-like
 #define USEFITFUNCTIONS //Fit functions
 class TH1;
 class TH1F;
