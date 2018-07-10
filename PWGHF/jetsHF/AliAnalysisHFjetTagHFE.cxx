@@ -1232,7 +1232,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             Double_t clustMatchE = clustMatch->E();
             Double_t m20 =clustMatch->GetM20();
          
-            if(m20<0.03 || m20>0.3)continue;  // shower shape cut
+            //if(m20<0.03 || m20>0.3)continue;  // shower shape cut (not need for MB since vAN20180710)
      
             //EMCAL EID info
             Double_t eop = -1.0;
