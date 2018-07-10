@@ -37,39 +37,42 @@ using std::endl;
 
 ClassImp(AliAnalysisTaskTwoMultiCorrelations)
 
-//==============================================================================
+// ============================================================================================== //
 
 AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const char *name, Bool_t useParticleWeights):
   AliAnalysisTaskSE(name),
-  fNparticlesCorrelations(2),          // Number of m-particle correlations and harmonics (2-14)
-  fHarmonicOne(2),                     // Harmonic n_1, default value for v_2{2}
-  fHarmonicTwo(-2),                    // Harmonic n_2, default value for v_2{4}
-  fHarmonicThree(0),                   // Harmonic n_3
-  fHarmonicFour(0),                    // Harmonic n_4
-  fHarmonicFive(0),                    // Harmonic n_5
-  fHarmonicSix(0),                     // Harmonic n_6
-  fHarmonicSeven(0),                   // Harmonic n_7
-  fHarmonicEight(0),                   // Harmonic n_8
-  fHarmonicNine(0),                    // Harmonic n_9
-  fHarmonicTen(0),                     // Harmonic n_10
-  fHarmonicEleven(0),                  // Harmonic n_11
-  fHarmonicTwelve(0),                  // Harmonic n_12
-  fHarmonicThirteen(0),                // Harmonic n_13
-  fHarmonicFourteen(0),                // Harmonic n_14
-  fMinCentrality(0.0),                 // Minimum of centrality
-  fMaxCentrality(100.0),               // Maximum of centrality
-  fUseParticleWeights(kFALSE),         // Use non-unit particle weights
-  fDoNestedLoops(kFALSE),              // Cross-check the results with nested loops
-  fOutputList(NULL),                   // Main list holding all the output objects
-  fControlOutputList(NULL),            // List holding all the control objects
-  fDraftOutputList(NULL),              // List holding all the intermediate objects
-  fFinalOutputList(NULL),              // List holding all the final results
+  fNparticlesCorrelations(2), // Number of m-particle correlations and harmonics (2-14)
+  fHarmonicOne(2),  // Harmonic n_1, default value for 2-p correlation
+  fHarmonicTwo(-2), // Harmonic n_2, default value for 2-p correlation
+  fHarmonicThree(0),  // Harmonic n_3
+  fHarmonicFour(0), // Harmonic n_4
+  fHarmonicFive(0), // Harmonic n_5
+  fHarmonicSix(0),  // Harmonic n_6
+  fHarmonicSeven(0),  // Harmonic n_7
+  fHarmonicEight(0),  // Harmonic n_8
+  fHarmonicNine(0), // Harmonic n_9
+  fHarmonicTen(0),  // Harmonic n_10
+  fHarmonicEleven(0), // Harmonic n_11
+  fHarmonicTwelve(0), // Harmonic n_12
+  fHarmonicThirteen(0), // Harmonic n_13
+  fHarmonicFourteen(0), // Harmonic n_14
+  fMinCentrality(0.0),  // Minimum of centrality
+  fMaxCentrality(100.0),  // Maximum of centrality
+  fUseParticleWeights(kFALSE),  // Use non-unit particle weights
+  fDoNestedLoops(kFALSE), // Cross-check the results with nested loops
+  fOutputList(NULL),  // Main list holding all the output objects
+  fControlOutputList(NULL), // List holding all the control objects
+  fDraftOutputList(NULL), // List holding all the intermediate objects
+  fFinalOutputList(NULL), // List holding all the final results
+  fPtControlHisto(NULL),  // Control histogram for the transverse momentum
+  fEtaControlHisto(NULL), // Control histogram for the pseudorapidity
+  fControlPhiHisto(NULL), // Control histogram for the azimuthal angles
+  fCentralityHisto(NULL), // Control histogram for the centrality
+  fMultiplicityDist(NULL),  // Control histogram for the multiplicity distribution
   fCorrelationWithQvectorsProfile(NULL),  // m-particle correlation estimated with Q-vectors
-  fCorrelationWithNestedLoopsProfile(NULL),  // 2-p correlation estimated with nested loops
-  fCorrelationWithQvectorsSaProfile(NULL),   // 2-p correlation estimated with stand-alone Q-vectors
-  fControlPhiHisto(NULL),              // Control histogram for the azimuthal angles
-  fCentralityHisto(NULL),              // Control histogram for the centrality
-  fAverageMulti(NULL)                  // Control histogram for the average multiplicity
+  fCorrelationWithNestedLoopsProfile(NULL), // 2-p correlation estimated with nested loops
+  fCorrelationWithQvectorsSaProfile(NULL)  // 2-p correlation estimated with stand-alone Q-vectors
+  //fEstimatedFlowWithQcProfile(NULL) // Anisotropic flow estimated with Q-cumulants
 {
 // Constructor of the class
 
@@ -90,39 +93,42 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations(const c
 
 } // End of the constructor
 
-//******************************************************************************
+// ********************************************************************************************** //
 
 AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations():
   AliAnalysisTaskSE(),
-  fNparticlesCorrelations(2),          // Number of m-particle correlations and harmonics (2-14)
-  fHarmonicOne(2),                     // Harmonic n_1
-  fHarmonicTwo(-2),                    // Harmonic n_2
-  fHarmonicThree(0),                   // Harmonic n_3
-  fHarmonicFour(0),                    // Harmonic n_4
-  fHarmonicFive(0),                    // Harmonic n_5
-  fHarmonicSix(0),                     // Harmonic n_6
-  fHarmonicSeven(0),                   // Harmonic n_7
-  fHarmonicEight(0),                   // Harmonic n_8
-  fHarmonicNine(0),                    // Harmonic n_9
-  fHarmonicTen(0),                     // Harmonic n_10
-  fHarmonicEleven(0),                  // Harmonic n_11
-  fHarmonicTwelve(0),                  // Harmonic n_12
-  fHarmonicThirteen(0),                // Harmonic n_13
-  fHarmonicFourteen(0),                // Harmonic n_14
-  fMinCentrality(0.0),                 // Minimum of centrality
-  fMaxCentrality(100.0),               // Maximum of centrality
-  fUseParticleWeights(kFALSE),         // Use non-unit particle weights
-  fDoNestedLoops(kFALSE),              // Cross-check the results with nested loops
-  fOutputList(NULL),                   // Main list holding all the output objects
-  fControlOutputList(NULL),            // List holding all the control objects
-  fDraftOutputList(NULL),              // List holding all the intermediate objects
-  fFinalOutputList(NULL),              // List holding all the final results
+  fNparticlesCorrelations(2), // Number of m-particle correlations and harmonics (2-14)
+  fHarmonicOne(2),  // Harmonic n_1
+  fHarmonicTwo(-2), // Harmonic n_2
+  fHarmonicThree(0),  // Harmonic n_3
+  fHarmonicFour(0), // Harmonic n_4
+  fHarmonicFive(0), // Harmonic n_5
+  fHarmonicSix(0),  // Harmonic n_6
+  fHarmonicSeven(0),  // Harmonic n_7
+  fHarmonicEight(0),  // Harmonic n_8
+  fHarmonicNine(0), // Harmonic n_9
+  fHarmonicTen(0),  // Harmonic n_10
+  fHarmonicEleven(0), // Harmonic n_11
+  fHarmonicTwelve(0), // Harmonic n_12
+  fHarmonicThirteen(0), // Harmonic n_13
+  fHarmonicFourteen(0), // Harmonic n_14
+  fMinCentrality(0.0),  // Minimum of centrality
+  fMaxCentrality(100.0),  // Maximum of centrality
+  fUseParticleWeights(kFALSE),  // Use non-unit particle weights
+  fDoNestedLoops(kFALSE), // Cross-check the results with nested loops
+  fOutputList(NULL),  // Main list holding all the output objects
+  fControlOutputList(NULL), // List holding all the control objects
+  fDraftOutputList(NULL), // List holding all the intermediate objects
+  fFinalOutputList(NULL), // List holding all the final results
+  fPtControlHisto(NULL),  // Control histogram for the transverse momentum
+  fEtaControlHisto(NULL), // Control histogram for the pseudorapidity
+  fControlPhiHisto(NULL), // Control histogram for the azimuthal angles
+  fCentralityHisto(NULL), // Control histogram for the centrality
+  fMultiplicityDist(NULL),  // Control histogram for the multiplicity distribution
   fCorrelationWithQvectorsProfile(NULL),  // m-particle correlation estimated with Q-vectors
-  fCorrelationWithNestedLoopsProfile(NULL),  // 2-p correlation estimated with nested loops
-  fCorrelationWithQvectorsSaProfile(NULL),   // 2-p correlation estimated with stand-alone Q-vectors
-  fControlPhiHisto(NULL),              // Control histogram for the azimuthal angles
-  fCentralityHisto(NULL),              // Control histogram for the centrality
-  fAverageMulti(NULL)                  // Control histogram for the average multiplicity
+  fCorrelationWithNestedLoopsProfile(NULL), // 2-p correlation estimated with nested loops
+  fCorrelationWithQvectorsSaProfile(NULL)  // 2-p correlation estimated with stand-alone Q-vectors
+  //fEstimatedFlowWithQcProfile(NULL) // Anisotropic flow estimated with Q-cumulants
 {
 // Dummy constructor of the class
 
@@ -130,125 +136,176 @@ AliAnalysisTaskTwoMultiCorrelations::AliAnalysisTaskTwoMultiCorrelations():
 
 } // End of the dummy constructor
 
-//******************************************************************************
+// ********************************************************************************************** //
 
 AliAnalysisTaskTwoMultiCorrelations::~AliAnalysisTaskTwoMultiCorrelations()
 {
 // Destructor of the class
-/// Delete the main TList => delete automatically everything holds in it
+  // Delete the main TList => delete automatically everything holds in it
 
   if(fOutputList) delete fOutputList;
 
 } // End of the destructor
 
-//==============================================================================
+// ============================================================================================== //
 
 void AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
 {
 // Method called at every worker node to initialise the lists
 // Organisation of the method
-  // 1.) First part of the trick to avoid name clashes
-  // 2.) Booking and nesting of all the lists
-  // 3.) Booking of all the objects
-  // 4.) Second part of the trick to avoid name clashes
+  // First part of the trick to avoid name clashes
+  // Booking and nesting of all the lists
+  // Booking of all the objects
+  // Second part of the trick to avoid name clashes
 
- // 1.) First part of the trick to avoid name clashes
+// First part of the trick to avoid name clashes
   Bool_t oldHistAddStatus = TH1::AddDirectoryStatus(); 
   TH1::AddDirectory(kFALSE);
 
- // 2.) Booking and nesting of all the lists
+// Booking and nesting of all the lists
   this->BookAndNestAllLists();
 
- // 3.) Booking of all the objects
+// Booking of all the objects
   this->BookControlList();
   this->BookDraftList();
   this->BookFinalList();
 
- // 4.) Second part of the trick to avoid name clashes
+// Second part of the trick to avoid name clashes
   TH1::AddDirectory(oldHistAddStatus);
 
   PostData(1,fOutputList);
 
 } // End of AliAnalysisTaskTwoMultiCorrelations::UserCreateOutputObjects()
 
-//******************************************************************************
+// ********************************************************************************************** //
 
 void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)
 {
 // Method called for each event, contains all the calculations
-// Note to self: find a way to include non-unit particle weights and select them via fUseParticleWeights
+  // Note to self: find a way to include non-unit particle weights and select them via fUseParticleWeights
 // Organisation of the method
-  // 1.) Obtention of the pointer to the AOD event
-  // 2.) Check if the multiplicity is higher than the considered number of correlation (to avoid the problem of dividing by zero)
-  // 3.) Gestion of the centrality
-  // 4.) Definition of the variables common to all correlation methods
-  // 5.) Filling of the azimuthal angles and particle weights
-  // 6.) Filling of some control histograms
-  // 7.) Computation of the correlation with different methods for the current event
-  // 8.) Release of the allocated memory
-  // 9.) PostData
+  // Obtention of the pointer to the AOD event
+  // Gestion of the centrality
+  // Loop over the multiplicity of the event
+    // Obtention of the pointer to the current particle
+    // Definition and control histograms of some variables for the cuts
+    // Determination of the number of particles that pass the cuts
+  // Definition of the varibles for the analysis
+  // Do the analysis only if the number of particles after the cuts is higher than the one for the m-particle correlation
+    // Gestion of the centrality
+    // Loop over the number of remaining particles
+      // Obtention of the pointer to the current particle
+      // Filling of the azimuthal angles and particle weights and the control histograms
+    // Computation of the correlations with different possible methods
+    // Release of the allocated memory
+  // PostData
 
-// 1.) Obtention of the pointer to the AOD event
+//cout << "TEST" << endl;
+//exit(0);
+
+
+// Obtention of the pointer to the AOD event (from TaskSE)
   AliAODEvent *currentEvent = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!currentEvent){return;}
+  if(!currentEvent){return;}  // Protection against NULL pointer
 
-// 2.) Check if the multiplicity is higher than the considered number of correlation (to avoid the problem of dividing by zero)
-  Int_t nParticles = currentEvent->GetNumberOfTracks();    // Multiplicity
-  fAverageMulti->Fill(0.5, nParticles);
-  if (nParticles >= fNparticlesCorrelations)
-  {
-
-// 3.) Gestion of the centrality
+// Gestion of the centrality
   AliMultSelection *ams = (AliMultSelection*)currentEvent->FindListObject("MultSelection");
   if(!ams){return;}
-  if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality)
-  {
-    fCentralityHisto->Fill(ams->GetMultiplicityPercentile("V0M"));
-  }
-  else
-  {
-    return; // this event does not belong to the centrality class specified for this particular analysis
-  }
 
-// 4.) Definition of the variables common to all correlation methods
-
-  Int_t harmonics[14] = {fHarmonicOne, fHarmonicTwo, fHarmonicThree, fHarmonicFour, fHarmonicFive, fHarmonicSix, fHarmonicSeven, fHarmonicEight, fHarmonicNine, fHarmonicTen, fHarmonicEleven, fHarmonicTwelve, fHarmonicThirteen, fHarmonicFourteen};  // Harmonics n_1,... n_14 (max)
-  Double_t *phi = new Double_t[nParticles]();              // Azimuthal angles
-  Double_t *particleWeights = new Double_t[nParticles]();  // Particle weights
+// Loop over the multiplicity of the event
+  Int_t nParticles = currentEvent->GetNumberOfTracks(); // Number of particles of the event
+  Int_t nParticlesAfterCuts = 0;  // Number of particles that pass the various cuts (pT, eta, ...)
+  Int_t *goodIndices = new Int_t[nParticles](); // Vector where the index of a particle which passes the cut is saved with 1 and if it does not pass, the index corresponds to 0
 
   for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
   {
-    // Pointer to a particle
+  // Obtention of the pointer to the current particle
     AliAODTrack *currentParticle = dynamic_cast<AliAODTrack*>(currentEvent->GetTrack(iParticle));
+    if(!currentParticle){continue;} // Protection against NULL pointer
+    if(!currentParticle->TestFilterBit(128)){continue;} // Filter bit 128 denotes TPC-only tracks
 
-// 5.) Filling of the azimuthal angles and particle weights
-    phi[iParticle] = currentParticle->Phi();
-    particleWeights[iParticle] = 1.;
-    //if (fUseParticleWeights) {TO IMPLEMENT WITH ACCESS TO EXTERNAL FILE}
-    //else {particleWeights[iParticle] = 1.;}
+  // Definition and control histograms of some variables for the cuts
+    Double_t pT = currentParticle->Pt();  // Transverse momentum
+    Double_t eta = currentParticle->Eta();  // Pseudorapidity
 
-// 6.) Filling of some control histograms
-    // Azimuthal angles
-    fControlPhiHisto->Fill(phi[iParticle]);
+    fPtControlHisto->Fill(pT);
+    fEtaControlHisto->Fill(eta);
+
+  // Determination of the number of particles which pass the cuts and set the flag 1/0 of goodIndices[iParticle]
+    if ( (-0.8 < eta) && (eta < 0.8) && (0.2 < pT) && (pT < 5.0) )
+    {
+      nParticlesAfterCuts++;
+      goodIndices[iParticle] = 1;
+    }
+    else {goodIndices[iParticle] = 0;}
 
   } // End of for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
 
-// 7.) Computation of the correlation with different methods for the current event
-  // Method: Q-vectors with the recursion
-  ComputeCorrelationsWithQvectors(nParticles, phi, particleWeights, harmonics, fNparticlesCorrelations);
-  // Method: Nested loops, used only to cross-check the results of the Q-vectors
-  if ((fDoNestedLoops) && (fNparticlesCorrelations == 2)) {ComputeCorrelationsWithTwoNestedLoops(fHarmonicOne, fHarmonicTwo, nParticles, phi, particleWeights);}  // 2-p correlation
-  if ((fDoNestedLoops) && (fNparticlesCorrelations == 4)) {ComputeCorrelationsWithFourNestedLoops(fHarmonicOne, fHarmonicTwo, fHarmonicThree, fHarmonicFour, nParticles, phi, particleWeights);}   // 4-p correlation
-  // Method: Q-vectors with stand-alone formula pour 2-p correlation (debug for recursion)
-  if (fNparticlesCorrelations == 2) {ComputeCorrelationsWithStandAloneQvectors(fHarmonicOne, 0, nParticles, phi, particleWeights);}
+// Filling of the control histogram for the multiplicity distribution
+  fMultiplicityDist->Fill(nParticlesAfterCuts);
 
-// 8.) Release of the allocated memory
-  delete [] phi;
-  delete [] particleWeights;
+// Definition of the varibles for the analysis
+  Double_t *phi = new Double_t[nParticlesAfterCuts]();  // Azimuthal angles
+  Double_t *particleWeights = new Double_t[nParticlesAfterCuts]();  // Particle weights
+  Int_t harmonics[14] = {fHarmonicOne, fHarmonicTwo, fHarmonicThree, fHarmonicFour, fHarmonicFive, fHarmonicSix, fHarmonicSeven, fHarmonicEight, fHarmonicNine, fHarmonicTen, fHarmonicEleven, fHarmonicTwelve, fHarmonicThirteen, fHarmonicFourteen};  // Harmonics (n_1,... n_14)
+  Int_t index = 0;  // Index of the "good index", increased when the loop reaches a 1 in goodIndices
 
-  } // End of if (nParticles => fNparticlesCorrelations)
+// Do the analysis only if the number of particles after the cuts is higher than the one for the m-particle correlation
+  // (in order to avoid the division by zero) 
+  if (nParticlesAfterCuts >= fNparticlesCorrelations)
+  {
+  // Gestion of the centrality
+    if(ams->GetMultiplicityPercentile("V0M") >= fMinCentrality && ams->GetMultiplicityPercentile("V0M") < fMaxCentrality)
+    {
+      fCentralityHisto->Fill(ams->GetMultiplicityPercentile("V0M"));
+    }
+    else {return;} // this event does not belong to the centrality class specified for this particular analysis
 
-// 9.) PostData
+  // Loop over the number of remaining particles
+    for (Int_t iiParticle = 0; iiParticle < nParticles; iiParticle++)
+    {
+    // Obtention of the pointer to the current particle
+      AliAODTrack *keptParticle = dynamic_cast<AliAODTrack*>(currentEvent->GetTrack(iiParticle));
+      if(!keptParticle){continue;} // Protection against NULL pointer
+      if(!keptParticle->TestFilterBit(128)){continue;} // Filter bit 128 denotes TPC-only tracks
+
+    // Filling of the azimuthal angles and particle weights and the control histograms only if goodIndices[iiParticle] == 1
+      if (goodIndices[iiParticle] == 1)
+      {
+        phi[index] = keptParticle->Phi();
+        particleWeights[index] = 1.;
+        //if (fUseParticleWeights) {continue;}  // Note to self: add the gestion of non-unit weight from external file
+        //else {particleWeights[iiParticle] = 1.;}
+
+        fControlPhiHisto->Fill(phi[index]);
+        index++;
+      }
+      else {continue;} // End of if ( (-0.8 < eta) && (eta < 0.8) && (0.2 < pT) && (pT < 5.0) )
+    } // End of for (Int_t iiParticle = 0; iiParticle < nParticlesAfterCuts; iiParticle++)
+
+  // Computation of the correlations with different possible methods
+    // Q-vectors with recursion formula
+      for (Int_t iParticleCorr = 2; iParticleCorr <= fNparticlesCorrelations; iParticleCorr = iParticleCorr + 2)
+      {
+        //ComputeCorrelationsWithQvectors(nParticles, phi, particleWeights, harmonics, fNparticlesCorrelations);
+        ComputeCorrelationsWithQvectors(nParticlesAfterCuts, phi, particleWeights, harmonics, iParticleCorr);
+      } // End of for (Int_t iCorr = 2; iCorr <= fNparticlesCorrelations; iCorr = iCorr + 2)
+
+    // Nested loops (for cross-checking the results from the Q-vectors)
+      if ((fDoNestedLoops) && (fNparticlesCorrelations == 2)) {ComputeCorrelationsWithTwoNestedLoops(fHarmonicOne, fHarmonicTwo, nParticlesAfterCuts, phi, particleWeights);}
+      if ((fDoNestedLoops) && (fNparticlesCorrelations == 4)) {ComputeCorrelationsWithFourNestedLoops(fHarmonicOne, fHarmonicTwo, fHarmonicThree, fHarmonicFour, nParticlesAfterCuts, phi, particleWeights);}
+
+    // Q-vectors with stand-alone formula pour 2-p correlation (debug for recursion)
+      if (fNparticlesCorrelations == 2) {ComputeCorrelationsWithStandAloneQvectors(fHarmonicOne, 0, nParticlesAfterCuts, phi, particleWeights);}
+
+  // Release of the allocated memory
+    delete [] goodIndices;
+    delete [] phi;
+    delete [] particleWeights;
+
+  } // End of if (nParticlesAfterCuts >= fNparticlesCorrelations)
+
+// PostData
   PostData(1,fOutputList);
 
 } // End of void AliAnalysisTaskTwoMultiCorrelations::UserExec(Option_t *)
@@ -260,19 +317,17 @@ void AliAnalysisTaskTwoMultiCorrelations::Terminate(Option_t *)
 // Method called at the end of the execution, once the run over the events is over
 // Organisation of the method
   // 1.) Access to the merged output list
-  // 2.) Filling the final profiles
-  // 3.) Offline calculations
-  // 4.) Creation of the output file and save of the main list in it
+  // 2.) Estimation of anisotropic flow with Q-cumulants
+  // 3.) Creation of the output file and save of the main list in it
 
 // 1.) Access to the merged output list
   fOutputList = (TList*)GetOutputData(1);
   if(!fOutputList){exit(1);}
 
-// 2.) Filling the final profiles
+// 2.) Estimation of anisotropic flow with Q-cumulants (CANNOT BE MERGED)
+  //EstimateFlowWithCumulants(fNparticlesCorrelations);
 
-// 3.) Offline calculations
-
-// 4.) Creation of the output file and save of the main list in it
+// 3.) Creation of the output file and save of the main list in it
   TFile *outputFile = new TFile("AnalysisResults.root", "RECREATE");
   fOutputList->Write(fOutputList->GetName(),TObject::kSingleKey);
   delete outputFile;
@@ -318,7 +373,21 @@ void AliAnalysisTaskTwoMultiCorrelations::BookControlList()
 {
 // Method to prepare the list with the control histograms
 // Organisation of the method
+  // Control histogram for the transverse momentum
+  // Control histogram for the pseudorapidity
   // 1.) Control histogram for the azimuthal angles
+
+// Control histrogram for the transverse momentum
+  fPtControlHisto = new TH1F("fPtControlHisto", "Transverse momentum distribution", 1000, 0., 20.);
+  fPtControlHisto->SetStats(kTRUE);
+  fPtControlHisto->GetXaxis()->SetTitle("p_{T}");
+  fControlOutputList->Add(fPtControlHisto);
+
+// Control histogram for the pseudorapidity
+  fEtaControlHisto = new TH1F("fEtaControlHisto", "Pseudorapidity distribution", 1000, -1., 1.);
+  fEtaControlHisto->SetStats(kTRUE);
+  fEtaControlHisto->GetXaxis()->SetTitle("eta");
+  fControlOutputList->Add(fEtaControlHisto);
 
 // 1.) Control histogram for the azimuthal angles
   fControlPhiHisto = new TH1F("fControlPhiHisto", "Azimuthal angles distribution", 1000, 0., 6.3);
@@ -333,9 +402,9 @@ void AliAnalysisTaskTwoMultiCorrelations::BookControlList()
   fControlOutputList->Add(fCentralityHisto);
 
 // 3.) Control TProfile for the average multiplicity
-  fAverageMulti = new TProfile("fAverageMulti", "Average multiplicity", 1, 0., 1.);
-  fAverageMulti->GetXaxis()->SetTitle("Multiplicity");
-  fControlOutputList->Add(fAverageMulti);
+  fMultiplicityDist = new TH1F("fMultiplicityDist", "Multiplicity distribution", 3000, 0., 3000.);
+  fMultiplicityDist->GetXaxis()->SetTitle("Multiplicity");
+  fControlOutputList->Add(fMultiplicityDist);
 
 } // End of void AliAnalysisTaskTwoMultiCorrelations::BookControlList()
 
@@ -347,23 +416,27 @@ void AliAnalysisTaskTwoMultiCorrelations::BookDraftList()
 // Organisation of the method
   // 1.) TProfile from the method of the Q-vectors
   // 2.) TProfile from the method of the two nested loops
+  // 3.) TProfile from the method of the Q-vectors, stand alone formula
 
 // 1.) TProfile from the method of the Q-vectors
-  fCorrelationWithQvectorsProfile = new TProfile("fCorrelationWithQvectorsProfile", "m-particle correlation with Q-vectors", 1, 0., 1.);
+  fCorrelationWithQvectorsProfile = new TProfile("fCorrelationWithQvectorsProfile", "m-particle correlation with Q-vectors", static_cast<int>(fNparticlesCorrelations)/2, 0., static_cast<double>(fNparticlesCorrelations)/2.);
+  fCorrelationWithQvectorsProfile->SetStats(kFALSE);
   fCorrelationWithQvectorsProfile->Sumw2();
-  fCorrelationWithQvectorsProfile->GetXaxis()->SetTitle("m-particle correlation");
+  //fCorrelationWithQvectorsProfile->GetXaxis()->SetTitle("m-particle correlation");
   fDraftOutputList->Add(fCorrelationWithQvectorsProfile);
 
 // 2.) TProfile from the method of nested loops
   fCorrelationWithNestedLoopsProfile = new TProfile("fCorrelationWithNestedLoopsProfile", "m-particle correlation with nested loops", 1, 0., 1.);
+  fCorrelationWithNestedLoopsProfile->SetStats(kFALSE);
   fCorrelationWithNestedLoopsProfile->Sumw2();
-  fCorrelationWithNestedLoopsProfile->GetXaxis()->SetTitle("m-particle correlation");
+  //fCorrelationWithNestedLoopsProfile->GetXaxis()->SetTitle("m-particle correlation");
   fDraftOutputList->Add(fCorrelationWithNestedLoopsProfile);
 
-// *.) TProfile from the method of the Q-vectors, stand alone formula
+// 3.) TProfile from the method of the Q-vectors, stand alone formula
   fCorrelationWithQvectorsSaProfile = new TProfile("fCorrelationWithQvectorsSaProfile", "m-particle correlation with Q-vectors, stand alone", 1, 0., 1.);
+  fCorrelationWithQvectorsSaProfile->SetStats(kTRUE);
   fCorrelationWithQvectorsSaProfile->Sumw2();
-  fCorrelationWithQvectorsSaProfile->GetXaxis()->SetTitle("2-particle correlation");
+  //fCorrelationWithQvectorsSaProfile->GetXaxis()->SetTitle("2-particle correlation");
   fDraftOutputList->Add(fCorrelationWithQvectorsSaProfile);
 
 } // End of void AliAnalysisTaskTwoMultiCorrelations::BookDraftList()
@@ -372,6 +445,23 @@ void AliAnalysisTaskTwoMultiCorrelations::BookDraftList()
 
 void AliAnalysisTaskTwoMultiCorrelations::BookFinalList()
 {
+// Method to prepare the list with the final results for the anisotropic flow
+// Organisation of the method
+  // 1.) TProfile of the anisotropic flow estimated with Q-cumulants
+  // 2.) TProfile of the errors on the anisotropic flow estimated with Q-cumulants
+
+// 1.) TProfile of the anisotropic flow estimated with Q-cumulants
+  /*fEstimatedFlowWithQcProfile = new TProfile("fEstimatedFlowWithQcProfile", "Flow v_n estimated with Q-cumulants", 1, 0., 1.);
+  fEstimatedFlowWithQcProfile->SetStats(kTRUE);
+  //fEstimatedFlowWithQcProfile->Sumw2();
+  fEstimatedFlowWithQcProfile->GetXaxis()->SetTitle("Estimated v_n");
+  fFinalOutputList->Add(fEstimatedFlowWithQcProfile);*/
+
+// 2.) TProfile of the errors on the anisotropic flow estimated with Q-cumulants
+  /*fEstimatedFlowWithQcErrorsProfile = new TProfile("fEstimatedFlowWithQcErrorsProfile", "Error on v_n estimated with QC", 1, 0., 1.);
+  fEstimatedFlowWithQcErrorsProfile->SetStats(kTRUE);
+  fEstimatedFlowWithQcErrorsProfile->GetXaxis()->SetTitle("Error on estimated v_n");
+  fFinalOutputList->Add(fEstimatedFlowWithQcErrorsProfile);*/
 
 } // End of void AliAnalysisTaskTwoMultiCorrelations::BookFinalList()
 
@@ -393,7 +483,7 @@ TComplex AliAnalysisTaskTwoMultiCorrelations::CalculateQvector(Int_t n, Int_t p,
   for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
   {
     pWeightPowerP = pow(particleWeight[iParticle], p);
-    qVectorNp += pWeightPowerP * TComplex::Exp(static_cast<double>(n)*(TComplex::I())*phi[iParticle]);
+    qVectorNp += pWeightPowerP * TComplex::Exp((static_cast<double>(n))*(TComplex::I())*phi[iParticle]);
   } // End of for (Int_t iParticle = 0; iParticle < nParticles; iParticle++)
 
 // 3.) Application of the property Q_(-n,p) = Q_(n,p)* and return of the result
@@ -481,24 +571,29 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithQvectors(Int_t 
   std::vector<Int_t> denominatorHarmonics(nCorr); // Harmonics with value 0 for the denominator
   memset(numeratorHarmonics.data(), 0, sizeof(Int_t) * numeratorHarmonics.size());
   memset(denominatorHarmonics.data(), 0, sizeof(Int_t) * denominatorHarmonics.size());
-  //Int_t denominatorHarmonics[14] = {0};
+
   Double_t denominator = 0.;           // Denominator of <m>_(n1...nm) and event weight for the TProfile
   TComplex mParticleCorrelation = TComplex(0,0);  // m-particle correlation
   TComplex eventWeight = TComplex(0,0);// Event weight
+
+  Double_t middleBin = 0.;             // Compute the middle value of the bin corresponding to <<m>> in the TProfile
  
 // 2.) Filling of the array for the numerator
   for (Int_t iCorr = 0; iCorr < nCorr; iCorr++)
   {
     numeratorHarmonics[iCorr] = harmonics[iCorr];
+    denominatorHarmonics[iCorr] = 0;
   } // End of for (Int_t iCorr = 0; iCorr < nCorr; iCorr++)
 
 // 3.) Computation of the m-particle correlation
   denominator = (CalculateRecursionWithQvectors(nParticles, phi, particleWeight, nCorr, denominatorHarmonics.data())).Re();
+  cout << Form("Denominator: %f", denominator) << endl;
   mParticleCorrelation = CalculateRecursionWithQvectors(nParticles, phi, particleWeight, nCorr, numeratorHarmonics.data())/denominator;
   //eventWeight = (CalculateRecursionWithQvectors(nParticles, phi, particleWeight, nCorr, denominatorHarmonics)).Re();
 
 // 4.) Filling of the TProfile
-  fCorrelationWithQvectorsProfile->Fill(0.5, mParticleCorrelation.Re(), denominator);
+  middleBin = (static_cast<double>(nCorr) - 1.)/2.;
+  fCorrelationWithQvectorsProfile->Fill(middleBin, mParticleCorrelation.Re(), denominator);
 
 } // End of void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithQvectors(Int_t n, Int_t nParticles, Double_t *phi[], Double_t *particleWeight[], Int_t *harmonics[], Int_t nCorr)
 
@@ -612,8 +707,70 @@ void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithStandAloneQvect
 // 3.) Filling of the TProfile
   fCorrelationWithQvectorsSaProfile->Fill(0.5, twoParticleCorrelation, twoParticleWeight);
 
-// 4.) Security: reset to 0 of the variables
+// 4.) Security: reset of the variables to 0.
   twoParticleCorrelation = 0.;
   twoParticleWeight = 0;
 
 } // End of void AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithStandAloneQvectors()
+
+//******************************************************************************
+/*
+void AliAnalysisTaskTwoMultiCorrelations::EstimateFlowWithCumulants(Int_t maxMcorr)
+{
+// Offline method to compute the estimation of v_n{np} using the m-p correlations
+// obtained with the Q-vectors
+// Organisation of the method
+  // 1.) Declaration of the local variables
+  // 2.) Filling of the values of the correlations from the TProfile
+  // *.) Computation of the Q-cumulant and the anisotropic flow for all possible cases of maxMcorr
+  // *.) Security: reset of the variables to 0.
+
+// 1.) Declaration of the local variables
+  Double_t cNforMaxMcorr = 0.;         // Q-cumulant c_n{MaxMcorr}
+  Double_t vNforMaxMcorr = 0.;         // Estimated anisotropic flow v_n{MaxMcorr}
+
+  std::vector<Double_t> mParticleCorrelation(static_cast<int>(maxMcorr/2)); // Vector with the m-particle correlations: <<2>>, <<4>>, <<6>>, <<8>>
+  memset(mParticleCorrelation.data(), 0, sizeof(Double_t) * mParticleCorrelation.size());
+
+// 2.) Filling of the values of the correlations from the TProfile
+  for (Int_t i = 0; i < static_cast<int>(maxMcorr/2); i++)
+  {
+    mParticleCorrelation[i] = fCorrelationWithQvectorsProfile->GetBinContent(i+1);
+  } // End of for (Int_t i = 0; i < static_cast<int>(maxMcorr/2); i++)
+
+// *.) Computation of the Q-cumulant and the anisotropic flow for all possible cases of maxMcorr
+  switch(maxMcorr)
+  {
+    case 2 :  // Computation of c_n{2} and v_n{2}
+      cNforMaxMcorr = mParticleCorrelation[0];
+      vNforMaxMcorr = pow(cNforMaxMcorr, 0.5);
+      break;
+    case 4 :
+      cNforMaxMcorr = mParticleCorrelation[1] - 2.*pow(mParticleCorrelation[0], 2.);
+      vNforMaxMcorr = pow((-1.*cNforMaxMcorr), 0.25);
+      break;
+    case 6 :
+      cNforMaxMcorr = mParticleCorrelation[2] - 9.*mParticleCorrelation[0]*mParticleCorrelation[1] + 12.*pow(mParticleCorrelation[0], 3.);
+      vNforMaxMcorr = pow((cNforMaxMcorr/4.), (1./6.));
+      break;
+    case 8 :
+      cNforMaxMcorr = mParticleCorrelation[3] - 16.*mParticleCorrelation[0]*mParticleCorrelation[2] - 18.*pow(mParticleCorrelation[1], 2.) + 144.*mParticleCorrelation[1]*pow(mParticleCorrelation[2], 2.) - 144.*pow(mParticleCorrelation[0], 4.);
+      vNforMaxMcorr = pow((-1.*cNforMaxMcorr/33.), 0.125);
+      break;
+  } // End of switch
+
+// *.) Filling of the TProfile
+  fEstimatedFlowWithQcProfile->Fill(0.5, vNforMaxMcorr);
+  cout << Form("cN: %f", cNforMaxMcorr) << endl;
+
+// *.) Security_ reset of the variables to 0.
+  cNforMaxMcorr = 0.;
+  vNforMaxMcorr = 0.;
+  for (Int_t i = 0; i < static_cast<int>(maxMcorr/2); i++)
+  {
+    mParticleCorrelation[i] = 0.;
+  } // End of for (Int_t i = 0; i < static_cast<int>(maxMcorr/2); i++)
+
+  //return vNforMaxMcorr;
+
+}*/ // End of Double_t AliAnalysisTaskTwoMultiCorrelations::ComputeCorrelationsWithStandAloneQvectors()
