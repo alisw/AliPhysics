@@ -4633,7 +4633,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
               fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
             }
             if(!fDoLightOutput && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-              fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),tempPi0CandWeight);
+              fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),tempBGCandidateWeight);
             }
 
             if(fDoMesonQA == 4 && fIsMC == 0 && (backgroundCandidate->Pt() > 13.) ){
@@ -4741,7 +4741,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                 fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
               }
               if(!fDoLightOutput && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-                fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),tempPi0CandWeight);
+                fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),tempBGCandidateWeight);
               }
 
               if(fDoMesonQA == 4 && fIsMC == 0 && (backgroundCandidate->Pt() > 13.) ){
