@@ -24,8 +24,12 @@ AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTaggin
   task->SelectCollisionCandidates(offlineTriggerMask);
  
   task->SetTimeCut(25.e-9) ;
-  task->SetTrigger(analyseTriggerEvents) ;
-  task->SetCentralityEstimator(centralityEstinator) ;
+  task->SetTrigger(ignorePHI7Events) ;
+  task->SetCentralityEstimator(centralityEstinator) ; 
+  
+  Int_t binLimits[8]={5,10,15,20,30,50,100,300};
+  TArrayI multBins(8,binLimits) ;
+  task->SetMultiplicityBins(multBins) ;
   
  
   mgr->AddTask(task);
