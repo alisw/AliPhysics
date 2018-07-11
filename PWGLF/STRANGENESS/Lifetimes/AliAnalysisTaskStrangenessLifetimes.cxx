@@ -40,8 +40,10 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fV0VertexerSels{33., 0.02, 0.02, 2.0, 0.95, 1.0, 200.},
       fLambdaMassMean{1.116, 0., 0., 0., 0.},
       fLambdaMassSigma{0.002, 0., 0., 0.},
-      fMinPtToSave{0.55},
+      fMinPtToSave{0.1},
       fMaxPtToSave{100},
+      fMaxTPCpionSigma{10.},
+      fMaxTPCprotonSigma{10.},
       fV0vector{},
       fMultiplicity{} {
   // Standard output
@@ -202,10 +204,6 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   fMultiplicity = fEventCuts.GetCentrality();
   fEventCuts.GetPrimaryVertex()->GetXYZ(primaryVertex);
 
-  // Variable definition
-  double fMinV0Pt = 0;
-  double fMaxV0Pt = 100;
-
   // Only reset if not using on-the-fly (or else nothing passes)
   esdEvent->ResetV0s();
 
@@ -243,7 +241,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     if (v0->GetParamN()->Charge() * v0->GetParamP()->Charge() > 0) continue;
 
     double v0Pt = v0->Pt();
-    if ((v0Pt < fMinV0Pt) || (fMaxV0Pt < v0Pt)) continue;
+    if ((v0Pt < fMinPtToSave) || (fMaxPtToSave < v0Pt)) continue;
 
     double decayVtx[3];
     v0->GetXYZ(decayVtx[0], decayVtx[1], decayVtx[2]);
@@ -350,13 +348,13 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     double invMassLambda = v0->GetEffMass();
 
     // Official means of acquiring N-sigmas
-    float nSigmasPosProton =
+    float nSigmaPosProton =
         std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton));
-    float nSigmasPosPion =
+    float nSigmaPosPion =
         std::abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion));
-    float nSigmasNegProton =
+    float nSigmaNegProton =
         std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton));
-    float nSigmasNegPion =
+    float nSigmaNegPion =
         std::abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion));
 
     float distOverP = std::sqrt(Sq(decayVtx[0] - primaryVertex[0]) +
@@ -379,21 +377,22 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     double lLowerLimitK0Short = (4.30006e-01) - (1.10029e-02) * v0Pt;
     // Lambda: Linear (for higher pt) plus exponential (for low-pt broadening)
     //[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
-    double lUpperLimitLambda =
-        (1.13688e+00) + (5.27838e-03) * v0Pt +
-        (8.42220e-02) * TMath::Exp(-(3.80595e+00) * v0Pt);
-    double lLowerLimitLambda =
-        (1.09501e+00) - (5.23272e-03) * v0Pt -
-        (7.52690e-02) * TMath::Exp(-(3.46339e+00) * v0Pt);
+    double upperLimitLambda = (1.13688e+00) + (5.27838e-03) * v0Pt +
+                              (8.42220e-02) * TMath::Exp(-(3.80595e+00) * v0Pt);
+    double lowerLimitLambda = (1.09501e+00) - (5.23272e-03) * v0Pt -
+                              (7.52690e-02) * TMath::Exp(-(3.46339e+00) * v0Pt);
     // Do Selection
     if (
         // Case 1: Lambda Selection
-        (invMassLambda < lUpperLimitLambda &&
-         invMassLambda > lLowerLimitLambda &&
-         ((nSigmasPosProton < 6.0 && nSigmasNegPion < 6.0) ||
-          (nSigmasNegProton < 6.0 && nSigmasPosPion < 6.0))) ||
+        (invMassLambda < upperLimitLambda && invMassLambda > lowerLimitLambda &&
+         ((nSigmaPosProton < fMaxTPCprotonSigma &&
+           nSigmaNegPion < fMaxTPCpionSigma) ||
+          (nSigmaNegProton < fMaxTPCprotonSigma &&
+           nSigmaPosPion < fMaxTPCpionSigma))) ||
         // Case 2: K0Short Selection
-        (invMassK0s < lUpperLimitK0Short && invMassK0s > lLowerLimitK0Short)) {
+        (invMassK0s < lUpperLimitK0Short && invMassK0s > lLowerLimitK0Short &&
+         nSigmaNegPion < fMaxTPCpionSigma &&
+         nSigmaPosPion < fMaxTPCpionSigma)) {
       /// Filling monitoring histograms
       fHistV0radius->Fill(v0Radius);
       fHistV0pt->Fill(v0Pt);
@@ -411,10 +410,10 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       fHistLeastNxedRows->Fill(minXedRows);
       fHistLeastXedOverFindable->Fill(minXedRowsOverFindable);
       fHistMaxChi2PerCluster->Fill(maxChi2PerCluster);
-      fHistNsigmaPosPion->Fill(nSigmasPosPion);
-      fHistNsigmaPosProton->Fill(nSigmasPosProton);
-      fHistNsigmaNegPion->Fill(nSigmasNegPion);
-      fHistNsigmaNegProton->Fill(nSigmasNegProton);
+      fHistNsigmaPosPion->Fill(nSigmaPosPion);
+      fHistNsigmaPosProton->Fill(nSigmaPosProton);
+      fHistNsigmaNegPion->Fill(nSigmaNegPion);
+      fHistNsigmaNegProton->Fill(nSigmaNegProton);
       fHistEtaPos->Fill(pTrack->Eta());
       fHistEtaNeg->Fill(nTrack->Eta());
       fHistArmenteros->Fill(v0->AlphaV0(), v0->PtArmV0());
@@ -435,8 +434,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       miniV0.SetLeastXedRowsOverFindable(minXedRowsOverFindable);
       miniV0.SetMaxChi2perCluster(maxChi2PerCluster);
       miniV0.SetProngsEta(pTrack->Eta(), nTrack->Eta());
-      miniV0.SetProngsTPCnsigmas(nSigmasPosPion, nSigmasPosProton,
-                                 nSigmasNegPion, nSigmasNegProton);
+      miniV0.SetProngsTPCnsigmas(nSigmaPosPion, nSigmaPosProton,
+                                 nSigmaNegPion, nSigmaNegProton);
       fV0vector.push_back(miniV0);
     }
   }
