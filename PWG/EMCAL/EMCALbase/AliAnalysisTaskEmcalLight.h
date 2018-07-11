@@ -169,7 +169,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        AddObjectToEvent(TObject *obj, Bool_t attempt = kFALSE);
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
   EBeamType_t                 GetBeamType();
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard, Bool_t &useXsecFromHeader);
   Bool_t                      IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
   Bool_t                      CheckMCOutliers();
 
@@ -280,6 +280,7 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   EBeamType_t                 fBeamType;                   //!<!event beam type
   AliGenEventHeader          *fMCHeader;                   //!<!event MC header
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
+  Bool_t                      fUseXsecFromHeader;          //!<!Switch for using cross section from header (if not found in pythia file)
   Int_t                       fPtHardBin;                  //!<!event pt hard bin
   Double_t                    fPtHard;                     //!<!event pt hard
   Int_t                       fNTrials;                    //!<!event trials
