@@ -1207,6 +1207,12 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 508){ // JJ MC AOD validation
     cuts.AddCut("80010123","2446641051013200000","0163103100000010"); // TM on
     cuts.AddCut("80010123","2446641050013200000","0163103100000010"); // TM off
+  } else if (trainConfig == 509){ // JJ MC AOD validation PHOS NL
+    cuts.AddCut("80010123","2446601051013200000","0163103100000010"); // TM on
+    cuts.AddCut("80010123","2446601050013200000","0163103100000010"); // TM off
+  } else if (trainConfig == 510){ // JJ MC AOD validation w/o NL
+    cuts.AddCut("80010123","2446600051013200000","0163103100000010"); // TM on
+    cuts.AddCut("80010123","2446600050013200000","0163103100000010"); // TM off
 
   // ===============================================================================================
   // Run 2 data PHOS clusters pPb 8TeV
