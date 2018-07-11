@@ -265,6 +265,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     //    cuts.AddCut("00010103", "00000009266300008884404000"); //- AM 28.03.18
     cuts.AddCut("00010103", "0c000009266300008850404000");
     cuts.AddCut("00010103", "0d000009266300008850404000");
+ } else if (trainConfig == 24) {
+    cuts.AddCut("00010103", "00000009266300008750404000");
+    cuts.AddCut("00010103", "00000009266302008750404000");
+    cuts.AddCut("00010103", "00000009266300008650404000");
 
    // Offline V0Finder is used
 
@@ -323,8 +327,10 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
  } else if (trainConfig == 123) {
     cuts.AddCut("00010103", "1c000009266300008850404000");
     cuts.AddCut("00010103", "1d000009266300008850404000");
-
-
+ } else if (trainConfig == 124) {
+    cuts.AddCut("00010103", "10000009266300008750404000");
+    cuts.AddCut("00010103", "10000009266302008750404000");
+    cuts.AddCut("00010103", "10000009266300008650404000");
 
   } else  if(trainConfig == 111){
     cuts.AddCut("00000003", "10000070000000000500004000");
