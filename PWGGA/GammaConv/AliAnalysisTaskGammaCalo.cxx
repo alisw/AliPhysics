@@ -90,8 +90,6 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
   fSparseMotherBackInvMassPtZM(NULL),
-  fHistoMotherInvMassPtAlpha(NULL),
-  fHistoMotherBackInvMassPtAlpha(NULL),
   fHistoMotherPi0PtY(NULL),
   fHistoMotherEtaPtY(NULL),
   fHistoMotherPi0PtAlpha(NULL),
@@ -363,8 +361,6 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
   fSparseMotherBackInvMassPtZM(NULL),
-  fHistoMotherInvMassPtAlpha(NULL),
-  fHistoMotherBackInvMassPtAlpha(NULL),
   fHistoMotherPi0PtY(NULL),
   fHistoMotherEtaPtY(NULL),
   fHistoMotherPi0PtAlpha(NULL),
@@ -966,8 +962,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoMotherInvMassPt           = new TH2F*[fnCuts];
     fHistoMotherBackInvMassPt       = new TH2F*[fnCuts];
     if(!fDoLightOutput){
-      fHistoMotherInvMassPtAlpha      = new TH2F*[fnCuts];
-      fHistoMotherBackInvMassPtAlpha  = new TH2F*[fnCuts];
       fHistoMotherInvMassECalib         = new TH2F*[fnCuts];
       fHistoMotherBackInvMassECalib     = new TH2F*[fnCuts];
     }
@@ -1195,15 +1189,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMotherBackInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
       fESDList[iCut]->Add(fHistoMotherBackInvMassPt[iCut]);
       if(!fDoLightOutput){
-        fHistoMotherInvMassPtAlpha[iCut]      = new TH2F("ESD_Mother_InvMass_vs_Pt_Alpha", "ESD_Mother_InvMass_vs_Pt_Alpha", 800, 0, 0.8, nBinsPt, arrPtBinning);
-        fHistoMotherInvMassPtAlpha[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
-        fHistoMotherInvMassPtAlpha[iCut]->SetYTitle("p_{T} (GeV/c)");
-        fESDList[iCut]->Add(fHistoMotherInvMassPtAlpha[iCut]);
-        fHistoMotherBackInvMassPtAlpha[iCut]  = new TH2F("ESD_Background_InvMass_vs_Pt_Alpha", "ESD_Background_InvMass_vs_Pt_Alpha", 800, 0, 0.8, nBinsPt, arrPtBinning);
-        fHistoMotherBackInvMassPtAlpha[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
-        fHistoMotherBackInvMassPtAlpha[iCut]->SetYTitle("p_{T} (GeV/c)");
-        fESDList[iCut]->Add(fHistoMotherBackInvMassPtAlpha[iCut]);
-
         fHistoMotherInvMassECalib[iCut]         = new TH2F("ESD_Mother_InvMass_E_Calib", "ESD_Mother_InvMass_E_Calib", 800, 0, 0.8, nBinsPt, arrPtBinning);
         fHistoMotherInvMassECalib[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
         fHistoMotherInvMassECalib[iCut]->SetYTitle("E_{cluster}(GeV)");
@@ -1218,8 +1203,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoMotherInvMassPt[iCut]->Sumw2();
         fHistoMotherBackInvMassPt[iCut]->Sumw2();
         if(!fDoLightOutput){
-          fHistoMotherInvMassPtAlpha[iCut]->Sumw2();
-          fHistoMotherBackInvMassPtAlpha[iCut]->Sumw2();
           fHistoMotherInvMassECalib[iCut]->Sumw2();
           fHistoMotherBackInvMassECalib[iCut]->Sumw2();
         }
@@ -3778,7 +3761,6 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
           fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
           // fill new histograms
           if(!fDoLightOutput && TMath::Abs(pi0cand->GetAlpha())<0.1){
-            fHistoMotherInvMassPtAlpha[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
             fHistoMotherInvMassECalib[fiCut]->Fill(pi0cand->M(),pi0cand->E(),fWeightJetJetMC);
           }
 
@@ -4651,7 +4633,6 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
               fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
             }
             if(!fDoLightOutput && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-              fHistoMotherBackInvMassPtAlpha[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
               fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),fWeightJetJetMC);
             }
 
@@ -4760,7 +4741,6 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                 fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
               }
               if(!fDoLightOutput && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-                fHistoMotherBackInvMassPtAlpha[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->Pt(), tempBGCandidateWeight);
                 fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),fWeightJetJetMC);
               }
 
