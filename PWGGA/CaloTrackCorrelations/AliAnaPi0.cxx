@@ -556,7 +556,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhPrimEtaAccE  = new TH1F("hPrimEtaAccE","Primary #eta #it{E} with both photons in acceptance",
                                 nptbins,ptmin,ptmax) ;
       fhPrimEtaAccE->SetXTitle("#it{E} (GeV)");
-      outputContainer->Add(fhPrimEtaE) ;
+      outputContainer->Add(fhPrimEtaAccE) ;
       
       fhPrimEtaAccPt  = new TH1F("hPrimEtaAccPt","Primary eta #it{p}_{T} with both photons in acceptance",
                                  nptbins,ptmin,ptmax) ;
