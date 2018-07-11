@@ -83,35 +83,35 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   TList* fListHist;  //! List of Cascade histograms
   TTree* fTreeV0;    //! Output Tree, V0s
 
-  AliPIDResponse* fPIDResponse;  // PID response object
+  AliPIDResponse* fPIDResponse;  //! PID response object
 
   bool fDoV0Refit;
   bool fUseLightVertexer;
 
   /// Control histograms to monitor the filtering
-  TH1D* fHistV0radius;              // V0 decay vertex radius
-  TH1D* fHistV0pt;                  // V0 transverse momentum
-  TH1D* fHistV0eta;                 // V0 pseudorapidity
-  TH2D* fHistInvMassK0s;            // Invariant mass for K0s
-  TH2D* fHistInvMassLambda;         // Invariant mass for (anti-)Lambda
-  TH1D* fHistDistOverTotMom;        // L/p
-  TH1D* fHistV0CosPA;               // V0 cosine of pointing angle
-  TH1D* fHistChi2V0;                // V0 fit chi2
-  TH1D* fHistDcaNeg2PrimaryVertex;  // DCA of the negative prong to the PV
-  TH1D* fHistDcaPos2PrimaryVertex;  // DCA of the positive prong to the PV
-  TH1D* fHistDcaV0daughters;        // DCA between the two prongs
-  TH1D* fHistV0armAlpha;            // Armenteros alpha
-  TH1D* fHistV0armPt;               // Armenteros pt
-  TH1D* fHistLeastNxedRows;         // Min number of xed roads
-  TH1D* fHistLeastXedOverFindable;  // Min number of xed roads/findable clusters
-  TH1D* fHistMaxChi2PerCluster;     // Max chi2 per cluster in TPC
-  TH1D* fHistNsigmaPosPion;         // # sigma TPC pion for the positive prong
-  TH1D* fHistNsigmaPosProton;       // # sigma TPC proton for the positive prong
-  TH1D* fHistNsigmaNegPion;         // # sigma TPC pion for the negative prong
-  TH1D* fHistNsigmaNegProton;       // # sigma TPC proton for the negative prong
-  TH1D* fHistEtaPos;                // Pseudorapidity of the positive prong
-  TH1D* fHistEtaNeg;                // Pseudorapidity of the negative prong
-  TH2D* fHistArmenteros;            // Pseudorapidity of the negative prong
+  TH1D* fHistV0radius;              //! V0 decay vertex radius
+  TH1D* fHistV0pt;                  //! V0 transverse momentum
+  TH1D* fHistV0eta;                 //! V0 pseudorapidity
+  TH2D* fHistInvMassK0s;            //! Invariant mass for K0s
+  TH2D* fHistInvMassLambda;         //! Invariant mass for (anti-)Lambda
+  TH1D* fHistDistOverTotMom;        //! L/p
+  TH1D* fHistV0CosPA;               //! V0 cosine of pointing angle
+  TH1D* fHistChi2V0;                //! V0 fit chi2
+  TH1D* fHistDcaNeg2PrimaryVertex;  //! DCA of the negative prong to the PV
+  TH1D* fHistDcaPos2PrimaryVertex;  //! DCA of the positive prong to the PV
+  TH1D* fHistDcaV0daughters;        //! DCA between the two prongs
+  TH1D* fHistV0armAlpha;            //! Armenteros alpha
+  TH1D* fHistV0armPt;               //! Armenteros pt
+  TH1D* fHistLeastNxedRows;         //! Min number of xed roads
+  TH1D* fHistLeastXedOverFindable;  //! Min number of xed roads/findable clusters
+  TH1D* fHistMaxChi2PerCluster;     //! Max chi2 per cluster in TPC
+  TH1D* fHistNsigmaPosPion;         //! # sigma TPC pion for the positive prong
+  TH1D* fHistNsigmaPosProton;       //! # sigma TPC proton for the positive prong
+  TH1D* fHistNsigmaNegPion;         //! # sigma TPC pion for the negative prong
+  TH1D* fHistNsigmaNegProton;       //! # sigma TPC proton for the negative prong
+  TH1D* fHistEtaPos;                //! Pseudorapidity of the positive prong
+  TH1D* fHistEtaNeg;                //! Pseudorapidity of the negative prong
+  TH2D* fHistArmenteros;            //! Pseudorapidity of the negative prong
 
   double fV0VertexerSels[7];  // Array to store the 7 values for the different
                               // selections V0 related
