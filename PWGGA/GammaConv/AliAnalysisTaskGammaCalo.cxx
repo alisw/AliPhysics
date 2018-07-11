@@ -3761,7 +3761,7 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
           fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt(), tempPi0CandWeight);
           // fill new histograms
           if(!fDoLightOutput && TMath::Abs(pi0cand->GetAlpha())<0.1){
-            fHistoMotherInvMassECalib[fiCut]->Fill(pi0cand->M(),pi0cand->E(),fWeightJetJetMC);
+            fHistoMotherInvMassECalib[fiCut]->Fill(pi0cand->M(),pi0cand->E(),tempPi0CandWeight);
           }
 
           if (fDoMesonQA > 0 && fDoMesonQA < 3){
@@ -4633,7 +4633,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
               fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
             }
             if(!fDoLightOutput && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-              fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),fWeightJetJetMC);
+              fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),tempPi0CandWeight);
             }
 
             if(fDoMesonQA == 4 && fIsMC == 0 && (backgroundCandidate->Pt() > 13.) ){
@@ -4741,7 +4741,7 @@ void AliAnalysisTaskGammaCalo::CalculateBackground(){
                 fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
               }
               if(!fDoLightOutput && TMath::Abs(backgroundCandidate->GetAlpha())<0.1){
-                fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),fWeightJetJetMC);
+                fHistoMotherBackInvMassECalib[fiCut]->Fill(backgroundCandidate->M(),backgroundCandidate->E(),tempPi0CandWeight);
               }
 
               if(fDoMesonQA == 4 && fIsMC == 0 && (backgroundCandidate->Pt() > 13.) ){
