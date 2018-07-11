@@ -1359,7 +1359,7 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
   
   // Here, it looks for a specific pass
   TString pass = fFilepass;
-  if (fFilepass=="calo_spc") pass ="pass1";
+  if (fFilepass=="spc_calo") pass ="pass1";
   TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(pass);
   if (!arrayBCpass)
   {
@@ -1377,12 +1377,20 @@ Int_t AliEMCALTenderSupply::InitTimeCalibration()
       delete h;
     
     h = (TH1F*)arrayBCpass->FindObject(Form("hAllTimeAvBC%d",i));
-    
+
     if (!h)
     {
       AliError(Form("Can not get hAllTimeAvBC%d",i));
       continue;
     }
+   
+    // Shift parameters for bc0 and bc1 in this pass
+    if ( fFilepass=="spc_calo" && (i==0 || i==1) ) 
+    {
+      for(Int_t icell = 0; icell < h->GetNbinsX(); icell++) 
+        h->SetBinContent(icell,h->GetBinContent(icell)-100);
+    }
+    
     h->SetDirectory(0);
     fEMCALRecoUtils->SetEMCALChannelTimeRecalibrationFactors(i,h);
   }
