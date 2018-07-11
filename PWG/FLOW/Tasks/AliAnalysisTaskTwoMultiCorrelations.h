@@ -139,20 +139,20 @@ class AliAnalysisTaskTwoMultiCorrelations : public AliAnalysisTaskSE{
     TList* fFinalOutputList;  // List holding all the final results
 
   // Histograms and TProfiles
-    TH1F *fPtControlHisto;  // Control histogram for the transverse momentum
-    TH1F *fEtaControlHisto; // Control histogram for the pseudorapidity
-    TH1F *fControlPhiHisto; // Control histogram for the azimuthal angles
-    TH1F *fCentralityHisto; // Control histogram for the centrality
-    TH1F *fMultiplicityDist;  // Control histogram for the multiplicity distribution
-    TProfile *fCorrelationWithQvectorsProfile;  // m-p correlation estimated with Q-vectors
-    TProfile *fCorrelationWithNestedLoopsProfile; // m-p correlation estimated with nested loops
-    TProfile *fCorrelationWithQvectorsSaProfile;  // 2-p correlation estimated with stand-alone Q-vectors
-    //TProfile *fEstimatedFlowWithQcProfile;  // Anisotropic flow estimated with Q-cumulants
+    TH1F *fPtControlHisto;  //! Control histogram for the transverse momentum
+    TH1F *fEtaControlHisto; //! Control histogram for the pseudorapidity
+    TH1F *fControlPhiHisto; //! Control histogram for the azimuthal angles
+    TH1F *fCentralityHisto; //! Control histogram for the centrality
+    TH1F *fMultiplicityDist;  //! Control histogram for the multiplicity distribution
+    TProfile *fCorrelationWithQvectorsProfile;  //! m-p correlation estimated with Q-vectors
+    TProfile *fCorrelationWithNestedLoopsProfile; //! m-p correlation estimated with nested loops
+    TProfile *fCorrelationWithQvectorsSaProfile;  //! 2-p correlation estimated with stand-alone Q-vectors
+    //TProfile *fEstimatedFlowWithQcProfile;  //! Anisotropic flow estimated with Q-cumulants
 
   // Version counter for the submissions on Grid
     // Increase the counter by one when the latest version changes the structure
     // of the output file
-    ClassDef(AliAnalysisTaskTwoMultiCorrelations,2);
+    ClassDef(AliAnalysisTaskTwoMultiCorrelations,3);
 
 }; // End of the definition of the class AliAnalysisTaskTwoMultiCorrelations
 
