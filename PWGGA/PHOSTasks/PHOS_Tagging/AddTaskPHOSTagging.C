@@ -2,7 +2,8 @@ AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTaggin
 					    const char* options = "",
 					    UInt_t offlineTriggerMask = AliVEvent::kCentral,
 					    Float_t timeCut = 100.e-9, //accept clusters with |t|<timeCut
-                                            Float_t distCut = 0.) //reject clusters with dist to nearest bad channel < cut (in cm)
+                                            Bool_t ignorePHI7Events=kFALSE,
+                                            Int_t centralityEstinator=1) //Centrality estimator, see cxx code for list (separate for pp and pPb
 {
   //Add a task AliAnalysisTaskTaggedPhotons to the analysis train
   //Author: Dmitri Peresunko
@@ -18,14 +19,14 @@ AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTaggin
     return NULL;
   }
 
-  AliAnalysisTaskTaggedPhotons* task = new AliAnalysisTaskTaggedPhotons(Form("%sTask", name));
+  AliAnalysisTaskTaggedPhotons* task = new AliAnalysisTaskTaggedPhotons(Form("%sTask%d", name,centralityEstinator));
 
   task->SelectCollisionCandidates(offlineTriggerMask);
-
  
-  task->SetDistanceToBad() ;
   task->SetTimeCut(25.e-9) ;
-
+  task->SetTrigger(analyseTriggerEvents) ;
+  task->SetCentralityEstimator(centralityEstinator) ;
+  
  
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
