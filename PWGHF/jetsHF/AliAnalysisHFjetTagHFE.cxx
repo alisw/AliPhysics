@@ -1247,7 +1247,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             fHistEop->Fill(pt,eop);
 
             //if(eop>0.9 && eop<1.3 && m20<0.3 && m20>0.03)isElectron = kTRUE;  
-            if(eop>fmimEop && eop<1.3 && m20<0.3 && m20>0.03)isElectron = kTRUE;  
+            if(eop>fmimEop && eop<1.3)isElectron = kTRUE;  
                  
             if(isElectron)
               {
@@ -1789,7 +1789,7 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
          if(gh)
            {
             TString MCgen =  gh->GetName();     
-            if(idbHFEj)cout << "<------- imc = " << igene << " ; " << gh->GetName() << endl;
+            if(idbHFEj)cout << "<------- imc = " << igene << " ; " << gh->GetName() << " ; proc = " <<gh->NProduced()<<  endl;
             if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc-1;
             if(MCgen.Contains(embeta))NembMCeta = NpureMCproc-1;
             NpureMCproc += gh->NProduced();
