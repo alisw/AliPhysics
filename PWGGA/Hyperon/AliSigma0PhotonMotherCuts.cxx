@@ -26,6 +26,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fSigmaMassCut(0),
       fPhotonPtMin(0),
       fPhotonPtMax(1e30),
+      fRapidityMax(0.5),
       fArmenterosCut(true),
       fArmenterosQtLow(0.f),
       fArmenterosQtUp(0.f),
@@ -37,6 +38,7 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassBeforeArmenteros(nullptr),
+      fHistInvMassBeforeRapidity(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
       fHistInvMassRec(nullptr),
@@ -85,6 +87,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fSigmaMassCut(0),
       fPhotonPtMin(0),
       fPhotonPtMax(1e30),
+      fRapidityMax(0.5),
       fArmenterosCut(true),
       fArmenterosQtLow(0.f),
       fArmenterosQtUp(0.f),
@@ -96,6 +99,7 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMassCutPt(nullptr),
       fHistInvMass(nullptr),
       fHistInvMassBeforeArmenteros(nullptr),
+      fHistInvMassBeforeRapidity(nullptr),
       fHistInvMassRecPhoton(nullptr),
       fHistInvMassRecLambda(nullptr),
       fHistInvMassRec(nullptr),
@@ -194,6 +198,8 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGamma(
           continue;
       }
       const float rap = sigma.GetRapidity();
+      if (!fIsLightweight) fHistInvMassBeforeRapidity->Fill(invMass);
+      if (std::abs(rap) > fRapidityMax) continue;
       const int rapBin = GetRapidityBin(rap);
       if (!fIsLightweight) {
         fHistArmenterosAfter->Fill(armAlpha, armQt);
@@ -257,11 +263,12 @@ void AliSigma0PhotonMotherCuts::SigmaToLambdaGammaMixedEvent(
             continue;
         }
         const float invMass = sigma.GetMass();
+        const float rap = sigma.GetRapidity();
+        if (std::abs(rap) > fRapidityMax) continue;
         fHistMixedInvMassPt->Fill(pT, invMass);
         if (!fIsLightweight) {
           fHistMixedPt->Fill(pT);
           fHistMixedInvMass->Fill(invMass);
-          const float rap = sigma.GetRapidity();
           const int rapBin = GetRapidityBin(rap);
           if (rapBin > -1) fHistMixedPtY[rapBin]->Fill(pT, invMass);
           fHistMixedInvMassEta->Fill(sigma.GetEta(), invMass);
@@ -462,6 +469,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->GetXaxis()->SetBinLabel(6, "Armenteros q_{T} up");
   fHistCutBooking->GetXaxis()->SetBinLabel(7, "Armenteros #alpha low");
   fHistCutBooking->GetXaxis()->SetBinLabel(8, "Armenteros #alpha up");
+  fHistCutBooking->GetXaxis()->SetBinLabel(9, "Rapidity y max");
   fHistograms->Add(fHistCutBooking);
 
   fHistCutBooking->Fill(0.f, fSigmaMassCut);
@@ -472,6 +480,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
   fHistCutBooking->Fill(5.f, fArmenterosQtUp);
   fHistCutBooking->Fill(6.f, fArmenterosAlphaLow);
   fHistCutBooking->Fill(7.f, fArmenterosAlphaUp);
+  fHistCutBooking->Fill(8.f, fRapidityMax);
 
   fHistInvMassPt = new TH2F("fHistInvMassPt",
                             "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
@@ -499,6 +508,11 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistInvMassBeforeArmenteros = new TH1F(
         "fHistInvMassBeforeArmenteros",
         "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 500, 1.15, 1.3);
+
+    fHistInvMassBeforeRapidity = new TH1F(
+        "fHistInvMassBeforeRapidity",
+        "; M_{#Lambda#gamma} (GeV/#it{c}^{2}); Entries", 500, 1.15, 1.3);
+
     fHistInvMassRecPhoton = new TH2F("fHistInvMassRecPhoton",
                                      "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); "
                                      "M_{#Lambda#gamma_{rec}} (GeV/#it{c}^{2})",
@@ -538,6 +552,7 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistograms->Add(fHistMassCutPt);
     fHistograms->Add(fHistInvMass);
     fHistograms->Add(fHistInvMassBeforeArmenteros);
+    fHistograms->Add(fHistInvMassBeforeRapidity);
     fHistograms->Add(fHistInvMassRecPhoton);
     fHistograms->Add(fHistInvMassRecLambda);
     fHistograms->Add(fHistInvMassRec);
