@@ -965,7 +965,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
 
     if (enableMatBudWeightsPi0 > 0){
       if (isMC > 0){
-        if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights,periodNameV0Reader)){
+        if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
           initializedMatBudWeigths_existing = kTRUE;}
         else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
       } else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}

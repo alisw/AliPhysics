@@ -3631,7 +3631,7 @@ UChar_t AliConversionPhotonCuts::DeterminePhotonQualityAOD(AliAODConversionPhoto
 }
 
 ///__________________________________________________________________________________________
-Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TString filename, TString periodName){
+Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TString filename){
 
     TString nameProfile;
     if      (flag==1){
@@ -3651,13 +3651,6 @@ Bool_t AliConversionPhotonCuts::InitializeMaterialBudgetWeights(Int_t flag, TStr
     if (!fProfileContainingMaterialBudgetWeights){
         AliError(Form("Histogram %s not found in file",nameProfile.Data()));
         return kFALSE;
-    }
-    if(periodName.Contains("LHC14a1")){
-        // scaling weights by gas factor for PbPb if pp ones are used (= at R=120cm w=1)
-        if(fProfileContainingMaterialBudgetWeights->GetBinContent(fProfileContainingMaterialBudgetWeights->GetXaxis()->FindBin(120.)) == 1){
-            fProfileContainingMaterialBudgetWeights->Scale(0.960035693454);
-            AliInfo("MaterialBudgetWeights histo scaled by gas factor for Pb-Pb");
-        }
     }
     fProfileContainingMaterialBudgetWeights->SetDirectory(0);
     file->Close();

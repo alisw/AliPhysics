@@ -246,7 +246,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void SetSwitchToKappaInsteadOfNSigdEdxTPC(Bool_t k=kTRUE) {fSwitchToKappa=k;}
 
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
-    Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename,TString periodName);
+    Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}

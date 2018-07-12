@@ -369,7 +369,7 @@ void AddTask_GammaConvDalitzV1_PbPb(  Int_t   trainConfig               = 1,
     analysisCuts[i] = new AliConversionPhotonCuts();
     if (enableMatBudWeightsPi0 > 0){
       if (isMC > 0){
-        if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights,periodName)){
+        if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
           initializedMatBudWeigths_existing = kTRUE;}
         else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
       }
