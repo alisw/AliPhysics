@@ -1374,9 +1374,10 @@ void AliAnalysisTaskUpcEtaC::RunAODhist()
   fHistNeventsEtaC3PiPiChannel->Fill(4);
   fHistNeventsEtaC4KaonChannel->Fill(4);
 
-  //  if( fZNAenergy > 11500 || fZNCenergy > 11500) return; // was 8200
-  if( fZNAenergy > 1500 || fZNCenergy > 1500) return; //>1500 for 0n0n or <= 1500 for XnXn
-
+  if( fZNAenergy > 11500 || fZNCenergy > 11500) return; // was 8200
+  if( fZNAenergy <= 1500 && fZNCenergy <= 1500) return; //>1500 for 0n0n or <= 1500 for XnXn
+  if( fZNAenergy > 1500 && fZNCenergy > 1500) return; //for 0nXn or Xn0n, one ZDC <= 1500 AND other ZDC > 1500.
+  
   fHistNeventsEtaCK0sChannel->Fill(5);
   fHistNeventsEtaC->Fill(5); 
   fHistNeventsEtaCRhoChannel->Fill(5);
