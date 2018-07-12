@@ -9,8 +9,8 @@
 #include "AliSigma0ParticleV0.h"
 #include "AliVEvent.h"
 #include "Riostream.h"
-#include "TObject.h"
 #include "TDatabasePDG.h"
+#include "TObject.h"
 #include "TProfile.h"
 
 class AliPIDResponse;
@@ -95,6 +95,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   float fSigmaMassCut;  //
   float fPhotonPtMin;   //
   float fPhotonPtMax;   //
+  float fRapidityMax;   //
 
   float fArmenterosCut;       //
   float fArmenterosQtLow;     //
@@ -111,6 +112,7 @@ class AliSigma0PhotonMotherCuts : public TObject {
   TH1F *fHistMassCutPt;                //!
   TH1F *fHistInvMass;                  //!
   TH1F *fHistInvMassBeforeArmenteros;  //!
+  TH1F *fHistInvMassBeforeRapidity;    //!
   TH2F *fHistInvMassRecPhoton;         //!
   TH2F *fHistInvMassRecLambda;         //!
   TH2F *fHistInvMassRec;               //!
