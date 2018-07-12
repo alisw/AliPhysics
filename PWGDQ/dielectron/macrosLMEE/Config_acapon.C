@@ -9,8 +9,8 @@ TVectorD *GetVector(Int_t var);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx, kCent, kPhi2D};
 
 //TString names=("all");
-//TString names=("TTreeCuts");
-TString names=("all;electrons");
+TString names=("TTreeCuts");
+//TString names=("all;electrons");
 TObjArray *arrNames = names.Tokenize(";");
 const Int_t nDie = arrNames->GetEntries();
 Bool_t MCenabled = kTRUE; //Needed for LMEEcutlib
@@ -53,7 +53,7 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
     }
     else if(cutDefinition == "electrons"){
         selectedCuts = LMEECutLib::kElectrons;
-				selectedPID = LMEECutLib::kAllSpecies;
+				selectedPID = LMEECutLib::kElectrons;
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
             //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
@@ -62,7 +62,7 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
     }
     else if(cutDefinition == "highMult"){
         selectedCuts = LMEECutLib::kHighMult;
-				selectedPID = LMEECutLib::kAllSpecies;
+				selectedPID = LMEECutLib::kHighMult;
         die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
@@ -72,7 +72,7 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
     }
     else if(cutDefinition == "midMult"){
         selectedCuts = LMEECutLib::kMidMult;
-				selectedPID = LMEECutLib::kAllSpecies;
+				selectedPID = LMEECutLib::kMidMult;
         die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
@@ -82,7 +82,7 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
     }
     else if(cutDefinition == "lowMult"){
         selectedCuts = LMEECutLib::kLowMult;
-				selectedPID = LMEECutLib::kAllSpecies;
+				selectedPID = LMEECutLib::kLowMult;
         die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
@@ -92,7 +92,7 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
     }
     else if(cutDefinition == "TTreeCuts"){
         selectedCuts = LMEECutLib::kTTreeCuts;
-				selectedPID = LMEECutLib::kAllSpecies;
+				selectedPID = LMEECutLib::kTTreeCuts;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
