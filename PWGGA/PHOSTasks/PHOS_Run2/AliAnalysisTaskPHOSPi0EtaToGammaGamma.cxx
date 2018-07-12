@@ -924,9 +924,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
     //for JJMC
     if(fIsJJMC){
-      fOutputContainer->Add(new TH1F("hPtHard","pT hard in GeV/c",1000,0,1000));
-      fOutputContainer->Add(new TH1F("hNTrial","nTrial",20,0.5,20.5));
-      fOutputContainer->Add(new TProfile("hProfCrossSection","inelastic cross section",20,0.5,20.5));
+      fOutputContainer->Add(new TH1F("hPtHard","pT hard in GeV/c;p_{T} hard (GeV/c)",1000,0,1000));
+      fOutputContainer->Add(new TH1F("hNTrial","nTrial;p_{T} hard bin",20,0.5,20.5));
+      fOutputContainer->Add(new TProfile("hProfCrossSection","inelastic cross section;p_{T} hard bin;<#sigma^{INEL}>",20,0.5,20.5));
 
       TH1F *hNMerged = new TH1F("hNMerged","N merged",20,0.5,20.5);
       hNMerged->SetYTitle("number of merged files");
