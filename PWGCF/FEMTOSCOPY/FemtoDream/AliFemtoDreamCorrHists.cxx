@@ -421,7 +421,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
                        500,-0.3,0.3,nBims,0,1);
           fMomResolutionDist[Counter]->Sumw2();
           fMomResolutionDist[Counter]->GetXaxis()->SetTitle("k_{Reco}-k_{Generated}");
-          fMomResolutionDist[Counter]->GetYaxis()->SetTitle("k_{Reco}");
+          fMomResolutionDist[Counter]->GetYaxis()->SetTitle("k_{Generated}");
           fPairQA[Counter]->Add(fMomResolutionDist[Counter]);
 
 
