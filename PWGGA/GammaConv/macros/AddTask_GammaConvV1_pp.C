@@ -88,7 +88,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                               Double_t  smearParConst                 = 0.,                      // conv photon smearing params
                               Int_t   enableMatBudWeightsPi0          = 0,                      // 1 = three radial bins, 2 = 10 radial bins
                               TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
-                              TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
+                              Bool_t    enableElecDeDxPostCalibration = kFALSE,
+                              TString   fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root", 
+                             TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
                             ) {
 
   Int_t isHeavyIon = 0;
@@ -1294,6 +1296,18 @@ if(!cuts.AreValid()){
         }
         else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
+    if (enableElecDeDxPostCalibration>0){
+      if (isMC == 0){
+	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration);
+      } else{
+	cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+	enableElecDeDxPostCalibration=kFALSE;
+	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      }
+    }
+
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());

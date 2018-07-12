@@ -186,6 +186,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg);
     Bool_t PhiSectorCut(AliConversionPhotonBase * photon);
     Bool_t dEdxCuts(AliVTrack * track);
+    Bool_t dEdxCuts(AliVTrack * track, AliConversionPhotonBase * photon);
     Bool_t KappaCuts(AliConversionPhotonBase * photon,AliVEvent *event);
     Bool_t ArmenterosQtCut(AliConversionPhotonBase *photon);
     Bool_t AsymmetryCut(AliConversionPhotonBase *photon,AliVEvent *event);
@@ -244,12 +245,15 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t GetEtaCut(){return fEtaCut;}
     void SetDodEdxSigmaCut(Bool_t k=kTRUE)  {fDodEdxSigmaCut=k;}
     void SetSwitchToKappaInsteadOfNSigdEdxTPC(Bool_t k=kTRUE) {fSwitchToKappa=k;}
+    void SetDoElecDeDxPostCalibration(Bool_t k=kTRUE)  {fDoElecDeDxPostCalibration=k;}
 
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename,TString periodName);
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
+    Bool_t  InitializeElecDeDxPostCalibration(TString filename);
+    Float_t GetCorrectedElectronTPCResponse(Float_t charge,Float_t nsig,Float_t P,Float_t Eta,Float_t R);
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
@@ -352,7 +356,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fSwitchToKappa;                       ///< switches from standard dEdx nSigma TPC cuts to Kappa TPC
     Float_t           fKappaMinCut;                         ///< maximum Kappa cut
     Float_t           fKappaMaxCut;                         ///< maximum Kappa cut
-
+    Bool_t            fDoElecDeDxPostCalibration;                   ///<
     // Histograms
     TH1F*             fHistoEtaDistV0s;                     ///< eta-distribution of all V0s after Finder selection
     TH1F*             fHistoEtaDistV0sAfterdEdxCuts;        ///< eta-distribution of all V0s after Finder selection after dEdx cuts
@@ -383,10 +387,14 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
     TProfile*         fProfileContainingMaterialBudgetWeights;
-
+    TH2F**            fHistoEleMapMean;
+    TH2F**            fHistoEleMapWidth;
+    TH2F**            fHistoPosMapMean;
+    TH2F**            fHistoPosMapWidth;
+ 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,16)
+    ClassDef(AliConversionPhotonCuts,17)
     /// \endcond
 };
 
