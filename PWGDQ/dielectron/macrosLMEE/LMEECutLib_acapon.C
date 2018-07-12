@@ -121,7 +121,8 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
 AliDielectronCutGroup* LMEECutLib::GetPairCuts(Int_t cutSet)  {
 
     ::Info("LMEECutLibg_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetPairCuts() >>>>>>>>>>>>>>>>>>>>>> ");
-    AliAnalysisCuts* cuts = 0x0;
+		//Final OR cut group to incorporate the following cuts (below)
+    AliDielectronCutGroup* allCuts    = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR);
 
      //AND cut group to select low mass pairs with large opening angle
     AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND);
@@ -136,30 +137,10 @@ AliDielectronCutGroup* LMEECutLib::GetPairCuts(Int_t cutSet)  {
     AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut");
     pairMassCut->AddCut(AliDielectronVarManager::kM, 0.1, 5.0);
 
-    //OR cut group to accept for above cuts
-    AliDielectronCutGroup* allCuts    = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR);
-
     allCuts->AddCut(convRejCut);
     allCuts->AddCut(pairMassCut);
 
-    //AND cut group for selecting pair momenta
-    AliDielectronCutGroup* finalCuts  = new AliDielectronCutGroup("finalCuts", "finalCuts", AliDielectronCutGroup::kCompAND);
-
-
-    switch(cutSet){
-        case kAllSpecies:
-        case kElectrons:
-        case kHighMult:
-        case kMidMult:
-        case kLowMult:
-				case kTTreeCuts:
-            cuts = allCuts;
-            break;
-       
-        default:
-            std::cout << "No Pair Cuts defined " << std::endl;
-    }
-    return cuts;
+    return allCuts;
 }
 
 
