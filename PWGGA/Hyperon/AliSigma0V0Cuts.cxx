@@ -489,7 +489,7 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
 
     V0Container.push_back(v0Candidate);
   }
-  fHistNV0->Fill(V0Container.size());
+  if (!fIsLightweight) fHistNV0->Fill(V0Container.size());
 }
 
 //____________________________________________________________________________________________________
@@ -1316,46 +1316,34 @@ bool AliSigma0V0Cuts::CheckDaughters(const AliMCParticle *particle) const {
 
 //____________________________________________________________________________________________________
 int AliSigma0V0Cuts::GetRapidityBin(float rapidity) const {
-  if (-1.f < rapidity && rapidity <= -0.9)
+  if (-10 < rapidity && rapidity <= -1)
     return 0;
-  else if (-0.9 < rapidity && rapidity <= -0.8)
+  else if (-1 < rapidity && rapidity <= -0.5)
     return 1;
-  else if (-0.8 < rapidity && rapidity <= -0.7)
-    return 2;
-  else if (-0.7 < rapidity && rapidity <= -0.6)
-    return 3;
-  else if (-0.6 < rapidity && rapidity <= -0.5)
-    return 4;
   else if (-0.5 < rapidity && rapidity <= -0.4)
-    return 5;
+    return 2;
   else if (-0.4 < rapidity && rapidity <= -0.3)
-    return 6;
+    return 3;
   else if (-0.3 < rapidity && rapidity <= -0.2)
-    return 7;
+    return 4;
   else if (-0.2 < rapidity && rapidity <= -0.1)
-    return 8;
+    return 5;
   else if (-0.1 < rapidity && rapidity <= 0.f)
-    return 9;
+    return 6;
   else if (0.f < rapidity && rapidity <= 0.1)
-    return 10;
+    return 7;
   else if (0.1 < rapidity && rapidity <= 0.2)
-    return 11;
+    return 8;
   else if (0.2 < rapidity && rapidity <= 0.3)
-    return 12;
+    return 9;
   else if (0.3 < rapidity && rapidity <= 0.4)
-    return 13;
+    return 10;
   else if (0.4 < rapidity && rapidity <= 0.5)
-    return 14;
-  else if (0.5 < rapidity && rapidity <= 0.6)
-    return 15;
-  else if (0.6 < rapidity && rapidity <= 0.7)
-    return 16;
-  else if (0.7 < rapidity && rapidity <= 0.8)
-    return 17;
-  else if (0.8 < rapidity && rapidity <= 0.9)
-    return 18;
-  else if (0.9 < rapidity && rapidity < 1.f)
-    return 19;
+    return 11;
+  else if (0.5 < rapidity && rapidity <= 1.f)
+    return 12;
+  else if (1.0 < rapidity < 10.f)
+    return 13;
   else
     return -1;
 }
@@ -1393,9 +1381,8 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
             << " PDG pos      " << fNegPDG << "\n"
             << "============================\n";
 
-  std::vector<float> rapBins = {{-1.,  -0.9, -0.8, -0.7, -0.6, -0.5, -0.4,
-                                 -0.3, -0.2, -0.1, 0.f,  0.1,  0.2,  0.3,
-                                 0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1.f}};
+  std::vector<float> rapBins = {{-10., -1.f, -0.5, -0.4, -0.3, -0.2, -0.1, 0.f,
+                                 0.1, 0.2, 0.3, 0.4, 0.5, 1.f, 10.f}};
 
   const float pi = TMath::Pi();
 
@@ -1525,64 +1512,77 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
   }
   fHistograms->Add(fHistCuts);
 
-  fHistNV0 =
-      new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 25, 0, 25);
-  fHistograms->Add(fHistNV0);
-
-  fHistV0MassPt =
-      new TH2F("fHistV0MassPt",
-               "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
-               1000, 0, 15, 2400, 0., 1.2);
+  if (std::abs(fPID) == 3122) {
+    fHistV0MassPt =
+        new TH2F("fHistV0MassPt",
+                 "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
+                 100, 0, 10, 400, 1., 1.2);
+  } else if (std::abs(fPID) == 22) {
+    fHistV0MassPt =
+        new TH2F("fHistV0MassPt",
+                 "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
+                 100, 0, 10, 400, 0., .4);
+  }
   fHistograms->Add(fHistV0MassPt);
 
   if (!fIsLightweight) {
+    fHistNV0 =
+        new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 25, 0, 25);
+    fHistograms->Add(fHistNV0);
+
     fHistLambdaMass = new TH1F(
         "fHistLambdaMass",
-        "; Invariant mass p#pi^{-} hypothesis (GeV/#it{c}^{2}); Entries", 2000,
-        0., 2.);
+        "; Invariant mass p#pi^{-} hypothesis (GeV/#it{c}^{2}); Entries", 250,
+        1., 1.5);
     fHistograms->Add(fHistLambdaMass);
 
     fHistAntiLambdaMass = new TH1F(
         "fHistAntiLambdaMass",
-        "; Invariant mass #bar{p}#pi hypothesis (GeV/#it{c}^{2}); Entries",
-        2000, 0., 2.);
+        "; Invariant mass #bar{p}#pi hypothesis (GeV/#it{c}^{2}); Entries", 250,
+        1., 1.5);
     fHistograms->Add(fHistAntiLambdaMass);
 
     fHistPhotonMass = new TH1F(
         "fHistPhotonMass",
-        "; Invariant mass e^{+}e^{-} hypothesis (GeV/#it{c}^{2}); Entries",
-        2000, 0., 2.);
+        "; Invariant mass e^{+}e^{-} hypothesis (GeV/#it{c}^{2}); Entries", 250,
+        0., 0.5);
     fHistograms->Add(fHistPhotonMass);
 
     fHistK0Mass =
         new TH1F("fHistK0Mass",
                  "; Invariant mass #pi#pi hypothesis (GeV/#it{c}^{2}); Entries",
-                 2000, 0., 2.);
+                 250, 0.2, 0.7);
     fHistograms->Add(fHistK0Mass);
 
     fHistV0Pt =
         new TH1F("fHistV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
     fHistograms->Add(fHistV0Pt);
 
-    fHistV0Mass =
-        new TH1F("fHistV0Mass", "; Invariant mass (GeV/#it{c}^{2}); Entries",
-                 2400, 0., 1.2);
+    if (std::abs(fPID) == 3122) {
+      fHistV0Mass =
+          new TH1F("fHistV0Mass", "; Invariant mass (GeV/#it{c}^{2}); Entries",
+                   400, 1., 1.2);
+    } else if (std::abs(fPID) == 22) {
+      fHistV0Mass =
+          new TH1F("fHistV0Mass", "; Invariant mass (GeV/#it{c}^{2}); Entries",
+                   400, 0., 0.2);
+    }
     fHistograms->Add(fHistV0Mass);
 
     fHistLambdaMassK0Rej = new TH1F("fHistLambdaMassK0Rej",
                                     "; Invariant mass p#pi hypothesis w/o "
                                     "K^{0} rejection (GeV/#it{c}^{2}); Entries",
-                                    1000, 0., 2.);
+                                    500, 1., 1.5);
     fHistograms->Add(fHistLambdaMassK0Rej);
 
     fHistK0MassAfter =
         new TH1F("fHistK0MassAfter",
                  "; Invariant mass #pi#pi hypothesis (GeV/#it{c}^{2}); Entries",
-                 1000, 0., 2.);
+                 500, 0.2, 0.7);
     fHistograms->Add(fHistK0MassAfter);
     fHistCosPA =
-        new TH2F("fHistCosPA", "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)", 1000,
-                 0, 10, 1000, 0.9, 1);
+        new TH2F("fHistCosPA", "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)", 500, 0,
+                 10, 500, 0.9, 1);
     fHistograms->Add(fHistCosPA);
 
     fHistEtaPhi =
@@ -1592,17 +1592,26 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     if (fPID == 22) {
       fHistPsiPair =
           new TH2F("fHistPsiPair", "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}",
-                   1000, 0, 10, 1000, -pi, pi);
+                   500, 0, 10, 500, -pi / 2.f, pi / 2.f);
       fHistograms->Add(fHistPsiPair);
     }
 
     for (int i = 0; i < static_cast<int>(rapBins.size() - 1); ++i) {
-      fHistV0PtY[i] =
-          new TH2F(Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
-                   Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
-                        "mass (GeV/#it{c}^{2})",
-                        rapBins[i], rapBins[i + 1]),
-                   500, 0, 10, 2400, 0., 1.2);
+      if (std::abs(fPID) == 3122) {
+        fHistV0PtY[i] = new TH2F(
+            Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
+            Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
+                 "mass (GeV/#it{c}^{2})",
+                 rapBins[i], rapBins[i + 1]),
+            100, 0, 10, 400, 1., 1.2);
+      } else if (std::abs(fPID) == 22) {
+        fHistV0PtY[i] = new TH2F(
+            Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
+            Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
+                 "mass (GeV/#it{c}^{2})",
+                 rapBins[i], rapBins[i + 1]),
+            100, 0, 10, 400, 0., 0.4);
+      }
       fHistograms->Add(fHistV0PtY[i]);
     }
   }
@@ -1661,49 +1670,49 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistDecayVertexXBefore =
         new TH2F("fHistDecayVertexXBefore",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex x (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsBefore->Add(fHistDecayVertexXBefore);
 
     fHistDecayVertexYBefore =
         new TH2F("fHistDecayVertexYBefore",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex y (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsBefore->Add(fHistDecayVertexYBefore);
 
     fHistDecayVertexZBefore =
         new TH2F("fHistDecayVertexZBefore",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex z (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsBefore->Add(fHistDecayVertexZBefore);
 
     fHistDecayVertexXAfter =
         new TH2F("fHistDecayVertexXAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex x (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsAfter->Add(fHistDecayVertexXAfter);
 
     fHistDecayVertexYAfter =
         new TH2F("fHistDecayVertexYAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex y (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsAfter->Add(fHistDecayVertexYAfter);
 
     fHistDecayVertexZAfter =
         new TH2F("fHistDecayVertexZAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex z (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsAfter->Add(fHistDecayVertexZAfter);
 
     fHistTransverseRadiusBefore =
         new TH2F("fHistTransverseRadiusBefore",
                  "; #it{p}_{T} (GeV/#it{c}); Transverse radius (cm)", 100, 0,
-                 10, 500, 0, 200);
+                 10, 200, 0, 200);
     fHistogramsBefore->Add(fHistTransverseRadiusBefore);
 
     fHistTransverseRadiusAfter =
         new TH2F("fHistTransverseRadiusAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Transverse radius (cm)", 100, 0,
-                 10, 500, 0, 200);
+                 10, 200, 0, 200);
     fHistogramsAfter->Add(fHistTransverseRadiusAfter);
 
     fHistCosPABefore =
@@ -1713,7 +1722,7 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
     fHistCosPAAfter =
         new TH2F("fHistCosPAAfter", "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)",
-                 100, 0, 10, 500, 0.8, 1);
+                 100, 0, 10, 200, 0.89, 1);
     fHistogramsAfter->Add(fHistCosPAAfter);
 
     fHistDCADaughtersBefore =
@@ -1725,16 +1734,16 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistDCADaughtersAfter =
         new TH2F("fHistDCADaughtersAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Daughter DCA at decay vertex (cm)",
-                 100, 0, 10, 500, 0, 2);
+                 100, 0, 10, 200, 0, 2);
     fHistogramsAfter->Add(fHistDCADaughtersAfter);
 
     fHistDCA = new TH2F("fHistDCA", "; #it{p}_{T} (GeV/#it{c}); DCA to PV (cm)",
-                        100, 0, 10, 500, 0, 10);
+                        100, 0, 10, 200, 0, 10);
     fHistogramsAfter->Add(fHistDCA);
 
     fHistDecayLength = new TH2F("fHistDecayLength",
                                 "; #it{p}_{T} (GeV/#it{c}); Decay length (cm)",
-                                100, 0, 10, 500, 0, 200);
+                                100, 0, 10, 200, 0, 200);
     fHistogramsAfter->Add(fHistDecayLength);
 
     fHistArmenterosBefore =
@@ -1744,40 +1753,40 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
     fHistArmenterosAfter =
         new TH2F("fHistArmenterosAfter", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
-                 500, -1, 1, 500, 0, 1);
+                 200, -1, 1, 200, 0, 1);
     fHistogramsAfter->Add(fHistArmenterosAfter);
 
     fHistograms->Add(fHistogramsBefore);
     fHistograms->Add(fHistogramsAfter);
 
     fHistSingleParticlePt[0] = new TH1F("fHistSingleParticlePt_pos",
-                                        ";#it{p}_{T}; Entries", 1000, 0, 10);
+                                        ";#it{p}_{T}; Entries", 500, 0, 10);
     fHistSingleParticlePt[1] = new TH1F("fHistSingleParticlePt_neg",
-                                        ";#it{p}_{T}; Entries", 1000, 0, 10);
+                                        ";#it{p}_{T}; Entries", 500, 0, 10);
     fHistSingleParticleEtaBefore[0] =
         new TH2F("fHistSingleParticleEtaBefore_pos",
-                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 500, -2, 2);
+                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 200, -2, 2);
     fHistSingleParticleEtaBefore[1] =
         new TH2F("fHistSingleParticleEtaBefore_neg",
-                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 500, -2, 2);
+                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 200, -2, 2);
     fHistSingleParticleEtaAfter[0] =
         new TH2F("fHistSingleParticleEtaAfter_pos",
-                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 500, -2, 2);
+                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 200, -2, 2);
     fHistSingleParticleEtaAfter[1] =
         new TH2F("fHistSingleParticleEtaAfter_neg",
-                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 500, -2, 2);
+                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 200, -2, 2);
     fHistSingleParticleChi2Before[0] =
         new TH2F("fHistSingleParticleChi2Before_pos",
-                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 200, 0, 20);
     fHistSingleParticleChi2Before[1] =
         new TH2F("fHistSingleParticleChi2Before_neg",
-                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 200, 0, 20);
     fHistSingleParticleChi2After[0] =
         new TH2F("fHistSingleParticleChi2After_pos",
-                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 200, 0, 20);
     fHistSingleParticleChi2After[1] =
         new TH2F("fHistSingleParticleChi2After_neg",
-                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 200, 0, 20);
     fHistSingleParticleNclsTPCBefore[0] = new TH2F(
         "fHistSingleParticleNclsTPCBefore_pos",
         "; #it{p}_{T} (GeV/#it{c}); # cls TPC ", 100, 0, 10, 170, 0, 170);
@@ -1808,16 +1817,16 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
                  170, 0, 170);
     fHistSingleParticleNclsTPCRatioFindableBefore[0] = new TH2F(
         "fHistSingleParticleNclsTPCRatioFindableBefore_pos",
-        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 500, 0, 2);
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 200, 0, 2);
     fHistSingleParticleNclsTPCRatioFindableBefore[1] = new TH2F(
         "fHistSingleParticleNclsTPCRatioFindableBefore_neg",
-        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 500, 0, 2);
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 200, 0, 2);
     fHistSingleParticleNclsTPCRatioFindableAfter[0] = new TH2F(
         "fHistSingleParticleNclsTPCRatioFindableAfter_pos",
-        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 500, 0, 2);
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 200, 0, 2);
     fHistSingleParticleNclsTPCRatioFindableAfter[1] = new TH2F(
         "fHistSingleParticleNclsTPCRatioFindableAfter_neg",
-        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 500, 0, 2);
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 200, 0, 2);
     fHistSingleParticleNcrossedTPCBefore[0] =
         new TH2F("fHistSingleParticleNcrossedTPCBefore_pos",
                  "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed", 100, 0, 10,
@@ -1860,16 +1869,16 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
         "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared", 100, 0, 10, 6, 0, 6);
     fHistSingleParticleDCAtoPVBefore[0] = new TH2F(
         "fHistSingleParticleDCAtoPVBefore_pos",
-        "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA)", 100, 0, 10, 500, 0, 10);
+        "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA)", 100, 0, 10, 200, 0, 10);
     fHistSingleParticleDCAtoPVBefore[1] = new TH2F(
         "fHistSingleParticleDCAtoPVBefore_neg",
-        "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA)", 100, 0, 10, 500, 0, 10);
+        "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA)", 100, 0, 10, 200, 0, 10);
     fHistSingleParticleDCAtoPVAfter[0] = new TH2F(
         "fHistSingleParticleDCAtoPVAfter_pos",
-        "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA)", 100, 0, 10, 500, 0, 10);
+        "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA)", 100, 0, 10, 200, 0, 10);
     fHistSingleParticleDCAtoPVAfter[1] = new TH2F(
         "fHistSingleParticleDCAtoPVAfter_neg",
-        "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA)", 100, 0, 10, 500, 0, 10);
+        "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA)", 100, 0, 10, 200, 0, 10);
     fHistSingleParticlePileUp[0] =
         new TH2F("fHistSingleParticlePileUp_pos",
                  "; Pileup flag; #it{p}_{T} (GeV/#it{c})", 4, 0, 4, 100, 0, 10);
@@ -1887,10 +1896,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
     fHistSingleParticlePID[0] = new TH2F(
         "fHistSingleParticlePID_pos", "; #it{p} (GeV/#it{c}); n_{#sigma} TPC",
-        1000, 0, 5, 1000, -10, 10);
+        250, 0, 5, 250, -10, 10);
     fHistSingleParticlePID[1] = new TH2F(
         "fHistSingleParticlePID_neg", "; #it{p} (GeV/#it{c}); n_{#sigma} TPC",
-        1000, 0, 5, 1000, -10, 10);
+        250, 0, 5, 250, -10, 10);
 
     fHistogramsPos->Add(fHistSingleParticlePt[0]);
     fHistogramsNeg->Add(fHistSingleParticlePt[1]);
