@@ -251,14 +251,34 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->Add(new TH1F("hCentrality1CL1","Centrality CL1",105,0.,105.));
   fOutputContainer->Add(new TH1F("hCentrality1ZNA","Centrality ZNA",105,0.,105.));
   fOutputContainer->Add(new TH1F("hCentrality1ZNC","Centrality ZNC",105,0.,105.));
-  
+  fOutputContainer->Add(new TH1F("hCentrality1OnlineV0M","Centrality OnlineV0M",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality1OnlineV0A","Centrality OnlineV0A",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality1OnlineV0C","Centrality OnlineV0C",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality1ADM","Centrality ADM",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality1ADA","Centrality ADA",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality1ADC","Centrality ADC",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality1SPDClusters","Centrality SPDClusters",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality1SPDTracklets","Centrality SPDTracklets",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality1RefMult05","Centrality RefMult05",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality1RefMult08","Centrality RefMult08",105,0.,105.));
+
   fOutputContainer->Add(new TH1F("hCentrality2V0A","Centrality V0A",105,0.,105.));
   fOutputContainer->Add(new TH1F("hCentrality2V0C","Centrality V0C",105,0.,105.));
   fOutputContainer->Add(new TH1F("hCentrality2V0M","Centrality V0M",105,0.,105.));
   fOutputContainer->Add(new TH1F("hCentrality2CL1","Centrality CL1",105,0.,105.));
   fOutputContainer->Add(new TH1F("hCentrality2ZNA","Centrality ZNA",105,0.,105.));
   fOutputContainer->Add(new TH1F("hCentrality2ZNC","Centrality ZNC",105,0.,105.));
-  
+  fOutputContainer->Add(new TH1F("hCentrality2OnlineV0M","Centrality OnlineV0M",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality2OnlineV0A","Centrality OnlineV0A",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality2OnlineV0C","Centrality OnlineV0C",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality2ADM","Centrality ADM",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality2ADA","Centrality ADA",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality2ADC","Centrality ADC",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality2SPDClusters","Centrality SPDClusters",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality2SPDTracklets","Centrality SPDTracklets",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality2RefMult05","Centrality RefMult05",105,0.,105.));
+  fOutputContainer->Add(new TH1F("hCentrality2RefMult08","Centrality RefMult08",105,0.,105.));  
+
   fOutputContainer->Add(new TH2F("hPHOSCentrality","PHOS vs centrality",105,0.,105.,100,0.,100.)); 
   fOutputContainer->Add(new TH2F("hTOF","cluster TOF",200,0.,20.,300,-3.e-6,6.e-6));
   
@@ -611,6 +631,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 
     Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)  ; 
     Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kPHI7);
+
 
     if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
       PostData(1, fOutputContainer);
@@ -2525,43 +2546,43 @@ Bool_t AliAnalysisTaskTaggedPhotons::SelectCentrality(AliVEvent * event){
     FillHistogram("hSelEvents",5) ;
     
     v0M = multSelection->GetMultiplicityPercentile("V0M");
-    FillHistogram("hCentrality1V0M",v0M) ;
+    FillHistogram("hCentrality2V0M",v0M) ;
 
     v0A =multSelection->GetMultiplicityPercentile("V0A");
-    FillHistogram("hCentrality1V0A",v0A) ;
+    FillHistogram("hCentrality2V0A",v0A) ;
       
     v0C =multSelection->GetMultiplicityPercentile("V0C");
-    FillHistogram("hCentrality1V0C",v0C) ;
+    FillHistogram("hCentrality2V0C",v0C) ;
 
     olv0M =multSelection->GetMultiplicityPercentile("OnlineV0M");
-    FillHistogram("hCentrality1OnlineV0M",olv0M) ;
+    FillHistogram("hCentrality2OnlineV0M",olv0M) ;
     
     olv0A =multSelection->GetMultiplicityPercentile("OnlineV0A");
-    FillHistogram("hCentrality1OnlineV0A",olv0A) ;
+    FillHistogram("hCentrality2OnlineV0A",olv0A) ;
     
     olv0C =multSelection->GetMultiplicityPercentile("OnlineV0C");
-    FillHistogram("hCentrality1OnlineV0C",olv0C) ;
+    FillHistogram("hCentrality2OnlineV0C",olv0C) ;
     
     adM = multSelection->GetMultiplicityPercentile("ADM");
-    FillHistogram("hCentrality1ADM",adM) ;
+    FillHistogram("hCentrality2ADM",adM) ;
 
     adA =multSelection->GetMultiplicityPercentile("ADA");
-    FillHistogram("hCentrality1ADA",adA) ;
+    FillHistogram("hCentrality2ADA",adA) ;
       
     adC =multSelection->GetMultiplicityPercentile("ADC");
-    FillHistogram("hCentrality1ADC",adC) ;
+    FillHistogram("hCentrality2ADC",adC) ;
 
     cl1 =multSelection->GetMultiplicityPercentile("SPDClusters");
-    FillHistogram("hCentrality1SPDClusters",cl1) ;
+    FillHistogram("hCentrality2SPDClusters",cl1) ;
       
     spd =multSelection->GetMultiplicityPercentile("SPDTracklets");
-    FillHistogram("hCentrality1SPDTracklets",spd) ;
+    FillHistogram("hCentrality2SPDTracklets",spd) ;
 
     refMu05 =multSelection->GetMultiplicityPercentile("RefMult05");
-    FillHistogram("hCentrality1RefMult05",refMu05) ;
+    FillHistogram("hCentrality2RefMult05",refMu05) ;
     
     refMu08 =multSelection->GetMultiplicityPercentile("RefMult08");
-    FillHistogram("hCentrality1RefMult08",refMu08) ;
+    FillHistogram("hCentrality2RefMult08",refMu08) ;
     
     
     
