@@ -42,5 +42,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20180622: Update of EMCALBadChannels.root with additional cells for LHC16j and LHC16l and a fix for the LHC16h maps which were not properly added in OADB before
 - 20180706: Update of EMCALBadChannels.root with additional cells for LHC16p and update of EMCALTimeCalib.root with updated calibrations for LHC17o
 - 20180711: Update of EMCALBadChannels.root with new maps for LHC18d
+- 20180711: Update of EMCALBadChannels.root with new maps for LHC17d, LHC18e, LHC18f as well as updates to the maps of LHC17m and LHC17o
 
 */
