@@ -284,6 +284,18 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     cuts.AddCut("82410513", "00200009327000008250400000", "0162103500000000"); // 20-40%
     cuts.AddCut("84610513", "00200009327000008250400000", "0162103500000000"); // 40-60%
     cuts.AddCut("86010513", "00200009327000008250400000", "0162103500000000"); // 60-100%
+  } else if (trainConfig == 13) {
+    cuts.AddCut("90010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("90210113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("92410113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("94610113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("96010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+  } else if (trainConfig == 14) {
+    cuts.AddCut("e0010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("e0210113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("e2410113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("e4610113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("e6010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
 
   // new standard configurations 0-20
   } else if (trainConfig == 20){

@@ -999,6 +999,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t centrality selection based on V0M \n");
     } else if (fDetectorCentrality == 1){
       printf("\t centrality selection based on Cl1 \n");
+    } else if (fDetectorCentrality == 2){
+      printf("\t centrality selection based on ZNA \n");
     }
     if (fModCentralityClass == 0){
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
@@ -1029,6 +1031,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t centrality selection based on V0A \n");
     } else if (fDetectorCentrality == 1){
       printf("\t centrality selection based on Cl1 \n");
+    } else if (fDetectorCentrality == 2){
+      printf("\t centrality selection based on ZNA \n");
     }
     if (fModCentralityClass == 0){
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
@@ -1128,32 +1132,51 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=2;
     fDetectorCentrality=1;
     break;
-  case 10: // pPb V0A
+  case 10: // a: pPb V0A
     // steps of 5%
     // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
     fIsHeavyIon=2;
     fDetectorCentrality=0;
     fModCentralityClass=1;
     break;
-  case 11: // pPb CL1
+  case 11: // b: pPb CL1
     // steps of 5%
     // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
     fIsHeavyIon=2;
     fDetectorCentrality=1;
     fModCentralityClass=1;
     break;
-  case 12: // pPb V0A
+  case 12: // c: pPb V0A
     // steps of 1%
     // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
     fIsHeavyIon=2;
     fDetectorCentrality=0;
     fModCentralityClass=2;
     break;
-  case 13: // pPb CL1
+  case 13: // d: pPb CL1
     // steps of 1%
     // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
     fIsHeavyIon=2;
     fDetectorCentrality=1;
+    fModCentralityClass=2;
+    break;
+  case 14: // e: pPb ZNA
+    // steps of 10%
+    fIsHeavyIon=2;
+    fDetectorCentrality=2;
+    break;
+  case 15: // f: pPb ZNA
+    // steps of 5%
+    // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
+    fIsHeavyIon=2;
+    fDetectorCentrality=2;
+    fModCentralityClass=1;
+    break;
+  case 16: // g: pPb CL1
+    // steps of 1%
+    // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
+    fIsHeavyIon=2;
+    fDetectorCentrality=2;
     fModCentralityClass=2;
     break;
 
@@ -2064,6 +2087,7 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
           if(fIsHeavyIon==2)             return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
           else                           return MultSelection->GetMultiplicityPercentile("V0M");// default
         }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+        else if(fDetectorCentrality==2) return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
       }
     }else{
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
@@ -2071,6 +2095,7 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
         if(fIsHeavyIon==2)             return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
         else                           return fESDCentrality->GetCentralityPercentile("V0M"); // default
       }else if(fDetectorCentrality==1) return fESDCentrality->GetCentralityPercentile("CL1");
+      else if(fDetectorCentrality==2) return fESDCentrality->GetCentralityPercentile("ZNA");
     }
   }
 
@@ -2086,6 +2111,7 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
           if(fIsHeavyIon==2)           return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
           else                         return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
         }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+        else if(fDetectorCentrality==2) return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
       }
     }else{
       if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
