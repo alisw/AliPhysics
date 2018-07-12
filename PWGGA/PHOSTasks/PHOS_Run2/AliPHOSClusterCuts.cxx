@@ -63,11 +63,11 @@ Bool_t AliPHOSClusterCuts::AcceptDisp(AliCaloPhoton *ph)
   Double_t M02   = ph->GetLambda2();
 
   if(fUseDisp){
-    Double_t Nmax = TMath::Min(-1.20 + 10.2 * TMath::Sqrt(e) , 28.1 + 0.358 *e);
+    Double_t Nmax = -1.20 + 10.2 * TMath::Sqrt(e);
     Double_t M02max = TMath::Min(3.7 , TMath::Min(1.75 + 2.73 * e , 1.94 + 1.86/TMath::Sqrt(e)));
 
-    if(M02max < M02) return kFALSE;
     if(Nmax < Ncell) return kFALSE;
+    //if(M02max < M02) return kFALSE;
 
     Double_t Nmin   = -999;
     Double_t M02min = -999;
