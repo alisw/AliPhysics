@@ -45,59 +45,59 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
     if(cutDefinition == "all"){
         selectedCuts = LMEECutLib::kAllSpecies;
 				selectedPID = LMEECutLib::kAllSpecies;
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
             //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
         }
     }
     else if(cutDefinition == "electrons"){
         selectedCuts = LMEECutLib::kElectrons;
 				selectedPID = LMEECutLib::kAllSpecies;
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
             //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
         }
     }
     else if(cutDefinition == "highMult"){
         selectedCuts = LMEECutLib::kHighMult;
 				selectedPID = LMEECutLib::kAllSpecies;
         die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
             //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
         }
     }
     else if(cutDefinition == "midMult"){
         selectedCuts = LMEECutLib::kMidMult;
 				selectedPID = LMEECutLib::kAllSpecies;
         die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
             //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
         }
     }
     else if(cutDefinition == "lowMult"){
         selectedCuts = LMEECutLib::kLowMult;
 				selectedPID = LMEECutLib::kAllSpecies;
         die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
             //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
         }
     }
     else if(cutDefinition == "TTreeCuts"){
         selectedCuts = LMEECutLib::kTTreeCuts;
 				selectedPID = LMEECutLib::kAllSpecies;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){
             //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
         }
     }
     
