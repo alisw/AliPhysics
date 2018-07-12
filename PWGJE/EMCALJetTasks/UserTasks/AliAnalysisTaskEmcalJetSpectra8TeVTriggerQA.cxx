@@ -82,11 +82,11 @@ AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AliAnalysisTaskEmcalJetSpectra8TeVT
 AliAnalysisTaskEmcalJet(),
 fUseRecalcPatches(false),
 fHistManager(),
-fRecevent(),
-fMCevent(),
-fGeneratorLevel(0),
-fMCJetContainer(nullptr),
-fRecoUtil(0x0),  fClusterEResolution(0x0), fVaryTrkPtRes(),
+//fRecevent(),
+//fMCevent(),
+//fGeneratorLevel(0),
+//fMCJetContainer(nullptr),
+//fRecoUtil(0x0),  fClusterEResolution(0x0), fVaryTrkPtRes(),
 fUseSumw2(),
 fHistNumbJets(),
 fHistJetPt(),
@@ -94,15 +94,15 @@ fHistJetJetPatchE(),
 fHistJetGammaPatchE(),
 fHistJetJetPatchPt(),
 fHistJetGammaPatchPt(),
-fHistTriggerPatchE(),
-fhnMBJetSpectra(),
-fhnTrkQA(),
-fhnClusQA()
+fHistTriggerPatchE()
+//fhnMBJetSpectra(),
+//fhnTrkQA(),
+//fhnClusQA()
 
 {
     //Array Initiation
     for(int i=0;i<9;i++){
-        fHistEMCalTowerMult[i] = NULL;
+        //fHistEMCalTowerMult[i] = NULL;
         
     }
 }
@@ -116,11 +116,11 @@ AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AliAnalysisTaskEmcalJetSpectra8TeVT
 AliAnalysisTaskEmcalJet(name, kTRUE),
 fUseRecalcPatches(false),
 fHistManager(name),
-fRecevent(NULL),
-fMCevent(NULL),
-fGeneratorLevel(0),
-fMCJetContainer(nullptr),
-fRecoUtil(0x0),  fClusterEResolution(0x0), fVaryTrkPtRes(0),
+//fRecevent(NULL),
+//fMCevent(NULL),
+//fGeneratorLevel(0),
+//fMCJetContainer(nullptr),
+//fRecoUtil(0x0),  fClusterEResolution(0x0), fVaryTrkPtRes(0),
 fUseSumw2(0),
 fHistNumbJets(0),
 fHistJetPt(0),
@@ -128,16 +128,16 @@ fHistJetJetPatchE(0),
 fHistJetGammaPatchE(0),
 fHistJetJetPatchPt(0),
 fHistJetGammaPatchPt(0),
-fHistTriggerPatchE(0),
-fhnMBJetSpectra(0x0),
-fhnTrkQA(0x0),
-fhnClusQA(0x0)
+fHistTriggerPatchE(0)
+//fhnMBJetSpectra(0x0),
+//fhnTrkQA(0x0),
+//fhnClusQA(0x0)
 
 
 {
     //Array Initiation
     for(int i=0;i<=9;i++){
-        fHistEMCalTowerMult[i] = NULL;
+        //fHistEMCalTowerMult[i] = NULL;
         
     }
     SetMakeGeneralHistograms(kTRUE);
@@ -164,8 +164,8 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::UserCreateOutputObjects()
      for(int i=0;i<=9;i++){
          histName = TString::Format("fHistEMCalTowerMult_%d",i);
          histTitle = TString::Format("%s;N_{tower};Counts",histName.Data());
-         fHistEMCalTowerMult[i] = new TH1F(histName.Data(),histTitle.Data(),400,0,400);
-         fOutput->Add(fHistEMCalTowerMult[i]);
+         //fHistEMCalTowerMult[i] = new TH1F(histName.Data(),histTitle.Data(),400,0,400);
+         //fOutput->Add(fHistEMCalTowerMult[i]);
      }
     
     // Get the MC particle branch, in case it exists
@@ -173,15 +173,15 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::UserCreateOutputObjects()
     AliJetContainer* jetMCCont = GetJetContainer();
     TString jetMCContName = jetMCCont->GetName();
     
-    fGeneratorLevel = GetMCParticleContainer("mcparticles");
-    if(fGeneratorLevel)
-    {
-        Printf("MCparticleContainer: %s", fGeneratorLevel->GetName());
-    }
-    if(jetMCContName.Contains("mcparticles"))
-    {
-        fMCJetContainer = jetMCCont;
-    }
+    //fGeneratorLevel = GetMCParticleContainer("mcparticles");
+   // if(fGeneratorLevel)
+    //{
+    //    Printf("MCparticleContainer: %s", fGeneratorLevel->GetName());
+    //}
+    //if(jetMCContName.Contains("mcparticles"))
+    //{
+    //    fMCJetContainer = jetMCCont;
+    //}
     
     
     AllocateClusterHistograms();
@@ -297,23 +297,24 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateClusterHistograms()
  *
  */
 
+/*
 void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateParticleHistograms()
 {
     // If MC, get the MC event
-    const AliMCEvent* mcevent = nullptr;
-    if (fGeneratorLevel) {
-        mcevent = MCEvent();
-    }
-    else {
-        return;
-    }
+   // const AliMCEvent* mcevent = nullptr;
+    //if (fGeneratorLevel) {
+     //   mcevent = MCEvent();
+    //}
+    //else {
+     //   return;
+    //}
     TString histname;
     TString histtitle;
     TString groupname;
     Double_t pi = TMath::Pi();
-    AliParticleContainer* MCCont = 0;
-    MCCont = AddMCParticleContainer("mcparticles");
-    groupname = MCCont->GetName();
+    //AliParticleContainer* MCCont = 0;
+    //MCCont = AddMCParticleContainer("mcparticles");
+    //groupname = MCCont->GetName();
     fHistManager.CreateHistoGroup(groupname);
     
     for (Int_t cent = 0; cent < fNcentBins; cent++) {
@@ -323,6 +324,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AllocateParticleHistograms()
     }
     
 }
+*/
 
 /*
  * This function allocates the histograms for basic EMCal QA.
@@ -714,8 +716,8 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                         histname = TString::Format("%s/histJetTrkPt_%d", groupname.Data(), fCentBin);
                         fHistManager.FillTH1(histname, JetTrk->Pt());
                         
-                        Z_part = GetZ(JetTrk->Px(),JetTrk->Py(),JetTrk->Pz(),jet->Px(),jet->Py(),jet->Pz());
-                        
+                        //Z_part = GetZ(JetTrk->Px(),JetTrk->Py(),JetTrk->Pz(),jet->Px(),jet->Py(),jet->Pz());
+                        Z_part = 1.;
                         histname = TString::Format("%s/histJetZvJetPt_%d", groupname.Data(), fCentBin);
                         fHistManager.FillTH2(histname,jet->Pt(),Z_part);
                         
@@ -735,7 +737,8 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
                 for(auto cluster : JetCluster->accepted()) {
                     AliTLorentzVector nPart;
                     cluster->GetMomentum(nPart, fVertex);
-                    Double_t JetFCross = GetFcross(cluster, fCaloCells);
+                    //Double_t JetFCross = GetFcross(cluster, fCaloCells);
+                    Double_t JetFCross = 1.;
                     histname = TString::Format("%s/histJetClusterEnergy_%d", groupname.Data(), fCentBin);
                     fHistManager.FillTH1(histname, cluster->E());
                     histname = TString::Format("%s/histJetClusterPhi_%d", groupname.Data(), fCentBin);
@@ -759,7 +762,8 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoJetLoop()
             leadingCluster = jet->GetLeadingCluster();
             if(leadingCluster){
                 leadingclusterE = leadingCluster->E();
-                JetFCrossLeading = GetFcross(leadingCluster, fCaloCells);
+                //JetFCrossLeading = GetFcross(leadingCluster, fCaloCells);
+                JetFCrossLeading = 1.;
             }
             
             AliVParticle* leadingTrk = jet->GetLeadingTrack();
@@ -866,7 +870,8 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoClusterLoop()
         for(auto cluster : clusCont->all()) {
             if (!cluster) continue;
             
-            Double_t FCross = GetFcross(cluster, fCaloCells);            
+            //Double_t FCross = GetFcross(cluster, fCaloCells);
+            Double_t FCross = 1.;
             histname = TString::Format("%s/fHistFcrossvEonline_%d", groupname.Data(), fCentBin);
             fHistManager.FillTH2(histname, cluster->E(), FCross);
             
@@ -1021,13 +1026,13 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Run()
         }
     }
     
-    fClusterEResolution = new TF1("fClusterEResolution","sqrt([0]^2+[1]^2*x+([2]*x)^2)*0.01");// 2010 EMCal Test Beam Resolution
-    fClusterEResolution->SetParameters(4.35,9.07,1.63);//Fit to test beam
+    //fClusterEResolution = new TF1("fClusterEResolution","sqrt([0]^2+[1]^2*x+([2]*x)^2)*0.01");// 2010 EMCal Test Beam Resolution
+    //fClusterEResolution->SetParameters(4.35,9.07,1.63);//Fit to test beam
     
     
     
     
-    IsLEDEvent();
+    //IsLEDEvent();
     
     return kTRUE;
 }
@@ -1092,6 +1097,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::Terminate(Option_t *)
     cout<<"******* Task Finished *******"<<endl;
     cout<<"*****************************"<<endl;
 }
+/*
 Double_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const
 {
     //
@@ -1100,6 +1106,8 @@ Double_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetZ(const Double_t trkPx,
     
     return (trkPx*jetPx+trkPy*jetPy+trkPz*jetPz)/(jetPx*jetPx+jetPy*jetPy+jetPz*jetPz);
 }
+ */
+/*
 Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::IsLEDEvent() const
 {
     Bool_t isLED = kFALSE;
@@ -1133,7 +1141,8 @@ Bool_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::IsLEDEvent() const
     
     return isLED;
 }
-
+*/
+/*
 Double_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetFcross(const AliVCluster *cluster, AliVCaloCells *cells)
 {
     Int_t    AbsIdseed  = -1;
@@ -1198,7 +1207,7 @@ Double_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetFcross(const AliVCluste
     
     return Fcross;
 }
-
+*/
 //Double_t AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::GetSmearedTrackPt(AliVTrack *track)
 //{
     //
