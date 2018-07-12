@@ -468,33 +468,33 @@ void CompareInSingleCanvas(TString Orgn= "NULL", TString pTth){
         TString path = filenames[f];
         cout << "Reading File from path: " << path << endl;
         TFile * file = TFile::Open(path.Data(),"WRITE");
-        ThCorr[f+1] = (TH1D*)file->Get("hCorrDeltaPhi");
-        if(!ThCorr[f+1])cout << ":Something wrong" << endl;
-        ThCorr[f+1]->SetMarkerSize(0.7);
+        ThCorr[f] = (TH1D*)file->Get("hCorrDeltaPhi");
+        if(!ThCorr[f])cout << ":Something wrong" << endl;
+        ThCorr[f]->SetMarkerSize(0.7);
     }
     
     
-    cnew->cd(1);
-    ThCorr[1]->Draw("p");
+    cnew->cd(0);
+    ThCorr[0]->Draw("p");
     //cout << "GetX bins " <<  ThCorr[1]->GetNbinsX() << endl; exit(1);
-    ThCorr[1]->SetMaximum(ThCorr[1]->GetMaximum()*1.15);
-    ThCorr[1]->SetMinimum(ThCorr[1]->GetMinimum()*0.85);
+    ThCorr[0]->SetMaximum(ThCorr[0]->GetMaximum()*1.15);
+    ThCorr[0]->SetMinimum(ThCorr[0]->GetMinimum()*0.85);
+    ThCorr[1]->Draw("samep");
     ThCorr[2]->Draw("samep");
-    ThCorr[3]->Draw("samep");
     
     cnew->cd(2);
-    ThCorr[4]->Draw("p");
-    ThCorr[4]->SetMaximum(ThCorr[4]->GetMaximum()*1.15);
-    ThCorr[4]->SetMinimum(ThCorr[4]->GetMinimum()*0.85);
+    ThCorr[3]->Draw("p");
+    ThCorr[3]->SetMaximum(ThCorr[3]->GetMaximum()*1.15);
+    ThCorr[3]->SetMinimum(ThCorr[3]->GetMinimum()*0.85);
+    ThCorr[4]->Draw("samep");
     ThCorr[5]->Draw("samep");
-    ThCorr[6]->Draw("samep");
     
     cnew->cd(3);
-    ThCorr[7]->Draw("p");
-    ThCorr[7]->SetMaximum(ThCorr[7]->GetMaximum()*1.15);
-    ThCorr[7]->SetMinimum(ThCorr[7]->GetMinimum()*0.85);
+    ThCorr[6]->Draw("p");
+    ThCorr[6]->SetMaximum(ThCorr[6]->GetMaximum()*1.15);
+    ThCorr[6]->SetMinimum(ThCorr[6]->GetMinimum()*0.85);
+    ThCorr[7]->Draw("samep");
     ThCorr[8]->Draw("samep");
-    ThCorr[9]->Draw("samep");
 
     cnew->cd(4);
     ThCorr[9]->Draw("p");
