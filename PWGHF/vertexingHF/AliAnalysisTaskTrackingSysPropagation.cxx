@@ -419,26 +419,9 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
 	else {  //D*
 	  mcLabel = ((AliAODRecoCascadeHF*)d)->MatchToMC(413,421,pdgDaughter,pdg2Daughter,arrayMC,kFALSE);
 	  if (mcLabel < 0) continue;
-                    
-	  //soft pion
-	  track = (AliAODTrack*)(((AliAODRecoCascadeHF*)d)->GetBachelor());
-	  if(!track) {
-	    PostData(1,fOutput);
-	    return;
-	  }
-	  Int_t labDau = track->GetLabel();
-	  AliAODMCParticle* p = (AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau));
-	  double ptdau = track->Pt();
-                   
-	  bin = fHistMESyst->FindBin(ptdau);
-	  if(bin > 0 && bin <= nbinsME) syst += fHistMESyst->GetBinContent(bin);
-	  else if(bin > nbinsME) syst += fHistMESyst->GetBinContent(nbinsME);
-	  else if(bin == 0) {
-	    AliError("Check input histo at low pt!");
-	    PostData(1,fOutput);
-	    return;
-	  }
-	  fhPtDauVsD->Fill(ptD,ptdau);
+    //soft pion
+    //Soft pion not prolonged from TPC to ITS, so matching should not be applied
+                
 	  //D0
 	  AliAODRecoDecayHF2Prong *D0 = ((AliAODRecoCascadeHF*)d)->Get2Prong();
 	  for(Int_t iDau=0; iDau < 2; iDau++){
@@ -448,9 +431,9 @@ void AliAnalysisTaskTrackingSysPropagation::UserExec(Option_t *){
 	      PostData(1,fOutput);
 	      return;
 	    }
-	    labDau = track->GetLabel();
-	    p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau));
-	    ptdau = track->Pt();
+	    Int_t labDau = track->GetLabel();
+	    AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau));
+	    double ptdau = track->Pt();
                         
 	    bin = fHistMESyst->FindBin(ptdau);
 	    if(bin > 0 && bin <= nbinsME) syst += fHistMESyst->GetBinContent(bin);
