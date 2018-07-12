@@ -1199,6 +1199,10 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                   = 1,    
     cuts.AddCut("c0210113","00200009327000008250400000","2446641051013200000","0163103100000010"); // non lin 0-2%
   } else if (trainConfig == 508) {  // AOD validation
     cuts.AddCut("80010113","00200009327000008250400000","2446641051013200000","0163103100000010"); // non lin 0-100%
+  } else if (trainConfig == 509) {  // AOD validation PHOS NL
+    cuts.AddCut("80010113","00200009327000008250400000","2446601051013200000","0163103100000010"); // non lin 0-100%
+  } else if (trainConfig == 510) {  // AOD validation no NL
+    cuts.AddCut("80010113","00200009327000008250400000","2446600051013200000","0163103100000010"); // non lin 0-100%
 
   // ===============================================================================================
   // Run 2 data PHOS clusters 8TeV
@@ -1310,7 +1314,7 @@ void AddTask_GammaConvCalo_pPb( Int_t     trainConfig                   = 1,    
       HeaderList->Add(HeaderP8J);
     }
   }
-  
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts        = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
