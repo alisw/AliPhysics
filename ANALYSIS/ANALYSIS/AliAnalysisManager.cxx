@@ -28,6 +28,7 @@
 #include "AliAnalysisManager.h"
 
 #include <cerrno>
+#include <Compression.h>		
 #include <Riostream.h>
 #include <TError.h>
 #include <TMap.h>
@@ -1168,6 +1169,7 @@ void AliAnalysisManager::Terminate()
          if (!gSystem->AccessPathName(filename) && !firsttime) openoption = "UPDATE";
 	      if (fDebug>1) printf("Opening file: %s  option=%s\n",filename, openoption.Data());
          file = new TFile(filename, openoption);
+         file->SetCompressionSettings(ROOT::CompressionSettings(ROOT::kZLIB, 1));
       } else {
          if (fDebug>1) printf("File <%s> already opened with option: <%s> \n", filename, file->GetOption());
          openoption = file->GetOption();

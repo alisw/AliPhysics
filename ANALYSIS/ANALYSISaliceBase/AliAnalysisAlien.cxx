@@ -22,6 +22,7 @@
 
 #include "AliAnalysisAlien.h"
 
+#include <Compression.h>		
 #include "Riostream.h"
 #include "TEnv.h"
 #include "TKey.h"
@@ -940,6 +941,7 @@ Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
    }
    TString stest = "plugin_test_copy";
    TFile f(stest, "RECREATE");
+   f.SetCompressionSettings(ROOT::CompressionSettings(ROOT::kZLIB, 1));
    // User may not have write permissions to current directory 
    if (f.IsZombie()) {
       Error("CheckFileCopy", "Cannot create local test file. Do you have write access to current directory: <%s> ?",
@@ -4035,6 +4037,7 @@ void AliAnalysisAlien::WriteAnalysisFile()
       }
       TDirectory *cdir = gDirectory;
       TFile *file = TFile::Open(analysisFile, "RECREATE");
+      file->SetCompressionSettings(ROOT::CompressionSettings(ROOT::kZLIB, 1));
       if (file) {
          // Skip task Terminate calls for the grid job (but not in test mode, where we want to check also the terminate mode
          if (!TestBit(AliAnalysisGrid::kTest)) mgr->SetSkipTerminate(kTRUE);
