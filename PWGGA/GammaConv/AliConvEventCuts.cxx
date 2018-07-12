@@ -999,7 +999,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t centrality selection based on V0M \n");
     } else if (fDetectorCentrality == 1){
       printf("\t centrality selection based on Cl1 \n");
-    } else if (fDetectorCentrality == 1){
+    } else if (fDetectorCentrality == 2){
       printf("\t centrality selection based on ZNA \n");
     }
     if (fModCentralityClass == 0){
@@ -1031,7 +1031,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t centrality selection based on V0A \n");
     } else if (fDetectorCentrality == 1){
       printf("\t centrality selection based on Cl1 \n");
-    } else if (fDetectorCentrality == 1){
+    } else if (fDetectorCentrality == 2){
       printf("\t centrality selection based on ZNA \n");
     }
     if (fModCentralityClass == 0){
