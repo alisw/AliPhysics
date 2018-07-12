@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
- AliAnalysisTaskCaloHFEpPbRun2* AddTaskCaloMultipPbRun2(
+ AliAnalysisTaskCaloHFEpPbRun2* AddTaskCaloHFEpPbRun2(
                                   TString name = "name",
                                   TString infoname = "infoname",
                                   TString period,
