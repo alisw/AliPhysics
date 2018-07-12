@@ -15,18 +15,13 @@
 
 #include <TClonesArray.h>
 #include <TH1F.h>
-#include <TF1.h>
 #include <TH2F.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TH3.h>
 #include <THnSparse.h>
 #include <TList.h>
 #include <array>
 #include <iostream>
 #include <map>
 #include <vector>
-#include <TRandom3.h>
 #include <TClonesArray.h>
 #include <TGrid.h>
 #include <THistManager.h>
@@ -45,19 +40,10 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
-#include "AliEMCALGeometry.h"
-#include "AliVCaloCells.h"
-#include "AliESDCaloCells.h"
-#include "AliMCEvent.h"
-#include "AliMCParticle.h"
-#include "AliGenEventHeader.h"
-#include "AliGenPythiaEventHeader.h"
 
 
 #include "AliAnalysisUtils.h"
 #include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliVEvent.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "Tracks/AliEmcalTriggerOfflineSelection.h"
 #include "AliInputEventHandler.h"
@@ -65,6 +51,7 @@
 #include "AliMultSelection.h"
 #include "AliMultEstimator.h"
 #include "AliOADBContainer.h"
+
 
 #include "AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA.h"
 
@@ -960,25 +947,7 @@ void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoCellLoop()
  *  particles in a current event and fills the relevent histograms.
  *  Functionality still in development
  */
-void AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::DoParticleLoop()
-{
-    TString histname;
-    TString groupname;
-    AliParticleContainer* partMCCont = 0;
-    //TIter next(&fGeneratorLevel);
-    for(auto trk : partMCCont->all()){
-         groupname = partMCCont->GetName();
-         UInt_t count = 0;
-         for(auto part : partMCCont->accepted()) {
-             if (!part) continue;
-             
-             histname = TString::Format("%s/fHistParticleLvlpT_%d", groupname.Data(), fCent);
-             fHistManager.FillTH1(histname, part->Pt());
-         }
-     }
-    
-    
-}
+
 
 /**
  * This function is executed automatically for the first event.

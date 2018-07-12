@@ -59,30 +59,6 @@ class AliOADBContainer;
 class AliEMCALTriggerPatchInfo;
 class THistManager;
 class TObjArray;
-class TFormula;
-class TH2F;
-class TH1F;
-class TF1;
-class THnSparse;
-class TRandom3;
-class TObjArray;
-class TClonesArray;
-class TObject;
-class TString;
-class TProfile2D;
-class AliAODEvent;
-class AliESDEvent;
-class AliMCEvent;
-class AliVEvent;
-class AliStack;
-class AliEMCALGeometry;
-//class AliEMCalJet;
-class AliEMCALRecoUtils;
-class AliESDCaloCluster;
-class AliVTrack;
-class AliMCEvent;
-class AliAODEvent;
-class AliESDEvent;
 
 /**
  * \class AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA
@@ -127,7 +103,7 @@ protected:
     void                        DoTrackLoop()                                     ;
     void                        DoClusterLoop()                                   ;
     void                        DoCellLoop()                                      ;
-    void                        DoParticleLoop()                                  ;
+    //void                        DoParticleLoop()                                  ;
     //void                        DoMCJetLoop()                                     ;
     //Bool_t                      IsLEDEvent() const                                ;
     
