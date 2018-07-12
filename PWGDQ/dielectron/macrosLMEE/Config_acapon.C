@@ -15,6 +15,7 @@ TObjArray *arrNames = names.Tokenize(";");
 const Int_t nDie = arrNames->GetEntries();
 Bool_t MCenabled = kTRUE; //Needed for LMEEcutlib
 Bool_t isQAtask =  kTRUE;
+Int_t selectedCuts = -1;
 Int_t selectedPID = -1;
 Bool_t pairCuts = kTRUE;
 
@@ -42,67 +43,61 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
     cout << "cutDefinition = " << cutDefinition << endl;
     // Setup Analysis Selection
     if(cutDefinition == "all"){
-        selectedPID = LMEECutLib::kAllSpecies;
-        die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+        selectedCuts = LMEECutLib::kAllSpecies;
+				selectedPID = LMEECutLib::kAllSpecies;
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
         if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
+            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
         }
     }
     else if(cutDefinition == "electrons"){
-        selectedPID = LMEECutLib::kElectrons;
-        die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+        selectedCuts = LMEECutLib::kElectrons;
+				selectedPID = LMEECutLib::kAllSpecies;
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
         if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
+            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
         }
     }
     else if(cutDefinition == "highMult"){
-        selectedPID = LMEECutLib::kHighMult;
-        die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+        selectedCuts = LMEECutLib::kHighMult;
+				selectedPID = LMEECutLib::kAllSpecies;
+        die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
         if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
+            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
         }
     }
     else if(cutDefinition == "midMult"){
-        selectedPID = LMEECutLib::kMidMult;
-        die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+        selectedCuts = LMEECutLib::kMidMult;
+				selectedPID = LMEECutLib::kAllSpecies;
+        die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
         if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
+            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
         }
     }
     else if(cutDefinition == "lowMult"){
-        selectedPID = LMEECutLib::kLowMult;
-        die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+        selectedCuts = LMEECutLib::kLowMult;
+				selectedPID = LMEECutLib::kAllSpecies;
+        die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
         if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
+            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
         }
     }
     else if(cutDefinition == "TTreeCuts"){
-        selectedPID = LMEECutLib::kTTreeCuts;
-        //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetKineCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedPID) );
-        die->GetTrackFilter().AddCuts( LMcutlib->GetPIDCutsAna(selectedPID) );
+        selectedCuts = LMEECutLib::kTTreeCuts;
+				selectedPID = LMEECutLib::kAllSpecies;
+        //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCutsAna(selectedCuts, selectedPID) );
         if(pairCuts){
-            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedPID) );
-            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedPID) );
+            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCutsAna(selectedCuts) );
         }
     }
     
@@ -117,7 +112,7 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
 
     AliDielectronMixingHandler* mix = 0x0;
     if(doMixing){
-        mix = LMcutlib->GetMixingHandler(selectedPID);
+        mix = LMcutlib->GetMixingHandler(selectedCuts);
         die->SetMixingHandler(mix);
     }
 

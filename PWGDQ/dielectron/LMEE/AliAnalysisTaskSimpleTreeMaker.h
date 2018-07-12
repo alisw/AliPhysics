@@ -32,14 +32,24 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
   public:
 		AliAnalysisTaskSimpleTreeMaker(const char *name);
 		AliAnalysisTaskSimpleTreeMaker();
-		virtual ~AliAnalysisTaskSimpleTreeMaker(){} 
+		~AliAnalysisTaskSimpleTreeMaker();
 
 		virtual void   UserCreateOutputObjects();
 		virtual void   UserExec(Option_t *option);
 		virtual void   FinishTaskOutput();
 		virtual void   Terminate(Option_t *);
-		//~ 
+
+		void SetupTrackCuts(AliDielectronCutGroup* finalTrackCuts);
+		void SetupEventCuts(AliDielectronEventCuts* finalEventCuts);
 	
+		//PID calibration function to set correct the width and mean of detector
+		//response (I.e each bang should be unit guassian)
+		void SetCorrWidthMean(TH3D* width, TH3D* mean){
+			fMean  = mean;
+			fWidth = width;
+		};
+
+
 		void SetCentralityPercentileRange(Double_t min, Double_t max){
 				fCentralityPercentileMin = min;
 				fCentralityPercentileMax = max;
@@ -135,9 +145,6 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		void setSDDstatus(Bool_t answer){
 				fHasSDD = answer;
 		}
-		void createGenTree(Bool_t answer){
-			fIsEffTree = answer;
-		}
 		Bool_t isV0daughterAccepted(AliVTrack* track);
 
 		void setFilterBitSelection(Int_t filterBit){
@@ -165,6 +172,20 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		AliPIDResponse* fPIDResponse; //! PID response object
 
 		TTree* fTree;
+	
+		//Dielectron cut classes needed to source cuts from LMEE cut libraries
+		//The desired cut library should be specified in the AddTask
+		AliDielectronEventCuts* eventCuts;
+		AliAnalysisFilter* eventFilter;
+		
+		AliDielectronVarCuts* trackCuts;
+		AliDielectronTrackCuts *trackFilter;
+		AliDielectronPID *pidCuts;
+		AliDielectronCutGroup* cuts;
+		AliAnalysisFilter* filter; 
+
+		//Class needed to use PID within the Dielectron Framework
+		AliDielectronVarManager* varManager;
 
 		//TTree branch variables
 		//Event variables
@@ -251,16 +272,16 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Bool_t fIsV0tree;
 		TH2F* fArmPlot;
 
-		//Efficiency calculation flags
-		Bool_t fIsEffTree;
-
 		Bool_t fIsAOD;
 		Int_t fFilterBit;
 		
 		//Grid PID
 		Bool_t fIsGRIDanalysis;
 		Int_t fGridPID;
-		
+				
+		Bool_t fUseTPCcorr;
+		TH3D* fWidth;
+		TH3D* fMean;
 		ClassDef(AliAnalysisTaskSimpleTreeMaker, 4); //
 
 };
