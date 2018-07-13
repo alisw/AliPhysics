@@ -84,11 +84,11 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
     fTree(0x0),
 		eventCuts(0),
 		eventFilter(0),
+		varCuts(0),
 		trackCuts(0),
-		trackFilter(0),
 		pidCuts(0),
 		cuts(0),
-		filter(0),
+		trackFilter(0),
 		varManager(0),
 		primaryVertex{0,0,0},
 		multiplicityV0A(0),
@@ -114,6 +114,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
 		charge(0),
 		EnSigmaITS(0),
 		EnSigmaTPC(0),
+		EnSigmaTPCcorr(0),
 		EnSigmaTOF(0),
 		PnSigmaTPC(0),
 		PnSigmaITS(0),
@@ -179,11 +180,11 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     fTree(0),
 		eventCuts(0),
 		eventFilter(0),
+		varCuts(0),
 		trackCuts(0),
-		trackFilter(0),
 		pidCuts(0),
 		cuts(0),
-		filter(0),
+		trackFilter(0),
 		varManager(0),
 		primaryVertex{0,0,0},
 		multiplicityV0A(0),
@@ -209,6 +210,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 		charge(0),
 		EnSigmaITS(0),
 		EnSigmaTPC(0),
+		EnSigmaTPCcorr(0),
 		EnSigmaTOF(0),
 		PnSigmaTPC(0),
 		PnSigmaITS(0),
@@ -285,11 +287,11 @@ AliAnalysisTaskSimpleTreeMaker::~AliAnalysisTaskSimpleTreeMaker(){
   delete eventCuts;
   delete eventFilter;
   
+  delete varCuts;
   delete trackCuts;
-  delete trackFilter;
   delete pidCuts;
   delete cuts;
-  delete filter; 
+  delete trackFilter; 
 
 }
 
@@ -331,6 +333,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		fTree->Branch("charge",            &charge);
 		fTree->Branch("EsigITS",           &EnSigmaITS);
 		fTree->Branch("EsigTPC",           &EnSigmaTPC);
+		if(fUseTPCcorr){
+			fTree->Branch("EsigTPCcorr",       &EnSigmaTPCcorr);
+		}
 		fTree->Branch("EsigTOF",           &EnSigmaTOF);
 		fTree->Branch("PsigITS",           &PnSigmaITS);
 		fTree->Branch("PsigTPC",           &PnSigmaTPC);
@@ -598,16 +603,16 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				}*/
       }
 
-			//Apply global track filter
+			//Apply global track trackFilter
 			if(!fIsAOD){
 				if(!(fESDtrackCuts->AcceptTrack(dynamic_cast<const AliESDtrack*>(track)))){ 
 						continue; 
 				}
 			}
 			else{
-				UInt_t selectedMask = (1<<filter->GetCuts()->GetEntries())-1;
-				if( selectedMask != (filter->IsSelected((AliVParticle*)track)) ){
-						continue;
+				UInt_t selectedMask = (1<<trackFilter->GetCuts()->GetEntries())-1;
+				if( selectedMask != (trackFilter->IsSelected((AliVParticle*)track)) ){
+					continue;
 				}
 			}
 
@@ -620,8 +625,9 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			//Get PID response of track without TPC calibration
 			EnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron);
 			if(fUseTPCcorr){
-				EnSigmaTPC -= AliDielectronPID::GetCntrdCorr(track);
-				EnSigmaTPC /= AliDielectronPID::GetWdthCorr(track);
+				EnSigmaTPCcorr = EnSigmaTPC;
+				EnSigmaTPCcorr -= AliDielectronPID::GetCntrdCorr(track);
+				EnSigmaTPCcorr /= AliDielectronPID::GetWdthCorr(track);
 			}
 				
 			EnSigmaITS = -999;
@@ -1209,13 +1215,13 @@ void AliAnalysisTaskSimpleTreeMaker::SetupTrackCuts(AliDielectronCutGroup* cuts)
 
 	//Initialise track cut object and add to DielectronCutGroup
 	//Track cuts include kinematic cuts, track cuts and PID cuts
-	filter = new AliAnalysisFilter("filter", "filter");
-	filter->AddCuts(cuts);
+	trackFilter = new AliAnalysisFilter("TrackFilter", "trackCuts");
+	trackFilter->AddCuts(cuts);
 }
 
 void AliAnalysisTaskSimpleTreeMaker::SetupEventCuts(AliDielectronEventCuts* cuts){
 
-	//Initiliase the event filter object and add event cuts
+	//Initiliase the event trackFilter object and add event cuts
 	eventFilter = new AliAnalysisFilter("eventFilter", "eventFilter");
 	eventFilter->AddCuts(cuts);
 }

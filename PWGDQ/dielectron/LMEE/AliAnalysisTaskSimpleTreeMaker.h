@@ -42,13 +42,12 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		void SetupTrackCuts(AliDielectronCutGroup* finalTrackCuts);
 		void SetupEventCuts(AliDielectronEventCuts* finalEventCuts);
 	
-		//PID calibration function to set correct the width and mean of detector
-		//response (I.e each bang should be unit guassian)
+		//PID calibration function to correct the width and mean of detector
+		//response (I.e should be unit guassian)
 		void SetCorrWidthMean(TH3D* width, TH3D* mean){
 			fMean  = mean;
 			fWidth = width;
 		};
-
 
 		void SetCentralityPercentileRange(Double_t min, Double_t max){
 				fCentralityPercentileMin = min;
@@ -154,6 +153,10 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 			hasMC = answer;
 		}
 
+		void SetUseCorr(Bool_t answer){
+			fUseTPCcorr = answer;
+		}
+
 		Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
 
   private:
@@ -178,11 +181,11 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		AliDielectronEventCuts* eventCuts;
 		AliAnalysisFilter* eventFilter;
 		
-		AliDielectronVarCuts* trackCuts;
-		AliDielectronTrackCuts *trackFilter;
+		AliDielectronVarCuts* varCuts;
+		AliDielectronTrackCuts *trackCuts;
 		AliDielectronPID *pidCuts;
 		AliDielectronCutGroup* cuts;
-		AliAnalysisFilter* filter; 
+		AliAnalysisFilter* trackFilter; 
 
 		//Class needed to use PID within the Dielectron Framework
 		AliDielectronVarManager* varManager;
@@ -214,6 +217,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Int_t charge;
 		Double_t EnSigmaITS;
 		Double_t EnSigmaTPC;
+		Double_t EnSigmaTPCcorr;
 		Double_t EnSigmaTOF;
 		Double_t PnSigmaTPC;
 		Double_t PnSigmaITS;
