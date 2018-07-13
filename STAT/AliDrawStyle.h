@@ -292,7 +292,7 @@ protected:
 public:
   static const TObjArray *GetCssStyle(const char *styleName) {return fCssStyleAlice[styleName];}
   template <typename T>
-    static void     ObjectApplyStyle(const char* styleName, T *cObj, Int_t objNum=0, Int_t verbose=0);
+    static void     TObjectApplyStyle(const char* styleName, T *cObj, Int_t objNum=0, Int_t verbose=0);
   static void       TGraphApplyStyle(const char* styleName, TGraph *cGraph, Int_t objNum=0, Int_t verbose=0);
   static void       TH1ApplyStyle(const char* styleName, TH1 *cHis, Int_t objNum=0, Int_t verbose=0);
   static void       TF1ApplyStyle(const char* styleName, TF1 *cFunc, Int_t objNum=0, Int_t verbose=0);
@@ -316,6 +316,7 @@ public:
   static Int_t      RgbToColor_t(const char *inputString, Int_t verbose=0);
   static Int_t      HexToColor_t(const char *inputString, Int_t verbose=0);
   static TObjArray *ReadCSSFile(const char *  inputName, TObjArray * array=nullptr, Int_t verbose=0);
+  static TObjArray *ReadCssString(TString  cssString, TObjArray *array=nullptr, Int_t verbose=0);
   static void       WriteCSSFile(TObjArray * cssArray, const char *  outputName, std::fstream *cssOut=nullptr);
   static Float_t   PrepareValue(const char* styleName, TString propertyName, TString elementID, TString classID, TString objectID,                                        TString localStyle, Bool_t &status, Int_t objNum=0, Int_t verbose=0);
   ClassDef(AliDrawStyle,1);

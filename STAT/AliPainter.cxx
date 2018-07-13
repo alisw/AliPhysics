@@ -63,7 +63,7 @@ std::vector<TString> AliPainter::rangesVec;
 *       \code
 *         TFile::SetCacheFileDir(".");
 *         TFile *finput = TFile::Open("http://aliqatrkeos.web.cern.ch/aliqatrkeos/performance/AliPainterTest.root","CACHEREAD");
-*         TTree *tree = (TTree *) finput.Get("hisPtAll");
+*         TTree *tree = (TTree *) finput->Get("hisPtAll");
 *         hisArray = new TObjArray();
 *         TList *keys = finput->GetListOfKeys();
 *         for (Int_t iKey = 0; iKey<keys->GetEntries();iKey++) {
@@ -415,7 +415,7 @@ void AliPainter::RangesToMap(TString range, Int_t axisNum, axisRangesMap &result
 *       \code
 *         TFile::SetCacheFileDir(".");
 *         TFile *finput = TFile::Open("http://aliqatrkeos.web.cern.ch/aliqatrkeos/performance/AliPainterTest.root","CACHEREAD");
-*         TTree *tree = (TTree *) finput.Get("hisPtAll");
+*         TTree *tree = (TTree *) finput->Get("hisPtAll");
 *         hisArray = new TObjArray();
 *         TList *keys = finput->GetListOfKeys();
 *         for (Int_t iKey = 0; iKey<keys->GetEntries();iKey++) {
@@ -720,7 +720,7 @@ void AliPainter::ParsePandasString(const TString optionsStr, std::map<TString, T
     if (verbose == 4) ::Info("AliPainter::ParsePandasString", "From string - \"%s\" key is \"%s\"", optionStr.Data(), key.Data());
     value = TString(optionStr(optionStr.Index("=") + 1, optionStr.Length())).ReplaceAll(" ", "");
     if (verbose == 4) ::Info("AliPainter::ParsePandasString", "From string - \"%s\" value is \"%s\"", optionStr.Data(), value.Data());
-    if (optMap.find(key) == optMap.end()) {
+    if (optMap.find(key) == optMap.end() && key != TString()) {
       TString defaultKeys = "";
       for (std::map<TString, TString>::iterator it=optMap.begin(); it!=optMap.end(); ++it)
         defaultKeys += it->first + ",";
