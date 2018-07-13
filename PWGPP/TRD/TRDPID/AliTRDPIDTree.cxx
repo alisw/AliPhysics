@@ -68,7 +68,7 @@ AliTRDPIDTree::AliTRDPIDTree(const char *name)
     fNumTagsStored(0), fCollisionSystem(3),
     fpdg(0), frun(0), frunnumber(0), fcentrality(0), fTRDNcls(0), fTRDntracklets(0), fTRDntrackletsPID(0),
     fTRDtheta(0), fTRDTPCtgl(0), fTRDsignal(0), fTRDnclsdEdx(0), fTRDnch(0), fPDG(0), fTrackCharge(0), fPDGTRUE(0), fChi2(0),
-    fhtrackCuts(0), fhEventCount(0), fhArmenteros(0), fUseExtraPileupCut(kTRUE), fHistV0MvsTPCoutBeforePileUpCuts(0), fHistV0MvsTPCoutAfterPileUpCuts(0)
+    fhtrackCuts(0), fhEventCount(0), fhArmenteros(0), fUseExtraPileupCut(kFALSE), fHistV0MvsTPCoutBeforePileUpCuts(0), fHistV0MvsTPCoutAfterPileUpCuts(0)
 {
 
   //
