@@ -1183,13 +1183,6 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
     FillPhotonCutIndex(kdEdxCuts);
     return kFALSE;
   }
-  // }else{
-  //   if(!KappaCuts(photon, event) || !dEdxCuts(negTrack) || !dEdxCuts(posTrack)) {
-  //     FillPhotonCutIndex(kdEdxCuts);
-  //     return kFALSE;
-  //   }
-  // }
-
 
   if (fHistoEtaDistV0sAfterdEdxCuts)fHistoEtaDistV0sAfterdEdxCuts->Fill(photon->GetPhotonEta());
   // Photon Cuts
@@ -1538,7 +1531,7 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
     }
     cutIndex++;
   }
-  else{cutIndex=3;}
+  else{cutIndex+=3;}
 
   if(fDoKaonRejectionLowP == kTRUE && !fSwitchToKappa){
     if(fCurrentTrack->P()<fPIDMinPKaonRejectionLowP ){
