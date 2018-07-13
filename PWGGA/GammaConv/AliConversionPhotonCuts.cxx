@@ -1609,31 +1609,35 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
   if(!fPIDResponse){AliError("No PID Response"); return kTRUE;}// if still missing fatal error
 
   Short_t Charge    = fCurrentTrack->Charge();
-  Double_t CentrnSig = fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron);
+  //  Double_t CentrnSig = 
+  Double_t electronNSigmaTPC = fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron);
+  Double_t electronNSigmaTPCCor=0.; 
   Double_t P=0.;         
   Double_t Eta=0.;    
   Double_t R=0.;
+
   if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
     P = fCurrentTrack->P();
     Eta = fCurrentTrack->Eta();
     R = photon->GetConversionRadius();
+    electronNSigmaTPCCor = GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,R);
   }
 
   Int_t cutIndex=0;
   if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-  if(fHistoTPCdEdxSigbefore)fHistoTPCdEdxSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
+  if(fHistoTPCdEdxSigbefore)fHistoTPCdEdxSigbefore->Fill(fCurrentTrack->P(), electronNSigmaTPC);
   if(fHistoTPCdEdxbefore)fHistoTPCdEdxbefore->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
   cutIndex++;
   if(fDodEdxSigmaCut == kTRUE && !fSwitchToKappa){
     // TPC Electron Line
     if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
-      if( GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)<fPIDnSigmaBelowElectronLine || GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)>fPIDnSigmaAboveElectronLine ){
+      if( electronNSigmaTPCCor < fPIDnSigmaBelowElectronLine ||  electronNSigmaTPCCor >fPIDnSigmaAboveElectronLine ){
 	if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
 	return kFALSE;
       }
     } else{
-      if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
-	  fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine){
+      if( electronNSigmaTPC < fPIDnSigmaBelowElectronLine ||
+	  electronNSigmaTPC > fPIDnSigmaAboveElectronLine){
 	if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
 	return kFALSE;
       }
@@ -1642,14 +1646,14 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
     // TPC Pion Line
     if( fCurrentTrack->P()>fPIDMinPnSigmaAbovePionLine && fCurrentTrack->P()<fPIDMaxPnSigmaAbovePionLine ){
       if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
-	if( GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)>fPIDnSigmaBelowElectronLine && GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)<fPIDnSigmaAboveElectronLine&&
+	if( electronNSigmaTPCCor >fPIDnSigmaBelowElectronLine && electronNSigmaTPCCor < fPIDnSigmaAboveElectronLine&&
 	    fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 	  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
 	  return kFALSE;
 	}
       } else{
-	if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
-	   fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	if( electronNSigmaTPC > fPIDnSigmaBelowElectronLine &&
+	    electronNSigmaTPC < fPIDnSigmaAboveElectronLine&&
 	   fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 	  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
 	  return kFALSE;
@@ -1661,15 +1665,15 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
     // High Pt Pion rej
     if( fCurrentTrack->P()>fPIDMaxPnSigmaAbovePionLine ){
       if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
-	if( GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)>fPIDnSigmaBelowElectronLine &&
-	    GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)<fPIDnSigmaAboveElectronLine &&
+	if( electronNSigmaTPCCor > fPIDnSigmaBelowElectronLine &&
+	    electronNSigmaTPCCor < fPIDnSigmaAboveElectronLine &&
 	    fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
 	  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
 	  return kFALSE;
 	}
       } else{
-	if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
-	   fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine &&
+	if( electronNSigmaTPC > fPIDnSigmaBelowElectronLine &&
+	    electronNSigmaTPC < fPIDnSigmaAboveElectronLine &&
 	   fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
 	  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
 	  return kFALSE;
