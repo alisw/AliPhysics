@@ -185,7 +185,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t AcceptanceCuts(AliConversionPhotonBase *photon);
     Bool_t AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg);
     Bool_t PhiSectorCut(AliConversionPhotonBase * photon);
-    Bool_t dEdxCuts(AliVTrack * track);
+    //   Bool_t dEdxCuts(AliVTrack * track);
     Bool_t dEdxCuts(AliVTrack * track, AliConversionPhotonBase * photon);
     Bool_t KappaCuts(AliConversionPhotonBase * photon,AliVEvent *event);
     Bool_t ArmenterosQtCut(AliConversionPhotonBase *photon);
@@ -254,7 +254,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
     Bool_t GetElecDeDxPostCalibrationInitialized() {return fElecDeDxPostCalibrationInitialized;}
     Bool_t  InitializeElecDeDxPostCalibration(TString filename);
-    Float_t GetCorrectedElectronTPCResponse(Float_t charge,Float_t nsig,Float_t P,Float_t Eta,Float_t R);
+    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t R);
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms

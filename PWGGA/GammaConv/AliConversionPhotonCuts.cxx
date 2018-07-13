@@ -674,7 +674,7 @@ Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filena
   return kTRUE;
 }
 //_________________________________________________________________________
-Float_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Float_t charge, Float_t nsig,Float_t P,Float_t Eta,Float_t R){
+Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge, Double_t nsig, Double_t P, Double_t Eta, Double_t R){
 
   Double_t Charge  = charge;
   Double_t CornSig = nsig;
@@ -1178,17 +1178,17 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
   if (fHistoEtaDistV0s)fHistoEtaDistV0s->Fill(photon->GetPhotonEta());
 
   // dEdx Cuts
-  if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
-    if(!KappaCuts(photon, event) || !dEdxCuts(negTrack,photon) || !dEdxCuts(posTrack,photon)) {
-      FillPhotonCutIndex(kdEdxCuts);
-      return kFALSE;
-    }
-  }else{
-    if(!KappaCuts(photon, event) || !dEdxCuts(negTrack) || !dEdxCuts(posTrack)) {
-      FillPhotonCutIndex(kdEdxCuts);
-      return kFALSE;
-    }
+  //  if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+  if(!KappaCuts(photon, event) || !dEdxCuts(negTrack,photon) || !dEdxCuts(posTrack,photon)) {
+    FillPhotonCutIndex(kdEdxCuts);
+    return kFALSE;
   }
+  // }else{
+  //   if(!KappaCuts(photon, event) || !dEdxCuts(negTrack) || !dEdxCuts(posTrack)) {
+  //     FillPhotonCutIndex(kdEdxCuts);
+  //     return kFALSE;
+  //   }
+  // }
 
 
   if (fHistoEtaDistV0sAfterdEdxCuts)fHistoEtaDistV0sAfterdEdxCuts->Fill(photon->GetPhotonEta());
@@ -1456,149 +1456,149 @@ Float_t AliConversionPhotonCuts::GetKappaTPC(AliConversionPhotonBase *gamma, Ali
 
 }
 ///________________________________________________________________________
-Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
-  // Electron Identification Cuts for Photon reconstruction
-  if(!fPIDResponse){InitPIDResponse();}// Try to reinitialize PID Response
-  if(!fPIDResponse){AliError("No PID Response"); return kTRUE;}// if still missing fatal error
+// Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack){
+//   // Electron Identification Cuts for Photon reconstruction
+//   if(!fPIDResponse){InitPIDResponse();}// Try to reinitialize PID Response
+//   if(!fPIDResponse){AliError("No PID Response"); return kTRUE;}// if still missing fatal error
 
-  Int_t cutIndex=0;
-  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-  if(fHistoTPCdEdxSigbefore)fHistoTPCdEdxSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
-  if(fHistoTPCdEdxbefore)fHistoTPCdEdxbefore->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
-  cutIndex++;
-  if(fDodEdxSigmaCut == kTRUE && !fSwitchToKappa){
-    // TPC Electron Line
-    if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
-      fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine){
+//   Int_t cutIndex=0;
+//   if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//   if(fHistoTPCdEdxSigbefore)fHistoTPCdEdxSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
+//   if(fHistoTPCdEdxbefore)fHistoTPCdEdxbefore->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
+//   cutIndex++;
+//   if(fDodEdxSigmaCut == kTRUE && !fSwitchToKappa){
+//     // TPC Electron Line
+//     if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
+//       fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine){
 
-      if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-      return kFALSE;
-    }
-    cutIndex++;
+//       if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//       return kFALSE;
+//     }
+//     cutIndex++;
 
-    // TPC Pion Line
-    if( fCurrentTrack->P()>fPIDMinPnSigmaAbovePionLine && fCurrentTrack->P()<fPIDMaxPnSigmaAbovePionLine ){
-      if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
-        fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
-        fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+//     // TPC Pion Line
+//     if( fCurrentTrack->P()>fPIDMinPnSigmaAbovePionLine && fCurrentTrack->P()<fPIDMaxPnSigmaAbovePionLine ){
+//       if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+//         fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+//         fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
 
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-        return kFALSE;
-      }
-    }
-    cutIndex++;
+//         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//         return kFALSE;
+//       }
+//     }
+//     cutIndex++;
 
-    // High Pt Pion rej
-    if( fCurrentTrack->P()>fPIDMaxPnSigmaAbovePionLine ){
-      if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
-        fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine &&
-        fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
+//     // High Pt Pion rej
+//     if( fCurrentTrack->P()>fPIDMaxPnSigmaAbovePionLine ){
+//       if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+//         fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine &&
+//         fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
 
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-        return kFALSE;
-      }
-    }
-    cutIndex++;
-  }
-  else{cutIndex+=3;}
+//         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//         return kFALSE;
+//       }
+//     }
+//     cutIndex++;
+//   }
+//   else{cutIndex+=3;}
 
-  if(fDoKaonRejectionLowP == kTRUE && !fSwitchToKappa){
-    if(fCurrentTrack->P()<fPIDMinPKaonRejectionLowP ){
-      if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
+//   if(fDoKaonRejectionLowP == kTRUE && !fSwitchToKappa){
+//     if(fCurrentTrack->P()<fPIDMinPKaonRejectionLowP ){
+//       if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kKaon))<fPIDnSigmaAtLowPAroundKaonLine){
 
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-        return kFALSE;
-      }
-    }
-  }
-  cutIndex++;
-  if(fDoProtonRejectionLowP == kTRUE && !fSwitchToKappa){
-    if( fCurrentTrack->P()<fPIDMinPProtonRejectionLowP ){
-      if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
+//         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//         return kFALSE;
+//       }
+//     }
+//   }
+//   cutIndex++;
+//   if(fDoProtonRejectionLowP == kTRUE && !fSwitchToKappa){
+//     if( fCurrentTrack->P()<fPIDMinPProtonRejectionLowP ){
+//       if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kProton))<fPIDnSigmaAtLowPAroundProtonLine){
 
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-        return kFALSE;
-      }
-    }
-  }
-  cutIndex++;
+//         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//         return kFALSE;
+//       }
+//     }
+//   }
+//   cutIndex++;
 
-  if(fDoPionRejectionLowP == kTRUE && !fSwitchToKappa){
-    if( fCurrentTrack->P()<fPIDMinPPionRejectionLowP ){
-      if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion))<fPIDnSigmaAtLowPAroundPionLine){
+//   if(fDoPionRejectionLowP == kTRUE && !fSwitchToKappa){
+//     if( fCurrentTrack->P()<fPIDMinPPionRejectionLowP ){
+//       if( TMath::Abs(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion))<fPIDnSigmaAtLowPAroundPionLine){
 
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-        return kFALSE;
-      }
-    }
-  }
-  cutIndex++;
+//         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//         return kFALSE;
+//       }
+//     }
+//   }
+//   cutIndex++;
 
 
-  // cout<<"Start"<<endl;
-  // AliPIDResponse::EDetPidStatus status=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,fCurrentTrack);
+//   // cout<<"Start"<<endl;
+//   // AliPIDResponse::EDetPidStatus status=fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,fCurrentTrack);
 
-  // if( ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) && ( (status & AliVTrack::kTIME) == AliVTrack::kTIME ))
-  //    {cout<<"TOF DA"<<endl;}
-  // if(status == AliPIDResponse::kDetPidOk){
-  //    Float_t probMis = fPIDResponse->GetTOFMismatchProbability(fCurrentTrack);
-  //    cout<<"--> "<<probMis<<endl;
-  //    if(probMis > 0.01){
+//   // if( ( (status & AliVTrack::kTOFout) == AliVTrack::kTOFout ) && ( (status & AliVTrack::kTIME) == AliVTrack::kTIME ))
+//   //    {cout<<"TOF DA"<<endl;}
+//   // if(status == AliPIDResponse::kDetPidOk){
+//   //    Float_t probMis = fPIDResponse->GetTOFMismatchProbability(fCurrentTrack);
+//   //    cout<<"--> "<<probMis<<endl;
+//   //    if(probMis > 0.01){
 
-  //    }
-  // }
+//   //    }
+//   // }
 
-  if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
-    if(fHistoTOFbefore){
-      Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
-      Double_t  times[AliPID::kSPECIESC];
-      fCurrentTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
-      Double_t TOFsignal = fCurrentTrack->GetTOFsignal();
-      Double_t dT = TOFsignal - t0 - times[0];
-      fHistoTOFbefore->Fill(fCurrentTrack->P(),dT);
-    }
-    if(fHistoTOFSigbefore) fHistoTOFSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
-    if(fUseTOFpid){
-      if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
-        fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)<fTofPIDnSigmaBelowElectronLine ){
-        if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-        return kFALSE;
-      }
-    }
-    if(fHistoTOFSigafter)fHistoTOFSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
-  }
-  cutIndex++;
+//   if((fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
+//     if(fHistoTOFbefore){
+//       Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
+//       Double_t  times[AliPID::kSPECIESC];
+//       fCurrentTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
+//       Double_t TOFsignal = fCurrentTrack->GetTOFsignal();
+//       Double_t dT = TOFsignal - t0 - times[0];
+//       fHistoTOFbefore->Fill(fCurrentTrack->P(),dT);
+//     }
+//     if(fHistoTOFSigbefore) fHistoTOFSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
+//     if(fUseTOFpid){
+//       if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
+//         fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)<fTofPIDnSigmaBelowElectronLine ){
+//         if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//         return kFALSE;
+//       }
+//     }
+//     if(fHistoTOFSigafter)fHistoTOFSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
+//   }
+//   cutIndex++;
 
-  if((fCurrentTrack->GetStatus() & AliESDtrack::kITSpid)){
-    if(fHistoITSSigbefore) fHistoITSSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
-    if(fUseITSpid){
-      if(fCurrentTrack->Pt()<=fMaxPtPIDITS){
-        if(fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron)>fITSPIDnSigmaAboveElectronLine || fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron)<fITSPIDnSigmaBelowElectronLine ){
-          if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-          return kFALSE;
-        }
-      }
-    }
-    if(fHistoITSSigafter)fHistoITSSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
-  }
+//   if((fCurrentTrack->GetStatus() & AliESDtrack::kITSpid)){
+//     if(fHistoITSSigbefore) fHistoITSSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
+//     if(fUseITSpid){
+//       if(fCurrentTrack->Pt()<=fMaxPtPIDITS){
+//         if(fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron)>fITSPIDnSigmaAboveElectronLine || fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron)<fITSPIDnSigmaBelowElectronLine ){
+//           if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//           return kFALSE;
+//         }
+//       }
+//     }
+//     if(fHistoITSSigafter)fHistoITSSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasITS(fCurrentTrack, AliPID::kElectron));
+//   }
 
-  cutIndex++;
+//   cutIndex++;
 
-  // Apply TRD PID
-  if(fDoTRDPID){
-    if(!fPIDResponse->IdentifiedAsElectronTRD(fCurrentTrack,fPIDTRDEfficiency)){
-      if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-      return kFALSE;
-    }
-  }
-  cutIndex++;
+//   // Apply TRD PID
+//   if(fDoTRDPID){
+//     if(!fPIDResponse->IdentifiedAsElectronTRD(fCurrentTrack,fPIDTRDEfficiency)){
+//       if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//       return kFALSE;
+//     }
+//   }
+//   cutIndex++;
 
-  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-  if(fHistoTPCdEdxSigafter)fHistoTPCdEdxSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
-  if(fHistoTPCdEdxafter)fHistoTPCdEdxafter->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
+//   if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+//   if(fHistoTPCdEdxSigafter)fHistoTPCdEdxSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTPC(fCurrentTrack, AliPID::kElectron));
+//   if(fHistoTPCdEdxafter)fHistoTPCdEdxafter->Fill(fCurrentTrack->P(),fCurrentTrack->GetTPCsignal());
 
-  return kTRUE;
-}
+//   return kTRUE;
+// }
 
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionPhotonBase* photon){
@@ -1608,11 +1608,16 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
   if(!fPIDResponse){InitPIDResponse();}// Try to reinitialize PID Response
   if(!fPIDResponse){AliError("No PID Response"); return kTRUE;}// if still missing fatal error
 
-  Float_t Charge    = fCurrentTrack->Charge();
-  Float_t CentrnSig = fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron);
-  Float_t P         = fCurrentTrack->P();
-  Float_t Eta       = fCurrentTrack->Eta();
-  Float_t R         = photon->GetConversionRadius();
+  Short_t Charge    = fCurrentTrack->Charge();
+  Double_t CentrnSig = fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron);
+  Double_t P=0.;         
+  Double_t Eta=0.;    
+  Double_t R=0.;
+  if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+    P = fCurrentTrack->P();
+    Eta = fCurrentTrack->Eta();
+    R = photon->GetConversionRadius();
+  }
 
   Int_t cutIndex=0;
   if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
@@ -1621,28 +1626,54 @@ Bool_t AliConversionPhotonCuts::dEdxCuts(AliVTrack *fCurrentTrack,AliConversionP
   cutIndex++;
   if(fDodEdxSigmaCut == kTRUE && !fSwitchToKappa){
     // TPC Electron Line
-    if( GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)<fPIDnSigmaBelowElectronLine || GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)>fPIDnSigmaAboveElectronLine ){
-      if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-      return kFALSE;
+    if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+      if( GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)<fPIDnSigmaBelowElectronLine || GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)>fPIDnSigmaAboveElectronLine ){
+	if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+	return kFALSE;
+      }
+    } else{
+      if( fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
+	  fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine){
+	if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+	return kFALSE;
+      }
     }
     cutIndex++;
     // TPC Pion Line
     if( fCurrentTrack->P()>fPIDMinPnSigmaAbovePionLine && fCurrentTrack->P()<fPIDMaxPnSigmaAbovePionLine ){
-      if( GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)>fPIDnSigmaBelowElectronLine && GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)<fPIDnSigmaAboveElectronLine&&
-	  fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
-	if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-	return kFALSE;
+      if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+	if( GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)>fPIDnSigmaBelowElectronLine && GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)<fPIDnSigmaAboveElectronLine&&
+	    fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+	  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+	  return kFALSE;
+	}
+      } else{
+	if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	   fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	   fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
+	  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+	  return kFALSE;
+	}
       }
       cutIndex++;
     }
 
     // High Pt Pion rej
     if( fCurrentTrack->P()>fPIDMaxPnSigmaAbovePionLine ){
-      if( GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)>fPIDnSigmaBelowElectronLine &&
-	  GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)<fPIDnSigmaAboveElectronLine &&
-	  fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
-	if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
-	return kFALSE;
+      if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+	if( GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)>fPIDnSigmaBelowElectronLine &&
+	    GetCorrectedElectronTPCResponse(Charge,CentrnSig,P,Eta,R)<fPIDnSigmaAboveElectronLine &&
+	    fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
+	  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+	  return kFALSE;
+	}
+      } else{
+	if(fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	   fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine &&
+	   fPIDResponse->NumberOfSigmasTPC(fCurrentTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
+	  if(fHistodEdxCuts)fHistodEdxCuts->Fill(cutIndex,fCurrentTrack->Pt());
+	  return kFALSE;
+	}
       }
     }
     cutIndex++;
