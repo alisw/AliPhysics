@@ -1,16 +1,33 @@
 AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtree", 
-                                             Double_t etaMin = -0.8,
-                                             Double_t etaMax = 0.8,
-                                             Double_t ptMin = 0.2,
-                                             Double_t ptMax = 10.0,
-					     ) {				
+                                                       Bool_t hasSDD = kTRUE,
+                                                       Bool_t useTPCcorr = kTRUE,
+																											 Bool_t getFromAlien = kFALSE) {				
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
         ::Error("AddTaskSimpleTreeMaker",  "No analysis manager to connect to.");
         return NULL;
     }
+		
+		//TString configBasePath("/home/aaron/analyses/LHC16q/eeFrameworkQA/"); //Local
+    TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/"); //AliPhysics
+    TString configLMEECutLib("LMEECutLib_acapon.C");
 
+    //Load updated macros from private ALIEN path
+    TString myCutLib ="alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/LMEECutLib_acapon.C ."; 
+    if (getFromAlien && (!gSystem->Exec(myCutLib))){
+
+        std::cout << "Copy config from Alien" << std::endl;
+        configBasePath=Form("%s/",gSystem->pwd());
+    }
+
+    TString configLMEECutLibPath(configBasePath+configLMEECutLib);
+
+    //load dielectron configuration files
+    if(!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data())){
+        gROOT->LoadMacro(configLMEECutLibPath.Data());
+    }
+   
     // Check the analysis type using the event handlers connected to the analysis manager.
     //===========================================================================
     if (!mgr->GetInputEventHandler()) {
@@ -25,21 +42,30 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
         return NULL;
     }
 
-    AliAnalysisTaskSimpleTreeMaker *taskESD = new AliAnalysisTaskSimpleTreeMaker(taskName);
+		LMEECutLib* cutLib = new LMEECutLib(hasSDD);
+    AliAnalysisTaskSimpleTreeMaker *task = new AliAnalysisTaskSimpleTreeMaker(taskName);
     // ==========================================================================
     // user customization part
 
-    //taskESD->SelectCollisionCandidates(AliVEvent::kINT7);
-    //taskESD->SetMC(kFALSE);
-    //taskESD->setSDDstatus(kFALSE);
-    //taskESD->createV0tree(kFALSE);
-    //taskESD->GRIDanalysis(kFALSE);
-    //taskESD->useAODs(kFALSE);
-    //taskESD->setFilterBitSelection(4);
+    if(useTPCcorr){
+			TH3D mean = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
+                                              AliDielectronVarManager::kEta,
+                                              AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
 
-  
+			TH3D width = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
+                                               AliDielectronVarManager::kEta,
+                                               AliDielectronVarManager::kRefMultTPConly, kFALSE,2);
+			task->SetUseCorr(kTRUE);
+			task->SetCorrWidthMean((TH3D*)width.Clone(),(TH3D*)mean.Clone());
+
+		}
+    //Add event filter
+		task->SelectCollisionCandidates(AliVEvent::kINT7);
+    task->SetupEventCuts(cutLib->GetEventCuts(LMEECutLib::kAllSpecies));
+		task->SetupTrackCuts(cutLib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTTreeCuts));
+
     // ==========================================================================
-    mgr->AddTask(taskESD);
+    mgr->AddTask(task);
 
     // Create ONLY the output containers for the data produced by the task.
     // Get and connect other common input/output containers via the manager as below
@@ -51,10 +77,10 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
     AliAnalysisDataContainer *coutHisto1 = mgr->CreateContainer("Histo", TH1F::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
     AliAnalysisDataContainer *coutHisto2 = mgr->CreateContainer("Arm. Plot", TH2F::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
 
-    mgr->ConnectInput(taskESD, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskESD, 1, coutTree);
-    mgr->ConnectOutput(taskESD, 2, coutHisto1);
-    mgr->ConnectOutput(taskESD, 3, coutHisto2);
+    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(task, 1, coutTree);
+    mgr->ConnectOutput(task, 2, coutHisto1);
+    mgr->ConnectOutput(task, 3, coutHisto2);
 
-    return taskESD;
+    return task;
 }
