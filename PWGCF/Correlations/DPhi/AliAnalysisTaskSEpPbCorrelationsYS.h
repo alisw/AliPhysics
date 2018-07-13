@@ -224,6 +224,7 @@ private:
   // Global Histograms
   TH1F *fHistzvertex;
   TH1F *fHistCentrality;
+  TH1F *fHistCentrality_beforecut;
 
   TH2F* mixedDist;
   TH2F* mixedDist2;
@@ -246,6 +247,9 @@ private:
   TH2D*  fh2_FMD_eta_phi_prim;
   TH2D*  fh2_FMD_acceptance;
   TH2D*  fh2_ITS_acceptance;
+  TH2F*  fh2_SPD_multcorr;
+  TH2F*  fh2_SPDV0_multcorr;
+  TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
 
   AliTHn* fhistfmd;
