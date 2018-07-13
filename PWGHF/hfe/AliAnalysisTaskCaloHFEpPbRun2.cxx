@@ -678,9 +678,9 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     ////////////////////////////////
     // Delta phi - Delta eta dist //
     ////////////////////////////////
-    Int_t bin[4] = {60,200,20,8}; //trigpT, assipT ,Dphi, Deta
-    Double_t xmin[4] = {0,0,-TMath::Pi()/2,-1.2};
-    Double_t xmax[4] = {30,20,(3*TMath::Pi())/2,1.2};
+    Int_t bin[4] = {300,200,20,12}; //trigpT, assipT ,Dphi, Deta
+    Double_t xmin[4] = {0,0,-TMath::Pi()/2,-1.8};
+    Double_t xmax[4] = {30,20,(3*TMath::Pi())/2,1.8};
     // Int_t bin[4] = {30,20,32,50}; //trigpT, assipT ,Dphi, Deta
     // Double_t xmin[4] = {0,0,-TMath::Pi()/2,-1.8};
     // Double_t xmax[4] = {30,20,(3*TMath::Pi())/2,1.8};
@@ -1464,7 +1464,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
         ///////////////////////////////////////
         // all charged particle correlations //
         ///////////////////////////////////////
-        if(TrackPt > 2)
+        if(TrackPt > 0.2)
         {
           fTrigpTAllHadHCorrl -> Fill(TrackPt);
           ElectronHadCorrel(i,track,fSprsAllHadHCorrl);
@@ -1636,7 +1636,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
             ////////////////////////////////////////////////////////////
             // all charged particle correlations (Calo mathed tracks) //
             ////////////////////////////////////////////////////////////
-            if(TrackPt > 2)
+            if(TrackPt > 0.2)
             {
               fTrigpTAllHadHCorrl_CaloMatch -> Fill(TrackPt);
               ElectronHadCorrel(i,track,fSprsAllHadHCorrl_CaloMatch);
