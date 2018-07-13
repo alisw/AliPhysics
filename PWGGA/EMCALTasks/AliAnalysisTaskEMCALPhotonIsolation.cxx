@@ -935,9 +935,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	    fOutput->Add(fPtvsSum_MC);
 	  }
 
-	  fPtvsSumUE_MC = new TH2F("hPtvsSumUE_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone}-UE distribution for isolated clusters (already normalised by the appropriate areas)",200,0.,100.,400,-50.,150.);
-	  fPtvsSumUE_MC->Sumw2();
-	  fOutput->Add(fPtvsSumUE_MC);
+	  if(fAnalysispPb){
+	    fPtvsSumUE_MC = new TH2F("hPtvsSumUE_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone}-UE distribution for isolated clusters (already normalised by the appropriate areas)",200,0.,100.,400,-50.,150.);
+	    fPtvsSumUE_MC->Sumw2();
+	    fOutput->Add(fPtvsSumUE_MC);
+	  }
 
 	  fSumEiso_MC = new TH1F ("hSumEiso_MC","#Sigma E_{T}^{iso cone} distribution (generated)",250,0.,100.);
 	  fSumEiso_MC->Sumw2();
@@ -4932,7 +4934,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       if(fAnalysispPb)
 	fPtvsSumUE_MC->Fill(eT, sumEiso-sumUE); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
       else
-      fPtvsSum_MC->Fill(eT, sumEiso);
+	fPtvsSum_MC->Fill(eT, sumEiso);
     }
   }
 
@@ -5280,7 +5282,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       CalculateUEDensityMC(candidateEta, candidatePhi, sumUE);
 
       if(fWho == 2){
-	fPtvsSumUE_MC->Fill(E_T, sumEiso-sumUE); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
+	if(fAnalysispPb)
+	  fPtvsSumUE_MC->Fill(E_T, sumEiso-sumUE); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
+	else
+	  fPtvsSum_MC->Fill(E_T, sumEiso);
+
 	fSumEiso_MC->Fill(sumEiso);
 	fSumUE_MC->Fill(sumUE);
       }
