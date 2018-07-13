@@ -120,4 +120,35 @@ EOF
 
 }
 
+
+testTPCVolumeDemoTest() {
+  cp $ALIROOT_SOURCE/STAT/Notebooks/TPCDataVolumeDemo.C .
+  root -n -b -l <<\EOF 2>&1 | tee TPCVolumeDemo.C.log
+    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    .x ./TPCDataVolumeDemo.C
+EOF
+
+  N_GOOD=1
+  N_BAD=0
+
+  TEST_STATUS=0
+  if [[ $N_GOOD != 1 ]]; then
+    alilog_error "statTest.AliPainterTest: Test FAILED"
+    ((TEST_STATUS++))
+  fi
+  if [[ $N_BAD != 0 ]]; then
+    alilog_error "statTest.AliPainterTest: Test FAILED"
+    ((TEST_STATUS+=2))
+  fi
+  if [[ $TEST_STATUS == 0 ]]; then
+    alilog_success "statTest.AliPainterTest: All OK"
+  else
+    alilog_error "statTest.: FAILED (code $TEST_STATUS)"
+  fi
+  exit $TEST_STATUS
+
+}
+
+
+
 [[ $1 ]] && $1

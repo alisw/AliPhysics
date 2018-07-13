@@ -19,7 +19,7 @@
   tree->Draw("AliNDFunctionInterface::EvalMVA(2,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:interactionRate","run==QA.EVS.run&&meanMIP>40&&bz0<-0.3","colz");
 */
 
-
+//#include "TPad.h""
 
 TTree * tree = 0;
 TTree * treeCache=0;
@@ -98,11 +98,11 @@ void drawExamplePlots(){
   makeMVABootstrapMI();
   loadMVAreadersBootstrap();
   /// 0.) Draw correlation plot
-  tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:run","run==QA.EVS.run","colz")
+  tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:run","run==QA.EVS.run","colz");
   gPad->SaveAs("resolutionMIPvsfit.png");
   /// 1.) Draw ration regression/fit as function of run
   tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR)/resolutionMIP:run:interactionRate","run==QA.EVS.run","colz");
   gPad->SaveAs("resolutionMIPFitRatiovsRun.png");
   /// 2.) compare  of the regression RMS for method array 0 and method array1
-  tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,2,interactionRate, bz0,qmaxQASum,qmaxQASumR):AliNDFunctionInterface::EvalMVAStat(1,2,interactionRate, bz0,qmaxQASum,qmaxQASumR)","run==QA.EVS.run","colz")
+  tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,2,interactionRate, bz0,qmaxQASum,qmaxQASumR):AliNDFunctionInterface::EvalMVAStat(1,2,interactionRate, bz0,qmaxQASum,qmaxQASumR)","run==QA.EVS.run","colz");
 }
