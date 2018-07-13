@@ -67,21 +67,21 @@ using std::endl;
  */
 AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA() :
 AliAnalysisTaskEmcalJet(),
-fUseRecalcPatches(false),
+fUseRecalcPatches(0x0),
 fHistManager(),
 //fRecevent(),
 //fMCevent(),
 //fGeneratorLevel(0),
 //fMCJetContainer(nullptr),
 //fRecoUtil(0x0),  fClusterEResolution(0x0), fVaryTrkPtRes(),
-fUseSumw2(),
-fHistNumbJets(),
-fHistJetPt(),
-fHistJetJetPatchE(),
-fHistJetGammaPatchE(),
-fHistJetJetPatchPt(),
-fHistJetGammaPatchPt(),
-fHistTriggerPatchE()
+fUseSumw2(0),
+fHistNumbJets(0x0),
+fHistJetPt(0x0),
+fHistJetJetPatchE(0x0),
+fHistJetGammaPatchE(0x0),
+fHistJetJetPatchPt(0x0),
+fHistJetGammaPatchPt(0x0),
+fHistTriggerPatchE(0x0)
 //fhnMBJetSpectra(),
 //fhnTrkQA(),
 //fhnClusQA()
@@ -101,7 +101,7 @@ fHistTriggerPatchE()
  */
 AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const char *name) :
 AliAnalysisTaskEmcalJet(name, kTRUE),
-fUseRecalcPatches(false),
+fUseRecalcPatches(0x0),
 fHistManager(name),
 //fRecevent(NULL),
 //fMCevent(NULL),
@@ -109,13 +109,13 @@ fHistManager(name),
 //fMCJetContainer(nullptr),
 //fRecoUtil(0x0),  fClusterEResolution(0x0), fVaryTrkPtRes(0),
 fUseSumw2(0),
-fHistNumbJets(0),
-fHistJetPt(0),
-fHistJetJetPatchE(0),
-fHistJetGammaPatchE(0),
-fHistJetJetPatchPt(0),
-fHistJetGammaPatchPt(0),
-fHistTriggerPatchE(0)
+fHistNumbJets(0x0),
+fHistJetPt(0x0),
+fHistJetJetPatchE(0x0),
+fHistJetGammaPatchE(0x0),
+fHistJetJetPatchPt(0x0),
+fHistJetGammaPatchPt(0x0),
+fHistTriggerPatchE(0x0)
 //fhnMBJetSpectra(0x0),
 //fhnTrkQA(0x0),
 //fhnClusQA(0x0)
