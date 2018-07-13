@@ -12,7 +12,11 @@ class LMEECutLib {
 	};
 
 
-	LMEECutLib(Bool_t wSDD): wSDD(wSDD){}
+	LMEECutLib(Bool_t wSDD): wSDD(wSDD){
+		
+		::Info("LMEECutLib_acapon", "Creating new LMEECutLib");
+		fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
+	}
 
 	//Getters
 	AliDielectronEventCuts*     GetEventCuts(Int_t cutSet);
@@ -24,15 +28,159 @@ class LMEECutLib {
 	AliDielectronCutGroup* GetPIDCuts(Int_t PIDcuts);
 	AliDielectronCutGroup* GetTrackCuts(Int_t cutSet, Int_t PIDcuts);
 
-	static TH3D SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
+	//TPC correction function used within dielectron framework
+  void SetEtaCorrectionTPC(AliDielectron *die, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
+
+	//TPC correction function used by SimpleTTreeMaker
+	//i.e it doesn't need an AliDielectron object
+	static TH3D SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
+
+	static TBits* fUsedVars; //Used Variables for correction
+	TH1* fPostPIDCntrdCorr; //Post PID correction object for electron sigma centroids in TPC
+	TH1* fPostPIDWdthCorr; //Post PID correction object for electron sigma widths in TPC
 
 	private:
 			Bool_t wSDD;
 };
 
+void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise) {
+  //
+  // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
+  //
+  std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
+  std::string file_name = "/home/aaron/analyses/recalib_data_tpc_nsigmaele.root";
 
-static TH3D LMEECutLib::SetEtaCorrectionTPC( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, int sel) {
+  TFile* inFile = TFile::Open(file_name.c_str());
+  std::cout << inFile << std::endl;
+  if(!inFile){
+    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/correctionMaps/recalib_data_tpc_nsigmaele.root .");
+    std::cout << "Copy TPC correction from Alien" << std::endl;
+    inFile = TFile::Open("output.root");
+  }
+  else {
+    std::cout << "Correction loaded" << std::endl;
+  }
+  if(runwise){
+    TObjArray* arr_mean = dynamic_cast<TObjArray*>(inFile->Get("mean_correction_arr"));
+    TObjArray* arr_width =dynamic_cast<TObjArray*>( inFile->Get("width_correction_arr"));
+    std::cout << arr_mean << " " << arr_width << std::endl;
+
+    die->SetWidthCorrArr(arr_width, kTRUE, corrXdim, corrYdim, corrZdim);
+    die->SetCentroidCorrArr(arr_mean, kTRUE, corrXdim, corrYdim, corrZdim);
+  }
+  else{
+    TH3D* mean = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+    TH3D* width= dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
+    die->SetCentroidCorrFunction(mean, corrXdim, corrYdim, corrZdim);
+    die->SetWidthCorrFunction(width, corrXdim, corrYdim, corrZdim);
+  }
+
+}
+
+static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection) {
 	
+
+  ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionTPC() >>>>>>>>>>>>>>>>>>>>>> ");
+
+  std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
+  std::string file_name = "/home/aaron/analyses/recalib_data_tpc_nsigmaele.root";
+
+  TFile* recalFile = TFile::Open(file_name.c_str());
+  std::cout << recalFile << std::endl;
+  if(!recalFile){
+    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/correctionMaps/recalib_data_tpc_nsigmaele.root .");
+    std::cout << "Copy TPC correction from Alien" << std::endl;
+    recalFile = TFile::Open("output.root");
+  }
+  else {
+    std::cout << "Correction loaded" << std::endl;
+  }  
+  TH3D* mean  = dynamic_cast<TH3D*>(recalFile->Get("sum_mean_correction"));
+  TH3D* width = dynamic_cast<TH3D*>(recalFile->Get("sum_width_correction"));
+	if(!mean || !width){
+		::Error("LMEECutLib_acapon", "Recal histograms not found.");
+		return 0x0;
+	}
+  
+  // AliDielectron::SetCentroidCorrFunction
+  UInt_t valType[20] = {0};
+  valType[0] = corrXdim;     valType[1] = corrYdim;     valType[2] = corrZdim;
+
+  AliDielectronHistos::StoreVariables(mean, valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("cntrd%d%d%d", corrXdim, corrYdim, corrZdim);
+	printf("%s", key);
+  fPostPIDCntrdCorr = (TH1*)mean->Clone(key.Data());
+	if(!fPostPIDCntrdCorr){
+		::Error("LMEECutLib_acapon", "CentroidCorr TH1 not cloned");
+		return 0x0;
+	}
+
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDCntrdCorr){
+    printf("POST TPC PID CORRECTION added for centroids:  ");
+    switch(fPostPIDCntrdCorr->GetDimension()){
+			case 1: printf(" %s ",fPostPIDCntrdCorr->GetXaxis()->GetName());
+			case 2: printf(" %s, ",fPostPIDCntrdCorr->GetYaxis()->GetName());
+			case 3: printf(" %s, ",fPostPIDCntrdCorr->GetZaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(corrXdim, kTRUE);
+    fUsedVars->SetBitNumber(corrYdim, kTRUE);
+    fUsedVars->SetBitNumber(corrZdim, kTRUE);
+  }
+  
+  if(fPostPIDCntrdCorr){
+		AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
+	}
+  
+  // AliDielectron::SetWidthCorrFunction
+  {
+  UInt_t valType[20] = {0};
+  valType[0]=corrXdim;     valType[1]=corrYdim;     valType[2]=corrZdim;
+  AliDielectronHistos::StoreVariables(width, valType);
+
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("wdth%d%d%d",corrXdim,corrYdim,corrZdim);
+  fPostPIDWdthCorr = (TH1*)width->Clone(key.Data());
+
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDWdthCorr)  {
+    printf("POST TPC PID CORRECTION added for widths:  ");
+    switch(fPostPIDWdthCorr->GetDimension()) {
+			case 1: printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());
+			case 2: printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());
+			case 3: printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(corrXdim, kTRUE);
+    fUsedVars->SetBitNumber(corrYdim, kTRUE);
+    fUsedVars->SetBitNumber(corrZdim, kTRUE);
+	}
+  }
+  
+  if(fPostPIDWdthCorr){
+		AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
+	}
+
+  if(selection == 1){
+		if(mean){
+			::Info("LMEECutLib::SetEtaCorrectionTPC","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
+		}else{
+			::Info("LMEECutLib::SetEtaCorrectionTPC","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
+			return 0;
+		}
+	return *mean;
+  }
+  else{
+		if(width){
+			::Info("LMEECutLib::SetEtaCorrectionTPC","Width Correction Histo loaded, entries: %f",width->GetEntries());
+		}else {
+			::Info("LMEECutLib::SetEtaCorrectionTPC","Width Correction Histo not loaded! entries: %f",width->GetEntries());
+			return 0;
+		}
+		return *width;
+  }
 
 }
 

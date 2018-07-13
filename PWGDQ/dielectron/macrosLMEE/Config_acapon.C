@@ -19,7 +19,9 @@ Int_t selectedCuts = -1;
 Int_t selectedPID = -1;
 Bool_t pairCuts = kTRUE;
 
-AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t isESD=kFALSE, Bool_t SDDstatus =kFALSE, Bool_t doPairing = kTRUE, Bool_t doMixing = kTRUE)
+AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC = kFALSE, Bool_t isESD = kFALSE,
+                             Bool_t SDDstatus = kFALSE, Bool_t doPairing = kTRUE,
+                             Bool_t doMixing = kTRUE, Bool_t setTPCcorr = kFALSE)
 {
 
     //Setup the instance of AliDielectron
@@ -29,9 +31,14 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC=kFALSE, Bool_t 
     TString name = cutDefinition;
 
     //Init AliDielectron
-    AliDielectron *die = new AliDielectron(Form("%s",name.Data()), Form("AliDielectron with cuts: %s",name.Data()));
-    //die->SetHasMC(hasMC);
-    MCenabled=hasMC;
+    AliDielectron* die = new AliDielectron(Form("%s",name.Data()), Form("AliDielectron with cuts: %s",name.Data()));
+		//die->SetHasMC(hasMC);
+		if(setTPCcorr){
+			LMcutlib->SetEtaCorrectionTPC(die, AliDielectronVarManager::kP,
+                                      AliDielectronVarManager::kEta,
+                                      AliDielectronVarManager::kRefMultTPConly, kFALSE);
+		}
+    MCenabled = hasMC;
 
     // deactivate pairing to check track cuts or run with loose pid cuts:
     if(!doPairing){
