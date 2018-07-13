@@ -1422,21 +1422,20 @@ Float_t AliConversionPhotonCuts::GetKappaTPC(AliConversionPhotonBase *gamma, Ali
   AliVTrack * negTrack = GetTrack(event, gamma->GetTrackLabelNegative());
   AliVTrack * posTrack = GetTrack(event, gamma->GetTrackLabelPositive());
 
-  Double_t CentrnSig[2] ={-1,-1};//negative, positive
-  Double_t P[2]         ={-1,-1};
-  Double_t Eta[2]       ={-1,-1};
-  Double_t R            =-1;
-  
-  CentrnSig[0]=fPIDResponse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
-  CentrnSig[1]=fPIDResponse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
-  P[0]        =negTrack->P();
-  P[1]        =posTrack->P();
-  Eta[0]      =negTrack->Eta();
-  Eta[1]      =posTrack->Eta();
-  R           =gamma->GetConversionRadius();
+  Double_t CentrnSig[2] ={-1.,-1.};//negative, positive
+  Double_t P[2]         ={-1.,-1.};
+  Double_t Eta[2]       ={-1.,-1.};
+  Double_t R            =-1.;
 
   Float_t KappaPlus, KappaMinus, Kappa;
   if(fDoElecDeDxPostCalibration && fElecDeDxPostCalibrationInitialized){
+    CentrnSig[0]=fPIDResponse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
+    CentrnSig[1]=fPIDResponse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
+    P[0]        =negTrack->P();
+    P[1]        =posTrack->P();
+    Eta[0]      =negTrack->Eta();
+    Eta[1]      =posTrack->Eta();
+    R           =gamma->GetConversionRadius();
     KappaMinus = GetCorrectedElectronTPCResponse(negTrack->Charge(),CentrnSig[0],P[0],Eta[0],R);
     KappaPlus =  GetCorrectedElectronTPCResponse(posTrack->Charge(),CentrnSig[1],P[1],Eta[1],R);
   }else{
