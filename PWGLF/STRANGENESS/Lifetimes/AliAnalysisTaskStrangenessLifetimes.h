@@ -17,7 +17,7 @@ class AliPIDResponse;
 
 class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskStrangenessLifetimes(std::string name);
+  AliAnalysisTaskStrangenessLifetimes(std::string name = "TaskStrangenessLifetimes");
   virtual ~AliAnalysisTaskStrangenessLifetimes();
 
   virtual void UserCreateOutputObjects();
