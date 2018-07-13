@@ -2138,6 +2138,8 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
   zdcAOD->ResetZNCfired();
   zdcAOD->ResetZPAfired();
   zdcAOD->ResetZPCfired();
+  zdcAOD->ResetZEM1fired();
+  zdcAOD->ResetZEM2fired();
   
   const Float_t kNoEntry = -999.;
   //Taking into account all the 4 hits
@@ -2185,6 +2187,8 @@ void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
     }
   }
   else for(int i=0; i<4; i++)  zdcAOD->SetZPATDCm(i, kNoEntry);
+  if(esdZDC->IsZEM1hit()) zdcAOD->SetZEM1fired();
+  if(esdZDC->IsZEM2hit()) zdcAOD->SetZEM2fired();
 }
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertAD(const AliESDEvent& esd)

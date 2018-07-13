@@ -47,7 +47,9 @@ AliAODZDC::AliAODZDC() :
   fIsZNAfired(kFALSE),
   fIsZNCfired(kFALSE),
   fIsZPAfired(kFALSE),
-  fIsZPCfired(kFALSE)
+  fIsZPCfired(kFALSE),
+  fIsZEM1fired(kFALSE),
+  fIsZEM2fired(kFALSE)
 {
 // Default constructor
   for(Int_t i=0; i<5; i++){
@@ -85,8 +87,9 @@ AliAODZDC::AliAODZDC(const AliAODZDC &zdcAOD) :
   fIsZNAfired(zdcAOD.fIsZNAfired),
   fIsZNCfired(zdcAOD.fIsZNCfired),
   fIsZPAfired(zdcAOD.fIsZPAfired),
-  fIsZPCfired(zdcAOD.fIsZPCfired)
-
+  fIsZPCfired(zdcAOD.fIsZPCfired),
+  fIsZEM1fired(zdcAOD.fIsZEM1fired),
+  fIsZEM2fired(zdcAOD.fIsZEM2fired)
 {
 // Constructor
   for(Int_t i=0; i<5; i++){
@@ -154,6 +157,8 @@ AliAODZDC& AliAODZDC::operator=(const AliAODZDC& zdcAOD)
     fIsZNCfired = zdcAOD.fIsZNCfired;
     fIsZPAfired = zdcAOD.fIsZPAfired;
     fIsZPCfired = zdcAOD.fIsZPCfired;
+    fIsZEM1fired = zdcAOD.fIsZEM1fired;
+    fIsZEM2fired = zdcAOD.fIsZEM2fired;
   } 
   return *this;
 }
