@@ -252,6 +252,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
+    Bool_t GetElecDeDxPostCalibrationInitialized() {return fElecDeDxPostCalibrationInitialized;}
     Bool_t  InitializeElecDeDxPostCalibration(TString filename);
     Float_t GetCorrectedElectronTPCResponse(Float_t charge,Float_t nsig,Float_t P,Float_t Eta,Float_t R);
 
@@ -387,14 +388,16 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
     TProfile*         fProfileContainingMaterialBudgetWeights;
-    TH2F**            fHistoEleMapMean;
-    TH2F**            fHistoEleMapWidth;
-    TH2F**            fHistoPosMapMean;
-    TH2F**            fHistoPosMapWidth;
+    Bool_t            fElecDeDxPostCalibrationInitialized;  ///< flag to check that initialization worked  
+    Int_t             fnRBins;                              //
+    TH2F**            fHistoEleMapMean;  //[fnRBins]
+    TH2F**            fHistoEleMapWidth; //[fnRBins] 
+    TH2F**            fHistoPosMapMean;  //[fnRBins] 
+    TH2F**            fHistoPosMapWidth; //[fnRBins] 
  
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,17)
+    ClassDef(AliConversionPhotonCuts,18)
     /// \endcond
 };
 

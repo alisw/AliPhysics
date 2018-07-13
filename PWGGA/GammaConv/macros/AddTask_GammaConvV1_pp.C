@@ -1298,8 +1298,13 @@ if(!cuts.AreValid()){
     }
     if (enableElecDeDxPostCalibration>0){
       if (isMC == 0){
-	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
-	analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration);
+	if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	} else {
+	  enableElecDeDxPostCalibration=kFALSE;
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	}
+
       } else{
 	cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
 	enableElecDeDxPostCalibration=kFALSE;
