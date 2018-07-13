@@ -26,6 +26,7 @@
  ************************************************************************************/
 #include <algorithm>
 #include <array>
+#include <bitset>
 #include <iostream>
 #include <string>
 #include <set>
@@ -412,11 +413,14 @@ Bool_t AliAnalysisTaskEmcalJetSubstructureTree::IsTriggerSelected(){
   }
   // Run trigger selection (not on pure MCgen train - pure MCgen train has no rec event, ESD event is fake there)
   if(fHasRecEvent){
-    if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
     if(!fHasTrueEvent){
       // Pure data - do EMCAL trigger selection from selection string
+      AliDebugStream(1) << "Applying trigger selection for trigger bits " << std::bitset<sizeof(decltype(fTriggerSelectionBits)) * 8>(fTriggerSelectionBits) << "and trigger selection string " << fTriggerSelectionString << std::endl;
+      if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
+      AliDebugStream(1) << "Passed trigger bit selection" << std::endl;
       if(fTriggerSelectionString.Length()) {
         if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
+        AliDebugStream(1) << "Passed trigger string section" << std::endl;
         if(fTriggerSelectionString.Contains("EJ") && fUseTriggerSelectionForData) {
           auto trgselresult = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
           AliDebugStream(1) << "Found trigger decision object: " << (trgselresult ? "yes" : "no") << std::endl;
@@ -425,6 +429,7 @@ Bool_t AliAnalysisTaskEmcalJetSubstructureTree::IsTriggerSelected(){
             return false;
           }
           if(!trgselresult->IsEventSelected(fTriggerSelectionString)) return false;
+          AliDebugStream(1) << "Data event selected" << std::endl;
         }
       }
     } else {
