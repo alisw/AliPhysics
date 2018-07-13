@@ -1843,8 +1843,9 @@ void AliAnalysisTaskSEpPbCorrelationsYS::UserCreateOutputObjects() {
 	   Double_t theta = tracklets->GetTheta(i);
 	   Double_t etaits   = -TMath::Log(TMath::Tan(theta/2));
 	   
-	   Double_t etalow=log(7.6)-log(sqrt((-14.1-fPrimaryZVtx)*(-14.1-fPrimaryZVtx)+7.6*7.6)-(-14.1-fPrimaryZVtx));
-	   Double_t etahigh=log(7.6)-log(sqrt((14.1-fPrimaryZVtx)*(14.1-fPrimaryZVtx)+7.6*7.6)-(14.1-fPrimaryZVtx));
+
+	   Double_t etalow=log(7.6)-log(sqrt((-13.8-fPrimaryZVtx)*(-13.8-fPrimaryZVtx)+7.6*7.6)-(-13.8-fPrimaryZVtx));
+	   Double_t etahigh=log(7.6)-log(sqrt((14.4-fPrimaryZVtx)*(14.4-fPrimaryZVtx)+7.6*7.6)-(14.4-fPrimaryZVtx));
 
 	   if(etaits<etalow || etaits>etahigh) continue;
 	   
