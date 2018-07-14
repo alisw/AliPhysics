@@ -1,5 +1,5 @@
 /***************************************************************************
-    Modified by himani.bhatt@cern.ch  - last modified on 27/05/2018 
+    Modified by himani.bhatt@cern.ch  - last modified on 13/05/2018 
 
    priyanka.sett@cern.ch - last modified on 27/10/2016
   
@@ -134,7 +134,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
   //if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
-  ::Info("AddAnalysisTasLStar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n ", nmix, maxDiffVzMix, maxDiffMultMix));
+  ::Info("AddAnalysisTaskLStar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n ", nmix, maxDiffVzMix, maxDiffMultMix));
   
   mgr->AddTask(task);
   
@@ -220,26 +220,8 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
   Int_t multID = task->CreateValue(AliRsnMiniValue::kMult, kFALSE);
   AliRsnMiniOutput *outMult = task->CreateOutput("eventMult", "HIST", "EVENT");
   if (isPP && !MultBins)   outMult->AddAxis(multID, 300, 0.0, 300.0);
-  else  outMult->AddAxis(multID, 110, 0.0, 110.0);
-  Int_t multRefID = task->CreateValue(AliRsnMiniValue::kRefMult, kFALSE);
-  AliRsnMiniOutput *outRefMult = task->CreateOutput("eventRefMult", "HIST", "EVENT");
-  outRefMult->AddAxis(multRefID, 300, 0.0, 300.0);
-  
-  TH2F* hvz = new TH2F("hVzVsCent",Form("Vertex position vs centrality"), 101, 0., 101., 500, -50.0, 50.0);
-  hvz->GetXaxis()->SetTitle("V0A");
-  hvz->GetYaxis()->SetTitle("z_{vtx} (cm)");
-  task->SetEventQAHist("vz", hvz);//plugs this histogram into the fHAEventVz data member
-  
-  TH2F* hRefMultiVsCent = new TH2F("hRefMultiVsCent",Form("Reference multiplicity vs centrality"), 101, 0., 101., 400, 0., 400.);
-  hRefMultiVsCent->GetXaxis()->SetTitle("V0A");
-  hRefMultiVsCent->GetYaxis()->SetTitle("GLOBAL");
-  task->SetEventQAHist("refmulti",hRefMultiVsCent);//plugs this histogram into the fHAEventRefMultiCent data member
-  
-  TH2F* hMultiVsCent = new TH2F("hMultiVsCent",Form("Multiplicity vs centrality"), 101, 0., 101., 400, 0., 400.);
-  hMultiVsCent->GetXaxis()->SetTitle("V0A");
-  hMultiVsCent->GetYaxis()->SetTitle("QUALITY");
-  task->SetEventQAHist("multicent",hMultiVsCent);//plugs this histogram into the fHAEventMultiCent data member
-  //  <<==============
+  else  outMult->AddAxis(multID, 100, 0.0, 100.0);
+
   
   
   //
@@ -259,8 +241,8 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
   
   //for systematic checks
   {
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp_II.C");
-    //gROOT->LoadMacro("ConfigureLstar13TeVpp_II.C");
+    //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp_II.C");
+    gROOT->LoadMacro("ConfigureLstar13TeVpp_II.C");
     if (!ConfigureLstar13TeVpp_II(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,  enableMonitor, isMC&IsMcTrueOnly, signedPdg, monitorOpt, useCrossedRows, yaxisVar ,useMixLS)) 
       return 0x0;  
   }
@@ -270,7 +252,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
   // -- CONTAINERS --------------------------------------------------------------------------------
   //
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  Printf("AddAnalysisTaskTPCKStarSyst - Set OutputFileName : \n %s\n", outputFileName.Data() );
+  Printf("AddAnalysisTaskLStarSyst - Set OutputFileName : \n %s\n", outputFileName.Data() );
   
   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()),TList::Class(),AliAnalysisManager::kOutputContainer, outputFileName);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
