@@ -72,13 +72,13 @@ class AliAnalysisDataContainer;
     task -> SetDG2(flagDG2);
     task -> SetCentrality(centmin,centmax);
 
-    // TString PathEffHad = "~/cernbox/Analysis/HFE/p-Pb_8TeV/rootfile/EleHadCorrlpPbRun2/EleHadCorrl/MC/LHC17i5b2/180630/EHCorrlOutputStage1.root";
+    // TString PathEffHad = "~/cernbox/Analysis/HFE/p-Pb_8TeV/rootfile/EleHadCorrlpPbRun2/EleHadCorrl/MC/LHC17i5b2/180702/EHCorrlOutputStage1.root";
     TString PathEffHad = "alien:///alice/cern.ch/user/d/dkawana/Efficiency/EffHadron/EHCorrlOutputStage1.root";
-    TFile *file = new TFile(PathEffHad.Data());
+    TFile *file = TFile::Open(PathEffHad.Data());
     TDirectory *dir = (TDirectory*)file->Get("Dir_kINT7_integ");
     TH1D *hist = (TH1D*)dir->Get("fHadRecoEff");
     if(hist) task -> SetEffHadron(hist);
-
+    else cout << "No hadron efficiency file!" << endl;
     //#########################//
     //Systematic uncertainties //
     //#########################//
