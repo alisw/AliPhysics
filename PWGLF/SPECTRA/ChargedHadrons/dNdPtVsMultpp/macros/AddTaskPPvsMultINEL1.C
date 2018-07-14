@@ -74,7 +74,7 @@ AliAnalysisTask* AddTaskPPvsMultINEL1(Bool_t is13TeV = kTRUE)
 	taskPPvsMultINEL0->SetAnalysisMC(AnalysisMC);
 	taskPPvsMultINEL0->SetAnalysisType(type);
 	taskPPvsMultINEL0->SetDebugLevel(0);
-	taskPPvsMultINEL0->SetEtaCut(0.8);
+	taskPPvsMultINEL0->SetEtaCut(0.3);
 	taskPPvsMultINEL0->SetVtxCut(10.0);
 	taskPPvsMultINEL0->SetTrigger(AliVEvent::kINT7);
 	taskPPvsMultINEL0->SetPileUpRej(kTRUE);		
