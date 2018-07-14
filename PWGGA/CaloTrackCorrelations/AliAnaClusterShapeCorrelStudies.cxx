@@ -1698,7 +1698,6 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   
   if ( fStudyModuleCells && GetCalorimeter() == kEMCAL )
   {
-    
     Int_t rowTCard = Int_t(iphiMax%8);
     Int_t colTCard = Int_t(ietaMax%2);
     Int_t iTCard = rowTCard+8*colTCard;
@@ -1801,7 +1800,8 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
       fhNCellsPerClusterM02NLMPerSM[smMax]->Fill(nlm, nCell, m02, GetEventWeight());
 
     // Col-Row histogram, fill emax/ecluster ratio for highest energy cell.
-    if ( fStudyColRowFromCellMax && fNCellsBins > 0)
+    if ( fStudyColRowFromCellMax && fNCellsBins > 0 && 
+         nCellBin >= 0 && nCellBin < fNCellsBins )
     {
       if      ( m02 > fM02LowBin[0]  && m02 <= fM02LowBin[1]  )
         fhColRowFromCellMaxECellClusterRatLowM02PerSM [smMax][ietaMax%2][nCellBin]->Fill(0., 0., eCellMax/energy, GetEventWeight());
