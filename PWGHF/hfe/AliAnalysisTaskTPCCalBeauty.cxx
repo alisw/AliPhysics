@@ -841,10 +841,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     }
     
     if (fFlagFillSprs) {
-        Int_t bins1[4]=  {/*280*/60,  160, 100, /*100,*/  200}; // pT;nSigma;eop;M20;DCA
-        Double_t xmin1[4]={ /*2*/0,   -8,   0,   /*0,*/ -0.2};
-        Double_t xmax1[4]={30,    8,   2,   /*1,*/  0.2};
-        fElectronSprs = new THnSparseD("Electron","Electron;pT;nSigma;eop;DCA;",4,bins1,xmin1,xmax1);
+        Int_t bins1[6]=  {/*280*/60,  160, 100, 100,  200, 4}; // pT;nSigma;eop;M20;DCA;MCTruth
+        Double_t xmin1[6]={ /*2*/0,   -8,   0,   0, -0.2, -0.5};
+        Double_t xmax1[6]={30,    8,   2,   1,  0.2, 3.5};
+        fElectronSprs = new THnSparseD("Electron","Electron;pT;nSigma;eop;DCA;MCTruth;",6,bins1,xmin1,xmax1);
         fOutputList->Add(fElectronSprs);
     }
     
@@ -1509,8 +1509,12 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 fvalueElectron[0] = track->Pt();
                 fvalueElectron[1] = nsigma;
                 fvalueElectron[2] = EovP;
-                //fvalueElectron[3] = M20;
-                fvalueElectron[3] = DCA;
+                fvalueElectron[3] = M20;
+                fvalueElectron[4] = DCA;
+                fvalueElectron[5] = 0;
+                if(kTruElec) fvalueElectron[5] = 1;
+                if(kTruHFElec) fvalueElectron[5] = 2;
+                if(kTruBElec) fvalueElectron[5] = 3;
                 if (fFlagFillSprs) {
                     fElectronSprs->Fill(fvalueElectron);
                 }
@@ -1520,8 +1524,12 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 fvalueElectron[0] = track->Pt();
                 fvalueElectron[1] = nsigma;
                 fvalueElectron[2] = EovP;
-                //fvalueElectron[3] = M20;
-                fvalueElectron[3] = DCA;
+                fvalueElectron[3] = M20;
+                fvalueElectron[4] = DCA;
+                fvalueElectron[5] = 0;
+                if(kTruElec) fvalueElectron[5] = 1;
+                if(kTruHFElec) fvalueElectron[5] = 2;
+                if(kTruBElec) fvalueElectron[5] = 3;
                 if (fFlagFillSprs) {
                     fElectronSprs->Fill(fvalueElectron);
                 }
