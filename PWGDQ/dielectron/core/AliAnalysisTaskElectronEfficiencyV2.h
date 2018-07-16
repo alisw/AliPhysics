@@ -58,6 +58,7 @@ public:
    // MC Signal setter
    void   AddSingleLegMCSignal(AliDielectronSignalMC signal1)         {fSingleLegMCSignal.push_back(signal1);}
    void   AddPairMCSignal(AliDielectronSignalMC signal1)              {fPairMCSignal.push_back(signal1);}
+   void   AddMCSignalsWhereDielectronPairNotFromSameMother(std::vector<bool> vec) {fDielectronPairNotFromSameMother = vec;}
 
    // PID correction functions
    void   SetCentroidCorrFunction(Detector det, TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -123,11 +124,12 @@ public:
   class Particle{
   public:
     Particle() :
-      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed() {}
+      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
     Particle(double pt, double eta, double phi, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed() {}
+      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
     void SetTrackID(int id) {fTrackID = id;}
     void SetMotherID(int id) {fMotherID = id;}
+    void SetDielectronPairFromSameMother(std::vector<Bool_t> vec){DielectronPairFromSameMother = vec;}
     int  GetTrackID() {return fTrackID;}
     int  GetMotherID() {return fMotherID;}
 
@@ -142,6 +144,7 @@ public:
     int     fMotherID;
     std::vector<Bool_t> isMCSignal;
     std::vector<Bool_t> isReconstructed;
+    std::vector<Bool_t> DielectronPairFromSameMother;
   };
 
 private:
@@ -153,7 +156,7 @@ private:
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
   bool    CheckGenerator(int trackID);
-
+  void    CheckIfFromMotherWithDielectronAsDaughter(Particle& part);
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
   Particle    CreateParticle(AliVParticle* part);
@@ -226,6 +229,7 @@ private:
 
   std::vector<AliDielectronSignalMC> fSingleLegMCSignal;
   std::vector<AliDielectronSignalMC> fPairMCSignal;
+  std::vector<bool> fDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
 
   TString fGeneratorName;
   std::vector<unsigned int> fGeneratorHashs;

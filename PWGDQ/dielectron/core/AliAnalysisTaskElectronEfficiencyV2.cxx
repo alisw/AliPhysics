@@ -74,7 +74,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
                                                                               , fMassBins(), fPairPtBins(), fDoGenSmearing(false)
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
-                                                                              , fSingleLegMCSignal(), fPairMCSignal()
+                                                                              , fSingleLegMCSignal(), fPairMCSignal(), fDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
                                                                               , fTrackCuts(), fUsedVars(0x0)
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
@@ -106,7 +106,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
                                                                               , fMassBins(), fPairPtBins(), fDoGenSmearing(false)
                                                                               , fPtMin(0.), fPtMax(0.), fEtaMin(-99.), fEtaMax(99.)
                                                                               , fPtMinGen(0.), fPtMaxGen(0.), fEtaMinGen(-99.), fEtaMaxGen(99.)
-                                                                              , fSingleLegMCSignal(), fPairMCSignal()
+                                                                              , fSingleLegMCSignal(), fPairMCSignal(), fDielectronPairNotFromSameMother()
                                                                               , fGeneratorName(""), fGeneratorHashs(), fPIDResponse(0x0), fEvent(0x0), fMC(0x0), fTrack(0x0), isAOD(false), fSelectPhysics(false), fTriggerMask(0)
                                                                               , fTrackCuts(), fUsedVars(0x0)
                                                                               , fSupportMCSignal(0), fSupportCutsetting(0)
@@ -714,6 +714,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     // check if correct generator used
     if (!CheckGenerator(iPart)) continue;
 
+
     // ##########################################################
     // Creating particles to summarize all the data
     int motherID = TMath::Abs(mcPart1->GetMother());
@@ -721,6 +722,10 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     part.isMCSignal = mcSignal_acc;
     part.SetTrackID(iPart);
     part.SetMotherID(motherID);
+
+    // ##########################################################
+    // check if electron comes from a mother with ele+pos as daughters
+    CheckIfFromMotherWithDielectronAsDaughter(part);
 
     // ##########################################################
     // Filling generated particle histograms according to MCSignals
@@ -810,11 +815,15 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     // ##########################################################
     // Create summary particle from track info
     int motherID = TMath::Abs(fMC->GetTrack(abslabel)->GetMother());
-    Particle part = CreateParticle(track);
+    Particle part  = CreateParticle(track);
     part.isMCSignal = mcSignal_acc;
     part.isReconstructed = selected;
     part.SetTrackID(iTracks);
     part.SetMotherID(motherID);
+
+    // ##########################################################
+    // check if electron comes from a mother with ele+pos as daughters
+    CheckIfFromMotherWithDielectronAsDaughter(part);
 
     // ##########################################################
     if      (fDoPairing == true && part.fCharge < 0) fRecNegPart.push_back(part);
@@ -956,8 +965,31 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double pairpt = LvecM.Pt();
             double weight = 1;
             for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
-              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true)
-               fHistGenPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
+              // if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true){
+              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true &&
+                  fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false){
+
+                // int motherID1 = fGenNegPart[neg_i].GetMotherID();
+                // int motherID2 = fGenPosPart[pos_i].GetMotherID();
+                // // if (/*(mass < 0.1 || (mass > 0.9 && mass < 1.15))&& */iMCSignal == 1){
+                // if (motherID1 == motherID2 && iMCSignal == 1){
+                //   int pdgCodeM1 = (fMC->GetTrack(TMath::Abs(fGenNegPart[neg_i].GetMotherID())))->PdgCode();
+                //   int pdgCodeM2 = (fMC->GetTrack(TMath::Abs(fGenPosPart[pos_i].GetMotherID())))->PdgCode();
+                //   int pdgCode1 = (fMC->GetTrack(TMath::Abs(fGenNegPart[neg_i].GetTrackID())))->PdgCode();
+                //   int pdgCode2 = (fMC->GetTrack(TMath::Abs(fGenPosPart[pos_i].GetTrackID())))->PdgCode();
+                //   int uniqueID1 = (fMC->GetTrack(TMath::Abs(fGenNegPart[neg_i].GetTrackID())))->GetUniqueID();
+                //   int uniqueID2 = (fMC->GetTrack(TMath::Abs(fGenPosPart[pos_i].GetTrackID())))->GetUniqueID();
+                //   int uniqueM1 = (fMC->GetTrack(TMath::Abs(fGenNegPart[neg_i].GetMotherID())))->GetUniqueID();
+                //   int uniqueM2 = (fMC->GetTrack(TMath::Abs(fGenPosPart[pos_i].GetMotherID())))->GetUniqueID();
+                //   std::cout << "MCSignal = " << iMCSignal << "   pdgCodeM1 = " << pdgCodeM1 << "    pdgCodeM2 = " << pdgCodeM2 << "    mass = " << mass << "   pairpt = " << pairpt <<  std::endl;
+                //   std::cout << "  motherID1 = " << fGenNegPart[neg_i].GetMotherID() << "    motherID2 = " << fGenPosPart[pos_i].GetMotherID() << "   ID1 = " << fGenNegPart[neg_i].GetTrackID() << "   ID2 = " << fGenPosPart[pos_i].GetTrackID() <<  std::endl;
+                //   std::cout << "  uniqueID1 = " << uniqueID1 << "    uniqueID2 = " << uniqueID2 << std::endl;
+                //   std::cout << "  uniqueM1 = " << uniqueM1 << "    uniqueM2 = " << uniqueM2 << std::endl;
+                //   std::cout << "  pdgCode1 = " << pdgCode1 << "   pdgCode2 = " << pdgCode2 << std::endl;
+                // }
+
+                fHistGenPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
+              }
             }
           }
           if (selectedByKinematicCuts_smeared){
@@ -971,7 +1003,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double weight = 1;
 
             for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
-              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true)
+              // if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true)
+              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true &&
+                  fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false)
                fHistGenSmearedPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
 
             }
@@ -1068,7 +1102,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double pairpt = LvecM.Pt();
             double weight = 1;
             for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
-              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true)
+              // if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true)
+              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true &&
+                  fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenNegPart[neg_j].DielectronPairFromSameMother[iMCSignal] == false)
                fHistGenPair_ULSandLS.at(3*iMCSignal+2)->Fill(mass, pairpt, weight * centralityWeight);
             }
           }
@@ -1082,7 +1118,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double pairpt = LvecM.Pt();
             double weight = 1;
             for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
-              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true)
+              // if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true)
+              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true &&
+                  fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenNegPart[neg_j].DielectronPairFromSameMother[iMCSignal] == false)
                fHistGenSmearedPair_ULSandLS.at(3*iMCSignal+2)->Fill(mass, pairpt, weight * centralityWeight);
 
             }
@@ -1110,7 +1148,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double pairpt = LvecM.Pt();
             double weight = 1;
             for (unsigned int iMCSignal = 0; iMCSignal < fGenPosPart[pos_i].isMCSignal.size(); ++iMCSignal){
-              if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true)
+              // if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true)
+              if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true &&
+                  fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_j].DielectronPairFromSameMother[iMCSignal] == false)
                fHistGenPair_ULSandLS.at(3*iMCSignal+1)->Fill(mass, pairpt, weight * centralityWeight);
             }
           }
@@ -1124,7 +1164,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double pairpt = LvecM.Pt();
             double weight = 1;
             for (unsigned int iMCSignal = 0; iMCSignal < fGenPosPart[pos_i].isMCSignal.size(); ++iMCSignal){
-              if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true)
+              // if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true)
+              if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true &&
+                  fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_j].DielectronPairFromSameMother[iMCSignal] == false)
                fHistGenSmearedPair_ULSandLS.at(3*iMCSignal+1)->Fill(mass, pairpt, weight * centralityWeight);
 
             }
@@ -1153,7 +1195,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
           double pairpt = LvecM.Pt();
 
           for (unsigned int i = 0; i < fRecNegPart[neg_i].isMCSignal.size(); ++i){
-            if (fRecNegPart[neg_i].isMCSignal[i] == kTRUE && fRecPosPart[pos_i].isMCSignal[i] == kTRUE){
+            // if (fRecNegPart[neg_i].isMCSignal[i] == kTRUE && fRecPosPart[pos_i].isMCSignal[i] == kTRUE){
+            if (fRecNegPart[neg_i].isMCSignal[i] == true && fRecPosPart[pos_i].isMCSignal[i] == true &&
+                fRecNegPart[neg_i].DielectronPairFromSameMother[i] == false && fRecPosPart[pos_i].DielectronPairFromSameMother[i] == false){
               for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
                 if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_i].isReconstructed[j] == kTRUE){
                   fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i]->Fill(mass, pairpt, centralityWeight);
@@ -1222,7 +1266,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         double pairpt = LvecM.Pt();
 
         for (unsigned int i = 0; i < fRecNegPart[neg_i].isMCSignal.size(); ++i){
-          if (fRecNegPart[neg_i].isMCSignal[i] == kTRUE && fRecNegPart[neg_j].isMCSignal[i] == kTRUE){
+          // if (fRecNegPart[neg_i].isMCSignal[i] == kTRUE && fRecNegPart[neg_j].isMCSignal[i] == kTRUE){
+          if (fRecNegPart[neg_i].isMCSignal[i] == true && fRecNegPart[neg_j].isMCSignal[i] == true &&
+              fRecNegPart[neg_i].DielectronPairFromSameMother[i] == false && fRecNegPart[neg_j].DielectronPairFromSameMother[i] == false){
             for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
               if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecNegPart[neg_j].isReconstructed[j] == kTRUE){
                 fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i + 2]->Fill(mass, pairpt, centralityWeight);
@@ -1245,7 +1291,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         double pairpt = LvecM.Pt();
 
         for (unsigned int i = 0; i < fRecPosPart[pos_i].isMCSignal.size(); ++i){
-          if (fRecPosPart[pos_i].isMCSignal[i] == kTRUE && fRecPosPart[pos_j].isMCSignal[i] == kTRUE){
+          // if (fRecPosPart[pos_i].isMCSignal[i] == kTRUE && fRecPosPart[pos_j].isMCSignal[i] == kTRUE){
+          if (fRecPosPart[pos_i].isMCSignal[i] == true && fRecPosPart[pos_j].isMCSignal[i] == true &&
+              fRecPosPart[pos_i].DielectronPairFromSameMother[i] == false && fRecPosPart[pos_j].DielectronPairFromSameMother[i] == false){
             for (unsigned int j = 0; j < fRecPosPart[pos_i].isReconstructed.size(); ++j){
               if (fRecPosPart[pos_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_j].isReconstructed[j] == kTRUE){
                 fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i + 1]->Fill(mass, pairpt, centralityWeight);
@@ -1310,9 +1358,51 @@ AliAnalysisTaskElectronEfficiencyV2::Particle AliAnalysisTaskElectronEfficiencyV
   double  phi1     = mcPart1->Phi();
   short   charge1  = mcPart1->Charge();
   Particle part(pt1, eta1, phi1, charge1);
+  part.DielectronPairFromSameMother.resize(fDielectronPairNotFromSameMother.size(), false);
+
+
   return part;
 }
 
+void AliAnalysisTaskElectronEfficiencyV2::CheckIfFromMotherWithDielectronAsDaughter(Particle& part){
+  if (isAOD && fDoULSandLS){
+
+    for (unsigned int k = 0; k < fDielectronPairNotFromSameMother.size(); ++k){
+      if (part.isMCSignal[k] == true && fDielectronPairNotFromSameMother[k] == true){
+        AliAODMCParticle* mother = dynamic_cast<AliAODMCParticle*> (fMC->GetTrack(part.GetMotherID()));
+        // int number_of_daugthers = mother->GetNDaughters() ;
+        int LabelFirstDaughter = mother->GetFirstDaughter();
+        int LabelLastDaughter = mother->GetLastDaughter();
+        // std::cout << "number_of_daughters = " << number_of_daugthers << "  first_daugther = " << LabelFirstDaughter << "  last_daugther = " << LabelLastDaughter << std::endl;
+
+        bool ele_from_same_mother = false;
+        bool pos_from_same_mother = false;
+        for (int daughter_i = LabelFirstDaughter; daughter_i <= LabelLastDaughter; daughter_i++){
+          int pdgCode = fMC->GetTrack(daughter_i)->PdgCode();
+          if      (pdgCode == 11)  ele_from_same_mother = true;
+          else if (pdgCode == -11) pos_from_same_mother = true;
+          // std::cout << "daugther[" << daughter_i << "] with pdgcode: " << pdgCode << std::endl;
+        }
+        if (ele_from_same_mother == true && pos_from_same_mother == true) {
+          part.DielectronPairFromSameMother[k] = true;
+          // std::cout << "dielectron pair from same mother" << std::endl;
+        }
+        else{
+          part.DielectronPairFromSameMother[k] = false;
+        }
+      }
+      else{
+        part.DielectronPairFromSameMother[k] = false;
+      }
+    }
+  }
+  if (part.DielectronPairFromSameMother.size() != fDielectronPairNotFromSameMother.size()){
+    std::cout << "ERROR IN SOME PART" << std::endl;
+    // vec = std::vector<bool>(fDielectronPairNotFromSameMother.size(), false);
+  }
+  // part.DielectronPairFromSameMother = vec;
+
+}
 
 
 // ############################################################################
