@@ -67,7 +67,7 @@ using std::endl;
  */
 AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA::AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA() :
 AliAnalysisTaskEmcalJet(),
-fUseRecalcPatches(0x0),
+fUseRecalcPatches(false),
 fHistManager(),
 //fRecevent(),
 //fMCevent(),
