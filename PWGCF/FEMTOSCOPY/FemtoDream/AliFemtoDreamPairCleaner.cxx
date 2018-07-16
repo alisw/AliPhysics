@@ -155,10 +155,49 @@ void AliFemtoDreamPairCleaner::FillInvMassPair(
     for (const auto &it2:Part2) {
       float invMass=InvMassPair(it1.GetMomentum(),PDGCode1,
                                  it2.GetMomentum(),PDGCode2);
-//      std::cout << invMass << std::endl;
       fHists->FillPairInvMass(histnumber,invMass);
+      float relMom = RelativePairMomentum(it1.GetMomentum(),PDGCode1,
+                                          it2.GetMomentum(),PDGCode2);
+      if (relMom < 0.5) {
+        fHists->FillPairTuple(histnumber,invMass,relMom);
+      }
     }
   }
 }
 
 
+float AliFemtoDreamPairCleaner::RelativePairMomentum(TVector3 Part1Momentum,
+                                                           int PDGPart1,
+                                                           TVector3 Part2Momentum,
+                                                           int PDGPart2)
+{
+  if(PDGPart1 == 0 || PDGPart2== 0){
+    printf("Invalid PDG Code");
+  }
+  float results = 0.;
+  TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;
+  //Even if the Daughter tracks were switched up during PID doesn't play a role here cause we are
+  //only looking at the mother mass
+  SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(),Part1Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+  TPProng.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(),Part2Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+  trackSum = SPtrack + TPProng;
+
+  float beta = trackSum.Beta();
+  float betax = beta*cos(trackSum.Phi())*sin(trackSum.Theta());
+  float betay = beta*sin(trackSum.Phi())*sin(trackSum.Theta());
+  float betaz = beta*cos(trackSum.Theta());
+
+  SPtrackCMS = SPtrack;
+  TPProngCMS = TPProng;
+
+  SPtrackCMS.Boost(-betax,-betay,-betaz);
+  TPProngCMS.Boost(-betax,-betay,-betaz);
+
+  TLorentzVector trackRelK;
+
+  trackRelK = SPtrackCMS - TPProngCMS;
+  results = 0.5*trackRelK.P();
+  return results;
+}
