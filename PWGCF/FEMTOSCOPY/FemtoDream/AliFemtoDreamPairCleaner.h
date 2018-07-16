@@ -35,6 +35,10 @@ class AliFemtoDreamPairCleaner {
   std::vector<std::vector<AliFemtoDreamBasePart>>& GetCleanParticles()
       {return fParticles;};
   void ResetArray();
+  float RelativePairMomentum(TVector3 Part1Momentum,
+                       int PDGPart1,
+                       TVector3 Part2Momentum,
+                       int PDGPart2);
  private:
   double InvMassPair(TVector3 Part1, int PDG1, TVector3 Part2, int PDG2);
   double E2(int pdgCode, double Ptot2);
