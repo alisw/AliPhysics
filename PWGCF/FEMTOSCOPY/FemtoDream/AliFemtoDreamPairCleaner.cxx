@@ -172,7 +172,7 @@ float AliFemtoDreamPairCleaner::RelativePairMomentum(TVector3 Part1Momentum,
                                                            int PDGPart2)
 {
   if(PDGPart1 == 0 || PDGPart2== 0){
-    AliError("Invalid PDG Code");
+    printf("Invalid PDG Code");
   }
   float results = 0.;
   TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;

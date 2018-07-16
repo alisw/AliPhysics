@@ -36,7 +36,7 @@ AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists(
     fOutput->Add(fDecayDecays[i]);
   }
   fPairInvMass=new TH1F*[nInvMassPairs];
-  fPairTuple=new TNtuple[nInvMassPairs];
+  fPairTuple=new TNtuple*[nInvMassPairs];
   for (int i=0;i<nInvMassPairs;++i) {
     TString histName=Form("InvMassPair_%d",i);
     //this is tuned to look for the H Dibaryon, if neccessary setters need to be

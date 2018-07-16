@@ -55,9 +55,9 @@ AliFemtoDreamv0MCHist::AliFemtoDreamv0MCHist(
     int MassNBins,float MassMin,float MassMax,bool contribSplitting,
     bool CPADist)
 {
-  float ptmin=0.;
-  float ptmax=5.;
-  int ptBins=50;
+  float ptmin=-0.2;
+  float ptmax=6.3;
+  int ptBins=13;
 
   fMCList=new TList();
   fMCList->SetName("v0MonteCarlo");
