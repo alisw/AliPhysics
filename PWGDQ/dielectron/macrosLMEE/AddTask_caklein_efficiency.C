@@ -145,7 +145,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
   AddSingleLegMCSignal(task);
-  AddPairMCSignal(task);
+  std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
+  task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+
 
   // #########################################################
   // #########################################################
