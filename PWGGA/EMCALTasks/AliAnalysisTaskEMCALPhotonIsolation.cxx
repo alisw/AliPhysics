@@ -489,6 +489,12 @@ fHistoRangeContainer(0x0)
 AliAnalysisTaskEMCALPhotonIsolation::~AliAnalysisTaskEMCALPhotonIsolation(){
 
     // Destructor
+
+  if ( AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) return;
+
+  if ( fCaloUtils ) delete fCaloUtils;
+  if ( fOutput    ) delete fOutput;
+
 }
 
 
