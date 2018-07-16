@@ -1327,7 +1327,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
 {
   Int_t index=0;
   TLorentzVector vecCOI;
-  coi->GetMomentum(vecCOI,fVertex);
+  coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
 
   Double_t coiTOF = coi->GetTOF()*1e9;
   index=coi->GetID();
@@ -1353,8 +1353,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
     nlm = GetNLM(coi,fCaloCells);
     AliDebug(1,Form("NLM = %d",nlm));
 
-    if(coi->E()>=5. && coi->E()<70. && fQA)
-      fNLM->Fill(nlm,coi->E());
+    if(coi->GetNonLinCorrEnergy()>=5. && coi->GetNonLinCorrEnergy()<70. && fQA)
+      fNLM->Fill(nlm,coi->GetNonLinCorrEnergy());
 
     if(fIsNLMCut && fNLMCut>0 && fNLMmin>0){ // If the NLM cut is enabled, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
       if(nlm > fNLMCut || nlm < fNLMmin ){
@@ -1407,20 +1407,20 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   fCutFlowClusters->Fill(8.5);
 
   if(fQA && fWho == 1){
-    fNLM2_NC_Acc->Fill(nlm,coi->E());
+    fNLM2_NC_Acc->Fill(nlm,coi->GetNonLinCorrEnergy());
     
     if(fANnoSameTcard){
       if(nlm==2){
         Int_t rowdiff,coldiff;
         if(!IsAbsIDsFromTCard(fAbsIDNLM[0],fAbsIDNLM[1],rowdiff,coldiff)){
-          fNLM2_NC_Acc_noTcard->Fill(nlm,coi->E());
+          fNLM2_NC_Acc_noTcard->Fill(nlm,coi->GetNonLinCorrEnergy());
           return kTRUE;
         }
         else
           return kFALSE;
       }
       else
-	fNLM2_NC_Acc_noTcard->Fill(nlm,coi->E());
+	fNLM2_NC_Acc_noTcard->Fill(nlm,coi->GetNonLinCorrEnergy());
     }
   } //the flag fANnoSameTcard could be used also independently of fQA and fWho,
     //depending on the results of the analysis on full dataset.
@@ -1594,7 +1594,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
     index=coi->GetID();
     TLorentzVector vecCOI;
-    coi->GetMomentum(vecCOI,fVertex);
+    coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
 
     fPT->Fill(vecCOI.Pt());
 
@@ -1648,7 +1648,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
 
       index=coi->GetID();
       TLorentzVector vecCOI;
-      coi->GetMomentum(vecCOI,fVertex);
+      coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
 
       fPT->Fill(vecCOI.Pt());
 
@@ -1784,7 +1784,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::MCSimTrigger(AliVEvent *eventIn, Int
     if(!coi)
       continue;
 
-    if(coi->E() > threshold)
+    if(coi->GetNonLinCorrEnergy() > threshold)
       return kTRUE;
   }
 
@@ -1801,7 +1801,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     AliError(Form("No TPC only tracks"));
 
   TLorentzVector vecClust;
-  clust->GetMomentum(vecClust,fVertex);
+  clust->GetMomentum(vecClust, fVertex, AliVCluster::kNonLinCorr);
 
   Int_t nbMObj = clust->GetNTracksMatched();
   if(nbMObj == 0)
@@ -2021,13 +2021,13 @@ Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster* coi, AliVCaloCell
   }
 
   if(iDigitN == 0){
-    AliDebug(1,Form("No local maxima found, assign highest energy cell as maxima, id %d, en cell %2.2f, en cluster %2.2f",idmax,emax,coi->E()));
+    AliDebug(1,Form("No local maxima found, assign highest energy cell as maxima, id %d, en cell %2.2f, en cluster %2.2f",idmax,emax,coi->GetNonLinCorrEnergy()));
     iDigitN      = 1;
     maxEList[0]  = emax;
     absIdList[0] = idmax;
   }
 
-  AliDebug(1,Form("In coi E %2.2f (wth non lin. %2.2f), M02 %2.2f, M20 %2.2f, N maxima %d",coi->E(),eCluster,coi->GetM02(),coi->GetM20(),iDigitN));
+  AliDebug(1,Form("In coi E %2.2f (wth non lin. %2.2f), M02 %2.2f, M20 %2.2f, N maxima %d",coi->GetNonLinCorrEnergy(),eCluster,coi->GetM02(),coi->GetM20(),iDigitN));
 
   return iDigitN ;
 }
@@ -2157,7 +2157,7 @@ Float_t AliAnalysisTaskEMCALPhotonIsolation::RecalEnClust(AliVCluster * coi, Ali
       energy += amp*frac;
     }
 
-    AliDebug(1,Form("Energy before %f, after %f",coi->E(),energy));
+    AliDebug(1,Form("Energy before %f, after %f",coi->GetNonLinCorrEnergy(),energy));
 
   } // Cells available
   else{
@@ -2390,7 +2390,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
       continue;
 
     phiClust = etaClust = clustTOF = 0.;
-    coi->GetMomentum(nClust,fVertex);
+    coi->GetMomentum(nClust, fVertex, AliVCluster::kNonLinCorr);
     phiClust = nClust.Phi();
     etaClust = nClust.Eta();
 
@@ -2586,7 +2586,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
       continue;
 
     phiClust = etaClust = clustTOF = 0.;
-    coi->GetMomentum(nClust,fVertex);
+    coi->GetMomentum(nClust, fVertex, AliVCluster::kNonLinCorr);
     phiClust = nClust.Phi();
     etaClust = nClust.Eta();
 
@@ -2803,7 +2803,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
       continue;
 
     phiClust = etaClust = clustTOF = 0.;
-    coi->GetMomentum(nClust,fVertex);
+    coi->GetMomentum(nClust, fVertex, AliVCluster::kNonLinCorr);
     phiClust = nClust.Phi();
     etaClust = nClust.Eta();
 
@@ -3697,7 +3697,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
       localIndex++;
 
       // TLorentzVector nClust(0., 0., 0., 0.);
-      coi->GetMomentum(nClust,fVertex);
+      coi->GetMomentum(nClust, fVertex, AliVCluster::kNonLinCorr);
 
       if((coi->GetNCells() < 2))
         continue;
@@ -3737,8 +3737,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
   }
 
   TLorentzVector vecCOI;
-  coi->GetMomentum(vecCOI,fVertex);
-  Double_t eTCOI  = vecCOI.Et();
+  coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+  Double_t eTCOI = vecCOI.Et();
 
   // Set smearing for MC
   Double_t m02COI = 0.;
@@ -3933,8 +3933,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
   Double_t fullTPCArea   = 1.74*2.*TMath::Pi()-1.74*2.*fIsoConeRadius-isoConeArea;
 
   TLorentzVector vecCOI;
-  coi->GetMomentum(vecCOI,fVertex);
-  Double_t eTCOI=vecCOI.Et();
+  coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+  Double_t eTCOI = vecCOI.Et();
 
   // Set smearing for MC
   Double_t m02COI = 0.;
