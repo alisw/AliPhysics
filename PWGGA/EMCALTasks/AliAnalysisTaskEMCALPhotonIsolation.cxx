@@ -46,6 +46,7 @@
 // --- Detectors ---
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliCalorimeterUtils.h"
 
   /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEMCALPhotonIsolation);
@@ -60,6 +61,7 @@ AliAnalysisTaskEmcal("AliAnalysisTaskEMCALPhotonIsolation",kTRUE),
   // fParticleCollArray(),
 fAOD(0),
 fVevent(0),
+fCaloUtils(),
 fNCluster(0),
 fAODMCParticles(0),
 fmcHeader(0),
@@ -67,7 +69,7 @@ fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
-fNonLinRecoEnergyScaling(1.),
+fNonLinRecoEnergyScaling(kFALSE),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -274,6 +276,7 @@ AliAnalysisTaskEmcal(name, histo),
   // fParticleCollArray(),
 fAOD(0),
 fVevent(0),
+fCaloUtils(),
 fNCluster(0),
 fAODMCParticles(0),
 fmcHeader(0),
@@ -281,7 +284,7 @@ fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
-fNonLinRecoEnergyScaling(1.),
+fNonLinRecoEnergyScaling(kFALSE),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -1892,6 +1895,38 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     fCTdistVSpTNC->Fill(vecClust.Pt(),distCT);
 
   return matched;
+}
+
+  //_____________________________________________________________________________________________
+void AliAnalysisTaskEMCALPhotonIsolation::NonLinRecoEnergyScaling ( AliVEvent * event, AliVCluster * cluster ) {
+
+  Int_t runNumber = event->GetRunNumber();
+  fCaloUtils      = new AliCalorimeterUtils();
+  fCaloUtils->SetRunNumber(runNumber);
+
+  Double_t scaleFactor_withoutTRD = 0., scaleFactor_withTRD = 0.;
+  Int_t    SM                     = fCaloUtils->GetModuleNumber(cluster); // Fonction de AliCalorimeterUtils
+  Int_t    maxSM_withoutTRD       = 4;
+
+  if      ( fPeriod.Contains("11") ) {
+    maxSM_withoutTRD       = 6;
+    scaleFactor_withoutTRD = 1./1.01217;
+    scaleFactor_withTRD    = 1./0.99994;
+  }
+  else if ( fPeriod.Contains("12") ) {
+    scaleFactor_withoutTRD = 1./1.00142;
+    scaleFactor_withTRD    = 1./0.995343;
+  }
+  else if ( fPeriod.Contains("13") ) {
+    scaleFactor_withoutTRD = 1./0.997278;
+    scaleFactor_withTRD    = 1./0.993112;
+  }
+
+  if ( SM < maxSM_withoutTRD )
+    cluster->SetE(scaleFactor_withoutTRD*(cluster->GetNonLinCorrEnergy()));
+  else
+    cluster->SetE(scaleFactor_withTRD*(cluster->GetNonLinCorrEnergy()));
+
 }
 
   //_____________________________________________________________________________________________
