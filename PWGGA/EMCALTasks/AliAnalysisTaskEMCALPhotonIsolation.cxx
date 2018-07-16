@@ -46,6 +46,7 @@
 // --- Detectors ---
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliCalorimeterUtils.h"
 
   /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEMCALPhotonIsolation);
@@ -60,6 +61,7 @@ AliAnalysisTaskEmcal("AliAnalysisTaskEMCALPhotonIsolation",kTRUE),
   // fParticleCollArray(),
 fAOD(0),
 fVevent(0),
+fCaloUtils(),
 fNCluster(0),
 fAODMCParticles(0),
 fmcHeader(0),
@@ -67,7 +69,7 @@ fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
-fNonLinRecoEnergyScaling(1.),
+fNonLinRecoEnergyScaling(kFALSE),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -274,6 +276,7 @@ AliAnalysisTaskEmcal(name, histo),
   // fParticleCollArray(),
 fAOD(0),
 fVevent(0),
+fCaloUtils(),
 fNCluster(0),
 fAODMCParticles(0),
 fmcHeader(0),
@@ -281,7 +284,7 @@ fDPMjetHeader(0),
 fPythiaVersion(""),
 fVariableCPV(kFALSE),
 fVariableCPVInCone(kFALSE),
-fNonLinRecoEnergyScaling(1.),
+fNonLinRecoEnergyScaling(kFALSE),
 fTracksAna(0),
 fStack(0),
 fEMCALRecoUtils(new AliEMCALRecoUtils),
@@ -935,9 +938,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::UserCreateOutputObjects(){
 	    fOutput->Add(fPtvsSum_MC);
 	  }
 
-	  fPtvsSumUE_MC = new TH2F("hPtvsSumUE_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone}-UE distribution for isolated clusters (already normalised by the appropriate areas)",200,0.,100.,400,-50.,150.);
-	  fPtvsSumUE_MC->Sumw2();
-	  fOutput->Add(fPtvsSumUE_MC);
+	  if(fAnalysispPb){
+	    fPtvsSumUE_MC = new TH2F("hPtvsSumUE_MC","#it{p}_{T} vs #Sigma E_{T}^{iso cone}-UE distribution for isolated clusters (already normalised by the appropriate areas)",200,0.,100.,400,-50.,150.);
+	    fPtvsSumUE_MC->Sumw2();
+	    fOutput->Add(fPtvsSumUE_MC);
+	  }
 
 	  fSumEiso_MC = new TH1F ("hSumEiso_MC","#Sigma E_{T}^{iso cone} distribution (generated)",250,0.,100.);
 	  fSumEiso_MC->Sumw2();
@@ -1890,6 +1895,38 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
     fCTdistVSpTNC->Fill(vecClust.Pt(),distCT);
 
   return matched;
+}
+
+  //_____________________________________________________________________________________________
+void AliAnalysisTaskEMCALPhotonIsolation::NonLinRecoEnergyScaling ( AliVEvent * event, AliVCluster * cluster ) {
+
+  Int_t runNumber = event->GetRunNumber();
+  fCaloUtils      = new AliCalorimeterUtils();
+  fCaloUtils->SetRunNumber(runNumber);
+
+  Double_t scaleFactor_withoutTRD = 0., scaleFactor_withTRD = 0.;
+  Int_t    SM                     = fCaloUtils->GetModuleNumber(cluster); // Fonction de AliCalorimeterUtils
+  Int_t    maxSM_withoutTRD       = 4;
+
+  if      ( fPeriod.Contains("11") ) {
+    maxSM_withoutTRD       = 6;
+    scaleFactor_withoutTRD = 1./1.01217;
+    scaleFactor_withTRD    = 1./0.99994;
+  }
+  else if ( fPeriod.Contains("12") ) {
+    scaleFactor_withoutTRD = 1./1.00142;
+    scaleFactor_withTRD    = 1./0.995343;
+  }
+  else if ( fPeriod.Contains("13") ) {
+    scaleFactor_withoutTRD = 1./0.997278;
+    scaleFactor_withTRD    = 1./0.993112;
+  }
+
+  if ( SM < maxSM_withoutTRD )
+    cluster->SetE(scaleFactor_withoutTRD*(cluster->GetNonLinCorrEnergy()));
+  else
+    cluster->SetE(scaleFactor_withTRD*(cluster->GetNonLinCorrEnergy()));
+
 }
 
   //_____________________________________________________________________________________________
@@ -4932,7 +4969,7 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC(){
       if(fAnalysispPb)
 	fPtvsSumUE_MC->Fill(eT, sumEiso-sumUE); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
       else
-      fPtvsSum_MC->Fill(eT, sumEiso);
+	fPtvsSum_MC->Fill(eT, sumEiso);
     }
   }
 
@@ -5280,7 +5317,11 @@ void AliAnalysisTaskEMCALPhotonIsolation::AnalyzeMC_Pythia8(){
       CalculateUEDensityMC(candidateEta, candidatePhi, sumUE);
 
       if(fWho == 2){
-	fPtvsSumUE_MC->Fill(E_T, sumEiso-sumUE); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
+	if(fAnalysispPb)
+	  fPtvsSumUE_MC->Fill(E_T, sumEiso-sumUE); // For etaBand method, output 2, and with fAreasPerEvent flag on: cone and band areas computed candidate-by-candidate
+	else
+	  fPtvsSum_MC->Fill(E_T, sumEiso);
+
 	fSumEiso_MC->Fill(sumEiso);
 	fSumUE_MC->Fill(sumUE);
       }
