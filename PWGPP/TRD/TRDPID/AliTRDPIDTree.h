@@ -100,6 +100,10 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
       fCollisionSystem.SetBitNumber(kPbPb, kTRUE);
   };
 
+  void SetUseExtraPileupCut(Bool_t UseExtraPileupCut=kFALSE){
+      fUseExtraPileupCut=UseExtraPileupCut;
+  };
+
   protected:
   static Double_t fgMinLayer;  //! Cut variable for min number of layers
   AliESDv0KineCuts *fV0cuts;           //! ESD V0 cuts
