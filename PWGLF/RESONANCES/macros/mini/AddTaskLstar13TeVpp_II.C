@@ -134,7 +134,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
   task->SetMaxDiffVz(maxDiffVzMix);
   task->SetMaxDiffMult(maxDiffMultMix);
   //if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
-  ::Info("AddAnalysisTaskLStar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n ", nmix, maxDiffVzMix, maxDiffMultMix));
+  ::Info("AddAnalysisTasLStar", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n ", nmix, maxDiffVzMix, maxDiffMultMix));
   
   mgr->AddTask(task);
   
@@ -241,8 +241,8 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
   
   //for systematic checks
   {
-    //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp_II.C");
-    gROOT->LoadMacro("ConfigureLstar13TeVpp_II.C");
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp_II.C");
+    //gROOT->LoadMacro("ConfigureLstar13TeVpp_II.C");
     if (!ConfigureLstar13TeVpp_II(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,  enableMonitor, isMC&IsMcTrueOnly, signedPdg, monitorOpt, useCrossedRows, yaxisVar ,useMixLS)) 
       return 0x0;  
   }
@@ -252,7 +252,7 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
   // -- CONTAINERS --------------------------------------------------------------------------------
   //
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
-  Printf("AddAnalysisTaskLStarSyst - Set OutputFileName : \n %s\n", outputFileName.Data() );
+  Printf("AddAnalysisTaskTPCKStarSyst - Set OutputFileName : \n %s\n", outputFileName.Data() );
   
   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()),TList::Class(),AliAnalysisManager::kOutputContainer, outputFileName);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
