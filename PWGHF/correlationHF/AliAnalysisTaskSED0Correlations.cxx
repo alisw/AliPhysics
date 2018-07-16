@@ -2047,10 +2047,10 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
   if(fPurityStudies) {
     
     TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
-    TString namebinAss[5] = {"03to99","03to1","1to99","1to3","3to99"};
+    TString namebinAss[7] = {"03to99","03to1","1to99","1to3","1to2","2to3","3to99"};
 
     for(int i=0; i<5; i++) { //pTD
-      for(int j=0; j<5; j++) { //pTass
+      for(int j=0; j<7; j++) { //pTass
 	namePlot=Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data());
         TH1F *hpurity_prim = new TH1F(namePlot.Data(), "Prim accepted",1,-0.5,0.5);
         hpurity_prim->SetMinimum(0);
@@ -3326,7 +3326,7 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
   if(!fReadMC || !fRecoD0 || !fRecoTr) return;
 
   TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
-  TString namebinAss[5] = {"03to99","03to1","1to99","1to3","3to99"};
+  TString namebinAss[7] = {"03to99","03to1","1to99","1to3","1to2","2to3","3to99"};
 
   AliAODMCParticle* trkKine = (AliAODMCParticle*)mcArray->At(track->GetLabel());
   if (!trkKine) return;
@@ -3334,7 +3334,7 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
   Bool_t primTrack = trkKine->IsPhysicalPrimary();
   Double_t pTtr = track->Pt();
 
-  Bool_t fillAssocRange[5] = {kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
+  Bool_t fillAssocRange[7] = {kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE};
   TString stringpTD = "";
   Bool_t okpTD = kFALSE;
   if(fBinLimsCorr.at(ptbin) >= 2 && fBinLimsCorr.at(ptbin) < 3)   {stringpTD = namebinD[0]; okpTD = kTRUE;}
@@ -3347,10 +3347,12 @@ void AliAnalysisTaskSED0Correlations::FillPurityPlots(TClonesArray* mcArray, Ali
   if(pTtr >= 0.3 && pTtr < 1) fillAssocRange[1] = kTRUE;
   if(pTtr >= 1) fillAssocRange[2] = kTRUE;
   if(pTtr >= 1 && pTtr < 3) fillAssocRange[3] = kTRUE;
-  if(pTtr >= 3) fillAssocRange[4] = kTRUE;
+  if(pTtr >= 1 && pTtr < 2) fillAssocRange[4] = kTRUE;
+  if(pTtr >= 2 && pTtr < 3) fillAssocRange[5] = kTRUE;
+  if(pTtr >= 3) fillAssocRange[6] = kTRUE;
 
   if(!okpTD) return;
-  for(int j=0; j<5; j++) {
+  for(int j=0; j<7; j++) {
     if(fillAssocRange[j]==kTRUE) {
       if(primTrack) {
         ((TH1F*)fOutputStudy->FindObject(Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",stringpTD.Data(),namebinAss[j].Data())))->Fill(0.,fWeight); 
