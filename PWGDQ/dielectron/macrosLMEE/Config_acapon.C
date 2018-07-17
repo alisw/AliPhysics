@@ -17,7 +17,7 @@ Bool_t MCenabled = kTRUE; //Needed for LMEEcutlib
 Bool_t isQAtask =  kTRUE;
 Int_t selectedCuts = -1;
 Int_t selectedPID = -1;
-Bool_t pairCuts = kTRUE;
+Bool_t pairCuts = kFALSE;
 
 AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC = kFALSE, Bool_t isESD = kFALSE,
                              Bool_t SDDstatus = kFALSE, Bool_t doPairing = kTRUE,
@@ -378,6 +378,28 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
                             100,-1,1, 120,0.,1.2, AliDielectronVarManager::kEta,AliDielectronVarManager::kNFclsTPCfCross);
         histos->UserHistogram("Track","TPCcrossedRowsOverFindable_Phi",";Phi;TPC crossed rows over findable",
                             120,0.,TMath::TwoPi(), 120,0.,1.2, AliDielectronVarManager::kPhi,AliDielectronVarManager::kNFclsTPCfCross);
+
+				//Histograms for POST PID calibration
+				//Define the min/max limits for each of the four variables:
+				//P, numTrack, {DET}nSigma{ParticleType}, eta
+				const Int_t dimensions    = 4;
+				Int_t bins[dimensions]    = {100, 20, 40, 16};
+				Double_t xmin[dimensions] = {0., 0., -4, -0.8};
+				Double_t xmax[dimensions] = {10., 20000., 4, 0.8};
+				//Define the histograms to be plotted using NTrk
+				UInt_t value_NTrk_ITSnSigmaEle[dimensions] = {AliDielectronVarManager::kP, AliDielectronVarManager::kNTrk, AliDielectronVarManager::kITSnSigmaEle, AliDielectronVarManager::kEta};
+				UInt_t value_NTrk_TPCnSigmaEle[dimensions] = {AliDielectronVarManager::kP, AliDielectronVarManager::kNTrk, AliDielectronVarManager::kTPCnSigmaEle, AliDielectronVarManager::kEta};
+				UInt_t value_NTrk_TOFnSigmaEle[dimensions] = {AliDielectronVarManager::kP, AliDielectronVarManager::kNTrk, AliDielectronVarManager::kTOFnSigmaEle, AliDielectronVarManager::kEta};
+				histos->UserHistogram("Track", dimensions, bins, xmin, xmax, value_NTrk_ITSnSigmaEle);
+				histos->UserHistogram("Track", dimensions, bins, xmin, xmax, value_NTrk_TPCnSigmaEle);
+				histos->UserHistogram("Track", dimensions, bins, xmin, xmax, value_NTrk_TOFnSigmaEle);
+				//Define the histograms to be plotted using refMultTPConly
+				UInt_t value_refMultTPC_ITSnSigmaEle[dimensions] = {AliDielectronVarManager::kP, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kITSnSigmaEle, AliDielectronVarManager::kEta};
+				UInt_t value_refMultTPC_TPCnSigmaEle[dimensions] = {AliDielectronVarManager::kP, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kTPCnSigmaEle, AliDielectronVarManager::kEta};
+				UInt_t value_refMultTPC_TOFnSigmaEle[dimensions] = {AliDielectronVarManager::kP, AliDielectronVarManager::kRefMultTPConly, AliDielectronVarManager::kTOFnSigmaEle, AliDielectronVarManager::kEta};
+				histos->UserHistogram("Track", dimensions, bins, xmin, xmax, value_refMultTPC_ITSnSigmaEle);
+				histos->UserHistogram("Track", dimensions, bins, xmin, xmax, value_refMultTPC_TPCnSigmaEle);
+				histos->UserHistogram("Track", dimensions, bins, xmin, xmax, value_refMultTPC_TOFnSigmaEle);
     } 
   
     if(doPairing){
