@@ -191,7 +191,7 @@ void BadChannelAna::Init()
 	fRootFile = new TFile(fileName,"recreate");
 	//.. make sure the vector is empty
 	fAnalysisVector.clear();
-
+	fSMMask.clear();
 	//......................................................
 	//..Initialize EMCal/DCal geometry
 	fCaloUtils = new AliCalorimeterUtils();
@@ -369,7 +369,7 @@ void BadChannelAna::Run(Bool_t mergeOnly)
 			LoadExternalBadMap();
 		}
 	}
-
+	if(fSMMask.size()>0)RunMaskSM();
 
 	if(fPrint==1)cout<<"o o o Create summary documents for the entire analysis o o o"<<endl;
 	SummarizeResults();
@@ -587,6 +587,7 @@ TString BadChannelAna::MergeRuns()
 void BadChannelAna::LoadExternalBadMap()
 {
 	if(fExternalBadMapName=="")cout<<"Error - no external Bad Map provided"<<endl;
+	else						   cout<<"Load external map: "<<fExternalBadMapName<<endl;
 
 	//..access the standart root output of a bad channel analysis to
 	//..get the necessary histogram
@@ -603,6 +604,7 @@ void BadChannelAna::LoadExternalBadMap()
 		//..Cell flagged as dead.
 		//..Flag only if it hasn't been flagged before
 		fFlag[cell] =extFlag;
+		if(extFlag>fCriterionCounter)fCriterionCounter=extFlag;
 	}
 }
 ///
@@ -638,13 +640,29 @@ void BadChannelAna::BCAnalysis()
 void BadChannelAna::AddMaskSM(Int_t iSM)
 {
 	cout<<"o o o Manually mask SM "<<iSM<<" o o o"<<endl;
+	fSMMask.push_back(iSM);
+}
+
+
+//
+// Mask an entire SM before doing the BC analysis
+// This is useful when you get info from QA that there are problems with one SM
+// and you want to clean up your bad channels beforehand
+//
+//________________________________________________________________________
+void BadChannelAna::RunMaskSM()
+{
+	Int_t NoSMmask = fSMMask.size();
 	//..Loop over cell ID
 	for (Int_t cell = fStartCell; cell < fNoOfCells; cell++)
 	{
 		//..check to which SM the cell belongs
-		if(cell>=fStartCellSM[iSM] && cell<fStartCellSM[iSM+1])
+		for(Int_t iSM=0; iSM<NoSMmask; iSM++)
 		{
-			fFlag[cell] =1;
+			if(cell>=fStartCellSM[fSMMask.at(iSM)] && cell<fStartCellSM[fSMMask.at(iSM)+1])
+			{
+				fFlag[cell] =1;
+			}
 		}
 	}
 }
@@ -1197,12 +1215,21 @@ void BadChannelAna::FlagAsBad(Int_t crit, TH1F* inhisto, Double_t nsigma, Double
 	}
 	if(crit==1 || crit == 4) //..energy/hit
 	{
+		//..Finding a good binning automatically is a bit messy. IF you know a better
+		//..way please go ahead and implenent it.
 		dnbins=(dmaxVal-dminVal)*150;  //150 if you have problems with low statistic 500 normal stat
-		if(dnbins<25)dnbins=50;        //..this is the min. binning for E/hit distr.
+		if(dnbins>500)dnbins=(dmaxVal-dminVal)*50;  //150 if you have problems with low statistic 500 normal stat
+
+		if(dnbins<25)dnbins=dnbins*3;        //..this is the min. binning for E/hit distr.
+		if(dnbins<25)dnbins=dnbins*2;        //..this is the min. binning for E/hit distr.
+
 		if(inputBins==-1)
 		{
 			//dnbins=200;
 			dnbins=(dmaxVal-dminVal)*40;
+			if(dnbins>500)dnbins=(dmaxVal-dminVal)*15;
+			if(dnbins<25)dnbins=dnbins*3;        //..this is the min. binning for E/hit distr.
+			if(dnbins<25)dnbins=dnbins*2;        //..this is the min. binning for E/hit distr.
 		}
 	}
 	if(x) delete []x;
@@ -2206,7 +2233,7 @@ void BadChannelAna::SummarizeResults()
 	c1_projSM->SaveAs(name4);
 	name5   = Form("%s/%s/CellEnergySMratio.gif", fWorkdir.Data(),fAnalysisOutput.Data());
 	c1_projRSM->SaveAs(name5);
-	name6   = Form("%s/%s/CellTime.gif", fWorkdir.Data(),fAnalysisOutput.Data());
+	name6   = Form("%s/%s/CellTimeSM.gif", fWorkdir.Data(),fAnalysisOutput.Data());
 	c1_projTimeSM->SaveAs(name6);
 
 	fRootFile->WriteObject(c1_ratio,c1_ratio->GetName());
@@ -2320,7 +2347,7 @@ void BadChannelAna::SaveBadCellsToPDF(Int_t version, TString pdfName)
 	gStyle->SetOptStat(0);
 	gStyle->SetFillColor(kWhite);
 	gStyle->SetTitleFillColor(kWhite);
-	gStyle->SetPalette(1);
+	gStyle->SetPalette(91);
 
 	char title[100];
 	char name[100];

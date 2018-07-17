@@ -64,7 +64,8 @@ public:
       void SetLowerBound(Double_t input)                   {fEndLowerBound      = input;}
       void AddManualMasking(std::vector<Int_t> cellVector) {fManualMask.swap(cellVector) ;}
 	  void AddMaskSM(Int_t iSM);
-      void AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax);
+	  void RunMaskSM();
+	  void AddPeriodAnalysis(Int_t criteria, Double_t nsigma, Double_t emin, Double_t emax);
 
 protected:
 
@@ -137,6 +138,7 @@ protected:
 	  Int_t fCriterionCounter;              //!<! This value will be written in fflag and updates after each PeriodAnalysis, to distinguish the steps at which cells are marked as bad
 	  std::vector<Bool_t> fWarmCell;        //!<! fWarmCell[CellID] = 0 (really bad), fWarmCell[CellID] = 1 (candidate for warm),
 	  std::vector<Int_t> fManualMask;       //!<! Is a list of cells that should be addidionally masked by hand.
+	  std::vector<Int_t> fSMMask;           //!<! fSMMask is filled with SM numbers that need to be masked by hand.
 
 	  //Calorimeter information for the investigated runs
 	  AliCalorimeterUtils* fCaloUtils;      //!<! Calorimeter information for the investigated runs
