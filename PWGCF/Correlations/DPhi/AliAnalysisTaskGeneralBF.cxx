@@ -907,22 +907,22 @@ void AliAnalysisTaskGeneralBF::UserCreateOutputObjects()
   __s1pt_1_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_1,    0.);
   __n1_1_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_1,  0.);
   
-    //particle 2
-    _id_2       = new int[arraySize];
-    _charge_2   = new int[arraySize];
-    _iEtaPhi_2  = new int[arraySize];
-    _iPt_2      = new int[arraySize];
-    _pt_2       = new float[arraySize];
-    _px_2       = new float[arraySize];
-    _py_2       = new float[arraySize];
-    _pz_2       = new float[arraySize];
-    _correction_2 = new float[arraySize];
-    _dedx_2       = new float[arraySize];
-    __n1_2_vsPt              = getDoubleArray(_nBins_pt_2,        0.);
-    __n1_2_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_2,    0.);
-    __s1pt_2_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_2,    0.);
-    __n1_2_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_2, 0.);
-
+  //particle 2
+  _id_2       = new int[arraySize];
+  _charge_2   = new int[arraySize];
+  _iEtaPhi_2  = new int[arraySize];
+  _iPt_2      = new int[arraySize];
+  _pt_2       = new float[arraySize];
+  _px_2       = new float[arraySize];
+  _py_2       = new float[arraySize];
+  _pz_2       = new float[arraySize];
+  _correction_2 = new float[arraySize];
+  _dedx_2       = new float[arraySize];
+  __n1_2_vsPt              = getDoubleArray(_nBins_pt_2,        0.);
+  __n1_2_vsEtaPhi          = getDoubleArray(_nBins_etaPhi_2,    0.);
+  __s1pt_2_vsEtaPhi        = getDoubleArray(_nBins_etaPhi_2,    0.);
+  __n1_2_vsZEtaPhiPt       = getFloatArray(_nBins_zEtaPhiPt_2, 0.);
+  
   
   __n2_12_vsPtPt           = getDoubleArray(_nBins_pt_1*_nBins_pt_2,0.);
   __n2_12_vsEtaPhi         = getFloatArray(_nBins_etaPhi_12,       0.);
@@ -1495,7 +1495,7 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
         _psi_EventPlane -> Fill( EP );
       }
       
-      //Track Loop starts here
+      //Track Loop for particle 1 starts here
       for (int iTrack = 0; iTrack < _nTracks; iTrack++ )
       {
         AliAODTrack * t = dynamic_cast<AliAODTrack *>( fAODEvent -> GetTrack( iTrack ) );
@@ -1784,7 +1784,91 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             }
           }
         }//if ( _requestedCharge_1 == charge )
+      } //Track Loop for particle 1 ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+
+      //------------------------------------------------------------------------------------------------------------------------------------------------
+      //Track Loop for particle 2 starts here
+      for (int iTrack = 0; iTrack < _nTracks; iTrack++ )
+      {
+        AliAODTrack * t = dynamic_cast<AliAODTrack *>( fAODEvent -> GetTrack( iTrack ) );
+        if ( !t ) {
+          AliError( Form( "Could not receive track %d", iTrack ) );
+          continue;
+        }
         
+        bitOK  = t -> TestFilterBit( _trackFilterBit );
+        if ( !bitOK ) continue;
+        
+        q      = t -> Charge();
+        charge = int( q );
+        phi    = t -> Phi();
+        p      = t -> P(); // momentum magnitude
+        pt     = t -> Pt();
+        px     = t -> Px();
+        py     = t -> Py();
+        pz     = t -> Pz();
+        eta    = t -> Eta();
+        if ( fAnalysisType == "RealData" )    dedx = t -> GetTPCsignal();
+        else if ( fAnalysisType == "MCAODreco" )  dedx = fPIDResponse -> GetTPCsignalTunedOnData( t );
+        
+        // QA for all the particles in the event
+        if ( _singlesOnly )
+        {
+          _etadis_before_any_cuts -> Fill( eta );
+          _phidis_before_any_cuts -> Fill( phi );
+          
+          CheckTOF( t );
+          if ( fHasTOFPID )
+          {
+            _t0_1d -> Fill( fPIDResponse->GetTOFResponse().GetStartTime(t->P()) );
+            if ( fAnalysisType == "RealData" )
+            {
+              _timeTOF_1d -> Fill( t->GetTOFsignal() );
+              _realTOF_1d -> Fill( t->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(t->P()) );
+            }
+            else if ( fAnalysisType == "MCAODreco" )
+            {
+              _timeTOF_1d -> Fill( t->GetTOFsignalTunedOnData() );
+              _realTOF_1d -> Fill( t->GetTOFsignalTunedOnData() - fPIDResponse->GetTOFResponse().GetStartTime(t->P()) );
+            }
+            _trackLength -> Fill( fPIDResponse->GetTOFResponse().GetExpectedSignal(t, AliPID::kElectron)*1E-3*c );
+            _trackLength_GetIntegratedLength -> Fill( t -> GetIntegratedLength() );
+            _msquare_p -> Fill( p, massSquareCalculation(t) );
+            _beta_p -> Fill( p, TOFBetaCalculation(t) );
+            _nSigmaTOF_p_pion_before -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kPion) );
+            _nSigmaTOF_p_kaon_before -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kKaon) );
+            _nSigmaTOF_p_proton_before -> Fill( p, fPIDResponse->NumberOfSigmasTOF(t,AliPID::kProton) );
+            _inverse_beta_p -> Fill( p, 1./TOFBetaCalculation(t)  );
+            _nSigmaTPC_nSigmaTOF_Pion_before -> Fill( fPIDResponse->NumberOfSigmasTPC(t,AliPID::kPion), fPIDResponse->NumberOfSigmasTOF(t,AliPID::kPion) );
+            _nSigmaTPC_nSigmaTOF_Kaon_before -> Fill( fPIDResponse->NumberOfSigmasTPC(t,AliPID::kKaon), fPIDResponse->NumberOfSigmasTOF(t,AliPID::kKaon) );
+            _nSigmaTPC_nSigmaTOF_Proton_before -> Fill( fPIDResponse->NumberOfSigmasTPC(t,AliPID::kProton), fPIDResponse->NumberOfSigmasTOF(t,AliPID::kProton) );
+          }
+          else  _dedx_p -> Fill( p, dedx );
+        }
+        
+        // Kinematics cuts begins:
+        if( charge == 0 ) continue;
+        
+        Double_t pos[3];
+        t -> GetXYZ(pos);
+        Double_t DCAX = pos[0] - vertexX;
+        Double_t DCAY = pos[1] - vertexY;
+        Double_t DCAZ = pos[2] - vertexZ;
+        Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+        if (DCAZ     <  _dcaZMin ||
+            DCAZ     >  _dcaZMax ||
+            DCAXY    >  _dcaXYMax ) continue;
+        
+        nClus = t -> GetTPCNcls();
+        if ( nClus < _nClusterMin ) continue; // Kinematics cuts ends.
+        
+        if ( _singlesOnly )    _Ncluster1 -> Fill( nClus );
+        //_Ncluster2->Fill(nClus);   //_Ncluster2 same with _Ncluster1
+        
+        if ( _useEventPlane )
+        {
+          if( !( ((phi-EP)>=EP_min) && ((phi-EP)<=EP_max)) && !( ((phi-EP-TMath::Pi())>=EP_min) && ((phi-EP-TMath::Pi())<=EP_max)) ) continue;
+        }
         
         //Particle 2
         if ( _requestedCharge_2 == charge )
@@ -1992,7 +2076,8 @@ void  AliAnalysisTaskGeneralBF::UserExec(Option_t */*option*/)
             }
           }
         } //if ( _requestedCharge_2 == charge )
-      } //Track Loop ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+      } //Track Loop for particle 2 ends here //for (int iTrack=0; iTrack< _nTracks; iTrack++)
+    
     } //end of "if ( fAnalysisType == "RealData" || fAnalysisType == "MCAODreco" )"
     
     //=========================================================================================================
