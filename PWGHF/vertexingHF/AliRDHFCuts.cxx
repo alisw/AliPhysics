@@ -128,7 +128,8 @@ fCutGeoNcrNclLength(130.),
 fCutGeoNcrNclGeom1Pt(1.5),
 fCutGeoNcrNclFractionNcr(0.85),
 fCutGeoNcrNclFractionNcl(0.7),
-fUseV0ANDSelectionOffline(kFALSE)
+fUseV0ANDSelectionOffline(kFALSE),
+fUseTPCtrackCutsOnThisDaughter(kTRUE)
 {
   //
   // Default Constructor
@@ -204,7 +205,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fCutGeoNcrNclGeom1Pt(source.fCutGeoNcrNclGeom1Pt),
   fCutGeoNcrNclFractionNcr(source.fCutGeoNcrNclFractionNcr),
   fCutGeoNcrNclFractionNcl(source.fCutGeoNcrNclFractionNcl),
-  fUseV0ANDSelectionOffline(source.fUseV0ANDSelectionOffline)
+  fUseV0ANDSelectionOffline(source.fUseV0ANDSelectionOffline),
+  fUseTPCtrackCutsOnThisDaughter(source.fUseTPCtrackCutsOnThisDaughter)
 {
   //
   // Copy constructor
@@ -307,6 +309,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fCutGeoNcrNclFractionNcr=source.fCutGeoNcrNclFractionNcr;
   fCutGeoNcrNclFractionNcl=source.fCutGeoNcrNclFractionNcl;
   fUseV0ANDSelectionOffline=source.fUseV0ANDSelectionOffline;
+  fUseTPCtrackCutsOnThisDaughter=source.fUseTPCtrackCutsOnThisDaughter;
 
   PrintAll();
 
@@ -861,13 +864,13 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
   }
 
   //appliyng TPC crossed rows pT dependent cut
-  if(f1CutMinNCrossedRowsTPCPtDep){
+  if(f1CutMinNCrossedRowsTPCPtDep && fUseTPCtrackCutsOnThisDaughter){
     Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
     if(nCrossedRowsTPC<f1CutMinNCrossedRowsTPCPtDep->Eval(esdTrack.Pt())) return kFALSE;
   }
   
   //appliyng NTPCcls/NTPCcrossedRows cut
-  if(fCutRatioClsOverCrossRowsTPC){
+  if(fCutRatioClsOverCrossRowsTPC && fUseTPCtrackCutsOnThisDaughter){
     Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
     Float_t nClustersTPC = esdTrack.GetTPCNcls();
     if(nCrossedRowsTPC!=0){ 
@@ -878,7 +881,7 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
   }
 
   //appliyng TPCsignalN/NTPCcrossedRows cut
-  if(fCutRatioSignalNOverCrossRowsTPC){
+  if(fCutRatioSignalNOverCrossRowsTPC && fUseTPCtrackCutsOnThisDaughter){
     Float_t nCrossedRowsTPC = esdTrack.GetTPCCrossedRows();
     Float_t nTPCsignal = esdTrack.GetTPCsignalN();
     if(nCrossedRowsTPC!=0){
