@@ -208,7 +208,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
-  gROOT->LoadMacro("ConfigPhiPP5TeV_PID.C");
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPP5TeV_PID.C");
   if(!ConfigPhiPP5TeV_PID(task,HIST,isMC,isPP,"",cutsPair,aodFilterBit,customQualityCutsID,cutKaCandidate,nsigmaKa,enableMonitor,isMC&IsMcTrueOnly,monitorOpt.Data(),useMixLS,isMC&checkReflex,yaxisvar,polarizationOpt)) return 0x0;
 
   // -- CONTAINERS --------------------------------------------------------------------------------
