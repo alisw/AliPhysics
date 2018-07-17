@@ -235,6 +235,18 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fCutString=new TObjString((GetCutNumber()).Data());
 
   fElectronLabelArray = new Int_t[fElectronArraySize];
+
+  fHistoEleMapMean  = new TH2F*[fnRBins];
+  fHistoEleMapWidth = new TH2F*[fnRBins];
+  fHistoPosMapMean  = new TH2F*[fnRBins];
+  fHistoPosMapWidth = new TH2F*[fnRBins];
+
+  for (Int_t i = 0; i < fnRBins; i++) {
+    fHistoEleMapMean[i] = NULL;
+    fHistoEleMapWidth[i] = NULL;
+    fHistoPosMapMean[i] = NULL;
+    fHistoPosMapWidth[i] = NULL;
+  }
 }
 
 //________________________________________________________________________
@@ -406,6 +418,34 @@ AliConversionPhotonCuts::~AliConversionPhotonCuts() {
       delete fProfileContainingMaterialBudgetWeights;
       fProfileContainingMaterialBudgetWeights = 0x0;
   }
+
+  // if( fHistoEleMapMean != NULL){
+  //   delete fHistoEleMapMean;
+  //   fHistoEleMapMean =NULL;	
+  // }
+
+  for (Int_t i = 0; i < fnRBins; i++) {
+    if( fHistoEleMapMean[i]  != NULL){
+      delete fHistoEleMapMean[i] ;
+      fHistoEleMapMean[i]  =NULL;
+    }
+    if( fHistoEleMapWidth[i]  != NULL){
+      delete fHistoEleMapWidth[i] ;
+      fHistoEleMapWidth[i]  =NULL;
+    }
+    
+    if( fHistoPosMapMean[i]  != NULL){
+      delete fHistoPosMapMean[i] ;
+      fHistoPosMapMean[i]  =NULL;
+    }
+    if( fHistoPosMapWidth[i]  != NULL){
+      delete fHistoPosMapWidth[i] ;
+      fHistoPosMapWidth[i]  =NULL;
+    }
+    
+  }
+
+
 }
 
 //________________________________________________________________________
@@ -472,6 +512,23 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
   if (fProfileContainingMaterialBudgetWeights){
       fProfileContainingMaterialBudgetWeights->SetName("InputMaterialBudgetWeightsPerGamma");
       fHistograms->Add(fProfileContainingMaterialBudgetWeights);
+  }
+
+  if (fElecDeDxPostCalibrationInitialized){
+    for (Int_t i = 0; i < fnRBins; i++) {
+      if( fHistoEleMapMean[i] ){
+	fHistograms->Add(fHistoEleMapMean[i]);
+      }
+      if( fHistoEleMapWidth[i]){
+        fHistograms->Add(fHistoEleMapWidth[i]);
+      }
+      if(fHistoPosMapMean[i]){
+	fHistograms->Add(fHistoPosMapMean[i]);
+      }
+      if( fHistoPosMapWidth[i]){
+        fHistograms->Add(fHistoPosMapWidth[i]);
+      }
+    }  
   }
 
   if(!fDoLightOutput){
@@ -643,10 +700,6 @@ Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filena
   }else{
     AliInfo(Form("found %s ",filename.Data()));
   }
-  fHistoEleMapMean  = new TH2F*[fnRBins];
-  fHistoEleMapWidth = new TH2F*[fnRBins];
-  fHistoPosMapMean  = new TH2F*[fnRBins];
-  fHistoPosMapWidth = new TH2F*[fnRBins];
 
   for(Int_t i=0;i<fnRBins;i++){
      fHistoEleMapMean[i]  = (TH2F*)file->Get(Form("Ele_R%d_mean",i));
