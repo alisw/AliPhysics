@@ -110,7 +110,7 @@ protected:
     Bool_t                      fUseRecalcPatches                                 ;///<                  Switch between offline (FEE) and recalc (L1) patches
     Bool_t                      SelectSingleShowerPatch(const AliEMCALTriggerPatchInfo *patch) const;
     Bool_t                      SelectJetPatch(const AliEMCALTriggerPatchInfo  *patch) const;
-    THistManager                fHistManager                                      ;//!<                 Histogram manager
+    THistManager                fHistManager                                      ;///<                 Histogram manager
     
     // Sparse Definition
     virtual THnSparse*     NewTHnSparseF(const char* name, UInt_t entries);
@@ -118,21 +118,11 @@ protected:
     // Binning helper functions
     
     //  Utilities
-    //Double_t                    GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
-    //Double_t                    GetSmearedTrackPt(AliVTrack *track)                ; //!<!               smeared Pt resolution with gaussian
-    //Double_t                    GetFcross(const AliVCluster *cluster, AliVCaloCells *cells);
-    
-    //AliVEvent                   *fRecevent                                         ;//!<!                Reconstructed event
-    //AliMCEvent                  *fMCevent                                          ;//!<!                Monte-Carlo event
-    //AliMCParticleContainer*     fGeneratorLevel                                    ;//!<!                generator level container
-   // AliJetContainer*            fMCJetContainer                                    ;//!<!                truth-level jet container
+
 
 private:
     
-  //AliEMCALGeometry              *fGeom                     ;//!<!          EMCal goemetry utility
-   // AliEMCALRecoUtils             *fRecoUtil                 ;//!<!          Reco utility
-    //TF1                           *fClusterEResolution       ;//!<!          Parameterization of cluster energy resolution from 2010 test beam results a = 4.35 b = 9.07 c = 1.63
-  //  Double_t                      fVaryTrkPtRes              ;//!<!          Variation of tracking momentum resolution
+
     Bool_t                        fUseSumw2                  ;//!          activate sumw2 for output histograms
 
     TH1F                          *fHistNumbJets             ;//!          Numb Jets Per Event
@@ -142,13 +132,7 @@ private:
     TH1F                          *fHistJetJetPatchPt        ;//!          Jet - Jet Trigger Patch Pt
     TH1F                          *fHistJetGammaPatchPt      ;//!          Jet - Gamma Trigger Patch Pt
     TH1F                          *fHistTriggerPatchE        ;//!          EMCal Trigger Patch E
-    
-    //THnSparse                     *fhnMBJetSpectra           ;//!<!          MB Jet Spectra sparse
-    //THnSparse                     *fhnTrkQA                  ;//!<!          Charged Track QA Sparse
-   // THnSparse                     *fhnClusQA                 ;//!<!          EMCal Cluster QA
-    
-    
-    //TH1F                          *fHistEMCalTowerMult[9]    ;//!<!          EMCal Tower Multiplicity by SM
+
 
     AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&)           ; // not implemented
     AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA &operator=(const AliAnalysisTaskEmcalJetSpectra8TeVTriggerQA&); // not implemented
