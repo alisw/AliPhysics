@@ -1334,6 +1334,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   Int_t index=0;
   TLorentzVector vecCOI;
   coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+  if(fIsMC && fNonLinRecoEnergyScaling)
+    NonLinRecoEnergyScaling(vecCOI);
 
   Double_t coiTOF = coi->GetTOF()*1e9;
   index=coi->GetID();
@@ -1359,8 +1361,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
     nlm = GetNLM(coi,fCaloCells);
     AliDebug(1,Form("NLM = %d",nlm));
 
-    if(coi->GetNonLinCorrEnergy()>=5. && coi->GetNonLinCorrEnergy()<70. && fQA)
-      fNLM->Fill(nlm,coi->GetNonLinCorrEnergy());
+    if(NonLinRecoEnergyScaling(fVevent, coi, coi->GetNonLinCorrEnergy()) >= 5. && NonLinRecoEnergyScaling(fVevent, coi, coi->GetNonLinCorrEnergy()) < 70. && fQA)
+      fNLM->Fill(nlm, NonLinRecoEnergyScaling(fVevent, coi, coi->GetNonLinCorrEnergy()));
 
     if(fIsNLMCut && fNLMCut>0 && fNLMmin>0){ // If the NLM cut is enabled, this is a loop to reject clusters with more than the defined NLM (should be 1 or 2 (merged photon decay clusters))
       if(nlm > fNLMCut || nlm < fNLMmin ){
@@ -1413,20 +1415,20 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::SelectCandidate(AliVCluster *coi)
   fCutFlowClusters->Fill(8.5);
 
   if(fQA && fWho == 1){
-    fNLM2_NC_Acc->Fill(nlm,coi->GetNonLinCorrEnergy());
+    fNLM2_NC_Acc->Fill(nlm, NonLinRecoEnergyScaling(fVevent, coi, coi->GetNonLinCorrEnergy()));
     
     if(fANnoSameTcard){
       if(nlm==2){
         Int_t rowdiff,coldiff;
         if(!IsAbsIDsFromTCard(fAbsIDNLM[0],fAbsIDNLM[1],rowdiff,coldiff)){
-          fNLM2_NC_Acc_noTcard->Fill(nlm,coi->GetNonLinCorrEnergy());
+          fNLM2_NC_Acc_noTcard->Fill(nlm, NonLinRecoEnergyScaling(fVevent, coi, coi->GetNonLinCorrEnergy()));
           return kTRUE;
         }
         else
           return kFALSE;
       }
       else
-	fNLM2_NC_Acc_noTcard->Fill(nlm,coi->GetNonLinCorrEnergy());
+	fNLM2_NC_Acc_noTcard->Fill(nlm, NonLinRecoEnergyScaling(fVevent, coi, coi->GetNonLinCorrEnergy()));
     }
   } //the flag fANnoSameTcard could be used also independently of fQA and fWho,
     //depending on the results of the analysis on full dataset.
@@ -1601,6 +1603,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
     index=coi->GetID();
     TLorentzVector vecCOI;
     coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+    if(fIsMC && fNonLinRecoEnergyScaling)
+      NonLinRecoEnergyScaling(vecCOI);
 
     fPT->Fill(vecCOI.Pt());
 
@@ -1655,6 +1659,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::Run()
       index=coi->GetID();
       TLorentzVector vecCOI;
       coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+      if(fIsMC && fNonLinRecoEnergyScaling)
+	NonLinRecoEnergyScaling(vecCOI);
 
       fPT->Fill(vecCOI.Pt());
 
@@ -1790,7 +1796,7 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::MCSimTrigger(AliVEvent *eventIn, Int
     if(!coi)
       continue;
 
-    if(coi->GetNonLinCorrEnergy() > threshold)
+    if(NonLinRecoEnergyScaling(fVevent, coi, coi->GetNonLinCorrEnergy()) > threshold)
       return kTRUE;
   }
 
@@ -1808,6 +1814,8 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
 
   TLorentzVector vecClust;
   clust->GetMomentum(vecClust, fVertex, AliVCluster::kNonLinCorr);
+  if(fIsMC && fNonLinRecoEnergyScaling)
+    NonLinRecoEnergyScaling(vecClust);
 
   Int_t nbMObj = clust->GetNTracksMatched();
   if(nbMObj == 0)
@@ -1904,15 +1912,13 @@ Bool_t AliAnalysisTaskEMCALPhotonIsolation::ClustTrackMatching(AliVCluster *clus
 }
 
   //_____________________________________________________________________________________________
-void AliAnalysisTaskEMCALPhotonIsolation::NonLinRecoEnergyScaling ( AliVEvent * event, AliVCluster * cluster ) {
+void AliAnalysisTaskEMCALPhotonIsolation::NonLinRecoEnergyScaling ( TLorentzVector cluster_vec ) {
 
-  Int_t runNumber = event->GetRunNumber();
-  fCaloUtils      = new AliCalorimeterUtils();
-  fCaloUtils->SetRunNumber(runNumber);
+  Int_t    cluster_SM = 0;
+  fGeom->SuperModuleNumberFromEtaPhi(cluster_vec.Eta(), cluster_vec.Phi(), cluster_SM);  
 
-  Double_t scaleFactor_withoutTRD = 0., scaleFactor_withTRD = 0.;
-  Int_t    SM                     = fCaloUtils->GetModuleNumber(cluster); // Fonction de AliCalorimeterUtils
   Int_t    maxSM_withoutTRD       = 4;
+  Double_t scaleFactor_withoutTRD = 0., scaleFactor_withTRD = 0.;
 
   if      ( fPeriod.Contains("11") ) {
     maxSM_withoutTRD       = 6;
@@ -1928,10 +1934,50 @@ void AliAnalysisTaskEMCALPhotonIsolation::NonLinRecoEnergyScaling ( AliVEvent * 
     scaleFactor_withTRD    = 1./0.993112;
   }
 
-  if ( SM < maxSM_withoutTRD )
-    cluster->SetE(scaleFactor_withoutTRD*(cluster->GetNonLinCorrEnergy()));
+  if ( cluster_SM < maxSM_withoutTRD )
+    cluster_vec *= scaleFactor_withoutTRD; // Scale each component of the 4-vector
   else
-    cluster->SetE(scaleFactor_withTRD*(cluster->GetNonLinCorrEnergy()));
+    cluster_vec *= scaleFactor_withTRD;
+
+}
+
+  //_____________________________________________________________________________________________
+Double_t AliAnalysisTaskEMCALPhotonIsolation::NonLinRecoEnergyScaling ( AliVEvent * event, AliVCluster * cluster, Double_t energy ) {
+
+  if ( fIsMC && fNonLinRecoEnergyScaling ) {
+    Double_t scaled_energy = 0.;
+
+    Int_t    runNumber  = event->GetRunNumber();
+    fCaloUtils          = new AliCalorimeterUtils();
+    fCaloUtils->SetRunNumber(runNumber);
+    Int_t    cluster_SM = fCaloUtils->GetModuleNumber(cluster);
+
+    Int_t    maxSM_withoutTRD       = 4;
+    Double_t scaleFactor_withoutTRD = 1., scaleFactor_withTRD = 1.;
+
+    if      ( fPeriod.Contains("11") ) {
+      maxSM_withoutTRD       = 6;
+      scaleFactor_withoutTRD = 1./1.01217;
+      scaleFactor_withTRD    = 1./0.99994;
+    }
+    else if ( fPeriod.Contains("12") ) {
+      scaleFactor_withoutTRD = 1./1.00142;
+      scaleFactor_withTRD    = 1./0.995343;
+    }
+    else if ( fPeriod.Contains("13") ) {
+      scaleFactor_withoutTRD = 1./0.997278;
+      scaleFactor_withTRD    = 1./0.993112;
+    }
+
+    if ( cluster_SM < maxSM_withoutTRD )
+      scaled_energy = scaleFactor_withoutTRD * energy;
+    else
+      scaled_energy = scaleFactor_withTRD * energy;
+
+    return scaled_energy;
+  }
+  else
+    return energy;
 
 }
 
@@ -2027,13 +2073,13 @@ Int_t AliAnalysisTaskEMCALPhotonIsolation::GetNLM(AliVCluster* coi, AliVCaloCell
   }
 
   if(iDigitN == 0){
-    AliDebug(1,Form("No local maxima found, assign highest energy cell as maxima, id %d, en cell %2.2f, en cluster %2.2f",idmax,emax,coi->GetNonLinCorrEnergy()));
+    AliDebug(1,Form("No local maxima found, assign highest energy cell as maxima, id %d, en cell %2.2f, en cluster %2.2f",idmax,emax,NonLinRecoEnergyScaling(fVevent, coi, coi->GetNonLinCorrEnergy())));
     iDigitN      = 1;
     maxEList[0]  = emax;
     absIdList[0] = idmax;
   }
 
-  AliDebug(1,Form("In coi E %2.2f (wth non lin. %2.2f), M02 %2.2f, M20 %2.2f, N maxima %d",coi->GetNonLinCorrEnergy(),eCluster,coi->GetM02(),coi->GetM20(),iDigitN));
+  AliDebug(1,Form("In coi E %2.2f (wth non lin. %2.2f), M02 %2.2f, M20 %2.2f, N maxima %d",NonLinRecoEnergyScaling(fVevent, coi, coi->GetNonLinCorrEnergy()),eCluster,coi->GetM02(),coi->GetM20(),iDigitN));
 
   return iDigitN ;
 }
@@ -2163,7 +2209,7 @@ Float_t AliAnalysisTaskEMCALPhotonIsolation::RecalEnClust(AliVCluster * coi, Ali
       energy += amp*frac;
     }
 
-    AliDebug(1,Form("Energy before %f, after %f",coi->GetNonLinCorrEnergy(),energy));
+    AliDebug(1,Form("Energy before %f, after %f",NonLinRecoEnergyScaling(fVevent, coi, coi->GetNonLinCorrEnergy()),energy));
 
   } // Cells available
   else{
@@ -2397,6 +2443,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusPhiBand(TLorentzVector c, Dou
 
     phiClust = etaClust = clustTOF = 0.;
     coi->GetMomentum(nClust, fVertex, AliVCluster::kNonLinCorr);
+    if(fIsMC && fNonLinRecoEnergyScaling)
+      NonLinRecoEnergyScaling(nClust);
+
     phiClust = nClust.Phi();
     etaClust = nClust.Eta();
 
@@ -2593,6 +2642,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusEtaBand(TLorentzVector c, Dou
 
     phiClust = etaClust = clustTOF = 0.;
     coi->GetMomentum(nClust, fVertex, AliVCluster::kNonLinCorr);
+    if(fIsMC && fNonLinRecoEnergyScaling)
+      NonLinRecoEnergyScaling(nClust);
+
     phiClust = nClust.Phi();
     etaClust = nClust.Eta();
 
@@ -2810,6 +2862,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::EtIsoClusExtraOrthCones(TLorentzVector
 
     phiClust = etaClust = clustTOF = 0.;
     coi->GetMomentum(nClust, fVertex, AliVCluster::kNonLinCorr);
+    if(fIsMC && fNonLinRecoEnergyScaling)
+      NonLinRecoEnergyScaling(nClust);
+
     phiClust = nClust.Phi();
     etaClust = nClust.Eta();
 
@@ -3704,6 +3759,8 @@ void AliAnalysisTaskEMCALPhotonIsolation::FillInvMassHistograms(Bool_t iso, Doub
 
       // TLorentzVector nClust(0., 0., 0., 0.);
       coi->GetMomentum(nClust, fVertex, AliVCluster::kNonLinCorr);
+      if(fIsMC && fNonLinRecoEnergyScaling)
+	NonLinRecoEnergyScaling(nClust);
 
       if((coi->GetNCells() < 2))
         continue;
@@ -3744,6 +3801,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinEMCAL(AliVCluster *coi
 
   TLorentzVector vecCOI;
   coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+  if(fIsMC && fNonLinRecoEnergyScaling)
+    NonLinRecoEnergyScaling(vecCOI);
+
   Double_t eTCOI = vecCOI.Et();
 
   // Set smearing for MC
@@ -3940,6 +4000,9 @@ void AliAnalysisTaskEMCALPhotonIsolation::IsolationAndUEinTPC(AliVCluster *coi, 
 
   TLorentzVector vecCOI;
   coi->GetMomentum(vecCOI, fVertex, AliVCluster::kNonLinCorr);
+  if(fIsMC && fNonLinRecoEnergyScaling)
+    NonLinRecoEnergyScaling(vecCOI);
+
   Double_t eTCOI = vecCOI.Et();
 
   // Set smearing for MC

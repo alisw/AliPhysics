@@ -151,8 +151,9 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         ApplySmearing               ( AliVCluster * coi, Double_t &m02COI                                                         ); // Applying smearing on MC
 							   
   Bool_t                       ClustTrackMatching          ( AliVCluster * emccluster, Bool_t candidate );
-  void                         NonLinRecoEnergyScaling     ( AliVEvent * event, AliVCluster * cluster   );
-  Int_t                        GetNLM                      ( AliVCluster * coi, AliVCaloCells * cells   );
+  void                         NonLinRecoEnergyScaling     ( TLorentzVector cluster_vec );
+  Double_t                     NonLinRecoEnergyScaling     ( AliVEvent * event, AliVCluster * cluster, Double_t energy );
+  Int_t                        GetNLM                      ( AliVCluster * coi, AliVCaloCells * cells );
   Int_t                        GetNLM                      ( AliVCluster * coi, AliVCaloCells * cells, Int_t * absIdList, Float_t * maxEList );
   Bool_t                       AreNeighbours               ( Int_t abscell1, Int_t abscell2 ) const;
   Float_t                      RecalEnClust                ( AliVCluster * cluster, AliVCaloCells * cells );
