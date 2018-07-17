@@ -25,6 +25,9 @@
 #include "AliJCDijetHistos.h"
 
 
+// Fastjet includes
+#include <FJ_includes.h>
+
 using namespace std;
 //==============================================================
 class TClonesArray;
@@ -47,7 +50,8 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t* );
   AliJCatalystTask *GetJCatalystTask() {return fJCatalystTask;}
   void    SetCentralityBins( vector<double> centralityBins ) {fcentralityBins=centralityBins; }
-  void    SetJetConeSize(double jetCone) {fjetCone=jetCone; }
+  void    SetJetConeSize(double jetCone, double ktjetCone) {fjetCone=jetCone; fktJetCone=ktjetCone; }
+  void    SetBGSubtrSettings(int ktScheme, Bool_t usePionMasskt) {fktScheme=ktScheme; fusePionMassInktjets=usePionMasskt; }
   Bool_t  IsMC()const{ return fIsMC; }
   void    SetIsMC(Bool_t b) { fIsMC=b; }
   void    SetCuts(double particleEta, double particlePt, double leadingJet, double subleadingJet, double constituent, double deltaPhi) {fparticleEtaCut=particleEta; fparticlePtCut=particlePt; fleadingJetCut=leadingJet; fsubleadingJetCut=subleadingJet; fconstituentCut=constituent; fdeltaPhiCut=deltaPhi;}
@@ -60,6 +64,9 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
                            double lParticleEtaCut,
                            double lParticlePtCut,
                            double lJetCone,
+                           double lktJetCone,
+                           int    lktScheme,
+                           bool   lusePionMassInkt,
                            double lConstituentCut,
                            double lLeadingJetCut,
                            double lSubleadingJetCut,
@@ -76,7 +83,10 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
   TString           fJCatalystTaskName; // Name for JCatalyst task
   vector<double> fcentralityBins;
   double fjetCone;
-  Bool_t      fIsMC;       // MC data or real data
+  double fktJetCone;
+  int  fktScheme;
+  Bool_t fusePionMassInktjets;
+  Bool_t fIsMC;       // MC data or real data
   double fparticleEtaCut;
   double fparticlePtCut;
   double fleadingJetCut;

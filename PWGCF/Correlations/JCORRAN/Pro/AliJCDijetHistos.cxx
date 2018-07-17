@@ -46,6 +46,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_dijetInvM(),
     fh_dijetPtPair(),
     fh_dijetDeltaPhi(),
+    fh_dijetPtPairDeltaPhiCut(),
     fh_dijetInvMDeltaPhiCut()
 {
 	
@@ -73,6 +74,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_dijetInvM(obj.fh_dijetInvM),
     fh_dijetPtPair(obj.fh_dijetPtPair),
     fh_dijetDeltaPhi(obj.fh_dijetDeltaPhi),
+    fh_dijetPtPairDeltaPhiCut(obj.fh_dijetPtPairDeltaPhiCut),
     fh_dijetInvMDeltaPhiCut(obj.fh_dijetInvMDeltaPhiCut)
 {
 	// copy constructor
@@ -97,7 +99,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 	fHMG = new AliJHistManager("AliJCDijetHistManager","jcdijet");
 	// set AliJBin here //
 	fHistCentBin.Set("CentBin","CentBin","Cent:",AliJBin::kSingle).SetBin(fNCentBin);
-	fJetBin.Set("JetBin","JetBin","Jet bin:",AliJBin::kSingle).SetBin(3);
+	fJetBin.Set("JetBin","JetBin","Jet bin:",AliJBin::kSingle).SetBin(5);
 
     // fh_events counts several things:
     // 0:  Number of events
@@ -116,7 +118,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     // 13: Number of const cut dijets
     // 14: Number of const cut dijets with delta phi cut
 	fh_events
-		<< TH1D("h_events", "h_events", 20, 0.0, 20.0 )
+		<< TH1D("h_events", "h_events", 40, 0.0, 40.0 )
 		<< fHistCentBin
 		<< "END" ;
 
@@ -218,6 +220,12 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_dijetDeltaPhi
         << TH1D("h_dijetDeltaPhi", "h_dijetDeltaPhi", 100, 0, 10)
+        << fHistCentBin << fJetBin
+        << "END" ;
+
+    fh_dijetPtPairDeltaPhiCut
+        //<< TH1D("h_dijetPtPair", "h_dijetPtPair", AliJCDijetHistos::NpttJacek, AliJCDijetHistos::pttJacek )
+        << TH1D("h_dijetPtPairDeltaPhiCut", "h_dijetPtPairDeltaPhiCut", NBINSDijet, logBinsXDijet )
         << fHistCentBin << fJetBin
         << "END" ;
 
