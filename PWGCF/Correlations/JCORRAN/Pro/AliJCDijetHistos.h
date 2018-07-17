@@ -74,6 +74,7 @@ public:
     AliJTH1D fh_dijetInvM;                //! // for dijet invariant mass
     AliJTH1D fh_dijetPtPair;              //! // for dijet pt
     AliJTH1D fh_dijetDeltaPhi;            //! // for dijet deltaPhi
+    AliJTH1D fh_dijetPtPairDeltaPhiCut;   //! // for dijet pt after deltaPhi cut
     AliJTH1D fh_dijetInvMDeltaPhiCut;     //! // for dijet invariant mass after deltaPhi cut
 };
 
