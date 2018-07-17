@@ -49,18 +49,18 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 	//. . Settings
 	//. . . . . . . . . . . . . . . . . . . . . . . .
 	Analysis->SetExternalMergedFile(externalFile);
-    Analysis->AddManualMasking(badcellsManual);
-	//Analysis->AddMaskSM(7);                     //..switch off entire SMs
-	//Analysis->AddMaskSM(9);                     //..switch off entire SMs
-	//Analysis->AddMaskSM(11);                    //..switch off entire SMs
-	//Analysis->SetLowerBound(1);                 //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
+    //Analysis->AddManualMasking(badcellsManual);
+	//Analysis->AddMaskSM(16);                    //..switch off entire SMs
+	//Analysis->AddMaskSM(9);                   //..switch off entire SMs
+	//Analysis->AddMaskSM(11);                  //..switch off entire SMs
+	//Analysis->SetLowerBound(1);               //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
 	Analysis->SetLowerBound(0.4);               //..If the Emin of the energy range (Emin-Emax) is higher than X GeV then dont apply a lower cut on the distribution
     //Analysis->SetStartEndCell(0,12288);       //..only EMCal
     //Analysis->SetStartEndCell(12288,17664);   //..only DCal
     //Analysis->SetQAChecks(1);                 //..1= Perform QA checks - takes a long time! Saves all good cells for cross check to pdf
     //Analysis->SetPrintOutput(1);              //..1= prints more information about excluded cells
 	//Analysis->SetTrackCellRecord(1);          //..1= prints non-zero flag elements thoughout the routine
-	//Analysis->SetExternalBadMap("Version1OADB/LHC16s_INT7_Histograms_V1.root");
+	//Analysis->SetExternalBadMap("Version286350_mSM11/LHC18d_INT7_Histograms_V286350.root");
 
 	//. . . . . . . . . . . . . . . . . . . . . . . .
 	//. . Add different period analyses
@@ -87,16 +87,15 @@ void runAnalysisBC(Int_t nversion = -1, TString period = "LHC15n", TString train
 
 	//..special test for extra high energy fluctuations
 	Analysis->AddPeriodAnalysis(1, 4.0,3.0,40.0); // energy/hit in cell in range Emin Emax
+//	Analysis->AddPeriodAnalysis(1, 80.0,3.0,40.0); // IN CASE something fails - energy/hit in cell in range Emin Emax
 //	Analysis->AddPeriodAnalysis(5, 4.0,3.0,40.0); // hits in cell range Emin Emax
 	//Analysis->AddPeriodAnalysis(1, 4.5,3.0,5.0);  // mean energy in range Emin Emax - cliff
 	//Analysis->AddPeriodAnalysis(5, 5.5,3.0,5.0);  // hits in cell range Emin Emax   - cliff
-	//Analysis->AddPeriodAnalysis(1, 4.5,5,20);     // energy/hit in range Emin Emax
-	//Analysis->AddPeriodAnalysis(5, 5.5,5,20);     // hits in range Emin Emax
 
 	//..Add a cut on the time distribution
 //	Analysis->AddPeriodAnalysis(3, 6,-20,+20);  // hits with time -20-20ns/all times
 	Analysis->AddPeriodAnalysis(3, 4,550,750); // hits with time 550-750ns/all times
-//	Analysis->AddPeriodAnalysis(3, 40,550,750); // if there are some problems with the fit hits with time 550-750ns/all times
+//	Analysis->AddPeriodAnalysis(3, 16,550,750); // IN CASE there are some problems with the fit hits with time 550-750ns/all times
 
 	//*test time stuff*/	Analysis->AddPeriodAnalysis(3, 6,-20,+20);// energy/hit in range Emin Emax
 
