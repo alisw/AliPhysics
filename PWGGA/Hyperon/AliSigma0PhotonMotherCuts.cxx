@@ -18,6 +18,10 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fLambdaMixed(),
       fPhotonMixed(),
       fTreeVariables(),
+      fLambdaCuts(nullptr),
+      fPhotonCuts(nullptr),
+      fV0Reader(nullptr),
+      fV0ReaderName("NoInit"),
       fMixingDepth(10),
       fPDG(0),
       fPDGDaughter1(0),
@@ -60,6 +64,9 @@ ClassImp(AliSigma0PhotonMotherCuts)
       fHistMCTruthDaughterPt(nullptr),
       fHistMCTruthDaughterPtY(nullptr),
       fHistMCTruthDaughterPtEta(nullptr),
+      fHistMCTruthDaughterPtAccept(nullptr),
+      fHistMCTruthDaughterPtYAccept(nullptr),
+      fHistMCTruthDaughterPtEtaAccept(nullptr),
       fHistMCV0Pt(nullptr),
       fHistMCV0Mass(nullptr),
       fOutputTree(nullptr) {}
@@ -79,6 +86,10 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fLambdaMixed(),
       fPhotonMixed(),
       fTreeVariables(),
+      fLambdaCuts(nullptr),
+      fPhotonCuts(nullptr),
+      fV0Reader(nullptr),
+      fV0ReaderName("NoInit"),
       fMixingDepth(10),
       fPDG(0),
       fPDGDaughter1(0),
@@ -121,6 +132,9 @@ AliSigma0PhotonMotherCuts::AliSigma0PhotonMotherCuts(
       fHistMCTruthDaughterPt(nullptr),
       fHistMCTruthDaughterPtY(nullptr),
       fHistMCTruthDaughterPtEta(nullptr),
+      fHistMCTruthDaughterPtAccept(nullptr),
+      fHistMCTruthDaughterPtYAccept(nullptr),
+      fHistMCTruthDaughterPtEtaAccept(nullptr),
       fHistMCV0Pt(nullptr),
       fHistMCV0Mass(nullptr),
       fOutputTree(nullptr) {}
@@ -137,7 +151,6 @@ AliSigma0PhotonMotherCuts &AliSigma0PhotonMotherCuts::operator=(
 //____________________________________________________________________________________________________
 AliSigma0PhotonMotherCuts *AliSigma0PhotonMotherCuts::DefaultCuts() {
   AliSigma0PhotonMotherCuts *photonMotherCuts = new AliSigma0PhotonMotherCuts();
-  photonMotherCuts->SetArmenterosCut(0., 0.12, -1., -0.6);
   photonMotherCuts->SetPhotonMaxPt(2);
   return photonMotherCuts;
 }
@@ -151,6 +164,9 @@ void AliSigma0PhotonMotherCuts::SelectPhotonMother(
 
   if (fIsMC) {
     ProcessMC();
+    fV0Reader =
+        (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
+            fV0ReaderName.Data());
   }
 
   fInputEvent = inputEvent;
@@ -358,17 +374,19 @@ void AliSigma0PhotonMotherCuts::ProcessMC() const {
     if (mcParticle->GetNDaughters() != 2) continue;
     if (mcParticle->PdgCode() != fPDG) continue;
     fHistMCTruthPt->Fill(mcParticle->Pt());
-    fHistMCTruthPtY->Fill(
-        ComputeRapidity(mcParticle->Pt(), mcParticle->Pz(), mcParticle->M()),
-        mcParticle->Pt());
+    fHistMCTruthPtY->Fill(mcParticle->Y(), mcParticle->Pt());
     fHistMCTruthPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
 
     if (!CheckDaughters(mcParticle)) continue;
     fHistMCTruthDaughterPt->Fill(mcParticle->Pt());
-    fHistMCTruthDaughterPtY->Fill(
-        ComputeRapidity(mcParticle->Pt(), mcParticle->Pz(), mcParticle->M()),
-        mcParticle->Pt());
+    fHistMCTruthDaughterPtY->Fill(mcParticle->Y(), mcParticle->Pt());
     fHistMCTruthDaughterPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
+
+    if (!CheckDaughtersInAcceptance(mcParticle)) continue;
+
+    fHistMCTruthDaughterPtAccept->Fill(mcParticle->Pt());
+    fHistMCTruthDaughterPtYAccept->Fill(mcParticle->Y(), mcParticle->Pt());
+    fHistMCTruthDaughterPtEtaAccept->Fill(mcParticle->Eta(), mcParticle->Pt());
   }
 }
 
@@ -394,6 +412,55 @@ bool AliSigma0PhotonMotherCuts::CheckDaughters(
   }
 
   if (!posDaughter || !negDaughter) return false;
+
+  return true;
+}
+
+//____________________________________________________________________________________________________
+bool AliSigma0PhotonMotherCuts::CheckDaughtersInAcceptance(
+    const AliMCParticle *particle) const {
+  AliMCParticle *lambdaDaughter = nullptr;
+  AliMCParticle *photonDaughter = nullptr;
+
+  if (std::abs(particle->Y()) > fRapidityMax) return false;
+
+  if (particle->GetNDaughters() != 2) return false;
+
+  for (int daughterIndex = particle->GetFirstDaughter();
+       daughterIndex <= particle->GetLastDaughter(); ++daughterIndex) {
+    if (daughterIndex < 0) continue;
+    AliMCParticle *tmpDaughter =
+        static_cast<AliMCParticle *>(fMCEvent->GetTrack(daughterIndex));
+    if (!tmpDaughter) continue;
+    const int pdgCode = tmpDaughter->PdgCode();
+    if (pdgCode == fPDGDaughter1) {
+      lambdaDaughter = tmpDaughter;
+    } else if (pdgCode == fPDGDaughter2) {
+      photonDaughter = tmpDaughter;
+    }
+  }
+
+  if (!lambdaDaughter || !photonDaughter) {
+    return false;
+  }
+
+  if (photonDaughter->Pt() > fPhotonPtMax ||
+      photonDaughter->Pt() < fPhotonPtMin)
+    return false;
+
+  // Check Daughters in acceptance
+  if (fLambdaCuts) {
+    if (!fLambdaCuts->CheckDaughtersInAcceptance(lambdaDaughter)) return false;
+  }
+  if (fPhotonCuts) {
+    if (!fPhotonCuts->CheckDaughtersInAcceptance(photonDaughter)) return false;
+  } else if (fV0Reader) {
+    AliConversionPhotonCuts *photonCuts = fV0Reader->GetConversionCuts();
+    if (photonCuts) {
+      if (!photonCuts->PhotonIsSelectedMC(photonDaughter->Particle(), fMCEvent))
+        return false;
+    }
+  }
 
   return true;
 }
@@ -426,7 +493,7 @@ int AliSigma0PhotonMotherCuts::GetRapidityBin(float rapidity) const {
     return 11;
   else if (0.5 < rapidity && rapidity <= 1.f)
     return 12;
-  else if (1.0 < rapidity < 10.f)
+  else if (1.0 < rapidity && rapidity < 10.f)
     return 13;
   else
     return -1;
@@ -611,6 +678,15 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistMCTruthDaughterPtEta =
         new TH2F("fHistMCTruthDaughterPtEta", "; #eta; #it{p}_{T} (GeV/#it{c})",
                  500, -10, 10, 500, 0, 10);
+    fHistMCTruthDaughterPtAccept =
+        new TH1F("fHistMCTruthDaughterPtAccept",
+                 "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
+    fHistMCTruthDaughterPtYAccept =
+        new TH2F("fHistMCTruthDaughterPtYAccept",
+                 "; y; #it{p}_{T} (GeV/#it{c})", 1000, -10, 10, 500, 0, 10);
+    fHistMCTruthDaughterPtEtaAccept =
+        new TH2F("fHistMCTruthDaughterPtEtaAccept",
+                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
     fHistMCV0Pt = new TH1F("fHistMCV0Pt",
                            "; #it{p}_{T} #Lambda#gamma (GeV/#it{c}); Entries",
                            500, 0, 20);
@@ -624,6 +700,9 @@ void AliSigma0PhotonMotherCuts::InitCutHistograms(TString appendix) {
     fHistogramsMC->Add(fHistMCTruthDaughterPt);
     fHistogramsMC->Add(fHistMCTruthDaughterPtY);
     fHistogramsMC->Add(fHistMCTruthDaughterPtEta);
+    fHistogramsMC->Add(fHistMCTruthDaughterPtAccept);
+    fHistogramsMC->Add(fHistMCTruthDaughterPtYAccept);
+    fHistogramsMC->Add(fHistMCTruthDaughterPtEtaAccept);
     fHistogramsMC->Add(fHistMCV0Pt);
     fHistogramsMC->Add(fHistMCV0Mass);
 
