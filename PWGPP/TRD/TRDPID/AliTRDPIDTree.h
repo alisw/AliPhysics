@@ -181,6 +181,6 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   AliTRDPIDTree(const AliTRDPIDTree&); // not implemented
   AliTRDPIDTree& operator=(const AliTRDPIDTree&); // not implemented
   
-  ClassDef(AliTRDPIDTree, 3);
+  ClassDef(AliTRDPIDTree, 4);
 };
 #endif
