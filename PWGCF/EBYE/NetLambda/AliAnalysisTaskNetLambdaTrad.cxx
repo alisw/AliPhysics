@@ -2,6 +2,7 @@
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
 // Updated Jul 3rd : DCA cuts & pt binning
+// Updated Jul 8th : MC test
 // Parts of the code taken from:
 // AliEbyEPidEfficiencyContamination.cxx
 // AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
@@ -131,16 +132,16 @@ void AliAnalysisTaskNetLambdaTrad::UserCreateOutputObjects()
     f2fHistRecCentVsPtAntiLambda = new TH2F("f2fHistRecCentVsPtAntiLambda","Centrality Vs Rec #bar{#Lambda} Pt", xNbins, xBinEdge, fNptBins, LambdaPtBins);
     fListHist->Add(f2fHistRecCentVsPtAntiLambda);
     
-    f2fHistInvMassVsPtLambda = new TH2F("f2fHistInvMassVsPtLambda","Inv mass #Lambda Vs Pt",100,1.05,1.25,19,1.1,3.1);
+    f2fHistInvMassVsPtLambda = new TH2F("f2fHistInvMassVsPtLambda","Inv mass #Lambda Vs Pt",100,1.08,1.16,19,1.1,3.1);
     fListHist->Add(f2fHistInvMassVsPtLambda);
     
-    f2fHistInvMassVsPtAntiLambda = new TH2F("f2fHistInvMassVsPtAntiLambda","Inv mass #bar{#Lambda} Vs Pt",100,1.05,1.25,20,1.1,3.1);
+    f2fHistInvMassVsPtAntiLambda = new TH2F("f2fHistInvMassVsPtAntiLambda","Inv mass #bar{#Lambda} Vs Pt",100,1.08,1.16,19,1.1,3.1);
     fListHist->Add(f2fHistInvMassVsPtAntiLambda);
     
-    f2fHistmassctLambda = new TH2F("f2fHistmassctLambda","#Lambda masscut",100,1.1,1.13,20,1.1,3.1);
+    f2fHistmassctLambda = new TH2F("f2fHistmassctLambda","#Lambda masscut",100,1.1,1.14,19,1.1,3.1);
     fListHist->Add(f2fHistmassctLambda);
     
-    f2fHistmassctAntiLambda = new TH2F("f2fHistmassctAntiLambda","#bar{#Lambda} masscut",100,1.1,1.13,20,1.1,3.1);
+    f2fHistmassctAntiLambda = new TH2F("f2fHistmassctAntiLambda","#bar{#Lambda} masscut",100,1.1,1.14,19,1.1,3.1);
     fListHist->Add(f2fHistmassctAntiLambda);
     
     const Int_t dim = 39; //19 pt bins + 1 cent bin
@@ -454,7 +455,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             ontheflystat = aodv0->GetOnFlyStatus();
             
             
-//            if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
+            //            if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
             
             dcaPosToVertex = aodv0->DcaPosToPrimVertex();
             dcaNegToVertex = aodv0->DcaNegToPrimVertex();
@@ -562,21 +563,21 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         if( ontheflystat == 0 )
         {
-            if(dcaV0ToVertex < 1.0 && dcaNegToVertex > 0.2 && dcaPosToVertex >  0.1 && TMath::Abs(posprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.8 && dcaNegToVertex > 0.2 && dcaPosToVertex >  0.1 && TMath::Abs(posprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
                 f2fHistRecCentVsPtLambda->Fill(fCentrality,V0pt);
                 nRecL += 1.;
-                if(invMassLambda > 1.11 && invMassLambda < 1.12)
+                if(invMassLambda > 1.1019689 && invMassLambda < 1.1300511)
                 {f2fHistmassctLambda->Fill(invMassLambda,V0pt);
                     ptCh[iptbin] += 1;}
             }
-            if(dcaV0ToVertex < 1.0 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.2 && TMath::Abs(negprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.8 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.2 && TMath::Abs(negprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
                 f2fHistRecCentVsPtAntiLambda->Fill(fCentrality,V0pt);
                 nRecA += 1.;
-                if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.12)
+                if(invMassAntiLambda > 1.10171895 && invMassAntiLambda < 1.13028105)
                 {f2fHistmassctAntiLambda->Fill(invMassAntiLambda,V0pt);
                     ptCh[iptbin+fNptBins] += 1;}
             }
@@ -729,8 +730,8 @@ Int_t AliAnalysisTaskNetLambdaTrad::GetPtBin(Double_t pt)
 {
     Int_t bin = -1;
     
-//    Double_t pidPtBins[21] = { 1.1, 1.25, 1.4, 1.55, 1.7, 1.85, 2.0, 2.15, 2.3, 2.45, 2.6, 2.75, 2.9, 3.05, 3.2, 3.35, 3.5, 3.65, 3.8, 3.95, 4.1 };
-     Double_t LambdaPtBins[20] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.45, 2.6, 2.75, 2.9, 3.05, 3.2, 3.35};
+    //    Double_t pidPtBins[21] = { 1.1, 1.25, 1.4, 1.55, 1.7, 1.85, 2.0, 2.15, 2.3, 2.45, 2.6, 2.75, 2.9, 3.05, 3.2, 3.35, 3.5, 3.65, 3.8, 3.95, 4.1 };
+    Double_t LambdaPtBins[20] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.45, 2.6, 2.75, 2.9, 3.05, 3.2, 3.35};
     
     for(Int_t iBin = 0; iBin < fNptBins; iBin++)
     {
