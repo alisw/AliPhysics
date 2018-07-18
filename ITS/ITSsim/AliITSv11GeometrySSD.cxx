@@ -4687,11 +4687,11 @@ void AliITSv11GeometrySSD::Layer6(TGeoVolume* moth){
   // Deallocating memory
   /////////////////////////////////////////////////////////////
   for(Int_t i=0; i<fgklayernumber; i++){
+	delete vertexlist[i];
 	for(Int_t j=0; j<nedges+1; j++)
 		delete vertex[i][j];
 	delete mountingsupportedgevector[i];
 	delete [] vertex[i];
-	delete vertexlist[i];
 	delete [] xsidevertex[i];
 	delete [] ysidevertex[i];
 	delete [] xcentervertex[i];
