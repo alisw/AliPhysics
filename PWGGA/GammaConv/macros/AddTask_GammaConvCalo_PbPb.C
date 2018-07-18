@@ -548,6 +548,12 @@ void AddTask_GammaConvCalo_PbPb(  Int_t     trainConfig                     = 1,
     cuts.AddCut("11210a13","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
     cuts.AddCut("12510a13","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
     cuts.AddCut("15910a13","00200009327000008250400000","1111183051032230000","0163103100000010"); //  0-90 calo correction cent dep
+  } else if (trainConfig == 253){ // EMCAL clusters - 20180718 - default without corrections
+    cuts.AddCut("10110a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("11210a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("12410a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("14610a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
+    cuts.AddCut("16810a13","00200009327000008250400000","1111100051032230000","0163103100000010"); //  0-90 calo correction cent dep
 
 
   } else if (trainConfig == 290){ // EMCAL clusters - correction convcalo f1

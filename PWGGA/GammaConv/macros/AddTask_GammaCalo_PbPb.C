@@ -764,6 +764,12 @@ void AddTask_GammaCalo_PbPb(  Int_t     trainConfig                     = 1,    
     cuts.AddCut("11210a13","1111183051032230000","0163103100000050"); //  0-90 calo correction
     cuts.AddCut("12510a13","1111183051032230000","0163103100000050"); //  0-90 calo correction
     cuts.AddCut("15910a13","1111183051032230000","0163103100000050"); //  0-90 calo correction
+  } else if (trainConfig == 253){ // EMCAL clusters - 20180718 - default without corrections
+    cuts.AddCut("10110a13","1111100051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("11210a13","1111100051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("12410a13","1111100051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("14610a13","1111100051032230000","0163103100000050"); //  0-90 calo correction
+    cuts.AddCut("16810a13","1111100051032230000","0163103100000050"); //  0-90 calo correction
 
 
 
