@@ -132,4 +132,6 @@
 #pragma link C++ class AliPP13MixingSample+;
 #pragma link C++ class AliAnalysisTaskPP13+;
 
+//Resonances
+#pragma link C++ class AliAnalysisPHOSResonances+ ;
 #endif
