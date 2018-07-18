@@ -761,23 +761,57 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
     fGammaTheta     = gamma->GetPhotonTheta();
     fGammaChi2NDF   = gamma->GetChi2perNDF();
 
-    AliPIDResponse* pidResonse = ((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
+    AliPIDResponse* pidResponse = ((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
 
     AliVTrack * negTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelNegative());
     AliVTrack * posTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelPositive());
+
+    Short_t Charge    = 1;
+    Double_t electronNSigmaTPC = pidResponse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
+    Double_t electronNSigmaTPCCor=0.; 
+    Double_t positronNSigmaTPC = pidResponse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
+    Double_t positronNSigmaTPCCor=0.; 
+    Double_t R = gamma->GetConversionRadius();
+    Double_t P=0.;         
+    Double_t Eta=0.;  
+
+    if( ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetElecDeDxPostCalibrationInitialized() ){
+      Charge = negTrack->Charge();
+      P = negTrack->P();
+      Eta = negTrack->Eta();
+      electronNSigmaTPCCor = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,R);
+
+      Charge = posTrack->Charge();
+      P = posTrack->P();
+      Eta = posTrack->Eta();
+      positronNSigmaTPCCor = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetCorrectedElectronTPCResponse(Charge,positronNSigmaTPC,P,Eta,R);
+    }
+
 
     hESDConversionRPhi[fiCut]->Fill(gamma->GetPhotonPhi(),gamma->GetConversionRadius());
     hESDConversionRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());
     hESDConversionREta[fiCut]->Fill(gamma->GetPhotonEta(),gamma->GetConversionRadius());
     hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius());
 
-    if(negTrack->GetTPCsignal()){
+    if( ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetElecDeDxPostCalibrationInitialized() ){
+      if(negTrack->GetTPCsignal()){
         hElectronRdEdx[fiCut]->Fill(negTrack->GetTPCsignal(),gamma->GetConversionRadius());
-        hElectronRNSigmadEdx[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron),gamma->GetConversionRadius());
-    }
-    if(posTrack->GetTPCsignal()){
+        hElectronRNSigmadEdx[fiCut]->Fill( electronNSigmaTPCCor, gamma->GetConversionRadius());
+      }
+      if(posTrack->GetTPCsignal()){
         hPositronRdEdx[fiCut]->Fill(posTrack->GetTPCsignal(),gamma->GetConversionRadius());
-        hPositronRNSigmadEdx[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron),gamma->GetConversionRadius());
+        hPositronRNSigmadEdx[fiCut]->Fill( positronNSigmaTPCCor, gamma->GetConversionRadius());
+      }
+    }else{
+     if(negTrack->GetTPCsignal()){
+        hElectronRdEdx[fiCut]->Fill(negTrack->GetTPCsignal(),gamma->GetConversionRadius());
+        hElectronRNSigmadEdx[fiCut]->Fill( electronNSigmaTPC, gamma->GetConversionRadius());
+      }
+      if(posTrack->GetTPCsignal()){
+        hPositronRdEdx[fiCut]->Fill(posTrack->GetTPCsignal(),gamma->GetConversionRadius());
+        hPositronRNSigmadEdx[fiCut]->Fill( positronNSigmaTPC, gamma->GetConversionRadius());
+      }
+
     }
 
     if(gamma->GetConversionRadius() < 75. || gamma->GetConversionRadius() > 85.) hESDConversionRRejSmall[fiCut]->Fill(gamma->GetConversionRadius());
@@ -799,19 +833,36 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 	hESDConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),negTrack->P()/gamma->GetPhotonP());
       }
     }
+
     if(fDoDeDxMaps > 0 ) {
-      if(gamma->GetConversionRadius() < 33.5){
-	hElectrondEdxMapsR0[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron),gamma->GetPhotonEta(), negTrack->P());
-	hPositrondEdxMapsR0[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron),gamma->GetPhotonEta(), posTrack->P());
-      }else if (gamma->GetConversionRadius() > 33.5  && gamma->GetConversionRadius() < 72.){
-	hElectrondEdxMapsR1[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron),gamma->GetPhotonEta(), negTrack->P());
-	hPositrondEdxMapsR1[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron),gamma->GetPhotonEta(), posTrack->P());
-      }else if (gamma->GetConversionRadius() > 72.  && gamma->GetConversionRadius() < 145.){
-	hElectrondEdxMapsR2[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron),gamma->GetPhotonEta(), negTrack->P());
-	hPositrondEdxMapsR2[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron),gamma->GetPhotonEta(), posTrack->P());
-      }else if (gamma->GetConversionRadius() > 145.  && gamma->GetConversionRadius() < 180.){
-	hElectrondEdxMapsR3[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron),gamma->GetPhotonEta(), negTrack->P());
-	hPositrondEdxMapsR3[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron),gamma->GetPhotonEta(), posTrack->P());
+      if( ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetElecDeDxPostCalibrationInitialized()){
+	if(gamma->GetConversionRadius() < 33.5){
+	  hElectrondEdxMapsR0[fiCut]->Fill(electronNSigmaTPCCor, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR0[fiCut]->Fill(positronNSigmaTPCCor, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 33.5  && gamma->GetConversionRadius() < 72.){
+	  hElectrondEdxMapsR1[fiCut]->Fill(electronNSigmaTPCCor, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR1[fiCut]->Fill(positronNSigmaTPCCor, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 72.  && gamma->GetConversionRadius() < 145.){
+	  hElectrondEdxMapsR2[fiCut]->Fill(electronNSigmaTPCCor, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR2[fiCut]->Fill(positronNSigmaTPCCor, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 145.  && gamma->GetConversionRadius() < 180.){
+	  hElectrondEdxMapsR3[fiCut]->Fill(electronNSigmaTPCCor, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR3[fiCut]->Fill(positronNSigmaTPCCor, gamma->GetPhotonEta(), posTrack->P());
+	}
+      }else{
+	if(gamma->GetConversionRadius() < 33.5){
+	  hElectrondEdxMapsR0[fiCut]->Fill(electronNSigmaTPC, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR0[fiCut]->Fill(positronNSigmaTPC, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 33.5  && gamma->GetConversionRadius() < 72.){
+	  hElectrondEdxMapsR1[fiCut]->Fill(electronNSigmaTPC, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR1[fiCut]->Fill(positronNSigmaTPC, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 72.  && gamma->GetConversionRadius() < 145.){
+	  hElectrondEdxMapsR2[fiCut]->Fill(electronNSigmaTPC, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR2[fiCut]->Fill(positronNSigmaTPC, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 145.  && gamma->GetConversionRadius() < 180.){
+	  hElectrondEdxMapsR3[fiCut]->Fill(electronNSigmaTPC, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR3[fiCut]->Fill(positronNSigmaTPC, gamma->GetPhotonEta(), posTrack->P());
+	}
       }
     }
 
