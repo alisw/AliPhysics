@@ -383,9 +383,9 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing)
 				//Define the min/max limits for each of the four variables:
 				//P, numTrack, {DET}nSigma{ParticleType}, eta
 				const Int_t dimensions    = 4;
-				Int_t bins[dimensions]    = {100, 20, 40, 16};
+				Int_t bins[dimensions]    = {100, 40, 40, 16};
 				Double_t xmin[dimensions] = {0., 0., -4, -0.8};
-				Double_t xmax[dimensions] = {10., 20000., 4, 0.8};
+				Double_t xmax[dimensions] = {10., 800., 4, 0.8};
 				//Define the histograms to be plotted using NTrk
 				UInt_t value_NTrk_ITSnSigmaEle[dimensions] = {AliDielectronVarManager::kP, AliDielectronVarManager::kNTrk, AliDielectronVarManager::kITSnSigmaEle, AliDielectronVarManager::kEta};
 				UInt_t value_NTrk_TPCnSigmaEle[dimensions] = {AliDielectronVarManager::kP, AliDielectronVarManager::kNTrk, AliDielectronVarManager::kTPCnSigmaEle, AliDielectronVarManager::kEta};
