@@ -1505,7 +1505,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             Double_t M02 = clustMatch->GetM02();
             
             if(!fFlagApplySSCut) {
-                Double_t fvalueElectron[4] = {-999,-999,-999,/*-999,*/-999};
+                Double_t fvalueElectron[6] = {-999,-999,-999,-999,-999,-999};
                 fvalueElectron[0] = track->Pt();
                 fvalueElectron[1] = nsigma;
                 fvalueElectron[2] = EovP;
@@ -1520,7 +1520,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 }
             }
             if(fFlagApplySSCut && M20>0.01 && M20<0.35){
-                Double_t fvalueElectron[4] = {-999,-999,-999,/*-999,*/-999};
+                Double_t fvalueElectron[6] = {-999,-999,-999,-999,-999,-999};
                 fvalueElectron[0] = track->Pt();
                 fvalueElectron[1] = nsigma;
                 fvalueElectron[2] = EovP;
