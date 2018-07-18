@@ -45,5 +45,6 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20180711: Update of EMCALBadChannels.root with new maps for LHC17d, LHC18e, LHC18f as well as updates to the maps of LHC17m and LHC17o
 - 20180713: Update of EMCALTimeCalib.root with fixed run range for period LHC16i
 - 20180713: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with LHC18d time calibrations
+- 20180718: Update of EMCALBadChannels.root with new maps for LHC18b and LHC18c including special maps for some runs
 
 */
