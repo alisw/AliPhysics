@@ -234,12 +234,29 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       }
 
       if (fDoCentBinning) {
+//        pp 13 TeV
+//        Mult (%)  Class η dNch/dη sys AN  Paper
+//        0 - 1 INEL>0  |η|<0.5 26.22 ±0.28 link  in preparation
+//        0 - 0.01      36.75 ±0.48
+//        0.01 - 0.05     32.43 ±0.37
+//        0.05 - 0.1      30.50 ±0.34
+//        0.1 - 1     25.59 ±0.27
+//        1 - 5     20.05 ±0.21
+//        5 - 10      16.18 ±0.17
+//        10 - 15     13.78 ±015
+//        15 - 20     12.02 ±0.13
+//        20 - 30     10.02 ±0.11
+//        30 - 40     7.93  ±0.08
+//        40 - 50     6.29  ±0.07
+//        50 - 70     4.45  ±0.05
+//        70 - 100      2.42  ±0.03
+        Double_t centBins [14] = {0,0.01,0.05,0.1,1,5,10,15,20,30,40,50,70,100} ;
         TString SameCentEventName=
             Form("SECentDist_Particle%d_Particle%d",iPar1,iPar2);
         fSameEventCentDist[Counter]=new TH2F(SameCentEventName.Data(),
                                              SameCentEventName.Data(),
                                              *itNBins,*itKMin,*itKMax,
-                                             100,0,100);
+                                             13,centBins);
         fSameEventCentDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fSameEventCentDist[Counter]);
 
@@ -248,7 +265,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
         fMixedEventCentDist[Counter]=new TH2F(MixedCentEventName.Data(),
                                               MixedCentEventName.Data(),
                                               *itNBins,*itKMin,*itKMax,
-                                              100,0,100);
+                                              13,centBins);
         fMixedEventCentDist[Counter]->Sumw2();
         fPairs[Counter]->Add(fMixedEventCentDist[Counter]);
       }

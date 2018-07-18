@@ -35,7 +35,7 @@ class AliFemtoDreamCorrHists {
   void FillSameEventMultDist(int i,int iMult,float RelK){
     if (fSameEventMultDist[i])fSameEventMultDist[i]->Fill(RelK,iMult);
   }
-  void FillSameEventCentDist(int i,int iCent,float RelK){
+  void FillSameEventCentDist(int i,float iCent,float RelK){
     if (fSameEventCentDist[i])fSameEventCentDist[i]->Fill(RelK,iCent);
   }
   void FillSameEventkTDist(int i,float kT,float RelK,float cent){
@@ -50,7 +50,7 @@ class AliFemtoDreamCorrHists {
   void FillMixedEventMultDist(int i,int iMult,float RelK){
     if (fMixedEventMultDist[i])fMixedEventMultDist[i]->Fill(RelK,iMult);
   }
-  void FillMixedEventCentDist(int i,int iCent,float RelK){
+  void FillMixedEventCentDist(int i,float iCent,float RelK){
     if (fMixedEventCentDist[i])fMixedEventCentDist[i]->Fill(RelK,iCent);
   }
   void FillMixedEventkTDist(int i,float kT,float RelK,float cent){
