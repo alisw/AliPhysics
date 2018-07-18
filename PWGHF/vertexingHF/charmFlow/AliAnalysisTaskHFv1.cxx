@@ -188,7 +188,7 @@ fFractionOfTracksForTPCq2(1.1),
 fq2SmearingHisto(0x0),
 fq2Smearing(kFALSE),
 fq2SmearingAxis(1),
-fScalProdLimit(0.3)
+fScalProdLimit(0.3),
 feff(0x0),
 fscaling(kFALSE)
 {
