@@ -76,6 +76,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
 	fPtHardBin(0.),
+	fRejectionFactorInclusiveJets(1),
 	fRandom(0),
 	fHistEvtSelection(0x0), 
 	fHJetSpec(0x0),
@@ -153,6 +154,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
 	fPtHardBin(0.),
+	fRejectionFactorInclusiveJets(1),
 	fRandom(0),
 	fHistEvtSelection(0x0), 
 	fHJetSpec(0x0),
@@ -1021,7 +1023,7 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 		fhPhiResidual->Fill(residualPhi);
 		fhPhiPhiResidual->Fill(phiJet3,residualPhi);
 
-		if(fFillInclusiveTree) {
+		if(fFillInclusiveTree && fRandom->Integer(fRejectionFactorInclusiveJets)==0 ) {
 			fTreeVarsInclusive[0] = fCent;
 			fTreeVarsInclusive[1] = ptJet1;
 			fTreeVarsInclusive[2] = area;
@@ -1309,9 +1311,9 @@ Double_t AliAnalysisTaskJetCoreEmcal::RelativePhi(Double_t mphi,Double_t vphi){
 Int_t AliAnalysisTaskJetCoreEmcal::GetPhiBin(Double_t phi)
 {
     Int_t phibin=-1;
-    if(!(TMath::Abs(phi)<=2*TMath::Pi())){AliError("phi w.r.t. RP out of defined range");return -1;}
+    if(!(TMath::Abs(phi)<=2*TMath::Pi())) return -1;
     Double_t phiwrtrp=TMath::ACos(TMath::Abs(TMath::Cos(phi)));
     phibin=Int_t(fNRPBins*phiwrtrp/(0.5*TMath::Pi()));
-    if(phibin<0||phibin>=fNRPBins){AliError("Phi Bin not defined");}
+    //if(phibin<0||phibin>=fNRPBins){AliError("Phi Bin not defined");}
     return phibin;
 }
