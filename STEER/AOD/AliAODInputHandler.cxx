@@ -15,11 +15,6 @@
 
 /* $Id$ */
 
-//-------------------------------------------------------------------------
-//     Event handler for AOD input 
-//     Author: Andreas Morsch, CERN
-//-------------------------------------------------------------------------
-
 #include <TSystem.h>
 #include <TTree.h>
 #include <TList.h>
@@ -60,7 +55,8 @@ AliAODInputHandler::AliAODInputHandler() :
     fAODEventToMerge(0),
     fMergeOffset(0)
 {
-  // Default constructor
+  /// Default constructor
+
   fHistStatistics[0] = fHistStatistics[1] = NULL;
 }
 
@@ -86,14 +82,16 @@ AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
   fAODEventToMerge(0),
   fMergeOffset(0)
 {
-    // Constructor
+    /// Constructor
+
   fHistStatistics[0] = fHistStatistics[1] = NULL;
 }
 
 //______________________________________________________________________________
 AliAODInputHandler::~AliAODInputHandler() 
 {
-// Destructor
+/// Destructor
+
   if (fFriends) fFriends->Delete();
   delete fFriends;
   delete fHistStatistics[0];
@@ -104,7 +102,8 @@ AliAODInputHandler::~AliAODInputHandler()
 //______________________________________________________________________________
 Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* opt)
 {
-    // Initialisation necessary for each new tree
+    /// Initialisation necessary for each new tree
+
     fTree = tree;
     if (!fTree) return kFALSE;
     fTree->GetEntries();
@@ -126,7 +125,8 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* opt)
 //______________________________________________________________________________
 Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
 {
-    // Begin event
+    /// Begin event
+
     static Int_t prevRunNumber = -1;
     if (prevRunNumber != fEvent->GetRunNumber() && NeedField()) {
       fEvent->InitMagneticField();
@@ -162,7 +162,8 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
 //______________________________________________________________________________
 Bool_t AliAODInputHandler::Notify(const char* path)
 {
-  // Notifaction of directory change
+  /// Notifaction of directory change
+
   if (fMixingHandler) fMixingHandler->Notify(path);
   if (!fFriendsConnected) {
       ConnectFriends();
@@ -218,7 +219,8 @@ Bool_t AliAODInputHandler::Notify(const char* path)
 //______________________________________________________________________________
 Bool_t AliAODInputHandler::FinishEvent()
 {
-  // Finish event
+  /// Finish event
+
   if (fMixingHandler) fMixingHandler->FinishEvent();
   if (fEvent) fEvent->Reset();
   return kTRUE;
@@ -227,7 +229,8 @@ Bool_t AliAODInputHandler::FinishEvent()
 //______________________________________________________________________________
 void AliAODInputHandler::AddFriend(char* filename)
 {
-    // Add a friend tree 
+    /// Add a friend tree
+
     TNamed* obj = new TNamed(filename, filename);
     if (!fFriends) fFriends = new TList();
     fFriends->Add(obj);
@@ -236,16 +239,18 @@ void AliAODInputHandler::AddFriend(char* filename)
 //______________________________________________________________________________
 Option_t *AliAODInputHandler::GetDataType() const
 {
-// Returns handled data type.
+/// Returns handled data type.
+
    return gAODDataType;
 }
 
 //______________________________________________________________________________
 TObject *AliAODInputHandler::GetStatistics(Option_t *option) const
 {
-// Get the statistics histogram(s) from the physics selection object. This
-// should be called during FinishTaskOutput(). Option can be empty (default
-// statistics histogram) or BIN0.
+/// Get the statistics histogram(s) from the physics selection object. This
+/// should be called during FinishTaskOutput(). Option can be empty (default
+/// statistics histogram) or BIN0.
+
    TString opt(option);
    opt.ToUpper();
    if (opt=="BIN0") return fHistStatistics[1];
@@ -254,7 +259,8 @@ TObject *AliAODInputHandler::GetStatistics(Option_t *option) const
 
 void AliAODInputHandler::ConnectFriends()
 {
-    // Connect the friend trees 
+    /// Connect the friend trees
+
     if (!fFriends) return;
     if (!fMergeEvents) {
 	TIter next(fFriends);
@@ -291,9 +297,8 @@ void AliAODInputHandler::ConnectFriends()
 //______________________________________________________________________________
 void AliAODInputHandler::CreatePIDResponse(Bool_t isMC/*=kFALSE*/)
 {
-  //
-  // create the pid response object if it does not exist yet
-  //
+  /// create the pid response object if it does not exist yet
+
   if (fAODpidUtil) return;
   fAODpidUtil=new AliAODpidUtil(isMC);
   

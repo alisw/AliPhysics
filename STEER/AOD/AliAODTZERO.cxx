@@ -13,12 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-//-------------------------------------------------------------------------
-//     Container class for AOD TZERO data
-//     Author: Filip Krizek 
-//     filip.krizek@cern.ch 23/02/2012
-//-------------------------------------------------------------------------
-
 #include "AliAODTZERO.h"
 #include "AliLog.h"
 
@@ -52,7 +46,8 @@ AliAODTZERO::AliAODTZERO(const AliAODTZERO &source)
    fT0zVertex(source.fT0zVertex),
   fPileupBits(source.fPileupBits)
 {   
-  // Default constructor 
+  /// Default constructor
+
   for(Int_t j=0; j<3; j++) {
     fT0TOF[j]     = source.fT0TOF[j];
     fT0TOFbest[j] = source.fT0TOFbest[j];
@@ -63,8 +58,8 @@ AliAODTZERO::AliAODTZERO(const AliAODTZERO &source)
 //__________________________________________________________________________
 AliAODTZERO& AliAODTZERO::operator=(const AliAODTZERO& source)
 {
-  // Assignment operator
-  //
+  /// Assignment operator
+
   if(this==&source) return *this;
   // Assignment operator
   fPileup      = source.fPileup;

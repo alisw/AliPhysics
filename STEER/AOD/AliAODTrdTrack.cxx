@@ -1,5 +1,4 @@
 #include "AliAODTrdTrack.h"
-
 AliAODTrdTrack::AliAODTrdTrack() :
   AliVTrdTrack(),
   fGlobalStack(-1),
@@ -11,7 +10,7 @@ AliAODTrdTrack::AliAODTrdTrack() :
   fTrackMatch(0x0),
   fLabel(-1)
 {
-  // default constructor
+  /// default constructor
 
   fTracklets.SetClass("AliAODTrdTracklet", 6);
 }
@@ -27,7 +26,7 @@ AliAODTrdTrack::AliAODTrdTrack(const AliVTrdTrack &rhs) :
   fTrackMatch(rhs.GetTrackMatch()),
   fLabel(rhs.GetLabel())
 {
-  // constructor from abstract base class
+  /// constructor from abstract base class
 
   fTracklets.SetClass("AliAODTrdTracklet", 6);
 
@@ -52,7 +51,7 @@ AliAODTrdTrack::AliAODTrdTrack(const AliAODTrdTrack& rhs) :
   fTrackMatch(rhs.fTrackMatch),
   fLabel(rhs.fLabel)
 {
-  // copy constructor
+  /// copy constructor
 
   fTracklets.SetClass("AliAODTrdTracklet", 6);
 
@@ -68,7 +67,7 @@ AliAODTrdTrack::AliAODTrdTrack(const AliAODTrdTrack& rhs) :
 
 AliAODTrdTrack& AliAODTrdTrack::operator=(const AliAODTrdTrack& rhs)
 {
-  // assignment operator
+  /// assignment operator
 
   if (&rhs != this)
     AliVTrdTrack::operator=(rhs);
@@ -95,14 +94,14 @@ AliAODTrdTrack& AliAODTrdTrack::operator=(const AliAODTrdTrack& rhs)
 
 void AliAODTrdTrack::Copy(TObject &rhs) const
 {
-  // copy
+  /// copy
 
   AliVTrdTrack::Copy(rhs);
 }
 
 Int_t AliAODTrdTrack::GetPt() const
 {
-  // calculate pt from a as done in hardware
+  /// calculate pt from a as done in hardware
 
   const Int_t maskIdLut[64] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  0,

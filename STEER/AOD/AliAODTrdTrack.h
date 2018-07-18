@@ -1,10 +1,11 @@
 #ifndef ALIAODTRDTRACK_H
 #define ALIAODTRDTRACK_H
 
-//
-// format for the TRD tracks calculated in the
-// Global Tracking Unit, used for the TRD L1 trigger
-// Author: Jochen Klein <jochen.klein@cern.ch>
+/// \class AliAODTrdTrack
+/// \brief format for the TRD tracks calculated in the
+///
+/// Global Tracking Unit, used for the TRD L1 trigger
+/// \author Jochen Klein <jochen.klein@cern.ch>
 
 #include "TRef.h"
 #include "TClonesArray.h"
@@ -61,17 +62,17 @@ class AliAODTrdTrack : public AliVTrdTrack {
 
  protected:
 
-  Char_t   fGlobalStack;		  // stack (0-89) in which the track was found
+  Char_t   fGlobalStack;		  ///< stack (0-89) in which the track was found
 					  // (unique because of stack-wise tracking)
-  UChar_t  fPID;			  // electron PID for this track
-  UChar_t  fLayerMask;			  // mask of contributing tracklets
-  Int_t    fA;				  // transverse offset from nominal primary vertex
-  UChar_t  fFlagsTiming;                  // timing flags
+  UChar_t  fPID;			  ///< electron PID for this track
+  UChar_t  fLayerMask;			  ///< mask of contributing tracklets
+  Int_t    fA;				  ///< transverse offset from nominal primary vertex
+  UChar_t  fFlagsTiming;                  ///< timing flags
 
-  TClonesArray fTracklets;                // array of contributing tracklets
-  TRef fTrackMatch;                       // reference to matched global track
+  TClonesArray fTracklets;                ///< array of contributing tracklets
+  TRef fTrackMatch;                       ///< reference to matched global track
 
-  Int_t fLabel;				  // Track label
+  Int_t fLabel;				  ///< Track label
 
   ClassDef(AliAODTrdTrack,1)
 };

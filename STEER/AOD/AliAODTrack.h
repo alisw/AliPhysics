@@ -5,10 +5,10 @@
 
 /* $Id$ */
 
-//-------------------------------------------------------------------------
-//     AOD track implementation of AliVTrack
-//     Author: Markus Oldenburg, CERN
-//-------------------------------------------------------------------------
+/// \class AliAODTrack
+/// \brief AOD track implementation of AliVTrack
+///
+/// \author Markus Oldenburg, CERN
 
 #include <TRef.h>
 #include <TBits.h>
@@ -459,66 +459,68 @@ class AliAODTrack : public AliVTrack {
   using AliVTrack::GetTPCdEdxInfo;
 
   // Momentum & position
-  Double32_t    fMomentum[3];       // momemtum stored in pt, phi, theta
-  Double32_t    fPosition[3];       // position of first point on track or dca
+  Double32_t    fMomentum[3];       ///< momemtum stored in pt, phi, theta
+  Double32_t    fPosition[3];       ///< position of first point on track or dca
   
-  Double32_t    fMomentumAtDCA[3];  // momentum (px,py,pz) at DCA
-  Double32_t    fPositionAtDCA[2];  // trasverse position (x,y) at DCA
+  Double32_t    fMomentumAtDCA[3];  ///< momentum (px,py,pz) at DCA
+  Double32_t    fPositionAtDCA[2];  ///< trasverse position (x,y) at DCA
   
-  Double32_t    fRAtAbsorberEnd;    // transverse position r at the end of the muon absorber
+  Double32_t    fRAtAbsorberEnd;    ///< transverse position r at the end of the muon absorber
   
-  Double32_t    fChi2perNDF;        // chi2/NDF of momentum fit
-  Double32_t    fChi2MatchTrigger;  // chi2 of trigger/track matching
-  Double32_t*   fPID;               //! [0.,1.,8] pointer to PID object
+  Double32_t    fChi2perNDF;        ///< chi2/NDF of momentum fit
+  Double32_t    fChi2MatchTrigger;  ///< chi2 of trigger/track matching
+  /// pointer to PID object
+  Double32_t*   fPID;               //!<![0.,1.,8]
 
-  Double32_t    fChi2TPCConstrainedVsGlobal; // chi2 of constrained TPC vs global track (Golden chi2)
-  Double32_t    fITSchi2;           // ITS chi2
+  Double32_t    fChi2TPCConstrainedVsGlobal; ///< chi2 of constrained TPC vs global track (Golden chi2)
+  Double32_t    fITSchi2;           ///< ITS chi2
 
-  ULong64_t     fFlags;             // reconstruction status flags 
-  Int_t         fLabel;             // track label, points back to MC track
-  Int_t         fTOFLabel[3];       // TOF label
-  Double32_t    fTrackLength;       // Track length
-  UInt_t        fITSMuonClusterMap; // map of ITS and muon clusters, one bit per layer
-                                    // (ITS: bit 1-8, muon trigger or ITS shared: bit 9-16, muon tracker: bit 17-26, muon match trigger: bit 31-32) 
-  UInt_t        fMUONtrigHitsMapTrg; // Muon trigger hits map from trigger
-  UInt_t        fMUONtrigHitsMapTrk; // Muon trigger hits map from tracker track extrapolation
-  UInt_t        fFilterMap;         // filter information, one bit per set of cuts
+  ULong64_t     fFlags;             ///< reconstruction status flags
+  Int_t         fLabel;             ///< track label, points back to MC track
+  Int_t         fTOFLabel[3];       ///< TOF label
+  Double32_t    fTrackLength;       ///< Track length
+  UInt_t        fITSMuonClusterMap; ///< map of ITS and muon clusters, one bit per layer
 
-  TBits         fTPCFitMap;      // Map of clusters, one bit per padrow; if has a cluster on given padrow which is used in the fit   
-  TBits         fTPCClusterMap;     // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
-  TBits         fTPCSharedMap;      // Map of clusters, one bit per padrow; 1 if has a shared cluster on given padrow
+                                    /// (ITS: bit 1-8, muon trigger or ITS shared: bit 9-16, muon tracker: bit 17-26, muon match trigger: bit 31-32) 
+  UInt_t        fMUONtrigHitsMapTrg; ///< Muon trigger hits map from trigger
+  UInt_t        fMUONtrigHitsMapTrk; ///< Muon trigger hits map from tracker track extrapolation
+  UInt_t        fFilterMap;         ///< filter information, one bit per set of cuts
 
-  UShort_t      fTPCnclsF;          // findable clusters
-  UShort_t      fTPCNCrossedRows;   // n crossed rows
+  TBits         fTPCFitMap;      ///< Map of clusters, one bit per padrow; if has a cluster on given padrow which is used in the fit
+  TBits         fTPCClusterMap;     ///< Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
+  TBits         fTPCSharedMap;      ///< Map of clusters, one bit per padrow; 1 if has a shared cluster on given padrow
 
-  Short_t       fID;                // unique track ID, points back to the ESD track
+  UShort_t      fTPCnclsF;          ///< findable clusters
+  UShort_t      fTPCNCrossedRows;   ///< n crossed rows
 
-  Char_t        fCharge;            // particle charge
-  Char_t        fType;              // Track Type, explanation close to the enum AODTrk_t
+  Short_t       fID;                ///< unique track ID, points back to the ESD track
 
-  Char_t        fPIDForTracking;    // pid using for tracking of ESD track
+  Char_t        fCharge;            ///< particle charge
+  Char_t        fType;              ///< Track Type, explanation close to the enum AODTrk_t
 
-  Int_t         fCaloIndex;         // index of associated EMCAL/PHOS cluster (AliAODCaloCluster)
+  Char_t        fPIDForTracking;    ///< pid using for tracking of ESD track
+
+  Int_t         fCaloIndex;         ///< index of associated EMCAL/PHOS cluster (AliAODCaloCluster)
 
   
-  AliAODRedCov<6> *fCovMatrix;      // covariance matrix (x, y, z, px, py, pz)
-  AliAODPid    *fDetPid;            // more detailed or detector specific raw pid information
-  mutable const AliDetectorPID* fDetectorPID; //! transient object to cache calibrated PID information
-  TRef          fProdVertex;        // vertex of origin
+  AliAODRedCov<6> *fCovMatrix;      ///< covariance matrix (x, y, z, px, py, pz)
+  AliAODPid    *fDetPid;            ///< more detailed or detector specific raw pid information
+  mutable const AliDetectorPID* fDetectorPID; //!<! transient object to cache calibrated PID information
+  TRef          fProdVertex;        ///< vertex of origin
 
-  Double32_t    fTrackPhiOnEMCal;   // phi of track after being propagated to the EMCal surface (default r = 440 cm)
-  Double32_t    fTrackEtaOnEMCal;   // eta of track after being propagated to the EMCal surface (default r = 440 cm)
-  Double32_t    fTrackPtOnEMCal;    // pt of track after being propagated to the EMCal surface (default r = 440 cm)
+  Double32_t    fTrackPhiOnEMCal;   ///< phi of track after being propagated to the EMCal surface (default r = 440 cm)
+  Double32_t    fTrackEtaOnEMCal;   ///< eta of track after being propagated to the EMCal surface (default r = 440 cm)
+  Double32_t    fTrackPtOnEMCal;    ///< pt of track after being propagated to the EMCal surface (default r = 440 cm)
 
-  Bool_t fIsMuonGlobalTrack;        // True if the track is built from the combination of MUON and MFT clusters     // AU
+  Bool_t fIsMuonGlobalTrack;        ///< True if the track is built from the combination of MUON and MFT clusters     // AU
 
-  Double32_t    fITSsignalTuned;    //! ITS signal tuned on data when using MC
-  Double32_t    fTPCsignalTuned;    //! TPC signal tuned on data when using MC
-  Double32_t    fTOFsignalTuned;    //! TOF signal tuned on data when using MC
+  Double32_t    fITSsignalTuned;    //!<! ITS signal tuned on data when using MC
+  Double32_t    fTPCsignalTuned;    //!<! TPC signal tuned on data when using MC
+  Double32_t    fTOFsignalTuned;    //!<! TOF signal tuned on data when using MC
 
-  ULong_t fMFTClusterPattern;       // Tells us which MFT clusters are contained in the track, and which one is a good one (if MC)  // AU
+  ULong_t fMFTClusterPattern;       ///< Tells us which MFT clusters are contained in the track, and which one is a good one (if MC)  // AU
 
-  const AliAODEvent* fAODEvent;     //! pointer back to the event the track belongs to
+  const AliAODEvent* fAODEvent;     //!<! pointer back to the event the track belongs to
 
   //---------------------------------------------------------------------------
   //--the calibration interface--
@@ -541,8 +543,8 @@ class AliAODTrack : public AliVTrack {
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const
 {
-    // True of track passes primary particle selection (independent of type) 
-    // 
+    /// True of track passes primary particle selection (independent of type)
+
     if (fFilterMap) {
 	return kTRUE;
     } else {
@@ -552,7 +554,8 @@ inline Bool_t  AliAODTrack::IsPrimaryCandidate() const
 
 inline Int_t AliAODTrack::GetITSNcls() const 
 {
-  // Number of points in ITS
+  /// Number of points in ITS
+
   Int_t n=0;
   for(Int_t i=0;i<6;i++) if(HasPointOnITSLayer(i)) n++;
   return n;

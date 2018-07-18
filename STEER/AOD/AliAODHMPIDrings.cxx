@@ -13,14 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
-
-//
-// Class to handle the AOD tracks with good HMPID data 
-// Author: Levente Molnar
-// levente.molnar@cern.ch , March 2012
-// 
-
 #include "AliAODHMPIDrings.h"
 
 ClassImp(AliAODHMPIDrings)
@@ -81,7 +73,8 @@ AliAODHMPIDrings::AliAODHMPIDrings(
 
                     
 {
-       //             
+       ///
+
        for(Int_t isp = 0 ; isp <AliPID::kSPECIES; isp++)   fHmpidAODpid[isp] = pid[isp];
        for ( Int_t ico = 0 ; ico < 3; ico++) fHMPIDmom[ico] = p[ico];
                            
@@ -105,7 +98,8 @@ AliAODHMPIDrings::AliAODHMPIDrings(const AliAODHMPIDrings& hmpidAOD):
 
                     
 {
-       //             
+       ///
+
        for(Int_t isp = 0 ; isp <AliPID::kSPECIES; isp++)   fHmpidAODpid[isp] = hmpidAOD.fHmpidAODpid[isp];
        for ( Int_t ico = 0 ; ico < 3; ico++) fHMPIDmom[ico] = hmpidAOD.fHMPIDmom[ico];
                            
@@ -140,7 +134,8 @@ AliAODHMPIDrings& AliAODHMPIDrings::operator=(const AliAODHMPIDrings& hmpidAOD)
 //________________________________________________________________________________________________________________________________________________________
 void AliAODHMPIDrings::GetHmpPidProbs(Double_t *pid) const
 {
-  // Gets probabilities of each particle type (in HMPID)
+  /// Gets probabilities of each particle type (in HMPID)
+
   for (Int_t i=0; i<AliPID::kSPECIES; i++) pid[i]=fHmpidAODpid[i];
 }
 //________________________________________________________________________________________________________________________________________________________
@@ -151,7 +146,8 @@ void  AliAODHMPIDrings::GetHmpMom(Double_t *mom) const
 //________________________________________________________________________________________________________________________________________________________
 void AliAODHMPIDrings::SetHmpPidProbs(Double_t *pid)
 {
-  // Gets probabilities of each particle type (in HMPID)
+  /// Gets probabilities of each particle type (in HMPID)
+
   for (Int_t i=0; i<AliPID::kSPECIES; i++) fHmpidAODpid[i] = pid[i];
 }
 

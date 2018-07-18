@@ -5,13 +5,15 @@
 
 /* $Id: AliAODpidUtil.h 38493 2010-01-26 16:33:03Z hristov $ */
 
-//-------------------------------------------------------
-//                    Combined PID class
-//                    for the AOD class
-//   Origin: Rosa Romita, GSI, r.romita@gsi.de
-//   Modified: Jens Wiechula, Uni Tuebingen, jens.wiechula@cern.ch
-//   Modified: Pietro Antonioli, INFN BO, pietro.antonioli@bo.infn.it
-//-------------------------------------------------------
+/// \class AliAODpidUtil
+/// \brief Combined PID class
+///
+/// for the AOD class
+/// Modified: Jens Wiechula, Uni Tuebingen, jens.wiechula@cern.ch
+/// Modified: Pietro Antonioli, INFN BO, pietro.antonioli@bo.infn.it
+///
+/// \author Rosa Romita, GSI, r.romita@gsi.de
+
 #include <Rtypes.h>
 #include "AliPID.h" // Needed for inline functions
 

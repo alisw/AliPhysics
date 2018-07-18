@@ -13,12 +13,6 @@
 
 /* $Id$ */
 
-//-----------------------------------------------------------------
-//           AliAODTagCreator class
-//   This is the class to deal with the tag creation (post process)
-//   Origin: Panos Christakoglou, UOA-CERN, Panos.Christakoglou@cern.ch
-//-----------------------------------------------------------------
-
 //ROOT
 #include <Riostream.h>
 #include <TFile.h>
@@ -58,19 +52,21 @@ ClassImp(AliAODTagCreator)
     fTreeTEsd(0), 
     fRunTagEsd(0)  
 {
-  //==============Default constructor for a AliAODTagCreator================
+/// Default constructor for a AliAODTagCreator
 }
 
 //______________________________________________________________________________
 AliAODTagCreator::~AliAODTagCreator() {
-//================Default destructor for a AliAODTagCreator===================
+/// Default destructor for a AliAODTagCreator
+
   delete fChain;
   delete fAODEvent;
 }
 
 //______________________________________________________________________________
 Bool_t AliAODTagCreator::ReadGridCollection(TGridResult *fresult) {
-  // Reads the entry of the TGridResult and creates the tags
+  /// Reads the entry of the TGridResult and creates the tags
+
   Int_t nEntries = fresult->GetEntries();
 
   TString alienUrl;
@@ -103,9 +99,9 @@ Bool_t AliAODTagCreator::ReadGridCollection(TGridResult *fresult) {
 
 //______________________________________________________________________________
 Bool_t AliAODTagCreator::ReadLocalCollection(const char *localpath, const char* pattern) {
-  // Checks the different subdirs of the given local path and in the
-  // case where it finds an AliAOD.root file it creates the tags
-  
+  /// Checks the different subdirs of the given local path and in the
+  /// case where it finds an AliAOD.root file it creates the tags
+
   void *dira =  gSystem->OpenDirectory(localpath);
   Char_t fPath[512];
   const char * dirname  = 0x0;
@@ -139,8 +135,8 @@ Bool_t AliAODTagCreator::ReadLocalCollection(const char *localpath, const char* 
 
 //______________________________________________________________________________
 Bool_t AliAODTagCreator::ReadCAFCollection(const char *filename) {
-  // Temporary solution for CAF: Takes as an input the ascii file that
-  // lists the AODs stored in the SE of the CAF and creates the tags.
+  /// Temporary solution for CAF: Takes as an input the ascii file that
+  /// lists the AODs stored in the SE of the CAF and creates the tags.
 
   // Open the input stream
   ifstream in;
@@ -167,7 +163,7 @@ Bool_t AliAODTagCreator::ReadCAFCollection(const char *filename) {
 
 //__________________________________________________________________________
 void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList */*grpList*/) {
-  // Creates tag files for AODs
+  /// Creates tag files for AODs
 
     AliInfo(Form("Creating the AOD tags......."));	
     
@@ -215,8 +211,7 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
 //_____________________________________________________________________________
 void AliAODTagCreator::CreateTag(TChain* chain, const char *type) {
     
-    // Private method that creates tag files
-    //
+    /// Private method that creates tag files
 
     //reading the esd tag file 
     fTreeTEsd = new TChain("T");
@@ -286,7 +281,8 @@ void AliAODTagCreator::CreateTag(TChain* chain, const char *type) {
 
 void AliAODTagCreator::CreateTags(const char* /*type*/)
 {
-    // Event loop for tag creation
+    /// Event loop for tag creation
+
     TString fturl;
     TString fguid;
     Int_t   oldRun = -1;
@@ -420,9 +416,8 @@ void AliAODTagCreator::CreateTags(const char* /*type*/)
 
 void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
 {
-// 
-// Fill the event tag information	
-    //
+/// Fill the event tag information
+
     fAODEvent = aod;
     
     //

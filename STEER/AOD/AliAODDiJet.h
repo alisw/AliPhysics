@@ -5,11 +5,12 @@
 
 /* $Id$ */
 
-//-------------------------------------------------------------------------
-//     AOD di-jet class
-//     The present version is for test purposes only
-//     Author: Andreas Morsch, CERN
-//-------------------------------------------------------------------------
+/// \class AliAODDiJet
+/// \brief AOD di-jet class
+///
+/// The present version is for test purposes only
+///
+/// \author Andreas Morsch, CERN
 
 #include <TLorentzVector.h>
 #include <TRefArray.h>
@@ -35,9 +36,9 @@ class AliAODDiJet : public AliAODJet {
     AliAODDiJet& operator=(const AliAODDiJet& jet);
 
  private:
-    TRefArray*  fJetR;  // References to jets
-    TRef        fJet1;  // Reference to Jet 1
-    TRef        fJet2;  // Reference to Jet 2
+    TRefArray*  fJetR;  ///< References to jets
+    TRef        fJet1;  ///< Reference to Jet 1
+    TRef        fJet2;  ///< Reference to Jet 2
     ClassDef(AliAODDiJet, 1);
 };
 #endif

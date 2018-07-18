@@ -15,12 +15,6 @@
 
 /* $Id$ */
 
-//-------------------------------------------------------------------------
-//     AOD track implementation of AliVTrack
-//     Author: Markus Oldenburg, CERN
-//     Markus.Oldenburg@cern.ch
-//-------------------------------------------------------------------------
-
 #include <TVector3.h>
 #include "AliLog.h"
 #include "AliExternalTrackParam.h"
@@ -139,8 +133,8 @@ AliAODTrack::AliAODTrack(Short_t id,
   fMFTClusterPattern(0),         // AU
   fAODEvent(NULL)
 {
-  // constructor
- 
+  /// constructor
+
   SetP(p, cartesian);
   SetPosition(x, isDCA);
   SetXYAtDCA(-999., -999.);
@@ -207,8 +201,8 @@ AliAODTrack::AliAODTrack(Short_t id,
   fMFTClusterPattern(0),         // AU
   fAODEvent(NULL)
 {
-  // constructor
- 
+  /// constructor
+
   SetP(p, cartesian);
   SetPosition(x, isDCA);
   SetXYAtDCA(-999., -999.);
@@ -223,7 +217,8 @@ AliAODTrack::AliAODTrack(Short_t id,
 //______________________________________________________________________________
 AliAODTrack::~AliAODTrack() 
 {
-  // destructor
+  /// destructor
+
   delete fCovMatrix;
   delete fDetPid;
   delete fDetectorPID;
@@ -272,7 +267,7 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
   fMFTClusterPattern(trk.fMFTClusterPattern),    // AU
   fAODEvent(trk.fAODEvent)
 {
-  // Copy constructor
+  /// Copy constructor
 
   trk.GetP(fMomentum);
   trk.GetPosition(fPosition);
@@ -290,7 +285,8 @@ AliAODTrack::AliAODTrack(const AliAODTrack& trk) :
 //______________________________________________________________________________
 AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
 {
-  // Assignment operator
+  /// Assignment operator
+
   if(this!=&trk) {
 
     AliVTrack::operator=(trk);
@@ -358,8 +354,8 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
 //______________________________________________________________________________
 Double_t AliAODTrack::M(AODTrkPID_t pid) const
 {
-  // Returns the mass.
-  // Masses for nuclei don't exist in the PDG tables, therefore they were put by hand.
+  /// Returns the mass.
+  /// Masses for nuclei don't exist in the PDG tables, therefore they were put by hand.
 
   switch (pid) {
 
@@ -411,8 +407,8 @@ Double_t AliAODTrack::M(AODTrkPID_t pid) const
 //______________________________________________________________________________
 Double_t AliAODTrack::E(AODTrkPID_t pid) const
 {
-  // Returns the energy of the particle of a given pid.
-  
+  /// Returns the energy of the particle of a given pid.
+
   if (pid != kUnknown) { // particle was identified
     Double_t m = M(pid);
     return TMath::Sqrt(P()*P() + m*m);
@@ -424,8 +420,8 @@ Double_t AliAODTrack::E(AODTrkPID_t pid) const
 //______________________________________________________________________________
 Double_t AliAODTrack::Y(AODTrkPID_t pid) const
 {
-  // Returns the rapidity of a particle of a given pid.
-  
+  /// Returns the rapidity of a particle of a given pid.
+
   if (pid != kUnknown) { // particle was identified
     Double_t e = E(pid);
     Double_t pz = Pz();
@@ -442,8 +438,8 @@ Double_t AliAODTrack::Y(AODTrkPID_t pid) const
 //______________________________________________________________________________
 Double_t AliAODTrack::Y(Double_t m) const
 {
-  // Returns the rapidity of a particle of a given mass.
-  
+  /// Returns the rapidity of a particle of a given mass.
+
   if (m >= 0.) { // mass makes sense
     Double_t e = E(m);
     Double_t pz = Pz();
@@ -458,21 +454,23 @@ Double_t AliAODTrack::Y(Double_t m) const
 }
 
 void AliAODTrack::SetTOFLabel(const Int_t *p) {  
-  // Sets  (in TOF)
+  /// Sets  (in TOF)
+
   for (Int_t i = 0; i < 3; i++) fTOFLabel[i]=p[i];
 }
 
 //_______________________________________________________________________
 void AliAODTrack::GetTOFLabel(Int_t *p) const {
-  // Gets (in TOF)
+  /// Gets (in TOF)
+
   for (Int_t i=0; i<3; i++) p[i]=fTOFLabel[i];
 }
 
 //______________________________________________________________________________
 AliAODTrack::AODTrkPID_t AliAODTrack::GetMostProbablePID() const 
 {
-  // Returns the most probable PID array element.
-  
+  /// Returns the most probable PID array element.
+
   Int_t nPID = 10;
   AODTrkPID_t loc = kUnknown;
   Bool_t allTheSame = kTRUE;
@@ -496,9 +494,10 @@ AliAODTrack::AODTrkPID_t AliAODTrack::GetMostProbablePID() const
 //______________________________________________________________________________
 void AliAODTrack::ConvertAliPIDtoAODPID()
 {
-  // Converts AliPID array.
-  // The numbering scheme is the same for electrons, muons, pions, kaons, and protons.
-  // Everything else has to be set to zero.
+  /// Converts AliPID array.
+  /// The numbering scheme is the same for electrons, muons, pions, kaons, and protons.
+  /// Everything else has to be set to zero.
+
   if (fPID) {
     fPID[kDeuteron] = 0.;
     fPID[kTriton]   = 0.;
@@ -541,7 +540,8 @@ template <typename T> void AliAODTrack::SetPosition(const T *x, const Bool_t dca
 //______________________________________________________________________________
 void AliAODTrack::SetDCA(Double_t d, Double_t z) 
 {
-  // set the dca
+  /// set the dca
+
   fPosition[0] = d;
   fPosition[1] = z;
   fPosition[2] = 0.;
@@ -551,7 +551,8 @@ void AliAODTrack::SetDCA(Double_t d, Double_t z)
 //______________________________________________________________________________
 void  AliAODTrack::GetImpactParameters(Float_t &xy,Float_t &z) const
 {
-  // get track impact parameters
+  /// get track impact parameters
+
   Float_t p[2], cov[3];
   GetImpactParameters(p,cov);
   xy=p[0];
@@ -561,7 +562,7 @@ void  AliAODTrack::GetImpactParameters(Float_t &xy,Float_t &z) const
 //______________________________________________________________________________
 void  AliAODTrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const
 {
-  // computes track impact parameters and convariance matrix
+  /// computes track impact parameters and convariance matrix
 
   p[0]=DCA();
   p[1]=ZAtDCA();
@@ -607,7 +608,7 @@ void  AliAODTrack::GetImpactParameters(Float_t p[2], Float_t cov[3]) const
 //______________________________________________________________________________
 void AliAODTrack::Print(Option_t* /* option */) const
 {
-  // prints information about AliAODTrack
+  /// prints information about AliAODTrack
 
   printf("Object name: %s   Track type: %s\n", GetName(), GetTitle()); 
   printf("        px = %f\n", Px());
@@ -624,7 +625,8 @@ void AliAODTrack::Print(Option_t* /* option */) const
 //______________________________________________________________________________
 void AliAODTrack::SetMatchTrigger(Int_t matchTrig)
 {
-  // Set the MUON trigger information
+  /// Set the MUON trigger information
+
   switch(matchTrig){
     case 0: // 0 track does not match trigger
       fITSMuonClusterMap=fITSMuonClusterMap&0x3fffffff;
@@ -647,11 +649,11 @@ void AliAODTrack::SetMatchTrigger(Int_t matchTrig)
 //______________________________________________________________________________
 Bool_t AliAODTrack::HitsMuonChamber(Int_t MuonChamber, Int_t cathode) const
 {
-  // return kTRUE if the track fires the given tracking or trigger chamber.
-  // If the chamber is a trigger one:
-  // - if cathode = 0 or 1, the track matches the corresponding cathode
-  // - if cathode = -1, the track matches both cathodes
-  
+  /// return kTRUE if the track fires the given tracking or trigger chamber.
+  /// If the chamber is a trigger one:
+  /// - if cathode = 0 or 1, the track matches the corresponding cathode
+  /// - if cathode = -1, the track matches both cathodes
+
   if (MuonChamber < 0) return kFALSE;
   
   if (MuonChamber < 10) return TESTBIT(GetMUONClusterMap(), MuonChamber);
@@ -671,8 +673,8 @@ Bool_t AliAODTrack::HitsMuonChamber(Int_t MuonChamber, Int_t cathode) const
 //______________________________________________________________________________
 Bool_t AliAODTrack::MatchTriggerDigits() const
 {
-  // return kTRUE if the track matches a digit on both planes of at least 2 trigger chambers
-  
+  /// return kTRUE if the track matches a digit on both planes of at least 2 trigger chambers
+
   Int_t nMatchedChambers = 0;
   for (Int_t ich=10; ich<14; ich++) if (HitsMuonChamber(ich)) nMatchedChambers++;
   
@@ -694,12 +696,12 @@ Int_t AliAODTrack::GetMuonTrigDevSign() const
 Bool_t AliAODTrack::PropagateToDCA(const AliVVertex *vtx, 
     Double_t b, Double_t maxd, Double_t dz[2], Double_t covar[3])
 {
-  // compute impact parameters to the vertex vtx and their covariance matrix
-  // b is the Bz, needed to propagate correctly the track to vertex 
-  // only the track parameters are update after the propagation (pos and mom),
-  // not the covariance matrix. This is OK for propagation over short distance
-  // inside the beam pipe.
-  // return kFALSE is something went wrong
+  /// compute impact parameters to the vertex vtx and their covariance matrix
+  /// b is the Bz, needed to propagate correctly the track to vertex
+  /// only the track parameters are update after the propagation (pos and mom),
+  /// not the covariance matrix. This is OK for propagation over short distance
+  /// inside the beam pipe.
+  /// return kFALSE is something went wrong
 
   // allowed only for tracks inside the beam pipe
   Float_t xstart2 = fPosition[0]*fPosition[0]+fPosition[1]*fPosition[1];
@@ -728,9 +730,8 @@ Bool_t AliAODTrack::PropagateToDCA(const AliVVertex *vtx,
 //______________________________________________________________________________
 Bool_t AliAODTrack::GetPxPyPz(Double_t p[3]) const 
 {
-    //---------------------------------------------------------------------
-    // This function returns the global track momentum components
-    //---------------------------------------------------------------------
+    /// This function returns the global track momentum components
+
   p[0]=Px(); p[1]=Py(); p[2]=Pz();
   return kTRUE;
 }
@@ -739,19 +740,17 @@ Bool_t AliAODTrack::GetPxPyPz(Double_t p[3]) const
 //_______________________________________________________________________
 Float_t AliAODTrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1, Int_t bitType ) const
 {
-  //
-  // TPC cluster information 
-  // type 0: get fraction of found/findable clusters with neighbourhood definition
-  //      1: findable clusters with neighbourhood definition
-  //      2: found clusters
-  // bitType:
-  //      0 - all cluster used
-  //      1 - clusters  used for the kalman update
-  // definition of findable clusters:
-  //            a cluster is defined as findable if there is another cluster
-  //           within +- nNeighbours pad rows. The idea is to overcome threshold
-  //           effects with a very simple algorithm.
-  //
+  /// TPC cluster information
+  /// type 0: get fraction of found/findable clusters with neighbourhood definition
+  ///      1: findable clusters with neighbourhood definition
+  ///      2: found clusters
+  /// bitType:
+  ///      0 - all cluster used
+  ///      1 - clusters  used for the kalman update
+  /// definition of findable clusters:
+  /// a cluster is defined as findable if there is another cluster
+  /// within +- nNeighbours pad rows. The idea is to overcome threshold
+  /// effects with a very simple algorithm.
 
   
   Int_t found=0;
@@ -799,9 +798,8 @@ Float_t AliAODTrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
 
 //______________________________________________________________________________
 Double_t  AliAODTrack::GetTRDslice(Int_t plane, Int_t slice) const {
-  //
-  // return TRD Pid information
-  //
+  /// return TRD Pid information
+
   if (!fDetPid) return -1;
   Double32_t *trdSlices=fDetPid->GetTRDslices();
   if (!trdSlices) return -1;
@@ -824,18 +822,16 @@ Double_t  AliAODTrack::GetTRDslice(Int_t plane, Int_t slice) const {
 
 //______________________________________________________________________________
 UChar_t AliAODTrack::GetTRDntrackletsPID() const{
-  //
-  // return number of tracklets calculated from the slices
-  //
+  /// return number of tracklets calculated from the slices
+
   if(!fDetPid) return -1;
   return fDetPid->GetTRDntrackletsPID();
 }
 
 //______________________________________________________________________________
 UChar_t AliAODTrack::GetTRDncls(Int_t layer) const {
-  // 
-  // return number of TRD clusters
-  //
+  /// return number of TRD clusters
+
   if(!fDetPid || layer > 5) return -1;
   if(layer < 0) return fDetPid->GetTRDncls();
   else return fDetPid->GetTRDncls(layer);
@@ -844,8 +840,8 @@ UChar_t AliAODTrack::GetTRDncls(Int_t layer) const {
 //______________________________________________________________________________
 Double_t AliAODTrack::GetTRDmomentum(Int_t plane, Double_t */*sp*/) const
 {
-  //Returns momentum estimation
-  // in TRD layer "plane".
+  /// Returns momentum estimation
+  /// in TRD layer "plane".
 
   if (!fDetPid) return -1;
   const Double_t *trdMomentum=fDetPid->GetTRDmomentum();
@@ -863,7 +859,8 @@ Double_t AliAODTrack::GetTRDmomentum(Int_t plane, Double_t */*sp*/) const
 //_______________________________________________________________________
 Int_t AliAODTrack::GetTOFBunchCrossing(Double_t b, Bool_t) const 
 {
-  // Returns the number of bunch crossings after trigger (assuming 25ns spacing)
+  /// Returns the number of bunch crossings after trigger (assuming 25ns spacing)
+
   const double kSpacing = 25e3; // min interbanch spacing
   const double kShift = 0;
   Int_t bcid = kTOFBCNA; // defualt one
@@ -898,9 +895,8 @@ Int_t AliAODTrack::GetTOFBunchCrossing(Double_t b, Bool_t) const
 
 void AliAODTrack::SetDetectorPID(const AliDetectorPID *pid)
 {
-  //
-  // Set the detector PID
-  //
+  /// Set the detector PID
+
   if (fDetectorPID) delete fDetectorPID;
   fDetectorPID=pid;
   
@@ -965,10 +961,8 @@ Bool_t AliAODTrack::GetOuterHmpPxPyPz(Double_t *p) const
 //_____________________________________________________________________________
 Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
 {
-  //---------------------------------------------------------------------
-  // This function returns the global track position extrapolated to
-  // the radial position "x" (cm) in the magnetic field "b" (kG)
-  //---------------------------------------------------------------------
+  /// This function returns the global track position extrapolated to
+  /// the radial position "x" (cm) in the magnetic field "b" (kG)
 
   //conversion of track parameter representation is
   //based on the implementation of AliExternalTrackParam::Set(...)
@@ -1019,15 +1013,14 @@ Bool_t AliAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
 //_____________________________________________________________________________
 Bool_t AliAODTrack::GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz, Double_t* alpSect) const
 {
-  // This method has 3 modes of behaviour
-  // 1) xyz[3] array is provided but alpSect pointer is 0: calculate the position of track intersection 
-  //    with circle of radius xr and fill it in xyz array
-  // 2) alpSect pointer is provided: find alpha of the sector where the track reaches local coordinate xr
-  //    Note that in this case xr is NOT the radius but the local coordinate.
-  //    If the xyz array is provided, it will be filled by track lab coordinates at local X in this sector
-  // 3) Neither alpSect nor xyz pointers are provided: just check if the track reaches radius xr
-  //
-  //
+  /// This method has 3 modes of behaviour
+  /// 1) xyz[3] array is provided but alpSect pointer is 0: calculate the position of track intersection
+  ///    with circle of radius xr and fill it in xyz array
+  /// 2) alpSect pointer is provided: find alpha of the sector where the track reaches local coordinate xr
+  ///    Note that in this case xr is NOT the radius but the local coordinate.
+  ///    If the xyz array is provided, it will be filled by track lab coordinates at local X in this sector
+  /// 3) Neither alpSect nor xyz pointers are provided: just check if the track reaches radius xr
+
   Double_t alpha=0.0;
   Double_t radPos2 = fPosition[0]*fPosition[0]+fPosition[1]*fPosition[1];  
   Double_t radMax  = 45.; // approximately ITS outer radius
@@ -1178,7 +1171,8 @@ Bool_t AliAODTrack::GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz, Double_t* 
 //_______________________________________________________
 void  AliAODTrack::GetITSdEdxSamples(Double_t s[4]) const
 {
-  // get ITS dedx samples
+  /// get ITS dedx samples
+
   if (!fDetPid) for (int i=4;i--;) s[i]=0;
   else          for (int i=4;i--;) s[i] = fDetPid->GetITSdEdxSample(i);
 }
@@ -1199,8 +1193,8 @@ const AliTOFHeader* AliAODTrack::GetTOFHeader() const {
 //_______________________________________________________
 Int_t AliAODTrack::GetNcls(Int_t idet) const
 {
-  // Get number of clusters by subdetector index
-  //
+  /// Get number of clusters by subdetector index
+
   Int_t ncls = 0;
   switch(idet){
   case 0:
