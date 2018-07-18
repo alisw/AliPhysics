@@ -1,5 +1,5 @@
-#ifndef ALIJFLOWBASETASK_H
-#define ALIJFLOWBASETASK_H
+#ifndef ALIJFLOWCMBTASK_H
+#define ALIJFLOWCMBTASK_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
