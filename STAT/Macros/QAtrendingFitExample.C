@@ -1,29 +1,28 @@
 /// \ingroup Macros
 /// \file    QAtrendingfitExample.C
-/// \brief   Demo usage of the information from the AliExternalInfo and AliNDFunctionInterface.cxx for MVA regression of TPC QA information (QA.EVS+QA calibration)
+/// \brief   Demo usage of the information from the AliExternalInfo and visualization using the TStatToolkit, AliTreePlayer and AliDrawStyle
 ///
 /// \author  Marian Ivanov
-
-/*
-  AliDrawStyle::SetDefaults()
-  AliDrawStyle::ApplyStyle("figTemplate");
-  gStyle->SetOptTitle(1);
-  .L $AliRoot_SRC/STAT/Macros/AliNDFunctionInterface.cxx+
-  .L $AliRoot_SRC/STAT/Macros/QAtrendingFitExample.C
-
-  0.)  loadTree();
-  1.)  cacheTree();      /// needed in case friend trees or arrays - which are not supported by TMVA
-  3.)  RegisterFitters();
-  4.)  makeMVAFits();
-  5.)  loadMVAreaders();
-  tree->Draw("AliNDFunctionInterface::EvalMVA(2,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:interactionRate","run==QA.EVS.run&&meanMIP>40&&bz0<-0.3","colz");
-*/
+/// \code
+///  AliDrawStyle::SetDefaults()
+///  AliDrawStyle::ApplyStyle("figTemplate");
+///  gStyle->SetOptTitle(1);
+///  .L $AliRoot_SRC/STAT/Macros/AliNDFunctionInterface.cxx+
+///  .L $AliRoot_SRC/STAT/Macros/QAtrendingFitExample.C
+/// \endcode
+///  0.)  loadTree();
+///  1.)  cacheTree();      /// needed in case friend trees or arrays - which are not supported by TMVA
+///  3.)  RegisterFitters();
+///  4.)  makeMVAFits();
+///  5.)  loadMVAreaders();
+///  tree->Draw("AliNDFunctionInterface::EvalMVA(2,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:interactionRate","run==QA.EVS.run&&meanMIP>40&&bz0<-0.3","colz");
 
 
 
+Bool_t useDNN=kFALSE;
 TTree * tree = 0;
 TTree * treeCache=0;
-/// Load tree and defining derived  information and metadata
+/// Load tree and defining derived  information (TTree aliases)  and metadata
 void loadTree() {
   AliExternalInfo info;
   tree = info.GetChain("QA.TPC", "LHC17*", "cpass1_pass1", "QA.EVS;QA.rawTPC");
@@ -38,28 +37,47 @@ void loadTree() {
   tree->SetMarkerStyle(21); tree->SetMarkerSize(0.5);
 }
 
-/// TMVA can not work with friend trees with indeces, respec. with array of the measurements
-///  => we have to create  input "flat tree" for MVA learning
+/// CacheTree input variables to tree format usable by TMVA
+///-------------------------------
+/// TMVA can not work with friend trees with indeces, respec. with array of the measurements, resp aliases and functions
+/// * input "flat tree" for MVA learning to be created with variables of interest
+/// * AliTreePlayer::MakeCacheTree to create flat input tree for TMVA
 void cacheTree(){
   AliTreePlayer::MakeCacheTree(tree,"resolutionMIP:meanMIPeleR:tpcItsMatchA:bz0:interactionRate:qmaxQASum:qmaxQASumIn:qmaxQASumOut:qmaxQASumR:run:time","TMVAInput.root","MVAInput","meanMIP>30&&run==QA.EVS.run");
 }
 
-/// Register methods used for regression
-void RegisterFitters(){
-  /// DNN - for the moment not used as need BLASS library  - not in default AliRoot
-  //TString dnnConfigString = "!H:V::VarTransform=Norm:ErrorStrategy=CROSSETROPY:WeightInitialization=XAVIERUNIFORM:";
-  TString dnnConfigString = "!H:V::VarTransform=Norm:WeightInitialization=XAVIERUNIFORM:";
-  TString  dnnLayoutString="Layout=TANH|100,TANH|50,TANH|10,LINEAR:";
-  TString dnnTrainingString ="LearningRate=1e-5,Momentum=0.5,Repetitions=1,ConvergenceSteps=500,BatchSize=50,TestRepetitions=7,WeightDecay=0.01,Regularization=NONE,DropConfig=0.5+0.5+0.5+0.5,DropRepetitions=2";
-  TString dnnConfig=dnnConfigString+dnnLayoutString+ dnnTrainingString;
+/// Register example methods used for regression
+///----------------------------------------
+/// * BDT and MLP example
+/// * DNN - for the moment not used as need BLASS library  - not in default AliRoot
+///   * Naive adaptation of the DNN configuration from the ROOT tutorials  TMVARegression.C -
+///   * slow 100 times smaller than MLP
+///   * lead to floating point exception
+void RegisterFitters() {
+  TString layoutString("Layout=TANH|20,LINEAR");
+  TString training0("LearningRate=1e-5,Momentum=0.5,Repetitions=1,ConvergenceSteps=500,BatchSize=50,"
+                    "TestRepetitions=7,WeightDecay=0.01,Regularization=L1,DropConfig=0.5+0.5+0.5+0.5,"
+                    "DropRepetitions=2");
+  TString training1("LearningRate=1e-5,Momentum=0.9,Repetitions=1,ConvergenceSteps=170,BatchSize=30,"
+                    "TestRepetitions=7,WeightDecay=0.01,Regularization=L1,DropConfig=0.1+0.1+0.1,DropRepetitions="
+                    "1");
+  TString trainingStrategyString("TrainingStrategy=");
+  trainingStrategyString += training0 + "|" + training1;
+  TString dnnOptions("!H:V:ErrorStrategy=SUMOFSQUARES:VarTransform=G:WeightInitialization=XAVIERUNIFORM:Architecture=CPU");
+  dnnOptions.Append(":");
+  dnnOptions.Append(layoutString);
+  dnnOptions.Append(":");
+  dnnOptions.Append(trainingStrategyString);
   ///
   AliNDFunctionInterface::registerMethod("BDTRF25_8","!H:!V:NTrees=25:Shrinkage=0.1:UseRandomisedTrees:nCuts=20:MaxDepth=8",TMVA::Types::kBDT);
-  AliNDFunctionInterface::registerMethod( "BDTRF12_16", "!H:!V:NTrees=12:Shrinkage=0.1:UseRandomisedTrees:nCuts=20:MaxDepth=16", TMVA::Types::kBDT);
+  AliNDFunctionInterface::registerMethod("BDTRF12_16", "!H:!V:NTrees=12:Shrinkage=0.1:UseRandomisedTrees:nCuts=20:MaxDepth=16", TMVA::Types::kBDT);
   AliNDFunctionInterface::registerMethod("KNN","nkNN=20:ScaleFrac=0.8:SigmaFact=1.0:Kernel=Gaus:UseKernel=F:UseWeight=T:!Trim", TMVA::Types::kKNN);
   AliNDFunctionInterface::registerMethod("MLP", "!H:!V:VarTransform=Norm:NeuronType=tanh:NCycles=20000:HiddenLayers=N+20:TestRate=6:TrainingMethod=BFGS:Sampling=0.3:SamplingEpoch=0.8:ConvergenceImprove=1e-6:ConvergenceTests=15:!UseRegulator",TMVA::Types::kMLP);
-  AliNDFunctionInterface::registerMethod("DNN",dnnConfig.Data(), TMVA::Types::kDNN);
+  AliNDFunctionInterface::registerMethod("DNN_CPU",dnnOptions.Data(), TMVA::Types::kDNN);
 }
 
+/// Make MVA regression example
+///----------------------------
 void makeMVAFits(){
   TFile *f= TFile::Open("TMVAInput.root");
   f->GetObject("MVAInput",treeCache);
@@ -68,12 +86,20 @@ void makeMVAFits(){
   AliNDFunctionInterface::FitMVA(treeCache, "tpcItsMatchA","interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR","BDTRF25_8:BDTRF12_16:MLP:KNN");
 }
 
-/// Emulation of the bootstrap - training repeated several time
-void makeMVABootstrapMI(){
+///Emulation of the bootstrap - training repeated several time
+///----------------------------
+///* TODO - Implement real bootstrap ( random sampling with replacement + other methods) in the TMVA (to check with ROOT)
+///* TODO - DNN example - TO USE DNN (Deep neural network)  BLASS or CBLASS library has to be enabled in ROOT. This is not the case for the default aliBuild recipies
+void makeMVABootstrapMI(Int_t nregression=10){
   TFile *f= TFile::Open("TMVAInput.root");
   f->GetObject("MVAInput",treeCache);
-  for (Int_t iBoot=0; iBoot<10; iBoot++) {
+  for (Int_t iBoot=0; iBoot<nRegression; iBoot++) {
     AliNDFunctionInterface::FitMVA(treeCache, "resolutionMIP", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN", 0, iBoot);
+     AliNDFunctionInterface::FitMVA(treeCache, "meanMIPeleR", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN", 0, iBoot);
+     AliNDFunctionInterface::FitMVA(treeCache, "tpcItsMatchA", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "BDTRF25_8:BDTRF12_16:KNN", 0, iBoot);
+    if (useDNN){
+      AliNDFunctionInterface::FitMVA(treeCache, "resolutionMIP", "interactionRate>0", "interactionRate:bz0:qmaxQASum:qmaxQASumR", "DNN_CPU", 0, iBoot);
+    }
   }
 }
 
@@ -84,25 +110,44 @@ void loadMVAreaders(){
   AliNDFunctionInterface::LoadMVAReader(2,"TMVA_RegressionOutput.root","BDTRF25_8","dir_resolutionMIP");
   AliNDFunctionInterface::LoadMVAReader(3,"TMVA_RegressionOutput.root","BDTRF12_16","dir_resolutionMIP");
 }
-///
+
+/// Load array of regression  -used later in the array regression evaluation (mean, median, rms)
+///-------------------------------
 void loadMVAreadersBootstrap() {
   AliNDFunctionInterface::LoadMVAReaderArray(0,"TMVA_RegressionOutput.root","BDTRF12_16",".*resolutionMIP");
   AliNDFunctionInterface::LoadMVAReaderArray(1,"TMVA_RegressionOutput.root","BDTRF25_8",".*resolutionMIP");
   AliNDFunctionInterface::LoadMVAReaderArray(2,"TMVA_RegressionOutput.root","KNN",".*resolutionMIP");
 }
-
-void drawExamplePlots(){
+/// QAtrendingFitExample
+/// ----------------------
+void QAtrendingFitExample(){
+  /// 0.) Remove regression file
+  gSystem->Unlink("TMVA_RegressionOutput.root");
+  /// 1.) Load Input data
   loadTree();
+  /// 2.) Cache tree - TMVA expect variables  - not functions and aliases
   cacheTree();
+  /// 3.) Register fitters
   RegisterFitters();
-  makeMVABootstrapMI();
+  /// 4.) Make bootstrap regression
+  makeMVABootstrapMI(10);
+  /// 5.) Load array of regression readers
   loadMVAreadersBootstrap();
-  /// 0.) Draw correlation plot
-  tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:run","run==QA.EVS.run","colz")
+  ///
+  /// 6.) Draw example plots
+  /// ===============================
+  /// 6.1 Correlation plot - mean regression of resolutionMIP vs observed resolutionMIP
+  /// ----------------------------------
+  /// \code tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:run","run==QA.EVS.run","colz"); \endcode
+  tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:run","run==QA.EVS.run","colz");
   gPad->SaveAs("resolutionMIPvsfit.png");
-  /// 1.) Draw ration regression/fit as function of run
+  /// 6.2 Draw ration regression/fit as function of run
+  /// ----------------------------------------
+  /// \code tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:run","run==QA.EVS.run","colz"); \endcode
   tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR)/resolutionMIP:run:interactionRate","run==QA.EVS.run","colz");
   gPad->SaveAs("resolutionMIPFitRatiovsRun.png");
-  /// 2.) compare  of the regression RMS for method array 0 and method array1
-  tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,2,interactionRate, bz0,qmaxQASum,qmaxQASumR):AliNDFunctionInterface::EvalMVAStat(1,2,interactionRate, bz0,qmaxQASum,qmaxQASumR)","run==QA.EVS.run","colz")
+  /// 6.3  compare  of the regression RMS for method array 0 and method array1
+  /// ----------------------------------------
+  /// \code tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,1,interactionRate, bz0,qmaxQASum,qmaxQASumR):resolutionMIP:run","run==QA.EVS.run","colz"); \endcode
+  tree->Draw("AliNDFunctionInterface::EvalMVAStat(0,2,interactionRate, bz0,qmaxQASum,qmaxQASumR):AliNDFunctionInterface::EvalMVAStat(1,2,interactionRate, bz0,qmaxQASum,qmaxQASumR)","run==QA.EVS.run","colz");
 }

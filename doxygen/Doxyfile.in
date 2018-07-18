@@ -762,6 +762,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/STAT \
                          @CMAKE_SOURCE_DIR@/STAT/test \
                          @CMAKE_SOURCE_DIR@/STAT/Macros \
+                         @CMAKE_SOURCE_DIR@/STAT/Notebooks \
                          @CMAKE_SOURCE_DIR@/TPC \
                          @CMAKE_SOURCE_DIR@/TPC/Attic \
                          @CMAKE_SOURCE_DIR@/TPC/Base/test \

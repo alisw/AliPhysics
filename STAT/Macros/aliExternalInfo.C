@@ -6,6 +6,7 @@
 ///
 /// Demo usage of the information from the AliExternalInfo and visualization using the TStatToolkit, AliTreePlayer and AliDrawStyle
 /// See documentation in following functions:
+/// -----------------------------------------
 /// * logbook/QA/RCT  multi figure export multipad
 ///   * ::drawLogbook
 /// * logbook/QA/RCT  multi figure export multigraph
@@ -18,6 +19,8 @@
 /// ## Example usage
 /// ###   Load library and define some example variables
 /*!
+ \code
+ * @return
      AliDrawStyle::SetDefaults();
      AliDrawStyle::ApplyStyle("figTemplate");
 
@@ -25,6 +28,7 @@
     // define some example selection and copy past the code below
     TString  period="LHC15o", pass="pass1", runSelection="QA.TPC.meanTPCncl>0", varSelection="run:runDuration:totalEventsPhysics:totalNumberOfFilesMigrated:QA.TPC.meanMIP";
     TString source="Logbook;QA.TPC;QA.TRD;QA.ITS;MonALISA.RCT;QA.EVS";
+\endcode
 */
 #include "TString.h"
 #include "TObjArray.h"

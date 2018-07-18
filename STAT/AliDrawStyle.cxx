@@ -45,6 +45,7 @@
 #include "TMultiGraph.h"
 #include "TAxis.h"
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <ios>
 
@@ -730,7 +731,7 @@ Float_t AliDrawStyle::PrepareValue(const char* styleName, TString propertyName, 
   else if (propertyName.Contains("size") || propertyName.Contains("margin")) {
     property = AliDrawStyle::GetValue(styleName, "", elementID, classID, objectID, "", verbose);
     hisNum = objNum;
-    cProperty = propertyName;
+    cProperty = propertyName + ":";
     if (!property.Contains(cProperty)) {
       if (verbose == 4) ::Info("AliDrawStyle","AliDrawStyle::PrepareValue(\"%s\", \"%s\", \"%s\", \"%s\", \"%s\") property not found in css file", styleName, propertyName.Data(), elementID.Data(), classID.Data(), objectID.Data());
       return -1.;
@@ -752,37 +753,57 @@ Float_t AliDrawStyle::PrepareValue(const char* styleName, TString propertyName, 
   return -1.0;
 }
 
-/// Read CSS html like files  (*see also AliRoot modification in CSS)
-/// TODO:
-/// * proper exception  handling (Boris)
-///   * Use ::Error verbosity according debug level
-/// \param inputName     - input file to read
-/// \param verbose       - specify verbose level for ::error and ::info (Int_t should be interpreted as an bit-mask)
-/// \return              - TObjArray  with the pairs TNamed of the CSS <Selector, declaration> or  TObjArray (recursive structure like includes)
-TObjArray *AliDrawStyle::ReadCSSFile(const char *  inputName, TObjArray * cssArray, Int_t verbose) {
-  //check file exist
-  if (gSystem->GetFromPipe(TString("[ -f ") + TString(inputName) +  TString(" ] && echo 1 || echo 0")) == "0") {
-    ::Error("AliDrawStyle::ReadCSSFile","File %s doesn't exist", inputName);
-    return nullptr;
-  }
-  TString inputCSS = gSystem->GetFromPipe(TString::Format("cat %s",inputName).Data());     // I expect this variable is defined
-  //remove comments:
+//TODO: add test for this @Boris
+///
+/// \param inputCSS
+/// \param cssArray
+/// \param verbose
+/// \return
+TObjArray *AliDrawStyle::ReadCssString(TString inputCSS, TObjArray *cssArray, Int_t verbose) {
   while (inputCSS.Index("*/") > 0) {
-    inputCSS = inputCSS(0, inputCSS.Index("/*")) + inputCSS(inputCSS.Index("*/")+2, inputCSS.Length());
+    inputCSS = TString(inputCSS(0, inputCSS.Index("/*"))) + TString(inputCSS(inputCSS.Index("*/")+2, inputCSS.Length()));
   }
-  //inputCSS.ReplaceAll("\n", ""); //  check performance and implement better variant;
+  inputCSS.ReplaceAll("\n", ""); //  check performance and implement better variant;
   TObjArray *tokenArray = inputCSS.Tokenize("{}");   //assuming we can not use {} symbols in the style IDS
   Int_t entries = tokenArray->GetEntries();
   if (cssArray==nullptr) {
     cssArray = new TObjArray(entries / 2);
   }
+  if (verbose == 4)
+    ::Info("AliDrawStyle::ReadCSSString","In input CSS string %s was parsed to:\n", inputCSS.Data());
   for (Int_t i = 0; i < entries; i += 2) {
     if (i + 1 >= entries) continue;
     TString selector = tokenArray->At(i)->GetName();
     TString declaration = tokenArray->At(i + 1)->GetName();
+    if (verbose == 4)
+      ::Info("selector: %s\ndeclaration: %s\n", selector.Data(), declaration.Data());
     cssArray->AddLast(new TNamed(selector.Data(), declaration.Data()));
   }
   return cssArray;
+}
+
+/// Read CSS html like files  (*see also AliRoot modification in CSS)
+/// TODO:
+/// * proper exception  handling (Boris)
+///   * Use ::Error verbosity according debug level
+/// \param inputName     - input file to read (supports environment vars)
+/// \param verbose       - specify verbose level for ::error and ::info (Int_t should be interpreted as an bit-mask)
+/// \return              - TObjArray  with the pairs TNamed of the CSS <Selector, declaration> or  TObjArray (recursive structure like includes)
+TObjArray *AliDrawStyle::ReadCSSFile(const char *  inputName, TObjArray * cssArray, Int_t verbose) {
+  TString expInputName(inputName);
+  if (gSystem->ExpandPathName(expInputName)) {
+    ::Error("AliDrawStyle::ReadCSSFile", "Cannot expand some variables in %s", inputName);
+    return nullptr;
+  }
+  if (gSystem->AccessPathName(expInputName.Data())) {
+    ::Error("AliDrawStyle::ReadCSSFile", "File %s doesn't exist", expInputName.Data());
+    return nullptr;
+  }
+  std::ifstream cssFp(expInputName.Data());
+  std::stringstream buf;
+  buf << cssFp.rdbuf();
+  TString inputCSS = buf.str();
+  return AliDrawStyle::ReadCssString(inputCSS, cssArray, verbose);
 }
 
 /// Write cssArray to the file as a plain array (recursive function)
@@ -1092,7 +1113,7 @@ TString AliDrawStyle::GetValue(const char *styleName, TString propertyName, TStr
 */
 void AliDrawStyle::TGraphApplyStyle(const char* styleName, TGraph *cGraph, Int_t objNum, Int_t verbose) {
 
-  AliDrawStyle::ObjectApplyStyle(styleName, cGraph, objNum, verbose);
+  AliDrawStyle::TObjectApplyStyle(styleName, cGraph, objNum, verbose);
 
   Bool_t status = kFALSE;
   TString elementID = "";
@@ -1110,6 +1131,20 @@ void AliDrawStyle::TGraphApplyStyle(const char* styleName, TGraph *cGraph, Int_t
     cGraph->GetXaxis()->SetAxisColor((Color_t) valueI);
     cGraph->GetYaxis()->SetAxisColor((Color_t) valueI);
   }
+
+  valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("ndivisions"), elementID, classID, objectID, localStyle, status, objNum, verbose);
+  if (status) {
+    cGraph->GetXaxis()->SetNdivisions(valueI);
+    cGraph->GetYaxis()->SetNdivisions(valueI);
+  }
+
+  valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("x-ndivisions"), elementID, classID, objectID, localStyle, status, objNum, verbose);
+  if (status)
+    cGraph->GetXaxis()->SetNdivisions(valueI);
+
+  valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("y-ndivisions"), elementID, classID, objectID, localStyle, status, objNum, verbose);
+  if (status)
+    cGraph->GetYaxis()->SetNdivisions(valueI);
 
   valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("label-color"), elementID, classID, objectID, localStyle, status, objNum, verbose);
   if (status) {
@@ -1162,7 +1197,7 @@ void AliDrawStyle::TGraphApplyStyle(const char* styleName, TGraph *cGraph, Int_t
 */
 void AliDrawStyle::TH1ApplyStyle(const char *styleName, TH1 *cHis, Int_t objNum, Int_t verbose) {
 
-  AliDrawStyle::ObjectApplyStyle(styleName, cHis, objNum, verbose);
+  AliDrawStyle::TObjectApplyStyle(styleName, cHis, objNum, verbose);
 
   Bool_t status = kFALSE;
   TString elementID = "";
@@ -1177,6 +1212,20 @@ void AliDrawStyle::TH1ApplyStyle(const char *styleName, TH1 *cHis, Int_t objNum,
 
   valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("axis-color"), elementID, classID, objectID, localStyle, status, objNum, verbose);
   if (status) cHis->SetAxisColor((Color_t) valueI);
+
+  valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("ndivisions"), elementID, classID, objectID, localStyle, status, objNum, verbose);
+  if (status) {
+    cHis->GetXaxis()->SetNdivisions(valueI);
+    cHis->GetYaxis()->SetNdivisions(valueI);
+  }
+
+  valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("x-ndivisions"), elementID, classID, objectID, localStyle, status, objNum, verbose);
+  if (status)
+    cHis->GetXaxis()->SetNdivisions(valueI);
+
+  valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("y-ndivisions"), elementID, classID, objectID, localStyle, status, objNum, verbose);
+  if (status)
+    cHis->GetYaxis()->SetNdivisions(valueI);
 
   valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("label-color"), elementID, classID, objectID, localStyle, status, objNum, verbose);
   if (status) cHis->SetLabelColor((Color_t) valueI, "xyz");
@@ -1246,7 +1295,7 @@ void AliDrawStyle::TH1ApplyStyle(const char *styleName, TH1 *cHis, Int_t objNum,
 
   //TODO: how to make it not only for TF1? @Boris
   for (Int_t i = 0; i < cHis->GetListOfFunctions()->GetEntries(); i++) {
-    AliDrawStyle::ObjectApplyStyle(styleName, (TF1 *) cHis->GetListOfFunctions()->At(i), objNum, verbose);
+    AliDrawStyle::TObjectApplyStyle(styleName, (TF1 *) cHis->GetListOfFunctions()->At(i), objNum, verbose);
   }
 
 }
@@ -1261,7 +1310,7 @@ void AliDrawStyle::TH1ApplyStyle(const char *styleName, TH1 *cHis, Int_t objNum,
 */
 void AliDrawStyle::TF1ApplyStyle(const char *styleName, TF1 *cFunc, Int_t objNum, Int_t verbose) {
 
-  AliDrawStyle::ObjectApplyStyle(styleName, cFunc, objNum, verbose);
+  AliDrawStyle::TObjectApplyStyle(styleName, cFunc, objNum, verbose);
 
   Bool_t status = false;
   TString elementID = "";
@@ -1279,6 +1328,20 @@ void AliDrawStyle::TF1ApplyStyle(const char *styleName, TF1 *cFunc, Int_t objNum
     cFunc->GetYaxis()->SetAxisColor((Color_t) valueI);
     if (cFunc->GetZaxis()) cFunc->GetZaxis()->SetAxisColor((Color_t) valueI);
   }
+
+  valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("ndivisions"), elementID, classID, objectID, localStyle, status, objNum, verbose);
+  if (status) {
+    cFunc->GetXaxis()->SetNdivisions(valueI);
+    cFunc->GetYaxis()->SetNdivisions(valueI);
+  }
+
+  valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("x-ndivisions"), elementID, classID, objectID, localStyle, status, objNum, verbose);
+  if (status)
+    cFunc->GetXaxis()->SetNdivisions(valueI);
+
+  valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("y-ndivisions"), elementID, classID, objectID, localStyle, status, objNum, verbose);
+  if (status)
+    cFunc->GetYaxis()->SetNdivisions(valueI);
 
   valueI = (Int_t) AliDrawStyle::PrepareValue(styleName, TString("label-font"), elementID, classID, objectID, localStyle, status, objNum, verbose);
   if (status) {
@@ -1441,7 +1504,7 @@ void AliDrawStyle::TLegendApplyStyle(const char *styleName, TLegend *cLegend, In
 /// \param verbose
 /// \return
 template <typename T>
- void AliDrawStyle::ObjectApplyStyle(const char *styleName, T *cObj, Int_t objNum, Int_t verbose) {
+ void AliDrawStyle::TObjectApplyStyle(const char *styleName, T *cObj, Int_t objNum, Int_t verbose) {
 
   Bool_t status = false;
   TString elementID = "";
@@ -1657,7 +1720,21 @@ void AliDrawStyle::TCanvasApplyCssStyle(const char *styleName, TCanvas *cCanvas,
 /// \param pad       - Input TPad object. You can specify TCanvas in this case style will be apply recursively to all objects (TH1, TF1, TGraph) on pad.
 /// \param styleName - Name of style specify in AliDrawStyle::RegisterCssStyle()
 /*!
-  ####  Example usage see in the beginnings of header file:
+##  List of available properties:
+### TObject
+marker-color; marker-size; marker-style; line-color; line-width; line-style; fill-color; fill-style;
+### TGraph
+axis-color; ndivisions; x-ndivisions; y-ndivisions; label-color; label-font; label-size; label-offset; title-font; title-offset; title-size;
+### TH1
+axis-color; ndivisions; x-ndivisions; y-ndivisions; label-color; Xlabel-color; Ylabel-color; Zlabel-color; label-font; Xlabel-font; Ylabel-font; Zlabel-font; label-size; Xlabel-size; Ylabel-size; Zlabel-size; label-offset; title-font; title-offset; Xtitle-offset; Ytitle-offset; Ztitle-offset; title-size; Xtitle-size; Ytitle-size; Ztitle-size;
+### TF1
+axis-color; ndivisions; x-ndivisions; y-ndivisions; label-font; label-size; label-offset; title-font; title-size; title-offset;
+### TLegend
+column-separation; margin; ncolumns; border-size; shadow-color; x1-ndc; x2-ndc; y1-ndc; y2-ndc; x1; x2; y1; y2; bbox-centerx; bbox-centery; bbox-x1; bbox-x2; bbox-y1; bbox-y2; line-color; line-style; line-width; fill-color; fill-style; text-align; text-angle; text-color; text-font; text-size;
+### TPad
+fill-color;  margin;  margin-bottom;  margin-top;  margin-left;  margin-right;  border-size;  border-mode;  gridX;  gridY;  tickX;  tickY;  logX;  logY;  logZ;
+### TCanvas
+width; height; fill-color;  highlight-color;  margin-bottom;  margin-top;  margin-left;  margin-right;  border-size;  border-mode;
 */
 void AliDrawStyle::ApplyCssStyle(TPad *pad, const char *styleName, Int_t verbose) {
   if (pad == nullptr) {

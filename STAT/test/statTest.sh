@@ -120,4 +120,63 @@ EOF
 
 }
 
+
+testTPCVolumeDemoTest() {
+  cp $ALIROOT_SOURCE/STAT/Notebooks/TPCDataVolumeDemo.C .
+  root -n -b -l <<\EOF 2>&1 | tee TPCVolumeDemo.C.log
+    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    .x ./TPCDataVolumeDemo.C
+EOF
+
+  N_GOOD=1
+  N_BAD=0
+
+  TEST_STATUS=0
+  if [[ $N_GOOD != 1 ]]; then
+    alilog_error "statTest.testTPCVolumeDemoTest: Test FAILED"
+    ((TEST_STATUS++))
+  fi
+  if [[ $N_BAD != 0 ]]; then
+    alilog_error "statTest.testTPCVolumeDemoTest: Test FAILED"
+    ((TEST_STATUS+=2))
+  fi
+  if [[ $TEST_STATUS == 0 ]]; then
+    alilog_success "statTest.: All OK"
+  else
+    alilog_error "statTest.testTPCVolumeDemoTest: FAILED (code $TEST_STATUS)"
+  fi
+  exit $TEST_STATUS
+
+}
+testAliNDFunctionInterface() {
+  cp $ALIROOT_SOURCE/STAT/Macros/AliNDFunctionInterface.cxx .
+  cp $AliRoot_SRC/STAT/Macros/QAtrendingFitExample.C .
+  root -n -b -l <<\EOF 2>&1 | tee AliNDFunctionInterface.cxx.log
+    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
+    AliDrawStyle::SetDefaults()
+    AliDrawStyle::ApplyStyle("figTemplate");
+    gStyle->SetOptTitle(1);
+    .L AliNDFunctionInterface.cxx+
+    .x QAtrendingFitExample.C
+EOF
+  N_GOOD=1
+  N_BAD=0
+
+  TEST_STATUS=0
+  if [[ $N_GOOD != 1 ]]; then
+    alilog_error "statTest.testAliNDFunctionInterface: Test FAILED"
+    ((TEST_STATUS++))
+  fi
+  if [[ $N_BAD != 0 ]]; then
+    alilog_error "statTest.testAliNDFunctionInterface: Test FAILED"
+    ((TEST_STATUS+=2))
+  fi
+  if [[ $TEST_STATUS == 0 ]]; then
+    alilog_success "statTest.: All OK"
+  else
+    alilog_error "statTest.testAliNDFunctionInterface: FAILED (code $TEST_STATUS)"
+  fi
+  exit $TEST_STATUS
+
+}
 [[ $1 ]] && $1
