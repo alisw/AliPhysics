@@ -122,7 +122,7 @@ void loadMVAreadersBootstrap() {
 /// ----------------------
 void QAtrendingFitExample(){
   /// 0.) Remove regression file
-  gSystem->Exec("rm -f TMVA_RegressionOutput.root");
+  gSystem->Unlink("TMVA_RegressionOutput.root");
   /// 1.) Load Input data
   loadTree();
   /// 2.) Cache tree - TMVA expect variables  - not functions and aliases

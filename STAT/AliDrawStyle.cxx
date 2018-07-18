@@ -45,6 +45,7 @@
 #include "TMultiGraph.h"
 #include "TAxis.h"
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <ios>
 
@@ -775,7 +776,7 @@ TObjArray *AliDrawStyle::ReadCssString(TString inputCSS, TObjArray *cssArray, In
     TString selector = tokenArray->At(i)->GetName();
     TString declaration = tokenArray->At(i + 1)->GetName();
     if (verbose == 4)
-      printf("selector: %s\ndeclaration: %s\n", selector.Data(), declaration.Data());
+      ::Info("selector: %s\ndeclaration: %s\n", selector.Data(), declaration.Data());
     cssArray->AddLast(new TNamed(selector.Data(), declaration.Data()));
   }
   return cssArray;
@@ -785,17 +786,23 @@ TObjArray *AliDrawStyle::ReadCssString(TString inputCSS, TObjArray *cssArray, In
 /// TODO:
 /// * proper exception  handling (Boris)
 ///   * Use ::Error verbosity according debug level
-/// \param inputName     - input file to read
+/// \param inputName     - input file to read (supports environment vars)
 /// \param verbose       - specify verbose level for ::error and ::info (Int_t should be interpreted as an bit-mask)
 /// \return              - TObjArray  with the pairs TNamed of the CSS <Selector, declaration> or  TObjArray (recursive structure like includes)
 TObjArray *AliDrawStyle::ReadCSSFile(const char *  inputName, TObjArray * cssArray, Int_t verbose) {
-  //check file exist
-  if (gSystem->GetFromPipe(TString("[ -f ") + TString(inputName) +  TString(" ] && echo 1 || echo 0")) == "0") {
-    ::Error("AliDrawStyle::ReadCSSFile","File %s doesn't exist", inputName);
+  TString expInputName(inputName);
+  if (gSystem->ExpandPathName(expInputName)) {
+    ::Error("AliDrawStyle::ReadCSSFile", "Cannot expand some variables in %s", inputName);
     return nullptr;
   }
-
-  TString inputCSS = gSystem->GetFromPipe(TString::Format("cat %s",inputName).Data());     // I expect this variable is defined
+  if (gSystem->AccessPathName(expInputName.Data())) {
+    ::Error("AliDrawStyle::ReadCSSFile", "File %s doesn't exist", expInputName.Data());
+    return nullptr;
+  }
+  std::ifstream cssFp(expInputName.Data());
+  std::stringstream buf;
+  buf << cssFp.rdbuf();
+  TString inputCSS = buf.str();
   return AliDrawStyle::ReadCssString(inputCSS, cssArray, verbose);
 }
 
