@@ -2278,6 +2278,7 @@ void AliAnalysisTaskESDfilter::ConvertTRD(const AliESDEvent& esd)
 
     // add the reference to the matched global track
     AliAODTrack *aodTrkMatch = 0x0;
+    AliAODPid* detpid(0x0);
     AliESDtrack *esdTrkMatch = (AliESDtrack*) esdTrdTrk->GetTrackMatch();
     if (esdTrkMatch) {
       Int_t idx = esdTrkMatch->GetID();
@@ -2351,7 +2352,7 @@ void AliAnalysisTaskESDfilter::ConvertTRD(const AliESDEvent& esd)
 	  if (esdTrkMatch->GetSign() > 0) ++fNumberOfPositiveTracks;
 	  aodTrkMatch->ConvertAliPIDtoAODPID();
 	  aodTrkMatch->SetFlags(esdTrkMatch->GetStatus());
-
+	  SetAODPID(esdTrkMatch,aodTrkMatch,detpid);
 
 
 	}
