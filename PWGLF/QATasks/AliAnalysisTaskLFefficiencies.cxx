@@ -166,7 +166,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     int TOFlabels[3];
     track->GetTOFLabel(TOFlabels);
     bool TOFmismatch = TOFlabels[0] != TMath::Abs(track->GetLabel());
-    bool cuts[fNcuts] = {true, hasFB5, hasFB5 && TPCpid, hasFB5 && hasTOF, hasFB5 && TOFpid, hasFB5 && TOFmismatch};
+    bool cuts[fNcuts] = {true, hasFB5, hasFB5 && TPCpid, hasFB5 && hasTOF, hasFB5 && hasTOF && TOFpid, hasFB5 && hasTOF && TOFmismatch};
 
     for (int iCut = 0; iCut < fNcuts; ++iCut) {
       if (cuts[iCut]) {
