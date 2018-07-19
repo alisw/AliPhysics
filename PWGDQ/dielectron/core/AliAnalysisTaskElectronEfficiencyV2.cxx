@@ -1043,6 +1043,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
               double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
               weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
             }
+            else{
+              weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
+            }
           }
 
           for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
@@ -1069,6 +1072,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
               double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
               weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
+            }
+            else{
+              weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
             }
           }
 
@@ -1233,6 +1239,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
           if (fRecNegPart[neg_i].GetMotherID() == fRecPosPart[pos_i].GetMotherID()){
             double motherpt = fMC->GetTrack(fRecNegPart[neg_i].GetMotherID())->Pt();
             weight *= GetWeight(fRecNegPart[neg_i], fRecPosPart[pos_i], motherpt);
+          }
+          else{
+            weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
           }
         }
 
@@ -1539,7 +1548,7 @@ TLorentzVector AliAnalysisTaskElectronEfficiencyV2::ApplyResolution(double pt, d
   // from Theos LightFlavorGenerator, modified
 
   TLorentzVector resvec;
-  resvec.SetPtEtaPhiM(pt, eta, phi, AliPID::ParticleMass(AliPID::kElectron));
+  // resvec.SetPtEtaPhiM(pt, eta, phi, AliPID::ParticleMass(AliPID::kElectron));
 
     // smear pt
     Int_t ptbin     = ((TH2D *)(fArrResoPt->At(0)))->GetXaxis()->FindBin(pt);
