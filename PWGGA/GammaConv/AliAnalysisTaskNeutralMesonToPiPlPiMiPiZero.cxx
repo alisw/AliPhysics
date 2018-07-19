@@ -2659,6 +2659,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
             }
           }
         }
+      }
 
         // \eta -> pi+ pi- \gamma
         Int_t labelNeutPion = -1;
@@ -2711,7 +2712,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
             }
           }
         }
-      }
     }
   }
 }
