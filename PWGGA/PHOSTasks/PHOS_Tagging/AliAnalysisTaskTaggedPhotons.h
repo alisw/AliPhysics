@@ -93,7 +93,7 @@ private:
   TList   * fPHOSEvents[10][5] ;    //!Previous events for mixing
   TList   * fCurrentMixedList;      //! list of previous evetns for given centrality
   AliTriggerAnalysis * fTriggerAnalysis ; //!
-  AliAnalysisUtils * fUtils ;
+  AliAnalysisUtils * fUtils ;       //!
   AliPHOSTriggerUtils * fPHOSTrigUtils ; //! utils to analyze PHOS trigger
  
   //Fiducial area parameters
@@ -103,18 +103,18 @@ private:
   Float_t fPhimin ;             //full calorimeter
   Float_t fMinBCDistance;       //minimal distance to bad channel
   Float_t fTimeCut ;            //Time cut
-  Double_t fWeightParamPi0[7] ; //Parameters to calculate weights
+  Double_t fWeightParamPi0[7] ; //!Parameters to calculate weights
   //
-  Double_t fRP;           //Reaction plane orientation
-  Double_t fCentrality;
-  Double_t fCentWeight ;  //Weight to correct bias in PHOS triigeered events
-  Int_t  fCentBin ;
-  Int_t  fRunNumber ;      //! current run number
+  Double_t fRP;           //! Reaction plane orientation
+  Double_t fCentrality;   //!
+  Double_t fCentWeight ;  //! Weight to correct bias in PHOS triigeered events
+  Int_t  fCentBin ;       //! 
+  Int_t  fRunNumber ;     //! current run number
   Bool_t fIsMB ;          //which trigger to use
   Bool_t fIsMC ;          //Is this is MC
   Bool_t fIsFastMC;       //This is fast MC, bypass event checks
-  TH2I * fPHOSBadMap[6] ;  
-  TH1F * fCentralityWeights[6]; //Weights to correct centrality non-flatness
+  TH2I * fPHOSBadMap[6] ; //! 
+  TH1F * fCentralityWeights[6]; //!Weights to correct centrality non-flatness
     
   ClassDef(AliAnalysisTaskTaggedPhotons, 3);   // a PHOS photon analysis task 
 };

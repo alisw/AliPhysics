@@ -600,9 +600,9 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   //Fill QA histograms
   //Fill Tagging histogsms
   
-  const Double_t kEcrossCut=0.98 ;
-  const Double_t kTOFMaxCut= 100.e-9 ;  
-  const Double_t kTOFMinCut=-100.e-9 ;  
+//   const Double_t kEcrossCut=0.98 ;
+//   const Double_t kTOFMaxCut= 100.e-9 ;  
+//   const Double_t kTOFMinCut=-100.e-9 ;  
   
   // Event selection flags
   //  FillHistogram("hSelEvents",0) ;
