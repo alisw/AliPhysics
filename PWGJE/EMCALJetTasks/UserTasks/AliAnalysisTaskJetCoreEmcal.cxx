@@ -73,6 +73,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fJetContPartName(""),
 	fFillTrackHistograms(kTRUE),
 	fFillJetHistograms(kTRUE),
+	fFillRecoilTHnSparse(kTRUE),
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
 	fPtHardBin(0.),
@@ -151,6 +152,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fJetContPartName(""),
 	fFillTrackHistograms(kTRUE),
 	fFillJetHistograms(kTRUE),
+	fFillRecoilTHnSparse(kTRUE),
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
 	fPtHardBin(0.),
@@ -491,11 +493,13 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fh2RPTC10);
 	fOutput->Add(fh2RPTC20);
 
-	const Int_t dimSpec = 6;
-	const Int_t nBinsSpec[dimSpec]     = {100,100, 280, 50,200, fNRPBins};
-	const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0,-0.5*TMath::Pi(), 0};
-	const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,1.5*TMath::Pi(),  static_cast<Double_t>(fNRPBins)};
-	fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+	if(fFillRecoilTHnSparse) {
+		const Int_t dimSpec = 6;
+		const Int_t nBinsSpec[dimSpec]     = {100,100, 280, 50,200, fNRPBins};
+		const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0,-0.5*TMath::Pi(), 0};
+		const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,1.5*TMath::Pi(),  static_cast<Double_t>(fNRPBins)};
+		fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+	}
 
 	// comment out since I want finer binning in jet area, to make it easier
 	// to change selection on jet area (Leticia used 0.8*R^2*Pi whereas 0.6 is used
@@ -826,12 +830,14 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			if(fCent<10.) fh2RPJetsC10->Fill(TMath::Abs(phiBin), ptcorr);
 			if(fCent<20.) fh2RPJetsC20->Fill(TMath::Abs(phiBin), ptcorr);
 
-			Float_t phitt=partback->Phi();
-			if(phitt<0)phitt+=TMath::Pi()*2.; 
-			Int_t phiBintt = GetPhiBin(phitt-fEPV0);
+			if(fFillRecoilTHnSparse) {
+				Float_t phitt=partback->Phi();
+				if(phitt<0)phitt+=TMath::Pi()*2.; 
+				Int_t phiBintt = GetPhiBin(phitt-fEPV0);
 
-			Double_t fillspec[] = {fCent,areabig,ptcorr,partback->Pt(),dPhiShift, static_cast<Double_t>(phiBintt)};
-			fHJetSpec->Fill(fillspec);
+				Double_t fillspec[] = {fCent,areabig,ptcorr,partback->Pt(),dPhiShift, static_cast<Double_t>(phiBintt)};
+				fHJetSpec->Fill(fillspec);
+			}
 
 			if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) {
 				//
