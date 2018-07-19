@@ -56,41 +56,41 @@ private:
        
  
 private:
-	TList * fOutputContainer;    //final histogram container
-	TArrayI fListOfChannels;     //list of active channels
+	TList * fOutputContainer;    //! final histogram container
+	TArrayI fListOfChannels;     //  list of active channels
 
-	Int_t fnPID;                 //NUmber of PID cuts
+	Int_t fnPID;                 //  NUmber of PID cuts
 // 	AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
 	AliPIDResponse     *fPIDResponse;     //! PID response 
 	
-	AliAODEvent  * fEvent ;      // Current event
-	TClonesArray * fGamma;       // List of selected photons
-	TClonesArray * fPi0 ;        // List of selected pi0s
-	TClonesArray * fPi0Merged ;  // List of selected merged pi0s
-	TClonesArray * fTracksElm ;  // list of selected electrons
-	TClonesArray * fTracksElp ;  // list of selected positrons
-	TClonesArray * fTracksPim ;  // list of selected pi-
-	TClonesArray * fTracksPip ;  // list of selected pi+
-	TClonesArray * fTracksKm ;   // list of selected K+
-	TClonesArray * fTracksKp ;   // list of selected K- 
-	TClonesArray * fTracksPm ;   // list of selected p+ 
-	TClonesArray * fTracksPp ;   // list of selected p-  
-	TClonesArray * fLambda ;     // list of selected Lambdas
-	TList * fMixGamma ;
-	TList * fMixPi0 ;
-	TList * fMixPi0Merged ;
-	TList * fMixElm ;
-	TList * fMixElp ;
-	TList * fMixTracksPim ;
-	TList * fMixTracksPip ;
-	TList * fMixTracksKm ;
-	TList * fMixTracksKp ;
-	TList * fMixTracksPm ;
-	TList * fMixTracksPp ;
-	TList * fMixLambda ;
+	AliAODEvent  * fEvent ;      //! Current event
+	TClonesArray * fGamma;       //! List of selected photons
+	TClonesArray * fPi0 ;        //! List of selected pi0s
+	TClonesArray * fPi0Merged ;  //! List of selected merged pi0s
+	TClonesArray * fTracksElm ;  //! list of selected electrons
+	TClonesArray * fTracksElp ;  //! list of selected positrons
+	TClonesArray * fTracksPim ;  //! list of selected pi-
+	TClonesArray * fTracksPip ;  //! list of selected pi+
+	TClonesArray * fTracksKm ;   //! list of selected K+
+	TClonesArray * fTracksKp ;   //! list of selected K- 
+	TClonesArray * fTracksPm ;   //! list of selected p+ 
+	TClonesArray * fTracksPp ;   //! list of selected p-  
+	TClonesArray * fLambda ;     //! list of selected Lambdas
+	TList * fMixGamma ;          //!
+	TList * fMixPi0 ;            //!
+	TList * fMixPi0Merged ;      //!
+	TList * fMixElm ;            //!
+	TList * fMixElp ;            //!
+	TList * fMixTracksPim ;      //!
+	TList * fMixTracksPip ;      //!
+	TList * fMixTracksKm ;       //!
+	TList * fMixTracksKp ;       //!
+	TList * fMixTracksPm ;       //!
+	TList * fMixTracksPp ;       //! 
+	TList * fMixLambda ;         //!
         
-        TH3F * fhHistos[300];
-        TH2F * fhPr;
+        TH3F * fhHistos[300];      //!
+        TH2F * fhPr;               //!
 
 	ClassDef(AliAnalysisPHOSResonances, 1); 
 };
