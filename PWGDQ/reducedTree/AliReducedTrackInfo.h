@@ -78,15 +78,23 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t  TRDpid(Int_t specie)       const {return (specie>=0 && specie<=1 ? fTRDpid[specie] : -999.);}
   Float_t  TRDpidLQ1D(Int_t specie)   const {return (specie>=0 && specie<=1 ? fTRDpid[specie] : -999.);}
   Float_t  TRDpidLQ2D(Int_t specie)   const {return (specie>=0 && specie<=1 ? fTRDpidLQ2D[specie] : -999.);}
-  
+
+  // TRD online tracks
+  UChar_t   TRDGTUtracklets()      const {return fTRDGTUtracklets;}
+  UChar_t   TRDGTUlayermask()      const {return fTRDGTUlayermask;}
+  Float_t   TRDGTUpt()             const {return fTRDGTUpt;}
+  Float_t   TRDGTUsagitta()        const {return fTRDGTUsagitta;}
+  UChar_t   TRDGTUPID()            const {return fTRDGTUPID;}
+
+
   Int_t    CaloClusterId() const {return fCaloClusterId;}
   
   Float_t TrackParam(Int_t iPar = 0) {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
   Float_t CovMatrix(Int_t iCov = 0) {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
   
-  Float_t MCmom(Int_t dim) {return (dim>=0 && dim<3 ? fMCMom[dim] : 0.0);}
-  Float_t PtMC() {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]);}
-  Float_t PMC()   const {return TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]+fMCMom[2]*fMCMom[2]);}
+  Float_t MCmom(Int_t dim);  
+  Float_t PtMC() {return (fIsMCTruth ? Pt() : TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]));}
+  Float_t PMC()   const {return (fIsMCTruth ? P() : TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]+fMCMom[2]*fMCMom[2]));}
   Float_t PhiMC() const;
   Float_t EtaMC() const;
   Float_t RapidityMC(Float_t massAssumption) const;
@@ -95,6 +103,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t MCFreezeout(Int_t dim) {return (dim>=0 && dim<3 ? fMCFreezeout[dim] : 0.0);}
   Int_t MCLabel(Int_t history=0) {return (history>=0 && history<4 ? fMCLabels[history] : -9999);}
   Int_t MCPdg(Int_t history=0) {return (history>=0 && history<4 ? fMCPdg[history] : -9999);}
+  Int_t HFProc() const {return fHFProc;}
   Short_t MCGeneratorIndex() {return fMCGeneratorIndex;}
   
 
@@ -147,7 +156,14 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t fTRDntracklets[2];       // 0 - AliESDtrack::GetTRDntracklets(); 1 - AliESDtrack::GetTRDntrackletsPID()   TODO: use only 1 char
   Float_t fTRDpid[2];              // TRD pid 1D likelihoods, [0]-electron , [1]- pion
   Float_t fTRDpidLQ2D[2];          // TRD pid 2D likelihoods, [0]-electron , [1]- pion
-  
+
+  // TRD online tracks
+  UChar_t  fTRDGTUtracklets;    // TRD online track #tracklets
+  UChar_t  fTRDGTUlayermask;    // TRD online track hit in layer0 yes/no
+  Float_t  fTRDGTUpt;           // TRD online track pT
+  Float_t  fTRDGTUsagitta;      // TRD online track sagitta
+  UChar_t  fTRDGTUPID;          // TRD online track pid
+
   // EMCAL/PHOS
   Int_t  fCaloClusterId;          // ID for the calorimeter cluster (if any)
   
@@ -161,18 +177,38 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t fMCFreezeout[3];    // MC truth 3-position information in cartezian coordinates
   Int_t    fMCLabels[4];           // MC label for: [0] - the current track, [1] - mother, [2] - grand mother, [3] - grand grand mother 
   Int_t    fMCPdg[4];                // MC PDG code for: [0] - the current track, [1] - mother, [2] - grand mother, [3] - grand grand mother 
+  Int_t    fHFProc;             // Heavy Flavour Process number in the event for the particle  
   Short_t fMCGeneratorIndex;    // generator index (used for cocktail generators ?)
 
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
   
-  ClassDef(AliReducedTrackInfo, 5);
+  ClassDef(AliReducedTrackInfo, 6);
 };
+
+//_______________________________________________________________________________
+inline Float_t AliReducedTrackInfo::MCmom(Int_t dim) {  // {}
+   //
+   // return momentum component
+   //
+   if(dim<0 || dim>2) return 0.0;
+   if(fIsMCTruth) {     // pure MC track -> use the fP vector
+      if(dim==0) return Px();
+      if(dim==1) return Py();
+      if(dim==2) return Pz();
+   }
+   else 
+      return fMCMom[dim];
+   
+   return 0.0;
+}
 
 //_______________________________________________________________________________
 inline Float_t AliReducedTrackInfo::PhiMC() const {
    //
    // Return the azimuthal angle of this particle
    //
+   if(fIsMCTruth) return Phi();
+   
    Float_t phi=TMath::ATan2(fMCMom[1],fMCMom[0]); 
    if(phi>=0.0) 
       return phi;
@@ -185,6 +221,8 @@ inline Float_t AliReducedTrackInfo::ThetaMC() const {
    //
    // Return the polar angle for this particle
    //
+   if(fIsMCTruth) return Theta();
+   
    Float_t p=PMC(); 
    if(p>=1.0e-6) 
       return TMath::ACos(fMCMom[2]/p);
@@ -197,6 +235,8 @@ inline Float_t AliReducedTrackInfo::EtaMC() const {
    //
    // Return the pseudorapidity of this particle
    //
+   if(fIsMCTruth) return Eta();
+   
    Float_t eta = TMath::Tan(0.5*ThetaMC());
    if(eta>1.0e-6) 
       return -1.0*TMath::Log(eta);
@@ -209,6 +249,8 @@ inline Float_t AliReducedTrackInfo::RapidityMC(Float_t massAssumption) const {
    //
    // Return the rapidity of this particle using a massAssumption
    //
+   if(fIsMCTruth) return Rapidity(massAssumption);
+   
    Float_t e = EnergyMC(massAssumption);
    Float_t factor = e-fMCMom[2];
    if(TMath::Abs(factor)<1.0e-6) return 0.0;

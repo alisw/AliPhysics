@@ -70,6 +70,7 @@ set(SRCS
     AliAnalysisTaskEPCorrAA.cxx
     AliAnalysisTaskEPCorrAAMC.cxx
     AliAnalysisTaskPIDBFDptDpt.cxx
+    AliAnalysisTaskGeneralBF.cxx
     AliCorrelationAnalysis.cxx
     DiHadronPID/AliAnalysisTaskCompareAODTrackCuts.cxx
     DiHadronPID/AliAnalysisTaskDiHadronPID.cxx
@@ -89,6 +90,16 @@ set(SRCS
     TriggerPID/AliAnalysisTaskPIDCORR.cxx
     TriggerPID/AliTwoParticlePIDCorr.cxx
     TriggerPID/AliTwoParticlePIDCorrKine.cxx
+    Unfoldedhistos/AliAnalysisTaskCorrelationsStudies.cxx
+    Unfoldedhistos/AliCSAnalysisCutsBase.cxx
+    Unfoldedhistos/AliCSEventCuts.cxx
+    Unfoldedhistos/AliCSPairAnalysis.cxx
+    Unfoldedhistos/AliCSPIDCuts.cxx
+    Unfoldedhistos/AliCSTrackCutsBase.cxx
+    Unfoldedhistos/AliCSTrackCuts.cxx
+    Unfoldedhistos/AliCSTrackMaps.cxx
+    Unfoldedhistos/AliCSTrackSelection.cxx
+    Unfoldedhistos/AliDptDptCorrelations.cxx
    )
 
 # Headers from sources

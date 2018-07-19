@@ -73,7 +73,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
                                 Bool_t    enableTriggerMimicking        = kFALSE,                 // enable trigger mimicking
                                 Bool_t    enableTriggerOverlapRej       = kFALSE,                 // enable trigger overlap rejection
                                 Float_t   maxFacPtHard                  = 3.,                     // maximum factor between hardest jet and ptHard generated
-                                TString   periodNameV0Reader            = "",                     // period Name for V0 Reader 
+                                TString   periodNameV0Reader            = "",                     // period Name for V0 Reader
                                 Bool_t    doMultiplicityWeighting       = kFALSE,                 // enable multiplicity weights
                                 TString   fileNameInputForMultWeighing  = "Multiplicity.root",    // file for multiplicity weights
                                 TString   periodNameAnchor              = "",                     // anchor period name for mult weighting
@@ -85,7 +85,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
                                 Double_t  smearParConst                 = 0.,                     // conv photon smearing params
                                 TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
               ) {
-  
+
   //parse additionalTrainConfig flag
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -108,7 +108,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
 
   // fReconMethod = first digit of trainconfig
   Int_t ReconMethod = trainConfig/100;
-  
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -126,11 +126,17 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse(isMCForOtherSettings);
   }
-  
+
   Printf("here \n");
-  
+
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton = "00000008400100001500000000";
+  if (  periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC18c")==0 ||
+        periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0 ||
+        periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0 ||
+        periodNameV0Reader.CompareTo("LHC17f8b") == 0 ||
+        periodNameV0Reader.CompareTo("LHC16P1JJLowB") == 0 || periodNameV0Reader.CompareTo("LHC16P1Pyt8LowB") == 0 )
+    cutnumberPhoton         = "00000088400000000100000000";
   TString cutnumberEvent = "00000003";
   Bool_t doEtaShift = kFALSE;
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
@@ -178,7 +184,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     }
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -245,6 +251,12 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 60) {
+    //std MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==1
   } else if(trainConfig == 101){ // EMCAL clusters pp 7 TeV
@@ -278,6 +290,12 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 160) {
+    //std MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==2
   } else if(trainConfig == 201){ // EMCAL clusters pp 7 TeV
@@ -311,6 +329,13 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 260) {
+    //std MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+
 
   // cuts for ReconMethod==3
   } else if(trainConfig == 301){ // EMCAL clusters pp 7 TeV
@@ -344,6 +369,12 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 360) {
+    //std MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
   // cuts for ReconMethod==4
   } else if(trainConfig == 401){ // EMCAL clusters pp 7 TeV
@@ -378,6 +409,18 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
+  } else if(trainConfig == 454){ // same as std 8TeV, for varying angle cut
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+  } else if( trainConfig == 460) {
+    //std MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+
+
   // cuts for ReconMethod==5
   } else if(trainConfig == 501){ // EMCAL clusters pp 7 TeV
     cuts.AddCut("00000113","00200009327000008250400000","1111111017032230000","0163103000000010","0163103000000010"); // pion mass (0.08,0.145)
@@ -411,6 +454,12 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
     cuts.AddCut("00081113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
 
+  } else if( trainConfig == 560) {
+    //std MB 13TeV
+    cuts.AddCut("00010113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00052113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00085113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
+    cuts.AddCut("00083113","00200009327000008250400000","1111111067032230000","0163103100000010","0163103000000010");
   } else {
     Error(Form("OmegaToPiZeroGamma_%i_%i", trainConfig, isMC), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -455,25 +504,25 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     }
 
     analysisEventCuts[i] = new AliConvEventCuts();
-    
+
     TString dataInputMultHisto  = "";
     TString mcInputMultHisto    = "";
     TString triggerString   = cuts.GetEventCut(i);
     triggerString           = triggerString(3,2);
-    if (triggerString.CompareTo("03")==0) 
+    if (triggerString.CompareTo("03")==0)
       triggerString         = "00";
     if (periodNameAnchor.CompareTo("LHC13g") == 0 && triggerString.CompareTo("10")== 0 )
       triggerString         = "00";
 
     dataInputMultHisto      = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
     mcInputMultHisto        = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
-   
+
     if (doMultiplicityWeighting){
       cout << "enableling mult weighting" << endl;
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
     }
-              
-    
+
+
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
@@ -482,7 +531,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-    
+
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
@@ -490,7 +539,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-  
+
     analysisClusterCuts[i] = new AliCaloPhotonCuts((isMC==2));
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
@@ -500,7 +549,7 @@ void AddTask_OmegaToPiZeroGamma_pp(  Int_t     trainConfig                   = 1
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     analysisClusterCuts[i]->SetFillCutHistograms("");
-    
+
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     analysisNeutralPionCuts[i]->SetLightOutput(runLightOutput);
     analysisNeutralPionCuts[i]->SetRunningMode(2);

@@ -1,24 +1,24 @@
 /**************************************************************************
- * Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in thce supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
+*                                                                        *
+* Author: The ALICE Off-line Project.                                    *
+* Contributors are mentioned in the code where appropriate.              *
+*                                                                        *
+* Permission to use, copy, modify and distribute this software and its   *
+* documentation strictly for non-commercial purposes is hereby granted   *
+* without fee, provided that the above copyright notice appears in all   *
+* copies and that both the copyright notice and this permission notice   *
+* appear in thce supporting documentation. The authors make no claims     *
+* about the suitability of this software for any purpose. It is          *
+* provided "as is" without express or implied warranty.                  *
+**************************************************************************/
 
 /**********************************
- * analysis task for CRC with ZDC *
- *                                *
- * author: Jacopo Margutti        *
- *         (margutti@nikhef.nl)   *
- **********************************/
+* analysis task for CRC with ZDC *
+*                                *
+* author: Jacopo Margutti        *
+*         (margutti@nikhef.nl)   *
+**********************************/
 
 #include "Riostream.h" //needed as include
 #include "TChain.h"
@@ -95,7 +95,7 @@
 #include "AliFlowCommonConstants.h"
 
 //NanoAODs
-// #include "AliNanoAODTrack.h"
+#include "AliNanoAODTrack.h"
 #include "AliNanoAODHeader.h"
 
 ClassImp(AliAnalysisTaskCRCZDC)
@@ -114,6 +114,7 @@ fCutContainer(new TList()),
 fQAList(NULL),
 fMinMult(0),
 fMaxMult(10000000),
+fAnalysisUtil(NULL),
 fMinA(-1.0),
 fMaxA(-0.01),
 fMinB(0.01),
@@ -122,7 +123,6 @@ fGenHeader(NULL),
 fPythiaGenHeader(NULL),
 fHijingGenHeader(NULL),
 fFlowTrack(NULL),
-fAnalysisUtil(NULL),
 fQAon(kFALSE),
 fLoadCandidates(kFALSE),
 fNbinsMult(10000),
@@ -246,8 +246,8 @@ fQATrackITSScls(NULL)
     fBadTowerCalibHist[c] = NULL;
   }
   for (Int_t k=0; k<fkVZEROnHar; k++) {
-//    fVZEROQVectorRecQx[k] = NULL;
-//    fVZEROQVectorRecQy[k] = NULL;
+    //    fVZEROQVectorRecQx[k] = NULL;
+    //    fVZEROQVectorRecQy[k] = NULL;
     fVZEROQVectorRecQxStored[k] = NULL;
     fVZEROQVectorRecQyStored[k] = NULL;
     for (Int_t t=0; t<fkVZEROnQAplots; t++) {
@@ -302,6 +302,7 @@ fCutContainer(new TList()),
 fQAList(NULL),
 fMinMult(0),
 fMaxMult(10000000),
+fAnalysisUtil(NULL),
 fMinA(-1.0),
 fMaxA(-0.01),
 fMinB(0.01),
@@ -374,7 +375,6 @@ fGenHeader(NULL),
 fPythiaGenHeader(NULL),
 fHijingGenHeader(NULL),
 fFlowTrack(NULL),
-fAnalysisUtil(NULL),
 fStack(0x0),
 fCutTPC(kFALSE),
 fCenDis(0x0),
@@ -513,7 +513,7 @@ void AliAnalysisTaskCRCZDC::InitializeRunArrays()
       fZNCTower[r][k] = NULL;
       fZNATower[r][k] = NULL;
     }
-//    fhZNSpectraRbR[r] = NULL;
+    //    fhZNSpectraRbR[r] = NULL;
   }
   //   for(Int_t i=0;i<fnCen;i++) {
   //     fPtPhiEtaRbRFB128[r][i] = NULL;
@@ -649,17 +649,17 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
   fhZNBCCorr = new TH3D("fhZNBCCorr","fhZNBCCorr",100,0.,100.,500,0.,1.E5,500,0.,1.E5);
   fOutput->Add(fhZNBCCorr);
 
-  fQATrackTPCNcls = new TH3D("fQATrackTPCNcls","fQATrackTPCNcls",20,0.,5.,16,-0.8,0.8,50,50.,150.);
+  fQATrackTPCNcls = new TH3D("fQATrackTPCNcls","fQATrackTPCNcls",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,50.,150.);
   fOutput->Add(fQATrackTPCNcls);
-  fQATrackITSNcls = new TH3D("fQATrackITSNcls","fQATrackITSNcls",20,0.,5.,16,-0.8,0.8,6,0.,6.);
+  fQATrackITSNcls = new TH3D("fQATrackITSNcls","fQATrackITSNcls",50,0.,TMath::TwoPi(),16,-0.8,0.8,6,0.,6.);
   fOutput->Add(fQATrackITSNcls);
-  fQATrackTPCchi2 = new TH3D("fQATrackTPCchi2","fQATrackTPCchi2",20,0.,5.,16,-0.8,0.8,50,0.,5.);
+  fQATrackTPCchi2 = new TH3D("fQATrackTPCchi2","fQATrackTPCchi2",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,0.,5.);
   fOutput->Add(fQATrackTPCchi2);
-  fQATrackITSchi2 = new TH3D("fQATrackITSchi2","fQATrackITSchi2",20,0.,5.,16,-0.8,0.8,50,0.,50.);
+  fQATrackITSchi2 = new TH3D("fQATrackITSchi2","fQATrackITSchi2",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,0.,50.);
   fOutput->Add(fQATrackITSchi2);
-  fQATrackTPCScls = new TH3D("fQATrackTPCScls","fQATrackTPCScls",20,0.,5.,16,-0.8,0.8,50,0.,1.);
+  fQATrackTPCScls = new TH3D("fQATrackTPCScls","fQATrackTPCScls",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,0.,1.);
   fOutput->Add(fQATrackTPCScls);
-  fQATrackITSScls = new TH3D("fQATrackITSScls","fQATrackITSScls",20,0.,5.,16,-0.8,0.8,50,0.,1.);
+  fQATrackITSScls = new TH3D("fQATrackITSScls","fQATrackITSScls",50,0.,TMath::TwoPi(),16,-0.8,0.8,50,0.,1.);
   fOutput->Add(fQATrackITSScls);
 
   if(fAnalysisType == kMCAOD) {
@@ -803,14 +803,14 @@ void AliAnalysisTaskCRCZDC::UserCreateOutputObjects()
     }
   }
 
-//  for (Int_t k=0; k<fkVZEROnHar; k++) {
-//    fVZEROQVectorRecQx[k] = new TProfile3D(Form("fVZEROQVectorRecQx[%d]",k),Form("fVZEROQVectorRecQx[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.,"s");
-//    fVZEROQVectorRecQx[k]->Sumw2();
-//    fVZEROStuffList->Add(fVZEROQVectorRecQx[k]);
-//    fVZEROQVectorRecQy[k] = new TProfile3D(Form("fVZEROQVectorRecQy[%d]",k),Form("fVZEROQVectorRecQy[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.,"s");
-//    fVZEROQVectorRecQy[k]->Sumw2();
-//    fVZEROStuffList->Add(fVZEROQVectorRecQy[k]);
-//  }
+  //  for (Int_t k=0; k<fkVZEROnHar; k++) {
+  //    fVZEROQVectorRecQx[k] = new TProfile3D(Form("fVZEROQVectorRecQx[%d]",k),Form("fVZEROQVectorRecQx[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.,"s");
+  //    fVZEROQVectorRecQx[k]->Sumw2();
+  //    fVZEROStuffList->Add(fVZEROQVectorRecQx[k]);
+  //    fVZEROQVectorRecQy[k] = new TProfile3D(Form("fVZEROQVectorRecQy[%d]",k),Form("fVZEROQVectorRecQy[%d]",k),fCRCnRun,0.,1.*fCRCnRun,100,0.,100.,8,0.,8.,"s");
+  //    fVZEROQVectorRecQy[k]->Sumw2();
+  //    fVZEROStuffList->Add(fVZEROQVectorRecQy[k]);
+  //  }
 
   // track QA
 
@@ -911,13 +911,13 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   Int_t RunBin=-1, bin=0, RunNum=-1;
 
   if(!head->InheritsFrom("AliNanoAODStorage")){ //no nanoAOD
-      RunNum = aod->GetRunNumber();
-      for(Int_t c=0;c<fCRCnRun;c++) {
-          if(fRunList[c]==RunNum) RunBin=bin;
-          else bin++;
-      }
-      if(RunBin==-1) return;
-      if(fDataSet==kAny) RunBin=0;
+    RunNum = aod->GetRunNumber();
+    for(Int_t c=0;c<fCRCnRun;c++) {
+      if(fRunList[c]==RunNum) RunBin=bin;
+      else bin++;
+    }
+    if(RunBin==-1) return;
+    if(fDataSet==kAny) RunBin=0;
   }
 
   //DEFAULT - automatically takes care of everything
@@ -925,32 +925,33 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
 
     // get centrality
     Double_t centrV0M=300, centrCL1=300, centrCL0=300, centrTRK=300;
-  if(!head->InheritsFrom("AliNanoAODStorage")){
-    if(fDataSet!=k2015 && fDataSet!=k2015v6 &&  fDataSet!=k2015pidfix) {
-      centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
-      centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
-      centrCL0 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
-      centrTRK = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK");
-    } else {
-      fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
-      if(!fMultSelection) {
-        //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
-        AliWarning("AliMultSelection object not found!");
+    if(!head->InheritsFrom("AliNanoAODStorage")){
+      if(fDataSet!=k2015 && fDataSet!=k2015v6 &&  fDataSet!=k2015pidfix) {
+        centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
+        centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
+        centrCL0 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL0");
+        centrTRK = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("TRK");
       } else {
-        centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
-        centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
-        centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
-        centrTRK = fMultSelection->GetMultiplicityPercentile("TRK");
+        fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+        if(!fMultSelection) {
+          //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
+          AliWarning("AliMultSelection object not found!");
+        } else {
+          centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+          centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
+          centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
+          centrTRK = fMultSelection->GetMultiplicityPercentile("TRK");
+        }
       }
-    }
-  }else{
+    }else{
 
       AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
       RunNum = nanoAodHeader->GetRunNumber();
       for(Int_t c=0;c<fCRCnRun;c++) {
-          if(fRunList[c]==RunNum) RunBin=bin;
-          else bin++;
+        if(fRunList[c]==RunNum) RunBin=bin;
+        else bin++;
       }
+
       if(RunBin==-1) return;
       if(fDataSet==kAny) RunBin=0;
 
@@ -959,8 +960,7 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       centrCL1 = nanoAodHeader->GetCentr("CL1");
       centrCL0 = nanoAodHeader->GetCentr("CL0");
 
-  }
-
+    }
     //check event cuts
     if (InputEvent()) {
       if(!fCutsEvent->IsSelected(InputEvent(),MCEvent())) return;
@@ -1034,10 +1034,10 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
       period = aod->GetPeriodNumber();
       orbit24 = aod->GetOrbitNumber(); // wrapped down to 24 bits
     }else{
-      // AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
-      // SumV0 = nanoAodHeader->GetSumV0();
-      // period = nanoAodHeader->GetPeriod();
-      // orbit24 = nanoAodHeader->GetOrbit(); // wrapped down to 24 bits
+      AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
+      SumV0 = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstV0"));
+      period = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstPeriod"));
+      orbit24 = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstOrbit")); // wrapped down to 24 bits
     }
     fFlowEvent->SetNITSCL1(SumV0);
 
@@ -1241,6 +1241,31 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     if(CenBin==-1) return;
     fCenDis->Fill(centr);
 
+    AliMCEvent* McEventFake = NULL;
+    //first attach all possible information to the cuts
+    fCutsRP->SetEvent( InputEvent(), McEventFake );  //attach event
+    fCutsPOI->SetEvent( InputEvent(), McEventFake );
+
+    //then make the event
+    fFlowEvent->Fill( fCutsRP, fCutsPOI );
+
+    fFlowEvent->SetCentrality(centr);
+    fFlowEvent->SetCentralityCL1(centr);
+    fFlowEvent->SetCentralityTRK(centr);
+    fFlowEvent->SetReferenceMultiplicity(fFlowEvent->GetNumberOfRPs());
+
+    Double_t SumV0=0.;
+    for(Int_t i=0; i<64; i++) {
+      if(std::isfinite(aod->GetVZEROEqMultiplicity(i))) SumV0 += aod->GetVZEROEqMultiplicity(i);
+    }
+    fFlowEvent->SetNITSCL1(SumV0);
+
+    Double_t vtxpos[3]={0.,0.,0.};
+    vtxpos[0] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetX();
+    vtxpos[1] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetY();
+    vtxpos[2] = ((AliAODVertex*)aod->GetPrimaryVertex())->GetZ();
+    fFlowEvent->SetVertexPosition(vtxpos);
+
     // reconstructed
     for(Int_t jTracks = 0; jTracks<aod->GetNumberOfTracks(); jTracks++){
 
@@ -1281,7 +1306,6 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     }
 
     // generated (physical primaries)
-
     for(Int_t jTracks = 0; jTracks<fStack->GetEntriesFast(); jTracks++) {
       AliAODMCParticle *MCpart = (AliAODMCParticle*)fStack->At(jTracks);
       if (!MCpart) {
@@ -1518,12 +1542,12 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
   {
     //if reaction plane not set from elsewhere randomize it before adding flow
     if (!fFlowEvent->IsSetMCReactionPlaneAngle())
-      fFlowEvent->SetMCReactionPlaneAngle(gRandom->Uniform(0.0,TMath::TwoPi()));
+    fFlowEvent->SetMCReactionPlaneAngle(gRandom->Uniform(0.0,TMath::TwoPi()));
 
     if(fDifferentialV2)
-      fFlowEvent->AddV2(fDifferentialV2);
+    fFlowEvent->AddV2(fDifferentialV2);
     else
-      fFlowEvent->AddFlow(fV1,fV2,fV3,fV4,fV5);     //add flow
+    fFlowEvent->AddFlow(fV1,fV2,fV3,fV4,fV5);     //add flow
     fFlowEvent->CloneTracks(fNonFlowNumberOfTrackClones); //add nonflow by cloning tracks
   }
   //////////////////////////////////////////////////////////////////////////////
@@ -1548,355 +1572,368 @@ void AliAnalysisTaskCRCZDC::UserExec(Option_t */*option*/)
     AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *hdr = (AliInputEventHandler*)am->GetInputEventHandler();
 
-      if(hdr->IsEventSelected()==0 && !head->InheritsFrom("AliNanoAODStorage")) return;
+    if(hdr->IsEventSelected()==0 && !head->InheritsFrom("AliNanoAODStorage")) return;
     //if(hdr->IsEventSelected() && AliVEvent::kAny) {
 
-      Double_t centrperc = fFlowEvent->GetCentrality();
-      Int_t cenb = (Int_t)centrperc;
+    Double_t centrperc = fFlowEvent->GetCentrality();
+    Int_t cenb = (Int_t)centrperc;
 
-      Int_t nTracklets ;
-      if(!head->InheritsFrom("AliNanoAODStorage")){
-          AliAODTracklets *trackl = aod->GetTracklets();
-          nTracklets = trackl->GetNumberOfTracklets();
-      }else{
-          // AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
-          // nTracklets = nanoAodHeader->GetNumberOfTracklets();
-      }
+    Int_t nTracklets ;
+    if(!head->InheritsFrom("AliNanoAODStorage")){
+      AliAODTracklets *trackl = aod->GetTracklets();
+      nTracklets = trackl->GetNumberOfTracklets();
+    }else{
+      AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
+      nTracklets = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstNTrackelets"));
+    }
 
 
-      // get VZERO data
-      AliAODVZERO *vzeroAOD = aod->GetVZEROData();
-      Double_t multV0A = vzeroAOD->GetMTotV0A();
-      Double_t multV0C = vzeroAOD->GetMTotV0C();
+    // get VZERO data
+    AliAODVZERO *vzeroAOD = aod->GetVZEROData();
+    Double_t multV0A = vzeroAOD->GetMTotV0A();
+    Double_t multV0C = vzeroAOD->GetMTotV0C();
 
-      // set VZERO Q-vectors
-      if(fDataSet==k2015 || fDataSet==k2015v6) {
-        Int_t CachednRing = 1;
-        Double_t QxTot[fkVZEROnHar] = {0.}, QyTot[fkVZEROnHar] = {0.};
-        Double_t denom = 0.;
-        Double_t V0TotQC[fkVZEROnHar][2] = {{0.}}, V0TotQA[fkVZEROnHar][2] = {{0.}};
-        Double_t MultC[fkVZEROnHar] = {0.}, MultA[fkVZEROnHar] = {0.};
+    // set VZERO Q-vectors
+    if(fDataSet==k2015 || fDataSet==k2015v6) {
+      Int_t CachednRing = 1;
+      Double_t QxTot[fkVZEROnHar] = {0.}, QyTot[fkVZEROnHar] = {0.};
+      Double_t denom = 0.;
+      Double_t V0TotQC[fkVZEROnHar][2] = {{0.}}, V0TotQA[fkVZEROnHar][2] = {{0.}};
+      Double_t MultC[fkVZEROnHar] = {0.}, MultA[fkVZEROnHar] = {0.};
 
-        for(Int_t i=0; i<64; i++) {
+      for(Int_t i=0; i<64; i++) {
 
-          // correct multiplicity per channel
-          Double_t mult = vzeroAOD->GetMultiplicity(i);
-          if(fVZEROGainEqHist) {
-            Double_t EqFactor = fVZEROGainEqHist->GetBinContent(RunBin+1,i+1);
-            if(EqFactor>0.) mult *= EqFactor;
-          }
-          fVZEROMult->Fill(RunBin+0.5,i+0.5,mult);
+        // correct multiplicity per channel
+        Double_t mult = vzeroAOD->GetMultiplicity(i);
+        if(fVZEROGainEqHist) {
+          Double_t EqFactor = fVZEROGainEqHist->GetBinContent(RunBin+1,i+1);
+          if(EqFactor>0.) mult *= EqFactor;
+        }
+        fVZEROMult->Fill(RunBin+0.5,i+0.5,mult);
 
-          // build Q-vector per ring
-          Int_t nRing = (Int_t)i/8 + 1;
-          Double_t ChPhi = TMath::PiOver4()*(0.5+i%8);
+        // build Q-vector per ring
+        Int_t nRing = (Int_t)i/8 + 1;
+        Double_t ChPhi = TMath::PiOver4()*(0.5+i%8);
 
-          if(i == 63) {
-            for (Int_t k=0; k<fkVZEROnHar; k++) {
-              QxTot[k] += mult*TMath::Cos((k+1.)*ChPhi);
-              QyTot[k] += mult*TMath::Sin((k+1.)*ChPhi);
-            }
-            denom += mult;
-            nRing++;
-          }
-
-          if(nRing!=CachednRing) {
-            for (Int_t k=0; k<fkVZEROnHar; k++) {
-              Double_t QxRec = QxTot[k]/denom;
-              Double_t QyRec = QyTot[k]/denom;
-              // store values for re-centering
-              //            fVZEROQVectorRecQx[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QxRec);
-              //            fVZEROQVectorRecQy[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QyRec);
-              // do re-centering
-              if(fVZEROQVectorRecQxStored[k]) {
-                if(!std::isnan(fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5)))) QxRec -= fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
-                if(!std::isnan(fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5)))) QyRec -= fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
-              }
-              // sum of Q-vectors over all rings (total V0 Q-vector)
-              if (CachednRing >= fMinRingVZC && CachednRing <= fMaxRingVZC) {
-                V0TotQC[k][0] += QxRec*denom;
-                V0TotQC[k][1] += QyRec*denom;
-                MultC[k] += denom;
-              }
-              if (CachednRing >= fMinRingVZA && CachednRing <= fMaxRingVZA) {
-                V0TotQA[k][0] += QxRec*denom;
-                V0TotQA[k][1] += QyRec*denom;
-                MultA[k] += denom;
-              }
-              QxTot[k] = 0.;
-              QyTot[k] = 0.;
-            }
-            denom = 0.;
-            CachednRing = nRing;
-          }
+        if(i == 63) {
           for (Int_t k=0; k<fkVZEROnHar; k++) {
             QxTot[k] += mult*TMath::Cos((k+1.)*ChPhi);
             QyTot[k] += mult*TMath::Sin((k+1.)*ChPhi);
           }
           denom += mult;
+          nRing++;
         }
 
-        for (Int_t k=0; k<fkVZEROnHar; k++) {
-          if(MultC[k]>0. && MultA[k]>0.) {
-            Double_t QCx = V0TotQC[k][0]/MultC[k], QCy = V0TotQC[k][1]/MultC[k], QAx = V0TotQA[k][0]/MultA[k], QAy = V0TotQA[k][1]/MultA[k];
-            if(!std::isnan(QCx) && !std::isnan(QCy) && !std::isnan(QAx) && !std::isnan(QAy)) {
-              fFlowEvent->SetV02Qsub(QCx,QCy,MultC[k],QAx,QAy,MultA[k],k+1);
-              fVZEROQVectorRecFinal[k][0]->Fill(RunBin+0.5,centrperc,QCx);
-              fVZEROQVectorRecFinal[k][1]->Fill(RunBin+0.5,centrperc,QCy);
-              fVZEROQVectorRecFinal[k][2]->Fill(RunBin+0.5,centrperc,QAx);
-              fVZEROQVectorRecFinal[k][3]->Fill(RunBin+0.5,centrperc,QAy);
-              fVZEROQVectorRecFinal[k][4]->Fill(RunBin+0.5,centrperc,QCx*QAx);
-              fVZEROQVectorRecFinal[k][5]->Fill(RunBin+0.5,centrperc,QCy*QAy);
-              fVZEROQVectorRecFinal[k][6]->Fill(RunBin+0.5,centrperc,QCx*QAy);
-              fVZEROQVectorRecFinal[k][7]->Fill(RunBin+0.5,centrperc,QCy*QAx);
-            } else {
-              fFlowEvent->SetV02Qsub(0.,0.,0.,0.,0.,0.,k+1);
+        if(nRing!=CachednRing) {
+          for (Int_t k=0; k<fkVZEROnHar; k++) {
+            Double_t QxRec = QxTot[k]/denom;
+            Double_t QyRec = QyTot[k]/denom;
+            // store values for re-centering
+            //            fVZEROQVectorRecQx[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QxRec);
+            //            fVZEROQVectorRecQy[k]->Fill(RunBin+0.5,centrperc,CachednRing-0.5,QyRec);
+            // do re-centering
+            if(fVZEROQVectorRecQxStored[k]) {
+              if(!std::isnan(fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5)))) QxRec -= fVZEROQVectorRecQxStored[k]->GetBinContent(fVZEROQVectorRecQxStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
+              if(!std::isnan(fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5)))) QyRec -= fVZEROQVectorRecQyStored[k]->GetBinContent(fVZEROQVectorRecQyStored[k]->FindBin(RunBin+0.5,centrperc,CachednRing-0.5));
             }
+            // sum of Q-vectors over all rings (total V0 Q-vector)
+            if (CachednRing >= fMinRingVZC && CachednRing <= fMaxRingVZC) {
+              V0TotQC[k][0] += QxRec*denom;
+              V0TotQC[k][1] += QyRec*denom;
+              MultC[k] += denom;
+            }
+            if (CachednRing >= fMinRingVZA && CachednRing <= fMaxRingVZA) {
+              V0TotQA[k][0] += QxRec*denom;
+              V0TotQA[k][1] += QyRec*denom;
+              MultA[k] += denom;
+            }
+            QxTot[k] = 0.;
+            QyTot[k] = 0.;
+          }
+          denom = 0.;
+          CachednRing = nRing;
+        }
+        for (Int_t k=0; k<fkVZEROnHar; k++) {
+          QxTot[k] += mult*TMath::Cos((k+1.)*ChPhi);
+          QyTot[k] += mult*TMath::Sin((k+1.)*ChPhi);
+        }
+        denom += mult;
+      }
+
+      for (Int_t k=0; k<fkVZEROnHar; k++) {
+        if(MultC[k]>0. && MultA[k]>0.) {
+          Double_t QCx = V0TotQC[k][0]/MultC[k], QCy = V0TotQC[k][1]/MultC[k], QAx = V0TotQA[k][0]/MultA[k], QAy = V0TotQA[k][1]/MultA[k];
+          if(!std::isnan(QCx) && !std::isnan(QCy) && !std::isnan(QAx) && !std::isnan(QAy)) {
+            fFlowEvent->SetV02Qsub(QCx,QCy,MultC[k],QAx,QAy,MultA[k],k+1);
+            fVZEROQVectorRecFinal[k][0]->Fill(RunBin+0.5,centrperc,QCx);
+            fVZEROQVectorRecFinal[k][1]->Fill(RunBin+0.5,centrperc,QCy);
+            fVZEROQVectorRecFinal[k][2]->Fill(RunBin+0.5,centrperc,QAx);
+            fVZEROQVectorRecFinal[k][3]->Fill(RunBin+0.5,centrperc,QAy);
+            fVZEROQVectorRecFinal[k][4]->Fill(RunBin+0.5,centrperc,QCx*QAx);
+            fVZEROQVectorRecFinal[k][5]->Fill(RunBin+0.5,centrperc,QCy*QAy);
+            fVZEROQVectorRecFinal[k][6]->Fill(RunBin+0.5,centrperc,QCx*QAy);
+            fVZEROQVectorRecFinal[k][7]->Fill(RunBin+0.5,centrperc,QCy*QAx);
           } else {
             fFlowEvent->SetV02Qsub(0.,0.,0.,0.,0.,0.,k+1);
           }
+        } else {
+          fFlowEvent->SetV02Qsub(0.,0.,0.,0.,0.,0.,k+1);
         }
       }
+    }
 
-//      AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(aodEvent->FindListObject("Forward"));
-//      const TH2D& d2Ndetadphi = aodForward->GetHistogram();
-//      Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
-//      Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
-//      Double_t ret = 0.;
-//      // Loop over eta
-//      for (Int_t iEta = 1; iEta <= nEta; iEta++) {
-//        Int_t valid = d2Ndetadphi.GetBinContent(iEta, 0);
-//        if (!valid) continue; // No data expected for this eta
-//        // Loop over phi
-//        for (Int_t iPhi = 1; i <= nPhi; i++) {
-//          ret = d2Ndetadphi.GetBinContent(iEta, iPhi);
-//          printf("eta %e phi %e : %e \n",d2Ndetadphi.GetXaxis()->GetBinCenter(iEta),d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi),ret);
-//        }
-//      }
+    //      AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(aodEvent->FindListObject("Forward"));
+    //      const TH2D& d2Ndetadphi = aodForward->GetHistogram();
+    //      Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
+    //      Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
+    //      Double_t ret = 0.;
+    //      // Loop over eta
+    //      for (Int_t iEta = 1; iEta <= nEta; iEta++) {
+    //        Int_t valid = d2Ndetadphi.GetBinContent(iEta, 0);
+    //        if (!valid) continue; // No data expected for this eta
+    //        // Loop over phi
+    //        for (Int_t iPhi = 1; i <= nPhi; i++) {
+    //          ret = d2Ndetadphi.GetBinContent(iEta, iPhi);
+    //          printf("eta %e phi %e : %e \n",d2Ndetadphi.GetXaxis()->GetBinCenter(iEta),d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi),ret);
+    //        }
+    //      }
 
-      AliAODZDC *aodZDC = aod->GetZDCData();
+    AliAODZDC *aodZDC = aod->GetZDCData();
 
-      const Double_t * towZNCraw = aodZDC->GetZNCTowerEnergy();
-      const Double_t * towZNAraw = aodZDC->GetZNATowerEnergy();
+    const Double_t * towZNCraw = aodZDC->GetZNCTowerEnergy();
+    const Double_t * towZNAraw = aodZDC->GetZNATowerEnergy();
 
-      // Get centroid from ZDCs *******************************************************
+    // Get centroid from ZDCs *******************************************************
 
-      Double_t Enucl = (RunNum < 209122 ? 1380. : 2511.);
-      Double_t xyZNC[2]={0.,0.}, xyZNA[2]={0.,0.};
-      Double_t towZNC[5]={0.}, towZNA[5]={0.};
+    Double_t Enucl = (RunNum < 209122 ? 1380. : 2511.);
+    Double_t xyZNC[2]={0.,0.}, xyZNA[2]={0.,0.};
+    Double_t towZNC[5]={0.}, towZNA[5]={0.};
 
-      Double_t ZNCcalib=1., ZNAcalib=1.;
-      if(fUseTowerEq) {
-        if(RunNum!=fCachedRunNum) {
-          for(Int_t i=0; i<5; i++) {
-            fTowerGainEq[0][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNCTower[%d][%d]",RunNum,i)));
-            fTowerGainEq[1][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNATower[%d][%d]",RunNum,i)));
-          }
-        }
+    Double_t ZNCcalib=1., ZNAcalib=1.;
+    if(fUseTowerEq) {
+      if(RunNum!=fCachedRunNum) {
         for(Int_t i=0; i<5; i++) {
-          if(fTowerGainEq[0][i]) towZNC[i] = towZNCraw[i]*fTowerGainEq[0][i]->GetBinContent(fTowerGainEq[0][i]->FindBin(centrperc));
-          if(fTowerGainEq[1][i]) towZNA[i] = towZNAraw[i]*fTowerGainEq[1][i]->GetBinContent(fTowerGainEq[1][i]->FindBin(centrperc));
-          if(fResetNegativeZDC) {
-            if(towZNC[i]<0.) towZNC[i] = 0.;
-            if(towZNA[i]<0.) towZNA[i] = 0.;
-          }
-        }
-      } else {
-        for(Int_t i=0; i<5; i++) {
-          towZNC[i] = towZNCraw[i];
-          towZNA[i] = towZNAraw[i];
-          if(fResetNegativeZDC) {
-            if(towZNC[i]<0.) towZNC[i] = 0.;
-            if(towZNA[i]<0.) towZNA[i] = 0.;
-          }
-          fZNCTower[RunBin][i]->Fill(centrperc,towZNC[i]);
-          fZNATower[RunBin][i]->Fill(centrperc,towZNA[i]);
+          fTowerGainEq[0][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNCTower[%d][%d]",RunNum,i)));
+          fTowerGainEq[1][i] = (TH1D*)(fTowerEqList->FindObject(Form("fZNATower[%d][%d]",RunNum,i)));
         }
       }
-
-      if(RunNum>=245829) towZNA[2] = 0.;
-      Double_t zncEnergy=0., znaEnergy=0.;
-      for(Int_t i=0; i<5; i++){
-        zncEnergy += towZNC[i];
-        znaEnergy += towZNA[i];
+      for(Int_t i=0; i<5; i++) {
+        if(fTowerGainEq[0][i]) towZNC[i] = towZNCraw[i]*fTowerGainEq[0][i]->GetBinContent(fTowerGainEq[0][i]->FindBin(centrperc));
+        if(fTowerGainEq[1][i]) towZNA[i] = towZNAraw[i]*fTowerGainEq[1][i]->GetBinContent(fTowerGainEq[1][i]->FindBin(centrperc));
+        if(fResetNegativeZDC) {
+          if(towZNC[i]<0.) towZNC[i] = 0.;
+          if(towZNA[i]<0.) towZNA[i] = 0.;
+        }
       }
-      if(RunNum>=245829) znaEnergy *= 8./7.;
-      fFlowEvent->SetZNCQ0(towZNC[0]);
-      fFlowEvent->SetZNAQ0(towZNA[0]);
+    } else {
+      for(Int_t i=0; i<5; i++) {
+        towZNC[i] = towZNCraw[i];
+        towZNA[i] = towZNAraw[i];
+        if(fResetNegativeZDC) {
+          if(towZNC[i]<0.) towZNC[i] = 0.;
+          if(towZNA[i]<0.) towZNA[i] = 0.;
+        }
+        fZNCTower[RunBin][i]->Fill(centrperc,towZNC[i]);
+        fZNATower[RunBin][i]->Fill(centrperc,towZNA[i]);
+      }
+    }
 
-      Double_t energyZNC = ((AliVAODHeader*)aod->GetHeader())->GetZDCN1Energy();
-      Double_t energyZNA = ((AliVAODHeader*)aod->GetHeader())->GetZDCN2Energy();
-      fFlowEvent->SetZNCEnergy(energyZNC);
-      fFlowEvent->SetZNAEnergy(energyZNA);
+    if(RunNum>=245829) towZNA[2] = 0.;
+    Double_t zncEnergy=0., znaEnergy=0.;
+    for(Int_t i=0; i<5; i++){
+      zncEnergy += towZNC[i];
+      znaEnergy += towZNA[i];
+    }
+    if(RunNum>=245829) znaEnergy *= 8./7.;
+    fFlowEvent->SetZNCQ0(towZNC[0]);
+    fFlowEvent->SetZNAQ0(towZNA[0]);
 
-      Double_t energyZPC = ((AliVAODHeader*)aod->GetHeader())->GetZDCP1Energy();
-      Double_t energyZPA = ((AliVAODHeader*)aod->GetHeader())->GetZDCP2Energy();
-      fFlowEvent->SetZPCEnergy(energyZPC);
-      fFlowEvent->SetZPAEnergy(energyZPA);
+    Double_t energyZNC =0;
+    Double_t energyZNA =0;
+    Double_t energyZPC =0;
+    Double_t energyZPA =0;
+    if(!head->InheritsFrom("AliNanoAODStorage")){
+      energyZNC = ((AliVAODHeader*)aod->GetHeader())->GetZDCN1Energy();
+      energyZNA = ((AliVAODHeader*)aod->GetHeader())->GetZDCN2Energy();
+      energyZPC = ((AliVAODHeader*)aod->GetHeader())->GetZDCP1Energy();
+      energyZPA = ((AliVAODHeader*)aod->GetHeader())->GetZDCP2Energy();
+    }else{
+      AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) head;
+      energyZNC = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZNC"));
+      energyZNA = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZNA"));
+      energyZPC = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZPC"));
+      energyZPA = nanoAodHeader->GetVar(nanoAodHeader->GetVarIndex("cstEnergyZPA"));
+    }
 
-      const Double_t x[4] = {-1.75, 1.75, -1.75, 1.75};
-      const Double_t y[4] = {-1.75, -1.75, 1.75, 1.75};
-      Double_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC, EZNC, SumEZNC=0.;
-      Double_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA, EZNA, SumEZNA=0., BadChOr;
-      Bool_t fAllChONZNC=kTRUE, fAllChONZNA=kTRUE;
+    fFlowEvent->SetZNCEnergy(energyZNC);
+    fFlowEvent->SetZNAEnergy(energyZNA);
 
-      if (fUseMCCen) {
-        for(Int_t i=0; i<4; i++){
+    fFlowEvent->SetZPCEnergy(energyZPC);
+    fFlowEvent->SetZPAEnergy(energyZPA);
 
-          // get energy
-          EZNC = towZNC[i+1];
-          fhZNSpectra->Fill(centrperc,i+0.5,EZNC);
-//          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+0.5,EZNC);
-          if(fUseZDCSpectraCorr && EZNC>0.) {
-            Double_t mu1 = SpecCorMu1[i]->Interpolate(centrperc);
-            Double_t mu2 = SpecCorMu2[i]->Interpolate(centrperc);
-            Double_t av = SpecCorAv[i]->Interpolate(centrperc);
-            Double_t cor1 = SpecCorSi[i]->Interpolate(centrperc);
-            EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 ) + av;
-            fhZNSpectraCor->Fill(centrperc,i+0.5,EZNC);
-          }
-          if(fUseZDCSpectraCorr && EZNC<=0.) fAllChONZNC=kFALSE;
+    const Double_t x[4] = {-1.75, 1.75, -1.75, 1.75};
+    const Double_t y[4] = {-1.75, -1.75, 1.75, 1.75};
+    Double_t numXZNC=0., numYZNC=0., denZNC=0., cZNC, wZNC, EZNC, SumEZNC=0.;
+    Double_t numXZNA=0., numYZNA=0., denZNA=0., cZNA, wZNA, EZNA, SumEZNA=0., BadChOr;
+    Bool_t fAllChONZNC=kTRUE, fAllChONZNA=kTRUE;
 
-          SumEZNC += EZNC;
+    if (fUseMCCen) {
+      for(Int_t i=0; i<4; i++){
 
-          // build centroid
-          wZNC = TMath::Power(EZNC, fZDCGainAlpha);
-          numXZNC += x[i]*wZNC;
-          numYZNC += y[i]*wZNC;
-          denZNC += wZNC;
-          fhZNSpectraPow->Fill(centrperc,i+0.5,wZNC);
+        // get energy
+        EZNC = towZNC[i+1];
+        fhZNSpectra->Fill(centrperc,i+0.5,EZNC);
+        //          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+0.5,EZNC);
+        if(fUseZDCSpectraCorr && EZNC>0.) {
+          Double_t mu1 = SpecCorMu1[i]->Interpolate(centrperc);
+          Double_t mu2 = SpecCorMu2[i]->Interpolate(centrperc);
+          Double_t av = SpecCorAv[i]->Interpolate(centrperc);
+          Double_t cor1 = SpecCorSi[i]->Interpolate(centrperc);
+          EZNC = exp( (log(EZNC) - mu1 + mu2*cor1)/cor1 ) + av;
+          fhZNSpectraCor->Fill(centrperc,i+0.5,EZNC);
+        }
+        if(fUseZDCSpectraCorr && EZNC<=0.) fAllChONZNC=kFALSE;
 
-          // get energy
-          if(fDataSet==k2015 || fDataSet==k2015v6) {
-            if(i==1) {
-              EZNA = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
-              if(fUseBadTowerCalib && fBadTowerCalibHist[cenb]) {
-                EZNA = GetBadTowerResp(EZNA, fBadTowerCalibHist[cenb]);
-              }
-            } else {
-              EZNA = towZNA[i+1];
+        SumEZNC += EZNC;
+
+        // build centroid
+        wZNC = TMath::Power(EZNC, fZDCGainAlpha);
+        numXZNC += x[i]*wZNC;
+        numYZNC += y[i]*wZNC;
+        denZNC += wZNC;
+        fhZNSpectraPow->Fill(centrperc,i+0.5,wZNC);
+
+        // get energy
+        if(fDataSet==k2015 || fDataSet==k2015v6) {
+          if(i==1) {
+            EZNA = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
+            if(fUseBadTowerCalib && fBadTowerCalibHist[cenb]) {
+              EZNA = GetBadTowerResp(EZNA, fBadTowerCalibHist[cenb]);
             }
           } else {
             EZNA = towZNA[i+1];
           }
-          fhZNSpectra->Fill(centrperc,i+4.5,EZNA);
-//          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+4.5,EZNA);
-          if(fUseZDCSpectraCorr && EZNA>0.) {
-            Double_t mu1 = SpecCorMu1[i+4]->Interpolate(centrperc);
-            Double_t mu2 = SpecCorMu2[i+4]->Interpolate(centrperc);
-            Double_t av = SpecCorAv[i+4]->Interpolate(centrperc);
-            Double_t cor1 = SpecCorSi[i+4]->Interpolate(centrperc);
-            EZNA = exp( (log(EZNA) - mu1 + mu2*cor1)/cor1 ) + av;
-            fhZNSpectraCor->Fill(centrperc,i+4.5,EZNA);
-          }
-          if(fUseZDCSpectraCorr && EZNA<=0.) fAllChONZNA=kFALSE;
-          SumEZNA += EZNA;
+        } else {
+          EZNA = towZNA[i+1];
+        }
+        fhZNSpectra->Fill(centrperc,i+4.5,EZNA);
+        //          fhZNSpectraRbR[RunBin]->Fill(centrperc,i+4.5,EZNA);
+        if(fUseZDCSpectraCorr && EZNA>0.) {
+          Double_t mu1 = SpecCorMu1[i+4]->Interpolate(centrperc);
+          Double_t mu2 = SpecCorMu2[i+4]->Interpolate(centrperc);
+          Double_t av = SpecCorAv[i+4]->Interpolate(centrperc);
+          Double_t cor1 = SpecCorSi[i+4]->Interpolate(centrperc);
+          EZNA = exp( (log(EZNA) - mu1 + mu2*cor1)/cor1 ) + av;
+          fhZNSpectraCor->Fill(centrperc,i+4.5,EZNA);
+        }
+        if(fUseZDCSpectraCorr && EZNA<=0.) fAllChONZNA=kFALSE;
+        SumEZNA += EZNA;
 
-          // build centroid
-          wZNA = TMath::Power(EZNA, fZDCGainAlpha);
+        // build centroid
+        wZNA = TMath::Power(EZNA, fZDCGainAlpha);
+        numXZNA += x[i]*wZNA;
+        numYZNA += y[i]*wZNA;
+        denZNA += wZNA;
+        fhZNSpectraPow->Fill(centrperc,i+4.5,wZNA);
+      }
+      // store distribution for unfolding
+      if(RunNum<245829) {
+        Double_t recoE = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
+        Double_t trueE = towZNA[2];
+        fhZNBCCorr->Fill(centrperc,trueE,recoE);
+      }
+      if(denZNC>0.){
+        Double_t nSpecnC = SumEZNC/Enucl;
+        cZNC = 1.89358-0.71262/(nSpecnC+0.71789);
+        xyZNC[0] = cZNC*numXZNC/denZNC;
+        xyZNC[1] = cZNC*numYZNC/denZNC;
+        denZNC *= cZNC;
+      }
+      else{
+        xyZNC[0] = xyZNC[1] = 0.;
+      }
+      if(denZNA>0.){
+        Double_t nSpecnA = SumEZNA/Enucl;
+        cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
+        xyZNA[0] = cZNA*numXZNA/denZNA;
+        xyZNA[1] = cZNA*numYZNA/denZNA;
+        denZNA *= cZNA;
+      }
+      else{
+        xyZNA[0] = xyZNA[1] = 0.;
+      }
+    } else {
+      for(Int_t i=0; i<4; i++) {
+        if(towZNC[i+1]>0.) {
+          wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
+          numXZNC += x[i]*wZNC;
+          numYZNC += y[i]*wZNC;
+          denZNC += wZNC;
+        }
+        if(towZNA[i+1]>0.) {
+          wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
           numXZNA += x[i]*wZNA;
           numYZNA += y[i]*wZNA;
           denZNA += wZNA;
-          fhZNSpectraPow->Fill(centrperc,i+4.5,wZNA);
-        }
-        // store distribution for unfolding
-        if(RunNum<245829) {
-          Double_t recoE = towZNA[0]-towZNA[1]-towZNA[3]-towZNA[4];
-          Double_t trueE = towZNA[2];
-          fhZNBCCorr->Fill(centrperc,trueE,recoE);
-        }
-        if(denZNC>0.){
-         Double_t nSpecnC = SumEZNC/Enucl;
-         cZNC = 1.89358-0.71262/(nSpecnC+0.71789);
-         xyZNC[0] = cZNC*numXZNC/denZNC;
-         xyZNC[1] = cZNC*numYZNC/denZNC;
-          denZNC *= cZNC;
-        }
-        else{
-          xyZNC[0] = xyZNC[1] = 0.;
-        }
-        if(denZNA>0.){
-         Double_t nSpecnA = SumEZNA/Enucl;
-         cZNA = 1.89358-0.71262/(nSpecnA+0.71789);
-         xyZNA[0] = cZNA*numXZNA/denZNA;
-         xyZNA[1] = cZNA*numYZNA/denZNA;
-          denZNA *= cZNA;
-        }
-        else{
-          xyZNA[0] = xyZNA[1] = 0.;
-        }
-      } else {
-        for(Int_t i=0; i<4; i++) {
-          if(towZNC[i+1]>0.) {
-            wZNC = TMath::Power(towZNC[i+1], fZDCGainAlpha);
-            numXZNC += x[i]*wZNC;
-            numYZNC += y[i]*wZNC;
-            denZNC += wZNC;
-          }
-          if(towZNA[i+1]>0.) {
-            wZNA = TMath::Power(towZNA[i+1], fZDCGainAlpha);
-            numXZNA += x[i]*wZNA;
-            numYZNA += y[i]*wZNA;
-            denZNA += wZNA;
-          }
-        }
-        if(denZNC!=0) {
-          xyZNC[0] = numXZNC/denZNC;
-          xyZNC[1] = numYZNC/denZNC;
-        }
-        else{
-          xyZNC[0] = xyZNC[1] = 999.;
-          zncEnergy = 0.;
-        }
-        if(denZNA!=0) {
-          xyZNA[0] = numXZNA/denZNA;
-          xyZNA[1] = numYZNA/denZNA;
-        }
-        else{
-          xyZNA[0] = xyZNA[1] = 999.;
-          znaEnergy = 0.;
         }
       }
-
-      if(!fAllChONZNC) denZNC=-1.;
-      if(!fAllChONZNA) denZNA=-1.;
-
-      if(denZNC>0. && pow(xyZNC[0]*xyZNC[0]+xyZNC[1]*xyZNC[1],0.5)>1.E-6) fhZNCenDis[0]->Fill(centrperc,xyZNC[0],xyZNC[1]);
-      if(denZNA>0. && pow(xyZNA[0]*xyZNA[0]+xyZNA[1]*xyZNA[1],0.5)>1.E-6) fhZNCenDis[1]->Fill(centrperc,-xyZNA[0], xyZNA[1]);
-
-      fFlowEvent->SetZDC2Qsub(xyZNC,denZNC,xyZNA,denZNA);
-
-      // ******************************************************************************
-
-      for(int i=0; i<5; i++){
-        fhZNCPM[i]->Fill(towZNC[i]);
-        if((i<4) && (towZNC[0]>0.)) fhZNCPMQiPMC[i]->Fill(towZNC[i+1]/towZNC[0]);
+      if(denZNC!=0) {
+        xyZNC[0] = numXZNC/denZNC;
+        xyZNC[1] = numYZNC/denZNC;
       }
-      for(int i=0; i<5; i++){
-        fhZNAPM[i]->Fill(towZNA[i]);
-        if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
+      else{
+        xyZNC[0] = xyZNC[1] = 999.;
+        zncEnergy = 0.;
       }
+      if(denZNA!=0) {
+        xyZNA[0] = numXZNA/denZNA;
+        xyZNA[1] = numYZNA/denZNA;
+      }
+      else{
+        xyZNA[0] = xyZNA[1] = 999.;
+        znaEnergy = 0.;
+      }
+    }
 
-      fhZNCvsZNA->Fill(energyZNA, energyZNC);
-      fhZDCCvsZDCCA->Fill(energyZNA+energyZPA, energyZNC+energyZPC);
-      fhZNCvsZPC->Fill(energyZPC, energyZNC);
-      fhZNAvsZPA->Fill(energyZPA, energyZNA);
-      fhZNvsZP->Fill(energyZPA+energyZPC, energyZNA+energyZNC);
-      fhZNvsVZERO->Fill(multV0A+multV0C, energyZNC+energyZNA);
-      fhZDCvsVZERO->Fill(multV0A+multV0C, energyZNA+energyZPA+energyZNC+energyZPC);
+    if(!fAllChONZNC) denZNC=-1.;
+    if(!fAllChONZNA) denZNA=-1.;
 
-      Double_t asymmetry = -999.;
-      if((energyZNC+energyZNA)>0.) asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
-      fhAsymm->Fill(asymmetry);
-      fhZNAvsAsymm->Fill(asymmetry, energyZNA);
-      fhZNCvsAsymm->Fill(asymmetry, energyZNC);
+    if(denZNC>0. && pow(xyZNC[0]*xyZNC[0]+xyZNC[1]*xyZNC[1],0.5)>1.E-6) fhZNCenDis[0]->Fill(centrperc,xyZNC[0],xyZNC[1]);
+    if(denZNA>0. && pow(xyZNA[0]*xyZNA[0]+xyZNA[1]*xyZNA[1],0.5)>1.E-6) fhZNCenDis[1]->Fill(centrperc,-xyZNA[0], xyZNA[1]);
 
-      fhZNCvscentrality->Fill(centrperc, energyZNC);
-      fhZNAvscentrality->Fill(centrperc, energyZNA);
-      fhZPCvscentrality->Fill(centrperc, energyZPC);
-      fhZPAvscentrality->Fill(centrperc, energyZPA);
+    fFlowEvent->SetZDC2Qsub(xyZNC,denZNC,xyZNA,denZNA);
 
-   // } // PHYSICS SELECTION
+    // ******************************************************************************
+
+    for(int i=0; i<5; i++){
+      fhZNCPM[i]->Fill(towZNC[i]);
+      if((i<4) && (towZNC[0]>0.)) fhZNCPMQiPMC[i]->Fill(towZNC[i+1]/towZNC[0]);
+    }
+    for(int i=0; i<5; i++){
+      fhZNAPM[i]->Fill(towZNA[i]);
+      if(((i<4) && towZNA[0]>0.)) fhZNAPMQiPMC[i]->Fill(towZNA[i+1]/towZNA[0]);
+    }
+
+    fhZNCvsZNA->Fill(energyZNA, energyZNC);
+    fhZDCCvsZDCCA->Fill(energyZNA+energyZPA, energyZNC+energyZPC);
+    fhZNCvsZPC->Fill(energyZPC, energyZNC);
+    fhZNAvsZPA->Fill(energyZPA, energyZNA);
+    fhZNvsZP->Fill(energyZPA+energyZPC, energyZNA+energyZNC);
+    fhZNvsVZERO->Fill(multV0A+multV0C, energyZNC+energyZNA);
+    fhZDCvsVZERO->Fill(multV0A+multV0C, energyZNA+energyZPA+energyZNC+energyZPC);
+
+    Double_t asymmetry = -999.;
+    if((energyZNC+energyZNA)>0.) asymmetry = (energyZNC-energyZNA)/(energyZNC+energyZNA);
+    fhAsymm->Fill(asymmetry);
+    fhZNAvsAsymm->Fill(asymmetry, energyZNA);
+    fhZNCvsAsymm->Fill(asymmetry, energyZNC);
+
+    fhZNCvscentrality->Fill(centrperc, energyZNC);
+    fhZNAvscentrality->Fill(centrperc, energyZNA);
+    fhZPCvscentrality->Fill(centrperc, energyZPC);
+    fhZPAvscentrality->Fill(centrperc, energyZPA);
+
+    // } // PHYSICS SELECTION
 
   }
 
@@ -1915,203 +1952,204 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
 {
   Bool_t BisPileup=kFALSE;
 
-    TObject *head =aod->GetHeader();
-    if (head->InheritsFrom("AliNanoAODStorage")){
+  TObject *head =aod->GetHeader();
+  if (head->InheritsFrom("AliNanoAODStorage")){
 
-        // AliNanoAODHeader * nanohead = (AliNanoAODHeader*)head;
-        // if (nanohead->IsPileUp()==0) BisPileup=kFALSE;
-        // if (nanohead->IsPileUp()==1) BisPileup=kTRUE;
+    AliNanoAODHeader * nanohead = (AliNanoAODHeader*)head;
+    Int_t pileupIndex = nanohead->GetVarIndex("cstPileUp");
+    if (nanohead->GetVar(pileupIndex)==0) BisPileup=kFALSE;
+    if (nanohead->GetVar(pileupIndex)==1) BisPileup=kTRUE;
 
-    } else {
+  } else {
 
-  Double_t centrV0M=300., centrCL1=300.;
+    Double_t centrV0M=300., centrCL1=300.;
 
-  if(fDataSet!=k2015 && fDataSet!=k2015v6 && fDataSet!=k2015pidfix) {
+    if(fDataSet!=k2015 && fDataSet!=k2015v6 && fDataSet!=k2015pidfix) {
 
-    // pileup for LHC10h and LHC11h
+      // pileup for LHC10h and LHC11h
 
-    centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
-    centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
+      centrV0M = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
+      centrCL1 = ((AliVAODHeader*)aod->GetHeader())->GetCentralityP()->GetCentralityPercentile("CL1");
 
-    // check anyway pileup
-    if (plpMV(aod)) {
-      fPileUpCount->Fill(0.5);
-      BisPileup=kTRUE;
-    }
-
-    Short_t isPileup = aod->IsPileupFromSPD(3);
-    if (isPileup != 0) {
-      fPileUpCount->Fill(1.5);
-      BisPileup=kTRUE;
-    }
-
-    if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
-      fPileUpCount->Fill(2.5);
-      BisPileup=kTRUE;
-    }
-
-    if (aod->IsIncompleteDAQ())  {
-      fPileUpCount->Fill(3.5);
-      BisPileup=kTRUE;
-    }
-
-    // check vertex consistency
-    const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
-    const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
-
-    if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
-      fPileUpCount->Fill(5.5);
-      BisPileup=kTRUE;
-    }
-
-    double covTrc[6], covSPD[6];
-    vtTrc->GetCovarianceMatrix(covTrc);
-    vtSPD->GetCovarianceMatrix(covSPD);
-
-    double dz = vtTrc->GetZ() - vtSPD->GetZ();
-
-    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-    double errTrc = TMath::Sqrt(covTrc[5]);
-    double nsigTot = dz/errTot;
-    double nsigTrc = dz/errTrc;
-
-    if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
-      fPileUpCount->Fill(6.5);
-      BisPileup=kTRUE;
-    }
-
-    if (fAnalysisUtil->IsPileUpEvent(InputEvent())) {
-      fPileUpCount->Fill(7.5);
-      BisPileup=kTRUE;
-    }
-
-  }
-  else {
-
-    // pileup for LHC15o, using AliMultSelection
-
-    if(fMultSelection) {
-      centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
-      centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
-    } else {
-      BisPileup=kTRUE;
-    }
-
-    // pileup from AliMultSelection
-    if(!fMultSelection->GetThisEventIsNotPileup()) fPileUpMultSelCount->Fill(0.5);
-    if(!fMultSelection->GetThisEventIsNotPileupMV()) fPileUpMultSelCount->Fill(1.5);
-    if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) fPileUpMultSelCount->Fill(2.5);
-    if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) fPileUpMultSelCount->Fill(3.5);
-    if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) fPileUpMultSelCount->Fill(4.5);
-    if(!fMultSelection->GetThisEventIsNotAsymmetricInVZERO()) fPileUpMultSelCount->Fill(5.5);
-    if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) fPileUpMultSelCount->Fill(6.5);
-    if(!fMultSelection->GetThisEventHasGoodVertex2016()) fPileUpMultSelCount->Fill(7.5);
-
-    // pile-up a la Dobrin for LHC15o
-    if (plpMV(aod)) {
-      fPileUpCount->Fill(0.5);
-      BisPileup=kTRUE;
-    }
-
-    Short_t isPileup = aod->IsPileupFromSPD(3);
-    if (isPileup != 0) {
-      fPileUpCount->Fill(1.5);
-      BisPileup=kTRUE;
-    }
-
-    if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
-      fPileUpCount->Fill(2.5);
-      BisPileup=kTRUE;
-    }
-
-    if (aod->IsIncompleteDAQ())  {
-      fPileUpCount->Fill(3.5);
-      BisPileup=kTRUE;
-    }
-
-    if(fabs(centrV0M-centrCL1)>7.5)  {
-      fPileUpCount->Fill(4.5);
-      BisPileup=kTRUE;
-    }
-
-    // check vertex consistency
-    const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
-    const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
-
-    if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
-      fPileUpCount->Fill(5.5);
-      BisPileup=kTRUE;
-    }
-
-    double covTrc[6], covSPD[6];
-    vtTrc->GetCovarianceMatrix(covTrc);
-    vtSPD->GetCovarianceMatrix(covSPD);
-
-    double dz = vtTrc->GetZ() - vtSPD->GetZ();
-
-    double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
-    double errTrc = TMath::Sqrt(covTrc[5]);
-    double nsigTot = dz/errTot;
-    double nsigTrc = dz/errTrc;
-
-    if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
-      fPileUpCount->Fill(6.5);
-      BisPileup=kTRUE;
-    }
-
-    // cuts on tracks
-    const Int_t nTracks = aod->GetNumberOfTracks();
-    Int_t multEsd = ((AliAODHeader*)aod->GetHeader())->GetNumberOfESDTracks();
-
-    Int_t multTrk = 0;
-    Int_t multTrkBefC = 0;
-    Int_t multTrkTOFBefC = 0;
-    Int_t multTPC = 0;
-
-    for (Int_t it = 0; it < nTracks; it++) {
-
-      AliAODTrack* aodTrk = (AliAODTrack*)aod->GetTrack(it);
-      if (!aodTrk){
-        delete aodTrk;
-        continue;
+      // check anyway pileup
+      if (plpMV(aod)) {
+        fPileUpCount->Fill(0.5);
+        BisPileup=kTRUE;
       }
 
-//      if (aodTrk->TestFilterBit(32)){
-//        multTrkBefC++;
-//
-//        if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10. && aodTrk->GetTOFsignal() >= 12000. && aodTrk->GetTOFsignal() <= 25000.)
-//          multTrkTOFBefC++;
-//
-//        if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2) && (aodTrk->Pt() < 20.))
-//          multTrk++;
-//      }
+      Short_t isPileup = aod->IsPileupFromSPD(3);
+      if (isPileup != 0) {
+        fPileUpCount->Fill(1.5);
+        BisPileup=kTRUE;
+      }
 
-      if (aodTrk->TestFilterBit(128))
+      if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
+        fPileUpCount->Fill(2.5);
+        BisPileup=kTRUE;
+      }
+
+      if (aod->IsIncompleteDAQ())  {
+        fPileUpCount->Fill(3.5);
+        BisPileup=kTRUE;
+      }
+
+      // check vertex consistency
+      const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
+      const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
+
+      if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
+        fPileUpCount->Fill(5.5);
+        BisPileup=kTRUE;
+      }
+
+      double covTrc[6], covSPD[6];
+      vtTrc->GetCovarianceMatrix(covTrc);
+      vtSPD->GetCovarianceMatrix(covSPD);
+
+      double dz = vtTrc->GetZ() - vtSPD->GetZ();
+
+      double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+      double errTrc = TMath::Sqrt(covTrc[5]);
+      double nsigTot = dz/errTot;
+      double nsigTrc = dz/errTrc;
+
+      if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
+        fPileUpCount->Fill(6.5);
+        BisPileup=kTRUE;
+      }
+
+      if (fAnalysisUtil->IsPileUpEvent(InputEvent())) {
+        fPileUpCount->Fill(7.5);
+        BisPileup=kTRUE;
+      }
+
+    }
+    else {
+
+      // pileup for LHC15o, using AliMultSelection
+
+      if(fMultSelection) {
+        centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+        centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
+      } else {
+        BisPileup=kTRUE;
+      }
+
+      // pileup from AliMultSelection
+      if(!fMultSelection->GetThisEventIsNotPileup()) fPileUpMultSelCount->Fill(0.5);
+      if(!fMultSelection->GetThisEventIsNotPileupMV()) fPileUpMultSelCount->Fill(1.5);
+      if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) fPileUpMultSelCount->Fill(2.5);
+      if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) fPileUpMultSelCount->Fill(3.5);
+      if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) fPileUpMultSelCount->Fill(4.5);
+      if(!fMultSelection->GetThisEventIsNotAsymmetricInVZERO()) fPileUpMultSelCount->Fill(5.5);
+      if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) fPileUpMultSelCount->Fill(6.5);
+      if(!fMultSelection->GetThisEventHasGoodVertex2016()) fPileUpMultSelCount->Fill(7.5);
+
+      // pile-up a la Dobrin for LHC15o
+      if (plpMV(aod)) {
+        fPileUpCount->Fill(0.5);
+        BisPileup=kTRUE;
+      }
+
+      Short_t isPileup = aod->IsPileupFromSPD(3);
+      if (isPileup != 0) {
+        fPileUpCount->Fill(1.5);
+        BisPileup=kTRUE;
+      }
+
+      if (((AliAODHeader*)aod->GetHeader())->GetRefMultiplicityComb08() < 0) {
+        fPileUpCount->Fill(2.5);
+        BisPileup=kTRUE;
+      }
+
+      if (aod->IsIncompleteDAQ())  {
+        fPileUpCount->Fill(3.5);
+        BisPileup=kTRUE;
+      }
+
+      if(fabs(centrV0M-centrCL1)>7.5)  {
+        fPileUpCount->Fill(4.5);
+        BisPileup=kTRUE;
+      }
+
+      // check vertex consistency
+      const AliAODVertex* vtTrc = aod->GetPrimaryVertex();
+      const AliAODVertex* vtSPD = aod->GetPrimaryVertexSPD();
+
+      if (vtTrc->GetNContributors() < 2 || vtSPD->GetNContributors()<1)  {
+        fPileUpCount->Fill(5.5);
+        BisPileup=kTRUE;
+      }
+
+      double covTrc[6], covSPD[6];
+      vtTrc->GetCovarianceMatrix(covTrc);
+      vtSPD->GetCovarianceMatrix(covSPD);
+
+      double dz = vtTrc->GetZ() - vtSPD->GetZ();
+
+      double errTot = TMath::Sqrt(covTrc[5]+covSPD[5]);
+      double errTrc = TMath::Sqrt(covTrc[5]);
+      double nsigTot = dz/errTot;
+      double nsigTrc = dz/errTrc;
+
+      if (TMath::Abs(dz)>0.2 || TMath::Abs(nsigTot)>10 || TMath::Abs(nsigTrc)>20)  {
+        fPileUpCount->Fill(6.5);
+        BisPileup=kTRUE;
+      }
+
+      // cuts on tracks
+      const Int_t nTracks = aod->GetNumberOfTracks();
+      Int_t multEsd = ((AliAODHeader*)aod->GetHeader())->GetNumberOfESDTracks();
+
+      Int_t multTrk = 0;
+      Int_t multTrkBefC = 0;
+      Int_t multTrkTOFBefC = 0;
+      Int_t multTPC = 0;
+
+      for (Int_t it = 0; it < nTracks; it++) {
+
+        AliAODTrack* aodTrk = (AliAODTrack*)aod->GetTrack(it);
+        if (!aodTrk){
+          delete aodTrk;
+          continue;
+        }
+
+        //      if (aodTrk->TestFilterBit(32)){
+        //        multTrkBefC++;
+        //
+        //        if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10. && aodTrk->GetTOFsignal() >= 12000. && aodTrk->GetTOFsignal() <= 25000.)
+        //          multTrkTOFBefC++;
+        //
+        //        if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2) && (aodTrk->Pt() < 20.))
+        //          multTrk++;
+        //      }
+
+        if (aodTrk->TestFilterBit(128))
         multTPC++;
 
-      if (centrV0M<10. && aodTrk->TestFilterBit(768)) {
+        if (centrV0M<10. && aodTrk->TestFilterBit(768) && aodTrk->Pt()>0.2) {
 
           // cut on # TPC clusters
           Int_t ntpccls = aodTrk->GetTPCNcls();
-          fQATrackTPCNcls->Fill(aodTrk->Pt(),aodTrk->Eta(),ntpccls);
+          fQATrackTPCNcls->Fill(aodTrk->Phi(),aodTrk->Eta(),ntpccls);
 
           // cut on # ITS clusters
           Int_t nitscls = aodTrk->GetITSNcls();
-          fQATrackITSNcls->Fill(aodTrk->Pt(),aodTrk->Eta(),nitscls);
+          fQATrackITSNcls->Fill(aodTrk->Phi(),aodTrk->Eta(),nitscls);
 
           // cut on chi2 / # TPC clusters
           Double_t chi2tpc = 0.;
           if(ntpccls>0) {
             chi2tpc = aodTrk->Chi2perNDF();
           }
-          fQATrackTPCchi2->Fill(aodTrk->Pt(),aodTrk->Eta(),chi2tpc);
+          fQATrackTPCchi2->Fill(aodTrk->Phi(),aodTrk->Eta(),chi2tpc);
 
           // cut on chi2 / # ITS clusters
           Double_t chi2its = 0.;
           if(nitscls>0) {
             chi2its = aodTrk->GetITSchi2()/aodTrk->GetITSNcls();
           }
-          fQATrackITSchi2->Fill(aodTrk->Pt(),aodTrk->Eta(),chi2its);
+          fQATrackITSchi2->Fill(aodTrk->Phi(),aodTrk->Eta(),chi2its);
 
           // cut on fraction shared TPC clusters
           Double_t fshtpccls = 0.;
@@ -2119,7 +2157,7 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
             Int_t ntpcclsS = aodTrk->GetTPCnclsS();
             fshtpccls = 1.*ntpcclsS/ntpccls;
           }
-          fQATrackTPCScls->Fill(aodTrk->Pt(),aodTrk->Eta(),fshtpccls);
+          fQATrackTPCScls->Fill(aodTrk->Phi(),aodTrk->Eta(),fshtpccls);
 
           // cut on fraction shared ITS clusters
           Double_t fshitscls = 0.;
@@ -2130,35 +2168,35 @@ Bool_t AliAnalysisTaskCRCZDC::SelectPileup(AliAODEvent *aod)
             }
             fshitscls = 1.*nshcl/nitscls;
           }
-          fQATrackITSScls->Fill(aodTrk->Pt(),aodTrk->Eta(),fshitscls);
+          fQATrackITSScls->Fill(aodTrk->Phi(),aodTrk->Eta(),fshitscls);
 
+        }
+
+      } // end of for (Int_t it = 0; it < nTracks; it++)
+
+      Double_t multTPCn = multTPC;
+      Double_t multEsdn = multEsd;
+      Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
+
+      if (multESDTPCDif > (fRejectPileUpTight?700.:15000.)) {
+        fPileUpCount->Fill(7.5);
+        BisPileup=kTRUE;
       }
 
-    } // end of for (Int_t it = 0; it < nTracks; it++)
-
-    Double_t multTPCn = multTPC;
-    Double_t multEsdn = multEsd;
-    Double_t multESDTPCDif = multEsdn - multTPCn*3.38;
-
-    if (multESDTPCDif > (fRejectPileUpTight?700.:15000.)) {
-      fPileUpCount->Fill(7.5);
-      BisPileup=kTRUE;
-    }
-
-    if(fRejectPileUpTight) {
-      if(BisPileup==kFALSE) {
-        if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
-        if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
-        if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
-        if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
-        if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
-        if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
-        if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
-        if(BisPileup) fPileUpCount->Fill(8.5);
+      if(fRejectPileUpTight) {
+        if(BisPileup==kFALSE) {
+          if(!fMultSelection->GetThisEventIsNotPileup()) BisPileup=kTRUE;
+          if(!fMultSelection->GetThisEventIsNotPileupMV()) BisPileup=kTRUE;
+          if(!fMultSelection->GetThisEventIsNotPileupInMultBins()) BisPileup=kTRUE;
+          if(!fMultSelection->GetThisEventHasNoInconsistentVertices()) BisPileup=kTRUE;
+          if(!fMultSelection->GetThisEventPassesTrackletVsCluster()) BisPileup=kTRUE;
+          if(!fMultSelection->GetThisEventIsNotIncompleteDAQ()) BisPileup=kTRUE;
+          if(!fMultSelection->GetThisEventHasGoodVertex2016()) BisPileup=kTRUE;
+          if(BisPileup) fPileUpCount->Fill(8.5);
+        }
       }
     }
   }
-    }
 
 
   return BisPileup;
@@ -2273,7 +2311,7 @@ void AliAnalysisTaskCRCZDC::Terminate(Option_t */*option*/)
   //
   /*  if(fDebug > 1) printf(" **** AliAnalysisTaskCRCZDC::Terminate() \n");
 
-   //fOutput = dynamic_cast<TList*> (GetOutputData(1));
-   //if(!fOutput) printf("ERROR: fOutput not available\n");
-   */
+  //fOutput = dynamic_cast<TList*> (GetOutputData(1));
+  //if(!fOutput) printf("ERROR: fOutput not available\n");
+  */
 }

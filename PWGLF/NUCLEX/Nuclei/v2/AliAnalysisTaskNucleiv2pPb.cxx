@@ -393,18 +393,22 @@ void AliAnalysisTaskNucleiv2pPb::UserExec(Option_t *)
   if(isSelectedINT7){
     eventtype = 1;
     fHistEventMultiplicity->Fill(6);
+    isTriggerSelected = kTRUE;
   }
   if(isSelectedHMV0){
     eventtype = 2;
     fHistEventMultiplicity->Fill(7);
+    isTriggerSelected = kTRUE;
   }
   if(isSelectedHMSPD){
     eventtype = 3;
     fHistEventMultiplicity->Fill(8);
+    isTriggerSelected = kTRUE;
   }
 
   if(eventtype!=1 && eventtype!=2 && eventtype!=3)return;
   
+  if(!isTriggerSelected)return;
   // get the PID response
   fPIDResponse=inputHandler->GetPIDResponse(); 
  
@@ -423,10 +427,10 @@ void AliAnalysisTaskNucleiv2pPb::Analyze(AliVEvent* aod)
     //Centrality
     Float_t v0Centr    = -100.;
     Float_t v0aCentr   = -100.;
-    Float_t v0EqCentr  = -100.;
+    //    Float_t v0EqCentr  = -100.;
     Float_t v0aEqCentr = -100.;
     Float_t cl1Centr   = -100.;
-    Float_t cl0Centr   = -100.;
+    //  Float_t cl0Centr   = -100.;
     
     AliMultSelection* MultSelection = 0x0;
     MultSelection = (AliMultSelection*) aod->FindListObject("MultSelection");
@@ -436,10 +440,10 @@ void AliAnalysisTaskNucleiv2pPb::Analyze(AliVEvent* aod)
     } else {
       v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
       v0aCentr = MultSelection->GetMultiplicityPercentile("V0A");
-      v0EqCentr = MultSelection->GetMultiplicityPercentile("V0MEq");
+      //v0EqCentr = MultSelection->GetMultiplicityPercentile("V0MEq");
       v0aEqCentr = MultSelection->GetMultiplicityPercentile("V0AEq");
       cl1Centr = MultSelection->GetMultiplicityPercentile("CL1");
-      cl0Centr = MultSelection->GetMultiplicityPercentile("CL0");
+      //cl0Centr = MultSelection->GetMultiplicityPercentile("CL0");
     }
     
     
@@ -564,18 +568,15 @@ void AliAnalysisTaskNucleiv2pPb::Analyze(AliVEvent* aod)
     Double_t pmax  = 10.;
     Double_t ptmax = 6.2;
       
-    Double_t ptcExp  = -999;
     Double_t pullTPC = -999;
-    Double_t expbeta = -999;
-    Double_t pullTOF = -999;
 
     Float_t deltaphiV0A = -3;
     Float_t deltaphiV0C = -3;
-
-    Double_t massd   = 1.875612859;
-    Double_t masst   = 2.808939;
-    Double_t mass3he = 2.80892;
-    
+    /*
+      Double_t massd   = 1.875612859;
+      Double_t masst   = 2.808939;
+      Double_t mass3he = 2.80892;
+    */
     Float_t  uqV0A = -999;
     Float_t  uqV0C = -999; 
 
@@ -636,13 +637,6 @@ void AliAnalysisTaskNucleiv2pPb::Analyze(AliVEvent* aod)
 	Float_t  gamma = 0;
 	Float_t  mass  = -99;
 	
-	if(fptc==1)
-	  expbeta = TMath::Sqrt(1-((massd*massd)/(ptot*ptot+massd*massd))); 
-	if(fptc==2)
-	  expbeta = TMath::Sqrt(1-((masst*masst)/(ptot*ptot+masst*masst))); 
-	if(fptc==3)
-	  expbeta = TMath::Sqrt(1-((mass3he*mass3he)/(ptot*ptot+mass3he*mass3he))); 
-        
 	if(fptc==3)
 	  pt = 2*pt;
 

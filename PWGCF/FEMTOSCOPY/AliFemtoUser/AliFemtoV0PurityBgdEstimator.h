@@ -77,7 +77,7 @@ public:
 
   AliFemtoV0PurityBgdEstimator(const AliFemtoV0PurityBgdEstimator& aCorrFctn);
   AliFemtoV0PurityBgdEstimator& operator=(const AliFemtoV0PurityBgdEstimator& aCorrFctn);
-  virtual AliFemtoV0PurityBgdEstimator* Clone();
+  virtual AliFemtoV0PurityBgdEstimator* Clone() const;
 
   virtual ~AliFemtoV0PurityBgdEstimator();
 

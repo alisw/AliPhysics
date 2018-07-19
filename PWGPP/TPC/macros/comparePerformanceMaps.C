@@ -31,12 +31,13 @@ TPRegexp regTreeDelta("(his|qahis|matchhis).*_tglDist$");  // regular expression
 TPRegexp regTreesmdEdx(".*smdEdxDist$");  // regular expression for standard trees
 TPRegexp regTreeNotDeltaInt("his.*(lpha|DSec)");
 //
-TPRegexp regCovar("hisCovar");
+TPRegexp regCovar("hisCovar.*_tglDist$");
 TPRegexp regTreeDeltaAlpha("(his|qahis|matchhis).*alphaVDist$");
-TPRegexp regTreeDeltaTrack5("(his|qahis|matchhis)*.*ogTracks5Dist$");
+TPRegexp regTreeDeltaTrack5("(his|qahis|matchhis).*_tgl_LogTracks5Dist$");
+TPRegexp regTreeDeltadEdxTrack5("(his|qahis|matchhis).*_smdEdx_LogTracks5Dist$");
 TPRegexp regTreeDeltaDAlphaQ("(his|qahis|matchhis)*.*_dalphaQDist$");
 
-TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha, *treeDeltaDAlphaQ, *treeK0Alpha,*treeLogTrack5;
+TTree * treeDelta0,  *treeK0proj_0_1,  *treeK0QptDSec, * treeCovar, * treeDeltaAlpha, *treeDeltaDAlphaQ, *treeK0Alpha,*treeLogTrack5,*treedEdxLogTrack5;
 TTree * treesmdEdx=0;
 TCanvas *canvasDrawRec=0;
 TCanvas *canvasDrawSquare=0;
@@ -62,7 +63,7 @@ void makeCanvas(){
 
 void InitTrees(TString  inputFileSelection=""){
   // TString  inputFileSelection ="LHC15o.pass1.B1.Bin3:LHC15o.pass3_lowIR_pidfix.B0.Bin0:LHC16i.TRD0:LHC16i.TRD2:LHC15n.TRD0:LHC15n.TRD2:LHC15n.TRD0"
-
+  // Lpad all trees
   treeDelta0= InitMapTree(regTreeDelta,dummy,"qPt:tgl","q/p_{t}(1/GeV):unit",inputFileSelection);
   treesmdEdx= InitMapTree(regTreesmdEdx,dummy,"qPt:tgl","q/p_{t}(1/GeV):unit",inputFileSelection);
   treeK0proj_0_1= InitMapTree(regTreeK0Qpt,regTreeNotK0Qpt , "mpt:tgl","1/p_{t} (1/GeV): tan(#lambda)",inputFileSelection);
@@ -72,6 +73,7 @@ void InitTrees(TString  inputFileSelection=""){
   treeDeltaDAlphaQ= InitMapTree(regTreeDeltaDAlphaQ,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):dalphaQ",inputFileSelection);
   treeK0Alpha= InitMapTree(regTreeK0Alpha,dummy , "qPt:tgl:alpha","q/p_{t} (1/GeV):tan(#lambda):alpha",inputFileSelection);
   treeLogTrack5= InitMapTree(regTreeDeltaTrack5,dummy , "qPt:tgl:logTrack5","q/p_{t} (1/GeV):tan(#lambda):log(1+N_{tracks}/5.)",inputFileSelection);
+  treedEdxLogTrack5= InitMapTree(regTreeDeltadEdxTrack5,dummy , "qPt:tgl:smdEdx:logTrack5","q/p_{t} (1/GeV):tan(#lambda):sqrt{1/dEdx}:log(1+N_{tracks}/5.)",inputFileSelection);
 
 }
 

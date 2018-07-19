@@ -72,9 +72,9 @@ void AliTrackContainerV0::SetArray(const AliVEvent *event)
 
 /// Preparation for next event. 
 /// Run in each event (via AliAnalysisTaskEmcal::RetrieveEventObjects)
-void AliTrackContainerV0::NextEvent()
+void AliTrackContainerV0::NextEvent(const AliVEvent * event)
 {
-  AliTrackContainer::NextEvent();
+  AliTrackContainer::NextEvent(event);
   
   if (fFilterDaughterTracks) {
     // V0s daughter tracks will be removed from track sample

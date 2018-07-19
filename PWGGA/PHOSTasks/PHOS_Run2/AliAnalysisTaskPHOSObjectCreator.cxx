@@ -42,14 +42,12 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
   fESDEvent(0x0),
   fPHOSObjectArray(NULL),
   fPHOSGeo(0x0),
-  fNonLinCorr(0),
-  fUserNonLinCorr(0),
+  fNonLinCorr(0x0),
+  fUserNonLinCorr(0x0),
   fRunNumber(0),
   fUsePHOSTender(kTRUE),
   fIsMC(kFALSE),
-  fBunchSpace(25),
-  fMinDistBC(-1),
-  fObjectArrayName("PHOSClusterArray"),
+  fBunchSpace(25.),
   fMCArrayESD(0x0),
   fMCArrayAOD(0x0),
   fIsM4Excluded(kTRUE)
@@ -65,8 +63,7 @@ AliAnalysisTaskPHOSObjectCreator::AliAnalysisTaskPHOSObjectCreator(const char *n
 
   //Initialize non-linrarity correction
   fNonLinCorr = new TF1("nonlin","0.0241 + 1.0504*x + 0.000249*x*x",0.,100.);
-  fUserNonLinCorr = new TF1("usernonlin","pol0(0)",0.,100.);
-  fUserNonLinCorr->SetParameter(0,1);
+  fUserNonLinCorr = new TF1("usernonlin","1.",0.,100.);
  
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -86,9 +83,15 @@ AliAnalysisTaskPHOSObjectCreator::~AliAnalysisTaskPHOSObjectCreator()
     fPHOSObjectArray = 0x0;
   }
 
-  delete fNonLinCorr;
-  if(fUserNonLinCorr) delete fUserNonLinCorr;
+  if(fNonLinCorr){
+    delete fNonLinCorr;
+    fNonLinCorr = 0x0;
+  }
 
+  if(fUserNonLinCorr){
+    delete fUserNonLinCorr;
+    fUserNonLinCorr = 0x0;
+  }
 
 }
 //________________________________________________________________________
@@ -156,8 +159,10 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     }
     else if(fAODEvent){
       fMCArrayAOD = dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (!fMCArrayAOD) AliError("Could not retrieve MC array!");
-
+      if(!fMCArrayAOD){
+        AliError("Could not retrieve MC array!");
+        return;
+      }
     }
 
   }
@@ -192,47 +197,31 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
   AliVCluster *cluster = 0x0;
   Double_t distance=0;
   Int_t inPHOS=0;
-  Int_t absId = -1;
 
   for(Int_t iclu=0; iclu<multClust; iclu++){
 
     cluster = (AliVCluster*)fEvent->GetCaloCluster(iclu);
 
-    if(cluster->GetType() != AliVCluster::kPHOSNeutral
-        || cluster->E() < 0.2 // MIP cut
-//        || cluster->GetNCells() < 2 //accidental noise, effectively remove exotic cluster
-//        || cluster->GetM02() < 0.2 //too small shower shape
-      ) continue;
+    if(cluster->GetType() != AliVCluster::kPHOSNeutral) continue;
+    if(cluster->E() < 0.1) continue;//energy is set to 0 GeV in PHOS Tender, if its position is one th bad channel.//0.05 GeV is threshold of seed in a cluster by clustering algorithm.
 
-    //if(cluster->E() > 1.0 && cluster->GetM02() < 0.1) continue;//energy is high enough, but eigen value of 2nd momentum of shower shape is too small. -> reject.
+    if(cluster->GetM20() > 2.0) continue;
 
-    distance = cluster->GetDistanceToBadChannel();
+    //printf("energy = %e , coreE = %e\n",cluster->E(),cluster->GetCoreEnergy());
+
+    distance = cluster->GetDistanceToBadChannel();//in cm.
 
     //cout << "Ncell before = " << cluster->GetNCells() << endl;
 
-    const Double32_t * elist = cluster->GetCellsAmplitudeFraction() ;
-    Double_t ei = 0;
-    Double_t eMax = 0;
-    Int_t maxAbsId = -1;
     Int_t Ncell = cluster->GetNCells();
     for(Int_t i=0;i<cluster->GetNCells();i++){
       Int_t absId_tmp = cluster->GetCellAbsId(i);
       Double_t amp = cells->GetCellAmplitude(absId_tmp);
-      //cout << "cell amplitude = " << amp << endl;
-
-      ei = elist[i]*cells->GetCellAmplitude(absId_tmp);
-
-      if(ei > eMax){
-        maxAbsId = absId_tmp;
-        eMax = ei;
-      }
 
       if(amp < 2e-6) //less than 2 keV
         Ncell--;
     }
     //cluster->SetNCells(Ncell);
-
-    if(distance < fMinDistBC) continue;
 
     cluster->GetPosition(position);
     TVector3 global1(position);
@@ -251,35 +240,9 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
 
     if(!fUsePHOSTender && !IsGoodChannel("PHOS",module,cellx,cellz)) continue;
 
-    Bool_t isHG = cells->GetCellHighGain(maxAbsId);
-
     energy = cluster->E();
     digMult = cluster->GetNCells();
     tof = cluster->GetTOF();
-    cluster->GetMomentum(p1,fVertex);
-    cluster->GetMomentum(p1core,fVertex);
-
-    p1 *= fUserNonLinCorr->Eval(p1.E());
-
-    new((*fPHOSObjectArray)[inPHOS]) AliCaloPhoton(p1.Px(),p1.Py(),p1.Pz(),p1.E());
-    AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSObjectArray->At(inPHOS); 
-    ph->SetCluster(cluster);
-    ph->SetModule(module);
-    ph->SetNCells(digMult); 
-    ph->SetTime(tof);//unit of second
-    ph->SetTOFBit(TMath::Abs(tof*1e+9) < fBunchSpace/2.);
-    ph->SetDistToBad((Int_t)(distance*100));//in unit of cm * 100
-    ph->SetEMCx((Double_t)position[0]);
-    ph->SetEMCy((Double_t)position[1]);
-    ph->SetEMCz((Double_t)position[2]);
-    ph->SetWeight(1.);
-    //if(!isHG) ph->SetTOFBit(kTRUE);//force to set kTRUE to TOFBit
-
-    if(fIsMC){
-      Bool_t sure = kTRUE;
-      Int_t label = FindPrimary(ph,sure);
-      ph->SetPrimary(label);
-    }
 
     if(fUsePHOSTender){
       //When PHOSTender is applied, GetM20(), GetM02() returns M20,M02 of core of cluster respectively.
@@ -323,13 +286,40 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
       else r = 999;//no matched track
     }
 
+    cluster->GetMomentum(p1,fVertex);
+    cluster->GetMomentum(p1core,fVertex);
+
+    p1 *= fUserNonLinCorr->Eval(p1.E());
+    p1core *= coreE/energy * fUserNonLinCorr->Eval(coreE); //use core energy in PbPb.
+
+    if(p1.E() < 0.1) continue;//minimum energy cut after NL correciton. Note Ecore <= Efull
+
+    new((*fPHOSObjectArray)[inPHOS]) AliCaloPhoton(p1.Px(),p1.Py(),p1.Pz(),p1.E());
+    AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSObjectArray->At(inPHOS); 
+    ph->SetCluster(cluster);
+    ph->SetModule(module);
+    ph->SetNCells(digMult); 
+    ph->SetTime(tof);//unit of second
+    ph->SetTOFBit(TMath::Abs(tof*1e+9) < fBunchSpace/2.);
+    ph->SetDistToBadfp(distance/2.2);//in unit of cells with floating point. 2.2 cm is crystal size
+    ph->SetEMCx((Double_t)position[0]);
+    ph->SetEMCy((Double_t)position[1]);
+    ph->SetEMCz((Double_t)position[2]);
+    ph->SetWeight(1.);
+
+    if(fIsMC){
+      Bool_t sure = kTRUE;
+      Int_t label = FindPrimary(ph,sure);
+      ph->SetPrimary(label);
+    }
+
     ph->SetLambdas(M20,M02);
     ph->SetNsigmaCPV(r);
     ph->SetNsigmaFullDisp(TMath::Sqrt(R2));
     ph->SetNsigmaCoreDisp(TMath::Sqrt(coreR2));
-
-    p1core *= coreE/energy * fUserNonLinCorr->Eval(coreE); //use core energy in PbPb.
     ph->SetMomV2(&p1core);//core energy
+
+    //printf("energy = %e , coreE = %e\n",ph->Energy(),ph->GetMomV2()->Energy());
 
     inPHOS++;
   }
@@ -342,17 +332,14 @@ void AliAnalysisTaskPHOSObjectCreator::UserExec(Option_t *option)
     AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSObjectArray->At(iph);
     AliVCluster *cluster = (AliVCluster*)ph->GetCluster();
     if(!PassSTDCut(cluster)){
-      AliInfo("cluster is rejected by the standard cluster cut.");
+      //AliInfo("cluster is rejected by the standard cluster cut.");
       fPHOSObjectArray->Remove(ph);
     }
   }
   fPHOSObjectArray->Compress();
 
-  AliInfo("PHOS object array name = PHOSClusterArray.");
-
   AliVEvent* input = InputEvent();
   TObject* outO = input->FindListObject("PHOSClusterArray");
-  TClonesArray* outS = 0;
 
   if(!outO){
     fPHOSObjectArray->SetName("PHOSClusterArray");
@@ -969,43 +956,55 @@ Int_t AliAnalysisTaskPHOSObjectCreator::FindPrimary(AliCaloPhoton *ph,  Bool_t&s
   const Double_t emFraction=0.9; //part of energy of cluster to be assigned to EM particle
   Int_t n = clu->GetNLabels();
 
-  for(Int_t i=0;  i<n;  i++){
-    Int_t label = clu->GetLabelAt(i);
-    AliAODMCParticle*  p =  (AliAODMCParticle*)fMCArrayAOD->At(label);
-    Int_t pdg = p->PdgCode() ;
-    if(pdg==22  ||  pdg==11 || pdg == -11){
-      if(p->E()>emFraction*clu->E()){
-        sure=kTRUE ;
-        return label;
+  if(fESDEvent){
+    return clu->GetLabel();
+  }
+  else if(fAODEvent){
+    for(Int_t i=0;  i<n;  i++){
+      Int_t label = clu->GetLabelAt(i);
+      AliAODMCParticle *p =  (AliAODMCParticle*)fMCArrayAOD->At(label);
+      Int_t pdg = p->PdgCode() ;
+      if(pdg==22  ||  pdg==11 || pdg == -11){
+        if(p->E()>emFraction*clu->E()){
+          sure=kTRUE ;
+          return label;
+        }
       }
     }
-  }
 
-  Double_t*  Ekin=  new  Double_t[n] ;
+    Double_t *Ekin = new Double_t[n];
 
-  for(Int_t i=0;  i<n;  i++){
-    Int_t label = clu->GetLabelAt(i);
-    AliAODMCParticle* p = (AliAODMCParticle*)fMCArrayAOD->At(label);
-    Ekin[i]=p->P() ;  // estimate of kinetic energy
-    if(p->PdgCode()==-2212  ||  p->PdgCode()==-2112){
-      Ekin[i]+=1.8  ;  //due to annihilation
+    for(Int_t i=0;  i<n;  i++){
+      Int_t label = clu->GetLabelAt(i);
+      AliAODMCParticle* p = (AliAODMCParticle*)fMCArrayAOD->At(label);
+      Ekin[i]=p->P() ;  // estimate of kinetic energy
+      if(p->PdgCode()==-2212  ||  p->PdgCode()==-2112){
+        Ekin[i]+=1.8  ;  //due to annihilation
+      }
     }
-  }
-  Int_t iMax=0;
-  Double_t eMax=0.,eSubMax=0. ;
-  for(Int_t i=0;  i<n;  i++){
-    if(Ekin[i]>eMax){
-      eSubMax=eMax;
-      eMax=Ekin[i];
-      iMax=i;
+
+    Int_t iMax=0;
+    Double_t eMax=0.,eSubMax=0. ;
+    for(Int_t i=0;  i<n;  i++){
+      if(Ekin[i]>eMax){
+        eSubMax=eMax;
+        eMax=Ekin[i];
+        iMax=i;
+      }
     }
+    if(eSubMax>0.8*eMax)//not obvious primary
+      sure=kFALSE;
+    else
+      sure=kTRUE;
+
+    delete[]  Ekin;
+
+    return clu->GetLabelAt(iMax);
+
   }
-  if(eSubMax>0.8*eMax)//not obvious primary
-    sure=kFALSE;
-  else
-    sure=kTRUE;
-  delete[]  Ekin;
-  return clu->GetLabelAt(iMax);
+  else{
+    return clu->GetLabel();
+  }
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskPHOSObjectCreator::PassSTDCut(AliVCluster *cluster)
@@ -1020,12 +1019,13 @@ void AliAnalysisTaskPHOSObjectCreator::EstimateSTDCutEfficiency(TClonesArray *ar
   const Int_t multClust = array->GetEntriesFast();
 
   TLorentzVector p12;
-  Double_t m12=0,pt12=0;
+  Double_t m12=0;
   Double_t energy=0;
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)array->At(i1);
-    if(ph1->GetNsigmaCoreDisp() > 2.5) continue;
+    if(ph1->GetNsigmaCoreDisp() > 3.0) continue;
+    if(ph1->Energy() < 0.5) continue;
 
     for(Int_t i2=0;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)array->At(i2);

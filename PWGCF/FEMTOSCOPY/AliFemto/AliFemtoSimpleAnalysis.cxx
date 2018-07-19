@@ -59,6 +59,7 @@ void DoFillParticleCollection(TrackCutType *cut,
   }
 }
 
+
 // This little function is used to apply ParticleCuts (TrackCuts or V0Cuts) and
 // fill ParticleCollections from tacks in picoEvent. It is called from
 // AliFemtoSimpleAnalysis::ProcessEvent().
@@ -66,7 +67,7 @@ void DoFillParticleCollection(TrackCutType *cut,
 // The actual loop implementation has been moved to the collection-generic
 // DoFillParticleCollection() function
 void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
-                               AliFemtoEvent *hbtEvent,
+                               const AliFemtoEvent *hbtEvent,
                                AliFemtoParticleCollection *partCollection,
                                bool performSharedDaughterCut=kFALSE)
 {
@@ -156,6 +157,17 @@ void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
 
   partCut->FillCutMonitor(hbtEvent, partCollection);
 }
+
+// Leave this here to appease any legacy code that expected a non-const AliFemtoEvent
+void FillHbtParticleCollection(AliFemtoParticleCut *partCut,
+                               AliFemtoEvent *hbtEvent,
+                               AliFemtoParticleCollection *partCollection,
+                               bool performSharedDaughterCut)
+{
+  FillHbtParticleCollection(partCut, const_cast<const AliFemtoEvent*>(hbtEvent), partCollection, performSharedDaughterCut);
+}
+
+
 //____________________________
 AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   fPicoEventCollectionVectorHideAway(nullptr),
@@ -431,7 +443,7 @@ AliFemtoString AliFemtoSimpleAnalysis::Report()
 
   report += "-------------\n";
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //_________________________
 void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
@@ -478,14 +490,14 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
   // hbtEvent which pass fFirstParticleCut. Uses cut's "Type()" to determine
   // which track collection to pull from hbtEvent.
   FillHbtParticleCollection(fFirstParticleCut,
-                            (AliFemtoEvent*)hbtEvent,
+                            hbtEvent,
                             fPicoEvent->FirstParticleCollection(),
                             fPerformSharedDaughterCut);
 
   // fill second particle cut if not analyzing identical particles
   if ( !AnalyzeIdenticalParticles() ) {
       FillHbtParticleCollection(fSecondParticleCut,
-                                (AliFemtoEvent*)hbtEvent,
+                                hbtEvent,
                                 fPicoEvent->SecondParticleCollection(),
                                 fPerformSharedDaughterCut);
   }

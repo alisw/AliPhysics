@@ -20,11 +20,13 @@
 #include <AliVEvent.h>
 
 #include "AliEmcalJetShapeProperties.h"
+#include "AliEmcalClusterJetConstituent.h"
+#include "AliEmcalParticleJetConstituent.h"
 
 /**
  * @class AliEmcalJet
  * @brief Represent a jet reconstructed using the EMCal jet framework
- * @ingroup EMCALCOREFW
+ * @ingroup JETFW
  * @author Salvatore Aiola <salvatore.aiola@yale.edu>, Yale University
  * @author Constantin Loizides <cloizides@lbl.gov>, Lawrence Berkeley National Laboratory
  *
@@ -40,6 +42,11 @@
  * - matching with other reconstructed jets (e.g. detector level with particole level).
  * The class implements also a number of service function to calculate other observable,
  * such as fragmentation functions, subtracted jet momentum, etc.
+ *
+ * # Access to jet constituents
+ *
+ * Constituents are distinguished between cluster type (EMCAL/PHOS cluster) and particle
+ * type (track / particle) constituents.
  */
 class AliEmcalJet : public AliVParticle
 {
@@ -90,7 +97,7 @@ class AliEmcalJet : public AliVParticle
   AliEmcalJet(const AliEmcalJet &jet);
   AliEmcalJet& operator=(const AliEmcalJet &jet);
   virtual ~AliEmcalJet();
-  friend std::ostream &operator<<(std::ostream &in, const AliEmcalJet &jet);
+  friend std::ostream &operator<<(std::ostream &in, const AliEmcalJet &myjet);
   Int_t Compare(const TObject* obj)  const;
   std::ostream &Print(std::ostream &in) const;
   TString toString() const;
@@ -162,13 +169,77 @@ class AliEmcalJet : public AliVParticle
   AliVCluster      *ClusterAt(Int_t idx, TClonesArray *ca)                         const;
   Int_t             ContainsCluster(AliVCluster* cluster, TClonesArray* clusters)  const;
   Int_t             ContainsCluster(Int_t ic)                                      const;
-  AliVCluster      *GetLeadingCluster(TClonesArray *clusters)                      const;
+  AliVCluster      *GetLeadingCluster(TClonesArray *clusters = 0)                  const;
   AliVParticle     *Track(Int_t idx)                                               const;
   AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)                           const;
   Int_t             ContainsTrack(AliVParticle* track, TClonesArray* tracks)       const;
   Int_t             ContainsTrack(Int_t it)                                        const;
-  AliVParticle     *GetLeadingTrack(TClonesArray *tracks)                          const;
+  AliVParticle     *GetLeadingTrack(TClonesArray *tracks = 0)                      const;
   Bool_t            IsGhost()                                                      const { return fNn + fNch == 0; }
+
+  /**
+   * @brief Get container with particle (track / MC particle) constituents
+   * @return Container with constituents
+   */
+  const std::vector<PWG::JETFW::AliEmcalParticleJetConstituent> &GetParticleConstituents() const { return fParticleConstituents; }
+
+  /**
+   * @brief Get container with cluster constituents
+   * @return Container with constituents
+   */
+  const std::vector<PWG::JETFW::AliEmcalClusterJetConstituent> &GetClusterConstituents() const { return fClusterConstituents; }
+
+  /**
+   * @brief Get the number of particle constituents assigned to the given jet
+   * @return Number of particle constituents
+   */
+  int GetNumberOfParticleConstituents() const { return fParticleConstituents.size(); }
+
+  /**
+   * @brief Get the number of cluster constituents
+   * @return Number of cluster constituents
+   */
+  int GetNumberOfClusterConstituents() const { return fClusterConstituents.size(); }
+
+  /**
+   * @brief Access to the \f$ i^{th}\f$-cluster constituent
+   * @param[in] icl Index of the constituent in the jet
+   * @return Cluster constituent at the given index (nullptr if out-of-bounds)
+   */
+  const PWG::JETFW::AliEmcalClusterJetConstituent *ClusterConstituentAt(unsigned int icl) const;
+
+  /**
+   * @brief Access to the \f$ i^{th}\f$-particle constituent
+   * @param[in] ipart Index of the constituent in the jet
+   * @return Particle constituent at the given position (nullptr if out-of-bounds)
+   */
+  const PWG::JETFW::AliEmcalParticleJetConstituent *ParticleConstituentAt(unsigned int ipart) const;
+
+  /**
+   * @brief Get the leading cluster constituent
+   * @return Leading cluster constituent (nullptr if no cluster constituents are assigned to the jet)
+   */
+  const PWG::JETFW::AliEmcalClusterJetConstituent *GetLeadingClusterConstituent() const;
+
+  /**
+   * @brief Get the leading particle constituent
+   * @return Leading particle constituent (nullptr if no particle constituents assigned to the jet)
+   */
+  const PWG::JETFW::AliEmcalParticleJetConstituent *GetLeadingParticleConstituent() const;
+
+  /**
+   * @brief Checks whether a given cluster is a constituent of the jet
+   * @param[in] clust Cluster to check
+   * @return True if the cluster is a constituent of this jet, false otherwise
+   */
+  bool HasClusterConstituent(const AliVCluster *const clust) const;
+
+  /**
+   * @brief Checks whether a given particle is a jet constituent
+   * @param[in] part Particle to check
+   * @return True if the particle is a jet constituent, false otherwise
+   */
+  bool HasParticleConstituent(const AliVParticle *const part) const;
 
   // Fragmentation function
   Double_t          GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz)  const;
@@ -203,6 +274,40 @@ class AliEmcalJet : public AliVParticle
   void              AddClusterAt(Int_t clus, Int_t idx){ fClusterIDs.AddAt(clus, idx);     }
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
   void              Clear(Option_t */*option*/="");
+
+  /**
+   * @brief Add new particle (track / mc particle) constituent to the given jet
+   * Note: this will append the constituent. No sorting according to particle \f$ p_{t|\f$ is done
+   * @param[in] part Particle constituent to be added to the jet
+   * @param[in] isFromEmbeddedEvent Flag whether particle is from embedded event
+   * @param[in] globalIndex Global index in particle container
+   */
+  void              AddParticleConstituent(const AliVParticle *const part, Bool_t isFromEmbeddedEvent, UInt_t globalIndex);
+
+  /**
+   * @brief Add new particle (track / mc particle) constituent to the given jet
+   * Note: this will append the constituent. No sorting according to particle \f$ p_{t|\f$ is done
+   * @param[in] part Particle constituent to be added to the jet
+   */
+  void              AddParticleConstituent(const PWG::JETFW::AliEmcalParticleJetConstituent &part);
+
+  /**
+   * @brief Add new cluster constituent to the given jet
+   * Note: this will append the constituent. No sorting according to particle \f$ p_{t|\f$ is done
+   * @param[in] clust Cluster constituent to be added to the jet
+   * @param[in] endef Energy definition used in the jetfinder
+   * @param[in] pvec Momentum vector calculated for the given cluster based on the primary vertex assumption
+   * @param[in] isFromEmbeddedEvent Flag whether particle is from embedded event
+   * @param[in] globalIndex Global index in particle container
+   */
+  void              AddClusterConstituent(const AliVCluster *const clust, AliVCluster::VCluUserDefEnergy_t endef, Double_t *pvec, Bool_t isFromEmbeddedEvent, UInt_t globalIndex);
+
+  /**
+   * @brief Add new cluster constituent to the given jet
+   * Note: this will append the constituent. No sorting according to particle \f$ p_{t|\f$ is done
+   * @param[in] clust Cluster constituent to be added to the jet
+   */
+  void              AddClusterConstituent(const PWG::JETFW::AliEmcalClusterJetConstituent &clust);
 
   // Sorting methods
   void              SortConstituents();
@@ -239,7 +344,7 @@ class AliEmcalJet : public AliVParticle
 
   // Debug printouts
   void Print(Option_t* /*opt*/ = "") const;
-  void PrintConstituents(TClonesArray* tracks, TClonesArray* clusters) const;
+  void PrintConstituents(TClonesArray* tracks = 0, TClonesArray* clusters = 0) const;
 
   //heavy-flavor jets
   Int_t             GetFlavour()                 const { return fFlavourTagging;                       }
@@ -313,6 +418,9 @@ class AliEmcalJet : public AliVParticle
 
   AliEmcalJetShapeProperties *fJetShapeProperties; //!<! Pointer to the jet shape properties
   UInt_t fJetAcceptanceType;    //!<!  Jet acceptance type (stored bitwise)
+
+  std::vector<PWG::JETFW::AliEmcalParticleJetConstituent>      fParticleConstituents;  ///< List of particle constituents
+  std::vector<PWG::JETFW::AliEmcalClusterJetConstituent>       fClusterConstituents;   ///< List of cluster constituents
 
  private:
   /**

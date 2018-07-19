@@ -7,10 +7,12 @@
 #include <TTree.h>
 #include <TList.h>
 #include <TH1.h>
-#include <TH3.h>
+#include <THn.h>
 #include <TFile.h>
 #include <TString.h>
 #include <TLorentzVector.h>
+#include <TArrayI.h>
+#include <TArrayD.h>
 
 #include "AliLog.h"
 #include "AliVEvent.h"
@@ -30,6 +32,9 @@
 #include "AliRawEventHeaderBase.h"
 #include "AliVVZERO.h"
 #include "AliVAD.h"
+#include "AliVZDC.h"
+#include "AliESDZDC.h"
+#include "AliAODZDC.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 
@@ -62,8 +67,11 @@ void AliAnalysisTaskDG::EventInfo::Fill(const AliVEvent* vEvent) {
 void AliAnalysisTaskDG::ADV0::FillInvalid() {
   fTime[0] = fTime[1] = -10240.0f;
   fBB[0] = fBG[0] = fBB[1] = fBG[1] = -1;
-  for (Int_t bc=0; bc<21; ++bc)
-    fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
+  std::fill_n(fMult,   8, -1);
+  std::fill_n(fPFBBA, 21,  0);
+  std::fill_n(fPFBBC, 21,  0);
+  std::fill_n(fPFBGA, 21,  0);
+  std::fill_n(fPFBGC, 21,  0);
 }
 
 void AliAnalysisTaskDG::ADV0::FillAD(const AliVEvent *vEvent, AliTriggerAnalysis &trigAna) {
@@ -73,30 +81,33 @@ void AliAnalysisTaskDG::ADV0::FillAD(const AliVEvent *vEvent, AliTriggerAnalysis
   fDecisionOffline[0] = trigAna.ADTrigger(vEvent, AliTriggerAnalysis::kCSide, kTRUE);
   fDecisionOffline[1] = trigAna.ADTrigger(vEvent, AliTriggerAnalysis::kASide, kTRUE);
 
-  const AliVAD *esdAD = vEvent->GetADData();
-  if (!esdAD) {
+  const AliVAD *vAD = vEvent->GetADData();
+  if (!vAD) {
     FillInvalid();
     return;
   }
-  fTime[0] = esdAD->GetADCTime();
-  fTime[1] = esdAD->GetADATime();
+  fTime[0] = vAD->GetADCTime();
+  fTime[1] = vAD->GetADATime();
 
   fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
   for (Int_t ch=0; ch<4; ++ch) {
-    fBB[0] += (esdAD->GetBBFlag(ch  ) && esdAD->GetBBFlag(ch+ 4));
-    fBB[1] += (esdAD->GetBBFlag(ch+8) && esdAD->GetBBFlag(ch+12));
-    fBG[0] += (esdAD->GetBGFlag(ch  ) && esdAD->GetBGFlag(ch+ 4));
-    fBG[1] += (esdAD->GetBGFlag(ch+8) && esdAD->GetBGFlag(ch+12));
+    fBB[0] += (vAD->GetBBFlag(ch  ) && vAD->GetBBFlag(ch+ 4));
+    fBB[1] += (vAD->GetBBFlag(ch+8) && vAD->GetBBFlag(ch+12));
+    fBG[0] += (vAD->GetBGFlag(ch  ) && vAD->GetBGFlag(ch+ 4));
+    fBG[1] += (vAD->GetBGFlag(ch+8) && vAD->GetBGFlag(ch+12));
   }
+  std::fill_n(fMult, 8, 0);
+  for (Int_t ch=0; ch<16; ++ch)
+    fMult[ch/4] += vAD->GetMultiplicity(ch);
 
   for (Int_t bc=0; bc<21; ++bc) {
     fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
     for (Int_t ch=0; ch<4; ++ch) {
-      fPFBBC[bc] += (esdAD->GetPFBBFlag(ch, bc) && esdAD->GetPFBBFlag(ch+4, bc));
-      fPFBGC[bc] += (esdAD->GetPFBGFlag(ch, bc) && esdAD->GetPFBGFlag(ch+4, bc));
+      fPFBBC[bc] += (vAD->GetPFBBFlag(ch, bc) && vAD->GetPFBBFlag(ch+4, bc));
+      fPFBGC[bc] += (vAD->GetPFBGFlag(ch, bc) && vAD->GetPFBGFlag(ch+4, bc));
 
-      fPFBBA[bc] += (esdAD->GetPFBBFlag(ch+8, bc) && esdAD->GetPFBBFlag(ch+12, bc));
-      fPFBGA[bc] += (esdAD->GetPFBGFlag(ch+8, bc) && esdAD->GetPFBGFlag(ch+12, bc));
+      fPFBBA[bc] += (vAD->GetPFBBFlag(ch+8, bc) && vAD->GetPFBBFlag(ch+12, bc));
+      fPFBGA[bc] += (vAD->GetPFBGFlag(ch+8, bc) && vAD->GetPFBGFlag(ch+12, bc));
     }
   }
 }
@@ -107,28 +118,30 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliVEvent *vEvent, AliTriggerAnalysis
   fDecisionOffline[0] = trigAna.V0Trigger(vEvent, AliTriggerAnalysis::kCSide, kTRUE);
   fDecisionOffline[1] = trigAna.V0Trigger(vEvent, AliTriggerAnalysis::kASide, kTRUE);
 
-  const AliVVZERO *esdV0 = vEvent->GetVZEROData();
-  if (!esdV0) {
+  const AliVVZERO *vV0 = vEvent->GetVZEROData();
+  if (!vV0) {
     FillInvalid();
     return;
   }
 
-  fTime[0] = esdV0->GetV0CTime();
-  fTime[1] = esdV0->GetV0ATime();
+  fTime[0] = vV0->GetV0CTime();
+  fTime[1] = vV0->GetV0ATime();
 
   fBB[0] = fBB[1] = fBG[0] = fBG[1] = 0;
+  std::fill_n(fMult, 8, 0);
   for (Int_t ch=0; ch<64; ++ch) {
-    fBB[ch/32] += esdV0->GetBBFlag(ch);
-    fBG[ch/32] += esdV0->GetBGFlag(ch);
+    fBB[ch/32]  += vV0->GetBBFlag(ch);
+    fBG[ch/32]  += vV0->GetBGFlag(ch);
+    fMult[ch/8] += vV0->GetMultiplicity(ch);
   }
 
   for (Int_t bc=0; bc<21; ++bc) {
     fPFBBA[bc] = fPFBBC[bc] = fPFBGA[bc] = fPFBGC[bc] = 0;
     for (Int_t ch=0; ch<32; ++ch) {
-      fPFBBC[bc] += esdV0->GetPFBBFlag(ch,    bc);
-      fPFBGC[bc] += esdV0->GetPFBGFlag(ch,    bc);
-      fPFBBA[bc] += esdV0->GetPFBBFlag(ch+32, bc);
-      fPFBGA[bc] += esdV0->GetPFBGFlag(ch+32, bc);
+      fPFBBC[bc] += vV0->GetPFBBFlag(ch,    bc);
+      fPFBGC[bc] += vV0->GetPFBGFlag(ch,    bc);
+      fPFBBA[bc] += vV0->GetPFBBFlag(ch+32, bc);
+      fPFBGA[bc] += vV0->GetPFBGFlag(ch+32, bc);
     }
   }
 }
@@ -136,6 +149,38 @@ void AliAnalysisTaskDG::ADV0::FillV0(const AliVEvent *vEvent, AliTriggerAnalysis
 void AliAnalysisTaskDG::FMD::Fill(const AliVEvent *vEvent, AliTriggerAnalysis &trigAna) {
   fA = trigAna.FMDTrigger(vEvent, AliTriggerAnalysis::kASide);
   fC = trigAna.FMDTrigger(vEvent, AliTriggerAnalysis::kCSide);
+}
+
+void AliAnalysisTaskDG::ZDC::Fill(AliVZDC *vZDC) {
+  // taken from $ALCIE_PHYSICS/PWGUD/UPC/AliAnalysisTaskUpcTree.cxx
+  fZNenergy[0]  = vZDC->GetZNCEnergy();
+  fZNenergy[1]  = vZDC->GetZNAEnergy();
+  fZPenergy[0]  = vZDC->GetZPCEnergy();
+  fZPenergy[1]  = vZDC->GetZPAEnergy();
+  fZEMenergy[0] = vZDC->GetZEM1Energy();
+  fZEMenergy[1] = vZDC->GetZEM2Energy();
+  fZNtower0[0]  = vZDC->GetZNCTowerEnergy()[0];
+  fZNtower0[1]  = vZDC->GetZNATowerEnergy()[0];
+  fZPtower0[0]  = vZDC->GetZPCTowerEnergy()[0];
+  fZPtower0[1]  = vZDC->GetZPATowerEnergy()[0];
+
+  AliESDZDC *esdZDC = dynamic_cast<AliESDZDC*>(vZDC);
+  if (esdZDC) {
+    Int_t detChZNA  = esdZDC->GetZNATDCChannel();
+    Int_t detChZNC  = esdZDC->GetZNCTDCChannel();
+    // if (esd->GetRunNumber()>=245726 && esd->GetRunNumber()<=245793) detChZNA = 10; // use  timing from the common ZNA PMT
+    for (Int_t i=0;i<4;i++) {
+      fZNTDC[0][i] = esdZDC->GetZDCTDCCorrected(detChZNC,i);
+      fZNTDC[1][i] = esdZDC->GetZDCTDCCorrected(detChZNA,i);
+    }
+  }
+  AliAODZDC *aodZDC = dynamic_cast<AliAODZDC*>(vZDC);
+  if (aodZDC) {
+    for (Int_t i=0;i<4;i++) {
+      fZNTDC[0][i] = aodZDC->GetZNCTDCm(i);
+      fZNTDC[1][i] = aodZDC->GetZNATDCm(i);
+    }
+  }
 }
 
 template<typename A>
@@ -284,6 +329,8 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fVertexSPD()
   , fVertexTPC()
   , fVertexTracks()
+  , fV0()
+  , fAD()
   , fTOFHeader()
   , fTriggerIRs("AliTriggerIR", 3)
   , fFiredTriggerClasses()
@@ -294,9 +341,9 @@ AliAnalysisTaskDG::AliAnalysisTaskDG(const char *name)
   , fMCTracks("TLorentzVector", 2)
   , fTrackCuts(nullptr)
 {
-  for (Int_t i=0; i<kNHist;++i) {
-    fHist[i] = nullptr;
-  }
+  const Int_t nHist = kNHist;
+  std::fill_n(fHist, nHist, nullptr);
+
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
 }
@@ -349,6 +396,18 @@ void AliAnalysisTaskDG::SetBranches(TTree* t, Bool_t isAOD) {
     else
       t->Branch("VertexTracks", &fVertexTracks.first,  32000, 0);
   }
+  if (fTreeBranchNames.Contains("V0")) {
+    if (isAOD)
+      t->Branch("V0", &fV0.second, 32000, 0);
+    else
+      t->Branch("V0", &fV0.first,  32000, 0);
+  }
+  if (fTreeBranchNames.Contains("AD")) {
+    if (isAOD)
+      t->Branch("AD", &fAD.second, 32000, 0);
+    else
+      t->Branch("AD", &fAD.first,  32000, 0);
+  }
   if (fTreeBranchNames.Contains("TOFHeader")) {
     t->Branch("TOFHeader", &fTOFHeader, 32000, 0);
   }
@@ -358,6 +417,10 @@ void AliAnalysisTaskDG::SetBranches(TTree* t, Bool_t isAOD) {
 
   if (fTreeBranchNames.Contains("Tracks")) {
     t->Branch("AliAnalysisTaskDG::TrackData", &fTrackData);
+  }
+
+  if (!fTreeBranchNames.Contains("ZDC")) {
+    t->SetBranchStatus("fZDCInfo.*", 0);
   }
 
   if (fIsMC) {
@@ -399,35 +462,17 @@ void AliAnalysisTaskDG::UserCreateOutputObjects()
   fHist[kHistTrig]->SetStats(0);
   fList->Add(fHist[kHistTrig]);
 
-  fHist[kHistSPDFiredTrk] = new TH3D("HSPDFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult",
-				     1200, -0.5, 1199.5, 4, -0.5, 3.5, 10, -0.5, 9.5);
-  fHist[kHistSPDFiredTrk]->SetStats(0);
-  fList->Add(fHist[kHistSPDFiredTrk]);
+  const Int_t    bins[5] = { 1200,    4,   10,   20,    2 };
+  const Double_t xMin[5] = {   -0.5, -0.5, -0.5, -2.0, -2.0 };
+  const Double_t xMax[5] = { 1199.5,  3.5,  9.5,  2.0,  2.0 };
+  fHistN[kHistSPDFiredTrk] = new THnD("HSPDFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult;#eta;sign", 5, bins, xMin, xMax);
+  fList->Add(fHistN[kHistSPDFiredTrk]);
 
-  fHist[kHistSPDFOTrk] = new TH3D("HSPDFOTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult",
-				  1200, -0.5, 1199.5, 4, -0.5, 3.5, 10, -0.5, 9.5);
-  fHist[kHistSPDFOTrk]->SetStats(0);
-  fList->Add(fHist[kHistSPDFOTrk]);
+  fHistN[kHistSPDFOTrk] = new THnD("HSPDFOTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult;#eta;sign", 5, bins, xMin, xMax);
+  fList->Add(fHistN[kHistSPDFOTrk]);
 
-  fHist[kHistSPDFiredTrkVsMult] = new TH3D("HSPDFiredTrkVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
-					   1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
-  fHist[kHistSPDFiredTrkVsMult]->SetStats(0);
-  fList->Add(fHist[kHistSPDFiredTrkVsMult]);
-
-  fHist[kHistSPDFOTrkVsMult] = new TH3D("HSPDFOTrkVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
-					1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
-  fHist[kHistSPDFOTrkVsMult]->SetStats(0);
-  fList->Add(fHist[kHistSPDFOTrkVsMult]);
-
-  fHist[kHistSPDFiredVsMult] = new TH3D("HSPDFiredVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
-					1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
-  fHist[kHistSPDFiredVsMult]->SetStats(0);
-  fList->Add(fHist[kHistSPDFiredVsMult]);
-
-  fHist[kHistSPDFOVsMult] = new TH3D("HSPDFOVsMult", fTriggerSelectionSPD+";chip key;BCmod4;log_{10}(number of tracklets)",
-				     1200, -0.5, 1199.5, 4, -0.5, 3.5, 25, 0.0, 5.0);
-  fHist[kHistSPDFOVsMult]->SetStats(0);
-  fList->Add(fHist[kHistSPDFOVsMult]);
+  fHistN[kHistSPDFOFiredTrk] = new THnD("HSPDFOFiredTrk", fTriggerSelectionSPD+";chip key;BCmod4;mult;#eta,sign", 5, bins, xMin, xMax);
+  fList->Add(fHistN[kHistSPDFOFiredTrk]);
 
   PostData(1, fList);
 
@@ -457,13 +502,14 @@ private:
   TClonesArray& fA;
 } ;
 
-void AliAnalysisTaskDG::FillTH3(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t w) {
-  if (idx < 0 || idx >= kNHist)
+void AliAnalysisTaskDG::FillTHn(Int_t idx, Double_t x, Double_t y, Double_t z, Double_t u, Double_t v, Double_t w) {
+  if (idx < 0 || idx >= kNHistN)
     AliFatalF("idx=%d", idx);
-  TH3 *h = dynamic_cast<TH3*>(fHist[idx]);
+  THn *h = dynamic_cast<THn*>(fHistN[idx]);
   if (!h)
     AliFatal("h==nullptr");
-  h->Fill(x, y, z, w);
+  const Double_t a[5] = { x,y,z,u,v };
+  h->Fill(a, w);
 }
 void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
 {
@@ -482,23 +528,23 @@ void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
   }
   AliInfoF("selectedForSPD = %d", selectedForSPD);
   if (selectedForSPD) { // PF protection
-    const AliVAD    *esdAD = esdEvent->GetADData();
-    const AliVVZERO *esdV0 = esdEvent->GetVZEROData();
+    const AliVAD    *vAD = esdEvent->GetADData();
+    const AliVVZERO *vV0 = esdEvent->GetVZEROData();
     Int_t nBB=0;
     for (Int_t bc=3; bc<=17 && !nBB; ++bc) {
       if (bc == 10)
 	continue;
       for (Int_t ch=0; ch<4; ++ch) {
-	nBB += (esdAD->GetPFBBFlag(ch,   bc) && esdAD->GetPFBBFlag(ch+ 4, bc));
-	nBB += (esdAD->GetPFBBFlag(ch+8, bc) && esdAD->GetPFBBFlag(ch+12, bc));
+	nBB += (vAD->GetPFBBFlag(ch,   bc) && vAD->GetPFBBFlag(ch+ 4, bc));
+	nBB += (vAD->GetPFBBFlag(ch+8, bc) && vAD->GetPFBBFlag(ch+12, bc));
       }
       for (Int_t ch=0; ch<64; ++ch)
-	nBB += esdV0->GetPFBBFlag(ch, bc);
+	nBB += vV0->GetPFBBFlag(ch, bc);
     }
     if (!nBB) {
-      Int_t matched[1200] = { 0 };
-      for (Int_t l=0; l<1200; ++l)
-	matched[l] = 0;
+      TArrayI matched(1200);
+      TArrayD etaSum(1200);
+      TArrayD signSum(1200);
       std::unique_ptr<AliESDtrackCuts> tc(AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE, kFALSE));
       std::unique_ptr<const TObjArray> oa(tc->GetAcceptedTracks(esdEvent));
       for (Int_t i=0, n=oa->GetEntries(); i<n; ++i) {
@@ -507,25 +553,27 @@ void AliAnalysisTaskDG::FillSPDFOEffiencyHistograms(const AliESDEvent *esdEvent)
 	Int_t   status[2]   = { -1, -1};
 	AliAnalysisTaskDG::FindChipKeys(tr, chipKeys, status);
 	for (Int_t layer=0; layer<2; ++layer) {
-	  if (chipKeys[layer] >= 0 && chipKeys[layer]<1200 && status[layer] == 1)
+	  if (chipKeys[layer] >= 0 && chipKeys[layer]<1200 && status[layer] == 1) {
 	    matched[chipKeys[layer]] += 1;
+            etaSum[chipKeys[layer]]  += tr->Eta();
+            signSum[chipKeys[layer]] += tr->GetSign();
+          }
 	}
       }
-      const Int_t    bcMod4         = (esdHeader->GetBunchCrossNumber() % 4);
-      const Double_t log10Tracklets = (mult->GetNumberOfTracklets() > 0
-				       ? TMath::Log10(mult->GetNumberOfTracklets())
-				       : -1.0);
+      const Int_t bcMod4 = (esdHeader->GetBunchCrossNumber() % 4);
       for (Int_t chipKey=0; chipKey<1200; ++chipKey) {
-	if (mult->TestFiredChipMap(chipKey)) {
-	  FillTH3(kHistSPDFiredTrk,       chipKey, bcMod4, matched[chipKey]);
-	  FillTH3(kHistSPDFiredTrkVsMult, chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
-	  FillTH3(kHistSPDFiredVsMult,    chipKey, bcMod4, log10Tracklets);
-	}
-	if (mult->TestFastOrFiredChips(chipKey)) {
-	  FillTH3(kHistSPDFOTrk,       chipKey, bcMod4, matched[chipKey]);
-	  FillTH3(kHistSPDFOTrkVsMult, chipKey, bcMod4, log10Tracklets, (matched[chipKey]>0));
-	  FillTH3(kHistSPDFOVsMult,    chipKey, bcMod4, log10Tracklets);
-	}
+        const Double_t eta = (matched[chipKey]
+                              ? etaSum[chipKey]/matched[chipKey]
+                              : -999.0);
+        const Double_t sign = (matched[chipKey]
+                               ? signSum[chipKey]/matched[chipKey]
+                               : -999.0);
+	if (mult->TestFiredChipMap(chipKey))
+	  FillTHn(kHistSPDFiredTrk, chipKey, bcMod4, matched[chipKey], eta, sign);
+	if (mult->TestFastOrFiredChips(chipKey))
+	  FillTHn(kHistSPDFOTrk, chipKey, bcMod4, matched[chipKey], eta, sign);
+	if (mult->TestFastOrFiredChips(chipKey) && mult->TestFiredChipMap(chipKey))
+	  FillTHn(kHistSPDFOFiredTrk, chipKey, bcMod4, matched[chipKey], eta, sign);
       }
     }
   }
@@ -609,46 +657,6 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
 
   PostData(1, fList);
 
-  Bool_t cutNotV0           = kFALSE;
-  Bool_t useOnly2Trk        = kFALSE;
-  Bool_t requireAtLeast2Trk = kFALSE;
-
-  Bool_t selected = (fTriggerSelection == "");
-
-  if (!selected) {
-    // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS3&Only2Trk|CLASS4&AtLeast2Trk"
-    Int_t sumCutNotV0(0);
-    Int_t sumUseOnly2Trk(0);
-    Int_t sumRequireAtLeast2Trk(0);
-
-    Int_t   counter     = 0;
-    TString tcName      = "";
-    Ssiz_t  from_tcName = 0;
-    while (fTriggerSelection.Tokenize(tcName, from_tcName, "|")) {
-      TString tok      = "";
-      Ssiz_t  from_tok = 0;
-      if (!tcName.Tokenize(tok, from_tok, "&")) continue;
-      if (!vEvent->GetFiredTriggerClasses().Contains(tok)) continue;
-      if ( tcName.Tokenize(tok, from_tok, "&")) {
-	sumCutNotV0           += (tok == "NotV0");
-	sumUseOnly2Trk        += (tok == "Only2Trk");
-	sumRequireAtLeast2Trk += (tok == "AtLeast2Trk");
-	++counter;
-      }
-    }
-
-    selected           = (counter != 0);
-    cutNotV0           = (counter == sumCutNotV0);
-    useOnly2Trk        = (counter == sumUseOnly2Trk);
-    requireAtLeast2Trk = (counter == sumRequireAtLeast2Trk);
-  }
-
-  AliDebugF(5, "selected: %d (%d,%d,%d) %s ", selected,
-	    cutNotV0, useOnly2Trk, requireAtLeast2Trk,
-	    vEvent->GetFiredTriggerClasses().Data());
-  if (!selected)
-    return;
-
   fTreeData.fEventInfo.Fill(vEvent);
 
   fTreeData.fIsIncompleteDAQ          = vEvent->IsIncompleteDAQ();
@@ -659,19 +667,23 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fTreeData.fV0Info.FillV0(vEvent, fTriggerAnalysis);
   fTreeData.fADInfo.FillAD(vEvent, fTriggerAnalysis);
 
-  if (cutNotV0 &&
-      (fTreeData.fV0Info.fDecisionOnline[0] != 0 ||
-       fTreeData.fV0Info.fDecisionOnline[1] != 0))
-    return;
+  fTreeData.fZDCInfo.Fill(vEvent->GetZDCData());
+
+  const Bool_t isNotV0(fTreeData.fV0Info.fDecisionOnline[0] == 0 &&
+                       fTreeData.fV0Info.fDecisionOnline[1] == 0);
 
   if (isESD) {
     fVertexSPD.first    = *esdEvent->GetPrimaryVertexSPD();
     fVertexTPC.first    = *esdEvent->GetPrimaryVertexTPC();
     fVertexTracks.first = *esdEvent->GetPrimaryVertexTracks();
+    fV0.first           = *esdEvent->GetVZEROData();
+    fAD.first           = *esdEvent->GetADData();
   } else {
     fVertexSPD.second    = *aodEvent->GetPrimaryVertexSPD();
     fVertexTPC.second    = *aodEvent->GetPrimaryVertexTPC();
     fVertexTracks.second = *aodEvent->GetPrimaryVertex();
+    fV0.second           = *aodEvent->GetVZEROData();
+    fAD.second           = *aodEvent->GetADData();
   }
   fTOFHeader    = *(vEvent->GetTOFHeader());
 
@@ -684,8 +696,7 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fIR1InteractionMap = vHeader->GetIRInt1InteractionMap();
   fIR2InteractionMap = vHeader->GetIRInt2InteractionMap();
 
-  for (Int_t i=0; i<4; ++i)
-    fTreeData.fEventInfo.fnTrklet[i] = 0;
+  std::fill_n(fTreeData.fEventInfo.fnTrklet, 4, 0);
   for (Int_t i=0, n=mult->GetNumberOfTracklets(); i<n; ++i) {
     const Double_t eta = -TMath::Log(TMath::Tan(0.5*mult->GetTheta(i)));
     fTreeData.fEventInfo.fnTrklet[0] += 1;           // all tracklets
@@ -714,16 +725,36 @@ void AliAnalysisTaskDG::UserExec(Option_t *)
   fTreeData.fEventInfo.fnTrk   = oa->GetEntries();
   fTreeData.fEventInfo.fCharge = 0;
 
-  if (useOnly2Trk && fTreeData.fEventInfo.fnTrk != 2)
-    return;
+  Bool_t selected(fTriggerSelection == "");
 
-  if (requireAtLeast2Trk && fTreeData.fEventInfo.fnTrk < 2)
+  if (!selected) {
+    // fTriggerSelection can be "CLASS1|CLASS2&NotV0|CLASS3&Only2Trk|CLASS4&AtLeast2Trk"
+    TString tcName = "";
+    for (Ssiz_t i=0; fTriggerSelection.Tokenize(tcName, i, "|") && !selected;) {
+      Ssiz_t j=0;
+      TString className = "";
+      if (!tcName.Tokenize(className, j, "&")) continue;
+      if (!vEvent->GetFiredTriggerClasses().Contains(className)) continue;
+
+      TString condition = "";
+      Int_t condition_counter=0, conditions_matched=0;
+      while (tcName.Tokenize(condition, j, "&")) {
+        conditions_matched += ((condition == "NotV0")       && isNotV0);
+        conditions_matched += ((condition == "Only2Trk")    && fTreeData.fEventInfo.fnTrk == 2);
+        conditions_matched += ((condition == "Only4Trk")    && fTreeData.fEventInfo.fnTrk == 4);
+        conditions_matched += ((condition == "AtLeast2Trk") && fTreeData.fEventInfo.fnTrk >= 2);
+        ++condition_counter;
+      }
+      selected = (condition_counter == conditions_matched);
+      AliDebugF(5, "class=%s %d/%d matched selected=%d", className.Data(), conditions_matched, condition_counter, selected);
+    }
+  }
+
+  if (!selected)
     return;
 
   for (Int_t i=0, n=oa->GetEntries(); i<n; ++i)
-    fTreeData.fEventInfo.fCharge += (GetTrackSign(dynamic_cast<AliVTrack*>(oa->At(i))) > 0
-				     ? +1
-				     : -1);
+    fTreeData.fEventInfo.fCharge += 2*(GetTrackSign(dynamic_cast<AliVTrack*>(oa->At(i))) > 0) - 1;
 
   TClonesArrayGuard guardTrackData(fTrackData);
   if (oa->GetEntries() <= fMaxTracksSave)  {

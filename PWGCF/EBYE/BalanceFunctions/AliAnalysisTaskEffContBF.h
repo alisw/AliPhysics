@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKEFFCONTBF_cxx
-#define ALIANALYSISTASKEFFCONTBF_cxx
+#ifndef ALIANALYSISTASKEFFCONTBF_H
+#define ALIANALYSISTASKEFFCONTBF_H
 
 // ---------------------------------------------------------------------
 //
@@ -17,80 +17,18 @@ class AliAODEvent;
 class AliAODInputHandler;
 class TH2D;
 
+#include <AliPID.h>
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskEffContBF() : AliAnalysisTaskSE(), 
-    fAOD(0), 
-    fArrayMC(0),  
-    fQAList(0), 
-    fOutputList(0),
-    fHistEventStats(0),
-    fHistCentrality(0), 
-    fHistNMult(0), 
-    fHistVz(0),
-    fHistNSigmaTPCvsPtbeforePID(0),
-    fHistNSigmaTPCvsPtafterPID(0),  
-    fHistContaminationSecondariesPlus(0),
-    fHistContaminationSecondariesMinus(0),
-    fHistContaminationPrimariesPlus(0),
-    fHistContaminationPrimariesMinus(0),
-    fHistGeneratedEtaPtPhiPlus(0),
-    fHistSurvivedEtaPtPhiPlus(0),
-    fHistGeneratedEtaPtPhiMinus(0),
-    fHistSurvivedEtaPtPhiMinus(0),
-    fHistGeneratedEtaPtPlusControl(0), 
-    fHistSurvivedEtaPtPlusControl(0),
-    fHistGeneratedEtaPtMinusControl(0), 
-    fHistSurvivedEtaPtMinusControl(0), 
-    fHistGeneratedEtaPtPlusPlus(0), 
-    fHistSurvivedEtaPtPlusPlus(0),
-    fHistGeneratedEtaPtMinusMinus(0), 
-    fHistSurvivedEtaPtMinusMinus(0),
-    fHistGeneratedEtaPtPlusMinus(0), 
-    fHistSurvivedEtaPtPlusMinus(0),
-    fHistGeneratedPhiEtaPlusPlus(0),
-    fHistSurvivedPhiEtaPlusPlus(0),
-    fHistGeneratedPhiEtaMinusMinus(0), 
-    fHistSurvivedPhiEtaMinusMinus(0),
-    fHistGeneratedPhiEtaPlusMinus(0),
-    fHistSurvivedPhiEtaPlusMinus(0), 
-    fUseCentrality(kFALSE), 
-    fCentralityEstimator("V0M"), 
-    fCentralityPercentileMin(0.0), 
-    fCentralityPercentileMax(5.0), 
-    fInjectedSignals(kFALSE),
-    fPIDResponse(0),
-    fElectronRejection(kFALSE),
-    fElectronOnlyRejection(kFALSE),
-    fElectronRejectionNSigma(-1.),
-    fElectronRejectionMinPt(0.),
-    fElectronRejectionMaxPt(1000.),
-    fVxMax(3.0), 
-    fVyMax(3.0), 
-    fVzMax(10.), 
-    fAODTrackCutBit(128),
-    fMinNumberOfTPCClusters(80), 
-    fMaxChi2PerTPCCluster(4.0),
-    fMaxDCAxy(3.0), 
-    fMaxDCAz(3.0),
-    fMinPt(0.0), 
-    fMaxPt(20.0), 
-    fMinEta(-0.8),
-    fMaxEta(0.8), 
-    fEtaRangeMin(0.0), 
-    fEtaRangeMax(1.6), 
-    fPtRangeMin(0.0), 
-    fPtRangeMax(20.0), 
-    fEtaBin(100),
-    fdEtaBin(64),
-    fPtBin(100),
-    fHistSurvived4EtaPtPhiPlus(0), 
-    fHistSurvived8EtaPtPhiPlus(0){}
-    AliAnalysisTaskEffContBF(const char *name);
-    virtual ~AliAnalysisTaskEffContBF() {}
+
+  AliAnalysisTaskEffContBF();
+  AliAnalysisTaskEffContBF(const char *name);
+  virtual ~AliAnalysisTaskEffContBF() {}
+  
+  enum etriggerSel{kMB, kCentral, kINT7, kppHighMult};
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -119,7 +57,18 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   //Injected signals
   void SetRejectInjectedSignals() {fInjectedSignals = kTRUE;}
 
-  // electron rejection
+  void SetRejectInjectedSignalsLabelAboveThreshold() {
+    fRejectLabelAboveThreshold=kTRUE;
+    fInjectedSignals = kTRUE; 
+  }
+  
+  void SetRejectInjectedSignalsGenName(TString genToBeKept) {
+    fGenToBeKept = genToBeKept; 
+    fRejectCheckGenName=kTRUE;
+    fInjectedSignals = kTRUE;
+  }
+
+ // electron rejection
   void SetElectronRejection(Double_t gMaxNSigma){
     fElectronRejection = kTRUE;
     fElectronRejectionNSigma = gMaxNSigma;
@@ -134,6 +83,24 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   void SetElectronRejectionPt(Double_t minPt,Double_t maxPt){
     fElectronRejectionMinPt  = minPt;
     fElectronRejectionMaxPt  = maxPt;
+  }
+  
+  void SetUseParticleID(Bool_t usePID=kFALSE, AliPID::EParticleType partOfInterest = AliPID::kPion) {
+    fUsePIDstrategy = usePID;
+    fUsePIDFromPDG = usePID;
+    fpartOfInterest = partOfInterest;
+  }
+
+ void SetUsePIDfromPDG(Bool_t usePID=kFALSE, AliPID::EParticleType partOfInterest = AliPID::kPion) {
+   fUsePIDFromPDG = usePID;
+   fpartOfInterest = partOfInterest;
+  }
+  
+  void SetUsePIDnSigmaComb(Bool_t UsePIDnSigmaComb){
+     fUsePIDnSigmaComb = UsePIDnSigmaComb;
+  }
+  void SetBayesPIDThr(Double_t Thr){
+      fBayesPIDThr = Thr;
   }
   
   //Track cuts
@@ -161,7 +128,9 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   void SetPtRange(Double_t minRangePt, Double_t maxRangePt,Int_t binPt){
     fPtRangeMin = minRangePt;
     fPtRangeMax = maxRangePt;
-    fPtBin = binPt;}  
+    fPtBin = binPt;}
+
+   
  private:
   AliAODEvent* fAOD; //! AOD object  
   TClonesArray *fArrayMC; //! array of MC particles  
@@ -179,6 +148,12 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   // output histograms
   TH3D        *fHistContaminationSecondariesPlus;//!
   TH3D        *fHistContaminationSecondariesMinus;//!
+
+  TH3D        *fHistContaminationSecondariesMaterialPlus;//!
+  TH3D        *fHistContaminationSecondariesMaterialMinus; //!
+  TH3D        *fHistContaminationSecondariesWeakDecPlus; //!
+  TH3D        *fHistContaminationSecondariesWeakDecMinus; //!
+  
   TH3D        *fHistContaminationPrimariesPlus;//!
   TH3D        *fHistContaminationPrimariesMinus;//!
   
@@ -215,23 +190,38 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH2F        *fHistSurvivedPhiEtaPlusMinus;//!correction map +- (survived)
 
   Bool_t  fUseCentrality;// Bool_t use centrality or not
-  TString fCentralityEstimator;//"V0M","TRK","TKL","ZDC","FMD"
-  Float_t fCentralityPercentileMin, fCentralityPercentileMax; //min-max centrality percentile
+  TString fCentralityEstimator;// "V0M","TRK","TKL","ZDC","FMD"
+  Float_t fCentralityPercentileMin; // min centrality percentile 
+  Float_t fCentralityPercentileMax; // max centrality percentile
 
   Bool_t fInjectedSignals;//Flag for using the rejection of injected signals
+  Bool_t fRejectLabelAboveThreshold;// 
+  TString fGenToBeKept; // name of the generator that should be kept in the analysis (in case of rejection of injected signals)
+  Bool_t fRejectCheckGenName; // Flag for using the rejection of injected signals on a track by track base (different cocktails with respect to fInjectedSignals) 
 
+  
   AliPIDResponse *fPIDResponse;     //! PID response object
   Bool_t   fElectronRejection;//flag to use electron rejection
   Bool_t   fElectronOnlyRejection;//flag to use electron rejection with exclusive electron PID (no other particle in nsigma range)
   Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
   Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
   Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
-
-  Double_t fVxMax;//vxmax
-  Double_t fVyMax;//vymax
-  Double_t fVzMax;//vzmax
   
-  Int_t fAODTrackCutBit;//track cut bit from track selection (only used for AODs)
+  AliPIDCombined* fPIDCombined;  //! PID combined
+
+  Bool_t  fUsePIDnSigmaComb;//
+  Double_t fBayesPIDThr;//
+    
+  Bool_t fUsePIDstrategy; // flag to switch on PID
+  Bool_t fUsePIDFromPDG; //flag to switch on MC PID (used for PID tracking eff) 
+  AliPID::EParticleType fpartOfInterest; //
+  Int_t fPDGCodeWanted;//
+    
+  Double_t fVxMax;// vxmax
+  Double_t fVyMax;// vymax
+  Double_t fVzMax;// vzmax
+  
+  Int_t fAODTrackCutBit;// track cut bit from track selection (only used for AODs)
 
   Double_t fMinNumberOfTPCClusters;//!
   Double_t fMaxChi2PerTPCCluster;//!
@@ -240,12 +230,12 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Double_t fMinEta, fMaxEta;//!
   Double_t fEtaRangeMin;// acceptance cuts 
   Double_t fEtaRangeMax; // acceptance cuts
-  Double_t fPtRangeMin;  //acceptance cuts
-  Double_t fPtRangeMax;  //acceptance cuts
+  Double_t fPtRangeMin;  // acceptance cuts
+  Double_t fPtRangeMax;  // acceptance cuts
   
-  Int_t fEtaBin;  //acceptance cuts
-  Int_t fdEtaBin;  //acceptance cuts
-  Int_t fPtBin; //acceptance cuts
+  Int_t fEtaBin;  // acceptance cuts
+  Int_t fdEtaBin;  // acceptance cuts
+  Int_t fPtBin; // acceptance cuts
 
   TH3F        *fHistSurvived4EtaPtPhiPlus;//!
   TH3F        *fHistSurvived8EtaPtPhiPlus;//!
@@ -253,7 +243,7 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   AliAnalysisTaskEffContBF(const AliAnalysisTaskEffContBF&); // not implemented
   AliAnalysisTaskEffContBF& operator=(const AliAnalysisTaskEffContBF&); // not implemented
   
-  ClassDef(AliAnalysisTaskEffContBF, 1); // example of analysis
+  ClassDef(AliAnalysisTaskEffContBF, 4); // example of analysis
 };
 
 #endif

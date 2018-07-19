@@ -634,8 +634,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL",Bool_t tm = 
   //if(!kData.Contains("delta")) 
   //{
   ana->SetOutputAODName(Form("Photon%s",kGammaJetCorrelationName.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
-  //  //ana->SetOutputAODClassName("AliAODPWG4Particle"); // use if no correlation done
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   //}
   //else 
   ana->SetInputAODName(Form("Photon%s",kGammaJetCorrelationName.Data()));
@@ -800,9 +799,6 @@ void ConfigureMC(AliAnaCaloTrackCorrBaseClass* ana,Bool_t simulation = kFALSE)
 {
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else            ana->SwitchOffDataMC() ;
-
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 }  
 
 ///

@@ -57,6 +57,14 @@ AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/
     suffix.Prepend("Ds");
     pdgmes=431;
   }
+  else if(decCh==AliAnalysisTaskSEHFvn::kD0toKpiFromDstar) {
+    if(stdcuts) {
+      analysiscuts = new AliRDHFCutsD0toKpi();
+      analysiscuts->SetStandardCutsPbPb2011();
+    } else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
+    suffix.Prepend("DzeroFromDstar");
+    pdgmes=421;
+  }
   if(pdgmes==-1){
     AliFatal("Wrong meson setting");
   }
@@ -71,7 +79,7 @@ AliAnalysisTaskSEHFvn *AddTaskHFvn(Int_t harm, TString filename="alien:///alice/
   v2Task->SetEtaGapFeatureForEventplaneFromTracks(kFALSE);
   if(decCh == AliAnalysisTaskSEHFvn::kDstartoKpipi) {
     v2Task->SetNMassBins(200);
-  } else if(decCh == AliAnalysisTaskSEHFvn::kDplustoKpipi || decCh == AliAnalysisTaskSEHFvn::kD0toKpi) {
+  } else if(decCh == AliAnalysisTaskSEHFvn::kDplustoKpipi || decCh == AliAnalysisTaskSEHFvn::kD0toKpi || decCh == AliAnalysisTaskSEHFvn::kD0toKpiFromDstar) {
     v2Task->SetNMassBins(104);
     v2Task->SetMassLimits(0.2,pdgmes);
   } else if(decCh == AliAnalysisTaskSEHFvn::kDstoKKpi) {

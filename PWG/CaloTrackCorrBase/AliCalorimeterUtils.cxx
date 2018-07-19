@@ -25,9 +25,10 @@
 
 // --- ANALYSIS system ---
 #include "AliCalorimeterUtils.h"
+#include "AliDataFile.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
-#include "AliAODPWG4Particle.h"
+#include "AliCaloTrackParticle.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliAODCaloCluster.h"
@@ -129,7 +130,10 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
     if(fRemoveBadChannels)
     {
       AliOADBContainer *contBC=new AliOADBContainer("");
-      contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePathEMCAL.Data()),"AliEMCALBadChannels"); 
+      if(fOADBFilePathEMCAL!="")
+        contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fOADBFilePathEMCAL.Data()),"AliEMCALBadChannels"); 
+      else
+        contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"AliEMCALBadChannels"); 
       
       TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRunNumber);
       
@@ -157,7 +161,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
           SetEMCALChannelStatusMap(i,hbm);
           
         } // loop
-      } else AliInfo("Do NOT remove EMCAL bad channels\n"); // run array
+      } else AliInfo("Do NOT remove EMCAL bad channels"); // run array
       
       delete contBC;
     }  // Remove bad
@@ -167,9 +171,12 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
     {
       AliOADBContainer *contRF=new AliOADBContainer("");
       
-      contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALRecalib");
-      
-      TObjArray *recal=(TObjArray*)contRF->GetObject(fRunNumber); 
+      if(fOADBFilePathEMCAL!="")
+        contRF->InitFromFile(Form("%s/EMCALRecalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALRecalib");
+      else
+        contRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"AliEMCALRecalib");
+        
+      TObjArray *recal=(TObjArray*)contRF->GetObject(fRunNumber);
       
       if(recal)
       {
@@ -216,8 +223,11 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
     {
       AliOADBContainer *contRFTD=new AliOADBContainer("");
       
-      contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALRunDepTempCalibCorrections");
-      
+      if(fOADBFilePathEMCAL!="")
+        contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALRunDepTempCalibCorrections");
+      else
+        contRFTD->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCorrCalib.root").data(),"AliEMCALRunDepTempCalibCorrections");
+
       TH1S *htd=(TH1S*)contRFTD->GetObject(fRunNumber); 
       
       //If it did not exist for this run, get closes one
@@ -278,8 +288,11 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
     {
       AliOADBContainer *contTRF=new AliOADBContainer("");
       
-      contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeCalib");
-      
+      if(fOADBFilePathEMCAL!="")
+        contTRF->InitFromFile(Form("%s/EMCALTimeCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeCalib");
+      else
+        contTRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeCalib.root").data(),"AliEMCALTimeCalib");
+
       TObjArray *trecal=(TObjArray*)contTRF->GetObject(fRunNumber); 
       
       if(trecal)
@@ -325,8 +338,11 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
     if(fEMCALRecoUtils->IsL1PhaseInTimeRecalibrationOn()) 
     {
       AliOADBContainer *contTRF=new AliOADBContainer("");
-      contTRF->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeL1PhaseCalib");
-      
+      if(fOADBFilePathEMCAL!="")
+        contTRF->InitFromFile(Form("%s/EMCALTimeL1PhaseCalib.root",fOADBFilePathEMCAL.Data()),"AliEMCALTimeL1PhaseCalib");
+      else
+        contTRF->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeL1PhaseCalib.root").data(),"AliEMCALTimeL1PhaseCalib");
+
       TObjArray *trecal=(TObjArray*)contTRF->GetObject(fRunNumber); 
       if(!trecal) 
       {
@@ -453,7 +469,11 @@ void AliCalorimeterUtils::AccessGeometry(AliVEvent* inputEvent)
       
       // OADB if available
       AliOADBContainer emcGeoMat("AliEMCALgeo");
-      emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePathEMCAL.Data()),"AliEMCALgeo");
+      if(fOADBFilePathEMCAL!="")
+        emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePathEMCAL.Data()),"AliEMCALgeo");
+      else
+        emcGeoMat.InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALlocal2master.root").data(),"AliEMCALgeo");
+
       TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(fRunNumber,"EmcalMatrices");
       
       for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
@@ -800,6 +820,103 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(Int_t calorimeter, UShort_
   } // cell cluster loop
   
   return kFALSE;
+}
+
+//_______________________________________________________________
+/// Configure fEMCALRecoUtils with some standard arguments for common analysis configurations
+///
+/// The input parameters:
+/// \param reco: pointer to object to initialize in this macro.
+/// \param bMC: Bool, indicates if data is MC.
+/// \param bExotic: Bool, indicates if exotic clusters are removed.
+/// \param bNonLin: Bool, indicates if non linearity correction is applied on clusters.
+/// \param bRecalE: Bool, indicates if energy recalibration is applied.
+/// \param bBad: Bool, indicates if bad channels/clusters are removed.
+/// \param bRecalT: Bool, indicates if time is calibrated.
+/// \param debug: int debug level, print info on settings in the macro
+///
+//_______________________________________________________________
+void AliCalorimeterUtils::ConfigureEMCALRecoUtils
+(Bool_t  bMC    , Bool_t  bExotic, Bool_t  bNonLin,  
+ Bool_t  bRecalE, Bool_t  bBad   , Bool_t  bRecalT, Int_t   debug)
+{
+  if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - **** Start ***\n");
+  
+  // Exotic cells removal
+  
+  if(bExotic)
+  {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Remove exotics in EMCAL\n");
+    fEMCALRecoUtils->SwitchOnRejectExoticCell() ;
+    fEMCALRecoUtils->SwitchOnRejectExoticCluster(); 
+    
+    //  fEMCALRecoUtils->SetExoticCellDiffTimeCut(50);     // If |t cell max - t cell in cross| > 50 do not add its energy, avoid 
+    fEMCALRecoUtils->SetExoticCellFractionCut(0.97);   // 1-Ecross/Ecell > 0.97 -> out
+    fEMCALRecoUtils->SetExoticCellMinAmplitudeCut(4.); // 4 GeV    
+  }  
+  
+  // Recalibration factors
+  
+  if(bRecalE && ! bMC)
+  {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Switch on energy recalibration in EMCAL\n");
+    fEMCALRecoUtils->SwitchOnRecalibration();
+    fEMCALRecoUtils->SwitchOnRunDepCorrection();    
+  } 
+  
+  // Remove EMCAL hot channels 
+  
+  if(bBad)
+  {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Switch on bad channels removal in EMCAL\n");
+    fEMCALRecoUtils->SwitchOnBadChannelsRemoval();
+    fEMCALRecoUtils->SwitchOnDistToBadChannelRecalculation();
+  }
+  
+  // *** Time recalibration settings ***
+  
+  if(bRecalT && ! bMC)
+  {
+    if ( debug > 0 ) printf("ConfigureEMCALRecoUtils() - Switch on time recalibration in EMCAL\n");
+    fEMCALRecoUtils->SwitchOnTimeRecalibration();
+    fEMCALRecoUtils->SwitchOnL1PhaseInTimeRecalibration() ;
+  }
+  
+  // Recalculate position with method
+  
+  fEMCALRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);   
+  
+  // Non linearity
+  
+  if( bNonLin )
+  {
+    fCorrectELinearity = kTRUE;
+    
+    if(!bMC)
+    {
+      if ( debug > 0 )
+        printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kBeamTestCorrected xxx\n");
+      
+      fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrectedv3);
+    }
+    else
+    {
+      if ( debug > 0 )
+        printf("ConfigureEMCALRecoUtils() xxx SET Non linearity correction kPi0MCv3 xxx\n");
+      
+      fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
+    }
+  } // Non linearity correction ON
+  else
+  {
+    fCorrectELinearity = kFALSE;
+
+    if ( debug > 0 )
+      printf("ConfigureEMCALRecoUtils() xxx DON'T SET Non linearity correction xxx\n");
+    
+    fEMCALRecoUtils->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
+  } // Non linearity correction OFF
+  
 }
 
 //_______________________________________________________________
@@ -1171,7 +1288,7 @@ Float_t AliCalorimeterUtils::GetMCECellClusFracCorrection(Float_t eCell, Float_t
 //_____________________________________________________________________________________________________
 /// Get the EMCAL/PHOS module number that corresponds to this particle.
 //_____________________________________________________________________________________________________
-Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEvent * inputEvent) const
+Int_t AliCalorimeterUtils::GetModuleNumber(AliCaloTrackParticle * particle, AliVEvent * inputEvent) const
 {	
   Int_t absId = -1;
   
@@ -1619,7 +1736,7 @@ void AliCalorimeterUtils::InitParameters()
   fOADBForEMCAL = kTRUE ;            
   fOADBForPHOS  = kFALSE;
   
-  fOADBFilePathEMCAL = "$ALICE_PHYSICS/OADB/EMCAL" ;
+  fOADBFilePathEMCAL = "" ; // $ALICE_PHYSICS/OADB/EMCAL
   fOADBFilePathPHOS  = "$ALICE_PHYSICS/OADB/PHOS"  ;
   
   fImportGeometryFromFile = kTRUE;
@@ -1720,10 +1837,10 @@ void AliCalorimeterUtils::InitEMCALGeometry()
     if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
     {
       // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-      if     (fRunNumber <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
-      else if(fRunNumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
-      else if(fRunNumber <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
-      else                          fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >= 2015
+      if     (fRunNumber <  140000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2010.root").data();
+      else if(fRunNumber <  171000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2011.root").data();
+      else if(fRunNumber <  198000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2012.root").data(); // 2012-2013
+      else                          fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2015.root").data(); // >= 2015
     }
     
     AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
@@ -2133,7 +2250,7 @@ void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event,
     fEMCALRecoUtils->GetMatchedResiduals(clus->GetID(),dZ,dR);
     
     if ( TMath::Abs(clus->GetTrackDx()) < 500 )
-      AliDebug(2,Form("Residuals (Old, New): z (%2.4f,%2.4f), x (%2.4f,%2.4f)\n",
+      AliDebug(2,Form("Residuals (Old, New): z (%2.4f,%2.4f), x (%2.4f,%2.4f)",
                       clus->GetTrackDz(),dZ,clus->GetTrackDx(),dR));
     
     clus->SetTrackDistance(dR,dZ);

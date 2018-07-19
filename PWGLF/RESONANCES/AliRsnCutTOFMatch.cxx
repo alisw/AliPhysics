@@ -25,10 +25,8 @@ Bool_t AliRsnCutTOFMatch::IsSelected(TObject *object)
    if (!TargetOK(object)) return accept;
 
    AliVTrack *vtrack = fDaughter->Ref2Vtrack();
-   if (!vtrack) {
-      AliError("Referenced daughter is not a track");
-      return accept;
-   }
+   if (!vtrack) return accept;
+
    if (MatchTOF(vtrack)) accept = kTRUE;
    return accept;
 }

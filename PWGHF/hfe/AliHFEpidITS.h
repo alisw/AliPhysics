@@ -37,7 +37,7 @@ class AliHFEpidITS : public AliHFEpidBase{
     AliHFEpidITS& operator=(const AliHFEpidITS &ref);
     virtual ~AliHFEpidITS();
 
-    void SetITSnSigma(Float_t nSigma) { fNsigmaITS = nSigma; };
+    void SetITSnSigma(Float_t nSigmalow, Float_t nSigmahigh);
     void SetMeanShift(Double_t meanshift) { fMeanShift = meanshift; }
     virtual Bool_t InitializePID(Int_t /*run*/);
     virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
@@ -50,10 +50,10 @@ class AliHFEpidITS : public AliHFEpidBase{
       kITSsigV1 = 0,
       kITSsigV2 = 1
     };
-    Float_t    fNsigmaITS;          // ITS sigma band
+    Float_t    fNsigmaITSlow;          // ITS sigma band
+    Float_t    fNsigmaITShigh;          // ITS sigma band
     Double_t   fMeanShift;          // Correction for possible shift of the electron band
-
-    ClassDef(AliHFEpidITS, 1)  // PID class for ITS
+    ClassDef(AliHFEpidITS, 2)  // PID class for ITS
 };
 #endif
 

@@ -7,7 +7,8 @@
 // the analysis (histograms/graphs) are stored in the folder which is
 // a data member of AliPerformanceRes.
 //
-// Author: J.Otwinowski 04/02/2008 
+// Author: J.Otwinowski 04/02/2008
+// Changes by J.Salzwedel 23/10/2014
 //------------------------------------------------------------------------------
 
 /*
@@ -40,11 +41,13 @@
 #include "TF1.h"
 
 #include "AliPerformanceRes.h" 
-#include "AliESDEvent.h" 
-#include "AliESDVertex.h"
+#include "AliVEvent.h"
+#include "AliVVertex.h"
+#include "AliVTrack.h"
+#include "AliExternalTrackParam.h"
+#include "AliVfriendTrack.h"
+#include "AliVfriendEvent.h"
 #include "AliESDtrack.h"
-#include "AliESDfriendTrack.h"
-#include "AliESDfriend.h"
 #include "AliLog.h" 
 #include "AliMCEvent.h" 
 #include "AliMCParticle.h" 
@@ -57,8 +60,25 @@
 
 using namespace std;
 
+#define MATCH_VALID_LABELS 0 //Needs to run two times!!
+#define FILTER_CLONES 0
+
 ClassImp(AliPerformanceRes)
-Double_t          AliPerformanceRes::fgkMergeEntriesCut=5000000.; //5*10**6 tracks (small default to keep default memory foorprint low)
+Double_t AliPerformanceRes::fgkMergeEntriesCut=5000000.; //5*10**6 tracks (small default to keep default memory foorprint low)
+
+//_____________________________________________________________________________
+AliPerformanceRes::AliPerformanceRes(TRootIOCtor* b):
+  AliPerformanceObject(b),
+  fResolHisto(0),
+  fPullHisto(0),
+
+  // histogram folder 
+  fAnalysisFolder(0),
+  fValidLabels(NULL),
+  fComparisonContainer(NULL)
+{
+  // io constructor	
+}
 
 //_____________________________________________________________________________
 AliPerformanceRes::AliPerformanceRes(const Char_t* name, const Char_t* title, Int_t analysisMode, Bool_t hptGenerator):
@@ -66,12 +86,10 @@ AliPerformanceRes::AliPerformanceRes(const Char_t* name, const Char_t* title, In
   fResolHisto(0),
   fPullHisto(0),
 
-  // Cuts 
-  fCutsRC(0),  
-  fCutsMC(0),  
-
   // histogram folder 
-  fAnalysisFolder(0)
+  fAnalysisFolder(0),
+  fValidLabels(NULL),
+  fComparisonContainer(NULL)
 {
   // named constructor	
   // 
@@ -86,10 +104,12 @@ AliPerformanceRes::~AliPerformanceRes()
 {
   // destructor
    
-  if(fResolHisto) delete fResolHisto; fResolHisto=0;     
-  if(fPullHisto)  delete fPullHisto;  fPullHisto=0;     
-  
-  if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
+  if(fResolHisto) delete fResolHisto;
+  fResolHisto=0;     
+  if(fPullHisto) delete fPullHisto;
+  fPullHisto=0;     
+  if(fAnalysisFolder) delete fAnalysisFolder;
+  fAnalysisFolder=0;
 }
 
 //_____________________________________________________________________________
@@ -101,14 +121,14 @@ void AliPerformanceRes::Init(){
 
   // set pt bins
   Int_t nPtBins = 50;
-  Double_t ptMin = 1.e-1, ptMax = 20.;
+  Double_t ptMin = 80.e-3, ptMax = 20.;
 
   Double_t *binsPt = 0;
 
   if (IsHptGenerator())  { 
         ptMax = 100.;
   } 
-   binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
+  binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
 
   Double_t yMin = -0.02, yMax = 0.02;
   Double_t zMin = -12.0, zMax = 12.0;
@@ -183,29 +203,22 @@ void AliPerformanceRes::Init(){
   fPullHisto->GetAxis(9)->SetTitle("1/p_{Tmc} (GeV/c)^{-1}");
   fPullHisto->Sumw2();
 
-  // Init cuts 
-  if(!fCutsMC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliMCInfoCuts object");
-  if(!fCutsRC) 
-    AliDebug(AliLog::kError, "ERROR: Cannot find AliRecInfoCuts object");
-
   // init folder
   fAnalysisFolder = CreateFolder("folderRes","Analysis Resolution Folder");
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceRes::ProcessTPC(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent* const vEvent)
 {
-  if(!esdEvent) return;
-  if(!esdTrack) return;
+  if(!vEvent || !vTrack) return;
 
   if( IsUseTrackVertex() ) 
   { 
     // Relate TPC inner params to prim. vertex
-    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
-    Double_t x[3]; esdTrack->GetXYZ(x);
+    const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; vTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK = vTrack->RelateToVVertexTPCBxByBz(vVertex, b, kVeryBig);
     if(!isOK) return;
 
     /*
@@ -217,19 +230,20 @@ void AliPerformanceRes::ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const es
   }
 
   // Fill TPC only resolution comparison information 
-  const AliExternalTrackParam* tmpTrack = esdTrack->GetTPCInnerParam();
+  const AliExternalTrackParam* tmpTrack = vTrack->GetTPCInnerParam();
   if(!tmpTrack) return;
 
   AliExternalTrackParam track = *tmpTrack;
 
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParametersTPC(dca,cov);
+  Float_t dca[2] = {0.,0.};// dca_xy, dca_z, 
+  Float_t cov[3] = {0.,0.,0.}; //sigma_xy, sigma_xy_z, sigma_z
+  vTrack->GetImpactParametersTPC(dca,cov);
  
   //
   // Fill rec vs MC information
   //
   if(!mcev) return;
-  Int_t label = esdTrack->GetTPCLabel(); //Use TPC-only label for TPC-only resolution analysis
+  Int_t label = vTrack->GetTPCLabel(); //Use TPC-only label for TPC-only resolution analysis
   if (label <= 0) return;
   TParticle* particle = ((AliMCParticle*)mcev->GetTrack(label))->Particle();
   if(!particle) return;
@@ -238,10 +252,10 @@ void AliPerformanceRes::ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const es
   //printf("charge %d \n",particle->GetPDG()->Charge());
   
   // Only 5 charged particle species (e,mu,pi,K,p)
-  if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
+  if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
@@ -254,29 +268,29 @@ void AliPerformanceRes::ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const es
   Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
   // nb. TPC clusters cut
-  if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return;
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return;
 
   // select primaries
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  if(TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ()) 
   { 
     if(mcpt == 0) return;
-	double Bz = esdEvent->GetMagneticField();
+    double Bz = vEvent->GetMagneticField();
 
-	Double_t mclocal[4]; //Rotated x,y,px,py mc-coordinates - the MC data should be rotated since the track is propagated best along x
-	Double_t c = TMath::Cos(track.GetAlpha());
-	Double_t s = TMath::Sin(track.GetAlpha());
-	Double_t x = particle->Vx();
-	Double_t y = particle->Vy();
-	mclocal[0] = x*c + y*s;
-	mclocal[1] =-x*s + y*c;
-	Double_t px = particle->Px();
-	Double_t py = particle->Py();
-	mclocal[2] = px*c + py*s;
-	mclocal[3] =-px*s + py*c;
+    Double_t mclocal[4]; //Rotated x,y,px,py mc-coordinates - the MC data should be rotated since the track is propagated best along x
+    Double_t c = TMath::Cos(track.GetAlpha());
+    Double_t s = TMath::Sin(track.GetAlpha());
+    Double_t x = particle->Vx();
+    Double_t y = particle->Vy();
+    mclocal[0] = x*c + y*s;
+    mclocal[1] =-x*s + y*c;
+    Double_t px = particle->Px();
+    Double_t py = particle->Py();
+    mclocal[2] = px*c + py*s;
+    mclocal[3] =-px*s + py*c;
     Float_t mcsnplocal = TMath::Sin(TMath::ATan2(mclocal[3],mclocal[2])); 
 
 
-	track.AliExternalTrackParam::PropagateTo(mclocal[0],Bz);
+    track.AliExternalTrackParam::PropagateTo(mclocal[0],Bz);
 
     deltaYTPC= track.GetY()-mclocal[1];
     deltaZTPC = track.GetZ()-particle->Vz();
@@ -308,19 +322,19 @@ void AliPerformanceRes::ProcessTPC(AliMCEvent* const mcev, AliESDtrack *const es
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceRes::ProcessTPCITS(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent* const vEvent)
 {
   // Fill resolution comparison information (TPC+ITS)
-  if(!esdEvent) return;
-  if(!esdTrack) return;
+  if(!vTrack) return;
+  if(!vEvent) return;
 
   if( IsUseTrackVertex() ) 
   { 
     // Relate TPC inner params to prim. vertex
-    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
-    Double_t x[3]; esdTrack->GetXYZ(x);
+    const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; vTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK = vTrack->RelateToVVertexBxByBz(vVertex, b, kVeryBig);
     if(!isOK) return;
 
     /*
@@ -330,16 +344,20 @@ void AliPerformanceRes::ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const
       }
     */
   }
-
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParameters(dca,cov);
- 
+  
+  //
+  //Get DCA information
+  //
+  Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
+  Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
+  vTrack->GetImpactParameters(dca,cov);
+  
   //
   // Fill rec vs MC information
   //
   if(!mcev) return;
 
-  Int_t label = TMath::Abs(esdTrack->GetLabel()); //Use global label for combined resolution analysis
+  Int_t label = TMath::Abs(vTrack->GetLabel()); //Use global label for combined resolution analysis
   TParticle* particle = ((AliMCParticle*)mcev->GetTrack(label))->Particle();
   if(!particle) return;
   if(!particle->GetPDG()) return;
@@ -348,10 +366,10 @@ void AliPerformanceRes::ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const
 
 
   // Only 5 charged particle species (e,mu,pi,K,p)
-  if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
+  if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   Float_t mceta =  particle->Eta();
   Float_t mcphi =  particle->Phi();
@@ -360,36 +378,35 @@ void AliPerformanceRes::ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const
   Float_t mcsnp = TMath::Sin(TMath::ATan2(particle->Py(),particle->Px()));
   Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
-  if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
-  if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters  
-  if(esdTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return;  // min. nb. ITS clusters
-
-  Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
-  Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
+  if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters
+  if(vTrack->GetITSclusters(0)<fCutsRC.GetMinNClustersITS()) return;  // min. nb. ITS clusters
+  
+  Float_t deltaPtTPC=0, deltaYTPC=0, deltaZTPC=0, deltaPhiTPC=0, deltaLambdaTPC=0; 
+  Float_t pull1PtTPC=0, pullYTPC=0, pullZTPC=0, pullPhiTPC=0, pullLambdaTPC=0; 
 
   // select primaries
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  if(TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ()) 
   { 
     if(mcpt == 0) return;
-    
-    deltaYTPC= esdTrack->GetY()-particle->Vy();
-    deltaZTPC = esdTrack->GetZ()-particle->Vz();
-    deltaLambdaTPC = TMath::ATan2(esdTrack->Pz(),esdTrack->Pt())-TMath::ATan2(particle->Pz(),particle->Pt());
-    deltaPhiTPC = TMath::ATan2(esdTrack->Py(),esdTrack->Px())-TMath::ATan2(particle->Py(),particle->Px());
-    //delta1PtTPC = (esdTrack->OneOverPt()-1./mcpt)*mcpt;
-    deltaPtTPC = (esdTrack->Pt()-mcpt) / mcpt;
+    Double_t trackYvert = vTrack->Yv(); // ****  should initialize to zero
+    Double_t trackZvert = vTrack->Zv();
+    Double_t trackP[3] = {0.,0.,0.};
+    vTrack->GetPxPyPz(trackP);
+    Double_t trackPt = sqrt(trackP[0]*trackP[0] + trackP[1]*trackP[1]);
+    deltaYTPC= trackYvert-particle->Vy();
+    deltaZTPC = trackZvert-particle->Vz();
+    deltaLambdaTPC = TMath::ATan2(trackP[2],trackPt)-TMath::ATan2(particle->Pz(),particle->Pt());
+    deltaPhiTPC = TMath::ATan2(trackP[1],trackP[0])-TMath::ATan2(particle->Py(),particle->Px());
+    deltaPtTPC = (trackPt-mcpt) / mcpt;
 
-    pullYTPC= (esdTrack->GetY()-particle->Vy()) / TMath::Sqrt(esdTrack->GetSigmaY2());
-    pullZTPC = (esdTrack->GetZ()-particle->Vz()) / TMath::Sqrt(esdTrack->GetSigmaZ2());
- 
-    //Double_t sigma_lambda = 1./(1.+esdTrack->GetTgl()*esdTrack->GetTgl()) * TMath::Sqrt(esdTrack->GetSigmaTgl2()); 
-    //Double_t sigma_phi = 1./TMath::Sqrt(1-esdTrack->GetSnp()*esdTrack->GetSnp()) * TMath::Sqrt(esdTrack->GetSigmaSnp2());
-    pullPhiTPC = (esdTrack->GetSnp() - mcsnp) / TMath::Sqrt(esdTrack->GetSigmaSnp2());
-    pullLambdaTPC = (esdTrack->GetTgl() - mctgl) / TMath::Sqrt(esdTrack->GetSigmaTgl2());
-
-    //pullLambdaTPC = deltaLambdaTPC / TMath::Sqrt(esdTrack->GetSigmaTgl2());
-    //pullPhiTPC = deltaPhiTPC / TMath::Sqrt(esdTrack->GetSigmaSnp2()); 
-    if (mcpt) pull1PtTPC = (esdTrack->OneOverPt()-1./mcpt) / TMath::Sqrt(esdTrack->GetSigma1Pt2());
+    AliExternalTrackParam extTrackParam;
+    extTrackParam.CopyFromVTrack(vTrack);
+    pullYTPC= (trackYvert-particle->Vy()) / TMath::Sqrt(extTrackParam.GetSigmaY2());
+    pullZTPC = (trackZvert-particle->Vz()) / TMath::Sqrt(extTrackParam.GetSigmaZ2());
+    pullPhiTPC = (extTrackParam.GetSnp() - mcsnp) / TMath::Sqrt(extTrackParam.GetSigmaSnp2());
+    pullLambdaTPC = (extTrackParam.GetTgl() - mctgl) / TMath::Sqrt(extTrackParam.GetSigmaTgl2());
+    if (mcpt) pull1PtTPC = (extTrackParam.OneOverPt()-1./mcpt) / TMath::Sqrt(extTrackParam.GetSigma1Pt2());
     else pull1PtTPC = 0.;
 
     Double_t vResolHisto[10] = {deltaYTPC,deltaZTPC,deltaPhiTPC,deltaLambdaTPC,deltaPtTPC,particle->Vy(),particle->Vz(),mcphi,mceta,mcpt};
@@ -429,20 +446,20 @@ void AliPerformanceRes::ProcessTPCITS(AliMCEvent* const mcev, AliESDtrack *const
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceRes::ProcessConstrained(AliMCEvent* const mcev, AliVTrack *const vTrack, AliVEvent* const vEvent)
 {
-  // Fill resolution comparison information (constarained parameters) 
+  // Fill resolution comparison information (constrained parameters) 
   //
-  if(!esdEvent) return;
-  if(!esdTrack) return;
+  if(!vEvent) return;
+  if(!vTrack) return;
 
   if( IsUseTrackVertex() ) 
   { 
     // Relate TPC inner params to prim. vertex
-    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
-    Double_t x[3]; esdTrack->GetXYZ(x);
+    const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; vTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK = vTrack->RelateToVVertexBxByBz(vVertex, b, kVeryBig);
     if(!isOK) return;
 
     /*
@@ -454,18 +471,19 @@ void AliPerformanceRes::ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *
   }
 
 
-  const AliExternalTrackParam * track = esdTrack->GetConstrainedParam();
+  const AliExternalTrackParam * track = vTrack->GetConstrainedParam();
   if(!track) return;
 
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParameters(dca,cov);
+  Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
+  Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
+  vTrack->GetImpactParameters(dca,cov);
  
   //
   // Fill rec vs MC information
   //
   if(!mcev) return;
 
-  Int_t label = TMath::Abs(esdTrack->GetLabel()); 
+  Int_t label = TMath::Abs(vTrack->GetLabel()); 
   TParticle* particle = ((AliMCParticle*)mcev->GetTrack(label))->Particle();
   if(!particle) return;
   if(!particle->GetPDG()) return;
@@ -473,10 +491,10 @@ void AliPerformanceRes::ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *
   //printf("charge %d \n",particle->GetPDG()->Charge());
 
   // Only 5 charged particle species (e,mu,pi,K,p)
-  if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
+  if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   Float_t mceta =  particle->Eta();
   Float_t mcphi =  particle->Phi();
@@ -485,14 +503,14 @@ void AliPerformanceRes::ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *
   Float_t mcsnp = TMath::Sin(TMath::ATan2(particle->Py(),particle->Px()));
   Float_t mctgl = TMath::Tan(TMath::ATan2(particle->Pz(),particle->Pt()));
 
-  if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
-  if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters
+  if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters
 
   Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
 
   // select primaries
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  if(TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ()) 
   { 
 
     if(mcpt == 0) return;
@@ -556,21 +574,21 @@ void AliPerformanceRes::ProcessConstrained(AliMCEvent* const mcev, AliESDtrack *
 }
  
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDEvent* const esdEvent)
+void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliVTrack *const vTrack, AliVEvent* const vEvent)
 {
   //
   // Fill resolution comparison information (inner params at TPC reference point) 
   //
-  if(!esdEvent) return;
-  if(!esdTrack) return;
-
+  if(!vEvent) return;
+  if(!vTrack) return;
+  
   if( IsUseTrackVertex() ) 
   { 
     // Relate TPC inner params to prim. vertex
-    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
-    Double_t x[3]; esdTrack->GetXYZ(x);
+    const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; vTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK = vTrack->RelateToVVertexTPCBxByBz(vVertex, b, kVeryBig);
     if(!isOK) return;
 
     /*
@@ -581,22 +599,23 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
     */
   }
 
-  const AliExternalTrackParam * innerParam = esdTrack->GetInnerParam();
+  const AliExternalTrackParam * innerParam = vTrack->GetInnerParam();
   if(!innerParam) return;
 
   // create new AliExternalTrackParam
   AliExternalTrackParam *track = new AliExternalTrackParam(*innerParam);
   if(!track) return;
 
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParametersTPC(dca,cov);
+  Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
+  Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
+  vTrack->GetImpactParametersTPC(dca,cov);
  
   //
   // Fill rec vs MC information
   //
   if(!mcEvent) return;
 
-  Int_t label = esdTrack->GetTPCLabel(); //Use TPC-only label for TPC-only resolution analysis
+  Int_t label = vTrack->GetTPCLabel(); //Use TPC-only label for TPC-only resolution analysis
   if (label <= 0) return;
   AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
   if(!mcParticle) return;
@@ -609,12 +628,18 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   TParticle *particle = mcParticle->Particle();
   if(!particle) return;
 
-  if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
+  if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
-  Double_t mclocal[4]; //Rotated x,y,Px,Py mc-coordinates - the MC data should be rotated since the track is propagated best along x
+  const float kDeg2Rad = 3.1415926535897 / 180.f;
+  const float kSectAngle = 2*3.1415926535897 / 18.f;
+  float mcAngle = (floor(atan2(ref0->Y(), ref0->X()) / kDeg2Rad / 20.f) + 0.5) * kSectAngle;
+  if (fabs(mcAngle - track->GetAlpha()) > 1.5 * kSectAngle) return; //This is most likely the backward leg of a looper that entered the TPC somewhere else
+  if (!track->Rotate(mcAngle)) return;
+  float oldX = track->GetX(), oldY = track->GetY(), oldZ = track->GetZ();
+  Double_t mclocal[4]; //Rotated x,y,Px,Py mc-coordinates, we use the local coordinate system in the sector of the MC label
   Double_t c = TMath::Cos(track->GetAlpha());
   Double_t s = TMath::Sin(track->GetAlpha());
   Double_t x = ref0->X();
@@ -629,14 +654,31 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   //Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
   // propagate track to the radius of the first track reference within TPC
   //Double_t trRadius = TMath::Sqrt(xyz[1] * xyz[1] + xyz[0] * xyz[0]);
-  Double_t field[3]; track->GetBxByBz(field);
   if (TGeoGlobalMagField::Instance()->GetField() == NULL) {
     Error("ProcessInnerTPC", "Magnetic Field not set");
   }
-  Bool_t isOK = track->PropagateToBxByBz(mclocal[0],field);
-  if(!isOK) {return;}
-  //track->AliExternalTrackParam::PropagateTo(mclocal[0],esdEvent->GetMagneticField());  //Use different propagation since above methods returns zero B field and does not work
   
+  if (!AliTrackerBase::PropagateTrackToBxByBz(track, mclocal[0], particle->GetMass(), 1., 0)) return;
+  if (fabs(track->GetY() - mclocal[1]) > 2 || fabs(track->GetZ() - ref0->Z()) > 2) return;
+  if (FILTER_CLONES)
+  {
+    for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
+    {
+      AliVTrack* compareTrack = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
+      if (!compareTrack) continue;
+      if (compareTrack->GetTPCLabel() != vTrack->GetTPCLabel()) continue;
+      if (vTrack == compareTrack) continue;
+      AliExternalTrackParam tmpTrack = *compareTrack->GetInnerParam();
+      if (AliTrackerBase::PropagateTrackToBxByBz(&tmpTrack, mclocal[0], particle->GetMass(), 1., 0))
+      {
+        float dy0 = (track->GetY() - mclocal[1]);
+        float dy1 = (tmpTrack.GetY() - mclocal[1]);
+        float dz0 = (track->GetZ() - ref0->Z());
+        float dz1 = (tmpTrack.GetZ() - ref0->Z());
+        if (dy1 * dy1 + dz1 * dz1 < dy0 * dy0 + dz0 * dz0) return;
+      }
+    }
+  }
   Float_t mceta =  -TMath::Log(TMath::Tan(0.5 * ref0->Theta()));
   Float_t mcphi =  ref0->Phi();
   if(mcphi<0) mcphi += 2.*TMath::Pi();
@@ -645,8 +687,8 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   Float_t mcsnplocal = TMath::Sin(TMath::ATan2(mclocal[3],mclocal[2]));
   Float_t mctgl = TMath::Tan(TMath::ATan2(ref0->Pz(),ref0->Pt()));
 
-  if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
-  if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters
+  if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters
 
   Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
@@ -655,16 +697,17 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
   Bool_t isPrimary;
   if ( IsUseTrackVertex() )
   {
-	  isPrimary = TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ();
+    isPrimary = TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ();
   }
   else
   {
-	  //If Track vertex is not used the above check does not work, hence we use the MC reference track
+    //If Track vertex is not used the above check does not work, hence we use the MC reference track
     isPrimary = mcEvent->IsPhysicalPrimary(label);
   }
   if(isPrimary) 
   { 
     if(mcpt == 0) return;
+    if (MATCH_VALID_LABELS) fValidLabels[label] = 1;
     
     deltaYTPC= track->GetY()-mclocal[1];
     deltaZTPC = track->GetZ()-ref0->Z();
@@ -687,6 +730,12 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
     //pullPhiTPC = deltaPhiTPC / TMath::Sqrt(track->GetSigmaSnp2()); 
     if (mcpt) pull1PtTPC = (track->OneOverPt()-1./mcpt) / TMath::Sqrt(track->GetSigma1Pt2());
     else pull1PtTPC = 0.;
+    
+    if (MATCH_VALID_LABELS)
+    {
+      comparisonContainer cont = {(float) mclocal[0], (float) mclocal[1], ref0->Z(), mcpt, mcphi, mctgl, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC, deltaPtTPC, oldX, oldY, oldZ, (float) vTrack->GetTPCNcls()};
+      fComparisonContainer[label] = cont;
+    }
 
     Double_t vResolHisto[10] = {deltaYTPC,deltaZTPC,deltaPhiTPC,deltaLambdaTPC,deltaPtTPC,ref0->Y(),ref0->Z(),mcphi,mceta,mcpt};
     fResolHisto->Fill(vResolHisto);
@@ -699,22 +748,22 @@ void AliPerformanceRes::ProcessInnerTPC(AliMCEvent *const mcEvent, AliESDtrack *
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack, AliESDEvent* const esdEvent)
+void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliVTrack *const vTrack, const AliVfriendTrack *const friendTrack, AliVEvent* const vEvent)
 {
   //
   // Fill resolution comparison information (outer params at TPC reference point) 
   //
   if(!friendTrack) return;
-  if(!esdEvent) return;
-  if(!esdTrack) return;
+  if(!vEvent) return;
+  if(!vTrack) return;
 
   if( IsUseTrackVertex() ) 
   { 
     // Relate TPC inner params to prim. vertex
-    const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
-    Double_t x[3]; esdTrack->GetXYZ(x);
+    const AliVVertex *vVertex = vEvent->GetPrimaryVertexTracks();
+    Double_t x[3]; vTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK = vTrack->RelateToVVertexTPCBxByBz(vVertex, b, kVeryBig);
     if(!isOK) return;
 
     /*
@@ -732,15 +781,16 @@ void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *
   AliExternalTrackParam *track = new AliExternalTrackParam(*outerParam);
   if(!track) return;
 
-  Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z
-  esdTrack->GetImpactParametersTPC(dca,cov);
+  Float_t dca[2] = {0.,0.}; // dca_xy, dca_z
+  Float_t cov[3] = {0.,0.,0.}; // sigma_xy, sigma_xy_z, sigma_z
+  vTrack->GetImpactParametersTPC(dca,cov);
  
   //
   // Fill rec vs MC information
   //
   if(!mcEvent) return;
 
-  Int_t label = esdTrack->GetTPCLabel(); //Use TPC-only label for TPC-only resolution analysis
+  Int_t label = vTrack->GetTPCLabel(); //Use TPC-only label for TPC-only resolution analysis
   if (label <= 0) return;
   AliMCParticle *mcParticle = (AliMCParticle*) mcEvent->GetTrack(label);
   if(!mcParticle) return;
@@ -753,10 +803,10 @@ void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *
   TParticle *particle = mcParticle->Particle();
   if(!particle) return;
 
-  if (fCutsMC->IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
+  if (fCutsMC.IsPdgParticle(TMath::Abs(particle->GetPdgCode())) == kFALSE) return;
 
   // exclude electrons
-  if (fCutsMC->GetEM()==TMath::Abs(particle->GetPdgCode())) return;
+  if (fCutsMC.GetEM()==TMath::Abs(particle->GetPdgCode())) return;
 
   // calculate alpha angle
   Double_t xyz[3] = {ref0->X(),ref0->Y(),ref0->Z()};
@@ -778,14 +828,14 @@ void AliPerformanceRes::ProcessOuterTPC(AliMCEvent *const mcEvent, AliESDtrack *
   Float_t mcsnp = TMath::Sin(TMath::ATan2(ref0->Py(),ref0->Px()));
   Float_t mctgl = TMath::Tan(TMath::ATan2(ref0->Pz(),ref0->Pt()));
 
-  if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
-  if (esdTrack->GetTPCNcls()<fCutsRC->GetMinNClustersTPC()) return; // min. nb. TPC clusters
+  if ((vTrack->GetStatus()&AliVTrack::kTPCrefit)==0) return; // TPC refit
+  if (vTrack->GetTPCNcls()<fCutsRC.GetMinNClustersTPC()) return; // min. nb. TPC clusters
 
   Float_t deltaPtTPC, deltaYTPC, deltaZTPC, deltaPhiTPC, deltaLambdaTPC; 
   Float_t pull1PtTPC, pullYTPC, pullZTPC, pullPhiTPC, pullLambdaTPC; 
 
   // select primaries
-  if(TMath::Abs(dca[0])<fCutsRC->GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC->GetMaxDCAToVertexZ()) 
+  if(TMath::Abs(dca[0])<fCutsRC.GetMaxDCAToVertexXY() && TMath::Abs(dca[1])<fCutsRC.GetMaxDCAToVertexZ()) 
   { 
     if(mcpt == 0) return;
     
@@ -869,12 +919,12 @@ return refOut;
 }
 
 //_____________________________________________________________________________
-void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend)
+void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vfriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend)
 {
-  // Process comparison information 
-  if(!esdEvent) 
+  // Process comparison information
+  if(!vEvent) 
   {
-    Error("Exec","esdEvent not available");
+    Error("Exec","vEvent not available");
     return;
   }
   AliHeader* header = 0;
@@ -906,41 +956,56 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
     return;
   }
   
-  // use ESD friends
-  if(bUseESDfriend) {
-    if(!esdFriend) {
-      Error("Exec","esdFriend not available");
+  // use V friends
+  if(bUseVfriend) {
+    if(!vfriendEvent) {
+      Error("Exec","vfriendEvent not available");
       return;
     }
   }
 
   // get event vertex
-  const AliESDVertex *vtxESD = NULL;
+  const AliVVertex *vVertex = NULL;
   if( IsUseTrackVertex() ) 
   { 
     // track vertex
-    vtxESD = esdEvent->GetPrimaryVertexTracks();
-	if(vtxESD && (vtxESD->GetStatus()<=0)) return;
+    vVertex = vEvent->GetPrimaryVertexTracks();
+    if(vVertex && (vVertex->GetStatus()<=0)) return;
   }
   // Coverity - removed else branch as vtxESD is not further used in method
   //  else {  
   //    // TPC track vertex
   //    vtxESD = esdEvent->GetPrimaryVertexTPC();
   //  }
- 
-
-
-
+  
+  char *validLabelsIn, *validLabelsOut;
+  if (MATCH_VALID_LABELS)
+  {
+    validLabelsIn = new char[mcEvent->GetNumberOfTracks()];
+    for (int i = 0;i < mcEvent->GetNumberOfTracks();i++) validLabelsIn[i] = 1;
+    validLabelsOut = new char[mcEvent->GetNumberOfTracks()];
+    for (int i = 0;i < mcEvent->GetNumberOfTracks();i++) validLabelsOut[i] = 0;
+    FILE* fp = fopen(Form("labels.%d.tmp", vEvent->GetEventNumberInFile()), "rb");
+    if (fp)
+    {
+      fread(validLabelsIn, sizeof(validLabelsIn[0]), mcEvent->GetNumberOfTracks(), fp);
+      fclose(fp);
+    }
+    fValidLabels = validLabelsOut;
+    fComparisonContainer = new comparisonContainer[mcEvent->GetNumberOfTracks()];
+  }
+  
   //  Process events
-  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
-  { 
-    AliESDtrack *track = esdEvent->GetTrack(iTrack);
-    if(!track) continue;
-
-    AliESDfriendTrack *friendTrack=0;
-
-
-    Int_t label = TMath::Abs(track->GetLabel()); 
+  for (Int_t iTrack = 0; iTrack < vEvent->GetNumberOfTracks(); iTrack++) 
+  {
+    AliVTrack *vTrack = dynamic_cast<AliVTrack*>(vEvent->GetTrack(iTrack));
+    if(!vTrack) continue;
+    
+    const AliVfriendTrack *friendTrack= NULL;
+    
+    int mode = GetAnalysisMode();
+    Int_t label = (mode == 0 || mode == 3 || mode == 4) ? vTrack->GetTPCLabel() : vTrack->GetLabel();
+    
     /* // RS this check is not needed
     if ( label > mcEvent->GetNumberOfTracks() ) 
     {
@@ -961,36 +1026,73 @@ void AliPerformanceRes::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
       continue;
     }
 */
-	if (label == 0) continue;		//Cannot distinguish between track or fake track
-	if (track->GetLabel() < 0) continue; //Do not consider fake tracks
+    if (label <= 0) continue; //Cannot distinguish between track or fake track for label = 0, do not process fakes (<0)
+    if (MATCH_VALID_LABELS && validLabelsIn[label] == 0) continue;
 
-    if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,track,esdEvent);
-    else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,track,esdEvent);
-    else if(GetAnalysisMode() == 2) ProcessConstrained(mcEvent,track,esdEvent);
-    else if(GetAnalysisMode() == 3) ProcessInnerTPC(mcEvent,track,esdEvent);
+    if(GetAnalysisMode() == 0) ProcessTPC(mcEvent,vTrack,vEvent);
+    else if(GetAnalysisMode() == 1) ProcessTPCITS(mcEvent,vTrack,vEvent);
+    else if(GetAnalysisMode() == 2) ProcessConstrained(mcEvent,vTrack,vEvent);
+    else if(GetAnalysisMode() == 3) ProcessInnerTPC(mcEvent,vTrack,vEvent);
     else if(GetAnalysisMode() == 4) {
-
-    if(bUseESDfriend) {
-      friendTrack=esdFriend->GetTrack(iTrack);
-      if(!friendTrack) continue;
-    }
-
-	ProcessOuterTPC(mcEvent,track,friendTrack,esdEvent);
+      if(bUseVfriend && vfriendEvent && vfriendEvent->TestSkipBit()==kFALSE) {
+	if (vTrack->IsA()==AliESDtrack::Class()) {
+	  friendTrack = ((AliESDtrack*)vTrack)->GetFriendTrack();
 	}
+	else {
+	  if (iTrack<vfriendEvent->GetNumberOfTracks()) {
+	    friendTrack=vfriendEvent->GetTrack(iTrack);
+	  }
+	}
+	if(!friendTrack) continue;
+      }
+      ProcessOuterTPC(mcEvent,vTrack,friendTrack,vEvent);
+    }
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
       return;
     }
+  }
+  if (MATCH_VALID_LABELS)
+  { 
+    FILE* fp = fopen(Form("labels.%d.tmp", vEvent->GetEventNumberInFile()), "w+b");
+    if (fp)
+    {
+      fwrite(validLabelsOut, sizeof(validLabelsOut[0]), mcEvent->GetNumberOfTracks(), fp);
+      fclose(fp);
+    }
+    delete[] validLabelsIn;
+    delete[] validLabelsOut;
+    fValidLabels = NULL;
+
+    static int lastNum = -1;
+    static int repeat = 0;
+    if (lastNum != vEvent->GetEventNumberInFile())
+    {
+        lastNum = vEvent->GetEventNumberInFile();
+        repeat = 0;
+    }
+    else
+    {
+        repeat++;
+    }
+    fp = fopen(Form("result.%d.%d.tmp", vEvent->GetEventNumberInFile(), repeat), "w+b");
+    fwrite(fComparisonContainer, sizeof(fComparisonContainer[0]), mcEvent->GetNumberOfTracks(), fp);
+    fclose(fp);
+    delete[] fComparisonContainer;
+    fComparisonContainer = NULL;
   }
 }
 
 //_____________________________________________________________________________
 TH1F* AliPerformanceRes::MakeResol(TH2F * his, Int_t integ, Bool_t type, Int_t cut){
   // Create resolution histograms
- 
+
+  //Debugging: Turning off creation/display of histograms because they
+  //seem to get stuck in a loop
   TH1F *hisr, *hism;
   if (!gPad) new TCanvas;
-  hisr = AliTreeDraw::CreateResHistoII(his,&hism,integ,kTRUE,cut);
+  bool shouldDrawBinFits = kFALSE; //default = kTRUE
+  hisr = AliTreeDraw::CreateResHistoII(his,&hism,integ,shouldDrawBinFits,cut);
   if (type) return hism;
   else 
     return hisr;
@@ -1018,10 +1120,18 @@ void AliPerformanceRes::Analyse() {
   {
     for(Int_t j=5; j<10; j++) 
     {
+      //Ranges
       if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
-      //if(j!=8) fResolHisto->GetAxis(8)->SetRangeUser(0.0,0.89); // eta window
       else fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);
-      if(GetAnalysisMode() == 3) fResolHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
+      if (j!=9) fResolHisto->GetAxis(9)->SetRangeUser(0.1,19.99);            // pt threshold
+      else fResolHisto->GetAxis(9)->SetRangeUser(0.015,19.99);
+
+      if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
+      else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);      // eta window
+      if (j!=9) fPullHisto->GetAxis(9)->SetRangeUser(0.1,19.99);            // pt threshold
+      else fPullHisto->GetAxis(9)->SetRangeUser(0.015,19.99);
+      
+      //Resolutions
 
       h2D = (TH2F*)fResolHisto->Projection(i,j);
 
@@ -1056,12 +1166,7 @@ void AliPerformanceRes::Analyse() {
       fResolHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
       //fResolHisto->GetAxis(9)->SetRangeUser(0.1,100.);
 
-      //
-      if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(-0.9,0.89); // eta window
-      //if(j!=8) fPullHisto->GetAxis(8)->SetRangeUser(0.0,0.89);    // eta window
-      else  fPullHisto->GetAxis(8)->SetRangeUser(-1.5,1.49);      // eta window
-      fPullHisto->GetAxis(9)->SetRangeUser(0.,9.99);            // 1./pt threshold
-      if(GetAnalysisMode() == 3) fPullHisto->GetAxis(5)->SetRangeUser(-80.,79.99); // y range
+      //Pulls
 
       h2D = (TH2F*)fPullHisto->Projection(i,j);
 

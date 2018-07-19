@@ -30,7 +30,7 @@ AliJIaaCorrelations::AliJIaaCorrelations( AliJCard *cardIn, AliJIaaHistograms *h
 	AliJCorrelationInterface(),
 	fcard(cardIn),
 	fhistos(histosIn),
-	fAcceptanceCorrection(0x0),
+//	fAcceptanceCorrection(0x0),
 	fnReal(0),
 	fnMix(0),
 	fsamplingMethod(0),    // flat by default
@@ -53,29 +53,28 @@ AliJIaaCorrelations::AliJIaaCorrelations( AliJCard *cardIn, AliJIaaHistograms *h
 	fTrackMergeCut(0),
     fNearSide(true),
     fNearSide3D(true),
-    fIsLikeSign(false),
-	fEtaGapBin(0),
+    fEtaGapBin(0),
 	fPhiGapBinNear(0),
 	fRGapBinNear(0),
 	fCentralityBin(0),
 	fXlongBin(0),
 	fUseZVertexBinsAcceptance(false),
-    fHelicity(0),
+    fRequireLikeSign(0),
+    fIsLikeSign(false),
     fUseTrackMergingCorr(0)
 {
 	// constructor
     fmaxEtaRange = fcard->Get("EtaRange");
-    fHelicity = fcard->Get("Helicity"); // 0: all, 1: like-sign, -1: opposite-sign
+    fRequireLikeSign = fcard->Get("RequireLikeSign"); // 0: all, 1: like-sign, -1: opposite-sign
     fUseTrackMergingCorr = fcard->Get("UseTrackMergingCorr"); // correct for track merging (1) or not (0)
     fTrackMergeCut = fcard->Get("TrackMergeCut"); // minimum of acceptable track separation
-
 }
 
 AliJIaaCorrelations::AliJIaaCorrelations() :
 	AliJCorrelationInterface(),
 	fcard(0x0),
 	fhistos(0x0),
-	fAcceptanceCorrection(0x0),
+	//fAcceptanceCorrection(0x0),
 	fnReal(0),
 	fnMix(0),
 	fsamplingMethod(0),    // flat by default
@@ -98,14 +97,14 @@ AliJIaaCorrelations::AliJIaaCorrelations() :
 	fTrackMergeCut(0),
 	fNearSide(true),
 	fNearSide3D(true),
-    fIsLikeSign(false),
-	fEtaGapBin(0),
+    fEtaGapBin(0),
 	fPhiGapBinNear(0),
 	fRGapBinNear(0),
 	fCentralityBin(0),
 	fXlongBin(0),
 	fUseZVertexBinsAcceptance(false),
-    fHelicity(0),
+    fRequireLikeSign(0),
+    fIsLikeSign(false),
     fUseTrackMergingCorr(0)
 {
 	// default constructor
@@ -114,7 +113,7 @@ AliJIaaCorrelations::AliJIaaCorrelations() :
 AliJIaaCorrelations::AliJIaaCorrelations(const AliJIaaCorrelations& in) :
 	fcard(in.fcard),
 	fhistos(in.fhistos),
-	fAcceptanceCorrection(in.fAcceptanceCorrection),
+	//fAcceptanceCorrection(in.fAcceptanceCorrection),
 	fnReal(in.fnReal),
 	fnMix(in.fnMix),
 	fsamplingMethod(in.fsamplingMethod),
@@ -137,14 +136,14 @@ AliJIaaCorrelations::AliJIaaCorrelations(const AliJIaaCorrelations& in) :
 	fTrackMergeCut(in.fTrackMergeCut),
 	fNearSide(in.fNearSide),
 	fNearSide3D(in.fNearSide3D),
-    fIsLikeSign(in.fIsLikeSign),
-	fEtaGapBin(in.fEtaGapBin),
+    fEtaGapBin(in.fEtaGapBin),
 	fPhiGapBinNear(in.fPhiGapBinNear),
 	fRGapBinNear(in.fRGapBinNear),
 	fCentralityBin(in.fCentralityBin),
 	fXlongBin(in.fXlongBin),
 	fUseZVertexBinsAcceptance(in.fUseZVertexBinsAcceptance),
-    fHelicity(in.fHelicity),
+    fRequireLikeSign(in.fRequireLikeSign),
+    fIsLikeSign(in.fIsLikeSign),
     fUseTrackMergingCorr(in.fUseTrackMergingCorr)
 {
 	// The pointers to card and histos are just copied. I think this is safe, since they are not created by
@@ -174,8 +173,7 @@ AliJIaaCorrelations& AliJIaaCorrelations::operator=(const AliJIaaCorrelations& i
 	fTrackMergeCut = in.fTrackMergeCut;
 	fNearSide = in.fNearSide;
 	fNearSide3D = in.fNearSide3D;
-    fIsLikeSign = in.fIsLikeSign;
-	fEtaGapBin = in.fEtaGapBin;
+    fEtaGapBin = in.fEtaGapBin;
 	fPhiGapBinNear = in.fPhiGapBinNear;
 	fRGapBinNear = in.fRGapBinNear;
 	fCentralityBin = in.fCentralityBin;
@@ -185,14 +183,15 @@ AliJIaaCorrelations& AliJIaaCorrelations::operator=(const AliJIaaCorrelations& i
 	fsamplingMethod = in.fsamplingMethod;
 	fmaxEtaRange = in.fmaxEtaRange;
 	fUseZVertexBinsAcceptance = in.fUseZVertexBinsAcceptance;
-    fHelicity = in.fHelicity;
+    fRequireLikeSign = in.fRequireLikeSign;
+    fIsLikeSign = in.fIsLikeSign;
     fUseTrackMergingCorr = in.fUseTrackMergingCorr;
 
 	// The pointers to card and histos are just copied. I think this is safe, since they are not created by
 	// AliJIaaCorrelations and thus should not disappear if the AliJCorrelation managing them is destroyed.
 	fcard = in.fcard;
 	fhistos = in.fhistos;
-	fAcceptanceCorrection = in.fAcceptanceCorrection;
+	//fAcceptanceCorrection = in.fAcceptanceCorrection;
 
 	return *this;
 	// copy constructor
@@ -236,14 +235,15 @@ void AliJIaaCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, 
 	// histo filler
 	bool twoTracks = false;
 	if(ftk1->GetParticleType()==kJHadron && ftk2->GetParticleType()==kJHadron) twoTracks =true;
+	if(ftk1->GetParticleType()==kJHadronMC && ftk2->GetParticleType()==kJHadronMC) twoTracks =true;
 
 	//double-counting check
 	if(fTyp == kReal && twoTracks && ftk1->GetID()==ftk2->GetID()) return;
 
 	// Check the signs of the paired particles
-	fIsLikeSign = false;
-	if(ftk1->GetCharge() > 0 && ftk2->GetCharge() > 0) fIsLikeSign = true;
-	if(ftk1->GetCharge() < 0 && ftk2->GetCharge() < 0) fIsLikeSign = true;
+    fIsLikeSign = false;
+    if(ftk1->GetCharge() > 0 && ftk2->GetCharge() > 0) fIsLikeSign = true;
+    if(ftk1->GetCharge() < 0 && ftk2->GetCharge() < 0) fIsLikeSign = true;
 
 	//----------------------------------------------------------------
 	fptt = ftk1->Pt();
@@ -322,11 +322,11 @@ void AliJIaaCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, 
         }
     }
 
-    // check helicity only if +1:same or -1:opposite check is required
-    if(fHelicity!=0) {
+    // check pair sign only if +1:same or -1:opposite check is required
+    if(fRequireLikeSign!=0) {
         // break if requirement is not met
-        if(fIsLikeSign==true && fHelicity!=+1) return;
-        if(fIsLikeSign==false && fHelicity!=-1 ) return;
+        if(fIsLikeSign==true && fRequireLikeSign!=+1) return;
+        if(fIsLikeSign==false && fRequireLikeSign!=-1 ) return;
     }
 	// ===================================================================
 	// =====================  Fill Histograms  ===========================
@@ -334,7 +334,7 @@ void AliJIaaCorrelations::FillCorrelationHistograms(fillType fTyp, int CentBin, 
 
 	if(ResonanceCut(ftk1,ftk2))
 	{
-		FillDeltaEtaHistograms(fTyp);  // Fill all the delta eta histograms
+        //FillDeltaEtaHistograms(fTyp);  // Fill all the delta eta histograms
 		FillDeltaEtaDeltaPhiHistograms(fTyp);  // Fill the 2D correlation functions
 	} else {
         FillResonanceHistograms(fTyp);
@@ -352,9 +352,9 @@ void AliJIaaCorrelations::FillDeltaEtaHistograms(fillType fTyp)
 
 	if( fNearSide ){
 		if( fTyp == 0 ) {
-            fhistos->fhDEtaNear[fCentralityBin][fZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency );
+            //fhistos->fhDEtaNear[fCentralityBin][fZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency );
 		} else {
-            fhistos->fhDEtaNearM[fCentralityBin][fZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency );
+            //fhistos->fhDEtaNearM[fCentralityBin][fZBin][fPhiGapBinNear][fpttBin][fptaBin]->Fill( fDeltaEta ,  fTrackPairEfficiency );
 		}
 	}
 }
@@ -374,7 +374,7 @@ void AliJIaaCorrelations::FillDeltaEtaDeltaPhiHistograms(fillType fTyp)
 
 void AliJIaaCorrelations::FillResonanceHistograms(fillType fTyp)
 {
-	fhistos->fhResonanceCut[fTyp][fCentralityBin][fZBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhi, fTrackPairEfficiency);
+	//fhistos->fhResonanceCut[fTyp][fCentralityBin][fZBin][fpttBin][fptaBin]->Fill(fDeltaEta, fDeltaPhi, fTrackPairEfficiency);
 }
 
 bool AliJIaaCorrelations::ResonanceCut(AliJBaseTrack *ftk1, AliJBaseTrack *ftk2)

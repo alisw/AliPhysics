@@ -112,17 +112,22 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   // event level
   //
 
-
-
   TH1 *h1D = 0;
   TH2 *h2D = 0;
   TH3 *h3D = 0;
+
+  // default gaus fit. Used for setting proper fit ranges
+  TF1* defaultFit = 0x0;
 
   h1D = (TH1*)fold->FindObject("h_tpc_event_1");
   Double_t NEvents = h1D->GetEntries();
 
   cout<<"number of events    "<<NEvents<<endl;
 
+  //
+  // ===| Event info |==========================================================
+  //
+  {
   TCanvas *can1 = new TCanvas("can1","TPC event information",1200,800);
   can1->Divide(3,2);
 
@@ -162,8 +167,12 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   he->Draw("histesame");
 
   can1->SaveAs("TPC_event_info.png");
+  }
 
-
+  //
+  // ===| Track distribution eta phi pt |=======================================
+  //
+  {
   TCanvas *can2 = new TCanvas("can2","#eta , #phi and p_{t}",1200,800);
 
   can2->Divide(3,2);
@@ -247,7 +256,12 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h1D->Draw("histesame");
 
   can2->SaveAs("eta_phi_pt.png");
+  }
 
+  //
+  // ===| Cluster Occupancy |===================================================
+  //
+  {
   TCanvas *can3 = new TCanvas("can3","Cluster Occupancy",700,700);
   can3->Divide(1,2);
 
@@ -270,6 +284,23 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
     h3D_2->Project3D("xy")->Scale(1.0/NEvents);
 
   can3->SaveAs("cluster_occupancy.png");
+  }
+
+  //
+  // ===| Cluster in detail |===================================================
+  //
+  {
+  TCanvas *can4 = new TCanvas("can4","Clusters in Detail",1200,800);
+  can4->Divide(3,2);
+
+  // set proper fit range for # cluster plots
+  //   the fits go either up to 160 clusters or as fraction up to 1.1
+  //   a range of 200 should be more than fine
+  defaultFit = (TF1*)gROOT->GetFunction("gaus");
+  if (!defaultFit) defaultFit = new TF1("gaus","gaus");
+  defaultFit->SetParameters(1,1,0.01);
+  defaultFit->SetParLimits(1, 0.01, 200);
+  defaultFit->SetParLimits(2, 0.001, 100);
 
   TObjArray *arr1 = new TObjArray();
   TObjArray *arr2 = new TObjArray();
@@ -277,9 +308,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   TObjArray *arr4 = new TObjArray();
   TObjArray *arr5 = new TObjArray();
   TObjArray *arr6 = new TObjArray();
-
-  TCanvas *can4 = new TCanvas("can4","Clusters in Detail",1200,800);
-  can4->Divide(3,2);
 
   can4->cd(1);
   h3D = (TH3*)fold->FindObject("h_tpc_track_all_recvertex_0_5_7");
@@ -313,7 +341,6 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   TH3 *h3D22 = h3D->Clone("h3D22");
   h3D22->Add(((TH3*)fold->FindObject("h_tpc_track_neg_recvertex_0_5_6")),1);
   h3D22->GetYaxis()->SetRangeUser(0.0,maxeta);
-  h2D = (TH2*)h3D22->Project3D("xz");
   h2D->SetTitle("nCluster vs #phi, 0.0<#eta<0.8, |dcar|<3 cm, |dcaz|<3 cm");
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr4);
   h2D->Draw("colz");
@@ -343,14 +370,27 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->Draw("colz");
   arr6->At(1)->Draw("same");
 
-  can4->SaveAs("cluster_in_detail.png");
   can4->Update();
+  can4->SaveAs("cluster_in_detail.png");
+  }
+
+  //
+  // ===| DCA in detail |=======================================================
+  //
+  {
+  TCanvas *can5 = new TCanvas("can5","DCA In Detail",1200,800);
+  can5->Divide(3,2);
+
+  // set proper fit range for # cluster plots
+  //   the range of the plot is -3 to 3
+  defaultFit = (TF1*)gROOT->GetFunction("gaus");
+  if (!defaultFit) defaultFit = new TF1("gaus","gaus");
+  defaultFit->SetParameters(1,0,0.1);
+  defaultFit->SetParLimits(1, -3, 3);
+  defaultFit->SetParLimits(2, 0.001, 1);
 
   TObjArray *arr7 = new TObjArray();
   TObjArray *arr8 = new TObjArray();
-
-  TCanvas *can5 = new TCanvas("can5","DCA In Detail",1200,800);
-  can5->Divide(3,2);
 
   can5->cd(1);
   h3D = (TH3*)fold->FindObject("h_tpc_track_all_recvertex_3_5_7");
@@ -396,9 +436,22 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h3D->Project3D("xy")->SetTitle("DCAZ vs #eta of neg. charged tracks");
 
   can5->SaveAs("dca_in_detail.png");
+  }
 
+  //
+  // ===| DCAr vs pT |==========================================================
+  //
+  {
   TCanvas *can51 = new TCanvas("can51","DCAr versus pT",700,800);
   can51->Divide(2,2);
+
+  // set proper fit range for # cluster plots
+  //   the range of the plot is -3 to 3
+  defaultFit = (TF1*)gROOT->GetFunction("gaus");
+  if (!defaultFit) defaultFit = new TF1("gaus","gaus");
+  defaultFit->SetParameters(1,0,0.1);
+  defaultFit->SetParLimits(1, -3, 3);
+  defaultFit->SetParLimits(2, 0.001, 3);
 
   TObjArray *arr9 = new TObjArray();
   TObjArray *arr10 = new TObjArray();
@@ -416,6 +469,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr9);
   TH1 *width1 = (TH1*)arr9->At(2);
   width1->Draw("same");
+  width1->SetMarkerColor(2);
   width1->SetLineColor(2);
   arr9->At(1)->Draw("same");
 
@@ -429,6 +483,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr10);
   TH1 *width2 = (TH1*)arr10->At(2);
   width2->Draw("same");
+  width2->SetMarkerColor(2);
   width2->SetLineColor(2);
   arr10->At(1)->Draw("same");
   PlotTimestamp(can51);
@@ -443,8 +498,9 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->SetTitle("DCAR vs pT of neg. charged tracks(A Side)");
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr11);
   TH1 *width3 = (TH1*)arr11->At(2);
-  width3->Draw("same");
+  width3->SetMarkerColor(2);
   width3->SetLineColor(2);
+  width3->Draw("same");
   arr11->At(1)->Draw("same");
 
   can51->cd(4);
@@ -456,13 +512,17 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->SetTitle("DCAR vs pT of neg. charged tracks(C Side)");
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr12);
   TH1 *width4 = (TH1*)arr12->At(2);
-  width4->Draw("same");
+  width4->SetMarkerColor(2);
   width4->SetLineColor(2);
+  width4->Draw("same");
   arr12->At(1)->Draw("same");
 
   can51->SaveAs("dcar_pT.png");
+  }
 
-  // get TPC dEdx performance object
+  // ===========================================================================
+  // ===| get TPC dEdx performance object |=====================================
+  // ===========================================================================
   AliPerformanceDEdx *obj1 = TPC->FindObject("AliPerformanceDEdxTPCInner");
   if(obj1==NULL) return(0);
 
@@ -470,6 +530,10 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   TFolder *fold1 = obj1->GetAnalysisFolder();
   if(!fold1) return(0);
 
+  //
+  // ===| dE/dx plot |==========================================================
+  //
+  {
   TCanvas *can6 = new TCanvas("can6","TPC dEdX",1200,800);
   can6->Divide(3,2);
 
@@ -508,10 +572,12 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
 
   /////////////////////////////////////////////////////////////////////
   can6->SaveAs("TPC_dEdx_track_info.png");
+  }
 
-  TObjArray *arr9 = new TObjArray();
-  TObjArray *arr10 = new TObjArray();
-
+  //
+  // ===| DCA vs phi |==========================================================
+  //
+  {
   TCanvas *can7 = new TCanvas("can7","DCA vs #phi",1200,800);
   can7->Divide(4,2);
 
@@ -570,8 +636,13 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
 
 
   can7->SaveAs("dca_and_phi.png");
+  }
 
 
+  // ===========================================================================
+  // ===| Get performance objects ==============================================
+  // ===========================================================================
+  //
   AliPerformanceMatch *obj2 = (AliPerformanceMatch*)TPC->FindObject("AliPerformanceMatchTPCITS");
   TFolder *pMatch = obj2->GetAnalysisFolder();
 
@@ -589,6 +660,10 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   TH2 *h2D = 0;
   TH2 *h2D1 = 0;
 
+  //
+  // ===| TPC-ITS matching efficiency |=========================================
+  //
+  {
   TCanvas *can8 = new TCanvas("can8","TPC-ITS Matching Efficiency",800,800);
   can8->Divide(2,2);
 
@@ -645,9 +720,22 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
 
   can8->SaveAs("TPC-ITS.png");
   //  TH2 *h2D = 0;
+  }
 
+  //
+  // ===| Pulls tracking parameters vs 1/pT |===================================
+  //
+  {
   TCanvas *can9 = new TCanvas("can9","Pulls of TPC Tracks vs 1/pT",1200,800);
   can9->Divide(3,2);
+
+  // set proper fit range for # cluster plots
+  //   the range of the plot is -5 to 5
+  defaultFit = (TF1*)gROOT->GetFunction("gaus");
+  if (!defaultFit) defaultFit = new TF1("gaus","gaus");
+  defaultFit->SetParameters(1,0,0.1);
+  defaultFit->SetParLimits(1, -5, 5);
+  defaultFit->SetParLimits(2, 0.001, 3);
 
   TObjArray *arr1 = new TObjArray();
   TObjArray *arr2 = new TObjArray();
@@ -689,9 +777,22 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   PlotTimestamp(can9);
 
   can9->SaveAs("pull-pt.png");
+  }
 
+  //
+  // ===| Pulls tracking parameters vs eta |====================================
+  //
+  {
   TCanvas *can10 = new TCanvas("can10","Pulls of TPC Tracks vs Eta",1200,800);
   can10->Divide(3,2);
+
+  // set proper fit range for # cluster plots
+  //   the range of the plot is -5 to 5
+  defaultFit = (TF1*)gROOT->GetFunction("gaus");
+  if (!defaultFit) defaultFit = new TF1("gaus","gaus");
+  defaultFit->SetParameters(1,0,0.1);
+  defaultFit->SetParLimits(1, -5, 5);
+  defaultFit->SetParLimits(2, 0.001, 3);
 
   TObjArray *arr6 = new TObjArray();
   TObjArray *arr7 = new TObjArray();
@@ -733,9 +834,22 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   PlotTimestamp(can10);
 
   can10->SaveAs("pull-eta.png");
+  }
 
+  //
+  // ===| Pulls tracking parameters vs phi |====================================
+  //
+  {
   TCanvas *can11 = new TCanvas("can11","Pulls of TPC Tracks vs Phi",1200,800);
   can11->Divide(3,2);
+
+  // set proper fit range for # cluster plots
+  //   the range of the plot is -5 to 5
+  defaultFit = (TF1*)gROOT->GetFunction("gaus");
+  if (!defaultFit) defaultFit = new TF1("gaus","gaus");
+  defaultFit->SetParameters(1,0,0.1);
+  defaultFit->SetParLimits(1, -5, 5);
+  defaultFit->SetParLimits(2, 0.001, 3);
 
   TObjArray *arr11 = new TObjArray();
   TObjArray *arr12 = new TObjArray();
@@ -777,10 +891,15 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   PlotTimestamp(can11);
 
   can11->SaveAs("pull-phi.png");
+  }
 
   AliPerformanceMatch *obj4 = (AliPerformanceMatch*)TPC->FindObject("AliPerformanceMatchTPCConstrain");
   TFolder *pConstrain = obj4->GetAnalysisFolder();
 
+  //
+  // ===| phi contrained pulls |================================================
+  //
+  {
   TCanvas *can12 = new TCanvas("can12","#delta_{sin#phi}/#sigma_{sin#phi}",800,800);
   can12->Divide(2,2);
 
@@ -797,8 +916,9 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr11);
   arr11->At(1)->Draw("same");
   TH1 *width1 = (TH1*)arr11->At(2);
-  width1->Draw("same");
+  width1->SetMarkerColor(2);
   width1->SetLineColor(2);
+  width1->Draw("same");
 
   /*  h3D->Project3D("xy")->Draw("colz");
       h3D->Project3D("xy")->SetTitle("A Side");
@@ -817,6 +937,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   arr12->At(1)->Draw("same");
   TH1 *width2 = (TH1*)arr12->At(2);
   width2->Draw("same");
+  width2->SetMarkerColor(2);
   width2->SetLineColor(2);
   PlotTimestamp(can1);
 
@@ -837,8 +958,9 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr13);
   arr13->At(1)->Draw("same");
   TH1 *width3 = (TH1*)arr13->At(2);
-  width3->Draw("same");
+  width3->SetMarkerColor(2);
   width3->SetLineColor(2);
+  width3->Draw("same");
 
   /*  h3D->Project3D("xy")->Draw("colz");
       h3D->Project3D("xy")->SetTitle("A Side");
@@ -855,8 +977,9 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
   h2D->FitSlicesY(0,0,-1,0,"QNR",arr14);
   arr14->At(1)->Draw("same");
   TH1 *width4 = (TH1*)arr14->At(2);
-  width4->Draw("same");
+  width4->SetMarkerColor(2);
   width4->SetLineColor(2);
+  width4->Draw("same");
 
   /*  h32->Project3D("xy")->Draw("colz");
       h32->Project3D("xy")->SetTitle("C Side");
@@ -865,6 +988,7 @@ int drawPerformanceTPCQAMatch(const char* inFile = "perf.root") {
       arr14->At(1)->Draw("same");  */
 
   can12->SaveAs("pullPhiConstrain.png");
+  }
 
   //
   // resolution and efficiency plots from David - added by Patrick

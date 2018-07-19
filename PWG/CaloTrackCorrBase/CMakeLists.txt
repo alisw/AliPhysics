@@ -24,7 +24,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
-  )
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase)
 
 # Sources - alphabetical order
 set(SRCS
@@ -34,6 +34,8 @@ set(SRCS
   AliMCAnalysisUtils.cxx 
   AliIsolationCut.cxx 
   AliAnaScale.cxx 
+  AliCaloTrackParticle.cxx 
+  AliCaloTrackParticleCorrelation.cxx 
   AliCaloTrackReader.cxx 
   AliCaloTrackESDReader.cxx 
   AliCaloTrackAODReader.cxx 
@@ -60,8 +62,8 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
-# Dependecies
-set(LIBDEPS ANALYSISalice EMCALUtils PHOSUtils)
+# Dependencies
+set(LIBDEPS ANALYSISalice EMCALUtils PWGEMCALbase PHOSUtils)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -70,7 +72,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
 
-# Public include folders that will be propagated to the dependecies
+# Public include folders that will be propagated to the dependencies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
 
 # System dependent: Modify the way the library is build

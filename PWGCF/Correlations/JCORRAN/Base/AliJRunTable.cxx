@@ -61,6 +61,9 @@ void AliJRunTable::Init(){
     SetPeriodInformation( kLHC13g, "LHC13g",kPA, kRE, 5020, 197669,200000, "LHC13b2-efix_p1" );
     // p-Pb 5TeV
     SetPeriodInformation( kLHC16q, "LHC16q",kPA, kRE, 5020, 264896,265533, "LHC17f2" );
+    // p-p 5TeV
+    SetPeriodInformation( kLHC17p, "LHC17p",kPP, kRE, 5020, 281970,282350, "LHC17l3b" );
+    SetPeriodInformation( kLHC17q, "LHC17q",kPP, kRE, 5020, 282351,282444, "LHC17l3b" ); // need to update once it is available
 }
 
 

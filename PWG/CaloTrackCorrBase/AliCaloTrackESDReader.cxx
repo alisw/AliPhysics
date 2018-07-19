@@ -24,7 +24,6 @@
 #include "AliMCEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliGenCocktailEventHeader.h"
-#include "AliGenPythiaEventHeader.h"
 #include "AliLog.h"
 
 /// \cond CLASSIMP
@@ -77,6 +76,8 @@ Bool_t AliCaloTrackESDReader::CheckForPrimaryVertex() const
     }
     if(esdevent->GetPrimaryVertexSPD()->GetNContributors() < 1)
     {
+      AliDebug(1,Form("Null number of contributors from bad vertex type:: %s",
+                    esdevent->GetPrimaryVertex()->GetName()));
       return kFALSE;
     }
   }
@@ -90,6 +91,8 @@ Bool_t AliCaloTrackESDReader::CheckForPrimaryVertex() const
 AliGenEventHeader* AliCaloTrackESDReader::GetGenEventHeader() const
 {
   if ( !fMC ) return 0x0 ;
+    
+  if ( fGenEventHeader ) return fGenEventHeader;
   
   AliGenEventHeader * eventHeader = fMC->GenEventHeader();
   

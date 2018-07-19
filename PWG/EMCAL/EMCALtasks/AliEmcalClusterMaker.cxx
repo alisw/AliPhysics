@@ -80,13 +80,13 @@ void AliEmcalClusterMaker::UserCreateOutputObjects()
   fOutput->Add(fEnergyDistBefore);
   fEtaPhiDistBefore = new TH2F("hEtaPhiDistBefore","hEtaPhiDistBefore;#eta;#phi",280,-0.7,0.7,200*3.14,0,2*3.14);
   fOutput->Add(fEtaPhiDistBefore);
-  fEnergyTimeHistBefore = new TH2F("hEnergyTimeDistBefore","hEnergyTimeDistBefore;E_{clus} (GeV);time",1500,0,150,500,0,1e-6);
+  fEnergyTimeHistBefore = new TH2F("hEnergyTimeDistBefore","hEnergyTimeDistBefore;E_{clus} (GeV);time",1500,0,150,500,-1e-6,1e-6);
   fOutput->Add(fEnergyTimeHistBefore);
   fEnergyDistAfter = new TH1F("hEnergyDistAfter","hEnergyDistAfter;E_{clus} (GeV)",1500,0,150);
   fOutput->Add(fEnergyDistAfter);
   fEtaPhiDistAfter = new TH2F("hEtaPhiDistAfter","hEtaPhiDistAfter;#eta;#phi",280,-0.7,0.7,200*3.14,0,2*3.14);
   fOutput->Add(fEtaPhiDistAfter);
-  fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time",1500,0,150,500,0,1e-6);
+  fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time",1500,0,150,500,-1e-6,1e-6);
   fOutput->Add(fEnergyTimeHistAfter);
   fEnergyExoticClusters = new TH1F("fEnergyExoticClusters","fEnergyExoticClusters;E_{ex clus} (GeV)",1500,0,150);
   fOutput->Add(fEnergyExoticClusters);

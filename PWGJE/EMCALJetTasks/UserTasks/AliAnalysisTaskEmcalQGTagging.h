@@ -11,9 +11,10 @@ class TClonesArray;
 class TArrayI;
 class AliAnalysisManager;
 class AliJetContainer;
-
+class AliEmcalJetFinder;
+class AliFJWrapper;
 #include "AliAnalysisTaskEmcalJet.h"
-
+#include "AliFJWrapper.h"
 
 
 class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
@@ -66,6 +67,11 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
+   void SetCheckTracksOn(Bool_t t)                         { fTrackCheckPlots =t;}
+   void SetSubjetCutoff(Float_t t)                            {fSubjetCutoff = t;}
+   void SetHardCutoff(Float_t t)                            {fHardCutoff = t;}
+   void SetDoTwoTrack(Bool_t t)                             {fDoTwoTrack = t;} 
+   void SetMagFieldPol(Float_t t)                           {fMagFieldPolarity=t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
   void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
@@ -94,13 +100,15 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
 
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
   Double_t                           RelativePhi(Double_t mphi, Double_t vphi);
-
+  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo);
+  void                               CheckSubjetResolution(AliEmcalJet *fJet,AliJetContainer *fJetCont, AliEmcalJet *fJetM,AliJetContainer *fJetContM);
+  Bool_t                              CheckClosePartner(Int_t index, AliEmcalJet *fJet,AliVParticle *fTrack, AliParticleContainer *fTrackCont);
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                             fShapesVar[19];                  // jet shapes used for the tagging
+  Float_t                             fShapesVar[14];                  // jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Int_t                                 fSelectedShapes;                //chose set of shapes 
@@ -114,6 +122,13 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
+  Bool_t                              fTrackCheckPlots;              //switch on qa plots
+  Float_t                             fSubjetCutoff;                 //angular cutoff for subjets at det/gen level
+  Float_t                             fHardCutoff;                   //hard cutoff in the iterative declustering 
+  Bool_t                              fDoTwoTrack;                    //switch to consider 2 track effects 
+  Float_t                             fPhiCutValue;                  //cuts from HBT
+  Float_t                             fEtaCutValue;                  //cuts from HBT
+  Float_t                             fMagFieldPolarity;             //polarity, to calculate phimin 
   Int_t                               fDerivSubtrOrder;
 
   
@@ -128,6 +143,9 @@ class AliAnalysisTaskEmcalQGTagging : public AliAnalysisTaskEmcalJet {
   TH2F                                *fhpTjetpT; //control p[lot fo the recoil analysis
   TH1F                                *fhPt;
   TH1F                                *fhPhi;
+  TH1F                                *fhTrackPhi;   //control plot for tracks 
+  THnSparse                           *fHLundIterative;//       iterative declustering
+  THnSparse                           *fHCheckResolutionSubjets;//     to evaluate energy resolution of subjets as function fo apperture angle 
   TH2F                                *fNbOfConstvspT;
 
   TTree           *fTreeObservableTagging;  // Tree with tagging variables subtracted MC or true MC or raw 

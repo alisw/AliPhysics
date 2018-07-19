@@ -104,19 +104,18 @@ private:
   Bool_t IsAcceptedCascadeOmega(const AliAODcascade *casc);
 
   Double_t RangePhi(Double_t DPhi);
+  Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
 
-
+/*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
                              TObjArray *selectedTrackArray, AliTHn *triggerHist,
                              AliTHn *associateHist, Bool_t, Float_t, Float_t,
                              Float_t, Int_t);
 
-
+*/
   void FillCorrelationTracks(Double_t MultipOrCent, TObjArray *triggerArray,
-                             TObjArray *selectedTrackArray, AliTHn *triggerHist,
-                             AliTHn *associateHist, Bool_t, Float_t, Float_t,
-                             Float_t, Int_t);
+                             TObjArray *selectedTrackArray, AliTHn *triggerHist, AliTHn *associateHist, Bool_t twoTrackEfficiencyCut, Float_t twoTrackEfficiencyCutValue, Float_t fTwoTrackCutMinRadius,Float_t bSign, Int_t step);
   void FillCorrelationTracksMixing(Double_t MultipOrCentMix, Double_t pvxMix,
                                    Double_t poolmax, Double_t poolmin,
                                    TObjArray *triggerArray,
@@ -138,7 +137,9 @@ private:
   Bool_t fPID;
 
   TString fCentType;
-
+  
+  Int_t fNEntries;
+  
   Double_t lCentrality;
   Float_t bSign;
   Double_t fZVertex;
@@ -198,6 +199,7 @@ private:
   //	Double_t fPtMinDaughter;
 
   AliAODEvent *fEvent; //  AOD Event
+  AliMCEvent* mcEvent;
   AliAODVertex *lPrimaryBestVtx;
   Double_t tPrimaryVtxPosition[3];
   Double_t fPrimaryZVtx;
@@ -222,12 +224,37 @@ private:
   // Global Histograms
   TH1F *fHistzvertex;
   TH1F *fHistCentrality;
+  TH1F *fHistCentrality_beforecut;
 
+  TH2F* mixedDist;
+  TH2F* mixedDist2;
+  
+  
   AliTHn *fHistLeadQA;
   AliTHn *fHistPIDQA;
 
+  AliTHn* fhistmcprim;
+  TH2D*fhmcprimvzeta;
+
+  TH1F*frefvz;
+  TH2D*fhcorr[10];
+
+  TH1D*fhmcprimpdgcode;
+  TH1D*fhrefetaFMD[4];
+  TH1D*fhrefphiFMD[4];
+
+  TH2D*  fh2_FMD_acceptance_prim;
+  TH2D*  fh2_FMD_eta_phi_prim;
   TH2D*  fh2_FMD_acceptance;
+  TH2D*  fh2_ITS_acceptance;
+  TH2F*  fh2_SPD_multcorr;
+  TH2F*  fh2_SPDV0_multcorr;
+  TH1F*  fhtrackletsdphi;
   TH2D*  fh2_FMD_eta_phi;
+
+  AliTHn* fhistfmd;
+  THnSparseF* fhistits;
+  AliTHn* fhSecFMD;
 
   TH2F*fFMDV0;
   TH2F*fFMDV0_post;
@@ -235,7 +262,7 @@ private:
   TH2F*fFMDV0A_post;
   TH2F*fFMDV0C;
   TH2F*fFMDV0C_post;
-  
+
   TH2F *fHist_vzeromult;
   TH2F *fHist_vzeromultEqweighted;
   TH3F *fHist2dmult;
@@ -245,7 +272,6 @@ private:
   TH1F *fHist_V0Stat;
 
   // QA histograms
-
   TH2D *fHistPhiDTPCNSig;
   TH2D *fHistPhiDTOFNSig;
   TH2D *fHistPhiDTPCTOFNSig;

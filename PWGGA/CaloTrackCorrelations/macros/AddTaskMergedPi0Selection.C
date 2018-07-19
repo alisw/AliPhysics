@@ -535,7 +535,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(Bool_t useSS,     Bool_t useAsy,
   
   // Branch AOD settings
   ana->SetOutputAODName(Form("Pi0SS_TM%d_SS%d_Asy%d_Mass%d_%s",tm,useSS,useAsy,useMass,kAnaMergedPi0.Data()));
-  ana->SetOutputAODClassName("AliAODPWG4ParticleCorrelation");
+  ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
    
   // Set Histograms name tag, bins and ranges
   ana->AddToHistogramsName(Form("AnaPi0SSEbE_TM%d_SS%d_Asy%d_Mass%d_",tm,useSS,useAsy,useMass));
@@ -757,9 +757,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana,
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
-  
-  //Set here generator name, default pythia
-  //ana->GetMCAnalysisUtils()->SetMCGenerator("");
 
   //
   // Debug

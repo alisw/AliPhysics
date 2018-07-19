@@ -998,6 +998,6 @@ Bool_t AliAnalysisPIDTrack::CheckExtraCuts(Float_t minTPCNcr, Float_t maxChi2Per
   if(fTPCNcr<minTPCNcr) return kFALSE;
   if(fTPCNclsF<=0) return kFALSE;
   if(fTPCchi2/fTPCNclsF > maxChi2PerFindableCluster) return kFALSE;
-  if(TMath::Abs(fImpactParameter[0])>maxDCAz) return kFALSE;
+  if(TMath::Abs(fImpactParameter[1])>maxDCAz) return kFALSE;
   return kTRUE;
 };

@@ -94,6 +94,9 @@
 #pragma link C++ class  AliHFEreducedEvent+;
 #pragma link C++ class  AliHFEreducedTrack+;
 #pragma link C++ class  AliHFEreducedMCParticle+;
+#pragma link C++ class  AliHFEminiTrack+;
+#pragma link C++ class  AliHFEminiEvent+;
+#pragma link C++ class  AliHFEminiEventCreator+;
 #pragma link C++ class  AliAnalysisTaskHFEQA+;
 #pragma link C++ class  AliAnalysisTaskHFEemcQA+;
 #pragma link C++ class  AliAnalysisTaskBeautyCal+;
@@ -105,12 +108,16 @@
 #pragma link C++ class  AliHFEUnfolding+;
 #pragma link C++ class  AliAnalysisTaskHFEEfficiency+;
 #pragma link C++ class  AliAnalysisTaskHaHFECorrel+;
+#pragma link C++ class  AliAnalysisTaskCaloHFEpPbRun2+;
+#pragma link C++ class  AliAnalysisTaskCaloHFEpp+;
 
 #pragma link C++ class  AliBasicParticleHaHFE+;
 #pragma link C++ class  AliehDPhiBasicParticle+;
+#pragma link C++ class  AliehDPhiBasicParticlepPbRun2+;
 
-#pragma link C++ class  AliAnalysisHFETPCTOFNew+;
 #pragma link C++ class  AliAnalysisTaskTPCCalBeauty+;
+#pragma link C++ class  AliAnalysisHFETPCTOFNew+;
+#pragma link C++ class  AliAnalysisHFETPCTOFBeauty+;
 
-
+#pragma link C++ class  AliAnalysisTaskHFEmultTPCTOF+;
 #endif

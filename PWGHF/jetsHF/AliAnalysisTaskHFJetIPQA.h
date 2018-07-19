@@ -1,6 +1,5 @@
 #ifndef ALIANALYSISTASKJETIPQA_H
 #define ALIANALYSISTASKJETIPQA_H
-#include "AliHFJetsTagging.h"
 #include "AliAnalysisTaskEmcalJet.h"
 #include "TGraph.h"
 #include "THistManager.h"
@@ -16,7 +15,6 @@ class AliPIDResponse;
 class AliHFEpidBayes;
 class TTree;
 class TH2D;
-class AliHFJetsTagging;
 class TParticle;
 class TClonesArray;
 class AliAODMCParticle;
@@ -52,7 +50,7 @@ public:
                    kBadDiamondXDistance,kBadDiamondYDistance,kBadDiamondZDistance};
     enum TTypeImpPar {kXY,kXYSig,kXYZ,kXYZSig,kXYZSigmaOnly,kZSig};
     enum EParticleType  {bPi0=111,bEta=221,bEtaPrime=331,bPhi=333,bRho=113,bOmega=223,bSigma0=3212,bK0s=310,bLambda=3122,bPi=211,bProton=2212,bKaon=321,bOmegaBaryon=3334,
-                         bAntiOmegaBaryon=-3334,bXiBaryon=3312,bAntiXiBaryon=-3312,bD0=411,bDPlus=421,bDStarPlus=413,bDSPlus=431,bK0l=130,bSigmaMinus = 3112,bSigmaPlus = 3222,bRhoPlus=213,
+                         bAntiOmegaBaryon=-3334,bXiBaryon=3312,bAntiXiBaryon=-3312,bD0=421,bDPlus=411,bDStarPlus=413,bDSPlus=431,bK0l=130,bSigmaMinus = 3112,bSigmaPlus = 3222,bRhoPlus=213,
                          bBPlus = 521,bB0 = 511,bLambdaB =5122,bLambdaC=4122,bBStarPlus=523,bK0S892 = 313,bK0S892plus = 323};
     enum EParticleArrayIdx
     {bIdxPi0=0,bIdxEta=1,bIdxEtaPrime=2,bIdxPhi=3,bIdxRho=4,bIdxOmega=5,bIdxK0s=6,bIdxLambda=7,bIdxPi=8,bIdxProton=9,bIdxKaon=10,bIdxD0=11,bIdxDPlus=12,
@@ -79,7 +77,7 @@ public:
         Double_t second;// to be compatible with std::pair
         Bool_t   is_electron; // added for electron contribution check
         Bool_t   is_fromB; // added for electron contribution check
-        Int_t trackLabel ;
+        Int_t trackLabel=-1 ;
     };
     //FUNCTION DEFINITIONS
     AliAnalysisTaskHFJetIPQA();
@@ -89,7 +87,6 @@ public:
     virtual ~AliAnalysisTaskHFJetIPQA(){;}
     virtual void   UserCreateOutputObjects();
     virtual Bool_t Run();
-    //virtual Bool_t IsEventSelected();
     virtual Bool_t IsSelected(AliVEvent *event, Int_t &WhyRejected,ULong_t &RejectionBits);
     void SetESDCuts (AliESDtrackCuts  *cuts =NULL){fESDTrackCut =  new AliESDtrackCuts(*cuts);}
     virtual AliRDHFJetsCuts* GetJetCutsHF(){return fJetCutsHF;}
@@ -148,11 +145,35 @@ public:
     {
         fRunSmearing = value;
     }
+    void setGlobalVertex(Bool_t value)
+    {
+        fGlobalVertex = value;
+    }
+
+   void setDoNotCheckIsPhysicalPrimary(Bool_t value)
+    {
+        fDoNotCheckIsPhysicalPrimary = value;
+    }
+     void setDoJetProb(Bool_t value)
+    {
+        fDoJetProb = value;
+    }
+    void useTreeForCorrelations(Bool_t value){
+        fUseTreeForCorrelations = value;
+    }
+    //virtual Bool_t IsEventSelected();
+    void FillCorrelations(bool bn[3], double v[3], double jetpt);
+    void setFFillCorrelations(const Bool_t &value);
+    virtual void SetPtHardBin(Int_t b){ fSelectPtHardBin = b;}
 
 private:
     THistManager         fHistManager    ;///< Histogram manager
     const AliAODVertex * fEventVertex;//!
     AliPIDResponse *fPidResponse ;//!
+    AliEmcalJet *  GetPerpendicularPseudoJet (AliEmcalJet*jet_in  , bool rev );
+    void GetOutOfJetParticleComposition(AliEmcalJet * jet, int flavour);
+    void FillParticleCompositionSpectra(AliEmcalJet * jet,const char * histname );
+    void FillParticleCompositionEvent();
     void DoJetLoop(); //jet matching function 2/4
     void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Int_t matching=0);
     void GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d) const;
@@ -163,8 +184,8 @@ private:
     void SubtractMean (Double_t val[2],AliVTrack *track);
     Bool_t IsTrackAccepted(AliVTrack* track,Int_t n=6);
     Bool_t MatchJetsGeometricDefault(); //jet matching function 1/4
-    Double_t GetMonteCarloCorrectionFactor(AliVTrack *track, Int_t &pCorr_indx);
-    Double_t GetWeightFactor( AliVTrack * mcpart,Int_t &pCorr_indx);
+    Double_t GetMonteCarloCorrectionFactor(AliVTrack *track, Int_t &pCorr_indx, double &ppt);
+    Double_t GetWeightFactor( AliVTrack * mcpart,Int_t &pCorr_indx, double &ppt);
     Bool_t ParticleIsPossibleSource(Int_t pdg);
     Bool_t IsSelectionParticle( AliVParticle * mcpart ,Int_t &pdg,Double_t &pT,Int_t &idx  );
     Bool_t IsSelectionParticleALICE( AliVParticle * mcpart ,Int_t &pdg,Double_t &pT,Int_t &idx  );
@@ -191,10 +212,15 @@ private:
     TH1D * GetHist1D(const char * name){return (TH1D*)fOutput->FindObject(name);}
     TH2D * GetHist2D(const char * name){return (TH2D*)fOutput->FindObject(name);}
 private:
+
     Bool_t   fUsePIDJetProb;//
+    Bool_t   fFillCorrelations;//
     Double_t fParam_Smear_Sigma;//
     Double_t fParam_Smear_Mean;//
     Bool_t   fRunSmearing;//
+    Bool_t   fGlobalVertex;//
+    Bool_t fDoNotCheckIsPhysicalPrimary;//
+    Bool_t fDoJetProb;
     TGraph * fGraphMean;//!
     TGraph * fGraphSigmaData;//!
     TGraph * fGraphSigmaMC;//!
@@ -230,10 +256,74 @@ private:
     Int_t   fProductionNumberPtHard;//
     Double_t fMCglobalDCAxyShift;//
     Double_t fMCglobalDCASmear;//
-
     Double_t fVertexRecalcMinPt;//
+//Event mixing for correlation study
+    Double_t fn1_mix ;
+    Double_t fn2_mix ;
+    Double_t fn3_mix ;
+    Bool_t   fIsMixSignalReady_n1;
+    Bool_t   fIsMixSignalReady_n2;
+    Bool_t   fIsMixSignalReady_n3;
+    Bool_t   fIsSameEvent_n1;
+    Bool_t   fIsSameEvent_n2;
+    Bool_t   fIsSameEvent_n3;
+    Bool_t   fUseTreeForCorrelations;
+    TTree *  fCorrelationCrossCheck;//!
+    Float_t  fTREE_n1;
+    Float_t  fTREE_n2;
+    Float_t  fTREE_n3;
+    Float_t  fTREE_pt;
+    
+    
+    void SetMixDCA(int n , Double_t v){
+    if(n==1){
+            if(fIsMixSignalReady_n1) return;
+            fn1_mix = v;
+            fIsMixSignalReady_n1 = kTRUE;
+            fIsSameEvent_n1 = kTRUE;
 
-    ClassDef(AliAnalysisTaskHFJetIPQA, 21)
+        }
+    else if(n==2){
+            if(fIsMixSignalReady_n2) return;
+            fn2_mix = v;
+            fIsMixSignalReady_n2 = kTRUE;
+            fIsSameEvent_n2 = kTRUE;
+
+        }
+    else if(n==3){
+            if(fIsMixSignalReady_n3) return;
+            fn3_mix = v;
+            fIsMixSignalReady_n3 = kTRUE;
+            fIsSameEvent_n3 = kTRUE;
+        }
+    }
+
+    Bool_t GetMixDCA(int n , double &v){
+        if(n==1){
+                if (!fIsMixSignalReady_n1 || fIsSameEvent_n1) return kFALSE;
+                v= fn1_mix;
+                fIsMixSignalReady_n1 = kFALSE;
+            }
+        else if(n==2){
+                if (!fIsMixSignalReady_n2|| fIsSameEvent_n2) return kFALSE;
+                v = fn2_mix;
+                fIsMixSignalReady_n2 = kFALSE;
+            }
+        else if(n==3){
+                if (!fIsMixSignalReady_n3|| fIsSameEvent_n3) return kFALSE;
+                v = fn3_mix;
+                fIsMixSignalReady_n3 = kFALSE;
+            }
+    return kTRUE;
+    }
+
+
+
+
+
+
+
+    ClassDef(AliAnalysisTaskHFJetIPQA, 26)
 };
 
 #endif

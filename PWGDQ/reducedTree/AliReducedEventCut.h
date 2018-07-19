@@ -16,9 +16,22 @@ class AliReducedEventCut : public AliReducedVarCut {
   AliReducedEventCut(const Char_t* name, const Char_t* title);
   virtual ~AliReducedEventCut();
 
-  void AddEventTagFilter(ULong64_t filter) {fEventFilter |= filter; fEventTagFilterEnabled = kTRUE;};
-  void AddEventTagFilterBit(UShort_t bit)  {if(bit>63) return; fEventFilter |= (ULong64_t(1)<<bit); fEventTagFilterEnabled = kTRUE;};
-  void EnableVertexDistanceCut()  {fEventFilter |= (ULong64_t(1)<<13); fEventTagFilterEnabled = kTRUE;};
+  void AddEventTagFilter(ULong64_t filter, ULong64_t exclude = 0) {
+    fEventFilter |= filter;
+    fEventTagFilterEnabled = kTRUE;
+    fEventTagFilterExclude |= exclude;
+  };
+  void AddEventTagFilterBit(UShort_t bit, Bool_t exclude = kFALSE)  {
+    if(bit<64) {
+      fEventFilter |= (ULong64_t(1)<<bit);
+      fEventTagFilterEnabled = kTRUE;
+      if(exclude) fEventTagFilterExclude |= (ULong64_t(1)<<bit);
+    }
+  };
+  void EnableVertexDistanceCut() {
+    fEventFilter |= (ULong64_t(1)<<13);
+    fEventTagFilterEnabled = kTRUE;
+  };
   
   void AddEventTriggerFilter(ULong64_t filter) {fEventTriggerMask |= filter; fEventTriggerMaskEnabled = kTRUE;};
   void AddEventTriggerFilterBit(UShort_t bit)  {if(bit>63) return; fEventTriggerMask |= (ULong64_t(1)<<bit); fEventTriggerMaskEnabled = kTRUE;};
@@ -34,19 +47,20 @@ class AliReducedEventCut : public AliReducedVarCut {
  protected: 
       
   // Cuts on event specific quantities
-  Bool_t         fEventTagFilterEnabled;           // if true apply the filter to the event tag 
-  ULong64_t  fEventFilter;                             // filter for the event tag map
-  Bool_t         fEventTriggerMaskEnabled;     // if true apply the filter on the event trigger mask 
-  ULong64_t  fEventTriggerMask;                             // filter for the event trigger mask
-  Bool_t         fEventL1MaskEnabled;          // if true apply the filter on the event L1 trigger inputs mask 
-  ULong64_t  fEventL1Mask;                             // filter for the event L1 trigger inputs mask
-  Bool_t         fEventL0MaskEnabled;          // if true apply the filter on the event L0 trigger inputs mask 
-  ULong64_t  fEventL0Mask;                             // filter for the event L0 trigger inputs mask
+  Bool_t    fEventTagFilterEnabled;     // if true apply the filter to the event tag
+  ULong64_t fEventTagFilterExclude;     // exclusion map for filter for the event tag map
+  ULong64_t fEventFilter;               // filter for the event tag map
+  Bool_t    fEventTriggerMaskEnabled;   // if true apply the filter on the event trigger mask
+  ULong64_t fEventTriggerMask;          // filter for the event trigger mask
+  Bool_t    fEventL1MaskEnabled;        // if true apply the filter on the event L1 trigger inputs mask
+  ULong64_t fEventL1Mask;               // filter for the event L1 trigger inputs mask
+  Bool_t    fEventL0MaskEnabled;        // if true apply the filter on the event L0 trigger inputs mask
+  ULong64_t fEventL0Mask;               // filter for the event L0 trigger inputs mask
    
   AliReducedEventCut(const AliReducedEventCut &c);
   AliReducedEventCut& operator= (const AliReducedEventCut &c);
   
-  ClassDef(AliReducedEventCut,2);
+  ClassDef(AliReducedEventCut,4);
 };
 
 #endif

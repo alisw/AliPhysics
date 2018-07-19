@@ -33,13 +33,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     void SetV0ReaderName(TString name){fV0ReaderName=name; return;}
     void SetIsHeavyIon(Int_t flag){
-      fIsHeavyIon = flag;    
+      fIsHeavyIon = flag;
     }
 
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
     void CalculatePi0Candidates();
-    
+
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void ProcessMCParticles();
@@ -48,7 +48,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void ProcessTrueClusterCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate, AliVCluster* clus);
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
-    
+
     // switches for additional analysis streams or outputs
     void SetLightOutput(Bool_t flag){fDoLightOutput = flag;}
     void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
@@ -56,12 +56,13 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void SetDoClusterQA(Int_t flag){fDoClusterQA = flag;}
     void SetDoTHnSparse(Bool_t flag){fDoTHnSparse = flag;}
     void SetPlotHistsExtQA(Bool_t flag){fSetPlotHistsExtQA = flag;}
+    void SetAllowOverlapHeaders( Bool_t allowOverlapHeader ) {fAllowOverlapHeaders = allowOverlapHeader;}
 
     void SetInOutTimingCluster(Double_t min, Double_t max){
       fDoInOutTimingCluster = kTRUE; fMinTimingCluster = min; fMaxTimingCluster = max;
       return;
     }
-    
+
       // Setting the cut lists for the conversion photons
     void SetEventCutList(Int_t nCuts, TList *CutArray){
       fnCuts = nCuts;
@@ -73,7 +74,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
       fnCuts = nCuts;
       fClusterCutArray = CutArray;
     }
-    
+
     // Setting the cut lists for the meson
     void SetMesonCutList(Int_t nCuts, TList *CutArray){
       fnCuts = nCuts;
@@ -90,7 +91,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void FillPhotonBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, AliVCluster* clus, Int_t pdgCode);
     void FillPhotonPlusConversionBackgroundM02Hist(AliAODConversionPhoton *TruePhotonCandidate, AliVCluster* clus, Int_t pdgCode);
     void UpdateEventByEventData();
-    
+
     // Additional functions for convenience
     void SetLogBinningXTH2(TH2* histoRebin);
     Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
@@ -98,7 +99,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t CheckVectorForDoubleCount(vector<Int_t> &vec, Int_t tobechecked);
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
-    
+
     // set method to enable EOverP tree
     void SetProduceTreeEOverP(Bool_t b){fProduceTreeEOverP = b;}
 
@@ -108,19 +109,22 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // Function to enable local debugging mode
     void SetLocalDebugFlag(Int_t iF) {fLocalDebugFlag = iF;}
 
+    // Function to set correction task setting
+    void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
+
     void EventDebugMethod();
     void DebugMethod(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
     void DebugMethodPrint1(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
 
-    
   protected:
     AliV0ReaderV1*        fV0Reader;                                            // basic photon Selection Task
     TString               fV0ReaderName;
-    AliGammaConversionAODBGHandler**  fBGHandler;                               // BG handler for Conversion 
+    TString               fCorrTaskSetting;
+    AliGammaConversionAODBGHandler**  fBGHandler;                               // BG handler for Conversion
     AliVEvent*            fInputEvent;                                          // current event
     AliMCEvent*           fMCEvent;                                             // corresponding MC event
     TList**               fCutFolder;                                           // Array of lists for containers belonging to cut
-    TList**               fESDList;                                             // Array of lists with histograms with reconstructed properties   
+    TList**               fESDList;                                             // Array of lists with histograms with reconstructed properties
     TList**               fBackList;                                            // Array of lists with BG THnSparseF
     TList**               fMotherList;                                          // Array of lists with Signal THnSparseF
     TList**               fTrueList;                                            // Array of lists with histograms with MC validated reconstructed properties
@@ -135,25 +139,29 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliCaloPhotonCuts*    fCaloPhotonCuts;                                      // CaloPhotonCutObject
     TList*                fMesonCutArray;                                       // List with Meson Cuts
     AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
-    
+
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
     THnSparseF**          fSparseMotherInvMassPtZM;                             //! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
     TH2F**                fHistoMotherBackInvMassPt;                            //! array of histogram with BG for mixed event photon pairs, inv Mass, pt
     THnSparseF**          fSparseMotherBackInvMassPtZM;                         //! array of THnSparseF with BG for same event photon pairs, inv Mass, pt
-    TH2F**                fHistoMotherInvMassPtAlpha;                           //! array of histograms with alpha cut of 0.1 for inv mass vs pt
-    TH2F**                fHistoMotherBackInvMassPtAlpha;                       //! array of histogram with BG for mixed event photon pairs with alpha cut of 0.1, inv Mass, pt
     TH2F**                fHistoMotherPi0PtY;                                   //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
     TH2F**                fHistoMotherEtaPtY;                                   //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, Y
     TH2F**                fHistoMotherPi0PtAlpha;                               //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, alpha
     TH2F**                fHistoMotherEtaPtAlpha;                               //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, alpha
     TH2F**                fHistoMotherPi0PtOpenAngle;                           //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, openAngle
     TH2F**                fHistoMotherEtaPtOpenAngle;                           //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, openAngle
+    TH2F**                fHistoMotherPi0NGoodESDTracksPt;                 //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, ngoodtrakcs, pt
+    TH2F**                fHistoMotherEtaNGoodESDTracksPt;                 //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, ngoodtrakcs, pt
+    TH2F**		            fHistoMotherInvMassECalib;				//! array of histogram with alpha cut of 0.1 for inv mass vs energy of cluster
+    TH2F**		            fHistoMotherBackInvMassECalib;			//! array of histogram with BG for mixed event photon pairs with alpha cut of 0.1, inv mass, energy of cluster
 
     // histograms for rec photon clusters
     TH1F**                fHistoClusGammaPt;                                    //! array of histos with cluster, pt
     TH1F**                fHistoClusGammaE;                                     //! array of histos with cluster, E
     TH1F**                fHistoClusOverlapHeadersGammaPt;                      //! array of histos with cluster, pt overlapping with other headers
+    TH1F**                fHistoClusAllHeadersGammaPt;                          //! array of histos with cluster, pt all headers
+    TH1F**                fHistoClusRejectedHeadersGammaPt;                     //! array of histos with cluster, pt rejected with other headers
     TH2F**                fHistoClusGammaPtM02;                                 //! array of histos with cluster M02 vs. pt
     //histograms for pure MC quantities
     TH1I**                fHistoMCHeaders;                                      //! array of histos for header names
@@ -280,7 +288,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoTrueClusSubLeadingPt;                           //! array of histos with pi0/eta/eta_prime in subleading contribution
     TH1F**                fHistoTrueClusNParticles;                             //! array of histos with number of different particles (pi0/eta/eta_prime) contributing to cluster
     TH1F**                fHistoTrueClusEMNonLeadingPt;                         //! array of histos with cluster with largest energy by hadron
-    TH1F**                fHistoTrueNLabelsInClus;                              //! array of histos with number of labels in cluster 
+    TH1F**                fHistoTrueNLabelsInClus;                              //! array of histos with number of labels in cluster
     TH1F**                fHistoTruePrimaryClusGammaPt;                         //! array of histos with validated primary photon cluster, pt
     TH2F**                fHistoTruePrimaryClusGammaESDPtMCPt;                  //! array of histos with validated primary photon cluster, rec Pt, MC pt
     TH1F**                fHistoTruePrimaryClusConvGammaPt;                     //! array of histos with validated primary conv photon cluster, pt
@@ -314,6 +322,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoNGoodESDTracks;                                 //! array of histos with number of good tracks (2010 Standard track cuts)
     TH1F**                fHistoVertexZ;                                        //! array of histos with vertex z distribution for selected events
     TH1F**                fHistoNGammaCandidates;                               //! array of histos with number of gamma candidates per event
+    TH1F**                fHistoNGammaCandidatesBasic;                          //! array of histos with number of gamma candidates per event for basic cluster cut
     TH2F**                fHistoNGoodESDTracksVsNGammaCandidates;               //! array of histos with number of good tracks vs gamma candidates
     TH2F**                fHistoSPDClusterTrackletBackground;                   //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1F**                fHistoNV0Tracks;                                      //! array of histos with V0 counts
@@ -322,12 +331,12 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoJetJetNTrials;                                  //! array of histos with ntrials for jetjet
 
     // tree for identified particle properties
-    TTree**               tTrueInvMassROpenABPtFlag;                            //! array of trees with 
-    Float_t               fInvMass;                                             //! InvMass, 
-    Float_t               fRconv;                                               //! Rconv, 
+    TTree**               tTrueInvMassROpenABPtFlag;                            //! array of trees with
+    Float_t               fInvMass;                                             //! InvMass,
+    Float_t               fRconv;                                               //! Rconv,
     Float_t               fOpenRPrim;                                           //! opening angle at R = 0,
     Float_t               fInvMassRTOF;                                         //! InvMass at R=375 cm,
-    Float_t               fPt;                                                  //! momentum, 
+    Float_t               fPt;                                                  //! momentum,
     UChar_t               iFlag;                                                //! flag (0 = gamma, 1 = pi0, 2 = eta)
 
     // tree for alpha/opening angle studies
@@ -365,7 +374,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
 
     // additional variables
     Double_t              fEventPlaneAngle;                                     // EventPlaneAngle
-    TRandom3              fRandom;                                              // random 
+    TRandom3              fRandom;                                              // random
     Int_t                 fnCuts;                                               // number of cuts to be analysed in parallel
     Int_t                 fiCut;                                                // current cut
     Int_t                 fIsHeavyIon;                                          // switch for pp = 0, PbPb = 1, pPb = 2
@@ -373,7 +382,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fDoMesonAnalysis;                                     // flag for meson analysis
     Int_t                 fDoMesonQA;                                           // flag for meson QA
     Int_t                 fDoClusterQA;                                         // flag for cluster QA
-    Bool_t                fIsFromMBHeader;                                      // flag for MC headers
+    Bool_t                fIsFromDesiredHeader;                                 // flag for MC headers
     Bool_t                fIsOverlappingWithOtherHeader;                        // flag for particles in MC overlapping between headers
     Int_t                 fIsMC;                                                // flag for MC information
     Bool_t                fDoTHnSparse;                                         // flag for using THnSparses for background estimation
@@ -387,15 +396,17 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Bool_t                fProduceTreeEOverP;                                   // flag for producing tree for E/p studies
     TTree*                tBrokenFiles;                                         // tree for keeping track of broken files
     TObjString*           fFileNameBroken;                                      // string object for broken file name
+    TTree*                tClusterQATree;                                       // tree for specific cluster QA
     TObjString*           fCloseHighPtClusters;                                 // file name to indicate clusters with high pT (>15 GeV/c) very close to each other (<17 mrad)
 
     Int_t                 fLocalDebugFlag;                                      // debug flag for local running, must be '0' for grid running
-
+    Bool_t                fAllowOverlapHeaders;                                 // enable overlapping headers for cluster selection
+    Int_t                 fNCurrentClusterBasic;                                // current number of cluster without minE
   private:
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 39);
+    ClassDef(AliAnalysisTaskGammaCalo, 44);
 };
 
 #endif

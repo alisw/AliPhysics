@@ -52,6 +52,9 @@
 #include "AliEmcalTrackSelection.h"
 #include "AliEmcalTrackSelectionESD.h"
 #include "AliEmcalTrackSelectionAOD.h"
+#include "AliEmcalCutBase.h"
+#include "AliEmcalVCutsWrapper.h"
+#include "AliEmcalESDtrackCutsWrapper.h"
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliPicoTrack.h"
@@ -294,10 +297,14 @@ namespace EMCalTriggerPtAnalysis {
       TIter cutIter(fListTrackCuts);
       AliEmcalTrackSelection *cutObject(NULL);
       while((cutObject = dynamic_cast<AliEmcalTrackSelection *>(cutIter()))){
-        AliESDtrackCuts *cuts = dynamic_cast<AliESDtrackCuts *>(cutObject->GetTrackCuts(0));
-        if(cuts){
-          cuts->DefineHistograms();
-          fOutput->Add(cuts);
+        PWG::EMCAL::AliEmcalVCutsWrapper *trackcuts = dynamic_cast<PWG::EMCAL::AliEmcalVCutsWrapper *>(cutObject->GetTrackCuts(0));
+        if(trackcuts){
+          PWG::EMCAL::AliEmcalESDtrackCutsWrapper *esdcuts = dynamic_cast<PWG::EMCAL::AliEmcalESDtrackCutsWrapper *>(trackcuts->GetCutObject());
+          if(esdcuts) {
+            AliESDtrackCuts *mycuts = esdcuts->GetTrackCuts();
+            mycuts->DefineHistograms();
+            fOutput->Add(mycuts);
+          }
         }
       }
     }

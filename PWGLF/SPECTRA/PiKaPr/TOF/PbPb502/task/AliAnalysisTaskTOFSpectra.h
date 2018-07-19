@@ -29,27 +29,23 @@ class AliAnalysisFilter;
 class AliCFContainer;
 class TDatabasePDG;
 class AliESDVertex;
-class TClonesArray;
+class AliAnTOFevent;
 class TProfile;
+class TTree;
+class AliTOFT0maker;
+class AliTOFcalib;
+class AliPIDResponse;
+class AliESDTOFCluster;
 
 //Includes
 #include "AliAnalysisTask.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliBackgroundSelection.h"
-#include "AliESDTOFCluster.h"
 #include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
 #include "AliMultSelection.h"
-#include "AliPIDResponse.h"
-#include "AliPhysicsSelection.h"
-#include "AliPhysicsSelectionTask.h"
-#include "AliTOFT0maker.h"
-#include "AliTOFT0v1.h"
-#include "AliTOFcalib.h"
+#include "AliTOFPIDResponse.h"
 #include "AliUtilTOFParams.h"
 #include "TBenchmark.h"
-#include "TRandom3.h"
-#include <TTree.h>
 
 using namespace AliUtilTOFParams;
 
@@ -61,13 +57,28 @@ using namespace AliUtilTOFParams;
 
 // #define CHECKCOMPUTEDVALUES//Flag to compute the TOF values and compare to the ones expected
 
-// #define BUILDTOFDISTRIBUTIONS// Flag to prepare distributions of T-Texp-T0 for analasys with and without mismatch with TPC information
+// #define BUILDTOFDISTRIBUTIONS// Flag to prepare distributions of T-Texp-T0 for analysis with and without mismatch with TPC information
+
+// #define BUILDT0PLOTS// Flag to prepare distributions of T0 for analysis of the correlation with the vertex position
 
 class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   public:
   //Constructors and destructor
-  AliAnalysisTaskTOFSpectra(const TString taskname = "TaskTOFChargedHadron", Bool_t hi = kTRUE, Bool_t mc = kFALSE, Bool_t tree = kTRUE, Bool_t chan = kFALSE, Bool_t cuts = kFALSE, Int_t simplecuts = -1);
+  AliAnalysisTaskTOFSpectra(const TString taskname = "TaskTOFChargedHadron", const Int_t collsys = AliUtilTOFParams::kPbPb, Bool_t mc = kFALSE, Bool_t tree = kTRUE, Bool_t chan = kFALSE, Bool_t cuts = kFALSE, Int_t simplecuts = -1);
   virtual ~AliAnalysisTaskTOFSpectra();
+
+  //////////////////////////////
+  // Soft configuration flags //
+  //////////////////////////////
+  Bool_t fBuilTPCTOF;     ///<  Flag to build the TPC TOF separation
+  Bool_t fBuilDCAchi2;    ///<  Flag to build the DCAxy distributions with the cut on the Golden Chi2
+  Bool_t fUseTPCShift;    ///<  Flag to use the Shift of the TPC nsigma
+  Bool_t fPerformance;    ///<  Flag to fill the performance plots
+  Bool_t fMCPerformance;  ///<  Flag to fill the MC performance plots
+  Bool_t fRecalibrateTOF; ///<  Flag to require to recalibrate the TOF signal
+  Bool_t fCutOnMCImpact;  ///<  Flag to cut the MC on the impact parameter instead of the centrality. This is intendend for the generation of MC predictions
+  Bool_t fFineTOFReso;    ///<  Flag to compute a finer TOF resolution as a function of the number of tracks with TOF signal
+  Bool_t fFineEfficiency; ///<  Flag to use 3D  histograms with the MC information as a function of pT, eta, phi
 
   //Standard AnalysisTask functions
   virtual void UserCreateOutputObjects();
@@ -115,17 +126,11 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to print out the configuration flags of the task
-  void PrintStatus()
-  {
-    AliInfo("- PrintStatus -");
-    AliInfo(Form("Using fHImode %i", fHImode));
-    AliInfo(Form("Using fMCmode %i", fMCmode));
-    AliInfo(Form("Using fTreemode %i", fTreemode));
-    AliInfo(Form("Using fChannelmode %i", fChannelmode));
-    AliInfo(Form("Using fCutmode %i", fCutmode));
-    AliInfo(Form("Using fSimpleCutmode %i", fSimpleCutmode));
-    AliInfo(Form("Using fUseTPCShift %i\n", fUseTPCShift));
-  };
+  void PrintStatus();
+
+  ///
+  /// Method to obtain the output list for histograms, this is intended so as to check the data size of output
+  TList* GetOutput() { return fListHist; }
 
   //Utility methods
   ///
@@ -194,49 +199,19 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
     kLimitfMCTrkMask }; //MC information fMCTrkMask
 
   //Implementation of mask read/write
-  void SetEvtMaskBit(fEvtMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfEvtMask)
-      AliFatal("Bit exceeds limits for fEvtMask");
-    else
-      SetMaskBit(fEvtMask, (Int_t)bit, value);
-  };
+  void SetEvtMaskBit(fEvtMaskIndex bit, Bool_t value);
   void ResetEvtMaskBit() { ResetMask(fEvtMask); };
 
-  void SetTrkMaskBit(fTrkMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfTrkMask)
-      AliFatal("Bit exceeds limits for fTrkMask");
-    else
-      SetMaskBit(fTrkMask, (Int_t)bit, value);
-  };
+  void SetTrkMaskBit(fTrkMaskIndex bit, Bool_t value);
   void ResetTrkMaskBit() { ResetMask(fTrkMask); };
 
-  void SetTPCPIDMaskBit(fTPCPIDMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfTPCPIDMask)
-      AliFatal("Bit exceeds limits for fTPCPIDMask");
-    else
-      SetMaskBit(fTPCPIDMask, (Int_t)bit, value);
-  };
+  void SetTPCPIDMaskBit(fTPCPIDMaskIndex bit, Bool_t value);
   void ResetTPCPIDMaskBit() { ResetMask(fTPCPIDMask); };
 
-  void SetTrkCutMaskBit(fTrkCutMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfTrkCutMask)
-      AliFatal("Bit exceeds limits for fTrkCutMask");
-    else
-      SetMaskBit(fTrkCutMask, (Int_t)bit, value);
-  };
+  void SetTrkCutMaskBit(fTrkCutMaskIndex bit, Bool_t value);
   void ResetTrkCutMaskBit() { ResetMask(fTrkCutMask); };
 
-  void SetMCTrkMaskBit(fMCTrkMaskIndex bit, Bool_t value)
-  {
-    if (bit >= kLimitfMCTrkMask)
-      AliFatal("Bit exceeds limits for fMCTrkMask");
-    else
-      SetMaskBit(fMCTrkMask, (Int_t)bit, value);
-  };
+  void SetMCTrkMaskBit(fMCTrkMaskIndex bit, Bool_t value);
   void ResetMCTrkMaskBit() { ResetMask(fMCTrkMask); };
 
   //Particle kinematics
@@ -252,23 +227,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Find the index of the pt bin of the track
-  void FindPtBin()
-  {
-    if (fBinPtIndex != -999) {
-      AliFatal(Form("Pt bin already assigned to value %i!", fBinPtIndex));
-      return;
-    }
-    for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { ///<  Computes the pt bin
-      if (fPt < fBinPt[ptbin] || fPt >= fBinPt[ptbin + 1])
-        continue;
-      //       AliInfo(Form("Requirement %i : %f < fPt %f < %f", ptbin, fBinPt[ptbin], fPt, fBinPt[ptbin+1]));
-      fBinPtIndex = ptbin;
-      break;
-    }
-    if (fBinPtIndex < 0)
-      AliWarning(Form("Pt bin not assigned, fPt value: %f!", fPt));
-    //if(fBinPtIndex >= 0 && fBinPtIndex + 1 != hNumMatch[0]->GetXaxis()->FindBin(fPt)) AliFatal(Form("Pt bin is different than intendend: %i vs %i!", fBinPtIndex, hNumMatch[0]->GetXaxis()->FindBin(fPt)));
-  };
+  void FindPtBin();
 
   ///
   /// Method to compute the expected time of a particle from the integrated track length
@@ -280,10 +239,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Computes the Y for the given particle mass!
-  Double_t ComputeY(Double_t mass)
-  {
-    return TMath::ASinH(fPt / TMath::Sqrt(mass * mass + fPt * fPt) * TMath::SinH(fEta));
-  }
+  Double_t ComputeY(Double_t mass) { return TMath::ASinH(fPt / TMath::Sqrt(mass * mass + fPt * fPt) * TMath::SinH(fEta)); }
 
   ///
   /// Computes the Rapidity of the track in the 3 mass hypothesis: pions kaons and protons
@@ -303,47 +259,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to fill the histograms containing the values of the variables under cut, the flag is to fill the ones before and after the flag
-  void FillCutVariable(const Bool_t pass = kFALSE)
-  {
-    hTrkTPCCls[pass]->Fill(fTPCClusters);
-    hTrkTPCRows[pass]->Fill(fTPCCrossedRows);
-    hTrkTPCRatioRowsFindCls[pass]->Fill(fTPCCrossedRows / fTPCFindClusters);
-    hTrkTPCChi2NDF[pass]->Fill(fTPCChi2PerNDF);
-    hTrkITSChi2NDF[pass]->Fill(fITSChi2PerNDF);
-    hTrkActiveLength[pass]->Fill(fLengthActiveZone);
-    hTrkITSTPCMatch[pass]->Fill(fITSTPCMatch);
-    hTrkDCAxy[pass]->Fill(fDCAXY);
-    hTrkDCAz[pass]->Fill(fDCAZ);
-#ifdef CHECKTRACKCUTS //Only if required
-    for (Int_t i = 0; i < 3; i++) {
-      Double_t x = 0;
-      switch (i) {
-      case 0:
-        x = fPt;
-        break;
-      case 1:
-        x = fEta;
-        break;
-      case 2:
-        x = fPhi;
-        break;
-      default:
-        AliFatal("index out of bound!");
-        break;
-      }
-
-      hTrkTPCClsCorr[pass][i]->Fill(fTPCClusters, x);
-      hTrkTPCRowsCorr[pass][i]->Fill(fTPCCrossedRows, x);
-      hTrkTPCRatioRowsFindClsCorr[pass][i]->Fill(fTPCCrossedRows / fTPCFindClusters, x);
-      hTrkTPCChi2NDFCorr[pass][i]->Fill(fTPCChi2PerNDF, x);
-      hTrkITSChi2NDFCorr[pass][i]->Fill(fITSChi2PerNDF, x);
-      hTrkActiveLengthCorr[pass][i]->Fill(fLengthActiveZone, x);
-      hTrkITSTPCMatchCorr[pass][i]->Fill(fITSTPCMatch, x);
-      hTrkDCAxyCorr[pass][i]->Fill(fDCAXY, x);
-      hTrkDCAzCorr[pass][i]->Fill(fDCAZ, x);
-    }
-#endif
-  }
+  void FillCutVariable(const Bool_t pass = kFALSE);
 
   ///
   /// Method to start the time usage
@@ -405,58 +321,42 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to fill the histograms used for the Performance
-  void FillPerformanceHistograms();
+  void FillPerformanceHistograms(const AliVTrack* track);
+
+  ///
+  /// Method to define the histograms used for the MC Performance
+  void DefineMCPerformanceHistograms();
+
+  ///
+  /// Method to fill the histograms used for the MC Performance
+  void FillMCPerformanceHistograms(const AliVTrack* track);
+
+  ///
+  /// Method to define the histograms used for the T0 information
+  void DefineT0Histograms();
+
+  ///
+  /// Method to fill the histograms used for the T0 information
+  Bool_t FillT0Histograms();
 
   //Setter methods
-  void SetHeavyIonFlag(Bool_t mode = kTRUE) { fHImode = mode; };
+  void SetHeavyIonFlag(CollSys mode) { fCollSysMode = mode; };
   void SetMCFlag(Bool_t mode = kTRUE) { fMCmode = mode; };
   void SetTreeFlag(Bool_t mode = kTRUE) { fTreemode = mode; };
   void SetChannelFlag(Bool_t mode = kTRUE) { fChannelmode = mode; };
   void SetCutFlag(Bool_t mode = kTRUE) { fCutmode = mode; };
   void SetTrigger(UInt_t trg = AliVEvent::kMB) { fSelectBit = trg; };
+  void SetMultiplicityBinning(TArrayD bin);
 
   //
   //Single cuts
-  void SetTPCRowsCut(Double_t cut)
-  {
-    fESDtrackCuts->SetMinNCrossedRowsTPC(cut);
-    AliDebug(2, Form("Setting SetMinNCrossedRowsTPC(%f) : %f", cut, fESDtrackCuts->GetMinNCrossedRowsTPC()));
-  };
-  void SetTrkChi2Cut(Double_t cut)
-  {
-    fESDtrackCuts->SetMaxChi2PerClusterTPC(cut);
-    AliDebug(2, Form("Setting SetMaxChi2PerClusterTPC(%f) : %f", cut, fESDtrackCuts->GetMaxChi2PerClusterTPC()));
-  };
-  void SetTrkChi2CutITS(Double_t cut)
-  {
-    fESDtrackCuts->SetMaxChi2PerClusterITS(cut);
-    AliDebug(2, Form("Setting SetMaxChi2PerClusterITS(%f) : %f", cut, fESDtrackCuts->GetMaxChi2PerClusterITS()));
-  };
-  void SetDCAxyCut(Double_t cut)
-  {
-    fESDtrackCutsPrm->SetMaxDCAToVertexXYPtDep(Form("%f*(%s)", cut, fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
-    AliDebug(2, Form("Setting SetMaxDCAToVertexXYPtDep(%f) : %s", cut, fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
-  };
-  void SetDCAzCut(Double_t cut)
-  {
-    fESDtrackCuts->SetMaxDCAToVertexZ(cut);
-    AliDebug(2, Form("Setting SetMaxDCAToVertexZ(%f) : %f", cut, fESDtrackCuts->GetMaxDCAToVertexZ()));
-  };
-  void SetGeoCut(Double_t fDeadZoneWidth, Double_t fCutGeoNcrNclLength, Double_t fCutGeoNcrNclGeom1Pt, Double_t fCutGeoNcrNclFractionNcr, Double_t fCutGeoNcrNclFractionNcl)
-  {
-    //Float_t fDeadZoneWidth;             // width of the TPC dead zone (missing pads + PRF +ExB)
-    //Float_t fCutGeoNcrNclLength;        // cut on the geometical length  condition Ngeom(cm)>cutGeoNcrNclLength default=130
-    //Float_t fCutGeoNcrNclGeom1Pt;       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
-    //Float_t fCutGeoNcrNclFractionNcr;   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
-    //Float_t fCutGeoNcrNclFractionNcl;   // ralative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
-    fESDtrackCuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
-    AliDebug(2, Form("Setting SetCutGeoNcrNcl(%f, %f, %f, %f, %f)", fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl));
-  }
-  void SetRatioCrossedRowsFindableCls(Double_t cut)
-  {
-    fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(cut);
-    AliDebug(2, Form("Setting SetMinRatioCrossedRowsOverFindableClustersTPC(%f) : %f", cut, fESDtrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()));
-  };
+  void SetTPCRowsCut(Double_t cut);
+  void SetTrkChi2Cut(Double_t cut);
+  void SetTrkChi2CutITS(Double_t cut);
+  void SetDCAxyCut(Double_t cut);
+  void SetDCAzCut(Double_t cut);
+  void SetGeoCut(Double_t fDeadZoneWidth, Double_t fCutGeoNcrNclLength, Double_t fCutGeoNcrNclGeom1Pt, Double_t fCutGeoNcrNclFractionNcr, Double_t fCutGeoNcrNclFractionNcl);
+  void SetRatioCrossedRowsFindableCls(Double_t cut);
 
   ///
   /// Method to initialize the standard cuts
@@ -472,68 +372,11 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   ///
   /// Method to print the cut variables for the whole list
-  void PrintCutVariables()
-  {
-    AliInfo("- PrintCutVariables -");
-    AliInfo(Form("Simple cut : %i", fSimpleCutmode));
-    AliInfo(Form("fESDtrackCuts->GetMinNCrossedRowsTPC() : %f", fESDtrackCuts->GetMinNCrossedRowsTPC()));
-    AliInfo(Form("fESDtrackCuts->GetMaxChi2PerClusterTPC() : %f", fESDtrackCuts->GetMaxChi2PerClusterTPC()));
-    AliInfo(Form("fESDtrackCuts->GetMaxDCAToVertexZ() : %f", fESDtrackCuts->GetMaxDCAToVertexZ()));
-    AliInfo(Form("fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep() : %s", fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
-    fESDtrackCuts->Print();
-    fESDtrackCutsPrm->Print();
-  };
+  void PrintCutVariables();
 
   ///
   /// Method to print the cut variables for the tree only
-  void PrintCutVariablesForTree()
-  {
-    if (!fTreemode || !fCutmode)
-      return;
-    AliInfo("- PrintCutVariablesForTree -");
-    AliInfo(Form("fCutmode cut : %i fTreemode : %i", fCutmode, fTreemode));
-
-    Int_t index = 0;
-    for (UInt_t cut = 0; cut < nCuts; cut++) {
-      for (UInt_t i = 0; i < CutIndex[cut]; i++) {
-        TString c = "";
-        switch (cut) {
-        case kTPCrows: {
-          c += Form("%f", CutValues[cut][i]);
-          break;
-        }
-        case kTrkChi2: {
-          c += Form("%f", CutValues[cut][i]);
-          break;
-        }
-        case kDCAz: {
-          c += Form("%f", CutValues[cut][i]);
-          break;
-        }
-        case kDCAxy: {
-          const TString dep = Form("%f*(%s)", CutValues[cut][i], primfunct.Data());
-          c += dep;
-          break;
-        }
-        case kGeo: {
-          c = "(";
-          for (Int_t j = 0; j < 5; j++)
-            c += Form("%f%s", CutValues[cut][5 * i + j], j < 4 ? ", " : "");
-          c += ")";
-          break;
-        }
-
-        default:
-          AliFatal(Form("Requested %i set for track cuts not implemented!!", cut));
-          break;
-        }
-
-        AliInfo(Form("CutValue%s[%i] : %s", Cuts[cut].Data(), i, c.Data()));
-        if (i != 0)
-          fCutVar[index++]->Print();
-      }
-    }
-  };
+  void PrintCutVariablesForTree();
 
   ///
   ///Bins numbers
@@ -574,31 +417,23 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   ///////////////////////
   // Output containers //
   ///////////////////////
-  TList* fListHist;         //!<! TList for histograms
-  TTree* fTreeTrack;        //!<! TTree to store information of the single track
-  TClonesArray* ArrayAnTrk; //!<! Array containing all tracks from one event in the format of AliAnTOFtrack
-  TTree* fTreeTrackMC;      //!<! TTree to store MC information of the single track
+  TList* fListHist;           //!<! TList for histograms
+  TTree* fTreeTrack;          //!<! TTree to store information of the single track
+  AliAnTOFevent* fAnTOFevent; //!<! Event container containing all tracks from one event in the format of AliAnTOFtrack
+  TTree* fTreeTrackMC;        //!<! TTree to store MC information of the single track
 
   /////////////////////////
   // Configuration Flags //
   /////////////////////////
-  Bool_t fHImode;               ///<  Flag for the Heavy Ion Mode
-  Bool_t fMCmode;               ///<  Flag for the Monte Carlo Mode
-  Bool_t fTreemode;             ///<  Flag for the Tree analysis Mode
-  Bool_t fChannelmode;          ///<  Flag to set the analysis only on channel TOF
-  Bool_t fCutmode;              ///<  Flag to set the cut variation mode, cuts are not the standard cuts but are modified accordingly to the requirements
-  const Int_t fSimpleCutmode;   ///<  Index to set simple configuration of the track cuts
-  const Bool_t fUseAliEveCut;   ///<  Index to set the usage of the AliEventCuts class from OADB to select events
-  const Bool_t fBuilTPCTOF;     ///<  Flag to build the TPC TOF separation
-  const Bool_t fBuilDCAchi2;    ///<  Flag to build the DCAxy distributions with the cut on the Golden Chi2
-  const Bool_t fUseTPCShift;    ///<  Flag to use the Shift of the TPC nsigma
-  const Bool_t fPerformance;    ///<  Flag to fill the performance plots
-  const Bool_t fRecalibrateTOF; ///<  Flag to require to recalibrate the TOF signal
-  const Bool_t fCutOnMCImpact;  ///<  Flag to cut the MC on the impact parameter instead of the centrality. This is intendend for the generation of MC predictions
-  const Bool_t fFineTOFReso;    ///<  Flag to compute a finer TOF resolution as a function of the number of tracks with TOF signal
-  const Bool_t fFineEfficiency; ///<  Flag to use 3D  histograms with the MC information as a function of pT, eta, phi
-  const Float_t fDCAXYshift;    ///<  Shift to the DCAxy of the track to compensate for the bias, to be used only in MC, to be defined in the constructor
-  UInt_t fSelectBit;            ///<  Mask for Trigger selection
+  CollSys fCollSysMode;       ///<  Flag for the Heavy Ion Mode
+  Bool_t fMCmode;             ///<  Flag for the Monte Carlo Mode
+  Bool_t fTreemode;           ///<  Flag for the Tree analysis Mode
+  Bool_t fChannelmode;        ///<  Flag to set the analysis only on channel TOF
+  Bool_t fCutmode;            ///<  Flag to set the cut variation mode, cuts are not the standard cuts but are modified accordingly to the requirements
+  const Int_t fSimpleCutmode; ///<  Index to set simple configuration of the track cuts
+  const Bool_t fUseAliEveCut; ///<  Index to set the usage of the AliEventCuts class from OADB to select events
+  const Float_t fDCAXYshift;  ///<  Shift to the DCAxy of the track to compensate for the bias, to be used only in MC, to be defined in the constructor
+  UInt_t fSelectBit;          ///<  Mask for Trigger selection
 
   /////////////////////
   // Event Variables //
@@ -623,7 +458,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   //Multiplicity
   Float_t fEvtMult;         ///<  Event Multiplicity
   Short_t fEvtMultBin;      ///<  Event Multiplicity bin to compact the information in the Tree
-  TArrayF fMultiplicityBin; ///<  Array of the Event Multiplicity bins
+  TArrayD fMultiplicityBin; ///<  Array of the Event Multiplicity bins
 
   /////////////////////
   // Track Variables //
@@ -685,6 +520,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   Double_t fTOFImpactDX;                    ///<  Local difference along z of track's impact on the TOF pad and the extrapolated track from the TPC
   Int_t fTOFchan;                           ///<  Channel Index of the TOF Signal
   Float_t fT0TrkTime;                       ///<  Best start time of the track
+  Float_t fT0TrkTimeSigma;                  ///<  Best start time resolution of the track
   Int_t fT0UsedMask;                        ///<  Mask with the T0 used (0x1=T0-TOF,0x2=T0A,0x3=TOC) for p bins
   Float_t fT0TrkSigma;                      ///<  Measured resolution on the T0
   Float_t fTOFExpSigma[kExpSpecies];        ///<  TOF expected Sigma of the track in the hypothesis (0) Electron, (1) Muon, (2) Pion, (3) Kaon, (4) Proton
@@ -707,18 +543,20 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   Float_t fCombinedSigma[3]; ///<  Measured Sigma of the combined TOF and TPC signal in the three hypothesis
 
   //MC info
-  Double_t fRapidityMC; ///<  Rapidity of the track with MC truth
-  Double_t fPtMC;       ///<  Transverse momentum of the track with MC truth
-  Double_t fPMC;        ///<  Momentum of the track with MC truth
-  Bool_t fSignMC;       ///<  MC sign of the track kFAlSE for Positive, kTRUE for Negative
-  Double_t fPhiMC;      ///<  Phi information of the track with MC truth
-  Double_t fEtaMC;      ///<  eta information of the track with MC truth
-  Short_t fProdInfo;    ///<  Information on the origin of the particle, if it is Physical Primary (0), Decay from strangeness (1), or Material (2)
-  Int_t fPdgcode;       ///<  PID identity of the track with MC truth -> Real PDG code
-  Short_t fPdgIndex;    ///<  PID identity of the track with MC truth -> Just the index (0) Pion, (1) Kaon, (2) Proton
-  Int_t fNMCTracks;     ///<  Number of MC tracks in the event
-  Int_t fMCPrimaries;   ///<  Number of MC primary tracks in the event
-  Int_t fMCTOFMatch;    ///<  Flag to see if the track has a real match in the TOF detector -> (0) Match, (1) Mismatch, (-1) Not matched
+  Double_t fRapidityMC;    ///<  Rapidity of the track with MC truth
+  Double_t fPtMC;          ///<  Transverse momentum of the track with MC truth
+  Double_t fPMC;           ///<  Momentum of the track with MC truth
+  Bool_t fSignMC;          ///<  MC sign of the track kFAlSE for Positive, kTRUE for Negative
+  Double_t fPhiMC;         ///<  Phi information of the track with MC truth
+  Double_t fEtaMC;         ///<  eta information of the track with MC truth
+  Short_t fProdInfo;       ///<  Information on the origin of the particle, if it is Physical Primary (0), Decay from strangeness (1), or Material (2)
+  Int_t fPdgcode;          ///<  PID identity of the track with MC truth -> Real PDG code
+  Short_t fPdgIndex;       ///<  PID identity of the track with MC truth -> Just the index (0) Pion, (1) Kaon, (2) Proton
+  Int_t fPdgcodeMother;    ///<  PID identity of the track Mother with MC truth -> Real PDG code
+  Int_t fFirstMotherIndex; ///<  Index of the mother in the stack the track with MC truth
+  Int_t fNMCTracks;        ///<  Number of MC tracks in the event
+  Int_t fMCPrimaries;      ///<  Number of MC primary tracks in the event
+  Int_t fMCTOFMatch;       ///<  Flag to see if the track has a real match in the TOF detector -> (0) Match, (1) Mismatch, (2) Mother label is compatible with match, (-1) Not matched
 
   //Masks to store the event and track information in the Tree
   UChar_t fEvtMask;     ///< Event information mask
@@ -808,7 +646,7 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hTOFResidualX;                        ///<  Histogram with the Impact Residual X
   TH1F* hTOFResidualZ;                        ///<  Histogram with the Impact Residual Z
   TH2F* hPadDist;                             ///<  Histogram with the Impact Residual X and Residual Z values
-  TH2F* hTOFDist;                             ///<  Histogram with the distributions of the TOF strips and sectors
+  TH2F* hTOFDist;                             ///<  Histogram with the distributions of the TOF strips and sectors matched to tracks
   TH1F* hTOFChannel;                          ///<  Histogram with the Channel in the TOF
   TH1F* hT0;                                  ///<  Histogram with the T0 used for each track
   TH1F* hT0Resolution;                        ///<  Histogram with the resolution on the T0
@@ -819,8 +657,10 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH2F* hTimeOfFlightResFine;                 ///<  Histogram to compute the Time Of Flight resolution as a function of the matched tracks to TOF
   TH1F* hTimeOfFlightResFinePerEvent;         ///<  Histogram to compute the Time Of Flight resolution per event, this particular one should not be added to the output list as it yields no information but it is rather auxiliary to the computation of the TOF resolution as a function of the TOF tracks
   TH2I* hBeta;                                ///<  Histogram with the track beta vs the track momentum
-  TProfile* hBetaExpected[kExpSpecies];       ///<  TProfile with the track beta vs the track momentum obtained with the exoected time
+  TProfile* hBetaExpected[kExpSpecies];       ///<  TProfile with the track beta vs the track momentum obtained with the expected time
   TProfile* hBetaExpectedTOFPID[kExpSpecies]; ///<  TProfile with the track beta vs the track momentum obtained with the expected time but with the 3sigma TOF PID on the particle hypothesis
+  TProfile* hTOFSepVsP[kExpSpecies - 1];      ///<  TProfile with the difference of the track nsigma vs the track momentum
+  TProfile* hTOFSepVsPt[kExpSpecies - 1];     ///<  TProfile with the difference of the track nsigma vs the track transverse momentum
   TH2I* hBetaNoMismatch;                      ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchEtaCut;                ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
   TH2I* hBetaNoMismatchEtaCutOut;             ///<  Histogram with the track beta vs the track momentum with a cut on the maximum number of clusters to reduce the mismatch and a lower cut on the eta range
@@ -828,11 +668,20 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH2I* hBetaNoMismatchCentral;               ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch
   TH2I* hBetaNoMismatchCentralEtaCut;         ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
   TH2I* hBetaNoMismatchCentralEtaCutOut;      ///<  Histogram with the track beta vs the track momentum for central events with a cut on the maximum number of clusters to reduce the mismatch and a cut on the eta range
+  TH3F* hBetaMC[3];                           ///<  Histogram with the track beta vs the track momentum with MC information on the PID and on the production mode
+  TH3F* hBetaMCMother[kExpSpecies + 1];       ///<  Histogram with the track beta vs the track momentum with MC information on the PID and on the decay mother
+  TH2F* hBetaMCMotherMode[kExpSpecies + 1];   ///<  Histogram with the track MC information on the PID and on the decay mother/production mode
+  TH1F* hChannelEvents;                       ///<  Histogram with the numbe of events used in the TOF channel-time mode
   TH2I* hChannelTime;                         ///<  Histogram with the measured time at TOF divided into each channel (or strip) -> Used to get the mismatch
+  TH1F* hChannelHits;                         ///<  Histogram with the numer of TOF Hits (matched and not matched) per channel
+  TH1F* hChannelClusters;                     ///<  Histogram with the numer of TOF Clusters (matched and not matched) per channel
   TH1F* hTOFClusters;                         ///<  Histogram with the number of TOF clusters per track
   TH1F* hTOFClustersDCApass;                  ///<  Histogram with the number of TOF clusters per track, for tracks which passed the DCA cut for primaries
   //->TPC information
-  TH2I* hTPCdEdx; ///<  Histogram with the track energy loss in the TOC vs the track momentum
+  TH2I* hTPCdEdx;                               ///<  Histogram with the track energy loss in the TOC vs the track momentum
+  TH2I* hTPCdEdxTPCp;                           ///<  Histogram with the track energy loss in the TOC vs the track momentum for TPC
+  TProfile* hdEdxExpected[kExpSpecies + 2];     ///<  TProfile with the track dEdx vs the track momentum
+  TProfile* hdEdxExpectedTPCp[kExpSpecies + 2]; ///<  TProfile with the track dEdx vs the track momentum for TPC
   //->TPC + TOF information
   TH2F* hTPCTOFSeparation[kExpSpecies][kPtBins]; ///<  Histogram with the PID separation of the TPC and TOF signal
 #ifdef CHECKCOMPUTEDVALUES                       // Only if checks on computed values are required
@@ -848,39 +697,44 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
   TH1F* hTOFNoMismatch[kPtBins][kCharges][kSpecies];      ///<  Distribution for T-Texp-T0 without Mismatch, removed with the information on the TPC
   TH1F* hTOFSigmaNoMismatch[kPtBins][kCharges][kSpecies]; ///<  Distribution for T-Texp-T0 without Mismatch, removed with the information on the TPC
 #endif
+#ifdef BUILDT0PLOTS
+  TH2F* hT0VsVtxZ[4];     ///<  Distribution for T0 vs Vtx Z position for all the ways of computing T0 (i.e. A&C, A, C and TOF)
+  TH2F* hT0VsVtxZbest[4]; ///<  Distribution for T0 vs Vtx Z position for all the ways of computing T0 (i.e. A&C, A, C best)
+#endif
 
   //
   //MC Info
   //
-  TH1F* hNumMatchMC[2][3];                                 ///<  Matching efficiency numerator with MC information on PID
-  TH1F* hDenMatchMC[2][3];                                 ///<  Matching efficiency denominator with MC information on PID
-  TH1F* hNumMatchPrimMC[2][3];                             ///<  Matching efficiency numerator with MC information on PID and on Primary production
-  TH1F* hDenMatchPrimMC[2][3];                             ///<  Matching efficiency denominator with MC information on PID and on Primary production
-  TH1F* hNumMatchPrimMCYCut[2][3][kEvtMultBins];           ///<  Matching efficiency numerator with MC information on PID and on Primary production with a cut on |y| < 0.5
-  TH1F* hDenMatchPrimMCYCut[2][3][kEvtMultBins];           ///<  Matching efficiency denominator with MC information on PID and on Primary production with a cut on |y| < 0.5
-  TH1F* hNumMatchMultTrkTRDOut[2][3][kEvtMultBins];        ///<  Matching efficiency numerator with kTRDOut flag and MC information on PID
-  TH1F* hDenMatchMultTrkTRDOut[2][3][kEvtMultBins];        ///<  Matching efficiency denominator with kTRDOut flag and MC information on PID
-  TH1F* hNumMatchMultTrkNoTRDOut[2][3][kEvtMultBins];      ///<  Matching efficiency numerator without kTRDOut flag and with MC information on PID
-  TH1F* hDenMatchMultTrkNoTRDOut[2][3][kEvtMultBins];      ///<  Matching efficiency denominator without kTRDOut flag and with MC information on PID
-  TH1F* hNumMatchMultTrk[2][3][kEvtMultBins];              ///<  Matching efficiency numerator with kTIME, kTRDOut flags and MC information on PID
-  TH1F* hDenMatchMultTrk[2][3][kEvtMultBins];              ///<  Matching efficiency denominator with kTIME, kTRDOut flags and MC information on PID
-  TH1F* hNumMatchMultTrkInc[2][kEvtMultBins];              ///<  Matching efficiency numerator with kTIME, kTRDOut flags
-  TH1F* hDenMatchMultTrkInc[2][kEvtMultBins];              ///<  Matching efficiency denominator with kTIME, kTRDOut flags
-  TH1F* hDenTrkTrigger[2][3][kEvtMultBins];                ///<  Generated particles with MC truth on PID for all events: that passed and didn't pass Physics Selection
-  TH1F* hDenTrkMCVertexZ[2][3];                            ///<  Generated particles with MC truth on PID for all events: that passed and didn't pass Physics Selection. But that are inside the sample selection in the MC
-  TH1F* hDenTrkVertex[2][3];                               ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
-  TH1F* hDenTrkVertexMCVertexZ[2][3];                      ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
-  TH1F* hDenPrimMCYCut[2][3][kEvtMultBins];                ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max y
-  TH1F* hDenPrimMCEtaCut[2][3][kEvtMultBins];              ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta
-  TH1F* hDenPrimMCEtaYCut[2][3][kEvtMultBins];             ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta and max y
-  TH1F* hNumPrimMCTrueMatch[2][3][kEvtMultBins];           ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector
-  TH1F* hNumPrimMCTrueMatchYCut[2][3][kEvtMultBins];       ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
-  TH1F* hNumPrimMCTrueMatchYCutTPC[2][3][kEvtMultBins];    ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut and a TPC 5sigma cut on the signal for pi/k/p
-  TH1F* hNumPrimMCConsistentMatchYCut[2][3][kEvtMultBins]; ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
-  TH3S* hDenMatchPrimNoCut[2][3];                          ///<  Matching efficiency denominator with MC information on PID and on Primary production without any geometical cut i.e. it has the three variables for pT eta and phi
-  TH3S* hDenPrimMCNoCut[2][3];                             ///<  Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection without any geometical cut i.e. it has the three variables for pT eta and phi
+  TH1F* hNumMatchMC[2][3];                   ///<  Matching efficiency numerator with MC information on PID
+  TH1F* hDenMatchMC[2][3];                   ///<  Matching efficiency denominator with MC information on PID
+  TH1F* hNumMatchPrimMC[2][3];               ///<  Matching efficiency numerator with MC information on PID and on Primary production
+  TH1F* hDenMatchPrimMC[2][3];               ///<  Matching efficiency denominator with MC information on PID and on Primary production
+  TH2F* hNumMatchPrimMCYCut[2][3];           ///<  Matching efficiency numerator with MC information on PID and on Primary production with a cut on |y| < 0.5
+  TH2F* hDenMatchPrimMCYCut[2][3];           ///<  Matching efficiency denominator with MC information on PID and on Primary production with a cut on |y| < 0.5
+  TH2F* hNumMatchMultTrkTRDOut[2][3];        ///<  Matching efficiency numerator with kTRDOut flag and MC information on PID
+  TH2F* hDenMatchMultTrkTRDOut[2][3];        ///<  Matching efficiency denominator with kTRDOut flag and MC information on PID
+  TH2F* hNumMatchMultTrkNoTRDOut[2][3];      ///<  Matching efficiency numerator without kTRDOut flag and with MC information on PID
+  TH2F* hDenMatchMultTrkNoTRDOut[2][3];      ///<  Matching efficiency denominator without kTRDOut flag and with MC information on PID
+  TH2F* hNumMatchMultTrk[2][3];              ///<  Matching efficiency numerator with kTIME, kTRDOut flags and MC information on PID
+  TH2F* hDenMatchMultTrk[2][3];              ///<  Matching efficiency denominator with kTIME, kTRDOut flags and MC information on PID
+  TH2F* hNumMatchMultTrkInc[2];              ///<  Matching efficiency numerator with kTIME, kTRDOut flags
+  TH2F* hDenMatchMultTrkInc[2];              ///<  Matching efficiency denominator with kTIME, kTRDOut flags
+  TH2F* hDenTrkTrigger[2][3];                ///<  Generated particles with MC truth on PID for all events: that passed and didn't pass Physics Selection
+  TH1F* hDenTrkMCVertexZ[2][3];              ///<  Generated particles with MC truth on PID for all events: that passed and didn't pass Physics Selection. But that are inside the sample selection in the MC
+  TH1F* hDenTrkVertex[2][3];                 ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
+  TH1F* hDenTrkVertexMCVertexZ[2][3];        ///<  Generated particles with MC truth on PID for events that passed Vertex Cuts
+  TH2F* hDenPrimMCYCut[2][3];                ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max y
+  TH2F* hDenPrimMCEtaCut[2][3];              ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta
+  TH2F* hDenPrimMCEtaYCut[2][3];             ///<  Pt Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with a cut on the max eta and max y
+  TH2F* hNumPrimMCTrueMatch[2][3];           ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector
+  TH2F* hNumPrimMCTrueMatchYCut[2][3];       ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut
+  TH2F* hNumPrimMCTrueMatchYCutTPC[2][3];    ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with true match in the TOF detector with a Y cut and a TPC 5sigma cut on the signal for pi/k/p
+  TH2F* hNumPrimMCConsistentMatchYCut[2][3]; ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, without true match in the TOF detector but compatible PID with a Y cut
+  TH2F* hNumPrimMCMotherMatchYCut[2][3];     ///<  Pt Distribution of Tracks from primary particles with MC Truth on PID, with mother with true match in the TOF detector with a Y cut
+  TH3S* hDenMatchPrimNoCut[2][3];            ///<  Matching efficiency denominator with MC information on PID and on Primary production with pT eta and phi
+  TH3S* hDenPrimMCNoCut[2][3];               ///<  Distribution of Primary Particles with MC Truth on PID, that passed Physics Selection and Event Selection with pT eta and phi
 
-  //histograms for matching efficiency calculation
+  //histograms for matching efficiency calculation (Also in Real Data)
   //Positive / Negative
   TH1F* hNumMatch[2];            ///<  Matching efficiency numerator Pt Distribution
   TH1F* hDenMatch[2];            ///<  Matching efficiency denominator Pt Distribution
@@ -906,18 +760,18 @@ class AliAnalysisTaskTOFSpectra : public AliAnalysisTaskSE {
 
   //DCA Histograms
   //-> Data and MC
-  TH1F* hDCAxy[2][3][kPtBins][kEvtMultBins];           ///< DCAxy Distribution in Pt bins for all the reconstructed tracks identified via a 2sigma TOF/TPC cut
-  TH1F* hDCAxyGoldenChi2[2][3][kPtBins][kEvtMultBins]; ///< DCAxy Distribution in Pt bins for all the reconstructed tracks but with the cut on the golden Chi2
+  TH2F* hDCAxy[2][3][kPtBins];           ///< DCAxy Distribution in Pt and Multiplicity/Centrality bins for all the reconstructed tracks identified via a 2sigma TOF/TPC cut
+  TH2F* hDCAxyGoldenChi2[2][3][kPtBins]; ///< DCAxy Distribution in Pt and Multiplicity/Centrality bins for all the reconstructed tracks but with the cut on the golden Chi2
   //-> MC only
   TH1F* hDCAxyPrimMC[2][3][kPtBins];   ///< DCAxy Distribution in Pt bins for Primary reconstructed tracks identified with MC Truth
   TH1F* hDCAxySecStMC[2][3][kPtBins];  ///< DCAxy Distribution in Pt bins for Secondary from Strangeness reconstructed tracks identified with MC Truth
   TH1F* hDCAxySecMatMC[2][3][kPtBins]; ///< DCAxy Distribution in Pt bins for Secondary from Material reconstructed tracks identified with MC Truth
 
   //
-  AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Not implemented
+  AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra&);            //! Copy constructor
   AliAnalysisTaskTOFSpectra& operator=(const AliAnalysisTaskTOFSpectra&); //! Not implemented
 
-  ClassDef(AliAnalysisTaskTOFSpectra, 8); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
+  ClassDef(AliAnalysisTaskTOFSpectra, 14); //AliAnalysisTaskTOFSpectra used for the Pi/K/p analysis with TOF
 };
 
 #endif

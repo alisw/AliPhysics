@@ -44,7 +44,7 @@ class AliTrackContainerV0 : public AliTrackContainer {
 
   	// reimplementation of inherited methods
   	virtual void    SetArray(const AliVEvent *event);
-  	virtual void    NextEvent();
+  	virtual void    NextEvent(const AliVEvent *event);
   	virtual Bool_t	ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectionReason) const;
 		
 		void ExtractDaughters(AliAODv0* cand);

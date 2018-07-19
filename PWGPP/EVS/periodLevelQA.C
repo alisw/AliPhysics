@@ -7,7 +7,7 @@
 #include "AliDAQ.h"
 #endif
 #include "map"
-#include "Includes.h"
+
 using namespace std;
 // TODO read number of bits from AliVEvent?
 #define NBITS 29
@@ -51,7 +51,7 @@ void AddFillSeparationLines(TH1* h, map<Int_t,Int_t> &fills);
 void AddPeriodSeparationLines(TH1* h,  map<Int_t,TString> &periods);
 
 //void periodLevelQA(TString inputFileName ="/afs/cern.ch/work/a/aliqaevs/www/data/2012/LHC12h/pass1/trending.root"){
-void periodLevelQA(TString inputFileName ="trending_merged.root"){
+void periodLevelQA(TString inputFileName ="trending.root"){
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(1.5);
   gStyle->SetPadGridX(0);
@@ -898,9 +898,9 @@ void periodLevelQA(TString inputFileName ="trending_merged.root"){
     
     hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
     hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
-    hAcceptedFraction->SetMinimum(elmin-0.1*(elmax-elmin));
-    hAcceptedFraction->SetMaximum(elmax+0.1*(elmax-elmin));
     hAccStep1Fraction->SetTitle(hAcceptedFraction->GetTitle());
+    hAccStep1Fraction->SetMaximum(elmax+0.1*(elmax-elmin));
+    hAccStep1Fraction->SetMinimum(elmin-0.1*(elmax-elmin));
     // hAcceptedFraction->Draw();
     hAccStep1Fraction->Draw();
     hAccStep2Fraction->Draw("same");

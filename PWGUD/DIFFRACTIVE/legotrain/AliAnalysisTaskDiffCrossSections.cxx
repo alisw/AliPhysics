@@ -86,6 +86,17 @@ const AliAnalysisTaskDiffCrossSections::PseudoTrack& AliAnalysisTaskDiffCrossSec
   //   AliFatalF("idx=%d is outside of the allowed range [0,%d)", idx, fTracks.GetSize());
   return *p;
 }
+void AliAnalysisTaskDiffCrossSections::PseudoTracks::SortIfNeeded() {
+  Float_t etaLast=0;
+  Bool_t isSorted = kTRUE;
+  for (Int_t i=0, n=fTracks.GetEntriesFast(); i<n && isSorted; ++i) {
+    const PseudoTrack &t = GetTrackAt(i);
+    isSorted = (i ? t.Eta() >= etaLast : kTRUE);
+    etaLast = t.Eta();
+  }
+  if (!isSorted)
+    fTracks.Sort();
+}
 
 TVector3 AliAnalysisTaskDiffCrossSections::GetADPseudoTrack(Int_t ch) {
   const Double_t z[2] = {
@@ -165,16 +176,7 @@ Int_t AliAnalysisTaskDiffCrossSections::PseudoTracks::ClassifyEventBits(Int_t &i
   // boundaries of acceptance:
   AliDebugF(5, "etaAccLR= %.3f %.3f", etaAccL, etaAccR);
 
-  // make sure that fTracks is sorted
-  Float_t etaLast=0;
-  Bool_t isSorted = kTRUE;
-  for (Int_t i=0; i<nt && isSorted; ++i) {
-    const PseudoTrack &t = GetTrackAt(i);
-    isSorted = (i ? t.Eta() >= etaLast : kTRUE);
-    etaLast = t.Eta();
-  }
-  if (!isSorted)
-    fTracks.Sort();
+  // fTracks.Sort(); already sorted
 
   // find etaL,etaR indices
   for (Int_t i=0; i<nt; ++i) {
@@ -659,11 +661,22 @@ AliAnalysisTaskDiffCrossSections::AliAnalysisTaskDiffCrossSections(const char *n
   , fTE(NULL)
   , fFastOrMap()
   , fFiredChipMap()
+  , fESDVZERO()
+  , fESDAD()
   , fTreeData()
   , fMCInfo()
+  , fIR1InteractionMap()
+  , fIR2InteractionMap()
   , fMeanVtxPos(3)
   , fMeanVtxCov(3,3)
   , fMeanVtxU(3,3)
+  , fEventType(0)
+  , fIdxEtaL(-1)
+  , fIdxEtaR(-1)
+  , fEtaL(0)
+  , fEtaR(0)
+  , fEtaGap(0)
+  , fEtaGapCenter(0)
 {
   fTimeChargeCuts.SetOwner(kTRUE);
   fTriggerAnalysis.SetAnalyzeMC(fIsMC);
@@ -685,7 +698,8 @@ AliAnalysisTaskDiffCrossSections::~AliAnalysisTaskDiffCrossSections()
 Bool_t AliAnalysisTaskDiffCrossSections::DoTimeChargeCut(Int_t ch, Float_t time, Float_t charge) const
 {
   const TCutG *cut = dynamic_cast<const TCutG*>(fTimeChargeCuts.At(ch));
-  return (cut ? cut->IsInside(time, charge) : kTRUE);
+  // it no cut is set, require a time measurement (AliADReconstructor::kInvalidTime=-1024)
+  return (cut ? cut->IsInside(time, charge) : (time > -1023.0f));
 }
 
 void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
@@ -698,6 +712,10 @@ void AliAnalysisTaskDiffCrossSections::SetBranches(TTree* t) {
     t->Branch("ESDVZERO", &fESDVZERO, 32000, 0);
   if (fUseBranch.Contains("ESDAD"))
     t->Branch("ESDAD", &fESDAD, 32000, 0);
+  if (fUseBranch.Contains("IRMap")) {
+    t->Branch("IR1InteractionMap", &fIR1InteractionMap, 32000, 0);
+    t->Branch("IR2InteractionMap", &fIR2InteractionMap, 32000, 0);
+  }
   if (fIsMC)
     t->Branch("MCInfo", &fMCInfo);
 
@@ -871,10 +889,11 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   fTreeData.fFMDInfo.Fill(esdEvent, fFMDMultLowCut);
   fTreeData.fADInfo.FillAD(esdEvent, fTriggerAnalysis);
 
-  fTreeData.fVtxInfo.Fill(esdEvent->GetPrimaryVertexSPD());
-
   fFastOrMap    = mult->GetFastOrFiredChips();
   fFiredChipMap = mult->GetFiredChipMap();
+
+  fIR1InteractionMap = esdHeader->GetIRInt1InteractionMap();
+  fIR2InteractionMap = esdHeader->GetIRInt2InteractionMap();
 
   fTreeData.fEventInfo.fnTrklet         = mult->GetNumberOfTracklets();
   fTreeData.fEventInfo.fnSPDClusters[0] = mult->GetNumberOfITSClusters(0);
@@ -883,7 +902,9 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
   if (fIsMC)
     fMCInfo.Fill(MCEvent(), fMCType);
 
-  const AliESDVertex *esdVertex = esdEvent->GetPrimaryVertex();
+  const AliESDVertex *esdVertex = esdEvent->GetPrimaryVertexSPD();
+  fTreeData.fVtxInfo.Fill(esdVertex);
+
   TVector3 vertexPosition(esdVertex->GetX(),
                           esdVertex->GetY(),
                           esdVertex->GetZ());
@@ -962,7 +983,7 @@ void AliAnalysisTaskDiffCrossSections::UserExec(Option_t *)
 	    fTreeData.fPseudoTracks.AddTrack(PseudoTrack(esdFMD->Eta(d, r, s, t),
 							 esdFMD->Phi(d, r, s, t)*TMath::Pi()/180.0,
 							 fmdMult,
-							 0.0f,
+							 Float_t( UInt_t(t) + (UInt_t(s) << 9)), // encode s,t
 							 (d==1)       *PseudoTracks::kFMD1  |
 							 (d==2)*(i==0)*PseudoTracks::kFMD2i |
 							 (d==2)*(i==1)*PseudoTracks::kFMD2o |

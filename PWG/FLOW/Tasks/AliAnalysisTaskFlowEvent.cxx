@@ -103,6 +103,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fMaxB(1.0),
   fQAon(kFALSE),
   fLoadCandidates(kFALSE),
+  fPassMCeventToCutsObject(kTRUE),
   fNbinsMult(10000),
   fNbinsPt(100),   
   fNbinsPhi(100),
@@ -164,6 +165,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fMaxB(1.0),
   fQAon(on),
   fLoadCandidates(bCandidates),
+  fPassMCeventToCutsObject(kTRUE),
   fNbinsMult(10000),
   fNbinsPt(100),   
   fNbinsPhi(100),
@@ -331,9 +333,19 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     if (InputEvent() && !fCutsEvent->IsSelected(InputEvent(),MCEvent())) 
       return;
 
+  
+    if(fPassMCeventToCutsObject){
     //first attach all possible information to the cuts
-    fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
-    fCutsPOI->SetEvent( InputEvent(), MCEvent() );
+      fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
+      fCutsPOI->SetEvent( InputEvent(), MCEvent() );
+    }
+    else{
+      AliMCEvent* McEventFake = NULL;
+      fCutsRP->SetEvent( InputEvent(), McEventFake );  //attach event
+      fCutsPOI->SetEvent( InputEvent(), McEventFake);
+    }
+
+
 
     //then make the event
     fFlowEvent->Fill( fCutsRP, fCutsPOI );

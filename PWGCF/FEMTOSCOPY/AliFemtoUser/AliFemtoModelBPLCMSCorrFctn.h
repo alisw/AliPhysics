@@ -24,7 +24,7 @@ class AliFemtoModelBPLCMSCorrFctn : public AliFemtoModelCorrFctn {
     fQinvHisto(0),
     fPairCut(0),
     fUseRPSelection(0){}
-  AliFemtoModelBPLCMSCorrFctn(char* title, const int& nbins, const float& QLo, const float& QHi);
+  AliFemtoModelBPLCMSCorrFctn(const char* title, const int& nbins, const float& QLo, const float& QHi);
   AliFemtoModelBPLCMSCorrFctn(const AliFemtoModelBPLCMSCorrFctn& aCorrFctn);
   virtual ~AliFemtoModelBPLCMSCorrFctn();
 
@@ -42,7 +42,7 @@ class AliFemtoModelBPLCMSCorrFctn : public AliFemtoModelCorrFctn {
   void SetSpecificPairCut(AliFemtoPairCut* aCut);
   void SetUseRPSelection(unsigned short aRPSel);
 
-  virtual AliFemtoModelCorrFctn* Clone();
+  virtual AliFemtoModelCorrFctn* Clone() const;
 
 protected:
   TH3D* fNumerator3DTrue;            // 3D Numerator with pairs from same event only

@@ -45,7 +45,7 @@ submitTimeDependent(){
     #  
     # we assume that the run.list and residual list is     
     source $ALICE_PHYSICS/PWGPP/TPC/CalibMacros/AliTPCcalibAlignInterpolation.sh
-    source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh  
+    source $ALICE_ROOT/libexec/alilog4bash.sh
 
     # makeEnvLocal; 
     # makeEnvHera; 

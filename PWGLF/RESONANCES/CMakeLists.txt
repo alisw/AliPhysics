@@ -94,6 +94,7 @@ set(SRCS
   AliRsnMiniMonitor.cxx
   AliRsnMiniAnalysisTask.cxx
   AliRsnMiniMonitorTask.cxx
+  AliRsnMiniResonanceFinder.cxx
   AliRsnTrainManager.cxx
   )
 

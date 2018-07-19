@@ -65,7 +65,7 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
 
     void SetTrkEffParametrisation(TF1 *function){fFunTrkEff = function;}
 
-    void SetUseMultiplicity(){fUseMultiplicity = kTRUE;}
+    void SetUseMultiplicity(Bool_t useMult){fUseMultiplicity = useMult;}
     void SetUseCentrality(){fUseMultiplicity = kFALSE;}
     void SetUseCountedMult(){fUseCountedMult = kTRUE;}
     // Binning
@@ -150,109 +150,117 @@ class AlidNdPtUnifiedAnalysisTask : public AliAnalysisTaskSE {
 
     void SetCentralityCut(Double_t lowerCut, Double_t upperCut){fUseCentralityCut = kTRUE; fLowerCentralityBound = lowerCut; fUpperCentralityBound = upperCut;}
     Bool_t IsSelectedCentrality();
-
+    
 
     void SetIncludeSigmas(Bool_t includeSigmas){fIncludeSigmas = includeSigmas;}
 
   private:
     TList       *fOutputList;		//!<! Output list
-    AliVEvent   *fEvent;		//!<! Event object (AliVEvent)
+    AliVEvent   *fEvent;			//!<! Event object (AliVEvent)
     AliMCEvent  *fMCEvent;		//!<! MC event
     AliStack    *fMCStack;		//!<! MC stack
-    TF1               *fFunTrkEff;
 
+    TF1               *fFunTrkEff;
     AlidNdPtEventCuts *fEventCuts;
     AliESDtrackCuts   *fESDtrackCuts;
+
     AliAnalysisUtils* fUtils;
     Bool_t      	fIsESD;			///< Flag for ESD usage
     Bool_t      	fUseMultiplicity;         ///< Flag for Multiplicity or Centrality
     Bool_t      	fIsMC;			///< Flag for MC usage
     Bool_t      	fEventTriggerRequired;
-    Bool_t 		fIs2013pA;
-    Bool_t 		fIs2015data;
-    Bool_t 		fUseTOFBunchCrossing;
+    Bool_t	 			fIs2013pA;
+    Bool_t 				fIs2015data;    
+    Bool_t 				fUseTOFBunchCrossing;    
+    
+    
     Bool_t      	fTPCRefit;		///< TPC refit
-    Bool_t      	fITSRefit;		///< TPC refit
-    Bool_t      	fAcceptKinks; 		///< Accept Kink Daughters
-    Bool_t        	fRequiresClusterITS;
+    Bool_t      	fITSRefit;		///< TPC refit            
+    Bool_t      	fAcceptKinks; 		///< Accept Kink Daughters    
+    Bool_t        fRequiresClusterITS;    
     Bool_t      	fDCAToVertex2D;
     Bool_t      	fSigmaToVertex;
     Bool_t      	fUseGeomCut;
     Bool_t      	fUseCountedMult;		///< Flag to select wether to use GetMultiplicity() or N_acc in fHistEvent and fHistTrack
     
-    // Output Histograms
-    THnF        	*fHistEvent;			///<  Histogram for events (Zv,mult/cent)
-    THnF          	*fEventCount;     ///< Histogram for triggered events and events with vertex
+    
+    THnF        	*fHistEvent;			///<  Histogram for events (Zv,mult/cent)    
+    THnF          *fEventCount;		        ///< Histogram for triggered events and events with vertex
     THnF        	*fHistMultEvent;		///<  Histogram for events (mult/cent,acc.mult,corr.mult)
     THnF        	*fHistMCGenEvent;		///<  Histogram for generated MC events (Zv,mult/cent)
-    THnF        	*fHistMCRecEvent;		///<  Histogram for reconstructed MC events (Zv,mult/cent)
+    THnF        	*fHistMCRecEvent;		///<  Histogram for reconstructed MC events (Zv,mult/cent)    
     THnF        	*fHistMultMCGenEvent;		///<  Histogram for generated MCevents (mult/cent,acc.mult,corr.mult)
     THnF        	*fHistMultMCRecEvent;		///<  Histogram for reconstructed MCevents (mult/cent,acc.mult,corr.mult)
-    
     THnF        	*fHistMCGenINEL0Event;		///<  Histogram for generated INEL>0 MC events (Zv,mult/cent)
     THnF        	*fHistMCRecINEL0Event;    	///<  Histogram for reconstructed INEL>0 MC events (Zv,mult/cent)
-    THnF        	*fHistMultCorrelation;		///<  Histogram for multiplicity correlation (corr.mult,corr.mult)
-    
-    THnF        	*fHistMCResponseMat;    	///<  Histogram for Detector Response N_ch vs. N_acc
-    THnF        	*fHistMCTrigEvent;		///<  Histogram for triggered MC events (Zv,mult/cent)
     THnF        	*fHistMCTrigINEL0Event;   	///<  Histogram for triggered INEL>0 MC events (Zv,mult/cent)
+    THnF        	*fHistMultCorrelation;		///<  Histogram for multiplicity correlation (corr.mult,corr.mult)
+               
+    THnF        	*fHistMCResponseMat;    	///<  Histogram for Detector Response N_ch vs. N_acc
+    THnF        	*fHistMCTrigEvent;		///<  Histogram for triggered MC events (Zv,mult/cent)               
 
     THnF        	*fHistTrack;			///<  Histogram for tracks (pt,eta,Zv,mult/cent)
     THnF	       	*fHistTrackCharge;		///<  Control Histogram for track charge (pt,eta,mult/cent,charge)
 
     THnF        	*fHistMCRecTrack;		///<  Histogram for reconstructed MC tracks (pt,eta,mult/cent)
     THnF        	*fHistMCRecTrackParticle;	///<  Particle type histogram for reconstructed MC tracks (pt,eta,mult/cent)
+
     THnF        	*fHistMCGenPrimTrack;		///<  Histogram for generated MC tracks (pt,eta,mult/cent)
     THnF        	*fHistMCRecPrimTrack;		///<  Histogram for primary MC tracks (pt,eta,mult/cent)
+
     THnF        	*fHistMCGenPrimTrackParticle;	///<  Particle type histogram for generated MC tracks (pt,eta,mult/cent)
     THnF        	*fHistMCRecPrimTrackParticle;	///<  Particle type histogram for primary MC tracks (pt,eta,mult/cent)
+
     THnF        	*fHistMCRecSecTrack;		///<  Histogram for secondary MC tracks (pt,eta,mult/cent)
     THnF        	*fHistMCRecSecTrackParticle;	///<  Particle type histogram for secondary MC tracks (pt,eta,mult/cent)
-
+                          
     UInt_t fTriggerMask;    // trigger mask
 
     // Acceptance cuts for tracks
     Float_t     	fMinEta;			///< Minimum eta cut
     Float_t     	fMaxEta;			///< Maximum eta cut
-    Float_t     	fMinPt;				///< Minimum pT cut
-    Float_t     	fMaxPt;				///< Maximum pT cut
+    Float_t     	fMinPt;			///< Minimum pT cut
+    Float_t     	fMaxPt;			///< Maximum pT cut
 
     Float_t     	fSigmaMeanXYZv[3];	///<[3]
     Float_t     	fMeanXYZv[3];		///<[3]
     Float_t     	fZvtx;
-    
+ 
     Int_t       	fMinNCrossedRowsTPC;	///< Minimum number of crossed Rows in the TPC
     Float_t     	fMinRatioCrossedRowsOverFindableClustersTPC;
     Float_t     	fMaxFractionSharedClustersTPC;
     Float_t     	fMaxChi2PerTPCCluster;
     Float_t     	fMaxChi2PerITSCluster;
     Float_t     	fMaxDCAzITSTPC;
-    TString             fDCAToVertexXYPtDep;
-    Float_t	        fDCAToVertexXY;
+    TString      	fDCAToVertexXYPtDep;
+    Float_t       	fDCAToVertexXY;
     Float_t     	fMaxChi2TPCConstrained;
     Int_t       	fMinActiveLength;
-    Float_t             fDeadZoneWidth;
-    
-    Float_t	       fCutGeoNcrNclLenght;
-    Float_t	       fCutGeoNcrNclGeom1Pt;
-    Float_t	       fCutGeoNcrNclFractionNcr;
-    Float_t	       fCutGeoNcrNclFractionNcl;
+    Float_t       	fDeadZoneWidth;
+    Float_t       	fCutGeoNcrNclLenght;
+    Float_t       	fCutGeoNcrNclGeom1Pt;
+    Float_t       	fCutGeoNcrNclFractionNcr;
+    Float_t       	fCutGeoNcrNclFractionNcl;
     
     TArrayD     	*fBinsMultCent;		///< Array of bins in multiplicity or centrality
     TArrayD     	*fBinsPt;			///< Array of bins in pt
-    TArrayD     	*fBinsEta;		///< Array of bins in eta    
+    TArrayD     	*fBinsEta;		///< Array of bins in eta
     TArrayD     	*fBinsZv;			///< Array of bins in Zv (Z-position of primary vtx)
-    
-    THnF* fHistMCMultPt;
-    Bool_t fUseCentralityCut;
-    Double_t fLowerCentralityBound;
-    Double_t fUpperCentralityBound;
-    Bool_t fIncludeSigmas;
-    TH1D* fHistV0Amp;
+        
+    THnF* 		  fHistMCMultPt;
+    Bool_t 			fUseCentralityCut;
+    Double_t	  fLowerCentralityBound;
+    Double_t 	  fUpperCentralityBound;
 
+    Bool_t fIncludeSigmas;
+    // Output Histograms
+
+    THnF        	*fHistMCTrackMult;		///<  Histogram for tracks vs multiplicity (pt,Nacc,Nch)
+    THnF        	*fHistMCTrackMultGen;		///<  Histogram for true tracks vs multiplicity (pt,Nacc,Nch)
+    
+    THnF          *fHistResPt;                    ///<  Histogram for pT_gen vs pT_rec for resolution chrosschecks (pt,pt,eta,vz)
 
     //   THnF	      *fHistMCGenTrackINEL0;    ///<  Histogram for generated MC tracks for INEL>0 events (pt,eta,mult/cent)
-
 
 
     AlidNdPtUnifiedAnalysisTask(const AlidNdPtUnifiedAnalysisTask&); // not implemented

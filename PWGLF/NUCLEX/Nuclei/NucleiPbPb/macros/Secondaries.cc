@@ -1,4 +1,6 @@
 #include "src/Common.h"
+#include "src/Utils.h"
+using namespace utils;
 
 #include <TDirectory.h>
 #include <TCanvas.h>
@@ -10,6 +12,7 @@
 #include <TList.h>
 #include <TStyle.h>
 #include <TRandom3.h>
+#include <TLegend.h>
 
 void Secondaries() {
   /// Taking all the histograms from the MC and data files
@@ -22,21 +25,7 @@ void Secondaries() {
   fitModel.SetParLimits(0, -100000, 0);
   fitModel.SetParLimits(1, -30, 30);
 
-
-  /// fit funztion for systematics evaluation
-  TF1* vFitModel[3];
-  for(int i=0; i<3; i++){
-    vFitModel[i] = new TF1(Form("fitFrac_%d",i),"1/(1-[0]*exp([1]*x))",0.4,6.);
-    vFitModel[i]->SetParLimits(0, -100000, 0);
-    vFitModel[i]->SetParLimits(1, -30, 30);
-  }
-  float integral_limits[3] = {0.07,.12,.19};
-  TH1D* vResTFFsyst[3];
-
-  cout << "************************************************"<< endl;
-  cout << "Inizializzazione riuscita" << endl;
-  cout << "************************************************"<< endl;
-
+  gStyle->SetOptStat(0);
   gStyle->SetOptFit(1111);
 
   const int nDCAbins = 34;
@@ -46,8 +35,6 @@ void Secondaries() {
      0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.50, 0.60, 0.70, 0.80,
      0.90, 1.00, 1.10, 1.20, 1.30
   };
-
-  //const Double_t dcaxy_limits[27] = {-1.3,-1.2,-1.1,-1.0,-0.9,-0.8,-0.7, -0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0.,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3};
 
   TObjArray obj(2);
   for (auto&& list_key : *mc_file.GetListOfKeys()) {
@@ -63,24 +50,17 @@ void Secondaries() {
     TDirectory *datadir = root->mkdir("Data");
     TDirectory *primdir = root->mkdir("Primaries");
     TDirectory *secodir = root->mkdir("Secondaries");
-    //TDirectory *secodir_rebin = root->mkdir("Secondaries_rebin");
-    //TDirectory *secodir_sim = root->mkdir("Secondaries_sim");
     TDirectory *tffdir = root->mkdir("TFractionFitter");
     TDirectory *resdir = root->mkdir("Results");
 
     TAxis *pt = data->GetYaxis();
+    TAxis *cen = data->GetXaxis();
 
     int n_cent_bins = secondaries->GetNbinsX();
 
-    TH1D hResTFF("hResTFF",";p_{T} GeV/c;Fraction",pt->GetNbins(),pt->GetXbins()->GetArray());
-
-    if(string(list_key->GetName())==kFilterListNames.data()){
-      for(int i=0; i<3; i++){
-        vResTFFsyst[i] = (TH1D*) hResTFF.Clone(Form("hResTFFsyst_%d",i));
-        cout << "************************************************"<< endl;
-        cout << "Istogramma " << i << " definito" << endl;
-        cout << "************************************************"<< endl;
-      }
+    TH1D* hResTFF[kCentLength] = {nullptr};
+    for(int iC=0; iC<kCentLength; iC++){
+      hResTFF[iC]= new TH1D(Form("hResTFF_%i",iC),";p_{T} GeV/c;Fraction",pt->GetNbins(),pt->GetXbins()->GetArray());
     }
 
     for (int iB = pt->FindBin(kPtRangeMatCorrection[0]); iB <= pt->FindBin(kPtRangeMatCorrection[1]); ++iB) {
@@ -89,130 +69,95 @@ void Secondaries() {
       TH1D* pr = (TH1D*)pr_tmp->Rebin(nDCAbins,Form("pr_%i",iB),dcabins);
       TH1D *sc_tmp = secondaries->ProjectionZ(Form("sc_tmp%i",iB),1,n_cent_bins,iB,iB);
       TH1D* sc = (TH1D*)sc_tmp->Rebin(nDCAbins,Form("sc_%i",iB),dcabins);
-      //TH1D* sc_rebin = (TH1D*)sc->Rebin(26,Form("sc_%i",iB),dcaxy_limits);
-      TH1D *dt_tmp = data->ProjectionZ(Form("dt_tmp%i",iB),1,n_cent_bins,iB,iB);
-      TH1D* dt = (TH1D*)dt_tmp->Rebin(nDCAbins,Form("dt_%i",iB),dcabins);
-
-      dt->SetTitle(Form("%4.1f < p_{T} #leq %4.1f",pt->GetBinLowEdge(iB),pt->GetBinLowEdge(iB+1)));
-      pr->SetTitle(dt->GetTitle());
-      sc->SetTitle(dt->GetTitle());
-      // sc_rebin->SetTitle(dt->GetTitle());
-      // sc_rebin->Rebin(2);
-      // sc_rebin->Fit("pol0","Q");
-
-      // TH1D* sim_sc = new TH1D(Form("sim_sc_%d",iB),sc->GetTitle(),sc->GetNbinsX(),sc->GetXaxis()->GetXbins()->GetArray());
-      // for(int i=0; i<1000000; i++){
-      //   sim_sc->Fill(gRandom->Uniform(-1.3,1.3));
-      // }
+      pr->SetTitle(Form("%4.1f < p_{T} #leq %4.1f (GeV/#it{c})",pt->GetBinLowEdge(iB),pt->GetBinLowEdge(iB+1)));
+      sc->SetTitle(Form("%4.1f < p_{T} #leq %4.1f (GeV/#it{c})",pt->GetBinLowEdge(iB),pt->GetBinLowEdge(iB+1)));
 
       primdir->cd();
       pr->Write();
       secodir->cd();
       sc->Write();
-      // secodir_rebin->cd();
-      // sc_rebin->Write();
-      // secodir_sim->cd();
-      // sim_sc->Write();
 
       datadir->cd();
-      dt->Write();
+      TH1D* dt[kCentLength] = {nullptr};
+      for(int iC=0; iC<kCentLength; iC++){
+        TH1D *dt_tmp = data->ProjectionZ(Form("dt_tmp%i",iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iB,iB);
+        dt[iC] = (TH1D*)dt_tmp->Rebin(nDCAbins,Form("dt_%i_%i",iB,iC),dcabins);
+        dt[iC]->SetTitle(Form("%1.0f - %1.0f %%  %4.1f < p_{T} #leq %4.1f",cen->GetBinLowEdge(kCentBinsArray[iC][0]),cen->GetBinUpEdge(kCentBinsArray[iC][1]),pt->GetBinLowEdge(iB),pt->GetBinLowEdge(iB+1)));
+        dt[iC]->Write();
+      }
 
       obj.Add(pr);
       obj.Add(sc);
-      TFractionFitter fitter(dt,&obj,"Q");
-      fitter.Constrain(0, 0., 1.);
-      fitter.Constrain(1, 0., 1.);
-      Double_t yieldSec = 0., yieldPri = 1., errorPri = 0., errorSec = 0.;
-      char input = 'n';
-      TVirtualFitter::SetMaxIterations(10000);
-      Int_t result = fitter.Fit();
-      if (result == 0) {
-        TH1F* hp = (TH1F*)fitter.GetMCPrediction(0);
-        TH1F* hs = (TH1F*)fitter.GetMCPrediction(1);
-        fitter.GetResult(0, yieldPri, errorPri);
-        fitter.GetResult(1, yieldSec, errorSec);
-        TH1F* hfit = (TH1F*)fitter.GetPlot();
-        Float_t dataIntegral = dt->Integral();
-        hfit->SetLineColor(kGreen + 1);
-        hfit->SetLineWidth(3);
-        hs->Scale(dataIntegral * yieldSec / hs->Integral());
-        hp->Scale(dataIntegral * yieldPri / hp->Integral());
-        dt->SetMarkerStyle(20);
-        dt->SetMarkerSize(0.5);
-        dt->SetMarkerColor(kBlack);
+      for(int iC=0; iC<kCentLength; iC++){
+        TFractionFitter fitter(dt[iC],&obj,"Q");
+        fitter.Constrain(0, 0., 1.);
+        fitter.Constrain(1, 0., 1.);
+        Double_t yieldSec = 0., yieldPri = 1., errorPri = 0., errorSec = 0.;
+        char input = 'n';
+        TVirtualFitter::SetMaxIterations(10000);
+        Int_t result = fitter.Fit();
+        if (result == 0) {
+          TH1F* hp = (TH1F*)fitter.GetMCPrediction(0);
+          TH1F* hs = (TH1F*)fitter.GetMCPrediction(1);
+          fitter.GetResult(0, yieldPri, errorPri);
+          fitter.GetResult(1, yieldSec, errorSec);
+          TH1F* hfit = (TH1F*)fitter.GetPlot();
+          Float_t dataIntegral = dt[iC]->Integral();
+          hfit->SetLineColor(kGreen + 1);
+          hfit->SetLineWidth(3);
+          hs->Scale(dataIntegral * yieldSec / hs->Integral());
+          hp->Scale(dataIntegral * yieldPri / hp->Integral());
+          dt[iC]->SetMarkerStyle(20);
+          dt[iC]->SetMarkerSize(0.5);
+          dt[iC]->SetMarkerColor(kBlack);
 
-        dt->Scale(1.,"width");
-        hs->Scale(1.,"width");
-        hp->Scale(1.,"width");
-        hfit->Scale(1.,"width");
+          dt[iC]->Scale(1.,"width");
+          hs->Scale(1.,"width");
+          hp->Scale(1.,"width");
+          hfit->Scale(1.,"width");
 
-        TCanvas cv(Form("tff_%i",iB),Form("TFractionFitter_%i",iB));
-        cv.cd();
-        dt->DrawCopy("e");
+          TCanvas cv(Form("tff_%i_%i",iB,iC),Form("TFractionFitter_%i_%i",iB,iC));
+          cv.cd();
+          dt[iC]->DrawCopy("e");
 
-        float tot_integral = hfit->Integral(hfit->GetXaxis()->FindBin(-0.12),hfit->GetXaxis()->FindBin(0.12));
-        float prim_integral = hp->Integral(hp->GetXaxis()->FindBin(-0.12),hp->GetXaxis()->FindBin(0.12));
+          float tot_integral = hfit->Integral(hfit->GetXaxis()->FindBin(-0.12),hfit->GetXaxis()->FindBin(0.12));
+          float prim_integral = hp->Integral(hp->GetXaxis()->FindBin(-0.12),hp->GetXaxis()->FindBin(0.12));
 
-        float ratio = prim_integral/tot_integral;
+          float ratio = prim_integral/tot_integral;
 
-        hfit->DrawCopy("same");
-        hs->SetLineColor(kRed);
-        hp->SetLineColor(kBlue);
-        hs->DrawCopy("same");
-        hp->DrawCopy("same");
-        tffdir->cd();
-        cv.Write();
-        hResTFF.SetBinContent(iB, ratio);
-        hResTFF.SetBinError(iB, std::sqrt(ratio * (1. - ratio) / tot_integral));
-
-        if(string(list_key->GetName())==kFilterListNames.data()){
-          cout << "sono entrato subito " << endl;
-          for(int i=0; i<3; i++){
-            tot_integral = hfit->Integral(hfit->GetXaxis()->FindBin(-1*integral_limits[i]),hfit->GetXaxis()->FindBin(integral_limits[i]));
-            prim_integral = hp->Integral(hp->GetXaxis()->FindBin(-1*integral_limits[i]),hp->GetXaxis()->FindBin(integral_limits[i]));
-            ratio = prim_integral/tot_integral;
-            vResTFFsyst[i]->SetBinContent(iB, ratio);
-            vResTFFsyst[i]->SetBinError(iB, std::sqrt(ratio * (1. - ratio) / tot_integral));
-          }
+          hfit->DrawCopy("same");
+          hs->SetLineColor(kRed);
+          hp->SetLineColor(kBlue);
+          hs->DrawCopy("same");
+          hp->DrawCopy("same");
+          tffdir->cd();
+          TLegend leg (0.6,0.56,0.89,0.84);
+          leg.SetBorderSize(0.);
+          leg.AddEntry(dt[iC],"Data","pe");
+          leg.AddEntry(hp,"Primaries","l");
+          leg.AddEntry(hs,"Secondaries","l");
+          leg.AddEntry(hfit,"TFF","l");
+          leg.Draw();
+          cv.Write();
+          hResTFF[iC]->SetBinContent(iB, ratio);
+          hResTFF[iC]->SetBinError(iB, std::sqrt(ratio * (1. - ratio) / tot_integral));
+        } else {
+          cout << "In bin ";
+          cout << Form("%4.1f < p_{T} #leq %4.1f",pt->GetBinLowEdge(iB),pt->GetBinLowEdge(iB+1));
+          cout << " the TFF does not converge." << endl;
         }
-      } else {
-        cout << "In bin ";
-        cout << Form("%4.1f < p_{T} #leq %4.1f",pt->GetBinLowEdge(iB),pt->GetBinLowEdge(iB+1));
-        cout << " the TFF does not converge." << endl;
+        delete dt[iC];
       }
       obj.Remove(pr);
       obj.Remove(sc);
       delete pr;
       delete sc;
-      // delete sc_rebin;
-      // delete sim_sc;
-      delete dt;
     }
     resdir->cd();
-    hResTFF.Fit(&fitModel);
-    hResTFF.Write();
-    root->Write();
-    if(string(list_key->GetName())==kFilterListNames.data()){
-      TDirectory *sysdir = root->mkdir("Systematics");
-      sysdir->cd();
-      for(int i=0; i<3;i++){
-        cout << "*******************************************************" << endl;
-        cout << "sto fittando" << endl;
-        cout << "*******************************************************" << endl;
-        vResTFFsyst[i]->Fit(vFitModel[i]);
-        vResTFFsyst[i]->Write();
-      }
-      float vec_values[3];
-      TH1D hSecondSyst("hSecondSyst",";p_{T} GeV/c;relative error",pt->GetNbins(),pt->GetXbins()->GetArray());
-      for(int iB = pt->FindBin(0.65); iB <= pt->FindBin(3.6); ++iB){
-        for(int i=0; i<3; i++){
-          vec_values[i] = vFitModel[i]->Eval(pt->GetBinCenter(iB));
-        }
-        float value = (TMath::MaxElement(3,vec_values)-TMath::MinElement(3,vec_values))/2;
-        hSecondSyst.SetBinContent(iB,value);
-        hSecondSyst.SetBinError(iB,0);
-      }
-      hSecondSyst.Write();
+    for(int iC=0; iC<kCentLength; iC++){
+      hResTFF[iC]->Fit(&fitModel);
+      hResTFF[iC]->Write();
     }
+    root->Write();
   }
 }

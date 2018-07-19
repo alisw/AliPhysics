@@ -57,7 +57,7 @@ CutOnBkgActivity        0.10 #cut on activity around leading particle   sum of a
 LowerPtCut              1.0 #for isolation
 
 #======= ALICE JYFL Track selection =============
-HadronSelectionCut      5 # enum { kJTPCOnly, kJRaa, kJGlobalTightDCA, kJGlobalDCA, kJGlobalSDD , kJHybrid, kJNTrackCuts };
+HadronSelectionCut      5 # enum { kJTPCOnly, kJRaa, kJGlobalTightDCA, kJGlobalDCA, kJGlobalSDD , kJHybrid, kJHybridAOD86, kJHybridStep1, kJNTrackCuts };
 
 TriggerFiducialEtaCut 0.4 #
 

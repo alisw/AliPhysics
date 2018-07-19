@@ -186,7 +186,7 @@ void AliHFInvMassFitter::SetNumberOfParams(){
     fNParsBkg=2;
     break;
   case 5:
-    fNParsBkg=3;
+    fNParsBkg=2;
     break;
   case 6:
     fNParsBkg=fPolDegreeBkg+1;
@@ -444,8 +444,8 @@ TF1* AliHFInvMassFitter::CreateBackgroundFitFunction(TString fname, Double_t int
     funcbkg->SetParameters(integral,0.5);
     break;
   case 5:    
-    funcbkg->SetParNames("BkgInt","Coef1","Coef2");
-    funcbkg->SetParameters(integral,-10.,5.);
+    funcbkg->SetParNames("Coef1","Coef2");
+    funcbkg->SetParameters(-10.,5.);
     break;
   case 6:
     for(Int_t j=0;j<fNParsBkg; j++){
@@ -460,6 +460,7 @@ TF1* AliHFInvMassFitter::CreateBackgroundFitFunction(TString fname, Double_t int
     return 0x0;
     break;
   }
+  //  if(fFixToHistoIntegral) funcbkg->FixParameter(0,integral);
   funcbkg->SetLineColor(kBlue+3); 
   return funcbkg;
 }
@@ -546,10 +547,13 @@ TF1* AliHFInvMassFitter::CreateTotalFitFunction(TString fname){
 
   SetNumberOfParams();
   Int_t totParams=fNParsBkg+fNParsRfl+fNParsSec+fNParsSig;
-  TF1* ftot=ftot=new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Mass,fMinMass,fMaxMass,totParams,"AliHFInvMassFitter","FitFunction4Mass");
+  TF1* ftot=new TF1(fname.Data(),this,&AliHFInvMassFitter::FitFunction4Mass,fMinMass,fMaxMass,totParams,"AliHFInvMassFitter","FitFunction4Mass");
   for(Int_t ipar=0; ipar<fNParsBkg; ipar++){
     ftot->SetParameter(ipar,fBkgFunc->GetParameter(ipar));
     ftot->SetParName(ipar,fBkgFunc->GetParName(ipar));
+    // Double_t parmin,parmax;
+    // fBkgFunc->GetParLimits(ipar,parmin,parmax);
+    // ftot->SetParLimits(ipar,parmin,parmax);
   }
   for(Int_t ipar=0; ipar<fNParsSig; ipar++){
     ftot->SetParameter(ipar+fNParsBkg,fSigFunc->GetParameter(ipar));
@@ -650,7 +654,7 @@ Double_t AliHFInvMassFitter::FitFunction4Bkg (Double_t *x, Double_t *par){
     { 
     Double_t mpi = TDatabasePDG::Instance()->GetParticle(211)->Mass();
 
-    total = par[1]*TMath::Sqrt(x[0] - mpi)*TMath::Exp(-1.*par[2]*(x[0]-mpi));
+    total = par[0]*TMath::Sqrt(x[0] - mpi)*TMath::Exp(-1.*par[1]*(x[0]-mpi));
     //    AliInfo("Background function set to: wit exponential");
     } 
     break;

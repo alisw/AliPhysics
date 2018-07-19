@@ -44,10 +44,14 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
-//~ 
+  Bool_t CheckGenerator(int Index);
   
-  void SetupTrackCuts();
-  void SetupEventCuts();
+  void SetCorrWidthMean(TH3D* width, TH3D* mean){
+      fmean=mean;
+      fwidth=width;
+  };
+  void SetupTrackCuts(AliDielectronCutGroup* f);
+  void SetupEventCuts(AliDielectronEventCuts* f);
   
   void SetCentralityPercentileRange(Double_t min, Double_t max){
     fCentralityPercentileMin = min;
@@ -130,6 +134,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
     fKaonSigmas = answer;
     Printf("Kaon nSigma values for ITS, TPC and TOF will be written to tree");
   }
+  
+  void SetUseCorr( Bool_t b){
+      fuseCorr=b;
+  }
  private:
  
   AliPIDResponse *fPIDResponse;     //! PID response object
@@ -148,7 +156,7 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Bool_t> HasSPDfirstHit; 
   std::vector<Double_t> RatioCrossedRowsFindableClusters;  
   std::vector<Int_t> NTPCSignal; 
-  
+  std::vector<unsigned int> fGeneratorHashs; // will be filled with the TString hashes of the generators you want to be analyzed
   Bool_t loCuts;        //loose cuts?
   
 //  std::vector<Int_t> IsBG;
@@ -200,7 +208,8 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   
   Int_t gMultiplicity;
   Int_t mcTrackIndex;
-  AliMCEvent* fMcArray; 
+  AliMCEvent* fMcArray;
+  AliMCEvent* mcEvent; 
 
   std::vector<Double_t> EsigTPC;
   std::vector<Double_t> EsigTOF;
@@ -234,6 +243,14 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   
   std::vector<Int_t> nITS;
   std::vector<Double_t> nITSshared;
+  
+  std::vector<Int_t> ITS1S;
+  std::vector<Int_t> ITS2S;
+  std::vector<Int_t> ITS3S;
+  std::vector<Int_t> ITS4S;
+  std::vector<Int_t> ITS5S;
+  std::vector<Int_t> ITS6S;
+  
   std::vector<Double_t> chi2ITS;
 //  std::vector<Double_t> chi2TPC;
   std::vector<Double_t> chi2GlobalPerNDF;
@@ -246,6 +263,10 @@ class AliAnalysisTaskMLTreeMaker : public AliAnalysisTaskSE {
   std::vector<Int_t> label;
   std::vector<Int_t> motherlabel;
   
+  TH3D* fwidth;
+  TH3D* fmean;
+  
+  Bool_t fuseCorr;
   //TBits*            fUsedVars;                // used variables by AliDielectronVarManager
   
 //  Double_t probs[AliPID::kSPECIESC];

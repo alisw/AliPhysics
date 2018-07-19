@@ -34,7 +34,7 @@ class AliPIDResponse;
 class AliAnalysisTaskParticleFractions :public AliAnalysisTaskSE{
 public:
 
-AliAnalysisTaskParticleFractions() : AliAnalysisTaskSE(),centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0)
+  AliAnalysisTaskParticleFractions() : AliAnalysisTaskSE(), centrality(0), fpidResponse(0), fHistoList(0), fHistEv(0)
   {
     for(Int_t i = 0; i < multbins*parttypes; i++)  {
       fParticleOriginMC[i] = NULL;

@@ -970,15 +970,23 @@ AliBasedNdetaTask::Finalize()
   
   DMSG(fDebug,3,"Marker style=%d, color=%d", style, color);
   while ((bin = static_cast<CentralityBin*>(next()))) {
-    bin->End(fSums, fResults, fNormalizationScheme, fTriggerEff, fTriggerEff0, 
-	     fUseROOTProj, fCorrEmpty, fTriggerMask, 
-	     style, color, mclist, truthlist);
+    if (!bin->End(fSums, fResults, fNormalizationScheme,
+		 fTriggerEff, fTriggerEff0, 
+		 fUseROOTProj, fCorrEmpty, fTriggerMask, 
+		 style, color, mclist, truthlist))
+      continue;
     if (HasCentrality() && bin->IsAllBin()) {
       // If we have centrality bins, do not add the min-bias
       // distribution to the output stack.
       AliWarning("Skipping MB bin since we have centrality");
       continue;
     }
+#if 0
+    if (HasCentrality() && bin->IsInclusiveBin()) {
+      AliWarning("Skipping 0-100 bin, as we have centrality");
+      continue;
+    }
+#endif 
     TH1* dndeta      = bin->GetResult("");
     TH1* dndetaMC    = bin->GetResult("MC", false);
     TH1* dndetaEmp   = bin->GetResult("Emp", false);
@@ -1906,7 +1914,6 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
   TString tN = t.GetXaxis()->GetBinLabel(AliAODForwardMult::kWithTrigger);
   tN.ReplaceAll("w/Selected trigger (","");
   tN.ReplaceAll(")", "");
-  Int_t d = fDebug;
   DMSG(fDebug,0,"\n"
        " Total of        %9d events for %s\n"
        "  of these       %9d have an offline trigger\n"
@@ -1936,24 +1943,6 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
        ntotal,
        scaler,
        rhs.Data(), ntotal);
-#if 0
-  DMSG(d,0,"\n"
-       " Total of        %9d events for %s", Int_t(nAll), GetTitle());
-  DMSG(d,0,"  of these       %9d have an offline trigger", Int_t(nOffline));
-  DMSG(d,0,"  of these N_T = %9d has the selected trigger (%s)",
-       Int_t(nTriggered), tN.Data());
-  DMSG(d,0,"  of these N_V = %9d has a vertex",Int_t(nWithVertex));
-  DMSG(d,0,"  of these N_A = %9d were in the selected range",Int_t(nAccepted));
-  DMSG(d,0,"  Triggers by hardware type:");
-  DMSG(d,0,"    N_b   =  %9d",                Int_t(nB));
-  DMSG(d,0,"    N_ac  =  %9d (%d+%d)",        Int_t(nA+nC),Int_t(nA),Int_t(nC));
-  DMSG(d,0,"    N_e   =  %9d",                Int_t(nE));
-  DMSG(d,0,"  Vertex efficiency:          %f",vtxEff);
-  DMSG(d,0,"  Trigger efficiency:         %f",trigEff);
-  DMSG(d,0,"  Total number of events: N = %f",ntotal);
-  DMSG(d,0,"  Scaler (N_A/N):             %f",scaler);
-  DMSG(fDebug, 0,"  %-25s = %f", rhs.Data(), ntotal);
-#endif 
   return scaler;
 }
 
@@ -2184,7 +2173,7 @@ AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,
 }  
 
 //________________________________________________________________________
-void 
+bool
 AliBasedNdetaTask::CentralityBin::End(TList*      sums, 
 				      TList*      results,
 				      UShort_t    scheme,
@@ -2212,8 +2201,9 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
   fSums = dynamic_cast<TList*>(sums->FindObject(GetListName()));
   if(!fSums) {
-    AliError("Could not retrieve TList fSums"); 
-    return; 
+    AliErrorF("Could not retrieve TList fSums: %s", GetListName());
+    sums->ls();
+    return false; 
   }
   
   fOutput = new TList;
@@ -2224,7 +2214,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   if (!fSum) { 
     if (!ReadSum(fSums, false)) {
       AliInfo("This task did not produce any output");
-      return;
+      return false;
     }
   }
   if (!fSumMC) ReadSum(fSums, true);
@@ -2233,7 +2223,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
   if (!fTriggers) { 
     AliError("Couldn't find histogram 'triggers' in list");
-    return;
+    return false;
   }
 
   // --- Get normalization scaler ------------------------------------
@@ -2253,7 +2243,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 				      rootProj, corrEmpty);
   if (!sum) { 
     AliError("Failed to get sum from summer - bailing out");
-    return;
+    return false;
   }
     
   TString  text;
@@ -2261,7 +2251,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   Double_t scaler = Normalization(*fTriggers, scheme, epsilonT, ntotal, &text);
   if (scaler < 0) { 
     AliError("Failed to calculate normalization - bailing out");
-    return;
+    return false;
   }
   fOutput->Add(fTriggers->Clone());
   fOutput->Add(new TNamed("normCalc", text.Data()));
@@ -2280,7 +2270,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   
   // Temporary stuff 
   // if (!IsAllBin()) return;
-
+  return true;
 }
 
 //____________________________________________________________________

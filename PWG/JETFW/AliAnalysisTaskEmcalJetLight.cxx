@@ -103,7 +103,7 @@ Bool_t AliAnalysisTaskEmcalJetLight::RetrieveEventObjects()
 {
   if (!AliAnalysisTaskEmcalLight::RetrieveEventObjects()) return kFALSE;
 
-  for (auto cont_it : fJetCollArray) cont_it.second->NextEvent();
+  for (auto cont_it : fJetCollArray) cont_it.second->NextEvent(InputEvent());
 
   return kTRUE;
 }

@@ -32,6 +32,7 @@ public:
       kTrack,
       kV0,
       kCascade,
+      kResonance,
       kNoType
    };
 
@@ -45,6 +46,9 @@ public:
       kLambda,
       kXi,
       kOmega,
+      kKstar0,
+      kPhi,
+      kLambdastar,
       kUnknown
    };
 
@@ -57,7 +61,7 @@ public:
    // basic getters
    Bool_t          IsOK()          const {return fOK;}
    Int_t           GetLabel()      const {return fLabel;}
-   Int_t           GetMotherPDG()  const {return fMotherPDG;}
+   Long_t          GetMotherPDG()  const {return fMotherPDG;}
    Int_t           GetRsnID()      const {return fRsnID;}
    AliVParticle   *GetRef()              {return fRef;}
    AliVParticle   *GetRefMC()            {return fRefMC;}
@@ -65,8 +69,8 @@ public:
    TLorentzVector &P(Bool_t mc)          {return (mc ? fPsim : fPrec);}
    TLorentzVector &Prec()                {return fPrec;}
    TLorentzVector &Psim()                {return fPsim;}
-   Int_t           GetPDG();
-   Int_t           GetPDGAbs()           {return TMath::Abs(GetPDG());}
+   Long_t          GetPDG();
+   Long_t          GetPDGAbs()           {return TMath::Abs(GetPDG());}
    Int_t           GetID();
    Int_t           GetMother();
 
@@ -76,7 +80,7 @@ public:
    void  SetBad()                      {fOK = kFALSE;}
    void  SetGood()                     {fOK = kTRUE;}
    void  SetLabel(Int_t label)         {fLabel = label;}
-   void  SetMotherPDG(Int_t value)     {fMotherPDG = value;}
+   void  SetMotherPDG(Long_t value)    {fMotherPDG = value;}
    void  SetRsnID(Int_t id)            {fRsnID = id;}
    void  SetRef(AliVParticle *p)       {fRef = p;}
    void  SetRefMC(AliVParticle *p)     {fRefMC = p;}
@@ -121,16 +125,17 @@ public:
    static ERefType    RefType(ESpecies species);
    static Bool_t      IsCharged(ESpecies species) {return (species <= kProton);}
    static const char *SpeciesName(ESpecies species);
-   static Int_t       SpeciesPDG(ESpecies species);
+   static Long_t       SpeciesPDG(ESpecies species);
    static Double_t    SpeciesMass(ESpecies species);
    static EPARTYPE    ToAliPID(ESpecies species);
    static ESpecies    FromAliPID(EPARTYPE species);
+   static Bool_t      IsEquivalentPDGCode(Long_t i1, Long_t i2);
 
 private:
 
    Bool_t         fOK;          // internal utility flag which is kFALSE when this object should not be used
    Int_t          fLabel;       // index of MC particle
-   Int_t          fMotherPDG;   // PDG code of mother (makes sense only if fRefMC is defined)
+   Long_t         fMotherPDG;   // PDG code of mother (makes sense only if fRefMC is defined)
    Int_t          fRsnID;       // internal ID for monitoring purposes
 
    TLorentzVector fPrec;        // 4-momentum for rec
@@ -140,7 +145,7 @@ private:
    AliVParticle  *fRefMC;       // reference to corresponding MC particle
    AliRsnEvent   *fOwnerEvent;  // pointer to owner event
 
-   ClassDef(AliRsnDaughter, 12)
+   ClassDef(AliRsnDaughter, 14)
 };
 
 //__________________________________________________________________________________________________
@@ -217,6 +222,10 @@ inline AliRsnDaughter::ERefType AliRsnDaughter::RefType(ESpecies species)
       case kXi:
       case kOmega:
          return kCascade;
+      case kKstar0:
+      case kPhi:
+      case kLambdastar:
+	 return kResonance;
       default:
          return kNoType;
    }

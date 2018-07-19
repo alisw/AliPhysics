@@ -7,12 +7,13 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults",
-					  Double_t etaMin = -3.5,
-                                          Double_t etaMax = 5,
+					  Double_t etaMin = -.9,
+                                          Double_t etaMax = .9,
 					  Double_t ptMin  = 0.05,
 					  Double_t ptMax  = 20.0,
 					  Int_t chargePOI = 0,
 					  Int_t harmonic  = 2,
+                                          Int_t pdg_pid   = 0,
 					  Double_t gImpactParameterMin = 0.0,
 					  Double_t gImpactParameterMax = 100.0,
 					  Int_t gRefMultMin = 0,
@@ -106,6 +107,10 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(ptMin,ptMax);
+  if(pdg_pid != 0) {
+      cutsPOI->SetMCPID(pdg_pid);
+      cutsPOI->SetIgnoreSignInMCPID(kTRUE);
+  }
 
   // side A
   if(side < 0)
@@ -127,6 +132,9 @@ AliAnalysisTaskFlowEvent *AddTaskAMPTTest(TString fileNameBase="AnalysisResults"
   outputSlotName+=cutsRP->GetName();
   outputSlotName+="_";
   outputSlotName+=cutsPOI->GetName();
+  outputSlotName+="_";
+  outputSlotName+=Form("PDG_%i", pdg_pid);
+
 
   TString fileName(fileNameBase);
   fileName.Append(".root");

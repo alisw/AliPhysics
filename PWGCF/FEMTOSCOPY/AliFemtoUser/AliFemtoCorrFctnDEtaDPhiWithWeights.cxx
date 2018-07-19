@@ -16,15 +16,15 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoCorrFctnDEtaDPhiWithWeights)
 #endif
-  
+
 #define PIH 1.57079632679489656
 #define PIT 6.28318530717958623
 
 //____________________________
-AliFemtoCorrFctnDEtaDPhiWithWeights::AliFemtoCorrFctnDEtaDPhiWithWeights(char* title, TH2D *filter1, TH2D *filter2, const int& aPhiBins=20, const int& aEtaBins=20):
+AliFemtoCorrFctnDEtaDPhiWithWeights::AliFemtoCorrFctnDEtaDPhiWithWeights(const char* title, TH2D *filter1, TH2D *filter2, const int& aPhiBins=20, const int& aEtaBins=20):
   AliFemtoCorrFctn(),
   fDPhiDEtaNumerator(0),
   fDPhiDEtaDenominator(0),
@@ -42,13 +42,13 @@ AliFemtoCorrFctnDEtaDPhiWithWeights::AliFemtoCorrFctnDEtaDPhiWithWeights(char* t
   fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
+  fYPtWeightsParticle1(filter1),
+  fYPtWeightsParticle2(filter2),
   fIfCorrectionHist(kNone),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
   fEtaCorrectionsNum(0),
   fEtaCorrectionsDen(0),
-  fYPtWeightsParticle1(filter1),
-  fYPtWeightsParticle2(filter2),
   fphiL(0),
   fphiT(0)
 {
@@ -95,7 +95,7 @@ AliFemtoCorrFctnDEtaDPhiWithWeights::AliFemtoCorrFctnDEtaDPhiWithWeights(char* t
   char tTitEta[101] = "Eta";
   strncat(tTitEta,title, 100);
   fEta = new TH1D(tTitEta,title,500,-5.0,5.0);
-    
+
 
   // THnSparse(const char* name, const char* title, Int_t dim,
   //           const Int_t* nbins, const Double_t* xmin, const Double_t* xmax,
@@ -133,13 +133,13 @@ AliFemtoCorrFctnDEtaDPhiWithWeights::AliFemtoCorrFctnDEtaDPhiWithWeights(const A
   fPtSumDist(0),
   fYtYtNumerator(0),
   fYtYtDenominator(0),
+  fYPtWeightsParticle1(0),
+  fYPtWeightsParticle2(0),
   fIfCorrectionHist(kNone),
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
   fEtaCorrectionsNum(0),
   fEtaCorrectionsDen(0),
-  fYPtWeightsParticle1(0),
-  fYPtWeightsParticle2(0),
   fphiL(0),
   fphiT(0)
 {
@@ -204,35 +204,35 @@ AliFemtoCorrFctnDEtaDPhiWithWeights::AliFemtoCorrFctnDEtaDPhiWithWeights(const A
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
- else 
+ else
    fYtYtNumerator = 0;
 
  if (aCorrFctn.fYtYtDenominator)
    fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
- else 
+ else
    fYtYtDenominator = 0;
-   
+
  if (aCorrFctn.fYPtWeightsParticle1)
    fYPtWeightsParticle1 = new TH2D(*aCorrFctn.fYPtWeightsParticle1);
- else 
+ else
    fYPtWeightsParticle1 = 0;
-   
+
  if (aCorrFctn.fYPtWeightsParticle2)
    fYPtWeightsParticle2 = new TH2D(*aCorrFctn.fYPtWeightsParticle2);
- else 
-   fYPtWeightsParticle2 = 0; 
+ else
+   fYPtWeightsParticle2 = 0;
 
   fphiL = aCorrFctn.fphiL;
   fphiT = aCorrFctn.fphiT;
 
 //  if (aCorrFctn.fPtCorrectionsNum)
 //    fPtCorrectionsNum = new THnSparseF(*aCorrFctn.fPtCorrectionsNum);
-//    else 
+//    else
 //    fPtCorrectionsNum = 0;
 
 // if (aCorrFctn.fPtCorrectionsDen)
 //    fPtCorrectionsDen = new THnSparseF(*aCorrFctn.fPtCorrectionsDen);
-//  else 
+//  else
 //    fPtCorrectionsDen = 0;
 
 
@@ -270,7 +270,7 @@ AliFemtoCorrFctnDEtaDPhiWithWeights::~AliFemtoCorrFctnDEtaDPhiWithWeights(){
   delete fEtaCorrectionsDen;
   if(fYPtWeightsParticle1) delete fYPtWeightsParticle1;
   if(fYPtWeightsParticle2) delete fYPtWeightsParticle2;
- 
+
 }
 //_________________________
 AliFemtoCorrFctnDEtaDPhiWithWeights& AliFemtoCorrFctnDEtaDPhiWithWeights::operator=(const AliFemtoCorrFctnDEtaDPhiWithWeights& aCorrFctn)
@@ -339,22 +339,22 @@ AliFemtoCorrFctnDEtaDPhiWithWeights& AliFemtoCorrFctnDEtaDPhiWithWeights::operat
 
  if (aCorrFctn.fYtYtNumerator)
    fYtYtNumerator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
- else 
+ else
    fYtYtNumerator = 0;
 
  if (aCorrFctn.fYtYtDenominator)
    fYtYtDenominator = new TH2D(*aCorrFctn.fDPhiDEtaDenominator);
- else 
+ else
    fYtYtDenominator = 0;
 
  if (aCorrFctn.fYPtWeightsParticle1)
    fYPtWeightsParticle1 = new TH2D(*aCorrFctn.fYPtWeightsParticle1);
- else 
+ else
    fYPtWeightsParticle1 = 0;
 
  if (aCorrFctn.fYPtWeightsParticle2)
    fYPtWeightsParticle2 = new TH2D(*aCorrFctn.fYPtWeightsParticle2);
- else 
+ else
    fYPtWeightsParticle2 = 0;
  fIfCorrectionHist = kNone;
 
@@ -363,12 +363,12 @@ AliFemtoCorrFctnDEtaDPhiWithWeights& AliFemtoCorrFctnDEtaDPhiWithWeights::operat
 
 // if (aCorrFctn.fPtCorrectionsNum)
 //    fPtCorrectionsNum = new THnSparseF(*aCorrFctn.fPtCorrectionsNum);
-//  else 
+//  else
 //    fPtCorrectionsNum = 0;
 
 // if (aCorrFctn.fPtCorrectionsDen)
 //    fPtCorrectionsDen = new THnSparseF(*aCorrFctn.fPtCorrectionsDen);
-//  else 
+//  else
 //    fPtCorrectionsDen = 0;
 
 
@@ -401,12 +401,12 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhiWithWeights::Report(){
   return returnThis;
 }
 //____________________________
-void AliFemtoCorrFctnDEtaDPhiWithWeights::AddRealPair( AliFemtoPair* pair){
-	
+void AliFemtoCorrFctnDEtaDPhiWithWeights::AddRealPair(AliFemtoPair* pair)
+{
   // add real (effect) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
-  
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
     double phi2 = pair->Track2()->Track()->P().Phi();
@@ -436,7 +436,7 @@ void AliFemtoCorrFctnDEtaDPhiWithWeights::AddRealPair( AliFemtoPair* pair){
   double pt2 = TMath::Hypot(px2, py2);
   //   double ptmin = pt1>pt2 ? pt2 : pt1;
   fPtSumDist->Fill(pt1+pt2);
-  
+
   double y1 = pair->Track1()->FourMomentum().Rapidity();
   double y2 = pair->Track2()->FourMomentum().Rapidity();
   //   double cosphi = (px1*px2 + py1*py2 + pz1*pz2)/
@@ -461,7 +461,7 @@ void AliFemtoCorrFctnDEtaDPhiWithWeights::AddRealPair( AliFemtoPair* pair){
   fPhi->Fill(phi1, weight1);
   fEta->Fill(eta1, weight1);
 
- 
+
   if(fIfCorrectionHist)
     {
       if(fIfCorrectionHist == kPt){
@@ -477,10 +477,12 @@ void AliFemtoCorrFctnDEtaDPhiWithWeights::AddRealPair( AliFemtoPair* pair){
 
 }
 //____________________________
-void AliFemtoCorrFctnDEtaDPhiWithWeights::AddMixedPair( AliFemtoPair* pair){
+void AliFemtoCorrFctnDEtaDPhiWithWeights::AddMixedPair(AliFemtoPair* pair)
+{
   // add mixed (background) pair
-  if (fPairCut)
-    if (!fPairCut->Pass(pair)) return;
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
 
   /*double phi1 = pair->Track1()->Track()->P().Phi();
   double phi2 = pair->Track2()->Track()->P().Phi();
@@ -500,7 +502,7 @@ void AliFemtoCorrFctnDEtaDPhiWithWeights::AddMixedPair( AliFemtoPair* pair){
 
   double y1 = pair->Track1()->FourMomentum().Rapidity();
   double y2 = pair->Track2()->FourMomentum().Rapidity();
-  
+
   double px1Mix = pair->Track1()->Track()->P().x();
   double py1Mix = pair->Track1()->Track()->P().y();
   //double pz1 = pair->Track1()->Track()->P().z();
@@ -514,14 +516,14 @@ void AliFemtoCorrFctnDEtaDPhiWithWeights::AddMixedPair( AliFemtoPair* pair){
 
   double weight1 = fYPtWeightsParticle1->GetBinContent(fYPtWeightsParticle1->FindBin(y1, pt1Mix));
   double weight2 = fYPtWeightsParticle2->GetBinContent(fYPtWeightsParticle2->FindBin(y2, pt2Mix));
- 
+
 
   fDPhiDEtaDenominator->Fill(dphi, deta, weight1 * weight2);
 
     double px1 = pair->Track1()->Track()->P().x();
     double py1 = pair->Track1()->Track()->P().y();
     //double pz1 = pair->Track1()->Track()->P().z();
-    
+
     double px2 = pair->Track2()->Track()->P().x();
     double py2 = pair->Track2()->Track()->P().y();
     //double pz2 = pair->Track2()->Track()->P().z();
@@ -585,7 +587,7 @@ void AliFemtoCorrFctnDEtaDPhiWithWeights::WriteHistos()
   }
   fPhi->Write();
   fEta->Write();
-  
+
   if(fIfCorrectionHist){
     if(fIfCorrectionHist==kPt){
     fPtCorrectionsNum->Write();
@@ -637,7 +639,7 @@ TList* AliFemtoCorrFctnDEtaDPhiWithWeights::GetOutputList()
 void AliFemtoCorrFctnDEtaDPhiWithWeights::SetDoPtAnalysis(int do2d)
 {
   fDoPtAnalysis = do2d;
-  
+
   int aPhiBins = fDPhiDEtaNumerator->GetNbinsX();
   int aEtaBins = fDPhiDEtaNumerator->GetNbinsY();
   const char *title = fDPhiDEtaNumerator->GetTitle();
@@ -677,7 +679,7 @@ void AliFemtoCorrFctnDEtaDPhiWithWeights::SetDoPtAnalysis(int do2d)
   fDPhiPtDenominator->Sumw2();
   fDCosPtNumerator->Sumw2();
   fDCosPtDenominator->Sumw2();
-  
+
 }
 
 void AliFemtoCorrFctnDEtaDPhiWithWeights::SetDo4DCorrectionHist(CorrectionType doCorr)

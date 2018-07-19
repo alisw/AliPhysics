@@ -29,7 +29,7 @@ class AliRDHFCuts : public AliAnalysisCuts
 {
  public:
 
-  enum ECentrality {kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentZNA,kCentZPA,kCentV0A,kCentInvalid};
+  enum ECentrality {kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentZNA,kCentZPA,kCentV0A,kCentCL0,kCentInvalid};
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex,kRejectMVPileupEvent};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID,kLctoV0Cuts,kDplustoK0sCuts,kDstoK0sCuts};
@@ -60,6 +60,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMaxVtxRdChi2(Float_t chi2=1e6) {fMaxVtxRedChi2=chi2;}  
   void SetMaxVtxZ(Float_t z=1e6) {fMaxVtxZ=z;}  
   void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
+  void SetMaxVtxChi2PileupMV(Float_t chi2=5.) {fMaxVtxChi2PileupMV=chi2;}
+  void SetMinWeightedDzVtxPileupMV(Float_t min=15.) {fMinWDzPileupMV=min;}
+  void SetRejectPlpFromDifferentBCMV(Bool_t ok=kTRUE) {fRejectPlpFromDiffBCMV=ok;}
 
   void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;}
   void SetUseOnlyOneTrigger(Bool_t onlyOne) {fUseOnlyOneTrigger=onlyOne;}
@@ -220,6 +223,12 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetOptPileup(Int_t opt=0){
     /// see enum below
     fOptPileup=opt;
+    if (fOptPileup==kRejectMVPileupEvent) {
+      fMinContrPileup=5.;
+      fMaxVtxChi2PileupMV=5.;
+      fMinWDzPileupMV=15.;
+      fRejectPlpFromDiffBCMV=kFALSE;
+    }
   }
   void ConfigurePileupCuts(Int_t minContrib=3, Float_t minDz=0.6){
     fMinContrPileup=minContrib;
@@ -233,6 +242,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMinCrossedRowsTPCPtDep(const char *rows="");
   void SetMinRatioClsOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioClsOverCrossRowsTPC = ratio;}
   void SetMinRatioSignalNOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioSignalNOverCrossRowsTPC = ratio;}
+  void SetUseTPCtrackCutsOnThisDaughter(Bool_t flag=kTRUE) {fUseTPCtrackCutsOnThisDaughter=flag;}
 
   AliAODPidHF* GetPidHF() const {return fPidHF;}
   Float_t *GetPtBinLimits() const {return fPtBinLimits;}
@@ -278,6 +288,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   const char* GetMinCrossedRowsTPCPtDep() const {return fCutMinCrossedRowsTPCPtDep;}
   Float_t GetMinRatioClsOverCrossRowsTPC() const {return fCutRatioClsOverCrossRowsTPC;}
   Float_t GetMinRatioSignalNOverCrossRowsTPC() const {return fCutRatioSignalNOverCrossRowsTPC;}
+  Bool_t GetUseTPCtrackCutsOnThisDaughter() const {return fUseTPCtrackCutsOnThisDaughter;}
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
@@ -391,6 +402,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t fMaxVtxRedChi2; /// maximum chi2/ndf
   Float_t fMaxVtxZ; /// maximum |z| of primary vertex
   Int_t fMinSPDMultiplicity; /// SPD multiplicity
+  Float_t fMaxVtxChi2PileupMV; /// max chi2 per contributor of the pile-up vertex to consider (multi-vertexer).
+  Float_t fMinWDzPileupMV; /// minimum weighted distance in Z between 2 vertices (multi-vertexer)
+  Bool_t fRejectPlpFromDiffBCMV; /// flag to reject pileup from different BC (multi-vertexer)
   ULong64_t fTriggerMask; /// trigger mask
   Bool_t fUseOnlyOneTrigger; /// flag to select one trigger only
   TString  fTriggerClass[2]; /// trigger class
@@ -456,10 +470,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fCutGeoNcrNclFractionNcr; /// 4th parameter of GeoNcrNcl cut
   Double_t fCutGeoNcrNclFractionNcl; /// 5th parameter of GeoNcrNcl cut
   Bool_t fUseV0ANDSelectionOffline; ///flag to apply V0AND selection offline
-  
+  Bool_t fUseTPCtrackCutsOnThisDaughter; ///flag to apply TPC track quality cuts on specific D-meson daughter (used for different strategies for soft pion and D0daughters from Dstar decay)
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,40);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,42);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

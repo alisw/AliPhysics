@@ -31,6 +31,7 @@
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliVAODHeader.h"
 #include "AliAODHeader.h"
 #include "AliCentrality.h"
 #include "AliMultSelection.h" // available from November 2015
@@ -44,6 +45,8 @@
 #include "AliGenEventHeader.h"
 #include "AliAnalysisUtils.h"
 #include "AliMultSelection.h"
+#include "AliNanoAODTrack.h"
+#include "AliNanoAODHeader.h"
 #include <iostream>
 using namespace std;
 
@@ -327,10 +330,119 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
         pvtxz = pvtx->GetZ();
         ncontrib = pvtx->GetNContributors();
     }
-    
+
   Bool_t pass=kTRUE;
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(event);
+    
+    Int_t multTPC = 0;
+    Int_t multGlobal = 0;
+    AliVAODHeader* header = (aodevent) ? static_cast<AliVAODHeader*>(aodevent->GetHeader()) : 0x0;
+    
+    //NanoAOD cuts
+    if(header && header->InheritsFrom("AliNanoAODStorage")){
+        AliNanoAODHeader *nanoAodHeader = (AliNanoAODHeader*) header;
+
+        if(fCheckPileUp){
+            Int_t pilepIndex = nanoAodHeader->GetVarIndex("cstPileUp");
+            if(nanoAodHeader->GetVar(pilepIndex)==0) pass = kTRUE;
+            if(nanoAodHeader->GetVar(pilepIndex)==1) pass = kFALSE;
+        }
+        
+        if (fCutPrimaryVertexZ)
+        {
+            if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
+            pass=kFALSE;
+        }
+
+        if(fQA || fCutTPCmultiplicityOutliersAOD){
+            
+            Int_t nTracks(aodevent->GetNumberOfTracks());
+            for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
+                AliNanoAODTrack* track = dynamic_cast<AliNanoAODTrack*>(aodevent->GetTrack(iTracks));
+                
+                if(!track) continue;
+                if (!track || track->Pt() < .2 || track->Pt() > 5.0 || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || track->GetTPCsignal() < 10.0)  continue;
+                if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
+                if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
+                
+                Double_t b[2] = {-99., -99.};
+                Double_t bCov[3] = {-99., -99., -99.};
+                
+                AliNanoAODTrack copy(*track);
+                Double_t magField = nanoAodHeader->GetMagneticField();
+                
+                if (magField!=0){
+                    
+                    if (track->PropagateToDCA(aodevent->GetPrimaryVertex(), magField, 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;
+                    
+                }
+            }
+            
+            if(fCutTPCmultiplicityOutliersAOD)
+            {
+                if(nanoAodHeader->GetRunNumber() < 209122) {
+                    if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) {
+                        pass = kFALSE;
+                    }
+                    else if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
+                } else {
+                    if(multTPC < (-18.5+1.15*multGlobal) || multTPC > (200.+1.45*multGlobal)) {
+                        pass = kFALSE;
+                    }
+                }
+            }
+
+            if (fQA)
+            {
+                QAbefore(0)->Fill(pvtxz);
+                QAbefore(1)->Fill(multGlobal,multTPC);
+            }
+            
+            if(!fUseNewCentralityFramework) {
+                AliCentrality* centr = ((AliVAODHeader*)aodevent->GetHeader())->GetCentralityP();
+                if(fCutTPCmultiplicityOutliers || fCutTPCmultiplicityOutliersAOD){
+                    Double_t v0Centr  = nanoAodHeader->GetCentr("V0M");
+                    Double_t trkCentr = nanoAodHeader->GetCentr("TRK");
+                    
+                    if(TMath::Abs(v0Centr-trkCentr) > 5) pass = kFALSE;
+                }
+                
+                if (fCutCentralityPercentile) {
+                    if (fUseCentralityUnchecked) {
+                        if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
+                                                                      fCentralityPercentileMax,
+                                                                      CentrMethName(fCentralityPercentileMethod) )) {
+                            pass = kFALSE;
+                        }
+                    } else {
+                        if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
+                                                             fCentralityPercentileMax,
+                                                             CentrMethName(fCentralityPercentileMethod) )) {
+                            pass = kFALSE;
+                        }
+                    }
+                }
+            }else {
+                if (fCutCentralityPercentile) {
+                    Float_t lPercentile = nanoAodHeader->GetCentr(CentrMethName(fCentralityPercentileMethod));
+                    
+                    if(!(fCentralityPercentileMin <= lPercentile && lPercentile < fCentralityPercentileMax))
+                    {
+                        pass=kFALSE;
+                    }
+                }
+            }
+        }
+
+        if (fQA&&pass)
+        {
+            QAafter(0)->Fill(pvtxz);
+            QAafter(1)->Fill(multGlobal,multTPC);
+        }
+        
+    }else{
+
     
     
   if(fCheckPileUp){
@@ -343,9 +455,6 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       if(fUtils->IsPileUpEvent(aodevent)) pass = kFALSE;
    }
     
-
-  Int_t multTPC = 0;
-  Int_t multGlobal = 0; 
 
   // to remove multiplicity outliers, an explicit cut on the correlation 
   // between global and tpc only tracks can be made by counting the two
@@ -570,6 +679,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     QAafter(1)->Fill(multGlobal,multTPC);
     QAafter(0)->Fill(pvtxz);
   }
+    }
   return pass;
 }
 
@@ -634,6 +744,10 @@ const char* AliFlowEventCuts::CentrMethName(refMultMethod method) const
       return "TRK";
     case kVZERO:
       return "V0M";
+    case kV0C:
+      return "V0C";
+    case kV0A:
+      return "V0A";
     case kZDC:
       return "ZDC";
     default:

@@ -77,39 +77,25 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
                                 TString periodname              = "LHC10b",           // period name
                                 TString periodNameV0Reader      = "",
                                 TString periodNameAnchor        = "",
-                                Bool_t 	enableV0findingEffi     = kFALSE              // enables V0finding efficiency histograms
-      ){
+				Int_t   doDeDxMaps              =  0,
+                                Bool_t 	enableV0findingEffi     = kFALSE,    // enables V0finding efficiency histograms
+				Bool_t    enableElecDeDxPostCalibration = kFALSE,
+				TString   fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root", 
+				TString additionalTrainConfig   = "0"       // additional counter for trainconfig, this has to be always the last parameter
+                              ){
 
-  // ================= Load Librariers =================================
-  gSystem->Load("libCore");
-  gSystem->Load("libTree");
-  gSystem->Load("libGeom");
-  gSystem->Load("libVMC");
-  gSystem->Load("libPhysics");
-  gSystem->Load("libMinuit");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libESD");
-  gSystem->Load("libAOD");
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");  
-  gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
-  gSystem->Load("libSTEERBase");
-  gSystem->Load("libTender");
-  gSystem->Load("libTenderSupplies");
-  gSystem->Load("libPWGflowBase");
-  gSystem->Load("libPWGflowTasks");
-  gSystem->Load("libPWGGAGammaConv");
-  
-  
   Int_t IsHeavyIon = 0;
+  if (additionalTrainConfig.Atoi() > 0){
+    trainConfig = trainConfig + additionalTrainConfig.Atoi();
+  }
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error(Form("AddTask_GammaConvV1_%i",trainConfig), "No analysis manager found.");
     return ;
   }
-  
+
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   Bool_t isMCForOtherSettings = 0;
@@ -119,12 +105,12 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse(isMCForOtherSettings);
   }
-  
+
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton = "00000000000000000500000000";
   //"00200008400000002200000000";
-  
-  TString cutnumberEvent = "00000103"; 
+
+  TString cutnumberEvent = "00000103";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
 
@@ -170,7 +156,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
       return;
     }
-    
+
     AliConvEventCuts *fEventCuts=NULL;
     if(cutnumberEvent!=""){
       fEventCuts= new AliConvEventCuts(cutnumberEvent.Data(),cutnumberEvent.Data());
@@ -181,7 +167,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
         fEventCuts->SetFillCutHistograms("",kTRUE);
       }
     }
-    
+
     // Set AnalysisCut Number
     AliConversionPhotonCuts *fCuts=NULL;
     if(cutnumberPhoton!=""){
@@ -194,23 +180,23 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
         fCuts->SetFillCutHistograms("",kTRUE);
       }
     }
-    
-    
+
+
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
       // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
-    
+
     AliLog::SetGlobalLogLevel(AliLog::kInfo);
-    
+
     //connect input V0Reader
     mgr->AddTask(fV0ReaderV1);
     mgr->ConnectInput(fV0ReaderV1,0,cinput);
-    
+
   } else {
     Error("AddTask_V0ReaderV1", "Cannot execute AddTask, V0ReaderV1 already exists.");
-  }   
+  }
 
   //================================================
   //========= Add task to the ANALYSIS manager =====
@@ -222,7 +208,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
   fMaterialHistos->SetIsMC(isMC);
   fMaterialHistos->SetIsHeavyIon(IsHeavyIon);
   fMaterialHistos->SetV0ReaderName(V0ReaderName);
-
+  fMaterialHistos->SetDoDeDxMaps(doDeDxMaps);
   CutHandlerConvMaterial cuts;
   if(trainConfig == 1){
     cuts.AddCut("00000103", "00000009266302004204400000");
@@ -265,16 +251,28 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00010103", "00000009266300008804004000");
     cuts.AddCut("00010103", "00000009266300008800404000");
     cuts.AddCut("00010103", "00000009266370008804004000");
- } else if (trainConfig == 21) {                 
-    cuts.AddCut("00010103", "00000009266300008884404000");
+ } else if (trainConfig == 21) {
+    //    cuts.AddCut("00010103", "00000009266300008884404000"); //- AM 28.03.18
     cuts.AddCut("00010103", "00000009266300008854404000");
-    cuts.AddCut("00010103", "00000009266370008854404000");
+    cuts.AddCut("00010103", "00000009266300008850404000");
+    cuts.AddCut("00010103", "00000009266300008254404000");
+    cuts.AddCut("00010103", "00000009227300008854404000");
+    //    cuts.AddCut("00010103", "00000009266370008854404000");
+
  } else if (trainConfig == 22) {
     cuts.AddCut("00000103", "00000009266300008884404000");
     cuts.AddCut("00000103", "00000009266300008854404000");
     cuts.AddCut("00000103", "00000009266370008854404000");
+ } else if (trainConfig == 23) {
+    //    cuts.AddCut("00010103", "00000009266300008884404000"); //- AM 28.03.18
+    cuts.AddCut("00010103", "0c000009266300008850404000");
+    cuts.AddCut("00010103", "0d000009266300008850404000");
+ } else if (trainConfig == 24) {
+    cuts.AddCut("00010103", "00000009266300008750404000");
+    cuts.AddCut("00010103", "00000009266302008750404000");
+    cuts.AddCut("00010103", "00000009266300008650404000");
 
-    // Offline V0Finder is used
+   // Offline V0Finder is used
 
   } else  if(trainConfig == 101){
     cuts.AddCut("00000103", "10000009266302004204400000");
@@ -316,15 +314,26 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     cuts.AddCut("00010103", "10000009266300008800404000");
     cuts.AddCut("00010103", "10000009266370008804004000");
  } else if (trainConfig == 121) {
-    cuts.AddCut("00010103", "10000009266300008884404000");
+    //    cuts.AddCut("00010103", "10000009266300008884404000"); //-AM 28.03.18
+    //    cuts.AddCut("00010103", "10000009266370008854404000");
+
     cuts.AddCut("00010103", "10000009266300008854404000");
-    cuts.AddCut("00010103", "10000009266370008854404000");
+    cuts.AddCut("00010103", "10000009266300008850404000");
+    cuts.AddCut("00010103", "10000009266300008254404000");
+    cuts.AddCut("00010103", "10000009227300008854404000");
+
  } else if (trainConfig == 122) {
     cuts.AddCut("00000103", "10000009266300008884404000");
     cuts.AddCut("00000103", "10000009266300008854404000");
     cuts.AddCut("00000103", "10000009266370008854404000");
+ } else if (trainConfig == 123) {
+    cuts.AddCut("00010103", "1c000009266300008850404000");
+    cuts.AddCut("00010103", "1d000009266300008850404000");
+ } else if (trainConfig == 124) {
+    cuts.AddCut("00010103", "10000009266300008750404000");
+    cuts.AddCut("00010103", "10000009266302008750404000");
+    cuts.AddCut("00010103", "10000009266300008650404000");
 
- 
   } else  if(trainConfig == 111){
     cuts.AddCut("00000003", "10000070000000000500004000");
   // 7 TeV testconfig for pileup checks
@@ -360,7 +369,7 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
-  
+
 	if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
     cout << "ERROR: No valid cuts stored in CutHandlerConvMaterial! Returning..." << endl;
@@ -368,12 +377,12 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     return;
   }
 
-  Int_t numberOfCuts = cuts.GetNCuts(); 
-   
+  Int_t numberOfCuts = cuts.GetNCuts();
+
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
 
- 
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts        = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
@@ -386,19 +395,35 @@ void AddTask_MaterialHistos_pp( Int_t   trainConfig             = 1,            
     analysisEventCuts[i]->SetFillCutHistograms("",kTRUE);
 
     analysisCuts[i]               = new AliConversionPhotonCuts();
+    if (enableElecDeDxPostCalibration>0){
+      if (isMC == 0){
+	if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	} else {
+	  enableElecDeDxPostCalibration=kFALSE;
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	}
+
+      } else{
+	cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+	enableElecDeDxPostCalibration=kFALSE;
+	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      }
+    }
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
-    analysisCuts[i]->SetFillCutHistograms("",kTRUE);  
+    analysisCuts[i]->SetFillCutHistograms("",kTRUE);
   }
 
-  fMaterialHistos->SetEventCutList(numberOfCuts,EventCutList);   
+  fMaterialHistos->SetEventCutList(numberOfCuts,EventCutList);
   fMaterialHistos->SetConversionCutList(numberOfCuts,ConvCutList);
   mgr->AddTask(fMaterialHistos);
 
-   
+
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaConvMaterial_%i",trainConfig), TList::Class(), 
+    mgr->CreateContainer(Form("GammaConvMaterial_%i",trainConfig), TList::Class(),
 			 AliAnalysisManager::kOutputContainer,Form("GammaConv_Material_%i.root",trainConfig ));
 
   mgr->ConnectInput(fMaterialHistos,  0, cinput );

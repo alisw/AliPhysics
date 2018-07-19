@@ -41,13 +41,12 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
 
   deu->SetParticleType(part);
   deu->SetPDG(pdgCode);
-  deu->SetYRange(-0.8,0.8);
   deu->SetIsMC(isMC);
   deu->SetDCABins(80,-0.5,0.5);
 
   deu->SetRequireTPCpidSigmas(3.f);
-  float cent[12] = {0.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};
-  deu->SetCentBins(11, cent);
+  float cent[14] = {-5.f,0.f,1.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};
+  deu->SetCentBins(13, cent);
   deu->SetUseFlattening(false);
   float pt[20] = {
     0.5f,0.6f,0.7f,0.8f,0.9f,1.0f,1.1f,1.2f,1.4f,1.6f,
@@ -63,7 +62,7 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield(Bool_t isMC = kFALSE,
   };
   deu->SetDCABins(34,dcabins);
 
-  deu->fEventCut.fCentralityFramework = !isMC;
+  //deu->fEventCut.fCentralityFramework = !isMC;
 
   mgr->AddTask(deu);
 

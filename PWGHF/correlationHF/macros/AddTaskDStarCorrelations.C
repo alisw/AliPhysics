@@ -30,10 +30,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                                                            TString cutsDstarname = "DStartoKpipiCuts", // name of Dstar cut container
 							   TString cutsTrkname = "AssociatedCuts", // name of track cut container
                                                                    
-                                                                 
-                                                
-                                                                   
-							   Bool_t  UseMCEventType = kFALSE, //***Feature currently disabled***//
+                               Bool_t  UseMCEventType = kFALSE, //***Feature currently disabled***//
 							   TString estimatorFilename = "", Int_t recoEstimator = AliAnalysisTaskDStarCorrelations::kNtrk10,
 							   Double_t refMult=9.26, Bool_t usemultiplicity=kFALSE, Int_t AODprot=1,
                                                                       
@@ -41,10 +38,14 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                                                            TString effDstarnamec = "DStarEff_From_c_wLimAcc_2d.root", //eff map name from c
                                                            TString effDstarnameb = "DStarEff_From_b_wLimAcc_2d.root",// eff map name from b
                                                            TString effName= "3D_eff_Std.root",
-                                                           Bool_t useSmallSizePlots=kFALSE //reduce number of bins in THnSparse (use for heavy datasets)
-                                                                      
-                                                                      
-                                                           )
+                                                           Bool_t useSmallSizePlots=kFALSE, //reduce number of bins in THnSparse (use for heavy datasets)
+                                                                         
+                                                           AliAnalysisTaskDStarCorrelations::TreeFill fillTrees=AliAnalysisTaskDStarCorrelations::kNoTrees)
+// AliAnalysisTaskDStarCorrelations::TreeFill fillTrees = AliAnalysisTaskDStarCorrelations::kNoTrees)
+//AliAnalysisTaskDStarCorrelations::TreeFill fillTrees = AliAnalysisTaskDStarCorrelations::kNoTrees//kTRUE to run in offline mode
+
+
+                                                           
 { 
     
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -53,7 +54,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     return NULL;
   } 
 
-	cout << "==========================================================" << endl;
+    //cout << "==========================================================" << endl; getchar();
     cout << "Set Inputs : " << endl;
     cout << " " << endl;
     if(syst == AliAnalysisTaskDStarCorrelations::pp) cout << "Running on pp @ 7 TeV" << endl;
@@ -277,6 +278,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     task->SetUseMCEventType(UseMCEventType);
     task->SetAODMismatchProtection(AODprot);
     task->SetUseSmallSizePlots(useSmallSizePlots);
+    task->SetFillTrees(fillTrees);
 
     if(useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDStarSB);
     if(!useDStarSidebands)task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDZeroSB);
@@ -338,6 +340,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     TString contname4 = "OutputEventMixing";
     TString contname5 = "OutputCorrelations";
     TString contname6 = "OutputMC";
+    TString contname10 = "TreeDstar";
     TString counter = "NormCounter";
     TString cutname1 = "Dcuts" ;
 	TString cutname2 = "hadroncuts" ;
@@ -349,6 +352,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
         contname4 += suffix;
         contname5 += suffix;
          contname6 += suffix;
+    contname10 += suffix;
         counter += suffix;
         cutname1 += suffix;
         cutname2 += suffix;
@@ -504,6 +508,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
    // Cut Objects
   AliAnalysisDataContainer *coutput8 = mgr->CreateContainer(cutname1,AliRDHFCutsDStartoKpipi::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts D
   AliAnalysisDataContainer *coutput9 = mgr->CreateContainer(cutname2,AliHFAssociatedTrackCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts tracks
+    
+    AliAnalysisDataContainer *coutput10 = mgr->CreateContainer(contname10,TTree::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //TTree D0
 
   
 	
@@ -517,6 +523,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
   mgr->ConnectOutput(task,7,coutput7);
   mgr->ConnectOutput(task,8,coutput8);
   mgr->ConnectOutput(task,9,coutput9);
+  mgr->ConnectOutput(task,10,coutput10);
+
 
   return task ;
 

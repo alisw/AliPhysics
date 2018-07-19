@@ -66,7 +66,9 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
 
   enum {
     kSnail = 0,    /// slow configuration, all variables
-    kCheetah = 1   /// fast configuration, only a subset of variables
+    kCheetah = 1,   /// fast configuration, only a subset of variables
+    kFalcon = 2,   /// super fast configuration, only (pt,y,centrality)
+    kESE = 3   /// configuration with variables for ESE analysis (pt,y,centrality,q2,mult)
   };
 
   enum {
@@ -236,9 +238,13 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromFONLL5overLHC16i2abc();
   void SetPtWeightsFromFONLL5andBAMPSoverLHC16i2abc();
   void SetPtWeightsFromFONLL5andTAMUoverLHC16i2abc();
+  void SetPtWeightsFromD0Cent080dataoverLHC16i2abc();
+  void SetPtWeightsFromD0Cent080dataModOhoverLHC16i2abc();
+  void SetPtWeightsFromD0Cent080dataModMartinezoverLHC16i2abc();
   void SetPtWeightsFromFONLL5overLHC16i6a();
   void SetPtWeightsFromFONLL5andDplusdataoverLHC16i2a();
-
+  void SetPtWeightsFromFONLL5overLHC18a4a2();
+  
   void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
   UInt_t GetResonantDecay() const {return fResonantDecay;}
 
@@ -263,8 +269,13 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetUseCascadeTaskForLctoV0bachelor(Bool_t useCascadeTaskForLctoV0bachelor) {fUseCascadeTaskForLctoV0bachelor = useCascadeTaskForLctoV0bachelor;}
   Bool_t GetUseCascadeTaskForLctoV0bachelor() const {return fUseCascadeTaskForLctoV0bachelor;}
 
+  void SetFillMinimumSteps(Bool_t FillMinimumSteps) {fFillMinimumSteps = FillMinimumSteps;}
+  Bool_t GetFillMinimumSteps() const {return fFillMinimumSteps;}
+
   void SetCutOnMomConservation(Float_t cut) {fCutOnMomConservation = cut;}
   Bool_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
+
+  Double_t ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const;
 
  protected:
   AliCFManager   *fCFManager;   ///  pointer to the CF manager
@@ -326,10 +337,11 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Bool_t fUseCutsForTMVA;     /// flag to use additional cuts needed for Lc --> K0S + p, TMVA
   /// these are the pre-selection cuts for the TMVA
   Bool_t fUseCascadeTaskForLctoV0bachelor;   /// flag to define which task to use for Lc --> K0S+p
+  Bool_t fFillMinimumSteps;   /// Skip filling the unneed steps for most of the analyses to save disk space
   Float_t fCutOnMomConservation; /// cut on momentum conservation
 
   /// \cond CLASSIMP     
-  ClassDef(AliCFTaskVertexingHF,25); /// class for HF corrections as a function of many variables
+  ClassDef(AliCFTaskVertexingHF,26); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 

@@ -60,8 +60,9 @@ AliRsnMiniOutput::AliRsnMiniOutput() :
 //
 
    fCutID[0] = fCutID[1] = -1;
-   fDaughter[0] = fDaughter[1] = AliRsnDaughter::kUnknown;
+   fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
+   fUseStoredMass[0] = fUseStoredMass[1] = kFALSE;
 }
 
 //__________________________________________________________________________________________________
@@ -93,8 +94,9 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, EOutputType type, EComputat
 //
 
    fCutID[0] = fCutID[1] = -1;
-   fDaughter[0] = fDaughter[1] = AliRsnDaughter::kUnknown;
+   fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
+   fUseStoredMass[0] = fUseStoredMass[1] = kFALSE;
 }
 
 //__________________________________________________________________________________________________
@@ -175,8 +177,9 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
       AliWarning(Form("String '%s' does not define a meaningful computation type", compType));
 
    fCutID[0] = fCutID[1] = -1;
-   fDaughter[0] = fDaughter[1] = AliRsnDaughter::kUnknown;
+   fDaughter[0] = fDaughter[1] = fDaughterTrue[0] = fDaughterTrue[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
+   fUseStoredMass[0] = fUseStoredMass[1] = kFALSE;
 }
 
 //__________________________________________________________________________________________________
@@ -211,7 +214,9 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
    for (i = 0; i < 2; i++) {
       fCutID[i] = copy.fCutID[i];
       fDaughter[i] = copy.fDaughter[i];
+      fDaughterTrue[i] = copy.fDaughterTrue[i];
       fCharge[i] = copy.fCharge[i];
+      fUseStoredMass[i] = copy.fUseStoredMass[i];
    }
 }
 
@@ -237,7 +242,9 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
    for (i = 0; i < 2; i++) {
       fCutID[i] = copy.fCutID[i];
       fDaughter[i] = copy.fDaughter[i];
+      fDaughterTrue[i] = copy.fDaughterTrue[i];
       fCharge[i] = copy.fCharge[i];
+      fUseStoredMass[i] = copy.fUseStoredMass[i];
    }
 
    fSel1.Set(0);
@@ -254,6 +261,31 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
    return (*this);
 }
 
+//__________________________________________________________________________________________________
+void AliRsnMiniOutput::SetDaughter(Int_t i, RSNPID value)
+{
+  if (i <= 0){
+    fDaughter[0] = value;
+    if(fDaughterTrue[0] == AliRsnDaughter::kUnknown) fDaughterTrue[0] = value;
+  }else{
+    fDaughter[1] = value;
+    if(fDaughterTrue[1] == AliRsnDaughter::kUnknown) fDaughterTrue[1] = value;
+  }
+  return;
+}
+
+//__________________________________________________________________________________________________
+void AliRsnMiniOutput::SetDaughterTrue(Int_t i, RSNPID value)
+{
+  if (i <= 0){
+    fDaughterTrue[0] = value;
+    if(fDaughter[0] == AliRsnDaughter::kUnknown) fDaughter[0] = value;
+  }else{
+    fDaughterTrue[1] = value;
+    if(fDaughter[1] == AliRsnDaughter::kUnknown) fDaughter[1] = value;
+  }
+  return;
+}
 
 //__________________________________________________________________________________________________
 void AliRsnMiniOutput::AddAxis(Int_t i, Int_t nbins, Double_t min, Double_t max)
@@ -498,6 +530,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    // loop variables
    Int_t i1, i2, start, nadded = 0;
    AliRsnMiniParticle *p1, *p2;
+   Double_t mass1, mass2;
 
    // it is necessary to know if criteria for the two daughters are the same
    // and if the two events are the same or not (mixing)
@@ -543,7 +576,13 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
             continue;
          }
          // sum momenta
-         fPair.Fill(p1, p2, GetMass(0), GetMass(1), fMotherMass);
+          
+         mass1 = p1->StoredMass(kFALSE);
+         if(!fUseStoredMass[0] || mass1 < 0.0) mass1 = GetMass(0);
+         mass2 = p2->StoredMass(kFALSE);
+         if(!fUseStoredMass[1] || mass2 < 0.0) mass2 = GetMass(1);
+         fPair.Fill(p1, p2, mass1, mass2, fMotherMass);
+	 
          // do rotation if needed
          if (fComputation == kTrackPairRotated1) fPair.InvertP(kTRUE);
          if (fComputation == kTrackPairRotated2) fPair.InvertP(kFALSE);
@@ -555,9 +594,11 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
                continue;
             }
             Bool_t decayMatch = kFALSE;
-            if (p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
+            if (AliRsnDaughter::IsEquivalentPDGCode(p1->PDGAbs() , GetPDG(0))
+		&& AliRsnDaughter::IsEquivalentPDGCode(p2->PDGAbs() , GetPDG(1)))
                decayMatch = kTRUE;
-            if (p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
+            if (AliRsnDaughter::IsEquivalentPDGCode(p2->PDGAbs() , GetPDG(0))
+		&& AliRsnDaughter::IsEquivalentPDGCode(p1->PDGAbs() , GetPDG(1)))
                decayMatch = kTRUE;
             if (!decayMatch) continue;
 	    if ( (fMaxNSisters>0) && (p1->NTotSisters()==p2->NTotSisters()) && (p1->NTotSisters()>fMaxNSisters)) continue;

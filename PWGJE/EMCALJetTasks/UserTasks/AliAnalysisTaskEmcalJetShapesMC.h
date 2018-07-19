@@ -22,6 +22,7 @@ class THnSparse;
 class TClonesArray;
 class TArrayI;
 class TRandom3;
+class TF1;
 class AliAnalysisManager;
 class AliJetContainer;
 class AliEmcalJetFinder;
@@ -68,10 +69,13 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetJetShapeType(JetShapeType t)                      { fJetShapeType       = t   ; }
   void SetJetShapeSub(JetShapeSub t)                        { fJetShapeSub     = t   ; }
   void SetJetSelection(JetSelectionType t)                  { fJetSelection    = t   ; }
+  void SetSwitchSDkT(Int_t c)                               { fSwitchSDKtNSub   = c   ; }
+  void SetSwitchSDMin(Int_t c)                              { fSwitchSDMinNSub   = c   ; }
   void SetSwitchkT(Int_t c)                                 { fSwitchKtNSub   = c   ; }
   void SetSwitchMin(Int_t c)                                { fSwitchMinNSub   = c   ; }
   void SetSwitchAkT(Int_t c)                                { fSwitchAktNSub   = c   ; }
-  void SetAdditionalTracks(Int_t c)                         { fAdditionalTracks =c   ;} 
+  void SetAdditionalTracks(Int_t c)                         { fAdditionalTracks =c   ;}
+  void SetHardCutoff(Float_t c)                             { fHardCutoff =c   ;} 
   void SetJetPtThreshold(Float_t f)                         { fPtThreshold     = f   ; }
   void SetRMatching(Float_t f)                              { fRMatching = f ;}
   void SetJetRadius(Float_t f)                              { fJetRadius = f ;}
@@ -81,16 +85,36 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void SetAngularWindowRecoilJet (Float_t t)                {fangWindowRecoil = t; }
   Float_t GetMinPtTriggerSelection()                        {return fminpTTrig;}
   Float_t GetMaxPtTriggerSelection()                        {return fmaxpTTrig;}
+  void SetMediumParameters(Float_t t, Float_t c)            {fqhat=t; fxlength=c;}
   void SetCentralitySelectionOn(Bool_t t)                   { fCentSelectOn = t;}
   void SetOneConstSelectionOn(Bool_t t)                     { fOneConstSelectOn =t;}
   void SetMinCentrality(Float_t t)                          { fCentMin = t ; }
   void SetMaxCentrality(Float_t t)                          { fCentMax = t ; }
-  void SetSemigoodCorrect(Int_t yesno)                 {fSemigoodCorrect=yesno;}
-  void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
-  void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
-  void SetDerivativeSubtractionOrder(Int_t c)              {fDerivSubtrOrder = c;}
-  
-  
+  void SetSemigoodCorrect(Int_t yesno)                      {fSemigoodCorrect=yesno;}
+  void SetHolePos(Float_t poshole)                          { fHolePos = poshole; }
+  void SetHoleWidth(Float_t holewidth)                      { fHoleWidth = holewidth; }
+  void SetDerivativeSubtractionOrder(Int_t c)               {fDerivSubtrOrder = c;}
+  void DoJetELoss(Bool_t b, Float_t f)                      {fScaleELoss = b; xfraction = f;}
+  void AddMedScat(Bool_t b, Float_t f, Int_t n)             {fAddMedScat = b; fAddMedScatPtFrac = f; fAddMedScatN = n;}
+
+  static AliAnalysisTaskEmcalJetShapesMC* AddTaskJetShapesMC(
+	 const char * njetsBase,
+         const Double_t jetradius,
+         const Double_t subjetradius,
+         const char *ntracksPartLevel,
+         const char *type,
+         const char *CentEst,
+         Int_t       pSel,
+         TString     trigClass      = "",
+         TString     kEmcalTriggers = "",
+         TString     tag            = "",
+         const char *rhoName = "",
+         AliAnalysisTaskEmcalJetShapesMC::JetShapeType jetShapeType=AliAnalysisTaskEmcalJetShapesMC::kGenShapes,
+         AliAnalysisTaskEmcalJetShapesMC::JetShapeSub jetShapeSub=AliAnalysisTaskEmcalJetShapesMC::kNoSub,
+         AliAnalysisTaskEmcalJetShapesMC::JetSelectionType jetSelection=AliAnalysisTaskEmcalJetShapesMC::kInclusive,
+         Float_t minpTHTrigger =0.,
+	 Float_t maxpTHTrigger =0.,
+         AliAnalysisTaskEmcalJetShapesMC::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskEmcalJetShapesMC::kSecondOrder );
   
  protected:
    
@@ -111,7 +135,8 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                            GetSigma2(AliEmcalJet *jet, Int_t jetContNb=0);
   Float_t                            Sigma2(AliEmcalJet *jet, Int_t jetContNb=0);
   void                               NTValues(AliEmcalJet *jet, Int_t jetContNb, Float_t* nTFractions);
-  void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, double zcut, double beta, Int_t ReclusterAlgo);
+  void                                SoftDrop(AliEmcalJet *fJet,AliJetContainer *fJetCont, Double_t zcut, Double_t beta, Int_t ReclusterAlgo);
+  void                                RecursiveParents(AliEmcalJet *fJet,AliJetContainer *fJetCont, Int_t ReclusterAlgo,Float_t PartonFlavor);
   AliEmcalJetFinder*                 Recluster(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius, Double_t SubJetRadius, Double_t SubJetMinPt, Int_t Algorithm, const char* Name);
 
   //Double_t                           NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
@@ -123,7 +148,7 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                            GetJetCoreFrac(AliEmcalJet *jet, Int_t jetContNb=0);
 
  
-  Double_t                           fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option);
+  Double_t                           FjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option, Double_t Beta_SD=0.0, Double_t ZCut=0.1, Int_t SoftDropOn=0);
 
   
   Int_t                              SelectTrigger(Float_t minpT, Float_t maxpT);
@@ -134,16 +159,19 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   JetShapeType                        fJetShapeType;               // jet type to be used
   JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
   JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet  
-  Float_t                             fShapesVar[48];              //     jet shapes used for the tagging
+  Float_t                             fShapesVar[11];              //     jet shapes used for the tagging
   Float_t                             fPtThreshold;
   Float_t                             fRMatching;
   Float_t                             fJetRadius;
   Float_t                             fSubjetRadius;
   Int_t                               fSelectedShapes;                //chose set of shapes
   Int_t                               fSwitchKtNSub;
-   Int_t                              fSwitchMinNSub;
-    Int_t                             fSwitchAktNSub;
-    Int_t                             fAdditionalTracks;             //number of extra tracks to stress the grooming
+  Int_t                               fSwitchMinNSub;
+  Int_t                               fSwitchAktNSub;
+  Int_t                               fSwitchSDKtNSub;
+  Int_t                               fSwitchSDMinNSub;
+  Int_t                               fAdditionalTracks;             //number of extra tracks to stress the grooming
+  Float_t                               fHardCutoff;                  //hard cutoff in the iterative procedure 
   Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet  
   Float_t                             fmaxpTTrig;
   Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis 
@@ -151,12 +179,18 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   Float_t                             fHolePos;                          //position in radians of the bad TPC sector
   Float_t                             fHoleWidth;                       //width of the hole in radians 
  TRandom3                             *fRandom;                     //! Random number generator
-  Bool_t                              fCentSelectOn;                // switch on/off centrality selection
+ Float_t                              fqhat;                        //qhat
+ Float_t                              fxlength;                     //medium length
+ Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
   Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
   Int_t                               fDerivSubtrOrder;
-
+  Bool_t                              fScaleELoss;
+  Double_t                            xfraction;
+  Bool_t                              fAddMedScat;
+  Double_t                            fAddMedScatPtFrac;
+  Double_t                            fAddMedScatN;
   
   TH2F                                *fPhiJetCorr6;//
   TH2F                                *fPhiJetCorr7;//
@@ -167,10 +201,13 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   TH2F                                *fhpTjetpT; //
   TH1F                                *fhPt;//
   TH1F                                *fhPhi;//
+  THnSparse                           *fHLundIterative;//
+   THnSparse                           *fHLundIterativeInject;//
   TH2F                                *fNbOfConstvspT;//
 
   TTree           *fTreeObservableTagging;//!<! Tree with tagging variables subtracted MC or true MC or raw
-
+  TF1             *fTf1Omega;//! to generate omega according to BDMPS tail
+  TF1             *fTf1Kt; //!  to generate kT according to BDMS tail
  private:
   AliAnalysisTaskEmcalJetShapesMC(const AliAnalysisTaskEmcalJetShapesMC&);            // not implemented
   AliAnalysisTaskEmcalJetShapesMC &operator=(const AliAnalysisTaskEmcalJetShapesMC&); // not implemented

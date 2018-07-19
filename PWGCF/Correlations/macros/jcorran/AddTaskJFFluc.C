@@ -1,13 +1,15 @@
 //_____________________________________________________________________
-AliAnalysisTask *AddTaskJFFluc(TString taskName = "JFFluc", Bool_t IsMC = kFALSE, Bool_t IsWeakExclude = kFALSE ,
-		Bool_t IsCentFlat = kFALSE, Int_t FilterBit = 768 , double eta_min = 0.4, double eta_max = 0.8, 
-		double pt_min = 0.2, double pt_max = 5.0, int effMode = 0, Bool_t IsPhiModule = kFALSE, TString InFileNameNUE  = "", int debuglevel = 0, TString suffix = ""){
-    TString combinedName = taskName+suffix;
+//AliAnalysisTask *AddTaskJFFluc(TString taskName = "JFFluc", Bool_t IsMC = kFALSE, Bool_t IsWeakExclude = kFALSE, Bool_t IsCentFlat = kFALSE, Int_t FilterBit = 768 , double eta_min = 0.4, double eta_max = 0.8, double pt_min = 0.2, double pt_max = 5.0, int effMode = 0, Bool_t IsPhiModule = kFALSE, TString InFileNameNUE  = "", int debuglevel = 0, TString suffix = ""){
+AliAnalysisTask *AddTaskJFFluc(TString taskName = "JFFluc", UInt_t flags = 0, Int_t FilterBit = 768 , double eta_min = 0.4, double eta_max = 0.8, double pt_min = 0.2, double pt_max = 5.0, int effMode = 0, int debuglevel = 0, TString suffix = ""){
+    TString combinedName = taskName;
+	if(suffix.Length() > 0)
+		combinedName += "_"+suffix;
     //
-	cout <<"AddTaskJFFluc:: IsMC = "<< IsMC <<endl;
-	cout <<"AddTaskJFFluc:: IsWeakExclude = "<< IsWeakExclude << endl;
-	cout <<"AddTaskJFFluc:: Force to Cent flatting for LHC11h? = " << IsCentFlat << endl;
-	cout <<"AddTaskJFFluc:: Efficiency Corr Mod? (0:no, 1:period, 2:run#, 3:auto) = " << effMode << endl;
+	cout<<"AddTaskJFFluc::flags = "<<flags<<endl;
+	//cout <<"AddTaskJFFluc:: IsMC = "<< IsMC <<endl;
+	//cout <<"AddTaskJFFluc:: IsWeakExclude = "<< IsWeakExclude << endl;
+	//cout <<"AddTaskJFFluc:: Force to Cent flatting for LHC11h? = " << IsCentFlat << endl;
+	//cout <<"AddTaskJFFluc:: Efficiency Corr Mod? (0:no, 1:period, 2:run#, 3:auto) = " << effMode << endl;
 	
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	/*
@@ -22,19 +24,16 @@ AliAnalysisTask *AddTaskJFFluc(TString taskName = "JFFluc", Bool_t IsMC = kFALSE
 	}
 	
     //==== JCORRAN TASK
-    AliJFFlucTask *FFtask = new AliJFFlucTask(combinedName.Data(),IsMC,IsWeakExclude);
-    
+    AliJFFlucTask *FFtask = new AliJFFlucTask(combinedName.Data());
+   
+   	//TODO: test flags for call()
 	FFtask->SetFFlucTaskName( combinedName.Data() ) ;
-	FFtask->SetIsMC( IsMC );
-	FFtask->SetIsWeakDeacyExclude( IsWeakExclude ) ;
+	FFtask->AddFlags(flags);
 	FFtask->SetTestFilterBit( FilterBit ) ;
 	FFtask->SetEtaRange( eta_min, eta_max);
-	FFtask->SetIsCentFlat( IsCentFlat ) ;
 	FFtask->SetDebugLevel( debuglevel ) ; 
 	FFtask->SetPtRange( pt_min, pt_max);
 	FFtask->SetEffConfig( effMode, FilterBit); 
-	FFtask->SetIsPhiModule( IsPhiModule );
-	FFtask->SetInFileName( InFileNameNUE );
 	FFtask->SetParticleCharge( 0 );  
     //int CollisionCandidates = AliVEvent::kCentral;
 	//FFtask->SelectCollisionCandidates( AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral ) ; 

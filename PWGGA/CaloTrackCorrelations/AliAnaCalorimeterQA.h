@@ -306,7 +306,8 @@ public:
 //TH2F *   fhDispersion;                        //!<! Cluster Dispersion vs Energy
   TH2F *   fhLambda0;                           //!<! Cluster Lambda0 vs Energy
   TH2F *   fhLambda1;                           //!<! Cluster Lambda1 vs Energy  
-  TH2F *   fhNLocMax;                           //!<! Cluster Number of local Maxima
+  TH2F *   fhNLocMax;                           //!<! Cluster Number of local Maxima, from CaloUtils
+  TH2F *   fhNLocMaxStd;                        //!<! Cluster Number of local Maxima, stored
   
   // Bad clusters histograms
   

@@ -167,10 +167,25 @@ TObject* MakeGSE(TDirectory* d,
   Color_t  col     = PbPbColor(c1,c2); // g->GetMarkerColor();
   // Double_t bg      = (1-c1/100)*(2-0.1)+0.1;
   // Double_t c       = TMath::Power(c1/100,2)*(6.2-0.4)+0.4;
-  Double_t cMin    = sNN == 5023 ? 0.005 : 0.004;
-  Double_t cMax    = sNN == 5023 ? 0.075 : 0.062;
-  Double_t bg      = CSysEval(c2, 0.02, 0.001);
+  // Preliminary centrality sys error for Xe-Xe
+  Double_t aMin    = sNN == 5440 ? -0.09  : 0.02;
+  Double_t pComp   = sNN == 5440 ? 0.002  : 0.01;
+  Double_t wDcy    = sNN == 5440 ? 0.004  : 0.01;
+  Double_t ptInt   = sNN == 5440 ? 0.004  : 0.02;
+  Double_t ptMax   = sNN == 5440 ? 0.010  : 0.00;
+  Double_t egDep   = sNN == 5440 ? 0.000  : 0.02;
+  Double_t cMin    = sNN == 5440 ? 0.001  : sNN == 5023 ? 0.005 : 0.004;
+  Double_t cMax    = sNN == 5440 ? 0.048  : sNN == 5023 ? 0.075 : 0.062;
+  Double_t tMax    = sNN == 5440 ? 0.040  : 0;
+  Double_t tMin    = sNN == 5440 ? 0.003  : 0;
+  Double_t bgMax   = sNN == 5440 ? 0.011  : 0.02;
+  Double_t bgMin   = sNN == 5440 ? 0.005  : 0.001;
+  Double_t bg      = CSysEval(c2, bgMax, bgMin);
   Double_t c       = CSysEval(c2, cMin, cMax);
+  Double_t em1     = sNN == 5440 ? 0.012 : sNN == 5023 ? 0.04 : 0.02;
+  Double_t em2     = sNN == 5440 ? 0.040 : 5023 ? 0.04 : 0.02;
+  Double_t em      = c1 >= 80 ? em2 : c1 >= 70 ? em1 : 0;
+  Double_t tkl     = CSysEval(c2, tMax, tMin);
   GraphSysErr* gse = new GraphSysErr(g->GetNbinsX());
   gse->SetName(nme);
   gse->SetTitle(Form("%5.1f - %5.1f%%", c1, c2));
@@ -198,16 +213,32 @@ TObject* MakeGSE(TDirectory* d,
   gse->SetCommonSumFillColor(col);
   gse->SetCommonSumLineColor(col);
   gse->SetCommonSumOption(GraphSysErr::kBox);
-  MakeCommon(gse, "Particle composition",	0.01,   col);
-  MakeCommon(gse, "Weak decay",			0.01,   col);
-  MakeCommon(gse, "pT extrapolation",		0.02,   col);
-  MakeCommon(gse, "EG dependence",		0.02,   col);
+  MakeCommon(gse, "Particle composition",	pComp,  col);
+  MakeCommon(gse, "Weak decay",			wDcy,   col);
+  Int_t pte = -1;
+  if (ptMax < 1e-3)
+    MakeCommon(gse, "pT extrapolation",		ptInt,  col);
+  else
+    pte = MakeP2P(gse, "pT extrapolation", col);
   MakeCommon(gse, "Background subtraction",	bg,     col);
   MakeCommon(gse, "Centrality",			c,      col);
+  MakeCommon(gse, "EM contamination",		em,     col);
+  if (egDep > 1e-6) 
+    MakeCommon(gse, "EG dependence",		egDep,  col);
+  if (sNN==5440)
+    MakeCommon(gse, "Material budget",		0.001,  col);
+  if (tkl > 1e-6)
+    MakeCommon(gse, "Tracklet selection",	tkl,    col);
+    
   if (eff) {
     MakeCommon(gse, "TRIGGER", 0.02, col);
   }
-  Int_t acc = MakeP2P(gse, "Acceptance", col);
+  Int_t acc = -1;
+  if (aMin > 0)
+    acc = MakeP2P(gse, "Acceptance", col);
+  else
+    MakeCommon(gse, "Acceptance", -aMin, col);
+  
 
   Int_t j =  0;
   for (Int_t i = 1; i <= g->GetNbinsX(); i++) {
@@ -215,11 +246,13 @@ TObject* MakeGSE(TDirectory* d,
     Double_t eEta = g->GetXaxis()->GetBinWidth(i)/2;
     Double_t xo   = TMath::Abs(eta)+eEta;
     if (xo > 2) continue;
-    Double_t ea  = 0.02*TMath::Power(xo/2,2);
+    Double_t ea  = aMin*TMath::Power(xo/2,2);
+    Double_t ep  = EtaSysEval(xo,ptInt, ptMax);
     gse->SetPoint(j, eta, g->GetBinContent(i));
     gse->SetPointError(j, eEta, eEta);
     gse->SetStatError(j, g->GetBinError(i),g->GetBinError(i));
-    gse->SetSysError(acc, j, eEta, eEta, ea/100, ea/100);
+    if (acc > 0) gse->SetSysError(acc, j, eEta, eEta, ea/100, ea/100);
+    if (pte > 0) gse->SetSysError(pte, j, eEta, eEta, ep/100, ep/100);
     j++;
   }
   return gse;

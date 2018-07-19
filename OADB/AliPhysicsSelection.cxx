@@ -553,7 +553,8 @@ void AliPhysicsSelection::FillStatistics(){
                         (fCurrentRun>=246672 && fCurrentRun<=244823) || //15o
                         (fCurrentRun>=244890 && fCurrentRun<=245060) || //15o
                         (fCurrentRun>=245062 && fCurrentRun<=245147) || //15o
-                        (fCurrentRun>=245149 && fCurrentRun<=246994)    //15o
+                        (fCurrentRun>=245149 && fCurrentRun<=246994) || //17n
+                        (fCurrentRun>=280234 && fCurrentRun<=280235)
                       )
           ) ||
           (// p-Pb

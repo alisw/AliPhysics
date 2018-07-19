@@ -24,7 +24,7 @@ class AliMeanVertexPreprocessorOffline: public TNamed
 
 	void SetShowPlots(Bool_t showPlots){fShowPlots = showPlots;}
 
-	void ModObject(const char* url, double zv, double zs, const char* commentAdd);
+	void ModObject(const char* url, double zv, double zs, const char* commentAdd, AliCDBStorage *db=0);
 
   private:
 	AliMeanVertexPreprocessorOffline(const AliMeanVertexPreprocessorOffline & proc); // copy constructor	

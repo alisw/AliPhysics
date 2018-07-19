@@ -157,10 +157,7 @@ void AliAnalysisTaskReducedEventProcessor::FinishTaskOutput()
     // Finish Task 
     //
   fReducedTask->Finish();
-  cout << "AliAnalysisTaskReducedEventProcessor::FinishTaskOutput() 0 " << endl;
-  //for(Int_t i=0; i<fNoutputSlots; i++)   if(fContainerType[i]==0) PostData(i, fOutputSlot[i]);
   PostData(1, fReducedTask->GetHistogramManager()->GetHistogramOutputList());
-  cout << "AliAnalysisTaskReducedEventProcessor::FinishTaskOutput() 1 " << endl;
   if(fWriteFilteredTree)
      PostData(2, fReducedTask->GetFilteredTree());
   

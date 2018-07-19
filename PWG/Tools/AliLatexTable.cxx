@@ -289,8 +289,15 @@ void AliLatexTable::InsertRow(){
 
   // Insert the row, based on all the individual columns
 
-  if ( fNcolReady != fNcol) {
-    Warning("InsertRow", "Wrong number of cols: %d (!= %d)", fNcolReady, fNcol); 
+  if ( fNcolReady > fNcol) {
+    Warning("InsertRow", "Wrong number of cols: %d (!= %d)", fNcolReady, fNcol);
+    return;
+  } else if (fNcolReady < fNcol) {
+    Warning("InsertRow", "Not enough columns provided, filling with empty cols");
+    for(Int_t icol = fNcolReady; icol < fNcol; icol++){
+      SetNextCol("");      
+    }
+    
   }
 
   TString row = "";
@@ -356,8 +363,9 @@ void AliLatexTable::PrintTable(Option_t * opt){
   // "HTML"  -> HTML, to be improved
   // "CSV"   -> skips hline, usefult for importing in excell 
   // "TWIKI" -> skips hline, usefult for importing in TWIKI
+  // "MD"    -> Print a markdown table
 
-  if(TString(opt) == "ASCII" || TString(opt)=="HTML" ||  TString(opt)=="CSV" ||  TString(opt)=="TWIKI") {
+  if(TString(opt) == "ASCII" || TString(opt)=="HTML" ||  TString(opt)=="CSV" ||  TString(opt)=="TWIKI" || TString(opt) == "MD") {
     
     Int_t nrow = fRows->GetEntriesFast();
 
@@ -365,21 +373,33 @@ void AliLatexTable::PrintTable(Option_t * opt){
 
     Int_t total_lenght = 0;
     for(Int_t icol = 0; icol < fNcol; icol++) total_lenght = total_lenght + colWidths[icol] + 2 ;
+
     
 
     for(Int_t irow = 0; irow < nrow; irow++){
       TString row = ((TObjString*) fRows->At(irow))->String();
       if (row.Contains("\\hline")){	
-	if (TString(opt)!="CSV" && TString(opt)!="TWIKI") {
+        if (TString(opt) == "MD") {
+	  for(Int_t icol = 0; icol < fNcol; icol++) { // the +2 compensates for the | which are not counted in the column width
+            printf("|");
+            for(Int_t ilen = 0; ilen < (colWidths[icol]+2); ilen++){
+              printf("-");
+            }
+          }
+          printf("|");
+	  printf("\n");	            
+        }
+        else if (TString(opt)!="CSV" && TString(opt)!="TWIKI") {
 	  for(Int_t il = 0; il < total_lenght; il++) printf("-");
 	  printf("\n");	  
 	}
+
 	continue;
       }
       StripLatex(row, opt);
       TObjArray * cols = row.Tokenize("&");
-      if (TString(opt)=="TWIKI") printf(" | ");
       for(Int_t icol = 0; icol < fNcol; icol++){
+        if (TString(opt)=="TWIKI" || TString(opt)=="MD")  printf("|");
 	TString strTmp = ((TObjString *) cols->At(icol))->String();
 	if(TString(opt)=="TWIKI" || TString(opt)=="HTML"){
 	  strTmp.ReplaceAll("AMPER","&");
@@ -396,6 +416,7 @@ void AliLatexTable::PrintTable(Option_t * opt){
 	if (TString(opt)=="TWIKI") printf(" | ");
 
       }
+      if (TString(opt)=="TWIKI" || TString(opt)=="MD")  printf("|");
       printf ("\n");
       delete cols;
     }
@@ -460,7 +481,7 @@ void AliLatexTable::StripLatex(TString &text, TString format) {
 
   text.ReplaceAll("\\cdot", "x");
   text.ReplaceAll("$", "");
-  if (format == "ASCII") {
+  if (format == "ASCII" || format == "MD") {
     text.ReplaceAll("\\right>", ">");
     text.ReplaceAll("\\left<", "<");
     text.ReplaceAll("\\rangle", ">");

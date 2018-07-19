@@ -24,6 +24,7 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
 
     // setters
     void SetMaxY(Double_t maxy){fMaxY = maxy;}
+    void SetMaxEta(Double_t maxeta){fMaxEta = maxeta;}
     void SetLightOutput(Bool_t flag) {fDoLightOutput = flag;}
     void SetAnalyzedParticle(Int_t flag);
     void SetHasMother(UInt_t selectedMothers);
@@ -44,18 +45,13 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     void FillPythiaBranchingRatio(TH1F* histo, Int_t np);
 
   protected:
+    TList*                      fOutputContainer;                 // Output container
+
     AliVEvent*                  fInputEvent;                      // current event
     AliMCEvent*                 fMCEvent;                         // corresponding MC event
     AliMCGenHandler*            fMCGenHandler;
     const AliGenerator*         fMCGenerator;
     AliGenEMCocktailV2*         fMCCocktailGen;
-
-    TList*                      fUserInfo;
-    TTree*                      fOutputTree;
-    TList*                      fOutputContainer;                 // Output container
-  
-    Int_t*                      fParticleList;                    // array with particle Pdg values
-    TString*                    fParticleListNames;               // array with particle names
   
     Int_t                       fAnalyzedMeson;                   // switch for analyzing pi0 (0), eta (1), pi+-(2)
     Bool_t                      fAnalyzeNeutralPi;                // switch for pi0 analysis
@@ -67,28 +63,27 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     TH1F*                       fHistNEvents;                     // number of events histo
   
     // histograms mesons
+    TH2F**                      fHistPtPhiDaughterSource;         //! histo for phi of pi0/eta from input particles
+    TH2F**                      fHistPtPhiInput;                  //! histo for phi of input particles
     TH2F**                      fHistPtYInput;                    //! histo for pi0/eta from input particles
     TH2F**                      fHistPtYDaughterSource;           //! histo for input particles
     TH1F**                      fHistDecayChannelsInput;          //! histo for input particle decay channels
     TH1F**                      fHistPythiaBR;                    //! histo for input particle BR from pythia
 
-    Int_t                       fIsMC;                            // MC flag
-    Double_t                    fMaxY;                            // Max y
-  
-    TH2F**                      fHistPtPhiDaughterSource;         //! histo for phi of pi0/eta from input particles
-    TH2F**                      fHistPtPhiInput;                  //! histo for phi of input particles
-
-    TH2F**                      fHistPtYGammaFromXFromInput;      //! gammas from X from k0s, k0l, lambda
-    TH2F**                      fHistPtPhiGammaFromXFromInput;    //!
-    TH2F**                      fHistPtYGammaFromPi0FromInput;    //! gammas from pi0 from k0s, k0l, lambda
-    TH2F**                      fHistPtPhiGammaFromPi0FromInput;  //!
-  
     TH2F**                      fHistPtDaughterPtSourceInput;     //! histo for pt correlation of gammas from input particles to source
     TH2F**                      fHistPhiDaughterPhiSourceInput;   //! histo for phi correlation of gammas from input particles to source
   
     TH1I*                       fHistPdgInputRest;                //! histo for rest
     TH1I*                       fHistPdgDaughterSourceRest;       //! histo for gamma from rest
-  
+
+    TH2F**                      fHistPtYGammaFromXFromInput;      //! gammas from X from k0s, k0l, lambda
+    TH2F**                      fHistPtPhiGammaFromXFromInput;    //!
+    TH2F**                      fHistPtYGammaFromPi0FromInput;    //! gammas from pi0 from k0s, k0l, lambda
+    TH2F**                      fHistPtPhiGammaFromPi0FromInput;  //!
+
+    Int_t*                      fParticleList;                    // array with particle Pdg values
+    TString*                    fParticleListNames;               // array with particle names
+
     // generator settings
     TF1*                        fPtParametrization[24];           //!
     TF1*                        fPtParametrizationProton;         //!
@@ -96,12 +91,19 @@ class AliAnalysisTaskHadronicCocktailMC : public AliAnalysisTaskSE {
     TObjString*                 fCocktailSettings[12];            //!
     TH1D*                       fMtScalingFactors;                //!
     TH2F*                       fPtYDistributions[24];            //!
+
+    TList*                      fUserInfo;
+    TTree*                      fOutputTree;
+    Int_t                       fIsMC;                            // MC flag
+    Double_t                    fMaxY;                            // Max y
+    Double_t                    fMaxEta;                          // Max Eta
+
   
   private:
     AliAnalysisTaskHadronicCocktailMC(const AliAnalysisTaskHadronicCocktailMC&);              // Prevent copy-construction
     AliAnalysisTaskHadronicCocktailMC &operator=(const AliAnalysisTaskHadronicCocktailMC&);   // Prevent assignment
   
-    ClassDef(AliAnalysisTaskHadronicCocktailMC, 8);
+    ClassDef(AliAnalysisTaskHadronicCocktailMC, 9);
 };
 
 #endif

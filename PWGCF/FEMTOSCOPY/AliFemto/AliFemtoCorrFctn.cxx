@@ -1,27 +1,48 @@
-////////////////////////////////////////////////////////////////////////////////
-/// AliFemtoCorrFctn - the pure virtual base class for correlation function  ///
-/// All correlation function classes must inherit from this one              ///
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemtoCorrFctn.cxx
+///
+
 #include "AliFemtoCorrFctn.h"
 
-void AliFemtoCorrFctn::AddRealPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
-void AliFemtoCorrFctn::AddMixedPair(AliFemtoPair*) { cout << "Not implemented" << endl; }
+AliFemtoCorrFctn::AliFemtoCorrFctn():
+  fyAnalysis(nullptr),
+  fPairCut(nullptr)
+{ /* no-op */
+}
 
-void AliFemtoCorrFctn::AddFirstParticle(AliFemtoParticle*,bool) { cout << "Not implemented" << endl; }
-void AliFemtoCorrFctn::AddSecondParticle(AliFemtoParticle*) { cout << "Not implemented" << endl; }
-void AliFemtoCorrFctn::CalculateAnglesForEvent(){ cout << "Not implemented" << endl; }
+AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& c):
+  fyAnalysis(c.fyAnalysis),
+  fPairCut(c.fPairCut)
+{
+}
 
-AliFemtoCorrFctn::AliFemtoCorrFctn(const AliFemtoCorrFctn& /* c */):fyAnalysis(0),fPairCut(0x0) {}
-AliFemtoCorrFctn::AliFemtoCorrFctn(): fyAnalysis(0),fPairCut(0x0) {/* no-op */}
-void AliFemtoCorrFctn::SetAnalysis(AliFemtoAnalysis* analysis) { fyAnalysis = analysis; }
-AliFemtoCorrFctn& AliFemtoCorrFctn::operator=(const AliFemtoCorrFctn& aCorrFctn) { if (this == &aCorrFctn) return *this; fyAnalysis = aCorrFctn.fyAnalysis; fPairCut = aCorrFctn.fPairCut; return *this; }
+AliFemtoCorrFctn& AliFemtoCorrFctn::operator=(const AliFemtoCorrFctn& aCorrFctn)
+{
+  if (this != &aCorrFctn) {
+    fyAnalysis = aCorrFctn.fyAnalysis;
+    fPairCut = aCorrFctn.fPairCut;
+  }
+  return *this;
+}
 
-void AliFemtoCorrFctn::EventBegin(const AliFemtoEvent* /* aEvent */) { /* no-op */ }
-void AliFemtoCorrFctn::EventEnd(const AliFemtoEvent* /* aEvent */) { /* no-op */ }
-void AliFemtoCorrFctn::SetPairSelectionCut(AliFemtoPairCut* aCut) { fPairCut =  aCut; }
+void AliFemtoCorrFctn::AddRealPair(AliFemtoPair*)
+{
+  cout << "AliFemtoCorrFctn::AddRealPair -- Not implemented\n";
+}
+void AliFemtoCorrFctn::AddMixedPair(AliFemtoPair*)
+{
+  cout << "AliFemtoCorrFctn::AddMixedPair -- Not implemented\n";
+}
 
-#ifdef __ROOT__
-  /// \cond CLASSIMP
-  ClassImp(AliFemtoCorrFctn);
-  /// \endcond
-#endif
+void AliFemtoCorrFctn::AddFirstParticle(AliFemtoParticle*, bool)
+{
+  cout << "AliFemtoCorrFctn::AddFirstParticle -- Not implemented\n";
+}
+void AliFemtoCorrFctn::AddSecondParticle(AliFemtoParticle*)
+{
+  cout << "AliFemtoCorrFctn::AddSecondParticle -- Not implemented\n";
+}
+void AliFemtoCorrFctn::CalculateAnglesForEvent()
+{
+  cout << "AliFemtoCorrFctn::CalculateAnglesForEvent -- Not implemented\n";
+}

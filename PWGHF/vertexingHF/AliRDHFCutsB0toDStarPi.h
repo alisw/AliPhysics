@@ -3,19 +3,23 @@
 /* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-//***********************************************************
+///***********************************************************
 /// \class Class AliRDHFCutsB0toDStarPi
 /// \brief class for cuts on AOD reconstructed B0->DStarPi->D0PiPi->KPiPiPi
 /// \author Author: Lennart van Doremalen, l.v.r.vandoremalen@uu.nl  
+///
 //
-// Based on work by A.Grelli, alessandro.grelli@uu.nl
-// PID method implemented by   Y.Wang, yifei@physi.uni-heidelberg.de
-//***********************************************************
+//                 Author Lennart van Doremalen
+//           Utrecht University - l.v.r.vandoremalen@uu.nl
+//
+//     Several AliPhysics classes have been used as a basis for this code
+//
+///***********************************************************
 
 #include "AliRDHFCuts.h"
 
 class AliAODEvent;
-class AliAODRecoCascadeHF;
+class AliAODRecoDecayHF2Prong;
 class AliAODRecoDecayHF;
 
 class AliRDHFCutsB0toDStarPi : public AliRDHFCuts 
@@ -26,7 +30,7 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
                   kCutAboveValue             = 1
                  };
 
-  AliRDHFCutsB0toDStarPi(const char* name="CutsB0toDStarPi");
+  AliRDHFCutsB0toDStarPi(const char* name="B0toDStarPiCuts");
   
   virtual ~AliRDHFCutsB0toDStarPi();
 
@@ -60,18 +64,21 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
   Double_t GetCircRadius() { return fCircRadius; }
   void SetCircRadius(Double_t radius) { fCircRadius = radius; }
 
-  Double_t DeltaInvMassDStarKpipi(AliAODRecoCascadeHF * DStar) const;
-  Double_t DeltaInvMassB0Kpipipi(AliAODRecoCascadeHF * B0) const;
+  Double_t DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong * DStar) const;
+  Double_t DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const;
 
   void SetCutsD0forD0ptbin(Int_t nVars,Int_t nPtBins,Float_t **cutsRDD0forD0ptbin);
+  void SetCutsD0forD0ptbin(Int_t glIndex,Float_t *cutsRDD0forD0ptbin);
   Int_t PtBinD0forD0ptbin(Double_t pt) const;
   void SetPtBinsD0forD0ptbin(Int_t nPtBinLimits,Float_t *ptBinLimits);
 
   void SetCutsD0forDStarptbin(Int_t nVars,Int_t nPtBins,Float_t **cutsRDD0forDStarptbin);
+  void SetCutsD0forDStarptbin(Int_t glIndex,Float_t *cutsRDD0forDStarptbin);
   Int_t PtBinD0forDStarptbin(Double_t pt) const;
   void SetPtBinsD0forDStarptbin(Int_t nPtBinLimits,Float_t *ptBinLimits);
 
   void SetCutsDStarforDStarptbin(Int_t nVars,Int_t nPtBins,Float_t **cutsRDDStarforDStarptbin);
+  void SetCutsDStarforDStarptbin(Int_t glIndex,Float_t *cutsRDDStarforDStarptbin);
   Int_t PtBinDStarforDStarptbin(Double_t pt) const;
   void SetPtBinsDStarforDStarptbin(Int_t nPtBinLimits,Float_t *ptBinLimits);
 
@@ -114,10 +121,10 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
   void SetIsCutUsedD0forDStarptbin(Int_t nCutIndex, Int_t ptbin, Bool_t isCutUsed){fIsCutUsedD0forDStarptbin[GetGlobalIndexD0forDStarptbin(nCutIndex,ptbin)] = isCutUsed; return;}
   void SetIsCutUsedDStarforDStarptbin(Int_t nCutIndex, Int_t ptbin, Bool_t isCutUsed){fIsCutUsedDStarforDStarptbin[GetGlobalIndexDStarforDStarptbin(nCutIndex,ptbin)] = isCutUsed; return;}
 
-  Bool_t GetIsCutUsed(Int_t nCutIndex, Int_t ptbin){return fIsCutUsed[GetGlobalIndex(nCutIndex,ptbin)];}
-  Bool_t GetIsCutUsedD0forD0ptbin(Int_t nCutIndex, Int_t ptbin){return fIsCutUsedD0forD0ptbin[GetGlobalIndexD0forD0ptbin(nCutIndex,ptbin)];}
-  Bool_t GetIsCutUsedD0forDStarptbin(Int_t nCutIndex, Int_t ptbin){return fIsCutUsedD0forDStarptbin[GetGlobalIndexD0forDStarptbin(nCutIndex,ptbin)];}
-  Bool_t GetIsCutUsedDStarforDStarptbin(Int_t nCutIndex, Int_t ptbin){return fIsCutUsedDStarforDStarptbin[GetGlobalIndexDStarforDStarptbin(nCutIndex,ptbin)];}
+  Bool_t GetIsCutUsed(Int_t nCutIndex, Int_t ptbin) const {return fIsCutUsed[GetGlobalIndex(nCutIndex,ptbin)];}
+  Bool_t GetIsCutUsedD0forD0ptbin(Int_t nCutIndex, Int_t ptbin) const {return fIsCutUsedD0forD0ptbin[GetGlobalIndexD0forD0ptbin(nCutIndex,ptbin)];}
+  Bool_t GetIsCutUsedD0forDStarptbin(Int_t nCutIndex, Int_t ptbin) const {return fIsCutUsedD0forDStarptbin[GetGlobalIndexD0forDStarptbin(nCutIndex,ptbin)];}
+  Bool_t GetIsCutUsedDStarforDStarptbin(Int_t nCutIndex, Int_t ptbin) const {return fIsCutUsedDStarforDStarptbin[GetGlobalIndexDStarforDStarptbin(nCutIndex,ptbin)];}
 
   Int_t ApplyCutOnVariable(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue, Bool_t bCutArray[85]);
   Int_t ApplyCutOnVariableD0forD0ptbin(Int_t nCutIndex, Int_t ptbin, Float_t cutVariableValue, Bool_t bCutArray[25]);
@@ -200,79 +207,77 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
 
  protected:
 
-  Float_t fMaxPtPid; 
-  Float_t fTPCflag;   
-  Double_t fCircRadius; /// Radius for circular PID nsigma cut
+  Float_t fMaxPtPid;                         ///
+  Float_t fTPCflag;                          ///
+  Double_t fCircRadius;                      /// Radius for circular PID nsigma cut
   Bool_t fGetCutInfo;
 
   Bool_t * fIsCutUsed;                       //[fGlobalIndex]
 
-  Int_t fnVarsD0forD0ptbin;
-  Int_t fnPtBinsD0forD0ptbin;
-  Int_t fGlobalIndexD0forD0ptbin;
+  Int_t fnVarsD0forD0ptbin;                  ///
+  Int_t fnPtBinsD0forD0ptbin;                ///
+  Int_t fGlobalIndexD0forD0ptbin;            ///
   Float_t * fCutsRDD0forD0ptbin;             //[fGlobalIndexD0forD0ptbin]
-  Int_t fnPtBinLimitsD0forD0ptbin;
-  Float_t * fPtBinLimitsD0forD0ptbin;        //[fnPtBinsD0forD0ptbin]
+  Int_t fnPtBinLimitsD0forD0ptbin;           ///
+  Float_t * fPtBinLimitsD0forD0ptbin;        //[fnPtBinLimitsD0forD0ptbin]
   Bool_t * fIsUpperCutD0forD0ptbin;          //[fnVarsD0forD0ptbin]
   Bool_t * fIsCutUsedD0forD0ptbin;           //[fGlobalIndexD0forD0ptbin]
   TString * fVarNamesD0forD0ptbin;           //[fnVarsD0forD0ptbin]
 
-  Int_t fnVarsD0forDStarptbin;
-  Int_t fnPtBinsD0forDStarptbin;
-  Int_t fGlobalIndexD0forDStarptbin;
+  Int_t fnVarsD0forDStarptbin;               ///
+  Int_t fnPtBinsD0forDStarptbin;             ///
+  Int_t fGlobalIndexD0forDStarptbin;         ///
   Float_t * fCutsRDD0forDStarptbin;          //[fGlobalIndexD0forDStarptbin]
-  Int_t fnPtBinLimitsD0forDStarptbin;
-  Float_t * fPtBinLimitsD0forDStarptbin;     //[fnPtBinsD0forDStarptbin]
+  Int_t fnPtBinLimitsD0forDStarptbin;        ///
+  Float_t * fPtBinLimitsD0forDStarptbin;     //[fnPtBinLimitsD0forDStarptbin]
   Bool_t * fIsUpperCutD0forDStarptbin;       //[fnVarsD0forDStarptbin]
   Bool_t * fIsCutUsedD0forDStarptbin;        //[fGlobalIndexD0forDStarptbin]
   TString * fVarNamesD0forDStarptbin;        //[fnVarsD0forDStarptbin]
 
-  Int_t fnVarsDStarforDStarptbin;
-  Int_t fnPtBinsDStarforDStarptbin;
-  Int_t fGlobalIndexDStarforDStarptbin;
+  Int_t fnVarsDStarforDStarptbin;            ///
+  Int_t fnPtBinsDStarforDStarptbin;          ///
+  Int_t fGlobalIndexDStarforDStarptbin;      ///
   Float_t * fCutsRDDStarforDStarptbin;       //[fGlobalIndexDStarforDStarptbin]
-  Int_t fnPtBinLimitsDStarforDStarptbin;
-  Float_t * fPtBinLimitsDStarforDStarptbin;  //[fnPtBinsDStarforDStarptbin]
+  Int_t fnPtBinLimitsDStarforDStarptbin;     ///
+  Float_t * fPtBinLimitsDStarforDStarptbin;  //[fnPtBinLimitsDStarforDStarptbin]
   Bool_t * fIsUpperCutDStarforDStarptbin;    //[fnVarsDStarforDStarptbin]
   Bool_t * fIsCutUsedDStarforDStarptbin;     //[fGlobalIndexDStarforDStarptbin]
   TString * fVarNamesDStarforDStarptbin;     //[fnVarsDStarforDStarptbin]
 
-  Int_t fMinITSNclsD0Pion;
-  Int_t fMinTPCNclsD0Pion;
-  Bool_t fUseITSRefitD0Pion;
-  Bool_t fUseTPCRefitD0Pion;
-  Bool_t fUseFilterBitD0Pion;
-  Int_t fFilterBitD0Pion;
-  Double_t fMinPtD0Pion;
+  Int_t fMinITSNclsD0Pion;                   ///
+  Int_t fMinTPCNclsD0Pion;                   ///
+  Bool_t fUseITSRefitD0Pion;                 ///
+  Bool_t fUseTPCRefitD0Pion;                 ///
+  Bool_t fUseFilterBitD0Pion;                ///
+  Int_t fFilterBitD0Pion;                    ///
+  Double_t fMinPtD0Pion;                     ///
 
-  Int_t fMinITSNclsD0Kaon;
-  Int_t fMinTPCNclsD0Kaon;
-  Bool_t fUseITSRefitD0Kaon;
-  Bool_t fUseTPCRefitD0Kaon;
-  Bool_t fUseFilterBitD0Kaon;
-  Int_t fFilterBitD0Kaon;
-  Double_t fMinPtD0Kaon;
+  Int_t fMinITSNclsD0Kaon;                   ///
+  Int_t fMinTPCNclsD0Kaon;                   ///
+  Bool_t fUseITSRefitD0Kaon;                 ///
+  Bool_t fUseTPCRefitD0Kaon;                 ///
+  Bool_t fUseFilterBitD0Kaon;                ///
+  Int_t fFilterBitD0Kaon;                    ///
+  Double_t fMinPtD0Kaon;                     ///
 
-  Int_t fMinITSNclsDStarPion;
-  Int_t fMinTPCNclsDStarPion;
-  Bool_t fUseITSRefitDStarPion;
-  Bool_t fUseTPCRefitDStarPion;
-  Bool_t fUseFilterBitDStarPion;
-  Int_t fFilterBitDStarPion;
-  Double_t fMinPtDStarPion;
+  Int_t fMinITSNclsDStarPion;                ///
+  Int_t fMinTPCNclsDStarPion;                ///
+  Bool_t fUseITSRefitDStarPion;              ///
+  Bool_t fUseTPCRefitDStarPion;              ///
+  Bool_t fUseFilterBitDStarPion;             ///
+  Int_t fFilterBitDStarPion;                 ///
+  Double_t fMinPtDStarPion;                  ///
 
-  Int_t fMinITSNclsB0Pion;
-  Int_t fMinTPCNclsB0Pion;
-  Bool_t fUseITSRefitB0Pion;
-  Bool_t fUseTPCRefitB0Pion;
-  Bool_t fUseFilterBitB0Pion;
-  Int_t fFilterBitB0Pion;
-  Double_t fMinPtB0Pion;
-
-  Double_t fMagneticField = 0.0;
+  Int_t fMinITSNclsB0Pion;                   ///
+  Int_t fMinTPCNclsB0Pion;                   ///
+  Bool_t fUseITSRefitB0Pion;                 ///
+  Bool_t fUseTPCRefitB0Pion;                 ///
+  Bool_t fUseFilterBitB0Pion;                ///
+  Int_t fFilterBitB0Pion;                    ///
+  Double_t fMinPtB0Pion;                     ///
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsB0toDStarPi,1)
+  ClassDef(AliRDHFCutsB0toDStarPi,6) ///
   /// \endcond
 };
 

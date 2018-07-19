@@ -1,5 +1,5 @@
 
-void    readCDB (TObject *task1);
+void    readCDB (TObject *task1,  Int_t runNumber);
 //_____________________________________________________________________________
 AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
 {
@@ -26,7 +26,6 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   AliT0CalibOffsetChannelsTask  *task1 = new AliT0CalibOffsetChannelsTask("CalibObjectsTrain1");
   readCDB(task1, runNumber);
    mgr->AddTask(task1);
-
   //  AliT0AnalysisTaskQA * task2 = new AliT0AnalysisTaskQA("QA task");
   //    mgr->AddTask(task2);
 
@@ -55,17 +54,17 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
 
   AliCDBManager* man = AliCDBManager::Instance();
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
-  if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
+  if (!entry) ::Fatal("AddTaskT0Calib", "CTP timing parameters are not found in OCDB !");
   AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
   Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
 
   AliCDBEntry *entry1 = AliCDBManager::Instance()->Get("GRP/CTP/TimeAlign");
-  if (!entry1) AliFatal("CTP time-alignment is not found in OCDB !");
+  if (!entry1) ::Fatal("AddTaskT0Calib", "CTP time-alignment is not found in OCDB !");
   AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
   l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
 
   AliCDBEntry *entry4 = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
-  if (!entry4) AliFatal("LHC clock-phase shift is not found in OCDB !");
+  if (!entry4) ::Fatal("AddTaskT0Calib", "LHC clock-phase shift is not found in OCDB !");
   AliLHCClockPhase *phase = (AliLHCClockPhase*)entry4->GetObject();
   Float_t fGRPdelays = l1Delay - phase->GetMeanPhase();
 
@@ -79,7 +78,6 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   TString LHCperiod = grpData->GetLHCPeriod();
   Bool_t isLHC10b =  LHCperiod.Contains("LHC10b");
   Bool_t isLHC10c =  LHCperiod.Contains("LHC10c");
-
   //  AliCDBEntry* entryGRP = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   // AliGRPObject* grpData = dynamic_cast<AliGRPObject*>(entryGRP->GetObject());
   UInt_t timeStart = grpData->GetTimeStart();
@@ -88,7 +86,7 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   cout<<"T0 start time  "<<timeStart<<" end time "<<timeEnd<<endl;
 
   ::Info("AddTaskT0Calib","LHCperiod:%s  --->  isLHC10b:%d isLHC10c:%d",
-         LHCperiod.Data(),(Int_t)isLHC10b, (Int_t)isLHC10c);
+	 LHCperiod.Data(),(Int_t)isLHC10b, (Int_t)isLHC10c);
 
   if(isLHC10b || isLHC10c) mytask-> SetRefPMT(12,2);
 

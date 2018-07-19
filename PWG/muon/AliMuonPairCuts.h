@@ -7,7 +7,7 @@
 class TList;
 class TVector3;
 class TArrayI;
-class AliInputEventHandler;
+class AliVEventHandler;
 
 class AliMuonPairCuts : public AliAnalysisCuts
 {
@@ -45,7 +45,7 @@ class AliMuonPairCuts : public AliAnalysisCuts
   
   void SetDefaultFilterMask();
 
-  Bool_t SetRun ( const AliInputEventHandler* eventHandler );
+  Bool_t SetRun ( const AliVEventHandler* eventHandler );
   void SetIsMC ( Bool_t isMC = kTRUE );
 
   void Print ( Option_t* option = "" ) const;

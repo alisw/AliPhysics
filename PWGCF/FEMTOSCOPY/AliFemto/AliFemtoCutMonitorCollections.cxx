@@ -1,48 +1,38 @@
-////////////////////////////////////////////////////////////////////////////////
-//                                                                            //
-// AliFemtoCutMonitorCollections - the cut monitor for particles to study    //
-// the difference between reconstructed and true momentum                     //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+///
+/// \file AliFemto/AliFemtoCutMonitorCollections.cxx
+///
+
 #include "AliFemtoCutMonitorCollections.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliFemtoEvent.h"
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TList.h>
+#include <TString.h>
 
 AliFemtoCutMonitorCollections::AliFemtoCutMonitorCollections():
-  fCollection1Mult(0),
-  fCollection2Mult(0)
+  AliFemtoCutMonitorCollections("")  // construct with empty 'name'
 {
-  // Default constructor
-  fCollection1Mult = new TH1D("Coll1Mult", "Collection 1 Multiplicity", 5001, -0.5, 5000.5);
-  fCollection2Mult = new TH1D("Coll2Mult","Collection 2 Multiplicity",5001,-0.5,5000.5);
 }
 
 AliFemtoCutMonitorCollections::AliFemtoCutMonitorCollections(const char *aName):
-  fCollection1Mult(0),
-  fCollection2Mult(0)
+  AliFemtoCutMonitor(),
+  fCollection1Mult(nullptr),
+  fCollection2Mult(nullptr)
 {
   // Normal constructor
-  char name[200];
-  snprintf(name, 200, "Coll1Mult%s", aName);
-  fCollection1Mult = new TH1D(name, "Collection 1 Multiplicity", 5001, -0.5, 5000.5);
-
-  snprintf(name, 200, "Coll2Mult%s", aName);
-  fCollection2Mult = new TH1D(name, "Collection 2 Multiplicity", 5001, -0.5, 5000.5);
+  fCollection1Mult = new TH1D(TString("Coll1Mult") + aName, "Collection 1 Multiplicity", 5001, -0.5, 5000.5);
+  fCollection2Mult = new TH1D(TString("Coll2Mult") + aName, "Collection 2 Multiplicity", 5001, -0.5, 5000.5);
 }
 
-AliFemtoCutMonitorCollections::AliFemtoCutMonitorCollections(const AliFemtoCutMonitorCollections &aCut):
-  fCollection1Mult(0),
-  fCollection2Mult(0)
+AliFemtoCutMonitorCollections::AliFemtoCutMonitorCollections(const AliFemtoCutMonitorCollections &aCutMonitor):
+  AliFemtoCutMonitor(),
+  fCollection1Mult(nullptr),
+  fCollection2Mult(nullptr)
 {
   // copy constructor
-  if (fCollection1Mult) delete fCollection1Mult;
-  fCollection1Mult = new TH1D(*aCut.fCollection1Mult);
-
-  if (fCollection2Mult) delete fCollection2Mult;
-  fCollection2Mult = new TH1D(*aCut.fCollection2Mult);
+  fCollection1Mult = new TH1D(*aCutMonitor.fCollection1Mult);
+  fCollection2Mult = new TH1D(*aCutMonitor.fCollection2Mult);
 }
 
 AliFemtoCutMonitorCollections::~AliFemtoCutMonitorCollections()
@@ -52,26 +42,22 @@ AliFemtoCutMonitorCollections::~AliFemtoCutMonitorCollections()
   delete fCollection2Mult;
 }
 
-AliFemtoCutMonitorCollections& AliFemtoCutMonitorCollections::operator=(const AliFemtoCutMonitorCollections& aCut)
+AliFemtoCutMonitorCollections& AliFemtoCutMonitorCollections::operator=(const AliFemtoCutMonitorCollections& aCutMonitor)
 {
   // assignment operator
-  if (this == &aCut) 
-    return *this;
-
-  if (fCollection1Mult) delete fCollection1Mult;
-  fCollection1Mult = new TH1D(*aCut.fCollection1Mult);
-
-  if (fCollection2Mult) delete fCollection2Mult;
-  fCollection2Mult = new TH1D(*aCut.fCollection2Mult);
-
+  if (this != &aCutMonitor) {
+    *fCollection1Mult = *aCutMonitor.fCollection1Mult;
+    *fCollection2Mult = *aCutMonitor.fCollection2Mult;
+  }
   return *this;
 }
 
-AliFemtoString AliFemtoCutMonitorCollections::Report(){ 
+AliFemtoString AliFemtoCutMonitorCollections::Report()
+{
   // Prepare report from the execution
-  string stemp = "*** AliFemtoCutMonitorCollections report"; 
+  string stemp = "*** AliFemtoCutMonitorCollections report";
   AliFemtoString returnThis = stemp;
-  return returnThis; 
+  return returnThis;
 }
 
 void AliFemtoCutMonitorCollections::Fill(const AliFemtoParticleCollection* aCollection1,const AliFemtoParticleCollection* aCollection2)
@@ -79,9 +65,7 @@ void AliFemtoCutMonitorCollections::Fill(const AliFemtoParticleCollection* aColl
   // Fill in the monitor histograms with the values from the current event
   //cout<<"Monitor collection sizes: "<<aCollection1->size()<<" "<<aCollection2->size()<<endl;
   fCollection1Mult->Fill(aCollection1->size());
-  fCollection2Mult->Fill(aCollection2->size()); 
-
-
+  fCollection2Mult->Fill(aCollection2->size());
 }
 
 void AliFemtoCutMonitorCollections::Write()
@@ -89,14 +73,13 @@ void AliFemtoCutMonitorCollections::Write()
   // Write out the relevant histograms
   fCollection1Mult->Write();
   fCollection2Mult->Write();
-
 }
 
 TList *AliFemtoCutMonitorCollections::GetOutputList()
 {
   TList *tOutputList = new TList();
   tOutputList->Add(fCollection1Mult);
-  tOutputList->Add(fCollection2Mult);  
+  tOutputList->Add(fCollection2Mult);
 
   return tOutputList;
 }

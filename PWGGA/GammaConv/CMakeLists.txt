@@ -57,12 +57,14 @@ set(SRCS
     AliAnalysisTaskMaterialHistos.cxx
     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
     AliAnalysisTaskOmegaToPiZeroGamma.cxx
+    AliAnalysisTaskHeavyNeutralMesonToGG.cxx
     AliAnalysisTaskK0toPi0Pi0.cxx
     AliAnalysisTaskPi0v2.cxx
     AliAnalysisTaskResolution.cxx
     AliAnalysisTaskGammaCaloDalitzV1.cxx
     AliAnalysisTaskGammaPureMC.cxx
     AliAnalysisTaskGammaCocktailMC.cxx
+    AliAnalysisTaskGammaTriggerQA.cxx
     AliAnalysisTaskHadronicCocktailMC.cxx
     AliAODConversionMother.cxx
     AliAODConversionParticle.cxx
@@ -85,9 +87,6 @@ set(SRCS
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx
     AliV0ReaderV1.cxx
-    AliV0ReaderStrange.cxx
-    AliV0CutsStrange.cxx
-    AliV0ParticleStrange.cxx
     AliConversionCutHandler.cxx
    )
 

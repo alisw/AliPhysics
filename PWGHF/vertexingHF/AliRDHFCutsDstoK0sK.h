@@ -25,7 +25,7 @@ class AliESDtrackCuts;
 class AliRDHFCutsDstoK0sK : public AliRDHFCuts
 {
 public:
-   
+
 
    AliRDHFCutsDstoK0sK(const char* name="CutsDstoK0sK");
    AliRDHFCutsDstoK0sK(const AliRDHFCutsDstoK0sK& source);
@@ -70,15 +70,21 @@ public:
 protected:
 
 
+   enum EPid {kConservative, kStrong};
+   void SetPidOption(Int_t opt)        { fPidOption      = opt; }
+   void SetMaxPtStrongPid(Float_t pid) { fMaxPtStrongPid = pid; }
+
    Int_t             fExcludedCut;           /// cut to be excluded (-1=none)
    Float_t           fV0Type;                /// V0 type -- should be defined as in AliRDHFCuts.h
    AliESDtrackCuts*  fV0daughtersCuts;       /// cuts for v0 daughters (AOD converted to ESD on the fly!)
+   Int_t             fPidOption;             /// PID option
+   Float_t           fMaxPtStrongPid;        /// Maximum pt of candidate to apply strong PID p dependent
 
-   
+
    /// \cond CLASSIMP
-   ClassDef(AliRDHFCutsDstoK0sK, 1);   /// class for cuts on AOD reconstructed D+ -> K0S + pi
+   ClassDef(AliRDHFCutsDstoK0sK, 2);   /// class for cuts on AOD reconstructed D+ -> K0S + pi
    /// \endcond
-   
+
 };
 
 #endif

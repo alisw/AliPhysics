@@ -562,7 +562,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
        ,nBarrelFriend(0), nBarrelITSFriend(0), nSAFriend(0)
        ,nBarrelMC(0), nSAMC(0), nKinkMC(0);
   AliESDtrack *esdTrack = NULL;
-  AliESDfriendTrack *esdFriendTrack = NULL;
   TObject *calObject = NULL;
   AliTRDtrackV1 *track = NULL;
   AliTRDseedV1 *tracklet = NULL;
@@ -644,6 +643,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     if(HasMCdata()){
       label = esdTrack->GetLabel(); 
       alab = TMath::Abs(label);
+      if (alab>=nTracksMC) continue; // bg track?
       // register the track
       // RS: this check makes no sense for events with embedding
       //      if(alab < UInt_t(nTracksMC)){ 
@@ -722,7 +722,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
 
     // read track REC info
-    if((esdFriendTrack = (fESDfriend->GetNumberOfTracks() > itrk) ? fESDfriend->GetTrack(itrk): NULL)) {
+    const AliESDfriendTrack* esdFriendTrack = dynamic_cast<const AliESDfriendTrack*>(esdTrack->GetFriendTrack());
+    if (esdFriendTrack) {
       fTrackInfo->SetTPCoutParam(esdFriendTrack->GetTPCOut());
       fTrackInfo->SetITSoutParam(esdFriendTrack->GetITSOut());
       const AliTrackPointArray *tps(NULL);

@@ -2850,7 +2850,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
   Int_t nphoton = GetInputAODBranch()->GetEntriesFast();
   for( Int_t iphoton = 0; iphoton < nphoton-1; iphoton++ )
   {
-    AliAODPWG4Particle * photon1 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(iphoton));
+    AliCaloTrackParticle * photon1 =  (AliCaloTrackParticle*) (GetInputAODBranch()->At(iphoton));
     
     // Vertex cut in case of mixed events
     // Not really in use or tested recently, remove ...
@@ -2872,24 +2872,24 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     }
     
     // Get kinematics and other parameters
-    fMomentum1 = *(photon1->Momentum());
+    fMomentum1 = *(photon1->GetMomentum());
     
     Float_t       e1 = photon1->E();
     Float_t     tof1 = photon1->GetTime();
     Int_t   nMaxima1 = photon1->GetNLM();
     Int_t       lab1 = photon1->GetLabel();
     Int_t       tag1 = photon1->GetTag();
-    Bool_t isolated1 = ((AliAODPWG4ParticleCorrelation*) photon1)->IsIsolated();
+    Bool_t isolated1 = ((AliCaloTrackParticleCorrelation*) photon1)->IsIsolated();
     
     for( Int_t jphoton = iphoton+1; jphoton < nphoton; jphoton++ )
     {
-      AliAODPWG4Particle * photon2 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(jphoton));
+      AliCaloTrackParticle * photon2 =  (AliCaloTrackParticle*) (GetInputAODBranch()->At(jphoton));
       
       // Do analysis only when one of the decays is isolated
       // Run AliAnaParticleIsolation before
       if(fSelectIsolatedDecay)
       {
-        Bool_t isolated2 = ((AliAODPWG4ParticleCorrelation*) photon2)->IsIsolated();
+        Bool_t isolated2 = ((AliCaloTrackParticleCorrelation*) photon2)->IsIsolated();
         if(!isolated1 && !isolated2) continue;
       }
       
@@ -2907,7 +2907,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       }
       
       // Get kinematics and other parameters
-      fMomentum2 = *(photon2->Momentum());
+      fMomentum2 = *(photon2->GetMomentum());
       
       Float_t     e2 = photon2->E();
       Float_t   tof2 = photon2->GetTime();
@@ -3139,7 +3139,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       //
       // Create AOD for analysis
       //
-      AliAODPWG4Particle pi0 = AliAODPWG4Particle(fMomentum);
+      AliCaloTrackParticle pi0 = AliCaloTrackParticle(fMomentum);
       
       if     ( (GetNeutralMesonSelection()->GetParticle()).Contains("Pi0") ) pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
       else if( (GetNeutralMesonSelection()->GetParticle()).Contains("Eta") ) pi0.SetIdentifiedParticleType(AliCaloPID::kEta);
@@ -3218,14 +3218,14 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
   // Do the loop, first calo, second CTS
   for(Int_t iphoton = 0; iphoton < GetInputAODBranch()->GetEntriesFast(); iphoton++)
   {
-    AliAODPWG4Particle * photon1 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(iphoton));
-    fMomentum1 = *(photon1->Momentum());
+    AliCaloTrackParticle * photon1 =  (AliCaloTrackParticle*) (GetInputAODBranch()->At(iphoton));
+    fMomentum1 = *(photon1->GetMomentum());
     
     // Do analysis only when one of the decays is isolated
     // Run AliAnaParticleIsolation before
     if(fSelectIsolatedDecay)
     {
-      Bool_t isolated1 = ((AliAODPWG4ParticleCorrelation*) photon1)->IsIsolated();
+      Bool_t isolated1 = ((AliCaloTrackParticleCorrelation*) photon1)->IsIsolated();
       if(!isolated1) continue;
     }
     
@@ -3248,7 +3248,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
     
     for(Int_t jphoton = 0; jphoton < nCTS; jphoton++)
     {
-      AliAODPWG4Particle * photon2 =  (AliAODPWG4Particle*) (inputAODGammaConv->At(jphoton));
+      AliCaloTrackParticle * photon2 =  (AliCaloTrackParticle*) (inputAODGammaConv->At(jphoton));
       
       Int_t evtIndex = 0;
       if(GetMixedEvent())
@@ -3257,7 +3257,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         if(TMath::Abs(GetVertex(evtIndex)[2]) > GetZvertexCut()) continue ;  //vertex cut
       }
       
-      fMomentum2 = *(photon2->Momentum());
+      fMomentum2 = *(photon2->GetMomentum());
       
       fMomentum = fMomentum1+fMomentum2;
       
@@ -3286,7 +3286,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       if(IsDataMC())
       {
         Int_t	label2 = photon2->GetLabel();
-        if ( label2 >= 0 ) photon2->SetTag(GetMCAnalysisUtils()->CheckOrigin(label2, GetMC()));
+        if ( label2 >= 0 ) photon2->SetTag(GetMCAnalysisUtils()->CheckOrigin(label2, GetMC(),
+                                                                             GetReader()->GetNameOfMCEventHederGeneratorToAccept()));
         
         HasPairSameMCMother(photon1->GetLabel(), photon2->GetLabel(),
                             photon1->GetTag()  , photon2->GetTag(),
@@ -3370,7 +3371,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
       //
       // Create AOD for analysis
       //
-      AliAODPWG4Particle pi0 = AliAODPWG4Particle(fMomentum);
+      AliCaloTrackParticle pi0 = AliCaloTrackParticle(fMomentum);
       
       if     ( (GetNeutralMesonSelection()->GetParticle()).Contains("Pi0") ) pi0.SetIdentifiedParticleType(AliCaloPID::kPi0);
       else if( (GetNeutralMesonSelection()->GetParticle()).Contains("Eta") ) pi0.SetIdentifiedParticleType(AliCaloPID::kEta);
@@ -3478,7 +3479,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     Int_t tag	= 0 ;
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC());
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC(),
+                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept());
       AliDebug(1,Form("Origin of candidate %d",tag));
     }
     
@@ -3808,7 +3810,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     //------------------------
     // Create AOD for analysis
     
-    AliAODPWG4Particle aodpi0 = AliAODPWG4Particle(fMomentum);
+    AliCaloTrackParticle aodpi0 = AliCaloTrackParticle(fMomentum);
     aodpi0.SetLabel(mesonLabel);
     
     // Set the indeces of the original caloclusters
@@ -3861,7 +3863,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    AliAODPWG4Particle* pi0 =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
+    AliCaloTrackParticle* pi0 =  (AliCaloTrackParticle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = pi0->GetIdentifiedParticleType();
     
     if( ( pdg != AliCaloPID::kPi0 && pdg != AliCaloPID::kEta ) ) continue;

@@ -1,6 +1,11 @@
+#include <vector>
+
 #include <TObject.h>
 #include <TClonesArray.h>
 #include <TH2.h>
+#include <TVector3.h>
+#include <TMath.h>
+
 #include <AliLog.h>
 #include <AliPHOSGeometry.h>
 #include <AliVEvent.h>
@@ -9,9 +14,12 @@
 #include <AliVCaloTrigger.h>
 #include <AliVCluster.h>
 #include <AliCaloPhoton.h>
+#include <AliOADBContainer.h>
 
 #include "AliPHOSClusterCuts.h"
 #include "AliPHOSTriggerHelper.h"
+
+using namespace std;
 
 // Author: Daiki Sekihata (Hiroshima University)
 ClassImp(AliPHOSTriggerHelper)
@@ -23,13 +31,19 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
   fXmax(3),
   fZmin(-3),
   fZmax(3),
+  fMatchingDeltaR(0.020),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
 	fTriggerInputL1(-1),//5:1PHL, 6:1PHM, 7:1PHH
 	fTriggerInputL0(-1),//9:0PH0
   fIsMC(kFALSE),
-  fCaloTrigger(0x0)
+  fCaloTrigger(0x0),
+  fIsUserTRUBadMap(kFALSE),
+  fRunNumber(-1),
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE),
+  fDRN(-1)
 {
   //Constructor
   
@@ -39,28 +53,57 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper():
 
 }
 //________________________________________________________________________
-AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t inputL1, Int_t inputL0):
+AliPHOSTriggerHelper::AliPHOSTriggerHelper(TString trigger, Bool_t isMC):
   fPHOSGeo(0x0),
   fXmin(-3),
   fXmax(3),
   fZmin(-3),
   fZmax(3),
+  fMatchingDeltaR(0.020),
   fEvent(0x0),
   fESDEvent(0x0),
   fAODEvent(0x0),
 	fTriggerInputL1(-1),//5:1PHL, 6:1PHM, 7:1PHH
 	fTriggerInputL0(-1),//9:0PH0
   fIsMC(kFALSE),
-  fCaloTrigger(0x0)
+  fCaloTrigger(0x0),
+  fIsUserTRUBadMap(kFALSE),
+  fRunNumber(-1),
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE),
+  fDRN(-1)
 {
   //Constructor
-  
+   
   for(Int_t i=0;i<6;i++){
     fPHOSTRUBadMap[i] = 0x0;
   }
 
-  fTriggerInputL1 = inputL1;
-  fTriggerInputL0 = inputL0;
+  fIsMC = isMC;
+
+  trigger.ToUpper();
+
+  if(trigger.Contains("L1")){
+    fTriggerInputL0 = -1;
+    if(trigger.Contains("L1H"))      fTriggerInputL1 = 7;
+    else if(trigger.Contains("L1M")) fTriggerInputL1 = 6;
+    else if(trigger.Contains("L1L")) fTriggerInputL1 = 5;
+    else                             fTriggerInputL1 = -1;
+    //STU stores top-left fired channel
+    fXmin = -3;
+    fXmax = 0;
+    fZmin = -1;
+    fZmax = 2;
+  }
+  if(trigger.Contains("L0")){
+    fTriggerInputL1 = -1;
+    fTriggerInputL0 = 9;
+    //TRU stores bottom-left fired channel.
+    fXmin = -3;
+    fXmax = 0;
+    fZmin = -3;
+    fZmax = 0;
+  }
 
   if(fTriggerInputL1 > 0 && fTriggerInputL0 > 0){
     AliError("Both L1 and L0 are selected. Analyzer must select either L1 or L0. L1 has higher priority in this class.");
@@ -68,86 +111,161 @@ AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t inputL1, Int_t inputL0):
 
 }
 //________________________________________________________________________
-AliPHOSTriggerHelper::~AliPHOSTriggerHelper()
+AliPHOSTriggerHelper::AliPHOSTriggerHelper(Int_t L1triggerinput, Int_t L0triggerinput, Bool_t isMC):
+  fPHOSGeo(0x0),
+  fXmin(-3),
+  fXmax(3),
+  fZmin(-3),
+  fZmax(3),
+  fMatchingDeltaR(0.020),
+  fEvent(0x0),
+  fESDEvent(0x0),
+  fAODEvent(0x0),
+	fTriggerInputL1(-1),//5:1PHL, 6:1PHM, 7:1PHH
+	fTriggerInputL0(-1),//9:0PH0
+  fIsMC(kFALSE),
+  fCaloTrigger(0x0),
+  fIsUserTRUBadMap(kFALSE),
+  fRunNumber(-1),
+  fUseDeltaRMatching(kFALSE),
+  fApplyTOFCut(kFALSE),
+  fDRN(-1)
 {
-
+  //Constructor
+   
   for(Int_t i=0;i<6;i++){
-    if(fPHOSTRUBadMap[i]) delete fPHOSTRUBadMap[i];
+    fPHOSTRUBadMap[i] = 0x0;
   }
 
+  fIsMC = isMC;
+
+  if(L1triggerinput > 0){
+    fTriggerInputL1 = L1triggerinput;
+    fTriggerInputL0 = -1;
+    //STU stores top-left fired channel
+    fXmin = -3;
+    fXmax = 0;
+    fZmin = -1;
+    fZmax = 2;
+  }
+  else if(L0triggerinput > 0){
+    fTriggerInputL1 = -1;
+    fTriggerInputL0 = L0triggerinput;
+    //TRU stores bottom-left fired channel.
+    fXmin = -3;
+    fXmax = 0;
+    fZmin = -3;
+    fZmax = 0;
+  }
+
+  if(fTriggerInputL1 > 0 && fTriggerInputL0 > 0){
+    AliError("Both L1 and L0 are selected. Analyzer must select either L1 or L0. L1 has higher priority in this class.");
+  }
+
+  if(fTriggerInputL1 < 0 && fTriggerInputL0 < 0){
+    AliError("Neither L1 nor L0 are selected. Analyzer must select either L1 or L0. L1 has higher priority in this class.");
+  }
 
 
 }
 //________________________________________________________________________
-Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
+AliPHOSTriggerHelper::~AliPHOSTriggerHelper()
 {
-  AliInfo(Form("Your choice L1:%d , L0:%d",fTriggerInputL1,fTriggerInputL0));
 
+  for(Int_t i=0;i<6;i++){
+    if(fPHOSTRUBadMap[i]){
+      delete fPHOSTRUBadMap[i];
+      fPHOSTRUBadMap[i] = 0x0;
+    }
+  }
+
+}
+//________________________________________________________________________
+Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts, Double_t Emin, Double_t ETrigger, Bool_t isCoreUsed)
+{
   fEvent    = dynamic_cast<AliVEvent*>(event);
   fESDEvent = dynamic_cast<AliESDEvent*>(event);
   fAODEvent = dynamic_cast<AliAODEvent*>(event);
   Int_t run = fEvent->GetRunNumber();
 
-  //if L1 trigger is used, L1 has higher priority
-  Bool_t IsPHI7fired = kFALSE;
-
-  if(fTriggerInputL1 > 0)
-    IsPHI7fired = event->GetHeader()->GetL1TriggerInputs() & 1 << fTriggerInputL1 - 1;//trigger input -1
-  else if(fTriggerInputL0 > 0)
-    IsPHI7fired = event->GetHeader()->GetL0TriggerInputs() & 1 << fTriggerInputL0 - 1;//trigger input -1
-  else{
-    AliInfo("Which PHOS triggered data do you analyze? Please set trigger input (L0 or L1).");
-    return kFALSE;
+  if(fIsMC && fDRN > 0){
+    run = fDRN;
+    AliInfo(Form("A dummy run number is set. run number = %d",run));
   }
-
-  if(!IsPHI7fired){
-    if(fTriggerInputL1 > 0)      AliInfo(Form("Your choice of L1 trigger input %d did not fire.",fTriggerInputL1));
-    else if(fTriggerInputL0 > 0) AliInfo(Form("Your choice of L0 trigger input %d did not fire.",fTriggerInputL0));
-    return kFALSE;
-  }
-
-  if(fTriggerInputL1 > 0)      AliInfo(Form("Your choice of L1 trigger input %d fired.",fTriggerInputL1));
-  else if(fTriggerInputL0 > 0) AliInfo(Form("Your choice of L0 trigger input %d fired.",fTriggerInputL0));
-
-  TString trigClasses = event->GetFiredTriggerClasses();
-  if(245917 <= run && run <= 246994){//LHC15o
-    if(!fIsMC && fTriggerInputL1 == 7 && !trigClasses.Contains("CINT7PHH")) return kFALSE;
-    if(!fIsMC && fTriggerInputL1 == 6 && !trigClasses.Contains("CPER7PHM")) return kFALSE;
-  }
-
-  if(fTriggerInputL1 > 0) AliInfo(Form("Your choice of L1 trigger input %d matches with fired trigger classes : %s",fTriggerInputL1,trigClasses.Data()));
 
   if(run<209122) //Run1
     fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP");
   else
     fPHOSGeo = AliPHOSGeometry::GetInstance("Run2");
 
+  //SetPHOSTRUBadmaps
+  if(fRunNumber != run){
+    fRunNumber = run;
+
+    if(!fIsUserTRUBadMap){
+      AliOADBContainer badmapContainer(Form("phosTriggerBadMap"));
+      badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSTrigBadMaps.root","phosTriggerBadMap");
+      TObjArray *maps = (TObjArray*)badmapContainer.GetObject(run,"phosTriggerBadMap");
+      if(!maps) AliError(Form("Can not read Trigger Bad map for run %d.",run));
+      else{
+        AliInfo(Form("Setting PHOS Trigger bad map with name %s.",maps->GetName()));
+        for(Int_t mod=0; mod<6;mod++){
+          if(fPHOSTRUBadMap[mod]){
+            delete fPHOSTRUBadMap[mod];
+            fPHOSTRUBadMap[mod] = 0x0;
+          }
+          TH2I * h = (TH2I*)maps->At(mod);
+          if(h) fPHOSTRUBadMap[mod] = new TH2I(*h);
+        }
+      }
+    }
+  }
+
   fCaloTrigger = (AliVCaloTrigger*)event->GetCaloTrigger("PHOS"); 
   fCaloTrigger->Reset();
+
+  if(fIsMC){
+    //please call this line after AliVCaloTrigger and PHOSGeometry and  TRU bad maps are prepared.
+      AliInfo("This is MC analysis. Always accept event.");
+     return kTRUE;
+  }
+
+  //if L1 trigger is used, L1 has higher priority
+  Bool_t IsPHI7fired = kFALSE;
+
+  if(fTriggerInputL1 > 0)
+    IsPHI7fired = event->GetHeader()->GetL1TriggerInputs() & 1 << (fTriggerInputL1 - 1);//trigger input -1
+  else if(fTriggerInputL0 > 0)
+    IsPHI7fired = event->GetHeader()->GetL0TriggerInputs() & 1 << (fTriggerInputL0 - 1);//trigger input -1
+  else{
+    AliInfo("Which PHOS triggered data do you analyze? Please set trigger input (L0 or L1[H,M,L]).");
+    return kFALSE;
+  }
+
+  if(!IsPHI7fired) return kFALSE;
+
+  if(fTriggerInputL1 > 0)      AliInfo(Form("Your choice of L1 trigger input %d fired.",fTriggerInputL1));
+  else if(fTriggerInputL0 > 0) AliInfo(Form("Your choice of L0 trigger input %d fired.",fTriggerInputL0));
 
   const Int_t Nfired = fCaloTrigger->GetEntries();
   AliInfo(Form("%d TRU patches fired in PHOS.",Nfired));
 
-  Int_t multClust = 0;
   TClonesArray *array = (TClonesArray*)fEvent->FindListObject("PHOSClusterArray");
   if(array){
     AliInfo("PHOSClusterArray is found!");
-    multClust = array->GetEntriesFast();
   }
   else{
-    AliInfo("PHOSClusterArray is NOT found!");
+    AliInfo("PHOSClusterArray is NOT found! return kFALSE");
     return kFALSE;
   }
-  AliVCaloCells *cells = dynamic_cast<AliVCaloCells*>(fEvent->GetPHOSCells());
+
+  //AliVCaloCells *cells = dynamic_cast<AliVCaloCells*>(fEvent->GetPHOSCells());//only for maxabsid
 
   Int_t trgrelId[4]={};
   Int_t tmod=0; //"Online" module number
   Int_t trgabsId=0; //bottom-left 4x4 edge cell absId [1-64], [1-56]
-  Int_t trgmodule=0,trgcellx=0,trgcellz=0;
-  Int_t maxId=0;
   Int_t relId[4]={};
-  Int_t module=0,cellx=0,cellz=0;
-  AliVCluster *clu1;
+  Float_t position[3] = {};
 
   Int_t L1=-999;
   if(fTriggerInputL1 > 0){
@@ -156,47 +274,60 @@ Bool_t AliPHOSTriggerHelper::IsPHI7(AliVEvent *event, AliPHOSClusterCuts *cuts)
     else if(fTriggerInputL1 == 5) L1 = 2;//L1 low
   }
   else if(fTriggerInputL0 > 0){
-    if(fTriggerInputL0 == 9) L1 = -1;//L0
+    L1 = -1;//L0
   }
+
+  Double_t energy = 0;
 
   while(fCaloTrigger->Next()){
     // L1 threshold: -1-L0, 0-PHH, 1-PHM, 2-PHL
 
     if(fCaloTrigger->GetL1TimeSum() != L1){
-      AliInfo(Form("This patch fired as %d, which does not match with your choice %d.",fCaloTrigger->GetL1TimeSum(),L1));
+      //AliInfo(Form("This patch fired as %d, which does not match with your choice %d.",fCaloTrigger->GetL1TimeSum(),L1));
       continue;
     }
-    AliInfo(Form("This patch fired as %d",fCaloTrigger->GetL1TimeSum()));
+    AliInfo(Form("This patch fired as %d.",fCaloTrigger->GetL1TimeSum()));
     fCaloTrigger->GetPosition(tmod,trgabsId);//tmod is online module numbering. i.e., tmod=1 means half module.
-
-    //cout << "tmod = "<< tmod << " , trgabsId = " << trgabsId << endl;
 
     fPHOSGeo->AbsToRelNumbering(trgabsId,trgrelId);
     //for offline numbering, relId should be used.
 
-    trgmodule = trgrelId[0];
-    trgcellx  = trgrelId[2];
-    trgcellz  = trgrelId[3];
+    AliInfo(Form("Fired trigger channel : M%d X%d Z%d",trgrelId[0],trgrelId[2],trgrelId[3]));
+    //if(!IsGoodTRUChannel("PHOS",trgrelId[0],trgrelId[2],trgrelId[3])) return kFALSE;
 
-    if(trgmodule == 4) continue;
-
+    Int_t multClust = array->GetEntriesFast();
     for(Int_t i=0;i<multClust;i++){
       AliCaloPhoton *ph = (AliCaloPhoton*)array->At(i);
-      clu1 = (AliVCluster*)ph->GetCluster();
       if(!cuts->AcceptPhoton(ph)) continue;
-      if(!ph->IsTOFOK()) continue;
+      if(fApplyTOFCut && !ph->IsTOFOK()) continue;
 
-      Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
+      energy = ph->Energy();
+      if(isCoreUsed) energy = (ph->GetMomV2())->Energy();
 
-      fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
-      module = relId[0];
-      cellx  = relId[2];
-      cellz  = relId[3];
+      //printf("cluster  E = %e GeV\n",energy);
+      if(energy < Emin) continue;
+      if(energy < ETrigger) continue;
 
-      if(module == 4) continue;
+      //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();//only for maxabsid
+      //Int_t maxAbsId = FindHighestAmplitudeCellAbsId(clu1,cells);
+      //fPHOSGeo->AbsToRelNumbering(maxAbsId,relId);
 
-      if(IsMatched(trgrelId,relId) && IsGoodTRUChannel("PHOS",trgrelId[0],trgrelId[2],trgrelId[3])) return kTRUE;
+      position[0] = ph->EMCx();
+      position[1] = ph->EMCy();
+      position[2] = ph->EMCz();
 
+      relId[0] = 0; relId[1] = 0; relId[2] = 0; relId[3] = 0;
+      TVector3 global1(position);
+      fPHOSGeo->GlobalPos2RelId(global1,relId);
+
+      //printf("cluster positoin M%d X%d Z%d and E = %e GeV\n",relId[0],relId[2],relId[3],energy);
+
+      if(fUseDeltaRMatching){
+        if(IsMatchedDeltaR(trgrelId,global1)) return kTRUE;
+      }
+      else{
+        if(IsMatched(trgrelId,relId)) return kTRUE;
+      }
     }//end of fired trigger channel loop
 
   }
@@ -210,14 +341,44 @@ Bool_t AliPHOSTriggerHelper::IsMatched(Int_t *trgrelid, Int_t *clurelid)
   Int_t diffx = trgrelid[2] - clurelid[2];
   Int_t diffz = trgrelid[3] - clurelid[3];
 
-  if(trgrelid[0] != clurelid[0])     return kFALSE; // different modules!
+  if(trgrelid[0] != clurelid[0])     return kFALSE; // different modules!//be carefull! STU kindly detects high energy hits on the border beween 2 modules.
   if(diffx < fXmin || fXmax < diffx) return kFALSE; // X-distance too large!
   if(diffz < fZmin || fZmax < diffz) return kFALSE; // Z-distance too large!
+  //if(fTriggerInputL1 < 0 && (WhichTRU(trgrelid[2],trgrelid[3]) != WhichTRU(clurelid[2],clurelid[3]))) return kFALSE;// different TRU in case of L0.//not needed because L0 can detect very high energy photon at the border.
 
-  AliInfo(Form("Accepted : diffx = %d , diffz = %d | fXmin = %d , fZmin = %d , fXmax = %d , fZmax = %d.\n",diffx,diffz,fXmin,fZmin,fXmax,fZmax));
+  if(!IsGoodTRUChannel("PHOS",trgrelid[0],trgrelid[2],trgrelid[3])) return kFALSE;
 
-  //if(WhichTRU(trgrelid[2],trgrelid[3]) != WhichTRU(clurelid[2],clurelid[3])) return kFALSE;// different TRU.
+  AliInfo(Form("Accepted : diffx = %d , diffz = %d | fXmin = %d , fZmin = %d , fXmax = %d , fZmax = %d.",diffx,diffz,fXmin,fZmin,fXmax,fZmax));
+  return kTRUE;
+}
+//________________________________________________________________________
+Bool_t AliPHOSTriggerHelper::IsMatchedDeltaR(Int_t *trgrelid, TVector3 position)
+{
+  //Returns kTRUE if cluster position (center of gravity) is close to fired TRU channel.
+  Float_t x = 0;
+  Float_t y = 0;
+  fPHOSGeo->RelPosInModule(trgrelid,x,y); 
+  TVector3 trgglobal;
+  fPHOSGeo->Local2Global(trgrelid[0],x,y,trgglobal);
+  Double_t eta_trigger = trgglobal.Eta();
+  Double_t phi_trigger = trgglobal.Phi();
+  if(phi_trigger < 0) phi_trigger += TMath::TwoPi();
+ 
+  Int_t clurelid[4] = {}; 
+  fPHOSGeo->GlobalPos2RelId(position,clurelid);
+  Double_t eta_cluster = position.Eta();
+  Double_t phi_cluster = position.Phi();
+  if(phi_cluster < 0) phi_cluster += TMath::TwoPi();
 
+  Double_t DeltaR = TMath::Sqrt( TMath::Power(eta_trigger - eta_cluster,2) +  TMath::Power(phi_trigger - phi_cluster,2) );
+  if(DeltaR > fMatchingDeltaR) return kFALSE;
+
+  if(trgrelid[0] != clurelid[0])     return kFALSE; // different modules!//be carefull! STU kindly detects high energy hits on the border beween 2 modules.
+  if(fTriggerInputL1 < 0 &&  (WhichTRU(trgrelid[2],trgrelid[3]) != WhichTRU(clurelid[2],clurelid[3]))) return kFALSE;// different TRU in case of L0.
+
+  if(!IsGoodTRUChannel("PHOS",trgrelid[0],trgrelid[2],trgrelid[3])) return kFALSE;
+
+  AliInfo(Form("Accepted : DeltaR = %e | Matching criterion is less than %4.3f",DeltaR,fMatchingDeltaR));
   return kTRUE;
 }
 //________________________________________________________________________
@@ -312,5 +473,102 @@ Bool_t AliPHOSTriggerHelper::IsGoodTRUChannel(const char * det, Int_t mod, Int_t
   return kTRUE ;
 }
 //________________________________________________________________________
+Bool_t AliPHOSTriggerHelper::IsOnActiveTRUChannel(AliCaloPhoton *ph)
+{
+  //Check if this channel belogs to the good ones
+  //this function is used to check cluster hit position is on active TRU channel,
+  //and to restrict hit acceptance where both FEE and TRU channels are active in trigger analysis
+  //matched or non-matched do not matter here, but IsGoodTRUChannel is called for the convinience.
+
+  Float_t position[3] = {};
+  position[0] = ph->EMCx();
+  position[1] = ph->EMCy();
+  position[2] = ph->EMCz();
+
+  Int_t relId[4] = {};
+  TVector3 global1(position);
+  fPHOSGeo->GlobalPos2RelId(global1,relId);
+  
+  Int_t module = relId[0];
+  Int_t cellx  = relId[2];
+  Int_t cellz  = relId[3];
+
+  //convert (cellx,cellz) in FEE to (TRUchX,TRUchZ) in TRU.
+
+  if(fTriggerInputL1 > 0){//L1 trigger analysis
+    if(cellx %2 == 0) cellx -= 1;
+    if(cellz %2 == 1) cellz += 1;
+  }
+  else if(fTriggerInputL0 >0){//L0 trigger analysis
+    //note that 2D TRU bad maps are filled in odd number bins.(1,1) (1,3) ... (55,53) (55,55)
+    if(cellx %2 == 0) cellx -= 1;
+    if(cellz %2 == 0) cellz -= 1;
+  }
+
+  return IsGoodTRUChannel("PHOS",module,cellx,cellz);
+
+}
+//________________________________________________________________________
+Double_t AliPHOSTriggerHelper::GetDistanceToClosestTRUChannel(AliCaloPhoton *ph)
+{
+  Float_t position[3] = {};
+  position[0] = ph->EMCx();
+  position[1] = ph->EMCy();
+  position[2] = ph->EMCz();
+  TVector3 global1(position); 
+  Double_t eta_cluster = global1.Eta();
+  Double_t phi_cluster = global1.Phi();
+  if(phi_cluster < 0) phi_cluster += TMath::TwoPi();
+
+  Int_t trgrelid[4]={};
+  Int_t tmod=0; //"Online" module number
+  Int_t trgabsId=0; //bottom-left 4x4 edge cell absId [1-64], [1-56]
+
+  vector<Double_t> vR;
+
+  Int_t L1=-999;
+  if(fTriggerInputL1 > 0){
+    if     (fTriggerInputL1 == 7) L1 = 0;//L1 high
+    else if(fTriggerInputL1 == 6) L1 = 1;//L1 medium
+    else if(fTriggerInputL1 == 5) L1 = 2;//L1 low
+  }
+  else if(fTriggerInputL0 > 0){
+    L1 = -1;//L0
+  }
+
+  fCaloTrigger->Reset();
+
+  while(fCaloTrigger->Next()){
+    // L1 threshold: -1-L0, 0-PHH, 1-PHM, 2-PHL
+
+    if(fCaloTrigger->GetL1TimeSum() != L1){
+      //AliInfo(Form("This patch fired as %d, which does not match with your choice %d.",fCaloTrigger->GetL1TimeSum(),L1));
+      continue;
+    }
+    fCaloTrigger->GetPosition(tmod,trgabsId);//tmod is online module numbering. i.e., tmod=1 means half module.
+
+    fPHOSGeo->AbsToRelNumbering(trgabsId,trgrelid);//for offline numbering, relId should be used.
+    if(!IsGoodTRUChannel("PHOS",trgrelid[0],trgrelid[2],trgrelid[3])) continue;
+
+    Float_t x = 0;
+    Float_t y = 0;
+    fPHOSGeo->RelPosInModule(trgrelid,x,y); 
+    TVector3 trgglobal;
+    fPHOSGeo->Local2Global(trgrelid[0],x,y,trgglobal);
+    Double_t eta_trigger = trgglobal.Eta();
+    Double_t phi_trigger = trgglobal.Phi();
+    if(phi_trigger < 0) phi_trigger += TMath::TwoPi();
+
+    Double_t DeltaR = TMath::Sqrt( TMath::Power(eta_trigger - eta_cluster,2) +  TMath::Power(phi_trigger - phi_cluster,2) );
+    vR.push_back(DeltaR);
+
+  }//end of trigger loop
+
+  if(vR.size() != 0){
+    Double_t min = *min_element(vR.begin(),vR.end());
+    return min;
+  }
+  else return 999;
+}
 //________________________________________________________________________
 //________________________________________________________________________

@@ -91,6 +91,8 @@ public:
   TH1D *Ratio();
 
   virtual TList *GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoAvgSepCorrFctn(*this); }
+
   void Write();
   void SetPairType(AliFemtoPairType pairtype);
 

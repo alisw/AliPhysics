@@ -39,12 +39,12 @@
 #include "AliDetectorTagCuts.h"
 #include "AliEventTagCuts.h"
 #include "AliAnalysisDataContainer.h"
+#include "AliAnalysisAlien.h"
 
 // PHYSICS includes
 #include "AliPhysicsSelectionTask.h"
 #include "AliPhysicsSelection.h"
-#include "AliBackgroundSelection.h"
-#include "AliCentralitySelectionTask.h"
+#include "AliMultSelectionTask.h"
 #include "AliAnalysisTaskMuonResolution.h"
 
 // MUON includes
@@ -64,10 +64,10 @@
 
 #endif
 
-enum {kLocal, kInteractif_xml, kInteractif_ESDList, kProof};
+enum {kLocal, kInteractif_xml, kInteractif_ESDList, kProof, kGrid, kTerminate};
 Int_t nDE = 200;
 
-Bool_t  Resume(Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[10],
+Bool_t  Resume(Int_t mode, Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[10],
 	       Double_t clusterResNBErr[10], Double_t clusterResBErr[10],
 	       Bool_t shiftHalfCh, Double_t halfChShiftNB[20], Double_t halfChShiftB[20],
 	       Double_t halfChShiftNBErr[20], Double_t halfChShiftBErr[20],
@@ -75,6 +75,9 @@ Bool_t  Resume(Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB
 	       TGraphErrors* clusterResXVsStep[10], TGraphErrors* clusterResYVsStep[10],
 	       TGraphErrors* halfChShiftXVsStep[20], TGraphErrors* halfChShiftYVsStep[20]);
 void    LoadAlirootOnProof(TString& aaf, TString rootVersion, TString aliphysicsVersion, Int_t iStep);
+void CreateAlienHandler(TString runMode, TString& aliphysicsVersion, TString& runListName,
+                        TString &dataDir, TString &dataPattern, TString &outDir, Int_t iStep,
+                        TString runFormat, Int_t maxFilesPerJob, Int_t maxMergeFiles, Int_t maxMergeStages);
 AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool_t selectPhysics, Bool_t selectTrigger,
                                                    Bool_t matchTrig, Bool_t applyAccCut, Bool_t applyPDCACut,
                                                    Double_t minMomentum, Double_t minPt, Bool_t isMC, Bool_t correctForSystematics,
@@ -94,7 +97,10 @@ TChain* CreateChainFromESDList(const char *esdList);
 TChain* CreateChain(Int_t mode, TString input);
 
 //______________________________________________________________________________
-void MuonResolution(TString smode, TString inputFileName, TString rootVersion, TString aliphysicsVersion, Int_t nSteps,
+void MuonResolution(TString smode, TString inputFileName, Int_t nSteps,
+                    TString rootVersion, TString aliphysicsVersion,
+                    TString dataDir, TString dataPattern, TString runFormat, TString outDir,
+                    Int_t maxFilesPerJob, Int_t maxMergeFiles, Int_t maxMergeStages,
 		    Bool_t selectPhysics, Bool_t selectTrigger, Bool_t matchTrig, Bool_t applyAccCut, Bool_t applyPDCACut,
 		    Double_t minMomentum, Double_t minPt, Bool_t isMC, Bool_t correctForSystematics, Int_t extrapMode,
 		    Bool_t shiftHalfCh, Bool_t shiftDE, Int_t nevents)
@@ -181,7 +187,7 @@ void MuonResolution(TString smode, TString inputFileName, TString rootVersion, T
     cout<<"Above files already exist in the current directory. [d=delete, r=resume, e=exit] "<<flush;
     while (remove != 'd' && remove != 'r' && remove != 'e') cin>>remove;
     if (remove == 'y') gSystem->Exec("rm -f chamberResolution_step*[0-9].root");
-    else if (remove == 'r' && !Resume(firstStep, clusterResNB, clusterResB, clusterResNBErr, clusterResBErr,
+    else if (remove == 'r' && !Resume(mode, firstStep, clusterResNB, clusterResB, clusterResNBErr, clusterResBErr,
 				      shiftHalfCh, halfChShiftNB, halfChShiftB, halfChShiftNBErr, halfChShiftBErr,
 				      shiftDE, deShiftNB, deShiftB, clusterResXVsStep, clusterResYVsStep,
 				      halfChShiftXVsStep, halfChShiftYVsStep)) return;
@@ -190,23 +196,22 @@ void MuonResolution(TString smode, TString inputFileName, TString rootVersion, T
   
   // Create input object
   TObject* inputObj = 0x0;
-  if (mode == kProof) {
-    if (inputFileName.EndsWith(".root")) {
-      TFile *inFile = TFile::Open(inputFileName.Data(),"READ");
-      if (inFile && inFile->IsOpen()) {
-        inputObj = dynamic_cast<TFileCollection*>(inFile->FindObjectAny("dataset"));
-        inFile->Close();
-      }
-    } else inputObj = new TObjString(inputFileName);
-  } else inputObj = CreateChain(mode, inputFileName);
-  if (!inputObj) return;
-  
+  if (mode != kGrid && mode != kTerminate) {
+    if (mode == kProof) {
+      if (inputFileName.EndsWith(".root")) {
+        TFile *inFile = TFile::Open(inputFileName.Data(),"READ");
+        if (inFile && inFile->IsOpen()) {
+          inputObj = dynamic_cast<TFileCollection*>(inFile->FindObjectAny("dataset"));
+          inFile->Close();
+        }
+      } else inputObj = new TObjString(inputFileName);
+    } else inputObj = CreateChain(mode, inputFileName);
+    if (!inputObj) return;
+  }
+
   // loop over step
   for (Int_t iStep = firstStep; iStep < nSteps; iStep++) {
     cout<<"step "<<iStep+1<<"/"<<nSteps<<endl;
-    
-    // Connect to proof if needed and prepare environment
-    if (mode == kProof) LoadAlirootOnProof(smode, rootVersion, aliphysicsVersion, iStep-firstStep);
     
     // create the analysis train
     AliAnalysisTaskMuonResolution *muonResolution = CreateAnalysisTrain(mode, iStep, selectPhysics, selectTrigger, matchTrig,
@@ -215,11 +220,32 @@ void MuonResolution(TString smode, TString inputFileName, TString rootVersion, T
                                                         shiftHalfCh, halfChShiftNB, halfChShiftB, shiftDE, deShiftNB, deShiftB);
     if (!muonResolution) return;
     
+    // prepare proof or grid environment
+    if (mode == kProof) LoadAlirootOnProof(smode, rootVersion, aliphysicsVersion, iStep-firstStep);
+    else if (mode == kGrid || mode == kTerminate) {
+      if (!gGrid) TGrid::Connect("alien://");
+      TString resultDir = Form("%s/%s/step%d", gGrid->GetHomeDirectory(), outDir.Data(), iStep);
+      if ((smode == "submit" || smode == "full") && AliAnalysisAlien::DirectoryExists(resultDir.Data())) {
+        cout << endl << "Output directory alien://" << resultDir <<" already exist." << endl;
+        cout << "Do you want to continue? [Y/n] " << endl;
+        TString reply = "";
+        reply.Gets(stdin,kTRUE);
+        reply.ToLower();
+        if (reply.BeginsWith("n")) return;
+      }
+      CreateAlienHandler(smode, aliphysicsVersion, inputFileName, dataDir, dataPattern, outDir, iStep,
+                         runFormat, maxFilesPerJob, maxMergeFiles, maxMergeStages);
+    }
+    
     // start analysis
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (mgr->InitAnalysis()) {
       mgr->PrintStatus();
-      if (mode == kProof) {
+      if (mode == kGrid) {
+        mgr->StartAnalysis("grid");
+        if (smode != "terminate") return; // stop here if we don't have yet the result of this step
+      } else if (mode == kTerminate) mgr->StartAnalysis("grid terminate");
+      else if (mode == kProof) {
         if (inputObj->IsA() == TFileCollection::Class())
           mgr->StartAnalysis("proof", static_cast<TFileCollection*>(inputObj), nevents);
         else mgr->StartAnalysis("proof", static_cast<TObjString*>(inputObj)->GetName(), nevents);
@@ -281,6 +307,9 @@ void MuonResolution(TString smode, TString inputFileName, TString rootVersion, T
     delete mgr;
     TObject::SetObjectStat(kFALSE);
     
+    // in grid mode, stop here unless it is the final step
+    if ((mode == kGrid || mode == kTerminate) && iStep != nSteps-1) return;
+    
   }
   
   // copy final results in results.root file
@@ -339,7 +368,7 @@ void MuonResolution(TString smode, TString inputFileName, TString rootVersion, T
 }
 
 //______________________________________________________________________________
-Bool_t Resume(Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[10],
+Bool_t Resume(Int_t mode, Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[10],
 	      Double_t clusterResNBErr[10], Double_t clusterResBErr[10],
 	      Bool_t shiftHalfCh, Double_t halfChShiftNB[20], Double_t halfChShiftB[20],
 	      Double_t halfChShiftNBErr[20], Double_t halfChShiftBErr[20],
@@ -348,6 +377,7 @@ Bool_t Resume(Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[
 	      TGraphErrors* halfChShiftXVsStep[20], TGraphErrors* halfChShiftYVsStep[20])
 {
   /// resume analysis from desired step
+  /// do not remove any step in terminate-only mode
   
   while (kTRUE) {
     
@@ -359,13 +389,13 @@ Bool_t Resume(Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[
     firstStep = step.Atoi();
     
     // restart from scratch if requested
-    if (firstStep == 0) {
+    if (firstStep == 0 && mode != kTerminate) {
       gSystem->Exec("rm -f chamberResolution_step*[0-9].root");
       return kTRUE;
     }
     
     // look for results from the previous step
-    if (gSystem->AccessPathName(Form("chamberResolution_step%d.root", firstStep-1))) {
+    if (firstStep != 0 && gSystem->AccessPathName(Form("chamberResolution_step%d.root", firstStep-1))) {
       cout<<"No result found from the previous step ("<<firstStep-1<<"). Unable to resume from step "<<firstStep<<endl;
       continue;
     }
@@ -426,13 +456,15 @@ Bool_t Resume(Int_t &firstStep, Double_t clusterResNB[10], Double_t clusterResB[
     if (missingInfo) continue;
     
     // keep previous steps and remove the others
-    gSystem->Exec("mkdir __TMP__");
-    for (Int_t iStep = 0; iStep < firstStep; iStep++)
-      if (!gSystem->AccessPathName(Form("chamberResolution_step%d.root", iStep)))
-	gSystem->Exec(Form("mv chamberResolution_step%d.root __TMP__", iStep));
-    gSystem->Exec("rm -f chamberResolution_step*[0-9].root");
-    gSystem->Exec("mv __TMP__/chamberResolution_step*[0-9].root .");
-    gSystem->Exec("rm -rf __TMP__");
+    if (mode != kTerminate) {
+      gSystem->Exec("mkdir __TMP__");
+      for (Int_t iStep = 0; iStep < firstStep; iStep++)
+        if (!gSystem->AccessPathName(Form("chamberResolution_step%d.root", iStep)))
+          gSystem->Exec(Form("mv chamberResolution_step%d.root __TMP__", iStep));
+      gSystem->Exec("rm -f chamberResolution_step*[0-9].root");
+      gSystem->Exec("mv __TMP__/chamberResolution_step*[0-9].root .");
+      gSystem->Exec("rm -rf __TMP__");
+    }
     
     return kTRUE;
   }
@@ -476,6 +508,106 @@ void LoadAlirootOnProof(TString& aaf, TString rootVersion, TString aliphysicsVer
 }
 
 //______________________________________________________________________________
+void CreateAlienHandler(TString runMode, TString& aliphysicsVersion, TString& runListName,
+                        TString &dataDir, TString &dataPattern, TString &outDir, Int_t iStep,
+                        TString runFormat, Int_t maxFilesPerJob, Int_t maxMergeFiles, Int_t maxMergeStages)
+{
+  // Configure the alien plugin
+  AliAnalysisAlien *plugin = new AliAnalysisAlien();
+  
+  // If the run mode is merge, run in mode terminate to merge via jdl
+  // If the run mode is terminate, disable the mergin via jdl
+  Bool_t merge = kTRUE;
+  if (runMode.Contains("terminate")) merge = kFALSE;
+  else if (runMode == "merge") runMode = "terminate";
+  
+  // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
+  plugin->SetRunMode(runMode.Data());
+  
+  // Set the number of input files in test mode
+  plugin->SetNtestFiles(2);
+  
+  // Set versions of used packages
+  plugin->SetAPIVersion("V1.1x");
+  if (!aliphysicsVersion.IsNull()) plugin->SetAliPhysicsVersion(aliphysicsVersion.Data());
+  
+  // Declare input data to be processed
+  plugin->SetGridDataDir(dataDir.Data());
+  plugin->SetDataPattern(dataPattern.Data());
+  ifstream inFile(runListName.Data());
+  TString currRun;
+  if (inFile.is_open())
+  {
+    while (! inFile.eof() )
+    {
+      currRun.ReadLine(inFile,kTRUE); // Read line
+      if(currRun.IsNull()) continue;
+      plugin->AddRunNumber(Form(runFormat.Data(), currRun.Atoi()));
+    }
+  }
+  inFile.close();
+  
+  // Define alien work directory where all files will be copied. Relative to alien $HOME
+  plugin->SetGridWorkingDir(outDir.Data());
+  
+  // Declare alien output directory. Relative to working directory
+  plugin->SetGridOutputDir(Form("step%d",iStep));
+  
+  // Set the ouput directory of each masterjob to the run number
+  plugin->SetOutputToRunNo();
+  
+  // Declare all libraries (other than the default ones for the framework)
+  plugin->SetAdditionalRootLibs("libGui.so libProofPlayer.so libXMLParser.so");
+  
+  // Optionally add include paths
+  plugin->AddIncludePath("-I$ALICE_ROOT/include");
+  plugin->AddIncludePath("-I$ALICE_PHYSICS/include");
+  plugin->AddIncludePath("-I.");
+  
+  // Optionally add packages
+//  plugin->EnablePackage("PWGPPMUONdep.par");
+  
+  // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
+  plugin->SetAnalysisMacro("Resolution.C");
+  plugin->SetExecutable("Resolution.sh");
+  
+  // Optionally set time to live (default 30000 sec)
+  plugin->SetTTL(30000);
+  
+  // Optionally set input format (default xml-single)
+  plugin->SetInputFormat("xml-single");
+  
+  // Optionally modify the name of the generated JDL (default analysis.jdl)
+  plugin->SetJDLName("Resolution.jdl");
+  
+  // Optionally modify job price (default 1)
+  plugin->SetPrice(1);
+  
+  // Optionally modify split mode (default 'se')
+  plugin->SetSplitMode("se");
+  
+  // Optionally modify the maximum number of files per job
+  plugin->SetSplitMaxInputFileNumber(maxFilesPerJob);
+  
+  // Merge via JDL
+  if (merge) plugin->SetMergeViaJDL(kTRUE);
+  
+  // Optionally set the maximum number of files merged together in one stage
+  plugin->SetMaxMergeFiles(maxMergeFiles);
+  
+  // Optionally set the maximum number of merging stages
+  plugin->SetMaxMergeStages(maxMergeStages);
+  
+  // Exclude given output file(s) from registration/merging
+  plugin->SetRegisterExcludes("AnalysisResults.root EventStat_temp.root");
+  
+  // Save the log files
+  plugin->SetKeepLogs();
+  
+  AliAnalysisManager::GetAnalysisManager()->SetGridHandler(plugin);
+}
+
+//______________________________________________________________________________
 AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool_t selectPhysics, Bool_t selectTrigger,
                                                    Bool_t matchTrig, Bool_t applyAccCut, Bool_t applyPDCACut,
                                                    Double_t minMomentum, Double_t minPt, Bool_t isMC, Bool_t correctForSystematics,
@@ -513,10 +645,12 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
   
   // multiplicity/centrality selection
   gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
-  if (!gROOT->ProcessLineFast("AddTaskMultSelection()")) {
-    Error("CreateAnalysisTrain","AliCentralitySelectionTask not created!");
+  AliMultSelectionTask *mult = reinterpret_cast<AliMultSelectionTask*>(gROOT->ProcessLineSync("AddTaskMultSelection()"));
+  if (!mult) {
+    Error("CreateAnalysisTrain","AliMultSelectionTask not created!");
     return 0x0;
   }
+//  mult->SetAlternateOADBforEstimators("LHC15o");
   
   // Muon Resolution analysis
   TString outputFileName = Form("chamberResolution_step%d.root", iStep);
@@ -526,19 +660,21 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
     Error("CreateAnalysisTrain","AliAnalysisTaskMuonResolution not created!");
     return 0x0;
   }
-  /*if (mode == kLocal) muonResolution->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  /*if (mode == kLocal) muonResolution->SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
   else muonResolution->SetDefaultStorage("raw://");*/
-  muonResolution->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2016/OCDB");
+  muonResolution->SetDefaultStorage("raw://");
+//  muonResolution->SetDefaultStorage("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/2017/OCDB");
   if (mode != kProof) muonResolution->ShowProgressBar();
   muonResolution->PrintClusterRes(kTRUE, kTRUE);
   muonResolution->SetStartingResolution(clusterResNB, clusterResB);
   muonResolution->RemoveMonoCathodClusters(kTRUE, kFALSE);
 //  muonResolution->FitResiduals(kFALSE);
 //  muonResolution->ImproveTracks(kTRUE);
-//  muonResolution->ReAlign("", -1, -1, "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC16_realign");
+//  muonResolution->ReAlign("", 1, -1, "alien://folder=/alice/cern.ch/user/h/hupereir/CDB/LHC17g_realign");
 //  muonResolution->ReAlign("", 1, 0, "");
-//  muonResolution->SetAlignStorage("", 5);
+//  muonResolution->SetAlignStorage("", 1);
 //  muonResolution->SetMuonSign(-1);
+//  muonResolution->UseMCLabel();
   
   if (shiftHalfCh) {
     muonResolution->SetHalfChShift(halfChShiftNB, halfChShiftB);
@@ -555,6 +691,7 @@ AliAnalysisTaskMuonResolution* CreateAnalysisTrain(Int_t mode, Int_t iStep, Bool
     AliMuonEventCuts eventCuts("muEventCuts", "muEventCuts");
     eventCuts.SetFilterMask(eventSelectionMask);
     if (selectPhysics) eventCuts.SetPhysicsSelectionMask(AliVEvent::kAny);
+//    if (selectPhysics) eventCuts.SetPhysicsSelectionMask(AliVEvent::kINT7inMUON);
 //    if (selectPhysics) eventCuts.SetPhysicsSelectionMask(AliVEvent::kMuonUnlikeLowPt7);
     if (selectTrigger) eventCuts.SetTrigClassPatterns(eventCuts.GetDefaultTrigClassPatterns());
     muonResolution->SetMuonEventCuts(eventCuts);
@@ -691,9 +828,9 @@ void AddMCHViews(TString smode, TFile* file)
   
   if (  ! AliMpDDLStore::Instance(false) )
   {
-    Warning("AddMCHViews","mapping was not loaded. Loading it from $ALICE_ROOT/OCDB");
+    Warning("AddMCHViews","mapping was not loaded. Loading it from OCDB");
     if (smode == "saf3") AliCDBManager::Instance()->SetDefaultStorage("raw://");
-    else AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    else AliCDBManager::Instance()->SetDefaultStorage("local://$ALIROOT_OCDB_ROOT/OCDB");
     AliCDBManager::Instance()->SetRun(999999999);
   }
   
@@ -784,6 +921,9 @@ Int_t GetMode(TString smode, TString input)
     else if ( input.EndsWith(".txt") ) return kInteractif_ESDList;
     else if ( input.EndsWith(".root") ) return kLocal;    
   } else if (smode == "caf" || smode == "saf" || smode == "saf3") return kProof;
+  else if ((smode == "test" || smode == "offline" || smode == "submit" || smode == "full" ||
+            smode == "merge" || smode == "terminate") && input.EndsWith(".txt")) return kGrid;
+  else if (smode == "terminateonly") return kTerminate;
   return -1;
 }
 

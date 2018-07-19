@@ -55,12 +55,17 @@ public:
     void SetCentralityEstimator(const char *estimator) { fCentralityEstimator = estimator; }
     
     void CheckMCgen(AliAODMCHeader* mcHeader);
+    void GetRawTrackInfo(AliAODTrack* rtrack);
     void SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC);
     void SetThresholdEG2(Int_t threshold) { fThresholdEG2=threshold; };
     void SetThresholdEG1(Int_t threshold) { fThresholdEG1=threshold; };
     void FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta, Double_t emcphi);
     void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
     void GetTrkClsEtaPhiDiff(AliVTrack *t, AliVCluster *v, Double_t &phidiff, Double_t &etadiff);
+    
+    Bool_t  ComparePropWithTPCAna(const AliVVertex *pVtx, AliAODTrack* atrack);
+    void    SetFilterBitOption(Int_t bitOption){fBitOption = bitOption;};
+    
 private:
     enum{
         kAODanalysis = BIT(20),
@@ -96,8 +101,10 @@ private:
     Bool_t fFlagClsTypeEMC;//switch to select EMC clusters
     Bool_t fFlagClsTypeDCAL;//switch to select DCAL clusters
     
-    Int_t fcentMim; // mim. centrality
-    Int_t fcentMax; // max. centrality
+    Int_t   fcentMim; // mim. centrality
+    Int_t   fcentMax; // max. centrality
+    
+    Int_t   fBitOption;// filter bit option - Global or ITSconstrained
     
     TString fCentralityEstimator;         // Centrality Estimator
     
@@ -184,8 +191,22 @@ private:
     TH1F        *fInvmassLS;//!Invmass of LS
     TH2F        *fInvmassULS_MCtrue;//!Invmass of ULS
     THnSparse   *fInvmassPi0Dalitz;//!Invmass of ULS
-    TH2F        *fMCcheckMother;
-    TH2F        *fMCneutral;
+    TH2F        *fHistRawNits;//!
+    TH2F        *fHistRawNtpc;//!
+    TH2F        *fHistRawCrosstpc;//!
+    TH2F        *fHistRawNitschi2;//!
+    TH2F        *fHistRawNtpcchi2;//!
+    TH2F        *fHistRawNitsPhi;//!
+    TH2F        *fHistRawNtpcPhi;//!
+    TH2F        *fMCcheckMother;//!
+    TH2F        *fMCneutral;//!
+    TH2F        *fEMCTrkMatch_Phi;//!
+    TH2F        *fEMCTrkMatch_Eta;//!
+    
+    TH1F        *fCompTrackPt;//!
+    TH1F        *fCompTrackPtinEMCreg;//!
+    TH1F        *fCompTrackPtMatch;//!
+    TH1F        *fCompTrackPtMatchwithEMC;//!
     
     THnSparse  *fSparseElectron;//!Electron info
     Double_t *fvalueElectron;//!Electron info

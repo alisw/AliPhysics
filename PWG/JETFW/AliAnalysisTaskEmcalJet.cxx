@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <sstream>
+#include <string>
 #include "AliAnalysisTaskEmcalJet.h"
 
 #include <TClonesArray.h>
@@ -174,7 +176,21 @@ void AliAnalysisTaskEmcalJet::ExecOnce()
   if (!cont->GetArrayName().IsNull()) {
     fJets = cont->GetArray();
     if(!fJets && fJetCollArray.GetEntriesFast()>0) {
-      AliError(Form("%s: Could not retrieve first jet branch!", GetName()));
+      AliErrorStream() << GetName() << ": Could not retrieve first jet branch!\n";
+      std::stringstream foundbranches;
+      bool first(true);
+      for(auto e : *(fInputEvent->GetList())){
+        if(first){
+          // Skip printing a comma on the first time through
+          first = false;
+        }
+        else {
+          foundbranches << ", ";
+        }
+        foundbranches << e->GetName();
+      }
+      std::string fbstring = foundbranches.str();
+      AliErrorStream() << "Found branches: " << fbstring << std::endl;
       fLocalInitialized = kFALSE;
       return;
     }
@@ -239,7 +255,7 @@ Bool_t AliAnalysisTaskEmcalJet::RetrieveEventObjects()
   AliEmcalContainer* cont = 0;
 
   TIter nextJetColl(&fJetCollArray);
-  while ((cont = static_cast<AliEmcalContainer*>(nextJetColl()))) cont->NextEvent();
+  while ((cont = static_cast<AliEmcalContainer*>(nextJetColl()))) cont->NextEvent(InputEvent());
 
   return kTRUE;
 }
@@ -292,7 +308,7 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(EJetType_t jetType, EJ
  * @param[in] n Name of the jet branch
  * @param[in] accType One of the AliEmcalJet::JetAcceptanceType enumeration values (kTPC, kEMCAL, kDCAL, ...),
  * or a combination using bitwise OR: For example, (kEMCAL | kDCAL) will select all jets in either EMCal or DCal.
- * @param[in] radius Resolution parameter (0.2, 0.4, ...)
+ * @param[in] jetRadius Resolution parameter (0.2, 0.4, ...)
  * @return Pointer to the new jet container
  */
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, UInt_t accType, Float_t jetRadius)
@@ -311,7 +327,7 @@ AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, UInt_t 
  * Create new jet container and attach it to the task. This method is usually called in the add task macro.
  * @param[in] n Name of the jet branch
  * @param[in] defaultCutType String that correspond to a possible acceptance cut type
- * @param[in] radius Resolution parameter (0.2, 0.4, ...)
+ * @param[in] jetRadius Resolution parameter (0.2, 0.4, ...)
  * @return Pointer to the new jet container
  */
 AliJetContainer* AliAnalysisTaskEmcalJet::AddJetContainer(const char *n, TString defaultCutType, Float_t jetRadius) {

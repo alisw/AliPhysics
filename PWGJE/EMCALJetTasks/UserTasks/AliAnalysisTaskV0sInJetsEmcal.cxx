@@ -1152,7 +1152,7 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
     fh2QAV0EtaRows[i] = new TH2D(Form("fh2QAV0EtaRows_%d", i), "QA: Daughter Eta vs TPC rows;#eta;TPC rows", 200, -2, 2, 160, 0, 160);
     fh2QAV0PtRows[i] = new TH2D(Form("fh2QAV0PtRows_%d", i), "QA: Daughter Pt vs TPC rows;pt;TPC rows", 100, 0, 10, 160, 0, 160);
     fh2QAV0PhiRows[i] = new TH2D(Form("fh2QAV0PhiRows_%d", i), "QA: Daughter Phi vs TPC rows;#phi;TPC rows", 90, 0, TMath::TwoPi(), 160, 0, 160);
-    fh2QAV0NClRows[i] = new TH2D(Form("fh2QAV0NClRows_%d", i), "QA: Daughter NCl vs TPC rows;findable clusters;TPC rows", 100, 0, 160, 160, 0, 160);
+    fh2QAV0NClRows[i] = new TH2D(Form("fh2QAV0NClRows_%d", i), "QA: Daughter NCl vs TPC rows;findable clusters;TPC rows", 160, 0, 160, 160, 0, 160);
     fh2QAV0EtaNCl[i] = new TH2D(Form("fh2QAV0EtaNCl_%d", i), "QA: Daughter Eta vs NCl;#eta;findable clusters", 200, -2, 2, 160, 0, 160);
 
     fh2QAV0EtaPtK0sPeak[i] = new TH2D(Form("fh2QAV0EtaPtK0sPeak_%d", i), "QA: K0s: Daughter Eta vs V0 pt, peak;track eta;V0 pt", 200, -2, 2, iNBinsPtV0, dPtV0Min, dPtV0Max);
@@ -1470,8 +1470,14 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   fAODIn = dynamic_cast<AliAODEvent*>(InputEvent()); // input AOD
   if(!fAODIn)
   {
-    AliError("No input AOD found!");
-    return kFALSE;
+    AliWarning("Input AOD not available from InputEvent() trying with AODEvent().");
+    // Assume that the AOD is in the general output.
+    fAODIn = AODEvent();
+    if(!fAODIn)
+    {
+      AliError("No input AOD found!");
+      return kFALSE;
+    }
   }
   if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Loading AOD OK");
 

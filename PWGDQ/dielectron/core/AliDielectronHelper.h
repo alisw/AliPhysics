@@ -39,6 +39,7 @@ TVectorD* MakeArbitraryBinning(const char* bins);
 
 void RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, const AliVEvent * const ev=0x0);
 Int_t GetNMothers(const AliMCEvent *ev=0x0, Double_t etaRange=0.9, Int_t pdgMother=-999, Int_t pdgDaughter=-999, Int_t prim=-1);
+  void CountMCtracks(const AliMCEvent *ev, Double_t numbers[11], Int_t pdgMother, Int_t pdgDaughter);
 
 
 }

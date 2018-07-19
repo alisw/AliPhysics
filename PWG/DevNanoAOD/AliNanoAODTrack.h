@@ -121,7 +121,7 @@ public:
 
 
   // Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
-  ULong_t GetStatus() const { AliFatal("Not implemented"); return 0; }
+  ULong64_t GetStatus() const { AliFatal("Not implemented"); return 0; }
   // ULong_t GetFlags() const { return fFlags; }
 
   //  Int_t   GetID() const { return (Int_t)fID; } // FIXME another int (short)
@@ -213,7 +213,7 @@ public:
    Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & UInt_t(GetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()))) != 0);}
   // Bool_t  TestFilterMask(UInt_t filterMask) const {return (Bool_t) ((filterMask & fFilterMap) == filterMask);}
   // void    SetFilterMap(UInt_t i){fFilterMap = i;}
-  // UInt_t  GetFilterMap() const {return fFilterMap;}
+   UInt_t  GetFilterMap() const {return UInt_t(GetVar(AliNanoAODTrackMapping::GetInstance()->GetFilterMap()));}
 
   // const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   // const TBits* GetTPCClusterMapPtr() const {return &fTPCClusterMap;}

@@ -80,6 +80,7 @@ set(SRCS
   AliAnalysisTaskSELc2V0bachelor.cxx
   AliAnalysisTaskSEDvsMultiplicity.cxx
   AliAnalysisTaskCheckHFMCProd.cxx
+  AliAnalysisTaskCheckEvSel.cxx
   AliAnalysisTaskDmesonMCPerform.cxx
   AliAnalysisTaskSELc2pK0sfromAODtracks.cxx
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks.cxx
@@ -112,7 +113,6 @@ set(SRCS
   AliAnalysisTaskSEImproveITS.cxx
   AliAnalysisTaskCombinHF.cxx
   charmFlow/AliEventPlaneResolutionHandler.cxx
-  charmFlow/AliAnalysisTaskSEHFv2.cxx
   charmFlow/AliAnalysisTaskSEHFvn.cxx
   charmFlow/AliAnalysisTaskHFv1.cxx
   charmFlow/AliHFAfterBurner.cxx

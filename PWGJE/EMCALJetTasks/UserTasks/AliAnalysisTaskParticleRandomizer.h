@@ -32,6 +32,7 @@ public:
   void          SetRandomizeInEta(Bool_t val)               {fRandomizeInEta = val;}
   void          SetRandomizeInTheta(Bool_t val)             {fRandomizeInTheta = val;}
   void          SetRandomizeInPt(Bool_t val)                {fRandomizeInPt = val;}
+  void          SetTrackEfficiency(Double_t val)            {fTrackEfficiency = val;}
 
   void          SetPhiMin(Double_t val)                     {fMinPhi = val;}
   void          SetPhiMax(Double_t val)                     {fMaxPhi = val;}
@@ -62,6 +63,7 @@ protected:
   Bool_t              fRandomizeInEta;            /// randomize the particle's position in pseudorap
   Bool_t              fRandomizeInTheta;          /// randomize the particle's position in theta
   Bool_t              fRandomizeInPt;             /// randomize the particle's position in Pt
+  Double_t            fTrackEfficiency;           /// Artificial tracking efficiency factor
 
   Double_t            fMinPhi;                    /// range for phi for randomization
   Double_t            fMaxPhi;                    /// range for phi for randomization
@@ -104,7 +106,7 @@ protected:
   AliAODTrack*        GetAODTrack(AliPicoTrack* track);
 
 
-  ClassDef(AliAnalysisTaskParticleRandomizer, 7);
+  ClassDef(AliAnalysisTaskParticleRandomizer, 8);
 };
 
 #endif

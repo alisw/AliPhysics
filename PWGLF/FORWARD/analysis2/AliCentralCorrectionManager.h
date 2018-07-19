@@ -61,19 +61,6 @@ public:
    * @return Reference to the singleton object 
    */
   static AliCentralCorrectionManager& Instance();
-
-  /** 
-   * Append the content of the file @a addition to the @a destination
-   * file for this manager.  This used TFileMerger::PartialMerge 
-   * 
-   * @param destination Filename of destination storage (in OADB_PATH)
-   * @param addition    Filename of addition. 
-   * 
-   * @return true on success 
-   */
-  virtual Bool_t Append(const TString& addition,
-			const TString& destination="") const;
-
   /** 
    * @return name of the object 
    */

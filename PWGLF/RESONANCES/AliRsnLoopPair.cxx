@@ -249,7 +249,7 @@ Bool_t AliRsnLoopPair::IsTrueMother()
 
    // check #1:
    // daughters have same mother with the right PDG code
-   Int_t commonPDG = fMother.CommonMother();
+   Long_t commonPDG = fMother.CommonMother();
    if (commonPDG != fPairDef->GetMotherPDG()) return kFALSE;
    AliDebugClass(1, "Found a true mother");
 

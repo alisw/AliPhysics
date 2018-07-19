@@ -1,8 +1,10 @@
 /***************************************************************************
-              Anders Knospe - last modified on 26 March 2016
+              Anders Knospe
 
-*** Configuration script for phi analysis of 2015 pp 13-TeV data ***
+*** Configuration script for phi analysis of 2015-2016 pp 13-TeV data ***
 ****************************************************************************/
+
+//Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0);
 
 Bool_t ConfigPhiPP13TeV_PID
 (  
@@ -34,6 +36,12 @@ Bool_t ConfigPhiPP13TeV_PID
 
   Int_t MultBins=aodFilterBit/100;
   aodFilterBit=aodFilterBit%100;
+    
+  Bool_t misIDpion=false;
+  if(customQualityCutsID==1000){
+    customQualityCutsID=1;
+    misIDpion=true;
+  }
 
   Float_t nsigmaKaTPC=fmod(nsigmaKa,1000.);
   Float_t nsigmaKaTOF=(nsigmaKa-fmod(nsigmaKa,1000.))/1000.;
@@ -41,9 +49,13 @@ Bool_t ConfigPhiPP13TeV_PID
 
   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
   if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,aodFilterBit)){
-    //Set custom quality cuts for systematic checks
-    cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kKaon,-1.);
-    cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKaTPC,nsigmaKaTOF);
+     //Set custom quality cuts for systematic checks
+    cutSetQ=new AliRsnCutSetDaughterParticle(Form("cutQ_bit%i",aodFilterBit),
+                                             trkQualityCut,AliRsnCutSetDaughterParticle::kQualityStd2010,AliPID::kKaon,-1.);
+    if(!misIDpion) cutSetK=new AliRsnCutSetDaughterParticle(Form("cutK%i_%2.1fsigma",cutKaCandidate, nsigmaKa),
+                                                            trkQualityCut,cutKaCandidate,AliPID::kKaon,nsigmaKaTPC,nsigmaKaTOF);
+    else cutSetK=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",cutKaCandidate, nsigmaKa),
+                                                  trkQualityCut,cutKaCandidate,AliPID::kPion,nsigmaKaTPC,nsigmaKaTOF);
   }else{
     //use default quality cuts std 2010 with crossed rows TPC
     Bool_t useCrossedRows = 1;
@@ -80,12 +92,21 @@ Bool_t ConfigPhiPP13TeV_PID
 
   Double_t multbins[200];
   int j,nmult=0;
-  for(j=0;j<10;j++){multbins[nmult]=0.0001*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-  for(j=1;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
-  if(triggerMask==AliVEvent::kHighMultV0){multbins[nmult]=1.; nmult++;}
-  else for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+  if(isMC){
+    for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+    for(j=1;j<50;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=5;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=j; nmult++;}
+    for(j=2;j<=20;j++){multbins[nmult]=5.*j; nmult++;}
+  }else if(triggerMask==AliVEvent::kHighMultV0){
+    for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+    for(j=1;j<50;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=5;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
+  }else{
+    for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=j; nmult++;}
+    for(j=2;j<=20;j++){multbins[nmult]=5.*j; nmult++;}
+  }
   
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
@@ -143,7 +164,7 @@ Bool_t ConfigPhiPP13TeV_PID
 
   if(isMC){   
     //get mothers for phi PDG = 333
-    AliRsnMiniOutput* outm=task->CreateOutput(Form("phi_Mother%s", suffix),"SPARSE","MOTHER");
+    AliRsnMiniOutput* outm=task->CreateOutput(Form("phi_Mother%s", suffix),"HIST","MOTHER");
     outm->SetDaughter(0,AliRsnDaughter::kKaon);
     outm->SetDaughter(1,AliRsnDaughter::kKaon);
     outm->SetMotherPDG(333);
@@ -151,12 +172,13 @@ Bool_t ConfigPhiPP13TeV_PID
     outm->SetPairCuts(cutsPair);
     outm->AddAxis(imID,215,0.985,1.2);
     outm->AddAxis(ptID,200,0.,20.);
-    if(!isPP || MultBins) outm->AddAxis(centID,100,0.,100.);
-    else outm->AddAxis(centID,161,-0.5,160.5);
+    outm->AddAxis(centID,nmult,multbins);
+    //if(!isPP || MultBins) outm->AddAxis(centID,100,0.,100.);
+    //else outm->AddAxis(centID,161,-0.5,160.5);
     if (polarizationOpt.Contains("J")) outm->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outm->AddAxis(cttmID,21,-1.,1.);
 
-    AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"SPARSE","MOTHER");
+    AliRsnMiniOutput* outmf=task->CreateOutput(Form("phi_MotherFine%s", suffix),"HIST","MOTHER");
     outmf->SetDaughter(0,AliRsnDaughter::kKaon);
     outmf->SetDaughter(1,AliRsnDaughter::kKaon);
     outmf->SetMotherPDG(333);
@@ -164,8 +186,9 @@ Bool_t ConfigPhiPP13TeV_PID
     outmf->SetPairCuts(cutsPair);
     outmf->AddAxis(imID,215,0.985,1.2);
     outmf->AddAxis(ptID,300,0.,3.);//fine binning for efficiency weighting
-    if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
-    else outmf->AddAxis(centID,161,-0.5,160.5);
+    outmf->AddAxis(centID,nmult,multbins);
+    //if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
+    //else outmf->AddAxis(centID,161,-0.5,160.5);
     if (polarizationOpt.Contains("J")) outmf->AddAxis(ctjmID,21,-1.,1.);
     if (polarizationOpt.Contains("T")) outmf->AddAxis(cttmID,21,-1.,1.);
 
@@ -212,6 +235,97 @@ Bool_t ConfigPhiPP13TeV_PID
       if (polarizationOpt.Contains("T")) outreflex->AddAxis(cttID,21,-1.,1.);
     }//end reflections
   }//end MC
+
+  //-------------------------------------------------------
+  // misidentified daughters in simulation
+
+  TString mName;
+  Double_t mMass;
+  Int_t mPDG0,mPDG1,mPDG2;
+
+  if(isMC){
+    for(Int_t i=0;i<10;i++){
+      if(!i){
+        mName.Form("pi0_ee");
+        mMass=0.134977;
+        mPDG0=111;
+        mPDG1=mPDG2=11;
+      }else if(i==1){
+        mName.Form("Kx_pipi");
+        mMass=0.493677;
+        mPDG0=321;
+        mPDG1=mPDG2=211;
+      }else if(i==2){
+        mName.Form("K0S_pipi");
+        mMass=0.497614;
+        mPDG0=310;
+        mPDG1=mPDG2=211;
+      }else if(i==3){
+        mName.Form("K0L_pipi");
+        mMass=0.497614;
+        mPDG0=130;
+        mPDG1=mPDG2=211;
+      }else if(i==4){
+        mName.Form("eta_pipi");
+        mMass=0.547862;
+        mPDG0=221;
+        mPDG1=mPDG2=211;
+      }else if(i==5){
+        mName.Form("etaprime_pipi");
+        mMass=0.95778;
+        mPDG0=331;
+        mPDG1=mPDG2=211;
+      }else if(i==6){
+        mName.Form("Lambdap_ppi");
+        mMass=1.115683;
+        mPDG0=3122;
+        mPDG1=2212;
+        mPDG2=211;
+      }else if(i==7){
+        mName.Form("Lambdaa_ppi");
+        mMass=1.115683;
+        mPDG0=-3122;
+        mPDG1=211;
+        mPDG2=2212;
+      }else if(i==8){
+        mName.Form("Lambda1520p_pK");
+        mMass=1.5915;
+        mPDG0=3124;
+        mPDG1=2212;
+        mPDG2=321;
+      }else if(i==9){
+        mName.Form("Lambda1520a_pK");
+        mMass=1.5915;
+        mPDG0=-3124;
+        mPDG1=321;
+        mPDG2=2212;
+      }
+
+      AliRsnMiniOutput* out=task->CreateOutput(Form("%s_true",mName.Data()),"HIST","TRUE");
+      out->SetCutID(0,iCutQ);
+      out->SetCutID(1,iCutQ);
+      out->SetDaughter(0,AliRsnDaughter::kKaon);
+      out->SetDaughter(1,AliRsnDaughter::kKaon);
+      out->SetCharge(0,'+');
+      out->SetCharge(1,'-');
+      out->SetMotherPDG(mPDG0);
+      out->SetMotherMass(mMass);
+      out->SetPairCuts(cutsPair);
+
+      if(mPDG1==11) out->SetDaughterTrue(0,AliRsnDaughter::kElectron);
+      else if(mPDG1==211) out->SetDaughterTrue(0,AliRsnDaughter::kPion);
+      else if(mPDG1==321) out->SetDaughterTrue(0,AliRsnDaughter::kKaon);
+      else if(mPDG1==2212) out->SetDaughterTrue(0,AliRsnDaughter::kProton);
+
+      if(mPDG2==11) out->SetDaughterTrue(1,AliRsnDaughter::kElectron);
+      else if(mPDG2==211) out->SetDaughterTrue(1,AliRsnDaughter::kPion);
+      else if(mPDG2==321) out->SetDaughterTrue(1,AliRsnDaughter::kKaon);
+      else if(mPDG2==2212) out->SetDaughterTrue(1,AliRsnDaughter::kProton);
+
+      out->AddAxis(imID,215,0.985,1.2);
+      out->AddAxis(ptID,100,0.,20.);
+    }
+  }
 
   return kTRUE;
 }

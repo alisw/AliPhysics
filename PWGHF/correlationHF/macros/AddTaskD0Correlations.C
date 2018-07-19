@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Bool_t speed=kTRUE, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileSBRanges=kFALSE, Double_t ptAssocLim=1., Int_t fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Double_t minDPt=2., Int_t AODprot=1, Bool_t puritystudies=kFALSE)
+AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, Bool_t pporpPb_lims=kFALSE /*0=pp,1=pPb limits*/, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std_NewPools.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE, Bool_t speed=kTRUE, Bool_t mergepools=kFALSE, Bool_t useDeff=kTRUE, Bool_t useTrackeff=kTRUE, Bool_t useCutFileSBRanges=kFALSE, Double_t ptAssocLim=1., Int_t fillTrees=AliAnalysisTaskSED0Correlations::kNoTrees, Double_t fractAccME=100., Double_t minDPt=2., Int_t AODprot=1, Bool_t puritystudies=kFALSE, Bool_t reweighMC=kFALSE, TString filenameWeights="")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -210,6 +210,20 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   massD0Task->SetPurityStudies(puritystudies);
   if(analyszeKaon) massD0Task->SetKaonCorrelations(kTRUE);
 
+  // multiplicity weights
+  if(reweighMC) {
+      printf(" Loading Ntracklet weights...\n");
+      TFile* filewgt = TFile::Open(filenameWeights);
+      TH1D* hWeight = (TH1D*)filewgt->Get("hNtrUnCorrEvWithCandWeight");
+      if(!hWeight) {
+          printf("Error! Weights for Ntracklets not correctly loaded!");
+          return;
+      }
+      massD0Task->SetUseNtrklWeight(kTRUE);
+      massD0Task->SetHistNtrklWeight(hWeight);
+  }
+
+
 //*********************
 //correlation settings
 //*********************
@@ -223,8 +237,8 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
     massD0Task->SetNPtBinsCorr(14);
     massD0Task->SetPtBinsLimsCorr(ptlimits);
   }
-  Double_t pttreshlow[15] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-  Double_t pttreshup[15] = {999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.};
+  Double_t pttreshlow[20] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
+  Double_t pttreshup[20] = {999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.,999.};
   massD0Task->SetPtTreshLow(pttreshlow);
   massD0Task->SetPtTreshUp(pttreshup);
 

@@ -14,7 +14,7 @@
 #include "AliHFPtSpectrum.h"
 #endif
 
-/* $Id$ */ 
+/* $Id$ */
 
 //
 // Macro to use the AliHFPtSpectrum class
@@ -26,10 +26,10 @@
 
 
 //
-// Macro execution parameters: 
+// Macro execution parameters:
 //  0) filename with the theoretical predictions  (direct & feed-down)
 //  1) acceptance and reconstruction efficiencies file name (direct & feed-down)
-//  2) reconstructed spectra file name 
+//  2) reconstructed spectra file name
 //  3) output file name
 //  4) Set the feed-down calculation option flag: knone=none, kfc=fc only, kNb=Nb only
 //  5-6) Set the luminosity: the number of events analyzed, and the cross-section of the sample [pb]
@@ -39,7 +39,7 @@
 //
 
 enum decay { kD0Kpi, kDplusKpipi, kDstarD0pi, kDsKKpi, kLctopKpi, kLcK0Sp};
-enum centrality{ kpp8, kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb010, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centrality{ kpp8, kpp7, kpp5, kpp276, k07half, kpPb0100, k010, k1020, k020, k1030, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb010, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
 enum centestimator{ kV0M, kV0A, kZNA, kCL1 };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { knone, kfc, kNb };
@@ -64,7 +64,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
 
   //  gROOT->Macro("$ALICE_PHYSICS/PWGHF/vertexingHF/macros/LoadLibraries.C");
 
-  //  Set if calculation considers asymmetric uncertainties or not 
+  //  Set if calculation considers asymmetric uncertainties or not
   Bool_t asym = true;
 
   Int_t option=3;
@@ -73,7 +73,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   else if (fdMethod==knone) { option=0; asym=false; }
   else option=3;
 
-  if (option>2) { 
+  if (option>2) {
     cout<< "Bad calculation option, should be <=2"<<endl;
     return;
   }
@@ -93,6 +93,8 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
       tab = 14.4318; tabUnc = 0.5733;
     } else if ( cc == k020 ) {
       tab = 18.93; tabUnc = 0.74;
+		} else if ( cc == k1030 ) {
+      tab = 11.4; tabUnc = 0.36;
     } else if ( cc == k2040 ) {
       tab = 6.86; tabUnc = 0.28;
     } else if ( cc == k2030 ) {
@@ -122,7 +124,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
        tab = 3.76; tabUnc = 0.13;
      }
   }
-    
+
   // pPb Glauber (A. Toia)
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
   if( cc == kpPb0100 ){
@@ -403,17 +405,17 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   spectra->SetIsParticlePlusAntiParticleYield(isParticlePlusAntiParticleYield);
 
   // Set the Tab parameter and uncertainties
-  if ( (cc != kpp7) && (cc != kpp8) && (cc != kpp276)  ) {
+  if ( (cc != kpp7) && (cc != kpp8) && (cc != kpp276) && (cc != kpp5) ) {
     spectra->SetTabParameter(tab,tabUnc);
   }
   if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     spectra->SetCollisionType(2);
-  } else if ( !( cc==kpp7 || cc==kpp8 || cc==kpp276 ) ) {
+  } else if ( !( cc==kpp7 || cc==kpp8 || cc==kpp276 || cc==kpp5 ) ) {
     spectra->SetCollisionType(1);
   }
-  
+
   // Set the systematics externally
-  
+
   Bool_t combineFeedDown = true;
   AliHFSystErr *systematics = new AliHFSystErr();
   if( cc==kpp276 ) {
@@ -422,10 +424,15 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   else if (cc==kpp8){
     systematics->SetRunNumber(12);
   }
+  else if (cc==kpp5){
+    systematics->SetIs5TeVAnalysis(true);
+    systematics->SetRunNumber(17);
+    systematics->SetCollisionType(0);
+  }
   else if ( cc == kpPb0100 || cc == kpPb010 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematics->SetCollisionType(2);
     systematics->SetRunNumber(16);//check this
-  
+
     // Rapidity slices
     if(rapiditySlice!=kdefault){
       systematics->SetIspPb2011RapidityScan(true);
@@ -472,7 +479,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     if(Energy==k276){
         if ( cc == k07half ) systematics->SetCentrality("07half");
         else if ( cc == k010 )  systematics->SetCentrality("010");
-        else if ( cc == k1020 )  systematics->SetCentrality("1020");
+				else if ( cc == k1020 )  systematics->SetCentrality("1020");
         else if ( cc == k020 )  systematics->SetCentrality("020");
         else if ( cc == k2040 || cc == k2030 || cc == k3040 ) {
             systematics->SetCentrality("2040");
@@ -487,10 +494,13 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
         else if ( cc == k6080 )  systematics->SetCentrality("6080");
         else if ( cc == k4080 ) systematics->SetCentrality("4080");
     } else if (Energy==k5dot023){
-        if ( cc == k3050 ) {
-            systematics->SetRunNumber(15);
-            systematics->SetCentrality("3050");
-        }
+      systematics->SetRunNumber(15);
+      if ( cc == k3050 ){
+	systematics->SetCentrality("3050");
+      }
+      else if ( cc == k1030 ) {
+	systematics->SetCentrality("3050"); //no systematics available for 10--30
+      }
     }
     else {
       cout << " Systematics not yet implemented " << endl;
@@ -527,8 +537,8 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   // the corrected yield and cross-section
   histoYieldCorr = (TH1D*)spectra->GetHistoFeedDownCorrectedSpectrum();
   histoSigmaCorr = (TH1D*)spectra->GetHistoCrossSectionFromYieldSpectrum();
-  histoYieldCorrMax = (TH1D*)spectra->GetHistoUpperLimitFeedDownCorrectedSpectrum(); 
-  histoYieldCorrMin = (TH1D*)spectra->GetHistoLowerLimitFeedDownCorrectedSpectrum(); 
+  histoYieldCorrMax = (TH1D*)spectra->GetHistoUpperLimitFeedDownCorrectedSpectrum();
+  histoYieldCorrMin = (TH1D*)spectra->GetHistoLowerLimitFeedDownCorrectedSpectrum();
   histoSigmaCorrMax = (TH1D*)spectra->GetHistoUpperLimitCrossSectionFromYieldSpectrum();
   histoSigmaCorrMin = (TH1D*)spectra->GetHistoLowerLimitCrossSectionFromYieldSpectrum();
   histoYieldCorr->SetNameTitle("histoYieldCorr","corrected yield");
@@ -633,7 +643,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     hFeedDownRebin->SetLineColor(2);
     hFeedDownRebin->Draw("same");
     cTheoryRebin->Update();
-    
+
     TCanvas *cTheoryRebinLimits = new TCanvas("cTheoryRebinLimits","control the theoretical spectra limits rebin");
     cTheoryRebinLimits->Divide(1,2);
     cTheoryRebinLimits->cd(1);
@@ -656,7 +666,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     hFeedDownMinRebin->Draw("same");
     cTheoryRebinLimits->Update();
   }
-  
+
   if (option==1) {
 
     TCanvas * cfc = new TCanvas("cfc","Fc");
@@ -743,7 +753,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   cresult2->Update();
 
 
-  if (asym) { 
+  if (asym) {
 
     TH2F *histoDraw = new TH2F("histoDraw","histo (for drawing)",100,0,33.25,100,50.,1e7);
     float max = 1.1*gYieldCorr->GetMaximum();
@@ -776,7 +786,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     gYieldCorrExtreme->Draw("3same");
     cyieldExtreme->SetLogy();
     cyieldExtreme->Update();
-    
+
     TH2F *histo2Draw = new TH2F("histo2Draw","histo2 (for drawing)",100,0,33.25,100,50.,1e9);
     max = 1.1*gSigmaCorr->GetMaximum();
     histo2Draw->SetAxisRange(0.1,max,"Y");
@@ -816,7 +826,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
     gSigmaCorrExtreme->Draw("3Psame");
     csigmaExtreme->SetLogy();
     csigmaExtreme->Update();
-      
+
 //     cout << endl << " Sytematics (Extreme approach)" <<endl;
 //     for(Int_t item=0; item<gSigmaCorrExtreme->GetN(); item++){
 //       Double_t center=0., value=0.;
@@ -825,7 +835,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
 //       Double_t lowunc = gSigmaCorrExtreme->GetErrorYlow(item) / value ;
 //       cout << "Sigma syst (extreme) i=" << item << ", center=" << center <<", value=" << value << " high unc=" << highunc*100 << "%, low unc=" << lowunc*100 << "%"<<endl;
 //     }
-    
+
 //     cout << endl << " Sytematics (Conservative approach)" <<endl;
 //     for(Int_t item=0; item<gSigmaCorrConservative->GetN(); item++){
 //       Double_t center=0., value=0.;
@@ -834,9 +844,9 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
 //       Double_t lowunc = gSigmaCorrConservative->GetErrorYlow(item) / value ;
 //       cout << "Sigma syst (conservative) i=" << item << ", center=" << center <<", value=" << value << " high unc=" << highunc*100 << "%, low unc=" << lowunc*100 << "%"<<endl;
 //     }
-    
+
  }
- 
+
   // Draw the PbPb Eloss hypothesis histograms
   if(PbPbEloss){
     AliHFPtSpectrum *CalcBins=NULL;
@@ -979,7 +989,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   hRECpt->Write();
   //
   histoYieldCorr->Write();
-  histoYieldCorrMax->Write();     histoYieldCorrMin->Write();   
+  histoYieldCorrMax->Write();     histoYieldCorrMin->Write();
   histoSigmaCorr->Write();
   histoSigmaCorrMax->Write();     histoSigmaCorrMin->Write();
 
@@ -1019,7 +1029,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   }
   systematics->Write();
 
-  // Draw the cross-section 
+  // Draw the cross-section
   //  spectra->DrawSpectrum(gPrediction);
 
   //  out->Close();

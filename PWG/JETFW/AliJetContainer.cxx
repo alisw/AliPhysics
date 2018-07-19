@@ -121,7 +121,7 @@ AliJetContainer::AliJetContainer(const char *name):
  * @param recoScheme Jet recombination scheme (E-scheme, pt-scheme)
  * @param radius Jet resolution parameter
  * @param partCont Particle container used to feed the jet finder
- * @param clustCont Cluster container used to feed the jet finder
+ * @param clusCont Cluster container used to feed the jet finder
  * @param tag Additional tag for the jet branch name (default is "Jet")
  */
 AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
@@ -177,7 +177,7 @@ void AliJetContainer::SetArray(const AliVEvent *event)
  * The rho object contains information about the event average
  * energy density, used to subtract diffuse background in jet reconstructed
  * in pA or A-A collisions.
- * @param Valid pointer to a AliVEvent object from which the object is to be retrieved
+ * @param event Valid pointer to a AliVEvent object from which the object is to be retrieved
  */
 void AliJetContainer::LoadRho(const AliVEvent *event)
 {
@@ -196,7 +196,7 @@ void AliJetContainer::LoadRho(const AliVEvent *event)
  * energy density as a function of the event geometry.
  * It is used to subtract background in jet reconstructed
  * in pA or A-A collisions.
- * @param Valid pointer to a AliVEvent object from which the object is to be retrieved
+ * @param event Valid pointer to a AliVEvent object from which the object is to be retrieved
  */
 void AliJetContainer::LoadLocalRho(const AliVEvent *event)
 {
@@ -215,7 +215,7 @@ void AliJetContainer::LoadLocalRho(const AliVEvent *event)
  * mass density.
  * It is used to subtract background in jet reconstructed
  * in pA or A-A collisions.
- * @param Valid pointer to a AliVEvent object from which the object is to be retrieved
+ * @param event Valid pointer to a AliVEvent object from which the object is to be retrieved
  */
 void AliJetContainer::LoadRhoMass(const AliVEvent *event)
 {
@@ -455,7 +455,7 @@ Bool_t AliJetContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 /**
  * Checks if a jet passes the cuts.
  * @param[in] jet Pointer to a AliEmcalJet object
- * @param[out] Rejection reason bit in case the jet does not pass the cuts
+ * @param[out] rejectionReason Rejection reason bit in case the jet does not pass the cuts
  * @return kTRUE if jet passes the cuts, kFALSE otherwise
  */
 Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet, UInt_t &rejectionReason) const
@@ -477,7 +477,7 @@ Bool_t AliJetContainer::AcceptJet(const AliEmcalJet *jet, UInt_t &rejectionReaso
 /**
  * Find the jet at position i in the container and checks if it passes the cuts.
  * @param[in] i Index position in the container
- * @param[out] Rejection reason bit in case the jet does not pass the cuts
+ * @param[out] rejectionReason Rejection reason bit in case the jet does not pass the cuts
  * @return kTRUE if jet passes the cuts, kFALSE otherwise
  */
 Bool_t AliJetContainer::AcceptJet(Int_t i, UInt_t &rejectionReason) const
@@ -499,7 +499,7 @@ Bool_t AliJetContainer::AcceptJet(Int_t i, UInt_t &rejectionReason) const
 /**
  * Apply the jet specific cuts to a jet object
  * @param[in] jet Pointer to a AliEmcalJet object
- * @param[out] Rejection reason bit in case the jet does not pass the cuts
+ * @param[out] rejectionReason Rejection reason bit in case the jet does not pass the cuts
  * @return kTRUE if jet passes the cuts, kFALSE otherwise
  */
 Bool_t AliJetContainer::ApplyJetCuts(const AliEmcalJet *jet, UInt_t &rejectionReason) const
@@ -632,6 +632,12 @@ Double_t AliJetContainer::GetLeadingHadronPt(const AliEmcalJet *jet) const
 /**
  * Retrieve the 4-momentum of leading hadron of the jet.
  * The mass hypothesis is always set to the pion mass (0.139 GeV/c^2).
+ * NOTE: The cluster energy used to calculate the momentum will always be
+ *       the _raw_ energy because the cluster container is not used. There are a
+ *       number of possible alternative approaches to use the user selected energy
+ *       (such as the hadronic corrected energy). One possible alternative which
+ *       uses the cluster energy selected during jet finding is to access the
+ *       leading AliEmcalClusterJetConstituent.
  * @param[out] mom Reference to a TLorentzVector object where the result is returned
  * @param[in] jet Pointer to a AliEmcalJet object
  */
@@ -645,8 +651,8 @@ void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmc
   Double_t maxTrackEta = 0;
   Double_t maxTrackPhi = 0;
 
-  if (fClusterContainer && fClusterContainer->GetArray() && (fLeadingHadronType == 1 || fLeadingHadronType == 2)) {
-    AliVCluster *cluster = jet->GetLeadingCluster(fClusterContainer->GetArray());
+  if (fLeadingHadronType == 1 || fLeadingHadronType == 2) {
+    AliVCluster *cluster = jet->GetLeadingCluster();
     if (cluster) {
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, const_cast<Double_t*>(fVertex));
@@ -657,8 +663,8 @@ void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmc
     }
   }
 
-  if (fParticleContainer && fParticleContainer->GetArray() && (fLeadingHadronType == 0 || fLeadingHadronType == 2)) {
-    AliVParticle *track = jet->GetLeadingTrack(fParticleContainer->GetArray());
+  if (fLeadingHadronType == 0 || fLeadingHadronType == 2) {
+    AliVParticle *track = jet->GetLeadingTrack();
     if (track) {
       maxTrackEta = track->Eta();
       maxTrackPhi = track->Phi();
@@ -680,18 +686,13 @@ void AliJetContainer::GetLeadingHadronMomentum(TLorentzVector &mom, const AliEmc
  */
 Double_t AliJetContainer::GetZLeadingEmc(const AliEmcalJet *jet) const
 {
-  if (fClusterContainer && fClusterContainer->GetArray()) {
-    TLorentzVector mom;
+  TLorentzVector mom;
 
-    AliVCluster *cluster = jet->GetLeadingCluster(fClusterContainer->GetArray());
-    if (cluster) {
-      cluster->GetMomentum(mom, fVertex);
+  AliVCluster *cluster = jet->GetLeadingCluster();
+  if (cluster) {
+    cluster->GetMomentum(mom, fVertex);
 
-      return GetZ(jet,mom);
-    }
-    else {
-      return -1;
-    }
+    return GetZ(jet,mom);
   }
   else {
     return -1;
@@ -706,19 +707,13 @@ Double_t AliJetContainer::GetZLeadingEmc(const AliEmcalJet *jet) const
  */
 Double_t AliJetContainer::GetZLeadingCharged(const AliEmcalJet *jet) const
 {
+  TLorentzVector mom;
 
-  if (fParticleContainer && fParticleContainer->GetArray() ) {
-    TLorentzVector mom;
+  AliVParticle *track = jet->GetLeadingTrack();
+  if (track) {
+    mom.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),0.139);
 
-    AliVParticle *track = jet->GetLeadingTrack(fParticleContainer->GetArray());
-    if (track) {
-      mom.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),0.139);
-
-      return GetZ(jet,mom);
-    }
-    else {
-      return -1;
-    }
+    return GetZ(jet,mom);
   }
   else {
     return -1;
@@ -831,7 +826,7 @@ Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1, AliPartic
     Int_t idx = (Int_t)jet2->TrackAt(icc);
     //get particle
     AliVParticle *p2 = 0x0;
-    if (bgeom) p2 = static_cast<AliVParticle*>(jet2->TrackAt(icc, cont2->GetArray()));
+    if (bgeom) p2 = static_cast<AliVParticle*>(jet2->Track(icc));
     iFound = 0;
     for (Int_t icf = 0; icf < jet1->GetNumberOfTracks(); icf++) {
       if (!bgeom && idx == jet1->TrackAt(icf) && iFound == 0 ) {
@@ -861,7 +856,7 @@ Double_t AliJetContainer::GetFractionSharedPt(const AliEmcalJet *jet1, AliPartic
  * @param recoScheme Jet recombination scheme (E-scheme, pt-scheme)
  * @param radius Jet resolution parameter
  * @param partCont Particle container used to feed the jet finder
- * @param clustCont Cluster container used to feed the jet finder
+ * @param clusCont Cluster container used to feed the jet finder
  * @param tag Additional tag for the jet branch name (default is "Jet")
  * @return A string containing the jet branch name
  */
@@ -897,7 +892,7 @@ TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo,
   TString radiusString = TString::Format("R%03.0f", radius*100.0);
 
   TString trackString;
-  if (jetType != kNeutralJet && partCont) {
+  if (partCont) { //Neutral jets on particle level, can have praticle containers
     trackString = "_" + TString(partCont->GetTitle());
   }
 

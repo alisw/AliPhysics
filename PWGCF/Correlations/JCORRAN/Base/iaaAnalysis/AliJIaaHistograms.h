@@ -52,10 +52,10 @@ public:
 	// 1D correlation histograms
 	//==================================================
 
-	AliJTH1D fhDphiAssoc;
-	AliJTH1D fhDEtaNear;
-	AliJTH1D fhDEtaNearM;
-	AliJTH1D fhDetaNearMixAcceptance;   // Mixed event uncorrected deltaEta histogram for acceptance correction
+    //AliJTH1D fhDphiAssoc;
+    //AliJTH1D fhDEtaNear;
+    //AliJTH1D fhDEtaNearM;
+    //AliJTH1D fhDetaNearMixAcceptance;   // Mixed event uncorrected deltaEta histogram for acceptance correction
 
 
 	//==================================================
@@ -63,7 +63,7 @@ public:
 	//==================================================
 
 	AliJTH2D fhDphiDetaPta;      // 2D histogram (deltaPhi-deltaEta plane) in [fTyp][fCentralityBin][fZBin][fpttBin][fptaBin] bins
-	AliJTH2D fhResonanceCut;     // DeltaEta histogram for resonance decays
+	//AliJTH2D fhResonanceCut;     // DeltaEta histogram for resonance decays
 
 	//==================================================
 	// Trigger and associated particle specra
@@ -85,7 +85,7 @@ public:
 	AliJTH1D fhIetaAssocFromFile;   // Associated inclusive eta distribution
 	AliJTH1D fhIphiTriggFromFile;   // Trigger inclusive phi distribution
 	AliJTH1D fhIphiAssocFromFile;   // Associated inclusive phi distribution
-	AliJTH1D fhResonanceInvMass;	// Invariant mass distribution of the cut-out resonances
+	//AliJTH1D fhResonanceInvMass;	// Invariant mass distribution of the cut-out resonances
 
 	//===================================================
 	// Event/Track histograms
@@ -93,6 +93,7 @@ public:
 
 	AliJTH1D fhLPpt; // pT distribution of leading particles
 	AliJTH1D fhChargedPt, fhChargedPtNoCorr; // Corrected and raw pT distribution of charged particles
+	AliJTH1D fhChargedPtPublished; // Corrected pT distribution of charged particles in published bins
 	AliJTProfile fhTrackingEfficiency; // Tracking efficiency
 	AliJTH1D fhChargedEta; // Charged particle pseudorapidity distribution
 	AliJTH1D fhLPeta; // Leading particle eta distribution
@@ -100,6 +101,8 @@ public:
 	AliJTH1D fhCentr;
 	AliJTH1D fhiCentr;
 	AliJTH1D fhZVert; // z-vertex distribution
+	AliJTH1D fhEP; // z-vertex distribution
+	AliJTH1D fhPhiS; // z-vertex distribution
 
 protected:
 

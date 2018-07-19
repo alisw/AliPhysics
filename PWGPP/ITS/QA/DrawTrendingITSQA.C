@@ -65,7 +65,7 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
     Float_t MPVdEdxLay3,errMPVdEdxLay3,MPVdEdxLay4,errMPVdEdxLay4;
     Float_t MPVdEdxTB0,errMPVdEdxTB0,MPVdEdxTB5,errMPVdEdxTB5;
     Float_t fracDead3,errfracDead3,fracDead4,errfracDead4;
-    Float_t FlagSDD1, FlagSDD2; // flag on fraction of SDD modules ON
+    Float_t FlagSDD1, FlagSDD2; // flag on fraction of SDD anodes ON
     Float_t FlagMinTime, FlagMeanTime, FlagdEdx3, FlagdEdx4; // flag on SDD time and charge parameters
   
   ttree->SetBranchAddress("nrun",&nrun);
@@ -104,8 +104,8 @@ Int_t DrawTrendingITSQA(TString mergedTrendFile = "trending.root", // trending t
     ttree->SetBranchAddress("errfracDead3",&errfracDead3); // fraction of bad SDD modules layer 3
     ttree->SetBranchAddress("fracDead4",&fracDead4); // fraction of bad SDD modules layer 4
     ttree->SetBranchAddress("errfracDead4",&errfracDead4); // fraction of bad SDD modules layer 4
-    ttree->SetBranchAddress("FlagSDD1",&FlagSDD1); // flag on fraction of SDD1 modules ON
-    ttree->SetBranchAddress("FlagSDD2",&FlagSDD2); // flag on fraction of SDD2 modules ON
+    ttree->SetBranchAddress("FlagSDD1",&FlagSDD1); // flag on fraction of SDD1 anodes ON
+    ttree->SetBranchAddress("FlagSDD2",&FlagSDD2); // flag on fraction of SDD2 anodes ON
     ttree->SetBranchAddress("FlagMinTime",&FlagMinTime); // flag on min drift time
     ttree->SetBranchAddress("FlagMeanTime",&FlagMeanTime); // flag on mean drift time
     ttree->SetBranchAddress("FlagdEdx3",&FlagdEdx3); // flag on layer 3 dEdx MPV
@@ -2108,12 +2108,21 @@ TH1F *hMeanVxOCDB = new TH1F("hMeanVxOCDB","Diamond OCDB Vx",nRuns,0.,nRuns);
 
 gStyle->SetOptStat(0);
 TCanvas *cVertexDisto;
+    Double_t ymin = 0.;
+    Double_t ymax = 0.;
+
 if(hMeanVx->GetEntries()>0){
     cVertexDisto=new TCanvas("cVertexDisto","cVertexDisto",1200,800);
     cVertexDisto->Divide(3,2);
     cVertexDisto->cd(1);
-    hMeanVx->SetMinimum(0.065);
-    hMeanVx->SetMaximum(0.085);
+    //
+    ymin = hMeanVx->GetMinimum();
+    ymax = hMeanVx->GetMaximum();
+    hMeanVx->SetMinimum(0.9*ymin);
+    hMeanVx->SetMaximum(1.1*ymax);
+    //
+//    hMeanVx->SetMinimum(0.065);
+//    hMeanVx->SetMaximum(0.085);
     hMeanVx->GetYaxis()->SetTitle("Vertex X coordinate");
     hMeanVx->GetXaxis()->SetTitle("run number");
     hMeanVx->Draw();
@@ -2132,14 +2141,20 @@ if(hMeanVx->GetEntries()>0){
     legVtx->Draw();
     
     cVertexDisto->cd(2);
-        if(hMeanVySPD->GetEntries()>0){  // pp runs
-            hMeanVy->SetMinimum(0.32);
-            hMeanVy->SetMaximum(0.38);
-        }
-        else{                       // PbPb runs
-            hMeanVy->SetMinimum(0.32);
-            hMeanVy->SetMaximum(0.38);
-        }
+    ymin = hMeanVy->GetMinimum();
+    ymax = hMeanVy->GetMaximum();
+    hMeanVy->SetMinimum(0.9*ymin);
+    hMeanVy->SetMaximum(1.1*ymax);
+
+//        if(hMeanVySPD->GetEntries()>0){  // pp runs
+
+//            hMeanVy->SetMinimum(0.32);
+//            hMeanVy->SetMaximum(0.38);
+//        }
+//        else{                       // PbPb runs
+//            hMeanVy->SetMinimum(0.32);
+//            hMeanVy->SetMaximum(0.38);
+//        }
     hMeanVy->GetYaxis()->SetTitle("Vertex Y coordinate");
     hMeanVy->GetXaxis()->SetTitle("run number");
     hMeanVy->Draw();
@@ -2148,8 +2163,12 @@ if(hMeanVx->GetEntries()>0){
     legVtx->Draw();
 
     cVertexDisto->cd(3);
-        hMeanVz->SetMinimum(-8.);
-        hMeanVz->SetMaximum(8.);
+    ymin = hMeanVz->GetMinimum();
+    ymax = hMeanVz->GetMaximum();
+    hMeanVz->SetMinimum(0.9*ymin);
+    hMeanVz->SetMaximum(1.1*ymax);
+//        hMeanVz->SetMinimum(-8.);
+//        hMeanVz->SetMaximum(8.);
         hMeanVz->GetYaxis()->SetTitle("Vertex Z coordinate");
         hMeanVz->GetXaxis()->SetTitle("run number");
         hMeanVz->Draw();
@@ -2169,7 +2188,7 @@ if(hMeanVx->GetEntries()>0){
 
     cVertexDisto->cd(5);
         hSigmaVy->SetMinimum(0.);
-        hSigmaVy->SetMaximum(0.2);
+        hSigmaVy->SetMaximum(0.1);
         hSigmaVy->GetYaxis()->SetTitle("sigma on y coordinate");
         hSigmaVy->GetXaxis()->SetTitle("run number");
         hSigmaVy->Draw();
@@ -2387,7 +2406,7 @@ if(histonEvents->GetEntries()>0){
 
 TCanvas* cfrac;
 if(histoFracDead3->GetEntries()>0){
-    cfrac=new TCanvas("cfrac","Fraction of SDD modules ON",900,900);
+    cfrac=new TCanvas("cfrac","Fraction of SDD good anodes",900,900);
     cfrac->Divide(1,3);
     cfrac->cd(1);
     histoFracDead3->SetMinimum(0.0);
@@ -2397,9 +2416,9 @@ if(histoFracDead3->GetEntries()>0){
     histoFracDead3->SetLineColor(kOrange+1);
     histoFracDead3->GetYaxis()->SetRangeUser(0.,1.2);
     histoFracDead3->Draw();
-    histoFracDead3->GetYaxis()->SetTitle("Fraction of Modules ON");
+    histoFracDead3->GetYaxis()->SetTitle("Fraction of good anodes");
     histoFracDead3->GetXaxis()->SetTitle("run number");
-    TLatex* tf3=new TLatex(0.2,0.8,"SDD modules ON - Layer 3 (total: 84)");
+    TLatex* tf3=new TLatex(0.2,0.8,"SDD good anodes - Layer 3 (total: 84*512)");
     tf3->SetNDC();
     tf3->SetTextColor(kOrange+1);
     tf3->Draw();
@@ -2410,9 +2429,9 @@ if(histoFracDead3->GetEntries()>0){
     histoFracDead4->SetLineColor(kAzure+1);
     histoFracDead4->GetYaxis()->SetRangeUser(0.,1.2);
     histoFracDead4->Draw("same");
-    histoFracDead4->GetYaxis()->SetTitle("Fraction of Modules ON");
+    histoFracDead4->GetYaxis()->SetTitle("Fraction of good anodes");
     histoFracDead4->GetXaxis()->SetTitle("run number");
-    TLatex* tf4=new TLatex(0.2,0.5,"SDD modules ON - Layer 4 (total: 176)");
+    TLatex* tf4=new TLatex(0.2,0.5,"SDD good anodes - Layer 4 (total: 176*512)");
     tf4->SetNDC();
     tf4->SetTextColor(kAzure+1);
     tf4->Draw();
@@ -2453,8 +2472,8 @@ if(histoFracDead3->GetEntries()>0){
     tf4_1->SetTextColor(1);
     tf4_1->Draw();
     
-    cfrac->SaveAs("SDDmodulesON_trend.pdf");
-    //    pdfFileNames+=" SDDmodulesON_trend.pdf";
+    cfrac->SaveAs("SDDanodesON_trend.pdf");
+    //    pdfFileNames+=" SDDanodesON_trend.pdf";
     cfrac->Update();
 }
 
@@ -3603,7 +3622,7 @@ TCanvas* cpu;
     if(h12->GetEntries()>0 && h12->GetBinContent(1)>0.) pdfFileNames+=" Frac_track_SA_trend.pdf";
 //    if(histoEvwSDD->GetEntries()>0 && histoEvwSDD->GetBinContent(1)>0.) pdfFileNames+=" NoFast_trend.pdf";
     if(histonEvents->GetEntries()>0 && histonEvents->GetBinContent(1)>0.) pdfFileNames+=" RunEvents_trend.pdf";
-    if(histoFracDead3->GetEntries()>0) pdfFileNames+=" SDDmodulesON_trend.pdf";
+    if(histoFracDead3->GetEntries()>0) pdfFileNames+=" SDDanodesON_trend.pdf";
     if(histodEdxLay5->GetEntries()>0) pdfFileNames+=" SDD_SSD_drift_charge_trend.pdf";
     if(histoFlagCR5->GetEntries()>0) pdfFileNames+=" SDDSSD_alarm_trend.pdf";
     if(histoFracBadn5->GetEntries()>0) pdfFileNames+=" SSD_BadStripsFrac_trend.pdf";

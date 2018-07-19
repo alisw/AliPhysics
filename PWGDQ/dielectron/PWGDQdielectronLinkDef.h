@@ -15,12 +15,14 @@
 #pragma link C++ class AliDielectronHFhelper+;
 #pragma link C++ class AliDielectronMC+;
 #pragma link C++ class AliDielectronQnEPcorrection+;
+#pragma link C++ class AliDielectronEvtVsTrkHist+;
 #pragma link C++ class AliDielectronVarManager+;
 #pragma link C++ class AliAnalysisTaskDielectronFilter+;
 #pragma link C++ class AliAnalysisTaskMultiDielectron+;
 #pragma link C++ class AliAnalysisTaskRandomRejection+;
 #pragma link C++ class AliAnalysisTaskDielectronReadAODBranch+;
 #pragma link C++ class AliAnalysisTaskElectronEfficiency+;
+#pragma link C++ class AliAnalysisTaskElectronEfficiencyV2+;
 #pragma link C++ class AliDielectronVarCuts+;
 #pragma link C++ class AliDielectronV0Cuts+;
 #pragma link C++ class AliDielectronTrackCuts+;

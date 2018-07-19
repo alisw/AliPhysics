@@ -40,7 +40,7 @@
 #include "TH3D.h"
 #include "TF1.h"
 #include "THnSparse.h"
-#include "AliHFMassFitter.h"
+#include "AliHFInvMassFitter.h"
 #include "AliHFCorrelationUtils.h"
 
 class AliDhCorrelationExtraction : public TObject
@@ -99,6 +99,10 @@ public:
     void SetUseMC(Bool_t useMC) {fUseMC=useMC;}
     void SetUseElSource(Int_t elSource) {fElSource=elSource;}
     void SetUseD0Source(Int_t D0Source) {fD0Source=D0Source;}
+    void SetUseReflections(Bool_t useRefl) {fUseRefl=useRefl;}
+    void SetReflFilename(TString filenameRefl) {fReflFilename=filenameRefl;}
+    void SetHistNameRefl(TString histnameRefl) {fHistnameRefl=histnameRefl;}
+    void SetHistNameSignal(TString histnameSign) {fHistnameSign=histnameSign;}
 
     void SetFitRanges(Double_t left, Double_t right) {fLeftFitRange=left; fRightFitRange=right;}
     void SetBkgFitFunction(Int_t func=0) {fBkgFitFunction=func;}
@@ -112,6 +116,8 @@ public:
     void PrintSandBForNormal();
     void GetSignalAndBackgroundForNorm(Int_t i, TH1F* &histo);  //evaluates signal and background in 'fSignalSigmas', for trigger normalization and SB correlation rescaling
     void GetSBScalingFactor(Int_t i, TH1F* &histo); //estract sideband scaling factor
+    void GetSignalAndBackgroundForNorm_WithRefl(Int_t i, TH1F* &histo);  //evaluates signal and background in 'fSignalSigmas', for trigger normalization and SB correlation rescaling
+    void GetSBScalingFactor_WithRefl(Int_t i, TH1F* &histo); //estract sideband scaling factor
     TH2D* GetCorrelHisto(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME=1);
     TH2D* GetCorrelHistoDzero(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax, Int_t softPiME=1);
     TH2D* GetCorrelHistoDplus(Int_t SEorME, Int_t SorSB, Int_t pool, Int_t pTbin, Double_t thrMin, Double_t thrMax);
@@ -145,16 +151,17 @@ public:
 
     void AddOriginType(TString suffix, MCOrigin orig) {fMCOriginSuffix.push_back(suffix); fMCOriginType.push_back(orig);} //for MC case
     void SetRecoMode(MCmode mode) {fMCmode=mode;}
-
+    
     Bool_t ReadInputs(); //reads input files and loads lists of plots
-    Bool_t FitInvariantMass(); //method to perform invariant mass fit via AliHFMassFitter
+    Bool_t FitInvariantMass(); //method to perform invariant mass fit via AliHFInvMassFitter
     Bool_t ExtractCorrelations(Double_t thrMin, Double_t thrMax); //method to retrieve the bkg subtracted and ME corrected correlation distributions
     Bool_t ExtractCorrelations_MC(Double_t thrMin, Double_t thrMax); //method to retrieve the ME corrected correlation distributions in MC
     Bool_t ExtractCorrelations_MC_Orig(Double_t thrMin, Double_t thrMax, Int_t orig); //method to retrieve the ME corrected correlation distributions in MC
     Bool_t ExtractNumberOfTriggers_MC();
     Bool_t DoSingleCanvasMCPlot(Double_t thrMin, Double_t thrMax);
+    Bool_t SetReflectionInfo(AliHFInvMassFitter* &fitter, Int_t iBin);
     void DrawMCClosure(Int_t nOrig, Int_t binMin, Int_t binMax, Double_t thrMin, Double_t thrMax, Bool_t reflect=kTRUE);
-    
+
 private:
     
     TFile *fFileMass; //file containing the mass histograms
@@ -187,6 +194,9 @@ private:
     TString fSECorrelHistoName;
     TString fSECorrelHistoName_DstarBkg;
     TString fMEsuffix;
+    TString fReflFilename;
+    TString fHistnameRefl;
+    TString fHistnameSign;
 
     Int_t fRebinMassPlots;    
     Int_t fNpTbins;
@@ -230,6 +240,7 @@ private:
     Bool_t fUseMC;
     Int_t fElSource;
     Int_t fD0Source;
+    Bool_t fUseRefl;
 
     Double_t *fSignalCorrel;
     Double_t *fBackgrCorrel;
@@ -242,6 +253,9 @@ private:
     Double_t *fScaleFactor;
     Double_t *fSignalCorrelMC_c;
     Double_t *fSignalCorrelMC_b;    
+    Double_t *fReflUnderSCorrel;
+    Double_t *fReflUnderSBCorrel;
+    Double_t *fRoverSinFitRange;
 
     Bool_t fIntegratePtBins;
 
@@ -249,6 +263,7 @@ private:
 
     TF1 **fMassFit;
     TF1 **fBkgFit;
+    TF1 **fBkRFit;
 
     TH1F **fMassHisto;
 
@@ -256,7 +271,7 @@ private:
     std::vector<Int_t>    fMCOriginType;      //container of specificators of origins
     MCmode		  fMCmode;	      //kine or reco analysis (changes just the filenames for output, for now)
 
-    ClassDef(AliDhCorrelationExtraction,4); // class for plotting HF correlations
+    ClassDef(AliDhCorrelationExtraction,6); // class for plotting HF correlations
 
 };
 

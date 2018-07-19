@@ -26,9 +26,11 @@ class fPIDCombined;
 
 
 #include "AliAnalysisTaskSE.h"
-#include <AliPIDCombined.h>
+#include "AliPIDCombined.h"
+#include "AliTPCdEdxInfo.h"
 #include "THnSparse.h"
 #include "THn.h"
+#include "TCutG.h"
 #include "TTreeStream.h"
 #include "AliESDv0Cuts.h"
 
@@ -43,8 +45,8 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   AliAnalysisTaskEbyeIterPID(const char *name);
   AliAnalysisTaskEbyeIterPID();
   virtual ~AliAnalysisTaskEbyeIterPID();
-
-enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr=8,};
+  
+  enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr=8,kLa=9,kLaLa=10,kCh=11,kChCh=12};
   enum momentTypeUnlike {
     kPiPosPiNeg=0,
     kPiPosKaNeg=1,
@@ -55,6 +57,24 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
     kPrPosPiNeg=6,
     kPrPosKaNeg=7,
     kPrPosPrNeg=8,
+    kLaPosLaNeg=9,
+    kChPosChNeg=10,
+  };
+  enum trackCutBit {
+    kNCrossedRowsTPC60=0,
+    kNCrossedRowsTPC80=1,
+    kNCrossedRowsTPC100=2,
+    kMaxChi2PerClusterTPC3=3,
+    kMaxChi2PerClusterTPC4=4,
+    kMaxChi2PerClusterTPC5=5,
+    kMaxDCAToVertexXYPtDepSmall=6,
+    kMaxDCAToVertexXYPtDep=7,
+    kMaxDCAToVertexXYPtDepLarge=8,
+    kRequireITSRefit=9,
+    kClusterRequirementITS=10,
+    kVertexZSmall=11,
+    kVertexZ=12,
+    kVertexZLarge=13,
   };
 
 // ---------------------------------------------------------------------------------
@@ -74,16 +94,23 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   void   Initialize();
   
    // Some boolian settings
-  void   SetIncludeITScuts(const Bool_t ifITSCuts = kTRUE)        {fIncludeITS          = ifITSCuts;}
-  void   SetFillArmPodTree(const Bool_t ifArmpodTree = kTRUE)     {fFillArmPodTree      = ifArmpodTree;}
-  void   SetTightCuts(const Bool_t ifTightCuts = kFALSE)          {fTightCuts           = ifTightCuts;}
-  void   SetDeDxCheck(const Bool_t ifDeDxCheck = kFALSE)          {fdEdxCheck           = ifDeDxCheck;}
-  void   SetEffMatrix(const Bool_t ifEffMatrix = kFALSE)          {fEffMatrix           = ifEffMatrix;}
-  void   SetCleanSamplesOnly(const Bool_t ifSamplesOnly = kFALSE) {fCleanSamplesOnly    = ifSamplesOnly;}
-  void   SetFillBayesianProb(const Bool_t ifBayesProb = kFALSE)   {fFillBayes           = ifBayesProb;}
-  void   SetFillAllCutVariables(const Bool_t ifAllCuts = kFALSE)  {fFillCuts            = ifAllCuts;}
-  void   SetFillDeDxTree(const Bool_t ifDeDxTree = kFALSE)        {fFillDeDxTree        = ifDeDxTree;}
-  void   SetRunFastSimulation(const Bool_t ifFastSimul = kFALSE)  {fRunFastSimulation   = ifFastSimul;}
+  void   SetIncludeITScuts(const Bool_t ifITSCuts = kTRUE)          {fIncludeITS          = ifITSCuts;}
+  void   SetFillArmPodTree(const Bool_t ifArmpodTree = kTRUE)       {fFillArmPodTree      = ifArmpodTree;}
+  void   SetTightCuts(const Bool_t ifTightCuts = kFALSE)            {fTightCuts           = ifTightCuts;}
+  void   SetDeDxCheck(const Bool_t ifDeDxCheck = kFALSE)            {fdEdxCheck           = ifDeDxCheck;}
+  void   SetEffMatrix(const Bool_t ifEffMatrix = kFALSE)            {fEffMatrix           = ifEffMatrix;}
+  void   SetCleanSamplesOnly(const Bool_t ifSamplesOnly = kFALSE)   {fCleanSamplesOnly    = ifSamplesOnly;}
+  void   SetFillBayesianProb(const Bool_t ifBayesProb = kFALSE)     {fFillBayes           = ifBayesProb;}
+  void   SetFillAllCutVariables(const Bool_t ifAllCuts = kFALSE)    {fFillCuts            = ifAllCuts;}
+  void   SetFillDeDxTree(const Bool_t ifDeDxTree = kFALSE)          {fFillDeDxTree        = ifDeDxTree;}
+  void   SetRunFastSimulation(const Bool_t ifFastSimul = kFALSE)    {fRunFastSimulation   = ifFastSimul;}
+  void   SetRunFastHighMomentCal(const Bool_t ifFastHighMom = kFALSE)  {fRunFastHighMomentCal   = ifFastHighMom;}
+  void   SetFillDnchDeta(const Bool_t ifDnchDetaCal = kFALSE)       {fFillDnchDeta        = ifDnchDetaCal;}
+  void   SetIncludeTOF(const Bool_t ifIncludeTOF = kFALSE)          {fIncludeTOF          = ifIncludeTOF;}
+  void   SetUseThnSparse(const Bool_t ifUseThnSparse = kFALSE)    {fUseThnSparse        = ifUseThnSparse;}
+  void   SetUseCouts(const Bool_t ifUseCouts = kFALSE)            {fUseCouts            = ifUseCouts;}  
+  void   SetWeakAndMaterial(const Bool_t ifWeakAndMaterial = kFALSE){fWeakAndMaterial     = ifWeakAndMaterial;}
+  void   SetFillTIdenTrees(const Bool_t ifTIdentity = kFALSE)       {fTIdentity           = ifTIdentity;}
 
   // Setters for the systematic uncertainty checks
   void   SetSystCentEstimator(const Int_t systCentEstimator = 0)  {fSystCentEstimatetor = systCentEstimator;}
@@ -98,6 +125,9 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   void   SetDeDxLowerEdge(const Float_t dEdxLowerEdge = 20.)      {fdEdxDown            = dEdxLowerEdge;}
   void   SetDeDxUpperEdge(const Float_t dEdxUpperEdge = 1020.)    {fdEdxUp              = dEdxUpperEdge;}
   void   SetNEtabins(const Int_t nEtaBins = 16)                   {fnEtaBins            = nEtaBins;}
+  void   SetPercentageOfEvents(const Int_t nPercentageOfEvents = 0) {fPercentageOfEvents = nPercentageOfEvents;}
+
+  
   void   SetEtaLowerEdge(const Float_t etaLowerEdge = -0.8)       {fEtaDown             = etaLowerEdge;}
   void   SetEtaUpperEdge(const Float_t etaUpperEdge = 0.8)        {fEtaUp               = etaUpperEdge;}
   void   SetNMomBins(const Int_t nMombins = 150)                  {fnMomBins            = nMombins;}
@@ -108,6 +138,7 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   void   SetCentralityBinning(const Int_t tmpCentbins, Float_t tmpfxCentBins[])
   {
     // Create the histograms to be used in the binning of eta, cent and momentum
+    std::cout << " Info::marsland: !!!!!! Centrality binning is being set !!!!!!! " << std::endl;
     fhEta  =  new TH1F("fhEta" ,"Eta Bins"       ,fnEtaBins        ,fEtaDown, fEtaUp );
     fhPtot =  new TH1F("fhPtot","Momentum Bins"  ,fnMomBins        ,fMomDown, fMomUp ); 
     fhCent =  new TH1F("fhCent","Centrality Bins",tmpCentbins-1    ,tmpfxCentBins );
@@ -126,6 +157,7 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   void SetMCEtaScanArray(const Int_t tmpEtaBinsMC, Float_t tmpetaDownArr[], Float_t tmpetaUpArr[])
   {    
     // set MC eta values to scan 
+    std::cout << " Info::marsland: !!!!!! SetMCEtaScanArray is being set !!!!!!! " << std::endl;
     fnEtaWinBinsMC = tmpEtaBinsMC;
     fetaDownArr = new Float_t[fnEtaWinBinsMC]; 
     fetaUpArr   = new Float_t[fnEtaWinBinsMC]; 
@@ -135,9 +167,20 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
     } 
   }
   
+  void SetMCResonanceArray(const Int_t tmpNRes, TString tmpResArr[])
+  {    
+    // set MC eta values to scan 
+    std::cout << " Info::marsland: !!!!!! SetMCResonanceArray is being set !!!!!!! " << std::endl;
+    fnResBins = tmpNRes;
+    fResonances = new TString[fnResBins]; 
+    for (Int_t i=0; i<fnResBins; i++) fResonances[i] = tmpResArr[i]; 
+     
+  }
+  
   void SetMCMomScanArray(const Int_t tmpMomBinsMC, Float_t tmppDownArr[], Float_t tmppUpArr[])
   {       
     // set MC momentum values to scan
+    std::cout << " Info::marsland: !!!!!! SetMCMomScanArray is being set !!!!!!! " << std::endl;
     fnMomBinsMC = tmpMomBinsMC;
     fpDownArr = new Float_t[fnMomBinsMC]; 
     fpUpArr   = new Float_t[fnMomBinsMC]; 
@@ -147,6 +190,42 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
     }
   }
   
+  void SetLookUpTableFirstMoments(TTree *lookUpTree, Int_t partType, Float_t pArr[],Float_t centArr[],Float_t etaArr[],const Int_t tmpMomBinsMC, const Int_t tmpCentbins, const Int_t tmpEtaBinsMC)
+  {    
+    // set MC eta values to scan 
+    std::cout << " Info::marsland: !!!!!! SetLookUpTableFirstMoments is being set !!!!!!!   " << std::endl;
+    //
+    // fill arrays from lookup table
+    TH1D *h=NULL, *h1=NULL;
+    for (Int_t imom=0; imom<tmpMomBinsMC; imom++){
+        for (Int_t icent=0; icent<tmpCentbins; icent++){
+            for (Int_t ieta=0; ieta<tmpEtaBinsMC; ieta++){
+                //
+                // with resonances
+                lookUpTree->Draw(Form("momentPos.fElements[%d]-momentNeg.fElements[%d]",partType,partType),Form("abs(etaUp-%f)<0.01&&abs(pDown-%f)<0.01&&abs(centDown-%f)<0.01",etaArr[ieta],pArr[imom],centArr[icent]),"goff");
+                h= (TH1D*)lookUpTree->GetHistogram()->Clone(); h-> SetName("Res");
+                if (partType==0)  fPiFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==1)  fKaFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==2)  fPrFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==9)  fLaFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                if (partType==11) fChFirstMoments[0][imom][icent][ieta] = h->GetMean();
+                delete h;
+                //
+                // without resonances
+                lookUpTree->Draw(Form("noResmomentPos.fElements[%d]-noResmomentNeg.fElements[%d]",partType,partType),Form("abs(etaUp-%f)<0.01&&abs(pDown-%f)<0.01&&abs(centDown-%f)<0.01",etaArr[ieta],pArr[imom],centArr[icent]),"goff");
+                h1= (TH1D*)lookUpTree->GetHistogram()->Clone(); h1-> SetName("noRes");
+                if (partType==0)  fPiFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==1)  fKaFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==2)  fPrFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==9)  fLaFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                if (partType==11) fChFirstMoments[1][imom][icent][ieta] = h1->GetMean();
+                delete h1;
+                
+            }
+        }
+    }
+
+  }
   
  private:
    
@@ -161,11 +240,14 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
    void  FillTPCdEdxCheck();                  // Quick check for the TPC dEdx 
    void  FillTPCdEdxMC();                     // Fill all info + TIdenMC from MC to do MC closure test
    void  FastGen();                           // Run over galice.root for Fastgen
+   void  CalculateFastGenHigherMoments();     // Run over galice.root for Fastgen and calculate higher moments
    void  WeakAndMaterial();                   // Look full acceptance, weak decay and material 
    void  FillDnchDeta();                      // Fill dnch/deta values for each cent and eta bin  
    void  FillTPCdEdxMCEffMatrix();            // Prepare efficiency matrix
    void  FillCleanElectrons();                // Fill Clean Electrons 
    void  FillCleanPions();                    // Fill Clean Pions
+   void  SelectCleanSamplesFromV0s(AliESDv0 *v0, AliESDtrack *track0, AliESDtrack *track1); 
+   Bool_t  ApplyDCAcutIfNoITSPixel(AliESDtrack *track);
    Int_t CountEmptyEvents(Int_t counterBin);  // Just count if there is empty events
    void  BinLogAxis(TH1 *h);
   
@@ -181,6 +263,8 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   AliESDv0Cuts     * fESDtrackCutsV0;         // basic cut variables for V0
   AliESDtrackCuts  * fESDtrackCutsCleanSamp;  // basic cut variables for clean pion and electron form V0s
   AliPIDCombined   * fPIDCombined;            //! combined PID object
+  AliTPCdEdxInfo   * fTPCdEdxInfo;            // detailed dEdx info
+  AliStack         * fMCStack;                  // stack object to get Mc info
   
   TTree            * fTree;                   // data Tree for real Data
   TTree            * fIdenTree;               // data tree for TIdentity
@@ -195,6 +279,8 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   TTree            * fTreeBayes;              // tree to save bayesian probabilities
   TTree            * fTreeCuts;               // tree to save all variables for control plots
   TTree            * fTreeMCFullAcc;          // tree with full acceptance filled with MC
+  TTree            * fTreeResonance;          // tree with full acceptance filled with MC
+  TTree            * fTreeMCgenMoms;          // tree with higher moment calculations
 
   TH1F             * fhEta;                   // helper histogram for TIdentity tree
   TH1F             * fhCent;                  // helper histogram for TIdentity tree
@@ -205,13 +291,17 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   THnSparseF       * fhnCleanKa;              // histogram which hold Clean Kaons
   THnSparseF       * fhnCleanDe;              // histogram which hold Clean Deuterons
  
+  UInt_t            fTrackCutBits;           // integer which hold all cut variations as bits
   Int_t             myBin[3];                // binning array to be used for TIdentity module
   Int_t             myBinMC[3];              // binning array to be used for MC TIdentity module
   Double_t          fEtaDown;
   Double_t          fEtaUp;
   Int_t             fnEtaBins;
+  Int_t             fPercentageOfEvents;     // when only a fPercentageOfEvents is enough
       
   Bool_t            fMCtrue;                 // flag if real data or MC is processed
+  Bool_t            fTIdentity;              // flag if tidentity trees are to be filled
+  Bool_t            fWeakAndMaterial;        // flag for the Weak and Material analysis
   Bool_t            fEffMatrix;              // flag for efficiency matrix filling
   Bool_t            fdEdxCheck;              // flag to check only the dEdx performance
   Bool_t            fCleanSamplesOnly;       // flag for only clean sample production
@@ -222,6 +312,13 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   Bool_t            fFillDeDxTree;           // switch whether to fill dEdx tree
   Bool_t            fFillArmPodTree;         // switch whether to fill clean sample tree
   Bool_t            fRunFastSimulation;      // when running over galice.root do not fill other objects
+  Bool_t            fRunFastHighMomentCal;   // when running over galice.root do not fill other objects
+  
+  Bool_t            fFillDnchDeta;           // switch on calculation of the dncdeta for fastgens
+  Bool_t            fIncludeTOF;             // Include TOF information to investigate the efficiency loss effects on observable
+  Bool_t            fUseThnSparse;           // in case thnsparse is filled
+  Bool_t            fUseCouts;               // for debugging
+
   Int_t             fnMomBins;               // number of mombins --> for 20MeV slice 150 and 10MeV 300
   Float_t           fMomDown;                // bottom limit for the momentum range (default 0.2)
   Float_t           fMomUp;                  // uppper limit for the momentum range (default 3.2)
@@ -275,6 +372,7 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   Float_t           fPrMC;
   Float_t           fDeMC;
   Float_t           fMuMC;
+  Float_t           fLaMC;
   
   Float_t           fptotMCgen;
   Float_t           fpTMCgen;
@@ -289,6 +387,7 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   Float_t           fPrMCgen;
   Float_t           fDeMCgen;
   Float_t           fMuMCgen;
+  Float_t           fLaMCgen;
    
   Float_t           fPx;                     // x component of momentum
   Float_t           fPy;                     // y component of momentum
@@ -316,14 +415,42 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   Float_t            fEta;                    // pseudo rapidity
   Double_t           fNContributors;          // Ntracks 
   Double_t           fTheta;                  // theta
+  Double_t           fPhi;                    // azimut angle                 
   Int_t              fSign;                   // sign of the particle
   Int_t              fTPCShared;              // number of shared clusters
   Int_t              fNcl;                    // number of points used for dEdx
 
+  Int_t              fnResBins;
   Int_t              fnEtaWinBinsMC;
   Int_t              fnMomBinsMC;
   Int_t              fnCentBinsMC;
+  Int_t              fnResModeMC;
   Int_t              fnCentbinsData;
+  Float_t            fMissingCl;
+  
+  // Additional cuts from marian
+  Bool_t             fIsITSpixel01;           // if track has hits in innermost 2 pixels of ITS
+  Int_t              fnITSclusters;           // number of ITS clusters
+  Float_t            fPrimRestriction;        // prim vertex cut recommended by marian
+  Float_t            fTPCvZ;                  // TPC vertex
+
+  //   CleanSample cuts
+  Bool_t             fCleanPionsFromK0;
+  Bool_t             fCleanPion0FromK0;
+  Bool_t             fCleanPion1FromK0;
+  Bool_t             fCleanPion0FromLambda;
+  Bool_t             fCleanPion1FromLambda;
+  Bool_t             fCleanProton0FromLambda;
+  Bool_t             fCleanProton1FromLambda;
+  Bool_t             fHasTrack0FirstITSlayer;
+  Bool_t             fHasTrack1FirstITSlayer;
+  Bool_t             fHasV0FirstITSlayer;
+  
+  TCutG              *fPionCutG;
+  TCutG              *fAntiProtonCutG;
+  TCutG              *fProtonCutG;
+
+
   
   //  Variables for systematic uncertainty checks
   //  B field configurations -->  use default settings and analyse the following set of runs
@@ -336,7 +463,11 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   Int_t              fSystDCAxy;             // 0 --> default ||| -1 --> -sigma ||| +1 --> +sigma 
   Int_t              fSystChi2;              // 0 -->  4      ||| -1 -->    3   ||| +1 -->   5
   Int_t              fSystVz;                // 0 -->  10     ||| -1 -->    8   ||| +1 -->   12
-  
+  Float_t            fPiFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fKaFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fPrFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fLaFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
+  Float_t            fChFirstMoments[2][4][20][20];    //[fnResModeMC][fnMomBinsMC][fnCentBinsMC][fnEtaWinBinsMC]
   Float_t            *fetaDownArr;           //[fnEtaWinBinsMC]
   Float_t            *fetaUpArr;             //[fnEtaWinBinsMC]
   Float_t            *fcentDownArr;          //[fnCentBinsMC]
@@ -344,6 +475,7 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   Float_t            *fpDownArr;             //[fnMomBinsMC]
   Float_t            *fpUpArr;               //[fnMomBinsMC]
   Float_t            *fxCentBins;            //[fnCentbinsData]
+  TString            *fResonances;           //[fnResBins]
 
   //
   // control and QA histograms
@@ -359,7 +491,7 @@ enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr
   THnF             * fHistdEdxTPC;            // 5D hist of dEdx from all TPC
   TH2F             * fHistArmPod;             // control histogram for Armanteros Podolanski plot
    
-  ClassDef(AliAnalysisTaskEbyeIterPID, 1);
+  ClassDef(AliAnalysisTaskEbyeIterPID, 2);
   
 };
 

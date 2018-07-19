@@ -651,7 +651,7 @@ protected:
   TObjArray       fCorrections; // List of corrections
   Bool_t          fIsInit;      // Whether we're intialized or not 
   ULong_t         fRun;         // Cached run number
-  UShort_t        fSys;         // Cached system (1:pp 2:PbPb 3:pPb)
+  UShort_t        fSys;         // Cached system (1:pp 2:PbPb 3:pPb 4:Pbp 5:XeXe)
   UShort_t        fSNN;         // Cached center of mass energy [GeV]
   Short_t         fField;       // Cached L3 magnetic field [kG]
   Bool_t          fMC;          // Cached Simulation flag

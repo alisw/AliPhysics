@@ -832,6 +832,9 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     AliMultVariable *fNTracksITSsa2010 =         new AliMultVariable("fNTracksITSsa2010");
     fNTracksITSsa2010->SetIsInteger(kTRUE);
     
+    AliMultVariable *fNTracksINELgtONE =       new AliMultVariable("fNTracksINELgtONE");
+    AliMultVariable *fNPartINELgtONE   =       new AliMultVariable("fNPartINELgtONE");
+    
     //vertex-Z
     AliMultVariable *fEvSel_VtxZ = new AliMultVariable("fEvSel_VtxZ");
     
@@ -880,6 +883,8 @@ void AliMultSelectionCalibrator::SetupStandardInput() {
     fInput->AddVariable( fNTracksGlobal2015        );
     fInput->AddVariable( fNTracksGlobal2015Trigger );
     fInput->AddVariable( fNTracksITSsa2010         );
+    fInput->AddVariable( fNTracksINELgtONE );
+    fInput->AddVariable( fNPartINELgtONE         );
     fInput->AddVariable( fEvSel_VtxZ  );
     //============================================================
     

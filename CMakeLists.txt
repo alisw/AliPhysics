@@ -11,6 +11,7 @@ foreach(p CMP0005  # Properly escape preprocessor definitions (v2.6, v3.0.2)
           CMP0025  # Compiler id for Apple Clang is now AppleClang (v3.0)
           CMP0042  # MACOSX_RPATH is enabled by default (v3.0)
           CMP0053  # Simplify variable reference and escape sequence evaluation (v3.1.3)
+          CMP0068  # RPATH settings on macOS do not affect install_name (v3.9 and newer)
        )
   if(POLICY ${p})
     cmake_policy(SET ${p} NEW)
@@ -78,6 +79,23 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
   set(CMAKE_SHARED_LIBRARY_SUFFIX .so)
 endif (NOT CMAKE_SYSTEM_NAME STREQUAL Windows)
 
+# Be sure about where libraries and binaries are put
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
+
+# Build targets with install rpath on Mac to dramatically speed up installation
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+  endif()
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+endif()
+unset(isSystemDir)
+
 # Optional: Doxygen for reference doc generation
 find_package(Doxygen)
 if(DOXYGEN_FOUND AND DOXYGEN_DOT_FOUND)
@@ -144,6 +162,12 @@ else()
   check_cxx_compiler_flag(-Werror=delete-non-virtual-dtor CXX_COMPILER_DELETE_NON_VIRTUAL_DTOR)
   if(CXX_COMPILER_HAS_MISMATCHED_NEW_DELETE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=delete-non-virtual-dtor")
+  endif()
+
+  # Turn OFF some -Werrors
+  check_cxx_compiler_flag(-Wno-error=strict-aliasing CXX_COMPILER_STRICT_ALIASING)
+  if(CXX_COMPILER_STRICT_ALIASING)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=strict-aliasing")
   endif()
 
   # Turn on "all" warnings, but skip missing braces warning

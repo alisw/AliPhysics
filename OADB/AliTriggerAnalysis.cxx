@@ -805,19 +805,7 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliVEvent* event, Int_t fillHist
   // This method implements a selection based on the timing in both sides of zdcN
   // It can be used in order to eliminate parasitic collisions
   // usage of uncorrected timings is deprecated
-  // TODO: implement selection on AOD in MC
-  if(fMC) {
-    if (event->GetDataLayoutType()==AliVEvent::kESD) {
-      const AliESDEvent* esd = dynamic_cast<const AliESDEvent*>(event);
-      AliESDZDC *esdZDC = esd->GetESDZDC();
-      UInt_t esdFlag = esdZDC->GetESDQuality();
-      Bool_t znaFired = (esdFlag & 0x01) == 0x01;
-      Bool_t zncFired = (esdFlag & 0x10) == 0x10;
-      return znaFired | zncFired;
-    } else {
-      return kTRUE;
-    }
-  }
+  if(fMC) return kTRUE;
   
   Float_t zna[4]={0};
   Float_t znc[4]={0};
@@ -1165,16 +1153,10 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliVEvent* event){
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliVEvent* event) {
   // This function flags events in which the TPC chamber HV is not at its nominal value
-  if (fMC) return kFALSE; // there are no dip events in MC
-  if (event->GetRunNumber()>197692) return kFALSE; // no dip events in run2
-  if (event->GetDataLayoutType()!=AliVEvent::kESD) {
-    AliWarning("IsHVdipTPCEvent method implemented for ESDs only");
-    return kFALSE;
-  }
-  const AliESDEvent* aEsd = dynamic_cast<const AliESDEvent*>(event);
-
-  if (!aEsd->IsDetectorOn(AliDAQ::kTPC)) return kTRUE;
-  return kFALSE;
+  // The function IsDetectorOn is implemented in AliESDEvent and AliAODEvent
+  //     by default it returns kTRUE (so also for MC). Therefore no extra treatment is required
+  //
+  return !event->IsDetectorOn(AliDAQ::kTPC);
 }
 
 
@@ -1504,8 +1486,10 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   fPileupCutsEnabled = kTRUE;
 
   SPDFiredChips(event,1,kTRUE,0);
-  // Int_t decisionADA        = ADTrigger(event, kASide, kFALSE, 1);
-  // Int_t decisionADC        = ADTrigger(event, kCSide, kFALSE, 1);
+  ADTrigger(event, kASide, kFALSE, 1);
+  ADTrigger(event, kCSide, kFALSE, 1);
+  V0MTrigger(event,kTRUE,1);
+  TKLTrigger(event,1);
   Int_t decisionV0A        = V0Trigger(event, kASide, kFALSE, 1);
   Int_t decisionV0C        = V0Trigger(event, kCSide, kFALSE, 1);
   Bool_t isSPDClsVsTklBG   = IsSPDClusterVsTrackletBG(event,1);
@@ -1516,10 +1500,8 @@ void AliTriggerAnalysis::FillHistograms(const AliVEvent* event,Bool_t onlineDeci
   Bool_t isSPDVtxPileup    = IsSPDVtxPileup(event,1);
   Bool_t isV0Casym         = IsV0Casym(event,1);
   Bool_t isVHMTrigger      = VHMTrigger(event,1);
-  // Bool_t isV0MOnTrigger    = V0MTrigger(event,kTRUE,1);
   Bool_t isV0MOfTrigger    = V0MTrigger(event,kFALSE,1);
   Bool_t isSH1Trigger      = SH1Trigger(event,1);
-  // Bool_t isTKLTrigger      = TKLTrigger(event,1);
   Bool_t isZDCTimeTrigger  = ZDCTimeTrigger(event,1);
   Bool_t isZNATimeBG       = ZDCTimeBGTrigger(event,AliTriggerAnalysis::kASide);
   Bool_t isZNCTimeBG       = ZDCTimeBGTrigger(event,AliTriggerAnalysis::kCSide);

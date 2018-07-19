@@ -46,6 +46,34 @@ AliRsnCut::AliRsnCut(const char *name, RSNTARGET target) :
 
 //______________________________________________________________________________
 AliRsnCut::AliRsnCut
+(const char *name, RSNTARGET target, Long_t imin, Long_t imax, Double_t dmin, Double_t dmax) :
+   AliRsnTarget(name, target),
+   fMinI(imin),
+   fMaxI(imax),
+   fMinD(dmin),
+   fMaxD(dmax),
+   fMinIptdep(0),
+   fMaxIptdep(0),
+   fMinDptdep(0),
+   fMaxDptdep(0),
+   fCutValueI(0),
+   fCutValueD(0.0),
+   fPtDepCut(kFALSE),
+   fRefPtValueD(0.0),
+   fMaxPt(1E20),
+   fMinPt(0.0),
+   fPtDepCutMaxFormula(""),
+   fPtDepCutMinFormula(""),
+   fCutResult(kTRUE)
+{
+//
+// Constructor with arguments.
+// This is provided to allow a quick setting of all data members.
+//
+}
+
+//______________________________________________________________________________
+AliRsnCut::AliRsnCut
 (const char *name, RSNTARGET target, Int_t imin, Int_t imax, Double_t dmin, Double_t dmax) :
    AliRsnTarget(name, target),
    fMinI(imin),

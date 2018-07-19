@@ -75,7 +75,6 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   // Initialization
   AliEmcalCorrectionComponent::Initialize();
   
-  GetProperty("createHistos", fCreateHisto);
   GetProperty("usePIDmass", fUsePIDmass);
   GetProperty("useDCA", fUseDCA);
   GetProperty("maxDist", fMaxDistance);

@@ -45,17 +45,35 @@ public:
      fOptionLoopOverTracks = option; 
      if(!fOptionLoopOverTracks) {fOptionRunPairing = kFALSE; fOptionRunMixing = kFALSE; fOptionRunLikeSignPairing = kFALSE;}     
   }
+  void SetRunPrefilter(Bool_t option) {fOptionRunPrefilter = option;}
+  void SetStoreJpsiCandidates(Bool_t option) {fOptionStoreJpsiCandidates = option;}
+  
+  void AddLegCandidateMCcut(AliReducedInfoCut* cut) {
+     if(fLegCandidatesMCcuts.GetEntries()>=32) return;
+     fLegCandidatesMCcuts.Add(cut);
+  }
+  void AddJpsiMotherMCCut(AliReducedInfoCut* cutMother, AliReducedInfoCut* cutElectron) {
+     if(fJpsiMotherMCcuts.GetEntries()>=32) return;
+     fJpsiMotherMCcuts.Add(cutMother);
+     fJpsiElectronMCcuts.Add(cutElectron);
+  }
   
   // getters
   virtual AliHistogramManager* GetHistogramManager() const {return fHistosManager;}
   virtual AliMixingHandler* GetMixingHandler() const {return fMixingHandler;}
   Int_t GetNTrackCuts() const {return fTrackCuts.GetEntries();}
   const Char_t* GetTrackCutName(Int_t i) const {return (i<fTrackCuts.GetEntries() ? fTrackCuts.At(i)->GetName() : "");} 
-  Bool_t GetRunOverMC() {return fOptionRunOverMC;};
-  Bool_t GetRunLikeSignPairing() {return fOptionRunLikeSignPairing;}
-  Bool_t GetRunEventMixing() {return fOptionRunMixing;}
-  Bool_t GetRunPairing() {return fOptionRunPairing;}
-  Bool_t GetLoopOverTracks() {return fOptionLoopOverTracks;}
+  Bool_t GetRunOverMC() const {return fOptionRunOverMC;};
+  Bool_t GetRunLikeSignPairing() const {return fOptionRunLikeSignPairing;}
+  Bool_t GetRunEventMixing() const {return fOptionRunMixing;}
+  Bool_t GetRunPairing() const {return fOptionRunPairing;}
+  Bool_t GetLoopOverTracks() const {return fOptionLoopOverTracks;}
+  Bool_t GetRunPrefilter() const {return fOptionRunPrefilter;}
+  Bool_t GetStoreJpsiCandidates() const {return fOptionStoreJpsiCandidates;}
+  Int_t GetNLegCandidateMCcuts() const {return fLegCandidatesMCcuts.GetEntries();}
+  const Char_t* GetLegCandidateMCcutName(Int_t i) const {return (i<fLegCandidatesMCcuts.GetEntries() ? fLegCandidatesMCcuts.At(i)->GetName() : "");}
+  Int_t GetNJpsiMotherMCCuts() const {return fJpsiMotherMCcuts.GetEntries();}
+  const Char_t* GetJpsiMotherMCcutName(Int_t i) const {return (i<fJpsiMotherMCcuts.GetEntries() ? fJpsiMotherMCcuts.At(i)->GetName() : "");}
   
 protected:
    AliHistogramManager* fHistosManager;   // Histogram manager
@@ -66,6 +84,8 @@ protected:
    Bool_t fOptionRunOverMC;  // true: trees contain MC info -> fill histos to compute efficiencies, false: run normally as on data
    Bool_t fOptionRunLikeSignPairing;   // true (default): performs the like sign pairing in addition to the opposite pairing
    Bool_t fOptionLoopOverTracks;       // true (default); if false do not loop over tracks and consequently no pairing
+   Bool_t fOptionRunPrefilter;        // true (default); if false do not run the prefilter
+   Bool_t fOptionStoreJpsiCandidates;   // false (default); if true, store the same event jpsi candidates in a TList 
   
    TList fEventCuts;               // array of event cuts
    TList fTrackCuts;               // array of track cuts
@@ -77,25 +97,50 @@ protected:
    TList fNegTracks;              // list of selected negative tracks in the current event
    TList fPrefilterPosTracks;  // list of prefilter selected positive tracks in the current event
    TList fPrefilterNegTracks; // list of prefilter selected negative tracks in the current event
+   TList fJpsiCandidates;       // list of Jpsi candidates --> to be used in analyses inheriting from this 
+   
+   // selection based on the MC truth information of the reconstructed leg candidates
+   // NOTE:    The list is a list of AliReducedInfoCut objects which can be used to 
+   //              apply cuts on the MC flags of the tracks.
+   // NOTE: The names of the cuts are used in the naming of the histogram classes
+   TList fLegCandidatesMCcuts;
+   
+   // selection cuts for the pure MC truth (select the J/psi from stack)
+   // the list should contains cuts which can be applied to a pure MC truth particle (no reconstructed information)
+   //  e.g. cuts on the MC flags and on kinematics
+   //  For each selection, a separate histogram directory will be created
+   TList fJpsiMotherMCcuts;
+   
+   // Selection on the MC truth of the electrons from the jpsi decay
+   //  Tipically, here one can specify the kinematic selection on the electrons from jpsi decay
+   //       so dividing the jpsi yield at this step by the yield of jpsi selected by the fJpsiMotherMCcuts, one can obtain the
+   //       acceptance efficiency.
+   //  NOTE: The number of selections on the jpsi electron needs to be the same and in sync with the number of fJpsiMotherMCcuts cuts
+   TList fJpsiElectronMCcuts;
    
   Bool_t IsEventSelected(AliReducedBaseEvent* event, Float_t* values=0x0);
   Bool_t IsTrackSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
   Bool_t IsTrackPrefilterSelected(AliReducedBaseTrack* track, Float_t* values=0x0);
   Bool_t IsPairSelected(Float_t* values);
   Bool_t IsPairPreFilterSelected(Float_t* values);
-  Bool_t IsMCTruth(AliReducedTrackInfo* ptrack, AliReducedTrackInfo* ntrack);
-  Bool_t IsMCTruth(AliReducedTrackInfo* track);
-  void    FindJpsiTruthLegs(AliReducedTrackInfo* mother, Int_t& leg1, Int_t& leg2);
+  UInt_t CheckReconstructedLegMCTruth(AliReducedBaseTrack* ptrack, AliReducedBaseTrack* ntrack);
+  UInt_t CheckReconstructedLegMCTruth(AliReducedBaseTrack* track);
+  void    FindJpsiTruthLegs(AliReducedTrackInfo* mother, Int_t& leg1Label, Int_t& leg2Label);
+  AliReducedTrackInfo* FindMCtruthTrackByLabel(Int_t label);
+  void    LoopOverMCTracks(Int_t trackArray =1);
+  UInt_t CheckMotherMCTruth(AliReducedTrackInfo* mother);
+  UInt_t CheckDaughterMCTruth(AliReducedTrackInfo* daughter);
   
   void RunPrefilter();
   void RunSameEventPairing(TString pairClass = "PairSE");
   void RunTrackSelection();
+  void LoopOverTracks(Int_t arrayOption=1);
   void FillTrackHistograms(TString trackClass = "Track");
-  void FillTrackHistograms(AliReducedTrackInfo* track, TString trackClass = "Track");
-  void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE", Bool_t isMCTruth = kFALSE);
+  void FillTrackHistograms(AliReducedBaseTrack* track, TString trackClass = "Track");
+  void FillPairHistograms(ULong_t mask, Int_t pairType, TString pairClass = "PairSE", UInt_t mcDecisions = 0);
   void FillMCTruthHistograms();
   
-  ClassDef(AliReducedAnalysisJpsi2ee,3);
+  ClassDef(AliReducedAnalysisJpsi2ee,5);
 };
 
 #endif

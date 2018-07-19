@@ -24,3 +24,19 @@
  * \brief Analysis task configuration and postprocessing macros for CaloTrackCorr package devoted to QA
  */
 
+/**
+ * \defgroup CaloTrackCorrMacrosQAPtHard Postprocessing files for Pt hard binned productions
+ * \ingroup CaloTrackCorrMacrosQA
+ * \brief Postprocessing files for EMCal analysis QA wagon for Pt hard binned productions
+ *
+ * The macros and scritps recover the merged output per pT hard bin and run, merges per run, 
+ * extracts the wagon histograms and scales each pT hard bin by its cross section and produce the QA plots
+ *
+ * The files are:
+ *  + DownloadExtractScaleMergePtHardAnalysisFiles.sh : execute the chain of download, mergin and scaling
+ *  + mergePtHardRunFiles.sh : merge outpout histogram files in same pT hard bin
+ *  + ScaleExtractPtHardBinHistograms.C : extract EMCal QA histograms to separate in 2 files, one scaled with cross section
+ *  + DrawPtHardBins.C : read the scaled and unscaled merged files and do QA plots
+ *
+ */
+

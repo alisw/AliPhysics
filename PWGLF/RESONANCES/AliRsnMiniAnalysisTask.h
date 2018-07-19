@@ -22,6 +22,9 @@
 #include "AliRsnMiniOutput.h"
 #include "AliRsnCutEventUtils.h"
 #include "AliRsnCutPrimaryVertex.h"
+#include "AliRsnMiniResonanceFinder.h"
+
+#include "AliESDtrackCuts.h"
 
 class TList;
 
@@ -36,7 +39,7 @@ class AliRsnMiniAnalysisTask : public AliAnalysisTaskSE {
 public:
 
    AliRsnMiniAnalysisTask();
-   AliRsnMiniAnalysisTask(const char *name, Bool_t isMC = kFALSE);
+   AliRsnMiniAnalysisTask(const char *name, Bool_t isMC = kFALSE,Bool_t saveRsnTreeInFile=kFALSE);
    AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &copy);
    AliRsnMiniAnalysisTask &operator=(const AliRsnMiniAnalysisTask &copy);
    virtual ~AliRsnMiniAnalysisTask();
@@ -75,6 +78,7 @@ public:
    Short_t             GetMaxNDaughters()                 {return fMaxNDaughters;}
    void                SetEventQAHist(TString type,TH1 *histo);
    void                UseBigOutput(Bool_t b=kTRUE) { fBigOutput = b; }
+   Int_t               GetNumberOfTrackCuts() { return fTrackCuts.GetEntries(); }
 
    virtual void        UserCreateOutputObjects();
    virtual void        UserExec(Option_t *);
@@ -85,6 +89,10 @@ public:
    Int_t               CreateValue(AliRsnMiniValue::EType type, Bool_t useMC = kFALSE);
    AliRsnMiniOutput   *CreateOutput(const char *name, AliRsnMiniOutput::EOutputType type, AliRsnMiniOutput::EComputation src);
    AliRsnMiniOutput   *CreateOutput(const char *name, const char *outType, const char *compType);
+
+   Int_t               SetResonanceFinder(AliRsnMiniResonanceFinder* f, Int_t j = -1);
+   AliRsnMiniResonanceFinder* GetResonanceFinder(UShort_t j = 0) {return ((j==0) ? fResonanceFinder[0] : fResonanceFinder[1]);}
+   Int_t               GetNResonanceFinders() {return ((Int_t) fNResonanceFinders);}
 
 private:
 
@@ -157,9 +165,11 @@ private:
    Float_t              fMotherAcceptanceCutMaxEta;             // cut value to apply when selecting the mothers inside a defined acceptance
    Bool_t               fKeepMotherInAcceptance;                // flag to keep also mothers in acceptance
    Bool_t               fRsnTreeInFile;  // flag rsn tree should be saved in file instead of memory
-   TFile               *fRsnTreeFile;    // pointer to file where rsn tree will be saved
 
-   ClassDef(AliRsnMiniAnalysisTask, 14);   // AliRsnMiniAnalysisTask
+   UShort_t              fNResonanceFinders; // number of AliRsnMiniResonanceFinder objects
+   AliRsnMiniResonanceFinder* fResonanceFinder[2]; // pointers to AliRsnMiniResonanceFinder objects
+
+   ClassDef(AliRsnMiniAnalysisTask, 16);   // AliRsnMiniAnalysisTask
 };
 
 

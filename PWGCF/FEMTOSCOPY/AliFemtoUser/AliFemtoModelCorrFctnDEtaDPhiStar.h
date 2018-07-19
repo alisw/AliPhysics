@@ -105,7 +105,7 @@ public:
   void WriteHistos();
   virtual TList* GetOutputList();
   virtual TList* AppendOutputList(TList &);
-
+  virtual AliFemtoModelCorrFctn* Clone() const { return new AliFemtoModelCorrFctnDEtaDPhiStar(*this); }
   static Builder Build() { return Builder(); };
 
   virtual void EventBegin(const AliFemtoEvent *);

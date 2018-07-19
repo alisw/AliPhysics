@@ -26,6 +26,7 @@
 #include "AliVCaloCells.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliOADBContainer.h"
+#include "AliDataFile.h"
 
 /// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEMCALPi0CalibSelection) ;
@@ -817,10 +818,10 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
     if(fImportGeometryFilePath=="") // If not specified, set location depending on run number
     {
       // "$ALICE_ROOT/EVE/alice-data/default_geo.root"
-      if     (runnumber <  140000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2010.root";
-      else if(runnumber <  171000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2011.root";
-      else if(runnumber <  198000) fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2012.root"; // 2012-2013
-      else                         fImportGeometryFilePath = "$ALICE_PHYSICS/OADB/EMCAL/geometry_2015.root"; // >= 2015
+      if     (runnumber <  140000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2010.root").data();
+      else if(runnumber <  171000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2011.root").data();
+      else if(runnumber <  198000) fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2012.root").data(); // 2012-2013
+      else                         fImportGeometryFilePath = AliDataFile::GetFileNameOADB("EMCAL/geometry_2015.root").data(); // >= 2015
     }
     
     AliInfo(Form("Import %s",fImportGeometryFilePath.Data()));
@@ -834,11 +835,12 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitGeometryMatrices()
     AliInfo("Load user defined EMCAL geometry matrices");
     // OADB if available
     AliOADBContainer emcGeoMat("AliEMCALgeo");
-    
-    if(fOADBFilePath=="") fOADBFilePath = "$ALICE_PHYSICS/OADB/EMCAL" ;
-    
-    emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
-    
+
+    if(fOADBFilePath!="")
+      emcGeoMat.InitFromFile(Form("%s/EMCALlocal2master.root",fOADBFilePath.Data()),"AliEMCALgeo");
+    else
+      emcGeoMat.InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALlocal2master.root").data(),"AliEMCALgeo");
+
     TObjArray *matEMCAL=(TObjArray*)emcGeoMat.GetObject(runnumber,"EmcalMatrices");
     
     for(Int_t mod = 0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++)
@@ -915,8 +917,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::InitTemperatureCorrections()
   
   AliOADBContainer *contRFTD=new AliOADBContainer("");
   
-  contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePath.Data()),"AliEMCALRunDepTempCalibCorrections");
-  
+  if(fOADBFilePath!="")
+    contRFTD->InitFromFile(Form("%s/EMCALTemperatureCorrCalib.root",fOADBFilePath.Data()),"AliEMCALRunDepTempCalibCorrections");
+  else
+    contRFTD->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALTemperatureCorrCalib.root").data(),"AliEMCALRunDepTempCalibCorrections");
+
   Int_t runnumber = InputEvent()->GetRunNumber() ;
 
   TH1S *htd=(TH1S*)contRFTD->GetObject(runnumber); 

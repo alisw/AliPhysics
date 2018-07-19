@@ -189,8 +189,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoTruePrimaryEtaMCPtResolPt;              //!
     TH2F**                            fHistoTrueSecondaryMotherInvMassPt;           //!
     TH2F**                            fHistoTrueSecondaryMotherFromK0sInvMassPt;    //!
-    TH2F**                            fHistoTrueSecondaryMotherFromK0lInvMassPt;    //!
     TH1F**                            fHistoTrueK0sWithPi0DaughterMCPt;             //!
+    TH2F**                            fHistoTrueSecondaryMotherFromK0lInvMassPt;    //!
     TH1F**                            fHistoTrueK0lWithPi0DaughterMCPt;             //!
     TH2F**                            fHistoTrueSecondaryMotherFromEtaInvMassPt;    //!
     TH1F**                            fHistoTrueEtaWithPi0DaughterMCPt;             //!
@@ -246,6 +246,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoNGoodESDTracksWeighted;                    //!
     TH1F**                            fHistoVertexZ;                                   //!
     TH1F**                            fHistoVertexZWeighted;                           //!
+    Int_t                             fDoCentralityFlat;                               //flag for centrality flattening
     TH1F**                            fHistoCentrality;                                //!
     TH1F**                            fHistoCentralityFlattened;                       //!
     TH2F**                            fHistoCentralityVsPrimaryTracks;                 //!
@@ -295,7 +296,6 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Bool_t                            fIsFromSelectedHeader;                      //
     Int_t                             fIsMC;                                      //
     Bool_t                            fDoTHnSparse;                               // flag for using THnSparses for background estimation
-    Int_t                             fDoCentralityFlat;                          //flag for centrality flattening
     Double_t                          fWeightJetJetMC;                            // weight for Jet-Jet MC
     Double_t*                         fWeightCentrality;                          //[fnCuts], weight for centrality flattening
     Bool_t                            fEnableClusterCutsForTrigger;               //enables ClusterCuts for Trigger

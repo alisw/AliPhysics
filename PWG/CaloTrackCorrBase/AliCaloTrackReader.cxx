@@ -44,6 +44,7 @@
 // ---- CaloTrackCorr ---
 #include "AliCalorimeterUtils.h"
 #include "AliCaloTrackReader.h"
+#include "AliMCAnalysisUtils.h"
 
 // ---- Jets ----
 #include "AliAODJet.h"
@@ -76,12 +77,13 @@ fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),
 fDCALClusters(0x0),          fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
-fInputEvent(0x0),            fOutputEvent(0x0),fMC(0x0),
+fInputEvent(0x0),            fOutputEvent(0x0),               fMC(0x0),
 fFillCTS(0),                 fFillEMCAL(0),
 fFillDCAL(0),                fFillPHOS(0),
 fFillEMCALCells(0),          fFillPHOSCells(0),
 fRecalculateClusters(kFALSE),fCorrectELinearity(kTRUE),
 fSelectEmbeddedClusters(kFALSE),
+fScaleEPerSM(kFALSE),       
 fSmearShowerShape(0),        fSmearShowerShapeWidth(0),       fRandom(),
 fSmearingFunction(0),        fSmearNLMMin(0),                 fSmearNLMMax(0),
 fTrackStatus(0),             fSelectSPDHitTracks(0),
@@ -96,13 +98,14 @@ fEventTrigEMCALL1Jet1(0),    fEventTrigEMCALL1Jet2(0),
 fBitEGA(0),                  fBitEJE(0),
 
 fEventType(-1),
-fTaskName(""),               fCaloUtils(0x0),
+fTaskName(""),               fCaloUtils(0x0),                 fMCUtils(0x0), 
 fWeightUtils(0x0),           fEventWeight(1),
 fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL),
 fListMixedTracksEvents(),    fListMixedCaloEvents(),
 fLastMixedTracksEvent(-1),   fLastMixedCaloEvent(-1),
 fWriteOutputDeltaAOD(kFALSE),
-fEMCALClustersListName(""),  fZvtxCut(0.),
+fEMCALClustersListName(""),  fEMCALCellsListName(""),  
+fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(0),
 //Trigger rejection
 fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
@@ -120,6 +123,8 @@ fUseEventsWithPrimaryVertex(kFALSE),
 fTimeStampEventSelect(0),
 fTimeStampEventFracMin(0),   fTimeStampEventFracMax(0),
 fTimeStampRunMin(0),         fTimeStampRunMax(0),
+fTimeStampEventCTPBCCorrExclude(0),
+fTimeStampEventCTPBCCorrMin(0), fTimeStampEventCTPBCCorrMax(0),
 fNPileUpClusters(-1),        fNNonPileUpClusters(-1),         fNPileUpClustersCut(3),
 fVertexBC(-200),             fRecalculateVertexBC(0),
 fUseAliCentrality(0),        fCentralityClass(""),            fCentralityOpt(0),
@@ -130,9 +135,11 @@ fFillInputBackgroundJetBranch(kFALSE),
 fBackgroundJets(0x0),fInputBackgroundJetBranchName("jets"),
 fAcceptEventsWithBit(0),     fRejectEventsWithBit(0),         fRejectEMCalTriggerEventsWith2Tresholds(0),
 fMomentum(),                 fOutputContainer(0x0),           
-fhEMCALClusterEtaPhi(0),     fhEMCALClusterTimeE(0),
+fhEMCALClusterEtaPhi(0),     fhEMCALClusterEtaPhiFidCut(0),     
+fhEMCALClusterTimeE(0),
 fEnergyHistogramNbins(0),
-fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept("")
+fhNEventsAfterCut(0),        fNMCGenerToAccept(0),            fMCGenerEventHeaderToAccept(""),
+fGenEventHeader(0),          fGenPythiaEventHeader(0)
 {
   for(Int_t i = 0; i < 8; i++) fhEMCALClusterCutsE [i]= 0x0 ;    
   for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE  [i]= 0x0 ;  
@@ -217,6 +224,8 @@ void AliCaloTrackReader::DeletePointers()
   
   if ( fWeightUtils ) delete fWeightUtils ;
     
+  if ( fMCUtils     ) delete fMCUtils ; 
+
   //  Pointers not owned, done by the analysis frame
   //  if(fInputEvent)  delete fInputEvent ;
   //  if(fOutputEvent) delete fOutputEvent ;
@@ -624,32 +633,27 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
 /// pT-hard is much smaller than the jet pT, then,
 /// there can be a problem in the tails of the 
 /// distributions and the event should be rejected.
+/// Do this only for pythia gamma-jet or jet-jet events
+///
+/// \param process pythia process from AliMCAnalysisUtils::GetPythiaEventHeader()
+/// \param processName Jet-Jet or Gamma-Jet processes from AliMCAnalysisUtils::GetPythiaEventHeader()
 //________________________________________________
-Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
+Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(Int_t process, TString processName)
 {  
-  //printf("AliCaloTrackReader::ComparePtHardAndJetPt() - GenHeaderName : %s\n",GetGenEventHeader()->ClassName());
-  
-  if ( !GetGenEventHeader() ) 
+  if ( !fGenEventHeader ) 
   {
     AliError("Skip event, event header is not available!");
     return kFALSE;
   }
   
-  if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
-  {
-    AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
+  if ( fGenPythiaEventHeader )
+  {  
+    // Do this check only for jet-jet and gamma-jet productions
     
-    // Do this check only for gamma-jet or jet-jet productions
-    Int_t process =  pygeh->ProcessType();
-    //printf("Process %d \n", process);
-    if ( process != 14 && process != 18 && process != 29 && process != 114 && process != 115 && // prompt gamma 
-         process != 11 && process != 12 && process != 13 && process != 28  && process !=  53 && // jet-jet 
-         process != 68 && process != 96  // jet-jet
-       ) return kTRUE ;
-    //printf("\t yes \n");
+    if ( !processName.Contains("Jet") ) return kTRUE;
     
-    Int_t nTriggerJets =  pygeh->NTriggerJets();
-    Float_t ptHard = pygeh->GetPtHard();
+    Int_t nTriggerJets =  fGenPythiaEventHeader->NTriggerJets();
+    Float_t ptHard = fGenPythiaEventHeader->GetPtHard();
     TParticle * jet =  0;
 
     AliDebug(1,Form("Njets: %d, pT Hard %f",nTriggerJets, ptHard));
@@ -657,7 +661,7 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
     Float_t tmpjet[]={0,0,0,0};
     for(Int_t ijet = 0; ijet< nTriggerJets; ijet++)
     {
-      pygeh->TriggerJet(ijet, tmpjet);
+      fGenPythiaEventHeader->TriggerJet(ijet, tmpjet);
       jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
       
       AliDebug(1,Form("jet %d; pycell jet pT %f",ijet, jet->Pt()));
@@ -665,14 +669,14 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
       //Compare jet pT and pt Hard
       if(jet->Pt() > fPtHardAndJetPtFactor * ptHard)
       {
-        AliInfo(Form("Reject jet event with : process %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
-                     process, ptHard, jet->Pt(), fPtHardAndJetPtFactor));
+        AliInfo(Form("Reject jet event with : process %d <%s>, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f",
+                     process, processName.Data(), ptHard, jet->Pt(), fPtHardAndJetPtFactor));
         return kFALSE;
       }
-    }
+    } // jet loop
     
     if(jet) delete jet;
-  }
+  } // pythia header
   
   return kTRUE ;
 }
@@ -682,29 +686,25 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt()
 /// pT-hard is smaller than the calorimeter cluster E, 
 /// there can be a problem in the tails of the 
 /// distributions and the event should be rejected.
+/// Do this only for pythia gamma-jet events
+///
+/// \param process pythia process from AliMCAnalysisUtils::GetPythiaEventHeader()
+/// \param processName Jet-Jet or Gamma-Jet processes from AliMCAnalysisUtils::GetPythiaEventHeader()
 //____________________________________________________
-Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
+Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt(Int_t process, TString processName)
 {  
-  if ( !GetGenEventHeader() ) 
+  if ( !fGenEventHeader ) 
   {
     AliError("Skip event, event header is not available!");
     return kFALSE;
   }
-  
-  if ( !strcmp(GetGenEventHeader()->ClassName(), "AliGenPythiaEventHeader") )
-  {
-    AliGenPythiaEventHeader* pygeh= (AliGenPythiaEventHeader*) GetGenEventHeader();
-    
+
+  if ( fGenPythiaEventHeader )
+  {  
     // Do this check only for gamma-jet productions
-    Int_t process =  pygeh->ProcessType();
-    //printf("Process %d \n", process);
-    if ( process != 14 && process != 18 && process != 29 && process != 114 && process != 115 // && // prompt gamma 
-        //process != 11 && process != 12 && process != 13 && process != 28  && process !=  53 && // jet-jet 
-        //process != 68 && process != 96  // jet-jet
-       ) return kTRUE ;
-    //printf("\t yes \n");
+    if(processName !="Gamma-Jet") return kTRUE;
     
-    Float_t ptHard = pygeh->GetPtHard();
+    Float_t ptHard = fGenPythiaEventHeader->GetPtHard();
     
     Int_t nclusters = fInputEvent->GetNumberOfCaloClusters();
     for (Int_t iclus =  0; iclus <  nclusters; iclus++)
@@ -714,14 +714,14 @@ Bool_t AliCaloTrackReader::ComparePtHardAndClusterPt()
       
       if(ecluster > fPtHardAndClusterPtFactor*ptHard)
       {
-        AliInfo(Form("Reject : process %d, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
-                     process, ecluster,clus->GetType(),fPtHardAndClusterPtFactor,ptHard));
+        AliInfo(Form("Reject : process %d <%s>, ecluster %2.2f, calo %d, factor %2.2f, ptHard %f",
+                     process, processName.Data(), ecluster ,clus->GetType(), fPtHardAndClusterPtFactor,ptHard));
         
         return kFALSE;
       }
-    }
+    } // cluster loop
     
-  }
+  } // pythia header
   
   return kTRUE ;
 }
@@ -784,7 +784,13 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
     // Very open limits to check problems
     fhEMCALClusterEtaPhi->SetXTitle("#eta");
     fhEMCALClusterEtaPhi->SetYTitle("#varphi (rad)");
-    fOutputContainer->Add(fhEMCALClusterEtaPhi);
+    fOutputContainer->Add(fhEMCALClusterEtaPhi);    
+    
+    fhEMCALClusterEtaPhiFidCut  = new TH2F 
+    ("hEMCALReaderEtaPhiFidCut","#eta vs #varphi after fidutial cut",40,-2, 2,50, 0,10);
+    fhEMCALClusterEtaPhiFidCut->SetXTitle("#eta");
+    fhEMCALClusterEtaPhiFidCut->SetYTitle("#varphi (rad)");
+    fOutputContainer->Add(fhEMCALClusterEtaPhiFidCut);
   }
   
   if(fFillPHOS)
@@ -1016,9 +1022,19 @@ Int_t AliCaloTrackReader::GetTrackID(AliVTrack* track)
 //_____________________________
 void AliCaloTrackReader::Init()
 {  
+  // Activate debug level in reader
+  if( fDebug >= 0 )
+    (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(this->ClassName(),fDebug);
+  
   // Activate debug level in AliAnaWeights
   if( fWeightUtils->GetDebug() >= 0 )
     (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(fWeightUtils->ClassName(), fWeightUtils->GetDebug());
+  
+  // Activate debug level in AliMCAnalysisUtils
+  if( GetMCAnalysisUtils()->GetDebug() >= 0 )
+  (AliAnalysisManager::GetAnalysisManager())->AddClassDebug(GetMCAnalysisUtils()->ClassName(),GetMCAnalysisUtils()->GetDebug());
+  
+  //printf("Debug levels: Reader %d, Neutral Sel %d, Iso %d\n",fDebug,GetMCAnalysisUtils()->GetDebug(),fWeightUtils->GetDebug());
 }
 
 //_______________________________________
@@ -1115,6 +1131,9 @@ void AliCaloTrackReader::InitParameters()
   fTimeStampEventFracMin = -1;
   fTimeStampEventFracMax = 2;
   
+  fTimeStampEventCTPBCCorrMin = -1;
+  fTimeStampEventCTPBCCorrMax = 1e12;
+  
   for(Int_t i = 0; i < 19; i++)
   {
     fEMCalBCEvent   [i] = 0;
@@ -1145,14 +1164,18 @@ void AliCaloTrackReader::InitParameters()
   fSmearNLMMin = 1;
   fSmearNLMMax = 1;
   
+  fMCUtils     = new AliMCAnalysisUtils() ;
+
   fWeightUtils = new AliAnaWeights() ;
   fEventWeight = 1 ;
-    
+      
   fTrackMultNPtCut = 8;
   fTrackMultPtCut[0] = 0.15; fTrackMultPtCut[1] = 0.5;  fTrackMultPtCut[2] = 1.0; 
   fTrackMultPtCut[3] = 2.0 ; fTrackMultPtCut[4] = 4.0;  fTrackMultPtCut[5] = 6.0;  
   fTrackMultPtCut[6] = 8.0 ; fTrackMultPtCut[7] = 10.;  
   fTrackMultPtCut[8] = 15.0; fTrackMultPtCut[9] = 20.;  
+  
+  for(Int_t ism = 0; ism < 22; ism++) fScaleFactorPerSM[ism] = 1. ;    
 }
 
 //__________________________________________________________________________
@@ -1290,24 +1313,36 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   // Event rejection depending on time stamp
   //------------------------------------------------------
   
-  if(fDataType==kESD && fTimeStampEventSelect)
+  if ( fTimeStampEventSelect )
   {
-    AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
-    if(esd)
-    {
-      Int_t timeStamp = esd->GetTimeStamp();
-      Float_t timeStampFrac = 1.*(timeStamp-fTimeStampRunMin) / (fTimeStampRunMax-fTimeStampRunMin);
-      
-      //printf("stamp0 %d, max0 %d, frac %f\n", timeStamp-fTimeStampRunMin,fTimeStampRunMax-fTimeStampRunMin, timeStampFrac);
-      
-      if(timeStampFrac < fTimeStampEventFracMin || timeStampFrac > fTimeStampEventFracMax) return kFALSE;
-    }
+    Int_t timeStamp = fInputEvent->GetTimeStamp();
+    Float_t timeStampFrac = 1.*(timeStamp-fTimeStampRunMin) / (fTimeStampRunMax-fTimeStampRunMin);
+    
+    //printf("stamp0 %d, max0 %d, frac %f\n", timeStamp-fTimeStampRunMin,fTimeStampRunMax-fTimeStampRunMin, timeStampFrac);
+    
+    if(timeStampFrac < fTimeStampEventFracMin || timeStampFrac > fTimeStampEventFracMax) return kFALSE;
     
     AliDebug(1,"Pass Time Stamp rejection");
     
     fhNEventsAfterCut->Fill(8.5);
   }
 
+  if(fDataType==kESD && fTimeStampEventCTPBCCorrExclude)
+  {
+    AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
+    if(esd)
+    {
+      Int_t timeStamp = esd->GetTimeStampCTPBCCorr();
+      
+      if(timeStamp > fTimeStampEventCTPBCCorrMin && timeStamp <= fTimeStampEventCTPBCCorrMax) return kFALSE;
+    }
+    
+    AliDebug(1,"Pass Time Stamp CTPBCCorr rejection");
+    
+    fhNEventsAfterCut->Fill(8.5);
+  }
+
+  
   //------------------------------------------------------
   // Event rejection depending on vertex, pileup, v0and
   //------------------------------------------------------
@@ -1381,60 +1416,103 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
   if ( fCentralityBin[0] >= 0 && fCentralityBin[1] >= 0 )
   {
     cen = GetEventCentrality();
-      
-    if(cen > fCentralityBin[1] || cen <= fCentralityBin[0]) return kFALSE; //reject events out of bin.
+    
+    AliDebug(1,Form("Centrality %d in [%d,%d]?", cen, fCentralityBin[0], fCentralityBin[1]));
+
+    if ( cen >= fCentralityBin[1] || cen <  fCentralityBin[0]   )  return kFALSE; //reject events out of bin.
     
     AliDebug(1,"Pass centrality rejection");
     
     fhNEventsAfterCut->Fill(14.5);
   }
-  
-  //----------------------------------------------------------------
-  // Reject the event if the event header name is not
-  // the one requested among the possible generators.
-  // Needed in case of cocktail MC generation with multiple options.
-  //----------------------------------------------------------------
-  if(fMCGenerEventHeaderToAccept!="") 
-  {
-    if(!GetGenEventHeader()) return kFALSE;
-    
-    AliDebug(1,"Pass Event header selection");
-    
-    fhNEventsAfterCut->Fill(15.5);
-  }
 
-  //---------------------------------------------------------------------------
-  // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
-  // To be used on for MC data in pT hard bins
-  //---------------------------------------------------------------------------
-  
-  if(fComparePtHardAndJetPt)
+  //----------------------------------------------------------------
+  // MC events selections
+  //----------------------------------------------------------------
+  if ( GetMC() )
   {
-    if(!ComparePtHardAndJetPt()) return kFALSE ;
+    //----------------------------------------------------------------
+    // Get the event headers
+    //----------------------------------------------------------------
     
-    AliDebug(1,"Pass Pt Hard - Jet rejection");
+    // Main header
+    // Init it first to 0 to tell the method to recover it.
+    fGenEventHeader = 0;
+    fGenEventHeader = GetGenEventHeader();
+
+    if ( fGenEventHeader )
+    {
+      AliDebug(1,Form("Selected event header class <%s>, name <%s>; cocktail %p",
+                      fGenEventHeader->ClassName(),
+                      fGenEventHeader->GetName(),
+                      GetMC()->GetCocktailList()));
+    }
+   
+    //----------------------------------------------------------------
+    // Reject the event if the event header name is not
+    // the one requested among the possible generators.
+    // Needed in case of cocktail MC generation with multiple options.
+    //----------------------------------------------------------------
+    if(fMCGenerEventHeaderToAccept!="") 
+    {
+      if ( !fGenEventHeader ) return kFALSE;
+      
+      AliDebug(1,"Pass Event header selection");
+      
+      fhNEventsAfterCut->Fill(15.5);
+    }
     
-    fhNEventsAfterCut->Fill(16.5);
-  }
-  
-  if(fComparePtHardAndClusterPt)
-  {
-    if(!ComparePtHardAndClusterPt()) return kFALSE ;
+    // Pythia header
+    TString pyGenName       = ""; 
+    TString pyProcessName   = "";  
+    Int_t   pyProcess       = 0;
+    Int_t   pyFirstGenPart  = 0; 
+    Int_t   pythiaVersion   = 0;
     
-    AliDebug(1,"Pass Pt Hard - Cluster rejection");
-    
-    fhNEventsAfterCut->Fill(17.5);
-  }
+    // Init it first to 0 to tell the method to recover it.
+    fGenPythiaEventHeader = 
+    GetMCAnalysisUtils()->GetPythiaEventHeader(GetMC(),fMCGenerEventHeaderToAccept,
+                                               pyGenName,pyProcessName,pyProcess,pyFirstGenPart,pythiaVersion);
+
+    if(fGenPythiaEventHeader)
+    {
+      AliDebug(2,Form("Pythia v%d name <%s>, process %d <%s>, first generated particle %d",
+                   pythiaVersion, pyGenName.Data(), pyProcess, pyProcessName.Data(), pyFirstGenPart));
+      
+      //---------------------------------------------------------------------------
+      // In case of analysis of events with jets, skip those with jet pt > 5 pt hard
+      // To be used on for MC data in pT hard bins
+      //---------------------------------------------------------------------------
+      
+      if(fComparePtHardAndJetPt)
+      {
+        if ( !ComparePtHardAndJetPt(pyProcess, pyProcessName) ) return kFALSE ;
+        
+        AliDebug(1,"Pass Pt Hard - Jet rejection");
+        
+        fhNEventsAfterCut->Fill(16.5);
+      }
+      
+      if(fComparePtHardAndClusterPt)
+      {
+        if ( !ComparePtHardAndClusterPt(pyProcess, pyProcessName) ) return kFALSE ;
+        
+        AliDebug(1,"Pass Pt Hard - Cluster rejection");
+        
+        fhNEventsAfterCut->Fill(17.5);
+      }
+    } // pythia header
+  } // MC
   
   //------------------------------------------------------------------
   // Recover the weight assigned to the event, if provided
-  // right now only for pT-hard bins and centrality depedent weights
+  // right now only for pT-hard bins and centrality dependent weights
   //------------------------------------------------------------------
   if ( fWeightUtils->IsWeightSettingOn() )
   {
     fWeightUtils->SetCentrality(cen);
     
-    fWeightUtils->SetPythiaEventHeader(((AliGenPythiaEventHeader*)GetGenEventHeader()));
+    fWeightUtils->SetPythiaEventHeader(fGenPythiaEventHeader);
       
     fEventWeight = fWeightUtils->GetWeight();
   }
@@ -1515,7 +1593,7 @@ Int_t AliCaloTrackReader::GetEventCentrality() const
     else if(fCentralityOpt ==  20) return GetCentrality()->GetCentralityClass5(fCentralityClass); // 20 bins max
     else
     {
-      AliInfo(Form("Unknown centrality option %d, use 10, 20 or 100\n",fCentralityOpt));
+      AliInfo(Form("Unknown centrality option %d, use 10, 20 or 100",fCentralityOpt));
       return -1;
     }
   }
@@ -1549,14 +1627,14 @@ Double_t AliCaloTrackReader::GetEventPlaneAngle() const
   
   if(GetEventPlaneMethod()=="Q" && (ep < 0 || ep > TMath::Pi()))
   {
-    AliDebug(1,Form("Bad EP for <Q> method : %f\n",ep));
+    AliDebug(1,Form("Bad EP for <Q> method : %f",ep));
     return -1000;
   }
   else if(GetEventPlaneMethod().Contains("V0")  )
   {
     if((ep > TMath::Pi()/2 || ep < -TMath::Pi()/2))
     {
-      AliDebug(1,Form("Bad EP for <%s> method : %f\n",GetEventPlaneMethod().Data(), ep));
+      AliDebug(1,Form("Bad EP for <%s> method : %f",GetEventPlaneMethod().Data(), ep));
       return -1000;
     }
     
@@ -1639,7 +1717,7 @@ void AliCaloTrackReader::FillVertexArray()
       fVertex[0][0]=0.;   fVertex[0][1]=0.;   fVertex[0][2]=0.;
     }
     
-    AliDebug(1,Form("Single Event Vertex : %f,%f,%f\n",fVertex[0][0],fVertex[0][1],fVertex[0][2]));
+    AliDebug(1,Form("Single Event Vertex : %f,%f,%f",fVertex[0][0],fVertex[0][1],fVertex[0][2]));
     
   } else
   { // MultiEvent analysis
@@ -1857,9 +1935,21 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // No correction/cut applied yet
   fhEMCALClusterCutsE[0]->Fill(clus->E());
 
+  // Get the maximum cell energy, its SM number and its col, row location, needed in 
+  // different places of this method, although not active by default, one can consider
+  // deactivate this and only activate it when requiered.
+  Int_t absIdMax= -1;
+  Int_t iSupMod = -1;
+  Int_t iphiMax = -1;
+  Int_t ietaMax = -1;
+  Bool_t shared = kFALSE;
+  GetCaloUtils()->GetEMCALRecoUtils()->GetMaxEnergyCell(GetCaloUtils()->GetEMCALGeometry(), 
+                                                        GetEMCALCells(),clus,absIdMax,iSupMod,
+                                                        ietaMax,iphiMax,shared);
+  
   //if( (fDebug > 2 && fMomentum.E() > 0.1) || fDebug > 10 )
-  AliDebug(2,Form("Input cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, nCells %d",
-                  fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(), clus->GetNCells()));
+  AliDebug(2,Form("Input cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f, nCells %d, SM %d",
+                  fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta(), clus->GetNCells(), iSupMod));
 
   //---------------------------
   // Embedding case
@@ -1903,16 +1993,12 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
     if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn())
     {
       Double_t tof      = clus->GetTOF();
-      Float_t  frac     =-1;
-      Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
-      
       GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
       
       //additional L1 phase shift
       if(GetCaloUtils()->GetEMCALRecoUtils()->IsL1PhaseInTimeRecalibrationOn())
       {
-        GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absIdMax), 
-                                                                        fInputEvent->GetBunchCrossNumber(), tof);
+        GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTimeL1Phase(iSupMod,fInputEvent->GetBunchCrossNumber(), tof);
       }
 
       clus->SetTOF(tof);
@@ -1946,27 +2032,38 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   //clus->GetPosition(pos);
   //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
   
-  //--------------------------------------
-  // Correct non linearity or smear energy
+  //-----------------------------------------------------
+  // Correct non linearity, smear energy or scale per SM
   //
-  if(fCorrectELinearity && GetCaloUtils()->IsCorrectionOfClusterEnergyOn())
+  if ( fCorrectELinearity && GetCaloUtils()->IsCorrectionOfClusterEnergyOn() )
   {
     GetCaloUtils()->CorrectClusterEnergy(clus) ;
     
     AliDebug(5,Form("Correct Non Lin: Old E %3.2f, New E %3.2f",
                     fMomentum.E(),clus->E()));
-
-    // In case of MC analysis, to match resolution/calibration in real data
-    // Not needed anymore, just leave for MC studies on systematics
-    if( GetCaloUtils()->GetEMCALRecoUtils()->IsClusterEnergySmeared() )
-    {
-      Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
-      
-      AliDebug(5,Form("Smear energy: Old E %3.2f, New E %3.2f",clus->E(),rdmEnergy));
-    
-      clus->SetE(rdmEnergy);
-    }
   }
+  
+  // In case of MC analysis, to match resolution/calibration in real data
+  // Not needed anymore, just leave for MC studies on systematics
+  if( GetCaloUtils()->GetEMCALRecoUtils()->IsClusterEnergySmeared() )
+  {
+    Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
+    
+    AliDebug(5,Form("Smear energy: Old E %3.2f, New E %3.2f",clus->E(),rdmEnergy));
+    
+    clus->SetE(rdmEnergy);
+  }
+
+  // In case of uncalibrated data, or non final non linearity for MC
+  // or calibration of MC for SMs behind TRD, apply a global scale factor per SM  
+  if ( fScaleEPerSM && iSupMod < 22 && iSupMod >=0)
+  {
+    Float_t scale = fScaleFactorPerSM[iSupMod];
+    
+    AliDebug(5,Form("Scale energy for SM %d: Old E %3.2f, scale factor %1.5f",iSupMod,clus->E(),scale));
+    
+    clus->SetE(clus->E()*scale);
+  }  
   
   clus->GetMomentum(fMomentum, fVertex[vindex]);
   fhEMCALClusterEtaPhi->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
@@ -2004,24 +2101,16 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   {
     bEMCAL = kTRUE;
   }
-
+  
   //---------------------------------------------------------------------
   // Mask all cells in collumns facing ALICE thick material if requested
   //
-  if(GetCaloUtils()->GetNMaskCellColumns())
+  if ( GetCaloUtils()->GetNMaskCellColumns() )
   {
-    Int_t absId   = -1;
-    Int_t iSupMod = -1;
-    Int_t iphi    = -1;
-    Int_t ieta    = -1;
-    Bool_t shared = kFALSE;
-    GetCaloUtils()->GetEMCALRecoUtils()->GetMaxEnergyCell(GetCaloUtils()->GetEMCALGeometry(), GetEMCALCells(),clus,absId,iSupMod,ieta,iphi,shared);
-    
     AliDebug(2,Form("Masked collumn: cluster E %3.2f, pt %3.2f, phi %3.2f deg, eta %3.2f",
                     fMomentum.E(),fMomentum.Pt(),RadToDeg(GetPhi(fMomentum.Phi())),fMomentum.Eta()));
     
-    
-    if(GetCaloUtils()->MaskFrameCluster(iSupMod, ieta))
+    if ( GetCaloUtils()->MaskFrameCluster(iSupMod, ietaMax) )
     {
       AliDebug(2,"Mask cluster");
       return;
@@ -2031,6 +2120,8 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   // Check effect of energy and fiducial cuts
   fhEMCALClusterCutsE[4]->Fill(clus->E());
   
+  if ( bEMCAL || bDCAL ) fhEMCALClusterEtaPhiFidCut->Fill(fMomentum.Eta(),GetPhi(fMomentum.Phi()));
+
   //----------------------------------------------------
   // Apply N cells cut
   //
@@ -2085,7 +2176,6 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
   
   // Check effect of time cut
   fhEMCALClusterCutsE[7]->Fill(clus->E());
-
   
   //----------------------------------------------------
   // Smear the SS to try to match data and simulations,
@@ -2098,7 +2188,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
 
     if (  nMaxima >= fSmearNLMMin && nMaxima <= fSmearNLMMax )
     {
-      AliDebug(2,Form("Smear shower shape - Original: %2.4f\n", clus->GetM02()));
+      AliDebug(2,Form("Smear shower shape - Original: %2.4f", clus->GetM02()));
       if(fSmearingFunction == kSmearingLandau)
       {
         clus->SetM02( clus->GetM02() + fRandom.Landau(0, fSmearShowerShapeWidth) );
@@ -2112,7 +2202,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, Int_t iclus
         clus->SetM02( clus->GetM02() );
       }
       //clus->SetM02( fRandom.Landau(clus->GetM02(), fSmearShowerShapeWidth) );
-      AliDebug(2,Form("Width %2.4f         Smeared : %2.4f\n", fSmearShowerShapeWidth,clus->GetM02()));
+      AliDebug(2,Form("Width %2.4f         Smeared : %2.4f", fSmearShowerShapeWidth,clus->GetM02()));
     }
   }
   
@@ -2403,7 +2493,10 @@ void AliCaloTrackReader::FillInputPHOS()
 //____________________________________________
 void AliCaloTrackReader::FillInputEMCALCells()
 {  
-  fEMCALCells = fInputEvent->GetEMCALCells();
+  if(fEMCALCellsListName.Length() == 0)
+    fEMCALCells = fInputEvent->GetEMCALCells();
+  else
+    fEMCALCells = (AliVCaloCells*) fInputEvent->FindListObject(fEMCALCellsListName);
 }
 
 //___________________________________________
@@ -3122,8 +3215,6 @@ Bool_t  AliCaloTrackReader::RejectLEDEvents()
         AliDebug(1,Form("Reject event with ncells in SM%d %d, cut %d, trig %s",
                         ism,ncellsSM[ism],ncellcut,GetFiredTriggerClasses().Data()));
         
-        printf("Reject event with ncells in SM%d %d, cut %d, trig %s\n",
-               ism,ncellsSM[ism],ncellcut,GetFiredTriggerClasses().Data()); 
         return kTRUE;
       }
     }

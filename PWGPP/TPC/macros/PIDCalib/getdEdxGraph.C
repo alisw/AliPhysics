@@ -60,12 +60,9 @@ AliPID dummy;
   TH1F hDummy("hDummy",";#it{p} (GeV/#it{c});TPC d#it{E}/d#it{x} (arb. units)",100,0,20);
   hDummy.SetMaximum(1000);
   hDummy.Draw();
-
-  AliCDBManager *man = AliCDBManager::Instance();
-  man->SetDefaultStorage("raw://");
-  TGraph *grProtonTracking    = getdEdxGraphPIDReco(225000, AliPID::kProton)
-  TGraph *grProtonTracking_p5 = getdEdxGraphPIDReco(225000, AliPID::kProton,15)
-  TGraph *grProtonTracking_m5 = getdEdxGraphPIDReco(225000, AliPID::kProton,-15)
+  TGraph *grProtonTracking    = getdEdxGraphPIDReco(run, AliPID::kProton);
+  TGraph *grProtonTracking_p5 = getdEdxGraphPIDReco(run, AliPID::kProton,15);
+  TGraph *grProtonTracking_m5 = getdEdxGraphPIDReco(run, AliPID::kProton,-15);
 
   grProtonTracking    -> SetLineColor(kBlack);
   grProtonTracking_p5 -> SetLineColor(kBlack);
@@ -79,9 +76,46 @@ AliPID dummy;
   grProtonTracking_p5 -> SetLineWidth(3);
   grProtonTracking_m5 -> SetLineWidth(3);
 
-  grProtonTracking   ->Draw("l")
-  grProtonTracking_p5->Draw("l")
-  grProtonTracking_m5->Draw("l")
+  grProtonTracking   ->Draw("l");
+  grProtonTracking_p5->Draw("l");
+  grProtonTracking_m5->Draw("l");
+
+  // if you would like to use the cvmfs OCDB, use the next line, otherwise omit it
+  gSystem->Setenv("OCDB_PATH","/cvmfs/alice-ocdb.cern.ch");
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage("raw://");
+  Int_t run = 270824
+  for (Int_t i=0; i<AliPID::kSPECIESC; ++i) {
+    TGraph *grTracking    = getdEdxGraphPIDReco(run, AliPID::EParticleType(i));
+    TGraph *grTracking_p5 = getdEdxGraphPIDReco(run, AliPID::EParticleType(i),15);
+    TGraph *grTracking_m5 = getdEdxGraphPIDReco(run, AliPID::EParticleType(i),-15);
+
+    grTracking    -> SetLineColor(kBlack);
+    grTracking_p5 -> SetLineColor(kBlack);
+    grTracking_m5 -> SetLineColor(kBlack);
+
+    grTracking    -> SetLineStyle(kSolid);
+    grTracking_p5 -> SetLineStyle(kDashed);
+    grTracking_m5 -> SetLineStyle(kDashed);
+
+    grTracking    -> SetLineWidth(3);
+    grTracking_p5 -> SetLineWidth(3);
+    grTracking_m5 -> SetLineWidth(3);
+
+    grTracking   ->Draw("l");
+    grTracking_p5->Draw("l");
+    grTracking_m5->Draw("l");
+  }
+
+  // Draw BB used for MC
+  gSystem->Setenv("OCDB_PATH","/cvmfs/alice-ocdb.cern.ch");
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage("raw://");
+  Int_t run = 270824
+  for (Int_t i=0; i<AliPID::kSPECIESC; ++i) {
+    TF1* f = GetPIDforMCFunction(run);
+    f->Draw("same");
+  }
 
  */
 
@@ -174,7 +208,13 @@ TGraph* getdEdxGraphPIDReco(Int_t run, AliPID::EParticleType particle, Double_t 
 }
 
 //______________________________________________________________________________
-TF1* getPIDforRecoFunction(Int_t run, Double_t xmin=0.1, Double_t xmax=20., AliPID::EParticleType particle=AliPID::EParticleType(AliPID::kSPECIESC))
+/// return Bethe Bloch function for used in MC simulation or during reconstruction
+/// \param run run number
+/// \param xmin minimum momentum
+/// \param xmax maximum momentum
+/// \param particle particle type
+/// \param type 0: MC BB parameters, 1: PID for reconstruction BB parameters
+TF1* GetPIDFunction(Int_t run, Double_t xmin=0.1, Double_t xmax=20., AliPID::EParticleType particle=AliPID::EParticleType(AliPID::kSPECIESC), Int_t type=0)
 {
   AliCDBManager *man = AliCDBManager::Instance();
   if (!man->GetDefaultStorage() && !man->GetRaw()) {
@@ -190,6 +230,7 @@ TF1* getPIDforRecoFunction(Int_t run, Double_t xmin=0.1, Double_t xmax=20., AliP
   AliTPCParamSR *par=(AliTPCParamSR*)parEntry->GetObject();
 
   TVectorD *vBBPID = par->GetBetheBlochParameters();
+  if (type == 1) vBBPID = par->GetBetheBlochParametersMC();
   Double_t mass=1;
   if (particle!=AliPID::kSPECIESC) {
     mass=AliPID::ParticleMass(particle);
@@ -198,10 +239,27 @@ TF1* getPIDforRecoFunction(Int_t run, Double_t xmin=0.1, Double_t xmax=20., AliP
   vParams.ResizeTo(6);
   vParams(5)=mass;
 
-  TF1* funcBB = new TF1("fBBPidForReco", "50*AliExternalTrackParam::BetheBlochAleph(x/[5],[0],[1],[2],[3],[4])", xmin, xmax);
-  funcBB->SetParameters(vBBPID->GetMatrixArray());
+  TF1* funcBB = new TF1(Form("fBBPidForReco_%d_%s", run, AliPID::ParticleShortName(particle)), "50*AliExternalTrackParam::BetheBlochAleph(x/[5],[0],[1],[2],[3],[4])", xmin, xmax);
+  funcBB->SetParameters(vParams.GetMatrixArray());
+  funcBB->SetNpx(500);
 
   return funcBB;
+}
+
+//______________________________________________________________________________
+/// return Bethe Bloch function for used in during reconstruction
+/// \see GetPIDFunction
+TF1* GetPIDforRecoFunction(Int_t run, Double_t xmin=0.1, Double_t xmax=20., AliPID::EParticleType particle=AliPID::EParticleType(AliPID::kSPECIESC))
+{
+  return GetPIDFunction(run, xmin, xmax, particle, 0);
+}
+
+//______________________________________________________________________________
+/// return Bethe Bloch function for used in MC simulation
+/// \see GetPIDFunction
+TF1* GetPIDforMCFunction(Int_t run, Double_t xmin=0.1, Double_t xmax=20., AliPID::EParticleType particle=AliPID::EParticleType(AliPID::kSPECIESC))
+{
+  return GetPIDFunction(run, xmin, xmax, particle, 1);
 }
 
 //______________________________________________________________________________

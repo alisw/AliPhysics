@@ -17,7 +17,7 @@
 #include <TObjArray.h>
 
 // --- AliRoot system ---
-#include "AliAODPWG4ParticleCorrelation.h"
+#include "AliCaloTrackParticleCorrelation.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALGeoParams.h"
 #include "AliAODTrack.h"
@@ -67,7 +67,8 @@ void AliIsolationCut::CalculateUEBandClusterNormalization(AliCaloTrackReader * /
                                                            Float_t & phiUEptsumClusterNorm, Float_t & etaUEptsumClusterNorm,
                                                            Float_t & excessFracEta,         Float_t & excessFracPhi         ) const
 {
-  Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  Float_t coneA = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  if ( fDistMinToTrigger > 0 ) coneA -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
   //Careful here if EMCal limits changed .. 2010 (4 SM) to 2011-12 (10 SM), for the moment consider 100 deg in phi
   Float_t emcEtaSize = 0.7*2; // TO FIX
@@ -107,8 +108,9 @@ void AliIsolationCut::CalculateUEBandTrackNormalization  (AliCaloTrackReader * r
                                                           Float_t & phiUEptsumTrackNorm,  Float_t & etaUEptsumTrackNorm,
                                                           Float_t & excessFracEta,        Float_t & excessFracPhi          ) const
 {
-  Float_t coneA     = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
-
+  Float_t coneA = fConeSize*fConeSize*TMath::Pi(); // A = pi R^2, isolation cone area
+  if ( fDistMinToTrigger > 0 ) coneA -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
+  
   // Get the cut used for the TPC tracks in the reader, +-0.8, +-0.9 ...
   // Only valid in simple fidutial cut case and if the cut is applied, careful!
   Float_t tpcEtaSize = reader->GetFiducialCut()->GetCTSFidCutMaxEtaArray()->At(0) -
@@ -167,7 +169,7 @@ Float_t AliIsolationCut::CalculateExcessAreaFraction(Float_t excess) const
 //_________________________________________________________________________________
 /// Get good cell density (number of active cells over all cells in cone).
 //_________________________________________________________________________________
-Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandidate,
+Float_t AliIsolationCut::GetCellDensity(AliCaloTrackParticleCorrelation * pCandidate,
                                         AliCaloTrackReader * reader) const
 {
   Double_t coneCells    = 0.; //number of cells in cone with radius fConeSize
@@ -250,7 +252,7 @@ Float_t AliIsolationCut::GetCellDensity(AliAODPWG4ParticleCorrelation * pCandida
 //___________________________________________________________________________________
 /// Get good cell density (number of active cells over all cells in cone).
 //___________________________________________________________________________________
-void AliIsolationCut::GetCoeffNormBadCell(AliAODPWG4ParticleCorrelation * pCandidate,
+void AliIsolationCut::GetCoeffNormBadCell(AliCaloTrackParticleCorrelation * pCandidate,
                                           AliCaloTrackReader * reader,
                                           Float_t &  coneBadCellsCoeff,
                                           Float_t &  etaBandBadCellsCoeff,
@@ -415,7 +417,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
                                         AliCaloTrackReader * reader,
                                         AliCaloPID * pid,
                                         Bool_t bFillAOD,
-                                        AliAODPWG4ParticleCorrelation  *pCandidate,
+                                        AliCaloTrackParticleCorrelation  *pCandidate,
                                         TString aodArrayRefName,
                                         Int_t   & n,
                                         Int_t   & nfrac,
@@ -488,8 +490,8 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         phi = fTrackVector.Phi() ;
       }
       else
-      {// Mixed event stored in AliAODPWG4Particles
-        AliAODPWG4Particle * trackmix = dynamic_cast<AliAODPWG4Particle*>(plCTS->At(ipr)) ;
+      {// Mixed event stored in AliCaloTrackParticles
+        AliCaloTrackParticle * trackmix = dynamic_cast<AliCaloTrackParticle*>(plCTS->At(ipr)) ;
         if(!trackmix)
         {
           AliWarning("Wrong track data type, continue");
@@ -637,8 +639,8 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * plCTS,
         phi = fMomentum.Phi() ;
       }
       else
-      {// Mixed event stored in AliAODPWG4Particles
-        AliAODPWG4Particle * calomix = dynamic_cast<AliAODPWG4Particle*>(plNe->At(ipr)) ;
+      {// Mixed event stored in AliCaloTrackParticles
+        AliCaloTrackParticle * calomix = dynamic_cast<AliCaloTrackParticle*>(plNe->At(ipr)) ;
         if(!calomix)
         {
           AliWarning("Wrong calo data type, continue");

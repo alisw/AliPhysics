@@ -43,6 +43,7 @@ class AliEmcalCorrectionClusterHadronicCorrection : public AliEmcalCorrectionCom
   Bool_t Run();
   
 protected:
+  void                   GenerateTrackToContainerMap();
   Double_t               ApplyHadCorrOneTrack(Int_t icluster, Double_t hadCorr);
   Double_t               ApplyHadCorrAllTracks(Int_t icluster, Double_t hadCorr);
   void                   DoMatchedTracksLoop(Int_t icluster, Double_t &totalTrkP, Int_t &Nmatches, Double_t &trkPMCfrac, Int_t &NMCmatches);
@@ -51,6 +52,7 @@ protected:
   UInt_t                 GetMomBin(Double_t pt)                    const;
   Double_t               GetPhiMean(Int_t pbin, Int_t centbin)     const;
   Double_t               GetPhiSigma(Int_t pbin, Int_t centbin)    const;
+  Double_t               ComputeM02Subtraction(const AliVCluster* cluster, Double_t energyclus, Int_t Nmatches, Double_t totalTrkP, Double_t hadCorr);
   
   // Task configuration
   Double_t               fPhiMatch;                  ///< phi match value (pp=0.050)
@@ -58,13 +60,18 @@ protected:
   Bool_t                 fDoTrackClus;               ///< loop over tracks first
   Double_t               fHadCorr;                   ///< hadronic correction (fraction)
   Double_t               fEexclCell;                 ///< energy/cell that we cannot subtract from the clusters
-  Bool_t                 fDoExact;                   ///< do exact correction (embedding only)
+  Bool_t                 fPlotOversubtractionHistograms; ///< compute and plot oversubtracted energy from embedded/signal matches (embedding only)
+  Bool_t                 fDoNotOversubtract;         ///< do not oversubtract energy from cluster (embedding only)
+  Bool_t                 fUseM02SubtractionScheme;   ///< Flag to enable hadronic correction scheme using cluster M02 value
+  Bool_t                 fUseConstantSubtraction;    ///< Flag to perform constant rather than fractional subtract (only applicable if using M02 scheme)
+  Double_t               fConstantSubtractionValue;  ///< Value to be used for constant subtraction (only applicable if using constant subtraction in M02 scheme)
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
   AliEmcalContainerIndexMap <AliClusterContainer, AliVCluster> fClusterContainerIndexMap;    //!<! Mapping between index and cluster containers
   AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
 #endif
+  std::map <AliVTrack *, AliParticleContainer *> fTrackToContainerMap;                       //!<! Mapping between AliVTracks and their respective particle containers. Needed for AODs only. See GenerateTrackToContainerMap() for more information.
   
   // QA plots
   TH2                   *fHistMatchEtaPhi[10][9][2];  //!<!deta vs. dphi of matched cluster-track pairs
@@ -98,7 +105,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterHadronicCorrection> reg;
   
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterHadronicCorrection, 3); // EMCal cluster hadronic correction component
+  ClassDef(AliEmcalCorrectionClusterHadronicCorrection, 5); // EMCal cluster hadronic correction component
   /// \endcond
 };
 

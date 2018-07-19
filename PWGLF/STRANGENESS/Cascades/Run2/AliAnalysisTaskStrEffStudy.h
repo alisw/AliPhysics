@@ -408,6 +408,9 @@ private:
     Float_t fTreeVariableDecayX;
     Float_t fTreeVariableDecayY;
     Float_t fTreeVariableDecayZ;
+    Float_t fTreeVariableDecayXMC;
+    Float_t fTreeVariableDecayYMC;
+    Float_t fTreeVariableDecayZMC;
     Float_t fTreeVariableInvMassK0s; //!
     Float_t fTreeVariableInvMassLambda; //!
     Float_t fTreeVariableInvMassAntiLambda; //!
@@ -416,6 +419,9 @@ private:
     Int_t fTreeVariablePIDNegative;
     Float_t fTreeVariablePtMC;
     Float_t fTreeVariableRapMC;
+    //TOF info
+    Float_t fTreeVariableNegTOFSignal; //!
+    Float_t fTreeVariablePosTOFSignal; //!
     //Uncertainties
     Float_t fTreeVariablePosAlpha;
     Float_t fTreeVariablePosSigmaY2;
@@ -425,8 +431,10 @@ private:
     Float_t fTreeVariableNegSigmaZ2;
     
     //Sandbox mode
-    AliExternalTrackParam *fTreeVariablePosTrack;
-    AliExternalTrackParam *fTreeVariableNegTrack;
+    AliESDtrack *fTreeVariablePosTrack;
+    AliESDtrack *fTreeVariableNegTrack;
+    
+    AliESDv0 *fTreeVariableOTFV0;
     
     Float_t fTreeVariableMagneticField;
     
@@ -436,6 +444,8 @@ private:
     Float_t fTreeVariablePVx;
     Float_t fTreeVariablePVy;
     Float_t fTreeVariablePVz;
+    
+    Int_t fTreeVariableRun;
     
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
@@ -497,11 +507,17 @@ private:
     Int_t fTreeCascVarPIDPositive;
     Int_t fTreeCascVarPIDNegative;
     Int_t fTreeCascVarPIDBachelor;
+
     //Set tree variables
     Int_t fTreeCascVarPID;
     Float_t fTreeCascVarPtMC;
     Float_t fTreeCascVarRapMC;
     
+    //TOF info
+    Float_t fTreeCascVarNegTOFSignal; //!
+    Float_t fTreeCascVarPosTOFSignal; //!
+    Float_t fTreeCascVarBachTOFSignal; //!
+
     //Super-control vars
     Float_t fTreeCascVarPosDistanceToTrueDecayPt;
     Float_t fTreeCascVarNegDistanceToTrueDecayPt;
@@ -531,9 +547,12 @@ private:
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     //Save full info for full re-vertex offline replay ('sandbox mode')
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    AliExternalTrackParam *fTreeCascVarBachTrack;
-    AliExternalTrackParam *fTreeCascVarPosTrack;
-    AliExternalTrackParam *fTreeCascVarNegTrack;
+    AliESDtrack *fTreeCascVarBachTrack;
+    AliESDtrack *fTreeCascVarPosTrack;
+    AliESDtrack *fTreeCascVarNegTrack;
+    
+    //Sandbox on-the-fly V0 for comparison, please
+    AliESDv0 *fTreeCascVarOTFV0;
     
     Float_t fTreeCascVarMagneticField;
     
@@ -564,7 +583,11 @@ private:
     TH3D *fHistGeneratedPtVsYVsCentralityXiPlus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaMinus;
     TH3D *fHistGeneratedPtVsYVsCentralityOmegaPlus;
-
+    
+    //Hypertriton
+    TH3D *fHistGeneratedPtVsYVsCentralityHypTrit;
+    TH3D *fHistGeneratedPtVsYVsCentralityAntiHypTrit;
+    
     AliAnalysisTaskStrEffStudy(const AliAnalysisTaskStrEffStudy&);            // not implemented
     AliAnalysisTaskStrEffStudy& operator=(const AliAnalysisTaskStrEffStudy&); // not implemented
 

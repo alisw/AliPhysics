@@ -21,11 +21,14 @@
 #include "TVector3.h"
 
 //---- ANALYSIS system ----
-#include "AliMCAnalysisUtils.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliVParticle.h"
 #include "AliLog.h"
+
+#include "AliMCAnalysisUtils.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMCAnalysisUtils) ;
@@ -42,7 +45,15 @@ fJetsList(new TList),
 fMCGenerator(kPythia),
 fMCGeneratorString("PYTHIA"),
 fDaughMom(),  fDaughMom2(),
-fMotherMom(), fGMotherMom()
+fMotherMom(), fGMotherMom(),
+fPyGenHead(NULL) ,
+fPyGenName(""), 
+fPyProcessName(""), 
+fPyProcess(-1),
+fPyFirstParticle(0), 
+fPyVersion(0),
+fMinPartonicParent(5),
+fMaxPartonicParent(8)
 {}
 
 //_______________________________________
@@ -176,12 +187,13 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(Int_t index1, Int_t index2,
 ///
 /// \param labels: list of MC labels of cluster
 /// \param mcevent: pointer to MCEvent()
+/// \param selectHeaderName String that must have the header name, for pythia event header/process selection
 //_____________________________________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliMCEvent* mcevent)
+Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, AliMCEvent* mcevent, TString selectHeaderName)
 {      
   Int_t labels[] = { label };
   
-  return CheckOrigin(labels, 1, mcevent);  
+  return CheckOrigin(labels, 1, mcevent, selectHeaderName);  
 }	
 
 //__________________________________________________________________________________________
@@ -198,10 +210,12 @@ Int_t AliMCAnalysisUtils::CheckOrigin(Int_t label, const AliMCEvent* mcevent)
 /// \param labels: list of MC labels of cluster
 /// \param nlabels: total number of labels attached to cluster
 /// \param mcevent: pointer to MCEvent()
+/// \param selectHeaderName String that must have the header name, for pythia event header/process selection
 /// \param arrayCluster: list of calorimeter clusters, needed to check lost meson decays
 //__________________________________________________________________________________________
 Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
-                                      const AliMCEvent* mcevent, const TObjArray* arrayCluster)
+                                      AliMCEvent* mcevent,  TString selectHeaderName,
+                                      const TObjArray* arrayCluster)
 {    
   if( nlabels <= 0 )
   {
@@ -214,7 +228,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
     AliDebug(1,"MCEvent is not available, check analysis settings in configuration file, do nothing with MC!!");
     return -1;
   }
-  
+    
   Int_t tag = 0;
   Int_t nprimaries = mcevent->GetNumberOfTracks();
   
@@ -232,6 +246,23 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
     return tag; 
   } // Bad label
   
+  //////////////// Start get the Pythia header //////////
+  //
+  if(fMCGenerator == kPythia)
+  {
+    CheckAndGetPythiaEventHeader(mcevent,selectHeaderName);
+    
+//    printf("CheckOrigin() - Name <%s>, include name? <%s>, Pythia version %d,"
+//           " process %d, process name <%s>, first pythia particle %d\n",
+//           fPyGenName.Data(), selectHeaderName.Data(), fPyVersion, 
+//           fPyProcess, fPyProcessName.Data(),fPyFirstParticle);
+    
+    // Select the index range where the prompt photon partonic parent can be
+    // it depends on the pythia version
+  }
+  //
+  //////////////// End get the Pythia header //////////
+  
   // Most significant particle contributing to the cluster
   Int_t label=labels[0];
     
@@ -246,6 +277,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
   //if(label < 8 && fMCGenerator != kBoxLike) AliDebug(1,Form("Mother is parton %d\n",iParent));
   
   //GrandParent
+  AliVParticle * firstGparent = NULL ;
   AliVParticle * parent = NULL ;
   Int_t pPdg    =-1;
   Int_t pStatus =-1;
@@ -414,34 +446,76 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t *labels, Int_t nlabels,
       
       AliDebug(2,Form("Generator decay photon from parent pdg %d",pPdg));
     }
-    else if( mom->IsPhysicalPrimary() && ( fMCGenerator == kPythia || fMCGenerator == kHerwig ) ) //undecayed particle
+    else if( mom->IsPhysicalPrimary() && mStatus == 1 && 
+            ( fMCGenerator == kPythia || fMCGenerator == kHerwig ) ) //undecayed particle
     {
-      if(iParent < 8 && iParent > 5 )
+      Int_t  firstpPdg        =-1 ;
+      Int_t  firstPhotonLabel =-1 ;
+      Int_t  gparentlabel     =-1 ;
+      Bool_t ok = kFALSE;
+      
+//      printf("=== Photon Label %d, Mom label %d, iParent %d, pPdg %d, pT %2.3f; "
+//             "process %d (%s), min parent %d, max parent %d, pythia v%d\n",
+//             label,iMom,  iParent, pPdg, mom->Pt(), fPyProcess, 
+//             fPyProcessName.Data(), fMinPartonicParent,fMaxPartonicParent, fPyVersion);
+      
+      //PrintAncestry(mcevent,iMom,10);
+      
+      if ( fPyVersion == 6 || fMCGenerator == kHerwig ) // to be checked for herwig
       {
-        //outgoing partons
-        if(pPdg == 22) SetTagBit(tag,kMCPrompt);
-        else           SetTagBit(tag,kMCFragmentation);
-      }//Outgoing partons
-      else if( iParent <= 5 && ( fMCGenerator == kPythia || fMCGenerator == kHerwig ) )
-      {
-        SetTagBit(tag, kMCISR); //Initial state radiation
+        if( iParent-fPyFirstParticle < fMaxPartonicParent && 
+            iParent-fPyFirstParticle > fMinPartonicParent )
+        {
+          //outgoing partons
+          if ( pPdg == 22 ) { SetTagBit(tag,kMCPrompt)       ; /*printf("\t \t Prompt6\n")*/   ; }
+          else              { SetTagBit(tag,kMCFragmentation); /*printf("\t \t Fragment66\n");*/ }
+        }//Outgoing partons
+        else if( iParent <= fMinPartonicParent ) // Pythia6
+        {
+          SetTagBit(tag, kMCISR); //Initial state radiation
+          //printf("\t \t ISR\n");
+        }
+        else if ( pPdg <  23 )
+        {
+          SetTagBit(tag,kMCFragmentation);
+          
+          AliDebug(2,Form("Generator fragmentation photon from parent pdg %d",firstpPdg));
+          //printf("\t \t Fragment6\n");
+        }
+        else 
+        {
+          AliDebug(2,Form("Generator physical primary (pythia/herwig) unknown photon from parent pdg %d",firstpPdg));
+          //printf("\t \t Unknown\n");
+          SetTagBit(tag,kMCUnknown);
+        }
       }
-      else if ( pPdg <  23 )
+      else if ( fPyVersion == 8 )
       {
-        SetTagBit(tag,kMCFragmentation);
+        GetFirstMotherWithPDG(iMom,22,mcevent, ok, firstPhotonLabel,gparentlabel);
+//        printf("\t First Gen %d, First photon: %d, parent %d; first photon - first gen %d, parent-firstGen %d\n",
+//               fPyFirstParticle, firstPhotonLabel,gparentlabel,
+//               firstPhotonLabel-fPyFirstParticle, gparentlabel-fPyFirstParticle);
+        firstGparent = mcevent->GetTrack(firstPhotonLabel);
+        firstpPdg   = TMath::Abs(firstGparent->PdgCode());
         
-        AliDebug(2,Form("Generator fragmentation photon from parent pdg %d",pPdg));
+        if( firstPhotonLabel-fPyFirstParticle < fMaxPartonicParent && 
+            firstPhotonLabel-fPyFirstParticle > fMinPartonicParent )
+        {
+          SetTagBit(tag,kMCPrompt); 
+          //printf("\t \t Prompt8\n");
+        }
+        else
+        {
+          SetTagBit(tag,kMCFragmentation);
+          
+          AliDebug(2,Form("Generator fragmentation photon from parent pdg %d",firstpPdg));
+          //printf("\t \t Fragment8\n");
+        }
       }
-      else 
-      {
-        AliDebug(2,Form("Generator physical primary (pythia/herwig) unknown photon from parent pdg %d",pPdg));
-
-        SetTagBit(tag,kMCUnknown);
-      }
-    }//Physical primary
+    } // Physical primary
     else 
     {
-      AliDebug(2,Form("Generator unknown photon from parent pdg %d",pPdg));
+      AliDebug(2,Form("Generator unknown unphysical photon from parent pdg %d",pPdg));
 
       SetTagBit(tag,kMCUnknown);
     }
@@ -832,21 +906,19 @@ void    AliMCAnalysisUtils::CheckLostDecayPair(const TObjArray* arrayCluster, In
 
 //_____________________________________________________________________
 /// \return list of jets (TParticles) and index of most likely parton that originated it.
+/// \param mcevent pointer to AliMCEvent
+/// \param check get the list from the pythia header or if already done return just return it.
 //_____________________________________________________________________
-TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, AliGenEventHeader * mcheader, Int_t eventNumber)
+TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, Bool_t check)
 {    
-  if(fCurrentEvent==eventNumber) return fJetsList ;
-  
-  fCurrentEvent = eventNumber;
-  
-  if (fJetsList) fJetsList->Clear();
-  else           fJetsList = new TList;
+  if ( !fJetsList || !check ) return fJetsList ;
+    
+  if ( fJetsList ) fJetsList->Clear();
+  else             fJetsList = new TList;
   
   Int_t nTriggerJets = 0;
   Float_t tmpjet[]={0,0,0,0};
-		
-  //printf("Event %d %d\n",fCurrentEvent,iEvent);
-  
+		  
   // Get outgoing partons
   if(mcevent->GetNumberOfTracks() < 8) return fJetsList;
   
@@ -900,13 +972,12 @@ TList * AliMCAnalysisUtils::GetJets(AliMCEvent* mcevent, AliGenEventHeader * mch
   if(fMCGenerator == kPythia)
   {
     TParticle * jet =  0x0;
-    AliGenPythiaEventHeader* pygeh = (AliGenPythiaEventHeader*) mcheader;
-    nTriggerJets =  pygeh->NTriggerJets();
+    nTriggerJets =  fPyGenHead->NTriggerJets();
     AliDebug(2,Form("PythiaEventHeader: Njets: %d",nTriggerJets));
     
     for(Int_t i = 0; i< nTriggerJets; i++)
     {
-      pygeh->TriggerJet(i, tmpjet);
+      fPyGenHead->TriggerJet(i, tmpjet);
       
       jet = new TParticle(94, 21, -1, -1, -1, -1, tmpjet[0],tmpjet[1],tmpjet[2],tmpjet[3], 0,0,0,0);
       
@@ -1156,6 +1227,61 @@ TLorentzVector AliMCAnalysisUtils::GetMotherWithPDG(Int_t label, Int_t pdg,
   return fGMotherMom;
 }
 
+//___________________________________________________________________________________
+/// \return the kinematics of the particle ancestor for the first time with a given pdg
+/// Prompt/fragmentation photons can have multiple times a photon as its parent
+//___________________________________________________________________________________
+TLorentzVector AliMCAnalysisUtils::GetFirstMotherWithPDG(Int_t label, Int_t pdg,
+                                                         const AliMCEvent* mcevent,
+                                                         Bool_t & ok, Int_t & momlabel, 
+                                                         Int_t & gparentlabel)
+{  
+  fGMotherMom.SetPxPyPzE(0,0,0,0);
+  momlabel = label;
+  
+  if ( !mcevent )
+  {
+    AliWarning("MCEvent is not available, check analysis settings in configuration file!!");
+    
+    ok = kFALSE;
+    return fGMotherMom;
+  }
+  
+  Int_t nprimaries = mcevent->GetNumberOfTracks();
+  if ( label < 0 || label >= nprimaries )
+  {  
+    ok = kFALSE;
+    return fGMotherMom;
+  }
+  
+  AliVParticle * momP = mcevent->GetTrack(label);
+  
+  Int_t grandmomLabel = momP->GetMother();
+  gparentlabel = grandmomLabel;
+  Int_t grandmomPDG   = -1;
+  AliVParticle * grandmomP = 0x0;
+  
+  while (grandmomLabel >=0 ) 
+  {
+    grandmomP   = mcevent->GetTrack(grandmomLabel);
+    grandmomPDG = grandmomP->PdgCode();
+    if(grandmomPDG==pdg)
+    {
+      //printf("AliMCAnalysisUtils::GetMotherWithPDG(AOD) - mother with PDG %d FOUND! \n",pdg);
+      momlabel = grandmomLabel;
+      fGMotherMom.SetPxPyPzE(grandmomP->Px(),grandmomP->Py(),grandmomP->Pz(),grandmomP->E());
+      gparentlabel =  grandmomP->GetMother();
+    }
+    
+    grandmomLabel =  grandmomP->GetMother();
+  }
+    
+  ok = kTRUE;
+  
+  return fGMotherMom;
+}
+
+
 //______________________________________________________________________________________________
 /// \return the kinematics of the particle that generated the signal.
 //______________________________________________________________________________________________
@@ -1255,7 +1381,7 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, 
   else 
   {
     ok = kFALSE;
-    AliInfo(Form("Mother with PDG %d, not found! \n",pdg));
+    AliInfo(Form("Mother with PDG %d, not found!",pdg));
     return;
   }      
   
@@ -1370,6 +1496,200 @@ Int_t AliMCAnalysisUtils::GetNOverlaps(const Int_t * label, UInt_t nlabels,
   }
   
   return noverlaps ;
+}
+
+//________________________________________________________
+/// Recover the event header if it is from Pythia. Check it only once per event
+/// since it is called many times.
+///
+/// Get and set internally the generated process
+/// pythia version and first generated particle in case of cocktail events
+///
+/// \param mcevent Access to AliVMCEvent
+/// \param selectHeaderName String that must have the header name
+///
+//________________________________________________________
+AliGenPythiaEventHeader * AliMCAnalysisUtils::CheckAndGetPythiaEventHeader
+(AliMCEvent* mcevent, TString selectHeaderName)
+{
+  Int_t eventN = -1;
+  if ( (AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler() )
+    eventN = ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()->GetReadEntry());
+  
+  if ( fCurrentEvent != eventN )
+  {
+    fCurrentEvent = eventN ;
+    
+    //GetJets(mcevent, kTRUE);
+    
+    fPyGenHead =  GetPythiaEventHeader(mcevent, selectHeaderName,
+                                       fPyGenName, fPyProcessName, fPyProcess, 
+                                       fPyFirstParticle, fPyVersion);
+    
+    if      ( fPyVersion == 6 )
+    {
+      fMaxPartonicParent = 8 ; 
+      fMinPartonicParent = 5 ;
+    }
+    else if ( fPyVersion == 8 )
+    {
+      fMaxPartonicParent = 6 ; 
+      fMinPartonicParent = 3 ;
+    }
+    
+    AliDebug(1,Form("For event %d, Pythia v%d name <%s>, process %d <%s>, first generated particle %d,"
+                    " photon partonic parent range [%d,%d]",
+                    fCurrentEvent, fPyVersion, fPyGenName.Data(), 
+                    fPyProcess, fPyProcessName.Data(), 
+                    fPyFirstParticle, fMinPartonicParent, fMaxPartonicParent));
+  }
+  
+  return fPyGenHead ;  
+}
+
+//________________________________________________________
+/// Recover the event header if it is from Pythia. Get the generated process
+/// pythia version and first generated particle in case of cocktail events
+///
+/// \param mcevent Access to AliVMCEvent
+/// \param selectHeaderName String that must have the header name
+/// \param genName String with name of generator
+/// \param processName String with type opf event Jet-Jet or Gamma-Jet
+/// \param process Integer process number id
+/// \param firstParticle Integer of first generated particle in case of cocktail simulations
+/// \param pythiaVersion 6 or 8
+///
+//________________________________________________________
+AliGenPythiaEventHeader * AliMCAnalysisUtils::GetPythiaEventHeader
+(AliMCEvent* mcevent, TString selectHeaderName,
+ TString & genName, TString & processName, 
+ Int_t   & process, Int_t & firstParticle, 
+ Int_t   & pythiaVersion)
+{
+  AliGenPythiaEventHeader * pyGenHead = 0;
+  firstParticle = 0 ;
+  genName       = "";
+  processName   = "";
+  pythiaVersion = 0 ;
+  Int_t ngen    = 0 ; 
+
+  TList * genlist = mcevent->GetCocktailList();
+  if  ( !genlist ) 
+  {
+    if  ( !mcevent->GenEventHeader() ) return pyGenHead; 
+    else  ngen = 1 ;
+  }
+  else 
+  {
+    ngen = genlist->GetEntries();
+    //printf("Cocktail ngen %d\n",ngen);
+    
+    if  ( ngen < 1 ) 
+    {
+      if  ( !mcevent->GenEventHeader() ) 
+        return pyGenHead;
+      else 
+        ngen = 1 ; 
+    }
+  }
+  
+//  printf("GetPythiaEventHeader() - N generators %d, cocktail list %p, gen header %p\n",
+//         ngen,genlist,mcevent->GenEventHeader());
+
+  if ( ngen == 1 )
+  {
+    //printf("GetPythiaEventHeader() - Generator class name %s\n",mcevent->GenEventHeader()->ClassName());
+    if ( strcmp(mcevent->GenEventHeader()->ClassName(), "AliGenPythiaEventHeader") ) return pyGenHead ;
+    
+    pyGenHead = (AliGenPythiaEventHeader*) mcevent->GenEventHeader();
+
+    genName = pyGenHead->GetName();
+    //printf("GetPythiaEventHeader() - 1 generator: %s\n",genName.Data());
+  }
+  else if ( ngen > 1 )
+  {
+    // Get the first pythia header
+    for(Int_t igen = 0; igen < ngen; igen++)
+    {
+      AliGenEventHeader * header = (AliGenEventHeader*) genlist->At(igen);
+//      printf("GetPythiaEventHeader() - igen %d Generator class %s, name %s\n",
+//             igen, header->ClassName(),header->GetName());
+ 
+      if ( !header || strcmp(header->ClassName(), "AliGenPythiaEventHeader") ) 
+      {
+        // Count the number of particles before the first header
+        firstParticle += header->NProduced();
+
+        continue;
+      }
+
+      genName = header->GetName();
+
+      // In case of cocktail generators, select only the generator with a particular name
+      if ( selectHeaderName.Length() > 0 && !genName.Contains(selectHeaderName) ) 
+      {
+        firstParticle += header->NProduced();
+        genName = "";
+        
+        continue;
+      }
+      
+      //printf("\t igen %d %s\n",igen,genName.Data());
+      pyGenHead = (AliGenPythiaEventHeader*) genlist->At(igen);
+      
+      break;
+    } // for igen
+    
+//    printf("GetPythiaEventHeader() - N generators %d, pythia pointer %p, %s, first particle %d\n",
+//           genlist->GetEntries(), pyGenHead, genName.Data(), firstParticle);
+  } // cocktail
+  
+  if ( !pyGenHead ) return pyGenHead; 
+  
+  // Try to identify what pythia version was used
+  // and what event type, a bit dangerous, only valid for gamma-jet and jet-jet events
+  //
+  process =  pyGenHead->ProcessType();
+  
+  if      ( genName.Contains("Pythia6") ) pythiaVersion = 6;
+  else if ( genName.Contains("Pythia8") ) pythiaVersion = 8;
+  
+  if ( process == 14 || process == 18 || process == 29 ) 
+  {
+    if( !pythiaVersion ) pythiaVersion = 6;
+    processName = "Gamma-Jet";
+  }
+  else if ( process == 11 || process == 12 || 
+            process == 13 || process == 28 || 
+            process == 53 || process == 68 || process == 96  ) 
+  {
+    if( !pythiaVersion ) pythiaVersion = 6;
+    processName = "Jet-Jet";  
+  }
+  else if (process >= 201 && process <= 205)  
+  {
+    if( !pythiaVersion ) pythiaVersion = 8;
+    processName = "Gamma-Jet";
+  }
+  else if (  (process >= 111 && process <= 116) || // jet-jet
+             (process >= 121 && process <= 124)  ) // jet-jet (b/c)
+  {
+    if( !pythiaVersion ) pythiaVersion = 8;
+    processName = "Jet-Jet";
+  }
+  
+//  printf("GetPythiaEventHeader() - Pythia version %d, process %d, process name %s\n",
+//         pythiaVersion, process,processName.Data());
+  
+  //     TString nameGen = "";
+  //     mcevent->GetCocktailGenerator(firstParticle-1,genName);
+  //     printf("\t -1: %d, %s\n",firstParticle-1,genName.Data());  
+  //     mcevent->GetCocktailGenerator(firstParticle,genName);
+  //     printf("\t  0: %d, %s\n",firstParticle,genName.Data());  
+  //     mcevent->GetCocktailGenerator(firstParticle+1,genName);
+  //     printf("\t +1: %d, %s\n",firstParticle+1,genName.Data());
+  
+  return pyGenHead;  
 }
 
 //________________________________________________________

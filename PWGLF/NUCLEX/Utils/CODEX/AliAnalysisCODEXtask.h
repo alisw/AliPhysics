@@ -30,18 +30,17 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
 
     long GetParticleMask(TParticle* part);
 
-    /// You know why I am putting these members as public?
-    /// Because I am sick of writing down setter and getter
-    /// for classes that I, and only I, use.
-    /// If you don't like it, write 3x lines of code for each
-    /// of these members...
     bool            mMCtrue;
     UInt_t          mCentralityMode;
     AliESDtrackCuts Cuts;
     AliEventCuts    mEventCuts;
     double          mPtCut;                 /// Minimum pt stored in the output trees
     unsigned char   mPOI;                   /// Particles Of Interest (POI) to be stored in the output
+    unsigned char   mEventPOI;              /// Events without POI with this PDG code can be rejected
     double          mNsigmaTPCselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
+    double          mNsigmaTOFselectionPOI; /// Maximum number of sigmas in the TPC from the expected signal of a POI
+    double          mStartingPtTOFselection;/// pt at which the TOF selection starts
+    bool            mSkipEmptyEvents;       /// If true events without any tracks are not stored in the output tree
 
     void Discard(const TString discard) { mToDiscard = discard;};
 
@@ -61,9 +60,10 @@ class AliAnalysisCODEXtask : public AliAnalysisTaskSE {
     vector<AliAnalysisCODEX::Track> mTracks; /// Tracks
 
     ///
-    TH2I* mTimeChan;                                    /// 2D histogram with the Time/Channel correlation
+    TH2I* mTimeChan;                                    //! 2D histogram with the Time/Channel correlation
     //
     TString mToDiscard; /// List of the branches to discard
+
 
     ClassDef(AliAnalysisCODEXtask,2)
 };

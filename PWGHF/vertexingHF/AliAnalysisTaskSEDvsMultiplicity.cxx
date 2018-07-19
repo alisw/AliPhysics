@@ -17,7 +17,7 @@
 
 //*************************************************************************
 // Class AliAnalysisTaskSEDvsMultiplicity
-// AliAnalysisTaskSE for the D meson vs. multiplcity analysis
+// AliAnalysisTaskSE for the charmed haadrons vs. multiplcity analysis
 // Authors: Renu Bala, Zaida Conesa del Valle, Francesco Prino
 /////////////////////////////////////////////////////////////
 
@@ -37,6 +37,7 @@
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsDstoKKpi.h"
+#include "AliRDHFCutsLctoV0.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
@@ -262,6 +263,13 @@ AliAnalysisTaskSEDvsMultiplicity::AliAnalysisTaskSEDvsMultiplicity(const char *n
     Double_t minMass = massDs-0.5*nInvMassBins*MassBinSize;
     Double_t maxMass = massDs+0.5*nInvMassBins*MassBinSize;
     SetMassLimits(minMass,maxMass);
+    SetNMassBins(nInvMassBins); 
+  }else if(fPdgMeson == 4122) {
+    Double_t massLc  = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+    Int_t nInvMassBins = 1000;
+    Double_t minMass = massLc-0.250;
+    Double_t maxMass = massLc+0.250;
+    SetMassLimits(minMass,maxMass);
     SetNMassBins(nInvMassBins);
   }
   else{
@@ -355,6 +363,10 @@ void AliAnalysisTaskSEDvsMultiplicity::Init(){
   }else if(fPdgMeson==431){
     AliRDHFCutsDstoKKpi* copycut=new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi*>(fRDCutsAnalysis)));
     copycut->SetName("AnalysisCutsDs");
+    fListCuts->Add(copycut);
+  }else if(fPdgMeson==4122){
+    AliRDHFCutsLctoV0* copycut=new AliRDHFCutsLctoV0(*(static_cast<AliRDHFCutsLctoV0*>(fRDCutsAnalysis)));
+    copycut->SetName("AnalysisCutsLc2pK0S");
     fListCuts->Add(copycut);
   }
   if(fHistoMeasNch) fListCuts->Add(fHistoMeasNch);
@@ -682,6 +694,11 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     pdgDau[0]=321; pdgDau[1]=321; pdgDau[2]=211;
     nDau=3;
     selbit=AliRDHFCuts::kDsCuts;
+  }else if(fPdgMeson==4122){
+    arrayName="CascadesHF";
+    pdgDau[0]=211; pdgDau[1]=211; pdgDau[2]=0; // Quoting here K0S daughters (Lc ones on another variable later)
+    nDau=2;
+    selbit=AliRDHFCuts::kLctoV0Cuts;
   }
 
   if(!aod && AODEvent() && IsStandardAOD()) {
@@ -1025,19 +1042,29 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
   Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
   Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
   Double_t mDsPDG    = TDatabasePDG::Instance()->GetParticle(431)->Mass();
+  Double_t mLcPDG    = TDatabasePDG::Instance()->GetParticle(4122)->Mass();
 
   // pdg of daughters needed for D* too
   UInt_t pdgDgDStartoD0pi[2]={421,211};
+
+  // pdg of daughters needed for Lc2pK0S too
+  UInt_t pdgDgLctopK0S[2]={2212,310};
 
   Double_t aveMult=0.;
   Double_t nSelCand=0.;
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     AliAODRecoDecayHF *d = (AliAODRecoDecayHF*)arrayCand->UncheckedAt(iCand);
     AliAODRecoCascadeHF *dCascade = NULL;
-    if(fPdgMeson==413) dCascade = (AliAODRecoCascadeHF*)d;
+    if(fPdgMeson==413 || fPdgMeson==4122) dCascade = (AliAODRecoCascadeHF*)d;
+
+    if(fPdgMeson==4122) {
+      AliAODv0 * v0part = (AliAODv0*)dCascade->Getv0();
+      Bool_t onFlyV0 = v0part->GetOnFlyStatus(); // on-the-flight V0s
+      if (onFlyV0) continue;
+    }
 
     fHistNEvents->Fill(7);
-    if(fUseBit && !d->HasSelectionBit(selbit)){
+    if(fPdgMeson!=4122 && fUseBit && !d->HasSelectionBit(selbit)) {
       fHistNEvents->Fill(8);
       continue;
     }
@@ -1051,6 +1078,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     if(fReadMC) {
       if(fPdgMeson==413){
 	labD = dCascade->MatchToMC(fPdgMeson,421,(Int_t*)pdgDgDStartoD0pi,(Int_t*)pdgDau,arrayMC);
+      } else if(fPdgMeson==4122){
+	labD = dCascade->MatchToMC(fPdgMeson,pdgDgLctopK0S[1],(Int_t*)pdgDgLctopK0S,(Int_t*)pdgDau,arrayMC,kTRUE);
       } else {
 	labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
       }
@@ -1058,8 +1087,10 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     }
 
     Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
+    if (fPdgMeson == 4122) passAllCuts=(((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
     Int_t passTopolCuts=fRDCutsAnalysis->GetIsSelectedCuts();
-    if(fPdgMeson != 431 && passTopolCuts==0) continue;
+    if (fPdgMeson == 4122) passTopolCuts=(((fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr));
+    if (fPdgMeson != 431 && passTopolCuts==0) continue;
     nSelectedNoPID++;
     fHistNEvents->Fill(9);
     if(fPdgMeson == 431 && passAllCuts==0) continue;
@@ -1070,17 +1101,26 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
     Double_t multForCand = countCorr;
 
     if(fSubtractTrackletsFromDau){
-      // For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
-      AliAODRecoDecayHF2Prong* d0fromDstar = NULL;
-      if(fPdgMeson==413) d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
-
-      for(Int_t iDau=0; iDau<nDau; iDau++){
-	AliAODTrack *t = NULL;
-	if(fPdgMeson==413){ t = (AliAODTrack*)d0fromDstar->GetDaughter(iDau); }
-	else{ t = (AliAODTrack*)d->GetDaughter(iDau); }
+      if(fPdgMeson==4122) {
+	// For the Lc2pK0S case, subtract only the proton daughter track <=== FIXME !!
+	AliAODTrack *t = (AliAODTrack *)dCascade->GetBachelor();
 	if(!t) continue;
 	if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1)){
 	  if(multForCand>0) multForCand-=1;
+	}
+      } else {
+	// For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
+	AliAODRecoDecayHF2Prong* d0fromDstar = NULL;
+	if(fPdgMeson==413) d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
+
+	for(Int_t iDau=0; iDau<nDau; iDau++){
+	  AliAODTrack *t = NULL;
+	  if(fPdgMeson==413){ t = (AliAODTrack*)d0fromDstar->GetDaughter(iDau); }
+	  else{ t = (AliAODTrack*)d->GetDaughter(iDau); }
+	  if(!t) continue;
+	  if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1)){
+	    if(multForCand>0) multForCand-=1;
+	  }
 	}
       }
     }
@@ -1110,10 +1150,14 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
       mass[0]=d->InvMass(nDau,pdgDsKKpi);
       mass[1]=d->InvMass(nDau,pdgDspiKK);
       if(TMath::Abs(mass[0]-mDsPDG)<0.02 || TMath::Abs(mass[1]-mDsPDG)<0.02 ) nSelectedInMassPeak++; //20 MeV for now... FIXME
+    }else if(fPdgMeson==4122){
+      mass[0]=d->InvMass(2,pdgDgLctopK0S);
+      mass[1]=-1.;
+      if(TMath::Abs(mass[0]-mLcPDG)<0.02) nSelectedInMassPeak++; //20 MeV for now... FIXME
     }
       
     for(Int_t iHyp=0; iHyp<2; iHyp++){
-      if(mass[iHyp]<0.) continue; // for D+ and D* we have 1 mass hypothesis
+      if(mass[iHyp]<0.) continue; // for D+,D* and Lc2pK0S we have 1 mass hypothesis
       Double_t invMass=mass[iHyp];
       Double_t arrayForSparse[5]={invMass,ptCand,impparXY,dlen,multForCand};
 
@@ -1121,6 +1165,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	
 	if(fPdgMeson==413){
 	  labD = dCascade->MatchToMC(fPdgMeson,421,(Int_t*)pdgDgDStartoD0pi,(Int_t*)pdgDau,arrayMC);
+	}else if(fPdgMeson==4122){
+	  labD = dCascade->MatchToMC(fPdgMeson,pdgDgLctopK0S[1],(Int_t*)pdgDgLctopK0S,(Int_t*)pdgDau,arrayMC,kTRUE);
 	} else {
 	  labD = d->MatchToMC(fPdgMeson,arrayMC,nDau,(Int_t*)pdgDau);
 	}
@@ -1137,7 +1183,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	      trueImpParXY=AliVertexingHFUtils::GetTrueImpactParameterDplus(mcHeader,arrayMC,partD)*10000.;
 	    }else if(fPdgMeson==421){
 	      trueImpParXY=AliVertexingHFUtils::GetTrueImpactParameterDzero(mcHeader,arrayMC,partD)*10000.;
-	    }else if(fPdgMeson==413){
+	    }else if(fPdgMeson==413 || fPdgMeson==4122){
 	      trueImpParXY=0.; /// FIXME
 	    }
 	    Double_t arrayForSparseTrue[5]={invMass,ptCand,trueImpParXY,dlen,multForCand};
@@ -1179,7 +1225,7 @@ void AliAnalysisTaskSEDvsMultiplicity::UserExec(Option_t */*option*/)
 	fPtVsMassVsMult->Fill(multForCand,invMass,ptCand,nchWeight);
 	fPtVsMassVsMultUncorr->Fill(countTreta1,invMass,ptCand,nchWeight);
 	// Add separation between part antipart
-	if(fPdgMeson==411 || fPdgMeson==413 || fPdgMeson==431){
+	if(fPdgMeson==411 || fPdgMeson==413 || fPdgMeson==431 || fPdgMeson==4122){
 	  if(d->GetCharge()>0) fPtVsMassVsMultPart->Fill(multForCand,invMass,ptCand,nchWeight);
 	  else fPtVsMassVsMultAntiPart->Fill(multForCand,invMass,ptCand,nchWeight);
 	}else if(fPdgMeson==421){

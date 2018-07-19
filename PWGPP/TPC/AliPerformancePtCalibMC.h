@@ -12,7 +12,8 @@
 // Fit options and theta, phi bins can be set by user.
 // Attention: use the Set* functions of AliPerformancePtCalibMC when running AliPerformancePtCalibMC::Analyse().
 //
-// Author: S. Schuchmann 11/13/2009 
+// Author: S. Schuchmann 11/13/2009
+// Updated: J. Salzwedel 14/01/2015
 //----------------------------------------------------------------------------------------------------
 
 class TString;
@@ -22,23 +23,21 @@ class TH1F;
 class TH2F;
 class TList;
 
-class AliESDVertex;
-class AliESDtrack;
 class AliMCEvent;
 class AliTrackReference;
-class AliESDEvent; 
-class AliESDfriend; 
-class AliESDfriendTrack; 
+class AliVEvent; 
+class AliVfriend; 
+class AliVfriendTrack; 
 class AliMCParticle;
-class AliMCInfoCuts;
-class AliRecInfoCuts;
 class AliESDtrackCuts;
+class TRootIOCtor;
 
 #include "THnSparse.h"
 #include "AliPerformanceObject.h"
 
 class AliPerformancePtCalibMC : public AliPerformanceObject {
 public:
+  AliPerformancePtCalibMC(TRootIOCtor*);
   AliPerformancePtCalibMC(const char *name= "AliPerformancePtCalibMC", const char *title="AliPerformancePtCalibMC");
    virtual ~AliPerformancePtCalibMC() ;
 
@@ -46,7 +45,7 @@ public:
    virtual void  Init();
 
    // Execute analysis
-   virtual void  Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, const Bool_t bUseMC, const Bool_t bUseESDfriend);
+   virtual void  Exec(AliMCEvent* const mcEvent, AliVEvent *const vEvent, AliVfriendEvent *const vfriendEvent, const Bool_t bUseMC, const Bool_t bUseVfriend);
 
    // Merge output objects (needed by PROOF) 
    virtual Long64_t Merge(TCollection* const list);
@@ -83,13 +82,6 @@ public:
    // Export objects to folder
    TFolder *ExportToFolder(TObjArray * array=0);
 
-   // Selection cuts
-   void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) {fCutsRC = cuts;}   
-   void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) {fCutsMC = cuts;}
-    
-   AliRecInfoCuts*  GetAliRecInfoCuts() const {return fCutsRC;}  
-   AliMCInfoCuts*   GetAliMCInfoCuts()  const {return fCutsMC;}
-
 protected:
    // variables for fitting in Analyse() function
    Double_t fThetaBins[100];// array of theta bins for projection of charge/pt vs theta
@@ -117,13 +109,10 @@ private:
    //options for cuts
    Bool_t fOptTPC;// flag for reading of TPC tracks in Exec
    Bool_t fESDcuts;//flag for usage of esd track cuts
-   Bool_t fPions;// flag for analzsing pions instead of all charged particles
+   Bool_t fPions;// flag for analyzing pions instead of all charged particles
     
    //ESD track cut values
    Double_t fEtaAcceptance;//sets value of eta window
-   AliRecInfoCuts* fCutsRC;     // selection cuts for reconstructed tracks
-   AliMCInfoCuts*  fCutsMC;     // selection cuts for MC tracks
-
    
    TList       *fList;// list of histograms
    
@@ -171,7 +160,7 @@ private:
    AliPerformancePtCalibMC(const AliPerformancePtCalibMC&);            // not implemented 
    AliPerformancePtCalibMC& operator=(const AliPerformancePtCalibMC&); // not implemented 
 
-   ClassDef(AliPerformancePtCalibMC, 1); 
+   ClassDef(AliPerformancePtCalibMC, 2); 
 };
 
 #endif

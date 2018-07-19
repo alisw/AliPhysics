@@ -146,7 +146,7 @@ AliFemtoString
 AliFemtoModelCorrFctnKStar::Report()
 {
   TString report;
-  return AliFemtoString(report);
+  return AliFemtoString(report.Data());
 }
 
 
@@ -199,34 +199,42 @@ static inline int GetTruthBinFrom(const AliFemtoModelHiddenInfo *info)
   }
 }
 
-void AliFemtoModelCorrFctnKStar::AddRealPair(AliFemtoPair* aPair)
+void AliFemtoModelCorrFctnKStar::AddRealPair(AliFemtoPair* pair)
 {
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
+
   const AliFemtoModelHiddenInfo
-    *info1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(aPair->Track1()->HiddenInfo()),
-    *info2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(aPair->Track2()->HiddenInfo());
+    *info1 = static_cast<const AliFemtoModelHiddenInfo*>(pair->Track1()->HiddenInfo()),
+    *info2 = static_cast<const AliFemtoModelHiddenInfo*>(pair->Track2()->HiddenInfo());
 
   if (info1 == NULL || info2 == NULL) {
     return;
   }
 
-  const Float_t kstar = CalcTrueKStar(aPair);
+  const Float_t kstar = CalcTrueKStar(pair);
   fResNum->Fill(kstar);
 
   const int truth_bin = GetTruthBinFrom(info1);
   fTrueNum->Fill(kstar, truth_bin);
 }
 
-void AliFemtoModelCorrFctnKStar::AddMixedPair(AliFemtoPair* aPair)
+void AliFemtoModelCorrFctnKStar::AddMixedPair(AliFemtoPair* pair)
 {
+  if (fPairCut && !fPairCut->Pass(pair)) {
+    return;
+  }
+
   const AliFemtoModelHiddenInfo
-    *info1 = dynamic_cast<const AliFemtoModelHiddenInfo*>(aPair->Track1()->HiddenInfo()),
-    *info2 = dynamic_cast<const AliFemtoModelHiddenInfo*>(aPair->Track2()->HiddenInfo());
+    *info1 = static_cast<const AliFemtoModelHiddenInfo*>(pair->Track1()->HiddenInfo()),
+    *info2 = static_cast<const AliFemtoModelHiddenInfo*>(pair->Track2()->HiddenInfo());
 
   if (info1 == NULL || info2 == NULL) {
     return;
   }
 
-  const Float_t kstar = CalcTrueKStar(aPair);
+  const Float_t kstar = CalcTrueKStar(pair);
   fResDen->Fill(kstar);
 
   const int truth_bin = GetTruthBinFrom(info1);

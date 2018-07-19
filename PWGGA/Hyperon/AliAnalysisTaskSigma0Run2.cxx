@@ -1,403 +1,533 @@
-#include <TChain.h>
-#include <TH1.h>
-#include <TH2.h>
-
-#include <AliVEvent.h>
-#include <AliVTrack.h>
-#include <AliAODEvent.h>
-#include <AliAODTrack.h>
-#include <AliESDtrackCuts.h>
-#include <AliPIDResponse.h>
-#include <AliAnalysisManager.h>
-#include <AliInputEventHandler.h>
-#include <AliMCEvent.h>
-#include "AliAODConversionMother.h"
-#include "AliV0ParticleStrange.h"
-
 #include "AliAnalysisTaskSigma0Run2.h"
 
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliMultSelection.h"
+#include "AliPIDResponse.h"
 
 ClassImp(AliAnalysisTaskSigma0Run2)
 
-AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2() :
-AliAnalysisTaskSE("AliAnalysisTaskSigma0Run2"),
-fOutputContainer(),
-fIsHeavyIon(kFALSE),
-fIsMC(kFALSE),
-fIsQA(kFALSE),
-fMCEvent(NULL),
-fMCStack(NULL),
-fReco(),
-fQA(),
-fMC(),
-fMCtruth(),
-fESDCuts(0x0),
-fESDEvent(NULL),
-fPIDResponse(0x0),
-fV0Reader(NULL),
-fV0ReaderName("V0ReaderV1"),
-fV0ReaderStrange(NULL),
-fV0ReaderStrangeName("V0ReaderStrange"),
-fReaderGammas(NULL),
-fReaderV0s(NULL),
-fHistLambdaInvMass(NULL),
-fHistLambdaInvMassPt(NULL),
-fHistLambdaInvMassEta(NULL),
-fHistLambdaAngle(NULL),
-fHistLambdaR(NULL),
-fHistPhotonPt(NULL),
-fHistPhotonInvMassPt(NULL),
-fHistPhotonInvMassEta(NULL),
-fHistPhotonAngle(NULL),
-fHistPhotonR(NULL),
-fHistSigmaInvMass(NULL),
-fHistSigmaInvMassPt(NULL),
-fHistSigmaInvMassEta(NULL),
-fHistSigmaAngle(NULL),
-fHistSigmaR(NULL),
-fHistNevents(NULL),
-fHistNTracksPt(NULL),
-fHistNTracks(NULL),
-fHistNV0(NULL),
-fHistPt(NULL),
-fHistZvertex(NULL),
-fHistPtMC(NULL)
+    //____________________________________________________________________________________________________
+    AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2()
+    : AliAnalysisTaskSE("AliAnalysisTaskSigma0Run2"),
+      fAliEventCuts(),
+      fInputEvent(nullptr),
+      fMCEvent(nullptr),
+      fV0Reader(nullptr),
+      fV0ReaderName("NoInit"),
+      fV0Cuts(nullptr),
+      fAntiV0Cuts(nullptr),
+      fPhotonV0Cuts(nullptr),
+      fSigmaCuts(nullptr),
+      fAntiSigmaCuts(nullptr),
+      fSigmaPhotonCuts(nullptr),
+      fAntiSigmaPhotonCuts(nullptr),
+      fIsMC(false),
+      fIsHeavyIon(false),
+      fIsLightweight(false),
+      fV0PercentileMax(100.f),
+      fTrigger(AliVEvent::kINT7),
+      fLambdaContainer(),
+      fAntiLambdaContainer(),
+      fPhotonV0Container(),
+      fGammaArray(nullptr),
+      fOutputContainer(nullptr),
+      fQA(nullptr),
+      fHistCutQA(nullptr),
+      fHistRunNumber(nullptr),
+      fHistCutBooking(nullptr),
+      fHistCentralityProfileBefore(nullptr),
+      fHistCentralityProfileAfter(nullptr),
+      fHistCentralityProfileCoarseAfter(nullptr),
+      fHistTriggerBefore(nullptr),
+      fHistTriggerAfter(nullptr),
+      fOutputTree(nullptr) {}
 
-{
-  // default constructor
-}
-
-//___________________________________________________
-AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char* name) :
-AliAnalysisTaskSE(name),
-fIsHeavyIon(kFALSE),
-fIsMC(kFALSE),
-fIsQA(kFALSE),
-fOutputContainer(),
-fMCEvent(NULL),
-fMCStack(NULL),
-fReco(),
-fQA(),
-fMC(),
-fMCtruth(),
-fESDCuts(0x0),
-fESDEvent(NULL),
-fPIDResponse(0x0),
-fV0Reader(NULL),
-fV0ReaderName("V0ReaderV1"),
-fV0ReaderStrange(NULL),
-fV0ReaderStrangeName("V0ReaderStrange"),
-fReaderGammas(NULL),
-fReaderV0s(NULL),
-fHistLambdaInvMass(NULL),
-fHistLambdaInvMassPt(NULL),
-fHistLambdaInvMassEta(NULL),
-fHistLambdaAngle(NULL),
-fHistLambdaR(NULL),
-fHistPhotonPt(NULL),
-fHistPhotonInvMassPt(NULL),
-fHistPhotonInvMassEta(NULL),
-fHistPhotonAngle(NULL),
-fHistPhotonR(NULL),
-fHistSigmaInvMass(NULL),
-fHistSigmaInvMassPt(NULL),
-fHistSigmaInvMassEta(NULL),
-fHistSigmaAngle(NULL),
-fHistSigmaR(NULL),
-fHistNevents(NULL),
-fHistNTracks(NULL),
-fHistNTracksPt(NULL),
-fHistNV0(NULL),
-fHistPt(NULL),
-fHistZvertex(NULL),
-fHistPtMC(NULL)
-{
-  DefineInput(0,  TChain::Class());
+//____________________________________________________________________________________________________
+AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
+    : AliAnalysisTaskSE(name),
+      fAliEventCuts(),
+      fInputEvent(nullptr),
+      fMCEvent(nullptr),
+      fV0Reader(nullptr),
+      fV0ReaderName("NoInit"),
+      fV0Cuts(nullptr),
+      fAntiV0Cuts(nullptr),
+      fPhotonV0Cuts(nullptr),
+      fSigmaCuts(nullptr),
+      fAntiSigmaCuts(nullptr),
+      fSigmaPhotonCuts(nullptr),
+      fAntiSigmaPhotonCuts(nullptr),
+      fIsMC(false),
+      fIsHeavyIon(false),
+      fIsLightweight(false),
+      fV0PercentileMax(100.f),
+      fTrigger(AliVEvent::kINT7),
+      fLambdaContainer(),
+      fAntiLambdaContainer(),
+      fPhotonV0Container(),
+      fGammaArray(nullptr),
+      fOutputContainer(nullptr),
+      fQA(nullptr),
+      fHistCutQA(nullptr),
+      fHistRunNumber(nullptr),
+      fHistCutBooking(nullptr),
+      fHistCentralityProfileBefore(nullptr),
+      fHistCentralityProfileAfter(nullptr),
+      fHistCentralityProfileCoarseAfter(nullptr),
+      fHistTriggerBefore(nullptr),
+      fHistTriggerAfter(nullptr),
+      fOutputTree(nullptr) {
+  DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
-//___________________________________________________
-AliAnalysisTaskSigma0Run2::~AliAnalysisTaskSigma0Run2()
-{  
-  delete fESDCuts;
-  delete fV0Reader;
-  delete fV0ReaderName;
-  delete fV0ReaderStrange;
-  delete fReaderGammas;
-  delete fReaderV0s;
-}
+//____________________________________________________________________________________________________
+void AliAnalysisTaskSigma0Run2::UserExec(Option_t * /*option*/) {
+  AliVEvent *fInputEvent = InputEvent();
+  if (fIsMC) fMCEvent = MCEvent();
 
-//___________________________________________________
-void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects()
-{
-  if(fOutputContainer != NULL){
-    delete fOutputContainer;
-    fOutputContainer = NULL;
+  // PREAMBLE - CHECK EVERYTHING IS THERE
+  if (!fInputEvent) {
+    AliError("No Input event");
+    return;
   }
-  if(fOutputContainer == NULL){
-    fOutputContainer = new TList();
-    fOutputContainer->SetOwner(kTRUE);
-  }
-  
-  fReco = new TList();
-  fReco->SetName("Reco");
-  fReco->SetOwner(kTRUE);
-  fOutputContainer->Add(fReco);
-  
-  //RECO Histos
-  fHistLambdaInvMass = new TH1F("fHistLambdaInvMass", "#Lambda candidates ; Invariant mass [GeV/#it{c}^{2}]; # of entries",2000,0,2);
-  fReco->Add(fHistLambdaInvMass);
-  fHistLambdaInvMassPt = new TH2F("fHistLambdaInvMassPt", "#Lambda candidates ; #it{p}_{T}; Invariant mass [GeV/#it{c}^{2}]",100, 0, 20, 2000,0,2);
-  fReco->Add(fHistLambdaInvMassPt);
-  fHistLambdaInvMassEta = new TH2F("fHistLambdaInvMassEta", "#Lambda candidates ; #eta; Invariant mass [GeV/#it{c}^{2}]",100, 0, 20, 2000,0,2);
-  fReco->Add(fHistLambdaInvMassEta);
-  fHistLambdaAngle = new TH2F("fHistLambdaAngle", "#Lambda candidates ; #it{p}_{T}; Opening angle",100, 0, 20, 2000,0,2);
-  fReco->Add(fHistLambdaAngle);
-  fHistLambdaR = new TH2F("fHistLambdaR", "#Lambda candidates ; #it{p}_{T}; Opening angle",100, 0, 20, 2000,0,2);
-  fReco->Add(fHistLambdaR);
 
-  fHistPhotonPt = new TH1F("fHistPhotonPt", "Photon candidates ; #it{p}_{T}; # of entries",5000,0,5);
-  fReco->Add(fHistPhotonPt);
-  fHistPhotonInvMassPt = new TH2F("fHistPhotonInvMassPt", "Photon candidates ; #it{p}_{T}; Invariant mass [GeV/#it{c}^{2}]",100, 0, 5, 2000,0,2);
-  fReco->Add(fHistPhotonInvMassPt);
-  fHistPhotonInvMassEta = new TH2F("fHistPhotonInvMassEta", "Photon candidates ; #it{p}_{T}; #eta",100, 0, 5, 2000,0,2);
-  fReco->Add(fHistPhotonInvMassEta);
-  fHistPhotonAngle = new TH2F("fHistPhotonAngle", "Photon candidates ; #it{p}_{T}; Opening angle",100, 0, 5, 2000,0,2);
-  fReco->Add(fHistPhotonAngle);
-  fHistPhotonR = new TH2F("fHistPhotonR", "Photon candidates ; #it{p}_{T}; Conversion radius",100, 0, 5, 2000,0,200);
-  fReco->Add(fHistPhotonR);
+  if (fIsMC && !fMCEvent) {
+    AliError("No MC event");
+    return;
+  }
 
-  
-  fHistSigmaInvMass = new TH1F("fHistSigmaInvMass", "#Sigma candidates ; Invariant mass [GeV/#it{c}^{2}]; # of entries",2000,0,2);
-  fReco->Add(fHistSigmaInvMass);
-  fHistSigmaInvMassPt = new TH2F("fHistSigmaInvMassPt", "#Sigma candidates ; #it{p}_{T}; Invariant mass [GeV/#it{c}^{2}]",100, 0, 20, 2000,0,2);
-  fReco->Add(fHistSigmaInvMassPt);
-  fHistSigmaInvMassEta = new TH2F("fHistSigmaInvMassEta", "#Sigma candidates ; #eta; Invariant mass [GeV/#it{c}^{2}]",100, 0, 20, 2000,0,2);
-  fReco->Add(fHistSigmaInvMassEta);
-  fHistSigmaAngle = new TH2F("fHistSigmaAngle", "#Sigma candidates ; #it{p}_{T}; Opening angle",100, 0, 20, 2000,0,2);
-  fReco->Add(fHistSigmaAngle);
-  fHistSigmaR = new TH2F("fHistSigmaR", "#Sigma candidates ; #it{p}_{T}; Opening angle",100, 0, 20, 2000,0,2);
-  fReco->Add(fHistSigmaR);
-  
-  //MC Histos  
-  if(fIsMC){
-    fMC = new TList();
-    fMC->SetName("MC");
-    fMC->SetOwner(kTRUE);
-    fOutputContainer->Add(fMC);
-    fMCtruth = new TList();
-    fMCtruth->SetName("MC truth");
-    fMCtruth->SetOwner(kTRUE);
-    fOutputContainer->Add(fMCtruth);
-    
-    fHistPtMC = new TH1F("hPtMC","MC Pt distribution; #it{p}_{T} (GeV/#it{c}); #tracks", 100, 0., 5.);
-    fMC->Add(fHistPtMC);
-  
-  
-  //MC truth histos
-  
+  if (!fV0Cuts || !fAntiV0Cuts || !fPhotonV0Cuts) {
+    AliError("V0 Cuts missing");
+    return;
   }
-  
-  
-  //QA histos
-  if(fIsQA==kTRUE){
-    fQA= new TList();
-    fQA->SetName("QA");
-    fQA->SetOwner(kTRUE);
-    fOutputContainer->Add(fQA);
-    
-    fHistNevents = new TH1F("hNevents","Number of processed events;;#events",1,0,1);
-    fQA->Add(fHistNevents);
-    fHistNTracks = new TH1F("fHistNTracks","Number of tracks ;#tracks;#entries",500,0,500);
-    fQA->Add(fHistNTracks);
-    fHistNTracksPt = new TH2F("fHistNTracksPt","Number of tracks ; #it{p}_{T};#tracks",100,0,20,500,0,500);
-    fQA->Add(fHistNTracksPt);
-    fHistPt = new TH1F("hPt","Pt distribution; #it{p}_{T} (GeV/#it{c}); #entries", 1000, 0., 100);
-    fQA->Add(fHistPt);
-    fHistNV0 = new TH1F("fHistNV0","Number of V0s per event ; #V0;#entries",100,0,100);
-    fQA->Add(fHistNV0);
-    fHistZvertex = new TH1F("fHistZvertex", "Position z vertex; z vertex pos; #entries", 200, -25, 25);
-    fQA->Add(fHistZvertex);
-  }
-  
-  // Get the PID manager from the input event handler
-  AliAnalysisManager*   man          = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = static_cast<AliInputEventHandler*>(man->GetInputEventHandler());
-  fPIDResponse  = inputHandler->GetPIDResponse();
-  
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
-  if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
-  
-  if(fV0Reader){
-    if((AliConvEventCuts*)fV0Reader->GetEventCuts()){
-      if(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms()){
-        fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
-      }
-    }
-    
-    if((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts()){
-      if(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms()){
-        fOutputContainer->Add(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
-      }
-    }
-  }
-   
-  fV0ReaderStrange=(AliV0ReaderStrange*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderStrangeName.Data());
-  if(!fV0ReaderStrange){printf("Error: No V0 Reader Strange");return;} // GetV0Reader
-  
-  if(fV0ReaderStrange){  
-    if((AliV0CutsStrange*)fV0ReaderStrange->GetV0Cuts()){
-      if((AliV0CutsStrange*)fV0ReaderStrange->GetV0Cuts()->GetCutHistograms()){
-        fOutputContainer->Add((AliV0CutsStrange*)fV0ReaderStrange->GetV0Cuts()->GetCutHistograms());
-      }
-    }
-  }
-  
-  PostData(1, fOutputContainer);
-}
 
-//___________________________________________________
-void AliAnalysisTaskSigma0Run2::UserExec(Option_t */*option*/)
-{    
-  AliVEvent *event=InputEvent();
-  
-  fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
-  if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
-  
-  fV0ReaderStrange=(AliV0ReaderStrange*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderStrangeName.Data());
-  if(!fV0ReaderStrange){printf("Error: No V0 Reader Strange");return;} // GetV0Reader
-  
-  //   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-  //   if(event->IsIncompleteDAQ()==kTRUE) eventQuality = 2;  // incomplete event
-  //   if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete
-  //     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
-  //       fHistoNEvents[iCut]->Fill(eventQuality);
-  //     }
-  //     return;
-  //   }
-  
-  const AliVVertex *vertex = event->GetPrimaryVertex();
-  fHistZvertex->Fill(vertex->GetZ());
-  
-  fReaderGammas    = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
-  fReaderV0s       = fV0ReaderStrange->GetReconstructedV0s();
-  
-  // check the analysis type
-  Bool_t isAOD = event->IsA() == AliAODEvent::Class();
-  
-  // in case of ESD analysis create the track cut object
-  if (!isAOD && !fESDCuts) fESDCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-  
-  Int_t nV0 = event->GetNumberOfV0s();
-  fHistNV0->Fill(nV0);
-  
-  fHistNevents->Fill(0);
-  
-  // loop over all tracks
-  const Int_t ntracks = event->GetNumberOfTracks();  
-  fHistNTracks->Fill(ntracks);
-  
-  
-  if(fMCEvent){ // Process MC Particle
-    fMCStack = fMCEvent->Stack();
-    ProcessMCParticles();
+  fV0Reader =
+      (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
+          fV0ReaderName.Data());
+  if (!fV0Reader) {
+    AliError("No V0 reader");
+    return;
   }
-  
-  
-  
-  
-  for(Int_t iLambda = 0; iLambda < fReaderV0s->GetEntriesFast(); ++iLambda){
-    AliV0ParticleStrange* LambdaCandidate =dynamic_cast<AliV0ParticleStrange*>(fReaderV0s->At(iLambda));
-//     AliV0ParticleStrange* LambdaCandidate = (AliV0ParticleStrange*) fReaderV0s->At(iLambda);
-    if(!LambdaCandidate) continue;
-    fHistLambdaInvMass->Fill(LambdaCandidate->GetMass());
-    fHistLambdaInvMassPt->Fill(LambdaCandidate->GetMass(), LambdaCandidate->GetPhotonPt());
-    fHistLambdaInvMassEta->Fill(LambdaCandidate->GetMass(), LambdaCandidate->GetPhotonEta());
-    //   fHistLambdaAngle(NULL),
-    fHistLambdaR->Fill(LambdaCandidate->GetMass(), LambdaCandidate->GetConversionRadius());
-    if(LambdaCandidate->GetMass()>1.23 || LambdaCandidate->GetMass()<1.) continue;
-    
-    for(Int_t iGamma=0; iGamma<fReaderGammas->GetEntriesFast(); ++iGamma){
-      AliAODConversionPhoton* PhotonCandidate =dynamic_cast<AliAODConversionPhoton*>(fReaderGammas->At(iGamma));
-      if(!PhotonCandidate) continue;
-      AliAODConversionPhoton *vPhotonCandidate = new AliAODConversionPhoton(PhotonCandidate);
-      fHistPhotonPt->Fill(PhotonCandidate->GetPhotonPt());
-      fHistPhotonInvMassPt->Fill(PhotonCandidate->GetPhotonPt(), PhotonCandidate->M());
-      fHistPhotonInvMassEta->Fill(PhotonCandidate->GetPhotonPt(), PhotonCandidate->GetPhotonEta());
-      //   fHistPhotonAngle(NULL),
-      fHistPhotonR->Fill(PhotonCandidate->GetPhotonPt(), PhotonCandidate->GetConversionRadius());
-      
-      AliAODConversionMother *SigmaCandidate = new AliAODConversionMother(LambdaCandidate, vPhotonCandidate); 
-      fHistSigmaInvMass->Fill(SigmaCandidate->M());
-      fHistSigmaInvMass->Fill(SigmaCandidate->M());
-      fHistSigmaInvMassPt->Fill(SigmaCandidate->M(), SigmaCandidate->Pt());
-      fHistSigmaInvMassEta->Fill(SigmaCandidate->M(), SigmaCandidate->Eta());
-      //       fGammaRadius =  PhotonCandidate->GetConversionRadius();  // fRConvPhoton  
-      //     fGammaDCAzToPrimVtx = PhotonCandidate->GetDCAzToPrimVtx();
-      
-      //   fHistSigmaAngle(NULL),
-      //   fHistSigmaR->Fill(SigmaCandidate->GetMass(), SigmaCandidate->GetConversionRadius());
-      
-      if( fMCEvent ) {
-//         LambdaCandidate->GetMCLabelPositive();
-//         LambdaCandidate->GetMCLabelNegative();
-        
-        
-      }
-      
-      
-      delete SigmaCandidate;
-    }
-    
+
+  if (!fSigmaCuts || !fAntiSigmaCuts || !fSigmaPhotonCuts ||
+      !fAntiSigmaPhotonCuts) {
+    AliError("Sigma0 Cuts missing");
+    return;
   }
-  
-  Float_t highest_pT=0;
-  
-  for (Int_t itrack=0 ;itrack<ntracks; ++itrack) {
-    AliVTrack *vtrack = static_cast<AliVTrack*>(event->GetTrack(itrack));
-    if(!vtrack) continue;
-    if (isAOD) {
-      // see also documentation for specific AOD productions
-      // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWGPPAODTrackCuts
-      AliAODTrack *aodTrack = static_cast<AliAODTrack*>(vtrack);
-      if (!aodTrack->TestFilterBit(AliAODTrack::kTrkGlobal)) continue;
-    } 
-    else {
-      if (!fESDCuts->IsSelected(vtrack)) continue;
-    }
-    
-    Double_t pt = vtrack->Pt();
-    if(pt>highest_pT) highest_pT=pt;
-    
-    // fill the Pt histogram
-    fHistPt->Fill(pt);
-    
-    // get the MC track and fill the MC hist if it exists
-//     AliVParticle *mcPart = GetMCTrack(vtrack);
-//     if (mcPart) fHistPtMC->Fill(mcPart->Pt());
-    
-  }
-  
-  fHistNTracksPt->Fill(highest_pT, ntracks);
-  
+
+  // EVENT SELECTION
+  if (!AcceptEvent(fInputEvent)) return;
+
+  // LAMBDA SELECTION
+  fV0Cuts->SelectV0(fInputEvent, fMCEvent, fLambdaContainer);
+
+  // LAMBDA SELECTION
+  fAntiV0Cuts->SelectV0(fInputEvent, fMCEvent, fAntiLambdaContainer);
+
+  // PHOTON V0 SELECTION
+  fPhotonV0Cuts->SelectV0(fInputEvent, fMCEvent, fPhotonV0Container);
+
+  // PHOTON SELECTION
+  fGammaArray = fV0Reader->GetReconstructedGammas();  // Gammas from default Cut
+  std::vector<AliSigma0ParticleV0> gammaConvContainer;
+  CastToVector(gammaConvContainer, fInputEvent);
+
+  // Sigma0 selection
+  fSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
+                                 fLambdaContainer);
+
+  // Sigma0 selection
+  fAntiSigmaCuts->SelectPhotonMother(fInputEvent, fMCEvent, gammaConvContainer,
+                                     fAntiLambdaContainer);
+
+  // Sigma0 selection
+  fSigmaPhotonCuts->SelectPhotonMother(fInputEvent, fMCEvent,
+                                       fPhotonV0Container, fLambdaContainer);
+
+  // Sigma0 selection
+  fAntiSigmaPhotonCuts->SelectPhotonMother(
+      fInputEvent, fMCEvent, fPhotonV0Container, fAntiLambdaContainer);
   // flush the data
   PostData(1, fOutputContainer);
 }
 
+//____________________________________________________________________________________________________
+bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
+  fHistRunNumber->Fill(0.f, event->GetRunNumber());
+  if (!fIsLightweight) FillTriggerHisto(fHistTriggerBefore);
 
-//____________________________________________________________
-void AliAnalysisTaskSigma0Run2::ProcessMCParticles()
-{  
-  // Loop over all primary MC particle
-  const AliVVertex* primVtxMC 	= fMCEvent->GetPrimaryVertex();
-  Double_t mcProdVtxX = primVtxMC->GetX();
-  Double_t mcProdVtxY = primVtxMC->GetY();
-  Double_t mcProdVtxZ = primVtxMC->GetZ();
-  
-  for(Int_t i = 0; i < fMCStack->GetNtrack(); i++) {
-    
-    TParticle* particle = (TParticle *)fMCStack->Particle(i);
-    if (!particle) continue;
-    
+  fHistCutQA->Fill(0);
+
+  // EVENT SELECTION
+  if (!fAliEventCuts.AcceptEvent(event)) return false;
+  fHistCutQA->Fill(1);
+
+  if (!fIsLightweight) FillTriggerHisto(fHistTriggerAfter);
+
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
+  if (!MultSelection) {
+    // If you get this warning (and lPercentiles 300) please check that the
+    // AliMultSelectionTask actually ran (before your task)
+    AliWarning("AliMultSelection object not found!");
+  } else {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
   }
+  if (!fIsLightweight) fHistCentralityProfileBefore->Fill(lPercentile);
+
+  // MULTIPLICITY SELECTION
+  if (fTrigger == AliVEvent::kHighMultV0 && fV0PercentileMax < 100.f) {
+    if (lPercentile > fV0PercentileMax) return false;
+    if (!fIsLightweight) fHistCentralityProfileAfter->Fill(lPercentile);
+    fHistCutQA->Fill(2);
+  }
+  if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
+
+  bool isConversionEventSelected =
+      ((AliConvEventCuts *)fV0Reader->GetEventCuts())
+          ->EventIsSelected(event, static_cast<AliMCEvent *>(fMCEvent));
+  if (!isConversionEventSelected) return false;
+
+  fHistCutQA->Fill(3);
+  return true;
+}
+
+//____________________________________________________________________________________________________
+void AliAnalysisTaskSigma0Run2::CastToVector(
+    std::vector<AliSigma0ParticleV0> &container, const AliVEvent *inputEvent) {
+  for (int iGamma = 0; iGamma < fGammaArray->GetEntriesFast(); ++iGamma) {
+    auto *PhotonCandidate =
+        dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
+    if (!PhotonCandidate) continue;
+    AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
+    container.push_back(phot);
+  }
+}
+
+//____________________________________________________________________________________________________
+void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
+  if (fOutputContainer != nullptr) {
+    delete fOutputContainer;
+    fOutputContainer = nullptr;
+  }
+  if (fOutputContainer == nullptr) {
+    fOutputContainer = new TList();
+    fOutputContainer->SetOwner(kTRUE);
+  }
+
+  fQA = new TList();
+  fQA->SetName("EventCuts");
+  fQA->SetOwner(true);
+
+  fAliEventCuts.SetManualMode();
+  if (!fIsHeavyIon) fAliEventCuts.SetupRun2pp();
+  fAliEventCuts.fTriggerMask = fTrigger;
+  fAliEventCuts.fRequireExactTriggerMask = true;
+
+  fHistRunNumber = new TProfile("fHistRunNumber", ";;Run Number", 1, 0, 1);
+  fQA->Add(fHistRunNumber);
+
+  fHistCutQA = new TH1F("fHistCutQA", ";;Entries", 5, 0, 5);
+  fHistCutQA->GetXaxis()->SetBinLabel(1, "Event");
+  fHistCutQA->GetXaxis()->SetBinLabel(2, "AliEventCuts");
+  fHistCutQA->GetXaxis()->SetBinLabel(3, "Multiplicity selection");
+  fHistCutQA->GetXaxis()->SetBinLabel(4, "AliConversionCuts");
+  fQA->Add(fHistCutQA);
+
+  fHistCutBooking = new TProfile("fHistCutBooking", ";;Cut value", 1, 0, 1);
+  fHistCutBooking->GetXaxis()->SetBinLabel(1, "V0 percentile");
+  fQA->Add(fHistCutBooking);
+  fHistCutBooking->Fill(0.f, fV0PercentileMax);
+
+  if (!fIsLightweight) {
+    fAliEventCuts.AddQAplotsToList(fQA);
+
+    fV0Reader =
+        (AliV0ReaderV1 *)AliAnalysisManager::GetAnalysisManager()->GetTask(
+            fV0ReaderName.Data());
+    if (!fV0Reader) {
+      AliError("No V0 reader");
+      return;
+    }
+
+    if (fV0Reader->GetEventCuts() &&
+        fV0Reader->GetEventCuts()->GetCutHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetEventCuts()->GetCutHistograms());
+    }
+    if (fV0Reader->GetConversionCuts() &&
+        fV0Reader->GetConversionCuts()->GetCutHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetConversionCuts()->GetCutHistograms());
+    }
+    if (fV0Reader->GetProduceV0FindingEfficiency() &&
+        fV0Reader->GetV0FindingEfficiencyHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetV0FindingEfficiencyHistograms());
+    }
+    if (fV0Reader->GetProduceImpactParamHistograms()) {
+      fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
+    }
+
+    fHistCentralityProfileBefore =
+        new TH1F("fHistCentralityProfileBefore", "; V0 percentile (%); Entries",
+                 1000, 0, 5);
+    fHistCentralityProfileAfter =
+        new TH1F("fHistCentralityProfileAfter", "; V0 percentile (%); Entries",
+                 1000, 0, 5);
+    fHistCentralityProfileCoarseAfter =
+        new TH1F("fHistCentralityProfileCoarseAfter",
+                 "; V0 percentile (%); Entries", 100, 0, 100);
+    fQA->Add(fHistCentralityProfileBefore);
+    fQA->Add(fHistCentralityProfileAfter);
+    fQA->Add(fHistCentralityProfileCoarseAfter);
+
+    fHistTriggerBefore = new TH1F("fHistTriggerBefore", ";;Entries", 50, 0, 50);
+    fHistTriggerBefore->GetXaxis()->LabelsOption("u");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(1, "kMB");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(2, "kINT1");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(3, "kINT7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(4, "kMUON");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(5, "kHighMult");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(6, "kHighMultSPD");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(7, "kEMC1");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(8, "kCINT5");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(9, "kINT5");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(10, "kCMUS5");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(11, "kMUSPB");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(12, "kINT7inMUON");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(13, "kMuonSingleHighPt7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(14, "kMUSH7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(15, "kMUSHPB");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(16, "kMuonLikeLowPt7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(17, "kMUL7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(18, "kMuonLikePB");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(19, "kMuonUnlikeLowPt7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(20, "kMUU7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(21, "kMuonUnlikePB");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(22, "kEMC7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(23, "kEMC8");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(24, "kMUS7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(25, "kMuonSingleLowPt7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(26, "kPHI1");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(27, "kPHI7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(28, "kPHI8");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(29, "kPHOSPb");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(30, "kEMCEJE");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(31, "kEMCEGA");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(32, "kHighMultV0");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(33, "kCentral");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(34, "kSemiCentral");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(35, "kDG");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(36, "kDG5");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(37, "kZED");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(38, "kSPI7");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(39, "kSPI");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(40, "kINT8");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(41, "kMuonSingleLowPt8");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(42, "kMuonSingleHighPt8");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(43, "kMuonLikeLowPt8");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(44, "kMuonUnlikeLowPt8");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(45, "kMuonUnlikeLowPt0");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(46, "kUserDefined");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(47, "kTRD");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(48, "kFastOnly");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(49, "kAny");
+    fHistTriggerBefore->GetXaxis()->SetBinLabel(50, "kAnyINT");
+    fQA->Add(fHistTriggerBefore);
+
+    fHistTriggerAfter = new TH1F("fHistTriggerAfter", ";;Entries", 50, 0, 50);
+    fHistTriggerAfter->GetXaxis()->LabelsOption("u");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(1, "kMB");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(2, "kINT1");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(3, "kINT7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(4, "kMUON");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(5, "kHighMult");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(6, "kHighMultSPD");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(7, "kEMC1");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(8, "kCINT5");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(9, "kINT5");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(10, "kCMUS5");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(11, "kMUSPB");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(12, "kINT7inMUON");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(13, "kMuonSingleHighPt7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(14, "kMUSH7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(15, "kMUSHPB");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(16, "kMuonLikeLowPt7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(17, "kMUL7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(18, "kMuonLikePB");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(19, "kMuonUnlikeLowPt7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(20, "kMUU7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(21, "kMuonUnlikePB");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(22, "kEMC7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(23, "kEMC8");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(24, "kMUS7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(25, "kMuonSingleLowPt7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(26, "kPHI1");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(27, "kPHI7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(28, "kPHI8");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(29, "kPHOSPb");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(30, "kEMCEJE");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(31, "kEMCEGA");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(32, "kHighMultV0");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(33, "kCentral");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(34, "kSemiCentral");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(35, "kDG");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(36, "kDG5");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(37, "kZED");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(38, "kSPI7");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(39, "kSPI");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(40, "kINT8");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(41, "kMuonSingleLowPt8");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(42, "kMuonSingleHighPt8");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(43, "kMuonLikeLowPt8");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(44, "kMuonUnlikeLowPt8");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(45, "kMuonUnlikeLowPt0");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(46, "kUserDefined");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(47, "kTRD");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(48, "kFastOnly");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(49, "kAny");
+    fHistTriggerAfter->GetXaxis()->SetBinLabel(50, "kAnyINT");
+    fQA->Add(fHistTriggerAfter);
+  }
+
+  fOutputContainer->Add(fQA);
+
+  if (fV0Cuts) fV0Cuts->InitCutHistograms(TString("Lambda"));
+  if (fAntiV0Cuts) fAntiV0Cuts->InitCutHistograms(TString("AntiLambda"));
+  if (fPhotonV0Cuts) fPhotonV0Cuts->InitCutHistograms(TString("Photon"));
+  if (fSigmaCuts) fSigmaCuts->InitCutHistograms(TString("Sigma0"));
+  if (fAntiSigmaCuts) fAntiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
+  if (fSigmaPhotonCuts)
+    fSigmaPhotonCuts->InitCutHistograms(TString("Sigma0Photon"));
+  if (fAntiSigmaPhotonCuts)
+    fAntiSigmaPhotonCuts->InitCutHistograms(TString("AntiSigma0Photon"));
+
+  if (fV0Cuts && fV0Cuts->GetCutHistograms()) {
+    fOutputContainer->Add(fV0Cuts->GetCutHistograms());
+  }
+
+  if (fAntiV0Cuts && fAntiV0Cuts->GetCutHistograms()) {
+    fOutputContainer->Add(fAntiV0Cuts->GetCutHistograms());
+  }
+
+  if (fPhotonV0Cuts && fPhotonV0Cuts->GetCutHistograms()) {
+    fOutputContainer->Add(fPhotonV0Cuts->GetCutHistograms());
+  }
+
+  if (fSigmaCuts && fSigmaCuts->GetCutHistograms()) {
+    fOutputContainer->Add(fSigmaCuts->GetCutHistograms());
+  }
+
+  if (fAntiSigmaCuts && fAntiSigmaCuts->GetCutHistograms()) {
+    fOutputContainer->Add(fAntiSigmaCuts->GetCutHistograms());
+  }
+
+  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetCutHistograms()) {
+    fOutputContainer->Add(fSigmaPhotonCuts->GetCutHistograms());
+  }
+
+  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetCutHistograms()) {
+    fOutputContainer->Add(fAntiSigmaPhotonCuts->GetCutHistograms());
+  }
+
+  if (fOutputTree != nullptr) {
+    delete fOutputTree;
+    fOutputTree = nullptr;
+  }
+  if (fOutputTree == nullptr) {
+    fOutputTree = new TList();
+    fOutputTree->SetOwner(kTRUE);
+  }
+
+  if (fSigmaCuts && fSigmaCuts->GetSigmaTree()) {
+    fOutputTree->Add(fSigmaCuts->GetSigmaTree());
+  }
+
+  if (fAntiSigmaCuts && fAntiSigmaCuts->GetSigmaTree()) {
+    fOutputTree->Add(fAntiSigmaCuts->GetSigmaTree());
+  }
+
+  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetSigmaTree()) {
+    fOutputTree->Add(fSigmaPhotonCuts->GetSigmaTree());
+  }
+
+  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetSigmaTree()) {
+    fOutputTree->Add(fAntiSigmaPhotonCuts->GetSigmaTree());
+  }
+
+  PostData(1, fOutputContainer);
+  PostData(2, fOutputTree);
+}
+
+//____________________________________________________________________________________________________
+void AliAnalysisTaskSigma0Run2::FillTriggerHisto(TH1F *histo) {
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMB) histo->Fill(0);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT1) histo->Fill(1);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) histo->Fill(2);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMUON) histo->Fill(3);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kHighMult) histo->Fill(4);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultSPD)
+    histo->Fill(5);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1) histo->Fill(6);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kCINT5) histo->Fill(7);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT5) histo->Fill(8);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kCMUS5) histo->Fill(9);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMUSPB) histo->Fill(10);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7inMUON)
+    histo->Fill(11);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleHighPt7)
+    histo->Fill(12);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMUSH7) histo->Fill(13);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMUSHPB) histo->Fill(14);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikeLowPt7)
+    histo->Fill(15);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMUL7) histo->Fill(16);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikePB)
+    histo->Fill(17);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt7)
+    histo->Fill(18);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMUU7) histo->Fill(19);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikePB)
+    histo->Fill(20);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) histo->Fill(21);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kEMC8) histo->Fill(22);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMUS7) histo->Fill(23);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleLowPt7)
+    histo->Fill(24);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kPHI1) histo->Fill(25);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kPHI7) histo->Fill(26);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kPHI8) histo->Fill(27);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kPHOSPb) histo->Fill(28);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE) histo->Fill(29);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kEMCEGA) histo->Fill(30);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kHighMultV0)
+    histo->Fill(31);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kCentral) histo->Fill(32);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kSemiCentral)
+    histo->Fill(33);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kDG) histo->Fill(34);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kDG5) histo->Fill(35);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kZED) histo->Fill(36);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kSPI7) histo->Fill(37);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kSPI) histo->Fill(38);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) histo->Fill(39);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleLowPt8)
+    histo->Fill(40);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonSingleHighPt8)
+    histo->Fill(41);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonLikeLowPt8)
+    histo->Fill(42);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt8)
+    histo->Fill(43);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kMuonUnlikeLowPt0)
+    histo->Fill(44);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kUserDefined)
+    histo->Fill(45);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kTRD) histo->Fill(46);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly) histo->Fill(47);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kAny) histo->Fill(48);
+  if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT) histo->Fill(49);
 }

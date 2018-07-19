@@ -81,6 +81,9 @@ bool AliJTrackCut::IsSelected ( AliJTrack *track, int icut )const{
 
             case AliJTrackCut::kJHybridAOD86 :
                 return track->IsFiltered(4) || track->IsFiltered(8) ; // 272
+            
+            case AliJTrackCut::kJHybridStep1 :
+                return track->IsFiltered(8); // 256
 
             case AliJTrackCut::kJGlobalTightDCA :
                 return track->IsFiltered( 5 ); // 32

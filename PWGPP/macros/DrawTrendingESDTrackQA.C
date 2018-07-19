@@ -13,7 +13,7 @@ TH1F* CreateHisto(TString nam, Int_t tote);
 Bool_t DrawTrendingESDTrackQA(TString mergedTrendFile = "trending.root"){
   TFile *fin = TFile::Open(mergedTrendFile.Data());
   if(!fin){
-    printf("Cannot open file with PID QA trending: %s\n",mergedTrendFile.Data());
+    printf("Cannot open file with ESD track QA trending: %s\n",mergedTrendFile.Data());
     return kFALSE;
   }
   TTree * ttree = (TTree*) fin->Get("trending");

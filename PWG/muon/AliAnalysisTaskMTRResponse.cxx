@@ -67,7 +67,7 @@ AliAnalysisTaskMTRResponse::AliAnalysisTaskMTRResponse(const char *name) :
   /// Constructor
   //
 
-  TString matchNames = "MatchNo MatchAllPt MatchLowPt MatchHighPt"; 
+  TString matchNames = "MatchNo MatchAllPt MatchLowPt MatchHighPt";
   fMatchTrigKeys = matchNames.Tokenize(" ");
 
   DefineOutput(1, AliMergeableCollection::Class());
@@ -155,7 +155,6 @@ void AliAnalysisTaskMTRResponse::FinishTaskOutput()
   TString histoName = "", auxName = "";
   TIter next(fMergeableCollection->Map());
 
-  TH2* histo = 0x0;
   TObjString* str;
 
   while ( (str = static_cast<TObjString*>(next())) ) {

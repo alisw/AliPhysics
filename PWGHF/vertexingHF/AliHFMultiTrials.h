@@ -66,6 +66,7 @@ class AliHFMultiTrials : public TNamed {
   }
   void SetUseChi2Fit(){fFitOption=1;}
   void SetUseLogLikelihoodFit(){fFitOption=0;}
+  void SetUseLikelihoodWithWeightsFit(){fFitOption=2;}
   void SetUseExpoBackground(Bool_t opt=kTRUE){fUseExpoBkg=opt;}
   void SetUseLinBackground(Bool_t opt=kTRUE){fUseLinBkg=opt;}
   void SetUsePol2Background(Bool_t opt=kTRUE){fUsePol2Bkg=opt;}

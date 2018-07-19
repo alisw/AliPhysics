@@ -84,6 +84,8 @@ fHistnTrackvsEtavsPhi(0),
 fHistnTrackvsEtavsPhiEvWithCand(0),
 fHistTrueSovsMeasSo(0),
 fHistTrueSovsMeasSoEvWithCand(0),
+fHistSpheroAxisDeltaPhi(0),
+fHistSpheroAxisDeltaGenPhi(0),
 fSparseEvtShape(0),
 fSparseEvtShapewithNoPid(0),
 fSparseEvtShapePrompt(0),
@@ -181,6 +183,8 @@ fHistnTrackvsEtavsPhi(0),
 fHistnTrackvsEtavsPhiEvWithCand(0),
 fHistTrueSovsMeasSo(0),
 fHistTrueSovsMeasSoEvWithCand(0),
+fHistSpheroAxisDeltaPhi(0),
+fHistSpheroAxisDeltaGenPhi(0),
 fSparseEvtShape(0),
 fSparseEvtShapewithNoPid(0),
 fSparseEvtShapePrompt(0),
@@ -424,11 +428,15 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     fHistNtrVsSo = new TH2F(histoNtrName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtr.Data(),parNameNtr.Data(),estimatorName), 20, 0., 1., nMultBins,firstMultBin,lastMultBin); //
     fHistNtrCorrVsSo = new TH2F(histoNtrCorrName.Data(),Form("N_{%s} vs %s; %s; N_{%s};",estimatorName,parNameNtr.Data(),parNameNtr.Data(),estimatorName), 20, 0., 1., nMultBins, firstMultBin,lastMultBin); //
     
-    fHistnTrackvsEtavsPhi = new TH3F("hnTrackvsEtavsPhi", "Eta vs Phi vs nTracks; #eta; #phi[rad]; nTracks;", 100, -1.5, 1.5, 100, 0., 6.28,nMultBins,firstMultBin,lastMultBin);
-    fHistnTrackvsEtavsPhiEvWithCand = new TH3F("hnTrackvsEtavsPhiEvWithCand", "Eta vs Phi vs nTracks; #eta; #phi[rad]; nTracks;", 100, -1.5, 1.5, 100, 0., 6.28,nMultBins,firstMultBin,lastMultBin);
+    fHistnTrackvsEtavsPhi = new TH3F("hnTrackvsEtavsPhi", "Eta vs Phi vs nTracks; #eta; #varphi[rad]; nTracks;", 100, -1.5, 1.5, 200, 0., 2*TMath::Pi(),nMultBins,firstMultBin,lastMultBin);
+    fHistnTrackvsEtavsPhiEvWithCand = new TH3F("hnTrackvsEtavsPhiEvWithCand", "Eta vs Phi vs nTracks; #eta; #varphi[rad]; nTracks;", 100, -1.5, 1.5,  200, 0., 2*TMath::Pi(),nMultBins,firstMultBin,lastMultBin);
     
     fHistTrueSovsMeasSo = new TH3F("hTrueSovsMeasSo", "trueSo vs measSo; S_{o} (true); S_{o} (meas); tracklets;", 100, 0., 1., 100, 0., 1., nMultBins, firstMultBin, lastMultBin);
     fHistTrueSovsMeasSoEvWithCand = new TH3F("hTrueSovsMeasSoEvWithCand", "trueSo vs measSo; S_{o} (true); S_{o} (meas); tracklets;", 100, 0., 1., 100, 0., 1., nMultBins, firstMultBin, lastMultBin);
+    
+    fHistSpheroAxisDeltaPhi = new TH3F("hSpheroAxisDeltaPhi", "Spherocit axis - D-meson direction; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; #Delta#varphi [rad];", 48, 0., 24., fNMassBins, fLowmasslimit, fUpmasslimit, 200, 0., 2*TMath::Pi());
+    
+    fHistSpheroAxisDeltaGenPhi = new TH3F("hSpheroAxisDeltaGenPhi", "Spherocit axis - D-meson direction; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; #Delta#varphi (Gen) [rad];", 48, 0., 24., fNMassBins, fLowmasslimit, fUpmasslimit, 200, 0., 2*TMath::Pi());
     
     TString histoNtrSphriName;
     TString histoNtrCorrSphriName;
@@ -468,6 +476,8 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     fOutput->Add(fHistnTrackvsEtavsPhiEvWithCand);
     fOutput->Add(fHistTrueSovsMeasSo);
     fOutput->Add(fHistTrueSovsMeasSoEvWithCand);
+    fOutput->Add(fHistSpheroAxisDeltaPhi);
+    fOutput->Add(fHistSpheroAxisDeltaGenPhi);
     
     fOutput->Add(fHistNtrVsSo);
     fOutput->Add(fHistNtrCorrVsSo);
@@ -756,10 +766,11 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     
     Double_t spherocity = -0.5;
     Double_t sphericity = -0.5;
+    Double_t phiRef = -1.0;
     if(fCalculateSphericity){ //When kTRUE, it calculates Sphericity and THnSparse filled for sphericity
         sphericity=AliVertexingHFUtils::GetSphericity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult);
     }
-    spherocity=AliVertexingHFUtils::GetSpherocity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg);
+    AliVertexingHFUtils::GetSpherocity(aod, spherocity, phiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg);
     
     Double_t St=1;
     fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult,spherocity);
@@ -839,6 +850,9 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     Int_t nChargedMC=0, nChargedMCPrimary=0, nChargedMCPhysicalPrimary=0;
     
     Double_t genspherocity = -0.5;
+    Double_t genphiRef = -1.0;
+    Double_t phiPart = -1.0;
+    
     // load MC particles and get weight on Nch
     if(fReadMC){
         
@@ -858,6 +872,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
             AliAODMCParticle *part=(AliAODMCParticle*)arrayMC->UncheckedAt(i);
             Int_t charge = part->Charge();
             Double_t eta = part->Eta();
+            phiPart = part->Phi();
             Bool_t isPrim = part->IsPrimary();
             Bool_t isPhysPrim = part->IsPhysicalPrimary();
             if(charge!=0) {
@@ -917,7 +932,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         }
         
         FillMCGenAccHistos(aod, arrayMC, mcHeader, countCorr, spherocity, sphericity, isEvSel, nchWeight);//Fill 2 separate THnSparses, one for prompt andf one for feeddown
-        genspherocity=AliVertexingHFUtils::GetGeneratedSpherocity(arrayMC, fetaMin, fetaMax, fptMin, fptMax, fminMult, fphiStepSizeDeg);
+        AliVertexingHFUtils::GetGeneratedSpherocity(arrayMC, genspherocity, genphiRef, fetaMin, fetaMax, fptMin, fptMax, fminMult, fphiStepSizeDeg);
 
     }
     
@@ -998,6 +1013,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         }
         
         Double_t ptCand = d->Pt();
+        Double_t phiCand = d->Phi();
         Double_t rapid=d->Y(fPdgMeson);
         Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
         if(!isFidAcc) continue;
@@ -1058,6 +1074,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         
         Int_t labD0=-1;
         Double_t recSpherocity = -0.5;
+        Double_t recphiRef = -1.0;
         
         // subtract D-meson daughters from spherocity calculation !!
         if(fRecomputeSpherocity){
@@ -1072,7 +1089,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 if(!t) continue;
                 idToSkip[iDau] = t->GetID();
             }
-            recSpherocity=AliVertexingHFUtils::GetSpherocity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
+            AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
         }
         
         // remove D0 from Dstar at reconstruction !!
@@ -1174,6 +1191,19 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                         Double_t arrayForSparseSo[4]={ptCand, invMass, spherocity, multForCand};
                         fSparseEvtShape->Fill(arrayForSparseSo, fWeight);
                     }
+                }
+                
+                Double_t deltaPhiRef = (phiRef-phiCand);
+                Double_t deltagenPhiRef = (genphiRef-phiPart);
+                
+                if(deltaPhiRef<0) deltaPhiRef+=2*TMath::Pi();
+                if(deltaPhiRef>2*TMath::Pi()) deltaPhiRef-=2*TMath::Pi();
+                if(deltagenPhiRef<0) deltagenPhiRef+=2*TMath::Pi();
+                if(deltagenPhiRef>2*TMath::Pi()) deltagenPhiRef-=2*TMath::Pi();
+                
+                if(phiRef>=0 && phiCand>=0){
+                    fHistSpheroAxisDeltaPhi->Fill(ptCand, invMass, deltaPhiRef);
+                    if(fReadMC) fHistSpheroAxisDeltaGenPhi->Fill(ptCand, invMass, deltagenPhiRef);
                 }
                 
                 if(fRecomputeSpherocity){
@@ -1502,6 +1532,7 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
     Int_t totPart = arrayMC->GetEntriesFast(); //number of particles
     Int_t totTracks = aod->GetNumberOfTracks(); // number of tracks
     Double_t recSpherocity = -0.5;
+    Double_t recphiRef = -1.0;
     
     const Int_t nPart = totPart;
     Int_t trkToSkip[nPart];
@@ -1576,7 +1607,7 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
                     Int_t indexDau = TMath::Abs(mcGenPart->GetDaughter(iDau));  //index of daughter i.e. label
                     idToSkip[iDau] = trkToSkip[indexDau];
                 }
-                recSpherocity=AliVertexingHFUtils::GetSpherocity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
+                AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
             }
             if(fPdgMeson==421){
                 //Removal of D0 from Dstar at Generation !!

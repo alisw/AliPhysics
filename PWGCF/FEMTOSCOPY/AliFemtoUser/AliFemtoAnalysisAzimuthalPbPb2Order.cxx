@@ -46,7 +46,7 @@ static void FillHbtParticleCollection(       AliFemtoParticleCut*         partCu
     AliEventplane* evpl;
     evpl = picoevent->PicoEventplane();
     *evpl = *hbtEvent->EP();
-    
+
     AliFemtoTrackCut* pCut = (AliFemtoTrackCut*) partCut;
     AliFemtoTrack* pParticle;
     AliFemtoTrackIterator pIter;
@@ -96,7 +96,7 @@ fmixedpsi(0)
     fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexZBins,fVertexZ[0],fVertexZ[1],
                                                                                        fMultBins,fMult[0],fMult[1],
                                                                                        fRPBins,0.0,TMath::Pi());
-    
+
     fphidist = new TH1F("fphidist","fphidist; Phi Distribution",100,-TMath::Pi(),TMath::Pi());
     fpairphi = new TH1F("fpairphi","fpairphi; Pair Phi Distribution",100,0,TMath::TwoPi());
     fRPdist = new TH1F("fRPdist","fRPdist; RP Distribution2",100,0,TMath::Pi());
@@ -147,7 +147,7 @@ fmixedpsi(0)
     fSecondParticleCut = a.fSecondParticleCut->Clone();
     // find the right pair cut
     fPairCut = a.fPairCut->Clone();
-    
+
     if ( fEventCut ) {
         SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
     }
@@ -160,7 +160,7 @@ fmixedpsi(0)
     if ( fPairCut ) {
         SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
     }
-    
+
     AliFemtoCorrFctnIterator iter;
     for (iter=a.fCorrFctnCollection->begin(); iter!=a.fCorrFctnCollection->end();iter++){
         AliFemtoCorrFctn* fctn = (*iter)->Clone();
@@ -174,7 +174,7 @@ AliFemtoAnalysisAzimuthalPbPb2Order& AliFemtoAnalysisAzimuthalPbPb2Order::operat
     // Assignment operator
     if (this == &a)
         return *this;
-    
+
     fCorrFctnCollection= 0;
     fCorrFctnCollection = new AliFemtoCorrFctnCollection;
     fVertexZ[0] = a.fVertexZ[0];
@@ -193,7 +193,7 @@ AliFemtoAnalysisAzimuthalPbPb2Order& AliFemtoAnalysisAzimuthalPbPb2Order::operat
     fSecondParticleCut = a.fSecondParticleCut->Clone();
     // find the right pair cut
     fPairCut = a.fPairCut->Clone();
-    
+
     if ( fEventCut ) {
         SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
     }
@@ -206,16 +206,16 @@ AliFemtoAnalysisAzimuthalPbPb2Order& AliFemtoAnalysisAzimuthalPbPb2Order::operat
     if ( fPairCut ) {
         SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
     }
-    
+
     AliFemtoCorrFctnIterator iter;
     for (iter=a.fCorrFctnCollection->begin(); iter!=a.fCorrFctnCollection->end();iter++){
         AliFemtoCorrFctn* fctn = (*iter)->Clone();
         if (fctn) AddCorrFctn(fctn);
     }
     fNumEventsToMix = a.fNumEventsToMix;
-    
+
     return *this;
-    
+
 }
 
 //____________________________
@@ -228,7 +228,7 @@ AliFemtoAnalysisAzimuthalPbPb2Order::~AliFemtoAnalysisAzimuthalPbPb2Order(){
 void AliFemtoAnalysisAzimuthalPbPb2Order::ProcessEvent(const AliFemtoEvent* hbtEvent) {
     // Perform event processing in bins of z vertex, multiplicity and Reaction Plane angle
     //****from AliFemtoSimpleAnalysis****
-    
+
     //AliEventplane* eventPlane = InputEvent()->GetEventplane();
     //double psiPlane = hbtEvent->GetEventplane("V0",hbtEvent,2);
     //cout<<"psiplane :: "<<psiPlane<<endl;
@@ -236,12 +236,12 @@ void AliFemtoAnalysisAzimuthalPbPb2Order::ProcessEvent(const AliFemtoEvent* hbtE
     fFirstParticleCut->EventBegin(hbtEvent);
     double vertexZ = hbtEvent->PrimVertPos().z();
     double mult = hbtEvent->UncorrectedNumberOfPrimaries();
-    
+
     double RP = hbtEvent->ReactionPlaneAngle(); //was *2
     //double RP2=GetPsiAngle(
     //fPicoEventRP2=0; // we will get a new pico event, if not prevent corr. fctn to access old pico event
     //fPicoEventRP2 = new AliFemtoPicoEventRP; // this is what we will make pairs from and put in Mixing Buffer
-    
+
     fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ,mult,RP);
     if (!fMixingBuffer) {
         //     cout << "no mixing buffer!!!" << endl;
@@ -251,32 +251,32 @@ void AliFemtoAnalysisAzimuthalPbPb2Order::ProcessEvent(const AliFemtoEvent* hbtE
         if ( mult > fMult[1] ) fOverFlowMult++;
         return;
     }
-    
+
     // Add event to processed events
     fPicoEventRP=0; // we will get a new pico event, if not prevent corr. fctn to access old pico event
     fNeventsProcessed++;
-    
+
     fFirstParticleCut->EventBegin(hbtEvent);
     fSecondParticleCut->EventBegin(hbtEvent);
     fPairCut->EventBegin(hbtEvent);
     fPairCutRD->EventBegin(hbtEvent);
-    
+
     int magsign = 0;
     if(hbtEvent->MagneticField()>0) magsign = 1;
     else if(hbtEvent->MagneticField()<0) magsign = -1;
     fPairCutRD->SetMagneticFieldSign(magsign);
-    
+
     for (AliFemtoCorrFctnIterator iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
         (*iter)->EventBegin(hbtEvent);
     }
-    
+
     // event cut and event cut monitor
     bool tmpPassEvent = fEventCut->Pass(hbtEvent);
     if (!tmpPassEvent) {
         fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
     }
     if (tmpPassEvent) {
-        
+
         if (RP>0){
             fPicoEventRP = new AliFemtoPicoEventRP; // this is what we will make pairs from and put in Mixing Buffer
             // no memory leak. we will delete picoevents when they come out of the mixing buffer
@@ -285,30 +285,30 @@ void AliFemtoAnalysisAzimuthalPbPb2Order::ProcessEvent(const AliFemtoEvent* hbtE
                 fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
                 // fRPdist->Fill(fPicoEventRP->PicoEventplane()->GetQVector()->Phi()/2); //fill with reaction plane angle  (was RP)
                 fRPdist->Fill(RP); //fill with reaction plane angle  (was RP)
-                
+
                 fsubRPdist->Fill(fPicoEventRP->PicoEventplane()->GetQsubRes());
-                
+
                 MakePairs("real", fPicoEventRP);
-                
-                
+
+
                 //---- Make pairs for mixed events, looping over events in mixingBuffer ----//
-                
+
                 AliFemtoPicoEventRP* storedEvent;
                 AliFemtoPicoEventIterator fPicoEventIter;
                 for (fPicoEventIter=MixingBuffer()->begin();fPicoEventIter!=MixingBuffer()->end();fPicoEventIter++){
                     storedEvent = (AliFemtoPicoEventRP*) *fPicoEventIter;
                     MakePairs("mixed",fPicoEventRP,
                               storedEvent );
-                    
+
                 }
-                
+
                 if ( MixingBufferFull() ) {
                     delete MixingBuffer()->back();
                     MixingBuffer()->pop_back();
                 }
-                
+
                 MixingBuffer()->push_front(fPicoEventRP);
-                
+
             }  // if ParticleCollections are big enough (mal jun2002)
             else{
                 //       cout << "here down" << endl;
@@ -332,19 +332,19 @@ void AliFemtoAnalysisAzimuthalPbPb2Order::ProcessEvent(const AliFemtoEvent* hbtE
 void AliFemtoAnalysisAzimuthalPbPb2Order::MakePairs(const char* typeIn, AliFemtoPicoEventRP *picoevent1,
                                                     AliFemtoPicoEventRP *picoevent2){
     string type = typeIn;
-    
+
     int swpart = fNeventsProcessed % 2;
-    
+
     AliFemtoParticleCollection* partCollection1 = picoevent1->FirstParticleCollection();
     AliFemtoParticleCollection* partCollection2 = 0;
     if (picoevent2)
         partCollection2 = picoevent2->FirstParticleCollection();
     AliFemtoPair* tPair = new AliFemtoPair;
-    
+
     AliFemtoCorrFctnIterator tCorrFctnIter;
-    
+
     AliFemtoParticleIterator tPartIter1, tPartIter2;
-    
+
     AliFemtoParticleIterator tStartOuterLoop = partCollection1->begin();  // always
     AliFemtoParticleIterator tEndOuterLoop   = partCollection1->end();    // will be one less if identical
     AliFemtoParticleIterator tStartInnerLoop;
@@ -365,7 +365,7 @@ void AliFemtoAnalysisAzimuthalPbPb2Order::MakePairs(const char* typeIn, AliFemto
         tPair->SetTrack1(*tPartIter1);
         for (tPartIter2 = tStartInnerLoop; tPartIter2!=tEndInnerLoop;tPartIter2++) {
             tPair->SetTrack2(*tPartIter2);
-            
+
             if (!partCollection2) {
                 if (swpart) {
                     tPair->SetTrack1(*tPartIter2);
@@ -378,19 +378,19 @@ void AliFemtoAnalysisAzimuthalPbPb2Order::MakePairs(const char* typeIn, AliFemto
                     swpart = 1;
                 }
             }
-            
-            
+
+
             //For getting the pair angle wrt EP
             if (type == "real"){
                 Double_t PairAngleEP=0;
                 TVector2* q=0;
                 q = picoevent1->PicoEventplane()->GetQVector();  //
-                
+
                 float psi = q->Phi()/2;
                 // cout<<"psi reg: "<<psi<<endl;
                 //float psi2 = q->Phi();
                 // cout<<"psi reg2: "<<psi2<<endl;
-                
+
                 PairAngleEP = (tPair->EmissionAngle() - TMath::RadToDeg()*psi);
                 while (PairAngleEP < 0) PairAngleEP += 180;
                 while (PairAngleEP > 180) PairAngleEP -= 180;
@@ -399,18 +399,18 @@ void AliFemtoAnalysisAzimuthalPbPb2Order::MakePairs(const char* typeIn, AliFemto
                 fphidist->Fill(tPair->Track1()->FourMomentum().Phi());
                 fphidist->Fill(tPair->Track2()->FourMomentum().Phi());
                 fpairphi->Fill(tPair->EmissionAngle()*TMath::DegToRad());
-                
+
             }
-            
+
             if (type == "mixed"){
-                
+
                 TVector2* q1=0;
                 TVector2* q2=0;
                 q1 = picoevent1->PicoEventplane()->GetQVector();
                 q2 = picoevent2->PicoEventplane()->GetQVector();
                 Double_t PairAngleEP=0;
-                
-                
+
+
                 float psi1 = q1->Phi()/2;
                 float psi2 = q2->Phi()/2;
                 PairAngleEP = TMath::RadToDeg()*(TMath::ATan2(((tPair->Track1()->Track()->Pt()*TMath::Sin(tPair->Track1()->FourMomentum().Phi() - psi1))+(tPair->Track2()->Track()->Pt()*TMath::Sin(tPair->Track2()->FourMomentum().Phi() - psi2))),((tPair->Track1()->Track()->Pt()*TMath::Cos(tPair->Track1()->FourMomentum().Phi() - psi1))+(tPair->Track2()->Track()->Pt()*TMath::Cos(tPair->Track2()->FourMomentum().Phi() - psi2)))));
@@ -419,7 +419,7 @@ void AliFemtoAnalysisAzimuthalPbPb2Order::MakePairs(const char* typeIn, AliFemto
                 fmixedpsi->Fill(PairAngleEP);
                 tPair->SetPairAngleEP(PairAngleEP);
             }
-            
+
             if (fPairCutRD->Pass(tPair)){
                 for (tCorrFctnIter=fCorrFctnCollection->begin();
                      tCorrFctnIter!=fCorrFctnCollection->end();tCorrFctnIter++){
@@ -429,28 +429,28 @@ void AliFemtoAnalysisAzimuthalPbPb2Order::MakePairs(const char* typeIn, AliFemto
                     else if(type == "mixed") {
                         tCorrFctn->AddMixedPair(tPair);
                     }
-                    
+
                 }
             }
         }    // loop over second particle
-        
+
     }      // loop over first particle
-    
+
     delete tPair;
-    
+
 }
 
 //_____________________________________________
 TVector2 AliFemtoAnalysisAzimuthalPbPb2Order::GetQVector(AliFemtoParticleCollection* particlecollection){
-    
+
     TVector2 mQ;
     float mQx=0, mQy=0;
-    
+
     if (!particlecollection) {
         mQ.Set(0.0, 0.0);
         return mQ;
     }
-    
+
     AliFemtoParticle* flowparticle;
     AliFemtoParticleIterator pIter;
     AliFemtoParticleIterator startLoop = particlecollection->begin();
@@ -460,23 +460,23 @@ TVector2 AliFemtoAnalysisAzimuthalPbPb2Order::GetQVector(AliFemtoParticleCollect
         mQx += (cos(2*flowparticle->FourMomentum().Phi()))*(flowparticle->Track()->Pt());
         mQy += (sin(2*flowparticle->FourMomentum().Phi()))*(flowparticle->Track()->Pt());
     }
-    
+
     mQ.Set(mQx,mQy);
     return mQ;
 }
 
 //_______________________________________
 float AliFemtoAnalysisAzimuthalPbPb2Order::GetPsiAngle(AliFemtoParticleCollection* particlecollection){
-    
+
     TVector2 mQ;
     float mypsi=0;
     float mQx=0, mQy=0;
-    
+
     /*if (!particlecollection) {
      mQ.Set(0.0, 0.0);
      return mQ;
      }*/
-    
+
     AliFemtoParticle* flowparticle;
     AliFemtoParticleIterator pIter;
     AliFemtoParticleIterator startLoop = particlecollection->begin();
@@ -486,9 +486,9 @@ float AliFemtoAnalysisAzimuthalPbPb2Order::GetPsiAngle(AliFemtoParticleCollectio
         mQx += (cos(2*flowparticle->FourMomentum().Phi()))*(flowparticle->Track()->Pt());
         mQy += (sin(2*flowparticle->FourMomentum().Phi()))*(flowparticle->Track()->Pt());
     }
-    
+
     mQ.Set(mQx,mQy);
-    
+
     mypsi=TMath::ATan2(mQy,mQx)/2;
     cout<<"mypsi :"<<mypsi<<endl;
     return mypsi;
@@ -501,7 +501,7 @@ double AliFemtoAnalysisAzimuthalPbPb2Order::GetCurrentReactionPlane()
 }
 
 //______________________________________________________________________________
-void AliFemtoAnalysisAzimuthalPbPb2Order::SetEPhistname(char* histname)
+void AliFemtoAnalysisAzimuthalPbPb2Order::SetEPhistname(const char* histname)
 {
     fphidist->SetName(Form("fphidist%s",histname));
     fpairphi->SetName(Form("fpairphi%s",histname));
@@ -515,27 +515,27 @@ void AliFemtoAnalysisAzimuthalPbPb2Order::SetEPhistname(char* histname)
 TList* AliFemtoAnalysisAzimuthalPbPb2Order::GetOutputList()
 {
     // Collect the list of output objects to be written
-    
+
     TList *tOutputList = new TList();
-    
-    
+
+
     AliFemtoCorrFctnIterator iter;
     for (iter=fCorrFctnCollection->begin(); iter!=fCorrFctnCollection->end();iter++){
         TList *tListCf = (*iter)->GetOutputList();
-        
+
         TIter nextListCf(tListCf);
         while (TObject *obj = nextListCf()) {
             tOutputList->Add(obj);
         }
     }
-    
+
     tOutputList->Add(fphidist);
     tOutputList->Add(fpairphi);
     tOutputList->Add(fRPdist);
     tOutputList->Add(fsubRPdist);
     tOutputList->Add(frealpsi);
     tOutputList->Add(fmixedpsi);
-    
+
     return tOutputList;
-    
+
 }

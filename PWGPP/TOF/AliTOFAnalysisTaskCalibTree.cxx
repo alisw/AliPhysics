@@ -13,6 +13,7 @@
 #include "AliTOFT0v1.h"
 #include "AliTOFT0maker.h"
 #include "AliTOFcalib.h"
+#include "AliESDTOFCluster.h"
 
 ClassImp(AliTOFAnalysisTaskCalibTree)
   
@@ -34,6 +35,7 @@ AliAnalysisTaskSE(name),
   fESDEvent(0),             
   fEventCuts(new AliPhysicsSelection()),    
   fTrackCuts(new AliESDtrackCuts()),  
+  fAuxTrackCuts(new AliESDtrackCuts()),
   fESDpid(new AliESDpid()),
   fStartTime(0),
   fEndTime(0),
@@ -65,14 +67,16 @@ AliAnalysisTaskSE(name),
   fDeltaz(0),
   fDeltat(0),
   fDeltaraw(0),
+  fHitFlag(0),
   fSaveCoordinates(kFALSE),
+  fTOFClusters(0),
   fOutputTree(0x0)             
 
 {
   /* 
    * default constructor 
    */
-
+  fAuxTrackCuts->GetStandardITSTPCTrackCuts2015PbPb();
   fmomentum = new Float_t[fMaxHits];
   flength = new Float_t[fMaxHits];
   findex = new Int_t[fMaxHits];
@@ -82,7 +86,8 @@ AliAnalysisTaskSE(name),
   fDeltax = new Float_t[fMaxHits];
   fDeltaz = new Float_t[fMaxHits];
   fDeltat = new Float_t[fMaxHits];
-  fDeltaraw = new Float_t [fMaxHits]; 
+  fDeltaraw = new Float_t [fMaxHits];
+  fHitFlag = new UChar_t [fMaxHits]; 
   for (Int_t i = 0; i < fMaxHits; i++){
       fmomentum[i] = 999999;
       flength[i] = 999999;
@@ -94,6 +99,7 @@ AliAnalysisTaskSE(name),
       fDeltaz[i] = 999999;
       fDeltat[i] = 999999;
       fDeltaraw[i] = 999999;
+      fHitFlag[i] = 0;
 
   }
 
@@ -110,6 +116,7 @@ AliTOFAnalysisTaskCalibTree::~AliTOFAnalysisTaskCalibTree()
    */
   delete fEventCuts;
   delete fTrackCuts;
+  delete fAuxTrackCuts;
   delete fESDpid;
   delete fTOFcalib;
   delete fTOFT0maker;
@@ -129,6 +136,7 @@ AliTOFAnalysisTaskCalibTree::~AliTOFAnalysisTaskCalibTree()
   delete fDeltaz;
   delete fDeltat;
   delete fDeltaraw;
+  delete fHitFlag;
   if (fOutputTree) {
     delete fOutputTree;
     fOutputTree = 0x0;
@@ -156,8 +164,9 @@ if (fSaveCoordinates) { //save reduced tree for coordinate study
   fOutputTree->Branch("tot", ftot, "tot[nhits]/F");
   fOutputTree->Branch("deltax", fDeltax, "deltax[nhits]/F");
   fOutputTree->Branch("deltaz", fDeltaz, "deltaz[nhits]/F");
-  fOutputTree->Branch("deltat", fDeltat, "deltat[nhits]/F");
+  fOutputTree->Branch("momentum", fmomentum, "momentum[nhits]/F");
   fOutputTree->Branch("deltaraw", fDeltaraw, "deltaraw[nhits]/F");
+  fOutputTree->Branch("flag", fHitFlag, "flag[nhits]/b");
 } 
    else { //default tree
   fOutputTree->Branch("run", &fRunNumber, "run/I");
@@ -215,6 +224,7 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
   
   // loop over ESD tracks
   Int_t nTracks = fESDEvent->GetNumberOfTracks();
+  fTOFClusters = fESDEvent->GetESDTOFClusters();
   AliESDtrack *track;
   Int_t index;
   Double_t momentum, length, time, tot, timei[AliPID::kSPECIES], deltax, deltaz, deltat, deltaraw;
@@ -254,6 +264,20 @@ void AliTOFAnalysisTaskCalibTree::UserExec(Option_t *) {
     fDeltaz[fnhits] = deltaz;
     fDeltat[fnhits] = deltat;
     fDeltaraw[fnhits] = deltaraw;
+    fHitFlag[fnhits] = 0; 
+    if (fSaveCoordinates){ // set hit flags
+     
+         SetClusterFlags(track,fnhits);  // check for multiple hits & adjjacent clusters in X and Z (flags 1,2,4)
+         if (fAuxTrackCuts->AcceptTrack(track)) {fHitFlag[fnhits]+=8;} // track is primary candidate
+         Int_t nTPCclus = track->GetTPCclusters(0);
+         if (nTPCclus >= 140) {fHitFlag[fnhits]+=16;}  //best Nclusters TPC
+      
+         Double_t chi2TPC = track->GetTPCchi2();
+         if (chi2TPC <= 2.0) {fHitFlag[fnhits]+=32;}   //best chi2 TPC  
+         if (timeZeroTOF_sigma <= 10.) {fHitFlag[fnhits] +=64;}  // best T0 resolution
+
+    }
+    
     fnhits++;
 
   } /* end of loop over ESD tracks */
@@ -433,3 +457,44 @@ Bool_t AliTOFAnalysisTaskCalibTree::HasPrimaryDCA(AliESDtrack *track) {
   /* primary DCA ok */
   return kTRUE;
 }
+
+
+void AliTOFAnalysisTaskCalibTree::SetClusterFlags(AliESDtrack *track, Int_t itrack){
+
+   Int_t ntofcl = track->GetNTOFclusters();
+   Bool_t isClusterAlongX = kFALSE;
+   Bool_t isClusterAlongZ = kFALSE;
+   for (Int_t itofcl = 1; itofcl < ntofcl; itofcl++) { // check if there is a candidate for clusterisation starting from second cluster
+      Int_t cluster_pos = track->GetTOFclusterArray()[itofcl];
+      AliESDTOFCluster *cl = (AliESDTOFCluster*)fTOFClusters->At(cluster_pos);
+      Float_t deltatime = cl->GetTime() - ftime[itrack];
+      if (TMath::Abs(deltatime) > 500) continue;  //time must be similar
+      
+      Int_t index2 = cl->GetTOFchannel(); // channel of current cluster
+      if (Int_t(findex[itrack]/96) != Int_t(index2/96)) continue; // must be same strip
+
+      Int_t deltapadx = (findex[itrack]%48) - (index2%48);
+      Int_t deltapadz = (findex[itrack]/48) - (index2/48);
+
+      if (deltapadz==0 && (deltapadx==1 || deltapadx==-1)) isClusterAlongX=kTRUE;
+      if (deltapadx==0 && (deltapadz==1 || deltapadz==-1)) isClusterAlongZ=kTRUE;
+
+      if (isClusterAlongX && isClusterAlongZ) break; // if both true, no need to continue searching
+
+   }
+
+//setting values of hit flags
+
+   if (ntofcl > 1) { fHitFlag[itrack]+=1;} // multiple hit
+   if (isClusterAlongX) fHitFlag[itrack] += 2; //adjacent cluster in X
+   if (isClusterAlongZ) fHitFlag[itrack] += 4; //adjacent cluster in Z
+
+   
+      
+
+
+
+}
+
+
+

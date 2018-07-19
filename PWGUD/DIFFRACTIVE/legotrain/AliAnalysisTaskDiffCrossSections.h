@@ -75,6 +75,7 @@ public:
       , fEventNumberInFile(0)
       , fRunNumber(0)
       , fnTrklet(0)
+      , fL2Inputs(0)
       , fOrbitID(0)
       , fInputFileName("") {
       fnSPDClusters[0] = fnSPDClusters[1] = 0;
@@ -235,17 +236,18 @@ public:
     void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR, const TVector3 &vertexPosition) const;
     void  FindAcceptance(UInt_t mask, Float_t &etaAccL, Float_t &etaAccR) const;
 
-    inline void Sort() { fTracks.Sort(); }
-
     template<typename F> // F is a function (object) of type Bool_t f(const PseudoTrack&)
     Int_t ClassifyEvent(Int_t &iEtaL, Int_t &iEtaR, Float_t &etaGap, Float_t &etaGapCenter,
-			UInt_t mask, F& f) const {
+			UInt_t mask, F& f) {
       static TBits bits(10000);
+      SortIfNeeded();
       for (Int_t i=0, nt=fTracks.GetEntriesFast(); i<nt; ++i)
 	bits.SetBitNumber(i, f(GetTrackAt(i)));
       return ClassifyEventBits(iEtaL, iEtaR, etaGap, etaGapCenter, mask, bits);
     }
   protected:
+    void SortIfNeeded();
+
     Int_t ClassifyEventBits(Int_t &iEtaL, Int_t &iEtaR, Float_t &etaGap, Float_t &etaGapCenter,
 			    UInt_t mask, const TBits& bits) const;
   private:
@@ -349,6 +351,9 @@ private:
   TreeData         fTreeData;            //!
   MCInfo           fMCInfo;              //!
 
+  TBits            fIR1InteractionMap;   //!
+  TBits            fIR2InteractionMap;   //!
+
   TVectorD         fMeanVtxPos;          //!
   TMatrixD         fMeanVtxCov;          //!
   TMatrixD         fMeanVtxU;            //!
@@ -360,7 +365,7 @@ private:
   Float_t          fEtaR;         //!
   Float_t          fEtaGap;       //!
   Float_t          fEtaGapCenter; //!
-  ClassDef(AliAnalysisTaskDiffCrossSections, 3);
+  ClassDef(AliAnalysisTaskDiffCrossSections, 4);
 } ;
 
 #endif // ALIANALYSISTASKDIFFCROSSSECTIONS_H

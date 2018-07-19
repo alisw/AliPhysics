@@ -60,7 +60,7 @@ class CutHandlerNeutralConv{
 //***************************************************************************************
 //main function
 //***************************************************************************************
-void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(    
+void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
     Int_t trainConfig                 = 1,
     Bool_t isMC                       = kFALSE,                         //run MC
     Int_t enableQAMesonTask           = 1,                              //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero
@@ -94,7 +94,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
 
   Int_t isHeavyIon = 2;
   Int_t neutralPionMode = 0;
-  
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -104,24 +104,24 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-  
+
   //========= Add PID Reponse to ANALYSIS manager ====
   if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse(isMC);
   }
-  
+
   //=========  Set Cutnumber for V0Reader ================================
   TString cutnumberPhoton = "06000008400100001500000000";
   TString cutnumberEvent = "80000003";
   TString PionCuts      = "000000200";            //Electron Cuts
-  
 
-  
+
+
   Bool_t doEtaShift = kFALSE;
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  
+
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
     TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
     if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
@@ -132,7 +132,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
     fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
     fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
     fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
-    
+
     if (!mgr) {
       Error("AddTask_V0ReaderV1", "No analysis manager found.");
       return;
@@ -167,7 +167,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
 
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -200,7 +200,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
 
     fPionSelector->Init();
     mgr->AddTask(fPionSelector);
-    
+
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
 
     //connect input V0Reader
@@ -208,8 +208,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
 
   }
 
-  
-  
+
+
   AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero *task=NULL;
   task= new AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero(Form("GammaConvNeutralMesonPiPlPiMiPiZero_%i_%i",neutralPionMode, trainConfig));
   task->SetIsHeavyIon(2);
@@ -217,7 +217,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
   task->SetV0ReaderName(V0ReaderName);
   if(runLightOutput>1) task->SetLightOutput(kTRUE);
   task->SetTolerance(tolerance);
-
   CutHandlerNeutralConv cuts;
 
   Bool_t doEtaShiftIndCuts = kFALSE;
@@ -283,7 +282,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
   }
 
   Int_t numberOfCuts = cuts.GetNCuts();
-  
+
   TList *EventCutList = new TList();
   TList *ConvCutList  = new TList();
   TList *NeutralPionCutList = new TList();
@@ -295,7 +294,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
   HeaderList->Add(Header1);
   TObjString *Header3 = new TObjString("eta_2");
   HeaderList->Add(Header3);
-  
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
@@ -308,7 +307,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
   AliPrimaryPionCuts **analysisPionCuts     = new AliPrimaryPionCuts*[numberOfCuts];
 
   for(Int_t i = 0; i<numberOfCuts; i++){
-    analysisEventCuts[i] = new AliConvEventCuts();   
+    analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if(runLightOutput>0) analysisEventCuts[i]->SetLightOutput(kTRUE);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -322,10 +321,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
     if( ! analysisCuts[i]->InitializeCutsFromCutString((cuts.GetConversionCut(i)).Data()) ) {
       cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
       return 0;
-    } else {				
+    } else {
       ConvCutList->Add(analysisCuts[i]);
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-      
+
     }
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
@@ -337,7 +336,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
       NeutralPionCutList->Add(analysisNeutralPionCuts[i]);
       analysisNeutralPionCuts[i]->SetFillCutHistograms("");
     }
-  
+
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     if(runLightOutput>0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
@@ -348,7 +347,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
       analysisMesonCuts[i]->SetFillCutHistograms("");
     }
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
-    
+
     TString cutName( Form("%s_%s_%s_%s_%s",(cuts.GetEventCut(i)).Data(), (cuts.GetConversionCut(i)).Data(),(cuts.GetPionCut(i)).Data(),(cuts.GetNeutralPionCut(i)).Data(), (cuts.GetMesonCut(i)).Data() ) );
     analysisPionCuts[i] = new AliPrimaryPionCuts();
     if(runLightOutput>0) analysisPionCuts[i]->SetLightOutput(kTRUE);
@@ -356,9 +355,9 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pPb(
     if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
       cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<endl;
       return 0;
-    } else { 
+    } else {
       PionCutList->Add(analysisPionCuts[i]);
-      analysisPionCuts[i]->SetFillCutHistograms("",kFALSE,cutName); 
+      analysisPionCuts[i]->SetFillCutHistograms("",kFALSE,cutName);
     }
   }
 

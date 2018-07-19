@@ -48,9 +48,6 @@ public:
 
   void ConfigureZVertPools(Int_t nPools, Double_t*  zVertLimits);
   void ConfigureMultiplicityPools(Int_t nPools, Double_t*  multLimits);
-  void SelectPromptD(){fPromptFeeddown=kPrompt;}
-  void SelectFeeddownD(){fPromptFeeddown=kFeeddown;}
-  void SelectPromptAndFeeddownD(){fPromptFeeddown=kBoth;}
   void SetGoUpToQuark(Bool_t opt){fGoUpToQuark=opt;}
   void SetKeepNegIDtracks(Bool_t nid){fKeepNegID=nid;}//set it to kTRUE only if you know what you are doing
   void SetTrackCuts(AliESDtrackCuts* cuts){
@@ -67,6 +64,12 @@ public:
   }
   void SetCutOnKKInvMass(Double_t cut){
     fPhiMassCut=cut;
+  }
+  void SetCutOnCos3PiKPhiRFrame(Double_t cut){
+    fCutCos3PiKPhiRFrame=cut;
+  }
+  void SetCutCosPiDsLabFrame(Double_t cut){
+    fCutCosPiDsLabFrame=cut;
   }
   void SetPIDHF(AliAODPidHF* pid){
     if(fPidHF) delete fPidHF;
@@ -131,6 +134,9 @@ private:
   AliAnalysisTaskCombinHF(const AliAnalysisTaskCombinHF &source);
   AliAnalysisTaskCombinHF& operator=(const AliAnalysisTaskCombinHF& source);
   Double_t ComputeInvMassKK(AliAODTrack* tr1, AliAODTrack* tr2) const;
+  Double_t ComputeInvMassKK(TLorentzVector* tr1, TLorentzVector* tr2) const;
+  Double_t CosPiKPhiRFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const;
+  Double_t CosPiDsLabFrame(TLorentzVector* dauK1, TLorentzVector* dauK2, TLorentzVector* daupi) const;
 
   TList   *fOutput; //!<! list send on output slot 0
   TH1F *fHistNEvents;         //!<!hist. for No. of events
@@ -139,15 +145,20 @@ private:
   TH1F *fHistTrackStatus;     //!<!hist. of status of tracks
   TH3F* fHistTrackEtaMultZv;  // track distribution vs. era z vertex and mult
   TH1F *fHistCheckOrigin;     //!<!hist. of origin (c/b) of D meson
-  TH1F *fHistCheckOriginSel;  //!<!hist. of origin (c/b) of D meson
   TH1F *fHistCheckDecChan;    //!<!hist. of decay channel of D meson
   TH1F *fHistCheckDecChanAcc; //!<!hist. of decay channel of D meson in acc.
-  TH3F *fPtVsYVsMultGen;        //!<! hist. of Y vs. Pt vs. Mult generated (all D)
-  TH3F *fPtVsYVsMultGenLargeAcc; //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
-  TH3F *fPtVsYVsMultGenLimAcc;  //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
-  TH3F *fPtVsYVsMultGenAcc;     //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
-  TH3F *fPtVsYVsMultGenAccEvSel; //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
-  TH3F *fPtVsYVsMultReco;       //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsYVsMultGenPrompt;         //!<! hist. of Y vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsYVsMultGenLargeAccPrompt; //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
+  TH3F *fPtVsYVsMultGenLimAccPrompt;   //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
+  TH3F *fPtVsYVsMultGenAccPrompt;      //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
+  TH3F *fPtVsYVsMultGenAccEvSelPrompt; //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
+  TH3F *fPtVsYVsMultRecoPrompt;        //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
+  TH3F *fPtVsYVsMultGenFeeddw;         //!<! hist. of Y vs. Pt vs. Mult generated (all D)
+  TH3F *fPtVsYVsMultGenLargeAccFeeddw; //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.9)
+  TH3F *fPtVsYVsMultGenLimAccFeeddw;   //!<! hist. of Y vs. Pt vs. Mult generated (|y|<0.5)
+  TH3F *fPtVsYVsMultGenAccFeeddw;      //!<! hist. of Y vs. Pt vs. Mult generated (D in acc)
+  TH3F *fPtVsYVsMultGenAccEvSelFeeddw; //!<! hist. of Y vs. Pt vs. Mult generated (D in acc, sel ev.)
+  TH3F *fPtVsYVsMultRecoFeeddw;        //!<! hist. of Y vs. Pt vs. Mult generated (Reco D)
   TH3F *fMassVsPtVsY;     //!<! hist. of Y vs. Pt vs. Mass (all cand)
   TH3F *fMassVsPtVsYRot;   //!<! hist. of Y vs. Pt vs. Mass (rotations)
   TH3F *fMassVsPtVsYLSpp;  //!<! hist. of Y vs. Pt vs. Mass (like sign ++)
@@ -169,6 +180,8 @@ private:
   AliESDtrackCuts* fTrackCutsPion; /// pion track selection
   AliESDtrackCuts* fTrackCutsKaon; /// kaon track selection
   Double_t fPhiMassCut;   /// cut on the KK inv mass for phi selection
+  Double_t fCutCos3PiKPhiRFrame; // cut on the Ds decay angles
+  Double_t fCutCosPiDsLabFrame;  // cut on the Ds decay angles
   AliAODPidHF* fPidHF; /// PID configuration
   AliRDHFCuts *fAnalysisCuts; /// Cuts for candidates
   
@@ -190,7 +203,6 @@ private:
   
   Int_t fMeson;          /// mesonSpecies (see enum)
   Bool_t  fReadMC;       ///  flag for access to MC
-  Int_t fPromptFeeddown; /// flag to select prompt (1), feeddown (2) or all (3)
   Bool_t fGoUpToQuark;   /// flag for definition of c,b origin
   Int_t fFullAnalysis;   /// flag to set analysis level (0 is the fastest)
   
@@ -223,7 +235,7 @@ private:
   TObjArray* fPionTracks; /// array of pion-compatible tracks (TLorentzVectors)
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCombinHF,12); /// D0D+ task from AOD tracks
+  ClassDef(AliAnalysisTaskCombinHF,14); /// D0D+ task from AOD tracks
   /// \endcond
 };
 

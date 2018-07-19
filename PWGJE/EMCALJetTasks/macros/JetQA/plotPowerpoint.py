@@ -7,13 +7,17 @@
 #       your needs -- the code should be intuitive to understand.
 #
 # Prerequisite: pip install python-pptx
+# The output needs to be saved in a folder called "QAoutput" plotDir/QAoutput/
 #
 # Author: <james.mulligan@yale.edu>
 
 from pptx import Presentation
 from pptx.util import Inches, Pt
 import argparse
+import itertools
 import os
+# ROOT
+import ROOT
 
 def plotPowerpoint(runList, plotDir):
   
@@ -21,11 +25,35 @@ def plotPowerpoint(runList, plotDir):
   if not plotDir.endswith("/"):
     plotDir = plotDir + "/"
   if not os.path.exists(plotDir):
-    print "plotDir " + plotDir + "does not exist!"
+    print("plotDir " + plotDir + "does not exist!")
 
+  #--------------------------------------------------------------------
+  # Some general settings for the routine
   # Detect whether pt-hard production or not
   isPtHard = os.path.exists(plotDir + "AllRuns/QAoutput/PtHard")
+  # Detect whether pp production or not
+  isPbPb = os.path.exists(plotDir + "AllRuns/QAoutput/Jets/hFullJetPtCorrCentral.png")
+  # Detect whether includes PHOS or not
+  isIncludePhos = os.path.exists(plotDir + "AllRuns/QAoutput/Clusters/hClusPHOSEnergy.png")
 
+  #period = "LHC15n"
+  period = "LHC17p"
+  #period = "LHC17q"
+  #qa_author = "James Mulligan, Yale University"
+  qa_author = "Eliane Epple, Yale University"
+  system = "pp"
+  if isPbPb:
+    system = "Pb-Pb"
+
+  print("Is pT hard: %s" % isPtHard)
+  print("Is PbPb data: %s" % isPbPb)
+  print("Includes PHOS info: %s" % isIncludePhos)
+  print("Period: %s" % period)
+  print("System: %s" % system)
+  print("Author: %s" % qa_author)
+
+  #--------------------------------------------------------------------
+  # Start creating some introductory slides
   # Create a blank presentation
   qa = Presentation()
   
@@ -38,17 +66,17 @@ def plotPowerpoint(runList, plotDir):
   slide = qa.slides.add_slide(title_slide_layout)
   title = slide.shapes.title
   author = slide.placeholders[1]
-  title.text = "LHC15o QA -- Full Jets"
-  author.text = "James Mulligan, Yale University"
+  title.text = str(period) + " QA -- Full Jets"
+  author.text = str(qa_author)
   
   # Make a general slide describing analysis details
   slide = qa.slides.add_slide(bullet_slide_layout)
   shapes = slide.shapes
   title_shape = shapes.title
-  title_shape.text = 'LHC15o QA -- Full Jets'
+  title_shape.text = str(period) + " QA -- Full Jets"
   body_shape = shapes.placeholders[1]
   tf = body_shape.text_frame
-  tf.text = "LHC15o: 5.02 TeV Pb-Pb"
+  tf.text = str(period) +": 5.02 TeV " + str(system)
   p = tf.add_paragraph()
   p.text = "Runlist: " + str(runList)
   p = tf.add_paragraph()
@@ -70,7 +98,7 @@ def plotPowerpoint(runList, plotDir):
   #p.text = 'pT,jet < 4 pT,hard'
   #p.level = 1
   p = tf.add_paragraph()
-  p.text = 'Track selection: LHC15o track cuts (hybrid tracks)'
+  p.text = 'Track selection:' + str(system) + 'track cuts (hybrid tracks)'
   p = tf.add_paragraph()
   p.text = 'EMCal corrections: AliEmcalCorrectionTask, all corrections enabled, default parameters used'
   p = tf.add_paragraph()
@@ -88,43 +116,152 @@ def plotPowerpoint(runList, plotDir):
   p.level = 2
   tf.fit_text('Calibri', 14)
 
-  if isPtHard:
-    makeAllRunsSlidesPtHard(qa, blank_slide_layout, plotDir)
-  else:
-    makeAllRunsSlides(qa, blank_slide_layout, plotDir)
-  
   #--------------------------------------------------------------------
-  # Now, do the run-by-run plots
-  
+  # Create a table at the end for summarizing the QA per run and object
+  slide = qa.slides.add_slide(bullet_slide_layout)
+  shapes = slide.shapes
+  title_shape = shapes.title
+  title_shape.text = str(period) + " QA -- Full Jets"
+  body_shape = shapes.placeholders[1]
+  tf = body_shape.text_frame
+  tf.text = str(period) +": 5.02 TeV " + str(system)
+  totalEvents=0
+  totalRuns=0
   for run in runList.split():
-    
-    print "Plotting Run " +  str(run)
-    
-    if not os.path.exists(plotDir + str(run) + "/QAoutput/EventQA"):
-      print "Run " + str(run) + " is empty -- skipping."
-      continue
-    
-    if isPtHard:
-      plotRunPtHard(qa, blank_slide_layout, plotDir, run)
+    inputFile= plotDir + str(run) + "/AnalysisResults.root"
+    #if downloading the file did fail at some point (=zero bytes) you can check this here:
+    size = os.stat(inputFile).st_size
+    #print("size of root file: %s" % size)
+    if size!=0:
+      f = ROOT.TFile(inputFile)
+      qaTaskName = determineQATaskName("AliAnalysisTaskPWGJEQA", f, isPtHard)
+      #print("Found qaTaskName \"{0}\"".format(qaTaskName))
+      qaList = f.Get(qaTaskName)
+      histNEvent = qaList.FindObject("fHistEventCount")
+      nEvents = histNEvent.GetBinContent(1)
+      totalEvents=totalEvents+nEvents
+      totalRuns=totalRuns+1
+      p = tf.add_paragraph()
+      p.text = str(run)+" with "+str(nEvents)+" Evts "
     else:
-      plotRun(qa, blank_slide_layout, plotDir, run)
+      print("!!!!!!! Root file for run %s is empty - please check download" % str(run))
+  p = tf.add_paragraph()
+  p.text = "Total number of used runs period: "+str(totalRuns)
+  p = tf.add_paragraph()
+  p.text = "Total events in period: "+str(totalEvents)+" Evts "
+  tf.fit_text('Calibri', 14)
+
+  #--------------------------------------------------------------------
+  # Create the slides for all runs combined (Run = -1)
+  # layout depending on the settings
+  plotRun(qa, blank_slide_layout, plotDir, isPtHard, isPbPb, isIncludePhos, -1, 0)
+
+  #define two different ways of plotting 1->ordered by run numbers 2->ordered by objects that are QAd'
+  version=2
+  #--------------------------------------------------------------------
+  # Now, do the run-by-run plots (run sorted)
+  #
+  if version==1:
+    for run in runList.split():
+      
+      if not os.path.exists(plotDir + str(run) + "/QAoutput/EventQA"):
+        print("Run " + str(run) + " is empty -- skipping.")
+        continue
+      plotRun(qa, blank_slide_layout, plotDir, isPtHard, isPbPb, isIncludePhos, run, 0)
+  #--------------------------------------------------------------------
+  # Now, do the run-by-run plots (object sorted)
+  #
+  if version==2:
+    for object in range(1, 5):
+      for run in runList.split():
+
+        if not os.path.exists(plotDir + str(run) + "/QAoutput/EventQA"):
+          print("Run " + str(run) + " is empty -- skipping.")
+          continue
+        plotRun(qa, blank_slide_layout, plotDir, isPtHard, isPbPb, isIncludePhos, run, object)
+  #--------------------------------------------------------------------
+  # Get number of events
+  slide = qa.slides.add_slide(blank_slide_layout)
+  shapes = slide.shapes
+#title_shape = shapes.title
+#title_shape.text = str(period) + " QA -- Full Jets"
+#body_shape = shapes.placeholders[1]
+  rows = totalRuns+1
+  cols = 5
+  left = top = Inches(0.3)
+  width = Inches(6.0)
+  height = Inches(0.2)
+
+  table = shapes.add_table(rows, cols, left, top, width, height).table
+  # set column widths
+  table.columns[0].width = Inches(1.0)
+  # table.columns[1].width = Inches(4.0)
+
+  table.cell(0,0).text = "Run"
+  table.cell(0,1).text = "Track OK"
+  table.cell(0,2).text = "Cluster OK"
+  table.cell(0,3).text = "Ch Jets OK"
+  table.cell(0,4).text = "Full Jets OK"
+  col=1
+  for run in runList.split():
+    table.cell(col,0).text = str(run)
+    col=col+1
+
+
+  #--------------------------------------------------------------------
+  # Save the final presentation
+  qa.save(plotDir + period + "_QA.pptx")
+  print("Saved presentation in: " +  plotDir + period + "_QA.pptx")
+
+####################################################################################################
+# Make slides a merged or single run, PbPb Data
+####################################################################################################
+def plotRun(qa, blank_slide_layout, plotDir, isPtHard, isPbPb, includePHOS, run, version):
   
-  qa.save(plotDir + "qa.pptx")
-
-######################################################
-# Below are the worker functions that make the slides
-######################################################
-
-# Make slides for all runs summed together
-def makeAllRunsSlides(qa, blank_slide_layout, plotDir):
-
-  plotRun(qa, blank_slide_layout, plotDir, "AllRuns")
-
-# Make slides for a single run
-def plotRun(qa, blank_slide_layout, plotDir, run):
+  isAllRuns = 0
+  if run == -1:
+    isAllRuns = 1
+    run = "AllRuns"
+  if isAllRuns:
+    print("Plotting all Runs")
+  if not isAllRuns and version==0:
+    print("Plotting Run " +  str(run))
   
-  isAllRuns = run is "AllRuns"
-  
+  # Title
+  titleleft = Inches(2.6)
+  titletop = Inches(0.)
+  titleheight = Inches(0.8)
+  titlewidth = Inches(5.)
+
+  if version==1 or version==0:
+    # Slide 1: Track plots --------------------------
+    slide = qa.slides.add_slide(blank_slide_layout)
+    txBox = slide.shapes.add_textbox(titleleft, titletop+0.2, titlewidth, titleheight)
+    plotTrackSlides(slide, txBox, plotDir, isPtHard, isPbPb, isAllRuns, run)
+
+  if version==2 or version==0:
+    # Slide 2: Clusters plots --------------------------
+    slide = qa.slides.add_slide(blank_slide_layout)
+    txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
+    plotClusterSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, isAllRuns,  run)
+
+  if version==3 or version==0:
+    # Slide 3: Charged jet plots --------------------------
+    slide = qa.slides.add_slide(blank_slide_layout)
+    txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
+    plotChargedJetSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, isAllRuns, run)
+
+  if version==4 or version==0:
+    # Slide 4: Full jet plots --------------------------
+    slide = qa.slides.add_slide(blank_slide_layout)
+    txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
+    plotFullJetSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, isAllRuns, run)
+
+####################################################################################################
+# Plot slides with track information
+####################################################################################################
+def plotTrackSlides(slide, txBox, plotDir, isPtHard, isPbPb, isAllRuns, run):
+
   imgWidth = 3.3
   # columns
   leftEdge = 0.1
@@ -135,21 +272,13 @@ def plotRun(qa, blank_slide_layout, plotDir, run):
   midVertEdge = 2.9
   lowEdge = 5.1
   
-  # Slide 1: Track plots --------------------------
-  slide = qa.slides.add_slide(blank_slide_layout)
-  
   # Title
-  titleleft = Inches(2.6)
-  titletop = Inches(0.)
-  titleheight = Inches(0.8)
-  titlewidth = Inches(5.)
-  txBox = slide.shapes.add_textbox(titleleft, titletop+0.2, titlewidth, titleheight)
   tf = txBox.text_frame
   tf.text = "Run " + str(run) + " -- Tracks"
   if isAllRuns:
     tf.text = "All Runs -- Tracks"
   tf.fit_text('Calibri', 40)
-  
+
   img_path = plotDir + str(run) + "/QAoutput/EventQA/hEventReject.png"
   left = Inches(leftEdge)
   top = Inches(topEdge)
@@ -163,7 +292,7 @@ def plotRun(qa, blank_slide_layout, plotDir, run):
     top = Inches(topEdge)
   width = Inches(imgWidth)
   slide.shapes.add_picture(img_path, left, top, width=width)
-  
+
   img_path = plotDir + str(run) + "/QAoutput/Tracks/profTrackPtResolution.png"
   left = Inches(rightEdge)
   top = Inches(topEdge)
@@ -187,516 +316,343 @@ def plotRun(qa, blank_slide_layout, plotDir, run):
   top = Inches(lowEdge-0.5)
   width = Inches(imgWidth)
   slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  # Slide 2: Clusters plots --------------------------
-  slide = qa.slides.add_slide(blank_slide_layout)
-  
-  # Title
-  txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
+
+####################################################################################################
+# Plot slides with cluster information
+####################################################################################################
+def plotClusterSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, isAllRuns, run):
+ 
+ # print("Plot cluster slide")
+ # print("Is pT hard: %s" % isPtHard)
+ # print("Is PbPb data: %s" % isPbPb)
+ # print("Includes PHOS info: %s" % includePHOS)
+ # print("Is all run: %s" % isAllRuns)
+
+  ## Settings
+  ## If phos is included phos E spectrum and ratio to other clusters is plotted on the right
+  ## Side of the slide
+  ## If phos is not included the eta phi distribution is expanded instead
+
+  imgWidth = 3.3
+  # columns
+  leftEdge = 0.1
+  midEdge = 3.3
+  rightEdge = 6.6
+  # rows
+  topEdge = 0.8
+  midVertEdge = 2.9
+  lowEdge = 5.1
+    
   tf = txBox.text_frame
   tf.text = "Run " + str(run) + " -- Clusters"
   if isAllRuns:
     tf.text = "All Runs -- Clusters"
   tf.fit_text('Calibri', 36)
-  
+
   img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusEMCalEnergy.png"
   left = Inches(leftEdge)
-  top = Inches(topEdge-0.6)
-  if isAllRuns:
-    top = Inches(topEdge)
+  top = Inches(topEdge)
   width = Inches(imgWidth)
   slide.shapes.add_picture(img_path, left, top, width=width)
-  
+
   img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusDCalEnergy.png"
   if os.path.exists(img_path):
     left = Inches(midEdge)
-    top = Inches(topEdge-0.6)
-    if isAllRuns:
-      top = Inches(topEdge)
+    top = Inches(topEdge)
     width = Inches(imgWidth)
     slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusPHOSEnergy.png"
-  if os.path.exists(img_path):
+
+  if includePHOS:
+    img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusPHOSEnergy.png"
+    if os.path.exists(img_path):
+      left = Inches(rightEdge)
+      top = Inches(topEdge)
+      width = Inches(imgWidth)
+      slide.shapes.add_picture(img_path, left, top, width=width)
+  if not isAllRuns and not includePHOS:
+    #img_path = plotDir + str(run) + "/QAoutput/Cells/profCellAbsIdTime.png"  #this is helpful in case there is an increased cluster/event yield
+    img_path = plotDir + str(run) + "/QAoutput/Cells/hCellEnergyTselRatio.png" #This checks the cluster yield after timing cuts
     left = Inches(rightEdge)
-    top = Inches(topEdge-0.6)
-    if isAllRuns:
-      top = Inches(topEdge)
+    top = Inches(topEdge)
     width = Inches(imgWidth)
     slide.shapes.add_picture(img_path, left, top, width=width)
-  
+
+
+  img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusPhiEta.png"
+  left = Inches(leftEdge)
+  top = Inches(lowEdge-1)
+  width = Inches(imgWidth*1.4)
+  if isAllRuns:
+    left = Inches(midEdge)
+    top = Inches(lowEdge-1.7)
+    if includePHOS:
+      #left = Inches(midEdge-0.5)
+      top = Inches(lowEdge-1)
+      width = Inches(imgWidth)
+  slide.shapes.add_picture(img_path, left, top, width=width)
+
+  if not isAllRuns:
+    img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusPhiEtaRatio.png"
+    left = Inches(rightEdge-1.5)
+    top = Inches(lowEdge-1)
+    width = Inches(imgWidth*1.4)
+#what about phos case?
+  slide.shapes.add_picture(img_path, left, top, width=width)
+
   if isAllRuns:
     img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusEnergyRatioEMC.png"
-    if os.path.exists(img_path):
-      left = Inches(leftEdge)
-      top = Inches(lowEdge-0.9)
-      width = Inches(imgWidth)
-      slide.shapes.add_picture(img_path, left, top, width=width)
-
-    img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusEnergyRatio.png"
-    if os.path.exists(img_path):
-      left = Inches(midEdge)
-      top = Inches(lowEdge-0.9)
-      width = Inches(imgWidth)
-      slide.shapes.add_picture(img_path, left, top, width=width)
-
-    img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusPhiEtaRatio.png"
+    left = Inches(leftEdge)
+    top = Inches(lowEdge-0.9)
     if isAllRuns:
-      img_path = plotDir + "AllRuns/QAoutput/Clusters/hClusPhiEta.png"
-    left = Inches(rightEdge)
-    top = Inches(lowEdge-0.6)
-    width = Inches(imgWidth)
-    slide.shapes.add_picture(img_path, left, top, width=width)
-  else:
-    img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusPhiEtaRatio.png"
-    if isAllRuns:
-      img_path = plotDir + "AllRuns/QAoutput/Clusters/hClusPhiEta.png"
-    left = Inches(midEdge)
-    top = Inches(lowEdge-0.6)
+      top = Inches(lowEdge-1.6)
     width = Inches(imgWidth)
     slide.shapes.add_picture(img_path, left, top, width=width)
 
-  # Slide 3: Charged jet plots --------------------------
-  slide = qa.slides.add_slide(blank_slide_layout)
-  imgWidth = 3.2
+    if includePHOS:
+      img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusEnergyRatio.png"
+      left = Inches(rightEdge)
+      top = Inches(lowEdge-1.6)
+      width = Inches(imgWidth)
+      slide.shapes.add_picture(img_path, left, top, width=width)
+
+####################################################################################################
+# Plot charged jet slides
+####################################################################################################
+def plotChargedJetSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, isAllRuns, run):
+  
+  imgWidth = 3.3
+  # columns
+  leftEdge = 0.1
+  midEdge = 1.6
+  rightEdge = 5.0
+  if isPbPb:
+    leftEdge = 0.1
+    midEdge = 3.3
+    rightEdge = 6.6
+  # rows
+  topEdge = 0.8
+  midVertEdge = 2.9
+  lowEdge = 5.1
+  if isPbPb:
+    topEdge = 0.8
+    midVertEdge = 2.9
+    lowEdge = 5.1
+
+  imgWidth = 4.0
+  if isPbPb:
+    imgWidth = 3.2
   titlewidth = Inches(7.)
   titleleft = Inches(2.5)
   
-  # Title
-  txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
   tf = txBox.text_frame
   tf.text = "Run " + str(run) + " -- Charged Jets"
   if isAllRuns:
     tf.text = "All Runs -- Charged Jets"
   tf.fit_text('Calibri', 36)
 
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetPtCorr.png"
-  left = Inches(leftEdge+1)
-  top = Inches(topEdge-0.5)
-  if isAllRuns:
-    top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-
-  if isAllRuns:
+  if isAllRuns and isPbPb:
     img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetPtCorrCentral.png"
     left = Inches(rightEdge-1.)
-    top = Inches(topEdge-0.5)
+    top  = Inches(topEdge-0.1)
+    width = Inches(imgWidth*1.2)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
+    img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetRhoVsCent.png"
+    left = Inches(leftEdge)
+    top = Inches(lowEdge-0.5)
     width = Inches(imgWidth)
     slide.shapes.add_picture(img_path, left, top, width=width)
   
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetRhoVsCent.png"
-  left = Inches(rightEdge-1)
-  top = Inches(topEdge)
-  if isAllRuns:
-    left = Inches(leftEdge)
-    top = Inches(lowEdge-0.5)
+
+  if isPbPb:
+    img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetPtCorr.png"
+  else:
+    img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetPt.png"
+  left = Inches(leftEdge+1)
+  top = Inches(topEdge-0.1)
   width = Inches(imgWidth)
+  if isAllRuns:
+    top = Inches(topEdge)
+    width = Inches(imgWidth*1.2)
   slide.shapes.add_picture(img_path, left, top, width=width)
 
   img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetPtLeadjetPt.png"
   left = Inches(leftEdge+1)
-  if isAllRuns:
+  if isPbPb:
     left = Inches(midEdge)
   top = Inches(lowEdge-0.5)
   width = Inches(imgWidth)
   slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetEtaPhiRatio.png"
-  left = Inches(rightEdge-1)
+
+  img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetEtaPhi.png"
+  left = Inches(rightEdge)
   top = Inches(lowEdge-0.5)
-  if isAllRuns:
-    img_path = plotDir + "AllRuns/QAoutput/Jets/hChargedJetEtaPhi.png"
-    left = Inches(rightEdge)
+  if isPbPb:
     top = Inches(lowEdge-0.5)
   width = Inches(imgWidth)
   slide.shapes.add_picture(img_path, left, top, width=width)
 
-  # Slide 4: Full jet plots --------------------------
-  slide = qa.slides.add_slide(blank_slide_layout)
+  if not isAllRuns:
+    img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetEtaPhiRatio.png"
+    left = Inches(rightEdge)
+    top = Inches(topEdge-0.1)
+    width = Inches(imgWidth)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
+####################################################################################################
+# Plot Full jet slides
+####################################################################################################
+def plotFullJetSlides(slide, txBox, plotDir, isPtHard, isPbPb, includePHOS, isAllRuns, run):
   
-  # Title
-  txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
+  # columns
+  leftEdge = 0.1
+  midEdge = 1.6
+  rightEdge = 5.0
+  if isPbPb:
+    leftEdge = 0.1
+    midEdge = 3.3
+    rightEdge = 6.6
+  # rows
+  topEdge = 0.8
+  midVertEdge = 2.9
+  lowEdge = 5.1
+  if isPbPb:
+    topEdge = 0.8
+    midVertEdge = 2.9
+    lowEdge = 5.1
+  #Figure width
+  imgWidth = 4.0
+  if isPbPb:
+    imgWidth = 3.2
+  titlewidth = Inches(7.)
+  titleleft = Inches(2.5)
+  
   tf = txBox.text_frame
   tf.text = "Run " + str(run) + " -- Full Jets"
   if isAllRuns:
     tf.text = "All Runs -- Full Jets"
   tf.fit_text('Calibri', 36)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPtCorr.png"
-  left = Inches(leftEdge+1.)
-  top = Inches(topEdge-0.5)
+
+  #- - - - - - - - - - - - - - -
+  #Top row figures
+  if isPbPb:
+    img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPtCorrCalo.png"
+  else:
+    img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPt.png"
+#img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPtCalo.png" #comparision of different jet types
+  left = Inches(leftEdge)
+  top = Inches(topEdge-0.1)
+  width = Inches(imgWidth*1.1)
   if isAllRuns:
     top = Inches(topEdge)
-  width = Inches(imgWidth)
+    width = Inches(imgWidth*1.2)
+  if isPbPb:
+    width = Inches(imgWidth*1.05)
   slide.shapes.add_picture(img_path, left, top, width=width)
 
-  if isAllRuns:
-    img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPtCorrCentral.png"
-    left = Inches(rightEdge-1.)
-    top = Inches(topEdge-0.5)
+  if isPbPb:
+    img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPt.png"
+    left = Inches(midEdge)
+    top = Inches(topEdge-0.1)
+    if isAllRuns:
+      top = Inches(topEdge)
+    width = Inches(imgWidth*1.05)
+    slide.shapes.add_picture(img_path, left, top, width=width)
+
+  img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetEtaPhi.png"
+  left = Inches(rightEdge)
+  top = Inches(topEdge)
+  width = Inches(imgWidth*1.1)
+  if isPbPb:
+    width = Inches(imgWidth)
+  slide.shapes.add_picture(img_path, left, top, width=width)
+
+  if isPbPb:
+    img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetRhoVsCent.png"
+    left = Inches(rightEdge)
+    top = Inches(topEdge+2.2)
     width = Inches(imgWidth)
     slide.shapes.add_picture(img_path, left, top, width=width)
   
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPtCorrCalo.png"
+  #- - - - - - - - - - - - - - -
+  #Bottom row figures
+  # if isAllRuns and isPbPb:
+
+  img_path = plotDir + str(run) + "/QAoutput/Jets/hDeltaEHadCorrProf.png"
+  left = Inches(leftEdge)
+  top = Inches(lowEdge+0.1)
+  width = Inches(3.2)
   if os.path.exists(img_path):
-    left = Inches(rightEdge-1)
-    top = Inches(topEdge-0.5)
-    if isAllRuns:
-      left = Inches(leftEdge)
-      top = Inches(lowEdge-0.9)
-    width = Inches(imgWidth)
+      slide.shapes.add_picture(img_path, left, top, width=width)
+
+  img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetNEF.png"
+  left = Inches(rightEdge+1.6)
+  top = Inches(lowEdge+0.1)
+  width = Inches(3.2)
+  if os.path.exists(img_path):
     slide.shapes.add_picture(img_path, left, top, width=width)
 
   img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPtLeadjetPt.png"
   left = Inches(leftEdge+1)
-  if isAllRuns:
+  if isPbPb:
     left = Inches(midEdge)
-  top = Inches(lowEdge-0.5)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetEtaPhiRatio.png"
-  left = Inches(rightEdge-1)
-  top = Inches(lowEdge-0.5)
-  if isAllRuns:
-    img_path = plotDir + "AllRuns/QAoutput/Jets/hFullJetEtaPhi.png"
-    left = Inches(rightEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-
-# Make slides for all runs summed together, Pt-hard production
-def makeAllRunsSlidesPtHard(qa, blank_slide_layout, plotDir):
-
-  slide = qa.slides.add_slide(blank_slide_layout)
-  left = Inches(3.7)
-  top = Inches(0.2)
-  height = Inches(0.8)
-  width = Inches(5.)
-  txBox = slide.shapes.add_textbox(left, top, width, height)
-  tf = txBox.text_frame
-  tf.text = "All Runs"
-  tf.fit_text('Calibri', 40)
-  
-  img_path = plotDir + "AllRuns/QAoutput/EventQA/hEventReject.png"
-  left = Inches(0.3)
-  top = Inches(1.)
-  width = Inches(4.3)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/PtHard/hPtHardNEvents.png"
-  left = Inches(5.1)
-  top = Inches(1.)
-  width = Inches(4.3)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/PtHard/hPtHardScaleFactor.png"
-  left = Inches(0.3)
-  top = Inches(4.2)
-  width = Inches(4.3)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/PtHard/hPtHard.png"
-  left = Inches(5.1)
-  top = Inches(4.2)
-  width = Inches(4.3)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  # Do plots for AllRuns
-  imgWidth = 3.3
-  # columns
-  leftEdge = 0.1
-  midEdge = 3.3
-  rightEdge = 6.6
-  # rows
-  topEdge = 1.5
-  midVertEdge = 2.9
-  lowEdge = 5.1
-  
-  # Slide 1: Track plots --------------------------
-  slide = qa.slides.add_slide(blank_slide_layout)
-  
-  # Title
-  titleleft = Inches(3.3)
-  titletop = Inches(0.)
-  titleheight = Inches(0.8)
-  titlewidth = Inches(5.)
-  txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
-  tf = txBox.text_frame
-  tf.text = "All Runs - Tracks"
-  tf.fit_text('Calibri', 36)
-  
-  # Track plots
-  img_path = plotDir + "AllRuns/QAoutput/Tracks/hTrackPhi.png"
-  left = Inches(leftEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Tracks/hTrackPt.png"
-  left = Inches(midEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Tracks/hTrackEtaPhi.png"
-  left = Inches(rightEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Tracks/profTrackPtResolution.png"
-  left = Inches(leftEdge)
-  top = Inches(lowEdge-1.)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Tracks/profTrackPtResolutionMC.png"
-  left = Inches(midEdge)
-  top = Inches(lowEdge-1.)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Tracks/hTrackingEfficiency1D.png"
-  left = Inches(rightEdge)
-  top = Inches(lowEdge-1.)
-  width = Inches(imgWidth+0.1)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  # Slide 2: Clusters plots --------------------------
-  slide = qa.slides.add_slide(blank_slide_layout)
-  
-  # Title
-  txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
-  tf = txBox.text_frame
-  tf.text = "All Runs - Clusters"
-  tf.fit_text('Calibri', 36)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Clusters/hClusEMCalEnergy.png"
-  left = Inches(leftEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Clusters/hClusDCalEnergy.png"
-  if os.path.exists(img_path):
-    left = Inches(midEdge)
-    top = Inches(topEdge)
-    width = Inches(imgWidth)
-    slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Clusters/hClusPHOSEnergy.png"
-  if os.path.exists(img_path):
-    left = Inches(rightEdge)
-    top = Inches(topEdge)
-    width = Inches(imgWidth)
-    slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Clusters/hClusPhiEta.png"
-  left = Inches(midEdge)
-  top = Inches(lowEdge-1.)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  # Slide 3: Jet plots --------------------------
-  slide = qa.slides.add_slide(blank_slide_layout)
-  
-  # Title
-  txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
-  tf = txBox.text_frame
-  tf.text = "All Runs - Jets"
-  tf.fit_text('Calibri', 36)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Jets/hChargedJetPt.png"
-  left = Inches(leftEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Jets/hFullJetPt.png"
-  left = Inches(midEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Jets/hFullJetPtCalo.png"
-  if os.path.exists(img_path):
-    left = Inches(rightEdge)
-    top = Inches(topEdge)
-    width = Inches(imgWidth)
-    slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Jets/hChargedJetEtaPhi.png"
-  left = Inches(leftEdge+1)
-  top = Inches(lowEdge-1.)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + "AllRuns/QAoutput/Jets/hFullJetEtaPhi.png"
-  left = Inches(rightEdge-1)
-  top = Inches(lowEdge-1.)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-
-# Make slides for a single run, Pt-hard production
-def plotRunPtHard(qa, blank_slide_layout, plotDir, run):
-  # Define some dimensions
-  imgWidth = 3.2
-  # columns
-  leftEdge = 0.1
-  midEdge = 3.3
-  rightEdge = 6.6
-  # rows
-  topEdge = 0.6
-  midVertEdge = 2.9
-  lowEdge = 5.1
-  
-  # Slide 1: Events + Track plots --------------------------
-  slide = qa.slides.add_slide(blank_slide_layout)
-  
-  # Title
-  titleleft = Inches(3.7)
-  titletop = Inches(0.)
-  titleheight = Inches(0.8)
-  titlewidth = Inches(5.)
-  txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
-  tf = txBox.text_frame
-  tf.text = "Run " + str(run)
-  tf.fit_text('Calibri', 36)
-  
-  # Left column: Event plots
-  img_path = plotDir + str(run) + "/QAoutput/EventQA/hEventReject.png"
-  left = Inches(leftEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/PtHard/hPtHardNEvents.png"
-  left = Inches(leftEdge)
-  top = Inches(midVertEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/PtHard/hPtHard.png"
-  left = Inches(leftEdge)
-  top = Inches(lowEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  # Middle column: track plots
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackingEfficiency1D.png"
-  left = Inches(midEdge+0.15)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/profTrackPtResolution.png"
-  left = Inches(midEdge)
-  top = Inches(midVertEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/profTrackPtResolutionMC.png"
-  left = Inches(midEdge)
+  else:
+    left = Inches(3.3)
   top = Inches(lowEdge+0.1)
-  width = Inches(imgWidth)
+  width = Inches(3.2)
   slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  # Right column: track plots
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackPt.png"
-  left = Inches(rightEdge)
-  top = Inches(0.)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackPhi.png"
-  left = Inches(rightEdge)
-  top = Inches(midVertEdge+0.25)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Tracks/hTrackEtaPhi.png"
-  left = Inches(rightEdge+0.2)
-  top = Inches(lowEdge+0.3)
-  width = Inches(imgWidth-0.2)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  # Slide 2: Clusters plots --------------------------
-  slide = qa.slides.add_slide(blank_slide_layout)
-  imgWidth = 3.3
-  topEdge = 1.5
-  
-  # Title
-  txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
-  tf = txBox.text_frame
-  tf.text = "Run " + str(run)
-  tf.fit_text('Calibri', 36)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusEMCalEnergy.png"
-  left = Inches(leftEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusDCalEnergy.png"
-  if os.path.exists(img_path):
-    left = Inches(midEdge)
-    top = Inches(topEdge)
-    width = Inches(imgWidth)
-    slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusPHOSEnergy.png"
-  if os.path.exists(img_path):
-    left = Inches(rightEdge)
-    top = Inches(topEdge)
-    width = Inches(imgWidth)
-    slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Clusters/hClusPhiEtaRatio.png"
-  left = Inches(midEdge)
-  top = Inches(lowEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  # Slide 3: Jet plots --------------------------
-  slide = qa.slides.add_slide(blank_slide_layout)
-  
-  # Title
-  txBox = slide.shapes.add_textbox(titleleft, titletop, titlewidth, titleheight)
-  tf = txBox.text_frame
-  tf.text = "Run " + str(run)
-  tf.fit_text('Calibri', 36)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetPt.png"
-  left = Inches(leftEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPt.png"
-  left = Inches(midEdge)
-  top = Inches(topEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetPtCalo.png"
-  if os.path.exists(img_path):
-    left = Inches(rightEdge)
-    top = Inches(topEdge)
-    width = Inches(imgWidth)
-    slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hChargedJetEtaPhi.png"
-  left = Inches(leftEdge+1)
-  top = Inches(lowEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
-  
-  img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetEtaPhiRatio.png"
-  left = Inches(rightEdge-1)
-  top = Inches(lowEdge)
-  width = Inches(imgWidth)
-  slide.shapes.add_picture(img_path, left, top, width=width)
+
+
+  #if not isAllRuns:
+  #  img_path = plotDir + str(run) + "/QAoutput/Jets/hFullJetEtaPhiRatio.png"
+  #  left = Inches(rightEdge)
+  #  top = Inches(lowEdge-0.5)
+  #  width = Inches(imgWidth)
+  #  slide.shapes.add_picture(img_path, left, top, width=width)
+
+#---------------------------------------------------------------------------------------------------
+def determineQATaskName(qaTaskBaseName, f, isPtHard):
+  """ Determine the task name based on a wide variety of possible names.
+    
+  Since the task name varies depending on what input objects are included,
+  we need to guess the name.
+    
+  Args:
+  qaTaskBaseName (str): Base name of the QA task without any of the input object names
+  f (TFile): Root file containing the QA task
+    
+  """
+  # Get all task names stored in the input file
+  possibleTaskNames = [key.GetName() for key in f.GetListOfKeys()]
+      
+  # Possible input object names
+  tracksName = "tracks"
+  mcTracksName = "mcparticles"
+  cellsName = "emcalCells"
+  clustersName = "caloClusters"
+              
+  # Compile into a list for easy processing
+  possibleNames = [tracksName, mcTracksName, cellsName, clustersName]
+  suffix = "histos"
+  if isPtHard:
+    suffix = "histosScaled"
+                    
+  for length in range(0, len(possibleNames)+1):
+    for elements in itertools.permutations(possibleNames, length):
+      joined = "_".join(elements)
+      testTaskName = qaTaskBaseName
+      if joined:
+        testTaskName += "_" + joined
+      # Also Try ESD
+      testTaskNameESD = testTaskName.replace("emcalCells", "EMCALCells").replace("caloClusters", "CaloClusters").replace("tracks", "Tracks").replace("mcparticles", "MCParticles")
+                              
+      for taskName in [testTaskName, testTaskNameESD]:
+        taskName = "{0}_{1}".format(taskName, suffix)
+        if taskName in possibleTaskNames:
+          return taskName
+                                    
+  print("Could not determine QA task name! Please check your spelling!")
+  exit(1)
 
 #---------------------------------------------------------------------------------------------------
 if __name__ == '__main__':

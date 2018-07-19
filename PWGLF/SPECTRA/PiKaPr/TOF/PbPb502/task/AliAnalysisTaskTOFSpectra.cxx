@@ -24,42 +24,29 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #define LOG_NO_INFO
+
 #define LOG_NO_DEBUG
+
 #define LOG_NO_WARNING
+
 #include "AliAnalysisTaskTOFSpectra.h"
-#include "AliAnalysisFilter.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskSE.h"
 #include "AliCDBManager.h"
-#include "AliCFContainer.h"
-#include "AliCFFrame.h"
-#include "AliCFGridSparse.h"
-#include "AliCentrality.h"
 #include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliESDUtils.h"
-#include "AliESDVertex.h"
+#include "AliESDTOFCluster.h"
 #include "AliESDpid.h"
 #include "AliESDtrack.h"
-#include "AliGenCocktailEventHeader.h"
 #include "AliGenHepMCEventHeader.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliHeader.h"
-#include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
-#include "AliMultSelection.h"
 #include "AliMultSelectionCuts.h"
-#include "AliMultiplicity.h"
-#include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliPPVsMultUtils.h"
 #include "AliStack.h"
 #include "AliTOFGeometry.h"
-#include "TCanvas.h"
+#include "AliTOFT0maker.h"
+#include "AliTOFcalib.h"
 #include "TChain.h"
-#include "TDatabasePDG.h"
-#include "TF1.h"
-#include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
@@ -67,13 +54,11 @@
 #include "TH3S.h"
 #include "TList.h"
 #include "TMath.h"
-#include "TObjArray.h"
 #include "TProfile.h"
-#include "TROOT.h"
-#include "TSystem.h"
 #include "TTree.h"
 #include <iostream>
 #ifdef USETREECLASS
+#include "AliAnTOFevent.h"
 #include "AliAnTOFtrack.h"
 #include "TClonesArray.h"
 #endif
@@ -81,8 +66,18 @@
 ClassImp(AliAnalysisTaskTOFSpectra);
 
 //________________________________________________________________________
-AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Bool_t hi, Bool_t mc, Bool_t tree, Bool_t chan, Bool_t cuts, Int_t simplecuts)
+AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, const Int_t collsys, Bool_t mc, Bool_t tree, Bool_t chan, Bool_t cuts, Int_t simplecuts)
     : AliAnalysisTaskSE(taskname)
+    // Soft configuration flags
+    , fBuilTPCTOF(kFALSE)
+    , fBuilDCAchi2(kFALSE)
+    , fUseTPCShift(kFALSE)
+    , fPerformance(kFALSE)   //kTRUE for performance plots!
+    , fMCPerformance(kFALSE) //kTRUE for MC performance plots!
+    , fRecalibrateTOF(kFALSE)
+    , fCutOnMCImpact(kFALSE)
+    , fFineTOFReso(kFALSE) // kTRUE for TOF resolution as a function of the number of TOF matched tracks
+    , fFineEfficiency(kFALSE)
     //Standard track and event cuts
     , fEventCut(0)
     , fESDtrackCuts(0x0)
@@ -104,25 +99,17 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     //Output containers
     , fListHist(0x0)
     , fTreeTrack(0x0)
-    , ArrayAnTrk(0x0)
+    , fAnTOFevent()
     , fTreeTrackMC(0x0)
     //Task configuration flags
-    , fHImode(hi)
+    , fCollSysMode(static_cast<CollSys>(collsys))
     , fMCmode(mc)
     , fTreemode(tree)
     , fChannelmode(chan)
     , fCutmode(cuts)
     , fSimpleCutmode(simplecuts)
-    //Task setup parameters
+    //Task setup for working configuration
     , fUseAliEveCut(kTRUE)
-    , fBuilTPCTOF(kFALSE)
-    , fBuilDCAchi2(kFALSE)
-    , fUseTPCShift(kFALSE)
-    , fPerformance(kFALSE)
-    , fRecalibrateTOF(kFALSE)
-    , fCutOnMCImpact(kFALSE)
-    , fFineTOFReso(kFALSE)
-    , fFineEfficiency(kFALSE)
     , fDCAXYshift(0)
     //Mask for physics selection
     , fSelectBit(AliVEvent::kINT7)
@@ -170,7 +157,7 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , fGoldenChi2(-999)
     , fLengthActiveZone(-999)
     , fLength(-999)
-    , fLengthRatio(-999)
+    , fLengthRatio(-1)
     , fEta(-999)
     , fPhi(-999)
     , fP(-999)
@@ -206,6 +193,8 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , fProdInfo(-999)
     , fPdgcode(-999)
     , fPdgIndex(-999)
+    , fPdgcodeMother(-999)
+    , fFirstMotherIndex(-999)
     , fNMCTracks(-999)
     , fMCPrimaries(-999)
     , fMCTOFMatch(-999)
@@ -262,11 +251,15 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
     , hBetaNoMismatchCentralEtaCut(0x0)
     , hBetaNoMismatchCentralEtaCutOut(0x0)
     //Channel and clusters in TOF
+    , hChannelEvents(0x0)
     , hChannelTime(0x0)
+    , hChannelHits(0x0)
+    , hChannelClusters(0x0)
     , hTOFClusters(0x0)
     , hTOFClustersDCApass(0x0)
     //TPC energy loss
     , hTPCdEdx(0x0)
+    , hTPCdEdxTPCp(0x0)
 {
 
   //
@@ -276,6 +269,8 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
 
   //Perform some tests
   //   TestDCAXYBinning();
+  if (collsys < 0 || collsys > kCollSysAll)
+    AliFatal("Wrong initialization index for collision system");
 
   //Initialize all the variables
   Init();
@@ -295,6 +290,25 @@ AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const TString taskname, Boo
 
   PrintStatus();
   AliDebug(2, "**** END OF CONSTRUCTOR ****");
+}
+
+//________________________________________________________________________
+AliAnalysisTaskTOFSpectra::AliAnalysisTaskTOFSpectra(const AliAnalysisTaskTOFSpectra& copy)
+    : AliAnalysisTaskTOFSpectra(copy.GetName(), copy.fCollSysMode, copy.fMCmode, copy.fTreemode, copy.fChannelmode, copy.fCutmode, copy.fSimpleCutmode)
+{
+  fBuilTPCTOF = copy.fBuilTPCTOF;
+  fBuilDCAchi2 = copy.fBuilDCAchi2;
+  fUseTPCShift = copy.fUseTPCShift;
+  fPerformance = copy.fPerformance;
+  fMCPerformance = copy.fMCPerformance;
+  fRecalibrateTOF = copy.fRecalibrateTOF;
+  fCutOnMCImpact = copy.fCutOnMCImpact;
+  fFineTOFReso = copy.fFineTOFReso;
+  fFineEfficiency = copy.fFineEfficiency;
+  fSelectBit = copy.fSelectBit;
+  fMultiplicityBin = copy.fMultiplicityBin;
+  fESDtrackCuts = copy.fESDtrackCuts;
+  fESDtrackCutsPrm = copy.fESDtrackCutsPrm;
 }
 
 //________________________________________________________________________
@@ -322,11 +336,6 @@ AliAnalysisTaskTOFSpectra::~AliAnalysisTaskTOFSpectra()
   if (fTreeTrack) {
     delete fTreeTrack;
     fTreeTrack = 0;
-  }
-
-  if (ArrayAnTrk) {
-    delete ArrayAnTrk;
-    ArrayAnTrk = 0;
   }
 
   if (fTreeTrackMC) {
@@ -378,7 +387,11 @@ void AliAnalysisTaskTOFSpectra::Init()
   //Defining ranges and bins
   //
   AliInfo("Defining Multiplicity bins");
-  for (Int_t i = 0; i <= kEvtMultBins; i++) { //Multiplicity
+  //
+  // Multiplicity
+  //
+  // Only for PbPb
+  for (Int_t i = 0; i <= kEvtMultBins; i++) {
     // Multiplicity [0%, 100%] - not uniform
     //5% step from 0% to 10% -> 2 bins
     //10% step from 10% to 100% -> 9 bins
@@ -396,8 +409,24 @@ void AliAnalysisTaskTOFSpectra::Init()
     if (i > 0)
       AliInfo(Form("Multiplicity Bin %i/%i [%.1f, %.1f]", i, kEvtMultBins, fMultiplicityBin.At(i - 1), fMultiplicityBin.At(i)));
   }
-  //
-  if (fCutOnMCImpact && fMCmode) {
+  // Only for pp
+  if (fCollSysMode == AliUtilTOFParams::kpp) {
+    TArrayD ppLimits(10);
+    Int_t j = 0;
+    ppLimits.AddAt(-1000, j++);
+    ppLimits.AddAt(-204, j++);
+    ppLimits.AddAt(-200, j++);
+    ppLimits.AddAt(0, j++);
+    ppLimits.AddAt(5, j++);
+    ppLimits.AddAt(10, j++);
+    ppLimits.AddAt(15, j++);
+    ppLimits.AddAt(23, j++);
+    ppLimits.AddAt(33, j++);
+    ppLimits.AddAt(1000, j++);
+    fMultiplicityBin.Set(j, ppLimits.GetArray());
+  }
+  // Only for cutting on the MC impact parameter!
+  if (fCutOnMCImpact && fMCmode && (fCollSysMode == kPbPb || fCollSysMode == kXeXe)) {
     AliInfo("Changing the centrality cut to match the data impact parameter b");
     TArrayD bLimits(kEvtMultBins + 1);
     Int_t j = 0;
@@ -433,29 +462,18 @@ void AliAnalysisTaskTOFSpectra::Init()
     if (j != kEvtMultBins)
       AliFatal("Somehow index does not sum up");
     //Copy the values to the cut array
-    for (Int_t i = 0; i <= kEvtMultBins; i++)
-      fMultiplicityBin.AddAt(bLimits.At(i), i);
+    fMultiplicityBin.Set(j + 1, bLimits.GetArray());
   }
-  if (!fHImode) {
-    TArrayF ppLimits(9);
-    Int_t j = 0;
-    ppLimits.AddAt(-1000, j++);
-    ppLimits.AddAt(-204, j++);
-    ppLimits.AddAt(-200, j++);
-    ppLimits.AddAt(0, j++);
-    ppLimits.AddAt(5, j++);
-    ppLimits.AddAt(10, j++);
-    ppLimits.AddAt(15, j++);
-    ppLimits.AddAt(23, j++);
-    ppLimits.AddAt(33, j);
-    fMultiplicityBin.Set(j, ppLimits.GetArray());
-  }
-  //Check on the defined binning
-  for (Int_t i = 0; i < (fHImode ? kEvtMultBins : fMultiplicityBin.GetSize()); i++) // Multiplicity
+  // Sanity Check on the defined binning
+  for (Int_t i = 0; i < fMultiplicityBin.GetSize() - 1; i++) // Loop on all Multiplicity bins
   {
     AliDebugF(2, "Mutltiplicity Bin %i is [%f, %f]", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
-    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1))
+    if (fMultiplicityBin.GetAt(i) >= fMultiplicityBin.GetAt(i + 1)) // Consecutive bins must be in increasing order!
       AliFatalF("Multiplicity bin %i is not defined correctly: %.3f > %.3f", i, fMultiplicityBin.GetAt(i), fMultiplicityBin.GetAt(i + 1));
+    //
+    if (i >= kEvtMultBins)
+      AliFatalF("Bin %i is out of bounds! Total number %i while maximum is %i", i, fMultiplicityBin.GetSize(), kEvtMultBins);
+    //
   }
   //
   //Shift to the TPC signal
@@ -525,23 +543,29 @@ void AliAnalysisTaskTOFSpectra::Init()
 #endif
   }
 
-  for (Int_t mult = 0; mult < kEvtMultBins; mult++) {   //Multiplicity loop
-    for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
-      for (Int_t species = 0; species < 3; species++) { //Species loop
+  for (Int_t i = 0; i < 3; i++) //Loop over production methods
+    hBetaMC[i] = 0x0;
+  for (Int_t i = 0; i < 7; i++) //Loop over species + Unidentified
+  {
+    hBetaMCMother[i] = 0x0;
+    hBetaMCMotherMode[i] = 0x0;
+  }
 
-        hNumMatchMultTrk[charge][species][mult] = 0x0;
-        hDenMatchMultTrk[charge][species][mult] = 0x0;
+  for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
+    for (Int_t species = 0; species < 3; species++) { //Species loop
 
-        hNumMatchMultTrkTRDOut[charge][species][mult] = 0x0;
-        hDenMatchMultTrkTRDOut[charge][species][mult] = 0x0;
+      hNumMatchMultTrk[charge][species] = 0x0;
+      hDenMatchMultTrk[charge][species] = 0x0;
 
-        hNumMatchMultTrkNoTRDOut[charge][species][mult] = 0x0;
-        hDenMatchMultTrkNoTRDOut[charge][species][mult] = 0x0;
-      }
+      hNumMatchMultTrkTRDOut[charge][species] = 0x0;
+      hDenMatchMultTrkTRDOut[charge][species] = 0x0;
 
-      hNumMatchMultTrkInc[charge][mult] = 0x0;
-      hDenMatchMultTrkInc[charge][mult] = 0x0;
+      hNumMatchMultTrkNoTRDOut[charge][species] = 0x0;
+      hDenMatchMultTrkNoTRDOut[charge][species] = 0x0;
     }
+
+    hNumMatchMultTrkInc[charge] = 0x0;
+    hDenMatchMultTrkInc[charge] = 0x0;
   }
 
   for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
@@ -551,16 +575,15 @@ void AliAnalysisTaskTOFSpectra::Init()
       hDenTrkVertex[charge][species] = 0x0;
       hDenTrkVertexMCVertexZ[charge][species] = 0x0;
 
-      for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
-        hDenTrkTrigger[charge][species][mult] = 0x0;
-        hDenPrimMCYCut[charge][species][mult] = 0x0;
-        hDenPrimMCEtaCut[charge][species][mult] = 0x0;
-        hDenPrimMCEtaYCut[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatch[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatchYCut[charge][species][mult] = 0x0;
-        hNumPrimMCTrueMatchYCutTPC[charge][species][mult] = 0x0;
-        hNumPrimMCConsistentMatchYCut[charge][species][mult] = 0x0;
-      }
+      hDenTrkTrigger[charge][species] = 0x0;
+      hDenPrimMCYCut[charge][species] = 0x0;
+      hDenPrimMCEtaCut[charge][species] = 0x0;
+      hDenPrimMCEtaYCut[charge][species] = 0x0;
+      hNumPrimMCTrueMatch[charge][species] = 0x0;
+      hNumPrimMCTrueMatchYCut[charge][species] = 0x0;
+      hNumPrimMCTrueMatchYCutTPC[charge][species] = 0x0;
+      hNumPrimMCConsistentMatchYCut[charge][species] = 0x0;
+      hNumPrimMCMotherMatchYCut[charge][species] = 0x0;
 
       hDenMatchPrimNoCut[charge][species] = 0x0;
       hDenPrimMCNoCut[charge][species] = 0x0;
@@ -601,11 +624,9 @@ void AliAnalysisTaskTOFSpectra::Init()
 
       hNumMatchPrimMC[charge][species] = 0x0;
       hDenMatchPrimMC[charge][species] = 0x0;
-      for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
 
-        hNumMatchPrimMCYCut[charge][species][mult] = 0x0;
-        hDenMatchPrimMCYCut[charge][species][mult] = 0x0;
-      }
+      hNumMatchPrimMCYCut[charge][species] = 0x0;
+      hDenMatchPrimMCYCut[charge][species] = 0x0;
     }
   }
 
@@ -643,13 +664,18 @@ void AliAnalysisTaskTOFSpectra::Init()
   }
 #endif
 
-  for (Int_t charge = 0; charge < 2; charge++) {            //Charge loop Positive/Negative
-    for (Int_t species = 0; species < 3; species++) {       //Species loop
-      for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) {     //Pt loop
-        for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
-          hDCAxy[charge][species][ptbin][mult] = 0x0;
-          hDCAxyGoldenChi2[charge][species][ptbin][mult] = 0x0;
-        }
+#ifdef BUILDT0PLOTS // Build TOF distributions only if requested
+  for (Int_t type = 0; type < 4; type++) {
+    hT0VsVtxZ[type] = 0x0;
+    hT0VsVtxZbest[type] = 0x0;
+  }
+#endif
+
+  for (Int_t charge = 0; charge < 2; charge++) {        //Charge loop Positive/Negative
+    for (Int_t species = 0; species < 3; species++) {   //Species loop
+      for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { //Pt loop
+        hDCAxy[charge][species][ptbin] = 0x0;
+        hDCAxyGoldenChi2[charge][species][ptbin] = 0x0;
         hDCAxyPrimMC[charge][species][ptbin] = 0x0;
         hDCAxySecStMC[charge][species][ptbin] = 0x0;
         hDCAxySecMatMC[charge][species][ptbin] = 0x0;
@@ -657,9 +683,20 @@ void AliAnalysisTaskTOFSpectra::Init()
     }
   }
 
+  //TOF expected
   for (Int_t species = 0; species < kExpSpecies; species++) { //Species loop
     hBetaExpected[species] = 0x0;
     hBetaExpectedTOFPID[species] = 0x0;
+    if (species < kExpSpecies - 1) {
+      hTOFSepVsP[species] = 0x0;
+      hTOFSepVsPt[species] = 0x0;
+    }
+  }
+
+  //TPC expected
+  for (Int_t species = 0; species < kExpSpecies + 2; species++) { //Species loop
+    hdEdxExpected[species] = 0x0;
+    hdEdxExpectedTPCp[species] = 0x0;
   }
 
   AliDebug(2, "Init()\t END");
@@ -702,13 +739,17 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
   fListHist->SetOwner();
 
   //Object for the event selection
-  if (fHImode)
+  switch (fCollSysMode) {
+  case kPbPb:
     fEventCut.SetupLHC15o();
-  else {
+  case kXeXe:
+    break;
+  case kpp:
     fEventCut.SetupRun2pp();
     fEventCut.fCentralityFramework = 0;
+  default:
+    fEventCut.SetManualMode();
   }
-  fEventCut.SetManualMode();
 
   //Histograms for event Selection
   fEventCut.AddQAplotsToList(fListHist);
@@ -716,8 +757,20 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
   DefineTimePerformance();
 
   if (fChannelmode) {
+    hChannelEvents = new TH1F("hChannelEvents", "Histogram with Channel/Time correlation;Channel;TOF (ps)", 10, -.5, 9.5);
+    hChannelEvents->GetXaxis()->SetBinLabel(1, "Events Read");             //Number of events used
+    hChannelEvents->GetXaxis()->SetBinLabel(2, "Total # of TOF Hits");     //Number of events used
+    hChannelEvents->GetXaxis()->SetBinLabel(2, "Total # of TOF Clusters"); //Number of events used
+    fListHist->AddLast(hChannelEvents);
+
     hChannelTime = new TH2I("hChannelTime", "Histogram with Channel/Time correlation;Channel;TOF (ps)", kChannelBins, fChannelFirst - .5, fChannelLast - .5, kTimeBins, fTOFmin, fTOFmax);
     fListHist->AddLast(hChannelTime);
+
+    hChannelHits = new TH1F("hChannelHits", "Histogram with Hits per Channel;Channel;Counts", kChannelBins, fChannelFirst - .5, fChannelLast - .5);
+    fListHist->AddLast(hChannelHits);
+
+    hChannelClusters = new TH1F("hChannelClusters", "Histogram with Clusters per Channel;Channel;Counts", kChannelBins, fChannelFirst - .5, fChannelLast - .5);
+    fListHist->AddLast(hChannelClusters);
   } else {
 
     Int_t binstart = 1;
@@ -736,7 +789,9 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed kVertexPosition");
       hNEvt->GetXaxis()->SetBinLabel(binstart++, "Passed All Cuts");
     } else {
-      if (fHImode) {
+      switch (fCollSysMode) {
+      case kXeXe:
+      case kPbPb:
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has AliMultSelection");      //Multiplicity estimator initialized
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Calibrated Mult.");      //kNoCalib: centrality not calibrated, this is the default value for the centrality code
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "Pass Trigger");              //kRejTrigger: do not pass the trigger
@@ -746,7 +801,8 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has consistent vertex");     //kRejConsistencySPDandTrackVertices: do not pass consistency of vertex Cut
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "pass Trk.lets Vs Clusters"); // kRejTrackletsVsClusters: do not pass Tracklets Vs Clusters Cut
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "Has Vertex Contributors");   //kRejNonZeroNContribs: do not pass Contributors (to vertex) Cut
-      } else {
+        break;
+      case kpp:
 
         //AliPPVsMultUtils::IsMinimumBias(fESD))
         //AliPPVsMultUtils::IsAcceptedVertexPosition(fESD))
@@ -762,12 +818,16 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsINELgtZERO");                         //AliPPVsMultUtils::IsINELgtZERO(fESD))
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "IsNotPileupSPDInMultBins");             //AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
         hNEvt->GetXaxis()->SetBinLabel(binstart++, "HasNoInconsistentSPDandTrackVertices"); //AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD))
+        break;
+      default:
+        AliFatal("Not implemented yet");
       }
     }
 
     //Check on the bins present in the histograms
     if (binstart > hNEvt->GetNbinsX() + 1)
       AliFatal(Form("binstart out of bounds!!"));
+    //
     fListHist->AddLast(hNEvt);
 
     hEvtMult = new TH1F("hEvtMult", "Event Multiplicity Before Event Selection;Multiplicity;Counts", fMultiplicityBin.GetSize() - 1, fMultiplicityBin.GetArray());
@@ -957,6 +1017,11 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
     fListHist->AddLast(hTOFDist);
 
     DefinePerformanceHistograms();
+
+    if (fMCmode)
+      DefineMCPerformanceHistograms();
+
+    DefineT0Histograms();
 
     hCutVariation = new TH1F("hCutVariation", "CutCounter;CutSet;Tracks", 20, 0. - .5, 20. - .5);
     fListHist->AddLast(hCutVariation);
@@ -1185,18 +1250,17 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
         //*****
         //Info from the DCAxy
         //*****
-        for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
-          for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { //Pt loop
-            hDCAxy[charge][species][ptbin][mult] = new TH1F(Form("hDCAxy%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin + 1], mult), fDCAXYbins, -fDCAXYRange, fDCAXYRange);
-            hDCAxy[charge][species][ptbin][mult]->Sumw2();
-            fListHist->AddLast(hDCAxy[charge][species][ptbin][mult]);
+        for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { //Pt loop
+          hDCAxy[charge][species][ptbin] = new TH2F(Form("hDCAxy%s%s_pt%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Multiplicity;Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin + 1]), fDCAXYbins, -fDCAXYRange, fDCAXYRange, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hDCAxy[charge][species][ptbin]->Sumw2();
+          fListHist->AddLast(hDCAxy[charge][species][ptbin]);
 
-            if (!fBuilDCAchi2)
-              continue;
-            hDCAxyGoldenChi2[charge][species][ptbin][mult] = new TH1F(Form("hDCAxyGoldenChi2%s%s_pt%i_mult%i", pC[charge].Data(), pS[species].Data(), ptbin, mult), Form("DCAxy w Golden Chi2 Distribution of %s %s in pt %i [%.2f,%.2f] and mult %i;DCA_{xy} (cm);Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin + 1], mult), fDCAXYbins, -fDCAXYRange, fDCAXYRange);
-            hDCAxyGoldenChi2[charge][species][ptbin][mult]->Sumw2();
-            fListHist->AddLast(hDCAxyGoldenChi2[charge][species][ptbin][mult]);
-          }
+          if (!fBuilDCAchi2)
+            continue;
+          //
+          hDCAxyGoldenChi2[charge][species][ptbin] = new TH2F(Form("hDCAxyGoldenChi2%s%s_pt%i", pC[charge].Data(), pS[species].Data(), ptbin), Form("DCAxy w Golden Chi2 Distribution of %s %s in pt %i [%.2f,%.2f];DCA_{xy} (cm);Multiplicity;Counts", pCharge[charge].Data(), pSpecies[species].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin + 1]), fDCAXYbins, -fDCAXYRange, fDCAXYRange, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hDCAxyGoldenChi2[charge][species][ptbin]->Sumw2();
+          fListHist->AddLast(hDCAxyGoldenChi2[charge][species][ptbin]);
         }
       }
     }
@@ -1220,16 +1284,13 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
           hDenMatchPrimMC[charge][species]->Sumw2();
           fListHist->AddLast(hDenMatchPrimMC[charge][species]);
 
-          for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
+          hNumMatchPrimMCYCut[charge][species] = new TH2F(Form("hNumMatchPrimMCYCut%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Numerator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hNumMatchPrimMCYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumMatchPrimMCYCut[charge][species]);
 
-            hNumMatchPrimMCYCut[charge][species][mult] = new TH1F(Form("hNumMatchPrimMCYCut%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), Form("Matching Numerator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt);
-            hNumMatchPrimMCYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumMatchPrimMCYCut[charge][species][mult]);
-
-            hDenMatchPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenMatchPrimMCYCut%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), Form("Matching Denominator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt);
-            hDenMatchPrimMCYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenMatchPrimMCYCut[charge][species][mult]);
-          }
+          hDenMatchPrimMCYCut[charge][species] = new TH2F(Form("hDenMatchPrimMCYCut%s%s", pC[charge].Data(), pS[species].Data()), Form("Matching Denominator with MC PID and Primary |y| < %.1f %s %s;%s", fRapidityCut, pCharge[charge].Data(), pSpecies[species].Data(), ptstring.Data()), kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hDenMatchPrimMCYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenMatchPrimMCYCut[charge][species]);
 
           //*****
           //Info from the DCAxy with MC information
@@ -1252,43 +1313,41 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
       }
 
       //efficiency
-      for (Int_t mult = 0; mult < kEvtMultBins; mult++) {   //Multiplicity loop
-        for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
-          for (Int_t species = 0; species < 3; species++) { //Species loop
+      for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
+        for (Int_t species = 0; species < 3; species++) { //Species loop
 
-            hNumMatchMultTrk[charge][species][mult] = new TH1F(Form("hNumMatch_MultTrk%i_%s%s", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hNumMatchMultTrk[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumMatchMultTrk[charge][species][mult]);
+          hNumMatchMultTrk[charge][species] = new TH2F(Form("hNumMatch_MultTrk_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hNumMatchMultTrk[charge][species]->Sumw2();
+          fListHist->AddLast(hNumMatchMultTrk[charge][species]);
 
-            hDenMatchMultTrk[charge][species][mult] = new TH1F(Form("hDenMatch_MultTrk%i_%s%s", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hDenMatchMultTrk[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenMatchMultTrk[charge][species][mult]);
+          hDenMatchMultTrk[charge][species] = new TH2F(Form("hDenMatch_MultTrk_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hDenMatchMultTrk[charge][species]->Sumw2();
+          fListHist->AddLast(hDenMatchMultTrk[charge][species]);
 
-            hNumMatchMultTrkTRDOut[charge][species][mult] = new TH1F(Form("hNumMatch_MultTrk%i_%s%s_TRDOut", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hNumMatchMultTrkTRDOut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumMatchMultTrkTRDOut[charge][species][mult]);
+          hNumMatchMultTrkTRDOut[charge][species] = new TH2F(Form("hNumMatch_MultTrk_%s%s_TRDOut", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hNumMatchMultTrkTRDOut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumMatchMultTrkTRDOut[charge][species]);
 
-            hDenMatchMultTrkTRDOut[charge][species][mult] = new TH1F(Form("hDenMatch_MultTrk%i_%s%s_TRDOut", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hDenMatchMultTrkTRDOut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenMatchMultTrkTRDOut[charge][species][mult]);
+          hDenMatchMultTrkTRDOut[charge][species] = new TH2F(Form("hDenMatch_MultTrk_%s%s_TRDOut", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hDenMatchMultTrkTRDOut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenMatchMultTrkTRDOut[charge][species]);
 
-            hNumMatchMultTrkNoTRDOut[charge][species][mult] = new TH1F(Form("hNumMatch_MultTrk%i_%s%s_NoTRDOut", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hNumMatchMultTrkNoTRDOut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumMatchMultTrkNoTRDOut[charge][species][mult]);
+          hNumMatchMultTrkNoTRDOut[charge][species] = new TH2F(Form("hNumMatch_MultTrk_%s%s_NoTRDOut", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hNumMatchMultTrkNoTRDOut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumMatchMultTrkNoTRDOut[charge][species]);
 
-            hDenMatchMultTrkNoTRDOut[charge][species][mult] = new TH1F(Form("hDenMatch_MultTrk%i_%s%s_NoTRDOut", mult, pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt);
-            hDenMatchMultTrkNoTRDOut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenMatchMultTrkNoTRDOut[charge][species][mult]);
-          }
-
-          hNumMatchMultTrkInc[charge][mult] = new TH1F(Form("hNumMatch_Inc_MultTrk%i_%s", mult, pC[charge].Data()), "", kPtBins, fBinPt);
-          hNumMatchMultTrkInc[charge][mult]->Sumw2();
-          fListHist->AddLast(hNumMatchMultTrkInc[charge][mult]);
-
-          hDenMatchMultTrkInc[charge][mult] = new TH1F(Form("hDenMatch_Inc_MultTrk%i_%s", mult, pC[charge].Data()), "", kPtBins, fBinPt);
-          hDenMatchMultTrkInc[charge][mult]->Sumw2();
-          fListHist->AddLast(hDenMatchMultTrkInc[charge][mult]);
+          hDenMatchMultTrkNoTRDOut[charge][species] = new TH2F(Form("hDenMatch_MultTrk_%s%s_NoTRDOut", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hDenMatchMultTrkNoTRDOut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenMatchMultTrkNoTRDOut[charge][species]);
         }
+
+        hNumMatchMultTrkInc[charge] = new TH2F(Form("hNumMatch_Inc_MultTrk_%s", pC[charge].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+        hNumMatchMultTrkInc[charge]->Sumw2();
+        fListHist->AddLast(hNumMatchMultTrkInc[charge]);
+
+        hDenMatchMultTrkInc[charge] = new TH2F(Form("hDenMatch_Inc_MultTrk_%s", pC[charge].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+        hDenMatchMultTrkInc[charge]->Sumw2();
+        fListHist->AddLast(hDenMatchMultTrkInc[charge]);
       }
 
       for (Int_t charge = 0; charge < 2; charge++) {      //Charge loop Positive/Negative
@@ -1306,40 +1365,41 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
           hDenTrkVertexMCVertexZ[charge][species]->Sumw2();
           fListHist->AddLast(hDenTrkVertexMCVertexZ[charge][species]);
 
-          for (Int_t mult = 0; mult < kEvtMultBins; mult++) { //Multiplicity loop
+          hDenTrkTrigger[charge][species] = new TH2F(Form("hDenTrkTrigger_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hDenTrkTrigger[charge][species]->Sumw2();
+          fListHist->AddLast(hDenTrkTrigger[charge][species]);
 
-            hDenTrkTrigger[charge][species][mult] = new TH1F(Form("hDenTrkTrigger_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hDenTrkTrigger[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenTrkTrigger[charge][species][mult]);
+          hDenPrimMCYCut[charge][species] = new TH2F(Form("hDenPrimMCYCut_%s%s", pC[charge].Data(), pS[species].Data()), "Primary particles", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hDenPrimMCYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenPrimMCYCut[charge][species]);
 
-            hDenPrimMCYCut[charge][species][mult] = new TH1F(Form("hDenPrimMCYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "Primary particles", kPtBins, fBinPt);
-            hDenPrimMCYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenPrimMCYCut[charge][species][mult]);
+          hDenPrimMCEtaCut[charge][species] = new TH2F(Form("hDenPrimMCEtaCut_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hDenPrimMCEtaCut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenPrimMCEtaCut[charge][species]);
 
-            hDenPrimMCEtaCut[charge][species][mult] = new TH1F(Form("hDenPrimMCEtaCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hDenPrimMCEtaCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenPrimMCEtaCut[charge][species][mult]);
+          hDenPrimMCEtaYCut[charge][species] = new TH2F(Form("hDenPrimMCEtaYCut_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hDenPrimMCEtaYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hDenPrimMCEtaYCut[charge][species]);
 
-            hDenPrimMCEtaYCut[charge][species][mult] = new TH1F(Form("hDenPrimMCEtaYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hDenPrimMCEtaYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hDenPrimMCEtaYCut[charge][species][mult]);
+          hNumPrimMCTrueMatch[charge][species] = new TH2F(Form("hNumPrimMCTrueMatch_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hNumPrimMCTrueMatch[charge][species]->Sumw2();
+          fListHist->AddLast(hNumPrimMCTrueMatch[charge][species]);
 
-            hNumPrimMCTrueMatch[charge][species][mult] = new TH1F(Form("hNumPrimMCTrueMatch_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hNumPrimMCTrueMatch[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumPrimMCTrueMatch[charge][species][mult]);
+          hNumPrimMCTrueMatchYCut[charge][species] = new TH2F(Form("hNumPrimMCTrueMatchYCut_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hNumPrimMCTrueMatchYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumPrimMCTrueMatchYCut[charge][species]);
 
-            hNumPrimMCTrueMatchYCut[charge][species][mult] = new TH1F(Form("hNumPrimMCTrueMatchYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hNumPrimMCTrueMatchYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumPrimMCTrueMatchYCut[charge][species][mult]);
+          hNumPrimMCTrueMatchYCutTPC[charge][species] = new TH2F(Form("hNumPrimMCTrueMatchYCutTPC_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hNumPrimMCTrueMatchYCutTPC[charge][species]->Sumw2();
+          fListHist->AddLast(hNumPrimMCTrueMatchYCutTPC[charge][species]);
 
-            hNumPrimMCTrueMatchYCutTPC[charge][species][mult] = new TH1F(Form("hNumPrimMCTrueMatchYCutTPC_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hNumPrimMCTrueMatchYCutTPC[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumPrimMCTrueMatchYCutTPC[charge][species][mult]);
+          hNumPrimMCConsistentMatchYCut[charge][species] = new TH2F(Form("hNumPrimMCConsistentMatchYCut_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hNumPrimMCConsistentMatchYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumPrimMCConsistentMatchYCut[charge][species]);
 
-            hNumPrimMCConsistentMatchYCut[charge][species][mult] = new TH1F(Form("hNumPrimMCConsistentMatchYCut_%s%s_%i", pC[charge].Data(), pS[species].Data(), mult), "", kPtBins, fBinPt);
-            hNumPrimMCConsistentMatchYCut[charge][species][mult]->Sumw2();
-            fListHist->AddLast(hNumPrimMCConsistentMatchYCut[charge][species][mult]);
-          }
+          hNumPrimMCMotherMatchYCut[charge][species] = new TH2F(Form("hNumPrimMCMotherMatchYCut_%s%s", pC[charge].Data(), pS[species].Data()), "", kPtBins, fBinPt, fMultiplicityBin.GetSize(), -.5, -.5 + fMultiplicityBin.GetSize());
+          hNumPrimMCMotherMatchYCut[charge][species]->Sumw2();
+          fListHist->AddLast(hNumPrimMCMotherMatchYCut[charge][species]);
 
           if (fFineEfficiency) {
             hDenMatchPrimNoCut[charge][species] = new TH3S(Form("hDenMatchPrimNoCut_%s%s", pC[charge].Data(), pS[species].Data()), Form(";%s;%s;%s", ptstring.Data(), etastring.Data(), phistring.Data()), kPtBins, 0, kPtBins, kEtaBins, -fEtaRange, fEtaRange, kPhiBins, 0, TMath::TwoPi());
@@ -1377,14 +1437,10 @@ void AliAnalysisTaskTOFSpectra::UserCreateOutputObjects()
       //Event wide variables
       //fTreeTrack->Branch("fPrimVertex", &fPrimVertex, "fPrimVertex[3]/D");
       //fTreeTrack->Branch("fNContrPrimVertex", &fNContrPrimVertex, "fNContrPrimVertex/I");
-      fTreeTrack->Branch("fEvtMultBin", &fEvtMultBin, "fEvtMultBin/S");
 //
 //Track variables
 #ifdef USETREECLASS
-      ArrayAnTrk = new TClonesArray("AliAnTOFtrack");
-      ArrayAnTrk->SetOwner();
-      AliAnTOFtrack::Class()->IgnoreTObjectStreamer();
-      fTreeTrack->Branch("AliAnTOFtrack", "TClonesArray", &ArrayAnTrk, 8000, 0);
+      fTreeTrack->Branch("AliAnTOFevent", "AliAnTOFevent", &fAnTOFevent, 8000, 0);
 #else
       //       fTreeTrack->Branch("fDCAXY", &fDCAXY, "fDCAXY/F");
       //       fTreeTrack->Branch("fDCAZ", &fDCAZ, "fDCAZ/F");
@@ -1589,6 +1645,12 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
     hNEvt->Fill(EvtStart); //-->Pass Phys. Sel. + Trig
   EvtStart++;
 
+  //T0 plots
+  if (FillT0Histograms()) {
+    PostAllTheData();
+    return;
+  }
+
   //
   // monitor vertex position before event and physics selection
   //
@@ -1615,6 +1677,8 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
   StartTimePerformance(2);
   fEvtSelected = SelectEvents(EvtStart); //Perform the cuts for the event selection
   StopTimePerformance(2);
+  if (!vertex && fEvtSelected)
+    AliFatal("Accepted event does not have vertex according to cuts!");
 
   StartTimePerformance(3);
   ComputeEvtMultiplicityBin(); //Calculate in the handy binning the Multiplicity bin of the event. Event selection needs to be defined already as no outliers are accepted!
@@ -1778,7 +1842,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
 
       if (clsindex > -1) {
         fTOFMismatchTime = fTOFcls->GetTime(clsindex);
-        fLengthRatio = fLength > 0 ? fTOFcls->GetLength(clsindex) / fLength : -999;
+        fLengthRatio = fLength > 0 ? fTOFcls->GetLength(clsindex) / fLength : -1;
       }
     }
 
@@ -1899,20 +1963,23 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       //DCA information
       //
       for (Int_t species = 0; species < 3; species++) { //Combined information of the TOF and TPC signal to identify a pure sample
-        if (fCombinedSigma[species] > 2.)
+
+        if (fCombinedSigma[species] > 2.) // PID cut
           continue;
-        if (TMath::Abs(fRapidity[species]) >= fRapidityCut)
-          continue; //Rapidity cut
+        //
+        if (TMath::Abs(fRapidity[species]) >= fRapidityCut) // Rapidity cut
+          continue;
 
         //Pure sample selected via TOF and TPC 2 sigma cut
-        hDCAxy[fSign][species][fBinPtIndex][fEvtMultBin]->Fill(fDCAXY);
+        hDCAxy[fSign][species][fBinPtIndex]->Fill(fDCAXY, fEvtMultBin);
 
         //
         //DCA - with golden chi2 cut
         //
         if (!fBuilDCAchi2 || !fPassGoldenChi2)
           continue;
-        hDCAxyGoldenChi2[fSign][species][fBinPtIndex][fEvtMultBin]->Fill(fDCAXY);
+        //
+        hDCAxyGoldenChi2[fSign][species][fBinPtIndex]->Fill(fDCAXY, fEvtMultBin);
       }
 
       if (fPdgIndex != -999 && TMath::Abs(fRapidity[fPdgIndex]) < fRapidityCut) { //MC info If the track is a Pion or a Kaon or a Proton
@@ -2015,7 +2082,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
         if (fProdInfo == 0) {
           hDenMatchPrimMC[fSign][fPdgIndex]->Fill(fPt);
           if (TMath::Abs(fRapidityMC) < fRapidityCut)
-            hDenMatchPrimMCYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+            hDenMatchPrimMCYCut[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
           if (fFineEfficiency)
             hDenMatchPrimNoCut[fSign][fPdgIndex]->Fill(fPt, fEta, fPhiout);
         }
@@ -2091,7 +2158,7 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       if (fCutmode)
         AnalyseCutVariation(track);
 #ifdef USETREECLASS
-      AliAnTOFtrack* AnTrk = (AliAnTOFtrack*)ArrayAnTrk->ConstructedAt(ArrayAnTrk->GetEntries());
+      AliAnTOFtrack* AnTrk = fAnTOFevent->GetTrack(fAnTOFevent->GetNtracks());
       AnTrk->ComputeDCABin(fDCAXY, fDCAZ); //Convert Impact parameters to binning
       AnTrk->fTrkMask = fTrkMask;
       AnTrk->fTPCPIDMask = fTPCPIDMask;
@@ -2102,9 +2169,12 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       AnTrk->fTOFMismatchTime = fTOFMismatchTime;
       for (Int_t ipart = 0; ipart < kExpSpecies; ipart++)
         AnTrk->fTOFExpTime[ipart] = fTOFExpTime[ipart];
+      //
       for (Int_t ipart = 0; ipart < kExpSpecies; ipart++)
         AnTrk->fTOFExpSigma[ipart] = fTOFExpSigma[ipart];
+      //
       AnTrk->fT0TrkTime = fT0TrkTime;
+      AnTrk->fT0TrkSigma = fT0TrkSigma;
       AnTrk->fTOFchan = fTOFchan;
       AnTrk->fEta = fEta;
       AnTrk->fPhi = fPhi;
@@ -2167,26 +2237,28 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
         hNumMatchMC[fSign][fPdgIndex]->Fill(fPt);
         if (fProdInfo == 0) { //Primaries
           hNumMatchPrimMC[fSign][fPdgIndex]->Fill(fPt);
-          if (TMath::Abs(fRapidityMC) < fRapidityCut)
-            hNumMatchPrimMCYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+          if (TMath::Abs(fRapidityMC) < fRapidityCut) //Rapidity cut
+            hNumMatchPrimMCYCut[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
+          //
           if (fMCTOFMatch == 0) { //True match in TOF
-            hNumPrimMCTrueMatch[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+            hNumPrimMCTrueMatch[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMultBin);
             if (TMath::Abs(fRapidityMC) < fRapidityCut) {
-              hNumPrimMCTrueMatchYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+              hNumPrimMCTrueMatchYCut[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
               if ((TMath::Abs(fTPCSigma[kpi]) < 5) && (TMath::Abs(fTPCSigma[kK]) < 5) && (TMath::Abs(fTPCSigma[kp]) < 5))
-                hNumPrimMCTrueMatchYCutTPC[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+                hNumPrimMCTrueMatchYCutTPC[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
+              //
             }
-
-          } else if (fMCTOFMatch > 0 && TMath::Abs(fTOFSigma[kpi + fPdgIndex]) < 2.) { //Consistent match in TOF
-            if (TMath::Abs(fRapidityMC) < fRapidityCut) {
-              hNumPrimMCConsistentMatchYCut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
-            }
-          }
+          } else if (fMCTOFMatch > 0 && TMath::Abs(fTOFSigma[kpi + fPdgIndex]) < 2. && TMath::Abs(fRapidityMC) < fRapidityCut) //Consistent match in TOF
+            hNumPrimMCConsistentMatchYCut[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
+          //
         }
+        if (fMCTOFMatch == 2 && TMath::Abs(fRapidityMC) < fRapidityCut) //Mother with consistent match in TOF
+          hNumPrimMCMotherMatchYCut[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
+        //
       }
 
       //
-      //All trakcs matched to TOF
+      //All tracks matched to TOF
       //
       hNumMatch[fSign]->Fill(fPt);           //-> transverse momentum
       hNumMatchEta[fSign]->Fill(fEta);       //-> eta
@@ -2204,9 +2276,14 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
         hNumMatchNoTRDOut[fSign]->Fill(fPt); //Tracks without TRDout
 
       //Performance plots
-      FillPerformanceHistograms();
+      FillPerformanceHistograms(track);
+      if (fMCmode)
+        FillMCPerformanceHistograms(track);
+      //
 
-      //fine plot test matching efficiency
+      //====================//
+      // TOF geometry plots //
+      //====================//
       hPadDist->Fill(fTOFImpactDX, fTOFImpactDZ);
       AliTOFGeometry::GetVolumeIndices(fTOFchan, det);
       coord[0] = AliTOFGeometry::GetX(det);
@@ -2216,6 +2293,10 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
       hTOFResidualX->Fill(fTOFImpactDX);
       hTOFResidualZ->Fill(fTOFImpactDZ);
       hTOFChannel->Fill(fTOFchan);
+
+      //======================//
+      // TOF resolution plots //
+      //======================//
       if ((fP > 0.9) && (fP < 1.1)) { //P range selected for TOF resolution measurements
         Float_t deltat = fTOFTime - fT0TrkTime - fTOFExpTime[AliPID::kPion];
         hTimeOfFlightRes->Fill(deltat);
@@ -2227,12 +2308,13 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
             break;
           }
         }
-        if (fT0TrkTime != 0) { //No T0 Fill
+        //
+        if (fT0TrkTime != 0) //No T0 Fill
           hTimeOfFlightTOFRes->Fill(deltat);
-        }
-        if ((TMath::Abs(fTOFImpactDX) < 1.25) && (TMath::Abs(fTOFImpactDZ) < 1.75)) {
+        //
+        if ((TMath::Abs(fTOFImpactDX) < 1.25) && (TMath::Abs(fTOFImpactDZ) < 1.75)) //Center of the PAD
           hTimeOfFlightGoodRes->Fill(deltat);
-        }
+        //
       }
     }
 
@@ -2245,13 +2327,15 @@ void AliAnalysisTaskTOFSpectra::UserExec(Option_t*)
 #ifdef USETREECLASS
   if (fTreemode) {
     StartTimePerformance(5);
+    fAnTOFevent->fEvtMultBin = fEvtMultBin;
+    fAnTOFevent->AdoptVertex(vertex);
     fTreeTrack->Fill();
     StopTimePerformance(5);
 
     //
     //Prepare the array for new event
     StartTimePerformance(6);
-    ArrayAnTrk->Clear();
+    fAnTOFevent->Reset();
     StopTimePerformance(6);
   }
 #endif
@@ -2292,7 +2376,7 @@ void AliAnalysisTaskTOFSpectra::InitializeTrackVar()
   fGoldenChi2 = -999;
   fLengthActiveZone = -999;
   fLength = -999;
-  fLengthRatio = -999;
+  fLengthRatio = -1;
   fSign = kFALSE;
   fTOFTime = -999;
   fTOFMismatchTime = -999;
@@ -2306,6 +2390,7 @@ void AliAnalysisTaskTOFSpectra::InitializeTrackVar()
   fTOFImpactDZ = -999;
   fTOFImpactDX = -999;
   fT0TrkTime = -999;
+  fT0TrkSigma = -999;
   for (Int_t species = 0; species < kExpSpecies; species++) {
     fTOFExpSigma[species] = -999;
     fTOFExpTime[species] = -999;
@@ -2356,6 +2441,8 @@ void AliAnalysisTaskTOFSpectra::InitializeMCTrackVar()
   fRapidityMC = -999;
   fPdgcode = -999;
   fPdgIndex = -999;
+  fPdgcodeMother = -999;
+  fFirstMotherIndex = -999;
   fSignMC = kFALSE;
   fMCTOFMatch = -999;
 
@@ -2399,6 +2486,19 @@ void AliAnalysisTaskTOFSpectra::InitializeEventVar()
 
   //   AliDebug(2, "InitializeEventVar\t END");
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::PrintStatus()
+{
+  AliInfo("- PrintStatus -");
+  AliInfo(Form("Using fCollSysMode %i", fCollSysMode));
+  AliInfo(Form("Using fMCmode %i", fMCmode));
+  AliInfo(Form("Using fTreemode %i", fTreemode));
+  AliInfo(Form("Using fChannelmode %i", fChannelmode));
+  AliInfo(Form("Using fCutmode %i", fCutmode));
+  AliInfo(Form("Using fSimpleCutmode %i", fSimpleCutmode));
+  AliInfo(Form("Using fUseTPCShift %i\n", fUseTPCShift));
+};
 
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::Terminate(Option_t*)
@@ -2446,7 +2546,9 @@ void AliAnalysisTaskTOFSpectra::Terminate(Option_t*)
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicity()
 {
-  if (fHImode) {
+  switch (fCollSysMode) {
+  case kXeXe:
+  case kPbPb:
     if (fMCmode && fCutOnMCImpact) { //If requested, using the MC impact parameter instead of the measured centrality
       fEvtMult = static_cast<AliGenHepMCEventHeader*>(fMCEvt->GenEventHeader())->impact_parameter();
       return;
@@ -2458,12 +2560,15 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicity()
       AliWarning("AliMultSelection object not found!");
     } else {
       AliDebug(2, "Estimating centrality");
-      fEvtMult = fMultSel->GetMultiplicityPercentile("V0M", kTRUE); //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
+      fEvtMult = fMultSel->GetMultiplicityPercentile("V0M", kFALSE); //Event selection is embedded in the Multiplicity estimator so that the Multiplicity percentiles are well defined and refer to the same sample
     }
-
-  } else {
+    break;
+  case kpp:
     AliDebug(2, "Estimating Multiplicity at midrapidity");
     fEvtMult = AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD, kTRUE); //fESDtrackCuts->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+    break;
+  default:
+    AliFatal("Wrong coll. sys. index when computing event multiplicity. May be not implemented yet");
   }
 }
 
@@ -2474,42 +2579,15 @@ void AliAnalysisTaskTOFSpectra::ComputeEvtMultiplicityBin()
     AliFatal(Form("Multiplicity bin already assigned to value %i!", fEvtMultBin));
     return;
   }
-
-  if (fHImode) {
-    for (Int_t multbin = 0; multbin < kEvtMultBins; multbin++) { ///<  Computes the Multiplicity bin
-      if (fEvtMult < fMultiplicityBin.At(multbin) || fEvtMult >= fMultiplicityBin.At(multbin + 1))
-        continue;
-      AliDebug(2, Form("Found bin %i/%i : %f < fEvtMultBin %f < %f", multbin, kEvtMultBins, fMultiplicityBin.At(multbin), fEvtMult, fMultiplicityBin.At(multbin + 1)));
-      fEvtMultBin = multbin;
-      break;
-    }
-  } else {
-
-    if ((fEvtMult >= 0) && (fEvtMult <= 5)) {
-      fEvtMultBin = 0;
-    }
-    if ((fEvtMult >= 6) && (fEvtMult <= 9)) {
-      fEvtMultBin = 1;
-    }
-    if ((fEvtMult >= 10) && (fEvtMult <= 14)) {
-      fEvtMultBin = 2;
-    }
-    if ((fEvtMult >= 15) && (fEvtMult <= 22)) {
-      fEvtMultBin = 3;
-    }
-    if ((fEvtMult >= 23) && (fEvtMult <= 32)) {
-      fEvtMultBin = 4;
-    }
-    if (fEvtMult >= 33) {
-      fEvtMultBin = 5;
-    }
-    if ((fEvtMult >= -204) && (fEvtMult <= -200)) {
-      fEvtMultBin = 6;
-    }
-  }
-
-  if (fEvtMultBin < 0 || fEvtMultBin >= kEvtMultBins)
+  //Computes the Multiplicity bin
+  fEvtMultBin = hEvtMult->GetXaxis()->FindBin(fEvtMult) - 1;
+  //
+  if (fEvtMultBin < 0 || fEvtMultBin >= kEvtMultBins) { //Check that the bin is correctly defined
+    for (Int_t multbin = 0; multbin < fMultiplicityBin.GetSize() - 1; multbin++)
+      printf("Multiplicity Bin %i/%i [%f, %f]\n", multbin, fMultiplicityBin.GetSize() - 1, fMultiplicityBin.At(multbin), fMultiplicityBin.At(multbin + 1));
+    //
     AliFatal(Form("Multiplicity bin wrongly assigned, for Multiplicity %f fEvtMultBin value: %hd!", fEvtMult, fEvtMultBin));
+  }
 }
 
 //________________________________________________________________________
@@ -2618,7 +2696,7 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles()
       fSignMC = kTRUE; //Particle is negative
 
     if (passy) {
-      hDenTrkTrigger[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+      hDenTrkTrigger[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMultBin);
       if (fEvtMCSampSelected)
         hDenTrkMCVertexZ[fSignMC][fPdgIndex]->Fill(fPtMC);
     }
@@ -2640,13 +2718,13 @@ void AliAnalysisTaskTOFSpectra::AnalyseMCParticles()
       hDenPrimMCNoCut[fSignMC][fPdgIndex]->Fill(fPtMC, fEtaMC, fPhiMC);
 
     if (passy)
-      hDenPrimMCYCut[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+      hDenPrimMCYCut[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMultBin);
 
     if (passeta)
-      hDenPrimMCEtaCut[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+      hDenPrimMCEtaCut[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMultBin);
 
     if (passeta && passy)
-      hDenPrimMCEtaYCut[fSignMC][fPdgIndex][fEvtMultBin]->Fill(fPtMC);
+      hDenPrimMCEtaYCut[fSignMC][fPdgIndex]->Fill(fPtMC, fEvtMultBin);
   }
 
   InitializeMCTrackVar();
@@ -2664,22 +2742,24 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseMCTracks()
   } //Rapidity cut
 
   if ((fTOFout == kTRUE) && (fTime == kTRUE))
-    hNumMatchMultTrkInc[fSign][fEvtMultBin]->Fill(fPt);
-  hDenMatchMultTrkInc[fSign][fEvtMultBin]->Fill(fPt);
+    hNumMatchMultTrkInc[fSign]->Fill(fPt, fEvtMultBin);
+  //
+  hDenMatchMultTrkInc[fSign]->Fill(fPt, fEvtMultBin);
 
-  if (fPdgIndex < 0)
-    return kFALSE; //Pi/K/P only!
-  hDenMatchMultTrk[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+  if (fPdgIndex < 0) //Pi/K/P only!
+    return kFALSE;
+  //
+  hDenMatchMultTrk[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
   if (fTRDout == kTRUE)
-    hDenMatchMultTrkTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+    hDenMatchMultTrkTRDOut[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
   else
-    hDenMatchMultTrkNoTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+    hDenMatchMultTrkNoTRDOut[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
   if ((fTOFout == kTRUE) && (fTime == kTRUE)) {
-    hNumMatchMultTrk[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+    hNumMatchMultTrk[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
     if (fTRDout == kTRUE)
-      hNumMatchMultTrkTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+      hNumMatchMultTrkTRDOut[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
     else
-      hNumMatchMultTrkNoTRDOut[fSign][fPdgIndex][fEvtMultBin]->Fill(fPt);
+      hNumMatchMultTrkNoTRDOut[fSign][fPdgIndex]->Fill(fPt, fEvtMultBin);
   }
 
   //   fTreeTrackMC->Fill();
@@ -2699,23 +2779,20 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseMCTracks()
 Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack* trk)
 {
   //       AliDebug(2, "Gathering the track MC Info");
-  const Int_t TrkLabel = trk->GetLabel(); /*The Get*Label() getters return the label of the associated MC particle. The absolute value of this label is the index of the particle within the MC fMCStack. If the label is negative, this track was assigned a certain number of clusters that did not in fact belong to this track. */
+  const Int_t TrkLabel = trk->GetLabel(); //The GetLabel() getters return the label of the associated MC particle. The absolute value of this label is the index of the particle within the MC fMCStack. If the label is negative, this track was assigned a certain number of clusters that did not in fact belong to this track.
   const Int_t AbsTrkLabel = TMath::Abs(TrkLabel);
   Int_t TOFTrkLabel[3] = { -1 }; //This can contain three particles wich occupy the same cluster
   // Int_t mfl, uniqueID;
 
   trk->GetTOFLabel(TOFTrkLabel); //Gets the labels of the tracks matched to the TOF, this can be used to remove the mismatch and to compute the efficiency! The label to check is the first one, the others can come from different tracks
 
-  if (TOFTrkLabel[0] == -1) {
+  if (TOFTrkLabel[0] == -1) // Track was not matched to any TOF hit.
     fMCTOFMatch = -1;
-  } // Track was not matched to any TOF hit.
-  else if (AbsTrkLabel == TOFTrkLabel[0]) {
+  else if (AbsTrkLabel == TOFTrkLabel[0]) // Track was correctly matched to a TOF hit.
     fMCTOFMatch = 0;
-  } // Track was correctly matched to a TOF hit.
-  else {
+  else // Track was matched to a TOF hit but comes from mismatch!
     fMCTOFMatch = 1;
-  } // Track was matched to a TOF hit but comes from mismatch!
-
+  //
   TParticle* part = (TParticle*)fMCStack->Particle(AbsTrkLabel); //Particle in the stack
   if (!part) {
     AliError("Cannot find the TParticle!");
@@ -2727,6 +2804,13 @@ Bool_t AliAnalysisTaskTOFSpectra::GatherTrackMCInfo(const AliESDtrack* trk)
   fPhiMC = part->Phi(); //angolo tra 0 e 2pi
   fEtaMC = part->Eta();
   fPdgcode = part->GetPdgCode();
+  fFirstMotherIndex = part->GetFirstMother();
+  if (fFirstMotherIndex >= 0) { //Check if the particle has a mother
+    fPdgcodeMother = fMCStack->Particle(fFirstMotherIndex)->GetPdgCode();
+    if (TOFTrkLabel[0] == TMath::Abs(fPdgcodeMother))
+      fMCTOFMatch = 2;
+  }
+  //
   if (fSignMC != kFALSE)
     AliError("fSignMC already defined!!");
   if (fPdgcode < 0)
@@ -2774,11 +2858,16 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
             hNEvt->Fill(binstart++);
             if (fEventCut.PassedCut(AliEventCuts::kVertexPosition)) {
               hNEvt->Fill(binstart++);
-            }
-          }
-        }
-      }
-    }
+            } else
+              binstart += 1;
+          } else
+            binstart += 2;
+        } else
+          binstart += 3;
+      } else
+        binstart += 4;
+    } else
+      binstart += 5;
 
     //Global cut
     if (!fEventCut.AcceptEvent(fESD))
@@ -2788,7 +2877,9 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
     return kTRUE;
   }
 
-  if (fHImode) {            //Heavy Ion
+  switch (fCollSysMode) {
+  case kXeXe:
+  case kPbPb:
     if (fEvtMult == -999) { //Multiplicity estimator not initialized
       return kFALSE;
     }
@@ -2840,8 +2931,8 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
     }
     hNEvt->Fill(binstart++);
 
-  } else { //pp
-
+    break;
+  case kpp: {
     //------------------------------------------------
     // Selection Investigation with AliPPVsMultUtils
     //------------------------------------------------
@@ -2888,6 +2979,11 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
       return kFALSE;
     } else if (!passall)
       AliFatal("The event selection for pp is inchoerent");
+    //
+    break;
+  }
+  default:
+    AliFatal("Wrong coll. sys. index when checking if event is selected. May be not implemented yet");
   }
 
   return kTRUE;
@@ -2896,13 +2992,26 @@ Bool_t AliAnalysisTaskTOFSpectra::SelectEvents(Int_t& binstart)
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::RunTOFChannel()
 {
+  hChannelEvents->Fill(0); //Number of events used
 
+  AliESDtrack* track = 0x0;
+  //Loop over all Tracks
   for (Int_t iTrack = 0; iTrack < fESD->GetNumberOfTracks(); iTrack++) {
-    AliESDtrack* track = fESD->GetTrack(iTrack);
-    if (!track) {
+    track = fESD->GetTrack(iTrack);
+    if (!track)
       continue;
-    }
-    hChannelTime->Fill(track->GetTOFCalChannel(), track->GetTOFsignal());
+    //
+    hChannelTime->Fill(track->GetTOFCalChannel(), track->GetTOFsignal()); //Filling TOF channel + TOF signal of the matched track
+  }
+  //Loop over all TOF Hits
+  for (Int_t i = 0; i < fESD->GetESDTOFHits()->GetEntries(); i++) {
+    hChannelEvents->Fill(1); //Number of total Hits in all events
+    hChannelHits->Fill(static_cast<AliESDTOFHit*>(fESD->GetESDTOFHits()->At(i))->GetTOFchannel());
+  }
+  //Loop over all TOF Clusters
+  for (Int_t i = 0; i < fESD->GetESDTOFClusters()->GetEntries(); i++) {
+    hChannelEvents->Fill(2); //Number of total Clusters in all events
+    hChannelClusters->Fill(static_cast<AliESDTOFCluster*>(fESD->GetESDTOFClusters()->At(i))->GetTOFchannel());
   }
 }
 
@@ -2935,6 +3044,49 @@ Bool_t AliAnalysisTaskTOFSpectra::AnalyseCutVariation(const AliESDtrack* track)
     AliFatal(Form("Wrong final index (%i should be %i)", index, nCutVars));
 
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::FillCutVariable(const Bool_t pass)
+{
+  hTrkTPCCls[pass]->Fill(fTPCClusters);
+  hTrkTPCRows[pass]->Fill(fTPCCrossedRows);
+  hTrkTPCRatioRowsFindCls[pass]->Fill(fTPCCrossedRows / fTPCFindClusters);
+  hTrkTPCChi2NDF[pass]->Fill(fTPCChi2PerNDF);
+  hTrkITSChi2NDF[pass]->Fill(fITSChi2PerNDF);
+  hTrkActiveLength[pass]->Fill(fLengthActiveZone);
+  hTrkITSTPCMatch[pass]->Fill(fITSTPCMatch);
+  hTrkDCAxy[pass]->Fill(fDCAXY);
+  hTrkDCAz[pass]->Fill(fDCAZ);
+#ifdef CHECKTRACKCUTS //Only if required
+  for (Int_t i = 0; i < 3; i++) {
+    Double_t x = 0;
+    switch (i) {
+    case 0:
+      x = fPt;
+      break;
+    case 1:
+      x = fEta;
+      break;
+    case 2:
+      x = fPhi;
+      break;
+    default:
+      AliFatal("index out of bound!");
+      break;
+    }
+
+    hTrkTPCClsCorr[pass][i]->Fill(fTPCClusters, x);
+    hTrkTPCRowsCorr[pass][i]->Fill(fTPCCrossedRows, x);
+    hTrkTPCRatioRowsFindClsCorr[pass][i]->Fill(fTPCCrossedRows / fTPCFindClusters, x);
+    hTrkTPCChi2NDFCorr[pass][i]->Fill(fTPCChi2PerNDF, x);
+    hTrkITSChi2NDFCorr[pass][i]->Fill(fITSChi2PerNDF, x);
+    hTrkActiveLengthCorr[pass][i]->Fill(fLengthActiveZone, x);
+    hTrkITSTPCMatchCorr[pass][i]->Fill(fITSTPCMatch, x);
+    hTrkDCAxyCorr[pass][i]->Fill(fDCAXY, x);
+    hTrkDCAzCorr[pass][i]->Fill(fDCAZ, x);
+  }
+#endif
 }
 
 //________________________________________________________________________
@@ -3006,6 +3158,68 @@ void AliAnalysisTaskTOFSpectra::SetCutVar()
         } else
           AliInfo(Form("Setting Cut %s (%s) to accept loose cuts for %s value: #%i %s", cuts->GetName(), cuts->GetTitle(), Cuts[cut].Data(), i, c.Data()));
       }
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::PrintCutVariables()
+{
+  AliInfo("- PrintCutVariables -");
+  AliInfo(Form("Simple cut : %i", fSimpleCutmode));
+  AliInfo(Form("fESDtrackCuts->GetMinNCrossedRowsTPC() : %f", fESDtrackCuts->GetMinNCrossedRowsTPC()));
+  AliInfo(Form("fESDtrackCuts->GetMaxChi2PerClusterTPC() : %f", fESDtrackCuts->GetMaxChi2PerClusterTPC()));
+  AliInfo(Form("fESDtrackCuts->GetMaxDCAToVertexZ() : %f", fESDtrackCuts->GetMaxDCAToVertexZ()));
+  AliInfo(Form("fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep() : %s", fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
+  fESDtrackCuts->Print();
+  fESDtrackCutsPrm->Print();
+}
+
+void AliAnalysisTaskTOFSpectra::PrintCutVariablesForTree()
+{
+  if (!fTreemode || !fCutmode)
+    return;
+  AliInfo("- PrintCutVariablesForTree -");
+  AliInfo(Form("fCutmode cut : %i fTreemode : %i", fCutmode, fTreemode));
+
+  Int_t index = 0;
+  for (UInt_t cut = 0; cut < nCuts; cut++) {
+    for (UInt_t i = 0; i < CutIndex[cut]; i++) {
+      TString c = "";
+      switch (cut) {
+      case kTPCrows: {
+        c += Form("%f", CutValues[cut][i]);
+        break;
+      }
+      case kTrkChi2: {
+        c += Form("%f", CutValues[cut][i]);
+        break;
+      }
+      case kDCAz: {
+        c += Form("%f", CutValues[cut][i]);
+        break;
+      }
+      case kDCAxy: {
+        const TString dep = Form("%f*(%s)", CutValues[cut][i], primfunct.Data());
+        c += dep;
+        break;
+      }
+      case kGeo: {
+        c = "(";
+        for (Int_t j = 0; j < 5; j++)
+          c += Form("%f%s", CutValues[cut][5 * i + j], j < 4 ? ", " : "");
+        c += ")";
+        break;
+      }
+
+      default:
+        AliFatal(Form("Requested %i set for track cuts not implemented!!", cut));
+        break;
+      }
+
+      AliInfo(Form("CutValue%s[%i] : %s", Cuts[cut].Data(), i, c.Data()));
+      if (i != 0)
+        fCutVar[index++]->Print();
     }
   }
 }
@@ -3353,81 +3567,358 @@ Bool_t AliAnalysisTaskTOFSpectra::TOFCalibInitEvent()
 //________________________________________________________________________
 void AliAnalysisTaskTOFSpectra::DefinePerformanceHistograms()
 {
-  if (fPerformance) {
-    const Int_t Bnbins = 4000;
-    const Double_t Blim[2] = { 0., 1.5 };
-    const Double_t Bplim[2] = { 0., 10. };
+  if (!fPerformance)
+    return;
+  //
+  const Int_t Bnbins = 4000;
+  const Double_t Blim[2] = { 0., 1.5 };
+  const Double_t Bplim[2] = { 0., 10. };
+  const Int_t Enbins = 4000;
+  const Double_t Elim[2] = { 0., 1000 };
+  const Double_t Eplim[2] = { 0.1, 30. };
 
-    hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBeta);
+  hBeta = new TH2I("hBeta", Form("Distribution of the beta;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBeta);
 
-    for (Int_t i = 0; i < kExpSpecies; i++) {
-      hBetaExpected[i] = new TProfile(Form("hBetaExpected%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaExpected[i]);
+  for (Int_t i = 0; i < kExpSpecies; i++) {
+    hBetaExpected[i] = new TProfile(Form("hBetaExpected%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaExpected[i]);
 
-      hBetaExpectedTOFPID[i] = new TProfile(Form("hBetaExpectedTOFPID%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s with TOF PID;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
-      fListHist->AddLast(hBetaExpectedTOFPID[i]);
+    hBetaExpectedTOFPID[i] = new TProfile(Form("hBetaExpectedTOFPID%s", pSpecies_all[i].Data()), Form("Profile of the beta for hypo %s with TOF PID;%s;TOF #beta", pSpecies_all[i].Data(), pstring.Data()), Bnbins, Bplim[0], Bplim[1], Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaExpectedTOFPID[i]);
+
+    hdEdxExpected[i] = new TProfile(Form("hdEdxExpected%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s;%s;TPC #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+    fListHist->AddLast(hdEdxExpected[i]);
+
+    hdEdxExpectedTPCp[i] = new TProfile(Form("hdEdxExpectedTPCp%s", pSpecies_all[i].Data()), Form("Profile of the dEdx for hypo %s;%s;TPC #dEdx", pSpecies_all[i].Data(), pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+    fListHist->AddLast(hdEdxExpectedTPCp[i]);
+
+    if (i < kExpSpecies - 1) {
+      hTOFSepVsP[i] = new TProfile(Form("hTOFSepVsP%s%s", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data()), Form("TOF separation between %s and %s;%s;TOF %s-%s separation", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data(), pstring.Data(), speciesRootNoSign_all[i].Data(), speciesRootNoSign_all[i + 1].Data()), Bnbins / 4, Bplim[0], Bplim[1], -1000, 1000);
+      fListHist->AddLast(hTOFSepVsP[i]);
+
+      hTOFSepVsPt[i] = new TProfile(Form("hTOFSepVsPt%s%s", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data()), Form("TOF separation between %s and %s;%s;TOF %s-%s separation", pSpecies_all[i].Data(), pSpecies_all[i + 1].Data(), ptstring.Data(), speciesRootNoSign_all[i].Data(), speciesRootNoSign_all[i + 1].Data()), Bnbins / 4, Bplim[0], Bplim[1], -1000, 1000);
+      fListHist->AddLast(hTOFSepVsPt[i]);
     }
+  }
 
-    hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatch);
+  hdEdxExpected[kExpSpecies] = new TProfile("hdEdxExpectedTriton", Form("Profile of the dEdx for hypo Triton;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+  fListHist->AddLast(hdEdxExpected[kExpSpecies]);
 
-    hBetaNoMismatchEtaCut = new TH2I("hBetaNoMismatchEtaCut", Form("Distribution of the beta w/o Mismatch and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatchEtaCut);
+  hdEdxExpected[kExpSpecies + 1] = new TProfile("hdEdxExpectedHelium3", Form("Profile of the dEdx for hypo Helium3;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+  fListHist->AddLast(hdEdxExpected[kExpSpecies + 1]);
 
-    hBetaNoMismatchEtaCutOut = new TH2I("hBetaNoMismatchEtaCutOut", Form("Distribution of the beta w/o Mismatch and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatchEtaCutOut);
+  hdEdxExpectedTPCp[kExpSpecies] = new TProfile("hdEdxExpectedTPCpTriton", Form("Profile of the dEdx for hypo Triton;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+  fListHist->AddLast(hdEdxExpectedTPCp[kExpSpecies]);
 
-    hBetaCentral = new TH2I("hBetaCentral", Form("Distribution of the beta Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaCentral);
+  hdEdxExpectedTPCp[kExpSpecies + 1] = new TProfile("hdEdxExpectedTPCpHelium3", Form("Profile of the dEdx for hypo Helium3;%s;TPC #dEdx", pstring.Data()), Enbins, Eplim[0], Eplim[1], Elim[0], Elim[1]);
+  fListHist->AddLast(hdEdxExpectedTPCp[kExpSpecies + 1]);
 
-    hBetaNoMismatchCentral = new TH2I("hBetaNoMismatchCentral", Form("Distribution of the beta w/o Mismatch Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatchCentral);
+  hBetaNoMismatch = new TH2I("hBetaNoMismatch", Form("Distribution of the beta w/o Mismatch;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatch);
 
-    hBetaNoMismatchCentralEtaCut = new TH2I("hBetaNoMismatchCentralEtaCut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatchCentralEtaCut);
+  hBetaNoMismatchEtaCut = new TH2I("hBetaNoMismatchEtaCut", Form("Distribution of the beta w/o Mismatch and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatchEtaCut);
 
-    hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
-    fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
+  hBetaNoMismatchEtaCutOut = new TH2I("hBetaNoMismatchEtaCutOut", Form("Distribution of the beta w/o Mismatch and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatchEtaCutOut);
 
-    hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), 1000, 0.25, 30., 1000, 0., 1000);
-    fListHist->AddLast(hTPCdEdx);
+  hBetaCentral = new TH2I("hBetaCentral", Form("Distribution of the beta Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaCentral);
+
+  hBetaNoMismatchCentral = new TH2I("hBetaNoMismatchCentral", Form("Distribution of the beta w/o Mismatch Central Events;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatchCentral);
+
+  hBetaNoMismatchCentralEtaCut = new TH2I("hBetaNoMismatchCentralEtaCut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| < 0.5;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatchCentralEtaCut);
+
+  hBetaNoMismatchCentralEtaCutOut = new TH2I("hBetaNoMismatchCentralEtaCutOut", Form("Distribution of the beta w/o Mismatch Central Events and a |#eta| > 0.2;%s;TOF #beta", pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1]);
+  fListHist->AddLast(hBetaNoMismatchCentralEtaCutOut);
+
+  hTPCdEdx = new TH2I("hTPCdEdx", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), Enbins, Eplim[0], Eplim[1], Enbins, Elim[0], Elim[1]);
+  fListHist->AddLast(hTPCdEdx);
+
+  hTPCdEdxTPCp = new TH2I("hTPCdEdxTPCp", Form("Distribution of the TPC dE/dx;%s;d#it{E}/d#it{x} in TPC (arb. units)", pstring.Data()), Enbins, Eplim[0], Eplim[1], Enbins, Elim[0], Elim[1]);
+  fListHist->AddLast(hTPCdEdxTPCp);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms(const AliVTrack* track)
+{
+  if (!fPerformance)
+    return;
+  //
+
+  //*****
+  //*TOF*
+  //*****
+  const Double_t beta = fLength / ((fTOFTime - fT0TrkTime) * CSPEED);
+  hBeta->Fill(fP, beta);
+  for (Int_t i = 0; i < kExpSpecies; i++) {
+    const Double_t betaHypo = fLength / ((fTOFExpTime[i] - fT0TrkTime) * CSPEED);
+    hBetaExpected[i]->Fill(fP, betaHypo);
+    if (TMath::Abs(fTOFSigma[i]) < 3.0)
+      hBetaExpectedTOFPID[i]->Fill(fP, betaHypo);
+  }
+  if (fNTOFClusters < 2) {
+    hBetaNoMismatch->Fill(fP, beta);
+    if (TMath::Abs(fEta) < 0.5)
+      hBetaNoMismatchEtaCut->Fill(fP, beta);
+    if (TMath::Abs(fEta) > 0.2)
+      hBetaNoMismatchEtaCutOut->Fill(fP, beta);
+  }
+
+  if (fEvtMult <= 30.0 && fEvtMult >= 0.0) { //Central collisions
+    hBetaCentral->Fill(fP, beta);
+    if (fNTOFClusters < 2) {
+      hBetaNoMismatchCentral->Fill(fP, beta);
+      if (TMath::Abs(fEta) < 0.5)
+        hBetaNoMismatchCentralEtaCut->Fill(fP, beta);
+      if (TMath::Abs(fEta) > 0.2)
+        hBetaNoMismatchCentralEtaCutOut->Fill(fP, beta);
+    }
+  }
+
+  for (Int_t i = 0; i < kExpSpecies - 1; i++) {
+    hTOFSepVsP[i]->Fill(fP, (fTOFExpTime[i + 1] - fTOFExpTime[i]) / fTOFExpSigma[i]);
+    hTOFSepVsPt[i]->Fill(fPt, (fTOFExpTime[i + 1] - fTOFExpTime[i]) / fTOFExpSigma[i]);
+  }
+
+  //*****
+  //*TPC*
+  //*****
+  hTPCdEdx->Fill(fP, fTPCSignal);
+  hTPCdEdxTPCp->Fill(fPTPC, fTPCSignal);
+  for (Int_t i = 0; i < kExpSpecies + 2; i++) {
+    hdEdxExpected[i]->Fill(fP, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
+    hdEdxExpectedTPCp[i]->Fill(fPTPC, fPIDResponse->GetTPCResponse().GetExpectedSignal(track, static_cast<AliPID::EParticleType>(i)));
   }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskTOFSpectra::FillPerformanceHistograms()
+void AliAnalysisTaskTOFSpectra::DefineMCPerformanceHistograms()
 {
-  if (fPerformance) {
-    //TOF
-    const Double_t beta = fLength / ((fTOFTime - fT0TrkTime) * CSPEED);
-    hBeta->Fill(fP, beta);
-    for (Int_t i = 0; i < kExpSpecies; i++) {
-      const Double_t betaHypo = fLength / ((fTOFExpTime[i] - fT0TrkTime) * CSPEED);
-      hBetaExpected[i]->Fill(fP, betaHypo);
-      if (TMath::Abs(fTOFSigma[i]) < 3.0)
-        hBetaExpectedTOFPID[i]->Fill(fP, betaHypo);
-    }
-    if (fNTOFClusters < 2) {
-      hBetaNoMismatch->Fill(fP, beta);
-      if (TMath::Abs(fEta) < 0.5)
-        hBetaNoMismatchEtaCut->Fill(fP, beta);
-      if (TMath::Abs(fEta) > 0.2)
-        hBetaNoMismatchEtaCutOut->Fill(fP, beta);
-    }
+  if (!fMCPerformance)
+    return;
+  //
+  const Int_t Bnbins = 400;
+  const Double_t Blim[2] = { 0., 1.5 };
+  const Double_t Bplim[2] = { 0., 1. };
+  //
+  for (Int_t i = 0; i < 3; i++) { //Loop on the source
+    hBetaMC[i] = new TH3F(Form("hBetaMC_%i", i), Form("Distribution of the beta %i;%s;TOF #beta;Particle species", i, pstring.Data()), Bnbins, Bplim[0], Bplim[1], Bnbins, Blim[0], Blim[1], kExpSpecies + 1, -1, kExpSpecies);
+    for (Int_t j = 0; j < hBetaMC[i]->GetNbinsZ(); j++)
+      hBetaMC[i]->GetZaxis()->SetBinLabel(j + 1, j == 0 ? "Residual" : AliPID::ParticleLatexName(j - 1));
+    //
+    fListHist->AddLast(hBetaMC[i]);
+  }
+  for (Int_t i = 0; i < 7; i++) { //Loop on the species + unidentified
+    hBetaMCMother[i] = new TH3F();
+    hBetaMCMother[i]->SetName(Form("hBetaMCMother_%i", i));
+    hBetaMCMother[i]->SetTitle(Form("Distribution of the beta %s;%s;TOF #beta;PDG code", i == 0 ? "Residual" : AliPID::ParticleLatexName(i - 1), pstring.Data()));
+    hBetaMCMother[i]->GetXaxis()->Set(Bnbins, Bplim[0], Bplim[1]);
+    hBetaMCMother[i]->GetYaxis()->Set(Bnbins, Blim[0], Blim[1]);
+    fListHist->AddLast(hBetaMCMother[i]);
 
-    if (fEvtMult <= 30.0 && fEvtMult >= 0.0) { //Central collisions
-      hBetaCentral->Fill(fP, beta);
-      if (fNTOFClusters < 2) {
-        hBetaNoMismatchCentral->Fill(fP, beta);
-        if (TMath::Abs(fEta) < 0.5)
-          hBetaNoMismatchCentralEtaCut->Fill(fP, beta);
-        if (TMath::Abs(fEta) > 0.2)
-          hBetaNoMismatchCentralEtaCutOut->Fill(fP, beta);
-      }
-    }
-
-    //TPC
-    hTPCdEdx->Fill(fP, fTPCSignal);
+    hBetaMCMotherMode[i] = new TH2F();
+    hBetaMCMotherMode[i]->SetName(Form("hBetaMCMotherMode_%i", i));
+    hBetaMCMotherMode[i]->SetTitle(Form("Production channel %s;PDG code;Channel", i == 0 ? "Residual" : AliPID::ParticleLatexName(i - 1)));
+    hBetaMCMotherMode[i]->GetXaxis()->Set(3, 0, 3);
+    fListHist->AddLast(hBetaMCMotherMode[i]);
   }
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::FillMCPerformanceHistograms(const AliVTrack* track)
+{
+  if (!fMCPerformance)
+    return;
+  //
+  const Double_t beta = fLength / ((fTOFTime - fT0TrkTime) * CSPEED);
+  Int_t bin = 0;
+  if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kElectron))
+    bin = 0;
+  else if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kMuon))
+    bin = 1;
+  else if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kPion))
+    bin = 2;
+  else if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kKaon))
+    bin = 3;
+  else if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kProton))
+    bin = 4;
+  else if (TMath::Abs(fPdgcode) == AliPID::ParticleCode(AliPID::kDeuteron))
+    bin = 5;
+  else //Unidentified
+    bin = -1;
+  //
+  if (fProdInfo < 0 || fProdInfo >= 3)
+    AliFatal(Form("Filling histogram without know production mechanism: %i", fProdInfo));
+  //
+  hBetaMC[fProdInfo]->Fill(fP, beta, .5 + bin);
+  //
+  // Printf("Mother PDG code %i", fPdgcodeMother);
+  hBetaMCMother[bin + 1]->Fill(fP, beta, Form("%i", TMath::Abs(fPdgcodeMother)), 1);
+  //
+  hBetaMCMotherMode[bin + 1]->Fill(0.5 + fProdInfo, Form("%i", TMath::Abs(fPdgcodeMother)), 1);
+  //
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::DefineT0Histograms()
+{
+#ifdef BUILDT0PLOTS
+  const TString titles[4] = { "t^{AC}_{ev}", "t^{A}_{ev}", "t^{C}_{ev}", "t^{TOF}_{ev}" };
+  for (Int_t i = 0; i < 4; i++) {
+    hT0VsVtxZ[i] = new TH2F(Form("hT0VsVtxZ%i", i), Form("%s;Vtx Z (cm);T0 (ps)", titles[i].Data()), 600, -30, 30, 500, -500, 500);
+    fListHist->AddLast(hT0VsVtxZ[i]);
+    hT0VsVtxZbest[i] = new TH2F(Form("hT0VsVtxZbest%i", i), Form("%s;Vtx Z (cm);T0 (ps)", titles[i].Data()), 600, -30, 30, 500, -500, 500);
+    fListHist->AddLast(hT0VsVtxZbest[i]);
+  }
+#endif
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskTOFSpectra::FillT0Histograms()
+{
+#ifdef BUILDT0PLOTS
+  if (!fESD->GetPrimaryVertexSPD())
+    return kTRUE;
+  //
+  hT0VsVtxZ[0]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOF(0));
+  hT0VsVtxZ[1]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOF(1));
+  hT0VsVtxZ[2]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOF(2));
+  hT0VsVtxZ[3]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetTOFHeader()->GetEventTimeValues() ? fESD->GetTOFHeader()->GetEventTimeValues()->GetAt(1) : -1000);
+  //
+  hT0VsVtxZbest[0]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOFbest(0));
+  hT0VsVtxZbest[1]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOFbest(1));
+  hT0VsVtxZbest[2]->Fill(fESD->GetPrimaryVertexSPD()->GetZ(), fESD->GetESDTZERO()->GetT0TOFbest(2));
+  return kTRUE;
+#endif
+  return kFALSE;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::FindPtBin()
+{
+  if (fBinPtIndex != -999) {
+    AliFatal(Form("Pt bin already assigned to value %i!", fBinPtIndex));
+    return;
+  }
+  for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { ///<  Computes the pt bin
+    if (fPt < fBinPt[ptbin] || fPt >= fBinPt[ptbin + 1])
+      continue;
+    //       AliInfo(Form("Requirement %i : %f < fPt %f < %f", ptbin, fBinPt[ptbin], fPt, fBinPt[ptbin+1]));
+    fBinPtIndex = ptbin;
+    break;
+  }
+  if (fBinPtIndex < 0)
+    AliWarning(Form("Pt bin not assigned, fPt value: %f!", fPt));
+  //if(fBinPtIndex >= 0 && fBinPtIndex + 1 != hNumMatch[0]->GetXaxis()->FindBin(fPt)) AliFatal(Form("Pt bin is different than intendend: %i vs %i!", fBinPtIndex, hNumMatch[0]->GetXaxis()->FindBin(fPt)));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetEvtMaskBit(fEvtMaskIndex bit, Bool_t value)
+{
+  if (bit >= kLimitfEvtMask)
+    AliFatal("Bit exceeds limits for fEvtMask");
+  else
+    SetMaskBit(fEvtMask, (Int_t)bit, value);
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTrkMaskBit(fTrkMaskIndex bit, Bool_t value)
+{
+  if (bit >= kLimitfTrkMask)
+    AliFatal("Bit exceeds limits for fTrkMask");
+  else
+    SetMaskBit(fTrkMask, (Int_t)bit, value);
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTPCPIDMaskBit(fTPCPIDMaskIndex bit, Bool_t value)
+{
+  if (bit >= kLimitfTPCPIDMask)
+    AliFatal("Bit exceeds limits for fTPCPIDMask");
+  else
+    SetMaskBit(fTPCPIDMask, (Int_t)bit, value);
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTrkCutMaskBit(fTrkCutMaskIndex bit, Bool_t value)
+{
+  if (bit >= kLimitfTrkCutMask)
+    AliFatal("Bit exceeds limits for fTrkCutMask");
+  else
+    SetMaskBit(fTrkCutMask, (Int_t)bit, value);
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetMCTrkMaskBit(fMCTrkMaskIndex bit, Bool_t value)
+{
+  if (bit >= kLimitfMCTrkMask)
+    AliFatal("Bit exceeds limits for fMCTrkMask");
+  else
+    SetMaskBit(fMCTrkMask, (Int_t)bit, value);
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetMultiplicityBinning(TArrayD bin)
+{
+  fMultiplicityBin.Set(bin.GetSize(), bin.GetArray());
+  if (fMultiplicityBin.GetSize() != bin.GetSize())
+    AliFatal(Form("Number of bins do not match: %i and %i", fMultiplicityBin.GetSize(), bin.GetSize()));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTPCRowsCut(Double_t cut)
+{
+  fESDtrackCuts->SetMinNCrossedRowsTPC(cut);
+  AliDebug(2, Form("Setting SetMinNCrossedRowsTPC(%f) : %f", cut, fESDtrackCuts->GetMinNCrossedRowsTPC()));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTrkChi2Cut(Double_t cut)
+{
+  fESDtrackCuts->SetMaxChi2PerClusterTPC(cut);
+  AliDebug(2, Form("Setting SetMaxChi2PerClusterTPC(%f) : %f", cut, fESDtrackCuts->GetMaxChi2PerClusterTPC()));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetTrkChi2CutITS(Double_t cut)
+{
+  fESDtrackCuts->SetMaxChi2PerClusterITS(cut);
+  AliDebug(2, Form("Setting SetMaxChi2PerClusterITS(%f) : %f", cut, fESDtrackCuts->GetMaxChi2PerClusterITS()));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetDCAxyCut(Double_t cut)
+{
+  fESDtrackCutsPrm->SetMaxDCAToVertexXYPtDep(Form("%f*(%s)", cut, fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
+  AliDebug(2, Form("Setting SetMaxDCAToVertexXYPtDep(%f) : %s", cut, fESDtrackCutsPrm->GetMaxDCAToVertexXYPtDep()));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetDCAzCut(Double_t cut)
+{
+  fESDtrackCuts->SetMaxDCAToVertexZ(cut);
+  AliDebug(2, Form("Setting SetMaxDCAToVertexZ(%f) : %f", cut, fESDtrackCuts->GetMaxDCAToVertexZ()));
+};
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetGeoCut(Double_t fDeadZoneWidth, Double_t fCutGeoNcrNclLength, Double_t fCutGeoNcrNclGeom1Pt, Double_t fCutGeoNcrNclFractionNcr, Double_t fCutGeoNcrNclFractionNcl)
+{
+  //Float_t fDeadZoneWidth;             // width of the TPC dead zone (missing pads + PRF +ExB)
+  //Float_t fCutGeoNcrNclLength;        // cut on the geometical length  condition Ngeom(cm)>cutGeoNcrNclLength default=130
+  //Float_t fCutGeoNcrNclGeom1Pt;       // 1/pt dependence slope  cutGeoNcrNclLength:=fCutGeoNcrNclLength-abs(1/pt)^fCutGeoNcrNclGeom1Pt
+  //Float_t fCutGeoNcrNclFractionNcr;   // relative fraction cut Ncr  condition Ncr>cutGeoNcrNclFractionNcr*fCutGeoNcrNclLength
+  //Float_t fCutGeoNcrNclFractionNcl;   // ralative fraction cut Ncr  condition Ncl>cutGeoNcrNclFractionNcl
+  fESDtrackCuts->SetCutGeoNcrNcl(fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl);
+  AliDebug(2, Form("Setting SetCutGeoNcrNcl(%f, %f, %f, %f, %f)", fDeadZoneWidth, fCutGeoNcrNclLength, fCutGeoNcrNclGeom1Pt, fCutGeoNcrNclFractionNcr, fCutGeoNcrNclFractionNcl));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskTOFSpectra::SetRatioCrossedRowsFindableCls(Double_t cut)
+{
+  fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(cut);
+  AliDebug(2, Form("Setting SetMinRatioCrossedRowsOverFindableClustersTPC(%f) : %f", cut, fESDtrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()));
+};

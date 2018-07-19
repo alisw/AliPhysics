@@ -16,9 +16,11 @@ ClassImp(AliV0Result);
 AliV0Result::AliV0Result() :
   AliVWeakResult(),
 fMassHypo(AliV0Result::kK0Short),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
+fCutMaxV0Radius(200.0),
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
@@ -47,7 +49,9 @@ fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
-fUseOnTheFly(kFALSE)
+fUseOnTheFly(kFALSE),
+fCut276TeVLikedEdx(kFALSE),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Dummy Constructor - not to be used! 
     //Main output histogram: Centrality, mass, transverse momentum
@@ -60,9 +64,11 @@ fUseOnTheFly(kFALSE)
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
+fCutMaxV0Radius(200.0),
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
@@ -91,7 +97,9 @@ fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
-fUseOnTheFly(kFALSE)
+fUseOnTheFly(kFALSE),
+fCut276TeVLikedEdx(kFALSE),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -111,9 +119,11 @@ fUseOnTheFly(kFALSE)
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
+fCutMaxV0Radius(200.0),
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
@@ -142,7 +152,9 @@ fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
-fUseOnTheFly(kFALSE)
+fUseOnTheFly(kFALSE),
+fCut276TeVLikedEdx(kFALSE),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Constructor
     Double_t lThisMass = GetMass();
@@ -167,9 +179,11 @@ fUseOnTheFly(kFALSE)
 AliV0Result::AliV0Result(const char * name, AliV0Result::EMassHypo lMassHypo, const char * title, Long_t lNCentBins, Double_t *lCentBins, Long_t lNPtBins, Double_t *lPtBins, Long_t lNMassBins, Double_t lMinMass, Double_t lMaxMass):
 AliVWeakResult(name,title),
 fMassHypo(lMassHypo),
+fProtonProfile(0x0),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
+fCutMaxV0Radius(200.0),
 fCutDCANegToPV(0.1),
 fCutDCAPosToPV(0.1),
 fCutDCAV0Daughters(1.0),
@@ -198,7 +212,9 @@ fCutVarV0CosPA_Exp0Slope(0),
 fCutVarV0CosPA_Exp1Const(0),
 fCutVarV0CosPA_Exp1Slope(0),
 fCutVarV0CosPA_Const(1),
-fUseOnTheFly(kFALSE)
+fUseOnTheFly(kFALSE),
+fCut276TeVLikedEdx(kFALSE),
+fCutAtLeastOneTOF(kFALSE)
 {
     // Constructor
     Double_t lMassWindow = (lMaxMass-lMinMass)/2.0 ;
@@ -223,6 +239,7 @@ fCutMinRapidity(lCopyMe.fCutMinRapidity),
 fCutMaxRapidity(lCopyMe.fCutMaxRapidity),
 //Topological
 fCutV0Radius(lCopyMe.fCutV0Radius),
+fCutMaxV0Radius(lCopyMe.fCutMaxV0Radius),
 fCutDCANegToPV(lCopyMe.fCutDCANegToPV),
 fCutDCAPosToPV(lCopyMe.fCutDCAPosToPV),
 fCutDCAV0Daughters(lCopyMe.fCutDCAV0Daughters),
@@ -251,7 +268,9 @@ fCutVarV0CosPA_Exp0Slope(lCopyMe.fCutVarV0CosPA_Exp0Slope),
 fCutVarV0CosPA_Exp1Const(lCopyMe.fCutVarV0CosPA_Exp1Const),
 fCutVarV0CosPA_Exp1Slope(lCopyMe.fCutVarV0CosPA_Exp1Slope),
 fCutVarV0CosPA_Const(lCopyMe.fCutVarV0CosPA_Const),
-fUseOnTheFly(lCopyMe.fUseOnTheFly)
+fUseOnTheFly(lCopyMe.fUseOnTheFly),
+fCut276TeVLikedEdx(lCopyMe.fCut276TeVLikedEdx),
+fCutAtLeastOneTOF(lCopyMe.fCutAtLeastOneTOF)
 {
     SetName( lNewName.Data() ); 
     
@@ -270,6 +289,11 @@ fUseOnTheFly(lCopyMe.fUseOnTheFly)
     fHistoFeeddown = 0x0;
     if( lCopyMe.GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe.GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
+    fProtonProfile = 0x0;
+    //Copy proton profile, if it exists
+    if( lCopyMe.GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe.GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
 }
 //________________________________________________________________
 AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
@@ -284,6 +308,7 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fCutMaxRapidity     = lCopyMe->GetCutMaxRapidity();
     
     fCutV0Radius = lCopyMe->GetCutV0Radius();
+    fCutMaxV0Radius = lCopyMe->GetCutMaxV0Radius();
     fCutDCANegToPV = lCopyMe->GetCutDCANegToPV();
     fCutDCAPosToPV = lCopyMe->GetCutDCAPosToPV();
     fCutDCAV0Daughters = lCopyMe->GetCutDCAV0Daughters();
@@ -320,6 +345,11 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     //OTF use
     fUseOnTheFly = lCopyMe -> GetUseOnTheFly();
     
+    //special dedx
+    fCut276TeVLikedEdx = lCopyMe -> GetCut276TeVLikedEdx();
+    
+    fCutAtLeastOneTOF = lCopyMe -> GetCutAtLeastOneTOF();
+    
     // Constructor
     Double_t lThisMass = GetMass();
     Double_t lMassWindow = 0.1 ;
@@ -335,6 +365,10 @@ AliV0Result::AliV0Result(AliV0Result *lCopyMe, TString lNewName)
     fHistoFeeddown = 0x0;
     if( lCopyMe->GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe->GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
+    fProtonProfile = 0x0;
+    if( lCopyMe->GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe->GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
 }
 //________________________________________________________________
 AliV0Result::~AliV0Result(){
@@ -342,6 +376,10 @@ AliV0Result::~AliV0Result(){
     if (fHisto) {
         delete fHisto;
         fHisto = 0x0;
+    }
+    if (fProtonProfile) {
+        delete fProtonProfile;
+        fProtonProfile = 0x0;
     }
 }
 
@@ -360,6 +398,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fCutMaxRapidity = lCopyMe.GetCutMaxRapidity(),
     
     fCutV0Radius = lCopyMe.GetCutV0Radius();
+    fCutMaxV0Radius = lCopyMe.GetCutMaxV0Radius();
     fCutDCANegToPV = lCopyMe.GetCutDCANegToPV();
     fCutDCAPosToPV = lCopyMe.GetCutDCAPosToPV();
     fCutDCAV0Daughters = lCopyMe.GetCutDCAV0Daughters();
@@ -396,9 +435,18 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     //OTF use
     fUseOnTheFly = lCopyMe.GetUseOnTheFly();
     
+    //special dedx
+    fCut276TeVLikedEdx = lCopyMe.GetCut276TeVLikedEdx();
+    
+    fCutAtLeastOneTOF = lCopyMe.GetCutAtLeastOneTOF();
+    
     if (fHisto) {
         delete fHisto;
         fHisto = 0;
+    }
+    if (fProtonProfile) {
+        delete fProtonProfile;
+        fProtonProfile = 0;
     }
     // Constructor
     Double_t lThisMass = GetMass();
@@ -415,6 +463,10 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fHistoFeeddown = 0x0;
     if( lCopyMe.GetHistogramFeeddownToCopy() )
         fHistoFeeddown = (TH3F*) lCopyMe.GetHistogramFeeddownToCopy()->Clone(Form("fHistoFeeddown_%s",GetName()));
+    fProtonProfile = 0x0;
+    if( lCopyMe.GetProtonProfileToCopy() ){
+        fProtonProfile = (TProfile*) lCopyMe.GetProtonProfileToCopy()->Clone(Form("fProtonProfile_%s",GetName()));
+    }
     
     return *this;
 }
@@ -441,6 +493,10 @@ Long64_t AliV0Result::Merge(TCollection *hlist)
             //... if feeddown matrices are both defined, merge that as well, please  
             if ( fHistoFeeddown && xh->GetHistogramFeeddown() )
                 GetHistogramFeeddown()->Add(xh->GetHistogramFeeddown());
+            
+            //... if proton profiles are both defined, merge that as well, please
+            if ( fProtonProfile && xh->GetProtonProfileToCopy() )
+                GetProtonProfile()->Add(xh->GetProtonProfile());
         }
     }
     return (Long64_t) GetHistogram()->GetEntries();
@@ -472,6 +528,7 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     if( TMath::Abs( fCutDCAV0Daughters - lCompareV0->GetCutDCAV0Daughters() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutV0CosPA - lCompareV0->GetCutV0CosPA() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutV0Radius - lCompareV0->GetCutV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
+    if( TMath::Abs( fCutMaxV0Radius - lCompareV0->GetCutMaxV0Radius() ) > 1e-6 ) lReturnValue = kFALSE;
     
     if( TMath::Abs( fCutProperLifetime - lCompareV0->GetCutProperLifetime() ) > 1e-6 ) lReturnValue = kFALSE;
 
@@ -501,6 +558,11 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     //Use OTF
     if( fUseOnTheFly != lCompareV0->GetUseOnTheFly() ) lReturnValue = kFALSE;
     
+    //special dedx
+    if( fCut276TeVLikedEdx != lCompareV0->GetCut276TeVLikedEdx() ) lReturnValue = kFALSE;
+    
+    if( fCutAtLeastOneTOF != lCompareV0->GetCutAtLeastOneTOF() ) lReturnValue = kFALSE;
+    
     return lReturnValue;
 }
 //________________________________________________________________
@@ -513,7 +575,8 @@ void AliV0Result::Print()
     cout<<"    AliV0Result Configuration      "<<endl;
     cout<<"========================================"<<endl;
     cout<<" Object Name........: "<<this->GetName()<<endl;
-    cout<<" Use OTF V0s........: "<<fUseOnTheFly<<endl; 
+    cout<<" Use OTF V0s........: "<<fUseOnTheFly<<endl;
+    cout<<" 2.76TeV-like dE/dx.: "<<fCut276TeVLikedEdx<<endl;
     cout<<" Histogram Name.....: "<<fHisto->GetName()<<endl;
     if( fMassHypo == AliV0Result::kK0Short      ) cout<<" Mass Hypothesis....: K0Short"<<endl;
     if( fMassHypo == AliV0Result::kLambda       ) cout<<" Mass Hypothesis....: Lambda"<<endl;
@@ -534,6 +597,7 @@ void AliV0Result::Print()
         cout<<" ^--Constant........: "<<fCutVarV0CosPA_Const<<endl;
     }
     cout<<" V0 2D Radius.......: "<<fCutV0Radius<<endl;
+    cout<<" V0 2D Radius (max).: "<<fCutMaxV0Radius<<endl;
     
     cout<<" Proper Lifetime....: "<<fCutProperLifetime<<endl;
     cout<<" Armenteros (for K0): "<<fCutArmenteros<<endl;
@@ -603,6 +667,14 @@ TString AliV0Result::GetParticleName () const
     if( fMassHypo == AliV0Result::kAntiLambda ) lName = "AntiLambda";
     return lName;
 }
+
+//________________________________________________________________
+void AliV0Result::InitializeProtonProfile (Long_t lNPtBins, Double_t *lPtBins)
+//Initialize TProfile to do bookkeeping of proton momenta
+{
+    if(!fProtonProfile) fProtonProfile = new TProfile( Form("fProtonProfile_%s",GetName()), "", lNPtBins, lPtBins);
+}
+
 
 
 

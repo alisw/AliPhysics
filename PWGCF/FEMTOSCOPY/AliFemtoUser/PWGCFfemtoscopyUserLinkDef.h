@@ -29,6 +29,7 @@
 #pragma link C++ class AliFemtoModelCorrFctnKStar;
 #pragma link C++ class AliFemtoModelCorrFctnQinv;
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ;
+#pragma link C++ class AliFemtoModelCorrFctnKK;
 #pragma link C++ class AliFemtoModelCorrFctnNonIdDR;
 #pragma link C++ class AliFemtoModelCorrFctn3DSpherical;
 #pragma link C++ class AliFemtoModelCorrFctn3DLCMSSpherical;
@@ -134,5 +135,10 @@
 #pragma link C++ class AliFemtoPairCutMInv;
 
 #pragma link C++ class AliFemtoV0PurityBgdEstimator+;
-
 #pragma link C++ class AliFemtoModelCorrFctnTrueQ3D+;
+#pragma link C++ class AliFemtoModelCorrFctnTrueQ6D-;
+#pragma link C++ class AliFemtoModelCorrFctnTrueQ6D::Builder;
+
+#pragma link C++ class AliFemtoPairCutRadialDistanceKKdist;
+// AliFemtoKKTrackCutTest class:
+#pragma link C++ class AliFemtoKKTrackCutTest;

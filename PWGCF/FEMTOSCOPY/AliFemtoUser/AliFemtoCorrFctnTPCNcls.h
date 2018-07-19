@@ -16,7 +16,7 @@
 
 class AliFemtoCorrFctnTPCNcls : public AliFemtoCorrFctn {
 public:
-  AliFemtoCorrFctnTPCNcls(char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
+  AliFemtoCorrFctnTPCNcls(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
   AliFemtoCorrFctnTPCNcls(const AliFemtoCorrFctnTPCNcls& aCorrFctn);
   virtual ~AliFemtoCorrFctnTPCNcls();
 
@@ -30,9 +30,11 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnTPCNcls(*this); }
+
 private:
-  
-  TH2D *fNclsTPCMinNumerator;        // Numerator as a function of lower TPC Ncls of the pair 
+
+  TH2D *fNclsTPCMinNumerator;        // Numerator as a function of lower TPC Ncls of the pair
   TH2D *fNclsTPCMinDenominator;      // Denominator as a function of lower TPC Ncls of the pair
 
 #ifdef __ROOT__

@@ -4,6 +4,8 @@
 #include <TH1F.h>
 #include <TFile.h>
 #include <TF1.h>
+#include <TProfile.h>
+#include <TSystem.h>
 #include <TMath.h>
 #include "TTree.h"
 #include <TLegend.h>
@@ -24,7 +26,10 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms);
 const Int_t totTrending=36;
 Float_t vecForTrend[totTrending];
 
-void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA", Int_t runNumber=-1){
+void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA", Int_t runNumber=-1, TString outputForm="png"){
+
+  TString pdfFileNames="";
+  TString plotFileName="";
 
   TString varForTrending[totTrending];
   for(Int_t jbit=0; jbit<12; jbit++){
@@ -43,21 +48,32 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   varForTrending[33]="MatchEffSPDPt350EtaNeg";
   varForTrending[34]="MatchEffSPDPt1000EtaNeg";
   varForTrending[35]="MatchEffSPDPt4000EtaNeg";
- 
-  TTree* trtree=new TTree("trending","tree of trending variables");
+
+  TTree* trtree=new TTree("trendingTrack","tree of trending variables");
   trtree->Branch("nrun",&runNumber,"nrun/I");
   for(Int_t j=0; j<totTrending; j++){
     trtree->Branch(varForTrending[j].Data(),&vecForTrend[j],Form("%s/F",varForTrending[j].Data()));
     vecForTrend[j]=-99.;
   }
-  
+
   TFile* f=new TFile(filename.Data());
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckAODTracks");
+  if(!df){
+    printf("Directory CheckAODTracks not found in file %s\n",filename.Data());
+    return;
+  }
   TList* l=(TList*)df->Get(Form("clistCheckAODTracks%s",suffix.Data()));
+  if(!l){
+    printf("TList clistCheckAODTracks%s not found in file %s\n",suffix.Data(),filename.Data());
+    return;    
+  }
 
   TH3F* hEtaPhiPtTPCsel=(TH3F*)l->FindObject("hEtaPhiPtTPCsel");
   TH3F* hEtaPhiPtTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSref");
   TH3F* hEtaPhiPtTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDany");
+  TH3F* hEtaPhiPtTPCselTOFbc=(TH3F*)l->FindObject("hEtaPhiPtTPCselTOFbc");
+  TH3F* hEtaPhiPtTPCselITSrefTOFbc=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefTOFbc");
+  TH3F* hEtaPhiPtTPCselSPDanyTOFbc=(TH3F*)l->FindObject("hEtaPhiPtTPCselSPDanyTOFbc");
   TH3F* hEtaPhiPtPosChargeTPCsel=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCsel");
   TH3F* hEtaPhiPtPosChargeTPCselITSref=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCselITSref");
   TH3F* hEtaPhiPtPosChargeTPCselSPDany=(TH3F*)l->FindObject("hEtaPhiPtPosChargeTPCselSPDany");
@@ -85,6 +101,11 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hPhiEtaPosTPCselLowPt=hEtaPhiPtTPCsel->ProjectionY("hPhiEtaPosTPCselLowPt",eta0p,etamax,ptzero4,ptzero7);
   TH1D* hPhiEtaNegTPCselHighPt=hEtaPhiPtTPCsel->ProjectionY("hPhiEtaNegTPCselHighPt",etamin,eta0m,ptone,ptten);
   TH1D* hPhiEtaPosTPCselHighPt=hEtaPhiPtTPCsel->ProjectionY("hPhiEtaPosTPCselHighPt",eta0p,etamax,ptone,ptten);
+  TH1D* hPhiEtaNegTPCselLowPtTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionY("hPhiEtaNegTPCselLowPtTOFbc",etamin,eta0m,ptzero4,ptzero7);
+  TH1D* hPhiEtaPosTPCselLowPtTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionY("hPhiEtaPosTPCselLowPtTOFbc",eta0p,etamax,ptzero4,ptzero7);
+  TH1D* hPhiEtaNegTPCselHighPtTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionY("hPhiEtaNegTPCselHighPtTOFbc",etamin,eta0m,ptone,ptten);
+  TH1D* hPhiEtaPosTPCselHighPtTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionY("hPhiEtaPosTPCselHighPtTOFbc",eta0p,etamax,ptone,ptten);
+
 
   TH1D* hPhiEtaNegTPCselITSref=hEtaPhiPtTPCselITSref->ProjectionY("hPhiEtaNegTPCselITSref",etamin,eta0m);
   TH1D* hPhiEtaPosTPCselITSref=hEtaPhiPtTPCselITSref->ProjectionY("hPhiEtaPosTPCselITSref",eta0p,etamax);
@@ -94,6 +115,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hPhiEtaPosTPCselITSrefLowPt=hEtaPhiPtTPCselITSref->ProjectionY("hPhiEtaPosTPCselITSrefLowPt",eta0p,etamax,ptzero4,ptzero7);
   TH1D* hPhiEtaNegTPCselITSrefHighPt=hEtaPhiPtTPCselITSref->ProjectionY("hPhiEtaNegTPCselITSrefHighPt",etamin,eta0m,ptone,ptten);
   TH1D* hPhiEtaPosTPCselITSrefHighPt=hEtaPhiPtTPCselITSref->ProjectionY("hPhiEtaPosTPCselITSrefHighPt",eta0p,etamax,ptone,ptten);
+  TH1D* hPhiEtaNegTPCselITSrefLowPtTOFbc=hEtaPhiPtTPCselITSrefTOFbc->ProjectionY("hPhiEtaNegTPCselITSrefLowPtTOFbc",etamin,eta0m,ptzero4,ptzero7);
+  TH1D* hPhiEtaPosTPCselITSrefLowPtTOFbc=hEtaPhiPtTPCselITSrefTOFbc->ProjectionY("hPhiEtaPosTPCselITSrefLowPtTOFbc",eta0p,etamax,ptzero4,ptzero7);
+  TH1D* hPhiEtaNegTPCselITSrefHighPtTOFbc=hEtaPhiPtTPCselITSrefTOFbc->ProjectionY("hPhiEtaNegTPCselITSrefHighPtTOFbc",etamin,eta0m,ptone,ptten);
+  TH1D* hPhiEtaPosTPCselITSrefHighPtTOFbc=hEtaPhiPtTPCselITSrefTOFbc->ProjectionY("hPhiEtaPosTPCselITSrefHighPtTOFbc",eta0p,etamax,ptone,ptten);
 
   TH1D* hPhiEtaNegTPCselSPDany=hEtaPhiPtTPCselSPDany->ProjectionY("hPhiEtaNegTPCselSPDany",etamin,eta0m);
   TH1D* hPhiEtaPosTPCselSPDany=hEtaPhiPtTPCselSPDany->ProjectionY("hPhiEtaPosTPCselSPDany",eta0p,etamax);
@@ -103,6 +128,17 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hPhiEtaPosTPCselSPDanyLowPt=hEtaPhiPtTPCselSPDany->ProjectionY("hPhiEtaPosTPCselSPDanyLowPt",eta0p,etamax,ptzero4,ptzero7);
   TH1D* hPhiEtaNegTPCselSPDanyHighPt=hEtaPhiPtTPCselSPDany->ProjectionY("hPhiEtaNegTPCselSPDanyHighPt",etamin,eta0m,ptone,ptten);
   TH1D* hPhiEtaPosTPCselSPDanyHighPt=hEtaPhiPtTPCselSPDany->ProjectionY("hPhiEtaPosTPCselSPDanyHighPt",eta0p,etamax,ptone,ptten);
+  TH1D* hPhiEtaNegTPCselSPDanyLowPtTOFbc=hEtaPhiPtTPCselSPDanyTOFbc->ProjectionY("hPhiEtaNegTPCselSPDanyLowPtTOFbc",etamin,eta0m,ptzero4,ptzero7);
+  TH1D* hPhiEtaPosTPCselSPDanyLowPtTOFbc=hEtaPhiPtTPCselSPDanyTOFbc->ProjectionY("hPhiEtaPosTPCselSPDanyLowPtTOFbc",eta0p,etamax,ptzero4,ptzero7);
+  TH1D* hPhiEtaNegTPCselSPDanyHighPtTOFbc=hEtaPhiPtTPCselSPDanyTOFbc->ProjectionY("hPhiEtaNegTPCselSPDanyHighPtTOFbc",etamin,eta0m,ptone,ptten);
+  TH1D* hPhiEtaPosTPCselSPDanyHighPtTOFbc=hEtaPhiPtTPCselSPDanyTOFbc->ProjectionY("hPhiEtaPosTPCselSPDanyHighPtTOFbc",eta0p,etamax,ptone,ptten);
+
+  TH1D* hPtEtaNegTPCselTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionZ("hPtEtaNegTPCselTOFbc",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselTOFbc=hEtaPhiPtTPCselTOFbc->ProjectionZ("hPtEtaPosTPCselTOFbc",eta0p,etamax);
+  TH1D* hPtEtaNegTPCselITSrefTOFbc=hEtaPhiPtTPCselITSrefTOFbc->ProjectionZ("hPtEtaNegTPCselITSrefTOFbc",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselITSrefTOFbc=hEtaPhiPtTPCselITSrefTOFbc->ProjectionZ("hPtEtaPosTPCselITSrefTOFbc",eta0p,etamax);
+  TH1D* hPtEtaNegTPCselSPDanyTOFbc=hEtaPhiPtTPCselSPDanyTOFbc->ProjectionZ("hPtEtaNegTPCselSPDanyTOFbc",etamin,eta0m);
+  TH1D* hPtEtaPosTPCselSPDanyTOFbc=hEtaPhiPtTPCselSPDanyTOFbc->ProjectionZ("hPtEtaPosTPCselSPDanyTOFbc",eta0p,etamax);
 
   hPhiEtaNegTPCsel->SetMinimum(0);
   hPhiEtaPosTPCsel->SetMinimum(0);
@@ -112,8 +148,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hPhiEtaPosTPCsel->GetXaxis()->SetTitle("#varphi (rad)");
   hPtEtaNegTPCsel->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   hPtEtaPosTPCsel->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  hPtEtaNegTPCsel->SetTitle("p_{T} tracks - #eta<0");
-  hPtEtaPosTPCsel->SetTitle("p_{T} tracks - #eta>0");
+  hPtEtaNegTPCsel->SetTitle("p_{T} tracks - TPC cuts - #eta<0");
+  hPtEtaPosTPCsel->SetTitle("p_{T} tracks - TPC cuts - #eta>0");
+  hPtEtaNegTPCselSPDany->SetTitle("p_{T} tracks - TPC cuts, SPD any - #eta<0");
+  hPtEtaPosTPCselSPDany->SetTitle("p_{T} tracks - TPC cuts, SPD any - #eta>0");
   hPhiEtaNegTPCselLowPt->SetMinimum(0);
   hPhiEtaPosTPCselLowPt->SetMinimum(0);
   hPhiEtaNegTPCselLowPt->SetTitle("#varphi tracks - #eta<0 - 0.4<p_{T}<0.7 GeV/c");
@@ -165,6 +203,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     TH1D* hPtEtaPosPosChargeTPCselSPDany=hEtaPhiPtPosChargeTPCselSPDany->ProjectionZ("hPtEtaPosPosChargeTPCselSPDany",eta0p,etamax);
     TH1D* hPtEtaNegNegChargeTPCselSPDany=hEtaPhiPtNegChargeTPCselSPDany->ProjectionZ("hPtEtaNegNegChargeTPCselSPDany",etamin,eta0m);
     TH1D* hPtEtaPosNegChargeTPCselSPDany=hEtaPhiPtNegChargeTPCselSPDany->ProjectionZ("hPtEtaPosNegChargeTPCselSPDany",eta0p,etamax);
+
     TH1D* hRatioPosNegEtaNegTPCsel=ComputeRatio(hPtEtaNegPosChargeTPCsel,hPtEtaNegNegChargeTPCsel,"hRatioPosNegEtaNegTPCsel",kGray+1,21,"p_{T} (GeV/c)");
     hRatioPosNegEtaNegTPCsel->GetYaxis()->SetTitle("Positive Charge / Negative Charge");
     TH1D* hRatioPosNegEtaPosTPCsel=ComputeRatio(hPtEtaPosPosChargeTPCsel,hPtEtaPosNegChargeTPCsel,"hRatioPosNegEtaPosTPCsel",kGray+1,21,"p_{T} (GeV/c)");
@@ -192,7 +231,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hRatioPosNegEtaNegTPCsel->Draw();
     cdist->cd(4);
     hRatioPosNegEtaPosTPCsel->Draw();
-    cdist->SaveAs("TracksPtDistrib-TPCsel.png");
+    plotFileName=Form("TracksPtDistrib-TPCsel.%s",outputForm.Data());
+    cdist->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
     TCanvas* cdists=new TCanvas("cdists","Pt Distrib SPDany",900,900);
     cdists->Divide(2,2);
@@ -204,10 +245,12 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogy();
     DrawDistrib(hPtEtaPosTPCselSPDany,hPtEtaPosPosChargeTPCselSPDany,hPtEtaPosNegChargeTPCselSPDany,kTRUE);
     cdists->cd(3);
-    hRatioPosNegEtaNegTPCsel->Draw();
+    hRatioPosNegEtaNegTPCselSPDany->Draw();
     cdists->cd(4);
-    hRatioPosNegEtaPosTPCsel->Draw();
-    cdists->SaveAs("TracksPtDistrib-TPCselSPDany.png");
+    hRatioPosNegEtaPosTPCselSPDany->Draw();
+    plotFileName=Form("TracksPtDistrib-TPCselSPDany.%s",outputForm.Data());
+    cdists->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }else{
     TCanvas* cdist=new TCanvas("cdist","Pt+Phi Distrib",900,900);
     cdist->Divide(2,2);
@@ -227,7 +270,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     legd->Draw();
     cdist->cd(4);
     DrawDistrib(hPhiEtaPosTPCsel,hPhiEtaPosTPCselITSref,hPhiEtaPosTPCselSPDany,kFALSE);
-    cdist->SaveAs("TracksPtPhiDistrib.png");
+    plotFileName=Form("TracksPtPhiDistrib.%s",outputForm.Data());
+    cdist->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
 
   TCanvas* cdist2=new TCanvas("cdist2","Phi Distrib",900,900);
@@ -245,12 +290,22 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   DrawDistrib(hPhiEtaNegTPCselHighPt,hPhiEtaNegTPCselITSrefHighPt,hPhiEtaNegTPCselSPDanyHighPt,kFALSE);
   cdist2->cd(4);
   DrawDistrib(hPhiEtaPosTPCselHighPt,hPhiEtaPosTPCselITSrefHighPt,hPhiEtaPosTPCselSPDanyHighPt,kFALSE);
-  cdist2->SaveAs("TracksPhiDistrib-PtBins.png");
+  plotFileName=Form("TracksPhiDistrib-PtBins.%s",outputForm.Data());
+  cdist2->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TH1D* hMatchEffVsPtNegEta=ComputeMatchEff(hPtEtaNegTPCselITSref,hPtEtaNegTPCsel,"hMatchEffVsPtNegEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtPosEta=ComputeMatchEff(hPtEtaPosTPCselITSref,hPtEtaPosTPCsel,"hMatchEffVsPtPosEta",1,20,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtNegEtaSPDany=ComputeMatchEff(hPtEtaNegTPCselSPDany,hPtEtaNegTPCsel,"hMatchEffVsPtNegEtaSPDAny",kBlue-7,33,"p_{T} (GeV/c)");
   TH1D* hMatchEffVsPtPosEtaSPDany=ComputeMatchEff(hPtEtaPosTPCselSPDany,hPtEtaPosTPCsel,"hMatchEffVsPtPosEtaSPDAny",kBlue-7,33,"p_{T} (GeV/c)");
+
+
+  TH1D* hMatchEffVsPtNegEtaTOFbc=ComputeMatchEff(hPtEtaNegTPCselITSrefTOFbc,hPtEtaNegTPCselTOFbc,"hMatchEffVsPtNegEtaTOFbc",kRed+1,20,"p_{T} (GeV/c)");
+  TH1D* hMatchEffVsPtPosEtaTOFbc=ComputeMatchEff(hPtEtaPosTPCselITSrefTOFbc,hPtEtaPosTPCselTOFbc,"hMatchEffVsPtPosEtaTOFbc",kRed+1,20,"p_{T} (GeV/c)");
+  TH1D* hMatchEffVsPtNegEtaSPDanyTOFbc=ComputeMatchEff(hPtEtaNegTPCselSPDanyTOFbc,hPtEtaNegTPCselTOFbc,"hMatchEffVsPtNegEtaSPDAnyTOFbc",kGreen+2,33,"p_{T} (GeV/c)");
+  TH1D* hMatchEffVsPtPosEtaSPDanyTOFbc=ComputeMatchEff(hPtEtaPosTPCselSPDanyTOFbc,hPtEtaPosTPCselTOFbc,"hMatchEffVsPtPosEtaSPDAnyTOFbc",kGreen+2,33,"p_{T} (GeV/c)");
+
+
   TH1D* hMatchEffVsPhiNegEta=ComputeMatchEff(hPhiEtaNegTPCselITSref,hPhiEtaNegTPCsel,"hMatchEffVsPhiNegEta",1,20,"#varphi (rad)");
   TH1D* hMatchEffVsPhiPosEta=ComputeMatchEff(hPhiEtaPosTPCselITSref,hPhiEtaPosTPCsel,"hMatchEffVsPhiPosEta",1,20,"#varphi (rad)");
   TH1D* hMatchEffVsPhiNegEtaSPDany=ComputeMatchEff(hPhiEtaNegTPCselSPDany,hPhiEtaNegTPCsel,"hMatchEffVsPhiNegEtaSPDAny",kBlue-7,33,"#varphi (rad)");
@@ -265,6 +320,16 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hMatchEffVsPhiNegEtaSPDanyHighPt=ComputeMatchEff(hPhiEtaNegTPCselSPDanyHighPt,hPhiEtaNegTPCselHighPt,"hMatchEffVsPhiNegEtaSPDAnyHighPt",kBlue-7,33,"#varphi (rad)");
   TH1D* hMatchEffVsPhiPosEtaSPDanyHighPt=ComputeMatchEff(hPhiEtaPosTPCselSPDanyHighPt,hPhiEtaPosTPCselHighPt,"hMatchEffVsPhiPosEtaSPDAnyHighPt",kBlue-7,33,"#varphi (rad)");
 
+  TH1D* hMatchEffVsPhiNegEtaLowPtTOFbc=ComputeMatchEff(hPhiEtaNegTPCselITSrefLowPtTOFbc,hPhiEtaNegTPCselLowPtTOFbc,"hMatchEffVsPhiNegEtaLowPtTOFbc",kRed+1,20,"#varphi (rad)");
+  TH1D* hMatchEffVsPhiPosEtaLowPtTOFbc=ComputeMatchEff(hPhiEtaPosTPCselITSrefLowPtTOFbc,hPhiEtaPosTPCselLowPtTOFbc,"hMatchEffVsPhiPosEtaLowPtTOFbc",kRed+1,20,"#varphi (rad)");
+  TH1D* hMatchEffVsPhiNegEtaSPDanyLowPtTOFbc=ComputeMatchEff(hPhiEtaNegTPCselSPDanyLowPtTOFbc,hPhiEtaNegTPCselLowPtTOFbc,"hMatchEffVsPhiNegEtaSPDAnyLowPtTOFbc",kGreen+2,33,"#varphi (rad)");
+  TH1D* hMatchEffVsPhiPosEtaSPDanyLowPtTOFbc=ComputeMatchEff(hPhiEtaPosTPCselSPDanyLowPtTOFbc,hPhiEtaPosTPCselLowPtTOFbc,"hMatchEffVsPhiPosEtaSPDAnyLowPtTOFbc",kGreen+2,33,"#varphi (rad)");
+  TH1D* hMatchEffVsPhiNegEtaHighPtTOFbc=ComputeMatchEff(hPhiEtaNegTPCselITSrefHighPtTOFbc,hPhiEtaNegTPCselHighPtTOFbc,"hMatchEffVsPhiNegEtaHighPtTOFbc",kRed+1,20,"#varphi (rad)");
+  TH1D* hMatchEffVsPhiPosEtaHighPtTOFbc=ComputeMatchEff(hPhiEtaPosTPCselITSrefHighPtTOFbc,hPhiEtaPosTPCselHighPtTOFbc,"hMatchEffVsPhiPosEtaHighPtTOFbc",kRed+1,20,"#varphi (rad)");
+  TH1D* hMatchEffVsPhiNegEtaSPDanyHighPtTOFbc=ComputeMatchEff(hPhiEtaNegTPCselSPDanyHighPtTOFbc,hPhiEtaNegTPCselHighPtTOFbc,"hMatchEffVsPhiNegEtaSPDAnyHighPtTOFbc",kGreen+2,33,"#varphi (rad)");
+  TH1D* hMatchEffVsPhiPosEtaSPDanyHighPtTOFbc=ComputeMatchEff(hPhiEtaPosTPCselSPDanyHighPtTOFbc,hPhiEtaPosTPCselHighPtTOFbc,"hMatchEffVsPhiPosEtaSPDAnyHighPtTOFbc",kGreen+2,33,"#varphi (rad)");
+
+
   hMatchEffVsPtNegEta->SetTitle("#eta<0");
   hMatchEffVsPtPosEta->SetTitle("#eta>0");
   hMatchEffVsPhiNegEta->SetTitle("#eta<0 - all p_{T}");
@@ -278,6 +343,11 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   hMatchEffVsPhiPosEtaLowPt->SetTitle("#eta>0 - 0.4<p_{T}<0.7 GeV/c");
   hMatchEffVsPhiNegEtaHighPt->SetTitle("#eta<0 - 1<p_{T}<10 GeV/c");
   hMatchEffVsPhiPosEtaHighPt->SetTitle("#eta>0 - 1<p_{T}<10 GeV/c");
+
+  hMatchEffVsPtNegEtaTOFbc->SetTitle("#eta<0");
+  hMatchEffVsPtPosEtaTOFbc->SetTitle("#eta>0");
+  hMatchEffVsPtNegEtaSPDanyTOFbc->SetTitle("#eta<0");
+  hMatchEffVsPtPosEtaSPDanyTOFbc->SetTitle("#eta>0");
 
   Int_t theBin350=hMatchEffVsPtNegEta->GetXaxis()->FindBin(0.35);
   Int_t theBin950=hMatchEffVsPtNegEta->GetXaxis()->FindBin(0.95);
@@ -295,7 +365,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   vecForTrend[34]=hMatchEffVsPtNegEtaSPDany->GetBinContent(theBin950);
   vecForTrend[35]=hMatchEffVsPtNegEtaSPDany->GetBinContent(theBin3950);
  
-  TCanvas* cme=new TCanvas("cme","MatchEff Pt+phi",900,900);
+  TCanvas* cme=new TCanvas("cme","MatchEff Pt",900,900);
   cme->Divide(2,2);
   cme->cd(1);
   gPad->SetLeftMargin(0.12);
@@ -320,16 +390,22 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   gPad->SetRightMargin(0.08);
   gPad->SetTickx();
   gPad->SetTicky();
-  hMatchEffVsPhiNegEta->Draw("PE");
-  hMatchEffVsPhiNegEtaSPDany->Draw("samepe");
+  hMatchEffVsPtNegEtaTOFbc->Draw("PE");
+  hMatchEffVsPtNegEtaSPDanyTOFbc->Draw("samepe");
+  TLegend* legt=new TLegend(0.27,0.17,0.89,0.39);
+  legt->AddEntry(hMatchEffVsPtNegEtaTOFbc,"ITSrefit, TOF bc=0","P");
+  legt->AddEntry(hMatchEffVsPtNegEtaSPDanyTOFbc,"SPD any, TOF bc=0","P");
+  legt->Draw();
   cme->cd(4);
   gPad->SetLeftMargin(0.12);
   gPad->SetRightMargin(0.08);
   gPad->SetTickx();
   gPad->SetTicky();
-  hMatchEffVsPhiPosEta->Draw("PE");
-  hMatchEffVsPhiPosEtaSPDany->Draw("samepe");
-  cme->SaveAs("MatchEff.png");
+  hMatchEffVsPtPosEtaTOFbc->Draw("PE");
+  hMatchEffVsPtPosEtaSPDanyTOFbc->Draw("samepe");
+  plotFileName=Form("MatchEff.%s",outputForm.Data());
+  cme->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TCanvas* cme2=new TCanvas("cme2","MatchEff Phi",900,900);
   cme2->Divide(2,2);
@@ -340,7 +416,16 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   gPad->SetTicky();
   hMatchEffVsPhiNegEtaLowPt->Draw("PE");
   hMatchEffVsPhiNegEtaSPDanyLowPt->Draw("samepe");
-  leg->Draw();
+  hMatchEffVsPhiNegEtaLowPtTOFbc->Draw("samepe");
+  hMatchEffVsPhiNegEtaSPDanyLowPtTOFbc->Draw("samepe");
+  TLegend* legt2=new TLegend(0.17,0.74,0.89,0.89);
+  legt2->SetNColumns(2);
+  legt2->SetMargin(0.1);
+  legt2->AddEntry(hMatchEffVsPhiNegEtaLowPt,"ITSrefit","P");
+  legt2->AddEntry(hMatchEffVsPhiNegEtaSPDanyLowPt,"SPD any","P");
+  legt2->AddEntry(hMatchEffVsPhiNegEtaLowPtTOFbc,"ITSrefit, TOF bc=0","P");
+  legt2->AddEntry(hMatchEffVsPhiNegEtaSPDanyLowPtTOFbc,"SPD any, TOF bc=0","P");
+  legt2->Draw();
   cme2->cd(2);
   gPad->SetLeftMargin(0.12);
   gPad->SetRightMargin(0.08);
@@ -348,6 +433,8 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   gPad->SetTicky();
   hMatchEffVsPhiPosEtaLowPt->Draw("PE");
   hMatchEffVsPhiPosEtaSPDanyLowPt->Draw("samepe");
+  hMatchEffVsPhiPosEtaLowPtTOFbc->Draw("samepe");
+  hMatchEffVsPhiPosEtaSPDanyLowPtTOFbc->Draw("samepe");
   cme2->cd(3);
   gPad->SetLeftMargin(0.12);
   gPad->SetRightMargin(0.08);
@@ -355,6 +442,8 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   gPad->SetTicky();
   hMatchEffVsPhiNegEtaHighPt->Draw("PE");
   hMatchEffVsPhiNegEtaSPDanyHighPt->Draw("samepe");
+  hMatchEffVsPhiNegEtaHighPtTOFbc->Draw("samepe");
+  hMatchEffVsPhiNegEtaSPDanyHighPtTOFbc->Draw("samepe");
   cme2->cd(4);
   gPad->SetLeftMargin(0.12);
   gPad->SetRightMargin(0.08);
@@ -362,7 +451,11 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   gPad->SetTicky();
   hMatchEffVsPhiPosEtaHighPt->Draw("PE");
   hMatchEffVsPhiPosEtaSPDanyHighPt->Draw("samepe");
-  cme2->SaveAs("MatchEffVsPhi.png");
+  hMatchEffVsPhiPosEtaHighPtTOFbc->Draw("samepe");
+  hMatchEffVsPhiPosEtaSPDanyHighPtTOFbc->Draw("samepe");
+  plotFileName=Form("MatchEffVsPhi.%s",outputForm.Data());
+  cme2->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TH3F* hEtaPhiPtTPCselITSrefGood=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefGood");
   TH3F* hEtaPhiPtTPCselITSrefFake=(TH3F*)l->FindObject("hEtaPhiPtTPCselITSrefFake");
@@ -402,6 +495,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     c1->Divide(2,2);
     c1->cd(1);
     gPad->SetLogy();
+    hPtAll->SetMinimum(0.5);
     hPtAll->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hPtAll->Draw("histo");
     gPad->Update();
@@ -453,7 +547,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hratiofakeip->GetYaxis()->SetTitle("Fraction of fakes");
     hratiofakeip->GetYaxis()->SetTitleOffset(1.2);
     hratiofakeip->Draw();
-    c1->SaveAs("GoodFakeTracks.png");
+    plotFileName=Form("GoodFakeTracks.%s",outputForm.Data());
+    c1->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
   
   TH3F* hImpParXYPtMulTPCselSPDanyPrim=(TH3F*)l->FindObject("hImpParXYPtMulTPCselSPDanyPrim");
@@ -465,6 +561,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hImpParPrim=hImpParXYPtMulTPCselSPDanyPrim->ProjectionY("hImpParPrim");
   TH1D* hImpParSecDec=hImpParXYPtMulTPCselSPDanySecDec->ProjectionY("hImpParSecDec");
   TH1D* hImpParSecMat=hImpParXYPtMulTPCselSPDanySecMat->ProjectionY("hImpParSecMat");
+    
   TH1D* hImpParAll=(TH1D*)hImpParSecDec->Clone("hImpParAll");
   hImpParAll->Add(hImpParSecMat);
   hImpParAll->Add(hImpParPrim);
@@ -580,88 +677,298 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hratiosecdecip->GetYaxis()->SetTitleOffset(1.2);
     hratiosecdecip->Draw();
     hratiosecmatip->Draw("same");
-    cps1->SaveAs("PrimSecTracks.png");
+    plotFileName=Form("PrimSecTracks.%s",outputForm.Data());
+    cps1->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
   }
   
+  TH2F* hPtResidVsPtTPCselITSrefPrim=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefPrim");
+  TH2F* hPtResidVsPtTPCselITSrefSecDec=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefSecDec");
+  TH2F* hPtResidVsPtTPCselITSrefSecMat=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefSecMat");  
+  TH2F* hOneOverPtResidVsPtTPCselITSrefPrim=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefPrim");
+  TH2F* hOneOverPtResidVsPtTPCselITSrefSecDec=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefSecDec");
+  TH2F* hOneOverPtResidVsPtTPCselITSrefSecMat=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefSecMat");  
+  if(hPtResidVsPtTPCselITSrefPrim){
+    hPtResidVsPtTPCselITSrefPrim->SetStats(0);
+    hPtResidVsPtTPCselITSrefSecDec->SetStats(0);
+    hPtResidVsPtTPCselITSrefSecMat->SetStats(0);
+    hPtResidVsPtTPCselITSrefPrim->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefSecDec->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefSecMat->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselITSrefPrim->GetXaxis()->SetTitleOffset(1.1);
+    hPtResidVsPtTPCselITSrefSecDec->GetXaxis()->SetTitleOffset(1.1);
+    hPtResidVsPtTPCselITSrefSecMat->GetXaxis()->SetTitleOffset(1.1);
+  }
+  if(hOneOverPtResidVsPtTPCselITSrefPrim){
+    hOneOverPtResidVsPtTPCselITSrefPrim->SetStats(0);
+    hOneOverPtResidVsPtTPCselITSrefSecDec->SetStats(0);
+    hOneOverPtResidVsPtTPCselITSrefSecMat->SetStats(0);
+    hOneOverPtResidVsPtTPCselITSrefPrim->GetYaxis()->SetTitleOffset(1.5);
+    hOneOverPtResidVsPtTPCselITSrefSecDec->GetYaxis()->SetTitleOffset(1.5);
+    hOneOverPtResidVsPtTPCselITSrefSecMat->GetYaxis()->SetTitleOffset(1.5);
+    hOneOverPtResidVsPtTPCselITSrefPrim->GetXaxis()->SetTitleOffset(1.1);
+    hOneOverPtResidVsPtTPCselITSrefSecDec->GetXaxis()->SetTitleOffset(1.1);
+    hOneOverPtResidVsPtTPCselITSrefSecMat->GetXaxis()->SetTitleOffset(1.1);
+  }
+  TGraphErrors* gMeanPrim=new TGraphErrors(0);
+  TGraphErrors* gMeanSecDec=new TGraphErrors(0);
+  TGraphErrors* gMeanSecMat=new TGraphErrors(0);
+  TGraphErrors* gRmsPrim=new TGraphErrors(0);
+  TGraphErrors* gRmsSecDec=new TGraphErrors(0);
+  TGraphErrors* gRmsSecMat=new TGraphErrors(0);
+  TGraphErrors* gDum=new TGraphErrors(0);
+  TGraphErrors* gRelPrim=new TGraphErrors(0);
+  TGraphErrors* gRelSecDec=new TGraphErrors(0);
+  TGraphErrors* gRelSecMat=new TGraphErrors(0);
+  gMeanPrim->SetName("gMeanPrim");
+  gMeanSecDec->SetName("gMeanSecDec");
+  gMeanSecMat->SetName("gMeanSecMat");
+  gMeanPrim->SetTitle("");
+  gMeanSecDec->SetTitle("");
+  gMeanSecMat->SetTitle("");
+  gRmsPrim->SetName("gRmsPrim");
+  gRmsSecDec->SetName("gRmsSecDec");
+  gRmsSecMat->SetName("gRmsSecMat");
+  gRmsPrim->SetTitle("");
+  gRmsSecDec->SetTitle("");
+  gRmsSecMat->SetTitle("");
+  gRelPrim->SetName("gRelPrim");
+  gRelSecDec->SetName("gRelSecDec");
+  gRelSecMat->SetName("gRelSecMat");
+  gRelPrim->SetTitle("");
+  gRelSecDec->SetTitle("");
+  gRelSecMat->SetTitle("");
+
+  Bool_t okRes=kFALSE;
+  Bool_t okOneOverRes=kFALSE;
+  if(hPtResidVsPtTPCselITSrefPrim && hPtResidVsPtTPCselITSrefPrim->Integral()>0){
+    FillMeanAndRms(hPtResidVsPtTPCselITSrefPrim,gMeanPrim,gRmsPrim);
+    FillMeanAndRms(hPtResidVsPtTPCselITSrefSecDec,gMeanSecDec,gRmsSecDec);
+    FillMeanAndRms(hPtResidVsPtTPCselITSrefSecMat,gMeanSecMat,gRmsSecMat);
+    okRes=kTRUE;
+  }
+  if(hOneOverPtResidVsPtTPCselITSrefPrim && hOneOverPtResidVsPtTPCselITSrefPrim->Integral()>0){
+    FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefPrim,gDum,gRelPrim);
+    FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefSecDec,gDum,gRelSecDec);
+    FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefSecMat,gDum,gRelSecMat);
+    okOneOverRes=kTRUE;
+  }
+  if(okRes){
+    TCanvas* cps2=new TCanvas("cps2","Pt resol - prim/sec",1500,900);
+    cps2->Divide(3,2);
+    cps2->cd(1);
+    gPad->SetLogz();
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefPrim->GetXaxis()->SetRangeUser(0.,20.);
+    hPtResidVsPtTPCselITSrefPrim->Draw("colz");
+    cps2->cd(2);
+    gPad->SetLogz();
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefSecDec->GetXaxis()->SetRangeUser(0.,20.);
+    hPtResidVsPtTPCselITSrefSecDec->Draw("colz");
+    cps2->cd(3);
+    gPad->SetLogz();
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefSecMat->GetXaxis()->SetRangeUser(0.,20.);
+    hPtResidVsPtTPCselITSrefSecMat->Draw("colz");
+    cps2->cd(4);
+    gPad->SetLeftMargin(0.13);
+    gPad->SetRightMargin(0.07);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    gMeanPrim->SetMarkerStyle(21);
+    gMeanPrim->SetMarkerColor(1);
+    gMeanPrim->SetLineColor(1);
+    gMeanSecDec->SetMarkerStyle(24);
+    gMeanSecDec->SetMarkerColor(kRed+1);
+    gMeanSecDec->SetLineColor(kRed+1);
+    gMeanSecMat->SetMarkerStyle(28);
+    gMeanSecMat->SetMarkerColor(kBlue+1);
+    gMeanSecMat->SetLineColor(kBlue+1);
+    gMeanPrim->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gMeanSecDec->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gMeanSecMat->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gMeanPrim->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
+    gMeanSecDec->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
+    gMeanSecMat->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
+    gMeanPrim->GetYaxis()->SetTitleOffset(1.6);
+    gMeanPrim->GetXaxis()->SetTitleOffset(1.2);
+    gMeanPrim->SetMinimum(-0.04);
+    gMeanPrim->SetMaximum(0.04);
+    gMeanPrim->GetXaxis()->SetLimits(0.,20.);
+    gMeanPrim->Draw("AP");
+    gMeanSecMat->Draw("psame");
+    gMeanSecDec->Draw("psame");
+    cps2->cd(5);
+    gPad->SetLeftMargin(0.13);
+    gPad->SetRightMargin(0.07);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    gRmsPrim->SetMarkerStyle(21);
+    gRmsPrim->SetMarkerColor(1);
+    gRmsPrim->SetLineColor(1);
+    gRmsSecDec->SetMarkerStyle(24);
+    gRmsSecDec->SetMarkerColor(kRed+1);
+    gRmsSecDec->SetLineColor(kRed+1);
+    gRmsSecMat->SetMarkerStyle(28);
+    gRmsSecMat->SetMarkerColor(kBlue+1);
+    gRmsSecMat->SetLineColor(kBlue+1);
+    gRmsPrim->SetMinimum(0.);
+    gRmsPrim->SetMaximum(0.4);
+    gRmsPrim->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gRmsSecDec->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gRmsSecMat->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+    gRmsPrim->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
+    gRmsSecDec->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
+    gRmsSecMat->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
+    gRmsPrim->GetYaxis()->SetTitleOffset(1.6);
+    gRmsPrim->GetXaxis()->SetTitleOffset(1.2);
+    gRmsPrim->GetXaxis()->SetLimits(0.,20.);
+    gRmsPrim->Draw("AP");
+    gRmsSecMat->Draw("psame");
+    gRmsSecDec->Draw("psame");
+    TLegend* legps=new TLegend(0.2,0.7,0.4,0.89);
+    legps->AddEntry(gRmsPrim,"Primary","P");
+    legps->AddEntry(gRmsSecDec,"Sec from decay","P");
+    legps->AddEntry(gRmsSecMat,"Sec from mat","P");
+    legps->Draw();
+    cps2->cd(6);
+    if(okOneOverRes){
+      gPad->SetLeftMargin(0.13);
+      gPad->SetRightMargin(0.07);
+      gPad->SetTickx();
+      gPad->SetTicky();
+      gRelPrim->SetMarkerStyle(21);
+      gRelPrim->SetMarkerColor(1);
+      gRelPrim->SetLineColor(1);
+      gRelSecDec->SetMarkerStyle(24);
+      gRelSecDec->SetMarkerColor(kRed+1);
+      gRelSecDec->SetLineColor(kRed+1);
+      gRelSecMat->SetMarkerStyle(28);
+      gRelSecMat->SetMarkerColor(kBlue+1);
+      gRelSecMat->SetLineColor(kBlue+1);
+      gRelPrim->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+      gRelSecDec->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+      gRelSecMat->GetXaxis()->SetTitle("p_{T,gen} (GeV/c)");
+      gRelPrim->GetYaxis()->SetTitle("#sigma(p_{T} (1/p_{T,reco}-1/p_{T,gen}))");
+      gRelSecDec->GetYaxis()->SetTitle("#sigma(p_{T} (1/p_{T,reco}-1/p_{T,gen}))");
+      gRelPrim->GetYaxis()->SetTitle("#sigma(p_{T} (1/p_{T,reco}-1/p_{T,gen}))");
+      gRelPrim->GetYaxis()->SetTitleOffset(1.6);
+      gRelPrim->GetXaxis()->SetTitleOffset(1.2);
+      gRelPrim->GetXaxis()->SetLimits(0.,20.);
+      gRelPrim->SetMinimum(0.);
+      gRelPrim->SetMaximum(0.04);
+      gRelPrim->Draw("AP");
+      gRelSecMat->Draw("psame");
+      gRelSecDec->Draw("psame");
+    }
+    plotFileName=Form("PtResidualsPrimSec.%s",outputForm.Data());
+    cps2->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+  }
+
   TH2F* hPtResidVsPtTPCselITSrefPion=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefpi");
   TH2F* hPtResidVsPtTPCselITSrefKaon=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefK");
   TH2F* hPtResidVsPtTPCselITSrefProton=(TH2F*)l->FindObject("hPtResidVsPtTPCselITSrefp");  
   TH2F* hOneOverPtResidVsPtTPCselITSrefPion=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefpi");
   TH2F* hOneOverPtResidVsPtTPCselITSrefKaon=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefK");
   TH2F* hOneOverPtResidVsPtTPCselITSrefProton=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselITSrefp");  
+  TH2F* hPtResidVsPtTPCselPion=(TH2F*)l->FindObject("hPtResidVsPtTPCselpi");
+  TH2F* hOneOverPtResidVsPtTPCselPion=(TH2F*)l->FindObject("hOneOverPtResidVsPtTPCselpi");
   if(hPtResidVsPtTPCselITSrefPion){
     hPtResidVsPtTPCselITSrefPion->SetStats(0);
     hPtResidVsPtTPCselITSrefKaon->SetStats(0);
     hPtResidVsPtTPCselITSrefProton->SetStats(0);
+    hPtResidVsPtTPCselPion->SetStats(0);
     hPtResidVsPtTPCselITSrefPion->GetYaxis()->SetTitleOffset(1.5);
     hPtResidVsPtTPCselITSrefKaon->GetYaxis()->SetTitleOffset(1.5);
     hPtResidVsPtTPCselITSrefProton->GetYaxis()->SetTitleOffset(1.5);
+    hPtResidVsPtTPCselPion->GetYaxis()->SetTitleOffset(1.5);
     hPtResidVsPtTPCselITSrefPion->GetXaxis()->SetTitleOffset(1.1);
     hPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetTitleOffset(1.1);
     hPtResidVsPtTPCselITSrefProton->GetXaxis()->SetTitleOffset(1.1);
+    hPtResidVsPtTPCselPion->GetXaxis()->SetTitleOffset(1.1);
   }
   if(hOneOverPtResidVsPtTPCselITSrefPion){
     hOneOverPtResidVsPtTPCselITSrefPion->SetStats(0);
     hOneOverPtResidVsPtTPCselITSrefKaon->SetStats(0);
     hOneOverPtResidVsPtTPCselITSrefProton->SetStats(0);
+    hOneOverPtResidVsPtTPCselPion->SetStats(0);
     hOneOverPtResidVsPtTPCselITSrefPion->GetYaxis()->SetTitleOffset(1.5);
     hOneOverPtResidVsPtTPCselITSrefKaon->GetYaxis()->SetTitleOffset(1.5);
     hOneOverPtResidVsPtTPCselITSrefProton->GetYaxis()->SetTitleOffset(1.5);
+    hOneOverPtResidVsPtTPCselPion->GetYaxis()->SetTitleOffset(1.5);
     hOneOverPtResidVsPtTPCselITSrefPion->GetXaxis()->SetTitleOffset(1.1);
     hOneOverPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetTitleOffset(1.1);
     hOneOverPtResidVsPtTPCselITSrefProton->GetXaxis()->SetTitleOffset(1.1);
+    hOneOverPtResidVsPtTPCselPion->GetXaxis()->SetTitleOffset(1.1);
   }
 
   TGraphErrors* gMeanPi=new TGraphErrors(0);
   TGraphErrors* gMeanK=new TGraphErrors(0);
   TGraphErrors* gMeanProt=new TGraphErrors(0);
+  TGraphErrors* gMeanPiTPC=new TGraphErrors(0);
   TGraphErrors* gRmsPi=new TGraphErrors(0);
   TGraphErrors* gRmsK=new TGraphErrors(0);
   TGraphErrors* gRmsProt=new TGraphErrors(0);
-  TGraphErrors* gDum=new TGraphErrors(0);
+  TGraphErrors* gRmsPiTPC=new TGraphErrors(0);
   TGraphErrors* gRelPi=new TGraphErrors(0);
   TGraphErrors* gRelK=new TGraphErrors(0);
   TGraphErrors* gRelProt=new TGraphErrors(0);
-  gMeanPi->SetName("gMeanProt");
-  gMeanK->SetName("gMeanProt");
+  TGraphErrors* gRelPiTPC=new TGraphErrors(0);
+  gMeanPi->SetName("gMeanPi");
+  gMeanK->SetName("gMeanK");
   gMeanProt->SetName("gMeanProt");
+  gMeanPiTPC->SetName("gMeanPiTPC");
   gMeanPi->SetTitle("");
   gMeanK->SetTitle("");
   gMeanProt->SetTitle("");
-  gRmsPi->SetName("gRmsProt");
-  gRmsK->SetName("gRmsProt");
+  gMeanPiTPC->SetTitle("");
+  gRmsPi->SetName("gRmsPi");
+  gRmsK->SetName("gRmsK");
   gRmsProt->SetName("gRmsProt");
+  gRmsPiTPC->SetName("gRmsPiTPC");
   gRmsPi->SetTitle("");
   gRmsK->SetTitle("");
   gRmsProt->SetTitle("");
-  gRelPi->SetName("gRelProt");
-  gRelK->SetName("gRelProt");
+  gRmsPiTPC->SetTitle("");
+  gRelPi->SetName("gRelPi");
+  gRelK->SetName("gRelK");
   gRelProt->SetName("gRelProt");
+  gRelPiTPC->SetName("gRelPiTPC");
   gRelPi->SetTitle("");
   gRelK->SetTitle("");
   gRelProt->SetTitle("");
+  gRelPiTPC->SetTitle("");
 
-  Bool_t okRes=kFALSE;
-  Bool_t okOneOverRes=kFALSE;
+  okRes=kFALSE;
+  okOneOverRes=kFALSE;
   if(hPtResidVsPtTPCselITSrefPion && hPtResidVsPtTPCselITSrefPion->Integral()>0){
     FillMeanAndRms(hPtResidVsPtTPCselITSrefPion,gMeanPi,gRmsPi);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefKaon,gMeanK,gRmsK);
     FillMeanAndRms(hPtResidVsPtTPCselITSrefProton,gMeanProt,gRmsProt);
+    FillMeanAndRms(hPtResidVsPtTPCselPion,gMeanPiTPC,gRmsPiTPC);
     okRes=kTRUE;
   }
   if(hOneOverPtResidVsPtTPCselITSrefPion && hOneOverPtResidVsPtTPCselITSrefPion->Integral()>0){
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefPion,gDum,gRelPi);
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefKaon,gDum,gRelK);
     FillMeanAndRms(hOneOverPtResidVsPtTPCselITSrefProton,gDum,gRelProt);
+    FillMeanAndRms(hOneOverPtResidVsPtTPCselPion,gDum,gRelPiTPC);
     okOneOverRes=kTRUE;
   }
   if(okRes){
-    TCanvas* c2=new TCanvas("c2","Pt resol",1500,900);
+
+    TCanvas* c2=new TCanvas("c2","Pt resol - species",1500,900);
     c2->Divide(3,2);
     c2->cd(1);
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefPion->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefPion->Draw("colz");
     // TLatex* tpi=new TLatex(0.45,0.93,"Pions");
     // tpi->SetNDC();
@@ -670,6 +977,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefKaon->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefKaon->Draw("colz");
     // TLatex* tk=new TLatex(0.45,0.93,"Kaons");
     // tk->SetNDC();
@@ -678,6 +986,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gPad->SetLogz();
     gPad->SetLeftMargin(0.12);
     gPad->SetRightMargin(0.11);
+    hPtResidVsPtTPCselITSrefProton->GetXaxis()->SetRangeUser(0.,20.);
     hPtResidVsPtTPCselITSrefProton->Draw("colz");
     // TLatex* tpr=new TLatex(0.43,0.93,"Protons");
     // tpr->SetNDC();
@@ -704,6 +1013,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gMeanProt->GetYaxis()->SetTitle("<p_{T,reco}-p_{T,gen}> (GeV/c)");
     gMeanProt->GetYaxis()->SetTitleOffset(1.6);
     gMeanProt->GetXaxis()->SetTitleOffset(1.2);
+    gMeanProt->SetMinimum(-0.04);
+    gMeanProt->SetMaximum(0.04);
+    gMeanProt->GetXaxis()->SetLimits(0.,20.);
     gMeanProt->Draw("AP");
     gMeanPi->Draw("psame");
     gMeanK->Draw("psame");
@@ -729,7 +1041,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     gRmsProt->GetYaxis()->SetTitle("#sigma(p_{T,reco}-p_{T,gen}) (GeV/c)");
     gRmsProt->GetYaxis()->SetTitleOffset(1.6);
     gRmsProt->GetXaxis()->SetTitleOffset(1.2);
-    gRmsProt->Draw("AP");
+    gRmsProt->SetMinimum(0.);
+    gRmsProt->SetMaximum(0.4);
+    gRmsProt->GetXaxis()->SetLimits(0.,20.);
     gRmsProt->Draw("AP");
     gRmsPi->Draw("psame");
     gRmsK->Draw("psame");
@@ -762,13 +1076,96 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       gRelPi->GetYaxis()->SetTitleOffset(1.6);
       gRelPi->GetXaxis()->SetTitleOffset(1.2);
       gRelPi->SetMinimum(0.);
-      gRelPi->SetMaximum(0.05);
+      gRelPi->SetMaximum(0.04);
+      gRelPi->GetXaxis()->SetLimits(0.,20.);
       gRelPi->Draw("AP");
       gRelProt->Draw("psame");
       gRelK->Draw("psame");
     }
-    c2->SaveAs("PtResisuals.png");
+    plotFileName=Form("PtResiduals.%s",outputForm.Data());
+    c2->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
+    TCanvas* c2p=new TCanvas("c2p","Pt resol - pion",1500,450);
+    c2p->Divide(3,1);
+    c2p->cd(1);
+    gPad->SetLeftMargin(0.13);
+    gPad->SetRightMargin(0.07);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    gMeanPiTPC->SetMarkerStyle(26);
+    gMeanPiTPC->SetMarkerColor(kMagenta+1);
+    gMeanPiTPC->SetLineColor(kMagenta+1);
+    gMeanPi->GetYaxis()->SetTitleOffset(1.6);
+    gMeanPi->GetXaxis()->SetTitleOffset(1.2);
+    gMeanPi->SetMinimum(-0.04);
+    gMeanPi->SetMaximum(0.04);
+    gMeanPi->Draw("AP");
+    gMeanPiTPC->Draw("psame");
+    c2p->cd(2);
+    gPad->SetLeftMargin(0.13);
+    gPad->SetRightMargin(0.07);
+    gPad->SetTickx();
+    gPad->SetTicky();
+    gRmsPiTPC->SetMarkerStyle(26);
+    gRmsPiTPC->SetMarkerColor(kMagenta+1);
+    gRmsPiTPC->SetLineColor(kMagenta+1);
+    gRmsPi->SetMinimum(-0.04);
+    gRmsPi->SetMaximum(0.4);
+    gRmsPi->GetYaxis()->SetTitleOffset(1.6);
+    gRmsPi->GetXaxis()->SetTitleOffset(1.2);
+    gRmsPi->GetXaxis()->SetLimits(0.,20.);
+    gRmsPi->Draw("AP");
+    gRmsPiTPC->Draw("psame");
+    TLegend* legpit=new TLegend(0.2,0.7,0.5,0.89);
+    legpit->AddEntry(gRmsPi,"#pi, TPC+ITS","P");
+    legpit->AddEntry(gRmsPiTPC,"#pi, TPC","P");
+    legpit->Draw();
+    c2p->cd(3);
+    if(okOneOverRes){
+      gPad->SetLeftMargin(0.13);
+      gPad->SetRightMargin(0.07);
+      gPad->SetTickx();
+      gPad->SetTicky();
+      gRelPiTPC->SetMarkerStyle(26);
+      gRelPiTPC->SetMarkerColor(kMagenta+1);
+      gRelPiTPC->SetLineColor(kMagenta+1);
+      gRelPi->GetYaxis()->SetTitleOffset(1.6);
+      gRelPi->GetXaxis()->SetTitleOffset(1.2);
+      gRelPi->SetMinimum(0.);
+      gRelPi->SetMaximum(0.04);
+      gRelPi->GetXaxis()->SetLimits(0.,20.);
+      gRelPi->Draw("AP");
+      gRelPiTPC->Draw("psame");
+    }
+    plotFileName=Form("PtResidualsPionsTPCITS.%s",outputForm.Data());
+    c2p->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
+    TFile* outres=new TFile("PtResol.root","recreate");
+    gMeanPrim->Write();
+    gMeanSecDec->Write();
+    gMeanSecMat->Write();
+    gMeanPi->Write();
+    gMeanK->Write();
+    gMeanProt->Write();
+    gMeanPiTPC->Write();
+    gRmsPrim->Write();
+    gRmsSecDec->Write();
+    gRmsSecMat->Write();
+    gRmsPi->Write();
+    gRmsK->Write();
+    gRmsProt->Write();
+    gRmsPiTPC->Write();
+    gRelPrim->Write();
+    gRelSecDec->Write();
+    gRelSecMat->Write();
+    gRelPi->Write();
+    gRelK->Write();
+    gRelProt->Write();
+    gRelPiTPC->Write();
   }
+
 
   TH2F* hFilterBits=(TH2F*)l->FindObject("hFilterBits");
   hFilterBits->SetStats(0);
@@ -779,6 +1176,10 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       vecForTrend[2*jbit+1]=cntj/cnt0;
     }
   }
+
+  TDirectory* curDir=gDirectory;
+  TFile* outfb=new TFile("FiltBitsHistos.root","recreate");
+  curDir->cd();
 
   TCanvas* cip=new TCanvas("cip","FiltBits",1100,900);
   cip->Divide(2,2);
@@ -838,8 +1239,14 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
       hpt1->Draw("same");
     }
     leg2->Draw();
+    outfb->cd();
+    hphi->Write();
+    hpt1->Write();
+    curDir->cd();
   }
-  cip->SaveAs("FilterBits.png");
+  plotFileName=Form("FilterBits.%s",outputForm.Data());
+  cip->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
 
   for(Int_t jb=0; jb<12; jb++){
@@ -851,41 +1258,76 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
     hdist1->SetStats(0);
     hdist1->SetTitle(Form("Filter bit %d",jb ));
     hdist1->Draw("colz");
+    TProfile* hpr1=hdist1->ProfileX(Form("%s-Profile",hdist1->GetName()));
+    hpr1->SetMarkerStyle(21);
+    hpr1->SetMarkerSize(0.8);
+    hpr1->Draw("same");
     ccc->cd(2);
     gPad->SetLogz();
     TH2F* hdist2=(TH2F*)l->FindObject(Form("hSPDcluPtFiltBit%d",jb));
     hdist2->SetTitle(Form("Filter bit %d",jb ));
     hdist2->SetStats(0);
     hdist2->Draw("colz");
+    TProfile* hpr2=hdist2->ProfileX(Form("%s-Profile",hdist2->GetName()));
+    hpr2->SetMarkerStyle(21);
+    hpr2->SetMarkerSize(0.8);
+    hpr2->Draw("same");
     ccc->cd(3);
     gPad->SetLogz();
     TH2F* hdist3=(TH2F*)l->FindObject(Form("hTPCcluPtFiltBit%d",jb));
     hdist3->SetTitle(Form("Filter bit %d",jb ));
     hdist3->SetStats(0);
     hdist3->Draw("colz");
+    TProfile* hpr3=hdist3->ProfileX(Form("%s-Profile",hdist3->GetName()));
+    hpr3->SetMarkerStyle(21);
+    hpr3->SetMarkerSize(0.8);
+    hpr3->Draw("same");
     ccc->cd(4);
     gPad->SetLogz();
     TH2F* hdist4=(TH2F*)l->FindObject(Form("hTPCcrrowsPtFiltBit%d",jb));
     hdist4->SetTitle(Form("Filter bit %d",jb ));
     hdist4->SetStats(0);
     hdist4->Draw("colz");
+    TProfile* hpr4=hdist4->ProfileX(Form("%s-Profile",hdist4->GetName()));
+    hpr4->SetMarkerStyle(21);
+    hpr4->SetMarkerSize(0.8);
+    hpr4->Draw("same");
     ccc->cd(5);
     gPad->SetLogz();
     TH2F* hdist5=(TH2F*)l->FindObject(Form("hTPCCrowOverFindPtFiltBit%d",jb));
     hdist5->SetTitle(Form("Filter bit %d",jb ));
-    hdist5->GetYaxis()->SetTitle("Crossed rows /findable clusters");
     hdist5->SetStats(0);
     hdist5->Draw("colz");
+    TProfile* hpr5=hdist5->ProfileX(Form("%s-Profile",hdist5->GetName()));
+    hpr5->SetMarkerStyle(21);
+    hpr5->SetMarkerSize(0.8);
+    hpr5->Draw("same");
     ccc->cd(6);
     gPad->SetLogz();
     TH2F* hdist6=(TH2F*)l->FindObject(Form("hTPCChi2ndfPtFiltBit%d",jb));
+    if(!hdist6) hdist6=(TH2F*)l->FindObject(Form("hTPCChi2clusPtFiltBit%d",jb));
     hdist6->SetTitle(Form("Filter bit %d",jb ));
     hdist6->SetStats(0);
     hdist6->Draw("colz");
-    gPad->SetLogz();
-    ccc->SaveAs(Form("VarDistFiltBit%d.png",jb));
-  }
+    TProfile* hpr6=hdist6->ProfileX(Form("%s-Profile",hdist6->GetName()));
+    hpr6->SetMarkerStyle(21);
+    hpr6->SetMarkerSize(0.8);
+    hpr6->Draw("same");
+    outfb->cd();
+    hpr1->Write();
+    hpr2->Write();
+    hpr3->Write();
+    hpr4->Write();
+    hpr5->Write();
+    hpr6->Write();
+    curDir->cd();
 
+    plotFileName=Form("VarDistFiltBit%d.%s",jb,outputForm.Data());
+    ccc->SaveAs(plotFileName.Data());
+    if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+  }
+  outfb->Close();
+  
   TH3F*	hInvMassK0s3d=(TH3F*)l->FindObject("hInvMassK0s");
   TH3F*	hInvMassLambda3d=(TH3F*)l->FindObject("hInvMassLambda");
   TH3F*	hInvMassAntiLambda3d=(TH3F*)l->FindObject("hInvMassAntiLambda");
@@ -917,7 +1359,6 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   TH1D* hInvMassLambdaR4=hInvMassLambda3d->ProjectionX("hInvMassLambda1dR4",0,-1,z5,z6);
   TH1D* hInvMassAntiLambdaR4=hInvMassAntiLambda3d->ProjectionX("hInvMassAntiLambda1dR4",0,-1,z5,z6);
 
-
   // K0s histos vs. pt
   Int_t p1=hInvMassK0s3d->GetYaxis()->FindBin(0.499);
   TH1D* hInvMassK0sP1=hInvMassK0s3d->ProjectionX("hInvMassK0sP1",1,p1,0,-1);
@@ -928,7 +1369,7 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   Int_t p4=hInvMassK0s3d->GetYaxis()->FindBin(5.01);
   Int_t p5=hInvMassK0s3d->GetYaxis()->FindBin(9.99);
   TH1D* hInvMassK0sP4=hInvMassK0s3d->ProjectionX("hInvMassK0sP4",p4,p5,0,-1);
-  
+
 
 
   TF1* fmassk0=new TF1("fmassk0","[0]+[1]*x+[2]/sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-0.5*(x-[3])*(x-[3])/[4]/[4])",0.46,0.54);
@@ -950,7 +1391,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   cv0->cd(3);
   hInvMassAntiLambda->Draw();
   InitFuncAndFit(hInvMassAntiLambda,fmassL,kFALSE);
-  cv0->SaveAs("MassSpectraV0-integrated.png");
+  plotFileName=Form("MassSpectraV0-integrated.%s",outputForm.Data());
+  cv0->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TCanvas* clam=new TCanvas("clam","Lambda vs R",1400,900);
   clam->Divide(2,2);
@@ -986,7 +1429,9 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   tr4->SetTextFont(43);
   tr4->SetTextSize(26);
   tr4->Draw();
-  clam->SaveAs("Lambda-MassSpectra-VsR.png");
+  plotFileName=Form("Lambda-MassSpectra-VsR.%s",outputForm.Data());
+  clam->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
 
   TCanvas* ck0=new TCanvas("ck0","K0s vs. pt",1400,900);
   ck0->Divide(2,2);
@@ -1022,16 +1467,24 @@ void PlotAODtrackQA(TString filename="AnalysisResults.root", TString suffix="QA"
   tp4->SetTextFont(43);
   tp4->SetTextSize(26);
   tp4->Draw();
-  ck0->SaveAs("K0s-MassSpectra-VsPt.png");
+  plotFileName=Form("K0s-MassSpectra-VsPt.%s",outputForm.Data());
+  ck0->SaveAs(plotFileName.Data());
+  if(outputForm=="pdf") pdfFileNames+=Form("%s ",plotFileName.Data());
+
 
   trtree->Fill();
 
   if(runNumber>0){
-    TFile* fouttree=new TFile("trending.root","recreate");
+    TFile* foutfile=new TFile("trendingAODtracks.root","recreate");
     trtree->Write();
-    fouttree->Close();
-    delete fouttree;
+    TDirectory* outdir=foutfile->mkdir(df->GetName());
+    outdir->cd();
+    l->Write(l->GetName(),1);
+    foutfile->Close();
+    delete foutfile;
   }
+
+  if(outputForm=="pdf") gSystem->Exec(Form("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=PlotsAODTrackQA.pdf %s",pdfFileNames.Data()));
 
 }
 
@@ -1116,6 +1569,8 @@ void DrawDistrib(TH1D* h1, TH1D* h2, TH1D* h3, Bool_t showStat){
 }
 
 TH1D* ComputeMatchEff(TH1D* hnumer, TH1D* hdenom, TString name, Int_t iCol, Int_t iMarker, TString xtitle){
+  if(hnumer->GetSumw2N()==0) hnumer->Sumw2();
+  if(hdenom->GetSumw2N()==0) hdenom->Sumw2();
   TH1D* hratio=(TH1D*)hnumer->Clone(name.Data());
   hratio->Divide(hnumer,hdenom,1.,1.,"B");
   hratio->SetLineColor(iCol);
@@ -1153,12 +1608,30 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
   Int_t jptr=0;
   for(Int_t j=1; j<=h2d->GetNbinsX(); j++){
     Double_t pt=h2d->GetXaxis()->GetBinCenter(j);
-    Double_t ept=0;
+    Double_t ept=h2d->GetXaxis()->GetBinWidth(j)/2.;
     Int_t ji=j;
     Int_t jf=j;
-    if(pt>10){
+    if(pt>5 && pt<=10){
       ji=j;
-      jf=j+5;
+      jf=j+1;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+    }else if(pt>10 && pt<=16){
+      ji=j;
+      jf=j+3;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+    }else if(pt>16 && pt<=20){
+      ji=j;
+      jf=j+7;
+      j=jf;
+      pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
+      ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
+     }else if(pt>20){
+      ji=j;
+      jf=j+19;
       j=jf;
       pt=0.5*(h2d->GetXaxis()->GetBinLowEdge(ji)+h2d->GetXaxis()->GetBinUpEdge(jf));
       ept=pt-h2d->GetXaxis()->GetBinLowEdge(ji);
@@ -1167,14 +1640,14 @@ void FillMeanAndRms(TH2F* h2d, TGraphErrors* gMean, TGraphErrors* gRms){
     if(htmp->Integral()>40){
       htmp->Fit("gaus","Q0");
       TF1* fg=(TF1*)htmp->GetListOfFunctions()->FindObject("gaus");      
-      Double_t m=htmp->GetMean();
-      Double_t em=htmp->GetMeanError();
-      gMean->SetPoint(jpt,pt,m);
-      gMean->SetPointError(jpt,ept,em);
-      ++jpt;
+      Double_t m=fg->GetParameter(1);//htmp->GetMean();
+      Double_t em=fg->GetParError(1);//htmp->GetMeanError();
       Double_t r=fg->GetParameter(2);//htmp->GetRMS();
       Double_t er=fg->GetParError(2);//=htmp->GetRMSError();
       if(er/r<0.35){
+	gMean->SetPoint(jpt,pt,m);
+	gMean->SetPointError(jpt,ept,em);
+	++jpt;
 	gRms->SetPoint(jptr,pt,r);
 	gRms->SetPointError(jptr,ept,er);
 	++jptr;

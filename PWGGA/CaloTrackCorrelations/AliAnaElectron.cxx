@@ -1099,7 +1099,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
   AliDebug(1,Form("Input %s cluster entries %d", GetCalorimeterString().Data(), nCaloClusters));
   
   //----------------------------------------------------
-  // Fill AOD with PHOS/EMCAL AliAODPWG4Particle objects
+  // Fill AOD with PHOS/EMCAL AliCaloTrackParticle objects
   //----------------------------------------------------
   // Loop on clusters
   for(Int_t icalo = 0; icalo < nCaloClusters; icalo++)
@@ -1203,7 +1203,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     Int_t tag = -1 ;
     if(IsDataMC())
     {
-      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC());
+      tag = GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(), calo->GetNLabels(), GetMC(),
+                                              GetReader()->GetNameOfMCEventHederGeneratorToAccept());
       
       AliDebug(1,Form("Origin of candidate, bit map %d",tag));
          
@@ -1329,7 +1330,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //Add AOD with electron/hadron object to aod branch
     if ( pid == fAODParticle || fAODParticle == 0 ) 
     {
-      AliAODPWG4Particle aodpart = AliAODPWG4Particle(fMomentum);
+      AliCaloTrackParticle aodpart = AliCaloTrackParticle(fMomentum);
       
       //...............................................
       //Set the indeces of the original caloclusters (MC, ID), and calorimeter
@@ -1400,7 +1401,7 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    AliAODPWG4Particle* ph =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
+    AliCaloTrackParticle* ph =  (AliCaloTrackParticle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = ph->GetIdentifiedParticleType();
 
     Int_t pidIndex = 0;// Electron

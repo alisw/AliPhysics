@@ -54,7 +54,7 @@ public:
   void SetCorrectionMode(Bool_t mode ) {fCorrMode = mode;};
 
   void SetDoBkgRejection(Bool_t dorej) {fDoBkgRej = dorej;};
-  
+
   void SetDoRandomCone(Bool_t dorndm) {fDoRndmCone = dorndm;};
 
   void SetDoFillSecVtxQA(Bool_t doqa ) {fDoQAVtx  = doqa;};
@@ -94,17 +94,17 @@ public:
     fCutsHFjets = (AliRDHFJetsCuts*)cuts->Clone("fCutsHFjets");
   }
 
-  void SetJetContName(char* name)        { fJetContName = name; }
+  void SetJetContName(const char* name)        { fJetContName = name; }
 
-  void SetTrkContName(char* name)        { fTrkContName = name; }
+  void SetTrkContName(const char* name)        { fTrkContName = name; }
 
-  void SetRhoTaskName(char* name)        { fRhoTaskName = name; }
+  void SetRhoTaskName(const char* name)        { fRhoTaskName = name; }
 
-  void SetMCJetContName(char* name)      { fMCJetContName = name; }
+  void SetMCJetContName(const char* name)      { fMCJetContName = name; }
 
-  void SetMCTrkContName(char* name)      { fMCTrkContName = name; }
+  void SetMCTrkContName(const char* name)      { fMCTrkContName = name; }
 
-  void SetMCRhoTaskName(char* name)      { fMCRhoTaskName = name; }
+  void SetMCRhoTaskName(const char* name)      { fMCRhoTaskName = name; }
 
   void SetAnalysisUtils(AliAnalysisUtils* utils) { fAnalysisUtils = utils; }
 
@@ -204,7 +204,7 @@ private:
   AliHFJetsContainerVertex*   fhQaVtx;           //!<! vertices properties
 
   TH1F*                       fhEntries;         //!<!
-  TH1F*						  fhZNApercentQa;	 //!<! QA histo for ZNA percentile	
+  TH1F*						  fhZNApercentQa;	 //!<! QA histo for ZNA percentile
   TH1F*                       fhEvtRej;          //!<! Rejection criteria.
   TH1F*                       fhHFjetQa;         //!<! Various QA check on Jet.
   TH1F*                       fhRhoQa;
@@ -212,7 +212,7 @@ private:
   TH1F* 					  fhDeltaPt;		 // delta pt distribution
 
   THnSparse*                  fhnDetRespMtx;     //!<! THnSparse to fill response matrix
-  THn*                        fhnGenerated;      //!<! THn to fill MC generated histo 
+  THn*                        fhnGenerated;      //!<! THn to fill MC generated histo
 
   TProfile*                   fhXsec;            //!<! Cross section in PYTHIA.
   TH1F*                       fhTrials;          //!<! Number of event trials in PYTHIA.

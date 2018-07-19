@@ -19,10 +19,10 @@ class FitModule {
 public:
   FitModule(RooRealVar *xm)
   : mX(xm)
-  , mBkgCounts(new RooRealVar("mBkgCounts","Bkg counts",1000.,0.,1.e8))
-  , mSigCounts(new RooRealVar("mSigCounts","Sig counts",1000.,0.,1.e8))
-  , mMu(new RooRealVar("mMu","Mu",-0.1,0.1))
-  , mSigma(new RooRealVar("mSigma","Sigma",0.02,.61))
+  , mBkgCounts(new RooRealVar("N_{bkg}","Bkg counts",1000.,0.,1.e8))
+  , mSigCounts(new RooRealVar("N_{sig}","Sig counts",1000.,0.,1.e8))
+  , mMu(new RooRealVar("#mu","Mu",-0.15,0.15))
+  , mSigma(new RooRealVar("#sigma","Sigma",0.02,.61))
     {}
 
   virtual RooPlot* FitData(TH1* h, TString name, TString title, TString range = "", TString plotrange="", bool change_range = false, float low_x = -2., float high_x = 2.);

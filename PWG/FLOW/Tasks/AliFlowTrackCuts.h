@@ -29,7 +29,7 @@ class AliVParticle;
 class AliMCParticle;
 class AliFlowTrack;
 class AliMCEvent;
-class AliInputEventHandler;
+class AliVEventHandler;
 class AliVEvent;
 class AliMultiplicity; 
 class AliAODTracklets;  // XZhang 20120615
@@ -41,6 +41,7 @@ class AliESDkink;
 class AliESDv0;
 class AliESDVZERO;
 class AliPIDResponse;
+class AliNanoAODTrack;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -161,7 +162,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetStandardMuonTrackCuts()      { InitMuonCuts(); fMuonTrackCuts->SetDefaultFilterMask(); return; }  // XZhang 20120604
   void SetIsMuonMC(Bool_t isMC)        { InitMuonCuts(); fMuonTrackCuts->SetIsMC(isMC);          return; }  // XZhang 20120604
   void SetMuonPassNumber(Int_t passN)  { InitMuonCuts(); fMuonTrackCuts->SetPassNumber(passN);   return; }  // XZhang 20121013
-  void SetRunsMuon(const AliInputEventHandler* eventHandler) { if (fMuonTrackCuts) fMuonTrackCuts->SetRun(eventHandler); }  // XZhang 20120604
+  void SetRunsMuon(const AliVEventHandler* eventHandler) { if (fMuonTrackCuts) fMuonTrackCuts->SetRun(eventHandler); }  // XZhang 20120604
 
   void SetForceTPCstandalone(Bool_t b) {fForceTPCstandalone=b;}
 
@@ -283,6 +284,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   //these should maybe be protected
   Bool_t PassesCuts(AliVParticle* track);
   Bool_t PassesESDcuts(AliESDtrack* track);
+  Bool_t PassesNanoAODcuts(const AliNanoAODTrack* track, Bool_t passFid);
   Bool_t PassesAODcuts(const AliAODTrack* track, Bool_t passFid=kTRUE);
   Bool_t PassesPMDcuts(const AliESDPmdTrack* track);
   Bool_t PassesVZEROcuts(Int_t id);

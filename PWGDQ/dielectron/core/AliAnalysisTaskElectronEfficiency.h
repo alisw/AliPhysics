@@ -13,6 +13,7 @@
 //#  Authors:                                               #
 //#   Patrick Reichelt, Uni Ffm / Patrick.Reichelt@cern.ch  #
 //#   Theo Broeker, Uni Ffm / Theo.Broeker@cern.ch          #
+//#   Sebastian Scheid, Uni Ffm / s.scheid@cern.ch          #
 //#                                                         #
 //###########################################################
 /**
@@ -23,8 +24,11 @@
  ---
  Additional functionalities:
  ---
- Pair efficiency: Fills 2D histograms (mee, ptee) for generated and reconstructed pairs, divided into sources with
- same and different mother and heavy flavour. Uses same electron candidates as for single efficiency.
+ Pair efficiency:
+ 1)   Fills 2D histograms (mee, ptee) for generated and reconstructed pairs, divided into sources with
+      same and different mother and heavy flavour. Uses same electron candidates as for single efficiency.
+ 2)   Instead of reconstructed pairs the 2D histogram contains the product of the leg efficiencies. With this one
+      can check if the  works.
  ---
  Extraction of resolutions for p, pt, eta, theta, phi, opening angle.
  The cut setting should have wide acceptance cuts (pt, eta), but realistic track quality cuts.
@@ -87,6 +91,9 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   virtual void  Terminate(const Option_t*);
 
   void          SetDoPairing(Bool_t b=kTRUE)                        {fDoPairing=b;}
+  void          SetDoWeightingEleEff(Bool_t b=kTRUE)                {fDoWeighting=b;}
+  void          SetCheckInvMee(Bool_t b=kTRUE)                      {fCheckmee=b;}
+  void          SetLimitmee(Double_t limit)                         {fLimitmee=limit;}
   void          SetCalcResolution(Bool_t b=kTRUE)                   {fCalcResolution=b;}
   void          SetMakeResolutionSparse(Bool_t b=kTRUE)             {fMakeResolutionSparse=b;}
   void          SetResolutionCuts(AliAnalysisFilter *cuts)          {fResolutionCuts=cuts;}
@@ -133,6 +140,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          AttachRejCutTheta(Double_t rejcut)            { fvRejCutTheta.push_back(rejcut); }
   void          AttachRejCutPhiV(Double_t rejcut)             { fvRejCutPhiV.push_back(rejcut); }
   void          AttachIsTOFrequireCut(Bool_t TOFreq)          { fvIsTOFrequireCut.push_back(TOFreq); }
+  void          AttachSingleEff(TH3D *h)                      { fSingleEff.AddLast(h); }
+
   void          SetPairCutMee(Double_t cut)                   { fPairCutMee=cut; }
   void          SetPairCutTheta(Double_t cut)                 { fPairCutTheta=cut; }
   void          SetPairCutPhiV(Double_t cut)                  { fPairCutPhiV=cut; }
@@ -143,6 +152,8 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   void          SetDeltaThetaBinning(Int_t N, Double_t min, Double_t max) {fDeltaThetaNbins=N; fDeltaThetaMin=min; fDeltaThetaMax=max;}
   void          SetDeltaPhiBinning(Int_t N, Double_t min, Double_t max)   {fDeltaPhiNbins=N; fDeltaPhiMin=min; fDeltaPhiMax=max;}
   void          SetDeltaAngleBinning(Int_t N, Double_t min, Double_t max) {fDeltaAngleNbins=N; fDeltaAngleMin=min; fDeltaAngleMax=max;}
+  void          SetPtCut(Double_t ptMin, Double_t ptMax) {fPtMinCut = ptMin; fPtMaxCut = ptMax;}
+  void          SetEtaCut(Double_t etaMin, Double_t etaMax) {fEtaMinCut = etaMin; fEtaMaxCut = etaMax;}
 
   virtual void  CreateHistograms(TString names, Int_t cutInstance);
   void          CreateHistoGen();
@@ -161,6 +172,10 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
     /**/        }
   TVectorD*     GetPDGcodes();
   Double_t      GetSmearing(TObjArray *arr, Double_t x);
+  Double_t      GetSingleEff(TH3D *h, Double_t pt, Double_t eta, Double_t phi);
+  Bool_t        CheckInvariantMassSM(AliMCEvent* mcEventLocal,Int_t label);
+  Bool_t        CheckInvariantMassHF(AliMCEvent* mcEventLocal,Int_t label);
+  // TH3D*         GetSingleEff(int i) {return static_cast<TH3D*> fSingleEff.At(i); }
 
   AliESDEvent*      fESD;
   AliMCEvent*       mcEvent;
@@ -175,6 +190,9 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TObjArray*        fSignalsMC;               // array of AliDielectronSignalMC
 
   Bool_t            fDoPairing;
+  Bool_t            fDoWeighting;             // Switch for the calculation of pair efficiency with the weights of the single leg efficiencies.
+  Bool_t            fCheckmee;                // Check mee with partner for factorization's check
+  Double_t          fLimitmee;                // Limit on mee
   Bool_t            fSelectPhysics;           // Whether to use physics selection
   UInt_t            fTriggerMask;             // Event trigger mask
   AliAnalysisCuts*  fEventFilter;             // event filter
@@ -189,6 +207,10 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   Double_t          fCentMin;                 // should be fCentMin=-1 for pp and p-Pb
   Double_t          fCentMax;
   Bool_t            fUseMultSelection;
+  Double_t          fPtMinCut;
+  Double_t          fPtMaxCut;
+  Double_t          fEtaMinCut;
+  Double_t          fEtaMaxCut;
   Double_t          fEtaMinGEN;
   Double_t          fEtaMaxGEN;
   Double_t          fPtMinGEN;
@@ -207,12 +229,14 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
 
   //Cut Settings
   std::vector<AliAnalysisFilter*> fvTrackCuts;
+  TObjArray                       fSingleEff; //vector for single efficiencies Take care to have as many efficiencies as cut settings
   std::vector<AliAnalysisFilter*> fvExtraTrackCuts; // used in prefilter cutsets for global electron cuts to find relevant events for prefilter efficiency determination. // has to be a subset of 'fvTrackCuts', otherwise the treatment is incorrect!
   std::vector<Bool_t>             fvDoPrefilterEff;
   std::vector<Double_t>           fvRejCutMee;
   std::vector<Double_t>           fvRejCutTheta;
   std::vector<Double_t>           fvRejCutPhiV;
   std::vector<Bool_t>             fvIsTOFrequireCut;
+  // signle electron efficiency
   //Efficiency Histograms
   TH3D*                           fNgen_Ele;
   std::vector<TH3D*>              fvReco_Ele;           // store reconstructed electrons (N vs pT, eta, phi) per cutset.
@@ -271,7 +295,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   };
 
   TH2D*                           fNgenPairsResonances;
-  TH2D*                           fNgenPairsDiffMothers;
+  TH2D*                           fNgenPairsDiffMothers; 
   TH2D*                           fNgenPairsCharm;
   TH2D*                           fNgenPairsBeauty;
   TH2D*                           fNgenPairsHF;
@@ -290,6 +314,12 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   std::vector<TH2D*>              fvRecoPairsRecCharm;
   std::vector<TH2D*>              fvRecoPairsRecBeauty;
   std::vector<TH2D*>              fvRecoPairsRecHF;
+  std::vector<TH2D*>              fvGenPairsWeightedResonances;
+  std::vector<TH2D*>              fvGenPairsWeightedDiffMothers;
+  std::vector<TH2D*>              fvGenPairsWeightedCharm;
+  std::vector<TH2D*>              fvGenPairsWeightedBeauty;
+  std::vector<TH2D*>              fvGenPairsWeightedHF;
+
 
   // resolutions
   Bool_t                          fCalcResolution;
@@ -333,12 +363,16 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   TH1D*                           fPRec;
   TH2D*                           fPGen_DeltaP;
   TH2D*                           fPtGen_DeltaPt;
+  TH2D*                           fPtGen_DeltaPtOverPtGen;
   TH2D*                           fPGen_PrecOverPGen; // higher precision at low p than 'fPGen_DeltaP'.
   TH2D*                           fPtGen_PtRecOverPtGen;
   TH2D*                           fPGen_DeltaEta;     // momentum dependence.
+  TH2D*                           fPtGen_DeltaEta;
   TH2D*                           fPGen_DeltaTheta;
   TH2D*                           fPGen_DeltaPhi_Ele; // delta phi is charge dependent.
   TH2D*                           fPGen_DeltaPhi_Pos;
+  TH2D*                           fPtGen_DeltaPhi_Ele; // delta phi is charge dependent.
+  TH2D*                           fPtGen_DeltaPhi_Pos;
   TH2D*                           fEtaGen_DeltaEta;
   TH2D*                           fThetaGen_DeltaTheta;
   TH2D*                           fPhiGen_DeltaPhi;
@@ -430,7 +464,7 @@ class AliAnalysisTaskElectronEfficiency : public AliAnalysisTaskSE {
   AliAnalysisTaskElectronEfficiency(const AliAnalysisTaskElectronEfficiency&); // not implemented
   AliAnalysisTaskElectronEfficiency& operator=(const AliAnalysisTaskElectronEfficiency&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiency, 7);
+  ClassDef(AliAnalysisTaskElectronEfficiency, 9);
 };
 
 #endif

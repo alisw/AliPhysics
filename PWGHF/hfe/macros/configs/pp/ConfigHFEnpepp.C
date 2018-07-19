@@ -103,10 +103,8 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
     // should be implemented in a different way, reading it from a root file.
     
     if(!useMC){
-        
-        
-        TF1 *hBackground
-        
+      
+       TF1 *hBackground;
         // First hadron contamination fit for 13TeV  by Andrea
         // relative to the case of a TPC+TOF PID cut at -1 sigma
         if(HadronContFunc == 0){
@@ -122,6 +120,21 @@ AliAnalysisTaskHFE* ConfigHFEnpepp(Bool_t useMC, Bool_t isAOD, TString appendix,
             hBackground->SetParameter(1, 3.35534e-01);
             hBackground->SetParameter(2, 5.84673e-01);
             hBackground->SetParameter(3,-3.74456e+00);
+        }
+        
+        if(HadronContFunc == 2){
+            hBackground= new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])", 0. ,60.);
+            hBackground->SetParameter(0, 7.61936e+03);
+            hBackground->SetParameter(1, 2.46441e+01);
+            hBackground->SetParameter(2, 5.82430e+00);
+            //error function
+        }
+        if(HadronContFunc == 3){
+            hBackground = new TF1("hadronicBackgroundFunction", "[0]+[1]*TMath::Erf([2]*x+[3])", 0. ,60.);
+            hBackground->SetParameter(0, 9.22700e-01);
+            hBackground->SetParameter(1, 9.22697e-01);
+            hBackground->SetParameter(2, 5.96595e-01);
+            hBackground->SetParameter(3,-3.85842e+00);
         }
         
         task->SetBackGroundFactorsFunction(hBackground);

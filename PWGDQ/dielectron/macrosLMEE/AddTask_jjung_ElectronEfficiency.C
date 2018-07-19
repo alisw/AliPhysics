@@ -82,6 +82,8 @@ AliAnalysisTask *AddTask_jjung_ElectronEfficiency(Bool_t getFromAlien=kFALSE,
   task->SetDeltaAngleBinning(NbinsDeltaAngle,DeltaAngleMin,DeltaAngleMax);
   // pair efficiency
   if(doPairing){
+    task->SetPtCut(minPtCut, maxPtCut);
+    task->SetEtaCut(minEtaCut, maxEtaCut);
     task->SetKineTrackCuts(SetupTrackCutsAndSettings(900));
     //task->SetPairCuts(SetupTrackCutsAndSettings(101));
     SetupTrackCutsAndSettings(901);

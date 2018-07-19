@@ -43,6 +43,7 @@
 #include "TF1.h"
 #include "TFile.h"
 #include "TGraphErrors.h"
+#include "TMultiGraph.h"
 #include "TGrid.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -1365,7 +1366,7 @@ TString AliAnalysisMuMu::ExpandPathName(const char* file)
  *
  * @param file [description]
  */
-  TString sfile;
+    TString sfile;
 
   if ( !sfile.BeginsWith("alien://") )
   {
@@ -1628,6 +1629,8 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::FitParticle(const char* particle,const 
   if( !sFlavour.IsNull()) spectraName += Form("-%s",flavour);
   if ( corrected )   spectraName += "-AccEffCorr";
 
+  TString EPdetector = "SPD";//{"VZEROA", "VZEROA","SPD"};
+
   // ---- MAIN PART : Loop on every binning range ----
 
   AliAnalysisMuMuBinning::Range* bin;
@@ -1656,6 +1659,10 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::FitParticle(const char* particle,const 
       hname = corrected ? Form("MeanPtVsMinvUS_AccEffCorr+%s%s",bin->AsString().Data(),mixflag1.Data()) : Form("MeanPtVsMinvUS+%s%s",bin->AsString().Data(),mixflag1.Data());
     else if( sHistoType.Contains("mpt2") )
       hname = corrected ? Form("MeanPtSquareVsMinvUS_AccEffCorr+%s%s",bin->AsString().Data(),mixflag1.Data()) : Form("MeanPtSquareVsMinvUS+%s%s",bin->AsString().Data(),mixflag1.Data());
+	  else if ( sHistoType.CompareTo("mV2") )
+      hname = corrected ? Form("MeanV2VsMinvUS_AccEffCorr+%s_%s",bin->AsString().Data(),EPdetector.Data()) : Form("MeanV2VsMinvUS+%s_%s",bin->AsString().Data(),EPdetector.Data());
+    else if ( sHistoType.CompareTo("SP") )
+      hname = corrected ? Form("SPVsMinvUS_AccEffCorr+%s_%s",bin->AsString().Data(),EPdetector.Data()) : Form("SPVsMinvUS+%s_%s",bin->AsString().Data(),EPdetector.Data());
     else {
       AliError("Wrong spectra type choice: Possibilities are: 'minv' or 'mpt' ");
       continue;
@@ -1874,6 +1881,62 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::FitParticle(const char* particle,const 
         }
       }
 
+    //Config. for mV2, similar to mpt (see function type)
+      else if ( fitType->String().Contains("histoType=mV2",TString::kIgnoreCase) && !fitType->String().Contains("histoType=minv",TString::kIgnoreCase) ){
+        std::cout << "++The Minv parameters will be taken from " << spectraName.Data() << std::endl;
+        std::cout << "" << std::endl;
+
+        AliAnalysisMuMuSpectra* minvSpectra = dynamic_cast<AliAnalysisMuMuSpectra*>(OC()->GetObject(Form("/FitResults%s",id->Data()),spectraName.Data()));
+
+        if ( !minvSpectra ){
+          AliError(Form("Cannot fit mean v2: could not get the minv spectra for /FitResults%s",id->Data()));
+          continue;
+        }
+
+        AliAnalysisMuMuJpsiResult* minvResult = static_cast<AliAnalysisMuMuJpsiResult*>(minvSpectra->GetResultForBin(*bin));
+        if ( !minvResult ){
+          AliError(Form("Cannot fit mean V2: could not get the minv result for bin %s in /FitResults%s",bin->AsString().Data(),id->Data()));
+          continue; //return 0x0;
+        }
+
+        if(spectraName.Contains("weight=2.0"))fitType->String() += ":weight=2.0";
+
+        TObjArray* minvSubResults = minvResult->SubResults();
+        TIter nextSubResult(minvSubResults);
+        AliAnalysisMuMuJpsiResult* fitMinv;
+        TString subResultName;
+
+        Int_t nSubFit(0);
+        while ( ( fitMinv = static_cast<AliAnalysisMuMuJpsiResult*>(nextSubResult())) )
+        {
+          TString fitMinvName(fitMinv->GetName());
+          fitMinvName.Remove(fitMinvName.First("_"),fitMinvName.Sizeof()-fitMinvName.First("_"));
+
+          if ( !fitType->String().Contains(fitMinvName) ) {
+             AliDebug(1,Form("FitType : %s does not contains fitMinvName %s",fitType->String().Data(),fitMinvName.Data()));
+            continue; //FIXME: Ambiguous, i.e. NA60NEWPOL2EXP & NA60NEWPOL2 (now its ok cause only VWG and POL2EXP are used, but care)
+          }
+          std::cout << "" << std::endl;
+          std::cout <<  "      /-- SubFit " << nSubFit + 1 << " --/ " << std::endl;
+          std::cout << "" << std::endl;
+
+          TString sMinvFitType(fitType->String());
+
+          GetParametersFromResult(sMinvFitType,fitMinv);//FIXME: Think about if this is necessary
+
+          AliDebug(1,Form("result for minv : %f",fitMinv->GetValue("FitStatus")));
+          if ( fitMinv->GetValue("FitStatus")!=0 && fitMinv->GetValue("NofJPsi")>0)//protection against failed minv fits
+          {
+            AliError(Form("Cannot fit mean v2: could not get the minv result for bin %s in /FitResults%s",bin->AsString().Data(),id->Data()));
+            continue; //return 0x0;
+          }
+
+          added += ( r->AddFit(sMinvFitType.Data()) == kTRUE );
+
+          nSubFit++;
+        }
+      }
+
       //Config. for the rest (see function type)
       else {
 
@@ -1918,9 +1981,11 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::FitParticle(const char* particle,const 
       nextFitType.Reset();
       Bool_t meanptVSminvFlag = kFALSE;
       Bool_t meanpt2VSminvFlag = kFALSE;
+	  Bool_t meanv2VSminvFlag = kFALSE;
       while ( ( fitType = static_cast<TObjString*>(nextFitType())) ){
         meanpt2VSminvFlag = fitType->String().Contains("histoType=mpt2");
         if(!meanpt2VSminvFlag)meanptVSminvFlag  = fitType->String().Contains("histoType=mpt");
+        if(!meanpt2VSminvFlag&&meanptVSminvFlag)meanptVSminvFlag  = fitType->String().Contains("histoType=mv2");
       }
       if ( meanptVSminvFlag){
         spectraSaveName += "-";
@@ -1929,6 +1994,12 @@ AliAnalysisMuMuSpectra* AliAnalysisMuMu::FitParticle(const char* particle,const 
       if ( meanpt2VSminvFlag){
         spectraSaveName += "-";
         spectraSaveName += "MeanPtSquareVsMinvUS";
+      }
+      if ( meanv2VSminvFlag){
+      	spectraSaveName += "-MeanV2VsMinvUS";
+        if(fitType->String().Contains("SPD")) spectraSaveName +="-SPD";
+        else if(fitType->String().Contains("VZEROA")) spectraSaveName +="-SPD";
+        else if(fitType->String().Contains("VZEROC")) spectraSaveName +="-VZEROC";
       }
       spectra = new AliAnalysisMuMuSpectra(spectraSaveName.Data());
     }

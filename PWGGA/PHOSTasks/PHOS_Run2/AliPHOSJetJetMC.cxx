@@ -1,6 +1,7 @@
 #include <TObject.h>
 #include <TClonesArray.h>
 #include <TH2.h>
+#include <TString.h>
 #include <AliLog.h>
 #include <AliPHOSGeometry.h>
 #include <AliVEvent.h>
@@ -8,7 +9,6 @@
 #include <AliAODEvent.h>
 #include <AliVCaloTrigger.h>
 #include <AliVCluster.h>
-#include <AliPHOSJetJetMC.h>
 #include <AliCaloPhoton.h>
 
 #include "AliESDInputHandler.h"
@@ -25,6 +25,8 @@
 #include "AliGenCocktailEventHeader.h"
 #include "AliAnalysisManager.h"
 
+#include "AliPHOSJetJetMC.h"
+
 // Author: Daiki Sekihata (Hiroshima University)
 ClassImp(AliPHOSJetJetMC)
 
@@ -38,7 +40,10 @@ AliPHOSJetJetMC::AliPHOSJetJetMC():
   fPtHardAndSinglePtFactor(1.5),
   fFirstJetIndex(-1),
   fLastJetIndex(-1),
-  fGenJetID(-1)
+  fGenJetID(-1),
+  fFirstUEIndex(-1),
+  fLastUEIndex(-1),
+  fGenUEID(-1)
 {
   //Constructor
   
@@ -54,11 +59,13 @@ AliPHOSJetJetMC::AliPHOSJetJetMC(Int_t pThardbin):
   fPtHardAndSinglePtFactor(1.5),
   fFirstJetIndex(-1),
   fLastJetIndex(-1),
-  fGenJetID(-1)
+  fGenJetID(-1),
+  fFirstUEIndex(-1),
+  fLastUEIndex(-1),
+  fGenUEID(-1)
 {
   //Constructor
   fPtHardBin = pThardbin; 
-  AliInfo(Form("pT-hard-bin : %d",fPtHardBin));
 
 }
 //________________________________________________________________________
@@ -74,6 +81,9 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
   AliESDEvent *esd = dynamic_cast<AliESDEvent*>(event);
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(event);
 
+  TString prodname = GetProductionName();
+  AliInfo(Form("production name = %s.",prodname.Data()));
+
   AliMCEvent *mcevent = 0x0;
   AliGenPythiaEventHeader* pythiaGenHeader = 0x0;
 
@@ -87,11 +97,12 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
   }
   else if(aod) pythiaGenHeader = GetPythiaEventHeader(aod);
 
-  Int_t pdg=0;
-  Double_t pT=0;
   Int_t firstindexJet = 0;
   Int_t lastindexJet = -1;
   Int_t genIDJet = -1;
+  Int_t firstindexUE = 0;
+  Int_t lastindexUE = -1;
+  Int_t genIDUE = -1;
 
   if(esd){
     AliStack *stack = (AliStack*)mcevent->Stack();
@@ -110,18 +121,45 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
       AliInfo(Form("GeneratorName = %s , NProduced = %d.",GeneratorName.Data(),gh->NProduced()));
       lastindexJet += gh->NProduced();
 
-      if(GeneratorName.Contains("Jets",TString::kIgnoreCase) || GeneratorName.Contains("Pythia",TString::kIgnoreCase)){
-        //this string supports LHC16h3, LHC16h4.
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet
+      || (prodname.Contains("LHC16h2") && GeneratorName.Contains("Jets",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("Pythia",TString::kIgnoreCase))//PYTHIA8 jet-jet
+      ){
+        //this string supports LHC16h3, LHC16h2abc.
         genIDJet = igen;
         break;
       }
       firstindexJet = gh->NProduced();
     }
 
+    //for UE event
+    for(Int_t igen=0;igen<Ngen;igen++){
+      AliGenEventHeader *gh = (AliGenEventHeader*)genHeaders->At(igen);
+      TString GeneratorName = gh->GetName();
+      lastindexUE += gh->NProduced();
+
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("NoUE",TString::kIgnoreCase)) //PYTHIA8 jet-jet anchord to LHC15n no UE
+      || (prodname.Contains("LHC16h2") && GeneratorName.Contains("HIJING",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet anchord to LHC15o
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("NoUE",TString::kIgnoreCase))//PYTHIA8 jet-jet anchord to LHC17pq no UE
+      ){
+        //this string supports LHC16h3, LHC16h2abc.
+        genIDUE = igen;
+        break;
+      }
+
+      firstindexUE = gh->NProduced();
+    }//end of generator loop
+
+    AliInfo(Form("genID of UE  = %d , firstindexUE  = %d , lastindexUE  = %d.",genIDUE ,firstindexUE ,lastindexUE ));
     AliInfo(Form("genID of jet = %d , firstindexJet = %d , lastindexJet = %d.",genIDJet,firstindexJet,lastindexJet));
     fFirstJetIndex = firstindexJet;
-    fLastJetIndex = lastindexJet;
-    fGenJetID = genIDJet;
+    fLastJetIndex  = lastindexJet;
+    fGenJetID      = genIDJet;
+    fFirstUEIndex  = firstindexUE;
+    fLastUEIndex   = lastindexUE;
+    fGenUEID       = genIDUE;
  
     const Int_t Ntrack = stack->GetNtrack();
     AliInfo(Form("%d MC particles are generated in ESD.",Ntrack));
@@ -144,19 +182,45 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
       AliInfo(Form("GeneratorName = %s , NProduced = %d.",GeneratorName.Data(),gh->NProduced()));
       lastindexJet += gh->NProduced();
 
-      if(GeneratorName.Contains("Jets",TString::kIgnoreCase) || GeneratorName.Contains("Pythia",TString::kIgnoreCase)){
-        //this string supports LHC16h3, LHC16h4.
-        //genIDJet = igen;
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("Pythia",TString::kIgnoreCase)) //PYTHIA8 jet-jet
+      || (prodname.Contains("LHC16h2") && GeneratorName.Contains("Jets",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("Pythia",TString::kIgnoreCase))//PYTHIA8 jet-jet
+      ){
+        //this string supports LHC16h3, LHC16h2abc.
         genIDJet = igen;
         break;
       }
       firstindexJet = gh->NProduced();
-    }
+    }//end of generator loop
 
+    //for UE event
+    for(Int_t igen=0;igen<Ngen;igen++){
+      AliGenEventHeader *gh = (AliGenEventHeader*)genHeaders->At(igen);
+      TString GeneratorName = gh->GetName();
+      lastindexUE += gh->NProduced();
+
+      if(
+         (prodname.Contains("LHC16h3") && GeneratorName.Contains("NoUE",TString::kIgnoreCase)) //PYTHIA8 jet-jet anchord to LHC15n no UE
+      || (prodname.Contains("LHC16h2") && GeneratorName.Contains("HIJING",TString::kIgnoreCase))//HIJING + PYTHIA8 jet-jet anchord to LHC15o
+      || (prodname.Contains("LHC18b8") && GeneratorName.Contains("NoUE",TString::kIgnoreCase))//PYTHIA8 jet-jet anchord to LHC17pq no UE
+      ){
+        //this string supports LHC16h3, LHC16h2abc.
+        genIDUE = igen;
+        break;
+      }
+
+      firstindexUE = gh->NProduced();
+    }//end of generator loop
+
+    AliInfo(Form("genID of UE  = %d , firstindexUE  = %d , lastindexUE  = %d.",genIDUE ,firstindexUE ,lastindexUE ));
     AliInfo(Form("genID of jet = %d , firstindexJet = %d , lastindexJet = %d.",genIDJet,firstindexJet,lastindexJet));
     fFirstJetIndex = firstindexJet;
-    fLastJetIndex = lastindexJet;
-    fGenJetID = genIDJet;
+    fLastJetIndex  = lastindexJet;
+    fGenJetID      = genIDJet;
+    fFirstUEIndex  = firstindexUE;
+    fLastUEIndex   = lastindexUE;
+    fGenUEID       = genIDUE;
 
     const Int_t Ntrack = MCArray->GetEntriesFast();
     AliInfo(Form("%d MC particles are generated in AOD.",Ntrack));
@@ -168,8 +232,6 @@ void AliPHOSJetJetMC::ConfigureJetJetMC(AliVEvent *event)
 //________________________________________________________________________
 AliGenPythiaEventHeader* AliPHOSJetJetMC::GetPythiaEventHeader(AliVEvent *MCEvent)
 {
-  Int_t NTrials = -1;
-  Float_t XSection = -1;
 
   AliGenCocktailEventHeader* cHeader = 0;
   AliAODMCHeader *cHeaderAOD = 0;
@@ -201,16 +263,12 @@ AliGenPythiaEventHeader* AliPHOSJetJetMC::GetPythiaEventHeader(AliVEvent *MCEven
       if(gPythia){
         //if dynamic_cast is successfully done, gPythia should not by 0x0.
         //this is a property of dynamic_cast.
-        NTrials = gPythia->Trials();
-        XSection = gPythia->GetXsection();
 
         return gPythia;
       }
     }
 
     //AliGenPythiaEventHeader are not found.
-    NTrials = -1;
-    XSection = -1;
     AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Pythia event header not found");
     return 0;
 
@@ -220,13 +278,9 @@ AliGenPythiaEventHeader* AliPHOSJetJetMC::GetPythiaEventHeader(AliVEvent *MCEven
     TString eventHeaderName  = eventHeader->ClassName();
     if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0){
       AliGenPythiaEventHeader* gPythia = dynamic_cast<AliGenPythiaEventHeader*>(eventHeader);
-      NTrials = gPythia->Trials();
-      XSection = gPythia->GetXsection();
       return gPythia;
     }
     else{
-      NTrials = -1;
-      XSection = -1;
       AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Pythia event header not found");
       return 0;
     }
@@ -256,11 +310,9 @@ Bool_t AliPHOSJetJetMC::ComparePtHardBin(AliVEvent *event)
   }
   else if(aod) pythiaGenHeader = GetPythiaEventHeader(aod);
 
-  Float_t xsection = pythiaGenHeader->GetXsection();
   Float_t pThard   = pythiaGenHeader->GetPtHard();
 
   if(pThard < pthardbin_loweredges[fPtHardBin-1]){
-    //printf("pT-hard = %f GeV/c , this value is lower than edge of pT-hard-bin[%d] settings. reject!\n",pThard,fPtHardBin);
     AliInfo(Form("pT-hard = %f GeV/c , this value is lower than edge of pT-hard-bin[%d] settings. reject!",pThard,fPtHardBin));
     return kFALSE;
   }
@@ -290,7 +342,6 @@ Bool_t AliPHOSJetJetMC::ComparePtHardWithJet(AliVEvent *event)
   }
   else if(aod) pythiaGenHeader = GetPythiaEventHeader(aod);
 
-  Float_t xsection = pythiaGenHeader->GetXsection();
   Float_t pThard   = pythiaGenHeader->GetPtHard();
 
   TParticle * jet = 0;
@@ -309,7 +360,7 @@ Bool_t AliPHOSJetJetMC::ComparePtHardWithJet(AliVEvent *event)
     //Compare jet pT and pt Hard
     if(jet->Pt() > fPtHardAndJetPtFactor * pThard)
     {
-      AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n", pThard, jet->Pt(), fPtHardAndJetPtFactor));
+      AliInfo(Form("Reject jet event with : pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f", pThard, jet->Pt(), fPtHardAndJetPtFactor));
       if(jet) delete jet;
       return kFALSE;
     }
@@ -328,9 +379,6 @@ Bool_t AliPHOSJetJetMC::ComparePtHardWithSingleParticle(AliVEvent *event)
 
   Int_t pdg=0;
   Double_t pT=0;
-  Int_t firstindexJet = 0;
-  Int_t lastindexJet = -1;
-  Int_t genIDJet = -1;
   AliGenPythiaEventHeader* pythiaGenHeader = 0x0;
 
   if(esd){
@@ -343,7 +391,6 @@ Bool_t AliPHOSJetJetMC::ComparePtHardWithSingleParticle(AliVEvent *event)
     }
 
     pythiaGenHeader = GetPythiaEventHeader(mcevent);
-    Float_t xsection = pythiaGenHeader->GetXsection();
     Float_t pThard   = pythiaGenHeader->GetPtHard();
 
     AliStack *stack = (AliStack*)mcevent->Stack();
@@ -362,7 +409,7 @@ Bool_t AliPHOSJetJetMC::ComparePtHardWithSingleParticle(AliVEvent *event)
       if(pdg==111 || pdg==221 || pdg==22){
         pT = p->Pt();
         if(pT > fPtHardAndSinglePtFactor*pThard){
-          AliInfo(Form("Reject jet event with : pT Hard %2.2f, particle %d : pT %2.2f, rejection factor %1.1f\n", pThard, pdg, pT, fPtHardAndSinglePtFactor));
+          AliInfo(Form("Reject jet event with : pT Hard %2.2f, particle %d : pT %2.2f, rejection factor %1.1f", pThard, pdg, pT, fPtHardAndSinglePtFactor));
           return kFALSE;//reject this event
         }
 
@@ -372,7 +419,6 @@ Bool_t AliPHOSJetJetMC::ComparePtHardWithSingleParticle(AliVEvent *event)
   }//end of ESD
   else if(aod){
     pythiaGenHeader = GetPythiaEventHeader(aod);
-    Float_t xsection = pythiaGenHeader->GetXsection();
     Float_t pThard   = pythiaGenHeader->GetPtHard();
 
     TClonesArray *MCArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -435,6 +481,48 @@ TList *AliPHOSJetJetMC::GetGenHeaderList(AliVEvent *MCEvent)
   return genHeaders;
 }
 //________________________________________________________________________
+TString AliPHOSJetJetMC::GetProductionName()
+{
+  //==================================
+  // Setup initial Info
+  Bool_t lLocated = kFALSE;
+  TString lTag = "LPMProductionTag";
+  TString lProductionName = "";
+
+  //==================================
+  // Get alirootVersion object title
+  AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (!handler) return lProductionName; //failed!
+  TObject* prodInfoData = handler->GetUserInfo()->FindObject("alirootVersion");
+  if (!prodInfoData) return lProductionName; //failed!
+  TString lAlirootVersion(prodInfoData->GetTitle());
+
+  //==================================
+  // Get Production name
+  TObjArray* lArrStr = lAlirootVersion.Tokenize(";");
+  if(lArrStr->GetEntriesFast()) {
+    TIter iString(lArrStr);
+    TObjString* os=0;
+    Int_t j=0;
+    while ((os=(TObjString*)iString())) {
+      if( os->GetString().Contains(lTag.Data()) ){
+        lLocated = kTRUE;
+        lProductionName = os->GetString().Data();
+        //Remove Label
+        lProductionName.ReplaceAll(lTag.Data(),"");
+        //Remove any remaining whitespace (just in case)
+        lProductionName.ReplaceAll("=","");
+        lProductionName.ReplaceAll(" ","");
+      }
+      j++;
+    }
+  }
+  //Memory cleanup
+  delete lArrStr;
+  //Return production name
+  return lProductionName;
+
+}
 //________________________________________________________________________
 //________________________________________________________________________
 

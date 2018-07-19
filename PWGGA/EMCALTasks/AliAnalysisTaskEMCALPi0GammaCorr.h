@@ -40,7 +40,6 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   void AddEventPoolsToOutput(double minCent, double maxCent,  double minZvtx, double maxZvtx, double minPt, double maxPt);
   
   private:
-
   
   void                        InitArrays()                                                 ;
   // overwritten EMCal framework functions
@@ -74,6 +73,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   double                      GetEff(AliTLorentzVector ParticleVec)                         ;
   void                        AnalyzeMC();
   Bool_t                      IsRealPion(AliVCluster* cluster_1, AliVCluster* cluster_2, double &truepT); 
+  Bool_t                      PassedGATrigger();
 
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   //Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
@@ -109,6 +109,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   TString     fPeriod;                         //!<! String containing the LHC period
 
   THnSparse                 *h_Track;                   //!<!
+  THnSparse                 *h_TrackITS;                   //!<!
   THnSparse                 *h_Truth;                   //!<!
   THnSparse                 *h_Cluster;                 //!<!
   THnSparse                 *h_ClusterTrack;                 //!<! THnSparse with info on cluster and track.
@@ -116,6 +117,7 @@ virtual ~AliAnalysisTaskEMCALPi0GammaCorr();
   THnSparse                 *h_Pi0;                 //!<!
   THnSparse                 *h_Pi0Track;                 //!<! THnSparse with info on pi0 and track.
   THnSparse                 *h_Pi0Track_Mixed;                 //!<!
+  TH1F                      *h_nEvents; //!<!
 
   TList                      *fEventCutList;           //!<! Output list for event cut histograms
   AliEMCALRecoUtils          *fFiducialCellCut;        //!<!     

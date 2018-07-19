@@ -45,7 +45,7 @@ class TH2F ;
 //--- AliRoot system ---
 class AliVCluster;
 class AliVCaloCells;
-class AliAODPWG4Particle;
+class AliCaloTrackParticle;
 class AliEMCALPIDUtils;
 class AliCalorimeterUtils;
 class AliVEvent;
@@ -109,7 +109,7 @@ class AliCaloPID : public TObject {
   
   Bool_t    IsTrackMatched(AliVCluster * cluster, AliCalorimeterUtils* cu, AliVEvent* event) ;    
   
-  void      SetPIDBits(AliVCluster * cluster, AliAODPWG4Particle *aodph, 
+  void      SetPIDBits(AliVCluster * cluster, AliCaloTrackParticle *aodph, 
                        AliCalorimeterUtils* cu, AliVEvent* event);
   
   void      Print(const Option_t * opt)const;
@@ -349,10 +349,10 @@ private:
   Int_t     fEMCALFuncTrackPtDepDPhiNParam;     ///<  number of formula parameters for matching eta residual pT track dependent
 
   /// Formula parameters for track matching eta residual pT track dependent
-  Float_t  *fEMCALFuncTrackPtDepDEtaParam;      //[EMCALFuncTrackPtDepDEtaNParam]
+  Float_t  *fEMCALFuncTrackPtDepDEtaParam;      //[fEMCALFuncTrackPtDepDEtaNParam]
   
   /// Formula parameters for track matching eta residual pT track dependent
-  Float_t  *fEMCALFuncTrackPtDepDPhiParam;      //[EMCALFuncTrackPtDepDPhiNParam] 
+  Float_t  *fEMCALFuncTrackPtDepDPhiParam;      //[fEMCALFuncTrackPtDepDPhiNParam] 
   
   
   Float_t   fTOFCut;                            ///<  Cut on TOF, used in PID evaluation.

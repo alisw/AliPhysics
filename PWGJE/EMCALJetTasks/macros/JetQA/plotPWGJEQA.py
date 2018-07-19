@@ -74,7 +74,7 @@ def plotPWGJEQA(inputFile, outputDir, referenceFile, fileFormat):
 
   # If not a Pt-hard production (since it is done already), we need to set Sumw2 since we will scale and divide histograms
   if not isPtHard:
-    print "Setting Sumw2 on histograms."
+    print("Setting Sumw2 on histograms.")
     for obj in qaList:
       SetSumw2(obj)
 
@@ -90,19 +90,22 @@ def plotPWGJEQA(inputFile, outputDir, referenceFile, fileFormat):
   qaListRef = ""
   trackTHnSparseRef = ""
   clusterQAListRef = ""
+  cellQAListRef = ""
   chargedJetListRef = ""
   fullJetListRef = ""
   if referenceFile:
     fRef = ROOT.TFile(referenceFile)
     qaListRef = fRef.Get(qaTaskName)
     if not isPtHard:
-      print "Setting Sumw2 on reference histograms."
+      print("Setting Sumw2 on reference histograms.")
       for obj in qaListRef:
         SetSumw2(obj)
     trackTHnSparseRef = qaListRef.FindObject(tracksListName)
     trackTHnSparseRef.SetName("trackRef")
     clusterQAListRef = qaListRef.FindObject("caloClusters")
     clusterQAListRef.SetName("caloClustersRef")
+    cellQAListRef = qaListRef.FindObject("emcalCells")
+    cellQAListRef.SetName("emcalCellsRef")
     chargedJetListRef = qaListRef.FindObject("Jet_AKTChargedR020_tracks_pT0150_pt_scheme")
     chargedJetListRef.SetName("chargedJetListRef")
     fullJetListRef = qaListRef.FindObject("Jet_AKTFullR020_tracks_pT0150_caloClusters_E0300_pt_scheme")
@@ -153,7 +156,7 @@ def plotPWGJEQA(inputFile, outputDir, referenceFile, fileFormat):
   if trackTHnSparse:
     plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackThnName, qaList, nEvents, outputDir, qaListRef, trackTHnSparseRef, nEventsRef, fileFormat)
   if clusterQAList:
-    plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, outputDir, clusterQAListRef, nEventsRef, fileFormat)
+    plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, outputDir, clusterQAListRef, cellQAListRef, nEventsRef, fileFormat)
   if chargedJetList:
     plotChargedJetQA(ispp, chargedJetList, outputDir, chargedJetListRef, nEvents, nEventsRef, fileFormat)
   if fullJetList:
@@ -257,12 +260,13 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
   hPhiSum.Scale(1./nEvents)
 
   hPhiGlobal.SetTitle("#phi Distribution of Hybrid Tracks")
-  hPhiGlobal.GetYaxis().SetTitle("#frac{1}{N_{evts}} #frac{dN}{d#varphi}")
+  hPhiGlobal.GetYaxis().SetTitle("#frac{1}{N_{evts}} #frac{dN}{d#phi}")
   hPhiGlobal.GetYaxis().SetTitleSize(0.06)
   hPhiGlobal.GetXaxis().SetTitleSize(0.06)
+  hPhiGlobal.GetXaxis().SetTitleOffset(0.5)
   hPhiGlobal.GetYaxis().SetRangeUser(0,15.)
   if ispp:
-    hPhiGlobal.GetYaxis().SetRangeUser(0,0.4)
+    hPhiGlobal.GetYaxis().SetRangeUser(0,0.2)
   ROOT.gPad.SetLeftMargin(0.15)
   ROOT.gPad.SetRightMargin(0.05)
   ROOT.gPad.SetBottomMargin(0.13)
@@ -339,6 +343,27 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
   ratioYAxisTitle = "Ratio: run / all runs"
     
   plotSpectra(hPtSum, hPtSumRef, hPtGlobal, hPtComplementary, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename, "width", "w/ SPD & ITSrefit", "w/o SPD & w/ ITSrefit")
+  
+  # Plot also ratio of central track spectrum to peripheral track spectrum
+  trackTHnSparse.GetAxis(0).SetRangeUser(0,10)
+  hPt010 = trackTHnSparse.Projection(1)
+  hPt010.SetName("hPt010")
+  
+  trackTHnSparse.GetAxis(0).SetRangeUser(50,90)
+  hPt5090 = trackTHnSparse.Projection(1)
+  hPt5090.SetName("hPt5090")
+  
+  outputFilename = os.path.join(outputDirTracks, "hTrackPtRatio" + fileFormat)
+  xRangeMax = 75
+  yAxisTitle = "#frac{1}{N_{evts}}#frac{dN}{dE_{T}} [GeV^{-1}]"
+  legendTitle = "Tracks"
+  h1legendLabel = "50-90 %"
+  h2legendLabel = "0-10 %"
+  ratioYAxisTitle = "Central / Peripheral"
+  yRatioMax = 12
+  plotSpectraCent(hPt5090, hPt010, "", nEvents, ispp, outputFilename, xRangeMax, yAxisTitle, ratioYAxisTitle, legendTitle, h1legendLabel, h2legendLabel, "", "width", yRatioMax)
+  
+  trackTHnSparse.GetAxis(0).SetRangeUser(0,90)
 
   #---------------------------------------------------------------------------------------------------
   #                        pT resolution of hybrid tracks -- from track fitting
@@ -369,6 +394,7 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
   profPtPtSigma1PtGlobal.GetYaxis().SetTitle(" #sigma(#it{p}_{T}) / #it{p}_{T}")
   profPtPtSigma1PtGlobal.GetXaxis().SetTitleSize(0.06)
   profPtPtSigma1PtGlobal.GetYaxis().SetTitleSize(0.06)
+  profPtPtSigma1PtGlobal.GetYaxis().SetRangeUser(0,0.15)
   ROOT.gPad.SetLeftMargin(0.15)
   ROOT.gPad.SetRightMargin(0.05)
   ROOT.gPad.SetBottomMargin(0.14)
@@ -409,7 +435,10 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
     c25 = ROOT.TCanvas("c25","c25: pT Res Dist MC",600,450)
     c25.cd()
     c25.SetLogy()
-    hPtRes = matchedTHnSparse.Projection(6)
+    if ispp:
+      hPtRes = matchedTHnSparse.Projection(6)
+    else:
+      hPtRes = matchedTHnSparse.Projection(7)
     hPtRes.GetYaxis().SetTitle("counts")
     hPtRes.Draw("hist E")
     outputFilename = os.path.join(outputDirTracks, "hTrackPtResolutionMC" + fileFormat)
@@ -419,7 +448,10 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
     c24 = ROOT.TCanvas("c24","c24: pT Resolution MC",600,450)
     c24.cd()
     # Project to (Pt, pT resolution, Track type)
-    hPtTracktypePtRes = matchedTHnSparse.Projection(3,7,6)
+    if ispp:
+      hPtTracktypePtRes = matchedTHnSparse.Projection(3,7,6)
+    else:
+      hPtTracktypePtRes = matchedTHnSparse.Projection(4,8,7)
     # Project to global tracks and take profile, to get the pT resolution as a function of pT
     hPtTracktypePtRes.GetYaxis().SetRange(1,1)
     hPtPtResGlobal = hPtTracktypePtRes.Project3D("zx")
@@ -479,13 +511,21 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
     for dim in ["1D", "2D"]:
       if dim == "1D":
         # 1D case
-        hPtGenMatched = matchedTHnSparse.Projection(0)
-        hPtGen1D = generatorTHnSparse.Projection(0, 3)
+        if ispp:
+          hPtGenMatched = matchedTHnSparse.Projection(0)
+          hPtGen1D = generatorTHnSparse.Projection(0, 3)
+        else:
+          hPtGenMatched = matchedTHnSparse.Projection(1)
+          hPtGen1D = generatorTHnSparse.Projection(1, 4)
         hPtGenFindable = hPtGen1D.ProjectionY("trackEff", 2, 2)
       elif dim == "2D":
         # 2D case
-        hPtGenMatched = matchedTHnSparse.Projection(1, 0)
-        hPtGen2D = generatorTHnSparse.Projection(0, 1, 3)
+        if ispp:
+          hPtGenMatched = matchedTHnSparse.Projection(1, 0)
+          hPtGen2D = generatorTHnSparse.Projection(0, 1, 3)
+        else:
+          hPtGenMatched = matchedTHnSparse.Projection(2, 1)
+          hPtGen2D = generatorTHnSparse.Projection(1, 2, 4)
         hPtGen2D.GetZaxis().SetRange(2, 2)
         hPtGenFindable = hPtGen2D.Project3D("yx")
 
@@ -543,9 +583,10 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
   hEtaGlobal.GetYaxis().SetTitle("#frac{1}{N_{evts}} #frac{dN}{d#eta}")
   hEtaGlobal.GetYaxis().SetTitleSize(0.06)
   hEtaGlobal.GetXaxis().SetTitleSize(0.06)
+  hEtaGlobal.GetXaxis().SetTitleOffset(0.7)
   hEtaGlobal.GetYaxis().SetRangeUser(0,20.)
   if ispp:
-    hEtaGlobal.GetYaxis().SetRangeUser(0,0.6)
+    hEtaGlobal.GetYaxis().SetRangeUser(0,0.2)
   ROOT.gPad.SetLeftMargin(0.15)
   ROOT.gPad.SetRightMargin(0.05)
   ROOT.gPad.SetBottomMargin(0.13)
@@ -616,7 +657,7 @@ def plotTrackQA(ispp, isMC, trackTHnSparse, generatorTrackThnName, matchedTrackT
 ########################################################################################################
 # Plot cluster histograms ##############################################################################
 ########################################################################################################
-def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, outputDir, clusterQAListRef, nEventsRef, fileFormat):
+def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, outputDir, clusterQAListRef, cellQAListRef, nEventsRef, fileFormat):
   
   # Create subdirectory for Cells, Clusters
   outputDirCells = outputDir + "Cells/"
@@ -641,6 +682,8 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
     hClusPhiEta = clusterTHnSparse.Projection(3,2)
   hClusPhiEta.SetName("clusterEMCalObservables_proj_eta_phi")
   outputFilename = os.path.join(outputDirClusters, "hClusPhiEta" + fileFormat)
+  hClusPhiEta.GetXaxis().SetRangeUser(-0.8,0.8)
+  hClusPhiEta.GetYaxis().SetRangeUser(1.2,5.8)
   plotHist(hClusPhiEta, outputFilename, "colz")
 
   # Plot ratio to reference run, if supplied
@@ -657,6 +700,7 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
     ROOT.gStyle.SetOptTitle(1)
     hClusPhiEtaRatio.SetTitle("Cluster Occupancy (per event): Current Run / All Runs")
     outputFilename = os.path.join(outputDirClusters, "hClusPhiEtaRatio" + fileFormat)
+
     plotHist(hClusPhiEtaRatio, outputFilename, "colz", False, True)
     ROOT.gStyle.SetOptTitle(0)
 
@@ -700,6 +744,8 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
 
   outputFilename = os.path.join(outputDirClusters, "hClusEMCalEnergy" + fileFormat)
   xRangeMax = 100
+  if ispp:
+    xRangeMax = 80
   yAxisTitle = "#frac{1}{N_{evts}}#frac{dN}{dE_{T}} [GeV^{-1}]"
   legendTitle = "EMCal Clusters"
   legendRunLabel = "Current run"
@@ -749,6 +795,8 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
 
     outputFilename = os.path.join(outputDirClusters, "hClusDCalEnergy" + fileFormat)
     xRangeMax = 100
+    if ispp:
+      xRangeMax = 50
     yAxisTitle = "#frac{1}{N_{evts}}#frac{dN}{dE_{T}} [GeV^{-1}]"
     legendTitle = "DCal Clusters"
     legendRunLabel = "Current run"
@@ -823,6 +871,8 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
   if isRun2:
     outputFilename = os.path.join(outputDirClusters, "hClusEnergyRatioEMC" + fileFormat)
     xRangeMax = 250
+    if ispp:
+      xRangeMax = 80
     yAxisTitle = "#frac{1}{N_{evts}}#frac{dN}{dE_{T}} [GeV^{-1}]"
     legendTitle = "Calo clusters"
     legendRunLabel = "DCal clusters"
@@ -830,34 +880,35 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
     ratioYAxisTitle = "DCal / EMCal"
     # Note: the spectra already have been scaled by nEvents, bin width
     plotSpectra(hClusDCalEnergy, hClusEMCalEnergy, "", "", 1., 1., ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename)
+  # Plot some PHOS QA plots
+  if includePhos:
+    # Plot also PHOS SM spectra
+    SMlist = clusterQAList.FindObject("BySM")
+    c2 = ROOT.TCanvas("c2","c2: hist",600,450)
+    c2.cd()
+    c2.SetLogy()
 
-  # Plot also PHOS SM spectra
-  SMlist = clusterQAList.FindObject("BySM")
-  c2 = ROOT.TCanvas("c2","c2: hist",600,450)
-  c2.cd()
-  c2.SetLogy()
+    leg = ROOT.TLegend(0.3,0.6,0.88,0.83,"PHOS SM")
+    leg.SetFillColor(10)
+    leg.SetBorderSize(0)
+    leg.SetFillStyle(0)
+    leg.SetTextSize(0.04)
 
-  leg = ROOT.TLegend(0.3,0.6,0.88,0.83,"PHOS SM")
-  leg.SetFillColor(10)
-  leg.SetBorderSize(0)
-  leg.SetFillStyle(0)
-  leg.SetTextSize(0.04)
+    for sm in range(1,5):
+      hSM = SMlist.FindObject("hPhosClusEnergy_SM" + str(sm))
+      hSM.SetLineColor(sm)
+      hSM.SetLineStyle(1)
+      hSM.GetXaxis().SetRangeUser(0,100)
+      if sm is 1:
+        hSM.Draw("hist E")
+      else:
+        hSM.Draw("hist E same")
+      leg.AddEntry(hSM, "SM " + str(sm), "l")
+    leg.Draw("same")
 
-  for sm in range(1,5):
-    hSM = SMlist.FindObject("hPhosClusEnergy_SM" + str(sm))
-    hSM.SetLineColor(sm)
-    hSM.SetLineStyle(1)
-    hSM.GetXaxis().SetRangeUser(0,100)
-    if sm is 1:
-      hSM.Draw("hist E")
-    else:
-      hSM.Draw("hist E same")
-    leg.AddEntry(hSM, "SM " + str(sm), "l")
-  leg.Draw("same")
-
-  outputFilename = os.path.join(outputDirClusters, "hClusPHOSEnergyBySM" + fileFormat)
-  c2.SaveAs(outputFilename)
-  c2.Close()
+    outputFilename = os.path.join(outputDirClusters, "hClusPHOSEnergyBySM" + fileFormat)
+    c2.SaveAs(outputFilename)
+    c2.Close()
 
   # Plot some PHOS QA plots
   if includePhos:
@@ -889,7 +940,50 @@ def plotCaloQA(ispp, isRun2, includePhos, clusterQAList, cellQAList, nEvents, ou
 
   profCellAbsIdTime = cellQAList.FindObject("fProfCellAbsIdTime")
   outputFilename = os.path.join(outputDirCells, "profCellAbsIdTime" + fileFormat)
+  profCellAbsIdTime.GetYaxis().SetRangeUser(-0.2e-6,0.2e-6)
   plotHist(profCellAbsIdTime, outputFilename)
+
+  # Plot the CELL energy spectrum with and without timing cuts
+  hCellEnergyTall = cellQAList.FindObject("fHistCellEvsTime")
+  hCellEnergyTall = hCellEnergyTall.ProjectionY()
+  hCellEnergyTall.SetName("cell_Allproj_energy")
+  hCellEnergyTall.GetXaxis().SetTitle("E_{Cell} [GeV]")
+  outputFilename = os.path.join(outputDirCells, "hCellEnergyTall" + fileFormat)
+  plotHist(hCellEnergyTall, outputFilename, "hist E", True)
+
+  hCellEnergyTsel = cellQAList.FindObject("fHistCellEvsTime")
+  hCellEnergyTsel.GetXaxis().SetRangeUser(-50e-9,50e-9) #recomended time cut
+  hCellEnergyTsel = hCellEnergyTsel.ProjectionY()
+  hCellEnergyTsel.SetName("cell_Selproj_energy")
+  hCellEnergyTsel.GetXaxis().SetTitle("E_{Cell} |t_{cell}|<50ns [GeV]")
+  outputFilename = os.path.join(outputDirCells, "hCellEnergyTsel" + fileFormat)
+  plotHist(hCellEnergyTsel, outputFilename, "hist E", True)
+
+  #refernce histograms
+  if cellQAListRef:
+    hCellEnergyTallRef = cellQAListRef.FindObject("fHistCellEvsTime")
+    hCellEnergyTallRef = hCellEnergyTallRef.ProjectionY()
+    hCellEnergyTallRef.SetName("cellRef_Allproj_energy")
+
+    hCellEnergyTselRef = cellQAListRef.FindObject("fHistCellEvsTime")
+    hCellEnergyTselRef.GetXaxis().SetRangeUser(-50e-9,50e-9)
+    hCellEnergyTselRef = hCellEnergyTselRef.ProjectionY()
+    hCellEnergyTselRef.SetName("cellRef_Selproj_energy")
+
+    xRangeMax = 100
+    if ispp:
+      xRangeMax = 80
+    yAxisTitle = "#frac{1}{N_{evts}}#frac{dN}{dE_{Cell}} [GeV^{-1}]"
+    legendTitle = "EMCal Cells"
+    legendRunLabel = "Current run"
+    legendRefLabel = "All runs"
+    ratioYAxisTitle = "Ratio: run / all runs"
+    outputFilename = os.path.join(outputDirCells, "hCellEnergyTallRatio" + fileFormat)
+    plotSpectra(hCellEnergyTall, hCellEnergyTallRef, 0, 0, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename, "width")
+
+    outputFilename = os.path.join(outputDirCells, "hCellEnergyTselRatio" + fileFormat)
+    plotSpectra(hCellEnergyTsel, hCellEnergyTselRef, 0, 0, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitle, legendTitle, legendRunLabel, legendRefLabel, ratioYAxisTitle, outputFilename, "width")
+
 
 ########################################################################################################
 # Plot charged jet histograms    #######################################################################
@@ -935,6 +1029,7 @@ def plotChargedJetQA(ispp, chargedJetList, outputDir, chargedJetListRef, nEvents
     hChargedJetEtaPhi = chargedJetTHnSparse.Projection(2,1)
   hChargedJetEtaPhi.SetName("ChargedJetEtaPhi")
   hChargedJetEtaPhi.SetTitle("Charged Jet Occupancy, p_{T,jet} > " + str((minJetPtBin-1)*3) + " GeV")
+  hChargedJetEtaPhi.GetXaxis().SetRangeUser(-0.8,0.8)
   outputFilename = os.path.join(outputDirJets, "hChargedJetEtaPhi" + fileFormat)
   plotHist(hChargedJetEtaPhi, outputFilename, "colz", False)
 
@@ -1088,8 +1183,43 @@ def plotFullJetQA(ispp, isRun2, includePhos, fullJetList, outputDir, fullJetList
     outputFilename = os.path.join(outputDirJets, "hFullJetRhoVsCent" + fileFormat)
     plotHist(hFullJetRhoVsCent, outputFilename, "colz", False, True)
 
-  # Plot full jet eta-phi, for jet pT > threshold
+  # Plot Neutral Energy Fraction
+  hFullJetNEF = fullJetList.FindObject("hNEFVsPtEMC")
+  if not ispp:
+    if hFullJetNEF:
+      hFullJetNEF = hNEFVsPtCorrVsCentEMCal.Project3D("zy")
+    else:
+      print("hFullJetNEF not saved for PbPb in this version")
+  hFullJetNEF = hFullJetNEF.ProjectionY()
+  hFullJetNEFDCal = fullJetList.FindObject("hNEFVsPtDCal")
+  hFullJetNEFDCal = hFullJetNEFDCal.ProjectionY()
+  hFullJetNEF.SetTitle("NEF vs. p_{T,jet}, Full Jets")
+  outputFilename = os.path.join(outputDirJets, "hFullJetNEF" + fileFormat)
+  # plotHist(hFullJetNEF, outputFilename, "colz", True, False)
+  plotNEFSpectra(hFullJetNEF,hFullJetNEFDCal, 0,nEvents, ispp, 1, "1/N_{Evt} dN/dNEF", "EMCal", outputFilename,"", "DCal")
   
+
+  if ispp:
+    # Plot Delta HadCorr vs pT
+    hFullJetDeltaHcorr = fullJetList.FindObject("hDeltaEHadCorr")
+    hFullJetDeltaHcorr.GetXaxis().SetRangeUser(0., 150.)
+    hFullJetDeltaHcorr.SetTitle("#Delta E vs. p_{T,jet}, Full Jets")
+    #outputFilename = os.path.join(outputDirJets, "hFullJetDeltaHcorr" + fileFormat)
+    #plotHist(hFullJetDeltaHcorr, outputFilename, "colz", False, True)
+    hFullJetDeltaHcorr.SetTitle("<#DeltaE> vs. p_{T,jet}, Full Jets")
+    hDeltaEHadCorrProf = hFullJetDeltaHcorr.ProfileX()
+    hDeltaEHadCorrProf.GetYaxis().SetRangeUser(0.08, 15.)
+    hDeltaEHadCorrProf.SetLineColor(1)
+    hDeltaEHadCorrProf.SetMarkerStyle(20)
+    hDeltaEHadCorrProf.GetYaxis().SetTitleOffset(1.2)
+    hDeltaEHadCorrProf.GetYaxis().SetTitle("< #sum#it{E}_{nonlincorr} - #it{E}_{hadcorr} >")
+    outputFilename = os.path.join(outputDirJets, "hDeltaEHadCorrProf" + fileFormat)
+    plotHist(hDeltaEHadCorrProf, outputFilename, "E", True, False)
+  else:
+    print("hFullJetDeltaHcorr not saved for PbPb yet") #need to project the TH3 down to 2D
+  
+
+  # Plot full jet eta-phi, for jet pT > threshold
   # there are ceil(250/3)=84 jet pt bins
   # (5,84) means (~12 GeV < jet pT < 250 GeV)
   # (11,84) means (~30 GeV < jet pT < 250 GeV)
@@ -1109,6 +1239,8 @@ def plotFullJetQA(ispp, isRun2, includePhos, fullJetList, outputDir, fullJetList
   hFullJetEtaPhi.SetName("FullJetEtaPhi")
   hFullJetEtaPhi.SetTitle("Full Jet Occupancy, p_{T,jet} > " + str((minJetPtBin-1)*3) + " GeV")
   outputFilename = os.path.join(outputDirJets, "hFullJetEtaPhi" + fileFormat)
+  hFullJetEtaPhi.GetXaxis().SetRangeUser(-0.8,0.8)
+  hFullJetEtaPhi.GetYaxis().SetRangeUser(1.2,5.8)
   plotHist(hFullJetEtaPhi, outputFilename, "colz", False)
 
   # Plot ratio to reference run, if supplied
@@ -1144,9 +1276,13 @@ def plotFullJetQA(ispp, isRun2, includePhos, fullJetList, outputDir, fullJetList
   hFullJetPtLeadjetPt.SetName("fHistFuJetObservables_proj_pt_leadpt")
   hFullJetPtLeadjetPt.SetTitle("Leading pT vs. Jet pT, Full Jets")
   outputFilename = os.path.join(outputDirJets, "hFullJetPtLeadjetPt" + fileFormat)
+  if ispp:
+    hFullJetPtLeadjetPt.GetXaxis().SetRangeUser(0,200)
+    hFullJetPtLeadjetPt.GetYaxis().SetRangeUser(0,100)
   plotHist(hFullJetPtLeadjetPt, outputFilename, "colz", "", True)
 
   ROOT.gStyle.SetOptTitle(0)
+
 
 
   # Plot full jet pT
@@ -1424,6 +1560,10 @@ def plotFullJetQA(ispp, isRun2, includePhos, fullJetList, outputDir, fullJetList
 ########################################################################################################
 def plotEventQA(ispp, isRun2, includePhos, qaList, outputDir, fileFormat):
   
+  histNEvent = qaList.FindObject("fHistEventCount")
+  nEvents = histNEvent.GetBinContent(1)
+  #print("N events: %d" % nEvents)
+  
   # Create subdirectory for EventQA
   outputDirEventQA = outputDir + "EventQA/"
   if not os.path.exists(outputDirEventQA):
@@ -1468,6 +1608,10 @@ def plotEventQA(ispp, isRun2, includePhos, qaList, outputDir, fileFormat):
   hEventReject = qaList.FindObject("fHistEventRejection")
   hEventReject.GetYaxis().SetTitle("N events rejected")
   outputFilename = os.path.join(outputDirEventQA, "hEventReject" + fileFormat)
+  textNEvents = ROOT.TLatex()
+  textNEvents.SetNDC()
+  textNEvents.DrawLatex(0.65,0.87,"#it{N}_{events} = %d" % nEvents)
+
   plotHist(hEventReject, outputFilename, "hist", True)
 
 ########################################################################################################
@@ -1555,6 +1699,7 @@ def plotSpectra(h, hRef, h2, h3, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitl
       h2.GetYaxis().SetRangeUser(2e-11,20)
     h2.GetYaxis().SetLabelFont(43)
     h2.GetYaxis().SetLabelSize(20)
+    h2.GetXaxis().SetTitleOffset(1.4)
   if h3:
     h3.SetLineStyle(1)
     h3.SetLineColor(4)
@@ -1565,7 +1710,7 @@ def plotSpectra(h, hRef, h2, h3, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitl
     c = ROOT.TCanvas("c","c: pT",600,450)
     c.cd()
 
-    ROOT.gPad.SetLeftMargin(0.15)
+    ROOT.gPad.SetLeftMargin(0.16)
     ROOT.gPad.SetRightMargin(0.05)
     ROOT.gPad.SetBottomMargin(0.14)
     ROOT.gPad.SetTopMargin(0.05)
@@ -1624,7 +1769,8 @@ def plotSpectra(h, hRef, h2, h3, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitl
     hRatio = h.Clone()
     hRatio.Divide(hRef)
     
-    hRatio.SetMarkerStyle(21)
+    hRatio.SetMarkerStyle(20)
+    hRatio.SetMarkerSize(0.5)
     hRatio.SetMarkerColor(1)
 
     if h2:
@@ -1701,6 +1847,199 @@ def plotSpectra(h, hRef, h2, h3, nEvents, nEventsRef, ispp, xRangeMax, yAxisTitl
   if hRef:
     leg2.AddEntry(hRef, legendRefLabel, "l")
   leg2.Draw("same")
+  
+  c.SaveAs(outputFilename)
+  c.Close()
+
+########################################################################################################
+# Plot spectra and ratio (h2,h3 will be divided by h)   ################################################
+########################################################################################################
+def plotSpectraCent(h, h2, h3, nEvents, ispp, outputFilename, xRangeMax, yAxisTitle, ratioYAxisTitle, legendTitle, h1legendLabel, h2legendLabel, h3legendLabel = "", scalingOptions = "", yRatioMax = 32):
+  
+  h.SetLineColor(4)
+  if not h3:
+    h.SetLineColor(2)
+  h.SetLineWidth(2)
+  h.SetLineStyle(1)
+  
+  h.Scale(1./nEvents, scalingOptions)
+
+  h.GetYaxis().SetTitle(yAxisTitle)
+  h.GetYaxis().SetTitleSize(0.06)
+  h.GetXaxis().SetRangeUser(0,xRangeMax)
+  h.GetYaxis().SetRangeUser(2e-9,2e3)
+  if ispp:
+    h.GetYaxis().SetRangeUser(2e-11,20)
+  h.GetYaxis().SetLabelFont(43)
+  h.GetYaxis().SetLabelSize(20)
+  
+  h2.SetLineColor(1)
+  h2.SetLineWidth(2)
+  h2.SetLineStyle(1)
+  h2.Scale(1./nEvents, scalingOptions)
+  h2.GetYaxis().SetTitle(yAxisTitle)
+  h2.GetYaxis().SetTitleSize(0.06)
+  h2.GetXaxis().SetRangeUser(0,xRangeMax)
+  h2.GetYaxis().SetRangeUser(2e-9,2e3)
+  if ispp:
+    h2.GetYaxis().SetRangeUser(2e-11,20)
+  h2.GetYaxis().SetLabelFont(43)
+  h2.GetYaxis().SetLabelSize(20)
+  if h3:
+    h3.SetLineStyle(1)
+    h3.SetLineColor(2)
+    h3.SetLineWidth(2)
+    h3.Scale(1./nEvents, scalingOptions)
+
+  c = ROOT.TCanvas("c","c: pT",800,850)
+  c.cd()
+  pad1 = ROOT.TPad("pad1", "pad1", 0, 0.3, 1, 1.0)
+  pad1.SetBottomMargin(0)
+  pad1.SetLeftMargin(0.15)
+  pad1.SetRightMargin(0.05)
+  pad1.SetTopMargin(0.05)
+  pad1.SetLogy()
+  pad1.Draw()
+  pad1.cd()
+  
+  if h3:
+    h2.Draw("hist E")
+    h3.Draw("hist E same")
+    h.Draw("hist E same")
+  else:
+    h2.Draw("hist E")
+    h.Draw("hist E same")
+
+  c.cd()
+  pad2 = ROOT.TPad("pad2", "pad2", 0, 0.05, 1, 0.3)
+  pad2.SetTopMargin(0)
+  pad2.SetBottomMargin(0.35)
+  pad2.SetLeftMargin(0.15)
+  pad2.SetRightMargin(0.05)
+  pad2.Draw()
+  pad2.cd()
+
+  hRatio = h2.Clone()
+  hRatio.Divide(h)
+
+  hRatio.SetMarkerStyle(21)
+  hRatio.SetMarkerColor(1)
+
+  if h3:
+    hRatio2 = h3.Clone()
+    hRatio2.Divide(h)
+    hRatio2.SetMarkerStyle(21)
+    hRatio2.SetMarkerColor(2)
+    
+    hRatio2.GetYaxis().SetTitle(ratioYAxisTitle)
+    hRatio2.GetYaxis().SetTitleSize(20)
+    hRatio2.GetYaxis().SetTitleFont(43)
+    hRatio2.GetYaxis().SetTitleOffset(2.2)
+    hRatio2.GetYaxis().SetLabelFont(43)
+    hRatio2.GetYaxis().SetLabelSize(20)
+    hRatio2.GetYaxis().SetNdivisions(505)
+    hRatio2.GetYaxis().SetRangeUser(0,yRatioMax)
+    hRatio2.GetXaxis().SetRangeUser(0,xRangeMax)
+    hRatio2.GetXaxis().SetTitleSize(30)
+    hRatio2.GetXaxis().SetTitleFont(43)
+    hRatio2.GetXaxis().SetTitleOffset(4.)
+    hRatio2.GetXaxis().SetLabelFont(43)
+    hRatio2.GetXaxis().SetLabelSize(20)
+    
+    hRatio2.Draw("P E")
+    hRatio.Draw("P E same")
+  else:
+    hRatio.GetYaxis().SetTitle(ratioYAxisTitle)
+    hRatio.GetYaxis().SetTitleSize(20)
+    hRatio.GetYaxis().SetTitleFont(43)
+    hRatio.GetYaxis().SetTitleOffset(2.2)
+    hRatio.GetYaxis().SetLabelFont(43)
+    hRatio.GetYaxis().SetLabelSize(20)
+    hRatio.GetYaxis().SetNdivisions(505)
+    hRatio.GetYaxis().SetRangeUser(0,yRatioMax)
+    
+    hRatio.GetXaxis().SetRangeUser(0,xRangeMax)
+    hRatio.GetXaxis().SetTitleSize(30)
+    hRatio.GetXaxis().SetTitleFont(43)
+    hRatio.GetXaxis().SetTitleOffset(4.)
+    hRatio.GetXaxis().SetLabelFont(43)
+    hRatio.GetXaxis().SetLabelSize(20)
+    
+    hRatio.Draw("P E")
+
+  pad1.cd()
+  leg = ROOT.TLegend(0.3,0.7,0.88,0.93,legendTitle)
+  leg.SetFillColor(10)
+  leg.SetBorderSize(0)
+  leg.SetFillStyle(0)
+  leg.SetTextSize(0.04)
+  leg.AddEntry(h2, h2legendLabel, "l")
+  if h3:
+    leg.AddEntry(h3, h3legendLabel, "l")
+  leg.AddEntry(h, h1legendLabel, "l")
+  leg.Draw("same")
+  
+  c.SaveAs(outputFilename)
+  c.Close()
+########################################################################################################
+# Plot spectra (and ratio, if reference file suppled)   ################################################
+########################################################################################################
+def plotNEFSpectra(h, h2, h3, nEvents, ispp, xRangeMax, yAxisTitle, h1legendLabel, outputFilename, scalingOptions = "", h2legendLabel = "", h3legendLabel = ""):
+  
+  h.SetLineColor(1)
+  h.SetLineWidth(2)
+  h.SetLineStyle(1)
+  
+  h.Scale(1./nEvents, scalingOptions)
+  if ispp:
+    h.GetYaxis().SetRangeUser(0.0000005, 0.05)
+  h.GetYaxis().SetTitle(yAxisTitle)
+  h.GetYaxis().SetTitleSize(0.06)
+  h.GetXaxis().SetRangeUser(0,xRangeMax)
+  h.GetYaxis().SetLabelFont(43)
+  h.GetYaxis().SetLabelSize(20)
+
+  if h2:
+    h2.SetLineColor(2)
+    h2.SetLineWidth(2)
+    h2.SetLineStyle(1)
+    h2.Scale(1./nEvents, scalingOptions)
+    h2.GetYaxis().SetTitle(yAxisTitle)
+    h2.GetYaxis().SetTitleSize(0.06)
+    h2.GetXaxis().SetRangeUser(0,xRangeMax)
+    #h2.GetYaxis().SetRangeUser(2e-9,2e3)
+    if ispp:
+      h2.GetYaxis().SetRangeUser(5e-7,0.05)
+      h2.GetYaxis().SetLabelFont(43)
+      h2.GetYaxis().SetLabelSize(20)
+      h2.GetXaxis().SetTitleOffset(1.4)
+
+  c = ROOT.TCanvas("c","c: hist",600,450)
+  c.cd().SetLogy()
+
+  ROOT.gPad.SetLeftMargin(0.16)
+  ROOT.gPad.SetRightMargin(0.05)
+  ROOT.gPad.SetBottomMargin(0.14)
+  ROOT.gPad.SetTopMargin(0.05)
+  
+  if h3:
+    h2.Draw("hist E")
+    h3.Draw("hist E same")
+    h.Draw("hist E same")
+  else:
+    h2.Draw("hist E")
+    h.Draw("hist E same")
+
+  leg = ROOT.TLegend(0.3,0.7,0.88,0.93)
+  leg.SetFillColor(10)
+  leg.SetBorderSize(0)
+  leg.SetFillStyle(0)
+  leg.SetTextSize(0.04)
+  leg.AddEntry(h, h1legendLabel, "l")
+  if h3:
+    leg.AddEntry(h3, h3legendLabel, "l")
+  leg.AddEntry(h2, h2legendLabel, "l")
+  leg.Draw("same")
   
   c.SaveAs(outputFilename)
   c.Close()

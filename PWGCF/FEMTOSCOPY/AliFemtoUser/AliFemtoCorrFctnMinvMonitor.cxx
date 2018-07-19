@@ -17,7 +17,7 @@ ClassImp(AliFemtoCorrFctnMinvMonitor)
 #endif
 
 //____________________________
-AliFemtoCorrFctnMinvMonitor::AliFemtoCorrFctnMinvMonitor(char* title):
+AliFemtoCorrFctnMinvMonitor::AliFemtoCorrFctnMinvMonitor(const char* title):
    AliFemtoCorrFctn(),
    fMinveeFail(0),
    fMinvee(0),

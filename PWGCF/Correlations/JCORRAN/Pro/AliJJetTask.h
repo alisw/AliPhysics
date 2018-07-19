@@ -39,8 +39,14 @@ class AliJJetTask : public AliAnalysisTaskEmcalJet {
   void SetTrackOrMCParticle( UInt_t i, int v ){ fTrackOrMCParticle[i] = v; }
   int  GetTrackOrMCParticle( UInt_t i ){ return fTrackOrMCParticle.at( i ); }
   void SetDebug(int n) {debug = n; }
-  void SetMC(int mc) {fIsMC = mc;} 
   int  GetDebug(){ return debug; }
+  void SetMC(int mc) {fIsMC = mc;} 
+  void SetnR(int nR) {fnR = nR;} 
+  int GetnR() {return fnR;} 
+  void SetConeSize(UInt_t i, double radius) {fConeSizes[i] = radius;}
+  double  GetConeSize( UInt_t i ){ return fConeSizes.at( i ); }
+  void Setnkt(int nkt) {fnkt = nkt;} 
+  int Getnkt() {return fnkt;} 
   vector<TString> &GetJetFinderString() { return fJetFinderString;}
 
  protected:
@@ -66,6 +72,7 @@ class AliJJetTask : public AliAnalysisTaskEmcalJet {
 
   UInt_t                    fTaskEntry;
   vector<int>               fTrackOrMCParticle;
+  vector<double>            fConeSizes;
 
   vector<TString>           fJetFinderString;
 
@@ -74,6 +81,8 @@ class AliJJetTask : public AliAnalysisTaskEmcalJet {
   Int_t fNJetFinder;
   Int_t debug;
   Int_t fIsMC;
+  Int_t fnR;
+  Int_t fnkt;
 
   ClassDef(AliJJetTask, 5) 
     // 5 : add fTrackOrMCParticle

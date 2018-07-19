@@ -115,4 +115,4 @@ install(TARGETS ${MODULE}
 install(FILES ${HDRS} DESTINATION include)
 
 # Install the macros
-install(DIRECTORY macros DESTINATION PWGGA/CaloTrackCorrelations)
+install(DIRECTORY macros yaml DESTINATION PWGGA/CaloTrackCorrelations)

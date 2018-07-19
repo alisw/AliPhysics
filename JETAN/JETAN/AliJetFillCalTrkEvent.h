@@ -15,7 +15,7 @@
 
 class AliJetReaderHeader;
 class AliEMCALGeometry;
-class AliEMCALRecoUtils;
+//class AliEMCALRecoUtils;
 class AliVEvent;
 class AliMCEvent;
 class AliJetHadronCorrection;
@@ -39,7 +39,7 @@ class AliJetFillCalTrkEvent
   virtual void SetApplyMIPCorrection(Bool_t /*val*/)              {;}
   virtual void SetVEvent(AliVEvent */*aod*/)                       {;}
   virtual void SetMCEvent(AliMCEvent */*MC*/)                      {;}
-  virtual void SetEMCALRecoUtils(AliEMCALRecoUtils */*ru*/)       {;}
+  //virtual void SetEMCALRecoUtils(AliEMCALRecoUtils */*ru*/)       {;}
   virtual void SetApplyElectronCorrection(Int_t /*flag*/)         {;}
   virtual void SetApplyFractionHadronicCorrection(Bool_t /*val*/) {;}
   virtual void SetFractionHadronicCorrection(Double_t /*val*/)    {;}

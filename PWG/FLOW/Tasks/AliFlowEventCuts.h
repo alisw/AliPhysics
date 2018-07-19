@@ -27,7 +27,7 @@ class AliMultSelection;
 class AliFlowEventCuts : public AliFlowEventSimpleCuts {
 
  public:
-  enum refMultMethod { kTPConly, kSPDtracklets, kVZERO, kV0=kVZERO, kSPD1clusters, kZDC };
+  enum refMultMethod { kTPConly, kSPDtracklets, kVZERO, kV0=kVZERO, kV0M=kVZERO, kSPD1clusters, kZDC, kV0C, kV0A};
 
   AliFlowEventCuts();
   AliFlowEventCuts(const char* name, const char* title = "AliFlowEventCuts");

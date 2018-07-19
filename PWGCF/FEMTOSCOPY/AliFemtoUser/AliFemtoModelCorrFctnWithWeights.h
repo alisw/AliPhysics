@@ -37,7 +37,7 @@ public:
   virtual TList* GetOutputList();
   virtual void Write();
 
-  virtual AliFemtoModelCorrFctnWithWeights* Clone();
+  virtual AliFemtoModelCorrFctnWithWeights* Clone() const;
 
   Double_t GetQinvTrue(AliFemtoPair*);
 

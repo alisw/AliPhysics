@@ -27,8 +27,13 @@ void ProcessOutputMultSelTask(TString filename="AnalysisResults.root", TString c
     return;
   }
   TDirectoryFile* mso=(TDirectoryFile*)fil->Get("MultSelection");
+  Bool_t isMC=kFALSE;
   if(!mso){
-    printf("ERROR: TDirectoryFile MultSelection not present in %s\n",filename.Data());    
+    mso=(TDirectoryFile*)fil->Get("MultSelection_MC");
+    isMC=kTRUE;
+  }
+  if(!mso){
+    printf("ERROR: TDirectoryFile MultSelection not present in %s\n",filename.Data());
     return;
   }
   TList* msl=(TList*)mso->Get("cListMultSelection");
@@ -36,9 +41,51 @@ void ProcessOutputMultSelTask(TString filename="AnalysisResults.root", TString c
     printf("TList cListMultSelection not present\n");
     return;
   }
+
+  // Extract collsyst from histogram title
+  TH1D* hev=(TH1D*)msl->FindObject("fHistEventCounter");
+  Bool_t readFromHisto=kFALSE;
+  if(hev){
+    TString htit=hev->GetTitle();
+    cout<<htit.Data()<<endl;
+    if(htit.Contains("Event type: PbPb")){
+      collsyst="Pb-Pb";
+      readFromHisto=kTRUE;
+    }else if(htit.Contains("Event type: XeXe")){
+      collsyst="Xe-Xe";
+      readFromHisto=kTRUE;
+    }else if(htit.Contains("Event type: pA")){
+      collsyst="p-Pb";
+      readFromHisto=kTRUE;
+    }else if(htit.Contains("Event type: pp")){
+      collsyst="pp";
+      readFromHisto=kTRUE;
+    }
+  }
+
+
   TString estimNames[11]={"V0M","V0A","V0C","CL0","CL1","SPDClusters","SPDTracklets","ZNA","ZNC","ZNApp","ZNCpp"};
   TCanvas* ce=new TCanvas("ce","Estimators",1200,800);
   ce->Divide(4,3);
+  ce->cd(1);
+  TString cmc="Monte Carlo";
+  if(!isMC) cmc="Data";
+  TLatex* tt1=new TLatex(0.1,0.76,cmc.Data());
+  tt1->Draw();
+  tt1->SetTextFont(43);
+  tt1->SetTextSize(22);
+  TString ccs=Form("Collision system: %s",collsyst.Data());
+  TLatex* tt2=new TLatex(0.1,0.6,ccs.Data());
+  tt2->SetTextFont(43);
+  tt2->SetTextSize(22);
+  tt2->Draw();
+  TString chow="  (from macro argument)";
+  if(readFromHisto) chow="  (from fHistEventCounter title)";
+  TLatex* tt3=new TLatex(0.1,0.5,chow.Data());
+  tt3->SetTextFont(43);
+  tt3->SetTextSize(18);
+  tt3->Draw();
+
   for(Int_t je=0; je<11; je++){
     Bool_t shouldBeFilled=kFALSE;
     // maxCent is the upper limit of the percentile interval in which the distribution should be flat
@@ -49,19 +96,22 @@ void ProcessOutputMultSelTask(TString filename="AnalysisResults.root", TString c
       if(estimNames[je]=="V0M" || estimNames[je]=="V0A" || estimNames[je]=="V0C" || 
 	 estimNames[je]=="ZNApp" ||  estimNames[je]=="ZNCpp" || 
 	 estimNames[je]=="SPDClusters" || estimNames[je]=="SPDTracklets") shouldBeFilled=kTRUE;
+    }else if(collsyst=="Pb-Pb" || collsyst=="Xe-Xe"){
+      if(estimNames[je]=="V0M" || estimNames[je]=="SPDTracklets" ||
+	 estimNames[je]=="CL0" || estimNames[je]=="CL1") shouldBeFilled=kTRUE;
+      maxCent=90.;
     }else{
-      // enables the estimators which are calibrated for Pb-Pb and p-Pb
+      // enables the estimators which are calibrated for p-Pb 
       if(estimNames[je]=="V0M" || estimNames[je]=="V0A" || estimNames[je]=="V0C" || 
 	 estimNames[je]=="ZNA" ||  estimNames[je]=="ZNC" || 
 	 estimNames[je]=="CL0" || estimNames[je]=="CL1") shouldBeFilled=kTRUE;
-      if(collsyst=="Pb-Pb") maxCent=90.;
       if(collsyst=="p-Pb" && (estimNames[je]=="ZNA" ||  estimNames[je]=="ZNC")) maxCent=95.;
     }
     TString histoname=Form("fHistQASelected_%s",estimNames[je].Data());
     printf("--- Retrieving histogram %s ---\n",histoname.Data());
     TH1D* h=(TH1D*)msl->FindObject(histoname.Data());
     if(h){
-      ce->cd(je+1);
+      ce->cd(je+2);
       h->SetLineWidth(2);
       h->Draw("e");
       Int_t ib0=h->FindBin(0.01);
@@ -114,4 +164,7 @@ void ProcessOutputMultSelTask(TString filename="AnalysisResults.root", TString c
       tqa->Draw();
     }
   }
+
+
+
 }

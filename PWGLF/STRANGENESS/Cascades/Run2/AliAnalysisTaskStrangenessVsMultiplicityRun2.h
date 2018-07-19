@@ -39,10 +39,10 @@ class AliESDtrackCuts;
 class AliAnalysisUtils;
 class AliESDEvent;
 class AliPhysicsSelection;
-class AliESDFMD;
 class AliCFContainer;
 class AliV0Result;
 class AliCascadeResult;
+class AliExternalTrackParam;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
@@ -97,6 +97,16 @@ public:
 //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
+    }
+    AliEventCuts* GetEventCuts (){
+        return &fEventCuts; //adddress of this object for manipulation at runtime
+    }
+    void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
+        fkUseOldCentrality = lUseOldCent;
+    }
+//---------------------------------------------------------------------------------------
+    void SetSelectCharge ( Int_t lCharge = -1) {
+        fkSelectCharge = lCharge;
     }
 //---------------------------------------------------------------------------------------
     //Task Configuration: Skip Event Selections after trigger (VZERO test)
@@ -192,30 +202,12 @@ public:
     void AddTopologicalQAV0(Int_t lRecNumberOfSteps = 100);
     void AddTopologicalQACascade(Int_t lRecNumberOfSteps = 100);
     // 3 - Standard analysis configurations + systematics
-    void AddStandardV0Configuration();
-    void AddStandardCascadeConfiguration();
+    void AddStandardV0Configuration(Bool_t lUseFull = kFALSE, Bool_t lDoSweep = kFALSE);
+    void AddStandardCascadeConfiguration(Bool_t lUseFull = kFALSE);
     void AddCascadeConfiguration276TeV(); //Adds old 2.76 PbPb cut level analyses
 //---------------------------------------------------------------------------------------
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
-//---------------------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------------------
-    // A simple struct to handle FMD hits information
-    // Nothe: this struct is based on what is implemented in AliAnalysisTaskValidation
-    //        defined as 'Track' (thanks to C. Bourjau). It was slightly changed here and
-    //        renamed to 'FMDhit' in order to avoid any confusion.
-    struct FMDhit {
-        Float_t eta;
-        Float_t phi;
-        Float_t weight;
-        //Constructor
-        FMDhit(Float_t _eta, Float_t _phi, Float_t _weight)
-            :eta(_eta), phi(_phi), weight(_weight) {};
-    };
-    typedef std::vector<AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhit> FMDhits;
-//---------------------------------------------------------------------------------------
-   AliAnalysisTaskStrangenessVsMultiplicityRun2::FMDhits GetFMDhits(AliAODEvent* aodEvent) const;
 //---------------------------------------------------------------------------------------
 
 
@@ -225,7 +217,10 @@ private:
     // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
     TList  *fListHist;      //! List of Cascade histograms
     TList  *fListV0;        // List of Cascade histograms
-    TList  *fListCascade;   // List of Cascade histograms
+    TList  *fListXiMinus;   // List of XiMinus outputs
+    TList  *fListXiPlus;   // List of XiPlus outputs
+    TList  *fListOmegaMinus;   // List of XiMinus outputs
+    TList  *fListOmegaPlus;   // List of XiPlus outputs
     TTree  *fTreeEvent;              //! Output Tree, Events
     TTree  *fTreeV0;              //! Output Tree, V0s
     TTree  *fTreeCascade;              //! Output Tree, Cascades
@@ -252,6 +247,7 @@ private:
     Bool_t fkDebugBump; //if true, add extra information to TTrees for debugging
     Bool_t fkDebugOOBPileup; // if true, add extra information to TTrees for pileup study
     Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
+    Bool_t fkUseOldCentrality; //if true, use AliCentrality instead of AliMultSelection 
 
     Bool_t fkSaveCascadeTree;         //if true, save TTree
     Bool_t fkDownScaleCascade;
@@ -277,6 +273,9 @@ private:
     Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
 
+    //if true, save sandbox mode info (beware large files!)
+    Bool_t fkSandboxMode; 
+    
 //===========================================================================================
 //   Variables for Event Tree
 //===========================================================================================
@@ -295,9 +294,8 @@ private:
     Float_t fAmplitudeV0A; //!
     Float_t fAmplitudeV0C; //!
 
-    //FMD info for OOB pileup study
-    Float_t fNHitsFMDA; //!
-    Float_t fNHitsFMDC; //!
+    //IR info for OOB pileup study
+    Int_t fClosestNonEmptyBC; //!
 
 //===========================================================================================
 //   Variables for V0 Tree
@@ -346,19 +344,66 @@ private:
     Float_t fTreeVariableNegDCAz; //!
     Float_t fTreeVariablePosDCAz; //!
 
+    //Cluster information for all daughter tracks
+    Bool_t fTreeVariablePosITSClusters0;
+    Bool_t fTreeVariablePosITSClusters1;
+    Bool_t fTreeVariablePosITSClusters2;
+    Bool_t fTreeVariablePosITSClusters3;
+    Bool_t fTreeVariablePosITSClusters4;
+    Bool_t fTreeVariablePosITSClusters5;
+    
+    Bool_t fTreeVariableNegITSClusters0;
+    Bool_t fTreeVariableNegITSClusters1;
+    Bool_t fTreeVariableNegITSClusters2;
+    Bool_t fTreeVariableNegITSClusters3;
+    Bool_t fTreeVariableNegITSClusters4;
+    Bool_t fTreeVariableNegITSClusters5;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeVariablePosITSSharedClusters0;
+    Bool_t fTreeVariablePosITSSharedClusters1;
+    Bool_t fTreeVariablePosITSSharedClusters2;
+    Bool_t fTreeVariablePosITSSharedClusters3;
+    Bool_t fTreeVariablePosITSSharedClusters4;
+    Bool_t fTreeVariablePosITSSharedClusters5;
+    
+    Bool_t fTreeVariableNegITSSharedClusters0;
+    Bool_t fTreeVariableNegITSSharedClusters1;
+    Bool_t fTreeVariableNegITSSharedClusters2;
+    Bool_t fTreeVariableNegITSSharedClusters3;
+    Bool_t fTreeVariableNegITSSharedClusters4;
+    Bool_t fTreeVariableNegITSSharedClusters5;
+    
+    Bool_t fTreeVariableIsCowboy; //store if V0 is cowboy-like or sailor-like in XY plane
+
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeVariableNegTOFExpTDiff; //!
     Float_t fTreeVariablePosTOFExpTDiff; //!
+    Float_t fTreeVariableNegTOFSignal; //!
+    Float_t fTreeVariablePosTOFSignal; //!
+    Int_t   fTreeVariableNegTOFBCid; //!
+    Int_t   fTreeVariablePosTOFBCid; //! 
     //Event info
     Float_t fTreeVariableAmplitudeV0A; //!
     Float_t fTreeVariableAmplitudeV0C; //!
-    Float_t fTreeVariableNHitsFMDA; //!
-    Float_t fTreeVariableNHitsFMDC; //!
+    Int_t   fTreeVariableClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality; //!
     Bool_t fTreeVariableMVPileupFlag; //!
     Bool_t fTreeVariableOOBPileupFlag; //!
+    
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Sandbox V0
+    Float_t fTreeVariablePrimVertexX;
+    Float_t fTreeVariablePrimVertexY;
+    Float_t fTreeVariablePrimVertexZ;
+    
+    AliExternalTrackParam *fTreeVariablePosTrack;
+    AliExternalTrackParam *fTreeVariableNegTrack;
+    
+    Float_t fTreeVariableMagneticField;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
@@ -402,6 +447,36 @@ private:
     Float_t fTreeCascVarPosNSigmaProton; //!
     Float_t fTreeCascVarBachNSigmaPion;  //!
     Float_t fTreeCascVarBachNSigmaKaon;  //!
+    
+    //TOF (experimental, not corrected for weak decay traj)
+    Float_t fTreeCascVarNegTOFNSigmaPion;   //!
+    Float_t fTreeCascVarNegTOFNSigmaProton; //!
+    Float_t fTreeCascVarPosTOFNSigmaPion;   //!
+    Float_t fTreeCascVarPosTOFNSigmaProton; //!
+    Float_t fTreeCascVarBachTOFNSigmaPion;  //!
+    Float_t fTreeCascVarBachTOFNSigmaKaon;  //!
+    
+    Float_t fTreeCascVarNegITSNSigmaPion;   //!
+    Float_t fTreeCascVarNegITSNSigmaProton; //!
+    Float_t fTreeCascVarPosITSNSigmaPion;   //!
+    Float_t fTreeCascVarPosITSNSigmaProton; //!
+    Float_t fTreeCascVarBachITSNSigmaPion;  //!
+    Float_t fTreeCascVarBachITSNSigmaKaon;  //!
+    
+    //ChiSquares
+    Float_t fTreeCascVarChiSquareV0;
+    Float_t fTreeCascVarChiSquareCascade;
+    
+    //Extended information: uncertainties at point closest to pV
+    Float_t fTreeCascVarBachDCAPVSigmaX2; //
+    Float_t fTreeCascVarBachDCAPVSigmaY2; //
+    Float_t fTreeCascVarBachDCAPVSigmaZ2; //
+    Float_t fTreeCascVarPosDCAPVSigmaX2; //
+    Float_t fTreeCascVarPosDCAPVSigmaY2; //
+    Float_t fTreeCascVarPosDCAPVSigmaZ2; //
+    Float_t fTreeCascVarNegDCAPVSigmaX2; //
+    Float_t fTreeCascVarNegDCAPVSigmaY2; //
+    Float_t fTreeCascVarNegDCAPVSigmaZ2; //
 
     //Variables for debugging Wrong PID hypothesis in tracking bug
     // more info at: https://alice.its.cern.ch/jira/browse/PWGPP-218
@@ -450,15 +525,64 @@ private:
     //Event Number (check same-event index mixups)
     ULong64_t fTreeCascVarEventNumber; //!
 
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSClusters0;
+    Bool_t fTreeCascVarPosITSClusters1;
+    Bool_t fTreeCascVarPosITSClusters2;
+    Bool_t fTreeCascVarPosITSClusters3;
+    Bool_t fTreeCascVarPosITSClusters4;
+    Bool_t fTreeCascVarPosITSClusters5;
+    
+    Bool_t fTreeCascVarNegITSClusters0;
+    Bool_t fTreeCascVarNegITSClusters1;
+    Bool_t fTreeCascVarNegITSClusters2;
+    Bool_t fTreeCascVarNegITSClusters3;
+    Bool_t fTreeCascVarNegITSClusters4;
+    Bool_t fTreeCascVarNegITSClusters5;
+    
+    Bool_t fTreeCascVarBachITSClusters0;
+    Bool_t fTreeCascVarBachITSClusters1;
+    Bool_t fTreeCascVarBachITSClusters2;
+    Bool_t fTreeCascVarBachITSClusters3;
+    Bool_t fTreeCascVarBachITSClusters4;
+    Bool_t fTreeCascVarBachITSClusters5;
+    
+    //Cluster information for all daughter tracks
+    Bool_t fTreeCascVarPosITSSharedClusters0;
+    Bool_t fTreeCascVarPosITSSharedClusters1;
+    Bool_t fTreeCascVarPosITSSharedClusters2;
+    Bool_t fTreeCascVarPosITSSharedClusters3;
+    Bool_t fTreeCascVarPosITSSharedClusters4;
+    Bool_t fTreeCascVarPosITSSharedClusters5;
+    
+    Bool_t fTreeCascVarNegITSSharedClusters0;
+    Bool_t fTreeCascVarNegITSSharedClusters1;
+    Bool_t fTreeCascVarNegITSSharedClusters2;
+    Bool_t fTreeCascVarNegITSSharedClusters3;
+    Bool_t fTreeCascVarNegITSSharedClusters4;
+    Bool_t fTreeCascVarNegITSSharedClusters5;
+    
+    Bool_t fTreeCascVarBachITSSharedClusters0;
+    Bool_t fTreeCascVarBachITSSharedClusters1;
+    Bool_t fTreeCascVarBachITSSharedClusters2;
+    Bool_t fTreeCascVarBachITSSharedClusters3;
+    Bool_t fTreeCascVarBachITSSharedClusters4;
+    Bool_t fTreeCascVarBachITSSharedClusters5;
+
     //Variables for OOB pileup study (high-multiplicity triggers pp 13 TeV - 2016 data)
     Float_t fTreeCascVarNegTOFExpTDiff; //!
     Float_t fTreeCascVarPosTOFExpTDiff; //!
     Float_t fTreeCascVarBachTOFExpTDiff; //!
+    Float_t fTreeCascVarNegTOFSignal; //!
+    Float_t fTreeCascVarPosTOFSignal; //!
+    Float_t fTreeCascVarBachTOFSignal; //!
+    Int_t   fTreeCascVarNegTOFBCid; //!
+    Int_t   fTreeCascVarPosTOFBCid; //!
+    Int_t   fTreeCascVarBachTOFBCid; //!
     //Event info
     Float_t fTreeCascVarAmplitudeV0A; //!
     Float_t fTreeCascVarAmplitudeV0C; //!
-    Float_t fTreeCascVarNHitsFMDA; //!
-    Float_t fTreeCascVarNHitsFMDC; //!
+    Int_t   fTreeCascVarClosestNonEmptyBC; //!
 
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality; //!
@@ -469,6 +593,22 @@ private:
     Bool_t fTreeCascVarBachIsKink;
     Bool_t fTreeCascVarPosIsKink;
     Bool_t fTreeCascVarNegIsKink;
+    
+    //Select charge (testing / checks)
+    Int_t fkSelectCharge;
+    
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //Sandbox mode for cascades
+    Float_t fTreeCascVarPrimVertexX;
+    Float_t fTreeCascVarPrimVertexY;
+    Float_t fTreeCascVarPrimVertexZ;
+    
+    AliExternalTrackParam *fTreeCascVarBachTrack;
+    AliExternalTrackParam *fTreeCascVarPosTrack;
+    AliExternalTrackParam *fTreeCascVarNegTrack;
+    
+    Float_t fTreeCascVarMagneticField;
+    //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 //===========================================================================================
 //   Histograms

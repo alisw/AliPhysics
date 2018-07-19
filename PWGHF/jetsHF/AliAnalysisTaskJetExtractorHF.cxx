@@ -92,27 +92,27 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fRandom(0),
   fVtxTagger(0),
   fCurrentNJetsInEvents(0),
+  fCurrentNJetsInEventsTotal(0),
   fCurrentJetTypeHM(0),
-  fCurrentJetTypeIC(0),
+  fCurrentJetTypePM(0),
   fCurrentLeadingJet(0),
   fCurrentSubleadingJet(0),
-  fCurrentInitialParton1(0),
-  fCurrentInitialParton2(0),
-  fCurrentInitialParton1Type(0),
-  fCurrentInitialParton2Type(0),
+  fCurrentJetHFHadron(0),
   fCurrentTrueJetPt(0),
-  fFoundIC(kFALSE),
+  fUnderflowBinContents(),
   fExtractionCutMinCent(-1),
   fExtractionCutMaxCent(-1),
-  fExtractionCutUseIC(kFALSE),
+  fExtractionCutUsePM(kFALSE),
   fExtractionCutUseHM(kFALSE),
   fExtractionCutMinPt(0.),
   fExtractionCutMaxPt(200.),
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
   fSetEmcalJetFlavour(0),
-  fHadronMatchingRadius(0.5),
-  fInitialCollisionMatchingRadius(0.3),
+  fUnderflowNumBins(1),
+  fUnderflowCutOff(5.0),
+  fUnderflowPercentage(0.5),
+  fHadronMatchingRadius(0.4),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
   fTruthParticleArrayName("mcparticles"),
@@ -120,12 +120,13 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF() :
   fSecondaryVertexMaxDispersion(0.05),
   fAddPIDSignal(kFALSE),
   fCalculateSecondaryVertices(kFALSE),
-  fUseJetTaggingHFMethod(kTRUE),
   fVertexerCuts(0)
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
   fRandom = new TRandom3(0);
+  for(size_t i=0;i<100;i++)
+    fUnderflowBinContents[i] = 0;
 }
 
 //________________________________________________________________________
@@ -139,27 +140,27 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fRandom(0),
   fVtxTagger(0),
   fCurrentNJetsInEvents(0),
+  fCurrentNJetsInEventsTotal(0),
   fCurrentJetTypeHM(0),
-  fCurrentJetTypeIC(0),
+  fCurrentJetTypePM(0),
   fCurrentLeadingJet(0),
   fCurrentSubleadingJet(0),
-  fCurrentInitialParton1(0),
-  fCurrentInitialParton2(0),
-  fCurrentInitialParton1Type(0),
-  fCurrentInitialParton2Type(0),
+  fCurrentJetHFHadron(0),
   fCurrentTrueJetPt(0),
-  fFoundIC(kFALSE),
+  fUnderflowBinContents(),
   fExtractionCutMinCent(-1),
   fExtractionCutMaxCent(-1),
-  fExtractionCutUseIC(kFALSE),
+  fExtractionCutUsePM(kFALSE),
   fExtractionCutUseHM(kFALSE),
   fExtractionCutMinPt(0.),
   fExtractionCutMaxPt(200.),
   fExtractionPercentage(1.0),
   fExtractionListPIDsHM(),
   fSetEmcalJetFlavour(0),
-  fHadronMatchingRadius(0.5),
-  fInitialCollisionMatchingRadius(0.3),
+  fUnderflowNumBins(1),
+  fUnderflowCutOff(5.0),
+  fUnderflowPercentage(0.5),
+  fHadronMatchingRadius(0.4),
   fTruthJetsArrayName(""),
   fTruthJetsRhoName(""),
   fTruthParticleArrayName("mcparticles"),
@@ -167,12 +168,13 @@ AliAnalysisTaskJetExtractorHF::AliAnalysisTaskJetExtractorHF(const char *name) :
   fSecondaryVertexMaxDispersion(0.05),
   fAddPIDSignal(kFALSE),
   fCalculateSecondaryVertices(kFALSE),
-  fUseJetTaggingHFMethod(kTRUE),
   fVertexerCuts(0)
 {
   // Default constructor.
   SetMakeGeneralHistograms(kTRUE);
   fRandom = new TRandom3(0);
+  for(size_t i=0;i<100;i++)
+    fUnderflowBinContents[i] = 0;
 }
 
 //________________________________________________________________________
@@ -198,16 +200,38 @@ void AliAnalysisTaskJetExtractorHF::UserCreateOutputObjects()
   //if(fTracksCont) fTracksCont->SetClassName("AliVTrack");
 
   // ### Add control histograms (already some created in base task)
-  AddHistogram2D<TH2D>("hJetCount", "Number of jets in acceptance vs. centrality", "COLZ", 100, 0., 100., 100, 0, 100, "N Jets","Centrality", "dN^{Events}/dN^{Jets}");
+  AddHistogram2D<TH2D>("hJetCount", "Number of tagged jets in acceptance vs. centrality", "COLZ", 100, 0., 100., 100, 0, 100, "N Jets","Centrality", "dN^{Events}/dN^{Jets}");
+  AddHistogram2D<TH2D>("hJetCountTotal", "Number of inclusive jets in acceptance vs. centrality", "COLZ", 100, 0., 100., 100, 0, 100, "N Jets","Centrality", "dN^{Events}/dN^{Jets}");
   AddHistogram2D<TH2D>("hTrackCount", "Number of tracks in acceptance vs. centrality", "COLZ", 500, 0., 5000., 100, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
   AddHistogram2D<TH2D>("hBackgroundPt", "Background p_{T} distribution", "", 150, 0., 150., 100, 0, 100, "Background p_{T} (GeV/c)", "Centrality", "dN^{Events}/dp_{T}");
 
   AddHistogram2D<TH2D>("hJetPtRaw", "Jets p_{T} distribution (raw)", "COLZ", 300, 0., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
   AddHistogram2D<TH2D>("hJetPt", "Jets p_{T} distribution (background subtracted)", "COLZ", 400, -100., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Jets}/dp_{T}");
+  AddHistogram2D<TH2D>("hJetPtAcceptance", "Statistically discarded jets p_{T} distribution (background subtracted)", "COLZ", 400, -100., 300., 100, 0, 100, "p_{T, jet} (GeV/c)", "Centrality", "dN^{Discarded jets}/dp_{T}");
   AddHistogram2D<TH2D>("hJetPhiEta", "Jet angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Jets}/d#phi d#eta");
   AddHistogram2D<TH2D>("hJetArea", "Jet area", "COLZ", 200, 0., 2., 100, 0, 100, "Jet A", "Centrality", "dN^{Jets}/dA");
 
-  AddHistogram2D<TH2D>("hJetType", "Jet type", "COLZ", 7, 0, 7, 7, 0, 7, "Jet type from hadron matching", "Jet type initial collision", "dN^{Jets}/dType");
+  TH1* tmpHisto = AddHistogram1D<TH1D>("hJetAcceptance", "Accepted jets", "", 5, 0, 5, "stage","N^{jets}/cut");
+  tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
+  tmpHisto->GetXaxis()->SetBinLabel(2, "Centrality");
+  tmpHisto->GetXaxis()->SetBinLabel(3, "p_{T}");
+  tmpHisto->GetXaxis()->SetBinLabel(4, "PID");
+  tmpHisto->GetXaxis()->SetBinLabel(5, "Extraction percentage");
+
+  tmpHisto = AddHistogram1D<TH1D>("hBJetFromInitialCollision", "B-jets directly from a b/anti b quark", "", 2, 0, 2, "IC","N^{jets}");
+  tmpHisto->GetXaxis()->SetBinLabel(1, "From gluon splittings etc.");
+  tmpHisto->GetXaxis()->SetBinLabel(2, "From initial collision");
+
+
+  AddHistogram1D<TH1D>("hJetTypeHM", "Jet types from HM (before tagging)", "COLZ", 100, 0, 100, "Jet type from hadron matching", "dN^{Jets}/dType");
+  AddHistogram1D<TH1D>("hJetTypePM", "Jet types from PM (before tagging)", "COLZ", 100, 0, 100, "Jet type from parton matching", "dN^{Jets}/dType");
+
+  AddHistogram1D<TH1D>("hJetHFHadronHM_C", "Hadron content for HM c-jets (before tagging)", "COLZ", 30000, 0, 30000,  "PDG code", "dN^{Jets}/dType");
+  AddHistogram1D<TH1D>("hJetHFHadronHM_B", "Hadron content for HM b-jets (before tagging)", "COLZ", 30000, 0, 30000,  "PDG code", "dN^{Jets}/dType");
+  AddHistogram1D<TH1D>("hJetHFHadronPM_C", "Hadron content for PM c-jets (before tagging)", "COLZ", 30000, 0, 30000,  "PDG code", "dN^{Jets}/dType");
+  AddHistogram1D<TH1D>("hJetHFHadronPM_B", "Hadron content for PM b-jets (before tagging)", "COLZ", 30000, 0, 30000,  "PDG code", "dN^{Jets}/dType");
+
+  AddHistogram2D<TH2D>("hJetTypeCorr", "Jet type correlation", "COLZ", 7, 0, 7, 7, 0, 7, "Jet type from hadron matching", "Jet type from parton matching", "dN^{Jets}/dType");
   AddHistogram2D<TH2D>("hDeltaPt", "#delta p_{T} distribution", "", 400, -100., 300., 100, 0, 100, "p_{T, cone} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
 
   AddHistogram2D<TH2D>("hConstituentPt", "Jet constituent p_{T} distribution", "COLZ", 400, 0., 300., 100, 0, 100, "p_{T, const} (GeV/c)", "Centrality", "dN^{Const}/dp_{T}");
@@ -221,14 +245,6 @@ void AliAnalysisTaskJetExtractorHF::UserCreateOutputObjects()
 
   AddHistogram2D<TH2D>("hTrackEtaPt", "Track angular distribution in #eta vs. p_{T}", "LEGO2", 100, -2.5, 2.5, 300, 0., 300., "#eta", "p_{T} (GeV/c)", "dN^{Tracks}/(d#eta dp_{T})");
   AddHistogram2D<TH2D>("hTrackPhiPt", "Track angular distribution in #phi vs. p_{T}", "LEGO2", 180, 0, 2*TMath::Pi(), 300, 0., 300., "#phi", "p_{T} (GeV/c)", "dN^{Tracks}/(d#phi dp_{T})");
-
-
-  TH1* tmpHisto = AddHistogram1D<TH1D>("hJetAcceptance", "Accepted jets", "", 5, 0, 5, "stage","N^{jets}/cut");
-  tmpHisto->GetXaxis()->SetBinLabel(1, "Before cuts");
-  tmpHisto->GetXaxis()->SetBinLabel(2, "Centrality");
-  tmpHisto->GetXaxis()->SetBinLabel(3, "p_{T}");
-  tmpHisto->GetXaxis()->SetBinLabel(4, "PID");
-  tmpHisto->GetXaxis()->SetBinLabel(5, "Extraction percentage");
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
@@ -255,6 +271,13 @@ void AliAnalysisTaskJetExtractorHF::ExecOnce() {
     fVtxTagger = new AliHFJetsTaggingVertex();
     fVtxTagger->SetCuts(fVertexerCuts);
   }
+
+  // Status message on low-pt extraction
+  if(fUnderflowNumBins)
+    AliWarning(Form("Low-pT extraction active: %2.0f%% of jets will be extracted in %d bin(s) from %2.2f to %2.2f GeV/c.", fUnderflowPercentage*100., fUnderflowNumBins, fUnderflowCutOff, fExtractionCutMinPt));
+  else
+    AliWarning(Form("Low-pT extraction not active: Jets below %2.2f GeV/c will be discarded completely.", fExtractionCutMinPt));
+
 }
 
 //________________________________________________________________________
@@ -270,19 +293,68 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
     return kFALSE;
   FillHistogram("hJetAcceptance", 1.5);
 
+  Double_t jetPt = jet->Pt()-jet->Area()*fJetsCont->GetRhoVal();
+
   // ### PT
-  if( ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) < fExtractionCutMinPt) || ((jet->Pt()-jet->Area()*fJetsCont->GetRhoVal()) >= fExtractionCutMaxPt) )
+  if(jetPt >= fExtractionCutMaxPt)
+  {
+    FillHistogram("hJetPtAcceptance", jetPt, fCent);
     return kFALSE;
+  }
+
+  if(jetPt < fExtractionCutMinPt && jetPt >= fUnderflowCutOff)
+  {
+    if(!fUnderflowNumBins) // If low-pT extraction is not active, discard jet
+    {
+      FillHistogram("hJetPtAcceptance", jetPt, fCent);
+      return kFALSE;
+    }
+    else // If active, put in underflow bin
+    {
+      if(fRandom->Rndm() >= fUnderflowPercentage)
+      {
+        FillHistogram("hJetPtAcceptance", jetPt, fCent);
+        return kFALSE;
+      }
+      Double_t extractionBinSize = (fExtractionCutMinPt-fUnderflowCutOff)/fUnderflowNumBins;
+      // Low-pT extraction
+      for(Int_t i=0; i<fUnderflowNumBins; i++)
+        if( (jetPt >= i*extractionBinSize + fUnderflowCutOff) && (jetPt < (i+1)*extractionBinSize + fUnderflowCutOff))
+        {
+          if (fUnderflowBinContents[i+1] >= fUnderflowBinContents[0])
+          {
+            FillHistogram("hJetPtAcceptance", jetPt, fCent);
+            return kFALSE;
+          }
+        }
+    }
+  }
+  fCurrentNJetsInEventsTotal++; // number inclusive jets within kinematic extraction criterium
   FillHistogram("hJetAcceptance", 2.5);
 
+  // Fill histograms to evaluate fractions of different jet types
+  // This is after the kinematic extraction cuts, but before jet ID filtering
+  FillHistogram("hJetTypeHM", fCurrentJetTypeHM);
+  FillHistogram("hJetTypePM", fCurrentJetTypePM);
+
+  // Jet hadron content of b- and c-jets
+  if(fCurrentJetTypeHM == 4)
+    FillHistogram("hJetHFHadronHM_C", fCurrentJetHFHadron);
+  else if (fCurrentJetTypeHM == 5)
+    FillHistogram("hJetHFHadronHM_B", fCurrentJetHFHadron);
+  if(fCurrentJetTypePM == 4)
+    FillHistogram("hJetHFHadronPM_C", fCurrentJetHFHadron);
+  else if (fCurrentJetTypePM == 5)
+    FillHistogram("hJetHFHadronPM_B", fCurrentJetHFHadron);
+
   Bool_t passedCutPID = kTRUE;
-  // ### PID (from initial collision)
-  if(fExtractionCutUseIC)
+  // ### PID (from parton matching)
+  if(fExtractionCutUsePM)
   {
     passedCutPID = kFALSE;
-    for(size_t i=0; i<fExtractionListPIDsIC.size(); i++)
+    for(size_t i=0; i<fExtractionListPIDsPM.size(); i++)
     {
-      if (fExtractionListPIDsIC.at(i) == fCurrentJetTypeIC)
+      if (fExtractionListPIDsPM.at(i) == fCurrentJetTypePM)
         passedCutPID = kTRUE;
     }
   }
@@ -301,13 +373,30 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsJetSelected(AliEmcalJet* jet)
   if(!passedCutPID)
     return kFALSE;
   FillHistogram("hJetAcceptance", 3.5);
+  fCurrentNJetsInEvents++; // number tagged jets within kinematic extraction criterium
+
 
   // Discard jets statistically
   if(fRandom->Rndm() >= fExtractionPercentage)
+  {
+    FillHistogram("hJetPtAcceptance", jetPt, fCent);
     return kFALSE;
+  }
   FillHistogram("hJetAcceptance", 4.5);
 
-  fCurrentNJetsInEvents++;
+  if(fUnderflowNumBins)
+  {
+    // Fill low-pt extraction bin contents
+    // Those contents decide whether we extract further jets in an "underflow" bin
+    Double_t extractionBinSize = (fExtractionCutMinPt-fUnderflowCutOff)/fUnderflowNumBins;
+    for(Int_t i=0; i<fUnderflowNumBins; i++)
+      if( (jetPt >= i*extractionBinSize + fUnderflowCutOff) && (jetPt < (i+1)*extractionBinSize + fUnderflowCutOff))
+        fUnderflowBinContents[i+1]++;
+
+    if( (jetPt >= fExtractionCutMinPt) && (jetPt < fExtractionCutMinPt+extractionBinSize) )
+      fUnderflowBinContents[0]++;
+  }
+
   return kTRUE;
 }
 
@@ -335,7 +424,7 @@ void AliAnalysisTaskJetExtractorHF::AddJetToTree(AliEmcalJet* jet)
     eventID = eventIDHeader->GetEventIdAsLong();
 
   // ### Actually add the basic jet
-  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fCurrentJetTypeIC, fCurrentJetTypeHM, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent, jet->M(), fPtHard);
+  AliBasicJet basicJet(jet->Eta(), jet->Phi(), jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), jet->Charge(), fJetsCont->GetJetRadius(), jet->Area(), fCurrentJetTypePM, fCurrentJetTypeHM, fJetsCont->GetRhoVal(), InputEvent()->GetMagneticField(), vtxX, vtxY, vtxZ, eventID, fCent, jet->M(), fPtHard);
 
   // Add constituents
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
@@ -344,14 +433,14 @@ void AliAnalysisTaskJetExtractorHF::AddJetToTree(AliEmcalJet* jet)
     if(!particle) continue;
 
     // Impact parameter analysis
+    Double_t d0 = 0;
+    Double_t z0 = 0;
+    Double_t d0cov = 0;
+    Double_t z0cov = 0;
+    // Note: significant IPs are given by d0/sqrt(d0cov) & z0/sqrt(z0cov)
+    GetTrackImpactParameters(myVertex, dynamic_cast<AliAODTrack*>(particle), d0, d0cov, z0, z0cov);
 
-    // significant impact parameters
-    Double_t z0sig = 0;
-    Double_t d0sig = 0;
-
-    GetTrackImpactParameters(myVertex, dynamic_cast<AliAODTrack*>(particle), d0sig, z0sig);
-
-    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), particle->Xv(), particle->Yv(), particle->Zv(), d0sig, z0sig);
+    basicJet.AddJetConstituent(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge(), particle->Xv(), particle->Yv(), particle->Zv(), d0, d0cov, z0, z0cov);
     AddPIDInformation(particle, *basicJet.GetJetConstituent(basicJet.GetNumbersOfConstituents()-1));
   }
 
@@ -371,6 +460,7 @@ void AliAnalysisTaskJetExtractorHF::FillEventControlHistograms()
   // ### Event control plots
   FillHistogram("hTrackCount", fTracksCont->GetNAcceptedParticles(), fCent);
   FillHistogram("hJetCount", fCurrentNJetsInEvents, fCent);
+  FillHistogram("hJetCountTotal", fCurrentNJetsInEventsTotal, fCent);
   FillHistogram("hBackgroundPt", fJetsCont->GetRhoVal(), fCent);
 }
 
@@ -382,8 +472,7 @@ void AliAnalysisTaskJetExtractorHF::FillJetControlHistograms(AliEmcalJet* jet)
   FillHistogram("hJetPt", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), fCent);
   FillHistogram("hJetPhiEta", jet->Phi(), jet->Eta());
   FillHistogram("hJetArea", jet->Area(), fCent);
-
-  FillHistogram("hJetType", fCurrentJetTypeHM, fCurrentJetTypeIC);
+  FillHistogram("hJetTypeCorr", fCurrentJetTypeHM, fCurrentJetTypePM);
 
   // ### Jet constituent plots
   for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
@@ -518,7 +607,7 @@ void AliAnalysisTaskJetExtractorHF::AddSecondaryVertices(const AliVVertex* primV
     // Calculate vtx distance
     Double_t effX = secVtx->GetX() - esdVtx->GetX();
     Double_t effY = secVtx->GetY() - esdVtx->GetY();
-    Double_t effZ = secVtx->GetZ() - esdVtx->GetZ();
+    //Double_t effZ = secVtx->GetZ() - esdVtx->GetZ();
 
     // ##### Vertex properties
     // vertex dispersion
@@ -556,7 +645,7 @@ void AliAnalysisTaskJetExtractorHF::AddSecondaryVertices(const AliVVertex* primV
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractorHF::GetTrackImpactParameters(const AliVVertex* vtx, AliAODTrack* track, Double_t& d0sig, Double_t& z0sig)
+void AliAnalysisTaskJetExtractorHF::GetTrackImpactParameters(const AliVVertex* vtx, AliAODTrack* track, Double_t& d0, Double_t& d0cov, Double_t& z0, Double_t& z0cov)
 {
   if (track)
   {
@@ -564,10 +653,10 @@ void AliAnalysisTaskJetExtractorHF::GetTrackImpactParameters(const AliVVertex* v
     Bool_t isDCA=track->PropagateToDCA(vtx,InputEvent()->GetMagneticField(),3.0,d0rphiz,covd0);
     if(isDCA)
     {
-      if(covd0[0] > 0)
-        d0sig = d0rphiz[0]/TMath::Sqrt(covd0[0]);
-      if(covd0[2] > 0)
-        z0sig = d0rphiz[1]/TMath::Sqrt(covd0[2]);
+      d0 = d0rphiz[0];
+      z0 = d0rphiz[1];
+      d0cov = covd0[0];
+      z0cov = covd0[2];
     }
   }
 }
@@ -575,107 +664,43 @@ void AliAnalysisTaskJetExtractorHF::GetTrackImpactParameters(const AliVVertex* v
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractorHF::CalculateJetProperties(AliEmcalJet* jet)
 {
-  if(fUseJetTaggingHFMethod)
-    CalculateJetType_HFMethod(jet, fCurrentJetTypeIC, fCurrentJetTypeHM);
-  else
-    CalculateJetType(jet, fCurrentJetTypeIC, fCurrentJetTypeHM);
+  CalculateJetType(jet, fCurrentJetTypeHM, fCurrentJetTypePM);
+
   // If fTruthJetsArrayName is set, the true pt field is calculated by searching the matching jet
   if(fTruthJetsArrayName != "")
     FindMatchingJet(jet);
+  else // otherwise, the true jet pt is set as fraction of non-MC particles in jets
+  {
+    Double_t pt_nonMC = 0.;
+    Double_t pt_all   = 0.;
+
+    for(Int_t iConst = 0; iConst < jet->GetNumberOfTracks(); iConst++)
+    {
+      // Loop over all valid jet constituents
+      AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(iConst, fTracksCont->GetArray()));
+      if(!particle) continue;
+      if(particle->Pt() < 1e-6) continue;
+
+      // Particles marked w/ labels above 100000 are considered from toy
+      if(particle->GetLabel() < 100000)
+        pt_nonMC += particle->Pt();
+      pt_all += particle->Pt();
+    }
+    if(pt_all)
+      fCurrentTrueJetPt = (pt_nonMC/pt_all);
+  }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractorHF::CalculateEventProperties()
 {
   fCurrentNJetsInEvents = 0;
+  fCurrentNJetsInEventsTotal = 0;
   GetLeadingJets("rho", fCurrentLeadingJet, fCurrentSubleadingJet);
-  CalculateInitialCollisionJets();
   if(fCent==-1)
     fCent = 99;
 }
 
-//________________________________________________________________________
-void AliAnalysisTaskJetExtractorHF::CalculateJetType(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM)
-{
-  typeIC = 0;
-  typeHM = 0;
-
-  // Set type if initial parton information is available
-  if(fFoundIC)
-  {
-    typeIC = 0;
-    if(jet==fCurrentInitialParton1)
-      typeIC = fCurrentInitialParton1Type;
-    else if (jet==fCurrentInitialParton2)
-      typeIC = fCurrentInitialParton2Type;
-  }
-
-  // Do hadron matching jet type tagging using mcparticles
-  // ... if not explicitly deactivated
-  if (fTruthParticleArray)
-  {
-    typeHM = 1; // light jet until something else was found
-    for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
-    {
-      AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(i));
-      if(!part) continue;
-
-      // Check if particle is in a radius around the jet
-      Double_t rsquared = (part->Eta() - jet->Eta())*(part->Eta() - jet->Eta()) + (part->Phi() - jet->Phi())*(part->Phi() - jet->Phi());
-      if(rsquared >= fHadronMatchingRadius*fHadronMatchingRadius)
-        continue;
-
-      // Check if the particle has beauty, charm or strangeness
-      // If it has beauty, we are done (exclusive definition)
-      Int_t absPDG = TMath::Abs(part->PdgCode());
-      // Particle has beauty
-      if ((absPDG > 500 && absPDG < 600) || (absPDG > 5000 && absPDG < 6000))
-      {
-        typeHM = 5; // beauty
-        break;
-      }
-      // Particle has charm
-      else if ((absPDG > 400 && absPDG < 500) || (absPDG > 4000 && absPDG < 5000))
-        typeHM = 4; // charm
-      // Particle has strangeness: Only search for strangeness, if charm was not already found
-      else if (typeHM != 4 && (absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
-        typeHM = 3; // strange
-    }
-  }
-  // As fallback, the MC stack will be tried
-  else if(MCEvent() && (MCEvent()->Stack()))
-  {
-    typeHM = 1; // light jet until something else was found
-    AliStack* stack = MCEvent()->Stack();
-    // Go through the whole particle stack
-    for(Int_t i=0; i<stack->GetNtrack(); i++)
-    {
-      TParticle *part = stack->Particle(i);
-      if(!part) continue;
-
-      // Check if particle is in a radius around the jet
-      Double_t rsquared = (part->Eta() - jet->Eta())*(part->Eta() - jet->Eta()) + (part->Phi() - jet->Phi())*(part->Phi() - jet->Phi());
-      if(rsquared >= fHadronMatchingRadius*fHadronMatchingRadius)
-        continue;
-
-      // Check if the particle has beauty, charm or strangeness
-      // If it has beauty, we are done (exclusive definition)
-      Int_t absPDG = TMath::Abs(part->GetPdgCode());
-      // Particle has beauty
-      if ((absPDG > 500 && absPDG < 600) || (absPDG > 5000 && absPDG < 6000))
-      {
-        typeHM = 5; // beauty
-        break;
-      }
-      // Particle has charm
-      else if ((absPDG > 400 && absPDG < 500) || (absPDG > 4000 && absPDG < 5000))
-        typeHM = 4; // charm
-      // Particle has strangeness: Only search for strangeness, if charm was not already found
-      else if (typeHM != 4 && (absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
-        typeHM = 3; // strange
-    }
-  }
-}
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskJetExtractorHF::IsStrangeJet(AliEmcalJet* jet)
@@ -730,24 +755,23 @@ Bool_t AliAnalysisTaskJetExtractorHF::IsStrangeJet(AliEmcalJet* jet)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskJetExtractorHF::CalculateJetType_HFMethod(AliEmcalJet* jet, Int_t& typeIC, Int_t& typeHM)
+void AliAnalysisTaskJetExtractorHF::CalculateJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM)
 {
   Double_t radius = fHadronMatchingRadius;
 
   if(!fTruthParticleArray)
     return;
 
-  typeIC = 0;
   typeHM = 0;
+  typePM = 0;
 
   AliAODMCParticle* parton[2];
-
-  parton[0] = (AliAODMCParticle*) fVtxTagger->IsMCJetParton(fTruthParticleArray, jet, radius);  // method 1
-  parton[1] = (AliAODMCParticle*) fVtxTagger->IsMCJetMeson(fTruthParticleArray, jet, radius);   // method 2
+  parton[0] = (AliAODMCParticle*) fVtxTagger->IsMCJetParton(fTruthParticleArray, jet, radius);  // method 1 (parton matching)
+  parton[1] = (AliAODMCParticle*) fVtxTagger->IsMCJetMeson(fTruthParticleArray, jet, radius);   // method 2 (hadron matching)
 
   if (parton[0]) {
     Int_t pdg = TMath::Abs(parton[0]->PdgCode());
-    typeIC = pdg;
+    typePM = pdg;
   }
 
   if (!parton[1])
@@ -760,8 +784,23 @@ void AliAnalysisTaskJetExtractorHF::CalculateJetType_HFMethod(AliEmcalJet* jet, 
   }
   else {
     Int_t pdg = TMath::Abs(parton[1]->PdgCode());
-    if ((pdg >= 400 && pdg <= 500) || (pdg >= 4000 && pdg <= 5000)) typeHM = 4;
-    else if ((pdg >= 500 && pdg <= 600) || (pdg >= 5000 && pdg <= 6000)) typeHM = 5;
+    if(fVtxTagger->IsDMeson(pdg)) typeHM = 4;
+    else if (fVtxTagger->IsBMeson(pdg)) typeHM = 5;
+    fCurrentJetHFHadron = pdg;
+
+    if(typeHM == 5)
+    {
+      Int_t motherCode = parton[1]->GetMother();
+      if(motherCode >= 0)
+      {
+        if(TMath::Abs( ((AliAODMCParticle*)fTruthParticleArray->At(motherCode))->PdgCode()) == 5)
+          FillHistogram("hBJetFromInitialCollision", 1.5);
+        else
+          FillHistogram("hBJetFromInitialCollision", 0.5);
+      }
+      else
+        FillHistogram("hBJetFromInitialCollision", 1.5);
+    }
   }
 
   // Set flavour of AliEmcalJet object (set ith bit while i corresponds to type)
@@ -793,7 +832,7 @@ void AliAnalysisTaskJetExtractorHF::FindMatchingJet(AliEmcalJet* jet)
     Double_t deltaR = TMath::Sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
 
     // Cut jets too far away
-    if (deltaR > 0.6)
+    if (deltaR > fJetsCont->GetJetRadius()*2)
       continue;
 
     // Search for the best match
@@ -930,124 +969,6 @@ void AliAnalysisTaskJetExtractorHF::GetLeadingJets(const char* opt, AliEmcalJet*
     }
   }
 }
-
-//________________________________________________________________________
-void AliAnalysisTaskJetExtractorHF::CalculateInitialCollisionJets()
-{
-  // Get the initial parton infromation
-  Double_t initialParton1_eta = -999.;
-  Double_t initialParton1_phi = -999.;
-  Int_t    initialParton1_pdg = 0;
-
-  Double_t initialParton2_eta = -999.;
-  Double_t initialParton2_phi = -999.;
-  Int_t    initialParton2_pdg = 0;
-
-  // If available, use stack as input
-  if(MCEvent() && (MCEvent()->Stack()))
-  {
-    AliStack* stack = MCEvent()->Stack();
-    TParticle* parton1 = 0;
-    TParticle* parton2 = 0;
-    // PYTHIA: Get LO collision objects
-    if(stack->GetNtrack() >= 8)
-    {
-      parton1 = stack->Particle(6);
-      parton2 = stack->Particle(7);
-    }
-    else if(stack->GetNtrack() >= 7)
-      parton1 = stack->Particle(6);
-
-    if(parton1)
-    {
-      initialParton1_eta = parton1->Eta();
-      initialParton1_phi = parton1->Phi();
-      initialParton1_pdg = TMath::Abs(parton1->GetPdgCode());
-    }
-    if(parton2)
-    {
-      initialParton2_eta = parton2->Eta();
-      initialParton2_phi = parton2->Phi();
-      initialParton2_pdg = TMath::Abs(parton2->GetPdgCode());
-    }
-  }
-  // Otherwise, PYTHIA object information
-  else if (fPythiaInfo)
-  {
-    initialParton1_eta = fPythiaInfo->GetPartonEta6();
-    initialParton1_phi = fPythiaInfo->GetPartonPhi6();
-    initialParton1_pdg = fPythiaInfo->GetPartonFlag6();
-    initialParton2_eta = fPythiaInfo->GetPartonEta7();
-    initialParton2_phi = fPythiaInfo->GetPartonPhi7();
-    initialParton2_pdg = fPythiaInfo->GetPartonFlag7();
-  }
-  // or direct particle level information from mcparticles branch
-  else if (fTruthParticleArray)
-  {
-    AliAODMCParticle* parton1 = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(6));
-    AliAODMCParticle* parton2 = dynamic_cast<AliAODMCParticle*>(fTruthParticleArray->At(7));
-    if(parton1)
-    {
-      initialParton1_eta = parton1->Eta();
-      initialParton1_phi = parton1->Phi();
-      initialParton1_pdg = TMath::Abs(parton1->GetPdgCode());
-    }
-    if(parton2)
-    {
-      initialParton2_eta = parton2->Eta();
-      initialParton2_phi = parton2->Phi();
-      initialParton2_pdg = TMath::Abs(parton2->GetPdgCode());
-    }
-  }
-  // No initial collision partons found, return
-  else
-  {
-    fFoundIC = kFALSE;
-    fCurrentInitialParton1 = 0;
-    fCurrentInitialParton2 = 0;
-    fCurrentInitialParton1Type = 0;
-    fCurrentInitialParton2Type = 0;
-    return;
-  }
-
-  fFoundIC = kTRUE;
-
-  Double_t bestMatchDeltaR1 = 999.;
-  Double_t bestMatchDeltaR2 = 999.;
-
-  // #### Find via geometrical matching the jet connected to the initial collision
-  fJetsCont->ResetCurrentID();
-  while(AliEmcalJet *jet = fJetsCont->GetNextAcceptJet())
-  {
-    Double_t deltaEta1 = TMath::Abs(jet->Eta()-initialParton1_eta);
-    Double_t deltaEta2 = TMath::Abs(jet->Eta()-initialParton2_eta);
-    Double_t deltaPhi1 = TMath::Min(TMath::Abs(jet->Phi()-initialParton1_phi),TMath::TwoPi() - TMath::Abs(jet->Phi()-initialParton1_phi));
-    Double_t deltaPhi2 = TMath::Min(TMath::Abs(jet->Phi()-initialParton2_phi),TMath::TwoPi() - TMath::Abs(jet->Phi()-initialParton2_phi));
-
-    Double_t deltaR1 = TMath::Sqrt(deltaEta1*deltaEta1 + deltaPhi1*deltaPhi1);
-    Double_t deltaR2 = TMath::Sqrt(deltaEta2*deltaEta2 + deltaPhi2*deltaPhi2);
-
-    if(deltaR1 < bestMatchDeltaR1)
-    {
-      bestMatchDeltaR1 = deltaR1;
-      fCurrentInitialParton1 = jet;
-      fCurrentInitialParton1Type = initialParton1_pdg;
-    }
-    if(deltaR2 < bestMatchDeltaR2)
-    {
-      bestMatchDeltaR2 = deltaR2;
-      fCurrentInitialParton2 = jet;
-      fCurrentInitialParton2Type = initialParton2_pdg;
-    }
-  }
-
-  // Discard matched jet that are to far away
-  if(bestMatchDeltaR1 > fInitialCollisionMatchingRadius)
-    fCurrentInitialParton1 = 0;
-  if(bestMatchDeltaR2 > fInitialCollisionMatchingRadius)
-    fCurrentInitialParton2 = 0;
-}
-
 
 
 //########################################################################

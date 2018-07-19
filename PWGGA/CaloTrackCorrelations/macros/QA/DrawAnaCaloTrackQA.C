@@ -6,7 +6,8 @@
 /// to QA data productions at 0th order
 /// Analysis performed with the wagon
 /// AddTaskPi0IMGammaCorrQA.C
-/// It generates 8 plots, each containing 2 to 4 pads
+/// It generates 8 plots, each containing 2 to 4 pads, 
+/// see the comments on the methods below to know what is plotted.
 ///
 /// To execute: root -q -b -l DrawAnaCaloTrackQA.C'("Pi0IM_GammaTrackCorr_EMCAL","AnalysisResults.root")'
 ///
@@ -21,6 +22,15 @@
 /// * EMCAL_L2: kEMCEGA L1 EG2 EMCal
 /// * DCAL_L2 : kEMCEGA L1 EG2 DCal
 /// A plot will be produced for each of the triggers, if they existed in the data.
+///
+/// If requested, a guiding message on the quality of the plot for non experts can be asked. 
+/// The checks done are very basic and only very strange behavior is spotted.
+/// The current possible messages are: 
+/// * OK: plot is good
+/// * NOT OK: plot is not good, there is a problem
+/// * Likely OK: there is a problem, but maybe not important or it is known
+/// * Expert plot: No need to look at
+/// * Low stat: Plot might be good but statistic is low to discriminate
 ///
 /// In case output file is too large, possiblity to dump the list content in a sepate file:  exportToFile = kTRUE
 ///
@@ -49,6 +59,7 @@
 #include <TLine.h>
 #include <TF1.h>
 #include <TMath.h>
+#include <TLatex.h>
 
 #endif
 
@@ -62,6 +73,7 @@ void CorrelQA  (Int_t icalo);
 void MCQA      (Int_t icalo);
 void ScaleAxis (TAxis *a, Double_t scale);
 void ScaleXaxis(TH1   *h, Double_t scale);
+void MyLatexMakeUp(TLatex *currentLatex, Int_t textfont, Double_t textsize, Int_t textcolor);
 
 TObject * GetHisto  (TString histoName);
 void      SaveHisto (TObject* histo, Bool_t tag = kTRUE);
@@ -73,12 +85,15 @@ Bool_t    GetList   (TString trigName );
 //-----------------------
 // Some global variables
 TDirectoryFile *dir = 0;  /// TDirectory file where lists per trigger are stored in train ouput
-TList  *list = 0;         /// TList with histograms for a given trigger
+TList  *histArr = 0;      /// TList with histograms for a given trigger
 TFile  *file = 0;         /// input train file
 TFile  *fout = 0;         /// output file with plots or extracted histograms
 TString histoTag = "";    /// file names tag, basically the trigger and calorimeter combination 
 TString format = "eps";   /// plots format: eps, pdf, etc.
 Int_t   exportToFile = 0; /// option to what and if export to output file
+TLatex *text[5];          /// plot quality messages 
+Double_t nEvents = 0.;    /// number of events analyzed
+Bool_t  addOkFlag = kTRUE;/// print message on plot with ok/not ok
 
 /// pre-defined colors list 
 Int_t   color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,kMagenta+2,kGray,kCyan-2,kViolet-2};
@@ -100,6 +115,7 @@ Int_t   color[]={kBlack,kRed,kOrange+1,kYellow+1,kGreen+2,kBlue,kCyan+1,kViolet,
 /// \param fileName: File name
 /// \param exportTo: 0 - do not export; 1 - export generated plots to file; 2 - export extracted lists to file
 /// \param fileFormat: define the type of figures: eps, pdf, etc.
+/// \param okFlag: add to the figures ok/not ok info.
 //_______________________________________________________________________
 void DrawAnaCaloTrackQA
 (
@@ -107,14 +123,16 @@ void DrawAnaCaloTrackQA
  TString fileName     = "AnalysisResults.root",
  Int_t   exportTo     = 1,
  TString fileFormat   = "eps",
- TString outFileName  = "CaloTrackCorrQA_output"
+ TString outFileName  = "CaloTrackCorrQA_output",
+ Bool_t  okFlag       = kTRUE
 )
 {
   format       = fileFormat;
   exportToFile = exportTo;
+  addOkFlag    = okFlag;
   
-  printf("Open <%s>; Get Trigger List : <%s>; Export option <%d>; format %s; outputFileName %s.root\n",
-         fileName.Data(),listName.Data(),exportToFile, format.Data(),outFileName.Data());
+  printf("Open <%s>; Get Trigger List : <%s>; Export option <%d>; format %s; outputFileName %s.root, ok flag %d\n",
+         fileName.Data(),listName.Data(),exportToFile, format.Data(),outFileName.Data(),addOkFlag);
  
   // Get file and list container, global variables
   //
@@ -152,6 +170,17 @@ void DrawAnaCaloTrackQA
     cdd->ls();
   }
   //---------------
+  
+  // Initialize OK messages
+  //
+  if(addOkFlag)
+  {
+    text[0] = new TLatex(0.35,0.4,"#color[3]{OK}");          MyLatexMakeUp(text[0],42,0.1,1);
+    text[1] = new TLatex(0.30,0.4,"#color[2]{NOT OK}");      MyLatexMakeUp(text[1],42,0.1,2);
+    text[2] = new TLatex(0.20,0.4,"#color[6]{Likely OK}");   MyLatexMakeUp(text[2],42,0.1,3);
+    text[3] = new TLatex(0.20,0.4,"#color[4]{Expert plot}"); MyLatexMakeUp(text[3],42,0.1,4);
+    text[4] = new TLatex(0.20,0.4,"#color[6]{Low stat}");    MyLatexMakeUp(text[4],42,0.1,3);
+  }
   
   // Process each of the triggers
   //
@@ -202,6 +231,19 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
     if ( !ok ) return;
   }
 
+  // Check the number of events, if no trigger, skip plots
+  //
+  nEvents = ((TH1D*) GetHisto("hNEvents"))->GetBinContent(1);
+  printf("\t \t n Events %2.3e\n",nEvents);
+  
+  if( nEvents < 1 )
+  {
+    printf("Skip list %s, no events\n",trigName.Data());
+    return;
+  }
+  
+  // Style options
+  //
   gStyle->SetOptTitle(1);
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(000000);
@@ -210,6 +252,8 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
   //gStyle->SetPadLeftMargin(0.15);
   gStyle->SetTitleFontSize(0.05);
 
+  // Calorimeter, DCal or EMCal, to be checked, depends on trigger
+  //
   Int_t nCalo = 2;
   Int_t calo  = 0;
   if     (trigName.Contains("EMCAL")) { calo = 0 ; nCalo = 1 ; }
@@ -218,6 +262,10 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
   TString caloString [] = {"EMCAL","DCAL"}; 
   
   histoTag = trigName;
+  
+  ////////////
+  // Plotting
+  ////////////
   
   // Plot basic Track QA
   TrackQA();
@@ -258,6 +306,8 @@ void ProcessTrigger( TString trigName, Bool_t checkList)
 //______________________________________
 void CaloQA(Int_t icalo)
 { 
+  Int_t ok = 0;
+
   //-----------------------------
   // Cluster spectra and track match residuals
   //
@@ -287,7 +337,6 @@ void CaloQA(Int_t icalo)
   l.SetBorderSize(0);
   l.SetFillColor(0);
 
-  
   TH2F* h2CellAmplitude = (TH2F*) GetHisto("QA_Cell_hAmp_Mod");
   TH1F* hCellAmplitude  = 0;
   if(h2CellAmplitude)
@@ -308,6 +357,37 @@ void CaloQA(Int_t icalo)
   
   l.Draw();
 
+  // ok message
+  // check for sudden spikes in the spectrum, due to bad channels
+  if(addOkFlag)
+  {
+    Float_t minClusterE = 1;
+    if      ( histoTag.Contains("L0") ) minClusterE =  4;
+    else if ( histoTag.Contains("L2") ) minClusterE = 10;
+    else if ( histoTag.Contains("L1") ) minClusterE = 14;
+    
+    ok=0;
+    
+    if ( hClusterEnergy->GetEntries() < 1000 ) ok = 4;
+    else
+    {
+      for(Int_t ibin = 1; ibin < hClusterEnergy->GetNbinsX(); ibin++)
+      {
+        if ( hClusterEnergy->GetBinCenter(ibin) < minClusterE ) continue;
+        
+        if ( hClusterEnergy->GetBinContent(ibin) < 100 ) continue;
+        
+        if ( hClusterEnergy->GetBinContent(ibin)*1.4 < hClusterEnergy->GetBinContent(ibin+1) )
+        {
+          ok=2;
+          //printf("ibin %d, E %2.2f, %2.1f < 1.5* %2.1f\n",ibin, hClusterEnergy->GetBinCenter(ibin), hClusterEnergy->GetBinContent(ibin), hClusterEnergy->GetBinContent(ibin+1));
+          break;
+        }
+      }
+    }
+    text[ok]->Draw();
+  }
+  
   ccalo->cd(2);
   //gPad->SetLogy();
   gPad->SetLogx();
@@ -358,11 +438,42 @@ void CaloQA(Int_t icalo)
   l2.SetFillColor(0);
   l2.Draw();
   
+  // ok message
+  // Check that the ratio neutral clusters over input cluster and neutral and photonic over input
+  // is what is expected. Currently mild guesses
+  if(addOkFlag)
+  {
+    ok=0;
+    for(Int_t ibin = 1; ibin < hTM->GetNbinsX(); ibin++)
+    {
+      if(hTM->GetBinCenter(ibin) < 0.5) continue;
+      if(hTM->GetBinCenter(ibin) > 20 ) break;
+      
+      Float_t conTM = hTM  ->GetBinContent(ibin);
+      Float_t conSh = hShSh->GetBinContent(ibin); 
+      Float_t errTM = hTM  ->GetBinError(ibin);
+      Float_t errSh = hShSh->GetBinError(ibin);
+      
+      if(errTM > conTM || errSh > conSh) continue;
+      
+      //printf("bin %d, center %2.2f, cont TM %f, Sh %f\n",ibin,hTM->GetBinCenter(ibin),conTM,conTM);
+      
+      if(conTM > 0.999 || conSh > 0.999 || conTM < 0.5 || conSh < 0.2)
+      {
+        ok=1;
+        //printf("bin %d, center %2.2f, cont TM %f, Sh %f\n",ibin,hTM->GetBinCenter(ibin),conTM,conTM);
+        break;
+      }
+    }
+    
+    text[ok]->Draw();
+  }
+  
   // Plot track-matching residuals
-  TH1F* hTrackMatchResEtaNeg;
-  TH1F* hTrackMatchResEtaPos;
-  TH1F* hTrackMatchResPhiNeg;
-  TH1F* hTrackMatchResPhiPos;
+  TH1F* hTrackMatchResEtaNeg = NULL;
+  TH1F* hTrackMatchResEtaPos = NULL;
+  TH1F* hTrackMatchResPhiNeg = NULL;
+  TH1F* hTrackMatchResPhiPos = NULL;
 
   // first test did not have this histogram, add protection
   TH2F* hTrackMatchResEtaPhi = (TH2F*) GetHisto(Form("AnaPhoton_Calo%d_hTrackMatchedDEtaDPhiPosNoCut",icalo));
@@ -382,6 +493,8 @@ void CaloQA(Int_t icalo)
     hTrackMatchResEtaPhi->SetYTitle("#Delta #varphi");
     hTrackMatchResEtaPhi->SetZTitle("Entries");
     hTrackMatchResEtaPhi->Draw("colz");
+    
+    if(addOkFlag) text[3]->Draw();
     
     ccalo->cd(4);
     //gPad->SetLogy();
@@ -435,6 +548,30 @@ void CaloQA(Int_t icalo)
     l3.SetBorderSize(0);
     l3.SetFillColor(0);
     l3.Draw();
+    
+    // ok message
+    // check that the residuals maxima are displaced from 0 within reasonable limits.
+    // quite open.
+    if(addOkFlag)
+    {
+      ok=0;
+      
+      if ( hTrackMatchResPhiPos->GetEntries() < 10 || hTrackMatchResPhiNeg->GetEntries() < 10 ||
+           hTrackMatchResEtaPos->GetEntries() < 10 || hTrackMatchResEtaNeg->GetEntries() < 10   ) ok = 1;
+      
+      //    printf("Mean (%2.2f, %2.2f, %2.2f, %2.2f), RMS (%2.2f, %2.2f, %2.2f, %2.2f)\n",
+      //           hTrackMatchResPhiPos->GetMean()*1000, hTrackMatchResEtaPos->GetMean()*1000,
+      //           hTrackMatchResPhiNeg->GetMean()*1000, hTrackMatchResEtaNeg->GetMean()*1000,
+      //           hTrackMatchResPhiPos->GetRMS ()*1000, hTrackMatchResEtaPos->GetRMS ()*1000,
+      //           hTrackMatchResPhiNeg->GetRMS ()*1000, hTrackMatchResEtaNeg->GetRMS ()*1000
+      //           );
+      
+      // just a guess, not based on anything
+      if( hTrackMatchResPhiPos->GetMean()*1000 < -2 || hTrackMatchResEtaPos->GetMean()*1000 < -2 ||
+          hTrackMatchResPhiNeg->GetMean()*1000 >  2 || hTrackMatchResEtaNeg->GetMean()*1000 >  2) ok = 2;
+      
+      text[ok]->Draw();
+    }
   }
   
   ccalo->Print(Form("%s_CaloHisto_ClusterSpectraAndTrackResiduals.%s",histoTag.Data(),format.Data()));
@@ -483,7 +620,60 @@ void CaloQA(Int_t icalo)
     hCellActivity->SetZTitle("Entries");
     hCellActivity->SetTitleOffset(1.5,"Z");
     hCellActivity->Draw("colz");
+    
+    // ok message
+    // Check that the dead regions of the EMCal are not a too large fraction
+    if(addOkFlag)
+    {
+      //Float_t meanCellHits = 0;
+      Int_t   nHitCell    = 0;
+      //Int_t   nHotCell    = 0;
+      //Int_t   nColdCell   = 0;
+      ok=0;
+      for(Int_t ibin = 2; ibin < hCellActivity->GetNbinsX(); ibin++)
+      {
+        for(Int_t jbin = 2; jbin < hCellActivity->GetNbinsY(); jbin++)
+        {
+          if(histoTag.Contains("default"))
+          {
+            if ( icalo == 0 && jbin > 129 ) continue ; // EMC
+            if ( icalo == 1 && jbin < 130 ) continue ; // DMC
+          }
+          
+          //meanCellHits += hCellActivity->GetBinContent(ibin,jbin);
+          if ( hCellActivity->GetBinContent(ibin,jbin) > 2 ) nHitCell++;
+        }
+      }
+      
+      //if ( nHitCell > 0 ) meanCellHits/=nHitCell;
+      
+      Float_t totalCells = 10*24*48+2*8*48; // EMC
+      if(icalo==1) totalCells = 6*24*32+2*8*48; // DMC
+      
+      Float_t active = nHitCell / totalCells ;
+      
+      if      ( active > 0.90) ok = 0;
+      else if ( active > 0.7 ) ok = 2;
+      else                     ok = 1;
+      
+      text[ok]->Draw();
+      
+      //    for(Int_t ibin = 1; ibin < hCellActivity->GetNbinsX(); ibin++)
+      //    {
+      //      for(Int_t jbin = 1; jbin < hCellActivity->GetNbinsY(); jbin++)
+      //      {
+      //        if(icalo == 0 && (jbin >  127)) continue ; // EMC
+      //        if(icalo == 1 && (jbin <= 127)) continue ; // DMC
+      //        
+      //        if ( hCellActivity->GetBinContent(ibin,jbin) > meanCellHits*10  ) nHotCell++;
+      //        if ( hCellActivity->GetBinContent(ibin,jbin) < meanCellHits*0.1 ) nColdCell++;
+      //      }
+      //    }
+      //
+      //    printf("cell hits %d, total %d, active %2.2f, mean %f, cold %d, hot %d\n",nHitCell,totalCells,active,meanCellHits,nHotCell,nColdCell);
+    }
   }
+  
   ccalo2->cd(2);
   
   TH2F* hCellActivityE = (TH2F*) GetHisto("QA_Cell_hGridCellsE");
@@ -502,7 +692,68 @@ void CaloQA(Int_t icalo)
     hCellActivityE->SetTitleOffset(1.5,"Z");
     
     hCellActivityE->Draw("colz");
+    
+    // ok message
+    // Check that the dead regions of the EMCal are not a too large fraction
+    if(addOkFlag)
+    {
+      //Float_t meanCellHits = 0;
+      Int_t   nHitCell    = 0;
+      //Int_t   nHotCell    = 0;
+      //Int_t   nColdCell   = 0;
+      ok=0;
+      for(Int_t ibin = 2; ibin < hCellActivityE->GetNbinsX(); ibin++)
+      {
+        //printf("col %d ",ibin);
+        for(Int_t jbin = 2; jbin < hCellActivityE->GetNbinsY(); jbin++)
+        {
+          if(histoTag.Contains("default"))
+          {
+            if ( icalo == 0 && jbin > 129 ) continue ; // EMC
+            if ( icalo == 1 && jbin < 130 ) continue ; // DMC
+          }
+          
+          //meanCellHits += hCellActivityE->GetBinContent(ibin,jbin);
+          if ( hCellActivityE->GetBinContent(ibin,jbin) > 0 ) 
+          {
+            //printf("1");
+            nHitCell++;
+          } 
+          //else printf("0");
+        }
+        //printf("\n");
+      }
+      
+      //if ( nHitCell > 0 ) meanCellHits/=nHitCell;
+      
+      Float_t totalCells = 10*24*48+2*8*48; // EMC
+      if(icalo==1) totalCells = 6*24*32+2*8*48; // DMC
+      
+      Float_t active = nHitCell / totalCells ;
+      
+      if      ( active > 0.90) ok = 0;
+      else if ( active > 0.7 ) ok = 2;
+      else                     ok = 1;
+      
+      text[ok]->Draw();
+      //printf("cell hits %d, total %2.0f, active %2.2f\n",nHitCell,totalCells,active);
+
+      //    for(Int_t ibin = 1; ibin < hCellActivityE->GetNbinsX(); ibin++)
+      //    {
+      //      for(Int_t jbin = 1; jbin < hCellActivityE->GetNbinsY(); jbin++)
+      //      {
+      //        if(icalo == 0 && (jbin >  127)) continue ; // EMC
+      //        if(icalo == 1 && (jbin <= 127)) continue ; // DMC
+      //        
+      //        if ( hCellActivityE->GetBinContent(ibin,jbin) > meanCellHits*10  ) nHotCell++;
+      //        if ( hCellActivityE->GetBinContent(ibin,jbin) < meanCellHits*0.1 ) nColdCell++;
+      //      }
+      //    }
+      //    
+      //    printf("cellE hits %d, total %d, active %2.2f, mean %f, cold %d, hot %d\n",nHitCell,totalCells,active,meanCellHits,nHotCell,nColdCell);
+    }
   }
+  
   ccalo2->cd(3);
   gPad->SetLogz();
   
@@ -518,6 +769,54 @@ void CaloQA(Int_t icalo)
   
   hClusterActivity->Draw("colz");
 
+  // ok message
+  // Check that the dead regions of the EMCal are not a too large fraction
+  if(addOkFlag)
+  {
+    //Float_t meanCellHits = 0;
+    Int_t   nHitCell    = 0;
+    //Int_t   nHotCell    = 0;
+    //Int_t   nColdCell   = 0;
+    ok=0;
+    for(Int_t ibin = 1; ibin < hClusterActivity->GetNbinsX(); ibin++)
+    {
+      for(Int_t jbin = 1; jbin < hClusterActivity->GetNbinsY(); jbin++)
+      {
+        //meanCellHits += hClusterActivity->GetBinContent(ibin,jbin);
+        if ( hClusterActivity->GetBinContent(ibin,jbin) > 2 ) nHitCell++;
+      }
+    }
+    
+    //if ( nHitCell > 0 ) meanCellHits/=nHitCell;
+    
+    Float_t totalCells = 10*24*48+2*8*48  -48*12-10*24-4*8; // EMC minus close to border
+    if(icalo==1) totalCells = 6*24*32+2*8*48  -32*8-48*4-6*24-8*2; // DMC minus close to border
+    
+    Float_t active = nHitCell / totalCells ;
+    
+    if      ( active > 0.90) ok = 0;
+    else if ( active > 0.7 ) ok = 2;
+    else                     ok = 1;
+    
+    if(ok==1 && nEvents < 1000000) ok = 2;
+    
+    text[ok]->Draw();
+    //printf("cellE hits %d, total %2.0f, active %2.2f\n",nHitCell,totalCells,active);
+
+    //printf("cluster cell hits %d, total %d, active %2.2f\n",nHitCell,totalCells,active);
+
+    //  for(Int_t ibin = 1; ibin < hClusterActivity->GetNbinsX(); ibin++)
+    //  {
+    //    for(Int_t jbin = 1; jbin < hClusterActivity->GetNbinsY(); jbin++)
+    //    {
+    //      if ( hClusterActivity->GetBinContent(ibin,jbin) > meanCellHits*10  ) nHotCell++;
+    //      if ( hClusterActivity->GetBinContent(ibin,jbin) < meanCellHits*0.1 ) nColdCell++;
+    //    }
+    //  }
+    //  
+    //  printf("cluster cell hits %d, total %d, active %2.2f, mean %f, cold %d, hot %d\n",nHitCell,totalCells,active,meanCellHits,nHotCell,nColdCell);
+  }
+  
   ccalo2->cd(4);
   gPad->SetLogz();
   
@@ -533,6 +832,52 @@ void CaloQA(Int_t icalo)
   
   hClusterActivity2->Draw("colz");
 
+  // ok message
+  // Check that the dead regions of the EMCal are not a too large fraction
+  if(addOkFlag)
+  {
+    //Float_t meanCellHits = 0;
+    Int_t nHitCell    = 0;
+    //Int_t nHotCell    = 0;
+    //Int_t nColdCell   = 0;
+    ok=0;
+    for(Int_t ibin = 1; ibin < hClusterActivity2->GetNbinsX(); ibin++)
+    {
+      for(Int_t jbin = 1; jbin < hClusterActivity2->GetNbinsY(); jbin++)
+      {
+        //meanCellHits += hClusterActivity2->GetBinContent(ibin,jbin);
+        if ( hClusterActivity2->GetBinContent(ibin,jbin) > 0 ) nHitCell++;
+      }
+    }
+    
+    //if ( nHitCell > 0 ) meanCellHits/=nHitCell;
+        
+    Float_t totalCells = 10*24*48+2*8*48  -48*12-10*24-4*8; // EMC minus close to border
+    if(icalo==1) totalCells = 6*24*32+2*8*48  -32*8-48*4-6*24-8*2; // DMC minus close to border
+    
+    Float_t active = nHitCell / totalCells ;
+    
+    if      ( active > 0.80) ok = 0;
+    else if ( active > 0.50) ok = 2;
+    else                     ok = 1;  
+    
+    if(ok==1 && nEvents < 1000000) ok = 2;
+    
+    text[ok]->Draw();
+    //printf("cluster2 cell hits %d, total %d, active %2.2f\n",nHitCell,totalCells,active);
+    
+//    for(Int_t ibin = 1; ibin < hClusterActivity2->GetNbinsX(); ibin++)
+//    {
+//      for(Int_t jbin = 1; jbin < hClusterActivity2->GetNbinsY(); jbin++)
+//      {
+//        if ( hClusterActivity2->GetBinContent(ibin,jbin) > meanCellHits*10  ) nHotCell++;
+//        if ( hClusterActivity2->GetBinContent(ibin,jbin) < meanCellHits*0.1 ) nColdCell++;
+//      }
+//    }
+//    
+//    printf("cluster2 cell hits %d, total %d, active %2.2f, mean %f, cold %d, hot %d\n",nHitCell,totalCells,active,meanCellHits,nHotCell,nColdCell);
+  }
+  
   ccalo2->Print(Form("%s_CaloHisto_CellClusterHit.%s",histoTag.Data(),format.Data()));
 
   // cleanup or save
@@ -561,7 +906,9 @@ void CaloQA(Int_t icalo)
   hClusterTime->SetZTitle("Entries");
   hClusterTime->SetTitleOffset(1.5,"Z");
   hClusterTime->Draw("colz");
-  
+
+  if(addOkFlag) text[3]->Draw();
+
   ccalo3->cd(2);
   
   gPad->SetLogz();
@@ -574,7 +921,8 @@ void CaloQA(Int_t icalo)
   hClusterL0->SetTitleOffset(1.5,"Z");
   
   hClusterL0->Draw("colz");
-
+  if(addOkFlag) text[3]->Draw();
+  
   ccalo3->cd(3);
   
   gPad->SetLogz();
@@ -587,6 +935,7 @@ void CaloQA(Int_t icalo)
   hClusterNCell->SetTitleOffset(1.5,"Z");
 
   hClusterNCell->Draw("colz");
+  if(addOkFlag) text[3]->Draw();
  
   ccalo3->cd(4);
   
@@ -601,7 +950,8 @@ void CaloQA(Int_t icalo)
   hClusterECell->SetTitleOffset(1.5,"Z");
 
   hClusterECell->Draw("colz");
-  
+  if(addOkFlag) text[3]->Draw();
+
   ccalo3->Print(Form("%s_CaloHisto_TimeShapeNCells.%s",histoTag.Data(),format.Data()));
   
   // cleanup or save
@@ -620,6 +970,8 @@ void CaloQA(Int_t icalo)
 //______________________________________
 void TrackQA()
 {
+  Int_t ok = 0;
+  
   TCanvas * ctrack = new TCanvas(Form("%s_TrackHisto"       ,histoTag.Data()),
                                  Form("Hybrid tracks for %s",histoTag.Data()),
                                  1000,1000);
@@ -637,6 +989,9 @@ void TrackQA()
   hTrackEtaPhi->SetTitleOffset(1.5,"Z");
 
   hTrackEtaPhi ->Draw("colz");
+  
+  // ok message
+  if(addOkFlag) text[3]->Draw();
   
   ctrack->cd(2);
   //gPad->SetLogy();
@@ -673,6 +1028,47 @@ void TrackQA()
   l.SetFillColor(0);
   l.Draw();
   
+  // ok message
+  // check that the tracks phi distribution is uniform (only for Min Bias) within a window.
+  // quite open
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if      ( hPhi->GetEntries() < 1000    ) ok = 4;
+    else if ( !histoTag.Contains("default")) ok = 3;
+    else
+    {
+      hPhi->Fit("pol0","QRL","",0, 7);
+      Float_t fitParam = hPhi->GetFunction("pol0")->GetParameter(0);
+      //printf("fit param %f\n",fitParam);
+      for(Int_t ibin = 1; ibin < hPhi->GetNbinsX(); ibin++)
+      {      
+        if(fitParam < 100)
+        {
+          ok=1;
+          break;
+        }
+        
+        if ( hPhi->GetBinContent(ibin) < 100 ) continue;
+        
+        Float_t ratToFit = hPhi->GetBinContent(ibin)/fitParam;
+        //printf("\t bin %d, rat to fit %2.2f\n",ibin,ratToFit);
+        if ( ratToFit < 0.85 || ratToFit > 1.15 ) // Just guessing, not sure it is ok.
+        {
+          ok=1;
+          //printf("ibin %d, ratio %f\n",ibin, ratToFit);
+          break;
+        }
+        else if ( (ratToFit < 0.98 && ratToFit >= 0.85) || (ratToFit <= 1.15 && ratToFit > 1.02) )
+        {
+          ok=2;
+        }
+      }
+    }
+    text[ok]->Draw();
+  }
+  
   ctrack->cd(3);
   gPad->SetLogy();
   
@@ -681,6 +1077,30 @@ void TrackQA()
   hTOF->SetTitleOffset(1.5,"Y");
 
   hTOF->Draw("");
+  
+  // ok message
+  // check that most of the tracks have TOF at BC0
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( hTOF->GetEntries() < 1000 ) ok = 4;
+    else
+    {
+      Float_t intBC0 = hTOF->Integral(hTOF->FindBin(0),hTOF->FindBin(25));
+      Float_t intAll = hTOF->Integral();
+      
+      Float_t rat = 0;
+      if ( intAll > 0 ) rat = intBC0 / intAll;
+      //printf("ratio TOF %f\n",rat);
+      
+      // Just guessing
+      if     (rat < 0.7) ok = 1;
+      else if(rat < 0.9) ok = 2;
+    }
+    
+    text[ok]->Draw();
+  }
   
   ctrack->cd(4);
   gPad->SetLogy();
@@ -700,6 +1120,32 @@ void TrackQA()
   hPt     ->Draw("");
   hPtSPD  ->Draw("same");
   hPtNoSPD->Draw("same");
+  
+  // ok message
+  // check for sudden spikes in the spectrum
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( hPt->GetEntries() < 1000 ) ok = 4;
+    else
+    {
+      for(Int_t ibin = 1; ibin < hPt->GetNbinsX(); ibin++)
+      {      
+        if ( hPt->GetBinContent(ibin) < 100 ) continue;
+        
+        if ( hPt->GetBinContent(ibin)*1.4 < hPt->GetBinContent(ibin+1) )
+        {
+          ok=1;
+          //printf("ibin %d, E %2.2f, %2.1f < 1.5* %2.1f\n",ibin, hClusterEnergy->GetBinCenter(ibin), hClusterEnergy->GetBinContent(ibin), hClusterEnergy->GetBinContent(ibin+1));
+          break;
+        }
+      }
+    }
+    
+    text[ok]->Draw();
+  }
+
   
 //  ctrack->cd(3);
 //  gPad->SetLogz();
@@ -750,6 +1196,8 @@ void TrackQA()
 //_____________________________
 void Pi0QA(Int_t icalo)
 {
+  Int_t ok = 0;
+  
   TCanvas * cpi0 = new TCanvas(Form("%s_InvariantMassHisto"          ,histoTag.Data()),
                                Form("Neutral mesons inv. mass for %s",histoTag.Data()),
                                1000,1000);
@@ -785,6 +1233,9 @@ void Pi0QA(Int_t icalo)
   h2DMass->SetAxisRange(0.0,0.7,"Y");
   h2DMass->SetAxisRange(0,30,"X");
   h2DMass->Draw("colz");
+  
+  // ok message
+  if(addOkFlag) text[3]->Draw();
   
   // Pi0 Invariant mass projection, in PbPb 6 centrality bins from 0 to 50%, all in pp
   cpi0->cd(2);
@@ -878,6 +1329,40 @@ void Pi0QA(Int_t icalo)
 
   hMassPi0[0]->Draw();
   
+  // ok message
+  // Check that at low or high mass with respect the pi0 peak there is not 
+  // too much activity with respect the peak, sign of bad channels
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( hMassPi0[0]->GetEntries() < 1000 ) ok = 4;
+    else
+    {
+      Float_t intLowMass = hMassPi0[0]->Integral(hMassPi0[0]->FindBin(0.04),hMassPi0[0]->FindBin(0.08));
+      Float_t intPi0Mass = hMassPi0[0]->Integral(hMassPi0[0]->FindBin(0.10),hMassPi0[0]->FindBin(0.14));
+      Float_t intHigMass = hMassPi0[0]->Integral(hMassPi0[0]->FindBin(0.18),hMassPi0[0]->FindBin(0.22));
+      
+      Float_t ratL = 0;
+      if ( intPi0Mass > 0 ) ratL = intLowMass / intPi0Mass;
+      Float_t ratH = 0;
+      if ( intPi0Mass > 0 ) ratH = intHigMass / intPi0Mass;
+      //printf("ratio InvMass Low %f High %f\n",ratL, ratH);
+
+      // Just guessing
+      if     (ratL > 0.80 || ratH > 0.80 ) ok = 1;
+      else if(ratL > 0.25 || ratH > 0.25 ) ok = 2;
+      
+//      hMassPi0[0]->Fit("gaus","RL","",0.11,0.14);
+//      Float_t massFit = hMassPi0[0]->GetFunction("gaus")->GetParameter(1);
+//      printf("mass fit = %f\n",massFit);
+//      
+//      if(massFit < 0.12 || massFit > 0.16) ok = 1;
+    }
+    
+    text[ok]->Draw();
+  }
+  
   if(hMass[1]) // PbPb
   {
     hMassPi0[0]->SetMaximum(maxPi0*1.2);
@@ -967,16 +1452,54 @@ void Pi0QA(Int_t icalo)
   hSM[first]->SetYTitle("Real / Mixed");
 
   hSM[first]->Draw("H");
+  
+  // ok message
+  // Check per SM that at low or high mass with respect the pi0 peak there is not 
+  // too much activity with respect the peak, sign of bad channels
+  Bool_t okSM[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  Bool_t okcheck = 0;
+
+  if(addOkFlag)
+  {
+    if ( hMassPi0[0]->GetEntries() < 1000 ) text[4]->Draw();
+    else
+    {
+      for(Int_t ism = first+1; ism < 20; ism++)
+      {
+        if(!hSM[ism]) continue;
+        
+        Float_t intLowMass = hSM[ism]->Integral(hSM[ism]->FindBin(0.04),hSM[ism]->FindBin(0.08));
+        Float_t intPi0Mass = hSM[ism]->Integral(hSM[ism]->FindBin(0.10),hSM[ism]->FindBin(0.14));
+        Float_t intHigMass = hSM[ism]->Integral(hSM[ism]->FindBin(0.18),hSM[ism]->FindBin(0.22));
+        
+        Float_t ratL = 0;
+        if ( intPi0Mass > 0 ) ratL = intLowMass / intPi0Mass;
+        Float_t ratH = 0;
+        if ( intPi0Mass > 0 ) ratH = intHigMass / intPi0Mass;
+        //printf("ratio InvMass Low %f High %f, ism %d\n",ratL, ratH,ism);
+        
+        // Just guessing
+        if     (ratL > 0.80 || ratH > 0.80 ) { okSM[ism] = 1; okcheck=1;}
+        else if(ratL > 0.2  || ratH > 0.2  ) { okSM[ism] = 2; okcheck=1;}
+      }      
+    }
+    //printf("ok check %d\n",okcheck);
+    if ( !okcheck ) {text[ok]->Draw();}
+  }
+  
   TLegend lsm(0.12,0.5,0.35,0.85);
   lsm.SetTextSize(0.04);
-  lsm.AddEntry(hSM[first],Form("Mod %d",first),"P");
-  
+  if(  addOkFlag && okcheck && okSM[first]) lsm.AddEntry(hSM[first],Form("#color[6]{Mod %d; not ok?}",first),"P");
+  else                                      lsm.AddEntry(hSM[first],Form("Mod %d",first),"P");
+
   for(Int_t ism = first+1; ism < 20; ism++)
   {
     if(!hSM[ism]) continue;
     
     hSM[ism]->Draw("Hsame");
-    lsm.AddEntry(hSM[ism],Form("Mod %d",ism),"P");
+    
+    if( addOkFlag && okcheck && okSM[ism]) lsm.AddEntry(hSM[ism],Form("#color[6]{Mod %d; not ok?}",ism),"P");
+    else                                   lsm.AddEntry(hSM[ism],Form("Mod %d",ism),"P");
   }
   
   lsm.SetBorderSize(0);
@@ -1000,6 +1523,40 @@ void Pi0QA(Int_t icalo)
 
   hMassEta[0]->Draw("H");
   
+  // ok message
+  // Check that at low or high mass with respect the eta peak there is not 
+  // too much activity with respect the peak, sign of bad channels
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( hMassEta[0]->GetEntries() < 1000 ) ok = 4;
+    else
+    {
+      Float_t intLowMass = hMassEta[0]->Integral(hMassEta[0]->FindBin(0.40),hMassEta[0]->FindBin(0.47));
+      Float_t intEtaMass = hMassEta[0]->Integral(hMassEta[0]->FindBin(0.48),hMassEta[0]->FindBin(0.55));
+      Float_t intHigMass = hMassEta[0]->Integral(hMassEta[0]->FindBin(0.60),hMassEta[0]->FindBin(0.67));
+      
+      Float_t ratL = 0;
+      if ( intEtaMass > 0 ) ratL = intLowMass / intEtaMass;
+      Float_t ratH = 0;
+      if ( intEtaMass > 0 ) ratH = intHigMass / intEtaMass;
+      //printf("ratio InvMass Low %f High %f\n",ratL, ratH);
+      
+      // Just guessing
+      if     (ratL > 1.50 || ratH > 1.50 ) ok = 1;
+      else if(ratL > 1.10 || ratH > 1.10 ) ok = 2;
+      
+//      hMassEta[0]->Fit("gaus","RL","",0.48,0.55);
+//      Float_t massFit = hMassEta[0]->GetFunction("gaus")->GetParameter(1);
+//      printf("mass fit = %f\n",massFit);
+//      
+//      if(massFit < 0.48 || massFit > 0.55) ok = 1;
+    }
+    
+    text[ok]->Draw();
+  }
+
   if(hMass[1]) // PbPb
   {
     hMassEta[0]->SetMaximum(maxEta*1.2);
@@ -1080,6 +1637,8 @@ void Pi0QA(Int_t icalo)
 //__________________________________________________
 void IsolQA(Int_t icalo)
 {
+  Int_t ok = 0;
+  
   TCanvas * cIsolation = new TCanvas(Form("%s_IsolationHisto"    ,histoTag.Data()),
                                      Form("Isolation cone for %s",histoTag.Data()),
                                      1000,1000);
@@ -1101,10 +1660,11 @@ void IsolQA(Int_t icalo)
   if ( nTrig <=0 ) return ;
     
   //
-  // Pt in cone
+  // Candidates Pt 
   //
   cIsolation->cd(1);
   gPad->SetLogy();
+  gPad->SetLogx();
 
   hIsolated   ->Sumw2();
   hNotIsolated->Sumw2();
@@ -1118,10 +1678,12 @@ void IsolQA(Int_t icalo)
   hNotIsolated->SetTitle("(non) isolated cluster spectra, #it{R}=0.4, #Sigma #it{p}_{T}<2 GeV/#it{c}");
   hNotIsolated->SetYTitle("Entries");
   
+  hNotIsolated->SetAxisRange(5,100,"X");
+  
   hNotIsolated->Draw();  
   hIsolated   ->Draw("same");
   
-  TLegend lI(0.4,0.7,0.88,0.88);
+  TLegend lI(0.5,0.7,0.88,0.88);
   lI.SetTextSize(0.04);
   lI.SetBorderSize(0);
   lI.SetFillColor(0);
@@ -1129,6 +1691,43 @@ void IsolQA(Int_t icalo)
   lI.AddEntry(hNotIsolated,"NOT Isolated candidates","P");
   lI.Draw("same");
   
+  // ok message
+  // Check for spikes on the candidate cluster (not) isolated spectrum, sign of bad channels.
+  // Also the isolated spectrum yield should be lower than the non isolated.
+  if(addOkFlag)
+  {
+    Float_t minClusterE = 5;
+    if      ( histoTag.Contains("L2") ) minClusterE = 10;
+    else if ( histoTag.Contains("L1") ) minClusterE = 14;
+    
+    ok=0;
+    
+    if ( hNotIsolated->GetEntries() < 1000 ) ok = 4;
+    else
+    {
+      for(Int_t ibin = 1; ibin < hNotIsolated->GetNbinsX(); ibin++)
+      {
+        if ( hNotIsolated->GetBinCenter(ibin) < minClusterE ) continue;
+        
+        if ( hNotIsolated->GetBinContent(ibin) < 100 ) continue;
+        
+        if ( hNotIsolated->GetBinContent(ibin)*1.4 < hNotIsolated->GetBinContent(ibin+1) ||
+             hIsolated   ->GetBinContent(ibin)*1.4 < hIsolated   ->GetBinContent(ibin+1) ||
+             hNotIsolated->GetBinContent(ibin)     < hIsolated   ->GetBinContent(ibin) 
+           )
+        {
+          ok=1;
+//          printf("ibin %d, E %2.2f, Iso: %2.1f (+1 bin) %2.1f; Not Iso %2.1f (+1 bin) %2.1f; \n",
+//                 ibin, hIsolated->GetBinCenter(ibin), 
+//                 hIsolated->GetBinContent(ibin), hIsolated->GetBinContent(ibin+1),
+//                 hNotIsolated->GetBinContent(ibin), hNotIsolated->GetBinContent(ibin+1));
+          break;
+        }
+      }
+    }
+    text[ok]->Draw();
+  }
+
   //
   // Pt in cone
   //
@@ -1215,6 +1814,7 @@ void IsolQA(Int_t icalo)
   if(max < hPtInEtaBandCluster->GetMaximum()) max = hPtInEtaBandCluster->GetMaximum();
   if(max < hPtInEtaBandTrack  ->GetMaximum()) max = hPtInEtaBandTrack  ->GetMaximum();
   hPtInCone->SetMaximum(max*2);
+  hPtInCone->SetMinimum(1e-4);
   
   hPtInCone          ->Draw("");
   hPtInConeCluster   ->Draw("same");
@@ -1232,11 +1832,49 @@ void IsolQA(Int_t icalo)
 
   l.Draw("same");
 
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( nTrig < 10000 ) ok = 4;
+    else
+    {
+      ok=3;
+      
+//      Float_t minPt = 0.5;
+//
+//      for(Int_t ibin = 1; ibin < hPtInCone->GetNbinsX(); ibin++)
+//      {
+//        if ( hPtInCone->GetBinCenter(ibin) < minPt ) continue;
+//
+//        if ( hPtInCone->GetBinContent(ibin) < 1e-4 ) continue;
+//        
+//        if ( 
+//            hPtInCone          ->GetBinContent(ibin)*2 < hPtInCone          ->GetBinContent(ibin+1) ||
+//            hPtInConeCluster   ->GetBinContent(ibin)   > hPtInConeTrack     ->GetBinContent(ibin) 
+//           )
+//        {
+//          ok=1;
+//          
+////          printf("ibin %d, E %2.2f, ClTr: %2.1e (+1 bin) %2.1e; Cl %2.1e (+1 bin) %2.1e; Tr %2.1e (+1 bin) %2.1e;\n",
+////                 ibin, hPtInCone->GetBinCenter(ibin), 
+////                 hPtInCone->GetBinContent(ibin)*2, hPtInCone->GetBinContent(ibin+1),
+////                 hPtInConeCluster->GetBinContent(ibin)*2, hPtInConeCluster->GetBinContent(ibin+1),
+////                 hPtInConeTrack  ->GetBinContent(ibin)*2, hPtInConeTrack  ->GetBinContent(ibin+1));
+//          break;
+//        }
+//      }
+    }
+    text[ok]->Draw();
+  }
+
   //
   // Sum Pt in cone
   //
   cIsolation->cd(3);
   gPad->SetLogy();
+  gPad->SetLogx();
   
   TLegend l2(0.55,0.55,0.88,0.88);
   l2.SetTextSize(0.04);
@@ -1371,6 +2009,44 @@ void IsolQA(Int_t icalo)
   
   l2.Draw("same");
   
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( nTrig < 10000 ) ok = 4;
+    else
+    {
+      ok=3;
+//      Float_t minPt = 3;
+//      Float_t maxPt = 30;
+//
+//      for(Int_t ibin = 1; ibin < hSumPtCone->GetNbinsX(); ibin++)
+//      {
+//        if ( hSumPtCone->GetBinCenter(ibin) < minPt ) continue;
+//        if ( hSumPtCone->GetBinCenter(ibin) > maxPt ) continue;
+//
+//        if ( hSumPtCone->GetBinContent(ibin) < 1e-4 ) continue;
+//        
+//        if ( 
+//            hSumPtCone          ->GetBinContent(ibin)*2  < hSumPtCone          ->GetBinContent(ibin+1) ||
+//            hSumPtConeCluster   ->GetBinContent(ibin)    > hSumPtConeTrack     ->GetBinContent(ibin) 
+//            )
+//        {
+//          ok=1;
+////          printf("ibin %d, E %2.2f, ClTr: %2.1e (+1 bin) %2.1e; Cl %2.1e (+1 bin) %2.1e; Tr %2.1e (+1 bin) %2.1e;\n",
+////                 ibin, hSumPtCone->GetBinCenter(ibin), 
+////                 hSumPtCone->GetBinContent(ibin)*2, hSumPtCone->GetBinContent(ibin+1),
+////                 hSumPtConeCluster->GetBinContent(ibin)*2, hSumPtConeCluster->GetBinContent(ibin+1),
+////                 hSumPtConeTrack  ->GetBinContent(ibin)*2, hSumPtConeTrack  ->GetBinContent(ibin+1));
+//
+//          break;
+//        }
+//      }
+    }
+    text[ok]->Draw();
+  }
+  
   //
   // Sum Pt in cone, UE subtracted
   //
@@ -1396,6 +2072,40 @@ void IsolQA(Int_t icalo)
 
   l3.Draw("same");
 
+  
+  // ok message
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( nTrig < 10000 ) ok = 4;
+    else
+    {
+      ok = 3;
+//      Float_t minPt = 3;
+//      Float_t maxPt = 30;
+//      
+//      for(Int_t ibin = 1; ibin < hSumPtCone->GetNbinsX(); ibin++)
+//      {
+//        if ( hSumPtConeSub->GetBinCenter(ibin) < minPt ) continue;
+//        if ( hSumPtConeSub->GetBinCenter(ibin) > maxPt ) continue;
+//        
+//        if ( hSumPtConeSub->GetBinContent(ibin) < 1e-4 ) continue;
+//        
+//        if ( 
+//            hSumPtConeSub       ->GetBinContent(ibin)*2 < hSumPtConeSub       ->GetBinContent(ibin+1) //||
+//            //hSumPtConeSubCluster->GetBinContent(ibin)   > hSumPtConeSubTrack  ->GetBinContent(ibin) 
+//           )
+//        {
+//          ok=1;
+//          break;
+//        }
+//      }
+    }
+    text[ok]->Draw();
+  }
+
+  
   cIsolation->Print(Form("%s_IsolationHisto.%s",histoTag.Data(),format.Data()));
   
   // cleanup or save
@@ -1455,6 +2165,8 @@ void IsolQA(Int_t icalo)
 //__________________________________________________
 void CorrelQA(Int_t icalo)
 {
+  Int_t ok = 0;
+  
   TCanvas * cCorrelation = new TCanvas(Form("%s_CorrelationHisto"                                  ,histoTag.Data()),
                                        Form("Trigger cluster - associated track correlation for %s",histoTag.Data()),
                                        1000,500);
@@ -1519,7 +2231,7 @@ void CorrelQA(Int_t icalo)
     hDeltaPhi[ibin]->SetYTitle("#it{N}_{pairs} / #it{N}_{trig} / ZYAM");
     hDeltaPhi[ibin]->SetTitle("#gamma (#lambda_{0}^{2} < 0.4, neutral cluster) trigger");
     
-    l.AddEntry(hDeltaPhi[ibin],Form("%2.1f<#it{p}_{T,A}< %2.0f GeV/c",assocBins[ibin],assocBins[ibin+1]),"P");
+    if(!addOkFlag) l.AddEntry(hDeltaPhi[ibin],Form("%2.1f<#it{p}_{T,A}< %2.0f GeV/c",assocBins[ibin],assocBins[ibin+1]),"P");
   }
   
   hDeltaPhi[2]->SetMaximum(hDeltaPhi[2]->GetMaximum()*10);
@@ -1529,6 +2241,40 @@ void CorrelQA(Int_t icalo)
   hDeltaPhi[1]->Draw("Hsame");
   hDeltaPhi[3]->Draw("Hsame");
   hDeltaPhi[0]->Draw("Hsame");
+  
+  // ok message
+  // Check that in the near region there is more yield than in the away region and more than in the zyam region
+  // per each of the associated pT bins
+  if(addOkFlag)
+  {
+    Bool_t okcheck = 0;
+    if ( nTrig < 1000 ) text[4]->Draw();
+    else
+    {
+      for(Int_t ibin = 0; ibin < nAssocBins; ibin++ )
+      {
+        if(!hDeltaPhi[ibin]) continue;
+        
+        Float_t intNear = hDeltaPhi[ibin]->Integral(hDeltaPhi[ibin]->FindBin(-0.4),hDeltaPhi[ibin]->FindBin(0.4));
+        Float_t intZyam = hDeltaPhi[ibin]->Integral(hDeltaPhi[ibin]->FindBin( 1.1),hDeltaPhi[ibin]->FindBin(1.9));
+        Float_t intAway = hDeltaPhi[ibin]->Integral(hDeltaPhi[ibin]->FindBin( 2.8),hDeltaPhi[ibin]->FindBin(3.6));
+            
+        if(intNear > intZyam && intAway > intZyam && intNear > intAway ) 
+        { 
+          l.AddEntry(hDeltaPhi[ibin],Form("%2.1f<#it{p}_{T,A}< %2.0f GeV/c",assocBins[ibin],assocBins[ibin+1]),"P");
+        }
+        else 
+        {
+          //printf("bin %d, near %2.2e, zyam %2.2e, away %2.2e\n",ibin,intNear,intZyam,intAway);
+          l.AddEntry(hDeltaPhi[ibin],Form("#color[6]{%2.1f<#it{p}_{T,A}< %2.0f GeV/c, not ok?}",assocBins[ibin],assocBins[ibin+1]),"P");
+          okcheck=1;
+        }
+      }      
+    }
+    //printf("ok check %d\n",okcheck);
+    if ( !okcheck ) {text[ok]->Draw();}
+  }
+
   
   l.Draw("same");
   
@@ -1572,6 +2318,47 @@ void CorrelQA(Int_t icalo)
   
   l2.Draw("same");
 
+  // ok message
+  // Check that there are no spikes and that the UE yield is lower than the correlated yield.
+  if(addOkFlag)
+  {
+    ok=0;
+    
+    if ( nTrig < 1000 ) ok = 4;
+    else
+    {
+      //ok=3;
+      
+      Float_t minXE = 0.1;
+      Float_t maxXE = 0.5;
+      
+      for(Int_t ibin = 1; ibin < hXE->GetNbinsX(); ibin++)
+      {
+        if ( hXE->GetBinCenter(ibin) < minXE ) continue;
+        if ( hXE->GetBinCenter(ibin) > maxXE ) continue;
+        
+        if ( hXE->GetBinContent(ibin) < 1e-3 ) continue;
+        
+        if ( 
+            hXE  ->GetBinContent(ibin)*2 < hXE  ->GetBinContent(ibin+1) ||
+            //hXEUE->GetBinContent(ibin)*2 < hXEUE->GetBinContent(ibin+1) ||
+            hXE  ->GetBinContent(ibin)   < hXEUE->GetBinContent(ibin) 
+            )
+        {
+          ok=1;
+          
+          printf("ibin %d, XE bin %2.2f, XE: %2.1e (+1 bin) %2.1e; XEUE %2.1e (+1 bin) %2.1e;\n",
+                 ibin, hXE->GetBinCenter(ibin), 
+                 hXE->GetBinContent(ibin)*2, hXE->GetBinContent(ibin+1),
+                 hXEUE->GetBinContent(ibin)*2, hXEUE->GetBinContent(ibin+1));
+          break;
+        }
+      }
+    }
+    text[ok]->Draw();
+  }
+
+  
   cCorrelation->Print(Form("%s_CorrelationHisto.%s",histoTag.Data(),format.Data()));
   
   // cleanup or save
@@ -1709,6 +2496,8 @@ void MCQA(Int_t icalo)
   lG.SetFillColor(0);
   lG.Draw();
 
+  if(addOkFlag) text[3]->Draw();
+
   cmc->cd(2);
   gPad->SetLogy();
   TH1F* hRatPho    = (TH1F*) hClusterPho   ->Clone(Form("%s_hGenRecoRatPho"   ,histoTag.Data()));
@@ -1744,6 +2533,8 @@ void MCQA(Int_t icalo)
   l2.SetBorderSize(0);
   l2.SetFillColor(0);
   l2.Draw();
+
+  if(addOkFlag) text[3]->Draw();
 
   cmc->cd(3);
   //gPad->SetLogy();
@@ -1795,6 +2586,8 @@ void MCQA(Int_t icalo)
   hPrimEtaPhi->SetMarkerStyle(22);
   hPrimEtaPhi->Draw("same");
 
+  if(addOkFlag) text[3]->Draw();
+  
   cmc->cd(4);
   //gPad->SetLogy();
   
@@ -1844,6 +2637,8 @@ void MCQA(Int_t icalo)
   hPrimEtaEtaP->SetMarkerStyle(22);
   hPrimEtaEtaP->Draw("same");
   
+  if(addOkFlag) text[3]->Draw();
+  
   cmc->Print(Form("%s_MCHisto.%s",histoTag.Data(),format.Data()));
   
   // cleanup or save
@@ -1880,26 +2675,26 @@ void MCQA(Int_t icalo)
 //____________________________________________________________________
 Bool_t GetList(TString trigName)
 {  
-  if(list) delete list;
+  if(histArr) delete histArr;
   
-  list = (TList*) dir->Get(trigName);
+  histArr = (TList*) dir->Get(trigName);
   
-  if ( !list ) 
+  if ( !histArr ) 
   { 
     printf("List not found, do nothing\n");
     return kFALSE; 
   }
 
-  if ( list->GetEntries() <= 0 ) 
+  if ( histArr->GetEntries() <= 0 ) 
   { 
-    printf("No histograms found <%d>, do nothing\n",list->GetEntries());
+    printf("No histograms found <%d>, do nothing\n",histArr->GetEntries());
     return kFALSE; 
   }
 
   if ( exportToFile == 2 )
   {
     fout = new TFile(Form("AnalysisResults%s.root",histoTag.Data()),"RECREATE");
-    list->Write();
+    histArr->Write();
     fout->Close();
   }
   
@@ -1918,8 +2713,10 @@ TObject * GetHisto(TString histoName)
 {
   TObject *histo = 0x0;
   
-  if ( list ) histo = list->FindObject(histoName);
-  else        histo = file->Get       (histoName);
+  if ( histArr ) 
+    histo = histArr->FindObject(histoName);
+  else        
+    histo = file->Get       (histoName);
   
   SaveHisto(histo);
   
@@ -1993,4 +2790,15 @@ void ScaleXaxis(TH1 *h, Double_t scale)
 }
 
 
+///
+/// Latex settings
+//___________________________________________________
+void MyLatexMakeUp(TLatex *currentLatex, Int_t textfont, Double_t textsize, Int_t textcolor)
+{
+  currentLatex->SetNDC();
+  currentLatex->SetTextFont(textfont);
+  currentLatex->SetTextSize(textsize);
+  currentLatex->SetTextColor(textcolor);
+  return;
+}
 

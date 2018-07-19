@@ -21,7 +21,7 @@
 class AliFemtoCorrFctnDPhiStarKStarMergedFraction : public AliFemtoCorrFctn {
 public:
 
-  AliFemtoCorrFctnDPhiStarKStarMergedFraction(char* title, Double_t aRadiusMin, Double_t aRadiusMax, Double_t aDistanceMax, Double_t aMergedFractionLimit, Double_t aDEtaMax, const int& aKStarBins, Double_t aKStarRangeLow, Double_t aKStarRangeUp, const Int_t& aPhiStarBins, Double_t aPhiStarRangeLow, Double_t aPhiStarRangeUp);
+  AliFemtoCorrFctnDPhiStarKStarMergedFraction(const char* title, Double_t aRadiusMin, Double_t aRadiusMax, Double_t aDistanceMax, Double_t aMergedFractionLimit, Double_t aDEtaMax, const int& aKStarBins, Double_t aKStarRangeLow, Double_t aKStarRangeUp, const Int_t& aPhiStarBins, Double_t aPhiStarRangeLow, Double_t aPhiStarRangeUp);
   AliFemtoCorrFctnDPhiStarKStarMergedFraction(const AliFemtoCorrFctnDPhiStarKStarMergedFraction& aCorrFctn);
   virtual ~AliFemtoCorrFctnDPhiStarKStarMergedFraction();
 
@@ -35,6 +35,8 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoCorrFctnDPhiStarKStarMergedFraction(*this); }
+
 
   void SetRadiusMin(double minrad);
   void SetRadiusMax(double maxrad);
@@ -44,7 +46,7 @@ public:
   void SetMagneticFieldSign(int magsign);
 
 private:
-  
+
   TH2D *fDPhiStarKStarMergedNumerator;              // Numerator of dPhi* k* function for pairs which are "merged"
   TH2D *fDPhiStarKStarTotalNumerator;               // Numerator of dPhi* k* function for all pairs
   TH2D *fDPhiStarKStarMergedDenominator;            // Denominator of dPhi* k* function for pairs which are "merged"
@@ -62,7 +64,7 @@ private:
 
   Double_t fRadiusMin;              // Minimum radius at which the pair separation is calculated [m]
   Double_t fRadiusMax;              // Maximum radius at which the pair separation is calculated [m]
-  
+
   Int_t fMagSign;                    // Magnetic field sign
 
 #ifdef __ROOT__

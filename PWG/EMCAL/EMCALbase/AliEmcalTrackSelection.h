@@ -1,10 +1,35 @@
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 #ifndef ALIEMCALTRACKSELECTION_H_
 #define ALIEMCALTRACKSELECTION_H_
-/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
 #include <TObject.h>
 #include <TBits.h>
+#include "AliEmcalTrackSelResultPtr.h"
 
 class TClonesArray;
 class TList;
@@ -12,6 +37,14 @@ class TObjArray;
 class AliVCuts;
 class AliVEvent;
 class AliVTrack;
+
+namespace PWG {
+namespace EMCAL {
+
+class AliEmcalCutBase;
+
+}
+}
 
 /**
  * @class AliEmcalManagedObject
@@ -146,7 +179,13 @@ public:
     kNoTrackFilter = 0,   ///< No filter (all tracks passing)
     kCustomTrackFilter,   ///< Custom (user-defined) tracks
     kHybridTracks,        ///< Hybrid tracks
-    kTPCOnlyTracks        ///< TPC-only tracks
+    kTPCOnlyTracks,       ///< TPC-only tracks
+    kITSPureTracks,       ///< ITS stand-alone tracks
+		kHybridTracks2010wNoRefit,	///< Hybrid tracks using the 2010 definition including NoITSrefit tracks (ESD-only)
+		kHybridTracks2010woNoRefit,	///< Hybrid tracks using the 2010 definition excluding NoITSrefit tracks (ESD-only)
+		kHybridTracks2011wNoRefit,	///< Hybrid tracks using the 2011 definition including NoITSrefit tracks (ESD-only)
+		kHybridTracks2011woNoRefit,	///< Hybrid tracks using the 2011 definition excluding NoITSrefit tracks (ESD-only)
+		kHybridTracks2018TRD				///< Hybrid tracks using the 2018 TRD test definition
   };
 
   /**
@@ -184,19 +223,31 @@ public:
 
   /**
    * @brief Select tracks from a TClonesArray of input tracks
+	 * 
+	 * Running track selection for all tracks in the input array 
+	 * (by calling the IsTrackAccepted function) and storing the track 
+	 * selection result in the output container.
+	 * Attention: The output container contains the result for all
+	 * tracks, not only those selected. It is the user responsibility
+	 * to filter the selected tracks.
    *
    * @param[in] tracks TClonesArray of tracks (must not be null)
-   * @return TObjArray of selected tracks
+   * @return TObjArray of AliEmcalTrackSelResultPtr with the selection status for all tracks
    */
 	TObjArray *GetAcceptedTracks(const TClonesArray * const tracks);
 
 	/**
 	 * @brief Select tracks from a virtual event
 	 *
-	 * Delegates selection process to function IsTrackAccepted
-	 *
+	 * Running track selection for all tracks in the input event 
+	 * (by calling the IsTrackAccepted function) and storing the track 
+	 * selection result in the output container.
+	 * Attention: The output container contains the result for all
+	 * tracks, not only those selected. It is the user responsibility
+	 * to filter the selected tracks.
+	 * 
 	 * @param[in] event AliVEvent, via interface of virtual event (must not be null)
-	 * @return TObjArray of selected tracks
+	 * @return TObjArray of AliEmcalTrackSelResultPtr with the selection status for all tracks
 	 */
 	TObjArray *GetAcceptedTracks(const AliVEvent *const event);
 
@@ -214,7 +265,7 @@ public:
 	 * @param[in] trk Track to be checked
 	 * @return True if the track is accepted, false otherwise
 	 */
-	virtual bool IsTrackAccepted(AliVTrack * const trk) = 0;
+	virtual PWG::EMCAL::AliEmcalTrackSelResultPtr IsTrackAccepted(AliVTrack * const trk) = 0;
 
 	/**
 	 * @brief Interface for track cut generators
@@ -244,6 +295,14 @@ public:
 	void AddTrackCuts(AliVCuts *cuts);
 
 	/**
+	 * @brief Add track cuts of type AliEmcalCutBase
+	 * 
+	 * Takes ownership over the cuts
+	 * @param[in] cuts New cuts to add
+	 */
+	void AddTrackCuts(PWG::EMCAL::AliEmcalCutBase *cuts);
+
+	/**
 	 * @brief Add new set of track cuts to the list of cuts
 	 *
 	 * Takes ownership over the cuts
@@ -262,19 +321,7 @@ public:
 	 * @param[in] icut Cut at position in array
 	 * @return The cuts (NULL for invalid positions)
 	 */
-	AliVCuts *GetTrackCuts(Int_t icut);
-
-	/**
-	 * @brief Get selection bitmap for the last handled track
-	 * @return Track selection bitmap of the last handled track
-	 */
-	const TBits& GetTrackBitmap() const { return fTrackBitmap; }
-
-	/**
-	 * Get selection bitmaps of all accepted tracks
-	 * @return Bitmaps of all selected tracks
-	 */
-	const TClonesArray* GetAcceptedTrackBitmaps() const { return fListOfTrackBitmaps; }
+	PWG::EMCAL::AliEmcalCutBase *GetTrackCuts(Int_t icut);
 
 	/**
 	 * @brief Set selection mode to any
@@ -300,8 +347,6 @@ public:
 
 protected:
 	TObjArray    *fListOfTracks;         ///< TObjArray with accepted tracks
-	TClonesArray *fListOfTrackBitmaps;   ///< TClonesArray with accepted tracks' bit maps
-	TBits         fTrackBitmap;          ///< Bitmap of last accepted/rejected track
 	TObjArray    *fListOfCuts;           ///< List of track cut objects
 	Bool_t        fSelectionModeAny;     ///< Accept track if any of the cuts is fulfilled
 

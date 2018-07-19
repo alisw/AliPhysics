@@ -27,7 +27,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
   } else {
     filecuts=TFile::Open(filename.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Cut object not found: analysis will not start!\n");
+      ::Fatal("AddTaskDs", "Cut object not found: analysis will not start!\n");
     }
     else printf("Cut object correctly found\n");
   }
@@ -41,7 +41,7 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
       printf("Cut object not found: standard pp cut object used\n");
       analysiscuts->SetStandardCutsPP2010();
     }
-    else AliFatal("Standard cut object not available for PbPb: analysis will not start!\n");
+    else ::Fatal("AddTaskDs", "Standard cut object not available for PbPb: analysis will not start!\n");
   }
   else analysiscuts = (AliRDHFCutsDstoKKpi*)filecuts->Get("AnalysisCuts");
     
@@ -91,8 +91,9 @@ AliAnalysisTaskSEDs *AddTaskDs(Int_t system=0/*0=pp,1=PbPb*/,
 								 outputfile.Data());
     
   name="coutputDs2"; name+=postname;
+  AliAnalysisDataContainer *coutputDs2 = 0x0; 
   if(storeNtuple){
-    AliAnalysisDataContainer *coutputDs2 = mgr->CreateContainer(name,TNtuple::Class(),
+    coutputDs2 = mgr->CreateContainer(name,TNtuple::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
     coutputDs2->SetSpecialOutput();

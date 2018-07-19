@@ -1,6 +1,12 @@
+////////////////////////////////////////////////////////////
+//
+// Default macro for calibrating minimum bias pp data.
+//
+////////////////////////////////////////////////////////////
 
-
-CalibratePeriodPP(TString lPeriodName = "LHC15f") {
+CalibratePeriodPP(TString lPeriodName = "LHC16k",
+                  TString lWhichData = "MB",
+                  Long_t lRunToUseAsDefault = 257630 ) {
 
     //Load ALICE stuff
     TString gLibs[] =    {"STEER",
@@ -20,7 +26,7 @@ CalibratePeriodPP(TString lPeriodName = "LHC15f") {
     //All fine, let's try the calibrator
     AliMultSelectionCalibrator *lCalib = new AliMultSelectionCalibrator("lCalib");
 
-    lCalib->SetRunToUseAsDefault( 244918 );
+    lCalib->SetRunToUseAsDefault( lRunToUseAsDefault );
 
     //============================================================
     // --- Definition of Boundaries ---
@@ -64,13 +70,6 @@ CalibratePeriodPP(TString lPeriodName = "LHC15f") {
         lCalib->GetEventCuts()->SetNonZeroNContribs          (kTRUE);
     }
 
-    if ( lPeriodName.Contains("LHC15f") ) {
-        cout<<"Extra cleanup in LHC15f"<<endl;
-        lCalib->GetEventCuts()->SetIsNotAsymmetricInVZERO (kTRUE );
-        lCalib->GetEventCuts()->SetIsNotIncompleteDAQ     (kTRUE );
-    }
-
-    
     if ( lPeriodName.Contains("LHC15m") || lPeriodName.Contains("LHC15o") ) {
         cout<<"Setting event selection criteria for Pb-Pb..."<<endl;
         lCalib->GetEventCuts()->SetVzCut(10.0);
@@ -142,20 +141,8 @@ CalibratePeriodPP(TString lPeriodName = "LHC15f") {
     //Integer estimators
     AliMultEstimator *fEstnSPDClusters = new AliMultEstimator("SPDClusters", "", "(fnSPDClusters)");
     fEstnSPDClusters->SetIsInteger(kTRUE);
-    AliMultEstimator *fEstCL0 = new AliMultEstimator("CL0", "", "(fnSPDClusters0)");
-    fEstCL0->SetIsInteger(kTRUE);
-    AliMultEstimator *fEstCL1 = new AliMultEstimator("CL1", "", "(fnSPDClusters1)");
-    fEstCL1->SetIsInteger(kTRUE);
-    
-    //Tracklet-based
     AliMultEstimator *fEstnSPDTracklets = new AliMultEstimator("SPDTracklets", "", "(fnTracklets)");
     fEstnSPDTracklets->SetIsInteger(kTRUE);
-    AliMultEstimator *fEstnSPDTracklets08 = new AliMultEstimator("SPDTracklets08", "", "(fnTracklets08)");
-    fEstnSPDTracklets08->SetIsInteger(kTRUE);
-    AliMultEstimator *fEstnSPDTracklets08to15 = new AliMultEstimator("SPD08to15", "", "(fnTracklets08)<-0.5?(fnTracklets08):(fnTracklets15)-(fnTracklets08)");
-    fEstnSPDTracklets08to15->SetIsInteger(kTRUE);
-    
-    //Ref-mult-based
     AliMultEstimator *fEstRefMultEta5 = new AliMultEstimator("RefMult05", "", "(fRefMultEta5)");
     fEstRefMultEta5->SetIsInteger(kTRUE);
     AliMultEstimator *fEstRefMultEta8 = new AliMultEstimator("RefMult08", "", "(fRefMultEta8)");
@@ -183,22 +170,16 @@ CalibratePeriodPP(TString lPeriodName = "LHC15f") {
     lCalib->GetMultSelection() -> AddEstimator( fEstV0C );
     //Only do this in run 2, AD didn't exist in Run 1
     //Will also save space in the OADB for old datasets!
-    if( lPeriodName.Contains("LHC15") ) {
-        lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0M );
-        lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0A );
-        lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0C );
-        lCalib->GetMultSelection() -> AddEstimator( fEstADM );
-        lCalib->GetMultSelection() -> AddEstimator( fEstADA );
-        lCalib->GetMultSelection() -> AddEstimator( fEstADC );
-    }
+    lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0M );
+    lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0A );
+    lCalib->GetMultSelection() -> AddEstimator( fEstOnlineV0C );
+    lCalib->GetMultSelection() -> AddEstimator( fEstADM );
+    lCalib->GetMultSelection() -> AddEstimator( fEstADA );
+    lCalib->GetMultSelection() -> AddEstimator( fEstADC );
 
     //Universal: Tracking, etc
     lCalib->GetMultSelection() -> AddEstimator( fEstnSPDClusters  );
     lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets );
-    lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets08 );
-    lCalib->GetMultSelection() -> AddEstimator( fEstnSPDTracklets08to15 );
-    lCalib->GetMultSelection() -> AddEstimator( fEstCL0 );
-    lCalib->GetMultSelection() -> AddEstimator( fEstCL1 );
     lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta5 );
     lCalib->GetMultSelection() -> AddEstimator( fEstRefMultEta8 );
 
@@ -211,21 +192,9 @@ CalibratePeriodPP(TString lPeriodName = "LHC15f") {
     // --- Definition of Input/Output ---
     //============================================================
 
-    if( !lPeriodName.Contains("test") ) {
-        //Per Period calibration: standard locations...
-        lCalib -> SetInputFile  ( Form("~/work/calibs/Merged%s.root",lPeriodName.Data() ) );
-        lCalib -> SetBufferFile ( Form("~/work/fast/buffer-%s.root", lPeriodName.Data() ) );
+    lCalib -> SetInputFile  ( Form("AnalysisResults_%s.root", lWhichData.Data()) );
+    lCalib -> SetBufferFile ( Form("buffer-%s-%s.root", lPeriodName.Data(), lWhichData.Data()) );
+    lCalib -> SetOutputFile ( Form("OADB-%s-%s.root", lPeriodName.Data(), lWhichData.Data()) );
+    lCalib -> Calibrate     ();
 
-        //Local running please
-        lCalib -> SetInputFile  ( Form("~/Dropbox/MultSelCalib/%s/Merged%s.root",lPeriodName.Data(), lPeriodName.Data() ) );
-        lCalib -> SetBufferFile ( "buffer.root" );
-
-        lCalib -> SetOutputFile ( Form("OADB-%s.root", lPeriodName.Data() ) );
-        lCalib -> Calibrate     ();
-    } else {
-        lCalib -> SetInputFile  ( "../MultSelCalib/LHC10h/files/AnalysisResults_137161.root");
-        lCalib -> SetBufferFile ( "buffer-test.root" );
-        lCalib -> SetOutputFile ( "OADB-testing.root" );
-        lCalib -> Calibrate     ();
-    }
 }

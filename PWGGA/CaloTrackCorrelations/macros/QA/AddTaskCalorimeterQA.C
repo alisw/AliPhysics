@@ -10,6 +10,25 @@
 /// \author Gustavo Conesa Balbastre <Gustavo.Conesa.Balbastre@cern.ch>, (LPSC-CNRS)
 ///
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <TString.h>
+#include <TROOT.h>
+#include <TSystem.h>
+
+#include "AliLog.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliCaloTrackESDReader.h"
+#include "AliCaloTrackAODReader.h"
+#include "AliCalorimeterUtils.h"
+#include "AliAnaCalorimeterQA.h"
+#include "AliHistogramRanges.h"
+#include "AliAnaCalorimeterQA.h"
+#include "AliAnaCaloTrackCorrMaker.h"
+#include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+
+#endif // CINT
 
 ///
 /// Main method calling all the configuration
@@ -35,14 +54,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskPartCorr", "No analysis manager to connect to.");
+    ::Error("AddTaskCalorimeterQA", "No analysis manager to connect to.");
     return NULL;
   }  
   
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskPartCorr", "This task requires an input event handler");
+    ::Error("AddTaskCalorimeter", "This task requires an input event handler");
     return NULL;
   }
   
@@ -55,7 +74,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   {
     simulation = kTRUE;
     printf("AddTaskCalorimeterQA - CAREFUL : Triggered events not checked in simulation!! \n");
-    if(!ssuffix.Contains("default")) return;
+    if(!ssuffix.Contains("default")) return NULL;
   }
   
   // Configure analysis
@@ -132,13 +151,16 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   AliEMCALRecoUtils* recou = cu->GetEMCALRecoUtils();
 
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/ConfigureEMCALRecoUtils.C");
-  ConfigureEMCALRecoUtils(recou,
-                          simulation,
-                          bExotic,
-                          bNonLin,
-                          bEnCalib,
-                          bBadMap,
-                          bTiCalib);  
+
+  TString recouStr = Form("(reinterpret_cast<AliEMCALRecoUtils*>(%p))", recou);
+  
+  gInterpreter->ProcessLine(Form("ConfigureEMCALRecoUtils(%s, %d, %d, %d, %d, %d, %d)", recouStr.Data(),
+				 (Int_t)simulation,
+				 (Int_t)bExotic,
+				 (Int_t)bNonLin,
+				 (Int_t)bEnCalib,
+				 (Int_t)bBadMap,
+				 (Int_t)bTiCalib));  
   
   if(bBadMap) 
     cu->SwitchOnBadChannelsRemoval();
@@ -150,7 +172,10 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
   //emcalQA->SetDebug(10); //10 for lots of messages
-  emcalQA->SetCalorimeter("EMCAL");
+  
+  TString calorimeter = "EMCAL";
+  emcalQA->SetCalorimeter(calorimeter);
+  
   if(simulation)
   {
     // Access MC stack and fill more histograms
@@ -251,16 +276,21 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   if(printSettings) maker->Print("");
   
   printf("======================== \n");
-  printf(" End Configuration of Calorimeter QA \n");
+  printf("AddTaskCalorimeterQA() - End Configuration \n");
   printf("======================== \n");
   
   // Create task
   //===========================================================================
   AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("CalorimeterPerformance_%s",suffix));
-  task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
+  
+  //task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
+  
   //task->SetDebugLevel(-1);
+  
   task->SetAnalysisMaker(maker);	
+  
   task->SetBranches("ESD:AliESDRun.,AliESDHeader"); //just a trick to get Constantin's analysis to work
+  
   mgr->AddTask(task);
   
   //Create containers

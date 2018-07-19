@@ -91,7 +91,7 @@ void AliVertexingHFUtils::ComputeSignificance(Double_t signal, Double_t  errsign
 Double_t AliVertexingHFUtils::Pol(Double_t x, Int_t k){
   /// compute chi from polynomial approximation
   Double_t c[5];
-  if(k==1){ 
+  if(k==1){
     c[0]=0.626657; c[1]=0.; c[2]=-0.09694; c[3]=0.02754; c[4]=-0.002283;
   }
   else if(k==2){
@@ -176,7 +176,7 @@ Double_t AliVertexingHFUtils::GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t
   if(!hSubEvCorr) return 1.;
   Double_t resSub=GetSubEvResolLowLim(hSubEvCorr);
   printf("%f\n",resSub);
-  return GetFullEvResol(resSub,k);  
+  return GetFullEvResol(resSub,k);
 }
 //______________________________________________________________________
 Double_t AliVertexingHFUtils::GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k){
@@ -184,7 +184,7 @@ Double_t AliVertexingHFUtils::GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_
   if(!hSubEvCorr) return 1.;
   Double_t resSub=GetSubEvResolHighLim(hSubEvCorr);
   printf("%f\n",resSub);
-  return GetFullEvResol(resSub,k);  
+  return GetFullEvResol(resSub,k);
 }
 //______________________________________________________________________
 Int_t AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AliAODEvent* ev, Double_t mineta, Double_t maxeta){
@@ -209,7 +209,7 @@ Int_t AliVertexingHFUtils::GetGeneratedMultiplicityInEtaRange(TClonesArray* arra
     Int_t charge = part->Charge();
     Double_t eta = part->Eta();
     if(charge!=0 && eta>mineta && eta<maxeta) nChargedMC++;
-  } 
+  }
   return nChargedMC;
 }
 //______________________________________________________________________
@@ -223,8 +223,8 @@ Int_t AliVertexingHFUtils::GetGeneratedPrimariesInEtaRange(TClonesArray* arrayMC
     Double_t eta = part->Eta();
     if(charge!=0 && eta>mineta && eta<maxeta){
       if(part->IsPrimary())nChargedMC++;
-    } 
-  }  
+    }
+  }
   return nChargedMC;
 }
 //______________________________________________________________________
@@ -238,7 +238,7 @@ Int_t AliVertexingHFUtils::GetGeneratedPhysicalPrimariesInEtaRange(TClonesArray*
     Double_t eta = part->Eta();
     if(charge!=0 && eta>mineta && eta<maxeta){
       if(part->IsPhysicalPrimary())nChargedMC++;
-    } 
+    }
   }
   return nChargedMC;
 }
@@ -335,8 +335,8 @@ void AliVertexingHFUtils::AveragePt(Float_t& averagePt, Float_t& errorPt,Float_t
   hMptBkgAver->Add(hMptBkgHiScal);
   hMptBkgAver->Scale(0.5);
   TH1F* hMptSig=(TH1F*)hMptSigReg->Clone("hCPtSigBin");
-  hMptSig->Add(hMptBkgAver,-1.);   
- 
+  hMptSig->Add(hMptBkgAver,-1.);
+
   averagePt = hMptSig->GetMean();
   errorPt = hMptSig->GetMeanError();
 
@@ -378,7 +378,7 @@ Double_t AliVertexingHFUtils::GetTrueImpactParameterDzero(AliAODMCHeader *mcHead
   }
 
   Int_t nDau=partD->GetNDaughters();
-  Int_t labelFirstDau = partD->GetDaughter(0); 
+  Int_t labelFirstDau = partD->GetDaughter(0);
   if(nDau==2){
     for(Int_t iDau=0; iDau<2; iDau++){
       Int_t ind = labelFirstDau+iDau;
@@ -386,7 +386,7 @@ Double_t AliVertexingHFUtils::GetTrueImpactParameterDzero(AliAODMCHeader *mcHead
       if(!part){
 	printf("Daughter particle not found in MC array");
 	return 99999.;
-      } 
+      }
       pXdauTrue[iDau]=part->Px();
       pYdauTrue[iDau]=part->Py();
       pZdauTrue[iDau]=part->Pz();
@@ -421,7 +421,7 @@ Double_t AliVertexingHFUtils::GetTrueImpactParameterDplus(AliAODMCHeader *mcHead
   }
 
   Int_t nDau=partD->GetNDaughters();
-  Int_t labelFirstDau = partD->GetDaughter(0); 
+  Int_t labelFirstDau = partD->GetDaughter(0);
   if(nDau==3){
     for(Int_t iDau=0; iDau<3; iDau++){
       Int_t ind = labelFirstDau+iDau;
@@ -429,7 +429,7 @@ Double_t AliVertexingHFUtils::GetTrueImpactParameterDplus(AliAODMCHeader *mcHead
       if(!part){
 	printf("Daughter particle not found in MC array");
 	return 99999.;
-      } 
+      }
       pXdauTrue[iDau]=part->Px();
       pYdauTrue[iDau]=part->Py();
       pZdauTrue[iDau]=part->Pz();
@@ -442,7 +442,7 @@ Double_t AliVertexingHFUtils::GetTrueImpactParameterDplus(AliAODMCHeader *mcHead
       if(!part){
 	printf("Daughter particle not found in MC array");
 	return 99999.;
-      } 
+      }
       Int_t pdgCode=TMath::Abs(part->GetPdgCode());
       if(pdgCode==211 || pdgCode==321){
 	pXdauTrue[theDau]=part->Px();
@@ -452,15 +452,15 @@ Double_t AliVertexingHFUtils::GetTrueImpactParameterDplus(AliAODMCHeader *mcHead
       }else{
 	Int_t nDauRes=part->GetNDaughters();
 	if(nDauRes==2){
-	  Int_t labelFirstDauRes = part->GetDaughter(0); 	
+	  Int_t labelFirstDauRes = part->GetDaughter(0);
 	  for(Int_t iDauRes=0; iDauRes<2; iDauRes++){
 	    Int_t indDR = labelFirstDauRes+iDauRes;
 	    AliAODMCParticle* partDR = dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDR));
 	    if(!partDR){
 	      printf("Daughter particle not found in MC array");
 	      return 99999.;
-	    } 
-	    
+	    }
+
 	    Int_t pdgCodeDR=TMath::Abs(partDR->GetPdgCode());
  	    if(pdgCodeDR==211 || pdgCodeDR==321){
 	      pXdauTrue[theDau]=partDR->Px();
@@ -535,9 +535,9 @@ void AliVertexingHFUtils::GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHe
 
   Int_t lab=TMath::Abs(track->GetLabel());
   nameGen=GetGenerator(lab,header);
-  
+
   //  Int_t countControl=0;
-  
+
   while(nameGen.IsWhitespace()){
     AliAODMCParticle *mcpart= (AliAODMCParticle*)arrayMC->At(lab);
     if(!mcpart){
@@ -557,7 +557,7 @@ void AliVertexingHFUtils::GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHe
     //   break;
     // }
   }
-  
+
   return;
 }
 //----------------------------------------------------------------------
@@ -565,9 +565,9 @@ Bool_t AliVertexingHFUtils::IsTrackInjected(AliAODTrack *track,AliAODMCHeader *h
   /// method to check if a track comes from the signal event or from the underlying Hijing event
   TString nameGen;
   GetTrackPrimaryGenerator(track,header,arrayMC,nameGen);
-  
+
   if(nameGen.IsWhitespace() || nameGen.Contains("ijing")) return kFALSE;
-  
+
   return kTRUE;
 }
 //____________________________________________________________________________
@@ -701,9 +701,9 @@ Int_t AliVertexingHFUtils::CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t*
   TParticle* mcPart = mcEvent->Particle(label);
   Int_t pdgD=mcPart->GetPdgCode();
   if(TMath::Abs(pdgD)!=421) return -1;
-  
+
   Int_t nDau=mcPart->GetNDaughters();
-  
+
   if(nDau==2){
     Int_t daughter0 = mcPart->GetDaughter(0);
     Int_t daughter1 = mcPart->GetDaughter(1);
@@ -729,7 +729,7 @@ Int_t AliVertexingHFUtils::CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t*
     if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
     return 1;
   }
-  
+
   if(nDau==3 || nDau==4){
     Int_t nKaons=0;
     Int_t nPions=0;
@@ -927,7 +927,7 @@ Int_t AliVertexingHFUtils::CheckDplusDecay(AliMCEvent* mcEvent, Int_t label, Int
   Double_t sumPyDau=0.;
   Double_t sumPzDau=0.;
   Int_t nFoundKpi=0;
-  
+
   if(nDau==3 || nDau==2){
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
@@ -992,9 +992,9 @@ Int_t AliVertexingHFUtils::CheckDplusDecay(AliMCEvent* mcEvent, Int_t label, Int
     if(nDau==3) return 1;
     else if(nDau==2) return 2;
   }
-  
+
   return -1;
-  
+
 }
 
 //____________________________________________________________________________
@@ -1100,7 +1100,7 @@ Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(AliMCEvent* mcEvent, Int_t label,
   Int_t nFoundKpi=0;
   Bool_t isPhi=kFALSE;
   Bool_t isk0st=kFALSE;
-  
+
   if(nDau==3 || nDau==2){
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
@@ -1166,17 +1166,17 @@ Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(AliMCEvent* mcEvent, Int_t label,
       if(isPhi) return 1;
     }
   }
-  
+
   return -1;
-  
+
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
   /// Checks the D+ decay channel. Returns 1 for D+->phipi->KKpi, 2 for D+->K0*K->KKpi, 3 for the non-resonant case
-    
+
   Int_t pdgD=mcPart->GetPdgCode();
   if(TMath::Abs(pdgD)!=411) return -1;
-    
+
   Int_t nDau=mcPart->GetNDaughters();
   Int_t labelFirstDau = mcPart->GetDaughter(0);
   Int_t nKaons=0;
@@ -1187,7 +1187,7 @@ Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(TClonesArray* arrayMC, AliAODMCPa
   Int_t nFoundKpi=0;
   Bool_t isPhi=kFALSE;
   Bool_t isk0st=kFALSE;
-    
+
   if(nDau==3 || nDau==2){
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
@@ -1253,9 +1253,9 @@ Int_t AliVertexingHFUtils::CheckDplusKKpiDecay(TClonesArray* arrayMC, AliAODMCPa
       if(isPhi) return 1;
     }
   }
-    
+
   return -1;
-    
+
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDplusK0spiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
@@ -1331,13 +1331,13 @@ Int_t AliVertexingHFUtils::CheckDplusK0spiDecay(AliMCEvent* mcEvent, Int_t label
     if(codeV0==310) return 1;
   }
   return -1;
-  
+
 }
 
- 
+
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
-  /// Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case
+  /// Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
 
   if(label<0) return -1;
   TParticle* mcPart = mcEvent->Particle(label);
@@ -1354,7 +1354,8 @@ Int_t AliVertexingHFUtils::CheckDsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
   Int_t nFoundKpi=0;
   Bool_t isPhi=kFALSE;
   Bool_t isk0st=kFALSE;
-  
+  Bool_t isf0=kFALSE;
+
   if(nDau==3 || nDau==2){
     for(Int_t iDau=0; iDau<nDau; iDau++){
       Int_t indDau = labelFirstDau+iDau;
@@ -1376,9 +1377,10 @@ Int_t AliVertexingHFUtils::CheckDsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
 	sumPzDau+=dau->Pz();
 	arrayDauLab[nFoundKpi++]=indDau;
 	if(nFoundKpi>3) return -1;
-      }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==333){
+      }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==333 || TMath::Abs(pdgdau)==9010221){
 	if(TMath::Abs(pdgdau)==313) isk0st=kTRUE;
 	if(TMath::Abs(pdgdau)==333) isPhi=kTRUE;
+        if(TMath::Abs(pdgdau)==9010221) isf0=kTRUE;
 	Int_t nResDau=dau->GetNDaughters();
 	if(nResDau!=2) return -1;
 	Int_t indFirstResDau=dau->GetDaughter(0);
@@ -1404,7 +1406,7 @@ Int_t AliVertexingHFUtils::CheckDsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
 	    arrayDauLab[nFoundKpi++]=indResDau;
 	    if(nFoundKpi>3) return -1;
 	  }
-	  }
+	}
       }else{
 	return -1;
       }
@@ -1418,11 +1420,100 @@ Int_t AliVertexingHFUtils::CheckDsDecay(AliMCEvent* mcEvent, Int_t label, Int_t*
     else if(nDau==2){
       if(isk0st) return 2;
       if(isPhi) return 1;
+      if(isf0) return 4;
     }
   }
-  
+
   return -1;
-  
+}
+//____________________________________________________________________________
+Int_t AliVertexingHFUtils::CheckDsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
+  /// Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case, 4 for Ds->f0pi->KKpi
+
+  Int_t pdgD=mcPart->GetPdgCode();
+  if(TMath::Abs(pdgD)!=431) return -1;
+
+  Int_t nDau=mcPart->GetNDaughters();
+  Int_t labelFirstDau = mcPart->GetDaughter(0);
+  Int_t nKaons=0;
+  Int_t nPions=0;
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+  Int_t nFoundKpi=0;
+  Bool_t isPhi=kFALSE;
+  Bool_t isk0st=kFALSE;
+  Bool_t isf0=kFALSE;
+
+  if(nDau==3 || nDau==2){
+    for(Int_t iDau=0; iDau<nDau; iDau++){
+      Int_t indDau = labelFirstDau+iDau;
+      if(indDau<0) return -1;
+      AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
+      if(!dau) return -1;
+      Int_t pdgdau=dau->GetPdgCode();
+      if(TMath::Abs(pdgdau)==321){
+	nKaons++;
+	sumPxDau+=dau->Px();
+	sumPyDau+=dau->Py();
+	sumPzDau+=dau->Pz();
+	arrayDauLab[nFoundKpi++]=indDau;
+	if(nFoundKpi>3) return -1;
+      }else if(TMath::Abs(pdgdau)==211){
+	nPions++;
+	sumPxDau+=dau->Px();
+	sumPyDau+=dau->Py();
+	sumPzDau+=dau->Pz();
+	arrayDauLab[nFoundKpi++]=indDau;
+	if(nFoundKpi>3) return -1;
+      }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==333 || TMath::Abs(pdgdau)==9010221){
+	if(TMath::Abs(pdgdau)==313) isk0st=kTRUE;
+	if(TMath::Abs(pdgdau)==333) isPhi=kTRUE;
+        if(TMath::Abs(pdgdau)==9010221) isf0=kTRUE;
+	Int_t nResDau=dau->GetNDaughters();
+	if(nResDau!=2) return -1;
+	Int_t indFirstResDau=dau->GetDaughter(0);
+	for(Int_t resDau=0; resDau<2; resDau++){
+	  Int_t indResDau=indFirstResDau+resDau;
+	  if(indResDau<0) return -1;
+	  AliAODMCParticle* resdau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indResDau));
+	  if(!resdau) return -1;
+	  Int_t pdgresdau=resdau->GetPdgCode();
+	  if(TMath::Abs(pdgresdau)==321){
+	    sumPxDau+=resdau->Px();
+	    sumPyDau+=resdau->Py();
+	    sumPzDau+=resdau->Pz();
+	    nKaons++;
+	    arrayDauLab[nFoundKpi++]=indResDau;
+	    if(nFoundKpi>3) return -1;
+	  }
+	  if(TMath::Abs(pdgresdau)==211){
+	    sumPxDau+=resdau->Px();
+	    sumPyDau+=resdau->Py();
+	    sumPzDau+=resdau->Pz();
+	    nPions++;
+	    arrayDauLab[nFoundKpi++]=indResDau;
+	    if(nFoundKpi>3) return -1;
+	  }
+	}
+      }else{
+	return -1;
+      }
+    }
+    if(nPions!=1) return -1;
+    if(nKaons!=2) return -1;
+    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
+    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
+    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
+    if(nDau==3) return 3;
+    else if(nDau==2){
+      if(isk0st) return 2;
+      if(isPhi) return 1;
+      if(isf0) return 4;
+    }
+  }
+
+  return -1;
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDsK0sKDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
@@ -1507,96 +1598,7 @@ Int_t AliVertexingHFUtils::CheckDsK0sKDecay(AliMCEvent* mcEvent, Int_t label, In
     if(codeV0==310) return 1;
   }
   return -1;
-  
-}
 
- 
-//____________________________________________________________________________
-Int_t AliVertexingHFUtils::CheckDsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab){
-  /// Checks the Ds decay channel. Returns 1 for Ds->phipi->KKpi, 2 for Ds->K0*K->KKpi, 3 for the non-resonant case
-
-  Int_t pdgD=mcPart->GetPdgCode();
-  if(TMath::Abs(pdgD)!=431) return -1;
-
-  Int_t nDau=mcPart->GetNDaughters();
-  Int_t labelFirstDau = mcPart->GetDaughter(0);
-  Int_t nKaons=0;
-  Int_t nPions=0;
-  Double_t sumPxDau=0.;
-  Double_t sumPyDau=0.;
-  Double_t sumPzDau=0.;
-  Int_t nFoundKpi=0;
-  Bool_t isPhi=kFALSE;
-  Bool_t isk0st=kFALSE;
-  
-  if(nDau==3 || nDau==2){
-    for(Int_t iDau=0; iDau<nDau; iDau++){
-      Int_t indDau = labelFirstDau+iDau;
-      if(indDau<0) return -1;
-      AliAODMCParticle* dau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indDau));
-      if(!dau) return -1;
-      Int_t pdgdau=dau->GetPdgCode();
-      if(TMath::Abs(pdgdau)==321){
-	nKaons++;
-	sumPxDau+=dau->Px();
-	sumPyDau+=dau->Py();
-	sumPzDau+=dau->Pz();
-	arrayDauLab[nFoundKpi++]=indDau;
-	if(nFoundKpi>3) return -1;
-      }else if(TMath::Abs(pdgdau)==211){
-	nPions++;
-	sumPxDau+=dau->Px();
-	sumPyDau+=dau->Py();
-	sumPzDau+=dau->Pz();
-	arrayDauLab[nFoundKpi++]=indDau;
-	if(nFoundKpi>3) return -1;
-      }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==333){
-	if(TMath::Abs(pdgdau)==313) isk0st=kTRUE;
-	if(TMath::Abs(pdgdau)==333) isPhi=kTRUE;
-	Int_t nResDau=dau->GetNDaughters();
-	if(nResDau!=2) return -1;
-	Int_t indFirstResDau=dau->GetDaughter(0);
-	for(Int_t resDau=0; resDau<2; resDau++){
-	  Int_t indResDau=indFirstResDau+resDau;
-	  if(indResDau<0) return -1;
-	  AliAODMCParticle* resdau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indResDau));
-	  if(!resdau) return -1;
-	  Int_t pdgresdau=resdau->GetPdgCode();
-	  if(TMath::Abs(pdgresdau)==321){
-	    sumPxDau+=resdau->Px();
-	    sumPyDau+=resdau->Py();
-	    sumPzDau+=resdau->Pz();
-	    nKaons++;
-	    arrayDauLab[nFoundKpi++]=indResDau;
-	    if(nFoundKpi>3) return -1;
-	  }
-	  if(TMath::Abs(pdgresdau)==211){
-	    sumPxDau+=resdau->Px();
-	    sumPyDau+=resdau->Py();
-	    sumPzDau+=resdau->Pz();
-	    nPions++;
-	    arrayDauLab[nFoundKpi++]=indResDau;
-	    if(nFoundKpi>3) return -1;
-	  }
-	}
-      }else{
-	return -1;
-      }
-    }
-    if(nPions!=1) return -1;
-    if(nKaons!=2) return -1;
-    if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
-    if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
-    if(nDau==3) return 3;
-    else if(nDau==2){
-      if(isk0st) return 2;
-      if(isPhi) return 1;
-    }
-  }
-  
-  return -1;
-  
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckDstarDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
@@ -1670,7 +1672,7 @@ Int_t AliVertexingHFUtils::CheckDstarDecay(AliMCEvent* mcEvent, Int_t label, Int
   if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
   if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
   return 1;
-  
+
 }
 
 //____________________________________________________________________________
@@ -1704,7 +1706,7 @@ Int_t AliVertexingHFUtils::CheckDstarDecay(TClonesArray* arrayMC, AliAODMCPartic
       for(Int_t resDau=0; resDau<2; resDau++){
 	Int_t indResDau=indFirstResDau+resDau;
 	if(indResDau<0) return -1;
-	AliAODMCParticle* resdau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indResDau)); 
+	AliAODMCParticle* resdau=dynamic_cast<AliAODMCParticle*>(arrayMC->At(indResDau));
 	if(!resdau) return -1;
 	Int_t pdgresdau=resdau->GetPdgCode();
 	if(TMath::Abs(pdgresdau)==321){
@@ -1743,7 +1745,7 @@ Int_t AliVertexingHFUtils::CheckDstarDecay(TClonesArray* arrayMC, AliAODMCPartic
   if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
   if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
   return 1;
-  
+
 }
 
 //____________________________________________________________________________
@@ -1794,7 +1796,7 @@ Int_t AliVertexingHFUtils::CheckLcpKpiDecay(AliMCEvent* mcEvent, Int_t label, In
 	sumPzDau+=dau->Pz();
 	arrayDauLab[nFoundpKpi++]=indDau;
 	if(nFoundpKpi>3) return -1;
-      }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==3124 || 
+      }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==3124 ||
 	       TMath::Abs(pdgdau)==2224){
 	codeRes=TMath::Abs(pdgdau);
 	Int_t nResDau=dau->GetNDaughters();
@@ -1844,10 +1846,10 @@ Int_t AliVertexingHFUtils::CheckLcpKpiDecay(AliMCEvent* mcEvent, Int_t label, In
       if(codeRes==313) return 2;
       else if(codeRes==2224) return 3;
       else if(codeRes==3124) return 4;
-    }  
+    }
   }
   return -1;
-  
+
 }
 
 //____________________________________________________________________________
@@ -1896,7 +1898,7 @@ Int_t AliVertexingHFUtils::CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParti
 	sumPzDau+=dau->Pz();
 	arrayDauLab[nFoundpKpi++]=indDau;
 	if(nFoundpKpi>3) return -1;
-      }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==3124 || 
+      }else if(TMath::Abs(pdgdau)==313 || TMath::Abs(pdgdau)==3124 ||
 	       TMath::Abs(pdgdau)==2224){
 	codeRes=TMath::Abs(pdgdau);
 	Int_t nResDau=dau->GetNDaughters();
@@ -1946,10 +1948,10 @@ Int_t AliVertexingHFUtils::CheckLcpKpiDecay(TClonesArray* arrayMC, AliAODMCParti
       if(codeRes==313) return 2;
       else if(codeRes==2224) return 3;
       else if(codeRes==3124) return 4;
-    }  
+    }
   }
   return -1;
-  
+
 }
 //____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
@@ -2042,10 +2044,10 @@ Int_t AliVertexingHFUtils::CheckLcV0bachelorDecay(AliMCEvent* mcEvent, Int_t lab
     else if(codeV0==3122) return 2;
   }
   return -1;
- 
+
 }
 
- 
+
 //__________________________________xic______________________________________
 Int_t AliVertexingHFUtils::CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab){
   /// Checks the Xic decay channel. Returns 1 for Xic->Xipipi, -1 in other cases
@@ -2079,7 +2081,7 @@ Int_t AliVertexingHFUtils::CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label,
       sumPzDau+=dau->Pz();
       nXi++;
       arrayDauLab[nFoundXi++]=indDau;
-      
+
     }
     if(TMath::Abs(pdgdau)==211){
       if(pdgD*pdgdau<0) return -1;
@@ -2091,20 +2093,21 @@ Int_t AliVertexingHFUtils::CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label,
       if(nFoundXi>3) return -1;
     }
   }
-  
+
   if(nPions!=2) return -1;
   if(nXi!=1) return -1;
   if(TMath::Abs(mcPart->Px()-sumPxDau)>0.001) return -2;
   if(TMath::Abs(mcPart->Py()-sumPyDau)>0.001) return -2;
   if(TMath::Abs(mcPart->Pz()-sumPzDau)>0.001) return -2;
   return 1;
-  
+
 }
 //________________________________________________________________________
-Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod, Double_t etaMin, Double_t etaMax, 
-					    Double_t ptMin, Double_t ptMax,
-					    Int_t filtbit1, Int_t filtbit2, 
-					    Int_t minMult){
+Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod,
+                                            Double_t etaMin, Double_t etaMax,
+                                            Double_t ptMin, Double_t ptMax,
+                                            Int_t filtbit1, Int_t filtbit2,
+                                            Int_t minMult){
   /// compute sphericity
 
   Int_t nTracks=aod->GetNumberOfTracks();
@@ -2115,7 +2118,7 @@ Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod, Double_t etaMin, D
   Double_t s01=0.;
   Double_t s11=0.;
   if(ptMin<0.) ptMin=0.;
-  
+
   for(Int_t it=0; it<nTracks; it++) {
     AliAODTrack *tr=dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
     if(!tr) continue;
@@ -2129,7 +2132,7 @@ Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod, Double_t etaMin, D
     Bool_t tpcRefit=tr->GetStatus() & AliAODTrack::kTPCrefit;
     if(filtbit1==1 && !tpcRefit) fb1=kFALSE;
     if(filtbit2==1 && !tpcRefit) fb2=kFALSE;
-    if( !(fb1 || fb2) ) continue;    
+    if( !(fb1 || fb2) ) continue;
     Double_t px=pt*TMath::Cos(phi);
     Double_t py=pt*TMath::Sin(phi);
     s00 += (px * px)/pt;
@@ -2157,13 +2160,14 @@ Double_t AliVertexingHFUtils::GetSphericity(AliAODEvent* aod, Double_t etaMin, D
 }
 
 //________________________________________________________________________
-Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod, 
-					    Double_t etaMin, Double_t etaMax, 
-					    Double_t ptMin, Double_t ptMax,
-					    Int_t filtbit1, Int_t filtbit2, 
-					    Int_t minMult, Double_t phiStepSizeDeg,
-					    Int_t nTrksToSkip, Int_t* idToSkip
-					    ){
+void AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
+                                        Double_t &spherocity, Double_t &phiRef,
+                                        Double_t etaMin, Double_t etaMax,
+                                        Double_t ptMin, Double_t ptMax,
+                                        Int_t filtbit1, Int_t filtbit2,
+                                        Int_t minMult, Double_t phiStepSizeDeg,
+                                        Int_t nTrksToSkip, Int_t* idToSkip
+                                        ){
   /// compute spherocity
 
   Int_t nTracks=aod->GetNumberOfTracks();
@@ -2180,11 +2184,11 @@ Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
     Float_t pt  = tr->Pt();
     Float_t phi  = tr->Phi();
     if(eta<etaMin || eta>etaMax) continue;
-    if(pt<ptMin || pt>ptMax) continue;    
-    if(nTrksToSkip>0 && idToSkip){ 
+    if(pt<ptMin || pt>ptMax) continue;
+    if(nTrksToSkip>0 && idToSkip){
       Int_t trid = (Int_t)tr->GetID();
       Bool_t keep=kTRUE;
-      for(Int_t jt=0; jt<nTrksToSkip; jt++){ 
+      for(Int_t jt=0; jt<nTrksToSkip; jt++){
 	if(trid==idToSkip[jt]) keep=kFALSE;
       }
       if(!keep) continue;
@@ -2194,17 +2198,17 @@ Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
     Bool_t tpcRefit=tr->GetStatus() & AliAODTrack::kTPCrefit;
     if(filtbit1==1 && !tpcRefit) fb1=kFALSE;
     if(filtbit2==1 && !tpcRefit) fb2=kFALSE;
-    if( !(fb1 || fb2) ) continue;    
+    if( !(fb1 || fb2) ) continue;
     ptArr[nSelTracks]=pt;
     phiArr[nSelTracks]=phi;
     nSelTracks++;
     sumpt+=pt;
   }
 
-  if(nSelTracks<minMult) return -0.5;
+  if(nSelTracks<minMult){spherocity = -0.5; return;}
 
   //Getting thrust
-  Double_t spherocity=2.;
+  spherocity=2.;
   for(Int_t i=0; i<360/phiStepSizeDeg; ++i){
     Double_t phistep=TMath::Pi()*(Double_t)i*phiStepSizeDeg/180.;
     Double_t nx=TMath::Cos(phistep);
@@ -2213,24 +2217,28 @@ Double_t AliVertexingHFUtils::GetSpherocity(AliAODEvent* aod,
     for(Int_t j=0; j<nSelTracks; ++j){
       Double_t pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
       Double_t pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
-      numer+=TMath::Abs(ny*pxA - nx*pyA);  
+      numer+=TMath::Abs(ny*pxA - nx*pyA);
     }
     Double_t pFull=numer*numer/(sumpt*sumpt);
-    if(pFull<spherocity) spherocity=pFull; // minimization;
+    if(pFull<spherocity){
+        spherocity=pFull; // minimization;
+        phiRef=phistep;
+    }
   }
 
   delete [] ptArr;
   delete [] phiArr;
 
   spherocity*=(TMath::Pi()*TMath::Pi()/4.);
-  return spherocity;
+  return;
 
 }
 //________________________________________________________________________
-Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC, 
-						     Double_t etaMin, Double_t etaMax, 
-						     Double_t ptMin, Double_t ptMax,
-						     Int_t minMult, Double_t phiStepSizeDeg){
+void AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
+                                                 Double_t &spherocity, Double_t &phiRef,
+                                                 Double_t etaMin, Double_t etaMax,
+                                                 Double_t ptMin, Double_t ptMax,
+                                                 Int_t minMult, Double_t phiStepSizeDeg){
 
   /// compute generated spherocity
 
@@ -2252,7 +2260,7 @@ Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
     if(!isPhysPrim) continue;
     if(charge==0) continue;
     if(eta<etaMin || eta>etaMax) continue;
-    if(pt<ptMin || pt>ptMax) continue;    
+    if(pt<ptMin || pt>ptMax) continue;
 
     ptArr[nSelParticles]=pt;
     phiArr[nSelParticles]=phi;
@@ -2260,10 +2268,10 @@ Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
     sumpt+=pt;
   }
 
-  if(nSelParticles<minMult) return -0.5;
+  if(nSelParticles<minMult){spherocity = -0.5; return;}
 
   //Getting thrust
-  Double_t spherocity=2.;
+  spherocity=2.;
   for(Int_t i=0; i<360/phiStepSizeDeg; ++i){
     Double_t phistep=TMath::Pi()*(Double_t)i*phiStepSizeDeg/180.;
     Double_t nx=TMath::Cos(phistep);
@@ -2272,17 +2280,20 @@ Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
     for(Int_t j=0; j<nSelParticles; ++j){
       Double_t pxA=ptArr[j]*TMath::Cos(phiArr[j]);  // x component of an unitary vector n
       Double_t pyA=ptArr[j]*TMath::Sin(phiArr[j]);  // y component of an unitary vector n
-      numer+=TMath::Abs(ny*pxA - nx*pyA);  
+      numer+=TMath::Abs(ny*pxA - nx*pyA);
     }
     Double_t pFull=numer*numer/(sumpt*sumpt);
-    if(pFull<spherocity) spherocity=pFull; // minimization;
+    if(pFull<spherocity){
+        spherocity=pFull; // minimization;
+        phiRef=phistep;
+    }
   }
 
   delete [] ptArr;
   delete [] phiArr;
 
   spherocity*=(TMath::Pi()*TMath::Pi()/4.);
-  return spherocity;
+  return;
 
 }
 
@@ -2290,8 +2301,8 @@ Double_t AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
 TH1D* AliVertexingHFUtils::RebinHisto(TH1* hOrig, Int_t reb, Int_t firstUse){
   /// Rebin histogram, from bin firstUse to lastUse
   /// Use all bins if firstUse=-1
-  /// If ngroup is not an exact divider of the number of bins, 
-  ///  the bin width is kept as reb*original width 
+  /// If ngroup is not an exact divider of the number of bins,
+  ///  the bin width is kept as reb*original width
   ///  and the range of rebinned histogram is adapted
 
   Int_t nBinOrig=hOrig->GetNbinsX();
@@ -2299,7 +2310,7 @@ TH1D* AliVertexingHFUtils::RebinHisto(TH1* hOrig, Int_t reb, Int_t firstUse){
   Int_t lastBinOrig=nBinOrig;
   Int_t nBinOrigUsed=nBinOrig;
   Int_t nBinFinal=nBinOrig/reb;
-  if(firstUse>=1){ 
+  if(firstUse>=1){
     firstBinOrig=firstUse;
     nBinFinal=(nBinOrig-firstUse+1)/reb;
     nBinOrigUsed=nBinFinal*reb;
@@ -2382,8 +2393,8 @@ TH1* AliVertexingHFUtils::AdaptTemplateRangeAndBinning(const TH1 *hMC,TH1 *hData
   }
 
   Double_t rebin=width/widthMC;
-  if(TMath::Abs(rebin-(Int_t)(rebin+0.000001))>0.001){
-    printf("Cannot adapt histo: rebin %f issue, width MC = %f, width hData=%f (check=%f)\n",rebin,widthMC,width,TMath::Abs(rebin-(Int_t)rebin));
+  if(TMath::Abs(rebin-TMath::Nint(rebin))>0.001){
+    printf("Cannot adapt histo: rebin %f issue, width MC = %f, width hData=%f (check=%f)\n",rebin,widthMC,width,TMath::Abs(rebin-TMath::Nint(rebin)));
     return 0x0;
   }
 

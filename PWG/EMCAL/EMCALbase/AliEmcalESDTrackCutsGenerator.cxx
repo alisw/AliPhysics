@@ -1,27 +1,42 @@
-/**************************************************************************
- * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+/************************************************************************************
+ * Copyright (C) 2017, Copyright Holders of the ALICE Collaboration                 *
+ * All rights reserved.                                                             *
+ *                                                                                  *
+ * Redistribution and use in source and binary forms, with or without               *
+ * modification, are permitted provided that the following conditions are met:      *
+ *     * Redistributions of source code must retain the above copyright             *
+ *       notice, this list of conditions and the following disclaimer.              *
+ *     * Redistributions in binary form must reproduce the above copyright          *
+ *       notice, this list of conditions and the following disclaimer in the        *
+ *       documentation and/or other materials provided with the distribution.       *
+ *     * Neither the name of the <organization> nor the                             *
+ *       names of its contributors may be used to endorse or promote products       *
+ *       derived from this software without specific prior written permission.      *
+ *                                                                                  *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND  *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED    *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY              *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES       *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;     *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND      *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
+ ************************************************************************************/
 
 #include <TString.h>
 #include <TFormula.h>
 
+#include "AliEmcalESDHybridTrackCuts.h"
 #include "AliEmcalTrackSelection.h"
 #include "AliEmcalESDTrackCutsGenerator.h"
 
 #include "AliESDtrackCuts.h"
 
 #include "TError.h"
+
+using namespace PWG::EMCAL;
 
 const Int_t AliEmcalESDTrackCutsGenerator::fgkAddCutFactor = 10000;
 
@@ -520,6 +535,16 @@ AliEmcalESDTrackCutsGenerator::EDataSet_t AliEmcalESDTrackCutsGenerator::SteerDa
     dataSet = kLHC11h;
   } else if (strPeriod == "lhc13g") {
     dataSet = kLHC11h;
+  } else if (strPeriod == "lhc16q") {
+    dataSet = kLHC11h;
+  } else if (strPeriod == "lhc16r") {
+    dataSet = kLHC11h;
+  } else if (strPeriod == "lhc16s") {
+    dataSet = kLHC11h;
+  } else if (strPeriod == "lhc16t") {
+    dataSet = kLHC11h;
+  } else if (strPeriod == "lhc17o_trd") {
+    dataSet = kLHC17o_TRD;
   } else if (strPeriod == "lhc12a15f") {
     dataSet = kLHC11h;
   } else if (strPeriod == "lhc13b4") {
@@ -534,6 +559,14 @@ AliEmcalESDTrackCutsGenerator::EDataSet_t AliEmcalESDTrackCutsGenerator::SteerDa
     dataSet = kLHC11h;
   } else if (strPeriod.BeginsWith("lhc15g6")) {
     dataSet = kLHC10bcde;
+  } else if (strPeriod.BeginsWith("lhc15i2")) {
+    dataSet = kLHC10bcde;
+  } else if (strPeriod.BeginsWith("lhc14j4")) {
+    dataSet = kLHC10bcde;
+  } else if (strPeriod.BeginsWith("lhc17f8")) {
+    dataSet = kLHC11h;
+  } else if (strPeriod.BeginsWith("lhc18f5")) {
+    dataSet = kLHC11h;
   } else {
     ::Error("AliEmcalESDTrackCutsGenerator::SteerDataSetFromString", "Dataset %s not recognized!", period.Data());
   }
@@ -554,11 +587,9 @@ void AliEmcalESDTrackCutsGenerator::AddHybridTrackCuts(AliEmcalTrackSelection* t
   case kLHC11d:
   case kLHC11h:
   {
-    AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(kGlobalTracks2011NoSPD, kSPDAny);
-    trkSel->AddTrackCuts(cutsp);
-    AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(kGlobalTracks2011NoSPD, kSPDOff);
-    trkSel->AddTrackCuts(hybsp);
-
+    auto hybridcuts2011 = new AliEmcalESDHybridTrackCuts("hybridcuts2011NoSPD", AliEmcalESDHybridTrackCuts::kDef2011);
+    hybridcuts2011->SetUseNoITSrefitTracks(kFALSE);
+    trkSel->AddTrackCuts(hybridcuts2011);
     break;
   }
   case kLHC10h:
@@ -566,10 +597,16 @@ void AliEmcalESDTrackCutsGenerator::AddHybridTrackCuts(AliEmcalTrackSelection* t
   case kLHC10bcde:
   {
     /* hybrid track cuts*/
-    AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(kGlobalTracksNClsPtDepNoSPDNoPtCut, kSPDAny);
-    trkSel->AddTrackCuts(cutsp);
-    AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(kGlobalTracksNClsPtDepNoSPDNoPtCut, kSPDOff, kNoITSRefit);
-    trkSel->AddTrackCuts(hybsp);
+    auto hybridcuts2010 = new AliEmcalESDHybridTrackCuts("hybridcuts2010wSPD", AliEmcalESDHybridTrackCuts::kDef2010);
+    hybridcuts2010->SetUseNoITSrefitTracks(kTRUE);
+    trkSel->AddTrackCuts(hybridcuts2010);
+    break;
+  }
+  case kLHC17o_TRD:
+  {
+    auto hybridcuts2018TRD = new AliEmcalESDHybridTrackCuts("hybridcuts2018TRD", AliEmcalESDHybridTrackCuts::kDef2018TRD);
+    hybridcuts2018TRD->SetUseNoITSrefitTracks(kFALSE);
+    trkSel->AddTrackCuts(hybridcuts2018TRD);
     break;
   }
   default:

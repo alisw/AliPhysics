@@ -1,5 +1,7 @@
 #include "src/Common.h"
 #include "src/Plotting.h"
+#include "src/Utils.h"
+using namespace utils;
 
 #include <map>
 #include <vector>
@@ -18,7 +20,7 @@ using std::array;
 
 
 const string labels[3] = {"0-10%","10-20%","20-40%"};
-void MyFinal() {
+void Final() {
   TFile spectra_file(kSpectraOutput.data());
   TFile TOF_systematics_file(kSystematicsOutput.data());
   TFile TPC_systematics_file(kSystematicsOutputTPC.data());
@@ -27,7 +29,7 @@ void MyFinal() {
   const double pt_bin_limits[16] = {0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.4,1.6,1.8,2.0,2.2,2.6,3.0,3.4,3.8};//,4.4};
   const int n_pt_bins = 15;
 
-  const int n_centralities = 1;
+  const int n_centralities = kCentLength;
 
   TH1F* stat[2][n_centralities];
   TH1F* syst[2][n_centralities];
@@ -69,7 +71,7 @@ void MyFinal() {
           syst[iS][iC]->SetBinContent(iB,stat[iS][iC]->GetBinContent(iB));
           syst[iS][iC]->SetBinError(iB,totsyst->GetBinContent(iB) * stat[iS][iC]->GetBinContent(iB));
         }
-        if(ptAxis->GetBinCenter(iB)<1.4){
+        if(ptAxis->GetBinCenter(iB)<1.2){
           syst_tpc[iS][iC]->SetBinContent(iB,stat_tpc[iS][iC]->GetBinContent(iB));
           syst_tpc[iS][iC]->SetBinError(iB,totsyst_tpc->GetBinContent(iB) * stat_tpc[iS][iC]->GetBinContent(iB));
         }
@@ -80,13 +82,17 @@ void MyFinal() {
           syst_tpc[iS][iC]->SetBinError(iB,0.);
         }
       }
-      SetHistStyle(stat[iS][iC],0);
-      SetHistStyle(syst[iS][iC],0);
+      plotting::SetHistStyle(stat[iS][iC],plotting::kSpectraColors[iC]);
+      plotting::SetHistStyle(syst[iS][iC],plotting::kSpectraColors[iC]);
+      stat[iS][iC]->Scale(1<<(kCentLength-iC-1));
       stat[iS][iC]->Write("stat_tof");
+      syst[iS][iC]->Scale(1<<(kCentLength-iC-1));
       syst[iS][iC]->Write("syst_tof");
-      SetHistStyle(stat_tpc[iS][iC],4);
-      SetHistStyle(syst_tpc[iS][iC],4);
+      plotting::SetHistStyle(stat_tpc[iS][iC],plotting::kSpectraColors[iC],21);
+      plotting::SetHistStyle(syst_tpc[iS][iC],plotting::kSpectraColors[iC],21);
+      stat_tpc[iS][iC]->Scale(1<<(kCentLength-iC-1));
       stat_tpc[iS][iC]->Write("stat_tpc");
+      syst_tpc[iS][iC]->Scale(1<<(kCentLength-iC-1));
       syst_tpc[iS][iC]->Write("syst_tpc");
 
     }
@@ -94,26 +100,23 @@ void MyFinal() {
     TCanvas spectra("spectra","spectra");
     spectra.DrawFrame(
         0.5 * kPtRange[0],
-        0.5 * syst[iS][n_centralities-1]->GetBinContent(syst[iS][n_centralities-1]->GetXaxis()->GetNbins()),
+        0.5 * syst[iS][n_centralities-1]->GetBinContent(syst[iS][n_centralities-1]->GetXaxis()->FindBin(kCentPtLimits[n_centralities-1]-0.1)),
         1.1 * 4.4,
-        1.8 * syst_tpc[iS][0]->GetMaximum(),
+        1.5 * syst_tpc[iS][0]->GetMaximum(),
         ";#it{p}_{T} (GeV/#it{c});#frac{1}{#it{N}_{ev}} #frac{d^{2}#it{N}}{d#it{p}_{T}d#it{y}}"
         );
-    TLegend final_leg(0.61,0.60,0.91,0.83);
+    TLegend final_leg(0.70,0.60,0.90,0.88);
     final_leg.SetBorderSize(0);
     final_leg.SetHeader(Form("%s, pp #sqrt{s} = 13 TeV",kNames[iS].data()));
     for (int iC = 0; iC < n_centralities; ++iC) {
-      stat[iS][iC]->SetMinimum(1e-6);
       stat[iS][iC]->Draw("esamex0");
-      syst[iS][iC]->SetMinimum(1e-6);
       syst[iS][iC]->Draw("e2same");
-      stat_tpc[iS][iC]->SetMinimum(1e-6);
       stat_tpc[iS][iC]->Draw("esamex0");
-      syst_tpc[iS][iC]->SetMinimum(1e-6);
       syst_tpc[iS][iC]->Draw("e2same");
-      final_leg.AddEntry(syst[iS][iC],"TOF spectrum","fp");
-      final_leg.AddEntry(syst_tpc[iS][iC],"TPC spectrum","fp");
+      final_leg.AddEntry(syst[iS][iC],Form("%4.0f - %2.0f %% (#times %d)",kCentLabels[iC][0],kCentLabels[iC][1],1<<(kCentLength-iC-1)),"fp");
     }
+    final_leg.AddEntry(syst[iS][7],"TOF","p");
+    final_leg.AddEntry(syst_tpc[iS][7],"TPC","p");
     final_leg.Draw();
     spectra.SetLogy();
     spectra.Write();
@@ -142,7 +145,7 @@ void MyFinal() {
     stat_tpc[1][iC]->Divide(stat_tpc[0][iC]);
     syst_tpc[1][iC]->Divide(syst_tpc[0][iC]);
     for(int iB=1; iB<=n_pt_bins; iB++){
-      if(stat_tpc[1][iC]->GetBinCenter(iB)>1.4){
+      if(stat_tpc[1][iC]->GetBinCenter(iB)>1.2){
         stat_tpc[1][iC]->SetBinContent(iB, 0.);
         stat_tpc[1][iC]->SetBinError(iB, 0.);
         syst_tpc[1][iC]->SetBinContent(iB, 0.);
@@ -153,7 +156,7 @@ void MyFinal() {
     ratio.DrawFrame(
         0.5 * kPtRange[0],
         0.1,
-        1.05 * kPtRange[1],
+        1.05 * kCentPtLimits[iC],
         1.9,
         ";#it{p}_{T} (GeV/#it{c});#bar{d}/d"
         );

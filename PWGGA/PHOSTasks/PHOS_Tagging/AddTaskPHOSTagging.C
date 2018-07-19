@@ -1,7 +1,9 @@
 AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTagging",
 					    const char* options = "",
 					    UInt_t offlineTriggerMask = AliVEvent::kCentral,
-					    AliAnalysisTaskPi0Flow::TriggerSelection internalTriggerSelection = AliAnalysisTaskPi0Flow::kNoSelection )
+					    Float_t timeCut = 100.e-9, //accept clusters with |t|<timeCut
+                                            Bool_t ignorePHI7Events=kFALSE,
+                                            Int_t centralityEstinator=1) //Centrality estimator, see cxx code for list (separate for pp and pPb
 {
   //Add a task AliAnalysisTaskTaggedPhotons to the analysis train
   //Author: Dmitri Peresunko
@@ -17,11 +19,19 @@ AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTaggin
     return NULL;
   }
 
-  AliAnalysisTaskTaggedPhotons* task = new AliAnalysisTaskTaggedPhotons(Form("%sTask", name));
+  AliAnalysisTaskTaggedPhotons* task = new AliAnalysisTaskTaggedPhotons(Form("%sTask%d", name,centralityEstinator));
 
   task->SelectCollisionCandidates(offlineTriggerMask);
-//  task->SetInternalTriggerSelection(internalTriggerSelection);
+ 
+  task->SetTimeCut(25.e-9) ;
+  task->SetTrigger(ignorePHI7Events) ;
+  task->SetCentralityEstimator(centralityEstinator) ; 
   
+  Int_t binLimits[8]={5,10,15,20,30,50,70,100};
+  TArrayI multBins(8,binLimits) ;
+  task->SetMultiplicityBins(multBins) ;
+  
+ 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   

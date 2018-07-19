@@ -49,6 +49,7 @@
 #include "AliAODCaloCells.h"
 #include "AliEMCALGeometry.h"
 #include "AliOADBContainer.h"
+#include "AliDataFile.h"
 
 #include "AliAnalysisTaskEMCALTimeCalib.h"
 
@@ -1480,7 +1481,7 @@ void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapOADB()
 {
   if(fBadChannelMapSet) return;
   AliOADBContainer *contBC=new AliOADBContainer("");
-  contBC->InitFromFile(Form("%s/EMCALBadChannels.root","$ALICE_PHYSICS/OADB/EMCAL"),"AliEMCALBadChannels"); 
+  contBC->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"AliEMCALBadChannels"); 
   printf("contBC %p, ent  %d\n",contBC,contBC->GetNumberOfEntries());
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(fRunNumber);
   if(arrayBC) {
@@ -1499,7 +1500,7 @@ void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapOADB()
   } else AliInfo("Do NOT remove EMCAL bad channels\n"); // run array
       
   delete contBC;
-  fBadChannelMapSet=kTRUE;
+  fBadChannelMapSet = kFALSE;//BC map is not fixed at the beginning but can change r-by-r
 }  // Bad channel map loaded
 
 //____________________________________________________
@@ -1518,7 +1519,7 @@ void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMapFile()
   }
   fBadChannelMapArray = new TObjArray(1);
   fBadChannelMapArray->AddAt(hbm,0);
-  fBadChannelMapSet=kTRUE;
+  fBadChannelMapSet=kTRUE;//BC map is fixed at the beginning for whole dataset
 }  // Bad channel map loaded
 
 

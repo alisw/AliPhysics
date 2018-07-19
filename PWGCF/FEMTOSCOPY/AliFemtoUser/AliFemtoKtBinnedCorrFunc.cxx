@@ -23,6 +23,11 @@ AliFemtoKtBinnedCorrFunc::AliFemtoKtBinnedCorrFunc(const TString& name, AliFemto
 { // no-op
 }
 
+AliFemtoKtBinnedCorrFunc::~AliFemtoKtBinnedCorrFunc()
+{
+  delete fPrototypeCF;
+}
+
 UInt_t AliFemtoKtBinnedCorrFunc::AddKtRange(float low, float high)
 {
   assert(low < high);

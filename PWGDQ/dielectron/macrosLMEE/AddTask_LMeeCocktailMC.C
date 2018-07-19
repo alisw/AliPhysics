@@ -1,5 +1,4 @@
-//void AddTask_LMeeCocktailMC(Double_t maxy = 0.8) {
-void AddTask_LMeeCocktailMC(Int_t collisionSystem = 200, Float_t maxy = 0.8, Float_t minpt = 0.2, Bool_t WriteTTree = kFALSE) {
+void AddTask_LMeeCocktailMC(Int_t CollisionSystem = 200, Float_t MaxEta = 0.8, Float_t MinPt = 0.2, Bool_t WriteTTree = kFALSE, Int_t ResolType = 2 , Int_t ALTweightType = 1, TString resFileName = "") {
 
   // ================= Load Librariers =================================
   gSystem->Load("libCore");
@@ -39,15 +38,20 @@ void AddTask_LMeeCocktailMC(Int_t collisionSystem = 200, Float_t maxy = 0.8, Flo
   //================================================
 
   AliAnalysisTaskLMeeCocktailMC *task=NULL;
-  task= new AliAnalysisTaskLMeeCocktailMC(Form("LMeeCocktailMC_%1.2f",maxy));
-  task->SetMaxY(maxy);
-  task->SetMinPt(minpt);
-  task->SetCollisionSystem(collisionSystem);
+  task= new AliAnalysisTaskLMeeCocktailMC(Form("LMeeCocktailMC_%1.2f",MaxEta));
+  task->SetCollisionSystem(CollisionSystem);
+  task->SetMaxEta(MaxEta);
+  task->SetMinPt(MinPt);
   task->SetWriteTTree(WriteTTree);
+  task->SetResolType(ResolType);
+  task->SetALTweight(ALTweightType);
+	if(resFileName != ""){
+		task->SetpPbResFileName(resFileName);
+	}
   
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer(Form("LMeeCocktailMC_%1.2f",maxy), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:LMeeCocktailMC",AliAnalysisManager::GetCommonFileName()));
+  mgr->CreateContainer(Form("LMeeCocktailMC_%1.2f",MaxEta), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:LMeeCocktailMC",AliAnalysisManager::GetCommonFileName()));
     
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);

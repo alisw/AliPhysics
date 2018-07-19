@@ -33,7 +33,7 @@ public:
     fOptions.Add("copy", "LIST",    "',' separated list to copy","cent");
     fOptions.Add("mc-tracks", "Enable MC track filter", false);
     fOptions.Add("tpc-ep",    "Use TPC event plane");
-
+    fOptions.Add("cent",      "Use centrality");
     // SPD tracklet options 
     fOptions.Add("max-delta",        "X","Cut on weighted distance",25.);
     fOptions.Add("scale-dtheta",         "Scale dTheta" ,           true);

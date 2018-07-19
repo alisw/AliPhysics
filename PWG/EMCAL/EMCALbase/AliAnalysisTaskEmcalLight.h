@@ -15,6 +15,7 @@ class AliVCaloCells;
 class TH1;
 class TProfile;
 class AliEMCALGeometry;
+class AliGenEventHeader;
 class AliGenPythiaEventHeader;
 class AliVCaloTrigger;
 class AliAnalysisUtils;
@@ -24,6 +25,8 @@ class AliAODTrack;
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
+#include <iostream>
 
 #include "Rtypes.h"
 
@@ -121,7 +124,9 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetCaloTriggerPatchInfoName(const char *n)            { fCaloTriggerPatchInfoName = n                       ; }
   void                        SetCaloTriggersName(const char *n)                    { fCaloTriggersName  = n                              ; }
   void                        SetCentralityEstimator(const char *c)                 { fCentEst           = c                              ; }
-  void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
+  void                        SetIsMonteCarlo(Bool_t i)                             { fIsMonteCarlo      = i                              ; }
+  void                        SetIsPythia(Bool_t i);
+  void                        SetMCEventHeaderName(const char* name);
   void                        SetForceBeamType(EBeamType_t f)                       { fForceBeamType     = f                              ; }
 
   // Task configuration
@@ -153,13 +158,18 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   void                        SetTrackPtFactor(Float_t f)                           { fPtHardAndTrackPtFactor = f                         ; }
   Float_t                     TrackPtFactor()                                       { return fPtHardAndTrackPtFactor                      ; }
   void                        SetEventSelectionAfterRun(Bool_t b)                   { fEventSelectionAfterRun = b                         ; }
+  void                        SelectGeneratorName(TString gen)                      { fSelectGeneratorName = gen                          ; }
+  void                        SetInhibit(Bool_t s)                                  { fInhibit = s                                        ; }
+  void                        SetEventWeightRange(Double_t min, Double_t max)       { fMinimumEventWeight = min; fMaximumEventWeight = max; }
+
+  Bool_t IsInhibit() const { return fInhibit; }
 
  protected:
   void                        SetRejectionReasonLabels(TAxis* axis);
   void                        AddObjectToEvent(TObject *obj, Bool_t attempt = kFALSE);
   TClonesArray               *GetArrayFromEvent(const char *name, const char *clname=0);
   EBeamType_t                 GetBeamType();
-  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard);
+  Bool_t                      PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard, Bool_t &useXsecFromHeader);
   Bool_t                      IsTrackInEmcalAcceptance(AliVParticle* part, Double_t edges=0.9) const;
   Bool_t                      CheckMCOutliers();
 
@@ -193,8 +203,10 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   static Byte_t               GetTrackType(const AliVTrack *t);
   static Byte_t               GetTrackType(const AliAODTrack *aodTrack, UInt_t filterBit1, UInt_t filterBit2);
   static Double_t             DeltaPhi(Double_t phia, Double_t phib, Double_t rMin = -TMath::Pi()/2, Double_t rMax = 3*TMath::Pi()/2);
-  static Double_t*            GenerateFixedBinArray(Int_t n, Double_t min, Double_t max);
-  static void                 GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array);
+  static std::vector<double>  GenerateFixedBinArray(int n, double min, double max, bool last = true);
+  static void                 GenerateFixedBinArray(int n, double min, double max, std::vector<double>& array, bool last = true);
+  static std::vector<double>  GenerateLogFixedBinArray(int n, double min, double max, bool last = true);
+  static void                 GenerateLogFixedBinArray(int n, double min, double max, std::vector<double>& array, bool last = true);
   static Double_t             GetParallelFraction(AliVParticle* part1, AliVParticle* part2);
   static Double_t             GetParallelFraction(const TVector3& vect1, AliVParticle* part2);
   static EBeamType_t          BeamTypeFromRunNumber(Int_t runnumber);
@@ -211,6 +223,8 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
 
   // Input data
   Bool_t                      fIsPythia;                   ///< if it is a PYTHIA production
+  Bool_t                      fIsMonteCarlo;               ///< if it is a MC production
+  TString                     fMCEventHeaderName;          ///< Looks for MC event properties in a particular MC event type (useful for a MC cocktail production)
   TString                     fCaloCellsName;              ///< name of calo cell collection
   TString                     fCaloTriggersName;           ///< name of calo triggers collection
   TString                     fCaloTriggerPatchInfoName;   ///< trigger patch info array name
@@ -240,8 +254,12 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   Float_t                     fPtHardAndTrackPtFactor;     ///< Factor between ptHard and track pT to reject/accept event.
   Bool_t                      fSwitchOffLHC15oFaultyBranches; ///< Switch off faulty tree branches in LHC15o AOD trees
   Bool_t                      fEventSelectionAfterRun;     ///< If kTRUE, the event selection is performed after Run() but before FillHistograms()
+  TString                     fSelectGeneratorName;        ///< Selects only events produced by a generator that has a name containing a string
+  Double_t                    fMinimumEventWeight;         ///< Minimum event weight for the related bookkeping histogram
+  Double_t                    fMaximumEventWeight;         ///< Minimum event weight for the related bookkeping histogram
 
   // Service fields
+  Bool_t                      fInhibit;                    //!<!inhibit execution of the task
   Bool_t                      fLocalInitialized;           //!<!whether or not the task has been already initialized
   EDataType_t                 fDataType;                   //!<!data type (ESD or AOD)
   AliEMCALGeometry           *fGeom;                       //!<!emcal geometry
@@ -260,99 +278,31 @@ class AliAnalysisTaskEmcalLight : public AliAnalysisTaskSE {
   ULong_t                     fFiredTriggerBitMap;         //!<!bit map of fired triggers
   std::vector<std::string>    fFiredTriggerClasses;        //!<!trigger classes fired by the current event
   EBeamType_t                 fBeamType;                   //!<!event beam type
+  AliGenEventHeader          *fMCHeader;                   //!<!event MC header
   AliGenPythiaEventHeader    *fPythiaHeader;               //!<!event Pythia header
-  Int_t                       fPtHardBin;                  //!<!event pt hard
+  Bool_t                      fUseXsecFromHeader;          //!<!Switch for using cross section from header (if not found in pythia file)
+  Int_t                       fPtHardBin;                  //!<!event pt hard bin
   Double_t                    fPtHard;                     //!<!event pt hard
   Int_t                       fNTrials;                    //!<!event trials
   Float_t                     fXsection;                   //!<!x-section from pythia header
+  Float_t                     fEventWeight;                //!<!event weight
+  TString                     fGeneratorName;              //!<!name of the MC generator used to produce the current event (only AOD)
 
   // Output
   TList                      *fOutput;                     //!<!output list
-  TH1                        *fHistTrialsVsPtHardNoSel;    //!<!total number of trials per pt hard bin after selection (no event selection)
-  TH1                        *fHistEventsVsPtHardNoSel;    //!<!total number of events per pt hard bin after selection (no event selection)
-  TProfile                   *fHistXsectionVsPtHardNoSel;  //!<!x section from pythia header (no event selection)
-  TH1                        *fHistTriggerClassesNoSel;    //!<!number of events in each trigger class (no event selection)
-  TH1                        *fHistZVertexNoSel;           //!<!z vertex position (no event selection)
-  TH1                        *fHistCentralityNoSel;        //!<!event centrality distribution (no event selection)
-  TH1                        *fHistEventPlaneNoSel;        //!<!event plane distribution (no event selection)
-  TH1                        *fHistTrialsVsPtHard;         //!<!total number of trials per pt hard bin after selection
-  TH1                        *fHistEventsVsPtHard;         //!<!total number of events per pt hard bin after selection
-  TProfile                   *fHistXsectionVsPtHard;       //!<!x section from pythia header
-  TH1                        *fHistTriggerClasses;         //!<!number of events in each trigger class
-  TH1                        *fHistZVertex;                //!<!z vertex position
-  TH1                        *fHistCentrality;             //!<!event centrality distribution
-  TH1                        *fHistEventPlane;             //!<!event plane distribution
-  TH1                        *fHistEventCount;             //!<!incoming and selected events
-  TH1                        *fHistEventRejection;         //!<!book keep reasons for rejecting event
-  TH1                        *fHistTrials;                 //!<!trials from pyxsec.root
-  TH1                        *fHistEvents;                 //!<!total number of events per pt hard bin
-  TProfile                   *fHistXsection;               //!<!x section from pyxsec.root
 
  private:
+  std::map<std::string, TH1*> fHistograms;                 //!<!general QA histograms
+  TH1* GetGeneralTH1(const char* name, bool warn=false);
+  TH2* GetGeneralTH2(const char* name, bool warn=false);
+  TProfile* GetGeneralTProfile(const char* name, bool warn=false);
+
   AliAnalysisTaskEmcalLight(const AliAnalysisTaskEmcalLight&);            // not implemented
   AliAnalysisTaskEmcalLight &operator=(const AliAnalysisTaskEmcalLight&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalLight, 3);
+  ClassDef(AliAnalysisTaskEmcalLight, 5);
   /// \endcond
 };
-
-/**
- * Calculate Delta Phi.
- * @param[in] phia \f$ \phi \f$ of the first particle
- * @param[in] phib \f$ \phi \f$ of the second particle
- * @param[in] rangeMin Minimum \f$ \phi \f$ range
- * @param[in] rangeMax Maximum \f$ \phi \f$ range
- * @return Difference in \f$ \phi \f$
- */
-inline Double_t AliAnalysisTaskEmcalLight::DeltaPhi(Double_t phia, Double_t phib, Double_t rangeMin, Double_t rangeMax)
-{
-  Double_t dphi = -999;
-  const Double_t tpi = TMath::TwoPi();
-
-  if (phia < 0)         phia += tpi;
-  else if (phia > tpi) phia -= tpi;
-  if (phib < 0)         phib += tpi;
-  else if (phib > tpi) phib -= tpi;
-  dphi = phib - phia;
-  if (dphi < rangeMin)      dphi += tpi;
-  else if (dphi > rangeMax) dphi -= tpi;
-
-  return dphi;
-}
-
-/**
- * Generate array with fixed binning within min and max with n bins. The parameter array
- * will contain the bin edges set by this function. Attention, the array needs to be
- * provided from outside with a size of n+1
- * @param[in] n Number of bins
- * @param[in] min Minimum value for the binning
- * @param[in] max Maximum value for the binning
- * @param[out] array Array containing the bin edges
- */
-inline void AliAnalysisTaskEmcalLight::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max, Double_t* array)
-{
-  Double_t binWidth = (max-min)/n;
-  array[0] = min;
-  for (Int_t i = 1; i <= n; i++) {
-    array[i] = array[i-1]+binWidth;
-  }
-}
-
-/**
- * Generate array with fixed binning within min and max with n bins. The array containing the bin
- * edges set will be created by this function. Attention, this function does not take care about
- * memory it allocates - the array needs to be deleted outside of this function
- * @param[in] n Number of bins
- * @param[in] min Minimum value for the binning
- * @param[in] max Maximum value for the binning
- * @return Array containing the bin edges created bu this function
- */
-inline Double_t* AliAnalysisTaskEmcalLight::GenerateFixedBinArray(Int_t n, Double_t min, Double_t max)
-{
-  Double_t *array = new Double_t[n+1];
-  GenerateFixedBinArray(n, min, max, array);
-  return array;
-}
 
 #endif

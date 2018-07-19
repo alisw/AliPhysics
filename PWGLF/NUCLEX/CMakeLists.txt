@@ -31,17 +31,19 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
-		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base		
+		                ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
-		    ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
+		                ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface/
   )
 set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
+  Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx
   Exotica/NOmega/AliAnalysisTaskNOmegaLPK.cxx
   Exotica/NOmega/AliAnalysisTaskOmegaOmegaOX.cxx
   Exotica/NOmega/AliAnalysisTaskNOmegaLX.cxx
   Exotica/Ps/AliAnalysisTaskPsEfficiency.cxx
+  Exotica/dStar/AliAnalysisTaskdStar.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3Pi.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiAOD.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHelium3PiMC.cxx
@@ -56,15 +58,17 @@ set(SRCS
   Nuclei/DeuteronpA/AliAnalysisDeuteronpA.cxx
   Nuclei/DeuteronpA/AliAnalysisDeuteronTree.cxx
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
+  Nuclei/He4pp/AliAnalysisHe4.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYieldESD.cxx
-  Nuclei/NucleiPbPb/AliNuclexEventCuts.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
+  Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
   Nuclei/Nucleipp/AliAnalysisTaskB2.cxx
   Nuclei/Nucleipp/AliAnalysisTaskB2AOD.cxx
   Nuclei/Nucleipp/AliLnAODtrackCuts.cxx
   Nuclei/Nucleipp/AliLnHistoMap.cxx
   Nuclei/Nucleipp/AliLnID.cxx
+  Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
@@ -90,7 +94,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES)
-set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW OADB PWGUDbase PWGHFvertexingHF PWGPPevcharQn PWGflowTasks EVGEN)
+set(ALIROOT_DEPENDENCIES ANALYSISalice CORRFW OADB PWGUDbase PWGHFvertexingHF PWGPPevcharQn PWGflowTasks EVGEN PWGLFcommonutils)
 
 # Generate the ROOT map
 # Dependecies
@@ -140,4 +144,3 @@ install(FILES ${HDRS} DESTINATION include)
 
 # install macros
 install(DIRECTORY . DESTINATION PWGLF/NUCLEX FILES_MATCHING PATTERN "*.C")
-

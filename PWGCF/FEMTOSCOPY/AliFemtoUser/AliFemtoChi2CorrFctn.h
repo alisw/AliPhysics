@@ -16,7 +16,7 @@
 
 class AliFemtoChi2CorrFctn : public AliFemtoCorrFctn {
 public:
-  AliFemtoChi2CorrFctn(char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
+  AliFemtoChi2CorrFctn(const char* title, const int& nbins, const float& QinvLo, const float& QinvHi);
   AliFemtoChi2CorrFctn(const AliFemtoChi2CorrFctn& aCorrFctn);
   virtual ~AliFemtoChi2CorrFctn();
 
@@ -30,17 +30,19 @@ public:
 
   void WriteHistos();
   virtual TList* GetOutputList();
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoChi2CorrFctn(*this); }
+
 private:
-  
+
   TH2D *fChi2ITSSUMNumerator;        // Numerator as a function of ITS quality sum for the pair
   TH2D *fChi2ITSSUMDenominator;      // Denominator as a function of ITS quality sum for the pair
- 
+
   TH2D *fChi2TPCSUMNumerator;        // Numerator as a function of TPC quality sum for the pair
   TH2D *fChi2TPCSUMDenominator;      // Denominator as a function of TPC quality sum for the pair
 
   TH2D *fChi2ITSONENumerator;        // Numerator as a function of ITS quality for the worse track
   TH2D *fChi2ITSONEDenominator;      // Denominator as a function of ITS quality for the worse track
- 
+
   TH2D *fChi2TPCONENumerator;        // Numerator as a function of TPC quality for the worse track
   TH2D *fChi2TPCONEDenominator;      // Denominator as a function of TPC quality for the worse track
 

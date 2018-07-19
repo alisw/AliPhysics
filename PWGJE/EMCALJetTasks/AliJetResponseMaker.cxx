@@ -52,12 +52,12 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fDeltaEtaDeltaPhiAxis(0),
   fNEFAxis(0),
   fZAxis(0),
+  fFlavourZAxis(0),
+  fFlavourPtAxis(0),
   fZgAxis(0),
   fdRAxis(0),
   fPtgAxis(0),
   fDBCAxis(0),
-  fFlavourZAxis(0),
-  fFlavourPtAxis(0),
   fJetRelativeEPAngle(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
@@ -141,12 +141,12 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fDeltaEtaDeltaPhiAxis(0),
   fNEFAxis(0),
   fZAxis(0),
+  fFlavourZAxis(0),
+  fFlavourPtAxis(0),
   fZgAxis(0),
   fdRAxis(0),
   fPtgAxis(0),
   fDBCAxis(0),
-  fFlavourZAxis(0),
-  fFlavourPtAxis(0),
   fJetRelativeEPAngle(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
@@ -2009,4 +2009,138 @@ Double_t AliJetResponseMaker::GetRelativeEPAngle(Double_t jetAngle, Double_t epA
     AliWarning(Form("%s: dPHI not in range [0, 0.5*Pi]!", GetName()));
 
   return dphi;   // dphi in [0, Pi/2]
+}
+
+/**
+ * Jet response maker AddTask.
+ */
+AliJetResponseMaker * AliJetResponseMaker::AddTaskJetResponseMaker(
+  const char *ntracks1,
+  const char *nclusters1,
+  const char *njets1,
+  const char *nrho1,
+  const Double_t    jetradius1,
+  const char *ntracks2,
+  const char *nclusters2,
+  const char *njets2,
+  const char *nrho2,
+  const Double_t    jetradius2,
+  const Double_t    jetptcut,
+  const Double_t    jetareacut,
+  const Double_t    jetBias,
+  const Int_t       biasType,
+  const AliJetResponseMaker::MatchingType matching,
+  const Double_t    maxDistance1,
+  const Double_t    maxDistance2,
+  const char *cutType,
+  const Int_t       ptHardBin,
+  const Double_t    minCent,
+  const Double_t    maxCent,
+  const char *taskname,
+  const Bool_t      biggerMatrix,
+  AliJetResponseMaker* address,
+  const Double_t    nefmincut,
+  const Double_t    nefmaxcut,
+  const Int_t       jetTagging,
+  const Double_t    maxTrackPt)
+{
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    ::Error("AddTaskJetResponseMaker", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  if (!mgr->GetInputEventHandler())
+  {
+    ::Error("AddTaskJetResponseMaker", "This task requires an input event handler");
+    return NULL;
+  }
+
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  TString name(Form("%s_%s_%s_Bias%d_BiasType%d_%s",taskname,njets1,njets2,(Int_t)floor(jetBias),biasType,cutType));
+
+  if (minCent != -999 && maxCent != -999)
+    name += Form("_Cent%d_%d", (Int_t)floor(minCent), (Int_t)floor(maxCent));
+
+  if (ptHardBin != -999)
+    name += Form("_PtHard%d", ptHardBin);
+  if (nefmaxcut<1.0)
+    name += Form("_NEF%d", (Int_t)(100*nefmaxcut));
+
+  AliJetResponseMaker* jetTask = address;
+  if (jetTask) {
+    new (jetTask) AliJetResponseMaker(name);
+  }
+  else {
+    jetTask = new AliJetResponseMaker(name);
+  }
+
+  AliParticleContainer *trackCont1 = jetTask->AddParticleContainer(ntracks1);
+  AliClusterContainer *clusCont1 = jetTask->AddClusterContainer(nclusters1);
+  AliJetContainer *jetCont1 = jetTask->AddJetContainer(njets1, cutType, jetradius1);
+  jetCont1->SetRhoName(nrho1);
+  jetCont1->SetLeadingHadronType(biasType);
+  jetCont1->SetPtBiasJetTrack(jetBias);
+  jetCont1->SetPtBiasJetClus(jetBias);
+  jetCont1->SetJetPtCut(jetptcut);
+  jetCont1->SetPercAreaCut(jetareacut);
+  jetCont1->SetIsParticleLevel(kFALSE);
+  jetCont1->ConnectParticleContainer(trackCont1);
+  jetCont1->ConnectClusterContainer(clusCont1);
+  jetCont1->SetNEFCut(nefmincut,nefmaxcut);
+  jetCont1->SetFlavourCut(jetTagging);
+  jetCont1->SetMaxTrackPt(maxTrackPt);
+
+
+  AliParticleContainer *trackCont2 = jetTask->AddParticleContainer(ntracks2);
+  trackCont2->SetParticlePtCut(0);
+  AliClusterContainer *clusCont2 = jetTask->AddClusterContainer(nclusters2);
+  AliJetContainer *jetCont2 = jetTask->AddJetContainer(njets2, cutType, jetradius2);
+  jetCont2->SetRhoName(nrho2);
+  jetCont2->SetLeadingHadronType(biasType);
+  jetCont2->SetPtBiasJetTrack(jetBias);
+  jetCont2->SetPtBiasJetClus(jetBias);
+  jetCont2->SetJetPtCut(jetptcut);
+  jetCont2->SetPercAreaCut(jetareacut);
+  jetCont2->SetIsParticleLevel(kTRUE);
+  jetCont2->ConnectParticleContainer(trackCont2);
+  jetCont2->ConnectClusterContainer(clusCont2);
+  jetCont2->SetFlavourCut(jetTagging);
+  jetCont2->SetMaxTrackPt(1000); // disable default 100 GeV/c track cut for particle level jets
+
+
+  jetTask->SetMatching(matching, maxDistance1, maxDistance2);
+  jetTask->SetVzRange(-10,10);
+  jetTask->SetIsPythia(kTRUE);
+  jetTask->SetPtHardBin(ptHardBin);
+  jetTask->SetCentRange(minCent,maxCent);
+
+  if (biggerMatrix)
+    jetTask->SetHistoBins(1000,0,500);
+
+  //-------------------------------------------------------
+  // Final settings, pass to manager and set the containers
+  //-------------------------------------------------------
+
+  mgr->AddTask(jetTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+  TString contname(name);
+  contname += "_histos";
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
+							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectInput  (jetTask, 0,  cinput1 );
+  mgr->ConnectOutput (jetTask, 1, coutput1 );
+
+  return jetTask;
 }

@@ -234,16 +234,20 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fHisxvtxSelEv(0)
   , fHisyvtxSelEv(0)
   , fHiszvtxSelEv(0)
+  , fHisxvtxSelEvWithD(0)
+  , fHisyvtxSelEvWithD(0)
+  , fHiszvtxSelEvWithD(0)
   , fHisWhichVert(0)
   , fHisWhichVertSelEv(0)
-  , fHisnClsITSvsNtrackletsSel(0)
-  , fHiszvtxvsSPDzvtx(0)
-  , fHiszvtxvsSPDzvtxSel(0)
   , fHisTrigCent(0)
   , fHisTrigMul(0)
   , fHisTrigCentSel(0)
   , fHisTrigMulSel(0)
   , fHisWhyEvRejected(0)
+  , fHisnClsITSvsNtrackletsSel(0)
+  , fHiszvtxvsSPDzvtx(0)
+  , fHiszvtxvsSPDzvtxSel(0)
+  , fHiszvtxvsSPDzvtxSelWithD(0)
   , fHisFEvents(0)
   , fHisTPCVZE_AngleQ(0)
   , fHisCentVsMultRPS(0)
@@ -415,16 +419,20 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fHisxvtxSelEv(0)
   , fHisyvtxSelEv(0)
   , fHiszvtxSelEv(0)
+  , fHisxvtxSelEvWithD(0)
+  , fHisyvtxSelEvWithD(0)
+  , fHiszvtxSelEvWithD(0)
   , fHisWhichVert(0)
   , fHisWhichVertSelEv(0)
-  , fHisnClsITSvsNtrackletsSel(0)
-  , fHiszvtxvsSPDzvtx(0)
-  , fHiszvtxvsSPDzvtxSel(0)
   , fHisTrigCent(0)
   , fHisTrigMul(0)
   , fHisTrigCentSel(0)
   , fHisTrigMulSel(0)
   , fHisWhyEvRejected(0)
+  , fHisnClsITSvsNtrackletsSel(0)
+  , fHiszvtxvsSPDzvtx(0)
+  , fHiszvtxvsSPDzvtxSel(0)
+  , fHiszvtxvsSPDzvtxSelWithD(0)
   , fHisFEvents(0)
   , fHisTPCVZE_AngleQ(0)
   , fHisCentVsMultRPS(0)
@@ -1262,6 +1270,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fHisxvtxSelEv=new TH1F("hxvtxSelEv", "Distribution of x_{VTX} Selected Ev;x_{VTX} [cm];Entries",800,-1,1);
     fHisyvtxSelEv=new TH1F("hyvtxSelEv", "Distribution of y_{VTX} Selected Ev;y_{VTX} [cm];Entries",800,-1,1);
     fHiszvtxSelEv=new TH1F("hzvtxSelEv", "Distribution of z_{VTX} Selected Ev;z_{VTX} [cm];Entries",800,-30,30);
+    fHisxvtxSelEvWithD=new TH1F("hxvtxSelEvWithD", "Distribution of x_{VTX} Selected Ev w/ D mesons;x_{VTX} [cm];Entries",800,-1,1);
+    fHisyvtxSelEvWithD=new TH1F("hyvtxSelEvWithD", "Distribution of y_{VTX} Selected Ev w/ D mesons;y_{VTX} [cm];Entries",800,-1,1);
+    fHiszvtxSelEvWithD=new TH1F("hzvtxSelEvWithD", "Distribution of z_{VTX} Selected Ev w/ D mesons;z_{VTX} [cm];Entries",800,-30,30);
     fHisWhichVert=new TH1F("hWhichVert","Vertex Type",4,-1.5,2.5);
     fHisWhichVert->GetXaxis()->SetBinLabel(1,"Not found");
     fHisWhichVert->GetXaxis()->SetBinLabel(2,"Track");
@@ -1276,6 +1287,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fHisnClsITSvsNtrackletsSel=new TH2F("hnClsITSvsNtrackletsSel","number of SPD clusters vs number of SPD tracklets; n. SPD clusters; Ntracklets",200,0,6000,500,0,20000); // max values should be changed for pp data to about 200 and 1000 respectively
     fHiszvtxvsSPDzvtx=new TH2F("hzvtxvsSPDzvtx","event primary z-vertex vs SPD z-vertex - before event selection; PV z-vertex [cm]; SPD z-vertex [cm]",800,-30,30,800,-30,30);
     fHiszvtxvsSPDzvtxSel=new TH2F("hzvtxvsSPDzvtxSel","event primary z-vertex vs SPD z-vertex - after event selection; PV z-vertex [cm]; SPD z-vertex [cm]",800,-30,30,800,-30,30);
+    fHiszvtxvsSPDzvtxSelWithD=new TH2F("hzvtxvsSPDzvtxSelWithD","event primary z-vertex vs SPD z-vertex - after event selection w/ D mesons; PV z-vertex [cm]; SPD z-vertex [cm]",800,-30,30,800,-30,30);
 
     fHisTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",24,-1.5,22.5,12,-10,110);
     fHisTrigCent->GetXaxis()->SetBinLabel(1,"All");
@@ -1409,6 +1421,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputEvSelection->Add(fHisxvtxSelEv);
     fOutputEvSelection->Add(fHisyvtxSelEv);
     fOutputEvSelection->Add(fHiszvtxSelEv);
+    fOutputEvSelection->Add(fHisxvtxSelEvWithD);
+    fOutputEvSelection->Add(fHisyvtxSelEvWithD);
+    fOutputEvSelection->Add(fHiszvtxSelEvWithD);
     fOutputEvSelection->Add(fHisWhichVert);
     fOutputEvSelection->Add(fHisWhichVertSelEv);
     fOutputEvSelection->Add(fHisTrigCent);
@@ -1421,6 +1436,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputEvSelection->Add(fHisnClsITSvsNtrackletsSel);
     fOutputEvSelection->Add(fHiszvtxvsSPDzvtx);
     fOutputEvSelection->Add(fHiszvtxvsSPDzvtxSel);
+    fOutputEvSelection->Add(fHiszvtxvsSPDzvtxSelWithD);
 
   }
   if(fOnOff[4]){ // FLOW OBSERVABLES
@@ -2281,16 +2297,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t nCandD0toKpi = arrayProngD0toKpi->GetEntriesFast();
   Int_t nCandDstar = arrayProngDstar->GetEntriesFast();
   Int_t nCandCasc=0;
-  Int_t n4Prong=0;
+  //  Int_t n4Prong=0;
   if(arrayProngCascades)nCandCasc = arrayProngCascades->GetEntriesFast();
-  if(arrayProng4Prong)n4Prong = arrayProng4Prong->GetEntriesFast();
+  //  if(arrayProng4Prong)n4Prong = arrayProng4Prong->GetEntriesFast();
   // D+, Ds and Lc
   AliAODRecoDecayHF *d;
   for (Int_t iCand = 0; iCand < nCand3Prong; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProng3Prong->UncheckedAt(iCand);
     if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
 
-    if(fUseSelectionBit && !isSimpleMode){
+    if(fUseSelectionBit){
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) fHisNentriesSelBit->Fill(0.0,ptCand_selBit);
@@ -2303,7 +2319,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   for (Int_t iCand = 0; iCand < nCandD0toKpi; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProngD0toKpi->UncheckedAt(iCand);
     if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
-    if(fUseSelectionBit && !isSimpleMode){
+    if(fUseSelectionBit){
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) fHisNentriesSelBit->Fill(3.0,ptCand_selBit);
@@ -2314,7 +2330,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   for (Int_t iCand = 0; iCand < nCandDstar; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProngDstar->UncheckedAt(iCand);
     if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
-    if(fUseSelectionBit && !isSimpleMode){
+    if(fUseSelectionBit){
       Double_t ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) fHisNentriesSelBit->Fill(4.0,ptCand_selBit);
@@ -2689,6 +2705,13 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      if(TMath::Abs(pdgMotCode)==4) fHisNentries->Fill(11); //from primary charm
 	      if(TMath::Abs(pdgMotCode)==5) fHisNentries->Fill(12); //from beauty
 	    }
+	    // Primary vertex position for selected events with true generated (not necessarily reconstructed) D mesons
+	    const AliVVertex *vertex = aod->GetPrimaryVertex();
+	    const AliVVertex *vSPD   = aod->GetPrimaryVertexSPD();
+	    fHisxvtxSelEvWithD->Fill( vertex->GetX() );
+	    fHisyvtxSelEvWithD->Fill( vertex->GetY() );
+	    fHiszvtxSelEvWithD->Fill( vertex->GetZ() );
+	    fHiszvtxvsSPDzvtxSelWithD->Fill(vSPD->GetZ(), vertex->GetZ());
 	  }
 	}//end MC
 	fHisNentries->Fill(10);//count the candidates (data and MC)
@@ -2710,8 +2733,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
 	  // filtering cut level
+	  Int_t isSelectedCand = fCuts->IsSelected(d, AliRDHFCuts::kAll, aod);
 
-	  if (fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(pdg)) && fCuts->IsSelected(d,AliRDHFCuts::kAll,aod)) {
+	  if (fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(pdg)) && isSelectedCand) {
 
 	    Int_t label=0;
 	    if(fReadMC)label=track->GetLabel();
@@ -2735,6 +2759,30 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 		  fHisd0zdauphi_filt->Fill(phidaughter,d0rphiz[1]);
 		}
 	      }
+	    }
+
+	    // If the reconstructed candidate is within mPDG +/- 40 MeV/c2, then it is considered as a good candidate
+	    Bool_t isGoodCandidate = kFALSE;
+	    Double_t pdgMass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
+
+	    if (fDecayChannel==kD0toKpi) {
+	       if (isSelectedCand==1 || isSelectedCand==3) { // D0
+	          if (TMath::Abs((dynamic_cast<AliAODRecoDecayHF2Prong*>(d))->InvMassD0() - pdgMass) < 0.04) isGoodCandidate=kTRUE;
+	       }
+	       if (isSelectedCand==2 || isSelectedCand==3) { // D0bar
+	          if (TMath::Abs((dynamic_cast<AliAODRecoDecayHF2Prong*>(d))->InvMassD0bar() - pdgMass) < 0.04) isGoodCandidate=kTRUE;
+	       }
+	    } else if (fDecayChannel==kDplustoKpipi) {
+	       if (TMath::Abs((dynamic_cast<AliAODRecoDecayHF3Prong*>(d))->InvMassDplus() - pdgMass) < 0.04) isGoodCandidate=kTRUE;
+	    }
+
+	    if (isGoodCandidate) {
+	       const AliVVertex *vertex = aod->GetPrimaryVertex();
+	       const AliVVertex *vSPD   = aod->GetPrimaryVertexSPD();
+	       fHisxvtxSelEvWithD->Fill( vertex->GetX() );
+	       fHisyvtxSelEvWithD->Fill( vertex->GetY() );
+	       fHiszvtxSelEvWithD->Fill( vertex->GetZ() );
+	       fHiszvtxvsSPDzvtxSelWithD->Fill(vSPD->GetZ(), vertex->GetZ());
 	    }
 	  }
 
@@ -2829,7 +2877,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	    }
 
 
-	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
+	    if (isSelectedCand && fOnOff[1]){
 	       fHisNentries->Fill(8); //candidates passing analysis cuts
 
 	    AliAODPid *pid = track->GetDetPid();

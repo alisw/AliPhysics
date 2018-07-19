@@ -9,7 +9,7 @@
 /// \brief Select clusters/tracks with low particle environment in their vecinity,
 /// isolated within a cone.
 ///
-/// This class takes a particle AOD object with format AliAODPWG4Particle
+/// This class takes a particle AOD object with format AliCaloTrackParticle
 /// produced by any of the identified particle classes (AliAnaPhoton, AliAnaElectron,
 /// AliAnaPi0EbE, AliAnaChargedParticle) and checks if there is low particle environment
 /// around it with the utils of AliIsolationCut, declaring the particle AOD object as isolated or not.
@@ -30,8 +30,8 @@ class TObjString;
 
 // --- ANALYSIS system ---
 #include "AliAnaCaloTrackCorrBaseClass.h"
-class AliAODPWG4Particle;
-class AliAODPWG4ParticleCorrelation ;
+class AliCaloTrackParticle;
+class AliCaloTrackParticleCorrelation ;
 
 class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
@@ -44,23 +44,23 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
   // Main general methods
     
-  void         CalculateCaloUEBand    (AliAODPWG4ParticleCorrelation * pCandidate,
+  void         CalculateCaloUEBand    (AliCaloTrackParticleCorrelation * pCandidate,
                                        Float_t & etaBand, Float_t & phiBand) ;
     
-  void         CalculateCaloCellUEBand(AliAODPWG4ParticleCorrelation * pCandidate,
+  void         CalculateCaloCellUEBand(AliCaloTrackParticleCorrelation * pCandidate,
                                        Float_t & etaBand, Float_t & phiBand) ;
     
-  void         CalculateTrackUEBand   (AliAODPWG4ParticleCorrelation * pCandidate,
+  void         CalculateTrackUEBand   (AliCaloTrackParticleCorrelation * pCandidate,
                                        Float_t & etaBand, Float_t & phiBand) ;
   
-  void         CalculateCaloSignalInCone    (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCluster, Float_t & coneptLeadCluster) ;
+  void         CalculateCaloSignalInCone    (AliCaloTrackParticleCorrelation * aodParticle, Float_t & coneptsumCluster, Float_t & coneptLeadCluster) ;
     
-  void         CalculateCaloCellSignalInCone(AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumCell) ;
+  void         CalculateCaloCellSignalInCone(AliCaloTrackParticleCorrelation * aodParticle, Float_t & coneptsumCell) ;
 
-  void         CalculateTrackSignalInCone   (AliAODPWG4ParticleCorrelation * aodParticle, Float_t & coneptsumTrack  , Float_t & coneptLeadTrack  ) ;
+  void         CalculateTrackSignalInCone   (AliCaloTrackParticleCorrelation * aodParticle, Float_t & coneptsumTrack  , Float_t & coneptLeadTrack  ) ;
 
 
-  void         CalculateNormalizeUEBandPerUnitArea(AliAODPWG4ParticleCorrelation * pCandidate, Float_t coneptsumCluster,
+  void         CalculateNormalizeUEBandPerUnitArea(AliCaloTrackParticleCorrelation * pCandidate, Float_t coneptsumCluster,
                                                    Float_t coneptsumCell,  Float_t coneptsumTrack,
                                                    Float_t &coneptsumSubEtaBand, Float_t &coneptsumSubPhiBand, Int_t mcIndex ) ;
   
@@ -84,13 +84,13 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillAcceptanceHistograms();
  
-  void         FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  * pCandidate,
+  void         FillTrackMatchingShowerShapeControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
                                                              Float_t coneptsum,  Float_t coneptsumTrack, Float_t coneptsumCluster, 
                                                              Float_t coneleadpt, Int_t mcIndex) ;
   
   Bool_t       IsTriggerTheNearSideEventLeadingParticle(Int_t & idLeading);
   
-  void         MakeSeveralICAnalysis( AliAODPWG4ParticleCorrelation * ph, Int_t mcIndex ) ;
+  void         MakeSeveralICAnalysis( AliCaloTrackParticleCorrelation * ph, Int_t mcIndex ) ;
   
   void         StudyEMCALRegions(Float_t pt, Float_t phi, Float_t eta, Float_t m02, 
                                  Float_t coneptsumTrack, Float_t coneptsumCluster, 
@@ -112,8 +112,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t        GetMCIndex(Int_t mcTag);
   
-  void         SetTriggerDetector(TString & det)     ;
-  void         SetTriggerDetector(Int_t  det)        ;
+  void         SetTriggerDetector(TString det)     ;
+  void         SetTriggerDetector(Int_t   det)     ;
   void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
   void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
   void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }
@@ -137,6 +137,12 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE    ; }
   void         SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE   ; }
 
+  void         SwitchOnFillHistogramsPerSM()         { fFillPerSMHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsPerSM()        { fFillPerSMHistograms = kFALSE ; }  
+  
+  void         SwitchOnFillHistogramsPerTCardIndex()  { fFillPerTCardIndexHistograms = kTRUE  ; }
+  void         SwitchOffFillHistogramsPerTCardIndex() { fFillPerTCardIndexHistograms = kFALSE ; }  
+  
   void         SwitchOnFillEMCALRegionHistograms()   { fFillEMCALRegionHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionHistograms()  { fFillEMCALRegionHistograms = kFALSE ; }  
   
@@ -243,6 +249,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fMakeSeveralIC ;                           ///<  Do analysis for different IC.
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots.
+  Bool_t   fFillPerSMHistograms ;                     ///<  Fill histograms per SM
+  Bool_t   fFillPerTCardIndexHistograms ;             ///<  Fill histograms per T-Card index.
+  Int_t    fTCardIndex;                               ///<  Store here the T-Card index per trigger cluster.
   Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
   Int_t    fFillUEBandSubtractHistograms;             ///<  Fill histograms working on the UE subtraction. 1 fill basic histograms, 2 more detailed
   Bool_t   fFillCellHistograms;                       ///<  Fill cell histograms.
@@ -394,7 +403,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtCell ;                           //!<! Cells Sum Pt in the cone.
   TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
   TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
- 
+  
   TH2F *   fhConeSumPtExoTrigger ;                     //!<! Cluster and tracks Sum Pt in the cone. Trigger is exotic
   TH2F *   fhConeSumPtClusterExoTrigger ;              //!<! Clusters Sum Pt  in the cone. Trigger is exotic
   TH2F *   fhConeSumPtTrackExoTrigger ;                //!<! Tracks Sum Pt  in the cone. Trigger considered exotic
@@ -546,6 +555,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F *   fhPtLambda0MC    [fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously).
   TH2F *   fhPtLambda0MCConv[fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously).
+  TH2F *   fhPtLambda0MCNCellCut[fgkNmcTypes][2];       //!<! Shower shape of (non) isolated candidates originated by mcTypes particle with n cell_w > 4.
 
   TH2F *   fhPtLambda0MCWith1Overlap    [fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle (do not apply SS cut previously). At least one overlap from other particles.
   TH2F *   fhPtLambda0MCConvWith1Overlap[fgkNmcTypes][2];           //!<! Shower shape of (non) isolated candidates originated by mcTypes particle that converted (do not apply SS cut previously). At least one overlap from other particles.
@@ -612,7 +622,35 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhELambda0TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
   TH2F *   fhPtLambda0TRD[2];                          //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
 //TH2F *   fhELambda1TRD[2];                           //!<! Shower shape of (non) isolated photons, SM behind TRD (do not apply SS cut previously).
+  
+  // Selection parameters per supermodule number
+  TH2F *   fhPtPerSM[2];                               //!<! Input particle pT distribution per SM
+  TH2F *   fhPtLambda0PerSM[2][20];                    //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously).
+  TH2F *   fhPtLambda0PerSMNCellCut[2][20];            //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously). N cell with weight > 4
+  TH2F *   fhPtNCellPerSM       [2][20];               //!<! N cells with weight in cluster per cluster pT, per SM
+  TH2F *   fhPtNCellLowM02PerSM [2][20];               //!<! N cells with weight in cluster per cluster pT for 0.1 < M02 < 0.3, per SM
+  TH2F *   fhPtNCellHighM02PerSM[2][20];               //!<! N cells with weight in cluster per cluster pT for 0.5 < M02 < 2, per SM
+ 
+  TH2F *   fhConeSumPtPerSM[20] ;                      //!<! Cluster and tracks Sum Pt in the cone, per supermodule.
+  TH2F *   fhConeSumPtClusterPerSM[20] ;               //!<! Clusters Sum Pt in the cone, per supermodule.
+  TH2F *   fhConeSumPtTrackPerSM[20] ;                 //!<! Tracks Sum Pt in the cone, per supermodule.
+  
+  TH2F *   fhPtInConePerSM[20] ;                       //!<! Cluster and tracks Pt in the cone, per supermodule.
+  TH2F *   fhPtClusterInConePerSM[20] ;                //!<! Clusters Pt in the cone, per supermodule.
+  TH2F *   fhPtTrackInConePerSM[20] ;                  //!<! Tracks Pt in the cone, per supermodule.
 
+  // Selection parameters per T-Card index
+  TH2F *   fhPtPerTCardIndex[2];                       //!<! Input particle pT distribution per T-Card index.
+  TH2F *   fhPtLambda0PerTCardIndex[2][16];            //!<! Shower shape of (non) isolated photons per T-Card index (do not apply shower shape cut previously).
+  
+  TH2F *   fhConeSumPtPerTCardIndex[16] ;              //!<! Cluster and tracks Sum Pt in the cone, per T-Card index.
+  TH2F *   fhConeSumPtClusterPerTCardIndex[16] ;       //!<! Clusters Sum Pt in the cone, per T-Card index.
+  TH2F *   fhConeSumPtTrackPerTCardIndex[16] ;         //!<! Tracks Sum Pt in the cone, per T-Card index.
+  
+  TH2F *   fhPtInConePerTCardIndex[16] ;               //!<! Cluster and tracks Pt in the cone, per T-Card index.
+  TH2F *   fhPtClusterInConePerTCardIndex[16] ;        //!<! Clusters Pt in the cone, per T-Card index.
+  TH2F *   fhPtTrackInConePerTCardIndex[16] ;          //!<! Tracks Pt in the cone, per T-Card index.
+  
   /// Candidate Pt distribution depending on bin of cone leading particle.
   TH1F **  fhPtLeadConeBin ;                           //![fNBkgBin]
     
@@ -877,7 +915,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,40) ;
+  ClassDef(AliAnaParticleIsolation,42) ;
   /// \endcond
 
 } ;

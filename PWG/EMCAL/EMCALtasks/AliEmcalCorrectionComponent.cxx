@@ -6,15 +6,16 @@
 #include <TFile.h>
 #include <TH1.h>
 
+#include <AliAnalysisManager.h>
+#include <AliVEvent.h>
+#include <AliEMCALRecoUtils.h>
+#include <AliOADBContainer.h>
 #include "AliEmcalList.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliAnalysisManager.h"
-#include "AliVEvent.h"
 #include "AliClusterContainer.h"
 #include "AliTrackContainer.h"
 #include "AliParticleContainer.h"
 #include "AliMCParticleContainer.h"
-#include "AliOADBContainer.h"
+#include "AliDataFile.h"
 
 /// \cond CLASSIMP
 ClassImp(AliEmcalCorrectionComponent);
@@ -28,8 +29,7 @@ AliEmcalCorrectionComponentFactory::map_type * AliEmcalCorrectionComponentFactor
  */
 AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   TNamed("AliEmcalCorrectionComponent", "AliEmcalCorrectionComponent"),
-  fUserConfiguration(),
-  fDefaultConfiguration(),
+  fYAMLConfig(),
   fCreateHisto(kTRUE),
   fRun(-1),
   fFilepass(""),
@@ -44,7 +44,6 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
   fMinBinPt(0),
   fMaxBinPt(250),
   fGeom(0),
-  fIsEmbedded(kFALSE),
   fMinMCLabel(0),
   fClusterCollArray(),
   fParticleCollArray(),
@@ -64,8 +63,7 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent() :
  */
 AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   TNamed(name, name),
-  fUserConfiguration(),
-  fDefaultConfiguration(),
+  fYAMLConfig(),
   fCreateHisto(kTRUE),
   fRun(-1),
   fFilepass(""),
@@ -80,7 +78,6 @@ AliEmcalCorrectionComponent::AliEmcalCorrectionComponent(const char * name) :
   fMinBinPt(0),
   fMaxBinPt(250),
   fGeom(0),
-  fIsEmbedded(kFALSE),
   fMinMCLabel(0),
   fClusterCollArray(),
   fParticleCollArray(),
@@ -108,16 +105,20 @@ Bool_t AliEmcalCorrectionComponent::Initialize()
 {
   // Read in pass. If it is empty, set flag to automatically find the pass from the filename.
   std::string tempString = "";
-  GetProperty("pass", tempString);
+  // Cannot use usual helper function because "pass" is not inside of a component, but rather at the top level.
+  fYAMLConfig.GetProperty("pass", tempString, true);
   fFilepass = tempString.c_str();
   if (fFilepass != "") {
     fGetPassFromFileName = kFALSE;
     // Handle the "default" value used in MC
-    if (fFilepass == "default") {
+    if (fFilepass == "default" || fFilepass == "usedefault") {
       AliError("Received \"default\" as pass value. Defaulting to \"pass1\"! In the case of MC, the user should set the proper pass value in their configuration file! For data, empty quotes should be set so that the pass is automatically set.");
       fFilepass = "pass1";
     }
   }
+
+  // Handle create histos, as this is universal for every component
+  GetProperty("createHistos", fCreateHisto);
 
   return kTRUE;
 }
@@ -233,28 +234,6 @@ Bool_t AliEmcalCorrectionComponent::CheckIfRunChanged()
 }
 
 /**
- * Check if value is a shared parameter, meaning we should look
- * at another node. Also edits the input string to remove "sharedParameters:"
- * if it exists, making it ready for use.
- *
- * @param[in] value String containing the string value return by the parameter.
- *
- * @return True if the value is shared.
- */
-bool AliEmcalCorrectionComponent::IsSharedValue(std::string & value)
-{
-  std::size_t sharedParameterLocation = value.find("sharedParameters:");
-  if (sharedParameterLocation != std::string::npos)
-  {
-    // "sharedParameters:" is 17 characters long
-    value.erase(sharedParameterLocation, sharedParameterLocation + 17);
-    return true;
-  }
-  // Return false otherwise
-  return false;
-}
-
-/**
  * Get pass from filename. Sets pass in fFilepass.
  */
 void AliEmcalCorrectionComponent::GetPass()
@@ -343,43 +322,44 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
   
   Int_t runBC = fEventManager.InputEvent()->GetRunNumber();
   
-  AliOADBContainer *contBC = new AliOADBContainer("");
+  std::unique_ptr<AliOADBContainer> contBC(nullptr);
+  std::unique_ptr<TFile> fbad;
   if (fBasePath!="")
   { //if fBasePath specified in the ->SetBasePath()
     AliInfo(Form("Loading Bad Channels OADB from given path %s",fBasePath.Data()));
     
-    TFile *fbad=new TFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read");
+    fbad = std::unique_ptr<TFile>(TFile::Open(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read"));
     if (!fbad || fbad->IsZombie())
     {
       AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s",fBasePath.Data()));
       return 0;
     }
     
-    if (fbad) delete fbad;
-    
-    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
   }
   else
   { // Else choose the one in the $ALICE_PHYSICS directory
     AliInfo("Loading Bad Channels OADB from $ALICE_PHYSICS/OADB/EMCAL");
     
-    TFile *fbad=new TFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","read");
+    fbad = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALBadChannels.root").data(),"read"));
     if (!fbad || fbad->IsZombie())
     {
-      AliFatal("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root was not found");
+      AliFatal("OADB/EMCAL/EMCALBadChannels.root was not found");
       return 0;
     }
     
-    if (fbad) delete fbad;
-    
-    contBC->InitFromFile("$ALICE_PHYSICS/OADB/EMCAL/EMCALBadChannels.root","AliEMCALBadChannels");
+    contBC = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(fbad->Get("AliEMCALBadChannels")));
   }
+  if(!contBC){
+    AliError("No OADB container found");
+    return 0;
+  }
+  contBC->SetOwner(true);
   
   TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
   if (!arrayBC)
   {
     AliError(Form("No external hot channel set for run number: %d", runBC));
-    delete contBC;
     return 2;
   }
   
@@ -399,8 +379,6 @@ Int_t AliEmcalCorrectionComponent::InitBadChannels()
     h->SetDirectory(0);
     fRecoUtils->SetEMCALChannelStatusMap(i,h);
   }
-  
-  delete contBC;
   
   return 1;
 }

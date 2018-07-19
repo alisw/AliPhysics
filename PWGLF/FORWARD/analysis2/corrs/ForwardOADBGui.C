@@ -65,9 +65,9 @@ class TGStatusBar;
 // #endif
 #endif
 
-struct ForwardOADBDialog
+struct ForwardOADBWait
 {
-  ForwardOADBDialog(TGMainFrame* p)
+  ForwardOADBWait(TGMainFrame* p)
     : fFrame(gClient->GetRoot(), p, 200, 40, kVerticalFrame),
       fHints(kLHintsExpandX,30,30,30,30),
       fLabel(&fFrame, ""), 
@@ -79,10 +79,10 @@ struct ForwardOADBDialog
     // fFrame.AddFrame(&fProgress, &fHints);
     fFrame.SetWindowName("Please wait ...");
     // fProgress.SetRange(0,1);
-    fIncrement.Connect("Timeout()","ForwardOADBDialog",this,"HandleIncr()");
+    fIncrement.Connect("Timeout()","ForwardOADBWait",this,"HandleIncr()");
   }
-  ForwardOADBDialog(const ForwardOADBDialog&) {}
-  ForwardOADBDialog& operator=(const ForwardOADBDialog&) { return *this; }
+  ForwardOADBWait(const ForwardOADBWait&) {}
+  ForwardOADBWait& operator=(const ForwardOADBWait&) { return *this; }
   void HandleIncr()
   {
     // Float_t dp = 0.1;
@@ -116,11 +116,11 @@ struct ForwardOADBDialog
   TGTransientFrame fFrame;
   TGLayoutHints    fHints;
   TGLabel          fLabel;
-  //TGHProgressBar   fProgress;
   Bool_t           fIsShown;
   TTimer           fIncrement;
+
 };
-    
+
 struct ForwardOADBGUI
 {
   enum { 
@@ -226,6 +226,7 @@ struct ForwardOADBGUI
     fSysSelect.AddEntry("Pb-Pb ",2);
     fSysSelect.AddEntry("p-Pb",  3);
     fSysSelect.AddEntry("Pb-p",  4);
+    fSysSelect.AddEntry("Xe-Xe", 5);
     fSysSelect.SetHeight(22);
     fSelectFrame.AddFrame(&fSysFrame, &fFrameHints);
     fSysFrame.AddFrame(&fSysLabel, &fLabelHints);
@@ -240,7 +241,9 @@ struct ForwardOADBGUI
     fFldLabel.SetWidth(kLabelWidth); fFldLabel.SetMinWidth(kLabelWidth);
     fFldSelect.AddEntry("- select -", 999);
     fFldSelect.AddEntry("-5", -5);
+    fFldSelect.AddEntry("-2", -2);
     fFldSelect.AddEntry("0 ",  0);
+    fFldSelect.AddEntry("+2", +2);
     fFldSelect.AddEntry("+5", +5);
     fFldSelect.SetHeight(22);
     fSelectFrame.AddFrame(&fFldFrame, &fFrameHints);
@@ -512,8 +515,9 @@ struct ForwardOADBGUI
     lve->SetSubnames(Form("%lu", e->fRunNo), 
 		     (e->fSys == 1 ? "p-p" : 
 		      e->fSys == 2 ? "Pb-Pb" : 
-		      e->fSys == 3 ? "p-Pb" :
-		      e->fSys == 4 ? "Pb-p" : "?"),
+		      e->fSys == 3 ? "p-Pb"  :
+		      e->fSys == 4 ? "Pb-p"  :
+		      e->fSys == 5 ? "Xe-Xe" :	"?"),
 		     Form("%4huGeV",e->fSNN), 
 		     Form("%+2hdkG", e->fField), 
 		     (e->fMC ? "MC" : "Real"),
@@ -775,7 +779,8 @@ struct ForwardOADBGUI
     out.Append(Form("_%s", (fEntry->fSys == 1 ? "pp" : 
 			    fEntry->fSys == 2 ? "PbPb" :
 			    fEntry->fSys == 3 ? "pPb" :
-			    fEntry->fSys == 4 ? "Pbp" : "XX")));
+			    fEntry->fSys == 4 ? "Pbp" :
+			    fEntry->fSys == 5 ? "Xe-Xe" : "XX")));
     out.Append(Form("_%04huGeV", fEntry->fSNN));
     out.Append(Form("_%c%hukG", fEntry->fField >= 0 ? 'p' : 'm', 
 		    TMath::Abs(fEntry->fField)));
@@ -896,7 +901,7 @@ struct ForwardOADBGUI
   TGLayoutHints     fListHints;
   TGStatusBar       fStatusBar;
   TGLayoutHints     fStatusBarHints;
-  ForwardOADBDialog fMsg;
+  ForwardOADBWait   fMsg;
   AliOADBForward*   fDB;
   AliOADBForward::Entry* fEntry;
   // TCanvas*          fDataCanvas;

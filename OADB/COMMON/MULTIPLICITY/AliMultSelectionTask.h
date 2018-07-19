@@ -26,6 +26,8 @@
 #ifndef AliMultSelectionTask_H
 #define AliMultSelectionTask_H
 
+#include <AliAnalysisTaskSE.h>
+
 class TList;
 class TH1F;
 class TH2F;
@@ -76,9 +78,11 @@ public:
     void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fkTrigger = trigType;}
     
     //Get Period name (can be static)
-    TString GetPeriodNameByLPM(); //try userInfo first
+    TString GetPeriodNameByLPM(TString lTag); //try userInfo first
     TString GetPeriodNameByPath( const TString lPath ) const; //no input required, will have all info in globals...
     TString GetPeriodNameByRunNumber()  const; //no input required, use fCurrentRun
+    TString GetSystemTypeByRunNumber()  const; //no input required, use fCurrentRun
+    TString GetExceptionMapping( TString lProductionName ) const; //list of exceptions
     Bool_t CheckOADB( TString lProdName ) const;
     
     //Check MC type
@@ -147,6 +151,7 @@ private:
     Bool_t fkDebugAliCentrality; //if true, adds V0M percentiles from AliCentrality in TTree
     Bool_t fkDebugAliPPVsMultUtils; //if true, adds V0M percentiles from AliCentrality in TTree
     Bool_t fkDebugIsMC; //if true, adds some MC info for cross-checks (needs MC)
+    Bool_t fkDebugAdditional2DHisto; //if true, adds a 2D histogram Ntracks vs. N gen. particles
     
     //Default options
     Bool_t fkUseDefaultCalib; //if true, allow for default data calibration
@@ -237,6 +242,10 @@ private:
     Bool_t fEvSel_IsNotAsymmetricInVZERO;   //!
     Bool_t fEvSel_IsNotIncompleteDAQ;       //!
     Bool_t fEvSel_HasGoodVertex2016;        //!
+    
+    //Full Physics Selection Trigger info
+    UInt_t fEvSel_TriggerMask; //! save full info for checking later
+    
     //Other Selections: more dedicated filtering to be studied!
 
     // A.T.
@@ -246,6 +255,8 @@ private:
     AliESDtrackCuts* fTrackCuts;        // optional track cuts
     AliESDtrackCuts* fTrackCutsGlobal2015;  // optional track cuts
     AliESDtrackCuts* fTrackCutsITSsa2010; // optional track cuts
+    AliESDtrackCuts* fTrackCutsFiltBit32;
+    AliESDtrackCuts* fTrackCutsFiltBit64;
     
     AliMultVariable *fZnaFired;
     AliMultVariable *fZncFired;
@@ -256,6 +267,8 @@ private:
     AliMultVariable *fNTracksGlobal2015;             //!  no. tracks (2015 Global track cuts)
     AliMultVariable *fNTracksGlobal2015Trigger;             //!  no. tracks (2015 glob. + TOF-based selection for trigger event)
     AliMultVariable *fNTracksITSsa2010;                     //!  no. tracks ITSsa (2010 ITSsa track cuts)
+    AliMultVariable *fNTracksINELgtONE; //!
+    AliMultVariable *fNPartINELgtONE;   //!
     
     Int_t fCurrentRun;
     
@@ -291,6 +304,8 @@ private:
     TH1D *fHistQA_ZNC;
     TH1D *fHistQA_ZNApp;
     TH1D *fHistQA_ZNCpp;
+    TH1D *fHistQA_NTracksINELgtONE;
+    TH1D *fHistQA_NPartINELgtONE;
     TProfile *fHistQA_TrackletsVsV0M; 
     TProfile *fHistQA_TrackletsVsCL0; 
     TProfile *fHistQA_TrackletsVsCL1; 
@@ -306,6 +321,8 @@ private:
     TH1D *fHistQASelected_ZNC;
     TH1D *fHistQASelected_ZNApp;
     TH1D *fHistQASelected_ZNCpp;
+    TH1D *fHistQASelected_NTracksINELgtONE;
+    TH1D *fHistQASelected_NPartINELgtONE;
     TProfile *fHistQASelected_TrackletsVsV0M;
     TProfile *fHistQASelected_TrackletsVsCL0; 
     TProfile *fHistQASelected_TrackletsVsCL1; 
@@ -331,7 +348,7 @@ private:
     AliMultSelectionTask(const AliMultSelectionTask&);            // not implemented
     AliMultSelectionTask& operator=(const AliMultSelectionTask&); // not implemented
 
-    ClassDef(AliMultSelectionTask, 3);
+    ClassDef(AliMultSelectionTask, 5);
     //3 - extra QA histograms
 };
 

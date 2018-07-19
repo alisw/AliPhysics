@@ -164,9 +164,9 @@ void AliEmcalJetUtilityGenSubtractor::Prepare(AliFJWrapper& fjw)
    fjw.DoGenericSubtractionJet1subjettiness_akt02();
    fjw.DoGenericSubtractionJet2subjettiness_akt02();
    fjw.DoGenericSubtractionJetOpeningAngle_akt02();
-   //fjw.DoGenericSubtractionJet1subjettiness_casd();
-   //fjw.DoGenericSubtractionJet2subjettiness_casd();
-   //fjw.DoGenericSubtractionJetOpeningAngle_casd();
+   fjw.DoGenericSubtractionJet1subjettiness_onepassca();
+   fjw.DoGenericSubtractionJet2subjettiness_onepassca();
+   fjw.DoGenericSubtractionJetOpeningAngle_onepassca();
  }
 }
 
@@ -363,31 +363,31 @@ void AliEmcalJetUtilityGenSubtractor::ProcessJet(AliEmcalJet* jet, Int_t ij, Ali
       jet->GetShapeProperties()->SetFirstOrderSubtractedOpeningAngle_akt02(jetOpeningAngleakt02Info[ij].first_order_subtracted());
       jet->GetShapeProperties()->SetSecondOrderSubtractedOpeningAngle_akt02(jetOpeningAngleakt02Info[ij].second_order_subtracted());
     }
-    std::vector<fastjet::contrib::GenericSubtractorInfo> jet1subjettinesscasdInfo = fjw.GetGenSubtractorInfoJet1subjettiness_casd();
-    Int_t n1subjettiness_casd = (Int_t)jet1subjettinesscasdInfo.size();
-    if(n1subjettiness_casd > ij && n1subjettiness_casd > 0) {
-      jet->GetShapeProperties()->SetFirstDerivative1subjettiness_casd(jet1subjettinesscasdInfo[ij].first_derivative());
-      jet->GetShapeProperties()->SetSecondDerivative1subjettiness_casd(jet1subjettinesscasdInfo[ij].second_derivative());
-      jet->GetShapeProperties()->SetFirstOrderSubtracted1subjettiness_casd(jet1subjettinesscasdInfo[ij].first_order_subtracted());
-      jet->GetShapeProperties()->SetSecondOrderSubtracted1subjettiness_casd(jet1subjettinesscasdInfo[ij].second_order_subtracted());
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet1subjettinessonepasscaInfo = fjw.GetGenSubtractorInfoJet1subjettiness_onepassca();
+    Int_t n1subjettiness_onepassca = (Int_t)jet1subjettinessonepasscaInfo.size();
+    if(n1subjettiness_onepassca > ij && n1subjettiness_onepassca > 0) {
+      jet->GetShapeProperties()->SetFirstDerivative1subjettiness_onepassca(jet1subjettinessonepasscaInfo[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivative1subjettiness_onepassca(jet1subjettinessonepasscaInfo[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtracted1subjettiness_onepassca(jet1subjettinessonepasscaInfo[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtracted1subjettiness_onepassca(jet1subjettinessonepasscaInfo[ij].second_order_subtracted());
     }
           
-    std::vector<fastjet::contrib::GenericSubtractorInfo> jet2subjettinesscasdInfo = fjw.GetGenSubtractorInfoJet2subjettiness_casd();
-    Int_t n2subjettiness_casd = (Int_t)jet2subjettinesscasdInfo.size();
-    if(n2subjettiness_casd > ij && n2subjettiness_casd > 0) {
-      jet->GetShapeProperties()->SetFirstDerivative2subjettiness_casd(jet2subjettinesscasdInfo[ij].first_derivative());
-      jet->GetShapeProperties()->SetSecondDerivative2subjettiness_casd(jet2subjettinesscasdInfo[ij].second_derivative());
-      jet->GetShapeProperties()->SetFirstOrderSubtracted2subjettiness_casd(jet2subjettinesscasdInfo[ij].first_order_subtracted());
-      jet->GetShapeProperties()->SetSecondOrderSubtracted2subjettiness_casd(jet2subjettinesscasdInfo[ij].second_order_subtracted());
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jet2subjettinessonepasscaInfo = fjw.GetGenSubtractorInfoJet2subjettiness_onepassca();
+    Int_t n2subjettiness_onepassca = (Int_t)jet2subjettinessonepasscaInfo.size();
+    if(n2subjettiness_onepassca > ij && n2subjettiness_onepassca > 0) {
+      jet->GetShapeProperties()->SetFirstDerivative2subjettiness_onepassca(jet2subjettinessonepasscaInfo[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivative2subjettiness_onepassca(jet2subjettinessonepasscaInfo[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtracted2subjettiness_onepassca(jet2subjettinessonepasscaInfo[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtracted2subjettiness_onepassca(jet2subjettinessonepasscaInfo[ij].second_order_subtracted());
     }
 
-    std::vector<fastjet::contrib::GenericSubtractorInfo> jetOpeningAnglecasdInfo = fjw.GetGenSubtractorInfoJetOpeningAngle_casd();
-    Int_t nOpeningAngle_casd = (Int_t)jetOpeningAnglecasdInfo.size();
-    if(nOpeningAngle_casd > ij && nOpeningAngle_casd > 0) {
-      jet->GetShapeProperties()->SetFirstDerivativeOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].first_derivative());
-      jet->GetShapeProperties()->SetSecondDerivativeOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].second_derivative());
-      jet->GetShapeProperties()->SetFirstOrderSubtractedOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].first_order_subtracted());
-      jet->GetShapeProperties()->SetSecondOrderSubtractedOpeningAngle_casd(jetOpeningAnglecasdInfo[ij].second_order_subtracted());
+    std::vector<fastjet::contrib::GenericSubtractorInfo> jetOpeningAngleonepasscaInfo = fjw.GetGenSubtractorInfoJetOpeningAngle_onepassca();
+    Int_t nOpeningAngle_onepassca = (Int_t)jetOpeningAngleonepasscaInfo.size();
+    if(nOpeningAngle_onepassca > ij && nOpeningAngle_onepassca > 0) {
+      jet->GetShapeProperties()->SetFirstDerivativeOpeningAngle_onepassca(jetOpeningAngleonepasscaInfo[ij].first_derivative());
+      jet->GetShapeProperties()->SetSecondDerivativeOpeningAngle_onepassca(jetOpeningAngleonepasscaInfo[ij].second_derivative());
+      jet->GetShapeProperties()->SetFirstOrderSubtractedOpeningAngle_onepassca(jetOpeningAngleonepasscaInfo[ij].first_order_subtracted());
+      jet->GetShapeProperties()->SetSecondOrderSubtractedOpeningAngle_onepassca(jetOpeningAngleonepasscaInfo[ij].second_order_subtracted());
       }
   }
 

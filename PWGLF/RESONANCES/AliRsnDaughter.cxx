@@ -89,7 +89,7 @@ void AliRsnDaughter::Reset()
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnDaughter::GetPDG()
+Long_t AliRsnDaughter::GetPDG()
 {
 //
 // Return the PDG code of the particle from MC ref (if any).
@@ -160,7 +160,7 @@ void AliRsnDaughter::Print(Option_t *) const
    AliInfo("=== DAUGHTER INFO ======================================================================");
    AliInfo(Form(" (sim) px,py,pz = %6.2f %6.2f %6.2f", fPsim.X(), fPsim.Y(), fPsim.Z()));
    AliInfo(Form(" (rec) px,py,pz = %6.2f %6.2f %6.2f", fPrec.X(), fPrec.Y(), fPrec.Z()));
-   AliInfo(Form(" OK, RsnID, Label, MotherPDG = %s, %5d, %5d, %4d", (fOK ? "true " : "false"), fRsnID, fLabel, fMotherPDG));
+   AliInfo(Form(" OK, RsnID, Label, MotherPDG = %s, %5d, %5d, %4ld", (fOK ? "true " : "false"), fRsnID, fLabel, fMotherPDG));
    AliInfo("========================================================================================");
 }
 
@@ -181,12 +181,15 @@ const char *AliRsnDaughter::SpeciesName(ESpecies species)
       case kLambda:   return "Lambda";
       case kXi:       return "Xi";
       case kOmega:    return "Omega";
+      case kKstar0:   return "Kstar0";
+      case kPhi:      return "Phi";
+      case kLambdastar: return "Lambdastar";
       default:        return "Undef";
    }
 }
 
 //______________________________________________________________________________
-Int_t AliRsnDaughter::SpeciesPDG(ESpecies species)
+Long_t AliRsnDaughter::SpeciesPDG(ESpecies species)
 {
 //
 // Return the PDG code of a particle species (abs value)
@@ -202,6 +205,9 @@ Int_t AliRsnDaughter::SpeciesPDG(ESpecies species)
       case kLambda:   return 3122;
       case kXi:       return 3312;
       case kOmega:    return 3334;
+      case kKstar0:   return 313;
+      case kPhi:      return 333;
+      case kLambdastar: return 3124;
       default:        return 0;
    }
 }
@@ -216,7 +222,7 @@ Double_t AliRsnDaughter::SpeciesMass(ESpecies species)
    TDatabasePDG *db = TDatabasePDG::Instance();
    TParticlePDG *part = 0x0;
 
-   Int_t pdg = SpeciesPDG(species);
+   Long_t pdg = SpeciesPDG(species);
    if (pdg) {
       part = db->GetParticle(pdg);
       return part->Mass();
@@ -263,4 +269,17 @@ AliRsnDaughter::ESpecies AliRsnDaughter::FromAliPID(EPARTYPE pid)
       case AliPID::kKaon0:    return kKaon0;
       default:                return kUnknown;
    }
+}
+
+//______________________________________________________________________________
+Bool_t AliRsnDaughter::IsEquivalentPDGCode(Long_t i1, Long_t i2)
+{
+//
+// Check to see if i1 and i2 are equal, with special treatment for K0.
+//
+
+   if(i1==i2) return kTRUE;
+   if( (i1==130 || i1==310) && TMath::Abs(i2)==311) return kTRUE;
+   if( (i2==130 || i2==310) && TMath::Abs(i1)==311) return kTRUE;
+   return kFALSE;
 }

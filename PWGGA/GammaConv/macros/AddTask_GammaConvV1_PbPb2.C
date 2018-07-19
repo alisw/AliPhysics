@@ -40,14 +40,15 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
                                 TString       periodNameV0Reader            = "",
                                 Bool_t        runLightOutput                = kFALSE,                           // switch to run light output (only essential histograms for afterburner)
                                 Bool_t        processAODcheckForV0s         = kFALSE,                           // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
+                                Bool_t        enableUseTHnSparse            = kTRUE,
                                 TString       additionalTrainConfig         = "0"                               // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
   Int_t isHeavyIon = 1;
   if (additionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + additionalTrainConfig.Atoi();
-  }  
-  
+  }
+
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -57,7 +58,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
 
   // ================== GetInputEventHandler =============================
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-  
+
   Bool_t isMCForOtherSettings = 0;
   if (isMC > 0) isMCForOtherSettings = 1;
   //========= Add PID Reponse to ANALYSIS manager ====
@@ -65,10 +66,12 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AddTaskPIDResponse(isMCForOtherSettings);
   }
-  
+
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00000008400100001500000000";
-  TString cutnumberEvent = "10000003";
+  TString cutnumberPhoton   = "00000008400100001500000000";
+  if (periodNameV0Reader.CompareTo("LHC17n") == 0 || periodNameV0Reader.Contains("LHC17j7"))
+    cutnumberPhoton         = "00000088400100001500000000";
+  TString cutnumberEvent    = "10000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
@@ -111,10 +114,10 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
         fCuts->SetFillCutHistograms("",kTRUE);
       }
     }
-    
+
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -136,97 +139,174 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(runLightOutput);
   // Cut Numbers to use in Analysis
-  
+
   CutHandlerConv cuts;
 
-  if (trainConfig == 1){ 
-    cuts.AddCut("60100013", "04200009297002003220000000", "0152204500900000"); 
-  } else if (trainConfig == 2) { 
-    cuts.AddCut("61200013", "04200009297002003220000000", "0152204500900000"); 
-  } else if (trainConfig == 3) { 
-    cuts.AddCut("50100013", "04200009297002003220000000", "0152204500900000"); 
-  } else if (trainConfig == 4) { 
-    cuts.AddCut("50200013", "04200009297002003220000000", "0152204500900000");    
-  } else if (trainConfig == 5) { 
-    cuts.AddCut("51200013", "04200009297002003220000000", "0152204500900000");    
-  } else if (trainConfig == 6) { 
-    cuts.AddCut("52400013", "04200009297002003220000000", "0152204500900000");       
-  } else if (trainConfig == 7) {    
-    cuts.AddCut("54600013", "04200009297002003220000000", "0152206500900000"); 
-  } else if (trainConfig == 8) {    
-    cuts.AddCut("54800013", "04200009297002003220000000", "0152206500900000");    
-  } else if (trainConfig == 9) {    
-    cuts.AddCut("54500013", "04200009297002003220000000", "0152206500900000"); 
-  } else if (trainConfig == 10) { 
+  if (trainConfig == 1){
+    cuts.AddCut("60100013", "04200009297002003220000000", "0152204500900000");
+  } else if (trainConfig == 2) {
+    cuts.AddCut("61200013", "04200009297002003220000000", "0152204500900000");
+  } else if (trainConfig == 3) {
+    cuts.AddCut("50100013", "04200009297002003220000000", "0152204500900000");
+  } else if (trainConfig == 4) {
+    cuts.AddCut("50200013", "04200009297002003220000000", "0152204500900000");
+  } else if (trainConfig == 5) {
+    cuts.AddCut("51200013", "04200009297002003220000000", "0152204500900000");
+  } else if (trainConfig == 6) {
+    cuts.AddCut("52400013", "04200009297002003220000000", "0152204500900000");
+  } else if (trainConfig == 7) {
+    cuts.AddCut("54600013", "04200009297002003220000000", "0152206500900000");
+  } else if (trainConfig == 8) {
+    cuts.AddCut("54800013", "04200009297002003220000000", "0152206500900000");
+  } else if (trainConfig == 9) {
+    cuts.AddCut("54500013", "04200009297002003220000000", "0152206500900000");
+  } else if (trainConfig == 10) {
     cuts.AddCut("55600013", "04200009297002003220000000", "0152206500900000");
-  } else if (trainConfig == 11) { 
-    cuts.AddCut("56800013", "04200009297002003220000000", "0152206500900000");    
-  } else if (trainConfig == 12) { 
-    cuts.AddCut("56700013", "04200009297002003220000000", "0152206500900000"); 
-  } else if (trainConfig == 13) { 
-    cuts.AddCut("57800013", "04200009297002003220000000", "0152206500900000"); 
-  } else if (trainConfig == 14) { 
+  } else if (trainConfig == 11) {
+    cuts.AddCut("56800013", "04200009297002003220000000", "0152206500900000");
+  } else if (trainConfig == 12) {
+    cuts.AddCut("56700013", "04200009297002003220000000", "0152206500900000");
+  } else if (trainConfig == 13) {
+    cuts.AddCut("57800013", "04200009297002003220000000", "0152206500900000");
+  } else if (trainConfig == 14) {
     cuts.AddCut("46900013", "04200009297002003220000000", "0152206500900000");
-  } else if (trainConfig == 15) { 
-    cuts.AddCut("58900013", "04200009297002003220000000", "0152206500900000");    
-  } else  if (trainConfig == 16){ 
-    cuts.AddCut("60100013", "00200009247602008250400000", "0152501500000000"); 
-  } else if (trainConfig == 17) { 
-    cuts.AddCut("61200013", "00200009247602008250400000", "0152501500000000"); 
-  } else if (trainConfig == 18) { 
-    cuts.AddCut("50100013", "00200009247602008250400000", "0152501500000000"); 
-  } else if (trainConfig == 19) { 
-    cuts.AddCut("50200013", "00200009247602008250400000", "0152501500000000");    
-  } else if (trainConfig == 20) { 
-    cuts.AddCut("51200013", "00200009247602008250400000", "0152501500000000");    
-  } else if (trainConfig == 21) { 
-    cuts.AddCut("52400013", "00200009247602008250400000", "0152501500000000");       
-  } else if (trainConfig == 22) {    
-    cuts.AddCut("54600013", "00200009247602008250400000", "0152501500000000"); 
-  } else if (trainConfig == 23) {    
-    cuts.AddCut("54800013", "00200009247602008250400000", "0152501500000000");    
-  } else if (trainConfig == 24) {    
-    cuts.AddCut("54500013", "00200009247602008250400000", "0152501500000000"); 
-  } else if (trainConfig == 25) { 
+  } else if (trainConfig == 15) {
+    cuts.AddCut("58900013", "04200009297002003220000000", "0152206500900000");
+  } else  if (trainConfig == 16){
+    cuts.AddCut("60100013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 17) {
+    cuts.AddCut("61200013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 18) {
+    cuts.AddCut("50100013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 19) {
+    cuts.AddCut("50200013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 20) {
+    cuts.AddCut("51200013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 21) {
+    cuts.AddCut("52400013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 22) {
+    cuts.AddCut("54600013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 23) {
+    cuts.AddCut("54800013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 24) {
+    cuts.AddCut("54500013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 25) {
     cuts.AddCut("55600013", "00200009247602008250400000", "0152501500000000");
-  } else if (trainConfig == 26) { 
-    cuts.AddCut("56800013", "00200009247602008250400000", "0152501500000000");    
-  } else if (trainConfig == 27) { 
-    cuts.AddCut("56700013", "00200009247602008250400000", "0152501500000000"); 
-  } else if (trainConfig == 28) { 
-    cuts.AddCut("57800013", "00200009247602008250400000", "0152501500000000"); 
-  } else if (trainConfig == 29) { 
+  } else if (trainConfig == 26) {
+    cuts.AddCut("56800013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 27) {
+    cuts.AddCut("56700013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 28) {
+    cuts.AddCut("57800013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 29) {
     cuts.AddCut("46900013", "00200009247602008250400000", "0152501500000000");
-  } else if (trainConfig == 30) { 
-    cuts.AddCut("58900013", "00200009247602008250400000", "0152501500000000");    
-  } else if (trainConfig == 31) { 
-    cuts.AddCut("50800013", "00200009247602008250400000", "0152501500000000");    
+  } else if (trainConfig == 30) {
+    cuts.AddCut("58900013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 31) {
+    cuts.AddCut("50800013", "00200009247602008250400000", "0152501500000000");
   } else if (trainConfig == 32) {
     cuts.AddCut("52500013", "00200009247602008250400000", "0152501500000000");
-  } else if (trainConfig == 33) { 
-    cuts.AddCut("53500013", "00200009247602008250400000", "0152501500000000");       
-  } else if (trainConfig == 34) { 
-    cuts.AddCut("54500013", "00200009247602008250400000", "0152501500000000");       
-  } else if (trainConfig == 35) { 
-    cuts.AddCut("53400013", "00200009247602008250400000", "0152501500000000");       
-  } else if (trainConfig == 36) { 
-    cuts.AddCut("52300013", "00200009247602008250400000", "0152501500000000");     
-  } else if (trainConfig == 37) { 
-    cuts.AddCut("52500013", "00700009247602008250400000", "0152501500000000");               
-  } else if (trainConfig == 38) { 
-    cuts.AddCut("52400013", "00700009247602008250400000", "0152501500000000");       
+  } else if (trainConfig == 33) {
+    cuts.AddCut("53500013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 34) {
+    cuts.AddCut("54500013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 35) {
+    cuts.AddCut("53400013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 36) {
+    cuts.AddCut("52300013", "00200009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 37) {
+    cuts.AddCut("52500013", "00700009247602008250400000", "0152501500000000");
+  } else if (trainConfig == 38) {
+    cuts.AddCut("52400013", "00700009247602008250400000", "0152501500000000");
   } else if (trainConfig == 39) { //latest std 11h cut
     cuts.AddCut("52400013", "00200009247602008250404000", "0152501500000000");
   } else if (trainConfig == 40) {
     cuts.AddCut("52500013", "00200009247602008250404000", "0152501500000000");
   } else if (trainConfig == 41) {
     cuts.AddCut("50100013", "00200009247602008250404000", "0152501500000000");
+    // Xe-Xe configs
+  } else if (trainConfig == 42) {
+    cuts.AddCut("10910113","00200009327000008250400000","0163103100000000"); // 0-90
+  } else if (trainConfig == 43) {
+    cuts.AddCut("10210113","00200009327000008250400000","0163103100000000"); // 0-20
+  } else if (trainConfig == 43) {
+    cuts.AddCut("12410113","00200009327000008250400000","0163103100000000"); // 20-40
+  } else if (trainConfig == 43) {
+    cuts.AddCut("10410113","00200009327000008250400000","0163103100000000"); // 0-40
+  } else if (trainConfig == 43) {
+    cuts.AddCut("14910113","00200009327000008250400000","0163103100000000"); // 40-90
+    // Pb-Pb 5.02 TeV
+  } else if (trainConfig == 44) {
+    cuts.AddCut("52310013","00200009247602008250404000","0652501500000000"); // 20-30%
+  } else if (trainConfig == 45) {
+    cuts.AddCut("53410013","00200009247602008250404000","0652501500000000"); // 30-40%
+  } else if (trainConfig == 46) {
+    cuts.AddCut("54510013","00200009247602008250404000","0652501500000000"); // 40-50%
+  } else if (trainConfig == 47) {
+    cuts.AddCut("55610013","00200009247602008250404000","0652501500000000"); // 50-60%
+  } else if (trainConfig == 48) {
+    cuts.AddCut("56710013","00200009247602008250404000","0652501500000000"); // 60-70%
+  } else if (trainConfig == 49) {
+    cuts.AddCut("57810013","00200009247602008250404000","0652501500000000"); // 70-80%
+  } else if (trainConfig == 50) {
+    cuts.AddCut("58910013","00200009247602008250404000","0652501500000000"); // 80-90%
+  } else if (trainConfig == 51) {
+    cuts.AddCut("52310613","00200009247602008250404000","0652501500000000"); // 20-30% with PU cut
+  } else if (trainConfig == 52) {
+    cuts.AddCut("53410613","00200009247602008250404000","0652501500000000"); // 30-40% with PU cut
+  } else if (trainConfig == 53) {
+    cuts.AddCut("54610613","00200009247602008250404000","0652501500000000"); // 40-60% with PU cut
+  } else if (trainConfig == 54) {
+    cuts.AddCut("56810613","00200009247602008250404000","0652501500000000"); // 60-80% with PU cut
+  } else if (trainConfig == 55) {
+    cuts.AddCut("58910613","00200009247602008250404000","0652501500000000"); // 80-90% with PU cut
+
+  // Xe-Xe 5.02 TeV 0-80
+  } else if (trainConfig == 100){
+    cuts.AddCut("10810113","00200009327000008250400000","0163103100000000"); // std
+  } else if (trainConfig == 101){
+    cuts.AddCut("10810113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
+  } else if (trainConfig == 102){
+    cuts.AddCut("10810113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
+    // Xe-Xe 5.02 TeV 0-20
+  } else if (trainConfig == 110){
+    cuts.AddCut("10210113","00200009327000008250400000","0163103100000000"); // std
+  } else if (trainConfig == 111){
+    cuts.AddCut("10210113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
+  } else if (trainConfig == 112){
+    cuts.AddCut("10210113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
+  // Xe-Xe 5.02 TeV 20-40
+  } else if (trainConfig == 120){
+    cuts.AddCut("12410113","00200009327000008250400000","0163103100000000"); // std
+  } else if (trainConfig == 121){
+    cuts.AddCut("12410113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
+  } else if (trainConfig == 122){
+    cuts.AddCut("12410113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
+    // Xe-Xe 5.02 TeV 40-80
+  } else if (trainConfig == 130){
+    cuts.AddCut("14810113","00200009327000008250400000","0163103100000000"); // std
+  } else if (trainConfig == 131){
+    cuts.AddCut("14810113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
+  } else if (trainConfig == 132){
+    cuts.AddCut("14810113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
+  // Xe-Xe 5.02 TeV 0-40
+  } else if (trainConfig == 140){
+    cuts.AddCut("10410113","00200009327000008250400000","0163103100000000"); // std
+  } else if (trainConfig == 141){
+    cuts.AddCut("10410113","00200089327000008250400000","0163103100000000"); // min pt elect 0.02
+  } else if (trainConfig == 142){
+    cuts.AddCut("10410113","00200079327000008250400000","0163103100000000"); // min pt elect 0
+
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
-  
+
   if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
     cout << "ERROR: No valid cuts stored in CutHandlerConv! Returning..." << endl;
@@ -234,8 +314,8 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
     return;
   }
 
-  Int_t numberOfCuts = cuts.GetNCuts(); 
-  
+  Int_t numberOfCuts = cuts.GetNCuts();
+
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
   TList *MesonCutList = new TList();
@@ -245,7 +325,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
   HeaderList->Add(Header1);
   //    TObjString *Header3 = new TObjString("eta_2");
   //    HeaderList->Add(Header3);
-  
+
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts = new AliConvEventCuts*[numberOfCuts];
   ConvCutList->SetOwner(kTRUE);
@@ -262,10 +342,10 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(runLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
-        
+
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
-    
+
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetIsHeavyIon(isHeavyIon);
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
@@ -279,7 +359,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
-    
+
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
 
@@ -291,6 +371,7 @@ void AddTask_GammaConvV1_PbPb2( Int_t         trainConfig                   = 1,
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
   task->SetDoPlotVsCentrality(kTRUE);
+  task->SetDoTHnSparse(enableUseTHnSparse);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

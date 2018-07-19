@@ -8,11 +8,6 @@
 #ifndef ALIFEMTOEVENTCUTESTIMATORS_H
 #define ALIFEMTOEVENTCUTESTIMATORS_H
 
-// do I need these lines ?
-//#ifndef StMaker_H
-//#include "StMaker.h"
-//#endif
-
 #include "AliFemtoEventCut.h"
 #include "AliFemtoEventReaderESDChain.h"
 
@@ -21,9 +16,9 @@ class AliFemtoEventCutEstimators : public AliFemtoEventCut {
 public:
 
   AliFemtoEventCutEstimators();
-  AliFemtoEventCutEstimators(AliFemtoEventCutEstimators& c);
+  AliFemtoEventCutEstimators(const AliFemtoEventCutEstimators& c);
   virtual ~AliFemtoEventCutEstimators();
-  AliFemtoEventCutEstimators& operator=(AliFemtoEventCutEstimators& c);
+  AliFemtoEventCutEstimators& operator=(const AliFemtoEventCutEstimators& c);
 
   void SetMultEst1Range(const unsigned short &lo, const unsigned short &hi);
   void SetMultEst2Range(const unsigned short &lo, const unsigned short &hi);
@@ -41,7 +36,7 @@ public:
   virtual AliFemtoString Report();
   virtual bool Pass(const AliFemtoEvent* event);
 
-  AliFemtoEventCutEstimators* Clone();
+  virtual AliFemtoEventCut* Clone() const;
 
   void SetVerboseMode(bool aVerbose);
 
@@ -86,10 +81,10 @@ inline void AliFemtoEventCutEstimators::SetCentEst4Range(const float& lo, const 
 inline void AliFemtoEventCutEstimators::SetVertZPos(const float& lo, const float& hi){fVertZPos[0]=lo; fVertZPos[1]=hi;}
 inline int  AliFemtoEventCutEstimators::NEventsPassed() const {return fNEventsPassed;}
 inline int  AliFemtoEventCutEstimators::NEventsFailed() const {return fNEventsFailed;}
-inline AliFemtoEventCutEstimators* AliFemtoEventCutEstimators::Clone() { AliFemtoEventCutEstimators* c = new AliFemtoEventCutEstimators(*this); return c;}
+inline AliFemtoEventCut* AliFemtoEventCutEstimators::Clone() const { AliFemtoEventCutEstimators* c = new AliFemtoEventCutEstimators(*this); return c;}
 inline void AliFemtoEventCutEstimators::SetVerboseMode(bool aVerbose) {fVerbose = aVerbose;}
 
-inline AliFemtoEventCutEstimators::AliFemtoEventCutEstimators(AliFemtoEventCutEstimators& c) : 
+inline AliFemtoEventCutEstimators::AliFemtoEventCutEstimators(const AliFemtoEventCutEstimators& c):
   AliFemtoEventCut(c), 
   fVerbose(c.fVerbose),
   fUseMultEst1(c.fUseMultEst1), fUseMultEst2(c.fUseMultEst2), fUseMultEst3(c.fUseMultEst3), 

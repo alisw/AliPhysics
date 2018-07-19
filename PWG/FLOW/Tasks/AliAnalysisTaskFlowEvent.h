@@ -75,6 +75,9 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
 
   void          SetShuffleTracks(Bool_t b)  {fShuffleTracks=b;}
 
+  void   SetPassMCeventToCutsObject(Bool_t passMC){this->fPassMCeventToCutsObject = passMC;}
+
+
   // setters for common constants
   void SetNbinsMult( Int_t i ) { fNbinsMult = i; }
   void SetNbinsPt( Int_t i )   { fNbinsPt = i; }
@@ -132,8 +135,9 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t      fMinB;              // Minimum of eta range for subevent B
   Double_t      fMaxB;              // Maximum of eta range for subevent B
 
-  Bool_t fQAon;                       // flag to set the filling of the QA hostograms
+  Bool_t fQAon;                     // flag to set the filling of the QA hostograms
   Bool_t fLoadCandidates;           // true if reciving candidates collection
+  Bool_t fPassMCeventToCutsObject;  // defaut: true 
 
   // setters for common constants
   //histogram sizes

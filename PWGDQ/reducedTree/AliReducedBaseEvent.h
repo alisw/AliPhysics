@@ -26,7 +26,7 @@ class AliReducedBaseEvent : public TObject {
   
  public:
   AliReducedBaseEvent();
-  AliReducedBaseEvent(const Char_t* name, Int_t trackOption=kNoInit);
+  AliReducedBaseEvent(const Char_t* name, Int_t trackOption=kNoInit, Int_t track2Option=kNoInit);
   virtual ~AliReducedBaseEvent();
   
   virtual void CopyEventHeader(const AliReducedBaseEvent* other);
@@ -47,12 +47,16 @@ class AliReducedBaseEvent : public TObject {
   Int_t     CentralityQuality()               const {return fCentQuality;}
   Int_t     NTracksTotal()                    const {return fNtracks[0];}
   Int_t     NTracks()                         const {return fNtracks[1];}
+  Int_t     NTracks1()                       const {return (fTracks ? fTracks->GetEntries() : 0);}
+  Int_t     NTracks2()                       const {return (fTracks2 ? fTracks2->GetEntries() : 0);}
   Int_t     NV0CandidatesTotal()              const {return fNV0candidates[0];}
   Int_t     NV0Candidates()                   const {return fNV0candidates[1];}
   Int_t     NPairs()                   const {return fCandidates->GetEntries();}
   
-  AliReducedBaseTrack* GetTrack(Int_t i) const {return (i<fNtracks[1] ? (AliReducedBaseTrack*)fTracks->At(i) : 0x0);}
+  AliReducedBaseTrack* GetTrack(Int_t i) const {return (fTracks && i>=0 && i<fTracks->GetEntries() ? (AliReducedBaseTrack*)fTracks->At(i) : 0x0);}
+  AliReducedBaseTrack* GetTrack2(Int_t i) const {return (fTracks2 && i>=0 && i<fTracks2->GetEntries() ? (AliReducedBaseTrack*)fTracks2->At(i) : 0x0);}
   TClonesArray* GetTracks()          const {return fTracks;}
+  TClonesArray* GetTracks2()        const {return fTracks2;}
   
   AliReducedPairInfo* GetV0Pair(Int_t i)         const 
   {return (i>=0 && i<fNV0candidates[1] ? (AliReducedPairInfo*)fCandidates->At(i) : 0x0);}
@@ -66,7 +70,7 @@ class AliReducedBaseEvent : public TObject {
   virtual void ClearEvent();
   
  protected:
-  ULong64_t fEventTag;              // Event tags to be used either during analysis or to filter events
+  ULong64_t fEventTag;        // Event tags to be used either during analysis or to filter events
   Int_t     fRunNo;                 // run number
   Float_t   fVtx[3];                // global event vertex vector in cm
   Int_t     fNVtxContributors;      // global event vertex contributors
@@ -77,6 +81,9 @@ class AliReducedBaseEvent : public TObject {
     
   TClonesArray* fTracks;            //->   array containing particles
   static TClonesArray* fgTracks;    //       global tracks
+
+  TClonesArray* fTracks2;               //->   array containing additional particles
+  static TClonesArray* fgTracks2;    //       global tracks
   
   TClonesArray* fCandidates;        //->   array containing pair candidates
   static TClonesArray* fgCandidates;  // pair candidates
@@ -84,7 +91,7 @@ class AliReducedBaseEvent : public TObject {
   AliReducedBaseEvent& operator= (const AliReducedBaseEvent &c);
   AliReducedBaseEvent(const AliReducedBaseEvent &c);
 
-  ClassDef(AliReducedBaseEvent, 2);
+  ClassDef(AliReducedBaseEvent, 3);
 };
 
 #endif

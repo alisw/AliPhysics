@@ -19,7 +19,7 @@
 #include "AliVParticle.h"
 #include "AliTLorentzVector.h"
 
-#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+#include "AliEmcalContainerUtils.h"
 
 #include "AliEmcalContainer.h"
 
@@ -126,6 +126,16 @@ void AliEmcalContainer::SetClassName(const char *clname)
 }
 
 /**
+ * Retrieve the vertex from the given event. It sets fVertex to the vertex of the current event.
+ * @param[in] event Input event containing the vertex.
+ */
+void AliEmcalContainer::GetVertexFromEvent(const AliVEvent * event)
+{
+  const AliVVertex *vertex = event->GetPrimaryVertex();
+  if (vertex) vertex->GetXYZ(fVertex);
+}
+
+/**
  * Connect the container to the array with content stored inside the virtual event.
  * The object name in the event must match the name given in the constructor
  * @param event Input event containing the array with content.
@@ -137,21 +147,12 @@ void AliEmcalContainer::SetArray(const AliVEvent *event)
     fClArrayName = GetDefaultArrayName(event);
   }
 
-  if (fIsEmbedding) {
-    // this is an embedding container
-    // will ignore the provided event and use the event
-    // from the embedding helper class
-
-    const AliAnalysisTaskEmcalEmbeddingHelper* embedding = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-    if (!embedding) return;
-
-    event = embedding->GetExternalEvent();
-  }
+  // Get the right event (either the current event of the embedded event)
+  event = AliEmcalContainerUtils::GetEvent(event, fIsEmbedding);
 
   if (!event) return;
 
-  const AliVVertex *vertex = event->GetPrimaryVertex();
-  if (vertex) vertex->GetXYZ(fVertex);
+  GetVertexFromEvent(event);
 
   if (!fClArrayName.IsNull() && !fClArray) {
     fClArray = dynamic_cast<TClonesArray*>(event->FindListObject(fClArrayName));
@@ -175,6 +176,20 @@ void AliEmcalContainer::SetArray(const AliVEvent *event)
   }
 
   fLabelMap = dynamic_cast<AliNamedArrayI*>(event->FindListObject(fClArrayName + "_Map"));
+}
+
+/**
+ * Preparation for the next event.
+ * @param[in] event The event to be processed.
+ */
+void AliEmcalContainer::NextEvent(const AliVEvent * event)
+{
+  // Get the right event (either the current event of the embedded event)
+  event = AliEmcalContainerUtils::GetEvent(event, fIsEmbedding);
+
+  if (!event) return;
+
+  GetVertexFromEvent(event);
 }
 
 /**

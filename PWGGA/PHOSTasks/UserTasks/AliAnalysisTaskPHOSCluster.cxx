@@ -1,9 +1,22 @@
-//-------------------------------------------------------------------------
+////-------------------------------------------------------------------------
 ////     AnalyisTask for PHOS clusters
 ////     Runs on ESDs and AODs
 ////     Authors: Alexej Kraiker (partly based on analysis task PHOSNeutralMesons by Malte Hecker and Fabian Pliquett)
-////     Date: 11/07/2017
+////     Date:          2017-07-11
+////     Last Modified: 2017-12-06
 ////-------------------------------------------------------------------------
+
+
+//TODO list:
+//Loop over all tracks of event and associate track with near cluster (max distance = xx)
+//Save clusters associated with tracks and clusters not associated with track seperately
+//Try to estimate particle ID of track -> differ between photon, electron and positron
+
+
+
+
+
+
 
 #include "AliAnalysisTaskPHOSCluster.h"
 
@@ -160,11 +173,12 @@ void AliAnalysisTaskPHOSCluster::UserCreateOutputObjects() {
   fEventCluster ->GetYaxis()->SetTitle("# Clusters");
 
 
-  fClusterCuts = new TH1F("fClusterCuts", "N o Cluster after cuts", 4, 0., 4.);
+  fClusterCuts = new TH1F("fClusterCuts", "N o Cluster after cuts", 5, 0., 5.);
   fClusterCuts ->GetXaxis()->SetBinLabel(1, "All clusters");
   fClusterCuts ->GetXaxis()->SetBinLabel(2, "PHOS Cluster");
   fClusterCuts ->GetXaxis()->SetBinLabel(3, "Min. Cells");
   fClusterCuts ->GetXaxis()->SetBinLabel(4, "E>0");
+  fClusterCuts ->GetXaxis()->SetBinLabel(5, "Only Mod 1");
   fClusterCuts ->GetYaxis()->SetTitle("# Clusters");
 
   fEventCuts   = new TH1F("fEventCuts", "N o Events after cuts", 4, 0., 4.);
@@ -347,7 +361,7 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
     if(fCluster->IsPHOS()){ // analyse only PHOS cluster
       fClusterCuts->Fill(1.5);
 
-      if(fMinCells > fCluster->GetNCells()) continue; // remove clusters with less than 2 cells
+      if(fMinCells > fCluster->GetNCells()) continue; // remove clusters with less than fMincells (i.g. fMincells=3)
       fClusterCuts->Fill(2.5);
       if(0 ==  fCluster->E()) continue; // remove cluster with no energy (e.g. disabled by badmap)
       fClusterCuts->Fill(3.5);
@@ -361,6 +375,9 @@ void AliAnalysisTaskPHOSCluster::UserExec(Option_t *){
 		  modNrClusterPos  = relId[0];
 		  cellX = relId[2];
 		  cellZ = relId[3];
+
+		  if(1 != modNrClusterPos) continue; // remove cluster from module 2 and 3 (too many hot cells)
+      fClusterCuts->Fill(4.5);
 
 
 //		if(fRecalibrateModuleWise) { // apply recalibration of cluster energy

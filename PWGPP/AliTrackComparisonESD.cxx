@@ -274,7 +274,7 @@ void AliTrackComparisonESD::Exec(Option_t *) {
       AliESDtrack *track = fESD->GetTrack(itr);
       if(!track || !fESDCuts->AcceptTrack(track)) continue;
 
-      AliESDfriendTrack *friendTrack = fESDfriend->GetTrack(itr);
+      AliESDfriendTrack *friendTrack = (AliESDfriendTrack*)track->GetFriendTrack();
       if(!friendTrack) continue;
       //printf(" --- %d < %d || %p | %p -- %p \n", itr, fESDfriend->GetNumberOfTracks(), track, fESDfriend, friendTrack);
       ProcessTOF(track,friendTrack,vPos);

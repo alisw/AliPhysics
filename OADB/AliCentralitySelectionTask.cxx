@@ -1841,7 +1841,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     }
 
 
-    if ((fMB) && (abs(zvtx)<10))	fHOutMultCL1vsTKL->Fill(spdCorr,nTracklets);
+    if ((fMB) && (TMath::Abs(zvtx)<10))	fHOutMultCL1vsTKL->Fill(spdCorr,nTracklets);
 
     if (fCVHN)   fHOutCentV0MCVHN->Fill(fCentV0M);
     if (fCVLN)   fHOutCentV0MCVLN->Fill(fCentV0M);

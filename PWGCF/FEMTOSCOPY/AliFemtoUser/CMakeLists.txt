@@ -61,6 +61,8 @@ set(SRCS
   AliFemtoModelCorrFctnQinv.cxx
   AliFemtoModelCorrFctnTrueQ.cxx
   AliFemtoModelCorrFctnTrueQ3D.cxx
+  AliFemtoModelCorrFctnTrueQ6D.cxx
+  AliFemtoModelCorrFctnKK.cxx
   AliFemtoNSigmaFilter.cxx
   AliFemtoCutMonitorParticleEtCorr.cxx
   AliFemtoCutMonitorParticleMomRes.cxx
@@ -131,6 +133,8 @@ set(SRCS
   AliFemtoCutMonitorPairKT.cxx
   AliFemtoPairCutMInv.cxx
   AliFemtoV0PurityBgdEstimator.cxx
+  AliFemtoPairCutRadialDistanceKKdist.cxx
+  AliFemtoKKTrackCutTest.cxx # new class
   )
 
 

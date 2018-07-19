@@ -9,6 +9,7 @@ TString inputcorrelationDir = "./Input_Plots_pp/";// directory where input files
 TString inputfileroot="1D_Signal_WithEMCorr_Normal_Charg_OriginSuper_Integrated";
 TString strSystemFDtempl="none";
 TString fdsubtrmacrodir="";
+TString purityTempldir="";
 void SetFDmacroDirectory(TString macrodir){
   fdsubtrmacrodir=macrodir;
 }
@@ -24,16 +25,19 @@ void SetDirectoryInputFiles(TString inputdir){
 void SetInputFileNameRoot(TString fileinputroot){
   inputfileroot=fileinputroot;
 }
-void RunFeedown_pp_Dzero(){
-    GetEnvelopeForEachV2();
-}
 
+void RunFeedown_pp_Dzero(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
+    GetEnvelopeForEachV2(collsyst,subtrMCclos,oldnames,centbin);
+}
 void SetFDtemplateSystemString(TString str){
   strSystemFDtempl=str;
 }
+void SetPurityTemplateDir(TString purtempldite){
+  purityTempldir=purtempldite;
+}
 
 //_____________________________________________________________
-void GetEnvelopeForEachV2(){
+void GetEnvelopeForEachV2(Int_t collsyst, Bool_t subtrMCclos, Bool_t oldnames, Int_t centbin){
     
     //**********************************
     // This function loops on all the templates, creating 5 envelopes for different v2 values.
@@ -44,8 +48,6 @@ void GetEnvelopeForEachV2(){
     gROOT->LoadMacro(Form("%s/SubtractFD.C",fdsubtrmacrodir.Data()));
     SetSystemStringForTemplateFDnames(strSystemFDtempl.Data());
     TString inputcorrelation;
-
-
   
     TString outputfilename = ""; //  (not needed here)
     
@@ -84,12 +86,13 @@ void GetEnvelopeForEachV2(){
  
             //For D0 input filenames! (bins and not pt)
             Double_t Dptbin[2] = {0,0};
-             if(iDpt == 0) {Dptbin[0] = 5; Dptbin[1] = 6;}
+            if(iDpt == 0) {Dptbin[0] = 5; Dptbin[1] = 6;}
             if(iDpt == 1) {Dptbin[0] = 7; Dptbin[1] = 9;}
             if(iDpt == 2) {Dptbin[0] = 10; Dptbin[1] = 11;}
            
             // set correct paths
             inputcorrelation = Form("%s/%s%dto%d_Limits_2_4_TreshPt_%.1f_to_%.2f_Data.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
+            if(!oldnames) inputcorrelation = Form("%s/%s%dto%d_PoolInt_thr%.1fto%.1f.root",inputcorrelationDir.Data(),inputfileroot.Data(),(int)Dptbin[0], (int)Dptbin[1], hadpt[ihadpt],hadptMaxInput[ihadpt]); // I guess all your input data files have
             cout << " inputcorrelation = " << inputcorrelation.Data() << endl;
             
             
@@ -97,9 +100,25 @@ void GetEnvelopeForEachV2(){
             outputfilename = "./Final_Plots_pp/Singlev2Envelope/pp_FDsubDzero";
             outputfilename += Form("Pt%dto%dassoc%1.1fto%1.1f",(int)Dpt[iDpt], (int)Dpt[iDpt+1], hadpt[ihadpt],hadptMax[ihadpt]);
                         
-      
+            TString binDIn = -1, binDOut = -1;
+            TString binhIn = -1, binhOut = -1;
+            if(iDpt == 0) {binDIn = "3"; binDOut = "5";}
+            if(iDpt == 1) {binDIn = "5"; binDOut = "8";}
+            if(iDpt == 2) {binDIn = "8"; binDOut = "16";}
+            if(iDpt == 3) {binDIn = "16"; binDOut = "24";} 
+            if(ihadpt == 0) {binhIn = "03"; binhOut = "99";}
+            if(ihadpt == 1) {binhIn = "03"; binhOut = "1";}
+            if(ihadpt == 2) {binhIn = "1"; binhOut = "99";}
+            if(ihadpt == 3) {binhIn = "2"; binhOut = "3";} //here I put 2-3 since this is what I have for templates (we don't use this bin) - it shall be 2-99
+            if(ihadpt == 4) {binhIn = "3"; binhOut = "99";} 
+            if(ihadpt == 5) {binhIn = "1"; binhOut = "2";}
+            if(ihadpt == 6) {binhIn = "2"; binhOut = "3";}
+            TString filepurity = Form("%s/DeltaPhi_%sto%s_%sto%s_RatioPrimOverAll.root",purityTempldir.Data(),binDIn.Data(),binDOut.Data(),binhIn.Data(),binhOut.Data());
+            cout << "Purity option: " << purityOpt << " - FILE INPUT FOR PURITY TO BE LOADED: " << filepurity << endl;
+
             // first one - no v2
-            SubtractFDexploitingClassDzero(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode);
+            if(!purityOpt) SubtractFDexploitingClassDzero(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purities[ihadpt],1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos,centbin);
+            else SubtractFDexploitingClassDzero(Dpt[iDpt],Dpt[iDpt+1],hadpt[ihadpt],hadptMax[ihadpt],outputfilename.Data(),2,purityOpt,1,inputcorrelation.Data(),inputfc.Data(),templatedir.Data(),collsyst,0,0,systmode,oldnames,subtrMCclos,centbin,filepurity);
 
             if(collsyst) cout << "Check: This is not pp" << endl; // if pp, stop here
             

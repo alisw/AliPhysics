@@ -79,6 +79,7 @@ using std::vector;
 AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   AliAnalysisTaskSE(taskname.Data()),
   fESDevent(0),
+  fEventCuts(),
   fESDtrackCuts(0x0),
   fESDtrackCutsV0(0x0),
   fPrimaryVertex(0x0),
@@ -87,6 +88,7 @@ AliAnalysisTaskHypertriton3::AliAnalysisTaskHypertriton3(TString taskname):
   fVtx1(0x0),
   fVtx2(0x0),
   fTrkArray(0x0),
+  fQAplots(kFALSE),
   fMC(kFALSE),
   fFillTree(kFALSE),
   fRun1PbPb(kTRUE),
@@ -510,11 +512,7 @@ Bool_t AliAnalysisTaskHypertriton3::PassCentralitySelection(){
   if(fRun2PbPb){
     if(fESDevent->GetEventSpecie() == fEvtSpecie){ // Event Specie == 4 == PbPb
       AliWarning("fRun2PbPb: Centrality task");
-      AliMultSelection *centr=(AliMultSelection*)fESDevent->FindListObject("MultSelection");
-      if(!centr){
-        AliWarning("AliMultSelection object not found!");
-      }
-      fCentralityPercentile = centr->GetMultiplicityPercentile("V0M",fEvtEmbedSelection);
+      fCentralityPercentile = fEventCuts.GetCentrality(0);
     }
   }
 
@@ -997,9 +995,9 @@ if(fFillTree){
   if(dcapi[1]<0)fTDCAZpivtx = TMath::Floor(dcapi[1]/0.001);
   else fTDCAZpivtx = TMath::Ceil(dcapi[1]/0.001);
 
-  fTAngle_dp = TMath::Ceil(angle_dp);
-  fTAngle_dpi = TMath::Ceil(angle_dpi);
-  fTAngle_ppi = TMath::Ceil(angle_ppi);
+  fTAngle_dp = TMath::Ceil(angle_dp/0.005);
+  fTAngle_dpi = TMath::Ceil(angle_dpi/0.005);
+  fTAngle_ppi = TMath::Ceil(angle_ppi/0.005);
 
   fTRapidity = TMath::Ceil(TMath::Abs(rapidity)/0.1);
   fTDecayLengthProper = ctau;
@@ -1066,6 +1064,8 @@ void AliAnalysisTaskHypertriton3::UserCreateOutputObjects(){
   fOutput = new TList();
   fOutput->SetOwner();
   fOutput->SetName("clistHypertriton");
+
+  if(fQAplots) fEventCuts.AddQAplotsToList(fOutput);
 
   fHistCount = new TH1F("fHistCount","Counter histogram",4,-0.5,3.5);
   fHistCount->GetXaxis()->SetBinLabel(1,"Reco Event");
@@ -1569,6 +1569,13 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
   fHistCount->Fill(0); // number of reco events opened
 
+  if(fRun2PbPb){
+    if(!fEventCuts.AcceptEvent(fESDevent)){
+      PostData(1,fOutput);
+      return;
+    }
+  }
+
  //==========MC info==========
   AliStack *stack=0x0;
   AliMCEvent *mcEvent = 0x0;
@@ -1596,11 +1603,14 @@ void AliAnalysisTaskHypertriton3::UserExec(Option_t *){
 
 
   //==========Trigger class==========
-  UInt_t maskPhysSel = handl->IsEventSelected();
-  if(!PassTriggerSelection(maskPhysSel)){
-    PostData(1,fOutput);
-    return;
+  if(fRun1PbPb){
+    UInt_t maskPhysSel = handl->IsEventSelected();
+    if(!PassTriggerSelection(maskPhysSel)){
+      PostData(1,fOutput);
+      return;
+    }
   }
+
   fHistCount->Fill(1); // number of events passing the Trigger Selection
 
   //==========Centrality==========

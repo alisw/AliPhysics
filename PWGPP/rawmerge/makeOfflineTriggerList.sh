@@ -210,7 +210,7 @@ ProcessfilterLog(){
     # example usage ( source $ALICE_PHYSICS/PWGPP/rawmerge/makeOfflineTriggerList.sh; ProcessfilterLog /lustre/nyx/alice/users/marsland/alice-tpc-notes/JIRA/PWGPP-126/filtering/2016/LHC16t/ )
     # 
     logPath=$1;  
-    source $ALICE_PHYSICS/PWGPP/scripts/utilities.sh;     
+    source $ALICE_ROOT/libexec/utilities.sh;
     egrep KeyValue $logPath/*/lists/makeOfflineTriggerList.log |sed s_":I-KeyValue."_"\t"_ | gawk '{print $1"\t"$2"\t"$3}' >  tmpsummary.log
     echo year/d:period/C:run/d:name/C:key/C:value/I >log.tree
     cat tmpsummary.log | \
@@ -235,7 +235,7 @@ gitRawListFromAlien(){
     #   info written to std out    - in example above redirected to the rawSummary.log
     #   
     alienPath=$1   
-    source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh
+    source $ALICE_ROOT/libexec/alilog4bash.sh
     
     # 1.) cache triggered lists locall
     alilog "gitRawList. Step0. DownloadList.Begin"

@@ -29,6 +29,8 @@
 #include <AliVParticle.h>
 #include <AliLog.h>
 
+#include "AliAnalysisManager.h"
+#include <AliVEventHandler.h>
 #include "AliTLorentzVector.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
@@ -51,41 +53,40 @@ ClassImp(AliAnalysisTaskEmcalDijetImbalance);
  */
 AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() : 
   AliAnalysisTaskEmcalJet(),
-  fHistManager(),
-  fEventCuts(0),
-  fEventCutList(0),
-  fUseManualEventCuts(kFALSE),
-  fUseAliEventCuts(kTRUE),
   fDeltaPhiMin(0),
   fMinTrigJetPt(0),
   fMinAssJetPt(0),
   fDijetLeadingHadronPt(0),
-  fMaxPt(200),
-  fNCentHistBins(0),
-  fCentHistBins(0),
-  fNPtHistBins(0),
-  fPtHistBins(0),
-  fPlotJetHistograms(kFALSE),
+  fMatchingJetR(0.2),
+  fTrackConstituentThreshold(0),
+  fClusterConstituentThreshold(0),
+  fNEtaBins(40),
+  fNPhiBins(200),
+  fBackgroundScalingWeights(0),
+  fGapJetScalingWeights(0),
   fPlotDijetCandHistograms(kFALSE),
   fPlotDijetImbalanceHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoMomentumBalance(kFALSE),
   fDoGeometricalMatching(kFALSE),
-  fMatchingJetR(0.2),
-  fTrackConstituentThreshold(0),
-  fClusterConstituentThreshold(0),
-  fMBUpscaleFactor(1.),
-  fNEtaBins(40),
-  fNPhiBins(200),
   fLoadBackgroundScalingWeights(kTRUE),
-  fBackgroundScalingWeights(0),
-  fGapJetScalingWeights(0),
   fComputeMBDownscaling(kFALSE),
   fDoTriggerSimulation(kFALSE),
+  fMaxPt(200),
+  fNCentHistBins(0),
+  fCentHistBins(0),
+  fNPtHistBins(0),
+  fPtHistBins(0),
+  fUseAliEventCuts(kTRUE),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
+  fMBUpscaleFactor(1.),
   fMedianEMCal(0),
   fMedianDCal(0),
   fkEMCEJE(kFALSE),
-  fEmbeddingQA()
+  fEmbeddingQA(),
+  fHistManager()
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -99,41 +100,40 @@ AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance() :
  */
 AliAnalysisTaskEmcalDijetImbalance::AliAnalysisTaskEmcalDijetImbalance(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fHistManager(name),
-  fEventCuts(0),
-  fEventCutList(0),
-  fUseManualEventCuts(kFALSE),
-  fUseAliEventCuts(kTRUE),
   fDeltaPhiMin(0),
   fMinTrigJetPt(0),
   fMinAssJetPt(0),
   fDijetLeadingHadronPt(0),
-  fMaxPt(200),
-  fNCentHistBins(0),
-  fCentHistBins(0),
-  fNPtHistBins(0),
-  fPtHistBins(0),
-  fPlotJetHistograms(kFALSE),
+  fMatchingJetR(0.2),
+  fTrackConstituentThreshold(0),
+  fClusterConstituentThreshold(0),
+  fNEtaBins(40),
+  fNPhiBins(200),
+  fBackgroundScalingWeights(0),
+  fGapJetScalingWeights(0),
   fPlotDijetCandHistograms(kFALSE),
   fPlotDijetImbalanceHistograms(kFALSE),
   fComputeBackground(kFALSE),
   fDoMomentumBalance(kFALSE),
   fDoGeometricalMatching(kFALSE),
-  fMatchingJetR(0.2),
-  fTrackConstituentThreshold(0),
-  fClusterConstituentThreshold(0),
-  fMBUpscaleFactor(1.),
-  fNEtaBins(40),
-  fNPhiBins(200),
   fLoadBackgroundScalingWeights(kTRUE),
-  fBackgroundScalingWeights(0),
-  fGapJetScalingWeights(0),
   fComputeMBDownscaling(kFALSE),
   fDoTriggerSimulation(kFALSE),
+  fMaxPt(200),
+  fNCentHistBins(0),
+  fCentHistBins(0),
+  fNPtHistBins(0),
+  fPtHistBins(0),
+  fUseAliEventCuts(kTRUE),
+  fEventCuts(0),
+  fEventCutList(0),
+  fUseManualEventCuts(kFALSE),
+  fMBUpscaleFactor(1.),
   fMedianEMCal(0),
   fMedianDCal(0),
   fkEMCEJE(kFALSE),
-  fEmbeddingQA()
+  fEmbeddingQA(),
+  fHistManager(name)
 {
   GenerateHistoBins();
   Dijet_t fDijet;
@@ -179,9 +179,6 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
 {
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  if (fPlotJetHistograms) {
-    AllocateJetHistograms();
-  }
   if (fComputeBackground) {
     AllocateBackgroundHistograms();
   }
@@ -242,107 +239,6 @@ void AliAnalysisTaskEmcalDijetImbalance::UserCreateOutputObjects()
 }
 
 /*
- * This function allocates the histograms for single jets.
- * A set of histograms is allocated per each jet container.
- */
-void AliAnalysisTaskEmcalDijetImbalance::AllocateJetHistograms()
-{
-  TString histname;
-  TString title;
-  
-  Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
-  
-  AliJetContainer* jets = 0;
-  TIter nextJetColl(&fJetCollArray);
-  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
-    
-    // Jet rejection reason
-    histname = TString::Format("%s/JetHistograms/hJetRejectionReason", jets->GetArrayName().Data());
-    title = histname + ";Rejection reason;#it{p}_{T,jet} (GeV/#it{c});counts";
-    TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 50, 0, fMaxPt);
-    SetRejectionReasonLabels(hist->GetXaxis());
-    
-    // Rho vs. Centrality
-    if (!jets->GetRhoName().IsNull()) {
-      histname = TString::Format("%s/JetHistograms/hRhoVsCent", jets->GetArrayName().Data());
-      title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
-    }
-    
-    // (Centrality, pT, calo type)
-    histname = TString::Format("%s/JetHistograms/hCentVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});type";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, 3, -0.5, 2.5);
-    
-    // (Centrality, eta, phi, pT, NEF, calo type)
-    histname = TString::Format("%s/JetHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF;type";
-    Int_t nbins1[6]  = {20, fNEtaBins, fNPhiBins, nPtBins, 50, 3};
-    Double_t min1[6] = {0, -0.5,1., 0, 0, -0.5};
-    Double_t max1[6] = {100, 0.5,6., fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 6, nbins1, min1, max1);
-    
-    // (Centrality, pT upscaled, calo type)
-    histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});type";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, 3, -0.5, 2.5, "s");
-    
-    // pT-leading vs. pT
-    histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c})";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, 0, fMaxPt);
-    
-    // A vs. pT
-    histname = TString::Format("%s/JetHistograms/hAreaVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
-    
-    // (Centrality, pT, z-leading (charged), calo type)
-    histname = TString::Format("%s/JetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading};type";
-    Int_t nbins2[4]  = {20, nPtBins, 50, 3};
-    Double_t min2[4] = {0, 0, 0, -0.5};
-    Double_t max2[4] = {100, fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins2, min2, max2);
-    
-    // (Centrality, pT, z (charged), calo type)
-    histname = TString::Format("%s/JetHistograms/hZVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z};type";
-    Int_t nbins3[4]  = {20, nPtBins, 50, 3};
-    Double_t min3[4] = {0, 0, 0, -0.5};
-    Double_t max3[4] = {100, fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins3, min3, max3);
-
-    // (Centrality, pT, Nconst, calo type)
-    histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents;type";
-    Int_t nbins4[4]  = {20, nPtBins, 50, 3};
-    Double_t min4[4] = {0, 0, 0, -0.5};
-    Double_t max4[4] = {100, fMaxPt, fMaxPt, 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins4, min4, max4);
-    
-    // (Median patch energy, calo type, jet pT, centrality)
-    if (fDoTriggerSimulation) {
-      histname = TString::Format("%s/JetHistograms/hMedPatchJet", jets->GetArrayName().Data());
-      title = histname + ";#it{E}_{patch,med};type;#it{p}_{T}^{corr} (GeV/#it{c});Centrality (%)";
-      Int_t nbins5[4]  = {100, 2, nPtBins, 50};
-      Double_t min5[4] = {0,-0.5, 0, 0};
-      Double_t max5[4] = {50,1.5, fMaxPt, 100};
-      fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins5, min5, max5);
-    }
-    
-  }
-  
-  // MB downscale factor histogram
-  if (fComputeMBDownscaling) {
-    histname = "Trigger/hMBDownscaleFactor";
-    title = histname + ";Downscale factor;counts";
-    TH1* hist = fHistManager.CreateTH1(histname.Data(), title.Data(), 200, 0, 200);
-  }
-  
-}
-
-/*
  * This function allocates background subtraction histograms, if enabled.
  * A set of histograms is allocated per each jet container.
  */
@@ -350,8 +246,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateBackgroundHistograms()
 {
   TString histname;
   TString title;
-  
-  Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
   
   AliJetContainer* jets = 0;
   TIter nextJetColl(&fJetCollArray);
@@ -746,7 +640,7 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateGeometricalMatchingHistograms()
   TString title;
   histname = "GeometricalMatchingEfficiency";
   title = histname + ";isMatched;counts";
-  TH1* hist = fHistManager.CreateTH1(histname.Data(), title.Data(), 2, -0.5, 1.5);
+  fHistManager.CreateTH1(histname.Data(), title.Data(), 2, -0.5, 1.5);
 }
 
 /*
@@ -757,30 +651,9 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateTriggerSimHistograms()
 {
   TString histname;
   TString title;
-  Int_t nPtBins = TMath::CeilNint(fMaxPt/2);
   
   //----------------------------------------------
   // Trigger patch histograms
-  
-  // patch eta vs. phi
-  histname = "TriggerSimHistograms/hEtaVsPhi";
-  title = histname + ";#eta_{patch} (rad);#phi_{patch} (rad)";
-  fHistManager.CreateTH2(histname.Data(), title.Data(), 140, -0.7, 0.7, 500, 1., 6.);
-  
-  // N patches
-  histname = "TriggerSimHistograms/hNPatches";
-  title = histname + ";#it{N}_{patches};type";
-  fHistManager.CreateTH2(histname.Data(), title.Data(), 200, 0, 200, 2, -0.5, 1.5);
-  
-  // patch E vs. centrality
-  histname = "TriggerSimHistograms/hPatchE";
-  title = histname + ";Centrality (%);#it{E}_{patch} (GeV)";
-  fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, nPtBins, 0, fMaxPt);
-  
-  // patch median vs. Centrality
-  histname = "TriggerSimHistograms/hPatchMedianE";
-  title = histname + ";Centrality (%);#it{E}_{patch,med} (GeV);type";
-  fHistManager.CreateTH3(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 50, 2, -0.5, 1.5);
   
   // Median patch energy vs. centrality, for dijets
   histname = "TriggerSimHistograms/hMedPatchDijet";
@@ -789,74 +662,6 @@ void AliAnalysisTaskEmcalDijetImbalance::AllocateTriggerSimHistograms()
   Double_t minD[4] = {0, 0, 0, -0.5};
   Double_t maxD[4] = {100, 200, 50, 1.5};
   fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbinsD, minD, maxD);
-  
-  //----------------------------------------------
-  // Jet histograms for "triggered" events
-  AliJetContainer* jets = 0;
-  TIter nextJetColl(&fJetCollArray);
-  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
-    
-    // Jet rejection reason
-    histname = TString::Format("%s/TriggerSimHistograms/hJetRejectionReason", jets->GetArrayName().Data());
-    title = histname + ";Rejection reason;#it{p}_{T,jet} (GeV/#it{c});counts";
-    TH2* hist = fHistManager.CreateTH2(histname.Data(), title.Data(), 32, 0, 32, 50, 0, fMaxPt);
-    SetRejectionReasonLabels(hist->GetXaxis());
-    
-    // Rho vs. Centrality
-    if (!jets->GetRhoName().IsNull()) {
-      histname = TString::Format("%s/TriggerSimHistograms/hRhoVsCent", jets->GetArrayName().Data());
-      title = histname + ";Centrality (%);#rho (GeV/#it{c});counts";
-      fHistManager.CreateTH2(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 500);
-    }
-    
-    // (Centrality, pT, calo type)
-    histname = TString::Format("%s/TriggerSimHistograms/hCentVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});type";
-    fHistManager.CreateTH3(histname.Data(), title.Data(), 20, 0, 100, nPtBins, 0, fMaxPt, 3, -0.5, 2.5);
-    
-    // (Centrality, eta, phi, pT, NEF, calo type)
-    histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#eta_{jet} (rad);#phi_{jet} (rad);#it{p}_{T}^{corr} (GeV/#it{c});NEF;type";
-    Int_t nbins1[6]  = {20, fNEtaBins, fNPhiBins, nPtBins, 50, 3};
-    Double_t min1[6] = {0, -0.5,1., 0, 0, -0.5};
-    Double_t max1[6] = {100, 0.5,6., fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 6, nbins1, min1, max1);
-    
-    // pT-leading vs. pT
-    histname = TString::Format("%s/TriggerSimHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{p}_{T,particle}^{leading} (GeV/#it{c})";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, nPtBins, 0, fMaxPt);
-    
-    // A vs. pT
-    histname = TString::Format("%s/TriggerSimHistograms/hAreaVsPt", jets->GetArrayName().Data());
-    title = histname + ";#it{p}_{T}^{corr} (GeV/#it{c});#it{A}_{jet}";
-    fHistManager.CreateTH2(histname.Data(), title.Data(), nPtBins, 0, fMaxPt, fMaxPt/3, 0, 0.5);
-    
-    // (Centrality, pT, z-leading (charged), calo type)
-    histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z}_{leading};type";
-    Int_t nbins2[4]  = {20, nPtBins, 50, 3};
-    Double_t min2[4] = {0, 0, 0, -0.5};
-    Double_t max2[4] = {100, fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins2, min2, max2);
-    
-    // z (charged) vs. pT
-    histname = TString::Format("%s/TriggerSimHistograms/hZVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});#it{z};type";
-    Int_t nbins3[4]  = {20, nPtBins, 50, 3};
-    Double_t min3[4] = {0, 0, 0, -0.5};
-    Double_t max3[4] = {100, fMaxPt, 1., 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins3, min3, max3);
-
-    // (Centrality, pT, Nconst, calo type)
-    histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPt", jets->GetArrayName().Data());
-    title = histname + ";Centrality (%);#it{p}_{T}^{corr} (GeV/#it{c});No. of constituents;type";
-    Int_t nbins4[4]  = {20, nPtBins, 50, 3};
-    Double_t min4[4] = {0, 0, 0, -0.5};
-    Double_t max4[4] = {100, fMaxPt, fMaxPt, 2.5};
-    fHistManager.CreateTHnSparse(histname.Data(), title.Data(), 4, nbins4, min4, max4);
-    
-  }
   
 }
 
@@ -957,10 +762,10 @@ void AliAnalysisTaskEmcalDijetImbalance::RunChanged(Int_t run){
   
   // Get the downscaling factors for MB triggers (to be used to calculate trigger efficiency)
   
-  if (fPlotJetHistograms && fComputeMBDownscaling) {
+  if (fComputeMBDownscaling) {
   
     // Get instance of the downscale factor helper class
-    AliEmcalDownscaleFactorsOCDB *downscaleOCDB = AliEmcalDownscaleFactorsOCDB::Instance();
+    PWG::EMCAL::AliEmcalDownscaleFactorsOCDB *downscaleOCDB = PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance();
     downscaleOCDB->SetRun(InputEvent()->GetRunNumber());
     
     // There are two possible min bias triggers for LHC15o
@@ -980,9 +785,6 @@ void AliAnalysisTaskEmcalDijetImbalance::RunChanged(Int_t run){
     
     // Store the inverse of the downscale factor, used later to weight the pT spectrum
     fMBUpscaleFactor = 1/downscalefactor;
-    
-    TString histname = "Trigger/hMBDownscaleFactor";
-    fHistManager.FillTH1(histname.Data(), fMBUpscaleFactor);
     
   }
   
@@ -1204,7 +1006,8 @@ void AliAnalysisTaskEmcalDijetImbalance::DoGeometricalMatching()
 }
 
 /**
- * Do a simple trigger simulation, mimicking the median-subtraction method using cell amplitudes.
+ * Do a simple trigger simulation, mimicking the median-subtraction method using cell amplitudes, in order to examine 
+ * whether there is a bias in the patch median for dijets.
  */
 void AliAnalysisTaskEmcalDijetImbalance::DoTriggerSimulation()
 {
@@ -1233,12 +1036,6 @@ void AliAnalysisTaskEmcalDijetImbalance::DoTriggerSimulation()
     if (recpatch) {
       
       if(!recpatch->IsJetHighSimple()) continue;
-      
-      histname = "TriggerSimHistograms/hEtaVsPhi";
-      fHistManager.FillTH2(histname.Data(), recpatch->GetEtaGeo(), recpatch->GetPhiGeo());
-      
-      histname = "TriggerSimHistograms/hPatchE";
-      fHistManager.FillTH2(histname.Data(), fCent, recpatch->GetPatchE());
 
       if (recpatch->IsEMCal()) {
         vecEMCal.push_back(recpatch->GetPatchE());
@@ -1255,14 +1052,6 @@ void AliAnalysisTaskEmcalDijetImbalance::DoTriggerSimulation()
   fMedianEMCal = TMath::Median(nBkgPatchesEMCal, &vecEMCal[0]); // point to array used internally by vector
   fMedianDCal = TMath::Median(nBkgPatchesDCal, &vecDCal[0]);
   
-  histname = "TriggerSimHistograms/hPatchMedianE";
-  fHistManager.FillTH3(histname.Data(), fCent, fMedianEMCal, kEMCal);
-  fHistManager.FillTH3(histname.Data(), fCent, fMedianDCal, kDCal);
-  
-  histname = "TriggerSimHistograms/hNPatches";
-  fHistManager.FillTH2(histname.Data(), nBkgPatchesEMCal, kEMCal);
-  fHistManager.FillTH2(histname.Data(), nBkgPatchesDCal, kDCal);
-  
   // Median patch energy vs. pT for dijets
   if (fDijet.isAccepted) {
     histname = "TriggerSimHistograms/hMedPatchDijet";
@@ -1270,34 +1059,6 @@ void AliAnalysisTaskEmcalDijetImbalance::DoTriggerSimulation()
     fHistManager.FillTHnSparse(histname, x);
     Double_t y[4] = {fCent, fDijet.trigJetPt, fMedianDCal, kDCal};
     fHistManager.FillTHnSparse(histname, y);
-  }
-
-  // Then compute background subtracted patches, by subtracting from each patch the median patch E from the opposite hemisphere
-  // If a patch is above threshold, the event is "triggered"
-  Bool_t fkEMCEJE = kFALSE;
-  Double_t threshold = 20;
-  for(auto p : *fTriggerPatchInfo){
-    AliEMCALTriggerPatchInfo *recpatch = static_cast<AliEMCALTriggerPatchInfo *>(p);
-    if (recpatch) {
-      
-      if(!recpatch->IsJetHighSimple()) continue;
-      
-      if (recpatch->IsEMCal()) {
-        if ((recpatch->GetPatchE() - fMedianDCal) > threshold) {
-          fkEMCEJE = kTRUE;
-          break;
-        }
-      } else {
-        if ((recpatch->GetPatchE() - fMedianEMCal) > threshold) {
-          fkEMCEJE = kTRUE;
-          break;
-        }
-      }
-    }
-  }
-  
-  if (fkEMCEJE) {
-    FillTriggerSimHistograms();
   }
   
 }
@@ -1338,8 +1099,8 @@ void AliAnalysisTaskEmcalDijetImbalance::FindMatchingDijet(AliJetContainer* jetC
     AliEmcalJet* trigJet = matchingTrigJet;
     AliEmcalJet* assJet = matchingAssJet;
     if ( GetJetPt(jetCont, matchingTrigJet) < GetJetPt(jetCont, matchingAssJet) ) {
-      AliEmcalJet* trigJet = matchingAssJet;
-      AliEmcalJet* assJet = matchingTrigJet;
+      trigJet = matchingAssJet;
+      assJet = matchingTrigJet;
     }
     
     // Fill the dijet struct
@@ -1376,18 +1137,18 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground()
   // Define the acceptance boundaries for the TPC and EMCal/DCal/PHOS
   Double_t etaTPC = 0.9;
   Double_t etaEMCal = 0.7;
-  Double_t etaMinDCal = 0.22;
-  Double_t etaMaxPHOS = 0.13;
+  //Double_t etaMinDCal = 0.22;
+  //Double_t etaMaxPHOS = 0.13;
   Double_t phiMinEMCal = fGeom->GetArm1PhiMin() * TMath::DegToRad(); // 80
   Double_t phiMaxEMCal = fGeom->GetEMCALPhiMax() * TMath::DegToRad(); // ~188
-  Double_t phiMinDCal = fGeom->GetDCALPhiMin() * TMath::DegToRad(); // 260
-  Double_t phiMaxDCal = fGeom->GetDCALPhiMax() * TMath::DegToRad(); // ~327 (1/3 SMs start at 320)
-  Double_t phiMinPHOS = 250 * TMath::DegToRad();
-  Double_t phiMaxPHOS = 320 * TMath::DegToRad();
+  //Double_t phiMinDCal = fGeom->GetDCALPhiMin() * TMath::DegToRad(); // 260
+  //Double_t phiMaxDCal = fGeom->GetDCALPhiMax() * TMath::DegToRad(); // ~327 (1/3 SMs start at 320)
+  //Double_t phiMinPHOS = 250 * TMath::DegToRad();
+  //Double_t phiMaxPHOS = 320 * TMath::DegToRad();
 
   Double_t accTPC = 2 * etaTPC * 2 * TMath::Pi();
   Double_t accEMCal = 2 * etaEMCal * (phiMaxEMCal - phiMinEMCal);
-  Double_t accDCalRegion = 2 * etaEMCal * (phiMaxDCal - phiMinDCal);
+  //Double_t accDCalRegion = 2 * etaEMCal * (phiMaxDCal - phiMinDCal);
   
   // Loop over jet containers
   AliJetContainer* jetCont = 0;
@@ -1401,8 +1162,6 @@ void AliAnalysisTaskEmcalDijetImbalance::ComputeBackground()
     Double_t etaEMCalfid = etaEMCal - jetR;
     Double_t phiMinEMCalfid = phiMinEMCal + jetR;
     Double_t phiMaxEMCalfid = phiMaxEMCal - jetR;
-    Double_t phiMinDCalRegionfid = phiMinDCal + jetR;
-    Double_t phiMaxDCalRegionfid = phiMaxDCal - jetR;
     
     // Generate EMCal random cone eta-phi
     Double_t etaEMCalRC = r->Uniform(-etaEMCalfid, etaEMCalfid);
@@ -1668,191 +1427,12 @@ Double_t AliAnalysisTaskEmcalDijetImbalance::GetJetType(AliEmcalJet* jet)
  */
 Bool_t AliAnalysisTaskEmcalDijetImbalance::FillHistograms()
 {
-  if (fPlotJetHistograms) {
-    FillJetHistograms();
-  }
+
   if (fComputeBackground) {
     ComputeBackground();
   }
   
   return kTRUE;
-}
-
-/**
- * This function performs a loop over the reconstructed jets
- * in the current event and fills the relevant histograms.
- */
-void AliAnalysisTaskEmcalDijetImbalance::FillJetHistograms()
-{
-  TString histname;
-  AliJetContainer* jets = 0;
-  TIter nextJetColl(&fJetCollArray);
-  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
-    TString jetContName = jets->GetName();
-    if (jetContName.Contains("HardCore")) continue;
-    Double_t rhoVal = 0;
-    if (jets->GetRhoParameter()) {
-      rhoVal = jets->GetRhoVal();
-      histname = TString::Format("%s/JetHistograms/hRhoVsCent", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), fCent, rhoVal);
-    }
-    
-    for (auto jet : jets->all()) {
-      
-      Float_t ptLeading = jets->GetLeadingHadronPt(jet);
-      Float_t corrPt = GetJetPt(jets, jet);
-      
-      // A vs. pT (fill before area cut)
-      histname = TString::Format("%s/JetHistograms/hAreaVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, jet->Area());
-      
-      
-      // Rejection reason
-      UInt_t rejectionReason = 0;
-      if (!jets->AcceptJet(jet, rejectionReason)) {
-        histname = TString::Format("%s/JetHistograms/hJetRejectionReason", jets->GetArrayName().Data());
-        fHistManager.FillTH2(histname.Data(), jets->GetRejectionReasonBitPosition(rejectionReason), jet->Pt());
-        continue;
-      }
-      
-      // compute jet acceptance type
-      Double_t type = GetJetType(jet);
-
-      // (Centrality, pT, calo type)
-      histname = TString::Format("%s/JetHistograms/hCentVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH3(histname.Data(), fCent, corrPt, type);
-      
-      // (Centrality, eta, phi, pT, NEF, calo type)
-      histname = TString::Format("%s/JetHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-      Double_t x[6] = {fCent, jet->Eta(), jet->Phi_0_2pi(), corrPt, jet->NEF(), type};
-      fHistManager.FillTHnSparse(histname, x);
-      
-      // (Centrality, pT upscaled, calo type)
-      histname = TString::Format("%s/JetHistograms/hPtUpscaledMB", jets->GetArrayName().Data());
-      fHistManager.FillTH3(histname.Data(), fCent, corrPt, type, fMBUpscaleFactor);
-      
-      // pT-leading vs. pT
-      histname = TString::Format("%s/JetHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, ptLeading);
-      
-      // (Centrality, pT, z-leading (charged), calo type)
-      TLorentzVector leadPart;
-      jets->GetLeadingHadronMomentum(leadPart, jet);
-      Double_t z = GetParallelFraction(leadPart.Vect(), jet);
-      if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
-      histname = TString::Format("%s/JetHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-      Double_t y[4] = {fCent, corrPt, z, type};
-      fHistManager.FillTHnSparse(histname, y);
-      
-      // (Centrality, pT, z (charged), calo type)
-      histname = TString::Format("%s/JetHistograms/hZVsPt", jets->GetArrayName().Data());
-      AliVTrack* track;
-      for (Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
-        track = static_cast<AliVTrack*>(jet->Track(i));
-        z = track->Pt() / TMath::Abs(corrPt);
-        Double_t y2[4] = {fCent, corrPt, z, type};
-        fHistManager.FillTHnSparse(histname, y2);
-      }
-      
-      // (Centrality, pT, Nconst, calo type)
-      histname = TString::Format("%s/JetHistograms/hNConstVsPt", jets->GetArrayName().Data());
-      Double_t a[4] = {fCent, corrPt, 1.*jet->GetNumberOfConstituents(), type};
-      fHistManager.FillTHnSparse(histname, a);
-      
-      // (Median patch energy, calo type, jet pT, centrality)
-      if (fDoTriggerSimulation) {
-        histname = TString::Format("%s/JetHistograms/hMedPatchJet", jets->GetArrayName().Data());
-        Double_t x[4] = {fMedianEMCal, kEMCal, corrPt, fCent};
-        fHistManager.FillTHnSparse(histname, x);
-        Double_t y[4] = {fMedianDCal, kDCal, corrPt, fCent};
-        fHistManager.FillTHnSparse(histname, y);
-      }
-      
-    } //jet loop
-    
-  }
-}
-
-/**
- * This function performs a loop over the reconstructed jets, when the "simulated" trigger has been fired.
- * in the current event and fills the relevant histograms.
- */
-void AliAnalysisTaskEmcalDijetImbalance::FillTriggerSimHistograms()
-{
-  TString histname;
-  AliJetContainer* jets = 0;
-  TIter nextJetColl(&fJetCollArray);
-  while ((jets = static_cast<AliJetContainer*>(nextJetColl()))) {
-    TString jetContName = jets->GetName();
-    if (jetContName.Contains("HardCore")) continue;
-    Double_t rhoVal = 0;
-    if (jets->GetRhoParameter()) {
-      rhoVal = jets->GetRhoVal();
-      histname = TString::Format("%s/TriggerSimHistograms/hRhoVsCent", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), fCent, rhoVal);
-    }
-    
-    for (auto jet : jets->all()) {
-      
-      Float_t ptLeading = jets->GetLeadingHadronPt(jet);
-      Float_t corrPt = GetJetPt(jets, jet);
-      
-      // A vs. pT (fill before area cut)
-      histname = TString::Format("%s/TriggerSimHistograms/hAreaVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, jet->Area());
-      
-      
-      // Rejection reason
-      UInt_t rejectionReason = 0;
-      if (!jets->AcceptJet(jet, rejectionReason)) {
-        histname = TString::Format("%s/TriggerSimHistograms/hJetRejectionReason", jets->GetArrayName().Data());
-        fHistManager.FillTH2(histname.Data(), jets->GetRejectionReasonBitPosition(rejectionReason), jet->Pt());
-        continue;
-      }
-      
-      // compute jet acceptance type
-      Double_t type = GetJetType(jet);
-      
-      // Centrality vs. pT
-      histname = TString::Format("%s/TriggerSimHistograms/hCentVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH3(histname.Data(), fCent, corrPt, type);
-      
-      // (Centrality, eta, phi, pT, NEF, calo type)
-      histname = TString::Format("%s/TriggerSimHistograms/hNEFVsPtVsEtaVsPhi", jets->GetArrayName().Data());
-      Double_t x[6] = {fCent, jet->Eta(), jet->Phi_0_2pi(), corrPt, jet->NEF(), type};
-      fHistManager.FillTHnSparse(histname, x);
-      
-      // pT-leading vs. pT
-      histname = TString::Format("%s/TriggerSimHistograms/hPtLeadingVsPt", jets->GetArrayName().Data());
-      fHistManager.FillTH2(histname.Data(), corrPt, ptLeading);
-      
-      // (Centrality, pT, z-leading (charged), calo type)
-      TLorentzVector leadPart;
-      jets->GetLeadingHadronMomentum(leadPart, jet);
-      Double_t z = GetParallelFraction(leadPart.Vect(), jet);
-      if (z == 1 || (z > 1 && z - 1 < 1e-3)) z = 0.999; // so that it will contribute to the bin 0.9-1 rather than 1-1.1
-      histname = TString::Format("%s/TriggerSimHistograms/hZLeadingVsPt", jets->GetArrayName().Data());
-      Double_t y[4] = {fCent, corrPt, z, type};
-      fHistManager.FillTHnSparse(histname, y);
-      
-      // (Centrality, pT, z (charged), calo type)
-      histname = TString::Format("%s/TriggerSimHistograms/hZVsPt", jets->GetArrayName().Data());
-      AliVTrack* track;
-      for (Int_t i=0; i<jet->GetNumberOfTracks(); i++) {
-        track = static_cast<AliVTrack*>(jet->Track(i));
-        z = track->Pt() / TMath::Abs(corrPt);
-        Double_t y2[4] = {fCent, corrPt, z, type};
-        fHistManager.FillTHnSparse(histname, y2);
-      }
-      
-      // (Centrality, pT, Nconst, calo type)
-      histname = TString::Format("%s/TriggerSimHistograms/hNConstVsPt", jets->GetArrayName().Data());
-      Double_t a[4] = {fCent, corrPt, 1.*jet->GetNumberOfConstituents(), type};
-      fHistManager.FillTHnSparse(histname, a);
-      
-    } //jet loop
-    
-  }
 }
 
 /**
@@ -2032,4 +1612,191 @@ void AliAnalysisTaskEmcalDijetImbalance::FillGeometricalMatchingHistograms()
   else {
     fHistManager.FillTH1(histname.Data(), 0.);
   }
+}
+
+/**
+ * DijetImbalance AddTask.
+ */
+AliAnalysisTaskEmcalDijetImbalance* AliAnalysisTaskEmcalDijetImbalance::AddTaskEmcalDijetImbalance(const char *ntracks,
+                                                                                                   const char *nclusters,
+                                                                                                   const Double_t deltaPhiMin,
+                                                                                                   const Bool_t doGeomMatching,
+                                                                                                   const Double_t minTrPtHardCore,
+                                                                                                   const Double_t minClPtHardCore,
+                                                                                                   const Double_t jetR,
+                                                                                                   const Bool_t includePHOS,
+                                                                                                   const Double_t minTrPt,
+                                                                                                   const Double_t minClPt,
+                                                                                                   const char *suffix)
+{
+  
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    ::Error("AddTaskEmcalDijetImbalance", "No analysis manager to connect to.");
+    return 0;
+  }
+
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
+  {
+    ::Error("AddTaskEmcalDijetImbalance", "This task requires an input event handler");
+    return 0;
+  }
+
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD
+  };
+
+  EDataType_t dataType = kUnknown;
+
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  }
+
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  TString trackName(ntracks);
+  TString clusName(nclusters);
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else {
+      trackName = "";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+  TString name("AliAnalysisTaskEmcalDijetImbalance");
+  if (!trackName.IsNull()) {
+    name += "_";
+    name += trackName;
+  }
+  if (!clusName.IsNull()) {
+    name += "_";
+    name += clusName;
+  }
+  if (strcmp(suffix,"") != 0) {
+    name += "_";
+    name += suffix;
+  }
+
+  /////////////////////////////////////////////////////////////
+  // Configure di-jet task
+  AliAnalysisTaskEmcalDijetImbalance* dijetTask = new AliAnalysisTaskEmcalDijetImbalance(name);
+  dijetTask->SetDeltaPhiCut(deltaPhiMin);
+  if (doGeomMatching) dijetTask->SetDoGeometricalMatching(doGeomMatching, jetR, minTrPtHardCore, minClPtHardCore);
+
+  /////////////////////////////////////////////////////////////
+  // Create track and cluster containers with the standard cuts
+
+  AliParticleContainer* partCont = 0;
+  if (trackName == "mcparticles") {
+    AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
+    partCont = mcpartCont;
+  }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    AliTrackContainer* trackCont = new AliTrackContainer(trackName);
+    partCont = trackCont;
+  }
+  if (partCont) partCont->SetParticlePtCut(minTrPt);
+  if (partCont) dijetTask->AdoptParticleContainer(partCont);
+
+  AliClusterContainer* clusCont = 0;
+  if (!clusName.IsNull()) {
+    clusCont = new AliClusterContainer(clusName);
+    clusCont->SetClusECut(0.);
+    clusCont->SetClusPtCut(0.);
+    clusCont->SetClusNonLinCorrEnergyCut(0.);
+    clusCont->SetClusHadCorrEnergyCut(minClPt);
+    clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+    if (includePHOS) {
+      clusCont->SetIncludePHOS(kTRUE);
+      clusCont->SetPhosMinNcells(3);
+      clusCont->SetPhosMinM02(0.2);
+    }
+  }
+  if (clusCont) dijetTask->AdoptClusterContainer(clusCont);
+
+  /////////////////////////////////////////////////////////////
+  // Create track and cluster containers for constituent study with geometrical matching (if enabled)
+
+  if (doGeomMatching) {
+    AliParticleContainer* partContThresh = 0;
+    if (trackName == "mcparticles") {
+      AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
+      partContThresh = mcpartCont;
+    }
+    else if (trackName == "tracks" || trackName == "Tracks") {
+      AliTrackContainer* trackCont = new AliTrackContainer(trackName);
+      partContThresh = trackCont;
+    }
+    if (partContThresh) {
+      partContThresh->SetParticlePtCut(minTrPtHardCore);
+      partContThresh->SetName("tracksThresh");
+      dijetTask->AdoptParticleContainer(partContThresh);
+    }
+    
+    AliClusterContainer* clusContThresh = 0;
+    if (!clusName.IsNull()) {
+      clusContThresh = new AliClusterContainer(clusName);
+      clusContThresh->SetName("caloClustersThresh");
+      clusContThresh->SetClusECut(0.);
+      clusContThresh->SetClusPtCut(0.);
+      clusContThresh->SetClusNonLinCorrEnergyCut(0.);
+      clusContThresh->SetClusHadCorrEnergyCut(minClPtHardCore);
+      clusContThresh->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+      if (includePHOS) {
+        clusContThresh->SetIncludePHOS(kTRUE);
+        clusContThresh->SetPhosMinNcells(3);
+        clusContThresh->SetPhosMinM02(0.2);
+      }
+    }
+    if (clusContThresh) dijetTask->AdoptClusterContainer(clusContThresh);
+      }
+
+  //-------------------------------------------------------
+  // Final settings, pass to manager and set the containers
+  //-------------------------------------------------------
+
+  mgr->AddTask(dijetTask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+  TString contname(name);
+  contname += "_histos";
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
+                                                            TList::Class(),AliAnalysisManager::kOutputContainer,
+                                                            Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectInput  (dijetTask, 0,  cinput1 );
+  mgr->ConnectOutput (dijetTask, 1, coutput1 );
+
+  return dijetTask;
 }

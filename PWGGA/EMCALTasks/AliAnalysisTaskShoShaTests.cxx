@@ -35,6 +35,7 @@
 #include "AliAnalysisTaskShoShaTests.h"
 #include "TFile.h"
 #include "AliOADBContainer.h"
+#include "AliDataFile.h"
 
 
 ClassImp(AliAnalysisTaskShoShaTests)
@@ -178,7 +179,7 @@ void AliAnalysisTaskShoShaTests::UserCreateOutputObjects()
   
   fGeom = AliEMCALGeometry::GetInstance(fGeoName.Data());
   fOADBContainer = new AliOADBContainer("AliEMCALgeo");
-  fOADBContainer->InitFromFile(Form("$ALICE_PHYSICS/OADB/EMCAL/EMCALlocal2master.root"),"AliEMCALgeo");
+  fOADBContainer->InitFromFile(AliDataFile::GetFileNameOADB("EMCAL/EMCALlocal2master.root").data(),"AliEMCALgeo");
   
   fEvtSel = new TH1F("hEvtSel","Event selection counter (0=all trg, 1=pvz cut) ;evt cut ;dN/dcut}",2,0,2);
   fOutputList->Add(fEvtSel);

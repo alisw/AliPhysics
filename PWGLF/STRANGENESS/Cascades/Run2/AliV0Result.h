@@ -48,6 +48,7 @@ public:
     void SetCutMaxRapidity      ( Double_t lCut ) { fCutMaxRapidity       = lCut; }
     
     void SetCutV0Radius       ( Double_t lCut ) { fCutV0Radius         = lCut; }
+    void SetCutMaxV0Radius    ( Double_t lCut ) { fCutMaxV0Radius      = lCut; }
     void SetCutDCANegToPV     ( Double_t lCut ) { fCutDCANegToPV       = lCut; }
     void SetCutDCAPosToPV     ( Double_t lCut ) { fCutDCAPosToPV       = lCut; }
     void SetCutDCAV0Daughters ( Double_t lCut ) { fCutDCAV0Daughters   = lCut; }
@@ -94,6 +95,11 @@ public:
     //Use OTF V0s
     void SetUseOnTheFly ( Bool_t lCut ) { fUseOnTheFly = lCut; } 
     
+    //Special dedx
+    void SetCut276TeVLikedEdx ( Bool_t lCut ) { fCut276TeVLikedEdx = lCut; }
+    
+    void SetCutAtLeastOneTOF (Bool_t lCut) { fCutAtLeastOneTOF = lCut; }
+    
     //Feeddown matrix initializer
     void InitializeFeeddownMatrix(Long_t lNLambdaPtBins, Double_t *lLambdaPtBins,
                                   Long_t lNXiPtPins, Double_t *lXiPtPins,
@@ -108,6 +114,7 @@ public:
     Double_t GetCutMaxRapidity     () const { return fCutMaxRapidity; }
     
     Double_t GetCutV0Radius       () const { return fCutV0Radius; }
+    Double_t GetCutMaxV0Radius    () const { return fCutMaxV0Radius; }
     Double_t GetCutDCANegToPV     () const { return fCutDCANegToPV; }
     Double_t GetCutDCAPosToPV     () const { return fCutDCAPosToPV; }
     Double_t GetCutDCAV0Daughters () const { return fCutDCAV0Daughters; }
@@ -145,12 +152,18 @@ public:
     //Use OTF V0s
     Bool_t GetUseOnTheFly() const { return fUseOnTheFly; }
     
+    Bool_t GetCutAtLeastOneTOF () const { return fCutAtLeastOneTOF; }
+    
+    //Special dedx
+    Bool_t GetCut276TeVLikedEdx () const { return fCut276TeVLikedEdx; }
+    
     TH3F* GetHistogram       ()       { return fHisto; }
     TH3F* GetHistogramToCopy () const { return fHisto; }
     
-    //Proton Profile - not implemented for V0s so far
-    TProfile* GetProtonProfile       ()       { return 0x0; }
-    TProfile* GetProtonProfileToCopy () const { return 0x0; }
+    //Proton Profile
+    TProfile *GetProtonProfile       ()       { return fProtonProfile; }
+    TProfile *GetProtonProfileToCopy () const { return fProtonProfile; }
+    void InitializeProtonProfile(Long_t lNPtBins, Double_t *lPtBins); //Initialize profile, otherwise not stored
 
     TH3F* GetHistogramFeeddown       ()       { return fHistoFeeddown; }
     TH3F* GetHistogramFeeddownToCopy () const { return fHistoFeeddown; }
@@ -167,6 +180,7 @@ private:
     Double_t fCutMaxRapidity; //max rapidity
     
     Double_t fCutV0Radius;
+    Double_t fCutMaxV0Radius;
     Double_t fCutDCANegToPV;
     Double_t fCutDCAPosToPV;
     Double_t fCutDCAV0Daughters;
@@ -204,10 +218,18 @@ private:
     //Master switch to use on-the-fly candidates
     Bool_t fUseOnTheFly; //if zero -> offline, if kTRUE -> go on-the-fly
     
+    //2.76-TeV like dE/dx selection (only baryons at low pT)
+    Bool_t fCut276TeVLikedEdx;
+    
+    //At least one track has TOF signal
+    Bool_t fCutAtLeastOneTOF; 
+    
     TH3F *fHisto; //Histogram for storing output with these configurations
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     
-    ClassDef(AliV0Result, 16)
+    TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta (optional)
+    
+    ClassDef(AliV0Result, 20)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -224,5 +246,9 @@ private:
     //14 - added possibility to select on-the-fly V0 candidates
     //15 - added proton profile (dummy as of now)
     //16 - added configurable AP cut
+    //17 - added real possibility of having proton profiles (re-analysis material)
+    //18 - added configurable max V0 radius
+    //19 - added 2.76TeV-like dE/dx switch
+    //20 - TOF cut: at-least-one type
 };
 #endif

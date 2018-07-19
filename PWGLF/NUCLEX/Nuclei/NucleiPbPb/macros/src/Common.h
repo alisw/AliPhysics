@@ -30,7 +30,9 @@ const string kNormalisationList = "mpuccio_NucleiPIDqa";
 const string kEfficiencyOutput = kBaseOutputDir + "efficiency.root";
 const string kSignalOutput = kBaseOutputDir + "signal.root";
 const string kSecondariesOutput = kBaseOutputDir + "secondaries.root";
+const string kSecondariesOutputRooFit = kBaseOutputDir + "RooSec.root";
 const string kSecondariesTPCoutput = kBaseOutputDir + "secondaries_TPC.root";
+const string kSecondariesTPCoutputRooFit = kBaseOutputDir + "RooSecTPC.root";
 const string kMaterialOutput = kBaseOutputDir + "materialbudget.root";
 const string kSpectraOutput = kBaseOutputDir + "spectra.root";
 const string kFitSystematicsOutput = kBaseOutputDir + "fitsystematics.root";
@@ -44,13 +46,20 @@ const string kMacrosFolder = "/Users/lbariogl/cernbox/Deuterons13TeV/macros/resu
 
 const float  kPtBins[16] = {0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.4,1.6,1.8,2.0,2.2,2.6,3.0,3.4,3.8};
 const int    kNPtBins = 15;
-const float  kCentralityBins[8] = {0.f,5.f,10.f,20.f,30.f,40.f,60.f,100.f};
-const int    kNCentralityBins = 7;
+const float  kCentralityBins[13] = {0.f,1.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};
+const int    kNCentralityBins = 12;
+
+const int    kCentLength = 8;
+const int    kCentBinsArray[kCentLength][2] = {{2,2},{3,3},{4,4},{5,5},{6,6},{7,8},{9,12},{2,12}};
+const float  kCentPtLimits[kCentLength] = {3.4,3.,3.,2.6,2.6,2.2,2.,3.8};
+const float  kCentLabels[kCentLength][2] = {{0.,5.},{5.,10.},{10.,20.},{20.,30.},{30.,40.},{40.,60.},{60.,100.},{0.,100.}};
+const float  kPtRebin[kCentLength] = {2.6,2.6,2.2,2.2,2.2,2.,0.6,3.4};
 
 const float  kTPCmaxPt = 1.4f;
 const float  kTOFminPt = 1.f;
 const float  kPtRange[2] = {0.6,3.8};
-const float  kPtRangeMatCorrection[2] = {0.7,1.3};
+const float  kPtRangeMatCorrection[2] = {1.05,1.55};
+const float  kPtRangeMatCorrectionTPC[2] = {0.65,1.35};
 
 const bool   kUseBarlow{true};
 const bool   kSmoothSystematics{true};

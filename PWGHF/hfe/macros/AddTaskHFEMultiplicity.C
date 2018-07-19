@@ -1,11 +1,33 @@
 AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
-					Bool_t PhysSelINT7 = kTRUE,
-					Bool_t useTender   =  kTRUE,
+					Bool_t readMC	=	kFALSE,
+				        Bool_t SwitchPi0EtaWeightCalc = kTRUE,
+					Bool_t PhysSelINT7 =  kTRUE,
+					Bool_t useTender   =  kTRUE, 
 					Bool_t ClsTypeEMC  =  kTRUE,
 					Bool_t ClsTypeDCAL =  kTRUE,
 					TString estimatorFilename="",
-					Double_t refMult=61.2
-					)
+					Double_t refMult=61.2,
+					Int_t NcontV =2,
+					Int_t MaxTPCclus = 100.,
+					Int_t TPCNclus =80.,
+  					Int_t ITSNclus =3.,
+  					Double_t DCAxyCut =2.4,
+  					Double_t DCAzCut =3.2,
+  					Double_t Etarange = 0.7,
+  					Double_t TrackPtMin = 1.,
+  					Double_t EopEMin = 0.8,
+ 					Double_t EopEMax = 1.2,
+  					Double_t TPCNSigMin = -1.,
+  					Double_t TPCNSigMax = 3.,
+  					Double_t M20Min =0.02,
+  					Double_t M20Max =0.35,
+  					Int_t AssoTPCCluster = 80.,
+  					Int_t AssoITSCluster =3.,
+  					Double_t AssoEPt =0.1,
+  					Double_t AssoEEtarange =0.9,
+  					Double_t AssoENsigma =3.,
+  					Bool_t AssoITSRefit =kTRUE,
+  					Double_t InvmassCut = 0.14					)
   
 { // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -16,19 +38,44 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
   if (!mgr->GetInputEventHandler()) {
     return 0x0;
   }
-  
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+
+  Bool_t  fReadMC = kTRUE;
+  AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>(mgr->GetMCtruthEventHandler());
+  if(!mcH){
+    fReadMC=kFALSE;
+  }
+
+
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName += ":MyTask";
   
   if(PhysSelINT7){
     AliAnalysisTaskHFEMultiplicity* HFEtaskINT7 = new AliAnalysisTaskHFEMultiplicity("");
     mgr->AddTask(HFEtaskINT7); //HFEtask is my task
+    HFEtaskINT7->SetReadMC(readMC);
     HFEtaskINT7->SelectCollisionCandidates(AliVEvent::kINT7);
     HFEtaskINT7->SetTenderSwitch(useTender);
-    
+    HFEtaskINT7->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
     HFEtaskINT7->SetClusterTypeEMC(ClsTypeEMC);
     HFEtaskINT7->SetClusterTypeDCAL(ClsTypeDCAL);
-
+    HFEtaskINT7->SetNcontVCut(NcontV);
+    HFEtaskINT7->SetEtaRange(Etarange);
+    HFEtaskINT7->SetMaxTPCCluster(MaxTPCclus);
+    HFEtaskINT7->SetNTPCCluster(TPCNclus);
+    HFEtaskINT7->SetNITSCluster(ITSNclus);
+    HFEtaskINT7->SetTrackpTMin(TrackPtMin);
+    HFEtaskINT7->SetDCACut(DCAxyCut,DCAzCut);
+    HFEtaskINT7->SetTPCnsigma(TPCNSigMin,TPCNSigMax);
+    HFEtaskINT7->SetEopE(EopEMin,EopEMax);
+    HFEtaskINT7->SetShowerShapeEM20(M20Min,M20Max);
+    HFEtaskINT7->SetInvMassCut(InvmassCut);
+    HFEtaskINT7->SetAssoTPCclus(AssoTPCCluster);
+    HFEtaskINT7->SetAssoITSclus(AssoITSCluster);
+    HFEtaskINT7->SetAssoITSrefit(AssoITSRefit);
+    HFEtaskINT7->SetAssopTMin(AssoEPt);
+    HFEtaskINT7->SetAssoEtarange(AssoEEtarange);
+    HFEtaskINT7->SetAssoTPCnsig(AssoENsigma);
  
     TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
     if(!fileEstimator)  {
@@ -55,199 +102,161 @@ AliAnalysisTask* AddTaskHFEMultiplicity(TString suffixName = "",
     // Create containers for input/output
     TString finDirname         = "_INT7";
     TString outBasicname       = "EID";
-   // TString profname       = "coutputProf";
+    TString profname       = "coutputProf";
         
     finDirname 	      +=   suffixName.Data();
     outBasicname      +=   finDirname.Data();
-    //profname          +=   finDirname.Data();
+    profname          +=   finDirname.Data();
         
         
         
     mgr->ConnectInput(HFEtaskINT7,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(HFEtaskINT7,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-   // mgr->ConnectOutput(HFEtaskINT7,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-  }
+     mgr->ConnectOutput(HFEtaskINT7,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
+
+   
+
+ }
     
    if(!PhysSelINT7){
-     if(ClsTypeEMC){
-            
-     AliAnalysisTaskHFEMultiplicity* HFEtaskEG1 = new AliAnalysisTaskHFEMultiplicity("");
-     mgr->AddTask(HFEtaskEG1);
-     HFEtaskEG1->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-     HFEtaskEG1->SetEMCalTriggerEG1(kTRUE);
-     HFEtaskEG1->SetTenderSwitch(useTender);
-     HFEtaskEG1->SetClusterTypeEMC(ClsTypeEMC);
-     HFEtaskEG1->SetClusterTypeDCAL(ClsTypeDCAL);
+     
+
+// EMCal EGA GA1
+      
+     AliAnalysisTaskHFEMultiplicity* HFEtaskGA1 = new AliAnalysisTaskHFEMultiplicity("");
+     mgr->AddTask(HFEtaskGA1);
+     HFEtaskGA1->SetReadMC(readMC);
+     HFEtaskGA1->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+     HFEtaskGA1->SetEMCalTriggerEG1(kTRUE);
+     HFEtaskGA1->SetEMCalTriggerDG1(kTRUE);
+     HFEtaskGA1->SetTenderSwitch(useTender);
+     HFEtaskGA1->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
+     HFEtaskGA1->SetClusterTypeEMC(ClsTypeEMC);
+     HFEtaskGA1->SetClusterTypeDCAL(ClsTypeDCAL);
+     HFEtaskGA1->SetNcontVCut(NcontV);
+     HFEtaskGA1->SetEtaRange(Etarange);
+     HFEtaskGA1->SetMaxTPCCluster(MaxTPCclus);
+     HFEtaskGA1->SetNTPCCluster(TPCNclus);
+     HFEtaskGA1->SetNITSCluster(ITSNclus);
+     HFEtaskGA1->SetTrackpTMin(TrackPtMin);
+     HFEtaskGA1->SetDCACut(DCAxyCut,DCAzCut);
+     HFEtaskGA1->SetTPCnsigma(TPCNSigMin,TPCNSigMax);
+     HFEtaskGA1->SetEopE(EopEMin,EopEMax);
+     HFEtaskGA1->SetShowerShapeEM20(M20Min,M20Max);
+     HFEtaskGA1->SetInvMassCut(InvmassCut);
+     HFEtaskGA1->SetAssoTPCclus(AssoTPCCluster);
+     HFEtaskGA1->SetAssoITSclus(AssoITSCluster);
+     HFEtaskGA1->SetAssoITSrefit(AssoITSRefit);
+     HFEtaskGA1->SetAssopTMin(AssoEPt);
+     HFEtaskGA1->SetAssoEtarange(AssoEEtarange);
+     HFEtaskGA1->SetAssoTPCnsig(AssoENsigma);
 
     TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
     if(!fileEstimator)  {
       AliFatal("File with multiplicity estimator not found\n");
       return;
     }
-    HFEtaskEG1->SetReferenceMultiplicity(refMult);
+    HFEtaskGA1->SetReferenceMultiplicity(refMult);
     const Char_t* profilebasename="SPDmultEG1";
     
     const Char_t* periodNames[2] = {"LHC16s", "LHC16r"};
-    TProfile* multEstimatorAvgEG1[2];
+    TProfile* multEstimatorAvgGA1[2];
     for(Int_t ip=0; ip<2; ip++) {
       cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
-      multEstimatorAvgEG1[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
-      if (!multEstimatorAvgEG1[ip]) {
+      multEstimatorAvgGA1[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+      if (!multEstimatorAvgGA1[ip]) {
 	AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
 	return;
       }
     }
 
-    HFEtaskEG1->SetMultiProfileLHC16s(multEstimatorAvgEG1[0]);
-    HFEtaskEG1->SetMultiProfileLHC16r(multEstimatorAvgEG1[1]);
+    HFEtaskGA1->SetMultiProfileLHC16s(multEstimatorAvgGA1[0]);
+    HFEtaskGA1->SetMultiProfileLHC16r(multEstimatorAvgGA1[1]);
             
             
-     TString finDirname         = "_TrigGAEG1";
+     TString finDirname         = "_TrigGA1";
      TString outBasicname       = "EID";
-            
+     TString profname       = "coutputProf";
+        
      finDirname 	      +=   suffixName.Data();
      outBasicname      +=   finDirname.Data();
+     profname          +=   finDirname.Data();       
             
             
+     mgr->ConnectInput(HFEtaskGA1,0,mgr->GetCommonInputContainer());
+     mgr->ConnectOutput(HFEtaskGA1,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+     mgr->ConnectOutput(HFEtaskGA1,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));    
+     
+
+// EMCal EGA GA2
             
-     mgr->ConnectInput(HFEtaskEG1,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(HFEtaskEG1,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-     // EMCal EGA EG2
-            
-     AliAnalysisTaskHFEMultiplicity* HFEtaskEG2 = new AliAnalysisTaskHFEMultiplicity("");
-     mgr->AddTask(HFEtaskEG2);
-     HFEtaskEG2->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-     HFEtaskEG2->SetEMCalTriggerEG2(kTRUE);
-     HFEtaskEG2->SetTenderSwitch(useTender);
-     HFEtaskEG2->SetClusterTypeEMC(ClsTypeEMC);
-     HFEtaskEG2->SetClusterTypeDCAL(ClsTypeDCAL);
+     AliAnalysisTaskHFEMultiplicity* HFEtaskGA2 = new AliAnalysisTaskHFEMultiplicity("");
+     mgr->AddTask(HFEtaskGA2);
+     HFEtaskGA2->SetReadMC(readMC);
+     HFEtaskGA2->SelectCollisionCandidates(AliVEvent::kEMCEGA);
+     HFEtaskGA2->SetEMCalTriggerEG2(kTRUE);
+     HFEtaskGA2->SetEMCalTriggerDG2(kTRUE);
+     HFEtaskGA2->SetTenderSwitch(useTender);
+     HFEtaskGA2->SwitchPi0EtaWeightCalc(SwitchPi0EtaWeightCalc);
+     HFEtaskGA2->SetClusterTypeEMC(ClsTypeEMC);
+     HFEtaskGA2->SetClusterTypeDCAL(ClsTypeDCAL);
+     HFEtaskGA2->SetNcontVCut(NcontV);
+     HFEtaskGA2->SetEtaRange(Etarange);
+     HFEtaskGA2->SetNTPCCluster(TPCNclus);
+     HFEtaskGA2->SetNITSCluster(ITSNclus);
+     HFEtaskGA2->SetTrackpTMin(TrackPtMin);
+     HFEtaskGA2->SetDCACut(DCAxyCut,DCAzCut);
+     HFEtaskGA2->SetTPCnsigma(TPCNSigMin,TPCNSigMax);
+     HFEtaskGA2->SetEopE(EopEMin,EopEMax);
+     HFEtaskGA2->SetShowerShapeEM20(M20Min,M20Max);
+     HFEtaskGA2->SetInvMassCut(InvmassCut);
+     HFEtaskGA2->SetAssoTPCclus(AssoTPCCluster);
+     HFEtaskGA2->SetAssoITSclus(AssoITSCluster);
+     HFEtaskGA2->SetAssoITSrefit(AssoITSRefit);
+     HFEtaskGA2->SetAssopTMin(AssoEPt);
+     HFEtaskGA2->SetAssoEtarange(AssoEEtarange);
+     HFEtaskGA2->SetAssoTPCnsig(AssoENsigma);
 
       TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
     if(!fileEstimator)  {
       AliFatal("File with multiplicity estimator not found\n");
       return;
     }
-    HFEtaskEG2->SetReferenceMultiplicity(refMult);
+    HFEtaskGA2->SetReferenceMultiplicity(refMult);
     const Char_t* profilebasename="SPDmultEG2";
     
     const Char_t* periodNames[2] = {"LHC16s", "LHC16r"};
-    TProfile* multEstimatorAvgEG2[2];
+    TProfile* multEstimatorAvgGA2[2];
     for(Int_t ip=0; ip<2; ip++) {
       cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
-      multEstimatorAvgEG2[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
-      if (!multEstimatorAvgEG2[ip]) {
+      multEstimatorAvgGA2[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+      if (!multEstimatorAvgGA2[ip]) {
 	AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
 	return;
       }
     }
 
-    HFEtaskEG2->SetMultiProfileLHC16s(multEstimatorAvgEG2[0]);
-    HFEtaskEG2->SetMultiProfileLHC16r(multEstimatorAvgEG2[1]);
+    HFEtaskGA2->SetMultiProfileLHC16s(multEstimatorAvgGA2[0]);
+    HFEtaskGA2->SetMultiProfileLHC16r(multEstimatorAvgGA2[1]);
             
             
-     TString finDirname         = "_TrigGAEG2";
+     TString finDirname         = "_TrigGA2";
      TString outBasicname       = "EID";
-            
+     TString profname       = "coutputProf";
+       
      finDirname 	      +=   suffixName.Data();
      outBasicname      +=   finDirname.Data();
+     profname          +=   finDirname.Data();      
             
             
-            
-     mgr->ConnectInput(HFEtaskEG2,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(HFEtaskEG2,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-            
-     }
+     mgr->ConnectInput(HFEtaskGA2,0,mgr->GetCommonInputContainer());
+     mgr->ConnectOutput(HFEtaskGA2,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+       mgr->ConnectOutput(HFEtaskGA2,2,mgr->CreateContainer(profname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));         
+     
         
-     if(ClsTypeDCAL){
-     // DCal EGA DG1
-     AliAnalysisTaskHFEMultiplicity* HFEtaskDG1 = new AliAnalysisTaskHFEMultiplicity("");
-     mgr->AddTask(HFEtaskDG1);
-     HFEtaskDG1->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-     HFEtaskDG1->SetEMCalTriggerDG1(kTRUE);
-     HFEtaskDG1->SetTenderSwitch(useTender);
-     HFEtaskDG1->SetClusterTypeEMC(ClsTypeEMC);
-     HFEtaskDG1->SetClusterTypeDCAL(ClsTypeDCAL);
-      
-      TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
-    if(!fileEstimator)  {
-      AliFatal("File with multiplicity estimator not found\n");
-      return;
-    }
-    HFEtaskDG1->SetReferenceMultiplicity(refMult);
-    const Char_t* profilebasename="SPDmultDG1";
     
-    const Char_t* periodNames[2] = {"LHC16s", "LHC16r"};
-    TProfile* multEstimatorAvgDG1[2];
-    for(Int_t ip=0; ip<2; ip++) {
-      cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
-      multEstimatorAvgDG1[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
-      if (!multEstimatorAvgDG1[ip]) {
-	AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	return;
-      }
-    }
-
-    HFEtaskDG1->SetMultiProfileLHC16s(multEstimatorAvgDG1[0]);
-    HFEtaskDG1->SetMultiProfileLHC16r(multEstimatorAvgDG1[1]);
-            
-            
-     TString finDirname         = "_TrigGADG1";
-     TString outBasicname       = "EID";
-            
-     finDirname 	      +=   suffixName.Data();
-     outBasicname      +=   finDirname.Data();
-            
-            
-            
-     mgr->ConnectInput(HFEtaskDG1,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(HFEtaskDG1,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-     // DCal EGA DG2
-
-     AliAnalysisTaskHFEMultiplicity* HFEtaskDG2 = new AliAnalysisTaskHFEMultiplicity("");
-     mgr->AddTask(HFEtaskDG2);
-     HFEtaskDG2->SelectCollisionCandidates(AliVEvent::kEMCEGA);
-     HFEtaskDG2->SetEMCalTriggerDG2(kTRUE);
-     HFEtaskDG2->SetTenderSwitch(useTender);
-     HFEtaskDG2->SetClusterTypeEMC(ClsTypeEMC);
-     HFEtaskDG2->SetClusterTypeDCAL(ClsTypeDCAL);
      
-     
-      TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
-    if(!fileEstimator)  {
-      AliFatal("File with multiplicity estimator not found\n");
-      return;
-    }
-    HFEtaskDG2->SetReferenceMultiplicity(refMult);
-    const Char_t* profilebasename="SPDmultDG2";
-    
-    const Char_t* periodNames[2] = {"LHC16s", "LHC16r"};
-    TProfile* multEstimatorAvgDG2[2];
-    for(Int_t ip=0; ip<2; ip++) {
-      cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
-      multEstimatorAvgDG2[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
-      if (!multEstimatorAvgDG2[ip]) {
-	AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-	return;
-      }
-    }
-
-    HFEtaskDG2->SetMultiProfileLHC16s(multEstimatorAvgDG2[0]);
-    HFEtaskDG2->SetMultiProfileLHC16r(multEstimatorAvgDG2[1]);
-            
-            
-     TString finDirname         = "_TrigGADG2";
-     TString outBasicname       = "EID";
-            
-     finDirname 	      +=   suffixName.Data();
-     outBasicname      +=   finDirname.Data();
-            
-            
-            
-     mgr->ConnectInput(HFEtaskDG2,0,mgr->GetCommonInputContainer());
-     mgr->ConnectOutput(HFEtaskDG2,1,mgr->CreateContainer(outBasicname, TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-            
-     }
-     }
+}
     
   
     

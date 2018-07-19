@@ -78,6 +78,9 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void SetPlotFineGrainedEtaPhi(Bool_t b)                   { fPlotFineGrainedEtaPhi = b; }
   void SetPlotEvenOddEta(Bool_t b)                          { fPlotEvenOddEta = b; }
   void SetPlotCellSMDensity(Bool_t b)                       { fPlotCellSMDensity = b; }
+  void SetExcludeRejectedCells(Bool_t b)                    { fExcludeRejectedCells = b; }
+  void SetPlotFineGrainedCentrality(Bool_t b)               { fPlotFineGrainedCentrality = b; }
+  void SetPlotEventHistograms(Bool_t b)                     { fPlotEventHistograms = b; }
 
  protected:
   void                        ExecOnce()                                        ;
@@ -92,11 +95,13 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   void                        AllocateCellHistograms()                          ;
   void                        AllocateNeutralJetHistograms()                    ;
   void                        AllocateClustersInJetsHistograms()                ;
+  void                        AllocateEventHistograms()                         ;
   void                        FillCaloHistograms()                              ;
   void                        FillClusterHistograms()                           ;
   void                        FillCellHistograms()                              ;
   void                        FillNeutralJetHistograms()                        ;
   void                        FillClustersInJetsHistograms()                    ;
+  void                        FillEventHistograms()                             ;
   void                        FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t Ehadcorr, Int_t hasMatchedTrack, Double_t M02, Int_t nCells, Int_t passDispersionCut, Double_t distNN, Int_t isOddEta, Int_t coneType = 0, Double_t R = 0., Double_t Econe = 0.);
   void                        FillClusterTHnSparse(TString clustersName, Double_t eta, Double_t phi, Double_t Enonlin, Double_t eCellCone, Double_t eCellSM, Int_t nCellsCone, Int_t nCellsSM);
   
@@ -126,6 +131,9 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Bool_t                      fPlotFineGrainedEtaPhi;               ///< Set whether to plot fine-grained eta-phi bins in cluster THnSparse
   Bool_t                      fPlotEvenOddEta;                      ///< Set whether to add axis to THnSparse separating even/odd eta columns
   Bool_t                      fPlotCellSMDensity;                   ///< Set whether to plot SM cell density when computing local density
+  Bool_t                      fExcludeRejectedCells;                ///< Set whether to exclude cells from rejected clusters in cone/SM studies
+  Bool_t                      fPlotFineGrainedCentrality;           ///< Set whether to plot a more fine grained centrality binning
+  Bool_t                      fPlotEventHistograms;                 ///< Set whether to plot some calo event histograms
 
   // Plotting parameters
   Float_t                     fMaxPt;                               ///< Histogram pt limit
@@ -133,6 +141,8 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   Double_t*                   fCentHistBins;                        //!<! cent bins
   Int_t                       fNPtHistBins;                         //!<! number of variable pt bins
   Double_t*                   fPtHistBins;                          //!<! variable pt bins
+  Int_t                       fNM02HistBins;                        //!<! number of variable M02 bins
+  Double_t*                   fM02HistBins;                         //!<! variable M02 bins
   
   // Event selection
   Bool_t                      fUseAliEventCuts;                     ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
@@ -151,7 +161,7 @@ class AliAnalysisTaskEmcalVsPhos : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalVsPhos &operator=(const AliAnalysisTaskEmcalVsPhos&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalVsPhos, 7);
+  ClassDef(AliAnalysisTaskEmcalVsPhos, 13);
   /// \endcond
 };
 #endif

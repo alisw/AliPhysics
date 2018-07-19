@@ -25,7 +25,7 @@ void AddTRDefficiency(AliAnalysisDataContainer **ci, Int_t effmc, Int_t mult)
   }
 
   // TRD combined tracking efficiency
-  if(mgr->GetMCtruthEventHandler() && effmc)) {
+  if(mgr->GetMCtruthEventHandler() && effmc) {
     mgr->AddTask(eff = new AliTRDefficiencyMC((char*)"TRDefficiencyMC"));
     eff->SetDebugLevel(0);
     //AliLog::SetClassDebugLevel("AliTRDefficiencyMC", 5);  

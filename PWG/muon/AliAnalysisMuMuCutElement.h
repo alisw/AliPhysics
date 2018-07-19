@@ -16,7 +16,7 @@
 
 class TMethodCall;
 class AliVEvent;
-class AliInputEventHandler;
+class AliVEventHandler;
 class AliVParticle;
 
 class AliAnalysisMuMuCutElement : public TObject
@@ -50,7 +50,7 @@ public:
 
   virtual Bool_t Pass(const AliVEvent& event) const;
 
-  virtual Bool_t Pass(const AliInputEventHandler& eventHandler) const;
+  virtual Bool_t Pass(const AliVEventHandler& eventHandler) const;
 
   virtual Bool_t Pass(const AliVParticle& particle) const;
 
@@ -125,7 +125,7 @@ public:
 
   Bool_t Pass(const AliVEvent& event) const { return !fCutElement->Pass(event); }
 
-  Bool_t Pass(const AliInputEventHandler& eventHandler) const { return !fCutElement->Pass(eventHandler); }
+  Bool_t Pass(const AliVEventHandler& eventHandler) const { return !fCutElement->Pass(eventHandler); }
 
   Bool_t Pass(const AliVParticle& particle) const { return !fCutElement->Pass(particle); }
 

@@ -258,7 +258,7 @@ AliFemtoString AliFemtoCutMonitorEventMult::Report()
 {
   // Prepare report from the execution
   TString report = "*** AliFemtoCutMonitorEventMult report";
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 void AliFemtoCutMonitorEventMult::Fill(const AliFemtoEvent* aEvent)

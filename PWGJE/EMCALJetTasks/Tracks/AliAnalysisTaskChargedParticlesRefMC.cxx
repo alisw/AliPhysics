@@ -77,6 +77,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC():
         fEnableSumw2(kFALSE),
         fStudyPID(kFALSE),
         fStudyEMCALgeo(false),
+        fExclusiveMinBias(false),
         fRequireTOFBunchCrossing(false),
         fNameAcceptanceOADB()
 {
@@ -103,6 +104,7 @@ AliAnalysisTaskChargedParticlesRefMC::AliAnalysisTaskChargedParticlesRefMC(const
         fEnableSumw2(kFALSE),
         fStudyPID(kFALSE),
         fStudyEMCALgeo(false),
+        fExclusiveMinBias(false),
         fRequireTOFBunchCrossing(false),
         fNameAcceptanceOADB()
 {
@@ -133,8 +135,12 @@ void AliAnalysisTaskChargedParticlesRefMC::UserCreateOutputObjects() {
   TString optionstring = fEnableSumw2 ? "s" : "";
 
   fHistos->CreateTH1("hPtHard", "Pt of the hard interaction", 1000, 0., 500);
-  const std::array<TString,7> triggers = {"True", "MB", "EMC7", "EJ1", "EJ2", "EG1", "EG2"};
-  const std::array<TString,6> species = {"El", "Mu", "Pi", "Ka", "Pr", "Ot"};
+  const std::array<TString,6> species = {{"El", "Mu", "Pi", "Ka", "Pr", "Ot"}};
+  std::vector<TString> triggers = {"True", "MB"};
+  if(!fExclusiveMinBias){
+    const std::array<TString,5> kEMCALtriggers = {{"EMC7", "EJ1", "EJ2", "EG1", "EG2"}};
+    for(const auto &t : kEMCALtriggers) triggers.emplace_back(t);
+  }
   for(const auto &trg : triggers){
     fHistos->CreateTH1("hEventCount" + trg, "Event Counter for trigger class " + trg, 1, 0.5, 1.5, optionstring);
     fHistos->CreateTH1("hVertexBefore" + trg, "Vertex distribution before z-cut for trigger class " + trg, 500, -50, 50, optionstring);
@@ -170,7 +176,7 @@ bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
   fEventTriggers.clear();
   AliDebugStream(1) << GetName() << ": Using custom event selection" << std::endl;
   if(!MCEvent()) return false;
-  if(!fTriggerPatchInfo) return false;
+  if(!fExclusiveMinBias && !fTriggerPatchInfo) return false;
   fEventWeight = fWeightHandler ? fWeightHandler->GetEventWeight(fPythiaHeader) : 1.;
 
   // Do MC outlier cut
@@ -184,18 +190,20 @@ bool AliAnalysisTaskChargedParticlesRefMC::IsEventSelected(){
   // select trigger
   bool isMinBias;
   if((isMinBias = fInputHandler->IsEventSelected() & AliVEvent::kINT7)) fEventTriggers.push_back("MB");
-  // In simulations triggered events are a subset of min. bias events
-  if(fTriggerPatchInfo && fTriggerSelection){
-    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fInputEvent))
-      fEventTriggers.push_back("EMC7"); // triggerstring.Contains("EMC7"),
-    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fInputEvent))
-      fEventTriggers.push_back("EJ1"); // triggerstring.Contains("EJ1"),
-    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fInputEvent))
-      fEventTriggers.push_back("EJ2"); // triggerstring.Contains("EJ2"),
-    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fInputEvent))
-      fEventTriggers.push_back("EG1"); // triggerstring.Contains("EG1"),
-    if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fInputEvent))
-      fEventTriggers.push_back("EG2"); // triggerstring.Contains("EG2");
+  if(!fExclusiveMinBias){
+    // In simulations triggered events are a subset of min. bias events
+    if(fTriggerPatchInfo && fTriggerSelection){
+      if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEL0, fInputEvent))
+        fEventTriggers.push_back("EMC7"); // triggerstring.Contains("EMC7"),
+      if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ1, fInputEvent))
+        fEventTriggers.push_back("EJ1"); // triggerstring.Contains("EJ1"),
+      if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEJ2, fInputEvent))
+        fEventTriggers.push_back("EJ2"); // triggerstring.Contains("EJ2"),
+      if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG1, fInputEvent))
+        fEventTriggers.push_back("EG1"); // triggerstring.Contains("EG1"),
+      if(isMinBias && fTriggerSelection->IsOfflineSelected(AliEmcalTriggerOfflineSelection::kTrgEG2, fInputEvent))
+        fEventTriggers.push_back("EG2"); // triggerstring.Contains("EG2");
+    }
   }
   if(!fEventTriggers.size()){
     AliDebugStream(1) << GetName() << ": No trigger selected" << std::endl;
@@ -231,7 +239,7 @@ void AliAnalysisTaskChargedParticlesRefMC::ExecOnce(){
     return;
   }
 
-  if(!fTriggerSelection->GetNameClusterContainer().Length()){
+  if(fTriggerSelection && !fTriggerSelection->GetNameClusterContainer().Length()){
     fTriggerSelection->SetClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   }
 

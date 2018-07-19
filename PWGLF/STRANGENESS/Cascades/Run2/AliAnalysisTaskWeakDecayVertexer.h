@@ -54,30 +54,53 @@ public:
         //Highly experimental, use with care!
         fkUseOnTheFlyV0Cascading = lUseOnTheFlyV0Cascading;
     }
-    void SetDoImprovedCascadeVertexFinding( Bool_t lOpt = kTRUE ){
+    void SetResetInitialPositions( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
-        fkDoImprovedCascadeVertexFinding = lOpt;
-    }
-    void SetDoImprovedCascadePosition( Bool_t lOpt = kTRUE ){
-        //Highly experimental, use with care!
-        fkDoImprovedCascadePosition = lOpt;
+        fkResetInitialPositions = lOpt;
     }
     void SetDoImprovedDCAV0DauPropagation( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkDoImprovedDCAV0DauPropagation = lOpt;
     }
+    void SetDoMaterialCorrections( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkDoMaterialCorrection = lOpt;
+    }
+    void SetXYCase1Preoptimization( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkXYCase1 = lOpt;
+    }
+    void SetXYCase2Preoptimization( Bool_t lOpt = kTRUE ){
+        //Highly experimental, use with care!
+        fkXYCase2 = lOpt;
+    }
+    
     void SetDoImprovedDCACascDauPropagation( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
         fkDoImprovedDCACascDauPropagation = lOpt;
     }
-    void SetIfImprovedPerformInitialLinearPropag( Bool_t lOpt = kTRUE ){
+    
+    void SetDoXYPlanePreOptCascade( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
-        fkIfImprovedPerformInitialLinearPropag = lOpt;
+        fkDoXYPlanePreOptCascade = lOpt;
     }
-    void SetIfImprovedExtraPrecisionFactor( Double_t lOpt ){
+    
+    void SetDoPureGeometricMinimization( Bool_t lOpt = kTRUE ){
         //Highly experimental, use with care!
-        fkIfImprovedExtraPrecisionFactor = lOpt;
+        fkDoPureGeometricMinimization = lOpt;
     }
+    void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
+        fkDoV0Refit = lDoV0Refit;
+    }
+    void SetDoCascadeRefit ( Bool_t lDoCascadeRefit = kTRUE) {
+        fkDoCascadeRefit = lDoCascadeRefit;
+        //WARNING: Requires V0 refit for covariance matrix
+        if( lDoCascadeRefit && !fkDoV0Refit ) fkDoV0Refit = kTRUE;
+    }
+    void SetMaxIterations (Long_t lMaxIter = 100){
+        fMaxIterationsWhenMinimizing = lMaxIter;
+    }
+    
     
 //---------------------------------------------------------------------------------------
     //Task Configuration: trigger selection
@@ -95,13 +118,14 @@ public:
         //         The user has to take care... 
         fkUseUncheckedChargeCascadeVertexer = lOpt;
     }
-    void SetDoV0Refit ( Bool_t lDoV0Refit = kTRUE) {
-        fkDoV0Refit = lDoV0Refit;
-    }
+
     void SetExtraCleanup ( Bool_t lExtraCleanup = kTRUE) {
         fkExtraCleanup = lExtraCleanup;
     }
 //---------------------------------------------------------------------------------------
+    void SetRevertexAllEvents     ( Bool_t lOpt ) {
+        fkRevertexAllEvents = lOpt;
+    }
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
     }
@@ -161,6 +185,12 @@ public:
     void SetMaxPtCascade     ( Float_t lMaxPt ) {
         fMaxPtCascade = lMaxPt;
     }
+    void SetMinPtV0     ( Float_t lMinPt ) {
+        fMinPtV0 = lMinPt;
+    }
+    void SetMaxPtV0     ( Float_t lMaxPt ) {
+        fMaxPtV0 = lMaxPt;
+    }
     void SetCentralityInterval     ( Float_t lMinCent, Float_t lMaxCent ) {
         fMinCentrality = lMinCent;
         fMaxCentrality = lMaxCent;
@@ -185,7 +215,7 @@ public:
     Double_t Det(Double_t a00,Double_t a01,Double_t a02,
                  Double_t a10,Double_t a11,Double_t a12,
                  Double_t a20,Double_t a21,Double_t a22) const;
-    Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk, AliESDEvent *event, Double_t b);
+    Double_t PropagateToDCA(AliESDv0 *vtx,AliExternalTrackParam *trk, AliESDEvent *event, Double_t b, Double_t lBachMassForTracking=0.139);
     void Evaluate(const Double_t *h, Double_t t,
                   Double_t r[3],  //radius vector
                   Double_t g[3],  //first defivatives
@@ -193,7 +223,7 @@ public:
     void CheckChargeV0(AliESDv0 *v0);
     //---------------------------------------------------------------------------------------
     //Improved DCA V0 Dau
-    Double_t GetDCAV0Dau ( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b);
+    Double_t GetDCAV0Dau ( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking=0.139, Double_t lPosMassForTracking=0.139);
     void GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], Double_t b);
     //---------------------------------------------------------------------------------------
 
@@ -207,43 +237,51 @@ private:
 
     //Implementation of event selection utility
     AliEventCuts fEventCuts; /// Event cuts class
-
-    //Objects Controlling Task Behaviour
-    Bool_t fkPreselectDedx;
-    Bool_t fkPreselectDedxLambda;
-    Bool_t fkUseOnTheFlyV0Cascading;
-    Bool_t fkDoImprovedCascadeVertexFinding;
-    Bool_t fkDoImprovedCascadePosition;
-    Bool_t fkDoImprovedDCAV0DauPropagation;
-    Bool_t fkDoImprovedDCACascDauPropagation;
-    Bool_t fkIfImprovedPerformInitialLinearPropag;
-    Double_t fkIfImprovedExtraPrecisionFactor;
-    Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
-
-    //Objects Controlling Task Behaviour: has to be streamed!
-    Bool_t    fkRunV0Vertexer;           // if true, re-run V0 vertexer
-    Bool_t    fkRunCascadeVertexer;      // if true, re-run cascade vertexer
-    Bool_t    fkUseUncheckedChargeCascadeVertexer; //if true, use cascade vertexer that does not check bachelor charge
-    Bool_t    fkDoV0Refit;              // if true, will invoke AliESDv0::Refit in the vertexing procedure
-    Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
-
-    AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
-
-    Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
-    Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
-
-    //Min/Max pT for cascades
-    Float_t fMinPtCascade; //minimum pt above which we keep candidates in TTree output
-    Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
     
+    AliVEvent::EOfflineTriggerTypes fTrigType; // trigger type
+    Bool_t fkDoExtraEvSels; //if true, rely on AliEventCuts
     //Min/Max Centrality
     Float_t fMinCentrality; //centrality interval to actually regenerate candidates
     Float_t fMaxCentrality; //centrality interval to actually regenerate candidates
     
-    //Mass Window around masses of interest
-    Double_t fMassWindowAroundCascade; 
+    //Objects Controlling Task Behaviour
+    Bool_t fkRevertexAllEvents; //Don't be smart. Re-vertex every single event 
+    Bool_t fkPreselectDedx;
+    Bool_t fkPreselectDedxLambda;
+    Bool_t fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
+    
+    //Objects Controlling Task Behaviour: has to be streamed!
+    Bool_t fkRunV0Vertexer;           // if true, re-run V0 vertexer
+    Bool_t fkDoV0Refit;
+    Bool_t fkXYCase1; //Circles-far-away case pre-optimization switch
+    Bool_t fkXYCase2; //Circles-touch case pre-optimization switch (cowboy/sailor duality resolution)
+    Bool_t fkResetInitialPositions; 
+    Bool_t fkDoImprovedDCAV0DauPropagation;
+    Bool_t fkDoMaterialCorrection; //Replace AliExternalTrackParam::PropagateTo with AliTrackerBase::PropagateTrackTo
+    Int_t fRunNumber; //keep track of run number, needed to load geometry + invoke AliTrackerBase 
+    
+    Bool_t fkRunCascadeVertexer;      // if true, re-run cascade vertexer
+    Bool_t fkUseUncheckedChargeCascadeVertexer; //if true, use cascade vertexer that does not check bachelor charge
+    Bool_t fkUseOnTheFlyV0Cascading;
+    Bool_t fkDoImprovedDCACascDauPropagation;
+    Bool_t fkDoXYPlanePreOptCascade; 
+    Bool_t fkDoPureGeometricMinimization;
+    Bool_t fkDoCascadeRefit; //WARNING: needs DoV0Refit!
+    Long_t fMaxIterationsWhenMinimizing;
+    
+    //Min/Max pT for cascades
+    Float_t fMinPtV0; //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxPtV0; //maximum pt below which we keep candidates in TTree output
+    Float_t fMinPtCascade; //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxPtCascade; //maximum pt below which we keep candidates in TTree output
 
-    //===========================================================================================
+    //Mass Window around masses of interest
+    Double_t fMassWindowAroundCascade;
+    
+    Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
+    Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+    
+//===========================================================================================
 //   Histograms
 //===========================================================================================
 

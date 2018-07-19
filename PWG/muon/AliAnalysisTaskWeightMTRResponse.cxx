@@ -129,9 +129,6 @@ TH2* AliAnalysisTaskWeightMTRResponse::GetHisto ( const char* source, Bool_t mcR
   TString ptTitle = "";
 
   TString yTitle = perBoard ? "Board ID" : "#eta";
-  Int_t nYbins = perBoard ? 234 : 15;
-  Double_t yMin = perBoard ? 0.5 : -4.;
-  Double_t yMax = perBoard ? 234.5 : -2.5;
 
   TString mustring = "";
   for ( Int_t imu=0; imu<makeIt; imu++ ) mustring += "#mu";
@@ -280,6 +277,7 @@ void AliAnalysisTaskWeightMTRResponse::Terminate(Option_t *)
         TH1* histoRatio = static_cast<TH1*>(histoMC->Clone(histoName.Data()));
         TString canName = Form("%s_%s",GetName(),histoRatio->GetName());
         TCanvas* can = new TCanvas(canName.Data(),canName.Data(),100*iperboard,0,800,800);
+        can->cd();
         histoRatio->Add(histoData,-1.);
         histoRatio->Divide(histoData);
         histoName.Append("   (MC/data)-1");

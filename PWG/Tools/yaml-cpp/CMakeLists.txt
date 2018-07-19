@@ -12,6 +12,11 @@ endif()
 if(POLICY CMP0015)
 	cmake_policy(SET CMP0015 OLD)
 endif()
+# see https://cmake.org/cmake/help/latest/policy/CMP0042.html
+if(POLICY CMP0042)
+	# Enable MACOSX_RPATH by default.
+	cmake_policy(SET CMP0042 NEW)
+endif()
 
 include(CheckCXXCompilerFlag)
 
@@ -22,8 +27,8 @@ include(CheckCXXCompilerFlag)
 project(YAML_CPP)
 
 set(YAML_CPP_VERSION_MAJOR "0")
-set(YAML_CPP_VERSION_MINOR "5")
-set(YAML_CPP_VERSION_PATCH "3")
+set(YAML_CPP_VERSION_MINOR "6")
+set(YAML_CPP_VERSION_PATCH "2")
 set(YAML_CPP_VERSION "${YAML_CPP_VERSION_MAJOR}.${YAML_CPP_VERSION_MINOR}.${YAML_CPP_VERSION_PATCH}")
 
 enable_testing()
@@ -33,7 +38,8 @@ enable_testing()
 ### Project options
 ###
 ## Project stuff
-option(YAML_CPP_BUILD_TOOLS "Enable testing and parse tools" ON)
+option(YAML_CPP_BUILD_TESTS "Enable testing" ON)
+option(YAML_CPP_BUILD_TOOLS "Enable parse tools" ON)
 option(YAML_CPP_BUILD_CONTRIB "Enable contrib stuff in library" ON)
 
 ## Build options
@@ -147,9 +153,11 @@ if(WIN32)
 	endif()
 endif()
 
-# GCC or Clang specialities
+# GCC or Clang or Intel Compiler specialities
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
-   CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+   CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
+   CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+
 	### General stuff
 	if(WIN32)
 		set(CMAKE_SHARED_LIBRARY_PREFIX "")	# DLLs do not have a "lib" prefix
@@ -217,13 +225,14 @@ if(MSVC)
 		endif()
 
 		# correct linker options
-		foreach(flag_var  yaml_c_flags  yaml_cxx_flags)
+		foreach(flag_var  CMAKE_C_FLAGS  CMAKE_CXX_FLAGS)
 			foreach(config_name  ""  DEBUG  RELEASE  MINSIZEREL  RELWITHDEBINFO)
 				set(var_name "${flag_var}")
 				if(NOT "${config_name}" STREQUAL "")
 					set(var_name "${var_name}_${config_name}")
 				endif()
 				string(REPLACE "/MD" "${LIB_RT_OPTION}" ${var_name} "${${var_name}}")
+				set(${var_name} "${${var_name}}" CACHE STRING "" FORCE)
 			endforeach()
 		endforeach()
 	endif()
@@ -250,21 +259,15 @@ endif()
 ###
 ### General install settings
 ###
-if(WIN32)
-	set(_library_dir bin)	# .dll are in PATH, like executables
-else()
-	set(_library_dir lib)
-endif()
-
-set(INCLUDE_INSTALL_ROOT_DIR ${CMAKE_INSTALL_PREFIX}/include)
+set(INCLUDE_INSTALL_ROOT_DIR include)
 
 set(INCLUDE_INSTALL_DIR ${INCLUDE_INSTALL_ROOT_DIR}/yaml-cpp)
-set(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/${_library_dir}${LIB_SUFFIX}")
+set(LIB_INSTALL_DIR "lib${LIB_SUFFIX}")
 
 set(_INSTALL_DESTINATIONS
-	RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+	RUNTIME DESTINATION bin
 	LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-	ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}"
+	ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
 )
 
 
@@ -318,12 +321,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp-config.cmake.in
 	"${PROJECT_BINARY_DIR}/yaml-cpp-config.cmake" @ONLY)
 
 if(WIN32 AND NOT CYGWIN)
-	set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_PREFIX}/CMake)
+	set(INSTALL_CMAKE_DIR CMake)
 else()
 	set(INSTALL_CMAKE_DIR ${LIB_INSTALL_DIR}/cmake/yaml-cpp)
 endif()
 
-file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INCLUDE_INSTALL_ROOT_DIR}")
+file(RELATIVE_PATH REL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_CMAKE_DIR}" "${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_ROOT_DIR}")
 set(CONFIG_INCLUDE_DIRS "\${YAML_CPP_CMAKE_DIR}/${REL_INCLUDE_DIR}")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp-config.cmake.in
 	"${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/yaml-cpp-config.cmake" @ONLY)
@@ -347,8 +350,10 @@ endif()
 ###
 ### Extras
 ###
-if(YAML_CPP_BUILD_TOOLS)
+if(YAML_CPP_BUILD_TESTS)
 	add_subdirectory(test)
+endif()
+if(YAML_CPP_BUILD_TOOLS)
 	add_subdirectory(util)
 endif()
 

@@ -1,15 +1,36 @@
+/**************************************************************************
+ * Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
 //=========================================================================//
+//             AliEbyE Analysis for Net-Particle Higher Moment study       //
+//                           Nirbhay K. Behera                             //
+//                           nbehera@cern.ch                               //
+//                   Deepika Rathee  | Satyajit Jena                       //
+//                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//           Analysis AddTask for Net-particle higher moments study        //
-//              Author: Deepika Rathee  || Satyajit Jena                   //
-//                      drathee@cern.ch || sjena@cern.ch                   //
-//                        Thu Jun 19 11:44:51 CEST 2015                    //
-//                              Nirbhay  K. Behera                         //
-//                         (Last Modified: 2017/04/07)                     //
+//                        (Last Modified 2018/03/14)                       //
+//                 Dealing with Wide pT Window Modified to ESDs            //
+//Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
+//analysis task.                                                           //
 //=========================================================================//
 TString fileNameBase="AnalysisResults.root";
 
-AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(Bool_t isModeAOD = 0,
+//Caution-> runName: LHC10h, LHC11h, LHC15o and LHC10hAMPT (only supported)
+
+AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(
+						      TString runName = "LHC10h",
+						      Bool_t isModeAOD = 0,
 						      Int_t aodFilterBit = 768, 
 						      Bool_t IsMC  = 0.,
 						      Bool_t IsQA = 0,
@@ -19,6 +40,8 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(Bool_t isModeAOD = 0,
 						      Double_t Vx = 0.3,
 						      Double_t Vy = 0.3,
 						      Double_t Vz = 10.,
+						      Bool_t IsRapCut = 0,
+						      Bool_t IsTotalMom = 0,
 						      Double_t Eta = 0.8,
 						      Int_t TPCCrossRow = 80,
 						      Double_t Chi2NDF = 4.,
@@ -61,6 +84,9 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(Bool_t isModeAOD = 0,
   const Char_t *ctsk = Form("%sNET%s",pidname[pidtype], taskname);
   
   AliEbyEPidEfficiencyContamination *task = new AliEbyEPidEfficiencyContamination(ctsk);
+
+
+  task->SetRunPeriod(runName);
   
   if(isModeAOD) {
     task->SetIsAOD(isModeAOD);                       
@@ -72,6 +98,8 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(Bool_t isModeAOD = 0,
 
    task->SetDca( DCAxy,DCAz );
    task->SetVertexDiamond( Vx, Vy, Vz );
+   task->SetIsRapidityCut( IsRapCut );
+   task->SetUseTotalMomentumCut( IsTotalMom );
    task->SetKinematicsCuts( ptl, pth, Eta );
    if( pidtype == 0){
      task->SetNumberOfPtBins( 16 );
@@ -91,8 +119,10 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(Bool_t isModeAOD = 0,
    task->SetNSigmaMaxTPClow(nSigmaTPClow);
    task->SetMinPtForTOFRequired(minPtTOF);
    task->SetMaxPtForTPClow(minPtTPClow);
+
+   if( runName == "LHC10h") task->SelectCollisionCandidates(AliVEvent::kMB);
+   else if ( runName == "LHC15o") task->SelectCollisionCandidates(AliVEvent::kINT7);
    
-   task->SelectCollisionCandidates(AliVEvent::kMB);
    mgr->AddTask(task);
  
    

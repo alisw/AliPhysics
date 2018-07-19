@@ -133,7 +133,7 @@ AliFemtoModelCorrFctnQinv::AliFemtoModelCorrFctnQinv(const AliFemtoModelCorrFctn
 {
 }
 
-AliFemtoModelCorrFctnQinv*
+AliFemtoModelCorrFctn*
 AliFemtoModelCorrFctnQinv::Clone() const
 {
   AliFemtoModelCorrFctnQinv *result = new AliFemtoModelCorrFctnQinv(*this);
@@ -157,7 +157,7 @@ AliFemtoString
 AliFemtoModelCorrFctnQinv::Report()
 {
   TString report;
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 

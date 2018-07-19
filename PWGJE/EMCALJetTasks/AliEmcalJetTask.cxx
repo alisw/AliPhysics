@@ -18,6 +18,8 @@
 #include <TClonesArray.h>
 #include <TMath.h>
 #include <TRandom3.h>
+#include <TGrid.h>
+#include <TFile.h>
 
 #include <AliVCluster.h>
 #include <AliVEvent.h>
@@ -35,6 +37,8 @@
 #include "AliEmcalJetUtility.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliEmcalClusterJetConstituent.h"
+#include "AliEmcalParticleJetConstituent.h"
 
 #include "AliEmcalJetTask.h"
 
@@ -55,8 +59,8 @@ const Int_t AliEmcalJetTask::fgkConstIndexShift = 100000;
 AliEmcalJetTask::AliEmcalJetTask() :
   AliAnalysisTaskEmcal(),
   fJetsTag(),
-  fJetAlgo(AliJetContainer::antikt_algorithm),
   fJetType(AliJetContainer::kFullJet),
+  fJetAlgo(AliJetContainer::antikt_algorithm),
   fRecombScheme(AliJetContainer::pt_scheme),
   fRadius(0.4),
   fMinJetArea(0.001),
@@ -67,9 +71,13 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
-  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fUtilities(0),
+  fTrackEfficiencyOnlyForEmbedding(kFALSE),
+  fTrackEfficiencyFunction(nullptr),
+  fApplyArtificialTrackingEfficiency(kFALSE),
+  fRandom(0),
   fLocked(0),
+  fFillConstituents(kTRUE),
   fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
@@ -77,9 +85,9 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
+  fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask"),
   fClusterContainerIndexMap(),
-  fParticleContainerIndexMap(),
-  fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask")
+  fParticleContainerIndexMap()
 {
 }
 
@@ -90,8 +98,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
 AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   AliAnalysisTaskEmcal(name),
   fJetsTag("Jets"),
-  fJetAlgo(AliJetContainer::antikt_algorithm),
   fJetType(AliJetContainer::kFullJet),
+  fJetAlgo(AliJetContainer::antikt_algorithm),
   fRecombScheme(AliJetContainer::pt_scheme),
   fRadius(0.4),
   fMinJetArea(0.001),
@@ -102,9 +110,13 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
-  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fUtilities(0),
+  fTrackEfficiencyOnlyForEmbedding(kFALSE),
+  fTrackEfficiencyFunction(nullptr),
+  fApplyArtificialTrackingEfficiency(kFALSE),
+  fRandom(0),
   fLocked(0),
+  fFillConstituents(kTRUE),
   fJetsName(),
   fIsInit(0),
   fIsPSelSet(0),
@@ -112,9 +124,9 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fLegacyMode(kFALSE),
   fFillGhost(kFALSE),
   fJets(0),
+  fFastJetWrapper(name,name),
   fClusterContainerIndexMap(),
-  fParticleContainerIndexMap(),
-  fFastJetWrapper(name,name)
+  fParticleContainerIndexMap()
 {
 }
 
@@ -240,11 +252,13 @@ Int_t AliEmcalJetTask::FindJets()
     AliDebug(2,Form("Tracks from collection %d: '%s'. Embedded: %i, nTracks: %i", iColl-1, tracks->GetName(), tracks->GetIsEmbedding(), tracks->GetNParticles()));
     AliParticleIterableMomentumContainer itcont = tracks->accepted_momentum();
     for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
-      // artificial inefficiency
-      if (fTrackEfficiency < 1.) {
+      
+      // Apply artificial track inefficiency, if supplied (either constant or pT-dependent)
+      if (fApplyArtificialTrackingEfficiency) {
         if (fTrackEfficiencyOnlyForEmbedding == kFALSE || (fTrackEfficiencyOnlyForEmbedding == kTRUE && tracks->GetIsEmbedding())) {
-          Double_t rnd = gRandom->Rndm();
-          if (fTrackEfficiency < rnd) {
+          Double_t trackEfficiency = fTrackEfficiencyFunction->Eval(it->first.Pt());
+          Double_t rnd = fRandom.Rndm();
+          if (trackEfficiency < rnd) {
             AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
             continue;
           }
@@ -368,12 +382,37 @@ Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::Pse
  */
 void AliEmcalJetTask::ExecOnce()
 {
+  
+  // If a constant artificial track efficiency is supplied, create a TF1 that is constant in pT
   if (fTrackEfficiency < 1.) {
-    if (gRandom) delete gRandom;
-    gRandom = new TRandom3(0);
+    // If a TF1 was already loaded, throw an error
+    if (fApplyArtificialTrackingEfficiency) {
+      AliError(Form("%s: fTrackEfficiencyFunction was already loaded! Do not apply multiple artificial track efficiencies.", GetName()));
+    }
+    
+    fTrackEfficiencyFunction = new TF1("trackEfficiencyFunction", "[0]", 0., fMaxBinPt);
+    fTrackEfficiencyFunction->SetParameter(0, fTrackEfficiency);
+    fApplyArtificialTrackingEfficiency = kTRUE;
+  }
+  
+  // If artificial tracking efficiency is enabled (either constant or pT-depdendent), set up random number generator
+  if (fApplyArtificialTrackingEfficiency) {
+    fRandom.SetSeed(0);
   }
 
   fJetsName = AliJetContainer::GenerateJetName(fJetType, fJetAlgo, fRecombScheme, fRadius, GetParticleContainer(0), GetClusterContainer(0), fJetsTag);
+  std::cout << GetName() << ": Name of the jet container: " << fJetsName << std::endl;
+  std::cout << "Use this name in order to connect jet containers in your task to connect to the collection of jets found by this jet finder" << std::endl;
+  if(auto partcont = GetParticleContainer(0)) {
+    std::cout << "Found particle container with name " << partcont->GetName() << std::endl;
+  } else {
+    std::cout << "Not particle container found for task" << std::endl;
+  }
+  if(auto clustcont = GetClusterContainer(0)){
+    std::cout << "Found cluster container with name " << clustcont->GetName() << std::endl;
+  } else {
+    std::cout << "Not cluster container found for task" << std::endl;
+  }
 
   // add jets to event if not yet there
   if (!(InputEvent()->FindListObject(fJetsName))) {
@@ -493,6 +532,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         AliError(Form("Could not find track %d",tid));
         continue;
       }
+      if(fFillConstituents){
+        jet->AddParticleConstituent(t, partCont->GetIsEmbedding(), fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid));
+      }
 
       Double_t cEta = t->Eta();
       Double_t cPhi = t->Phi();
@@ -553,6 +595,8 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       Double_t cPhi = nP.Phi_0_2pi();
       Double_t cPt  = nP.Pt();
       Double_t cP   = nP.P();
+      Double_t pvec[3] = {nP.Px(), nP.Py(), nP.Pz()};
+      if(fFillConstituents) jet->AddClusterConstituent(c, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec, clusCont->GetIsEmbedding(), fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid));
 
       neutralE += cP;
       if (cPt > maxNe) maxNe = cPt;
@@ -923,6 +967,42 @@ Bool_t AliEmcalJetTask::IsJetInPhos(Double_t eta, Double_t phi, Double_t r)
   }
   return kFALSE;
 }
+  
+/**
+ * Load the artificial tracking efficiency TF1 from a file into the member fTrackEfficiencyFunction
+ * @param path Path to the file containing the TF1
+ * @param name Name of the TF1
+ */
+void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, const std::string & name)
+{
+  TString fname(path);
+  if (fname.BeginsWith("alien://")) {
+    TGrid::Connect("alien://");
+  }
+  
+  TFile* file = TFile::Open(path.data());
+  
+  if (!file || file->IsZombie()) {
+    AliErrorStream() << "Could not open artificial track efficiency function file\n";
+    return;
+  }
+  
+  TF1* trackEff = dynamic_cast<TF1*>(file->Get(name.data()));
+  
+  if (trackEff) {
+    AliInfoStream() << Form("Artificial track efficiency function %s loaded from file %s.", name.data(), path.data()) << "\n";
+  }
+  else {
+    AliErrorStream() << Form("Artificial track efficiency function %s not found in file %s.", name.data(), path.data()) << "\n";
+    return;
+  }
+  
+  fTrackEfficiencyFunction = static_cast<TF1*>(trackEff->Clone());
+  fApplyArtificialTrackingEfficiency = kTRUE;
+  
+  file->Close();
+  delete file;
+}
 
 /**
  * Add an instance of this class to the analysis manager
@@ -1066,8 +1146,6 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
   // Create containers for input/output
   AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(jetTask, 0, cinput);
-
-  TObjArray* cnt = mgr->GetContainers();
 
   return jetTask;
 }

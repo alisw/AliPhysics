@@ -19,18 +19,22 @@
 //                                                                       //
 /*
  * A container to describe the decay of a two body process
- * 
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
+ *
  */
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+
 #include "AliDielectronSignalMC.h"
 
 ClassImp(AliDielectronSignalMC)
+
+const char *AliDielectronSignalMC::fgkJpsiSignals[AliDielectronSignalMC::kEnd] = {"none",
+  "inclusiveJpsi", "beautyJpsi", "promptJpsi", "promptJpsiRad", "promptJpsiNonRad", "directJpsi", "gammaConversion", "gammaConversionDiffMother", "electrons", "directElec", "elecPrim", "fromBgTest"};
 
 //_________________________________________________________________________
 AliDielectronSignalMC::AliDielectronSignalMC() :
@@ -44,10 +48,11 @@ AliDielectronSignalMC::AliDielectronSignalMC() :
   fMother2(0),
   fGrandMother1(0),
   fGrandMother2(0),
-  fLeg1Exclude(kFALSE),      
-  fLeg2Exclude(kFALSE),         
-  fMother1Exclude(kFALSE),       
-  fMother2Exclude(kFALSE),   
+  fStackPDG(0),
+  fLeg1Exclude(kFALSE),
+  fLeg2Exclude(kFALSE),
+  fMother1Exclude(kFALSE),
+  fMother2Exclude(kFALSE),
   fGrandMother1Exclude(kFALSE),
   fGrandMother2Exclude(kFALSE),
   fLeg1Source(kDontCare),
@@ -63,16 +68,15 @@ AliDielectronSignalMC::AliDielectronSignalMC() :
   fCheckBothChargesGrandMother1(kFALSE),
   fCheckBothChargesGrandMother2(kFALSE),
   fCheckGEANTProcess(kFALSE),
+  fCheckMotherGrandmother(kFALSE),
+  fMotherIsGrandmother(kFALSE),
   fMothersRelation(kUndefined),
   fGrandMothersRelation(kUndefined),
   fGEANTProcess(kPPrimary),
   fJpsiRadiative(kAll),
-  fStackPDG(0),
-  fCheckMotherGrandmother(kFALSE),
-  fMotherIsGrandmother(kFALSE),
   fCheckStackForPDG(kFALSE),
-  fFillPureMCStep(kFALSE) {
-
+  fFillPureMCStep(kFALSE)
+{
   //
   // Default constructor
   //
@@ -91,10 +95,11 @@ AliDielectronSignalMC::AliDielectronSignalMC(const Char_t* name, const Char_t* t
   fMother2(0),
   fGrandMother1(0),
   fGrandMother2(0),
-  fLeg1Exclude(kFALSE),      
-  fLeg2Exclude(kFALSE),         
-  fMother1Exclude(kFALSE),       
-  fMother2Exclude(kFALSE),   
+  fStackPDG(0),
+  fLeg1Exclude(kFALSE),
+  fLeg2Exclude(kFALSE),
+  fMother1Exclude(kFALSE),
+  fMother2Exclude(kFALSE),
   fGrandMother1Exclude(kFALSE),
   fGrandMother2Exclude(kFALSE),
   fLeg1Source(kDontCare),
@@ -110,16 +115,15 @@ AliDielectronSignalMC::AliDielectronSignalMC(const Char_t* name, const Char_t* t
   fCheckBothChargesGrandMother1(kFALSE),
   fCheckBothChargesGrandMother2(kFALSE),
   fCheckGEANTProcess(kFALSE),
+  fCheckMotherGrandmother(kFALSE),
+  fMotherIsGrandmother(kFALSE),
   fMothersRelation(kUndefined),
   fGrandMothersRelation(kUndefined),
   fGEANTProcess(kPPrimary),
   fJpsiRadiative(kAll),
-  fStackPDG(0),
-  fCheckMotherGrandmother(kFALSE),
-  fMotherIsGrandmother(kFALSE),
   fCheckStackForPDG(kFALSE),
-  fFillPureMCStep(kFALSE){
-
+  fFillPureMCStep(kFALSE)
+{
   //
   // Named constructor
   //
@@ -132,4 +136,137 @@ AliDielectronSignalMC::~AliDielectronSignalMC() {
   //
   //  Destructor
   //
+}
+
+//_________________________________________________________________________
+AliDielectronSignalMC* AliDielectronSignalMC::GetJpsiMCsignalDef(EJpsiSignals kSignal)
+{
+  AliDielectronSignalMC *mcSignal = new AliDielectronSignalMC();
+  mcSignal->SetName(fgkJpsiSignals[kSignal]);
+  switch (kSignal) {
+    case kBegin:
+      printf("No AliDielectronSignalMC defined for kBegin returning NULL");
+      return 0x0;
+    case kInclusiveJpsi:
+      // Inclusive Jpsi
+      // All jpsi available decaying into dielectron pairs
+      mcSignal->SetLegPDGs(11,-11);
+      mcSignal->SetMotherPDGs(443,443);
+      mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
+      mcSignal->SetFillPureMCStep(kTRUE);
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesMothers(kTRUE,kTRUE);
+      return mcSignal;;
+    case kBeautyJpsi:
+      // Jpsi from beauty decays
+      // Only b-Mesons, b-Baryons decay to fast to measure them separately from promptJpsi in real data (anyhow small branching ratio b-Baryons->Jpsi)
+      mcSignal->SetLegPDGs(11,-11);
+      mcSignal->SetMotherPDGs(443,443);
+      mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
+      mcSignal->SetGrandMotherPDGs(500,500);
+      mcSignal->SetFillPureMCStep(kTRUE);
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesMothers(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+      return mcSignal;
+    case kPromptJpsi:
+      // Inclusive Jpsi without Jpsi from beauty decays
+      mcSignal->SetLegPDGs(11,-11);
+      mcSignal->SetMotherPDGs(443,443);
+      mcSignal->SetGrandMotherPDGs(503,503,kTRUE,kTRUE);
+      mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
+      mcSignal->SetFillPureMCStep(kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesMothers(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+      return mcSignal;
+    case kPromptRadJpsi:
+      mcSignal->SetLegPDGs(11,-11);
+      mcSignal->SetMotherPDGs(443,443);
+      mcSignal->SetGrandMotherPDGs(503,503,kTRUE,kTRUE);   // not from beauty hadrons
+      mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
+      mcSignal->SetFillPureMCStep(kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesMothers(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+      mcSignal->SetJpsiRadiative(AliDielectronSignalMC::kIsRadiative);
+      return mcSignal;
+    case kPromptNonRadJpsi:
+      mcSignal->SetLegPDGs(11,-11);
+      mcSignal->SetMotherPDGs(443,443);
+      mcSignal->SetGrandMotherPDGs(503,503,kTRUE,kTRUE);   // not from beauty hadrons
+      mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
+      mcSignal->SetFillPureMCStep(kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesMothers(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+      mcSignal->SetJpsiRadiative(AliDielectronSignalMC::kIsNotRadiative);
+      return mcSignal;
+    case kDirectJpsi:
+      mcSignal->SetLegPDGs(11,-11);
+      mcSignal->SetMotherPDGs(443,443);
+      mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
+      mcSignal->SetFillPureMCStep(kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+      mcSignal->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesMothers(kTRUE,kTRUE);
+      return mcSignal;
+    case kGammaConv:
+      mcSignal->SetLegPDGs(11,-11);
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+      mcSignal->SetMotherPDGs(22,22);
+      mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
+      return mcSignal;
+    case kGammaConvDiffMother:
+      mcSignal->SetLegPDGs(11,-11);
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kSecondary, AliDielectronSignalMC::kSecondary);
+      mcSignal->SetMotherPDGs(22,22);
+      mcSignal->SetMothersRelation(AliDielectronSignalMC::kDifferent);
+      return mcSignal;
+    case kElectrons:
+      // All electrons
+      mcSignal->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      // mcSignal->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+      mcSignal->SetGrandMotherPDGs(500,500,kTRUE,kTRUE); // exclude non-prompt jpsi eletrons
+      mcSignal->SetFillPureMCStep(kTRUE);
+      // mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
+      return mcSignal;
+    case kDirectElectrons:
+      mcSignal->SetLegPDGs(11,1); //NEW
+      mcSignal->SetMothersRelation(AliDielectronSignalMC::kSame);
+      mcSignal->SetGrandMotherPDGs(-1103,-1103);
+      mcSignal->SetFillPureMCStep(kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+      mcSignal->SetMotherSources(AliDielectronSignalMC::kDirect, AliDielectronSignalMC::kDirect);
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+      mcSignal->SetGrandMotherPDGs(902,902,kTRUE,kTRUE); // exclude open charm,beauty hadrons
+      return mcSignal;
+    case kPrimaryElectrons:
+      mcSignal->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kFinalState, AliDielectronSignalMC::kFinalState);
+      mcSignal->SetCheckBothChargesMothers(kTRUE,kTRUE);
+      mcSignal->SetMotherPDGs(902,902,kTRUE,kTRUE); // exclude open charm,beauty hadrons
+      mcSignal->SetCheckBothChargesGrandMothers(kTRUE,kTRUE);
+      mcSignal->SetGrandMotherPDGs(902,902,kTRUE,kTRUE); // exclude open charm,beauty hadrons
+      mcSignal->SetFillPureMCStep(kTRUE);
+      return mcSignal;
+    case kFromBgTest:
+      mcSignal->SetLegPDGs(11,1);  //dummy second leg (never MCtrue)
+      mcSignal->SetCheckBothChargesLegs(kTRUE,kTRUE);
+      mcSignal->SetLegSources(AliDielectronSignalMC::kFromBGEvent, AliDielectronSignalMC::kFinalState);
+      mcSignal->SetFillPureMCStep(kTRUE);
+      return mcSignal;
+    case kEnd:
+      printf("No AliDielectronSignalMC defined for kEnd returning NULL");
+      return 0x0;
+  }
 }

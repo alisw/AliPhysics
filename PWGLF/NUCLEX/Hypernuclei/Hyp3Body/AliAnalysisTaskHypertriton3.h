@@ -30,6 +30,7 @@
 #include <TROOT.h>
 
 #include "AliAnalysisTaskSE.h"
+#include "AliEventCuts.h"
 #include <TString.h>
 
 class TChain;
@@ -59,6 +60,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t*);
 
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
+  void SetAddQAplot(Bool_t mcplot = kFALSE) {fQAplots = mcplot;}
   void SetFillTree(Bool_t outTree = kFALSE) {fFillTree = outTree;}
   void SetRunPeriodSelection(Bool_t run1 = kFALSE, Bool_t run2 = kFALSE) {fRun1PbPb = run1; fRun2PbPb = run2;}
   void SetMassUpperLimit(Float_t massup = 3.1) {fCutMassUp = massup;}
@@ -125,6 +127,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
 
   AliESDEvent        *fESDevent;                   ///< ESD event
+  AliEventCuts        fEventCuts;                  ///< Event selection using AliEventCuts - implemented for Run2 (TO DO: crosscheck and update also for Run1 analysis)
   AliESDtrackCuts    *fESDtrackCuts;               ///< First set of ESD track cuts
   AliESDtrackCuts    *fESDtrackCutsV0;             ///< Track cuts applied only to \f$\pi^{-}\f$ and \f$\pi^{+}\f$ candidate
   AliESDVertex       *fPrimaryVertex;              //!<! Primary vertex of the current event
@@ -137,6 +140,7 @@ class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
   TObjArray          *fTrkArray;                   //!<! Array containing the three tracks candidated to the secondary vertex reconstruction
 
   //Variables
+  Bool_t             fQAplots;
   Bool_t             fMC;                          ///< variables for MC selection
   Bool_t             fFillTree;                    ///< variables to fill the Tree
   Bool_t             fRun1PbPb;                    ///< variables to activate Trigger and Centrality selection for Run1 (2011 Pb-Pb)

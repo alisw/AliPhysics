@@ -30,7 +30,7 @@ public:
                     kSDD0=0x0004, kSDD1=0x0008,
                     kSSD0=0x0010, kSSD1=0x0020};
   enum ITSclusterCutType { kOneOf=0, kAtLeast, kExact };
-  enum EFilterBit  { kSwitchOff=0, kTPCqual=1, kITSonly=2, kTPCqualSPDany=4, kTPCqualSPDanyPIDele=8, kTPConly=128 };
+  enum EFilterBit  { kSwitchOff=0, kTPCqual=1, kITSonly=2, kTPCqualSPDany=4, kTPCqualSPDanyPIDele=8, kGlobalNoDCA=16, kTPConly=128 };
 
   AliDielectronTrackCuts();
   AliDielectronTrackCuts(const char*name, const char* title);

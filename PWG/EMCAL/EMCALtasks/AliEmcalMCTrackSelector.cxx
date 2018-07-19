@@ -5,6 +5,8 @@
 
 #include "AliEmcalMCTrackSelector.h"
 
+#include <iostream>
+
 #include <TClonesArray.h>
 
 #include "AliAnalysisManager.h"
@@ -166,6 +168,8 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
 
   const Int_t nprim = mcEvent->GetNumberOfPrimaries();
 
+  AliDebugStream(3) << "Number of particles: " << Nparticles << std::endl;
+
   // loop over particles
   for (Int_t iPart = 0, nacc = 0; iPart < Nparticles; iPart++) {
 
@@ -182,6 +186,16 @@ void AliEmcalMCTrackSelector::ConvertMCParticles(AliMCEvent* mcEvent, TClonesArr
     if (isPhysPrim) flag |= AliAODMCParticle::kPhysicalPrim;
     if (mcEvent->IsSecondaryFromWeakDecay(iPart)) flag |= AliAODMCParticle::kSecondaryFromWeakDecay;
     if (mcEvent->IsSecondaryFromMaterial(iPart)) flag |= AliAODMCParticle::kSecondaryFromMaterial;
+
+    AliDebugStream(3) << "Particle " << iPart << ": pt = " << part->Pt() << ", PDG = " << part->PdgCode() <<
+        ", mother " << part->GetMother() <<
+        ", kPrimary? " <<  Bool_t((flag & AliAODMCParticle::kPrimary) != 0) <<
+        ", kPhysicalPrim? " <<  Bool_t((flag & AliAODMCParticle::kPhysicalPrim) != 0) <<
+        ", kSecondaryFromWeakDecay? " <<  Bool_t((flag & AliAODMCParticle::kSecondaryFromWeakDecay) != 0) <<
+        ", kSecondaryFromMaterial? " << Bool_t((flag & AliAODMCParticle::kSecondaryFromMaterial) != 0) <<
+        ", nacc = " << nacc <<
+        ", iPart = " << iPart <<
+        std::endl;
 
     AliAODMCParticle *aodPart = new ((*partOut)[nacc]) AliAODMCParticle(part, iPart, flag);
     aodPart->SetGeneratorIndex(part->GetGeneratorIndex());    

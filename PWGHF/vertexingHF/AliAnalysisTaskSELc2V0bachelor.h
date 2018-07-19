@@ -19,6 +19,7 @@
 
 #include "TROOT.h"
 #include "TSystem.h"
+#include "TVector.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
@@ -26,6 +27,7 @@
 #include "AliAODTrack.h"
 #include "AliRDHFCutsLctoV0.h"
 #include "AliNormalizationCounter.h"
+#include <vector>
 
 /// \class AliAnalysisTaskSELc2V0bachelor
 
@@ -62,6 +64,12 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   void MakeSingleAnalysisForSystK0SP(AliAODEvent* aodEvent,TClonesArray *mcArray, 
       AliRDHFCutsLctoV0 *cutsAnal);
 
+  void SetGenerateBGEventFromTracks(Int_t a){fGenerateBGEventFromTracks=a;}
+  Int_t GetPoolIndex(Double_t zvert, Double_t mult);
+  void DoEventMixing(AliAODEvent* aodEvent,TClonesArray *mcArray, AliRDHFCutsLctoV0 *cutsAnal);
+  void FillMixedBackground(std::vector<TVector * > mixTypePVars, AliAODEvent *aod, AliRDHFCutsLctoV0 *cutsAnal);
+  void DoRotationFromTrack(AliAODEvent* aodEvent,TClonesArray *mcArray, AliRDHFCutsLctoV0 *cutsAnal);
+
   /// set MC usage
   void SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
   Bool_t GetMC() const {return fUseMCInfo;}
@@ -69,6 +77,9 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   /// set flag for additional checks
   void SetAdditionalChecks(Bool_t additionalChecks) {fAdditionalChecks = additionalChecks;}
   Bool_t GetAdditionalChecks() const {return fAdditionalChecks;}
+
+  void SetFillSubSampleHist(Bool_t subChecks) {fFillSubSampleHist = subChecks;}
+  Bool_t GetFillSubSampleHist() const {return fFillSubSampleHist;}
 
   void FillArmPodDistribution(AliAODRecoDecay *vZero,TString histoTitle, Bool_t isCandidateSelectedCuts, Bool_t isBachelorID);
 
@@ -154,6 +165,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   TList *fOutputPIDBach;      /// User output slot 5 // histos with PID on Bachelor
 
   TH1F *fCEvents;                    /// Histogram to check selected events
+  Int_t fEventCounter; /// Event counter for sub sample test
   AliNormalizationCounter *fCounter; /// AliNormalizationCounter on output slot 2
   AliRDHFCutsLctoV0 *fAnalCuts;      /// Cuts - sent to output slot 3
   Bool_t fUseOnTheFlyV0;             /// flag to analyze also on-the-fly V0 candidates
@@ -166,6 +178,7 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
   AliAODVertex *fVtx1;                /// primary vertex
   Float_t fBzkG;                      /// magnetic field value [kG]
   Bool_t fAdditionalChecks;           /// flag to fill additional histograms
+  Bool_t fFillSubSampleHist;           /// flag to fill subsample histograms
 
   Bool_t fTrackRotation;              /// flag to check track rotation
   TList *fOutputPIDBachTR;            /// User output slot 6 // histos with PID on Bachelor and track rotation
@@ -184,8 +197,21 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 
   Int_t fDoSingleAnalysisForSystK0SP; /// Analyze p,K,D for syst (0:off, 1:on, 2:only single ana)
 
+  // Mixed event (track level)
+  Int_t fGenerateBGEventFromTracks; /// flag for (1) event mixing or (2) track rotation from tracks
+  Int_t  fNumberOfEventsForMixing; /// maximum number of events to be used in event mixing
+  Int_t fNzVtxBins;								/// number of z vrtx bins
+  Double_t fZvtxBins[100];						// [fNzVtxBinsDim]
+  Int_t fNCentBins;								/// number of centrality bins
+  Double_t fCentBins[100];						// [fNCentBinsDim]
+  Int_t  fNOfPools; /// number of pools
+  Int_t fPoolIndex; /// pool index
+  std::vector<Int_t> fNextResVec; //!<! Vector storing next reservoir ID
+  std::vector<Bool_t> fReservoirsReady; //!<! Vector storing if the reservoirs are ready
+  std::vector<std::vector< std::vector< TVector * > > > fReservoirP; //!<! reservoir
+
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSELc2V0bachelor,12); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelor,14); /// class for Lc->p K0
   /// \endcond
 };
 

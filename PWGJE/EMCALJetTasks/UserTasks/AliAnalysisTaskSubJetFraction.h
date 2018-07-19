@@ -14,9 +14,11 @@ class AliJetContainer;
 class AliEmcalJetFinder;
 class AliFJWrapper;
 
+
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliFJWrapper.h"
 #include "AliClusterContainer.h"
+#include "TF1.h"
 const Int_t nVar = 28;
 class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
  public:
@@ -80,7 +82,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   void SetZCut(Double_t ZCut)                               {fZCut = ZCut;}
   void SetReclusteringAlgorithm(Int_t ReclusteringAlgorithm)     {fReclusteringAlgorithm = ReclusteringAlgorithm;}
   void SetSoftDropOn(Int_t SoftDropOn)                           {fSoftDropOn = SoftDropOn;}
-  Int_t GetSoftDropOn()                                          {return fSoftDropOn;} 
+  Int_t GetSoftDropOn()                                          {return fSoftDropOn;}
+  void SetRandomisationEqualPt(Bool_t RandmosationEqualPt)       {fRandomisationEqualPt = RandmosationEqualPt;}
   
   void SetNsubUnNormMeasure( Bool_t NsubMeasure)              {fNsubMeasure= NsubMeasure;}
 
@@ -98,7 +101,12 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            SubJetOrdering(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Index);
   Double_t                            SubJetFraction(AliEmcalJet *Jet, AliEmcalJetFinder *Reclusterer, Int_t N, Int_t Type, Bool_t Add, Bool_t Loss);
   Double_t                            NSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Double_t JetRadius,  AliEmcalJetFinder *Reclusterer, Int_t N, Int_t A, Int_t B);
-  Double_t                            fjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
+  Double_t                            FjNSubJettiness(AliEmcalJet *Jet, Int_t JetContNb, Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
+  Double_t                            FjNSubJettinessFastJet(std::pair<fastjet::PseudoJet,fastjet::ClusterSequence *> Jet_ClusterSequence, Int_t JetContNb,Int_t N, Int_t Algorithm, Double_t Beta, Int_t Option=0, Double_t Beta_SD=0, Double_t ZCut=0.1);
+  std::pair<fastjet::PseudoJet,fastjet::ClusterSequence *>                  ModifyJet(AliEmcalJet* Jet, Int_t JetContNb, TString Modification);
+  std::vector<fastjet::PseudoJet>     RandomiseTracks(AliEmcalJet *Jet,std::vector<fastjet::PseudoJet> fInputVectors);
+  std::vector<fastjet::PseudoJet>     AddExtraProng(std::vector<fastjet::PseudoJet> fInputVectors, Double_t Distance, Double_t PtFrac);
+  std::vector<fastjet::PseudoJet>     AddkTTracks(AliEmcalJet *Jet,std::vector<fastjet::PseudoJet> fInputVectors, Double_t QHat,Double_t Xlength, Int_t NAdditionalTracks);
  
   Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted. 
   Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
@@ -114,7 +122,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Float_t                             fRecoilAngularWindow;             //angular window for btb recoil analysis 
   Int_t                               fSemigoodCorrect;             //if==1 we run over semigood runs
   Float_t                             fHolePos;                          //position in radians of the bad TPC sector
-  Float_t                             fHoleWidth;                       //width of the hole in radians 
+  Float_t                             fHoleWidth;                       //width of the hole in radians
+  TRandom3                            *fRandom;                     //! Random number generator
   Bool_t                              fCentSelectOn;                // switch on/off centrality selection
   Float_t                             fCentMin;                     // min centrality value
   Float_t                             fCentMax;                     // max centrality value
@@ -132,9 +141,9 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   Double_t                            fZCut;
   Int_t                               fReclusteringAlgorithm;
   Int_t                               fSoftDropOn;
+  Bool_t                              fRandomisationEqualPt;
 
   Bool_t                              fNsubMeasure;
-  
   TH1F                                *fhPtTriggerHadron;
   TH1F                                *fhJetPt;
   TH1F                                *fhJetPt_1;
@@ -177,6 +186,8 @@ class AliAnalysisTaskSubJetFraction : public AliAnalysisTaskEmcalJet {
   TH1F                                *fhEventCounter_2;
   TH1F                                *fhPhiTriggerHadronJet;
   TH1F                                *fhPhiTriggerHadronEventPlane;
+  TH1F                                *fhTrackPhi;
+  TH1F                                *fhTrackPhi_Cut;
   TH1F                                *fhPhiTriggerHadronEventPlaneTPC;
   TH2F                                *fh2PtTriggerHadronJet;
   TH2F                                *fh2PtRatio; 

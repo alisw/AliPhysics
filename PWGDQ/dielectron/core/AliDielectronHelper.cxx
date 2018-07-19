@@ -43,7 +43,6 @@
 #include <AliAODEvent.h>
 #include <AliAODTracklets.h>
 #include <AliMultiplicity.h>
-#include <AliStack.h>
 
 #include "AliDielectronVarCuts.h"
 #include "AliDielectronTrackCuts.h"
@@ -148,40 +147,60 @@ void AliDielectronHelper::GetMaxPtAndPhi(const AliVEvent *ev, Double_t &ptMax, D
 //_____________________________________________________________________________
 Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange, Bool_t excludeJpsiDaughters){
   // determination of Nch
+  // Obsolete function see CountMCtracks
   if (!ev || ev->IsA()!=AliMCEvent::Class()) return -1;
-
-  AliStack *stack = ((AliMCEvent*)ev)->Stack();
-
-  if (!stack) return -1;
-
-  Int_t nParticles = stack->GetNtrack();
+  Int_t nParticles = ev->GetNumberOfTracks();
   Int_t nCh = 0;
+  if(!ev->Particle(1) && !ev->GetTrack(1))  return -1;
 
-  // count..
-  for (Int_t iMc = 0; iMc < nParticles; ++iMc) {
-    if (!stack->IsPhysicalPrimary(iMc)) continue;
+  Bool_t isAOD = kFALSE;
+  if(ev->GetTrack(1)->IsA() == AliAODMCParticle::Class()) isAOD = kTRUE;
+  if(isAOD){
+    for (Int_t iParticle = 1; iParticle < nParticles; iParticle++) {
+      AliAODMCParticle *mcPar = (AliAODMCParticle*) ev->GetTrack(iParticle);
+      if(!mcPar) continue;
+      if(!mcPar->IsPhysicalPrimary()) continue;
+      if(mcPar->Charge() == 0) continue;
 
-    TParticle* particle = stack->Particle(iMc);
-    if (!particle) continue;
-    if (particle->GetPDG()->Charge() == 0) continue;
-
-    if(excludeJpsiDaughters){
-      Int_t iMother = particle->GetMother(0);
-      if( ! (iMother < 0) ) {
-        TParticle* mother = stack->Particle(iMother);
-        if( mother && TMath::Abs( mother->GetPdgCode() ) == 443  ) continue;
+      if(excludeJpsiDaughters){
+        Int_t iMother = mcPar->GetMother();
+        if(iMother > 0){
+          AliAODMCParticle *mcParMother = (AliAODMCParticle*) ev->GetTrack(iMother);
+          if(mcParMother)
+          if(TMath::Abs(mcParMother->GetPdgCode()) == 443) continue;
+        }
       }
+      Float_t eta = mcPar->Eta();
+      if (TMath::Abs(eta) < TMath::Abs(etaRange)) nCh++;
     }
-    Float_t eta = particle->Eta();
-    if (TMath::Abs(eta) < TMath::Abs(etaRange)) nCh++;
   }
+  // count.. for ESD input
+  else{
+    for (Int_t iMc = 0; iMc < nParticles; ++iMc) {
+      if (!ev->IsPhysicalPrimary(iMc)) continue;
 
+      TParticle* particle = ev->Particle(iMc);
+      if (!particle) continue;
+      if (particle->GetPDG()->Charge() == 0) continue;
+
+      if(excludeJpsiDaughters){
+        Int_t iMother = particle->GetMother(0);
+        if( ! (iMother < 0) ) {
+          TParticle* mother = ev->Particle(iMother);
+          if( mother && TMath::Abs( mother->GetPdgCode() ) == 443  ) continue;
+        }
+      }
+      Float_t eta = particle->Eta();
+      if (TMath::Abs(eta) < TMath::Abs(etaRange)) nCh++;
+    }
+  }
   return nCh;
 }
 
 
 //_____________________________________________________________________________
-Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev, Double_t etaRange){
+Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev, Double_t etaRange)
+{
   // Compute the collision multiplicity based on AOD or ESD tracklets
   // Code taken from: AliAnalysisTaskMuonCollisionMultiplicity::ComputeMultiplicity()
   if (!ev) return -1;
@@ -212,7 +231,8 @@ Int_t AliDielectronHelper::GetNaccTrcklts(const AliVEvent *ev, Double_t etaRange
 
 
 //________________________________________________________________
-Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Double_t uncorrectedNacc, Double_t vtxZ, Int_t type) {
+Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Double_t uncorrectedNacc, Double_t vtxZ, Int_t type)
+{
   //
   // Correct the number of accepted tracklets based on the period and event vertex
   //
@@ -222,15 +242,15 @@ Double_t AliDielectronHelper::GetNaccTrckltsCorrected(const AliVEvent *event, Do
   Int_t period = -1;   // 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
   Double_t refMult = 0.0;   // reference multiplicity
 
-//  if(runNo>114930 && runNo<117223) period = 0; Org Fred Kramer Analysis
+  //  if(runNo>114930 && runNo<117223) period = 0; Org Fred Kramer Analysis
   if(runNo>114736 && runNo<117224) period = 0; // LHC10b PASS4 2015
-//  if(runNo>119158 && runNo<120830) period = 1; Org Fred Kramer Analysis
+  //  if(runNo>119158 && runNo<120830) period = 1; Org Fred Kramer Analysis
   if(runNo>118358 && runNo<121041) period = 1; // LHC10c PASS4 2015
-//  if(runNo>122373 && runNo<126438) period = 2; Org Fred Kramer Analysis
+  //  if(runNo>122373 && runNo<126438) period = 2; Org Fred Kramer Analysis
   if(runNo>121693 && runNo<126439) period = 2; // LHC10d PASS4 2015
-//  if(runNo>127711 && runNo<130841) period = 3; Org Fred Kramer Analysis
+  //  if(runNo>127711 && runNo<130841) period = 3; Org Fred Kramer Analysis
   if(runNo>127102 && runNo<130851) period = 3; // LHC10e PASS4 2015
-//pp 13 TeV CJ
+  //pp 13 TeV CJ
   if(runNo>254124 && runNo<264035) period = 4; // LHC16l,16k,16i,16j,16o pass1 2016 CJ analysis
 
   if(period<0 || period>4) return uncorrectedNacc;
@@ -296,10 +316,10 @@ Int_t AliDielectronHelper::GetNacc(const AliVEvent *ev){
 }
 
 //_____________________________________________________________________________
-Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *efficiencies, Bool_t bEventPlane, Bool_t useV0Cep){
+Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *efficiencies, Bool_t bEventPlane, Bool_t useV0Cep)
+{
   // recalulate the its-tpc matching efficiecy
   if (!ev) return -1;
-  Bool_t bDebug = kFALSE;
 
 
   // AliDielectronVarCuts varCutsTPC;
@@ -329,8 +349,8 @@ Double_t AliDielectronHelper::GetITSTPCMatchEff(const AliVEvent *ev, Double_t *e
   //   varCutsEPoutP.AddCut(AliDielectronVarManager::kQnDeltaPhiTrackTPCrpH2, 2.35, 3.15, kTRUE);
   // }
 
-// @TODO: IsSelected() sets the VarManager fgFillMap to the 'trkCutsITS' fillmap.
-// Since 'trkCutsITS' is a stack object and will be deleted, the VarManager fgFillMap goes into an undefined state.
+  // @TODO: IsSelected() sets the VarManager fgFillMap to the 'trkCutsITS' fillmap.
+  // Since 'trkCutsITS' is a stack object and will be deleted, the VarManager fgFillMap goes into an undefined state.
 
   Int_t nRecoTracks = ev->GetNumberOfTracks();
   Double_t nTPC = 0, nITS = 0;
@@ -511,53 +531,82 @@ void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t a
 }
 
 //_____________________________________________________________________________
-Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, Int_t pdgMother, Int_t pdgDaughter, Int_t prim){
-  // TODO: add AODs
+Int_t AliDielectronHelper::GetNMothers(const AliMCEvent *ev, Double_t etaRange, Int_t pdgMother, Int_t pdgDaughter, Int_t prim)
+{
+  // Obsolete function see CountMCtracks
   // counting number of mother particles generated in given eta range and 2 particle decay
   if (!ev || ev->IsA()!=AliMCEvent::Class()) return -1;
 
-  AliStack *stack = ((AliMCEvent*)ev)->Stack();
+  if(!ev->Particle(1) && !ev->GetTrack(1))  return -1;
 
-  if (!stack) return -1;
+  Bool_t isAOD = kFALSE;
+  if(ev->GetTrack(1)->IsA() == AliAODMCParticle::Class()) isAOD = kTRUE;
 
-  Int_t nParticles = stack->GetNtrack();
+  Int_t nParticles = ev->GetNumberOfTracks();
   Int_t nMothers   = 0;
 
-  // count..
-  for (Int_t iMc = 0; iMc < nParticles; ++iMc) {
+  // count.. for ESDs
+  if(isAOD)
+  {
+    for (Int_t iMc = 1; iMc < nParticles; ++iMc) {
+      AliAODMCParticle *mcPar = (AliAODMCParticle*) ev->GetTrack(iMc);
+      if(!mcPar) continue;
+      if(mcPar->GetPdgCode() != pdgMother) continue;
+      if(TMath::Abs(mcPar->Eta()) > TMath::Abs(etaRange)) continue;
 
-    TParticle* particle = stack->Particle(iMc);
-    if (!particle) continue;
-    if (particle->GetPdgCode() != pdgMother)               continue;
-    if (TMath::Abs(particle->Eta()) > TMath::Abs(etaRange)) continue;
+      // Daughters
+      if(mcPar->GetNDaughters() != 2) continue;
+      if(mcPar->GetFirstDaughter() >= nParticles || mcPar->GetFirstDaughter() < 0) continue;
+      AliAODMCParticle *mcParDau1 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetFirstDaughter());
+      if(!mcParDau1) continue;
+      if(TMath::Abs(mcParDau1->GetPdgCode()) != pdgDaughter) continue;
+      if(TMath::Abs(mcParDau1->Eta()) > TMath::Abs(etaRange)) continue;
 
-    if (particle->GetNDaughters() != 2)                 continue;
-    // 1st daugther
-    if (particle->GetFirstDaughter()>=nParticles ||
-	particle->GetFirstDaughter()<0             ) continue;
-
-    TParticle* dau1 = stack->Particle(particle->GetFirstDaughter());
-    if (TMath::Abs(dau1->GetPdgCode()) != pdgDaughter)     continue;
-    if (TMath::Abs(dau1->Eta()) > TMath::Abs(etaRange)) continue;
-
-    // 2nd daughter
-    if (particle->GetLastDaughter()>=nParticles ||
-	particle->GetLastDaughter()<0             ) continue;
-
-    TParticle* dau2 = stack->Particle(particle->GetLastDaughter());
-    if (TMath::Abs(dau2->GetPdgCode()) != pdgDaughter)     continue;
-    if (TMath::Abs(dau2->Eta()) > TMath::Abs(etaRange)) continue;
-
-    // primary
-    if (prim != -1) {
-      if(particle->IsPrimary() != prim) continue;
+      if(mcPar->GetLastDaughter() >= nParticles || mcPar->GetLastDaughter() < 0) continue;
+      AliAODMCParticle *mcParDau2 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetLastDaughter());
+      if(!mcParDau2) continue;
+      if(TMath::Abs(mcParDau2->GetPdgCode()) != pdgDaughter) continue;
+      if(TMath::Abs(mcParDau2->Eta()) > TMath::Abs(etaRange)) continue;
+      if(prim != -1 && mcPar->IsPhysicalPrimary() != prim) continue;
+      nMothers++;
     }
-    nMothers++;
+  }
+  else{
+    for (Int_t iMc = 0; iMc < nParticles; ++iMc) {
+
+      TParticle* particle = ev->Particle(iMc);
+      if (!particle) continue;
+      if (particle->GetPdgCode() != pdgMother)               continue;
+      if (TMath::Abs(particle->Eta()) > TMath::Abs(etaRange)) continue;
+
+      if (particle->GetNDaughters() != 2)                 continue;
+      // 1st daugther
+      if (particle->GetFirstDaughter()>=nParticles ||
+  	particle->GetFirstDaughter()<0             ) continue;
+
+      TParticle* dau1 = ev->Particle(particle->GetFirstDaughter());
+      if (TMath::Abs(dau1->GetPdgCode()) != pdgDaughter)     continue;
+      if (TMath::Abs(dau1->Eta()) > TMath::Abs(etaRange)) continue;
+
+      // 2nd daughter
+      if (particle->GetLastDaughter()>=nParticles ||
+  	particle->GetLastDaughter()<0             ) continue;
+
+      TParticle* dau2 = ev->Particle(particle->GetLastDaughter());
+      if (TMath::Abs(dau2->GetPdgCode()) != pdgDaughter)     continue;
+      if (TMath::Abs(dau2->Eta()) > TMath::Abs(etaRange)) continue;
+
+      // primary
+      if (prim != -1) {
+        if(particle->IsPrimary() != prim) continue;
+      }
+      nMothers++;
+    }
   }
   return nMothers;
 }
 
-//_____________________________________________________________________________
+//______________________________________________
 Bool_t AliDielectronHelper::IsInPlane(Float_t trackPhi, Float_t eventPhi){
   Float_t deltaPhi = TVector2::Phi_mpi_pi(trackPhi - eventPhi);
   if(TMath::Abs(deltaPhi) < TMath::Pi()/4 || (TMath::Abs(deltaPhi) < TMath::Pi() && TMath::Abs(deltaPhi) > TMath::Pi()*3/4) )  return kTRUE;
@@ -568,4 +617,88 @@ Bool_t AliDielectronHelper::IsOutOfPlane(Float_t trackPhi, Float_t eventPhi){
   Float_t deltaPhi = TVector2::Phi_mpi_pi(trackPhi - eventPhi);
   if(TMath::Abs(deltaPhi) > TMath::Pi()/4 && TMath::Abs(deltaPhi) < TMath::Pi()*3/4)  return kTRUE;
   else return kFALSE;
+}
+
+//______________________________________________
+void AliDielectronHelper::CountMCtracks(const AliMCEvent *ev, Double_t numbers[11], Int_t pdgMother, Int_t pdgDaughter)
+{
+  /* Count the number of charged tracks, jpsi mothers and so on in one loop (more efficient then running GetNch and GetNMothers several times from the VarManager) */
+  // 0 - N charged tracks, eta 1.6, incl jpsi daughters
+  // 1 - N charged tracks, eta 1.6, excl jpsi daughters
+  // 2 - N charged tracks, eta 0.5, incl jpsi daughters
+  // 3 - N charged tracks, eta 0.5, excl jpsi daughters
+  // 4 - N charged tracks, eta 1.0, incl jpsi daughters
+  // 5 - N charged tracks, eta 1.0, excl jpsi daughters
+  // 6 - N charged tracks, eta 0.9, incl jpsi daughters
+  // 7 - N charged tracks, eta 0.9, excl jpsi daughters
+
+  // 8 - N Jpsis, eta 0.9
+  // 9 - N Prompt Jpsis, eta 0.9
+  // 10 - N Non-Prompt Jpsis, eta 0.9
+
+  for (Int_t i = 0; i < 11; i++) {
+    numbers[i] = 0;
+  }
+
+  if (!ev || ev->IsA()!=AliMCEvent::Class()) return;
+
+  if(!ev->Particle(1) && !ev->GetTrack(1))  return;
+
+  Int_t nParticles = ev->GetNumberOfTracks();
+  for (Int_t iMc = 1; iMc < nParticles; ++iMc) {
+    AliVParticle *mcPar = (AliVParticle*) ev->GetTrack(iMc);
+    // AliAODMCParticle *mcPar = (AliAODMCParticle*) ev->GetTrack(iMc);
+    if(!mcPar) continue;
+    Float_t eta = mcPar->Eta();
+    if(mcPar->IsPhysicalPrimary() && mcPar->Charge() != 0){
+      // count nCharged
+      if(TMath::Abs(eta) < TMath::Abs(1.6))  numbers[0]++;
+      if(TMath::Abs(eta) < TMath::Abs(0.5))  numbers[2]++;
+      if(TMath::Abs(eta) < TMath::Abs(1.0))  numbers[4]++;
+      if(TMath::Abs(eta) < TMath::Abs(0.9))  numbers[6]++;
+      // count nCharged without jpsis daughters
+      Int_t iMother = mcPar->GetMother();
+      if(iMother > 0){
+        AliVParticle *mcParMother = (AliVParticle*) ev->GetTrack(iMother);
+        // AliAODMCParticle *mcParMother = (AliAODMCParticle*) ev->GetTrack(iMother);
+        if(mcParMother)
+        if(TMath::Abs(mcParMother->PdgCode()) != pdgMother){
+        // if(TMath::Abs(mcParMother->GetPdgCode()) != pdgMother){
+          if(TMath::Abs(eta) < TMath::Abs(1.6))  numbers[1]++;
+          if(TMath::Abs(eta) < TMath::Abs(0.5))  numbers[3]++;
+          if(TMath::Abs(eta) < TMath::Abs(1.0))  numbers[5]++;
+          if(TMath::Abs(eta) < TMath::Abs(0.9))  numbers[7]++;
+        }
+      }
+    } // End of counting nCharged
+    // njpsis counting
+    if(mcPar->PdgCode() != pdgMother) continue;
+    // if(mcPar->GetPdgCode() != pdgMother) continue;
+
+    // Daughters
+    if(mcPar->GetNDaughters() != 2) continue;
+    if(mcPar->GetFirstDaughter() >= nParticles || mcPar->GetFirstDaughter() < 0) continue;
+
+    AliVParticle *mcParDau1 = (AliVParticle*) ev->GetTrack(mcPar->GetFirstDaughter());
+    // AliAODMCParticle *mcParDau1 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetFirstDaughter());
+    if(!mcParDau1) continue;
+    if(TMath::Abs(mcParDau1->PdgCode()) != pdgDaughter) continue;
+    // if(TMath::Abs(mcParDau1->GetPdgCode()) != pdgDaughter) continue;
+
+    if(mcPar->GetLastDaughter() >= nParticles || mcPar->GetLastDaughter() < 0) continue;
+    AliVParticle *mcParDau2 = (AliVParticle*) ev->GetTrack(mcPar->GetLastDaughter());
+    // AliAODMCParticle *mcParDau2 = (AliAODMCParticle*) ev->GetTrack(mcPar->GetLastDaughter());
+    if(!mcParDau2) continue;
+    if(TMath::Abs(mcParDau2->PdgCode()) != pdgDaughter) continue;
+    // if(TMath::Abs(mcParDau2->GetPdgCode()) != pdgDaughter) continue;
+
+    if((TMath::Abs(eta) > TMath::Abs(0.9)) && (TMath::Abs(mcParDau1->Eta()) > TMath::Abs(0.9)) && (TMath::Abs(mcParDau2->Eta()) > TMath::Abs(0.9)))
+    {
+      numbers[8]++;
+      //prompt
+      if(mcPar->IsPhysicalPrimary()) numbers[9]++;
+      //non-prompt
+      if(!mcPar->IsPhysicalPrimary()) numbers[10]++;
+    }
+  }
 }

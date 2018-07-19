@@ -186,6 +186,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       if(isProfile) {
 	h=new TProfile(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax);
         fBinsAllocated+=nXbins+2;
+	h->Sumw2();
         h->SetUniqueID(1);
         if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1);
       }
@@ -221,12 +222,14 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
         if(varT>AliReducedVarManager::kNothing) {
           h=new TProfile3D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax,nYbins,ymin,ymax,nZbins,zmin,zmax);
           fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
+	  h->Sumw2();
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
           else h->SetUniqueID((fNVars+1)*(varT+1)*100+1);
         }
         else {
 	  h=new TProfile2D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xmin,xmax,nYbins,ymin,ymax);
           fBinsAllocated+=(nXbins+2)*(nYbins+2);
+	  h->Sumw2();
           h->SetUniqueID(1);
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1); 
         }
@@ -323,6 +326,7 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
       if(isProfile) {
 	h=new TProfile(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins);
         fBinsAllocated+=nXbins+2;
+	h->Sumw2();
         h->SetUniqueID(1);
         if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1); 
       }
@@ -359,12 +363,14 @@ void AliHistogramManager::AddHistogram(const Char_t* histClass,
          if(varT>AliReducedVarManager::kNothing) {
           h=new TProfile3D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins,nYbins,ybins,nZbins,zbins);
           fBinsAllocated+=(nXbins+2)*(nYbins+2)*(nZbins+2);
+	  h->Sumw2();
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(((varW+1)+(fNVars+1)*(varT+1))*100+1);   // 4th variable "varT" is encoded in the UniqueId of the histogram
           else h->SetUniqueID((fNVars+1)*(varT+1)*100+1);
         }
         else {
 	  h=new TProfile2D(hname.Data(),(arr->At(0) ? arr->At(0)->GetName() : ""),nXbins,xbins,nYbins,ybins);
           fBinsAllocated+=(nXbins+2)*(nYbins+2);
+	  h->Sumw2();
           h->SetUniqueID(1);
           if(varW>AliReducedVarManager::kNothing) h->SetUniqueID(100*(varW+1)+1);
         }

@@ -29,7 +29,7 @@ AliAnalysisTaskNucleiPIDqa* AddTaskNucleiPIDqa(TString tskname = "NucleiPIDqa", 
   tskname.Append(Form("%s",suffix.Data()));
   AliAnalysisTaskNucleiPIDqa *pid = new AliAnalysisTaskNucleiPIDqa(tskname);
   mgr->AddTask(pid);
-  TString output = "AnalysisResults.root";
+  TString output = "AnalysisResults.root:" + tskname + suffix;
   AliAnalysisDataContainer *pidCont = mgr->CreateContainer(Form("mpuccio_%s",tskname.Data()),
                                                            TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,

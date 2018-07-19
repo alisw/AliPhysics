@@ -6,16 +6,23 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
 ){
     
     
-    enum SystematicType
+   enum SystematicType
     {
         kSystMultiple = 1, // ITS, hadron contamination, SPD kAny, PrimaryVertexTyp
         kSystTPCcluster= 2,
-        kSystPID = 3
+        kSystPID = 3,
         //        kSystAsociatedMultiple = 6, // ITS hits & standalone, TPC PID, TOF PID
-        //        kSystAsociatedDCA = 7,
-        //        kSystAsociatedTPCcluster = 8,
-        //        kSystAsociatedMinpTWeights = 9
+        kSystAsociatedDCA = 4,
+        kSystAsociatedTPCcluster = 5,
+        kSystAsociatedMinpTWeights = 6,
+	kSystTrackPIDMixedCuts = 7,
+	kSystAssoTrackPIDAssoMinPtMixedCuts = 8,
+	kHC = 9,
+	kSystAsociatedMinpTNew = 10,
+	kSystAssoTrackPIDAssoMinPtMixedCutsNew = 11,
+	kSystTrackPIDMixedCutsNew = 12
     };
+
     
     // Default settings (TOF-TPC pp)
     // ESD analysis of LHC15n, 5 TeV analysis
@@ -37,6 +44,9 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
     // On ESD:
     Double_t dEdxhm[12] = {3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};  // Above 3 sigma we neglect 0.13%
     Double_t dEdxhm20[12] = {2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0};
+    Double_t dEdxhm25[12] = {2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5};
+    Double_t dEdxhm35[12] = {3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5};
+
     Double_t dEdxhm21[12] = {1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5};
     Double_t dEdxhm22[12] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0};
     Double_t tpcl0[12]  = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};  // 50%
@@ -120,6 +130,10 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
         RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                           dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                           kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                          
+        RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData,2);
         //
         //
         //
@@ -140,7 +154,14 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
                                       kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData,1);
                     
                     break;
-                case kSystTPCcluster:
+                case kHC:
+                    RegisterTaskNPEpp(  MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                      dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                      kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData,1);
+                             
+                    RegisterTaskNPEpp(  MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                      dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                      kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData,3);
                     break;
                 case kSystPID:
                     break;
@@ -247,6 +268,14 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
                                   dEdxhm20, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
                                   kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
                 
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm25, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
                 // different TOF PID cuts
                 RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
                                   dEdxhm, 2, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
@@ -273,8 +302,367 @@ AliAnalysisTask *AddTaskHFEnpepp(Bool_t MCthere,
                 //                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
                 //
                 //                break;
+       
+   
+
+	case kSystTrackPIDMixedCuts:
+
+               RegisterTaskNPEpp( MCthere, isAOD, 100, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+                                  dEdxhm, 2, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 105, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl0,
+                                  dEdxhm, 2, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 110, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl16,
+                                  dEdxhm, 2, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+               
+                RegisterTaskNPEpp( MCthere, isAOD, 130, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm20, 2.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, 80, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm25, 2.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, 85, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, 2.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, 95, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm20, 3.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, 100, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, 3.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 90, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm25, 3.5, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 95, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm35, 4, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, 125, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl11,
+                                  dEdxhm, 4, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 100, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl16,
+                                  dEdxhm, 4, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                break;
+
+       case kSystAsociatedDCA:
+                // DCA associated cuts
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  2.4,3.2, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp(MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl,kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  0.5,1, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+            break;
+        case kSystAsociatedTPCcluster:
+                
+                // Assosciated TPC clusters
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 50, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 70, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 90, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, 50,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, 70,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, 80,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+               
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, 90,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+            
+                
+                break;
+                
+
+case kSystAsociatedMinpTWeights:
+
+		// AssociatedMinPt		
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.1,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.2,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.3,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+        
+		break;
+
+
+
+case kSystAssoTrackPIDAssoMinPtMixedCuts:
+
+		// Associated Mixed Cuts 		
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 50, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.1,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 70, 80,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.2,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, 50,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.3,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 90, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.1,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 70, 50,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.2,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, 90,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.3,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                          
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 90, 50,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.2,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 90, 80,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.3,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                          
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.2,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 50, 80,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.3,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 90, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.2,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 70, 90,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.2,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 50, 90,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.3,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                          
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.3,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, 90,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.2,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 50, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.3,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		break;
+
+
+case kSystAsociatedMinpTNew:
+
+		// AssociatedMinPt		
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.1,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.12,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.14,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.16,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.18,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.2,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.24,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.28,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.3,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		break;
+
+
+
+case kSystAssoTrackPIDAssoMinPtMixedCutsNew:
+
+		// Associated Mixed Cuts 		
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 50, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.12,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 70, 80,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.14,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, 50,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.12,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 90, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.14,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 70, 50,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.14,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, 90,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.12,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                          
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 90, 50,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.12,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 90, 80,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.14,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                          
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.12,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 50, 80,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.14,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 90, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.12,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 70, 90,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.14,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 50, 90,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.12,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                          
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.14,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 80, 90,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.14,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		RegisterTaskNPEpp( MCthere, isAOD, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl13,
+                          dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, 50, 70,
+                          kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,0.14,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+
+		break;
+
+
+              
+            case kSystTrackPIDMixedCutsNew:
+                
+                // TPC clusters
+                RegisterTaskNPEpp( MCthere, isAOD, 90, 80, 5, 2.4, 3.2, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 95, 85, 3,  2.4, 3.2, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 100, 95, 5,  2.4, 3.2, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 105, 100, 3,  2.4, 3.2, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 110, 80, 5,  2.4, 3.2, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 125, 85, 5,  0.5, 1, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 130, 95, 3,  0.5, 1, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                // TPC PID custer
+                RegisterTaskNPEpp( MCthere, isAOD, 100, 80, 3,  0.5, 1, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 130, 85, 5,  0.5, 1, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 105, 95, 3,  0.5, 1, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                RegisterTaskNPEpp( MCthere, isAOD, 110, 100, 5,  0.5, 1, tpcl13,
+                                  dEdxhm, kDefTOFs, AliHFEextraCuts::kBoth, 0, kassITS, kassTPCcl, kassTPCPIDcl,
+                                  kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid,kasspTmin,assETAm,assETAp, kTRUE, kFALSE, kWei, kWeiData);
+                
+                break;
+  
+
         }
         
+
+     
         
     }
     if(kNPERefTPConly){
@@ -321,10 +709,13 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
     //
     // Cuts on the inclusive leg
     //
+    Int_t iassMinPt = (Int_t)(assMinPt*100.);
     Int_t idcaxy = (Int_t)(dcaxy*10.);
     Int_t idcaz = (Int_t)(dcaz*10.);
     Int_t tpclow = 0;
+    Int_t tpchigh = 0;
     if(tpcdEdxcutlow) tpclow = (Int_t) (tpcdEdxcutlow[0]*1000.);
+    if(tpcdEdxcuthigh) tpchigh = (Int_t) (tpcdEdxcuthigh[0]*1000.);
     Int_t itofs = (Int_t)(tofs*10.);
     Int_t ipixelany = itshitpixel;
     
@@ -349,12 +740,18 @@ AliAnalysisTask *RegisterTaskNPEpp(Bool_t useMC, Bool_t isAOD,
         }
     }
     
+   
+
+ TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCls%dTPCh%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dAssMinpt%dtr%d%s%d",
+                                     tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,tpchigh,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
+                                     iassDCAz,iassTPCSminus,iassITS,iassTOF,iassMinPt,phoTrack,cweightsback.Data(),HadronContFunc));
     
-    
-    TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCs%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%d%s%d",
-                                     tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
+ 
+ /*   
+    TString appendix(TString::Format("incTPCc%dp%dITS%dSPD%dDCAr%dz%dTPCls%dTPCh%dTOFs%dK%d_photTPCc%dp%dITS%dDCAr%dz%dTPCs%dITSs%dTOFs%dtr%d%s%d",
+                                     tpcCls,tpcClsPID,itsCls,ipixelany,idcaxy,idcaz,tpclow,tpchigh,itofs,iKink,assTPCcl,assTPCPIDcl,assITS,iassDCAr,
                                      iassDCAz,iassTPCSminus,iassITS,iassTOF,phoTrack,cweightsback.Data(),HadronContFunc));
-    
+    */
     printf("Add macro appendix %s\n", appendix.Data());
     
     if(useMC&&!gROOT->GetListOfGlobalFunctions()->FindObject("ConfigWeightFactors"))

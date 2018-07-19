@@ -102,7 +102,8 @@ fhClusterMaxCellDiff(0),               fhClusterMaxCellDiffNoCut(0),
 //fhClusterMaxCellDiffAverageTime(0),    fhClusterMaxCellDiffWeightedTime(0),    
 fhClusterMaxCellECross(0),
 // fhDispersion(0),
-fhLambda0(0),                          fhLambda1(0),                           fhNLocMax(0),  
+fhLambda0(0),                          fhLambda1(0),                           
+fhNLocMax(0),                          fhNLocMaxStd(0),  
 
 // bad clusters
 fhBadClusterEnergy(0),                 fhBadClusterTimeEnergy(0),              fhBadClusterEtaPhi(0),            
@@ -745,6 +746,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   fhLambda1             ->Fill(clus->E(), clus->GetM20()       , GetEventWeight());
 //fhDispersion          ->Fill(clus->E(), clus->GetDispersion(), GetEventWeight());
   fhNLocMax             ->Fill(clus->E(), GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells), GetEventWeight());
+  fhNLocMaxStd          ->Fill(clus->E(), clus->GetNExMax()    , GetEventWeight());
 
   if(fFillClusterMaxCellHisto)
   {
@@ -1144,7 +1146,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(Bool_t matched,const Int_t * lab
   Int_t charge  = 0;
   
   // Check the origin.
-  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, nLabels, GetMC());
+  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels, nLabels, GetMC(),
+                                                GetReader()->GetNameOfMCEventHederGeneratorToAccept());
   
   if ( !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown) )
   { 
@@ -1868,12 +1871,18 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhLambda1->SetYTitle("#lambda^{2}_{1}");
     outputContainer->Add(fhLambda1); 
     
-    fhNLocMax  = new TH2F ("hNLocMax","#it{n}_{LM}vs E",
+    fhNLocMax  = new TH2F ("hNLocMax","#it{n}_{LM} vs E",
                            nptbins,ptmin,ptmax,10,0,10); 
     fhNLocMax->SetXTitle("#it{E}_{cluster} (GeV)");
     fhNLocMax->SetYTitle("#it{n}_{LM}");
     outputContainer->Add(fhNLocMax); 
-    
+
+    fhNLocMaxStd  = new TH2F ("hNLocMaxStd","#it{n}_{LM} vs E",
+                           nptbins,ptmin,ptmax,10,0,10); 
+    fhNLocMaxStd->SetXTitle("#it{E}_{cluster} (GeV)");
+    fhNLocMaxStd->SetYTitle("#it{n}_{LM}");
+    outputContainer->Add(fhNLocMaxStd); 
+
     if(fFillClusterMaxCellHisto)
     {
       fhClusterMaxCellCloseCellRatio  = new TH2F ("hClusterMaxCellCloseCellRatio","energy vs ratio of max cell / neighbour cell, reconstructed clusters",

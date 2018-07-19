@@ -112,6 +112,16 @@ public:
   virtual Bool_t    Run();
 
   /**
+   * @brief Perfrom Event Selection
+   * 
+   * As the trigger maker is a correction task it should run on
+   * any event, no matter whether the event is a good physics event
+   * or not. Therefor it overrides the event selection implemented
+   * in AliAnalysisTaskEmcal.
+   */
+  virtual Bool_t    IsEventSelected() { return true; }
+
+  /**
    * @brief Set range for L0 time
    * @param[in] min Minimum L0 time (default is 7)
    * @param[in] max Maximum L0 time (default is 10)
@@ -202,12 +212,39 @@ protected:
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   /**
+   * @brief Create functor handling the conversion between reg mask and channel
+   * 
    * Closure producing a handler converting a set of mask / bit number into a channel
    * ID. In case the mask / bit number is invalid the function will return -1
    * @return function that converts a set of mask / bit number into a channel ID
+   * 
+   * The handling is different for LHC run1 and LHC run2 due to different TRU geometry:
+   * - In run1 a linear indexing was applied
+   * - In run2 the indexing is not linear for the TRUs in the full and DCAL supermodules,
+   *   while it follows the linear indexing for the 1/3rd supermodules
+   * Due to run2 definitions the handlers are created based on the index of the TRU
+   * using L0 convention.
+   * 
+   * @param[in] itru Index of the TRU (L0 convention, without remapping)
    */
-  std::function<int (unsigned int, unsigned int)> GetMaskHandler() const;
+  std::function<int (unsigned int, unsigned int)> GetMaskHandler(int itru) const;
 #endif
+
+ /**
+  * @brief Fix mapping in TRU index
+  * 
+  * In run 2 the index of the TRU is different between
+  * TRU indexing and STU indexing:
+  * - STU indexing: Linear, including PHOS region
+  * - TRU indexing: Out to in in eta (C-side mirrored), no PHOS region
+  * Obviously the mapping uses the STU indexing. This function
+  * remaps the TRU indexing (used in the DCS configuration) to the
+  * STU indexing
+  * 
+  * @param itru TRU index in TRU convention 
+  * @return int TRU index in STU convention
+  */
+  int RemapTRUIndex(int itru) const;
 
   /**
    * @brief Internal QA handler for trigger pathches of given type

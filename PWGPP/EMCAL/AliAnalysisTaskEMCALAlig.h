@@ -15,12 +15,112 @@
 
 
 #include "AliAnalysisTaskEmcal.h"
+#include "TObject.h"
 
 class AliEMCALRecoUtils;
 class AliPIDResponse;
 class TH1F;
 class TH2F;
 class AliEMCALGeometry;
+class TTree;
+
+class ElectronForAlignment : public TObject {
+public:
+    
+    //General Track properties
+    Short_t charge;
+    Float_t pt;
+    Float_t pz;
+    Float_t eta_track;
+    Float_t phi_track;
+    Float_t x_track;
+    Float_t y_track;
+    Float_t z_track;
+    Float_t zvtx;
+
+    
+    //cluster properties
+    Float_t energy;
+    Float_t M20;
+    Float_t M02;
+    Float_t eta_cluster;
+    Float_t phi_cluster;
+    Float_t x_cluster;
+    Float_t y_cluster;
+    Float_t z_cluster;
+
+    //mathing properties using electron mass
+    UShort_t super_module_number;
+    Int_t distance_bad_channel;
+    Bool_t is_in_fid_region;
+
+    //PID properties
+    Float_t n_sigma_electron_TPC;
+    
+    ElectronForAlignment()
+    {
+        charge = -9;
+        pt = -999;
+        pz = -999;
+        eta_track = -999;
+        phi_track = -999;
+        x_track = -999;
+        y_track = -999;
+        z_track = -999;
+        zvtx = -999;
+
+        energy = -999;
+        M20 = -999;
+        M02 = -999;
+        eta_cluster = -999;
+        phi_cluster = -999;
+        x_cluster = -999;
+        y_cluster = -999;
+        z_cluster = -999;
+        
+
+        super_module_number = 99;
+        distance_bad_channel = -99;
+        is_in_fid_region = kFALSE;
+
+        n_sigma_electron_TPC = -999;
+    }
+    
+    void Reset()
+    {
+               charge = -9;
+        pt = -999;
+        pz = -999;
+        eta_track = -999;
+        phi_track = -999;
+        x_track = -999;
+        y_track = -999;
+        z_track = -999;
+        zvtx = -999;
+
+
+        energy = -999;
+        M20 = -999;
+        M02 = -999;
+        eta_cluster = -999;
+        phi_cluster = -999;
+        x_cluster = -999;
+        y_cluster = -999;
+        z_cluster = -999;
+        
+
+        super_module_number = 99;
+        distance_bad_channel = -99;
+        is_in_fid_region = kFALSE;
+        n_sigma_electron_TPC = -999;
+    }
+    
+    //Default Initializer
+    
+    ClassDef(ElectronForAlignment, 3);
+    
+};
+
 
 class AliAnalysisTaskEMCALAlig : public AliAnalysisTaskEmcal {
 public:
@@ -29,8 +129,9 @@ public:
     AliAnalysisTaskEMCALAlig(const char *name);
     virtual ~AliAnalysisTaskEMCALAlig();
     
-    void                        UserCreateOutputObjects();
-    void                        Terminate(Option_t *option);
+    void UserCreateOutputObjects();
+    void Terminate(Option_t *option);
+    void SetSuffix(TString suff) { fTreeSuffix = suff;};
     
 protected:
     void                        ExecOnce();
@@ -44,45 +145,9 @@ protected:
     AliEMCALGeometry *fEMCALGeo; //! EMCAL geometry class
     AliPIDResponse *fPIDResponse; //! PID response task used to perform electron identification
     
-    //Negative Particle Histograms;
-    TH1F *fNPartPt; //! Electron transverse momemtum distribution
-    TH1F *fNPartPhi; //! Electron azimuthal angle distribution
-    TH1F *fNPartEta; //! Electron pseudorapidity distribution
-    
-    //Positive Particle Histograms;
-    TH1F *fPPartPt; //! Positron transverse momemtum distribution
-    TH1F *fPPartPhi; //! Positron azimuthal angle distribution
-    TH1F *fPPartEta; //! Positron pseudorapidity distribution
-    
-    //PID Plots
-    TH2F* fTPCnSgima; //! TPC Nsigma as function of pT
-    TH2F* fEOverP; //! E/p as function of pT
-    
-    //Matching Residual Plots
-    TH2F        **fElectronPhiRes; //! Electron matching residual in phi as function of EMCAL SuperModule using propagation to EMCAL surface
-    TH2F        **fElectronEtaRes; //! Electron matching residual in eta as function of EMCAL SuperModule using propagation to EMCAL surface
-    TH2F        **fElectronXRes; //! Electron matching residual in x as function of EMCAL SuperModule using propagation to EMCAL surface
-    TH2F        **fElectronYRes; //! Electron matching residual in y as function of EMCAL SuperModule using propagation to EMCAL surface
-    TH2F        **fElectronPositronZRes; //! Electron and positron matching residual in z as function of EMCAL SuperModule using propagation to EMCAL surface
-    
-    TH2F        **fPositronPhiRes; //! Positron matching residual in phi as function of EMCAL SuperModule using propagation to EMCAL surface
-    TH2F        **fPositronEtaRes; //! Positron matching residual in eta as function of EMCAL SuperModule using propagation to EMCAL surface
-    TH2F        **fPositronXRes; //! Positron matching residual in x as function of EMCAL SuperModule using propagation to EMCAL surface
-    TH2F        **fPositronYRes; //! Positron  matching residual in y as function of EMCAL SuperModule using propagation to EMCAL surface
-    
-    TH2F        **fAllMatchedTracksPhiRes; //! All tracks mathing residual in Phi
-    TH2F        **fAllMatchedTracksEtaRes; //! All tracks mathing residual in Eta
-    
-    TH2F        **fElectronPhiResRU; //! Electron matching residual in phi as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
-    TH2F        **fElectronEtaResRU; //! Electron matching residual in eta as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
-    TH2F        **fElectronXResRU; //! Electron matching residual in x as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
-    TH2F        **fElectronYResRU; //! Electron matching residual in y as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
-    TH2F        **fElectronPositronZResRU; //! Electron and positron matching residual in z as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
-    
-    TH2F        **fPositronPhiResRU; //! Positron matching residual in phi as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
-    TH2F        **fPositronEtaResRU; //! Positron matching residual in eta as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
-    TH2F        **fPositronXResRU; //! Positron matching residual in x as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
-    TH2F        **fPositronYResRU; //! Positron  matching residual in y as function of EMCAL SuperModule using propagation to cluster (done by EMCALRecoUtils)
+    ElectronForAlignment fElectronInformation; //! Object to hold the electron information
+    TTree* fElectronTree; //! Electron tree output
+    TString fTreeSuffix; // Suffix for tree name
 
     
 private:
@@ -90,7 +155,7 @@ private:
     AliAnalysisTaskEMCALAlig &operator=(const AliAnalysisTaskEMCALAlig&); // not implemented
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALAlig, 1);
+  ClassDef(AliAnalysisTaskEMCALAlig, 3);
   /// \endcond
 
 };

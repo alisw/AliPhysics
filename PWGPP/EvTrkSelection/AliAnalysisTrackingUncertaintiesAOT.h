@@ -62,18 +62,22 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   void           SetRequireTrackVtx(Bool_t flag)      {fRequireVtxTracks = flag;}
   void           SetUseGeneratedPt(Bool_t flag)       {fUseGenPt = flag;}
   void           SetUsePtLogScale(Bool_t flag)        {fUsePtLogAxis = flag;}
+  void           SetUseFinePtAxis(Bool_t flag)        {fUseFinePtAxis = flag;}
   void           SetUseCutV0multVsTPCout(Bool_t flag) {fDoCutV0multTPCout=flag;}
   void           SetSPDRequirement(AliESDtrackCuts::ITSClusterRequirement  spdlayreq)   {fSPDlayerReq = spdlayreq;}                   
   void           SetMultSelectionObjectName(TString str){fMultSelectionObjectName=str;}
   void           SetMinCentrality(Double_t val) {fminCent = val;}
   void           SetMaxCentrality(Double_t val) {fmaxCent = val;}
   void           SetUseCentrality(AliAnalysisTrackingUncertaintiesAOT::ECentrality flag);
+  void           SetDCAzOn(Bool_t flag = kTRUE) {fDCAz = flag;}
+  void           SetTPConly(Bool_t tpconly = kTRUE) {fTPConlyFIT = tpconly;}
 
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
  private:
     
   void   BinLogAxis(const THnSparseF *h, Int_t axisNumber);
+  void   BinFinePt(const THnSparseF *h, Int_t axisNumber);
   Bool_t IsVertexAccepted(AliESDEvent * esd);
   Bool_t IsElectron(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
   Bool_t IsPion(const AliESDtrack * const tr, Bool_t useTPCTOF = kFALSE) const;
@@ -109,8 +113,11 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   Bool_t   fMC;                     //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
   Bool_t   fUsePtLogAxis;           //flag to use log scale on pt axis in match. eff. sparse
+  Bool_t   fUseFinePtAxis;          //flag to use fine bin width for low pt axis in match. eff. sparse
   Bool_t   fUseGenPt;               //flag to use generated pt in match. eff. sparse
   Bool_t   fDoCutV0multTPCout;      //flag to activate cut on V0mult vs #tracks TPCout
+  Bool_t   fDCAz;                   //flag to switch on the DCAz axis
+  Bool_t   fTPConlyFIT;             //flag to use only TPC track for DCA fits
 
   TString fMultSelectionObjectName; /// name of the AliMultSelection object to be considered
 
@@ -121,7 +128,7 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 6);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 9);
 };
 
 #endif

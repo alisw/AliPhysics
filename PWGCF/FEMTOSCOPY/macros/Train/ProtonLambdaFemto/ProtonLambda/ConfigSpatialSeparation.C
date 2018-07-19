@@ -103,7 +103,7 @@ AliFemtoManager* ConfigFemtoAnalysis(bool mcAnalysis=false, int year=2015, bool 
           
           // create analysis
           femtoAnalysis[anIter] = new AliFemtoEventAnalysis(multBins[iMult], multBins[iMult+1]);
-          femtoAnalysis[anIter]->SetIdenticalParticles(AreIdentical(iSys));
+          femtoAnalysis[anIter]->SetIdenticalParticles(AreIdentical((ESys)iSys));
           femtoAnalysis[anIter]->SetNumEventsToMix(10);
           femtoAnalysis[anIter]->SetV0SharedDaughterCut(true);
           

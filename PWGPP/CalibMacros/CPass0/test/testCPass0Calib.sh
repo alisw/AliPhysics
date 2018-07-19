@@ -12,11 +12,11 @@ inputFriend="/alice/data/2015/LHC15f/000226495/pass2/15000226495029.919/AliESDfr
 inputRun=226495
 #
 # 1.) Dump software info git.log  should be implemented  in some utilities.sh 
-#     Current implementation in $ALICE_PHYSICS/../src/PWGPP/scripts/utilities.sh
+#     Current implementation in $ALICE_ROOT/libexec/utilities.sh
 #
 wdir=`pwd`
 ( 
-    source $ALICE_PHYSICS/../src/PWGPP/scripts/alilog4bash.sh    
+    source $ALICE_ROOT/libexec/alilog4bash.sh
     #
     echo ==============================  >$wdir/git.log 
     alilog "ALICE_PHYSICS"  >>$wdir/git.log 

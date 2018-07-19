@@ -24,6 +24,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/legotrain
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/DGTrigger
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/CEPdevel
+                    ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/CEPdevel/RawBuffers
                     ${AliPhysics_SOURCE_DIR}/PWGUD/DIFFRACTIVE/Resonance
                    )
 
@@ -55,10 +56,17 @@ set(SRCS
     xsAndTwoProng/AliCDMesonTracks.cxx
     xsAndTwoProng/AliCDMesonUtils.cxx
     DGTrigger/AliTriggerStudy0STP.cxx
-    CEPdevel/CEPEventBuffer.cxx
-    CEPdevel/CEPTrackBuffer.cxx
     CEPdevel/AliCEPBase.cxx
     CEPdevel/AliCEPUtils.cxx
+    CEPdevel/RawBuffers/CEPRawADBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawCaloBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawCaloClusterTrack.cxx
+    CEPdevel/RawBuffers/CEPRawEventBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawFMDBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawTrackBuffer.cxx
+    CEPdevel/RawBuffers/CEPRawV0Buffer.cxx
+    CEPdevel/CEPEventBuffer.cxx
+    CEPdevel/CEPTrackBuffer.cxx
     CEPdevel/AliAnalysisTaskCEP.cxx
     Resonance/AliAnalysisTaskf0f2.cxx
     Resonance/AliAnalysisPseudoRapidityDensity.cxx

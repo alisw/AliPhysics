@@ -81,6 +81,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   else if (configuration == AliCFTaskVertexingHF::kCheetah){
     printf("The configuration is set to be FAST --> using only pt, y, ct, phi, zvtx, centrality, fake, multiplicity to fill the CF\n");
   }
+  else if (configuration == AliCFTaskVertexingHF::kFalcon){
+    printf("The configuration is set to be FAST --> using only pt, y, centrality, multiplicity to fill the CF\n");
+  }
   else{
     printf("The configuration is not defined! returning\n");
     return;
@@ -129,7 +132,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   const Double_t phiV0max = 2.*TMath::Pi();
 
   const Int_t nbinZvtx       =  30; //bins in centrality (total number)
-  const Int_t nbincent       =18+1; //bins in centrality (total number)
+  const Int_t nbincent       =19+1; //bins in centrality (total number)
   const Int_t nbinfake       =   3; //bins in fake
   //const Int_t nbinmult       =  48; //bins in multiplicity (total number)
   const Int_t nbinmult         = 49; //bins in multiplicity (total number)
@@ -351,32 +354,26 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
   AliCFContainer* container;
   if (configuration == AliCFTaskVertexingHF::kSnail) {
     container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvarTot,iBin);
-  }
-  else if (configuration == AliCFTaskVertexingHF::kCheetah) {
-    container = new AliCFContainer(nameContainer,"container for tracks",nstep,8,iBin);
-  }
+    //setting the bin limits
+    container -> SetBinLimits(ipT,binLimpT);
+    container -> SetBinLimits(iy,binLimy);
+    container -> SetBinLimits(iphi,binLimphi);
+    container -> SetBinLimits(ionFly,binLimonFlyV0);
+    container -> SetBinLimits(iZvtx,binLimzvtx);
+    container -> SetBinLimits(icent,binLimcent);
+    container -> SetBinLimits(ifake,binLimfake);
+    if (isFineNtrkBin) container->SetBinLimits(imult, binLimmultFine);
+    else               container->SetBinLimits(imult, binLimmult);
 
-  //setting the bin limits
-  container -> SetBinLimits(ipT,binLimpT);
-  container -> SetBinLimits(iy,binLimy);
-  container -> SetBinLimits(iphi,binLimphi);
-  container -> SetBinLimits(ionFly,binLimonFlyV0);
-  container -> SetBinLimits(iZvtx,binLimzvtx);
-  container -> SetBinLimits(icent,binLimcent);
-  container -> SetBinLimits(ifake,binLimfake);
-  if (isFineNtrkBin) container->SetBinLimits(imult, binLimmultFine);
-  else               container->SetBinLimits(imult, binLimmult);
+    container -> SetVarTitle(ipT,"p_{T}(#Lambda_{c}) [GeV/c]");
+    container -> SetVarTitle(iy,"y(#Lambda_{c})");
+    container -> SetVarTitle(iphi,"#phi(#Lambda_{c}) [rad]");
+    container -> SetVarTitle(ionFly,"onTheFlyStatusV0");
+    container -> SetVarTitle(iZvtx,"z_{vtx} [cm]");
+    container -> SetVarTitle(icent,"centrality");
+    container -> SetVarTitle(ifake,"fake");
+    container -> SetVarTitle(imult,"multiplicity");
 
-  container -> SetVarTitle(ipT,"p_{T}(#Lambda_{c}) [GeV/c]");
-  container -> SetVarTitle(iy,"y(#Lambda_{c})");
-  container -> SetVarTitle(iphi,"#phi(#Lambda_{c}) [rad]");
-  container -> SetVarTitle(ionFly,"onTheFlyStatusV0");
-  container -> SetVarTitle(iZvtx,"z_{vtx} [cm]");
-  container -> SetVarTitle(icent,"centrality");
-  container -> SetVarTitle(ifake,"fake");
-  container -> SetVarTitle(imult,"multiplicity");
-
-  if (configuration == AliCFTaskVertexingHF::kSnail) {
     container -> SetBinLimits(ipbach,binLimpbach);
     container -> SetBinLimits(ipTV0,binLimpTV0);
     container -> SetBinLimits(iyV0,binLimyV0);
@@ -398,6 +395,51 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFLctoV0bachelor(const char* cutFile = "
     container -> SetVarTitle(icosPA,"cosine pointing angle (#Lambda_{c})");
     //container -> SetVarTitle(,"c#tau -V0-");
     //container -> SetVarTitle(,"c#tau");
+  }
+  else if (configuration == AliCFTaskVertexingHF::kCheetah) {
+    container = new AliCFContainer(nameContainer,"container for tracks",nstep,8,iBin);
+    //setting the bin limits
+    container -> SetBinLimits(ipT,binLimpT);
+    container -> SetBinLimits(iy,binLimy);
+    container -> SetBinLimits(iphi,binLimphi);
+    container -> SetBinLimits(ionFly,binLimonFlyV0);
+    container -> SetBinLimits(iZvtx,binLimzvtx);
+    container -> SetBinLimits(icent,binLimcent);
+    container -> SetBinLimits(ifake,binLimfake);
+    if (isFineNtrkBin) container->SetBinLimits(imult, binLimmultFine);
+    else               container->SetBinLimits(imult, binLimmult);
+
+    container -> SetVarTitle(ipT,"p_{T}(#Lambda_{c}) [GeV/c]");
+    container -> SetVarTitle(iy,"y(#Lambda_{c})");
+    container -> SetVarTitle(iphi,"#phi(#Lambda_{c}) [rad]");
+    container -> SetVarTitle(ionFly,"onTheFlyStatusV0");
+    container -> SetVarTitle(iZvtx,"z_{vtx} [cm]");
+    container -> SetVarTitle(icent,"centrality");
+    container -> SetVarTitle(ifake,"fake");
+    container -> SetVarTitle(imult,"multiplicity");
+  }
+  else if (configuration == AliCFTaskVertexingHF::kFalcon) {
+    Int_t iBinSuperFast[4];
+		const UInt_t ipTSuperFast = 0;
+		const UInt_t iySuperFast = 1;
+		const UInt_t icentSuperFast = 2;
+		const UInt_t imultSuperFast = 3;
+    iBinSuperFast[ipTSuperFast]=iBin[ipT];
+    iBinSuperFast[iySuperFast]=iBin[iy];
+    iBinSuperFast[icentSuperFast]=iBin[icent];
+    iBinSuperFast[imultSuperFast]=iBin[imult];
+    container = new AliCFContainer(nameContainer,"container for tracks",nstep,4,iBinSuperFast);
+    //setting the bin limits
+    container -> SetBinLimits(ipTSuperFast,binLimpT);
+    container -> SetBinLimits(iySuperFast,binLimy);
+    container -> SetBinLimits(icentSuperFast,binLimcent);
+    if (isFineNtrkBin) container->SetBinLimits(imultSuperFast, binLimmultFine);
+    else               container->SetBinLimits(imultSuperFast, binLimmult);
+
+    container -> SetVarTitle(ipTSuperFast,"p_{T}(#Lambda_{c}) [GeV/c]");
+    container -> SetVarTitle(iySuperFast,"y(#Lambda_{c})");
+    container -> SetVarTitle(icentSuperFast,"centrality");
+    container -> SetVarTitle(imultSuperFast,"multiplicity");
   }
 
   container -> SetStepTitle(0, "MCLimAcc");

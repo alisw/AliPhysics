@@ -69,5 +69,7 @@ install(DIRECTORY AMPT
 # install THERMINATOR2 configurations
 install(DIRECTORY Therminator2
   DESTINATION PWG/MCLEGO
-  FILES_MATCHING PATTERN "*.ini"
+  FILES_MATCHING
+  PATTERN "*.ini"
+  PATTERN "*.py"
   )

@@ -21,7 +21,6 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Bool_t           bMCNormalization          = kFALSE,
                                                                  const Bool_t           bNLMCut                   = kFALSE,
                                                                  const Int_t            NLMCut                    = 0,
-                                                                 const Double_t         minPtCutCluster           = 0.3,
                                                                  const Double_t         EtIso                     = 2.,
                                                                  const Int_t            iIsoMethod                = 1,
                                                                  const Int_t            iEtIsoMethod              = 0,
@@ -30,13 +29,11 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Double_t         TMdeta                    = 0.02,
                                                                  const Double_t         TMdphi                    = 0.03,
                                                                  const Bool_t           bTMClusterRejection       = kTRUE,
-                                                                 const Bool_t           bTMClusterRejectionInCone = kTRUE,
                                                                  const Float_t          iIsoConeRadius            = 0.4,
                                                                  const Bool_t           iSmearingSS               = kFALSE,
                                                                  const Float_t          iWidthSSsmear             = 0.,
                                                                  const Float_t          iMean_SSsmear             = 0.,
                                                                  const Bool_t           iExtraIsoCuts             = kFALSE,
-                                                                 const Bool_t           i_pPb                     = kFALSE,
                                                                  const Bool_t           isQA                      = kFALSE,
                                                                  TString                configBasePath            = "",
                                                                  const Int_t            bWhichToSmear             = 0,
@@ -44,12 +41,11 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
                                                                  const Double_t         TMdetaIso                 = 0.02,
                                                                  const Double_t         TMdphiIso                 = 0.03,
                                                                  const Bool_t           bmcTruth                  = kTRUE,
-                                                                 const Bool_t           isLCAnalysis              = kFALSE,
                                                                  TString                triggerName               = "",
                                                                  const Bool_t           RejectPileUpEvent         = kFALSE,
                                                                  const Int_t            NContrToPileUp            = 3,
-								 const Bool_t           lightOutput               = kFALSE,
-                                                                 const Float_t          iFiducialCut              = 0.4
+                                                                 const Float_t          iFiducialCut              = 0.4,
+                                                                 const Bool_t           bANwithNoSameTcard        = kFALSE
                                                                  )
 {
   Printf("Preparing neutral cluster analysis\n");
@@ -64,6 +60,7 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   // Use the input containers naming convention with "usedefault" (already used in several EMCal tasks and new correction framework)
   TString trackName(ntracks);
   TString clusName(nclusters);
+  TString clusInfix("");
 
   if(trackName == "usedefault"){
     if(dType == "ESD"){
@@ -88,23 +85,27 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
       clusName = "";
     }
   }
+  else{
+      clusInfix = Form("_%s",clusName.Data());
+  }
 
   // Set the task output container name
   Printf("Creating container name for cluster analysis\n");
 
   TString myContName("");
   if(bIsMC){
-    myContName = Form("Analysis_Neutrals_MC");
+    myContName = Form("Analysis_Neutrals_MC%s",clusInfix.Data());
   }
   else{
-    myContName = Form("Analysis_Neutrals");
+    myContName = Form("Analysis_Neutrals%s",clusInfix.Data());
   }
   
-  // for the 2012 EGA/L1 Analysis, only events with EGA/L1 recalc patches are considered
-  // this configuration requires a TriggerMaker wagon in the train!!!
-  Bool_t is2012_EGA = kFALSE;
-  TString Period = periodstr;
-  if((triggerName.Contains("EGArecalc") || triggerName.Contains("L1recalc")) && Period.Contains("12")) is2012_EGA = kTRUE;
+  // For the 2012 EGA/L1 analysis, only events with EGA/L1 recalc patches are considered
+  // (This configuration requires a TriggerMaker wagon in the train!!!)
+  TString period     = periodstr;
+  Bool_t  is2012_EGA = kFALSE;
+  if((triggerName.Contains("EGArecalc") || triggerName.Contains("L1recalc")) && period.Contains("12"))
+    is2012_EGA = kTRUE;
   
   if(triggerName.Contains("EG1") || triggerName.Contains("EGA1")){
     triggerName = "_Trigger_EG1";
@@ -127,7 +128,14 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
     pileUp = "";
   }
   
-  myContName.Append(Form("%s%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s_WhichSmear_%d%s%s",is2012_EGA ? "_L1recalc":"",isLCAnalysis?"_LC_Yes":"",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off",bWhichToSmear,triggerName.Data(),pileUp.Data()));
+  myContName.Append(Form("%s_TM_%s_CPVe%.2lf_CPVp%.2lf_IsoMet%d_EtIsoMet%d_UEMet%d_TPCbound_%s_IsoConeR%.1f_NLMCut_%s_minNLM%d_maxNLM%d_SSsmear_%s_Width%.3f_Mean_%.3f_PureIso_%s_WhichSmear_%d%s%s%s",is2012_EGA ? "_L1recalc":"",bTMClusterRejection? "On" :"Off", TMdeta , TMdphi ,iIsoMethod,iEtIsoMethod,iUEMethod,bUseofTPC ? "Yes" : "No",iIsoConeRadius,bNLMCut ? "On": "Off",minNLM, NLMCut, iSmearingSS ? "On":"Off",iWidthSSsmear,iMean_SSsmear,iExtraIsoCuts?"On":"Off",bWhichToSmear,triggerName.Data(),pileUp.Data(),bANwithNoSameTcard?"_NoSameTcard":""));
+
+  // Switch on/off the p-Pb analysis features
+  Bool_t i_pPb = kFALSE;
+  if (period.Contains("12g") ||
+      period.Contains("13b") || period.Contains("13c") || period.Contains("13d") || period.Contains("13e") || period.Contains("13f") ||
+      period.Contains("16q") || period.Contains("16r") || period.Contains("16s") || period.Contains("16t"))
+    i_pPb = kTRUE;
 
   // #### Define analysis task
   AliAnalysisTaskEMCALPhotonIsolation* task = new AliAnalysisTaskEMCALPhotonIsolation("Analysis",bHisto);
@@ -174,13 +182,24 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   gROOT->LoadMacro(configFilePath.Data());
   Printf("Path of config file: %s\n",configFilePath.Data());
 
+  // Set histrogram bins and ranges
+  task->GetHistogramRangesAndBinning()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 96);                                                 // 2 SM = 96 cells in eta
+  if(period.Contains("10")){
+    task->GetHistogramRangesAndBinning()->SetHistoPhiRangeAndNBins(80.*TMath::DegToRad(), 120.*TMath::DegToRad(), 48);           // 2*2 SM = 48 cells in phi
+  }
+  else if(period.Contains("11") || period.Contains("12") || period.Contains("13")){
+    task->GetHistogramRangesAndBinning()->SetHistoPhiRangeAndNBins(80.*TMath::DegToRad(), 180.*TMath::DegToRad(), 120);          // 2*5 SM = 120 cells in phi
+  }
+  else{
+    task->GetHistogramRangesAndBinning()->SetHistoPhiRangeAndNBins(80.*TMath::DegToRad(), (340.-40./3.)*TMath::DegToRad(), 296); // 2*10 SM = 296 cells in phi
+  }
+
   // #### Task preferences
+  task->SelectCollisionCandidates(pSel);
   task->SetOutputFormat(iOutput);
-  task->SetLCAnalysis(isLCAnalysis);
   task->SetIsoConeRadius(iIsoConeRadius);
   task->SetEtIsoThreshold(EtIso);
   task->SetTMClusterRejection(bTMClusterRejection);
-  task->SetTMClusterRejectioninCone(bTMClusterRejectionInCone);
   task->SetCTMdeltaEta(TMdeta);
   task->SetCTMdeltaPhi(TMdphi);
   task->SetCTMdeltaEtaIso(TMdetaIso);
@@ -216,11 +235,25 @@ AliAnalysisTaskEMCALPhotonIsolation* AddTaskEMCALPhotonIsolation(
   task->SetPeriod(periodstr);
   task->SetRejectPileUpEvent(RejectPileUpEvent);
   task->SetNcontributorsToPileUp(NContrToPileUp);
-  task->SetLightenOutput(lightOutput);
   task->SetFiducialCut(iFiducialCut);
   task->Set2012L1Analysis(is2012_EGA);
+  task->SetANWithNoSameTcard(bANwithNoSameTcard);
 
-  if(bIsMC && bMCNormalization) task->SetIsPythia(kTRUE);
+  if(triggerName.Contains("EG1") || triggerName.Contains("EGA1")){
+    if(bIsMC)
+      task->SetTriggerLevel1(1);
+    else
+      task->SetTrigClass("EMC7EG1-B-NOPF-CENTNOTRD");
+  }
+  else if(triggerName.Contains("EG2") || triggerName.Contains("EGA2")){
+    if(bIsMC)
+      task->SetTriggerLevel1(2);
+    else
+      task->SetTrigClass("EMC7EG2-B-NOPF-CENTNOTRD");
+  }
+
+  if(bIsMC && bMCNormalization)
+    task->SetIsPythia(kTRUE);
   
   TString name(Form("PhotonIsolation_%s_%s", trackName.Data(), clusName.Data()));
   cout<<"Name of the container "<<name.Data()<<endl;

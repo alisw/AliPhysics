@@ -11,7 +11,7 @@
 ///
 /// Class for the photon identification.
 /// Clusters from calorimeters are identified/selected as photons (candidates)
-/// and kept in AOD format (AliAODPWG4Particle). Few histograms produced.
+/// and kept in AOD format (AliCaloTrackParticle). Few histograms produced.
 /// Produces input for other analysis classes like AliAnaPi0,
 /// AliAnaParticleHadronCorrelation ...
 ///
@@ -60,14 +60,14 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   
   // Analysis methods
   
-  Bool_t       ClusterSelected(AliVCluster* cl, Int_t nlm, Int_t mctag) ;
+  Bool_t       ClusterSelected(AliVCluster* cl, Int_t sm, Int_t nlm, Int_t mctag) ;
   
   void         FillAcceptanceHistograms();
   
 //  void         DistanceToAddedSignalAtGeneratorLevel(Int_t label, Int_t nprim, 
 //                                     Float_t photonE, Float_t photonEta, Float_t photonPhi);
   
-  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t mcTag, Int_t nlm,
+  void         FillShowerShapeHistograms( AliVCluster* cluster, Int_t sm, Int_t mcTag, Int_t nlm,
                                          Float_t maxCellEFraction, Int_t & largeTimeInside) ;
   
   void         SwitchOnFillShowerShapeHistograms()        { fFillSSHistograms      = kTRUE  ; }
@@ -75,6 +75,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   void         SwitchOnFillShowerShapeHistogramsPerNLM()  { fFillSSNLocMaxHisto    = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistogramsPerNLM() { fFillSSNLocMaxHisto    = kFALSE ; }  
+
+  void         SwitchOnFillShowerShapeHistogramsPerSM()   { fFillSSPerSMHistograms = kTRUE  ; }
+  void         SwitchOffFillShowerShapeHistogramsPerSM()  { fFillSSPerSMHistograms = kFALSE ; }  
   
   void         SwitchOnFillEMCALRegionSSHistograms()      { fFillEMCALRegionSSHistograms = kTRUE  ; }
   void         SwitchOffFillEMCALRegionSSHistograms()     { fFillEMCALRegionSSHistograms = kFALSE ; }  
@@ -88,7 +91,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillTrackMultiplicityHistograms()  { fFillTrackMultHistograms = kTRUE  ; }
   void         SwitchOffFillTrackMultiplicityHistograms() { fFillTrackMultHistograms = kFALSE ; }
   
-  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut, Int_t mctag);
+  void         FillTrackMatchingResidualHistograms(AliVCluster* calo, Int_t cut, Int_t sm, Int_t mctag);
   
   void         SwitchOnTMHistoFill()                      { fFillTMHisto           = kTRUE  ; }
   void         SwitchOffTMHistoFill()                     { fFillTMHisto           = kFALSE ; }
@@ -195,6 +198,8 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fNLMCutMax  ;                            ///<  Remove clusters/cells with number of local maxima larger than this value
     
   Bool_t   fFillSSHistograms ;                      ///<  Fill shower shape histograms
+  
+  Bool_t   fFillSSPerSMHistograms ;                 ///<  Fill shower shape histograms per SM
 
   Bool_t   fFillEMCALRegionSSHistograms ;           ///<  Fill shower shape histograms in EMCal slices
     

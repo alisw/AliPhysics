@@ -19,6 +19,7 @@ class AliMergeableCollectionProxy;
 class AliMuonTrackCuts;
 class TH2F;
 class TObjArray;
+class AliVEventHandler;
 
 class AliAnalysisMuMuSingle : public AliAnalysisMuMuBase
 {
@@ -54,7 +55,7 @@ public:
   void NameOfIsEtaInRange(TString& name) const
   { name = "ETA"; }
 
-  void SetRun(const AliInputEventHandler* eventHandler);
+  void SetRun(const AliVEventHandler* eventHandler);
 
   void MakePtEtaSpectraPerBunchCrossing() { fPtEtaSpectraPerBCX = kTRUE; }
 

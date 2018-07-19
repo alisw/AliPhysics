@@ -34,6 +34,7 @@ public:
 
   void SetPtBinEdgesForMassPlot(Double_t ptmin, Double_t ptmax)    { fpTmin                  = ptmin ; fpTmax                  = ptmax ; }
   void SetMassRebin(UInt_t r)                                      { fMassRebin              = r > 0 ? r : 1; }
+  void SetEfficiencyWeightSB(Bool_t b)                             { fEfficiencyWeightSB     = b     ; }
 
   UInt_t GetMassRebin() const { return fMassRebin; }
 
@@ -60,6 +61,7 @@ protected:
   Double_t          *fJetzBinEdges               ; ///< Jet z bin edges to be used for spectrum
   Double_t          *fDEffValues                 ; ///< D-meson efficiency values
   UInt_t             fMassRebin                  ; ///< Rebin the mass histogram axis
+  Bool_t             fEfficiencyWeightSB         ; ///< If true the efficiency is applied as a weight in the inv mass distribution also in the side-band method (this is always the case for the inv.mass fit method in jet pt bins)
 
   TH1D              *fMassPlot                   ; //!<!Mass spectra to be fitted
   TH2D              *fMassVsJetPtPlot            ; //!<!Mass vs jet pt (SB method)

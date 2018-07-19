@@ -53,6 +53,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    fCutBits = 0x0;
    fPsim[0] = fPrec[0] = fPmother[0] = fPsim[1] = fPrec[1] = fPmother[1] = fPsim[2] = fPrec[2] = fPmother[2] = 0.0;
    fIndexV0[0] = fIndexV0[1] = -1;
+   fMass[0] = fMass[1] = -1.0;
 
    // charge
    if (daughter->IsPos())
@@ -198,7 +199,7 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
 Double_t AliRsnMiniParticle::Mass()
 {
    //
-   // return mass of particle
+   // return PDG mass of particle
    //
 
    TDatabasePDG *db   = TDatabasePDG::Instance();
@@ -214,5 +215,5 @@ void AliRsnMiniParticle::Set4Vector(TLorentzVector &v, Float_t mass, Bool_t mc)
    //
 
    if (mass<0.0) mass = Mass();
-   v.SetXYZM(Px(mc), Py(mc), Pz(mc),mass);
+   v.SetXYZM(Px(mc), Py(mc), Pz(mc), mass);
 }

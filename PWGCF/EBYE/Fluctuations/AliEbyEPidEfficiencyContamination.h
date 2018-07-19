@@ -1,5 +1,5 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * Copyright(c) 1998-2018, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
@@ -13,14 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//=========================================================================//
+//             AliEbyE Analysis for Net-Particle Higher Moment study       //
+//                           Nirbhay K. Behera                             //
+//                           nbehera@cern.ch                               //
+//                   Deepika Rathee  | Satyajit Jena                       //
+//                   drathee@cern.ch | sjena@cern.ch                       //
 //                                                                         //
-//             AliEbyE Analysis  Net-Particle Higher Moment study          //
-//              Author:   Deepika Rathee  || Satyajit Jena                 //
-//                        drathee@cern.ch || sjena@cern.ch                 //
-//                                Nirbhay K. Behera                        //              
-//                          (Last modified: 2017/04/07)                    //
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//                        (Last Modified 2018/03/14)                       //
+//                 Dealing with Wide pT Window Modified to ESDs            //
+//Some parts of the code are taken from J. Thaeder/ M. Weber NetParticle   //
+//analysis task.                                                           //
+//=========================================================================//
 
 #ifndef AliEbyEPidEfficiencyContamination_H
 #define AliEbyEPidEfficiencyContamination_H
@@ -30,16 +34,18 @@ class TH2F;
 class TH1D;
 class THnSparse;
 
+class AliVEventHandler;
+class AliMCEventHandler;
+class AliVEvent;
+class AliESDtrackCuts;
 class AliMCEvent;
 class AliStack;
-class AliESDtrackCuts;
+class AliEventCuts;
 class AliVParticle;
 class AliVTrack;
 class TClonesArray;
 class AliPID;
 class AliPIDResponse;
-class AliPIDCombined;
-class AliAnalysisUtils;
 
 
 class AliEbyEPidEfficiencyContamination: public AliAnalysisTaskSE {
@@ -52,6 +58,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
 
+  void SetRunPeriod( TString runperiod) { fRun = runperiod; }
   void SetIsAOD(Bool_t IsAOD) {fIsAOD = IsAOD;}
   void SetAODtrackCutBit(Int_t bit) {fAODtrackCutBit = bit; }
   void SetIsMC(Bool_t Ismc) {fIsMC = Ismc;}
@@ -64,6 +71,8 @@ AliEbyEPidEfficiencyContamination( const char *name );
     fVxMax = vx;fVyMax = vy; fVzMax = vz;
   }
   
+  void SetIsRapidityCut(Bool_t IsRapCut){ fIsRapCut = IsRapCut; }
+  void SetUseTotalMomentumCut( Bool_t IsTotalMom){ fTotP = IsTotalMom; }
   void SetKinematicsCuts(Double_t ptl, Double_t pth, Double_t eta) {
     fPtMin = ptl; fPtMax = pth; fEtaMin = -eta; fEtaMax = eta; 
   }
@@ -89,14 +98,17 @@ AliEbyEPidEfficiencyContamination( const char *name );
   void SetMaxPtForTPClow(Float_t f)                  {fMaxPtForTPClow      = f;}
   
  private:
-  TList           *fThnList;       //!
-  Double_t        *fPtArray;       //pt array
-  TClonesArray    *fArrayMC;       // AOD MC stack
-  AliESDtrackCuts *fESDtrackCuts;  // ESD Track Cuts
-  AliMCEvent      *fMCEvent;       // Current MC Event
-  AliStack        *fMCStack;       // Stak tree
-  AliAnalysisUtils *fanaUtils;     //using for pileup check
-  TString          fCentralityEstimator;   // "V0M","TRK","CL1"
+  TList               *fThnList;       //
+  AliVEventHandler    *fInputHandler;  // for Event handler
+  AliMCEventHandler   *fMCEventHandler;         // for MC event handler---
+  AliVEvent 	      *fVevent;        // V event
+  TClonesArray        *fArrayMC;       // AOD MC stack
+  AliESDtrackCuts     *fESDtrackCuts;  // ESD Track Cuts
+  AliMCEvent          *fMCEvent;       // Current MC Event
+  AliStack            *fMCStack;       // Stak tree
+  AliEventCuts        *fEventCuts;      //using for pileup check
+  TString             fRun;            //Run  production name 
+  TString             fCentralityEstimator;   // "V0M","TRK","CL1"
  
   Int_t        fAODtrackCutBit; //
     
@@ -115,6 +127,8 @@ AliEbyEPidEfficiencyContamination( const char *name );
   Bool_t     fIsMC;                         // Is MC event - Auto set by Add Task
   Bool_t     fIsAOD;                        // analysis mode: 0 = ESDs  | 1 = AODs
   Bool_t     fIsQA;                         // Check for QA
+  Bool_t     fIsRapCut;                     // Use rapidity cut 1= yes, 0= no
+  Bool_t     fTotP;                        // Swith to use total momentum cut
   Bool_t     fIsTrig;           //
   Bool_t     fIsThn;            //
 
@@ -200,7 +214,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   //________________________________
   AliEbyEPidEfficiencyContamination(const AliEbyEPidEfficiencyContamination&);
   AliEbyEPidEfficiencyContamination& operator = (const AliEbyEPidEfficiencyContamination&);
-  ClassDef(AliEbyEPidEfficiencyContamination, 1);
+  ClassDef(AliEbyEPidEfficiencyContamination, 6);
 };
 
 #endif

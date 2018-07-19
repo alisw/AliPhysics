@@ -1,5 +1,18 @@
+#if !defined(__CINT__) || defined(__MAKE_CINT__) || defined(__CLING__)
+
+#include <TString.h>
+
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
+#include "AliVEventHandler.h"
+#include "AliITSPidParams.h"
+#include "AliAnalysisTaskSEITSsaSpectra.h"
+
+#endif
+
 AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSigCut, 1:kMeanCut, 2:kLanGaus
                                                    Bool_t   isMC       = kFALSE, //
+                                                   Bool_t   defPriors  = kTRUE,
                                                    Bool_t   optNtuple  = kFALSE,
                                                    const char* suffix  = "")
 {
@@ -26,14 +39,32 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
     return NULL;
   }
 
-  char* pidName[3] = {"_NSigCut", "_MeanCut", "_LanGauMP"};
+  const char* pidName[3] = {"_NSigCut", "_MeanCut", "_LanGauMP"};
   TString kContSuffix(pidName[pidMethod]);
 
   // Create and configure the task
-  AliAnalysisTaskSEITSsaSpectra* taskits = new AliAnalysisTaskSEITSsaSpectra();
-  taskits->SetIsMC(isMC);
-  taskits->SetFillNtuple(optNtuple);
+  AliAnalysisTaskSEITSsaSpectra* taskits = new AliAnalysisTaskSEITSsaSpectra(defPriors,optNtuple);
+
   taskits->SetPidTech(pidMethod);
+  taskits->SetIsMC(isMC);
+  if (pidMethod==2) {
+    AliITSPidParams* aliParams = new AliITSPidParams(isMC);
+    taskits->SetITSPidParams(aliParams);
+  }
+
+  const int nMultBins=14;
+  float mult[nMultBins+1] = {-5.f,0.f,1.f,5.f,10.f,15.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f,100.f};
+  taskits->SetCentBins(nMultBins, mult);
+
+  const int nPtBins=24;
+  float ptBins[nPtBins+1] = {
+   0.00f,0.05f,0.08f,0.10f,0.12f,0.14f,0.16f,0.18f,0.20f,0.25f,
+   0.30f,0.35f,0.40f,0.45f,0.50f,0.55f,0.60f,0.65f,0.70f,0.75f,
+   0.80f,0.85f,0.90f,0.95f,1.00f
+  };
+  taskits->SetPtBins(nPtBins, ptBins);
+
+  taskits->Initialization();
 
   kContSuffix += suffix;
   mgr->AddTask(taskits);
@@ -65,17 +96,16 @@ AliAnalysisTaskSEITSsaSpectra* AddTaskITSsaSpectra(Int_t    pidMethod, // 0:kNSi
                                          outputFileName);
   mgr->ConnectOutput(taskits, 2, kDCAcutDataCont);
 
-  if(optNtuple) {
-    TString kNtupleContName("cListTreeInfo");
-    kNtupleContName += kContSuffix;
+  TString kNtupleContName("cListTreeInfo");
+  kNtupleContName += kContSuffix;
 
-    AliAnalysisDataContainer* kNtupleDataCont;
-    kNtupleDataCont = mgr->CreateContainer(kContSuffix.Data(),
-                                           TTree::Class(),
+  AliAnalysisDataContainer* kNtupleDataCont = NULL;
+  if (optNtuple){
+        kNtupleDataCont = mgr->CreateContainer(kNtupleContName.Data(),
+                                           TList::Class(),
                                            AliAnalysisManager::kOutputContainer,
                                            outputFileName);
     mgr->ConnectOutput(taskits, 3, kNtupleDataCont);
   }
-
   return taskits;
 }

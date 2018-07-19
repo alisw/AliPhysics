@@ -50,12 +50,12 @@ AliAnalysisTaskNucleiYield* AddTaskNucleiYield_LHC15o(Bool_t isMC = kFALSE,
   float cent[11] = {0.f,5.f,10.f,20.f,30.f,40.f,50.f,60.f,70.f,80.f,90.f};
   deu->SetCentBins(10, cent);
   deu->SetUseFlattening(false);
-  float pt[26] = {
-    0.6f,0.7f,0.8f,0.9f,1.0f,1.1f,1.2f,1.4f,1.6f,1.8f,
-    2.0f,2.2f,2.4f,2.6f,2.8f,3.0f,3.2f,3.4f,3.6f,3.8f,
-    4.0f,4.2f,4.4f,5.0f,6.0f,8.0f
+  float pt[30] = {
+    0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f,1.1f,
+    1.2f,1.4f,1.6f,1.8f,2.0f,2.2f,2.4f,2.6f,2.8f,3.0f,
+    3.2f,3.4f,3.6f,3.8f,4.0f,4.2f,4.4f,5.0f,6.0f,8.0f
   };
-  deu->SetPtBins(25,pt);
+  deu->SetPtBins(29,pt);
 
   float dcabins[53] = {
     -1.30,-1.20,-1.10,-1.00,-0.90,-0.80,-0.70,-0.60,-0.50,-0.40,

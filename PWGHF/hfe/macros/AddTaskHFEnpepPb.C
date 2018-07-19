@@ -575,17 +575,12 @@ AliAnalysisTask *AddTaskHFEnpepPb(Bool_t MCthere,
     // Beauty task
     //
     // **************************************************************
-    const int	kDefTPCclBeauty	= 110;
+    const int	kDefTPCclBeauty	= 100;  // before 110
     if(isAOD==1){
-      RegisterTaskNPEpPb( MCthere, isAOD, kBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2AOD, dEdxhmAOD, kDefTOFs,
-                          AliHFEextraCuts::kBoth, 0, kHFEV0A, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp, kassITS, kassTPCcl,
-                          kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kTRUE, -1, kTRUE);
-      RegisterTaskNPEpPb( MCthere, isAOD, kBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2AOD, dEdxhmAOD, kDefTOFs,
-                          AliHFEextraCuts::kBoth, 0, kHFEV0A, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp, kassITS, kassTPCcl,
-                          kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kTRUE,-1, kTRUE, kTRUE, kFALSE);
-      RegisterTaskNPEpPb( MCthere, isAOD, kBeauty, kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2AOD, dEdxhmAOD, kDefTOFs,
-                          AliHFEextraCuts::kBoth, 0, kHFEV0A, kDefEtaIncMin, kDefEtaIncMax, kassETAm, kassETAp, kassITS, kassTPCcl,
-                          kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kTRUE,-1, kTRUE, kTRUE, kTRUE);
+	RegisterTaskNPEpPb( MCthere, isAOD, kBeauty, kDefTPCclBeauty, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2AOD,
+			   dEdxhmAOD, kDefTOFs, AliHFEextraCuts::kBoth, 0, kHFEV0A, kassITS, kassTPCcl, kassTPCPIDcl,
+			   kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kassITSpid, kassTOFpid, kTRUE, kTRUE, kWei, kd3weiData, 0, kFALSE, kTRUE);
+        // last argument for  nonHFE systematics' container kTRUE = filled
     }
     else{
       // reference
@@ -813,8 +808,8 @@ AliAnalysisTask *RegisterTaskNPEpPb(Bool_t useMC, Bool_t isAOD, Bool_t beauty,
   if(useMC&&(beauty || (weightlevelback>=0))) {
     ConfigWeightFactors(task,nonHFEsys,WhichWei);
     task->SetNonHFEsystematics(nonHFEsys);
-    }
   }
+
   TString containerName = mgr->GetCommonFileName();
   containerName += ":HFEtask";
   containerName += appendix.Data();

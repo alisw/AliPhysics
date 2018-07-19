@@ -301,15 +301,15 @@ void AliAnalysisTaskK0toPi0Pi0::UserExec(Option_t *){
   Int_t mbin   = fSamePCMHandler->GetMultiplicityBinIndex(fV0Reader->GetNumberOfPrimaryTracks());
 
 
-  Int_t nEventsSamePCM   = fSamePCMHandler->GetNBackgroundEventsInBuffer(binZ,mbin);
-  Int_t nEventsSameEMCAL = fSameEMCALHandler->GetNBackgroundEventsInBuffer(binZ,mbin);
-  Int_t nEventsMixed     = fMixedHandler->GetNBackgroundEventsInBuffer(binZ,mbin);
+//  Int_t nEventsSamePCM   = fSamePCMHandler->GetNBackgroundEventsInBuffer(binZ,mbin);
+//  Int_t nEventsSameEMCAL = fSameEMCALHandler->GetNBackgroundEventsInBuffer(binZ,mbin);
+//  Int_t nEventsMixed     = fMixedHandler->GetNBackgroundEventsInBuffer(binZ,mbin);
   //printf("Zbin is %d\n",binZ );
   //printf("multiplicityBin is %d\n", mbin);
   //printf("nEventsSamePCM: %d ::: nEventsSameEMCAL %d ::: nEventsMixed %d\n", nEventsSamePCM,nEventsSameEMCAL,nEventsMixed);
-  std::vector<AliAODConversionMother> samePi0PCM_BG;
-  std::vector<AliAODConversionMother> samePi0EMCAL_BG;
-  std::vector<AliAODConversionMother> mixedPi0_BG;
+//  std::vector<AliAODConversionMother> samePi0PCM_BG;
+//  std::vector<AliAODConversionMother> samePi0EMCAL_BG;
+//  std::vector<AliAODConversionMother> mixedPi0_BG;
 
 
   Double_t primVtxX = fInputEvent->GetPrimaryVertex()->GetX();

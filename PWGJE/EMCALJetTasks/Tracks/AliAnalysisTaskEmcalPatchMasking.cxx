@@ -135,7 +135,7 @@ void AliAnalysisTaskEmcalPatchMasking::UserCreateOutputObjects(){
 
 bool AliAnalysisTaskEmcalPatchMasking::IsEventSelected(){
   if(fTriggerBits){
-    if(!fInputHandler->IsEventSelected() & fTriggerBits) return false;
+    if(!(fInputHandler->IsEventSelected() & fTriggerBits)) return false;
   }
   if(fTriggerPattern.Length()){
     if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerPattern)) return false;

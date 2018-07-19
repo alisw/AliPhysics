@@ -42,7 +42,7 @@ AliFemtoSphericityEventCut::~AliFemtoSphericityEventCut(){
   // Default destructor
 }
 //------------------------------
-bool AliFemtoSphericityEventCut::Pass(const AliFemtoEvent* event){  
+bool AliFemtoSphericityEventCut::Pass(const AliFemtoEvent* event){
 
   // Pass events if they fall within the multiplicity, z-vertex position range
   // and transverse sphericity. Fail otherwise

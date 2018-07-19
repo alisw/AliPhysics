@@ -1816,6 +1816,8 @@ void AliAnalysisTaskPiKpK0Lamba::Analyze(AliAODEvent* aod, Float_t vtxZ)
             continue;
         }
 
+        Int_t statfly = v0->GetOnFlyStatus();
+        if (statfly == 1) continue;
 
         if (fEtaRange == 0){
             if (v0->Eta() >= 0)
@@ -2021,25 +2023,44 @@ void AliAnalysisTaskPiKpK0Lamba::Analyze(AliAODEvent* aod, Float_t vtxZ)
     Double_t corV0ATPCvn = QxanCor*Qxtn + QyanCor*Qytn;
     Double_t corV0CTPCvn = QxcnCor*Qxtn + QycnCor*Qytn;
 
+    Double_t corV0AV0Cvnsq = QxanCor*QxanCor*QxcnCor*QxcnCor - QyanCor*QyanCor*QxcnCor*QxcnCor + 4.*QxanCor*QxcnCor*QyanCor*QycnCor - QxanCor*QxanCor*QycnCor*QycnCor + QyanCor*QyanCor*QycnCor*QycnCor;
+    Double_t corV0ATPCvnsq = QxanCor*QxanCor*Qxtn*Qxtn - QyanCor*QyanCor*Qxtn*Qxtn + 4.*QxanCor*Qxtn*QyanCor*Qytn - QxanCor*QxanCor*Qytn*Qytn + QyanCor*QyanCor*Qytn*Qytn;
+    Double_t corV0CTPCvnsq = QxcnCor*QxcnCor*Qxtn*Qxtn - QycnCor*QycnCor*Qxtn*Qxtn + 4.*QxcnCor*Qxtn*QycnCor*Qytn - QxcnCor*QxcnCor*Qytn*Qytn + QycnCor*QycnCor*Qytn*Qytn;
+
+
+
     if (!fBin1Cent){
+
+
+
 
         fV0AV0Cvn->Fill(v0Centr, corV0AV0Cvn);
         fV0ATPCvn->Fill(v0Centr, corV0ATPCvn);
         fV0CTPCvn->Fill(v0Centr, corV0CTPCvn);
-
+/*
         fV0AV0Cvnsq->Fill(v0Centr, corV0AV0Cvn*corV0AV0Cvn);
         fV0ATPCvnsq->Fill(v0Centr, corV0ATPCvn*corV0ATPCvn);
         fV0CTPCvnsq->Fill(v0Centr, corV0CTPCvn*corV0CTPCvn);
-
+*/
+        fV0AV0Cvnsq->Fill(v0Centr, corV0AV0Cvnsq);
+        fV0ATPCvnsq->Fill(v0Centr, corV0ATPCvnsq);
+        fV0CTPCvnsq->Fill(v0Centr, corV0CTPCvnsq);
     } else {
 
         fV0AV0CvnB1C->Fill(v0Centr, corV0AV0Cvn);
         fV0ATPCvnB1C->Fill(v0Centr, corV0ATPCvn);
         fV0CTPCvnB1C->Fill(v0Centr, corV0CTPCvn);
-
+/*
         fV0AV0CvnB1Csq->Fill(v0Centr, corV0AV0Cvn*corV0AV0Cvn);
         fV0ATPCvnB1Csq->Fill(v0Centr, corV0ATPCvn*corV0ATPCvn);
         fV0CTPCvnB1Csq->Fill(v0Centr, corV0CTPCvn*corV0CTPCvn);
+*/
+        fV0AV0CvnB1Csq->Fill(v0Centr, corV0AV0Cvnsq);
+        fV0ATPCvnB1Csq->Fill(v0Centr, corV0ATPCvnsq);
+        fV0CTPCvnB1Csq->Fill(v0Centr, corV0CTPCvnsq);
+
+
+
     }
 
 }

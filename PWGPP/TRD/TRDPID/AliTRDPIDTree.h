@@ -100,6 +100,10 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
       fCollisionSystem.SetBitNumber(kPbPb, kTRUE);
   };
 
+  void SetUseExtraPileupCut(Bool_t UseExtraPileupCut=kFALSE){
+      fUseExtraPileupCut=UseExtraPileupCut;
+  };
+
   protected:
   static Double_t fgMinLayer;  //! Cut variable for min number of layers
   AliESDv0KineCuts *fV0cuts;           //! ESD V0 cuts
@@ -137,6 +141,8 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
 
   Float_t fpdg;                        //! particle type (pdg value)
   Int_t frun;                          //! run number
+
+  Bool_t fUseExtraPileupCut;           //! cut on correlation of VZERO multiplicity & TPCout tracks (LHC15o pass1)
   
   // TTree stuff for PID References
   Int_t frunnumber;                  //! Tree: Run number
@@ -169,10 +175,12 @@ class AliTRDPIDTree : public AliAnalysisTaskSE {
   TH1F *fhtrackCuts;                 //! Track and Event Cuts - QA
   TH1F *fhEventCount;                //! count number of events analysed 
   TH2F *fhArmenteros;                //! 2D V0 QA Hist
+  TH2F *fHistV0MvsTPCoutBeforePileUpCuts; //! histos to monitor pile up cuts
+  TH2F *fHistV0MvsTPCoutAfterPileUpCuts;  //!
 
   AliTRDPIDTree(const AliTRDPIDTree&); // not implemented
   AliTRDPIDTree& operator=(const AliTRDPIDTree&); // not implemented
   
-  ClassDef(AliTRDPIDTree, 3);
+  ClassDef(AliTRDPIDTree, 4);
 };
 #endif

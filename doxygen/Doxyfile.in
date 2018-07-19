@@ -787,6 +787,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros \
                          @CMAKE_SOURCE_DIR@/PWGGA/CaloTrackCorrelations/macros/QA \
                          @CMAKE_SOURCE_DIR@/PWGGA/GammaConv \
+                         @CMAKE_SOURCE_DIR@/PWGGA/GammaConv/documentation \
                          @CMAKE_SOURCE_DIR@/PWGMM/doc \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/lite \
                          @CMAKE_SOURCE_DIR@/PWGPP/MUON/dep \
@@ -801,6 +802,7 @@ INPUT                  = @CMAKE_SOURCE_DIR@/doxygen \
                          @CMAKE_SOURCE_DIR@/PWG/FLOW/Tasks \
                          @CMAKE_SOURCE_DIR@/PWG/FLOW/Base \
                          @CMAKE_SOURCE_DIR@/PWG/CaloTrackCorrBase \
+                         @CMAKE_SOURCE_DIR@/OADB/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALbase \
                          @CMAKE_SOURCE_DIR@/PWG/EMCAL/EMCALtrigger \

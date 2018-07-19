@@ -51,7 +51,17 @@
 #endif
 using namespace std;
 
-void QAplots(TString fCalorimeter = "EMCAL", TString period = "LHC11h", TString pass = "pass1_HLT", TString trigger= "default")
+void QAplots(TString fCalorimeter = "EMCAL", TString period = "LHC11h", TString pass = "pass1_HLT", TString trigger= "default");
+
+void QAplots(Int_t run, TString period ="LHC11h", TString pass="pass1_HLT", TString trigger= "default");
+
+void DrawOccupancy(Int_t run , TString period ="LHC11h", TString pass="pass1_HLT",
+                   TString trigger= "default", TFile *f =0x0);
+
+void  DrawRun(const Int_t run = 167713, TString period ="LHC11h",
+              TString pass="pass1_HLT", TString trigger= "default", TFile *f =0x0);
+
+void QAplots(TString fCalorimeter, TString period, TString pass, TString trigger)
 {
   FILE * pFile;
   TString file = "";
@@ -99,7 +109,7 @@ void QAplots(TString fCalorimeter = "EMCAL", TString period = "LHC11h", TString 
   }
 }
 
-void QAplots(Int_t run, TString period ="LHC11h", TString pass="pass1_HLT", TString trigger= "default")
+void QAplots(Int_t run, TString period, TString pass, TString trigger)
 {
   TString base ;
   base = "/scratch/alicehp2/germain/QA/";
@@ -116,8 +126,8 @@ void QAplots(Int_t run, TString period ="LHC11h", TString pass="pass1_HLT", TStr
   f->Close();
 }
 
-void DrawOccupancy(Int_t run , TString period ="LHC11h", TString pass="pass1_HLT",
-                   TString trigger= "default", TFile *f =0x0)
+void DrawOccupancy(Int_t run , TString period, TString pass,
+                   TString trigger, TFile *f)
 {
   TH2D *hEnergyMap = new TH2D("hEnergyMap","",96,-48,48,120,-0,120);
   TH2D *hOccupancyMap = new TH2D("hOccupancyMap","",96,-48,48,120,-0,120); 
@@ -144,7 +154,7 @@ void DrawOccupancy(Int_t run , TString period ="LHC11h", TString pass="pass1_HLT
   Int_t iphi, ieta,jj,kk;
   Int_t icol, irow;
   Int_t bineta, binphi;
-  Int_t realbineta, realbinphi;
+  Int_t realbineta = -1, realbinphi = -1;
   TVector3 vg, gg;
   Double_t eta, phi, glob[3];
   
@@ -303,11 +313,10 @@ void DrawOccupancy(Int_t run , TString period ="LHC11h", TString pass="pass1_HLT
   hOccupancyMapReal->Draw("colz");  
   c2->cd();
   c2->SaveAs(Entries);
-  c2->SaveAs(Entries2);
 }
 
-void  DrawRun(const Int_t run = 167713, TString period ="LHC11h",
-              TString pass="pass1_HLT", TString trigger= "default", TFile *f =0x0)
+void  DrawRun(const Int_t run, TString period,
+              TString pass, TString trigger, TFile *f)
 {
   gStyle->SetPalette(1);
   TString base = "/scratch/alicehp2/germain/QA/"; 
@@ -335,36 +344,36 @@ void  DrawRun(const Int_t run = 167713, TString period ="LHC11h",
   
   
   
-  hClusterTimeEnergy =(TH2F *)outputList->FindObject("EMCAL_hClusterTimeEnergy");
+  TH2F * hClusterTimeEnergy =(TH2F *)outputList->FindObject("EMCAL_hClusterTimeEnergy");
   
   TString title3 =" Time Vs Energy";
   title3 += legend ;
   hClusterTimeEnergy->SetStats(kFALSE);
   hClusterTimeEnergy->SetTitle(title3);
   
-  hClusterVsTrack =(TH2F *)outputList->FindObject("EMCAL_hCaloTrackMNClusters");
+  TH2F * hClusterVsTrack =(TH2F *)outputList->FindObject("EMCAL_hCaloTrackMNClusters");
   hClusterVsTrack->SetStats(kFALSE);
-  TString title3 =" N cluster Vs N track";
+  title3 =" N cluster Vs N track";
   title3 += legend ;
   hClusterVsTrack->SetTitle(title3);
   
   
-  hClusterEVsTrack =(TH2F *)outputList->FindObject("EMCAL_hCaloTrackMEClusters");
+  TH2F * hClusterEVsTrack =(TH2F *)outputList->FindObject("EMCAL_hCaloTrackMEClusters");
   hClusterEVsTrack->SetStats(kFALSE);
   hClusterEVsTrack->SetTitle(legend);
-  TString title3 =" Sum E cluster Vs N track";
+  title3 =" Sum E cluster Vs N track";
   title3 += legend ;
   hClusterEVsTrack->SetTitle(title3);
   
   
-  hClusterEVsV0S =(TH2F *)outputList->FindObject("EMCAL_hCaloV0SEClusters");
+  TH2F * hClusterEVsV0S =(TH2F *)outputList->FindObject("EMCAL_hCaloV0SEClusters");
   hClusterEVsV0S->SetStats(kFALSE);
-  TString title3 =" Sum E cluster Vs V0 signal";
+  title3 =" Sum E cluster Vs V0 signal";
   title3 += legend ;
   hClusterEVsV0S->SetTitle(title3);
   
-  
-  hNCellsPerClusterMod0 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod0");
+
+  TH2F * hNCellsPerClusterMod0 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod0");
   hNCellsPerClusterMod0->SetStats(kFALSE);
   
   if(trigger=="EMC7"){sprintf(legend2,"Run %i EMC Mod 0",run);}
@@ -373,7 +382,7 @@ void  DrawRun(const Int_t run = 167713, TString period ="LHC11h",
   
   hNCellsPerClusterMod0->SetTitle(legend2);
   
-  hNCellsPerClusterMod1 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod1");
+  TH2F * hNCellsPerClusterMod1 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod1");
   hNCellsPerClusterMod1->SetStats(kFALSE);
   if(trigger=="EMC7"){sprintf(legend2,"Run %i EMC Mod 1",run);}
   else {sprintf(legend2,"Run %i Mod 1",run);}
@@ -381,14 +390,14 @@ void  DrawRun(const Int_t run = 167713, TString period ="LHC11h",
   
   hNCellsPerClusterMod1->SetTitle(legend2);
   
-  hNCellsPerClusterMod2 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod2");
+  TH2F * hNCellsPerClusterMod2 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod2");
   hNCellsPerClusterMod2->SetStats(kFALSE);
   if(trigger=="EMC7"){sprintf(legend2,"Run %i EMC Mod 2",run);}
   else {sprintf(legend2,"Run %i Mod 2",run);}
   
   hNCellsPerClusterMod2->SetTitle(legend2);
   
-  hNCellsPerClusterMod3 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod3");
+  TH2F * hNCellsPerClusterMod3 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod3");
   hNCellsPerClusterMod3->SetStats(kFALSE);
   if(trigger=="EMC7"){sprintf(legend2,"Run %i EMC Mod 3",run);}
   else {sprintf(legend2,"Run %i Mod 3",run);}
@@ -396,38 +405,38 @@ void  DrawRun(const Int_t run = 167713, TString period ="LHC11h",
   hNCellsPerClusterMod3->SetTitle(legend2);
   
   
-  hNCellsPerClusterMod4 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod4");
+  TH2F * hNCellsPerClusterMod4 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod4");
   hNCellsPerClusterMod4->SetStats(kFALSE);
   if(trigger=="EMC7"){sprintf(legend2,"Run %i EMC Mod 4",run);}
   else {sprintf(legend2,"Run %i Mod 4",run);}
   
   hNCellsPerClusterMod4->SetTitle(legend2);
   
-  hNCellsPerClusterMod5 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod5");
+  TH2F * hNCellsPerClusterMod5 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod5");
   hNCellsPerClusterMod5->SetStats(kFALSE);
   if(trigger=="EMC7"){sprintf(legend2,"Run %i EMC Mod 5",run);}
   else {sprintf(legend2,"Run %i Mod 5",run);}
   hNCellsPerClusterMod5->SetTitle(legend2);
   
-  hNCellsPerClusterMod6 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod6");
+  TH2F * hNCellsPerClusterMod6 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod6");
   hNCellsPerClusterMod6->SetStats(kFALSE);
   if(trigger=="EMC7"){sprintf(legend2,"Run %i EMC Mod 6",run);}
   else {sprintf(legend2,"Run %i Mod 6",run);}
   hNCellsPerClusterMod6->SetTitle(legend2);
   
-  hNCellsPerClusterMod7 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod7");
+  TH2F * hNCellsPerClusterMod7 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod7");
   hNCellsPerClusterMod7->SetStats(kFALSE);
   if(trigger=="EMC7"){sprintf(legend2,"Run %i EMC Mod 7",run);}
   else {sprintf(legend2,"Run %i Mod 7",run);}
   hNCellsPerClusterMod7->SetTitle(legend2);
   
-  hNCellsPerClusterMod8 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod8");
+  TH2F * hNCellsPerClusterMod8 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod8");
   hNCellsPerClusterMod8->SetStats(kFALSE);
   if(trigger=="EMC7"){sprintf(legend2,"Run %i EMC Mod 8",run);}
   else {sprintf(legend2,"Run %i Mod 8",run);}
   hNCellsPerClusterMod8->SetTitle(legend2);
   
-  hNCellsPerClusterMod9 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod9");
+  TH2F * hNCellsPerClusterMod9 =(TH2F *)outputList->FindObject("EMCAL_hNCellsPerCluster_Mod9");
   hNCellsPerClusterMod9->SetStats(kFALSE);
   if(trigger=="EMC7"){sprintf(legend2,"Run %i EMC Mod 9",run);}
   else {sprintf(legend2,"Run %i Mod 9",run);} 

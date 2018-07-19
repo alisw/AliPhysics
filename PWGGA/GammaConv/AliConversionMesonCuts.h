@@ -45,7 +45,7 @@ class AliAnalysisManager;
  * |                  2                        | NumberOfBGEvents         |
  * |                  3                        | DegreesForRotationMethod |
  * |                  4                        | RapidityMesonCut         |
- * |                  5                        | RCut                     |
+ * |                  5                        | PtCut                    |
  * |                  6                        | AlphaMesonCut            |
  * |                  7                        | SelectionWindow          |
  * |                  8                        | SharedElectronCuts       |
@@ -70,7 +70,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
       kNumberOfBGEvents,
       kDegreesForRotationMethod,
       kRapidityMesonCut,
-      kRCut,
+      kPtCut,
       kalphaMesonCut,
       kSelectionCut,
       kElecShare,
@@ -138,7 +138,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     void SetCaloMesonCutsObject(AliCaloPhotonCuts* cuts){fCaloPhotonCuts = cuts;}
 
     // Set Individual Cuts
-    Bool_t SetRCut(Int_t RCut);
+    Bool_t SetMinPtCut(Int_t PtCut);
     Bool_t SetMesonKind(Int_t mesonKind);
     Bool_t SetSelectionWindowCut(Int_t selectionCut);
     Bool_t SetSelectionWindowMergedCut(Int_t selectionCut);
@@ -179,7 +179,16 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    BackgroundHandlerType(){return fBackgroundHandler;}
     Double_t GetSelectionLow() const {return fSelectionLow;}
     Double_t GetSelectionHigh() const {return fSelectionHigh;}
-    
+    Double_t GetMinPt() const {return fMinPt;}
+    Bool_t   UseLikeSignMixing() {return fBackgroundUseLikeSign;}
+    Bool_t   UseSidebandMixing() {return fBackgroundUseSideband;}
+    Bool_t   UseSidebandMixingBothSides() {return fBackgroundUseSidebandBothSides;}
+    Double_t GetSidebandMixingLow() const {return fSidebandMixingLow;}
+    Double_t GetSidebandMixingHigh() const {return fSidebandMixingHigh;}
+    Double_t GetSidebandMixingLeftLow() const {return fSidebandMixingLeftLow;}
+    Double_t GetSidebandMixingLeftHigh() const {return fSidebandMixingLeftHigh;}
+    Double_t GetSidebandMixingRightLow() const {return fSidebandMixingRightLow;}
+    Double_t GetSidebandMixingRightHigh() const {return fSidebandMixingRightHigh;}
   protected:
     TList*    fHistograms;				 ///< List of QA histograms
     Bool_t    fDoLightOutput;             ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
@@ -188,9 +197,11 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     AliCaloPhotonCuts* fCaloPhotonCuts;   ///< CaloPhotonCutObject belonging to same main task
 
     //cuts
-    Int_t     fMesonKind;				 ///<
+    Int_t     fMesonKind;				  ///<
     Int_t     fIsMergedClusterCut;        ///< flag for merged cluster and di cluster analysis
-    Double_t  fMaxR;                      ///< r cut
+    Double_t  fMaxR;                      ///< max r cut
+    Double_t  fMinPt;                     ///< min pT cut
+    Bool_t    fDoMinPtCut;                ///< do min pT cut
     Bool_t    fEnableMassCut;             ///< flag to enable mass cut
     Double_t  fSelectionLow;              ///< lower meson inv mass window for further selection
     Double_t  fSelectionHigh;             ///< higher meson inv mass window for further selection
@@ -234,7 +245,15 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     TF1*      fFMaxOpanCut;               ///<
     Bool_t    fMaxOpanPtDepCut;           ///<
     Int_t     fBackgroundHandler;         ///<
-    
+    Bool_t    fBackgroundUseSideband;     ///<
+    Bool_t    fBackgroundUseSidebandBothSides;     ///<
+    Bool_t    fBackgroundUseLikeSign;     ///<
+    Double_t  fSidebandMixingLow;     ///<
+    Double_t  fSidebandMixingHigh;     ///<
+    Double_t  fSidebandMixingLeftLow;     ///<
+    Double_t  fSidebandMixingLeftHigh;     ///<
+    Double_t  fSidebandMixingRightLow;     ///<
+    Double_t  fSidebandMixingRightHigh;     ///<
     // Histograms
     TObjString* fCutString;                     ///< cut number used for analysis
     TString     fCutStringRead;
@@ -252,7 +271,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,19)
+    ClassDef(AliConversionMesonCuts,22)
     /// \endcond
 };
 

@@ -381,18 +381,18 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   //loop for pi0 and photon
   if(GetDebug() > 0) printf("omega->pi0+gamma->3gamma invariant mass analysis ! This event have %d photons and %d pi0 \n", nphotons, npi0s);
   for(Int_t i=0;i<npi0s;i++){
-    AliAODPWG4Particle * pi0 = (AliAODPWG4Particle*) (fInputAODPi0->At(i)) ; //pi0
+    AliCaloTrackParticle * pi0 = (AliCaloTrackParticle*) (fInputAODPi0->At(i)) ; //pi0
     TLorentzVector vpi0(pi0->Px(),pi0->Py(),pi0->Pz(),pi0->E());
     Int_t lab1=pi0->GetCaloLabel(0);  // photon1 from pi0 decay
     Int_t lab2=pi0->GetCaloLabel(1);  // photon2 from pi0 decay
     //for omega->pi0+gamma, it needs at least three photons per event
     //Get the two decay photons from pi0
-    AliAODPWG4Particle * photon1 =0;
-    AliAODPWG4Particle * photon2 =0;
+    AliCaloTrackParticle * photon1 =0;
+    AliCaloTrackParticle * photon2 =0;
     for(Int_t d1=0;d1<nphotons;d1++){
       for(Int_t d2=0;d2<nphotons;d2++){
-        AliAODPWG4Particle * dp1 = (AliAODPWG4Particle*) (aodGamma->At(d1));
-        AliAODPWG4Particle * dp2 = (AliAODPWG4Particle*) (aodGamma->At(d2));
+        AliCaloTrackParticle * dp1 = (AliCaloTrackParticle*) (aodGamma->At(d1));
+        AliCaloTrackParticle * dp2 = (AliCaloTrackParticle*) (aodGamma->At(d2));
         Int_t dlab1=dp1->GetCaloLabel(0);
         Int_t dlab2=dp2->GetCaloLabel(0);
         if(dlab1==lab1 && dlab2==lab2){
@@ -422,7 +422,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
       Int_t index1=0;
       Int_t index2=0;
       for(Int_t k=0;k<i;k++){
-        AliAODPWG4Particle * p3=(AliAODPWG4Particle*)(fInputAODPi0->At(k));
+        AliCaloTrackParticle * p3=(AliCaloTrackParticle*)(fInputAODPi0->At(k));
         Int_t lab4=p3->GetCaloLabel(0);
         Int_t lab5=p3->GetCaloLabel(1);
         if(lab1==lab4){ dc1[index1]=lab5;  index1++;  }
@@ -432,7 +432,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
       
       //loop the pi0 with third gamma
       for(Int_t j=0;j<nphotons;j++){
-        AliAODPWG4Particle *photon3 = (AliAODPWG4Particle*) (aodGamma->At(j));
+        AliCaloTrackParticle *photon3 = (AliCaloTrackParticle*) (aodGamma->At(j));
         TLorentzVector dph3(photon3->Px(),photon3->Py(),photon3->Pz(),photon3->E());
         Int_t lab3=photon3->GetCaloLabel(0);
         Double_t pi0gammapt=(vpi0+dph3).Pt();
@@ -478,7 +478,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
       for(Int_t im=0;im<nMixed;im++){
         TClonesArray* ev2= (TClonesArray*) (fEventsList[curEventBin]->At(im));
         for(Int_t mix1=0;mix1<ev2->GetEntries();mix1++){
-          AliAODPWG4Particle *mix1ph = (AliAODPWG4Particle*) (ev2->At(mix1));     
+          AliCaloTrackParticle *mix1ph = (AliCaloTrackParticle*) (ev2->At(mix1));     
           TLorentzVector vmixph(mix1ph->Px(),mix1ph->Py(),mix1ph->Pz(),mix1ph->E());
           Double_t pi0gammapt=(vpi0+vmixph).Pt();
           Double_t pi0gammamass=(vpi0+vmixph).M();
@@ -517,14 +517,14 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   //
   if(GetDebug() >0)printf("MixB:  (r1_event1+r2_event2)+r3_event2 \n");
   for(Int_t i=0;i<nphotons;i++){
-    AliAODPWG4Particle *ph1 = (AliAODPWG4Particle*) (aodGamma->At(i)); 
+    AliCaloTrackParticle *ph1 = (AliCaloTrackParticle*) (aodGamma->At(i)); 
     TLorentzVector vph1(ph1->Px(),ph1->Py(),ph1->Pz(),ph1->E());
     //interrupt here...................
     //especially for EMCAL
     //we suppose the high pt clusters are overlapped pi0   
 
     for(Int_t j=i+1;j<nphotons;j++){
-        AliAODPWG4Particle *ph2 = (AliAODPWG4Particle*) (aodGamma->At(j));
+        AliCaloTrackParticle *ph2 = (AliCaloTrackParticle*) (aodGamma->At(j));
         TLorentzVector fakePi0, fakeOmega, vph;
 
         if(ph1->E() > fEOverlapCluster && ph1->E() > ph2->E()) {
@@ -548,14 +548,14 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
     for(Int_t ie=0;ie<nMixed;ie++){
       TClonesArray* ev2= (TClonesArray*) (fEventsList[curEventBin]->At(ie));
       for(Int_t mix1=0;mix1<ev2->GetEntries();mix1++){
-        AliAODPWG4Particle *ph2 = (AliAODPWG4Particle*) (ev2->At(mix1));
+        AliCaloTrackParticle *ph2 = (AliCaloTrackParticle*) (ev2->At(mix1));
         TLorentzVector vph2(ph2->Px(),ph2->Py(),ph2->Pz(),ph2->E());
         Double_t pi0asy = TMath::Abs(vph1.E()-vph2.E())/(vph1.E()+vph2.E()); 	     
         Double_t pi0mass=(vph1+vph2).M();
         
         if(TMath::Abs(pi0mass-fPi0Mass)<fPi0MassWindow){//for pi0 selection
           for(Int_t mix2=(mix1+1);mix2<ev2->GetEntries();mix2++){
-            AliAODPWG4Particle *ph3 = (AliAODPWG4Particle*) (ev2->At(mix2));
+            AliCaloTrackParticle *ph3 = (AliCaloTrackParticle*) (ev2->At(mix2));
             TLorentzVector vph3(ph3->Px(),ph3->Py(),ph3->Pz(),ph3->E());
             
             Double_t pi0gammapt=(vph1+vph2+vph3).Pt();
@@ -593,7 +593,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
           for(Int_t je=(ie+1);je<nMixed;je++){
             TClonesArray* ev3= (TClonesArray*) (fEventsList[curEventBin]->At(je));
             for(Int_t mix3=0;mix3<ev3->GetEntries();mix3++){
-              AliAODPWG4Particle *ph3 = (AliAODPWG4Particle*) (ev3->At(mix3));
+              AliCaloTrackParticle *ph3 = (AliCaloTrackParticle*) (ev3->At(mix3));
               TLorentzVector vph3(ph3->Px(),ph3->Py(),ph3->Pz(),ph3->E());
               
               Double_t pi0gammapt=(vph1+vph2+vph3).Pt();

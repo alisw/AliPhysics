@@ -10,6 +10,7 @@
 #include <TH3F.h>
 #include <THnSparse.h>
 #include <TList.h>
+#include <TRandom.h>
 #include <TLorentzVector.h>
 
 //
@@ -70,12 +71,19 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fMultSelection(0),
   ftrack(0),
   fCaloClusters(0),
+  fMCheader(0),
   fpidResponse(0),
   fcentMim(0), 
   fcentMax(10.0), 
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
   fmimSig(-1.0),
+  fmimEop(0.8),
+  fInvmassCut(0.1),
+  fptAssocut(0.15),
+  NembMCpi0(0),
+  NembMCeta(0),
+  NpureMCproc(0),
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -91,7 +99,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistZcorr(0),
   fHistCent(0),
   fHistTPCnSigma(0),
+  fHistEopNsig(0),
   fHistEop(0),
+  fHistEopHad(0),
   fHistJetOrg(0),
   fHistJetOrgArea(0),
   fHistJetBG(0),
@@ -105,33 +115,59 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistHfEleMC(0),
   fHistHfEleMCreco(0),
   fHistPhoEleMC(0),
+  fHistPhoEleMCpi0(0),
+  fHistPhoEleMCeta(0),
   fHistPhoEleMCreco(0),
+  fHistPhoEleMCrecopi0(0),
+  fHistPhoEleMCrecoeta(0),
+  fHistMCorgPi0(0),
+  fHistMCorgEta(0),
   fHistIncjet(0),
   fHistIncjetFrac(0),
   fHistIncjetOrg(0),
   fHistIncjetBG(0),
   fHistHFjet(0), 
+  fHistHFdijet(0), 
   fHistULSjet(0), 
   fHistLSjet(0), 
+  fHistHFjetOrder(0), 
+  fHistDiJetPhi(0), 
+  fHistDiJetMomBalance(0), 
+  fHistDiJetMomBalance_All(0), 
+  fHistDiJetPhi_MC(0), 
+  fHistDiJetMomBalance_MC(0), 
   fInvmassULS(0),
   fInvmassLS(0),
+  fInvmassHFuls(0),
+  fInvmassHFls(0),
+  fLxy_ls(0),
+  fLxy_uls(0),
   HFjetCorr0(0),
   HFjetCorr1(0),
   HFjetParticle(0),
   fQAHistJetPhi(0),
   fQAHistTrPhiJet(0),
   fQAHistTrPhi(0),
+  fQAHistNits(0),
+  fQAHistEleDCAxy(0),
+  fQAHistEleDCAz(0),
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
+  fHistBGfrac(0),
+  fHistBGfracHFEev(0),
+  fPi0Weight(0),
+  fEtaWeight(0),
+  generator(0),
   fJetsCont(0),
+  fJetsContPart(0),
   fTracksCont(0),
   fCaloClustersCont(0),
   fAOD(0),
   fMCarray(0),
   fMCparticle(0),
-  fMCparticleMother(0),
-  fmcData(kFALSE)
+  fMCparticleMother(0)
+  //fmcData(kFALSE)
 {
   // Default constructor.
 
@@ -163,12 +199,19 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fMultSelection(0),
   ftrack(0),
   fCaloClusters(0),
+  fMCheader(0),
   fpidResponse(0),
   fcentMim(0), 
   fcentMax(10.0), 
   idbHFEj(kFALSE),
   iHybrid(kTRUE),
   fmimSig(-1.0),
+  fmimEop(0.8),
+  fInvmassCut(0.1),
+  fptAssocut(0.15),
+  NembMCpi0(0),
+  NembMCeta(0),
+  NpureMCproc(0),
   fHistTracksPt(0),
   fHistClustersPt(0),
   fHistLeadingJetPt(0),
@@ -184,7 +227,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistZcorr(0),
   fHistCent(0),
   fHistTPCnSigma(0),//my
+  fHistEopNsig(0),
   fHistEop(0),
+  fHistEopHad(0),
   fHistJetOrg(0),
   fHistJetOrgArea(0),
   fHistJetBG(0),
@@ -198,34 +243,60 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistHfEleMC(0),
   fHistHfEleMCreco(0),
   fHistPhoEleMC(0),
+  fHistPhoEleMCpi0(0),
+  fHistPhoEleMCeta(0),
   fHistPhoEleMCreco(0),
+  fHistPhoEleMCrecopi0(0),
+  fHistPhoEleMCrecoeta(0),
+  fHistMCorgPi0(0),
+  fHistMCorgEta(0),
   fHistIncjet(0),
   fHistIncjetFrac(0),
   fHistIncjetOrg(0),
   fHistIncjetBG(0),
   fHistHFjet(0),
+  fHistHFdijet(0),
   fHistULSjet(0),
   fHistLSjet(0),
+  fHistHFjetOrder(0),
+  fHistDiJetPhi(0), 
+  fHistDiJetMomBalance(0), 
+  fHistDiJetMomBalance_All(0), 
+  fHistDiJetPhi_MC(0), 
+  fHistDiJetMomBalance_MC(0), 
   fInvmassULS(0),
   fInvmassLS(0),//my
+  fInvmassHFuls(0),//my
+  fInvmassHFls(0),//my
+  fLxy_ls(0),
+  fLxy_uls(0),
   HFjetCorr0(0),
   HFjetCorr1(0),
   HFjetParticle(0),
   fQAHistJetPhi(0),
   fQAHistTrPhiJet(0),
   fQAHistTrPhi(0),
+  fQAHistNits(0),
+  fQAHistEleDCAxy(0),
+  fQAHistEleDCAz(0),
   fHistClustE(0),
   fHistClustEtime(0),
   fEMCClsEtaPhi(0),
+  fHistBGfrac(0),
+  fHistBGfracHFEev(0),
+  fPi0Weight(0),
+  fEtaWeight(0),
+  generator(0),
   fJetsCont(0),
+  fJetsContPart(0),
   fTracksCont(0),
   fCaloClustersCont(0),
   //
   fAOD(0),
   fMCarray(0),
   fMCparticle(0),
-  fMCparticleMother(0),
-  fmcData(kFALSE)
+  fMCparticleMother(0)
+  //fmcData(kFALSE)
 {
   // Standard constructor.
 
@@ -264,15 +335,6 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   // Create user output.
 
      if(idbHFEj)cout << "+++++++ MC check ++++++++ " << fmcData <<  endl;
-  //if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())
-  if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()))
-    {
-     fmcData = kTRUE;
-    }
-  else
-   {
-     fmcData = kFALSE;
-   }
 
   for(int i=0; i<5; i++)
      {
@@ -389,8 +451,14 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistTPCnSigma = new TH2F("fHistTPCnSigma","TPC nSigma;p_{T}(GeV/c);n#sigms",100,0.,20.,250,-5.,5.);
   fOutput->Add(fHistTPCnSigma);
 
+  fHistEopNsig = new TH2F("fHistEopNsig","E/p vs. Nsig;Nsig;E/p",200,-5,5,200,0.,4.);
+  fOutput->Add(fHistEopNsig);
+
   fHistEop = new TH2F("fHistEop","E/p;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
   fOutput->Add(fHistEop);
+
+  fHistEopHad = new TH2F("fHistEopHad","E/p hadron ;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
+  fOutput->Add(fHistEopHad);
 
   fHistJetOrg = new TH1F("fHistJetOrg","Inclusive jet org;p_{T}",300,-100.,200.);
   fOutput->Add(fHistJetOrg);
@@ -416,14 +484,45 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistIncEle = new TH1F("fHistIncEle","Inclusive electron;p_{T}",100,0.,20.);
   fOutput->Add(fHistIncEle);
 
+  fHistHfEleMC = new TH1F("fHistHfEleMC","HF electron;p_{T}",100,0.,20.);
+  fOutput->Add(fHistHfEleMC);
+
+  fHistHfEleMCreco = new TH1F("fHistHfEleMCreco","HF reco electron;p_{T}",100,0.,20.);
+  fOutput->Add(fHistHfEleMCreco);
+
   fHistIncEleInJet0 = new TH1F("fHistIncEleInJet0","Inclusive electron in Jet;p_{T}",100,0.,20.);
   fOutput->Add(fHistIncEleInJet0);
 
   fHistIncEleInJet1 = new TH1F("fHistIncEleInJet1","Inclusive electron in Jet;p_{T}",100,0.,20.);
   fOutput->Add(fHistIncEleInJet1);
 
+  fHistPhoEleMC = new TH1F("fHistPhoEleMC","Photonic e MC reco;p_{T}",100,0.,20.);
+  fOutput->Add(fHistPhoEleMC);
+
+  fHistPhoEleMCpi0 = new TH1F("fHistPhoEleMCpi0","Photonic e form pi0 MC reco;p_{T}",100,0.,20.);
+  fHistPhoEleMCpi0->Sumw2();
+  fOutput->Add(fHistPhoEleMCpi0);
+
+  fHistPhoEleMCeta = new TH1F("fHistPhoEleMCeta","Photonic e form eta MC reco;p_{T}",100,0.,20.);
+  fHistPhoEleMCeta->Sumw2();
+  fOutput->Add(fHistPhoEleMCeta);
+
   fHistPhoEleMCreco = new TH1F("fHistPhoEleMCreco","Photonic e MC reco;p_{T}",100,0.,20.);
   fOutput->Add(fHistPhoEleMCreco);
+
+  fHistPhoEleMCrecopi0 = new TH1F("fHistPhoEleMCrecopi0","Photonic e from pi0 MC reco;p_{T}",100,0.,20.);
+  fHistPhoEleMCrecopi0->Sumw2();
+  fOutput->Add(fHistPhoEleMCrecopi0);
+
+  fHistPhoEleMCrecoeta = new TH1F("fHistPhoEleMCrecoeta","Photonic e from eta MC reco;p_{T}",100,0.,20.);
+  fHistPhoEleMCrecoeta->Sumw2();
+  fOutput->Add(fHistPhoEleMCrecoeta);
+
+  fHistMCorgPi0 = new TH1F("fHistMCorgPi0","MC org Pi0",100,0,50);
+  fOutput->Add(fHistMCorgPi0);
+
+  fHistMCorgEta = new TH1F("fHistMCorgEta","MC org Eta",100,0,50);
+  fOutput->Add(fHistMCorgEta);
 
   fHistIncjet = new TH2F("fHistIncjet","Inc jet;p_{T}",20,0,20,150,0.,150.);
   fOutput->Add(fHistIncjet);
@@ -440,17 +539,50 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistHFjet = new TH2F("fHistHFjet","HF jet;p_{T}",20,0,20,300,-100.,200.);
   fOutput->Add(fHistHFjet);
 
+  fHistHFdijet = new TH1F("fHistHFdijet","HF Dijet;p_{T}",300,-100.,200.);
+  fOutput->Add(fHistHFdijet);
+
   fHistULSjet = new TH2F("fHistULSjet","ULS jet;p_{T}",20,0,20,300,-100.,200.);
   fOutput->Add(fHistULSjet);
 
   fHistLSjet = new TH2F("fHistLSjet","LS jet;p_{T}",20,0,20,300,-100.,200.);
   fOutput->Add(fHistLSjet);
 
+  fHistHFjetOrder = new TH2F("fHistHFjetOrder","HF jet;p_{T}",300,-100.,200.,30,0,30);
+  fOutput->Add(fHistHFjetOrder);
+
+  fHistDiJetPhi = new TH2F("fHistDiJetPhi","HF dijet;p_{T}(GeV/c);#delta #phi",100,0,100,320,-3.2,3.2);
+  fOutput->Add(fHistDiJetPhi);
+
+  fHistDiJetMomBalance = new TH2F("fHistDiJetMomBalance","HF dijet;p_{T}(GeV/c);#delta p_{T}",100,0,100,100,0,1);
+  fOutput->Add(fHistDiJetMomBalance);
+
+  fHistDiJetMomBalance_All = new TH2F("fHistDiJetMomBalance_All","HF dijet;p_{T}(GeV/c);#delta p_{T}",100,0,100,100,0,1);
+  fOutput->Add(fHistDiJetMomBalance_All);
+
+  fHistDiJetPhi_MC = new TH2F("fHistDiJetPhi_MC","HF dijet (part level);p_{T}(GeV/c);#delta #phi",100,0,100,320,-3.2,3.2);
+  fOutput->Add(fHistDiJetPhi_MC);
+
+  fHistDiJetMomBalance_MC = new TH2F("fHistDiJetMomBalance_MC","HF dijet (part level);p_{T}(GeV/c);#delta p_{T}",100,0,100,100,0,1);
+  fOutput->Add(fHistDiJetMomBalance_MC);
+
   fInvmassULS = new TH2F("fInvmassULS","ULS mass;p_{T};mass",20,0,20,150,0.,0.3);
   fOutput->Add(fInvmassULS);
 
   fInvmassLS = new TH2F("fInvmassLS","LS mass;p_{T};mass",20,0,20,150,0.,0.3);
   fOutput->Add(fInvmassLS);
+
+  fInvmassHFuls = new TH2F("fInvmassHFuls","HF mass;p_{T};mass",100,0,100,500,0.,5);
+  fOutput->Add(fInvmassHFuls);
+
+  fInvmassHFls = new TH2F("fInvmassHFls","HF mass;p_{T};mass",100,0,100,500,0.,5);
+  fOutput->Add(fInvmassHFls);
+
+  fLxy_uls = new TH1F("fLxy_uls","HF Lxy ULS;Lxy",200,-1,1);
+  fOutput->Add(fLxy_uls);
+
+  fLxy_ls = new TH1F("fLxy_ls","HF Lxy LS;Lxy",200,-1,1);
+  fOutput->Add(fLxy_ls);
 
   // jet
   Int_t jetpTMax = 300;
@@ -480,6 +612,15 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fQAHistTrPhi = new TH1F("fQAHistTrPhi","track phi",650,0.0,6.5);
   fOutput->Add(fQAHistTrPhi);
  
+  fQAHistNits = new TH1F("fQAHistNits","ITS hits",7,-0.5,6.5);
+  fOutput->Add(fQAHistNits);
+
+  fQAHistEleDCAxy = new TH2F("fQAHistEleDCAxy","pT ele check DCAxy",40,0,20,200,-10,10);
+  fOutput->Add(fQAHistEleDCAxy);
+
+  fQAHistEleDCAz = new TH2F("fQAHistEleDCAz","pT ele check DCAz",40,0,20,200,-10,10);
+  fOutput->Add(fQAHistEleDCAz);
+
   fHistClustE = new TH1F("fHistClustE", "EMCAL cluster energy distribution; Cluster E;counts", 500, 0.0, 50.0);
   fOutput->Add(fHistClustE);
 
@@ -489,7 +630,22 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fEMCClsEtaPhi = new TH2F("fEMCClsEtaPhi","EMCAL cluster #eta and #phi distribution;#eta;#phi",1800,-0.9,0.9,630,0,6.3);
   fOutput->Add(fEMCClsEtaPhi);
 
+  fHistBGfrac = new TH1F("fHistBGfrac", "BG frac; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
+  fOutput->Add(fHistBGfrac);
+
+  fHistBGfracHFEev = new TH1F("fHistBGfracHFEev", "BG frac; #Delta p_{T}(GeV/c)", 200, -100.0, 100.0);
+  fOutput->Add(fHistBGfracHFEev);
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
+
+  // pi0 & eta weight
+  
+   fPi0Weight = new TF1("fPi0Weight","1.245*((7.331-1.)*(7.331-2.))/(7.331*0.1718*(7.331*0.1718+0.135*(7.331-2.)))*pow(1.+(sqrt(0.135*0.135+x*x)-0.135)/(7.331*0.1718),-7.331)",0,40);//p-Pb pi0 AllCent
+  
+   fEtaWeight = new TF1("fEtaWeight","0.48*((((7.331-1.)*(7.331-2.))/(7.331*0.1718*(7.331*0.1718+0.13498*(7.331-2.)))*pow(1.+(sqrt(0.13498*0.13498+25)-0.13498)/(7.331*0.1718),-7.331)) / (((7.331-1.)*(7.331-2.))/(7.331*0.1718*(7.331*0.1718+0.13498*(7.331-2.)))*pow(1.+(sqrt(0.54751*0.54751+25)-0.13498)/(7.331*0.1718),-7.331)))*(x/sqrt(x*x + 0.54751*0.54751 - 0.13498*0.13498))*1.245*((7.331-1.)*(7.331-2.))/(7.331*0.1718*(7.331*0.1718+0.13498*(7.331-2.)))*pow(1.+(sqrt(0.54751*0.54751+x*x)-0.13498)/(7.331*0.1718),-7.331)",0,40);//p-Pb eta0 from mT_scaling AllCent
+
+   generator = new TRandom();
+
 }
 
 //________________________________________________________________________
@@ -665,9 +821,26 @@ void AliAnalysisHFjetTagHFE::ExecOnce() {
 Bool_t AliAnalysisHFjetTagHFE::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
+  
+  if(idbHFEj)cout <<  endl;
+  if(idbHFEj)cout << "++++++++++++++++ " << endl;
   if(idbHFEj)cout << "Run!" << endl;
+  if(idbHFEj)cout << fJetsCont << endl;
+  if(idbHFEj)cout << fJetsContPart << endl;
+  if(idbHFEj)cout << " fJetsCont :" <<  fJetsCont->GetName()<< " ; N = "<< fJetsCont->GetNAcceptedJets() << endl;
+  if(idbHFEj)cout << " fJetsContPart :" <<  fJetsContPart->GetName() << " N = " << fJetsContPart->GetNAcceptedJets() << endl;
+
+        if(idbHFEj)
+           {
+            cout << "fmimSig = " << fmimSig << endl;
+            cout << "fmimEop = " << fmimEop << endl;
+            cout << "fInvmassCut = " << fInvmassCut << endl;
+            cout << "fptAssocut = " << fptAssocut << endl;
+           }
 
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+
+  fMCheader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 
   // centrality
   /*
@@ -726,7 +899,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
    {
      ntracks = fAOD->GetNumberOfTracks();
    }
-
+   if(idbHFEj)cout << "ftrack = " << ftrack << " ; " << ntracks << endl;
+ 
    //cout << "check track ..." << endl;
 
   // EMCal
@@ -737,20 +911,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
    // MC array
    fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
    //cout << "check fMCarray ..." << endl;
-
-  // MC (particle level Jet)
-  if(fmcData)
-    {
-     MakeParticleLevelJet(HFjetParticle);
-    }
-   //cout << "check fmcData ..." << endl;
    
-
-  //AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
-  //while(track) {
-  
-  // check jets
-
 
  // analysis
 
@@ -769,6 +930,13 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     {
      //cout << "cent cut = " << centrality << endl; 
      fHistCent->Fill(centrality);    
+
+     // MC (particle level Jet)
+     if(fmcData)
+       {
+        MakeParticleLevelJet();
+       }
+     if(idbHFEj)cout << "check fmcData ..." << endl;
 
   /////////////////////////////
   //EMCAL cluster information//
@@ -809,6 +977,17 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
      // inclusive jet
      double rho = 0.0;
      int Ncon = 0;
+     int Njet = 0;
+     Double_t ExJetPt[5], ExJetEta[5], ExJetPhi[5];
+     for(int i=0; i<5; i++)
+        {
+         ExJetPt[i] = 0.0;
+         ExJetEta[i] = 0.0;
+         ExJetPhi[i] = 0.0;
+        }
+ 
+
+     Double_t LeadJetpT = 0.0; 
      if (fJetsCont) 
         {
          //AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);
@@ -816,6 +995,15 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();
          rho = fJetsCont->GetRhoVal();
          if(idbHFEj)cout << "rho = " << rho << endl; 
+         
+         AliEmcalJet *jetLead = fJetsCont->GetLeadingJet();
+         if(jetLead)
+           {
+            LeadJetpT = jetLead->Pt();
+            //Double_t BGfracAll = CalRandomCone(LeadJetPhi,LeadJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
+            //fHistBGfrac->Fill(BGfracAll);
+           } 
+        
 
          while(jet) {
 
@@ -827,6 +1015,15 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
          double jetPhi = jet->Phi();
          int Ncont = jet->GetNumberOfConstituents();
          double Jarea = jet->Area();       
+
+         //cout << "Njet = " << Njet << " ; pT = " << jetpT << endl; 
+
+         if(Njet<2)
+           {
+            ExJetEta[Njet] = jetEta; 
+            ExJetPhi[Njet] = jetPhi; 
+            ExJetPt[Njet] = jetpTsub; 
+           }
 
          if(idbHFEj)cout << "Ncont = " << Ncont << endl;
          //if(Ncont<2)continue;
@@ -852,9 +1049,21 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                   }
  
          jet = fJetsCont->GetNextAcceptJet(); 
+         Njet++;
         }
      
      }
+            Double_t Ajall = (ExJetPt[0]-ExJetPt[1])/(ExJetPt[0]+ExJetPt[1]);
+            if(ExJetPt[0]>10.0 && ExJetPt[1]>10.0)fHistDiJetMomBalance_All->Fill(ExJetPt[0],Ajall); 
+
+
+
+            Double_t BGfracAll = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
+            fHistBGfrac->Fill(BGfracAll);
+            //if(CalRandomCone(ExJetPhi,ExJetEta,0.3)>40.0)cout << CalRandomCone(ExJetPhi,ExJetEta,0.3) << " ; " << LeadJetpT << endl;  
+
+
+   if(idbHFEj)cout <<"finished check jet" << endl;
 
   // --- Look for kink mother for AOD//
   Int_t numberofvertices = 100;
@@ -878,7 +1087,10 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     //Bool_t ISelectronEv = kFALSE;
     Int_t ISelectronEv = 0;
 
+
     for (Int_t itrack = 0; itrack < ntracks; itrack++) {
+
+        //cout << "tracks = " << itrack << " ; " << ntracks << endl;
 
         AliVParticle* ptrack = 0x0;
         if(ftrack)ptrack = dynamic_cast<AliVTrack*>(ftrack->At(itrack));
@@ -886,14 +1098,22 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         AliVTrack *track = dynamic_cast<AliVTrack*>(ptrack);
         AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(track);  // to apply cuts
 
-        //cout<< "tarck label = " << track->GetLabel() << endl;
+        if(idbHFEj)cout<< "tarck label = " << track->GetLabel() << endl;
 
         int MCpdg = 0;
+        fMCparticle = 0x0;
+        fMCparticleMother = 0x0;
+        Int_t pidM = 0;
+        Int_t ilabelM = 0;
+        Double_t pTmom = 0.0;
+
         if(fmcData && track->GetLabel()!=0)
           {
-	   fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+	   //fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
+	   fMCparticle = (AliAODMCParticle*) fMCarray->At(TMath::Abs(track->GetLabel()));
            MCpdg = fMCparticle->GetPdgCode();
           }
+        if(idbHFEj)cout << "MCpdg = " << MCpdg << endl;
 
         Bool_t isElectron = kFALSE;
         Bool_t fFlagULS=kFALSE;
@@ -919,27 +1139,37 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
           if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
         //cout << "DCA = " << d0z0[0] << " ; " << d0z0[1] << endl;
 
+        if(fabs(eta)>0.6)continue;
 
-        fQAHistTrPhi->Fill(phi); // QA
+        //fQAHistTrPhi->Fill(phi); // QA
+        fQAHistNits->Fill(atrack->GetITSNcls());
 
+        
         if(iHybrid)
           {
-           if(!atrack->IsHybridGlobalConstrainedGlobal()) continue; // AOD track level
+           if(idbHFEj)cout << "Hybrid" << endl;
+           if(!(atrack->TestFilterBit(9) || atrack->TestFilterBit(4)))continue;
           }
         else
           {
+           if(idbHFEj)cout << "non Hybrid" << endl;
            if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; // AOD track level
           }
 
-        //if(pt<0.5)continue;
-        if(fabs(eta)>0.6)continue;
+        fQAHistTrPhi->Fill(phi); // QA
+
+        //cout << "track cuts ....." << endl;
+
+        //if(fabs(eta)>0.6)continue;
         if(fabs(d0z0[0])>3.0)continue;
         if(fabs(d0z0[1])>3.0)continue;
         if(track->GetTPCNcls() < 80) continue;
-        if(atrack->GetITSNcls() < 2) continue;   // AOD track level
+        //if(atrack->GetITSNcls() < 2) continue;   // AOD track level
+        if(atrack->GetITSNcls() < 0.9) continue;   // AOD track level
         if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) continue;    // kAny
         if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         // kink cut
+        //cout << "Kink cut" << endl;
 	Bool_t kinkmotherpass = kTRUE;
 	for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
 		if(track->GetID() == listofmotherkink[kinkmother]) {
@@ -949,14 +1179,13 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 	      }
         if(!kinkmotherpass) continue;
 
+
         // Get TPC nSigma
         Double_t dEdx =-999, fTPCnSigma=-999;
         dEdx = track->GetTPCsignal();
         fTPCnSigma = fpidResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
 
-         if(idbHFEj)cout << "fmimSig = " << fmimSig << endl;
-        //if(fTPCnSigma<-1 || fTPCnSigma>3)continue;
-        if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;
+        //if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  //++++++++
         fHistTPCnSigma->Fill(pt,fTPCnSigma);
 
                epTarray[0] = px;
@@ -986,6 +1215,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             /////////////////////////////////////////////
             //Properties of tracks matched to the EMCAL//
             /////////////////////////////////////////////
+            if(idbHFEj)cout << "++++++++++ match EMCal  " << endl;
       
             Bool_t fClsTypeEMC = kFALSE;
             Float_t  emcx[3]; // cluster pos
@@ -1001,13 +1231,23 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             
             Double_t clustMatchE = clustMatch->E();
             Double_t m20 =clustMatch->GetM20();
-            
+         
+            //if(m20<0.03 || m20>0.3)continue;  // shower shape cut (not need for MB since vAN20180710)
+     
             //EMCAL EID info
             Double_t eop = -1.0;
             if(track->P()>0)eop = clustMatchE/track->P();
+            if(fmcData)eop += 0.04; // mean shift correction between data and MC (pPb at 5 in 2016) 
             if(idbHFEj)cout << "++++++++++ eop = " << eop << " ; " << pt  << endl;
+            if(pt>2.0)fHistEopNsig->Fill(fTPCnSigma,eop);
+
+            if(fTPCnSigma<-4)fHistEopHad->Fill(pt,eop);
+
+            if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  // Nsigma cut
             fHistEop->Fill(pt,eop);
-            if(eop>0.9 && eop<1.3 && m20<0.3 && m20>0.03)isElectron = kTRUE;  
+
+            //if(eop>0.9 && eop<1.3 && m20<0.3 && m20>0.03)isElectron = kTRUE;  
+            if(eop>fmimEop && eop<1.3)isElectron = kTRUE;  
                  
             if(isElectron)
               {
@@ -1017,13 +1257,18 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
                if(abs(MCpdg)==11)
                  {
-	          if(fMCparticle->GetMother()>0) fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
-	          Int_t pdgMom = fMCparticleMother->GetPdgCode();
-                  iMCHF  = isHeavyFlavour(pdgMom);
-                  iMCPHO = isPhotonic(pdgMom);
-                  epTarrayMC[0] = fMCparticle->Px();
-                  epTarrayMC[1] = fMCparticle->Py();
-                  epTarrayMC[2] = fMCparticle->Pz();
+	          if(fMCparticle->GetMother()>0)
+                    {
+                      fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
+                      ilabelM = fMCparticle->GetMother();
+	              pidM = fMCparticleMother->GetPdgCode();
+	              pTmom = fMCparticleMother->Pt();
+                      iMCHF  = isHeavyFlavour(pidM);
+                      iMCPHO = isPhotonic(pidM);
+                      epTarrayMC[0] = fMCparticle->Px();
+                      epTarrayMC[1] = fMCparticle->Py();
+                      epTarrayMC[2] = fMCparticle->Pz();
+                    }
                  }
 
               }
@@ -1034,16 +1279,57 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
     if(idbHFEj)cout << "electron in event" << endl;
 
     // data
-    fHistIncEle->Fill(pt);  // to do ULS, LS
+    fHistIncEle->Fill(pt);  
     // MC
-    //if(iMCHF)fHistHfEleMCreco->Fill(pt);  // to do ULS, LS
-    if(iMCPHO)
-      {  
-       fHistPhoEleMC->Fill(pt);
-       if(fFlagULS && !fFlagLS)fHistPhoEleMCreco->Fill(pt);
-      }
+    if(iMCHF)fHistHfEleMCreco->Fill(pt);  // to do ULS, LS
 
-    // ++++++ find e in jet
+  
+    if(iMCPHO)
+      {
+       Bool_t iEmbPi0 = kFALSE;
+       Bool_t iEmbEta = kFALSE;
+
+      if(pidM==111)
+        {
+         if(ilabelM>NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
+        }
+      if(pidM==221)
+        {
+         if(ilabelM>NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
+        }
+      if(pidM==22) // from pi0 & eta
+        {
+          AliAODMCParticle* fMCparticleM = (AliAODMCParticle*) fMCarray->At(ilabelM);
+          FindMother(fMCparticleM, ilabelM, pidM, pTmom);
+
+          if(pidM==111)
+            {
+             if(ilabelM>NembMCpi0 && ilabelM<NembMCeta)iEmbPi0 = kTRUE;
+            }
+          if(pidM==221)
+            {
+             if(ilabelM>NembMCeta && ilabelM<NpureMCproc)iEmbEta = kTRUE;
+            }
+        }
+    
+       Double_t phoweight = 0.0;
+       if(iEmbPi0)phoweight = fPi0Weight->Eval(pTmom);  
+       if(iEmbEta)phoweight = fEtaWeight->Eval(pTmom);  
+
+       fHistPhoEleMC->Fill(pt);
+       if(iEmbPi0)fHistPhoEleMCpi0->Fill(pt,phoweight);
+       if(iEmbEta)fHistPhoEleMCeta->Fill(pt,phoweight);
+
+       if(fFlagULS && !fFlagLS)
+          {
+           fHistPhoEleMCreco->Fill(pt);
+           if(iEmbPi0)fHistPhoEleMCrecopi0->Fill(pt,phoweight);
+           if(iEmbEta)fHistPhoEleMCrecoeta->Fill(pt,phoweight);
+          }
+      }
+    
+
+    if(idbHFEj)cout << " ++++++ find e in jet " << endl;
     
     // MC true
     Double_t pTeJetTrue = 0.0;
@@ -1055,23 +1341,22 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         while(jetPart) 
              {
                Bool_t iTagHFjet = tagHFjet( jetPart, epTarrayMC, 0, pt);
+	       if(iTagHFjet)pTeJetTrue = jetPart->Pt();
                jetPart = fJetsContPart->GetNextAcceptJet(); 
-	       pTeJetTrue = jetPart->Pt();
              }
       }
     
+     if(idbHFEj)cout << "pTeJetTrue = " << pTeJetTrue << endl;
+
     // reco
     if (fJetsCont) 
        {
         //AliEmcalJet *jet = fJetsCont->GetNextAcceptJet(0);  // full or charge ?
         fJetsCont->ResetCurrentID();
         AliEmcalJet *jet = fJetsCont->GetNextAcceptJet();  // full or charge ?
+        Int_t Njet = 0;
         while(jet) 
            {
-            //jet->Pt() 
-            //jet->Area()
-            //jet->Eta() 
-            //jet->Phi()
             //Float_t ptLeading = fJetsCont->GetLeadingHadronPt(jet);
 
             double jetEta = jet->Eta();
@@ -1091,6 +1376,9 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                if(idbHFEj)cout << "iTagHFjet = " << iTagHFjet << endl;
 	       //Float_t corrPt = jet->Pt() - fJetsCont->GetRhoVal() * jet->Area();
 	       Float_t pTeJet = jet->Pt();
+	       Float_t Phi_eJet = jet->Phi();
+	       Float_t Eta_eJet = jet->Eta();
+	       Float_t Area_eJet = jet->Area();
 	       Float_t pTeJetBG = rho * jet->Area();
                Float_t corrPt = pTeJet - pTeJetBG;
                Float_t efrac = pt/corrPt;
@@ -1110,19 +1398,112 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                     fHistIncjetBG->Fill(pt,pTeJetBG); 
                     fHistIncjet->Fill(pt,corrPt);
                     fHistIncjetFrac->Fill(pt,efrac);
-                   
-                    if(!fFlagULS)fHistHFjet->Fill(pt,corrPt);
+                    /*
+                    Double_t pTrand = CalRandomCone(Phi_eJet,Eta_eJet,Area_eJet);
+                    Double_t BGfrac = pTrand - pTeJetBG;
+                    fHistBGfrac->Fill(BGfrac);
+                    */
+                    if(!fFlagULS)
+                      {
+                       fHistHFjet->Fill(pt,corrPt);
+                       fHistHFjetOrder->Fill(corrPt,Njet);
+                       if(Njet==0 || Njet==1)
+                         {
+                          Double_t dPhiHFjet_tmp = 0.0;
+                          if(Njet==0)
+                             {
+                              dPhiHFjet_tmp = Phi_eJet - ExJetPhi[1];
+                              fHistHFdijet->Fill(ExJetPt[1]);
+                             }
+                          else 
+                             {
+                              dPhiHFjet_tmp = Phi_eJet - ExJetPhi[0];
+                             }
+                             
+                          Double_t dPhiHFjet = atan2(sin(dPhiHFjet_tmp),cos(dPhiHFjet_tmp));
+
+                          if(ExJetPt[0]>10.0 && ExJetPt[1]>10.0)
+                             {
+                              fHistDiJetPhi->Fill(corrPt,dPhiHFjet);
+                              Double_t MomBalance = -1.0;
+                               if(Njet==0)
+                                  {
+                                   MomBalance = (corrPt-ExJetPt[1])/(corrPt+ExJetPt[1]);
+                                  }
+                               else
+                                  {
+                                   MomBalance = (ExJetPt[0]-corrPt)/(ExJetPt[0]+corrPt);
+                                  }
+                              fHistDiJetMomBalance->Fill(corrPt,MomBalance);
+                             }
+                         }
+
+                              ExJetPhi[2] = Phi_eJet;
+                              ExJetEta[2] = Eta_eJet;
+                              Double_t BGfracHFE = CalRandomCone(ExJetPhi,ExJetEta,0.3) - fJetsCont->GetRhoVal()*acos(-1.0)*pow(0.3,2);
+                              fHistBGfracHFEev->Fill(BGfracHFE);
+
+                      }
                     if(fFlagULS) fHistULSjet->Fill(pt,corrPt);
                     if(fFlagLS)fHistLSjet->Fill(pt,corrPt);
                
-                    double HFjetVals[7];
-                    //HFjetVals[0]=track->Pt(); HFjetVals[1]=mcpT; HFjetVals[2] = HFjetpT; HFjetVals[3] = HFjetpTMC; HFjetVals[4] = HFjetpTparticle; HFjetVals[5] = 0.0; HFjetVals[6] = ptHard;
-                    HFjetVals[0]=track->Pt(); HFjetVals[1]=0.0; HFjetVals[2] = corrPt; HFjetVals[3] = pTeJet; HFjetVals[4] = pTeJetTrue; HFjetVals[5] = 0.0; HFjetVals[6] = 0.0;
-                    HFjetCorr1->Fill(HFjetVals);
+                    if(iMCHF)
+                      {
+                       double HFjetVals[7];
+                       HFjetVals[0]=track->Pt(); HFjetVals[1]=0.0; HFjetVals[2] = corrPt; HFjetVals[3] = pTeJet; HFjetVals[4] = pTeJetTrue; HFjetVals[5] = 0.0; HFjetVals[6] = 0.0;
+                       HFjetCorr1->Fill(HFjetVals); 
+ 
+                       
+                       for (unsigned j = 0; j< jet->GetNumberOfTracks(); j++) 
+                           {
+                            AliVParticle *HFjetcont;
+                            HFjetcont = static_cast<AliVParticle*>(jet->TrackAt(j, fTracks));
+                            if(!HFjetcont) continue;
+                            AliAODTrack *aHFjetcont = dynamic_cast<AliAODTrack*>(HFjetcont);
+                            Double_t fTPCnSiamaKaon = fpidResponse->NumberOfSigmasTPC(aHFjetcont, AliPID::kKaon);
+                            if(TMath::Abs(fTPCnSiamaKaon)>2.5)continue;
+
+                            if(track->Pt()==aHFjetcont->Pt())continue;                            
+
+                            if(aHFjetcont->Pt()<1.0)continue;
+
+                            AliKFParticle::SetField(fVevent->GetMagneticField());
+                            AliKFParticle hfe1 = AliKFParticle(*track, 11);
+                            AliKFParticle hfe2 = AliKFParticle(*aHFjetcont, 321);
+                            AliKFParticle recgHF(hfe1, hfe2);
+                            AliKFVertex primVtxCopy(*(fAOD->GetPrimaryVertex()));
+                            recgHF.SetProductionVertex(primVtxCopy);
+                            if(recgHF.GetNDF()<1) continue;
+                            Double_t chi2recg = recgHF.GetChi2()/recgHF.GetNDF();
+                            if(TMath::Sqrt(TMath::Abs(chi2recg))>3.) continue;
+                          
+                            Int_t MassHFcorr;
+                            Double_t HFmass,HFwidth;
+                            MassHFcorr = recgHF.GetMass(HFmass,HFwidth);
+
+                            Double_t Lxy = recgHF.GetDecayLengthXY();
+
+                            if((track->Charge()*aHFjetcont->Charge())>0)
+                               {
+                                //cout << pidM  << "same sign ; " <<  track->Charge() << " ; " << aHFjetcont->Charge() <<endl;
+                                if(track->Pt()>3.0)fInvmassHFls->Fill(corrPt,HFmass);
+                                if(track->Pt()>3.0)fLxy_ls->Fill(Lxy);
+                               }
+                            if((track->Charge()*aHFjetcont->Charge())<0)
+                               {
+                                //cout << pidM << "opp sign ; " <<  track->Charge() << " ; " << aHFjetcont->Charge() <<endl;
+                                if(track->Pt()>3.0)fInvmassHFuls->Fill(corrPt,HFmass);
+                                if(track->Pt()>3.0)fLxy_uls->Fill(Lxy);
+                               }
+
+                           }
+
+                      }
                    } // teg by e
 
              } // jet eta cut
              jet = fJetsCont->GetNextAcceptJet(); 
+             Njet++;
            }  // while jet
        } // while jet   
 
@@ -1140,7 +1521,7 @@ Bool_t AliAnalysisHFjetTagHFE::tagHFjet(AliEmcalJet* jetC, double *epT, int MCpi
 {
   Bool_t HFjetTag = kFALSE;
 
-  //cout << "electron mom = " << epT[0] << " ; " << epT[1] << " ; " << epT[2] << endl;
+  //if(idbHFEj)cout << "tagging ... electron mom = " << epT[0] << " ; " << epT[1] << " ; " << epT[2] << endl;
   //cout << "tagHFE:jet number = " << jetC->GetNumberOfTracks() << endl; 
 
   for (unsigned j = 0; j< jetC->GetNumberOfTracks(); j++) 
@@ -1155,7 +1536,7 @@ Bool_t AliAnalysisHFjetTagHFE::tagHFjet(AliEmcalJet* jetC, double *epT, int MCpi
        Rmom[1] = epT[1]-jetcont->Py();
        Rmom[2] = epT[2]-jetcont->Pz();
        double Rmatch = sqrt(pow(Rmom[0],2)+pow(Rmom[1],2)+pow(Rmom[2],2));
-       if(idbHFEj)cout << "dRmom = " << Rmatch << endl;
+       //if(idbHFEj)cout << "dRmom = " << Rmatch << endl;
 
        //if(epT[0] == jetcont->Px() && epT[1] == jetcont->Py() && epT[2] == jetcont->Pz()) // electron in jet
        if(Rmatch<1e-8) // electron in jet
@@ -1167,7 +1548,6 @@ Bool_t AliAnalysisHFjetTagHFE::tagHFjet(AliEmcalJet* jetC, double *epT, int MCpi
          }
      
       }
- if(idbHFEj)cout << "HFjetTag = " << HFjetTag << endl;
  return HFjetTag;
 }
 
@@ -1234,7 +1614,9 @@ void AliAnalysisHFjetTagHFE::SelectPhotonicElectron(Int_t itrack, AliVTrack *tra
         if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         
         //-------loose cut on partner electron
-        if(ptAsso <0.3) continue;
+        //if(ptAsso <0.3) continue;
+        //if(ptAsso <0.15) continue;
+        if(ptAsso <fptAssocut) continue;
         if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
         if(nsigma < -3 || nsigma > 3) continue;
         
@@ -1257,12 +1639,105 @@ void AliAnalysisHFjetTagHFE::SelectPhotonicElectron(Int_t itrack, AliVTrack *tra
         if(fFlagULS)
             if(track->Pt()>1) fInvmassULS->Fill(track->Pt(),mass);
         
-        //if(mass<100 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
-        if(mass<0.1 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
-        if(mass<0.1 && fFlagLS  && !flagConvinatElec) flagConvinatElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+        //if(mass<0.1 && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+        //if(mass<0.1 && fFlagLS  && !flagConvinatElec) flagConvinatElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+        if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec) flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
+        if(mass<fInvmassCut && fFlagLS  && !flagConvinatElec) flagConvinatElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised)
     }
     fFlagPhotonicElec = flagPhotonicElec;
     fFlagConvinatElec = flagConvinatElec;
+}
+
+Double_t AliAnalysisHFjetTagHFE::CalRandomCone(Double_t HFjetPhi[], Double_t HFjetEta[], Double_t HFjetArea)
+{
+  Double_t dR0 = 0.0;
+  Double_t dR1 = 0.0;
+  Double_t dR2 = 0.0;
+  Double_t dPhiBg = 0.0;
+  Int_t iExclude = 0;
+
+  Double_t maxphi = 2.0*acos(-1.0);
+  Double_t PhiRand = 0.0;
+  Double_t EtaRand = 0.0;
+ 
+  do{  
+
+     PhiRand = generator->Uniform(0.0,maxphi);
+     EtaRand = generator->Uniform(-0.6,0.6);
+
+     // leading
+     Double_t dPhi_tmp = HFjetPhi[0] - PhiRand;
+     Double_t dPhi = atan2(sin(dPhi_tmp),cos(dPhi_tmp));
+     Double_t dEta = HFjetEta[0] - EtaRand;
+     dR0 = sqrt(pow(dPhi,2)+pow(dEta,2));
+
+     //cout << "dR = " << dR << endl;
+
+     // subleading
+     Double_t dPhi1 = HFjetPhi[1] - PhiRand;
+     Double_t dEta1 = HFjetEta[1] - EtaRand;
+     dR1 = sqrt(pow(dPhi1,2)+pow(dEta1,2));
+
+     // HFE
+     Double_t dPhi2 = HFjetPhi[2] - PhiRand;
+     Double_t dEta2 = HFjetEta[2] - EtaRand;
+     dR2 = sqrt(pow(dPhi2,2)+pow(dEta2,2));
+
+     if(HFjetEta[2]==0.0 && HFjetPhi[2]==0.0) 
+       { 
+        if(dR0>0.45 && dR1>0.45)iExclude=1;
+       }
+     else
+       { 
+        if(dR0>0.35 && dR1>0.35 && dR2>0.35)iExclude=1;
+       }
+
+
+    }while(iExclude==0);
+
+      Double_t pTrand = 0.0;
+
+   //if(dR0>0.45 && dR1>0.45)
+   if(dR0>1.0)
+     {
+
+         cout << "check 2 ; " << dR0 << " ; " << PhiRand << " ; " << EtaRand << endl;
+
+      Int_t ntracks = -999; 
+      ntracks = ftrack->GetEntries();
+
+      AliVParticle* trackRcone = 0x0;
+
+      for (Int_t jtrack = 0; jtrack < ntracks; jtrack++) {
+  
+        trackRcone = dynamic_cast<AliVTrack*>(ftrack->At(jtrack)); //take tracks from Tender list
+        AliAODTrack *trackR = dynamic_cast<AliAODTrack*>(trackRcone);
+        if(!(trackR->TestFilterBit(9) || trackR->TestFilterBit(4)))continue;
+
+        Double_t EtaR = trackR->Eta();
+        Double_t PhiR = trackR->Phi();
+
+        if(TMath::Abs(EtaR)>0.6)continue; 
+        if(trackR->Pt()<0.15)continue; 
+
+        Double_t dPhiR_tmp = PhiRand - PhiR;
+        Double_t dPhiR = atan2(sin(dPhiR_tmp),cos(dPhiR_tmp));
+        Double_t dEtaR = EtaRand - EtaR;
+        Double_t dRcone = sqrt(pow(dPhiR,2)+pow(dEtaR,2));
+
+        if(dRcone<HFjetArea)
+          { 
+           //if(trackR->Pt()>40)cout << "large pT = " << trackR->Pt() << endl;
+           pTrand += trackR->Pt();
+           //cout << "0 : pTrand = "<< pTrand << endl; 
+          } 
+
+       }
+     }
+
+           cout << "all : pTrand = "<< pTrand << endl; 
+
+  return pTrand;
 }
 
 //Bool_t isHeavyFlavour(int Mompdg)
@@ -1291,24 +1766,61 @@ Bool_t AliAnalysisHFjetTagHFE::isPhotonic(int Mompdg)
  
 }
 
-void AliAnalysisHFjetTagHFE::MakeParticleLevelJet(THnSparse *pJet)
+//void AliAnalysisHFjetTagHFE::MakeParticleLevelJet(THnSparse *pJet)
+void AliAnalysisHFjetTagHFE::MakeParticleLevelJet()
 {  
          if(idbHFEj)cout << "Making Particle Level Jet ..." << endl;
+         if(idbHFEj)cout << fJetsContPart << endl;
         //fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+       
+        TList *lh=fMCheader->GetCocktailHeaders();
+ 
+ NembMCpi0 = 0;
+ NembMCeta = 0;
+ NpureMCproc = 0;
+ TString embpi0("pi");
+ TString embeta("eta");
+
+ if(lh)
+    {     
+     for(int igene=0; igene<lh->GetEntries(); igene++)
+        {
+         AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
+         if(gh)
+           {
+            TString MCgen =  gh->GetName();     
+            if(idbHFEj)cout << "<------- imc = " << igene << " ; " << gh->GetName() << " ; proc = " <<gh->NProduced()<<  endl;
+            if(MCgen.Contains(embpi0))NembMCpi0 = NpureMCproc-1;
+            if(MCgen.Contains(embeta))NembMCeta = NpureMCproc-1;
+            NpureMCproc += gh->NProduced();
+           }
+        }
+    }
+
 
 	for(Int_t iMC = 0; iMC < fMCarray->GetEntries(); iMC++)
 	{
-        if(idbHFEj)cout << "iMC = " << iMC << endl;
+         fMCparticle = 0x0;
+         fMCparticleMother = 0x0;
+
 	fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
         if(!fMCparticle)continue;
-	if(fMCparticle->GetMother()>0) fMCparticleMother = (AliAODMCParticle*) fMCarray->At(fMCparticle->GetMother());
 	Int_t pdg = fMCparticle->GetPdgCode();
-	Int_t pdgMom = 0;
-        if(fMCparticleMother)pdgMom = fMCparticleMother->GetPdgCode();
-
         if(idbHFEj)cout << "pdg = " << pdg << endl;
 
-        if(fabs(pdg)==11 && pdgMom!=0)
+	Int_t iMCmom =  fMCparticle->GetMother();
+        if(idbHFEj)cout << "iMCmom " << iMCmom << endl;
+	if(iMCmom>0) fMCparticleMother = (AliAODMCParticle*) fMCarray->At(iMCmom);
+        if(idbHFEj)cout << fMCparticleMother  << endl;
+	Int_t pdgMom = 0;
+        if(fMCparticleMother)pdgMom = fMCparticleMother->GetPdgCode();
+        if(idbHFEj)cout << "Mom = " << pdgMom << endl;
+        Double_t etaMC = fMCparticle->Eta();
+ 
+        if(pdg==111 && iMC>NembMCpi0 && iMC<NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgPi0->Fill(fMCparticle->Pt());
+        if(pdg==221 && iMC>NembMCeta && TMath::Abs(etaMC)<0.6)fHistMCorgEta->Fill(fMCparticle->Pt());
+
+        if(fabs(pdg)==11 && pdgMom!=0 && TMath::Abs(etaMC)<0.6)
           {
            Bool_t iMCHF = isHeavyFlavour(pdgMom);
            if(iMCHF)
@@ -1317,39 +1829,89 @@ void AliAnalysisHFjetTagHFE::MakeParticleLevelJet(THnSparse *pJet)
               MCpTarray[0]=fMCparticle->Px(); 
               MCpTarray[1]=fMCparticle->Py(); 
               MCpTarray[2]=fMCparticle->Pz(); 
+              //cout << MCpTarray[0] << endl;
               double MChfepT=fMCparticle->Pt(); 
-              if(fabs(fMCparticle->Eta())<0.6)fHistHfEleMC->Fill(MChfepT); 
+              //cout << MChfepT << endl;
+              fHistHfEleMC->Fill(MChfepT); 
 
-              if (fJetsCont) 
+              //if (fJetsCont) 
                   {
                    //AliEmcalJet *jetPart = fJetsContPart->GetNextAcceptJet(0);  // full or charge ?
                    fJetsContPart->ResetCurrentID();
                    AliEmcalJet *jetPart = fJetsContPart->GetNextAcceptJet();  // full or charge ?
+                   int NjetMC = 0;        
+
+                   Double_t PartJetLeading_pT = -1.0;
+                   Double_t PartJetLeading_Phi = -1.0;
+
                    while(jetPart) 
                     {
-
+                     if(idbHFEj)cout << "jetPart = " << jetPart->Pt() << endl;
                      double jetEta = jetPart->Eta();
                      //double jetEtacut = 0.9-0.3; // how get R size ?
                      double jetEtacut = 0.6; // how get R size ?
                      if(fabs(jetEta)<jetEtacut)
                         {
                          Bool_t iTagHFjet = tagHFjet( jetPart, MCpTarray, 0, MChfepT);
+                         //if(idbHFEj)cout << "iTagHFjet = " << iTagHFjet << endl;
                          if(iTagHFjet)
                            {
+                            //if(idbHFEj)cout << "iTagHFjetMC = " << iTagHFjet << " ; " << jetPart->Pt() << endl;
+                            cout << "iTagHFjetMC = " << iTagHFjet << " ; " << jetPart->Pt() << endl;
                             double HFjetVals[7];
-                            //HFjetVals[0]=0.0; HFjetVals[1]=MChfepT; HFjetVals[2] = 0.0; HFjetVals[3] = 0.0; HFjetVals[4] = jetPart->Pt(); HFjetVals[5] = 0.0; HFjetVals[6] = ptHard;
                             HFjetVals[0]=0.0; HFjetVals[1]=MChfepT; HFjetVals[2] = 0.0; HFjetVals[3] = 0.0; HFjetVals[4] = jetPart->Pt(); HFjetVals[5] = 0.0; HFjetVals[6] = 0.0;
-                            //HFjetParticle->Fill(HFjetVals); 
-                            pJet->Fill(HFjetVals); 
-                          }
+                            HFjetParticle->Fill(HFjetVals); 
+  
+                            if(jetPart->Pt()>10.0)cout << "HF jet in MC = " << NjetMC << endl;
+                            //pJet->Fill(HFjetVals); 
+
+                            if(NjetMC==0)
+                              {
+                               PartJetLeading_pT = jetPart->Pt();
+                               PartJetLeading_Phi = jetPart->Phi();
+                              }
+                          } // iTagHFjet
                         }
+
+                        if(NjetMC==1 && PartJetLeading_pT>0.0)
+                          {
+                           if(jetPart->Pt()>10)
+                             {
+                              Double_t dphiMC_tmp = PartJetLeading_Phi - jetPart->Phi(); 
+                              Double_t dphiMC = atan2(sin(dphiMC_tmp),cos(dphiMC_tmp)); 
+                              Double_t MomBalanceMC = (PartJetLeading_pT - jetPart->Pt())/(PartJetLeading_pT + jetPart->Pt());
+                              fHistDiJetPhi_MC->Fill(PartJetLeading_pT,dphiMC);
+                              fHistDiJetMomBalance_MC->Fill(PartJetLeading_pT,MomBalanceMC);
+                             }
+
+                          }
+
+                        if(idbHFEj)cout << "go to next jet" << endl;
+                        jetPart = fJetsContPart->GetNextAcceptJet(); 
+                        NjetMC++;
                     }
-                   jetPart = fJetsCont->GetNextAcceptJet(); 
-                 }     
-             }
+                 } //if (fJetsCont)      
+             } // iMCHF
           }
         
        }
+}
+
+void AliAnalysisHFjetTagHFE::FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom)
+{
+
+ if(part->GetMother()>-1)
+   {
+    label = part->GetMother();
+    AliAODMCParticle *partM = (AliAODMCParticle*)fMCarray->At(label);
+    pid = TMath::Abs(partM->GetPdgCode());
+    ptmom = partM->Pt();
+   }
+ else
+   {
+    pid = -99;
+   } 
+   //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
 }
 
 //________________________________________________________________________

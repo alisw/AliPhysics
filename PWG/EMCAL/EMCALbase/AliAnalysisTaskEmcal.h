@@ -250,10 +250,22 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetEventPlaneVsEmcal(Double_t ep)                     { fEventPlaneVsEmcal = ep                             ; }
   void                        SetForceBeamType(BeamType f)                          { fForceBeamType     = f                              ; }
   void                        SetHistoBins(Int_t nbins, Double_t min, Double_t max) { fNbins = nbins; fMinBinPt = min; fMaxBinPt = max    ; }
+  void                        SetRecycleUnusedEmbeddedEventsMode(Bool_t b)          { fRecycleUnusedEmbeddedEventsMode = b                ; }
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
   void                        SetIsHerwig(Bool_t i)                                 { fIsHerwig          = i                              ; }
   void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
+
+  /**
+   * @brief Switch on/off getting \f$ p_{t,hard}\f$ bin from the file path.
+   *
+   * By default the \f$ p_{t,hard}\f$ bin is obtained from the file path in case the
+   * task is defined to run on a \f$ p_{t,hard}\f$ production. New samples decode
+   * the \f$ p_{t,hard}\f$ bin number in the file path. However this is not supported
+   * for
+   * @param[in] docheck
+   */
+  void                        SetGetPtHardBinFromPath(Bool_t docheck)               { fGetPtHardBinFromName = docheck; }
 
   /**
    * @brief Set the number of \f$ p_{t}\f$-hard bins
@@ -458,17 +470,17 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    * If there are more than 1 main patch of a given trigger category (i.e. different high and low threshold patches),
    * the highest one according to the ADC value is taken. In case doSimpleOffline is true, then only the patches from
    * the simple offline trigger are used.
-   * @param[in] trigger Type of the EMCAL Level0/Level1 trigger
+   * @param[in] triggersel Type of the EMCAL Level0/Level1 trigger
    * @param[in] doSimpleOffline If true simple offline patches are used
    * @return Main trigger patch for the trigger category (defined as highest energy patch)
    */
-  AliEMCALTriggerPatchInfo   *GetMainTriggerPatch(TriggerCategory triggersel = kTriggerLevel1Jet, Bool_t doOfflinSimple = kFALSE);
+  AliEMCALTriggerPatchInfo   *GetMainTriggerPatch(TriggerCategory triggersel = kTriggerLevel1Jet, Bool_t doSimpleOffline = kFALSE);
 
   /**
    * @brief Check if event has a given trigger type
    *
-   * Trigger types defined in @ref
-   * @param trigger Trigger type to check
+   * Trigger types defined in @ref TriggerType.
+   * @param triggersel Trigger type to check
    * @return True fo the trigger type is found in the event,
    * false otherwise.
    */
@@ -686,6 +698,19 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   virtual Bool_t              IsEventSelected();
 
   /**
+   * @brief Selection of a hardware trigger
+   * 
+   * The function is used in the default implementation of 
+   * IsEventSelected in order to perform the trigger selection.
+   * Users can reimplement the function in order to perform the
+   * trigger selection of their choise. The default implementation
+   * checks for the trigger bits specified in the task configuration.
+   * 
+   * @return True if the event is selected as triggered event, false otherwise 
+   */
+  virtual Bool_t              IsTriggerSelected();
+
+  /**
    * @brief Retrieve common objects from event.
    *
    * Several object used for the analysis are handled by the
@@ -839,9 +864,11 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fMinEventPlane;              ///< minimum event plane value
   Double_t                    fMaxEventPlane;              ///< maximum event plane value
   TString                     fCentEst;                    ///< name of V0 centrality estimator
+  Bool_t                      fRecycleUnusedEmbeddedEventsMode; ///< Allows the recycling of embedded events which fail internal event selection. See the embedding helper.
   Bool_t                      fIsEmbedded;                 ///< trigger, embedded signal
   Bool_t                      fIsPythia;                   ///< trigger, if it is a PYTHIA production
   Bool_t                      fIsHerwig;                   ///< trigger, if it is a HERWIG production
+  Bool_t                      fGetPtHardBinFromName;       ///< Obtain pt-hard bin from file path
   Int_t                       fSelectPtHardBin;            ///< select one pt hard bin for analysis
   Int_t                       fMinMCLabel;                 ///< minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               ///< if MC label > fMCLabelShift, MC label -= fMCLabelShift
@@ -886,6 +913,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Float_t                     fPtHard;                     //!<!event \f$ p_{t}\f$-hard
   Int_t                       fPtHardBin;                  //!<!event \f$ p_{t}\f$-hard bin
   Int_t                       fPtHardBinGlobal;            //!<!event \f$ p_{t}\f$-hard bin, detected from filename
+  Bool_t                      fPtHardInitialized;          //!<!flag whether the \f$ p_{t}\f$-hard bin was initialized, purely for internal processing
   Int_t                       fNPtHardBins;                ///< Number of \f$ p_{t}\f$-hard bins in the dataset
   TArrayI                     fPtHardBinning;              ///< \f$ p_{t}\f$-hard binning
   Int_t                       fNTrials;                    //!<!event trials
@@ -917,7 +945,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcal, 16) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 18) // EMCAL base analysis task
   /// \endcond
 };
 

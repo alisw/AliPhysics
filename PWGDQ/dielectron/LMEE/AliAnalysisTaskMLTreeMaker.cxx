@@ -8,6 +8,7 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "TList.h"
+#include "AliAnalysisTaskMLTreeMaker.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliStack.h"
@@ -43,7 +44,6 @@
 #include <TMCProcess.h>
 #include <vector>
 #include "AliPIDResponse.h"
-#include "AliAnalysisTaskMLTreeMaker.h"
 #include "AliTrackReference.h"
 #include "AliHeader.h"
 #include "AliGenEventHeader.h"
@@ -66,20 +66,54 @@ Int_t ev=0;
 
 AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   AliAnalysisTaskSE(),
-  fList(0x0),
+  eventCuts(0),
+  eventplaneCuts(0),
+  evfilter(0),
+  trcuts(0),
+  trfilter(),
+  pidcuts(0),      
+  cuts(0),
+  filter(0), 
+  varManager(0), 
+  fPIDResponse(0),        
+  eta(0),
+  phi(0),
+  pt(0),        
+  charge(0.),   
+  enh(0),
+  NCrossedRowsTPC(0), 
+  NClustersTPC(0),        
+  HasSPDfirstHit(0),        
+  RatioCrossedRowsFindableClusters(0), 
+  NTPCSignal(0),
+  fGeneratorHashs(0x0),      
+  loCuts(kTRUE),        
+  runn(0),      
+  n(0),
+  cent(0),
+  fList(0x0),        
   fCentralityPercentileMin(0),
-  fCentralityPercentileMax(100), 
+  fCentralityPercentileMax(100),         
   fPtMin(0),
   fPtMax(1000),
   fEtaMin(-10),
-  fEtaMax(10),
+  fEtaMax(10),  
+  fESigITSMin(-100.),
+  fESigITSMax(3.),
+  fESigTPCMin(-3.),
+  fESigTPCMax(3.),
+  fESigTOFMin(-3),
+  fESigTOFMax(3),
+  fPSigTPCMin(-100.),
+  fPSigTPCMax(4.),
+  fUsePionPIDTPC(kFALSE),
+  fPionSigmas(kFALSE),
+  fKaonSigmas(kFALSE),
   fFilterBit(96),
+  gMultiplicity(-999),
+  mcTrackIndex(0),
   fMcArray(0x0),
-  fTree(0),
-  fQAHist(0),  
-  eta(0),
-  phi(0),
-  pt(0),
+  mcEvent(0x0),      
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
@@ -89,86 +123,95 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker():
   KsigTPC(0),
   KsigTOF(0),
   KsigITS(0),
-  fESigITSMin(-100.),
-  fESigITSMax(3.),
-  fESigTPCMin(-3.),
-  fESigTPCMax(3.),
-  fESigTOFMin(-3),
-  fESigTOFMax(3),
-  fPSigTPCMin(-100.),
-  fPSigTPCMax(4.),
-  fPionSigmas(kFALSE),
-  fKaonSigmas(kFALSE),
-  fUsePionPIDTPC(kFALSE),
-  hasMC(kFALSE),
+  hasMC(kFALSE),       
+  Rej(kFALSE),  
   MCpt(0),
   MCeta(0),
-  MCphi(0),
-  pdg(0),
-  pdgmother(0),
-  hasmother(0),      
+  MCphi(0),        
+  MCvertx(0),
+  MCverty(0),
+  MCvertz(0),        
   dcar(),
-  dcaz(),
-  nITS(0),
-//  fESDTrackCuts(0),
-  gMultiplicity(-999),
-  chi2ITS(0),
-//  chi2TPC(0),
-  chi2GlobalPerNDF(0),
-  nITSshared(0),
-  chi2GlobalvsTPC(0),
-  fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
-  motherlabel(0),
-  label(0),        
-  charge(0.),      
-  runn(0),      
-  Rej(kFALSE),
-  fPIDResponse(0),
-  n(0),
-  cent(0),
+  dcaz(), 
   vertx(0),
   verty(0),
   vertz(0),
-  MCvertx(0),
-  MCverty(0),
-  MCvertz(0),
-  mcTrackIndex(0),
-  NCrossedRowsTPC(0),
-  NClustersTPC(0),
-  HasSPDfirstHit(0), 
-  RatioCrossedRowsFindableClusters(0), 
-  NTPCSignal(0),
-  loCuts(kTRUE),
-  enh(0),
-  eventCuts(0),
-  trcuts(0),
-  trfilter(),
-  cuts(0),
-  pidcuts(0),
-  filter(0),
-  varManager(0),
-  eventplaneCuts(0),
-  evfilter(0)
+  nITS(0),        
+  nITSshared(0),        
+  ITS1S(0),
+  ITS2S(0),
+  ITS3S(0),
+  ITS4S(0),
+  ITS5S(0),
+  ITS6S(0),  
+  chi2ITS(0),        
+  chi2GlobalPerNDF(0),
+  chi2GlobalvsTPC(0),
+  fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
+  pdg(0),
+  pdgmother(0),
+  hasmother(0),
+  label(0),      
+  motherlabel(0),
+  fmean(0),
+  fwidth(0), 
+  fuseCorr(kFALSE),      
+  fTree(0),
+  fQAHist(0)
 {
 
 }
 
 AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   AliAnalysisTaskSE(name),
-  fList(0x0),
+  eventCuts(0),
+  eventplaneCuts(0),
+  evfilter(0),
+  trcuts(0),
+  trfilter(),
+  pidcuts(0),      
+  cuts(0),
+  filter(0), 
+  varManager(0), 
+  fPIDResponse(0),        
+  eta(0),
+  phi(0),
+  pt(0),        
+  charge(0.),   
+  enh(0),
+  NCrossedRowsTPC(0), 
+  NClustersTPC(0),        
+  HasSPDfirstHit(0),        
+  RatioCrossedRowsFindableClusters(0), 
+  NTPCSignal(0),
+  fGeneratorHashs(0x0),        
+  loCuts(kTRUE),        
+  runn(0),      
+  n(0),
+  cent(0),
+  fList(0x0), 
   fCentralityPercentileMin(0),
-  fCentralityPercentileMax(100), 
+  fCentralityPercentileMax(100),         
   fPtMin(0),
   fPtMax(1000),
   fEtaMin(-10),
-  fEtaMax(10),
+  fEtaMax(10),  
+  fESigITSMin(-100.),
+  fESigITSMax(3.),
+  fESigTPCMin(-3.),
+  fESigTPCMax(3.),
+  fESigTOFMin(-3),
+  fESigTOFMax(3),
+  fPSigTPCMin(-100.),
+  fPSigTPCMax(4.),
+  fUsePionPIDTPC(kFALSE),
+  fPionSigmas(kFALSE),
+  fKaonSigmas(kFALSE),
   fFilterBit(96),
+  gMultiplicity(-999),
+  mcTrackIndex(0),
   fMcArray(0x0),
-  fTree(0),
-  fQAHist(0),  
-  eta(0),
-  phi(0),
-  pt(0),
+  mcEvent(0x0),      
   EsigTPC(0),
   EsigTOF(0),
   EsigITS(0),
@@ -178,70 +221,45 @@ AliAnalysisTaskMLTreeMaker::AliAnalysisTaskMLTreeMaker(const char *name) :
   KsigTPC(0),
   KsigTOF(0),
   KsigITS(0),
-  fESigITSMin(-100.),
-  fESigITSMax(3.),
-  fESigTPCMin(-3.),
-  fESigTPCMax(3.),
-  fESigTOFMin(-3),
-  fESigTOFMax(3),
-  fPSigTPCMin(-100.),
-  fPSigTPCMax(4.),
-  fPionSigmas(kFALSE),
-  fKaonSigmas(kFALSE),
-  fUsePionPIDTPC(kFALSE),
-  hasMC(kFALSE),
+  hasMC(kFALSE),       
+  Rej(kFALSE),  
   MCpt(0),
   MCeta(0),
-  MCphi(0),
-  pdg(0),
-  pdgmother(0),
-  hasmother(0),      
+  MCphi(0),        
+  MCvertx(0),
+  MCverty(0),
+  MCvertz(0),        
   dcar(),
-  dcaz(),
-  nITS(0),
-//  fESDTrackCuts(0),
-  gMultiplicity(-999),
-  chi2ITS(0),
-//  chi2TPC(0),
-  chi2GlobalPerNDF(0),      
-  nITSshared(0),
-  chi2GlobalvsTPC(0),
-  fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
-  motherlabel(0),
-  label(0),         
-  charge(0.),      
-  runn(0),      
-  Rej(kFALSE),
-  fPIDResponse(0),
-  n(0),
-  cent(0),
+  dcaz(), 
   vertx(0),
   verty(0),
   vertz(0),
-  MCvertx(0),
-  MCverty(0),
-  MCvertz(0),
-  mcTrackIndex(0),
-  NCrossedRowsTPC(0),
-  NClustersTPC(0),
-  HasSPDfirstHit(0), 
-  RatioCrossedRowsFindableClusters(0), 
-  NTPCSignal(0),
-  loCuts(kTRUE),
-  enh(0),
-  trcuts(0),
-  trfilter(),
-  cuts(0),
-  pidcuts(0),
-  filter(0),
-  varManager(0),
-  eventCuts(0),
-  eventplaneCuts(0),
-  evfilter(0)
+  nITS(0),        
+  nITSshared(0),        
+  ITS1S(0),
+  ITS2S(0),
+  ITS3S(0),
+  ITS4S(0),
+  ITS5S(0),
+  ITS6S(0),  
+  chi2ITS(0),        
+  chi2GlobalPerNDF(0),
+  chi2GlobalvsTPC(0),
+  fCutMaxChi2TPCConstrainedVsGlobalVertexType(0),
+  pdg(0),
+  pdgmother(0),
+  hasmother(0),
+  label(0),      
+  motherlabel(0),
+  fmean(0),
+  fwidth(0), 
+  fuseCorr(kFALSE),              
+  fTree(0),
+  fQAHist(0)
 {
- SetupTrackCuts(); 
- SetupEventCuts(); 
- AliInfo("Track & Event cuts were set"); 
+// SetupTrackCuts(); 
+// SetupEventCuts(); 
+// AliInfo("Track & Event cuts were set"); 
    
  DefineOutput(1, TList::Class());
 }
@@ -307,25 +325,12 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   fTree->Branch("PsigTPC", &PsigTPC);
   
-//  fTree->Branch("NClustersITS", &NClustersITS);
   fTree->Branch("NCrossedRowsTPC", &NCrossedRowsTPC);
   fTree->Branch("NClustersTPC", &NClustersTPC);
   fTree->Branch("RatioCrossedRowsFindableClusters", &RatioCrossedRowsFindableClusters);
   fTree->Branch("HasSPDfirstHit", &HasSPDfirstHit);   
   fTree->Branch("NTPCSignal", &NTPCSignal); 
-  
-  
-//  if(fPionSigmas){
-//    fTree->Branch("PsigTPC", &PsigTPC);
-//    fTree->Branch("PsigITS", &PsigITS);
-//    fTree->Branch("PsigTOF", &PsigTOF);
-//  }
-//  if(fKaonSigmas){
-//    fTree->Branch("KsigTPC", &KsigTPC);
-//    fTree->Branch("KsigITS", &KsigITS);
-//    fTree->Branch("KsigTOF", &KsigTOF);
-//  }
-  
+
   fTree->Branch("DCAxy", &dcar);
   fTree->Branch("DCAz", &dcaz);
   
@@ -334,6 +339,12 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   fTree->Branch("vertz", &vertz);
   
   fTree->Branch("nITS", &nITS);
+  fTree->Branch("ITS1Shared", &ITS1S);
+  fTree->Branch("ITS2Shared", &ITS2S); 
+  fTree->Branch("ITS3Shared", &ITS3S); 
+  fTree->Branch("ITS4Shared", &ITS4S); 
+  fTree->Branch("ITS5Shared", &ITS5S); 
+  fTree->Branch("ITS6Shared", &ITS6S);   
   fTree->Branch("nITSshared_frac", &nITSshared);
   fTree->Branch("chi2ITS", &chi2ITS);
 //  fTree->Branch("chi2TPC", &chi2TPC);
@@ -362,6 +373,17 @@ void AliAnalysisTaskMLTreeMaker::UserCreateOutputObjects() {
   
   AliInfo("Finished setting up the Output");
   TH1::AddDirectory(oldStatus);
+  
+  TString generatorName = "Hijing_0";//;pizero_1;eta_2;etaprime_3;rho_4;omega_5;phi_6;jpsi_7;Pythia CC_8;Pythia B_8;Pythia BB_8";
+ 
+
+  TObjArray arr = *(generatorName.Tokenize(";"));
+  std::cout << "Used Generators: " << std::endl;
+  for (int i = 0; i < arr.GetEntries(); ++i){
+    TString temp = arr.At(i)->GetName();
+    std::cout << "--- " << temp << std::endl;
+    fGeneratorHashs.push_back(temp.Hash());
+  }
 }
 
 //________________________________________________________________________
@@ -387,11 +409,24 @@ void AliAnalysisTaskMLTreeMaker::UserExec(Option_t *) {
   
   fQAHist->Fill("Events_accepted",1);
   
-  if(hasMC){
-    AliMCEventHandler* mchandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    fMcArray = mchandler->MCEvent();
-    // get the accepted tracks in main event
+     AliInputEventHandler *eventHandler = nullptr;
+     AliInputEventHandler *eventHandlerMC = nullptr;
+  
+    if ((AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsA() == AliAODInputHandler::Class()){
+    eventHandler = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    eventHandlerMC = eventHandler;
   }
+     
+  if(hasMC){
+    fMcArray = eventHandlerMC->MCEvent();
+  }   
+  
+  if(fuseCorr){   
+    AliDielectronPID::SetCentroidCorrFunction( (TH1*) fmean->Clone());
+    AliDielectronPID::SetWidthCorrFunction( (TH1*) fwidth->Clone());
+    ::Info("AliAnalysisTaskMLTreeMaker::UserExec","Setting Correction Histos");
+  }
+     
   Double_t lMultiplicityVar = -1;
   Int_t acceptedTracks = GetAcceptedTracks(event,lMultiplicityVar);
 
@@ -499,12 +534,19 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
   MCvertx.clear();
   MCverty.clear();
   MCvertz.clear();
+  ITS1S.clear();
+  ITS2S.clear();
+  ITS3S.clear();
+  ITS4S.clear();
+  ITS5S.clear();
+  ITS6S.clear(); 
+   
+  
   
   // Loop over tracks in event
-  AliGenCocktailEventHeader* coHeader;
-  AliMCEvent *mcEvent;
-  Int_t temppdg;
-  Int_t tempmpdg;
+  AliMCEvent *mcEvent=0;
+//  Int_t temppdg;
+//  Int_t tempmpdg;
   AliAODMCParticle* mcMTrack;
 
   
@@ -540,69 +582,41 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
         }
         else{
           fQAHist->Fill("After MC check, bef. Hij",1); 
-
           Rej=kFALSE;
-
-                mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
-                temppdg = mcMTrack->PdgCode(); 
-                
-                if(!(mcMTrack->GetMother() < 0)){       //get direct mother
-                    mcTrackIndex = mcMTrack->GetMother(); 
-                    mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
-                    tempmpdg= mcMTrack->PdgCode(); 
-                }
-                else tempmpdg=-9999;
-                    
-                while(!(mcMTrack->GetMother() < 0)){        //get first mother in chain
-                    mcTrackIndex = mcMTrack->GetMother(); 
-                    mcMTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(mcMTrack->GetMother()));
-                }
-
-                if(!(mcEvent->IsFromBGEvent(abs(mcTrackIndex)))) Rej=kTRUE;
-
+          if(!(CheckGenerator(TMath::Abs(track->GetLabel())))) Rej=kTRUE;
           }
-
 
         }
 
       fQAHist->Fill("Tracks aft MC&Hij, bef tr cuts",1); 
-
+      
       UInt_t selectedMask=(1<<filter->GetCuts()->GetEntries())-1;
       if(selectedMask!=(filter->IsSelected((AliVParticle*)track))){
           continue;
       }
       
-//      // Kinematic cuts
       Double_t pttemp = track->Pt();
       Double_t etatemp = track->Eta();
-//      
-//      if( pttemp > fPtMax || pttemp < fPtMin ) continue;
-//      if( etatemp > fEtaMax || etatemp < fEtaMin ) continue;
-// 
+       
+      //Get PID response for tree - this is w/o postcalibration - the PID response after postcalibration has to be taken from dielectron task
       Double_t tempEsigTPC=fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 0);
+
+        if (fuseCorr){
+            tempEsigTPC-=AliDielectronPID::GetCntrdCorr(track);
+            tempEsigTPC/=AliDielectronPID::GetWdthCorr(track);
+        }
+
       Double_t tempEsigITS=fPIDResponse->NumberOfSigmasITS(track, (AliPID::EParticleType) 0);
       Double_t tempEsigTOF=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType) 0);
-//      
-//      if(fUsePionPIDTPC){
-//        if (fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2) > fPSigTPCMin &&  fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType) 2)  < fPSigTPCMax){ continue;} //exclude pions in TPC
-//      }
-//
-//      if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track)==AliPIDResponse::kDetPidOk && (tempEsigTOF < fESigTOFMin || tempEsigTOF > fESigTOFMax)) continue;  
-//      if (tempEsigITS < fESigITSMin || tempEsigITS > fESigITSMax) continue;  
-//      if (tempEsigTPC < fESigTPCMin || tempEsigTPC > fESigTPCMax) continue;
-      
       
       fQAHist->Fill("Selected tracks",1); 
 
-//      printf("Found %d with Mother %d originated from %d generated by %s  \n",temppdg,tempmpdg,mcMTrack->PdgCode(),(mcEvent->GetGenerator(mcTrackIndex)).Data()); 
-      //Fill Tree with MC data
       if(hasMC){ 
         AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
 
         pdg.push_back( mcTrack->PdgCode());
         if(Rej) enh.push_back(1);
         else enh.push_back(0);
-        
         
         MCpt.push_back(mcTrack->Pt());
         MCeta.push_back(mcTrack->Eta());
@@ -674,10 +688,24 @@ Int_t AliAnalysisTaskMLTreeMaker::GetAcceptedTracks(AliVEvent *event, Double_t g
       charge.push_back(track->Charge());   
 
       NCrossedRowsTPC.push_back(track->GetTPCCrossedRows());
-      NClustersTPC.push_back(track->GetNumberOfTPCClusters());
+      NClustersTPC.push_back(track->GetTPCNcls());//->GetNumberOfTPCClusters());
       HasSPDfirstHit.push_back(track->HasPointOnITSLayer(0)); 
       RatioCrossedRowsFindableClusters.push_back((Double_t) track->GetTPCCrossedRows()/ (Double_t) track->GetTPCNclsF());       
       NTPCSignal.push_back(track->GetTPCsignalN());
+      
+
+      if( track->HasSharedPointOnITSLayer(0) ) {ITS1S.push_back(1);}
+      else {ITS1S.push_back(0);}
+      if( track->HasSharedPointOnITSLayer(1) ) {ITS2S.push_back(1);}
+      else {ITS2S.push_back(0);}
+      if( track->HasSharedPointOnITSLayer(2) ) {ITS3S.push_back(1);}
+      else {ITS3S.push_back(0);}
+      if( track->HasSharedPointOnITSLayer(3) ) {ITS4S.push_back(1);}
+      else {ITS4S.push_back(0);}
+      if( track->HasSharedPointOnITSLayer(4) ) {ITS5S.push_back(1);}
+      else {ITS5S.push_back(0);}
+      if( track->HasSharedPointOnITSLayer(5) ) {ITS6S.push_back(1);}
+      else {ITS6S.push_back(0);}
       
        //Get DCA position
       if(isAOD){
@@ -754,66 +782,39 @@ Bool_t AliAnalysisTaskMLTreeMaker::GetDCA(const AliVEvent* event, const AliAODTr
 }
 
 
-void AliAnalysisTaskMLTreeMaker::SetupTrackCuts()
+void AliAnalysisTaskMLTreeMaker::SetupTrackCuts(AliDielectronCutGroup* f)
 {
-cuts     = new AliDielectronCutGroup("cuts","cuts",AliDielectronCutGroup::kCompAND);    
-trcuts   = new AliDielectronVarCuts("TrCuts","TrCuts");
-trfilter = new AliDielectronTrackCuts("TrFilter","TrFilter");
-pidcuts  = new AliDielectronPID("PIDCuts","PIDCuts");
-
-filter   = new AliAnalysisFilter("filter","filter");
- 
-// need this to use PID in dielectron framework
-varManager = new AliDielectronVarManager;
-     
-trfilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany); // I think we loose the possibility to use prefilter?
-trfilter->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
-trfilter->SetRequireITSRefit(kTRUE);
-trfilter->SetRequireTPCRefit(kTRUE); // not useful when using prefilter
-
-trcuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
-trcuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
-trcuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
-trcuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
-trcuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
-trcuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
-trcuts->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
-trcuts->AddCut(AliDielectronVarManager::kEta,         -0.8,   0.8);
-trcuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
-trcuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
-trcuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
-
-pidcuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.,4.);
-pidcuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,3.5,0.,0.,kTRUE);
-pidcuts->AddCut(AliDielectronPID::kITS,AliPID::kElectron,-4.,4.);
-
-cuts->AddCut(trcuts);
-cuts->AddCut(trfilter);
-cuts->AddCut(pidcuts);
-
- cuts->Print();
-
-filter->AddCuts(cuts);
+filter   = new AliAnalysisFilter("filter","filter");  
+filter->AddCuts(f);
 }
 
 
-void AliAnalysisTaskMLTreeMaker::SetupEventCuts()
+void AliAnalysisTaskMLTreeMaker::SetupEventCuts(AliDielectronEventCuts* f)
 {
   evfilter   = new AliAnalysisFilter("evfilter","evfilter");  
-    
-  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","eventCuts");
-  eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-  eventCuts->SetRequireVertex();
-  eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,+10.);
-  // eventCuts->SetCentralityRange(10., 50., kTRUE);
-  eventCuts->Print();
-  evfilter->AddCuts(eventCuts);
+  evfilter->AddCuts(f);
+}
 
-  AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
-  eventplaneCuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
-  eventplaneCuts->Print();
 
-  evfilter->AddCuts(eventplaneCuts);
 
+bool AliAnalysisTaskMLTreeMaker::CheckGenerator(Int_t trackID){     //check if the generator is on the list of generators
+  if (fGeneratorHashs.size() == 0) return true;
+  TString genname;
+  Bool_t hasGenerator = fMcArray->GetCocktailGenerator(TMath::Abs(trackID), genname); // fMC is AliMCEvent
+  // std::cout << genname << std::endl;
+    if(!hasGenerator) {
+
+    Printf("no cocktail header list was found for this track");
+    return false;
+  }
+  else{
+
+    for (unsigned int i = 0; i < fGeneratorHashs.size(); ++i){
+      // std::cout << genname.Hash() << " " << fGeneratorHashs[i] << std::endl;
+      if (genname.Hash() == fGeneratorHashs[i]) return true;
+
+    }
+    return false;
+  }
+  return false; // should not happen
 }

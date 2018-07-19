@@ -13,7 +13,7 @@
 #include <cstdio>
 #include <TMath.h>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoModelCorrFctnDEtaDPhi)
 #endif
 
@@ -29,7 +29,7 @@ ClassImp(AliFemtoModelCorrFctnDEtaDPhi)
 //
 
 //____________________________
-AliFemtoModelCorrFctnDEtaDPhi::AliFemtoModelCorrFctnDEtaDPhi(char* title, const int& aPhiBins=20, const int& aEtaBins=20):
+AliFemtoModelCorrFctnDEtaDPhi::AliFemtoModelCorrFctnDEtaDPhi(const char* title, const int& aPhiBins=20, const int& aEtaBins=20):
   AliFemtoModelCorrFctn(),
   fDPhiDEtaNumeratorTrue(0),
   fDPhiDEtaNumeratorFake(0),

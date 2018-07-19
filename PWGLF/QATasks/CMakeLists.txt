@@ -34,6 +34,7 @@ set(SRCS
   AliAnalysisTaskQAV0.cxx
   AliAnalysisTaskQAV0AOD.cxx
   AliAnalysisTaskQAMultistrange.cxx
+  AliAnalysisTaskLFefficiencies.cxx
   )
 
 # Headers from sources

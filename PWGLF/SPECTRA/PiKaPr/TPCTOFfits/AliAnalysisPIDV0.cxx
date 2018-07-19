@@ -11,7 +11,8 @@ AliAnalysisPIDV0::AliAnalysisPIDV0():
   fDCAV0Daughters(0),
   fV0CosinePA(0),
   fPt(0),
-  fEta(0)
+  fEta(0),
+  fDCAPV(-999)
 {
 };
 AliAnalysisPIDV0::AliAnalysisPIDV0(const AliAnalysisPIDV0 &source):
@@ -25,7 +26,8 @@ AliAnalysisPIDV0::AliAnalysisPIDV0(const AliAnalysisPIDV0 &source):
   fDCAV0Daughters(source.fDCAV0Daughters),
   fV0CosinePA(source.fV0CosinePA),
   fPt(source.fPt),
-  fEta(source.fEta)
+  fEta(source.fEta),
+  fDCAPV(source.fDCAPV)
 {
 };
 AliAnalysisPIDV0 &AliAnalysisPIDV0::operator=(const AliAnalysisPIDV0 &source) {
@@ -41,9 +43,10 @@ AliAnalysisPIDV0 &AliAnalysisPIDV0::operator=(const AliAnalysisPIDV0 &source) {
   fV0CosinePA = source.fV0CosinePA;
   fPt = source.fPt;
   fEta = source.fEta;
+  fDCAPV = source.fDCAPV;
   return *this;
 };
-void AliAnalysisPIDV0::Update(AliAnalysisPIDTrack *PosTrack, AliAnalysisPIDTrack *NegTrack, Double_t *InvMasses, Double_t Radius, Double_t DaughterDCA, Double_t CosinePA, Double_t pT, Double_t Eta) {
+void AliAnalysisPIDV0::Update(AliAnalysisPIDTrack *PosTrack, AliAnalysisPIDTrack *NegTrack, Double_t *InvMasses, Double_t Radius, Double_t DaughterDCA, Double_t CosinePA, Double_t pT, Double_t Eta, Double_t DCAPV) {
   fPosAnalysisPIDTrack = PosTrack;
   fNegAnalysisPIDTrack = NegTrack;
   fInvMK0s=InvMasses[0];
@@ -54,6 +57,7 @@ void AliAnalysisPIDV0::Update(AliAnalysisPIDTrack *PosTrack, AliAnalysisPIDTrack
   fV0CosinePA = CosinePA;
   fPt = pT;
   fEta = Eta;
+  fDCAPV = DCAPV;
 };
 AliAnalysisPIDV0::~AliAnalysisPIDV0()
 {
@@ -67,4 +71,7 @@ Int_t AliAnalysisPIDV0::GetMCPdgCode() {
     if(fPosAnalysisPIDTrack->GetMCMotherLabel()==fNegAnalysisPIDTrack->GetMCMotherLabel())
       return fPosAnalysisPIDTrack->GetMCMotherPdgCode();
   return 0;
+};
+Double_t AliAnalysisPIDV0::CalculateDCAPV() {
+  return fRadius * ( TMath::Sqrt(1. - fV0CosinePA * fV0CosinePA));
 };

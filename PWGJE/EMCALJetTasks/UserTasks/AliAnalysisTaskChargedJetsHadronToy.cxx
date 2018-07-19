@@ -25,13 +25,25 @@
 #include "AliAODVertex.h"
 #include <AliAODTrack.h>
 #include <TClonesArray.h>
+
+
+#include "AliAnalysisTaskEmcalJet.h"
 #include "AliAnalysisTaskChargedJetsHadronToy.h"
 
+/// \cond CLASSIMP
 ClassImp(AliAnalysisTaskChargedJetsHadronToy)
+/// \endcond
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy() :
-  AliAnalysisTaskSE("AliAnalysisTaskChargedJetsHadronToy"), fCreateUE(1), fCreateJets(1), fUEMultDistribution(0), fUEDistribution(0), fUEMultiplicity(1000), fGeneratedJetParticleDistribution(0), fGeneratedJetPtDistribution(0), fGeneratedJetCount(1), fGeneratedJetPtMin(20.), fGeneratedJetPtMax(30.), fGeneratedJetWidthPhi(0.2), fGeneratedJetWidthEta(0.2), fGeneratedJetMinEta(-0.9), fGeneratedJetMaxEta(0.9), fInputArrTracks(0), fInputArrTracksName(""), fOutputArrTracks(0), fOutputArrTracksName(""), fGeneratedJetsArr(0), fGeneratedJetsArrName(""), fDistEtaGaussian(0), fDistPhiGaussian(0), fRandom(), fInitialized()
+  AliAnalysisTaskEmcalJet("AliAnalysisTaskChargedJetsHadronToy", kTRUE), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fInputArrayName(""), fOutputArrayName(""), fInputArray(0), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
+{
+// constructor
+}
+
+//_____________________________________________________________________________________________________
+AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy(const char* name) :
+  AliAnalysisTaskEmcalJet(name, kTRUE), fDistributionMultiplicity(0), fDistributionPt(0), fDistributionEtaPhi(0), fMinCentrality(0), fMaxCentrality(10), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fInputArrayName(""), fOutputArrayName(""), fInputArray(0), fOutputArray(0), fRandom(), fToyCent(0), fRandomPsi3(0), fRandomPsi4(0), fRandomPsi5(0)
 {
 // constructor
 }
@@ -39,124 +51,85 @@ AliAnalysisTaskChargedJetsHadronToy::AliAnalysisTaskChargedJetsHadronToy() :
 //_____________________________________________________________________________________________________
 AliAnalysisTaskChargedJetsHadronToy::~AliAnalysisTaskChargedJetsHadronToy()
 {
-// destructor
-  if(fUEMultDistribution)
-    delete fUEMultDistribution;
-  if(fUEDistribution)
-    delete fUEDistribution;
-  if(fGeneratedJetPtDistribution)
-    delete fGeneratedJetPtDistribution;
-  if(fGeneratedJetParticleDistribution)
-    delete fGeneratedJetParticleDistribution;
-  if(fDistPhiGaussian)
-    delete fDistPhiGaussian;
-  if(fDistEtaGaussian)
-    delete fDistEtaGaussian;
+  // destructor
+  if(fDistributionMultiplicity)
+    delete fDistributionMultiplicity;
+  if(fDistributionPt)
+    delete fDistributionPt;
+  if(fDistributionEtaPhi)
+    delete fDistributionEtaPhi;
 }
 
 
 //_____________________________________________________________________________________________________
 void AliAnalysisTaskChargedJetsHadronToy::UserCreateOutputObjects()
 {
+  AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
   fRandom = new TRandom3(0);
+  AddHistogram1D<TH1D>("hTrackPt", "Tracks p_{T} distribution", "", 300, 0., 300., "p_{T} (GeV/c)", "dN^{Tracks}/dp_{T}");
+  AddHistogram2D<TH2D>("hTrackPhiEta", "Track angular distribution #phi/#eta", "COLZ", 180, 0., 2*TMath::Pi(), 100, -2.5, 2.5, "#phi", "#eta", "dN^{Tracks}/d#phi d#eta");
+  AddHistogram1D<TH1D>("hMultiplicity", "Number of tracks in acceptance vs. centrality", "", 500, 0., 5000., "N tracks","dN^{Events}/dN^{Tracks}");
+
+  PostData(1, fOutput);
 }
+
 
 //_____________________________________________________________________________________________________
 void AliAnalysisTaskChargedJetsHadronToy::ExecOnce()
 {
+  AliAnalysisTaskEmcalJet::ExecOnce();
+
   // Check if input array can be loaded
-  if(!fInputArrTracksName.IsNull())
+  if(!fInputArrayName.IsNull())
   {
-    fInputArrTracks = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fInputArrTracksName.Data())));
-    if(!fInputArrTracks)
-      AliFatal(Form("Input array '%s' demanded, but not found!", fInputArrTracksName.Data()));
-    if(strcmp(fInputArrTracks->GetClass()->GetName(), "AliAODTrack"))
-      AliFatal(Form("Input array has track type %s. Only AliAODTracks are supported.", fInputArrTracks->GetClass()->GetName()));
+    fInputArray = static_cast<TClonesArray*>(InputEvent()->FindListObject(Form("%s", fInputArrayName.Data())));
+    if(!fInputArray)
+    {
+      AliFatal(Form("Input array '%s' not found!", fInputArrayName.Data()));
+    }
   }
 
   // Check if output arrays can be created
-  if((InputEvent()->FindListObject(Form("%s", fOutputArrTracksName.Data()))))
-    AliFatal(Form("Output array '%s' already exists in the event! Rename it.", fOutputArrTracksName.Data()));
-  if((InputEvent()->FindListObject(Form("%s", fGeneratedJetsArrName.Data()))))
-    AliFatal(Form("Output array '%s' already exists in the event! Rename it.", fGeneratedJetsArrName.Data()));
+  if((InputEvent()->FindListObject(Form("%s", fOutputArrayName.Data()))))
+    AliFatal(Form("Output array '%s' already exists in the event! Rename it.", fOutputArrayName.Data()));
 
-  // Define functions used in toy model + put the arrays to the event
-  // NOTE: fOutputArrTracks must be added in any case since it contains the tracks of UE and jets
-  fOutputArrTracks = new TClonesArray("AliAODTrack");
-  fOutputArrTracks->SetName(fOutputArrTracksName.Data());
-  InputEvent()->AddObject(fOutputArrTracks);
-
-  if(fCreateUE)
-  {
-    if(!fUEDistribution)
-    {
-      std::cout << "\n### Distribution for the UE not given -- using default thermal distribution ###\n\n";
-      fUEDistribution = new TF1("fUEDistribution","[0]*exp([1]*x)",0,200.);
-      fUEDistribution->SetParameters(1.0,-1.5);
-    }
-    fUEDistribution->SetNpx(400);
-  }
-
-  if(fCreateJets)
-  {
-    fGeneratedJetsArr = new TClonesArray("AliEmcalJet");
-    fGeneratedJetsArr->SetName(fGeneratedJetsArrName.Data());
-    InputEvent()->AddObject(fGeneratedJetsArr);
-    if(!fGeneratedJetParticleDistribution)
-    {
-      std::cout << "\n### Distribution for the particles in jets not given -- using default power law distribution ###\n\n";
-      fGeneratedJetParticleDistribution = new TF1("fGeneratedJetParticleDistribution","[0]*(x^[1])",4.,120.);
-      fGeneratedJetParticleDistribution->SetParameters(6.0,-2.5);
-    }
-    fGeneratedJetParticleDistribution->SetNpx(400);
-
-    if(!fGeneratedJetPtDistribution)
-    {
-      std::cout << "\n### Distribution for the jet pt not given -- only min jet pT ###\n\n";
-    }
-    else
-    {
-      Int_t minBin = fGeneratedJetPtDistribution->GetXaxis()->FindBin(fGeneratedJetPtMin);
-      Int_t maxBin = fGeneratedJetPtDistribution->GetXaxis()->FindBin(fGeneratedJetPtMax);
-      for(Int_t i=0; i<=fGeneratedJetPtDistribution->GetNbinsX(); i++)
-        if(i < minBin || i > maxBin)
-        {
-          fGeneratedJetPtDistribution->SetBinContent(i,0.0);
-          fGeneratedJetPtDistribution->SetBinError(i,0.0);
-        }
-
-    }
-
-    fDistEtaGaussian = new TF1("fDistEtaGaussian","gaus(0)",-1.,1.);// gaus(0) is  [0]*exp(-0.5*((x-[1])/[2])**2)
-    fDistEtaGaussian->SetParameters(1.0,0.,0.5*fGeneratedJetWidthEta);
-    fDistPhiGaussian = new TF1("fDistPhiGaussian","gaus(0)",-1.,1.);
-    fDistPhiGaussian->SetParameters(1.0,0.,0.5*fGeneratedJetWidthPhi);
-  }
-
-  fInitialized = kTRUE;
+  fOutputArray = new TClonesArray("AliAODTrack");
+  fOutputArray->SetName(fOutputArrayName.Data());
+  fInputEvent->AddObject(fOutputArray);
 }
 
 //_____________________________________________________________________________________________________
-void AliAnalysisTaskChargedJetsHadronToy::UserExec(Option_t *)
+Bool_t AliAnalysisTaskChargedJetsHadronToy::Run()
 {
-  // Run once the exec once (must be here to have the input event ready)
-  if(!fInitialized)
-    ExecOnce();
-
   AssembleEvent();
-//    std::cout << fOutputArrTracks->GetName() << ":" << fOutputArrTracks->GetEntries() << std::endl;
-
+  CreateQAPlots();
+  return kTRUE;
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
 {
-  // Create the event from the several inputs and run the jet finder
-  // Note: those tracks are guaranteed to be AliAODTracks
-  if(fInputArrTracks)
-    fOutputArrTracks->AddAll(fInputArrTracks);
+  fRandomPsi3 = fRandom->Rndm()*TMath::Pi(); // once per event, create a random value dedicated for Psi3
+  fRandomPsi4 = fRandom->Rndm()*TMath::Pi(); // once per event, create a random value dedicated for Psi4
+  fRandomPsi5 = fRandom->Rndm()*TMath::Pi(); // once per event, create a random value dedicated for Psi5
+  fToyCent    = fMinCentrality + (fMaxCentrality-fMinCentrality)*fRandom->Rndm(); // centrality value (flat from selected range)
 
-  // 1. Create a vertex if there is none (needed by correlation task)
+  // Create the event from the several inputs and run the jet finder
+
+  // ################# 1. Add input tracks (if available)
+  Int_t particleCount = 0;
+  if(fInputArray)
+  {
+    for(Int_t iPart=0; iPart<fInputArray->GetEntries(); iPart++)
+    {
+      AliAODTrack* inputParticle = static_cast<AliAODTrack*>(fInputArray->At(iPart));
+      new ((*fOutputArray)[particleCount]) AliAODTrack(*inputParticle);
+      particleCount++;
+    }
+  }
+
+  // ################# 2. Create a vertex if there is none (needed by some tasks)
   if(dynamic_cast<AliESDEvent*>(InputEvent()))
   {
     if(!(dynamic_cast<AliESDEvent*>(InputEvent()))->GetPrimaryVertexTracks()->GetNContributors())
@@ -175,86 +148,208 @@ void AliAnalysisTaskChargedJetsHadronToy::AssembleEvent()
     }
   }
 
-  // 2. Create underlying event
-  Int_t     UEmultiplicity = fUEMultiplicity;
-  Double_t  UEthrownPt = 0.;
-  Double_t etaMin = -0.9;
-  Double_t etaMax = +0.9;
-
-  if(fCreateUE)
+  // ################# 3. Create toy event
+  Int_t multiplicity = (Int_t)fDistributionMultiplicity->GetRandom();
+  for(Int_t i=0;i<multiplicity; i++)
   {
-    Int_t count = fOutputArrTracks->GetEntries();
+    Double_t trackPt = fDistributionPt->GetRandom();
+    Double_t trackEta = 0;
+    Double_t trackPhi = 0;
+    static_cast<TH2*>(fDistributionEtaPhi)->GetRandom2(trackPhi, trackEta);
+    Double_t trackTheta = 2.*atan(exp(-trackEta));
+    Double_t trackCharge = fRandom->Rndm() - 0.5;
 
-    if(fUEMultDistribution)
-      UEmultiplicity = (Int_t)fUEMultDistribution->GetRandom();
+    if(trackCharge>0) trackCharge = 1; else trackCharge = -1;
 
-    for(Int_t i=0;i<UEmultiplicity; i++)
-    {
-      Double_t trackPt = fUEDistribution->GetRandom();
-      Double_t trackEta = etaMin + fRandom->Rndm()*(etaMax-etaMin);
-      Double_t trackTheta = 2.*atan(exp(-trackEta));
-      Double_t trackPhi = fRandom->Rndm()*TMath::TwoPi();
-      Double_t trackCharge = fRandom->Rndm() - 0.5;
+    // Add flow to particle
+    if(fDistributionV2 || fDistributionV3 || fDistributionV4 || fDistributionV5)
+      trackPhi = AddFlow(trackPhi, trackPt);
 
-      if(trackCharge>0) trackCharge = 1; else trackCharge = -1;
 
-      // Add very basic particle to event
-      new ((*fOutputArrTracks)[count]) AliAODTrack();
-      static_cast<AliAODTrack*>(fOutputArrTracks->At(count))->SetPt(trackPt);
-      static_cast<AliAODTrack*>(fOutputArrTracks->At(count))->SetPhi(trackPhi);
-      static_cast<AliAODTrack*>(fOutputArrTracks->At(count))->SetTheta(trackTheta); // AliAODTrack cannot set eta directly
-      static_cast<AliAODTrack*>(fOutputArrTracks->At(count))->SetCharge(trackCharge);
-      count++;
-      UEthrownPt += trackPt;
-    }
+    // Add basic particle to event
+    new ((*fOutputArray)[particleCount]) AliAODTrack();
+    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPt(trackPt);
+    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetPhi(trackPhi);
+    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetTheta(trackTheta); // AliAODTrack cannot set eta directly
+    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetCharge(trackCharge);
+    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetLabel(100000 + i);
+    static_cast<AliAODTrack*>(fOutputArray->At(particleCount))->SetIsHybridGlobalConstrainedGlobal();
+    particleCount++;
   }
-
-  // 3. Embed gaussian jets into event
-  Double_t JETthrownPt = 0.;
-  if(fCreateJets)
-  {
-    // Define jets and throw them into the acceptance
-
-    for(Int_t i=0;i<fGeneratedJetCount; i++)
-    {
-      Double_t jetEta = fGeneratedJetMinEta + fRandom->Rndm()*(fGeneratedJetMaxEta-fGeneratedJetMinEta);
-      Double_t jetPhi = fRandom->Rndm()*TMath::TwoPi();
-
-      Double_t jetPt = fGeneratedJetPtMin;
-      if(fGeneratedJetPtDistribution)
-        jetPt = fGeneratedJetPtDistribution->GetRandom();
-
-      Int_t count = fOutputArrTracks->GetEntries();
-      Int_t particlesInJet = 0;
-      JETthrownPt = 0;
-      while(JETthrownPt < jetPt)
-      {
-        Double_t trackPt = fGeneratedJetParticleDistribution->GetRandom();
-        Double_t trackEta = jetEta + fDistEtaGaussian->GetRandom();
-        Double_t trackTheta = 2.*atan(exp(-trackEta));
-        Double_t trackPhi = jetPhi + fDistPhiGaussian->GetRandom();
-        Double_t trackCharge = fRandom->Rndm() - 0.5;
-        if(trackCharge>0) trackCharge = 1; else trackCharge = -1;
-
-        // Add particle to event
-        new ((*fOutputArrTracks)[count]) AliAODTrack();
-        static_cast<AliAODTrack*>(fOutputArrTracks->At(count))->SetPt(trackPt);
-        static_cast<AliAODTrack*>(fOutputArrTracks->At(count))->SetPhi(trackPhi);
-        static_cast<AliAODTrack*>(fOutputArrTracks->At(count))->SetTheta(trackTheta); // AliAODTrack cannot set eta directly
-        static_cast<AliAODTrack*>(fOutputArrTracks->At(count))->SetCharge(trackCharge);
-
-        count++;
-        particlesInJet++;
-        JETthrownPt += trackPt;
-      }
-
-      // Save the generated jet for later matching
-      new ((*fGeneratedJetsArr)[i]) AliEmcalJet(JETthrownPt, jetEta, jetPhi, 0);
-    }
-  }
-
-  std::cout << Form("Event has been generated using %3i particles UE (pT density: %5.2f). ", UEmultiplicity, UEthrownPt/(TMath::TwoPi()*(etaMax-etaMin))) << std::endl;
-  std::cout << Form("  %i embedded gaussian jets (pT density: %5.2f). ", fGeneratedJetCount, JETthrownPt/(TMath::TwoPi()*(etaMax-etaMin))) << std::endl;
 
 }
 
+//_____________________________________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronToy::CreateQAPlots()
+{
+  for(Int_t iTrack=0; iTrack<fOutputArray->GetEntries(); iTrack++)
+  {
+    AliAODTrack* track = static_cast<AliAODTrack*>(fOutputArray->At(iTrack));
+    FillHistogram("hTrackPt", track->Pt());
+    FillHistogram("hTrackPhiEta", track->Phi(), track->Eta());
+  }
+  FillHistogram("hMultiplicity", fOutputArray->GetEntries());
+}
+
+
+//_____________________________________________________________________________________________________
+Double_t AliAnalysisTaskChargedJetsHadronToy::AddFlow(Double_t phi, Double_t pt)
+{
+  // adapted from AliFlowTrackSimple
+  Double_t precisionPhi = 1e-10;
+  Int_t maxNumberOfIterations  = 200;
+
+  Double_t phi0=phi;
+  Double_t f=0.;
+  Double_t fp=0.;
+  Double_t phiprev=0.;
+  Int_t ptBin = 0;
+
+  // Evaluate V2 for track pt/centrality
+  Double_t v2 = 0;
+  if(fDistributionV2)
+  {
+    ptBin = fDistributionV2->GetXaxis()->FindBin(pt);
+    if(ptBin>fDistributionV2->GetNbinsX())
+      v2 = fDistributionV2->GetBinContent(fDistributionV2->GetNbinsX(), fDistributionV2->GetYaxis()->FindBin(fToyCent));
+    else if(ptBin>0)
+      v2 = fDistributionV2->GetBinContent(ptBin, fDistributionV2->GetYaxis()->FindBin(fToyCent));
+  }
+
+  // Evaluate V3 for track pt/centrality
+  Double_t v3 = 0;
+  if(fDistributionV3)
+  {
+    ptBin = fDistributionV3->GetXaxis()->FindBin(pt);
+    if(ptBin>fDistributionV3->GetNbinsX())
+      v3 = fDistributionV3->GetBinContent(fDistributionV3->GetNbinsX(), fDistributionV3->GetYaxis()->FindBin(fToyCent));
+    else if(ptBin>0)
+      v3 = fDistributionV3->GetBinContent(ptBin, fDistributionV3->GetYaxis()->FindBin(fToyCent));
+  }
+
+  // Evaluate V4 for track pt/centrality
+  Double_t v4 = 0;
+  if(fDistributionV4)
+  {
+    ptBin = fDistributionV4->GetXaxis()->FindBin(pt);
+    if(ptBin>fDistributionV4->GetNbinsX())
+      v4 = fDistributionV4->GetBinContent(fDistributionV4->GetNbinsX(), fDistributionV4->GetYaxis()->FindBin(fToyCent));
+    else if(ptBin>0)
+      v4 = fDistributionV4->GetBinContent(ptBin, fDistributionV4->GetYaxis()->FindBin(fToyCent));
+  }
+
+  // Evaluate V5 for track pt/centrality
+  Double_t v5 = 0;
+  if(fDistributionV5)
+  {
+    ptBin = fDistributionV5->GetXaxis()->FindBin(pt);
+    if(ptBin>fDistributionV5->GetNbinsX())
+      v5 = fDistributionV5->GetBinContent(fDistributionV5->GetNbinsX(), fDistributionV5->GetYaxis()->FindBin(fToyCent));
+    else if(ptBin>0)
+      v5 = fDistributionV5->GetBinContent(ptBin, fDistributionV5->GetYaxis()->FindBin(fToyCent));
+  }
+
+  // Add all v's
+  for (Int_t i=0; i<maxNumberOfIterations; i++)
+  {
+    phiprev=phi; //store last value for comparison
+    f =  phi-phi0
+        +      v2*TMath::Sin(2.*(phi-(fEPV0+(TMath::Pi()/2.))))
+        +2./3.*v3*TMath::Sin(3.*(phi-fRandomPsi3))
+        +0.5  *v4*TMath::Sin(4.*(phi-fRandomPsi4))
+        +0.4  *v5*TMath::Sin(5.*(phi-fRandomPsi5));
+
+    fp =  1.0+2.0*(
+           +v2*TMath::Cos(2.*(phi-(fEPV0+(TMath::Pi()/2.))))
+           +v3*TMath::Cos(3.*(phi-fRandomPsi3))
+           +v4*TMath::Cos(4.*(phi-fRandomPsi4))
+           +v5*TMath::Cos(5.*(phi-fRandomPsi5))); //first derivative
+
+    phi -= f/fp;
+    if (TMath::AreEqualAbs(phiprev,phi,precisionPhi)) break;
+  }
+
+  return phi;
+}
+
+
+//________________________________________________________________________
+inline void AliAnalysisTaskChargedJetsHadronToy::FillHistogram(const char * key, Double_t x)
+{
+  TH1* tmpHist = static_cast<TH1*>(fOutput->FindObject(key));
+  if(!tmpHist)
+  {
+    AliError(Form("Cannot find histogram <%s> ",key)) ;
+    return;
+  }
+
+  tmpHist->Fill(x);
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskChargedJetsHadronToy::FillHistogram(const char * key, Double_t x, Double_t y)
+{
+  TH1* tmpHist = static_cast<TH1*>(fOutput->FindObject(key));
+  if(!tmpHist)
+  {
+    AliError(Form("Cannot find histogram <%s> ",key));
+    return;
+  }
+
+  if (tmpHist->IsA()->GetBaseClass("TH1"))
+    static_cast<TH1*>(tmpHist)->Fill(x,y); // Fill x with y
+  else if (tmpHist->IsA()->GetBaseClass("TH2"))
+    static_cast<TH2*>(tmpHist)->Fill(x,y); // Fill x,y with 1
+}
+
+//________________________________________________________________________
+inline void AliAnalysisTaskChargedJetsHadronToy::FillHistogram(const char * key, Double_t x, Double_t y, Double_t add)
+{
+  TH2* tmpHist = static_cast<TH2*>(fOutput->FindObject(key));
+  if(!tmpHist)
+  {
+    AliError(Form("Cannot find histogram <%s> ",key));
+    return;
+  }
+  
+  tmpHist->Fill(x,y,add);
+}
+
+//________________________________________________________________________
+template <class T> T* AliAnalysisTaskChargedJetsHadronToy::AddHistogram1D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, const char* xTitle, const char* yTitle)
+{
+  T* tmpHist = new T(name, title, xBins, xMin, xMax);
+
+  tmpHist->GetXaxis()->SetTitle(xTitle);
+  tmpHist->GetYaxis()->SetTitle(yTitle);
+  tmpHist->SetOption(options);
+  tmpHist->SetMarkerStyle(kFullCircle);
+  tmpHist->Sumw2();
+
+  fOutput->Add(tmpHist);
+
+  return tmpHist;
+}
+
+//________________________________________________________________________
+template <class T> T* AliAnalysisTaskChargedJetsHadronToy::AddHistogram2D(const char* name, const char* title, const char* options, Int_t xBins, Double_t xMin, Double_t xMax, Int_t yBins, Double_t yMin, Double_t yMax, const char* xTitle, const char* yTitle, const char* zTitle)
+{
+  T* tmpHist = new T(name, title, xBins, xMin, xMax, yBins, yMin, yMax);
+  tmpHist->GetXaxis()->SetTitle(xTitle);
+  tmpHist->GetYaxis()->SetTitle(yTitle);
+  tmpHist->GetZaxis()->SetTitle(zTitle);
+  tmpHist->SetOption(options);
+  tmpHist->SetMarkerStyle(kFullCircle);
+  tmpHist->Sumw2();
+
+  fOutput->Add(tmpHist);
+
+  return tmpHist;
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskChargedJetsHadronToy::Terminate(Option_t *) 
+{
+  // Called once at the end of the analysis.
+}

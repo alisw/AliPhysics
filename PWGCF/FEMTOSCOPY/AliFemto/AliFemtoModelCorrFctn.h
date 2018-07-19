@@ -34,15 +34,14 @@ public:
   virtual void EventEnd(const AliFemtoEvent* aEvent);
   virtual void Finish();
 
-  virtual TList* GetOutputList();
   virtual void Write();
+  virtual TList* GetOutputList();
+  virtual AliFemtoModelCorrFctn* Clone() const { return new AliFemtoModelCorrFctn(*this); }
 
-  virtual AliFemtoModelCorrFctn* Clone();
+  void SetFillkT(bool fillkT){fFillkT = fillkT;}
 
-    void SetFillkT(bool fillkT){fFillkT = fillkT;}
-    
   Double_t GetQinvTrue(AliFemtoPair*);
-  
+
   //Special MC analysis for K selected by PDG code -->
   void SetKaonPDG(Bool_t aSetKaonAna);
 
@@ -61,7 +60,7 @@ protected:
 
 
 private:
-  
+
   //Special MC analysis for K selected by PDG code -->
   Bool_t fKaonPDG;
 
@@ -70,7 +69,7 @@ private:
     TH1D *fkTdists[21]; // histograms with kT distributions for different BB pairs
     double GetParentsKt(AliFemtoPair *pair);
     int GetPairNumber(AliFemtoPair *pair); // returns pair code
-    
+
 #ifdef __ROOT__
   /// \cond CLASSIMP
   ClassDef(AliFemtoModelCorrFctn, 1);

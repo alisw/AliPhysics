@@ -39,7 +39,9 @@ AliFemtoModelCorrFctnDEtaDPhiStar::AliFemtoModelCorrFctnDEtaDPhiStar(
                 yAxisTitle = "#Delta#phi*";
 
   // const TString hist_title = p.title + ";" + xAxisTitle + ";" + yAxisTitle;
-  const auto hist_title = [] (const TString &title) { return title + ";#Delta#eta;#Delta#phi*"; };
+  const auto hist_title = [] (const TString &title, const TString &xtitle="#Delta#eta", const TString &ytitle="#Delta#phi*") {
+    return title + ";" + xtitle + ";" + ytitle;
+  };
 
   const TString fix = (fGroupOutputList == true) ? "" : p.title + "_";
 
@@ -88,20 +90,20 @@ AliFemtoModelCorrFctnDEtaDPhiStar::AliFemtoModelCorrFctnDEtaDPhiStar(
                cosphi_bincount = p.phi.bin_count * 2;
 
   fDPhiStarPtNumerator = new TH2F(hist_name("NumDPhiPt"),
-                                  "#Delta#phi* vs p_{T} Numinator; #Delta#phi*; p_{T} (GeV)",
+                                  hist_title("#Delta#phi* vs p_{T} Numinator", "#Delta#phi*", "p_{T} (GeV)"),
                                    p.phi.bin_count, p.phi.low, p.phi.high,
                                    pt_bincount, 0.0, 3.0);
   fDPhiStarPtDenominator = new TH2F(hist_name("DenDPhiPt"),
-                                    "#Delta#phi* vs p_{T} Denominator; #Delta#phi*; p_{T} (GeV)",
+                                    hist_title("#Delta#phi* vs p_{T} Denominator", "#Delta#phi*", "p_{T} (GeV)"),
                                     p.phi.bin_count, p.phi.low, p.phi.high,
                                     pt_bincount, 0.0, 3.0);
 
   fDCosPtNumerator = new TH2F(hist_name("NumDCosPt"),
-                              "Cos vs p_{T} Numinator; cos(#phi); p_T (GeV)",
+                              hist_title("Cos vs p_{T} Numinator", "cos(#phi)", "p_{T} (GeV)"),
                               cosphi_bincount, -1.0, 1.0,
                               pt_bincount, 0.0, 3.0);
   fDCosPtDenominator = new TH2F(hist_name("DenDCosPt"),
-                                "Cos vs P_{T} Denominator; cos(#phi); p_T (GeV)",
+                                hist_title("Cos vs p_{T} Denominator", "cos(#phi)", "p_{T} (GeV)"),
                                 cosphi_bincount, -1.0, 1.0,
                                 pt_bincount, 0.0, 3.0);
 }
@@ -279,5 +281,5 @@ AliFemtoModelCorrFctnDEtaDPhiStar::Report()
   report += TString::Format("Number of entries in ideal unweighted numerator:\t%0.2f\n", fDPhiStarDEtaNumeratorIdealUnweighted->GetEntries());
   report += TString::Format("Number of entries in denominator:\t%0.2f\n", fDPhiStarDEtaIdealDenominator->GetEntries());
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }

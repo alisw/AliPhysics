@@ -24,6 +24,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/Hyperon)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Tasks # what target here
+                    ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW
@@ -39,6 +40,11 @@ set(SRCS
         AliAnalysisTaskSigma0.cxx
         AliAnalysisTaskSigma0Spectra.cxx
         AliCaloParticle.cxx
+        AliSigma0ParticleBase.cxx
+        AliSigma0ParticlePhotonMother.cxx
+        AliSigma0ParticleV0.cxx
+        AliSigma0V0Cuts.cxx
+        AliSigma0PhotonMotherCuts.cxx
         AliAnalysisTaskSigma0Run2.cxx
    )
 
@@ -61,7 +67,7 @@ generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}
 # Generate a PARfile target for this library
 add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS}")
 
-# Create an object to be reused in case of static libraries 
+# Create an object to be reused in case of static libraries
 # Otherwise the sources will be compiled twice
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object

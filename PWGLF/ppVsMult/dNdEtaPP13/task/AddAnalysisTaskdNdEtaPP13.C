@@ -10,11 +10,11 @@
 #endif
 
 
-const Double_t centBinsMultV0MSPD[] = {1e-10, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
-const Double_t centBinsMultV0M[] =   {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
-//const Double_t centBinsMultV0M_Ridge[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 3., 5., 10., 20., 30., 40., 50., 90., 100};
-const Double_t centBinsMultV0M_Ridge[] = {0., 1., 8., 16., 25., 27., 43., 45., 68., 69., 100.};
-const Double_t centBinsMultRef[] = {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
+//const Double_t centBinsMultV0M[] =   {0., 1., 5., 10., 20., 30., 40., 60., 80., 100.};
+const Double_t centBinsMultV0M[] =       {0., 0.01, 0.05, 0.1, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100.};
+const Double_t centBinsMultV0M_Ridge[] = {0., 0.01, 0.1, 0.5, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100.};
+//const Double_t centBinsMultV0M_Ridge[] = {0., 0.001, 0.01, 0.1, 0.5, 1., 5., 10., 15., 20., 30., 40., 50., 70., 100};
+const Double_t centBinsMultRef[] = {0., 1., 5., 10., 15., 20., 30., 40., 50., 70., 100.};
 const Double_t centBinsMB[] = {0., 100.};
 
 
@@ -56,7 +56,7 @@ float  dtht        = 0.025,       // dtheta .... (if negative, abs will be used 
   Bool_t ridgeBins      = kFALSE,             // VOM percentiles with ridge binning
   Bool_t useBCmod      = kFALSE,              // set Bunch crossing mode 4
   Int_t BCmod4      = 2,              // set Bunch crossing mode 4
-  Bool_t phicuts      = kFALSE,       // set cut on affected phi regions
+  const char* phicuts      = "phi0",       // set cut on affected phi regions
 Float_t mcscale = 1.0,                // set mc scale for V0 amplitude
 Bool_t mcCalib      = kTRUE,       // set cut on affected phi regions
 TString calibfile = "./V0M_bins_LHC15g3a3.root"
@@ -160,9 +160,14 @@ TString calibfile = "./V0M_bins_LHC15g3a3.root"
     centBins = centBinsMultV0M;
     nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
   }
-
-
-
+  else if (strCentr == "SPDTracklets" && ridgeBins){
+    centBins = centBinsMultV0M_Ridge;
+    nCentBins = sizeof(centBinsMultV0M_Ridge) / 8 - 1;
+  }
+  else if(strCentr == "SPDTracklets"){
+    centBins = centBinsMultV0M;
+    nCentBins = sizeof(centBinsMultV0M) / 8 - 1;
+  }
 
   task->SetCentPercentiles(centBins, nCentBins);
   task->SetTriggerSelection(trigSel);

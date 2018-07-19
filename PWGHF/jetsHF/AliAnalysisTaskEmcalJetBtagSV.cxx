@@ -1077,9 +1077,7 @@ Double_t AliAnalysisTaskEmcalJetBtagSV::GetDeltaPtRandomCone(Double_t jetradius,
 			if (dist < jetradius) conePt += trk->Pt();
 		}
 	} // track loop
-		
-	if (conePt > ptcut) // sanity check: at least one track found
-	  return conePt - jetradius*jetradius*TMath::Pi() * rhovalue;
-	else 
-	  return -999;
+
+  return conePt - jetradius*jetradius*TMath::Pi() * rhovalue;
+
 }

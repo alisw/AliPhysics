@@ -852,14 +852,20 @@ Bool_t AliPrimaryPionCuts::SetTPCClusterCut(Int_t clsTPCCut){
 			fUseCorrectedTPCClsInfo=1;
 			break;
         case 10:
-             fMinClsTPC     = 80.;
-             fChi2PerClsTPC = 4;
-             fRequireTPCRefit    = kTRUE;
-             fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
-             // Other Cuts concerning TPC
-             fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
-             fEsdTrackCuts->SetRequireTPCRefit(fRequireTPCRefit);
-        break;
+            fMinClsTPC     = 80.;
+            fChi2PerClsTPC = 4;
+            fRequireTPCRefit    = kTRUE;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            // Other Cuts concerning TPC
+            fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
+            fEsdTrackCuts->SetRequireTPCRefit(fRequireTPCRefit);
+            break;
+        case 11: // settings as in PHOS public omega
+            fMinClsTPC     = 70.;
+            fChi2PerClsTPC = 4;
+            fEsdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
+            fEsdTrackCuts->SetMaxChi2PerClusterTPC(fChi2PerClsTPC);
+            break;
 
 		default:
 			cout<<"Warning: clsTPCCut not defined "<<clsTPCCut<<endl;
@@ -930,6 +936,9 @@ Bool_t AliPrimaryPionCuts::SetPtCut(Int_t ptCut){
 		case 3: // 0.15 GeV
 			fPtCut	= 0.15;
 			break;
+        case 4: // 0.40 GeV
+            fPtCut  = 0.40;
+            break;
 		default:
 			cout<<"Warning: PtCut not defined "<<ptCut<<endl;
 			return kFALSE;
@@ -968,6 +977,11 @@ Bool_t AliPrimaryPionCuts::SetDCACut(Int_t dcaCut)
             fEsdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
             fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
             fEsdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
+            break;
+        case 4:
+            fEsdTrackCuts->SetMaxDCAToVertexZ(3.);
+            fEsdTrackCuts->SetMaxDCAToVertexXY(0.5);
+            fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
             break;
 		default:
 			cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;
@@ -1059,6 +1073,10 @@ Bool_t AliPrimaryPionCuts::SetMassCut(Int_t massCut){
             fDoMassCut = kTRUE;
             fMassCut = 0.7;
             break;
+        case 8: // cut at 0.85 GeV/c^2
+             fDoMassCut = kTRUE;
+             fMassCut = 0.85;
+             break;
 		default:
 			cout<<"Warning: MassCut not defined "<<massCut<<endl;
 		return kFALSE;

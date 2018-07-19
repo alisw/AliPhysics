@@ -52,6 +52,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 	else if (configuration == AliCFTaskVertexingHF::kCheetah){
 		printf("The configuration is set to be FAST --> using only pt, y, ct, phi, zvtx, centrality, fake, multiplicity to fill the CF\n");
 	}
+	else if (configuration == AliCFTaskVertexingHF::kFalcon){
+		printf("The configuration is set to be FAST --> using only pt, y, centrality, multiplicity to fill the CF\n");
+	}
 	else{
 		printf("The configuration is not defined! returning\n");
 		return;
@@ -459,6 +462,37 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngDs(TString suffixName="", Int_t 
 		container -> SetVarTitle(icentFast, "centrality");
 		container -> SetVarTitle(ifakeFast, "fake");
 		container -> SetVarTitle(imultFast, "multiplicity");
+	}
+	else if (configuration == AliCFTaskVertexingHF::kFalcon){
+		//arrays for the number of bins in each dimension
+		const Int_t nvar = 4;
+
+		const UInt_t ipTSuperFast = 0;
+		const UInt_t iySuperFast = 1;
+		const UInt_t icentSuperFast = 2;
+		const UInt_t imultSuperFast = 3;
+
+		Int_t iBinSuperFast[nvar];
+		iBinSuperFast[ipTSuperFast] = iBin[ipT];
+		iBinSuperFast[iySuperFast] = iBin[iy];
+		iBinSuperFast[icentSuperFast] = iBin[icent];
+		iBinSuperFast[imultSuperFast] = iBin[imult];
+
+		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinSuperFast);
+		printf("pt\n");
+		container -> SetBinLimits(ipTSuperFast,binLimpT);
+		printf("y\n");
+		container -> SetBinLimits(iySuperFast,binLimy);
+		printf("centrality\n");
+		container -> SetBinLimits(icentSuperFast,binLimcent);
+		printf("multiplicity\n");
+        if(isFineNtrkBin) container -> SetBinLimits(imultSuperFast,binLimmultFine);
+        else container -> SetBinLimits(imultSuperFast,binLimmult);
+
+		container -> SetVarTitle(ipTSuperFast,"pt");
+		container -> SetVarTitle(iySuperFast,"y");
+		container -> SetVarTitle(icentSuperFast, "centrality");
+		container -> SetVarTitle(imultSuperFast, "multiplicity");
 	}
 
 	//return container;

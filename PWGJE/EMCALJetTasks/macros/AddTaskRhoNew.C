@@ -80,7 +80,7 @@ AliAnalysisTaskRho* AddTaskRhoNew(
     name += suffix;
   }
 
-  AliAnalysisTaskRho* mgrTask = mgr->GetTask(name.Data());
+  AliAnalysisTaskRho* mgrTask = (AliAnalysisTaskRho*)(mgr->GetTask(name.Data()));
   if (mgrTask) return mgrTask;
 
   AliAnalysisTaskRho *rhotask = new AliAnalysisTaskRho(name, histo);

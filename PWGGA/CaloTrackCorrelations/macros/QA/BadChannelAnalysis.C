@@ -90,7 +90,43 @@
 #endif
 using namespace std;
 
-void Draw2(Int_t cell, Int_t cellref=400) {
+void Draw2(Int_t cell, Int_t cellref=400);
+
+void Draw(Int_t cell[], Int_t iBC, Int_t nBC,TString datapath="/scratch/alicehp2/germain/QANew2/", 
+          TString period="LHC15f", TString pass="pass2", Int_t trial=0,const Int_t cellref=2377);
+
+void Convert(TString datapath= "/scratch/alicehp2/germain/QANew2",TString fCalorimeter = "EMCAL", 
+             TString period = "LHC11h", TString pass = "pass1_HLT", TString trigger= "default");
+
+void Process(Int_t *pflag[23040][7], TH1* inhisto, Double_t Nsigma = 4., Int_t dnbins = 200, 
+             Double_t dmaxval = -1., Int_t compteur = 1);
+
+void TestCellEandN(Int_t *pflag[23040][7], Double_t Emin = 0.1, Double_t Emax=2., Double_t Nsigma = 4.,  
+                   Int_t compteur = 1, char const * hname = "hCellAmplitude", Int_t dnbins = 200);
+
+void TestCellShapes(Int_t *pflag[23040][7], Double_t fitEmin, Double_t fitEmax, Double_t Nsigma =4., 
+                    Int_t compteur= 1, char const * hname = "hCellAmplitude", Int_t dnbins = 1000);
+
+void ExcludeCells(Int_t *pexclu[23040]);
+
+void KillCells(Int_t filter[], Int_t nbc);
+
+void PeriodAnalysis(Int_t criterum=7, Double_t Nsigma = 4.0, Double_t Emin=0.1, 
+                    Double_t Emax=2.0, Int_t compteur = 1, 
+                    TString datapath="/scratch/alicehp2/germain/QANew2",
+                    TString period = "LHC15f", TString pass = "pass2", Int_t trial=0, TString file ="none");
+
+void BCAnalysis(TString file, TString datapath="scratch/alicehp2/germain/QANew2",
+                TString trigger = "default",TString period = "LHC15f", 
+                TString pass = "pass2",Int_t trial = 0);
+
+void BadChannelAnalysis(TString datapath= "/scratch/alicehp2,germain/QANew2",
+                        TString fCalorimeter = "EMCAL", TString period = "LHC15f", 
+                        TString pass = "pass2", TString trigger= "default",Int_t trial=0);
+
+
+void Draw2(Int_t cell, Int_t cellref) 
+{
   gROOT->SetStyle("Plain");
   gStyle->SetOptStat(0); 
   gStyle->SetFillColor(kWhite);
@@ -135,7 +171,9 @@ void Draw2(Int_t cell, Int_t cellref=400) {
   
 }
 
-void Draw(Int_t cell[], Int_t iBC, Int_t nBC,TString datapath="/scratch/alicehp2/germain/QANew2/", TString period="LHC15f", TString pass="pass2", Int_t trial=0,const Int_t cellref=2377){
+void Draw(Int_t cell[], Int_t iBC, Int_t nBC,TString datapath, TString period, 
+          TString pass, Int_t trial,const Int_t cellref)
+{
   //Allow to produce a pdf file with badcells candidates (red) compared to a refence cell (black)
 
   gROOT->SetStyle("Plain");
@@ -213,8 +251,9 @@ void Draw(Int_t cell[], Int_t iBC, Int_t nBC,TString datapath="/scratch/alicehp2
 //_________________________________________________________________________
 //_________________________________________________________________________
 
-void Convert(TString datapath= "/scratch/alicehp2/germain/QANew2",TString fCalorimeter = "EMCAL", TString period = "LHC11h", TString pass = "pass1_HLT", TString trigger= "default"){
-
+void Convert(TString datapath,TString fCalorimeter, TString period, TString pass, 
+             TString trigger)
+{
   //Create one file for the analysis from several outputs QA files listed in runlist.txt
   //You need :
   // runlist.txt with runs listed
@@ -341,7 +380,8 @@ cout << " file = " << file << endl;;
 //_________________________________________________________________________
 //_________________________________________________________________________
 
-void Process(Int_t *pflag[23040][7], TH1* inhisto, Double_t Nsigma = 4., Int_t dnbins = 200, Double_t dmaxval = -1., Int_t compteur = 1)
+void Process(Int_t *pflag[23040][7], TH1* inhisto, Double_t Nsigma, 
+             Int_t dnbins, Double_t dmaxval, Int_t compteur)
 {
   //  1) create a distribution for the input histogram;
   //  2) fit the distribution with a gaussian
@@ -474,10 +514,9 @@ void Process(Int_t *pflag[23040][7], TH1* inhisto, Double_t Nsigma = 4., Int_t d
 //_________________________________________________________________________
 //_________________________________________________________________________
 
-void TestCellEandN(Int_t *pflag[23040][7], Double_t Emin = 0.1, Double_t Emax=2., Double_t Nsigma = 4.,  Int_t compteur = 1, char const * hname = "hCellAmplitude", Int_t dnbins = 200)
+void TestCellEandN(Int_t *pflag[23040][7], Double_t Emin, Double_t Emax,
+                   Double_t Nsigma,  Int_t compteur, char const * hname, Int_t dnbins)
 {
-
-
   // Three more tests for bad  cells:
   //  1) total deposited energy;
   //  2) total number of entries;
@@ -555,7 +594,8 @@ void TestCellEandN(Int_t *pflag[23040][7], Double_t Emin = 0.1, Double_t Emax=2.
 //_________________________________________________________________________
 //_________________________________________________________________________
 
-void TestCellShapes(Int_t *pflag[23040][7], Double_t fitEmin, Double_t fitEmax, Double_t Nsigma =4., Int_t compteur= 1, char const * hname = "hCellAmplitude", Int_t dnbins = 1000)
+void TestCellShapes(Int_t *pflag[23040][7], Double_t fitEmin, Double_t fitEmax, 
+                    Double_t Nsigma, Int_t compteur, char const * hname, Int_t dnbins)
 {
   // Test cells shape using fit function f(x)=A*exp(-B*x)/x^2.
   // Produce values per cell + distributions for A,B and chi2/ndf parameters.
@@ -693,7 +733,8 @@ void TestCellShapes(Int_t *pflag[23040][7], Double_t fitEmin, Double_t fitEmax, 
 //_________________________________________________________________________
 //_________________________________________________________________________
 
-void ExcludeCells(Int_t *pexclu[23040]) {
+void ExcludeCells(Int_t *pexclu[23040]) 
+{
   //find the cell with 0 entrie for excluding
   TH2 *hCellAmplitude = (TH2*) gFile->Get("hCellAmplitude");
 
@@ -717,7 +758,8 @@ void ExcludeCells(Int_t *pexclu[23040]) {
 //_________________________________________________________________________
 //_________________________________________________________________________
 
-void KillCells(Int_t filter[], Int_t nbc) {
+void KillCells(Int_t filter[], Int_t nbc)
+{
   // kill a cell : put it to 0 entrie
  TH2 *hCellAmplitude = (TH2*) gFile->Get("hCellAmplitude");
 
@@ -738,8 +780,10 @@ void KillCells(Int_t filter[], Int_t nbc) {
 //_________________________________________________________________________
 //_________________________________________________________________________
 
-void PeriodAnalysis(Int_t criterum=7, Double_t Nsigma = 4.0, Double_t Emin=0.1, Double_t Emax=2.0, Int_t compteur = 1, TString datapath="/scratch/alicehp2/germain/QANew2",TString period = "LHC15f", TString pass = "pass2", Int_t trial=0, TString file ="none"){
-  
+void PeriodAnalysis(Int_t criterum, Double_t Nsigma, Double_t Emin, Double_t Emax, 
+                    Int_t compteur, TString datapath,TString period, TString pass, 
+                    Int_t trial, TString file)
+{  
   // what it does in function of criterum value
 
   // 1 : average E for E>Emin
@@ -881,8 +925,9 @@ void PeriodAnalysis(Int_t criterum=7, Double_t Nsigma = 4.0, Double_t Emin=0.1, 
 //_________________________________________________________________________
 //_________________________________________________________________________
 
-  void BCAnalysis(TString file, TString datapath="scratch/alicehp2/germain/QANew2",TString trigger = "default",TString period = "LHC15f", TString pass = "pass2",Int_t trial = 0){
-
+  void BCAnalysis(TString file, TString datapath,TString trigger,TString period, 
+                  TString pass,Int_t trial)
+{
   //Configure a complete analysis with different criteria, it provides bad+dead cells lists
   //You can manage criteria used and their order, the first criteria will use the original output file from AliAnalysisTaskCaloCellsQA task, then after each criteria it will use a filtered file without the badchannel previously identified
 
@@ -898,7 +943,6 @@ void PeriodAnalysis(Int_t criterum=7, Double_t Nsigma = 4.0, Double_t Emin=0.1, 
 
     //if(trigger=="default"){
  if(trigger=="default"||trigger=="INT7"||trigger=="DMC7"||trigger=="AnyINTnoBC"){
-
 
     TFile::Open(file);
     PeriodAnalysis(2, 4., 0.2, 0.5,1,datapath,period,pass,trial); // nb ent emin emax
@@ -962,11 +1006,13 @@ void PeriodAnalysis(Int_t criterum=7, Double_t Nsigma = 4.0, Double_t Emin=0.1, 
 //_________________________________________________________________________
 //________________________________________________________________________
 
-void BadChannelAnalysis(TString datapath= "/scratch/alicehp2,germain/QANew2",TString fCalorimeter = "EMCAL", TString period = "LHC15f", TString pass = "pass2", TString trigger= "default",Int_t trial=0){
+void BadChannelAnalysis(TString datapath,TString /*fCalorimeter*/, TString period, 
+                        TString pass, TString trigger,Int_t trial)
+{
   //Convert(datapath,fCalorimeter, period, pass, trigger);
   //   TString inputfile(Form( "/scratch/alicehp2/germain/QANew2/%s/%s/%s%sRunlist0New.root",period.Data(),pass.Data(),period.Data(),pass.Data(),trigger.Data()));
 
-     TString inputfile(Form( "%s/%s/%s/%s%sRunlist1New.root",datapath.Data(),period.Data(),pass.Data(),period.Data(),pass.Data(),trigger.Data()));
+     TString inputfile(Form( "%s/%s/%s/%s%sRunlist1New.root",datapath.Data(),period.Data(),pass.Data(),period.Data(),trigger.Data()));
 
      BCAnalysis(inputfile,datapath,trigger,period,pass,trial);
 }

@@ -14,6 +14,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            TString PathToJetProbabilityInput = "alien:///alice/cern.ch/user/l/lfeldkam/dummy_ResFct_XYSignificance_pp7TeV.root",
                                            Bool_t GenerateMeanSigmaCorrectionTable=kTRUE,
                                            Int_t nITSReq=6,
+                                           Bool_t useCorrelationTree=kFALSE,
                                            const char* suffix = ""
                                            )
 {
@@ -70,6 +71,7 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     TString name(taskname),combinedName;
     combinedName.Form("%s%s", name.Data(),suffix);
     AliAnalysisTaskHFJetIPQA* jetTask = new AliAnalysisTaskHFJetIPQA(combinedName);
+    if(useCorrelationTree) jetTask->useTreeForCorrelations(kTRUE);
     if(isMC && filecorrectionfactors){
         TH1F * h[20] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
         const char * nampart[20] = {"pi0","eta","etap","rho","phi","omega","k0s","lambda","pi","kaon","proton","D0","Dp","Dsp","Ds","lambdac","bplus","b0","lambdab","bsp"};
@@ -110,8 +112,12 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     }
     //==============================================================================
     TH1::AddDirectory(0);
-    if( PathToJetProbabilityInput.EqualTo("") ) {
-    } else {
+    if( PathToJetProbabilityInput.EqualTo("") ) 
+    {
+
+    } 
+    else 
+    {
         jetTask->SetResFunctionPID(PathToJetProbabilityInput.Data());
     }
     // Set Monte Carlo / Data status
@@ -152,14 +158,13 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
     TString contname(combinedName);
     contname += "_histos";
- 
+    TString contnamecorr(combinedName);
+    contnamecorr += "_correlations";
 
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                               TList::Class(),AliAnalysisManager::kOutputContainer,
                                                               Form("%s", AliAnalysisManager::GetCommonFileName()));
- 
 
-    
     mgr->ConnectInput  (jetTask, 0,  cinput1 );
     mgr->ConnectOutput (jetTask, 1, coutput1 );
 

@@ -26,7 +26,6 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     void SetTenderFlag(Bool_t tender) {fUsePHOSTender = tender;}
     void SetMCFlag(Bool_t mc) {fIsMC = mc;}
     void SetBunchSpace(Double_t bs) {fBunchSpace = bs;}
-    void SetMinimumDistanceFromBC(Double_t dist) {fMinDistBC = dist;}
 
     void SetPHOSBadMap(Int_t mod,TH2I *h)
     {
@@ -34,7 +33,6 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
       fPHOSBadMap[mod] = new TH2I(*h);
       AliInfo(Form("Setting Bad Map Histogram  %s",fPHOSBadMap[mod]->GetName()));
     }
-    TString GetObjectArrayName() {return fObjectArrayName;}
 
     void SetUserDefinedNonlinearity(TF1 *f1nonlin) {fUserNonLinCorr = f1nonlin;}
     void ExcludeM4(Bool_t flag) {fIsM4Excluded = flag;}
@@ -54,7 +52,6 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     Double_t CoreEnergy(AliVCluster *clu);
     Int_t FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge);
     void DistanceToBadChannel(Int_t mod, TVector3 * locPos, Double_t &minDist) ;
-    //Int_t FindHighestAmplitudeCellAbsId(AliVCluster *clu, AliVCaloCells *cells);
     Int_t FindPrimary(AliCaloPhoton *ph,  Bool_t&sure);
 
     void EstimateSTDCutEfficiency(TClonesArray *array);
@@ -77,18 +74,15 @@ class AliAnalysisTaskPHOSObjectCreator : public AliAnalysisTaskSE {
     Bool_t fUsePHOSTender;
     Bool_t fIsMC;
     Double_t fBunchSpace;
-    Double_t fMinDistBC;
-    TString fObjectArrayName;
     AliStack *fMCArrayESD;
     TClonesArray *fMCArrayAOD;
     Bool_t fIsM4Excluded;
-
 
   private:
     AliAnalysisTaskPHOSObjectCreator(const AliAnalysisTaskPHOSObjectCreator&);
     AliAnalysisTaskPHOSObjectCreator& operator=(const AliAnalysisTaskPHOSObjectCreator&);
 
-    ClassDef(AliAnalysisTaskPHOSObjectCreator, 11);
+    ClassDef(AliAnalysisTaskPHOSObjectCreator, 16);
 };
 
 #endif

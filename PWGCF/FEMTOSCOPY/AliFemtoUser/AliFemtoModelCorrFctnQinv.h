@@ -30,30 +30,27 @@ class TH2F;
 class AliFemtoModelCorrFctnQinv : public AliFemtoModelCorrFctn {
 public:
 
-  /**
-   * Default constructor
-   *
-   * Histograms are created with default titles/ranges. No other members are
-   * initialized - user **MUST** set pair type and PDG codes.
-   */
+  /// Default constructor
+  ///
+  /// Histograms are created with default titles/ranges. No other members are
+  /// initialized - user **MUST** set pair type and PDG codes.
+  ///
   AliFemtoModelCorrFctnQinv();
 
-  /**
-   * Construct with histogram parameters
-   *
-   * KStar histograms use these parameters when constructing histograms. No
-   * other memebers are set - user **MUST** set pair type and PDG codes.
-   */
+  /// Construct with histogram parameters
+  ///
+  /// KStar histograms use these parameters when constructing histograms. No
+  /// other memebers are set - user **MUST** set pair type and PDG codes.
+  ///
   AliFemtoModelCorrFctnQinv(const char *suffix,
                             const Int_t aNbins,
                             const Float_t aQinvLo,
                             const Float_t aQinvHi);
 
-  /**
-   * Copy Constructor
-   *
-   * Copies pair type & PDG codes. Clones histograms.
-   */
+  /// Copy Constructor
+  ///
+  /// Copies pair type & PDG codes. Clones histograms.
+  ///
   AliFemtoModelCorrFctnQinv(const AliFemtoModelCorrFctnQinv &);
 
   /// Return a pointer to a clone of this correlation function.
@@ -62,7 +59,7 @@ public:
   /// all stored data.
   /// No pointers are shared between this object and the clone.
   ///
-  virtual AliFemtoModelCorrFctnQinv* Clone() const;
+  virtual AliFemtoModelCorrFctn* Clone() const;
 
 
   /// Destructor

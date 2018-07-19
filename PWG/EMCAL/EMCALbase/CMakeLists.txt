@@ -27,23 +27,33 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
   )
 
 # Sources - alphabetical order
 set(SRCS
+  AliEMCALRecoUtils.cxx
   AliAnalysisTaskEmcal.cxx
   AliAnalysisTaskEmcalLight.cxx
   AliClusterContainer.cxx
   AliEmcalContainer.cxx
   AliEmcalContainerUtils.cxx
   AliEmcalDownscaleFactorsOCDB.cxx
+  AliEmcalCutBase.cxx
+  AliEmcalVCutsWrapper.cxx
   AliEmcalAODFilterBitCuts.cxx
+  AliEmcalAODHybridTrackCuts.cxx
+  AliEmcalAODTPCOnlyTrackCuts.cxx
   AliEmcalContainerUtils.cxx
   AliEmcalESDTrackCutsGenerator.cxx
+  AliEmcalESDHybridTrackCuts.cxx
+  AliEmcalESDtrackCutsWrapper.cxx
   AliEmcalParticle.cxx
   AliEmcalPhysicsSelection.cxx
   AliEmcalPythiaInfo.cxx
   AliEmcalTrackSelResultPtr.cxx
+  AliEmcalTrackSelResultCombined.cxx
+  AliEmcalTrackSelResultHybrid.cxx
   AliEmcalTrackSelection.cxx
   AliEmcalTrackSelectionESD.cxx
   AliEmcalTrackSelectionAOD.cxx
@@ -96,3 +106,27 @@ install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
+
+# Unit tests
+
+add_test(func_PWGEMCALbase_AliEmcalTrackSelResultPtr
+    env
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    ROOT_HIST=0
+    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalTrackSelResultPtr.C)")
+
+add_test(func_PWGEMCALbase_AliEmcalAODHybridTrackCuts
+    env
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    ROOT_HIST=0
+    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalAODHybridTrackCuts.C)")
+
+add_test(func_PWGEMCALbase_AliEmcalTrackSelectionAOD
+    env
+    LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}
+    DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{DYLD_LIBRARY_PATH}
+    ROOT_HIST=0
+    root -n -l -b -q "${CMAKE_INSTALL_PREFIX}/PWG/EMCAL/macros/TestAliEmcalTrackSelectionAOD.C)")
+    

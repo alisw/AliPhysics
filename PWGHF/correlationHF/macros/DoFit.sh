@@ -1,6 +1,6 @@
 #!/bin/bash
 
-declare macroPP="${HFCJlocalCodeDir}/FitSystematicsAverage_pp.C"
+declare macroPP="${HFCJlocalCodeDir}/FitSystematicsAverage_pp13TeV.C"
 declare macroPPb="${HFCJlocalCodeDir}/FitSystematicsAverage_pPb.C"
 declare macroPPb2016="${HFCJlocalCodeDir}/FitSystematicsAverage_pPb2016.C"
 declare -i system=$1
@@ -11,6 +11,7 @@ declare outputdir=$5
 declare avstring="Weighted"
 declare -i includev2=$6
 declare saveawayside=$7
+declare doNewPedestalVars=$8
 declare -i plotv2sep=1
 declare -i v2had=8
 declare -i v2D=5
@@ -26,6 +27,10 @@ declare -i v2D3to5=5
 declare -i v2D5to8=3
 declare -i v2D8to16=2
 declare -i v2D16to24=2
+
+if [ ${doNewPedestalVars} = 0 ]; then
+    macroPP="${HFCJlocalCodeDir}/FitSystematicsAverage_pp.C"
+fi
 
 if [ ${avopt} = 1 ]; then
     avstring="Arithmetic"

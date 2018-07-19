@@ -26,9 +26,14 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
                                                          Bool_t UseGlobalTracksForHadrons = kTRUE,
                                                          Int_t CentralityEstimator = 0,
                                                          TString HadronEfficiencyFile = "alien:///alice/cern.ch/user/h/hzanoli/Efficiency/Hadron_Tracking.root",
-                                                         TString BackgroundWFile = "alien:///alice/cern.ch/user/h/hzanoli/BackgroundW/BackgroundW.root",
+                                                         TString ElectronEfficiencyFile = "",
                                                          TString BackgroundWFileToData = "alien:///alice/cern.ch/user/h/hzanoli/BackgroundW/BackgroundWToData.root",
-                                                         TString Sufix = ""
+                                                         TString Sufix = "",
+                                                         Float_t ZvtxMin  = -10.,
+                                                         Float_t ZvtxMax = 10.,
+                                                         Int_t ZvtxBinConfig = 0,
+                                                         Bool_t UseTOF = kTRUE,
+                                                         Int_t NBinsCentrality = 4
                                                          )
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -51,7 +56,43 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     taskName.Append(Form("%d_%d_%d_%d_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%1.2f_%d_%d_%d_%d_%d_%d_%d",pTBin, Correlation, ispp, isMC,   ElectronDCAxy,ElectronDCAz,HadronDCAxy,HadronDCAz,TPCPIDLow,TPCPIDUp,InvariantMassCut,pTCutPartner, MultiplicityLow, MultiplicityUp, HadronPtCutLow, HadronPtCutUp, EtaCutLow, EtaCutUp, NonHFEangleCut, NHitsITS, SPDLayers, TPCNCluster, TPCNClusterPartner, TPCNClusterPID,UseGlobalTracksForHadrons,CentralityEstimator));
     taskName += Sufix;
     
-    AliAnalysisTaskHFEpACorrelation *task = ConfigHFEpACorrelation(taskName, Correlation, ispp, isMC,   ElectronDCAxy,ElectronDCAz,HadronDCAxy,HadronDCAz,TPCPIDLow,TPCPIDUp,InvariantMassCut,pTCutPartner, MultiplicityLow, MultiplicityUp, HadronPtCutLow, HadronPtCutUp, EtaCutLow, EtaCutUp, NonHFEangleCut, NHitsITS, SPDLayers, TPCNCluster, TPCNClusterPartner, TPCNClusterPID,UseGlobalTracksForHadrons,CentralityEstimator);
+    AliAnalysisTaskHFEpACorrelation *task = ConfigHFEpACorrelation(taskName, Correlation, ispp, isMC,   ElectronDCAxy,ElectronDCAz,HadronDCAxy,HadronDCAz,TPCPIDLow,TPCPIDUp,InvariantMassCut,pTCutPartner, MultiplicityLow, MultiplicityUp, HadronPtCutLow, HadronPtCutUp, EtaCutLow, EtaCutUp, NonHFEangleCut, NHitsITS, SPDLayers, TPCNCluster, TPCNClusterPartner, TPCNClusterPID,UseGlobalTracksForHadrons,CentralityEstimator,UseTOF);
+    
+    
+    Double_t vertexBins0[] = {-10, -5.3, -2.6, -0.5, 1.5, 3.5, 5.7,10.01};
+    Double_t vertexBins1[] = {-10, -5, -3, -1, 1, 3, 5, 10.01};
+    Double_t vertexBins2[] = {-10, -6, -2.2, -1, 0.8, 2.7, 5.2,10.01};
+    Double_t vertexBins3[] = {-10, -4, -1.0,0.7, 1.9, 3.7, 6.2,10.01};
+    Double_t vertexBins4[] = {-10, -5.5, -3.0,-0.9, 1.2, 2.9, 5.9,10.01};
+    
+    switch (ZvtxBinConfig) {
+        case 1:
+            task->SetZvtxBins(8,vertexBins1);
+            break;
+        case 2:
+            task->SetZvtxBins(8,vertexBins2);
+            break;
+        case 3:
+            task->SetZvtxBins(8,vertexBins3);
+            break;
+        case 4:
+            task->SetZvtxBins(8,vertexBins4);
+            break;
+            
+        default:
+            task->SetZvtxBins(8,vertexBins0);
+            break;
+    }
+    
+    TArrayD CentralityArray(NBinsCentrality+1);
+    
+    for (Int_t i = 0; i <= NBinsCentrality; i++)
+    {
+        CentralityArray.SetAt(MultiplicityLow + (Double_t)i*(MultiplicityUp-MultiplicityLow)/NBinsCentrality, i);
+    }
+    
+    task->SetCentralityBins(NBinsCentrality+1,CentralityArray.GetArray());
+
     
     //_______________________
     //Trigger
@@ -64,7 +105,7 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
     if(pTBin ==0)
     {
         Float_t pTBinsCorrelation[] = {0.5,0.75,1.0,1.25,1.5,2,2.5,3,4,6};
-        task->SetpTBins(11,pTBinsCorrelation);
+        task->SetpTBins(10,pTBinsCorrelation);
     }
     else if (pTBin ==1)
     {
@@ -84,6 +125,8 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
         task->SetpTBins(16,pTBinsCorrelation);
     }
     
+    task->SetZVtxCut(ZvtxMin,ZvtxMax);
+
     
     if(Correlation)
     {
@@ -96,29 +139,22 @@ AliAnalysisTaskHFEpACorrelation *AddTaskHFEpACorrelation(
             printf("=!=!=!=!=!=!=!=! No Hadron Correction =!=!=!=!=!=!=!=!\n");
             printf("=!=!=!=!=!=!=!=! Correlation will be useless =!=!=!=!=!=!=!=!\n");
         }
+        
+        TFile *ElectronEffFile_f =  TFile::Open(ElectronEfficiencyFile.Data());
+        if (ElectronEffFile_f)
+        {
+            
+            TH3F* test = (TH3F*) ElectronEffFile_f->Get("EffE");
+            if (test)
+                task->SetEfficiencyElectron(test);
+        }
+
+        
+        
     }
     
     if (isMC)
     {
-        TFile *fileBkgW= TFile::Open(BackgroundWFile.Data());
-        if (fileBkgW)
-        {
-            TH1F *Pi0 = (TH1F*) fileBkgW->Get("Pi0W");
-            TH1F *Eta = (TH1F*) fileBkgW->Get("EtaW");
-            
-            if (Pi0)
-                task->SetBackgroundPi0Weight(Pi0);
-            else
-                printf("MC analysis with no pi0 weight hijing\n");
-            
-            if (Eta)
-                task->SetBackgroundEtaWeight(Eta);
-            else
-                printf("MC analysis with no Eta weight hijing \n");
-            
-        }
-        else
-            printf("Background weight to Hijing not available\n");
         
         TFile *fileBkgWToData= TFile::Open(BackgroundWFileToData.Data());
         

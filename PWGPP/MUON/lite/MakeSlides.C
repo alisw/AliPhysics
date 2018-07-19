@@ -493,8 +493,8 @@ void MakePreamble ( ofstream &outFile )
   outFile << "\\setbeamercolor*{author in head/foot}{parent=palette tertiary}" << endl;
   outFile << "\\setbeamercolor*{title in head/foot}{parent=palette secondary}" << endl;
   outFile << "\\setbeamercolor*{date in head/foot}{parent=palette primary}" << endl;
-  outFile << "\\setbeamercolor*{section in head/foot}{parent=palette tertiary}" << endl;
-  outFile << "\\setbeamercolor*{subsection in head/foot}{parent=palette primary}" << endl;
+  // outFile << "\\setbeamercolor*{section in head/foot}{parent=palette tertiary}" << endl;
+  // outFile << "\\setbeamercolor*{subsection in head/foot}{parent=palette primary}" << endl;
   outFile << "\\newcommand{\\changeFootline}[1]{" << endl;
   outFile << " \\setbeamertemplate{footline}{" << endl;
   outFile << "  \\hbox{%" << endl;
@@ -562,11 +562,9 @@ void BeginSlides ( TString period, TString pass, TString authors, ofstream &outF
   outFile << "\\setlength{\\TPHorizModule}{1bp}" << endl;
   outFile << "\\setlength{\\TPVertModule}{1bp}" << endl;
   outFile << "\\textblockorigin{0bp}{0bp}" << endl;
-  outFile << endl;
-  outFile << "\\graphicspath{{images/}}" << endl;
 
   outFile << endl;
-  outFile << "\\begin{frame}" << endl;
+  outFile << "\\begin{frame}[plain]" << endl;
   outFile << " \\titlepage" << endl;
   outFile << "\\end{frame}" << endl;
 }
@@ -583,23 +581,14 @@ void EndSlides ( ofstream &outFile )
 void StartAppendix ( ofstream &outFile )
 {
   if ( ! outFile.is_open() ) return;
-  outFile << endl;
-  outFile << endl;
-  outFile << "\\AtBeginSection[] % Do nothing for \\section*" << endl;
-  outFile << "{" << endl;
-  outFile << "  \\begin{frame}<beamer>" << endl;
-  outFile << "   \\begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}" << endl;
-  outFile << "   \\usebeamerfont{title}\\insertsectionhead" << endl;
-  outFile << "   \\end{beamercolorbox}" << endl;
-  outFile << "  \\end{frame}" << endl;
-  outFile << "}" << endl;
-  outFile << endl;
   outFile << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   outFile << "\\appendix" << endl;
   outFile << "\\renewcommand{\\theframenumber}{A.\\arabic{framenumber}}" << endl;
   outFile << "\\changeFootline{\\theframenumber}" << endl;
-  outFile << "\\hypersetup{hidelinks}" << endl;
-  outFile << "\\section{\\huge Backup slides}" << endl;
+  outFile << "\\begin{frame}[plain]" << endl;
+  outFile << "  \\title{Backup slides}\\author{}\\date{}\\institute{}\\subtitle{}" << endl;
+  outFile << "  \\titlepage" << endl;
+  outFile << "\\end{frame}" << endl;
 }
 
 //_________________________________
@@ -686,6 +675,7 @@ void MakeSlides ( TString period, TString pass, TString triggerList, TString aut
     trigList = triggerList.Tokenize(",");
 
     outFile.open(texFilename);
+    outFile << "% !TEX pdfSinglePage" << endl; // Useful for texshop
     outFile << "%TriggerList=" << triggerList.Data() << endl;
     MakePreamble(outFile);
     BeginSlides(period,pass,authors,outFile);

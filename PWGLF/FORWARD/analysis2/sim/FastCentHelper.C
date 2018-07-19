@@ -257,23 +257,25 @@ struct FastCentHelper
     // fCentStack = new THStack("stack", "Stack of all dN_{ch}/d#eta");
     fCentList  = new TList;
     fCentList->SetName("byCent");
-    for (Int_t i = 1; i <= fCentAxis->GetNbins(); i++) {
-      Double_t low  = fCentAxis->GetBinLowEdge(i);
-      Double_t high = fCentAxis->GetBinUpEdge(i);
-      Printf("Calling call-back for %5.1f-%5.1f%%", low, high);
-      TObject* obj  = (*callback)();
-      Printf("Got call back return %p", obj);
-      ModHist(obj, low, high);
-      Printf("Now adding %s (%s)to centrality list",
-	     obj->GetName(), obj->ClassName());
-      fCentList->Add(obj);
+    if (callback) {
+      for (Int_t i = 1; i <= fCentAxis->GetNbins(); i++) {
+	Double_t low  = fCentAxis->GetBinLowEdge(i);
+	Double_t high = fCentAxis->GetBinUpEdge(i);
+	Printf("Calling call-back for %5.1f-%5.1f%%", low, high);
+	TObject* obj  = (*callback)();
+	Printf("Got call back return %p", obj);
+	ModHist(obj, low, high);
+	Printf("Now adding %s (%s)to centrality list",
+	       obj->GetName(), obj->ClassName());
+	fCentList->Add(obj);
+      }
     }
     if (fCentMeth.BeginsWith("RefMult")) {
       // Create null-bin 
       TObject* first = (*callback)();
       ModHist(first, 0, 0);
       fCentList->AddFirst(first);
-
+      
       // Create overflow-bin
       TObject* last = (*callback)();
       ModHist(last, 100, 100);
@@ -568,6 +570,8 @@ struct FastCentHelper
 	 int(fCentAcc->GetEntries()), int(fCentAll->GetEntries()),
 	 100*fCentAcc->GetEntries()/fCentAll->GetEntries());
 
+    if (!callback) return true;
+    
     fMapping.Set(fCentAll->GetNbinsX()+1);
     fMapping.Reset(-1);
     THStack*  stack = new THStack("all", "All");
@@ -630,9 +634,9 @@ struct FastCentHelper
       bin++;
 #endif 
     }
+    output->Add(stack);
     Printf("ana/acc/all: %9lld/%9lld/%9lld [%6.2f%%/%6.2f%%]",
 	   sum, total, all, float(100*sum)/total, float(100*total)/all);
-    output->Add(stack);
     for (Int_t i = 1; i < fMapping.GetSize(); i++)
       Printf("  %3d -> %3d", i, fMapping[i]);
   }

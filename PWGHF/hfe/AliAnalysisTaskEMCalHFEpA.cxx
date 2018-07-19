@@ -90,23 +90,21 @@
 #include "AliVTrack.h"
 #include "AliEventPoolManager.h"
 #include "TObjArray.h"
-	//include to use reader as Lucile does
-#include "AliCaloTrackAODReader.h"
-#include "AliCaloTrackReader.h"
-#include "AliEMCALRecoUtils.h" //to remove exotics
+//include to use reader as Lucile does
+//#include "AliCaloTrackAODReader.h"
+//#include "AliCaloTrackReader.h"
+//#include "AliEMCALRecoUtils.h" //to remove exotics
 #include "AliAODHeader.h"
-#include "AliEMCALGeometry.h"
 
 #include "AliAnalysisUtils.h"
 
 
 
 	// --- ANALYSIS system ---
-#include "AliCalorimeterUtils.h"
+//#include "AliCalorimeterUtils.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
-	//#include "AliAODPWG4Particle.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliMixedEvent.h"
@@ -115,8 +113,8 @@
 #include "AliAnalysisManager.h"
 
 	// --- Detector ---
-#include "AliEMCALGeometry.h"
-#include "AliPHOSGeoUtils.h"
+//#include "AliEMCALGeometry.h"
+//#include "AliPHOSGeoUtils.h"
 
 	//______________________________________________________________________
 

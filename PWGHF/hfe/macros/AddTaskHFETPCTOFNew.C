@@ -20,7 +20,7 @@ AliAnalysisHFETPCTOFNew* AddTaskHFETPCTOFNew( ///-> to run locally
             Int_t 	isCharPion 			= 0,
             Float_t DCAxy,
             Float_t DCAz,
-            Bool_t 	isErf 			= kFALSE
+            Int_t HadCont 			= 0
             
 )           
 {
@@ -38,7 +38,7 @@ AliAnalysisHFETPCTOFNew* AddTaskHFETPCTOFNew( ///-> to run locally
 	}
 	
 	//_______________________
-    AliAnalysisHFETPCTOFNew *task = ConfigHFETPCTOF(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,Mass,MinPt,TpcNclus,EtaMin,EtaMax,isCharPion,DCAxy,DCAz,isErf);
+    AliAnalysisHFETPCTOFNew *task = ConfigHFETPCTOF(isMC,isAOD,isPP,tpcPIDmincut,tpcPIDmaxcut,tofPIDcut,MinNClustersTPC,MinNClustersTPCPID,MinRatioTPCclusters,MinNClustersITS,pixel,Mass,MinPt,TpcNclus,EtaMin,EtaMax,isCharPion,DCAxy,DCAz,HadCont);
     //_____________________________________________________
 	//Trigger
 		if(!isMC){
@@ -65,7 +65,7 @@ AliAnalysisHFETPCTOFNew* AddTaskHFETPCTOFNew( ///-> to run locally
 }
 
 
-AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t Mass, Float_t MinPt, Float_t TpcNclus, Float_t EtaMin, Float_t EtaMax, Int_t isCharPion, Float_t DCAxy, Float_t DCAz, Bool_t isErf)
+AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isPPc,Double_t tpcPIDmincut,Double_t tpcPIDmaxcut, Double_t tofPID, Int_t minNClustersTPC, Int_t minNClustersTPCPID, Float_t minRatioTPCclusters, Int_t  minNClustersITS, AliHFEextraCuts::ITSPixel_t pixel, Float_t Mass, Float_t MinPt, Float_t TpcNclus, Float_t EtaMin, Float_t EtaMax, Int_t isCharPion, Float_t DCAxy, Float_t DCAz, Int_t HadCont)
 {
     ///_______________________________________________________________________________________________________________
     ///Track selection: Cuts used to ensure a minimum quality level of the tracks selected to perform the analysis
@@ -118,27 +118,50 @@ AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isP
    
     //______________________________________
     ///Hadron Contamination function
-      
+    
+         
     ///Landau function
-    if(!isErf){
+    if(HadCont == 0){
 		TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]*TMath::Landau(x,[1],[2],0)", 0.5, 8);
-		hBackground->FixParameter(0, 6.30930e-02);
-		hBackground->FixParameter(1, 6.61437e+00);
-		hBackground->FixParameter(2, 1.67725e+00);
+		hBackground->FixParameter(0, 1.89864e-02);
+		hBackground->FixParameter(1, 4.82510e+00);
+		hBackground->FixParameter(2, 1.18288e+00);
 		//hBackground->Eval(0,0,0);
 		task->SetHadronFunction(hBackground);
 	} 
      
     ///Error function
-    if(isErf){
+    if(HadCont == 1){
 		TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]+[1]*TMath::Erf(([2]*x-[3]))", 0.5, 8);
-		hBackground->FixParameter(0, 1.01135e-02);
-		hBackground->FixParameter(1, 1.01144e-02);
-		hBackground->FixParameter(2, 7.55811e-01);
-		hBackground->FixParameter(3, 3.25378e+00);
+		hBackground->FixParameter(0, 9.99999e-01);
+		hBackground->FixParameter(1, 1.00000e+00);
+		hBackground->FixParameter(2, 4.51097e-01);
+		hBackground->FixParameter(3, 3.67968e+00);
 		//hBackground->Eval(0,0,0);
 		task->SetHadronFunction(hBackground);
 	}
+	
+	///Landau function fit up
+	if(HadCont == 2){
+		TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]*TMath::Landau(x,[1],[2],0)", 0.5, 8);
+		hBackground->FixParameter(0, 2.82262e-02);
+		hBackground->FixParameter(1, 5.03114e+00);
+		hBackground->FixParameter(2, 1.26631e+00);
+		//hBackground->Eval(0,0,0);
+		task->SetHadronFunction(hBackground);
+	}
+	
+	///Landau function fit down
+	if(HadCont == 3){
+		TF1 *hBackground = new TF1("hadronicBackgroundFunction","[0]*TMath::Landau(x,[1],[2],0)", 0.5, 8);
+		hBackground->FixParameter(0, 9.85918e-03);
+		hBackground->FixParameter(1, 4.37298e+00);
+		hBackground->FixParameter(2, 9.99751e-01);
+		//hBackground->Eval(0,0,0);
+		task->SetHadronFunction(hBackground);
+		//cout<<"HadCont = "<<HadCont<<endl;
+	}  
+	
     //______________________________________
     
     
@@ -147,6 +170,7 @@ AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isP
     
     ///Weights tilted up and down calculated using the charged pion systematic uncertainty
     ///................................................................................................................................................
+    /*
     if(isCharPion == 0){
 		///Good weights for d20a2_extra (data over MB), where data = charged pions and eta from Mt-scaling (using |eta| < 1.2 in MC for the weight calculation)
 		
@@ -203,10 +227,68 @@ AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isP
 		task->SetEtaWeight3(hetaw3);
 		///--------------------------------------------------------------
 		}
+		*/
 		
+		
+		if(isCharPion == 0){
+		///Good weights for d20a2_extra (data over MB), where data = charged pions and eta from Mt-scaling (using |y| < 0.8 in MC for the weight calculation)
+		
+		//cout<<"-----------reference--------------------"<<endl;
+		///Reference-----------------------------------------------------
+		TF1 *hpi0w1 = new TF1("hpi0w1","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 0.5,2.5);
+		hpi0w1->FixParameter(0,1.00835e+01);
+		hpi0w1->FixParameter(1,-8.79889e+00);
+		hpi0w1->FixParameter(2,7.13270e+00);
+		hpi0w1->FixParameter(3,3.30909e-02);
+		hpi0w1->FixParameter(4,4.14692e-01);
+		task->SetPi0Weight(hpi0w1);
+		
+		TF1 *hpi0w2 = new TF1("hpi0w2","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 2.5,6);
+		hpi0w2->FixParameter(0,1.07625e+00);
+		hpi0w2->FixParameter(1,-3.99293e+00);
+		hpi0w2->FixParameter(2,9.21251e-01);
+		hpi0w2->FixParameter(3,8.76327e-02);
+		hpi0w2->FixParameter(4,-1.00391e-01);
+		task->SetPi0Weight2(hpi0w2);
+		
+		TF1 *hpi0w3 = new TF1("hpi0w3","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 6,20);
+		hpi0w3->FixParameter(0,2.32912e+00);
+		hpi0w3->FixParameter(1,-7.09878e-01);
+		hpi0w3->FixParameter(2,8.37756e-02);
+		hpi0w3->FixParameter(3,1.87128e+00);
+		hpi0w3->FixParameter(4,1.88703e-01);
+		task->SetPi0Weight3(hpi0w3);
+		
+		
+		TF1 *hetaw1 = new TF1("hetaw1","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 0.5,2);
+		hetaw1->FixParameter(0,1.46145e+00);
+		hetaw1->FixParameter(1,-2.57763e+00);
+		hetaw1->FixParameter(2,4.48690e+00);
+		hetaw1->FixParameter(3,1.74529e+00);
+		hetaw1->FixParameter(4,2.83520e-01);
+		task->SetEtaWeight(hetaw1);
+		
+		
+		TF1 *hetaw2 = new TF1("hetaw2","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 2,6);
+		hetaw2->FixParameter(0,1.18725e+00);
+		hetaw2->FixParameter(1,-1.87279e+00);
+		hetaw2->FixParameter(2,6.36254e-01);
+		hetaw2->FixParameter(3,1.60257e+00);
+		hetaw2->FixParameter(4,-1.04365e-01);
+		task->SetEtaWeight2(hetaw2);
+		
+		TF1 *hetaw3 = new TF1("hetaw3","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 6,20);
+		hetaw3->FixParameter(0,1.36826e+00);
+		hetaw3->FixParameter(1,1.00818e+00);
+		hetaw3->FixParameter(2,3.23711e-01);
+		hetaw3->FixParameter(3,8.42844e-08);
+		hetaw3->FixParameter(4,-1.66152e-04);
+		task->SetEtaWeight3(hetaw3);
+		///--------------------------------------------------------------
+		}
 		
 		if(isCharPion == 1){
-			cout<<"***********************tilt 1******************************"<<endl;
+			//cout<<"***********************tilt 1******************************"<<endl;
 		///Tilt 1-----------------------------------------------------
 		TF1 *hpi0w1 = new TF1("hpi0w1","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 0.5,2);
 		hpi0w1->FixParameter(0,8.70443e+00);
@@ -260,7 +342,7 @@ AliAnalysisHFETPCTOFNew* ConfigHFETPCTOF(Bool_t isMCc, Bool_t isAODc, Bool_t isP
 		}
 		
 		if(isCharPion == 2){
-			cout<<"-----------tilt 2--------------------"<<endl;
+			//cout<<"-----------tilt 2--------------------"<<endl;
 		///Tilt 2-----------------------------------------------------
 		TF1 *hpi0w1 = new TF1("hpi0w1","[0] / (TMath::Power(TMath::Exp( - [1] * x[0] - [2] * x[0] * x[0] ) + x / [3], [4]))", 0.5,2);
 		hpi0w1->FixParameter(0,5.13903e+00);

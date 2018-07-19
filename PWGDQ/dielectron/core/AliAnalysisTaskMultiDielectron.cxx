@@ -31,6 +31,7 @@
 #include <AliTriggerAnalysis.h>
 #include <AliPIDResponse.h>
 #include <AliTPCPIDResponse.h>
+#include <AliAnalysisUtils.h>
 
 #include "AliDielectron.h"
 #include "AliDielectronHistos.h"
@@ -55,12 +56,14 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   fFiredTrigger(""),
   fFiredExclude(kFALSE),
   fRejectPileup(kFALSE),
+  fPileUpRejTool(AliDielectronEventCuts::kSPD),
   fBeamEnergy(-1.),
   fRandomizeDaughters(kFALSE),
   fTriggerLogic(kAny),
   fTriggerAnalysis(0x0),
   fRequireTRDtrigger(kFALSE),
   fRequireMatchedTrack(kFALSE),
+  fEvtVsTrkHistExists(kFALSE),
   fTRDTriggerClass(AliDielectronEventCuts::kSEorQU),
   fEventFilter(0x0),
   fEventStat(0x0),
@@ -85,12 +88,14 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name)
   fFiredTrigger(""),
   fFiredExclude(kFALSE),
   fRejectPileup(kFALSE),
+  fPileUpRejTool(AliDielectronEventCuts::kSPD),
   fBeamEnergy(-1.),
   fRandomizeDaughters(kFALSE),
   fTriggerLogic(kAny),
   fTriggerAnalysis(0x0),
   fRequireTRDtrigger(kFALSE),
   fRequireMatchedTrack(kFALSE),
+  fEvtVsTrkHistExists(kFALSE),
   fTRDTriggerClass(AliDielectronEventCuts::kSEorQU),
   fEventFilter(0x0),
   fEventStat(0x0),
@@ -148,7 +153,7 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
 //   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
 //   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
 //   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
-  
+
   TIter nextDie(&fListDielectron);
   AliDielectron *die=0;
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
@@ -189,13 +194,13 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
     fEventStat->GetXaxis()->SetBinLabel(5,"Bin5 not used");
     fEventStat->GetXaxis()->SetBinLabel(6,"Bin6 not used");
     fEventStat->GetXaxis()->SetBinLabel(7,"Bin7 not used");
-    
+
     if(fTriggerOnV0AND) fEventStat->GetXaxis()->SetBinLabel(3,"V0and triggers");
     if(fRequireTRDtrigger) fEventStat->GetXaxis()->SetBinLabel(4,"TRD triggered");
     if(fRequireMatchedTrack) fEventStat->GetXaxis()->SetBinLabel(5,"track matched");
     if (fEventFilter) fEventStat->GetXaxis()->SetBinLabel(6,"After Event Filter");
     if (fRejectPileup) fEventStat->GetXaxis()->SetBinLabel(7,"After Pileup rejection");
-    
+
     for (Int_t i=0; i<cuts; ++i){
       fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+1)+2*i,Form("#splitline{1 candidate}{%s}",fListDielectron.At(i)->GetName()));
       fEventStat->GetXaxis()->SetBinLabel((kNbinsEvent+2)+2*i,Form("#splitline{With >1 candidate}{%s}",fListDielectron.At(i)->GetName()));
@@ -214,12 +219,12 @@ void AliAnalysisTaskMultiDielectron::UserCreateOutputObjects()
     fEventStatTRDTrigger->GetXaxis()->SetBinLabel(9,"both fired, SE matched, QU not matched");
     fEventStatTRDTrigger->GetXaxis()->SetBinLabel(10,"error");
   }
-  
+
 
   if (!fTriggerAnalysis) fTriggerAnalysis=new AliTriggerAnalysis;
   fTriggerAnalysis->EnableHistograms();
   fTriggerAnalysis->SetAnalyzeMC(AliDielectronMC::Instance()->HasMC());
-  
+
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
   PostData(3, fEventStat);
@@ -240,10 +245,10 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
-  
+
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   if (!inputHandler) return;
-  
+
 //   AliPIDResponse *pidRes=inputHandler->GetPIDResponse();
   if ( inputHandler->GetPIDResponse() ){
     // for the 2.76 pass2 MC private train. Together with a sigma shift of -0.169
@@ -252,7 +257,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   } else {
     AliFatal("This task needs the PID response attached to the input event handler!");
   }
-  
+
   // Was event selected ?
   ULong64_t isSelected = AliVEvent::kAny;
   Bool_t isRejected = kFALSE;
@@ -270,8 +275,8 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
       isSelected=(firedTriggerClasses.Contains(fFiredTrigger))^fFiredExclude;
     }
    }
- 
- 
+
+
   //Before physics selection
   fEventStat->Fill(kAllEvents);
   if (isSelected==0||isRejected) {
@@ -289,7 +294,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
             (static_cast<AliAODEvent*>(InputEvent()))->GetVZEROData()->GetV0CDecision() == AliVVZERO::kV0BB) )
             return;}
    }
-  
+
 
   fEventStat->Fill(kV0andEvents);
 
@@ -312,12 +317,12 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
     }
   }
   nextDie.Reset();
-  
+
   // TRD trigger
   if(fRequireTRDtrigger){
     Bool_t trackMatched;
     Int_t bin;
-    Bool_t trdTriggered = AliDielectronEventCuts::IsTRDTriggerFired( InputEvent(), fTRDTriggerClass, trackMatched, bin ); 
+    Bool_t trdTriggered = AliDielectronEventCuts::IsTRDTriggerFired( InputEvent(), fTRDTriggerClass, trackMatched, bin );
     fEventStatTRDTrigger->Fill(bin);
     if(!trdTriggered){
       return;
@@ -328,19 +333,30 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
     }
     fEventStat->Fill(kTrdTriggeredEventsMatched);
   }
-  
+
   //event filter
   if (fEventFilter) {
     if (!fEventFilter->IsSelected(InputEvent())) return;
   }
   fEventStat->Fill(kFilteredEvents);
-  
+
   //pileup
-  if (fRejectPileup){
-    if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
+  if(fRejectPileup){
+    switch(fPileUpRejTool) {
+      case AliDielectronEventCuts::kSPD:
+        if (InputEvent()->IsPileupFromSPD(3,0.8,3.,2.,5.)) return;
+        break;
+      case AliDielectronEventCuts::kSPDInMultBins:
+        if ( (InputEvent()->GetMultiplicity()) && (InputEvent()->IsPileupFromSPDInMultBins() == kTRUE) ) return;
+        break;
+      case AliDielectronEventCuts::kMultiVertexer:
+        AliAnalysisUtils utils;
+        if (utils.IsPileUpMV(InputEvent())) return;
+        break;
+    }
   }
   fEventStat->Fill(kPileupEvents);
-  
+
   //bz for AliKF
   Double_t bz = InputEvent()->GetMagneticField();
   AliKFParticle::SetField( bz );
@@ -348,7 +364,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   AliDielectronPID::SetCorrVal((Double_t)InputEvent()->GetRunNumber());
   AliDielectronPair::SetBeamEnergy(InputEvent(), fBeamEnergy);
   AliDielectronPair::SetRandomizeDaughters(fRandomizeDaughters);
-  
+
   //Process event in all AliDielectron instances
   //   TIter nextDie(&fListDielectron);
   //   AliDielectron *die=0;
@@ -381,7 +397,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   if(fRequireTRDtrigger){
     PostData(4,fEventStatTRDTrigger);
   }
-    
+
 }
 
 //_________________________________________________________________________________
@@ -403,6 +419,9 @@ void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
     // debug tree
     die->SaveDebugTree();
 
+    // Event vs Track Histo Class
+    if(fEvtVsTrkHistExists) die->FinishEvtVsTrkHistoClass();
+
     // skip internal train tasks in main loop
     if(!die->DoEventProcess()) continue;
 
@@ -420,13 +439,13 @@ void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
 
       // loop over internal train task candidates
       for(Int_t i=ic; i<fListDielectron.GetEntries(); i++) {
-	die2 = static_cast<AliDielectron*>(fListDielectron.At(i));
-	// abort if tasks following are not internal wagons
-	if(die2->DoEventProcess()) break;
-	// fill internal train output
-	die2->SetPairArraysPointer(fPairArray);
-	//	printf(" --> fill internal train output %s \n",die2->GetName());
-	die2->FillHistogramsFromPairArray(kTRUE);
+      	die2 = static_cast<AliDielectron*>(fListDielectron.At(i));
+      	// abort if tasks following are not internal wagons
+      	if(die2->DoEventProcess()) break;
+      	// fill internal train output
+      	die2->SetPairArraysPointer(fPairArray);
+      	//	printf(" --> fill internal train output %s \n",die2->GetName());
+      	die2->FillHistogramsFromPairArray(kTRUE);
       }
       // printf("\n\n\n===============\ncall mix in Terminate: %p (%p)\n=================\n\n",mix,die);
 
@@ -437,4 +456,3 @@ void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
 }
-

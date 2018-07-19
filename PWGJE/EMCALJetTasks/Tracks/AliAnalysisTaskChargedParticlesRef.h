@@ -101,7 +101,7 @@ public:
    * @brief Switch on-/off- study of exotic triggers (default: off)
    * @param[in] doStudy If true study of exotic triggers is enabled
    */
-  void SetStudyExoticTriggers(Bool_t doStudy) { fStudyExoticTriggers = doStudy; }
+  void SetStudyExoticTriggers(Bool_t doStudy) { fStudyExoticTriggers = doStudy; SetCaloTriggerPatchInfoName("EmcalTriggers"); }
 
   /**
    * @brief Set the virtual track selection.
@@ -248,7 +248,7 @@ protected:
    */
   bool IsExoticsTrigger(const TString &trg);
 
-  AliEmcalTrackSelection          *fTrackCuts;                ///< Standard track selection
+  AliEmcalTrackSelection *fTrackCuts;                ///< Standard track selection
 
   Double_t                        fYshift;                    ///< Rapidity shift
   Double_t                        fEtaSign;                   ///< Sign of the eta distribution (swaps when beam directions swap): p-Pb: +1, Pb-p: -1

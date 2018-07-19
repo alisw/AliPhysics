@@ -18,7 +18,7 @@ if [[ $# -lt 3 ]] ; then Usage ;fi
 
 echo "Arguments: 1 = $1, 2 = $2, 3 = $3, 4 = $4, 5 = $5, 6 = $6, 7 = $7"
 
-source $ALICE_PHYSICS/PWGPP/scripts/alilog4bash.sh  
+source $ALICE_ROOT/libexec/alilog4bash.sh
 #
 secStep=18  # number of sectors to process in one go
 hisMin=0

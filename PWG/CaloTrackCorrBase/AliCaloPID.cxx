@@ -24,7 +24,7 @@
 #include "AliESDCaloCluster.h"
 #include "AliVCaloCells.h"
 #include "AliVTrack.h"
-#include "AliAODPWG4Particle.h"
+#include "AliCaloTrackParticle.h"
 #include "AliCalorimeterUtils.h"
 #include "AliFiducialCut.h" // detector enum definition
 #include "AliVEvent.h"
@@ -1075,7 +1075,7 @@ void AliCaloPID::PrintClusterPIDWeights(const Double_t * pid) const
 /// Set Bits for PID selection
 //___________________________________________________________________________
 void AliCaloPID::SetPIDBits(AliVCluster * cluster, 
-                            AliAODPWG4Particle * ph, AliCalorimeterUtils* cu, 
+                            AliCaloTrackParticle * ph, AliCalorimeterUtils* cu, 
                             AliVEvent* event) 
 {  
   // Dispersion/lambdas

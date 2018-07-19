@@ -30,6 +30,7 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
                                                                  const char*            trig                      = "INT7",
                                                                  const Bool_t           M02cut                    = kTRUE,
                                                                  const Bool_t           ThnSp                     = kTRUE,
+                                                                 TString                MaskedFastOrPath          = "",
                                                                  const Bool_t           onlyL1RecalcEvents        = kFALSE
                                                                  )
 {
@@ -59,8 +60,8 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
 //  }
 
   if(configBasePath.IsNull()){ //Check if a specific config should be used and copy appropriate file
-	configBasePath="$ALICE_PHYSICS/PWGGA/EMCALTasks/macros";
-  	gSystem->Exec(Form("cp %s/%s .",configBasePath.Data(),configFile.Data()));
+    Printf("File for THnSparse Binning needed!");
+    return NULL;
   }
   else if(configBasePath.Contains("alien:///")){
   	gSystem->Exec(Form("alien_cp %s/%s .",configBasePath.Data(),configFile.Data()));
@@ -95,6 +96,18 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   gROOT->LoadMacro(configFilePath.Data());
   printf("Path of config file: %s\n",configFilePath.Data());
   
+  
+  Bool_t MaskFastors = kFALSE;
+
+  if(!MaskedFastOrPath.IsNull()){ 
+    MaskFastors = kTRUE;
+    if(!MaskedFastOrPath.Contains("alien:///")){
+      Printf("OADB path is not an alien path!!!");
+      return NULL;
+    }
+  }
+  
+
     // #### Task preferences
   task->SetIsoConeRadius(iIsoConeRadius);
   task->SetCTMdeltaEta(TMdeta); // after should be replaced by TMdeta
@@ -113,6 +126,8 @@ AliAnalysisTaskEMCALClusterTurnOn* AddTaskEMCALClusterTurnOn(
   task->SetPhiClBinning(PhiClBin);
   task->SetNeedEmcalGeom(kTRUE);
   task->SetM02cut(M02cut);
+  task->SetFastOrMasking(MaskFastors);
+  task->SetFastOrPath(MaskedFastOrPath);
   
   TString name(Form("ClusterTurnOn_%s_%s", ntracks, nclusters));
   cout<<"name of the containers  "<<name.Data()<<endl;

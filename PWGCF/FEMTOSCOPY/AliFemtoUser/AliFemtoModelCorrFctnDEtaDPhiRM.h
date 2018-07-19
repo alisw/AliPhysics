@@ -20,7 +20,7 @@
 
 class AliFemtoModelCorrFctnDEtaDPhiRM : public AliFemtoModelCorrFctn {
 public:
-  AliFemtoModelCorrFctnDEtaDPhiRM(char* title, const int& aPhiBins, const int& aEtaBins, const double m1, const double m2);
+  AliFemtoModelCorrFctnDEtaDPhiRM(const char* title, const int& aPhiBins, const int& aEtaBins, const double m1, const double m2);
   AliFemtoModelCorrFctnDEtaDPhiRM(const AliFemtoModelCorrFctnDEtaDPhiRM& aCorrFctn);
   virtual ~AliFemtoModelCorrFctnDEtaDPhiRM();
 
@@ -35,12 +35,12 @@ public:
   void WriteHistos();
   virtual TList* GetOutputList();
 private:
-  
+
   TH2D *fDPhiDEtaNumeratorTrue;      // Numerator of dEta dPhi true function
   TH2D *fDPhiDEtaNumeratorFake;      // Numerator of dEta dPhi fake function
   TH2D *fDPhiDEtaDenominator;        // Denominator of dEta dPhi function
 
-  TH2D *fDPhiDEtaColNumerator;       // Numerator of colinear dEta dPhi function 
+  TH2D *fDPhiDEtaColNumerator;       // Numerator of colinear dEta dPhi function
   TH2D *fDPhiDEtaColDenominator;     // Denominator of colinear dEta dPhi function
 
   TH1D *fDPhiNumeratorTrue;          // Numerator of dPhi true correlation

@@ -64,6 +64,12 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
     kK0NoLambdaMother = 5,
     kK0DifferentLambdaMother = 6,
     kK0CorrectLambdaMother = 7 };    
+
+  enum EAnalysisType { /// enum for setting analysis system/year (for loading profile histograms for multiplicity correction)
+     kpPb2013 = 0,
+     kpPb2016 = 1,
+     kpp2016 = 2,
+     kpp2010 = 3};
   
   AliAnalysisTaskSELc2V0bachelorTMVA();
   AliAnalysisTaskSELc2V0bachelorTMVA(const Char_t* name, AliRDHFCutsLctoV0* cutsA,
@@ -130,6 +136,73 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
     if(fHistoMCNch) delete fHistoMCNch;
     fHistoMCNch = new TH1F(*h);
   }
+  
+  void SetAnalysisType(Int_t mode){
+     fAnalysisType = mode;
+  }
+  
+  
+  void SetMultVsZProfileLHC13b(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC13c(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+  }
+
+  void SetMultVsZProfileLHC16qt1stBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC16qt2ndBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC16qt3rdBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC16qt4thBunch(TProfile* hprof){
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
+  }
+
+  void SetMultVsZProfileLHC16j(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC16k(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC16l(TProfile* hprof){
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
+  }
+
+  void SetMultVsZProfileLHC10b(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC10c(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC10d(TProfile* hprof){
+    if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+    fMultEstimatorAvg[2]=new TProfile(*hprof);
+  }
+  void SetMultVsZProfileLHC10e(TProfile* hprof){
+    if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+    fMultEstimatorAvg[3]=new TProfile(*hprof);
+  }
+
+
+  void SetReferenceMultiplicity(Double_t rmu){fRefMult=rmu;}
+  
+  
+
 
  private:
   
@@ -146,6 +219,7 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
 
   AliAnalysisTaskSELc2V0bachelorTMVA(const AliAnalysisTaskSELc2V0bachelorTMVA &source);
   AliAnalysisTaskSELc2V0bachelorTMVA& operator=(const AliAnalysisTaskSELc2V0bachelorTMVA& source); 
+  TProfile* GetEstimatorHistogram(const AliVEvent *event);
   
   Bool_t fUseMCInfo;          /// Use MC info
   TList *fOutput;             //!<! User output1: list of trees
@@ -157,8 +231,10 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   Bool_t fIsK0sAnalysis;             /// switch between Lpi and K0sp
   AliNormalizationCounter *fCounter; //!<! AliNormalizationCounter on output slot 4
   AliRDHFCutsLctoV0 *fAnalCuts;      /// Cuts - sent to output slot 5
-  TList *fListCuts;                  /// list of cuts
+  TList *fListCuts;                  //!<! list of cuts
   TList *fListWeight;                /// list of weights
+  TList *fListCounters;              //!<! list of counters on output slot 2
+  TList *fListProfiles;              /// list of profiles for z-vtx correction of multiplicity
   Bool_t fUseOnTheFlyV0;             /// flag to analyze also on-the-fly V0 candidates
   Bool_t fIsEventSelected;           /// flag for event selected
 
@@ -270,15 +346,33 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   TH1F* fHistoMCLcK0SpGenLimAcc;      //!<! histo with MC Lc --> K0S + p
 
   ULong64_t fTriggerMask;			  /// mask to the trigger word returned by the physics selection
-  Int_t fNTracklets;                               /// multiplicity definition with tracklets
 
   TF1 *fFuncWeightPythia; //!<! weight function for Pythia vs pPb prod.
   TF1 *fFuncWeightFONLL5overLHC13d3; //!<! weight function for FONLL vs pPb prod.
   TF1 *fFuncWeightFONLL5overLHC13d3Lc; //!<! weight function for FONLL vs pPb prod.
-  TH1F* fHistoMCNch;  /// histogram with Nch distribution from MC production
+  TH1F* fHistoMCNch;  //!<! histogram with Nch distribution from MC production
+ 
+  Int_t fAnalysisType; /// switch to change system/year in use for loading of mult. estimators
+  Int_t fNTracklets; /// tracklet multiplicity in event
+  TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
+  Double_t fRefMult; /// reference multiplicity
+  
+  TList *fListMultiplicityHistograms; //!<! list of multiplicity-related histograms on output slot 8 
+  TH2F *fHistNtrVsZvtx; //!<! hist of ntracklets vs. z_vtx
+  TH2F *fHistNtrCorrVsZvtx; //!<! hist of corrected ntracklets vs. z_vtx
+  
+  TH1F* fHistNtrUnCorrEvSel; //!<! hist. of ntracklets for selected events
+  TH1F* fHistNtrUnCorrEvWithCand; //!<! hist. of ntracklets for evnts with a candidate
+  TH1F* fHistNtrCorrEvSel; //!<! hist. of ntracklets for selected events
+  TH1F* fHistNtrCorrEvWithCand; //!<! hist. of ntracklets for evnts with a candidate
 
+  AliNormalizationCounter *fCounterC;           //!<!Counter for normalization, corrected multiplicity
+  AliNormalizationCounter *fCounterU;           //!<!Counter for normalization, uncorrected multiplicity
+  AliNormalizationCounter *fCounterCandidates;  //!<!Counter for normalization, corrected multiplicity for candidates
+
+  
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 11); /// class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 12); /// class for Lc->p K0
   /// \endcond    
 };
 

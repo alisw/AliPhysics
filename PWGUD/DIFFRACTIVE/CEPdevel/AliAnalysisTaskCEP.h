@@ -34,7 +34,7 @@ class AliPhysicsSelection;
 #include "AliEventCuts.h"
 #include "AliCEPUtils.h"
 #include "CEPEventBuffer.h"
-
+#include "CEPRawEventBuffer.h"
 
 class AliAnalysisTaskCEP : public AliAnalysisTaskSE
 {
@@ -60,6 +60,20 @@ public:
   // called  at  end  of  analysis
   // virtual void Terminate(Option_t* option);
   
+  // setters for the task parameters
+  void setTaskState(Int_t state) { fTaskState = state; }
+  void setRnumMin(Int_t rn) { frnummin = rn; }
+  void setRnumMax(Int_t rn) { frnummax = rn; }
+  void setnTracksMax(Int_t ntrk) { fnumTracksMax = ntrk; }
+  void setfracDG(Double_t frac) { ffracDG = frac; }
+  void setfracNDG(Double_t frac) { ffracNDG = frac; }
+  void setETmaskDG(UInt_t mask) { fETmaskDG = mask; }
+  void setETpatternDG(UInt_t pattern) { fETpatternDG = pattern; }
+  void setETmaskNDG(UInt_t mask) { fETmaskNDG = mask; }
+  void setETpatternNDG(UInt_t pattern) { fETpatternNDG = pattern; }
+  void setTTmask(UInt_t mask) { fTTmask = mask; }
+  void setTTpattern(UInt_t pattern) { fTTpattern = pattern; }
+  
 private:
 
 	AliAnalysisTaskCEP(const AliAnalysisTaskCEP  &p);
@@ -74,15 +88,20 @@ private:
   // events are saved if (ET=Event test, TT=Track test)
   // . ET conditions are met (conditions for DG and NDG)
   // . 0 < nTrack='number of tracks meeting the TT conditions' <= fnumTracksMax
+  Int_t fTaskState;
   Int_t frnummin, frnummax;
   Int_t fnumTracksMax;
   Double_t ffracDG, ffracNDG;
   UInt_t fETmaskDG,  fETpatternDG;
   UInt_t fETmaskNDG, fETpatternNDG;
   UInt_t fTTmask, fTTpattern;
+  
+  // some hit information
+  UInt_t fisSTGTriggerFired;
+  Int_t  fnTOFmaxipads;
 
 	// event information
-	Int_t fRun;                     //  run number
+	Int_t           fRun;           //  run number
   AliESDRun      *fESDRun;        //! esd run object
   Bool_t          fisESD;         //!
   Bool_t          fisAOD;         //!
@@ -91,17 +110,17 @@ private:
 
   CEPEventBuffer *fCEPEvent;      //! event buffer
   TObjArray      *fTracks;        //! array of tracks
+  TObjArray      *fTrl2Tr;        //! array of tracklet-track associations
   TArrayI        *fTrackStatus;   //! array of TrackStatus
   TString         fLHCPeriod;     //! LHC period
+  
+  CEPRawEventBuffer *fCEPRawEvent;//! raw event buffer
     
   TVector3        fVtxPos;        // vertex position
 
 	// analysis task status
 	Long_t fAnalysisStatus; // stores the status bits used to specify
                           // processing steps to be performed
-  // MC CEP system
-  TLorentzVector fMCCEPSystem;
-  
 	// PID information
   AliPIDResponse *fPIDResponse;   //! esd pid object
   AliPIDCombined *fPIDCombined1;  //! PID Combined object with priors
@@ -123,6 +142,7 @@ private:
   TList *flVtx     ;    //! list of QA histograms for vertex selection
   TList *flV0      ;    //! list of QA histograms for V0 study
   TList *flFMD     ;    //! list of QA histograms for FMD study
+  TList *flEMC     ;    //! list of QA histograms for EMC study
   TH1F *fhStatsFlow;    //! histogram with event selection statistics
   
 	// output objects

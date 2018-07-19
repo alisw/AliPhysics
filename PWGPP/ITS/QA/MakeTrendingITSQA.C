@@ -888,7 +888,7 @@ void FillVertexBranches(TList * VertxList){
     }
     
     if(zVtxTRK){
-        TF1 *fzTRK = new TF1("gausz", "gaus", -1, 1);
+        TF1 *fzTRK = new TF1("gausz", "gaus", -10., 10.);
         if(zVtxTRK->GetEntries()>0){
             zVtxTRK->Fit("gausz","NQRL");
             meanVtxTRKz=(Float_t)fzTRK->GetParameter(1);
@@ -933,7 +933,7 @@ void FillVertexBranches(TList * VertxList){
     }
     
     if(zVtxSPD){
-        TF1 *fzSPD = new TF1("gauszSPD", "gaus", -1, 1);
+        TF1 *fzSPD = new TF1("gauszSPD", "gaus", -10., 10.);
         if(zVtxSPD->GetEntries()>0){
             zVtxSPD->Fit("gauszSPD","NQRL");
             meanVtxSPDz=(Float_t)fzSPD->GetParameter(1);
@@ -1456,14 +1456,15 @@ void FillSDDBranches(TList * SDDList){
     if(hgamod){
         if(hgamod->GetEntries()>0){
             Int_t bestMod=0;
-            Int_t deadMod3=0, deadMod4=0;
+//            Int_t deadMod3=0, deadMod4=0;
+            Int_t chOK3=0, chOK4=0;
             for(Int_t iMod=0; iMod<260;iMod++){
                 Int_t gda=(Int_t)hgamod->GetBinContent(iMod+1);
                 if(gda>bestMod) bestMod=gda;
-                if(gda == 0) {
-                    if(iMod<84) deadMod3+=1;
-                    else deadMod4+=1;
-                }
+//                if(gda == 0) {
+//                    if(iMod<84) deadMod3+=1;
+//                    else deadMod4+=1;
+//                }
             }
     
             Int_t nChunks=1;
@@ -1471,12 +1472,18 @@ void FillSDDBranches(TList * SDDList){
                 nChunks=(Int_t)(bestMod/512.+0.5);
             }
             hgamod->Scale(1./nChunks);
+            for(Int_t iMod=0; iMod<84;iMod++) chOK3 += (Int_t)hgamod->GetBinContent(iMod+1);
+            for(Int_t iMod=84; iMod<260;iMod++) chOK4 += (Int_t)hgamod->GetBinContent(iMod+1);
 
-            fracDead3 = 1.-(Float_t)deadMod3/84;
-            fracDead4 = 1.-(Float_t)deadMod4/176;
-            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/84);         //
-            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/176);
-            
+//            fracDead3 = 1.-(Float_t)deadMod3/84;
+//            fracDead4 = 1.-(Float_t)deadMod4/176;
+//            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/84);         //
+//            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/176);
+            fracDead3 = (Float_t)chOK3/(84*512); // fraction of good anodes for layer 3
+            fracDead4 = (Float_t)chOK4/(176*512); // fraction of good anodes for layer 4
+            errfracDead3 = TMath::Sqrt(fracDead3*(1-fracDead3)/(84*512));         //
+            errfracDead4 = TMath::Sqrt(fracDead4*(1-fracDead4)/(176*512));
+
             if(fracDead3 > 0.8)FlagSDD1=1.; else FlagSDD1=0.;
             if(fracDead4 > 0.75)FlagSDD2=1.; else FlagSDD2=0.;
         }

@@ -1325,7 +1325,7 @@ void  AliAnaGeneratorKine::MakeAnalysisFillHistograms()
 //_________________________________________________________
 /// Set the calorimeter for the analysis.
 //_________________________________________________________
-void AliAnaGeneratorKine::SetTriggerDetector(TString & det)
+void AliAnaGeneratorKine::SetTriggerDetector(TString det)
 {
   fTriggerDetectorString = det;
   

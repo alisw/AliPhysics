@@ -1037,20 +1037,20 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
 #if 0
 #define TEST_TRIG_BIN(RET,BIN,TRIGGERS) \
   do { switch (BIN) { \
-    case kInel:      RET = triggers & AliAODForwardMult::kInel;       break; \
-    case kInelGt0:   RET = triggers & AliAODForwardMult::kInelGt0;    break; \
-    case kNSD:       RET = triggers & AliAODForwardMult::kNSD;        break; \
-    case kV0AND:     RET = triggers & AliAODForwardMult::kV0AND;      break; \
-    case kEmpty:     RET = triggers & AliAODForwardMult::kEmpty;      break; \
-    case kA:         RET = triggers & AliAODForwardMult::kA;          break; \
-    case kB:         RET = triggers & AliAODForwardMult::kB;          break; \
-    case kC:         RET = triggers & AliAODForwardMult::kC;          break; \
-    case kE:         RET = triggers & AliAODForwardMult::kE;          break; \
-    case kPileUp:    RET = triggers & AliAODForwardMult::kPileUp;     break; \
-    case kMCNSD:     RET = triggers & AliAODForwardMult::kMCNSD;      break; \
-    case kSatellite: RET = triggers & AliAODForwardMult::kSatellite;  break; \
-    case kSpdOutlier:RET = triggers & AliAODForwardMult::kSPDOutlier; break; \
-    case kOffline:   RET = triggers & AliAODForwardMult::kOffline;    break; \
+    case kInel:      RET = TRIGGERS & AliAODForwardMult::kInel;       break; \
+    case kInelGt0:   RET = TRIGGERS & AliAODForwardMult::kInelGt0;    break; \
+    case kNSD:       RET = TRIGGERS & AliAODForwardMult::kNSD;        break; \
+    case kV0AND:     RET = TRIGGERS & AliAODForwardMult::kV0AND;      break; \
+    case kEmpty:     RET = TRIGGERS & AliAODForwardMult::kEmpty;      break; \
+    case kA:         RET = TRIGGERS & AliAODForwardMult::kA;          break; \
+    case kB:         RET = TRIGGERS & AliAODForwardMult::kB;          break; \
+    case kC:         RET = TRIGGERS & AliAODForwardMult::kC;          break; \
+    case kE:         RET = TRIGGERS & AliAODForwardMult::kE;          break; \
+    case kPileUp:    RET = TRIGGERS & AliAODForwardMult::kPileUp;     break; \
+    case kMCNSD:     RET = TRIGGERS & AliAODForwardMult::kMCNSD;      break; \
+    case kSatellite: RET = TRIGGERS & AliAODForwardMult::kSatellite;  break; \
+    case kSpdOutlier:RET = TRIGGERS & AliAODForwardMult::kSPDOutlier; break; \
+    case kOffline:   RET = TRIGGERS & AliAODForwardMult::kOffline;    break; \
     default:         RET = false; } } while(false)
       
   if (!fHTriggers) { 
@@ -1524,7 +1524,13 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
   const char* sys  = esd->GetBeamType();
   Float_t     cms  = 2 * esd->GetBeamEnergy();
   Float_t     fld  = esd->GetMagneticField();
-  fCollisionSystem = AliForwardUtil::ParseCollisionSystem(sys);
+  Int_t       b1a  = esd->GetBeamParticleA(0);
+  Int_t       b1z  = esd->GetBeamParticleZ(0);
+  Int_t       b2a  = esd->GetBeamParticleA(1);
+  Int_t       b2z  = esd->GetBeamParticleZ(1);
+  fCollisionSystem = AliForwardUtil::ParseCollisionSystem(b1a, b1z,
+							  b2a, b2z,
+							  sys);
   fEnergy          = AliForwardUtil::ParseCenterOfMassEnergy(fCollisionSystem, 
 							     cms);
   fField           = AliForwardUtil::ParseMagneticField(fld);

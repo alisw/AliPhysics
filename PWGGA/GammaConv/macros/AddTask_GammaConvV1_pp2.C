@@ -80,14 +80,14 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
                                 Bool_t  doMultiplicityWeighting      = kFALSE,                          //
                                 TString fileNameInputForMultWeighing = "Multiplicity.root",             //
                                 TString periodNameAnchor             = "",                              //
-                                Bool_t   runLightOutput              = kFALSE,                          // switch to run light output (only essential histograms for afterburner)
+                                Bool_t   runLightOutput             = kFALSE,                          // switch to run light output (only essential histograms for afterburner)
                                 TString  additionalTrainConfig       = "0"                              // additional counter for trainconfig, this has to be always the last parameter
                            ) {
 
   Int_t isHeavyIon = 0;
   if (additionalTrainConfig.Atoi() > 0){
     trainConfig = trainConfig + additionalTrainConfig.Atoi();
-  }  
+  }
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -108,7 +108,14 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   }
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "00200008400000002200000000";
+
+  TString cutnumberPhoton = "00000008400000000100000000";
+  if (  periodNameV0Reader.CompareTo("LHC16f") == 0 || periodNameV0Reader.CompareTo("LHC17g")==0 || periodNameV0Reader.CompareTo("LHC18c")==0 ||
+        periodNameV0Reader.CompareTo("LHC17d1") == 0  || periodNameV0Reader.CompareTo("LHC17d12")==0 ||
+        periodNameV0Reader.CompareTo("LHC17h3")==0 || periodNameV0Reader.CompareTo("LHC17k1")==0 ||
+        periodNameV0Reader.CompareTo("LHC17f8b") == 0 ||
+        periodNameV0Reader.CompareTo("LHC16P1JJLowB") == 0 || periodNameV0Reader.CompareTo("LHC16P1Pyt8LowB") == 0 )
+    cutnumberPhoton         = "00000088400000000100000000";
   TString cutnumberEvent = "00000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
@@ -157,7 +164,7 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     }
     if(inputHandler->IsA()==AliAODInputHandler::Class()){
     // AOD mode
-      fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
+      fV0ReaderV1->AliV0ReaderV1::SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
     }
     fV0ReaderV1->Init();
 
@@ -179,18 +186,18 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   task->SetV0ReaderName(V0ReaderName);
   task->SetLightOutput(runLightOutput);
   // Cut Numbers to use in Analysis
-  
+
   CutHandlerConv cuts;
 
   //----------------------------- configuration for 2.76TeV standard cuts ----------------------------------------------------
   if (trainConfig == 1){
-    cuts.AddCut("00000113", "00200009397300008250400000", "0163103100900000"); // new pi0/eta cut 2.76TeV 
+    cuts.AddCut("00000113", "00200009397300008250400000", "0163103100900000"); // new pi0/eta cut 2.76TeV
   } else if (trainConfig == 2) {
     cuts.AddCut("00000113", "00200009397300008250400000", "0163103100000000"); // new pi0/eta cut 2.76TeV without MC smearing
   } else if (trainConfig == 3) {
     cuts.AddCut("00000113", "00200009366300003800000000", "0163103100900000"); // standard cut Pi0 pp 2.76TeV PbPb paper 2012
   } else if (trainConfig == 4) {
-    cuts.AddCut("00000113", "00200009297002008250400000", "0163103100900000"); // standard cut LHC11h pp 2.76TeV 
+    cuts.AddCut("00000113", "00200009297002008250400000", "0163103100900000"); // standard cut LHC11h pp 2.76TeV
   } else if (trainConfig == 5) {
     cuts.AddCut("00000113", "00200009227302008250404000", "0163101500000000"); // Ana eta analysis prefered 2.76TeV
   } else if (trainConfig == 6) {
@@ -203,12 +210,12 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     cuts.AddCut("00003113", "00200009397300008250400000", "0163103100900000"); // new pi0/eta cut 2.76TeV wSDD
   } else if (trainConfig == 10) {
     cuts.AddCut("00051013", "00200009397300008250400000", "0163103100900000"); // new pi0/eta cut 2.76TeV wSDD & EMC1
-  
+
   //----------------------------- configuration for  8 TeV standard  --------------------------------------------------------
   } else if (trainConfig == 20) {
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //standard cut pp 8 TeV
   } else if (trainConfig == 21) {
-    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 8 TeV EMC7 
+    cuts.AddCut("00052113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 8 TeV EMC7
   } else if (trainConfig == 22) {
     cuts.AddCut("00081113", "00200009227302008250400000", "0152103500000000"); //standard cut pp 8 TeV EGA
   } else if (trainConfig == 23) {
@@ -250,14 +257,46 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     cuts.AddCut("00075113", "00200009227302008254404000", "0152101500000000"); //standard cut Gamma pp 13TeV, SPD HM
   } else if (trainConfig == 43){
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //New standard cut Gamma Pi0 Eta pp 13TeV, V0AND
-    
-  //----------------------------- configuration for run 2 analysis 5 TeV ----------------------------------------------------  
+  } else if (trainConfig == 44){
+    cuts.AddCut("00010113", "00200009266300008854404000", "0152101500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 45){
+    cuts.AddCut("00010113", "00200009267300008254404000", "0152103500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 46){
+    cuts.AddCut("00010113", "00a00009267300008254404000", "0152103500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 47){
+    cuts.AddCut("00010113", "00b00009267300008254404000", "0152103500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 48){
+    cuts.AddCut("00010113", "00c00009267300008254404000", "0152103500000000"); // A. Marin alpha pT dependent and gamma asym cut
+  } else if (trainConfig == 49){
+    cuts.AddCut("00010113", "00200009227300008250404000", "0163103100000000"); // J. Luehder AOD Compare
+
+  //----------------------------- configuration for run 2 analysis 5 TeV ----------------------------------------------------
   } else if (trainConfig == 50){
     cuts.AddCut("00010113", "00200009227300008250404000", "0152101500000000"); //old standard cut pp 5 TeV VAND
   } else if (trainConfig == 51){
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
-    
-    
+  } else if (trainConfig == 52){
+    cuts.AddCut("00010113", "00a00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
+  } else if (trainConfig == 53){
+    cuts.AddCut("00010113", "00b00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
+  } else if (trainConfig == 54){
+    cuts.AddCut("00010113", "00c00009227300008250404000", "0152103500000000"); //new standard cut pp 5 TeV VAND
+  } else if (trainConfig == 55){
+    cuts.AddCut("00010113", "00200009227300008250704000", "0152103500000000"); //test cosPA scan
+  } else if (trainConfig == 56){
+    cuts.AddCut("00010113", "00200009227300008250804000", "0152103500000000"); //test cosPA scan
+  } else if (trainConfig == 57){
+    cuts.AddCut("00010113", "00200009227300008250904000", "0152103500000000"); //test cosPA scan
+  } else if (trainConfig == 58){
+    cuts.AddCut("00010113", "00200009227300008250a04000", "0152103500000000"); //test cosPA scan
+  } else if (trainConfig == 59){
+    cuts.AddCut("00010113", "00200009227300008250a04020", "0152103500000000"); //test cosPA dca
+  } else if (trainConfig == 60){
+    cuts.AddCut("00010113", "00200009227300008250a04040", "0152103500000000"); //test dcaPA
+  } else if (trainConfig == 61){
+    cuts.AddCut("00010113", "00200009227300008250404040", "0152103500000000"); //test dcaPA
+  
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -271,7 +310,7 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   }
 
   Int_t numberOfCuts = cuts.GetNCuts();
-  
+
   TList *EventCutList = new TList();
   TList *ConvCutList = new TList();
   TList *MesonCutList = new TList();
@@ -295,19 +334,19 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     TString mcInputMultHisto      = "";
     TString triggerString         = (cuts.GetEventCut(i)).Data();
     triggerString                 = triggerString(3,2);
-    if (triggerString.CompareTo("03")==0) 
+    if (triggerString.CompareTo("03")==0)
       triggerString               = "00";
     if (periodNameAnchor.CompareTo("LHC13g") == 0 && triggerString.CompareTo("10")== 0 )
       triggerString               = "00";
 
     dataInputMultHisto            = Form("%s_%s", periodNameAnchor.Data(), triggerString.Data());
     mcInputMultHisto              = Form("%s_%s", periodNameV0Reader.Data(), triggerString.Data());
-   
+
     if (doMultiplicityWeighting){
       cout << "enabling mult weighting" << endl;
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile( kTRUE, fileNameInputForMultWeighing, dataInputMultHisto, mcInputMultHisto );
     }
-    
+
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
     analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);

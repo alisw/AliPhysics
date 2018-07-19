@@ -28,9 +28,36 @@ class AliReducedTrackCut : public AliReducedVarCut {
   void SetRequestTOFout(Bool_t flag = kTRUE) {fRequestTOFout = flag;}  
   void SetRequestTRDmatch(Bool_t flag = kTRUE) {fRequestTRDonlineMatch = flag;}
   
+  void SetTrackFilterMap(UInt_t map, Bool_t useAND=kTRUE) {fCutOnTrackFilterMap = map; fUseANDonTrackFilterMap=useAND;}
+  void SetTrackFilterBit(Int_t bit) {if(bit>=0 && bit<32) fCutOnTrackFilterMap |= (UInt_t(1)<<bit);}
+  void SetUseANDonTrackFilterMap(Bool_t useAND=kTRUE) {fUseANDonTrackFilterMap=useAND;}
+  
+  void SetTrackQualityFilterMap(UInt_t map, UInt_t exclusionMap=0, Bool_t useAND=kTRUE) {
+     fCutOnTrackQualityMap = map; fCutOnTrackQualityMapExclude=exclusionMap; fUseANDonTrackQualityMap=useAND;}
+  void SetTrackQualityFilterBit(Int_t bit, Bool_t exclude=kFALSE) {
+     if(bit>=0 && bit<32) {
+        fCutOnTrackQualityMap |= (UInt_t(1)<<bit);
+        if(exclude) fCutOnTrackQualityMapExclude |= (UInt_t(1)<<bit);
+     }
+   }
+  void SetUseANDonTrackQualityFilterMap(Bool_t useAND=kTRUE) {fUseANDonTrackQualityMap=useAND;}
+  
+  void SetRejectPureMC(Bool_t reject=kTRUE) {fRejectPureMC=reject;}
+  
+  void SetMCFilterMap(UInt_t map, Bool_t useAND=kTRUE) {fCutOnMCFilterMap = map; fUseANDonMCFilterMap=useAND;}
+  void SetMCFilterBit(Int_t bit) {if(bit>=0 && bit<32) fCutOnMCFilterMap |= (UInt_t(1)<<bit);}
+  void SetUseANDonMCFilterMap(Bool_t useAND=kTRUE) {fUseANDonMCFilterMap=useAND;}
+  
   Bool_t GetRejectKinks() const {return fRejectKinks;}
   Bool_t GetRejectTaggedGamma() const {return fRejectTaggedGamma;}
   Bool_t GetRejectTaggedPureGamma() const {return fRejectTaggedPureGamma;}
+  UInt_t GetTrackFilterMap() const {return fCutOnTrackFilterMap;}
+  Bool_t GetUseANDonTrackFilterMap() const {return fUseANDonTrackFilterMap;}
+  UInt_t GetTrackQualityFilterMap() const {return fCutOnTrackQualityMap;}
+  Bool_t GetUseANDonTrackQualityFilterMap() const {return fUseANDonTrackQualityMap;}
+  Bool_t GetRejectPureMC() const {return fRejectPureMC;}
+  UInt_t GetMCFilterMap() const {return fCutOnMCFilterMap;}
+  Bool_t GetUseANDonMCFilterMap() const {return fUseANDonMCFilterMap;}
   Bool_t GetRequestITSrefit() const {return fRequestITSrefit;}
   Bool_t GetRequestTPCrefit() const {return fRequestTPCrefit;}
   UChar_t GetITShitMapRequest() const {return fCutOnITShitMap;}
@@ -49,6 +76,20 @@ class AliReducedTrackCut : public AliReducedVarCut {
   Bool_t    fRejectKinks;                       // if true, reject kinks
   Bool_t    fRejectTaggedGamma;       // if true, reject tagged gamma conversions
   Bool_t    fRejectTaggedPureGamma;  // if true, reject only the high purity tagged gamma conversions
+  UInt_t    fCutOnTrackQualityMap;      // map encoding requests on the quality of the track (see bits in AliReducedBaseTrack::fQualityFlags)
+  UInt_t    fCutOnTrackQualityMapExclude;    // if bits are enabled, corresponding requests on fCutOnTrackQualityMap are negated
+  Bool_t    fUseANDonTrackQualityMap;   // if false, apply an OR on enabled positions; if true apply AND
+  
+  // selections on the track filter map 
+  UInt_t    fCutOnTrackFilterMap;         // map encoding the various requests on track filters
+  Bool_t    fUseANDonTrackFilterMap;  // if false, at least one of the enabled positions in the cut map should be on in the track filters map
+   
+   // Reject pure MC tracks
+   Bool_t   fRejectPureMC;    
+   
+   // selections on the MC signals bit map 
+   UInt_t    fCutOnMCFilterMap;         // map encoding the various requests on MC signals
+   Bool_t    fUseANDonMCFilterMap;  // if false, at least one of the enabled positions in the cut map should be on in the track MC signals map
    
    // ITS quantities
   Bool_t    fRequestITSrefit;                // if true, request kITSrefit flag to be on
@@ -73,7 +114,7 @@ class AliReducedTrackCut : public AliReducedVarCut {
   AliReducedTrackCut(const AliReducedTrackCut &c);
   AliReducedTrackCut& operator= (const AliReducedTrackCut &c);
   
-  ClassDef(AliReducedTrackCut,2);
+  ClassDef(AliReducedTrackCut,3);
 };
 
 #endif

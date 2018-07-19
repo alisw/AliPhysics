@@ -58,6 +58,10 @@ struct MacroParams {
   bool do_kt_qinv_cf;
   bool do_q3d_cf;
   bool do_kt_q3d_cf;
+  bool do_pqq3d_cf;
+  bool do_kt_pqq3d_cf;
+
+  bool do_moco6_cf;
 
   bool do_ylm_cf; // not implemented yet
   bool ylm_useLCMS;
@@ -96,9 +100,12 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_kt_qinv_cf = false;
   macro_config.do_q3d_cf = false;
   macro_config.do_kt_q3d_cf = false;
+  macro_config.do_pqq3d_cf = false;
+  macro_config.do_kt_pqq3d_cf = false;
   macro_config.do_deltaeta_deltaphi_cf = false;
   macro_config.do_avg_sep_cf = false;
   macro_config.do_ylm_cf = false;
+  macro_config.do_moco6_cf = false;
 
   macro_config.do_trueq_cf = false;
   macro_config.do_kt_trueq_cf = false;
@@ -166,11 +173,11 @@ ConfigFemtoAnalysis(const TString& param_str="")
   // loop over centrality ranges
   for (int cent_it = 0; cent_it + 1 < macro_config.centrality_ranges.size(); cent_it += 2) {
 
-    const int mult_low = macro_config.centrality_ranges[cent_it],
-             mult_high = macro_config.centrality_ranges[cent_it + 1];
+    const int cent_low = macro_config.centrality_ranges[cent_it],
+             cent_high = macro_config.centrality_ranges[cent_it + 1];
 
-    const TString mult_low_str = TString::Format("%0.2i", mult_low),
-                 mult_high_str = TString::Format("%0.2i", mult_high);
+    const TString cent_low_str = TString::Format("%0.2i", cent_low),
+                 cent_high_str = TString::Format("%0.2i", cent_high);
 
     // loop over pair types
     for (int pair_it = 0; pair_it < macro_config.pair_codes.size(); ++pair_it) {
@@ -200,14 +207,14 @@ ConfigFemtoAnalysis(const TString& param_str="")
 
       // build unique analysis name from centrality and pair types
       const TString analysis_name = TString::Format(
-        "PiPiAnalysis_%0.2i_%0.2i_%s", mult_low, mult_high, pair_type_str.Data()
+        "PiPiAnalysis_%0.2i_%0.2i_%s", cent_low, cent_high, pair_type_str.Data()
       );
 
       analysis_config.pion_type_1 = type_1;
       analysis_config.pion_type_2 = type_2;
 
-      cut_config.event_CentralityMin = mult_low;
-      cut_config.event_CentralityMax = mult_high;
+      cut_config.event_CentralityMin = cent_low;
+      cut_config.event_CentralityMax = cent_high;
 
       AliFemtoAnalysisPionPion *analysis = new AliFemtoAnalysisPionPion(analysis_name, analysis_config, cut_config);
 
@@ -235,10 +242,8 @@ ConfigFemtoAnalysis(const TString& param_str="")
       const int QINV_BIN_COUNT = TMath::Abs((QINV_MAX_VAL - QINV_MIN_VAL) * 1000 / macro_config.qinv_bin_size_MeV);
 
       if (macro_config.do_qinv_cf) {
-        // TString cf_title = TString("_qinv_") + pair_type_str;
         TString cf_title("_qinv");
-        int bin_count = (int)TMath::Abs(macro_config.qinv_max_GeV * 1000 / macro_config.qinv_bin_size_MeV));
-        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
+        AliFemtoCorrFctn *cf = new AliFemtoQinvCorrFctn(cf_title, QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
         analysis->AddCorrFctn(cf);
       }
 
@@ -275,37 +280,62 @@ ConfigFemtoAnalysis(const TString& param_str="")
       }
 
       if (macro_config.do_trueq3d_cf) {
-        // cf_title = TString("Trueq3D_") + pair_type_str;
         TString cf_title("Trueq3D_");
         AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
         m_cf->SetManager(model_manager);
         analysis->AddCorrFctn(m_cf);
       }
 
+      if (macro_config.do_moco6_cf) {
+        TString cf_title("MRC6D");
+        AliFemtoModelCorrFctnTrueQ6D *m_cf = new AliFemtoModelCorrFctnTrueQ6D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        m_cf->SetManager(model_manager);
+        analysis->AddCorrFctn(m_cf);
+      }
+
       if (macro_config.do_kt_qinv_cf) {
-        AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title.Data(), bin_count, 0.0, macro_config.qinv_max_GeV);
-        AliFemtoKtBinnedCorrFunc *kt_qinv = new AliFemtoKtBinnedCorrFunc("KT_Qinv", qinv_cf);
+        TString cf_title("_qinv");
+        AliFemtoQinvCorrFctn *qinv_cf = new AliFemtoQinvCorrFctn(cf_title, QINV_BIN_COUNT, QINV_MIN_VAL, QINV_MAX_VAL);
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Qinv", qinv_cf);
         // loop over (low,high) pairs in the kt_ranges vector
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],
                 high = macro_config.kt_ranges[kt_idx+1];
-          kt_qinv->AddKtRange(low, high);
+          kt_binned_cfs->AddKtRange(low, high);
         }
-        analysis->AddCorrFctn(kt_qinv);
+        analysis->AddCorrFctn(kt_binned_cfs);
       }
 
       if (macro_config.do_kt_q3d_cf && !macro_config.do_kt_trueq3d_cf) {
         // TString q3d_cf_name = TString("_q3D_") + pair_type_str;
         TString q3d_cf_name("_q3d");
-        AliFemtoKtBinnedCorrFunc *kt_q3d = new AliFemtoKtBinnedCorrFunc("KT_Q3D",
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_Q3D",
           new AliFemtoCorrFctn3DLCMSSym(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],
                 high = macro_config.kt_ranges[kt_idx+1];
-          kt_q3d->AddKtRange(low, high);
+          kt_binned_cfs->AddKtRange(low, high);
         }
-        analysis->AddCorrFctn(kt_q3d);
+        analysis->AddCorrFctn(kt_binned_cfs);
+      }
+
+      if (macro_config.do_pqq3d_cf) {
+        AliFemtoCorrFctn3DLCMSPosQuad *cf = AliFemtoCorrFctn3DLCMSPosQuad(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        analysis->AddCorrFctn(cf);
+      }
+
+      if (macro_config.do_kt_pqq3d_cf) {
+        TString q3d_cf_name("_q3d");
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_PQ3D",
+          new AliFemtoCorrFctn3DLCMSPosQuad(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq));
+
+        for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
+          float low = macro_config.kt_ranges[kt_idx],
+                high = macro_config.kt_ranges[kt_idx+1];
+          kt_binned_cfs->AddKtRange(low, high);
+        }
+        analysis->AddCorrFctn(kt_binned_cfs);
       }
 
       if (macro_config.do_kt_trueq3d_cf) {
@@ -314,20 +344,19 @@ ConfigFemtoAnalysis(const TString& param_str="")
         AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(q3d_cf_name, macro_config.q3d_bin_count, macro_config.q3d_maxq);
         m_cf->SetManager(model_manager);
 
-        AliFemtoKtBinnedCorrFunc *kt_true_q3d = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", m_cf);
+        AliFemtoKtBinnedCorrFunc *kt_binned_cfs = new AliFemtoKtBinnedCorrFunc("KT_TrueQ3D", m_cf);
 
         for (size_t kt_idx=0; kt_idx < macro_config.kt_ranges.size(); kt_idx += 2) {
           float low = macro_config.kt_ranges[kt_idx],
                 high = macro_config.kt_ranges[kt_idx+1];
-          kt_true_q3d->AddKtRange(low, high);
+          kt_binned_cfs->AddKtRange(low, high);
         }
-        analysis->AddCorrFctn(kt_true_q3d);
+        analysis->AddCorrFctn(kt_binned_cfs);
       }
 
       if (macro_config.do_ylm_cf) {
-        TString name = TString::Format("ylm", chrgs[ichg], imult);
         AliFemtoCorrFctnDirectYlm *ylm_cf = new AliFemtoCorrFctnDirectYlm(
-            name,
+            "AliFemtoCorrFctnDirectYlm",
             macro_config.ylm_max_l,
             macro_config.ylm_ibin, // nbinssh,
             macro_config.ylm_vmin,
@@ -363,7 +392,7 @@ BuildConfiguration(const TString &text,
   TIter next_line(lines);
   TObject *line_obj = NULL;
 
-  while (line_obj = next_line()) {
+  while ((line_obj = next_line())) {
 
     const TString line = ((TObjString*)line_obj)->String().Strip(TString::kBoth, ' ');
 
@@ -394,12 +423,12 @@ BuildConfiguration(const TString &text,
       TIter next_range_group(range_groups);
       TObjString *range_group = NULL;
 
-      while (range_group = (TObjString*)next_range_group()) {
+      while ((range_group = (TObjString*)next_range_group())) {
         TObjArray *subrange = range_group->String().Tokenize(":");
         TIter next_subrange(subrange);
         TObjString *subrange_it = (TObjString *)next_subrange();
         TString prev = TString::Format("%0.2d", subrange_it->String().Atoi());
-        while (subrange_it = (TObjString *)next_subrange()) {
+        while ((subrange_it = (TObjString *)next_subrange())) {
           TString next = TString::Format("%0.2d", subrange_it->String().Atoi());
 
           cmd = macro_varname + ".centrality_ranges.push_back(" + prev + ");";
@@ -427,12 +456,12 @@ BuildConfiguration(const TString &text,
       TIter next_range_group(range_groups);
       TObjString *range_group = NULL;
 
-      while (range_group = (TObjString*)next_range_group()) {
+      while ((range_group = (TObjString*)next_range_group())) {
         TObjArray *subrange = range_group->String().Tokenize(":");
         TIter next_subrange(subrange);
         TObjString *subrange_it = (TObjString *)next_subrange();
         TString prev = TString::Format("%0.6e", subrange_it->String().Atof());
-        while (subrange_it = (TObjString *)next_subrange()) {
+        while ((subrange_it = (TObjString *)next_subrange())) {
           TString next = TString::Format("%0.6e", subrange_it->String().Atof());
 
           cmd = macro_varname + ".kt_ranges.push_back(" + prev + ");";

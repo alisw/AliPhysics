@@ -2,7 +2,7 @@
 #define ALIANALYSISTASKTOFQAID_h
 
 class TString;
-class TList;
+class THashList;
 class AliAnalysisFilter;
 class AliCDBManager;
 class AliTOFcalib;
@@ -11,6 +11,7 @@ class AliTOFT0v1;
 class AliTOFHeader;
 class AliTOFChannelOnlineStatusArray;
 class AliTOFcalib;
+class AliESDpid;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -46,15 +47,15 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   void    SetExpTimeBinWidth(Float_t width) { fExpTimeBinWidth = width; return;};
   Bool_t  SetSelectMCspecies(Bool_t enableMC, Int_t absPdgCode) {fIsMC = enableMC; fSelectedPdg = absPdgCode; return kTRUE;};
   TString GetSpeciesName(Int_t absPdgCode);
-  void    HistogramMakeUp(TH1* hist, Color_t color, Int_t markerStyle,  TString drawOpt, TString newName, TString newTitle, TString xTitle, TString yTitle);
+  void    HistogramMakeUp(TH1* hist, Color_t color =-1, Int_t markerStyle = -1,  TString drawOpt = "", TString newName = "", TString newTitle = "", TString xTitle = "", TString yTitle = "");
   Double_t GetPhiAtTPCouterRadius(AliESDtrack * track);
   void    SetOCDBInfo(const char *cdbLocation, UInt_t runN) {fOCDBLocation=cdbLocation; fRunNumber=runN;}
 
  protected:
-  void    AddTofBaseHisto(TList *list, Int_t charge, TString suffix);
-  void    AddMatchingEffHisto(TList *list, Int_t charge, TString suffix);
-  void    AddPidHisto(TList *list, Int_t charge, TString suffix);
-  void    AddStartTimeHisto(TList *list, TString suffix);
+  void    AddTofBaseHisto(THashList *list, Int_t charge, TString suffix);
+  void    AddMatchingEffHisto(THashList *list, Int_t charge, TString suffix);
+  void    AddPidHisto(THashList *list, Int_t charge, TString suffix);
+  void    AddStartTimeHisto(THashList *list, TString suffix);
   void    AddTrdHisto();
   void    AddTofTrgHisto(TString suffix);
 
@@ -69,12 +70,12 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
 
   Bool_t  ComputeTimeZeroByTOF1GeV();
   Bool_t  SelectMCspecies(AliMCEvent * ev, AliESDtrack * track);
-  Bool_t  ComputeMatchingEfficiency(TList* list, TString variable);
+  Bool_t  ComputeMatchingEfficiency(THashList* list, TString variable);
   Bool_t  IsTPCTOFMatched(AliESDtrack * track, Bool_t checkMatchLabel);
   Bool_t  IsInTRD(AliESDtrack * track);
   Bool_t  IsEventSelected(AliESDEvent * event);
   void    LoadChannelMapsFromOCDB();
-  Bool_t  IsChannelGood(Int_t channel);
+  Bool_t  IsChannelGood(Int_t channel = -1);
 
  private:
   Int_t               fRunNumber; //run number
@@ -118,13 +119,23 @@ class AliAnalysisTaskTOFqaID : public AliAnalysisTaskSE {
   AliTOFChannelOnlineStatusArray * fChannelArray; //array of channel status
   AliTOFcalib *       fCalib; //TOF calibration object
   //output objects
-  TList *             fHlist;  //list of general histos
-  TList *             fHlistTimeZero; //list of timeZero related histos
-  TList *             fHlistPID; //list of PID-related histos
-  TList *             fHlistTRD;  //list of general histos for positive tracks
-  TList *             fHlistTrigger;  //list of general histos for TOF trg infos
+  THashList *             fHlist;  //list of general histos
+  THashList *             fHlistTimeZero; //list of timeZero related histos
+  THashList *             fHlistPID; //list of PID-related histos
+  THashList *             fHlistTRD;  //list of general histos for positive tracks
+  THashList *             fHlistTrigger;  //list of general histos for TOF trg infos
 
-  ClassDef(AliAnalysisTaskTOFqaID, 5); // example of analysis
+  static const Int_t fnBinsPt = 300; // binning for pt and p 
+  static const Int_t fnBinsEta = 200; // binning for eta
+  static const Int_t fnBinsPhi = 72; // binning for phi and phi_TPCouter
+  static const Double_t fBinsPt[2]; // binning for pt and p - max and min
+  static const Double_t fBinsEta[2]; // binning for eta - max and min
+  static const Double_t fBinsPhi[2]; // binning for phi and phi_TPCouter - max and min
+  Double_t fVariableBinsPt[fnBinsPt + 1]; // array of bins for pt and p
+
+  void SetPtVariableBinning(); // sets the array with variable binning in p and pT
+  
+  ClassDef(AliAnalysisTaskTOFqaID, 6); // example of analysis
 };
 
 #endif

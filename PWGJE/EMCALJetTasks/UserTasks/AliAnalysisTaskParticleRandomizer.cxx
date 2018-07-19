@@ -34,7 +34,7 @@ ClassImp(AliAnalysisTaskParticleRandomizer)
 
 //_____________________________________________________________________________________________________
 AliAnalysisTaskParticleRandomizer::AliAnalysisTaskParticleRandomizer() :
-  AliAnalysisTaskEmcal("AliAnalysisTaskParticleRandomizer", kFALSE), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fJetRemovalNLeadingJets(0), fJetEmbeddingArrayName(), fJetEmbeddingArray(0), fRandomPsi3(0), fLeadingJet(0), fSubleadingJet(0), fRandom()
+  AliAnalysisTaskEmcal("AliAnalysisTaskParticleRandomizer", kFALSE), fRandomizeInPhi(1), fRandomizeInEta(0), fRandomizeInTheta(0), fRandomizeInPt(0), fTrackEfficiency(1.0), fMinPhi(0), fMaxPhi(TMath::TwoPi()), fMinEta(-0.9), fMaxEta(+0.9), fMinPt(0), fMaxPt(120), fDistributionV2(0), fDistributionV3(0), fDistributionV4(0), fDistributionV5(0), fInputArrayName(), fOutputArrayName(), fInputArray(0), fOutputArray(0), fJetRemovalRhoObj(), fJetRemovalArrayName(), fJetRemovalArray(0), fJetRemovalPtThreshold(999.), fJetRemovalNLeadingJets(0), fJetEmbeddingArrayName(), fJetEmbeddingArray(0), fRandomPsi3(0), fLeadingJet(0), fSubleadingJet(0), fRandom()
 {
 // constructor
 }
@@ -125,6 +125,11 @@ Bool_t AliAnalysisTaskParticleRandomizer::Run()
       if( (fRandomizeInTheta || fRandomizeInEta) && (inputParticle->Eta() < fMinEta  || inputParticle->Eta() >= fMaxEta) )
         continue;
 
+      // Discard tracks due to lowered tracking efficiency
+      if (fTrackEfficiency < 1.0)
+        if (fTrackEfficiency < fRandom->Rndm())
+          continue;
+
       new ((*fOutputArray)[accTracks]) AliAODTrack(*((AliAODTrack*)fInputArray->At(iPart)));
 
       // Randomize on demand
@@ -144,6 +149,11 @@ Bool_t AliAnalysisTaskParticleRandomizer::Run()
         continue;
       if( (fRandomizeInTheta || fRandomizeInEta) && (inputParticle->Eta() < fMinEta  || inputParticle->Eta() >= fMaxEta) )
         continue;
+
+      // Discard tracks due to lowered tracking efficiency
+      if (fTrackEfficiency < 1.0)
+        if (fTrackEfficiency < fRandom->Rndm())
+          continue;
 
       new ((*fOutputArray)[accTracks]) AliAODTrack(*(GetAODTrack(inputParticle)));
 

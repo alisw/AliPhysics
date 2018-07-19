@@ -2,8 +2,7 @@
 //
 
 #include "AliEmcalCorrectionEventManager.h"
-
-#include "AliAnalysisTaskEmcalEmbeddingHelper.h"
+#include "AliEmcalContainerUtils.h"
 
 /**
  * Standard constructor
@@ -46,13 +45,5 @@ AliEmcalCorrectionEventManager::~AliEmcalCorrectionEventManager()
  */
 AliVEvent * AliEmcalCorrectionEventManager::InputEvent() const
 {
-  AliVEvent * event = fInputEvent;
-  if (fUseEmbedding) {
-    const auto embeddingHelper = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance();
-    if (!embeddingHelper) return 0;
-
-    event = embeddingHelper->GetExternalEvent();
-  }
-
-  return event;
+  return AliEmcalContainerUtils::GetEvent(fInputEvent, fUseEmbedding);
 }

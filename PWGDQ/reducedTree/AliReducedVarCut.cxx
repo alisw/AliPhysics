@@ -196,7 +196,7 @@ Bool_t AliReducedVarCut::IsSelected(TObject* obj, Float_t* values) {
   // apply cuts
   //
   if(values) return IsSelected(values);
-  if(!values) return IsSelected(obj);
+  else return IsSelected(obj);
 }
 
 
@@ -205,8 +205,6 @@ Bool_t AliReducedVarCut::IsSelected(TObject* obj) {
    //
    // apply cuts
    //
-   if(!obj->InheritsFrom(AliReducedBaseTrack::Class())) return kFALSE;
-   
    //Fill values
    Float_t values[AliReducedVarManager::kNVars];
    if(obj->InheritsFrom(AliReducedBaseEvent::Class())) AliReducedVarManager::FillEventInfo((AliReducedBaseEvent*)obj, values);

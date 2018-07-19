@@ -11,7 +11,12 @@ Options ("opt" argument):
 - NoTPCSIGMA  --> disable the nsigma_TPC vs p_TPC histos
 - NoSIGN --> disable splitting for single track charge
 - NoTrackQ  --> disable track quality monitoring (DCA, nCls) histos
-/***************************************************************************/
+***************************************************************************/
+#if !defined (__CINT__) || defined (__CLING__)
+#include "AliRsnValueEvent.h"
+#include "AliRsnValueDaughter.h"
+#include "AliRsnListOutput.h"
+#endif
 
 void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="NoSIGN",AliRsnLoopDaughter *lm=0)
 {
@@ -25,7 +30,7 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="NoSIGN"
   
   // Multiplicity/centrality
   AliRsnValueEvent *multi = new AliRsnValueEvent("multi",AliRsnValueEvent::kMult);
-  multi->SetBins(0.0, 400.0, 1);
+  multi->SetBins(0.0, 100.0, 1);
   // Momentum
   AliRsnValueDaughter *axisMomTPC = new AliRsnValueDaughter("pTPC", AliRsnValueDaughter::kPtpc);
   axisMomTPC->SetBins(0.0, 10.0, 0.02);
@@ -388,12 +393,6 @@ void AddMonitorOutput(Bool_t useMCMon = 0, TObjArray *mon=0,TString opt="NoSIGN"
     outMonitorEtaMC->AddValue(axisEtaMC);
     if (mon) mon->Add(outMonitorEtaMC);
     if (lm) lm->AddOutput(outMonitorEtaMC);
-
-    // output: 1D histo pt from MC
-    AliRsnListOutput *outMonitorPtMC = new AliRsnListOutput("PtMC", AliRsnListOutput::kHistoDefault);
-    outMonitorPtMC->AddValue(axisMomPtMC);
-    if (mon) mon->Add(outMonitorPtMC);
-    if (lm) lm->AddOutput(outMonitorPtMC);
   }
  
 }

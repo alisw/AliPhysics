@@ -7,23 +7,28 @@
 // 
 // Author: J.Otwinowski 04/14/2008 
 // Changes by M.Knichel 15/10/2010
+// Changes by J.Salzwedel 29/9/2014
 //------------------------------------------------------------------------------
 
 #include "TNamed.h"
 #include "TFolder.h"
 #include "THnSparse.h"
+#include "AliMergeable.h"
 
 class TTree;
 class AliMCEvent;
-class AliESDEvent;
+class AliVEvent;
 class AliRecInfoCuts;
 class AliMCInfoCuts;
-class AliESDfriend;
+class AliVfriendEvent;
 class AliESDVertex;
+class TRootIOCtor;
+#include "AliRecInfoCuts.h"
+#include "AliMCInfoCuts.h"
 
-class AliPerformanceObject : public TNamed {
+class AliPerformanceObject : public TNamed, public AliMergeable {
 public :
-  AliPerformanceObject(); 
+  AliPerformanceObject(TRootIOCtor*); 
   AliPerformanceObject(const char* name="AliPerformanceObject", const char* title="AliPerformanceObject", Int_t run=-1, Bool_t highMult=kFALSE); 
   virtual ~AliPerformanceObject();
 
@@ -37,10 +42,10 @@ public :
   
   // Execute analysis
   // call in the event loop 
-  virtual void Exec(AliMCEvent* const infoMC=0, AliESDEvent* const infoRC=0, AliESDfriend* const infoFriend=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseESDfriend=kFALSE) = 0;
+  virtual void Exec(AliMCEvent* const infoMC=0, AliVEvent* const infoRC=0, AliVfriendEvent* const vfriendEvent=0, const Bool_t bUseMC=kFALSE, const Bool_t bUseVfriend=kFALSE) = 0;
 
   // Merge output objects (needed by PROOF) 
-  virtual Long64_t Merge(TCollection* const list=0) = 0;
+  virtual Long64_t Merge(TCollection* list=0) = 0;
 
   // project to 1d,2d,3d
   // is called from FinishTaskOuput() in AliPerformanceTask
@@ -57,10 +62,16 @@ public :
   // is called from Terminate() in AliPerformanceTask
   // final spectra calculation
   virtual void AnalyseFinal() { ; }
+  virtual TCollection* GetListOfDrawableObjects(){ return 0; }
 
-  // 
-  virtual void SetAliRecInfoCuts(AliRecInfoCuts* const cuts=0) = 0;
-  virtual void SetAliMCInfoCuts(AliMCInfoCuts* const cuts=0) = 0; 
+  // Selection cuts
+  void SetAliRecInfoCuts(const AliRecInfoCuts* cuts) {
+    if (!cuts) return;
+    fCutsRC = *cuts;
+  }
+  void SetAliMCInfoCuts(const AliMCInfoCuts* cuts) {
+    fCutsMC = *cuts;
+  }
 
   // set and get analysisMode
   void SetAnalysisMode(const Int_t analysisMode=0) {fAnalysisMode = analysisMode;} 
@@ -72,13 +83,13 @@ public :
 
   // draw all histograms from the folder
   void PrintHisto(Bool_t logz = kTRUE, const Char_t * outFileName = "PerformanceQAHisto.ps"); 
-
+    
   // create log axis 
   Double_t *CreateLogAxis(Int_t nbins, Double_t xmin, Double_t xmax); 
 
   // trigger class selection
   void SetTriggerClass(const Char_t *triggerClass) { fTriggerClass = triggerClass; }
-  const Char_t* GetTriggerClass() const { return fTriggerClass; }
+  const Char_t* GetTriggerClass() const { return fTriggerClass.IsNull()?NULL:fTriggerClass.Data(); }
 
   // use track vertex
   void SetUseTrackVertex(Bool_t trackVtx = kTRUE) { fUseTrackVertex = trackVtx; }
@@ -105,6 +116,8 @@ public :
   void SetUseTOFBunchCrossing(Bool_t tofBunching = kTRUE) { fUseTOFBunchCrossing = tofBunching; }
   Bool_t IsUseTOFBunchCrossing() { return fUseTOFBunchCrossing; }
 
+  virtual void ResetOutputData() { ; }
+    
 protected: 
 
   void AddProjection(TObjArray* aFolderObj, TString nameSparse, THnSparse *hSparse, Int_t xDim, TString* selString = 0);
@@ -123,7 +136,7 @@ protected:
   Bool_t fHptGenerator; // hpt event generator
 
   // trigger class
-  const Char_t * fTriggerClass;
+  TString fTriggerClass;
 
   // use track vertex
   Bool_t fUseTrackVertex; // use track vertex
@@ -136,11 +149,13 @@ protected:
   Int_t  fUseCentralityBin;  // centrality bin to be used 
 
   Bool_t fUseTOFBunchCrossing; // use TOFBunchCrossing, default is yes
+  Bool_t fUseSparse;
 
-  AliPerformanceObject(const AliPerformanceObject&); // not implemented
-  AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
+  // Global cuts objects
+  AliRecInfoCuts fCutsRC;  // selection cuts for reconstructed tracks
+  AliMCInfoCuts  fCutsMC;  // selection cuts for MC tracks
 
-  ClassDef(AliPerformanceObject,7);
+  ClassDef(AliPerformanceObject,11);
 };
 
 #endif

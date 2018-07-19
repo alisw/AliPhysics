@@ -87,6 +87,8 @@ AliFemtoV0PurityBgdEstimator::AliFemtoV0PurityBgdEstimator(const AliFemtoV0Purit
   AliFemtoCorrFctn(aCorrFctn),
   fTitle(aCorrFctn.fTitle),
   fNbinsMinv(aCorrFctn.fNbinsMinv),
+  fMinvLow(aCorrFctn.fMinvLow),
+  fMinvHigh(aCorrFctn.fMinvHigh),
 
   fNumeratorWithoutSharedDaughterCut(aCorrFctn.fNumeratorWithoutSharedDaughterCut ? new TH1D(*aCorrFctn.fNumeratorWithoutSharedDaughterCut) : nullptr),
   fDenominatorWithoutSharedDaughterCut(aCorrFctn.fDenominatorWithoutSharedDaughterCut ? new TH1D(*aCorrFctn.fDenominatorWithoutSharedDaughterCut) : nullptr),
@@ -97,10 +99,8 @@ AliFemtoV0PurityBgdEstimator::AliFemtoV0PurityBgdEstimator(const AliFemtoV0Purit
   fFemtoV0TrackCut(aCorrFctn.fFemtoV0TrackCut ? new AliFemtoV0TrackCutNSigmaFilter(*aCorrFctn.fFemtoV0TrackCut) : nullptr),
 
   fRealV0Collection(aCorrFctn.fRealV0Collection ? new AliFemtoV0Collection(*aCorrFctn.fRealV0Collection) : nullptr),
-  fMixedV0Collection(aCorrFctn.fMixedV0Collection ? new AliFemtoV0Collection(*aCorrFctn.fMixedV0Collection) : nullptr),
+  fMixedV0Collection(aCorrFctn.fMixedV0Collection ? new AliFemtoV0Collection(*aCorrFctn.fMixedV0Collection) : nullptr)
 
-  fMinvLow(aCorrFctn.fMinvLow),
-  fMinvHigh(aCorrFctn.fMinvHigh)
 {
   // copy constructor
   fRatioWithoutSharedDaughterCut = (aCorrFctn.fRatioWithoutSharedDaughterCut) ? new TH1D(*aCorrFctn.fRatioWithoutSharedDaughterCut) : nullptr;
@@ -152,9 +152,9 @@ AliFemtoV0PurityBgdEstimator& AliFemtoV0PurityBgdEstimator::operator=(const AliF
 }
 
 //____________________________
-AliFemtoV0PurityBgdEstimator* AliFemtoV0PurityBgdEstimator::Clone()
+AliFemtoV0PurityBgdEstimator* AliFemtoV0PurityBgdEstimator::Clone() const
 {
-  return(new AliFemtoV0PurityBgdEstimator(*this));
+  return new AliFemtoV0PurityBgdEstimator(*this);
 }
 
 //____________________________
@@ -257,11 +257,11 @@ void AliFemtoV0PurityBgdEstimator::UseCorrectedDaughterHelices(const AliFemtoTra
   //When the helix was built, it assumed that particles come directly from event vertex
   //This is not useful for me, so I build new ones with more correct (hopefully) origins
   //Also, define relative to event vertex, this is necessary in the mixed event case
-  const AliFmThreeVector<double> tOriginPos(tTrackPos->XatDCA()-tHelixPosOG.Origin().x(), 
-                                            tTrackPos->YatDCA()-tHelixPosOG.Origin().y(), 
+  const AliFmThreeVector<double> tOriginPos(tTrackPos->XatDCA()-tHelixPosOG.Origin().x(),
+                                            tTrackPos->YatDCA()-tHelixPosOG.Origin().y(),
                                             tTrackPos->ZatDCA()-tHelixPosOG.Origin().z());
-  const AliFmThreeVector<double> tOriginNeg(tTrackNeg->XatDCA()-tHelixNegOG.Origin().x(), 
-                                            tTrackNeg->YatDCA()-tHelixNegOG.Origin().y(), 
+  const AliFmThreeVector<double> tOriginNeg(tTrackNeg->XatDCA()-tHelixNegOG.Origin().x(),
+                                            tTrackNeg->YatDCA()-tHelixNegOG.Origin().y(),
                                             tTrackNeg->ZatDCA()-tHelixNegOG.Origin().z());
 
   const AliFmPhysicalHelixD tHelixPos(tHelixPosOG.Curvature(), tHelixPosOG.DipAngle(), tHelixPosOG.Phase(), tOriginPos, tHelixPosOG.H());
@@ -318,7 +318,7 @@ void AliFemtoV0PurityBgdEstimator::BuildV0(AliFemtoPair* aPair)
 
   //Due to relative shift above in UseCorrectedDaughterHelices, use the primary vertex = {0,0,0} in
   //decay length etc. calculations below.
-  //  However, still call AliFemtoV0::SetPrimaryVertex to set primary vertex to actual value, 
+  //  However, still call AliFemtoV0::SetPrimaryVertex to set primary vertex to actual value,
   //  as, for now, the position of the event primary vertex is how we distinguish events in IsSameEvent function
 
   double tEventPrimVtx[3];
@@ -389,7 +389,7 @@ AliFemtoString AliFemtoV0PurityBgdEstimator::Report()
   report += TString::Format("Number of entries in denominatorWithoutSharedDaughterCut:\t%E\n", fDenominatorWithoutSharedDaughterCut->GetEntries());
   report += TString::Format("Number of entries in numerator:\t%E\n", fNumerator->GetEntries());
   report += TString::Format("Number of entries in denominator:\t%E\n", fDenominator->GetEntries());
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 
 //______________________________
@@ -467,6 +467,3 @@ void AliFemtoV0PurityBgdEstimator::AddMixedPair(AliFemtoPair* aPair)
   fDenominatorWithoutSharedDaughterCut->Fill(tMinv,weight);
 
 }
-
-
-

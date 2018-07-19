@@ -95,17 +95,10 @@ AliFemtoCorrFctn3DLCMSSym& AliFemtoCorrFctn3DLCMSSym::operator=(const AliFemtoCo
 
   AliFemtoCorrFctn::operator=(aCorrFctn);
 
-  delete fNumerator;
-  fNumerator = new TH3F(*aCorrFctn.fNumerator);
-
-  delete fDenominator;
-  fDenominator = new TH3F(*aCorrFctn.fDenominator);
-
-  delete fNumeratorW;
-  fNumeratorW = new TH3F(*aCorrFctn.fNumeratorW);
-
-  delete fDenominatorW;
-  fDenominatorW = new TH3F(*aCorrFctn.fDenominatorW);
+  *fNumerator = *aCorrFctn.fNumerator;
+  *fDenominator = *aCorrFctn.fDenominator;
+  *fNumeratorW = *aCorrFctn.fNumeratorW;
+  *fDenominatorW = *aCorrFctn.fDenominatorW;
 
   fUseLCMS = aCorrFctn.fUseLCMS;
 
@@ -161,7 +154,7 @@ AliFemtoString AliFemtoCorrFctn3DLCMSSym::Report()
     report += "No PairCut specific to this CorrFctn\n";
   }
 
-  return AliFemtoString(report);
+  return AliFemtoString((const char *)report);
 }
 //____________________________
 void AliFemtoCorrFctn3DLCMSSym::AddRealPair(AliFemtoPair* pair)

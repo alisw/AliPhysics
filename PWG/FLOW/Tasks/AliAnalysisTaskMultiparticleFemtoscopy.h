@@ -28,6 +28,8 @@
 #include "TProfile2D.h"
 #include "TH1F.h"
 #include "TH1I.h"
+#include "THnSparse.h"
+#include "TSystem.h"
 
 //================================================================================================================
 
@@ -52,6 +54,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void InitializeArraysForCorrelationFunctionsTEST();
   virtual void InitializeArraysForBackgroundTEST();
   virtual void InitializeArraysForHybridApproach();
+  virtual void InitializeArraysForMPDF();
 
   // 1.) Methods called in UserCreateOutputObjects():
   //  2a) Directly:
@@ -68,6 +71,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void BookEverythingForCorrelationFunctionsTEST();
   virtual void BookEverythingForBackgroundTEST();
   virtual void BookEverythingForHybridApproach();
+  virtual void BookEverythingForMPDF();
   //  2b) Indirectly:
   Int_t InsanityChecksForGlobalTrackCuts(); // insanity checks for global track cuts
 
@@ -79,10 +83,11 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   virtual void ESD(AliESDEvent *aESD);
   virtual void AOD(AliAODEvent *aAOD);
   virtual void OnlineMonitoring();
+  virtual void DoHybridApproach(AliVEvent *ave);
+  virtual void DoMPDF(AliVEvent *ave);
   //  2b) Indirectly:
   virtual void EstimateBackground(AliVEvent *ave);
   virtual void EstimateBackgroundTEST(AliVEvent *ave);
-  virtual void DoHybridApproach(AliVEvent *ave);
   virtual void FillControlHistogramsEvent(AliVEvent *ave);
   virtual void FillControlHistogramsParticle(AliVEvent *ave);
   virtual void FillControlHistogramsNonIdentifiedParticles(AliAODTrack *atrack);
@@ -110,6 +115,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Double_t PairVectorComponent(AliAODTrack *agtrack1, AliAODTrack *agtrack2, const char *component);
   Double_t RelativeMomenta(AliAODMCParticle *amcparticle1, AliAODMCParticle *amcparticle2);
   Double_t Q2(AliAODTrack *agtrack1, AliAODTrack *agtrack2);
+  Double_t Q2(TLorentzVector lv1, TLorentzVector lv2);
   Double_t Q3(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3);
   Double_t Q4(AliAODTrack *agtrack1, AliAODTrack *agtrack2, AliAODTrack *agtrack3, AliAODTrack *agtrack4);
 
@@ -135,6 +141,8 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   //virtual void HybridApproach3rdTerm(AliAODEvent *aAOD); // TBI not needed for the time being
   //virtual void HybridApproach4thTerm(AliAODEvent *aAOD); // TBI not needed for the time being
   virtual void HybridApproach5thTerm(TClonesArray *ca1, TClonesArray *ca2, TClonesArray *ca3, TExMap *em1, TExMap *em2, TExMap *em3);
+  virtual void CalculateMPDF2p(AliAODEvent *aAOD);
+  virtual void CalculateMPDF3p(AliAODEvent *aAOD);
 
   // 3.) Methods called in Terminate(Option_t *):
   virtual void GetOutputHistograms(TList *histList);
@@ -142,10 +150,15 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
    virtual void GetPointersForCorrelationFunctions();
    virtual void GetPointersForBackground();
    virtual void GetPointersForBuffers();
+   virtual void GetPointersForMPDF();
   virtual void NormalizeCorrelationFunctions();
+  virtual void ProjectMPDF2p();
+  virtual void ProjectMPDF3p();
+
   // 4.) Utility:
   Int_t BinNoForSpecifiedValue(TH1F *hist, Double_t value);
   Int_t BinNoForSpecifiedValue(TProfile *pro, Double_t value);
+  Double_t BinCenterSparse(THnSparse *hs, Int_t dim, Int_t binNo);
 
   // Setters and getters:
   // 0.) Not classified yet;
@@ -388,6 +401,12 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
    this->fnQ3min = min;
    this->fnQ3max = max;
   };
+  void SetQ4binning(const Int_t nBins, const Double_t min, const Double_t max)
+  {
+   this->fnQ4bins = nBins;
+   this->fnQ4min = min;
+   this->fnQ4max = max;
+  };
   void SetFillCorrelationFunctionsTEST(Int_t const testNO, Bool_t bDoTest) {this->fFillCorrelationFunctionsTEST[testNO] = bDoTest;};
 
   // *.) Testing new ways to calculate background:
@@ -403,6 +422,66 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   void SetHybridApproachFlagsPro(TProfile* const hafp) {this->fHybridApproachFlagsPro = hafp;};
   TProfile* GetHybridApproachFlagsPro() const {return this->fHybridApproachFlagsPro;};
   void SetDoHybridApproach(Bool_t bhap) {this->fDoHybridApproach = bhap;};
+
+  // *) m.p.d.f.'s:
+  void SetMPDFList(TList* const mpdfl) {this->fMPDFList = mpdfl;};
+  TList* GetMPDFList() const {return this->fMPDFList;}
+  void SetMPDFFlagsPro(TProfile* const mpdffp) {this->fMPDFFlagsPro = mpdffp;};
+  TProfile* GetMPDFFlagsPro() const {return this->fMPDFFlagsPro;};
+  void SetDoMPDF(Bool_t bmpdf) {this->fDoMPDF = bmpdf;};
+  void SetCalculateMPDF2p(Bool_t cmpdf2p) {this->fCalculateMPDF2p = cmpdf2p;};
+  Bool_t GetCalculateMPDF2p() const {return this->fCalculateMPDF2p;};
+  void SetCalculateMPDF3p(Bool_t cmpdf3p) {this->fCalculateMPDF3p = cmpdf3p;};
+  Bool_t GetCalculateMPDF3p() const {return this->fCalculateMPDF3p;};
+  void SetProjectMPDF2p(Bool_t pmpdf2p) {this->fProjectMPDF2p = pmpdf2p;};
+  Bool_t GetProjectMPDF2p() const {return this->fProjectMPDF2p;};
+  void SetProjectMPDF3p(Bool_t pmpdf3p) {this->fProjectMPDF3p = pmpdf3p;};
+  Bool_t GetProjectMPDF3p() const {return this->fProjectMPDF3p;};
+  void SetnBinsPxPyPzE2p(Int_t p1xNbins, Int_t p1yNbins, Int_t p1zNbins, Int_t p2xNbins, Int_t p2yNbins, Int_t p2zNbins)
+  {
+   this->fnBinsPxPyPzE2p[0] = p1xNbins;
+   this->fnBinsPxPyPzE2p[1] = p1yNbins;
+   this->fnBinsPxPyPzE2p[2] = p1zNbins;
+   this->fnBinsPxPyPzE2p[3] = p2xNbins;
+   this->fnBinsPxPyPzE2p[4] = p2yNbins;
+   this->fnBinsPxPyPzE2p[5] = p2zNbins;
+  };
+  void SetMinValuesBinsPxPyPzE2p(Float_t p1xmin, Float_t p1ymin, Float_t p1zmin, Float_t p2xmin, Float_t p2ymin, Float_t p2zmin)
+  {
+   this->fmin2p[0] = p1xmin;
+   this->fmin2p[1] = p1ymin;
+   this->fmin2p[2] = p1zmin;
+   this->fmin2p[3] = p2xmin;
+   this->fmin2p[4] = p2ymin;
+   this->fmin2p[5] = p2zmin;
+  };
+  void SetMaxValuesBinsPxPyPzE2p(Float_t p1xmax, Float_t p1ymax, Float_t p1zmax, Float_t p2xmax, Float_t p2ymax, Float_t p2zmax)
+  {
+   this->fmax2p[0] = p1xmax;
+   this->fmax2p[1] = p1ymax;
+   this->fmax2p[2] = p1zmax;
+   this->fmax2p[3] = p2xmax;
+   this->fmax2p[4] = p2ymax;
+   this->fmax2p[5] = p2zmax;
+  };
+  void SetnBinsPxPyPzE1p(Int_t p1xNbins, Int_t p1yNbins, Int_t p1zNbins)
+  {
+   this->fnBinsPxPyPzE1p[0] = p1xNbins;
+   this->fnBinsPxPyPzE1p[1] = p1yNbins;
+   this->fnBinsPxPyPzE1p[2] = p1zNbins;
+  };
+  void SetMinValuesBinsPxPyPzE1p(Float_t p1xmin, Float_t p1ymin, Float_t p1zmin) // applies both for p1 and p2
+  {
+   this->fmin1p[0] = p1xmin;
+   this->fmin1p[1] = p1ymin;
+   this->fmin1p[2] = p1zmin;
+  };
+  void SetMaxValuesBinsPxPyPzE1p(Float_t p1xmax, Float_t p1ymax, Float_t p1zmax) // applies both for p1 and p2
+  {
+   this->fmax1p[0] = p1xmax;
+   this->fmax1p[1] = p1ymax;
+   this->fmax1p[2] = p1zmax;
+  };
 
   // *.) Online monitoring:
   void SetUpdateOutputFile(const Int_t uf, const char *uqof)
@@ -659,6 +738,9 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   Int_t fnQ3bins;                                    // number of bins for all histos and profiles vs. Q3 (both for signal and background)
   Double_t fnQ3min;                                  // min bin for all histos and profiles vs. Q3 (both for signal and background)
   Double_t fnQ3max;                                  // max bin for all histos and profiles vs. Q3 (both for signal and background)
+  Int_t fnQ4bins;                                    // number of bins for all histos and profiles vs. Q4 (both for signal and background)
+  Double_t fnQ4min;                                  // min bin for all histos and profiles vs. Q4 (both for signal and background)
+  Double_t fnQ4max;                                  // max bin for all histos and profiles vs. Q4 (both for signal and background)
   TList *fCorrelationFunctionsTESTSublist[10];       //! lists to hold all TEST correlation functions, they are enumerated in .cxx file
   Bool_t fFillCorrelationFunctionsTEST[10];          // fill or not particular TEST correlation functions, they are enumerated in .cxx file (by default all are set to FALSE)
   TProfile *fCorrelationFunctionsTEST[10][2][7][10]; //! [testNo][0=vs Q2, 1=vs Q3][example [0=<x1>][1=<x2>], ...,[6=<x1x2x3>]][differential index, e.g. for test 0 [0=Cx][1=Cy][2=Cz]]
@@ -685,6 +767,24 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   TClonesArray *fMixedEventsHA[3];   //! tracks for mixed events, using just 'shifting' for simplicity TBI make it it more sophisticated later
   TExMap *fGlobalTracksAODHA[3];     //! global tracks in AOD
 
+  // *.) m.p.d.f.'s:
+  TList *fMPDFList;         // list to hold all histos for approach with m.p.d.f.'s
+  TProfile *fMPDFFlagsPro;  // profile to hold all flags for approach with m.p.d.f.'s
+  Bool_t fDoMPDF;           // do or not the correlations via the m.p.d.f.'s
+  Bool_t fCalculateMPDF2p;  // calculate 2p correlations via m.p.d.f.'s 
+  Bool_t fCalculateMPDF3p;  // calculate 3p correlations via m.p.d.f.'s 
+  Bool_t fProjectMPDF2p;    // project 2p correlations at the end of the day 
+  Bool_t fProjectMPDF3p;    // project 3p correlations at the end of the day
+  THnSparse *fhs2p[3];      //! [0] = p.d.f. for both particles; [1] = m.p.d.f. for 1st particle; [2] = m.p.d.f. for 2nd particle
+  TH1D *fProjectionQ2[3];   //! [0] = projection on Q2 from p.d.f. for both particles; [1] = projection on Q2 from the product of m.p.d.f.'s of 1st and 2nd particle; [2] = normalized, i.e. [0]/[1]
+  TH1D *fDistMPDF[9];       //! various distributions relevant for m.p.d.f.'s (see .cxx file for a detailed expl.)
+  Int_t fnBinsPxPyPzE2p[6]; // TBI add a comment 
+  Double_t fmin2p[6];       // TBI add a comment 
+  Double_t fmax2p[6];       // TBI add a comment 
+  Int_t fnBinsPxPyPzE1p[3]; // TBI add a comment 
+  Double_t fmin1p[3];       // TBI add a comment 
+  Double_t fmax1p[3];       // TBI add a comment 
+
   // *.) Online monitoring:
   Bool_t fOnlineMonitoring;        // enable online monitoring (not set excplicitly!), the flags below just refine it
   Bool_t fUpdateOutputFile;        // update the output file after certain number of analysed events
@@ -700,7 +800,7 @@ class AliAnalysisTaskMultiparticleFemtoscopy : public AliAnalysisTaskSE{
   UInt_t fOrbit;                  // do something only for the specified event
   UInt_t fPeriod;                 // do something only for the specified event
 
-  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,20);
+  ClassDef(AliAnalysisTaskMultiparticleFemtoscopy,23);
 
 };
 

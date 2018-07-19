@@ -91,6 +91,7 @@ fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
 fcentMim(0),
 fcentMax(0),
+fBitOption(0),
 fCentralityEstimator("V0M"),
 fOutputList(0),
 fNevents(0),
@@ -174,8 +175,21 @@ fInvmassULS(0),
 fInvmassLS(0),
 fInvmassULS_MCtrue(0),
 fInvmassPi0Dalitz(0),
+fHistRawNits(0), 
+fHistRawNtpc(0), 
+fHistRawCrosstpc(0), 
+fHistRawNitschi2(0), 
+fHistRawNtpcchi2(0), 
+fHistRawNitsPhi(0), 
+fHistRawNtpcPhi(0), 
 fMCcheckMother(0),
 fMCneutral(0),
+fEMCTrkMatch_Phi(0),
+fEMCTrkMatch_Eta(0),
+fCompTrackPt(0),
+fCompTrackPtinEMCreg(0),
+fCompTrackPtMatch(0),
+fCompTrackPtMatchwithEMC(0),
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -215,6 +229,7 @@ fThresholdEG1(140),
 fFlagClsTypeEMC(kTRUE),
 fcentMim(0),
 fcentMax(0),
+fBitOption(0),
 fCentralityEstimator("V0M"),
 fFlagClsTypeDCAL(kTRUE),
 fOutputList(0),
@@ -299,8 +314,21 @@ fInvmassULS(0),
 fInvmassLS(0),
 fInvmassULS_MCtrue(0),
 fInvmassPi0Dalitz(0),
+fHistRawNits(0), 
+fHistRawNtpc(0), 
+fHistRawCrosstpc(0), 
+fHistRawNitschi2(0), 
+fHistRawNtpcchi2(0), 
+fHistRawNitsPhi(0), 
+fHistRawNtpcPhi(0), 
 fMCcheckMother(0),
 fMCneutral(0),
+fEMCTrkMatch_Phi(0),
+fEMCTrkMatch_Eta(0),
+fCompTrackPt(0),
+fCompTrackPtinEMCreg(0),
+fCompTrackPtMatch(0),
+fCompTrackPtMatchwithEMC(0),
 fSparseElectron(0),
 fvalueElectron(0)
 {
@@ -501,6 +529,12 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fEMCTrkMatch = new TH2F("fEMCTrkMatch","Distance of EMCAL cluster to its closest track;#phi;z",100,-0.3,0.3,100,-0.3,0.3);
     fOutputList->Add(fEMCTrkMatch);
     
+    fEMCTrkMatch_Phi = new TH2F("fEMCTrkMatch_Phi","Distance of EMCAL cluster to its closest track in #Delta#phi vs p_{T};p_{T};#Delta#phi",500,0,50.0,100,-0.3,0.3);
+    fOutputList->Add(fEMCTrkMatch_Phi);
+    
+    fEMCTrkMatch_Eta = new TH2F("fEMCTrkMatch_Eta","Distance of EMCAL cluster to its closest track in #Delta#eta vs p_{T};p_{T};#Delta#eta",500,0,50.0,100,-0.3,0.3);
+    fOutputList->Add(fEMCTrkMatch_Eta);
+    
     fEMCTrkPt = new TH1F("fEMCTrkPt","p_{T} distribution of tracks with EMCAL cluster;p_{T} (GeV/c);counts",500,0,50);
     fOutputList->Add(fEMCTrkPt);
     
@@ -606,6 +640,27 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fInvmassULS_MCtrue = new TH2F("fInvmassULS_MCtrue", "Invmass of ULS (e,e) for pt^{e}>1; mass(GeV/c^2); counts;", 6,-0.5,5.5,1000,0,1.0);
     fOutputList->Add(fInvmassULS_MCtrue);
     
+    fHistRawNits = new TH2F("fHistRawNits","Raw its hits; p_{T}(GeV/c); counts",40,0,40,7,0,7);
+    fOutputList->Add(fHistRawNits);
+
+    fHistRawNtpc = new TH2F("fHistRawNtpc","Raw tpc hits; p_{T}(GeV/c); counts",40,0,40,200,0,200);
+    fOutputList->Add(fHistRawNtpc);
+
+    fHistRawCrosstpc = new TH2F("fHistRawCrosstpc","Raw tpc NCrossroad; p_{T}(GeV/c); counts",40,0,40,200,0,200);
+    fOutputList->Add(fHistRawCrosstpc);
+
+    fHistRawNitschi2 = new TH2F("fHistRawNitschi2","Raw its chi2; p_{T}(GeV/c); #chi^{2}",40,0,40,50,0,50);
+    fOutputList->Add(fHistRawNitschi2);
+
+    fHistRawNtpcchi2 = new TH2F("fHistRawNtpcchi2","Raw tpc chi2; p_{T}(GeV/c); #chi^{2}",40,0,40,50,0,50);
+    fOutputList->Add(fHistRawNtpcchi2);
+
+    fHistRawNitsPhi = new TH2F("fHistRawNitsPhi","Raw its hits vs. Phi; #phi; counts",200,0,6.4,7,0,7);
+    fOutputList->Add(fHistRawNitsPhi);
+
+    fHistRawNtpcPhi = new TH2F("fHistRawNtpcPhi","Raw tpc hits vs. Phi; #phi; counts",200,0,6.4,200,0,200);
+    fOutputList->Add(fHistRawNtpcPhi);
+
     /*
      Int_t binsDal[6] =      {3,300,200,200,3,100};
      Double_t mimDal[6] = {-0.5,0,0,0,-0.5,-5};
@@ -619,11 +674,25 @@ void AliAnalysisTaskHFEemcQA::UserCreateOutputObjects()
     fMCneutral = new TH2F("fMCneutral","pi0 and eta pT from Hijing and enhance",6,-0.5,5.5,500,0,50);
     fOutputList->Add(fMCneutral);
     
+    Double_t ptbinning[36] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
+    
+    fCompTrackPt = new TH1F("fCompTrackPt","p_{T} distribution of tracks after cuts for comparison;p_{T} (GeV/c);counts",35,ptbinning);
+    fOutputList->Add(fCompTrackPt);
+    
+    fCompTrackPtinEMCreg = new TH1F("fCompTrackPtinEMCreg","p_{T} distribution of tracks after cuts in EMC region for comparison;p_{T} (GeV/c);counts",35,ptbinning);
+    fOutputList->Add(fCompTrackPtinEMCreg);
+    
+    fCompTrackPtMatch = new TH1F("fCompTrackPtMatch","p_{T} distribution of tracks matched to EMC surface for comparison;p_{T} (GeV/c);counts",35,ptbinning);
+    fOutputList->Add(fCompTrackPtMatch);
+    
+    fCompTrackPtMatchwithEMC = new TH1F("fCompTrackPtMatchwithEMC","p_{T} distribution of tracks matched to EMC cluster for comparison;p_{T} (GeV/c);counts",35,ptbinning);
+    fOutputList->Add(fCompTrackPtMatchwithEMC);
+    
     if(fFlagSparse){
-    Int_t bins[9]=      {8, 280, 160, 40, 200, 200,    3, 100,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;nSigma_Pi;cent
-    Double_t xmin[9]={-0.5,   2,  -8,   0,   0,   0, -0.5,  -5,   0};
-    Double_t xmax[9]={ 7.5,  30,   8,   2,   2,   2,  2.5,  15, 100};
-    fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;eID;nSigma_Pi;cent;",9,bins,xmin,xmax);
+    Int_t bins[9]=      {8, 280, 160, 40, 200, 200, 3, 20,  10}; // trigger;pT;nSigma;eop;m20;m02;sqrtm02m20;eID;iSM;cent
+    Double_t xmin[9]={-0.5,   2,  -8,   0,   0,   0, -0.5,  0,   0};
+    Double_t xmax[9]={ 7.5,  30,   8,   2,   2,   2,  2.5,  20, 100};
+    fSparseElectron = new THnSparseD ("Electron","Electron;trigger;pT;nSigma;eop;m20;m02;eID;iSM;cent;",9,bins,xmin,xmax);
     fOutputList->Add(fSparseElectron);
     }
     PostData(1,fOutputList);
@@ -998,11 +1067,22 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
         AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
         
+        GetRawTrackInfo(atrack);
+        
+        ////////////////////////////////
+        //Comparison with TPC analysis//
+        ////////////////////////////////
+        Bool_t fcompTPC=kFALSE;
+        fcompTPC = ComparePropWithTPCAna(pVtx,atrack);
+
         ////////////////////
         //Apply track cuts//
         ////////////////////
         if(fAOD)
-            if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
+            if(fBitOption==0)
+                if(!atrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue; //mimimum cuts
+            if(fBitOption==1)
+                if(!atrack->TestFilterMask(AliAODTrack::kTrkITSConstrained)) continue; //mimimum cuts
         
         if(fESD)
             if(!esdTrackCutsH->AcceptTrack(etrack))continue;
@@ -1114,10 +1194,10 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
         if(fUseTender) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
         
         Short_t NcellsInCluster = clustMatch->GetNCells();
-        int iSM = -1;
+        int icell=-1, iSM = -1;
         for(int icl=0; icl<NcellsInCluster; icl++)
         {
-            int icell = clustMatch->GetCellAbsId(icl);
+            if(icl==0) icell = clustMatch->GetCellAbsId(icl); //first cell = seed cell?
             if(fEMCALGeo)
                 iSM = fEMCALGeo->GetSuperModuleNumber(icell);
         }
@@ -1132,6 +1212,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             Double_t fPhiDiff = -999, fEtaDiff = -999;
             GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
             fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
+            fEMCTrkMatch_Phi->Fill(track->Pt(),fPhiDiff);
+            fEMCTrkMatch_Eta->Fill(track->Pt(),fEtaDiff);
             
             if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) continue;
             
@@ -1217,7 +1299,8 @@ void AliAnalysisTaskHFEemcQA::UserExec(Option_t *)
             fvalueElectron[4] = m20;
             fvalueElectron[5] = m02;
             fvalueElectron[6] = pid_ele;
-            fvalueElectron[7] = fTPCnSigma_Pi;
+           // fvalueElectron[7] = fTPCnSigma_Pi;
+            fvalueElectron[7] = iSM;
             fvalueElectron[8] = centrality;
             
             if(fFlagSparse && track->Pt()>2.0){
@@ -1533,6 +1616,85 @@ void AliAnalysisTaskHFEemcQA::CheckMCgen(AliAODMCHeader* fMCheader)
     return;
 }
 
+//_______________________________________________________________________
+void AliAnalysisTaskHFEemcQA::GetRawTrackInfo(AliAODTrack* rtrack)
+{
+    //Get properties of all tracks
+    
+ fHistRawNits->Fill(rtrack->Pt(),rtrack->GetITSNcls()); 
+ fHistRawNtpc->Fill(rtrack->Pt(),rtrack->GetTPCNcls()); 
+ fHistRawCrosstpc->Fill(rtrack->Pt(),rtrack->GetTPCNCrossedRows()); 
+ fHistRawNitschi2->Fill(rtrack->Pt(),rtrack->GetITSchi2()); 
+ fHistRawNtpcchi2->Fill(rtrack->Pt(),rtrack->GetTPCchi2()); 
+ if(rtrack->Pt()>1.5)
+   {
+   fHistRawNitsPhi->Fill(rtrack->Phi(),rtrack->GetITSNcls()); 
+   fHistRawNtpcPhi->Fill(rtrack->Phi(),rtrack->GetTPCNcls()); 
+   }
+}
+//_______________________________________________________________________
+Bool_t AliAnalysisTaskHFEemcQA::ComparePropWithTPCAna(const AliVVertex *pVtx, AliAODTrack* atrack)
+{
+    //Comparison with TPC analysis
+    
+    Double_t d0z0[2]={-999,-999}, cov[3];
+
+    //track cuts
+    if(!atrack->TestFilterMask(AliAODTrack::kTrkITSConstrained)) return kFALSE;
+    if(atrack->GetTPCNcls() < 120) return kFALSE;
+    if(TMath::Abs(atrack->Eta()) > 0.8) return kFALSE;
+    if(atrack->GetITSNcls() < 4) return kFALSE;
+    if(atrack->GetTPCNclsF() < 0.6) return kFALSE;
+    if(atrack->GetTPCsignalN() < 80) return kFALSE;
+    if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) return kFALSE;
+    if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) return kFALSE;
+    
+    if(atrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
+            if(TMath::Abs(d0z0[0]) > 1 || TMath::Abs(d0z0[1]) > 2) return kFALSE;
+    
+    fCompTrackPt->Fill(atrack->Pt()); //All tracks after track cuts
+    
+    //tracks in the EMCAL region
+    if(TMath::Abs(atrack->Eta()) > 0.6) return kFALSE; //EMCAL : 80 < phi < 187, eta < 0.7
+    if(atrack->Phi() < 1.39 || atrack->Phi() > 3.265) return kFALSE;
+
+    fCompTrackPtinEMCreg->Fill(atrack->Pt()); //tracks in the EMC region
+    
+    ///////////////////////////
+    //Track matching to EMCAL//
+    //////////////////////////
+    if(!atrack->IsEMCAL()) return kFALSE;
+    Int_t EMCalIndex = -1;
+    EMCalIndex = atrack->GetEMCALcluster();
+    if(EMCalIndex < 0) return kFALSE;
+    
+    fCompTrackPtMatch->Fill(atrack->Pt()); //tracks matched to EMC
+    
+    AliVCluster *clustMatch=0x0;
+    if(!fUseTender) clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);
+    if(fUseTender) clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));
+    
+    Double_t emcphi = -999, emceta=-999;
+    if(clustMatch && clustMatch->IsEMCAL())
+    {
+        Double_t fPhiDiff = -999, fEtaDiff = -999;
+        GetTrkClsEtaPhiDiff(atrack, clustMatch, fPhiDiff, fEtaDiff);
+        if(TMath::Abs(fPhiDiff) > 0.05 || TMath::Abs(fEtaDiff)> 0.05) return kFALSE;
+        
+        Float_t  emcx[3]; // cluster pos
+        clustMatch->GetPosition(emcx);
+        TVector3 clustpos(emcx[0],emcx[1],emcx[2]);
+        emcphi = clustpos.Phi();
+        emceta = clustpos.Eta();
+        if(emcphi < 0) emcphi = emcphi+(2*TMath::Pi());
+        if(emcphi < 1.39 || emcphi > 3.265) return kFALSE; //EMCAL : 80 < phi < 187
+        
+        fCompTrackPtMatchwithEMC->Fill(atrack->Pt()); //tracks with EMC cluster
+        Double_t clustMatchE = clustMatch->E();
+    }
+    
+    return kTRUE;
+}
 //________________________________________________________________________
 void AliAnalysisTaskHFEemcQA::FindPatches(Bool_t &hasfiredEG1,Bool_t &hasfiredEG2,Double_t emceta,Double_t emcphi)
 {

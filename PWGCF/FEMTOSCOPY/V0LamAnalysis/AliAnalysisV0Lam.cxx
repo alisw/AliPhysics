@@ -1,3 +1,7 @@
+///
+/// \file V0LamAnalysis/AliAnalysisV0Lam.cxx
+///
+
 #include <iostream>
 #include <math.h>
 #include "TChain.h"
@@ -28,45 +32,54 @@
 
 // Analysis task for studying lambda-lambda femtoscopic correlations
 // Author: Jai Salzwedel, jai.salzwedel@cern.ch
+using namespace std;
 
-
+/// \cond CLASSIMP
 ClassImp(AliAnalysisV0Lam)
+/// \endcond
 
 //________________________________________________________________________
 AliAnalysisV0Lam::AliAnalysisV0Lam():
-AliAnalysisTaskSE(),
+  AliAnalysisTaskSE(),
   nEventsToMix(5),
-  fAOD(0),
-  fOutputList(0),
-  fpidAOD(0),
-  fVariableCutType(0),
-  fNominalTopCutIndex(0),
-  fEventCount(0),
-  fPDGLambda(1.115683),
-  fPDGProton(.938272),
-  fPDGPion(.1395702),
+  fAOD(nullptr),
+  fOutputList(nullptr),
+  fpidAOD(nullptr),
+  fCutProcessor(nullptr),
+  fMaxV0Mult(700),
   fEtaDaughter(0.8),
   fMassWindowLam(0.00568),
   fTOFLow(0.8),
-  fSigmaCutTPCProton(3.0),
+
+  fSigmaCutTOFPion(4.0),
   fSigmaCutTPCPion(3.0),
   fSigmaCutTOFProton(4.0),
-  fSigmaCutTOFPion(4.0),
-  fIsUsingVariableAvgSepCut(kFALSE),
-  fMaxV0Mult(700),
-  fNumberVariableAvgSepCuts(3),
-  fTestNoTTC(kFALSE),
-  fCutProcessor(NULL),
+  fSigmaCutTPCProton(3.0),
+
+  fPDGLambda(1.115683),
+  fPDGProton(.938272),
+  fPDGPion(.1395702),
+
+  fEventCount(0),
   fSysStudyType(kNoStudy),
+
   fNumberOfTopologicalCutValues(1),
   fNumberOfCfVariableCutValues(1),
-  fTotalLambda(0),
-  fTotalAntiLambda(0),
-  fV0Candidates(0),
+  fVariableCutType(0),
+  fNominalTopCutIndex(0),
+
+  fTestNoTTC(kFALSE),
+  fNumberVariableAvgSepCuts(3),
+  fIsUsingVariableAvgSepCut(kFALSE),
   fIsMCEvent(kFALSE),
   fFlattenCent(kTRUE),
   fEC(NULL),
   fEvt(NULL),
+
+  fTotalLambda(0),
+  fTotalAntiLambda(0),
+  fV0Candidates(0),
+
   fTPCVsPPosLam(NULL), fTPCVsPNegLam(NULL),
   fTPCVsPPosALam(NULL), fTPCVsPNegALam(NULL),
   fMultDistRough(NULL),
@@ -125,39 +138,47 @@ AliAnalysisTaskSE(),
 //________________________________________________________________________
 
 AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_t varCutType, Bool_t flattenCent, Int_t nMixingEvents, Bool_t testNoTwoTrackCuts):
-  AliAnalysisTaskSE(name), 
+  AliAnalysisTaskSE(name),
   nEventsToMix(nMixingEvents),
-  fAOD(0), 
-  fOutputList(0),
-  fpidAOD(0),
-  fVariableCutType(varCutType),
-  fNominalTopCutIndex(0),
-  fEventCount(0),
-  fPDGLambda(1.115683),
-  fPDGProton(.938272),
-  fPDGPion(.1395702),
+  fAOD(nullptr),
+  fOutputList(nullptr),
+  fpidAOD(nullptr),
+  fCutProcessor(nullptr),
+  fMaxV0Mult(700),
   fEtaDaughter(0.8),
   fMassWindowLam(0.00568),
   fTOFLow(0.8),
-  fSigmaCutTPCProton(3.0),
+
+  fSigmaCutTOFPion(4.0),
   fSigmaCutTPCPion(3.0),
   fSigmaCutTOFProton(4.0),
-  fSigmaCutTOFPion(4.0),
-  fIsUsingVariableAvgSepCut(kFALSE),
-  fMaxV0Mult(700),
-  fNumberVariableAvgSepCuts(3),
-  fTestNoTTC(testNoTwoTrackCuts),
-  fCutProcessor(NULL),
+  fSigmaCutTPCProton(3.0),
+
+  fPDGLambda(1.115683),
+  fPDGProton(.938272),
+  fPDGPion(.1395702),
+
+  fEventCount(0),
   fSysStudyType(sysStudyType),
   fNumberOfTopologicalCutValues(1),
   fNumberOfCfVariableCutValues(1),
-  fTotalLambda(0),
-  fTotalAntiLambda(0),
-  fV0Candidates(0), 
+
+  fVariableCutType(varCutType),
+  fNominalTopCutIndex(0),
+
+  fTestNoTTC(testNoTwoTrackCuts),
+  fNumberVariableAvgSepCuts(3),
+  fIsUsingVariableAvgSepCut(kFALSE),
   fIsMCEvent(kFALSE),
   fFlattenCent(flattenCent),
+
   fEC(NULL),
   fEvt(NULL),
+
+  fTotalLambda(0),
+  fTotalAntiLambda(0),
+  fV0Candidates(0),
+
   fTPCVsPPosLam(NULL), fTPCVsPNegLam(NULL),
   fTPCVsPPosALam(NULL), fTPCVsPNegALam(NULL),
   fMultDistRough(NULL),
@@ -212,7 +233,7 @@ AliAnalysisV0Lam::AliAnalysisV0Lam(const char *name, SysStudy sysStudyType, Int_
   fBkgLamLamPlusMinusSep(NULL), fBkgALamALamPlusMinusSep(NULL),
   fBkgLamALamProtSep(NULL), fBkgLamALamPionSep(NULL)
 {
-  // Define output slots here 
+  // Define output slots here
   // Output slot #1
   DefineOutput(1, TList::Class());
   if (kTopologicalStudy == fSysStudyType) {
@@ -235,7 +256,7 @@ AliAnalysisV0Lam::~AliAnalysisV0Lam()
   delete[] fEC;
   delete fCutProcessor;
   if(fOutputList) delete fOutputList; //This cleans up all output hists
-} 
+}
 //________________________________________________________________________
 void AliAnalysisV0Lam::MyInit()
 {
@@ -269,7 +290,7 @@ void AliAnalysisV0Lam::MyInit()
   }
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   fpidAOD = aodH->GetAODpidUtil();
-}	
+}
 //________________________________________________________________________
 void AliAnalysisV0Lam::UserCreateOutputObjects()
 {
@@ -279,9 +300,9 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   // associated histograms
   // cout<<"Create histograms"<<endl;
   fOutputList = new TList();
-  fOutputList->SetOwner(); 
+  fOutputList->SetOwner();
   MyInit();// Initialize my settings
-  
+
   fMultDistRough = new TH1F("fMultDistRough","Multiplicity Distribution",301,-.5,3001-.5);
   fMultDistRough->GetXaxis()->SetTitle("Event Multiplicity (pions)");
   fMultDistRough->GetYaxis()->SetTitle("# of events");
@@ -375,7 +396,7 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   int kTBins = 20;
   double maxKtBin = 4.;
   int kStarBins = 800;
-  double maxKStar = 2.; 
+  double maxKStar = 2.;
   //Pair kT Tracking: kT bins, centrality bins, k* bins
   fSignalKtVsKstarLamLam = new TH3F("fSignalKtVsKstarLamLam", "LamLam Pair Kt Same Event;k_T;CentBin;k*", kTBins, 0., maxKtBin, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
   fOutputList->Add(fSignalKtVsKstarLamLam);
@@ -392,9 +413,9 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   fOutputList->Add(fBkgKtVsKstarLamALam);
 
 
-  
 
-  
+
+
   /////////Signal Distributions///////////////////
   //First bin is variable cut value, second bin is centrality, third bin is Kstar
   fSignalLamLam = new TH3F("fSignalLamLam","Same Event Pair Distribution;VarBin;CentBin;k*", fNumberOfCfVariableCutValues, -0.5, fNumberOfCfVariableCutValues -0.5, nCentBins, .5, nCentBins+.5, kStarBins, 0., maxKStar);
@@ -429,7 +450,7 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   dlDiffDir->Add(fHistSignalProperDecayLengthDiffALamALam);
   fHistSignalProperDecayLengthDiffLamALam = new TH1F ("fHistSignalProperDecayLengthDiffLamALam", "Difference in proper decay length of #Lambda#bar{#Lambda} pairs;ProperDecayLengthDiff", dlDiffBins, 0., dlDiffMaxValue);
   dlDiffDir->Add(fHistSignalProperDecayLengthDiffLamALam);
-  
+
   fHistBkgProperDecayLengthDiffLamLam = new TH1F ("fHistBkgProperDecayLengthDiffLamLam", "Difference in proper decay length of #Lambda#Lambda pairs;ProperDecayLengthDiff", dlDiffBins, 0., dlDiffMaxValue);
   dlDiffDir->Add(fHistBkgProperDecayLengthDiffLamLam);
   fHistBkgProperDecayLengthDiffALamALam = new TH1F ("fHistBkgProperDecayLengthDiffALamALam", "Difference in proper decay length of #bar{#Lambda}#bar{#Lambda} pairs;ProperDecayLengthDiff", dlDiffBins, 0., dlDiffMaxValue);
@@ -442,7 +463,7 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   sepDirNew->SetName("AvgSepNew");
   fOutputList->Add(sepDirNew);
 
-  
+
   Int_t avgSepBins = 400;
   Double_t avgSepMaxValue = 40.;
   Int_t ptBins = 30;
@@ -464,7 +485,7 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
 
   fSignalLamALamProtPiPlusSep = new TH3F ("fSignalLamALamProtPiPlusSep","Pos pair sep for Lam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
   sepDirNew->Add(fSignalLamALamProtPiPlusSep);
-  
+
   fBkgLamLamProtSep = new TH3F ("fBkgLamLamProtSep","Proton pair sep for Lam-Lam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
   sepDirNew->Add(fBkgLamLamProtSep);
 
@@ -511,7 +532,7 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   fBkgLamALamPionSep = new TH3F ("fBkgLamALamPionSep","Pion pair sep for Lam-ALam;AvgSep;pT1;pT2", avgSepBins, 0., avgSepMaxValue, ptBins, 0., ptMax, ptBins, 0., ptMax);
   sepDirNew->Add(fBkgLamALamPionSep);
 
-  
+
   // Directory for MC Truth info
   TObjArray *arrMC = new TObjArray();
   arrMC->SetName("MCTruthInfo");
@@ -560,12 +581,12 @@ void AliAnalysisV0Lam::UserCreateOutputObjects()
   resArr->Add(fResMatrixLLMixedPure);
   resArr->Add(fResMatrixAAMixedPure);
   resArr->Add(fResMatrixLAMixedPure);
-  
+
   PostData(1, fOutputList);
 }
 
 //________________________________________________________________________
-void AliAnalysisV0Lam::Exec(Option_t *) 
+void AliAnalysisV0Lam::Exec(Option_t *)
 {
   // Main loop
   // Called for each event
@@ -601,7 +622,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
   else if(mcArray) cerr<<"Could not find mcHeader!"<<endl;
   if(mcArray) fIsMCEvent = kTRUE;
   else fIsMCEvent = kFALSE;
-  
+
   //Centrality selection
   AliCentrality *centrality = fAOD->GetCentrality();
   float centralityPercentile = centrality->GetCentralityPercentile("V0M");
@@ -613,7 +634,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
       // cout<<"\t\t\tSkipping Event: Centrality flattening\n\n";
       return;}
   }
-  
+
   int centralityBin=0;
   //Printf("Centrality percent = %f", centralityPercentile);
   fCentrality->Fill(centralityPercentile);
@@ -648,7 +669,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
   else if(centralityPercentile <= 95.) centralityBin=18;
   else if(centralityPercentile <= 100.) centralityBin=19;
   else {/*Printf("Skipping Peripheral Event");*/ return;}
-   
+
   //Vertexing
   AliAODVertex *primaryVertexAOD = fAOD->GetPrimaryVertex();
   TVector3 vertex(primaryVertexAOD->GetX(),
@@ -688,10 +709,10 @@ void AliAnalysisV0Lam::Exec(Option_t *)
   fEvt = fEC[zBin][centralityBin]->fEvt;
   fEvt->fPrimaryVertex = vertex;
   fCutProcessor->SetCentralityBin(centralityBin+1);
-//////////////////////////////////////////////////////////////////  
+//////////////////////////////////////////////////////////////////
   //v0 tester
 ////////////////////////////////////////////////////////////////
-  
+
   int v0Count = 0;
   vector<int> lambdaCount(fNumberOfTopologicalCutValues,0);
   vector<int> antiLambdaCount(fNumberOfTopologicalCutValues,0);
@@ -745,25 +766,25 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     if(daughterTrackNeg->Pt() < .16) continue;
     if(fabs(daughterTrackPos->Eta()) > fEtaDaughter) continue;
     if(fabs(daughterTrackNeg->Eta()) > fEtaDaughter) continue;
-    
+
     //Now we'll get particle origin and momentum truth for MC particles
     AliReconstructedV0::MCV0Origin_t mcV0Origin = AliReconstructedV0::kUnassigned;
     TVector3 v0MomentumTruth(0., 0., 0.);
     if(fIsMCEvent){
       //first reject injected particles
-      if(IsInjectedParticle(v0,mcArray,numberOfLastHijingLabel)) continue; 
+      if(IsInjectedParticle(v0,mcArray,numberOfLastHijingLabel)) continue;
       mcV0Origin = DetermineV0Origin(v0, mcArray);
       v0OriginHist->Fill(mcV0Origin);
       GetMCParticleMomentumTruth(v0MomentumTruth, v0, mcArray);
     }
     //Now perform daughter track PID using TPC
     if (daughterTrackPos->Pt() > 0.5) {// min-pt cut to fix proton PID issues in LHC10h data
-      if(fabs(fpidAOD->NumberOfSigmasTPC(daughterTrackPos,AliPID::kProton)) 
-	 < fSigmaCutTPCProton)   hasProtonDaughter = kTRUE;	
+      if(fabs(fpidAOD->NumberOfSigmasTPC(daughterTrackPos,AliPID::kProton))
+	 < fSigmaCutTPCProton)   hasProtonDaughter = kTRUE;
     }
     if(fabs(fpidAOD->NumberOfSigmasTPC(daughterTrackPos,AliPID::kPion)) < fSigmaCutTPCPion)  hasPiPlusDaughter = kTRUE;
     if (daughterTrackNeg->Pt() > 0.5){
-      if(fabs(fpidAOD->NumberOfSigmasTPC(daughterTrackNeg,AliPID::kProton)) 
+      if(fabs(fpidAOD->NumberOfSigmasTPC(daughterTrackNeg,AliPID::kProton))
 	 < fSigmaCutTPCProton) hasAntiProtonDaughter = kTRUE;
     }
     if(fabs(fpidAOD->NumberOfSigmasTPC(daughterTrackNeg,AliPID::kPion)) < fSigmaCutTPCPion) hasPiMinusDaughter = kTRUE;
@@ -782,7 +803,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
 	  else hasProtonDaughter = kFALSE;
 	}
       }
-    }      
+    }
     if(daughterTrackNeg->P() > fTOFLow)
     { //negative daughter PID
       AliPIDResponse::EDetPidStatus statusNegTOF = fpidAOD->CheckPIDStatus(AliPIDResponse::kTOF,daughterTrackNeg);
@@ -796,7 +817,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
 	  if(fabs(fpidAOD->NumberOfSigmasTOF(daughterTrackNeg,AliPID::kProton)) < fSigmaCutTOFProton) hasAntiProtonDaughter = kTRUE;
 	  else hasAntiProtonDaughter = kFALSE;
 	}
-      }    
+      }
     }
     //If V0 doesn't have the right daughter combinations,
     //move on to the next candidate
@@ -804,7 +825,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
 
     //Save V0 information
     AliReconstructedV0 &thisV0 = fEvt->fReconstructedV0[v0Count];
-    
+
     thisV0.v0Momentum.SetXYZ(v0->Px(), v0->Py(), v0->Pz());
     thisV0.v0MomentumTruth = v0MomentumTruth;
     thisV0.v0Pt     = v0->Pt();
@@ -855,7 +876,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
       TVector3 posCorrected = thisV0.daughterPosGlobalPositions[iRad] - vertex;
       TVector3 negCorrected = thisV0.daughterNegGlobalPositions[iRad] - vertex;
       posCorrectedVector.push_back(posCorrected);
-      negCorrectedVector.push_back(negCorrected);      
+      negCorrectedVector.push_back(negCorrected);
     }
     thisV0.daughterPosCorrectedGlobalPositions = posCorrectedVector;
     thisV0.daughterNegCorrectedGlobalPositions = negCorrectedVector;
@@ -867,7 +888,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     AddV0ToMultiplicityCounts(& thisV0, lambdaCount, antiLambdaCount);
     FillTPCSignalHists(& thisV0, daughterTrackPos->P(), daughterTrackPos->GetTPCsignal(), daughterTrackNeg->P(), daughterTrackNeg->GetTPCsignal());
     if(fIsMCEvent) CheckForFakeV0s(& thisV0, fMCFakeParticleIdentity, fMCOtherV0Identity, mcV0Origin);
-    
+
     if(fIsMCEvent) {
       // Fill some MC information for lambdas, fill for antilambdas
       if(thisV0.isLamCenter[fNominalTopCutIndex]) {
@@ -881,7 +902,7 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     	fMCTruthEtaALam->Fill(thisV0.v0MomentumTruth.Eta());
       }
     }
-    
+
     //Increment V0 count and check that we don't exceed size of V0 array
     v0Count++;
     if(fMaxV0Mult <= v0Count){
@@ -890,10 +911,10 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     }
   } //End of V0 loop
   //cout<<"Finished with V0 storage.  V0 candidate count is "<<v0Count<<endl;
-  
+
   fEvt->fNumberCandidateV0 = v0Count;
   if(fIsMCEvent) BinOriginInformationForMCParticles(mcTruthOriginHist, v0OriginHist, v0PassedCutsOriginHist);
-  
+
   //The following histograms don't get used again, so clean them up
   if(mcTruthOriginHist){
     delete mcTruthOriginHist;
@@ -908,22 +929,22 @@ void AliAnalysisV0Lam::Exec(Option_t *)
     v0PassedCutsOriginHist = NULL;
   }
 
-  
+
   DoV0JudgmentCuts(fEvt, v0Count);
   HistogramEventMultiplicities(lambdaCount, antiLambdaCount, centralityBin);
   fTotalLambda += lambdaCount[fNominalTopCutIndex];
   fTotalAntiLambda += antiLambdaCount[fNominalTopCutIndex];
   //Printf("Reconstruction Finished. Starting pair studies.");
-  
+
   //Now look at pairs for correlation function binning
   DoPairStudies(fEvt, centralityBin);
   //cout<<"Pair studies completed.  Event finished"<<endl;
-  
+
   // Post output data.
   PostData(1, fOutputList);
 }
 //________________________________________________________________________
-void AliAnalysisV0Lam::Terminate(Option_t *) 
+void AliAnalysisV0Lam::Terminate(Option_t *)
 {
   // Called once at the end of the query
   // cout<<"Total Lambdas found:\t"<<fTotalLambda<<"."<<endl
@@ -975,7 +996,7 @@ Double_t AliAnalysisV0Lam::GetAverageSeparation(const vector<TVector3> &globalPo
   Double_t radii[9]={85.,105.,125.,145.,165.,185.,205.,225.,245.};
 
 
-  
+
   double avgSeparation = 0.;
   double pointsUsed = 0.;
   for(int iRad = 0; iRad < 9; iRad++) {
@@ -988,16 +1009,16 @@ Double_t AliAnalysisV0Lam::GetAverageSeparation(const vector<TVector3> &globalPo
       pointIsBad = kTRUE;
       continue;
     }
-    
+
     if(pointIsBad) continue;
     TVector3 diff = globalPositions1st[iRad] - globalPositions2nd[iRad];
     avgSeparation += diff.Mag();
     pointsUsed++;
   }
-  
+
   if(pointsUsed < 1) return 0.;
 
-  return avgSeparation/pointsUsed; 
+  return avgSeparation/pointsUsed;
 }
 
 
@@ -1010,7 +1031,7 @@ void AliAnalysisV0Lam::DoV0JudgmentCuts(const AliAnalysisV0LamEvent * const even
   // characteristic (e.g. cosine of pointing angle) of two V0s that share a
   // daughter.  The V0 closer to the ideal value (e.g. cos(pointing) = 1) is
   // kept, while the other V0 is removed.
-  
+
   // Occasionally several V0s will share a single daughter, or several V0s
   // will share several daughters.  Because of this, the possibility
   // exists for a V0 to be removed, and subsequently the V0 that it
@@ -1020,7 +1041,7 @@ void AliAnalysisV0Lam::DoV0JudgmentCuts(const AliAnalysisV0LamEvent * const even
   // subsequently restores V0s which no longer compete with any other V0s.
   // This process of removing and restoring V0s continues until the
   // process stabilizes or 20 iterations occurs.
-  
+
   //"Removed" V0s have a boolean flag "isDeemedUnworthy" which is set to
   // true.  Those V0s do not get used in correlation function pairs.
 
@@ -1055,7 +1076,7 @@ void AliAnalysisV0Lam::DoV0JudgmentCuts(const AliAnalysisV0LamEvent * const even
 	  int worseV0 = DetermineWhichV0IsWorse(event, currentV0Number, comparisonV0Number, selectionCriterion, cutIndex);
 	  if (worseV0 != -1) event->fReconstructedV0[worseV0].isDeemedUnworthy[cutIndex] = kTRUE;
 	  // A V0 has been removed, so process has not converged.
-	  converged = kFALSE; 
+	  converged = kFALSE;
 	  if(event->fReconstructedV0[currentV0Number].isDeemedUnworthy[cutIndex]) break;
 	} //End loop over comparison V0s
       }// End V0 removal
@@ -1106,7 +1127,7 @@ void AliAnalysisV0Lam::DoV0JudgmentCuts(const AliAnalysisV0LamEvent * const even
 
 //________________________________________________________________________
 int AliAnalysisV0Lam::DetermineWhichV0IsWorse(const AliAnalysisV0LamEvent * const event, const int V01, const int V02, const int Criterion, const int cutIndex)
-{ 
+{
   // Performs a judgment cut on two V0 by comparing characteristics of those V0
   // and looking to see which of those V0 is further from the ideal value.
   // Cut is only performed on two V0 that claim the same daughter track.
@@ -1116,16 +1137,16 @@ int AliAnalysisV0Lam::DetermineWhichV0IsWorse(const AliAnalysisV0LamEvent * cons
     if (event->fReconstructedV0[V01].v0DCA <
 	event->fReconstructedV0[V02].v0DCA) worseV0=V02;
     else worseV0=V01;
-  } 
+  }
   else if (Criterion == 1)//compare using DCA of daughters
   {
-    if(event->fReconstructedV0[V01].daughtersDCA < 
+    if(event->fReconstructedV0[V01].daughtersDCA <
        event->fReconstructedV0[V02].daughtersDCA) worseV0 = V02;
     else worseV0 = V01;
   }
   else if (Criterion == 2)//compare using cos(pointing) of V0s
   {
-    if(event->fReconstructedV0[V01].cosPointing > 
+    if(event->fReconstructedV0[V01].cosPointing >
        event->fReconstructedV0[V02].cosPointing) worseV0 = V02;
     else worseV0 = V01;
   }
@@ -1463,7 +1484,7 @@ void AliAnalysisV0Lam::AddV0ToMultiplicityCounts(AliReconstructedV0 *v0, vector<
   //If a V0 is a Lambda or an Antilambda, add one to the respective V0
   //yields for this event.  Depending on the variable cut value, the V0
   //may or may not get categorized as a (anti)Lambda.
-  //This information is used for histogramming event multiplicities. 
+  //This information is used for histogramming event multiplicities.
   for(int i = 0; i < fNumberOfTopologicalCutValues; i++){
     if(v0->isLamCenter[i]) lambdaCount[i]++;
     if(v0->isALamCenter[i]) antiLambdaCount[i]++;
@@ -1506,7 +1527,7 @@ void AliAnalysisV0Lam::CheckForFakeV0s(const AliReconstructedV0 *v0, TH1F *mcFak
   // Used in MC studies to determine how many reconstructed Lambdas and
   // Antilambdas are actually fake.  For simplicity, this is only done for
   // the default value of the variable reconstruction cut.
-  if(v0->isLamCenter[fNominalTopCutIndex] 
+  if(v0->isLamCenter[fNominalTopCutIndex]
      || v0->isALamCenter[fNominalTopCutIndex])
   {
     if(AliReconstructedV0::kFake == mcV0Origin){
@@ -1528,7 +1549,7 @@ double AliAnalysisV0Lam::CalculateKstar(TVector3 p1, TVector3 p2, double mass1, 
 {
   Double_t e1 = sqrt(pow(mass1, 2) + p1.Mag2());
   Double_t e2 = sqrt(pow(mass2, 2) + p2.Mag2());
-  
+
   TLorentzVector vec1(p1, e1);
   TLorentzVector vec2(p2, e2);
 
@@ -1549,7 +1570,7 @@ TVector3 AliAnalysisV0Lam::GetEmissionPoint(const AliAODMCParticle * const track
   emisV -= primVertex;
   return emisV;
 }
-  
+
 //________________________________________________________________________
 void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent * const event, const Int_t centralityBin)
 {
@@ -1558,27 +1579,27 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent * const event, 
 
   for (Int_t topCutIndex = 0; topCutIndex < fNumberOfTopologicalCutValues; topCutIndex++)
   { // Start looping over all variable cut values
-    for (Int_t i=0; i < event->fNumberCandidateV0; i++) 
+    for (Int_t i=0; i < event->fNumberCandidateV0; i++)
     { //Start looping over reconstructed V0s in this event
       AliReconstructedV0 &v01 = event->fReconstructedV0[i];
-      
+
       Bool_t center1Lam  = v01.isLamCenter[topCutIndex];
       Bool_t center1ALam = v01.isALamCenter[topCutIndex];
       // Disregard V0 if it wasn't reconstructed as a center (anti)Lambda
       if (!(center1Lam || center1ALam)) continue;
       // Disregard V0 if it was removed via the judgment cuts
       if (v01.isDeemedUnworthy[topCutIndex]) continue;
-     
+
       for (Int_t eventNumber=0; eventNumber<nEventsToMix+1; eventNumber++)
       { // Event buffer loop: eventNumber=0 is the current event, all other eventNumbers are past events
 	Int_t startBin=0;
 	// For same event pairs, start 2nd V0 loop at i+1 V0 to avoid
 	// double counting
 	if (eventNumber==0) startBin=i+1;
-	for (Int_t j=startBin; j<(event+eventNumber)->fNumberCandidateV0; j++) 
+	for (Int_t j=startBin; j<(event+eventNumber)->fNumberCandidateV0; j++)
 	{ // Second V0 loop (from past or current event)
 	  AliReconstructedV0 &v02 = (event+eventNumber)->fReconstructedV0[j];
-	  if (eventNumber==0)  
+	  if (eventNumber==0)
 	  { // Don't make pairs of V0s if they shared daughter tracks.
 	    // This is redundant if the judgment cut is already employed
 	    if (v01.daughter1ID == v02.daughter1ID) continue;
@@ -1608,16 +1629,17 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent * const event, 
 	    cout<<"Error: AliAnalysisV0Lam::DoPairStudies - Not a valid pair type"<<endl;
 	    continue;
 	  }
-	  
+
 	  // Now we calculate a bunch of values that are used later during
 	  // histogramming
-	  Double_t pairKt = (v01.v0Momentum + v02.v0Momentum).Pt()/2;
+	  // Double_t pairKt = (v01.v0Momentum + v02.v0Momentum).Pt()/2;
 	  //Calculate k* for V0s and daughters using different mass assumptions
-	  Double_t pairKstarLam = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda,fPDGLambda);
+    // Double_t pairKstarLam =
+    CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda,fPDGLambda);
 
 	  // Check that the pair passes our pair cuts
 	  vector<Bool_t> avgSepCutResults = CheckAvgSepCut(pairType, v01, v02);
-	  
+
 	  if (topCutIndex == fNominalTopCutIndex) {
 	    FillDecayLengthDiffHists(pairType, v01, v02, eventNumber);
 	    FillAvgSepHists(pairType, v01, v02, eventNumber);
@@ -1633,7 +1655,7 @@ void AliAnalysisV0Lam::DoPairStudies(const AliAnalysisV0LamEvent * const event, 
 		cutBin = iTTC;
 	      }
 	      FillCorrelationHists(pairType, v01, v02, eventNumber, cutBin, centralityBin);
-	      
+
 	      // Fill the momentum resolution matrices. We only
 	      // want to fill this once, so make sure that there is
 	      // no systematic cut study going on, or that we are
@@ -1658,7 +1680,7 @@ void AliAnalysisV0Lam::FillDecayLengthDiffHists(const PairType pairType, const A
 
   if (v01.lorentzGammaLam <= 0) return; // Avoid divide by zero errors if something is wrong
   if (v02.lorentzGammaLam <= 0) return;
-  
+
   Double_t properLength1 = v01.decayLength/v01.lorentzGammaLam;
   Double_t properLength2 = v02.decayLength/v02.lorentzGammaLam;
 
@@ -1821,10 +1843,10 @@ vector<Bool_t> AliAnalysisV0Lam::CheckAvgSepCut(const PairType type, const AliRe
   if (kTwoTrackStudy == fSysStudyType) {
     nVariableCuts = 3;
   }
-  
+
   // We may be varying one of the cut values. Loop over the variations.
   for (Int_t iVar = 0; iVar < nVariableCuts; iVar++) {
-    // Initialize the nominal avg sep cut values.  
+    // Initialize the nominal avg sep cut values.
     vector<Double_t> nominalCutValues(kNumberTTCTypes);
     nominalCutValues[kSameProtProt] = 12.; // Same sign prot-prot cut
     nominalCutValues[kSamePiPi]     = 10.; // Same sign pi-pi
@@ -1888,7 +1910,7 @@ void AliAnalysisV0Lam::FillMomentumResolutionMatrix(const PairType type, const A
   if(v01.v0MomentumTruth.Mag() < 0.0001) return;  //Not a real V0
   if(v02.v0MomentumTruth.Mag() < 0.0001) return;  //Not a real V0
 
-  
+
   Double_t kstarRec = CalculateKstar(v01.v0Momentum, v02.v0Momentum, fPDGLambda, fPDGLambda);
   Double_t kstarTruth = CalculateKstar(v01.v0MomentumTruth, v02.v0MomentumTruth, fPDGLambda, fPDGLambda);
 
@@ -1941,7 +1963,7 @@ void AliAnalysisV0Lam::FillMomentumResolutionMatrix(const PairType type, const A
     }
   }
 
-  
+
 }
 
 

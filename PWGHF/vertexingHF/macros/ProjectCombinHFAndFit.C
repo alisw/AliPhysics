@@ -8,22 +8,31 @@
 #include <TH3F.h>
 #include <TH1D.h>
 #include <TF1.h>
+#include <TStyle.h>
 #include <TLatex.h>
 #include <TPaveText.h>
 #include <TLegend.h>
 #include <TLegendEntry.h>
 #include <TDatabasePDG.h>
 #include "AliHFInvMassFitter.h"
+#include "AliVertexingHFUtils.h"
 #include "AliNormalizationCounter.h"
 #endif
 
 enum Method{kME,kRot,kLS,kSB};
 
 // input files and pt binning
-TString fileName="DataTrains/AnalysisResults_FAST_wSDD_train912915.root";
-TString suffix="Pt400_SPDany_3SigPID_FidY_PilMV_EM1";
-TString fileNameMC="MCtrains/AnalysisResults_FAST_wSDD_train834835.root";//AnalysisResults_FAST_wSDD_train826827.root";
-TString suffixMC="_Prompt_Pt400_SPDany_3SigPID_FidY_PilMV_EM1";
+TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2114.root";
+TString suffix="3SigPID_Pt300_FidY_PilSPD5_EM1";
+//TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G3_train890-889.root";
+TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train892-891.root";
+TString suffixMC="_Prompt_3SigPID_Pt300_FidY_PilSPD5_EM1";
+
+// TString fileName="DataTrains/AnalysisResults_17pq_FAST_wSDD_train2104.root";
+// TString suffix="2SigPID_Pt300_FidY_PilSPD5_EM1";
+// TString fileNameMC="MCTrains/AnalysisResults_LHC17pq_FAST_CENTwSDD_G4_train870-869.root";
+// TString suffixMC="_Prompt_2SigPID_Pt300_FidY_PilSPD5_EM1";
+
 TString meson="Dzero";
 const Int_t nPtBins=8;
 Double_t binLims[nPtBins+1]={0.,1.,2.,3.,4.,5.,6.,8.,12.};
@@ -35,8 +44,9 @@ Bool_t saveCanvasAsRoot=kTRUE;
 Int_t saveCanvasAsEps=1;   //0=none, 1=main ones, 2=all
 
 // fit configuration
-Int_t rebin[nPtBins]={5,6,7,8,9,10,10,12};//8,9,10,12,12,12,12};
-Bool_t fixSigma=kTRUE;
+Int_t rebin[nPtBins]={4,6,7,8,9,10,10,12};//8,9,10,12,12,12,12};
+Bool_t fixSigma=kFALSE;
+Double_t tuneSigmaOnData=-1.00; // scaling factor for the Gaussian sigma, if -1. use MC out of the box
 Bool_t fixMean=kFALSE;
 Double_t minMass=1.72;
 Double_t maxMass=2.04;
@@ -68,6 +78,8 @@ TH1D* hMCReflPtBin;
 TH1D* hMCSigPtBin;
 
 void WriteFitInfo(AliHFInvMassFitter *fitter, TH1D* histo);
+void WriteFitFunctionsToFile(AliHFInvMassFitter *fitter, TString meth, Int_t iPtBin);
+TH1F* FitMCInvMassSpectra(TList* lMC);
 
 AliHFInvMassFitter* ConfigureFitter(TH1D* histo, Int_t iPtBin, Int_t backcase, Double_t minFit, Double_t maxFit){
   TH1F* histof=(TH1F*)histo->Clone(Form("%s_Fl",histo->GetName()));
@@ -288,6 +300,9 @@ void ProjectCombinHFAndFit(){
   }else if(!fileName.Contains("FAST") && fileName.Contains("wSDD")){
     suffix.Prepend("wSDD_");
   }
+  if(fileNameMC.Contains("_G3")) suffix.Append("_Geant3MC");
+  else if(fileNameMC.Contains("_G4")) suffix.Append("_Geant4MC");
+  if(smoothLS!=0) suffix.Append(Form("_smoothLS%d",smoothLS));
 
   if(meson=="Dplus") massD=TDatabasePDG::Instance()->GetParticle(411)->Mass();
   else if(meson=="Dzero") massD=TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -300,6 +315,10 @@ void ProjectCombinHFAndFit(){
   TH1F* hnEv=new TH1F("hEvForNorm","events for normalization",1,0,1);
   printf("Number of Ev. for norm=%d\n",(Int_t)nC->GetNEventsForNorm());
   hnEv->SetBinContent(1,nC->GetNEventsForNorm());
+
+  TH1F* hRebin=new TH1F("hRebin","",nPtBins,binLims);
+  TH1F* hBkgFitFunc=new TH1F("hBkgFitFunc","",nPtBins,binLims);
+  TH1F* hBkgFitFuncSB=new TH1F("hBkgFitFuncSB","",nPtBins,binLims);
 
   TList* l=(TList*)df->Get(lstName.Data());
   l->ls();
@@ -333,8 +352,9 @@ void ProjectCombinHFAndFit(){
   }
 
   TString sigConf="FixedSigma";
+  if(fixSigma && tuneSigmaOnData>0.) sigConf=Form("FixedSigma%d",TMath::Nint(tuneSigmaOnData*100.));
   if(!fixSigma) sigConf="FreeSigma";
-
+  if(fixMean) sigConf+="FixedMean";
 
   TCanvas* cem=new TCanvas("cem","Pools",1200,600);
   cem->Divide(2,1);
@@ -421,45 +441,55 @@ void ProjectCombinHFAndFit(){
   AliHFInvMassFitter* fitterME[nPtBins];
   AliHFInvMassFitter* fitterSB[nPtBins];
 
-  TH1F* hRawYieldRot=new TH1F("hRawYieldRot","",nPtBins,binLims);
-  TH1F* hRawYieldLS=new TH1F("hRawYieldLS","",nPtBins,binLims);
-  TH1F* hRawYieldME=new TH1F("hRawYieldME","",nPtBins,binLims);
-  TH1F* hRawYieldSBfit=new TH1F("hRawYieldSBfit","",nPtBins,binLims);
+  TH1F* hRawYieldRot=new TH1F("hRawYieldRot"," ; p_{T} (GeV/c) ; Raw yield",nPtBins,binLims);
+  TH1F* hRawYieldLS=new TH1F("hRawYieldLS"," ; p_{T} (GeV/c) ; Raw yield",nPtBins,binLims);
+  TH1F* hRawYieldME=new TH1F("hRawYieldME"," ; p_{T} (GeV/c) ; Raw yield",nPtBins,binLims);
+  TH1F* hRawYieldSB=new TH1F("hRawYieldSB"," ; p_{T} (GeV/c) ; Raw yield",nPtBins,binLims);
 
-  TH1F* hRelStatRot=new TH1F("hRelStatRot","",nPtBins,binLims);
-  TH1F* hRelStatLS=new TH1F("hRelStatLS","",nPtBins,binLims);
-  TH1F* hRelStatME=new TH1F("hRelStatME","",nPtBins,binLims);
-  TH1F* hRelStatSBfit=new TH1F("hRelStatSBfit","",nPtBins,binLims);
+  TH1F* hRelStatRot=new TH1F("hRelStatRot"," ; p_{T} (GeV/c) ; Relative stat. unc.",nPtBins,binLims);
+  TH1F* hRelStatLS=new TH1F("hRelStatLS"," ; p_{T} (GeV/c) ; Relative stat. unc.",nPtBins,binLims);
+  TH1F* hRelStatME=new TH1F("hRelStatME"," ; p_{T} (GeV/c) ; Relative stat. unc.",nPtBins,binLims);
+  TH1F* hRelStatSB=new TH1F("hRelStatSB"," ; p_{T} (GeV/c) ; Relative stat. unc.",nPtBins,binLims);
+
+  TH1F* hSignifRot=new TH1F("hSignifRot","",nPtBins,binLims);
+  TH1F* hSignifLS=new TH1F("hSignifLS","",nPtBins,binLims);
+  TH1F* hSignifME=new TH1F("hSignifME","",nPtBins,binLims);
+  TH1F* hSignifSB=new TH1F("hSignifSB","",nPtBins,binLims);
 
   TH1F* hSoverBRot=new TH1F("hSoverBRot","",nPtBins,binLims);
   TH1F* hSoverBLS=new TH1F("hSoverBLS","",nPtBins,binLims);
   TH1F* hSoverBME=new TH1F("hSoverBME","",nPtBins,binLims);
-  TH1F* hSoverBSBfit=new TH1F("hSoverBSBfit","",nPtBins,binLims);
+  TH1F* hSoverBSB=new TH1F("hSoverBSB","",nPtBins,binLims);
 
   TH1F* hGausMeanRot=new TH1F("hGausMeanRot","",nPtBins,binLims);
   TH1F* hGausMeanLS=new TH1F("hGausMeanLS","",nPtBins,binLims);
   TH1F* hGausMeanME=new TH1F("hGausMeanME","",nPtBins,binLims);
-  TH1F* hGausMeanSBfit=new TH1F("hGausMeanSBfit","",nPtBins,binLims);
+  TH1F* hGausMeanSB=new TH1F("hGausMeanSB","",nPtBins,binLims);
 
   TH1F* hGausSigmaRot=new TH1F("hGausSigmaRot","",nPtBins,binLims);
   TH1F* hGausSigmaLS=new TH1F("hGausSigmaLS","",nPtBins,binLims);
   TH1F* hGausSigmaME=new TH1F("hGausSigmaME","",nPtBins,binLims);
-  TH1F* hGausSigmaSBfit=new TH1F("hGausSigmaSBfit","",nPtBins,binLims);
+  TH1F* hGausSigmaSB=new TH1F("hGausSigmaSB","",nPtBins,binLims);
 
   TH1F* hChiSqRot=new TH1F("hChiSqRot","",nPtBins,binLims);
   TH1F* hChiSqLS=new TH1F("hChiSqLS","",nPtBins,binLims);
   TH1F* hChiSqME=new TH1F("hChiSqME","",nPtBins,binLims);
-  TH1F* hChiSqSBfit=new TH1F("hChiSqSBfit","",nPtBins,binLims);
+  TH1F* hChiSqSB=new TH1F("hChiSqSB","",nPtBins,binLims);
 
   TH1F* hNdfRot=new TH1F("hNdfRot","",nPtBins,binLims);
   TH1F* hNdfLS=new TH1F("hNdfLS","",nPtBins,binLims);
   TH1F* hNdfME=new TH1F("hNdfME","",nPtBins,binLims);
-  TH1F* hNdfSBfit=new TH1F("hNdfSBfit","",nPtBins,binLims);
+  TH1F* hNdfSB=new TH1F("hNdfSB","",nPtBins,binLims);
 
   TH1F* hRawYieldRotBC=new TH1F("hRawYieldRotBC","BC yield (rotational background)",nPtBins,binLims);
   TH1F* hRawYieldLSBC=new TH1F("hRawYieldLSBC","BC yield (like-sign background)",nPtBins,binLims);
   TH1F* hRawYieldMEBC=new TH1F("hRawYieldMEBC","BC yield (mixed-event background)",nPtBins,binLims);
-  TH1F* hRawYieldSBfitBC=new TH1F("hRawYieldSBfitBC","BC yield (direct fit background)",nPtBins,binLims);
+  TH1F* hRawYieldSBBC=new TH1F("hRawYieldSBBC","BC yield (side-band fit background)",nPtBins,binLims);
+
+  TH1F* hInvMassHistoBinWidthRot=new TH1F("hInvMassHistoBinWidthRot","",nPtBins,binLims);
+  TH1F* hInvMassHistoBinWidthLS=new TH1F("hInvMassHistoBinWidthLS","",nPtBins,binLims);
+  TH1F* hInvMassHistoBinWidthME=new TH1F("hInvMassHistoBinWidthME","",nPtBins,binLims);
+  TH1F* hInvMassHistoBinWidthSB=new TH1F("hInvMassHistoBinWidthSB","",nPtBins,binLims);
 
   TLatex* tME=new TLatex(0.65,0.82,"MixEv +- pairs");
   tME->SetNDC();
@@ -470,6 +500,7 @@ void ProjectCombinHFAndFit(){
 
   TF1 *fpeak=new TF1("fpeak","[0]*1./(TMath::Sqrt(2.*TMath::Pi())*[2])*TMath::Exp(-(x-[1])*(x-[1])/(2.*[2]*[2]))",minMass,maxMass);
 
+ 
   TDirectory *current = gDirectory;
   TFile* fout=new TFile(Form("outputMassFits_%s_%s.root",sigConf.Data(),suffix.Data()),"recreate");
   current->cd();
@@ -587,6 +618,8 @@ void ProjectCombinHFAndFit(){
     printf("Background norm bin %d DONE\n",iPtBin);
 
     c1->cd(iPtBin+1);
+    hMassPtBin->GetXaxis()->SetRangeUser(minMass,maxMass);
+    hMassPtBin->SetMinimum(0);
     hMassPtBin->Draw();
     hMassPtBin->GetYaxis()->SetTitle("Counts");
     hMassPtBin->GetYaxis()->SetTitleOffset(2.);
@@ -634,6 +667,13 @@ void ProjectCombinHFAndFit(){
     hMassSubME=AliVertexingHFUtils::RebinHisto(hMassSubME,rebin[iPtBin]);
     if(hMassPtBinls) hMassSubLS=AliVertexingHFUtils::RebinHisto(hMassSubLS,rebin[iPtBin]);
  
+    hRebin->SetBinContent(iPtBin+1,rebin[iPtBin]);
+    Int_t bkgToFill=typeb;
+    if(typeb==6) bkgToFill=typeb+nDegreeBackPol[iPtBin];
+    Int_t bkgToFillSB=6+nDegreeBackPol[iPtBin];
+
+    hBkgFitFunc->SetBinContent(iPtBin+1,bkgToFill);
+    hBkgFitFuncSB->SetBinContent(iPtBin+1,bkgToFillSB);
 
     fitterRot[iPtBin]=ConfigureFitter(hMassSubRot,iPtBin,typeb,minMass,maxMass);
     if(hMassPtBinls) fitterLS[iPtBin]=ConfigureFitter(hMassSubLS,iPtBin,typeb,minMass,maxMass);
@@ -643,39 +683,45 @@ void ProjectCombinHFAndFit(){
     Bool_t out2=kFALSE;
     if(hMassPtBinls) out2=fitterLS[iPtBin]->MassFitter(0);
     Bool_t out3=fitterME[iPtBin]->MassFitter(0);
-
+    
+    Double_t background=999999999.;
     Bool_t out4=kFALSE;
     if(tryDirectFit){
       TH1D *hMassDirectFit=(TH1D*)hMassPtBin->Clone(Form("hMassDirectFit_bin%d",iPtBin));
       hMassDirectFit=AliVertexingHFUtils::RebinHisto(hMassDirectFit,rebin[iPtBin]);
       fitterSB[iPtBin]=ConfigureFitter(hMassDirectFit,iPtBin,6,fitrangelow[iPtBin],fitrangeup[iPtBin]);
-      out4=fitterSB[iPtBin]->MassFitter(0);//DirectFit(hMassDirectFit,iPtBin,hRawYieldSBfit);
+      out4=fitterSB[iPtBin]->MassFitter(0);//DirectFit(hMassDirectFit,iPtBin,hRawYieldSB);
 
       Double_t background,ebkg;
 
       if(out4 && fitterSB[iPtBin]->GetMassFunc()){
 	c5->cd(iPtBin+1);
 	fitterSB[iPtBin]->DrawHere(gPad,3,0);
-	hRawYieldSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield());
-	hRawYieldSBfit->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError());
+	hRawYieldSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield());
+	hRawYieldSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError());
 	if(fitterSB[iPtBin]->GetRawYield()>0){
-	  hRelStatSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError()/fitterSB[iPtBin]->GetRawYield());
-	  hRelStatSBfit->SetBinError(iPtBin+1,0.00000001);
+	  hRelStatSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYieldError()/fitterSB[iPtBin]->GetRawYield());
+	  hRelStatSB->SetBinError(iPtBin+1,0.00000001);
 	}
 	fitterSB[iPtBin]->Background(3.,background,ebkg);
-	hSoverBSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield()/background);
-	hSoverBSBfit->SetBinError(iPtBin+1,0.00000001);
-	hGausMeanSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMean());
-	hGausMeanSBfit->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetMeanUncertainty());
-	hGausSigmaSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetSigma());
-	hGausSigmaSBfit->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetSigmaUncertainty());
-	hChiSqSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetReducedChiSquare());
-	hChiSqSBfit->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
-	hNdfSBfit->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMassFunc()->GetNDF());
-	hNdfSBfit->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hSignifSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterSB[iPtBin]->GetRawYield()));
+	hSignifSB->SetBinError(iPtBin+1,0.00000001);
+	hSoverBSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetRawYield()/background);
+	hSoverBSB->SetBinError(iPtBin+1,0.00000001);
+	hInvMassHistoBinWidthSB->SetBinContent(iPtBin+1,hMassDirectFit->GetBinWidth(1));
+	hGausMeanSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMean());
+	hGausMeanSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetMeanUncertainty());
+	hGausSigmaSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetSigma());
+	hGausSigmaSB->SetBinError(iPtBin+1,fitterSB[iPtBin]->GetSigmaUncertainty());
+	hChiSqSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetReducedChiSquare());
+	hChiSqSB->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
+	hNdfSB->SetBinContent(iPtBin+1,fitterSB[iPtBin]->GetMassFunc()->GetNDF());
+	hNdfSB->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
 	//	if(!correctForRefl)
 	WriteFitInfo(fitterSB[iPtBin],hMassPtBin);
-	
+	fout->cd();
+	WriteFitFunctionsToFile(fitterSB[iPtBin],"SB",iPtBin);
+	current->cd();
 
 	c5sub->cd(iPtBin+1);
 	TH1F* hsubTemp=(TH1F*)hMassDirectFit->Clone(Form("%sSubBack%d",hMassDirectFit->GetName(),iPtBin));
@@ -722,8 +768,8 @@ void ProjectCombinHFAndFit(){
 
 	Double_t errbc;
 	Double_t bc=fitterSB[iPtBin]->GetRawYieldBinCounting(errbc,nsigmaBinCounting,optBkgBinCount);
-	hRawYieldSBfitBC->SetBinContent(iPtBin+1,bc);
-	hRawYieldSBfitBC->SetBinError(iPtBin+1,errbc);
+	hRawYieldSBBC->SetBinContent(iPtBin+1,bc);
+	hRawYieldSBBC->SetBinError(iPtBin+1,errbc);
       
 	c5pulls->cd(iPtBin+1);
 	TH1F *hPulls=new TH1F();//the name is changed afterwards, histo must not be deleted
@@ -765,6 +811,9 @@ void ProjectCombinHFAndFit(){
       hSoverBRot->SetBinError(iPtBin+1,0.000001);
       hRelStatRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYieldError()/fitterRot[iPtBin]->GetRawYield());
       hRelStatRot->SetBinError(iPtBin+1,0.000001);
+      hSignifRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterRot[iPtBin]->GetRawYield()));
+      hSignifRot->SetBinError(iPtBin+1,0.00000001);
+      hInvMassHistoBinWidthRot->SetBinContent(iPtBin+1,hMassSubRot->GetBinWidth(1));
       hGausMeanRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetMean());
       hGausMeanRot->SetBinError(iPtBin+1,fitterRot[iPtBin]->GetMeanUncertainty());
       hGausSigmaRot->SetBinContent(iPtBin+1,fitterRot[iPtBin]->GetSigma());
@@ -775,6 +824,9 @@ void ProjectCombinHFAndFit(){
       hNdfRot->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       //      if(!correctForRefl)
       WriteFitInfo(fitterRot[iPtBin],hMassPtBin);
+      fout->cd();
+      WriteFitFunctionsToFile(fitterRot[iPtBin],"Rot",iPtBin);
+      current->cd();
       
       Double_t errbc;
       Double_t bc=fitterRot[iPtBin]->GetRawYieldBinCounting(errbc,nsigmaBinCounting,optBkgBinCount);
@@ -819,6 +871,9 @@ void ProjectCombinHFAndFit(){
       hSoverBLS->SetBinError(iPtBin+1,0.000001);
       hRelStatLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYieldError()/fitterLS[iPtBin]->GetRawYield());
       hRelStatLS->SetBinError(iPtBin+1,0.0000001);
+      hSignifLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterLS[iPtBin]->GetRawYield()));
+      hSignifLS->SetBinError(iPtBin+1,0.00000001);
+      hInvMassHistoBinWidthLS->SetBinContent(iPtBin+1,hMassSubLS->GetBinWidth(1));
       hGausMeanLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetMean());
       hGausMeanLS->SetBinError(iPtBin+1,fitterLS[iPtBin]->GetMeanUncertainty());
       hGausSigmaLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetSigma());
@@ -828,7 +883,11 @@ void ProjectCombinHFAndFit(){
       hNdfLS->SetBinContent(iPtBin+1,fitterLS[iPtBin]->GetMassFunc()->GetNDF());
       hNdfLS->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       //      if(!correctForRefl)
-WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
+      WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
+      fout->cd();
+      WriteFitFunctionsToFile(fitterLS[iPtBin],"LS",iPtBin);
+      current->cd();
+
 
       Double_t errbc;
       Double_t bc=fitterLS[iPtBin]->GetRawYieldBinCounting(errbc,nsigmaBinCounting,optBkgBinCount);
@@ -872,6 +931,9 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
       hSoverBME->SetBinError(iPtBin+1,0.000001);
       hRelStatME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYieldError()/fitterME[iPtBin]->GetRawYield());
       hRelStatME->SetBinError(iPtBin+1,0.000001);
+      hSignifME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetRawYield()/TMath::Sqrt(background+fitterME[iPtBin]->GetRawYield()));
+      hSignifME->SetBinError(iPtBin+1,0.00000001);
+      hInvMassHistoBinWidthME->SetBinContent(iPtBin+1,hMassSubME->GetBinWidth(1));
       hGausMeanME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetMean());
       hGausMeanME->SetBinError(iPtBin+1,fitterME[iPtBin]->GetMeanUncertainty());
       hGausSigmaME->SetBinContent(iPtBin+1,fitterME[iPtBin]->GetSigma());
@@ -882,6 +944,9 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
       hNdfME->SetBinError(iPtBin+1,0.00001); // very small number, for graphics
       //      if(!correctForRefl)
       WriteFitInfo(fitterME[iPtBin],hMassPtBin);
+      fout->cd();
+      WriteFitFunctionsToFile(fitterME[iPtBin],"ME",iPtBin);
+      current->cd();
 
       Double_t errbc;
       Double_t bc=fitterME[iPtBin]->GetRawYieldBinCounting(errbc,nsigmaBinCounting,optBkgBinCount);
@@ -925,6 +990,7 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   }
 
   if(saveCanvasAsEps>0){
+    c1->SaveAs(Form("figures/InvMassSpectra_%s_%s_NoBkgSub.eps",sigConf.Data(),suffix.Data()));
     c2->SaveAs(Form("figures/InvMassSpectra_%s_%s_Rot.eps",sigConf.Data(),suffix.Data()));
     c3->SaveAs(Form("figures/InvMassSpectra_%s_%s_LS.eps",sigConf.Data(),suffix.Data()));
     c4->SaveAs(Form("figures/InvMassSpectra_%s_%s_EM.eps",sigConf.Data(),suffix.Data()));
@@ -992,38 +1058,33 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   }
 
 
+  hRawYieldRot->SetMarkerStyle(21);
+  hRawYieldLS->SetMarkerStyle(22);
+  hRawYieldLS->SetMarkerColor(kGreen+2);
+  hRawYieldLS->SetLineColor(kGreen+2);
+  hRawYieldME->SetMarkerStyle(25);
+  hRawYieldME->SetMarkerColor(4);
+  hRawYieldME->SetLineColor(4);
+  hRawYieldSB->SetMarkerStyle(27);
+  hRawYieldSB->SetMarkerColor(6);
+  hRawYieldSB->SetLineColor(6);
 
 
   TCanvas* cry=new TCanvas("cry","RawYield",800,700);
   cry->SetLeftMargin(0.15);
-  hRawYieldRot->SetMarkerStyle(21);
   hRawYieldRot->Draw("P");
   hRawYieldRot->SetMinimum(0);
-  hRawYieldRot->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  hRawYieldRot->GetYaxis()->SetTitle("Raw Yield");
   hRawYieldRot->GetYaxis()->SetTitleOffset(1.8);
   Double_t max=hRawYieldRot->GetMaximum();
   if(hRawYieldLS->GetMaximum()>max)max=hRawYieldLS->GetMaximum();
   if(hRawYieldME->GetMaximum()>max)max=hRawYieldME->GetMaximum();
   if(tryDirectFit){
-    if(hRawYieldSBfit->GetMaximum()>max)max=hRawYieldSBfit->GetMaximum();
+    if(hRawYieldSB->GetMaximum()>max)max=hRawYieldSB->GetMaximum();
   }
   hRawYieldRot->SetMaximum(max*1.2);
-
-  hRawYieldLS->SetMarkerStyle(22);
-  hRawYieldLS->SetMarkerColor(kGreen+2);
-  hRawYieldLS->SetLineColor(kGreen+2);
   hRawYieldLS->Draw("PZSAME");
-  hRawYieldME->SetMarkerStyle(25);
-  hRawYieldME->SetMarkerColor(4);
-  hRawYieldME->SetLineColor(4);
   hRawYieldME->Draw("PSAME");
-  if(tryDirectFit){
-    hRawYieldSBfit->SetMarkerStyle(27);
-    hRawYieldSBfit->SetMarkerColor(6);
-    hRawYieldSBfit->SetLineColor(6);
-    hRawYieldSBfit->Draw("PSAME");
-  }
+  if(tryDirectFit) hRawYieldSB->Draw("PSAME");
   TLegend* legry=new TLegend(0.7,0.7,0.89,0.89);
   legry->SetFillStyle(0);
   legry->SetBorderSize(0);
@@ -1031,7 +1092,7 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   legry->AddEntry(hRawYieldLS,"Like Sign","PL")->SetTextColor(kGreen+2);
   legry->AddEntry(hRawYieldME,"Ev Mix","PL")->SetTextColor(4);
   if(tryDirectFit){
-    legry->AddEntry(hRawYieldSBfit,"Direct Fit","PL")->SetTextColor(6);
+    legry->AddEntry(hRawYieldSB,"Side-Band Fit","PL")->SetTextColor(6);
   }
   legry->Draw();
   if(saveCanvasAsEps>0) cry->SaveAs(Form("figures/RawYield_%s_%s.eps",sigConf.Data(),suffix.Data()));
@@ -1051,7 +1112,7 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   if(hChiSqLS->GetMaximum()>maxc)maxc=hChiSqLS->GetMaximum();
   if(hChiSqME->GetMaximum()>maxc)maxc=hChiSqME->GetMaximum();
   if(tryDirectFit){
-    if(hChiSqSBfit->GetMaximum()>maxc)maxc=hChiSqSBfit->GetMaximum();
+    if(hChiSqSB->GetMaximum()>maxc)maxc=hChiSqSB->GetMaximum();
   }
   hChiSqRot->SetMaximum(maxc*1.2);
 
@@ -1064,10 +1125,10 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   hChiSqME->SetLineColor(4);
   hChiSqME->Draw("PSAME");
   if(tryDirectFit){
-    hChiSqSBfit->SetMarkerStyle(27);
-    hChiSqSBfit->SetMarkerColor(6);
-    hChiSqSBfit->SetLineColor(6);
-    hChiSqSBfit->Draw("PSAME");
+    hChiSqSB->SetMarkerStyle(27);
+    hChiSqSB->SetMarkerColor(6);
+    hChiSqSB->SetLineColor(6);
+    hChiSqSB->Draw("PSAME");
   }
   legry->Draw();
   if(saveCanvasAsEps>0) cch2->SaveAs(Form("figures/ChiSq_%s_%s.eps",sigConf.Data(),suffix.Data()));
@@ -1076,7 +1137,7 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   TH1F* hRatioLSToME=(TH1F*)hRawYieldLS->Clone("hRatioLStoME");
   TH1F* hRatioRotToME=(TH1F*)hRawYieldRot->Clone("hRatioRottoME");
   TH1F* hRatioMEToME=(TH1F*)hRawYieldME->Clone("hRatioMEtoME");
-  TH1F* hRatioSBToME=(TH1F*)hRawYieldSBfit->Clone("hRatioSBtoME");
+  TH1F* hRatioSBToME=(TH1F*)hRawYieldSB->Clone("hRatioSBtoME");
   for(Int_t ib=1; ib<=hRawYieldME->GetNbinsX(); ib++){
     Double_t yme=hRawYieldME->GetBinContent(ib);
     if(yme>0.){
@@ -1086,8 +1147,8 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
       hRatioMEToME->SetBinError(ib,hRawYieldME->GetBinError(ib)/yme);
       hRatioRotToME->SetBinContent(ib,hRawYieldRot->GetBinContent(ib)/yme);
       hRatioRotToME->SetBinError(ib,hRawYieldRot->GetBinError(ib)/yme);
-      hRatioSBToME->SetBinContent(ib,hRawYieldSBfit->GetBinContent(ib)/yme);
-      hRatioSBToME->SetBinError(ib,hRawYieldSBfit->GetBinError(ib)/yme);
+      hRatioSBToME->SetBinContent(ib,hRawYieldSB->GetBinContent(ib)/yme);
+      hRatioSBToME->SetBinError(ib,hRawYieldSB->GetBinError(ib)/yme);
     }
   }
 
@@ -1100,7 +1161,7 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   hRawYieldLS->Draw("PZSAME");
   hRawYieldME->Draw("PSAME");
   if(tryDirectFit){
-    hRawYieldSBfit->Draw("PSAME");
+    hRawYieldSB->Draw("PSAME");
   }
   legry->Draw();
   cry2->cd(2);
@@ -1115,6 +1176,52 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   if(saveCanvasAsEps>0) cry2->SaveAs(Form("figures/RawYieldAndRatios_%s_%s.eps",sigConf.Data(),suffix.Data()));
   if(saveCanvasAsRoot) cry2->SaveAs(Form("figures/RawYieldAndRatios_%s_%s.root",sigConf.Data(),suffix.Data()));
 
+  hRelStatRot->GetYaxis()->SetTitleOffset(1.8);
+  hRelStatRot->SetMarkerStyle(21);
+  hRelStatLS->SetMarkerStyle(22);
+  hRelStatLS->SetMarkerColor(kGreen+2);
+  hRelStatLS->SetLineColor(kGreen+2);
+  hRelStatME->SetMarkerStyle(25);
+  hRelStatME->SetMarkerColor(4);
+  hRelStatME->SetLineColor(4);
+  hRelStatSB->SetMarkerStyle(27);
+  hRelStatSB->SetMarkerColor(6);
+  hRelStatSB->SetLineColor(6);
+
+  TCanvas* cry3=new TCanvas("cry3","RawYield+Ratios+Unc",1800,600);
+  cry3->Divide(3,1);
+  cry3->cd(1);
+  gPad->SetLeftMargin(0.15);
+  gPad->SetRightMargin(0.05);    
+  hRawYieldRot->Draw("P");
+  hRawYieldLS->Draw("PZSAME");
+  hRawYieldME->Draw("PSAME");
+  if(tryDirectFit){
+    hRawYieldSB->Draw("PSAME");
+  }
+  legry->Draw();
+  cry3->cd(2);
+  hRatioLSToME->SetStats(0);
+  hRatioLSToME->SetMinimum(0.3);
+  hRatioLSToME->SetMaximum(1.7);
+  hRatioLSToME->GetYaxis()->SetTitle("Ratio To EvMix");
+  hRatioLSToME->Draw("same");
+  hRatioRotToME->Draw("same");
+  hRatioMEToME->Draw("same");
+  hRatioSBToME->Draw("same");
+  cry3->cd(3);
+  gPad->SetLeftMargin(0.15);
+  gPad->SetRightMargin(0.05);    
+  hRelStatRot->SetStats(0);
+  hRelStatRot->SetMinimum(0.04);
+  hRelStatRot->SetMaximum(0.2);
+  hRelStatRot->Draw();
+  hRelStatLS->Draw("same");
+  hRelStatME->Draw("same");
+  if(tryDirectFit) hRelStatSB->Draw("same");
+
+  if(saveCanvasAsEps>0) cry3->SaveAs(Form("figures/RawYieldRatiosAndUnc_%s_%s.eps",sigConf.Data(),suffix.Data()));
+  if(saveCanvasAsRoot) cry3->SaveAs(Form("figures/RawYieldRatiosAndUnc_%s_%s.root",sigConf.Data(),suffix.Data()));
 
 
 
@@ -1134,14 +1241,14 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   hRawYieldME->Draw("PSAME");
   hRawYieldLS->Draw("PZSAME");
   if(tryDirectFit){
-    hRawYieldSBfit->Draw("PSAME");
+    hRawYieldSB->Draw("PSAME");
   }
 
   if(hRawYieldRotBC->GetMaximum()>max)max=hRawYieldRotBC->GetMaximum();
   if(hRawYieldLSBC->GetMaximum()>max)max=hRawYieldLSBC->GetMaximum();
   if(hRawYieldMEBC->GetMaximum()>max)max=hRawYieldMEBC->GetMaximum();
   if(tryDirectFit){
-    if(hRawYieldSBfitBC->GetMaximum()>max)max=hRawYieldSBfitBC->GetMaximum();
+    if(hRawYieldSBBC->GetMaximum()>max)max=hRawYieldSBBC->GetMaximum();
   }
   hRawYieldRot->SetMaximum(max*1.2);
   
@@ -1162,11 +1269,11 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   hRawYieldMEBC->SetLineStyle(2);
   hRawYieldMEBC->Draw("PSAME");
   if(tryDirectFit){
-    hRawYieldSBfitBC->SetMarkerStyle(27);
-    hRawYieldSBfitBC->SetMarkerColor(6);
-    hRawYieldSBfitBC->SetLineColor(6);
-    hRawYieldSBfitBC->SetLineStyle(2);
-    hRawYieldSBfitBC->Draw("PSAME");
+    hRawYieldSBBC->SetMarkerStyle(27);
+    hRawYieldSBBC->SetMarkerColor(6);
+    hRawYieldSBBC->SetLineColor(6);
+    hRawYieldSBBC->SetLineStyle(2);
+    hRawYieldSBBC->Draw("PSAME");
   }
 
   TLegend* legryBC=new TLegend(0.7,0.7,0.89,0.89);
@@ -1179,8 +1286,8 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   legryBC->AddEntry(hRawYieldME,"Ev Mix","PL")->SetTextColor(4);
   legryBC->AddEntry(hRawYieldMEBC,"Ev Mix BC","PL")->SetTextColor(4);
   if(tryDirectFit){
-    legryBC->AddEntry(hRawYieldSBfit,"Direct Fit","PL")->SetTextColor(6);
-    legryBC->AddEntry(hRawYieldSBfitBC,"Direct Fit BC","PL")->SetTextColor(6);
+    legryBC->AddEntry(hRawYieldSB,"Side-Band Fit","PL")->SetTextColor(6);
+    legryBC->AddEntry(hRawYieldSBBC,"Side-Band Fit BC","PL")->SetTextColor(6);
   }
   legryBC->Draw();
   if(saveCanvasAsEps>0) cryBC->SaveAs(Form("figures/RawYieldBC_%s_%s.eps",sigConf.Data(),suffix.Data()));
@@ -1193,31 +1300,42 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   hRawYieldRot->Write();
   hRawYieldLS->Write();
   hRawYieldME->Write();
-  hRawYieldSBfit->Write();
+  hRawYieldSB->Write();
   hRelStatRot->Write();
   hRelStatLS->Write();
   hRelStatME->Write();
-  hRelStatSBfit->Write();
+  hRelStatSB->Write();
+  hSignifRot->Write();
+  hSignifLS->Write();
+  hSignifME->Write();
+  hSignifSB->Write();
   hSoverBRot->Write();
   hSoverBLS->Write();
   hSoverBME->Write();
-  hSoverBSBfit->Write();
+  hSoverBSB->Write();
   hGausMeanRot->Write();
   hGausMeanLS->Write();
   hGausMeanME->Write();
-  hGausMeanSBfit->Write();
+  hGausMeanSB->Write();
   hGausSigmaRot->Write();
   hGausSigmaLS->Write();
   hGausSigmaME->Write();
-  hGausSigmaSBfit->Write();
+  hGausSigmaSB->Write();
   hChiSqRot->Write();
   hChiSqLS->Write();
   hChiSqME->Write();
-  hChiSqSBfit->Write();
+  hChiSqSB->Write();
   hNdfRot->Write();
   hNdfLS->Write();
   hNdfME->Write();
-  hNdfSBfit->Write();
+  hNdfSB->Write();
+  hInvMassHistoBinWidthRot->Write();
+  hInvMassHistoBinWidthLS->Write();
+  hInvMassHistoBinWidthME->Write();
+  hInvMassHistoBinWidthSB->Write();
+  hRebin->Write();
+  hBkgFitFunc->Write();
+  hBkgFitFuncSB->Write();
   hnEv->Write();
   if(hSigmaMC) hSigmaMC->Write();
   fout->Close();
@@ -1225,6 +1343,25 @@ WriteFitInfo(fitterLS[iPtBin],hMassPtBin);
   return;
 }
 
+void WriteFitFunctionsToFile(AliHFInvMassFitter *fitter, TString meth, Int_t iPtBin){
+  TString nameh;
+  TF1* fTot=fitter->GetMassFunc();
+  nameh.Form("FitFuncTot_%s_PtBin%d",meth.Data(),iPtBin);
+  fTot->SetRange(1.6,2.2);
+  fTot->SetNpx(500);
+  fTot->Write(nameh.Data());
+  TF1* fSig=fitter->GetSignalFunc();
+  nameh.Form("FitFuncSig_%s_PtBin%d",meth.Data(),iPtBin);
+  fSig->SetRange(1.6,2.2);
+  fSig->SetNpx(500);
+  fSig->Write(nameh.Data());
+  TF1* fBkg=fitter->GetBackgroundRecalcFunc();
+  nameh.Form("FitFuncBkg_%s_PtBin%d",meth.Data(),iPtBin);
+  fBkg->SetRange(1.6,2.2);
+  fBkg->SetNpx(500);
+  fBkg->Write(nameh.Data());  
+  return;
+}
 
 void WriteFitInfo(AliHFInvMassFitter *fitter, TH1D* histo){
   Double_t sig=fitter->GetRawYield();
@@ -1314,11 +1451,16 @@ TH1F* FitMCInvMassSpectra(TList* lMC){
       tref->Draw();
       t1->AddText(Form("Refl(3#sigma) = %.0f",hReflPtBin->Integral(bin1,bin2)));
       hReflPtBin->Draw("same");
-      hSigmaMC->SetBinContent(iPtBin+1,fg->GetParameter(2));
-      hSigmaMC->SetBinError(iPtBin+1,fg->GetParError(2));
-      sigmas[iPtBin]=fg->GetParameter(2);
+      t1->Draw();
     }
-    t1->Draw();
+    sigmas[iPtBin]=fg->GetParameter(2);
+    Double_t errMCsigma=fg->GetParError(2);
+    if(tuneSigmaOnData>0.){
+      sigmas[iPtBin]*=tuneSigmaOnData;
+      errMCsigma*=tuneSigmaOnData;
+    }
+    hSigmaMC->SetBinContent(iPtBin+1,sigmas[iPtBin]);
+    hSigmaMC->SetBinError(iPtBin+1,errMCsigma);
   }
   return hSigmaMC;
 }

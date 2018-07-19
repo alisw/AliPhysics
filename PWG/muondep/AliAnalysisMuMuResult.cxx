@@ -394,6 +394,7 @@ Double_t AliAnalysisMuMuResult::GetErrorStat(const char* name, const char* subRe
         Double_t err = r->GetErrorStat(name);
 
         AliDebug(1,Form(" ----> Weight for subResults %s = %f \n", r->GetName(),w));
+		AliDebug(1,Form("FitStatus for subresult : %i",r->GetValue("FitStatus")));
         if ( !(err>0.0 ) ){
           continue;
         } // If the error is not correct we skip the subresult
@@ -625,7 +626,7 @@ Double_t AliAnalysisMuMuResult::GetValue(const char* name, const char* subResult
         Double_t e = r->Weight();
         AliDebug(1,Form(" ----> Weight for subResults %s = %f \n", r->GetName(),e));
         // Double_t e2 = e*e;
-        if ( !(r->GetErrorStat(name)>0.0 ) ) continue; /*e2 = TMath::Sqrt(r->GetValue(name));*/ // If the error is not correct (fit not good) we skip the subresult
+        if ( !(r->GetErrorStat(name)>0.0 )||(r->GetValue("FitStatus")!=0)) continue; /*e2 = TMath::Sqrt(r->GetValue(name));*/ // If the error is not correct (fit not good) we skip the subresult
 
         mean += e*r->GetValue(name);
         Sum += e;

@@ -1,0 +1,102 @@
+read LHCpp.in
+
+set LHCGenerator:EventHandler:LuminosityFunction:Energy 7000
+
+## setup outputs/analyses
+create ThePEG::HepMCFile HepMCFile HepMCAnalysis.so
+set LHCGenerator:AnalysisHandlers 0 HepMCFile
+set HepMCFile:Filename DIPSYpp.hepmc
+set HepMCFile:PrintEvent 9223372036854775807
+set HepMCFile:Format GenEvent
+set HepMCFile:Units GeV_mm
+
+#erase LHCGenerator:AnalysisHandlers[0]
+
+#create ThePEG::RivetAnalysis RivetLHC RivetAnalysis.so
+#insert LHCGenerator:AnalysisHandlers[0] RivetLHC
+
+#insert RivetLHC:Analyses[0] ATLAS_2010_S8918562
+#insert RivetLHC:Analyses[0] CMS_2011_S8978280
+#insert RivetLHC:Analyses[0] LHCB_2012_I1119400
+#insert RivetLHC:Analyses[0] ROPE_PLOTS
+
+set Frag8:StringZ_aLund 0.30
+set Frag8:StringZ_bLund 0.36
+set Frag8:StringPT_sigma 0.32
+set Frag8:StringFlav_probQQtoQ 0.082
+set Frag8:StringFlav_probStoUD 0.22
+
+set LHCEventHandler:LambdaQCD 0.16
+set LHCEventHandler:RMax 3.32
+set LHCEventHandler:Emitter:PMinusOrdering 1.04
+set LHCEventHandler:Emitter:PTScale 1.49
+erase AriadneCascade:Emitters[0]
+
+#saverun noswing7000 LHCGenerator
+
+set Frag8:StringZ_aLund 0.42
+set Frag8:StringZ_bLund 0.40
+set Frag8:StringPT_sigma 0.32
+set Frag8:StringFlav_probQQtoQ 0.084
+set Frag8:StringFlav_probStoUD 0.22
+insert AriadneCascade:Emitters[0] FSSwinger
+set LHCGenerator:EventHandler:CascadeHandler NULL
+set LHCGenerator:EventHandler:CascadeHandler AriadneCascade
+
+#set LHCEventHandler:LambdaQCD 0.230
+#set LHCEventHandler:RMax 2.94
+#set stdEmitter:PMinusOrdering 0.654
+#set stdEmitter:PTScale 1.32
+
+#set Frag8:FragmentationScheme pythia
+#saverun strings7000 LHCGenerator
+
+set Frag8:FragmentationScheme dipole
+set Frag8:ThrowAway true
+set LHCGenerator:DumpPeriod 0
+set Frag8:StringR0 1.0
+set Frag8:Stringm0 0.2
+#set Frag8:JunctionDiquark 0.1
+set Frag8:BaryonSuppression 0.25
+
+set LHCEventHandler:LambdaQCD 0.219
+set LHCEventHandler:RMax 3.04
+set stdEmitter:PMinusOrdering 0.648
+set stdEmitter:PTScale 1.267
+
+set Frag8:Average False
+
+set LHCEventHandler:LambdaQCD 0.229
+set LHCEventHandler:RMax 2.97
+set stdEmitter:PMinusOrdering 0.638
+set stdEmitter:PTScale 1.230
+
+set LHCGenerator:EventHandler:DecayHandler:MaxLifeTime 10
+
+#set Frag8:StringR0           7.732930e-01
+#set Frag8:Stringm0           1.132720e-01
+#set Frag8:BaryonSuppression  2.002677e-01
+#
+#set LHCEventHandler:LambdaQCD  3.149792e-01
+#set LHCEventHandler:RMax  3.401039e+00
+#set stdEmitter:PMinusOrdering  9.646030e-01
+#set stdEmitter:PTScale  1.317355e+00
+#set LHCEventHandler:Swinger:Lambda  1.443634e+00
+
+set Frag8:StringR0  5.898783e-01
+set Frag8:Stringm0  1.340000e-01
+set Frag8:BaryonSuppression  4.766433e-01
+
+set LHCEventHandler:LambdaQCD  2.697946e-01
+set LHCEventHandler:RMax  3.390554e+00
+set stdEmitter:PMinusOrdering  7.475026e-01
+set stdEmitter:PTScale  1.347935e+00
+
+
+#set LHCEventHandler:LambdaQCD       1.720646e-01
+#set LHCEventHandler:RMax            4.220124e+00
+#set stdEmitter:PMinusOrdering       7.685386e-01
+#set stdEmitter:PTScale              1.422694e+00
+#set LHCEventHandler:Swinger:Lambda  1.722515e+00
+
+saverun Rope LHCGenerator

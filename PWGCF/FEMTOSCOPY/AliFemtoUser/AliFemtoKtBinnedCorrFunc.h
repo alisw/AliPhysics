@@ -24,6 +24,11 @@ public:
   /// each bin added
   AliFemtoKtBinnedCorrFunc(const TString& name, AliFemtoCorrFctn*);
 
+  /// Destructor
+  ///
+  /// Deletes the prototype correlation function 
+  ///
+  virtual ~AliFemtoKtBinnedCorrFunc();
 
   /// Add a k_{T} bin to the correlation function
   ///
@@ -90,6 +95,8 @@ public:
 
   /// Constant to return if no correlation is found
   static const UInt_t NPos = static_cast<UInt_t>(-1);
+
+  virtual AliFemtoCorrFctn* Clone() const { return new AliFemtoKtBinnedCorrFunc(*this); }
 
 protected:
   /// Name of the output TObjArray
