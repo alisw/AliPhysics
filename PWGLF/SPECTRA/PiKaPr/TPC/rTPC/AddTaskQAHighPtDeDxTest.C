@@ -16,7 +16,7 @@ AliAnalysisTaskQAHighPtDeDxTest* AddTaskQAHighPtDeDxTest(
 		Float_t minCent = 0.0, 
 		Float_t maxCent = 5.0,
 		Bool_t ispileuprej = kTRUE,
-		Bool_t PostCalib = kTRUE,
+		Bool_t PostCalib = kFALSE,
 		Bool_t MakePid = kTRUE,
 		const char *centralityEstimator = "V0M"//for pPb V0A for PbPb V0M
 
@@ -38,13 +38,7 @@ AliAnalysisTaskQAHighPtDeDxTest* AddTaskQAHighPtDeDxTest(
 	}
 
 	AliAnalysisFilter* trackFilterGolden = new AliAnalysisFilter("trackFilter");
-	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,1);
-// 	esdTrackCutsGolden->SetMaxDCAToVertexXY(2.4);
-//    	esdTrackCutsGolden->SetMaxDCAToVertexZ(3.2);
-//    	esdTrackCutsGolden->SetDCAToVertex2D(kTRUE);
-//    	esdTrackCutsGolden->SetMaxChi2TPCConstrainedGlobal(36);
-//    	esdTrackCutsGolden->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
-//    	esdTrackCutsGolden->SetMaxFractionSharedTPCClusters(0.4);
+	AliESDtrackCuts* esdTrackCutsGolden = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,1);
 	trackFilterGolden->AddCuts(esdTrackCutsGolden);
 
 	AliAnalysisFilter* trackFilterTPC = new AliAnalysisFilter("trackFilterTPC");

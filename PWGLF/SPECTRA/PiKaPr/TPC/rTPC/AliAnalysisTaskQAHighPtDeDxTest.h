@@ -77,8 +77,8 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
   virtual Float_t GetVertex(const AliVEvent* event) const;
   virtual void AnalyzeESD(AliESDEvent* esd); 
   virtual void AnalyzeAOD(AliAODEvent* aod); 
-  virtual void ProduceArrayTrksESD(AliESDEvent* event);
-  virtual void ProduceArrayV0ESD(AliESDEvent* event);
+  virtual void ProduceArrayTrksESD(AliESDEvent* event, const Int_t cent);
+  virtual void ProduceArrayV0ESD(AliESDEvent* event, const Int_t cent );
   virtual void ProduceArrayTrksAOD(AliAODEvent* event);
   virtual void ProduceArrayV0AOD(AliAODEvent* event);
   Short_t   GetPidCode(Int_t pdgCode) const;
@@ -98,8 +98,10 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
   Int_t      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
   Bool_t PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
   Float_t GetMaxDCApTDep( TF1 *fcut, Double_t pt );
-  Double_t EtaCalibrationNeg(Int_t centrality, Double_t Eta);
-  Double_t EtaCalibrationPos(Int_t centrality, Double_t Eta);
+  Double_t EtaCalibrationNeg(const Int_t centrality, const Double_t Eta);
+  Double_t EtaCalibrationPos(const Int_t centrality, const Double_t Eta);
+  Double_t EtaCalibrationNegEl(const Int_t centrality, const Double_t Eta);
+  Double_t EtaCalibrationPosEl(const Int_t centrality, const Double_t Eta);
 
 
 
@@ -124,6 +126,7 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
   TString       fAnalysisType;        //  "ESD" or "AOD"
   Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
   Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
+//  Boolt_t       fAnalysisTask;
   UInt_t        ftrigBit;
   TRandom*      fRandom;              //! random number generator
   Bool_t        fPileUpRej;           // kTRUE is pile-up is rejected
@@ -156,10 +159,18 @@ class AliAnalysisTaskQAHighPtDeDxTest : public AliAnalysisTaskSE {
   // Output objects
   //
   TList*        fListOfObjects;     //! Output list of objects
+//  TH1I*         fEvents;            //! No of accepted events
+//  TH1I*         fVtx;               //! Event vertex info
   TH1F*         fVtxMC;             //! Event vertex info for ALL MC events
+//  TH1F*         fVtxBeforeCuts;     //! Vertex z dist before cuts
+//  TH1F*         fVtxAfterCuts;      //! Vertex z dist after cuts
+//  TH1F* fn1;
+//  TH1F* hEvents;
   Bool_t       fdEdxCalibrated;
   Bool_t       fMakePid;
   TH1F* fcent;
+  TH1F* fcentAfterPrimaries;
+  TH1F* fcentAfterV0s;
 
 
   // Histograms for PreCalibration
