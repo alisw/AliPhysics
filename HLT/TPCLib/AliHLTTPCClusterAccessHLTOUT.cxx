@@ -45,6 +45,9 @@
 #include <memory>
 #include <iostream>
 #include <iomanip>
+#ifdef HAVE_ALITPCCOMMON
+#include "AliHLTTPCGMTracksToTPCSeeds.h"
+#endif
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterAccessHLTOUT)
@@ -60,6 +63,8 @@ AliHLTTPCClusterAccessHLTOUT::AliHLTTPCClusterAccessHLTOUT()
   , fMarkEdgeClusters(0)
   , fpDecoder(NULL)
   , fTPCParam(NULL)
+  , fCopySeeds(0)
+  , fTPCtracker(NULL)
 {
   // see header file for class documentation
   // or
@@ -93,21 +98,32 @@ AliHLTTPCClusterAccessHLTOUT::~AliHLTTPCClusterAccessHLTOUT()
 void AliHLTTPCClusterAccessHLTOUT::Execute(const char *method,  const char *params, Int_t *error)
 {
   /// inherited from TObject: abstract command interface
-  if (strcmp(method, "read")==0) {
+  if (strcmp(method, "createSeeds") == 0) {
+    sscanf(params, "%p", &fTPCtracker);
+    fCopySeeds = 1;
+  }
+  else if (strcmp(method, "updateSeedsOuter") == 0) {
+    fCopySeeds = 2;
+  }
+  else if (strcmp(method, "updateSeedsInner") == 0) {
+    fCopySeeds = 3;
+  }
+  else if (strcmp(method, "read")==0) {
     int iResult=ProcessClusters(params);
     if (error) *error=iResult;
     return;
   }
-  if (strcmp(method, "prepare_copy")==0) {
+  else if (strcmp(method, "prepare_copy")==0) {
     int iResult=ScanParameters(params);
     if (error) *error=iResult;
+    fCopySeeds = false;
     return;
   }
-  if (strcmp(method, "get_edge_flags_set")==0) {
+  else if (strcmp(method, "get_edge_flags_set")==0) {
     *error = GetPropagateEdgeClusterFlag() || GetMarkEdgeClusterFlag();
     return;
   }
-  if (strcmp(method, "verbosity")==0) {
+  else if (strcmp(method, "verbosity")==0) {
     int iResult=0;
     if (params) {
       char* dummy;
@@ -122,6 +138,10 @@ void AliHLTTPCClusterAccessHLTOUT::Execute(const char *method,  const char *para
     }
     if (error) *error=iResult;
     return;
+  }
+  else
+  {
+    AliError("Invalid method!!!");
   }
 }
 
@@ -138,6 +158,18 @@ TObject* AliHLTTPCClusterAccessHLTOUT::FindObject(const char *name) const
 void AliHLTTPCClusterAccessHLTOUT::Copy(TObject &object) const
 {
   /// inherited from TObject: supports writing of data to AliTPCClustersRow
+  if (fCopySeeds)
+  {
+    TObjArray* seeds = dynamic_cast<TObjArray*>(&object);
+    if (seeds)
+    {
+#ifdef HAVE_ALITPCCOMMON
+      if (fCopySeeds == 1) AliHLTTPCGMTracksToTPCSeeds::CreateSeedsFromHLTTracks(seeds, fTPCtracker);
+      else if (fCopySeeds == 2) AliHLTTPCGMTracksToTPCSeeds::UpdateParamsOuter(seeds);
+      else if (fCopySeeds == 3) AliHLTTPCGMTracksToTPCSeeds::UpdateParamsInner(seeds);
+#endif      
+    }
+  }
   AliTPCClustersRow* rowcl=dynamic_cast<AliTPCClustersRow*>(&object);
   if (rowcl) {
     fClusters->FillSectorArray(rowcl->GetArray(), fCurrentSector, fCurrentRow, fPropagateSplitClusterFlag, fPropagateEdgeClusterFlag, fMarkEdgeClusters);
