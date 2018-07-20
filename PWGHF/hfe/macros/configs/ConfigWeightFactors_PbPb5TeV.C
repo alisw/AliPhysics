@@ -26,6 +26,7 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
   printf("collType %d\n",collType);
   TFile *weightFile = TFile::Open(Form("%s/util/hfe/%s", gSystem->Getenv("TRAIN_ROOT"),filename.Data()));
 */
+
         // GRID version
     printf("Take the weights from %s\n",Form("$ALICE_PHYSICS/PWGHF/hfe/macros/%s", filename.Data()));
   printf("collType %d\n",collType);
@@ -251,6 +252,17 @@ void ConfigWeightFactors_PbPb5TeV(AliAnalysisTaskHFE *task, Bool_t syst = kFALSE
           cout << "\n----------------------------------------------------------------------------------------------------------------\n";
           cout << "------------------------------------------------------------------------------------------------------------------\n";
           cout << "      PbPb LHC16g1 minimum bias MC weights read for all centrality classes (charged pion data spectra used)      ";
+          cout << "\n------------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------\n";
+          cout << hRatio->GetName() << endl;
+        }
+        // 73: PbPb LHC16g1 minimum bias MC using pi charged data spectra in smaller centrality bins respect to the actual ones (e.g.: in 0-5% and 5-10% instead of 0-10%)
+        else if(collType == 73){
+          if(iCent > 0) hRatio = (TH1F*)weightFile->Get(Form("hRatio_fromchpions_510_%s",backNameMC[iSpecies]));
+          else          hRatio = (TH1F*)weightFile->Get(Form("hRatio_fromchpions_05_%s",backNameMC[iSpecies]));
+          cout << "\n----------------------------------------------------------------------------------------------------------------\n";
+          cout << "------------------------------------------------------------------------------------------------------------------\n";
+          cout << "     PbPb LHC16g1 minimum bias MC weights in smaller centrality bins                                             ";
           cout << "\n------------------------------------------------------------------------------------------------------------------\n";
           cout << "------------------------------------------------------------------------------------------------------------------\n";
           cout << hRatio->GetName() << endl;

@@ -17,7 +17,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
 				   Bool_t kNPETOFlast = kFALSE,
 				   Bool_t kNPEw      = kFALSE,
 				   Bool_t kNPEkf  = kFALSE,
-                                   Int_t  RunSyst = 9                            // switch statement useful for systematics (mfaggin, 06/07/2017)
+                                   Int_t  RunSyst = 0                            // switch statement useful for systematics (mfaggin, 06/07/2017)
                                    ,Int_t centrMin = 0          // min centrality
                                    ,Int_t centrMax = 10         // max centrality
                                    //,Int_t centrMin = 30          // min centrality
@@ -31,6 +31,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    ,Bool_t kRejectKinkParticles = kFALSE         // mfaggin, 12-Apr-2018
                                    ,Int_t chosen_filBIT = 2     // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT) (mfaggin, 07-Jun-2018)
                                    ,Bool_t kTestDifferentFilBIT = kFALSE        // test a different filterbit (mfaggin, 07-Jun-2018)
+                                   ,Bool_t kTestWeightSmallerCentBins = kFALSE   // test weights in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
                                    )		   
   
 {
@@ -164,9 +165,10 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
 
     ,k16g1_3 = 67               // 67: PbPb LHC16g1 minimum bias MC using pi0 data spectra (mfaggin, 06-Mar-2018)
 
-    ,k16g1_2_3050 = 70          // 70: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 30-50% centrality class (mfaggin, 07-Jun-2018)
-    ,k16g1_2_6080 = 71          // 71: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 60-80% centrality class (mfaggin, 20-Jun-2018)
-    ,k16g1_2_all = 72           // 72: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 0-10%, 30-50% and 60-80% centrality classes, all in one file (mfaggin, 22-Jun-2018)
+    ,k16g1_2_3050 = 70          // 70: PbPb LHC16g1 minimum bias MC using pi charged  data spectra for 30-50% centrality class (mfaggin, 07-Jun-2018)
+    ,k16g1_2_6080 = 71          // 71: PbPb LHC16g1 minimum bias MC using pi charged data spectra for 60-80% centrality class (mfaggin, 20-Jun-2018)
+    ,k16g1_2_all = 72           // 72: PbPb LHC16g1 minimum bias MC using pi charged data spectra for 0-10%, 30-50% and 60-80% centrality classes, all in one file (mfaggin, 22-Jun-2018)
+    ,k16g1_2_smallercentbins = 73       // 73: PbPb LHC16g1 minimum bias MC using pi charged data spectra in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
 
   };
   //Int_t kWeightMC = k16g1;
@@ -611,6 +613,22 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
                 RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017 
                 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm, kDefTOFs, kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kAny, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
 	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+        }
+
+        if(kTestWeightSmallerCentBins){
+        // *****************************************************************************
+        //
+        // weights in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
+        //
+        // *****************************************************************************
+                printf("\n=====\n");
+                printf("\n===== kTestWeightSmallerCentBins case for MC");
+                printf("\n=====\n");
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_2_smallercentbins);
+
         }
 
    }
@@ -1323,6 +1341,7 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
         if(wei==67)                 ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_frompi0.root");
         else if(wei==70 || wei==71) ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_3050.root");
         else if(wei==72)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_allCentr.root");
+        else if(wei==73)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_smallerbins.root");
         else                        ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);
   }
 
