@@ -1,5 +1,7 @@
 #include "AliAnalysisTaskStrangenessLifetimes.h"
 
+#include <unordered_map>
+
 #include <Riostream.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -13,10 +15,13 @@
 #include "AliESDtrack.h"
 #include "AliExternalTrackParam.h"
 #include "AliInputEventHandler.h"
+#include "AliMCEvent.h"
 #include "AliLightV0vertexer.h"
 #include "AliPIDResponse.h"
+#include "AliStack.h"
 #include "AliV0vertexer.h"
 
+using Lifetimes::MCparticle;
 using Lifetimes::MiniV0;
 using std::cout;
 using std::endl;
@@ -26,16 +31,22 @@ ClassImp(AliAnalysisTaskStrangenessLifetimes);
 namespace {
 constexpr double Sq(double x) { return x * x; }
 constexpr float kEps = 1.e-6;
+
+double Distance(double dx, double dy, double dz) {
+  return std::sqrt(dx * dx + dy * dy + dz * dz);
+}
+
 }  // namespace
 
 AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
-    std::string name)
+    bool mc, std::string name)
     : AliAnalysisTaskSE(name.data()),
       fEventCuts{},
       fListHist{nullptr},
       fTreeV0{nullptr},
       fPIDResponse{nullptr},
       fDoV0Refit{true},
+      fMC{mc},
       fUseLightVertexer{true},
       fHistV0radius{nullptr},
       fHistV0pt{nullptr},
@@ -88,15 +99,17 @@ AliAnalysisTaskStrangenessLifetimes::~AliAnalysisTaskStrangenessLifetimes() {
 }
 
 void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
+  inputHandler->SetNeedField();
+
   fTreeV0 = new TTree("fTreeV0", "V0 Candidates");
   fTreeV0->Branch("fMultiplicity", &fMultiplicity, "fMultiplicity/F");
   fTreeV0->Branch("V0s", &fV0vector);
-
-  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler =
-      (AliInputEventHandler *)(man->GetInputEventHandler());
-  fPIDResponse = inputHandler->GetPIDResponse();
-  inputHandler->SetNeedField();
+  if (man->GetMCtruthEventHandler()) {
+    fTreeV0->Branch("MCparticles",&fMCvector);
+  }
 
   fListHist = new TList();
   fListHist->SetOwner();
@@ -215,6 +228,18 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     return;
   }
 
+  std::array<int,2> pdgCodes = {310, 3122};
+  AliMCEvent* mcEvent = MCEvent();
+  if (!mcEvent && fMC) {
+    ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec","Could not retrieve MC event");
+    return;
+  }
+  AliStack* stack = mcEvent->Stack();
+  if (!stack && mcEvent) {
+    ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec","Could not retrieve MC stack");
+    return;
+  }
+
   double magneticField = esdEvent->GetMagneticField();
 
   if (!fEventCuts.AcceptEvent(esdEvent)) {
@@ -250,6 +275,47 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     lV0vtxer.SetCuts(fV0VertexerSels);
     // Redo
     lV0vtxer.Tracks2V0vertices(esdEvent);
+  }
+
+  std::unordered_map<int,int> mcMap;
+  if (fMC) {
+    for (int ilab = 0;  ilab < (stack->GetNtrack()); ilab++) {   // This is the begining of the loop on tracks
+      TParticle* part = stack->Particle( ilab );
+      if(!part) {
+        ::Warning("AliAnalysisTaskStrangenessLifetimes::UserExec","Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skipping.", ilab );
+        continue;
+      }
+      
+      int currentPDG = part->GetPdgCode();
+      for (auto code : pdgCodes) {
+        if (code == std::abs(currentPDG)) {
+          double dist = Distance(primaryVertex[0] - part->Vx(), primaryVertex[1] - part->Vy(), primaryVertex[2] - part->Vz());
+
+          MCparticle v0part;
+          v0part.SetPDGcode(currentPDG);
+          v0part.SetEta(part->Eta());
+          v0part.SetPt(part->Pt());
+          v0part.SetDistOverP(dist / part->P());
+          bool isSecondary = stack->IsSecondaryFromWeakDecay(ilab);
+          TParticle* mother = stack->Particle(part->GetFirstMother());
+          if (isSecondary && mother) {
+            v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
+
+            double motherDist = Distance(primaryVertex[0] - mother->Vx(), primaryVertex[1] - mother->Vy(), primaryVertex[2] - mother->Vz());
+            MCparticle motherPart;
+            motherPart.SetPDGcode(mother->GetPdgCode());
+            motherPart.SetEta(mother->Eta());
+            motherPart.SetPt(mother->Pt());
+            motherPart.SetDistOverP(motherDist / mother->P());
+            fMCvector.push_back(motherPart);
+          } else {
+            v0part.SetStatus(MCparticle::kPrimary);
+          }
+          mcMap[ilab] = fMCvector.size();
+          fMCvector.push_back(v0part);
+        }
+      }
+    }
   }
 
   fV0vector.clear();
@@ -459,7 +525,23 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       miniV0.SetProngsEta(pTrack->Eta(), nTrack->Eta());
       miniV0.SetProngsTPCnsigmas(nSigmaPosPion, nSigmaPosProton,
                                  nSigmaNegPion, nSigmaNegProton);
+
+      if (fMC && stack) {
+        int ilab = std::abs(v0->GetLabel());
+        TParticle* part = stack->Particle( ilab );
+        if(!part) {
+          continue;
+        }
+        int currentPDG = part->GetPdgCode();
+        for (auto code : pdgCodes) {
+          if (code == std::abs(currentPDG)) {
+            fMCvector[mcMap[ilab]].SetRecoIndex(fV0vector.size());
+            break;
+          }
+        }
+      }
       fV0vector.push_back(miniV0);
+
     }
   }
 
