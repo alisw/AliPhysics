@@ -86,7 +86,7 @@ AliAnalysisPHOSResonances::AliAnalysisPHOSResonances(const char *name)
   }
 	
   // Output slots #0 write into a TH1 container
-  DefineOutput(1,TList::Class());
+  DefineOutput(1,THashList::Class());
 
 }
 AliAnalysisPHOSResonances:: AliAnalysisPHOSResonances(const AliAnalysisPHOSResonances& rh):
@@ -121,7 +121,7 @@ AliAnalysisPHOSResonances:: AliAnalysisPHOSResonances(const AliAnalysisPHOSReson
 {
   if(fOutputContainer)
     delete fOutputContainer ;  
-  fOutputContainer = new TList() ; 
+  fOutputContainer = new THashList() ; 
   fListOfChannels = rh.fListOfChannels ;
   fnPID = rh.fnPID ;
   for(Int_t i=0; i<300; i++){
@@ -189,6 +189,8 @@ AliAnalysisPHOSResonances::~AliAnalysisPHOSResonances(){
   if(fMixTracksPp){delete fMixTracksPp; fMixTracksPp=0x0;} 
  
   if(fMixLambda){delete fMixLambda; fMixLambda=0x0;} 
+  //No need to delete histograms in array fhHistos[]!
+  //They are deleted as content of fOutputContainer
     
 }
 //________________________________________________________________________
