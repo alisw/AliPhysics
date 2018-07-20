@@ -26,9 +26,10 @@ AliAnalysisPHOSResonances* AddTaskPHOSResonances(UInt_t offlineTriggerMask = Ali
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   
-  TString cname(Form("PHOSResonancesCoutput1"));
-  TString pname(Form("%s:PHOSResonanses", AliAnalysisManager::GetCommonFileName()));
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
+      Form("PHOSResonancesCoutputTrig_%s",(offlineTriggerMask==AliVEvent::kINT7)?"MB":(offlineTriggerMask==AliVEvent::kPHI7)?"PHI7":"Other"), 
+      THashList::Class(), 
+      AliAnalysisManager::kOutputContainer, Form("%s:PHOSResonanses", AliAnalysisManager::GetCommonFileName()));
   mgr->ConnectOutput(task, 1, coutput1);
   
   return task;

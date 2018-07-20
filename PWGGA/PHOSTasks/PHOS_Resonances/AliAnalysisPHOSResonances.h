@@ -56,7 +56,7 @@ private:
        
  
 private:
-	TList * fOutputContainer;    //! final histogram container
+	THashList * fOutputContainer;  //! final histogram container
 	TArrayI fListOfChannels;     //  list of active channels
 
 	Int_t fnPID;                 //  NUmber of PID cuts

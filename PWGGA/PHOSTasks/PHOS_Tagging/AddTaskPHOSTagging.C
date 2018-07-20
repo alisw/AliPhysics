@@ -35,7 +35,7 @@ AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTaggin
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );
   
-  TString cname(Form("%sCoutput1", name));
+  TString cname(Form("%sCoutput_%s", name,(offlineTriggerMask==AliVEvent::kINT7)?"MB":(offlineTriggerMask==AliVEvent::kPHI7)?"PHI7":"Other"));
   TString pname(Form("%s:%s", AliAnalysisManager::GetCommonFileName(), name));
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(cname.Data(), THashList::Class(), AliAnalysisManager::kOutputContainer, pname.Data());
   mgr->ConnectOutput(task, 1, coutput1);
