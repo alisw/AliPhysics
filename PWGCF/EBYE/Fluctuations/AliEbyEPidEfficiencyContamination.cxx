@@ -1479,7 +1479,17 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
     else if( fPidStrategy == 2){     
       isAccepted = isAcceptedTOF && isAcceptedTPC;
     }
-    
+    else if( fPidStrategy == 3){
+      if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
+      else if( pt >= 0.825 && pt < 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+      else isAccepted =  isAcceptedTPC;
+      
+    }
+    else if( fPidStrategy == 4){
+      if( pt >= 0.825 && pt < 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+      else isAccepted =  isAcceptedTPC;
+    }
+  
   }//for proton
   
   
