@@ -11,13 +11,14 @@ class TTree;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "MCparticle.h"
 #include "MiniV0.h"
 
 class AliPIDResponse;
 
 class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskStrangenessLifetimes(std::string name = "TaskStrangenessLifetimes");
+  AliAnalysisTaskStrangenessLifetimes(bool mc = false, std::string name = "TaskStrangenessLifetimes");
   virtual ~AliAnalysisTaskStrangenessLifetimes();
 
   virtual void UserCreateOutputObjects();
@@ -91,6 +92,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   AliPIDResponse* fPIDResponse;  //! PID response object
 
   bool fDoV0Refit;
+  bool fMC;
   bool fUseLightVertexer;
 
   /// Control histograms to monitor the filtering
@@ -135,6 +137,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
   float fMaxTPCprotonSigma;
 
   std::vector<Lifetimes::MiniV0> fV0vector;
+  std::vector<Lifetimes::MCparticle> fMCvector;
   float fMultiplicity;
 
   AliAnalysisTaskStrangenessLifetimes(
