@@ -62,6 +62,7 @@ ClassImp(AliSigma0V0Cuts)
       fHistLambdaMass(nullptr),
       fHistAntiLambdaMass(nullptr),
       fHistPhotonMass(nullptr),
+      fHistPhotonMassRefit(nullptr),
       fHistK0Mass(nullptr),
       fHistV0Pt(nullptr),
       fHistV0Mass(nullptr),
@@ -236,6 +237,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistLambdaMass(nullptr),
       fHistAntiLambdaMass(nullptr),
       fHistPhotonMass(nullptr),
+      fHistPhotonMassRefit(nullptr),
       fHistK0Mass(nullptr),
       fHistV0Pt(nullptr),
       fHistV0Mass(nullptr),
@@ -488,7 +490,7 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
 
     v0Candidate.SetPDGMass(fDataBasePDG.GetParticle(fPID)->Mass());
     if (std::abs(fPID) == 22) {
-      const float massPhoton = ComputePhotonMass(v0);
+      const float massPhoton = ComputePhotonMassRefit(v0);
       v0Candidate.SetMass(massPhoton);
       v0Candidate.SetRecMass(massPhoton);
     }
@@ -872,12 +874,14 @@ void AliSigma0V0Cuts::PlotMasses(AliESDv0 *v0) const {
   v0->ChangeMassHypothesis(-3122);
   const float massAntiLambda = v0->GetEffMass();
   const float massPhoton = ComputePhotonMass(v0);
+  const float massPhotonRefit = ComputePhotonMassRefit(v0);
 
   if (!fIsLightweight) {
     fHistK0Mass->Fill(massK0);
     fHistLambdaMass->Fill(massLambda);
     fHistAntiLambdaMass->Fill(massAntiLambda);
     fHistPhotonMass->Fill(massPhoton);
+    fHistPhotonMassRefit->Fill(massPhotonRefit);
   }
 }
 
@@ -923,7 +927,7 @@ bool AliSigma0V0Cuts::PhotonSelection(AliESDv0 *v0) const {
   const float massLambda = v0->GetEffMass();
   v0->ChangeMassHypothesis(310);
   const float massK0 = v0->GetEffMass();
-  const float massPhoton = ComputePhotonMass(v0);
+  const float massPhoton = ComputePhotonMassRefit(v0);
 
   const float psiPair = ComputePsiPair(v0);
   if (!fIsLightweight) fHistPsiPair->Fill(v0->Pt(), psiPair);
@@ -987,6 +991,25 @@ float AliSigma0V0Cuts::ComputePhotonMass(const AliESDv0 *v0) const {
   float pl = std::sqrt(pxl * pxl + pyl * pyl + pzl * pzl);
 
   return std::sqrt((en + ep) * (en + ep) - pl * pl);
+}
+
+//____________________________________________________________________________________________________
+float AliSigma0V0Cuts::ComputePhotonMassRefit(const AliESDv0 *v0) const {
+  const AliExternalTrackParam *parPos = v0->GetParamP();
+  const AliExternalTrackParam *parNeg = v0->GetParamN();
+  Double_t mass = -99.0, mass_width = -99.0, Pt = -99.0, Pt_width = -99.0;
+  AliKFParticle neg(*(parNeg), 11);
+  AliKFParticle pos(*(parPos), -11);
+  AliKFParticle fCurrentMotherKFForMass(neg, pos);
+  fCurrentMotherKFForMass.GetMass(mass, mass_width);
+  fCurrentMotherKFForMass.GetPt(Pt, Pt_width);
+
+  AliKFConversionPhoton *mother = new AliKFConversionPhoton();
+  mother->ConstructGamma(neg, pos);
+
+  const float invMassRefit = mother->M();
+  delete mother;
+  return invMassRefit;
 }
 
 /////________________________________________________________________________
@@ -1160,7 +1183,7 @@ void AliSigma0V0Cuts::CheckCutsMC() const {
 
     float invMass = 0.f;
     if (fPID == 22) {
-      invMass = ComputePhotonMass(v0);
+      invMass = ComputePhotonMassRefit(v0);
     } else {
       v0->ChangeMassHypothesis(fPID);
       invMass = v0->GetEffMass();
@@ -1612,6 +1635,12 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
         "; Invariant mass e^{+}e^{-} hypothesis (GeV/#it{c}^{2}); Entries", 250,
         0., 0.5);
     fHistograms->Add(fHistPhotonMass);
+
+    fHistPhotonMassRefit = new TH1F("fHistPhotonMassRefit",
+                                    "; Invariant mass e^{+}e^{-} refit "
+                                    "hypothesis (GeV/#it{c}^{2}); Entries",
+                                    250, 0., 0.1);
+    fHistograms->Add(fHistPhotonMassRefit);
 
     fHistK0Mass =
         new TH1F("fHistK0Mass",

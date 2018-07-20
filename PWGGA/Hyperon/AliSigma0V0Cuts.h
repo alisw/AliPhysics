@@ -55,6 +55,7 @@ class AliSigma0V0Cuts : public TObject {
   bool PhotonSelection(AliESDv0 *v0) const;
   float ComputeRapidity(float pt, float pz, float m) const;
   float ComputePhotonMass(const AliESDv0 *v0) const;
+  float ComputePhotonMassRefit(const AliESDv0 *v0) const;
   float ComputePsiPair(const AliESDv0 *v0) const;
   int GetRapidityBin(float rapidity) const;
 
@@ -184,6 +185,7 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistLambdaMass;       //!
   TH1F *fHistAntiLambdaMass;   //!
   TH1F *fHistPhotonMass;       //!
+  TH1F *fHistPhotonMassRefit;  //!
   TH1F *fHistK0Mass;           //!
   TH1F *fHistV0Pt;             //!
   TH1F *fHistV0Mass;           //!
@@ -306,7 +308,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticlePID[2];                         //!
 
  private:
-  ClassDef(AliSigma0V0Cuts, 4)
+  ClassDef(AliSigma0V0Cuts, 5)
 };
 
 #endif
