@@ -142,6 +142,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fInvmassHFls(0),
   fLxy_ls(0),
   fLxy_uls(0),
+  feJetCorr(0),
   HFjetCorr0(0),
   HFjetCorr1(0),
   HFjetParticle(0),
@@ -270,6 +271,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fInvmassHFls(0),//my
   fLxy_ls(0),
   fLxy_uls(0),
+  feJetCorr(0),
   HFjetCorr0(0),
   HFjetCorr1(0),
   HFjetParticle(0),
@@ -583,6 +585,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fLxy_ls = new TH1F("fLxy_ls","HF Lxy LS;Lxy",200,-1,1);
   fOutput->Add(fLxy_ls);
+
+  feJetCorr = new TH2D("feJetCorr","e-jet dphi;iso;dphi",50,0,0.05,700,-3.5,3.5);
+  fOutput->Add(feJetCorr);
 
   // jet
   Int_t jetpTMax = 300;
@@ -1128,6 +1133,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             epTarrayMC[i] = 0.0; 
            }
 
+        Double_t iso = 999;
+
         // get track information
         Double_t pt = track->Pt(); 
         Double_t px = track->Px(); 
@@ -1271,12 +1278,20 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                     }
                  }
 
+                // e-jet corr
+                if(pt>30.0)
+                   {
+                    iso = IsolationCut(itrack, track, pt, emcphi, emceta, clustMatchE);
+                   }
               }
           }
 
     if(!isElectron)continue;
 
     if(idbHFEj)cout << "electron in event" << endl;
+ 
+    //-------------
+
 
     // data
     fHistIncEle->Fill(pt);  
@@ -1360,6 +1375,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             //Float_t ptLeading = fJetsCont->GetLeadingHadronPt(jet);
 
             double jetEta = jet->Eta();
+            double jetPhi = jet->Phi();
             //double jetEtacut = 0.9-0.3; // how get R size ?
             double jetEtacut = 0.6; // how get R size ?
             Bool_t iTagHFjet = tagHFjet( jet, epTarray, 0, pt);
@@ -1499,13 +1515,22 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                            }
 
                       }
+
                    } // teg by e
+
+                     // eJet corr
+                     if(pt>30.0 && iso<0.05 && !iTagHFjet && jet->Pt()>10.0)
+                       {
+                        Double_t dPhi_eJet_tmp = phi - jetPhi;
+                        Double_t dPhi_eJet = atan2(sin(dPhi_eJet_tmp),cos(dPhi_eJet_tmp));
+                        feJetCorr->Fill(iso,dPhi_eJet);
+                       }
 
              } // jet eta cut
              jet = fJetsCont->GetNextAcceptJet(); 
              Njet++;
            }  // while jet
-       } // while jet   
+       } // if jet   
 
    }  // end of Track loop
 
@@ -1913,6 +1938,65 @@ void AliAnalysisHFjetTagHFE::FindMother(AliAODMCParticle* part, int &label, int 
    } 
    //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
 }
+
+Double_t AliAnalysisHFjetTagHFE::IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta,Double_t MatchclE)
+{
+	//##################### Set cone radius  ##################### //
+	Double_t CutConeR = 0.4;
+	//################################################################# //
+
+	//////////////////////////////
+	// EMCal cluster loop
+	//////////////////////////////
+	Int_t NclustIso = -999;
+
+	NclustIso =  fCaloClusters->GetEntries();
+
+	Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;;
+	Double_t riso =  0.;
+	Double_t ConeR = -999.;
+
+	for(Int_t jcl=0; jcl<NclustIso; jcl++)
+	{
+	AliVCluster *Assoclust = 0x0;     
+	Assoclust = dynamic_cast<AliVCluster*>(fCaloClusters->At(jcl)); 
+
+	fClsTypeEMC = kFALSE; fClsTypeDCAL = kFALSE;
+	ConeR = 0.;
+
+	if(Assoclust && Assoclust->IsEMCAL())
+	{
+	Float_t Assoclpos[3] = {0.};
+	Assoclust->GetPosition(Assoclpos);
+
+	TVector3 Assocpos(Assoclpos);
+
+	Double_t AssoPhi =  Assocpos.Phi();
+	if(AssoPhi <0){AssoPhi += 2*TMath::Pi();}
+	Double_t AssoEta =  Assocpos.Eta();
+	Double_t AssoclE =  Assoclust->E();
+
+	//------reject same Cluster
+	if(AssoclE==MatchclE && AssoPhi==MatchPhi && AssoEta==MatchEta) continue;
+
+
+	if(AssoPhi > 1.39 && AssoPhi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187
+	if(AssoPhi > 4.53 && AssoPhi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
+
+        if(!fClsTypeEMC)continue;
+
+	ConeR = sqrt(pow(AssoPhi-MatchPhi,2.)+pow(AssoEta-MatchEta,2.));
+	if(ConeR>CutConeR) continue;
+
+	riso += AssoclE;
+	}
+	}
+
+	riso = riso/MatchclE;
+
+        return riso;
+}
+
 
 //________________________________________________________________________
 void AliAnalysisHFjetTagHFE::Terminate(Option_t *) 
