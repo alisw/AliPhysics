@@ -60,7 +60,6 @@ class AliAODMCHeader;
 // Detectors
 class AliEMCALGeometry;
 class AliEMCALRecoUtils;
-class AliCalorimeterUtils;
 
 #include "AliAnalysisTaskEmcal.h"
 #include "AliHistogramRanges.h"
@@ -152,7 +151,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
 							   
   Bool_t                       ClustTrackMatching          ( AliVCluster * emccluster, Bool_t candidate );
   void                         NonLinRecoEnergyScaling     ( TLorentzVector cluster_vec );
-  Double_t                     NonLinRecoEnergyScaling     ( AliVEvent * event, AliVCluster * cluster, Double_t energy );
+  Double_t                     NonLinRecoEnergyScaling     ( AliVCluster * cluster, Double_t energy );
+  Int_t                        GetModuleNumber             ( AliVCluster * cluster ) const;
   Int_t                        GetNLM                      ( AliVCluster * coi, AliVCaloCells * cells );
   Int_t                        GetNLM                      ( AliVCluster * coi, AliVCaloCells * cells, Int_t * absIdList, Float_t * maxEList );
   Bool_t                       AreNeighbours               ( Int_t abscell1, Int_t abscell2 ) const;
@@ -182,7 +182,6 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   
   AliAODEvent		     * fAOD;			     ///<
   AliVEvent		     * fVevent;			     ///< AliVEvent
-  AliCalorimeterUtils        * fCaloUtils;                   ///<
   
   TClonesArray		     * fNCluster;		     ///< Neutral clusters
   TClonesArray		     * fAODMCParticles;		     ///<
