@@ -429,8 +429,8 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
     return;
   }
 
-  /// Run 2 p-Pb
-  if (fCurrentRun >= 195681 && fCurrentRun <= 196311) {  /// LHC13de: p-Pb 5 TeV
+  /// Run 1 p-Pb
+  if (fCurrentRun >= 195344 && fCurrentRun <= 196311) {  /// LHC13bcde: p-Pb 5 TeV
     SetupRun1pA(0);
     return;
   }
