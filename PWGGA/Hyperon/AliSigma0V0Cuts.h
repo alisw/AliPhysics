@@ -55,6 +55,7 @@ class AliSigma0V0Cuts : public TObject {
   bool PhotonSelection(AliESDv0 *v0) const;
   float ComputeRapidity(float pt, float pz, float m) const;
   float ComputePhotonMass(const AliESDv0 *v0) const;
+  float ComputePhotonMassRefit(const AliESDv0 *v0) const;
   float ComputePsiPair(const AliESDv0 *v0) const;
   int GetRapidityBin(float rapidity) const;
 
@@ -114,6 +115,7 @@ class AliSigma0V0Cuts : public TObject {
   void ProcessMC() const;
   void CheckCutsMC() const;
   bool CheckDaughters(const AliMCParticle *particle) const;
+  bool CheckDaughtersInAcceptance(const AliMCParticle *particle) const;
 
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const { return fHistograms; }
@@ -183,6 +185,7 @@ class AliSigma0V0Cuts : public TObject {
   TH1F *fHistLambdaMass;       //!
   TH1F *fHistAntiLambdaMass;   //!
   TH1F *fHistPhotonMass;       //!
+  TH1F *fHistPhotonMassRefit;  //!
   TH1F *fHistK0Mass;           //!
   TH1F *fHistV0Pt;             //!
   TH1F *fHistV0Mass;           //!
@@ -211,13 +214,16 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistArmenterosBefore;        //!
   TH2F *fHistArmenterosAfter;         //!
 
-  TH1F *fHistMCTruthV0Pt;             //!
-  TH2F *fHistMCTruthV0PtY;            //!
-  TH2F *fHistMCTruthV0PtEta;          //!
-  TH1F *fHistMCTruthV0DaughterPt;     //!
-  TH2F *fHistMCTruthV0DaughterPtY;    //!
-  TH2F *fHistMCTruthV0DaughterPtEta;  //!
-  TH1F *fHistMCV0Pt;                  //!
+  TH1F *fHistMCTruthV0Pt;                   //!
+  TH2F *fHistMCTruthV0PtY;                  //!
+  TH2F *fHistMCTruthV0PtEta;                //!
+  TH1F *fHistMCTruthV0DaughterPt;           //!
+  TH2F *fHistMCTruthV0DaughterPtY;          //!
+  TH2F *fHistMCTruthV0DaughterPtEta;        //!
+  TH1F *fHistMCTruthV0DaughterPtAccept;     //!
+  TH2F *fHistMCTruthV0DaughterPtYAccept;    //!
+  TH2F *fHistMCTruthV0DaughterPtEtaAccept;  //!
+  TH1F *fHistMCV0Pt;                        //!
 
   TH2F *fHistV0Mother;                                        //!
   TH2F *fHistV0MassPtTrue;                                    //!
@@ -302,7 +308,7 @@ class AliSigma0V0Cuts : public TObject {
   TH2F *fHistSingleParticlePID[2];                         //!
 
  private:
-  ClassDef(AliSigma0V0Cuts, 4)
+  ClassDef(AliSigma0V0Cuts, 5)
 };
 
 #endif

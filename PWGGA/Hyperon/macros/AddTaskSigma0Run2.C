@@ -184,6 +184,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   sigmaCuts->SetIsMC(isMC);
   sigmaCuts->SetPDG(3212, 3122, 22);
   sigmaCuts->SetSigmaMassCut(0.2);
+  sigmaCuts->SetLambdaCuts(v0Cuts);
+  sigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0") {
     sigmaCuts->SetLightweight(true);
     sigmaCuts->SetTreeOutput(false);
@@ -196,6 +198,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   antiSigmaCuts->SetIsMC(isMC);
   antiSigmaCuts->SetPDG(3212, 3122, 22);
   antiSigmaCuts->SetSigmaMassCut(0.2);
+  antiSigmaCuts->SetLambdaCuts(antiv0Cuts);
+  antiSigmaCuts->SetV0ReaderName(V0ReaderName.Data());
   if (suffix != "0") {
     antiSigmaCuts->SetLightweight(true);
     antiSigmaCuts->SetTreeOutput(false);
@@ -208,6 +212,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   sigmaPhotonCuts->SetIsMC(isMC);
   sigmaPhotonCuts->SetPDG(3212, 3122, 22);
   sigmaPhotonCuts->SetSigmaMassCut(0.2);
+  sigmaPhotonCuts->SetPhotonCuts(photonV0Cuts);
+  sigmaPhotonCuts->SetLambdaCuts(v0Cuts);
   if (suffix != "0") {
     sigmaPhotonCuts->SetLightweight(true);
     sigmaPhotonCuts->SetTreeOutput(false);
@@ -220,6 +226,8 @@ AliAnalysisTaskSE *AddTaskSigma0Run2(bool isMC = false, bool isHeavyIon = false,
   antiSigmaPhotonCuts->SetIsMC(isMC);
   antiSigmaPhotonCuts->SetPDG(-3212, -3122, 22);
   antiSigmaPhotonCuts->SetSigmaMassCut(0.2);
+  antiSigmaPhotonCuts->SetPhotonCuts(photonV0Cuts);
+  antiSigmaPhotonCuts->SetLambdaCuts(antiv0Cuts);
   if (suffix != "0") {
     antiSigmaPhotonCuts->SetLightweight(true);
     antiSigmaPhotonCuts->SetTreeOutput(false);
