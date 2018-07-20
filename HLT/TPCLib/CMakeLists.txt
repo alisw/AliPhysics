@@ -46,9 +46,7 @@ set(MODULE AliHLTTPC)
 include_directories(${AliRoot_SOURCE_DIR}/HLT/TPCLib
                     ${AliRoot_SOURCE_DIR}/HLT/TPCLib/HWCFemulator/
                     ${AliRoot_SOURCE_DIR}/HLT/TPCLib/comp
-                    ${AliRoot_SOURCE_DIR}/HLT/TPCLib/merger-ca
                     ${AliRoot_SOURCE_DIR}/HLT/TPCLib/offline
-                    ${AliRoot_SOURCE_DIR}/HLT/TPCLib/tracking-ca
                     ${AliRoot_SOURCE_DIR}/HLT/TPCLib/transform
                     ${AliRoot_SOURCE_DIR}/HLT/TPCLib/transform-new
 )

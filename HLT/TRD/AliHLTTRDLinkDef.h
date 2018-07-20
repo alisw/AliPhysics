@@ -7,7 +7,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliHLTTRDClusterizer+;
-#pragma link C++ class AliHLTTRDDefinitions+;
 #pragma link C++ class AliHLTTRDCluster+;
 #pragma link C++ class AliHLTTRDTracklet+;
 #pragma link C++ class AliHLTTRDAgent+;
