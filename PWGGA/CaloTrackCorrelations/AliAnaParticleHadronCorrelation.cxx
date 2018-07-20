@@ -4119,7 +4119,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   // Find leading trigger if analysis request only leading,
   // if there is no leading trigger, then skip the event
   
-  Int_t iaod = 0 ;
+  Int_t iaod0 = 0 ;
   if ( fMakeAbsoluteLeading || fMakeNearSideLeading )
   {
     Bool_t leading = IsTriggerTheEventLeadingParticle();
@@ -4134,8 +4134,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     else
     {
       // Select only the leading in the trigger AOD loop
-      naod = fLeadingTriggerIndex+1 ;
-      iaod = fLeadingTriggerIndex   ;
+      naod  = fLeadingTriggerIndex+1 ;
+      iaod0 = fLeadingTriggerIndex   ;
     }
   }
   
@@ -4153,7 +4153,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   //------------------------------------------------------
   // Loop on trigger AOD
   
-  for( iaod = 0; iaod < naod; iaod++ )
+  for( Int_t iaod = iaod0; iaod < naod; iaod++ )
   {
     AliCaloTrackParticleCorrelation* particle =  (AliCaloTrackParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     
