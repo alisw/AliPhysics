@@ -290,13 +290,14 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   } else if (trainConfig == 58){
     cuts.AddCut("00010113", "00200009227300008250a04000", "0152103500000000"); //test cosPA scan
   } else if (trainConfig == 59){
-    cuts.AddCut("00010113", "00200009227300008250a04020", "0152103500000000"); //test cosPA dca
+    cuts.AddCut("00010113", "00200009a27300008250904120", "0152103500000000"); //cosPA, 0.99 eta 0.9
   } else if (trainConfig == 60){
-    cuts.AddCut("00010113", "00200009227300008250a04040", "0152103500000000"); //test dcaPA
+    cuts.AddCut("00010113", "0d200009a27300008250904120", "0152103500000000"); //cosPA, 0.99 eta 0.8
   } else if (trainConfig == 61){
-    cuts.AddCut("00010113", "00200009227300008250404040", "0152103500000000"); //test dcaPA
+    cuts.AddCut("00010113", "00200009a27300008250a04120", "0152103500000000"); //cosPA, 0.995 dcaz 0.9
+  } else if (trainConfig == 62){
+    cuts.AddCut("00010113", "0d200009a27300008250a04120", "0152103500000000"); //cosPA, 0.995 dcaz 0.8
   
-
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -358,12 +359,14 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisCuts[i] = new AliConversionPhotonCuts();
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     if (trainConfig == 21){
       analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
     }
+
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 
