@@ -49,6 +49,7 @@ fDCalDG1(kFALSE),
 fFlagApplySSCut(kTRUE),
 fFlagFillSprs(kFALSE),
 fFlagFillMCHistos(kFALSE),
+fFlagRunStackLoop(kFALSE),
 fNclusTPC(80),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
@@ -212,6 +213,7 @@ fDCalDG1(kFALSE),
 fFlagApplySSCut(kTRUE),
 fFlagFillSprs(kFALSE),
 fFlagFillMCHistos(kFALSE),
+fFlagRunStackLoop(kFALSE),
 fNclusTPC(80),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
@@ -840,7 +842,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fBElecAftEMCeID);
     }
     
-    if (fFlagFillSprs) {
+    if (fFlagFillSprs && ) {
         Int_t bins1[6]=  {/*280*/60,  160, 100, 100,  200, 4}; // pT;nSigma;eop;M20;DCA;MCTruth
         Double_t xmin1[6]={ /*2*/0,   -8,   0,   0, -0.2, -0.5};
         Double_t xmax1[6]={30,    8,   2,   1,  0.2, 3.5};
@@ -890,13 +892,15 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     //Loop over Stack//
     ///////////////////
     
-    if (fFlagFillMCHistos) {
+    if (fFlagFillMCHistos && fFlagRunStackLoop) {
         Int_t eleinStack=0;
         if (fMCarray) {
             //cout<<"Test2..................................."<<endl;
             // Make Pi0 and Eta Weight Sparse
             GetPi0EtaWeight(fSprsPi0EtaWeightCal);
-        
+            Int_t TrackPDG = -999;
+            Int_t ilabelM = -99;
+            
             for(int i=0; i<(fMCarray->GetEntries()); i++)
             {
                 //cout<<"Test "<<fMCarray->GetEntries()<<" ..................................."<<i<<endl;
@@ -908,8 +912,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
             
                 //-------Get PDG
-                Int_t TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
-                Int_t ilabelM = -99;
+                TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
                 ilabelM = AODMCtrack->GetMother();
             
             
