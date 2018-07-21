@@ -842,7 +842,7 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
         fOutputList->Add(fBElecAftEMCeID);
     }
     
-    if (fFlagFillSprs && ) {
+    if (fFlagFillSprs) {
         Int_t bins1[6]=  {/*280*/60,  160, 100, 100,  200, 4}; // pT;nSigma;eop;M20;DCA;MCTruth
         Double_t xmin1[6]={ /*2*/0,   -8,   0,   0, -0.2, -0.5};
         Double_t xmax1[6]={30,    8,   2,   1,  0.2, 3.5};
