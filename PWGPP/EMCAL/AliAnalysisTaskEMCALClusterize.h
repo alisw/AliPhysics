@@ -179,7 +179,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SetClustersMCLabelFrom2SelectedLabels(AliEMCALRecPoint* recPoint, AliAODCaloCluster *clus) ;
   void           SetClustersMCLabelFromOriginalClusters(AliAODCaloCluster * clus) ;
   
-  void           SwitchOnUseClusterMCLabelForCell(Int_t opt = 2){ fSetCellMCLabelFromCluster = opt     ; }
+  void           SwitchOnUseClusterMCLabelForCell(Int_t opt = 0){ fSetCellMCLabelFromCluster = opt     ; }
   void           SwitchOffUseClusterMCLabelForCell()            { fSetCellMCLabelFromCluster = 0       ; }
 
   void           SwitchOnUseMCEdepFracLabelForCell()            { fSetCellMCLabelFromEdepFrac = kTRUE  ;  
@@ -410,8 +410,10 @@ private:
 
   ///<  Use cluster MC label as cell label:
   ///<   * 0 - get the MC label stored in cells
-  ///<   * 1 - from old way, select 2 most likely labels
-  ///<   * 2 - from new way, get the original clusters, add all the MC labels (useful for any reclusterization with output V1 clusters)
+  ///<   * 1 - select 2 most likely labels
+  ///<   * 2 - get the original clusters, add all the MC labels 
+  ///< Options 1 and 2 useful for any reclusterization with output V1 clusters and similar clusterization thresholds as original cluster,
+  ///< if original is 50 MeV cell E cut and new is 100 MeV, this does not work well.
   Int_t                  fSetCellMCLabelFromCluster;
   
   ///< For MC generated with aliroot > v5-07-21, check the EDep information 
