@@ -1,4 +1,4 @@
-AliAnalysisTaskStrangenessLifetimes *AddTaskStrangenessLifetimes(
+AliAnalysisTaskStrangenessLifetimes *AddTaskStrangenessLifetimes(bool isMC = false,
     TString tskname = "LifetimesFiltering", TString suffix = "") {
   // Get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -17,7 +17,7 @@ AliAnalysisTaskStrangenessLifetimes *AddTaskStrangenessLifetimes(
 
   tskname.Append(suffix.Data());
   AliAnalysisTaskStrangenessLifetimes *task =
-      new AliAnalysisTaskStrangenessLifetimes(tskname.Data());
+      new AliAnalysisTaskStrangenessLifetimes(isMC, tskname.Data());
 
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(
       Form("%s_summary", tskname.Data()), TList::Class(),
