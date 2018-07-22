@@ -60,9 +60,13 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fMassErr(0.),
   fSigmaSgn(0.012),
   fSigmaSgnErr(0.),
+  fSigmaSgn2Gaus(0.012),
   fFixedMean(kFALSE),
   fFixedSigma(kFALSE),
+  fFixedSigma2Gaus(kFALSE),
   fFixedRawYield(-1.),
+  fFrac2Gaus(0.2),
+  fFixedFrac2Gaus(kFALSE),
   fNParsSig(3),
   fNParsBkg(2),
   fOnlySideBands(kFALSE),
@@ -110,9 +114,13 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fMassErr(0.),
   fSigmaSgn(0.012),
   fSigmaSgnErr(0.),
+  fSigmaSgn2Gaus(0.012),
   fFixedMean(kFALSE),
   fFixedSigma(kFALSE),
+  fFixedSigma2Gaus(kFALSE),
   fFixedRawYield(-1.),
+  fFrac2Gaus(0.2),
+  fFixedFrac2Gaus(kFALSE),
   fNParsSig(3),
   fNParsBkg(2),
   fOnlySideBands(kFALSE),
@@ -531,10 +539,12 @@ TF1* AliHFInvMassFitter::CreateSignalFitFunction(TString fname, Double_t integsi
     funcsig->SetParameter(2,fSigmaSgn);
     funcsig->SetParLimits(2,0.004,0.05);
     if(fFixedSigma) funcsig->FixParameter(2,fSigmaSgn);
-    funcsig->SetParameter(3,0.2);
-    funcsig->SetParLimits(3,0.,1.);
-    funcsig->SetParameter(4,fSigmaSgn);
-    funcsig->SetParLimits(4,0.004,0.05);
+    funcsig->SetParameter(3,fFrac2Gaus);
+    if(fFixedFrac2Gaus) funcsig->FixParameter(3,fFrac2Gaus);
+    else funcsig->SetParLimits(3,0.,1.);
+    funcsig->SetParameter(4,fSigmaSgn2Gaus);
+    if(fFixedSigma2Gaus) funcsig->FixParameter(4,fSigmaSgn2Gaus);
+    else funcsig->SetParLimits(4,0.004,0.05);
     funcsig->SetParNames("SgnInt","Mean","Sigma1","Frac","Sigma2");
   }
   return funcsig;
