@@ -1,5 +1,6 @@
 #include "AliAnalysisTaskStrangenessLifetimes.h"
 
+#include <array>
 #include <unordered_map>
 
 #include <Riostream.h>
