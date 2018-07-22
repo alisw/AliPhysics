@@ -22,6 +22,7 @@
 #pragma link C++ class AliFemtoEventCut+;
 #pragma link C++ class AliFemtoSphericityEventCut+;
 #pragma link C++ class AliFemtoSpherocityEventCut+;
+#pragma link C++ class AliFemtoResultStorage+;
 #pragma link C++ class AliFemtoEventReader+;
 #pragma link C++ class AliFemtoEventReaderStandard+;
 #pragma link C++ class AliFemtoKinkCut+;
