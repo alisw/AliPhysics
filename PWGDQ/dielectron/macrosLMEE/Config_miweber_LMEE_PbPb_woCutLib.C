@@ -787,7 +787,7 @@ void SetupAODtrackCutsRun3(AliDielectron *die)
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,      80.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsITS,      3.0, 100.0);
   varCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0,   15.0);
-  varCuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster
+  //varCuts->AddCut(AliDielectronVarManager::kNclsSITS,     0.0,   3.1); // means 0 and 1 shared Cluster (cannot be used for Run3)
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   8.0);
   varCuts->AddCut(AliDielectronVarManager::kNFclsTPCr,    80.0, 160.0);
   varCuts->AddCut(AliDielectronVarManager::kPt,           0.2, 8.);
@@ -817,8 +817,8 @@ void SetupAODtrackCutsRun3(AliDielectron *die)
 
   // activate the cut sets (order might be CPU timewise important)
   if(hasMC) {
-    // cuts->AddCut(pidCutsMC); // commnted out for the moment
-    // die->GetTrackFilter().AddCuts(pidCutsMC);
+    cuts->AddCut(pidCutsMC); // commnted in for the moment -> only true electrons
+    die->GetTrackFilter().AddCuts(pidCutsMC);
     cuts->AddCut(trkFilter);
     die->GetTrackFilter().AddCuts(trkFilter);
     cuts->AddCut(varCuts);
