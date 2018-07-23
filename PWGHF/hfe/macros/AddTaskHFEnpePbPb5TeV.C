@@ -31,7 +31,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    ,Bool_t kRejectKinkParticles = kFALSE         // mfaggin, 12-Apr-2018
                                    ,Int_t chosen_filBIT = 2     // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT) (mfaggin, 07-Jun-2018)
                                    ,Bool_t kTestDifferentFilBIT = kFALSE        // test a different filterbit (mfaggin, 07-Jun-2018)
-                                   ,Bool_t kTestWeightSmallerCentBins = kTRUE   // test weights in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
+                                   ,Bool_t kTestWeightSmallerCentBins = kFALSE   // test weights in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
                                    )		   
   
 {
