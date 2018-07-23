@@ -87,6 +87,13 @@ set(SRCS
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
+# Add header only files
+set(HDRS 
+  ${HDRS}
+  Lifetimes/MCparticle.h
+  Lifetimes/Utils.h
+)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
@@ -138,11 +145,6 @@ set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
-
-set(HDRS 
-  ${HDRS}
-  Lifetimes/Utils.h
-)
 
 install(FILES ${HDRS} DESTINATION include)
 
