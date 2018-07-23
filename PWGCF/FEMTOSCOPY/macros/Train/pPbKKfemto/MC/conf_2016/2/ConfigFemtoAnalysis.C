@@ -166,7 +166,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoShareQualityCorrFctn  *cqinvsqtpc[20*10];
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
   AliFemtoTPCInnerCorrFctn      *cqinvinnertpc[20*10];
-  AliFemtoModelCorrFctnKK   *cqinvkttpcmodel[20*8];
+  //AliFemtoModelCorrFctnKK   *cqinvkttpcmodel[20*8];
+  AliFemtoModelCorrFctnSource   *cqinvkttpcmodel[20*8];
 
   // *** Begin pion-pion analysis ***
   int aniter = 0;
@@ -355,7 +356,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
 
 	      //model
-	      cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnKK(Form("cqinvModel%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
+	      //cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnKK(Form("cqinvModel%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
+	      cqinvkttpcmodel[ktm] = new AliFemtoModelCorrFctnSource(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0, shqmax);
 	      cqinvkttpcmodel[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	      cqinvkttpcmodel[ktm]->SetKaonPDG(kTRUE);
 	      cqinvkttpcmodel[ktm]->ConnectToManager(tModelManager);
