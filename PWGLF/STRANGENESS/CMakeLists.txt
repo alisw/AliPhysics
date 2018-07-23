@@ -139,6 +139,11 @@ install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
 
+set(HDRS 
+  ${HDRS}
+  Lifetimes/Utils.h
+)
+
 install(FILES ${HDRS} DESTINATION include)
 
 # install macros

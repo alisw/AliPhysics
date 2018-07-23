@@ -54,4 +54,6 @@
 #pragma link C++ class AliAnalysisTaskMCPredictions+; 
 #pragma link C++ class Lifetimes::MiniV0+;
 #pragma link C++ class std::vector<Lifetimes::MiniV0>+;
+#pragma link C++ class Lifetimes::MCparticle+;
+#pragma link C++ class std::vector<Lifetimes::MCparticle>+;
 #endif
