@@ -107,6 +107,10 @@ AliTPCclusterer::AliTPCclusterer(const AliTPCParam* par, const AliTPCRecoParam *
   fEventHeader(0),
   fTimeStamp(0),
   fEventType(0),
+  fPeriodNumber(0), // period numer
+  fOrbitNumber(0),  // orbit number
+  fBunchCrossNumber(0), // bunch crossing number
+  fGlobalID(0),       // global ID
   fInput(0),
   fOutput(0),
   fOutputArray(0),
@@ -682,12 +686,13 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * 
   if ( (AliTPCReconstructor::StreamLevel()&AliTPCtracker::kStreamClDumpLocal)!=0) {
     Float_t xyz[3];
     cl->GetGlobalXYZ(xyz);
-     (*fDebugStreamer)<<"Clusters"<<
-       "Cl.="<<cl<<
-       "gx="<<xyz[0]<<
-       "gy="<<xyz[1]<<
-       "gz="<<xyz[2]<<
-       "\n";
+    (*fDebugStreamer)<<"Clusters"<<
+                     "Cl.="<<cl<<
+                     "gid="<<fGlobalID<<
+                     "gx="<<xyz[0]<<
+                     "gy="<<xyz[1]<<
+                     "gz="<<xyz[2]<<
+                     "\n";
   }
 
   fNcluster++;
@@ -994,6 +999,13 @@ void AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
   if (fEventHeader){
     fTimeStamp = fEventHeader->Get("Timestamp");
     fEventType = fEventHeader->Get("Type");
+    const UInt_t *id  = fEventHeader->GetP("Id");                             // copy of AliRawReaderRoot::GetEventId()
+    if (id!= nullptr) {
+      fPeriodNumber = id ? (((id)[0] >> 4) & 0x0fffffff) : 0;                           // AliRawReader::Get<>
+      fOrbitNumber = id ? ((((id)[0] << 20) & 0xf00000) | (((id)[1] >> 12) & 0xfffff)) : 0; // AliRawReader::Get<>
+      fBunchCrossNumber = id ? ((id)[1] & 0x00000fff) : 0;                              // AliRawReader::Get<>
+      fGlobalID = (((ULong64_t) fPeriodNumber << 36) | ((ULong64_t) fOrbitNumber << 12) | (ULong64_t) fBunchCrossNumber); // AliRawReader::GetEventIdAsLong()
+    }
     AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
     transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
     transform->SetCurrentTimeStamp(fTimeStamp);

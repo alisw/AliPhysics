@@ -96,6 +96,10 @@ private:
   AliRawEventHeaderBase *fEventHeader; //! event header information
   UInt_t  fTimeStamp;   // Time Stamp
   UInt_t  fEventType;   // Event Type
+  ULong64_t fPeriodNumber; // period numer
+  ULong64_t  fOrbitNumber;  // orbit number
+  ULong64_t fBunchCrossNumber; // bunch crossing number
+  ULong64_t fGlobalID;       // global ID
   TTree * fInput;   //!input  tree with digits - object not owner
   TTree * fOutput;   //!output tree with digits - object not owner
   TObjArray *fOutputArray;     //! output TObjArray with pointers arrays of cluster
