@@ -1241,13 +1241,15 @@ void AliAnalysisHFETPCTOFBeauty::UserExec(Option_t *)
 		NAnalizedTracks = NAnalizedTracks+1;
         
         ///Number of analysed tracks from Hijing:
-        Int_t trkLabel = TMath::Abs(track->GetLabel());
-		Int_t labelm = GetPrimary(trkLabel,fMCarray);///gives the label of first mother
-		AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(labelm);
-		Int_t trkIndexPrimHFE= AODMCtrack->GetLabel();///gives index of the particle in original MCparticle array (labelm and trkIndexPrimHFE are the same, so I don't understand why this is done)
+        if(fIsMC){
+			Int_t trkLabel = TMath::Abs(track->GetLabel());
+			Int_t labelm = GetPrimary(trkLabel,fMCarray);///gives the label of first mother
+			AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(labelm);
+			Int_t trkIndexPrimHFE= AODMCtrack->GetLabel();///gives index of the particle in original MCparticle array (labelm and trkIndexPrimHFE are the same, so I don't understand why this is done)
    
-		if(trkIndexPrimHFE < fNpureMC){
-			NAnalizedTracksHijing = NAnalizedTracksHijing+1;
+			if(trkIndexPrimHFE < fNpureMC){
+				NAnalizedTracksHijing = NAnalizedTracksHijing+1;
+			}
 		}
 
         fTPC_p2->Fill(fP,fTPCsignal);
