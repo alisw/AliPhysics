@@ -2801,7 +2801,7 @@ void TStatToolkit::MakeDistortionMapFast(THnBase * histo, TTreeSRedirector *pcst
     if (grpOn) for (int i=ndim;i--;) idx[i]=idxSav[i]; // restore central bins
     idx[tgtDim] = 0;
     if (verbose>0) {for (int i=0;i<ndim;i++) printf("%d ",idx[i]); printf(" | central bin fit\n");}
-    if (meanVectorMI[ndim]>0) {
+    if (meanVectorMI[ndim]>1) { //TODO check valgrind
       for (Int_t jDim=0; jDim<ndim; jDim++) meanVectorMI[jDim]/= meanVectorMI[ndim];
     }else{
       for (Int_t jDim=0; jDim<ndim; jDim++) meanVectorMI[jDim]= meanVector[ndim];

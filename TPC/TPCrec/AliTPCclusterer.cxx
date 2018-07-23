@@ -79,6 +79,7 @@
 #include "AliTPCclusterMI.h"
 #include "AliTPCTransform.h"
 #include "AliTPCclusterer.h"
+#include "AliTPCtracker.h"
 
 using std::cerr;
 using std::endl;
@@ -106,6 +107,10 @@ AliTPCclusterer::AliTPCclusterer(const AliTPCParam* par, const AliTPCRecoParam *
   fEventHeader(0),
   fTimeStamp(0),
   fEventType(0),
+  fPeriodNumber(0), // period numer
+  fOrbitNumber(0),  // orbit number
+  fBunchCrossNumber(0), // bunch crossing number
+  fGlobalID(0),       // global ID
   fInput(0),
   fOutput(0),
   fOutputArray(0),
@@ -677,16 +682,17 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, bool addtoarray, Float_t * 
 //  if (!fRecoParam->DumpSignal()) {
 //    cl->SetInfo(0);
 //  }
-  const Int_t kClusterStream=128; // stream level should be per action - to be added to the AliTPCReconstructor
-  if ( (AliTPCReconstructor::StreamLevel()&kClusterStream)==kClusterStream) {
+
+  if ( (AliTPCReconstructor::StreamLevel()&AliTPCtracker::kStreamClDumpLocal)!=0) {
     Float_t xyz[3];
     cl->GetGlobalXYZ(xyz);
-     (*fDebugStreamer)<<"Clusters"<<
-       "Cl.="<<cl<<
-       "gx="<<xyz[0]<<
-       "gy="<<xyz[1]<<
-       "gz="<<xyz[2]<<
-       "\n";
+    (*fDebugStreamer)<<"Clusters"<<
+                     "Cl.="<<cl<<
+                     "gid="<<fGlobalID<<
+                     "gx="<<xyz[0]<<
+                     "gy="<<xyz[1]<<
+                     "gz="<<xyz[2]<<
+                     "\n";
   }
 
   fNcluster++;
@@ -993,6 +999,13 @@ void AliTPCclusterer::Digits2Clusters(AliRawReader* rawReader)
   if (fEventHeader){
     fTimeStamp = fEventHeader->Get("Timestamp");
     fEventType = fEventHeader->Get("Type");
+    const UInt_t *id  = fEventHeader->GetP("Id");                             // copy of AliRawReaderRoot::GetEventId()
+    if (id!= nullptr) {
+      fPeriodNumber = id ? (((id)[0] >> 4) & 0x0fffffff) : 0;                           // AliRawReader::Get<>
+      fOrbitNumber = id ? ((((id)[0] << 20) & 0xf00000) | (((id)[1] >> 12) & 0xfffff)) : 0; // AliRawReader::Get<>
+      fBunchCrossNumber = id ? ((id)[1] & 0x00000fff) : 0;                              // AliRawReader::Get<>
+      fGlobalID = (((ULong64_t) fPeriodNumber << 36) | ((ULong64_t) fOrbitNumber << 12) | (ULong64_t) fBunchCrossNumber); // AliRawReader::GetEventIdAsLong()
+    }
     AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
     transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
     transform->SetCurrentTimeStamp(fTimeStamp);
@@ -1453,7 +1466,7 @@ Int_t AliTPCclusterer::ReadHLTClusters()
       AliError("can not load class description of AliHLTTPCClusterAccessHLTOUT, aborting ...");
       return -1;
     }
-  
+
     void* p=(*pNewFunc)(NULL);
     if (!p) {
       AliError("unable to create instance of AliHLTTPCClusterAccessHLTOUT");
@@ -1480,8 +1493,8 @@ Int_t AliTPCclusterer::ReadHLTClusters()
   //       since we don't have the charge information
   const Float_t minMaxCutAbs       = fRecoParam -> GetMinMaxCutAbs();
   const Float_t minMaxCutSigma     = fRecoParam -> GetMinMaxCutSigma();
-  
-  
+
+
   // make sure that all clusters from the previous event are cleared
   pClusterAccess->Clear("event");
   for(fSector = 0; fSector < kNS; fSector++) {
@@ -1530,51 +1543,52 @@ Int_t AliTPCclusterer::ReadHLTClusters()
       TObjArray* clusterArray=fRowCl->GetArray();
       if (!clusterArray) continue;
       AliDebug(4,Form("Reading %d clusters from HLT for sector %d row %d", clusterArray->GetEntriesFast(), fSector, fRow));
-      
+
       int edge_flags_set = 0;
       pClusterAccess->Execute("get_edge_flags_set", NULL, &edge_flags_set);
 
       for (Int_t i=0; i<clusterArray->GetEntriesFast(); i++) {
-	if (!clusterArray->At(i)) 
-	  continue;
-	
-	bool keepCluster=false;
-	AliTPCclusterMI* cluster=dynamic_cast<AliTPCclusterMI*>(clusterArray->At(i));
-	if (keepCluster=(cluster!=NULL)) {
-	if (cluster->GetRow()!=fRow) {
-	  AliError(Form("mismatch in row of cluster: %d, expected %d", cluster->GetRow(), fRow));
-	  keepCluster = false;
-	}
-        nClusterSector++;
+        if (!clusterArray->At(i))
+          continue;
 
-        const Int_t   currentPad = TMath::Nint(cluster->GetPad());
-        const Float_t maxCharge  = cluster->GetMax();
+        bool keepCluster=false;
+        AliTPCclusterMI* cluster=dynamic_cast<AliTPCclusterMI*>(clusterArray->At(i));
+        if (keepCluster=(cluster!=NULL)) {
+          if (cluster->GetRow()!=fRow) {
+            AliError(Form("mismatch in row of cluster: %d, expected %d", cluster->GetRow(), fRow));
+            keepCluster = false;
+          }
+          nClusterSector++;
 
-        const Float_t gain       = gainROC  -> GetValue(fRow, currentPad);
-        const Float_t noise      = noiseROC -> GetValue(fRow, currentPad);
+          const Int_t   currentPad = TMath::Nint(cluster->GetPad());
+          const Float_t maxCharge  = cluster->GetMax();
 
-        // check if cluster is on an active pad
-        // TODO: PadGainFactor should only contain 1 or 0. However in Digits2Clusters
-        //       this is treated as a real gain factor per pad. Is the implementation
-        //       below fine?
-        if (!(gain>0)) keepCluster = false;
+          const Float_t gain       = gainROC  -> GetValue(fRow, currentPad);
+          const Float_t noise      = noiseROC -> GetValue(fRow, currentPad);
 
-        // check if the cluster is on a too noisy pad
-        if (noise>fRecoParam->GetMaxNoise()) keepCluster = false;
+          // check if cluster is on an active pad
+          // TODO: PadGainFactor should only contain 1 or 0. However in Digits2Clusters
+          //       this is treated as a real gain factor per pad. Is the implementation
+          //       below fine?
+          if (!(gain>0)) keepCluster = false;
 
-        // check if the charge is above the required minimum
-        if (maxCharge<minMaxCutAbs)         keepCluster = false;
-	if (cluster->GetQ() < 0) keepCluster = false;
-        if (maxCharge<minMaxCutSigma*noise) keepCluster = false;
-	}
-	if (!keepCluster) {
-	  clusterArray->RemoveAt(i);
-	  continue;
-	}
-        
-	nClusterSectorGood++;
-	// Note: cluster is simply adjusted, not cloned nor added to any additional array
-	AddCluster(*cluster, false, NULL, 0, !edge_flags_set);
+          // check if the cluster is on a too noisy pad
+          if (noise>fRecoParam->GetMaxNoise()) keepCluster = false;
+
+          // check if the charge is above the required minimum
+          if (maxCharge<minMaxCutAbs)         keepCluster = false;
+          if (cluster->GetQ() < 0) keepCluster = false;
+          if (maxCharge<minMaxCutSigma*noise) keepCluster = false;
+        }
+        if (!keepCluster) {
+          clusterArray->RemoveAt(i);
+          continue;
+        }
+
+        nClusterSectorGood++;
+        // Note: cluster is simply adjusted, not cloned nor added to any additional array
+        AddCluster(*cluster, false, NULL, 0, !edge_flags_set);
+
       }
       // remove the empty slots from the array
       clusterArray->Compress();
@@ -1582,7 +1596,7 @@ Int_t AliTPCclusterer::ReadHLTClusters()
       FillRow();
       //fRowCl->GetArray()->Clear("c");
       fRowCl->GetArray()->Clear(); // RS: AliTPCclusterMI does not allocate memory
-      
+
     } // for (fRow = 0; fRow < nRows; fRow++) {
     fNclusters+=nClusterSectorGood;
     nClustersAll+=nClusterSector;
@@ -1591,6 +1605,6 @@ Int_t AliTPCclusterer::ReadHLTClusters()
   pClusterAccess->Clear("event");
 
   Info("Digits2Clusters", "Number of converted HLT clusters : %d/%d", fNclusters,nClustersAll);
-  
+
   return 0;
 }
