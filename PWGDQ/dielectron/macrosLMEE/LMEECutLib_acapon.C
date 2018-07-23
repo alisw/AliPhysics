@@ -8,7 +8,8 @@ class LMEECutLib {
 		kHighMult,
 		kMidMult,
 		kLowMult,
-		kTTreeCuts
+		kTTreeCuts,
+		kV0_tight
 	};
 
 
@@ -198,6 +199,7 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
         case kMidMult:
         case kLowMult:
 				case kTTreeCuts:
+				case kV0_tight:
             eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
             eventCuts->SetRequireVertex();
             eventCuts->SetMinVtxContributors(1);
@@ -215,7 +217,8 @@ AliDielectronCutGroup* LMEECutLib::GetCentralityCuts(Int_t centSel) {
     switch(centSel){
         case kAllSpecies:
         case kElectrons:
-        case kTTreeCuts
+				case kTTreeCuts:
+				case kV0_tight:
             break;
         case kHighMult:
             AliDielectronVarCuts* centCut1 = new AliDielectronVarCuts("centCutsHigh","MultiplicitypPbLHC16qHigh");
@@ -322,6 +325,11 @@ AliDielectronCutGroup* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 	//separately.
   AliDielectronPID* PID_TTreeCuts = new AliDielectronPID("PID_TTreeCuts", "PID_TTreeCuts");
   PID_TTreeCuts->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -4., 4. , 0.1, 100., kFALSE);
+
+	//PID cuts used to select out a very pure sample of V0 electrons (gamma decays)
+	AliDielectronPID* PID_V0_tight = new AliDielectronPID("PID_V0_tight", "PID_V0_tight");
+	PID_V0_tight->AddCut(AliDielectronPID::kITS, AliPID::kElectron, -1., 1., 0.1, 100., kFALSE);
+	PID_V0_tight->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -1., 1., 0.4, 100., kFALSE, AliDielectronPID::kRequire);
   
   //-----------------------------------------------
   // Now see what Config actually loads and assemble final cuts
@@ -343,6 +351,9 @@ AliDielectronCutGroup* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 			break;
 		case kTTreeCuts:
 			cuts->AddCut(PID_TTreeCuts);
+			break;
+		case kV0_tight:
+			cuts->AddCut(PID_V0_toight);
 			break;
 		default:
 			std::cout << "No Analysis PID Cut defined " << std::endl;
@@ -430,6 +441,38 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 			trackCuts->AddCut(varCutsFilter);
 
 			trackCuts->AddCut(GetPIDCuts(PIDcuts));
+			break;
+		case kV0_tight:
+			// V0 specific track cuts
+			AliDielectronV0Cuts* gammaV0cuts = new AliDielectronV0Cuts("gammaV0cuts", "gammaV0cuts");
+			gammaV0cuts->SetV0finder(AliDielectronV0Cuts::kOnTheFly);
+			// Cut on the angle between the total momentum vector of the daughter
+			// tracks and a line connecting the primary and secondary vertices
+			gammaV0cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02), 1.0,  kFALSE);
+			gammaV0cuts->AddCut(AliDielectronVarManager::kChi2NDF, 0.0, 10.0, kFALSE);
+			// Restrict distance between legs
+			gammaV0cuts->AddCut(AliDielectronVarManager::kLegDist, 0.0, 0.25, kFALSE);
+			// Require minimum distance to secondary vertex
+			gammaV0cuts->AddCut(AliDielectronVarManager::kR, 3.0, 90.0, kFALSE);
+			// Angle between daughter momentum plane and plane perpendicular to magnetic field
+			gammaV0cuts->AddCut(AliDielectronVarManager::kPsiPair, 0.0, 0.05, kFALSE);
+			// Mass cut on V0 (mother) particle
+			gammaV0cuts->AddCut(AliDielectronVarManager::kM, 0.0, 0.05, kFALSE);
+			// Armenteros-Podolanksi variables
+			// Pt
+			gammaV0cuts->AddCut(AliDielectronVarManager::kArmPt, 0.0, 0.05, kFALSE);
+			// Longitudinal momentum asymmentry between daughter particles
+			gammaV0cuts->AddCut(AliDielectronVarManager::kArmAlpha, -0.35, 0.35, kFALSE); 
+			// Default setting is to exclude V0 tracks
+			gammaV0cuts->SetExcludeTracks(kFALSE);
+			// Standard track cut variables
+			AliDielectronVarCuts* trackCutsV0 = new AliDielectronVarCuts("trackCutsV0", "trackCutsV0");
+			trackCutsV0->AddCut(AliDielectronVarManager::kTPCchi2Cl, 0.0, 4.0);
+			trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCr, 100.0, 160.0);
+			trackCutsV0->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.8, 1.1);
+
+			trackCuts->AddCut(gammaV0cuts);
+			trackCuts->AddCut(trackCutsV0);
 			break;
 		default:
 			std::cout << "No Analysis Track Cut defined" << std::endl;
