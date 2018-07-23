@@ -1,8 +1,7 @@
 
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-// Updated Jul 3rd : DCA cuts & pt binning
-// Updated Jul 8th : MC test
+// Updated Jul 23rd : cuts added to rec
 // Parts of the code taken from:
 // AliEbyEPidEfficiencyContamination.cxx
 // AliAnalysisTaskStrangenessVsMultiplicityMCRun2.cxx
@@ -455,7 +454,6 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
             ontheflystat = aodv0->GetOnFlyStatus();
             
             
-            //            if ((V0pt<fMinV0Pt)||(fMaxV0Pt<V0pt)) continue;
             
             dcaPosToVertex = aodv0->DcaPosToPrimVertex();
             dcaNegToVertex = aodv0->DcaNegToPrimVertex();
@@ -547,9 +545,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         
         Float_t v0Radius = TMath::Sqrt(vertx[0]*vertx[0]+vertx[1]*vertx[1]);
-        //         if(TMath::Abs(eta) > 0.8) continue;
-        //         if(!(TMath::Abs(peta) < 1.)) continue;
-        //         if(!(TMath::Abs(neta) < 1.)) continue;
+    
         if(TMath::Abs(peta) > 0.8) continue;
         if(TMath::Abs(neta) > 0.8) continue;
         if(cosPointingAngle < 0.999) continue;
@@ -563,27 +559,27 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
         
         if( ontheflystat == 0 )
         {
-            if(dcaV0ToVertex < 0.8 && dcaNegToVertex > 0.2 && dcaPosToVertex >  0.1 && TMath::Abs(posprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.8 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtLambda->Fill(invMassLambda,V0pt);
                 f2fHistRecCentVsPtLambda->Fill(fCentrality,V0pt);
                 nRecL += 1.;
-                if(invMassLambda > 1.1019689 && invMassLambda < 1.1300511)
+                if(invMassLambda > 1.11 && invMassLambda < 1.12)
                 {f2fHistmassctLambda->Fill(invMassLambda,V0pt);
                     ptCh[iptbin] += 1;}
             }
-            if(dcaV0ToVertex < 0.8 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.2 && TMath::Abs(negprnsg)  <= 3.)
+            if(dcaV0ToVertex < 0.8 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
             {
                 f2fHistInvMassVsPtAntiLambda->Fill(invMassAntiLambda,V0pt);
                 f2fHistRecCentVsPtAntiLambda->Fill(fCentrality,V0pt);
                 nRecA += 1.;
-                if(invMassAntiLambda > 1.10171895 && invMassAntiLambda < 1.13028105)
+                if(invMassAntiLambda > 1.11 && invMassAntiLambda < 1.12)
                 {f2fHistmassctAntiLambda->Fill(invMassAntiLambda,V0pt);
                     ptCh[iptbin+fNptBins] += 1;}
             }
             
             
-            if(fIsMC) //plots for efficiency calculations
+            if(fIsMC)
             {
                 fTreeVariablePID = -999;
                 Float_t mcpt = -999, mceta = -999;
@@ -622,7 +618,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     }
                     
                     
-                    //                     if(dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.8 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
                     {
                         if(fTreeVariablePID == 3122)
                         {
@@ -631,7 +627,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         }
                     }
                     
-                    //                     if(dcaNegToVertex > 0.05 && dcaPosToVertex > 0.1 && TMath::Abs(negprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.8 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
                     {
                         if(fTreeVariablePID == -3122)
                         {
@@ -674,7 +670,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                     }
                     
                     
-                    //                     if(dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.8 && dcaNegToVertex > 0.1 && dcaPosToVertex >  0.05 && TMath::Abs(posprnsg)  <= 3.)
                     {
                         if(fTreeVariablePID == 3122)
                         {
@@ -683,7 +679,7 @@ void AliAnalysisTaskNetLambdaTrad::UserExec(Option_t *)
                         }
                     }
                     
-                    //                     if(dcaNegToVertex > 0.05 && dcaPosToVertex > 0.1 && TMath::Abs(negprnsg)  <= 3.)
+                    if(dcaV0ToVertex < 0.8 && dcaNegToVertex > 0.05 && dcaPosToVertex >  0.1 && TMath::Abs(negprnsg)  <= 3.)
                     {
                         if(fTreeVariablePID == -3122)
                         {
@@ -730,7 +726,6 @@ Int_t AliAnalysisTaskNetLambdaTrad::GetPtBin(Double_t pt)
 {
     Int_t bin = -1;
     
-    //    Double_t pidPtBins[21] = { 1.1, 1.25, 1.4, 1.55, 1.7, 1.85, 2.0, 2.15, 2.3, 2.45, 2.6, 2.75, 2.9, 3.05, 3.2, 3.35, 3.5, 3.65, 3.8, 3.95, 4.1 };
     Double_t LambdaPtBins[20] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.45, 2.6, 2.75, 2.9, 3.05, 3.2, 3.35};
     
     for(Int_t iBin = 0; iBin < fNptBins; iBin++)
