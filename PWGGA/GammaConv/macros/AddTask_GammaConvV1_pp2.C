@@ -81,6 +81,8 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
                                 TString fileNameInputForMultWeighing = "Multiplicity.root",             //
                                 TString periodNameAnchor             = "",                              //
                                 Bool_t   runLightOutput             = kFALSE,                          // switch to run light output (only essential histograms for afterburner)
+				Bool_t   enableElecDeDxPostCalibration = kFALSE,
+				TString  fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root",
                                 TString  additionalTrainConfig       = "0"                              // additional counter for trainconfig, this has to be always the last parameter
                            ) {
 
@@ -290,13 +292,14 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
   } else if (trainConfig == 58){
     cuts.AddCut("00010113", "00200009227300008250a04000", "0152103500000000"); //test cosPA scan
   } else if (trainConfig == 59){
-    cuts.AddCut("00010113", "00200009227300008250a04020", "0152103500000000"); //test cosPA dca
+    cuts.AddCut("00010113", "00200009a27300008250904120", "0152103500000000"); //cosPA, 0.99 eta 0.9
   } else if (trainConfig == 60){
-    cuts.AddCut("00010113", "00200009227300008250a04040", "0152103500000000"); //test dcaPA
+    cuts.AddCut("00010113", "0d200009a27300008250904120", "0152103500000000"); //cosPA, 0.99 eta 0.8
   } else if (trainConfig == 61){
-    cuts.AddCut("00010113", "00200009227300008250404040", "0152103500000000"); //test dcaPA
+    cuts.AddCut("00010113", "00200009a27300008250a04120", "0152103500000000"); //cosPA, 0.995 dcaz 0.9
+  } else if (trainConfig == 62){
+    cuts.AddCut("00010113", "0d200009a27300008250a04120", "0152103500000000"); //cosPA, 0.995 dcaz 0.8
   
-
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -358,12 +361,30 @@ void AddTask_GammaConvV1_pp2(   Int_t    trainConfig                 = 1,       
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisCuts[i] = new AliConversionPhotonCuts();
+
+    if (enableElecDeDxPostCalibration>0){
+      if (isMC == 0){
+	if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	} else {
+	  enableElecDeDxPostCalibration=kFALSE;
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	}
+
+      } else{
+	cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+	enableElecDeDxPostCalibration=kFALSE;
+	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      }
+    }
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     if (trainConfig == 21){
       analysisCuts[i]->SetDodEdxSigmaCut(kFALSE);
     }
+
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 

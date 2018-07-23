@@ -2791,6 +2791,18 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut){ 
     fPIDnSigmaBelowElectronLine=-2.5;
     fPIDnSigmaAboveElectronLine=5;
     break;
+  case 10: // -3,3.
+    fPIDnSigmaBelowElectronLine=-3;
+    fPIDnSigmaAboveElectronLine=3;
+    break;
+  case 11: // -3.2,3.2.
+    fPIDnSigmaBelowElectronLine=-3.2;
+    fPIDnSigmaAboveElectronLine=3.2;
+    break;
+  case 12: // -2.8,2.8
+    fPIDnSigmaBelowElectronLine=-2.8;
+    fPIDnSigmaAboveElectronLine=2.8;
+    break;
   default:
     AliError("TPCdEdxCutElectronLine not defined");
     return kFALSE;
@@ -3435,6 +3447,9 @@ Bool_t AliConversionPhotonCuts::SetCosPAngleCut(Int_t cosCut) {
     break;
   case 10:
     fCosPAngleCut = 0.995;
+    break;
+  case 11:
+    fCosPAngleCut = 0.985;
     break;
   default:
     AliError(Form("Cosine Pointing Angle cut not defined %d",cosCut));
