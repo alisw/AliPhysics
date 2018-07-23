@@ -29,8 +29,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            UserExec(Option_t* option);
 		virtual void            Terminate(Option_t* option);
 		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt);
-		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t &fFlagIso);
-		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso);
+		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso);
+		virtual void            CheckCorrelation(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t Riso, Bool_t fFlagPhoto);
 
 		virtual void            CheckMCgen(AliAODMCHeader* fMCheader,Double_t CutEta);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
@@ -58,6 +58,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetNsigma(Double_t min, Double_t max) {NsigmaMin = min, NsigmaMax = max;};
 		void                    SetM20(Double_t min, Double_t max) {M20Min = min, M20Max = max;};
 		void                    SetEop(Double_t min, Double_t max) {EopMin = min, EopMax = max;};
+		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
 
 	private:
 		AliAODEvent*            fAOD;           //! input event
@@ -78,6 +79,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t NsigmaMin, NsigmaMax;
 		Double_t M20Min, M20Max;
 		Double_t EopMin, EopMax;
+		Double_t MaxConeR;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;
@@ -103,6 +105,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fM02_2;
 		TH2F*                   fM20_2;
 		TH1F*                   fEop_ele;
+		TH1F*                   fConeR;
 
 		//==== Real data output ====
 		TH1F*                   fHist_trackPt;        //! dummy histogram
@@ -121,10 +124,14 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fPhidiff;
 		TH2F*                   fInv_pT_LS;
 		TH2F*                   fInv_pT_ULS;
+		TH2F*                   fInv_pT_ULS_forW;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
 		TH2F*                   fHistPt_R_Iso;
 		TH2F*                   fRiso_phidiff;
+		TH2F*                   fRiso_phidiff_LS;
+		TH2F*                   fRiso_phidiff_35;
+		TH2F*                   fRiso_phidiff_LS_35;
 
 		//==== Trigger or Calorimeter flag ====
     Bool_t                  fEMCEG1;//EMcal Threshold EG1

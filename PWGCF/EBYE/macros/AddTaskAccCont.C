@@ -7,12 +7,12 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
 				       Bool_t DCAext = kFALSE,
 				       Bool_t PID = kFALSE,
 				       Bool_t UseRapidity = kFALSE,
-				       TString MCorData = "data",
 				       TString centEstim = "V0M",
 				       AliAnalysisTaskAccCont::kSystem systemType = AliAnalysisTaskAccCont::kPbPb,
 				       AliAnalysisTaskAccCont::kCentralityBinning nCenBins = AliAnalysisTaskAccCont::kFull,
 				       AliPID::EParticleType particleType = AliPID::kMuon,
-				       TString fileNameBase="AnalysisResults") {
+				       TString fileNameBase="AnalysisResults",
+		                       TString MCorData = "data") {
   // Creates an analysis task and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
   TString outputFileName(fileNameBase);
@@ -120,12 +120,16 @@ AliAnalysisTaskAccCont *AddTaskAccCont(Double_t vertexZ=10.,
   task[iCentralityBin]->CheckPileUp();
   task[iCentralityBin]->UsePileUpCutsPbPb();
   }
+  else if (MCorData == "MCrec")
+  task[iCentralityBin]->SetMCRec();
   }
   else if(systemType == AliAnalysisTaskAccCont::kpPb){
   if (MCorData == "data"){
   task[iCentralityBin]->CheckPileUp();
   task[iCentralityBin]->UsePileUpCutspPb();
   }
+  else if (MCorData == "MCrec")
+  task[iCentralityBin]->SetMCRec();
   }
 
   if(UseRapidity)

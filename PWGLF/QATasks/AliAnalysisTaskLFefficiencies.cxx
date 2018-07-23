@@ -37,8 +37,8 @@
 using TMath::TwoPi;
 
 const std::string AliAnalysisTaskLFefficiencies::fPosNeg[2] = {"neg","pos"};
-const int AliAnalysisTaskLFefficiencies::fNcuts = 5;
-const std::string AliAnalysisTaskLFefficiencies::fCutNames[5] = {"FB4","FB5","FB5+PID TPC", "FB5 + TOF matching", "FB5 + PID TOF"};
+const int AliAnalysisTaskLFefficiencies::fNcuts = 6;
+const std::string AliAnalysisTaskLFefficiencies::fCutNames[6] = {"FB4","FB5","FB5+PID TPC", "FB5 + TOF matching", "FB5 + PID TOF", "TOF mismatch"};
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskLFefficiencies);
@@ -163,7 +163,10 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     bool TPCpid = std::abs(pid->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
     bool hasTOF = HasTOF(track);
     bool TOFpid = std::abs(pid->NumberOfSigmasTOF(track, static_cast<AliPID::EParticleType>(iSpecies))) < 3;
-    bool cuts[fNcuts] = {true, hasFB5, hasFB5 && TPCpid, hasFB5 && hasTOF, hasFB5 && TOFpid};
+    int TOFlabels[3];
+    track->GetTOFLabel(TOFlabels);
+    bool TOFmismatch = TOFlabels[0] != TMath::Abs(track->GetLabel());
+    bool cuts[fNcuts] = {true, hasFB5, hasFB5 && TPCpid, hasFB5 && hasTOF, hasFB5 && hasTOF && TOFpid, hasFB5 && hasTOF && TOFmismatch};
 
     for (int iCut = 0; iCut < fNcuts; ++iCut) {
       if (cuts[iCut]) {

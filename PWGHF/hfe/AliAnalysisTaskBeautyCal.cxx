@@ -102,6 +102,7 @@ ClassImp(AliAnalysisTaskBeautyCal)
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  fRefit(kTRUE),
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
@@ -274,6 +275,7 @@ AliAnalysisTaskBeautyCal::AliAnalysisTaskBeautyCal()
   fThresholdEG1(140),
   fFlagClsTypeEMC(kTRUE),
   fFlagClsTypeDCAL(kTRUE),
+  fRefit(kTRUE),
   NpureMCproc(0),
   NembMCpi0(0),
   NembMCeta(0),
@@ -1259,9 +1261,13 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
     AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
     AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 
+    /*
+    // up to vAN20180708
     double m20mim = 0.03;
-    //double m20max = 0.3;
     double m20max = 0.28;
+    */
+    double m20mim = 0.01;
+    double m20max = 0.35;
 
     ////////////////////
     //Apply track cuts//
@@ -1329,7 +1335,16 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
         }
       fCheckEta->Fill(atrack->Eta());
 
-      if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+
+     cout << "<-------------- fRefit 0 = " << fRefit << endl; 
+      if(fRefit)
+        { 
+          cout << "<-------------- fRefit 1 = " << fRefit << endl; 
+         //cout << "fRefit = " << fRefit << endl; 
+         if((!(atrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(atrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+        }
+      // not apply vAN20180703 to vAN20180705
+      
       if(!(atrack->HasPointOnITSLayer(0) || atrack->HasPointOnITSLayer(1))) continue;
 
       Double_t TPCfound = atrack->GetTPCNclsF();
@@ -1699,15 +1714,15 @@ void AliAnalysisTaskBeautyCal::UserExec(Option_t *)
       
       //Double_t mimSig = -0.5;
       Double_t fmaxSig =  3.0;
-      /*
+      
       if(fMCarray) // nSigma cut in MC
         {
          fmimSig = -10.0;
          fmaxSig =  10.0;
         }
-        // tempolary not use the cut vAN20180619 to ...
+        // tempolary not use the cut vAN20180619 to vAN20180703
 
-      */ 
+    
 
         fHistIncTPCchi2->Fill(track->Pt(),atrack->GetTPCchi2());
         fHistIncITSchi2->Fill(track->Pt(),atrack->GetITSchi2());

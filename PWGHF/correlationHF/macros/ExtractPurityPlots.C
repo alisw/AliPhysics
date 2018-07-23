@@ -31,16 +31,16 @@ void ExtractPurityPlots(TString filename="AnalysisResults.root", TString dirname
 
 void DrawFractionSecondariesAccepted(TList* l1, TString suffix) {  //secondary tracks which pass DCA cut over all tracks which pass DCA cut
 
-  TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
-  TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+  TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+  TString namebinAss[5] = {"03to99","03to1","1to99","1to3","3to99"};
 
-  for(int i=0; i<4; i++) {
+  for(int i=0; i<5; i++) {
 
-    TH1F *hSecAcc = new TH1F("hSecAcc",Form("Fraction of secondary track accepted, %s",namebinD[i].Data()),6,-0.5,5.5);
-    for(int j=0;j<6;j++) hSecAcc->GetXaxis()->SetBinLabel(j+1,namebinAss[j]);
+    TH1F *hSecAcc = new TH1F("hSecAcc",Form("Fraction of secondary track accepted, %s",namebinD[i].Data()),5,-0.5,4.5);
+    for(int j=0;j<5;j++) hSecAcc->GetXaxis()->SetBinLabel(j+1,namebinAss[j]);
     hSecAcc->Sumw2(); //in realtà no, andrebbe usato l'errore binomiale, ma vabbè tanto è useless...
 	
-    for(int j=0;j<6;j++) {						    
+    for(int j=0;j<5;j++) {						    
       TH1F *hInputSec = (TH1F*)l1->FindObject(Form("hPurityCount_SecAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
       TH1F *hInputPrim = (TH1F*)l1->FindObject(Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
       Double_t num = hInputSec->GetBinContent(1);
@@ -67,15 +67,15 @@ void DrawFractionSecondariesAccepted(TList* l1, TString suffix) {  //secondary t
 
 void DrawFractionPrimariesRejected(TList* l1, TList* l2, TString suffix) {  //primary tracks which pass the DCA cut over primary tracks w/o any DCA cut
 
-  TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
-  TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+  TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+  TString namebinAss[5] = {"03to99","03to1","1to99","1to3","3to99"};
 
-  for(int i=0; i<4; i++) {
+  for(int i=0; i<5; i++) {
 
-    TH1F *hPrimAcc = new TH1F("hPrimRej",Form("Fraction of primary tracks accepted by DCA cut, %s",namebinD[i].Data()),6,-0.5,5.5);
-    TH1F *hcAcc = new TH1F("hcRej",Form("Fraction of charm tracks accepted by DCA cut, %s",namebinD[i].Data()),6,-0.5,5.5);
-    TH1F *hbAcc = new TH1F("hbRej",Form("Fraction of beauty tracks accepted by DCA cut, %s",namebinD[i].Data()),6,-0.5,5.5);        
-    for(int j=0;j<6;j++) {
+    TH1F *hPrimAcc = new TH1F("hPrimRej",Form("Fraction of primary tracks accepted by DCA cut, %s",namebinD[i].Data()),5,-0.5,4.5);
+    TH1F *hcAcc = new TH1F("hcRej",Form("Fraction of charm tracks accepted by DCA cut, %s",namebinD[i].Data()),5,-0.5,4.5);
+    TH1F *hbAcc = new TH1F("hbRej",Form("Fraction of beauty tracks accepted by DCA cut, %s",namebinD[i].Data()),5,-0.5,4.5);        
+    for(int j=0;j<5;j++) {
     	hSecAcc->GetXaxis()->SetBinLabel(j+1,namebinAss[j]);
     	hcAcc->GetXaxis()->SetBinLabel(j+1,namebinAss[j]);
     	hbAcc->GetXaxis()->SetBinLabel(j+1,namebinAss[j]);
@@ -84,7 +84,7 @@ void DrawFractionPrimariesRejected(TList* l1, TList* l2, TString suffix) {  //pr
     hcAcc->Sumw2(); //in realtà no, andrebbe usato l'errore binomiale, ma vabbè tanto è useless...
     hbAcc->Sumw2(); //in realtà no, andrebbe usato l'errore binomiale, ma vabbè tanto è useless...
 	
-    for(int j=0;j<6;j++) {
+    for(int j=0;j<5;j++) {
       TH1F *hInputPrStd = (TH1F*)l1->FindObject(Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
       hInputPrStd->SetName("h1");
       TH1F *hInputPrNo  = (TH1F*)l2->FindObject(Form("hPurityCount_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
@@ -153,11 +153,11 @@ void DrawFractionPrimariesRejected(TList* l1, TList* l2, TString suffix) {  //pr
 
 void DrawDeltaPhiDistrAndRatios_Primaries(TList* l1, TString suffix) {  //secondary tracks which pass DCA cut over all tracks which pass DCA cut
 
-  TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
-  TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+  TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+  TString namebinAss[5] = {"03to99","03to1","1to99","1to3","3to99"};
 
-  for(int i=0; i<4; i++) {
-    for(int j=0;j<6;j++) {
+  for(int i=0; i<5; i++) {
+    for(int j=0;j<5;j++) {
 
       TH1F *hInputSec = (TH1F*)l1->FindObject(Form("hPuritydPhi_SecAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
       TH1F *hInputPrim = (TH1F*)l1->FindObject(Form("hPuritydPhi_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
@@ -221,11 +221,11 @@ void DrawDeltaPhiDistrAndRatios_Primaries(TList* l1, TString suffix) {  //second
 
 void DrawDeltaPhiDistrAndRatios_Secondaries(TList* l1, TString suffix) {  //secondary tracks which pass DCA cut over all tracks which pass DCA cut
 
-  TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
-  TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+  TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+  TString namebinAss[5] = {"03to99","03to1","1to99","1to3","3to99"};
 
-  for(int i=0; i<4; i++) {
-    for(int j=0;j<6;j++) {
+  for(int i=0; i<5; i++) {
+    for(int j=0;j<5;j++) {
 
       TH1F *hInputSec = (TH1F*)l1->FindObject(Form("hPuritydPhi_SecAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
       TH1F *hInputPrim = (TH1F*)l1->FindObject(Form("hPuritydPhi_PrimAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
@@ -289,11 +289,11 @@ void DrawDeltaPhiDistrAndRatios_Secondaries(TList* l1, TString suffix) {  //seco
 
 void DrawDeltaPhiRatios_CharmAccepted(TList* l1, TList* l2, TString suffix) {  //secondary tracks which pass DCA cut over all tracks which pass DCA cut
 
-  TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
-  TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+  TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+  TString namebinAss[5] = {"03to99","03to1","1to99","1to3","3to99"};
 
-  for(int i=0; i<4; i++) {
-    for(int j=0;j<6;j++) {
+  for(int i=0; i<5; i++) {
+    for(int j=0;j<5;j++) {
 
       TH1F *hInputCAcc = (TH1F*)l1->FindObject(Form("hPuritydPhi_CharmAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
       TH1F *hInputCAll = (TH1F*)l2->FindObject(Form("hPuritydPhi_CharmAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
@@ -321,11 +321,11 @@ void DrawDeltaPhiRatios_CharmAccepted(TList* l1, TList* l2, TString suffix) {  /
 
 void DrawDeltaPhiRatios_BeautyAccepted(TList* l1, TList* l2, TString suffix) {  //secondary tracks which pass DCA cut over all tracks which pass DCA cut
 
-  TString namebinD[4] = {"3to5","5to8","8to16","16to24"};
-  TString namebinAss[6] = {"03to99","03to1","1to99","1to2","2to3","3to99"};
+  TString namebinD[5] = {"2to3","3to5","5to8","8to16","16to24"};
+  TString namebinAss[5] = {"03to99","03to1","1to99","1to3","3to99"};
 
-  for(int i=0; i<4; i++) {
-    for(int j=0;j<6;j++) {
+  for(int i=0; i<5; i++) {
+    for(int j=0;j<5;j++) {
 
       TH1F *hInputBAcc = (TH1F*)l1->FindObject(Form("hPuritydPhi_BeautyAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));
       TH1F *hInputBAll = (TH1F*)l2->FindObject(Form("hPuritydPhi_BeautyAccepted_pTD%s_pTass%s",namebinD[i].Data(),namebinAss[j].Data()));

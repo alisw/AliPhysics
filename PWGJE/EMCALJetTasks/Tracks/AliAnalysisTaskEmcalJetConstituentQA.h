@@ -55,6 +55,7 @@ public:
 protected:
   virtual void UserCreateOutputObjects();
   virtual bool Run();
+  virtual bool IsTriggerSelected();
 
 private:
   THistManager                  *fHistos;                   ///< Histogram manager

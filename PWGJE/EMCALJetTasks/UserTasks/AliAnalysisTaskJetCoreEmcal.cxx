@@ -73,9 +73,11 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fJetContPartName(""),
 	fFillTrackHistograms(kTRUE),
 	fFillJetHistograms(kTRUE),
+	fFillRecoilTHnSparse(kTRUE),
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
 	fPtHardBin(0.),
+	fRejectionFactorInclusiveJets(1),
 	fRandom(0),
 	fHistEvtSelection(0x0), 
 	fHJetSpec(0x0),
@@ -150,9 +152,11 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fJetContPartName(""),
 	fFillTrackHistograms(kTRUE),
 	fFillJetHistograms(kTRUE),
+	fFillRecoilTHnSparse(kTRUE),
 	fFillInclusiveTree(kFALSE),
 	fFillRecoilTree(kFALSE),
 	fPtHardBin(0.),
+	fRejectionFactorInclusiveJets(1),
 	fRandom(0),
 	fHistEvtSelection(0x0), 
 	fHJetSpec(0x0),
@@ -489,11 +493,13 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
 	fOutput->Add(fh2RPTC10);
 	fOutput->Add(fh2RPTC20);
 
-	const Int_t dimSpec = 6;
-	const Int_t nBinsSpec[dimSpec]     = {100,100, 280, 50,200, fNRPBins};
-	const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0,-0.5*TMath::Pi(), 0};
-	const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,1.5*TMath::Pi(),  static_cast<Double_t>(fNRPBins)};
-	fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+	if(fFillRecoilTHnSparse) {
+		const Int_t dimSpec = 6;
+		const Int_t nBinsSpec[dimSpec]     = {100,100, 280, 50,200, fNRPBins};
+		const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0,-0.5*TMath::Pi(), 0};
+		const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,1.5*TMath::Pi(),  static_cast<Double_t>(fNRPBins)};
+		fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
+	}
 
 	// comment out since I want finer binning in jet area, to make it easier
 	// to change selection on jet area (Leticia used 0.8*R^2*Pi whereas 0.6 is used
@@ -824,12 +830,14 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			if(fCent<10.) fh2RPJetsC10->Fill(TMath::Abs(phiBin), ptcorr);
 			if(fCent<20.) fh2RPJetsC20->Fill(TMath::Abs(phiBin), ptcorr);
 
-			Float_t phitt=partback->Phi();
-			if(phitt<0)phitt+=TMath::Pi()*2.; 
-			Int_t phiBintt = GetPhiBin(phitt-fEPV0);
+			if(fFillRecoilTHnSparse) {
+				Float_t phitt=partback->Phi();
+				if(phitt<0)phitt+=TMath::Pi()*2.; 
+				Int_t phiBintt = GetPhiBin(phitt-fEPV0);
 
-			Double_t fillspec[] = {fCent,areabig,ptcorr,partback->Pt(),dPhiShift, static_cast<Double_t>(phiBintt)};
-			fHJetSpec->Fill(fillspec);
+				Double_t fillspec[] = {fCent,areabig,ptcorr,partback->Pt(),dPhiShift, static_cast<Double_t>(phiBintt)};
+				fHJetSpec->Fill(fillspec);
+			}
 
 			if(fJetShapeType == AliAnalysisTaskJetCoreEmcal::kDetEmbPart) {
 				//
@@ -1021,7 +1029,7 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 		fhPhiResidual->Fill(residualPhi);
 		fhPhiPhiResidual->Fill(phiJet3,residualPhi);
 
-		if(fFillInclusiveTree) {
+		if(fFillInclusiveTree && fRandom->Integer(fRejectionFactorInclusiveJets)==0 ) {
 			fTreeVarsInclusive[0] = fCent;
 			fTreeVarsInclusive[1] = ptJet1;
 			fTreeVarsInclusive[2] = area;
@@ -1309,9 +1317,9 @@ Double_t AliAnalysisTaskJetCoreEmcal::RelativePhi(Double_t mphi,Double_t vphi){
 Int_t AliAnalysisTaskJetCoreEmcal::GetPhiBin(Double_t phi)
 {
     Int_t phibin=-1;
-    if(!(TMath::Abs(phi)<=2*TMath::Pi())){AliError("phi w.r.t. RP out of defined range");return -1;}
+    if(!(TMath::Abs(phi)<=2*TMath::Pi())) return -1;
     Double_t phiwrtrp=TMath::ACos(TMath::Abs(TMath::Cos(phi)));
     phibin=Int_t(fNRPBins*phiwrtrp/(0.5*TMath::Pi()));
-    if(phibin<0||phibin>=fNRPBins){AliError("Phi Bin not defined");}
+    //if(phibin<0||phibin>=fNRPBins){AliError("Phi Bin not defined");}
     return phibin;
 }

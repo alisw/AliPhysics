@@ -39,6 +39,11 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
 
   }
 
+  void SetMCRec() {
+    fMCrec = kTRUE;
+    fExcludeSecondariesInMCrec = kTRUE;
+  }
+
   void UsePileUpCutsPbPb() {fPbPb = kTRUE;}
 
   void CheckPileUp() {fCheckPileUp = kTRUE;}
@@ -163,6 +168,10 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   Bool_t fPbPb;
   Bool_t fpPb;
   Bool_t fCheckPileUp;
+  Bool_t fMCrec;
+  Bool_t fExcludeSecondariesInMCrec;
+
+  TClonesArray* fArrayMC;
 
   Float_t fPileupLHC15oSlope; //parameters for LHC15o pile-up rejection  default: slope=3.35, offset 15000
   Float_t fPileupLHC15oOffset;

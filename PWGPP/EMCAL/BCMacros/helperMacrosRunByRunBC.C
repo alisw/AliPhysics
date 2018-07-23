@@ -66,6 +66,7 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	gStyle->SetOptTitle(0);
 	gStyle->SetOptStat(0);
 	//gStyle->SetPalette(53);  //standard is 1
+	gStyle->SetPalette(91);  //standard is 1 //91 pastel
 	gStyle->SetCanvasColor(10);
 	TGaxis::SetMaxDigits(4);
 	gStyle->SetPadTopMargin(0.07);//0.05
@@ -177,29 +178,29 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	TH1D** hNEvent       = new TH1D*[nRun];
 	TH2F* hBadVsEvent      = new TH2F("hBadVsEvent","hBadVsEvent",100,100000,25000000,60,700,1800);
 	TH2F* hDeadBadVsEvent  = new TH2F("hDeadBadVsEvent","hDeadBadVsEvent",100,100000,25000000,60,700,1800);
-	TH1D* deadbadCellsVsRun;
-	TH1D* deadCellsVsRun;
-	TH1D* badCellsVsRun;
-	TH1D* deadCellsVsRunC;
-	TH1D* badCellsVsRunC;
-	TH1D* projSum;
-	TH1D* projSumC;
-	TH1D* projSumC3Blocks;
-	TH1D* projSumC3BlocksA;
-	TH1D* projSumC3BlocksB;
-	TH1D* projSumC3BlocksC;
-	TH1D* projSumC3BlocksD;
-	TH1D* projSumC1Block;
-	TH1D* nEventsVsRuns;
-	TH2F* Sum2DSingleMask;
-	TH2F* Sum2D3BlockMask;
-	TH2F* Sum2D3BlockMaskA;
-	TH2F* Sum2D3BlockMaskB;
-	TH2F* Sum2D3BlockMaskC;
-	TH2F* Sum2D3BlockMaskD;
-	TH2F* Sum2DOrig;
-	TH2F* Sum2DIdeal;
-	TH1D* hgoodMean;
+	TH1D* deadbadCellsVsRun=nullptr;
+	TH1D* deadCellsVsRun=nullptr;
+	TH1D* badCellsVsRun=nullptr;
+	TH1D* deadCellsVsRunC=nullptr;
+	TH1D* badCellsVsRunC=nullptr;
+	TH1D* projSum=nullptr;
+	TH1D* projSumC=nullptr;
+	TH1D* projSumC3Blocks=nullptr;
+	TH1D* projSumC3BlocksA=nullptr;
+	TH1D* projSumC3BlocksB=nullptr;
+	TH1D* projSumC3BlocksC=nullptr;
+	TH1D* projSumC3BlocksD=nullptr;
+	TH1D* projSumC1Block=nullptr;
+	TH1D* nEventsVsRuns=nullptr;
+	TH2F* Sum2DSingleMask=nullptr;
+	TH2F* Sum2D3BlockMask=nullptr;
+	TH2F* Sum2D3BlockMaskA=nullptr;
+	TH2F* Sum2D3BlockMaskB=nullptr;
+	TH2F* Sum2D3BlockMaskC=nullptr;
+	TH2F* Sum2D3BlockMaskD=nullptr;
+	TH2F* Sum2DOrig=nullptr;
+	TH2F* Sum2DIdeal=nullptr;
+	TH1D* hgoodMean=nullptr;
 
 	for(Int_t i = 0; i<nFlags; i++)
 	{
@@ -502,6 +503,8 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 	// Draw summary histogram with dead and bad cells vs run
 	//. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+	cout<<"nbins hFlagvsRun[1]: "<<hFlagvsRun[1]->GetYaxis()->GetNbins()<<endl;
+	hFlagvsRun[1]->GetYaxis()->SetRange(1,nRunsUsed); //..This is for some mysterious reason necessary otherwise the x-axis range of the projected histogram will be 2*nRunsUsed
 	deadCellsVsRun    =hFlagvsRun[0]->ProjectionY("deadCellsVsRun");
 	badCellsVsRun     =hFlagvsRun[1]->ProjectionY("badCellsVsRun");
 	deadbadCellsVsRun =hFlagvsRun[2]->ProjectionY("badDeadCellsVsRun");
@@ -509,18 +512,19 @@ void SummarizeRunByRun(TString period = "LHC15o", TString train = "Train_641", T
 	cellSummaryCan->cd(1);
 	SetHisto(badCellsVsRun,"Run","No. of cells",0);
 	badCellsVsRun->GetYaxis()->SetTitleOffset(1.7);
-	badCellsVsRun->GetYaxis()->SetRangeUser(0,1300);
+	badCellsVsRun->GetYaxis()->SetRangeUser(0,badCellsVsRun->GetMaximum()*1.2);
 	if(nRunsUsed>8)badCellsVsRun->GetXaxis()->SetLabelSize(0.06-0.01*(nRunsUsed-8)/4); //..lables should get smaller the more runs are on the x-axis
 	else badCellsVsRun->GetXaxis()->SetLabelSize(0.06);
     if(nRunsUsed>24)badCellsVsRun->GetXaxis()->SetLabelSize(0.025);   //..labels should not be smaller than 0.025
 	badCellsVsRun->SetLineColor(kCyan+2);
-	badCellsVsRun->SetLineWidth(2);
+	badCellsVsRun->SetLineWidth(3);
+
 	badCellsVsRun->DrawCopy("hist");
 	deadCellsVsRun->SetLineColor(kMagenta-2);
-	deadCellsVsRun->SetLineWidth(2);
+	deadCellsVsRun->SetLineWidth(3);
   	deadCellsVsRun->DrawCopy("same");
 
-	TLegend *legSum0 = new TLegend(0.60,0.78,0.85,0.90);
+	TLegend *legSum0 = new TLegend(0.60,0.82,0.85,0.93);
 	legSum0->SetBorderSize(0);
 	legSum0->SetTextSize(0.03);
 	legSum0->AddEntry(badCellsVsRun,"Bad cells","l");
@@ -1125,7 +1129,7 @@ Bool_t GetBestPeriodSplitting(TString period = "LHC15o", Int_t train = 771,Int_t
 	}
 	gStyle->SetOptTitle(0);
 	gStyle->SetOptStat(0);
-	//gStyle->SetPalette(53);  //standard is 1
+	gStyle->SetPalette(55);  //standard is 1 //91 pastel
 	gStyle->SetCanvasColor(10);
 	TGaxis::SetMaxDigits(4);
 	gStyle->SetPadTopMargin(0.07);//0.05
@@ -1182,7 +1186,7 @@ Bool_t GetBestPeriodSplitting(TString period = "LHC15o", Int_t train = 771,Int_t
 	if(!hEventsPerRun)cout<<"couldn't find histogram - nEventVsRun"<<endl;
 
 	//TH1D *hEventsPerRunHI = (TH1D)hEventsPerRun->Clone("hEventsPerRunHI");
-    // 2DPlot
+	// 2DPlot
 	// flag vs run
 
 	//.......................................
@@ -1279,11 +1283,11 @@ Bool_t GetBestPeriodSplitting(TString period = "LHC15o", Int_t train = 771,Int_t
 				{
 					hbadAndDeadvsRun ->GetXaxis()->UnZoom();
 					hbadAndDeadvsRunw->GetXaxis()->UnZoom();
-					TH1D *htmpCell1;
-					TH1D *htmpCell2;
-					TH1D *htmpCell3;
-					TH1D *htmpCell4;
-					TH1D *htmpCell5;
+					TH1D *htmpCell1=nullptr;
+					TH1D *htmpCell2=nullptr;
+					TH1D *htmpCell3=nullptr;
+					TH1D *htmpCell4=nullptr;
+					TH1D *htmpCell5=nullptr;
 
 					if(noOfSplits<3)iRun2=Nruns;
 					if(noOfSplits<4)iRun3=Nruns;
@@ -1422,10 +1426,10 @@ Bool_t GetBestPeriodSplitting(TString period = "LHC15o", Int_t train = 771,Int_t
 	static Double_t rangeUp=nBlockTotal;
 	hbadAndDeadvsRun->GetXaxis()->SetRangeUser(0,rangeUp);  //..Zoom into the actual range of bad cells
 	hbadAndDeadvsRun->DrawCopy("colz"); //box
-	PlotHorLineRange(splitRun1,0,nBlockTotal,9);
-	PlotHorLineRange(splitRun2,0,nBlockTotal,9);
-	if(noOfSplits>3)PlotHorLineRange(splitRun3,0,nBlockTotal,9);
-	if(noOfSplits>4)PlotHorLineRange(splitRun4,0,nBlockTotal,9);
+	PlotHorLineRange(splitRun1,0,nBlockTotal,0);
+	PlotHorLineRange(splitRun2,0,nBlockTotal,0);
+	if(noOfSplits>3)PlotHorLineRange(splitRun3,0,nBlockTotal,0);
+	if(noOfSplits>4)PlotHorLineRange(splitRun4,0,nBlockTotal,0);
 
 	TCanvas *can2= new TCanvas("compressedIDs2", "compressed cell ID's B)", 1600, 1000);
 	can2->cd()->SetLeftMargin(0.05);
@@ -1436,10 +1440,10 @@ Bool_t GetBestPeriodSplitting(TString period = "LHC15o", Int_t train = 771,Int_t
 	hbadAndDeadvsRunw->GetYaxis()->SetTitleOffset(0.5);
 	hbadAndDeadvsRunw->GetXaxis()->SetRangeUser(0,nBlockTotal);  //..Zoom into the actual range of bad cells (!! to make that work for some reason you have to run it twice in a row???)
 	hbadAndDeadvsRunw->DrawCopy("colz");
-	PlotHorLineRange(splitRun1w,0,nBlockTotal,1);
-	PlotHorLineRange(splitRun2w,0,nBlockTotal,1);
-	if(noOfSplits>3)PlotHorLineRange(splitRun3w,0,nBlockTotal,1);
-	if(noOfSplits>4)PlotHorLineRange(splitRun4w,0,nBlockTotal,1);
+	PlotHorLineRange(splitRun1w,0,nBlockTotal,0);
+	PlotHorLineRange(splitRun2w,0,nBlockTotal,0);
+	if(noOfSplits>3)PlotHorLineRange(splitRun3w,0,nBlockTotal,0);
+	if(noOfSplits>4)PlotHorLineRange(splitRun4w,0,nBlockTotal,0);
 
 
 	cout<<"Best results are achieved by splitting into:"<<endl;
@@ -1449,6 +1453,7 @@ Bool_t GetBestPeriodSplitting(TString period = "LHC15o", Int_t train = 771,Int_t
 	cout<<"Bad cells if masked as 1 block: "<<nBlockTotal<<endl;
 	cout<<"Bad cells * runs: "<<nBlockTotal*Nruns<<endl;
 	cout<<"Bad cells * evt: "<<nBlockTotal*hEventsPerRun->Integral(0,Nruns)<<endl;
+	/*
 	cout<<"- - - - - - - - UNWEIGHTED Splitting - - - - - - - - -"<<endl;
 	cout<<"Run Block 1: 0-"<<splitRun1<<endl;
 	cout<<"Run Block 2: "<<splitRun1+1<<"-"<<splitRun2<<endl;
@@ -1457,6 +1462,7 @@ Bool_t GetBestPeriodSplitting(TString period = "LHC15o", Int_t train = 771,Int_t
 	if(noOfSplits>4)cout<<"Run Block 5: "<<splitRun4+1<<"-"<<Nruns<<endl;
 	cout<<"Number of Bad cells*runs   ="<<totalCellsBadRun<<endl;
 	cout<<"Number of effective Bad cells ="<<totalCellsBadRun/Nruns<<endl;
+	*/
 	cout<<"- - - - - - - - WEIGHTED Splitting - - - - - - - - -"<<endl;
 	cout<<"Run Block 1: 0-"<<splitRun1w<<endl;
 	cout<<"Run Block 2: "<<splitRun1w+1<<"-"<<splitRun2w<<endl;
@@ -2433,8 +2439,8 @@ void PlotHorLineRange(Double_t y_val, Double_t xLow, Double_t xHigh, Int_t Line_
     Zero_line -> SetX1(xLow);
     Zero_line -> SetX2(xHigh);
     //cout << "x_val = " << x_val << ", Bin = " << Histo->FindBin(x_val) << ", Y2 = " << Histo->GetBinContent(Histo->FindBin(x_val)) << endl;
-    Zero_line -> SetLineWidth(2);
-    Zero_line -> SetLineStyle(9);
+    Zero_line -> SetLineWidth(3);
+    Zero_line -> SetLineStyle(7);
     Zero_line -> SetLineColor(Line_Col);
     Zero_line -> Draw();
     //delete Zero_line;
@@ -2572,8 +2578,8 @@ void CreateCellCompPDF(TH2F* hAmpIDMasked, std::vector<Int_t> cellVector,TH1* go
 	for(Int_t cell=0;cell<NoOfCells;cell++)
 	{
 		TString internal_pdfName=pdfName;
-		TCanvas *c1;
-		if(cell%9==0)
+		TCanvas *c1=nullptr;
+		if((cell%9)==0)
 		{
 			c1 = new TCanvas(Form("badcells%i",cell),"badcells",1000,750);
 			if(cellVector.size() > 6)        c1->Divide(3,3);
@@ -2583,7 +2589,7 @@ void CreateCellCompPDF(TH2F* hAmpIDMasked, std::vector<Int_t> cellVector,TH1* go
 		TH1 *hCell  = hAmpIDMasked->ProjectionX(Form("Cell %d",cellVector.at(cell)),cellVector.at(cell)+1,cellVector.at(cell)+1);
 		TH1 *hCell2 = (TH1*)hCell->Clone("hCell2");
 
-		c1->cd(cell%9 + 1);
+		c1->cd((cell%9) + 1);
 		hCell->Divide(goodCellsRbR);
 		hCell2->Divide(goodCellsMerged);
 

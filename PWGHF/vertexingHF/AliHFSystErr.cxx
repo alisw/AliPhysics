@@ -3485,6 +3485,7 @@ void AliHFSystErr::InitDstartoD0pi2017pp5TeV(){
     for(Int_t i=1;i<=36;i++) fBR->SetBinError(i,0.);
 
     // Tracking efficiency
+    // 11/07/18: To be updated after implementation new strategy for Dstar
     fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",36,0,36);
     fTrackingEff->SetBinContent(2,0.05);
     fTrackingEff->SetBinContent(3,0.055);
@@ -3498,19 +3499,17 @@ void AliHFSystErr::InitDstartoD0pi2017pp5TeV(){
     fRawYield = new TH1F("fRawYield","fRawYield",36,0,36);
     fRawYield->SetBinContent(2,0.07);
     fRawYield->SetBinContent(3,0.03);
-    for(Int_t i= 4;i<=12;i++) fRawYield->SetBinContent(i,0.02);
-    for(Int_t i=13;i<=16;i++) fRawYield->SetBinContent(i,0.03);
-    for(Int_t i=17;i<=24;i++) fRawYield->SetBinContent(i,0.04);
-    for(Int_t i=25;i<=36;i++) fRawYield->SetBinContent(i,0.04);
+    fRawYield->SetBinContent(4,0.02);
+    for(Int_t i= 5;i<=16;i++) fRawYield->SetBinContent(i,0.01);
+    for(Int_t i=17;i<=36;i++) fRawYield->SetBinContent(i,0.02);
     for(Int_t i=1;i<=36;i++) fRawYield->SetBinError(i,0.);
 
     // Cuts efficiency (from cuts variation)
     fCutsEff = new TH1F("fCutsEff","fCutsEff",36,0,36);
-    fCutsEff->SetBinContent(2,0.08);
-    fCutsEff->SetBinContent(3,0.05);
-    fCutsEff->SetBinContent(4,0.05);
-    fCutsEff->SetBinContent(5,0.02);
-    for(Int_t i= 6;i<=36;i++) fCutsEff->SetBinContent(i,0.01);
+    fCutsEff->SetBinContent(2,0.05);
+    fCutsEff->SetBinContent(3,0.04);
+    fCutsEff->SetBinContent(4,0.02);
+    for(Int_t i=5;i<=36;i++) fCutsEff->SetBinContent(i,0.01);
     for(Int_t i=1;i<=36;i++) fCutsEff->SetBinError(i,0.);
 
     // PID efficiency (from PID/noPID)

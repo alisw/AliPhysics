@@ -1843,6 +1843,14 @@ Bool_t AliDalitzElectronCuts::SetMassCut(Int_t massCut)
       fDoMassCut = kTRUE;
       fDoMassMinCut = kFALSE;
       break;
+    case 10:
+      fMassCutPtMin  = 0.547;   //GeV
+      fMassCutLowPt  = 0.025; //GeV/c^2
+      fMassCutHighPt = 0.035; //GeV/c^2
+      fMassMinCut = -999;
+      fDoMassCut = kTRUE;
+      fDoMassMinCut = kFALSE;
+      break;
     default:
       cout<<"Warning: MassCut not defined "<<massCut<<endl;
       return kFALSE;

@@ -796,7 +796,8 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
 
   // Loop on original clusters, get MC labels, cluster time (OLD AODs), 
   // or track matching residuals (if matching is not requested)
-  if(fSetCellMCLabelFromEdepFrac || fSetCellMCLabelFromCluster || fRecalibrateWithClusterTime || !fDoTrackMatching)
+  if ( fSetCellMCLabelFromEdepFrac || fSetCellMCLabelFromCluster || 
+       fRecalibrateWithClusterTime || !fDoTrackMatching)
   {
     for (Int_t i = 0; i < nClusters; i++)
     {
@@ -806,23 +807,28 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       else      
         clus = fEvent->GetCaloCluster(i);
       
-      if(!clus) return;
+      if ( !clus ) continue;
+            
+      if ( !clus || !clus->IsEMCAL() ) continue;
       
       nClustersOrg++;
-      
-      if(!clus->IsEMCAL()) continue;
-      
+
       Int_t label = clus->GetLabel();
       Int_t label2 = -1 ;
       if (clus->GetNLabels() >=2 ) label2 = clus->GetLabelAt(1) ;
       
-      //printf("Org cluster %d) ID = %d, E %2.2f, Time  %3.0f,  N Cells %d, N MC labels %d, main MC label %d, all MC labels:\n", 
-      //       i, clus->GetID(), clus->E(), clus->GetTOF()*1e9, clus->GetNCells(), clus->GetNLabels(), label);
-      //
-      //for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) 
-      //  printf("%d) Label %d, E dep frac %0.2f; ",
-      //         imc, clus->GetLabelAt(imc),clus->GetClusterMCEdepFraction(imc));
-      //if(clus->GetNLabels() > 0) printf("\n");
+      AliDebug(2, Form("recover original cluster %d info: Id %d, E %2.3f, N cells %d, TOF %3.2f, N labels %d, label %d;",
+                       i,clus->GetID(), clus->E(),clus->GetNCells(),clus->GetTOF()*1e9, clus->GetNLabels(), label) );
+
+      if ( fSetCellMCLabelFromEdepFrac && fDebug > 1 )
+      {
+        for(Int_t imc = 0; imc < clus->GetNLabels(); imc++) 
+        {
+          printf("\t mc %d) Label %d, E dep frac %1.3f; ",
+                 imc, clus->GetLabelAt(imc),clus->GetClusterMCEdepFraction(imc));
+        }
+        printf("\n");
+      }
       
       UShort_t * index    = clus->GetCellsAbsId() ;
       for(Int_t icell=0; icell < clus->GetNCells(); icell++ )
@@ -832,14 +838,20 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
         fCellMatchdEta[index[icell]]    = clus->GetTrackDz();
         fCellMatchdPhi[index[icell]]    = clus->GetTrackDx();
         
-        if(!fSetCellMCLabelFromEdepFrac)
+        if ( !fSetCellMCLabelFromEdepFrac )
         {
           fCellLabels[index[icell]]       = label;
           fCellSecondLabels[index[icell]] = label2;
         }
-      }
-    } 
-  }
+        
+        AliDebug(2, Form("\t : cell %d Id %d, clus %d, time %2.3e, MatchEta %2.3f, MatchPhi %2.3f; 1st label %d, 2nd label %d",
+                         icell,index[icell],fOrgClusterCellId[index[icell]],
+                         fCellTime[index[icell]], fCellMatchdEta[index[icell]] ,  fCellMatchdPhi[index[icell]],
+                         fCellLabels[index[icell]],fCellSecondLabels[index[icell]] ) );
+      } // cell in cluster loop
+    } // cluster loop 
+    AliDebug(2, Form("N original cluster %d",nClustersOrg) );
+  } // use cluster org info
   
   // Do here induced cell energy assignation by T-Card correlation emulation, ONLY MC
   if(fTCardCorrEmulation) MakeCellTCardCorrelation();
@@ -903,7 +915,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     TArrayF eDepArr(0);
     Int_t nLabels = 0;
 
-    if(!fSetCellMCLabelFromEdepFrac)
+    if ( !fSetCellMCLabelFromEdepFrac )
     {
       // Old way to recover/set the cell MC label
       // Only possibility for old Run1 productions
@@ -926,25 +938,18 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       
       eDep *= efrac ; 
     }
-    else // fSetCellMCLabelFromEdepFrac = true
+    else if ( fOrgClusterCellId[id] >= 0 ) // fSetCellMCLabelFromEdepFrac = true
     {
       // New way, valid only for MC productions with aliroot > v5-07-21
       mcLabel = -1;
       
       // Map the digit to cell index for later to calculate the cell MC energy deposition map
       fCellLabels[id] = idigit; 
-      //printf("\t absId %d, idigit %d\n",id,idigit);
-      
-      if(fOrgClusterCellId[id] < 0) continue; // index can be negative if noisy cell that did not form cluster 
-      
+
       AliVCluster *clus = 0;
       Int_t iclus = fOrgClusterCellId[id];
       
-      if(iclus < 0)
-      {
-        AliInfo("Negative original cluster index, skip \n");
-        continue;
-      }
+      AliDebug(1, Form("EdepFrac use for : absId %d, idigit %d, iclus %d, amp %2.3f",id,idigit,iclus,amp) );
       
       if(aodIH && aodIH->GetEventToMerge()) //Embedding
         clus = aodIH->GetEventToMerge()->GetCaloCluster(iclus); //Get clusters directly from embedded signal
@@ -953,6 +958,8 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
       
       fRecoUtils->RecalculateCellLabelsRemoveAddedGenerator(id, clus, MCEvent(), amp, labeArr, eDepArr);
       nLabels = labeArr.GetSize();
+      
+      AliDebug(1, Form("N labels after EdepFrac info use: %d, amp %2.3f (check changes)",nLabels,amp) );
 
     } // cell MC label, new
     
@@ -963,15 +970,17 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
 //        printf("add energy to digit %d, absId %d: amp %2.2f + %2.2f\n",idigit,id,amp,fTCardCorrCellsEner[id]);
       amp+=fTCardCorrCellsEner[id];
     }
-    
+
     //
     // Create the digit
     //
     if(amp <= 0.01) continue ; // accept if > 10 MeV
     
-    //if(amp > 1.5)printf("*** Add digit *** amp %f, nlabels %d, label %d, found %d, edep fract tot %f, ncluslabels %d\n",amp, nLabels,mcLabel,found,edepTotFrac,nClusLabels);
+    AliDebug(5,Form("*** Add digit *** digit %d, AbsId %d, amp %2.3f, time %3.2f, nlabels %d, label %d",
+                    idigit, id, amp, time*1.e9,nLabels,mcLabel));
     
-    AliEMCALDigit* digit = new((*fDigitsArr)[idigit]) AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, eDep);
+    AliEMCALDigit* digit = new((*fDigitsArr)[idigit]) 
+      AliEMCALDigit( mcLabel, mcLabel, id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, eDep);
     
     if(nLabels > 0)
       digit->SetListOfParents(nLabels,labeArr.GetArray(),eDepArr.GetArray());
@@ -2654,7 +2663,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   // Print once the analysis parameters
   if ( fDebug > 0 || !fPrintOnce )
   {
-    fRecParam->Print("reco");
+    //fRecParam->Print("reco"); // AliInfo not printed ...
     
     PrintParam();
     

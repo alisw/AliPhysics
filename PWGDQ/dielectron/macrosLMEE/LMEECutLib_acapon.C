@@ -1,45 +1,195 @@
 class LMEECutLib {
 
-    public:
+	public:
 
-    enum LMMECutSet{
-        kAllSpecies,
-        kElectrons,
-        kHighMult,
-        kMidMult,
-        kLowMult,
-        kTTreeCuts
-    };
-
-
-    LMEECutLib(Bool_t wSDD): wSDD(wSDD){}
-
-    //Getters
-    AliDielectronEventCuts*     GetEventCuts(Int_t cutSet);
-    AliAnalysisCuts*            GetCentralityCuts(Int_t centSel);
-    AliDielectronTrackRotator*  GetTrackRotator(Int_t cutSet);
-    AliDielectronMixingHandler* GetMixingHandler(Int_t cutSet);
-
-    AliAnalysisCuts* GetPairCutsAna(Int_t cutSet); //Bool_t togglePC=kFALSE
-    AliAnalysisCuts* GetPairCutsPre(Int_t cutSet);
-
-    AliAnalysisCuts* GetPIDCutsAna(Int_t cutSet);
-    AliAnalysisCuts* GetPIDCutsPre(Int_t cutSet);
-
-    AliAnalysisCuts* GetTrackCutsAna(Int_t cutSet);
-    AliAnalysisCuts* GetTrackCutsPre(Int_t cutSet);
+	enum LMMECutSet{
+		kAllSpecies,
+		kElectrons,
+		kHighMult,
+		kMidMult,
+		kLowMult,
+		kTTreeCuts
+	};
 
 
-    private:
-        Bool_t wSDD;
+	LMEECutLib(Bool_t wSDD): wSDD(wSDD){
+		
+		::Info("LMEECutLib_acapon", "Creating new LMEECutLib");
+		fUsedVars = new TBits(AliDielectronVarManager::kNMaxValues);
+	}
+
+	//Getters
+	AliDielectronEventCuts*     GetEventCuts(Int_t cutSet);
+	AliAnalysisCuts*            GetCentralityCuts(Int_t centSel);
+	AliDielectronTrackRotator*  GetTrackRotator(Int_t cutSet);
+	AliDielectronMixingHandler* GetMixingHandler(Int_t cutSet);
+
+	AliDielectronCutGroup* GetPairCuts(Int_t cutSet);
+	AliDielectronCutGroup* GetPIDCuts(Int_t PIDcuts);
+	AliDielectronCutGroup* GetTrackCuts(Int_t cutSet, Int_t PIDcuts);
+
+	//TPC correction function used within dielectron framework
+  void SetEtaCorrectionTPC(AliDielectron *die, Int_t corrZdim, Int_t corrYdim); //giving default value fails: /* = AliDielectronVarManager::kEta*/
+
+	//TPC correction function used by SimpleTTreeMaker
+	//i.e it doesn't need an AliDielectron object
+	static TH3D SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise);
+
+	static TBits* fUsedVars; //Used Variables for correction
+	TH1* fPostPIDCntrdCorr; //Post PID correction object for electron sigma centroids in TPC
+	TH1* fPostPIDWdthCorr; //Post PID correction object for electron sigma widths in TPC
+
+	private:
+			Bool_t wSDD;
 };
 
+void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise) {
+  //
+  // eta correction for the centroid and width of electron sigmas in the TPC, can be one/two/three-dimensional
+  //
+  std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
+  std::string file_name = "/home/aaron/analyses/recalib_data_tpc_nsigmaele.root";
+
+  TFile* inFile = TFile::Open(file_name.c_str());
+  std::cout << inFile << std::endl;
+  if(!inFile){
+    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/correctionMaps/recalib_data_tpc_nsigmaele.root .");
+    std::cout << "Copy TPC correction from Alien" << std::endl;
+    inFile = TFile::Open("output.root");
+  }
+  else {
+    std::cout << "Correction loaded" << std::endl;
+  }
+  if(runwise){
+    TObjArray* arr_mean = dynamic_cast<TObjArray*>(inFile->Get("mean_correction_arr"));
+    TObjArray* arr_width =dynamic_cast<TObjArray*>( inFile->Get("width_correction_arr"));
+    std::cout << arr_mean << " " << arr_width << std::endl;
+
+    die->SetWidthCorrArr(arr_width, kTRUE, corrXdim, corrYdim, corrZdim);
+    die->SetCentroidCorrArr(arr_mean, kTRUE, corrXdim, corrYdim, corrZdim);
+  }
+  else{
+    TH3D* mean = dynamic_cast<TH3D*>(inFile->Get("sum_mean_correction"));
+    TH3D* width= dynamic_cast<TH3D*>(inFile->Get("sum_width_correction"));
+    die->SetCentroidCorrFunction(mean, corrXdim, corrYdim, corrZdim);
+    die->SetWidthCorrFunction(width, corrXdim, corrYdim, corrZdim);
+  }
+
+}
+
+static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim, Int_t corrZdim, Bool_t runwise, Int_t selection) {
+	
+
+  ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> SetEtaCorrectionTPC() >>>>>>>>>>>>>>>>>>>>>> ");
+
+  std::cout << "starting LMEECutLib::SetEtaCorrectionTPC()\n";
+  std::string file_name = "/home/aaron/analyses/recalib_data_tpc_nsigmaele.root";
+
+  TFile* recalFile = TFile::Open(file_name.c_str());
+  std::cout << recalFile << std::endl;
+  if(!recalFile){
+    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/correctionMaps/recalib_data_tpc_nsigmaele.root .");
+    std::cout << "Copy TPC correction from Alien" << std::endl;
+    recalFile = TFile::Open("output.root");
+  }
+  else {
+    std::cout << "Correction loaded" << std::endl;
+  }  
+  TH3D* mean  = dynamic_cast<TH3D*>(recalFile->Get("sum_mean_correction"));
+  TH3D* width = dynamic_cast<TH3D*>(recalFile->Get("sum_width_correction"));
+	if(!mean || !width){
+		::Error("LMEECutLib_acapon", "Recal histograms not found.");
+		return 0x0;
+	}
+  
+  // AliDielectron::SetCentroidCorrFunction
+  UInt_t valType[20] = {0};
+  valType[0] = corrXdim;     valType[1] = corrYdim;     valType[2] = corrZdim;
+
+  AliDielectronHistos::StoreVariables(mean, valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("cntrd%d%d%d", corrXdim, corrYdim, corrZdim);
+	printf("%s", key);
+  fPostPIDCntrdCorr = (TH1*)mean->Clone(key.Data());
+	if(!fPostPIDCntrdCorr){
+		::Error("LMEECutLib_acapon", "CentroidCorr TH1 not cloned");
+		return 0x0;
+	}
+
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDCntrdCorr){
+    printf("POST TPC PID CORRECTION added for centroids:  ");
+    switch(fPostPIDCntrdCorr->GetDimension()){
+			case 1: printf(" %s ",fPostPIDCntrdCorr->GetXaxis()->GetName());
+			case 2: printf(" %s, ",fPostPIDCntrdCorr->GetYaxis()->GetName());
+			case 3: printf(" %s, ",fPostPIDCntrdCorr->GetZaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(corrXdim, kTRUE);
+    fUsedVars->SetBitNumber(corrYdim, kTRUE);
+    fUsedVars->SetBitNumber(corrZdim, kTRUE);
+  }
+  
+  if(fPostPIDCntrdCorr){
+		AliDielectronPID::SetCentroidCorrFunction(fPostPIDCntrdCorr);
+	}
+  
+  // AliDielectron::SetWidthCorrFunction
+  {
+  UInt_t valType[20] = {0};
+  valType[0]=corrXdim;     valType[1]=corrYdim;     valType[2]=corrZdim;
+  AliDielectronHistos::StoreVariables(width, valType);
+
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("wdth%d%d%d",corrXdim,corrYdim,corrZdim);
+  fPostPIDWdthCorr = (TH1*)width->Clone(key.Data());
+
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDWdthCorr)  {
+    printf("POST TPC PID CORRECTION added for widths:  ");
+    switch(fPostPIDWdthCorr->GetDimension()) {
+			case 1: printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());
+			case 2: printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());
+			case 3: printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(corrXdim, kTRUE);
+    fUsedVars->SetBitNumber(corrYdim, kTRUE);
+    fUsedVars->SetBitNumber(corrZdim, kTRUE);
+	}
+  }
+  
+  if(fPostPIDWdthCorr){
+		AliDielectronPID::SetWidthCorrFunction(fPostPIDWdthCorr);
+	}
+
+  if(selection == 1){
+		if(mean){
+			::Info("LMEECutLib::SetEtaCorrectionTPC","Mean Correction Histo loaded, entries: %f",mean->GetEntries());
+		}else{
+			::Info("LMEECutLib::SetEtaCorrectionTPC","Mean Correction Histo not loaded! entries: %f",mean->GetEntries());
+			return 0;
+		}
+	return *mean;
+  }
+  else{
+		if(width){
+			::Info("LMEECutLib::SetEtaCorrectionTPC","Width Correction Histo loaded, entries: %f",width->GetEntries());
+		}else {
+			::Info("LMEECutLib::SetEtaCorrectionTPC","Width Correction Histo not loaded! entries: %f",width->GetEntries());
+			return 0;
+		}
+		return *width;
+  }
+
+}
 
 // Note: event cuts are identical for all analysis 'cutDefinition's that run together!
 // the selection is hardcoded in the AddTask
 AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
 
-    AliDielectronEventCuts* eventCuts = 0x0;
+    ::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetEventCuts() >>>>>>>>>>>>>>>>>>>>>> ");
+    AliDielectronEventCuts* eventCuts = new AliDielectronEventCuts("eventCuts_acapon","Vertex Track && |vtxZ|<10 && ncontrib>0");
 
     switch(cutSet){
         case kAllSpecies:
@@ -48,22 +198,19 @@ AliDielectronEventCuts* LMEECutLib::GetEventCuts(Int_t cutSet) {
         case kMidMult:
         case kLowMult:
 				case kTTreeCuts:
-            eventCuts = new AliDielectronEventCuts("eventCuts_acapon","Vertex Track && |vtxZ|<10 && ncontrib>0");
             eventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD); // AOD
             eventCuts->SetRequireVertex();
             eventCuts->SetMinVtxContributors(1);
             eventCuts->SetVertexZ(-10.,10.);
-            //eventCuts->SetCentralityRange(0,80,kTRUE); //Use Run2 centrality definitions
             break;
-
-    default: cout << "No Event Cut defined" << endl;
+				default: cout << "No Event Cut defined" << endl;
     }
     return eventCuts;
 }
 
 
 //Centrality selection done in Event selection
-AliAnalysisCuts* LMEECutLib::GetCentralityCuts(Int_t centSel) {
+AliDielectronCutGroup* LMEECutLib::GetCentralityCuts(Int_t centSel) {
     AliAnalysisCuts* centCuts = 0x0;
     switch(centSel){
         case kAllSpecies:
@@ -99,7 +246,7 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
         case kHighMult:
         case kMidMult:
         case kLowMult:
-        case kTTreeCuts
+				case kTTreeCuts:
             mixingHandler = new AliDielectronMixingHandler;
             mixingHandler->AddVariable(AliDielectronVarManager::kZvPrim,"-10., -7.5, -5., -2.5 , 0., 2.5, 5., 7.5 , 10.");
             //mixingHandler->AddVariable(AliDielectronVarManager::kNacc,"0,500");
@@ -119,10 +266,11 @@ AliDielectronMixingHandler* LMEECutLib::GetMixingHandler(Int_t cutSet) {
 
 //Pair Cuts for Analysis step - take care of logic - inverted compared to other PairCuts!!
 // cuts = SELECTION!!!
-AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet)  {
+AliDielectronCutGroup* LMEECutLib::GetPairCuts(Int_t cutSet)  {
 
-    std::cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << std::endl;
-    AliAnalysisCuts* cuts = 0x0;
+    ::Info("LMEECutLibg_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetPairCuts() >>>>>>>>>>>>>>>>>>>>>> ");
+		//Final OR cut group to incorporate the following cuts (below)
+    AliDielectronCutGroup* allCuts    = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR);
 
      //AND cut group to select low mass pairs with large opening angle
     AliDielectronCutGroup* convRejCut = new AliDielectronCutGroup("convRejCut", "convRejCut", AliDielectronCutGroup::kCompAND);
@@ -137,63 +285,16 @@ AliAnalysisCuts* LMEECutLib::GetPairCutsAna(Int_t cutSet)  {
     AliDielectronVarCuts* pairMassCut = new AliDielectronVarCuts("pairMassCut", "pairMassCut");
     pairMassCut->AddCut(AliDielectronVarManager::kM, 0.1, 5.0);
 
-    //OR cut group to accept for above cuts
-    AliDielectronCutGroup* allCuts    = new AliDielectronCutGroup("allCuts", "allCuts", AliDielectronCutGroup::kCompOR);
-
     allCuts->AddCut(convRejCut);
     allCuts->AddCut(pairMassCut);
 
-    //AND cut group for selecting pair momenta
-    AliDielectronCutGroup* finalCuts  = new AliDielectronCutGroup("finalCuts", "finalCuts", AliDielectronCutGroup::kCompAND);
-
-
-    switch(cutSet){
-        case kAllSpecies:
-        case kElectrons:
-        case kHighMult:
-        case kMidMult:
-        case kLowMult:
-				case kTTreeCuts:
-            cuts = allCuts;
-            break;
-       
-        default:
-            std::cout << "No Pair Cuts defined " << std::endl;
-    }
-    return cuts;
+    return allCuts;
 }
 
 
-//Pair Cuts for PREFILTER step
-// cuts = REJECTION!!!
-AliAnalysisCuts* LMEECutLib::GetPairCutsPre(Int_t cutSet)  {
-    cout << " >>>>>>>>>>>>>>>>>>>>>> GetPairCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << endl;
-    AliAnalysisCuts* pairCutsPre = 0x0;
-    switch(cutSet){
-        case kAllSpecies:
-        case kElectrons:
-        case kTTreeCuts:
-            AliDielectronVarCuts* pairCutsInvM =new AliDielectronVarCuts("pairCutsInvM","pairCutsInvM");
-            pairCutsInvM->AddCut(AliDielectronVarManager::kM, 0.0, 0.03); // in upgrade: 0.01
-            AliDielectronVarCuts* pairCutsOpAng =new AliDielectronVarCuts("pairCutsOpAng","pairCutsOpAng");
-            pairCutsOpAng->AddCut(AliDielectronVarManager::kOpeningAngle, 0.0, 0.06); // in upgrade: 0.05
-
-            AliDielectronCutGroup* pairCutsCG =new AliDielectronCutGroup("pairCutsCG","pairCutsCG",AliDielectronCutGroup::kCompAND);
-            pairCutsCG->AddCut(pairCutsInvM);
-            pairCutsCG->AddCut(pairCutsOpAng);
-            pairCuts = pairCutsCG;
-            break;
-
-        default: cout << "No Prefilter Pair Cuts defined " << endl;
-    }
-    return pairCutsPre;
-}
-
-
-
-AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(Int_t cutSet) {
-  cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << endl;
-  AliAnalysisCuts* pidCuts = 0x0;
+AliDielectronCutGroup* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
+  
+	::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetPIDCuts() >>>>>>>>>>>>>>>>>>>>>> ");
 
   //-----------------------------------------------
   // Define different PID Cuts, that are used later
@@ -227,7 +328,7 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(Int_t cutSet) {
   //-----------------------------------------------
 
 	AliDielectronCutGroup* cuts = new AliDielectronCutGroup("cuts","cuts", AliDielectronCutGroup::kCompAND);
-	switch(cutSet){
+	switch(PIDcuts){
 		case kElectrons:
 		case kHighMult:
 		case kMidMult:
@@ -237,53 +338,17 @@ AliAnalysisCuts* LMEECutLib::GetPIDCutsAna(Int_t cutSet) {
 			}else{
 				cuts->AddCut(PID_woSDD_FAST_looseCuts);
 			}
-			pidCuts = cuts;
 			break;
 		case kAllSpecies:
 			break;
 		case kTTreeCuts:
 			cuts->AddCut(PID_TTreeCuts);
-			pidCuts = cuts;
 			break;
 		default:
 			std::cout << "No Analysis PID Cut defined " << std::endl;
 			return 0x0;
     }
-    return pidCuts;
-}
-
-AliAnalysisCuts* LMEECutLib::GetKineCutsAna(Int_t cutSet){
-
-	std::cout << "--------------  Get Kinematic Cuts ---------------" << std::endl;
-	AliDielectronVarCuts* kineCutsAna = new AliDielectronVarCuts("kineCutsAna", "kineCutsAna");
-	if(!kineCutsAna){
-			std::cout << "Kinemtaic cuts could not be setup!" << std::endl;
-			return 0x0;
-	}
-
-	kineCutsAna->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-	kineCutsAna->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
-
-  return kineCutsAna;
-
-}
-
-AliAnalysisCuts* LMEECutLib::GetKineCutsPre(Int_t cutSet){
-
-  std::cout << "--------------  Get Kinematic Cuts Prefilter ---------------" << std::endl;
-  AliDielectronVarCuts* kineCuts = new AliDielectronVarCuts("kineCuts","kineCuts");
-
-  switch(cutSet){
-    case kAllSpecies:
-    case kElectrons:
-		case kTTreeCuts:
-      kineCuts->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
-      kineCuts->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
-      break;
-    default:
-      std::cout << "No kinematic cuts used for prefilter" << std::endl;
-  }
-  return kineCuts;
+    return cuts;
 }
 
 //Make/Tighten track Cuts that are *NOT* already
@@ -291,10 +356,14 @@ AliAnalysisCuts* LMEECutLib::GetKineCutsPre(Int_t cutSet){
 //**IMPORTANT**: For AODs, select FilterBit
 //the method is ignored for ESDs
 
-AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet){
+AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 
-	std::cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackCutsAna() >>>>>>>>>>>>>>>>>>>>>> " << std::endl;
-	AliDielectronCutGroup* trackCuts = 0x0;
+	::Info("LMEECutLib_acapon", " >>>>>>>>>>>>>>>>>>>>>> GetTrackCuts() >>>>>>>>>>>>>>>>>>>>>> ");
+	AliDielectronCutGroup* trackCuts = new AliDielectronCutGroup("trackCuts", "trackCuts", AliDielectronCutGroup::kCompAND);
+
+	AliDielectronVarCuts* varCutsFilter     = new AliDielectronVarCuts("varCutsFilter", "varCutsFilter");
+	AliDielectronTrackCuts* trackCutsFilter = new AliDielectronTrackCuts("trackCutsFilter", "trackCutsFilter");
+
 	switch(cutSet){
     //----------
     // these MAIN settings just load the main track selection directly below:
@@ -304,112 +373,67 @@ AliAnalysisCuts* LMEECutLib::GetTrackCutsAna(Int_t cutSet){
 		case kHighMult:
 		case kMidMult:
 		case kLowMult:
-			AliDielectronVarCuts* trackCutsAOD = new AliDielectronVarCuts("trackCutsAOD","trackCutsAOD");
-			trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParXY,  - 1.0, 1.0);
-			trackCutsAOD->AddCut(AliDielectronVarManager::kImpactParZ,   - 3.0, 3.0);
+			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
+			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,  - 1.0, 1.0);
+			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,   - 3.0, 3.0);
 			if(wSDD){
-					trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,  3.0, 100.0);
+					varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,  3.0, 100.0);
 			}else{
-					trackCutsAOD->AddCut(AliDielectronVarManager::kNclsITS,  2.0, 100.0);
+					varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,  2.0, 100.0);
 			}
-			//trackCutsAOD->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0, 0.1);
-			trackCutsAOD->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0, 4.5);
-			trackCutsAOD->AddCut(AliDielectronVarManager::kNclsTPC,      60.0, 200.); //clusters
-			trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCr,    70.0, 200.); //findable
-			//trackCutsAOD->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0, 6.0);
-			//trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCrFrac,  0.3, 10.); //Number of found/findable
-			trackCutsAOD->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); //Crossed rows over findable
-			//Lower limit 0.8 in most filterbits! // 1.1 since 26.02.2014
-			AliDielectronTrackCuts *trackCutsDiel = new AliDielectronTrackCuts("trackCutsDiel","trackCutsDiel");
-			//trackCutsDiel->SetAODFilterBit(0<<0); // (=0) filterbit 0! //GetStandardITSTPCTrackCuts2010(kFALSE); loose DCA, 2D cut
-			trackCutsDiel->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kFirst);
-			trackCutsDiel->SetRequireITSRefit(kTRUE);
-			trackCutsDiel->SetRequireTPCRefit(kTRUE);
+			//varCutsFilter->AddCut(AliDielectronVarManager::kNclsSFracITS, 0.0, 0.1);
+			varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0, 4.5);
+			varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,      60.0, 200.); //clusters
+			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,    70.0, 200.); //findable
+			//varCutsFilter->AddCut(AliDielectronVarManager::kTPCchi2Cl,      0.0, 6.0);
+			//varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCrFrac,  0.3, 10.); //Number of found/findable
+			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); //Crossed rows over findable
 
-			AliDielectronCutGroup* cgPIDCuts = new AliDielectronCutGroup("cgPIDCuts","cgPIDCuts",AliDielectronCutGroup::kCompAND);
-			cgPIDCuts->AddCut(trackCutsDiel);
-			cgPIDCuts->AddCut(trackCutsAOD);
-			trackCuts = cgPIDCuts;
+			trackCutsFilter->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+			trackCutsFilter->SetRequireITSRefit(kTRUE);
+			trackCutsFilter->SetRequireTPCRefit(kTRUE);
+
+			trackCuts->AddCut(trackCutsFilter);
+			trackCuts->AddCut(varCutsFilter);
+			
+			trackCuts->AddCut(GetPIDCuts(PIDcuts));
 			break;
 		case kTTreeCuts:
-			//Cuts appear in same order as written in SimpleTreeMaker
-			AliDielectronVarCuts* trackCutsTTree = new AliDielectronVarCuts("trackCutsTTree","trackCutsTTree");
-			//TPC cuts	
-			trackCutsTTree->AddCut(AliDielectronVarManager::kNclsTPC,      70.0, 200.); //clusters
-			trackCutsTTree->AddCut(AliDielectronVarManager::kNFclsTPCr,      60.0, 200.); //Crossed (60)
-			trackCutsTTree->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); //Crossed rows over findable
+			varCutsFilter->AddCut(AliDielectronVarManager::kEta, -0.80, 0.80);
+			varCutsFilter->AddCut(AliDielectronVarManager::kPt, 0.2, 10.);
+			//TPC cuts
+			//Clusters
+			varCutsFilter->AddCut(AliDielectronVarManager::kNclsTPC,      70.0, 200.); 
+			//Crossed rows
+			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCr,      60.0, 200.); 
+			//Crossed rows over findable
+			varCutsFilter->AddCut(AliDielectronVarManager::kNFclsTPCfCross, 0.3, 1.1); 
 			//DCA
-			trackCutsTTree->AddCut(AliDielectronVarManager::kImpactParXY,  - 3.0, 3.0);
-			trackCutsTTree->AddCut(AliDielectronVarManager::kImpactParZ,   - 4.0, 4.0);
+			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParXY,  - 3.0, 3.0);
+			varCutsFilter->AddCut(AliDielectronVarManager::kImpactParZ,   - 4.0, 4.0);
 			//ITS cuts
 			if(wSDD){
-				trackCutsTTree->AddCut(AliDielectronVarManager::kNclsITS,  3.0, 100.0); // < 3
+				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,  3.0, 100.0); // < 3
 			}else{
-				trackCutsTTree->AddCut(AliDielectronVarManager::kNclsITS,  1.0, 100.0); // < 1
+				varCutsFilter->AddCut(AliDielectronVarManager::kNclsITS,  1.0, 100.0); // < 1
 			}
-			trackCutsTTree->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0, 36.);
+			varCutsFilter->AddCut(AliDielectronVarManager::kITSchi2Cl,    0.0, 36.);
 			
-			AliDielectronTrackCuts *ttreeCutsDiel = new AliDielectronTrackCuts("ttreeCutsDiel","ttreeCutsDiel");
 			//Select filterbit 4
-			ttreeCutsDiel->SetAODFilterBit(16);//or 1<<4
+			trackCutsFilter->SetAODFilterBit(16);//or 1<<4
 			//Refits	
-			ttreeCutsDiel->SetRequireITSRefit(kTRUE);
-			ttreeCutsDiel->SetRequireTPCRefit(kTRUE);
-	
-			AliDielectronCutGroup* allTTreeCuts = new AliDielectronCutGroup("allTTreeCuts","allTTreeCuts",AliDielectronCutGroup::kCompAND);
-			allTTreeCuts->AddCut(ttreeCutsDiel);
-			allTTreeCuts->AddCut(trackCutsTTree);
-			trackCuts = allTTreeCuts;
+			trackCutsFilter->SetRequireITSRefit(kTRUE);
+			trackCutsFilter->SetRequireTPCRefit(kTRUE);
+
+			trackCuts->AddCut(trackCutsFilter);
+			trackCuts->AddCut(varCutsFilter);
+
+			trackCuts->AddCut(GetPIDCuts(PIDcuts));
 			break;
 		default:
 			std::cout << "No Analysis Track Cut defined" << std::endl;
 		}
 		return trackCuts;
 }
-
-
-
-//Relaxed PID cuts for additional rejection step, do not use blindly
-AliAnalysisCuts* LMEECutLib::GetPIDCutsPre(Int_t cutSet){
-    std::cout << " >>>>>>>>>>>>>>>>>>>>>> GetPIDCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << std::endl;
-    AliAnalysisCuts* pidCuts = 0x0;
-
-    switch(cutSet){
-    case kAllSpecies:
-        AliDielectronCutGroup* InitialFilterCG = new AliDielectronCutGroup("IntitialFilterCG","InitialFilterCG", AliDielectronCutGroup::kCompOR);
-        //InitialFilterCG->AddCut(GetTrackCutsAna(cutSet));
-        InitialFilterCG->AddCut(GetPIDCutsAna(cutSet));
-        pidCuts = InitialFilterCG;
-        break;
-    case kElectrons:
-        AliDielectronCutGroup* InitialFilterCGelecs = new AliDielectronCutGroup("IntitialFilterCGelecs","InitialFilterCGelecs", AliDielectronCutGroup::kCompOR);
-        //InitialFilterCGelecs->AddCut(GetTrackCutsAna(cutSet));
-        InitialFilterCGelecs->AddCut(GetPIDCutsAna(cutSet));
-        pidCuts = InitialFilterCGelecs;
-        break;
-
-    default:
-        std::cout << "No Prefilter PID Cut defined " << std::endl;
-    }
-    return pidCuts;
-}
- -
- -
-//Possibly different cut sets for Prefilter step
-//Not used at the moment
-AliAnalysisCuts* LMEECutLib::GetTrackCutsPre(Int_t cutSet){
-    std::cout << " >>>>>>>>>>>>>>>>>>>>>> GetTrackCutsPre() >>>>>>>>>>>>>>>>>>>>>> " << std::endl;
-    AliDielectronCutGroup* trackCuts = 0x0;
-    switch(cutSet){
-        case kAllSpecies:
-        case kElectrons:
-        trackCuts = LMEECutLib::GetTrackCutsAna(cutSet);
-        break;
-    default:
-        std::cout << "No Prefilter Track Cut defined " << std::endl;
-    }
-return trackCuts;
-}
-
-
 

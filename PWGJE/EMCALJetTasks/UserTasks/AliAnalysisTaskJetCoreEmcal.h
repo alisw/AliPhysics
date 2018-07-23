@@ -47,9 +47,11 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void		 SetJetContPartName(TString cont){fJetContPartName=cont;}
 	virtual void		 SetFillTrackHistograms(Bool_t b){fFillTrackHistograms=b;}
 	virtual void		 SetFillJetHistograms(Bool_t b){fFillJetHistograms=b;}
+	virtual void		 SetFillRecoilTHnSparse(Bool_t b){fFillRecoilTHnSparse=b;}
 	virtual void		 SetFillInclusiveTree(Bool_t b){fFillInclusiveTree=b;}
 	virtual void		 SetFillRecoilTree(Bool_t b){fFillRecoilTree=b;}
 	virtual void		 SetPtHardBin(Int_t bin){fPtHardBin=bin;}
+	virtual void		 SetRejectionFactorInclusiveJets(Int_t f){fRejectionFactorInclusiveJets=f;}
 
 //  static AliAnalysisTaskJetCoreEmcal* AddTaskJetCoreEmcal(
 //      const char *ntracks            = "usedefault",
@@ -113,9 +115,11 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TString fJetContPartName; ///< Particle(MC) level jet container name
 	Bool_t fFillTrackHistograms; ///< switch to fill track histograms
 	Bool_t fFillJetHistograms; ///< switch to fill jet histograms
+	Bool_t fFillRecoilTHnSparse; ///< switch to fill recoil THnSparse for main analysis
 	Bool_t fFillInclusiveTree; ///< switch to fill embedding tree with inclusive jet info
 	Bool_t fFillRecoilTree; ///< switch to fill embedding tree with recoil jet info
 	Int_t fPtHardBin; ///< pt hard bin if running embedding
+	Int_t fRejectionFactorInclusiveJets; ///< factor to reject inclusive jets, to reduce size of ttree
 	//
 	TRandom3 *fRandom; ///<
 	Float_t fTreeVarsInclusive[8]; ///<
@@ -171,7 +175,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 5);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 6);
   /// \endcond
 };
 #endif

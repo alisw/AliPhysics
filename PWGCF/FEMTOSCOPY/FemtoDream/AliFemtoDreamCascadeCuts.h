@@ -83,6 +83,7 @@ class AliFemtoDreamCascadeCuts {
   void SetMCName(TString OutputName) {if(fMCHistList)fMCHistList->SetName(OutputName.Data());};
   TList *GetQAHists() {return fHistList;};
   TList *GetMCQAHists() {return fMCHistList;};
+  void FillGenerated(float pT) {if (fMCHist) fMCHist->FillMCGen(pT);};
  private:
   AliFemtoDreamCascadeHist *fHist;            //!
   AliFemtoDreamv0MCHist *fMCHist;             //!
@@ -139,7 +140,7 @@ class AliFemtoDreamCascadeCuts {
   int fPDGPosDaug;              //
   int fPDGNegDaug;              //
   int fPDGBachDaug;             //
-  ClassDef(AliFemtoDreamCascadeCuts,2)
+  ClassDef(AliFemtoDreamCascadeCuts,3)
 };
 
 #endif /* ALIFEMTODREAMCASCADECUTS_H_ */

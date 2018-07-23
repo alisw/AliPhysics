@@ -14,6 +14,7 @@
  **************************************************************************/
 #include <sstream>
 #include <array>
+#include <memory>
 
 #include <RVersion.h>
 #include <TClonesArray.h>
@@ -120,6 +121,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight() :
   fBeamType(kNA),
   fMCHeader(0),
   fPythiaHeader(0),
+  fUseXsecFromHeader(false),
   fPtHardBin(0),
   fPtHard(0),
   fNTrials(0),
@@ -204,6 +206,7 @@ AliAnalysisTaskEmcalLight::AliAnalysisTaskEmcalLight(const char *name, Bool_t hi
   fBeamType(kNA),
   fMCHeader(0),
   fPythiaHeader(0),
+  fUseXsecFromHeader(false),
   fPtHardBin(0),
   fPtHard(0),
   fNTrials(0),
@@ -518,10 +521,7 @@ Bool_t AliAnalysisTaskEmcalLight::FillGeneralHistograms(Bool_t eventSelected)
       GetGeneralTH1("fHistEventWeightsNoSel", true)->Fill(fEventWeight);
       GetGeneralTH2("fHistEventWeightsVsPtHardNoSel", true)->Fill(fPtHard, fEventWeight);
       GetGeneralTH1("fHistXsectionDistributionNoSel", true)->Fill(fXsection);
-
-      TProfile* hXsection = GetGeneralTProfile("fHistXsectionNoSel", true);
-      hXsection->SetBinEntries(fPtHardBin + 1, hXsection->GetBinEntries(fPtHardBin + 1) + 1);
-      hXsection->SetBinContent(fPtHardBin + 1, fXsection * hXsection->GetBinEntries(fPtHardBin + 1));
+      GetGeneralTProfile("fHistXsectionNoSel", true)->Fill(fPtHardBin, fXsection);
     }
 
     GetGeneralTH1("fHistZVertexNoSel", true)->Fill(fVertex[2]);
@@ -607,15 +607,27 @@ void AliAnalysisTaskEmcalLight::UserExec(Option_t *option)
  * @param[out] pthard \f$ p_{t} \f$-hard bin, extracted from path name
  * @return True if parameters were obtained successfully, false otherwise
  */
-Bool_t AliAnalysisTaskEmcalLight::PythiaInfoFromFile(const char* currFile, Float_t &xsec, Float_t &trials, Int_t &pthard)
+Bool_t AliAnalysisTaskEmcalLight::PythiaInfoFromFile(const char* currFile, Float_t &xsec, Float_t &trials, Int_t &pthard, Bool_t &useXsecFromHeader)
 {
 
   TString file(currFile);
   xsec = 0;
   trials = 1;
 
-  if (file.Contains(".zip#")) {
-    Ssiz_t pos1 = file.Index("root_archive",12,0,TString::kExact);
+  // Determine archive type
+  TString archivetype;
+  std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
+  for(auto t : *walk){
+    TString &tok = static_cast<TObjString *>(t)->String();
+    if(tok.Contains(".zip")){
+      archivetype = tok;
+      Int_t pos = archivetype.Index(".zip");
+      archivetype.Replace(pos, archivetype.Length() - pos, "");
+    }
+  }
+  if(archivetype.Length()){
+    AliDebugStream(1) << "Auto-detected archive type " << archivetype << std::endl;
+    Ssiz_t pos1 = file.Index(archivetype,archivetype.Length(),0,TString::kExact);
     Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
     Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
     file.Replace(pos+1,pos2-pos1,"");
@@ -623,54 +635,122 @@ Bool_t AliAnalysisTaskEmcalLight::PythiaInfoFromFile(const char* currFile, Float
     // not an archive take the basename....
     file.ReplaceAll(gSystem->BaseName(file.Data()),"");
   }
-  AliDebug(1,Form("File name: %s",file.Data()));
+  AliDebugStream(1) << "File name: " << file << std::endl;
+
+  // Build virtual file name
+  // Support for train tests
+  TString virtualFileName;
+  if(file.Contains("__alice")){
+    TString tmp(file);
+    Int_t pos = tmp.Index("__alice");
+    tmp.Replace(0, pos, "");
+    tmp.ReplaceAll("__", "/");
+    // cut out tag for archive and root file
+    // this needs a determin
+    std::unique_ptr<TObjArray> toks(tmp.Tokenize("/"));
+    TString tag = "_" + archivetype;
+    for(auto t : *toks){
+      TString &path = static_cast<TObjString *>(t)->String();
+      if(path.Contains(tag)){
+        Int_t posTag = path.Index(tag);
+        path.Replace(posTag, path.Length() - posTag, "");
+      }
+      virtualFileName += "/" + path;
+    }
+  } else {
+    virtualFileName = file;
+  }
+
+  AliDebugStream(1) << "Physical file name " << file << ", virtual file name " << virtualFileName << std::endl;
 
   // Get the pt hard bin
-  TString strPthard(file);
+  TString strPthard(virtualFileName);
 
+  /*
+  // Dead code - to be removed after testing phase
+  // Procedure will fail for everything else than the expected path name
   strPthard.Remove(strPthard.Last('/'));
   strPthard.Remove(strPthard.Last('/'));
-  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));
+  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));    
   strPthard.Remove(0,strPthard.Last('/')+1);
-  if (strPthard.IsDec()) {
-    pthard = strPthard.Atoi();
+  if (strPthard.IsDec()) pthard = strPthard.Atoi();
+  else 
+    AliWarningStream() << "Could not extract file number from path " << strPthard << std::endl;
+  */
+
+  // New implementation : pattern matching
+  // Reason: Implementation valid only for old productions (new productions swap run number and pt-hard bin)
+  // Idea: Don't use the position in the string but the match different informations
+  // + Year clearly 2000+
+  // + Run number can be match to the one in the event
+  // + If we know it is not year or run number, it must be the pt-hard bin if we start from the beginning
+  // The procedure is only valid for the current implementations and unable to detect non-pt-hard bins
+  // It will also fail in case of arbitrary file names
+
+  bool binfound = false;
+  std::unique_ptr<TObjArray> tokens(strPthard.Tokenize("/"));
+  for(auto t : *tokens) {
+    TString &tok = static_cast<TObjString *>(t)->String();
+    if(tok.IsDec()){
+      Int_t number = tok.Atoi();
+      if(number > 2000 && number < 3000){
+        // Year
+        continue;
+      } else if(number == fInputHandler->GetEvent()->GetRunNumber()){
+        // Run number
+        continue;
+      } else {
+        if(!binfound){
+          // the first number that is not one of the two must be the pt-hard bin
+          binfound = true;
+          pthard = number;
+          break;
+        }
+      }
+    }
   }
-  else {
-    AliWarning(Form("Could not extract file number from path %s", strPthard.Data()));
-    pthard = -1;
+  if(!binfound) {
+    AliErrorStream() << "Could not extract file number from path " << strPthard << std::endl;
+  } else {
+    AliInfoStream() << "Auto-detecting pt-hard bin " << pthard << std::endl;
   }
+
+  AliInfoStream() << "File: " << file << std::endl;
 
   // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
-  TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root"));
+  std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
 
   if (!fxsec) {
     // next trial fetch the histgram file
-    fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
-    if (!fxsec) {
-      // not a severe condition but inciate that we have no information
-      return kFALSE;
-    } else {
+    fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
+    if (!fxsec){
+      AliErrorStream() << "Failed reading cross section from file " << file << std::endl;
+      useXsecFromHeader = true;
+      return kFALSE; // not a severe condition but inciate that we have no information
+    }
+    else {
       // find the tlist we want to be independtent of the name so use the Tkey
-      TKey* key = static_cast<TKey*>(fxsec->GetListOfKeys()->At(0));
-      if (!key) {
-        fxsec->Close();
-        return kFALSE;
-      }
+      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
+      if (!key) return kFALSE;
       TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if (!list) {
-        fxsec->Close();
-        return kFALSE;
+      if (!list) return kFALSE;
+      TProfile *xSecHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
+      // check for failure
+      if(!xSecHist->GetEntries()) {
+        // No cross seciton information available - fall back to raw
+        AliErrorStream() << "No cross section information available in file " << fxsec->GetName() <<" - fall back to cross section in PYTHIA header" << std::endl;
+        useXsecFromHeader = true;
+      } else {
+        // Cross section histogram filled - take it from there
+        xsec = xSecHist->GetBinContent(1);
+        if(!xsec) AliErrorStream() << GetName() << ": Cross section 0 for file " << file << std::endl;
+        useXsecFromHeader = false;
       }
-      xsec = static_cast<TProfile*>(list->FindObject("h1Xsec"))->GetBinContent(1);
-      trials = static_cast<TH1F*>(list->FindObject("h1Trials"))->GetBinContent(1);
-      fxsec->Close();
+      trials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
     }
   } else { // no tree pyxsec.root
-    TTree *xtree = static_cast<TTree*>(fxsec->Get("Xsection"));
-    if (!xtree) {
-      fxsec->Close();
-      return kFALSE;
-    }
+    TTree *xtree = (TTree*)fxsec->Get("Xsection");
+    if (!xtree) return kFALSE;
     UInt_t   ntrials  = 0;
     Double_t  xsection  = 0;
     xtree->SetBranchAddress("xsection",&xsection);
@@ -678,7 +758,6 @@ Bool_t AliAnalysisTaskEmcalLight::PythiaInfoFromFile(const char* currFile, Float
     xtree->GetEntry(0);
     trials = ntrials;
     xsec = xsection;
-    fxsec->Close();
   }
   return kTRUE;
 }
@@ -709,6 +788,7 @@ Bool_t AliAnalysisTaskEmcalLight::UserNotify()
   Float_t xsection    = 0;
   Float_t trials      = 0;
   Int_t   pthardbin   = 0;
+  Bool_t  useXsecFromHeader = false;
 
   TFile *curfile = tree->GetCurrentFile();
   if (!curfile) {
@@ -721,15 +801,16 @@ Bool_t AliAnalysisTaskEmcalLight::UserNotify()
 
   Int_t nevents = tree->GetEntriesFast();
 
-  Bool_t res = PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
+  Bool_t res = PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin, useXsecFromHeader);
 
   fPtHardBin = pthardbin >= 0 ? pthardbin : 0;
+  fUseXsecFromHeader = useXsecFromHeader;
 
   if (!res) return kTRUE;
 
   if (fGeneralHistograms  && fCreateHisto) {
     GetGeneralTH1("fHistTrialsExternalFile", true)->Fill(fPtHardBin, trials);
-    GetGeneralTProfile("fHistXsectionExternalFile", true)->Fill(fPtHardBin, xsection);
+    if(!useXsecFromHeader) GetGeneralTProfile("fHistXsectionExternalFile", true)->Fill(fPtHardBin, xsection);
     GetGeneralTH1("fHistEventsExternalFile", true)->Fill(fPtHardBin, nevents);
   }
   
@@ -890,8 +971,16 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
   Bool_t acceptedTrgClassFound = kFALSE;
   if (fAcceptedTriggerClasses.size() > 0) {
     for (auto acc_trg : fAcceptedTriggerClasses) {
+      std::string teststring(acc_trg);
+      bool fullmatch(false);
+      auto posexact = acc_trg.find("EXACT");
+      if(posexact != std::string::npos) {
+        fullmatch = true;
+        teststring.erase(posexact, 5);
+      }
       for (auto fired_trg : fFiredTriggerClasses) {
-        if (fired_trg.find(acc_trg) != std::string::npos) {
+        bool classmatch = fullmatch ? teststring == fired_trg : fired_trg.find(teststring) != std::string::npos;
+        if (classmatch) {
           acceptedTrgClassFound = kTRUE;
           break;
         }
@@ -907,8 +996,16 @@ Bool_t AliAnalysisTaskEmcalLight::IsEventSelected()
 
   if (fRejectedTriggerClasses.size() > 0) {
     for (auto rej_trg : fRejectedTriggerClasses) {
+      std::string teststring(rej_trg);
+      bool fullmatch(false);
+      auto posexact = rej_trg.find("EXACT");
+      if(posexact != std::string::npos) {
+        fullmatch = true;
+        teststring.erase(posexact, 5);
+      }
       for (auto fired_trg : fFiredTriggerClasses) {
-        if (fired_trg.find(rej_trg) != std::string::npos) {
+        bool classmatch = fullmatch ? teststring == fired_trg : fired_trg.find(teststring) != std::string::npos;
+        if (classmatch) {
           if (fGeneralHistograms) hEventRejection->Fill("Trg class (rej)",1);
           return kFALSE;
         }
@@ -1125,6 +1222,7 @@ Bool_t AliAnalysisTaskEmcalLight::RetrieveEventObjects()
         fPtHard = fPythiaHeader->GetPtHard();
         fXsection = fPythiaHeader->GetXsection();
         fNTrials = fPythiaHeader->Trials();
+        if(fUseXsecFromHeader) GetGeneralTProfile("fHistXsectionExternalFile", true)->Fill(fPtHardBin, fXsection);
       }
     }
   }

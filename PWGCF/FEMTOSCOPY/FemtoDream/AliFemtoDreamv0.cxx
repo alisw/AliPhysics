@@ -94,26 +94,27 @@ void AliFemtoDreamv0::SetDaughter(AliAODv0 *v0) {
 }
 
 void AliFemtoDreamv0::SetDaughterInfo(AliAODv0 *v0) {
-  this->SetEta(fnDaug->GetEta().at(0));
-  this->SetEta(fpDaug->GetEta().at(0));
-
-  this->SetTheta(fnDaug->GetTheta().at(0));
-  this->SetTheta(fpDaug->GetTheta().at(0));
-
-  this->SetPhi(fnDaug->GetPhi().at(0));
-  this->SetPhi(fpDaug->GetPhi().at(0));
-
-  this->SetIDTracks(fnDaug->GetIDTracks().at(0));
-  this->SetIDTracks(fpDaug->GetIDTracks().at(0));
-
-  this->SetCharge(fnDaug->GetCharge().at(0));
-  this->SetCharge(fpDaug->GetCharge().at(0));
   //here we have to set the momentum from the v0. The Momentum of the Global
   //track is different to the one of the daughter track and is also
   //used in the official v0 class for the invarian mass
   //calculation.
   fnDaug->SetMomentum(v0->PxProng(1), v0->PyProng(1), v0->PzProng(1));
   fpDaug->SetMomentum(v0->PxProng(0), v0->PyProng(0), v0->PzProng(0));
+
+  this->SetEta(fnDaug->GetMomentum().Eta());
+  this->SetEta(fpDaug->GetMomentum().Eta());
+
+  this->SetTheta(fnDaug->GetMomentum().Theta());
+  this->SetTheta(fpDaug->GetMomentum().Theta());
+
+  this->SetPhi(fnDaug->GetMomentum().Phi());
+  this->SetPhi(fpDaug->GetMomentum().Phi());
+
+  this->SetIDTracks(fnDaug->GetIDTracks().at(0));
+  this->SetIDTracks(fpDaug->GetIDTracks().at(0));
+
+  this->SetCharge(fnDaug->GetCharge().at(0));
+  this->SetCharge(fpDaug->GetCharge().at(0));
 
   if(fIsMC) {
     if (fnDaug->IsSet()) {

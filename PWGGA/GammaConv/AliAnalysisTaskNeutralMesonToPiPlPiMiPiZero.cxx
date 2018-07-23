@@ -956,9 +956,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
         fHistoDoubleCountTrueOmegaInvMassPt             = new TH2F*[fnCuts];
     }
     fHistoTrueMotherPiPlPiMiPiZeroInvMassPt         = new TH2F*[fnCuts];
+    fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt    = new TH2F*[fnCuts];
+    fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt      = new TH2F*[fnCuts];
     if(!fDoLightOutput){
-        fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt    = new TH2F*[fnCuts];
-        fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt      = new TH2F*[fnCuts];
         fHistoTrueMotherGammaGammaInvMassPt             = new TH2F*[fnCuts];
         fHistoTrueMotherGammaGammaFromEtaInvMassPt      = new TH2F*[fnCuts];
         fHistoTrueMotherGammaGammaFromOmegaInvMassPt    = new TH2F*[fnCuts];
@@ -1151,7 +1151,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
       fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+} #pi^{-} #pi^{0}} (GeV/c^{2})");
       fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[iCut]);
-      if(!fDoLightOutput){
+
           fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt[iCut]  = new TH2F("ESD_TrueMotherOmegaPiPlPiMiPiZero_InvMass_Pt","ESD_TrueMotherOmegaPiPlPiMiPiZero_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt[iCut]    = new TH2F("ESD_TrueMotherEtaPiPlPiMiPiZero_InvMass_Pt","ESD_TrueMotherEtaPiPlPiMiPiZero_InvMass_Pt",HistoNMassBins,HistoMassRange[0],HistoMassRange[1],HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt[iCut]->Sumw2();
@@ -1163,7 +1163,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::UserCreateOutputObjects()
           fTrueList[iCut]->Add(fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt[iCut]);
           fTrueList[iCut]->Add(fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt[iCut]);
 
-
+      if(!fDoLightOutput){
           fHistoTrueMotherGammaGammaInvMassPt[iCut]           = new TH2F("ESD_TrueMotherGG_InvMass_Pt","ESD_TrueMotherGG_InvMass_Pt",450,0.,0.45,HistoNPtBins,HistoPtRange[0],HistoPtRange[1]);
           fHistoTrueMotherGammaGammaInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#gamma #gamma} (GeV/c^{2})");
           fHistoTrueMotherGammaGammaInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
@@ -2659,6 +2659,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
             }
           }
         }
+      }
 
         // \eta -> pi+ pi- \gamma
         Int_t labelNeutPion = -1;
@@ -2711,7 +2712,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessMCParticles(){
             }
           }
         }
-      }
     }
   }
 }
@@ -3315,8 +3315,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
   if(isSameMotherPiPlPiMiPiZero){
     if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                        == 221){
       // eta was found
-      if(!fDoLightOutput) fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      if(!fDoLightOutput) fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+      fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+      fHistoTrueMotherEtaPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
       AliAODConversionMother *PosPiontmp = new AliAODConversionMother();
       PosPiontmp->SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->Energy());
       AliAODConversionMother *NegPiontmp = new AliAODConversionMother();
@@ -3339,7 +3339,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessTrueMesonCandidates(Ali
     } else if(fMCEvent->Particle(pi0MotherLabel)->GetPdgCode()                 == 223){
       // omega was found
       fHistoTrueMotherPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
-      if(!fDoLightOutput) fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
+      fHistoTrueMotherOmegaPiPlPiMiPiZeroInvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
 
       AliAODConversionMother *PosPiontmp = new AliAODConversionMother();
       PosPiontmp->SetPxPyPzE(positiveMC->Px(), positiveMC->Py(), positiveMC->Pz(), positiveMC->Energy());

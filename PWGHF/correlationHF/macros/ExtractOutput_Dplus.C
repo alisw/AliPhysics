@@ -33,7 +33,9 @@ void ExtractOutput_Dplus(
                          Int_t npools=9, //number of pools for the event-mixing
                          Bool_t poolByPool=kTRUE, //kTRUE=pool-by-pool ME correction; kFALSE=merged-pools ME correction (set the options that you used in the online analysis)
                          Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1.,
-			 Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100.) //deltaEta ranges for correlation distributions
+			             Bool_t use2Dmassplots=kFALSE,
+                         Double_t mincent=0., Double_t maxcent=100., //deltaEta ranges for correlation distributions
+                         Bool_t useOneMEpoolOnly=kFALSE)  //****KEEP AT kFALSE!!**** Put as kTRUE only in case of crashed for very low stat (ME pools with empty bins)
 {
     Int_t num=0;
     //Create and set the correlation plotter class
@@ -74,6 +76,7 @@ void ExtractOutput_Dplus(
     plotter->ReadTTreeOutputFiles(treeSE,treeME);
     plotter->SetSubtractSoftPiInMEdistr(kFALSE);
     plotter->SetUseMassVsCentPlots(use2Dmassplots);
+    plotter->SetUseOneMEPool(useOneMEpoolOnly);      
     if(use2Dmassplots) plotter->SetCentralitySelection(mincent,maxcent);
     SetInputNames(plotter, treeSE, treeME);  // check the names in the method!!
     

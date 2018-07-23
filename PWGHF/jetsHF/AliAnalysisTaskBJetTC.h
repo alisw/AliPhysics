@@ -98,6 +98,10 @@ public:
 	void SetDoSVAnalysis(Bool_t value){fDoSVAnalysis = value;}
 	void SetDoTCAnalysis(Bool_t value){fDoTrackCountingAnalysis = value;}
 
+	void SetMinTrackProbability(Double_t value){fMinTrackProb = value;}
+
+	void SetDoImprovedDCACut(Bool_t value){fDoImprovedDCACut = value;}
+
 	// B jet tracks selection
 	void SetTrackMinPt(Double_t val){ fTCMinTrackPt = val;}
 	void SetTPCClusterMin(Int_t val){ fTCMinClusTPC = val;}
@@ -144,6 +148,7 @@ private:
 	Bool_t fUseCorrPt;//
 	Bool_t fEnableV0GammaRejection;//
 	Float_t fPythiaEventWeight;//!
+	Bool_t fDoImprovedDCACut;//
 
   	AliPIDResponse   *fRespoPID;//!
 
@@ -303,6 +308,7 @@ private:
 	TH2D * fhistJetProbability_cLogSVHP;//!
 	TH2D * fhistJetProbability_bLogSVHP;//!
 
+	Double_t fMinTrackProb;
 
 	// inclusive signed impact parameter distributions
 	//First

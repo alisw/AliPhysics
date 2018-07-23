@@ -97,7 +97,24 @@ class AliAnalysisTaskEmcalJetShapesMC : public AliAnalysisTaskEmcalJet {
   void DoJetELoss(Bool_t b, Float_t f)                      {fScaleELoss = b; xfraction = f;}
   void AddMedScat(Bool_t b, Float_t f, Int_t n)             {fAddMedScat = b; fAddMedScatPtFrac = f; fAddMedScatN = n;}
 
-  
+  static AliAnalysisTaskEmcalJetShapesMC* AddTaskJetShapesMC(
+	 const char * njetsBase,
+         const Double_t jetradius,
+         const Double_t subjetradius,
+         const char *ntracksPartLevel,
+         const char *type,
+         const char *CentEst,
+         Int_t       pSel,
+         TString     trigClass      = "",
+         TString     kEmcalTriggers = "",
+         TString     tag            = "",
+         const char *rhoName = "",
+         AliAnalysisTaskEmcalJetShapesMC::JetShapeType jetShapeType=AliAnalysisTaskEmcalJetShapesMC::kGenShapes,
+         AliAnalysisTaskEmcalJetShapesMC::JetShapeSub jetShapeSub=AliAnalysisTaskEmcalJetShapesMC::kNoSub,
+         AliAnalysisTaskEmcalJetShapesMC::JetSelectionType jetSelection=AliAnalysisTaskEmcalJetShapesMC::kInclusive,
+         Float_t minpTHTrigger =0.,
+	 Float_t maxpTHTrigger =0.,
+         AliAnalysisTaskEmcalJetShapesMC::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskEmcalJetShapesMC::kSecondOrder );
   
  protected:
    

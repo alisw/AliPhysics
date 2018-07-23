@@ -864,6 +864,16 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
   } else if (trainConfig == 383){ // PHOS clusters with larger acceptance
     cuts.AddCut("00010113","2446600040013300000","0163103100000010"); // INT7
     cuts.AddCut("00062113","2446600040013300000","0163103100000010"); // PHI7
+  } else if (trainConfig == 384){ // Default cut, No TM
+    cuts.AddCut("00010113","2446651040013300000","0163103100000010"); // INT7
+    cuts.AddCut("00062113","2446651040013300000","0163103100000010"); // PHI7
+  } else if (trainConfig == 385){ // Default cut, with TM
+    cuts.AddCut("00010113","2446651044013300000","0163103100000010"); // INT7
+    cuts.AddCut("00062113","2446651044013300000","0163103100000010"); // PHI7
+  } else if(trainConfig == 386){ // NL variations
+    cuts.AddCut("00010113","2446651044013300000","0163103100000010"); // INT7
+    cuts.AddCut("00010113","2446652044013300000","0163103100000010"); // PHOS calo NL
+    cuts.AddCut("00010113","2446601044013300000","0163103100000010"); // PHOS people NL
 
   // *********************************************************************************************************
   // 5 TeV  pp Run2 - EMC configurations
@@ -1017,6 +1027,11 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","1111111066032220000","01631031000000d0"); // tm pt dependent var 1
     cuts.AddCut("00010113","1111111068032220000","01631031000000d0"); // tm pt dependent var 2
     cuts.AddCut("00010113","1111111069032220000","01631031000000d0"); // tm pt dependent var 3
+  } else if (trainConfig == 456){ // EMCAL syst 5/5
+    cuts.AddCut("00010113","1111111037032230000","01631031000000d0"); // +-10ns timing cut
+    cuts.AddCut("00010113","1111111047032230000","01631031000000d0"); // +-20ns timing cut
+    cuts.AddCut("00010113","1111111057032230000","01631031000000d0"); // +-50ns timing cut
+    cuts.AddCut("00010113","1111111077032230000","01631031000000d0"); // +-30ns timing cut
 
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations

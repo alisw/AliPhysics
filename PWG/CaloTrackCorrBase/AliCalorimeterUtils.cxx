@@ -161,7 +161,7 @@ void AliCalorimeterUtils::AccessOADB(AliVEvent* event)
           SetEMCALChannelStatusMap(i,hbm);
           
         } // loop
-      } else AliInfo("Do NOT remove EMCAL bad channels\n"); // run array
+      } else AliInfo("Do NOT remove EMCAL bad channels"); // run array
       
       delete contBC;
     }  // Remove bad
@@ -2250,7 +2250,7 @@ void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event,
     fEMCALRecoUtils->GetMatchedResiduals(clus->GetID(),dZ,dR);
     
     if ( TMath::Abs(clus->GetTrackDx()) < 500 )
-      AliDebug(2,Form("Residuals (Old, New): z (%2.4f,%2.4f), x (%2.4f,%2.4f)\n",
+      AliDebug(2,Form("Residuals (Old, New): z (%2.4f,%2.4f), x (%2.4f,%2.4f)",
                       clus->GetTrackDz(),dZ,clus->GetTrackDx(),dR));
     
     clus->SetTrackDistance(dR,dZ);

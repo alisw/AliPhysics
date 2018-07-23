@@ -143,6 +143,7 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
         || cluster->E() < 0.1 // Emin cut
       ) continue;
 
+    if(cluster->GetM20() > 2.0) continue;
     if(cluster->GetLabel() < 0) continue;
 
     Bool_t IsSameFound = kFALSE;
@@ -153,6 +154,7 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
       if(clusterUE->GetType() != AliVCluster::kPHOSNeutral
           || clusterUE->E() < 0.1 // noise cut
         ) continue;
+
 
 //      cout << "UE E = " << clusterUE->E() << " , Ncell = " << clusterUE->GetNCells() << " , label = " << clusterUE->GetLabel() << endl;
 

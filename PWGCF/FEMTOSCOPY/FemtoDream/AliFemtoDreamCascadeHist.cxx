@@ -74,6 +74,7 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,bool perRunnumber,
   fCutCounter->GetXaxis()->SetBinLabel(20, "Rej Omega");
   fCutCounter->GetXaxis()->SetBinLabel(21, "PtCut");
   fCutCounter->GetXaxis()->SetBinLabel(22, "Inv Mass Xi");
+  fCutCounter->GetXaxis()->SetBinLabel(23, "Casc not set");
 
   fHistList->Add(fCutCounter);
 

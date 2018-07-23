@@ -72,6 +72,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   }
   
   void SetIsRapidityCut(Bool_t IsRapCut){ fIsRapCut = IsRapCut; }
+  void SetUseTotalMomentumCut( Bool_t IsTotalMom){ fTotP = IsTotalMom; }
   void SetKinematicsCuts(Double_t ptl, Double_t pth, Double_t eta) {
     fPtMin = ptl; fPtMax = pth; fEtaMin = -eta; fEtaMax = eta; 
   }
@@ -127,6 +128,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   Bool_t     fIsAOD;                        // analysis mode: 0 = ESDs  | 1 = AODs
   Bool_t     fIsQA;                         // Check for QA
   Bool_t     fIsRapCut;                     // Use rapidity cut 1= yes, 0= no
+  Bool_t     fTotP;                        // Swith to use total momentum cut
   Bool_t     fIsTrig;           //
   Bool_t     fIsThn;            //
 
@@ -212,7 +214,7 @@ AliEbyEPidEfficiencyContamination( const char *name );
   //________________________________
   AliEbyEPidEfficiencyContamination(const AliEbyEPidEfficiencyContamination&);
   AliEbyEPidEfficiencyContamination& operator = (const AliEbyEPidEfficiencyContamination&);
-  ClassDef(AliEbyEPidEfficiencyContamination, 5);
+  ClassDef(AliEbyEPidEfficiencyContamination, 6);
 };
 
 #endif

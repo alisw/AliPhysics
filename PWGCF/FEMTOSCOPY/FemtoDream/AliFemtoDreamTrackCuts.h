@@ -74,10 +74,12 @@ class AliFemtoDreamTrackCuts {
   {fParticleID = pid; fPIDPTPCThreshold = pTPChresh; fNSigValue = sigVal; fCutPID = kTRUE;};
   void SetRejLowPtPionsTOF(bool use){fRejectPions = use;};
   void SetCutSmallestSig(bool cutit){fCutHighPtSig = cutit;};
+  int GetPDGCode();
   //selection Methods
   bool isSelected(AliFemtoDreamTrack *Track);
   void BookQA(AliFemtoDreamTrack *Track);
   void BookMC(AliFemtoDreamTrack *Track);
+  void FillGenerated(float pT) {if (fMCHists) fMCHists->FillMCGen(pT);};
   //  void FillSharedClusterQA(AliFemtoDreamTrack *Track);
   //Histogram things
   void Init();

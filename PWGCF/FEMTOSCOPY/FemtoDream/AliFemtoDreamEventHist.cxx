@@ -171,7 +171,7 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
 
     TString SPDTrkZVtxDisplName=Form("SPDTrackZVtxDisplacement%s",sName[i].Data());
     fSPDTrkZVtxDispl[i]=new TH1F(SPDTrkZVtxDisplName.Data(),SPDTrkZVtxDisplName.Data(),
-                              300,0,15);
+                              300,0,1.5);
     fSPDTrkZVtxDispl[i]->Sumw2();
     fSPDTrkZVtxDispl[i]->GetXaxis()->SetTitle("zVtx Position |SPD - Tracks|");
     fEvtCutQA[i]->Add(fSPDTrkZVtxDispl[i]);

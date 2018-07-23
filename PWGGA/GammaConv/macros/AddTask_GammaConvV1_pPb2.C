@@ -59,7 +59,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
                                 Int_t         enableQAMesonTask             = 0,                                // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t         enableQAPhotonTask            = 0,                                // enable additional QA task
                                 TString       fileNameInputForWeighting     = "MCSpectraInput.root",            // path to file for weigting input
-                                Bool_t        doWeightingPart               = kFALSE,                           // enable Weighting
+                                Int_t         doWeightingPart               = 0,                                // enable Weighting
                                 TString       generatorName                 = "DPMJET",                         // generator Name
                                 TString       cutnumberAODBranch            = "800000006008400000001500000",    // cutnumber for AOD branch
                                 Bool_t        enableV0findingEffi           = kFALSE,                           // enables V0finding efficiency histograms
@@ -309,7 +309,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   for(Int_t i = 0; i<numberOfCuts; i++){
 
     analysisEventCuts[i] = new AliConvEventCuts();
-    if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 || trainConfig == 19 || trainConfig == 20 || trainConfig == 22){
+    if ( trainConfig == 1 ||  trainConfig == 2 ||  trainConfig == 11 || trainConfig == 12  ||  trainConfig == 21 || trainConfig == 22 ||   trainConfig == 100 ) {
       if (doWeighting){
         if (generatorName.CompareTo("DPMJET")==0){
           analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -320,14 +320,6 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
         }
       }
     }
-    if ( trainConfig == 14 || trainConfig == 16 || trainConfig == 18 || trainConfig == 21 || trainConfig == 23){
-      if (doWeighting){
-        analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
-                                      "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
-      }
-
-    }
-
 
     TString dataInputMultHisto  = "";
     TString mcInputMultHisto    = "";

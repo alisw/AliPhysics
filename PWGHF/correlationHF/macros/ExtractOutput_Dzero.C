@@ -35,7 +35,8 @@ void ExtractOutput(
    Double_t deltaEtaMin=-1., Double_t deltaEtaMax=1., //deltaEta ranges for correlation distributions  
    Bool_t use2Dmassplots=kFALSE, Double_t mincent=0., Double_t maxcent=100., //***NOTE: ONLY FOR OFFLINE APPROACH*** takes mass plots from 2D massVscent - ***use only if you did a centrality selection in CorrelateOffline.C, and put the same range!!***
    Bool_t subtractSoftPiME=kTRUE, //removes likely soft pions (via inv.mass cut) also in ME distributions, though they are fake (shall stay kTRUE)
-   Bool_t useRefl=kTRUE) //includes also the D0 reflection templates in the fits. Need to set the template filename in the SetInputNames
+   Bool_t useRefl=kTRUE, //includes also the D0 reflection templates in the fits. Need to set the template filename in the SetInputNames
+   Bool_t useOneMEpoolOnly=kFALSE)  //****KEEP AT kFALSE!!**** Put as kTRUE only in case of crashed for very low stat (ME pools with empty bins)
 {
 
   //Create and set the correlation plotter class
@@ -58,6 +59,7 @@ void ExtractOutput(
   plotter->SetSubtractSoftPiInMEdistr(subtractSoftPiME);
   plotter->SetUseMassVsCentPlots(use2Dmassplots);
   plotter->SetUseReflections(useRefl);
+  plotter->SetUseOneMEPool(useOneMEpoolOnly);  
   if(use2Dmassplots) plotter->SetCentralitySelection(mincent,maxcent);
   if(!flagSpecie) return;
 

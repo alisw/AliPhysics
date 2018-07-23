@@ -20,7 +20,9 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     bool phiSpin=true,//14
     bool ContributionSplitting=false,//15
     bool ContributionSplittingDaug=false,//16
-    bool RunNumberQA=false)//17
+    bool RunNumberQA=false,//17
+    int FilterBit=128,//18
+    bool InvMassPairs=false)//19
 {
   // 1    2     3     4     5     6     7    8    9      10   11     12   13    14    15    16   17
   //true,true,false,false,false,false,false,true,false,false,true,false,true,false,false,false,true
@@ -68,6 +70,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     TrackCuts->SetCheckFilterBit(false);
     TrackCuts->SetCheckESDFiltering(true);
     TrackCuts->SetDCAReCalculation(false);
+  } else {
+    TrackCuts->SetFilterBit(FilterBit);
   }
   TrackCuts->SetCutCharge(1);
   AliFemtoDreamTrackCuts *AntiTrackCuts=
@@ -77,6 +81,8 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
     AntiTrackCuts->SetCheckFilterBit(false);
     AntiTrackCuts->SetCheckESDFiltering(true);
     AntiTrackCuts->SetDCAReCalculation(false);
+  } else {
+    AntiTrackCuts->SetFilterBit(FilterBit);
   }
   AntiTrackCuts->SetCutCharge(-1);
   AliFemtoDreamv0Cuts *v0Cuts;
@@ -123,7 +129,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
   CascadeCuts->SetBachCuts(XiBachCuts);
-  CascadeCuts->SetPDGCodeCasc(-3312);
+  CascadeCuts->SetPDGCodeCasc(3312);
   CascadeCuts->SetPDGCodev0(3122);
   CascadeCuts->SetPDGCodePosDaug(2212);
   CascadeCuts->SetPDGCodeNegDaug(-211);
@@ -144,7 +150,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
   AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
   AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
-  AntiCascadeCuts->SetPDGCodeCasc(3312);
+  AntiCascadeCuts->SetPDGCodeCasc(-3312);
   AntiCascadeCuts->SetPDGCodev0(-3122);
   AntiCascadeCuts->SetPDGCodePosDaug(211);
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);
@@ -321,6 +327,7 @@ AliAnalysisTaskSE* AddTaskFemtoDream(
   config->SetkTBinning(mTkTPlot);
   config->SetmTBinning(mTkTPlot);
   config->SetkTCentralityBinning(kTCentPlot);
+  config->SetInvMassPairs(InvMassPairs);
   if (kTCentPlot) {
     std::vector<float> centBins;
     centBins.push_back(20);

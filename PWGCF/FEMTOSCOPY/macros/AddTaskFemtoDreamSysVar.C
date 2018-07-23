@@ -279,13 +279,13 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
     AntiXiBachCuts->SetPID(AliPID::kPion,999,4.5);
   } else if (suffix=="41") {
     CascadeCuts->SetPtRangeXi(0.1,999.5);
-    AntiCascadeCuts->SetPtRangeXi(0.4,999.5);
+    AntiCascadeCuts->SetPtRangeXi(0.1,999.5);
   }
 
   CascadeCuts->Setv0Negcuts(XiNegCuts);
   CascadeCuts->Setv0PosCuts(XiPosCuts);
   CascadeCuts->SetBachCuts(XiBachCuts);
-  CascadeCuts->SetPDGCodeCasc(-3312);
+  CascadeCuts->SetPDGCodeCasc(3312);
   CascadeCuts->SetPDGCodev0(3122);
   CascadeCuts->SetPDGCodePosDaug(2212);
   CascadeCuts->SetPDGCodeNegDaug(-211);
@@ -294,7 +294,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamSysVar(
   AntiCascadeCuts->Setv0Negcuts(AntiXiNegCuts);
   AntiCascadeCuts->Setv0PosCuts(AntiXiPosCuts);
   AntiCascadeCuts->SetBachCuts(AntiXiBachCuts);
-  AntiCascadeCuts->SetPDGCodeCasc(3312);
+  AntiCascadeCuts->SetPDGCodeCasc(-3312);
   AntiCascadeCuts->SetPDGCodev0(-3122);
   AntiCascadeCuts->SetPDGCodePosDaug(211);
   AntiCascadeCuts->SetPDGCodeNegDaug(-2212);

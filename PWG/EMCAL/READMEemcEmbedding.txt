@@ -369,6 +369,14 @@ runlist:
 Embedding can be used as expected on the LEGO train. If available, it is best to use centralized wagons, while
 changing the configuration for your particular dataset. For more, see the following sections.
 
+In addition to the information below, in terms of best practices for the user, after the test train is run, there
+are a few additional points which should be checked:
+- Check that all of the embedding helper histograms look reasonable.
+- Check the train number to pt hard bin map provides the correct mapping, as described [below](\ref emcEmbeddingAutoConfigurePtHard).
+- If ]internal event selection](\ref emcEmbeddingEventSelection) is enabled (it is highly recommended), check
+  that embedded event recycling is properly enabled for every task. This is easiest to do by looking at the event
+  rejection histogra. If even just one task is missed, it will negate the performance benefits for the entire train.
+
 ## Configuring the LEGO Train Wagon                                         {#emcEmbeddingLEGOTrainWagon}
 
 There are some special procedures for the LEGO train. There will be a centralized EMCal Embedding Helper wagon which
@@ -385,9 +393,9 @@ __R_ADDTASK__->SetRandomFileAccess(kTRUE);
 __R_ADDTASK__->Initialize(true);
 ~~~
 
-Note that your configuration wagon should depend on the centralized embedding helper wagon, but your tasks
-(such as corrections, user tasks, etc) should depend **only** on the centralized embedding helper wagon.
-They should not depend on your configuration wagon!
+Remember to enable the tick box for `AddTask macro needs AliEn connection`.  Note that your configuration wagon
+should depend on the centralized embedding helper wagon, but your tasks (such as corrections, user tasks, etc)
+should depend **only** on the centralized embedding helper wagon.  They should not depend on your configuration wagon!
 
 ## Auto configuration of pt hard bins                                       {#emcEmbeddingAutoConfigurePtHard}
 
@@ -419,8 +427,16 @@ embeddingHelper->SetNPtHardBins(11);
 
 Now just request the trains. Each one can be started with the desired settings, and they will automatically
 coordinate to determine which pt hard bins should be selected for each train. No need to manually change variables
-for each pt hard bin! Note that there can be a race condition based on how quickly the test trains are started, so
-it is best to check the yaml pt hard map to ensure that one pt hard bin has successfully assigned to each train.
+for each pt hard bin! Note that there can be a fairly rare race condition based on how quickly the test trains are
+started. Consequently, although it is rather tedious, it is strongly recommended to compare the %YAML pt hard to
+train number map to the pt hard bin in the Embedding Helper output in the `AnalysisResults.root` to ensure that a
+unique pt hard bin was assigned to each train. The %YAML train number to pt hard map will usually be available in
+the directory above the output for a particular train, stored under the name that you specified with your unique
+identifier.
+
+Note that in the case of a centralized wagon, it is usually not necessary to configure all of the pt hard auto
+configuration options listed above. Usually, the centralized wagon will enable pt hard auto configuration,
+as well as define the base and train type paths, such that all you need to do is set the identifier.
 
 # Optimization of Event Selection and Computing                                 {#emcEmbeddingEventSelection}
 
@@ -439,7 +455,7 @@ is effectively applied to all other tasks. Thus, be certain that any other event
 is less restrictive than that in the embedding helper to ensure that no good embedded events are lost.
 
 To configure this mode, internal event selection must be enabled in the embedding helper via
-`SetUseManualInternalEventCuts(true)`, and then selection on the outcome from the embedding helper must be enabled
+`SetUseInternalEventSelection(true)`, and then selection on the outcome from the embedding helper must be enabled
 in other tasks. In the case of the EMCal Correction Task, this option can be enabled in the %YAML configuration.
 In the case of tasks derived from AliAnalysisTaskEmcal, set the option `task->SetRecycleUnusedEmbeddedEventsMode(true)`.
 If your task does not inherit from AliAnalysisTaskEmcal, it should check `EmbeddedEventUsed()` each event and then
@@ -460,6 +476,9 @@ centrality range in AliEventCuts and disregard the centrality selection capabili
 it would look something like (for embedding `LHC11h`):
 
 ~~~{.cxx}
+// Enable internal event selection
+embeddingHelper->SetUseInternalEventSelection(true);
+// Use manual event cuts
 embeddingHelper->SetUseManualInternalEventCuts(true);
 auto eventCuts = embeddingHelper->GetInternalEventCuts();
 eventCuts->SetupLHC11h();

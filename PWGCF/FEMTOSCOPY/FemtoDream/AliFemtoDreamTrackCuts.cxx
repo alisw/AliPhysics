@@ -11,8 +11,8 @@
 #include <iostream>
 ClassImp(AliFemtoDreamTrackCuts)
 AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
-:fMCHists(0)
-,fHists(0)
+:fMCHists(nullptr)
+,fHists(nullptr)
 ,fMinimalBooking(false)
 ,fMCData(false)
 ,fDCAPlots(false)
@@ -510,8 +510,13 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
           fMCHists->FillMCCorr(pT);
           if (tmpOrg==AliFemtoDreamBasePart::kPhysPrimary) {
             fMCHists->FillMCPtResolution(Track->GetMCPt(),Track->GetPt());
-            fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetTheta().at(0),Track->GetMCPt());
-            fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),Track->GetPhi().at(0),Track->GetMCPt());
+            float phi = Track->GetMomentum().Phi();
+            if (phi < 0 ) {
+              //Root handles phi from - pi to + pi, while AliROOT handles it from 0 to 2 pi
+              phi+=2*TMath::Pi();
+            }
+            fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetMomentum().Theta(),Track->GetMCPt());
+            fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),phi,Track->GetMCPt());
           }
         } else {
           Track->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
@@ -522,8 +527,15 @@ void AliFemtoDreamTrackCuts::BookMC(AliFemtoDreamTrack *Track) {
           fMCHists->FillMCCorr(pT);
           if (tmpOrg==AliFemtoDreamBasePart::kPhysPrimary) {
             fMCHists->FillMCPtResolution(Track->GetMCPt(),Track->GetPt());
-            fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetTheta().at(0),Track->GetMCPt());
-            fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),Track->GetPhi().at(0),Track->GetMCPt());
+            fMCHists->FillMCThetaResolution(Track->GetMCTheta().at(0),Track->GetMomentum().Theta(),Track->GetMCPt());
+            float phi = Track->GetMomentum().Phi();
+//            std::cout << phi << '\t' << Track->GetMCPhi().at(0) << std::endl;
+            if (phi < 0 ) {
+              //Root handles phi from - pi to + pi, while AliROOT handles it from 0 to 2 pi
+              phi+=2*TMath::Pi();
+            }
+//            std::cout << phi << '\t' << Track->GetMCPhi().at(0) << std::endl;
+            fMCHists->FillMCPhiResolution(Track->GetMCPhi().at(0),phi,Track->GetMCPt());
           }
         } else {
           Track->SetParticleOrigin(AliFemtoDreamBasePart::kContamination);
@@ -810,3 +822,12 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::XiBachPionCuts(
   trackCuts->SetPID(AliPID::kPion, 999.,4);
   return trackCuts;
 }
+
+int AliFemtoDreamTrackCuts::GetPDGCode() {
+    int PDGcode[5] = {11,13,211,321,2212};
+    if (fParticleID<5) {
+      return fCharge*PDGcode[fParticleID];
+    } else {
+      return 0;
+    }
+  };

@@ -46,7 +46,8 @@
 TString kAnaCaloTrackCorr = "";
 
 /// Global name to be composed of the analysis components chain and some internal settings
-TString kAnaCutsString = ""; // "Photon_MergedPi0_DecayPi0_Isolation_Correlation_Bkg_QA_Charged",
+// Some examples of strings: "Photon_MergedPi0_DecayPi0_Isolation_Correlation_Bkg_QA_Charged_HighMult_MultiIso_PerSM_PerTCard",
+TString kAnaCutsString = ""; 
 
 ///
 /// Set common histograms binning
@@ -76,7 +77,6 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   if ( histoString != "" ) 
     ana->AddToHistogramsName(Form("%s_%s",  histoString.Data(), (ana->GetAddedHistogramsStringToName()).Data()) );
 
-  
   histoRanges->SetHistoPtRangeAndNBins(0, 100, 200) ; // Energy and pt histograms
   
   if(calorimeter=="EMCAL")
@@ -181,6 +181,15 @@ void SetAnalysisCommonParameters(AliAnaCaloTrackCorrBaseClass* ana, TString hist
   //
   if(simulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else           ana->SwitchOffDataMC() ;
+  
+ 
+  //
+  // Specialized histograms on multiplicity
+  //
+  if ( kAnaCutsString.Contains("HighMult") ) 
+    ana->SwitchOnFillHighMultiplicityHistograms();
+  else
+    ana->SwitchOnFillHighMultiplicityHistograms();
   
   //
   // Debug
@@ -921,9 +930,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOffFillPtImbalancePerPtABinHistograms();
   ana->SwitchOffCorrelationVzBin() ;
   ana->SwitchOffFillEtaGapHistograms();
-  
-  ana->SwitchOffFillHighMultiplicityHistograms();
-  
+    
   ana->SwitchOffPi0TriggerDecayCorr();
   
   if(particle.Contains("Photon"))
@@ -973,15 +980,27 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   
   //if(!simulation) ana->SwitchOnFillPileUpHistograms();
   
-  ana->SetNAssocPtBins(8);
-  ana->SetAssocPtBinLimit(0, 1) ;
-  ana->SetAssocPtBinLimit(1, 2) ;
-  ana->SetAssocPtBinLimit(2, 3) ;
-  ana->SetAssocPtBinLimit(3, 4) ;
-  ana->SetAssocPtBinLimit(4, 5) ;
-  ana->SetAssocPtBinLimit(5, 8) ;
-  ana->SetAssocPtBinLimit(6, 10) ;
-  ana->SetAssocPtBinLimit(7, 100);
+  ana->SwitchOnFillDeltaEtaPhiPtTrigHistograms();
+  
+  ana->SetNAssocPtBins(16); // set last bin [20,30] GeV/c
+  // See AliAnaParticleCorrelation::InitParameters();
+  // Default bins{0.2,0.5,1,2,3,4,5,6,7,8,9,10,12,14,16,20,30,40,50,100} GeV/c
+  // If you want to change it:
+  //  ana->SetAssocPtBinLimit(0, 1) ;
+  //  ana->SetAssocPtBinLimit(1, 2) ;
+  //  ana->SetAssocPtBinLimit(2, 3) ;
+  //  ana->SetAssocPtBinLimit(3, 4) ;
+  //  ana->SetAssocPtBinLimit(4, 5) ;
+  //  ana->SetAssocPtBinLimit(5, 8) ;
+  //  ana->SetAssocPtBinLimit(6, 10) ;
+  //  ana->SetAssocPtBinLimit(7, 100);
+  
+  ana->SetNTriggerPtBins(5); // set last bin [25,30] GeV/c
+  // See AliAnaParticleCorrelation::InitParameters();
+  // Default bins{10,12,16,20,25,30,40,50,75,100} GeV/c
+  // If you want to change it:
+  //  ana->SetTriggerPtBinLimit(0,  5) ;
+  //  ana->SetTriggerPtBinLimit(1, 10) ;
   
   ana->SelectIsolated(bIsolated); // do correlation with isolated photons
   
@@ -1169,18 +1188,20 @@ AliAnaClusterShapeCorrelStudies* ConfigureClusterShape
   
   ana->SwitchOnStudyEMCalModuleCells();
   
+  ana->SwitchOnStudyColRowFromCellMax() ;
+
   ana->SwitchOffStudyClusterShapeParam();
   
   ana->SwitchOffStudyMatchedPID() ;
   
   ana->SwitchOffStudyWeight();
   
-  ana->SetNCellBinLimits(-1); // no analysis on predefined bins in nCell
+  ana->SetNCellBinLimits(3); // set to -1 for no analysis on predefined bins in nCell
+  ana->SetDistToBadMin(2);
   
   ana->SwitchOffStudyTCardCorrelation() ;
   ana->SwitchOffStudyExotic();
   ana->SwitchOffStudyInvariantMass();
-  ana->SwitchOffStudyColRowFromCellMax() ;
   ana->SwitchOffStudyCellTime() ;
   
   // PID cuts (Track-matching)

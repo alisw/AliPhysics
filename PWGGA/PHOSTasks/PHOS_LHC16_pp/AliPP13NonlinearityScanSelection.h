@@ -35,6 +35,7 @@ public:
 			for(Int_t ib = 0; ib < kNbinsSigma; ++ib)
 			{
 				AliPP13SelectionWeightsMC & swi = fWeightsScan[ia][ib];
+				swi.fNonGlobal = sw->fNonGlobal;
 				swi.fNonA = nona - fPrecisionA * kNbinsA / 2 + ia * fPrecisionA;
 				swi.fNonSigma = nonSigma - fPrecisionSigma * kNbinsSigma / 2 + ib * fPrecisionSigma;
 			}
@@ -54,7 +55,7 @@ protected:
 private:
 
 	// Set of weights that are need for NonlinearityScan
-	AliPP13SelectionWeightsMC fWeightsScan[kNbinsA][kNbinsSigma];//!
+	AliPP13SelectionWeightsMC fWeightsScan[kNbinsA][kNbinsSigma];
 
 	// Parameters of nonlinearity parametrization
 	TH1 * fInvariantMass[kNbinsA][kNbinsSigma];    //!

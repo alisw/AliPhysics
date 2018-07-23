@@ -14,6 +14,7 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
 		Bool_t DoJetProb 		= kFALSE,
 		TString pathToResolFunc		= "",
 		Bool_t V0PhotonRejection 	= kFALSE,
+		TString cutnumberAODBranch 	= "",  // cutnumber for AOD branch
   		Int_t       ptHardBin           = -999,
 		const char* suffix 		= "")
 {
@@ -42,8 +43,6 @@ AliAnalysisTaskBJetTC* AddTaskBJetTC(
   	if(V0PhotonRejection){
 
 		  //=========  Set Cutnumber for V0Reader ================================
-		  TString cutnumberAODBranch = "8000000060084000001500000";  // cutnumber for AOD branch
-		  //TString cutnumberAODBranch = "00000003_06000008400100001000000000";  // cutnumber for AOD branch
 		  TString cutnumberPhoton = "10000029200000003220400000";
 		  TString cutnumberEvent = "80010103";
 

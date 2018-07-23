@@ -8,6 +8,8 @@
 #include "AliLog.h"
 #include "AliFemtoDreamAnalysis.h"
 #include "TClonesArray.h"
+#include "AliAODInputHandler.h"
+#include "AliAnalysisManager.h"
 #include <iostream>
 ClassImp(AliFemtoDreamAnalysis)
 AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
@@ -31,6 +33,7 @@ AliFemtoDreamAnalysis::AliFemtoDreamAnalysis()
 ,fGTI(nullptr)
 ,fConfig(nullptr)
 ,fPartColl(nullptr)
+,fIsMC(false)
 {
 
 }
@@ -60,6 +63,7 @@ AliFemtoDreamAnalysis::~AliFemtoDreamAnalysis() {
 }
 
 void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
+  fIsMC=isMonteCarlo;
   fFemtoTrack=new AliFemtoDreamTrack();
   fFemtoTrack->SetUseMCInfo(isMonteCarlo);
 
@@ -107,11 +111,11 @@ void AliFemtoDreamAnalysis::Init(bool isMonteCarlo,UInt_t trigger) {
   }
   if (fConfig->GetUseEventMixing()) {
     fPartColl=
-      new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
+        new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
   }
   if (fConfig->GetUsePhiSpinning()) {
     fControlSample=
-      new AliFemtoDreamControlSample(fConfig,fConfig->GetMinimalBookingSample());
+        new AliFemtoDreamControlSample(fConfig,fConfig->GetMinimalBookingSample());
   }
   return;
 }
@@ -263,6 +267,12 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
       AntiDecays.push_back(*fFemtov0);
     }
   }
+  //  std::cout << "=====================================\n" ;
+  //  std::cout << "=====================================\n" ;
+  //  std::cout << "==========New event==================\n" ;
+  //  std::cout << "=====================================\n" ;
+  //  std::cout << "=====================================\n" ;
+
   std::vector<AliFemtoDreamBasePart> XiDecays;
   std::vector<AliFemtoDreamBasePart> AntiXiDecays;
   int numcascades = evt->GetNumberOfCascades();
@@ -275,6 +285,32 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
     }
     if (fAntiCascCuts->isSelected(fFemtoCasc)) {
       AntiXiDecays.push_back(*fFemtoCasc);
+    }
+  }
+  //loop once over the MC stack to calculate Efficiency/Purity
+  if (fIsMC) {
+    AliAODInputHandler *eventHandler =
+        dynamic_cast<AliAODInputHandler*>(
+            AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    AliMCEvent* fMC = eventHandler->MCEvent();
+
+    for(int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+      AliAODMCParticle *mcPart  = (AliAODMCParticle*)fMC->GetTrack(iPart);
+      if (TMath::Abs(mcPart->Eta()) < 0.8 && mcPart->IsPhysicalPrimary()) {
+        if (mcPart->GetPdgCode() == fTrackCuts->GetPDGCode()) {
+          fTrackCuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiTrackCuts->GetPDGCode()) {
+          fAntiTrackCuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fv0Cuts->GetPDGv0()) {
+          fv0Cuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiv0Cuts->GetPDGv0()) {
+          fAntiv0Cuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fCascCuts->GetPDGCodeCasc()) {
+          fCascCuts->FillGenerated(mcPart->Pt());
+        } else if (mcPart->GetPdgCode() == fAntiCascCuts->GetPDGCodeCasc()) {
+          fAntiCascCuts->FillGenerated(mcPart->Pt());
+        }
+      }
     }
   }
   fPairCleaner->ResetArray();
@@ -294,7 +330,14 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   fPairCleaner->StoreParticle(AntiDecays);
   fPairCleaner->StoreParticle(XiDecays);
   fPairCleaner->StoreParticle(AntiXiDecays);
-
+  if (fConfig->GetInvMassPairs()) {
+    fPairCleaner->FillInvMassPair(
+        (fPairCleaner->GetCleanParticles().at(0)),2212,
+        (fPairCleaner->GetCleanParticles().at(4)),3312,0);
+    fPairCleaner->FillInvMassPair(
+        (fPairCleaner->GetCleanParticles().at(1)),2212,
+        (fPairCleaner->GetCleanParticles().at(5)),3312,1);
+  }
   if (fConfig->GetUseEventMixing()) {
     fPartColl->SetEvent(
         fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),

@@ -100,7 +100,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
                     itPart2->GetMomentum(),*itPDGPar2),
                     RelativeK);
           }
-          if (ResultsHist->GetEtaPhiPlots()) {
+          if (ResultsHist->GetEtaPhiPlots() && (RelativeK < 0.2)) {
             DeltaEtaDeltaPhi(HistCounter,&(*itPart1),&(*itPart2),true,ResultsHist);
           }
           if (ResultsHist->GetDodPhidEtaPlots()) {
@@ -295,7 +295,7 @@ float AliFemtoDreamZVtxMultContainer::RelativePairkT(TVector3 Part1Momentum,
     AliError("Invalid PDG Code");
   }
   float results = 0.;
-  TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;
+  TLorentzVector SPtrack,TPProng,trackSum;
   //Even if the Daughter tracks were switched up during PID doesn't play a role here cause we are
   //only looking at the mother mass
   SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(),Part1Momentum.Z(),
@@ -315,7 +315,7 @@ float AliFemtoDreamZVtxMultContainer::RelativePairmT(TVector3 Part1Momentum,
     AliError("Invalid PDG Code");
   }
   float results = 0.;
-  TLorentzVector SPtrack,TPProng,trackSum,SPtrackCMS,TPProngCMS;
+  TLorentzVector SPtrack,TPProng,trackSum;
   //Even if the Daughter tracks were switched up during PID doesn't play a role here cause we are
   //only looking at the mother mass
   SPtrack.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(),Part1Momentum.Z(),

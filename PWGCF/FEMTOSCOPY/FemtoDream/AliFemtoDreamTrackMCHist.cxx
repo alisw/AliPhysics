@@ -100,7 +100,7 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,bool DC
                          100,0,5,400,-0.25,0.25);
   fThetaResolution->Sumw2();
   fThetaResolution->GetXaxis()->SetTitle("P_{T,True}");
-  fThetaResolution->GetYaxis()->SetTitle("(#Theta_{T,True}-#Theta_{T,Reco})");
+  fThetaResolution->GetYaxis()->SetTitle("#Theta_{T,True}-#Theta_{T,Reco}");
   fMCList->Add(fThetaResolution);
 
   fPhiResolution=new TH2F("DeltaPhiRecoTruevsPtReco","DeltaPhiRecoTruevsPtReco",

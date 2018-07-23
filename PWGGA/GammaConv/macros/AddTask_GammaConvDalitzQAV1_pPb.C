@@ -40,7 +40,8 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t    trainConfig               = 1,
                                        TString  cutnumberAODBranch        = "0000000060084001001500000",
                                        Bool_t   enableV0findingEffi       = kFALSE,
                                        Int_t   enableMatBudWeightsPi0          = 0,              // 1 = three radial bins, 2 = 10 radial bins
-                                       TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root"
+                                       TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
+                                       TString periodName                = ""
 				    ) {
 
   cout<<"*********Parameters*******"<<endl;

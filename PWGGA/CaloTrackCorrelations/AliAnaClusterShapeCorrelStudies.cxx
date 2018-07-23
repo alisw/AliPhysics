@@ -1698,7 +1698,6 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
   
   if ( fStudyModuleCells && GetCalorimeter() == kEMCAL )
   {
-    
     Int_t rowTCard = Int_t(iphiMax%8);
     Int_t colTCard = Int_t(ietaMax%2);
     Int_t iTCard = rowTCard+8*colTCard;
@@ -1801,7 +1800,8 @@ void AliAnaClusterShapeCorrelStudies::ClusterShapeHistograms
       fhNCellsPerClusterM02NLMPerSM[smMax]->Fill(nlm, nCell, m02, GetEventWeight());
 
     // Col-Row histogram, fill emax/ecluster ratio for highest energy cell.
-    if ( fStudyColRowFromCellMax && fNCellsBins > 0)
+    if ( fStudyColRowFromCellMax && fNCellsBins > 0 && 
+         nCellBin >= 0 && nCellBin < fNCellsBins )
     {
       if      ( m02 > fM02LowBin[0]  && m02 <= fM02LowBin[1]  )
         fhColRowFromCellMaxECellClusterRatLowM02PerSM [smMax][ietaMax%2][nCellBin]->Fill(0., 0., eCellMax/energy, GetEventWeight());
@@ -5788,14 +5788,46 @@ void AliAnaClusterShapeCorrelStudies::Print(const Option_t * opt) const
   AliAnaCaloTrackCorrBaseClass::Print(" ");
   
   printf("Select Calorimeter %s \n",GetCalorimeterString().Data());
-  printf("Min n cells    : %d\n"   , fNCellMin) ;
-  printf("Min dist to bad: %2.1f\n", fMinDistToBad) ;
-  printf("Min M02        : %1.2f\n", fM02Min) ;
   
-  printf("Inv. Mass %2.1f < E_clus < %2.1f GeV/c\n"  , fInvMassMinECut  , fInvMassMaxECut  ) ;
-  printf("Inv. Mass %2.1f < M02_clus < %2.1f GeV/c\n", fInvMassMinM02Cut, fInvMassMaxM02Cut) ;
-  printf("Inv. Mass open angle : %2.1f deg\n"        , fInvMassMaxOpenAngle*TMath::RadToDeg()) ;
-  printf("Inv. Mass time difference: %2.1f ns\n"     , fInvMassMaxTimeDifference) ;
+  printf("Min n cells, basic cluster: %d\n"   , fNCellMin) ;
+  printf("Min n cells shape studies : %d\n"   , fNCellMinShape) ;
+  printf("N cell bins: %d {",fNCellsBins);
+  for(Int_t ibin = 0; ibin < fNCellsBins+1; ibin++) printf(" %d ", fNCellsBinsLimits[ibin]);
+  printf("}\n");
+  
+  printf("Min distance to bad channel: %2.1f\n", fMinDistToBad) ;
+  
+  printf("Min  M02 : %1.2f\n", fM02Min) ;
+  printf("Low  M02 bin [%1.2f,%1.2f]\n", fM02LowBin[0],fM02LowBin[1]) ;
+  printf("High M02 bin [%1.2f,%1.2f]\n", fM02HighBin[0],fM02HighBin[1]) ;
+
+  printf("E bin shape studies : [%2.2f,%2.2f]\n", fEMinShape,fEMaxShape) ;
+  if ( fStudyTCardCorrelation )
+  {
+    printf("E bins: %d {",fNEBinCuts);
+    for(Int_t ibin = 0; ibin < fNEBinCuts+1; ibin++) printf(" %2.2f ", fEBinCuts[ibin]);
+    printf("}\n");
+  }
+  
+  printf("Active switchs: Shape %d, extra shape param %d, weight %d, exotic %d,"
+         " TCardCorrel %d, cell max-sec %d, InvMass %d,"
+         " cell time %d, cells module %d, NLM histo %d\n",
+         fStudyShape,fStudyShapeParam,fStudyWeight,fStudyExotic,
+         fStudyTCardCorrelation,fStudyColRowFromCellMax,fStudyInvMass,
+         fStudyTimeCellHisto,fStudyModuleCells,fFillNLocMaxHistos);
+  
+  printf("N PID cases %d\n",fNMatchPIDCases);
+  if ( fNMatchPIDCases > 1 ) 
+    printf("dEdx bin for electrons [%d,%d], for hadrons [%d,%d]\n",
+           fdEdXMinEle,fdEdXMaxEle,fdEdXMinHad,fdEdXMaxHad);
+  
+  if ( fStudyInvMass )
+  {
+    printf("Inv. Mass %2.1f < E_clus < %2.1f GeV/c\n"  , fInvMassMinECut  , fInvMassMaxECut  ) ;
+    printf("Inv. Mass %2.1f < M02_clus < %2.1f GeV/c\n", fInvMassMinM02Cut, fInvMassMaxM02Cut) ;
+    printf("Inv. Mass open angle : %2.1f deg\n"        , fInvMassMaxOpenAngle*TMath::RadToDeg()) ;
+    printf("Inv. Mass time difference: %2.1f ns\n"     , fInvMassMaxTimeDifference) ;
+  }
 }
 
 //_____________________________________________________

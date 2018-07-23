@@ -124,6 +124,11 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
 
   // #########################################################
   // #########################################################
+  // Set MCSignal and Cutsetting to fill the support histograms
+  task->SetSupportHistoMCSignalAndCutsetting(nMCSignal, nCutsetting);
+
+  // #########################################################
+  // #########################################################
   // Set Cocktail weighting
   task->SetDoCocktailWeighting(DoCocktailWeighting);
   task->SetCocktailWeighting(CocktailFilename);
@@ -141,6 +146,9 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_caklein_efficiency(TString name = "
   // e.g. secondaries and primaries. or primaries from charm and resonances
   AddSingleLegMCSignal(task);
   AddPairMCSignal(task);
+  std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
+  task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+
 
   // #########################################################
   // #########################################################

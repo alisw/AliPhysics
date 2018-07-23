@@ -261,6 +261,12 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     cuts.AddCut("80010213", "00200009327000008250400000", "0162103500000000"); // new default, no to close, +-2.225\mus no other interaction
     cuts.AddCut("80010513", "00200009327000008250404000", "0162103500000000"); // new default,  +-1.075\mus no other interaction
     cuts.AddCut("80010513", "00200009327000008250400000", "0162103500000000"); // new default, no to close,  +-1.075\mus no other interaction
+  } else if (trainConfig == 7){
+    cuts.AddCut("80010123", "00200009327000008250404000", "0162103500900000"); // new default
+    cuts.AddCut("80010123", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+  } else if (trainConfig == 8){
+    cuts.AddCut("80010123", "00200009327000008250404000", "0162103500000000"); // new default
+    cuts.AddCut("80010123", "00200009327000008250400000", "0162103500000000"); // new default, no to close
 
   // default cut all cents without smearing and to close V0
   } else if (trainConfig == 10) {
@@ -278,18 +284,27 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     cuts.AddCut("82410513", "00200009327000008250400000", "0162103500000000"); // 20-40%
     cuts.AddCut("84610513", "00200009327000008250400000", "0162103500000000"); // 40-60%
     cuts.AddCut("86010513", "00200009327000008250400000", "0162103500000000"); // 60-100%
+  } else if (trainConfig == 13) {
+    cuts.AddCut("90010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("90210113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("92410113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("94610113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("96010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+  } else if (trainConfig == 14) {
+    cuts.AddCut("e0010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("e0210113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("e2410113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("e4610113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCut("e6010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
 
   // new standard configurations 0-20
   } else if (trainConfig == 20){
     cuts.AddCut("80210113", "00200009327000008250404000", "0162103500900000"); //new default
     cuts.AddCut("80210113", "00200009327000008250400000", "0162103500900000"); //new default, no to close
   } else if (trainConfig == 21){
-    cuts.AddCut("80210113", "00200009327000008250404000", "0162103500000000"); //new default
-    cuts.AddCut("80210113", "00200009327000008250400000", "0162103500000000"); //new default, no to close
-  } else if (trainConfig == 22){
     cuts.AddCut("80210123", "00200009327000008250404000", "0162103500900000"); //new default
     cuts.AddCut("80210123", "00200009327000008250400000", "0162103500900000"); //new default, no to close
-  } else if (trainConfig == 23){
+  } else if (trainConfig == 22){
     cuts.AddCut("80210123", "00200009327000008250404000", "0162103500000000"); //new default
     cuts.AddCut("80210123", "00200009327000008250400000", "0162103500000000"); //new default, no to close
 
@@ -298,12 +313,9 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     cuts.AddCut("82410113", "00200009327000008250404000", "0162103500900000"); //new default
     cuts.AddCut("82410113", "00200009327000008250400000", "0162103500900000"); //new default, no to close
   } else if (trainConfig == 31){
-    cuts.AddCut("82410113", "00200009327000008250404000", "0162103500000000"); //new default
-    cuts.AddCut("82410113", "00200009327000008250400000", "0162103500000000"); //new default, no to close
-  } else if (trainConfig == 32){
     cuts.AddCut("82410123", "00200009327000008250404000", "0162103500900000"); //new default
     cuts.AddCut("82410123", "00200009327000008250400000", "0162103500900000"); //new default, no to close
-  } else if (trainConfig == 33){
+  } else if (trainConfig == 32){
     cuts.AddCut("82410123", "00200009327000008250404000", "0162103500000000"); //new default
     cuts.AddCut("82410123", "00200009327000008250400000", "0162103500000000"); //new default, no to close
 
@@ -312,12 +324,9 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     cuts.AddCut("84610113", "00200009327000008250404000", "0162103500900000"); //new default
     cuts.AddCut("84610113", "00200009327000008250400000", "0162103500900000"); //new default, no to close
   } else if (trainConfig == 41){
-    cuts.AddCut("84610113", "00200009327000008250404000", "0162103500000000"); //new default
-    cuts.AddCut("84610113", "00200009327000008250400000", "0162103500000000"); //new default, no to close
-  } else if (trainConfig == 42){
     cuts.AddCut("84610123", "00200009327000008250404000", "0162103500900000"); //new default
     cuts.AddCut("84610123", "00200009327000008250400000", "0162103500900000"); //new default, no to close
-  } else if (trainConfig == 43){
+  } else if (trainConfig == 42){
     cuts.AddCut("84610123", "00200009327000008250404000", "0162103500000000"); //new default
     cuts.AddCut("84610123", "00200009327000008250400000", "0162103500000000"); //new default, no to close
 
@@ -326,12 +335,9 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     cuts.AddCut("86010113", "00200009327000008250404000", "0162103500900000"); //new default
     cuts.AddCut("86010113", "00200009327000008250400000", "0162103500900000"); //new default, no to close
   } else if (trainConfig == 51){
-    cuts.AddCut("86010113", "00200009327000008250404000", "0162103500000000"); //new default
-    cuts.AddCut("86010113", "00200009327000008250400000", "0162103500000000"); //new default, no to close
-  } else if (trainConfig == 52){
     cuts.AddCut("86010123", "00200009327000008250404000", "0162103500900000"); //new default
     cuts.AddCut("86010123", "00200009327000008250400000", "0162103500900000"); //new default, no to close
-  } else if (trainConfig == 53){
+  } else if (trainConfig == 52){
     cuts.AddCut("86010123", "00200009327000008250404000", "0162103500000000"); //new default
     cuts.AddCut("86010123", "00200009327000008250400000", "0162103500000000"); //new default, no to close
 
@@ -857,9 +863,15 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
     TObjString *Header3 = new TObjString("eta_2");
     HeaderList->Add(Header3);
   }
-  if (periodNameV0Reader.Contains("LHC18b9")){
+  if (periodNameV0Reader.Contains("LHC18b9")||periodNameV0Reader.Contains("LHC17g8")){
+    TObjString *HeaderPMB = new TObjString("EPOSLHC_0");
     TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
-    HeaderList->Add(HeaderP8J);
+    if (doWeightingPart==4) {
+      HeaderList->Add(HeaderPMB);
+      HeaderList->Add(HeaderP8J);
+    } else {
+      HeaderList->Add(HeaderP8J);
+    }
   }
 
   Bool_t doWeighting = kFALSE;
@@ -895,7 +907,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
         }
       }
     }
-    if ( trainConfig == 3 || trainConfig == 4 ||
+    if ( trainConfig == 3 || trainConfig == 4 || trainConfig == 7 || trainConfig == 8 ||
         ( trainConfig > 119 && trainConfig < 140 ) ||
         ( trainConfig > 209 && trainConfig < 220 ) ){
       if (doWeighting){
@@ -965,7 +977,7 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
 
     if (enableMatBudWeightsPi0 > 0){
       if (isMC > 0){
-        if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights,periodNameV0Reader)){
+        if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
           initializedMatBudWeigths_existing = kTRUE;}
         else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
       } else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}

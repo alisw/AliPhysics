@@ -62,9 +62,10 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   //xi business
   Reset();
   fIsReset=false;
+  fIsSet=true;
   this->SetCharge(casc->ChargeXi());
   this->SetMomentum(casc->MomXiX(),casc->MomXiY(),casc->MomXiZ());
-  this->SetPt(casc->MomXiX()*casc->MomXiX()+casc->MomXiY()*casc->MomXiY());
+  this->SetPt(fP.Pt());
   double PrimVtx[3]={99.,99.,99};
   double decayPosXi[3]={casc->DecayVertexXiX(),casc->DecayVertexXiY(),
       casc->DecayVertexXiZ()};
@@ -79,8 +80,8 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   fRapXi=casc->RapXi();
   fRapOmega=casc->RapOmega();
   this->SetEta(casc->Eta());
-  this->SetTheta(casc->Theta());
-  this->SetPhi(casc->Phi());
+  this->SetTheta(fP.Theta());
+  this->SetPhi(fP.Phi());
   fAlphaXi=casc->AlphaXi();
   fPtArmXi=casc->PtArmXi();
   fDCAXiPrimVtx=casc->DcaXiToPrimVertex(PrimVtx[0],PrimVtx[1],PrimVtx[2]);
@@ -119,17 +120,17 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
   this->SetIDTracks(pTrackXi->GetID());
   this->SetIDTracks(bachTrackXi->GetID());
 
-  this->SetEta(nTrackXi->Eta());
-  this->SetEta(pTrackXi->Eta());
-  this->SetEta(bachTrackXi->Eta());
+  this->SetEta(fNegDaug->GetMomentum().Eta());
+  this->SetEta(fPosDaug->GetMomentum().Eta());
+  this->SetEta(fBach->GetMomentum().Eta());
 
-  this->SetTheta(nTrackXi->Theta());
-  this->SetTheta(pTrackXi->Theta());
-  this->SetTheta(bachTrackXi->Theta());
+  this->SetTheta(fNegDaug->GetMomentum().Theta());
+  this->SetTheta(fPosDaug->GetMomentum().Theta());
+  this->SetTheta(fBach->GetMomentum().Theta());
 
-  this->SetPhi(nTrackXi->Phi());
-  this->SetPhi(pTrackXi->Phi());
-  this->SetPhi(bachTrackXi->Phi());
+  this->SetPhi(fNegDaug->GetMomentum().Phi());
+  this->SetPhi(fPosDaug->GetMomentum().Phi());
+  this->SetPhi(fBach->GetMomentum().Phi());
 
   this->SetCharge(nTrackXi->Charge());
   this->SetCharge(pTrackXi->Charge());
@@ -189,7 +190,7 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt,AliAODcascade *casc) {
 void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt,AliESDcascade *casc) {
   Reset();
   fIsReset=false;
-
+  this->fIsSet=true;
   int idxPosFromV0Dghter  = casc->GetPindex();
   int idxNegFromV0Dghter  = casc->GetNindex();
   int idxBachFromCascade  = casc->GetBindex();
@@ -411,13 +412,13 @@ void AliFemtoDreamCascade::SetMCMotherInfo(
       AliAODTrack* bachTrk = dynamic_cast<AliAODTrack*>(casc->GetDecayVertexXi()->GetDaughter(0));
       int labelBach=bachTrk->GetLabel();
       labelBachMother=((AliAODMCParticle*)mcarray->At(labelBach))->GetMother();
-      //      std::cout << "PDG Bach: "<<((AliAODMCParticle*)mcarray->At(labelBach))->GetPdgCode() << "\n";
-      //      std::cout << "PDG Mother: "<<((AliAODMCParticle*)mcarray->At(labelBachMother))->GetPdgCode() << "\n";
-      //      std::cout << "Found a weakling and his mother is: " << labelBachMother <<'\n';
       if (labelBachMother < 0) {
         //This should not happen, just in case somethings very fishy
-        this->fIsSet=false;
+        this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
       } else {
+//        std::cout << "Found a Track weakling and his mother is: " << labelBachMother <<'\n';
+//        std::cout << "PDG Bach: "<<((AliAODMCParticle*)mcarray->At(labelBach))->GetPdgCode() << "\n";
+//        std::cout << "PDG Bach-Mother: "<<((AliAODMCParticle*)mcarray->At(labelBachMother))->GetPdgCode() << "\n";
         //look if a v0 exists, and if this v0 stems from a weak decay, and
         //get the label of the mother particle
         int labelv0Mother=-1;
@@ -431,7 +432,7 @@ void AliFemtoDreamCascade::SetMCMotherInfo(
           //be a fake v0, and therefore a fake candidate overall
           this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
         } else {
-          //          std::cout <<"Potential weakling with ID: " << labelv0 << " found \n";
+//          std::cout <<"Potential v0 weakling with ID: " << labelv0 << " found \n";
           AliAODMCParticle* mcv0=(AliAODMCParticle*)mcarray->At(labelv0);
           if (!mcv0) {
             this->fIsSet=false;
@@ -440,7 +441,9 @@ void AliFemtoDreamCascade::SetMCMotherInfo(
                 !(mcv0->IsSecondaryFromMaterial())) {
               //the v0 candidate has to be from a weak decay itself
               labelv0Mother=mcv0->GetMother();
-              //              std::cout << "Indeed a weakling his mothers number is " << labelv0Mother << "\n";
+//              std::cout << "Indeed a v0 weakling his mothers number is " << labelv0Mother << "\n";
+//              std::cout << "PDG v0: "<< mcv0->GetPdgCode() << "\n";
+//              std::cout << "PDG v0-Mother: "<<((AliAODMCParticle*)mcarray->At(labelv0Mother))->GetPdgCode() << "\n";
               if (labelv0Mother < 0) {
                 //Again, this should not happen, just in case somethings
                 //very fishy
@@ -452,7 +455,7 @@ void AliFemtoDreamCascade::SetMCMotherInfo(
                 if (labelv0Mother==labelBachMother) {
                   //MOMMY?
                   AliAODMCParticle* mcPart=(AliAODMCParticle*)mcarray->At(labelv0Mother);
-                  //                  std::cout << "MOOOOOM: " << mcPart->GetPdgCode() << "\n";
+//                  std::cout << "MOOOOOM: " << mcPart->GetPdgCode() << "\n";
                   this->SetMCPDGCode(mcPart->GetPdgCode());
                   double mcMom[3]={0.,0.,0.};
                   mcPart->PxPyPz(mcMom);
@@ -462,15 +465,17 @@ void AliFemtoDreamCascade::SetMCMotherInfo(
                   this->SetMCTheta(mcPart->Theta());
                   if (mcPart->IsPhysicalPrimary()&&!(mcPart->IsSecondaryFromWeakDecay())) {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
-                  } else if (mcPart->IsSecondaryFromWeakDecay()&&
-                      !(mcPart->IsSecondaryFromMaterial())) {
+//                    std::cout << "A primary \n";
+                  } else if (mcPart->IsSecondaryFromWeakDecay()&&!(mcPart->IsSecondaryFromMaterial())) {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
-                    this->SetPDGMotherWeak(((AliAODMCParticle*)mcarray->At(
-                        mcPart->GetMother()))->PdgCode());
+                    this->SetPDGMotherWeak(((AliAODMCParticle*)mcarray->At(mcPart->GetMother()))->PdgCode());
+//                    std::cout << "A secondary from" << ((AliAODMCParticle*)mcarray->At(mcPart->GetMother()))->PdgCode() << std::endl;
                   } else if (mcPart->IsSecondaryFromMaterial()) {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+//                    std::cout << "A Material \n";
                   } else {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+//                    std::cout << "An Unknown \n";
                   }
                 } else {
                   //combinatorial background

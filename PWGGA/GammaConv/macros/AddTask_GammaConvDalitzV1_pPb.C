@@ -40,6 +40,7 @@ void AddTask_GammaConvDalitzV1_pPb(     Int_t trainConfig = 1,
                                         Bool_t enableV0findingEffi = kFALSE,
                                         Int_t   enableMatBudWeightsPi0          = 0,              // 1 = three radial bins, 2 = 10 radial bins
                                         TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
+                                        TString periodName                      = "",
                                         TString   additionalTrainConfig       = "0"
 
                                   ) {
