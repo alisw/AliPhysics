@@ -56,34 +56,34 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
   fTPCflag(999.),
   fCircRadius(0.),
   fGetCutInfo(0),
-  fIsCutUsed(0),
+  fIsCutUsed(0x0),
   fnVarsD0forD0ptbin(0),
   fnPtBinsD0forD0ptbin(1),
   fGlobalIndexD0forD0ptbin(0),
-  fCutsRDD0forD0ptbin(0),
+  fCutsRDD0forD0ptbin(0x0),
   fnPtBinLimitsD0forD0ptbin(1),
-  fPtBinLimitsD0forD0ptbin(0),
-  fIsUpperCutD0forD0ptbin(0),
-  fIsCutUsedD0forD0ptbin(0),
-  fVarNamesD0forD0ptbin(0),
+  fPtBinLimitsD0forD0ptbin(0x0),
+  fIsUpperCutD0forD0ptbin(0x0),
+  fIsCutUsedD0forD0ptbin(0x0),
+  fVarNamesD0forD0ptbin(0x0),
   fnVarsD0forDStarptbin(0),
   fnPtBinsD0forDStarptbin(0),
   fGlobalIndexD0forDStarptbin(0),
-  fCutsRDD0forDStarptbin(0),
+  fCutsRDD0forDStarptbin(0x0),
   fnPtBinLimitsD0forDStarptbin(1),
-  fPtBinLimitsD0forDStarptbin(0),
-  fIsUpperCutD0forDStarptbin(0),
-  fIsCutUsedD0forDStarptbin(0),
-  fVarNamesD0forDStarptbin(0),
+  fPtBinLimitsD0forDStarptbin(0x0),
+  fIsUpperCutD0forDStarptbin(0x0),
+  fIsCutUsedD0forDStarptbin(0x0),
+  fVarNamesD0forDStarptbin(0x0),
   fnVarsDStarforDStarptbin(0),
   fnPtBinsDStarforDStarptbin(1),
   fGlobalIndexDStarforDStarptbin(0),
-  fCutsRDDStarforDStarptbin(0),
+  fCutsRDDStarforDStarptbin(0x0),
   fnPtBinLimitsDStarforDStarptbin(1),
-  fPtBinLimitsDStarforDStarptbin(0),
-  fIsUpperCutDStarforDStarptbin(0),
-  fIsCutUsedDStarforDStarptbin(0),
-  fVarNamesDStarforDStarptbin(0),
+  fPtBinLimitsDStarforDStarptbin(0x0),
+  fIsUpperCutDStarforDStarptbin(0x0),
+  fIsCutUsedDStarforDStarptbin(0x0),
+  fVarNamesDStarforDStarptbin(0x0),
   fMinITSNclsD0FirstDaughter(0),
   fMinTPCNclsD0FirstDaughter(0),
   fUseITSRefitD0FirstDaughter(0),
@@ -112,30 +112,36 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
   fUseFilterBitB0Pion(0),
   fFilterBitB0Pion(0),
   fMinPtB0Pion(0),
-  fMaxAbsEtaD0FirstDaughter(0),
+  fMaxAbsEtaD0FirstDaughter(999.),
   fHardSelectionArrayITSD0FirstDaughter(),
   fSoftSelectionArrayITSD0FirstDaughter(),
   fNSoftITSCutD0FirstDaughter(0),
-  fMaxAbsEtaD0SecondDaughter(0),
+  fMaxAbsEtaD0SecondDaughter(999.),
   fHardSelectionArrayITSD0SecondDaughter(),
   fSoftSelectionArrayITSD0SecondDaughter(),
   fNSoftITSCutD0SecondDaughter(0),
-  fMaxAbsEtaDStarPion(0),
+  fMaxAbsEtaDStarPion(999.),
   fHardSelectionArrayITSDStarPion(),
   fSoftSelectionArrayITSDStarPion(),
   fNSoftITSCutDStarPion(0),
-  fMaxAbsEtaB0Pion(0),
+  fMaxAbsEtaB0Pion(999.),
   fHardSelectionArrayITSB0Pion(),
   fSoftSelectionArrayITSB0Pion(),
   fNSoftITSCutB0Pion(0),
-  fMaxDCADStarPionD0(0),
-  fMaxDCADStarPionB0Pion(0),
-  fMaxDCAB0PionD0(0)
+  fMaxDCADStarPionD0(999.),
+  fMaxDCADStarPionB0Pion(999.),
+  fMaxDCAB0PionD0(999.),
+  fMaxDCACombined(999.),
+  fMind0D0FirstDaughter(0),
+  fMind0D0SecondDaughter(0),
+  fMind0DStarPion(0),
+  fMind0B0Pion(0),
+  fMaxPtDStarPion(999.)
 {
   //
   // Default Constructor
   //
-  
+
   // Main cut setup as function of B0 pt bins
   const Int_t nvars=97;
   SetNVars(nvars);
@@ -426,11 +432,6 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const char* name) :
   Float_t limitsDStarforDStarptbin[2]={0,999999999.};
   SetPtBinsDStarforDStarptbin(2,limitsDStarforDStarptbin);
 
-
-
-
-
-
   Bool_t forOpt[16]={0}; //not yet used for B0 analysis
   SetVarsForOpt(16,forOpt);
 
@@ -442,34 +443,34 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const AliRDHFCutsB0toDStarPi &sou
   fTPCflag(source.fTPCflag),
   fCircRadius(source.fCircRadius),
   fGetCutInfo(source.fGetCutInfo),
-  fIsCutUsed(0),
+  fIsCutUsed(0x0),
   fnVarsD0forD0ptbin(source.fnVarsD0forD0ptbin),
   fnPtBinsD0forD0ptbin(source.fnPtBinsD0forD0ptbin),
   fGlobalIndexD0forD0ptbin(source.fGlobalIndexD0forD0ptbin),
-  fCutsRDD0forD0ptbin(0),
+  fCutsRDD0forD0ptbin(0x0),
   fnPtBinLimitsD0forD0ptbin(source.fnPtBinLimitsD0forD0ptbin),
-  fPtBinLimitsD0forD0ptbin(0),
-  fIsUpperCutD0forD0ptbin(0),
-  fIsCutUsedD0forD0ptbin(0),
-  fVarNamesD0forD0ptbin(0),
+  fPtBinLimitsD0forD0ptbin(0x0),
+  fIsUpperCutD0forD0ptbin(0x0),
+  fIsCutUsedD0forD0ptbin(0x0),
+  fVarNamesD0forD0ptbin(0x0),
   fnVarsD0forDStarptbin(source.fnVarsD0forDStarptbin),
   fnPtBinsD0forDStarptbin(source.fnPtBinsD0forDStarptbin),
   fGlobalIndexD0forDStarptbin(source.fGlobalIndexD0forDStarptbin),
-  fCutsRDD0forDStarptbin(0),
+  fCutsRDD0forDStarptbin(0x0),
   fnPtBinLimitsD0forDStarptbin(source.fnPtBinLimitsD0forDStarptbin),
-  fPtBinLimitsD0forDStarptbin(0),
-  fIsUpperCutD0forDStarptbin(0),
-  fIsCutUsedD0forDStarptbin(0),
-  fVarNamesD0forDStarptbin(0),
+  fPtBinLimitsD0forDStarptbin(0x0),
+  fIsUpperCutD0forDStarptbin(0x0),
+  fIsCutUsedD0forDStarptbin(0x0),
+  fVarNamesD0forDStarptbin(0x0),
   fnVarsDStarforDStarptbin(source.fnVarsDStarforDStarptbin),
   fnPtBinsDStarforDStarptbin(source.fnPtBinsDStarforDStarptbin),
   fGlobalIndexDStarforDStarptbin(source.fGlobalIndexDStarforDStarptbin),
-  fCutsRDDStarforDStarptbin(0),
+  fCutsRDDStarforDStarptbin(0x0),
   fnPtBinLimitsDStarforDStarptbin(source.fnPtBinLimitsDStarforDStarptbin),
-  fPtBinLimitsDStarforDStarptbin(0),
-  fIsUpperCutDStarforDStarptbin(0),
-  fIsCutUsedDStarforDStarptbin(0),
-  fVarNamesDStarforDStarptbin(0),
+  fPtBinLimitsDStarforDStarptbin(0x0),
+  fIsUpperCutDStarforDStarptbin(0x0),
+  fIsCutUsedDStarforDStarptbin(0x0),
+  fVarNamesDStarforDStarptbin(0x0),
   fMinITSNclsD0FirstDaughter(source.fMinITSNclsD0FirstDaughter),
   fMinTPCNclsD0FirstDaughter(source.fMinTPCNclsD0FirstDaughter),
   fUseITSRefitD0FirstDaughter(source.fUseITSRefitD0FirstDaughter),
@@ -516,11 +517,18 @@ AliRDHFCutsB0toDStarPi::AliRDHFCutsB0toDStarPi(const AliRDHFCutsB0toDStarPi &sou
   fNSoftITSCutB0Pion(source.fNSoftITSCutB0Pion),
   fMaxDCADStarPionD0(source.fMaxDCADStarPionD0),
   fMaxDCADStarPionB0Pion(source.fMaxDCADStarPionB0Pion),
-  fMaxDCAB0PionD0(source.fMaxDCAB0PionD0)
+  fMaxDCAB0PionD0(source.fMaxDCAB0PionD0),
+  fMaxDCACombined(source.fMaxDCACombined),
+  fMind0D0FirstDaughter(source.fMind0D0FirstDaughter),
+  fMind0D0SecondDaughter(source.fMind0D0SecondDaughter),
+  fMind0DStarPion(source.fMind0DStarPion),
+  fMind0B0Pion(source.fMind0B0Pion),
+  fMaxPtDStarPion(source.fMaxPtDStarPion)
 {
   //
   // Copy constructor
   // 
+
   if(source.fPtBinLimitsD0forD0ptbin) SetPtBinsD0forD0ptbin(source.fnPtBinLimitsD0forD0ptbin,source.fPtBinLimitsD0forD0ptbin);
   if(source.fVarNamesD0forD0ptbin) SetVarNamesD0forD0ptbin(source.fnVarsD0forD0ptbin,source.fVarNamesD0forD0ptbin,source.fIsUpperCut);
   if(source.fPtBinLimitsD0forDStarptbin) SetPtBinsD0forDStarptbin(source.fnPtBinLimitsD0forDStarptbin,source.fPtBinLimitsD0forDStarptbin);
@@ -633,10 +641,166 @@ AliRDHFCutsB0toDStarPi &AliRDHFCutsB0toDStarPi::operator=(const AliRDHFCutsB0toD
   //
   // assignment operator
   //
+
+  cout << "Assignment start" << endl;
+
   if(&source == this) return *this;
+
+  cout << "Assignment 1" << endl;
 
   AliRDHFCuts::operator=(source);
 
+  cout << "Assignment 2" << endl;
+
+  fMaxPtPid = source.fMaxPtPid;
+  fTPCflag = source.fTPCflag;
+  fCircRadius = source.fCircRadius;
+  fGetCutInfo = source.fGetCutInfo;
+  fnVarsD0forD0ptbin = source.fnVarsD0forD0ptbin;
+  fnPtBinsD0forD0ptbin = source.fnPtBinsD0forD0ptbin;
+  fGlobalIndexD0forD0ptbin = source.fGlobalIndexD0forD0ptbin;
+  fnPtBinLimitsD0forD0ptbin = source.fnPtBinLimitsD0forD0ptbin;
+  fnVarsD0forDStarptbin = source.fnVarsD0forDStarptbin;
+  fnPtBinsD0forDStarptbin = source.fnPtBinsD0forDStarptbin;
+  fGlobalIndexD0forDStarptbin = source.fGlobalIndexD0forDStarptbin;
+  fnPtBinLimitsD0forDStarptbin = source.fnPtBinLimitsD0forDStarptbin;
+  fnVarsDStarforDStarptbin = source.fnVarsDStarforDStarptbin;
+  fnPtBinsDStarforDStarptbin = source.fnPtBinsDStarforDStarptbin;
+  fGlobalIndexDStarforDStarptbin = source.fGlobalIndexDStarforDStarptbin;
+  fnPtBinLimitsDStarforDStarptbin = source.fnPtBinLimitsDStarforDStarptbin;
+  fMinITSNclsD0FirstDaughter = source.fMinITSNclsD0FirstDaughter;
+  fMinTPCNclsD0FirstDaughter = source.fMinTPCNclsD0FirstDaughter;
+  fUseITSRefitD0FirstDaughter = source.fUseITSRefitD0FirstDaughter;
+  fUseTPCRefitD0FirstDaughter = source.fUseTPCRefitD0FirstDaughter;
+  fUseFilterBitD0FirstDaughter = source.fUseFilterBitD0FirstDaughter;
+  fFilterBitD0FirstDaughter = source.fFilterBitD0FirstDaughter;
+  fMinPtD0FirstDaughter = source.fMinPtD0FirstDaughter;
+  fMinITSNclsD0SecondDaughter = source.fMinITSNclsD0SecondDaughter;
+  fMinTPCNclsD0SecondDaughter = source.fMinTPCNclsD0SecondDaughter;
+  fUseITSRefitD0SecondDaughter = source.fUseITSRefitD0SecondDaughter;
+  fUseTPCRefitD0SecondDaughter = source.fUseTPCRefitD0SecondDaughter;
+  fUseFilterBitD0SecondDaughter = source.fUseFilterBitD0SecondDaughter;
+  fFilterBitD0SecondDaughter = source.fFilterBitD0SecondDaughter;
+  fMinPtD0SecondDaughter = source.fMinPtD0SecondDaughter;
+  fMinITSNclsDStarPion = source.fMinITSNclsDStarPion;
+  fMinTPCNclsDStarPion = source.fMinTPCNclsDStarPion;
+  fUseITSRefitDStarPion = source.fUseITSRefitDStarPion;
+  fUseTPCRefitDStarPion = source.fUseTPCRefitDStarPion;
+  fUseFilterBitDStarPion = source.fUseFilterBitDStarPion;
+  fFilterBitDStarPion = source.fFilterBitDStarPion;
+  fMinPtDStarPion = source.fMinPtDStarPion;
+  fMinITSNclsB0Pion = source.fMinITSNclsB0Pion;
+  fMinTPCNclsB0Pion = source.fMinTPCNclsB0Pion;
+  fUseITSRefitB0Pion = source.fUseITSRefitB0Pion;
+  fUseTPCRefitB0Pion = source.fUseTPCRefitB0Pion;
+  fUseFilterBitB0Pion = source.fUseFilterBitB0Pion;
+  fFilterBitB0Pion = source.fFilterBitB0Pion;
+  fMinPtB0Pion = source.fMinPtB0Pion;
+  fMaxAbsEtaD0FirstDaughter = source.fMaxAbsEtaD0FirstDaughter;
+  fNSoftITSCutD0FirstDaughter = source.fNSoftITSCutD0FirstDaughter;
+  fMaxAbsEtaD0SecondDaughter = source.fMaxAbsEtaD0SecondDaughter;
+  fNSoftITSCutD0SecondDaughter = source.fNSoftITSCutD0SecondDaughter;
+  fMaxAbsEtaDStarPion = source.fMaxAbsEtaDStarPion;
+  fNSoftITSCutDStarPion = source.fNSoftITSCutDStarPion;
+  fMaxAbsEtaB0Pion = source.fMaxAbsEtaB0Pion;
+  fNSoftITSCutB0Pion = source.fNSoftITSCutB0Pion;
+  fMaxDCADStarPionD0 = source.fMaxDCADStarPionD0;
+  fMaxDCADStarPionB0Pion = source.fMaxDCADStarPionB0Pion;
+  fMaxDCAB0PionD0 = source.fMaxDCAB0PionD0;
+  fMaxDCACombined = source.fMaxDCACombined;
+  fMind0D0FirstDaughter = source.fMind0D0FirstDaughter;
+  fMind0D0SecondDaughter = source.fMind0D0SecondDaughter;
+  fMind0DStarPion = source.fMind0DStarPion;
+  fMind0B0Pion = source.fMind0B0Pion;
+  fMaxPtDStarPion = source.fMaxPtDStarPion;
+
+  cout << "Assignment 3" << endl;
+
+  if(source.fPtBinLimitsD0forD0ptbin) SetPtBinsD0forD0ptbin(source.fnPtBinLimitsD0forD0ptbin,source.fPtBinLimitsD0forD0ptbin);
+  if(source.fVarNamesD0forD0ptbin) SetVarNamesD0forD0ptbin(source.fnVarsD0forD0ptbin,source.fVarNamesD0forD0ptbin,source.fIsUpperCut);
+  if(source.fPtBinLimitsD0forDStarptbin) SetPtBinsD0forDStarptbin(source.fnPtBinLimitsD0forDStarptbin,source.fPtBinLimitsD0forDStarptbin);
+  if(source.fVarNamesD0forDStarptbin) SetVarNamesD0forDStarptbin(source.fnVarsD0forDStarptbin,source.fVarNamesD0forDStarptbin,source.fIsUpperCut);
+  if(source.fPtBinLimitsDStarforDStarptbin) SetPtBinsDStarforDStarptbin(source.fnPtBinLimitsDStarforDStarptbin,source.fPtBinLimitsDStarforDStarptbin);
+  if(source.fVarNamesDStarforDStarptbin) SetVarNamesDStarforDStarptbin(source.fnVarsDStarforDStarptbin,source.fVarNamesDStarforDStarptbin,source.fIsUpperCut);
+  if(source.fIsCutUsed) 
+  {
+    if(fIsCutUsed) {
+      delete [] fIsCutUsed;
+      fIsCutUsed = NULL;
+    }
+    fIsCutUsed = new Bool_t[(source.GetNPtBins())*(source.GetNVars())];
+
+    for (Int_t i = 0; i < source.fnVars; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBins; j++)
+      { 
+        Bool_t bUse = source.GetIsCutUsed(i,j);
+        SetIsCutUsed(i,j,bUse);
+      }
+    }
+  }
+  if(source.fIsCutUsedD0forD0ptbin) 
+  {
+    if(fIsCutUsedD0forD0ptbin) {
+      delete [] fIsCutUsedD0forD0ptbin;
+      fIsCutUsedD0forD0ptbin = NULL;
+    }
+    fIsCutUsedD0forD0ptbin = new Bool_t[(source.GetNPtBinsD0forD0ptbin())*(source.GetNVarsD0forD0ptbin())];
+    for (Int_t i = 0; i < source.fnVarsD0forD0ptbin; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBinsD0forD0ptbin; j++)
+      {
+        Bool_t bUse = source.GetIsCutUsedD0forD0ptbin(i,j);
+        SetIsCutUsedD0forD0ptbin(i,j,bUse);
+      }
+    }
+  }
+  if(source.fIsCutUsedD0forDStarptbin) 
+  {
+    if(fIsCutUsedD0forDStarptbin) {
+      delete [] fIsCutUsedD0forDStarptbin;
+      fIsCutUsedD0forDStarptbin = NULL;
+    }
+    fIsCutUsedD0forDStarptbin = new Bool_t[(source.GetNPtBinsD0forDStarptbin())*(source.GetNVarsD0forDStarptbin())];
+    for (Int_t i = 0; i < source.fnVarsD0forDStarptbin; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBinsD0forDStarptbin; j++)
+      {
+        Bool_t bUse = source.GetIsCutUsedD0forDStarptbin(i,j);
+        SetIsCutUsedD0forDStarptbin(i,j,bUse);
+      }
+    }
+  }
+  if(source.fIsCutUsedDStarforDStarptbin) 
+  {
+    if(fIsCutUsedDStarforDStarptbin) {
+      delete [] fIsCutUsedDStarforDStarptbin;
+      fIsCutUsedDStarforDStarptbin = NULL;
+    }
+    fIsCutUsedDStarforDStarptbin = new Bool_t[(source.GetNPtBinsDStarforDStarptbin())*(source.GetNVarsDStarforDStarptbin())];
+    for (Int_t i = 0; i < source.fnVarsDStarforDStarptbin; ++i)
+    {
+      for(Int_t j = 0; j < source.fnPtBinsDStarforDStarptbin; j++)
+      {
+        Bool_t bUse = source.GetIsCutUsedDStarforDStarptbin(i,j);
+        SetIsCutUsedDStarforDStarptbin(i,j,bUse);
+      }
+    }
+  }      
+  if(source.fCutsRDD0forD0ptbin) SetCutsD0forD0ptbin(source.fGlobalIndexD0forD0ptbin,source.fCutsRDD0forD0ptbin);
+  if(source.fCutsRDD0forDStarptbin) SetCutsD0forDStarptbin(source.fGlobalIndexD0forDStarptbin,source.fCutsRDD0forDStarptbin);
+  if(source.fCutsRDDStarforDStarptbin) SetCutsDStarforDStarptbin(source.fGlobalIndexDStarforDStarptbin,source.fCutsRDDStarforDStarptbin);
+
+  if(source.fHardSelectionArrayITSD0FirstDaughter) SetHardSelectionArrayITSD0FirstDaughter(source.fHardSelectionArrayITSD0FirstDaughter);
+  if(source.fSoftSelectionArrayITSD0FirstDaughter) SetSoftSelectionArrayITSD0FirstDaughter(source.fSoftSelectionArrayITSD0FirstDaughter);
+  if(source.fHardSelectionArrayITSD0SecondDaughter) SetHardSelectionArrayITSD0SecondDaughter(source.fHardSelectionArrayITSD0SecondDaughter);
+  if(source.fSoftSelectionArrayITSD0SecondDaughter) SetSoftSelectionArrayITSD0SecondDaughter(source.fSoftSelectionArrayITSD0SecondDaughter);
+  if(source.fHardSelectionArrayITSDStarPion) SetHardSelectionArrayITSDStarPion(source.fHardSelectionArrayITSDStarPion);
+  if(source.fSoftSelectionArrayITSDStarPion) SetSoftSelectionArrayITSDStarPion(source.fSoftSelectionArrayITSDStarPion);
+  if(source.fHardSelectionArrayITSB0Pion)  SetHardSelectionArrayITSB0Pion(source.fHardSelectionArrayITSB0Pion);
+  if(source.fSoftSelectionArrayITSB0Pion) SetSoftSelectionArrayITSB0Pion(source.fSoftSelectionArrayITSB0Pion);
+
+  cout << "Assignment 4" << endl;
   return *this;
 }
 //--------------------------------------------------------------------------

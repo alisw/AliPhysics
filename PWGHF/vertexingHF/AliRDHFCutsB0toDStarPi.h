@@ -247,12 +247,25 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
   void SetMaxDCAB0PionD0(Double_t value){fMaxDCAB0PionD0 = value; return;}
   void SetMaxDCACombined(Double_t value){fMaxDCACombined = value; return;}
 
+  Double_t GetMind0D0FirstDaughter(){return fMind0D0FirstDaughter;}
+  Double_t GetMind0D0SecondDaughter(){return fMind0D0SecondDaughter;}
+  Double_t GetMind0DStarPion(){return fMind0DStarPion;}
+  Double_t GetMind0B0Pion(){return fMind0B0Pion;}
+
+  void SetMind0D0FirstDaughter(Double_t value){fMind0D0FirstDaughter = value; return;}
+  void SetMind0D0SecondDaughter(Double_t value){fMind0D0SecondDaughter = value; return;}
+  void SetMind0DStarPion(Double_t value){fMind0DStarPion = value; return;}
+  void SetMind0B0Pion(Double_t value){fMind0B0Pion = value; return;}
+
+  Double_t GetMaxPtDStarPion(){return fMaxPtDStarPion;}
+  void SetMaxPtDStarPion(Double_t value){fMaxPtDStarPion = value; return;}
+
  protected:
 
   Float_t fMaxPtPid;                                  ///
   Float_t fTPCflag;                                   ///
   Double_t fCircRadius;                               /// Radius for circular PID nsigma cut
-  Bool_t fGetCutInfo;
+  Bool_t fGetCutInfo;                                 ///
 
   Bool_t * fIsCutUsed;                                //[fGlobalIndex]
 
@@ -339,9 +352,18 @@ class AliRDHFCutsB0toDStarPi : public AliRDHFCuts
   Double_t fMaxDCAB0PionD0;                           ///
   Double_t fMaxDCACombined;                           ///
 
+  Double_t fMind0D0FirstDaughter;                     ///
+  Double_t fMind0D0SecondDaughter;                    ///
+  Double_t fMind0DStarPion;                           ///
+  Double_t fMind0B0Pion;                              ///
+
+  Double_t fMaxPtDStarPion;                           ///
+
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsB0toDStarPi,7) ///
+  ClassDef(AliRDHFCutsB0toDStarPi,8) ///
   /// \endcond
 };
 
 #endif
+
+
