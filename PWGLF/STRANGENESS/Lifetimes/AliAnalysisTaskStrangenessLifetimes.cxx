@@ -37,6 +37,30 @@ double Distance(double dx, double dy, double dz) {
   return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
 
+int ComputeMother(AliStack* stack, const AliESDtrack* one, const AliESDtrack* two) {
+  int labOne = std::abs(one->GetLabel());
+  int labTwo = std::abs(two->GetLabel());
+
+  if (stack->IsPhysicalPrimary(labOne) ||
+      stack->IsPhysicalPrimary(labTwo) ||
+      stack->IsSecondaryFromMaterial(labOne) ||
+      stack->IsSecondaryFromMaterial(labTwo))
+    return -1;
+  else {
+    TParticle* partOne = stack->Particle(labOne);
+    TParticle* partTwo = stack->Particle(labTwo);
+    if (partOne->GetFirstMother() != partTwo->GetFirstMother()) {
+      return -1;
+    } else {
+      if (one->GetLabel() * two->GetLabel() >= 0)
+        return partTwo->GetFirstMother();
+      else
+        return -partTwo->GetFirstMother();
+    }
+  }
+
+}
+
 }  // namespace
 
 AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
@@ -280,6 +304,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
   std::unordered_map<int,int> mcMap;
   if (fMC) {
+    fMCvector.clear();
     for (int ilab = 0;  ilab < (stack->GetNtrack()); ilab++) {   // This is the begining of the loop on tracks
       TParticle* part = stack->Particle( ilab );
       if(!part) {
@@ -528,8 +553,13 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
                                  nSigmaNegPion, nSigmaNegProton);
 
       if (fMC && stack) {
-        int ilab = std::abs(v0->GetLabel());
-        TParticle* part = stack->Particle( ilab );
+        AliESDtrack* one = esdEvent->GetTrack(v0->GetNindex());
+        AliESDtrack* two = esdEvent->GetTrack(v0->GetPindex());
+        if (!one || !two)
+          ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec",
+            "Missing V0 tracks %p %p",(void*)one,(void*)two);
+        int ilab = std::abs(ComputeMother(stack, one, two));
+        TParticle* part = stack->Particle(ilab);
         if(!part) {
           continue;
         }
