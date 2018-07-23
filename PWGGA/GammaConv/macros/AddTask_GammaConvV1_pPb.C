@@ -86,6 +86,8 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
                                 Int_t     enableMatBudWeightsPi0        = 0,                              // 1 = three radial bins, 2 = 10 radial bins
                                 TString   filenameMatBudWeights         = "MCInputFileMaterialBudgetWeights.root",
                                 Int_t     debugLevel                    = 0,                              // introducing debug levels for grid running
+				Bool_t    enableElecDeDxPostCalibration = kFALSE,
+				TString   fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root",
                                 TString   additionalTrainConfig         = "0"                             // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
@@ -1143,6 +1145,20 @@ void AddTask_GammaConvV1_pPb(   Int_t     trainConfig                   = 1,    
           initializedMatBudWeigths_existing = kTRUE;}
         else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
       } else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+    }
+    if (enableElecDeDxPostCalibration>0){
+      if (isMC == 0){
+	if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	} else {
+	  enableElecDeDxPostCalibration=kFALSE;
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	}
+      } else{
+	cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+	enableElecDeDxPostCalibration=kFALSE;
+	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      }
     }
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
