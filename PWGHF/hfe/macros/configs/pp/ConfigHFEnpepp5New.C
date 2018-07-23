@@ -189,7 +189,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
          // Default of the TPC-TOF - TO-BE-UPDATED
          switch (HadronContFunc) {
                 case kHadronTPConly_Minus05:
-               TF1 *hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3]*TMath::Gaus(x,[4],[5])",0.,60.);
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3]*TMath::Gaus(x,[4],[5])",0.,60.);
                hBackground->SetParameter(0,5.14946e+00);
                hBackground->SetParameter(1,1.58931e+01);
                hBackground->SetParameter(2,4.03552e+00);
@@ -201,7 +201,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                break;
                
                 case kHadronTPConly_Minus025:
-               TF1 *hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3]*TMath::Gaus(x,[4],[5])",0.,60.);
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3]*TMath::Gaus(x,[4],[5])",0.,60.);
                hBackground->SetParameter(0,4.29739e+00);
                hBackground->SetParameter(1,1.80873e+01);
                hBackground->SetParameter(2,4.61691e+00);
@@ -213,7 +213,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                break;
                
                 case kHadronTPConly_Minus0125:
-               TF1 *hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3]*TMath::Gaus(x,[4],[5])",0.,60.);
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3]*TMath::Gaus(x,[4],[5])",0.,60.);
                hBackground->SetParameter(0,3.28834e+00);
                hBackground->SetParameter(1,1.86554e+01);
                hBackground->SetParameter(2,4.76731e+00);
@@ -226,7 +226,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                
                 case kHadronTPConly_0125:
                     
-               TF1 *hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3]*TMath::Gaus(x,[4],[5])",0.,60.);
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3]*TMath::Gaus(x,[4],[5])",0.,60.);
                hBackground->SetParameter(0,1.76294e+00);
                hBackground->SetParameter(1,1.96221e+01);
                hBackground->SetParameter(2,5.03374e+00);
@@ -240,7 +240,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepp5New(Bool_t useMC, Bool_t isAOD, TString appen
                
                 case kHadronTPConly_025:
                     
-               TF1 *hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3]*TMath::Gaus(x,[4],[5])",0.,60.);
+               hBackground = new TF1("hadronicBackgroundFunction", "[0]*TMath::Landau(x,[1],[2])+ [3]*TMath::Gaus(x,[4],[5])",0.,60.);
                hBackground->SetParameter(0,1.13397e+00);
                hBackground->SetParameter(1,1.96791e+01);
                hBackground->SetParameter(2,5.06089e+00);
