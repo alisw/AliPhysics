@@ -816,32 +816,19 @@ void SetupAODtrackCutsRun3(AliDielectron *die)
   pidCutsMC->AddCut(AliDielectronVarManager::kPdgCode, +11., +11.);
 
   // activate the cut sets (order might be CPU timewise important)
-  if(hasMC) {
-    cuts->AddCut(pidCutsMC); // commnted in for the moment -> only true electrons
-    die->GetTrackFilter().AddCuts(pidCutsMC);
-    cuts->AddCut(trkFilter);
-    die->GetTrackFilter().AddCuts(trkFilter);
-    cuts->AddCut(varCuts);
-    die->GetTrackFilter().AddCuts(varCuts);
-    cuts->AddCut(trkCuts);
-    die->GetTrackFilter().AddCuts(trkCuts);
-    cuts->AddCut(varCuts2);
-    die->GetTrackFilter().AddCuts(varCuts2);
-    cuts->AddCut(pidCuts);
-    die->GetTrackFilter().AddCuts(pidCuts);
-  }
-  else {
-    cuts->AddCut(trkFilter);
-    die->GetTrackFilter().AddCuts(trkFilter);
-    cuts->AddCut(varCuts);
-    die->GetTrackFilter().AddCuts(varCuts);
-    cuts->AddCut(trkCuts);
-    die->GetTrackFilter().AddCuts(trkCuts);
-    cuts->AddCut(varCuts2);
-    die->GetTrackFilter().AddCuts(varCuts2);
-    cuts->AddCut(pidCuts);
-    die->GetTrackFilter().AddCuts(pidCuts);
-  }
+  cuts->AddCut(pidCutsMC); // commented in for the moment -> only true electrons
+  die->GetTrackFilter().AddCuts(pidCutsMC);
+  cuts->AddCut(trkFilter);
+  die->GetTrackFilter().AddCuts(trkFilter);
+  cuts->AddCut(varCuts);
+  die->GetTrackFilter().AddCuts(varCuts);
+  cuts->AddCut(trkCuts);
+  die->GetTrackFilter().AddCuts(trkCuts);
+  cuts->AddCut(varCuts2);
+  die->GetTrackFilter().AddCuts(varCuts2);
+  cuts->AddCut(pidCuts);
+  die->GetTrackFilter().AddCuts(pidCuts);
+  
   cuts->Print();
   //die->GetTrackFilter().AddCuts(cuts); // done now separately
 }
