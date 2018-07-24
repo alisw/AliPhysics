@@ -159,6 +159,8 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
 		Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
 
+		Bool_t CheckGenerator(Int_t trackID);
+
   private:
  
 		Int_t IsEventAccepted(AliVEvent* event);
@@ -170,35 +172,36 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
 		Bool_t hasMC;
 
-		AliESDtrackCuts* fESDtrackCuts; // ESD track cuts object
+		AliESDtrackCuts* fESDtrackCuts; //! ESD track cuts object
 
 		AliPIDResponse* fPIDResponse; //! PID response object
+		AliMCEvent* fMCevent; //!
 
 		TTree* fTree;
 	
 		//Dielectron cut classes needed to source cuts from LMEE cut libraries
 		//The desired cut library should be specified in the AddTask
-		AliDielectronEventCuts* eventCuts;
-		AliAnalysisFilter* eventFilter;
+		AliDielectronEventCuts* eventCuts; //!
+		AliAnalysisFilter* eventFilter; //!
 		
-		AliDielectronVarCuts* varCuts;
-		AliDielectronTrackCuts *trackCuts;
-		AliDielectronPID *pidCuts;
-		AliDielectronCutGroup* cuts;
-		AliAnalysisFilter* trackFilter; 
+		AliDielectronVarCuts* varCuts; //!
+		AliDielectronTrackCuts *trackCuts; //!
+		AliDielectronPID *pidCuts; //!
+		AliDielectronCutGroup* cuts; //!
+		AliAnalysisFilter* trackFilter;  //!
 
 		//Class needed to use PID within the Dielectron Framework
-		AliDielectronVarManager* varManager;
+		AliDielectronVarManager* varManager; //!
 
-		//TTree branch variables
-		//Event variables
+		// TTree branch variables
+		// Event variables
 		Double_t primaryVertex[3];
 		Double_t multiplicityV0A;
 		Double_t multiplicityV0C;
 		Double_t multiplicityCL1;
 		Int_t runNumber;
 		Int_t event;
-		//Reconstructed
+		// Reconstructed
 		Double_t pt;
 		Double_t eta;
 		Double_t phi;
@@ -238,6 +241,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Int_t iPdgMother;
 		Bool_t HasMother;
 		Int_t motherLabel;
+		Bool_t isInj; // If track is injected (MC only)
 		//V0 features
 		Double_t pointingAngle;
 		Double_t daughtersDCA;
@@ -284,8 +288,12 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Int_t fGridPID;
 				
 		Bool_t fUseTPCcorr;
-		TH3D* fWidth;
-		TH3D* fMean;
+		TH3D* fWidth; //!
+		TH3D* fMean; //!
+
+		// Store list of generator hashes which can be checked against to determine
+		// whether or not the track was injected
+		std::vector<UInt_t> fGeneratorHashes;
 		ClassDef(AliAnalysisTaskSimpleTreeMaker, 4); //
 
 };
