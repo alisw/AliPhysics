@@ -116,6 +116,8 @@ public:
 
   AliAnalysisUtils* GetAnalysisUtils()           { return fAnalysisUtils; }
 
+  void SetMaxFacPtHard(Float_t maxfacpthard){ fMaxFacPtHard = maxfacpthard;} //FK
+
 protected:
   // Implementation of interface methods
   virtual void    UserCreateOutputObjects();
@@ -153,6 +155,8 @@ protected:
 
   Double_t  GetExternalRho(Bool_t isMC = kFALSE);
   Double_t  GetDeltaPtRandomCone(Double_t jetradius, Double_t rhovalue);
+
+  Bool_t IsOutlier(); //FK// Tests if the event is pthard bin outlier 
 
 private:
 
@@ -241,8 +245,9 @@ private:
   Int_t                       fGlLogLevel;
   Int_t                       fLcDebLevel;
   Int_t                       fStartBin;
+  Float_t                     fMaxFacPtHard;  ///< Cut on  pthat events. How many times can be jet pT larger than pthat //FK
 
-  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 4);  // analysis task for MC study
+  ClassDef(AliAnalysisTaskEmcalJetBtagSV, 5);  // analysis task for MC study //FK
 };
 
 //-------------------------------------------------------------------------------------
