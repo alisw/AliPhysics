@@ -2076,26 +2076,51 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 {   // Get Event Centrality
 
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
+  Int_t runnumber = event->GetRunNumber();
   if(esdEvent){
     if(GetUseNewMultiplicityFramework()){
       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
       if(!MultSelection){
         AliWarning ("AliMultSelection object not found !");
         return -1;
-            }else{
+      }else{
         if(fDetectorCentrality==0){
-          if(fIsHeavyIon==2)             return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
-          else                           return MultSelection->GetMultiplicityPercentile("V0M");// default
-        }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
-        else if(fDetectorCentrality==2) return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
+          if(fIsHeavyIon==2){
+            if (runnumber > 266329 && runnumber < 267139)
+              return MultSelection->GetMultiplicityPercentile("V0C");// default for Pbp
+            else
+              return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
+          } else {
+            return MultSelection->GetMultiplicityPercentile("V0M");// default
+          }
+        } else if(fDetectorCentrality==1){
+          return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+        } else if(fDetectorCentrality==2){
+          if (runnumber > 266329 && runnumber < 267139)
+            return MultSelection->GetMultiplicityPercentile("ZNC",kTRUE);
+          else
+            return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
+        }
       }
     }else{
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
       if(fDetectorCentrality==0){
-        if(fIsHeavyIon==2)             return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
-        else                           return fESDCentrality->GetCentralityPercentile("V0M"); // default
-      }else if(fDetectorCentrality==1) return fESDCentrality->GetCentralityPercentile("CL1");
-      else if(fDetectorCentrality==2) return fESDCentrality->GetCentralityPercentile("ZNA");
+        if(fIsHeavyIon==2){
+          if (runnumber > 196432 && runnumber < 197389)
+            return fESDCentrality->GetCentralityPercentile("V0C"); // default for Pbp
+          else
+            return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
+        } else {
+          return fESDCentrality->GetCentralityPercentile("V0M"); // default
+        }
+      } else if(fDetectorCentrality==1){
+        return fESDCentrality->GetCentralityPercentile("CL1");
+      } else if(fDetectorCentrality==2){
+        if (runnumber > 196432 && runnumber < 197389)
+          return fESDCentrality->GetCentralityPercentile("ZNC");
+        else
+          return fESDCentrality->GetCentralityPercentile("ZNA");
+      }
     }
   }
 
@@ -3136,8 +3161,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         if ( mch ){
           Int_t nGenerators = mch->GetNCocktailHeaders();
           if ( nGenerators > 0  ){
-            for(Int_t igen = 0; igen < nGenerators; igen++)
-            {
+            for(Int_t igen = 0; igen < nGenerators; igen++){
               AliGenEventHeader * eventHeaderGen = mch->GetCocktailHeader(igen) ;
               TString name = eventHeaderGen->GetName();
               if (name.CompareTo("AliGenPythiaEventHeader") == 0 || name.Contains("Pythia8Jets")){
