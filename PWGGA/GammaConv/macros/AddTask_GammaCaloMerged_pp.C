@@ -956,7 +956,6 @@ void AddTask_GammaCaloMerged_pp(  Int_t     trainConfig                 = 1,    
     cuts.AddCut("00081113","1111111060032200000","1111111060022d00001","0163300000000000"); // min M02 = 0.10 + min M02 = 0.33
     cuts.AddCut("00081113","1111111060032200000","1111111060022e00001","0163300000000000"); // min M02 = 0.10 + min M02 = 0.36
     cuts.AddCut("00081113","1111111060032200000","1111111060022f00001","0163300000000000"); // min M02 = 0.10 + min M02 = 0.39
-  }
 
     // multiple standard cuts for supermodule-wise analysis
   } else if (trainConfig == 191){  // M02 cut at 0.27
