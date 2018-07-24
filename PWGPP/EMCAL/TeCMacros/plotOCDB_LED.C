@@ -1,7 +1,7 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
 #include <AliEMCALGeometry.h>
 #include <TCanvas.h>
 #include <TDatime.h>
-#include <TFile.h>
 #include <TFile.h>
 #include <TGrid.h>
 #include <TH2F.h>
@@ -9,145 +9,102 @@
 #include <TMap.h>
 #include <TNtuple.h>
 #include <TProfile.h>
-#include <stdio.h>
 #include "LInfo.h"
 
-void plot_LHC18d() 
+class LDraw : public TNamed {
+ public:
+  LDraw(const char *name, const char *fname="tempinfo.root"); 
+  virtual ~LDraw() {;}
+  void       Compute();
+  Int_t      GetNRuns()                 const { return fArr->GetEntries(); }
+  void       Print(Option_t *opt="")    const {};
+  void       SetPrint(Bool_t b=1)        { fDoPrint=b; }
+#if 0
+  void       DrawAll();
+  TCanvas   *DrawT(Int_t type=3)        const;
+  TCanvas   *DrawT2D(Int_t type=3)      const;
+  TCanvas   *DrawOccRun()               const;
+  TCanvas   *DrawOccSensor2D()          const;
+  TCanvas   *DrawOcc2D()                const;
+  Double_t   GetMaxT(Int_t type=3)      const;
+  Double_t   GetMinT(Int_t type=3)      const;
+  Double_t   GetMaxTperS(Int_t ns, Int_t type=3) const;
+  Double_t   GetMinTperS(Int_t ns, Int_t type=3) const;
+  Double_t   GetFraction(Int_t ns)      const { return (Double_t)GetNRunsValid(ns)/GetNRuns(); }
+  Int_t      GetBad(Int_t ns)           const { return fBad.At(ns); }
+  Int_t      GetNBad()                  const;
+  Int_t      GetNRunsValid(Int_t ns)    const;
+  Int_t      GetRunNo(Int_t run)        const { return (static_cast<TInfo*>(fArr->At(run)))->GetRunNo(); }
+  TH1       *GetOccRun()                const;
+  TH1       *GetOccSensor()             const;
+  TH2       *GetOccSensor2D()           const;
+  TH2       *GetOcc2D()                 const;
+  TH1       *GetT(Int_t ns1, Int_t ns2, Int_t type=3) const;
+  TH2       *GetT2D(Int_t type=3)       const;
+  Bool_t     IsGood(Int_t ns)           const { return (fBad.At(ns)==0); }
+  void       SetBad(Int_t ns, Bool_t b)  { fBad.SetAt(ns,b); }
+ protected:
+  TH2       *GetMask()                  const;
+  TArrayI    fBad;     // list of bad channels
+  Double_t   fMinFrac; // minimum fraction 
+#endif
+  TObjArray *fArr;     // array with info
+  Bool_t     fDoPrint; // if true then print canvases  
+  ClassDef(LDraw, 1); // Led draw class
+};
+#endif
+
+LDraw::LDraw(const char *name, const char *fname) : TNamed(name,fname), fArr(0), fDoPrint(0)
 {
   TFile *inf = TFile::Open("ledinfo.root");
-  TObjArray *arr = dynamic_cast<TObjArray*>(inf->Get("led_lhc18d"));
-  if (!arr) 
-    return;
-  const Int_t rns=arr->GetEntries();
+  fArr = dynamic_cast<TObjArray*>(inf->Get(Form("led_%s",name)));
+  delete inf;
+}
+
+void LDraw::Compute()
+{
+  const Int_t rns=fArr->GetEntries();
   for (Int_t i=0;i<rns;++i) {
-    LInfo *linfo = dynamic_cast<LInfo*>(arr->At(i));
+    LInfo *linfo = dynamic_cast<LInfo*>(fArr->At(i));
     if (!linfo)
       continue;
     linfo->Print();
-    cout << "fraction bad ";
+    cout << "fraction good strips ";
     for (Int_t i=0;i<20;++i) 
       cout << linfo->FracStrips(i) << " ";
+    cout << endl;
+    cout << "fraction good towers ";
+    for (Int_t i=0;i<20;++i) 
+      cout << linfo->FracLeds(i) << " ";
     cout << endl;
   }
 }
 
-void plotOCDB_LED()
+void plotL_period(const char *period, Bool_t doprint=0) 
 {
-  plot_LHC18d();
+  LDraw d(period);
+  //d.SetPrint(doprint);
+  d.Compute();
+  //d.Print();
 }
 
-#if 0
-TH2 *getT2D(TObjArray *arr, Int_t type=1)
+void plotOCDB_LED(const char *period="lhc18d")
 {
-  if (!arr) 
-    return 0;
-  const Int_t rns=arr->GetEntries();
-  TInfo f; 
-  TString title=f.Type(type);
-  TH2F *ret = new TH2F(Form("h2f_%d",type),Form("%s;run idx;sensor idx",title.Data()),rns,0,rns,159,0,159);
-  ret->SetDirectory(0);
-  for (Int_t i=0;i<rns;++i) {
-    TInfo *tinfo = dynamic_cast<TInfo*>(arr->At(i));
-    if (!tinfo)
-      continue;
-    for (Int_t j=0;j<160;++j) {
-      if (!tinfo->IsValid(j)) 
-	continue;
-      Double_t val = tinfo->T(j,type);
-      ret->SetBinContent(ret->FindBin(i,j),val);
-    }
-  }
-  return ret;
+  plotL_period(period);
 }
 
-TH1 *getT(Int_t ns1, Int_t ns2, TObjArray *arr, Int_t type=1) 
+void test_geo()
 {
-  if (!arr) 
-    return 0;
-  const Int_t rns=arr->GetEntries();
-  TProfile *ret = new TProfile(Form("h%d%d%d",ns1,ns2,type),Form(";run idx"),rns,0,rns);
-  ret->SetDirectory(0);
-  for (Int_t i=0;i<rns;++i) {
-    TInfo *tinfo = dynamic_cast<TInfo*>(arr->At(i));
-    if (!tinfo)
-      continue;
-    for (Int_t j=ns1;j<=ns2;++j) {
-      if (!tinfo->IsValid(j)) 
-	continue;
-      Double_t val = 0;
-      if (type==1) 
-	val = tinfo->MinT(j);
-      else if (type==2) 
-	val = tinfo->MaxT(j);
-      else 
-	val = tinfo->Diff(j);
-      ret->Fill(i,val);
-    }
-  }
-  return ret;
-}
-
-void plot_LHC18d() 
-{
-  TFile *inf = TFile::Open("temperatures.root");
-  TObjArray *arr = dynamic_cast<TObjArray*>(inf->Get("temperatures_lhc18d"));
-  if (!arr) 
-    return;
-  //arr->Print();
-
-  if (0) {
-    TCanvas *c1 = new TCanvas("cMinT18d","cMinT18d");
-    TH2 *hminT = getT2D(arr,1);
-    hminT->SetStats(0);
-    hminT->Draw("colz");
-    c1->Print(Form("%s.pdf",c1->GetName()));
-    TCanvas *c2 = new TCanvas("cMaxT18d","cMaxT18d");
-    TH2 *hmaxT = getT2D(arr,2);
-    hmaxT->SetStats(0);
-    hmaxT->Draw("colz");
-    c2->Print(Form("%s.pdf",c2->GetName()));
-    TCanvas *c3 = new TCanvas("cDiffT18d","cDiffT18d");
-    TH2 *hdiffT = getT2D(arr,0);
-    hdiffT->SetStats(0);
-    hdiffT->Draw("colz");
-    c3->Print(Form("%s.pdf",c3->GetName()));
-  }
-  if (0) {
-    TCanvas *c1 = new TCanvas("cTemp","cTemp");
-    Int_t type=1;
-    TH2 *h2f = new TH2F("h2f",";run idx;T",1,0,60,1,18,26);
-    h2f->SetStats(0);
-    h2f->Draw();
-    TLegend *leg = new TLegend(0.5,0.5,0.9,0.9);
-    for (Int_t i=0,n1=0,n2=7;i<20;++i) {
-      TH1 *h=getT(n1,n2,arr,type);
-      n1+=8;
-      n2+=8;
-      h->SetLineColor(i+1);
-      h->SetLineWidth(3);
-      h->SetName(Form("SM%d",i));
-      h->Draw("same, hist");
-      leg->AddEntry(h,h->GetName(),"l");
-    }
-    leg->Draw();
-  }
-  if (1) {
-    TCanvas *ci = new TCanvas("cLHC18d","cLHC18d",1200,800);
-    ci->Print(Form("%s.pdf[",ci->GetName()));
-    const Int_t rns=arr->GetEntries();
-    for (Int_t i=0;i<rns;++i) {
-      TInfo *tinfo = dynamic_cast<TInfo*>(arr->At(i));
-      if (!tinfo)
-	continue;
-      TH2 *h=tinfo->GetHist(3);
-      h->Draw("colz text");
-      ci->Print(Form("%s.pdf",ci->GetName()));
-    }
-    ci->Print(Form("%s.pdf]",ci->GetName()));
+  AliEMCALGeometry *g=AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
+  Int_t kSM=g->GetNumberOfSuperModules();
+  cout << "Number of SM: " << kSM << endl;
+  for (Int_t i=0;i<kSM;++i) {
+    Int_t np = g->GetNumberOfCellsInPhiDirection(i);
+    Int_t ne = g->GetNumberOfCellsInEtaDirection(i);
+    cout << i << ": " << np << " " << ne << endl;
   }
 }
 
-#endif
 
 #if 0
 // global EMCal numbers

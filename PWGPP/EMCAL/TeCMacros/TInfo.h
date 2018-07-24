@@ -22,7 +22,7 @@ class TInfo : public TObject {
   Int_t        GetNFaulty()               const { return fNFaulty; }
   Double_t     Fraction()                 const { return 1.*Nvalid()/(NSensors()-GetNFaulty()); }
   UInt_t       LastTime()                 const { return fAvTime; }
-  Bool_t       IsValid(Int_t ns)          const { return ((fMinT.At(ns)!=0)&&(fMaxT.At(ns)!=0)); }
+  Bool_t       IsValid(Int_t ns)          const { return ((fMinT.At(ns)>0)&&(fMaxT.At(ns)>0)); }
   Int_t        RunNo()                    const { return fRunNo; }
   Float_t      T(Int_t ns, Int_t t)       const;
   Float_t      MinT(Int_t ns)             const { return fMinT.At(ns); } 

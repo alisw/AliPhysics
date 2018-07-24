@@ -107,11 +107,17 @@ void LInfo::CreateHistograms()
       fhLedCount[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow - 0.5);
       fhLedCount[iSM][igain]->SetDirectory(0);
 
-      fhAmpOverMon[iSM][igain]    = 0;
-      fhLedRmsOverMean[kNSM][2]   = 0;
-      fhStripRmsOverMean[kNSM][2] = 0;
+      fhAmpOverMon[iSM][igain]       = 0;
+      fhLedRmsOverMean[iSM][igain]   = 0;
+      fhStripRmsOverMean[iSM][igain] = 0;
     }
   }
+}
+
+void LInfo::FillLed(Int_t mod,Int_t gain, Int_t col, Int_t row, Double_t amp, Double_t rms)
+{
+  fhLed[mod][gain]->Fill(col, row, amp);  
+  fhLedCount[mod][gain]->Fill(col, row, rms);
 }
 
 void LInfo::FillStrip(Int_t mod, Int_t gain, Int_t strip, Double_t amp, Double_t rms)
@@ -120,10 +126,31 @@ void LInfo::FillStrip(Int_t mod, Int_t gain, Int_t strip, Double_t amp, Double_t
   fhStripCount[mod][gain]->Fill(strip, rms);
 }
 
-void LInfo::FillLed(Int_t mod,Int_t gain, Int_t col, Int_t row, Double_t amp, Double_t rms)
+Double_t LInfo::FracLeds(Int_t sm, Int_t gain) const
 {
-  fhLed[mod][gain]->Fill(col, row, amp);  
-  fhLedCount[mod][gain]->Fill(col, row, rms);
+  const Int_t kGain=gain;
+  Double_t ret=0,all=0;
+  for (Int_t iSM=0; iSM<kNSM; ++iSM) {
+    if (sm>=0&&iSM!=sm)
+      continue;
+    Int_t nrows=NRow();
+    if (iSM>11 && iSM<18) 
+      nrows=32;
+    Int_t ncols=NCol();
+    if (iSM==10||iSM==11||iSM==18||iSM==19)
+      ncols=8;
+    for (Int_t col=0;col<ncols;++col) {
+      for (Int_t row=0;row<nrows;++row) {
+	++all;
+	Int_t bin=fhLed[iSM][kGain]->GetBin(col,row);
+	if (fhLed[iSM][kGain]->GetBinContent(bin)>0.)
+	++ret;
+      }
+    }
+  }
+  if (all>0)
+    return ret/all;
+  return 0;
 }
 
 Double_t LInfo::FracStrips(Int_t sm, Int_t gain) const
@@ -136,7 +163,7 @@ Double_t LInfo::FracStrips(Int_t sm, Int_t gain) const
     Int_t nstrips=NStrip();
     if (iSM>11 && iSM<18) 
       nstrips=32/2;
-    for (Int_t strip=1; strip<=NStrip(); ++strip) {
+    for (Int_t strip=1; strip<=nstrips; ++strip) {
       ++all;
       if (fhStrip[iSM][kstripGain]->GetBinContent(strip)>0.)
 	++ret;

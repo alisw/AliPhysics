@@ -24,10 +24,12 @@ void testOCDB_Temperature(Int_t runNb = 286350);
 #define _tempfuncs_
 TInfo *readOCDB_Temperature(Int_t runNb, Bool_t debug)
 {
-  TGrid::Connect("alien://");
+  if (!gGrid)
+    TGrid::Connect("alien://");
 
   AliCDBManager*  cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("raw://");
+  if (cdb->GetDefaultStorage()==0)
+    cdb->SetDefaultStorage("raw://");
   cdb->SetRun(runNb);
 
   AliCDBEntry *en=0;

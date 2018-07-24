@@ -23,6 +23,7 @@
 #include <TNtuple.h>
 #include <TTree.h>
 #include "LInfo.h"
+
 LInfo *readOCDB_LED(Int_t runNb  = 286350, Bool_t debug=1);
 void testOCDB_LED(Int_t runNb  = 286350);
 #endif
@@ -31,10 +32,12 @@ void testOCDB_LED(Int_t runNb  = 286350);
 #define _ledfuncs_
 LInfo *readOCDB_LED(Int_t runNb, Bool_t debug)
 {
-  TGrid::Connect("alien://");
+  if (!gGrid)
+    TGrid::Connect("alien://");
 
   AliCDBManager*  cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("raw://");
+  if (cdb->GetDefaultStorage()==0)
+    cdb->SetDefaultStorage("raw://");
   cdb->SetRun(runNb);
 
   AliCDBEntry *en = 0;

@@ -115,11 +115,15 @@ void TDraw::Compute()
   }
 
   for (Int_t ns=0;ns<TInfo::NSensors();++ns) {
-    if (!IsGood(ns))
-      continue;
     Double_t frac=GetFraction(ns);
+    if (!IsGood(ns)) {
+      if (frac>0) {
+	cout << "Sensor " << ns << " marked bad, but has fraction: " << frac << endl;
+      }
+      continue;
+    }
     if (frac<fMinFrac)
-      cout << "Channel " << ns << " below threshold: " << frac << endl;
+      cout << "Sensor " << ns << " below threshold: " << frac << endl;
   }
 }
 
@@ -197,13 +201,10 @@ TCanvas *TDraw::DrawT(Int_t type) const
 {
   TString lab(Form("cTemp_%s_%s",TInfo::Type(type),GetName()));
   TCanvas *c = new TCanvas(lab,lab,1200,800);
-  Double_t max=GetMaxT(type);
-  Double_t min=GetMinT(type);
-  TH2 *h2f = new TH2F("h2f",";run idx;T",1,0,GetNRuns(),1,18,26);
-  h2f->SetTitle(Form("Average T per SM: run %d to %d, min=%.1f, max=%.1f",GetRunNo(0), GetRunNo(GetNRuns()-1), min, max));
-  h2f->SetStats(0);
-  h2f->Draw();
+  Double_t max=GetMaxT(type),maxp=-100;
+  Double_t min=GetMinT(type),minp=+100;
   TLegend *leg = new TLegend(0.92,0.1,0.99,0.99);
+  TObjArray arr;
   for (Int_t i=0,n1=0,n2=7;i<20;++i) {
     TH1 *h=GetT(n1,n2,type);
     n1+=8;
@@ -228,10 +229,22 @@ TCanvas *TDraw::DrawT(Int_t type) const
     h->SetLineColor(col);
     h->SetLineWidth(3);
     h->SetName(Form("SM%d",i));
-    h->Draw("same, p, hist");
+    //h->Draw("same, p, hist");
+    arr.Add(h);
+    Double_t minh=h->GetMinimum();
+    if (minh<minp) minp=minh;
+    Double_t maxh=h->GetMaximum();
+    if (maxh>maxp) maxp=maxh;
     leg->AddEntry(h,h->GetName(),"p");
   }
+  minp=0.9*minp; maxp=1.1*maxp;
+  TH2 *h2f = new TH2F("h2f",";run idx;T",1,0,GetNRuns(),1,minp,maxp);
+  h2f->SetTitle(Form("Average T per SM: run %d to %d, min=%.1f, max=%.1f",GetRunNo(0), GetRunNo(GetNRuns()-1), min, max));
+  h2f->SetStats(0);
+  h2f->Draw();
   leg->Draw();
+  for (Int_t i=0;i<arr.GetEntries();++i)
+    arr.At(i)->Draw("same, p, hist");
   c->SetGridx(1);
   c->SetGridy(1);
   if (fDoPrint)
@@ -494,13 +507,13 @@ void TDraw::Print(Option_t *opt) const
   }
 }
 
-void plot_LHC18d(Bool_t doprint=0) 
+void plotT_period(const char *period, Bool_t doprint=0) 
 {
-  TDraw d("lhc18d");
+  TDraw d(period);
   d.SetPrint(doprint);
   d.Compute();
   d.Print();
-  if (0) {
+  if (1) {
     d.DrawOccRun();
     d.DrawOccSensor2D();
     //d.DrawT2D(3);
@@ -509,8 +522,8 @@ void plot_LHC18d(Bool_t doprint=0)
     d.DrawAll();
 }
 
-void plotOCDB_Temperature()
+void plotOCDB_Temperature(const char *period="lhc18d")
 {
-  plot_LHC18d();
+  plotT_period(period);
 }
 
