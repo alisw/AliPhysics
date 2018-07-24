@@ -333,6 +333,8 @@ void AliFemtoCorrFctnKStar::Write()
 //____________________________
 void AliFemtoCorrFctnKStar::AddRealPair(AliFemtoPair* aPair)
 {
+  if(PassPairCut_RotatePar2(aPair)) fNumerator_RotatePar2->Fill(fabs(CalcKStar_RotatePar2(aPair)));
+
   // add true pair
   if (fPairCut && !fPairCut->Pass(aPair)) {
     return;
@@ -348,8 +350,6 @@ void AliFemtoCorrFctnKStar::AddRealPair(AliFemtoPair* aPair)
   if(fBuildmTBinned) fNumerator_mT->Fill(aPair->KStar(), CalcMt(aPair));
   if(fBuildmTBinned) fNumeratorv2_mT->Fill(aPair->KStar(), CalcMtv2(aPair));
   if(fBuild3d) fNumerator3d->Fill(aPair->KStarOut(),aPair->KStarSide(),aPair->KStarLong());
-
-  if(PassPairCut_RotatePar2(aPair)) fNumerator_RotatePar2->Fill(fabs(CalcKStar_RotatePar2(aPair)));
 }
 
 //____________________________
