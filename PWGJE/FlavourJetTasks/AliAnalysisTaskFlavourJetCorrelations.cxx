@@ -178,7 +178,7 @@ fResponseMatrix()
    }
 
    if(fCandidateType==kD0toKpi)SetMassLimits(0.15,fPDGmother);
-   if(fCandidateType==kDstartoKpipi) SetMassLimits(0.015, fPDGmother);
+   if(fCandidateType==kDstartoKpipi) SetMassLimits(0.035, fPDGmother);
    if(fUseCandArray) DefineInput(1, TClonesArray::Class());
    if(fUseSBArray) DefineInput(2, TClonesArray::Class());
 
@@ -824,10 +824,14 @@ void  AliAnalysisTaskFlavourJetCorrelations::SetMassLimits(Double_t range, Int_t
       Float_t mass1=0;
       mass1=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       mass = mass-mass1;
-   }
 
-   fMinMass = mass-range;
-   fMaxMass = mass+range;
+      fMinMass = mass-range;
+      fMaxMass = mass+range;
+  }
+  else {
+      fMinMass = 1.5;
+      fMaxMass = 2.2;
+  }
 
    AliInfo(Form("Setting mass limits to %f, %f",fMinMass,fMaxMass));
    if (fMinMass<0 || fMaxMass<=0 || fMaxMass<fMinMass) AliFatal("Wrong mass limits!\n");
@@ -953,7 +957,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    const Int_t nbinseta=100;
 
    //binning for THnSparse
-   const Int_t nbinsSpsmass=120;
+   const Int_t nbinsSpsmass=280;
    const Int_t nbinsSpsptjet=200;
    const Int_t nbinsSpsptD=100;
    const Int_t nbinsSpsz=160;
@@ -1146,6 +1150,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
 
           if(isselected==1) {
             point[6]=masses[0];
+            point[7]=-999;
           }
           else if(isselected==3 && pdgTrue==421){
             point[6]=masses[0];
@@ -1163,6 +1168,11 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
           point[3]=masses[1];
           if(isselected==2) {
             point[6]=masses[1];
+            point[7]=-999;
+          }
+          else if(isselected==3){
+            point[6]=-999;
+            point[7]=-999;
           }
           fhsDphiz->Fill(point,1.);
       }
