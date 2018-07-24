@@ -1489,7 +1489,10 @@ void AliAnalysisTaskQAHighPtDeDxTest::ProduceArrayTrksESD( AliESDEvent *ESDevent
 
 		if(fAnalysisMC){
 
-			if(esdTrack->Charge()==0)
+			if( esdTrack->Charge()==0 )
+				continue;
+
+			if ( TMath::Abs(esdTrack->Y()) > 0.5 )
 				continue;
 
 			hMcOut[Cent][0]->Fill(esdTrack->Pt());
