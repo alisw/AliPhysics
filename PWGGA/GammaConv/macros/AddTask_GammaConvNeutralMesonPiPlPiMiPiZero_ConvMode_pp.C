@@ -214,16 +214,16 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
 
   if( trainConfig == 1 ) {
     // everything open, min pt charged pi = 100 MeV
-    cuts.AddCut("00000113","00200009327000008250400000","000010400","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","00200009327000008250400000","000010400","0103503a00000000","0103503000000000");
   } else if( trainConfig == 2 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("00000113","00200009327000008250400000","002010700","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","00200009327000008250400000","002010700","0103503a00000000","0103503000000000");
   } else if( trainConfig == 3 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 5 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("00000113","00200009327000008250400000","002013700","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","00200009327000008250400000","002013700","0103503a00000000","0103503000000000");
   } else if( trainConfig == 4 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
-    cuts.AddCut("00000113","00200009327000008250400000","002016700","0103503000000000","0103503000000000");
+    cuts.AddCut("00000113","00200009327000008250400000","002016700","0103503a00000000","0103503000000000");
   } else if( trainConfig == 5 ) {
     // closing charged pion cuts, minimum TPC cluster = 80, TPC dEdx pi = \pm 3 sigma, ITS dEdx = \pm 4 sigma, min pt charged pi = 100 MeV
     // closing neural pion cuts, 0.1 < M_gamma,gamma < 0.15
@@ -387,7 +387,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp(
   } else if ( trainConfig == 49) { // selectionWindow
     cuts.AddCut("00000113","00200009227000008250400000","302010708","0103603900000000","0153503000000000"); // 0.11 - 0.155
     cuts.AddCut("00000113","00200009227000008250400000","302010708","0103603300000000","0153503000000000"); // 0.12 - 0.145
-    cuts.AddCut("00000113","00200009227000008250400000","302010708","0103603000000000","0153503000000000"); // 0.08 - 0.145
+    cuts.AddCut("00000113","00200009227000008250400000","302010708","0103603a00000000","0153503000000000"); // 0.08 - 0.145
 
     // *************Variations in AliConversionMesonCuts (omega) ******************
   } else if ( trainConfig == 50) { // Background scheme
