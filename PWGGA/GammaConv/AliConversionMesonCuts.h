@@ -193,7 +193,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSidebandMixingRightHigh() const {return fSidebandMixingRightHigh;}
 
   protected:
-    TRandom3    fRandom;                        //!<
+    TRandom3    fRandom;                        ///<
     AliCaloPhotonCuts* fCaloPhotonCuts;         ///< CaloPhotonCutObject belonging to same main task
     TList*      fHistograms;                    ///< List of QA histograms
     TObjString* fCutString;                     ///< cut number used for analysis
@@ -215,69 +215,69 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     TF1*        fFMinOpanCut;                   ///<
     TF1*        fFMaxOpanCut;                   ///<
 
-    Double_t    fMaxR;                          //!< max r cut
-    Double_t    fMinPt;                         //!< min pT cut
-    Double_t    fSelectionLow;                  //!< lower meson inv mass window for further selection
-    Double_t    fSelectionHigh;                 //!< higher meson inv mass window for further selection
-    Double_t    fAlphaMinCutMeson;              //!< min value for meson alpha cut
-    Double_t    fAlphaCutMeson;                 //!< max value for meson alpha cut
-    Double_t    fRapidityCutMeson;              //!< max value for meson rapidity
-    Double_t    fMinV0Dist;                     //!
-    Double_t    fPBremSmearing;                 //!
-    Double_t    fPSigSmearing;                  //!
-    Double_t    fPSigSmearingCte;               //!
-    Double_t    fDCAGammaGammaCut;              //!< cut value for the maximum distance between the two photons [cm]
-    Double_t    fDCAZMesonPrimVtxCut;           //!< cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
-    Double_t    fDCARMesonPrimVtxCut;           //!< cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
-    Double_t    fMinOpanCutMeson;               //!<
-    Double_t    fMaxOpanCutMeson;               //!<
-    Double_t    fSidebandMixingLow;             //!<
-    Double_t    fSidebandMixingHigh;            //!<
-    Double_t    fSidebandMixingLeftLow;         //!<
-    Double_t    fSidebandMixingLeftHigh;        //!<
-    Double_t    fSidebandMixingRightLow;        //!<
-    Double_t    fSidebandMixingRightHigh;       //!<
+    Double_t    fMaxR;                          ///< max r cut
+    Double_t    fMinPt;                         ///< min pT cut
+    Double_t    fSelectionLow;                  ///< lower meson inv mass window for further selection
+    Double_t    fSelectionHigh;                 ///< higher meson inv mass window for further selection
+    Double_t    fAlphaMinCutMeson;              ///< min value for meson alpha cut
+    Double_t    fAlphaCutMeson;                 ///< max value for meson alpha cut
+    Double_t    fRapidityCutMeson;              ///< max value for meson rapidity
+    Double_t    fMinV0Dist;                     ///
+    Double_t    fPBremSmearing;                 ///
+    Double_t    fPSigSmearing;                  ///
+    Double_t    fPSigSmearingCte;               ///
+    Double_t    fDCAGammaGammaCut;              ///< cut value for the maximum distance between the two photons [cm]
+    Double_t    fDCAZMesonPrimVtxCut;           ///< cut value for the maximum distance in Z between the production point of the Meson & the primary vertex [cm]
+    Double_t    fDCARMesonPrimVtxCut;           ///< cut value for the maximum distance in R between the production point of the Meson & the primary vertex [cm]
+    Double_t    fMinOpanCutMeson;               ///<
+    Double_t    fMaxOpanCutMeson;               ///<
+    Double_t    fSidebandMixingLow;             ///<
+    Double_t    fSidebandMixingHigh;            ///<
+    Double_t    fSidebandMixingLeftLow;         ///<
+    Double_t    fSidebandMixingLeftHigh;        ///<
+    Double_t    fSidebandMixingRightLow;        ///<
+    Double_t    fSidebandMixingRightHigh;       ///<
 
-    Float_t     fOpeningAngle;                  //!< min opening angle for meson
+    Float_t     fOpeningAngle;                  ///< min opening angle for meson
 
-    Int_t       fMode;                          //!< running mode of ConversionMesonCuts to select different sets of cut parameters for different running modes
-    Int_t       fMesonKind;                     //!<
-    Int_t       fIsMergedClusterCut;            //!< flag for merged cluster and di cluster analysis
-    Int_t       fSelectionWindowCut;            //!< selection window for merged ana in mass
-    Int_t       fNDegreeRotationPMForBG;        //!<
-    Int_t       fNumberOfBGEvents;              //!<
-    Int_t       fElectronLabelArraySize;        //!<
+    Int_t       fMode;                          ///< running mode of ConversionMesonCuts to select different sets of cut parameters for different running modes
+    Int_t       fMesonKind;                     ///<
+    Int_t       fIsMergedClusterCut;            ///< flag for merged cluster and di cluster analysis
+    Int_t       fSelectionWindowCut;            ///< selection window for merged ana in mass
+    Int_t       fNDegreeRotationPMForBG;        ///<
+    Int_t       fNumberOfBGEvents;              ///<
+    Int_t       fElectronLabelArraySize;        ///<
     Int_t*      fElectronLabelArray;            //[fElectronLabelArraySize] Array with elec/pos v0 label
-    Int_t       fBackgroundHandler;             //!<
+    Int_t       fBackgroundHandler;             ///<
 
-    Bool_t      fDoLightOutput;                 //!< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
-    Bool_t      fDoMinPtCut;                    //!< do min pT cut
-    Bool_t      fEnableMassCut;                 //!< flag to enable mass cut
-    Bool_t      fAcceptMesonMass;               //!< flag to distinguish rejecting and accepting meson mass window for further analysis
-    Bool_t      fUseRotationMethodInBG;         //!< flag to apply rotation method for meson bg estimation
-    Bool_t      fUsePtmaxMethodForBG;           //!< flag to apply Ptmax method
-    Bool_t      fDoBG;                          //!< flag to intialize BG
-    Bool_t      fDoBGProbability;               //!< flag to use probability method for meson bg estimation
-    Bool_t      fUseTrackMultiplicityForBG;     //!< flag to use track multiplicity for meson bg estimation (else V0 mult)
-    Bool_t      fEnableMinOpeningAngleCut;      //!< flag to enable min opening angle cut
-    Bool_t      fEnableOneCellDistCut;          //!< flag to enable 1 cell dist cut
-    Bool_t      fDoToCloseV0sCut;               //!<
-    Bool_t      fDoSharedElecCut;               //!<
-    Bool_t      fUseMCPSmearing;                //!< flag
-    Bool_t      fAlphaPtDepCut;                 //!<
-    Bool_t      fDCAGammaGammaCutOn;            //!< cut flag for the maximum distance between the two photons
-    Bool_t      fDCAZMesonPrimVtxCutOn;         //!< cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex
-    Bool_t      fDCARMesonPrimVtxCutOn;         //!< cut flag for the maximum distance in R between the production point of the Meson & the primary vertex
-    Bool_t      fMinOpanPtDepCut;               //!<
-    Bool_t      fMaxOpanPtDepCut;               //!<
-    Bool_t      fBackgroundUseSideband;         //!<
-    Bool_t      fBackgroundUseSidebandBothSides;//!<
-    Bool_t      fBackgroundUseLikeSign;         //!<
+    Bool_t      fDoLightOutput;                 ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Bool_t      fDoMinPtCut;                    ///< do min pT cut
+    Bool_t      fEnableMassCut;                 ///< flag to enable mass cut
+    Bool_t      fAcceptMesonMass;               ///< flag to distinguish rejecting and accepting meson mass window for further analysis
+    Bool_t      fUseRotationMethodInBG;         ///< flag to apply rotation method for meson bg estimation
+    Bool_t      fUsePtmaxMethodForBG;           ///< flag to apply Ptmax method
+    Bool_t      fDoBG;                          ///< flag to intialize BG
+    Bool_t      fDoBGProbability;               ///< flag to use probability method for meson bg estimation
+    Bool_t      fUseTrackMultiplicityForBG;     ///< flag to use track multiplicity for meson bg estimation (else V0 mult)
+    Bool_t      fEnableMinOpeningAngleCut;      ///< flag to enable min opening angle cut
+    Bool_t      fEnableOneCellDistCut;          ///< flag to enable 1 cell dist cut
+    Bool_t      fDoToCloseV0sCut;               ///<
+    Bool_t      fDoSharedElecCut;               ///<
+    Bool_t      fUseMCPSmearing;                ///< flag
+    Bool_t      fAlphaPtDepCut;                 ///<
+    Bool_t      fDCAGammaGammaCutOn;            ///< cut flag for the maximum distance between the two photons
+    Bool_t      fDCAZMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in Z between the production point of the Meson & the primary vertex
+    Bool_t      fDCARMesonPrimVtxCutOn;         ///< cut flag for the maximum distance in R between the production point of the Meson & the primary vertex
+    Bool_t      fMinOpanPtDepCut;               ///<
+    Bool_t      fMaxOpanPtDepCut;               ///<
+    Bool_t      fBackgroundUseSideband;         ///<
+    Bool_t      fBackgroundUseSidebandBothSides;///<
+    Bool_t      fBackgroundUseLikeSign;         ///<
 
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,23)
+    ClassDef(AliConversionMesonCuts,24)
     /// \endcond
 };
 

@@ -171,7 +171,7 @@ protected:
   TList**                             fTrueList;                              // Array of lists with histograms with MC validated reconstructed properties
   TList**                             fMCList;                                // Array of lists with histograms with pure MC information
   TList*                              fOutputContainer;                       // Output container
-  TList*                              fGammaCandidates;                       // current list of photon candidates
+  TList*                              fGammaCandidates;                       //! current list of photon candidates
   TList*                              fClusterCandidates;                     //! current list of cluster candidates
   TList*                              fEventCutArray;                         // List with Event Cuts
   TList*                              fCutArray;                              // List with Conversion Cuts
@@ -287,36 +287,36 @@ protected:
   Int_t*                  fESDArrayPos;                                       //[fNGammaCandidates]
   Int_t*                  fESDArrayNeg;                                       //[fNGammaCandidates]
 
-  Double_t                fEventPlaneAngle;                                   //! EventPlaneAngle
-  Double_t                fMesonInvMassMin;                                   //! minimum inv mass for histos
-  Double_t                fMesonInvMassMax;                                   //! maximum inv mass for histos
-  Double_t                fMesonInvMassNBins;                                 //! Number of bins for inv mass histos
-  Double_t                fWeightJetJetMC;                                    //! weight for Jet-Jet MC
+  Double_t                fEventPlaneAngle;                                   // EventPlaneAngle
+  Double_t                fMesonInvMassMin;                                   // minimum inv mass for histos
+  Double_t                fMesonInvMassMax;                                   // maximum inv mass for histos
+  Double_t                fMesonInvMassNBins;                                 // Number of bins for inv mass histos
+  Double_t                fWeightJetJetMC;                                    // weight for Jet-Jet MC
 
-  Int_t                   fNGammaCandidates;                                  //! number of gamma candidates in event
-  Int_t                   fnCuts;                                             //! number of cuts to be analysed in parallel
-  Int_t                   fiCut;                                              //! current cut
-  Int_t                   fIsHeavyIon;                                        //! switch for pp = 0, PbPb = 1, pPb = 2
-  Int_t                   fMesonRecoMode;                                     //! switch for running with different reconstruction modes: 0 - PCM-PCM, 1 - PCM-Calo, 2 - Calo-Calo
-  Int_t                   fMesonType;                                         //! selector for meson analysis
-  Int_t                   fMesonPDG;                                          //! PDG code for selected meson
-  Int_t                   fDoMesonQA;                                         //! flag for meson QA
-  Int_t                   fDoPhotonQA;                                        //! flag for photon QA
-  Int_t                   fDoClusterQA;                                       //! flag for cluster QA
-  Int_t                   fIsMC;                                              //! flag for MC information
+  Int_t                   fNGammaCandidates;                                  // number of gamma candidates in event
+  Int_t                   fnCuts;                                             // number of cuts to be analysed in parallel
+  Int_t                   fiCut;                                              // current cut
+  Int_t                   fIsHeavyIon;                                        // switch for pp = 0, PbPb = 1, pPb = 2
+  Int_t                   fMesonRecoMode;                                     // switch for running with different reconstruction modes: 0 - PCM-PCM, 1 - PCM-Calo, 2 - Calo-Calo
+  Int_t                   fMesonType;                                         // selector for meson analysis
+  Int_t                   fMesonPDG;                                          // PDG code for selected meson
+  Int_t                   fDoMesonQA;                                         // flag for meson QA
+  Int_t                   fDoPhotonQA;                                        // flag for photon QA
+  Int_t                   fDoClusterQA;                                       // flag for cluster QA
+  Int_t                   fIsMC;                                              // flag for MC information
 
-  Bool_t                  fMoveParticleAccordingToVertex;                     //! boolean for BG calculation
-  Bool_t                  fDoLightOutput;                                     //! switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
-  Bool_t                  fIsFromDesiredHeader;                               //! flag for MC headers
-  Bool_t                  fIsOverlappingWithOtherHeader;                      //! flag for particles in MC overlapping between headers
-  Bool_t                  fDoTHnSparse;                                       //! flag for using THnSparses for background estimation
-  Bool_t                  fSetPlotHistsExtQA;                                 //! flag for extended QA hists
-  Bool_t                  fDoConvGammaShowerShapeTree;                        //! flag for tree with conv gamma R vs energy vs shower shape
-  Bool_t                  fEnableSortForClusMC;                               //! switch on sorting for MC labels in cluster
-  Bool_t                  fDoPrimaryTrackMatching;                            //! switch for basic track matching for primaries
-  Bool_t                  fDoInvMassShowerShapeTree;                          //! flag for producing tree tESDInvMassShowerShape
-  Bool_t                  fAllowOverlapHeaders;                               //! enable overlapping headers for cluster selection
-  Bool_t                  fEnableClusterCutsForTrigger;                       //! enable CLusterCuts output for trigger only
+  Bool_t                  fMoveParticleAccordingToVertex;                     // boolean for BG calculation
+  Bool_t                  fDoLightOutput;                                     // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+  Bool_t                  fIsFromDesiredHeader;                               // flag for MC headers
+  Bool_t                  fIsOverlappingWithOtherHeader;                      // flag for particles in MC overlapping between headers
+  Bool_t                  fDoTHnSparse;                                       // flag for using THnSparses for background estimation
+  Bool_t                  fSetPlotHistsExtQA;                                 // flag for extended QA hists
+  Bool_t                  fDoConvGammaShowerShapeTree;                        // flag for tree with conv gamma R vs energy vs shower shape
+  Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
+  Bool_t                  fDoPrimaryTrackMatching;                            // switch for basic track matching for primaries
+  Bool_t                  fDoInvMassShowerShapeTree;                          // flag for producing tree tESDInvMassShowerShape
+  Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
+  Bool_t                  fEnableClusterCutsForTrigger;                       // enable CLusterCuts output for trigger only
 
 private:
   AliAnalysisTaskHeavyNeutralMesonToGG(const AliAnalysisTaskHeavyNeutralMesonToGG&); // Prevent copy-construction
