@@ -661,10 +661,7 @@ void AliAnalysisTaskEbyeNetChargeFluctuations::doMCAODEvent(){
     fEventStatistics->Fill("centrality selection",1);
     
     fHistZVertexCent->Fill(zv, fCentrality);
-    
-    if (!fEventCuts.AcceptEvent(fInputEvent)) return;
-    fEventStatistics->Fill("AliEventCuts",1);
-    
+        
     fArrayMC = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!fArrayMC)
         AliFatal("No array of MC particles found !!!");
