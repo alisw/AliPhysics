@@ -805,16 +805,7 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
   }
 
   fConversionCuts->FillV0EtaBeforedEdxCuts(fCurrentV0->Eta());
-  if (!fConversionCuts->dEdxCuts(posTrack)) {
-    fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kdEdxCuts);
-    return 0x0;
-  }
-  // PID Cuts
-  if(!fConversionCuts->dEdxCuts(negTrack)) {
-    fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kdEdxCuts);
-    return 0x0;
-  }
-  fConversionCuts->FillV0EtaAfterdEdxCuts(fCurrentV0->Eta());
+
   // Reconstruct Photon
   AliKFConversionPhoton *fCurrentMotherKF=NULL;
   //    fUseConstructGamma = kFALSE;
@@ -834,6 +825,19 @@ AliKFConversionPhoton *AliV0ReaderV1::ReconstructV0(AliESDv0 *fCurrentV0,Int_t c
     fCurrentMotherKF = new AliKFConversionPhoton(fCurrentNegativeKFParticle,fCurrentPositiveKFParticle);
     fCurrentMotherKF->SetMassConstraint(0,0.0001);
   }
+
+  // PID Cuts- positive track
+  if (!fConversionCuts->dEdxCuts(posTrack,fCurrentMotherKF)) {
+    fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kdEdxCuts);
+    return 0x0;
+  }
+  // PID Cuts - negative track
+  if(!fConversionCuts->dEdxCuts(negTrack,fCurrentMotherKF)) {
+    fConversionCuts->FillPhotonCutIndex(AliConversionPhotonCuts::kdEdxCuts);
+    return 0x0;
+  }
+  fConversionCuts->FillV0EtaAfterdEdxCuts(fCurrentV0->Eta());
+
 
   // Set Track Labels
 
@@ -1501,9 +1505,6 @@ Bool_t AliV0ReaderV1::ParticleIsConvertedPhoton(AliMCEvent *mcEvent, TParticle *
     }
     if( eNeg->R() <= ((TMath::Abs(eNeg->Vz()) * lineCutZRSlope) - lineCutZValue)){
       return kFALSE; // line cut to exclude regions where we do not reconstruct
-    }
-    if (ePos->Pt() < 0.05 || eNeg->Pt() < 0.05){
-      return kFALSE;
     }
 
     return kTRUE;

@@ -112,8 +112,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   Int_t        GetMCIndex(Int_t mcTag);
   
-  void         SetTriggerDetector(TString & det)     ;
-  void         SetTriggerDetector(Int_t  det)        ;
+  void         SetTriggerDetector(TString det)     ;
+  void         SetTriggerDetector(Int_t   det)     ;
   void         SetNCones(Int_t ncs)                  { fNCones          = ncs    ; }
   void         SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt    ; }
   void         SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r      ; }

@@ -71,11 +71,11 @@ AliAnalysisTaskFemto* AddTaskFemtoWithConfig(TString configuration,
 
   const std::string CONFIG_DEFAULTS
 	  = "{ directory:'$ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train'"
-            ", container:'femtolist'"
-            ", output_container:'PWG2FEMTO'"
-            ", task_name:'TaskConfigured'"
-            ", subwagon_type:'centrality'"
-            "}";
+      ", container:'femtolist'"
+      ", output_container:'PWG2FEMTO'"
+      ", task_name:'TaskConfigured'"
+      ", subwagon_type:'centrality'"
+      "}";
 
 
   const AliFemtoConfigObject cfg
@@ -89,6 +89,11 @@ AliAnalysisTaskFemto* AddTaskFemtoWithConfig(TString configuration,
     return nullptr;
   }
 
+  TString task_name, container, output_container, subwagon_type;
+  cfg.find_and_load("task_name", task_name);
+  cfg.find_and_load("container", container);
+  cfg.find_and_load("output_container", output_container);
+  cfg.find_and_load("subwagon_type", subwagon_type);
 
   // Get the global manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -97,31 +102,11 @@ AliAnalysisTaskFemto* AddTaskFemtoWithConfig(TString configuration,
     return NULL;
   }
 
-
-  TString macro = DEFAULT_MACRO
-        , output_filename = mgr->GetCommonFileName()
-        , task_name = DEFAULT_TASK_NAME
-        , container = DEFAULT_CONTAINER_NAME
-        , output_container = DEFAULT_OUTPUT_CONTAINER
-        , subwagon_type = DEFAULT_SUBWAGON_TYPE
-        ;
+  TString output_filename = mgr->GetCommonFileName();
 
   bool verbose = kFALSE;
 
-  TObjArray* lines = configuration.Tokenize("\n;");
-
-  TIter next_line(lines);
-  TObject *line_obj = NULL;
-
-  while (line_obj = next_line()) {
-    TString cmd = ((TObjString*)line_obj)->String().Strip(TString::kBoth, ' ');
-    cmd.ReplaceAll("'", '"');
-    gROOT->ProcessLineFast(cmd + ';');
-  }
-
   // Replace %% with this directory for convenience
-  macro.ReplaceAll("%%", AUTO_DIRECTORY);
-
   if (macro == "") {
     std::cerr << "\n\n"
                  "ERROR - AddTaskFemtoWithConfig - No setup macro provided.\n"
@@ -154,7 +139,7 @@ AliAnalysisTaskFemto* AddTaskFemtoWithConfig(TString configuration,
 
   const TString outputfile = (output_container == "")
                            ? output_filename
-                           : TString::Format("%s:%s", output_filename.Data(), output_container.Data());
+                           : output_filename + ":" + output_container);
 
   AliAnalysisDataContainer *out_container = mgr->CreateContainer(container,
                                                                  TList::Class(),

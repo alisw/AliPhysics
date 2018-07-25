@@ -1,4 +1,4 @@
-AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskHFv1::DecChannel decCh=AliAnalysisTaskHFv1::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskHFv1::EventPlaneMeth flagep=AliAnalysisTaskHFv1::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskHFv1::FlowMethod meth=AliAnalysisTaskHFv1::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskHFv1::q2Method q2meth=AliAnalysisTaskHFv1::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=1)
+AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString filename="alien:///alice/cern.ch/user/a/abarbano/DstoKKpiCutsCentrality20to50_strongPID.root",AliAnalysisTaskHFv1::DecChannel decCh=AliAnalysisTaskHFv1::kDstoKKpi,TString cutsobjname="AnalysisCuts", Bool_t readMC=kFALSE, TString suffix="", AliAnalysisTaskHFv1::EventPlaneMeth flagep=AliAnalysisTaskHFv1::kVZERO/*kTPC,kTPCVZERO,kVZEROA,kVZEROC*/,Float_t minC=20.,Float_t maxC=50., Bool_t useNewQnFw=kTRUE, AliAnalysisTaskHFv1::FlowMethod meth=AliAnalysisTaskHFv1::kEP/*kSP,kEvShape*/, TString normMethod="QoverM"/*"QoverQlength","QoverSqrtM"*/,AliAnalysisTaskHFv1::q2Method q2meth=AliAnalysisTaskHFv1::kq2TPC/*kq2PosTPC,kq2NegTPC,kq2VZERO,kq2VZEROA,kq2VZEROC}*/, Int_t useAODProtection=1, Bool_t scaling = kFALSE)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D
@@ -64,8 +64,19 @@ AliAnalysisTaskHFv1 *AddTaskHFv1(Int_t harm, Bool_t separateD0D0bar, TString fil
     AliFatal("Specific AliRDHFCuts not found");
   }
     
+    TF1 *eff = new TF1("pol2","pol2",3,36);
+    eff->SetParameter(0,-0.05);
+    eff->SetParameter(1,0.02);
+    eff->SetParameter(2,-0.0003);
+    
+    
+    
   // Analysis task
   AliAnalysisTaskHFv1 *v2Task = new AliAnalysisTaskHFv1("HFvnAnalysis",analysiscuts,decCh);
+    
+  v2Task->SetFunctionForEffScaling(eff);
+  v2Task->SetScalingEff(scaling);
+
   v2Task->SetScalProdLimit(1.75);
   v2Task->SetCentralityBinWidthPerMil(100);
   v2Task->SetHarmonic(harm);

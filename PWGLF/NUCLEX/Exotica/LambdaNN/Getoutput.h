@@ -29,6 +29,10 @@ class Getoutput {
    void DrawResults();
   void ClearInputData();
 
+  void SetMC(){fIsMC=kTRUE;}
+  void SetAODCuts(){fUseAODCut=kTRUE;}
+  void SetTOFpid(){fIncludePidTOF=kTRUE;}
+  void Set3HPcut(Double_t pMin){f3HPcut=pMin;}
   void BookOutputData();
   Double_t GetInvMass (TVector3 vPos, TVector3 vNeg, Double_t mPos, Double_t mNeg);
   bool EventSelectionAOD(Double_t *arr);
@@ -36,7 +40,9 @@ class Getoutput {
   Bool_t fIsMC;
   Bool_t fIncludePidTOF;
   Bool_t fRejectBkg; // useful in case like-sign V0 are produced
+  Bool_t fUseAODCut;
   Int_t f3Hsign;
+  Double_t f3HPcut;
   Double_t array[28];
   Float_t param[20];
 
@@ -48,6 +54,7 @@ class Getoutput {
   TH1F *hDecayLength[5];
   TH1F *hProdVtx[5];
   TH1F *hMass[5];
+  TH1F *hMassTrd[5];
   TH1F *hMassBkg;
   TH1F *hMassSignal;
   TH1F *hMassContrib[2][7]; // quark u&d, s,c,b for pion and triton
@@ -64,8 +71,13 @@ class Getoutput {
   TH2F *hArmPlotSel[5];
   TH2F *hTPCsignalPi;
   TH2F *hTPCsignalTri;
+  TH2F *hTPCsignalTriAll;
+  TH2F *hTPCsignalPiClean;
+  TH2F *hTPCsignalTriClean;
   TH2F* hTPCsignalTri91Lim;
+  TH2F* hTPCsignalTriTrd;
   TH2F *hMumCheck[2];
+  TH1I *hMonitorPlot;
  
 
   TNtupleD *ntTot;
@@ -90,7 +102,7 @@ enum { kPposx, kPposy, kPposz, kPnegx, kPnegy, kPnegz,	//0-5
 
 enum {
  kParMinP, kParMinPv0, kParMaxP3H, kParPiLim, kPar3hLim, kParNclusITS, kParNsigmaPID, kParNsigmaTOFmass, kParDcaTriZ, kParCosP, kParV0Dca,
- kK0MassLow, kK0MassHigh, kLambdaMassLow, kLambdaMassHigh,kGammaMassHigh
+ kK0MassLow, kK0MassHigh, kLambdaMassLow, kLambdaMassHigh,kGammaMassHigh,kTOFpid,kIsMc,kPIDResponseYear,k3HPlim
 };
 #endif
 

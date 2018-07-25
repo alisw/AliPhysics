@@ -204,7 +204,7 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(  Int_t     selectedMeson             
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskHeavyNeutralMesonToGG *task=NULL;
-  task= new AliAnalysisTaskHeavyNeutralMesonToGG(Form("HeavyNeutralMesonToGG_%i",trainConfig));
+  task= new AliAnalysisTaskHeavyNeutralMesonToGG(Form("HeavyNeutralMesonToGG_%i_%i_%i", mesonRecoMode, selectedMeson, trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
@@ -217,37 +217,55 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(  Int_t     selectedMeson             
   //create cut handler
   CutHandlerHeavyMesonCalo cuts;
 
+  //****************************************************************
   // Run 1, EMC
+  //****************************************************************
   if (trainConfig == 1){
-    cuts.AddCut("80010113","1111100057032230000","01631031000000d0"); // default MB
-    cuts.AddCut("80052113","1111100057032230000","01631031000000d0"); // default EMC7
-    cuts.AddCut("80083113","1111100057032230000","01631031000000d0"); // default EG1
-    cuts.AddCut("80085113","1111100057032230000","01631031000000d0"); // default EG2
+    cuts.AddCut("80010113","1111100057032230000","01631030000000d0"); // default MB
+    cuts.AddCut("80052113","1111100057032230000","01631030000000d0"); // default EMC7
+    cuts.AddCut("80083113","1111100057032230000","01631030000000d0"); // default EG1
+    cuts.AddCut("80085113","1111100057032230000","01631030000000d0"); // default EG2
   } else if (trainConfig == 2){
-    cuts.AddCut("80010113","1111141057032230000","01631031000000d0"); // default MB
-    cuts.AddCut("80052113","1111141057032230000","01631031000000d0"); // default EMC7
-    cuts.AddCut("80083113","1111141057032230000","01631031000000d0"); // default EG1
-    cuts.AddCut("80085113","1111141057032230000","01631031000000d0"); // default EG2
-  // Run 1, PHOS
-  } else if (trainConfig == 100){
-    cuts.AddCut("80010113","2444400041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
-    cuts.AddCut("80062113","2444400041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
-  } else if (trainConfig == 101){
-    cuts.AddCut("80010113","2444451041013200000","0163103100000010"); //standart cut, kINT7 // PHOS clusters
-    cuts.AddCut("80062113","2444451041013200000","0163103100000010"); //standard cut, kPHI7  // PHOS clusters
+    cuts.AddCut("80010113","1111141057032230000","01631030000000d0"); // default MB
+    cuts.AddCut("80052113","1111141057032230000","01631030000000d0"); // default EMC7
+    cuts.AddCut("80083113","1111141057032230000","01631030000000d0"); // default EG1
+    cuts.AddCut("80085113","1111141057032230000","01631030000000d0"); // default EG2
+  } else if (trainConfig == 3){
+    cuts.AddCut("80010113","1111100057032230000","0163103b000000d0"); // default MB
+    cuts.AddCut("80052113","1111100057032230000","0163103b000000d0"); // default EMC7
+    cuts.AddCut("80083113","1111100057032230000","0163103b000000d0"); // default EG1
+    cuts.AddCut("80085113","1111100057032230000","0163103b000000d0"); // default EG2
 
+  //****************************************************************
+  // Run 1, PHOS
+  //****************************************************************
+  } else if (trainConfig == 100){
+    cuts.AddCut("80010113","2444400041013200000","0163103000000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCut("80062113","2444400041013200000","0163103000000010"); //standard cut, kPHI7  // PHOS clusters
+  } else if (trainConfig == 101){
+    cuts.AddCut("80010113","2444451041013200000","0163103000000010"); //standart cut, kINT7 // PHOS clusters
+    cuts.AddCut("80062113","2444451041013200000","0163103000000010"); //standard cut, kPHI7  // PHOS clusters
+
+  //****************************************************************
   // Run 2, EMC
+  //****************************************************************
   } else if (trainConfig == 300){
-    cuts.AddCut("80010113","1111100057032230000","01631031000000d0"); // default MB
-    cuts.AddCut("80210113","1111100057032230000","01631031000000d0"); // default 0-20
+    cuts.AddCut("80010113","1111100057032230000","01631030000000d0"); // default MB
+    cuts.AddCut("80210113","1111100057032230000","01631030000000d0"); // default 0-20
+
+  //****************************************************************
   // Run 2, DMC
+  //****************************************************************
   } else if (trainConfig == 400){
-    cuts.AddCut("80010113","3885500057032230000","01631031000000d0"); // default MB
-    cuts.AddCut("80210113","3885500057032230000","01631031000000d0"); // default 0-20
-    // Run 2, PHOS
+    cuts.AddCut("80010113","3885500057032230000","01631030000000d0"); // default MB
+    cuts.AddCut("80210113","3885500057032230000","01631030000000d0"); // default 0-20
+
+  //****************************************************************
+  // Run 2, PHOS
+  //****************************************************************
   } else if (trainConfig == 500){
-    cuts.AddCut("80010113","2446600051013200000","0163103100000010"); // default MB
-    cuts.AddCut("80210113","2446600051013200000","0163103100000010"); // default 0-20
+    cuts.AddCut("80010113","2446600051013200000","0163103000000010"); // default MB
+    cuts.AddCut("80210113","2446600051013200000","0163103000000010"); // default 0-20
 
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -342,9 +360,10 @@ void AddTask_GammaHeavyMeson_CaloMode_pPb(  Int_t     selectedMeson             
     analysisClusterCuts[i]->SetFillCutHistograms("");
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    if (runLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
-    analysisMesonCuts[i]->SetRunningMode(2);
+    analysisMesonCuts[i]->SetLightOutput(runLightOutput);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
+    analysisMesonCuts[i]->SetIsMergedClusterCut(2);
+    analysisMesonCuts[i]->SetCaloMesonCutsObject(analysisClusterCuts[i]);
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);

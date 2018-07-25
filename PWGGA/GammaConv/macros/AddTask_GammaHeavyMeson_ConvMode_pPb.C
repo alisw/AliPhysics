@@ -29,28 +29,38 @@ class CutHandlerHeavyMesonConv{
   public:
     CutHandlerHeavyMesonConv(Int_t nMax=10){
       nCuts=0; nMaxCuts=nMax; validCuts = true;
-      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts];
-      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = "";}
+      eventCutArray = new TString[nMaxCuts]; photonCutArray = new TString[nMaxCuts]; mesonCutArray = new TString[nMaxCuts]; clusterCutArray = new TString[nMaxCuts];
+      for(Int_t i=0; i<nMaxCuts; i++) {eventCutArray[i] = ""; photonCutArray[i] = ""; mesonCutArray[i] = ""; clusterCutArray[i] = "";}
     }
 
     void AddCut(TString eventCut, TString photonCut, TString mesonCut){
       if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerHeavyMesonConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
       if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 ) {cout << "ERROR in CutHandlerHeavyMesonConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
-      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut;
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]="";
       nCuts++;
       return;
     }
+    void AddCut(TString eventCut, TString photonCut, TString mesonCut, TString clusterCut){
+      if(nCuts>=nMaxCuts) {cout << "ERROR in CutHandlerHeavyMesonConv: Exceeded maximum number of cuts!" << endl; validCuts = false; return;}
+      if( eventCut.Length()!=8 || photonCut.Length()!=26 || mesonCut.Length()!=16 || clusterCut.Length()!=19 ) {cout << "ERROR in CutHandlerHeavyMesonConv: Incorrect length of cut string!" << endl; validCuts = false; return;}
+      eventCutArray[nCuts]=eventCut; photonCutArray[nCuts]=photonCut; mesonCutArray[nCuts]=mesonCut; clusterCutArray[nCuts]=clusterCut;
+      nCuts++;
+      return;
+    }
+
     Bool_t AreValid(){return validCuts;}
     Int_t GetNCuts(){if(validCuts) return nCuts; else return 0;}
     TString GetEventCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return eventCutArray[i]; else{cout << "ERROR in CutHandlerHeavyMesonConv: GetEventCut wrong index i" << endl;return "";}}
     TString GetPhotonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return photonCutArray[i]; else {cout << "ERROR in CutHandlerHeavyMesonConv: GetPhotonCut wrong index i" << endl;return "";}}
     TString GetMesonCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return mesonCutArray[i]; else {cout << "ERROR in CutHandlerHeavyMesonConv: GetMesonCut wrong index i" << endl;return "";}}
+    TString GetClusterCut(Int_t i){if(validCuts&&i<nMaxCuts&&i>=0) return clusterCutArray[i]; else {cout << "ERROR in CutHandlerHeavyMesonConv: GetClusterCut wrong index i" << endl;return "";}}
   private:
     Bool_t validCuts;
     Int_t nCuts; Int_t nMaxCuts;
     TString* eventCutArray;
     TString* photonCutArray;
     TString* mesonCutArray;
+    TString* clusterCutArray;
 };
 
 //***************************************************************************************
@@ -179,7 +189,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pPb(  Int_t     selectedMeson             
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskHeavyNeutralMesonToGG *task=NULL;
-  task= new AliAnalysisTaskHeavyNeutralMesonToGG(Form("HeavyNeutralMesonToGG_%i",trainConfig));
+  task= new AliAnalysisTaskHeavyNeutralMesonToGG(Form("HeavyNeutralMesonToGG_%i_%i_%i", mesonRecoMode, selectedMeson, trainConfig));
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
@@ -191,14 +201,20 @@ void AddTask_GammaHeavyMeson_ConvMode_pPb(  Int_t     selectedMeson             
   //create cut handler
   CutHandlerHeavyMesonConv cuts;
 
+  //****************************************************************
   // Run1 default
+  //****************************************************************
   if (trainConfig == 1){
-    cuts.AddCut("80010113","00200009327000008250400000","0163103100000010");
+    cuts.AddCut("80010113","00200009327000008250400000","0163103000000010");
+  } else if (trainConfig == 2){
+    cuts.AddCut("80010113","00200009327000008250400000","0163103b00000010");
 
+  //****************************************************************
   // Run2 default
+  //****************************************************************
   } else if (trainConfig == 100){
-    cuts.AddCut("80010113","00200009327000008250400000","0163103100000010");
-    cuts.AddCut("80210113","00200009327000008250400000","0163103100000010");
+    cuts.AddCut("80010113","00200009327000008250400000","0163103000000010");
+    cuts.AddCut("80210113","00200009327000008250400000","0163103000000010");
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -279,7 +295,7 @@ void AddTask_GammaHeavyMeson_ConvMode_pPb(  Int_t     selectedMeson             
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
     if (runLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
-    analysisMesonCuts[i]->SetRunningMode(2);
+    analysisMesonCuts[i]->SetRunningMode(0);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
     analysisMesonCuts[i]->SetFillCutHistograms("");

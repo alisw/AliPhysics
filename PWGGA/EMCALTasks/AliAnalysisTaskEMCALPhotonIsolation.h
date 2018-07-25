@@ -77,6 +77,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         UserCreateOutputObjects();
   virtual AliHistogramRanges * GetHistogramRangesAndBinning()                                               { if(!fHistoRangeContainer) fHistoRangeContainer = new AliHistogramRanges(); return fHistoRangeContainer; }
   
+  void                         SetMinClusterEnergy         ( Float_t minE                                 ) { fMinClusterEnergy = minE ;                                }
   void                         SetIsoConeRadius            ( Float_t r                                    ) { fIsoConeRadius = r ;                                      }
   void                         SetEtIsoThreshold           ( Float_t r                                    ) { fEtIsoThreshold = r ;                                     }
   void                         SetCTMdeltaEta              ( Float_t r                                    ) { fdetacut = r ;                                            }
@@ -124,158 +125,168 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   void                         Set2012L1Analysis           ( Bool_t  is2012L1                             ) { f2012EGA = is2012L1;                                      }
   void                         SetANWithNoSameTcard        ( Bool_t  iNoSameTCard                         ) { fANnoSameTcard = iNoSameTCard;                            }
   void                         SetPythiaVersion            ( TString pythiaVersion                        ) { fPythiaVersion = pythiaVersion;                           }
+  void                         SetVariableCPV              ( Bool_t  variable                             ) { fVariableCPV = variable;                                  }
+  void                         SetVariableCPVInCone        ( Bool_t  variable                             ) { fVariableCPVInCone = variable;                            }
+  void                         SetNonLinRecoEnergyScaling  ( Bool_t  scaling                              ) { fNonLinRecoEnergyScaling = scaling;                       }
   
  protected:
   
-  void                         FillQAHistograms          ( AliVCluster * coi, TLorentzVector vecCOI                                                    ); // Fill some QA histograms
-  void                         EtIsoCellPhiBand          ( TLorentzVector c , Double_t &etIso      , Double_t &phiBand                                 ); // EIsoCone via Cells UE via PhiBand EMCal
-  void                         EtIsoCellEtaBand          ( TLorentzVector c , Double_t &etIso      , Double_t &etaBand                                 ); // EIsoCone via Cells UE via EtaBand EMCal
-  void                         EtIsoClusPhiBand          ( TLorentzVector c , Double_t m02candidate, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
-  void                         EtIsoClusEtaBand          ( TLorentzVector c , Double_t m02candidate, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
-  void                         EtIsoClusExtraOrthCones   ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &cones  , Int_t index ); // EIsoCone via Clusters + Track but extrapolated charged UE with orthogonal cones
-  void                         PtIsoTrackPhiBand         ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &phiBand              ); // PIsoCone via Track UE via PhiBand TPC
-  void                         PtIsoTrackEtaBand         ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &etaBand              ); // PIsoCone via Track UE via EtaBand TPC
-  void                         PtIsoTrackOrthCones       ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &cones                ); // PIsoCone via Tracks UE via Orthogonal Cones in Phi
-  void                         PtIsoTrackFullTPC         ( TLorentzVector c , Double_t &ptIso      , Double_t &full                                    ); // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
-  void                         ComputeConeAreaInEMCal    ( Double_t etaCand , Double_t phiCand     , Double_t &coneArea                                ); // Iso cone area depending on the cluster position (neutral + charged)
-  void                         ComputeConeAreaInTPC      ( Double_t etaCand , Double_t &coneArea                                                       ); // Iso cone area depending on the cluster position (charged-only)
-  void                         ComputeEtaBandAreaInEMCal ( Double_t phiCand , Double_t coneArea    , Double_t &etaBandArea                             ); // Eta-band area depending on the cluster position (neutral + charged)
-  void                         ComputeEtaBandAreaInTPC   ( Double_t coneArea, Double_t &etaBandArea                                                    ); // Eta-band area depending on the cluster position (charged-only)
-  void                         ComputePhiBandAreaInEMCal ( Double_t etaCand , Double_t coneArea    , Double_t &phiBandArea                             ); // Phi-band area depending on the cluster position (neutral + charged)
-  void                         ComputePhiBandAreaInTPC   ( Double_t etaCand , Double_t coneArea    , Double_t &phiBandArea                             ); // Phi-band area depending on the cluster position (charged-only
-  void                         ApplySmearing             ( AliVCluster * coi, Double_t &m02COI                                                         ); // Applying smearing on MC
-
-  Bool_t                       ClustTrackMatching    ( AliVCluster * emccluster, Bool_t candidate );
-  Int_t                        GetNLM                ( AliVCluster * coi, AliVCaloCells * cells );
-  Int_t                        GetNLM                ( AliVCluster * coi, AliVCaloCells * cells, Int_t * absIdList, Float_t * maxEList );
-  Bool_t                       AreNeighbours         ( Int_t abscell1, Int_t abscell2 ) const;
-  Float_t                      RecalEnClust          ( AliVCluster * cluster, AliVCaloCells * cells );
-  void                         RecalAmpCell          ( Float_t &amp, Int_t absId ) const ;
-  Bool_t                       IsAbsIDsFromTCard     ( Int_t absId1, Int_t absId2, Int_t & rowDiff, Int_t & colDiff ) const ;
-
-  Bool_t                       CheckBoundaries       ( TLorentzVector vecCOI );
-  void                         FillInvMassHistograms ( Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index, Double_t isolation );
+  void                         FillQAHistograms            ( AliVCluster * coi, TLorentzVector vecCOI                                                    ); // Fill some QA histograms
+  void                         EtIsoCellPhiBand            ( TLorentzVector c , Double_t &etIso      , Double_t &phiBand                                 ); // EIsoCone via Cells UE via PhiBand EMCal
+  void                         EtIsoCellEtaBand            ( TLorentzVector c , Double_t &etIso      , Double_t &etaBand                                 ); // EIsoCone via Cells UE via EtaBand EMCal
+  void                         EtIsoClusPhiBand            ( TLorentzVector c , Double_t m02candidate, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
+  void                         EtIsoClusEtaBand            ( TLorentzVector c , Double_t m02candidate, Double_t &etIso  , Double_t &etaBand, Int_t index ); // EIsoCone via Clusters + Track UE via EtaBand EMCal
+  void                         EtIsoClusExtraOrthCones     ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &cones  , Int_t index ); // EIsoCone via Clusters + Track but extrapolated charged UE with orthogonal cones
+  void                         PtIsoTrackPhiBand           ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &phiBand              ); // PIsoCone via Track UE via PhiBand TPC
+  void                         PtIsoTrackEtaBand           ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &etaBand              ); // PIsoCone via Track UE via EtaBand TPC
+  void                         PtIsoTrackOrthCones         ( TLorentzVector c , Double_t m02candidate, Double_t &ptIso  , Double_t &cones                ); // PIsoCone via Tracks UE via Orthogonal Cones in Phi
+  void                         PtIsoTrackFullTPC           ( TLorentzVector c , Double_t &ptIso      , Double_t &full                                    ); // PIsoCone via Tracks UE via FullTPC - IsoCone - B2BEtaBand
+  void                         ComputeConeAreaInEMCal      ( Double_t etaCand , Double_t phiCand     , Double_t &coneArea                                ); // Iso cone area depending on the cluster position (neutral + charged)
+  void                         ComputeConeAreaInTPC        ( Double_t etaCand , Double_t &coneArea                                                       ); // Iso cone area depending on the cluster position (charged-only)
+  void                         ComputeEtaBandAreaInEMCal   ( Double_t phiCand , Double_t coneArea    , Double_t &etaBandArea                             ); // Eta-band area depending on the cluster position (neutral + charged)
+  void                         ComputeEtaBandAreaInTPC     ( Double_t coneArea, Double_t &etaBandArea                                                    ); // Eta-band area depending on the cluster position (charged-only)
+  void                         ComputePhiBandAreaInEMCal   ( Double_t etaCand , Double_t coneArea    , Double_t &phiBandArea                             ); // Phi-band area depending on the cluster position (neutral + charged)
+  void                         ComputePhiBandAreaInTPC     ( Double_t etaCand , Double_t coneArea    , Double_t &phiBandArea                             ); // Phi-band area depending on the cluster position (charged-only
+  void                         ApplySmearing               ( AliVCluster * coi, Double_t &m02COI                                                         ); // Applying smearing on MC
+							   
+  Bool_t                       ClustTrackMatching          ( AliVCluster * emccluster, Bool_t candidate );
+  void                         NonLinRecoEnergyScaling     ( TLorentzVector cluster_vec );
+  Double_t                     NonLinRecoEnergyScaling     ( AliVCluster * cluster, Double_t energy );
+  Int_t                        GetModuleNumber             ( AliVCluster * cluster ) const;
+  Int_t                        GetNLM                      ( AliVCluster * coi, AliVCaloCells * cells );
+  Int_t                        GetNLM                      ( AliVCluster * coi, AliVCaloCells * cells, Int_t * absIdList, Float_t * maxEList );
+  Bool_t                       AreNeighbours               ( Int_t abscell1, Int_t abscell2 ) const;
+  Float_t                      RecalEnClust                ( AliVCluster * cluster, AliVCaloCells * cells );
+  void                         RecalAmpCell                ( Float_t &amp, Int_t absId ) const ;
+  Bool_t                       IsAbsIDsFromTCard           ( Int_t absId1, Int_t absId2, Int_t & rowDiff, Int_t & colDiff ) const ;
+						           
+  Bool_t                       CheckBoundaries             ( TLorentzVector vecCOI );
+  void                         FillInvMassHistograms       ( Bool_t iso, Double_t m02COI, TLorentzVector c, Int_t index, Double_t isolation );
+  						           
+  Double_t*                    GenerateFixedBinArray       ( Int_t n, Double_t min, Double_t max ) const;
+  void                         ExecOnce();	           
+  Bool_t                       Run();		           
+  Bool_t                       SelectCandidate             ( AliVCluster * coi );
+  void                         AnalyzeMC();	           
+  void                         AnalyzeMC_Pythia8();        
+  void                         LookforParticle             ( Int_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t );
+  Bool_t                       MCSimTrigger                ( AliVEvent * eventIn, Int_t triggerLevel );
+  void                         IsolationAndUEinEMCAL       ( AliVCluster * coi, Double_t &isolation, Double_t &ue, Double_t eTThreshold, Int_t index );
+  void                         IsolationAndUEinTPC         ( AliVCluster * coi, Double_t &isolation, Double_t &ue, Double_t eTThreshold, Int_t index );
+  void                         AddParticleToUEMC           ( Double_t &sumUE, AliAODMCParticle * mcpp, Double_t eta, Double_t phi );
+  void                         CalculateUEDensityMC        ( Double_t etaCand, Double_t phiCand, Double_t &sumUE );
+							   
+							   
+  using AliAnalysisTaskEmcal::FillGeneralHistograms;	   
+  Bool_t                       FillGeneralHistograms       ( AliVCluster * COI, TLorentzVector VecCOI, Int_t index );
   
-  Double_t*                    GenerateFixedBinArray ( Int_t n, Double_t min, Double_t max ) const;
-  void                         ExecOnce();
-  Bool_t                       Run();
-  Bool_t                       SelectCandidate       ( AliVCluster * coi );
-  void                         AnalyzeMC();
-  void                         AnalyzeMC_Pythia8();
-  void                         LookforParticle       ( Int_t, Double_t, Double_t, Double_t, Double_t, Double_t, Double_t );
-  Bool_t                       MCSimTrigger          ( AliVEvent * eventIn, Int_t triggerLevel );
-  void                         IsolationAndUEinEMCAL ( AliVCluster * coi, Double_t &isolation, Double_t &ue, Double_t eTThreshold, Int_t index );
-  void                         IsolationAndUEinTPC   ( AliVCluster * coi, Double_t &isolation, Double_t &ue, Double_t eTThreshold, Int_t index );
-  void                         AddParticleToUEMC     ( Double_t &sumUE, AliAODMCParticle * mcpp, Double_t eta, Double_t phi );
-  void                         CalculateUEDensityMC  ( Double_t etaCand, Double_t phiCand, Double_t &sumUE );
-
-
-  using AliAnalysisTaskEmcal::FillGeneralHistograms;
-  Bool_t                       FillGeneralHistograms ( AliVCluster * COI, TLorentzVector VecCOI, Int_t index );
+  AliAODEvent		     * fAOD;			     ///<
+  AliVEvent		     * fVevent;			     ///< AliVEvent
   
-  AliAODEvent                * fAOD;                            ///<
-  AliVEvent                  * fVevent;                         ///< AliVEvent
+  TClonesArray		     * fNCluster;		     ///< Neutral clusters
+  TClonesArray		     * fAODMCParticles;		     ///<
+  AliAODMCHeader	     * fmcHeader;		     ///<
+  AliGenDPMjetEventHeader    * fDPMjetHeader;		     ///< DPMjet header for cocktail simulations
+  TString		       fPythiaVersion;		     ///< May contain "6" or "8" to determine the Pythia version used
+  Bool_t		       fVariableCPV;		     ///<
+  Bool_t		       fVariableCPVInCone;	     ///<
+  Bool_t		       fNonLinRecoEnergyScaling;     ///< Set a scaling factor for reconstructed energy (regarding non-linearity correction)
+  TClonesArray		     * fTracksAna;		     ///< Hybrid track array in
+  AliStack		     * fStack;			     ///<
+  AliEMCALRecoUtils	     * fEMCALRecoUtils;		     ///< EMCal utils for cluster rereconstruction.
   
-  TClonesArray               * fNCluster;                       ///< Neutral clusters
-  TClonesArray               * fAODMCParticles;                 ///<
-  AliAODMCHeader             * fmcHeader;                       ///<
-  AliGenDPMjetEventHeader    * fDPMjetHeader;                   ///< DPMjet header for cocktail simulations
-  TString                      fPythiaVersion;                  ///< May contain "6" or "8" to determine the Pythia version used
-  TClonesArray               * fTracksAna;                      ///< Hybrid track array in
-  AliStack                   * fStack;                          ///<
-  AliEMCALRecoUtils          * fEMCALRecoUtils;                 ///< EMCal utils for cluster rereconstruction.
-  
-  Int_t                        fWho;                            ///< Mode for the output objects ( 0 = TTree, 1 = THnSparse, 2 = TH * D/TH * F )
-  Bool_t                       fSSsmearing;                     ///<
-  Float_t                      fSSsmearwidth;                   ///<
-  Float_t                      fSSsmear_mean;                   ///<
-  Int_t                        fWhich;                          ///<
-  Bool_t                       fRejectPileUpEvent;              ///<
-  Int_t                        fNContrToPileUp;                 ///<
-  
-  /* TList       * fOutputList;                                     ///< Output list */
-  /* TGeoHMatrix * fGeomMatrix[12];                                 ///< Geometry misalignment matrices for EMCal */
-  
-  Float_t                      fIsoConeRadius;                  ///< Radius for the isolation cone
-  Int_t                        fEtIsoMethod;                    ///< Isolation definition ( 0 = SumEt<EtThr, 1 = SumEt<%Ephoton, 2 = Etmax<EtThr )
-  Double_t                     fEtIsoThreshold;                 ///< Et isolation threshold, supposed to be a percentage ( < 1 ) if method one is chosen ( fEtIsoMethod = 1 )
-  Double_t                     fdetacut;                        ///< Cut on deta between track and cluster
-  Double_t                     fdphicut;                        ///< Cut on dphi between track and cluster
-  Double_t                     fdetacutIso;                     ///< Cut on deta between track and cluster for isolation
-  Double_t                     fdphicutIso;                     ///< Cut on dphi between track and cluster for isolation
-  Double_t                     fM02mincut;                      ///< lambda0^2 ( sigma_long^2 ) minimum cut
-  Double_t                     fM02maxcut;                      ///< lambda0^2 ( sigma_long^2 ) maximum cut
-  Bool_t                       fExtraIsoCuts;                   ///< Enable/disable cuts on Ncell and DTBC for clusters in Eiso calculation
-  Bool_t                       fQA;                             ///< Enable/disable a few further QA plots wrt the ones already done in the EMCalTask
-  Bool_t                       fIsMC;                           ///< Enable/disable MC analysis
-  Bool_t                       fTPC4Iso;                        ///< Acceptance for isolation and UE studies ( 0 = candidate in EMCal acceptance, 1 = candidate in TPC acceptance )
-  Int_t                        fIsoMethod;                      ///< Isolation method ( 0 = cells, 1 = clusters + tracks, 2 = tracks only ( within EMCal or TPC acceptance ), 3 = clusters only )
-  Int_t                        fUEMethod;                       ///< UE method ( within EMCal or TPC acceptance: 0 = phi-band, 1 = eta-band; only with TPC: 2 = orthogonal cones, 3 = full TPC )
-  Int_t                        fNDimensions;                    ///< Number of dimensions for the THnSPARSE reconstruction
-  Int_t                        fMCDimensions;                   ///< Number of dimensions for the THnSPARSE truth
-  Int_t                        fMCQAdim;                        ///< Number of dimensions for the THnSPARSE mix
-  Bool_t                       fisLCAnalysis;                   ///< Flag to pass from Leading Cluster ( LC ) analysis to a NC One
-  Bool_t                       fIsNLMCut;                       ///< Enable/disable cut on NLM
-  Int_t                        fNLMCut;                         ///< Max value for NLM cut
-  Int_t                        fNLMmin;                         ///< Min value of NLM
-  Bool_t                       fTMClusterRejected;              ///< Enable/disable TM cluster rejection
-  Bool_t                       fTMClusterInConeRejected;        ///< Enable/disable TM cluster rejection in isolation cone
-  Bool_t                       fRejectionEventWithoutTracks;    ///< Enable/disable rejction of events without tracks
-  Bool_t                       fAnalysispPb;                    ///< Enable/disable the p-Pb analysis facilities
-  Int_t                        fTriggerLevel1;                  ///< Choice of the L1 gamma trigger to "simulate" for the MC ( 0 = no simulation ( "MB" case ), 1 = EMCEGA1, 2 = EMCEGA2 )
-  Bool_t                       fMCtruth;                        ///< Enable/disable MC truth analysis
-  TString                      fPeriod;                         ///< String containing the LHC period
-  Float_t                      fFiducialCut;                    ///< Variable fiducial cut from the border of the EMCal/TPC acceptance
-  Bool_t                       fAreasPerEvent;                  ///< Enable/disable the event-by-event cone area computation
+  Int_t			       fWho;			     ///< Mode for the output objects ( 0 = TTree, 1 = THnSparse, 2 = TH * D/TH * F )
+  Bool_t		       fSSsmearing;		     ///<
+  Float_t		       fSSsmearwidth;		     ///<
+  Float_t		       fSSsmear_mean;		     ///<
+  Int_t			       fWhich;			     ///<
+  Bool_t		       fRejectPileUpEvent;	     ///<
+  Int_t			       fNContrToPileUp;		     ///<
+  Float_t                      fMinClusterEnergy;            ///< Minimal cut on cluster energy (by default at 5 GeV)
+  Float_t                      fIsoConeRadius;               ///< Radius for the isolation cone
+  Int_t                        fEtIsoMethod;                 ///< Isolation definition ( 0 = SumEt<EtThr, 1 = SumEt<%Ephoton, 2 = Etmax<EtThr )
+  Double_t                     fEtIsoThreshold;              ///< Et isolation threshold, supposed to be a percentage ( < 1 ) if method one is chosen ( fEtIsoMethod = 1 )
+  Double_t                     fdetacut;                     ///< Cut on deta between track and cluster
+  Double_t                     fdphicut;                     ///< Cut on dphi between track and cluster
+  Double_t                     fdetacutIso;                  ///< Cut on deta between track and cluster for isolation
+  Double_t                     fdphicutIso;                  ///< Cut on dphi between track and cluster for isolation
+  Double_t                     fM02mincut;                   ///< lambda0^2 ( sigma_long^2 ) minimum cut
+  Double_t                     fM02maxcut;                   ///< lambda0^2 ( sigma_long^2 ) maximum cut
+  Bool_t                       fExtraIsoCuts;                ///< Enable/disable cuts on Ncell and DTBC for clusters in Eiso calculation
+  Bool_t                       fQA;                          ///< Enable/disable a few further QA plots wrt the ones already done in the EMCalTask
+  Bool_t                       fIsMC;                        ///< Enable/disable MC analysis
+  Bool_t                       fTPC4Iso;                     ///< Acceptance for isolation and UE studies ( 0 = candidate in EMCal acceptance, 1 = candidate in TPC acceptance )
+  Int_t                        fIsoMethod;                   ///< Isolation method ( 0 = cells, 1 = clusters + tracks, 2 = tracks only ( within EMCal or TPC acceptance ), 3 = clusters only )
+  Int_t                        fUEMethod;                    ///< UE method ( within EMCal or TPC acceptance: 0 = phi-band, 1 = eta-band; only with TPC: 2 = orthogonal cones, 3 = full TPC )
+  Int_t                        fNDimensions;                 ///< Number of dimensions for the THnSPARSE reconstruction
+  Int_t                        fMCDimensions;                ///< Number of dimensions for the THnSPARSE truth
+  Int_t                        fMCQAdim;                     ///< Number of dimensions for the THnSPARSE mix
+  Bool_t                       fisLCAnalysis;                ///< Flag to pass from Leading Cluster ( LC ) analysis to a NC One
+  Bool_t                       fIsNLMCut;                    ///< Enable/disable cut on NLM
+  Int_t                        fNLMCut;                      ///< Max value for NLM cut
+  Int_t                        fNLMmin;                      ///< Min value of NLM
+  Bool_t                       fTMClusterRejected;           ///< Enable/disable TM cluster rejection
+  Bool_t                       fTMClusterInConeRejected;     ///< Enable/disable TM cluster rejection in isolation cone
+  Bool_t                       fRejectionEventWithoutTracks; ///< Enable/disable rejction of events without tracks
+  Bool_t                       fAnalysispPb;                 ///< Enable/disable the p-Pb analysis facilities
+  Int_t                        fTriggerLevel1;               ///< Choice of the L1 gamma trigger to "simulate" for the MC ( 0 = no simulation ( "MB" case ), 1 = EMCEGA1, 2 = EMCEGA2 )
+  Bool_t                       fMCtruth;                     ///< Enable/disable MC truth analysis
+  TString                      fPeriod;                      ///< String containing the LHC period
+  Float_t                      fFiducialCut;                 ///< Variable fiducial cut from the border of the EMCal/TPC acceptance
+  Bool_t                       fAreasPerEvent;               ///< Enable/disable the event-by-event cone area computation
   
   // Initialization for TTree variables
-  Double_t                     fEClustersT;                     ///< E for all clusters
-  Double_t                     fPtClustersT;                    ///< Pt for all clusters
-  Double_t                     fEtClustersT;                    ///< Et for all clusters
-  Double_t                     fEtaClustersT;                   ///< Eta for all clusters
-  Double_t                     fPhiClustersT;                   ///< Phi for all clusters
-  Double_t                     fM02ClustersT;                   ///< lambda0^2 (sigma_long^2) for all clusters
-  Int_t                        fevents;                         ///< Number of events
-  Int_t                        fNClustersT;                     ///< Clusters multiplicity
-  Double_t                     flambda0T;                       ///< M02 for considered clusters (leading one or all depending on flag)
-  Double_t                     fM02isoT;                        ///< M02 for isolated clusters
-  Double_t                     fM02noisoT;                      ///< M02 for non isolated clusters
-  Double_t                     fPtnoisoT;                       ///< Pt for non isolated clusters
-  Double_t                     fEtT;                            ///< Et for considered clusters (leading one or all depending on flag)
-  Double_t                     fPtT;                            ///< Pt for considered clusters (leading one or all depending on flag)
-  Double_t                     fPtisoT;                         ///< Pt for all isolated neutral clusters
-  Double_t                     fEtisolatedT;                    ///< Et for isolated clusters
-  Double_t                     fPtisolatedT;                    ///< Pt for isolated clusters
-  Double_t                     fetaT;                           ///< Eta for considered clusters
-  Double_t                     fphiT;                           ///< Phi for considered clusters
-  Double_t                     fsumEtisoconeT;                  ///< Sum Et in cone
-  Double_t                     fsumEtUE;                        ///< Sum UE
-  Bool_t                       fANnoSameTcard;                  ///<
+  Double_t                     fEClustersT;                  ///< E for all clusters
+  Double_t                     fPtClustersT;                 ///< Pt for all clusters
+  Double_t                     fEtClustersT;                 ///< Et for all clusters
+  Double_t                     fEtaClustersT;                ///< Eta for all clusters
+  Double_t                     fPhiClustersT;                ///< Phi for all clusters
+  Double_t                     fM02ClustersT;                ///< lambda0^2 (sigma_long^2) for all clusters
+  Int_t                        fevents;                      ///< Number of events
+  Int_t                        fNClustersT;                  ///< Clusters multiplicity
+  Double_t                     flambda0T;                    ///< M02 for considered clusters (leading one or all depending on flag)
+  Double_t                     fM02isoT;                     ///< M02 for isolated clusters
+  Double_t                     fM02noisoT;                   ///< M02 for non isolated clusters
+  Double_t                     fPtnoisoT;                    ///< Pt for non isolated clusters
+  Double_t                     fEtT;                         ///< Et for considered clusters (leading one or all depending on flag)
+  Double_t                     fPtT;                         ///< Pt for considered clusters (leading one or all depending on flag)
+  Double_t                     fPtisoT;                      ///< Pt for all isolated neutral clusters
+  Double_t                     fEtisolatedT;                 ///< Et for isolated clusters
+  Double_t                     fPtisolatedT;                 ///< Pt for isolated clusters
+  Double_t                     fetaT;                        ///< Eta for considered clusters
+  Double_t                     fphiT;                        ///< Phi for considered clusters
+  Double_t                     fsumEtisoconeT;               ///< Sum Et in cone
+  Double_t                     fsumEtUE;                     ///< Sum UE
+  Bool_t                       fANnoSameTcard;               ///<
   
   // Initialization of variables for THnSparse
-  std::vector<Double_t>        fBinsPt;                         ///<
-  std::vector<Double_t>        fBinsM02;                        ///<
-  std::vector<Double_t>        fBinsEtiso;                      ///<
-  std::vector<Double_t>        fBinsEtue;                       ///<
-  std::vector<Double_t>        fBinsEta;                        ///<
-  std::vector<Double_t>        fBinsPhi;                        ///<
-  std::vector<Double_t>        fBinsLabel;                      ///<
-  std::vector<Double_t>        fBinsPDG;                        ///<
-  std::vector<Double_t>        fBinsMomPDG;                     ///<
-  std::vector<Double_t>        fBinsClustPDG;                   ///<
-  std::vector<Double_t>        fBinsDx;                         ///<
-  std::vector<Double_t>        fBinsDz;                         ///<
-  std::vector<Double_t>        fBinsDecay;                      ///<
+  std::vector<Double_t>        fBinsPt;                      ///<
+  std::vector<Double_t>        fBinsM02;                     ///<
+  std::vector<Double_t>        fBinsEtiso;                   ///<
+  std::vector<Double_t>        fBinsEtue;                    ///<
+  std::vector<Double_t>        fBinsEta;                     ///<
+  std::vector<Double_t>        fBinsPhi;                     ///<
+  std::vector<Double_t>        fBinsLabel;                   ///<
+  std::vector<Double_t>        fBinsPDG;                     ///<
+  std::vector<Double_t>        fBinsMomPDG;                  ///<
+  std::vector<Double_t>        fBinsClustPDG;                ///<
+  std::vector<Double_t>        fBinsDx;                      ///<
+  std::vector<Double_t>        fBinsDz;                      ///<
+  std::vector<Double_t>        fBinsDecay;                   ///<
   
   //IMPLEMENT ALL THE HISTOGRAMS AND ALL THE OUTPUT OBJECTS WE WANT!!!
 
   TH1F                       * fTrackMult;                      ///<  Track Multiplicity ---QA
+  TH2F                       * fPtvsSum_MC;                     //!<!
   TH2F                       * fPtvsSumUE_MC;                   //!<!
   TH1F                       * fSumEiso_MC;                     //!<!
   TH1F                       * fSumUE_MC;                       //!<!
   TH1F                       * fGenPromptPhotonSel;             //!<!
   TH2F                       * fEtaPhiClus;                     ///<  EMCal Cluster Distribution EtaPhi ---QA
   TH2F                       * fEtaPhiClusAftSel;               ///<  EMCal Cluster Distribution EtaPhi after cluster selection
+  TH3F                       * fPtvsDetavsDphi;                 ///<  Cluster-track matching vs. cluster energy
+  TH3F                       * fPtvsTrackPtvsDeta;              ///<  Cluster-track matching Deta vs. track pT vs. cluster energy
+  TH3F                       * fPtvsTrackPtvsDphi;              ///<  Cluster-track matching Dphi vs. track pT vs. cluster energy
   TH2F                       * fClusEvsClusT;                   //!<! Cluster Energy vs Cluster Time ---QA
   TH1F                       * fPT;                             //!<! Pt distribution
   TH1F                       * fE;                              //!<! E distribution
@@ -284,6 +295,8 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   TH2F                       * fNLM2_NC_Acc_noTcard;            //!<! NLM (1,2) distribution for Neutral Clusters in Acceptance w/o NLM=2 in SameT
   TH1F                       * fVz;                             //!<! Vertex Z distribution
   TH1F                       * fEvents;                         //!<! Number of Events
+  TH1F                       * fCutFlowEvents;                  //!<! Effect of each cut on event number
+  TH1F                       * fCutFlowClusters;                //!<! Effect of each cut on candidate cluster number
   TH1F                       * fPtaftTime;                      //!<! E distribution for clusters after Cluster Time cut
   TH1F                       * fPtaftCell;                      //!<! Pt distribution for clusters after NCells cut
   TH1F                       * fPtaftNLM;                       //!<! Pt distribution for clusters after NLM cut
@@ -392,7 +405,7 @@ class AliAnalysisTaskEMCALPhotonIsolation: public AliAnalysisTaskEmcal {
   AliAnalysisTaskEMCALPhotonIsolation&operator = ( const AliAnalysisTaskEMCALPhotonIsolation & ); // Not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 26);            // EMCal neutrals base analysis task
+  ClassDef(AliAnalysisTaskEMCALPhotonIsolation, 27);            // EMCal neutrals base analysis task
   /// \endcond
 };
 #endif

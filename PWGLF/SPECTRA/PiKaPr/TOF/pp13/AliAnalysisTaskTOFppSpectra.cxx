@@ -274,20 +274,20 @@ inputHandler->SetNeedField();
 	fZVertex = new TH1F("fZVertex","Z vertex dist;Vtx_{z};Counts",40,-20,20);
 	fOutputList->Add(fZVertex);
 
-	Int_t nTimebins=1000;
-	Int_t nSigmabins=1000;
-	Int_t nResobins=1000;
-	Double_t Timebins[1001];
-	Double_t Sigmabins[1001];
-	Double_t Resobins[1001];
+	Int_t nTimebins=2000;
+//	Int_t nSigmabins=1000;
+//	Int_t nResobins=1000;
+	Double_t Timebins[2001];
+//	Double_t Sigmabins[1001];
+//	Double_t Resobins[1001];
 	
-	Timebins[0]=-10000.0;
-	Sigmabins[0]=-300.0;
-	Resobins[0]=0;
-        for (Int_t i=1;i<1001;i++){
+	Timebins[0]=-20000.0;
+//	Sigmabins[0]=-300.0;
+//	Resobins[0]=0;
+        for (Int_t i=1;i<2001;i++){
 	Timebins[i]=Timebins[i-1]+20.0;
-	Sigmabins[i]=Sigmabins[i-1]+0.6;
-	Resobins[i]=Resobins[i-1]+1.0;
+//	Sigmabins[i]=Sigmabins[i-1]+0.6;
+//	Resobins[i]=Resobins[i-1]+1.0;
 }
 	
 	fTOFTimeV0MPtPosPi=new TH3F("fTOFTimeV0MPtPosPi","TOF Time vs pT #pi^{+};p_{T} (GeV/c);T-T_{0}-T_{exp #pi} (ps);V0M PC",nPtbins,Ptbins,nTimebins,Timebins,nV0Mbins,V0Mbins);

@@ -28,6 +28,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		virtual ~AliAnalysisTaskMaterialHistos();
 
 		virtual void   UserCreateOutputObjects();
+        virtual Bool_t Notify();
 		virtual void   UserExec(Option_t *option);
         virtual void   SetLogBinningXTH2(TH2* histoRebin);
 		virtual void   Terminate(Option_t *);
@@ -35,6 +36,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		void SetIsMC(Int_t isMC)                                      {fIsMC=isMC;}
 		void SetV0Reader(AliV0ReaderV1 *v0Reader)                     {fV0Reader=v0Reader;}
         void SetV0ReaderName(TString name)                            {fV0ReaderName=name; return;}
+	void SetDoDeDxMaps(Int_t flag)                          { fDoDeDxMaps           = flag    ;}
 
         void SetEventCutList(Int_t nCuts, TList *CutArray)            {fnCuts                      = nCuts;
                                                                        fEventCutArray              = CutArray;}
@@ -63,6 +65,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
         TList**           fESDList;                     //
         TList**           fTrueList;                    //
         TList**           fMCList;                      //
+        TList**           fDeDxMapList;                 //
 		TList 			  *fOutputList; 	 			//
 		TList 			  *fAllMCGammaList;	   		    //
 		TList 			  *fAllMCConvGammaList;		    //
@@ -85,6 +88,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliMCEvent*       fMCEvent;				        //
 		Int_t             fnCuts;                       //
 		Int_t             fiCut;                        //
+		Int_t             fDoDeDxMaps;                                 //
 		TH1F**            hNEvents;                     //!
 		TH1F**            hNGoodESDTracksEta09;         //!
 		TH1F**            hNGoodESDTracksEta14;         //!
@@ -99,7 +103,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hESDConversionMass;           //!
 		TH1F**            hESDConversionRRejSmall;      //!
 		TH1F**            hESDConversionRRejLarge;      //!
-
+		TH2F**            hESDConversionAsymP;          //!  
         TH2F**            hElectronRdEdx;               //!
         TH2F**            hElectronRNSigmadEdx;         //!
         TH2F**            hPositronRdEdx;               //!
@@ -111,14 +115,18 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
  		TH1F**            hMCConversionRRejSmall;       //!
  		TH1F**            hMCConversionRRejLarge;       //!
 		TH1F**            hMCAllGammaPt;                //!
+
+
 		TH2F**            hMCTrueConversionRPhi;        //!
 		TH2F**            hMCTrueConversionRZ;          //!
 		TH2F**            hMCTrueConversionRPt;         //!
+		TH2F**            hMCTrueConversionRPtMCRPt;    //!
 		TH2F**            hMCTrueConversionREta;        //!
 		TH1F**            hMCTrueConversionDCA;         //!
 		TH1F**            hMCTrueConversionPsiPair;     //!
 		TH1F**            hMCTrueConversionChi2;        //!
 		TH1F**            hMCTrueConversionMass;        //!
+		TH2F**            hMCTrueConversionAsymP;          //!
  		TH1F**            hMCTrueConversionRRejSmall;   //!
  		TH1F**            hMCTrueConversionRRejLarge;   //!
 
@@ -128,13 +136,21 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hMCTrueEtaDalConversionEta;   //!
 		TH2F**            hMCTrueCombinatorialConversionRPt;     //!
 		TH1F**            hMCTrueCombinatorialConversionEta;     //!
+		TH3F**            hPositrondEdxMapsR0;         //!
+		TH3F**            hElectrondEdxMapsR0;         //!
+		TH3F**            hPositrondEdxMapsR1;         //!
+		TH3F**            hElectrondEdxMapsR1;         //!
+		TH3F**            hPositrondEdxMapsR2;         //!
+		TH3F**            hElectrondEdxMapsR2;         //!
+		TH3F**            hPositrondEdxMapsR3;         //!
+		TH3F**            hElectrondEdxMapsR3;         //!
 		//Bool_t            fDoHistosForMaterial;             // flag for using Trees for Material Budget evaluation
 
 		AliAnalysisTaskMaterialHistos(const AliAnalysisTaskMaterialHistos&); // not implemented
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 12);
+        ClassDef(AliAnalysisTaskMaterialHistos, 15);
 };
 
 #endif

@@ -408,6 +408,18 @@ class AliReducedVarManager : public TObject {
     kMultEstimatorPercentileRefMult08,
     kINT7Triggered,
     kHighMultV0Triggered,
+    kEtaBinForSPDtracklets,
+    kMCNch,                                  // number of primary charged particles in the MC, in |eta|<1
+    kMCNchNegSide,                     // number of primary charged particles in the MC, in -1<eta<0
+    kMCNchPosSide,                     // number of primary charged particles in the MC, in 0<eta<1
+    kMCNchSPDacc,                       // number of primary charged particles in the MC, in |eta|<1 but limited to the SPD acceptance
+    kDiffNchSPDtrklts,
+    kDiffNchSPDaccSPDtrklts,
+    kRelDiffNchSPDtrklts,
+    kRelDiffNchSPDaccSPDtrklts,
+    kRelDiff2NchSPDtrklts,
+    kRelDiff2NchSPDaccSPDtrklts,
+    kSPDntrackletsInCurrentEtaBin,
     kNEventVars,                               // number of event variables  
     // Particle variables --------------------------------------
     // Common pair/track variables
@@ -487,9 +499,13 @@ class AliReducedVarManager : public TObject {
     kOneOverPairEffSq,             // 1 / pair efficiency squared (correction factor)
     kPairLegITSchi2,              // the ITS chi2 for the pair legs, used in correlations between pair legs
     kPairLegTPCchi2=kPairLegITSchi2+2,              // the TPC chi2 for the pair legs, used in correlations between pair legs
+    kPairLegPt=kPairLegTPCchi2+2,                 // pair leg pt
+    kPairLegPtSum=kPairLegPt+2,                   // sum of the pt of the two legs
+    kPairLegPtMC,                                // MC truth pair leg pt
+    kPairLegPtMCSum=kPairLegPtMC+2,               // sum of the MC truth leg pt's
 
     // Track-only variables -------------------------------------
-    kPtTPC=kPairLegTPCchi2+2,     
+    kPtTPC,     
     kPhiTPC,    
     kEtaTPC,    
     kDcaXYTPC,    
@@ -588,6 +604,8 @@ class AliReducedVarManager : public TObject {
   static const Double_t fgkVZEROCz;    // z-position for VZERO-C
   static const Double_t fgkVZEROminMult;   // minimum VZERO channel multiplicity
   static const Float_t fgkTPCQvecRapGap;    // symmetric interval in the middle of the TPC excluded from EP calculation
+  
+  static const Double_t fgkSPDEtaCutsVsVtxZ[20][2];      // eta interval coverage for the SPDntracklets estimator as a function of vtx 
     
   AliReducedVarManager();
   AliReducedVarManager(const Char_t* name);
@@ -631,6 +649,7 @@ class AliReducedVarManager : public TObject {
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
  // static void FillTrackingFlags(AliReducedTrackInfo* p, Float_t* values);
   static void FillMCTruthInfo(AliReducedTrackInfo* p, Float_t* values, AliReducedTrackInfo* leg1 = 0x0, AliReducedTrackInfo* leg2 = 0x0);
+  static void FillMCEventInfo(AliReducedEventInfo* event, Float_t* values);
   
   static void PrintTrackFlags(AliReducedTrackInfo* track);
   static void PrintBits(ULong_t mask, Int_t maxBit=64);

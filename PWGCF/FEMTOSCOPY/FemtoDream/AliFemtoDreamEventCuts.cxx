@@ -144,8 +144,11 @@ void AliFemtoDreamEventCuts::BookQA(AliFemtoDreamEvent *evt) {
         fHist->FillMultV0A(i,evt->GetV0AMult());
         fHist->FillMultV0C(i,evt->GetV0CMult());
         fHist->FillMultRef08(i,evt->GetRefMult08());
+        fHist->FillSPDTrackletsVsCluster(i,evt->GetSPDMult(),evt->GetSPDCluster());
+        fHist->FillEvtVtxZTrackvsSPD(i,evt->GetZVertexSPD(),evt->GetZVertexTracks());
       }
     }
+
     if (fCentVsMultPlots) {
       fHist->FillCentVsMultV0A(evt->GetV0MCentrality(),evt->GetV0AMult());
       fHist->FillCentVsMultV0M(evt->GetV0MCentrality(),evt->GetV0MMult());

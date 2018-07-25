@@ -45,6 +45,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fESDList(NULL),
   fTrueList(NULL),
   fMCList(NULL),
+  fDeDxMapList(NULL),
   fOutputList(NULL),
   fAllMCGammaList(NULL),
   fAllMCConvGammaList(NULL),
@@ -67,6 +68,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fMCEvent(NULL),
   fnCuts(0),
   fiCut(0),
+  fDoDeDxMaps(0),
   hNEvents(NULL),
   hNGoodESDTracksEta09(NULL),
   hNGoodESDTracksEta14(NULL),
@@ -81,6 +83,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hESDConversionMass(NULL),
   hESDConversionRRejSmall(NULL),
   hESDConversionRRejLarge(NULL),
+  hESDConversionAsymP(NULL),
   hElectronRdEdx(NULL),
   hElectronRNSigmadEdx(NULL),
   hPositronRdEdx(NULL),
@@ -94,11 +97,13 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hMCTrueConversionRPhi(NULL),
   hMCTrueConversionRZ(NULL),
   hMCTrueConversionRPt(NULL),
+  hMCTrueConversionRPtMCRPt(NULL),
   hMCTrueConversionREta(NULL),
   hMCTrueConversionDCA(NULL),
   hMCTrueConversionPsiPair(NULL),
   hMCTrueConversionChi2(NULL),
   hMCTrueConversionMass(NULL),
+  hMCTrueConversionAsymP(NULL),
   hMCTrueConversionRRejSmall(NULL),
   hMCTrueConversionRRejLarge(NULL),
   hMCTruePi0DalConversionRPt(NULL),
@@ -106,7 +111,15 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hMCTrueEtaDalConversionRPt(NULL),
   hMCTrueEtaDalConversionEta(NULL),
   hMCTrueCombinatorialConversionRPt(NULL),
-  hMCTrueCombinatorialConversionEta(NULL)
+  hMCTrueCombinatorialConversionEta(NULL),
+  hPositrondEdxMapsR0(NULL),
+  hElectrondEdxMapsR0(NULL), 
+  hPositrondEdxMapsR1(NULL),
+  hElectrondEdxMapsR1(NULL), 
+  hPositrondEdxMapsR2(NULL),
+  hElectrondEdxMapsR2(NULL), 
+  hPositrondEdxMapsR3(NULL),
+  hElectrondEdxMapsR3(NULL) 
 {
 
 }
@@ -124,6 +137,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fESDList(NULL),
   fTrueList(NULL),
   fMCList(NULL),
+  fDeDxMapList(NULL),
   fOutputList(NULL),
   fAllMCGammaList(NULL),
   fAllMCConvGammaList(NULL),
@@ -146,6 +160,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fMCEvent(NULL),
   fnCuts(0),
   fiCut(0),
+  fDoDeDxMaps(0),
   hNEvents(NULL),
   hNGoodESDTracksEta09(NULL),
   hNGoodESDTracksEta14(NULL),
@@ -160,6 +175,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hESDConversionMass(NULL),
   hESDConversionRRejSmall(NULL),
   hESDConversionRRejLarge(NULL),
+  hESDConversionAsymP(NULL),
   hElectronRdEdx(NULL),
   hElectronRNSigmadEdx(NULL),
   hPositronRdEdx(NULL),
@@ -173,11 +189,13 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCTrueConversionRPhi(NULL),
   hMCTrueConversionRZ(NULL),
   hMCTrueConversionRPt(NULL),
+  hMCTrueConversionRPtMCRPt(NULL),
   hMCTrueConversionREta(NULL),
   hMCTrueConversionDCA(NULL),
   hMCTrueConversionPsiPair(NULL),
   hMCTrueConversionChi2(NULL),
   hMCTrueConversionMass(NULL),
+  hMCTrueConversionAsymP(NULL),
   hMCTrueConversionRRejSmall(NULL),
   hMCTrueConversionRRejLarge(NULL),
   hMCTruePi0DalConversionRPt(NULL),
@@ -185,7 +203,15 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCTrueEtaDalConversionRPt(NULL),
   hMCTrueEtaDalConversionEta(NULL),
   hMCTrueCombinatorialConversionRPt(NULL),
-  hMCTrueCombinatorialConversionEta(NULL)
+  hMCTrueCombinatorialConversionEta(NULL),
+  hPositrondEdxMapsR0(NULL),
+  hElectrondEdxMapsR0(NULL), 
+  hPositrondEdxMapsR1(NULL),
+  hElectrondEdxMapsR1(NULL), 
+  hPositrondEdxMapsR2(NULL),
+  hElectrondEdxMapsR2(NULL), 
+  hPositrondEdxMapsR3(NULL),   
+  hElectrondEdxMapsR3(NULL) 
 {
   // Default constructor
 
@@ -223,7 +249,9 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   fESDList                  = new TList*[fnCuts];
   fMCList                   = new TList*[fnCuts];
   fTrueList                 = new TList*[fnCuts];
-
+  if (fDoDeDxMaps>0) {
+    fDeDxMapList            = new TList*[fnCuts];
+  }
   hNEvents                  = new TH1F*[fnCuts];
   hNGoodESDTracksEta09      = new TH1F*[fnCuts];
   hNGoodESDTracksEta14      = new TH1F*[fnCuts];
@@ -238,11 +266,26 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   hESDConversionMass        = new TH1F*[fnCuts];
   hESDConversionRRejLarge   = new TH1F*[fnCuts];
   hESDConversionRRejSmall   = new TH1F*[fnCuts];
+  hESDConversionAsymP       = new TH2F*[fnCuts];
 
   hElectronRdEdx            = new TH2F*[fnCuts];
   hElectronRNSigmadEdx      = new TH2F*[fnCuts];
   hPositronRdEdx            = new TH2F*[fnCuts];
   hPositronRNSigmadEdx      = new TH2F*[fnCuts];
+
+  if (fDoDeDxMaps>0) {
+    hElectrondEdxMapsR0  =   new TH3F*[fnCuts]; 
+    hPositrondEdxMapsR0  =   new TH3F*[fnCuts]; 
+
+    hElectrondEdxMapsR1  =   new TH3F*[fnCuts]; 
+    hPositrondEdxMapsR1  =   new TH3F*[fnCuts]; 
+
+    hElectrondEdxMapsR2  =   new TH3F*[fnCuts]; 
+    hPositrondEdxMapsR2  =   new TH3F*[fnCuts]; 
+
+    hElectrondEdxMapsR3  =   new TH3F*[fnCuts]; 
+    hPositrondEdxMapsR3  =   new TH3F*[fnCuts]; 
+  }
 
   hMCConversionRPhi         = new TH2F*[fnCuts];
   hMCConversionRPt          = new TH2F*[fnCuts];
@@ -254,11 +297,13 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
   hMCTrueConversionRPhi     = new TH2F*[fnCuts];
   hMCTrueConversionRZ       = new TH2F*[fnCuts];
   hMCTrueConversionRPt      = new TH2F*[fnCuts];
+  hMCTrueConversionRPtMCRPt = new TH2F*[fnCuts];
   hMCTrueConversionREta     = new TH2F*[fnCuts];
   hMCTrueConversionDCA      = new TH1F*[fnCuts];
   hMCTrueConversionPsiPair  = new TH1F*[fnCuts];
   hMCTrueConversionChi2     = new TH1F*[fnCuts];
   hMCTrueConversionMass     = new TH1F*[fnCuts];
+  hMCTrueConversionAsymP    = new TH2F*[fnCuts];
   hMCTrueConversionRRejLarge = new TH1F*[fnCuts];
   hMCTrueConversionRRejSmall = new TH1F*[fnCuts];
 
@@ -356,6 +401,19 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
     hESDConversionRRejSmall[iCut]   = new TH1F("ESD_Conversion_RSmall","ESD_Conversion_RSmall",nBinsR,0.,200.);
     fESDList[iCut]->Add(hESDConversionRRejSmall[iCut]);
 
+    hESDConversionAsymP[iCut]       = new TH2F("ESD_ConversionMapping_AsymP","ESD_ConversionMapping_AsymP",nBinsPt,0.01,20.,500,0.,1.);
+    fESDList[iCut]->Add(hESDConversionAsymP[iCut]);
+    TAxis *AxisAfter = hESDConversionAsymP[iCut]->GetXaxis();
+    Int_t bins = AxisAfter->GetNbins();
+    Double_t from = AxisAfter->GetXmin();
+    Double_t to = AxisAfter->GetXmax();
+    Double_t *newBins = new Double_t[bins+1];
+    newBins[0] = from;
+    Double_t factor = TMath::Power(to/from, 1./bins);
+    for(Int_t i=1; i<=bins; ++i) newBins[i] = factor * newBins[i-1];
+    AxisAfter->Set(bins, newBins);
+
+
     if (fIsMC>0) {
 
         fMCList[iCut]               = new TList();
@@ -388,6 +446,8 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
         fTrueList[iCut]->Add(hMCTrueConversionREta[iCut]);
         hMCTrueConversionRPt[iCut]  = new TH2F("ESD_TrueConversion_RPt","ESD_TrueConversion_RPt",nBinsPt,0.,20.,nBinsR,0.,200.);
         fTrueList[iCut]->Add(hMCTrueConversionRPt[iCut]);
+ 	hMCTrueConversionRPtMCRPt[iCut]  = new TH2F("ESD_TrueConversion_RPtMCRPt","ESD_TrueConversion_RPtMCRPt",nBinsPt,0.,20.,nBinsR,0.,200.);
+        fTrueList[iCut]->Add(hMCTrueConversionRPtMCRPt[iCut]);
         hMCTrueConversionRZ[iCut]   = new TH2F("ESD_TrueConversion_RZ","ESD_TrueConversion_RZ",nBinsZ,-180.,180.,nBinsR,0.,200.);
         fTrueList[iCut]->Add(hMCTrueConversionRZ[iCut]);
 
@@ -419,6 +479,67 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
         fTrueList[iCut]->Add(hMCTrueCombinatorialConversionRPt[iCut]);
         hMCTrueCombinatorialConversionEta[iCut]   = new TH1F("ESD_TrueCombinatorialConversion_Eta","ESD_TrueCombinatorialConversion_Eta",nBinsEta,-2.,2.);
         fTrueList[iCut]->Add(hMCTrueCombinatorialConversionEta[iCut]);
+
+	hMCTrueConversionAsymP[iCut]               = new TH2F("ESD_TrueConversionMapping_AsymP","ESD_TrueConversionMapping_AsymP",nBinsPt,0.01,20.,500,0.,1.);
+	fTrueList[iCut]->Add(hMCTrueConversionAsymP[iCut]);
+	    
+	AxisAfter = hMCTrueConversionAsymP[iCut]->GetXaxis();
+	AxisAfter->Set(bins, newBins);
+
+    }
+
+    Int_t nPBins =12;
+    Int_t nEtaBins =20;
+    Int_t nSigmaDeDxBins=100;
+    Double_t *arrPBinning = new Double_t[13]; 
+    for( Int_t i=0;i<nPBins+1;i++){
+      if(i==0){
+	arrPBinning[i]= 0.05;
+      }else if(i>0 && i<11){
+	arrPBinning[i]= 0.1*i;
+      }else if(i==11){
+	arrPBinning[i]= 2.0;
+      }else if(i==12){
+	arrPBinning[i]= 10.0;
+      }
+      //cout<< "pbins::"<< i << " " <<  arrPBinning[i]<< endl;
+    }
+    Double_t *arrEtaBinning      = new Double_t[21]; 
+    for( Int_t i=0;i<nEtaBins+1;i++){
+      arrEtaBinning[i]= -1.+0.1*i;
+      //cout<< "Etabins::"<< i << " " <<  arrEtaBinning[i]<< endl;
+    }
+    Double_t *arrSigmaDeDxBinning      = new Double_t[101]; 
+    for( Int_t i=0;i<nSigmaDeDxBins+1;i++){
+      arrSigmaDeDxBinning[i]= -5.+0.1*i;
+      //cout<< "dedx::"<< i << " " <<  arrSigmaDeDxBinning[i]<< endl;
+    }
+
+    if (fDoDeDxMaps>0) {
+      fDeDxMapList[iCut] = new TList();
+      fDeDxMapList[iCut] ->SetName(Form("%s_%s  dEdx Maps",cutstringEvent.Data() ,cutstringPhoton.Data()));
+      fDeDxMapList[iCut]->SetOwner(kTRUE);
+      fCutFolder[iCut]->Add(fDeDxMapList[iCut]);
+
+      hElectrondEdxMapsR0[iCut]= new TH3F("R0 electron sigma dEdx P Eta","R0 electron sigma dEdx P Eta", nSigmaDeDxBins, arrSigmaDeDxBinning, nEtaBins,arrEtaBinning, nPBins, arrPBinning); 
+      hPositrondEdxMapsR0[iCut]= new TH3F("R0 positron sigma dEdx P Eta","R0 positron sigma dEdx P Eta", nSigmaDeDxBins, arrSigmaDeDxBinning, nEtaBins,arrEtaBinning, nPBins, arrPBinning); 
+      fDeDxMapList[iCut]->Add( hPositrondEdxMapsR0[iCut]);
+      fDeDxMapList[iCut]->Add( hElectrondEdxMapsR0[iCut]);
+
+      hElectrondEdxMapsR1[iCut]= new TH3F("R1 electron sigma dEdx P Eta","R1 electron sigma dEdx P Eta", nSigmaDeDxBins, arrSigmaDeDxBinning, nEtaBins,arrEtaBinning, nPBins, arrPBinning); 
+      hPositrondEdxMapsR1[iCut]= new TH3F("R1 positron sigma dEdx P Eta","R1 positron sigma dEdx P Eta", nSigmaDeDxBins, arrSigmaDeDxBinning, nEtaBins,arrEtaBinning, nPBins, arrPBinning); 
+      fDeDxMapList[iCut]->Add( hPositrondEdxMapsR1[iCut]);
+      fDeDxMapList[iCut]->Add( hElectrondEdxMapsR1[iCut]);
+
+      hElectrondEdxMapsR2[iCut]= new TH3F("R2 electron sigma dEdx P Eta","R2 electron sigma dEdx P Eta", nSigmaDeDxBins, arrSigmaDeDxBinning, nEtaBins,arrEtaBinning, nPBins, arrPBinning); 
+      hPositrondEdxMapsR2[iCut]= new TH3F("R2 positron sigma dEdx P Eta","R2 positron sigma dEdx P Eta", nSigmaDeDxBins, arrSigmaDeDxBinning, nEtaBins,arrEtaBinning, nPBins, arrPBinning); 
+      fDeDxMapList[iCut]->Add( hPositrondEdxMapsR2[iCut]);
+      fDeDxMapList[iCut]->Add( hElectrondEdxMapsR2[iCut]);
+
+      hElectrondEdxMapsR3[iCut]= new TH3F("R3 electron sigma dEdx P Eta", "R3 electron sigma dEdx P Eta", nSigmaDeDxBins, arrSigmaDeDxBinning, nEtaBins,arrEtaBinning, nPBins, arrPBinning); 
+      hPositrondEdxMapsR3[iCut]= new TH3F("R3 positron sigma dEdx P Eta","R3 positron sigma dEdx P Eta", nSigmaDeDxBins, arrSigmaDeDxBinning, nEtaBins,arrEtaBinning, nPBins, arrPBinning); 
+      fDeDxMapList[iCut]->Add( hPositrondEdxMapsR3[iCut]);
+      fDeDxMapList[iCut]->Add( hElectrondEdxMapsR3[iCut]);
 
 
     }
@@ -454,6 +575,19 @@ void AliAnalysisTaskMaterialHistos::UserCreateOutputObjects()
 
   PostData(1, fOutputList);
 
+}
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskMaterialHistos::Notify()
+{
+  for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+    if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod && ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum() != AliConvEventCuts::kNoPeriod){
+        ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnumExplicit(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetPeriodEnum());
+    } else if (((AliConvEventCuts*)fEventCutArray->At(iCut))->GetPeriodEnum() == AliConvEventCuts::kNoPeriod ){
+      ((AliConvEventCuts*)fEventCutArray->At(iCut))->SetPeriodEnum(fV0Reader->GetPeriodName());
+    }
+  }
+  return kTRUE;
 }
 
 //________________________________________________________________________
@@ -627,23 +761,57 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
     fGammaTheta     = gamma->GetPhotonTheta();
     fGammaChi2NDF   = gamma->GetChi2perNDF();
 
-    AliPIDResponse* pidResonse = ((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
+    AliPIDResponse* pidResponse = ((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
 
     AliVTrack * negTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelNegative());
     AliVTrack * posTrack = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetTrack(fInputEvent, gamma->GetTrackLabelPositive());
+
+    Short_t Charge    = 1;
+    Double_t electronNSigmaTPC = pidResponse->NumberOfSigmasTPC(negTrack,AliPID::kElectron);
+    Double_t electronNSigmaTPCCor=0.; 
+    Double_t positronNSigmaTPC = pidResponse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
+    Double_t positronNSigmaTPCCor=0.; 
+    Double_t R = gamma->GetConversionRadius();
+    Double_t P=0.;         
+    Double_t Eta=0.;  
+
+    if( ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetElecDeDxPostCalibrationInitialized() ){
+      Charge = negTrack->Charge();
+      P = negTrack->P();
+      Eta = negTrack->Eta();
+      electronNSigmaTPCCor = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,R);
+
+      Charge = posTrack->Charge();
+      P = posTrack->P();
+      Eta = posTrack->Eta();
+      positronNSigmaTPCCor = ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetCorrectedElectronTPCResponse(Charge,positronNSigmaTPC,P,Eta,R);
+    }
+
 
     hESDConversionRPhi[fiCut]->Fill(gamma->GetPhotonPhi(),gamma->GetConversionRadius());
     hESDConversionRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());
     hESDConversionREta[fiCut]->Fill(gamma->GetPhotonEta(),gamma->GetConversionRadius());
     hESDConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius());
 
-    if(negTrack->GetTPCsignal()){
+    if( ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetElecDeDxPostCalibrationInitialized() ){
+      if(negTrack->GetTPCsignal()){
         hElectronRdEdx[fiCut]->Fill(negTrack->GetTPCsignal(),gamma->GetConversionRadius());
-        hElectronRNSigmadEdx[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron),gamma->GetConversionRadius());
-    }
-    if(posTrack->GetTPCsignal()){
+        hElectronRNSigmadEdx[fiCut]->Fill( electronNSigmaTPCCor, gamma->GetConversionRadius());
+      }
+      if(posTrack->GetTPCsignal()){
         hPositronRdEdx[fiCut]->Fill(posTrack->GetTPCsignal(),gamma->GetConversionRadius());
-        hPositronRNSigmadEdx[fiCut]->Fill(pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron),gamma->GetConversionRadius());
+        hPositronRNSigmadEdx[fiCut]->Fill( positronNSigmaTPCCor, gamma->GetConversionRadius());
+      }
+    }else{
+     if(negTrack->GetTPCsignal()){
+        hElectronRdEdx[fiCut]->Fill(negTrack->GetTPCsignal(),gamma->GetConversionRadius());
+        hElectronRNSigmadEdx[fiCut]->Fill( electronNSigmaTPC, gamma->GetConversionRadius());
+      }
+      if(posTrack->GetTPCsignal()){
+        hPositronRdEdx[fiCut]->Fill(posTrack->GetTPCsignal(),gamma->GetConversionRadius());
+        hPositronRNSigmadEdx[fiCut]->Fill( positronNSigmaTPC, gamma->GetConversionRadius());
+      }
+
     }
 
     if(gamma->GetConversionRadius() < 75. || gamma->GetConversionRadius() > 85.) hESDConversionRRejSmall[fiCut]->Fill(gamma->GetConversionRadius());
@@ -659,6 +827,45 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
     hESDConversionPsiPair[fiCut]->Fill(gamma->GetPsiPair());
     hESDConversionChi2[fiCut]->Fill(gamma->GetChi2perNDF());
     hESDConversionMass[fiCut]->Fill(gamma->GetInvMassPair());
+  
+    if(gamma->GetPhotonP()!=0 && negTrack->P()!=0) {
+      if(gamma->GetConversionRadius() > 5. ){
+	hESDConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),negTrack->P()/gamma->GetPhotonP());
+      }
+    }
+
+    if(fDoDeDxMaps > 0 ) {
+      if( ((AliConversionPhotonCuts*)fConversionCutArray->At(fiCut))->GetElecDeDxPostCalibrationInitialized()){
+	if(gamma->GetConversionRadius() < 33.5){
+	  hElectrondEdxMapsR0[fiCut]->Fill(electronNSigmaTPCCor, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR0[fiCut]->Fill(positronNSigmaTPCCor, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 33.5  && gamma->GetConversionRadius() < 72.){
+	  hElectrondEdxMapsR1[fiCut]->Fill(electronNSigmaTPCCor, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR1[fiCut]->Fill(positronNSigmaTPCCor, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 72.  && gamma->GetConversionRadius() < 145.){
+	  hElectrondEdxMapsR2[fiCut]->Fill(electronNSigmaTPCCor, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR2[fiCut]->Fill(positronNSigmaTPCCor, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 145.  && gamma->GetConversionRadius() < 180.){
+	  hElectrondEdxMapsR3[fiCut]->Fill(electronNSigmaTPCCor, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR3[fiCut]->Fill(positronNSigmaTPCCor, gamma->GetPhotonEta(), posTrack->P());
+	}
+      }else{
+	if(gamma->GetConversionRadius() < 33.5){
+	  hElectrondEdxMapsR0[fiCut]->Fill(electronNSigmaTPC, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR0[fiCut]->Fill(positronNSigmaTPC, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 33.5  && gamma->GetConversionRadius() < 72.){
+	  hElectrondEdxMapsR1[fiCut]->Fill(electronNSigmaTPC, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR1[fiCut]->Fill(positronNSigmaTPC, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 72.  && gamma->GetConversionRadius() < 145.){
+	  hElectrondEdxMapsR2[fiCut]->Fill(electronNSigmaTPC, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR2[fiCut]->Fill(positronNSigmaTPC, gamma->GetPhotonEta(), posTrack->P());
+	}else if (gamma->GetConversionRadius() > 145.  && gamma->GetConversionRadius() < 180.){
+	  hElectrondEdxMapsR3[fiCut]->Fill(electronNSigmaTPC, gamma->GetPhotonEta(), negTrack->P());
+	  hPositrondEdxMapsR3[fiCut]->Fill(positronNSigmaTPC, gamma->GetPhotonEta(), posTrack->P());
+	}
+      }
+    }
+
 
     fKind = 9;
     Int_t pdgCodePos = 0.;
@@ -673,6 +880,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
 
       TParticle *posDaughter = gamma->GetPositiveMCDaughter(fMCEvent);
       TParticle *negDaughter = gamma->GetNegativeMCDaughter(fMCEvent);
+      TParticle *Photon = gamma->GetMCParticle(fMCEvent);
       //cout << "generate Daughters: "<<posDaughter << "\t" << negDaughter << endl;
 
       if(fMCEvent && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() != 0){
@@ -733,6 +941,7 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
         hMCTrueConversionRZ[fiCut]->Fill(gamma->GetConversionZ(),gamma->GetConversionRadius());
         hMCTrueConversionREta[fiCut]->Fill(gamma->GetPhotonEta(),gamma->GetConversionRadius());
         hMCTrueConversionRPt[fiCut]->Fill(gamma->GetPhotonPt(),gamma->GetConversionRadius());
+        hMCTrueConversionRPtMCRPt[fiCut]->Fill(Photon->Pt(),negDaughter->R());
 
         if(gamma->GetConversionRadius() < 75. || gamma->GetConversionRadius() > 85.) hMCTrueConversionRRejSmall[fiCut]->Fill(gamma->GetConversionRadius());
         if(gamma->GetConversionRadius() < 70. || gamma->GetConversionRadius() > 90.) hMCTrueConversionRRejLarge[fiCut]->Fill(gamma->GetConversionRadius());
@@ -740,6 +949,13 @@ void AliAnalysisTaskMaterialHistos::ProcessPhotons(){
         hMCTrueConversionPsiPair[fiCut]->Fill(gamma->GetPsiPair());
         hMCTrueConversionChi2[fiCut]->Fill(gamma->GetChi2perNDF());
         hMCTrueConversionMass[fiCut]->Fill(gamma->GetInvMassPair());
+	if(gamma->GetPhotonP()!=0 && negTrack->P()!=0) {
+	  if(gamma->GetConversionRadius() > 5.){
+	    hMCTrueConversionAsymP[fiCut]->Fill(gamma->GetPhotonP(),negTrack->P()/gamma->GetPhotonP());
+	  }
+        }
+
+
         if(fInputEvent->IsA()==AliESDEvent::Class()){
             AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(fInputEvent);
             if(esdEvent){

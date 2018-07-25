@@ -45,6 +45,9 @@
 #include "AliESDVertex.h"
 #include "AliLog.h"
 #include "AliRhoParameter.h"
+#include "AliGenCocktailEventHeader.h" //FK//
+#include "AliGenPythiaEventHeader.h"//FK//
+#include "AliMCEvent.h" //FK// 
 
 //--AliHFJetsClass--
 #include "AliHFJetsTaggingVertex.h"
@@ -117,7 +120,8 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV() :
   fRandom(new TRandom3(0)),
   fGlLogLevel(AliLog::kError),
   fLcDebLevel(1),
-  fStartBin(0)
+  fStartBin(0),
+  fMaxFacPtHard(0)  //FK
 {
   // default constructor
 }
@@ -183,7 +187,8 @@ AliAnalysisTaskEmcalJetBtagSV::AliAnalysisTaskEmcalJetBtagSV(const char* name):
   fRandom(new TRandom3(0)),
   fGlLogLevel(AliLog::kError),
   fLcDebLevel(1),
-  fStartBin(0)
+  fStartBin(0),
+  fMaxFacPtHard(0)  //FK
 {
   // standard constructor
   AliInfo(MSGINFO("+++ Executing Constructor +++"));
@@ -262,7 +267,7 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
   }
 
   // Control histogram
-  fhEntries = new TH1F("hEntries", "Analyzed sample properties", 9, -.5, 8.5);
+  fhEntries = new TH1F("hEntries", "Analyzed sample properties", 11, -.5, 10.5);
   fhEntries->GetXaxis()->SetBinLabel(1, "nEventsAnal");
   fhEntries->GetXaxis()->SetBinLabel(2, "nEvPhySel");
   fhEntries->GetXaxis()->SetBinLabel(3, "nEvGoodJetArray");
@@ -272,6 +277,8 @@ void AliAnalysisTaskEmcalJetBtagSV::UserCreateOutputObjects()
   fhEntries->GetXaxis()->SetBinLabel(7, "nJetsCand");
   fhEntries->GetXaxis()->SetBinLabel(8, "nJetsTagged");
   fhEntries->GetXaxis()->SetBinLabel(9, "nUnexpError");
+  fhEntries->GetXaxis()->SetBinLabel(10, "noMCHeader");
+  fhEntries->GetXaxis()->SetBinLabel(11, "nEvPtHardOutlier");
   fOutputList->Add(fhEntries);
 
   fhEvtRej  = new TH1F("fhEvtRej", "Event rejection criteria", 10, -.5, 10.5);
@@ -428,7 +435,13 @@ void AliAnalysisTaskEmcalJetBtagSV::UserExec(Option_t* /*option*/)
 
   // Execute analysis for current event
   if (fCorrMode)
-    AnalyseCorrectionsMode(); // must be MC, all steps are filled for container kBJets (only)
+    if( IsOutlier()){             //FK// Check whether this event is pthard bin outlier 
+       fhEntries->Fill(10);       //FK//
+       PostData(1, fOutputList); //FK//
+       return;                   //FK//
+    }else{                       //FK// 
+       AnalyseCorrectionsMode(); // must be MC, all steps are filled for container kBJets (only)
+    }
   else
     AnalyseDataMode();        // can also be MC, only step kCFStepReco is filled also for kBJets
 
@@ -1080,4 +1093,54 @@ Double_t AliAnalysisTaskEmcalJetBtagSV::GetDeltaPtRandomCone(Double_t jetradius,
 
   return conePt - jetradius*jetradius*TMath::Pi() * rhovalue;
 
+}
+//_____________________________________________________________________________________
+Bool_t AliAnalysisTaskEmcalJetBtagSV::IsOutlier(){ //FK// whole function
+   //Checks that this event is pthard bin outlier
+   //inspired by Bool_t AliConvEventCuts::IsJetJetMCEventAccepted  
+
+   if(TMath::Abs(fMaxFacPtHard) < 1e-6) return kFALSE; //FK// skip 
+
+   TList *genHeaders         = 0x0;
+   AliGenEventHeader* gh     = 0;
+   Float_t ptHard;
+   AliEmcalJet* jetMC = 0x0;
+   Int_t nMCJets = fMCJetArray->GetEntries();
+   Bool_t bPythiaHeader = 0; // flag whether pythia header was found
+
+   if(MCEvent()){
+      genHeaders = MCEvent()->GetCocktailList(); //get list of MC cocktail headers 
+   }
+
+   if(genHeaders){
+      for(Int_t i = 0; i<genHeaders->GetEntries(); i++){
+         gh = (AliGenEventHeader*)genHeaders->At(i);
+
+         AliGenPythiaEventHeader* pyhead= dynamic_cast<AliGenPythiaEventHeader*>(gh); //identify pythia header
+
+         if(pyhead){
+            bPythiaHeader = 1;
+            ptHard = pyhead->GetPtHard();
+
+            for(Int_t jetcand = 0; jetcand < nMCJets; ++jetcand) {
+               jetMC = (AliEmcalJet*)fMCJetArray->UncheckedAt(jetcand);
+               if (!jetMC) continue;
+               //Compare jet pT and pt Hard
+               if(jetMC->Pt() > fMaxFacPtHard * ptHard){
+                  return kTRUE;
+               }
+            }
+         }
+      }
+      if(!bPythiaHeader){ //ptyhia header was not found
+          AliWarning("AliAnalysisTaskEmcalJetBtagSV MC header not found");
+          fhEntries->Fill(9);
+          return kTRUE; //skip the event
+      }
+      return kFALSE;  //there was not outlier all jets have pT below fMaxFacPtHard * ptHard
+   }else{
+      fhEntries->Fill(9);
+      AliWarning("AliAnalysisTaskEmcalJetBtagSV MC header not found");
+      return kTRUE; //MC header not found
+   }
 }

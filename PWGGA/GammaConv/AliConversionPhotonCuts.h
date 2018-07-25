@@ -45,7 +45,7 @@ class AliAODMCParticle;
  * | Position in the cut string (from the end) | Cut type               |
  * |-------------------------------------------|------------------------|
  * |                  0                        | V0FinderType           |
- * |                  1                        | EtaCut                 | 
+ * |                  1                        | EtaCut                 |
  * |                  2                        | MinRCut                |
  * |                  3                        | EtaForPhiCut           |
  * |                  4                        | MinPhiCut              |
@@ -60,7 +60,7 @@ class AliAODMCParticle;
  * |                  13                       | TOFelectronPID         |
  * |                  14                       | ITSelectronPID         |
  * |                  15                       | TRDelectronPID         |
- * |                  16                       | QtMaxCut               | 
+ * |                  16                       | QtMaxCut               |
  * |                  17                       | Chi2GammaCut           |
  * |                  18                       | PsiPair                |
  * |                  19                       | DoPhotonAsymmetryCut   |
@@ -74,28 +74,28 @@ class AliAODMCParticle;
 
 
 class AliConversionPhotonCuts : public AliAnalysisCuts {
-      
-  public: 
+
+  public:
     enum cutIds {
-      kv0FinderType,                
-      ketaCut,                                     
+      kv0FinderType,
+      ketaCut,
       kRCut,
       kEtaForPhiSector,
       kMinPhiSector,
       kMaxPhiSector,
-      ksinglePtCut,                 
-      kclsTPCCut,                   
-      kededxSigmaCut,               
-      kpidedxSigmaCut,              
-      kpiMomdedxSigmaCut,        
-      kpiMaxMomdedxSigmaCut,        
-      kLowPRejectionSigmaCut,       
-      kTOFelectronPID, 
+      ksinglePtCut,
+      kclsTPCCut,
+      kededxSigmaCut,
+      kpidedxSigmaCut,
+      kpiMomdedxSigmaCut,
+      kpiMaxMomdedxSigmaCut,
+      kLowPRejectionSigmaCut,
+      kTOFelectronPID,
       kITSelectronPID,
       kTRDelectronPID,
-      kQtMaxCut,                    
-      kchi2GammaCut,                
-      kPsiPair, 
+      kQtMaxCut,
+      kchi2GammaCut,
+      kPsiPair,
       kdoPhotonAsymmetryCut,
       kCosPAngle,
       kElecShare,
@@ -127,10 +127,10 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
     static const char * fgkCutNames[kNCuts];
 
-    Double_t GetCosineOfPointingAngle(const AliConversionPhotonBase * photon, AliVEvent * event) const; 
+    Double_t GetCosineOfPointingAngle(const AliConversionPhotonBase * photon, AliVEvent * event) const;
     Bool_t InitializeCutsFromCutString(const TString analysisCutSelection);
     void FillElectonLabelArray(AliAODConversionPhoton* photon, Int_t nV0);
-    void SetPreSelectionCutFlag(Bool_t preSelFlag){fPreSelCut = preSelFlag;}   
+    void SetPreSelectionCutFlag(Bool_t preSelFlag){fPreSelCut = preSelFlag;}
 
     AliConversionPhotonCuts(const char *name="V0Cuts", const char * title="V0 Cuts");
     AliConversionPhotonCuts(const AliConversionPhotonCuts&);
@@ -145,14 +145,14 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void SetPIDResponse(AliPIDResponse * pidResponse) {fPIDResponse = pidResponse;}
     AliPIDResponse * GetPIDResponse() { return fPIDResponse;}
 
-    
+
     virtual Bool_t IsSelected(TObject* /*obj*/){return kTRUE;}
     virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
     TString GetCutNumber();
-    
+
     Float_t GetKappaTPC(AliConversionPhotonBase *gamma, AliVEvent *event);
-    
+
     // Cut Selection
     Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
     Bool_t PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
@@ -161,7 +161,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t TracksAreSelected(AliVTrack * negTrack, AliVTrack * posTrack);
     //Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
     //Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent *mcEvent, Bool_t bMCDaughtersInAcceptance=kFALSE);
-      
+
     void PrintCuts();
     void PrintCutsWithValues();
 
@@ -169,7 +169,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
     void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
     TList *GetCutHistograms(){return fHistograms;}
-    void FillPhotonCutIndex(Int_t photoncut){if(fHistoCutIndex)fHistoCutIndex->Fill(photoncut);}    
+    void FillPhotonCutIndex(Int_t photoncut){if(fHistoCutIndex)fHistoCutIndex->Fill(photoncut);}
     void FillV0EtaBeforedEdxCuts(Float_t v0Eta){if(fHistoEtaDistV0s)fHistoEtaDistV0s->Fill(v0Eta);}
     void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(fHistoEtaDistV0sAfterdEdxCuts)fHistoEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
 
@@ -178,14 +178,15 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
 
     AliVTrack * GetTrack(AliVEvent * event, Int_t label);
     AliESDtrack *GetESDTrack(AliESDEvent * event, Int_t label);
-    
+
     ///Cut functions
     Bool_t SpecificTrackCuts(AliAODTrack * negTrack, AliAODTrack * posTrack,Int_t &cutIndex);
     Bool_t SpecificTrackCuts(AliESDtrack * negTrack, AliESDtrack * posTrack,Int_t &cutIndex);
     Bool_t AcceptanceCuts(AliConversionPhotonBase *photon);
     Bool_t AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg);
     Bool_t PhiSectorCut(AliConversionPhotonBase * photon);
-    Bool_t dEdxCuts(AliVTrack * track);
+    //   Bool_t dEdxCuts(AliVTrack * track);
+    Bool_t dEdxCuts(AliVTrack * track, AliConversionPhotonBase * photon);
     Bool_t KappaCuts(AliConversionPhotonBase * photon,AliVEvent *event);
     Bool_t ArmenterosQtCut(AliConversionPhotonBase *photon);
     Bool_t AsymmetryCut(AliConversionPhotonBase *photon,AliVEvent *event);
@@ -234,23 +235,27 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SetKappaTPCCut(Int_t kappaCut);
     void SetIsHeavyIon(Int_t isHeavyIon){fIsHeavyIon=isHeavyIon;}
     Int_t GetFirstTPCRow(Double_t radius);
-    
+
     Bool_t SetITSElectronPIDCut(Int_t ITSelectronPID);
     Bool_t SetTRDElectronPIDCut(Int_t TRDelectronPID);
-    
+
     // Request Flags
     Bool_t UseElecSharingCut(){return fDoSharedElecCut;}
     Bool_t UseToCloseV0sCut(){return fDoToCloseV0sCut;}
     Double_t GetEtaCut(){return fEtaCut;}
     void SetDodEdxSigmaCut(Bool_t k=kTRUE)  {fDodEdxSigmaCut=k;}
     void SetSwitchToKappaInsteadOfNSigdEdxTPC(Bool_t k=kTRUE) {fSwitchToKappa=k;}
-    
+    void SetDoElecDeDxPostCalibration(Bool_t k=kTRUE)  {fDoElecDeDxPostCalibration=k;}
+
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
     Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
-      
+    Bool_t GetElecDeDxPostCalibrationInitialized() {return fElecDeDxPostCalibrationInitialized;}
+    Bool_t  InitializeElecDeDxPostCalibration(TString filename);
+    Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t R);
+
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
     AliPIDResponse*   fPIDResponse;                         ///< PID response
@@ -352,7 +357,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fSwitchToKappa;                       ///< switches from standard dEdx nSigma TPC cuts to Kappa TPC
     Float_t           fKappaMinCut;                         ///< maximum Kappa cut
     Float_t           fKappaMaxCut;                         ///< maximum Kappa cut
-    
+    Bool_t            fDoElecDeDxPostCalibration;                   ///<
     // Histograms
     TH1F*             fHistoEtaDistV0s;                     ///< eta-distribution of all V0s after Finder selection
     TH1F*             fHistoEtaDistV0sAfterdEdxCuts;        ///< eta-distribution of all V0s after Finder selection after dEdx cuts
@@ -374,6 +379,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoArmenterosbefore;               ///< armenteros podolanski plot before cuts
     TH1F*             fHistoInvMassafter;                   ///< e+e- inv mass distribution after cuts
     TH2F*             fHistoArmenterosafter;                ///< armenteros podolanski plot after cuts
+    TH2F*             fHistoAsymmetrybefore;                 ///< asymmetry plot after cuts
     TH2F*             fHistoAsymmetryafter;                 ///< asymmetry plot after cuts
     TH2F*             fHistoAcceptanceCuts;                 ///< bookkeeping for acceptance cuts
     TH1F*             fHistoCutIndex;                       ///< bookkeeping for cuts
@@ -381,11 +387,17 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t            fPreSelCut;                           ///< Flag for preselection cut used in V0Reader
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
-    TProfile*         fProfileContainingMaterialBudgetWeights;      
-
+    TProfile*         fProfileContainingMaterialBudgetWeights;
+    Bool_t            fElecDeDxPostCalibrationInitialized;  ///< flag to check that initialization worked  
+    Int_t             fnRBins;                              //
+    TH2F**            fHistoEleMapMean;  //[fnRBins]
+    TH2F**            fHistoEleMapWidth; //[fnRBins] 
+    TH2F**            fHistoPosMapMean;  //[fnRBins] 
+    TH2F**            fHistoPosMapWidth; //[fnRBins] 
+ 
   private:
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,15)
+    ClassDef(AliConversionPhotonCuts,18)
     /// \endcond
 };
 

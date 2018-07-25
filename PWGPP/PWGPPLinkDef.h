@@ -1,6 +1,6 @@
 #ifdef __CINT__
 
-#pragma link off all glols;
+#pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
@@ -95,6 +95,8 @@
 
 #pragma link C++ class AliTaskConfigOCDB+;
 
+#pragma link C++ class AliAnalysisTaskTrackRefsChecksMultipleSpecies+;
+#pragma link C++ class AliAnalysisTaskTrackRefsChecks+;
 
 // TRD performance classes
 #pragma link C++ class  AliTenderSupplyTRD+;

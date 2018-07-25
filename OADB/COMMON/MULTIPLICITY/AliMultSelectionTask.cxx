@@ -1988,7 +1988,7 @@ Int_t AliMultSelectionTask::SetupRun(const AliVEvent* const esd)
     }
 
     //Determine location of file to open: default OADB
-    TString fileName =(Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
+    TString fileName = (Form("%s/COMMON/MULTIPLICITY/data/OADB-%s.root", AliAnalysisManager::GetOADBPath(), lPeriodName.Data() ));
     AliInfo(Form("Setup Multiplicity Selection for run %d with file %s, period: %s\n",fCurrentRun,fileName.Data(),lPeriodName.Data()));
 
     TString lOADBref = lPeriodName.Data();
@@ -2536,6 +2536,7 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     //2016
     if ( fCurrentRun >= 252235 && fCurrentRun <= 252375 ) lProductionName = "LHC16d";
     if ( fCurrentRun >= 252603 && fCurrentRun <= 253591 ) lProductionName = "LHC16e";
+    if ( fCurrentRun >= 253659 && fCurrentRun <= 253978 ) lProductionName = "LHC16f";
     if ( fCurrentRun >= 254124 && fCurrentRun <= 254332 ) lProductionName = "LHC16g";
     if ( fCurrentRun >= 254378 && fCurrentRun <= 255467 ) lProductionName = "LHC16h";
     if ( fCurrentRun >= 255515 && fCurrentRun <= 255618 ) lProductionName = "LHC16i";
@@ -2561,6 +2562,11 @@ TString AliMultSelectionTask::GetPeriodNameByRunNumber() const
     if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lProductionName = "LHC17p"; 
     if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lProductionName = "LHC17q"; 
     if ( fCurrentRun >= 282504 && fCurrentRun <= 282704 ) lProductionName = "LHC17r"; 
+
+    //2018
+    if ( fCurrentRun >= 285008 && fCurrentRun <= 285447 ) lProductionName = "LHC18b"; 
+    if ( fCurrentRun >= 285978 && fCurrentRun <= 286350 ) lProductionName = "LHC18d"; 
+    if ( fCurrentRun >= 286380 && fCurrentRun <= 286937 ) lProductionName = "LHC18e"; 
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lProductionName = "LHC15m";
@@ -2613,6 +2619,7 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     //2016
     if ( fCurrentRun >= 252235 && fCurrentRun <= 252375 ) lSystemType = "pp";
     if ( fCurrentRun >= 252603 && fCurrentRun <= 253591 ) lSystemType = "pp";
+    if ( fCurrentRun >= 253659 && fCurrentRun <= 253978 ) lSystemType = "pp";
     if ( fCurrentRun >= 254124 && fCurrentRun <= 254332 ) lSystemType = "pp";
     if ( fCurrentRun >= 254378 && fCurrentRun <= 255467 ) lSystemType = "pp";
     if ( fCurrentRun >= 255515 && fCurrentRun <= 255618 ) lSystemType = "pp";
@@ -2638,6 +2645,11 @@ TString AliMultSelectionTask::GetSystemTypeByRunNumber() const
     if ( fCurrentRun >= 282008 && fCurrentRun <= 282343 ) lSystemType = "pp"; 
     if ( fCurrentRun >= 282365 && fCurrentRun <= 282367 ) lSystemType = "pp"; 
     if ( fCurrentRun >= 282504 && fCurrentRun <= 282704 ) lSystemType = "pp"; 
+
+    //2018
+    if ( fCurrentRun >= 285008 && fCurrentRun <= 285447 ) lSystemType = "pp"; 
+    if ( fCurrentRun >= 285978 && fCurrentRun <= 286350 ) lSystemType = "pp"; 
+    if ( fCurrentRun >= 286380 && fCurrentRun <= 286937 ) lSystemType = "pp"; 
     
     //Registered Productions : Run 2 Pb-Pb
     if ( fCurrentRun >= 243395 && fCurrentRun <= 243984 ) lSystemType = "Pb-Pb";
@@ -2670,6 +2682,11 @@ TString AliMultSelectionTask::GetExceptionMapping( TString lProductionName ) con
     if ( lProductionName.Contains("LHC17g8b") ) lReturnString = "LHC16r-DefaultMC-EPOSLHC";
     if ( lProductionName.Contains("LHC17g8c") ) lReturnString = "LHC16s-DefaultMC-EPOSLHC";
     if ( lProductionName.Contains("LHC17g8a") ) lReturnString = "LHC16t-DefaultMC-EPOSLHC";
+
+    if ( lProductionName.Contains("LHC17d13") || lProductionName.Contains("LHC17d15") ) {
+        if ( fCurrentRun >= 265115 && fCurrentRun <= 265525 ) lReturnString = "LHC16q-DefaultMC-EPOSLHC";
+        if ( fCurrentRun >= 267161 && fCurrentRun <= 267166 ) lReturnString = "LHC16t-DefaultMC-EPOSLHC";
+    }
    
    //Header mistakes
    if ( lProductionName.EqualTo("LHC17i2a") ) lReturnString = "LHC17i2";

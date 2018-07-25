@@ -8,14 +8,16 @@
 #include "AliFemtoDreamPairCleanerHists.h"
 ClassImp(AliFemtoDreamPairCleanerHists)
 AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists()
-:fTrackDecays(0)
-,fDecayDecays(0)
+:fTrackDecays(nullptr)
+,fDecayDecays(nullptr)
+,fPairInvMass(nullptr)
+,fPairTuple(nullptr)
 ,fOutput(0)
 {
 }
 
 AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists(
-    int nTrackDecays,int nDecayDecays)
+    int nTrackDecays,int nDecayDecays,int nInvMassPairs)
 {
   fOutput = new TList();
   fOutput->SetOwner();
@@ -32,6 +34,20 @@ AliFemtoDreamPairCleanerHists::AliFemtoDreamPairCleanerHists(
     TString histName=Form("DaugthersSharedDaughters_%d",i);
     fDecayDecays[i]=new TH1F(histName.Data(),histName.Data(),20,0,20);
     fOutput->Add(fDecayDecays[i]);
+  }
+  fPairInvMass=new TH1F*[nInvMassPairs];
+  fPairTuple=new TNtuple*[nInvMassPairs];
+  for (int i=0;i<nInvMassPairs;++i) {
+    TString histName=Form("InvMassPair_%d",i);
+    //this is tuned to look for the H Dibaryon, if neccessary setters need to be
+    //introduced.
+    fPairInvMass[i]=new TH1F(histName.Data(),histName.Data(),1500,2.25,3.2);
+    fPairInvMass[i]->Sumw2();
+    fOutput->Add(fPairInvMass[i]);
+
+    histName+="Tuple";
+    fPairTuple[i] = new TNtuple(histName.Data(),histName.Data(),"mass:relMom");
+    fOutput->Add(fPairTuple[i]);
   }
 }
 

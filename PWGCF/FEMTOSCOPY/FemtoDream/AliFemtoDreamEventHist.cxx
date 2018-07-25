@@ -19,14 +19,15 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist()
 ,fCentVsRefMult(0)
 {
   for (int i=0;i<2;++i) {
-    fEvtNCont[i]=0;
-    fEvtVtxX[i]=0;
-    fEvtVtxY[i]=0;
-    fEvtVtxZ[i]=0;
-    fMultDistSPD[i]=0;
-    fMultDistV0A[i]=0;
-    fMultDistV0C[i]=0;
-    fMultDistRef08[i]=0;
+    fEvtNCont[i]=nullptr;
+    fEvtVtxX[i]=nullptr;
+    fEvtVtxY[i]=nullptr;
+    fEvtVtxZ[i]=nullptr;
+    fSPDTrklCls[i]=nullptr;
+    fMultDistSPD[i]=nullptr;
+    fMultDistV0A[i]=nullptr;
+    fMultDistV0C[i]=nullptr;
+    fMultDistRef08[i]=nullptr;
   }
 }
 AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
@@ -151,6 +152,29 @@ AliFemtoDreamEventHist::AliFemtoDreamEventHist(bool centVsMultPlot) {
     fMultDistRef08[i]->Sumw2();
     fMultDistRef08[i]->GetXaxis()->SetTitle("Multiplicity (RefMult08)");
     fEvtCutQA[i]->Add(fMultDistRef08[i]);
+
+    TString SPDtrklClsName=Form("SPDTrackletsVsCluster_%s",sName[i].Data());
+    fSPDTrklCls[i]=new TH2F(SPDtrklClsName.Data(),SPDtrklClsName.Data(),
+                        250,0,250,1000,0,1000);
+    fSPDTrklCls[i]->Sumw2();
+    fSPDTrklCls[i]->GetXaxis()->SetTitle("SPD Tracklets");
+    fSPDTrklCls[i]->GetYaxis()->SetTitle("SPD Cluster");
+    fEvtCutQA[i]->Add(fSPDTrklCls[i]);
+
+    TString SPDvsTrkZVtxName=Form("SPDvsTrackZVtxPos_%s",sName[i].Data());
+    fSPDTrackZVtx[i]=new TH2F(SPDvsTrkZVtxName.Data(),SPDvsTrkZVtxName.Data(),
+                              300,-15,15,300,-15,15);
+    fSPDTrackZVtx[i]->Sumw2();
+    fSPDTrackZVtx[i]->GetXaxis()->SetTitle("zVtx Position SPD");
+    fSPDTrackZVtx[i]->GetYaxis()->SetTitle("zVtx Position Tracks");
+    fEvtCutQA[i]->Add(fSPDTrackZVtx[i]);
+
+    TString SPDTrkZVtxDisplName=Form("SPDTrackZVtxDisplacement%s",sName[i].Data());
+    fSPDTrkZVtxDispl[i]=new TH1F(SPDTrkZVtxDisplName.Data(),SPDTrkZVtxDisplName.Data(),
+                              300,0,1.5);
+    fSPDTrkZVtxDispl[i]->Sumw2();
+    fSPDTrkZVtxDispl[i]->GetXaxis()->SetTitle("zVtx Position |SPD - Tracks|");
+    fEvtCutQA[i]->Add(fSPDTrkZVtxDispl[i]);
   }
 }
 

@@ -61,6 +61,8 @@ struct MacroParams {
   bool do_pqq3d_cf;
   bool do_kt_pqq3d_cf;
 
+  bool do_moco6_cf;
+
   bool do_ylm_cf; // not implemented yet
   bool ylm_useLCMS;
 
@@ -103,6 +105,7 @@ ConfigFemtoAnalysis(const TString& param_str="")
   macro_config.do_deltaeta_deltaphi_cf = false;
   macro_config.do_avg_sep_cf = false;
   macro_config.do_ylm_cf = false;
+  macro_config.do_moco6_cf = false;
 
   macro_config.do_trueq_cf = false;
   macro_config.do_kt_trueq_cf = false;
@@ -279,6 +282,13 @@ ConfigFemtoAnalysis(const TString& param_str="")
       if (macro_config.do_trueq3d_cf) {
         TString cf_title("Trueq3D_");
         AliFemtoModelCorrFctnTrueQ3D *m_cf = new AliFemtoModelCorrFctnTrueQ3D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
+        m_cf->SetManager(model_manager);
+        analysis->AddCorrFctn(m_cf);
+      }
+
+      if (macro_config.do_moco6_cf) {
+        TString cf_title("MRC6D");
+        AliFemtoModelCorrFctnTrueQ6D *m_cf = new AliFemtoModelCorrFctnTrueQ6D(cf_title, macro_config.q3d_bin_count, macro_config.q3d_maxq);
         m_cf->SetManager(model_manager);
         analysis->AddCorrFctn(m_cf);
       }

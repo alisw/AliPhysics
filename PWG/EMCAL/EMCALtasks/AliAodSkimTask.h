@@ -26,6 +26,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     void                  SetCopyTZERO(Bool_t b)    {fDoCopyTZERO=b;}
     void                  SetCopyVertices(Bool_t b) {fDoCopyVertices=b;}
     void                  SetCopyTOF(Bool_t b)      {fDoCopyTOF=b;}
+    void                  SetCopyTracklets(Bool_t b){fDoCopyTracklets=b;}
     void                  SetCopyTracks(Bool_t b)   {fDoCopyTracks=b;}
     void                  SetCopyTrigger(Bool_t b)  {fDoCopyTrigger=b;}
     void                  SetCopyPTrigger(Bool_t b) {fDoCopyPTrigger=b;}
@@ -51,6 +52,7 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     Bool_t                fDoCopyTZERO;     //  if true copy TZERO
     Bool_t                fDoCopyVertices;  //  if true copy vertices
     Bool_t                fDoCopyTOF;       //  if true copy TOF
+    Bool_t                fDoCopyTracklets; //  if true copy tracklets
     Bool_t                fDoCopyTracks;    //  if true copy tracks
     Bool_t                fDoCopyTrigger;   //  if true copy trigger (EMC)
     Bool_t                fDoCopyPTrigger;  //  if true copy trigger (PHS)
@@ -70,10 +72,10 @@ class AliAodSkimTask: public AliAnalysisTaskSE
     TList                *fOutputList;      //! output list
     TH1F                 *fHevs;            //! events processed/accepted
     TH1F                 *fHclus;           //! cluster distribution
-    const char           *GetVersion() const { return "1.0"; }
+    const char           *GetVersion() const { return "1.1"; }
 
     AliAodSkimTask(const AliAodSkimTask&);             // not implemented
     AliAodSkimTask& operator=(const AliAodSkimTask&);  // not implemented
-    ClassDef(AliAodSkimTask, 2); // AliAodSkimTask
+    ClassDef(AliAodSkimTask, 3); // AliAodSkimTask
 };
 #endif

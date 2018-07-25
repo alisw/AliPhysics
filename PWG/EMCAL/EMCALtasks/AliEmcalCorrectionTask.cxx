@@ -358,23 +358,23 @@ void AliEmcalCorrectionTask::InitializeConfiguration()
   }
 
   // Setup and initialize configurations
-  // user is added first so that it will be checked first.
-  // User file
-  int returnValue = fYAMLConfig.AddConfiguration(fUserConfigurationFilename, "user");
-  if (returnValue >= 0) {
-    AliInfoStream() << "Using user EMCal corrections configuration located at \"" << fUserConfigurationFilename << "\"\n";
-  }
-  else {
-    AliInfoStream() << "User file at \"" << fUserConfigurationFilename << "\" does not exist! All settings will be from the default file!\n";
-  }
-
+  // default is added first so that it will be checked last.
   // Default file
-  returnValue = fYAMLConfig.AddConfiguration(fDefaultConfigurationFilename, "default");
+  int returnValue = fYAMLConfig.AddConfiguration(fDefaultConfigurationFilename, "default");
   if (returnValue >= 0) {
     AliInfoStream() << "Using default EMCal corrections configuration located at \"" << fDefaultConfigurationFilename << "\"\n";
   }
   else {
     AliFatal(TString::Format("Default file located at \"%s\" does not exist!", fDefaultConfigurationFilename.c_str()));
+  }
+
+  // User file
+  returnValue = fYAMLConfig.AddConfiguration(fUserConfigurationFilename, "user");
+  if (returnValue >= 0) {
+    AliInfoStream() << "Using user EMCal corrections configuration located at \"" << fUserConfigurationFilename << "\"\n";
+  }
+  else {
+    AliInfoStream() << "User file at \"" << fUserConfigurationFilename << "\" does not exist! All settings will be from the default file!\n";
   }
 
   // Initialize

@@ -207,6 +207,9 @@ public:
   void SetUseChargedConstituents(Bool_t doUse) { fUseChargedConstituents = doUse; }
   void SetUseNeutralConstituents(Bool_t doUse) { fUseNeutralConstituents = doUse; }
 
+  void SetHasRecEvent(Bool_t hasrec) { fHasRecEvent = hasrec; }
+  void SetHasTrueEvent(Bool_t hastrue) { fHasTrueEvent = hastrue; }
+
 	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *name);
 
 protected:
@@ -214,6 +217,7 @@ protected:
 	virtual bool Run();
 	virtual void RunChanged(Int_t newrun);
   virtual void UserExecOnce();
+  virtual Bool_t IsTriggerSelected();
 
 	AliJetSubstructureData MakeJetSubstructure(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters, const AliJetSubstructureSettings &settings) const;
 
@@ -254,6 +258,8 @@ private:
 	Double_t                     fSDBetaCut;                  ///< Soft drop beta cut
 	Reclusterizer_t              fReclusterizer;              ///< Reclusterizer method
 
+  Bool_t                       fHasRecEvent;                ///< Has reconstructed event (for trigger selection)
+  Bool_t                       fHasTrueEvent;               ///< Has Monte-Carlo truth (for trigger selection)
 	UInt_t                       fTriggerSelectionBits;       ///< Trigger selection bits
   TString                      fTriggerSelectionString;     ///< Trigger selection string
   TString                      fNameTriggerDecisionContainer; ///< Global trigger decision container

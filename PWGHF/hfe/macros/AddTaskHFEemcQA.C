@@ -3,6 +3,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
                                  Bool_t FillElecSparse=kFALSE,
                                  Bool_t ClsTypeEMC=kTRUE, Bool_t ClsTypeDCAL=kTRUE,
                                  Bool_t hasTwoEMCTrigThres=kFALSE,
+                                 Int_t  BitOption=0,
                                  Int_t MimCent = -1, Int_t MaxCent = -1,
                                  Int_t thEG1ADC=140, Int_t thEG2ADC=89,
                                  TString ContNameExt = "", TString centrality="V0M")
@@ -93,6 +94,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     hfecalqa->SetClusterTypeDCAL(ClsTypeDCAL);
     hfecalqa->SetCentralityMim(MimCent);
     hfecalqa->SetCentralityMax(MaxCent);
+    hfecalqa->SetFilterBitOption(BitOption);
     hfecalqa->SetCentralityEstimator(centrality.Data());
     
     TString containerName = mgr->GetCommonFileName();
@@ -117,6 +119,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
     hfecalqa7->SetClusterTypeDCAL(ClsTypeDCAL);
     hfecalqa7->SetCentralityMim(MimCent);
     hfecalqa7->SetCentralityMax(MaxCent);
+    hfecalqa7->SetFilterBitOption(BitOption);
     hfecalqa7->SetCentralityEstimator(centrality.Data());
     
     TString containerName7 = mgr->GetCommonFileName();
@@ -195,6 +198,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfecalqaTrig01->SetClusterTypeDCAL(ClsTypeDCAL);
         hfecalqaTrig01->SetCentralityMim(MimCent);
         hfecalqaTrig01->SetCentralityMax(MaxCent);
+        hfecalqaTrig01->SetFilterBitOption(BitOption);
         hfecalqaTrig01->SetCentralityEstimator(centrality.Data());
         
         TString containerName01 = mgr->GetCommonFileName();
@@ -220,6 +224,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfecalqaTrig02->SetClusterTypeDCAL(ClsTypeDCAL);
         hfecalqaTrig02->SetCentralityMim(MimCent);
         hfecalqaTrig02->SetCentralityMax(MaxCent);
+        hfecalqaTrig02->SetFilterBitOption(BitOption);
         hfecalqaTrig02->SetCentralityEstimator(centrality.Data());
         
         TString containerName02 = mgr->GetCommonFileName();
@@ -246,6 +251,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfdcalqaTrig01->SetClusterTypeDCAL(ClsTypeDCAL);
         hfdcalqaTrig01->SetCentralityMim(MimCent);
         hfdcalqaTrig01->SetCentralityMax(MaxCent);
+        hfdcalqaTrig01->SetFilterBitOption(BitOption);
         hfdcalqaTrig01->SetCentralityEstimator(centrality.Data());
         
         TString containerName03 = mgr->GetCommonFileName();
@@ -271,6 +277,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
         hfdcalqaTrig02->SetClusterTypeDCAL(ClsTypeDCAL);
         hfdcalqaTrig02->SetCentralityMim(MimCent);
         hfdcalqaTrig02->SetCentralityMax(MaxCent);
+        hfdcalqaTrig02->SetFilterBitOption(BitOption);
         hfdcalqaTrig02->SetCentralityEstimator(centrality.Data());
         
         TString containerName04 = mgr->GetCommonFileName();
@@ -300,6 +307,7 @@ AliAnalysisTask *AddTaskHFEemcQA(
         if(ClsTypeDCAL)hfecalqaTrig0->SetEMCalTriggerDG1(kTRUE);
         hfecalqaTrig0->SetCentralityMim(MimCent);
         hfecalqaTrig0->SetCentralityMax(MaxCent);
+        hfecalqaTrig0->SetFilterBitOption(BitOption);
         hfecalqaTrig0->SetCentralityEstimator(centrality.Data());
         
         TString containerName1 = mgr->GetCommonFileName();

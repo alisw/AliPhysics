@@ -70,6 +70,7 @@ fSubtractSoftPiME(kFALSE),
 fUseMassVsCentPlots(kFALSE),
 fMinCent(0.),
 fMaxCent(100.),
+fUseOneMEPool(kFALSE),
 fDmesonFitterSignal(0x0),
 fDmesonFitterSignalError(0x0),
 fDmesonFitterBackground(0x0),
@@ -108,6 +109,7 @@ fSignalCorrelMC_c(0x0),
 fSignalCorrelMC_b(0x0),
 fReflUnderSCorrel(0x0),
 fReflUnderSBCorrel(0x0),
+fRoverSinFitRange(0x0),
 fIntegratePtBins(kFALSE),
 fDebug(0),
 fMassFit(0x0),
@@ -167,6 +169,7 @@ fSubtractSoftPiME(source.fSubtractSoftPiME),
 fUseMassVsCentPlots(source.fUseMassVsCentPlots),
 fMinCent(source.fMinCent),
 fMaxCent(source.fMaxCent),
+fUseOneMEPool(source.fUseOneMEPool),
 fDmesonFitterSignal(source.fDmesonFitterSignal),
 fDmesonFitterSignalError(source.fDmesonFitterSignalError),
 fDmesonFitterBackground(source.fDmesonFitterBackground),
@@ -205,6 +208,7 @@ fSignalCorrelMC_c(source.fSignalCorrelMC_c),
 fSignalCorrelMC_b(source.fSignalCorrelMC_b),
 fReflUnderSCorrel(source.fReflUnderSCorrel),
 fReflUnderSBCorrel(source.fReflUnderSBCorrel),
+fRoverSinFitRange(source.fRoverSinFitRange),
 fIntegratePtBins(source.fIntegratePtBins),
 fDebug(source.fDebug),
 fMassFit(source.fMassFit),
@@ -371,6 +375,7 @@ Bool_t AliDhCorrelationExtraction::FitInvariantMass() {
   fScaleFactor = new Double_t[fNpTbins];
   fReflUnderSCorrel = new Double_t[fNpTbins]; 
   fReflUnderSBCorrel = new Double_t[fNpTbins];
+  fRoverSinFitRange = new Double_t[fNpTbins];
 
   fMassFit = new TF1*[fNpTbins];
   fBkgFit = new TF1*[fNpTbins];
@@ -711,6 +716,11 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
   TH1D* h1D_Subtr;
   TH1D* h1D_SubtrNorm;
 
+    TH2D *hME_Sign_PtInt_AllPool;
+    TH2D *hME_Sideb_PtInt_AllPool;
+    TH2D *hME_Sign_SoftPi_PtInt_AllPool;
+    TH2D *hME_Sideb_SoftPi_PtInt_AllPool;
+
   for(int iPool=0; iPool<fNpools; iPool++) {
 
     for(int iBin=0; iBin<fNpTbins; iBin++) {
@@ -728,10 +738,10 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
       }
 
       if(fDebug>=3) {  //statistical uncertainty
-	printf("hSE_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sign[iPool][iBin]->GetBinContent(8,5),hSE_Sign[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hSE_Sign[iPool][iBin]->GetBinContent(8,5)),hSE_Sign[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hSE_Sign[iPool][iBin]->GetBinContent(8,5)));
-	printf("hME_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sign[iPool][iBin]->GetBinContent(8,5),hME_Sign[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hME_Sign[iPool][iBin]->GetBinContent(8,5)),hME_Sign[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hME_Sign[iPool][iBin]->GetBinContent(8,5)));
-	printf("hSE_Side: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sideb[iPool][iBin]->GetBinContent(8,5),hSE_Sideb[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hSE_Sideb[iPool][iBin]->GetBinContent(8,5)),hSE_Sideb[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hSE_Sideb[iPool][iBin]->GetBinContent(8,5)));
-	printf("hME_Side: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sideb[iPool][iBin]->GetBinContent(8,5),hME_Sideb[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hME_Sideb[iPool][iBin]->GetBinContent(8,5)),hME_Sideb[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hME_Sideb[iPool][iBin]->GetBinContent(8,5)));
+	     printf("hSE_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sign[iPool][iBin]->GetBinContent(8,5),hSE_Sign[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hSE_Sign[iPool][iBin]->GetBinContent(8,5)),hSE_Sign[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hSE_Sign[iPool][iBin]->GetBinContent(8,5)));
+     	 printf("hME_Sign: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sign[iPool][iBin]->GetBinContent(8,5),hME_Sign[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hME_Sign[iPool][iBin]->GetBinContent(8,5)),hME_Sign[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hME_Sign[iPool][iBin]->GetBinContent(8,5)));
+	     printf("hSE_Side: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hSE_Sideb[iPool][iBin]->GetBinContent(8,5),hSE_Sideb[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hSE_Sideb[iPool][iBin]->GetBinContent(8,5)),hSE_Sideb[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hSE_Sideb[iPool][iBin]->GetBinContent(8,5)));
+	     printf("hME_Side: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sideb[iPool][iBin]->GetBinContent(8,5),hME_Sideb[iPool][iBin]->GetBinError(8,5),TMath::Sqrt(hME_Sideb[iPool][iBin]->GetBinContent(8,5)),hME_Sideb[iPool][iBin]->GetBinError(8,5)/TMath::Sqrt(hME_Sideb[iPool][iBin]->GetBinContent(8,5)));
       }
 
       //Scale bkg plots by ratio of signal region/sidebands
@@ -793,7 +803,7 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
         hSE_Sideb_PtInt[iPool] = (TH2D*)hSE_Sideb[iPool][iBin]->Clone(Form("hSE_Sideb_PtInt_p%d",iPool));
         hME_Sideb_PtInt[iPool] = (TH2D*)hME_Sideb[iPool][iBin]->Clone(Form("hME_Sideb_PtInt_p%d",iPool));
         if(fSubtractSoftPiME) {
-	  hME_Sign_SoftPi_PtInt[iPool] = (TH2D*)hME_Sign_SoftPi[iPool][iBin]->Clone(Form("hME_Sign_SoftPi_PtInt_p%d",iPool));
+	      hME_Sign_SoftPi_PtInt[iPool] = (TH2D*)hME_Sign_SoftPi[iPool][iBin]->Clone(Form("hME_Sign_SoftPi_PtInt_p%d",iPool));
           hME_Sideb_SoftPi_PtInt[iPool] = (TH2D*)hME_Sideb_SoftPi[iPool][iBin]->Clone(Form("hME_Sideb_SoftPi_PtInt_p%d",iPool));
         }
       }
@@ -803,7 +813,7 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
         hSE_Sideb_PtInt[iPool]->Add(hSE_Sideb[iPool][iBin]);
         hME_Sideb_PtInt[iPool]->Add(hME_Sideb[iPool][iBin]);
         if(fSubtractSoftPiME) {
-	  hME_Sign_SoftPi_PtInt[iPool]->Add(hME_Sign_SoftPi[iPool][iBin]);
+	      hME_Sign_SoftPi_PtInt[iPool]->Add(hME_Sign_SoftPi[iPool][iBin]);
           hME_Sideb_SoftPi_PtInt[iPool]->Add(hME_Sideb_SoftPi[iPool][iBin]);
         }
       }
@@ -817,22 +827,81 @@ Bool_t AliDhCorrelationExtraction::ExtractCorrelations(Double_t thrMin, Double_t
       printf("hME_Sideb_PtInt: bin content=%1.3f, staterr=%1.3f, sqrt(N)=%1.3f, ratioToPrev=%1.3f\n",hME_Sideb_PtInt[iPool]->GetBinContent(8,5),hME_Sideb_PtInt[iPool]->GetBinError(8,5),TMath::Sqrt(hME_Sideb_PtInt[iPool]->GetBinContent(8,5)),hME_Sideb_PtInt[iPool]->GetBinError(8,5)/TMath::Sqrt(hME_Sideb_PtInt[iPool]->GetBinContent(8,5)));
     }
 
+  } //end of pool loop
+
+  if(fUseOneMEPool) {
+    hME_Sign_PtInt_AllPool = (TH2D*)hME_Sign_PtInt[0]->Clone("hME_Sign_PtInt_AllPool");
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[1]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[2]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[3]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[4]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[5]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[6]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[7]);
+    hME_Sign_PtInt_AllPool->Add(hME_Sign_PtInt[8]);
+    hME_Sideb_PtInt_AllPool = (TH2D*)hME_Sideb_PtInt[0]->Clone("hME_Sideb_PtInt_AllPool");
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[1]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[2]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[3]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[4]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[5]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[6]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[7]);
+    hME_Sideb_PtInt_AllPool->Add(hME_Sideb_PtInt[8]);
+    hME_Sign_SoftPi_PtInt_AllPool = (TH2D*)hME_Sign_SoftPi_PtInt[0]->Clone("hME_Sign_SoftPi_PtInt_AllPool");
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[1]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[2]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[3]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[4]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[5]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[6]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[7]);
+    hME_Sign_SoftPi_PtInt_AllPool->Add(hME_Sign_SoftPi_PtInt[8]);
+    hME_Sideb_SoftPi_PtInt_AllPool = (TH2D*)hME_Sideb_SoftPi_PtInt[0]->Clone("hME_Sideb_SoftPi_PtInt_AllPool");
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[1]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[2]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[3]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[4]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[5]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[6]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[7]);
+    hME_Sideb_SoftPi_PtInt_AllPool->Add(hME_Sideb_SoftPi_PtInt[8]);
+
+    NormalizeMEplot(hME_Sign_PtInt_AllPool,hME_Sign_SoftPi_PtInt_AllPool);
+    NormalizeMEplot(hME_Sideb_PtInt_AllPool,hME_Sideb_SoftPi_PtInt_AllPool);
+/*
+    TCanvas *cTOT = new TCanvas(Form("cInput_%1.1fto%1.1f",thrMin,thrMax),Form("InputCorr_%s_pTassoc%1.1fto%1.1f",fDmesonLabel.Data(),thrMin,thrMax),100,100,1600,900);
+    cTOT->Divide(2,1);
+    cTOT->cd(1);
+    hME_Sign_PtInt_AllPool->Draw("lego2");
+    cTOT->cd(2);
+    hME_Sideb_PtInt_AllPool->Draw("lego2");
+    cTOT->SaveAs(Form("Output_png/INTEGRATEDME_InputCorr_%s_Canvas_thr%1.1fto%1.1f.png",fDmesonLabel.Data(),thrMin,thrMax));
+*/
+  } 
+
+  for(int iPool=0; iPool<fNpools; iPool++) {//new pool lopp
+
     //Normalize ME plots and (if requested) remove the softpion-compatible tracks
     NormalizeMEplot(hME_Sign_PtInt[iPool],hME_Sign_SoftPi_PtInt[iPool]);
     NormalizeMEplot(hME_Sideb_PtInt[iPool],hME_Sideb_SoftPi_PtInt[iPool]);
 
+
+
     //Apply Event Mixing Correction
     hCorr_Sign_PtInt[iPool] = (TH2D*)hSE_Sign_PtInt[iPool]->Clone(Form("hCorr_Sign_PtInt_p%d",iPool));
-    hCorr_Sign_PtInt[iPool]->Divide(hME_Sign_PtInt[iPool]);   
+    if(!fUseOneMEPool) hCorr_Sign_PtInt[iPool]->Divide(hME_Sign_PtInt[iPool]);   
+    if(fUseOneMEPool)  hCorr_Sign_PtInt[iPool]->Divide(hME_Sign_PtInt_AllPool);   
     hCorr_Sideb_PtInt[iPool] = (TH2D*)hSE_Sideb_PtInt[iPool]->Clone(Form("hCorr_Sideb_PtInt_p%d",iPool));
-    hCorr_Sideb_PtInt[iPool]->Divide(hME_Sideb_PtInt[iPool]); 
+    if(!fUseOneMEPool) hCorr_Sideb_PtInt[iPool]->Divide(hME_Sideb_PtInt[iPool]); 
+    if(fUseOneMEPool)  hCorr_Sideb_PtInt[iPool]->Divide(hME_Sideb_PtInt_AllPool); 
     Double_t N_SEsign = 0, N_SEsideb = 0, N_sign = 0, N_sideb = 0;  
     for(int i=1;i<=hCorr_Sign_PtInt[iPool]->GetXaxis()->GetNbins();i++) {
       for(int j=1;j<=hCorr_Sign_PtInt[iPool]->GetYaxis()->GetNbins();j++) {
-	N_SEsign += hSE_Sign_PtInt[iPool]->GetBinContent(i,j);
-	N_SEsideb += hSE_Sideb_PtInt[iPool]->GetBinContent(i,j);
-	N_sign += hCorr_Sign_PtInt[iPool]->GetBinContent(i,j);
-	N_sideb += hCorr_Sideb_PtInt[iPool]->GetBinContent(i,j);
+	     N_SEsign += hSE_Sign_PtInt[iPool]->GetBinContent(i,j);
+	     N_SEsideb += hSE_Sideb_PtInt[iPool]->GetBinContent(i,j);
+	     N_sign += hCorr_Sign_PtInt[iPool]->GetBinContent(i,j);
+	     N_sideb += hCorr_Sideb_PtInt[iPool]->GetBinContent(i,j);
       }
     }
     hSE_Sign_PtInt[iPool]->SetEntries(N_SEsign); 
@@ -2223,6 +2292,7 @@ void AliDhCorrelationExtraction::PrintSandBForNormal() {
     printf("  Signal = %1.1f\n",fSignalCorrel[i]);
     printf("  Background = %1.1f\n",fBackgrCorrel[i]);
     if(fUseRefl) printf("  Reflections under S = %1.1f\n",fReflUnderSCorrel[i]);
+    if(fUseRefl) printf("  R/S in fit range = %1.3f\n",fRoverSinFitRange[i]);
     printf("  SB scaling factor = %1.4f\n",fScaleFactor[i]);
   }
   printf("******************************************\n\n");
@@ -2270,6 +2340,7 @@ Bool_t AliDhCorrelationExtraction::SetReflectionInfo(AliHFInvMassFitter* &fitter
   fitter->SetTemplateReflections(histRefl,"template",fLeftFitRange,fRightFitRange);
   Double_t RoverS = histRefl->Integral(histRefl->FindBin(fLeftFitRange),histRefl->FindBin(fRightFitRange))/histSign->Integral(histSign->FindBin(fLeftFitRange),histSign->FindBin(fRightFitRange));
   printf("R/S ratio in fit range for bin %d = %1.3f\n",iBin,RoverS);
+  fRoverSinFitRange[iBin-fFirstpTbin] = RoverS;
   fitter->SetFixReflOverS(RoverS);
   return kTRUE;
 
@@ -2458,6 +2529,7 @@ void AliDhCorrelationExtraction::ClearObjects() {
   if(fScaleFactor) delete[] fScaleFactor;
   if(fReflUnderSCorrel) delete[] fReflUnderSCorrel; 
   if(fReflUnderSBCorrel) delete[] fReflUnderSBCorrel; 
+  if(fRoverSinFitRange) delete[] fRoverSinFitRange; 
 
   if(fMassFit) delete[] fMassFit; 
   if(fBkgFit) delete[] fBkgFit;

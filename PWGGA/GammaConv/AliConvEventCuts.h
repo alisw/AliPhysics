@@ -98,6 +98,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC10e20,        //!< anchored LHC10e pass 2
         kLHC10e21,        //!< anchored LHC10e pass 2
         kLHC14j4,         //!< anchored LHC10[b-g] pass 4
+        kLHC14b7,         //!< anchored LHC11 pass 1
         kLHC13d2,         //!< anchored LHC10h pass 2
         kLHC13d2b,        //!< anchored LHC10h pass 2
         kLHC12a11a,       //!< anchored LHC10h pass 2
@@ -228,13 +229,14 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC16P1PHO,        //!< anchored LHC16d pass 1 nom B- field - for MBW Phojet
         kLHC16P1JJ,         //!< anchored LHC16x pass 1 nom B-field - Pythia8 JJ
         kLHC16P1JJLowB,     //!< anchored LHC16f pass 1 low B-field - Pythia8 JJ
-        kLHC17h8a,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
-        kLHC17h8b,             //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
-        kLHC17h8c,             //!< anchored LHC16i,j,o,p pass 1 - heavy flavour MC Pythia6
-        kLHC17c3b1,            //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
-        kLHC17c3a1,            //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
-        kLHC17c3b2,            //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
-        kLHC17c3a2,            //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17h8a,          //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17h8b,          //!< anchored LHC16d,e,g,h,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17h8c,          //!< anchored LHC16i,j,o,p pass 1 - heavy flavour MC Pythia6
+        kLHC17c3b1,         //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
+        kLHC17c3a1,         //!< anchored LHC16k pass 1 - heavy flavour MC Pythia6
+        kLHC17c3b2,         //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17c3a2,         //!< anchored LHC16l pass 1 - heavy flavour MC Pythia6
+        kLHC17i3a1,         //!< anchored LHC16i,j,k,l,o,p GammaJet - EMCal triggered
 
         //General purpose- pPb
         kLHC17a3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
@@ -243,9 +245,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17a4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
         kLHC17f2a,            //!< anchored LHC16qt pass 1 - general purpose EPOSLHC
         kLHC17f2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
+        kLHC18f3,             //!< anchored LHC16qt pass 1 - general purpose DPMJET
         kLHC17g8a,            //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC
+        kLHC17f3,             //!< anchored LHC16r pass 1 - general purpose
         kLHC17f3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
         kLHC17f3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
+        kLHC17f4,             //!< anchored LHC16s pass 1 - general purpose
         kLHC17f4a,            //!< anchored LHC16s pass 1 - general purpose EPOSLHC
         kLHC17f4b,            //!< anchored LHC16s pass 1 - general purpose DPMJET
         kLHC16rP1JJ,          //!< anchored LHC16r pass 1 - jet-jet MC in EPOSLHC
@@ -410,6 +415,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString*  GetFoundHeader()                                                    { return fGeneratorNames                                    ; }
       Int_t     GetEventQuality()                                                   { return fEventQuality                                      ; }
       Bool_t    GetIsFromPileup()                                                   { return fRemovePileUp                                      ; }
+      Bool_t    GetIsFromPileupSPD()                                                { return fRemovePileUpSPD                                   ; }
       Int_t     GetPastFutureLowBC()                                                { return fPastFutureRejectionLow                            ; }
       Int_t     GetPastFutureHighBC()                                               { return fPastFutureRejectionHigh                           ; }
       Bool_t    GetDoPileUpRejectV0MTPCout()                                        { return fDoPileUpRejectV0MTPCout                           ; }
@@ -553,10 +559,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fMultiplicityMethod;                    ///< selected multiplicity method
       Int_t                       fSpecialTrigger;                        ///< flag
       Int_t                       fSpecialSubTrigger;                     ///< flag
-      Bool_t                      fRemovePileUp;                          ///< flag
+      Bool_t                      fRemovePileUp;                          ///< flag specifies if any pileup cut is applied
+      Bool_t                      fRemovePileUpSPD;                       ///< flag specifies if SPD pileup cuts are applied
       Int_t                       fPastFutureRejectionLow;                ///< sets bunch crossing event rejection in past
-      Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future
-      Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V=M mult
+      Int_t                       fPastFutureRejectionHigh;               ///< sets bunch crossing event rejection in future. If both are 0, the cut is not applied
+      Int_t                       fDoPileUpRejectV0MTPCout;               ///< reject event if # TPCout tracks does not follow expected V0M mult
       TF1 *                       fFPileUpRejectV0MTPCout;                ///< Pol1 function to compute the cut
       Int_t                       fRejectExtraSignals;                    ///<
       UInt_t                      fOfflineTriggerMask;                    ///< Task processes collision candidates only
@@ -647,7 +654,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,48)
+      ClassDef(AliConvEventCuts,53)
       /// \endcond
 };
 

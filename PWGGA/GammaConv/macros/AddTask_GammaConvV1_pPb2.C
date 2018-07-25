@@ -59,7 +59,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
                                 Int_t         enableQAMesonTask             = 0,                                // enable QA in AliAnalysisTaskGammaConvV1
                                 Int_t         enableQAPhotonTask            = 0,                                // enable additional QA task
                                 TString       fileNameInputForWeighting     = "MCSpectraInput.root",            // path to file for weigting input
-                                Bool_t        doWeightingPart               = kFALSE,                           // enable Weighting
+                                Int_t         doWeightingPart               = 0,                                // enable Weighting
                                 TString       generatorName                 = "DPMJET",                         // generator Name
                                 TString       cutnumberAODBranch            = "800000006008400000001500000",    // cutnumber for AOD branch
                                 Bool_t        enableV0findingEffi           = kFALSE,                           // enables V0finding efficiency histograms
@@ -73,6 +73,8 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
                                 TString       periodNameAnchor              = "",
                                 Bool_t        runTHnSparse                  = kTRUE,                            // switch on THNsparse
                                 Bool_t        runLightOutput                = kFALSE,                           // switch to run light output (only essential histograms for afterburner)
+				Bool_t        enableElecDeDxPostCalibration = kFALSE,
+				TString       fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root",
                                 TString       additionalTrainConfig         = "0"                               // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
@@ -257,6 +259,37 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     cuts.AddCut("c0110113", "00200009327000008250404000", "0162103500000000"); // 0-1
   } else if (trainConfig == 112) {
     cuts.AddCut("c0210113", "00200009327000008250404000", "0162103500000000"); // 0-2
+  //Run 2 pPb HM
+  } else if (trainConfig == 500) {
+    cuts.AddCut("80010113", "00200009a27000008250a04120", "0162103500000000"); // test 1 for 5TeV
+  } else if (trainConfig == 501) {
+    cuts.AddCut("80110113", "00200009a27000008250a04120", "0162103500000000"); // 0-10
+  } else if (trainConfig == 502) {
+    cuts.AddCut("81210113", "00200009a27000008250a04120", "0162103500000000"); // 0-20
+  } else if (trainConfig == 503) {
+    cuts.AddCut("82410113", "00200009a27000008250a04120", "0162103500000000"); // 20-40
+  } else if (trainConfig == 504) {
+    cuts.AddCut("84610113", "00200009a27000008250a04120", "0162103500000000"); // 40-60
+  } else if (trainConfig == 505) {
+    cuts.AddCut("86810113", "00200009a27000008250a04120", "0162103500000000"); // 60-80
+  } else if (trainConfig == 506) {
+    cuts.AddCut("88010113", "00200009a27000008250a04120", "0162103500000000"); // 80-100
+  } else if (trainConfig == 507) {
+    cuts.AddCut("80010113", "0d200009a27000008250a04120", "0162103500000000"); // test 2 for 5TeV
+  } else if (trainConfig == 508) {
+    cuts.AddCut("80110113", "0d200009a27000008250a04120", "0162103500000000"); // 0-10
+  } else if (trainConfig == 509) {
+    cuts.AddCut("81210113", "0d200009a27000008250a04120", "0162103500000000"); // 0-20
+  } else if (trainConfig == 510) {
+    cuts.AddCut("82410113", "0d200009a27000008250a04120", "0162103500000000"); // 20-40
+  } else if (trainConfig == 511) {
+    cuts.AddCut("84610113", "0d200009a27000008250a04120", "0162103500000000"); // 40-60
+  } else if (trainConfig == 512) {
+    cuts.AddCut("86810113", "0d200009a27000008250a04120", "0162103500000000"); // 60-80
+  } else if (trainConfig == 513) {
+    cuts.AddCut("88010113", "0d200009a27000008250a04120", "0162103500000000"); // 80-100
+
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -290,7 +323,10 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     HeaderList->Add(Header3);
   }
 
-
+  if (periodNameV0Reader.Contains("LHC18b9")){
+    TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
+    HeaderList->Add(HeaderP8J);
+  }
   Bool_t doWeighting = kFALSE;
   if (doWeightingPart == 1 || doWeightingPart == 2 || doWeightingPart == 3) doWeighting = kTRUE;
 
@@ -306,7 +342,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   for(Int_t i = 0; i<numberOfCuts; i++){
 
     analysisEventCuts[i] = new AliConvEventCuts();
-    if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 || trainConfig == 19 || trainConfig == 20 || trainConfig == 22){
+    if ( trainConfig == 1 ||  trainConfig == 2 ||  trainConfig == 11 || trainConfig == 12  ||  trainConfig == 21 || trainConfig == 22 ||   trainConfig == 100 ) {
       if (doWeighting){
         if (generatorName.CompareTo("DPMJET")==0){
           analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -317,14 +353,6 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
         }
       }
     }
-    if ( trainConfig == 14 || trainConfig == 16 || trainConfig == 18 || trainConfig == 21 || trainConfig == 23){
-      if (doWeighting){
-        analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
-                                      "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
-      }
-
-    }
-
 
     TString dataInputMultHisto  = "";
     TString mcInputMultHisto    = "";
@@ -358,6 +386,23 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisCuts[i] = new AliConversionPhotonCuts();
+
+    if (enableElecDeDxPostCalibration>0){
+      if (isMC == 0){
+	if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	} else {
+	  enableElecDeDxPostCalibration=kFALSE;
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	}
+
+      } else{
+	cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+	enableElecDeDxPostCalibration=kFALSE;
+	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      }
+    }
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());

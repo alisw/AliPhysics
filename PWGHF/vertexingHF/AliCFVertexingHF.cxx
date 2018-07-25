@@ -61,7 +61,9 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fFakeSelection(0),
 	fFake(1.), // setting to MC value
 	fRejectIfNoQuark(kFALSE),
-	fMultiplicity(0.),
+  fMultiplicity(0.),
+  fq2(0.),
+  fTrackArray(0x0),
 	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
 {
 	//
@@ -97,6 +99,8 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fFake(1.), // setting to MC value
 	fRejectIfNoQuark(kFALSE),
 	fMultiplicity(0.),
+  fq2(0.),
+  fTrackArray(0x0),
 	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
 {
 	//
@@ -128,7 +132,8 @@ AliCFVertexingHF::~AliCFVertexingHF()
 	if (fEtaAccCut){
 	  	delete [] fEtaAccCut;
 	  	fEtaAccCut = 0x0;
-	}	
+	}
+  if(fTrackArray) fTrackArray = 0x0;
 }
 
 //_____________________________________________________
@@ -173,7 +178,10 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 				fEtaAccCut[iP]=c.fEtaAccCut[iP];
 			}
 		}
-		fMultiplicity=c.fMultiplicity;
+    fMultiplicity=c.fMultiplicity;
+    fq2=c.fq2;
+    delete fTrackArray;
+    fTrackArray = new TClonesArray(*(c.fTrackArray));
 		fConfiguration=c.fConfiguration;
 	}
 	
@@ -203,7 +211,9 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fFakeSelection(c.fFakeSelection),
 	fFake(c.fFake),
 	fRejectIfNoQuark(c.fRejectIfNoQuark),	
-	fMultiplicity(c.fMultiplicity),
+  fMultiplicity(c.fMultiplicity),
+  fq2(c.fq2),
+  fTrackArray(0),
 	fConfiguration(c.fConfiguration)
 {  
   //
@@ -226,6 +236,8 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
     if (c.fPtAccCut) memcpy(fPtAccCut,c.fPtAccCut,fProngs*sizeof(Int_t));
     if (c.fEtaAccCut) memcpy(fEtaAccCut,c.fEtaAccCut,fProngs*sizeof(Int_t));
   }
+  delete fTrackArray;
+  fTrackArray = new TClonesArray(*(c.fTrackArray));
 }
 
 //___________________________________________________________
@@ -1015,4 +1027,25 @@ void AliCFVertexingHF::SetAccCut()
 		}
 	}
 	return;
-}		
+}
+
+//___________________________________________________________
+Int_t AliCFVertexingHF::ComputeLocalMultiplicity(Double_t etaD, Double_t phiD, Double_t R) const {
+  
+  Int_t mult=0;
+  if(!fTrackArray) {
+    AliWarning("Track array not found, local multiplicity not computed\n");
+    return -1;
+  }
+  for(Int_t it=0; it<fTrackArray->GetEntriesFast(); it++) {
+    AliAODTrack* track=(AliAODTrack*)fTrackArray->UncheckedAt(it);
+    if(!track) continue;
+    if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9))) continue;
+    Double_t eta=track->Eta();
+    Double_t phi=track->Phi();
+    if(TMath::Sqrt((eta-etaD)*(eta-etaD)+(phi-phiD)*(phi-phiD))<R) mult++;
+  }
+  
+  return mult;
+}
+

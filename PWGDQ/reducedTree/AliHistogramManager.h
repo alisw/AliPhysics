@@ -73,6 +73,7 @@ class AliHistogramManager : public TObject {
   void AddToOutputList(TList* list) {fOutputList.Add(list);}
   void CloseFile();
   const THashList* GetMainHistogramList() const {return &fMainList;}    // get a histogram list
+  const THashList* GetMainDirectory() const {return fMainDirectory;}    // get the main histogram list from the loaded file
   THashList* AddHistogramsToOutputList(); // get all histograms on a THashList
   THashList* GetHistogramOutputList() {return &fOutputList;} 
   THashList* GetHistogramList(const Char_t* listname) const;    // get a histogram list

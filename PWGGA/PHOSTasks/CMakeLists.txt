@@ -42,6 +42,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Run2
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_LHC16_pp
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Resonances
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
@@ -140,6 +141,7 @@ set(SRCS
     UserTasks/AliPHOSpPbPi0Header.cxx
     UserTasks/AliAnalysisTaskPHOSCluster.cxx
     UserTasks/AliCaloClusterContent.cxx
+    PHOS_Resonances/AliAnalysisPHOSResonances.cxx
    )
 
 # Headers from sources
@@ -235,6 +237,7 @@ install(FILES PHOS_GAFlow/AddTaskThermalGAFlow.C DESTINATION PWGGA/PHOSTasks/PHO
 install(FILES PHOS_GAFlow/AddTaskThermalGAFlowMC.C DESTINATION PWGGA/PHOSTasks/PHOS_GAFlow)
 install(FILES PHOS_NeutralMeson/AddTaskAliAnalysisTaskPHOSNeutralMeson.C DESTINATION PWGGA/PHOSTasks/PHOS_NeutralMeson)
 install(FILES PHOS_Tagging/AddTaskPHOSTagging.C DESTINATION PWGGA/PHOSTasks/PHOS_Tagging)
+install(FILES PHOS_Resonances/AddTaskPHOSResonances.C DESTINATION PWGGA/PHOSTasks/PHOS_Resonances)
 install(FILES AutoTrendQA/MakeTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
 install(FILES AutoTrendQA/DrawTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
 install(FILES AutoTrendQA/DrawTrends.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)

@@ -42,6 +42,11 @@ public:
     Bool_t          GetEMCalTriggerDG1() { return fDCalDG1; };
     void            SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; };
     
+    void            SetSSCut(Bool_t applySSCut) {fFlagApplySSCut = applySSCut;}
+    void            SetFillSprs(Bool_t fillElecSprs) {fFlagFillSprs = fillElecSprs;}
+    void            SetMC(Bool_t fillMChistos) {fFlagFillMCHistos = fillMChistos;}
+    void            SetStackLoop(Bool_t runStackLoop) {fFlagRunStackLoop = runStackLoop;}
+    void            SetTPCClus(Int_t nTPCclusters) {fNclusTPC = nTPCclusters;}
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
     
@@ -71,6 +76,11 @@ private:
     
     Bool_t              fEMCEG1;         // EMCal Threshold EG1
     Bool_t              fDCalDG1;        // DCal Threshold DG1
+    Bool_t              fFlagApplySSCut; //switch to turn on SS cut
+    Bool_t              fFlagFillSprs; //switch to fill electron eid sparse
+    Bool_t              fFlagFillMCHistos; // switch to fill histos that require MC pid
+    Bool_t              fFlagRunStackLoop; //switch to run stack loop to get D & B meson species info
+    Int_t               fNclusTPC;       // set number of TPC clusters
     Bool_t              fFlagClsTypeEMC; // switch to select EMC clusters
     Bool_t              fFlagClsTypeDCAL;// switch to select DCAL clusters
     Bool_t              fUseTender;      // switch to add tender
@@ -99,6 +109,7 @@ private:
     TH1F                *fTrkEta;        //! track eta after track matching
     TH1F                *fdEdx;          //! track dEdx
     TH2F                *fnSigma;          //! track dEdx
+    TH2F                *fnSigmaAftTrkMatch;  //! track dEdx after matching cal
     TH1F                *fCentCheck;     //! event centrality
     TH1F                *fTrigCheck;     //! checking trigger used
     TH2F                *fEMCTrkMatch;   //! plots distance of cluster from closest track
@@ -138,9 +149,12 @@ private:
     TH2F                *fPhotonicDCA;   //! Photonic DCA using MC PID
     TH2F                *fInclElecDCA;   //! Inclusive electron DCA vs. pT
     TH2F                *fInclElecDCAnoSign;   //! Inclusive electron DCA vs. pT, no sign
+    TH2F                *fElecEoPnoSig;  //! Elec EoP w/o sigma cut
     TH2F                *fInclElecEoP;   //! Inclusive electron EoP vs. pT
+    TH2F                *fTPCElecEoP;   //! EoP vs. pT, -0.1<nsig<3 cut
     TH2F                *fHadronEoP;     //! Hadron EoP vs. pT
     TH2F                *fHadronDCA;     //! Hadron DCA vs. pT
+    TH2F                *fHadronCamDCAHij;     //! Hadron DCA vs. pT, no sign, no E/p cut
     TH2F                *fHadronCamDCA;     //! Hadron DCA vs. pT, no sign, no E/p cut
     
     TF1                 *fPi0Weight;    //! Function to weight enhanced pi0
@@ -232,7 +246,8 @@ private:
     TH1F                *fHFElecAftEMCeID; //!
     TH1F                *fBElecAftEMCeID; //!
     
-    //THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
+    THnSparse           *fElectronSprs;  //! Sparse with electron cut parameters
+    
     //Double_t            *fvalueElectron; //! Electron info
     
     AliAnalysisTaskTPCCalBeauty(const AliAnalysisTaskTPCCalBeauty&); // not implemented???

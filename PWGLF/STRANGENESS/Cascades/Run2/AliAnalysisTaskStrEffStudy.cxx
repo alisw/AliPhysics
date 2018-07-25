@@ -144,8 +144,8 @@ fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
 fkSaveGoodTracks( kTRUE ),
-fkSandboxV0( kFALSE ),
-fkSandboxCascade( kTRUE ),
+fkSandboxV0( kTRUE ),
+fkSandboxCascade( kFALSE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -186,6 +186,9 @@ fTreeVariableV0CosineOfPointingAngle(0),
 fTreeVariableDecayX(0),
 fTreeVariableDecayY(0),
 fTreeVariableDecayZ(0),
+fTreeVariableDecayXMC(0),
+fTreeVariableDecayYMC(0),
+fTreeVariableDecayZMC(0),
 fTreeVariableInvMassK0s(0),
 fTreeVariableInvMassLambda(0),
 fTreeVariableInvMassAntiLambda(0),
@@ -212,6 +215,8 @@ fTreeVariableNegOriginalX(0),
 fTreeVariablePVx(0),
 fTreeVariablePVy(0),
 fTreeVariablePVz(0),
+
+fTreeVariableRun(0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCentrality(0),
@@ -328,7 +333,10 @@ fHistGeneratedPtVsYVsCentralityAntiLambda(0),
 fHistGeneratedPtVsYVsCentralityXiMinus(0),
 fHistGeneratedPtVsYVsCentralityXiPlus(0),
 fHistGeneratedPtVsYVsCentralityOmegaMinus(0),
-fHistGeneratedPtVsYVsCentralityOmegaPlus(0)
+fHistGeneratedPtVsYVsCentralityOmegaPlus(0),
+//Hypertriton
+fHistGeneratedPtVsYVsCentralityHypTrit(0),
+fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
 //------------------------------------------------
 // Tree Variables
 {
@@ -373,8 +381,8 @@ fkUseLightVertexer ( kTRUE ),
 fkDoV0Refit ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
 fkSaveGoodTracks( kTRUE ),
-fkSandboxV0( kFALSE ),
-fkSandboxCascade( kTRUE ),
+fkSandboxV0( kTRUE ),
+fkSandboxCascade( kFALSE ),
 
 //---> Flag controlling trigger selection
 fTrigType(AliVEvent::kMB),
@@ -415,6 +423,9 @@ fTreeVariableV0CosineOfPointingAngle(0),
 fTreeVariableDecayX(0),
 fTreeVariableDecayY(0),
 fTreeVariableDecayZ(0),
+fTreeVariableDecayXMC(0),
+fTreeVariableDecayYMC(0),
+fTreeVariableDecayZMC(0),
 fTreeVariableInvMassK0s(0),
 fTreeVariableInvMassLambda(0),
 fTreeVariableInvMassAntiLambda(0),
@@ -441,6 +452,8 @@ fTreeVariableNegOriginalX(0),
 fTreeVariablePVx(0),
 fTreeVariablePVy(0),
 fTreeVariablePVz(0),
+
+fTreeVariableRun(0),
 
 //---> Variables for fTreeCascade
 fTreeCascVarCentrality(0),
@@ -550,7 +563,11 @@ fHistGeneratedPtVsYVsCentralityAntiLambda(0),
 fHistGeneratedPtVsYVsCentralityXiMinus(0),
 fHistGeneratedPtVsYVsCentralityXiPlus(0),
 fHistGeneratedPtVsYVsCentralityOmegaMinus(0),
-fHistGeneratedPtVsYVsCentralityOmegaPlus(0)
+fHistGeneratedPtVsYVsCentralityOmegaPlus(0),
+//Hypertriton
+fHistGeneratedPtVsYVsCentralityHypTrit(0),
+fHistGeneratedPtVsYVsCentralityAntiHypTrit(0)
+
 {
     
     //Re-vertex: Will only apply for cascade candidates
@@ -702,6 +719,9 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
     fTreeV0->Branch("fTreeVariableDecayX",&fTreeVariableDecayX,"fTreeVariableDecayX/F");
     fTreeV0->Branch("fTreeVariableDecayY",&fTreeVariableDecayY,"fTreeVariableDecayY/F");
     fTreeV0->Branch("fTreeVariableDecayZ",&fTreeVariableDecayZ,"fTreeVariableDecayZ/F");
+    fTreeV0->Branch("fTreeVariableDecayXMC",&fTreeVariableDecayXMC,"fTreeVariableDecayXMC/F");
+    fTreeV0->Branch("fTreeVariableDecayYMC",&fTreeVariableDecayYMC,"fTreeVariableDecayYMC/F");
+    fTreeV0->Branch("fTreeVariableDecayZMC",&fTreeVariableDecayZMC,"fTreeVariableDecayZMC/F");
     fTreeV0->Branch("fTreeVariableInvMassK0s",       &fTreeVariableInvMassK0s,       "fTreeVariableInvMassK0s/F");
     fTreeV0->Branch("fTreeVariableInvMassLambda",    &fTreeVariableInvMassLambda,    "fTreeVariableInvMassLambda/F");
     fTreeV0->Branch("fTreeVariableInvMassAntiLambda",&fTreeVariableInvMassAntiLambda,"fTreeVariableInvMassAntiLambda/F");
@@ -733,6 +753,8 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fTreeV0->Branch("fTreeVariablePVy",&fTreeVariablePVy,"fTreeVariablePVy/F");
         fTreeV0->Branch("fTreeVariablePVz",&fTreeVariablePVz,"fTreeVariablePVz/F");
     }
+    
+    fTreeV0->Branch("fTreeVariableRun",&fTreeVariableRun,"fTreeVariableRun/I");
     //------------------------------------------------
     
     //------------------------------------------------
@@ -951,6 +973,16 @@ void AliAnalysisTaskStrEffStudy::UserCreateOutputObjects()
         fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",500,0,25,40,-1.0,1.0,100,0,100);
         fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaPlus);
     }
+    if(! fHistGeneratedPtVsYVsCentralityHypTrit ) {
+        //Histogram Output: Efficiency Denominator
+        fHistGeneratedPtVsYVsCentralityHypTrit = new TH3D( "fHistGeneratedPtVsYVsCentralityHypTrit", ";pT;y;centrality",500,0,25,40,-1.0,1.0,100,0,100);
+        fListHist->Add(fHistGeneratedPtVsYVsCentralityHypTrit);
+    }
+    if(! fHistGeneratedPtVsYVsCentralityAntiHypTrit ) {
+        //Histogram Output: Efficiency Denominator
+        fHistGeneratedPtVsYVsCentralityAntiHypTrit = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiHypTrit", ";pT;y;centrality",500,0,25,40,-1.0,1.0,100,0,100);
+        fListHist->Add(fHistGeneratedPtVsYVsCentralityAntiHypTrit);
+    }
     
     //Superlight mode output
     if ( !fListV0 ){
@@ -1054,6 +1086,8 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     Double_t lBestPrimaryVtxPos[3]          = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
     
+    fTreeVariableRun = lESDevent->GetRunNumber();
+    
     //sandbox info
     fTreeCascVarPVx = lBestPrimaryVtxPos[0];
     fTreeCascVarPVy = lBestPrimaryVtxPos[1];
@@ -1154,7 +1188,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         lThisPDG = lPart->GetPdgCode();
         
         //This if is necessary in some situations (rapidity calculation and PYTHIA junctions, etc)
-        if ( (TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) || (TMath::Abs(lThisPDG) == 3122) || lThisPDG == 310 )
+        if ( (TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) || (TMath::Abs(lThisPDG) == 3122) || lThisPDG == 310 || TMath::Abs(lThisPDG)==1010010030 )
         {
             lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
             lThisPt    = lPart->Pt();
@@ -1183,6 +1217,12 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
             if( lThisPDG == -3334 ) {
                 fHistGeneratedPtVsYVsCentralityOmegaPlus       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection);
             }
+            if( lThisPDG ==  1010010030 ) {
+                fHistGeneratedPtVsYVsCentralityHypTrit       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection);
+            }
+            if( lThisPDG == -1010010030 ) {
+                fHistGeneratedPtVsYVsCentralityAntiHypTrit       -> Fill (lThisPt, lThisRap, lPercentileEmbeddedSelection);
+            }
         }
     }//End of loop on tracks
     //----- End Loop on Cascades ------------------------------------------------------------
@@ -1210,9 +1250,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
     //-------------------------------------------------
     
     //Particles of interest
-    Int_t lV0Types[3]          = { 310, 3122, -3122};
-    Int_t lV0TypesPDau[3]      = { 211, 2212,   211};
-    Int_t lV0TypesNDau[3]      = {-211, -211, -2212};
+    const Int_t lNV0Types = 5;
+    Int_t lV0Types[lNV0Types]          = { 310, 3122, -3122,  1010010030, -1010010030};
+    Int_t lV0TypesPDau[lNV0Types]      = { 211, 2212,   211,  1000010030, -211};
+    Int_t lV0TypesNDau[lNV0Types]      = {-211, -211, -2212, -1000010030,  211};
     
     //Number of tracks
     Long_t lNTracks = lESDevent->GetNumberOfTracks();
@@ -1246,7 +1287,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         if ( lParticleMother->GetNDaughters()!=2 ) continue;
         
         Bool_t lOfDesiredType = kFALSE;
-        for(Int_t iType=0; iType<3; iType++){
+        for(Int_t iType=0; iType<lNV0Types; iType++){
             if( lParticleMotherPDG == lV0Types[iType] ) lOfDesiredType = kTRUE;
         }
         if( !lOfDesiredType ) continue;
@@ -1303,6 +1344,10 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         fTreeVariableNegOriginalX = esdTrackNeg->GetX();
         fTreeVariablePosOriginalX = esdTrackPos->GetX();
+        
+        //store original esd tracks
+        fTreeVariableNegTrack = esdTrackNeg;
+        fTreeVariablePosTrack = esdTrackPos;
         
         //-----------------------------------------------------------------
         //3a: get basic track characteristics
@@ -1365,8 +1410,7 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         fTreeVariableNegPropagStatus = nt.PropagateTo(xn,lMagneticField);
         fTreeVariablePosPropagStatus = pt.PropagateTo(xp,lMagneticField);
         
-        fTreeVariableNegTrack = pointnt;
-        fTreeVariablePosTrack = pointpt;
+
         
         //=================================================================================
         //OTF loop: try to find equivalent OTF V0, store empty object if not found
@@ -1461,6 +1505,12 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         
         TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
         TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
+        
+        //-----------------------------------------------------------------
+        //3c: Get perfect MC information for bookkeeping
+        fTreeVariableDecayXMC = mcPosV0Dghter->Vx();
+        fTreeVariableDecayYMC = mcPosV0Dghter->Vy();
+        fTreeVariableDecayZMC = mcPosV0Dghter->Vz();
         
         fTreeVariablePIDPositive = mcPosV0Dghter -> GetPdgCode();
         fTreeVariablePIDNegative = mcNegV0Dghter -> GetPdgCode();
@@ -1596,6 +1646,11 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         AliESDtrack *esdTrackPos  = lESDevent->GetTrack( lCascPosTrackArray[iCasc] );
         AliESDtrack *esdTrackNeg  = lESDevent->GetTrack( lCascNegTrackArray[iCasc] );
         AliESDtrack *esdTrackBach = lESDevent->GetTrack( lCascBachTrackArray[iCasc] );
+        
+        //Sandbox information: always, regardless of status
+        fTreeCascVarBachTrack = esdTrackBach;
+        fTreeCascVarPosTrack = esdTrackPos;
+        fTreeCascVarNegTrack = esdTrackNeg;
         
         //=================================================================================
         //OTF loop: try to find equivalent OTF V0, store empty object if not found
@@ -1763,11 +1818,6 @@ void AliAnalysisTaskStrEffStudy::UserExec(Option_t *)
         AliESDv0 *pv0=&v0;
         AliExternalTrackParam bt(*esdTrackBach), *pbt=&bt;
         Double_t cascdca = PropagateToDCA(pv0,pbt,lESDevent,lMagneticField);
-        
-        //Sandbox information: always, regardless of status
-        fTreeCascVarBachTrack = pbt;
-        fTreeCascVarPosTrack = ptp;
-        fTreeCascVarNegTrack = ntp;
         
         fTreeCascVarDCACascDaughters = 1e+10;
         fTreeCascVarCascPropagation = kFALSE;

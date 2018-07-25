@@ -17,6 +17,7 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "AliAODMCParticle.h"
 
 #include <AliPID.h>
 #include <AliPIDCombined.h>
@@ -79,6 +80,10 @@ AliAnalysisTaskAccCont::AliAnalysisTaskAccCont(const char *name)
   fUseOfflineTrigger(kFALSE),
   fPbPb(kFALSE),
   fpPb(kFALSE),
+  fCheckPileUp(kFALSE),
+  fMCrec(kFALSE),
+  fArrayMC(0),
+  fExcludeSecondariesInMCrec(kFALSE),
   fPileupLHC15oSlope(3.38),
   fPileupLHC15oOffset(15000),
   fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
@@ -282,7 +287,17 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
         Printf("ERROR: AOD header not available");
         return;
     }
+
+    if (fMCrec){
+        
+        fArrayMC = dynamic_cast<TClonesArray*>(gAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+        
+        if (!fArrayMC) {
+            AliError("No array of MC particles found !!!");
+        }
     
+    }
+
     Int_t nAcceptedTracks = 0;
     Float_t gCentrality = -1;
     
@@ -401,10 +416,13 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
 				      }
 				    }
 				    
+ 				    if (fCheckPileUp){
 				    if(fUtils->IsPileUpEvent(gAOD)){ 
 				      fHistEventStats->Fill(6,gCentrality);
 				      return;
 				    }
+				    }
+
     				    fHistEventStats->Fill(5,gCentrality); 	    
 				    
 
@@ -422,6 +440,16 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                         if (!aodTrack) {
                                             Printf("ERROR: Could not receive track %d", iTracks);
                                             continue;
+                                        }
+
+                                        if(fExcludeSecondariesInMCrec){
+                                            
+                                            Int_t label = TMath::Abs(aodTrack->GetLabel());
+                                            
+                                            AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+                                            
+                                            if (!AODmcTrack->IsPhysicalPrimary())
+                                                continue;
                                         }
                                         
                                         // AOD track cuts

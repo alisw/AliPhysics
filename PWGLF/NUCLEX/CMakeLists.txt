@@ -68,6 +68,7 @@ set(SRCS
   Nuclei/Nucleipp/AliLnAODtrackCuts.cxx
   Nuclei/Nucleipp/AliLnHistoMap.cxx
   Nuclei/Nucleipp/AliLnID.cxx
+  Nuclei/NucleiReducedTree/AliAnalysisTaskReducedTreeNuclei.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx
@@ -82,6 +83,7 @@ set(SRCS
   Utils/RecoDecay/AliAODRecoDecayLF2Prong.cxx
   Utils/CODEX/AliAnalysisCODEX.cxx
   Utils/CODEX/AliAnalysisCODEXtask.cxx
+  Utils/NucleiSkimAOD/AliAnalysisTaskNucleiSkimAOD.cxx
   )
 
 # Headers from sources

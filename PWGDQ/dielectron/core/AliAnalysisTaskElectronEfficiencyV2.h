@@ -58,6 +58,7 @@ public:
    // MC Signal setter
    void   AddSingleLegMCSignal(AliDielectronSignalMC signal1)         {fSingleLegMCSignal.push_back(signal1);}
    void   AddPairMCSignal(AliDielectronSignalMC signal1)              {fPairMCSignal.push_back(signal1);}
+   void   AddMCSignalsWhereDielectronPairNotFromSameMother(std::vector<bool> vec) {fDielectronPairNotFromSameMother = vec;}
 
    // PID correction functions
    void   SetCentroidCorrFunction(Detector det, TObject *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
@@ -81,6 +82,7 @@ public:
    // Resolution setter
    void   SetResolutionFile(std::string filename) {fResoFilename = filename; }
    void   SetResolutionFileFromAlien(std::string filename) {fResoFilenameFromAlien = filename; }
+   void   SetSmearGenerated(bool setSmearingGen) { fDoGenSmearing = setSmearingGen; }
    void   SetResolutionDeltaPtBinsLinear (const double min, const double max, const unsigned int steps){SetBinsLinear("ptDelta_reso", min, max, steps);}
    void   SetResolutionRelPtBinsLinear   (const double min, const double max, const unsigned int steps){SetBinsLinear("ptRel_reso", min, max, steps);}
    void   SetResolutionEtaBinsLinear  (const double min, const double max, const unsigned int steps){SetBinsLinear("eta_reso", min, max, steps);}
@@ -122,11 +124,12 @@ public:
   class Particle{
   public:
     Particle() :
-      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed() {}
+      fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
     Particle(double pt, double eta, double phi, short charge) :
-      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed() {}
+      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fPt_smeared(0.), fEta_smeared(0.), fPhi_smeared(0.), fTrackID(0), fMotherID(0), isMCSignal(), isReconstructed(), DielectronPairFromSameMother() {}
     void SetTrackID(int id) {fTrackID = id;}
     void SetMotherID(int id) {fMotherID = id;}
+    void SetDielectronPairFromSameMother(std::vector<Bool_t> vec){DielectronPairFromSameMother = vec;}
     int  GetTrackID() {return fTrackID;}
     int  GetMotherID() {return fMotherID;}
 
@@ -141,6 +144,7 @@ public:
     int     fMotherID;
     std::vector<Bool_t> isMCSignal;
     std::vector<Bool_t> isReconstructed;
+    std::vector<Bool_t> DielectronPairFromSameMother;
   };
 
 private:
@@ -152,7 +156,7 @@ private:
   void    CheckSingleLegMCsignals(std::vector<Bool_t>& vec, const int track);
   void    CheckPairMCsignals(std::vector<Bool_t>& vec, AliVParticle* part1, AliVParticle* part2);
   bool    CheckGenerator(int trackID);
-
+  void    CheckIfFromMotherWithDielectronAsDaughter(Particle& part);
   Bool_t  CheckIfOneIsTrue(std::vector<Bool_t>& vec);
 
   Particle    CreateParticle(AliVParticle* part);
@@ -182,10 +186,13 @@ private:
   TList* fResolutionList;
 
   TH2D* fPGen_DeltaP;
+  TH2D* fPGen_PrecOverPGen;
   TH2D* fPtGen_DeltaPt;
   TH2D* fPtGen_DeltaPtOverPtGen;
-  TH2D* fPGen_PrecOverPGen;
   TH2D* fPtGen_PtRecOverPtGen;
+  TH2D* fPtGen_DeltaPt_wGenSmeared;
+  TH2D* fPtGen_DeltaPtOverPtGen_wGenSmeared;
+  TH2D* fPtGen_PtRecOverPtGen_wGenSmeared;
   TH2D* fPGen_DeltaEta;
   TH2D* fPtGen_DeltaEta;
   TH2D* fPGen_DeltaTheta;
@@ -208,6 +215,7 @@ private:
   std::vector<double> fResolutionThetaBins;
   std::vector<double> fMassBins;
   std::vector<double> fPairPtBins;
+  bool fDoGenSmearing;
 
   double  fPtMin; // Kinematic cut for pairing
   double  fPtMax; // Kinematic cut for pairing
@@ -221,6 +229,7 @@ private:
 
   std::vector<AliDielectronSignalMC> fSingleLegMCSignal;
   std::vector<AliDielectronSignalMC> fPairMCSignal;
+  std::vector<bool> fDielectronPairNotFromSameMother; // this is used to get electrons from charmed mesons in a environment where GEANT is doing the decay of D mesons, like in LHC18b5a
 
   TString fGeneratorName;
   std::vector<unsigned int> fGeneratorHashs;

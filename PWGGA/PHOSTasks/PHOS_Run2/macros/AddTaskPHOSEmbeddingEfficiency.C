@@ -93,10 +93,10 @@ AliAnalysisTaskPHOSEmbeddingEfficiency* AddTaskPHOSEmbeddingEfficiency(
  
   task->SetTenderFlag(usePHOSTender);
   task->SetMCFlag(isMC);
-  task->SetCoreEnergyFlag(useCoreE);
+//  task->SetCoreEnergyFlag(useCoreE);
 
   task->SetEventCuts(isMC);
-  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,distBC);
+  task->SetClusterCuts(useCoreDisp,NsigmaCPV,NsigmaDisp,useCoreE,distBC);
 
   task->SetCentralityMin(CenMin);
   task->SetCentralityMax(CenMax);

@@ -246,7 +246,19 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("84610113","1111100007032230000","01631031000000d0"); // 40-60
     cuts.AddCut("86010113","1111100007032230000","01631031000000d0"); // 60-80
 
-  //-----------------------------------------------------------------------------------------------
+  } else if (trainConfig == 7){
+    cuts.AddCut("90010113","1111141057032230000","01631031000000d0"); // 0-100
+    cuts.AddCut("90210113","1111141057032230000","01631031000000d0"); // 0-20
+    cuts.AddCut("92410113","1111141057032230000","01631031000000d0"); // 20-40
+    cuts.AddCut("94610113","1111141057032230000","01631031000000d0"); // 40-60
+    cuts.AddCut("96010113","1111141057032230000","01631031000000d0"); // 60-100
+  } else if (trainConfig == 8){
+    cuts.AddCut("e0010113","1111141057032230000","01631031000000d0"); // 0-100
+    cuts.AddCut("e0210113","1111141057032230000","01631031000000d0"); // 0-20
+    cuts.AddCut("e2410113","1111141057032230000","01631031000000d0"); // 20-40
+    cuts.AddCut("e4610113","1111141057032230000","01631031000000d0"); // 40-60
+    cuts.AddCut("e6010113","1111141057032230000","01631031000000d0"); // 60-100
+    //-----------------------------------------------------------------------------------------------
   // Standard cuts
   //-----------------------------------------------------------------------------------------------
   } else if (trainConfig == 10){ // default cutstring smaller openangle 1 cell
@@ -267,25 +279,25 @@ void AddTask_GammaCalo_pPb(
   //-----------------------------------------------------------------------------------------------
   // Standard cuts cent dependent
   //-----------------------------------------------------------------------------------------------
-  } else if (trainConfig == 14){ // testing past future protection, timing 1000ns
+  } else if (trainConfig == 14){
     cuts.AddCut("80210113","1111141057032230000","01631031000000d0"); // 0-20
     cuts.AddCut("80210113","11111410570322l0000","01631031000000d0"); // 0-20
     cuts.AddCut("80252113","1111141057032230000","01631031000000d0"); // 0-20 EMC7
     cuts.AddCut("80285113","1111141057032230000","01631031000000d0"); // 0-20 EG2
     cuts.AddCut("80283113","1111141057032230000","01631031000000d0"); // 0-20 EG1
-  } else if (trainConfig == 15){ // testing past future protection timing 100ns
+  } else if (trainConfig == 15){
     cuts.AddCut("82410113","1111141057032230000","01631031000000d0"); // 20-40
     cuts.AddCut("82410113","11111410570322l0000","01631031000000d0"); // 20-40
     cuts.AddCut("82452113","1111141057032230000","01631031000000d0"); // 20-40 EMC7
     cuts.AddCut("82485113","1111141057032230000","01631031000000d0"); // 20-40 EG2
     cuts.AddCut("82483113","1111141057032230000","01631031000000d0"); // 20-40 EG1
-  } else if (trainConfig == 16){ // testing past future protection timing 100ns
+  } else if (trainConfig == 16){
     cuts.AddCut("84610113","1111141057032230000","01631031000000d0"); // 40-60
     cuts.AddCut("84610113","11111410570322l0000","01631031000000d0"); // 40-60
     cuts.AddCut("84652113","1111141057032230000","01631031000000d0"); // 40-60 EMC7
     cuts.AddCut("84685113","1111141057032230000","01631031000000d0"); // 40-60 EG2
     cuts.AddCut("84683113","1111141057032230000","01631031000000d0"); // 40-60 EG1
-  } else if (trainConfig == 17){ // testing past future protection timing 100ns
+  } else if (trainConfig == 17){
     cuts.AddCut("86010113","1111141057032230000","01631031000000d0"); // 60-80
     cuts.AddCut("86010113","11111410570322l0000","01631031000000d0"); // 60-80
     cuts.AddCut("86052113","1111141057032230000","01631031000000d0"); // 60-80 EMC7
@@ -420,6 +432,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80210113","1111143057032230000","01631031000000d0"); // CCRF testbeam nonlin
     cuts.AddCut("80210113","1111144057032230000","01631031000000d0"); // CRF testbeam nonlin
     cuts.AddCut("80210113","1111102057032230000","01631031000000d0"); // testbeam nonlin
+  } else if (trainConfig == 47){ //all default triggers
+    cuts.AddCut("80210113","1111141057032230000","01631031000000d0"); // default MB
+    cuts.AddCut("80252113","1111141057032230000","01631031000000d0"); // default EMC7
+    cuts.AddCut("80283113","1111141057032230000","01631031000000d0"); // default EG1
+    cuts.AddCut("80285113","1111141057032230000","01631031000000d0"); // default EG2
 
   //-----------------------------------------------------------------------------------------------
   // Systematics variations 20-40
@@ -456,12 +473,17 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("82410113","1111141056032230000","01631031000000d0"); // tm pt dependent var 1
     cuts.AddCut("82410113","1111141058032230000","01631031000000d0"); // tm pt dependent var 2
     cuts.AddCut("82410113","1111141059032230000","01631031000000d0"); // tm pt dependent var 3
- } else if (trainConfig == 56){ // TM variations
+  } else if (trainConfig == 56){ // TM variations
     cuts.AddCut("82410113","1111153057032230000","01631031000000d0"); // CCMF nonlin+testbeam
     cuts.AddCut("82410113","1111154057032230000","01631031000000d0"); // CMF nonlin+testbeam
     cuts.AddCut("82410113","1111143057032230000","01631031000000d0"); // CCRF testbeam nonlin
     cuts.AddCut("82410113","1111144057032230000","01631031000000d0"); // CRF testbeam nonlin
     cuts.AddCut("82410113","1111102057032230000","01631031000000d0"); // testbeam nonlin
+  } else if (trainConfig == 57){ //all default triggers
+    cuts.AddCut("82410113","1111141057032230000","01631031000000d0"); // default MB
+    cuts.AddCut("82452113","1111141057032230000","01631031000000d0"); // default EMC7
+    cuts.AddCut("82483113","1111141057032230000","01631031000000d0"); // default EG1
+    cuts.AddCut("82485113","1111141057032230000","01631031000000d0"); // default EG2
 
   //-----------------------------------------------------------------------------------------------
   // Systematics variations 40-60
@@ -504,6 +526,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("84610113","1111143057032230000","01631031000000d0"); // CCRF testbeam nonlin
     cuts.AddCut("84610113","1111144057032230000","01631031000000d0"); // CRF testbeam nonlin
     cuts.AddCut("84610113","1111102057032230000","01631031000000d0"); // testbeam nonlin
+  } else if (trainConfig == 67){ //all default triggers
+    cuts.AddCut("84610113","1111141057032230000","01631031000000d0"); // default MB
+    cuts.AddCut("84652113","1111141057032230000","01631031000000d0"); // default EMC7
+    cuts.AddCut("84683113","1111141057032230000","01631031000000d0"); // default EG1
+    cuts.AddCut("84685113","1111141057032230000","01631031000000d0"); // default EG2
 
   //-----------------------------------------------------------------------------------------------
   // Systematics variations 60-100
@@ -546,6 +573,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("86010113","1111143057032230000","01631031000000d0"); // CCRF testbeam nonlin
     cuts.AddCut("86010113","1111144057032230000","01631031000000d0"); // CRF testbeam nonlin
     cuts.AddCut("86010113","1111102057032230000","01631031000000d0"); // testbeam nonlin
+  } else if (trainConfig == 77){ //all default triggers
+    cuts.AddCut("86010113","1111141057032230000","01631031000000d0"); // default MB
+    cuts.AddCut("86052113","1111141057032230000","01631031000000d0"); // default EMC7
+    cuts.AddCut("86083113","1111141057032230000","01631031000000d0"); // default EG1
+    cuts.AddCut("86085113","1111141057032230000","01631031000000d0"); // default EG2
 
   //-----------------------------------------------------------------------------------------------
   //testing different event mix methods
@@ -930,7 +962,19 @@ void AddTask_GammaCalo_pPb(
   // AOD validation
   } else if (trainConfig == 226){
     cuts.AddCut("80010113","1111151017032230000","01631031000000d0"); // 0-100
-
+  // pPb 8 TeV EPOS+PythiaJets JJ simulation QA
+  } else if (trainConfig == 227){ // variations when using special JJ case (Jets+MB)
+    cuts.AddCut("80010143","1111100017032230000","01631031000000d0"); // INT7
+    cuts.AddCut("80083143","1111100017032230000","01631031000000d0"); // EG1
+    cuts.AddCut("80085143","1111100017032230000","01631031000000d0"); // EG2
+  } else if (trainConfig == 228){ // variations for JJ MC (all, MB only and special headers)
+    cuts.AddCut("80010103","1111100017032230000","01631031000000d0"); // all headers
+    cuts.AddCut("80010113","1111100017032230000","01631031000000d0"); // MB only
+    cuts.AddCut("80010123","1111100017032230000","01631031000000d0"); // special header
+  } else if (trainConfig == 229){ // variations when using special JJ case (Jets only)
+    cuts.AddCut("80010123","1111100017032230000","01631031000000d0"); // INT7
+    cuts.AddCut("80083123","1111100017032230000","01631031000000d0"); // EG1
+    cuts.AddCut("80085123","1111100017032230000","01631031000000d0"); // EG2
   //-----------------------------------------------------------------------------------------------
   // Systematics variations MB run 2 EMC pPb std cut: cuts.AddCut("80010113","1111141057032230000","01631031000000d0"); // 0-100
   //-----------------------------------------------------------------------------------------------
@@ -1169,8 +1213,18 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("86010113","2446601051013200000","0163103100000010"); // no non lin 60-100%
     cuts.AddCut("a0110113","2446601051013200000","0163103100000010"); // no non lin 0-5%
     cuts.AddCut("a1210113","2446601051013200000","0163103100000010"); // no non lin 5-10%
-  } else if (trainConfig == 507){ // AOD validation
-    cuts.AddCut("80010113","2446641051013200000","0163103100000010"); //
+  } else if (trainConfig == 507){
+    cuts.AddCut("80010113","2446641051013200000","0163103100000010"); // TM on
+    cuts.AddCut("80010113","2446641050013200000","0163103100000010"); // TM off
+  } else if (trainConfig == 508){ // JJ MC AOD validation
+    cuts.AddCut("80010123","2446641051013200000","0163103100000010"); // TM on
+    cuts.AddCut("80010123","2446641050013200000","0163103100000010"); // TM off
+  } else if (trainConfig == 509){ // JJ MC AOD validation PHOS NL
+    cuts.AddCut("80010123","2446601051013200000","0163103100000010"); // TM on
+    cuts.AddCut("80010123","2446601050013200000","0163103100000010"); // TM off
+  } else if (trainConfig == 510){ // JJ MC AOD validation w/o NL
+    cuts.AddCut("80010123","2446600051013200000","0163103100000010"); // TM on
+    cuts.AddCut("80010123","2446600050013200000","0163103100000010"); // TM off
 
   // ===============================================================================================
   // Run 2 data PHOS clusters pPb 8TeV
@@ -1264,6 +1318,16 @@ void AddTask_GammaCalo_pPb(
     HeaderList->Add(Header1);
     TObjString *Header3 = new TObjString("eta_2");
     HeaderList->Add(Header3);
+  }
+  if (periodNameV0Reader.Contains("LHC18b9")||periodNameV0Reader.Contains("LHC17g8")){
+    TObjString *HeaderPMB = new TObjString("EPOSLHC_0");
+    TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
+    if (doWeightingPart==4) {
+      HeaderList->Add(HeaderPMB);
+      HeaderList->Add(HeaderP8J);
+    } else {
+      HeaderList->Add(HeaderP8J);
+    }
   }
 
   EventCutList->SetOwner(kTRUE);

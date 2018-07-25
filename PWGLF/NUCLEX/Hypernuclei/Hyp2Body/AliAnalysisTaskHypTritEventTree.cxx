@@ -263,7 +263,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
       }
     }
   }
-  if (fPeriod == 2016) {
+  if (fPeriod == 2016 || fPeriod == 2017) {
     if(!fEventCuts.AcceptEvent(fESDevent)) {
       PostData(1,fHistogramList);
       return;

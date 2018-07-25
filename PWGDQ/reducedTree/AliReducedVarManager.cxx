@@ -129,6 +129,13 @@ const Double_t AliReducedVarManager::fgkVZEROminMult = 0.5;   // minimum VZERO c
 const Float_t  AliReducedVarManager::fgkTPCQvecRapGap = 0.8;    // symmetric interval in the middle of the TPC excluded from EP calculation
       Float_t  AliReducedVarManager::fgBeamMomentum = 1380.;   // beam momentum in GeV/c
      
+const Double_t AliReducedVarManager::fgkSPDEtaCutsVsVtxZ[20][2] = {
+   {-0.5, 1.0}, {-0.6, 1.0}, {-0.8, 1.0}, {-0.9, 1.0}, {-1.0, 1.0},
+   {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0},
+   {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0},
+   {-1.0, 1.0}, {-1.0, 0.9}, {-1.0, 0.8}, {-1.0, 0.7}, {-1.0, 0.6}
+};
+     
 Int_t      AliReducedVarManager::fgCurrentRunNumber = -1;
 TString AliReducedVarManager::fgVariableNames[AliReducedVarManager::kNVars] = {""};
 TString AliReducedVarManager::fgVariableUnits[AliReducedVarManager::kNVars] = {""};
@@ -334,6 +341,13 @@ void AliReducedVarManager::FillEventInfo(Float_t* values) {
   // Fill event information
   //
   FillEventInfo(fgEvent, values, fgEventPlane);
+}
+
+void AliReducedVarManager::FillMCEventInfo(AliReducedEventInfo* event, Float_t* values) {
+   //
+   // fill MC event information
+   //
+   
 }
 
 //__________________________________________________________________
@@ -1122,12 +1136,17 @@ void AliReducedVarManager::FillMCTruthInfo(TRACK* p, Float_t* values, TRACK* leg
    if(fgUsedVars[kPtMCfromLegs] || fgUsedVars[kPMCfromLegs] || 
       fgUsedVars[kPxMCfromLegs] || fgUsedVars[kPyMCfromLegs] || fgUsedVars[kPzMCfromLegs] ||
       fgUsedVars[kThetaMCfromLegs] || fgUsedVars[kEtaMCfromLegs] || fgUsedVars[kPhiMCfromLegs] ||
-      fgUsedVars[kMassMCfromLegs] || fgUsedVars[kRapMCfromLegs]) 
+      fgUsedVars[kMassMCfromLegs] || fgUsedVars[kRapMCfromLegs] ||
+      fgUsedVars[kPairLegPtMC] || fgUsedVars[kPairLegPtMC+1] || fgUsedVars[kPairLegPtMCSum]) 
       requestMCfromLegs = kTRUE;
+   
    if(leg1 && leg2 && requestMCfromLegs) {
       values[kPxMCfromLegs] = leg1->MCmom(0) + leg2->MCmom(0);
       values[kPyMCfromLegs] = leg1->MCmom(1) + leg2->MCmom(1);
       values[kPzMCfromLegs] = leg1->MCmom(2) + leg2->MCmom(2);
+      values[kPairLegPtMC+0] = TMath::Sqrt(leg1->MCmom(0)*leg1->MCmom(0)+leg1->MCmom(1)*leg1->MCmom(1));
+      values[kPairLegPtMC+1] = TMath::Sqrt(leg2->MCmom(0)*leg2->MCmom(0)+leg2->MCmom(1)*leg2->MCmom(1));
+      values[kPairLegPtMCSum] = values[kPairLegPtMC]+values[kPairLegPtMC+1];
       values[kPtMCfromLegs] = TMath::Sqrt(values[kPxMCfromLegs]*values[kPxMCfromLegs]+values[kPyMCfromLegs]*values[kPyMCfromLegs]);
       values[kPMCfromLegs] = TMath::Sqrt(values[kPtMCfromLegs]*values[kPtMCfromLegs]+values[kPzMCfromLegs]*values[kPzMCfromLegs]);
       values[kThetaMCfromLegs] = (values[kPMCfromLegs]>=1.0e-6 ? TMath::ACos(values[kPzMCfromLegs]/values[kPMCfromLegs]) : 0.0);
@@ -1581,7 +1600,10 @@ void AliReducedVarManager::FillPairInfo(BASETRACK* t1, BASETRACK* t2, Int_t type
 
   if(fgUsedVars[kRap])    values[kRap]    = p.Rapidity();
   if(fgUsedVars[kRapAbs]) values[kRapAbs] = TMath::Abs(p.Rapidity());
-
+  values[kPairLegPt+0] = t1->Pt();
+  values[kPairLegPt+1] = t2->Pt();
+  values[kPairLegPtSum] = t1->Pt()+t2->Pt();
+  
   values[kMassV0]   = -999.0;
   values[kMassV0+1] = -999.0;
   values[kMassV0+2] = -999.0;
@@ -1868,13 +1890,16 @@ void AliReducedVarManager::FillPairInfoME(BASETRACK* t1, BASETRACK* t2, Int_t ty
     values[kPt] = p.Pt();
     if(fgUsedVars[kPtSquared]) values[kPtSquared] = values[kPt]*values[kPt];
   }
+  values[kPairLegPt] = t1->Pt();
+  values[kPairLegPt+1] = t2->Pt();
+  values[kPairLegPtSum] = t1->Pt() + t2->Pt();
   if(fgUsedVars[kP])      values[kP]      = p.P();
   if(fgUsedVars[kEta])    values[kEta]    = p.Eta();
   if(fgUsedVars[kRap])    values[kRap]    = p.Rapidity();
   if(fgUsedVars[kRapAbs]) values[kRapAbs] = TMath::Abs(p.Rapidity());
   if(fgUsedVars[kPhi])    values[kPhi]    = p.Phi();
   if(fgUsedVars[kTheta])  values[kTheta]  = p.Theta();
-
+  
   if((fgUsedVars[kPairEff] || fgUsedVars[kOneOverPairEff] || fgUsedVars[kOneOverPairEffSq]) && fgPairEffMap) {
     Int_t binX = fgPairEffMap->GetXaxis()->FindBin(values[fgEffMapVarDependencyX]); //make sure the values[XVar] are filled for EM
     if(binX==0) binX = 1;
@@ -2193,38 +2218,38 @@ void AliReducedVarManager::SetDefaultVarNames() {
     "SPDntracklets08",
     "SPDntracklets16",
     "SPDntrackletsOuterEta",
-    "SPDntrackletsEtaBin00",
-    "SPDntrackletsEtaBin01",
-    "SPDntrackletsEtaBin02",
-    "SPDntrackletsEtaBin03",
-    "SPDntrackletsEtaBin04",
-    "SPDntrackletsEtaBin05",
-    "SPDntrackletsEtaBin06",
-    "SPDntrackletsEtaBin07",
-    "SPDntrackletsEtaBin08",
-    "SPDntrackletsEtaBin09",
-    "SPDntrackletsEtaBin10",
-    "SPDntrackletsEtaBin11",
-    "SPDntrackletsEtaBin12",
-    "SPDntrackletsEtaBin13",
-    "SPDntrackletsEtaBin14",
-    "SPDntrackletsEtaBin15",
-    "SPDntrackletsEtaBin16",
-    "SPDntrackletsEtaBin17",
-    "SPDntrackletsEtaBin18",
-    "SPDntrackletsEtaBin19",
-    "SPDntrackletsEtaBin20",
-    "SPDntrackletsEtaBin21",
-    "SPDntrackletsEtaBin22",
-    "SPDntrackletsEtaBin23",
-    "SPDntrackletsEtaBin24",
-    "SPDntrackletsEtaBin25",
-    "SPDntrackletsEtaBin26",
-    "SPDntrackletsEtaBin27",
-    "SPDntrackletsEtaBin28",
-    "SPDntrackletsEtaBin29",
-    "SPDntrackletsEtaBin30",
-    "SPDntrackletsEtaBin31",
+    "SPDntracklets -1.6<#eta<-1.5",
+    "SPDntracklets -1.5<#eta<-1.4",
+    "SPDntracklets -1.4<#eta<-1.3",
+    "SPDntracklets -1.3<#eta<-1.2",
+    "SPDntracklets -1.2<#eta<-1.1",
+    "SPDntracklets -1.1<#eta<-1.0",
+    "SPDntracklets -1.0<#eta<-0.9",
+    "SPDntracklets -0.9<#eta<-0.8",
+    "SPDntracklets -0.8<#eta<-0.7",
+    "SPDntracklets -0.7<#eta<-0.6",
+    "SPDntracklets -0.6<#eta<-0.5",
+    "SPDntracklets -0.5<#eta<-0.4",
+    "SPDntracklets -0.4<#eta<-0.3",
+    "SPDntracklets -0.3<#eta<-0.2",
+    "SPDntracklets -0.2<#eta<-0.1",
+    "SPDntracklets -0.1<#eta<0.0",
+    "SPDntracklets 0.0<#eta<0.1",
+    "SPDntracklets 0.1<#eta<0.2",
+    "SPDntracklets 0.2<#eta<0.3",
+    "SPDntracklets 0.3<#eta<0.4",
+    "SPDntracklets 0.4<#eta<0.5",
+    "SPDntracklets 0.5<#eta<0.6",
+    "SPDntracklets 0.6<#eta<0.7",
+    "SPDntracklets 0.7<#eta<0.8",
+    "SPDntracklets 0.8<#eta<0.9",
+    "SPDntracklets 0.9<#eta<1.0",
+    "SPDntracklets 1.0<#eta<1.1",
+    "SPDntracklets 1.1<#eta<1.2",
+    "SPDntracklets 1.2<#eta<1.3",
+    "SPDntracklets 1.3<#eta<1.4",
+    "SPDntracklets 1.4<#eta<1.5",
+    "SPDntracklets 1.5<#eta<1.6",
     "SPDntrackletsVtxEta",
     "VZEROTotalMult",
     "VZEROATotalMult",
@@ -2494,6 +2519,18 @@ void AliReducedVarManager::SetDefaultVarNames() {
     fgVariableUnits[kTPCuQsine+iHarmonic] = "";
   }  // end loop over harmonics 
   
+  fgVariableNames[kMCNch] = "N_{ch} in |#eta|<1"; fgVariableUnits[kMCNch] = ""; 
+  fgVariableNames[kMCNchSPDacc] = "N_{ch} in SPD acceptance"; fgVariableUnits[kMCNchSPDacc] = ""; 
+  fgVariableNames[kEtaBinForSPDtracklets] = "#eta"; fgVariableUnits[kEtaBinForSPDtracklets] = "";
+  fgVariableNames[kMCNchNegSide] = "N_{ch} in -1<#eta<0"; fgVariableUnits[kMCNchNegSide] = "";
+  fgVariableNames[kMCNchPosSide] = "N_{ch} in 0<#eta<1"; fgVariableUnits[kMCNchPosSide] = ""; 
+  fgVariableNames[kDiffNchSPDtrklts] = "N_{ch}^{|#eta|<1} - SPD #trklts"; fgVariableUnits[kDiffNchSPDtrklts] = "";
+  fgVariableNames[kDiffNchSPDaccSPDtrklts] = "N_{ch}^{SPD} - SPD #trklts"; fgVariableUnits[kDiffNchSPDaccSPDtrklts] = "";
+  fgVariableNames[kRelDiffNchSPDtrklts] = "(N_{ch}^{|#eta|<1} - SPD #trklts) / N_{ch}^{|#eta|<1}"; fgVariableUnits[kRelDiffNchSPDtrklts] = "";
+  fgVariableNames[kRelDiffNchSPDaccSPDtrklts] = "(N_{ch}^{SPD} - SPD #trklts) / N_{ch}^{SPD}"; fgVariableUnits[kRelDiffNchSPDaccSPDtrklts] = "";
+  fgVariableNames[kRelDiff2NchSPDtrklts] = "2*(N_{ch}^{|#eta|<1} - SPD #trklts) / (N_{ch}^{|#eta|<1} + SPD #trklts)"; fgVariableUnits[kRelDiff2NchSPDtrklts] = "";
+  fgVariableNames[kRelDiff2NchSPDaccSPDtrklts] = "2*(N_{ch}^{SPD} - SPD #trklts) / (N_{ch}^{SPD} + SPD #trklts)"; fgVariableUnits[kRelDiff2NchSPDaccSPDtrklts] = "";
+  
   fgVariableNames[kPt]    = "p_{T}";   fgVariableUnits[kPt]    = "GeV/c";
   fgVariableNames[kPtMC]    = "p^{MC}_{T}";   fgVariableUnits[kPtMC]    = "GeV/c";
   fgVariableNames[kPtMCfromLegs]    = "p^{MC-legs}_{T}";   fgVariableUnits[kPtMCfromLegs]    = "GeV/c";
@@ -2561,7 +2598,13 @@ void AliReducedVarManager::SetDefaultVarNames() {
      fgVariableUnits[kPairLegTPCchi2+i] = "";
      fgVariableNames[kPairLegITSchi2+i] = Form("ITS #chi^{2}, leg %d", i+1);
      fgVariableUnits[kPairLegITSchi2+i] = "";
+     fgVariableNames[kPairLegPt+i] = Form("Leg%d p_{T}", i+1);
+     fgVariableNames[kPairLegPtMC+i] = Form("Leg%d p^{MC}_{T}", i+1);
+     fgVariableUnits[kPairLegPt+i] = "GeV/c"; fgVariableUnits[kPairLegPtMC+i] = "GeV/c";
   }
+  fgVariableNames[kPairLegPtSum] = "Pair leg p_{T,1} + p_{T,2}"; fgVariableUnits[kPairLegPtSum] = "GeV/c";
+  fgVariableNames[kPairLegPtMCSum] = "Pair leg p^{MC}_{T,1} + p^{MC}_{T,2}"; fgVariableUnits[kPairLegPtMCSum] = "GeV/c";
+  
   
   fgVariableNames[kPtTPC]             = "p_{T}^{TPC}";                  fgVariableUnits[kPtTPC] = "GeV/c";
   fgVariableNames[kPhiTPC]            = "#varphi^{TPC}";                fgVariableUnits[kPhiTPC] = "rad.";

@@ -39,7 +39,14 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
 
   }
 
+  void SetMCRec() {
+    fMCrec = kTRUE;
+    fExcludeSecondariesInMCrec = kTRUE;
+  }
+
   void UsePileUpCutsPbPb() {fPbPb = kTRUE;}
+
+  void CheckPileUp() {fCheckPileUp = kTRUE;}
 
   void SetPileUpCutsParamsLHC15o(Float_t slope, Float_t offset){
     fUseOutOfBunchPileUpCutsLHC15o=kTRUE;
@@ -75,7 +82,7 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   }
 
   // enum kParticleOfInterest { kMuon, kElectron, kPion, kKaon, kProton };
-  enum kCentralityBinning { kFull, kBins};
+  enum kCentralityBinning { kFull, kBins, kMCgen };
   enum kSystem { kPbPb, kpPb};
 
   void setParticleType(AliPID::EParticleType ptype){
@@ -160,6 +167,11 @@ class AliAnalysisTaskAccCont : public AliAnalysisTaskSE {
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
   Bool_t fPbPb;
   Bool_t fpPb;
+  Bool_t fCheckPileUp;
+  Bool_t fMCrec;
+  Bool_t fExcludeSecondariesInMCrec;
+
+  TClonesArray* fArrayMC;
 
   Float_t fPileupLHC15oSlope; //parameters for LHC15o pile-up rejection  default: slope=3.35, offset 15000
   Float_t fPileupLHC15oOffset;

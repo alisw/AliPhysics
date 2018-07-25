@@ -987,12 +987,14 @@ void AliResonanceFits::FitInvMass() {
       fSignalMCshape->SetName(Form("fSignalMCshape_%.6f", gRandom->Rndm()));
    }
    
+   if(fGlobalFitFunction) delete fGlobalFitFunction;
+   
    fGlobalFitFunction = new TF1("GlobalFitFunction", GlobalFitFunction, 0.0, 10.0, 1+fBkgFitFunction->GetNpar());
    fGlobalFitFunction->SetParameter(0, 1.);
 	fGlobalFitFunction->SetNpx(10000.);
    // set starting parameters and parameter limits for the bkg function from the user input
    for(Int_t i=0;i<fBkgFitFunction->GetNpar();++i) {
-      fGlobalFitFunction->SetParameter(i+1, fBkgFitFunction->GetParameter(i));
+      //fGlobalFitFunction->SetParameter(i+1, fBkgFitFunction->GetParameter(i));
       //cout << "SetParameter("<< i <<")=" <<fBkgFitFunction->GetParameter(i) << endl;
       // get the parameter limits from the user provided function
       Double_t parLow=0.; Double_t parHigh=0.;
@@ -1177,7 +1179,7 @@ Double_t* AliResonanceFits::ComputeOutputValues(Double_t minMass, Double_t maxMa
          
          fFitValues[kSig] = fFitValues[kSplusB] - fFitValues[kBkg];
          fFitValues[kSigErr] = TMath::Sqrt(fFitValues[kSplusBerr]*fFitValues[kSplusBerr] + fFitValues[kBkgErr]*fFitValues[kBkgErr]);
-         
+         fFitValues[kChisqMCTotal] = fFitResult->Chi2() / Double_t(fFitResult->Ndf());
          /*
          fSignalMCshape->Scale(fGlobalFitFunction->GetParameter(0));
          cout << "counts :: " << fFitValues[kSig] << " +/- " << fFitValues[kSigErr] << endl;
@@ -1199,7 +1201,8 @@ Double_t* AliResonanceFits::ComputeOutputValues(Double_t minMass, Double_t maxMa
                                                               
          fFitValues[kSig] = fFitValues[kSplusB] - fFitValues[kBkg];
          fFitValues[kSigErr] = TMath::Sqrt(fFitValues[kSplusBerr]*fFitValues[kSplusBerr] + fFitValues[kBkgErr]*fFitValues[kBkgErr]);
-         
+         fFitValues[kChisqMCTotal] = fFitResult->Chi2() / Double_t(fFitResult->Ndf());
+         fFitValues[kFitProbability] = fFitResult->Prob();
          
          /*
          fSignalMCshape->Scale(fGlobalFitFunction->GetParameter(0));

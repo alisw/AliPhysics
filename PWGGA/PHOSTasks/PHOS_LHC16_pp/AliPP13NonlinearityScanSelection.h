@@ -15,7 +15,7 @@
 //
 class AliPP13NonlinearityScanSelection : public AliPP13PhysPhotonSelectionMC
 {
-	enum ScanSize {kNbinsA = 11, kNbinsSigma = 11};
+	enum ScanSize {kNbinsA = 9, kNbinsSigma = 9};
 public:
 	AliPP13NonlinearityScanSelection(): AliPP13PhysPhotonSelectionMC() {}
 	AliPP13NonlinearityScanSelection(const char * name, const char * title, AliPP13ClusterCuts cuts, 
@@ -34,10 +34,10 @@ public:
 		{
 			for(Int_t ib = 0; ib < kNbinsSigma; ++ib)
 			{
-				AliPP13SelectionWeightsMC swi;
+				AliPP13SelectionWeightsMC & swi = fWeightsScan[ia][ib];
+				swi.fNonGlobal = sw->fNonGlobal;
 				swi.fNonA = nona - fPrecisionA * kNbinsA / 2 + ia * fPrecisionA;
 				swi.fNonSigma = nonSigma - fPrecisionSigma * kNbinsSigma / 2 + ib * fPrecisionSigma;
-				fWeightsScan[ia][ib] = swi;
 			}
 		}
 	}
@@ -55,7 +55,7 @@ protected:
 private:
 
 	// Set of weights that are need for NonlinearityScan
-	AliPP13SelectionWeightsMC fWeightsScan[kNbinsA][kNbinsSigma];//!
+	AliPP13SelectionWeightsMC fWeightsScan[kNbinsA][kNbinsSigma];
 
 	// Parameters of nonlinearity parametrization
 	TH1 * fInvariantMass[kNbinsA][kNbinsSigma];    //!

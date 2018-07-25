@@ -18,6 +18,7 @@
 
 class THnSparse;
 class TH2F;
+class TProfile;
 class TLorentzVector;
 
 class AliEMCALTrack;
@@ -42,7 +43,7 @@ class AliMultSelection;
 class AliEventPoolManager;
 class AliAODv0KineCuts;
 class AliESDv0KineCuts;
-
+class AliVertexingHFUtils;
 #include "AliAODv0KineCuts.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
@@ -65,15 +66,15 @@ public:
     virtual void   Terminate(Option_t *);
     
     //******************** ANALYSIS
-    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t mult);
+    AliVTrack* FindLPAndHFE(TObjArray* RedTracksHFE, const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Double_t mult, Bool_t &EvContTP, Bool_t &EvContNTP);
     void FindPhotonicPartner(Int_t iTracks, AliVTrack* track,  const AliVVertex *pVtx, Int_t nMother, Int_t listMother[], Int_t &LSPartner, Int_t&ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Bool_t &trueULSPartner, Bool_t &iHsPhotonic);
     void CorrelateElectron(TObjArray* RedTracksHFE);
 
     void CorrelateLP(AliVTrack* LPtrack,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], TObjArray* RedTracksHFE);
-    void CorrelateLPMixedEvent(AliVTrack* LPtrack, Float_t mult, Float_t zVtx, Float_t maxPt);
+    void CorrelateLPMixedEvent(AliVTrack* LPtrack, Float_t mult, Float_t zVtx, Float_t maxPt, Bool_t EvContTP, Bool_t EvContNTP);
     
     void CorrelateHadron(TObjArray* RedTracksHFE,  const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Float_t mult, Float_t maxPt);
-    void CorrelateHadronMixedEvent(Float_t mult, const AliVVertex* zVtx, Float_t maxPt, Int_t nMother, Int_t listMother[]);
+    void CorrelateHadronMixedEvent(Float_t mult, const AliVVertex* zVtx, Float_t maxPt, Int_t nMother, Int_t listMother[], Bool_t EvContTP, Bool_t EvContNTP);
 
     void CorrelateWithHadrons(AliVTrack* TriggerTrack, const AliVVertex* pVtx, Int_t nMother, Int_t listMother[], Bool_t FillHadron, Bool_t FillLP,Bool_t** NonElecIsTrigger, Double_t *NonElecIsTriggerPt, Double_t *NonElecIsTriggerWeight, Int_t NumElectronsInEvent); 
 
@@ -125,6 +126,12 @@ public:
     void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
     void SetPtMaxEvent(Double_t PtMax) {fMaxPtEvent=PtMax;};
 
+
+    void SetEtaMax(Double_t EtaMax) {
+      fMaxElectronEta = TMath::Abs(EtaMax);
+      fMinElectronEta = -TMath::Abs(EtaMax);
+    };
+
     void SetTPCnCut(Int_t TPCnCut) {fTPCnCut = TPCnCut;};
     void SetTPCnCutdEdx(Int_t TPCnCutdEdx) {fTPCndEdxCut = TPCnCutdEdx;};
     void SetITSnCut (Int_t ITSnCut) {fITSnCut = ITSnCut;};
@@ -146,39 +153,31 @@ public:
     void SetSigmaTPCcut(Double_t SigmaTPCcut) {fSigmaTPCcut = SigmaTPCcut;};
 
   
+    void SetRecEff(Bool_t RecEff) { 
+      fRecEff=RecEff;
+    }
+    void SetTagEff(Bool_t TagEff) {
+      fTagEff=TagEff;
+    }
     void SetHadronCorrelation(Bool_t CorrHadron) {
       fCorrHadron = CorrHadron;
-      if (CorrHadron) {
-	fTagEff=kFALSE;
-	fRecEff=kFALSE;
-	fHadCont=kFALSE;
-      }
     };
     void SetLPCorrelation(Bool_t CorrLP) {
       fCorrLParticle = CorrLP;
-      if (CorrLP) {
-	fTagEff=kFALSE;
-	fRecEff=kFALSE;
-	fHadCont=kFALSE;
-      }
     };
     void SetMCTruthCorrelation(Bool_t MCTruthCorr) {
       fMCTrueCorrelation = MCTruthCorr;
-      if (MCTruthCorr) {
-	fTagEff=kTRUE;
-	fRecEff=kTRUE;
-	fHadCont=kTRUE;
-      }
     };
 
     void SetOpeningAngleCut(Bool_t OpeningAngleCut) {fOpeningAngleCut=OpeningAngleCut;};
     void SetInvmassCut(Double_t InvmassCut) {fInvmassCut=InvmassCut;};
 
-
     void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
     void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
     void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");}
     void SetEleRecEff(TH2F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
+    void SetSPDnTrAvg(TProfile & SPDnTrAvg) {fSPDnTrAvg = SPDnTrAvg; fSPDnTrAvg.SetName("fSPDnTrAvg");}
+    
 
     Bool_t   ESDkTrkGlobalNoDCA(AliVTrack* Vtrack);
 
@@ -284,14 +283,29 @@ public:
     AliHFEpidQAmanager    *fPIDqa;                  //! PID QA manager
         
     TList                 *fOutputList;             //! output list
-    TList                 *fOutputListMain;          //!
-    TList                 *fOutputListLP;           //
+    TList                 *fOutputListMain;         //!
+    TList                 *fOutputListLP;           //!
     TList                 *fOutputListHadron;       //!
     TList                 *fOutputListQA;           //!
     TH1F                  *fNoEvents;               //! no of events for different cuts
     TH2F                  *fTrkpt;                  //! track pt for different cuts
     TH2F                  *fEtaVtxZ;                //! Eta vs Vtx z (check for ITS acceptance problem)
 
+    TH2F                  *fSPDVtxRes;              //!
+    TH2F                  *fDiffSPDPrimVtx;         //!
+    TH2F                  *fSPDnTrAcc;              //!
+    TH2F                  *fSPDnTrCorrMax;          //!
+    TH2F                  *fSPDnTrGen;              //!
+    TH2F                  *fDiffSPDMCVtx;           //!
+    THnSparseF            *fnTrAccMaxGen;           //!
+    THnSparseF            *fnTrAccMinGen;           //!
+    THnSparseF            *fnTrAccMeanGen;          //!
+    THnSparseF            *fnTrAccMax;              //!
+    THnSparseF            *fnTrAccMin;              //!
+    THnSparseF            *fnTrAccMean;             //!
+
+
+    
     THnSparse             *fMultiplicity;	    //! multiplicity distribution
     TH3F                  *fSPDMultiplicity;        //!
     Int_t                 *fRunList;                //!
@@ -322,6 +336,7 @@ public:
 
     THnSparse             *fCheckNHadronScaling;    //!
     THnSparse             *fCheckNPhotHadScaling;  //!
+    TH3F                  *fCheckTaggedEvent;       //!
 
     TH2F                  *fHadContPvsPt;           //!
     TH3F                  *fHadContEtaPhiPt;        //!
@@ -368,12 +383,13 @@ public:
     THnSparse             *fTagEffULSWoWeight;        //!
     THnSparse             *fTagTruePairsWoWeight;     //!
 
-    TH1F                  fCorrectPiontoData;    
+    TH1F                  fCorrectPiontoData;   
     Double_t              GetPionWeight(Double_t pt);
     TH1F                  fCorrectEtatoData;       
     Double_t              GetEtaWeight(Double_t pt);
     TH3F                  fHadRecEff;
     TH2F                  fEleRecEff;
+    TProfile              fSPDnTrAvg;
 
     Int_t                 fAssPtHad_Nbins;
     TArrayF               fAssPtHad_Xmin;
@@ -445,6 +461,8 @@ public:
     TH3F                  *fElecLPTrigger;          //!
     TH2F                  *fElecLPTriggerLS;         //!
     TH2F                  *fElecLPTriggerULS;        //!
+    TH2F                  *fElecLPTriggerLSNoP;         //!
+    TH2F                  *fElecLPTriggerULSNoP;        //!
     TH2F                  *fHadContLPTrigger;       //!
     TH2F                  *fLPElecTrigger;          //!
     TH2F                  *fLPNonElecTrigger;       //!
@@ -456,6 +474,7 @@ public:
     THnSparse             *fElecLPHa;               //!
     THnSparse             *fElecLPLSNoPartner;      //! 
     THnSparse             *fElecLPULSNoPartner;     //! 
+
     THnSparse             *fMCElecLPTruePartner;    //! 
     THnSparse             *fMCElecLPNoPartner;      //! 
     THnSparse             *fMCElecLPRemovedPartner; //!
@@ -465,6 +484,8 @@ public:
     THnSparse             *fElecLPMixedEvent;       //!
     THnSparse             *fLSElecLPMixedEvent;     //!
     THnSparse             *fULSElecLPMixedEvent;    //!
+    THnSparse             *fTagLPMixedEvent; //!
+    THnSparse             *fNonTagLPMixedEvent; //!
    
     
     TH2F                  *fCheckMCVertex;           //!
@@ -539,7 +560,7 @@ public:
     AliAnalysisTaskHaHFECorrel(const AliAnalysisTaskHaHFECorrel&);
     AliAnalysisTaskHaHFECorrel& operator=(const AliAnalysisTaskHaHFECorrel&);
     
-    ClassDef(AliAnalysisTaskHaHFECorrel, 3);
+    ClassDef(AliAnalysisTaskHaHFECorrel, 4);
 };
 
 

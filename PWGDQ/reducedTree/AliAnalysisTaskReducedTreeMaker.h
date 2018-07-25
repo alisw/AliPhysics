@@ -111,12 +111,12 @@ public:
   void SetFillHFInfo(Bool_t flag=kTRUE)               {fFillHFInfo = flag;}
   void SetFillTRDMatchedTracks(Bool_t flag1=kTRUE, Bool_t flag2=kFALSE)   {fFillTRDMatchedTracks = flag1; fFillAllTRDMatchedTracks=flag2;}
   Float_t GetInvPtDevFromBC(Int_t b, Int_t c); // calculates the sagitta value from the online tracks
-  void SetWriteEventsWithNoSelectedTracks(Bool_t flag=kTRUE, Double_t scaleDown=0.0, Int_t minSelectedTracks=1)   {
-     fWriteEventsWithNoSelectedTracks = flag; 
-     fScaleDownEventsWithNoSelectedTracks = scaleDown;
+  void SetEventWritingRequirement(Int_t minSelectedTracks, Int_t minSelectedBaseTracks=0, Double_t scaleDown=0.0)   {
      fMinSelectedTracks = minSelectedTracks;
+     fMinSelectedBaseTracks = minSelectedBaseTracks;
+     fScaleDownEvents = scaleDown;
   }
-  void SetWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks(Bool_t flag=kTRUE) {fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks = flag;}
+
     
  private:
 
@@ -140,10 +140,9 @@ public:
   
   Int_t     fTreeWritingOption;                 // one of the options described by ETreeWritingOptions
   Bool_t    fWriteTree;                         // if kFALSE don't write the tree, use task only to produce on the fly reduced events
-  Bool_t    fWriteEventsWithNoSelectedTracks;   // write events without any selected tracks
-  Int_t      fMinSelectedTracks;        // minimum number of selected tracks for the event to be written (defaults to 1)
-  Bool_t    fWriteEventsWithNoSelectedTracksAndNoSelectedAssociatedTracks;  // write events without tracks in both track arrays
-  Double_t  fScaleDownEventsWithNoSelectedTracks; // scale down factor for events with no selected track candidates in the main track array
+  Int_t     fMinSelectedTracks;                 // minimum number of selected full tracks (in AliReducedBaseEvent::fTracks) for the event to be written (defaults to 0)
+  Int_t     fMinSelectedBaseTracks;             // minimum number of selected base tracks (in AliReducedBaseEvent::fTracks2) for the event to be written (defaults to 0)
+  Double_t  fScaleDownEvents;                   // allow writing events which do not fulfill the minimum number of tracks criteria with scale down factor (default is zero)
   Bool_t    fWriteSecondTrackArray;       // write second array only if full+base tracks requested
   Bool_t    fSetTrackFilterUsed;          // specifier if SetTrackFilter method was used
   std::vector<Bool_t>   fWriteBaseTrack;  // specifier if tracks for certain track filter are reduced or base tracks
@@ -223,6 +222,6 @@ public:
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 10); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 11); //Analysis Task for creating a reduced event information tree
 };
 #endif

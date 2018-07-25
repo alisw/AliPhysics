@@ -164,14 +164,16 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistdEdxVsPBadHyp[3];                //!<!  histo of dE/dx for protons
   TH3F* fHistImpParXYPtMulBadHypTPCselSPDany[3];   //!<!  histo of impact parameter
 
-  TH2F* fHistPtResidVsPtTPCselAll;                              //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistPtResidVsPtTPCselITSrefAll;                        //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
+  TH2F* fHistPtResidVsPtTPConlyAll;                             //!<!  Pt residuals for TPC only tracks
+  TH2F* fHistPtResidVsPtTPCselAll;                              //!<!  Pt residuals for TPC+ITS track with TPC only cuts
+  TH2F* fHistPtResidVsPtTPCselITSrefAll;                        //!<!  Pt residuals for ITS+TPC tracks 
   TH2F* fHistPtResidVsPtTPCselGoodHyp[AliPID::kSPECIESC];       //!<!  Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
   TH2F* fHistPtResidVsPtTPCselBadHyp[AliPID::kSPECIESC];        //!<!  Pt residuals for TPC only tracks tracked with bad mass hypothesis (for each species)
   TH2F* fHistPtResidVsPtTPCselITSrefGoodHyp[AliPID::kSPECIESC]; //!<!  Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
   TH2F* fHistPtResidVsPtTPCselITSrefBadHyp[AliPID::kSPECIESC];  //!<!  Pt residuals for ITS+TPC tracks tracked with bad mass hypothesis (for each species)
-  TH2F* fHistOneOverPtResidVsPtTPCselAll;                              //!<!  1/Pt residuals for TPC only tracks tracked with good mass hypothesis
-  TH2F* fHistOneOverPtResidVsPtTPCselITSrefAll;                        //!<!  1/Pt residuals for ITS+TPC tracks tracked with good mass hypothesis
+  TH2F* fHistOneOverPtResidVsPtTPConlyAll;                             //!<!  1/Pt residuals for TPC only tracks
+  TH2F* fHistOneOverPtResidVsPtTPCselAll;                              //!<!  1/Pt residuals for TPC+ITS track with TPC only cuts
+  TH2F* fHistOneOverPtResidVsPtTPCselITSrefAll;                        //!<!  1/Pt residuals for ITS+TPC tracks
   TH2F* fHistOneOverPtResidVsPtTPCselGoodHyp[AliPID::kSPECIESC];       //!<!  1/Pt residuals for TPC only tracks tracked with good mass hypothesis (for each species)
   TH2F* fHistOneOverPtResidVsPtTPCselBadHyp[AliPID::kSPECIESC];        //!<!  1/Pt residuals for TPC only tracks tracked with bad mass hypothesis (for each species)
   TH2F* fHistOneOverPtResidVsPtTPCselITSrefGoodHyp[AliPID::kSPECIESC]; //!<!  1/Pt residuals for ITS+TPC tracks tracked with good mass hypothesis (for each species)
@@ -217,7 +219,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,10);
+  ClassDef(AliAnalysisTaskCheckESDTracks,11);
 };
 
 

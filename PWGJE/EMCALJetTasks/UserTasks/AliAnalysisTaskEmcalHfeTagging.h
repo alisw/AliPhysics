@@ -55,13 +55,6 @@ public:
         kFirstOrder = 1
     };
     
-    enum JetShapeTree {
-        kAll = 0,
-        kInclElec = 1,
-        kPhotElec = 2,
-        kNoElec = 3
-    };
-    
     AliAnalysisTaskEmcalHfeTagging();
     AliAnalysisTaskEmcalHfeTagging(const char *name);
     virtual ~AliAnalysisTaskEmcalHfeTagging();
@@ -90,7 +83,7 @@ public:
     void SetHolePos(Float_t poshole)                        { fHolePos = poshole; }
     void SetHoleWidth(Float_t holewidth)                  { fHoleWidth = holewidth; }
     void SetDerivativeSubtractionOrder(Int_t c)              {fDerivSubtrOrder = c;}
-    void SetJetShapeTree(Int_t c)                            {fJetShapeTree = c;}
+    void SetMCweight(Int_t c)                                 {fMCweight = c;}
     
 protected:
     Bool_t                              RetrieveEventObjects();
@@ -100,7 +93,7 @@ protected:
     void                                GetNumberOfElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[],  Int_t &nIncElec,  Int_t &nPhotElec, Double_t &pElec, Double_t &ptElec, Bool_t &hasElec);
     void                                GetNumberOfTrueElectrons(AliEmcalJet *jet,Int_t jetContNb, Int_t nMother, Double_t listMother[], Int_t &nTrueElec, Int_t &nTrueHFElec);
     void                                GetWeightAndDecay(AliAODMCParticle *particle, Int_t &decay, Double_t &weight);
-    Int_t                               GetNumberOfPairs(AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[]);
+    Int_t                               GetNumberOfPairs(AliEmcalJet *jet,AliAODTrack *track,const AliVVertex *pVtx, Int_t nMother, Double_t listMother[]);
     Bool_t                              IsFromHFdecay(AliAODMCParticle *particle);
     Bool_t                              IsFromLMdecay(AliAODMCParticle *particle);
     Bool_t                              IsPrimary(AliAODMCParticle *particle);
@@ -129,52 +122,52 @@ protected:
     AliAODEvent                         *fAOD;                  //! AOD object
     AliVEvent                           *fVevent;               //! VEvent
     AliPIDResponse                      *fpidResponse;          //! PID response
-    TClonesArray                        *fTracksTender;        //Tender for tracks
-    const AliVVertex                    *pVtx;                   // z vertex
-    const AliVVertex                    *spdVtx;                  //spd z vertez
+    TClonesArray                        *fTracksTender;         //Tender for tracks
+    const AliVVertex                    *pVtx;                  // z vertex
+    const AliVVertex                    *spdVtx;                //spd z vertez
     
     AliMCEvent                          *fMC;                   //! MC object
-    AliStack                            *fStack;                              //! stack
-    AliAODMCParticle                    *fMCparticle;            //! MC particle
-    TClonesArray                        *fMCarray;               //! MC array
+    AliStack                            *fStack;                //! stack
+    AliAODMCParticle                    *fMCparticle;           //! MC particle
+    TClonesArray                        *fMCarray;              //! MC array
     AliAODMCHeader                      *fMCheader;
     
     
     Int_t                               fContainer;              // jets to be analyzed 0 for Base, 1 for subtracted.
-    Float_t                             fMinFractionShared;          // only fill histos for jets if shared fraction larger than X
-    JetShapeType                        fJetShapeType;               // jet type to be used
-    JetShapeSub                         fJetShapeSub;                // jet subtraction to be used
-    JetSelectionType                    fJetSelection;               // Jet selection: inclusive/recoil jet
-    Float_t                             fShapesVar[21];                  // jet shapes used for the tagging
+    Float_t                             fMinFractionShared;      // only fill histos for jets if shared fraction larger than X
+    JetShapeType                        fJetShapeType;           // jet type to be used
+    JetShapeSub                         fJetShapeSub;            // jet subtraction to be used
+    JetSelectionType                    fJetSelection;           // Jet selection: inclusive/recoil jet
+    Float_t                             fShapesVar[24];          // jet shapes used for the tagging
     Float_t                             fPtThreshold;
     Float_t                             fRMatching;
-    Int_t                               fSelectedShapes;                //chose set of shapes
-    Float_t                             fminpTTrig;                   //min - max pT for trigger particle in case of recoil jet
+    Int_t                               fSelectedShapes;         //chose set of shapes
+    Float_t                             fminpTTrig;              //min - max pT for trigger particle in case of recoil jet
     Float_t                             fmaxpTTrig;
-    Float_t                             fangWindowRecoil;             //angular window for btb recoil analysis
-    Int_t                               fSemigoodCorrect;             //if==1 we run over semigood runs
-    Float_t                             fHolePos;                          //position in radians of the bad TPC sector
-    Float_t                             fHoleWidth;                       //width of the hole in radians
-    Bool_t                              fCentSelectOn;                // switch on/off centrality selection
-    Float_t                             fCentMin;                     // min centrality value
-    Float_t                             fCentMax;                     // max centrality value
-    Bool_t                              fOneConstSelectOn;                // switch on/off one constituent selection
+    Float_t                             fangWindowRecoil;        //angular window for btb recoil analysis
+    Int_t                               fSemigoodCorrect;        //if==1 we run over semigood runs
+    Float_t                             fHolePos;                //position in radians of the bad TPC sector
+    Float_t                             fHoleWidth;              //width of the hole in radians
+    Bool_t                              fCentSelectOn;           // switch on/off centrality selection
+    Float_t                             fCentMin;                // min centrality value
+    Float_t                             fCentMax;                // max centrality value
+    Bool_t                              fOneConstSelectOn;       // switch on/off one constituent selection
     Int_t                               fDerivSubtrOrder;
-    Int_t                               fJetShapeTree;                  // selection of the tree
+    Int_t                               fMCweight;               //0: no weight, 1: enhanced MC, 2: MB MC
     
-    Double_t                            fAssPtCut;                     // pt cut for associated electron
-    Int_t                               fITSncut;                       // ITC number of clusters for tagged electrons
-    Int_t                               fAssTPCnCut;                    // TPC number of clusters for associated electron
-    Int_t                               fTPCnCut;                       // TPC number of clusters for tagged electron
-    Bool_t                              fAssITSrefitCut;                // ITS refit for associated electron
-    Bool_t                              fUseTender;                     // Use tender
-    Double_t                            fSigmaTOFcut;                   // sigma TOF cut |sigma_TOF|< cut
-    Double_t                            fSigmaTPCcut;                   // sigma TPC cut - cut < sigma_TPC < 3
-    Double_t                            fDcaXYcut;                      //DCA_xy cut
-    Double_t                            fDcaZcut;                      //DCA_xy cut
-    Double_t                            fIMcut;                       //invariant mass cut
+    Double_t                            fAssPtCut;               // pt cut for associated electron
+    Int_t                               fITSncut;                // ITC number of clusters for tagged electrons
+    Int_t                               fAssTPCnCut;             // TPC number of clusters for associated electron
+    Int_t                               fTPCnCut;                // TPC number of clusters for tagged electron
+    Bool_t                              fAssITSrefitCut;         // ITS refit for associated electron
+    Bool_t                              fUseTender;              // Use tender
+    Double_t                            fSigmaTOFcut;            // sigma TOF cut |sigma_TOF|< cut
+    Double_t                            fSigmaTPCcut;            // sigma TPC cut - cut < sigma_TPC < 3
+    Double_t                            fDcaXYcut;               //DCA_xy cut
+    Double_t                            fDcaZcut;                //DCA_xy cut
+    Double_t                            fIMcut;                  //invariant mass cut
     
-    TH2F                                *fh2ResponseUW;
+    TH2F                                *fh2ResponseUW;         //
     TH2F                                *fh2ResponseW;
     TH2F                                *fPhiJetCorr6;
     TH2F                                *fPhiJetCorr7;
@@ -182,7 +175,11 @@ protected:
     TH2F                                *fEtaJetCorr7;
     TH2F                                *fPtJetCorr;
     TH1F                                *fPtJet;
-    TH2F                                *fhpTjetpT; //control p[lot fo the recoil analysis
+    TH1F                                *fPtGenJet;
+    TH2F                                *fPhiJet;
+    TH2F                                *fEtaJet;
+    TH2F                                *fJetEfficiency;
+    TH2F                                *fhpTjetpT;                        //control p[lot fo the recoil analysis
     TH1F                                *fhPt;
     TH1F                                *fhPhi;
     TH2F                                *fNbOfConstvspT;
@@ -190,10 +187,10 @@ protected:
     TH2F                                *fnTPCnocut;
     TH2F                                *fnTOFnocut;
     TH2F                                *fnTPCcut;
-    TH2F                                *fnTPCTrueParticles[15];
+    TH2F                                *fnTPCTrueParticles[5][18];
     TH2F                                *fnULSmLSpairsPerElectron;
-    TH2F                                *fInvmassLS;
-    TH2F                                *fInvmassULS;
+    TH2F                                *fInvmassLS[5];
+    TH2F                                *fInvmassULS[5];
     TH1F                                *fnPartPerJet;
     TH1F                                *fnElecOverPartPerJet;
     TH1F                                *fnInclElecPerJet;
@@ -204,11 +201,23 @@ protected:
     TH1F                                *fnTruePElecPerJet;
     TH2F                                *fPi0Pt;
     TH2F                                *fEtaPt;
-    TH1F                                *fUlsLsElecPt;
-    TH1F                                *fTotElecPt;
+    TH1F                                *fGenHfePt;
+    TH1F                                *fGenPePt;
+    TH1F                                *fUlsLsElecPt[5];
+    TH1F                                *fTotElecPt[5];
     TH2F                                *fPtP;
-    
-    TTree                               *fTreeObservableTagging;  // Tree with tagging variables subtracted MC or true MC or raw
+    TH1F                                *fptJetIE;               // pT of jets containing IE
+    TH1F                                *fptJetPE;               // pT of jets containing PE
+    TH1F                                *fptJetHFE;              // pT of jets containing HFE
+    TH1F                                *fptRecPE;
+    TH1F                                *fptTruePE;
+    TH1F                                *fptTrueHFE[4];
+    TH1F                                *fptWrongPE;
+    TH2F                                *fPhiTrack;
+    TH2F                                *fEtaTrack;
+    TH2F                                *fPhiElec;
+    TH2F                                *fEtaElec;
+    TTree                               *fTreeObservableTagging;            // Tree with tagging variables subtracted MC or true MC or raw
     
 private:
     AliAnalysisTaskEmcalHfeTagging(const AliAnalysisTaskEmcalHfeTagging&);            // not implemented

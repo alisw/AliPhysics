@@ -15,21 +15,27 @@ AliAnalysisTaskUpcRho0 *AddTaskUpcRho0(){
   }
 	
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-
+  Bool_t isMC = kFALSE;
+  if(mgr->GetMCtruthEventHandler()) isMC = kTRUE;
+  
   // Create tasks
-  AliAnalysisTaskUpcRho0 *task = new AliAnalysisTaskUpcRho0(inputDataType.Data());
+  AliAnalysisTaskUpcRho0 *task = new AliAnalysisTaskUpcRho0(inputDataType.Data(), isMC);
   mgr->AddTask(task);
-
+  task->SetIsMC(isMC);
 
    // Create containers for input/output
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("Rho0Tree", TTree::Class(), AliAnalysisManager::kOutputContainer,Form("%s:Rho0Central", AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Histograms", TList::Class(), AliAnalysisManager::kOutputContainer,Form("%s:Rho0Central", AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput3 = NULL;
+  if (isMC) coutput3 = mgr->CreateContainer("MCTree", TTree::Class(), AliAnalysisManager::kOutputContainer,Form("%s:Rho0Central", AliAnalysisManager::GetCommonFileName()));
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);
+  if (isMC) mgr->ConnectOutput(task, 3, coutput3);
+  
 
 return task;
 }

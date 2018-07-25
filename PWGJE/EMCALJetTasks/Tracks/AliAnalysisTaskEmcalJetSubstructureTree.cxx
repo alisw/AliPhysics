@@ -26,6 +26,7 @@
  ************************************************************************************/
 #include <algorithm>
 #include <array>
+#include <bitset>
 #include <iostream>
 #include <string>
 #include <set>
@@ -98,6 +99,8 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fSDZCut(0.1),
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
+    fHasRecEvent(false),
+    fHasTrueEvent(false),
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString(""),
     fNameTriggerDecisionContainer("EmcalTriggerDecision"),
@@ -130,6 +133,8 @@ AliAnalysisTaskEmcalJetSubstructureTree::AliAnalysisTaskEmcalJetSubstructureTree
     fSDZCut(0.1),
     fSDBetaCut(0),
     fReclusterizer(kCAAlgo),
+    fHasRecEvent(false),
+    fHasTrueEvent(false),
     fTriggerSelectionBits(AliVEvent::kAny),
     fTriggerSelectionString(""),
     fNameTriggerDecisionContainer("EmcalTriggerDecision"),
@@ -278,50 +283,21 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   this->fGlobalTreeParams->fJetRadius = (datajets ? datajets->GetJetRadius() : mcjets->GetJetRadius());
   fGlobalTreeParams->fTriggerClusterIndex = -1;       // Reset trigger cluster index
 
-  // Run trigger selection (not on pure MCgen train)
-  if(datajets){
-    if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
-    if(!mcjets){
-      // Pure data - do EMCAL trigger selection from selection string
-      if(fTriggerSelectionString.Length()) {
-        if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
-        if(fTriggerSelectionString.Contains("EJ") && fUseTriggerSelectionForData) {
-          auto trgselresult = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
-          AliDebugStream(1) << "Found trigger decision object: " << (trgselresult ? "yes" : "no") << std::endl;
-          if(!trgselresult){
-            AliErrorStream() <<  "Trigger decision container with name " << fNameTriggerDecisionContainer << " not found in event - not possible to select EMCAL triggers" << std::endl;
-            return false;
-          }
-          if(!trgselresult->IsEventSelected(fTriggerSelectionString)) return false;
-        }
-      }
-
-      // decode trigger string in order to determine the trigger clusters
-      std::vector<std::string> clusternames;
-      auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
-      for(auto t : triggerinfos) {
-        if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
-      }
-      bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
-           isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
-           isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
-           isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
-      if(isCENT) fGlobalTreeParams->fTriggerClusterIndex = 0;
-      else if(isCENTNOTRD) fGlobalTreeParams->fTriggerClusterIndex = 1;
-      else if(isCALO) fGlobalTreeParams->fTriggerClusterIndex = 2;
-      else if(isCALOFAST) fGlobalTreeParams->fTriggerClusterIndex = 3;
-    } else {
-      if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
-        // Simulation - do EMCAL trigger selection from trigger selection object
-        auto mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
-        AliDebugStream(1) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
-        if(!mctrigger){
-          AliErrorStream() <<  "Trigger decision container with name " << fNameTriggerDecisionContainer << " not found in event - not possible to select EMCAL triggers" << std::endl;
-          return false;
-        }
-        if(!mctrigger->IsEventSelected(fTriggerSelectionString)) return false;
-      }
+  if(datajets && !mcjets){
+    // decode trigger string in order to determine the trigger clusters
+    std::vector<std::string> clusternames;
+    auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
+    for(auto t : triggerinfos) {
+      if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
     }
+    bool isCENT = (std::find(clusternames.begin(), clusternames.end(), "CENT") != clusternames.end()),
+         isCENTNOTRD = (std::find(clusternames.begin(), clusternames.end(), "CENTNOTRD") != clusternames.end()),
+         isCALO = (std::find(clusternames.begin(), clusternames.end(), "CALO") != clusternames.end()),
+         isCALOFAST = (std::find(clusternames.begin(), clusternames.end(), "CALOFAST") != clusternames.end());
+    if(isCENT) fGlobalTreeParams->fTriggerClusterIndex = 0;
+    else if(isCENTNOTRD) fGlobalTreeParams->fTriggerClusterIndex = 1;
+    else if(isCALO) fGlobalTreeParams->fTriggerClusterIndex = 2;
+    else if(isCALOFAST) fGlobalTreeParams->fTriggerClusterIndex = 3;
   }
 
   double weight = 1.;
@@ -427,6 +403,50 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   }
 
   return true;
+}
+
+Bool_t AliAnalysisTaskEmcalJetSubstructureTree::IsTriggerSelected(){
+  AliDebugStream(1) << "Trigger selection called\n";
+  if(!(fHasRecEvent || fHasTrueEvent)){
+    AliErrorStream() << "Impossible combination: Neither rec nor true event available. Rejecting ..." << std::endl;
+    return false;
+  }
+  // Run trigger selection (not on pure MCgen train - pure MCgen train has no rec event, ESD event is fake there)
+  if(fHasRecEvent){
+    if(!fHasTrueEvent){
+      // Pure data - do EMCAL trigger selection from selection string
+      AliDebugStream(1) << "Applying trigger selection for trigger bits " << std::bitset<sizeof(decltype(fTriggerSelectionBits)) * 8>(fTriggerSelectionBits) << "and trigger selection string " << fTriggerSelectionString << std::endl;
+      if(!(fInputHandler->IsEventSelected() & fTriggerSelectionBits)) return false;
+      AliDebugStream(1) << "Passed trigger bit selection" << std::endl;
+      if(fTriggerSelectionString.Length()) {
+        if(!fInputEvent->GetFiredTriggerClasses().Contains(fTriggerSelectionString)) return false;
+        AliDebugStream(1) << "Passed trigger string section" << std::endl;
+        if(fTriggerSelectionString.Contains("EJ") && fUseTriggerSelectionForData) {
+          auto trgselresult = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
+          AliDebugStream(1) << "Found trigger decision object: " << (trgselresult ? "yes" : "no") << std::endl;
+          if(!trgselresult){
+            AliErrorStream() <<  "Trigger decision container with name " << fNameTriggerDecisionContainer << " not found in event - not possible to select EMCAL triggers" << std::endl;
+            return false;
+          }
+          if(!trgselresult->IsEventSelected(fTriggerSelectionString)) return false;
+          AliDebugStream(1) << "Data event selected" << std::endl;
+        }
+      }
+    } else {
+      // Simulation - do EMCAL trigger selection from trigger selection object
+      if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;        // Require INT7 trigger - EMCAL triggers will be a subset
+      if(IsSelectEmcalTriggers(fTriggerSelectionString.Data())){
+        auto mctrigger = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer));
+        AliDebugStream(1) << "Found trigger decision object: " << (mctrigger ? "yes" : "no") << std::endl;
+        if(!mctrigger){
+          AliErrorStream() <<  "Trigger decision container with name " << fNameTriggerDecisionContainer << " not found in event - not possible to select EMCAL triggers" << std::endl;
+          return false;
+        }
+        if(!mctrigger->IsEventSelected(fTriggerSelectionString)) return false;
+      }
+    }
+  }
+  return true;      // trigger selected or pure MCgen information
 }
 
 void AliAnalysisTaskEmcalJetSubstructureTree::UserExecOnce() {
@@ -757,6 +777,8 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   AliAnalysisTaskEmcalJetSubstructureTree *treemaker = new AliAnalysisTaskEmcalJetSubstructureTree(taskname.str().data());
   mgr->AddTask(treemaker);
   treemaker->SetMakeGeneralHistograms(kTRUE);
+  if(isMC) treemaker->SetHasTrueEvent(true);
+  if(isData) treemaker->SetHasRecEvent(true);
 
   // Adding containers
   if(isMC) {
@@ -782,7 +804,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
       tracks->SetMinPt(0.15);
     }
     AliClusterContainer *clusters(nullptr);
-    if((jettype == AliJetContainer::kFullJet) || (AliJetContainer::kNeutralJet)){
+    if((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)){
       std::cout << "Using full or neutral jets ..." << std::endl;
       clusters = treemaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
       std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
@@ -872,7 +894,6 @@ void AliJetKineParameters::LinkJetTreeBranches(TTree *jettree, const char *tag){
   LinkBranch(jettree, &fArea, Form("Area%s", tag), "D");
   LinkBranch(jettree, &fMass, Form("Mass%s", tag), "D");
   LinkBranch(jettree, &fNEF, Form("NEF%s", tag), "D");
-  LinkBranch(jettree, &fPt, Form("PtJet%s", tag), "D");
   LinkBranch(jettree, &fNCharged, Form("NCharged%s", tag), "I");
   LinkBranch(jettree, &fNNeutral, Form("NNeutral%s", tag), "I");
 }

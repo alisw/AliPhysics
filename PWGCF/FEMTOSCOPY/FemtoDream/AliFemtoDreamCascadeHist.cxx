@@ -14,7 +14,7 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist()
 ,fHistList()
 ,fCutCounter(0)
 ,fConfig(0)
-,fInvMassPtXi(0)
+,fInvMassPt(0)
 ,fInvMassPtv0(0)
 ,fInvMassPerRunNumber()
 {
@@ -24,12 +24,17 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist()
     fInvMassv0[i]=nullptr;
     fXiPt[i]=nullptr;
     fP_Y_Xi[i]=nullptr;
+    fP_Y_Omega[i]=nullptr;
+    fDCAXi[i]=nullptr;
     fDCAXiDaug[i]=nullptr;
     fMinDistVtxBach[i]=nullptr;
     fCPAXi[i]=nullptr;
+    fDecayLength[i]=nullptr;
+    fv0DecayLength[i]=nullptr;
     fTransRadiusXi[i]=nullptr;
     fv0MaxDCADaug[i]=nullptr;
     fCPAv0[i]=nullptr;
+    fCPAv0Xi[i]=nullptr;
     fv0Pt[i]=nullptr;
     fTransRadiusv0[i]=nullptr;
     fMinDistVtxv0[i]=nullptr;
@@ -54,21 +59,22 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,bool perRunnumber,
   fCutCounter->GetXaxis()->SetBinLabel(5, "Id Pos Bach");
   fCutCounter->GetXaxis()->SetBinLabel(6, "Neg Cuts Daug");
   fCutCounter->GetXaxis()->SetBinLabel(7, "Pos Cuts Daug");
-  fCutCounter->GetXaxis()->SetBinLabel(8, "Bach Cuts");
-  fCutCounter->GetXaxis()->SetBinLabel(9, "DCAXiDaug");
-  fCutCounter->GetXaxis()->SetBinLabel(10, "Min Dist Prim Vtx Bach");
-  fCutCounter->GetXaxis()->SetBinLabel(11, "CPA Xi");
-  fCutCounter->GetXaxis()->SetBinLabel(12, "Xi TransRadius");
-  fCutCounter->GetXaxis()->SetBinLabel(13, "DCA v0 Vtx Daug");
-  fCutCounter->GetXaxis()->SetBinLabel(14, "CPA v0");
-  fCutCounter->GetXaxis()->SetBinLabel(15, "Pt v0");
-  fCutCounter->GetXaxis()->SetBinLabel(16, "v0 TransRadius");
-  fCutCounter->GetXaxis()->SetBinLabel(17, "Min Dist Prim Vtx v0");
-  fCutCounter->GetXaxis()->SetBinLabel(18, "Min Dist Prim Vtx v0 Daughter");
-  fCutCounter->GetXaxis()->SetBinLabel(19, "Inv Mass Lambda");
+  fCutCounter->GetXaxis()->SetBinLabel(8, "DCA v0 Vtx Daug");
+  fCutCounter->GetXaxis()->SetBinLabel(9, "CPA v0");
+  fCutCounter->GetXaxis()->SetBinLabel(10, "Pt v0");
+  fCutCounter->GetXaxis()->SetBinLabel(11, "v0 TransRadius");
+  fCutCounter->GetXaxis()->SetBinLabel(12, "Min Dist Prim Vtx v0");
+  fCutCounter->GetXaxis()->SetBinLabel(13, "Min Dist Prim Vtx v0 Daughter");
+  fCutCounter->GetXaxis()->SetBinLabel(14, "Inv Mass Lambda");
+  fCutCounter->GetXaxis()->SetBinLabel(15, "Bach Cuts");
+  fCutCounter->GetXaxis()->SetBinLabel(16, "DCAXiDaug");
+  fCutCounter->GetXaxis()->SetBinLabel(17, "Min Dist Prim Vtx Bach");
+  fCutCounter->GetXaxis()->SetBinLabel(18, "CPA Xi");
+  fCutCounter->GetXaxis()->SetBinLabel(19, "Xi TransRadius");
   fCutCounter->GetXaxis()->SetBinLabel(20, "Rej Omega");
   fCutCounter->GetXaxis()->SetBinLabel(21, "PtCut");
   fCutCounter->GetXaxis()->SetBinLabel(22, "Inv Mass Xi");
+  fCutCounter->GetXaxis()->SetBinLabel(23, "Casc not set");
 
   fHistList->Add(fCutCounter);
 
@@ -98,11 +104,11 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,bool perRunnumber,
   fConfig->GetXaxis()->SetBinLabel(22,"Rej. Omega Width");
   fHistList->Add(fConfig);
 
-  fInvMassPtXi=new TH2F("InvMassXiPt","InvMassXiPt",13,-0.2,6.3,500,mass*0.9,mass*1.3);
-  fInvMassPtXi->Sumw2();
-  fInvMassPtXi->GetXaxis()->SetTitle("P_{T}");
-  fInvMassPtXi->GetYaxis()->SetTitle("Inv Mass");
-  fHistList->Add(fInvMassPtXi);
+  fInvMassPt=new TH2F("InvMassXi","InvMassXi",13,-0.2,6.3,500,mass*0.9,mass*1.3);
+  fInvMassPt->Sumw2();
+  fInvMassPt->GetXaxis()->SetTitle("P_{T}");
+  fInvMassPt->GetYaxis()->SetTitle("Inv Mass");
+  fHistList->Add(fInvMassPt);
 
   fInvMassPtv0=new TH2F("InvMassv0Pt","InvMassv0Pt",13,-0.2,6.3,400,0.9,1.2);
   fInvMassPtv0->Sumw2();
@@ -140,6 +146,18 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,bool perRunnumber,
     fP_Y_Xi[i]->Sumw2();
     fCascadeQA[i]->Add(fP_Y_Xi[i]);
 
+    TString P_Y_OmegaName=Form("Omega_P_Y_%s",sName[i].Data());
+    fP_Y_Omega[i]=new TH2F(P_Y_OmegaName.Data(),P_Y_OmegaName.Data(),50,-3.,3.,50,0.,5.);
+    fP_Y_Omega[i]->GetXaxis()->SetName("Rapidity Y");
+    fP_Y_Omega[i]->GetYaxis()->SetName("P");
+    fP_Y_Omega[i]->Sumw2();
+    fCascadeQA[i]->Add(fP_Y_Omega[i]);
+
+    TString DCAXiName=Form("DCAXi_%s",sName[i].Data());  //ANDERUNG
+    fDCAXi[i]=new TH1F(DCAXiName.Data(),DCAXiName.Data(),50,0,10);
+    fDCAXi[i]->Sumw2();
+    fCascadeQA[i]->Add(fDCAXi[i]);
+
     TString DCAXiDaugName=Form("DCAXiDaug_%s",sName[i].Data());
     fDCAXiDaug[i]=new TH1F(DCAXiDaugName.Data(),DCAXiDaugName.Data(),50,0,10);
     fDCAXiDaug[i]->Sumw2();
@@ -155,6 +173,16 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,bool perRunnumber,
     fCPAXi[i]=new TH1F(CPAXiName.Data(),CPAXiName.Data(),100,0.97,1);
     fCPAXi[i]->Sumw2();
     fCascadeQA[i]->Add(fCPAXi[i]);
+
+    TString DecayLengthName=Form("DecayLength_%s",sName[i].Data());
+    fDecayLength[i] = new TH1F(DecayLengthName.Data(),DecayLengthName.Data(),200,0,50);
+    fDecayLength[i]->Sumw2();
+    fCascadeQA[i]->Add(fDecayLength[i]);
+
+    TString v0DecayLengthName=Form("v0DecayLength_%s",sName[i].Data());
+    fv0DecayLength[i] = new TH1F(v0DecayLengthName.Data(),v0DecayLengthName.Data(),400,0,100);
+    fv0DecayLength[i]->Sumw2();
+    fCascadeQA[i]->Add(fv0DecayLength[i]);
 
     TString TransRadiusXiName=Form("TransRadiusXi_%s",sName[i].Data());
     fTransRadiusXi[i]=new TH1F(TransRadiusXiName.Data(),
@@ -172,6 +200,11 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(float mass,bool perRunnumber,
     fCPAv0[i]=new TH1F(CPAv0Name.Data(),CPAv0Name.Data(),100,0.97,1);
     fCPAv0[i]->Sumw2();
     fCascadeQA[i]->Add(fCPAv0[i]);
+
+    TString CPAv0XiName=Form("CPAv0Xi_%s",sName[i].Data());
+    fCPAv0Xi[i]=new TH1F(CPAv0XiName.Data(),CPAv0XiName.Data(),100,0.97,1);
+    fCPAv0Xi[i]->Sumw2();
+    fCascadeQA[i]->Add(fCPAv0Xi[i]);
 
     TString v0PtName=Form("v0Pt_%s",sName[i].Data());
     fv0Pt[i]=new TH1F(v0PtName.Data(),v0PtName.Data(),100,0,10);
@@ -231,12 +264,17 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(TString minimalBooking,float 
     fInvMassv0[i]=nullptr;
     fXiPt[i]=nullptr;
     fP_Y_Xi[i]=nullptr;
+    fP_Y_Omega[i]=nullptr;
+    fDCAXi[i]=nullptr;
     fDCAXiDaug[i]=nullptr;
     fMinDistVtxBach[i]=nullptr;
     fCPAXi[i]=nullptr;
+    fDecayLength[i]=nullptr;
+    fv0DecayLength[i]=nullptr;
     fTransRadiusXi[i]=nullptr;
     fv0MaxDCADaug[i]=nullptr;
     fCPAv0[i]=nullptr;
+    fCPAv0Xi[i]=nullptr;
     fv0Pt[i]=nullptr;
     fTransRadiusv0[i]=nullptr;
     fMinDistVtxv0[i]=nullptr;
@@ -248,11 +286,11 @@ AliFemtoDreamCascadeHist::AliFemtoDreamCascadeHist(TString minimalBooking,float 
   fHistList->SetOwner();
   fHistList->SetName(minimalBooking.Data());
 
-  fInvMassPtXi=new TH2F("InvMassXiPt","InvMassXiPt",13,-0.2,6.3,500,mass*0.9,mass*1.3);
-  fInvMassPtXi->Sumw2();
-  fInvMassPtXi->GetXaxis()->SetTitle("P_{T}");
-  fInvMassPtXi->GetYaxis()->SetTitle("Inv Mass");
-  fHistList->Add(fInvMassPtXi);
+  fInvMassPt=new TH2F("InvMassXiPt","InvMassXiPt",13,-0.2,6.3,500,mass*0.9,mass*1.3);
+  fInvMassPt->Sumw2();
+  fInvMassPt->GetXaxis()->SetTitle("P_{T}");
+  fInvMassPt->GetYaxis()->SetTitle("Inv Mass");
+  fHistList->Add(fInvMassPt);
 }
 
 AliFemtoDreamCascadeHist::~AliFemtoDreamCascadeHist() {

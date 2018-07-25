@@ -184,8 +184,10 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
 	fHistos -> CreateTH2("hJetPtLeadingSubLeading","LeadingSubleading",100,0,100,100,0,100,"s");
  	fHistos -> CreateTH1("hDijetMassTest","DijetMassTest",300,0,300,"s");
  	fHistos -> CreateTH1("hDijetDPhiTest","DijetDPhiTest",100,0,2*pi,"s");
-	fHistos -> CreateTH1("hInclJetPtBefore","InclDeltaJetPt",300,-100,200,"s");
-	fHistos -> CreateTH1("hInclJetPtAfter","InclDeltaJetPt",300,-100,200,"s");
+	fHistos -> CreateTH1("hInclJetPt","InclJetPt",110,-100,1000,"s");
+	fHistos -> CreateTH1("hInclJetPtCorrected","InclJetPt after bg subtraction",110,-100,1000,"s");
+	fHistos -> CreateTH1("hInclJetPtCorrectedAndMatched","InclJetPt after bg subtraction",110,-100,1000,"s");
+	fHistos -> CreateTH1("hInclTruthJetPt","Truth jet pt",110,-100,1000,"s");
   vector<TString> ent ={"All","PassPileUp","PassPileUpGoodz","GoodzNTrials","GoodzNX","NXoNTrials"};
   auto h = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
   for(auto i=0u;i<ent.size();i++) h->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
@@ -197,7 +199,11 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
       binDiJetSel, binCent,bintpt,binInvM }, "s" );
   CreateTHnSparse( "hDiJetDPhi_0_2pi", "DiJet #Delta#Phi", 5, {
       binDiJetSel, binCent, bintpt,binInvM, AxisFix( "",100, 0, 2*pi ) },"s");
+  CreateTHnSparse( "hDiJetDPhi_0_2piTruth", "DiJet #Delta#Phi", 5, {
+      binDiJetSel, binCent, bintpt,binInvM, AxisFix( "",100, 0, 2*pi ) },"s");
   CreateTHnSparse( "hDiJetPtPair", "DiJet PtPair", 5, {
+      binDiJetSel, binCent, bintpt, binInvM, binLog3c  },"s");
+  CreateTHnSparse( "hDiJetPtPairTruth", "DiJet PtPair Truth", 5, {
       binDiJetSel, binCent, bintpt, binInvM, binLog3c  },"s");
   CreateTHnSparse( "hDiJetPtPairH", "DiJet PtPair", 5, {
       binDiJetSel, binCent, bintpt,binInvM, binLog3c  },"s");
@@ -211,8 +217,8 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
       binDiJetSel, binCent, bintpt,binInvM, binLog3c},"s");
  
 	
-  CreateTHnSparse( "hInclJetPt", "Inclusive jet pt", 2, {
-      binCent, binjetpt  },"s");
+  //CreateTHnSparse( "hInclJetPt", "Inclusive jet pt", 2, {
+  //    binCent, binjetpt  },"s");
   CreateTHnSparse( "hInclJetPtCorrectedScaledToMB", "Inclusive jet pt", 2, {
       binCent, binjetpt  },"s");
   CreateTHnSparse( "hInclJetPtCorrectedScaledToMBH", "Inclusive jet pt", 2, {
@@ -221,10 +227,12 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
       binCent, binjetpt  },"s");
   CreateTHnSparse( "hInclJetPtScaledToMB", "Inclusive jet pt", 2, {
       binCent, binjetpt  },"s");
-  CreateTHnSparse( "hInclJetPtCorrected", "Inclusive jet pt", 2, {
-      binCent, binjetpt  },"s");
-  CreateTHnSparse( "hInclJetPtCorrectedAndMatched", "Inclusive jet pt", 2, {
-      binCent, binjetpt  },"s");
+  //CreateTHnSparse( "hInclJetPtCorrected", "Inclusive jet pt", 2, {
+  //    binCent, binjetpt  },"s");
+  //CreateTHnSparse( "hInclTruthJetPt", "Inclusive jet pt", 2, {
+  //    binCent, binjetpt  },"s");
+  //CreateTHnSparse( "hInclJetPtCorrectedAndMatched", "Inclusive jet pt", 2, {
+  //    binCent, binjetpt  },"s");
   CreateTHnSparse( "hInclJetMass", "Inclusive jet Mass", 2, {
       binCent, binjetpt  },"s");
   CreateTHnSparse( "hInclJetMassScaledToMB", "Inclusive jet Mass", 2, {
@@ -259,7 +267,6 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
 		fDijetPtPair.push_back(0.);
 		fDijetInvM.push_back(0.);
   }
-  fJets.clear();
   fUtils = new AliAnalysisUtils();
 
   fUtils -> 	SetMaxVtxZ(10);
@@ -369,42 +376,6 @@ void AliBSDiJetTask::UserCreateOutputObjects(){
 		tsfh->SetParameters(41.4233,520.858,0.803635,0.00094383);
 		tsfl->SetParameters(34.594,460.346,0.787003,0.000736331);
 	}
-
-	
-	/*if (fName.Contains("FullJet")){
-		tsf->SetParameter(0,263.817);
-		tsf->SetParameter(1,4146.28);
-		tsf->SetParameter(2,1.01805);
-		tsf->SetParameter(3,0.000403723);
-
-	} 
-  else if (fOption.Contains("ScaleTo5")){
-		tsf->SetParameter(0,22.3377);
-		tsf->SetParameter(1,401.885);
-		tsf->SetParameter(2,0.777928);
-		tsf->SetParameter(3,0.000394575);
-	}
-	else if (fOption.Contains("ScaleTo13bc") && fOption.Contains("13d")){
-		tsf->SetParameter(0,248.968);
-		tsf->SetParameter(1,1901.53);
-		tsf->SetParameter(2,0.864777);
-		tsf->SetParameter(3,0.000799705);
-	}
-	else if (fOption.Contains("ScaleTo13bc") && fOption.Contains("13e")){
-		tsf->SetParameter(0,199.376);
-		tsf->SetParameter(1,1927.48);
-		tsf->SetParameter(2,0.838168);
-		tsf->SetParameter(3,0.00115039);
-	}
-
-	else if (fOption.Contains("ScaleTo13bc") && fOption.Contains("13f")){
-		tsf->SetParameter(0,143.121);
-		tsf->SetParameter(1,1771.21);
-		tsf->SetParameter(2,0.801047);
-		tsf->SetParameter(3,0.00128567);
-	}*/
-
-
 }
 
 //________________________________________________________________________
@@ -430,17 +401,318 @@ Bool_t AliBSDiJetTask::Run(){
 
   //pt hard bin scaling-----------------------------------------------------------
 	//https://twiki.cern.ch/twiki/bin/viewauth/ALICE/JetMCProductionsCrossSections
-  Double_t sf = 1.;
-	Int_t NTrials = -1;
-	Double_t XSection =-1;
-  TLorentzVector p6,p7,p67;
-  Double_t genzvtx = -30;
+  sf = 1.;
+	if (fIsMC) this->MeasurePtHardBinScalingFactor();
+	//cout<<"Scaling factor = "<<sf<<endl;
+  
+  fHistos->FillTH1("hEventNumbers","All",1);
+	AliVEvent *event = InputEvent();
+	event->IsA()==AliESDEvent::Class()
+		? fEvt = dynamic_cast<AliESDEvent*>(event)
+		: fEvt = dynamic_cast<AliAODEvent*>(event);
+	if (!fEvt) return false;
+
+
+  if (!fIsMC && fUtils->IsPileUpSPD(InputEvent())) {
+    PostData(1, fHistos->GetListOfHistograms());
+    return false;
+  }
+  
+	fHistos->FillTH1("hEventNumbers","PassPileUp",1);
+
+  // Fill z_vertex and cut z_vertex range
+  IsGoodVertex = false;
+  IsGenGoodVtx = false;
+  if (fOption.Contains("Emb")){
+		fHistos -> FillTH1 ("zvtx",genzvtx);
+		//cout<<"bkkim genzvtx : "<<genzvtx<<endl;
+  	if (abs(genzvtx)<=10) {
+      IsGenGoodVtx = true;
+    }
+  } 
+
+	const AliVVertex* vtx = InputEvent()->GetPrimaryVertex();
+	if (fUtils->IsVertexSelected2013pA(InputEvent())){
+		//if (vtx->	GetNContributors()>1){
+		double zvtx = vtx->GetZ();
+		vtx ->GetXYZ(vertex);
+		fHistos -> FillTH1 ("zvtx",zvtx);
+		if (abs(zvtx)<=10) IsGoodVertex = true; 
+		//if (IsGoodVertex) cout<<"bkkim zvtx : "<<zvtx<<endl;
+	} 
+  
+  
+	if (IsGoodVertex) {
+		fHistos->FillTH1("hEventNumbers","PassPileUpGoodz",1);
+		fHistos->FillTH1("hEventNumbers","GoodzNTrials",NTrials);
+		fHistos->FillTH1("hEventNumbers","GoodzNX",XSection);
+		fHistos->FillTH1("hEventNumbers","NXoNTrials",XSection/NTrials);
+		fHistos -> FillTH1 ("nCentrality",fCent);
+  }
+	
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+	
+
+  //===============================
+  // RESUM JETS
+  //===============================
+
+  auto jetContainer = GetJetContainer(0);
+	//cout<<"First jet Container name : "<<jetContainer -> GetName()<<endl;
+  auto trkContainer = GetParticleContainer(0); //trk container recall for QA purpose
+	//cout<<"trkContainer name "<<trkContainer->GetName()<<endl;
+	AliClusterContainer* cluContainer = nullptr;
+	if (fName.Contains("FullJet")) cluContainer = GetClusterContainer(0);
+  auto ktContainer = GetJetContainer(1);
+	//cout<<"Second jet Container name : "<<ktContainer -> GetName()<<endl;
+
+	AliJetContainer *mcContainer = nullptr;
+	if (fOption.Contains("Emb")){
+		mcContainer = GetJetContainer(2);
+		//cout<<"MC jet Container name : "<<mcContainer -> GetName()<<endl;
+	}
+  // =============================
+  // QA plots
+  // ============================
+
+
+  for (auto trk : trkContainer->all()){
+    fHistos->FillTH2("trketaphi",trk->Eta(),trk->Phi());
+		//cout<<"trk -> Eta : "<<trk->Eta()<<endl;
+		//cout<<"trk -> Label : "<<trk->GetLabel()<<endl;
+  }
+  //cout<<((AliAODEvent*)AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent())->GetCentrality()->GetCentralityPercentile("V0M")<<endl;
+
+
+  // Underlying background calculation
+  // this will be done by four-momentum sum of constituents
+
+	this -> MeasureBgDensity(ktContainer);
+ 
+	TLorentzVector1D RecJets; 
+	Bool_t gooddijet = this -> MeasureJets(jetContainer, RecJets, false);
+	std::sort(RecJets.begin(), RecJets.end(), [&](const TLorentzVector& x, const TLorentzVector& y) { return x.Pt() > y.Pt() ;});
+	for (auto j : RecJets){
+			//cout<<"corrected rec jet eta phi  pt  = "<< j.Eta()<<"     "<<TVector2::Phi_0_2pi(j.Phi())<<"     " <<j.Pt() <<endl;
+	}
+	if (!gooddijet) return false;
+
+	
+	TLorentzVector1D TrueJets; 
+	Bool_t gooddijetkine = false; 
+	
+	if (fOption.Contains("Emb")){
+		gooddijetkine = this -> MeasureJets(mcContainer, TrueJets, true);
+		for (auto j : TrueJets){
+			//cout<<"True jet eta phi  pt  = "<< j.Eta()<<"     "<<TVector2::Phi_0_2pi(j.Phi())<<"     " <<j.Pt() <<endl;
+		}
+		if (!gooddijetkine) return false;
+		std::sort(TrueJets.begin(), TrueJets.end(), [&](const TLorentzVector& x, const TLorentzVector& y) { return x.Pt() > y.Pt(); });
+	}
+
+	//cout<<"pjet size : "<<TrueJets.size()<<endl;
+	// Embedding matching with truth jets
+	TLorentzVector1D matchedjets;
+	if (fOption.Contains("Emb") && IsGenGoodVtx){ // Inclusive jet pt response matrix
+		TLorentzVector1D pjets = TrueJets;
+		TLorentzVector1D rjets = RecJets;
+		if (IsGoodVertex){
+			for (auto pj : pjets){
+				double maxjpt = 0;
+				TLorentzVector maxjet(0,0,0,0);
+				for (auto rj : rjets){
+					if (rj.Pt()>pj.Pt()*0.3 && rj.DeltaR(pj)<0.4 && maxjet.Pt()<rj.Pt())  {
+					//if (rj.Pt()>pj.Pt()*0.3  && maxjet.Pt()<rj.Pt())  {
+						maxjet = rj;
+					}
+				}
+
+				if (maxjet.Pt()>0) {
+					rjets.erase(std::remove_if(rjets.begin(), rjets.end(),
+								[&](const TLorentzVector& x) { return x.Pt() == maxjet.Pt() ; }), rjets.end());
+					matchedjets.push_back(maxjet);
+				}
+			} 
+			RecJets = matchedjets;
+			//cout<<"matchedjets"<<endl;
+			for (auto j : matchedjets){	
+				//cout<<j.Pt()<<endl;
+				if (abs(j.Eta())<0.5) fHistos->FillTH1("hInclJetPtCorrectedAndMatched",j.Pt(),sf);
+			}
+		}
+	}
+
+
+
+	TLorentzVector2D sj( fNDiJetSelection+1, TLorentzVector1D(2));
+	Bool1D recdisel(fNDiJetSelection +1, false);
+	this->CheckDijetSelections(RecJets,sj, recdisel);
+	TLorentzVector2D sjkine( fNDiJetSelection+1, TLorentzVector1D(2));
+	Bool1D truedisel(fNDiJetSelection +1, false);
+	if (fOption.Contains("Emb")) {
+		this->CheckDijetSelections(TrueJets,sjkine, truedisel);
+	}
+	
+	//cout <<"sj size : "<<sj.size()<<endl;
+	//===============================
+  // ptPair : leading - subleading
+  //===============================
+
+
+	for( int ids=kBDiJetSelBegin;ids<kBDiJetSelEnd;ids++ ){ // NOTE : begin with 1
+		auto j = sj[ids];
+		//=== SKIP Empty DiJet
+		if( j[0].E() < 1e-4 || j[1].E() < 1e-4 ) {
+			//fDijetSelectionCut[ids] = false;
+			if (fOption.Contains("Emb")){
+				auto truej = sjkine[ids];
+				auto dijet    = truej[0] + truej[1];
+				auto invM     = dijet.M();
+				auto ptpair   = dijet.Pt(); 
+        Bool_t  truthdijetcut = truedisel.at(ids);
+				if (IsGenGoodVtx && truthdijetcut ) {
+					FillTHnSparse( "hDiJetInvMPtPairMiss", {(double)ids,fCent,truej[0].Pt(),invM,ptpair},sf);
+				}
+			}
+		}
+    if (!recdisel[ids]) continue;
+		Double_t nphi=0;
+		auto diJetSel = Double_t( ids );
+		auto dijet    = j[0] + j[1];
+		auto invM     = dijet.M();
+		auto dPhi     = j[0].DeltaPhi(j[1]);
+		auto dPhiA    = Abs(dPhi);
+		auto dPhi_0_2pi  = TVector2::Phi_0_2pi(dPhi);
+		auto tpt      = j[0].Pt();
+		auto apt      = j[1].Pt();
+		auto ptpair   = dijet.Pt(); 
+		auto testdphi = nphi-j[0].Phi();
+		auto ptAsim   = (tpt-apt)/(tpt+apt);
+		auto eAsim    = (j[0].E()-j[1].E())/(j[0].E()+j[1].E());
+    auto kty      = j[0].Pt() * TMath::Sin(dPhi_0_2pi);
+    if (ids>=kM1) ptpair = kty;
+
+		double tratio = 1.;
+		double tratioh = 1.;
+		double tratiol = 1.;
+		if (fName.Contains("EMCEJE")){
+			tratio = tsf->Eval(j[0].Pt());
+			tratioh = tsfh->Eval(j[0].Pt());
+			tratiol = tsfl->Eval(j[0].Pt());
+		}
+		
+		if (fOption.Contains("Emb") ){	
+			auto truej = sjkine[ids];
+			auto truedijet    = truej[0] + truej[1];
+			//auto invM     = dijet.M();
+			//auto ptpair   = dijet.Pt(); 
+			Double_t truthptpair =  truedijet.Pt();
+			Double_t truthinvM =  truedijet.M();
+			Bool_t  truthdijetcut = truedisel.at(ids);
+			auto 		dPhi_0_2piTruth = TVector2::Phi_0_2pi(truej[0].DeltaPhi(truej[1]));
+
+			if ( IsGenGoodVtx) {
+				if (IsGoodVertex){
+					if (truthdijetcut){
+						//cout <<"truth ptpair mjj : "<< ids << " "  <<truthptpair<<" "<<truthinvM<<endl;
+						//cout <<"rec ptpair mjj : "<<ids<< " " << ptpair <<" "<<invM<<endl;
+						FillTHnSparse( "hDiJetInvMPtPairRes", { diJetSel,fCent,tpt,invM,truthinvM,ptpair,truthptpair},sf);
+					} else {
+						FillTHnSparse( "hDiJetInvMPtPairFake", {diJetSel,fCent,tpt,invM,ptpair},sf);
+						FillTHnSparse( "hDiJetInvMPtPairMiss", {diJetSel,fCent,tpt,truthinvM,truthptpair},sf);
+					}
+				} else FillTHnSparse( "hDiJetInvMPtPairMiss", {diJetSel,fCent,tpt,truthinvM,truthptpair},sf);
+
+			}
+			
+			if (truthdijetcut) {
+				FillTHnSparse( "hDiJetPtPairTruth",         { diJetSel, fCent, tpt, truthinvM, truthptpair },sf); 
+				FillTHnSparse( "hDiJetDPhi_0_2piTruth",     { diJetSel, fCent, tpt, truthinvM, dPhi_0_2piTruth },sf*tratio);
+			}
+		}
+
+		if (IsGoodVertex){
+			FillTHnSparse( "hJetPtLeading",        { diJetSel, fCent, tpt},sf*tratio );
+			FillTHnSparse( "hDiJetInvM",           { diJetSel, fCent, tpt, invM },sf*tratio);
+			FillTHnSparse( "hDiJetDPhi_0_2pi",     { diJetSel, fCent, tpt, invM, dPhi_0_2pi },sf*tratio);
+			FillTHnSparse( "hDiJetPtPair",         { diJetSel, fCent, tpt, invM, ptpair },sf*tratio); 
+			FillTHnSparse( "hDiJetPtPairH",   { diJetSel, fCent, tpt, invM, ptpair },sf*tratioh); 
+			FillTHnSparse( "hDiJetPtPairL",   { diJetSel, fCent, tpt, invM, ptpair },sf*tratiol); 
+		}
+
+	}
+
+  PostData(1, fHistos->GetListOfHistograms());;
+  //PostData(1, fOutput);
+	//cout<<"\n\n\n"<<endl;
+  return kTRUE;
+}
+void AliBSDiJetTask::FinishTaskOutput()
+{
+}
+//___________________________________________________________________
+void AliBSDiJetTask::MeasureBgDensity(AliJetContainer* ktContainer){
+	using TMath::Abs;
+	RHO=0;
+ 	RHOM=0;
+	int n = 0;
+	TLorentzVector1D rhoarray;
+	Double1D Sumpt;
+	Double1D Summ;
+	for( auto j : ktContainer->accepted() ){
+		if (Abs(j->Eta())>0.7)  continue;
+		double lpt = 0;
+		double sumpt = 0;
+		double summ = 0;
+
+		for( int it=0; it<j->GetNumberOfTracks(); it++ ) {
+			auto trk =  j->Track(it);
+			if( ! ((AliAODTrack*) trk)->TestFilterBit(768)) continue;
+			TLorentzVector temp;
+			temp.SetXYZM(trk->Px(),trk->Py(),trk->Pz(),pionmass);
+			if( lpt < temp.Pt() )  lpt = temp.Pt();
+			sumpt += temp.Pt();
+			summ += (sqrt(pionmass*pionmass+temp.Pt()*temp.Pt())-temp.Pt());
+		}
+		sumpt /= j->Area();
+		summ /= j->Area();
+		//if( lpt < fLeadingParticlePtMin ) continue;
+		if (n>=2) {//remove leading and subleading jets
+			Sumpt.push_back(sumpt);
+			Summ.push_back(summ);
+		}
+		n++;
+	}
+
+	Double_t rhopt[Sumpt.size()];
+	Double_t rhom[Summ.size()];
+	int i=0;
+	for (auto k : Sumpt){
+		rhopt[i] = k;
+		i++;
+	}
+	i=0;
+	for (auto k : Summ){
+		rhom[i] = k;
+		i++;
+	}
+	RHO = TMath::Median(Sumpt.size(),rhopt);
+	RHOM = TMath::Median(Summ.size(),rhom);
+	//cout<<"bkkim RHO :"<<RHO<<endl;
+	FillTHnSparse("hRho",{fCent,RHO},sf); 
+}
+
+void AliBSDiJetTask::MeasurePtHardBinScalingFactor(){
+	NTrials = -1;
+	XSection =-1;
+  genzvtx = -30;
 	if(fIsMC){
 		if (fOption.Contains("AOD")){
 			AliVEvent *event = InputEvent();
+			//if (fOption.Contains("Emb")) event = AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent();
 			if (!event) {
 				Printf("ERROR: Could not retrieve event");
-				return kFALSE;
+				sf = 0;
 			}
 			AliAODMCHeader *cHeaderAOD  = dynamic_cast<AliAODMCHeader*>
 				(event->FindListObject(AliAODMCHeader::StdBranchName()));
@@ -466,12 +738,14 @@ Bool_t AliBSDiJetTask::Run(){
 			for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
 				AliAODMCParticle* trackMC = dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
 				Int_t pdgCode = trackMC->PdgCode();
-				//cout<<"iTracks  : "<<iTracks<<"   pdgcode : "<<pdgCode
-				//<< "  Pt " <<trackMC->Pt()
-				//<< "   Phi  " <<trackMC->Phi()
-				//<<endl;
-				if (iTracks == 6) p6.SetXYZT(trackMC->Px(), trackMC->Py(), trackMC->Pz(), trackMC->E());
-				if (iTracks == 7) p7.SetXYZT(trackMC->Px(), trackMC->Py(), trackMC->Pz(), trackMC->E());
+				if (iTracks == 4 || iTracks == 5)
+					//cout<<"iTracks  : "<<iTracks<<"   pdgcode : "<<pdgCode
+						//<< "  Pt " <<trackMC->Pt()
+						//<< "   Phi  " <<trackMC->Phi()
+						//<<endl;
+				if (iTracks == 4) p6.SetXYZT(trackMC->Px(), trackMC->Py(), trackMC->Pz(), trackMC->E());
+				if (iTracks == 5) p7.SetXYZT(trackMC->Px(), trackMC->Py(), trackMC->Pz(), trackMC->E());
+				//cout<<"p6 pt "<<p6.Pt()<<endl;
 				// Select only primaries
 				//if(!(trackMC->IsPhysicalPrimary())) continue;
 				//Float_t ptMC = trackMC->Pt();
@@ -500,9 +774,9 @@ Bool_t AliBSDiJetTask::Run(){
     || fOption.Contains("13e4")
 		|| fOption.Contains("13fix") ){
 		TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
-		if(!tree) return kFALSE;
+		if(!tree) sf = 0;;
 		TFile *curfile = tree->GetCurrentFile();
-		if(!curfile) return kFALSE;
+		if(!curfile) sf = 0;
 		TString fCurrFileName = TString(curfile->GetName());
 		if (!filename.EqualTo(fCurrFileName)) {
       filename = fCurrFileName.Data();
@@ -521,164 +795,35 @@ Bool_t AliBSDiJetTask::Run(){
 		sf = pyxsechistsf;
 	}
 
-  //pT hard bin scaling end---------------------------------------------------
+}
 
-  
-  fHistos->FillTH1("hEventNumbers","All",1);
-	AliVEvent *event = InputEvent();
-	event->IsA()==AliESDEvent::Class()
-		? fEvt = dynamic_cast<AliESDEvent*>(event)
-		: fEvt = dynamic_cast<AliAODEvent*>(event);
-	if (!fEvt) return false;
+Bool_t AliBSDiJetTask::MeasureJets(AliJetContainer *jetContainer, TLorentzVector1D &Jets, Bool_t istruth){
+	using TMath::Abs;
 
-
-  if (!fOption.Contains("MC") && fUtils->IsPileUpSPD(InputEvent())) {
-    PostData(1, fHistos->GetListOfHistograms());
-    return false;
-  }
-  
-	fHistos->FillTH1("hEventNumbers","PassPileUp",1);
-
-  // Fill z_vertex and cut z_vertex range
-  Bool_t IsGoodVertex = false;
-  IsGenGoodVtx = false;
-	Double_t vertex[3] = {0,0,0};             
-  if (fName.Contains("kinefull") || fName.Contains("kinech")){
-		fHistos -> FillTH1 ("zvtx",genzvtx);
-  	if (abs(genzvtx)<=10) {
-			IsGoodVertex = true;  
-      IsGenGoodVtx = true;
-    }
-  } else {
-  	const AliVVertex* vtx = InputEvent()->GetPrimaryVertex();
-    if (fUtils->IsVertexSelected2013pA(InputEvent())){
-    //if (vtx->	GetNContributors()>1){
-			double zvtx = vtx->GetZ();
-			vtx ->GetXYZ(vertex);
-			fHistos -> FillTH1 ("zvtx",zvtx);
-      if (abs(zvtx)<=10) IsGoodVertex = true; 
-    } 
-	}
-  
-  
-	if (IsGoodVertex) {
-		fHistos->FillTH1("hEventNumbers","PassPileUpGoodz",1);
-		fHistos->FillTH1("hEventNumbers","GoodzNTrials",NTrials);
-		fHistos->FillTH1("hEventNumbers","GoodzNX",XSection);
-		fHistos->FillTH1("hEventNumbers","NXoNTrials",XSection/NTrials);
-		fHistos -> FillTH1 ("nCentrality",fCent);
-  }
-	
-  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-	AliBSDiJetTask *task = nullptr;
-  if (fName.Contains("FullJet"))  task = (AliBSDiJetTask*)man -> GetTask("kinefullFullJet");
-	else task = (AliBSDiJetTask*)man -> GetTask("kinech");
-	//-----------------------------------
-
-
-
-  //===============================
-  // RESUM JETS
-  //===============================
-
-  auto jetContainer = GetJetContainer(0);
-  auto trkContainer = GetParticleContainer(0);
-	AliClusterContainer* cluContainer = nullptr;
-	if (fName.Contains("FullJet")) cluContainer = GetClusterContainer(0);
-  auto ktContainer = GetJetContainer(1);
-
-  // Underlying background calculation
-  // this will be done by four-momentum sum of constituents
-  
-  Double_t RHO=0;
-	Double_t RHOM=0;
-	if (!fName.Contains("kinefull") && !fName.Contains("kinech")){
-    int n = 0;
-		TLorentzVector1D rhoarray;
-		Double1D Sumpt;
-		Double1D Summ;
-		for( auto j : ktContainer->accepted() ){
-      if (Abs(j->Eta())>0.7)  continue;
-			double lpt = 0;
-      double sumpt = 0;
-      double summ = 0;
-
-			for( int it=0; it<j->GetNumberOfTracks(); it++ ) {
-				auto trk =  j->Track(it);
-				TLorentzVector temp;
-				temp.SetXYZM(trk->Px(),trk->Py(),trk->Pz(),pionmass);
-        if( lpt < temp.Pt() )  lpt = temp.Pt();
-        sumpt += temp.Pt();
-        summ += (sqrt(pionmass*pionmass+temp.Pt()*temp.Pt())-temp.Pt());
-			}
-      sumpt /= j->Area();
-      summ /= j->Area();
-      //if( lpt < fLeadingParticlePtMin ) continue;
-			if (n>=2) {//remove leading and subleading jets
-				Sumpt.push_back(sumpt);
-				Summ.push_back(summ);
-			}
-      n++;
-		}
-   
-		Double_t rhopt[Sumpt.size()];
-		Double_t rhom[Summ.size()];
-    int i=0;
-		for (auto k : Sumpt){
-			rhopt[i] = k;
-      i++;
-		}
-    i=0;
-		for (auto k : Summ){
-			rhom[i] = k;
-			i++;
-		}
-    RHO = TMath::Median(Sumpt.size(),rhopt);
-    RHOM = TMath::Median(Summ.size(),rhom);
-	}
-
-
-  // =============================
-  // QA plots
-  // ============================
-  for (auto trk : trkContainer->accepted()){
-    fHistos->FillTH2("trketaphi",trk->Eta(),trk->Phi());
-  }
-  //cout<<((AliAODEvent*)AliAnalysisTaskEmcalEmbeddingHelper::GetInstance()->GetExternalEvent())->GetCentrality()->GetCentralityPercentile("V0M")<<endl;
-
-
-  //=== NOTE : We will not use sj[0] because bin in THnSparse is always begin with 1.
-  TLorentzVector2D sj( fNDiJetSelection+1, TLorentzVector1D(2));
-  TLorentzVector1D sumJets, sumJetsCorr;
-  std::vector<Double_t> lpts;
-  fJets.clear();
-  int ij=0;
-  FillTHnSparse("hRho",{fCent,RHO},sf); 
-  double rho = 0;
-  rho = jetContainer->GetRhoVal();
-  for( auto j : jetContainer->accepted() ){
+	//=== NOTE : We will not use sj[0] because bin in THnSparse is always begin with 1.
+	int ij=0;
+	for( auto j : jetContainer->accepted() ){
 		fHistos->FillTH2("jetetaphi",j->Eta(),j->Phi(),sf);
-    TLorentzVector sum (0,0,0,0);
-    double sumpt=0;
-    double lpt = 0;
-    //cout<<"jet pt : "<<j->Pt()<<"  total tracks : "<<j->GetNumberOfTracks()<<endl;
+		TLorentzVector sum (0,0,0,0);
+		double sumpt=0;
+		double lpt = 0;
 
-    for( int it=0; it<j->GetNumberOfTracks(); it++ ) {
-      auto trk =  j->Track(it);
-		 	//cout<<"trk eta : "<<trk->Eta()<<"    trk phi : "<<trk->Phi()<< "   Label "<<trk->GetLabel()<<endl;
-      if (fName.Contains("MBTR")){
+		for( int it=0; it<j->GetNumberOfTracks(); it++ ) {
+			auto trk =  j->Track(it);
+			if( ! ((AliAODTrack*) trk)->TestFilterBit(768)) continue;
+			//cout<<"trk : "<<trk->GetLabel()<<endl;
+			if (!istruth && fOption.Contains("MBTR")){
 				if (fBSRandom->Uniform(0,100)<5.) continue;
-      }
-      TLorentzVector temp;
-      temp.SetXYZM(trk->Px(),trk->Py(),trk->Pz(),pionmass);
+			}
+			TLorentzVector temp;
+			temp.SetXYZM(trk->Px(),trk->Py(),trk->Pz(),pionmass);
 			fHistos->FillTH2("trketaphifulljet",trk->Eta(),trk->Phi(),sf);
-			//if (fName.Contains("FullJet")) cout<<"track Pt : "<<trk->Pt()<<endl;
-      sum+=temp;
-      sumpt+=trk->Pt();
-      if( lpt < temp.Pt() )  lpt = temp.Pt();
-      
-    }
-		if (fName.Contains("FullJet")){
+			sum+=temp;
+			sumpt+=trk->Pt();
+			if( lpt < temp.Pt() )  lpt = temp.Pt();
+
+		}
+		if (fOption.Contains("FullJet")){
 			for( int it=0; it<j->GetNumberOfClusters(); it++ ) {
 				auto clu =  j->Cluster(it);
 				TLorentzVector temp;
@@ -692,28 +837,27 @@ Bool_t AliBSDiJetTask::Run(){
 			}
 		}
 
-    TLorentzVector avec(0,0,0,0);
-    avec.SetPtEtaPhiE(j->AreaPt(),j->AreaEta(),j->AreaPhi(),j->AreaE());
-    TLorentzVector sumcorr(
-			  sum.Px()-RHO*avec.Px()
-			, sum.Py()-RHO*avec.Py()
-			, sum.Pz()-(RHO+RHOM)*avec.Pz()
-			, sum.E() -(RHO+RHOM)*avec.E()
-		);
+		TLorentzVector avec(0,0,0,0);
+		avec.SetPtEtaPhiE(j->AreaPt(),j->AreaEta(),j->AreaPhi(),j->AreaE());
+		TLorentzVector sumcorr(
+				sum.Px()-RHO*avec.Px()
+				, sum.Py()-RHO*avec.Py()
+				, sum.Pz()-(RHO+RHOM)*avec.Pz()
+				, sum.E() -(RHO+RHOM)*avec.E()
+				);
 		//MC Pythia jet / pT-hard > 4 cut
-		if( fOption.Contains("MC")) {
-			if (TMath::Abs(sum.DeltaR(p6))<0.4 && (sumpt/p6.Pt())>4) return false;
-			if (TMath::Abs(sum.DeltaR(p7))<0.4 && (sumpt/p7.Pt())>4) return false;
-		}
-		
-    //=== Jet geometric and kinematic CUT 
+		if( lpt < fLeadingParticlePtMin ) continue;
+		//if (TMath::Abs(sum.DeltaR(p6))<0.4 && (sum.Pt()/p6.Pt())>4) return false;
+		//if (TMath::Abs(sum.DeltaR(p7))<0.4 && (sum.Pt()/p7.Pt())>4) return false;
+
+
+		//=== Jet geometric and kinematic CUT 
 		//=== MCTRUTH=0, MCREC & DATA = 5GeV
-    if( lpt < fLeadingParticlePtMin ) continue;
 		if (IsGoodVertex && abs(sum.Eta())<0.5){
-			fHistos->FillTH1("hInclJetPtBefore",sum.Pt());
+			//fHistos->FillTH1("hInclJetPtBefore",sum.Pt());
 		}
 		if (IsGoodVertex && abs(sumcorr.Eta())<0.5){
-			fHistos->FillTH1("hInclJetPtAfter",sumcorr.Pt());
+			//fHistos->FillTH1("hInclJetPtAfter",sumcorr.Pt());
 		}
 
 		if (IsGoodVertex){
@@ -727,187 +871,69 @@ Bool_t AliBSDiJetTask::Run(){
 				tratioh = tsfh->Eval(sum.Pt());
 				tratiol = tsfl->Eval(sum.Pt());
 			}
-			if (abs(sum.Eta())<0.5){
-				if (fOption.Contains("LHC16j5") && (sum.DeltaR(p6)<0.1 || sum.DeltaR(p7)<0.1))  
-					FillTHnSparse("hInclJetPt",{fCent,sum.Pt()},sf);
-				else FillTHnSparse("hInclJetPt",{fCent,sum.Pt()},sf);
-				FillTHnSparse("hInclJetPtScaledToMB",{fCent,sum.Pt()},sf*tratio);
-				FillTHnSparse("hInclJetMass",{fCent,sum.M()},sf);
-				FillTHnSparse("hInclJetMassScaledToMB",{fCent,sum.M()},sf*tratio);
+			if (!istruth){
+				//if (fOption.Contains("LHC16j5") && (sum.DeltaR(p6)<0.1 || sum.DeltaR(p7)<0.1))  
+				if (abs(sum.Eta())<0.5) fHistos->FillTH1("hInclJetPt",sum.Pt(),sf);
+				if (abs(sumcorr.Eta())<0.5) fHistos->FillTH1("hInclJetPtCorrected",sumcorr.Pt(),sf);
+				//else FillTHnSparse("hInclJetPt",{fCent,sum.Pt()},sf);
+				//FillTHnSparse("hInclJetPtScaledToMB",{fCent,sum.Pt()},sf*tratio);
+				//FillTHnSparse("hInclJetMass",{fCent,sum.M()},sf);
+				//FillTHnSparse("hInclJetMassScaledToMB",{fCent,sum.M()},sf*tratio);
 			}	
-			if (abs(sumcorr.Eta())<0.5){
-				//if (fOption.Contains("LHC16j5") && (sumcorr.DeltaR(p6)<0.1 || sumcorr.DeltaR(p7)<0.1)) 
-				FillTHnSparse("hInclJetPtCorrected",{fCent,sumcorr.Pt()},sf);
-				FillTHnSparse("hInclJetPtCorrectedScaledToMB",{fCent,sumcorr.Pt()},sf*tratio);
-				FillTHnSparse("hInclJetPtCorrectedScaledToMBH",{fCent,sumcorr.Pt()},sf*tratioh);
-				FillTHnSparse("hInclJetPtCorrectedScaledToMBL",{fCent,sumcorr.Pt()},sf*tratiol);
-				FillTHnSparse("hInclJetMassCorrected",{fCent,sumcorr.M()},sf);
-				FillTHnSparse("hInclJetMassCorrectedScaledToMB",{fCent,sumcorr.M()},sf*tratio);
+			if (istruth){
+				if (abs(sum.Eta())<0.5) fHistos->FillTH1("hInclTruthJetPt",sum.Pt(),sf);
+				//FillTHnSparse("hInclJetPtCorrected",{fCent,sumcorr.Pt()},sf);
+				//FillTHnSparse("hInclJetPtCorrectedScaledToMB",{fCent,sumcorr.Pt()},sf*tratio);
+				//FillTHnSparse("hInclJetPtCorrectedScaledToMBH",{fCent,sumcorr.Pt()},sf*tratioh);
+				//FillTHnSparse("hInclJetPtCorrectedScaledToMBL",{fCent,sumcorr.Pt()},sf*tratiol);
+				//FillTHnSparse("hInclJetMassCorrected",{fCent,sumcorr.M()},sf);
+				//FillTHnSparse("hInclJetMassCorrectedScaledToMB",{fCent,sumcorr.M()},sf*tratio);
 			}
 		}
 
-    if( Abs(sum.Eta()) < 0.5 ) sumJets.push_back(sum);
-		if( Abs(sumcorr.Eta()) < 0.5) sumJetsCorr.push_back(sumcorr);
-		// Using corrected jets for any kind of reconstructed jets
-		if (!fName.Contains("kinech")) sum = sumcorr; 
-    lpts.push_back(lpt);
+		if (istruth){
+			if (abs(sum.Eta())<0.5) Jets.push_back(sum);
+		} else {
+			if (abs(sumcorr.Eta())<0.5) Jets.push_back(sumcorr);
+		}
 
-    //=== DiJetSelection 1 : LS = Leading-SubLeading
-    if (sj[0][0].Pt() < sum.Pt()) {
- 			sj[0][0]=sum;
-    }
-    else if( sj[0][1].Pt() < sum.Pt()){
-			sj[0][1]=sum;
-    }
-    ij++;
-  }
-	if (IsGoodVertex) fHistos->FillTH2("hJetPtLeadingSubLeading",sj[0][0].Pt(),sj[0][1].Pt(),sf);
-
-	if (IsGoodVertex){
-		if (sj[0][0].Pt()>20 && sj[0][1].Pt()>20) fHistos->FillTH1("hDijetMassTest",(sj[0][0]+sj[0][1]).M(),sf);
-		if (sj[0][0].Pt()>20 && sj[0][1].Pt()>20) fHistos->FillTH1("hDijetDPhiTest",TVector2::Phi_0_2pi(sj[0][0].DeltaPhi(sj[0][1])),sf);
+		ij++;
 	}
-	// chjet isolated jet correlation
+	return true;
+}
+ 
+void AliBSDiJetTask::CheckDijetSelections(TLorentzVector1D Jets, TLorentzVector2D& sj, Bool1D &disel){
+	using TMath::Abs;
 
-
-
-	// Using corrected jets for any kind of reconstructed jets
-	if (!fName.Contains("kinech")) sumJets = sumJetsCorr;   
-
-
-
-	TLorentzVector1D matchedjets;
-	if (task && task->GetIsGenGoodVtx()){ // Inclusive jet pt response matrix
-		TLorentzVector1D pjets = task->GetJets();
-		TLorentzVector1D rjets = sumJets;
-		if (IsGoodVertex){
-			for (auto pj : pjets){
-				double maxjpt = 0;
-				TLorentzVector maxjet(0,0,0,0);
-				for (auto rj : rjets){
-					//if (rj.Pt()>pj.Pt()*0.5 && maxjet.Pt()<rj.Pt() && rj.DeltaR(pj)<0.1)  {
-					if (rj.Pt()>pj.Pt()*0.5 && rj.Pt()<pj.Pt()*1.5 && maxjet.Pt()<rj.Pt())  {
-						maxjet = rj;
-					}
-				}
-				if (maxjet.Pt()>0) {
-					matchedjets.push_back(maxjet);
-					FillTHnSparse("hInclJetPtCorrectedAndMatched",{fCent,maxjet.Pt()},sf);	
-					FillTHnSparse("hInclJetPtRes",{fCent,maxjet.Pt(),pj.Pt()},sf);
-				}
-				if (maxjet.Pt()==0) FillTHnSparse("hInclJetPtMiss",{fCent,pj.Pt()},sf);
-				}
-				for (auto rj : rjets){
-					bool matched = false;
-					for (auto mj : matchedjets){
-						if (rj.Pt() == mj.Pt()) matched = true;
-					}
-					if (!matched ) FillTHnSparse("hInclJetPtFake",{fCent,rj.Pt()},sf); 
-				}
-			}
-			else {
-				for (auto pj : pjets){
-					FillTHnSparse("hInclJetPtMiss",{fCent,pj.Pt()},sf);
-				}
-			}
-		} 
-
-		// do test
-		//cout<<"sumJets"<<endl;
-		//for (auto j : sumJets)	cout<<j.Pt()<<endl;
-		//cout<<"sumJetCorr"<<endl;
-		//for (auto j : sumJetsCorr)	cout<<j.Pt()<<endl;
-		//cout<<"matched jets"<<endl;
-		//for (auto j : matchedjets)	cout<<j.Pt()<<endl;
-
-		//cout<<"sj[0] before "<<endl;
-		//cout<<sj[0][0].Pt()<<endl;
-		//cout<<sj[0][1].Pt()<<endl;
-	
-		// Re-searching leading and subleading for matched jets. 
-		if (fOption.Contains("16j5") && !fName.Contains("kinech") ){
-			sj[0][0] = TLorentzVector(0,0,0,0);
-			sj[0][1] = TLorentzVector(0,0,0,0);
-			for (auto j : matchedjets){
-				if (sj[0][0].Pt() < j.Pt()) {
-					sj[0][0]=j;
-				}
-				else if( sj[0][1].Pt() < j.Pt()){
-					sj[0][1]=j;
-				}
-			}
-			//sumjets are redirected to matched jets for embedded data samples
-			sumJets = matchedjets;
+		//=== DiJetSelection 1 : LS = Leading-SubLeading
+  TLorentzVector1D zsj(2,TLorentzVector(0,0,0,0));
+	sj[0] = zsj;
+	for (auto j : Jets){
+		if (sj[0][0].Pt() < j.Pt()) {
+			sj[0][0]=j;
 		}
-
-		//cout<<"sj[0] after "<<endl;
-		//cout<<sj[0][0].Pt()<<endl;
-		//cout<<sj[0][1].Pt()<<endl;
-
-
-
-
-
-	/*
-  if (task && IsGoodVertex){ // Find a probe jet
-    TLorentzVector1D pjets = task->GetJets();
-    TLorentzVector1D rjets = sumJets;
-    TLorentzVector1D rjetscorr = sumJetsCorr;
-		for (auto pj : pjets){
- 			double maxjpt = 0;
-      TLorentzVector maxjet(0,0,0,0);
-			for (auto rj : rjets){
-				if (rj.Pt()>pj.Pt()/2. && maxjpt<rj.Pt() && rj.DeltaR(pj)<0.1)	{
-					maxjet = rj;
-				}	
-			}
-      rjets.erase(std::remove_if(rjets.begin(), rjets.end(),
-						[&](const TLorentzVector& x) { return (x.Pt() > pj.Pt()/2)  && (x.DeltaR(pj)<0.1) ; }), rjets.end());
-			
-		  if (maxjet.Pt()>0) {
-      }
-   
-			maxjpt = 0;
-			maxjet.SetXYZT(0,0,0,0);
-			for (auto rj : rjetscorr){
-				if (rj.Pt()>pj.Pt()/2. && maxjpt<rj.Pt() && rj.DeltaR(pj)<0.1) {
-					maxjet = rj;
-				}
-			}
-			rjetscorr.erase(std::remove_if(rjetscorr.begin(), rjetscorr.end(),
-						[&](const TLorentzVector& x)  { return (x.Pt() > pj.Pt()/2)  && (x.DeltaR(pj)<0.1); }), rjetscorr.end());
-
-			if (maxjet.Pt()>0) {
-			}
+		else if( sj[0][1].Pt() < j.Pt()){
+			sj[0][1]=j;
 		}
 	}
-  */
 
-  //cout<<"\n\n"<<endl; 
-  for (auto i=0u; i<kBDiJetSelEnd; i++) {
-    fDijetPtPair[i] = 0;
-    fDijetInvM[i] = 0;
-		fDijetSelectionCut[i] = false;
-  }
-  fJets = sumJets;
 
   //0 lorentz vector
-  TLorentzVector1D zsj(2,TLorentzVector(0,0,0,0));
 
-  fDijetSelectionCut[kNoCut] = true;
+  disel[kNoCut] = true;
   sj[kNoCut] = sj[0];
 	Double_t kinecut = 20;
 	
   //DiJetSelection 1 : TpTJET>20, ApTJET>20, pT_pair
 	if (sj[0][0].Pt()>kinecut && sj[0][1].Pt()>kinecut) {
 		sj[kB1] =sj[0]; 
-		fDijetSelectionCut[kB1] = true;
+		disel[kB1] = true;
 	}
   //DiJetSelection 2 : TpTJET>20, ApTJET>20, pT_pair 
   //Leading-Subreading & dPhi>pi/2
 	if(sj[0][0].Pt()>kinecut && sj[0][1].Pt()>kinecut &&
   	Abs(sj[0][0].DeltaPhi(sj[0][1])) > pi/2. ){ 
-    sj[kB2] = sj[0]; fDijetSelectionCut[kB2] = true;
+    sj[kB2] = sj[0]; disel[kB2] = true;
 	}
 
 	//DiJetSelection 3 : TpTJET>20, ApTJET>20, pT_pair 
@@ -915,22 +941,22 @@ Bool_t AliBSDiJetTask::Run(){
 	if(sj[0][0].Pt()>kinecut ){
 		auto tj = sj[kB3][0] = sj[0][0]; // Leading is same as 1:LS
 		sj[kB3][1] = TLorentzVector(0,0,0,0);
-		for( auto jet: sumJets ){
+		for( auto jet: Jets ){
 			if( Abs(tj.DeltaPhi( jet )) < pi/2. ) continue; 
 			if( sj[kB3][1].Pt() < jet.Pt() ) sj[kB3][1] = jet;
 		}
-    if (sj[kB3][1].Pt() >kinecut) fDijetSelectionCut[kB3] = true;
+    if (sj[kB3][1].Pt() >kinecut) disel[kB3] = true;
 	}
 
 	if (sj[0][0].Pt()>30 && sj[0][1].Pt()>30) {
 		sj[kC1] =sj[0];
-		fDijetSelectionCut[kC1] = true;
+		disel[kC1] = true;
 	}
 	//DiJetSelection 2 : TpTJET>20, ApTJET>20, pT_pair
 	//Leading-Subreading & dPhi>pi/2
 	if(sj[0][0].Pt()>30 && sj[0][1].Pt()>30 &&
 			Abs(sj[0][0].DeltaPhi(sj[0][1])) > pi/2. ){
-		sj[kC2] = sj[0]; fDijetSelectionCut[kC2] = true;
+		sj[kC2] = sj[0]; disel[kC2] = true;
 	}
 
 	//DiJetSelection 3 : TpTJET>20, ApTJET>20, pT_pair
@@ -938,22 +964,22 @@ Bool_t AliBSDiJetTask::Run(){
 	if(sj[0][0].Pt()>30 ){
 		auto tj = sj[kC3][0] = sj[0][0]; // Leading is same as 1:LS
 		sj[kC3][1] = TLorentzVector(0,0,0,0);
-		for( auto jet: sumJets ){
+		for( auto jet: Jets ){
 			if( Abs(tj.DeltaPhi( jet )) < pi/2. ) continue;
 			if( sj[kC3][1].Pt() < jet.Pt() ) sj[kC3][1] = jet;
 		}
-		if (sj[kC3][1].Pt() >30) fDijetSelectionCut[kC3] = true;
+		if (sj[kC3][1].Pt() >30) disel[kC3] = true;
 	} 
 
 	if (sj[0][0].Pt()>40 && sj[0][1].Pt()>40) {
 		sj[kD1] =sj[0];
-		fDijetSelectionCut[kD1] = true;
+		disel[kD1] = true;
 	}
 	//DiJetSelection 2 : TpTJET>20, ApTJET>20, pT_pair
 	//Leading-Subreading & dPhi>pi/2
 	if(sj[0][0].Pt()>40 && sj[0][1].Pt()>40 &&
 			Abs(sj[0][0].DeltaPhi(sj[0][1])) > pi/2. ){
-		sj[kD2] = sj[0]; fDijetSelectionCut[kD2] = true;
+		sj[kD2] = sj[0]; disel[kD2] = true;
 	}
 
 	//DiJetSelection 3 : TpTJET>20, ApTJET>20, pT_pair
@@ -961,149 +987,103 @@ Bool_t AliBSDiJetTask::Run(){
 	if(sj[0][0].Pt()>30 ){
 		auto tj = sj[kD3][0] = sj[0][0]; // Leading is same as 1:LS
 		sj[kD3][1] = TLorentzVector(0,0,0,0);
-		for( auto jet: sumJets ){
+		for( auto jet: Jets ){
 			if( Abs(tj.DeltaPhi( jet )) < pi/2. ) continue;
 			if( sj[kD3][1].Pt() < jet.Pt() ) sj[kD3][1] = jet;
 		}
-		if (sj[kD3][1].Pt() >30) fDijetSelectionCut[kD3] = true;
+		if (sj[kD3][1].Pt() >30) disel[kD3] = true;
 	} 
 
 
   //DiJetSelection 4 : 20<TpTJET<40, 20<ApTJET, kTy
-	if (sj[0][0].Pt()>20 && sj[0][0].Pt()<40 && sj[0][1].Pt()>20 &&
-			Abs(TVector2::Phi_0_2pi(sj[0][0].DeltaPhi(sj[0][1]))-pi) < pi/3.){ 	
-		sj[kM1] =sj[0]; fDijetSelectionCut[kM1] = true;}
-  else sj[kM1] = zsj;
+	if (sj[0][0].Pt()>20 && sj[0][0].Pt()<40){
+		auto tj = sj[kM1][0] = sj[0][0]; // Leading is same as 1:LS
+		sj[kM1][1] = TLorentzVector(0,0,0,0);
+		for( auto jet: Jets ){
+			if( Abs(TVector2::Phi_0_2pi(tj.DeltaPhi(jet))-pi) > pi/3.) continue;
+			if( sj[kM1][1].Pt() < jet.Pt() ) sj[kM1][1] = jet;
+		}
+		if (sj[kM1][1].Pt() >20) disel[kM1] = true;
+	} else sj[kM1] = zsj;
 
   //DiJetSelection 5 : 40<TpTJET<60, 20<ApTJET, kTy
-	if (sj[0][0].Pt()>40 && sj[0][0].Pt()<60 && sj[0][1].Pt()>20 &&
-			Abs(TVector2::Phi_0_2pi(sj[0][0].DeltaPhi(sj[0][1]))-pi) < pi/3.){	
-		sj[kM2] =sj[0];fDijetSelectionCut[kM2] = true;}
-  else sj[kM2] = zsj;
+	if (sj[0][0].Pt()>40 && sj[0][0].Pt()<60){
+		auto tj = sj[kM2][0] = sj[0][0]; // Leading is same as 1:LS
+		sj[kM2][1] = TLorentzVector(0,0,0,0);
+		for( auto jet: Jets ){
+			if( Abs(TVector2::Phi_0_2pi(tj.DeltaPhi(jet))-pi) > pi/3.) continue;
+			if( sj[kM2][1].Pt() < jet.Pt() ) sj[kM2][1] = jet;
+		}
+		if (sj[kM2][1].Pt() >20) disel[kM2] = true;
+	} else sj[kM2] = zsj;
 
   //DiJetSelection 6 : 60<TpTJET<80, 20<ApTJET, kTy
-	if (sj[0][0].Pt()>60 && sj[0][0].Pt()<80 && sj[0][1].Pt()>20 &&	
-			Abs(TVector2::Phi_0_2pi(sj[0][0].DeltaPhi(sj[0][1]))-pi) < pi/3.){	
-		sj[kM3] =sj[0]; fDijetSelectionCut[kM3] = true;}
-  else sj[kM3] = zsj;
+	if (sj[0][0].Pt()>60 && sj[0][0].Pt()<80){
+		auto tj = sj[kM3][0] = sj[0][0]; // Leading is same as 1:LS
+		sj[kM3][1] = TLorentzVector(0,0,0,0);
+		for( auto jet: Jets ){
+			if( Abs(TVector2::Phi_0_2pi(tj.DeltaPhi(jet))-pi) > pi/3.) continue;
+			if( sj[kM3][1].Pt() < jet.Pt() ) sj[kM3][1] = jet;
+		}
+		if (sj[kM3][1].Pt() >20) disel[kM3] = true;
+	} else sj[kM3] = zsj;
+
 
   //DiJetSelection 7 : 80<TpTJET<110, 20<ApTJET, kTy
-	if (sj[0][0].Pt()>80 && sj[0][0].Pt()<110 && sj[0][1].Pt()>20 && 	
-			Abs(TVector2::Phi_0_2pi(sj[0][0].DeltaPhi(sj[0][1]))-pi) < pi/3.){	
-		sj[kM4] =sj[0];fDijetSelectionCut[kM4] = true;}
-  else sj[kM4] = zsj;
+	if (sj[0][0].Pt()>80 && sj[0][0].Pt()<110){
+		auto tj = sj[kM4][0] = sj[0][0]; // Leading is same as 1:LS
+		sj[kM4][1] = TLorentzVector(0,0,0,0);
+		for( auto jet: Jets ){
+			if( Abs(TVector2::Phi_0_2pi(tj.DeltaPhi(jet))-pi) > pi/3.) continue;
+			if( sj[kM4][1].Pt() < jet.Pt() ) sj[kM4][1] = jet;
+		}
+		if (sj[kM4][1].Pt() >20) disel[kM4] = true;
+	} else sj[kM4] = zsj;
+
 
   //DiJetSelection 8 : 70<TpTJET<110, 20<ApTJET<30, kTy
-	if (sj[0][0].Pt()>70 && sj[0][0].Pt()<110 &&
-			sj[0][1].Pt()>20 && sj[0][1].Pt()<30 && 	
-			Abs(TVector2::Phi_0_2pi(sj[0][0].DeltaPhi(sj[0][1]))-pi) < pi/3.){	
-		sj[kM5] =sj[0];fDijetSelectionCut[kM5] = true;}
-  else sj[kM5] = zsj;
+	if (sj[0][0].Pt()>70 && sj[0][0].Pt()<110){
+		auto tj = sj[kM5][0] = sj[0][0]; // Leading is same as 1:LS
+		sj[kM5][1] = TLorentzVector(0,0,0,0);
+		for( auto jet: Jets ){
+			if( Abs(TVector2::Phi_0_2pi(tj.DeltaPhi(jet))-pi) > pi/3.) continue;
+			if( sj[kM5][1].Pt() < jet.Pt() ) sj[kM5][1] = jet;
+		}
+		if (sj[kM5][1].Pt() >20 && sj[kM5][1].Pt() < 30) disel[kM5] = true;
+	} else sj[kM5] = zsj;
 
   //DiJetSelection 9 : 70<TpTJET<110, 30<ApTJET<40, kTy
-	if (sj[0][0].Pt()>70 && sj[0][0].Pt()<110 &&
-			sj[0][1].Pt()>30 && sj[0][1].Pt()<40 && 	
-			Abs(TVector2::Phi_0_2pi(sj[0][0].DeltaPhi(sj[0][1]))-pi) < pi/3.){	
-		sj[kM6] =sj[0]; fDijetSelectionCut[kM6] = true;}
-  else sj[kM6] = zsj;
+
+	if (sj[0][0].Pt()>70 && sj[0][0].Pt()<110){
+		auto tj = sj[kM6][0] = sj[0][0]; // Leading is same as 1:LS
+		sj[kM6][1] = TLorentzVector(0,0,0,0);
+		for( auto jet: Jets ){
+			if( Abs(TVector2::Phi_0_2pi(tj.DeltaPhi(jet))-pi) > pi/3.) continue;
+			if( sj[kM6][1].Pt() < jet.Pt() ) sj[kM6][1] = jet;
+		}
+		if (sj[kM6][1].Pt() >30 && sj[kM6][1].Pt() < 40) disel[kM6] = true;
+	} else sj[kM6] = zsj;
 
   //DiJetSelection 10 : 70<TpTJET<110, 40<ApTJET, kTy
-	if (sj[0][0].Pt()>70 && sj[0][0].Pt()<110 && sj[0][1].Pt()>40  && 	
-			Abs(TVector2::Phi_0_2pi(sj[0][0].DeltaPhi(sj[0][1]))-pi) < pi/3.){	
-		sj[kM7] =sj[0]; fDijetSelectionCut[kM7] = true;}
-  else sj[kM7] = zsj;
-
-
-  //==== FILL
-  fHistos->FillTH1("hJetMulti", sumJets.size() );
-
-  //===============================
-  // ptPair : leading - subleading
-  //===============================
-
-
-	for( int ids=kBDiJetSelBegin;ids<kBDiJetSelEnd;ids++ ){ // NOTE : begin with 1
-		auto j = sj[ids];
-		//=== SKIP Empty DiJet
-		if( j[0].E() < 1e-4 || j[1].E() < 1e-4 ) {
-			//fDijetSelectionCut[ids] = false;
-			if (task){
-				Double_t truthptpair =  (task->GetDijetPtPair()).at(ids);
-				Double_t truthinvM =  (task->GetDijetInvM()).at(ids);
-        Bool_t  truthdijetcut = (task->GetDijetSelectionCut()).at(ids);
-				if (task->GetIsGenGoodVtx() && truthdijetcut ) {
-					FillTHnSparse( "hDiJetInvMPtPairMiss", {(double)ids,fCent,j[0].Pt(),truthinvM,truthptpair},sf);
-				}
-			}
+	if (sj[0][0].Pt()>70 && sj[0][0].Pt()<110){
+		auto tj = sj[kM7][0] = sj[0][0]; // Leading is same as 1:LS
+		sj[kM7][1] = TLorentzVector(0,0,0,0);
+		for( auto jet: Jets ){
+			if( Abs(TVector2::Phi_0_2pi(tj.DeltaPhi(jet))-pi) > pi/3.) continue;
+			if( sj[kM7][1].Pt() < jet.Pt() ) sj[kM7][1] = jet;
 		}
-    if (!fDijetSelectionCut[ids]) continue;
-		Double_t nphi=0;
-		auto diJetSel = Double_t( ids );
-		auto dijet    = j[0] + j[1];
-		auto invM     = dijet.M();
-		auto dPhi     = j[0].DeltaPhi(j[1]);
-		auto dPhiA    = Abs(dPhi);
-		auto dPhi_0_2pi  = TVector2::Phi_0_2pi(dPhi);
-		auto tpt      = j[0].Pt();
-		auto apt      = j[1].Pt();
-		auto ptpair   = dijet.Pt(); 
-		auto testdphi = nphi-j[0].Phi();
-		auto ptAsim   = (tpt-apt)/(tpt+apt);
-		auto eAsim    = (j[0].E()-j[1].E())/(j[0].E()+j[1].E());
-    auto kty      = j[0].Pt() * TMath::Sin(dPhi_0_2pi);
-    if (ids>=kM1) ptpair = kty;
+		if (sj[kM7][1].Pt() >40) disel[kM7] = true;
+	} else sj[kM7] = zsj;
 
-		double tratio = 1.;
-		double tratioh = 1.;
-		double tratiol = 1.;
-		if (fName.Contains("EMCEJE")){
-			tratio = tsf->Eval(j[0].Pt());
-			tratioh = tsfh->Eval(j[0].Pt());
-			tratiol = tsfl->Eval(j[0].Pt());
-		}
-		
-		fDijetPtPair[ids] = ptpair;
-		fDijetInvM[ids]=invM;
-		if (task ){	
-			Double_t truthptpair =  (task->GetDijetPtPair()).at(ids);
-			Double_t truthinvM =  (task->GetDijetInvM()).at(ids);
-			Bool_t truthdijetcut = (task->GetDijetSelectionCut().at(ids));
-			if ( task->GetIsGenGoodVtx()) {
-				if (IsGoodVertex){
-					if (truthdijetcut){
-						FillTHnSparse( "hDiJetInvMPtPairRes", { diJetSel,fCent,tpt,invM,truthinvM,ptpair,truthptpair},sf);
-					} else {
-						FillTHnSparse( "hDiJetInvMPtPairFake", {diJetSel,fCent,tpt,invM,ptpair},sf);
-						FillTHnSparse( "hDiJetInvMPtPairMiss", {diJetSel,fCent,tpt,truthinvM,truthptpair},sf);
-					}
-				} else FillTHnSparse( "hDiJetInvMPtPairMiss", {diJetSel,fCent,tpt,truthinvM,truthptpair},sf);
 
-			}
-		}
-
-		if (IsGoodVertex){
-			FillTHnSparse( "hJetPtLeading",        { diJetSel, fCent, tpt},sf*tratio );
-			FillTHnSparse( "hDiJetInvM",           { diJetSel, fCent, tpt, invM },sf*tratio);
-			FillTHnSparse( "hDiJetDPhi_0_2pi",     { diJetSel, fCent, tpt, invM, dPhi_0_2pi },sf*tratio);
-			FillTHnSparse( "hDiJetPtPair",         { diJetSel, fCent, tpt, invM, ptpair },sf*tratio); 
-			FillTHnSparse( "hDiJetPtPairH",   { diJetSel, fCent, tpt, invM, ptpair },sf*tratioh); 
-			FillTHnSparse( "hDiJetPtPairL",   { diJetSel, fCent, tpt, invM, ptpair },sf*tratiol); 
-		}
-	}
-
-  PostData(1, fHistos->GetListOfHistograms());;
-  //PostData(1, fOutput);
-  return kTRUE;
 }
-void AliBSDiJetTask::FinishTaskOutput()
-{
-}
-//___________________________________________________________________
+
+
 
 THnSparse * AliBSDiJetTask::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t * opt){
-  const TAxis * axises[bins.size()];
-  for( UInt_t i=0;i<bins.size();i++ ) axises[i]= &bins[i];
-  THnSparse * h= fHistos->CreateTHnSparse(name, title, ndim, axises,opt );
+	const TAxis * axises[bins.size()];
+	for( UInt_t i=0;i<bins.size();i++ ) axises[i]= &bins[i];
+	THnSparse * h= fHistos->CreateTHnSparse(name, title, ndim, axises,opt );
   return h;
 }
 

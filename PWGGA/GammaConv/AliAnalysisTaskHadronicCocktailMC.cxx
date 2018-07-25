@@ -93,7 +93,8 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(): AliAnaly
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
-  fMaxY(2)
+  fMaxY(2),
+  fMaxEta(0)
 {
 
 }
@@ -138,7 +139,8 @@ AliAnalysisTaskHadronicCocktailMC::AliAnalysisTaskHadronicCocktailMC(const char 
   fUserInfo(NULL),
   fOutputTree(NULL),
   fIsMC(1),
-  fMaxY(2)
+  fMaxY(2),
+  fMaxEta(0)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -515,7 +517,6 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
     if( yPre <= 0 ) continue;
 
     Double_t y = 0.5*TMath::Log(yPre);
-    if (TMath::Abs(y) > fMaxY) continue;
 
     Int_t                       PdgAnalyzedParticle = 0;
     if (fAnalyzedMeson==0)      PdgAnalyzedParticle = 111;
@@ -524,6 +525,7 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
 
     // pi0/eta/pi+- from source
     if(TMath::Abs(particle->GetPdgCode())==PdgAnalyzedParticle && hasMother==kTRUE){
+      if (TMath::Abs(y) > fMaxY) continue;
       if(motherIsPrimary && fHasMother[GetParticlePosLocal(motherParticle->GetPdgCode())]){
 
         switch(motherParticle->GetPdgCode()){
@@ -680,6 +682,7 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
 
     // source
     if(particle->GetPdgCode()!=PdgAnalyzedParticle && particleIsPrimary && fHasMother[GetParticlePosLocal(particle->GetPdgCode())]){
+      if (TMath::Abs(y) > fMaxY) continue;
 
       switch(particle->GetPdgCode()){
         case 221:
@@ -834,6 +837,12 @@ void AliAnalysisTaskHadronicCocktailMC::ProcessMCParticles(){
 
     // gamma from X/pi0 from source
     if (particle->GetPdgCode()==22 && motherHasMother) {
+      // additional condition to remove gammas out of eta range
+      if (fMaxEta>0){
+        if (TMath::Abs(particle->Eta()) > fMaxEta) continue;
+      } else {
+        if (TMath::Abs(y) > fMaxY) continue;
+      }
       if (grandMotherIsPrimary && fHasMother[GetParticlePosLocal(grandMotherParticle->GetPdgCode())]) {
 
         switch(grandMotherParticle->GetPdgCode()){
