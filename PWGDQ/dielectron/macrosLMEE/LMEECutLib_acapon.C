@@ -54,9 +54,9 @@ void LMEECutLib::SetEtaCorrectionTPC(AliDielectron *die, Int_t corrXdim, Int_t c
   TFile* inFile = TFile::Open(file_name.c_str());
   std::cout << inFile << std::endl;
   if(!inFile){
-    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/correctionMaps/recalib_data_tpc_nsigmaele.root .");
+    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/correctionMaps/output_test.root .");
     std::cout << "Copy TPC correction from Alien" << std::endl;
-    inFile = TFile::Open("output.root");
+    inFile = TFile::Open("output_test.root");
   }
   else {
     std::cout << "Correction loaded" << std::endl;
@@ -89,9 +89,9 @@ static TH3D LMEECutLib::SetEtaCorrectionTPCTTree( Int_t corrXdim, Int_t corrYdim
   TFile* recalFile = TFile::Open(file_name.c_str());
   std::cout << recalFile << std::endl;
   if(!recalFile){
-    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/correctionMaps/recalib_data_tpc_nsigmaele.root .");
+    gSystem->Exec("alien_cp alien:///alice/cern.ch/user/a/acapon/dielectronShizzle/correctionMaps/output_test.root .");
     std::cout << "Copy TPC correction from Alien" << std::endl;
-    recalFile = TFile::Open("output.root");
+    recalFile = TFile::Open("output_test.root");
   }
   else {
     std::cout << "Correction loaded" << std::endl;
