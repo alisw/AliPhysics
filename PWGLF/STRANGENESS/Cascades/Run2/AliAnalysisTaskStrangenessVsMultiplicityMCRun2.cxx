@@ -6850,6 +6850,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         lN++;
     }
     
+    //Require ITS refit (will lose tons of signal)
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitTracks_NoAssoc",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitTracks(kTRUE);
+        lCascadeResult[lN] -> SetCutMCUseMCProperties(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPhysicalPrimary(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPDGCodeAssociation(kFALSE);
+        //Add result to pool
+        lN++;
+    }
+    
     //ITS refit requirement map:
     //  [NPB]
     //1  100
