@@ -112,14 +112,14 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hMCTrueEtaDalConversionEta(NULL),
   hMCTrueCombinatorialConversionRPt(NULL),
   hMCTrueCombinatorialConversionEta(NULL),
-  hElectrondEdxMapsR0(NULL), 
   hPositrondEdxMapsR0(NULL),
-  hElectrondEdxMapsR1(NULL), 
+  hElectrondEdxMapsR0(NULL), 
   hPositrondEdxMapsR1(NULL),
-  hElectrondEdxMapsR2(NULL), 
+  hElectrondEdxMapsR1(NULL), 
   hPositrondEdxMapsR2(NULL),
-  hElectrondEdxMapsR3(NULL), 
-  hPositrondEdxMapsR3(NULL)   
+  hElectrondEdxMapsR2(NULL), 
+  hPositrondEdxMapsR3(NULL),
+  hElectrondEdxMapsR3(NULL) 
 {
 
 }
@@ -204,14 +204,14 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCTrueEtaDalConversionEta(NULL),
   hMCTrueCombinatorialConversionRPt(NULL),
   hMCTrueCombinatorialConversionEta(NULL),
-  hElectrondEdxMapsR0(NULL), 
   hPositrondEdxMapsR0(NULL),
-  hElectrondEdxMapsR1(NULL), 
+  hElectrondEdxMapsR0(NULL), 
   hPositrondEdxMapsR1(NULL),
-  hElectrondEdxMapsR2(NULL), 
+  hElectrondEdxMapsR1(NULL), 
   hPositrondEdxMapsR2(NULL),
-  hElectrondEdxMapsR3(NULL), 
-  hPositrondEdxMapsR3(NULL)   
+  hElectrondEdxMapsR2(NULL), 
+  hPositrondEdxMapsR3(NULL),   
+  hElectrondEdxMapsR3(NULL) 
 {
   // Default constructor
 
