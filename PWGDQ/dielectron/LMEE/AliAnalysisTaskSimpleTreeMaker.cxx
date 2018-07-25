@@ -81,6 +81,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
 		hasMC(kFALSE),
     fESDtrackCuts(0),
     fPIDResponse(0),
+		fMCevent(0),
     fTree(0x0),
 		eventCuts(0),
 		eventFilter(0),
@@ -134,6 +135,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
 		iPdgMother(0),
 		HasMother(0),
 		motherLabel(0),
+		isInj(0),
 		pointingAngle(0),
 		daughtersDCA(0),
 		decayLength(0),
@@ -167,7 +169,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
     fGridPID(-1),
 		fUseTPCcorr(kFALSE),
 		fWidth(0),
-		fMean(0)
+		fMean(0),
+		fGeneratorHashes(0)
 {
 
 }
@@ -177,6 +180,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 		hasMC(kFALSE),
    	fESDtrackCuts(0),
     fPIDResponse(0),
+		fMCevent(0),
     fTree(0),
 		eventCuts(0),
 		eventFilter(0),
@@ -230,6 +234,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 		iPdgMother(0),
 		HasMother(0),
 		motherLabel(0),
+		isInj(0),
 		pointingAngle(0),
 		daughtersDCA(0),
 		decayLength(0),
@@ -263,7 +268,8 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     fGridPID(0),
 		fUseTPCcorr(kFALSE),
 		fWidth(0),
-		fMean(0)
+		fMean(0),
+		fGeneratorHashes(0)
 
 {
     if(!fIsV0tree){
@@ -272,6 +278,15 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     else{
         fESDtrackCuts = AliESDtrackCuts::GetStandardV0DaughterCuts();
     }
+
+		// Create hashes of generators used for injected signals in MC
+		TString generatorNames = "Pythia CC_1;Pythia BB_1;Pythia B_1;Jpsi2ee_1";
+		TObjArray arr = *(generatorNames.Tokenize(";"));
+		for(Int_t i = 0; i < arr.GetEntries(); i++){
+			TString temp = arr.At(i)->GetName();
+			std::cout << "---" << temp << std::endl;
+			fGeneratorHashes.push_back(temp.Hash());
+		}
 
     // Input slot #0 works with a TChain
     DefineInput(0, TChain::Class());
@@ -367,6 +382,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 			fTree->Branch("pdgMother",   &iPdgMother);
 			fTree->Branch("HasMother",   &HasMother);
 			fTree->Branch("motherLabel", &motherLabel);
+			fTree->Branch("isInjected", &isInj);
 		}
 		//Event variables
 		fTree->Branch("vertexX",         &primaryVertex[0]);
@@ -407,9 +423,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		fQAhist->Fill("Events_MCcheck",0);
 		fQAhist->Fill("Tracks_all",0);
 		fQAhist->Fill("Tracks_MCcheck",0);
-		fQAhist->Fill("Tracks_KineCuts",0);
-		fQAhist->Fill("Tracks_TrackCuts",0);
-		fQAhist->Fill("Tracks_PIDcuts",0);
+		fQAhist->Fill("Tracks_Cuts",0);
 		    
 		PostData(1, fTree);
     PostData(2, fQAhist);
@@ -448,8 +462,8 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 	}
 
 	//Check if running on MC files
-	AliMCEvent* mcEvent = MCEvent();
-	if(mcEvent){
+	fMCevent = MCEvent();
+	if(fMCevent){
 		hasMC = kTRUE;
 		if(!fIsV0tree){
 			fQAhist->Fill("Events_MCcheck",1);
@@ -545,14 +559,14 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			//Get MC information
 			if(hasMC){
 				if(fIsAOD){
-					mcTrack = dynamic_cast<AliAODMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+					mcTrack = dynamic_cast<AliAODMCParticle*>(fMCevent->GetTrack(TMath::Abs(track->GetLabel())));
 
 					//Check valid pointer has been returned. If not, disregard track. 
 					if(!mcTrack){
 						continue;
 					}
 				}else{
-					mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(track->GetLabel())));
+					mcTrack = dynamic_cast<AliMCParticle*>(fMCevent->GetTrack(TMath::Abs(track->GetLabel())));
 
 					//Check valid pointer has been returned. If not, disregard track. 
 					if(!mcTrack){
@@ -572,36 +586,27 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				
 				if(!(gMotherIndex < 0)){
 					if(fIsAOD){
-						motherMCtrack = dynamic_cast<AliAODMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+						motherMCtrack = dynamic_cast<AliAODMCParticle*>((fMCevent->GetTrack(gMotherIndex)));
 						//Check for mother particle. 
 						if(!motherMCtrack){
 							continue;
 						}
 					}else{
-						motherMCtrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+						motherMCtrack = dynamic_cast<AliMCParticle*>((fMCevent->GetTrack(gMotherIndex)));
 						//Check for mother particle. 
 						if(!motherMCtrack){
 							continue;
 						}
-                    }
-						HasMother = kTRUE;
-            iPdgMother = motherMCtrack->PdgCode();
-            motherLabel = TMath::Abs(motherMCtrack->GetLabel());
+          }
 				}
 					
-				//Currently no injected MC productions for Run 2. Hence commented out
-				//Now determine whether track comes from an injected MC sample or not
-				/*Int_t mcTrackIndex = -9999;
-				while(!(mcTrack->GetMother() < 0)){ 
-						mcTrackIndex = mcTrack->GetMother();
-						mcTrack = dynamic_cast<AliAODMCParticle*>(mcEvent->GetTrack(mcTrack->GetMother()));
-				}
-				if(!(mcEvent->IsFromBGEvent(TMath::Abs(mcTrackIndex)))){
-						IsEnchanced = kTRUE;
-				}else{
-						IsEnhanced = kFALSE;
-				}*/
-      }
+				HasMother   = kTRUE;
+				iPdgMother  = motherMCtrack->PdgCode();
+				motherLabel = TMath::Abs(motherMCtrack->GetLabel());
+				// Check which generator was used
+				// Returns kTRUE if from injected sample
+				isInj = CheckGenerator(track->GetLabel());
+			}//End if(hasMC)
 
 			//Apply global track trackFilter
 			if(!fIsAOD){
@@ -802,7 +807,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				//Only want to check validity of track
 				label = negTrack->GetLabel();
 
-				mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
+				mcTrack = dynamic_cast<AliMCParticle*>(fMCevent->GetTrack(TMath::Abs(label)));
 				if(!mcTrack){
 					continue;
 				}
@@ -811,13 +816,13 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 		
 				if(!(gMotherIndex < 0)){
 					if(fIsAOD){
-						motherMCtrack = dynamic_cast<AliAODMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+						motherMCtrack = dynamic_cast<AliAODMCParticle*>((fMCevent->GetTrack(gMotherIndex)));
 						//Check for mother particle. 
 						if(!motherMCtrack){
 							continue;
 						}
 					}else{
-						motherMCtrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+						motherMCtrack = dynamic_cast<AliMCParticle*>((fMCevent->GetTrack(gMotherIndex)));
 						//Check for mother particle. 
 						if(!motherMCtrack){
 							continue;
@@ -831,7 +836,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 				 
 				label = posTrack->GetLabel();
 
-				mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
+				mcTrack = dynamic_cast<AliMCParticle*>(fMCevent->GetTrack(TMath::Abs(label)));
 				if(!mcTrack){
 					continue;
 				}
@@ -850,13 +855,13 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 		
 				if(!(gMotherIndex < 0)){
 					if(fIsAOD){
-						motherMCtrack = dynamic_cast<AliAODMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+						motherMCtrack = dynamic_cast<AliAODMCParticle*>((fMCevent->GetTrack(gMotherIndex)));
 						//Check for mother particle. 
 						if(!motherMCtrack){
 							continue;
 						}
 					}else{
-						motherMCtrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+						motherMCtrack = dynamic_cast<AliMCParticle*>((fMCevent->GetTrack(gMotherIndex)));
 						//Check for mother particle. 
 						if(!motherMCtrack){
 							continue;
@@ -1061,7 +1066,7 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			if(hasMC){
 				label = negTrack->GetLabel();
 
-				mcTrack = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(TMath::Abs(label)));
+				mcTrack = dynamic_cast<AliMCParticle*>(fMCevent->GetTrack(TMath::Abs(label)));
 				//Redundant?
 				if(!mcTrack){
 					continue;
@@ -1081,13 +1086,13 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 	
 				if(!(gMotherIndex < 0)){
 					if(fIsAOD){
-						motherMCtrack = dynamic_cast<AliAODMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+						motherMCtrack = dynamic_cast<AliAODMCParticle*>((fMCevent->GetTrack(gMotherIndex)));
 						//Check for mother particle. 
 						if(!motherMCtrack){
 							continue;
 						}
 					}else{
-						motherMCtrack = dynamic_cast<AliMCParticle*>((mcEvent->GetTrack(gMotherIndex)));
+						motherMCtrack = dynamic_cast<AliMCParticle*>((fMCevent->GetTrack(gMotherIndex)));
 						//Check for mother particle. 
 						if(!motherMCtrack){
 							continue;
@@ -1224,4 +1229,28 @@ void AliAnalysisTaskSimpleTreeMaker::SetupEventCuts(AliDielectronEventCuts* cuts
 	//Initiliase the event trackFilter object and add event cuts
 	eventFilter = new AliAnalysisFilter("eventFilter", "eventFilter");
 	eventFilter->AddCuts(cuts);
+}
+
+// Check if the generator is on the list of generators
+Bool_t AliAnalysisTaskSimpleTreeMaker::CheckGenerator(Int_t trackID){
+
+  if(fGeneratorHashes.size() == 0){
+		return kTRUE;
+	}
+
+  TString genname;
+  Bool_t hasGenerator = fMCevent->GetCocktailGenerator(TMath::Abs(trackID), genname); 
+  if(!hasGenerator){
+    Printf("no cocktail header list was found for this track");
+    return kFALSE;
+  }
+  else{
+    for(UInt_t i = 0; i < fGeneratorHashes.size(); ++i){
+      if(genname.Hash() == fGeneratorHashes[i]){
+				return kTRUE;
+			}
+    }
+    return kFALSE;
+  }
+  return kFALSE; // should not happen
 }

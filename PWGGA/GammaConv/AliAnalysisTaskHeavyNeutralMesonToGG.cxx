@@ -63,15 +63,18 @@ ClassImp(AliAnalysisTaskHeavyNeutralMesonToGG)
 
 //________________________________________________________________________
 AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(): AliAnalysisTaskSE(),
+  fRandom(0),
   fV0Reader(NULL),
-  fV0ReaderName("V0ReaderV1"),
-  fCorrTaskSetting(""),
   fBGHandler(NULL),
   fBGHandlerRP(NULL),
   fBGClusHandler(NULL),
   fBGClusHandlerRP(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
+  fEventCuts(NULL),
+  fConversionCuts(NULL),
+  fCaloPhotonCuts(NULL),
+  fMesonCuts(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
   fBackList(NULL),
@@ -79,42 +82,27 @@ AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(): Al
   fTrueList(NULL),
   fMCList(NULL),
   fOutputContainer(NULL),
-  fReaderGammas(NULL),
   fGammaCandidates(NULL),
   fClusterCandidates(NULL),
   fEventCutArray(NULL),
-  fEventCuts(NULL),
   fCutArray(NULL),
-  fConversionCuts(NULL),
   fClusterCutArray(NULL),
-  fCaloPhotonCuts(NULL),
   fMesonCutArray(NULL),
-  fMesonCuts(NULL),
-  fHistoConvGammaPt(NULL),
+  fReaderGammas(NULL),
+  fV0ReaderName("V0ReaderV1"),
+  fCorrTaskSetting(""),
+  fFileNameBroken(NULL),
+  fSparseMotherInvMassPtZM(NULL),
+  fSparseMotherBackInvMassPtZM(NULL),
+  fTreeBrokenFiles(NULL),
+  fProfileTruePrimaryMesonWeightsInvMassPt(NULL),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
-  fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
-  fSparseMotherBackInvMassPtZM(NULL),
   fHistoMotherMesonPtY(NULL),
   fHistoMotherMesonPtAlpha(NULL),
   fHistoMotherMesonPtOpenAngle(NULL),
   fHistoMotherMesonConvPhotonEtaPhi(NULL),
-  fHistoClusGammaPt(NULL),
-  fHistoClusGammaE(NULL),
-  fHistoClusOverlapHeadersGammaPt(NULL),
-  fHistoClusAllHeadersGammaPt(NULL),
-  fHistoClusRejectedHeadersGammaPt(NULL),
-  fHistoMCHeaders(NULL),
-  fHistoMCMesonPt(NULL),
-  fHistoMCMesonWOWeightPt(NULL),
-  fHistoMCMesonWOEvtWeightPt(NULL),
-  fHistoMCMesonInAccPt(NULL),
-  fHistoMCMesonWOWeightInAccPt(NULL),
-  fHistoMCMesonWOEvtWeightInAccPt(NULL),
-  fHistoMCMesonPtY(NULL),
-  fHistoMCMesonPtAlpha(NULL),
-  fHistoMCMesonPtJetPt(NULL),
   fHistoTrueMesonInvMassPt(NULL),
   fHistoTrueMesonMatchedInvMassPt(NULL),
   fHistoTrueMesonCaloPhotonInvMassPt(NULL),
@@ -126,7 +114,6 @@ AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(): Al
   fHistoTrueMesonCaloMergedClusterPartConvInvMassPt(NULL),
   fHistoTruePrimaryMesonInvMassPt(NULL),
   fHistoTruePrimaryMesonW0WeightingInvMassPt(NULL),
-  fProfileTruePrimaryMesonWeightsInvMassPt(NULL),
   fHistoTruePrimaryMesonMCPtResolPt(NULL),
   fHistoTrueMotherMesonConvPhotonEtaPhi(NULL),
   fHistoTrueBckGGInvMassPt(NULL),
@@ -136,27 +123,40 @@ AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(): Al
   fHistoTrueMesonPtY(NULL),
   fHistoTrueMesonPtAlpha(NULL),
   fHistoTrueMesonPtOpenAngle(NULL),
+  fHistoMCMesonPtY(NULL),
+  fHistoMCMesonPtAlpha(NULL),
+  fHistoMCMesonPtJetPt(NULL),
+  fHistoTrueNLabelsInClusPt(NULL),
+  fHistoDoubleCountTrueMesonInvMassPt(NULL),
+  fHistoDoubleCountTrueConvGammaRPt(NULL),
+  fHistoDoubleCountTrueClusterGammaPt(NULL),
+  fHistoSPDClusterTrackletBackground(NULL),
+  fProfileEtaShift(NULL),
+  fProfileJetJetXSection(NULL),
+  fHistoMCHeaders(NULL),
+  fHistoConvGammaPt(NULL),
+  fHistoClusGammaPt(NULL),
+  fHistoClusGammaE(NULL),
+  fHistoClusOverlapHeadersGammaPt(NULL),
+  fHistoClusAllHeadersGammaPt(NULL),
+  fHistoClusRejectedHeadersGammaPt(NULL),
+  fHistoMotherInvMassRejected(NULL),
+  fHistoMCMesonPt(NULL),
+  fHistoMCMesonWOWeightPt(NULL),
+  fHistoMCMesonWOEvtWeightPt(NULL),
+  fHistoMCMesonInAccPt(NULL),
+  fHistoMCMesonWOWeightInAccPt(NULL),
+  fHistoMCMesonWOEvtWeightInAccPt(NULL),
   fHistoTrueConvGammaPt(NULL),
   fHistoTruePrimaryConvGammaPt(NULL),
   fHistoTrueClusGammaPt(NULL),
   fHistoTrueClusConvGammaPt(NULL),
   fHistoTrueClusConvGammaFullyPt(NULL),
-  fHistoTrueNLabelsInClusPt(NULL),
   fHistoTruePrimaryClusGammaPt(NULL),
   fHistoTruePrimaryClusConvGammaPt(NULL),
-  fVectorRecTrueMesons(0),
-  fHistoDoubleCountTrueMesonInvMassPt(NULL),
-  fHistoDoubleCountTrueConvGammaRPt(NULL),
-  fHistoDoubleCountTrueClusterGammaPt(NULL),
-  fVectorDoubleCountTrueMesons(0),
-  fVectorDoubleCountTrueConvGammas(0),
-  fVectorDoubleCountTrueClusterGammas(0),
   fHistoMultipleCountTrueMeson(NULL),
   fHistoMultipleCountTrueConvGamma(NULL),
   fHistoMultipleCountTrueClusterGamma(NULL),
-  fMapMultipleCountTrueMesons(),
-  fMapMultipleCountTrueConvGammas(),
-  fMapMultipleCountTrueClusterGammas(),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -165,49 +165,50 @@ AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(): Al
   fHistoVertexY(NULL),
   fHistoNGammaConvCandidates(NULL),
   fHistoNGammaCaloCandidates(NULL),
-  fHistoSPDClusterTrackletBackground(NULL),
   fHistoNV0Tracks(NULL),
-  fProfileEtaShift(NULL),
-  fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
-  fEventPlaneAngle(-100),
-  fRandom(0),
-  fNGammaCandidates(0),
+  fMapMultipleCountTrueMesons(),
+  fMapMultipleCountTrueConvGammas(),
+  fMapMultipleCountTrueClusterGammas(),
+  fVectorRecTrueMesons(0),
+  fVectorDoubleCountTrueMesons(0),
+  fVectorDoubleCountTrueConvGammas(0),
+  fVectorDoubleCountTrueClusterGammas(0),
   fUnsmearedPx(NULL),
   fUnsmearedPy(NULL),
   fUnsmearedPz(NULL),
   fUnsmearedE(NULL),
+  fMesonInvMassWindow(NULL),
   fMCEventPos(NULL),
   fMCEventNeg(NULL),
   fESDArrayPos(NULL),
   fESDArrayNeg(NULL),
-  fnCuts(0),
-  fiCut(0),
-  fMoveParticleAccordingToVertex(kTRUE),
-  fIsHeavyIon(0),
-  fDoLightOutput(kFALSE),
-  fMesonRecoMode(-1),
-  fMesonType(-1),
-  fMesonPDG(0),
+  fEventPlaneAngle(-100),
   fMesonInvMassMin(0),
   fMesonInvMassMax(0),
   fMesonInvMassNBins(0),
-  fMesonInvMassWindow(NULL),
+  fWeightJetJetMC(1),
+  fNGammaCandidates(0),
+  fnCuts(0),
+  fiCut(0),
+  fIsHeavyIon(0),
+  fMesonRecoMode(-1),
+  fMesonType(-1),
+  fMesonPDG(0),
   fDoMesonQA(0),
   fDoPhotonQA(0),
   fDoClusterQA(0),
+  fIsMC(0),
+  fMoveParticleAccordingToVertex(kTRUE),
+  fDoLightOutput(kFALSE),
   fIsFromDesiredHeader(kTRUE),
   fIsOverlappingWithOtherHeader(kFALSE),
-  fIsMC(0),
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
-  fWeightJetJetMC(1),
   fDoConvGammaShowerShapeTree(kFALSE),
   fEnableSortForClusMC(kFALSE),
   fDoPrimaryTrackMatching(kFALSE),
   fDoInvMassShowerShapeTree(kFALSE),
-  tBrokenFiles(NULL),
-  fFileNameBroken(NULL),
   fAllowOverlapHeaders(kTRUE),
   fEnableClusterCutsForTrigger(kFALSE)
 {
@@ -217,58 +218,46 @@ AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(): Al
 //________________________________________________________________________
 AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(const char *name):
   AliAnalysisTaskSE(name),
+  fRandom(0),
   fV0Reader(NULL),
-  fV0ReaderName("V0ReaderV1"),
-  fCorrTaskSetting(""),
   fBGHandler(NULL),
   fBGHandlerRP(NULL),
   fBGClusHandler(NULL),
   fBGClusHandlerRP(NULL),
   fInputEvent(NULL),
   fMCEvent(NULL),
+  fEventCuts(NULL),
+  fConversionCuts(NULL),
+  fCaloPhotonCuts(NULL),
+  fMesonCuts(NULL),
   fCutFolder(NULL),
   fESDList(NULL),
   fBackList(NULL),
   fMotherList(NULL),
   fTrueList(NULL),
   fMCList(NULL),
-  fOutputContainer(0),
-  fReaderGammas(NULL),
+  fOutputContainer(NULL),
   fGammaCandidates(NULL),
   fClusterCandidates(NULL),
   fEventCutArray(NULL),
-  fEventCuts(NULL),
   fCutArray(NULL),
-  fConversionCuts(NULL),
   fClusterCutArray(NULL),
-  fCaloPhotonCuts(NULL),
   fMesonCutArray(NULL),
-  fMesonCuts(NULL),
-  fHistoConvGammaPt(NULL),
+  fReaderGammas(NULL),
+  fV0ReaderName("V0ReaderV1"),
+  fCorrTaskSetting(""),
+  fFileNameBroken(NULL),
+  fSparseMotherInvMassPtZM(NULL),
+  fSparseMotherBackInvMassPtZM(NULL),
+  fTreeBrokenFiles(NULL),
+  fProfileTruePrimaryMesonWeightsInvMassPt(NULL),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
-  fSparseMotherInvMassPtZM(NULL),
   fHistoMotherBackInvMassPt(NULL),
-  fSparseMotherBackInvMassPtZM(NULL),
   fHistoMotherMesonPtY(NULL),
   fHistoMotherMesonPtAlpha(NULL),
   fHistoMotherMesonPtOpenAngle(NULL),
   fHistoMotherMesonConvPhotonEtaPhi(NULL),
-  fHistoClusGammaPt(NULL),
-  fHistoClusGammaE(NULL),
-  fHistoClusOverlapHeadersGammaPt(NULL),
-  fHistoClusAllHeadersGammaPt(NULL),
-  fHistoClusRejectedHeadersGammaPt(NULL),
-  fHistoMCHeaders(NULL),
-  fHistoMCMesonPt(NULL),
-  fHistoMCMesonWOWeightPt(NULL),
-  fHistoMCMesonWOEvtWeightPt(NULL),
-  fHistoMCMesonInAccPt(NULL),
-  fHistoMCMesonWOWeightInAccPt(NULL),
-  fHistoMCMesonWOEvtWeightInAccPt(NULL),
-  fHistoMCMesonPtY(NULL),
-  fHistoMCMesonPtAlpha(NULL),
-  fHistoMCMesonPtJetPt(NULL),
   fHistoTrueMesonInvMassPt(NULL),
   fHistoTrueMesonMatchedInvMassPt(NULL),
   fHistoTrueMesonCaloPhotonInvMassPt(NULL),
@@ -280,7 +269,6 @@ AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(const
   fHistoTrueMesonCaloMergedClusterPartConvInvMassPt(NULL),
   fHistoTruePrimaryMesonInvMassPt(NULL),
   fHistoTruePrimaryMesonW0WeightingInvMassPt(NULL),
-  fProfileTruePrimaryMesonWeightsInvMassPt(NULL),
   fHistoTruePrimaryMesonMCPtResolPt(NULL),
   fHistoTrueMotherMesonConvPhotonEtaPhi(NULL),
   fHistoTrueBckGGInvMassPt(NULL),
@@ -290,27 +278,40 @@ AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(const
   fHistoTrueMesonPtY(NULL),
   fHistoTrueMesonPtAlpha(NULL),
   fHistoTrueMesonPtOpenAngle(NULL),
+  fHistoMCMesonPtY(NULL),
+  fHistoMCMesonPtAlpha(NULL),
+  fHistoMCMesonPtJetPt(NULL),
+  fHistoTrueNLabelsInClusPt(NULL),
+  fHistoDoubleCountTrueMesonInvMassPt(NULL),
+  fHistoDoubleCountTrueConvGammaRPt(NULL),
+  fHistoDoubleCountTrueClusterGammaPt(NULL),
+  fHistoSPDClusterTrackletBackground(NULL),
+  fProfileEtaShift(NULL),
+  fProfileJetJetXSection(NULL),
+  fHistoMCHeaders(NULL),
+  fHistoConvGammaPt(NULL),
+  fHistoClusGammaPt(NULL),
+  fHistoClusGammaE(NULL),
+  fHistoClusOverlapHeadersGammaPt(NULL),
+  fHistoClusAllHeadersGammaPt(NULL),
+  fHistoClusRejectedHeadersGammaPt(NULL),
+  fHistoMotherInvMassRejected(NULL),
+  fHistoMCMesonPt(NULL),
+  fHistoMCMesonWOWeightPt(NULL),
+  fHistoMCMesonWOEvtWeightPt(NULL),
+  fHistoMCMesonInAccPt(NULL),
+  fHistoMCMesonWOWeightInAccPt(NULL),
+  fHistoMCMesonWOEvtWeightInAccPt(NULL),
   fHistoTrueConvGammaPt(NULL),
   fHistoTruePrimaryConvGammaPt(NULL),
   fHistoTrueClusGammaPt(NULL),
   fHistoTrueClusConvGammaPt(NULL),
   fHistoTrueClusConvGammaFullyPt(NULL),
-  fHistoTrueNLabelsInClusPt(NULL),
   fHistoTruePrimaryClusGammaPt(NULL),
   fHistoTruePrimaryClusConvGammaPt(NULL),
-  fVectorRecTrueMesons(0),
-  fHistoDoubleCountTrueMesonInvMassPt(NULL),
-  fHistoDoubleCountTrueConvGammaRPt(NULL),
-  fHistoDoubleCountTrueClusterGammaPt(NULL),
-  fVectorDoubleCountTrueMesons(0),
-  fVectorDoubleCountTrueConvGammas(0),
-  fVectorDoubleCountTrueClusterGammas(0),
   fHistoMultipleCountTrueMeson(NULL),
   fHistoMultipleCountTrueConvGamma(NULL),
   fHistoMultipleCountTrueClusterGamma(NULL),
-  fMapMultipleCountTrueMesons(),
-  fMapMultipleCountTrueConvGammas(),
-  fMapMultipleCountTrueClusterGammas(),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -319,49 +320,50 @@ AliAnalysisTaskHeavyNeutralMesonToGG::AliAnalysisTaskHeavyNeutralMesonToGG(const
   fHistoVertexY(NULL),
   fHistoNGammaConvCandidates(NULL),
   fHistoNGammaCaloCandidates(NULL),
-  fHistoSPDClusterTrackletBackground(NULL),
   fHistoNV0Tracks(NULL),
-  fProfileEtaShift(NULL),
-  fProfileJetJetXSection(NULL),
   fHistoJetJetNTrials(NULL),
-  fEventPlaneAngle(-100),
-  fRandom(0),
-  fNGammaCandidates(0),
+  fMapMultipleCountTrueMesons(),
+  fMapMultipleCountTrueConvGammas(),
+  fMapMultipleCountTrueClusterGammas(),
+  fVectorRecTrueMesons(0),
+  fVectorDoubleCountTrueMesons(0),
+  fVectorDoubleCountTrueConvGammas(0),
+  fVectorDoubleCountTrueClusterGammas(0),
   fUnsmearedPx(NULL),
   fUnsmearedPy(NULL),
   fUnsmearedPz(NULL),
   fUnsmearedE(NULL),
+  fMesonInvMassWindow(NULL),
   fMCEventPos(NULL),
   fMCEventNeg(NULL),
   fESDArrayPos(NULL),
   fESDArrayNeg(NULL),
-  fnCuts(0),
-  fiCut(0),
-  fMoveParticleAccordingToVertex(kTRUE),
-  fIsHeavyIon(0),
-  fDoLightOutput(kFALSE),
-  fMesonRecoMode(-1),
-  fMesonType(-1),
-  fMesonPDG(0),
+  fEventPlaneAngle(-100),
   fMesonInvMassMin(0),
   fMesonInvMassMax(0),
   fMesonInvMassNBins(0),
-  fMesonInvMassWindow(NULL),
+  fWeightJetJetMC(1),
+  fNGammaCandidates(0),
+  fnCuts(0),
+  fiCut(0),
+  fIsHeavyIon(0),
+  fMesonRecoMode(-1),
+  fMesonType(-1),
+  fMesonPDG(0),
   fDoMesonQA(0),
   fDoPhotonQA(0),
   fDoClusterQA(0),
+  fIsMC(0),
+  fMoveParticleAccordingToVertex(kTRUE),
+  fDoLightOutput(kFALSE),
   fIsFromDesiredHeader(kTRUE),
   fIsOverlappingWithOtherHeader(kFALSE),
-  fIsMC(0),
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
-  fWeightJetJetMC(1),
   fDoConvGammaShowerShapeTree(kFALSE),
   fEnableSortForClusMC(kFALSE),
   fDoPrimaryTrackMatching(kFALSE),
   fDoInvMassShowerShapeTree(kFALSE),
-  tBrokenFiles(NULL),
-  fFileNameBroken(NULL),
   fAllowOverlapHeaders(kTRUE),
   fEnableClusterCutsForTrigger(kFALSE)
 {
@@ -563,6 +565,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
     }
 
     fHistoMotherInvMassPt             = new TH2F*[fnCuts];
+    fHistoMotherInvMassRejected       = new TH1F*[fnCuts];
     fHistoMotherBackInvMassPt         = new TH2F*[fnCuts];
     if(!fDoLightOutput && fMesonRecoMode == 1){
       fHistoMotherMatchedInvMassPt      = new TH2F*[fnCuts];
@@ -968,6 +971,9 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
     fHistoMotherInvMassPt[iCut]             = new TH2F("ESD_Mother_InvMass_Pt", "ESD_Mother_InvMass_Pt; M_{inv} (GeV/c^{2}); p_{T,pair} (GeV/c)",
                                                        fMesonInvMassNBins, fMesonInvMassMin, fMesonInvMassMax, nBinsPt, arrPtBinning);
     fESDList[iCut]->Add(fHistoMotherInvMassPt[iCut]);
+    fHistoMotherInvMassRejected[iCut]       = new TH1F("ESD_Mother_InvMassRejected", "ESD_Mother_InvMassRejected; M_{inv} (GeV/c^{2})",
+                                                       1200, 0, 1.2);
+    fESDList[iCut]->Add(fHistoMotherInvMassRejected[iCut]);
 
     if(!fDoLightOutput){
       if (fMesonRecoMode == 1){
@@ -1413,9 +1419,9 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserCreateOutputObjects(){
   }
 
   if (fIsMC > 0){
-    tBrokenFiles = new TTree("BrokenFiles", "BrokenFiles");
-    tBrokenFiles->Branch("fileName",&fFileNameBroken);
-    fOutputContainer->Add(tBrokenFiles);
+    fTreeBrokenFiles = new TTree("BrokenFiles", "BrokenFiles");
+    fTreeBrokenFiles->Branch("fileName",&fFileNameBroken);
+    fOutputContainer->Add(fTreeBrokenFiles);
   }
 
   PostData(1, fOutputContainer);
@@ -1469,7 +1475,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserExec(Option_t *){
         if (fInputEvent->IsA()==AliESDEvent::Class()){
           if (((AliESDEvent*)fInputEvent)->GetEventNumberInFile() == 0){
             fFileNameBroken = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
-            if (tBrokenFiles) tBrokenFiles->Fill();
+            if (fTreeBrokenFiles) fTreeBrokenFiles->Fill();
             delete fFileNameBroken;
           }
         }
@@ -1628,6 +1634,10 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::UserExec(Option_t *){
           }
         }
       }
+
+      // check gamma gamma pairs and veto if necessary
+      if (!((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetAcceptMassFlag())
+        SetPhotonVeto();
 
       CalculateMesonCandidates(); // Combine Gammas from conversion and from calo
 
@@ -2379,8 +2389,11 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::ProcessMCParticles(){
   }
 }
 
+
 //________________________________________________________________________
-void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateMesonCandidates(){
+// function to reject photons in specific invariant mass window
+//________________________________________________________________________
+void AliAnalysisTaskHeavyNeutralMesonToGG::SetPhotonVeto(){
   TClonesArray * arrClustersMesonCand = NULL;
   if(fCorrTaskSetting.CompareTo("") && fMesonRecoMode > 0)
     arrClustersMesonCand = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
@@ -2404,6 +2417,123 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateMesonCandidates(){
           mesonCand->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 
           if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesonCand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+            if (!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(mesonCand, 0))){
+              gamma0->SetUseForMesonPair(kFALSE);
+              gamma1->SetUseForMesonPair(kFALSE);
+              fHistoMotherInvMassRejected[fiCut]->Fill(mesonCand->M());
+            }
+          }
+          delete mesonCand;
+          mesonCand=0x0;
+        }
+      }
+    }
+  } else if (fMesonRecoMode == 1){
+    if(fGammaCandidates->GetEntries()>0){
+      for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries();firstGammaIndex++){
+        AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+        if (gamma0==NULL) continue;
+
+        for(Int_t secondGammaIndex=0;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
+          Bool_t matched = kFALSE;
+          AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
+          if (gamma1==NULL) continue;
+
+          if (gamma1->GetIsCaloPhoton()){
+            AliVCluster* cluster = NULL;
+            if(fInputEvent->IsA()==AliESDEvent::Class()){
+              if(arrClustersMesonCand)
+                cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersMesonCand->At(gamma1->GetCaloClusterRef()));
+              else
+                cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+            } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+              if(arrClustersMesonCand)
+                cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersMesonCand->At(gamma1->GetCaloClusterRef()));
+              else
+                cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+            }
+
+            matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent, fWeightJetJetMC);
+            if(arrClustersMesonCand) delete cluster;
+          }
+
+          AliAODConversionMother *mesonCand = new AliAODConversionMother(gamma0,gamma1);
+          mesonCand->SetLabels(firstGammaIndex,secondGammaIndex);
+
+          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesonCand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+            if (!matched){
+              if (!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(mesonCand, 0))){
+                gamma0->SetUseForMesonPair(kFALSE);
+                gamma1->SetUseForMesonPair(kFALSE);
+                fHistoMotherInvMassRejected[fiCut]->Fill(mesonCand->M());
+              }
+            }
+          }
+          delete mesonCand;
+          mesonCand=0x0;
+        }
+      }
+    }
+  } else if (fMesonRecoMode == 2){
+    if(fClusterCandidates->GetEntries()>0){
+      for(Int_t firstGammaIndex=0;firstGammaIndex<fClusterCandidates->GetEntries();firstGammaIndex++){
+        AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(firstGammaIndex));
+        if (gamma0==NULL) continue;
+        for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fClusterCandidates->GetEntries();secondGammaIndex++){
+          AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
+          if (gamma1==NULL) continue;
+
+          AliAODConversionMother *mesonCand = new AliAODConversionMother(gamma0,gamma1);
+          mesonCand->SetLabels(firstGammaIndex,secondGammaIndex);
+
+          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesonCand, kTRUE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), gamma0->GetLeadingCellID(), gamma1->GetLeadingCellID()))){
+            if (!(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(mesonCand, 0))){
+              gamma0->SetUseForMesonPair(kFALSE);
+              gamma1->SetUseForMesonPair(kFALSE);
+              fHistoMotherInvMassRejected[fiCut]->Fill(mesonCand->M());
+            }
+          }
+          delete mesonCand;
+          mesonCand=0x0;
+        }
+      }
+    }
+  }
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateMesonCandidates(){
+  TClonesArray * arrClustersMesonCand = NULL;
+  if(fCorrTaskSetting.CompareTo("") && fMesonRecoMode > 0)
+    arrClustersMesonCand = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+
+  if (fMesonRecoMode == 0){
+    if(fGammaCandidates->GetEntries()>1){
+      for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
+        AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
+        if (gamma0==NULL) continue;
+        for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fGammaCandidates->GetEntries();secondGammaIndex++){
+          AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(secondGammaIndex));
+          //Check for same Electron ID
+          if (gamma1==NULL) continue;
+          if(gamma0->GetTrackLabelPositive() == gamma1->GetTrackLabelPositive() ||
+            gamma0->GetTrackLabelNegative() == gamma1->GetTrackLabelNegative() ||
+            gamma0->GetTrackLabelNegative() == gamma1->GetTrackLabelPositive() ||
+            gamma0->GetTrackLabelPositive() == gamma1->GetTrackLabelNegative() ) continue;
+
+
+          AliAODConversionMother *mesonCand = new AliAODConversionMother(gamma0,gamma1);
+          mesonCand->SetLabels(firstGammaIndex,secondGammaIndex);
+          mesonCand->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
+
+          if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesonCand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
+            if (!gamma0->GetUseForMesonPair() || !gamma1->GetUseForMesonPair()){
+              fHistoMotherInvMassRejected[fiCut]->Fill(mesonCand->M());
+              delete mesonCand;
+              mesonCand=0x0;
+              continue;
+            }
             if (fHistoMotherInvMassPt[fiCut]) fHistoMotherInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(), fWeightJetJetMC);
 
             if (fDoMesonQA > 0){
@@ -2485,6 +2615,12 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateMesonCandidates(){
             if (matched){
               if(fHistoMotherMatchedInvMassPt[fiCut]) fHistoMotherMatchedInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(),fWeightJetJetMC);
             }else {
+              if (!gamma0->GetUseForMesonPair() || !gamma1->GetUseForMesonPair()){
+                fHistoMotherInvMassRejected[fiCut]->Fill(mesonCand->M());
+                delete mesonCand;
+                mesonCand=0x0;
+                continue;
+              }
               if (fHistoMotherInvMassPt[fiCut]) fHistoMotherInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(),fWeightJetJetMC);
             }
 
@@ -2547,6 +2683,12 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateMesonCandidates(){
           mesonCand->SetLabels(firstGammaIndex,secondGammaIndex);
 
           if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(mesonCand, kTRUE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), gamma0->GetLeadingCellID(), gamma1->GetLeadingCellID()))){
+            if (!gamma0->GetUseForMesonPair() || !gamma1->GetUseForMesonPair()){
+              fHistoMotherInvMassRejected[fiCut]->Fill(mesonCand->M());
+              delete mesonCand;
+              mesonCand=0x0;
+              continue;
+            }
             if (fHistoMotherInvMassPt[fiCut]) fHistoMotherInvMassPt[fiCut]->Fill(mesonCand->M(),mesonCand->Pt(), fWeightJetJetMC);
             // fill new histograms
             if (fDoMesonQA > 0 && fDoMesonQA < 3){
@@ -3457,6 +3599,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackground(){
       }
       for(Int_t iCurrent=0;iCurrent<currPhotonList->GetEntries();iCurrent++){
         AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(currPhotonList->At(iCurrent));
+        if (!currentEventGoodV0.GetUseForMesonPair() )continue;
         for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
           AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
           if(fMoveParticleAccordingToVertex == kTRUE){
@@ -3481,8 +3624,6 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackground(){
               if (fSparseMotherBackInvMassPtZM[fiCut]) fSparseMotherBackInvMassPtZM[fiCut]->Fill(sparesFill,1);
             }
           }
-          delete backgroundCandidate;
-          backgroundCandidate = 0x0;
         }
       }
     }
@@ -3497,6 +3638,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackground(){
         }
         for(Int_t iCurrent=0;iCurrent<currPhotonList->GetEntries();iCurrent++){
           AliAODConversionPhoton currentEventGoodV0 = *(AliAODConversionPhoton*)(currPhotonList->At(iCurrent));
+          if (!currentEventGoodV0.GetUseForMesonPair() )continue;
           for(UInt_t iPrevious=0;iPrevious<previousEventV0s->size();iPrevious++){
             AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
             if(fMoveParticleAccordingToVertex == kTRUE){
@@ -3563,15 +3705,18 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundRP(){
     for(Int_t firstGammaIndex=0;firstGammaIndex<currPhotonList->GetEntries();firstGammaIndex++){
       AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(currPhotonList->At(firstGammaIndex));
       if (gamma0==NULL) continue;
+      if (!gamma0->GetUseForMesonPair() ) continue;
       for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<currPhotonList->GetEntries();secondGammaIndex++){
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(currPhotonList->At(secondGammaIndex));
         if (gamma1 == NULL) continue;
+        if (!gamma1->GetUseForMesonPair() ) continue;
         if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(gamma1,fInputEvent))continue;
         for(Int_t nRandom=0;nRandom<((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNumberOfBGEvents();nRandom++){
           RotateParticle(gamma1);
           AliAODConversionMother backgroundCandidate(gamma0,gamma1);
           backgroundCandidate.CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
           if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(&backgroundCandidate, kFALSE, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift())){
+
             if (fHistoMotherBackInvMassPt[fiCut]) fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate.M(),backgroundCandidate.Pt(),fWeightJetJetMC);
             if(fDoTHnSparse){
               Double_t sparesFill[4] = {backgroundCandidate.M(),backgroundCandidate.Pt(),(Double_t)zbin,(Double_t)mbin};
@@ -3597,6 +3742,7 @@ void AliAnalysisTaskHeavyNeutralMesonToGG::CalculateBackgroundRP(){
 
         for(Int_t iCurrent=0;iCurrent<currPhotonList->GetEntries();iCurrent++){
           AliAODConversionPhoton *gamma0 = (AliAODConversionPhoton*)(currPhotonList->At(iCurrent));
+          if (!gamma0->GetUseForMesonPair() ) continue;
           for(UInt_t iPrevious=0;iPrevious<previousEventGammas->size();iPrevious++){
             AliAODConversionPhoton *gamma1 = (AliAODConversionPhoton*)(previousEventGammas->at(iPrevious));
             AliAODConversionMother backgroundCandidate(gamma0,gamma1);

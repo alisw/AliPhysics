@@ -99,9 +99,13 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE() :
   fHistZcorr(0),
   fHistCent(0),
   fHistTPCnSigma(0),
+  fHistTPCnSigma_ele(0),
+  fHistTPCnSigma_had(0),
+  fHistTPCnSigma_eMC(0),
   fHistEopNsig(0),
   fHistEop(0),
   fHistEopHad(0),
+  fHistEopHFjet(0),
   fHistJetOrg(0),
   fHistJetOrgArea(0),
   fHistJetBG(0),
@@ -228,9 +232,13 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name) :
   fHistZcorr(0),
   fHistCent(0),
   fHistTPCnSigma(0),//my
+  fHistTPCnSigma_ele(0),
+  fHistTPCnSigma_had(0),
+  fHistTPCnSigma_eMC(0),
   fHistEopNsig(0),
   fHistEop(0),
   fHistEopHad(0),
+  fHistEopHFjet(0),
   fHistJetOrg(0),
   fHistJetOrgArea(0),
   fHistJetBG(0),
@@ -453,6 +461,15 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
   fHistTPCnSigma = new TH2F("fHistTPCnSigma","TPC nSigma;p_{T}(GeV/c);n#sigms",100,0.,20.,250,-5.,5.);
   fOutput->Add(fHistTPCnSigma);
 
+  fHistTPCnSigma_ele = new TH2F("fHistTPCnSigma_ele","TPC nSigma electron;p_{T}(GeV/c);n#sigms",20,0.,20.,250,-5.,5.);
+  fOutput->Add(fHistTPCnSigma_ele);
+
+  fHistTPCnSigma_had = new TH2F("fHistTPCnSigma_had","TPC nSigma hadron;p_{T}(GeV/c);n#sigms",20,0.,20.,250,-5.,5.);
+  fOutput->Add(fHistTPCnSigma_had);
+
+  fHistTPCnSigma_eMC = new TH2F("fHistTPCnSigma_eMC","TPC nSigma electron in MC;p_{T}(GeV/c);n#sigms",20,0.,20.,250,-5.,5.);
+  fOutput->Add(fHistTPCnSigma_eMC);
+
   fHistEopNsig = new TH2F("fHistEopNsig","E/p vs. Nsig;Nsig;E/p",200,-5,5,200,0.,4.);
   fOutput->Add(fHistEopNsig);
 
@@ -461,6 +478,9 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects()
 
   fHistEopHad = new TH2F("fHistEopHad","E/p hadron ;p_{T}(GeV/c);E/p",100,0.,20.,200,0.,4.);
   fOutput->Add(fHistEopHad);
+
+  fHistEopHFjet = new TH2F("fHistEopHFjet","E/p HFjet ;p_{T}(GeV/c);E/p",10,0.,100.,200,0.,4.);
+  fOutput->Add(fHistEopHFjet);
 
   fHistJetOrg = new TH1F("fHistJetOrg","Inclusive jet org;p_{T}",300,-100.,200.);
   fOutput->Add(fHistJetOrg);
@@ -910,7 +930,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
   // EMCal
   //TClonesArray* fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("EmcCaloClusters")); 
-  TClonesArray* fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
+  //TClonesArray* fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
+  fCaloClusters = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
   //cout << "check cluster ..." << endl;
 
    // MC array
@@ -1201,6 +1222,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
         
         // Get E/p
         Int_t EMCalIndex = -1;
+        Double_t eopJet = -1.0;
         EMCalIndex = track->GetEMCALcluster();
         if(EMCalIndex < 0) continue;
         
@@ -1239,22 +1261,28 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             Double_t clustMatchE = clustMatch->E();
             Double_t m20 =clustMatch->GetM20();
          
-            //if(m20<0.03 || m20>0.3)continue;  // shower shape cut (not need for MB since vAN20180710)
+            if(m20<0.01 || m20>0.35)continue;  // shower shape cut (not need for MB since vAN20180710)
      
             //EMCAL EID info
             Double_t eop = -1.0;
             if(track->P()>0)eop = clustMatchE/track->P();
             if(fmcData)eop += 0.04; // mean shift correction between data and MC (pPb at 5 in 2016) 
             if(idbHFEj)cout << "++++++++++ eop = " << eop << " ; " << pt  << endl;
+            eopJet = eop;
             if(pt>2.0)fHistEopNsig->Fill(fTPCnSigma,eop);
 
             if(fTPCnSigma<-4)fHistEopHad->Fill(pt,eop);
 
+            // check nSigma Data and MC
+            if(0.8<eop<1.3)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
+            if(0.3<eop<0.6)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
+            if(abs(MCpdg)==11)fHistTPCnSigma_eMC->Fill(pt,fTPCnSigma);
+ 
             if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  // Nsigma cut
             fHistEop->Fill(pt,eop);
 
-            //if(eop>0.9 && eop<1.3 && m20<0.3 && m20>0.03)isElectron = kTRUE;  
-            if(eop>fmimEop && eop<1.3)isElectron = kTRUE;  
+            if(eop>fmimEop && eop<1.3 && m20<0.35 && m20>0.01)isElectron = kTRUE;  
+            //if(eop>fmimEop && eop<1.3)isElectron = kTRUE;  
                  
             if(isElectron)
               {
@@ -1280,7 +1308,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
 
                 // e-jet corr
                 if(pt>30.0)
-                   {
+                   { 
                     iso = IsolationCut(itrack, track, pt, emcphi, emceta, clustMatchE);
                    }
               }
@@ -1423,6 +1451,7 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
                       {
                        fHistHFjet->Fill(pt,corrPt);
                        fHistHFjetOrder->Fill(corrPt,Njet);
+                       fHistEopHFjet->Fill(corrPt,eopJet);
                        if(Njet==0 || Njet==1)
                          {
                           Double_t dPhiHFjet_tmp = 0.0;

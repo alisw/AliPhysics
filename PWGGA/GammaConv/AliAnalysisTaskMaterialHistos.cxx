@@ -37,7 +37,6 @@ ClassImp(AliAnalysisTaskMaterialHistos)
 AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTaskSE(),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
-  fDoDeDxMaps(0),
   fConversionGammas(NULL),
   fGammaCandidates(NULL),
   fConversionCutArray(NULL),
@@ -69,6 +68,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   fMCEvent(NULL),
   fnCuts(0),
   fiCut(0),
+  fDoDeDxMaps(0),
   hNEvents(NULL),
   hNGoodESDTracksEta09(NULL),
   hNGoodESDTracksEta14(NULL),
@@ -112,14 +112,14 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
   hMCTrueEtaDalConversionEta(NULL),
   hMCTrueCombinatorialConversionRPt(NULL),
   hMCTrueCombinatorialConversionEta(NULL),
-  hElectrondEdxMapsR0(NULL), 
   hPositrondEdxMapsR0(NULL),
-  hElectrondEdxMapsR1(NULL), 
+  hElectrondEdxMapsR0(NULL), 
   hPositrondEdxMapsR1(NULL),
-  hElectrondEdxMapsR2(NULL), 
+  hElectrondEdxMapsR1(NULL), 
   hPositrondEdxMapsR2(NULL),
-  hElectrondEdxMapsR3(NULL), 
-  hPositrondEdxMapsR3(NULL)   
+  hElectrondEdxMapsR2(NULL), 
+  hPositrondEdxMapsR3(NULL),
+  hElectrondEdxMapsR3(NULL) 
 {
 
 }
@@ -129,7 +129,6 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos() : AliAnalysisTask
 AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) : AliAnalysisTaskSE(name),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
-  fDoDeDxMaps(0),
   fConversionGammas(NULL),
   fGammaCandidates(NULL),
   fConversionCutArray(NULL),
@@ -161,6 +160,7 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   fMCEvent(NULL),
   fnCuts(0),
   fiCut(0),
+  fDoDeDxMaps(0),
   hNEvents(NULL),
   hNGoodESDTracksEta09(NULL),
   hNGoodESDTracksEta14(NULL),
@@ -204,14 +204,14 @@ AliAnalysisTaskMaterialHistos::AliAnalysisTaskMaterialHistos(const char *name) :
   hMCTrueEtaDalConversionEta(NULL),
   hMCTrueCombinatorialConversionRPt(NULL),
   hMCTrueCombinatorialConversionEta(NULL),
-  hElectrondEdxMapsR0(NULL), 
   hPositrondEdxMapsR0(NULL),
-  hElectrondEdxMapsR1(NULL), 
+  hElectrondEdxMapsR0(NULL), 
   hPositrondEdxMapsR1(NULL),
-  hElectrondEdxMapsR2(NULL), 
+  hElectrondEdxMapsR1(NULL), 
   hPositrondEdxMapsR2(NULL),
-  hElectrondEdxMapsR3(NULL), 
-  hPositrondEdxMapsR3(NULL)   
+  hElectrondEdxMapsR2(NULL), 
+  hPositrondEdxMapsR3(NULL),   
+  hElectrondEdxMapsR3(NULL) 
 {
   // Default constructor
 

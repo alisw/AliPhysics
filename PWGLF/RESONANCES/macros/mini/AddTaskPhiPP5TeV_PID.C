@@ -217,12 +217,23 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP5TeV_PID
   //  outputFileName += ":Rsn";
   Printf("AddAnalysisTaskPhiPP5TeV_PID - Set OutputFileName : \n %s\n",outputFileName.Data());
 
+  if (HIST) {
+    AliAnalysisDataContainer* output_hist=mgr->CreateContainer(Form("RsnOut_hist_%s",outNameSuffix.Data()),
+							  TList::Class(),
+							  AliAnalysisManager::kOutputContainer,
+							  outputFileName);
+    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(task, 1, output_hist);
+  }
+
+  else {
   AliAnalysisDataContainer* output=mgr->CreateContainer(Form("RsnOut_%s",outNameSuffix.Data()),
 							TList::Class(),
 							AliAnalysisManager::kOutputContainer,
 							outputFileName);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, output);
+  }
 
   return task;
 }
