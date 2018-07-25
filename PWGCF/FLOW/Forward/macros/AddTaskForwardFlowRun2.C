@@ -52,7 +52,7 @@ AliAnalysisTaskSE* AddTaskForwardFlowRun2()
       std::cerr << "   Using default value: '" << nua_filepath << "'\n";
     //}
 
-    TFile *file = new TFile("/home/thoresen/Documents/PhD/analysis/nua.root");
+    TFile *file = new TFile("/home/thoresen/Documents/PhD/analysis/NUA_corr/20180603_1806_NUA_LHC15o_lowIR_10binszvtx/nua.root");
 
     file->GetObject("nuacentral", task->fSettings.nuacentral);  
 

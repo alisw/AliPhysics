@@ -97,7 +97,7 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
     
 
     //..adding QA plots from AliEventCuts class
-  fEventCuts.AddQAplotsToList(fOutputList);
+    fEventCuts.AddQAplotsToList(fOutputList);
 
     fEventList = new TList();
 
@@ -106,14 +106,14 @@ AliForwardNUATask::AliForwardNUATask() : AliAnalysisTaskSE(),
     fEventList->Add(new TH2F("hOutliers","Maximum #sigma from mean N_{ch} pr. bin", 
      20, 0., 100., 500, 0., 5.)); //((fFlags & kMC) ? 15. : 5. // Sigma <M> histogram 
     fEventList->Add(new TH1D("FMDHits","FMDHits",100,0,10));
-    fEventList->Add(new TH2D("hybrid","hybrid",200,-4.0,6.0, 200, 0, 2*TMath::Pi()));
+
 
     fEventList->SetName("EventInfo");
 
-    fOutputList->Add(new TH3F("NUAforward","NUAforward", 200, -4.0, 6.0, 20, 0., 2*TMath::Pi(),20,-10,10));
-    fOutputList->Add(new TH3F("NUAhist","NUAhist", 200, -4.0, 6.0, 20, 0., 2*TMath::Pi(),20,-10,10));
+    fOutputList->Add(new TH3F("NUAforward","NUAforward", 200, -4.0, 6.0, 20, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
+    fOutputList->Add(new TH3F("NUAhist","NUAhist", 200, -4.0, 6.0, 20, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
     //fOutputList->Add(fEventList);
-    fOutputList->Add(new TH3F("NUAcentral","NUAcentral", 400, -1.5, 1.5, 400, 0., 2*TMath::Pi(),20,-10,10));
+    fOutputList->Add(new TH3F("NUAcentral","NUAcentral", 400, -1.5, 1.5, 400, 0., 2*TMath::Pi(),fSettings.fNZvtxBins,fSettings.fZVtxAcceptanceLowEdge,fSettings.fZVtxAcceptanceUpEdge));
     fOutputList->Add(fEventList);
 
     PostData(1, fOutputList);
@@ -164,91 +164,72 @@ void AliForwardNUATask::UserExec(Option_t */*option*/)
   TH3F* nuacentral = static_cast<TH3F*>(fOutputList->FindObject("NUAcentral"));
   TH2F* fOutliers = static_cast<TH2F*>(eventList->FindObject("hOutliers"));
   TH1D* fFMDHits = static_cast<TH1D*>(eventList->FindObject("FMDHits"));
-  TH2D* fHybrid = static_cast<TH2D*>(eventList->FindObject("hybrid"));
+
 
   Int_t  iTracks(fAOD->GetNumberOfTracks());
 
   double cent = v0Centr;
-  //const AliAODTracklets* spdmult = fAOD->GetMultiplicity();
 
   TH2D& forwarddNdedp = aodfmult->GetHistogram(); // also known as forwarddNdedp
   AliAODVertex* aodVtx = fAOD->GetPrimaryVertex();
 
 
-  //AliAODTracklets* aodTracklets = fAOD->GetTracklets();
-  //Int_t noTracklets = aodTracklets->GetNumberOfTracklets();
-  
- 
-
   bool useEvent = kTRUE;
 
   if (iTracks < 10) useEvent = kFALSE;
 
-  Int_t phibins = forwarddNdedp.GetNbinsY();
   TString detType = "forward";
 
-  for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
-    Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
-
-
-    for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
-      //Double_t phi = forwarddNdedp.GetYaxis()->GetBinCenter(phiBin);
-      Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
-      if (!weight){
-        weight = 0;
-      }
-      
-      if (weight == 0) continue;
-    } // End of phi loop
-  } // End of eta bin
-
+  // extra cut on the FMD
   if (!fSettings.ExtraEventCutFMD(forwarddNdedp, cent, true)) useEvent = false;
-  if (useEvent){ 
+  if (useEvent) { 
 
 
-    // loop  over  all  the  tracks
+    // loop for the SPD
     /*
-for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
-    spddNdedp.Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
-        fHybrid->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
-        nuacentral->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i),aodVtx->GetZ(),1);
-        nuahist->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i),aodVtx->GetZ(),1);
-  }*/
+    AliAODTracklets* aodTracklets = fAOD->GetTracklets();
 
-  for(Int_t i(0); i < iTracks; i++) {
+    for (Int_t i = 0; i < aodTracklets->GetNumberOfTracklets(); i++) {
+      spddNdedp.Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
+      fHybrid->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i), 1);
+      nuacentral->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i),aodVtx->GetZ(),1);
+      nuahist->Fill(aodTracklets->GetEta(i),aodTracklets->GetPhi(i),aodVtx->GetZ(),1);
+    }*/
 
-    AliAODTrack* track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
-    if (track->TestFilterBit(kHybrid)){
-      if (track->Pt() >= 0.2 && track->Pt() <= 5){
-        //spddNdedp.Fill(track->Eta(),track->Phi(), 1);
-        //fHybrid->Fill(track->Eta(),track->Phi(), 1);
-        nuacentral->Fill(track->Eta(),track->Phi(),aodVtx->GetZ(),1);
-        nuahist->Fill(track->Eta(),track->Phi(),aodVtx->GetZ(),1);
+    // loop for the TPC
+    for(Int_t i(0); i < iTracks; i++) {
+
+      AliAODTrack* track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
+      if (track->TestFilterBit(kHybrid)){
+        if (track->Pt() >= 0.2 && track->Pt() <= 5){
+          //spddNdedp.Fill(track->Eta(),track->Phi(), 1);
+          //fHybrid->Fill(track->Eta(),track->Phi(), 1);
+          nuacentral->Fill(track->Eta(),track->Phi(),aodVtx->GetZ(),1);
+          nuahist->Fill(track->Eta(),track->Phi(),aodVtx->GetZ(),1);
+        }
       }
     }
-  }
 
-  for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
-    
-      Double_t acceptance = 1.;
-      Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
+    // loop for the FMD
+    Int_t phibins = forwarddNdedp.GetNbinsY();
 
-      for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
-        Double_t phi = forwarddNdedp.GetYaxis()->GetBinCenter(phiBin);
-        Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
+    for (Int_t etaBin = 1; etaBin <= forwarddNdedp.GetNbinsX(); etaBin++) {
+      
+        Double_t eta = forwarddNdedp.GetXaxis()->GetBinCenter(etaBin);
 
-        // We calculate the average Nch per. bin
-        if (weight == 0) continue;
-        
-        // Fill into Cos() and Sin() hists
-        fFMDHits->Fill(weight);
-        nuaforward->Fill(eta,phi,aodVtx->GetZ(),weight);
-        nuahist->Fill(eta,phi,aodVtx->GetZ(),weight);
-      } // End of phi loop
-    } // End of eta bin
-  } // End of useEvent
+        for (Int_t phiBin = 0; phiBin <= phibins; phiBin++) {
+          Double_t phi = forwarddNdedp.GetYaxis()->GetBinCenter(phiBin);
+          Double_t weight = forwarddNdedp.GetBinContent(etaBin, phiBin);
 
-  if(!fAOD) return;              
+          // If empty, do not fill hist
+          if (weight == 0) continue;
+          
+          fFMDHits->Fill(weight);
+          nuaforward->Fill(eta,phi,aodVtx->GetZ(),weight);
+          nuahist->Fill(eta,phi,aodVtx->GetZ(),weight);
+        } // End of phi loop
+      } // End of eta bin
+    } // End of useEvent
 
   PostData(1, fOutputList); 
   return;

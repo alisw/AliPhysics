@@ -37,9 +37,9 @@ AliAnalysisTaskSE* AddTaskForwardNUA()
 
 
   
-  else {
-    task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
-  }
+  //else {
+  //  task->fSettings.fNRefEtaBins = 1; // eller skal det være et andet antal?
+  //}
 
   if (mode == kRECON) {
     AliAnalysisDataContainer *coutput_recon =

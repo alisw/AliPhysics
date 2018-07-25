@@ -8,6 +8,8 @@ AliForwardFlowRun2Settings::AliForwardFlowRun2Settings() :
   fDataType(-1),
   fPhiAcceptanceLowEdge(0),
   fPhiAcceptanceUpEdge(2*TMath::Pi()),
+  fEtaLowEdge(-6.0),
+  fEtaUpEdge(6.0),
   fNPhiBins(20),
   fZVtxAcceptanceLowEdge(-10),
   fZVtxAcceptanceUpEdge(10),

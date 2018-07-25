@@ -28,6 +28,10 @@ class AliForwardFlowRun2Settings : public TObject {
   Double_t fPhiAcceptanceLowEdge;
   // Upper bound phi acceptance (should always be 2pi)
   Double_t fPhiAcceptanceUpEdge;
+  // Lower bound eta acceptance (should always be -6.0)
+  Double_t fEtaLowEdge;
+  // Upper bound eta acceptance (should always be 6.0)
+  Double_t fEtaUpEdge;
   // Number of bins used along phi
   // fPhiBins must be divisable by 2, but not by 4; so that we can later shift it by pi/2 (2pi is total int.)
   // The idea is to have the deltaPhi histogram with a bin centered arround 0

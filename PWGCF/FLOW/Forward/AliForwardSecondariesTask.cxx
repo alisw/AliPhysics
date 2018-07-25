@@ -165,8 +165,8 @@ AliForwardSecondariesTask::AliForwardSecondariesTask() : AliAnalysisTaskSE(),
 
     fAutoCorrection->Add(new TList());
 
-    static_cast<TList*>(fAutoCorrection)->Add(new TH2F("fQcorrfactor", "fQcorrfactor", 20, -10, 10, 1, -6.0, 6.0)); //(eta, n)
-    static_cast<TList*>(fAutoCorrection)->Add(new TH2F("fpcorrfactor", "fpcorrfactor", 20, -10, 10, fSettings.fNDiffEtaBins, -6.0, 6.0)); //(eta, n)
+    static_cast<TList*>(fAutoCorrection)->Add(new TH2F("fQcorrfactor", "fQcorrfactor", 20, fSettings.fZVtxAcceptanceLowEdge, fSettings.fZVtxAcceptanceUpEdge, 1, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge)); //(eta, n)
+    static_cast<TList*>(fAutoCorrection)->Add(new TH2F("fpcorrfactor", "fpcorrfactor", 20, fSettings.fZVtxAcceptanceLowEdge, fSettings.fZVtxAcceptanceUpEdge, fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge)); //(eta, n)
 
     Int_t bins[5] = {fSettings.fnoSamples, fSettings.fNZvtxBins, 21, fSettings.fCentBins, 48} ;
     Double_t xmin[5] = {0,fSettings.fZVtxAcceptanceLowEdge, -TMath::Pi(), 0, -6};

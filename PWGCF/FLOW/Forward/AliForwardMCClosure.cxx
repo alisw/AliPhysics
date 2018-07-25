@@ -223,9 +223,9 @@ void AliForwardMCClosure::UserExec(Option_t */*option*/)
     return;
   }
 
-    AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
-    double cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-
+    //AliMultSelection *MultSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+    //double cent = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+double cent = 10;
 
 
 

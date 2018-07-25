@@ -125,6 +125,7 @@ AliEventCuts fEventCuts;
 TF1 *fMultTOFLowCut; //!
 TF1 *fMultTOFHighCut; //!
 TF1 *fMultCentLowCut; //!
+Bool_t useEvent;
 
   enum {
     kTPCOnly = 128, // TPC only tracks

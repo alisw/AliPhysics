@@ -19,8 +19,8 @@ AliForwardGenericFramework::AliForwardGenericFramework()
      rbins[3] = 2 ; // two bins in eta for gap
   }
 
-  Double_t xmin[4] = {-1.0, -0.5, 0.5, -6.0}; // kind (real or imaginary), n, p, eta
-  Double_t xmax[4] = { 1,   5.5, 4.5,  6.0}; // kind (real or imaginary), n, p, eta
+  Double_t xmin[4] = {-1.0, -0.5, 0.5, fSettings.fEtaLowEdge}; // kind (real or imaginary), n, p, eta
+  Double_t xmax[4] = { 1,   5.5, 4.5,  fSettings.fEtaUpEdge}; // kind (real or imaginary), n, p, eta
 
   fQvector = new THnD("Qvector", "Qvector", dimensions, rbins, xmin, xmax);
   Int_t dbins[4] = {2, 6, 4, fSettings.fNDiffEtaBins} ; // kind (real or imaginary), n, p, eta
@@ -30,8 +30,8 @@ AliForwardGenericFramework::AliForwardGenericFramework()
 
   useEvent = true;
 
-  fAutoRef = TH1F("fAutoRef","fAutoRef", 1, -6.0, 6.0); // not used at the moment
-  fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, -6.0, 6.0); // not used at the moment
+  fAutoRef = TH1F("fAutoRef","fAutoRef", fSettings.fNRefEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge); // not used at the moment
+  fAutoDiff = TH1F("fAutoDiff","fAutoDiff", fSettings.fNDiffEtaBins, fSettings.fEtaLowEdge, fSettings.fEtaUpEdge); // not used at the moment
 }
 
 
@@ -55,12 +55,6 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
     Double_t max = 0;
     Int_t nInAvg = 0;
     
-    /*
-    if (fabs(eta) > 1.7 && detType == "forward"){
-      acceptance = dNdetadphi.GetBinContent(etaBin, kphiAcceptanceBin);
-      if (acceptance == 0 || acceptance > 2.0) continue;
-    }*/
-
     Double_t difEtaBin = fpvector->GetAxis(3)->FindBin(eta);
     Double_t difEta = fpvector->GetAxis(3)->GetBinCenter(difEtaBin);
     Double_t refEtaBin = fQvector->GetAxis(3)->FindBin(eta);
@@ -69,18 +63,13 @@ void AliForwardGenericFramework::CumulantsAccumulate(TH2D& dNdetadphi, TList* ou
     for (Int_t phiBin = 1; phiBin <= dNdetadphi.GetNbinsY(); phiBin++) {
       Double_t phi = dNdetadphi.GetYaxis()->GetBinCenter(phiBin);
 
-      // Check for acceptance
-      /*
-      if ( fabs(eta) > 1.7) {
-        if (phiBin == 0 && dNdetadphi.GetBinContent(etaBin, 0) == 0) break;
-      }*/
+
 
       Double_t weight = dNdetadphi.GetBinContent(etaBin, phiBin);
-
+      // holes in the FMD
       if ((etaBin == 17 || etaBin == 18 || etaBin == 14) && (weight == 0)){
         if (detType == "forward") weight = 1.; 
       } 
-
 
       if (fSettings.doNUA){
         if (detType == "central") {
