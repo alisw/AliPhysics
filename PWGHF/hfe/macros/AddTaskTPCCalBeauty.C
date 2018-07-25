@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////
 class AliAnalysisDataContainer;
 
-AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bool_t applySSCut = kTRUE, Bool_t fillElecSprs = kFALSE, Bool_t isMC=kFALSE, Int_t nClsTPC=80, TString ContNameExt = " ")
+AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bool_t applySSCut = kTRUE, Bool_t fillElecSprs = kFALSE, Bool_t isMC=kFALSE, Bool_t runStackLoop = kFALSE, Int_t nClsTPC=80, TString ContNameExt = " ")
 {
     // get the manager via the static access member
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -32,6 +32,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bo
     taskBFEemc->SetSSCut(applySSCut);
     taskBFEemc->SetFillSprs(fillElecSprs);
     taskBFEemc->SetMC(isMC);
+    taskBFEemc->SetStackLoop(runStackLoop);
     taskBFEemc->SetTPCClus(nClsTPC);
     taskBFEemc->SetClusterTypeEMC(kTRUE);
     taskBFEemc->SetClusterTypeDCAL(kFALSE);
@@ -57,6 +58,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bo
     taskBFEdc->SetSSCut(applySSCut);
     taskBFEdc->SetFillSprs(fillElecSprs);
     taskBFEdc->SetMC(isMC);
+    taskBFEdc->SetStackLoop(runStackLoop);
     taskBFEdc->SetTPCClus(nClsTPC);
     taskBFEdc->SetClusterTypeEMC(kFALSE);
     taskBFEdc->SetClusterTypeDCAL(kTRUE);
@@ -114,6 +116,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bo
         taskBFEeg01emc->SetSSCut(applySSCut);
         taskBFEeg01emc->SetFillSprs(fillElecSprs);
         taskBFEeg01emc->SetMC(isMC);
+        taskBFEeg01emc->SetStackLoop(runStackLoop);
         taskBFEeg01emc->SetTPCClus(nClsTPC);
         taskBFEeg01emc->SetClusterTypeEMC(kTRUE);
         taskBFEeg01emc->SetClusterTypeDCAL(kFALSE);
@@ -185,6 +188,7 @@ AliAnalysisTask* AddTaskTPCCalBeauty(Double_t centMin=0, Double_t centMax=10, Bo
         taskBFEdg01dc->SetSSCut(applySSCut);
         taskBFEdg01dc->SetFillSprs(fillElecSprs);
         taskBFEdg01dc->SetMC(isMC);
+        taskBFEdg01dc->SetStackLoop(runStackLoop);
         taskBFEdg01dc->SetTPCClus(nClsTPC);
         taskBFEdg01dc->SetClusterTypeEMC(kFALSE);
         taskBFEdg01dc->SetClusterTypeDCAL(kTRUE);

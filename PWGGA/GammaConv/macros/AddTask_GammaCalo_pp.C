@@ -1000,38 +1000,42 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00052013","1111111067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC
     cuts.AddCut("00085013","1111111067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC EG2
     cuts.AddCut("00083013","1111111067032220000","01631031000000d0"); // -50ns, 30ns timing cut, NL kSDM PCMEMC EG1
-  } else if (trainConfig == 451){ // EMCAL syst 1/5
+  } else if (trainConfig == 451){ // EMCAL syst 1/7
     cuts.AddCut("00010113","1111111067022220000","01631031000000d0"); // min energy cluster variation 1  600 MeV
     cuts.AddCut("00010113","1111111067042220000","01631031000000d0"); // min energy cluster variation 2  800 MeV
     cuts.AddCut("00010113","1111111067052220000","01631031000000d0"); // min energy cluster variation 3  900 MeV
     cuts.AddCut("00010113","1111111067032220000","01631061000000d0"); // alpha meson variation 1 0<alpha<0.8
     cuts.AddCut("00010113","1111111067032220000","01631051000000d0"); // alpha meson variation 2 0<alpha<0.75
-  } else if (trainConfig == 452){ // EMCAL syst 2/5
+  } else if (trainConfig == 452){ // EMCAL syst 2/7
     cuts.AddCut("00010113","1111111067032230000","01631031000000d0"); // min/max M02  0.1<M<0.5
     cuts.AddCut("00010113","1111111067032200000","01631031000000d0"); // min/max M02  0.1<M<100
     cuts.AddCut("00010113","1111111067032250000","01631031000000d0"); // min/max M02  0.1<M<0.3
     cuts.AddCut("00010113","1111111067032260000","01631031000000d0"); // min/max M02  0.1<M<0.27
-  } else if (trainConfig == 453){ // EMCAL syst 3/5
+  } else if (trainConfig == 453){ // EMCAL syst 3/7
     cuts.AddCut("00010113","1112111067032220000","01631031000000d0"); // only modules with TRD infront
     cuts.AddCut("00010113","1111311067032220000","01631031000000d0"); // no modules with TRD infront
     cuts.AddCut("00010113","1111111067032220000","01633031000000d0"); // rapidity variation  y<0.6
     cuts.AddCut("00010113","1111111067032220000","01634031000000d0"); // rapidity variation  y<0.5
-  } else if (trainConfig == 454){ // EMCAL syst 4/5
+  } else if (trainConfig == 454){ // EMCAL syst 4/7
     cuts.AddCut("00010113","1111111067032220000","0163103100000040"); // min opening angle 0.0152
     cuts.AddCut("00010113","1111111067032220000","0163103100000060"); // min opening angle 0.017
     cuts.AddCut("00010113","1111111067032220000","0163103100000070"); // min opening angle 0.016
     cuts.AddCut("00010113","1111111067032220000","0163103100000080"); // min opening angle 0.018
     cuts.AddCut("00010113","1111111067032220000","0163103100000090"); // min opening angle 0.019
-  } else if (trainConfig == 455){ // EMCAL syst 5/5
+  } else if (trainConfig == 455){ // EMCAL syst 5/7
     cuts.AddCut("00010113","1111111063032220000","01631031000000d0"); // fixed window
     cuts.AddCut("00010113","1111111066032220000","01631031000000d0"); // tm pt dependent var 1
     cuts.AddCut("00010113","1111111068032220000","01631031000000d0"); // tm pt dependent var 2
     cuts.AddCut("00010113","1111111069032220000","01631031000000d0"); // tm pt dependent var 3
-  } else if (trainConfig == 456){ // EMCAL syst 5/5
-    cuts.AddCut("00010113","1111111037032230000","01631031000000d0"); // +-10ns timing cut
-    cuts.AddCut("00010113","1111111047032230000","01631031000000d0"); // +-20ns timing cut
-    cuts.AddCut("00010113","1111111057032230000","01631031000000d0"); // +-50ns timing cut
-    cuts.AddCut("00010113","1111111077032230000","01631031000000d0"); // +-30ns timing cut
+  } else if (trainConfig == 456){ // EMCAL syst 6/7
+    cuts.AddCut("00010113","1111111037032230000","01631031000000d0"); // cluster timing cut
+    cuts.AddCut("00010113","1111111047032230000","01631031000000d0"); // cluster timing cut
+    cuts.AddCut("00010113","1111111057032230000","01631031000000d0"); // cluster timing cut
+    cuts.AddCut("00010113","1111111077032230000","01631031000000d0"); // cluster timing cut
+  } else if (trainConfig == 457){ // EMCAL syst 7/7
+    cuts.AddCut("00010113","1111111087032230000","01631031000000d0"); // cluster timing cut
+    cuts.AddCut("00010113","1111111097032230000","01631031000000d0"); // cluster timing cut
+    cuts.AddCut("00010113","11111110a7032230000","01631031000000d0"); // cluster timing cut
 
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations

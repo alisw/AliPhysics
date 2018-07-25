@@ -81,6 +81,7 @@ AliAnalysisTaskEmcalJetConstituentQA::AliAnalysisTaskEmcalJetConstituentQA(const
   fNameTriggerDecisionContainer("EmcalTriggerDecision")
 {
   this->SetUseAliAnaUtils(true);
+  this->SetMakeGeneralHistograms(true);
 }
 
 AliAnalysisTaskEmcalJetConstituentQA::~AliAnalysisTaskEmcalJetConstituentQA(){
@@ -95,9 +96,10 @@ void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
 
   const TBinning *jetbinning[4] = {&binningptjet, &binningnef, &multbinning, &multbinning},
                  *chargedbinning[7] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningz, &binningR},
-                 *neutralbinning[8] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningptconst, &binningz, &binningR},
+                 *neutralbinning[9] = {&binningptjet, &binningnef, &multbinning, &multbinning, &binningptconst, &binningptconst, &binningz, &binningR, &binningptconst},
                  *binningHighZClusters[7] = {&binningptjet, &binningnef, &binningptconst, &binningz, &binningNCell, &binningFracCellLeading, &binningM02},
-                 *leadingbinning[5] = {&binningptjet, &binningnef, &binningptconst, &binningz, &binningR},
+                 *leadingchargedbinning[5] = {&binningptjet, &binningnef, &binningptconst, &binningz, &binningR},
+                 *leadingneutralbinning[6] = {&binningptjet, &binningnef, &binningptconst, &binningz, &binningR, &binningptconst},
                  *leadingjetvecbinning[4] = {&binningptjet, &etabinning, &phibinning, &binningptjet};
 
   fHistos = new THistManager(Form("histos_%s", GetName()));
@@ -108,14 +110,14 @@ void AliAnalysisTaskEmcalJetConstituentQA::UserCreateOutputObjects(){
     fHistos->CreateTHnSparse(Form("hPtEtaPhiELeadingJet%s", contname->String().Data()), Form("Momemtum vector of leading jets %s", contname->String().Data()), 4, leadingjetvecbinning);
     if(fJetType == AliJetContainer::kFullJet || fJetType == AliJetContainer::kNeutralJet){
       fHistos->CreateTHnSparse(Form("hChargedConstituents%s", contname->String().Data()), Form("charged constituents in jets %s", contname->String().Data()), 7, chargedbinning);
-      fHistos->CreateTHnSparse(Form("hLeadingTrack%s", contname->String().Data()), Form("leading charged constituent in jets %s", contname->String().Data()), 5, leadingbinning);
-      fHistos->CreateTHnSparse(Form("hLeadingJetLeadingTrack%s", contname->String().Data()), Form("leading charged constituent in jets %s", contname->String().Data()), 5, leadingbinning);
+      fHistos->CreateTHnSparse(Form("hLeadingTrack%s", contname->String().Data()), Form("leading charged constituent in jets %s", contname->String().Data()), 5, leadingchargedbinning);
+      fHistos->CreateTHnSparse(Form("hLeadingJetLeadingTrack%s", contname->String().Data()), Form("leading charged constituent in jets %s", contname->String().Data()), 5, leadingchargedbinning);
     }
     if(fJetType == AliJetContainer::kFullJet || AliJetContainer::kNeutralJet){
-      fHistos->CreateTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), Form("neutral constituents in jets %s", contname->String().Data()), 8, neutralbinning);
+      fHistos->CreateTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), Form("neutral constituents in jets %s", contname->String().Data()), 9, neutralbinning);
       fHistos->CreateTHnSparse(Form("hHighZClusters%s", contname->String().Data()), "Properties of high-z clusters", 7, binningHighZClusters);
-      fHistos->CreateTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), Form("leading neutral constituent in jets %s", contname->String().Data()), 5, leadingbinning);
-      fHistos->CreateTHnSparse(Form("hLeadingJetLeadingCluster%s", contname->String().Data()), Form("leading neutral constituent in jets %s", contname->String().Data()), 5, leadingbinning);
+      fHistos->CreateTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), Form("leading neutral constituent in jets %s", contname->String().Data()), 6, leadingneutralbinning);
+      fHistos->CreateTHnSparse(Form("hLeadingJetLeadingCluster%s", contname->String().Data()), Form("leading neutral constituent in jets %s", contname->String().Data()), 6, leadingneutralbinning);
     }
   }
 
@@ -136,31 +138,6 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
     return kFALSE;
   }
 
-  // Event selection
-  AliDebugStream(1) << "Trigger selection string: " << fTriggerSelectionString << ", fired trigger classes: " << fInputEvent->GetFiredTriggerClasses() << std::endl;
-  if(fTriggerSelectionString.Contains("INT7")){
-    // INT7 trigger
-    if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
-  } else if(fTriggerSelectionString.Contains("EJ")){
-    auto triggerclass = fTriggerSelectionString(fTriggerSelectionString.Index("EJ"),3); // cleanup trigger string from possible tags
-    AliDebugStream(1) << "Inspecting trigger class " << triggerclass << std::endl;
-    // EMCAL JET trigger
-    if(!fMCEvent){ // Running on Data
-      if(!(fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)) return false;
-      if(!fInputEvent->GetFiredTriggerClasses().Contains(triggerclass)) return false;
-    }
-
-    if(fUseTriggerSelection) {
-      auto triggerdecisions = dynamic_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer.Data()));
-      if(!triggerdecisions) {
-        AliErrorStream() << "No offline trigger selection available" << std::endl;
-        return false;
-      }
-      else if(!triggerdecisions->IsEventSelected(triggerclass.Data())) return false;
-    }
-  } else return false;
-
-  AliDebugStream(1) << "Event is selected" << std::endl;
 
   for(auto jc : fNamesJetContainers){
     auto contname = dynamic_cast<TObjString *>(jc);
@@ -181,7 +158,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
       AliDebugStream(3) << "Next accepted jet, found " << jet->GetNumberOfTracks() << " tracks and " << jet->GetNumberOfClusters() << " clusters." << std::endl;
       Double_t pointjet[4] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters())}, 
                pointcharged[7] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1., -1.}, 
-               pointneutral[8] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1., -1., -1.},
+               pointneutral[9] = {std::abs(jet->Pt()), jet->NEF(), static_cast<double>(jet->GetNumberOfTracks()), static_cast<double>(jet->GetNumberOfClusters()), -1., 1., -1., -1.},
                pointHighZCluster[7] = {std::abs(jet->Pt()), jet->NEF(), -1., -1., -1., -1., -1.};
       fHistos->FillTHnSparse(Form("hJetCounter%s", contname->String().Data()), pointjet);
       TVector3 jetvec{jet->Px(), jet->Py(), jet->Pz()};
@@ -212,6 +189,8 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
       if((fJetType == AliJetContainer::kFullJet || fJetType == AliJetContainer::kNeutralJet) && clusters){
         for(decltype(jet->GetNumberOfClusters()) icl = 0; icl < jet->GetNumberOfClusters(); icl++){
           const auto clust = jet->ClusterAt(icl, clusters->GetArray());
+          std::vector<double> fracamp(clust->GetNCells());
+          memcpy(fracamp.data(), clust->GetCellsAmplitudeFraction(), sizeof(double) * clust->GetNCells());
           if(!clust) continue; 
           TLorentzVector ptvec;
           clust->GetMomentum(ptvec, this->fVertex, AliVCluster::kHadCorr);
@@ -219,6 +198,7 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
           pointneutral[5] = std::abs(clust->GetNonLinCorrEnergy());
           pointneutral[6] = jet->GetZ(ptvec.Px(), ptvec.Py(), ptvec.Pz());
           pointneutral[7] = jetvec.DeltaR(ptvec.Vect());
+          pointneutral[8] = std::abs(clust->E() * (*std::max_element(fracamp.begin(), fracamp.end())));
           fHistos->FillTHnSparse(Form("hNeutralConstituents%s", contname->String().Data()), pointneutral);
 
           if(pointneutral[6] > 0.95) {
@@ -235,7 +215,9 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
         if(leadingcluster){
           TLorentzVector pvect;
           leadingcluster->GetMomentum(pvect, fVertex);
-          double lclusterpoint[5] = {std::abs(jet->Pt()), jet->NEF(), std::abs(pvect.Pt()), jet->GetZ(pvect.Px(), pvect.Py(), pvect.Pz()), jetvec.DeltaR(pvect.Vect())};
+          std::vector<double> fracamp(leadingcluster->GetNCells());
+          memcpy(fracamp.data(), leadingcluster->GetCellsAmplitudeFraction(), sizeof(double) * leadingcluster->GetNCells());
+          double lclusterpoint[6] = {std::abs(jet->Pt()), jet->NEF(), std::abs(pvect.Pt()), jet->GetZ(pvect.Px(), pvect.Py(), pvect.Pz()), jetvec.DeltaR(pvect.Vect()), std::abs(leadingcluster->E() * (*std::max_element(fracamp.begin(), fracamp.end())))};
           fHistos->FillTHnSparse(Form("hLeadingCluster%s", contname->String().Data()), lclusterpoint);
         }
       }
@@ -271,6 +253,35 @@ bool AliAnalysisTaskEmcalJetConstituentQA::Run(){
   }
   
   return kTRUE;
+}
+
+Bool_t AliAnalysisTaskEmcalJetConstituentQA::IsTriggerSelected(){
+  // Event selection
+  AliDebugStream(1) << "Trigger selection string: " << fTriggerSelectionString << ", fired trigger classes: " << fInputEvent->GetFiredTriggerClasses() << std::endl;
+  if(fTriggerSelectionString.Contains("INT7")){
+    // INT7 trigger
+    if(!(fInputHandler->IsEventSelected() & AliVEvent::kINT7)) return false;
+  } else if(fTriggerSelectionString.Contains("EJ")){
+    auto triggerclass = fTriggerSelectionString(fTriggerSelectionString.Index("EJ"),3); // cleanup trigger string from possible tags
+    AliDebugStream(1) << "Inspecting trigger class " << triggerclass << std::endl;
+    // EMCAL JET trigger
+    if(!fMCEvent){ // Running on Data
+      if(!(fInputHandler->IsEventSelected() & AliVEvent::kEMCEJE)) return false;
+      if(!fInputEvent->GetFiredTriggerClasses().Contains(triggerclass)) return false;
+    }
+
+    if(fUseTriggerSelection) {
+      auto triggerdecisions = dynamic_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(fInputEvent->FindListObject(fNameTriggerDecisionContainer.Data()));
+      if(!triggerdecisions) {
+        AliErrorStream() << "No offline trigger selection available" << std::endl;
+        return false;
+      }
+      else if(!triggerdecisions->IsEventSelected(triggerclass.Data())) return false;
+    }
+  } else return false;
+
+  AliDebugStream(1) << "Event is selected" << std::endl;
+  return true;
 }
 
 AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddTaskEmcalJetConstituentQA(const char *trigger, AliJetContainer::EJetType_t jettype, bool partmode){

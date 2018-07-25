@@ -1381,7 +1381,7 @@ void AliMCAnalysisUtils::GetMCDecayAsymmetryAngleForPDG(Int_t label, Int_t pdg, 
   else 
   {
     ok = kFALSE;
-    AliInfo(Form("Mother with PDG %d, not found! \n",pdg));
+    AliInfo(Form("Mother with PDG %d, not found!",pdg));
     return;
   }      
   

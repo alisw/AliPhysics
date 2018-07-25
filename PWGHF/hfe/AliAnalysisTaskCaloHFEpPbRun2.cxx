@@ -14,7 +14,7 @@
  **************************************************************************/
 
 /////////////////////////////////////////////////////////////////////////////
-//   Task for heavy-flavour electrons analysis in p-Pb collisions
+//   Task for Heavy-flavour electrons analysis in p-Pb collisions
 //   at 8.16 TeV with TPC + EMCal + DCal
 //
 //   - [Preliminary] Nuclear modification factor RpPb
@@ -76,7 +76,6 @@ Double_t CutPairEEta[2] = {-0.9,0.9};
 Double_t CutPairENsigma[2] = {-3.,3.};
 //############################################################################################## //
 
-
 AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTaskSE(),
     //----- Analysis Parameters -----
     TrackEtaLow(0),
@@ -111,6 +110,8 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fMCparticle(0),
     fMCheader(0),
     fMCarray(0),
+    //------Period name-----
+    fPeriodName("name"),
     //------EMCal&DCal flag-----
     fFlagClsTypeEMCal(kTRUE),
     fFlagClsTypeDCal(kTRUE),
@@ -132,9 +133,13 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     //-----Centrality-----
     fCentrality(-1),
     fMultiplicity(-1),
+    fCentMax(-1),
+    fCentMin(-1),
     fCent(0),
     fMulti(0),
     fCentMultiCorrl(0),
+    //---ch particle eff---//
+    fEffHadron(0),
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE(0),
     fCaloClusterEAfterMatch(0),
@@ -182,6 +187,9 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2() : AliAnalysisTask
     fTrigpTAllHadHCorrl(0),
     fSprsAllHadHCorrl(0),
     fSprsMixAllHadHCorrl(0),
+    fTrigpTAllHadHCorrl_CaloMatch(0),
+    fSprsAllHadHCorrl_CaloMatch(0),
+    fSprsMixAllHadHCorrl_CaloMatch(0),
     fTrigpTHadHCorrl(0),
     fSprsHadHCorrl(0),
     fSprsMixHadHCorrl(0),
@@ -284,6 +292,8 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fMCparticle(0),
     fMCheader(0),
     fMCarray(0),
+    //------Period name-----
+    fPeriodName("name"),
     //------EMCal&DCal flag-----
     fFlagClsTypeEMCal(kTRUE),
     fFlagClsTypeDCal(kTRUE),
@@ -305,9 +315,13 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     //-----Centrality-----
     fCentrality(-1),
     fMultiplicity(-1),
+    fCentMax(-1),
+    fCentMin(-1),
     fCent(0),
     fMulti(0),
     fCentMultiCorrl(0),
+    //---ch particle eff---
+    fEffHadron(0),
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE(0),
     fCaloClusterEAfterMatch(0),
@@ -355,6 +369,9 @@ AliAnalysisTaskCaloHFEpPbRun2::AliAnalysisTaskCaloHFEpPbRun2(const char* name) :
     fTrigpTAllHadHCorrl(0),
     fSprsAllHadHCorrl(0),
     fSprsMixAllHadHCorrl(0),
+    fTrigpTAllHadHCorrl_CaloMatch(0),
+    fSprsAllHadHCorrl_CaloMatch(0),
+    fSprsMixAllHadHCorrl_CaloMatch(0),
     fTrigpTHadHCorrl(0),
     fSprsHadHCorrl(0),
     fSprsMixHadHCorrl(0),
@@ -438,6 +455,8 @@ AliAnalysisTaskCaloHFEpPbRun2::~AliAnalysisTaskCaloHFEpPbRun2()
     delete fCaloClusters_tender;
     delete fSprsAllHadHCorrl;
     delete fSprsMixAllHadHCorrl;
+    delete fSprsAllHadHCorrl_CaloMatch;
+    delete fSprsMixAllHadHCorrl_CaloMatch;
     delete fSprsHadHCorrl;
     delete fSprsMixHadHCorrl;
     delete fSprsInclusiveEHCorrl;
@@ -456,6 +475,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     //
     // the histograms are in this case added to a tlist, this list is in the end saved
     // to an output file
+
     //
     fOutputList = new TList();          // this is a list which will contain all of your histograms
                                         // at the end of the analysis, the contents of this list are written
@@ -501,6 +521,8 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fCentMultiCorrl = new TH2F("fCentMultiCorrl","Multiplicity vs Centrality;Multiplicity;Centrality",200,0,2000,100,0,100);
     fOutputList -> Add(fCentMultiCorrl);
 
+    //---ch particle eff---
+    fOutputList -> Add(fEffHadron);
 
     //-----EMCal(&DCal) Cluster------
     fCaloClusterE = new TH1F("fCaloClusterE", "cluster energy distribution;Energy (GeV.);counts",500,0,50);
@@ -591,7 +613,6 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fNSigmaEop = new TH2F("fNSigmaEop","E/p vs. n_{#sigma}^{TPC}, p_{T} > 3 GeV/c.;E/p;#sigma_{TPC-dE/dx}",300,0.,3.,200,-10,10);
     fOutputList -> Add(fNSigmaEop);
 
-    // fEopElectron = new TH2F("fEopElectron",Form("E/p vs. p_{T}, %3.1f < n_{#sigma}^{TPC} < %3.1f;p_{T} (GeV/c.);E/p",CutNsigmaE[0],CutNsigmaE[1]),500,0,50,300,0.,3.);
     fEopElectron = new TH2F("fEopElectron",Form("E/p vs. p_{T}, %3.2f < n_{#sigma}^{TPC} < %3.2f;p_{T} (GeV/c.);E/p",NsigmaLow,NsigmaHigh),500,0,50,300,0.,3.);
     fOutputList -> Add(fEopElectron);
 
@@ -657,9 +678,12 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     ////////////////////////////////
     // Delta phi - Delta eta dist //
     ////////////////////////////////
-    Int_t bin[4] = {30,20,32,50}; //trigpT, assipT ,Dphi, Deta
+    Int_t bin[4] = {300,200,20,12}; //trigpT, assipT ,Dphi, Deta
     Double_t xmin[4] = {0,0,-TMath::Pi()/2,-1.8};
     Double_t xmax[4] = {30,20,(3*TMath::Pi())/2,1.8};
+    // Int_t bin[4] = {30,20,32,50}; //trigpT, assipT ,Dphi, Deta
+    // Double_t xmin[4] = {0,0,-TMath::Pi()/2,-1.8};
+    // Double_t xmax[4] = {30,20,(3*TMath::Pi())/2,1.8};
 
     fTrigpTAllHadHCorrl = new TH1F("fTrigpTAllHadHCorrl","#it{p}_{T}^{trig} distribution (ch-ch corrl);#it{p}_{T}^{trig} (GeV/#it{c});counts",500,0,50);
     fTrigpTAllHadHCorrl -> Sumw2();
@@ -672,6 +696,18 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
     fSprsMixAllHadHCorrl = new THnSparseD("fSprsMixAllHadHCorrl","Sparse for Dphi and Deta (ch-ch corrl) for mixed event;#it{p}_{T}^{trig} (GeV/#it{c});#it{p}_{T}^{asso} (GeV/#it{c});#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
     fSprsMixAllHadHCorrl -> Sumw2();
     fOutputList -> Add(fSprsMixAllHadHCorrl);
+
+    fTrigpTAllHadHCorrl_CaloMatch = new TH1F("fTrigpTAllHadHCorrl_CaloMatch","#it{p}_{T}^{trig} distribution (ch-ch corrl, Calo matched tracks);#it{p}_{T}^{trig} (GeV/#it{c});counts",500,0,50);
+    fTrigpTAllHadHCorrl_CaloMatch -> Sumw2();
+    fOutputList -> Add(fTrigpTAllHadHCorrl_CaloMatch);
+
+    fSprsAllHadHCorrl_CaloMatch = new THnSparseD("fSprsAllHadHCorrl_CaloMatch","Sparse for Dphi and Deta (ch-ch corrl, Calo matched tracks);#it{p}_{T}^{trig} (GeV/#it{c});#it{p}_{T}^{asso} (GeV/#it{c});#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+    fSprsAllHadHCorrl_CaloMatch -> Sumw2();
+    fOutputList -> Add(fSprsAllHadHCorrl_CaloMatch);
+
+    fSprsMixAllHadHCorrl_CaloMatch = new THnSparseD("fSprsMixAllHadHCorrl_CaloMatch","Sparse for Dphi and Deta (ch-ch corrl, Calo matched tracks) for mixed event;#it{p}_{T}^{trig} (GeV/#it{c});#it{p}_{T}^{asso} (GeV/#it{c});#Delta#varphi;#Delta#eta;",4,bin,xmin,xmax);
+    fSprsMixAllHadHCorrl_CaloMatch -> Sumw2();
+    fOutputList -> Add(fSprsMixAllHadHCorrl_CaloMatch);
 
     fTrigpTHadHCorrl = new TH1F("fTrigpTHadHCorrl","#it{p}_{T}^{trig} distribution (h-h corrl);#it{p}_{T}^{trig} (GeV/#it{c});counts",500,0,50);
     fTrigpTHadHCorrl -> Sumw2();
@@ -778,6 +814,31 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserCreateOutputObjects()
 
       fMCHFEEopwPID = new TH2F("fMCHFEEopwPID","embedding e^{HF} E/p vs p_{T} (with n_{#sigma}^{TPC} & shower shape cut);p_{T} (GeV/c);E/p",500,0,50,300,0,3);
       fOutputList -> Add(fMCHFEEopwPID);
+
+      //----- DCA for c/b separation ------
+      // fMCDCAinclusive = new TH2F("fMCDCAinclusive","inclusive electrons;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
+      // fOutputList -> Add(fMCDCAinclusive);
+      //
+      // fMCDCAconv = new TH2F("fMCDCAconv","conversion electrons;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
+      // fOutputList -> Add(fMCDCAconv);
+      //
+      // fMCDCAdalitz = new TH2F("fMCDCAdalitz","Dalitz decay electrons;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
+      // fOutputList -> Add(fMCDCAdalitz);
+      //
+      // fMCDCAcharm = new TH2F("fMCDCAcharm","charm hadrons decay electrons;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
+      // fOutputList -> Add(fMCDCAcharm);
+      //
+      // fMCDCAbeauty = new TH2F("fMCDCAbeauty","beauty hadrons decay electrons;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
+      // fOutputList -> Add(fMCDCAbeauty);
+      //
+      // fMCDCAPHE = new TH2F("fMCDCAPHE","PHE w/PID before mass method;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
+      // fOutputList -> Add(fMCDCAPHE);
+      //
+      // fMCDCAPHEULS = new TH2F("fMCDCAPHEULS","ULS-pair w/ mass cut;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
+      // fOutputList -> Add(fMCDCAPHEULS);
+      //
+      // fMCDCAPHELS = new TH2F("fMCDCAPHELS","ULS-pair w/ mass cut;p_{T} (GeV/c.);DCA #times charge (cm.)",500,0,50,400,-0.2,0.2);
+      // fOutputList -> Add(fMCDCAPHELS);
 
       //----- Non-HFE tagging efficiency ------
       Bool_t fFlagweightfunc = kTRUE;
@@ -978,6 +1039,13 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
     fNevents -> Fill(1);
     //#######################################################################//
 
+    //########################## Centrality Class ##########################//
+    Bool_t IsCentPass = kFALSE;
+    CheckCentrality(fAOD,IsCentPass);
+    if(!IsCentPass) return;
+    if(fCentrality < fCentMin || fCentrality > fCentMax) return;
+    //######################################################################//
+
     //########################## Event Selection ##########################//
     // --- SPD Vtx --- //
     const AliVVertex *pVtxSPD = fVevent -> GetPrimaryVertexSPD();
@@ -1015,12 +1083,9 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
     // if(!fEventCuts->GoodPrimaryAODVertex(fVevent)) return;
     //#####################################################################//
     if(Isdebug) cout << "event selection finished" << endl;
-
-    //########################## Centrality ##########################//
-    Bool_t IsCentPass = kFALSE;
-    CheckCentrality(fAOD,IsCentPass);
-    if(!IsCentPass) return;
-    //################################################################//
+    fCent -> Fill(fCentrality);
+    fMulti -> Fill(fMultiplicity);
+    fCentMultiCorrl -> Fill(fMultiplicity,fCentrality);
 
     //########################## Fill Mixed event pool ##########################//
     AliEventPool *fPool = fPoolMgr -> GetEventPool(fCentrality,Zvertex); // Get the buffer associated with the current centrality and z-vtx
@@ -1075,11 +1140,14 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
         MCTracklabelM = fMCALLparticle -> GetMother();
 
         IsMCPhysicalPrimary = fMCALLparticle -> IsPhysicalPrimary();
-        if(IsMCPhysicalPrimary) fMCchtrack_gene -> Fill(MCTrackPt,MCTrackEta);
+        if(IsMCPhysicalPrimary && jMCTrack<NpureMC && TMath::Abs(MCTrackEta) < 0.9)
+        {
+          if(TMath::Abs(MCTrackpdg)==211 || TMath::Abs(MCTrackpdg)==2212 || TMath::Abs(MCTrackpdg)==321) fMCchtrack_gene -> Fill(MCTrackPt,MCTrackEta);
+        }
+
 
         // --- eta cut --- //
         if(MCTrackEta < CutTrackEta[0] || CutTrackEta[1] < MCTrackEta) continue;
-
 
         //########################## get particle info ##########################//
         if(MCTracklabelM >= 0)
@@ -1215,7 +1283,6 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
 
     if(Isdebug && fFlagMC) cout << "MC loop finished" << endl;
 
-
     // --- Calo Cluster Loop (EMCal/DCal/PHOS) --- //
     Int_t Nclust;
     if(!fFlagEMCalCorrection) Nclust = fVevent->GetNumberOfCaloClusters();
@@ -1334,6 +1401,25 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
         fTrackCluster_woCut -> Fill(1.,TPCNCls);
         fTrackCluster_woCut -> Fill(2.,TPCCrossedRows);
 
+        GetHadronEfficiency(TrackPt);
+
+        Bool_t IsPhysicalPrimary = kFALSE;
+        Int_t Pdgcode = -999;
+        if(fFlagMC)
+        {
+          ilabel = track -> GetLabel();
+          if(ilabel > 0 && fMCarray)
+          {
+            fMCparticle = (AliAODMCParticle*)fMCarray -> At(ilabel);
+            IsPhysicalPrimary = fMCparticle -> IsPhysicalPrimary();
+            Pdgcode = fMCparticle -> GetPdgCode();
+            if(ilabel<NpureMC && PassHadronCuts(track))
+            {
+              if(TMath::Abs(Pdgcode)==211 || TMath::Abs(Pdgcode)==2212 || TMath::Abs(Pdgcode)==321) fMCchtrack_reco -> Fill(TrackPt,TrackEta);
+            }
+          }
+        }
+
         //########################## Standard Track Cut ##########################//
         // successful track fitting in TPC and ITS //
         if(!(track->GetStatus()&AliAODTrack::kITSrefit) || !(track->GetStatus()&AliAODTrack::kTPCrefit)) continue;
@@ -1353,8 +1439,6 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
         {
             if(TMath::Abs(DCA[0]) > CutDCAxy || TMath::Abs(DCA[1]) > CutDCAz) continue;
         }
-        //---Eta Cut
-        if(TrackEta < CutTrackEta[0] || CutTrackEta[1] < TrackEta) continue;
         //---reject kink
         Bool_t kinkmotherpass = kTRUE;
         for(Int_t kinkmother = 0; kinkmother < numberofmotherkink; kinkmother++) {
@@ -1364,6 +1448,8 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
           }
         }
         if(!kinkmotherpass) continue;
+        //---Eta Cut
+        if(TrackEta < CutTrackEta[0] || CutTrackEta[1] < TrackEta) continue;
         //########################################################################//
 
         fTrackPt -> Fill(TrackPt);
@@ -1375,8 +1461,10 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
         fTrackChi2 -> Fill(0.,ITSchi2), fTrackChi2 -> Fill(1.,TPCchi2NDF);
         fTrackCluster -> Fill(0.,ITSNCls), fTrackCluster -> Fill(1.,TPCNCls), fTrackCluster -> Fill(2.,TPCCrossedRows);
 
+        ///////////////////////////////////////
         // all charged particle correlations //
-        if(TrackPt > 2)
+        ///////////////////////////////////////
+        if(TrackPt > 0.2)
         {
           fTrigpTAllHadHCorrl -> Fill(TrackPt);
           ElectronHadCorrel(i,track,fSprsAllHadHCorrl);
@@ -1393,12 +1481,11 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
         ilabelM = -999, ilabelGM = -999, ilabelGGM = -999, ilabelGGGM = -999;
         if(fFlagMC)
         {
-          fMCchtrack_reco -> Fill(TrackPt,TrackEta);
-          ilabel = track -> GetLabel();
+          // ilabel = track -> GetLabel();
           if(ilabel > 0 && fMCarray)
           {
             //########################## get particle info ##########################//
-            fMCparticle = (AliAODMCParticle*)fMCarray -> At(ilabel);
+            // fMCparticle = (AliAODMCParticle*)fMCarray -> At(ilabel);
             pdg = fMCparticle -> GetPdgCode();
             ilabelM = fMCparticle -> GetMother();
             if(ilabelM >= 0)
@@ -1544,6 +1631,16 @@ void AliAnalysisTaskCaloHFEpPbRun2::UserExec(Option_t *)
             if(fFlagMC && flagpidele)
             {
               if((flagCharm || flagBeauty) && TrackP > 0 && flagNsigmaECut && flagShowerShapeCut) fMCHFEEopwPID -> Fill(TrackPt,Eop);
+            }
+
+            ////////////////////////////////////////////////////////////
+            // all charged particle correlations (Calo mathed tracks) //
+            ////////////////////////////////////////////////////////////
+            if(TrackPt > 0.2)
+            {
+              fTrigpTAllHadHCorrl_CaloMatch -> Fill(TrackPt);
+              ElectronHadCorrel(i,track,fSprsAllHadHCorrl_CaloMatch);
+              MixedEvent(track,fSprsMixAllHadHCorrl_CaloMatch);
             }
 
             //////////////////////
@@ -1792,15 +1889,13 @@ void AliAnalysisTaskCaloHFEpPbRun2::CheckCentrality(AliAODEvent* fAOD, Bool_t &I
     //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
     AliWarning("AliMultSelection object not found!");
   }
-  else fCentrality = fMultSelection -> GetMultiplicityPercentile("V0M",false);
+  else if(fPeriodName == "LHC16r" || fPeriodName == "LHC16q") fCentrality = fMultSelection -> GetMultiplicityPercentile("V0A",false);
+  else if(fPeriodName == "LHC16s" || fPeriodName == "LHC16t") fCentrality = fMultSelection -> GetMultiplicityPercentile("V0C",false);
+  else if(fPeriodName == "LHC17i5b2") fCentrality = fMultSelection -> GetMultiplicityPercentile("V0M",false);
 
   AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
   if(!header) AliFatal("Not a standard AOD");
   fMultiplicity = header -> GetRefMultiplicity();
-
-  fCent -> Fill(fCentrality);
-  fMulti -> Fill(fMultiplicity);
-  fCentMultiCorrl -> Fill(fMultiplicity,fCentrality);
 
   IsCentPass = kTRUE;
 }
@@ -1880,7 +1975,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::ElectronHadCorrel(Int_t itrack, AliAODTrack 
     if(!PassHadronCuts(Assotrack)) continue;
 
     values[0] = trig_pt, values[1] = asso_pt, values[2] = dphi, values[3] = deta;
-    SparseEHCorrl -> Fill(values);
+    SparseEHCorrl -> Fill(values,1./GetHadronEfficiency(asso_pt));
    }
 }
 //--- correlation in mixed events
@@ -1929,7 +2024,7 @@ void AliAnalysisTaskCaloHFEpPbRun2::MixedEvent(AliAODTrack *Trigtrack, THnSparse
         if(dphi < -pi/2) dphi = dphi + 2*pi;
         deta = trig_eta - asso_eta;
         values[0] = trig_pt, values[1] = asso_pt, values[2] = dphi, values[3] = deta;
-        SparseMixEHCorrl -> Fill(values);
+        SparseMixEHCorrl -> Fill(values,1./GetHadronEfficiency(asso_pt));
       }
     }
   }
@@ -1974,33 +2069,48 @@ void AliAnalysisTaskCaloHFEpPbRun2::ElectronHadCorrelNopartner(Int_t itrack, Int
     if(!PassHadronCuts(Assotrack)) continue;
 
     values[0] = trig_pt, values[1] = asso_pt, values[2] = dphi, values[3] = deta;
-    SparseEHCorrl -> Fill(values);
+    SparseEHCorrl -> Fill(values,1./GetHadronEfficiency(asso_pt));
    }
 }
 //--- require the track cuts for associated track
 Bool_t AliAnalysisTaskCaloHFEpPbRun2::PassHadronCuts(AliAODTrack *HadTrack)
 {
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+  Bool_t IsEta = kTRUE;
+  Bool_t IsFilter = kTRUE;
+  Bool_t IsTPCclust = kTRUE;
+  Bool_t IsITSclust = kTRUE;
+  Bool_t IsDCA = kTRUE;
 
   //---eta coverage
-  if(HadTrack->Eta() < -0.9 || HadTrack->Eta() > 0.9) return kFALSE;
+  if(HadTrack->Eta() < -0.9 || HadTrack->Eta() > 0.9) IsEta = kFALSE;
   //---minimum cut (filter bit 4)
-  if(!HadTrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return kFALSE;
+  if(!HadTrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) IsFilter = kFALSE;
   //---TPC number of clusters
-  if(HadTrack -> GetTPCNcls() < 80) return kFALSE;
+  if(HadTrack -> GetTPCNcls() < 80) IsTPCclust = kFALSE;
   //---chi2/NTPCclust
-  if(HadTrack -> Chi2perNDF() >= 4) return kFALSE;
+  if(HadTrack -> Chi2perNDF() >= 4) IsITSclust = kFALSE;
   //--- DCA cut
   Double_t DCA[2] = {-999.,-999.}, CovarianceMatrix[3];
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
   if(HadTrack -> PropagateToDCA(pVtx,fVevent -> GetMagneticField(),20.,DCA,CovarianceMatrix))
   {
-    if(TMath::Abs(DCA[0]) >= 0.25 || TMath::Abs(DCA[1]) >= 1) return kFALSE;
+    if(TMath::Abs(DCA[0]) >= 0.25 || TMath::Abs(DCA[1]) >= 1) IsDCA = kFALSE;
   }
 
-  return kTRUE;
+  if(IsEta && IsFilter && IsTPCclust && IsITSclust && IsDCA) return kTRUE;
+  else return kFALSE;
 }
-
+//--- calculate the weight of associate hadrons
+Double_t AliAnalysisTaskCaloHFEpPbRun2::GetHadronEfficiency(Double_t pT)
+{
+  if(!fEffHadron) return 1.;
+  Int_t bin = fEffHadron -> FindBin(pT);
+  if(fEffHadron->IsBinUnderflow(bin) || fEffHadron->IsBinOverflow(bin)) return 1.;
+  // cout << "pT = " << pT << endl;
+  // cout << "eff = " << fEffHadron -> GetBinContent(bin) << endl;
+  return fEffHadron -> GetBinContent(bin);
+}
 
 // #################################################################################
 // Functions for MC analyis

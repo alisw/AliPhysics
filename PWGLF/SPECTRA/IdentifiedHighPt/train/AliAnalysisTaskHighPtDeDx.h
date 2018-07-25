@@ -1,3 +1,9 @@
+/*
+  Commets:
+  * 10 jul 2018: clean-up
+
+  */
+
 #ifndef ALIANALYSISTASKHIGHPTDEDX_H
 #define ALIANALYSISTASKHIGHPTDEDX_H
 
@@ -42,15 +48,13 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t GetMinPtV0() { return fMinPtV0; }
   Double_t GetCosPACut() { return fCosPACut; }
   Double_t GetDecayRCut() { return fDecayRCut; }
-  Int_t    GetTreeOption() { return fTreeOption; }
 
-   virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;}
-   virtual void  SetTrigger2(UInt_t ktriggerInt2) {ftrigBit2 = ktriggerInt2;}
+  virtual void  SetTrigger1(UInt_t ktriggerInt1) {ftrigBit1 = ktriggerInt1;}
+  virtual void  SetTrigger2(UInt_t ktriggerInt2) {ftrigBit2 = ktriggerInt2;}
   virtual void  SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
   virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
   virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
   virtual void  SetProduceVZEROBranch(Bool_t prodvzerob) {fVZEROBranch = prodvzerob;}
-  virtual void  SetProduceTPCBranch(Bool_t prodtpcb) {fTPCBranch = prodtpcb;}
   virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
   virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
   virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
@@ -62,9 +66,6 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
   virtual void  SetLowPtFraction(Double_t value) {fLowPtFraction = value;}   
   virtual void  SetMassCut(Double_t massCut){fMassCut = massCut;}
-  virtual void  SetTreeOption(Int_t value) {fTreeOption = value;}    
-  virtual void  SetRequireRecV0(Bool_t value) {fRequireRecV0 = value;}
-  virtual void  SetStoreMcIn(Bool_t value) {fStoreMcIn = value;}
   virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) {fAnalysisPbPb = isanaPbPb;}
   virtual void  SetCosPACut(Double_t value) {fCosPACut = value;}   
   virtual void  SetDecayRCut(Double_t value) {fDecayRCut = value;}   
@@ -84,10 +85,6 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   virtual void ProduceArrayTrksAOD(AliAODEvent* event, AnalysisMode anamode );
   virtual void ProduceArrayV0AOD(AliAODEvent* event, AnalysisMode anamode );
   Short_t   GetPidCode(Int_t pdgCode) const;
-  /* Float_t   GetSpherocity(AliESDEvent* event, AliAnalysisFilter* cuts, Float_t etacut, Float_t ptcut, Bool_t useTPCtrack); */
-  /* Float_t   GetSphericity(AliESDEvent* event, AliAnalysisFilter* cuts, Float_t etacut, Float_t ptcut, Bool_t useTPCtrack); */
-  /* Float_t   GetSpherocityTrue(AliStack *Stack, Float_t etacut, Float_t ptcut); */
-  /* Float_t   GetSphericityTrue(AliStack *Stack, Float_t etacut, Float_t ptcut); */
 
   void      ProcessMCTruthESD();
   void      ProcessMCTruthAOD(); 
@@ -125,13 +122,10 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
   Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
   Bool_t        fVZEROBranch;         //true if you want to store VZERO cells information
-  Bool_t        fTPCBranch;           //tru if you want to produce the TPC branch
   TRandom*      fRandom;              //! random number generator
   DeDxEvent*    fEvent;               //! event pointer
   TClonesArray* fTrackArrayGlobalPar;          //! track array pointer, global tracks
-  TClonesArray* fTrackArrayTPCPar;          //! track array pointer, tpc track parameters
   TClonesArray* fV0ArrayGlobalPar;             //! V0 array pointer, global tracks
-  TClonesArray* fV0ArrayTPCPar;             //! V0 array pointer, tpc tracks
   TClonesArray* fTrackArrayMC;        //! MC track array pointer
   TClonesArray* fVZEROArray;          //! array of the v0 cells.
 
@@ -150,13 +144,8 @@ class AliAnalysisTaskHighPtDeDx : public AliAnalysisTaskSE {
   Double_t     fCosPACut;              // Min cosPA - for histogram limits
   Double_t     fDecayRCut;              // Min decay radius
   Double_t     fMassCut;            // Reject all v0 with all dmass > masscut!
-  Int_t        fTreeOption;         // 0: no tree, >0: enable debug tree
   Float_t      fMinCent; //minimum centrality
   Float_t      fMaxCent; //maximum centrality
-  Bool_t       fRequireRecV0;       // Require a v0 before updating tree
-                                    // For a spectra analysis we will need to
-                                    // keep track also of the empty events
-  Bool_t       fStoreMcIn;          // Store MC input tracks
   //
   // Help variables
   //

@@ -36,6 +36,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		void SetIsMC(Int_t isMC)                                      {fIsMC=isMC;}
 		void SetV0Reader(AliV0ReaderV1 *v0Reader)                     {fV0Reader=v0Reader;}
         void SetV0ReaderName(TString name)                            {fV0ReaderName=name; return;}
+	void SetDoDeDxMaps(Int_t flag)                          { fDoDeDxMaps           = flag    ;}
 
         void SetEventCutList(Int_t nCuts, TList *CutArray)            {fnCuts                      = nCuts;
                                                                        fEventCutArray              = CutArray;}
@@ -64,6 +65,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
         TList**           fESDList;                     //
         TList**           fTrueList;                    //
         TList**           fMCList;                      //
+        TList**           fDeDxMapList;                 //
 		TList 			  *fOutputList; 	 			//
 		TList 			  *fAllMCGammaList;	   		    //
 		TList 			  *fAllMCConvGammaList;		    //
@@ -86,6 +88,7 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		AliMCEvent*       fMCEvent;				        //
 		Int_t             fnCuts;                       //
 		Int_t             fiCut;                        //
+		Int_t             fDoDeDxMaps;                                 //
 		TH1F**            hNEvents;                     //!
 		TH1F**            hNGoodESDTracksEta09;         //!
 		TH1F**            hNGoodESDTracksEta14;         //!
@@ -133,13 +136,21 @@ class AliAnalysisTaskMaterialHistos : public AliAnalysisTaskSE{
 		TH1F**            hMCTrueEtaDalConversionEta;   //!
 		TH2F**            hMCTrueCombinatorialConversionRPt;     //!
 		TH1F**            hMCTrueCombinatorialConversionEta;     //!
+		TH3F**            hPositrondEdxMapsR0;         //!
+		TH3F**            hElectrondEdxMapsR0;         //!
+		TH3F**            hPositrondEdxMapsR1;         //!
+		TH3F**            hElectrondEdxMapsR1;         //!
+		TH3F**            hPositrondEdxMapsR2;         //!
+		TH3F**            hElectrondEdxMapsR2;         //!
+		TH3F**            hPositrondEdxMapsR3;         //!
+		TH3F**            hElectrondEdxMapsR3;         //!
 		//Bool_t            fDoHistosForMaterial;             // flag for using Trees for Material Budget evaluation
 
 		AliAnalysisTaskMaterialHistos(const AliAnalysisTaskMaterialHistos&); // not implemented
 		AliAnalysisTaskMaterialHistos& operator=(const AliAnalysisTaskMaterialHistos&); // not implemented
 
 
-        ClassDef(AliAnalysisTaskMaterialHistos, 14);
+        ClassDef(AliAnalysisTaskMaterialHistos, 15);
 };
 
 #endif

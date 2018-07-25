@@ -201,14 +201,20 @@ void AddTask_GammaHeavyMeson_ConvMode_pPb(  Int_t     selectedMeson             
   //create cut handler
   CutHandlerHeavyMesonConv cuts;
 
+  //****************************************************************
   // Run1 default
+  //****************************************************************
   if (trainConfig == 1){
-    cuts.AddCut("80010113","00200009327000008250400000","0163103100000010");
+    cuts.AddCut("80010113","00200009327000008250400000","0163103000000010");
+  } else if (trainConfig == 2){
+    cuts.AddCut("80010113","00200009327000008250400000","0163103b00000010");
 
+  //****************************************************************
   // Run2 default
+  //****************************************************************
   } else if (trainConfig == 100){
-    cuts.AddCut("80010113","00200009327000008250400000","0163103100000010");
-    cuts.AddCut("80210113","00200009327000008250400000","0163103100000010");
+    cuts.AddCut("80010113","00200009327000008250400000","0163103000000010");
+    cuts.AddCut("80210113","00200009327000008250400000","0163103000000010");
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

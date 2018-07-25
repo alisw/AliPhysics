@@ -27,7 +27,7 @@ Double_t AliPP13SelectionWeightsTOF::TofEfficiency(Double_t energy) const
 //________________________________________________________________
 Double_t AliPP13SelectionWeightsMC::Nonlinearity(Double_t x) const
 {
-    return fNonGlobal * (1. + fNonA * TMath::Exp(-x * x / 2. / fNonSigma / fNonSigma));
+    return fNonGlobal * (1. + fNonA / (1 + TMath::Power(x / fNonSigma, 2)));
 }
 
 
@@ -75,19 +75,9 @@ AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SinglePi0()
     ws.fW3 = 0.135;
     ws.fW4 = 0.135;
 
-    // Nonlinearity Naive estimation
-    //
-    // ws.fNonA = -0.022934923767457753;
-    // ws.fNonSigma = 1.4188237289034245;
-    // ws.fNonGlobal = 1.0579663356860527;
-
-    ws.fNonA = -0.023207895974126137;
-    ws.fNonSigma = 0.5 * 2.1705074159914495;
-    ws.fNonGlobal = 1.0178019980200619;
-
-    // ws.fNonGlobal = 1.0;
-    // ws.fNonA = 0;
-    // ws.fNonSigma = 1.0579663356860527;
+    ws.fNonA = -0.06;
+    ws.fNonSigma = 0.7;
+    ws.fNonGlobal = 1.015;
     return ws;
 }
 
@@ -105,15 +95,10 @@ AliPP13SelectionWeights & AliPP13SelectionWeightsSPMC::SingleEta()
     ws.fW3 = 0.547;
     ws.fW4 = 0.547;
 
-    // Former nonlinearity
-    // ws.fNonA = -0.014719244288611932;
-    // ws.fNonSigma = 2 * 0.8017501954719543;
-    // ws.fNonGlobal = 1.050000000000015;
-
     // The latest nonlinarity tested on the simples data
-    ws.fNonA = -0.023207895974126137;
-    ws.fNonSigma = 0.5 * 2.1705074159914495;
-    ws.fNonGlobal = 1.0178019980200619;
+    ws.fNonA = -0.06;
+    ws.fNonSigma = 0.7;
+    ws.fNonGlobal = 1.015;
     return ws;
 }
 

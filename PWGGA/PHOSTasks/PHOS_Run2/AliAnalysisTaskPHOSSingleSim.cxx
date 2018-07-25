@@ -561,9 +561,10 @@ void AliAnalysisTaskPHOSSingleSim::FillMgg()
       value[1] = pt12;
       value[2] = asym;
 
-      Double_t oa = TMath::Abs(ph1->Angle(ph2->Vect())) * 1e+3;//rad->mrad
-      FillHistogramTH3(fOutputContainer,"hMgg_OA",m12,pt12,oa,weight);
-
+      if(fIsOAStudy){
+        Double_t oa = TMath::Abs(ph1->Angle(ph2->Vect())) * 1e+3;//rad->mrad
+        FillHistogramTH3(fOutputContainer,"hMgg_OA",m12,pt12,oa,weight);
+      }
       if(m12 > 0.96) continue;//reduce entry in THnSparse
 
       if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight * 1/trgeff12);
@@ -685,6 +686,12 @@ void AliAnalysisTaskPHOSSingleSim::FillMixMgg()
         value[0] = m12;
         value[1] = pt12;
         value[2] = asym;
+
+        if(fIsOAStudy){
+          Double_t oa = TMath::Abs(ph1->Angle(ph2->Vect())) * 1e+3;//rad->mrad
+          FillHistogramTH3(fOutputContainer,"hMixMgg_OA",m12,pt12,oa,weight);
+        }
+
         if(m12 > 0.96) continue;//reduce entry in THnSparse
 
         if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12);
@@ -718,7 +725,7 @@ void AliAnalysisTaskPHOSSingleSim::EstimatePIDCutEfficiency()
 
   TLorentzVector p12, p12core;
   Double_t m12=0;
-  Double_t energy=0;
+  Double_t pT=0;
   Double_t weight = 1., w1 = 1., w2 = 1.;
 
   for(Int_t i1=0;i1<multClust;i1++){
@@ -736,12 +743,12 @@ void AliAnalysisTaskPHOSSingleSim::EstimatePIDCutEfficiency()
 
       p12 = *ph1 + *ph2;
       m12 = p12.M();
-      energy = ph2->Energy();
+      pT = ph2->Pt();
 
       if(fUseCoreEnergy){
         p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
         m12 = p12core.M();
-        energy = (ph2->GetMomV2())->Energy();
+        pT = (ph2->GetMomV2())->Pt();
       }
 
       weight = 1.;
@@ -751,9 +758,13 @@ void AliAnalysisTaskPHOSSingleSim::EstimatePIDCutEfficiency()
         weight = w1;//common weighting to all generated particles in embedding.
       }//end of if fIsMC
 
-      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,energy,weight);
-      if(fPHOSClusterCuts->AcceptPhoton(ph2))
-        FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID",m12,energy,weight);
+
+      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID",m12,pT,weight);
+
+      if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_CPV" ,m12,pT,weight);
+      if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_Disp",m12,pT,weight);
+      if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID" ,m12,pT,weight);
+
 
     }//end of ph2
 
@@ -776,12 +787,12 @@ void AliAnalysisTaskPHOSSingleSim::EstimatePIDCutEfficiency()
 
         p12 = *ph1 + *ph2;
         m12 = p12.M();
-        energy = ph2->Energy();
+        pT = ph2->Pt();
 
         if(fUseCoreEnergy){
           p12core = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
           m12 = p12core.M();
-          energy = (ph2->GetMomV2())->Energy();
+          pT = (ph2->GetMomV2())->Pt();
         }
 
         weight = 1.;
@@ -791,9 +802,10 @@ void AliAnalysisTaskPHOSSingleSim::EstimatePIDCutEfficiency()
           weight = w1*w2;
         }//end of if fIsMC
 
-        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,energy,weight);
-        if(fPHOSClusterCuts->AcceptPhoton(ph2))
-          FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID",m12,energy,weight);
+        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID",m12,pT,weight);
+        if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_CPV" ,m12,pT,weight);
+        if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_Disp",m12,pT,weight);
+        if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID" ,m12,pT,weight);
 
       }//end of mix
 

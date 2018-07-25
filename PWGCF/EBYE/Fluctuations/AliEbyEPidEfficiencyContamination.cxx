@@ -101,6 +101,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination()
   fIsAOD(kFALSE),
   fIsQA(kFALSE),
   fIsRapCut(kFALSE),
+  fTotP(kFALSE),
   fIsTrig(kFALSE),
   fIsThn(kFALSE),
 
@@ -203,6 +204,7 @@ AliEbyEPidEfficiencyContamination::AliEbyEPidEfficiencyContamination( const char
     fIsAOD(kFALSE),
     fIsQA(kFALSE),
     fIsRapCut(kFALSE),
+    fTotP(kFALSE),
     fIsTrig(kFALSE),
     fIsThn(kFALSE),
     
@@ -823,14 +825,17 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
     Float_t lP   = (Float_t)track->P();
     Float_t lEta = (Float_t)track->Eta();
     Float_t lPhi = (Float_t)track->Phi();
+
+    Int_t iptbin = -1;
+    if( fTotP) iptbin = GetPtBin(lP);  //total momentum 
+    else iptbin = GetPtBin(lPt);
     
-    //Int_t iptbin = GetPtBin(lPt);
-    Int_t iptbin = GetPtBin(lP);
     if( iptbin < 0 || iptbin > fNptBins-1 ) continue;
     Bool_t isPid = kFALSE;
     
     if (fPidType == 0 ) {
-      fHistERec[icharge][0]->Fill(fCentrality,lP);  //p or pT
+      if( fTotP ) fHistERec[icharge][0]->Fill(fCentrality,lP);  //total p
+      else fHistERec[icharge][0]->Fill(fCentrality,lPt); //pT
       fHistERec[icharge][1]->Fill(fCentrality,lEta); 
       fHistERec[icharge][2]->Fill(fCentrality,lPhi);
       nRec[icharge] += 1.;
@@ -848,7 +853,8 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
       isPid = IsPidPassed(track);
       if(isPid){
 	nPidRec[icharge] += 1.;
-	fHistERec[icharge][0]->Fill(fCentrality,lP); 
+	if( fTotP ) fHistERec[icharge][0]->Fill(fCentrality,lP); //total mom
+	else fHistERec[icharge][0]->Fill(fCentrality,lPt); //pT
 	fHistERec[icharge][1]->Fill(fCentrality,lEta); 
 	fHistERec[icharge][2]->Fill(fCentrality,lPhi);
 	nRec[icharge] += 1.;
@@ -890,8 +896,8 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
       }
       
 
-      Float_t fpTRec   = particle->Pt();
-      Float_t fPRec    = particle->P(); //p
+      Float_t fpTRec   = particle->Pt(); //pT
+      Float_t fPRec    = particle->P(); //total p
       Float_t fEtaRec  = particle->Eta();
       Float_t fPhiRec  = particle->Phi();
       Int_t pdg        = TMath::Abs(particle->PdgCode());
@@ -903,12 +909,14 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	if (fPidType == 0) { // For Charge
 	  if (!isLep) {
 	    nPidRecP[icharge] += 1.;
-	    fHistERecPri[icharge][0]->Fill(fCentrality,fPRec);  //pT or p
+	    if( fTotP ) fHistERecPri[icharge][0]->Fill(fCentrality,fPRec); //total p
+	    else fHistERecPri[icharge][0]->Fill(fCentrality,fpTRec); //pT
 	    fHistERecPri[icharge][1]->Fill(fCentrality,fEtaRec); 
 	    fHistERecPri[icharge][2]->Fill(fCentrality,fPhiRec); 
 	  } else {
 	    nPidRecMid[icharge] += 1.;
-	    fHistCMisId[icharge][0]->Fill(fCentrality,fpTRec); 
+	    if( fTotP ) fHistCMisId[icharge][0]->Fill(fCentrality, fPRec); //total p
+	    else fHistCMisId[icharge][0]->Fill(fCentrality, fpTRec); //pT
 	    fHistCMisId[icharge][1]->Fill(fCentrality,fEtaRec); 
 	    fHistCMisId[icharge][2]->Fill(fCentrality,fPhiRec); 
 	  }//mis-Id
@@ -920,26 +928,30 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	if(isPhysicalPrimary){
 	  if ( pdg == fMcPid ) {// For PID
 	    nPidRecP[icharge] += 1.;
-	    fHistERecPri[icharge][0]->Fill(fCentrality,fPRec);  //pT or p
+	    if( fTotP ) fHistERecPri[icharge][0]->Fill(fCentrality,fPRec);  //Total p
+	    else fHistERecPri[icharge][0]->Fill(fCentrality,fpTRec); //pT
 	    fHistERecPri[icharge][1]->Fill(fCentrality,fEtaRec); 
 	    fHistERecPri[icharge][2]->Fill(fCentrality,fPhiRec); 
 	  }
 	  else {
 	    nPidRecMid[icharge] += 1.;
-	    fHistCMisId[icharge][0]->Fill(fCentrality,fPRec); //pT or p
+	    if( fTotP ) fHistCMisId[icharge][0]->Fill(fCentrality, fPRec); //Total p
+	    else fHistCMisId[icharge][0]->Fill(fCentrality,fpTRec); //pT
 	    fHistCMisId[icharge][1]->Fill(fCentrality,fEtaRec); 
 	    fHistCMisId[icharge][2]->Fill(fCentrality,fPhiRec); 
 	  }
 	}//------------isPhysics Primary -------------
 	else if (isSecondaryFromWeakDecay) {
 	  nPidRecWD[icharge] += 1.;
-	  fHistCSec[icharge][0]->Fill(fCentrality,fPRec); //pT or p
+	  if( fTotP ) fHistCSec[icharge][0]->Fill(fCentrality, fPRec); //Total p
+	  else fHistCSec[icharge][0]->Fill(fCentrality, fpTRec); //pT
 	  fHistCSec[icharge][1]->Fill(fCentrality,fEtaRec); 
 	  fHistCSec[icharge][2]->Fill(fCentrality,fPhiRec); 
 	}//------isSecondaryFromWeakDecay--------------
 	else if (isSecondaryFromMaterial) {
 	  nPidRecSec[icharge] += 1.;
-	  fHistCMat[icharge][0]->Fill(fCentrality,fPRec); //pT or p
+	  if( fTotP ) fHistCMat[icharge][0]->Fill(fCentrality, fPRec); //Total p
+	  else fHistCMat[icharge][0]->Fill(fCentrality, fpTRec);
 	  fHistCMat[icharge][1]->Fill(fCentrality,fEtaRec); 
 	  fHistCMat[icharge][2]->Fill(fCentrality,fPhiRec); 
 	}//------isSecondaryFromMaterial--------------------
@@ -997,13 +1009,15 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	  if (pdg == 11 || pdg == 13) continue;
 	}
 	
-	fHistEGen[icharge][0]->Fill(fCentrality,fpGen); //pT or p
+	if( fTotP ) fHistEGen[icharge][0]->Fill(fCentrality, fpGen); //Total p
+	else fHistEGen[icharge][0]->Fill(fCentrality, fpTGen);
 	fHistEGen[icharge][1]->Fill(fCentrality,fEtaGen); 
 	fHistEGen[icharge][2]->Fill(fCentrality,fPhiGen);
 	nGen[icharge] += 1.;
 
-	//Int_t iptbinMC = GetPtBin(fpTGen);
-	Int_t iptbinMC = GetPtBin(fpGen); // p bin
+	Int_t iptbinMC = -1;
+	if( fTotP ) iptbinMC = GetPtBin(fpGen); // Total p bin
+	else iptbinMC = GetPtBin(fpTGen); //pT bin
 	
 	if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
 	
@@ -1040,13 +1054,16 @@ void AliEbyEPidEfficiencyContamination::UserExec( Option_t * ){
 	  if (pdg == 11 || pdg == 13) continue;
 	}
 	
-	fHistEGen[icharge][0]->Fill(fCentrality,fpGen); 
+	if( fTotP ) fHistEGen[icharge][0]->Fill(fCentrality, fpGen);//total p
+	else fHistEGen[icharge][0]->Fill(fCentrality, fpTGen);//pT
 	fHistEGen[icharge][1]->Fill(fCentrality,fEtaGen); 
 	fHistEGen[icharge][2]->Fill(fCentrality,fPhiGen); 
 	nGen[icharge] += 1.;
+
+	Int_t iptbinMC = -1;
+	if( fTotP ) iptbinMC = GetPtBin(fpGen); // Total p bin
+	else iptbinMC = GetPtBin(fpTGen); //pT bin
 	
-	//Int_t iptbinMC = GetPtBin(fpTGen);
-	Int_t iptbinMC = GetPtBin(fpGen);
 	if( iptbinMC < 0 || iptbinMC > fNptBins-1 ) continue;
 	
 	if(icharge == 1){
@@ -1104,10 +1121,14 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
   } else {      // ESDs
     if(!fESDtrackCuts->AcceptTrack(dynamic_cast<AliESDtrack*>(track)))  return kFALSE;
   }
-  
+
   Double_t ptot = track->P();
-  if( ptot < fPtMin || ptot > fPtMax )  return kFALSE; //cut on momentum (to compare with Identity method result)
-  //if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE;
+  if( fTotP ){
+    if( ptot < fPtMin || ptot > fPtMax )  return kFALSE; //cut on momentum (to compare with Identity method result)
+  }
+  else{
+    if(track->Pt() < fPtMin || track->Pt() > fPtMax )  return kFALSE; //pT cut
+  }
 
   //cout << "Track --" << track->Pt() << endl;
 
@@ -1137,11 +1158,16 @@ Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackL(AliVTrack *track) const {
 Bool_t AliEbyEPidEfficiencyContamination::AcceptTrackLMC(AliVParticle *particle) const {
   if(!particle) return kFALSE;
   if (particle->Charge() == 0.0) return kFALSE;
-  
-  Double_t ptotMC = particle->P();
-  if ( ptotMC < fPtMin || ptotMC > fPtMax )  return kFALSE; //cut on momentum (to compare with Identity method result)
-  //if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
 
+  Double_t ptotMC = particle->P();
+  
+  if( fTotP ){
+    if ( ptotMC < fPtMin || ptotMC > fPtMax )  return kFALSE; //cut on momentum (to compare with Identity method result)
+  }
+  else{
+    if (particle->Pt() < fPtMin || particle->Pt() > fPtMax) return kFALSE;
+  }
+  
   //rapidity cut
   Double_t partMass = AliPID::ParticleMass(fParticleSpecies);
   Double_t pz = particle->Pz();
@@ -1290,10 +1316,16 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
     pid[0] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kITS, track, fParticleSpecies);
     
     if(TMath::Abs(pid[0]) < fNSigmaMaxITS) isAcceptedITS = kTRUE;
+
+    Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kPion));
+    Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kKaon));
+    Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
     
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron));
-    
-    if (TMath::Abs(pid[0]) > nSigma) isAcceptedITS = kFALSE;
+    if (TMath::Abs(pid[0]) > nSigmaEl) isAcceptedITS = kFALSE;
+    if( fPidStrategy == 1){
+      if( TMath::Abs(pid[0]) > nSigmaPion) isAcceptedITS = kFALSE;
+      if( TMath::Abs(pid[0]) > nSigmaKaon) isAcceptedITS = kFALSE;
+    }
     
   }
   
@@ -1318,14 +1350,24 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
     }//kaon
     else{
       
-      if (TMath::Abs(pid[1]) < fNSigmaMaxTPC)  // Anywhere withing Max Nsigma TPC
+      if (TMath::Abs(pid[1]) < fNSigmaMaxTPC )  // Anywhere withing Max Nsigma TPC
 	isAcceptedTPC = kTRUE;
-  
+      
+    }
+    
+    Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
+    Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kPion));
+    Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kKaon));
+    
+    if (TMath::Abs(pid[1]) > nSigmaEl) isAcceptedTPC = kFALSE;
+
+    if( fPidStrategy == 2){
+      if (TMath::Abs(pid[1]) > nSigmaPion) isAcceptedTPC = kFALSE;
+      if (TMath::Abs(pid[1]) > nSigmaKaon) isAcceptedTPC = kFALSE;
     }
 
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)AliPID::kElectron));
-    if (TMath::Abs(pid[1]) > nSigma) isAcceptedTPC = kFALSE;
-
+    
+    
   }
   
   
@@ -1333,14 +1375,21 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
   if ( fPIDResponse->CheckPIDStatus((AliPIDResponse::EDetector)AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) {
     pid[2] = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)AliPIDResponse::kTOF, track, fParticleSpecies);
     hasPIDTOF = kTRUE;
-    if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) 
-      isAcceptedTOF = kTRUE;
+    if (TMath::Abs(pid[2]) < fNSigmaMaxTOF) isAcceptedTOF = kTRUE;
     
-    Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron));
-    if (TMath::Abs(pid[2]) > nSigma)
-      isAcceptedTOF = kFALSE;
-  }
+    Double_t nSigmaEl = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron));
+    Double_t nSigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kPion));
+    Double_t nSigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kKaon));
+    
+    if (TMath::Abs(pid[2]) > nSigmaEl) isAcceptedTOF = kFALSE;
 
+    if( fPidStrategy == 2){
+      if (TMath::Abs(pid[2]) > nSigmaPion) isAcceptedTOF = kFALSE;
+      if (TMath::Abs(pid[2]) > nSigmaKaon) isAcceptedTOF = kFALSE;
+    }
+    
+  }
+  
   
   if (fIsMC && isAcceptedTOF) {
     Int_t tofLabel[3];  
@@ -1356,11 +1405,7 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
     }
     
     if(fIsAOD) {
-      // AliAODMCParticle  *matchedTrack = dynamic_cast<AliAODMCParticle*>(fArrayMC->At(TMath::Abs(tofLabel[0])));
-      // if (TMath::Abs(matchedTrack->GetMother()) == TMath::Abs(track->GetLabel())) 
-      //	hasMatchTOF = kTRUE;
-      // if (TMath::Abs(track->GetLabel()) ==  TMath::Abs(matchedTrack->GetMother()))
-      //	cout << mcMother->GetMother() << "  " << tofLabel[0]  << "  " << track->GetLabel() << endl;
+      //------
     } else {
       TParticle *matchedTrack = fMCStack->Particle(TMath::Abs(tofLabel[0]));
       if (TMath::Abs(matchedTrack->GetFirstMother()) == TMath::Abs(track->GetLabel())) 
@@ -1431,11 +1476,20 @@ Bool_t AliEbyEPidEfficiencyContamination::IsPidPassed(AliVTrack * track) {
 	if( nsigCompTPCTOF < fNSigmaMaxTPC ) isAccepted = kTRUE;
       }
     }
-    else if( fPidStrategy == 2){
-      //ITS+TPC
+    else if( fPidStrategy == 2){     
       isAccepted = isAcceptedTOF && isAcceptedTPC;
     }
-    
+    else if( fPidStrategy == 3){
+      if( pt >= 0.3 && pt <= 0.575 ) isAccepted = isAcceptedITS && isAcceptedTPC;
+      else if( pt >= 0.825 && pt < 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+      else isAccepted =  isAcceptedTPC;
+      
+    }
+    else if( fPidStrategy == 4){
+      if( pt >= 0.825 && pt < 2.0 ) isAccepted = isAcceptedTPC && isAcceptedTOF;
+      else isAccepted =  isAcceptedTPC;
+    }
+  
   }//for proton
   
   

@@ -73,6 +73,8 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
                                 TString       periodNameAnchor              = "",
                                 Bool_t        runTHnSparse                  = kTRUE,                            // switch on THNsparse
                                 Bool_t        runLightOutput                = kFALSE,                           // switch to run light output (only essential histograms for afterburner)
+				Bool_t        enableElecDeDxPostCalibration = kFALSE,
+				TString       fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root",
                                 TString       additionalTrainConfig         = "0"                               // additional counter for trainconfig, this has to be always the last parameter
                           ) {
 
@@ -230,50 +232,6 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   } else if (trainConfig == 22) {
     cuts.AddCut("80010113", "0b200009327000008250400000", "0162103500000000"); //Eta cut -0.9 - -0.2 and 0.2 - 0.9 with LineCut
 
-    // configurations for addsig (addsig part) with weighting
-  } else if (trainConfig == 30) {
-    cuts.AddCut("80010113", "00200009327000008250400000", "0162103500900000"); // new standard pPb MB
-  } else if (trainConfig == 31) {
-    cuts.AddCut("80010113", "00200009327000008250400000", "0162103500900000"); // new standard pPb MB
-  } else if (trainConfig == 32) {
-    cuts.AddCut("80210113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 0-20
-  } else if (trainConfig == 33) {
-    cuts.AddCut("80210113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 0-20
-  } else if (trainConfig == 34) {
-    cuts.AddCut("82410113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 20-40
-  } else if (trainConfig == 35) {
-    cuts.AddCut("82410113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 20-40
-  } else if (trainConfig == 36) {
-    cuts.AddCut("84610113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 40-60
-  } else if (trainConfig == 37) {
-    cuts.AddCut("84610113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 40-60
-  } else if (trainConfig == 38) {
-    cuts.AddCut("86010113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
-  } else if (trainConfig == 39) {
-    cuts.AddCut("86010113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
-
-    // configurations for addsig (MB part) with weighting
-  } else if (trainConfig == 40) {
-    cuts.AddCut("80010113", "00200009327000008250400000", "0162103500900000"); // new standard pPb MB
-  } else if (trainConfig == 41) {
-    cuts.AddCut("80010113", "00200009327000008250400000", "0162103500900000"); // new standard pPb MB
-  } else if (trainConfig == 42) {
-    cuts.AddCut("80210113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 0-20
-  } else if (trainConfig == 43) {
-    cuts.AddCut("80210113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 0-20
-  } else if (trainConfig == 44) {
-    cuts.AddCut("82410113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 20-40
-  } else if (trainConfig == 45) {
-    cuts.AddCut("82410113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 20-40
-  } else if (trainConfig == 46) {
-    cuts.AddCut("84610113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 40-60
-  } else if (trainConfig == 47) {
-    cuts.AddCut("84610113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 40-60
-  } else if (trainConfig == 48) {
-    cuts.AddCut("86010113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
-  } else if (trainConfig == 49) {
-    cuts.AddCut("86010113", "00200009327000008250400000", "0162103500900000"); // new standard pPb 60-80
-
   //Run 2 pPb
   } else if (trainConfig == 100) {
     cuts.AddCut("80010113", "00200009327000008250404000", "0162103500000000"); // new default for 5TeV
@@ -301,6 +259,37 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     cuts.AddCut("c0110113", "00200009327000008250404000", "0162103500000000"); // 0-1
   } else if (trainConfig == 112) {
     cuts.AddCut("c0210113", "00200009327000008250404000", "0162103500000000"); // 0-2
+  //Run 2 pPb HM
+  } else if (trainConfig == 500) {
+    cuts.AddCut("80010113", "00200009a27000008250a04120", "0162103500000000"); // test 1 for 5TeV
+  } else if (trainConfig == 501) {
+    cuts.AddCut("80110113", "00200009a27000008250a04120", "0162103500000000"); // 0-10
+  } else if (trainConfig == 502) {
+    cuts.AddCut("81210113", "00200009a27000008250a04120", "0162103500000000"); // 0-20
+  } else if (trainConfig == 503) {
+    cuts.AddCut("82410113", "00200009a27000008250a04120", "0162103500000000"); // 20-40
+  } else if (trainConfig == 504) {
+    cuts.AddCut("84610113", "00200009a27000008250a04120", "0162103500000000"); // 40-60
+  } else if (trainConfig == 505) {
+    cuts.AddCut("86810113", "00200009a27000008250a04120", "0162103500000000"); // 60-80
+  } else if (trainConfig == 506) {
+    cuts.AddCut("88010113", "00200009a27000008250a04120", "0162103500000000"); // 80-100
+  } else if (trainConfig == 507) {
+    cuts.AddCut("80010113", "0d200009a27000008250a04120", "0162103500000000"); // test 2 for 5TeV
+  } else if (trainConfig == 508) {
+    cuts.AddCut("80110113", "0d200009a27000008250a04120", "0162103500000000"); // 0-10
+  } else if (trainConfig == 509) {
+    cuts.AddCut("81210113", "0d200009a27000008250a04120", "0162103500000000"); // 0-20
+  } else if (trainConfig == 510) {
+    cuts.AddCut("82410113", "0d200009a27000008250a04120", "0162103500000000"); // 20-40
+  } else if (trainConfig == 511) {
+    cuts.AddCut("84610113", "0d200009a27000008250a04120", "0162103500000000"); // 40-60
+  } else if (trainConfig == 512) {
+    cuts.AddCut("86810113", "0d200009a27000008250a04120", "0162103500000000"); // 60-80
+  } else if (trainConfig == 513) {
+    cuts.AddCut("88010113", "0d200009a27000008250a04120", "0162103500000000"); // 80-100
+
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -353,7 +342,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
   for(Int_t i = 0; i<numberOfCuts; i++){
 
     analysisEventCuts[i] = new AliConvEventCuts();
-    if ( trainConfig == 13 || trainConfig == 15 || trainConfig == 17 || trainConfig == 19 || trainConfig == 20 || trainConfig == 22 || ( trainconfig > 39 && trainconfig < 50 )){
+    if ( trainConfig == 1 ||  trainConfig == 2 ||  trainConfig == 11 || trainConfig == 12  ||  trainConfig == 21 || trainConfig == 22 ||   trainConfig == 100 ) {
       if (doWeighting){
         if (generatorName.CompareTo("DPMJET")==0){
           analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A",
@@ -364,14 +353,6 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
         }
       }
     }
-    if ( trainConfig == 14 || trainConfig == 16 || trainConfig == 18 || trainConfig == 21 || trainConfig == 23 || ( trainconfig > 29 && trainconfig < 40 ) ){
-      if (doWeighting){
-        analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A",
-                                      "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
-      }
-
-    }
-
 
     TString dataInputMultHisto  = "";
     TString mcInputMultHisto    = "";
@@ -405,6 +386,23 @@ void AddTask_GammaConvV1_pPb2(  Int_t         trainConfig                   = 1,
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
     analysisCuts[i] = new AliConversionPhotonCuts();
+
+    if (enableElecDeDxPostCalibration>0){
+      if (isMC == 0){
+	if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	} else {
+	  enableElecDeDxPostCalibration=kFALSE;
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	}
+
+      } else{
+	cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+	enableElecDeDxPostCalibration=kFALSE;
+	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      }
+    }
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());

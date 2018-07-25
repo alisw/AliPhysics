@@ -1789,7 +1789,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
     
-    fEventCuts.AddQAplotsToList(fListHist);
+    fEventCuts.AddQAplotsToList(fListHist,kTRUE);
     
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
@@ -6816,6 +6816,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AddStandardCascadeConfigura
         
         lCascadeResult[lN] -> SetCutMinRapidity(-0.3);
         lCascadeResult[lN] -> SetCutMaxRapidity(+0.3);
+        
+        //Add result to pool
+        lN++;
+    }
+    
+    //Explore No PDG association
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_NoMCInfoUsed",lParticleName[i].Data() ) );
+        
+        lCascadeResult[lN] -> SetCutMCUseMCProperties(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPhysicalPrimary(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPDGCodeAssociation(kFALSE);
         
         //Add result to pool
         lN++;

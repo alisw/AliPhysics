@@ -17,13 +17,13 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
 				   Bool_t kNPETOFlast = kFALSE,
 				   Bool_t kNPEw      = kFALSE,
 				   Bool_t kNPEkf  = kFALSE,
-                                   Int_t  RunSyst = 1                            // switch statement useful for systematics (mfaggin, 06/07/2017)
-                                   //,Int_t centrMin = 0          // min centrality
-                                   //,Int_t centrMax = 10         // max centrality
-                                   ,Int_t centrMin = 30          // min centrality
+                                   Int_t  RunSyst = 0                            // switch statement useful for systematics (mfaggin, 06/07/2017)
+                                   ,Int_t centrMin = 0          // min centrality
+                                   ,Int_t centrMax = 10         // max centrality
+                                   //,Int_t centrMin = 30          // min centrality
                                    //,Int_t centrMax = 50         // max centrality
                                    //,Int_t centrMin = 60          // min centrality
-                                   ,Int_t centrMax = 80         // max centrality
+                                   //,Int_t centrMax = 80         // max centrality
                                    ,Bool_t kHadContSyst = kFALSE        // hadron contamination systematics
                                    ,Bool_t kPileUpIonutRejection = kFALSE
                                    ,Bool_t kCheckDCA = kFALSE    // additional check: set maximum value for DCA between inclusive and associated tracks (default: 3cm)
@@ -31,6 +31,7 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
                                    ,Bool_t kRejectKinkParticles = kFALSE         // mfaggin, 12-Apr-2018
                                    ,Int_t chosen_filBIT = 2     // EXPONENT that then defines the filterbit (filterbit=2^chosenfilBIT) (mfaggin, 07-Jun-2018)
                                    ,Bool_t kTestDifferentFilBIT = kFALSE        // test a different filterbit (mfaggin, 07-Jun-2018)
+                                   ,Bool_t kTestWeightSmallerCentBins = kFALSE   // test weights in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
                                    )		   
   
 {
@@ -95,20 +96,55 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
   Double_t dEdxhm[12] = {3.11,3.11,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};  
   Double_t tpcl1[12]  = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};                              // my 46% (mfaggin)
   //Double_t tpcl2[12]  = {-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1,-0.1};                  // my 50% (mfaggin) in 0-10%
-  Double_t tpcl3[12]  = {0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18};                  // my 40% (mfaggin) in 0-10%
-  Double_t tpcl4[12]  = {-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38};      // my 60% (mfaggin) in 0-10%
+
+  //Double_t tpcl3[12]  = {0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18,0.18};                  // my 40% (mfaggin) in 0-10%
+  //Double_t tpcl4[12]  = {-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38,-0.38};      // my 60% (mfaggin) in 0-10%
+
+  //Double_t tpcl3[12]  = {0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1};                              // my 40% (mfaggin) in 0-10% (mfaggin, 06-Jul-2018)
+  //Double_t tpcl4[12]  = {-0.42,-0.42,-0.42,-0.42,-0.42,-0.42,-0.42,-0.42,-0.42,-0.42,-0.42,-0.42};      // my 60% (mfaggin) in 0-10% (mfaggin, 06-Jul-2018)
 
   Double_t tpcl2[12];
+  Double_t tpcl3[12];
+  Double_t tpcl4[12];
   for(UInt_t i_tpcl=0; i_tpcl<12; i_tpcl++){
-        if(centrMin==0  && centrMax==10) tpcl2[i_tpcl]=-0.1;
-        if(centrMin==30 && centrMax==50) tpcl2[i_tpcl]= 0; 
-        if(centrMin==60 && centrMax==80) tpcl2[i_tpcl]=0.2;     // (mfaggin, 20-Jun-2018)
+
+        //if(centrMin==0  && centrMax==10) tpcl2[i_tpcl]=-0.1;
+
+        if(centrMin==0  && centrMax==10){
+                tpcl2[i_tpcl]=-0.16;   // my 50% (mfaggin) in 0-10% (mfaggin, 06-Jul-2018)
+                tpcl3[i_tpcl]= 0.1;
+                tpcl4[i_tpcl]=-0.42;
+        }
+        if(centrMin==30 && centrMax==50){
+                tpcl2[i_tpcl]= 0; 
+                tpcl3[i_tpcl]= 0.23;
+                tpcl4[i_tpcl]=-0.23;
+        }
+        if(centrMin==60 && centrMax==80){
+                tpcl2[i_tpcl]= 0.2;     // (mfaggin, 20-Jun-2018)
+                tpcl3[i_tpcl]= 0.43;
+                tpcl4[i_tpcl]=-0.03;
+        }
         if(centrMin==30 && centrMax==80){       // cases 30-50% and 60-80% merged in 1 file (mfaggin, 22-Jun-2018)
                 printf("\nCase centrality 30-80%\n");
                 tpcl2[i_tpcl]=0;                // NB: it MUST trigger a function present in the had_cont_functions file, even if it is not the right one for the specific centrality, otherwise even for the correct cases the contamination function is not passed to the task (the Bool_t returned by the ReadContaminationFunctions function is kFALSE if AT LEAST 1 function is not read)
-                if(i_tpcl==0 || i_tpcl==1)      tpcl2[i_tpcl]=-0.1;
-                if(i_tpcl==4 || i_tpcl==5)      tpcl2[i_tpcl]= 0;
-                if(i_tpcl==7 || i_tpcl==8)      tpcl2[i_tpcl]=0.2;
+                tpcl3[i_tpcl]=0;
+                tpcl4[i_tpcl]=0;
+                //if(i_tpcl==0 || i_tpcl==1){
+                //        tpcl2[i_tpcl]=-0.16;
+                //        tpcl3[i_tpcl]= 0.1;
+                //        tpcl4[i_tpcl]=-0.42;
+                //}
+                if(i_tpcl==4 || i_tpcl==5){   
+                        tpcl2[i_tpcl]= 0;
+                        tpcl3[i_tpcl]= 0.23;
+                        tpcl4[i_tpcl]=-0.23;
+                }
+                if(i_tpcl==7 || i_tpcl==8){    
+                        tpcl2[i_tpcl]= 0.2;
+                        tpcl3[i_tpcl]= 0.43;
+                        tpcl4[i_tpcl]=-0.03;
+                }
         }
         printf("i_tpcl=%d, tpcl2[%d]=%.2f\n",i_tpcl,i_tpcl,tpcl2[i_tpcl]);
   }
@@ -156,9 +192,10 @@ AliAnalysisTask *AddTaskHFEnpePbPb5TeV(
 
     ,k16g1_3 = 67               // 67: PbPb LHC16g1 minimum bias MC using pi0 data spectra (mfaggin, 06-Mar-2018)
 
-    ,k16g1_2_3050 = 70          // 70: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 30-50% centrality class (mfaggin, 07-Jun-2018)
-    ,k16g1_2_6080 = 71          // 71: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 60-80% centrality class (mfaggin, 20-Jun-2018)
-    ,k16g1_2_all = 72           // 72: PbPb LHC16g1 minimum bias MC using pi0 data spectra for 0-10%, 30-50% and 60-80% centrality classes, all in one file (mfaggin, 22-Jun-2018)
+    ,k16g1_2_3050 = 70          // 70: PbPb LHC16g1 minimum bias MC using pi charged  data spectra for 30-50% centrality class (mfaggin, 07-Jun-2018)
+    ,k16g1_2_6080 = 71          // 71: PbPb LHC16g1 minimum bias MC using pi charged data spectra for 60-80% centrality class (mfaggin, 20-Jun-2018)
+    ,k16g1_2_all = 72           // 72: PbPb LHC16g1 minimum bias MC using pi charged data spectra for 0-10%, 30-50% and 60-80% centrality classes, all in one file (mfaggin, 22-Jun-2018)
+    ,k16g1_2_smallercentbins = 73       // 73: PbPb LHC16g1 minimum bias MC using pi charged data spectra in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
 
   };
   //Int_t kWeightMC = k16g1;
@@ -605,6 +642,22 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
 	        kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
         }
 
+        if(kTestWeightSmallerCentBins){
+        // *****************************************************************************
+        //
+        // weights in smaller centrality bins (e.g.: 0-5% and 5-10% instead of 0-10%)
+        //
+        // *****************************************************************************
+                printf("\n=====\n");
+                printf("\n===== kTestWeightSmallerCentBins case for MC");
+                printf("\n=====\n");
+        RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+			//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,-1);
+			 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,k16g1_2_smallercentbins);
+
+        }
+
    }
    else
    {
@@ -663,9 +716,9 @@ kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhm,  kDefTOFs
                 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl3, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
                 kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
                 // WITH WEIGHTS - ITS cut [-4,2], TPC cut [-0.1,2] (about 47.5%)
-                RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
-                kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhmALTERNATIVE,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
-		kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
+                //RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
+                //kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl2, dEdxhmALTERNATIVE,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
+		//kassETAm, kassETAp, kassITS, kassTPCcl, kassTPCPIDcl, kassDCAr, kassDCAz, dEdxaclm, dEdxachm, kTRUE, kFALSE,kWei,kWeightMC);
                 // WITH WEIGHTS - ITS cut [-4,2], TPC cut [-0.38,3] (about 60%)
                 RegisterTaskNPEPbPb( centrMin,centrMax,newCentralitySelection,MCthere, isAOD, //isBeauty, // mfaggin 15-Dec-2017
                 kDefTPCcl, kDefTPCclPID, kDefITScl, kDefDCAr, kDefDCAz, tpcl4, dEdxhm,  kDefTOFs,  kDefITSsMin, kDefITSsMax, AliHFEextraCuts::kBoth, kDefITSchi2percluster, kDefTPCclshared, etacorrection, multicorrection, kFALSE, kDefEtaIncMin, kDefEtaIncMax,
@@ -1172,7 +1225,7 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
   bool IsTPClowcutNegative = kFALSE;
   if(tpcdEdxcutlow) 
   {
-        tpclow = (Int_t) (tpcdEdxcutlow[0]*1000.);
+        tpclow = (Int_t) (tpcdEdxcutlow[7]*1000.);
         if(tpclow<0)
         {
                 IsTPClowcutNegative = kTRUE;
@@ -1237,9 +1290,19 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
   
 // new version, mfaggin 15-Dec-2017
   TString appendix(Form("SPD%d_incEta%dTPCc%dTPCp%dITS%dDCAr%dz%d",ipixelany,etaInclusiveMax,tpcCls,tpcClsPID,itsCls,idcaxy,idcaz));
-  if(IsTPClowcutNegative)       appendix+=TString::Format("TPCsMinm%d",tpclow);
-  else                          appendix+=TString::Format("TPCsMin%d",tpclow);
-  appendix+=TString::Format("Max%d",tpchigh);
+
+  if(centrMin==30 && centrMax==80){
+        printf("\n----------- tpclow %d\n",tpclow);
+        if(tpclow>195 && tpclow<205)        appendix+="TPCPIDeff50";       // with multiple centralities the reference to the mean TPC value has no sense ---> TPC PID value used (NB: the min value of TPC checked is the one for 60-80% just for simplicity, namely tpcdEdxcutlow[7], line 1228)
+        if(tpclow>425 && tpclow<435)           appendix+="TPCPIDeff40";
+        if(tpclow>25 && tpclow<35)             appendix+="TPCPIDeff60";
+  }
+  else{
+        if(IsTPClowcutNegative)       appendix+=TString::Format("TPCsMinm%d",tpclow);
+        else                          appendix+=TString::Format("TPCsMin%d",tpclow);
+        appendix+=TString::Format("Max%d",tpchigh);
+  }
+
   appendix+=TString::Format("TOFs%d",itofs);
   if(IsITSlowCutNegative)       appendix+=TString::Format("ITSsMinm%d",iitsMinNEGATIVE);
   else                          appendix+=TString::Format("ITSsMin%d",iitssMin);
@@ -1315,6 +1378,7 @@ AliAnalysisTask *RegisterTaskNPEPbPb(
         if(wei==67)                 ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_frompi0.root");
         else if(wei==70 || wei==71) ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_3050.root");
         else if(wei==72)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_allCentr.root");
+        else if(wei==73)            ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei,"nonHFEcorrect_PbPb5TeV_fromchpions_smallerbins.root");
         else                        ConfigWeightFactors_PbPb5TeV(task,kFALSE,wei);
   }
 

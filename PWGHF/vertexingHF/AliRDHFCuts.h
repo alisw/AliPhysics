@@ -242,6 +242,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMinCrossedRowsTPCPtDep(const char *rows="");
   void SetMinRatioClsOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioClsOverCrossRowsTPC = ratio;}
   void SetMinRatioSignalNOverCrossRowsTPC(Float_t ratio=0.) {fCutRatioSignalNOverCrossRowsTPC = ratio;}
+  void SetUseTPCtrackCutsOnThisDaughter(Bool_t flag=kTRUE) {fUseTPCtrackCutsOnThisDaughter=flag;}
 
   AliAODPidHF* GetPidHF() const {return fPidHF;}
   Float_t *GetPtBinLimits() const {return fPtBinLimits;}
@@ -287,6 +288,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   const char* GetMinCrossedRowsTPCPtDep() const {return fCutMinCrossedRowsTPCPtDep;}
   Float_t GetMinRatioClsOverCrossRowsTPC() const {return fCutRatioClsOverCrossRowsTPC;}
   Float_t GetMinRatioSignalNOverCrossRowsTPC() const {return fCutRatioSignalNOverCrossRowsTPC;}
+  Bool_t GetUseTPCtrackCutsOnThisDaughter() const {return fUseTPCtrackCutsOnThisDaughter;}
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
@@ -468,10 +470,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fCutGeoNcrNclFractionNcr; /// 4th parameter of GeoNcrNcl cut
   Double_t fCutGeoNcrNclFractionNcl; /// 5th parameter of GeoNcrNcl cut
   Bool_t fUseV0ANDSelectionOffline; ///flag to apply V0AND selection offline
-  
+  Bool_t fUseTPCtrackCutsOnThisDaughter; ///flag to apply TPC track quality cuts on specific D-meson daughter (used for different strategies for soft pion and D0daughters from Dstar decay)
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCuts,41);  /// base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,42);  /// base class for cuts on AOD reconstructed heavy-flavour decays
   /// \endcond
 };
 

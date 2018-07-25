@@ -165,7 +165,7 @@ void AliPP13PhotonSelection::InitSummaryHistograms()
 	if(mc)
 	{
 		weights += Form(
-			"Nonlin NonGlobal = %.4g, NonA = %.4g, NonSigma = %.4g",
+			"Nonlin NonGlobal = %.6g, NonA = %.6g, NonSigma = %.6g",
 			mc->fNonGlobal,
 			mc->fNonA,
 			mc->fNonSigma

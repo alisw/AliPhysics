@@ -62,7 +62,7 @@ set(SRCS
   ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
-  PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxO.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx

@@ -2,14 +2,17 @@
 #define AliSigma0PhotonMotherCuts_H
 
 #include <deque>
-#include "AliAODConversionPhoton.h"
+#include "AliAnalysisManager.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliSigma0ParticleBase.h"
 #include "AliSigma0ParticlePhotonMother.h"
 #include "AliSigma0ParticleV0.h"
+#include "AliSigma0V0Cuts.h"
+#include "AliV0ReaderV1.h"
 #include "AliVEvent.h"
 #include "Riostream.h"
+#include "TDatabasePDG.h"
 #include "TObject.h"
 #include "TProfile.h"
 
@@ -41,17 +44,17 @@ class AliSigma0PhotonMotherCuts : public TObject {
   int GetRapidityBin(float rapidity) const;
   void ProcessMC() const;
   bool CheckDaughters(const AliMCParticle *particle) const;
+  bool CheckDaughtersInAcceptance(const AliMCParticle *particle) const;
 
   void SetIsMC(bool isMC) { fIsMC = isMC; }
   void SetLightweight(bool isLightweight) { fIsLightweight = isLightweight; }
+  void SetTreeOutput(bool isTreeOutput) { fIsTreeOutput = isTreeOutput; }
 
   void SetSigmaMass(float mass) { fMassSigma = mass; }
   void SetMixingDepth(short mixDepth) { fMixingDepth = mixDepth; }
   void SetSigmaMassCut(float cut) { fSigmaMassCut = cut; }
-  void SetSigmaSideband(float low, float up) {
-    fSigmaSidebandLow = low;
-    fSigmaSidebandUp = up;
-  }
+  void SetPhotonMinPt(float minpT) { fPhotonPtMin = minpT; }
+  void SetPhotonMaxPt(float maxpT) { fPhotonPtMax = maxpT; }
   void SetArmenterosCut(float qtLow, float qtUp, float alphaLow,
                         float alphaUp) {
     fArmenterosCut = true;
@@ -67,73 +70,95 @@ class AliSigma0PhotonMotherCuts : public TObject {
     fPDGDaughter2 = pdgDaughter2;
   }
 
+  void SetLambdaCuts(AliSigma0V0Cuts *lamCut) { fLambdaCuts = lamCut; }
+  void SetPhotonCuts(AliSigma0V0Cuts *photCut) { fPhotonCuts = photCut; }
+  void SetV0ReaderName(TString name) { fV0ReaderName = name; }
+
   void InitCutHistograms(TString appendix = TString(""));
   TList *GetCutHistograms() const { return fHistograms; }
+  TTree *GetSigmaTree() const { return fOutputTree; }
 
  protected:
-  TList *fHistograms;
-  TList *fHistogramsMC;
+  TList *fHistograms;    //!
+  TList *fHistogramsMC;  //!
 
   bool fIsMC;
   bool fIsLightweight;
+  bool fIsTreeOutput;
 
-  AliVEvent *fInputEvent;  //!
-  AliMCEvent *fMCEvent;    //!
+  AliVEvent *fInputEvent;     //!
+  AliMCEvent *fMCEvent;       //!
+  TDatabasePDG fDataBasePDG;  //!
 
   deque<vector<AliSigma0ParticleV0> > fLambdaMixed;  //!
   deque<vector<AliSigma0ParticleV0> > fPhotonMixed;  //!
+  float fTreeVariables[4];                           //!
 
-  short fMixingDepth;
-  int fPDG;
-  int fPDGDaughter1;
-  int fPDGDaughter2;
+  AliSigma0V0Cuts *fLambdaCuts;  //
+  AliSigma0V0Cuts *fPhotonCuts;  //
+  AliV0ReaderV1 *fV0Reader;      //! basic photon Selection Task
+  TString fV0ReaderName;         //
 
-  float fMassSigma;
-  float fSigmaMassCut;
-  float fSigmaSidebandLow;
-  float fSigmaSidebandUp;
+  short fMixingDepth;  //
+  int fPDG;            //
+  int fPDGDaughter1;   //
+  int fPDGDaughter2;   //
 
-  float fArmenterosCut;
-  float fArmenterosQtLow;
-  float fArmenterosQtUp;
-  float fArmenterosAlphaLow;
-  float fArmenterosAlphaUp;
+  float fMassSigma;     //
+  float fSigmaMassCut;  //
+  float fPhotonPtMin;   //
+  float fPhotonPtMax;   //
+  float fRapidityMax;   //
+
+  float fArmenterosCut;       //
+  float fArmenterosQtLow;     //
+  float fArmenterosQtUp;      //
+  float fArmenterosAlphaLow;  //
+  float fArmenterosAlphaUp;   //
 
   // Histograms
   // =====================================================================
-  TProfile *fHistCutBooking;  //
+  TProfile *fHistCutBooking;  //!
 
-  TH1F *fHistNSigma;                   //
-  TH1F *fHistPt;                       //
-  TH1F *fHistMassCutPt;                //
-  TH1F *fHistInvMass;                  //
-  TH1F *fHistInvMassBeforeArmenteros;  //
-  TH1F *fHistInvMassRec;               //
-  TH2F *fHistInvMassPt;                //
-  TH2F *fHistInvMassEta;               //
-  TH2F *fHistEtaPhi;                   //
-  TH1F *fHistRapidity;                 //
-  TH2F *fHistPtY[22];                  //
-  TH2F *fHistArmenterosBefore;         //
-  TH2F *fHistArmenterosAfter;          //
-  TH1F *fHistMixedPt;                  //
-  TH1F *fHistMixedInvMass;             //
-  TH2F *fHistMixedPtY[22];             //
-  TH2F *fHistMixedInvMassPt;           //
-  TH2F *fHistMixedInvMassEta;          //
+  TH1F *fHistNSigma;                   //!
+  TH1F *fHistPt;                       //!
+  TH1F *fHistMassCutPt;                //!
+  TH1F *fHistInvMass;                  //!
+  TH1F *fHistInvMassBeforeArmenteros;  //!
+  TH1F *fHistInvMassBeforeRapidity;    //!
+  TH2F *fHistInvMassRecPhoton;         //!
+  TH2F *fHistInvMassRecLambda;         //!
+  TH2F *fHistInvMassRec;               //!
+  TH2F *fHistInvMassPt;                //!
+  TH2F *fHistInvMassEta;               //!
+  TH2F *fHistEtaPhi;                   //!
+  TH1F *fHistRapidity;                 //!
+  TH2F *fHistPtY[22];                  //!
+  TH2F *fHistArmenterosBefore;         //!
+  TH2F *fHistArmenterosAfter;          //!
+  TH1F *fHistMixedPt;                  //!
+  TH1F *fHistMixedInvMass;             //!
+  TH2F *fHistMixedPtY[22];             //!
+  TH2F *fHistMixedInvMassPt;           //!
+  TH2F *fHistMixedInvMassEta;          //!
 
-  TH1F *fHistMCTruthPt;             //
-  TH2F *fHistMCTruthPtY;            //
-  TH2F *fHistMCTruthPtEta;          //
-  TH1F *fHistMCTruthDaughterPt;     //
-  TH2F *fHistMCTruthDaughterPtY;    //
-  TH2F *fHistMCTruthDaughterPtEta;  //
+  TH1F *fHistMCTruthPt;                   //!
+  TH2F *fHistMCTruthPtY;                  //!
+  TH2F *fHistMCTruthPtEta;                //!
+  TH1F *fHistMCTruthDaughterPt;           //!
+  TH2F *fHistMCTruthDaughterPtY;          //!
+  TH2F *fHistMCTruthDaughterPtEta;        //!
+  TH1F *fHistMCTruthDaughterPtAccept;     //!
+  TH2F *fHistMCTruthDaughterPtYAccept;    //!
+  TH2F *fHistMCTruthDaughterPtEtaAccept;  //!
 
-  TH1F *fHistMCV0Pt;    //
-  TH1F *fHistMCV0Mass;  //
+  TH1F *fHistMCV0Pt;    //!
+  TH1F *fHistMCV0Mass;  //!
+
+  TTree *fOutputTree;  //!
 
  private:
-  ClassDef(AliSigma0PhotonMotherCuts, 3)
+  ClassDef(AliSigma0PhotonMotherCuts, 5)
 };
 
 #endif

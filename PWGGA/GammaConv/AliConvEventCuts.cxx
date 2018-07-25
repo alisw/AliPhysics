@@ -999,6 +999,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t centrality selection based on V0M \n");
     } else if (fDetectorCentrality == 1){
       printf("\t centrality selection based on Cl1 \n");
+    } else if (fDetectorCentrality == 2){
+      printf("\t centrality selection based on ZNA \n");
     }
     if (fModCentralityClass == 0){
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
@@ -1029,6 +1031,8 @@ void AliConvEventCuts::PrintCutsWithValues() {
       printf("\t centrality selection based on V0A \n");
     } else if (fDetectorCentrality == 1){
       printf("\t centrality selection based on Cl1 \n");
+    } else if (fDetectorCentrality == 2){
+      printf("\t centrality selection based on ZNA \n");
     }
     if (fModCentralityClass == 0){
       printf("\t %d - %d \n", fCentralityMin*10, fCentralityMax*10);
@@ -1063,6 +1067,7 @@ void AliConvEventCuts::PrintCutsWithValues() {
   printf("MC event cuts: \n");
   if (fRejectExtraSignals == 0) printf("\t no rejection was applied \n");
     else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
+    else if (fRejectExtraSignals == 4) printf("\t special handling for Jets embedded in MB events \n");
     else if (fRejectExtraSignals > 1) printf("\t special header have been selected \n");
   printf("\t maximum factor between jet and pt hard = %2.2f \n", fMaxFacPtHard);
 }
@@ -1127,32 +1132,51 @@ Bool_t AliConvEventCuts::SetIsHeavyIon(Int_t isHeavyIon)
     fIsHeavyIon=2;
     fDetectorCentrality=1;
     break;
-  case 10: // pPb V0A
+  case 10: // a: pPb V0A
     // steps of 5%
     // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
     fIsHeavyIon=2;
     fDetectorCentrality=0;
     fModCentralityClass=1;
     break;
-  case 11: // pPb CL1
+  case 11: // b: pPb CL1
     // steps of 5%
     // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
     fIsHeavyIon=2;
     fDetectorCentrality=1;
     fModCentralityClass=1;
     break;
-  case 12: // pPb V0A
+  case 12: // c: pPb V0A
     // steps of 1%
     // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
     fIsHeavyIon=2;
     fDetectorCentrality=0;
     fModCentralityClass=2;
     break;
-  case 13: // pPb CL1
+  case 13: // d: pPb CL1
     // steps of 1%
     // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
     fIsHeavyIon=2;
     fDetectorCentrality=1;
+    fModCentralityClass=2;
+    break;
+  case 14: // e: pPb ZNA
+    // steps of 10%
+    fIsHeavyIon=2;
+    fDetectorCentrality=2;
+    break;
+  case 15: // f: pPb ZNA
+    // steps of 5%
+    // 0 -0%, 1-5%, 2-10%, 3-15%, 4-20%, 5-25%, 6-30%, 7-35%, 8-40%, 9-45%, a-50%, b-55%, c-60%, d-65%, e-70%, f-75%, g-80%, h-85%, i-90%, j-95%, k-100%
+    fIsHeavyIon=2;
+    fDetectorCentrality=2;
+    fModCentralityClass=1;
+    break;
+  case 16: // g: pPb CL1
+    // steps of 1%
+    // 0 -0%, 1-1%, 2-2%, 3-3%, 4-4%, 5-5%, 6-6%, 7-7%, 8-8%, 9-9%, a-10%, b-11%, c-12%, d-13%, e-14%, f-15%, g-16%, h-17%, i-18%, j-19%, k-20%
+    fIsHeavyIon=2;
+    fDetectorCentrality=2;
     fModCentralityClass=2;
     break;
 
@@ -1969,6 +1993,9 @@ Bool_t AliConvEventCuts::SetRejectExtraSignalsCut(Int_t extraSignal) {
   case 3:
     fRejectExtraSignals = 3;
     break; // Rejection for Gamma Correction only
+  case 4:
+    fRejectExtraSignals = 4;
+    break; // Special handling of Jet weights for Jets embedded in MB events
   default:
     AliError(Form("Extra Signal Rejection not defined %d",extraSignal));
     return kFALSE;
@@ -2030,8 +2057,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
       fPeriodEnum == kLHC16r || fPeriodEnum == kLHC16s ||                                                                  // pPb 8TeV LHC16rs
       fPeriodEnum == kLHC17f2a || fPeriodEnum == kLHC17f2b || fPeriodEnum == kLHC17g8a ||                                  // MC pPb 5TeV LHC16qt
       fPeriodEnum == kLHC16rP1JJ || fPeriodEnum == kLHC16sP1JJ ||
-      fPeriodEnum == kLHC17f3a || fPeriodEnum == kLHC17f3b ||
-      fPeriodEnum == kLHC17f4a || fPeriodEnum == kLHC17f4b ||                                                               // MC pPb 8TeV LHC16sr
+      fPeriodEnum == kLHC17f3 || fPeriodEnum == kLHC17f4 ||                                                                 // MC pPb 8TeV LHC16sr
       fPeriodEnum == kLHC17n ||                                                                                             // Xe-Xe LHC17n
       fPeriodEnum == kLHC17j7 ||                                                                                            // MC Xe-Xe LHC17n
       fPeriodEnum == kLHC17pq ||                                                                                            // pp 5TeV LHC17pq
@@ -2050,24 +2076,51 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
 {   // Get Event Centrality
 
   AliESDEvent *esdEvent=dynamic_cast<AliESDEvent*>(event);
+  Int_t runnumber = event->GetRunNumber();
   if(esdEvent){
     if(GetUseNewMultiplicityFramework()){
       AliMultSelection *MultSelection = (AliMultSelection*)event->FindListObject("MultSelection");
       if(!MultSelection){
         AliWarning ("AliMultSelection object not found !");
         return -1;
-            }else{
+      }else{
         if(fDetectorCentrality==0){
-          if(fIsHeavyIon==2)             return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
-          else                           return MultSelection->GetMultiplicityPercentile("V0M");// default
-        }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+          if(fIsHeavyIon==2){
+            if (runnumber > 266329 && runnumber < 267139)
+              return MultSelection->GetMultiplicityPercentile("V0C");// default for Pbp
+            else
+              return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
+          } else {
+            return MultSelection->GetMultiplicityPercentile("V0M");// default
+          }
+        } else if(fDetectorCentrality==1){
+          return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+        } else if(fDetectorCentrality==2){
+          if (runnumber > 266329 && runnumber < 267139)
+            return MultSelection->GetMultiplicityPercentile("ZNC",kTRUE);
+          else
+            return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
+        }
       }
     }else{
       AliCentrality *fESDCentrality = (AliCentrality*)esdEvent->GetCentrality();
       if(fDetectorCentrality==0){
-        if(fIsHeavyIon==2)             return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
-        else                           return fESDCentrality->GetCentralityPercentile("V0M"); // default
-      }else if(fDetectorCentrality==1) return fESDCentrality->GetCentralityPercentile("CL1");
+        if(fIsHeavyIon==2){
+          if (runnumber > 196432 && runnumber < 197389)
+            return fESDCentrality->GetCentralityPercentile("V0C"); // default for Pbp
+          else
+            return fESDCentrality->GetCentralityPercentile("V0A"); // default for pPb
+        } else {
+          return fESDCentrality->GetCentralityPercentile("V0M"); // default
+        }
+      } else if(fDetectorCentrality==1){
+        return fESDCentrality->GetCentralityPercentile("CL1");
+      } else if(fDetectorCentrality==2){
+        if (runnumber > 196432 && runnumber < 197389)
+          return fESDCentrality->GetCentralityPercentile("ZNC");
+        else
+          return fESDCentrality->GetCentralityPercentile("ZNA");
+      }
     }
   }
 
@@ -2083,6 +2136,7 @@ Float_t AliConvEventCuts::GetCentrality(AliVEvent *event)
           if(fIsHeavyIon==2)           return MultSelection->GetMultiplicityPercentile("V0A");// default for pPb
           else                         return MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
         }else if(fDetectorCentrality==1) return MultSelection->GetMultiplicityPercentile("CL1",kTRUE);
+        else if(fDetectorCentrality==2) return MultSelection->GetMultiplicityPercentile("ZNA",kTRUE);
       }
     }else{
       if(aodEvent->GetHeader()){return ((AliVAODHeader*)aodEvent->GetHeader())->GetCentrality();}
@@ -2792,9 +2846,9 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 20) weight = weightsBins[bin];
-        } else if ( fPeriodEnum == kLHC17i3a1 ){ // preliminary weights obtained from local running
+        } else if ( fPeriodEnum == kLHC17i3a1 ){ // weights obtained from ga_pp_mc_aod train 912
            Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 10000};
-           Double_t weightsBins[6]      = { 0.000212409, 3.12964e-05, 5.07523e-06, 9.67792e-07, 2.06531e-07, 8.05828e-08};
+           Double_t weightsBins[6]      = { 0.0002181, 3.13684e-05, 5.01515e-06, 9.50662e-07, 2.08186e-07, 7.96555e-08};
            Int_t bin = 0;
            while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
            if (bin < 6) weight = weightsBins[bin];
@@ -3006,9 +3060,9 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 20) weight = weightsBins[bin];
-      } else if ( fPeriodEnum == kLHC17i3a1 ){ // preliminary weights obtained from local running
-         Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 10000};
-         Double_t weightsBins[6]      = { 0.000212409, 3.12964e-05, 5.07523e-06, 9.67792e-07, 2.06531e-07, 8.05828e-08};
+      } else if ( fPeriodEnum == kLHC17i3a1 ){ // weights obtained from ga_pp_mc_aod train 912
+        Double_t ptHardBinRanges[7]  = { 5, 11, 21, 36, 57, 84, 10000};
+        Double_t weightsBins[6]      = { 0.0002181, 3.13684e-05, 5.01515e-06, 9.50662e-07, 2.08186e-07, 7.96555e-08};
          Int_t bin = 0;
          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
          if (bin < 6) weight = weightsBins[bin];
@@ -3107,8 +3161,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         if ( mch ){
           Int_t nGenerators = mch->GetNCocktailHeaders();
           if ( nGenerators > 0  ){
-            for(Int_t igen = 0; igen < nGenerators; igen++)
-            {
+            for(Int_t igen = 0; igen < nGenerators; igen++){
               AliGenEventHeader * eventHeaderGen = mch->GetCocktailHeader(igen) ;
               TString name = eventHeaderGen->GetName();
               if (name.CompareTo("AliGenPythiaEventHeader") == 0 || name.Contains("Pythia8Jets")){
@@ -3978,7 +4031,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
     Int_t firstindexA         = 0;
     Int_t lastindexA          = -1;
     if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
-    if(rejection == 2){ // TList of Headers Names
+    if(rejection == 2 || rejection == 4){ // TList of Headers Names
       for(Int_t i = 0; i<genHeaders->GetEntries();i++){
         gh                    = (AliGenEventHeader*)genHeaders->At(i);
         TString GeneratorName = gh->GetName();
@@ -5620,11 +5673,11 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
               periodName.CompareTo("LHC17a3b_cent") == 0 || periodName.CompareTo("LHC17a3b_cent_woSDD") == 0){
     fPeriodEnum = kLHC17a3b;
     fEnergyEnum = kpPb8TeV;
-  } else if (periodName.CompareTo("LHC17f3a") == 0){
-    fPeriodEnum = kLHC17f3a;
+  } else if (periodName.Contains("LHC17f3")){
+    fPeriodEnum = kLHC17f3;
     fEnergyEnum = kpPb8TeV;
-  } else if (periodName.CompareTo("LHC17f3b") == 0){
-    fPeriodEnum = kLHC17f3b;
+  } else if (periodName.Contains("LHC17f4")){
+    fPeriodEnum = kLHC17f4;
     fEnergyEnum = kpPb8TeV;
   // LHC16s anchored MCs
   } else if (periodName.CompareTo("LHC17a4a") == 0      || periodName.CompareTo("LHC17a4a_fast") == 0 ||

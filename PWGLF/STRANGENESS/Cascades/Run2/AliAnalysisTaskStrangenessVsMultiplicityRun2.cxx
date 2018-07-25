@@ -1285,7 +1285,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     fListHist = new TList();
     fListHist->SetOwner();  // See http://root.cern.ch/root/html/TCollection.html#TCollection:SetOwner
     
-    fEventCuts.AddQAplotsToList(fListHist);
+    fEventCuts.AddQAplotsToList(fListHist,kTRUE);
     
     if(! fHistEventCounter ) {
         //Histogram Output: Event-by-Event
@@ -4862,6 +4862,18 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         lN++;
     }
     
+    //Explore No PDG association
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_NoMCInfoUsed",lParticleName[i].Data() ) );
+        
+        lCascadeResult[lN] -> SetCutMCUseMCProperties(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPhysicalPrimary(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPDGCodeAssociation(kFALSE);
+        
+        //Add result to pool
+        lN++;
+    }
+    
     //Explore TOF info use
     for(Int_t i = 0 ; i < 4 ; i ++){
         lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_AtLeastOneTOF",lParticleName[i].Data() ) );
@@ -5113,41 +5125,41 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
     lMass[2] = 1.672;
     lMass[3] = 1.672;
     /*
-    //Old vertexer-level configuration for cross-checks
-    for(Int_t i = 0 ; i < 4 ; i ++){
-        //Central result, customized binning: the one to use, usually
-        lCascadeResult[lN] = new AliCascadeResult( Form("%s_VertexerLevel",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits,100,lMass[i]-0.050,lMass[i]+0.050);
-        
-        
-        //This is MC: generate profile for G3/F (if ever needed)
-        lCascadeResult[lN] -> InitializeProtonProfile();
-        
-        //Default cuts: use vertexer level ones
-        //Setters for V0 Cuts
-        lCascadeResult[lN]->SetCutDCANegToPV            ( 0.2 ) ;
-        lCascadeResult[lN]->SetCutDCAPosToPV            ( 0.2 ) ;
-        lCascadeResult[lN]->SetCutDCAV0Daughters        (  1. ) ;
-        lCascadeResult[lN]->SetCutV0CosPA               ( 0.98 ) ;
-        lCascadeResult[lN]->SetCutV0Radius              (  3 ) ;
-        //Setters for Cascade Cuts
-        lCascadeResult[lN]->SetCutDCAV0ToPV             ( 0.1 ) ;
-        lCascadeResult[lN]->SetCutV0Mass                ( 0.006 ) ;
-        lCascadeResult[lN]->SetCutDCABachToPV           ( 0.03 ) ;
-        lCascadeResult[lN]->SetCutDCACascDaughters      ( 1. ) ;
-        lCascadeResult[lN]->SetCutCascRadius            ( 1.2 ) ;
-        if(i==2||i==3)
-        lCascadeResult[lN]->SetCutCascRadius            ( 1.0 ) ; //omega case
-        lCascadeResult[lN]->SetCutCascCosPA             ( 0.98 ) ;
-        //Miscellaneous
-        lCascadeResult[lN]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
-        lCascadeResult[lN]->SetCutMinTrackLength           ( 90.0 ) ;
-        lCascadeResult[lN]->SetCutTPCdEdx               ( 4.0 ) ;
-        lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
-        lCascadeResult[lN]->SetCutBachBaryonCosPA        ( TMath::Cos(0.006) ) ;
-        //Add result to pool
-        lN++;
-    }
-    */
+     //Old vertexer-level configuration for cross-checks
+     for(Int_t i = 0 ; i < 4 ; i ++){
+     //Central result, customized binning: the one to use, usually
+     lCascadeResult[lN] = new AliCascadeResult( Form("%s_VertexerLevel",lParticleName[i].Data() ),lMassHypo[i],"",lCentbinnumb,lCentbinlimits, lPtbinnumb,lPtbinlimits,100,lMass[i]-0.050,lMass[i]+0.050);
+     
+     
+     //This is MC: generate profile for G3/F (if ever needed)
+     lCascadeResult[lN] -> InitializeProtonProfile();
+     
+     //Default cuts: use vertexer level ones
+     //Setters for V0 Cuts
+     lCascadeResult[lN]->SetCutDCANegToPV            ( 0.2 ) ;
+     lCascadeResult[lN]->SetCutDCAPosToPV            ( 0.2 ) ;
+     lCascadeResult[lN]->SetCutDCAV0Daughters        (  1. ) ;
+     lCascadeResult[lN]->SetCutV0CosPA               ( 0.98 ) ;
+     lCascadeResult[lN]->SetCutV0Radius              (  3 ) ;
+     //Setters for Cascade Cuts
+     lCascadeResult[lN]->SetCutDCAV0ToPV             ( 0.1 ) ;
+     lCascadeResult[lN]->SetCutV0Mass                ( 0.006 ) ;
+     lCascadeResult[lN]->SetCutDCABachToPV           ( 0.03 ) ;
+     lCascadeResult[lN]->SetCutDCACascDaughters      ( 1. ) ;
+     lCascadeResult[lN]->SetCutCascRadius            ( 1.2 ) ;
+     if(i==2||i==3)
+     lCascadeResult[lN]->SetCutCascRadius            ( 1.0 ) ; //omega case
+     lCascadeResult[lN]->SetCutCascCosPA             ( 0.98 ) ;
+     //Miscellaneous
+     lCascadeResult[lN]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
+     lCascadeResult[lN]->SetCutMinTrackLength           ( 90.0 ) ;
+     lCascadeResult[lN]->SetCutTPCdEdx               ( 4.0 ) ;
+     lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
+     lCascadeResult[lN]->SetCutBachBaryonCosPA        ( TMath::Cos(0.006) ) ;
+     //Add result to pool
+     lN++;
+     }
+     */
     for (Int_t iconf = 0; iconf<lN; iconf++){
         cout<<"["<<iconf<<"/"<<lN<<"] Adding config named "<<lCascadeResult[iconf]->GetName()<<endl;
         AddConfiguration(lCascadeResult[iconf]);

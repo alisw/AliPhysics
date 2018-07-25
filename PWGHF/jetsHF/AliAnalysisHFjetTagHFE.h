@@ -90,9 +90,13 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistZcorr; //!
   TH1F                        *fHistCent; //!
   TH2F                        *fHistTPCnSigma;
+  TH2F                        *fHistTPCnSigma_ele;
+  TH2F                        *fHistTPCnSigma_had;
+  TH2F                        *fHistTPCnSigma_eMC;
   TH2F                        *fHistEopNsig;
   TH2F                        *fHistEop;
   TH2F                        *fHistEopHad;
+  TH2F                        *fHistEopHFjet;
   TH1F                        *fHistJetOrg;
   TH2F                        *fHistJetOrgArea;
   TH1F                        *fHistJetBG;
@@ -118,17 +122,22 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH2F                        *fHistIncjetOrg;
   TH2F                        *fHistIncjetBG;
   TH2F                        *fHistHFjet;
+  TH1F                        *fHistHFdijet;
   TH2F                        *fHistULSjet;
   TH2F                        *fHistLSjet;
   TH2F                        *fHistHFjetOrder;
   TH2F                        *fHistDiJetPhi; 
   TH2F                        *fHistDiJetMomBalance; 
+  TH2F                        *fHistDiJetMomBalance_All; 
+  TH2F                        *fHistDiJetPhi_MC; 
+  TH2F                        *fHistDiJetMomBalance_MC; 
   TH2F                        *fInvmassULS;
   TH2F                        *fInvmassLS;
   TH2F                        *fInvmassHFuls;
   TH2F                        *fInvmassHFls;
   TH1F                        *fLxy_uls;
   TH1F                        *fLxy_ls;
+  TH2D                        *feJetCorr;
   THnSparse                   *HFjetCorr0;
   THnSparse                   *HFjetCorr1;
   THnSparse                   *HFjetParticle;
@@ -162,6 +171,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   //void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
   //void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
   void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
+  Double_t IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE);
 
  private:
 

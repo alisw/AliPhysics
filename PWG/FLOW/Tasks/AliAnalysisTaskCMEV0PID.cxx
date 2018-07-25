@@ -915,54 +915,54 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
     //Charged:
     for(int j=0;j<4;j++){
      //Detector: 0 = V0A, 1 = V0C, 3 = TPCA, 4 = TPCC 
-      fHist_Corr3p_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %d",j),10,centRange,"");
-      //fHist_Corr3p_EP_Norm_PN[i][j]->Sumw2();
+      fHist_Corr3p_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %d",j),100,0,100,"");
+      fHist_Corr3p_EP_Norm_PN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EP_Norm_PN[i][j]);
-      fHist_Corr3p_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %d",j),10,centRange,"");
-      //fHist_Corr3p_EP_Norm_PP[i][j]->Sumw2();
+      fHist_Corr3p_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %d",j),100,0,100,"");
+      fHist_Corr3p_EP_Norm_PP[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EP_Norm_PP[i][j]);
-      fHist_Corr3p_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %d",j),10,centRange,"");
-      //fHist_Corr3p_EP_Norm_NN[i][j]->Sumw2();
+      fHist_Corr3p_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %d",j),100,0,100,"");
+      fHist_Corr3p_EP_Norm_NN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_EP_Norm_NN[i][j]);
     }
     //EP Resolution:
     for(int j=0;j<4;j++){
     //Det: 0 = v0c-v0a, 1 = v0a-TPC, 2 = v0c-TPC, 3 =TPC-A TPC-C
-      fHist_Reso2n_EP_Norm_Det[i][j]  = new TProfile(Form("fHist_Reso2n_EP_Norm_Mag%d_DetComb%d",i,j+1),"Event plane Resolution",10,centRange,"");
-      //fHist_Reso2n_EP_Norm_Det[i][j]->Sumw2();
+      fHist_Reso2n_EP_Norm_Det[i][j]  = new TProfile(Form("fHist_Reso2n_EP_Norm_Mag%d_DetComb%d",i,j+1),"Event plane Resolution",100,0,100,"");
+      fHist_Reso2n_EP_Norm_Det[i][j]->Sumw2();
       fListHist->Add(fHist_Reso2n_EP_Norm_Det[i][j]);
     }
     //----------- PID -------------------
     for(int j=0;j<4;j++){       //Detector: 0 = V0A, 1 = V0C, 3 = TPCA, 4 = TPCC 
       //----------> Pion:
-      fHist_Corr3p_Pion_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_Pion_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %d",j),10,centRange,"");
-      //fHist_Corr3p_Pion_EP_Norm_PN[i][j]->Sumw2();
+      fHist_Corr3p_Pion_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_Pion_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %d",j),100,0,100,"");
+      fHist_Corr3p_Pion_EP_Norm_PN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_Pion_EP_Norm_PN[i][j]);
-      fHist_Corr3p_Pion_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_Pion_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %d",j),10,centRange,"");
-      //fHist_Corr3p_Pion_EP_Norm_PP[i][j]->Sumw2();
+      fHist_Corr3p_Pion_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_Pion_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %d",j),100,0,100,"");
+      fHist_Corr3p_Pion_EP_Norm_PP[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_Pion_EP_Norm_PP[i][j]);
-      fHist_Corr3p_Pion_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_Pion_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %d",j),10,centRange,"");
-      //fHist_Corr3p_Pion_EP_Norm_NN[i][j]->Sumw2();
+      fHist_Corr3p_Pion_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_Pion_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %d",j),100,0,100,"");
+      fHist_Corr3p_Pion_EP_Norm_NN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_Pion_EP_Norm_NN[i][j]);
       //----------> Kaon:
-      fHist_Corr3p_Kaon_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_Kaon_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %d",j),10,centRange,"");
-      //fHist_Corr3p_Kaon_EP_Norm_PN[i][j]->Sumw2();
+      fHist_Corr3p_Kaon_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_Kaon_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %d",j),100,0,100,"");
+      fHist_Corr3p_Kaon_EP_Norm_PN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_Kaon_EP_Norm_PN[i][j]);
-      fHist_Corr3p_Kaon_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_Kaon_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %d",j),10,centRange,"");
-      //fHist_Corr3p_Kaon_EP_Norm_PP[i][j]->Sumw2();
+      fHist_Corr3p_Kaon_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_Kaon_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %d",j),100,0,100,"");
+      fHist_Corr3p_Kaon_EP_Norm_PP[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_Kaon_EP_Norm_PP[i][j]);
-      fHist_Corr3p_Kaon_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_Kaon_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %d",j),10,centRange,"");
-      //fHist_Corr3p_Kaon_EP_Norm_NN[i][j]->Sumw2();
+      fHist_Corr3p_Kaon_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_Kaon_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %d",j),100,0,100,"");
+      fHist_Corr3p_Kaon_EP_Norm_NN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_Kaon_EP_Norm_NN[i][j]);
       //----------> Proton:
-      fHist_Corr3p_Proton_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_Proton_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %d",j),10,centRange,"");
-      //fHist_Corr3p_Proton_EP_Norm_PN[i][j]->Sumw2();
+      fHist_Corr3p_Proton_EP_Norm_PN[i][j] = new TProfile(Form("fHist_Corr3p_Proton_EP_Norm_PosNeg_Mag%d_Det%d",i,j+1),Form("US, #Psi_{2} %d",j),100,0,100,"");
+      fHist_Corr3p_Proton_EP_Norm_PN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_Proton_EP_Norm_PN[i][j]);
-      fHist_Corr3p_Proton_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_Proton_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %d",j),10,centRange,"");
-      //fHist_Corr3p_Proton_EP_Norm_PP[i][j]->Sumw2();
+      fHist_Corr3p_Proton_EP_Norm_PP[i][j] = new TProfile(Form("fHist_Corr3p_Proton_EP_Norm_PosPos_Mag%d_Det%d",i,j+1),Form("P-P, #Psi_{2} %d",j),100,0,100,"");
+      fHist_Corr3p_Proton_EP_Norm_PP[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_Proton_EP_Norm_PP[i][j]);
-      fHist_Corr3p_Proton_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_Proton_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %d",j),10,centRange,"");
-      //fHist_Corr3p_Proton_EP_Norm_NN[i][j]->Sumw2();
+      fHist_Corr3p_Proton_EP_Norm_NN[i][j] = new TProfile(Form("fHist_Corr3p_Proton_EP_Norm_NegNeg_Mag%d_Det%d",i,j+1),Form("N-N, #Psi_{2}, %d",j),100,0,100,"");
+      fHist_Corr3p_Proton_EP_Norm_NN[i][j]->Sumw2();
       fListHist->Add(fHist_Corr3p_Proton_EP_Norm_NN[i][j]);
     }//Det loop
   }//magfield loop
@@ -1696,7 +1696,7 @@ void AliAnalysisTaskCMEV0PID::UserCreateOutputObjects()
   PostData(1,fListHist);
   cout<<"\n.........UserCreateOutputObject called.........\n fFilterBit = "<<fFilterBit<<" CentMax = "<<fCentralityPercentMax;
   cout<<" PU C = "<<fPileUpConstParm<<" gN = "<<gN<<" gM = "<<gM<<" PsiN = "<<gPsiN<<"\n\n"<<endl;
-
+  //cout<<" ***********  checking my commit...!! ***************** \n\n ";
 }
 
 

@@ -41,7 +41,8 @@ ClassImp(AliAnalysisTaskSigma0Run2)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr) {}
+      fHistTriggerAfter(nullptr),
+      fOutputTree(nullptr) {}
 
 //____________________________________________________________________________________________________
 AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
@@ -76,9 +77,11 @@ AliAnalysisTaskSigma0Run2::AliAnalysisTaskSigma0Run2(const char *name)
       fHistCentralityProfileAfter(nullptr),
       fHistCentralityProfileCoarseAfter(nullptr),
       fHistTriggerBefore(nullptr),
-      fHistTriggerAfter(nullptr) {
+      fHistTriggerAfter(nullptr),
+      fOutputTree(nullptr) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________________________________________
@@ -165,24 +168,25 @@ bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
 
   if (!fIsLightweight) FillTriggerHisto(fHistTriggerAfter);
 
+  Float_t lPercentile = 300;
+  AliMultSelection *MultSelection = 0x0;
+  MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
+  if (!MultSelection) {
+    // If you get this warning (and lPercentiles 300) please check that the
+    // AliMultSelectionTask actually ran (before your task)
+    AliWarning("AliMultSelection object not found!");
+  } else {
+    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+  if (!fIsLightweight) fHistCentralityProfileBefore->Fill(lPercentile);
+
   // MULTIPLICITY SELECTION
   if (fTrigger == AliVEvent::kHighMultV0 && fV0PercentileMax < 100.f) {
-    Float_t lPercentile = 300;
-    AliMultSelection *MultSelection = 0x0;
-    MultSelection = (AliMultSelection *)event->FindListObject("MultSelection");
-    if (!MultSelection) {
-      // If you get this warning (and lPercentiles 300) please check that the
-      // AliMultSelectionTask actually ran (before your task)
-      AliWarning("AliMultSelection object not found!");
-    } else {
-      lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-    }
-    if (!fIsLightweight) fHistCentralityProfileBefore->Fill(lPercentile);
     if (lPercentile > fV0PercentileMax) return false;
-    if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
     if (!fIsLightweight) fHistCentralityProfileAfter->Fill(lPercentile);
     fHistCutQA->Fill(2);
   }
+  if (!fIsLightweight) fHistCentralityProfileCoarseAfter->Fill(lPercentile);
 
   bool isConversionEventSelected =
       ((AliConvEventCuts *)fV0Reader->GetEventCuts())
@@ -197,10 +201,10 @@ bool AliAnalysisTaskSigma0Run2::AcceptEvent(AliVEvent *event) {
 void AliAnalysisTaskSigma0Run2::CastToVector(
     std::vector<AliSigma0ParticleV0> &container, const AliVEvent *inputEvent) {
   for (int iGamma = 0; iGamma < fGammaArray->GetEntriesFast(); ++iGamma) {
-    auto photonCandidate =
+    auto *PhotonCandidate =
         dynamic_cast<AliAODConversionPhoton *>(fGammaArray->At(iGamma));
-    if (!photonCandidate) continue;
-    AliSigma0ParticleV0 phot(photonCandidate, inputEvent);
+    if (!PhotonCandidate) continue;
+    AliSigma0ParticleV0 phot(PhotonCandidate, inputEvent);
     container.push_back(phot);
   }
 }
@@ -220,12 +224,10 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
   fQA->SetName("EventCuts");
   fQA->SetOwner(true);
 
-  if (fTrigger != AliVEvent::kINT7) {
-    fAliEventCuts.SetManualMode();
-    if (!fIsHeavyIon) fAliEventCuts.SetupRun2pp();
-    fAliEventCuts.fTriggerMask = fTrigger;
-    fAliEventCuts.fRequireExactTriggerMask = true;
-  }
+  fAliEventCuts.SetManualMode();
+  if (!fIsHeavyIon) fAliEventCuts.SetupRun2pp();
+  fAliEventCuts.fTriggerMask = fTrigger;
+  fAliEventCuts.fRequireExactTriggerMask = true;
 
   fHistRunNumber = new TProfile("fHistRunNumber", ";;Run Number", 1, 0, 1);
   fQA->Add(fHistRunNumber);
@@ -393,6 +395,16 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
 
   fOutputContainer->Add(fQA);
 
+  if (fV0Cuts) fV0Cuts->InitCutHistograms(TString("Lambda"));
+  if (fAntiV0Cuts) fAntiV0Cuts->InitCutHistograms(TString("AntiLambda"));
+  if (fPhotonV0Cuts) fPhotonV0Cuts->InitCutHistograms(TString("Photon"));
+  if (fSigmaCuts) fSigmaCuts->InitCutHistograms(TString("Sigma0"));
+  if (fAntiSigmaCuts) fAntiSigmaCuts->InitCutHistograms(TString("AntiSigma0"));
+  if (fSigmaPhotonCuts)
+    fSigmaPhotonCuts->InitCutHistograms(TString("Sigma0Photon"));
+  if (fAntiSigmaPhotonCuts)
+    fAntiSigmaPhotonCuts->InitCutHistograms(TString("AntiSigma0Photon"));
+
   if (fV0Cuts && fV0Cuts->GetCutHistograms()) {
     fOutputContainer->Add(fV0Cuts->GetCutHistograms());
   }
@@ -421,7 +433,33 @@ void AliAnalysisTaskSigma0Run2::UserCreateOutputObjects() {
     fOutputContainer->Add(fAntiSigmaPhotonCuts->GetCutHistograms());
   }
 
+  if (fOutputTree != nullptr) {
+    delete fOutputTree;
+    fOutputTree = nullptr;
+  }
+  if (fOutputTree == nullptr) {
+    fOutputTree = new TList();
+    fOutputTree->SetOwner(kTRUE);
+  }
+
+  if (fSigmaCuts && fSigmaCuts->GetSigmaTree()) {
+    fOutputTree->Add(fSigmaCuts->GetSigmaTree());
+  }
+
+  if (fAntiSigmaCuts && fAntiSigmaCuts->GetSigmaTree()) {
+    fOutputTree->Add(fAntiSigmaCuts->GetSigmaTree());
+  }
+
+  if (fSigmaPhotonCuts && fSigmaPhotonCuts->GetSigmaTree()) {
+    fOutputTree->Add(fSigmaPhotonCuts->GetSigmaTree());
+  }
+
+  if (fAntiSigmaPhotonCuts && fAntiSigmaPhotonCuts->GetSigmaTree()) {
+    fOutputTree->Add(fAntiSigmaPhotonCuts->GetSigmaTree());
+  }
+
   PostData(1, fOutputContainer);
+  PostData(2, fOutputTree);
 }
 
 //____________________________________________________________________________________________________

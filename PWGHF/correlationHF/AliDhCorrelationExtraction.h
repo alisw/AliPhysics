@@ -87,6 +87,7 @@ public:
     void SetSubtractSoftPiInMEdistr(Bool_t subtractSoftPiME) {fSubtractSoftPiME=subtractSoftPiME;}
     void SetUseMassVsCentPlots(Bool_t mass2D) {fUseMassVsCentPlots=mass2D;}
     void SetCentralitySelection(Double_t min, Double_t max) {fMinCent=min; fMaxCent=max;} //activated only if both values are != 0
+    void SetUseOneMEPool(Bool_t onepool) {fUseOneMEPool=onepool;}
     
     void SetRebinMassPlots(Int_t rebinMassPlots) {fRebinMassPlots=rebinMassPlots;}
     void SetNpTbins(Int_t npt) {fNpTbins=npt;}
@@ -211,6 +212,7 @@ private:
     Bool_t fUseMassVsCentPlots;		//don't use histMass plots, but project histMass2D plots (for offline)
     Double_t fMinCent;
     Double_t fMaxCent;
+    Bool_t fUseOneMEPool;  			//in analysios with ME pools, sum up the pools and use the integral to divide each ME pool (for cases of low-stat crashes)
 
     Double_t *fDmesonFitterSignal;
     Double_t *fDmesonFitterSignalError;

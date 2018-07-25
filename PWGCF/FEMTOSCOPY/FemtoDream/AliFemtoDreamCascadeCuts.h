@@ -140,7 +140,7 @@ class AliFemtoDreamCascadeCuts {
   int fPDGPosDaug;              //
   int fPDGNegDaug;              //
   int fPDGBachDaug;             //
-  ClassDef(AliFemtoDreamCascadeCuts,2)
+  ClassDef(AliFemtoDreamCascadeCuts,3)
 };
 
 #endif /* ALIFEMTODREAMCASCADECUTS_H_ */

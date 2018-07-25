@@ -6,7 +6,7 @@
 
 //**************************************************************************
 // AliAnalysisTaskHFv1 directed flow of D mesons with scalar
-// product method (modified from AliAnalysisTaskHFv1)
+// product method (modified from AliAnalysisTaskHFv2)
 // Authors: Andrea Dubla, Jacopo Margutti
 //
 // AliAnalysisTaskHFv1 gives the needed tools for the D
@@ -109,6 +109,9 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
     fScalProdLimit=limit;
   }
   
+  void  SetFunctionForEffScaling(TF1 *effFunc) {feff=effFunc;}
+  void  SetScalingEff(Bool_t scaling){fscaling=scaling;}
+
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -180,10 +183,12 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
   Bool_t fq2Smearing;           // flag to activate q2 smearing
   Int_t fq2SmearingAxis;        // axis of the smearing histogram corresponding to the q2 used for the analysis
   Double_t fScalProdLimit;      // max value for the scalar product histograms
-  
+  TF1     *feff;//-> func for eff_Correction
+  Bool_t  fscaling;// scaling option
+    
   AliAnalysisTaskHFv1::FlowMethod fFlowMethod;
     
-  ClassDef(AliAnalysisTaskHFv1,4); // AliAnalysisTaskSE for the HF v2 analysis
+  ClassDef(AliAnalysisTaskHFv1,5); // AliAnalysisTaskSE for the HF v2 analysis
 };
 
 #endif

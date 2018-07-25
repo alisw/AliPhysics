@@ -1,6 +1,6 @@
 #ifdef __CINT__
 
-#pragma link off all glols;
+#pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
@@ -25,6 +25,7 @@
 #pragma link C++ class AliAnalysisTaskExtractCascade+;
 #pragma link C++ class AliAnalysisTaskExtractCascadePbPbRun2+;
 #pragma link C++ class AliAnalysisTaskExtractPerformanceCascade+;
+#pragma link C++ class AliAnalysisTaskStrangenessLifetimes+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicity+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityMC+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultiplicityRun2+;
@@ -51,4 +52,8 @@
 #pragma link C++ class AliAnalysisTaskWeakDecayVertexer+;
 #pragma link C++ class AliAnalysisTaskStrEffStudy+; 
 #pragma link C++ class AliAnalysisTaskMCPredictions+; 
+#pragma link C++ class Lifetimes::MiniV0+;
+#pragma link C++ class std::vector<Lifetimes::MiniV0>+;
+#pragma link C++ class Lifetimes::MCparticle+;
+#pragma link C++ class std::vector<Lifetimes::MCparticle>+;
 #endif

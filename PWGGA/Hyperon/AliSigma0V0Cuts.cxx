@@ -18,6 +18,7 @@ ClassImp(AliSigma0V0Cuts)
       fMCEvent(nullptr),
       fDataBasePDG(),
       fIsLightweight(false),
+      fCheckCutsMC(false),
       fV0cut(0),
       fPID(0),
       fPosPDG(0),
@@ -61,6 +62,7 @@ ClassImp(AliSigma0V0Cuts)
       fHistLambdaMass(nullptr),
       fHistAntiLambdaMass(nullptr),
       fHistPhotonMass(nullptr),
+      fHistPhotonMassRefit(nullptr),
       fHistK0Mass(nullptr),
       fHistV0Pt(nullptr),
       fHistV0Mass(nullptr),
@@ -93,7 +95,68 @@ ClassImp(AliSigma0V0Cuts)
       fHistMCTruthV0DaughterPt(nullptr),
       fHistMCTruthV0DaughterPtY(nullptr),
       fHistMCTruthV0DaughterPtEta(nullptr),
+      fHistMCTruthV0DaughterPtAccept(nullptr),
+      fHistMCTruthV0DaughterPtYAccept(nullptr),
+      fHistMCTruthV0DaughterPtEtaAccept(nullptr),
       fHistMCV0Pt(nullptr),
+      fHistV0Mother(nullptr),
+      fHistV0MassPtTrue(nullptr),
+      fHistDecayVertexXTrue(nullptr),
+      fHistDecayVertexYTrue(nullptr),
+      fHistDecayVertexZTrue(nullptr),
+      fHistTransverseRadiusTrue(nullptr),
+      fHistCosPATrue(nullptr),
+      fHistDCADaughtersTrue(nullptr),
+      fHistArmenterosTrue(nullptr),
+      fHistPsiPairTrue(nullptr),
+      fHistSingleParticlePtTrue(),
+      fHistSingleParticleDCAtoPVTrue(),
+      fHistSingleParticleNclsTPCTrue(),
+      fHistSingleParticleNclsTPCFindableTrue(),
+      fHistSingleParticleNclsTPCRatioFindableTrue(),
+      fHistSingleParticleNcrossedTPCTrue(),
+      fHistSingleParticleNclsTPCSharedTrue(),
+      fHistSingleParticleNclsITSSharedTrue(),
+      fHistSingleParticleChi2True(),
+      fHistSingleParticlePIDTrue(),
+      fHistV0MassPtTrueSigma(nullptr),
+      fHistDecayVertexXTrueSigma(nullptr),
+      fHistDecayVertexYTrueSigma(nullptr),
+      fHistDecayVertexZTrueSigma(nullptr),
+      fHistTransverseRadiusTrueSigma(nullptr),
+      fHistCosPATrueSigma(nullptr),
+      fHistDCADaughtersTrueSigma(nullptr),
+      fHistArmenterosTrueSigma(nullptr),
+      fHistPsiPairTrueSigma(nullptr),
+      fHistSingleParticlePtTrueSigma(),
+      fHistSingleParticleDCAtoPVTrueSigma(),
+      fHistSingleParticleNclsTPCTrueSigma(),
+      fHistSingleParticleNclsTPCFindableTrueSigma(),
+      fHistSingleParticleNclsTPCRatioFindableTrueSigma(),
+      fHistSingleParticleNcrossedTPCTrueSigma(),
+      fHistSingleParticleNclsTPCSharedTrueSigma(),
+      fHistSingleParticleNclsITSSharedTrueSigma(),
+      fHistSingleParticleChi2TrueSigma(),
+      fHistSingleParticlePIDTrueSigma(),
+      fHistV0MassPtBkg(nullptr),
+      fHistDecayVertexXBkg(nullptr),
+      fHistDecayVertexYBkg(nullptr),
+      fHistDecayVertexZBkg(nullptr),
+      fHistTransverseRadiusBkg(nullptr),
+      fHistCosPABkg(nullptr),
+      fHistDCADaughtersBkg(nullptr),
+      fHistArmenterosBkg(nullptr),
+      fHistPsiPairBkg(nullptr),
+      fHistSingleParticlePtBkg(),
+      fHistSingleParticleDCAtoPVBkg(),
+      fHistSingleParticleNclsTPCBkg(),
+      fHistSingleParticleNclsTPCFindableBkg(),
+      fHistSingleParticleNclsTPCRatioFindableBkg(),
+      fHistSingleParticleNcrossedTPCBkg(),
+      fHistSingleParticleNclsTPCSharedBkg(),
+      fHistSingleParticleNclsITSSharedBkg(),
+      fHistSingleParticleChi2Bkg(),
+      fHistSingleParticlePIDBkg(),
       fHistSingleParticleCuts(),
       fHistSingleParticlePt(),
       fHistSingleParticleEtaBefore(),
@@ -108,8 +171,10 @@ ClassImp(AliSigma0V0Cuts)
       fHistSingleParticleNclsTPCRatioFindableAfter(),
       fHistSingleParticleNcrossedTPCBefore(),
       fHistSingleParticleNcrossedTPCAfter(),
-      fHistSingleParticleNclsTPCShared(),
-      fHistSingleParticleNclsITSShared(),
+      fHistSingleParticleNclsTPCSharedBefore(),
+      fHistSingleParticleNclsITSSharedBefore(),
+      fHistSingleParticleNclsTPCSharedAfter(),
+      fHistSingleParticleNclsITSSharedAfter(),
       fHistSingleParticleDCAtoPVBefore(),
       fHistSingleParticleDCAtoPVAfter(),
       fHistSingleParticlePileUp(),
@@ -128,6 +193,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fMCEvent(nullptr),
       fDataBasePDG(),
       fIsLightweight(false),
+      fCheckCutsMC(false),
       fV0cut(0),
       fPID(0),
       fPosPDG(0),
@@ -171,6 +237,7 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistLambdaMass(nullptr),
       fHistAntiLambdaMass(nullptr),
       fHistPhotonMass(nullptr),
+      fHistPhotonMassRefit(nullptr),
       fHistK0Mass(nullptr),
       fHistV0Pt(nullptr),
       fHistV0Mass(nullptr),
@@ -203,7 +270,68 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistMCTruthV0DaughterPt(nullptr),
       fHistMCTruthV0DaughterPtY(nullptr),
       fHistMCTruthV0DaughterPtEta(nullptr),
+      fHistMCTruthV0DaughterPtAccept(nullptr),
+      fHistMCTruthV0DaughterPtYAccept(nullptr),
+      fHistMCTruthV0DaughterPtEtaAccept(nullptr),
       fHistMCV0Pt(nullptr),
+      fHistV0Mother(nullptr),
+      fHistV0MassPtTrue(nullptr),
+      fHistDecayVertexXTrue(nullptr),
+      fHistDecayVertexYTrue(nullptr),
+      fHistDecayVertexZTrue(nullptr),
+      fHistTransverseRadiusTrue(nullptr),
+      fHistCosPATrue(nullptr),
+      fHistDCADaughtersTrue(nullptr),
+      fHistArmenterosTrue(nullptr),
+      fHistPsiPairTrue(nullptr),
+      fHistSingleParticlePtTrue(),
+      fHistSingleParticleDCAtoPVTrue(),
+      fHistSingleParticleNclsTPCTrue(),
+      fHistSingleParticleNclsTPCFindableTrue(),
+      fHistSingleParticleNclsTPCRatioFindableTrue(),
+      fHistSingleParticleNcrossedTPCTrue(),
+      fHistSingleParticleNclsTPCSharedTrue(),
+      fHistSingleParticleNclsITSSharedTrue(),
+      fHistSingleParticleChi2True(),
+      fHistSingleParticlePIDTrue(),
+      fHistV0MassPtTrueSigma(nullptr),
+      fHistDecayVertexXTrueSigma(nullptr),
+      fHistDecayVertexYTrueSigma(nullptr),
+      fHistDecayVertexZTrueSigma(nullptr),
+      fHistTransverseRadiusTrueSigma(nullptr),
+      fHistCosPATrueSigma(nullptr),
+      fHistDCADaughtersTrueSigma(nullptr),
+      fHistArmenterosTrueSigma(nullptr),
+      fHistPsiPairTrueSigma(nullptr),
+      fHistSingleParticlePtTrueSigma(),
+      fHistSingleParticleDCAtoPVTrueSigma(),
+      fHistSingleParticleNclsTPCTrueSigma(),
+      fHistSingleParticleNclsTPCFindableTrueSigma(),
+      fHistSingleParticleNclsTPCRatioFindableTrueSigma(),
+      fHistSingleParticleNcrossedTPCTrueSigma(),
+      fHistSingleParticleNclsTPCSharedTrueSigma(),
+      fHistSingleParticleNclsITSSharedTrueSigma(),
+      fHistSingleParticleChi2TrueSigma(),
+      fHistSingleParticlePIDTrueSigma(),
+      fHistV0MassPtBkg(nullptr),
+      fHistDecayVertexXBkg(nullptr),
+      fHistDecayVertexYBkg(nullptr),
+      fHistDecayVertexZBkg(nullptr),
+      fHistTransverseRadiusBkg(nullptr),
+      fHistCosPABkg(nullptr),
+      fHistDCADaughtersBkg(nullptr),
+      fHistArmenterosBkg(nullptr),
+      fHistPsiPairBkg(nullptr),
+      fHistSingleParticlePtBkg(),
+      fHistSingleParticleDCAtoPVBkg(),
+      fHistSingleParticleNclsTPCBkg(),
+      fHistSingleParticleNclsTPCFindableBkg(),
+      fHistSingleParticleNclsTPCRatioFindableBkg(),
+      fHistSingleParticleNcrossedTPCBkg(),
+      fHistSingleParticleNclsTPCSharedBkg(),
+      fHistSingleParticleNclsITSSharedBkg(),
+      fHistSingleParticleChi2Bkg(),
+      fHistSingleParticlePIDBkg(),
       fHistSingleParticleCuts(),
       fHistSingleParticlePt(),
       fHistSingleParticleEtaBefore(),
@@ -218,8 +346,10 @@ AliSigma0V0Cuts::AliSigma0V0Cuts(const AliSigma0V0Cuts &ref)
       fHistSingleParticleNclsTPCRatioFindableAfter(),
       fHistSingleParticleNcrossedTPCBefore(),
       fHistSingleParticleNcrossedTPCAfter(),
-      fHistSingleParticleNclsTPCShared(),
-      fHistSingleParticleNclsITSShared(),
+      fHistSingleParticleNclsTPCSharedBefore(),
+      fHistSingleParticleNclsITSSharedBefore(),
+      fHistSingleParticleNclsTPCSharedAfter(),
+      fHistSingleParticleNclsITSSharedAfter(),
       fHistSingleParticleDCAtoPVBefore(),
       fHistSingleParticleDCAtoPVAfter(),
       fHistSingleParticlePileUp(),
@@ -255,6 +385,7 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
   v0Cuts->SetK0Rejection(0.48, 0.515);
   v0Cuts->SetLambdaSelection(1.115683 - 0.004, 1.115683 + 0.004);
   v0Cuts->SetPileUpRejectionMode(BothDaughtersCombined);
+  v0Cuts->SetChi2Max(4);
   return v0Cuts;
 }
 
@@ -262,11 +393,12 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::LambdaCuts() {
 AliSigma0V0Cuts *AliSigma0V0Cuts::PhotonCuts() {
   AliSigma0V0Cuts *v0Cuts = new AliSigma0V0Cuts();
   v0Cuts->SetV0OnFlyStatus(false);
-  v0Cuts->SetV0PtMin(0.1);
+  v0Cuts->SetV0PtMin(0.2);
+  v0Cuts->SetV0PtMax(2.f);
   v0Cuts->SetV0CosPAMin(0.99);
-  v0Cuts->SetV0RadiusMax(200.f);
-  v0Cuts->SetV0RadiusMin(5.f);
-  v0Cuts->SetPIDnSigma(5.f);
+  v0Cuts->SetV0DecayVertexMax(150.f);
+  v0Cuts->SetV0RadiusMax(100.f);
+  v0Cuts->SetV0RadiusMin(1.f);
   v0Cuts->SetTPCRatioFindable(0.6f);
   v0Cuts->SetEtaMax(0.8);
   v0Cuts->SetDaughterDCAMax(1.5);
@@ -276,6 +408,7 @@ AliSigma0V0Cuts *AliSigma0V0Cuts::PhotonCuts() {
   v0Cuts->SetLambdaSelection(0., 0.);
   v0Cuts->SetPsiPairMax(0.2);
   v0Cuts->SetPileUpRejectionMode(None);
+  v0Cuts->SetChi2Max(4);
   return v0Cuts;
 }
 
@@ -288,14 +421,17 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
       static_cast<AliInputEventHandler *>(man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
   fMCEvent = mcEvent;
+  fInputEvent = static_cast<AliESDEvent *>(inputEvent);
 
   V0Container.clear();
 
   if (fIsMC) {
     ProcessMC();
+    if (fCheckCutsMC) {
+      CheckCutsMC();
+    }
   }
 
-  fInputEvent = static_cast<AliESDEvent *>(inputEvent);
   for (int iV0 = 0; iV0 < fInputEvent->GetNumberOfV0s(); ++iV0) {
     AliESDv0 *v0 = fInputEvent->GetV0(iV0);
 
@@ -354,14 +490,14 @@ void AliSigma0V0Cuts::SelectV0(AliVEvent *inputEvent, AliMCEvent *mcEvent,
 
     v0Candidate.SetPDGMass(fDataBasePDG.GetParticle(fPID)->Mass());
     if (std::abs(fPID) == 22) {
-      const float massPhoton = ComputePhotonMass(v0);
+      const float massPhoton = ComputePhotonMassRefit(v0);
       v0Candidate.SetMass(massPhoton);
       v0Candidate.SetRecMass(massPhoton);
     }
 
     V0Container.push_back(v0Candidate);
   }
-  fHistNV0->Fill(V0Container.size());
+  if (!fIsLightweight) fHistNV0->Fill(V0Container.size());
 }
 
 //____________________________________________________________________________________________________
@@ -391,9 +527,8 @@ bool AliSigma0V0Cuts::V0QualityCuts(const AliESDv0 *v0) const {
   fHistCuts->Fill(4);
 
   // check for daughter tracks
-  AliESDEvent *event = static_cast<AliESDEvent *>(fInputEvent);
-  AliESDtrack *pos = event->GetTrack(v0->GetPindex());
-  AliESDtrack *neg = event->GetTrack(v0->GetNindex());
+  AliESDtrack *pos = fInputEvent->GetTrack(v0->GetPindex());
+  AliESDtrack *neg = fInputEvent->GetTrack(v0->GetNindex());
   if (!pos || !neg) return false;
   if (pos->Charge() == neg->Charge()) return false;
   fHistCuts->Fill(5);
@@ -479,11 +614,16 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
   const short nClsTPC = track->GetTPCNcls();
   const float nCrossedRows = track->GetTPCClusterInfo(2, 1);
   const short nFindable = track->GetTPCNclsF();
+  const short nClsSharedTPC = track->GetTPCnclsS();
   const float ratioFindable =
-      nCrossedRows / (static_cast<float>(nFindable) + 1.e-13);
+      nCrossedRows / (static_cast<float>(nFindable) + 1.e-3);
   const float chi2 =
       (nClsTPC > 5) ? (track->GetTPCchi2() / float(nClsTPC - 5)) : -1.;
   /// see AliAnalysisTaskESDfilter::Chi2perNDF
+  int nClsSharedITS = 0;
+  for (int i = 0; i < 6; ++i) {
+    if (track->HasSharedPointOnITSLayer(i)) ++nClsSharedITS;
+  }
 
   const float magField = fInputEvent->GetMagneticField();
   const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
@@ -499,6 +639,10 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
     fHistSingleParticleChi2Before[histoPrefix]->Fill(pt, chi2);
     fHistSingleParticleNclsTPCBefore[histoPrefix]->Fill(pt, nClsTPC);
     fHistSingleParticleNclsTPCFindableBefore[histoPrefix]->Fill(pt, nFindable);
+    fHistSingleParticleNclsTPCSharedBefore[histoPrefix]->Fill(pt,
+                                                              nClsSharedTPC);
+    fHistSingleParticleNclsITSSharedBefore[histoPrefix]->Fill(pt,
+                                                              nClsSharedITS);
     fHistSingleParticleNclsTPCRatioFindableBefore[histoPrefix]->Fill(
         pt, ratioFindable);
     fHistSingleParticleNcrossedTPCBefore[histoPrefix]->Fill(pt, nCrossedRows);
@@ -530,24 +674,12 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
   fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // TPC nCls Shared
-  const int nClsSharedTPC = track->GetTPCnclsS();
   if (nClsSharedTPC > fTPCnSharedMax) return false;
   fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
 
   // Minimal distance of daughters to primary vertex
   if (dcaDaughterToPV < fDaughterDCAPV) return false;
   fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
-
-  // Keep track of shared clusters
-  if (!fIsLightweight) {
-    int nClsSharedITS = 0;
-    for (int i = 0; i < 6; ++i) {
-      if (track->HasSharedPointOnITSLayer(i)) ++nClsSharedITS;
-    }
-    const int histoPrefix = (charge > 0) ? 0 : 1;
-    fHistSingleParticleNclsTPCShared[histoPrefix]->Fill(pt, nClsSharedTPC);
-    fHistSingleParticleNclsITSShared[histoPrefix]->Fill(pt, nClsSharedITS);
-  }
 
   if (!(track->GetStatus() & AliESDtrack::kTPCrefit)) return false;
   fHistSingleParticleCuts[histoPrefix]->Fill(qaHistoCounter++);
@@ -561,6 +693,8 @@ bool AliSigma0V0Cuts::SingleParticleQualityCuts(AliESDtrack *track) const {
     fHistSingleParticleChi2After[histoPrefix]->Fill(pt, chi2);
     fHistSingleParticleNclsTPCAfter[histoPrefix]->Fill(pt, nClsTPC);
     fHistSingleParticleNclsTPCFindableAfter[histoPrefix]->Fill(pt, nFindable);
+    fHistSingleParticleNclsTPCSharedAfter[histoPrefix]->Fill(pt, nClsSharedTPC);
+    fHistSingleParticleNclsITSSharedAfter[histoPrefix]->Fill(pt, nClsSharedITS);
     fHistSingleParticleNclsTPCRatioFindableAfter[histoPrefix]->Fill(
         pt, ratioFindable);
     fHistSingleParticleNcrossedTPCAfter[histoPrefix]->Fill(pt, nCrossedRows);
@@ -740,12 +874,14 @@ void AliSigma0V0Cuts::PlotMasses(AliESDv0 *v0) const {
   v0->ChangeMassHypothesis(-3122);
   const float massAntiLambda = v0->GetEffMass();
   const float massPhoton = ComputePhotonMass(v0);
+  const float massPhotonRefit = ComputePhotonMassRefit(v0);
 
   if (!fIsLightweight) {
     fHistK0Mass->Fill(massK0);
     fHistLambdaMass->Fill(massLambda);
     fHistAntiLambdaMass->Fill(massAntiLambda);
     fHistPhotonMass->Fill(massPhoton);
+    fHistPhotonMassRefit->Fill(massPhotonRefit);
   }
 }
 
@@ -791,7 +927,7 @@ bool AliSigma0V0Cuts::PhotonSelection(AliESDv0 *v0) const {
   const float massLambda = v0->GetEffMass();
   v0->ChangeMassHypothesis(310);
   const float massK0 = v0->GetEffMass();
-  const float massPhoton = ComputePhotonMass(v0);
+  const float massPhoton = ComputePhotonMassRefit(v0);
 
   const float psiPair = ComputePsiPair(v0);
   if (!fIsLightweight) fHistPsiPair->Fill(v0->Pt(), psiPair);
@@ -855,6 +991,25 @@ float AliSigma0V0Cuts::ComputePhotonMass(const AliESDv0 *v0) const {
   float pl = std::sqrt(pxl * pxl + pyl * pyl + pzl * pzl);
 
   return std::sqrt((en + ep) * (en + ep) - pl * pl);
+}
+
+//____________________________________________________________________________________________________
+float AliSigma0V0Cuts::ComputePhotonMassRefit(const AliESDv0 *v0) const {
+  const AliExternalTrackParam *parPos = v0->GetParamP();
+  const AliExternalTrackParam *parNeg = v0->GetParamN();
+  Double_t mass = -99.0, mass_width = -99.0, Pt = -99.0, Pt_width = -99.0;
+  AliKFParticle neg(*(parNeg), 11);
+  AliKFParticle pos(*(parPos), -11);
+  AliKFParticle fCurrentMotherKFForMass(neg, pos);
+  fCurrentMotherKFForMass.GetMass(mass, mass_width);
+  fCurrentMotherKFForMass.GetPt(Pt, Pt_width);
+
+  AliKFConversionPhoton *mother = new AliKFConversionPhoton();
+  mother->ConstructGamma(neg, pos);
+
+  const float invMassRefit = mother->M();
+  delete mother;
+  return invMassRefit;
 }
 
 /////________________________________________________________________________
@@ -928,17 +1083,231 @@ void AliSigma0V0Cuts::ProcessMC() const {
     if (!mcParticle->IsPhysicalPrimary()) continue;
     if (mcParticle->PdgCode() != fPID) continue;
     fHistMCTruthV0Pt->Fill(mcParticle->Pt());
-    fHistMCTruthV0PtY->Fill(
-        ComputeRapidity(mcParticle->Pt(), mcParticle->Pz(), mcParticle->M()),
-        mcParticle->Pt());
+    fHistMCTruthV0PtY->Fill(mcParticle->Y(), mcParticle->Pt());
     fHistMCTruthV0PtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
 
     if (!CheckDaughters(mcParticle)) continue;
     fHistMCTruthV0DaughterPt->Fill(mcParticle->Pt());
-    fHistMCTruthV0DaughterPtY->Fill(
-        ComputeRapidity(mcParticle->Pt(), mcParticle->Pz(), mcParticle->M()),
-        mcParticle->Pt());
+    fHistMCTruthV0DaughterPtY->Fill(mcParticle->Y(), mcParticle->Pt());
     fHistMCTruthV0DaughterPtEta->Fill(mcParticle->Eta(), mcParticle->Pt());
+
+    if (!CheckDaughtersInAcceptance(mcParticle)) continue;
+    fHistMCTruthV0DaughterPtAccept->Fill(mcParticle->Pt());
+    fHistMCTruthV0DaughterPtYAccept->Fill(mcParticle->Y(), mcParticle->Pt());
+    fHistMCTruthV0DaughterPtEtaAccept->Fill(mcParticle->Eta(),
+                                            mcParticle->Pt());
+  }
+}
+
+//____________________________________________________________________________________________________
+void AliSigma0V0Cuts::CheckCutsMC() const {
+  for (int iV0 = 0; iV0 < fInputEvent->GetNumberOfV0s(); ++iV0) {
+    AliESDv0 *v0 = fInputEvent->GetV0(iV0);
+
+    // On-fly status
+    if (fV0OnFly) {
+      // online v0
+      if (!(v0->GetOnFlyStatus())) continue;
+    } else {
+      // offline v0
+      if (v0->GetOnFlyStatus()) continue;
+    }
+
+    // Daughter tracks
+    AliESDtrack *pos = fInputEvent->GetTrack(v0->GetPindex());
+    AliESDtrack *neg = fInputEvent->GetTrack(v0->GetNindex());
+    if (!pos || !neg) continue;
+
+    if (pos->Charge() < 0) {
+      pos = neg;
+      neg = fInputEvent->GetTrack(v0->GetPindex());
+    }
+    AliSigma0ParticleV0 v0Candidate(v0, pos, neg,
+                                    fInputEvent->GetPrimaryVertex(), fPID,
+                                    fInputEvent->GetMagneticField(), fMCEvent);
+
+    int label = v0Candidate.MatchToMC(fMCEvent, fPID, {{fPosPDG, fNegPDG}});
+
+    const float pt = v0->Pt();
+    const float posPt = pos->Pt();
+    const float negPt = neg->Pt();
+    const float magField = fInputEvent->GetMagneticField();
+    const AliVVertex *vertex = fInputEvent->GetPrimaryVertex();
+    const float dcaDaughterToPVPos =
+        std::abs(pos->GetD(vertex->GetX(), vertex->GetY(), magField));
+    const short nClsTPCPos = pos->GetTPCNcls();
+    const float nCrossedRowsPos = pos->GetTPCClusterInfo(2, 1);
+    const short nFindablePos = pos->GetTPCNclsF();
+    const float ratioFindablePos =
+        nCrossedRowsPos / (static_cast<float>(nFindablePos) + 1.e-3);
+    const int nClsSharedTPCPos = pos->GetTPCnclsS();
+    const float chi2Pos =
+        (nClsTPCPos > 5) ? (pos->GetTPCchi2() / float(nClsTPCPos - 5)) : -1.;
+
+    const float dcaDaughterToPVNeg =
+        std::abs(neg->GetD(vertex->GetX(), vertex->GetY(), magField));
+    const short nClsTPCNeg = neg->GetTPCNcls();
+    const float nCrossedRowsNeg = neg->GetTPCClusterInfo(2, 1);
+    const short nFindableNeg = neg->GetTPCNclsF();
+    const float ratioFindableNeg =
+        nCrossedRowsNeg / (static_cast<float>(nFindableNeg) + 1.e-3);
+    const int nClsSharedTPCNeg = neg->GetTPCnclsS();
+    const float chi2Neg =
+        (nClsTPCNeg > 5) ? (neg->GetTPCchi2() / float(nClsTPCNeg - 5)) : -1.;
+
+    int nClsSharedITSPos = 0;
+    int nClsSharedITSNeg = 0;
+    for (int i = 0; i < 6; ++i) {
+      if (pos->HasSharedPointOnITSLayer(i)) ++nClsSharedITSPos;
+      if (neg->HasSharedPointOnITSLayer(i)) ++nClsSharedITSNeg;
+    }
+
+    const float pidPos = fPIDResponse->NumberOfSigmasTPC(pos, fPosPID);
+    const float pidNeg = fPIDResponse->NumberOfSigmasTPC(neg, fNegPID);
+
+    Double_t xPV = vertex->GetX();
+    Double_t yPV = vertex->GetY();
+    Double_t zPV = vertex->GetZ();
+    Double_t decayVertexV0[3];
+
+    v0->GetXYZ(decayVertexV0[0], decayVertexV0[1], decayVertexV0[2]);
+
+    // Calculate vertex variables:
+    const float point = v0->GetV0CosineOfPointingAngle(xPV, yPV, zPV);
+    const float dcaV0Dau = v0->GetDcaV0Daughters();
+    const float transverseRadius =
+        std::sqrt(decayVertexV0[0] * decayVertexV0[0] +
+                  decayVertexV0[1] * decayVertexV0[1]);
+
+    const float psiPair = ComputePsiPair(v0);
+
+    float invMass = 0.f;
+    if (fPID == 22) {
+      invMass = ComputePhotonMassRefit(v0);
+    } else {
+      v0->ChangeMassHypothesis(fPID);
+      invMass = v0->GetEffMass();
+    }
+
+    const float armAlpha = v0->AlphaV0();
+    const float armQt = v0->PtArmV0();
+
+    if (label > 0) {
+      fHistV0MassPtTrue->Fill(pt, invMass);
+      fHistDecayVertexXTrue->Fill(pt, decayVertexV0[0]);
+      fHistDecayVertexYTrue->Fill(pt, decayVertexV0[1]);
+      fHistDecayVertexZTrue->Fill(pt, decayVertexV0[2]);
+      fHistTransverseRadiusTrue->Fill(pt, transverseRadius);
+      fHistCosPATrue->Fill(pt, point);
+      fHistDCADaughtersTrue->Fill(pt, dcaV0Dau);
+      fHistArmenterosTrue->Fill(armAlpha, armQt);
+      fHistPsiPairTrue->Fill(pt, psiPair);
+      fHistSingleParticlePtTrue[0]->Fill(posPt);
+      fHistSingleParticlePtTrue[1]->Fill(negPt);
+      fHistSingleParticleDCAtoPVTrue[0]->Fill(posPt, dcaDaughterToPVPos);
+      fHistSingleParticleDCAtoPVTrue[1]->Fill(negPt, dcaDaughterToPVNeg);
+
+      fHistSingleParticleNclsTPCTrue[0]->Fill(posPt, nClsTPCPos);
+      fHistSingleParticleNclsTPCTrue[1]->Fill(negPt, nClsTPCNeg);
+      fHistSingleParticleNclsTPCFindableTrue[0]->Fill(posPt, nFindablePos);
+      fHistSingleParticleNclsTPCFindableTrue[1]->Fill(negPt, nFindableNeg);
+      fHistSingleParticleNclsTPCRatioFindableTrue[0]->Fill(posPt,
+                                                           ratioFindablePos);
+      fHistSingleParticleNclsTPCRatioFindableTrue[1]->Fill(negPt,
+                                                           ratioFindableNeg);
+      fHistSingleParticleNcrossedTPCTrue[0]->Fill(posPt, nCrossedRowsPos);
+      fHistSingleParticleNcrossedTPCTrue[1]->Fill(negPt, nCrossedRowsNeg);
+      fHistSingleParticleNclsTPCSharedTrue[0]->Fill(posPt, nClsSharedTPCPos);
+      fHistSingleParticleNclsTPCSharedTrue[1]->Fill(negPt, nClsSharedTPCNeg);
+      fHistSingleParticleNclsITSSharedTrue[0]->Fill(posPt, nClsSharedITSPos);
+      fHistSingleParticleNclsITSSharedTrue[1]->Fill(negPt, nClsSharedITSNeg);
+      fHistSingleParticleChi2True[0]->Fill(posPt, chi2Pos);
+      fHistSingleParticleChi2True[1]->Fill(negPt, chi2Neg);
+      fHistSingleParticlePIDTrue[0]->Fill(pos->P(), pidPos);
+      fHistSingleParticlePIDTrue[1]->Fill(neg->P(), pidNeg);
+
+      AliMCParticle *mcParticle =
+          static_cast<AliMCParticle *>(fMCEvent->GetTrack(label));
+      if (!mcParticle) continue;
+      const int pdgMother = static_cast<AliMCParticle *>(
+                                fMCEvent->GetTrack(mcParticle->GetMother()))
+                                ->PdgCode();
+      fHistV0Mother->Fill(pt, std::abs(pdgMother));
+      if (std::abs(pdgMother) == 3212) {
+        fHistV0MassPtTrueSigma->Fill(pt, invMass);
+        fHistDecayVertexXTrueSigma->Fill(pt, decayVertexV0[0]);
+        fHistDecayVertexYTrueSigma->Fill(pt, decayVertexV0[1]);
+        fHistDecayVertexZTrueSigma->Fill(pt, decayVertexV0[2]);
+        fHistTransverseRadiusTrueSigma->Fill(pt, transverseRadius);
+        fHistCosPATrueSigma->Fill(pt, point);
+        fHistDCADaughtersTrueSigma->Fill(pt, dcaV0Dau);
+        fHistArmenterosTrueSigma->Fill(armAlpha, armQt);
+        fHistPsiPairTrueSigma->Fill(pt, psiPair);
+        fHistSingleParticlePtTrueSigma[0]->Fill(posPt);
+        fHistSingleParticlePtTrueSigma[1]->Fill(negPt);
+        fHistSingleParticleDCAtoPVTrueSigma[0]->Fill(posPt, dcaDaughterToPVPos);
+        fHistSingleParticleDCAtoPVTrueSigma[1]->Fill(negPt, dcaDaughterToPVNeg);
+        fHistSingleParticleNclsTPCTrueSigma[0]->Fill(posPt, nClsTPCPos);
+        fHistSingleParticleNclsTPCTrueSigma[1]->Fill(negPt, nClsTPCNeg);
+        fHistSingleParticleNclsTPCFindableTrueSigma[0]->Fill(posPt,
+                                                             nFindablePos);
+        fHistSingleParticleNclsTPCFindableTrueSigma[1]->Fill(negPt,
+                                                             nFindableNeg);
+        fHistSingleParticleNclsTPCRatioFindableTrueSigma[0]->Fill(
+            posPt, ratioFindablePos);
+        fHistSingleParticleNclsTPCRatioFindableTrueSigma[1]->Fill(
+            negPt, ratioFindableNeg);
+        fHistSingleParticleNcrossedTPCTrueSigma[0]->Fill(posPt,
+                                                         nCrossedRowsPos);
+        fHistSingleParticleNcrossedTPCTrueSigma[1]->Fill(negPt,
+                                                         nCrossedRowsNeg);
+        fHistSingleParticleNclsTPCSharedTrueSigma[0]->Fill(posPt,
+                                                           nClsSharedTPCPos);
+        fHistSingleParticleNclsTPCSharedTrueSigma[1]->Fill(negPt,
+                                                           nClsSharedTPCNeg);
+        fHistSingleParticleNclsITSSharedTrueSigma[0]->Fill(posPt,
+                                                           nClsSharedITSPos);
+        fHistSingleParticleNclsITSSharedTrueSigma[1]->Fill(negPt,
+                                                           nClsSharedITSNeg);
+        fHistSingleParticleChi2TrueSigma[0]->Fill(posPt, chi2Pos);
+        fHistSingleParticleChi2TrueSigma[1]->Fill(negPt, chi2Neg);
+        fHistSingleParticlePIDTrueSigma[0]->Fill(pos->P(), pidPos);
+        fHistSingleParticlePIDTrueSigma[1]->Fill(neg->P(), pidNeg);
+      }
+    } else {
+      fHistV0MassPtBkg->Fill(pt, invMass);
+      fHistDecayVertexXBkg->Fill(pt, decayVertexV0[0]);
+      fHistDecayVertexYBkg->Fill(pt, decayVertexV0[1]);
+      fHistDecayVertexZBkg->Fill(pt, decayVertexV0[2]);
+      fHistTransverseRadiusBkg->Fill(pt, transverseRadius);
+      fHistCosPABkg->Fill(pt, point);
+      fHistDCADaughtersBkg->Fill(pt, dcaV0Dau);
+      fHistArmenterosBkg->Fill(armAlpha, armQt);
+      fHistPsiPairBkg->Fill(pt, psiPair);
+      fHistSingleParticlePtBkg[0]->Fill(posPt);
+      fHistSingleParticlePtBkg[1]->Fill(negPt);
+      fHistSingleParticleDCAtoPVBkg[0]->Fill(posPt, dcaDaughterToPVPos);
+      fHistSingleParticleDCAtoPVBkg[1]->Fill(negPt, dcaDaughterToPVNeg);
+
+      fHistSingleParticleNclsTPCBkg[0]->Fill(posPt, nClsTPCPos);
+      fHistSingleParticleNclsTPCBkg[1]->Fill(negPt, nClsTPCNeg);
+      fHistSingleParticleNclsTPCFindableBkg[0]->Fill(posPt, nFindablePos);
+      fHistSingleParticleNclsTPCFindableBkg[1]->Fill(negPt, nFindableNeg);
+      fHistSingleParticleNclsTPCRatioFindableBkg[0]->Fill(posPt,
+                                                          ratioFindablePos);
+      fHistSingleParticleNclsTPCRatioFindableBkg[1]->Fill(negPt,
+                                                          ratioFindableNeg);
+      fHistSingleParticleNcrossedTPCBkg[0]->Fill(posPt, nCrossedRowsPos);
+      fHistSingleParticleNcrossedTPCBkg[1]->Fill(negPt, nCrossedRowsNeg);
+      fHistSingleParticleNclsTPCSharedBkg[0]->Fill(posPt, nClsSharedTPCPos);
+      fHistSingleParticleNclsTPCSharedBkg[1]->Fill(negPt, nClsSharedTPCNeg);
+      fHistSingleParticleNclsITSSharedBkg[0]->Fill(posPt, nClsSharedITSPos);
+      fHistSingleParticleNclsITSSharedBkg[1]->Fill(negPt, nClsSharedITSNeg);
+      fHistSingleParticleChi2Bkg[0]->Fill(posPt, chi2Pos);
+      fHistSingleParticleChi2Bkg[1]->Fill(negPt, chi2Neg);
+      fHistSingleParticlePIDBkg[0]->Fill(pos->P(), pidPos);
+      fHistSingleParticlePIDBkg[1]->Fill(neg->P(), pidNeg);
+    }
   }
 }
 
@@ -973,47 +1342,96 @@ bool AliSigma0V0Cuts::CheckDaughters(const AliMCParticle *particle) const {
 }
 
 //____________________________________________________________________________________________________
+bool AliSigma0V0Cuts::CheckDaughtersInAcceptance(
+    const AliMCParticle *particle) const {
+  AliMCParticle *posDaughter = nullptr;
+  AliMCParticle *negDaughter = nullptr;
+
+  if (particle->GetNDaughters() != 2) return false;
+
+  for (int daughterIndex = particle->GetFirstDaughter();
+       daughterIndex <= particle->GetLastDaughter(); ++daughterIndex) {
+    if (daughterIndex < 0) continue;
+    AliMCParticle *tmpDaughter =
+        static_cast<AliMCParticle *>(fMCEvent->GetTrack(daughterIndex));
+    if (!tmpDaughter) continue;
+    const int pdgCode = tmpDaughter->PdgCode();
+    if (pdgCode == fPosPDG)
+      posDaughter = tmpDaughter;
+    else if (pdgCode == fNegPDG)
+      negDaughter = tmpDaughter;
+  }
+
+  if (!posDaughter || !negDaughter) return false;
+
+  if (particle->PdgCode() == 22 &&
+      (posDaughter->Particle()->GetUniqueID() != 5 ||
+       negDaughter->Particle()->GetUniqueID() != 5)) {
+    return false;
+  }
+
+  // Daughter Eta
+  const float posEta = posDaughter->Eta();
+  const float negEta = negDaughter->Eta();
+  if (posEta > fEtaMax) return false;
+  if (negEta > fEtaMax) return false;
+
+  // Mother pT
+  const float pT = particle->Pt();
+  if (pT > fV0PtMax || pT < fV0PtMin) return false;
+
+  // Mother decay vertex
+  Double_t posVertex[3];
+  posDaughter->XvYvZv(posVertex);
+  const float rPos =
+      std::sqrt(posVertex[0] * posVertex[0] + posVertex[1] * posVertex[1]);
+  if (rPos > fV0RadiusMax || rPos < fV0RadiusMin) return false;
+  if (std::abs(posVertex[0]) > fV0DecayVertexMax) return false;
+  if (std::abs(posVertex[1]) > fV0DecayVertexMax) return false;
+  if (std::abs(posVertex[2]) > fV0DecayVertexMax) return false;
+
+  Double_t negVertex[3];
+  negDaughter->XvYvZv(negVertex);
+  const float rNeg =
+      std::sqrt(negVertex[0] * negVertex[0] + negVertex[1] * negVertex[1]);
+  if (rNeg > fV0RadiusMax || rNeg < fV0RadiusMin) return false;
+  if (std::abs(negVertex[0]) > fV0DecayVertexMax) return false;
+  if (std::abs(negVertex[1]) > fV0DecayVertexMax) return false;
+  if (std::abs(negVertex[2]) > fV0DecayVertexMax) return false;
+
+  return true;
+}
+
+//____________________________________________________________________________________________________
 int AliSigma0V0Cuts::GetRapidityBin(float rapidity) const {
-  if (-1.f < rapidity && rapidity <= -0.9)
+  if (-10 < rapidity && rapidity <= -1)
     return 0;
-  else if (-0.9 < rapidity && rapidity <= -0.8)
+  else if (-1 < rapidity && rapidity <= -0.5)
     return 1;
-  else if (-0.8 < rapidity && rapidity <= -0.7)
-    return 2;
-  else if (-0.7 < rapidity && rapidity <= -0.6)
-    return 3;
-  else if (-0.6 < rapidity && rapidity <= -0.5)
-    return 4;
   else if (-0.5 < rapidity && rapidity <= -0.4)
-    return 5;
+    return 2;
   else if (-0.4 < rapidity && rapidity <= -0.3)
-    return 6;
+    return 3;
   else if (-0.3 < rapidity && rapidity <= -0.2)
-    return 7;
+    return 4;
   else if (-0.2 < rapidity && rapidity <= -0.1)
-    return 8;
+    return 5;
   else if (-0.1 < rapidity && rapidity <= 0.f)
-    return 9;
+    return 6;
   else if (0.f < rapidity && rapidity <= 0.1)
-    return 10;
+    return 7;
   else if (0.1 < rapidity && rapidity <= 0.2)
-    return 11;
+    return 8;
   else if (0.2 < rapidity && rapidity <= 0.3)
-    return 12;
+    return 9;
   else if (0.3 < rapidity && rapidity <= 0.4)
-    return 13;
+    return 10;
   else if (0.4 < rapidity && rapidity <= 0.5)
-    return 14;
-  else if (0.5 < rapidity && rapidity <= 0.6)
-    return 15;
-  else if (0.6 < rapidity && rapidity <= 0.7)
-    return 16;
-  else if (0.7 < rapidity && rapidity <= 0.8)
-    return 17;
-  else if (0.8 < rapidity && rapidity <= 0.9)
-    return 18;
-  else if (0.9 < rapidity && rapidity < 1.f)
-    return 19;
+    return 11;
+  else if (0.5 < rapidity && rapidity <= 1.f)
+    return 12;
+  else if (1.0 < rapidity && rapidity < 10.f)
+    return 13;
   else
     return -1;
 }
@@ -1051,9 +1469,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
             << " PDG pos      " << fNegPDG << "\n"
             << "============================\n";
 
-  std::vector<float> rapBins = {{-1.,  -0.9, -0.8, -0.7, -0.6, -0.5, -0.4,
-                                 -0.3, -0.2, -0.1, 0.f,  0.1,  0.2,  0.3,
-                                 0.4,  0.5,  0.6,  0.7,  0.8,  0.9,  1.f}};
+  std::vector<float> rapBins = {{-10., -1.f, -0.5, -0.4, -0.3, -0.2, -0.1, 0.f,
+                                 0.1, 0.2, 0.3, 0.4, 0.5, 1.f, 10.f}};
+
+  const float pi = TMath::Pi();
 
   TH1::AddDirectory(kFALSE);
   TString name;
@@ -1181,83 +1600,112 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
   }
   fHistograms->Add(fHistCuts);
 
-  fHistNV0 =
-      new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 25, 0, 25);
-  fHistograms->Add(fHistNV0);
-
-  fHistV0MassPt =
-      new TH2F("fHistV0MassPt",
-               "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
-               1000, 0, 15, 2400, 0., 1.2);
+  if (std::abs(fPID) == 3122) {
+    fHistV0MassPt =
+        new TH2F("fHistV0MassPt",
+                 "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
+                 100, 0, 10, 400, 1., 1.2);
+  } else if (std::abs(fPID) == 22) {
+    fHistV0MassPt =
+        new TH2F("fHistV0MassPt",
+                 "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
+                 100, 0, 10, 400, 0., .4);
+  }
   fHistograms->Add(fHistV0MassPt);
 
   if (!fIsLightweight) {
+    fHistNV0 =
+        new TH1F("fHistNV0", ";Number of V0 candidates; Entries", 25, 0, 25);
+    fHistograms->Add(fHistNV0);
+
     fHistLambdaMass = new TH1F(
         "fHistLambdaMass",
-        "; Invariant mass p#pi^{-} hypothesis (GeV/#it{c}^{2}); Entries", 2000,
-        0., 2.);
+        "; Invariant mass p#pi^{-} hypothesis (GeV/#it{c}^{2}); Entries", 250,
+        1., 1.5);
     fHistograms->Add(fHistLambdaMass);
 
     fHistAntiLambdaMass = new TH1F(
         "fHistAntiLambdaMass",
-        "; Invariant mass #bar{p}#pi hypothesis (GeV/#it{c}^{2}); Entries",
-        2000, 0., 2.);
+        "; Invariant mass #bar{p}#pi hypothesis (GeV/#it{c}^{2}); Entries", 250,
+        1., 1.5);
     fHistograms->Add(fHistAntiLambdaMass);
 
     fHistPhotonMass = new TH1F(
         "fHistPhotonMass",
-        "; Invariant mass e^{+}e^{-} hypothesis (GeV/#it{c}^{2}); Entries",
-        2000, 0., 2.);
+        "; Invariant mass e^{+}e^{-} hypothesis (GeV/#it{c}^{2}); Entries", 250,
+        0., 0.5);
     fHistograms->Add(fHistPhotonMass);
+
+    fHistPhotonMassRefit = new TH1F("fHistPhotonMassRefit",
+                                    "; Invariant mass e^{+}e^{-} refit "
+                                    "hypothesis (GeV/#it{c}^{2}); Entries",
+                                    250, 0., 0.1);
+    fHistograms->Add(fHistPhotonMassRefit);
 
     fHistK0Mass =
         new TH1F("fHistK0Mass",
                  "; Invariant mass #pi#pi hypothesis (GeV/#it{c}^{2}); Entries",
-                 2000, 0., 2.);
+                 250, 0.2, 0.7);
     fHistograms->Add(fHistK0Mass);
 
     fHistV0Pt =
         new TH1F("fHistV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
     fHistograms->Add(fHistV0Pt);
 
-    fHistV0Mass =
-        new TH1F("fHistV0Mass", "; Invariant mass (GeV/#it{c}^{2}); Entries", 2400, 0., 1.2);
+    if (std::abs(fPID) == 3122) {
+      fHistV0Mass =
+          new TH1F("fHistV0Mass", "; Invariant mass (GeV/#it{c}^{2}); Entries",
+                   400, 1., 1.2);
+    } else if (std::abs(fPID) == 22) {
+      fHistV0Mass =
+          new TH1F("fHistV0Mass", "; Invariant mass (GeV/#it{c}^{2}); Entries",
+                   400, 0., 0.2);
+    }
     fHistograms->Add(fHistV0Mass);
 
     fHistLambdaMassK0Rej = new TH1F("fHistLambdaMassK0Rej",
                                     "; Invariant mass p#pi hypothesis w/o "
                                     "K^{0} rejection (GeV/#it{c}^{2}); Entries",
-                                    1000, 0., 2.);
+                                    500, 1., 1.5);
     fHistograms->Add(fHistLambdaMassK0Rej);
 
     fHistK0MassAfter =
         new TH1F("fHistK0MassAfter",
                  "; Invariant mass #pi#pi hypothesis (GeV/#it{c}^{2}); Entries",
-                 1000, 0., 2.);
+                 500, 0.2, 0.7);
     fHistograms->Add(fHistK0MassAfter);
     fHistCosPA =
-        new TH2F("fHistCosPA", "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)", 1000,
-                 0, 10, 1000, 0.9, 1);
+        new TH2F("fHistCosPA", "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)", 500, 0,
+                 10, 500, 0.9, 1);
     fHistograms->Add(fHistCosPA);
 
-    fHistEtaPhi = new TH2F("fHistEtaPhi", "; #eta; #phi", 200, -1, 1, 200, 0,
-                           2 * TMath::Pi());
+    fHistEtaPhi =
+        new TH2F("fHistEtaPhi", "; #eta; #phi", 200, -1, 1, 200, 0, 2 * pi);
     fHistograms->Add(fHistEtaPhi);
 
     if (fPID == 22) {
       fHistPsiPair =
           new TH2F("fHistPsiPair", "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}",
-                   1000, 0, 10, 1000, TMath::Pi(), -TMath::Pi());
+                   500, 0, 10, 500, -pi / 2.f, pi / 2.f);
       fHistograms->Add(fHistPsiPair);
     }
 
     for (int i = 0; i < static_cast<int>(rapBins.size() - 1); ++i) {
-      fHistV0PtY[i] =
-          new TH2F(Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
-                   Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
-                        "mass p#pi hypothesis (GeV/#it{c}^{2})",
-                        rapBins[i], rapBins[i + 1]),
-                   500, 0, 10, 400, 1., 1.2);
+      if (std::abs(fPID) == 3122) {
+        fHistV0PtY[i] = new TH2F(
+            Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
+            Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
+                 "mass (GeV/#it{c}^{2})",
+                 rapBins[i], rapBins[i + 1]),
+            100, 0, 10, 400, 1., 1.2);
+      } else if (std::abs(fPID) == 22) {
+        fHistV0PtY[i] = new TH2F(
+            Form("fHistV0PtY_%.2f_%.2f", rapBins[i], rapBins[i + 1]),
+            Form("%.2f < y < %.2f ; #it{p}_{T} (GeV/#it{c}); Invariant "
+                 "mass (GeV/#it{c}^{2})",
+                 rapBins[i], rapBins[i + 1]),
+            100, 0, 10, 400, 0., 0.4);
+      }
       fHistograms->Add(fHistV0PtY[i]);
     }
   }
@@ -1316,49 +1764,49 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistDecayVertexXBefore =
         new TH2F("fHistDecayVertexXBefore",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex x (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsBefore->Add(fHistDecayVertexXBefore);
 
     fHistDecayVertexYBefore =
         new TH2F("fHistDecayVertexYBefore",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex y (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsBefore->Add(fHistDecayVertexYBefore);
 
     fHistDecayVertexZBefore =
         new TH2F("fHistDecayVertexZBefore",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex z (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsBefore->Add(fHistDecayVertexZBefore);
 
     fHistDecayVertexXAfter =
         new TH2F("fHistDecayVertexXAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex x (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsAfter->Add(fHistDecayVertexXAfter);
 
     fHistDecayVertexYAfter =
         new TH2F("fHistDecayVertexYAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex y (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsAfter->Add(fHistDecayVertexYAfter);
 
     fHistDecayVertexZAfter =
         new TH2F("fHistDecayVertexZAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Decay vertex z (cm)", 100, 0, 10,
-                 500, 0, 200);
+                 200, 0, 200);
     fHistogramsAfter->Add(fHistDecayVertexZAfter);
 
     fHistTransverseRadiusBefore =
         new TH2F("fHistTransverseRadiusBefore",
                  "; #it{p}_{T} (GeV/#it{c}); Transverse radius (cm)", 100, 0,
-                 10, 500, 0, 200);
+                 10, 200, 0, 200);
     fHistogramsBefore->Add(fHistTransverseRadiusBefore);
 
     fHistTransverseRadiusAfter =
         new TH2F("fHistTransverseRadiusAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Transverse radius (cm)", 100, 0,
-                 10, 500, 0, 200);
+                 10, 200, 0, 200);
     fHistogramsAfter->Add(fHistTransverseRadiusAfter);
 
     fHistCosPABefore =
@@ -1368,7 +1816,7 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
     fHistCosPAAfter =
         new TH2F("fHistCosPAAfter", "; #it{p}_{T} (GeV/#it{c}); cos(#alpha)",
-                 100, 0, 10, 500, 0.8, 1);
+                 100, 0, 10, 200, 0.89, 1);
     fHistogramsAfter->Add(fHistCosPAAfter);
 
     fHistDCADaughtersBefore =
@@ -1380,16 +1828,16 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistDCADaughtersAfter =
         new TH2F("fHistDCADaughtersAfter",
                  "; #it{p}_{T} (GeV/#it{c}); Daughter DCA at decay vertex (cm)",
-                 100, 0, 10, 500, 0, 2);
+                 100, 0, 10, 200, 0, 2);
     fHistogramsAfter->Add(fHistDCADaughtersAfter);
 
     fHistDCA = new TH2F("fHistDCA", "; #it{p}_{T} (GeV/#it{c}); DCA to PV (cm)",
-                        100, 0, 10, 500, 0, 10);
+                        100, 0, 10, 200, 0, 10);
     fHistogramsAfter->Add(fHistDCA);
 
     fHistDecayLength = new TH2F("fHistDecayLength",
                                 "; #it{p}_{T} (GeV/#it{c}); Decay length (cm)",
-                                100, 0, 10, 500, 0, 200);
+                                100, 0, 10, 200, 0, 200);
     fHistogramsAfter->Add(fHistDecayLength);
 
     fHistArmenterosBefore =
@@ -1399,40 +1847,40 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
     fHistArmenterosAfter =
         new TH2F("fHistArmenterosAfter", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
-                 500, -1, 1, 500, 0, 1);
+                 200, -1, 1, 200, 0, 1);
     fHistogramsAfter->Add(fHistArmenterosAfter);
 
     fHistograms->Add(fHistogramsBefore);
     fHistograms->Add(fHistogramsAfter);
 
     fHistSingleParticlePt[0] = new TH1F("fHistSingleParticlePt_pos",
-                                        ";#it{p}_{T}; Entries", 1000, 0, 10);
+                                        ";#it{p}_{T}; Entries", 500, 0, 10);
     fHistSingleParticlePt[1] = new TH1F("fHistSingleParticlePt_neg",
-                                        ";#it{p}_{T}; Entries", 1000, 0, 10);
+                                        ";#it{p}_{T}; Entries", 500, 0, 10);
     fHistSingleParticleEtaBefore[0] =
         new TH2F("fHistSingleParticleEtaBefore_pos",
-                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 500, -2, 2);
+                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 200, -2, 2);
     fHistSingleParticleEtaBefore[1] =
         new TH2F("fHistSingleParticleEtaBefore_neg",
-                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 500, -2, 2);
+                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 200, -2, 2);
     fHistSingleParticleEtaAfter[0] =
         new TH2F("fHistSingleParticleEtaAfter_pos",
-                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 500, -2, 2);
+                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 200, -2, 2);
     fHistSingleParticleEtaAfter[1] =
         new TH2F("fHistSingleParticleEtaAfter_neg",
-                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 500, -2, 2);
+                 "; #it{p}_{T} (GeV/#it{c}); #eta", 100, 0, 10, 200, -2, 2);
     fHistSingleParticleChi2Before[0] =
         new TH2F("fHistSingleParticleChi2Before_pos",
-                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 200, 0, 20);
     fHistSingleParticleChi2Before[1] =
         new TH2F("fHistSingleParticleChi2Before_neg",
-                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 200, 0, 20);
     fHistSingleParticleChi2After[0] =
         new TH2F("fHistSingleParticleChi2After_pos",
-                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 200, 0, 20);
     fHistSingleParticleChi2After[1] =
         new TH2F("fHistSingleParticleChi2After_neg",
-                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+                 "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 200, 0, 20);
     fHistSingleParticleNclsTPCBefore[0] = new TH2F(
         "fHistSingleParticleNclsTPCBefore_pos",
         "; #it{p}_{T} (GeV/#it{c}); # cls TPC ", 100, 0, 10, 170, 0, 170);
@@ -1463,16 +1911,16 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
                  170, 0, 170);
     fHistSingleParticleNclsTPCRatioFindableBefore[0] = new TH2F(
         "fHistSingleParticleNclsTPCRatioFindableBefore_pos",
-        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 500, 0, 2);
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 200, 0, 2);
     fHistSingleParticleNclsTPCRatioFindableBefore[1] = new TH2F(
         "fHistSingleParticleNclsTPCRatioFindableBefore_neg",
-        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 500, 0, 2);
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 200, 0, 2);
     fHistSingleParticleNclsTPCRatioFindableAfter[0] = new TH2F(
         "fHistSingleParticleNclsTPCRatioFindableAfter_pos",
-        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 500, 0, 2);
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 200, 0, 2);
     fHistSingleParticleNclsTPCRatioFindableAfter[1] = new TH2F(
         "fHistSingleParticleNclsTPCRatioFindableAfter_neg",
-        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 500, 0, 2);
+        "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable", 100, 0, 10, 200, 0, 2);
     fHistSingleParticleNcrossedTPCBefore[0] =
         new TH2F("fHistSingleParticleNcrossedTPCBefore_pos",
                  "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed", 100, 0, 10,
@@ -1489,30 +1937,42 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
         new TH2F("fHistSingleParticleNcrossedTPCAfter_neg",
                  "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed", 100, 0, 10,
                  170, 0, 170);
-    fHistSingleParticleNclsTPCShared[0] = new TH2F(
-        "fHistSingleParticleNclsTPCShared_pos",
+    fHistSingleParticleNclsTPCSharedBefore[0] = new TH2F(
+        "fHistSingleParticleNclsTPCSharedBefore_pos",
         "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared", 100, 0, 10, 170, 0, 170);
-    fHistSingleParticleNclsTPCShared[1] = new TH2F(
-        "fHistSingleParticleNclsTPCShared_neg",
+    fHistSingleParticleNclsTPCSharedBefore[1] = new TH2F(
+        "fHistSingleParticleNclsTPCSharedBefore_neg",
         "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared", 100, 0, 10, 170, 0, 170);
-    fHistSingleParticleNclsITSShared[0] = new TH2F(
-        "fHistSingleParticleNclsITSShared_pos",
+    fHistSingleParticleNclsITSSharedBefore[0] = new TH2F(
+        "fHistSingleParticleNclsITSSharedBefore_pos",
         "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared", 100, 0, 10, 6, 0, 6);
-    fHistSingleParticleNclsITSShared[1] = new TH2F(
-        "fHistSingleParticleNclsITSShared_neg",
+    fHistSingleParticleNclsITSSharedBefore[1] = new TH2F(
+        "fHistSingleParticleNclsITSSharedBefore_neg",
+        "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared", 100, 0, 10, 6, 0, 6);
+    fHistSingleParticleNclsTPCSharedAfter[0] = new TH2F(
+        "fHistSingleParticleNclsTPCSharedAfter_pos",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared", 100, 0, 10, 170, 0, 170);
+    fHistSingleParticleNclsTPCSharedAfter[1] = new TH2F(
+        "fHistSingleParticleNclsTPCSharedAfter_neg",
+        "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared", 100, 0, 10, 170, 0, 170);
+    fHistSingleParticleNclsITSSharedAfter[0] = new TH2F(
+        "fHistSingleParticleNclsITSSharedAfter_pos",
+        "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared", 100, 0, 10, 6, 0, 6);
+    fHistSingleParticleNclsITSSharedAfter[1] = new TH2F(
+        "fHistSingleParticleNclsITSSharedAfter_neg",
         "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared", 100, 0, 10, 6, 0, 6);
     fHistSingleParticleDCAtoPVBefore[0] = new TH2F(
         "fHistSingleParticleDCAtoPVBefore_pos",
-        "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA)", 100, 0, 10, 500, 0, 10);
+        "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA)", 100, 0, 10, 200, 0, 10);
     fHistSingleParticleDCAtoPVBefore[1] = new TH2F(
         "fHistSingleParticleDCAtoPVBefore_neg",
-        "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA)", 100, 0, 10, 500, 0, 10);
+        "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA)", 100, 0, 10, 200, 0, 10);
     fHistSingleParticleDCAtoPVAfter[0] = new TH2F(
         "fHistSingleParticleDCAtoPVAfter_pos",
-        "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA)", 100, 0, 10, 500, 0, 10);
+        "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA)", 100, 0, 10, 200, 0, 10);
     fHistSingleParticleDCAtoPVAfter[1] = new TH2F(
         "fHistSingleParticleDCAtoPVAfter_neg",
-        "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA)", 100, 0, 10, 500, 0, 10);
+        "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA)", 100, 0, 10, 200, 0, 10);
     fHistSingleParticlePileUp[0] =
         new TH2F("fHistSingleParticlePileUp_pos",
                  "; Pileup flag; #it{p}_{T} (GeV/#it{c})", 4, 0, 4, 100, 0, 10);
@@ -1530,10 +1990,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
 
     fHistSingleParticlePID[0] = new TH2F(
         "fHistSingleParticlePID_pos", "; #it{p} (GeV/#it{c}); n_{#sigma} TPC",
-        1000, 0, 5, 1000, -10, 10);
+        250, 0, 5, 250, -10, 10);
     fHistSingleParticlePID[1] = new TH2F(
         "fHistSingleParticlePID_neg", "; #it{p} (GeV/#it{c}); n_{#sigma} TPC",
-        1000, 0, 5, 1000, -10, 10);
+        250, 0, 5, 250, -10, 10);
 
     fHistogramsPos->Add(fHistSingleParticlePt[0]);
     fHistogramsNeg->Add(fHistSingleParticlePt[1]);
@@ -1549,10 +2009,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistogramsNeg->Add(fHistSingleParticleNclsTPCRatioFindableBefore[1]);
     fHistogramsPos->Add(fHistSingleParticleNcrossedTPCBefore[0]);
     fHistogramsNeg->Add(fHistSingleParticleNcrossedTPCBefore[1]);
-    fHistogramsPos->Add(fHistSingleParticleNclsTPCShared[0]);
-    fHistogramsNeg->Add(fHistSingleParticleNclsTPCShared[1]);
-    fHistogramsPos->Add(fHistSingleParticleNclsITSShared[0]);
-    fHistogramsNeg->Add(fHistSingleParticleNclsITSShared[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsTPCSharedBefore[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsTPCSharedBefore[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsITSSharedBefore[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsITSSharedBefore[1]);
     fHistogramsPos->Add(fHistSingleParticleDCAtoPVBefore[0]);
     fHistogramsNeg->Add(fHistSingleParticleDCAtoPVBefore[1]);
     fHistogramsPos->Add(fHistSingleParticleEtaAfter[0]);
@@ -1567,6 +2027,10 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistogramsNeg->Add(fHistSingleParticleNclsTPCRatioFindableAfter[1]);
     fHistogramsPos->Add(fHistSingleParticleNcrossedTPCAfter[0]);
     fHistogramsNeg->Add(fHistSingleParticleNcrossedTPCAfter[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsTPCSharedAfter[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsTPCSharedAfter[1]);
+    fHistogramsPos->Add(fHistSingleParticleNclsITSSharedAfter[0]);
+    fHistogramsNeg->Add(fHistSingleParticleNclsITSSharedAfter[1]);
     fHistogramsPos->Add(fHistSingleParticleDCAtoPVAfter[0]);
     fHistogramsNeg->Add(fHistSingleParticleDCAtoPVAfter[1]);
     fHistogramsPos->Add(fHistSingleParticlePileUp[0]);
@@ -1605,6 +2069,15 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistMCTruthV0DaughterPtEta =
         new TH2F("fHistMCTruthV0DaughterPtEta",
                  "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+    fHistMCTruthV0DaughterPtAccept =
+        new TH1F("fHistMCTruthV0DaughterPtAccept",
+                 "; #it{p}_{T} (GeV/#it{c}); Entries", 500, 0, 10);
+    fHistMCTruthV0DaughterPtYAccept =
+        new TH2F("fHistMCTruthV0DaughterPtYAccept",
+                 "; y; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
+    fHistMCTruthV0DaughterPtEtaAccept =
+        new TH2F("fHistMCTruthV0DaughterPtEtaAccept",
+                 "; #eta; #it{p}_{T} (GeV/#it{c})", 500, -10, 10, 500, 0, 10);
 
     fHistMCV0Pt = new TH1F("fHistMCV0Pt", "; #it{p}_{T} (GeV/#it{c}); Entries",
                            500, 0, 10);
@@ -1615,7 +2088,484 @@ void AliSigma0V0Cuts::InitCutHistograms(TString appendix) {
     fHistogramsMC->Add(fHistMCTruthV0DaughterPt);
     fHistogramsMC->Add(fHistMCTruthV0DaughterPtY);
     fHistogramsMC->Add(fHistMCTruthV0DaughterPtEta);
+    fHistogramsMC->Add(fHistMCTruthV0DaughterPtAccept);
+    fHistogramsMC->Add(fHistMCTruthV0DaughterPtYAccept);
+    fHistogramsMC->Add(fHistMCTruthV0DaughterPtEtaAccept);
     fHistogramsMC->Add(fHistMCV0Pt);
+
+    if (fCheckCutsMC) {
+      // TRUE V0
+      fHistV0Mother = new TH2F("fHistV0Mother",
+                               "; #it{p}_{T} (GeV/#it{c}); PDG code mother",
+                               100, 0, 10, 4000, 0, 4000);
+      fHistogramsMC->Add(fHistV0Mother);
+
+      fHistV0MassPtTrue =
+          new TH2F("fHistV0MassPtTrue",
+                   "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
+                   1000, 0, 15, 2400, 0., 1.2);
+      fHistogramsMC->Add(fHistV0MassPtTrue);
+
+      fHistDecayVertexXTrue =
+          new TH2F("fHistDecayVertexXTrue",
+                   "; #it{p}_{T} (GeV/#it{c}); Decay vertex x true (cm)", 100,
+                   0, 10, 500, 0, 200);
+      fHistogramsMC->Add(fHistDecayVertexXTrue);
+
+      fHistDecayVertexYTrue =
+          new TH2F("fHistDecayVertexYTrue",
+                   "; #it{p}_{T} (GeV/#it{c}); Decay vertex y true (cm)", 100,
+                   0, 10, 500, 0, 200);
+      fHistogramsMC->Add(fHistDecayVertexYTrue);
+
+      fHistDecayVertexZTrue =
+          new TH2F("fHistDecayVertexZTrue",
+                   "; #it{p}_{T} (GeV/#it{c}); Decay vertex z true (cm)", 100,
+                   0, 10, 500, 0, 200);
+      fHistogramsMC->Add(fHistDecayVertexZTrue);
+
+      fHistTransverseRadiusTrue =
+          new TH2F("fHistTransverseRadiusTrue",
+                   "; #it{p}_{T} (GeV/#it{c}); Transverse radius true (cm)",
+                   100, 0, 10, 500, 0, 200);
+      fHistogramsMC->Add(fHistTransverseRadiusTrue);
+
+      fHistCosPATrue = new TH2F("fHistCosPATrue",
+                                "; #it{p}_{T} (GeV/#it{c}); cos(#alpha) true",
+                                100, 0, 10, 500, 0.8, 1);
+      fHistogramsMC->Add(fHistCosPATrue);
+
+      fHistDCADaughtersTrue = new TH2F(
+          "fHistDCADaughtersTrue",
+          "; #it{p}_{T} (GeV/#it{c}); Daughter DCA at decay vertex true (cm)",
+          100, 0, 10, 500, 0, 2);
+      fHistogramsMC->Add(fHistDCADaughtersTrue);
+
+      fHistArmenterosTrue =
+          new TH2F("fHistArmenterosTrue", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
+                   500, -1, 1, 500, 0, 1);
+      fHistogramsMC->Add(fHistArmenterosTrue);
+
+      fHistPsiPairTrue =
+          new TH2F("fHistPsiPairTrue", "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}",
+                   1000, 0, 10, 1000, -pi, pi);
+      fHistogramsMC->Add(fHistPsiPairTrue);
+
+      fHistSingleParticlePtTrue[0] =
+          new TH1F("fHistSingleParticlePtTrue_pos",
+                   ";#it{p}_{T} true ; Entries", 1000, 0, 10);
+      fHistSingleParticlePtTrue[1] =
+          new TH1F("fHistSingleParticlePtTrue_neg", ";#it{p}_{T} true; Entries",
+                   1000, 0, 10);
+      fHistogramsMC->Add(fHistSingleParticlePtTrue[0]);
+      fHistogramsMC->Add(fHistSingleParticlePtTrue[1]);
+
+      fHistSingleParticleDCAtoPVTrue[0] =
+          new TH2F("fHistSingleParticleDCAtoPVTrue_pos",
+                   "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA) true", 100, 0, 10,
+                   500, 0, 10);
+      fHistSingleParticleDCAtoPVTrue[1] =
+          new TH2F("fHistSingleParticleDCAtoPVTrue_neg",
+                   "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA) true", 100, 0, 10,
+                   500, 0, 10);
+      fHistogramsMC->Add(fHistSingleParticleDCAtoPVTrue[0]);
+      fHistogramsMC->Add(fHistSingleParticleDCAtoPVTrue[1]);
+
+      fHistSingleParticleNclsTPCTrue[0] = new TH2F(
+          "fHistSingleParticleNclsTPCTrue_pos",
+          "; #it{p}_{T} (GeV/#it{c}); # cls TPC true", 100, 0, 10, 170, 0, 170);
+      fHistSingleParticleNclsTPCTrue[1] = new TH2F(
+          "fHistSingleParticleNclsTPCTrue_neg",
+          "; #it{p}_{T} (GeV/#it{c}); # cls TPC true", 100, 0, 10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCTrue[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCTrue[1]);
+
+      fHistSingleParticleNclsTPCFindableTrue[0] =
+          new TH2F("fHistSingleParticleNclsTPCFindableTrue_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC findable true", 100, 0,
+                   10, 170, 0, 170);
+      fHistSingleParticleNclsTPCFindableTrue[1] =
+          new TH2F("fHistSingleParticleNclsTPCFindableTrue_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC findable true", 100, 0,
+                   10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCFindableTrue[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCFindableTrue[1]);
+
+      fHistSingleParticleNclsTPCRatioFindableTrue[0] =
+          new TH2F("fHistSingleParticleNclsTPCRatioFindableTrue_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable true", 100, 0,
+                   10, 500, 0, 2);
+      fHistSingleParticleNclsTPCRatioFindableTrue[1] =
+          new TH2F("fHistSingleParticleNclsTPCRatioFindableTrue_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable true", 100, 0,
+                   10, 500, 0, 2);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCRatioFindableTrue[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCRatioFindableTrue[1]);
+
+      fHistSingleParticleNcrossedTPCTrue[0] =
+          new TH2F("fHistSingleParticleNcrossedTPCTrue_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed true", 100, 0,
+                   10, 170, 0, 170);
+      fHistSingleParticleNcrossedTPCTrue[1] =
+          new TH2F("fHistSingleParticleNcrossedTPCTrue_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed true", 100, 0,
+                   10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNcrossedTPCTrue[0]);
+      fHistogramsMC->Add(fHistSingleParticleNcrossedTPCTrue[1]);
+
+      fHistSingleParticleNclsTPCSharedTrue[0] =
+          new TH2F("fHistSingleParticleNclsTPCSharedTrue_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared true", 100, 0,
+                   10, 170, 0, 170);
+      fHistSingleParticleNclsTPCSharedTrue[1] =
+          new TH2F("fHistSingleParticleNclsTPCSharedTrue_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared true", 100, 0,
+                   10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCSharedTrue[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCSharedTrue[1]);
+
+      fHistSingleParticleNclsITSSharedTrue[0] =
+          new TH2F("fHistSingleParticleNclsITSSharedTrue_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared true", 100, 0,
+                   10, 6, 0, 6);
+      fHistSingleParticleNclsITSSharedTrue[1] =
+          new TH2F("fHistSingleParticleNclsITSSharedTrue_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared true", 100, 0,
+                   10, 6, 0, 6);
+      fHistogramsMC->Add(fHistSingleParticleNclsITSSharedTrue[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsITSSharedTrue[1]);
+
+      fHistSingleParticleChi2True[0] = new TH2F(
+          "fHistSingleParticleChi2True_pos",
+          "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+      fHistSingleParticleChi2True[1] = new TH2F(
+          "fHistSingleParticleChi2True_neg",
+          "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+      fHistogramsMC->Add(fHistSingleParticleChi2True[0]);
+      fHistogramsMC->Add(fHistSingleParticleChi2True[1]);
+
+      fHistSingleParticlePIDTrue[0] = new TH2F(
+          "fHistSingleParticlePIDTrue_pos",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistSingleParticlePIDTrue[1] = new TH2F(
+          "fHistSingleParticlePIDTrue_neg",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistogramsMC->Add(fHistSingleParticlePIDTrue[0]);
+      fHistogramsMC->Add(fHistSingleParticlePIDTrue[1]);
+
+      // TRUE SIGMA DAUGHTER
+      fHistV0MassPtTrueSigma =
+          new TH2F("fHistV0MassPtTrueSigma",
+                   "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
+                   1000, 0, 15, 2400, 0., 1.2);
+      fHistogramsMC->Add(fHistV0MassPtTrueSigma);
+
+      fHistDecayVertexXTrueSigma =
+          new TH2F("fHistDecayVertexXTrueSigma",
+                   "; #it{p}_{T} (GeV/#it{c}); Decay vertex x true Sigma (cm)",
+                   100, 0, 10, 500, 0, 200);
+      fHistogramsMC->Add(fHistDecayVertexXTrueSigma);
+
+      fHistDecayVertexYTrueSigma =
+          new TH2F("fHistDecayVertexYTrueSigma",
+                   "; #it{p}_{T} (GeV/#it{c}); Decay vertex y true Sigma (cm)",
+                   100, 0, 10, 500, 0, 200);
+      fHistogramsMC->Add(fHistDecayVertexYTrueSigma);
+
+      fHistDecayVertexZTrueSigma =
+          new TH2F("fHistDecayVertexZTrueSigma",
+                   "; #it{p}_{T} (GeV/#it{c}); Decay vertex z true Sigma (cm)",
+                   100, 0, 10, 500, 0, 200);
+      fHistogramsMC->Add(fHistDecayVertexZTrueSigma);
+
+      fHistTransverseRadiusTrueSigma = new TH2F(
+          "fHistTransverseRadiusTrueSigma",
+          "; #it{p}_{T} (GeV/#it{c}); Transverse radius true Sigma (cm)", 100,
+          0, 10, 500, 0, 200);
+      fHistogramsMC->Add(fHistTransverseRadiusTrueSigma);
+
+      fHistCosPATrueSigma =
+          new TH2F("fHistCosPATrueSigma",
+                   "; #it{p}_{T} (GeV/#it{c}); cos(#alpha) true Sigma", 100, 0,
+                   10, 500, 0.8, 1);
+      fHistogramsMC->Add(fHistCosPATrueSigma);
+
+      fHistDCADaughtersTrueSigma =
+          new TH2F("fHistDCADaughtersTrueSigma",
+                   "; #it{p}_{T} (GeV/#it{c}); Daughter DCA at decay vertex "
+                   "true Sigma (cm)",
+                   100, 0, 10, 500, 0, 2);
+      fHistogramsMC->Add(fHistDCADaughtersTrueSigma);
+
+      fHistArmenterosTrueSigma =
+          new TH2F("fHistArmenterosTrueSigma",
+                   " ; #alpha; #it{q}_{T} (GeV/#it{c})", 500, -1, 1, 500, 0, 1);
+      fHistogramsMC->Add(fHistArmenterosTrueSigma);
+
+      fHistPsiPairTrueSigma = new TH2F("fHistPsiPairTrueSigma",
+                                       "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}",
+                                       1000, 0, 10, 1000, -pi, pi);
+      fHistogramsMC->Add(fHistPsiPairTrueSigma);
+
+      fHistSingleParticlePtTrueSigma[0] =
+          new TH1F("fHistSingleParticlePtTrueSigma_pos",
+                   ";#it{p}_{T} true Sigma; Entries", 1000, 0, 10);
+      fHistSingleParticlePtTrueSigma[1] =
+          new TH1F("fHistSingleParticlePtTrueSigma_neg",
+                   ";#it{p}_{T} true Sigma; Entries", 1000, 0, 10);
+      fHistogramsMC->Add(fHistSingleParticlePtTrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticlePtTrueSigma[1]);
+
+      fHistSingleParticleDCAtoPVTrueSigma[0] =
+          new TH2F("fHistSingleParticleDCAtoPVTrueSigma_pos",
+                   "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA) true Sigma", 100, 0,
+                   10, 500, 0, 10);
+      fHistSingleParticleDCAtoPVTrueSigma[1] =
+          new TH2F("fHistSingleParticleDCAtoPVTrueSigma_neg",
+                   "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA) true Sigma", 100, 0,
+                   10, 500, 0, 10);
+      fHistogramsMC->Add(fHistSingleParticleDCAtoPVTrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticleDCAtoPVTrueSigma[1]);
+
+      fHistSingleParticleNclsTPCTrueSigma[0] =
+          new TH2F("fHistSingleParticleNclsTPCTrueSigma_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC true Sigma", 100, 0,
+                   10, 170, 0, 170);
+      fHistSingleParticleNclsTPCTrueSigma[1] =
+          new TH2F("fHistSingleParticleNclsTPCTrueSigma_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC true Sigma", 100, 0,
+                   10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCTrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCTrueSigma[1]);
+
+      fHistSingleParticleNclsTPCFindableTrueSigma[0] =
+          new TH2F("fHistSingleParticleNclsTPCFindableTrueSigma_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC findable true Sigma",
+                   100, 0, 10, 170, 0, 170);
+      fHistSingleParticleNclsTPCFindableTrueSigma[1] =
+          new TH2F("fHistSingleParticleNclsTPCFindableTrueSigma_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC findable true Sigma",
+                   100, 0, 10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCFindableTrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCFindableTrueSigma[1]);
+
+      fHistSingleParticleNclsTPCRatioFindableTrueSigma[0] =
+          new TH2F("fHistSingleParticleNclsTPCRatioFindableTrueSigma_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable true Sigma",
+                   100, 0, 10, 500, 0, 2);
+      fHistSingleParticleNclsTPCRatioFindableTrueSigma[1] =
+          new TH2F("fHistSingleParticleNclsTPCRatioFindableTrueSigma_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable true Sigma",
+                   100, 0, 10, 500, 0, 2);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCRatioFindableTrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCRatioFindableTrueSigma[1]);
+
+      fHistSingleParticleNcrossedTPCTrueSigma[0] =
+          new TH2F("fHistSingleParticleNcrossedTPCTrueSigma_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed true Sigma",
+                   100, 0, 10, 170, 0, 170);
+      fHistSingleParticleNcrossedTPCTrueSigma[1] =
+          new TH2F("fHistSingleParticleNcrossedTPCTrueSigma_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed true Sigma",
+                   100, 0, 10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNcrossedTPCTrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticleNcrossedTPCTrueSigma[1]);
+
+      fHistSingleParticleNclsTPCSharedTrueSigma[0] =
+          new TH2F("fHistSingleParticleNclsTPCSharedTrueSigma_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared true Sigma",
+                   100, 0, 10, 170, 0, 170);
+      fHistSingleParticleNclsTPCSharedTrueSigma[1] =
+          new TH2F("fHistSingleParticleNclsTPCSharedTrueSigma_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared true Sigma",
+                   100, 0, 10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCSharedTrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCSharedTrueSigma[1]);
+
+      fHistSingleParticleNclsITSSharedTrueSigma[0] =
+          new TH2F("fHistSingleParticleNclsITSSharedTrueSigma_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared true Sigma",
+                   100, 0, 10, 6, 0, 6);
+      fHistSingleParticleNclsITSSharedTrueSigma[1] =
+          new TH2F("fHistSingleParticleNclsITSSharedTrueSigma_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared true Sigma",
+                   100, 0, 10, 6, 0, 6);
+      fHistogramsMC->Add(fHistSingleParticleNclsITSSharedTrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsITSSharedTrueSigma[1]);
+
+      fHistSingleParticleChi2TrueSigma[0] = new TH2F(
+          "fHistSingleParticleChi2TrueSigma_pos",
+          "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+      fHistSingleParticleChi2TrueSigma[1] = new TH2F(
+          "fHistSingleParticleChi2TrueSigma_neg",
+          "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+      fHistogramsMC->Add(fHistSingleParticleChi2TrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticleChi2TrueSigma[1]);
+
+      fHistSingleParticlePIDTrueSigma[0] = new TH2F(
+          "fHistSingleParticlePIDTrueSigma_pos",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistSingleParticlePIDTrueSigma[1] = new TH2F(
+          "fHistSingleParticlePIDTrueSigma_neg",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistogramsMC->Add(fHistSingleParticlePIDTrueSigma[0]);
+      fHistogramsMC->Add(fHistSingleParticlePIDTrueSigma[1]);
+
+      // BACKGROUND
+      fHistV0MassPtBkg =
+          new TH2F("fHistV0MassPtBkg",
+                   "; #it{p}_{T} (GeV/#it{c});Invariant mass (GeV/#it{c}^{2})",
+                   1000, 0, 15, 2400, 0., 1.2);
+      fHistogramsMC->Add(fHistV0MassPtBkg);
+
+      fHistDecayVertexXBkg =
+          new TH2F("fHistDecayVertexXBkg",
+                   "; #it{p}_{T} (GeV/#it{c}); Decay vertex x Bkg (cm)", 100, 0,
+                   10, 500, 0, 200);
+      fHistogramsMC->Add(fHistDecayVertexXBkg);
+
+      fHistDecayVertexYBkg =
+          new TH2F("fHistDecayVertexYBkg",
+                   "; #it{p}_{T} (GeV/#it{c}); Decay vertex y Bkg (cm)", 100, 0,
+                   10, 500, 0, 200);
+      fHistogramsMC->Add(fHistDecayVertexYBkg);
+
+      fHistDecayVertexZBkg =
+          new TH2F("fHistDecayVertexZBkg",
+                   "; #it{p}_{T} (GeV/#it{c}); Decay vertex z Bkg (cm)", 100, 0,
+                   10, 500, 0, 200);
+      fHistogramsMC->Add(fHistDecayVertexZBkg);
+
+      fHistTransverseRadiusBkg =
+          new TH2F("fHistTransverseRadiusBkg",
+                   "; #it{p}_{T} (GeV/#it{c}); Transverse radius Bkg (cm)", 100,
+                   0, 10, 500, 0, 200);
+      fHistogramsMC->Add(fHistTransverseRadiusBkg);
+
+      fHistCosPABkg = new TH2F("fHistCosPABkg",
+                               "; #it{p}_{T} (GeV/#it{c}); cos(#alpha) Bkg",
+                               100, 0, 10, 500, 0.8, 1);
+      fHistogramsMC->Add(fHistCosPABkg);
+
+      fHistDCADaughtersBkg = new TH2F(
+          "fHistDCADaughtersBkg",
+          "; #it{p}_{T} (GeV/#it{c}); Daughter DCA at decay vertex Bkg (cm)",
+          100, 0, 10, 500, 0, 2);
+      fHistogramsMC->Add(fHistDCADaughtersBkg);
+
+      fHistArmenterosBkg =
+          new TH2F("fHistArmenterosBkg", " ; #alpha; #it{q}_{T} (GeV/#it{c})",
+                   500, -1, 1, 500, 0, 1);
+      fHistogramsMC->Add(fHistArmenterosBkg);
+
+      fHistPsiPairBkg =
+          new TH2F("fHistPsiPairBkg", "; #it{p}_{T} (GeV/#it{c}); #Psi_{pair}",
+                   1000, 0, 10, 1000, -pi, pi);
+      fHistogramsMC->Add(fHistPsiPairBkg);
+
+      fHistSingleParticlePtBkg[0] =
+          new TH1F("fHistSingleParticlePtBkg_pos", ";#it{p}_{T} Bkg; Entries",
+                   1000, 0, 10);
+      fHistSingleParticlePtBkg[1] =
+          new TH1F("fHistSingleParticlePtBkg_neg", ";#it{p}_{T} Bkg; Entries",
+                   1000, 0, 10);
+      fHistogramsMC->Add(fHistSingleParticlePtBkg[0]);
+      fHistogramsMC->Add(fHistSingleParticlePtBkg[1]);
+
+      fHistSingleParticleDCAtoPVBkg[0] =
+          new TH2F("fHistSingleParticleDCAtoPVBkg_pos",
+                   "; #it{p}_{T} (GeV/#it{c});DCA (pos, PA) Bkg", 100, 0, 10,
+                   500, 0, 10);
+      fHistSingleParticleDCAtoPVBkg[1] =
+          new TH2F("fHistSingleParticleDCAtoPVBkg_neg",
+                   "; #it{p}_{T} (GeV/#it{c});DCA (neg, PA) Bkg", 100, 0, 10,
+                   500, 0, 10);
+      fHistogramsMC->Add(fHistSingleParticleDCAtoPVBkg[0]);
+      fHistogramsMC->Add(fHistSingleParticleDCAtoPVBkg[1]);
+
+      fHistSingleParticleNclsTPCBkg[0] = new TH2F(
+          "fHistSingleParticleNclsTPCBkg_pos",
+          "; #it{p}_{T} (GeV/#it{c}); # cls TPC Bkg", 100, 0, 10, 170, 0, 170);
+      fHistSingleParticleNclsTPCBkg[1] = new TH2F(
+          "fHistSingleParticleNclsTPCBkg_neg",
+          "; #it{p}_{T} (GeV/#it{c}); # cls TPC Bkg", 100, 0, 10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCBkg[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCBkg[1]);
+
+      fHistSingleParticleNclsTPCFindableBkg[0] =
+          new TH2F("fHistSingleParticleNclsTPCFindableBkg_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC findable Bkg", 100, 0,
+                   10, 170, 0, 170);
+      fHistSingleParticleNclsTPCFindableBkg[1] =
+          new TH2F("fHistSingleParticleNclsTPCFindableBkg_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC findable Bkg", 100, 0,
+                   10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCFindableBkg[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCFindableBkg[1]);
+
+      fHistSingleParticleNclsTPCRatioFindableBkg[0] =
+          new TH2F("fHistSingleParticleNclsTPCRatioFindableBkg_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable Bkg", 100, 0,
+                   10, 500, 0, 2);
+      fHistSingleParticleNclsTPCRatioFindableBkg[1] =
+          new TH2F("fHistSingleParticleNclsTPCRatioFindableBkg_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); TPC ratio findable Bkg", 100, 0,
+                   10, 500, 0, 2);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCRatioFindableBkg[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCRatioFindableBkg[1]);
+
+      fHistSingleParticleNcrossedTPCBkg[0] =
+          new TH2F("fHistSingleParticleNcrossedTPCBkg_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed Bkg", 100, 0,
+                   10, 170, 0, 170);
+      fHistSingleParticleNcrossedTPCBkg[1] =
+          new TH2F("fHistSingleParticleNcrossedTPCBkg_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC crossed Bkg", 100, 0,
+                   10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNcrossedTPCBkg[0]);
+      fHistogramsMC->Add(fHistSingleParticleNcrossedTPCBkg[1]);
+
+      fHistSingleParticleNclsTPCSharedBkg[0] =
+          new TH2F("fHistSingleParticleNclsTPCSharedBkg_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared Bkg", 100, 0,
+                   10, 170, 0, 170);
+      fHistSingleParticleNclsTPCSharedBkg[1] =
+          new TH2F("fHistSingleParticleNclsTPCSharedBkg_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls TPC shared Bkg", 100, 0,
+                   10, 170, 0, 170);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCSharedBkg[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsTPCSharedBkg[1]);
+
+      fHistSingleParticleNclsITSSharedBkg[0] =
+          new TH2F("fHistSingleParticleNclsITSSharedBkg_pos",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared Bkg", 100, 0,
+                   10, 6, 0, 6);
+      fHistSingleParticleNclsITSSharedBkg[1] =
+          new TH2F("fHistSingleParticleNclsITSSharedBkg_neg",
+                   "; #it{p}_{T} (GeV/#it{c}); # cls ITS shared Bkg", 100, 0,
+                   10, 6, 0, 6);
+      fHistogramsMC->Add(fHistSingleParticleNclsITSSharedBkg[0]);
+      fHistogramsMC->Add(fHistSingleParticleNclsITSSharedBkg[1]);
+
+      fHistSingleParticleChi2Bkg[0] = new TH2F(
+          "fHistSingleParticleChi2Bkg_pos",
+          "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+      fHistSingleParticleChi2Bkg[1] = new TH2F(
+          "fHistSingleParticleChi2Bkg_neg",
+          "; #it{p}_{T} (GeV/#it{c}); #chi^{2}", 100, 0, 10, 500, 0, 20);
+      fHistogramsMC->Add(fHistSingleParticleChi2Bkg[0]);
+      fHistogramsMC->Add(fHistSingleParticleChi2Bkg[1]);
+
+      fHistSingleParticlePIDBkg[0] = new TH2F(
+          "fHistSingleParticlePIDBkg_pos",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistSingleParticlePIDBkg[1] = new TH2F(
+          "fHistSingleParticlePIDBkg_neg",
+          "; #it{p} (GeV/#it{c}); n_{#sigma} TPC", 500, 0, 10, 500, -10, 10);
+      fHistogramsMC->Add(fHistSingleParticlePIDBkg[0]);
+      fHistogramsMC->Add(fHistSingleParticlePIDBkg[1]);
+    }
+
     fHistograms->Add(fHistogramsMC);
   }
 }

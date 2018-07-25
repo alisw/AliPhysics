@@ -1,7 +1,7 @@
 
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskQAHighPtDeDxO.h"
+#include "AliAnalysisTaskQAHighPtDeDxTest.h"
 #include "AliAnalysisFilter.h"
 #include "TInterpreter.h"
 #include "TChain.h"
@@ -9,13 +9,14 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskQAHighPtDeDxO* AddTaskQAHighPtDeDxO(
+AliAnalysisTaskQAHighPtDeDxTest* AddTaskQAHighPtDeDxTest(
 		Bool_t AnalysisMC = kFALSE,
 		Int_t typerun =1, // 0 for pp and 1 for Pb-Pb or pPb
+//		UInt_t kTriggerInt = AliVEvent::kINT7, //for pPb kINT7, for pp or PbPb kMB
 		Float_t minCent = 0.0, 
-		Float_t maxCent = 90.0,
+		Float_t maxCent = 5.0,
 		Bool_t ispileuprej = kTRUE,
-		Bool_t PostCalib = kTRUE,
+		Bool_t PostCalib = kFALSE,
 		Bool_t MakePid = kTRUE,
 		const char *centralityEstimator = "V0M"//for pPb V0A for PbPb V0M
 
@@ -45,15 +46,17 @@ AliAnalysisTaskQAHighPtDeDxO* AddTaskQAHighPtDeDxO(
 	trackFilterTPC->AddCuts(esdTrackCutsTPC);
 
 	AliAnalysisFilter* trackFilterGolden2015PbPb = new AliAnalysisFilter("trackFilter2015PbPb");
-	AliESDtrackCuts* esdTrackCutsGolden2015PbPb = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kFALSE,1,kTRUE ,kFALSE);
-	trackFilterGolden2015PbPb->AddCuts(esdTrackCutsGolden2015PbPb);
+  	AliESDtrackCuts* esdTrackCutsGolden2015PbPb = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(kFALSE,1,kTRUE ,kFALSE);
+  	trackFilterGolden2015PbPb->AddCuts(esdTrackCutsGolden2015PbPb);
+
 
 	// by default, a file is open for writing. here, we get the filename
 	TString fileName = AliAnalysisManager::GetCommonFileName();
 	fileName += Form(":%.2f-%.2f",minCent,maxCent);      // create a subfolder in the file
 
+
 	// now we create an instance of your task
-	AliAnalysisTaskQAHighPtDeDxO* task = new AliAnalysisTaskQAHighPtDeDxO("taskHighPtDeDxpp");   
+	AliAnalysisTaskQAHighPtDeDxTest* task = new AliAnalysisTaskQAHighPtDeDxTest("taskHighPtDeDxpp");   
 	if(!task) return 0x0;
 
 
@@ -67,9 +70,8 @@ AliAnalysisTaskQAHighPtDeDxO* AddTaskQAHighPtDeDxO(
 		task->SetMaxCent(maxCent);
 		task->SetCentralityEstimator(centralityEstimator);
 	}
-	else{
+	else
 		task->SetAnalysisPbPb(kFALSE);
-	}
 	task->SetDebugLevel(0);
 	task->SetEtaCut(0.8);
 //	task->SetVtxCut(10.0);
@@ -83,7 +85,7 @@ AliAnalysisTaskQAHighPtDeDxO* AddTaskQAHighPtDeDxO(
 	task->SetAnalysisTask(PostCalib);
 	task->SetAnalysisPID(MakePid);
 
-	//task->SelectCollisionCandidates(kTriggerInt);
+//	task->SelectCollisionCandidates(kTriggerInt AliVEvent::kINT7 );
 	// add your task to the manager
 	mgr->AddTask(task);
 	// your task needs input: here we connect the manager to your task

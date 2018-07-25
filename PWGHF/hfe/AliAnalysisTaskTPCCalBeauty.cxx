@@ -49,6 +49,7 @@ fDCalDG1(kFALSE),
 fFlagApplySSCut(kTRUE),
 fFlagFillSprs(kFALSE),
 fFlagFillMCHistos(kFALSE),
+fFlagRunStackLoop(kFALSE),
 fNclusTPC(80),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
@@ -212,6 +213,7 @@ fDCalDG1(kFALSE),
 fFlagApplySSCut(kTRUE),
 fFlagFillSprs(kFALSE),
 fFlagFillMCHistos(kFALSE),
+fFlagRunStackLoop(kFALSE),
 fNclusTPC(80),
 fFlagClsTypeEMC(kTRUE),
 fFlagClsTypeDCAL(kTRUE),
@@ -841,10 +843,10 @@ void AliAnalysisTaskTPCCalBeauty::UserCreateOutputObjects()
     }
     
     if (fFlagFillSprs) {
-        Int_t bins1[4]=  {/*280*/60,  160, 100, /*100,*/  200}; // pT;nSigma;eop;M20;DCA
-        Double_t xmin1[4]={ /*2*/0,   -8,   0,   /*0,*/ -0.2};
-        Double_t xmax1[4]={30,    8,   2,   /*1,*/  0.2};
-        fElectronSprs = new THnSparseD("Electron","Electron;pT;nSigma;eop;DCA;",4,bins1,xmin1,xmax1);
+        Int_t bins1[6]=  {/*280*/60,  160, 100, 100,  200, 4}; // pT;nSigma;eop;M20;DCA;MCTruth
+        Double_t xmin1[6]={ /*2*/0,   -8,   0,   0, -0.2, -0.5};
+        Double_t xmax1[6]={30,    8,   2,   1,  0.2, 3.5};
+        fElectronSprs = new THnSparseD("Electron","Electron;pT;nSigma;eop;DCA;MCTruth;",6,bins1,xmin1,xmax1);
         fOutputList->Add(fElectronSprs);
     }
     
@@ -890,13 +892,15 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
     //Loop over Stack//
     ///////////////////
     
-    if (fFlagFillMCHistos) {
+    if (fFlagFillMCHistos && fFlagRunStackLoop) {
         Int_t eleinStack=0;
         if (fMCarray) {
             //cout<<"Test2..................................."<<endl;
             // Make Pi0 and Eta Weight Sparse
             GetPi0EtaWeight(fSprsPi0EtaWeightCal);
-        
+            Int_t TrackPDG = -999;
+            Int_t ilabelM = -99;
+            
             for(int i=0; i<(fMCarray->GetEntries()); i++)
             {
                 //cout<<"Test "<<fMCarray->GetEntries()<<" ..................................."<<i<<endl;
@@ -908,8 +912,7 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
                 if(TMath::Abs(AODMCtrack->Eta()) > 0.6) continue;
             
                 //-------Get PDG
-                Int_t TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
-                Int_t ilabelM = -99;
+                TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
                 ilabelM = AODMCtrack->GetMother();
             
             
@@ -1505,23 +1508,31 @@ void AliAnalysisTaskTPCCalBeauty::UserExec(Option_t*)
             Double_t M02 = clustMatch->GetM02();
             
             if(!fFlagApplySSCut) {
-                Double_t fvalueElectron[4] = {-999,-999,-999,/*-999,*/-999};
+                Double_t fvalueElectron[6] = {-999,-999,-999,-999,-999,-999};
                 fvalueElectron[0] = track->Pt();
                 fvalueElectron[1] = nsigma;
                 fvalueElectron[2] = EovP;
-                //fvalueElectron[3] = M20;
-                fvalueElectron[3] = DCA;
+                fvalueElectron[3] = M20;
+                fvalueElectron[4] = DCA;
+                fvalueElectron[5] = 0;
+                if(kTruElec) fvalueElectron[5] = 1;
+                if(kTruHFElec) fvalueElectron[5] = 2;
+                if(kTruBElec) fvalueElectron[5] = 3;
                 if (fFlagFillSprs) {
                     fElectronSprs->Fill(fvalueElectron);
                 }
             }
             if(fFlagApplySSCut && M20>0.01 && M20<0.35){
-                Double_t fvalueElectron[4] = {-999,-999,-999,/*-999,*/-999};
+                Double_t fvalueElectron[6] = {-999,-999,-999,-999,-999,-999};
                 fvalueElectron[0] = track->Pt();
                 fvalueElectron[1] = nsigma;
                 fvalueElectron[2] = EovP;
-                //fvalueElectron[3] = M20;
-                fvalueElectron[3] = DCA;
+                fvalueElectron[3] = M20;
+                fvalueElectron[4] = DCA;
+                fvalueElectron[5] = 0;
+                if(kTruElec) fvalueElectron[5] = 1;
+                if(kTruHFElec) fvalueElectron[5] = 2;
+                if(kTruBElec) fvalueElectron[5] = 3;
                 if (fFlagFillSprs) {
                     fElectronSprs->Fill(fvalueElectron);
                 }

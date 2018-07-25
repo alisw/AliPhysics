@@ -278,7 +278,14 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     cuts.AddCut("80010123","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
     cuts.AddCut("80085123","1111101010032200000","1111101010022700001","0163300000000000"); // EG2
     cuts.AddCut("80083123","1111101010032200000","1111101010022700001","0163300000000000"); // EG1
-
+  } else if (trainConfig == 108){ // pp 2.76TeV paper cuts : open timing, TB nonlin, no TM
+    cuts.AddCut("80010103","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+    cuts.AddCut("80010113","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+    cuts.AddCut("80010123","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 109){ // pp 2.76TeV paper cuts : open timing, TB nonlin, no TM
+    cuts.AddCut("80010143","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
+    cuts.AddCut("80085143","1111101010032200000","1111101010022700001","0163300000000000"); // EG2
+    cuts.AddCut("80083143","1111101010032200000","1111101010022700001","0163300000000000"); // EG1
     // pPb 8 TeV LHC16 periods
   } else if (trainConfig == 200){ // open timing, TB nonlin, no TM
     cuts.AddCut("80010113","1111101010032200000","1111101010022700001","0163300000000000"); // INT7
@@ -329,11 +336,17 @@ void AddTask_GammaCaloMerged_pPb( Int_t     trainConfig                 = 1,    
     TObjString *Header3         = new TObjString("eta_2");
     HeaderList->Add(Header3);
   }
-  if (periodNameV0Reader.Contains("LHC18b9")){
-    TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
-    HeaderList->Add(HeaderP8J);
-  }
 
+  if (periodNameV0Reader.Contains("LHC18b9")||periodNameV0Reader.Contains("LHC17g8")){
+    TObjString *HeaderPMB = new TObjString("EPOSLHC_0");
+    TObjString *HeaderP8J = new TObjString("Pythia8Jets_1");
+    if (doWeightingPart==4) {
+      HeaderList->Add(HeaderPMB);
+      HeaderList->Add(HeaderP8J);
+    } else {
+      HeaderList->Add(HeaderP8J);
+    }
+  }
   EventCutList->SetOwner(kTRUE);
   AliConvEventCuts **analysisEventCuts          = new AliConvEventCuts*[numberOfCuts];
   ClusterCutList->SetOwner(kTRUE);

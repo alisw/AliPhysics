@@ -41,6 +41,7 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(
 						      Double_t Vy = 0.3,
 						      Double_t Vz = 10.,
 						      Bool_t IsRapCut = 0,
+						      Bool_t IsTotalMom = 0,
 						      Double_t Eta = 0.8,
 						      Int_t TPCCrossRow = 80,
 						      Double_t Chi2NDF = 4.,
@@ -98,6 +99,7 @@ AliAnalysisTask *AddAliEbyEPidEfficiencyContamination(
    task->SetDca( DCAxy,DCAz );
    task->SetVertexDiamond( Vx, Vy, Vz );
    task->SetIsRapidityCut( IsRapCut );
+   task->SetUseTotalMomentumCut( IsTotalMom );
    task->SetKinematicsCuts( ptl, pth, Eta );
    if( pidtype == 0){
      task->SetNumberOfPtBins( 16 );

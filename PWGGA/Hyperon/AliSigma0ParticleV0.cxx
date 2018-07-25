@@ -79,7 +79,7 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(AliESDv0 *v0, const AliESDtrack *pos,
 }
 
 //____________________________________________________________________________________________________
-AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton &gamma,
+AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton *gamma,
                                          const AliVEvent *inputEvent)
     : AliSigma0ParticleBase(),
       fTrackLabelPos(-1),
@@ -92,34 +92,34 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton &gamma,
       fCosAlpha(0),
       fRecMass(0),
       fPDGMass(0) {
-  fP[0] = gamma.GetPx();
-  fP[1] = gamma.GetPy();
-  fP[2] = gamma.GetPz();
+  fP[0] = gamma->GetPx();
+  fP[1] = gamma->GetPy();
+  fP[2] = gamma->GetPz();
   fPMC[0] = -1.;
   fPMC[1] = -1.;
   fPMC[2] = -1.;
 
   fPDGCode = 22;
-  fPt = gamma.GetPhotonPt();
-  fTrackLabel = gamma.GetV0Index();
-  fPhi = gamma.GetPhotonPhi();
-  fEta = gamma.GetPhotonEta();
-  fMass = gamma.GetPhotonMass();
-  fRecMass = gamma.M();
+  fPt = gamma->GetPhotonPt();
+  fTrackLabel = gamma->GetV0Index();
+  fPhi = gamma->GetPhotonPhi();
+  fEta = gamma->GetPhotonEta();
+  fMass = gamma->GetPhotonMass();
+  fRecMass = gamma->M();
 
-  fTrackLabelPos = gamma.GetTrackLabelPositive();
-  fTrackLabelNeg = gamma.GetTrackLabelNegative();
+  fTrackLabelPos = gamma->GetTrackLabelPositive();
+  fTrackLabelNeg = gamma->GetTrackLabelNegative();
 
   // commpute CPA
   double momV0[3] = {0, 0, 0};
-  momV0[0] = gamma.Px();
-  momV0[1] = gamma.Py();
-  momV0[2] = gamma.Pz();
+  momV0[0] = gamma->Px();
+  momV0[1] = gamma->Py();
+  momV0[2] = gamma->Pz();
 
   double PosV0[3] = {
-      gamma.GetConversionX() - inputEvent->GetPrimaryVertex()->GetX(),
-      gamma.GetConversionY() - inputEvent->GetPrimaryVertex()->GetY(),
-      gamma.GetConversionZ() -
+      gamma->GetConversionX() - inputEvent->GetPrimaryVertex()->GetX(),
+      gamma->GetConversionY() - inputEvent->GetPrimaryVertex()->GetY(),
+      gamma->GetConversionZ() -
           inputEvent->GetPrimaryVertex()
               ->GetZ()};  // Recalculated V0 Position vector
 
@@ -135,11 +135,8 @@ AliSigma0ParticleV0::AliSigma0ParticleV0(const AliAODConversionPhoton &gamma,
           : -999.f;
   fCosAlpha = cosinePointingAngle;
 
-  fMCLabelPos = gamma.GetMCLabelPositive();
-  fMCLabelNeg = gamma.GetMCLabelNegative();
-
-  //  fTrackPos
-  //  fTrackNeg
+  fMCLabelPos = gamma->GetMCLabelPositive();
+  fMCLabelNeg = gamma->GetMCLabelNegative();
 
   fUse = true;
 }

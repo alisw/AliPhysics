@@ -31,6 +31,7 @@ fAODevent(NULL),
 fPIDResponse(NULL),
 fAODeventCuts(),
 fUtils(NULL),
+fUseTri(kFALSE),
 fQAList(NULL),
 TreeEventSelection(NULL),
 reducedTree_Helium(NULL),
@@ -250,6 +251,7 @@ fAODevent(NULL),
 fPIDResponse(NULL),
 fAODeventCuts(),
 fUtils(NULL),
+fUseTri(kFALSE),
 fQAList(NULL),
 TreeEventSelection(NULL),
 reducedTree_Helium(NULL),
@@ -741,7 +743,11 @@ void AliAnalysisTaskReducedTreeNuclei::UserExec(Option_t *)
       px = track -> Px();
       py = track -> Py();
       pz = track -> Pz();
-      if ( !IsHeliumCandidate (track)) continue;
+      
+      
+      if ( fUseTri && !IsTritonCandidate(track)) continue;
+      if ( !fUseTri && !IsHeliumCandidate(track)) continue;
+      
 
       q  = (Int_t) track -> Charge();
       eta = track -> Eta();
@@ -1128,6 +1134,13 @@ Bool_t AliAnalysisTaskReducedTreeNuclei::IsHeliumCandidate (AliAODTrack *track) 
       if ( nsigmaTPC < -5 ) return false;
    }
 
+   return true;
+}
+//_________________________________________________________________________________________________________________________________________________________________________________________________
+Bool_t AliAnalysisTaskReducedTreeNuclei::IsTritonCandidate (AliAODTrack *track)  {
+
+   Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
+   if ( nsigmaTPC < -5 ) return false;
    return true;
 }
 //_________________________________________________________________________________________________________________________________________________________________________________________________

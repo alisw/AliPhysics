@@ -10,14 +10,16 @@ ClassImp(AliAODConversionPhoton)
 AliAODConversionPhoton::AliAODConversionPhoton() :
 AliAODConversionParticle(),
 AliConversionPhotonBase(),
-fDCArPrimVtx(0),
-fDCAzPrimVtx(0),
-fInvMassPair(0),
-fCaloPhoton(0),
-fCaloClusterRef(-1),
-fNCaloPhotonMCLabels(0),
-fNCaloPhotonMotherMCLabels(0),
-fCaloPhotonMCFlags(0)
+  fCaloClusterRef(-1),
+  fDCArPrimVtx(0),
+  fDCAzPrimVtx(0),
+  fInvMassPair(0),
+  fNCaloPhotonMCLabels(0),
+  fNCaloPhotonMotherMCLabels(0),
+  fCaloPhotonMCFlags(0),
+  fPairedId(-1),
+  fCaloPhoton(kFALSE),
+  fUseForMesonPair(kTRUE)
 {
   // initialize calo photon MC labels
   for (Int_t i =0; i<50; i++){
@@ -32,22 +34,22 @@ fCaloPhotonMCFlags(0)
 AliAODConversionPhoton::AliAODConversionPhoton(AliKFConversionPhoton *kfphoton) :
 AliAODConversionParticle(kfphoton),
 AliConversionPhotonBase(*((AliConversionPhotonBase*)kfphoton)),
-fDCArPrimVtx(0),
-fDCAzPrimVtx(0),
-fInvMassPair(0),
-fCaloPhoton(0),
-fCaloClusterRef(-1),
-fNCaloPhotonMCLabels(0),
-fNCaloPhotonMotherMCLabels(0),
-fCaloPhotonMCFlags(0)
+  fCaloClusterRef(-1),
+  fDCArPrimVtx(0),
+  fDCAzPrimVtx(0),
+  fInvMassPair(0),
+  fNCaloPhotonMCLabels(0),
+  fNCaloPhotonMotherMCLabels(0),
+  fCaloPhotonMCFlags(0),
+  fPairedId(-1),
+  fCaloPhoton(kFALSE),
+  fUseForMesonPair(kTRUE)
 {
   //Constructor from kfphoton
-
   // puts the mass to zero and store dilepton mass
   SetMass(kfphoton->M());
 
   //SetE(P());
-
   // initialize calo photon MC labels
   for (Int_t i =0; i<50; i++){
     fCaloPhotonMCLabels[i]=-1;
@@ -61,14 +63,16 @@ fCaloPhotonMCFlags(0)
 AliAODConversionPhoton::AliAODConversionPhoton(TLorentzVector *vec) :
 AliAODConversionParticle(vec),
 AliConversionPhotonBase(),
-fDCArPrimVtx(0),
-fDCAzPrimVtx(0),
-fInvMassPair(0),
-fCaloPhoton(0),
-fCaloClusterRef(-1),
-fNCaloPhotonMCLabels(0),
-fNCaloPhotonMotherMCLabels(0),
-fCaloPhotonMCFlags(0)
+  fCaloClusterRef(-1),
+  fDCArPrimVtx(0),
+  fDCAzPrimVtx(0),
+  fInvMassPair(0),
+  fNCaloPhotonMCLabels(0),
+  fNCaloPhotonMotherMCLabels(0),
+  fCaloPhotonMCFlags(0),
+  fPairedId(-1),
+  fCaloPhoton(kFALSE),
+  fUseForMesonPair(kTRUE)
 {
   //Constructor from TLorentzVector
 
@@ -86,14 +90,16 @@ fCaloPhotonMCFlags(0)
 AliAODConversionPhoton::AliAODConversionPhoton(const AliAODConversionPhoton & original) :
 AliAODConversionParticle(original),
 AliConversionPhotonBase(original),
-fDCArPrimVtx(original.fDCArPrimVtx),
-fDCAzPrimVtx(original.fDCAzPrimVtx),
-fInvMassPair(original.fInvMassPair),
-fCaloPhoton(original.fCaloPhoton),
-fCaloClusterRef(original.fCaloClusterRef),
-fNCaloPhotonMCLabels(original.fNCaloPhotonMCLabels),
-fNCaloPhotonMotherMCLabels(original.fNCaloPhotonMotherMCLabels),
-fCaloPhotonMCFlags(original.fCaloPhotonMCFlags)
+  fCaloClusterRef(original.fCaloClusterRef),
+  fDCArPrimVtx(original.fDCArPrimVtx),
+  fDCAzPrimVtx(original.fDCAzPrimVtx),
+  fInvMassPair(original.fInvMassPair),
+  fNCaloPhotonMCLabels(original.fNCaloPhotonMCLabels),
+  fNCaloPhotonMotherMCLabels(original.fNCaloPhotonMotherMCLabels),
+  fCaloPhotonMCFlags(original.fCaloPhotonMCFlags),
+  fPairedId(original.fPairedId),
+  fCaloPhoton(original.fCaloPhoton),
+  fUseForMesonPair(original.fUseForMesonPair)
 {
   //Copy constructor
 
@@ -120,27 +126,27 @@ AliAODConversionPhoton & AliAODConversionPhoton::operator = (const AliAODConvers
 ///________________________________________________________________________
 void AliAODConversionPhoton::CalculateDistanceOfClossetApproachToPrimVtx(const AliVVertex* primVertex ){
 
-   Double_t primCo[3] = {primVertex->GetX(),primVertex->GetY(),primVertex->GetZ()};
+  Double_t primCo[3] = {primVertex->GetX(),primVertex->GetY(),primVertex->GetZ()};
 
-   Double_t absoluteP = TMath::Sqrt(TMath::Power(GetPx(),2) + TMath::Power(GetPy(),2) + TMath::Power(GetPz(),2));
-   Double_t p[3] = {GetPx()/absoluteP,GetPy()/absoluteP,GetPz()/absoluteP};
-   Double_t CP[3];
+  Double_t absoluteP = TMath::Sqrt(TMath::Power(GetPx(),2) + TMath::Power(GetPy(),2) + TMath::Power(GetPz(),2));
+  Double_t p[3] = {GetPx()/absoluteP,GetPy()/absoluteP,GetPz()/absoluteP};
+  Double_t CP[3];
 
-   CP[0] =  fConversionPoint[0] - primCo[0];
-   CP[1] =  fConversionPoint[1] - primCo[1];
-   CP[2] =  fConversionPoint[2] - primCo[2];
+  CP[0] =  fConversionPoint[0] - primCo[0];
+  CP[1] =  fConversionPoint[1] - primCo[1];
+  CP[2] =  fConversionPoint[2] - primCo[2];
 
-   Double_t Lambda = - (CP[0]*p[0]+CP[1]*p[1]+CP[2]*p[2])/(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
+  Double_t Lambda = - (CP[0]*p[0]+CP[1]*p[1]+CP[2]*p[2])/(p[0]*p[0]+p[1]*p[1]+p[2]*p[2]);
 
-   Double_t S[3];
-   S[0] = fConversionPoint[0] + p[0]*Lambda;
-   S[1] = fConversionPoint[1] + p[1]*Lambda;
-   S[2] = fConversionPoint[2] + p[2]*Lambda;
+  Double_t S[3];
+  S[0] = fConversionPoint[0] + p[0]*Lambda;
+  S[1] = fConversionPoint[1] + p[1]*Lambda;
+  S[2] = fConversionPoint[2] + p[2]*Lambda;
 
-   fDCArPrimVtx = TMath::Sqrt( TMath::Power(primCo[0]-S[0],2) + TMath::Power(primCo[1]-S[1],2));
-   fDCAzPrimVtx = primCo[2]-S[2];
+  fDCArPrimVtx = TMath::Sqrt( TMath::Power(primCo[0]-S[0],2) + TMath::Power(primCo[1]-S[1],2));
+  fDCAzPrimVtx = primCo[2]-S[2];
 
-   return;
+  return;
 }
 
 
@@ -158,8 +164,6 @@ void AliAODConversionPhoton::SetCaloPhotonMCFlags(AliMCEvent *mcEvent, Bool_t en
   Bool_t isShower                   = kFALSE; // this cluster contains as a largest contribution a particle from a shower or radiative process
   Bool_t isSubLeadingEM             = kFALSE; // cluster contains at least one electron or photon from a pi0, eta or eta_prime in subleading contribution
   Bool_t isElectronFromFragPhoton   = kFALSE; // largest contribution to cluster is from converted electron, but photon stems from fragmentation photon ( q -> q gamma)
-
-
 
   TParticle* Photon = 0x0;
   if (fNCaloPhotonMCLabels==0) return;

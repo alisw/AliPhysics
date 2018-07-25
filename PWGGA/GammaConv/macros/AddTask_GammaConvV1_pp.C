@@ -88,7 +88,9 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
                               Double_t  smearParConst                 = 0.,                      // conv photon smearing params
                               Int_t   enableMatBudWeightsPi0          = 0,                      // 1 = three radial bins, 2 = 10 radial bins
                               TString filenameMatBudWeights           = "MCInputFileMaterialBudgetWeights.root",
-                              TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
+                              Bool_t    enableElecDeDxPostCalibration = kFALSE,
+                              TString   fileNameElecDeDxPostCalibration = "dEdxCorrectionMap_Period_Pass.root", 
+                             TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
                             ) {
 
   Int_t isHeavyIon = 0;
@@ -633,42 +635,45 @@ void AddTask_GammaConvV1_pp(  Int_t   trainConfig                     = 1,      
     cuts.AddCut("10110113", "00200009227302008254404000", "0152101500000000"); // mult.: 0-10%
     cuts.AddCut("11010113", "00200009227302008254404000", "0152101500000000"); // mult.: 10-100%
   } else if (trainConfig == 118){
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); // New standard cut for pp 5 TeV analysis VAND
-    cuts.AddCut("00010113", "00200079227300008250404000", "0152103500000000"); // min pT no cut
-    cuts.AddCut("00010113", "00200069227300008250404000", "0152103500000000"); // min pT 40 MeV
-    cuts.AddCut("00010113", "00200049227300008250404000", "0152103500000000"); // min pT 75 MeV
-    cuts.AddCut("00010113", "00200019227300008250404000", "0152103500000000"); // min pT 100 MeV
+    cuts.AddCut("00010113", "0d200009a27300008250904120", "0152103500000000"); // New standard cut for pp 5 TeV analysis VAND
+    cuts.AddCut("00010113", "0d200079a27300008250904120", "0152103500000000"); // min pT no cut
+    cuts.AddCut("00010113", "0d200069a27300008250904120", "0152103500000000"); // min pT 40 MeV
+    cuts.AddCut("00010113", "0d200049a27300008250904120", "0152103500000000"); // min pT 75 MeV
+    cuts.AddCut("00010113", "0d200008a27300008250904120", "0152103500000000"); // TPC cluster 35%
+    cuts.AddCut("00010113", "0d200006a27300008250904120", "0152103500000000"); // TPC cluster 70%
   } else if (trainConfig == 119){
-    cuts.AddCut("00010113", "00200008227300008250404000", "0152103500000000"); // TPC cluster 35%
-    cuts.AddCut("00010113", "00200006227300008250404000", "0152103500000000"); // TPC cluster 70%
+    cuts.AddCut("00010113", "0d200009a27300008250904120", "0152103500000000"); // edEdx -3,3
+    cuts.AddCut("00010113", "0d200009b27300008250904120", "0152103500000000"); // edEdx -3,2,3.2
+    cuts.AddCut("00010113", "0d200009c27300008250904120", "0152103500000000"); // edEdx -2.8,2.8
+    cuts.AddCut("00010113", "0d200009a57300008250904120", "0152103500000000"); // pidEdx 2,-10
+    cuts.AddCut("00010113", "0d200009a17300008250904120", "0152103500000000"); // pidEdx 0,-10
   } else if (trainConfig == 120){
-    cuts.AddCut("00010113", "00200009327300008250404000", "0152103500000000"); // edEdx -4,5
-    cuts.AddCut("00010113", "00200009627300008250404000", "0152103500000000"); // edEdx -2.5,4
-    cuts.AddCut("00010113", "00200009257300008250404000", "0152103500000000"); // pidEdx 2,-10
-    cuts.AddCut("00010113", "00200009217300008250404000", "0152103500000000"); // pidEdx 0,-10
+    cuts.AddCut("00010113", "0d200009a20300008250904120", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
+    cuts.AddCut("00010113", "0d200009a26300008250904120", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
+    cuts.AddCut("00010113", "0d200009a27600008250904120", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
+    cuts.AddCut("00010113", "0d200009a27100008250904120", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
   } else if (trainConfig == 121){
-    cuts.AddCut("00010113", "00200009220300008250404000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
-    cuts.AddCut("00010113", "00200009226300008250404000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
-    cuts.AddCut("00010113", "00200009227600008250404000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
-    cuts.AddCut("00010113", "00200009227100008250404000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
+    cuts.AddCut("00010113", "0d200009a27300003250904120", "0152103500000000"); // qT max 0.05 1D
+    cuts.AddCut("00010113", "0d200009a27300002250904120", "0152103500000000"); // qT max 0.06 2D
+    cuts.AddCut("00010113", "0d200009a27300008210904120", "0152103500000000"); // Psi pair 0.1  1D
+    cuts.AddCut("00010113", "0d200009a27300008260904120", "0152103500000000"); // Psi pair 0.05 2D
+    cuts.AddCut("00010113", "0d020009a27300008280904120", "0152103500000000"); // Psi pair 0.2  2D
   } else if (trainConfig == 122){
-    cuts.AddCut("00010113", "00200009227300003250404000", "0152103500000000"); // qT max 0.05 1D
-    cuts.AddCut("00010113", "00200009227300002250404000", "0152103500000000"); // qT max 0.06 2D
-    cuts.AddCut("00010113", "00200009227300009250404000", "0152103500000000"); // qT max 0.03 2D
-    cuts.AddCut("00010113", "00200009227300008210404000", "0152103500000000"); // Psi pair 0.1  1D
-    cuts.AddCut("00010113", "00200009227300008260404000", "0152103500000000"); // Psi pair 0.05 2D
-    cuts.AddCut("00010113", "00200009227300008280404000", "0152103500000000"); // Psi pair 0.2  2D
+    cuts.AddCut("00010113", "0d200009a27300008210904120", "0152103500000000"); // variation chi2 30 psi pair 0.1 1D
+    cuts.AddCut("00010113", "0d200009a27300008860904120", "0152103500000000"); // variation chi2 20 psi pair 0.05 2D
+    cuts.AddCut("00010113", "0d200009a27300008180904120", "0152103500000000"); // variation chi2 50 psi pair 0.2 2D
+    cuts.AddCut("00010113", "0d200009a27300008254904120", "0152103500000000"); // Photon Asymmetry Cut
   } else if (trainConfig == 123){
-    cuts.AddCut("00010113", "00200009227300008210404000", "0152103500000000"); // variation chi2 30 psi pair 0.1 1D
-    cuts.AddCut("00010113", "00200009227300008860404000", "0152103500000000"); // variation chi2 20 psi pair 0.05 2D
-    cuts.AddCut("00010113", "00200009227300008180404000", "0152103500000000"); // variation chi2 50 psi pair 0.2 2D
-    cuts.AddCut("00010113", "00200009227300008254404000", "0152103500000000"); // Photon Asymmetry Cut
+    cuts.AddCut("00010113", "0d200009a27300008250a04120", "0152103500000000"); // CosPA 0.995
+    cuts.AddCut("00010113", "0d200009a27300008250b04120", "0152103500000000"); // CosPA 0.985
+    cuts.AddCut("00010113", "0d200009a27300008250900120", "0152103500000000"); // no double counting
+    cuts.AddCut("00010113", "0d200009a27300008250904120", "0152105500000000"); // meson alpha < 0.75
+    cuts.AddCut("00010113", "0d200009a27300008250904120", "0152107500000000"); // meson alpha < 0.85
   } else if (trainConfig == 124){
-    cuts.AddCut("00010113", "00200009227300008250604000", "0152103500000000"); // CosPA 0.9
-    cuts.AddCut("00010113", "00200009227300008250304000", "0152103500000000"); // CosPA 0.75
-    cuts.AddCut("00010113", "00200009227300008250400000", "0152103500000000"); // no double counting
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152105500000000"); // meson alpha < 0.75
-    cuts.AddCut("00010113", "00200009227300008250404000", "0152107500000000"); // meson alpha < 0.85
+    cuts.AddCut("00010113", "0d200009a27300008250904130", "0152103500000000"); // dcaz 4cm
+    cuts.AddCut("00010113", "0d200009a27300008250904140", "0152103500000000"); // dcaz 3cm
+    cuts.AddCut("00010113", "0d200009a27300008250904220", "0152103500000000"); // dcar 5cm
+    cuts.AddCut("00010113", "0d200009a27300008250904320", "0152105500000000"); // dcar 4cm
     // eta cut variation to exclude central cathode
   } else if (trainConfig == 130) {
     cuts.AddCut("00010113", "00200009227300008250404000", "0152103500000000"); //standard cut from 8TeV ana
@@ -1288,12 +1293,29 @@ if(!cuts.AreValid()){
     }
     if (enableMatBudWeightsPi0 > 0){
         if (isMC > 0){
-            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights,periodname)){
+            if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,filenameMatBudWeights)){
                 initializedMatBudWeigths_existing = kTRUE;}
             else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
         }
         else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
+    if (enableElecDeDxPostCalibration>0){
+      if (isMC == 0){
+	if( analysisCuts[i]->InitializeElecDeDxPostCalibration(fileNameElecDeDxPostCalibration)){
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	} else {
+	  enableElecDeDxPostCalibration=kFALSE;
+	  analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+	}
+
+      } else{
+	cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+	enableElecDeDxPostCalibration=kFALSE;
+	analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+      }
+    }
+
+
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisCuts[i]->SetLightOutput(runLightOutput);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());

@@ -330,7 +330,14 @@ void AliFemtoDreamAnalysis::Make(AliAODEvent *evt) {
   fPairCleaner->StoreParticle(AntiDecays);
   fPairCleaner->StoreParticle(XiDecays);
   fPairCleaner->StoreParticle(AntiXiDecays);
-
+  if (fConfig->GetInvMassPairs()) {
+    fPairCleaner->FillInvMassPair(
+        (fPairCleaner->GetCleanParticles().at(0)),2212,
+        (fPairCleaner->GetCleanParticles().at(4)),3312,0);
+    fPairCleaner->FillInvMassPair(
+        (fPairCleaner->GetCleanParticles().at(1)),2212,
+        (fPairCleaner->GetCleanParticles().at(5)),3312,1);
+  }
   if (fConfig->GetUseEventMixing()) {
     fPartColl->SetEvent(
         fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(),

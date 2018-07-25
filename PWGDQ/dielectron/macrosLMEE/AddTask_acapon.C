@@ -1,5 +1,14 @@
-AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", Bool_t SDDstatus = kFALSE, Bool_t getFromAlien = kFALSE, Bool_t doPairing = kTRUE, Bool_t doMixing = kTRUE){
+//Names should contain a comma seperated list of cut settings
+//Current options: all, electrons, TTreeCuts, V0_tight
+AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", TString names ="electrons",
+                                Bool_t SDDstatus = kFALSE, Bool_t getFromAlien = kFALSE,
+                                Bool_t doPairing = kTRUE,  Bool_t doMixing = kTRUE,
+                                Bool_t useTPCcorr = kFALSE){
   
+		TObjArray *arrNames = names.Tokenize(";");
+		Int_t nDie = arrNames->GetEntries();
+    Printf("Number of implemented cuts: %i", nDie);
+
     //get the current analysis manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -51,12 +60,13 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", 
 
     //create task and add it to the manager
     AliAnalysisTaskMultiDielectron *task = new AliAnalysisTaskMultiDielectron("DielectronTask");
-    //if (!hasMC) 
+		if(!task){
+			::Error("AddTask_acapon", "MultiDielectron trask not created");
+			return 0x0;
+		}
 
-    //task->UsePhysicsSelection();
-
-    //Add event filter
-    Int_t triggerNames=(AliVEvent::kINT7);
+		//Add event filter
+    Int_t triggerNames = (AliVEvent::kINT7);
     task->SetEventFilter(cutlib->GetEventCuts(LMEECutLib::kAllSpecies));
     task->SelectCollisionCandidates(triggerNames);
     task->SetTriggerMask(triggerNames);
@@ -65,11 +75,10 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", 
 
     // Add the task to the manager
     mgr->AddTask(task);
-    Printf("Number of implemented cuts: %i", nDie);
     //add dielectron analysis with different cuts to the task
     for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
         //MB
-        AliDielectron *diel_low = Config_acapon(arrNames->At(i)->GetName(), hasMC, bESDANA, SDDstatus, doPairing, doMixing);
+        AliDielectron *diel_low = Config_acapon(arrNames->At(i)->GetName(), hasMC, bESDANA, SDDstatus, doPairing, doMixing, useTPCcorr);
         if(!diel_low){ continue; }
         task->AddDielectron(diel_low);
         printf("successfully added AliDielectron: %s\n",diel_low->GetName());

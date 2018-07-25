@@ -3,7 +3,7 @@
 /* $Id$ */
 
 /////////////////////////////////////////////////////////////////////////////
-//   Task for heavy-flavour electrons analysis in p-Pb collisions
+//   Task for Heavy-flavour electrons analysis in p-Pb collisions
 //   at 8.16 TeV with TPC + EMCal + DCal
 //
 //   - [Preliminary] Nuclear modification factor RpPb
@@ -39,6 +39,7 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         virtual void            Terminate(Option_t* option);
         //--- MC Switch ---//
         void SetMC(Bool_t flagMC) {fFlagMC = flagMC;};
+        void SetRunPeriod(TString period) {fPeriodName = period;};
         //---EMCal/DCal switch---//
         void SetClusterTypeEMC(Bool_t flagClsEMCal) {fFlagClsTypeEMCal = flagClsEMCal;};
         void SetClusterTypeDCAL(Bool_t flagClsDCal) {fFlagClsTypeDCal = flagClsDCal;};
@@ -49,6 +50,11 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         void SetEG2(Bool_t flagEG2) {fFlagEG2 = flagEG2;};
         void SetDG1(Bool_t flagDG1) {fFlagDG1 = flagDG1;};
         void SetDG2(Bool_t flagDG2) {fFlagDG2 = flagDG2;};
+        //---Centrality selection---//
+        void SetCentrality(Double_t min, Double_t max) {fCentMin = min, fCentMax = max;};
+        //---ch particle eff---//
+        void SetEffHadron(TH1D *hist) {if(fEffHadron) delete fEffHadron;fEffHadron = (TH1D*)hist->Clone();};
+
         //#########################//
         //Systematic uncertainties //
         //#########################//
@@ -70,6 +76,7 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         void MixedEvent(AliAODTrack *Trigtrack, THnSparse *SparseMixEHCorrl);
         TObjArray* CloneAndReduceTrackList();
         Bool_t PassHadronCuts(AliAODTrack *HadTrack);
+        Double_t GetHadronEfficiency(Double_t pT);
 
         void FindMother(AliAODMCParticle* part, Int_t &label, Int_t &pid);
         Bool_t ConversionCheck(Int_t &pidM);
@@ -89,6 +96,8 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         AliEventCuts *fEventCuts;
         AliPIDResponse *fPIDresponse;
 
+        TString fPeriodName;
+
         TClonesArray  *fTracks_tender;//Tender tracks
         TClonesArray  *fCaloClusters_tender;//Tender cluster
 
@@ -106,6 +115,8 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         Bool_t fFlagEG2;
         Bool_t fFlagDG1;
         Bool_t fFlagDG2;
+
+        TH1D *fEffHadron;
 
         //#########################//
         //Systematic uncertainties //
@@ -136,6 +147,8 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         //############//
         Double_t fCentrality;
         Double_t fMultiplicity;
+        Double_t fCentMax;
+        Double_t fCentMin;
         TH1F *fCent;
         TH1F *fMulti;
         TH2F *fCentMultiCorrl;
@@ -199,6 +212,9 @@ class AliAnalysisTaskCaloHFEpPbRun2 : public AliAnalysisTaskSE
         TH1F *fTrigpTAllHadHCorrl;
         THnSparse *fSprsAllHadHCorrl;
         THnSparse *fSprsMixAllHadHCorrl;
+        TH1F *fTrigpTAllHadHCorrl_CaloMatch;
+        THnSparse *fSprsAllHadHCorrl_CaloMatch;
+        THnSparse *fSprsMixAllHadHCorrl_CaloMatch;
         TH1F *fTrigpTHadHCorrl;
         THnSparse *fSprsHadHCorrl;
         THnSparse *fSprsMixHadHCorrl;
@@ -313,7 +329,7 @@ class AliehDPhiBasicParticlepPbRun2 : public AliVParticle
     virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }
     virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
 
-    private:
+  private:
     Float_t fEta;      // eta
     Float_t fPhi;      // phi
     Float_t fpT;       // pT

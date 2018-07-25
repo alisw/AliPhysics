@@ -378,47 +378,28 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
         //cout << "Requested file:" << inputHistogramFileName << " was not opened. ABORT." << endl;
         return;
       }
+      
       TString nameHistoBase = "correction_";
-      TString nameHisto;
+      TString nameHisto_1;
+      TString nameHisto_2;
       nameHistoBase += eventName;
-      if (requestedCharge1 == 1)
-      {
-        nameHisto = nameHistoBase + "_p";
-        //cout << "Input Histogram named: " << nameHisto << endl;
-        weight_1 = (TH3F *) inputFile->Get(nameHisto);
-      }
-      else
-      {
-        nameHisto = nameHistoBase + "_m";
-        //cout << "Input Histogram named: " << nameHisto << endl;
-        weight_1 = (TH3F *) inputFile->Get(nameHisto);
-      }
+      
+      nameHisto_1 = nameHistoBase + "_1";
+      weight_1 = (TH3F *) inputFile->Get(nameHisto_1);
+
       if (!weight_1)
       {
         //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
         return 0;
       }
-      
-      if (!sameFilter)
+
+      nameHisto_2 = nameHistoBase + "_2";
+      weight_2 = (TH3F *) inputFile->Get(nameHisto_2);
+   
+      if (!weight_2)
       {
-        weight_2 = 0;
-        if (requestedCharge2 == 1)
-        {
-          nameHisto = nameHistoBase + "_p";
-          //cout << "Input Histogram named: " << nameHisto << endl;
-          weight_2 = (TH3F *) inputFile->Get(nameHisto);
-        }
-        else
-        {
-          nameHisto = nameHistoBase + "_m";
-          //cout << "Input Histogram named: " << nameHisto << endl;
-          weight_2 = (TH3F *) inputFile->Get(nameHisto);
-        }
-        if (!weight_2)
-        {
-          //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
-          return 0;
-        }
+        //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
+        return 0;
       }
     }
     

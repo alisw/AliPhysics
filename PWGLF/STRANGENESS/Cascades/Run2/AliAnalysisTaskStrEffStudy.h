@@ -408,6 +408,9 @@ private:
     Float_t fTreeVariableDecayX;
     Float_t fTreeVariableDecayY;
     Float_t fTreeVariableDecayZ;
+    Float_t fTreeVariableDecayXMC;
+    Float_t fTreeVariableDecayYMC;
+    Float_t fTreeVariableDecayZMC;
     Float_t fTreeVariableInvMassK0s; //!
     Float_t fTreeVariableInvMassLambda; //!
     Float_t fTreeVariableInvMassAntiLambda; //!
@@ -428,8 +431,8 @@ private:
     Float_t fTreeVariableNegSigmaZ2;
     
     //Sandbox mode
-    AliExternalTrackParam *fTreeVariablePosTrack;
-    AliExternalTrackParam *fTreeVariableNegTrack;
+    AliESDtrack *fTreeVariablePosTrack;
+    AliESDtrack *fTreeVariableNegTrack;
     
     AliESDv0 *fTreeVariableOTFV0;
     
@@ -441,6 +444,8 @@ private:
     Float_t fTreeVariablePVx;
     Float_t fTreeVariablePVy;
     Float_t fTreeVariablePVz;
+    
+    Int_t fTreeVariableRun;
     
 //===========================================================================================
 //   Variables for Cascade Candidate Tree
@@ -542,9 +547,9 @@ private:
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     //Save full info for full re-vertex offline replay ('sandbox mode')
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-    AliExternalTrackParam *fTreeCascVarBachTrack;
-    AliExternalTrackParam *fTreeCascVarPosTrack;
-    AliExternalTrackParam *fTreeCascVarNegTrack;
+    AliESDtrack *fTreeCascVarBachTrack;
+    AliESDtrack *fTreeCascVarPosTrack;
+    AliESDtrack *fTreeCascVarNegTrack;
     
     //Sandbox on-the-fly V0 for comparison, please
     AliESDv0 *fTreeCascVarOTFV0;

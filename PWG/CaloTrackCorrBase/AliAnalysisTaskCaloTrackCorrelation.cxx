@@ -90,35 +90,40 @@ AliAnalysisTaskCaloTrackCorrelation::~AliAnalysisTaskCaloTrackCorrelation()
 void AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects()
 {
   AliDebug(1,"Begin");
-  
+
   // Get list of aod arrays, add each aod array to analysis frame
   TList * list = fAna->FillAndGetAODBranchList(); //Loop the analysis and create the list of branches
   
   AliDebug(1,Form("n AOD branches %d",list->GetEntries()));
-  
+
   // Put the delta AODs in output file, std or delta
-  if((fAna->GetReader())->WriteDeltaAODToFile())
+  if ( (fAna->GetReader())->WriteDeltaAODToFile() )
   {
     TString deltaAODName = (fAna->GetReader())->GetDeltaAODFileName();
     for(Int_t iaod = 0; iaod < list->GetEntries(); iaod++)
     {
       TClonesArray * array = (TClonesArray*) list->At(iaod);
-      if(deltaAODName!="") AddAODBranch("TClonesArray", &array, deltaAODName);//Put it in DeltaAOD file
-      else AddAODBranch("TClonesArray", &array);//Put it in standard AOD file
+      if ( !array ) continue;
+
+      if ( deltaAODName!="" ) 
+        AddAODBranch("TClonesArray", &array, deltaAODName);//Put it in DeltaAOD file
+      else 
+        AddAODBranch("TClonesArray", &array);//Put it in standard AOD file
     }
   }
-  
+
   // Histograms container
   OpenFile(1);
   fOutputContainer = fAna->GetOutputContainer();
-  
+
   AliDebug(1,Form("n histograms %d",fOutputContainer->GetEntries()));
   
   fOutputContainer->SetOwner(kTRUE);
   
   AliDebug(1,"End");
-  
+
   PostData(1,fOutputContainer);
+
 }
 
 //___________________________________________________
