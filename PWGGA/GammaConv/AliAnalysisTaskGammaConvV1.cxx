@@ -620,7 +620,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     nBinsTrklCls                = 150;
   }
 
-  Float_t binWidthPt          = 0.1;
+//  Float_t binWidthPt          = 0.1;
   Int_t nBinsPt               = 250;
   Float_t minPt               = 0;
   Float_t maxPt               = 25;
@@ -637,7 +637,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
       ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeVR2 ||
       ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb8TeV ){
-    binWidthPt                = 0.05;
+//    binWidthPt                = 0.05;
     nBinsPt                   = 186;
     minPt                     = 0;
     maxPt                     = 40;
@@ -675,7 +675,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k5TeV  ){
-    binWidthPt                = 0.05;
+//    binWidthPt                = 0.05;
     nBinsPt                   = 199;
     minPt                     = 0;
     maxPt                     = 50;
@@ -711,7 +711,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
   // Set special pt binning for XeXe 5.44TeV
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kXeXe5440GeV ){
-    binWidthPt                = 0.1;
+//    binWidthPt                = 0.1;
     nBinsPt                   = 90;
     minPt                     = 0;
     maxPt                     = 20;
@@ -742,7 +742,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     }
   // Set special pt binning for PbPb 5TeV
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV ){
-    binWidthPt  = 0.1;
+//    binWidthPt  = 0.1;
     nBinsPt     = 63;
     minPt       = 0.0;
     maxPt       = 25.0;
