@@ -172,7 +172,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
 		Bool_t hasMC;
 
-		AliESDtrackCuts* fESDtrackCuts; //! ESD track cuts object
+		AliESDtrackCuts* fESDtrackCuts;
 
 		AliPIDResponse* fPIDResponse; //! PID response object
 		AliMCEvent* fMCevent; //!
@@ -181,17 +181,17 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 	
 		//Dielectron cut classes needed to source cuts from LMEE cut libraries
 		//The desired cut library should be specified in the AddTask
-		AliDielectronEventCuts* eventCuts; //!
-		AliAnalysisFilter* eventFilter; //!
+		AliDielectronEventCuts* eventCuts;
+		AliAnalysisFilter* eventFilter;
 		
-		AliDielectronVarCuts* varCuts; //!
-		AliDielectronTrackCuts *trackCuts; //!
-		AliDielectronPID *pidCuts; //!
-		AliDielectronCutGroup* cuts; //!
-		AliAnalysisFilter* trackFilter;  //!
+		AliDielectronVarCuts* varCuts;
+		AliDielectronTrackCuts *trackCuts;
+		AliDielectronPID *pidCuts;
+		AliDielectronCutGroup* cuts;
+		AliAnalysisFilter* trackFilter;
 
 		//Class needed to use PID within the Dielectron Framework
-		AliDielectronVarManager* varManager; //!
+		AliDielectronVarManager* varManager;
 
 		// TTree branch variables
 		// Event variables
@@ -288,8 +288,8 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Int_t fGridPID;
 				
 		Bool_t fUseTPCcorr;
-		TH3D* fWidth; //!
-		TH3D* fMean; //!
+		TH3D* fWidth;
+		TH3D* fMean;
 
 		// Store list of generator hashes which can be checked against to determine
 		// whether or not the track was injected
