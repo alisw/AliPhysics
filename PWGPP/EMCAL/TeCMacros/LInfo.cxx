@@ -1,4 +1,5 @@
 #include "LInfo.h"
+#include <TCanvas.h>
 #include <TDatime.h>
 #include <TFile.h>
 #include <TFile.h>
@@ -9,6 +10,9 @@
 
 void LInfo::Compute()  
 { 
+  if (fIsComputed)
+    return;
+
   char id[100];
   char title[100]; 
   const char *sideStr[] = {"A", "C"};
@@ -31,7 +35,7 @@ void LInfo::Compute()
 	fhStripRmsOverMean[iSM][igain]->SetDirectory(0);
 	sprintf(id, "hLedRmsOverMean%02d%d", iSM, igain);
 	sprintf(title, "Led rms  over mean: SM %d (%1s%d) gain %d", iSM, sideStr[iside], isector, igain);
-	fhLedRmsOverMean[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNStrip, -0.5, kNStrip-0.5);
+	fhLedRmsOverMean[iSM][igain] = new TH2F(id, title, kNCol, -0.5, kNCol-0.5, kNRow, -0.5, kNRow-0.5);
 	fhLedRmsOverMean[iSM][igain]->SetDirectory(0);
       } else {
 	fhAmpOverMon[iSM][igain]->Reset();
@@ -53,24 +57,25 @@ void LInfo::Compute()
 	  Int_t lbin = fhLed[iSM][igain]->FindBin(col,row);
 	  Double_t ledAmp = fhLed[iSM][igain]->GetBinContent(lbin);
 	  if (ledMonAmp!=0) {
-	    Double_t weightf = ledAmp/ledMonAmp;  
-	    fhAmpOverMon[iSM][igain]->AddBinContent(lbin,weightf);
+	    Double_t weightf = ledAmp/ledMonAmp;
+	    fhAmpOverMon[iSM][igain]->SetBinContent(lbin,weightf);
 	  }
-	  Double_t m = fhLed[iSM][igain]->GetBinContent(lbin);
-	  Double_t r = fhLedCount[iSM][igain]->GetBinContent(lbin);
-	  if (m>0)
-	    fhLedRmsOverMean[iSM][igain]->AddBinContent(lbin,r/m);
+	  Double_t ledRms = fhLedCount[iSM][igain]->GetBinContent(lbin);
+	  if (ledAmp>0) {
+	    fhLedRmsOverMean[iSM][igain]->SetBinContent(lbin,ledRms/ledAmp);
+	  }
 	}
       }
       for (Int_t strip=0;strip<kNStrip;++strip) {
 	Int_t bin = fhStrip[iSM][igain]->FindBin(strip);
-	Double_t m = fhStrip[iSM][igain]->GetBinContent(bin);
-	Double_t r = fhStripCount[iSM][igain]->GetBinContent(bin);
-	if (m>0)
-	  fhLedRmsOverMean[iSM][igain]->SetBinContent(bin,r/m);
+	Double_t mean = fhStrip[iSM][igain]->GetBinContent(bin);
+	Double_t rms = fhStripCount[iSM][igain]->GetBinContent(bin);
+	if (mean>0)
+	  fhStripRmsOverMean[iSM][igain]->SetBinContent(bin,rms/mean);
       }
     }
   }
+  fIsComputed = 1;
 }
 
 void LInfo::CreateHistograms()  
@@ -119,6 +124,71 @@ void LInfo::FillLed(Int_t mod,Int_t gain, Int_t col, Int_t row, Double_t amp, Do
   fhLed[mod][gain]->Fill(col, row, amp);  
   fhLedCount[mod][gain]->Fill(col, row, rms);
 }
+
+TCanvas *LInfo::DrawHist(Int_t which, Int_t gain, const char *opt) const
+{
+  TString name;
+  TString hopt;
+  if ((which<1||which>4) && !fIsComputed) {
+    cerr << "Execute Linfo::Compute first" << endl;
+    return 0;
+  }
+  TCanvas *c = new TCanvas("c","c",1600,1600);
+  c->Divide(2,10);
+  c->SetLeftMargin(0.02);
+  c->SetRightMargin(0.02);
+  c->SetTopMargin(0.02);
+  c->SetBottomMargin(0.02);
+  for (Int_t sm=0;sm<kNSM;++sm) {
+    c->cd(sm+1);
+    gPad->SetLeftMargin(0.02);
+    gPad->SetRightMargin(0.02);
+    gPad->SetTopMargin(0.02);
+    gPad->SetBottomMargin(0.02);
+    TH1 *h = 0;
+    switch (which) {
+    case 1:
+      h = GetStripHist(sm,gain);
+      name = Form("StripMeanHist_%d_%d",gain,fRunNo);
+      break;
+    case 2:
+      h = GetStripRmsHist(sm,gain);
+      name = Form("StripRmsHist_%d_%d",gain,fRunNo);
+      break;
+    case 3:
+      h = GetLedHist(sm,gain);
+      name = Form("LedMeanHist_%d_%d",gain,fRunNo);
+      hopt = "colz";
+      break;
+    case 4:
+      h = GetLedRmsHist(sm,gain);
+      name = Form("LedRmsHist_%d_%d",gain,fRunNo);
+      hopt = "colz";
+      break;
+    case 5:
+      h = GetLedMonDispHist(sm,gain);
+      name = Form("LedMonDispHist_%d_%d",gain,fRunNo);
+      break;
+    case 6:
+      h = GetLedDispHist(sm,gain);
+      name = Form("LedDispHist_%d_%d",gain,fRunNo);
+      hopt = "colz";
+      break;
+    default :
+      h = GetLedOverMonHist(sm,gain);
+      name = Form("LedOverMonHist_%d_%d",gain,fRunNo);
+      hopt = "colz";
+    } 
+    if (opt)
+      h->Draw(opt);
+    else
+      h->Draw(hopt);
+  }
+  c->SetName(name);
+  c->SetTitle(name);
+  return c;
+}
+
 
 void LInfo::FillStrip(Int_t mod, Int_t gain, Int_t strip, Double_t amp, Double_t rms)
 {

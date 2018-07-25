@@ -129,7 +129,7 @@ void TDraw::Compute()
 
 void TDraw::DrawAll()
 {
-  TString cname(Form("cAll_%s",GetName()));
+  TString cname(Form("cTempAll_%s",GetName()));
   TCanvas *c1 = DrawOccRun();
   c1->Print(Form("%s.pdf[",cname.Data()));
   c1->Print(Form("%s.pdf",cname.Data()));
@@ -513,10 +513,10 @@ void plotT_period(const char *period, Bool_t doprint=0)
   d.SetPrint(doprint);
   d.Compute();
   d.Print();
-  if (1) {
+  if (0) {
     d.DrawOccRun();
     d.DrawOccSensor2D();
-    //d.DrawT2D(3);
+    d.DrawT2D(3);
     d.DrawT(3);
   } else 
     d.DrawAll();

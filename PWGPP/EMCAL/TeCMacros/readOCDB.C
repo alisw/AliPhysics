@@ -195,10 +195,10 @@ void read_LHC18d(Bool_t test=0)
   if (test)
     nruns=3;
 
-  //readTemp(runs,nruns,"lhc18d");
-
   AliCDBManager*  cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local:///opt/alice/aliroot/ocdb/2018/");
+  cdb->SetDefaultStorage("local:///opt/alice/OCDB/2018/");
+
+  //readTemp(runs,nruns,"lhc18d");
   readLed(runs,nruns,"lhc18d");
 }
 
