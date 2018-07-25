@@ -3688,12 +3688,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
         if(i >= 2){
             lCascadeResult[lN]->SetCutDCACascDaughters  ( 0.6 ) ;
             lCascadeResult[lN]->SetCutCascRadius        ( 1.0 ) ;
-       	    lCascadeResult[lN]->SetCutDCACascadeToPV    ( 0.6 ) ;
-	      }
+            lCascadeResult[lN]->SetCutDCACascadeToPV    ( 0.6 ) ;
+        }
         lCascadeResult[lN]->SetCutVarDCACascDau ( TMath::Exp(0.0470076), -0.917006, 0, 1, 0.5 );
         //Miscellaneous
         lCascadeResult[lN]->SetCutProperLifetime        ( lLifetimeCut[i] ) ;
-        lCascadeResult[lN]->SetCutMinTrackLength        ( 90.0 ) ;
+        lCascadeResult[lN]->SetCutMaxV0Lifetime         ( 30.0  );
+        lCascadeResult[lN]->SetCutMinTrackLength        ( 90.0  );
         lCascadeResult[lN]->SetCutTPCdEdx               ( 3.0 ) ;
         lCascadeResult[lN]->SetCutXiRejection           ( 0.008 ) ;
         lCascadeResult[lN]->SetCutBachBaryonCosPA       ( TMath::Cos(0.04) ) ; //+variable
@@ -3909,9 +3910,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
             //Add result to pool
             lCascadeResult[lN] -> SetCutXiRejection ( lThisCut );
             lN++;
-				}
-		}
-
+        }
+    }
+    
     //________________________________________________________
     // Variable 15: V0 Mass Window
     Float_t lMinV0Mass = 0.002;
@@ -3925,7 +3926,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
             lN++;
         }
     }
-
+    
     //________________________________________________________
     // Variable 16: DCA Cascade To PV
     Float_t lMinDCACascToPV = 0.2;
@@ -3939,7 +3940,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
             lN++;
         }
     }
-
+    
     //________________________________________________________
     // Variable 17: Minimum Track Length
     Float_t lMinTrackLength = 60;
@@ -3953,7 +3954,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
             lN++;
         }
     }
-
+    
     //________________________________________________________
     // Variable 18: TPC dE/dx
     Float_t lMinTPCnSigma = 2.5;
@@ -3967,12 +3968,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddTopologicalQACascade(Int_t
             lN++;
         }
     }
-
+    
     for (Int_t iconf = 0; iconf<lN; iconf++)
         AddConfiguration(lCascadeResult[iconf]);
     
     cout<<"Added "<<lN<<" Cascade configurations to output."<<endl;
-    
 }
 
 //________________________________________________________________________
@@ -4890,6 +4890,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         lN++;
     }
     
+    //Require ITS refit (will lose tons of signal)
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitTracks_NoAssoc",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitTracks(kTRUE);
+        lCascadeResult[lN] -> SetCutMCUseMCProperties(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPhysicalPrimary(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPDGCodeAssociation(kFALSE);
+        //Add result to pool
+        lN++;
+    }
+    
     //ITS refit requirement map:
     //  [NPB]
     //1  100
@@ -4921,6 +4932,50 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::AddStandardCascadeConfigurati
         lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB011",lParticleName[i].Data() ) );
         lCascadeResult[lN] -> SetCutUseITSRefitPositive(kTRUE);
         lCascadeResult[lN] -> SetCutUseITSRefitBachelor(kTRUE);
+        lN++;
+    }
+    
+    //Require ITS refit (will lose tons of signal)
+    //No perfect MC association
+    for(Int_t i = 0 ; i < 4 ; i ++){
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB100_NoAssoc",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitNegative(kTRUE);
+        lCascadeResult[lN] -> SetCutMCUseMCProperties(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPhysicalPrimary(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPDGCodeAssociation(kFALSE);
+        lN++;
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB010_NoAssoc",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitPositive(kTRUE);
+        lCascadeResult[lN] -> SetCutMCUseMCProperties(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPhysicalPrimary(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPDGCodeAssociation(kFALSE);
+        lN++;
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB001_NoAssoc",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitBachelor(kTRUE);
+        lCascadeResult[lN] -> SetCutMCUseMCProperties(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPhysicalPrimary(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPDGCodeAssociation(kFALSE);
+        lN++;
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB110_NoAssoc",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitNegative(kTRUE);
+        lCascadeResult[lN] -> SetCutUseITSRefitPositive(kTRUE);
+        lCascadeResult[lN] -> SetCutMCUseMCProperties(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPhysicalPrimary(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPDGCodeAssociation(kFALSE);
+        lN++;
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB101_NoAssoc",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitNegative(kTRUE);
+        lCascadeResult[lN] -> SetCutUseITSRefitBachelor(kTRUE);
+        lCascadeResult[lN] -> SetCutMCUseMCProperties(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPhysicalPrimary(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPDGCodeAssociation(kFALSE);
+        lN++;
+        lCascadeResult[lN] = new AliCascadeResult( lCascadeResult[i], Form("%s_ITSRefitNPB011_NoAssoc",lParticleName[i].Data() ) );
+        lCascadeResult[lN] -> SetCutUseITSRefitPositive(kTRUE);
+        lCascadeResult[lN] -> SetCutUseITSRefitBachelor(kTRUE);
+        lCascadeResult[lN] -> SetCutMCUseMCProperties(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPhysicalPrimary(kFALSE);
+        lCascadeResult[lN] -> SetCutMCPDGCodeAssociation(kFALSE);
         lN++;
     }
     
