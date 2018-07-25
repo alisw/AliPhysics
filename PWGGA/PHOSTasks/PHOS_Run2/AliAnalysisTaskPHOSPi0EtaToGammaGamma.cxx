@@ -1556,7 +1556,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
 
     for(Int_t i=0;i<multClust;i++){
       AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i);
+      if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
       //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();
+
       energy = ph->Energy();
 
       position[0] = ph->EMCx();
