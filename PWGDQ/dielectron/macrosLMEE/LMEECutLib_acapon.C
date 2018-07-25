@@ -317,7 +317,8 @@ AliDielectronCutGroup* LMEECutLib::GetPIDCuts(Int_t PIDcuts) {
 				cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -1.5,  4.0, 0.2, 100., kFALSE);
 				cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kPion,     -100., 3.5, 0.2, 100., kTRUE);
 				cutsPID->AddCut(AliDielectronPID::kTOF, AliPID::kElectron, -3.0,  3.0, 0.2, 100., kFALSE, AliDielectronPID::kIfAvailable);
-				return cutsPID;
+				cuts->AddCut(cutsPID);
+				return cuts;
 			}else{
 				cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kElectron, -3.0,  3.0, 0.2, 100., kFALSE);
 				cutsPID->AddCut(AliDielectronPID::kTPC, AliPID::kPion,     -100., 4.0, 0.2, 100., kTRUE);
@@ -462,6 +463,8 @@ AliDielectronCutGroup* LMEECutLib::GetTrackCuts(Int_t cutSet, Int_t PIDcuts){
 
 			trackCuts->AddCut(gammaV0cuts);
 			trackCuts->AddCut(trackCutsV0);
+
+			trackCuts->AddCut(GetPIDCuts(PIDcuts));
 			break;
 		default:
 			std::cout << "No Analysis Track Cut defined" << std::endl;
