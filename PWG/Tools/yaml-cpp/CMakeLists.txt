@@ -28,11 +28,7 @@ project(YAML_CPP)
 
 set(YAML_CPP_VERSION_MAJOR "0")
 set(YAML_CPP_VERSION_MINOR "6")
-<<<<<<< HEAD
 set(YAML_CPP_VERSION_PATCH "2")
-=======
-set(YAML_CPP_VERSION_PATCH "0")
->>>>>>> origin/master
 set(YAML_CPP_VERSION "${YAML_CPP_VERSION_MAJOR}.${YAML_CPP_VERSION_MINOR}.${YAML_CPP_VERSION_PATCH}")
 
 enable_testing()
