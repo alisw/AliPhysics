@@ -176,8 +176,8 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
       if (cuts[iCut]) {
         fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Rapidity(),phi,pt);
         fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]->Fill(eta,phi,pt);
-        if (iCut==6) {
-          fNsigmaTOFvsPt[iSpecies][iCharge]->Fill(nSigmaTOF,pt);
+        if (iCut==5) {
+          fNsigmaTOFvsPt[iSpecies][iCharge]->Fill(pt,nSigmaTOF);
         }
       }
     }
