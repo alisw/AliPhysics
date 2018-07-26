@@ -109,6 +109,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistRapidity(0),
   fHistRapidityCorr(0),
   fHistPhi(0),
+  fHistPdgMC(0),
+  fHistPdgMCAODrec(0),
   fHistPhiCorr(0),
   fHistEtaVzPos(0),
   fHistEtaVzPosCorr(0),
@@ -471,6 +473,10 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistPhiCorr);
   fHistPtTriggerThreshold = new TH2F("fHistPtTriggerThreshold","p_{T} distribution with threshold for pT trig;p_{T} (GeV/c);Centrality percentile",200,0,20,220,-5,105);
   fList->Add(fHistPtTriggerThreshold);
+  fHistPdgMC  = new TH1F("fHistPdgMC","Pdg code distribution;pdg code;Entries",6401,-3200.5,3200.5);
+  fList->Add(fHistPdgMC);
+  fHistPdgMCAODrec  = new TH1F("fHistPdgMCAODrec","Pdg code distribution;pdg code;Entries",6401,-3200.5,3200.5);
+  fList->Add(fHistPdgMCAODrec);
 				     
   fHistEtaVzPos  = new TH3F("fHistEtaVzPos","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
   fList->Add(fHistEtaVzPos); 
@@ -2953,7 +2959,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
       fHistPt->Fill(vPt,gCentrality);
       fHistEta->Fill(vEta,gCentrality);
-      fHistRapidity->Fill(vY,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality); 
       if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
       else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
@@ -2966,6 +2972,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	fHistEtaVzNeg->Fill(vEta,mcEvent->GetPrimaryVertex()->GetZ(),
 			    gCentrality); 		 
 	fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      }
+
+      Int_t label_pdg = TMath::Abs(aodTrack->GetLabel());
+      AliAODMCParticle *AODmcTrack_pdg = (AliAODMCParticle*) fArrayMC->At(label_pdg);
+        if(AODmcTrack_pdg){
+        Int_t trackPdg = AODmcTrack_pdg->GetPdgCode();
+        fHistPdgMCAODrec->Fill(trackPdg);
       }
       
       //=======================================correction
@@ -3486,6 +3499,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  fHistPhiNeg->Fill(vPhi,gCentrality);
 	}
 	
+        TParticle *particle_pdg = track->Particle();
+        if(!particle_pdg) continue;
+        Int_t trackPdg = particle_pdg->GetPdgCode();
+        fHistPdgMC->Fill(trackPdg);
+
 	//Flow after burner
 	if(fUseFlowAfterBurner) {
 	  Double_t precisionPhi = 0.001;

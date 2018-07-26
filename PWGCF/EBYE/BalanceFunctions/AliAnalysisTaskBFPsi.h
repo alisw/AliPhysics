@@ -39,7 +39,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   enum eCorrProcedure{kNoCorr, kDataDrivCorr, kMCCorr};
   
   AliAnalysisTaskBFPsi(const char *name = "AliAnalysisTaskBFPsi");
-  virtual ~AliAnalysisTaskBFPsi(); 
+  virtual ~AliAnalysisTaskBFPsi();
    
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -327,7 +327,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TList *fListNUA;  //fList of TH3F for NUA run-by-run corrections
   TList *fListNUE;   //fList of TH1F for NUE run-by-run corrections
 
-  AliAnalysisTaskBFPsi::eCorrProcedure fCorrProcedure; 
+  AliAnalysisTaskBFPsi::eCorrProcedure fCorrProcedure;
 
   //defualt kFALSE to be switch on for old correction method
   
@@ -377,6 +377,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistPhivZ;//phi vs Vz (QA histos) 
   TH2F *fHistEtavZ;//eta vs Vz (QA histos)
 
+  TH1F *fHistPdgMC;
+  TH1F *fHistPdgMCAODrec;//pdg code of accepted tracks in MCAODrec
   TH1F *fHistSphericity; //sphericity of accepted tracks
   TH2F *fHistMultiplicityVsSphericity; //multiplicity vs sphericity of accepted tracks
   TH2F *fHistMeanPtVsSphericity; //mean pT vs sphericity of accepted tracks
