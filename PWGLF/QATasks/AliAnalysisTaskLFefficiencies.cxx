@@ -84,7 +84,7 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
           Form("%s;#eta;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),10,-1.,1.,16,0.,TwoPi(),60,0.,6.);
         fOutputList->Add(fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]);
       }
-      fNsigmaTOFvsPt[iSpecies][iCharge] = new TH2D(Form("nSigmaTOF_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),";#it{p}_{T} (GeV/#it{c}); n#sigma_{TOF}",60,0.,6.,401,-10.05,-10.05);
+      fNsigmaTOFvsPt[iSpecies][iCharge] = new TH2D(Form("nSigmaTOF_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),";#it{p}_{T} (GeV/#it{c}); n#sigma_{TOF}",60,0.,6.,1001,-100.1,100.1);
       fOutputList->Add(fNsigmaTOFvsPt[iSpecies][iCharge]);
     }
   }
