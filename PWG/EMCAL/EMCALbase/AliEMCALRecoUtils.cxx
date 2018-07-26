@@ -424,7 +424,10 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   if ( IsBadChannelsRemovalSwitchedOn() )
   {
     Bool_t bad = GetEMCALChannelStatus(imod, ieta, iphi,status);
-    if ( status > 0 ) printf("Status %d, bad %d\n",status,bad);
+    
+    if ( status > 0 )
+      AliDebug(1,Form("Channel absId %d, status %d, set as bad %d",absID, status, bad));
+    
     if ( bad ) return kFALSE;
   }
   
