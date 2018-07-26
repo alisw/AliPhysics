@@ -1,19 +1,26 @@
 #ifndef PrepareRawSpectra_H
 #define PrepareRawSpectra_H
 
-#include "AliTOFTemplateFitter.h"
+#include "AliUtilTOFParams.h"
+#include "RooPlot.h"
+#include "RooRealVar.h"
 #include "TCanvas.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TList.h"
+#include "TOFMacroUtils.h"
 #include "TROOT.h"
 #include "TString.h"
 #include "TStyle.h"
 #include "UtilFiles.h"
 #include "UtilHisto.h"
 #include "UtilMessages.h"
+#include "Utilities/UtilPlots.h"
 #include "iostream"
+#include "libs/TOFsignal.C"
+
+#include "AliTOFTemplateFitter.h"
 using std::cout;
 using std::endl;
 
@@ -26,6 +33,8 @@ using std::endl;
 /// Authors:                                                              //
 /// N. Jacazio,  nicolo.jacazio[AROBASe]bo.infn.it                        //
 ////////////////////////////////////////////////////////////////////////////
+
+void SetColor(TH1* h, Int_t c, Int_t f);
 
 void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDataHisto.root", TString fitprefix = "", UInt_t iCharge = 0, UInt_t iSpecies = 0, UInt_t iMult = 11, UInt_t fitmode = 0, TString prefix = "", const Bool_t fitsigma = kTRUE, const Bool_t save = kFALSE)
 {
@@ -43,24 +52,29 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   if (iMult >= nMultBin)
     Fatalmsg("PrepareRawSpectra", Form("Multiplicity bin %i out of bounds", iMult));
   //
-  const Bool_t drawresult = kTRUE;                                                                        //To draw the magenta histogram of the total fit result
-  const Bool_t samemismatch = iMult == 11 || iMult < 2 ? kFALSE : kFALSE;                                 //To use the mismatch template from the Centrality integrated case
-  const Int_t mismatchindex = 0;                                                                          //Which mismatch template to use in case we want to use the same one as for other multiplicity bins
-  const Int_t useReduced = 0;                                                                             //1: reduced 2: replaced To use the mismatch template reduced in the signal contribution
-  const Bool_t geteventinfo = kFALSE;                                                                     //Set to take the event wide information, this shall not be mandatory as it is more for checks on normalization
-  const Bool_t drawlines = kTRUE;                                                                         //Set to draw lines representing fitrange in the fitted distribution
-  const Int_t filltemplates = 3001;                                                                       //Set to fill the templates with shaded colors if negative nothing is done
-  const Bool_t normfromlist = kFALSE;                                                                     //Flag to normalize from the list
-  const Bool_t showchi2 = kFALSE;                                                                         //Flag to write the chi2 of the fit on each plot
-  const Bool_t showratiomean = kFALSE;                                                                    //Flag to write the mean and other parameters of the ratio between the fit and the data
-  const Bool_t limitrange = kTRUE;                                                                        //Flag to limit the plotting range of the th2 to the requested range
-  const Bool_t showtemplateusage = kTRUE;                                                                 //Flag to show the template usage for each pt bin
-  const Bool_t T0fillOnly = dataname.Contains("0T0") ? kTRUE : dataname.Contains("_T0") ? kTRUE : kFALSE; //Flag to check if the file has T0 fill only, in this case it should work as for peripheral Pb--Pb
+  const Bool_t drawresult = kTRUE;                                                                 //To draw the magenta histogram of the total fit result
+  const Bool_t samemismatch = iMult == 11 || iMult < 2 ? kFALSE : kFALSE;                          //To use the mismatch template from the Centrality integrated case
+  const Int_t mismatchindex = 0;                                                                   //Which mismatch template to use in case we want to use the same one as for other multiplicity bins
+  const Int_t useReduced = 0;                                                                      //1: reduced 2: replaced To use the mismatch template reduced in the signal contribution
+  const Bool_t geteventinfo = kFALSE;                                                              //Set to take the event wide information, this shall not be mandatory as it is more for checks on normalization
+  const Bool_t drawlines = kTRUE;                                                                  //Set to draw lines representing fitrange in the fitted distribution
+  const Int_t filltemplates = 3001;                                                                //Set to fill the templates with shaded colors if negative nothing is done
+  const Bool_t normfromlist = kFALSE;                                                              //Flag to normalize from the list
+  const Bool_t showchi2 = kFALSE;                                                                  //Flag to write the chi2 of the fit on each plot
+  const Bool_t showratiomean = kFALSE;                                                             //Flag to write the mean and other parameters of the ratio between the fit and the data
+  const Bool_t limitrange = kTRUE;                                                                 //Flag to limit the plotting range of the th2 to the requested range
+  const Bool_t showtemplateusage = kTRUE;                                                          //Flag to show the template usage for each pt bin
+  const Bool_t T0fillOnly = dataname.Contains("0T0") || dataname.Contains("_T0") ? kTRUE : kFALSE; //Flag to check if the file has T0 fill only, in this case it should work as for peripheral Pb--Pb
 
   gROOT->SetStyle("Plain");
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
 
+  //
+  const TString speclab = pC[iCharge] + pS[iSpecies];
+  const TString speclabel = pCharge[iCharge] + pSpecies[iSpecies];
+  const TString spectitle = pCharge[iCharge] + " " + pSpecies[iSpecies];
+  //
   TString fNameDataMismatch = "";
   if (dataname.Contains(" ")) {
     fNameDataMismatch = dataname;
@@ -81,15 +95,8 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   if (!fNameDataMismatch.EqualTo(""))
     finDataMismatch = GetFile(fNameDataMismatch, "READ");
 
-  TFile* finDataEvt = 0x0;
-  TList* lin = 0x0;
-  if (geteventinfo) {
-    finDataEvt = GetFile(fNameDataEvt, "READ");
-    GetListFromFile(finDataEvt, "cOutputList", lin);
-  }
-
   //Common path for macro output
-  const TString outpath = Form("./Spectra/%s/Yields/%s%s/", systemString[optpp].Data(), pCharge[iCharge].Data(), pSpecies[iSpecies].Data());
+  const TString outpath = Form("./Spectra/%s/Yields/%s/", systemString[optpp].Data(), speclabel.Data());
   TString fname = "Yield";
   TString identifier = pCharge[iCharge];
   identifier.Append(pSpecies[iSpecies]);
@@ -135,19 +142,15 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   TH1D* hEvtMult = nullptr;
   TH1D* hEvtMultAftEvSel = nullptr;
 
-  TH1F* fEntries = nullptr;
-  TH1F* hTOF[kPtBins] = { nullptr };
-  TH1F* hTOFMismatch[kPtBins] = { nullptr };
-  TH1F* hTOFExpected[kPtBins][kExpSpecies];
-
-  TH1F* hTOFSigma[kPtBins] = { nullptr };
-  TH1F* hTOFMismatchSigma[kPtBins] = { nullptr };
-  TH1F* hTOFSigmaExpected[kPtBins][kExpSpecies];
+  TH1F* fEntries = nullptr;                  //Event information
+  TH1F* hTOF[kPtBins] = { nullptr };         //TOF distribution (time or n-sigma)
+  TH1F* hTOFMismatch[kPtBins] = { nullptr }; //TOF mismatch template
+  TH1F* hTOFExpected[kPtBins][kExpSpecies];  //TOF signal/background templates
 
   //Fitted results
-  TH1F* hFitted[kPtBins] = { nullptr };
-  TH1F* hMismatchFitted[kPtBins] = { nullptr };
-  TH1F* hExpectedFitted[kPtBins][kExpSpecies];
+  TH1F* hFitted[kPtBins] = { nullptr };         //Total fitted result
+  TH1F* hMismatchFitted[kPtBins] = { nullptr }; //Mismatch fitted
+  TH1F* hExpectedFitted[kPtBins][kExpSpecies];  //signal/background fitted
 
   //Ratio to fitted
   TH1F* hRatioToFitted[kPtBins] = { nullptr };
@@ -177,78 +180,57 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   //Track information
   //
 
-  TString hname = "";
   //Get the histograms
+  TString hname = "";
+//Helper macro to get
+#define GetMyH(H, L, F)                               \
+  {                                                   \
+    if (outputintolists && L || !F)                   \
+      GetHistogram(static_cast<TList*>(L), hname, H); \
+    else                                              \
+      GetHistogram(static_cast<TFile*>(F), hname, H); \
+    H->SetDirectory(0);                               \
+    lHistograms->Add(H);                              \
+  }
   hname = Form("fEntries_%s", MultBinString[iMult].Data());
-  if (outputintolists)
-    GetHistogram(linData, hname, fEntries);
-  else
-    GetHistogram(finData, hname, fEntries);
-  fEntries->SetDirectory(0);
-  lHistograms->Add(fEntries);
+  GetMyH(fEntries, linData, finData);
 
   for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { //Pt loop
-    hname = Form("hTOF%s%s_%i_%s", pC[iCharge].Data(), pS[iSpecies].Data(), ptbin, MultBinString[iMult].Data());
-    if (outputintolists)
-      GetHistogram(linData, hname, hTOF[ptbin]);
-    else
-      GetHistogram(finData, hname, hTOF[ptbin]);
-    hTOF[ptbin]->SetDirectory(0);
-
-    hname = Form("hTOFMismatch%s%s_%i_%s", pC[iCharge].Data(), pS[iSpecies].Data(), ptbin, MultBinString[samemismatch ? mismatchindex : iMult].Data());
-    if (!finDataMismatch) { //Get the mismacth from the same file
-      if (outputintolists)
-        GetHistogram(linData, hname, hTOFMismatch[ptbin]);
-      else
-        GetHistogram(finData, hname, hTOFMismatch[ptbin]);
-    } else { //Get histogram for mismatch from other file
-      GetHistogram(finDataMismatch, hname, hTOFMismatch[ptbin]);
-    }
-    hTOFMismatch[ptbin]->SetDirectory(0);
-
-    hname = Form("hTOFSigma%s%s_%i_%s", pC[iCharge].Data(), pS[iSpecies].Data(), ptbin, MultBinString[iMult].Data());
-    if (outputintolists)
-      GetHistogram(linData, hname, hTOFSigma[ptbin]);
-    else
-      GetHistogram(finData, hname, hTOFSigma[ptbin]);
-    hTOFSigma[ptbin]->SetDirectory(0);
-
-    hname = Form("hTOFMismatchSigma%s%s_%i_%s", pC[iCharge].Data(), pS[iSpecies].Data(), ptbin, MultBinString[samemismatch ? mismatchindex : iMult].Data());
-    if (useReduced == 1 || useReduced == 2) { //Take the coocked background
+    hname = "hTOF";
+    if (fitsigma)
+      hname += "Sigma";
+    //
+    hname += Form("%s_%i_%s", speclab.Data(), ptbin, MultBinString[iMult].Data());
+    GetMyH(hTOF[ptbin], linData, finData);
+    //
+    hname = "hTOFMismatch";
+    if (fitsigma)
+      hname += "Sigma";
+    //
+    hname += Form("%s_%i_%s", speclab.Data(), ptbin, MultBinString[samemismatch ? mismatchindex : iMult].Data());
+    if (fitsigma && (useReduced == 1 || useReduced == 2)) { //Take the coocked background
       TFile auxifile(Form("./TOFMismatch/SignalRemoved/%s/%s%i%s.root", pSpecies[iSpecies].Data(), pCharge[iCharge].Data(), ptbin, useReduced == 2 ? "Bkg" : "Sig"), "READ");
       if (auxifile.IsOpen()) {
-        GetHistogram(&auxifile, useReduced == 2 ? "FitReplaced" : "FitReduced", hTOFMismatchSigma[ptbin]);
-        hTOFMismatchSigma[ptbin]->SetName(hname);
-        hTOFMismatchSigma[ptbin]->SetDirectory(0);
+        GetHistogram(&auxifile, useReduced == 2 ? "FitReplaced" : "FitReduced", hTOFMismatch[ptbin]);
+        hTOFMismatch[ptbin]->SetName(hname);
+        hTOFMismatch[ptbin]->SetDirectory(0);
         auxifile.Close();
       }
-    }
-    if (hTOFMismatchSigma[ptbin] == 0x0) {
-      if (!finDataMismatch) { //Get the mismacth from the same file
-        if (outputintolists)
-          GetHistogram(linData, hname, hTOFMismatchSigma[ptbin]);
-        else
-          GetHistogram(finData, hname, hTOFMismatchSigma[ptbin]);
-      } else { //Get histogram for mismatch from other file
-        GetHistogram(finDataMismatch, hname, hTOFMismatchSigma[ptbin]);
+    } else {
+      if (finDataMismatch) { //Get histogram for mismatch from other file
+        GetMyH(hTOFMismatch[ptbin], 0x0, finDataMismatch);
+      } else { //Get the mismacth from the same file
+        GetMyH(hTOFMismatch[ptbin], linData, finData);
       }
-      hTOFMismatchSigma[ptbin]->SetDirectory(0);
     }
-
+    //Templates for each species
     for (Int_t species = 0; species < kExpSpecies; species++) { //Species loop
-      hname = Form("hTOFExpected%s%s_%s_%i_%s", pC[iCharge].Data(), pS[iSpecies].Data(), pS_all[species].Data(), ptbin, MultBinString[iMult].Data());
-      if (outputintolists)
-        GetHistogram(linData, hname, hTOFExpected[ptbin][species]);
-      else
-        GetHistogram(finData, hname, hTOFExpected[ptbin][species]);
-      hTOFExpected[ptbin][species]->SetDirectory(0);
-
-      hname = Form("hTOFSigmaExpected%s%s_%s_%i_%s", pC[iCharge].Data(), pS[iSpecies].Data(), pS_all[species].Data(), ptbin, MultBinString[iMult].Data());
-      if (outputintolists)
-        GetHistogram(linData, hname, hTOFSigmaExpected[ptbin][species]);
-      else
-        GetHistogram(finData, hname, hTOFSigmaExpected[ptbin][species]);
-      hTOFSigmaExpected[ptbin][species]->SetDirectory(0);
+      hname = "hTOF";
+      if (fitsigma)
+        hname += "Sigma";
+      //
+      hname += Form("Expected%s_%s_%i_%s", speclab.Data(), pS_all[species].Data(), ptbin, MultBinString[iMult].Data());
+      GetMyH(hTOFExpected[ptbin][species], linData, finData);
     }
   }
 
@@ -256,23 +238,27 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   //Event wide information
   //
 
-  //Get the histograms
+  //Get the histograms for the whole event
   if (geteventinfo) {
+    TFile finDataEvt(fNameDataEvt, "READ");
+    TList* lin = 0x0;
+    GetListFromFile(&finDataEvt, "cOutputList", lin);
+    //
     hname = Form("hNEvt");
-    GetHistogram(lin, hname, hNEvt);
-    hNEvt->SetDirectory(0);
-    lHistograms->Add(hNEvt);
+    GetMyH(hNEvt, lin, 0x0);
+    //
 
     hname = Form("hEvtMult");
-    GetHistogram(lin, hname, hEvtMult);
-    hEvtMult->SetDirectory(0);
-    lHistograms->Add(hEvtMult);
+    GetMyH(hEvtMult, lin, 0x0);
+    //
 
     hname = Form("hEvtMultAftEvSel");
-    GetHistogram(lin, hname, hEvtMultAftEvSel);
-    hEvtMultAftEvSel->SetDirectory(0);
-    lHistograms->Add(hEvtMultAftEvSel);
+    GetMyH(hEvtMultAftEvSel, lin, 0x0);
+    //
+    delete lin;
+    finDataEvt.Close();
   }
+#undef GetMyH
 
   //Closing input files
   if (finDataMismatch) {
@@ -281,10 +267,6 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   }
   finData->Close();
   delete finData;
-  if (finDataEvt) {
-    finDataEvt->Close();
-    delete finDataEvt;
-  }
 
   //
   //Define histogram to show which template is included in the fit
@@ -306,60 +288,56 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   Int_t FI = TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, kExpSpecies + 1);
 
   //Define the histograms
-  hYield = new TH1F(Form("hYield%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Yield for %s %s;%s;Counts", pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), ptstring.Data()), kPtBins, fBinPt);
-  lHistograms->Add(hYield);
+  hYield = new TH1F("hYield" + speclab, Form("Yield for %s;%s;Counts", spectitle.Data(), ptstring.Data()), kPtBins, fBinPt);
+  lHistograms->AddFirst(hYield);
 
-  hYieldResidual = new TH1F(Form("hYieldResidual%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Residual Yield for %s %s;%s;Counts", pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), ptstring.Data()), kPtBins, fBinPt);
+  hYieldResidual = new TH1F("hYieldResidual" + speclab, Form("Residual Yield for %s;%s;Counts", spectitle.Data(), ptstring.Data()), kPtBins, fBinPt);
   hYieldResidual->SetLineColor(kRed);
   hYieldResidual->SetMarkerColor(kRed);
   hYieldResidual->Sumw2();
-  lHistograms->Add(hYieldResidual);
+  lHistograms->AddFirst(hYieldResidual);
 
   for (Int_t i = 0; i < kExpSpecies + 1; i++) {
-    hBackground[i] = new TH1F(Form("hBackground%s%s%i", pC[iCharge].Data(), pS[iSpecies].Data(), i), Form("Background for %s %s %i;%s;%s Yield", pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), i, ptstring.Data(), i == 0 ? "Mismatch" : pSpecies_all[i - 1].Data()), kPtBins, fBinPt);
+    hBackground[i] = new TH1F(Form("hBackground%s%i", speclab.Data(), i), Form("Background for %s %i;%s;%s Yield", spectitle.Data(), i, ptstring.Data(), i == 0 ? "Mismatch" : pSpecies_all[i - 1].Data()), kPtBins, fBinPt);
     lHistograms->Add(hBackground[i]);
 
-    hBackgroundOverlap[i] = new TH1F(Form("hBackgroundOverlap%s%s%i", pC[iCharge].Data(), pS[iSpecies].Data(), i), Form("Background Overlap for %s %s %i;%s;%s Overlap Yield", pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), i, ptstring.Data(), i == 0 ? "Mismatch" : pSpecies_all[i - 1].Data()), kPtBins, fBinPt);
+    hBackgroundOverlap[i] = new TH1F(Form("hBackgroundOverlap%s%i", speclab.Data(), i), Form("Background Overlap for %s %i;%s;%s Overlap Yield", spectitle.Data(), i, ptstring.Data(), i == 0 ? "Mismatch" : pSpecies_all[i - 1].Data()), kPtBins, fBinPt);
     lHistograms->Add(hBackgroundOverlap[i]);
   }
 
   Int_t rows = 7, columns = 7;
-  TCanvas* cTOF = new TCanvas(Form("cTOF%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Canvas with TOF distributions for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()), screendim[0], screendim[1]);
+  TCanvas* cTOF = new TCanvas("cTOF" + speclab, "Canvas with TOF distributions for " + spectitle, screendim[0], screendim[1]);
   cTOF->Divide(rows, columns);
   lCanvas->Add(cTOF);
 
-  TCanvas* cFit = new TCanvas(Form("cFit%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Fitted distribution for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()), screendim[0], screendim[1]);
+  TCanvas* cFit = new TCanvas("cFit" + speclab, "Fitted distribution for " + spectitle, screendim[0], screendim[1]);
   lCanvas->Add(cFit);
   cFit->Divide(rows, columns);
 
-  TCanvas* cFitOnly = new TCanvas(Form("cFitOnly%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Only Fitted distribution for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()), screendim[0], screendim[1]);
+  TCanvas* cFitOnly = new TCanvas("cFitOnly" + speclab, "Only Fitted distribution for " + spectitle, screendim[0], screendim[1]);
   lCanvas->Add(cFitOnly);
   cFitOnly->Divide(rows, columns);
 
-  TCanvas* cFitRatio = new TCanvas(Form("cFitRatio%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Fitted distribution Ratio for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()), screendim[0], screendim[1]);
+  TCanvas* cFitRatio = new TCanvas("cFitRatio" + speclab, "Fitted distribution Ratio for " + spectitle, screendim[0], screendim[1]);
   lCanvas->Add(cFitRatio);
   cFitRatio->Divide(rows, columns);
 
-  TCanvas* cTOFPt = new TCanvas(Form("cTOFPt%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Canvas with Pt TOF distributions for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()), screendim[0], screendim[1]);
+  TCanvas* cTOFPt = new TCanvas("cTOFPt" + speclab, "Canvas with Pt TOF distributions for " + spectitle, screendim[0], screendim[1]);
   lCanvas->Add(cTOFPt);
 
-  TCanvas* cTOFNSigma = new TCanvas(Form("cTOFNSigma%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Canvas with TOF Nsigmas distributions for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()), screendim[0], screendim[1]);
-  cTOFNSigma->Divide(rows, columns);
-  lCanvas->Add(cTOFNSigma);
-
-  TCanvas* cYield = new TCanvas(Form("cYield%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Canvas with Yield for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()));
+  TCanvas* cYield = new TCanvas("cYield" + speclab, "Canvas with Yield for " + spectitle);
   cYield->Divide(3);
   lCanvas->Add(cYield);
 
-  TCanvas* cYieldResidual = new TCanvas(Form("cYieldResidual%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Canvas with YieldResidual for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()));
+  TCanvas* cYieldResidual = new TCanvas("cYieldResidual" + speclab, "Canvas with YieldResidual for " + spectitle);
   cYieldResidual->Divide(2, 2);
   lCanvas->Add(cYieldResidual);
 
-  TCanvas* cBackground = new TCanvas(Form("cBackground%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Canvas with Background for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()));
+  TCanvas* cBackground = new TCanvas("cBackground" + speclab, "Canvas with Background for " + spectitle);
   cBackground->Divide(4, 2);
   lCanvas->Add(cBackground);
 
-  TCanvas* cBackgroundOverlap = new TCanvas(Form("cBackgroundOverlap%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("Canvas with BackgroundOverlap for %s %s", pCharge[iCharge].Data(), pSpecies[iSpecies].Data()));
+  TCanvas* cBackgroundOverlap = new TCanvas("cBackgroundOverlap" + speclab, "Canvas with BackgroundOverlap for " + spectitle);
   cBackgroundOverlap->Divide(4, 2);
   lCanvas->Add(cBackgroundOverlap);
 
@@ -369,69 +347,40 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
 
   Int_t padcounter = 1;
 
+  //Pt ranges where to fit
+  //RooFit pt ranges
+  const Int_t MinPtRoofit_PbPb[nSpecies] = { 10, 10, 12, 26 };
+  const Int_t MaxPtRoofit_PbPb[nSpecies] = { 43, 43, 43, 59 };
+  const Int_t MinPtRoofit_pp[nSpecies] = { 10, 10, 16, 26 };
+  const Int_t MaxPtRoofit_pp[nSpecies] = { 43, 43, 43, 59 };
+  //Functions pt ranges
+  const Int_t MinPtFunctions[nSpecies] = { 10, 12, 21, 26 };
+  const Int_t MaxPtFunctions[nSpecies] = { 37, 40, 40, 59 };
+  //
+  Int_t MinPtFit = optpp ? MinPtRoofit_pp[iSpecies] : MinPtRoofit_PbPb[iSpecies];
+  Int_t MaxPtFit = optpp ? MaxPtRoofit_pp[iSpecies] : MaxPtRoofit_PbPb[iSpecies];
   for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) { //Pt loop
-    cout << "#######################" << endl;
-    cout << "Pt bin " << ptbin + 1 << "/" << kPtBins << " [" << fBinPt[ptbin] << "," << fBinPt[ptbin + 1] << "]" << endl;
-    cout << "#######################" << endl;
+    Bool_t status = ptbin >= MinPtFit && ptbin <= MaxPtFit;
+    Printf("###############################");
+    Printf("Pt bin %i/%i: [%.2f, %.2f]", ptbin + 1, kPtBins, fBinPt[ptbin], fBinPt[ptbin + 1]);
+    Printf("###############################");
 
     //Drawing Delta T
     Int_t colorcounter = 0;
     cTOF->cd(padcounter);
     gPad->SetLogy();
 
-    hTOF[ptbin]->SetLineColor(kBlack);
-    hTOF[ptbin]->SetMarkerColor(kBlack);
+    SetColor(hTOF[ptbin], kBlack, 0);
     hTOF[ptbin]->DrawCopy();
 
-    hTOFMismatch[ptbin]->SetMarkerColor(FI + colorcounter);
-    hTOFMismatch[ptbin]->SetLineColor(FI + colorcounter);
-    if (filltemplates > 0) {
-      hTOFMismatch[ptbin]->SetFillStyle(filltemplates);
-      hTOFMismatch[ptbin]->SetFillColor(FI + colorcounter);
-    }
+    SetColor(hTOFMismatch[ptbin], FI + colorcounter, filltemplates);
     colorcounter++;
     hTOFMismatch[ptbin]->DrawCopy("same");
 
     for (Int_t species = 0; species < kExpSpecies; species++) { //Species loop
-      hTOFExpected[ptbin][species]->SetMarkerColor(FI + colorcounter);
-      hTOFExpected[ptbin][species]->SetLineColor(FI + colorcounter);
-      if (filltemplates > 0) {
-        hTOFExpected[ptbin][species]->SetFillStyle(filltemplates);
-        hTOFExpected[ptbin][species]->SetFillColor(FI + colorcounter);
-      }
+      SetColor(hTOFExpected[ptbin][species], FI + colorcounter, filltemplates);
       colorcounter++;
       hTOFExpected[ptbin][species]->DrawCopy("same");
-    }
-
-    DrawLabel(Form("pt %i [%.2f,%.2f]", ptbin, fBinPt[ptbin], fBinPt[ptbin + 1]));
-
-    //Drawing Nsigma
-    colorcounter = 0;
-    cTOFNSigma->cd(padcounter);
-    gPad->SetLogy();
-
-    hTOFSigma[ptbin]->SetLineColor(kBlack);
-    hTOFSigma[ptbin]->SetMarkerColor(kBlack);
-    hTOFSigma[ptbin]->DrawCopy();
-
-    hTOFMismatchSigma[ptbin]->SetMarkerColor(FI + colorcounter);
-    hTOFMismatchSigma[ptbin]->SetLineColor(FI + colorcounter);
-    if (filltemplates > 0) {
-      hTOFMismatchSigma[ptbin]->SetFillStyle(filltemplates);
-      hTOFMismatchSigma[ptbin]->SetFillColor(FI + colorcounter);
-    }
-    colorcounter++;
-    hTOFMismatchSigma[ptbin]->DrawCopy("same");
-
-    for (Int_t species = 0; species < kExpSpecies; species++) { //Species loop
-      hTOFSigmaExpected[ptbin][species]->SetMarkerColor(FI + colorcounter);
-      hTOFSigmaExpected[ptbin][species]->SetLineColor(FI + colorcounter);
-      if (filltemplates > 0) {
-        hTOFSigmaExpected[ptbin][species]->SetFillStyle(filltemplates);
-        hTOFSigmaExpected[ptbin][species]->SetFillColor(FI + colorcounter);
-      }
-      colorcounter++;
-      hTOFSigmaExpected[ptbin][species]->DrawCopy("same");
     }
 
     DrawLabel(Form("pt %i [%.2f,%.2f]", ptbin, fBinPt[ptbin], fBinPt[ptbin + 1]));
@@ -439,11 +388,11 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     //
     //Define data and template histograms
     //
-    TH1F* datahisto = fitsigma ? hTOFSigma[ptbin] : hTOF[ptbin];
-    TH1F* mismatchhisto = fitsigma ? hTOFMismatchSigma[ptbin] : hTOFMismatch[ptbin];
+    TH1F* datahisto = hTOF[ptbin];
+    TH1F* mismatchhisto = hTOFMismatch[ptbin];
     TH1F* templatehhisto[kExpSpecies] = { 0x0 };
     for (Int_t species = 0; species < kExpSpecies; species++)
-      templatehhisto[species] = fitsigma ? hTOFSigmaExpected[ptbin][species] : hTOFExpected[ptbin][species];
+      templatehhisto[species] = hTOFExpected[ptbin][species];
 
     //
     //Fit Parameters
@@ -451,16 +400,6 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     const Double_t showrange[2] = { fitsigma ? -40. : -3000., fitsigma ? 40. : 3000. };            //Range where to show the actual fit in the saved figure
     const Bool_t setstart = optpp ? kTRUE : kTRUE;                                                 //Gets the first bin above zero as a fitrange
     const Bool_t setstop = optpp ? kFALSE : (iMult < 3 || iMult == nMultBin - 1) ? kFALSE : kTRUE; //Gets the last bin above zero as a fitrange
-    //RooFit pt ranges
-    const Int_t MinPtRoofit_PbPb[nSpecies] = { 10, 10, 12, 26 };
-    const Int_t MaxPtRoofit_PbPb[nSpecies] = { 38, 38, 43, 59 };
-    const Int_t MinPtRoofit_pp[nSpecies] = { 10, 10, 16, 26 };
-    const Int_t MaxPtRoofit_pp[nSpecies] = { 43, 43, 43, 59 };
-    const Int_t* MinPtRoofit = optpp ? MinPtRoofit_pp : MinPtRoofit_PbPb;
-    const Int_t* MaxPtRoofit = optpp ? MaxPtRoofit_pp : MaxPtRoofit_PbPb;
-    //Functions pt ranges
-    const Int_t MinPtFunctions[nSpecies] = { 10, 12, 21, 26 };
-    const Int_t MaxPtFunctions[nSpecies] = { 37, 40, 40, 59 };
 
     Double_t range[2] = { fitsigma ? -300. : -10000., fitsigma ? 300. : 10000. };  //Integration range to extract yields only if using TFF
     Double_t fitrange[2] = { fitsigma ? -300. : -3000., fitsigma ? 300. : 6000. }; //Fit range
@@ -474,7 +413,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     const Bool_t usefun[kExpSpecies] = { 0, 0, 0, 0, 0, 0 }; //Choose if use or not a full function instead of the template for fitting
     Int_t ntemplates = 0;
     Int_t indexoffset = 0;
-    if (useOptions) { //Custom pt and mult dependent parameters
+    if (useOptions && status) { //Custom pt and mult dependent parameters
       if (fitsigma) {
         if (ptbin < 25)
           useit[0] = kTRUE; //Low pt electrons
@@ -724,7 +663,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     //
     //Signal definition
     //
-    if (fitmode == 3 && ptbin >= MinPtFunctions[iSpecies] && ptbin <= MaxPtFunctions[iSpecies]) { //Fit with functions
+    if (fitmode == 3 && status) { //Fit with functions
       for (Int_t species = 0; species < kExpSpecies; species++) {
         fTOFsignal[species] = new TF1(Form("expTOFsignal%s%s", pCharge[iCharge].Data(), pSpecies_all[species].Data()), TOFsignal, range[0], range[1], 4);
         fTOFsignal[species]->SetLineColor(templatehhisto[species]->GetLineColor());
@@ -834,11 +773,8 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
         Double_t underflowfraction = templateunderflow[species] / templateentries[species];
         Double_t diffplus = templatemean[species] + templatesigma[species];
         Double_t diffminus = templatemean[species] - templatesigma[species];
-        cout << "AliPID" << species << " mean " << templatemean[species] << " rms " << templatesigma[species] << " difference " << diffplus << endl;
-        cout << "       "
-             << " entries " << templateentries[species] << " overflow " << templateoverflow[species] << " overflow fraction " << overflowfraction << endl;
-        cout << "       "
-             << " entries " << templateentries[species] << " underflow " << templateunderflow[species] << " overflow fraction " << underflowfraction << endl;
+        Printf("AliPID %i mean %f rms %f difference %f", species, templatemean[species], templatesigma[species], diffplus);
+        Printf("\t\t entries %f overflow %f (frac. %f) underflow %f (frac. %f)", templateentries[species], templateoverflow[species], overflowfraction, templateunderflow[species], underflowfraction);
 
         if (overflowfraction < 0.99 && underflowfraction < 0.99)
           inrange[species] = kTRUE;
@@ -858,7 +794,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
         husage->Fill(kExpSpecies, ptbin);
       indexoffset++;
       ntemplates++;
-      cout << "Using Mismatch template:" << indexoffset << "/" << ntemplates << endl;
+      Printf("Using Mismatch template: %i/%i", indexoffset, ntemplates);
     }
     for (UInt_t species = 0; species < kExpSpecies; species++) { //Signal for particles
       if (useit[species]) {
@@ -867,7 +803,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
         ntemplates++;
         if (species < iSpecies + kpi)
           indexoffset++;
-        cout << "Using " << species << " " << pSpecies_all[species] << " template:" << indexoffset << "/" << ntemplates << endl;
+        Printf("Using template %i %s: %i/%i", species, pSpecies_all[species].Data(), indexoffset, ntemplates);
       }
     }
 
@@ -878,10 +814,8 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     TObjArray* prediction = new TObjArray(ntemplates + 1); //Has also the total fitted template
     if (fitmode == 3) {                                    //Fit with functions only
       for (Int_t species = 0; species < kExpSpecies; species++) {
-        if (useit[species]) {
-          cout << "Adding " << species << endl;
+        if (useit[species])
           templates->Add(fTOFsignal[species]);
-        }
       }
       if (useMismatch)
         templates->Add(fTOFbackground);
@@ -901,26 +835,59 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
           continue;
         if (usefun[species]) {
 
-          TF1* funct = new TF1(Form("signal%s%s", pC[iCharge].Data(), pS_all[species].Data()), TOFsignalNorm, range[0], range[1], 3);
-          funct->SetTitle(Form("%s", speciesRoot_all[3 * species + iCharge].Data()));
-          const Double_t m = templatehhisto[species]->GetMean() > 0 ? templatehhisto[species]->GetMean() : 0;
+          // TF1 *funct = new TF1(Form("signal%s%s", pC[iCharge].Data(), pS_all[species].Data()), TOFsignalNorm, range[0], range[1], 3);
+          // funct->SetTitle(Form("%s", speciesRoot_all[3*species + iCharge].Data()));
+          const Double_t m = templatehhisto[species]->GetXaxis()->GetBinCenter(templatehhisto[species]->GetMaximumBin()); //templatehhisto[species]->GetMean() > 0 ? templatehhisto[species]->GetMean() : 0;
           const Double_t mLow = fitsigma ? m - 3 : m - 1;
           const Double_t mUp = fitsigma ? m + 3 : m + 1;
-          const Double_t s = fitsigma ? 1 : 80;
+          const Double_t s = fitsigma ? 1 : 56;
           const Double_t sLow = fitsigma ? s - .5 : s - 1;
           const Double_t sUp = fitsigma ? s + .5 : s + 1;
           const Double_t t = 1.25;
           const Double_t tLow = t - 1;
           const Double_t tUp = t + .01;
 
-          funct->SetParameters(m, s, t);
-          funct->SetParLimits(0, mLow, mUp);
-          funct->SetParLimits(1, sLow, sUp);
-          funct->SetParLimits(2, tLow, tUp);
-          funct->SetParNames("Mean", "Sigma", "Tail");
+          //
+          RooRealVar* x = new RooRealVar("x", "x" + speciesRoot_all[3 * species + iCharge],
+              datahisto->GetXaxis()->GetBinLowEdge(1),
+              datahisto->GetXaxis()->GetBinUpEdge(datahisto->GetNbinsX()));
+          RooRealVar* mean = new RooRealVar(
+              "mean" + speciesRoot_all[3 * species + iCharge],
+              "mean" + speciesRoot_all[3 * species + iCharge],
+              m);
+          // m, mLow, mUp);
+          RooRealVar* sigma = new RooRealVar(
+              "sigma" + speciesRoot_all[3 * species + iCharge],
+              "sigma" + speciesRoot_all[3 * species + iCharge],
+              // s);
+              s, s * .95, 400);
+          // s, sLow, sUp);
+          cout << "RMS IS " << templatehhisto[species]->GetRMS() << endl;
+          RooRealVar* qL = new RooRealVar(
+              "qL" + speciesRoot_all[3 * species + iCharge],
+              "qL" + speciesRoot_all[3 * species + iCharge],
+              1.0);
+          // 1.0, 0.9999, 1.0001);
+          RooRealVar* qR = new RooRealVar(
+              "qR" + speciesRoot_all[3 * species + iCharge],
+              "qR" + speciesRoot_all[3 * species + iCharge],
+              1.667);
+          // 1.667, 1.5, 1.7);
+          RooqGaussian* funct = new RooqGaussian("qGaussian" + speciesRoot_all[3 * species + iCharge], speciesRoot_all[3 * species + iCharge], *x, *mean, *sigma, *qR, *qL);
+          // funct->SetParameters(m, s, t);
+          // funct->SetParLimits(0, mLow, mUp);
+          // funct->SetParLimits(1, sLow, sUp);
+          // funct->SetParLimits(2, tLow, tUp);
+          // funct->SetParNames("Mean", "Sigma", "Tail");
 
           templates->Add(funct);
 
+          // new TCanvas();
+          // RooPlot *plot = x.frame();
+          // funct->plotOn(plot);
+          // plot->Draw();
+          // lHistograms->Add(funct);
+          // return;
         } else
           templates->Add(templatehhisto[species]);
       }
@@ -929,7 +896,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     //
     //Set fit ranges
     //
-    if (useOptions && ptbin >= MinPtRoofit[iSpecies] && ptbin <= MaxPtRoofit[iSpecies]) { //Auto-Set start/stop for fit
+    if (useOptions && status) { //Auto-Set start/stop for fit
       //Sets the first bin above a certain value as the start for the fit
       if (setstart) {
         const Double_t mincounts = 10;
@@ -937,16 +904,17 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
         const Int_t databin = GetHistoLowRange(datahisto, mincounts);
         if (fitmode == 3) { //With functions only data is important
           fitrange[0] = datahisto->GetXaxis()->GetBinLowEdge(databin);
-          cout << "Autoset start for function fit to bin " << databin << "[" << datahisto->GetXaxis()->GetBinLowEdge(databin) << "," << datahisto->GetXaxis()->GetBinUpEdge(databin) << "]" << endl;
+          Printf("Autoset start for function fit to bin %i [%f, %f]", databin, datahisto->GetXaxis()->GetBinLowEdge(databin), datahisto->GetXaxis()->GetBinUpEdge(databin));
         } else {
           const Int_t firstindex = GetFirstHistogram(templates, mincounts); //First template from the left with non zero values
-          const Int_t templatebin = GetHistoLowRange(static_cast<TH1F*>(templates->At(firstindex)), mincounts);
-          const Int_t templatebinAfter = GetHistoLowRangeAfter(static_cast<TH1F*>(templates->At(firstindex)), mincounts, templatebin);
-          const Int_t templatebinNoHoles = GetHistoNoHolesAfter(static_cast<TH1F*>(templates->At(firstindex)), templatebin);
+          TH1F* firsthisto = dynamic_cast<TH1F*>(templates->At(firstindex));
+          const Int_t templatebin = GetHistoLowRange(firsthisto, mincounts);
+          const Int_t templatebinAfter = GetHistoLowRangeAfter(firsthisto, mincounts, templatebin);
+          const Int_t templatebinNoHoles = GetHistoNoHolesAfter(firsthisto, templatebin);
           if (templatebin > templatebinAfter)
             Fatalmsg("PrepareRawSpectra", "Wrongly defined bins");
-          if (!SameBinning(datahisto, static_cast<TH1F*>(templates->At(firstindex))))
-            Fatalmsg("PrepareRawSpectra", Form("Histograms have different binning : datahisto %s (%i) and the %s (%i)", datahisto->GetName(), datahisto->GetNbinsX(), static_cast<TH1F*>(templates->At(firstindex))->GetName(), static_cast<TH1F*>(templates->At(firstindex))->GetNbinsX()));
+          if (!SameBinning(datahisto, firsthisto))
+            Fatalmsg("PrepareRawSpectra", Form("Histograms have different binning : datahisto %s (%i) and the %s (%i)", datahisto->GetName(), datahisto->GetNbinsX(), firsthisto->GetName(), firsthisto->GetNbinsX()));
 
           const Int_t binlimits[2] = { databin, templatebinNoHoles };
           const TString bins[2] = {
@@ -1058,44 +1026,29 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     //
     //Fitting
     //
-    Bool_t status = kTRUE;
     Double_t chi2 = showchi2 ? indexoffset : -10;
     // Double_t chi2 = -1;
 
     if (status == kTRUE) {
       switch (fitmode) {
-      case 0: {
+      case 0:
         status = PerformFitWithTFF(datahisto, templates, range, fitrange, fraction, fractionErr, prediction);
         break;
-      }
-      case 1: {
-        if (ptbin < MinPtRoofit[iSpecies])
-          status = kFALSE;
-        else if (ptbin > MaxPtRoofit[iSpecies])
-          status = kFALSE;
-        else
-          status = PerformFitWithRooFit(datahisto, templates, range, fitrange, fraction, fractionErr, prediction, chi2);
+      case 1:
+        status = PerformFitWithRooFit(datahisto, templates, range, fitrange, fraction, fractionErr, prediction, chi2);
         break;
-      }
-      case 2: {
+      case 2:
         status = PerformFitWithCD(datahisto, templates, range, fitrange, fraction, fractionErr, prediction);
         break;
-      }
-      case 3: {
-        if (ptbin < MinPtFunctions[iSpecies])
-          status = kFALSE;
-        else if (ptbin > MaxPtFunctions[iSpecies])
-          status = kFALSE;
-        // else status = UseBinCounting(datahisto, templates, range, fraction, fractionErr);
-        else
-          status = PerformFitWithFunctions(datahisto, templates, fTOFsignalSum, range, fitrange, fraction, fractionErr, prediction);
+      case 3:
+        status = PerformFitWithFunctions(datahisto, templates, fTOFsignalSum, range, fitrange, fraction, fractionErr, prediction);
         break;
-      }
       default:
         Fatalmsg("PrepareRawSpectra", Form("The fitmode selected (%i) is not available", fitmode));
         break;
       }
-    }
+    } else
+      Infomsg("PrepareRawSpectra", "Required not to fit!");
     gPad->SetLogy();
 
     //Drawing labels on the pad
@@ -1259,7 +1212,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   TH1F* auxiarray[kPtBins];
 
   for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++)
-    auxiarray[ptbin] = fitsigma ? hTOFSigma[ptbin] : hTOF[ptbin];
+    auxiarray[ptbin] = hTOF[ptbin];
   hTOFPt = Form2DHisto(auxiarray, kPtBins, fBinPt, Form("hTOFPt%s%s", pC[iCharge].Data(), pS[iSpecies].Data()), Form("hTOFPt%s%s;%s;%s", pC[iCharge].Data(), pS[iSpecies].Data(), fitsigma ? nsigmastringSpecies[iSpecies + kpi].Data() : tofsignalstringSpecies[iSpecies + kpi].Data(), ptstring.Data()));
   CopyStyle(hTOFPt, auxiarray[0]);
 
@@ -1330,14 +1283,14 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
   hYield->SetTitle("Raw Yield Unbinned");
   hYield->GetXaxis()->SetRangeUser(0, 5);
   hYield->DrawCopy()->GetYaxis()->SetTitle("Unscaled unbinned counts");
-  lHistograms->Add(((TH1F*)hYield->Clone(Form("hUnscaledYieldUnbinned%s%s", pC[iCharge].Data(), pS[iSpecies].Data()))));
+  lHistograms->AddFirst(((TH1F*)hYield->Clone(Form("hUnscaledYieldUnbinned%s%s", pC[iCharge].Data(), pS[iSpecies].Data()))));
   DrawLabel("Raw Yield Unbinned");
   cYield->cd(2);
   gPad->SetLogy();
   hYield->Scale(1, "width"); //Scale to the bin width
   hYield->SetTitle("Raw Yield");
   hYield->DrawCopy()->GetYaxis()->SetTitle("Unscaled counts");
-  lHistograms->Add(((TH1F*)hYield->Clone(Form("hUnscaledYield%s%s", pC[iCharge].Data(), pS[iSpecies].Data()))));
+  lHistograms->AddFirst(((TH1F*)hYield->Clone(Form("hUnscaledYield%s%s", pC[iCharge].Data(), pS[iSpecies].Data()))));
   DrawLabel("Unscaled counts");
   cYield->cd(3);
   gPad->SetLogy();
@@ -1435,7 +1388,7 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
     if (foutfits)
       foutfits->cd();
     for (Int_t ptbin = 0; ptbin < kPtBins; ptbin++) {
-      TH1F* auxihisto = fitsigma ? hTOFSigma[ptbin] : hTOF[ptbin];
+      TH1F* auxihisto = hTOF[ptbin];
       auxihisto->SetName(Form("TOFData%s%s%s_pt%i", pC[iCharge].Data(), pS[iSpecies].Data(), MultBinString[iMult].Data(), ptbin));
       auxihisto->SetTitle(Form("TOF for %s %s in %s ptbin %i [%.2f,%.2f]", pCharge[iCharge].Data(), pSpecies[iSpecies].Data(), MultBinString[iMult].Data(), ptbin, fBinPt[ptbin], fBinPt[ptbin + 1]));
       if (foutfits)
@@ -1485,11 +1438,22 @@ void PrepareRawSpectra(TString dirname = latestDir[0], TString dataname = "TOFDa
       delete lCanvas;
   }
 
+  if (linData)
+    delete linData;
   if (fout) {
     fout->Close();
     delete fout;
   }
-  // if(linData) delete linData;
+}
+
+void SetColor(TH1* h, Int_t c, Int_t f)
+{
+  h->SetMarkerColor(c);
+  h->SetLineColor(c);
+  if (f > 0) {
+    h->SetFillStyle(f);
+    h->SetFillColor(c);
+  }
 }
 
 #endif
