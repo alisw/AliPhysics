@@ -6408,7 +6408,8 @@ Bool_t AliCaloPhotonCuts::AcceptCellByBadChannelMap(Int_t absID ){
     fGeomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
 
     // Do not include bad channels found in analysis,
-    if (fEMCALRecUtils->GetEMCALChannelStatus(imod, ieta, iphi) == 0 )
+    Int_t status = 0;
+    if (fEMCALRecUtils->GetEMCALChannelStatus(imod, ieta, iphi, status) == 0 )
       return kTRUE;
     else
       return kFALSE;
