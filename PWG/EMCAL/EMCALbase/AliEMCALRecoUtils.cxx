@@ -88,6 +88,11 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fResidualPhi           = new TArrayF();
   fResidualEta           = new TArrayF();
   fPIDUtils              = new AliEMCALPIDUtils();
+  
+  fBadStatusSelection[0] = kTRUE;
+  fBadStatusSelection[1] = kTRUE;
+  fBadStatusSelection[2] = kTRUE;
+  fBadStatusSelection[3] = kTRUE;
 }
 
 //
@@ -136,9 +141,10 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
 {  
   for (Int_t i = 0; i < 15 ; i++) { fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; 
                                     fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; }
-  for (Int_t i = 0; i < 10  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
+  for (Int_t i = 0; i < 10  ; i++){ fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
   for (Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
   for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]    = reco.fMCGenerToAccept[j]    ; }
+  for (Int_t j = 0; j < 4  ; j++) { fBadStatusSelection[j] = reco.fBadStatusSelection[j] ; }
 
   if(reco.fEMCALBadChannelMap) {
     // Copy constructor - not taking ownership over calibration histograms
@@ -302,6 +308,9 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
     fMatchedClusterIndex = 0;
   }
 
+  for (Int_t j = 0; j < 4  ; j++) 
+   fBadStatusSelection[j] = reco.fBadStatusSelection[j] ; 
+  
   if(fEMCALBadChannelMap) delete fEMCALBadChannelMap;
   if(reco.fEMCALBadChannelMap) {
     // Copy constructor - not taking ownership over calibration histograms
@@ -400,7 +409,7 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   if ( absID < 0 || absID >= 24*48*geom->GetNumberOfSuperModules() ) 
     return kFALSE;
   
-  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1, status=0; 
   
   if (!geom->GetCellIndex(absID,imod,iTower,iIphi,iIeta)) 
   {
@@ -412,8 +421,12 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
   geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);  
 
   // Do not include bad channels found in analysis,
-  if (IsBadChannelsRemovalSwitchedOn() && GetEMCALChannelStatus(imod, ieta, iphi)) 
-    return kFALSE;
+  if ( IsBadChannelsRemovalSwitchedOn() )
+  {
+    Bool_t bad = GetEMCALChannelStatus(imod, ieta, iphi,status);
+    if ( status > 0 ) printf("Status %d, bad %d\n",status,bad);
+    if ( bad ) return kFALSE;
+  }
   
   //Recalibrate energy
   amp  = cells->GetCellAmplitude(absID);
@@ -552,9 +565,10 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(const AliEMCALGeometry* geom
     
     geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);      
     
-    if (GetEMCALChannelStatus(imod, icol, irow)) 
+    Int_t status = 0;
+    if (GetEMCALChannelStatus(imod, icol, irow, status)) 
     {
-      AliDebug(2,Form("Cluster with bad channel: SM %d, col %d, row %d\n",imod, icol, irow));
+      AliDebug(2,Form("Cluster with bad channel: SM %d, col %d, row %d, status %d\n",imod, icol, irow, status));
       return kTRUE;
     }
   }// cell cluster loop
@@ -1207,6 +1221,72 @@ if (fNonLinearityFunction == kPCMv1) {
  }
 }
 
+///
+/// Set the type of channels to be declared as bad
+/// \param all  : all cases are bad, default true
+/// \param dead : dead channels are bad
+/// \param hot  : hot channels are bad
+/// \param warm : warm channels are bad
+///
+//____________________________________________________________________
+void AliEMCALRecoUtils::SetEMCALBadChannelStatusSelection(Bool_t all, Bool_t dead, Bool_t hot, Bool_t warm)
+{ 
+  fBadStatusSelection[0] = all;  // declare all as bad if true, never mind the other settings
+  fBadStatusSelection[1] = dead; 
+  fBadStatusSelection[2] = hot; 
+  fBadStatusSelection[3] = warm; 
+}
+
+///
+/// \return declare channel as bad (true) or not good (false)
+/// By default if status is not kAlive, all are declared bad,
+/// but optionnaly 
+///
+/// \param iSM: supermodule number of channel
+/// \param iCol: cell column in SM
+/// \param iRow: cell row in SM
+/// \param status: channel status
+///
+//____________________________________________________________________
+Bool_t AliEMCALRecoUtils::GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Int_t & status) const 
+{ 
+  if(fEMCALBadChannelMap) 
+    status = (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
+  else 
+    status = 0; // Channel is ok by default
+  
+  if ( status == AliCaloCalibPedestal::kAlive ) 
+  {
+    return kFALSE; // Good channel
+  }
+  else
+  {
+    if      ( fBadStatusSelection[0]  == kTRUE ) 
+    {
+      return kTRUE; // consider bad hot, dead and warm
+    }
+    else
+    {
+      if      ( fBadStatusSelection[AliCaloCalibPedestal::kDead]    == kTRUE  && 
+                status == AliCaloCalibPedestal::kDead    ) 
+        return kTRUE; // consider bad dead
+      else if ( fBadStatusSelection[AliCaloCalibPedestal::kHot]     == kTRUE  && 
+                status == AliCaloCalibPedestal::kHot     ) 
+        return kTRUE; // consider bad hot
+      else if ( fBadStatusSelection[AliCaloCalibPedestal::kWarning] == kTRUE  && 
+                status == AliCaloCalibPedestal::kWarning ) 
+        return kTRUE; // consider bad warm 
+    }
+  }
+  
+  AliWarning(Form("Careful, bad channel selection not properly done: ism %d, icol %d, irow %d, status %d,\n"
+                  " fBadAll %d, fBadHot %d, fBadWarm %d, fBadDead %d",
+                  iSM, iCol, iRow, status,
+                  fBadStatusSelection[0], fBadStatusSelection[1],
+                  fBadStatusSelection[2], fBadStatusSelection[3]));
+  
+  return kFALSE; // if everything fails, accept it.
+}
 
 ///
 /// For a given CaloCluster gets the absId of the cell 
