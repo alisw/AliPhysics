@@ -64,12 +64,12 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
   AliDielectron *diel_low = Config_miweber_LMEE_PbPb_woCutLib(cutDefinition,bESDANA,bCutQA,kFALSE,useTPCCorr);
   if(diel_low){
     AliDielectronVarCuts *eventplaneCuts = new AliDielectronVarCuts("eventplaneCuts","eventplaneCuts");
-    if(cutDefinition!=672)
-//removed event plane cuts        
-//      eventplaneCuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
-//    eventplaneCuts->Print();
-//    diel_low->GetEventFilter().AddCuts(eventplaneCuts);
-  
+    // use event plane cuts only for this cut set
+    if(cutDefinition==671){
+      eventplaneCuts->AddCut(AliDielectronVarManager::kQnTPCrpH2,-999.,kTRUE); // makes sure that the event has an eventplane
+      eventplaneCuts->Print();
+      diel_low->GetEventFilter().AddCuts(eventplaneCuts);
+    }
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());
   }
