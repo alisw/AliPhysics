@@ -250,7 +250,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Double_t ptArm;
 		Double_t alpha;
 
-		TH1F* fQAhist;
+		TH1F* fQAhist; //!
 		Double_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
 		Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
 
@@ -278,7 +278,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Bool_t fHasSDD;
 
 		Bool_t fIsV0tree;
-		TH2F* fArmPlot;
+		TH2F* fArmPlot; //!
 
 		Bool_t fIsAOD;
 		Int_t fFilterBit;
@@ -294,7 +294,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		// Store list of generator hashes which can be checked against to determine
 		// whether or not the track was injected
 		std::vector<UInt_t> fGeneratorHashes;
-		ClassDef(AliAnalysisTaskSimpleTreeMaker, 4); //
+		ClassDef(AliAnalysisTaskSimpleTreeMaker, 5); //
 
 };
 
