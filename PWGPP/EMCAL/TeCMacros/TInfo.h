@@ -13,6 +13,7 @@ class TInfo : public TObject {
   virtual     ~TInfo() {;}
   Float_t      AbsMinT(Int_t t=1)         const;
   Float_t      AbsMaxT(Int_t t=2)         const;
+  Float_t      AvgT(Int_t sm)             const;
   UInt_t       AvTime()                   const { return fAvTime; }
   Float_t      Diff(Int_t ns )            const { return fMaxT.At(ns)-fMinT.At(ns); }
   UInt_t       FirstTime()                const { return fAvTime; }
@@ -39,6 +40,8 @@ class TInfo : public TObject {
   static             Int_t GetBin(Int_t ns);
   static             Int_t SM(Int_t ns)               { return ns/8; }
   static             Int_t NSensors()                 { return 160; }
+  static             Int_t SensId(Int_t sm, Int_t row, Int_t col);
+
  protected:
   Int_t        fRunNo;      // run number
   TArrayF      fMinT;       // min temperature per sensor

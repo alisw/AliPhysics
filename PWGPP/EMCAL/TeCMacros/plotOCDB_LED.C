@@ -15,6 +15,7 @@ class LDraw : public TNamed {
  public:
   LDraw(const char *name, const char *fname="tempinfo.root"); 
   virtual ~LDraw() {;}
+  TObjArray *GetArray()                          { return fArr; }
   void       Compute();
   Int_t      GetNRuns()                    const { return fArr->GetEntries(); }
   void       Print(Option_t *opt="")       const {};
@@ -188,9 +189,22 @@ void test_geo()
   Int_t kSM=g->GetNumberOfSuperModules();
   cout << "Number of SM: " << kSM << endl;
   for (Int_t i=0;i<kSM;++i) {
-    Int_t np = g->GetNumberOfCellsInPhiDirection(i);
-    Int_t ne = g->GetNumberOfCellsInEtaDirection(i);
-    cout << i << ": " << np << " " << ne << endl;
+    Int_t nrow = g->GetNumberOfCellsInPhiDirection(i);
+    Int_t ncol = g->GetNumberOfCellsInEtaDirection(i);
+    cout << i << ": " << nrow << " " << ncol << endl;
+    continue;
+    TH2 *h2f = new TH2F(Form("hsm%d",i),Form(";col;row"), ncol, -0.5, ncol-0.5, nrow, -0.5, nrow-0.5);
+    for (Int_t col=0;col<ncol;++col) {
+      for (Int_t row=0;row<nrow;++row) {
+	Int_t  id = g->GetAbsCellIdFromCellIndexes(i,row,col)-24*48;
+	cout << "Id " << id << " " << col << " " << row << endl;
+	Int_t bin = h2f->FindBin(col,row);
+	h2f->SetBinContent(bin,id);
+      }
+    }
+    h2f->Draw("text");
+    break;
+
   }
 }
 #endif

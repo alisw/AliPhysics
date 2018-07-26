@@ -16,6 +16,7 @@ class TDraw : public TNamed {
  public:
   TDraw(const char *name, const char *fname="tempinfo.root"); 
   virtual ~TDraw() {;}
+  TObjArray *GetArray()                       { return fArr; }
   void       Compute();
   void       DrawAll();
   TCanvas   *DrawT(Int_t type=3)        const;

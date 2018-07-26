@@ -203,12 +203,12 @@ Double_t LInfo::FracLeds(Int_t sm, Int_t gain) const
   for (Int_t iSM=0; iSM<kNSM; ++iSM) {
     if (sm>=0&&iSM!=sm)
       continue;
-    Int_t nrows=NRow();
-    if (iSM>11 && iSM<18) 
-      nrows=32;
     Int_t ncols=NCol();
+    if (iSM>11 && iSM<18) 
+      ncols=32;
+    Int_t nrows=NRow();
     if (iSM==10||iSM==11||iSM==18||iSM==19)
-      ncols=8;
+      nrows=8;
     for (Int_t col=0;col<ncols;++col) {
       for (Int_t row=0;row<nrows;++row) {
 	++all;

@@ -33,6 +33,16 @@ Float_t TInfo::AbsMaxT(Int_t type) const
   return max;
 }
 
+Float_t TInfo::AvgT(Int_t sm) const
+{
+  Double_t temp = 0;
+  for (Int_t i=sm*8;i<(sm+1)*8;++i) {
+    temp += T(i,3);
+  }
+  temp /= 8;
+  return temp;
+}
+
 TH2 *TInfo::GetHist(Int_t type) const
 {
   TH2F *h = new TH2F(Form("h%dT%d_%s",fRunNo,type,Type(type)),";col;rows",8,-0.5,7.5,20,-0.5,19.5);
@@ -258,6 +268,48 @@ Int_t TInfo::GetBin(Int_t ns)
   }
   return 0;
 } 
+
+Int_t TInfo::SensId(Int_t sm, Int_t row, Int_t col)
+{
+  Int_t ret = 0;
+
+  Int_t nrows=12;
+  Int_t ncols=12;
+  if (sm>11 && sm<18){ 
+    ncols=16;
+  }
+  if (sm==10||sm==11||sm==18||sm==19) {
+    ncols=24;
+    nrows=4;
+  }
+
+  Bool_t oddsm = sm%2;
+  if (sm==11) {
+    ret = 91;
+  } else if (sm==19) {
+    ret = 155;
+  } else if (!oddsm) {
+    ret = sm*8;
+  } else {
+    ret = (sm+1)*8-1;
+  }
+
+  if (!oddsm) {
+    Int_t x = col/ncols;
+    Int_t b = 0;
+    if (row<nrows)
+      b = 1;
+    ret += 2*x + b;
+  } else {
+    Int_t x = col/ncols;
+    Int_t b = 0;
+    if (row<nrows)
+      b = 1;
+    ret -= 2*x + b;
+  }
+
+  return ret;
+}
 
 const char *TInfo::Type(Int_t type)
 {
