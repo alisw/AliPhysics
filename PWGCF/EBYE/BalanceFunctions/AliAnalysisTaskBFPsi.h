@@ -166,6 +166,14 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fPDGCodeToBeAnalyzed = gPdgCode;
   }
 
+   void SetRejectInjectedSignals() {fExcludeInjectedSignals = kTRUE;}
+
+   void SetRejectInjectedSignalsGenName(TString genToBeKept) {
+    fGenToBeKept = genToBeKept; 
+    fRejectCheckGenName=kTRUE;
+    fExcludeInjectedSignals = kTRUE;
+  }
+
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)  const              {return fCentralityEstimator;}
@@ -525,6 +533,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC and MCAODrec
   Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
   Int_t fIncludeResonancePDGInMC;// include excluvely this resonance with this PDG to the MC and MCAODrec analysis
+
+  Bool_t fExcludeInjectedSignals; //Flag to reject MC injected signals from MC analysis
+  Bool_t fRejectCheckGenName; // Flag to activate the injected signal rejection based on the name of the MC generator 
+  TString fGenToBeKept; //String to select the generator name that has to be kept for analysis
+
+  
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
   TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)
   
@@ -545,7 +559,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 14); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 15); // example of analysis
 };
 
 
