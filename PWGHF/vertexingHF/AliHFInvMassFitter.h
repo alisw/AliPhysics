@@ -55,14 +55,24 @@ class AliHFInvMassFitter : public TNamed {
     SetNumberOfParams();
   }
   void SetInitialGaussianMean(Double_t mean) {fMass=mean;} 
-  void SetInitialGaussianSigma(Double_t sigma) {fSigmaSgn=sigma;} 
+  void SetInitialGaussianSigma(Double_t sigma) {fSigmaSgn=sigma;}
+  void SetInitialSecondGaussianSigma(Double_t sigma) {fSigmaSgn2Gaus=sigma;}
+  void SetInitialFrac2Gaus(Double_t frac) {fFrac2Gaus=frac;}
   void SetFixGaussianMean(Double_t mean){
     SetInitialGaussianMean(mean); 
     fFixedMean=kTRUE;
   }
   void SetFixGaussianSigma(Double_t sigma){
-    SetInitialGaussianSigma(sigma); 
+    SetInitialGaussianSigma(sigma);
     fFixedSigma=kTRUE;
+  }
+  void SetFixSecondGaussianSigma(Double_t sigma){
+    SetInitialSecondGaussianSigma(sigma);
+    fFixedSigma2Gaus=kTRUE;
+  }
+  void SetFixFrac2Gaus(Double_t frac){
+    SetInitialFrac2Gaus(frac);
+    fFixedFrac2Gaus=kTRUE;
   }
   void SetFixSignalYield(Double_t yield){
     fFixedRawYield=yield;
@@ -165,9 +175,13 @@ class AliHFInvMassFitter : public TNamed {
   Double_t  fMassErr;          /// unc on signal gaussian mean value  
   Double_t  fSigmaSgn;         /// signal gaussian sigma
   Double_t  fSigmaSgnErr;      /// unc on signal gaussian sigma
-  Bool_t    fFixedMean;        /// switch for fix mean of gaussian 
-  Bool_t    fFixedSigma;       /// switch for fix Sigma of gaussian 
+  Double_t  fSigmaSgn2Gaus;    /// signal second gaussian sigma in case of k2Gaus
+  Bool_t    fFixedMean;        /// switch for fix mean of gaussian
+  Bool_t    fFixedSigma;       /// switch for fix Sigma of gaussian
+  Bool_t    fFixedSigma2Gaus;  /// switch for fix Sigma of second gaussian in case of k2Gaus
   Double_t  fFixedRawYield;    /// initialization for wa yield
+  Double_t  fFrac2Gaus;        /// initialization for fraction of 2nd gaussian in case of k2Gaus
+  Bool_t    fFixedFrac2Gaus;   /// switch for fixed fraction of 2nd gaussian in case of k2Gaus
   Int_t     fNParsSig;         /// fit parameters in signal fit function
   Int_t     fNParsBkg;         /// fit parameters in background fit function
   Bool_t    fOnlySideBands;    /// kTRUE = only side bands considered
@@ -189,7 +203,7 @@ class AliHFInvMassFitter : public TNamed {
   TF1*      fRflFunc;          /// fit function for reflections
   TF1*      fBkRFunc;          /// fit function for reflections
   Bool_t    fSecondPeak;       /// switch off/on second peak (for D+->KKpi in Ds)
-  Int_t     fNParsSec          ;/// fit parameters in 2nd peak fit function
+  Int_t     fNParsSec;         /// fit parameters in 2nd peak fit function
   Double_t  fSecMass;          /// position of the 2nd peak
   Double_t  fSecWidth;         /// width of the 2nd peak
   Bool_t    fFixSecMass;       /// flag to fix the position of the 2nd peak
@@ -198,7 +212,7 @@ class AliHFInvMassFitter : public TNamed {
   TF1*      fTotFunc;          /// total fit function
 
   /// \cond CLASSIMP     
-  ClassDef(AliHFInvMassFitter,3); /// class for invariant mass fit
+  ClassDef(AliHFInvMassFitter,4); /// class for invariant mass fit
   /// \endcond
 };
 
