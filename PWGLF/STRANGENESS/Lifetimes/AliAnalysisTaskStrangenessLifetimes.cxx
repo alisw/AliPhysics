@@ -21,6 +21,7 @@
 #include "AliPIDResponse.h"
 #include "AliStack.h"
 #include "AliV0vertexer.h"
+#include "AliVVertex.h"
 
 using Lifetimes::MCparticle;
 using Lifetimes::MiniV0;
@@ -304,6 +305,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
 
   std::unordered_map<int,int> mcMap;
   if (fMC) {
+    const AliVVertex* mcV = mcEvent->GetPrimaryVertex();
     fMCvector.clear();
     for (int ilab = 0;  ilab < (stack->GetNtrack()); ilab++) {   // This is the begining of the loop on tracks
       TParticle* part = stack->Particle( ilab );
@@ -315,7 +317,11 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       int currentPDG = part->GetPdgCode();
       for (auto code : pdgCodes) {
         if (code == std::abs(currentPDG)) {
-          double dist = Distance(primaryVertex[0] - part->Vx(), primaryVertex[1] - part->Vy(), primaryVertex[2] - part->Vz());
+          if (std::abs(part->Y()) < 1.) {
+            continue;
+          }
+
+          double dist = Distance(mcV->GetX() - part->Vx(), mcV->GetY() - part->Vy(), mcV->GetZ() - part->Vz());
 
           MCparticle v0part;
           v0part.SetPDGcode(currentPDG);
@@ -334,8 +340,10 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             motherPart.SetPt(mother->Pt());
             motherPart.SetDistOverP(motherDist / mother->P());
             fMCvector.push_back(motherPart);
-          } else {
+          } else if (stack->IsPhysicalPrimary(ilab)) {
             v0part.SetStatus(MCparticle::kPrimary);
+          } else {
+            continue;
           }
           mcMap[ilab] = fMCvector.size();
           fMCvector.push_back(v0part);
