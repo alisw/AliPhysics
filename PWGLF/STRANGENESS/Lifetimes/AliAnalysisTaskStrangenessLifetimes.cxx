@@ -330,7 +330,16 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             continue;
           }
 
-          double dist = Distance(mcV->GetX() - part->Vx(), mcV->GetY() - part->Vy(), mcV->GetZ() - part->Vz());
+          double sVtx[3]={0.};
+          for (int iD = part->GetFirstDaughter(); iD <= part->GetLastDaughter(); ++iD) {
+            TParticle* dau = stack->Particle(iD);
+            if (stack->IsSecondaryFromWeakDecay(iD) && dau) {
+              sVtx[0] = dau->Vx();
+              sVtx[1] = dau->Vy();
+              sVtx[2] = dau->Vz();
+            }
+          }
+          double dist = Distance(mcV->GetX() - sVtx[0], mcV->GetY() - sVtx[1], mcV->GetZ() - sVtx[2]);
 
           MCparticle v0part;
           v0part.SetPDGcode(currentPDG);
@@ -343,7 +352,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
           if (isSecondary && mother) {
             v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
 
-            double motherDist = Distance(primaryVertex[0] - mother->Vx(), primaryVertex[1] - mother->Vy(), primaryVertex[2] - mother->Vz());
+            double motherDist = Distance(mcV->GetX() - part->Vx(), mcV->GetY() - part->Vy(), mcV->GetZ() - part->Vz());
             MCparticle motherPart;
             motherPart.SetPDGcode(mother->GetPdgCode());
             motherPart.SetEta(mother->Eta());
