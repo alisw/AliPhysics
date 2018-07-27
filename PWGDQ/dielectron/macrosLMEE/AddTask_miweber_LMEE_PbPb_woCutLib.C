@@ -73,6 +73,12 @@ AliAnalysisTask *AddTask_miweber_LMEE_PbPb_woCutLib(Int_t cutDefinition = 0,
     task->AddDielectron(diel_low);
     printf("successfully added AliDielectron: %s\n",diel_low->GetName());
   }
+  else{
+    Printf("=======================================");
+    Printf("No AliDielectron object loaded -> EXIT ");
+    Printf("=======================================");
+    return NULL;
+  }
 
   //create output container
   AliAnalysisDataContainer *coutput1 =
