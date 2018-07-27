@@ -68,6 +68,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
 	fJetEtaMax(.5),
 	fJetHadronDeltaPhi(0.6),
 	fMinFractionSharedPt(0.5),
+	fMinEmbJetPt(15.),
 	fJetContName(""),
 	fJetContTrueName(""),
 	fJetContPartName(""),
@@ -147,6 +148,7 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
 	fJetEtaMax(.5),
 	fJetHadronDeltaPhi(0.6),
 	fMinFractionSharedPt(0.5),
+	fMinEmbJetPt(15.),
 	fJetContName(""),
 	fJetContTrueName(""),
 	fJetContPartName(""),
@@ -844,6 +846,7 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 				// embedding for recoil jets
 				// get MC info
 				//
+				if(ptcorr<fMinEmbJetPt) continue;
 				Double_t ptTTMC = 0;
 				Double_t phiTTMC = 0;
 				Int_t TTmatched = 0;
@@ -982,6 +985,9 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 
 		Double_t ptJet1 = jet1->Pt();
 		Double_t phiJet1 = jet1->Phi();
+		Double_t area = jet1->Area();
+		Double_t ptCorr = ptJet1-rho*area;
+		if(ptCorr<fMinEmbJetPt) continue;
 		auto jet2 = jet1->ClosestJet();
 		if(!jet2) {
 			//Printf("jet 2 cant be found");
@@ -1013,8 +1019,6 @@ void AliAnalysisTaskJetCoreEmcal::DoMatchingLoop() {
 		Double_t fraction = jetCont->GetFractionSharedPt(jet1);
 		if(fraction < fMinFractionSharedPt) continue;
 
-		Double_t area = jet1->Area();
-		Double_t ptCorr = ptJet1-rho*area;
 
 		Double_t residual = (ptCorr - ptJet3) / ptJet3;
 		Double_t residualPhi = (phiJet1 - phiJet3) / phiJet3;
