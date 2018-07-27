@@ -62,8 +62,18 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
   ld.Compute();
 
   TObjArray *ta = td.GetArray();
+  if (!ta) {
+    cerr << "No time objects for period " << period << endl;
+    return;
+  }
   TObjArray *la = ld.GetArray();
+  if (!la) {
+    cerr << "No led objects for period " << period << endl;
+    return;
+  }
+
   const Int_t rns=la->GetEntries();
+  cout << "Working on period " << period << " with " << rns << " runs" << endl;
 
   AliEMCALGeometry *g=AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   const Int_t kSM=g->GetNumberOfSuperModules();
@@ -138,7 +148,7 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
 	  cell->fLedM = hledm->GetBinContent(hledm->FindBin(col,row));
 	  cell->fLedR = hledr->GetBinContent(hledr->FindBin(col,row));
 	  cell->fMonM = hmonm->GetBinContent(hmonm->FindBin(col/2));
-	  cell->fMonR = hmonr->GetBinContent(hmonm->FindBin(col/2));
+	  cell->fMonR = hmonr->GetBinContent(hmonr->FindBin(col/2));
 	  cell->fLocT = tinfo->T(ns,3);
 	  cell->fSMT  = avg[sm];
 	}
@@ -148,4 +158,19 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
   }
   fTree->Write();
   out->Close();
+}
+
+void createTree_all() 
+{
+  createTree("lhc16f","tree_lhc16f.root");
+  createTree("lhc16g","tree_lhc16g.root");
+  createTree("lhc16h","tree_lhc16h.root");
+  createTree("lhc16i","tree_lhc16i.root");
+  createTree("lhc16j","tree_lhc16j.root");
+  createTree("lhc16k","tree_lhc16k.root");
+  createTree("lhc16l","tree_lhc16g.root");
+  createTree("lhc16o","tree_lhc16g.root");
+  createTree("lhc16p","tree_lhc16g.root");
+  createTree("lhc17p","tree_lhc17p.root");
+  createTree("lhc18d","tree_lhc18d.root");
 }

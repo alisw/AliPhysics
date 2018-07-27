@@ -6,4 +6,5 @@
   gROOT->ProcessLine(".L readOCDB_LED.C+");
   gROOT->ProcessLine(".L plotOCDB_Temperature.C+");
   gROOT->ProcessLine(".L plotOCDB_LED.C+");
+  gROOT->ProcessLine(".L createTree.C+");
 }

@@ -36,15 +36,15 @@ void anaTree(const char *ifile="treefile.root", const char *ofile="outhist.root"
     gLedVsT[i] = new TProfile("","Led info;T;",1000,15,35);
     gLedVsT[i]->SetMarkerStyle(20);
     gLedVsT[i]->SetMarkerSize(1.2);
-    gLedVsT[i]->SetMarkerColor(i+1);
-    gLedVsT[i]->SetLineColor(i+1);
+    gLedVsT[i]->SetMarkerColor(1);
+    gLedVsT[i]->SetLineColor(1);
     gLedVsT[i]->SetLineWidth(3);
     gLedVsT[i]->SetName(Form("ledsm%d",i));
     gRatVsT[i] = new TProfile("","Led/LedMon;T",1000,15,35);
     gRatVsT[i]->SetMarkerStyle(20);
     gRatVsT[i]->SetMarkerSize(1.2);
-    gRatVsT[i]->SetMarkerColor(i+1);
-    gRatVsT[i]->SetLineColor(i+1);
+    gRatVsT[i]->SetMarkerColor(1);
+    gRatVsT[i]->SetLineColor(1);
     gRatVsT[i]->SetLineWidth(3);
     gRatVsT[i]->SetName(Form("ledovermonsm%d",i));
   }
@@ -62,18 +62,21 @@ void anaTree(const char *ifile="treefile.root", const char *ofile="outhist.root"
       Double_t monM = cell->fMonM;
       Double_t monR = cell->fMonR;
       Double_t locT = cell->fLocT;
-      if ((locT<5)||(locT>45))
+      Double_t smT  = cell->fSMT;
+
+      Double_t T = locT; // use local or SM T, change here
+      if ((T<5)||(T>45))
 	continue;
       if ((ledM<=0)||(ledR<=0))
 	continue;
       Double_t w = ledR;
       TProfile *h = gLedVsT[sm];
-      h->Fill(locT,ledM,w);
+      h->Fill(T,ledM,w);
       if ((monM<=0)||(monR<=0))
 	continue;
       Double_t w2=TMath::Sqrt(ledR*ledR+monM*monM);
       TProfile *h2 = gRatVsT[sm];
-      h2->Fill(locT,ledM/monM,w2);
+      h2->Fill(T,ledM/monM,w2);
     }
   }
 
