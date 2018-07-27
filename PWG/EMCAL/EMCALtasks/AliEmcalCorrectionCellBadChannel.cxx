@@ -49,6 +49,18 @@ Bool_t AliEmcalCorrectionCellBadChannel::Initialize()
 
   fRecoUtils->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);
 
+  Bool_t dead = kFALSE;
+  GetProperty("acceptDead", dead);
+  if ( dead ) fRecoUtils->SetDeadChannelAsGood();
+
+  Bool_t hot = kFALSE;
+  GetProperty("acceptHot", hot);
+  if ( hot ) fRecoUtils->SetHotChannelAsGood();  
+  
+  Bool_t warm = kFALSE;
+  GetProperty("acceptWarm", warm);
+  if ( warm ) fRecoUtils->SetWarmChannelAsGood();
+  
   return kTRUE;
 }
 

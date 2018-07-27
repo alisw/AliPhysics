@@ -47,6 +47,7 @@ class AliVCaloCells;
 class AliVEvent;
 #include "AliLog.h"
 class AliMCEvent;
+#include "AliCaloCalibPedestal.h"
 
 // EMCAL includes
 #include "AliEMCALRecoUtilsBase.h"
@@ -259,12 +260,17 @@ public:
                                                            if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap() ; }
   TObjArray* GetEMCALBadChannelStatusMapArray()    const { return fEMCALBadChannelMap ; }
   void     InitEMCALBadChannelStatusMap() ;
-  Int_t    GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-    if(fEMCALBadChannelMap) return (Int_t) ((TH2I*)fEMCALBadChannelMap->At(iSM))->GetBinContent(iCol,iRow); 
-    else return 0;}//Channel is ok by default
-  void     SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
+  void     SetEMCALBadChannelStatusSelection(Bool_t all, Bool_t dead, Bool_t hot, Bool_t warm);
+  void     SetWarmChannelAsGood() 
+           { fBadStatusSelection[0] = kFALSE; fBadStatusSelection[AliCaloCalibPedestal::kWarning] = kFALSE; }
+  void     SetDeadChannelAsGood() 
+           { fBadStatusSelection[0] = kFALSE; fBadStatusSelection[AliCaloCalibPedestal::kDead]    = kFALSE; }
+  void     SetHotChannelAsGood() 
+           { fBadStatusSelection[0] = kFALSE; fBadStatusSelection[AliCaloCalibPedestal::kHot]     = kFALSE; } 
+  Bool_t   GetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Int_t & status) const ;
+  void     SetEMCALChannelStatus(Int_t iSM , Int_t iCol, Int_t iRow, Double_t status = 1) { 
     if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap()               ;
-    ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,c)    ; }
+    ((TH2I*)fEMCALBadChannelMap->At(iSM))->SetBinContent(iCol,iRow,status)    ; }
   TH2I *   GetEMCALChannelStatusMap(Int_t iSM)     const { return (TH2I*)fEMCALBadChannelMap->At(iSM) ; }
   void     SetEMCALChannelStatusMap(const TObjArray *map);
   void     SetEMCALChannelStatusMap(Int_t iSM , const TH2I* h);
@@ -480,7 +486,12 @@ private:
   Bool_t     fRemoveBadChannels;         ///< Check the channel status provided and remove clusters with bad channels
   Bool_t     fRecalDistToBadChannels;    ///< Calculate distance from highest energy tower of cluster to closes bad channel
   TObjArray* fEMCALBadChannelMap;        ///< Array of histograms with map of bad channels, EMCAL
-
+  Bool_t     fBadStatusSelection[4];     ///< Declare as bad all the types of bad channels or only some. 
+                                         ///<   0- Set all types to bad if true
+                                         ///<   1- Set dead as good if false
+                                         ///<   2- Set hot as good if false
+                                         ///<   3- Set warm as good if false
+  
   // Border cells
   Int_t      fNCellsFromEMCALBorder;     ///< Number of cells from EMCAL border the cell with maximum amplitude has to be.
   Bool_t     fNoEMCALBorderAtEta0;       ///< Do fiducial cut in EMCAL region eta = 0?
