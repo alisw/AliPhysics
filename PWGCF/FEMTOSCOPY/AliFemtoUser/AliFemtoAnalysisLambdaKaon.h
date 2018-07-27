@@ -94,7 +94,10 @@ struct AnalysisParams
   unsigned int minCollectionSize;
 
   bool verbose;
+
   bool implementAvgSepCuts;
+  bool implementPairCutsOnlyInKStarCfs;
+
   bool writePairKinematics;
   bool isMCRun;
   bool isMBAnalysis;
@@ -403,6 +406,9 @@ protected:
   TString fOutputName;		      /* name given to output directory for specific analysis*/
   TH1F* fMultHist;			      //histogram of event multiplicities to ensure event cuts are properly implemented
   bool fImplementAvgSepCuts;		      //Self-explanatory, set to kTRUE when I want Avg Sep cuts implemented
+  bool fImplementPairCutsOnlyInKStarCfs;  //This will allow me to have an unbiased sample for fNumerator_RotatePar2 in AliFemtoCorrFctnKStar
+                                          //As implied by name, pair cut will not be implemented in AliFemtoSimpleAnalysis, but only in the
+                                          //AliFemtoCorrFctnKStar objects
   bool fWritePairKinematics;
   bool fIsMCRun;
   bool fIsMBAnalysis;

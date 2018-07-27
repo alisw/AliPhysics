@@ -1892,10 +1892,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, TPar
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),particle->Phi(),absID);
     if(ok)
     {
-      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t icol = -1, irow = -1, iRCU = -1, status = 0;
       Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
-      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
-      if(status > 0) ok = kFALSE;
+      Bool_t bad    = GetEMCALChannelStatus(nModule,icol,irow,status);
+      if( bad ) ok = kFALSE;
     }
 
     return ok ;
@@ -1934,10 +1934,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliA
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),phi,absID);
     if(ok)
     {
-      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t icol = -1, irow = -1, iRCU = -1, status = 0;
       Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
-      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
-      if(status > 0) ok = kFALSE;
+      Bool_t bad    = GetEMCALChannelStatus(nModule,icol,irow,status);
+      if( bad ) ok = kFALSE;
     }
 
     return ok ;
@@ -1976,10 +1976,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, AliV
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(particle->Eta(),phi,absID);
     if(ok)
     {
-      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t icol = -1, irow = -1, iRCU = -1, status = 0;
       Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
-      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
-      if(status > 0) ok = kFALSE;
+      Bool_t bad    = GetEMCALChannelStatus(nModule,icol,irow,status);
+      if( bad ) ok = kFALSE;
     }
     
     return ok ;
@@ -2018,10 +2018,10 @@ Bool_t AliCalorimeterUtils::IsMCParticleInCalorimeterAcceptance(Int_t calo, Floa
     Bool_t ok = GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(eta,phi,absID);
     if(ok)
     {
-      Int_t icol = -1, irow = -1, iRCU = -1;
+      Int_t icol = -1, irow = -1, iRCU = -1, status = 0;
       Int_t nModule = GetModuleNumberCellIndexes(absID,calo, icol, irow, iRCU);
-      Int_t status  = GetEMCALChannelStatus(nModule,icol,irow);
-      if(status > 0) ok = kFALSE;
+      Bool_t bad    = GetEMCALChannelStatus(nModule,icol,irow,status);
+      if( bad ) ok = kFALSE;
     }
 
     return ok ;

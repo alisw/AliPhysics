@@ -59,6 +59,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetM20(Double_t min, Double_t max) {M20Min = min, M20Max = max;};
 		void                    SetEop(Double_t min, Double_t max) {EopMin = min, EopMax = max;};
 		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
+		void                    SetptAsso(Double_t ptassoMin) {ptAssoMin = ptassoMin;};
 
 	private:
 		AliAODEvent*            fAOD;           //! input event
@@ -80,6 +81,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t M20Min, M20Max;
 		Double_t EopMin, EopMax;
 		Double_t MaxConeR;
+		Double_t ptAssoMin;
 
 		//==== basic parameters ====
 		TH1F*                   fNevents;

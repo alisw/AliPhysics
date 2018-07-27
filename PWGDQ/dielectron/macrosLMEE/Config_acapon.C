@@ -8,11 +8,6 @@ TVectorD *BinsToVector(Int_t nbins, Double_t min, Double_t max);
 TVectorD *GetVector(Int_t var);
 enum {kMee=0, kMee500, kPtee, kP2D, kRuns, kPhiV, kOpAng, kOpAng2, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx, kCent, kPhi2D};
 
-//TString names=("all");
-TString names=("TTreeCuts");
-//TString names=("all;electrons");
-TObjArray *arrNames = names.Tokenize(";");
-const Int_t nDie = arrNames->GetEntries();
 Bool_t MCenabled = kTRUE; //Needed for LMEEcutlib
 Bool_t isQAtask =  kTRUE;
 Int_t selectedCuts = -1;
@@ -100,6 +95,16 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC = kFALSE, Bool_
     else if(cutDefinition == "TTreeCuts"){
         selectedCuts = LMEECutLib::kTTreeCuts;
 				selectedPID = LMEECutLib::kTTreeCuts;
+        //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
+        die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
+        if(pairCuts){
+            //die->GetPairPreFilter().AddCuts( LMcutlib->GetPairCutsPre(selectedCuts) );
+            die->GetPairFilter().AddCuts( LMcutlib->GetPairCuts(selectedCuts) );
+        }
+    }
+    else if(cutDefinition == "V0_tight"){
+        selectedCuts = LMEECutLib::kV0_tight;
+				selectedPID = LMEECutLib::kV0_tight;
         //die->GetEventFilter().AddCuts( LMcutlib->GetCentralityCuts(selectedCuts) );
         die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(selectedCuts, selectedPID) );
         if(pairCuts){

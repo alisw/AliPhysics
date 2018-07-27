@@ -477,14 +477,21 @@ Double_t AliHFCorrFitter::FindBaseline(){
     Float_t *hval=new Float_t[fHist->GetNbinsX()];// needed because problems were found with usage of fHist->GetArray();
     for(Int_t k=1;k<=fHist->GetNbinsX();k++){
       hval[k-1]=fHist->GetBinContent(k);
+      //printf("bin %d val %f #pm %f\n",k,hval[k-1],fHist->GetBinError(k));
     }
     Double_t errAv=0.,av=0.;
     TMath::Sort(fHist->GetNbinsX(),hval,ind,kFALSE);//  KFALSE->increasing order
     // Average of abs(fFixBase) lower points
     for(Int_t k=0;k<npointsAv;k++){
-      //      Printf("Point %d, index %d,value: %f",k,ind[k],fHist->GetBinContent(ind[k]+1));
+      //Printf("Point %d, index %d,value: %f\n",k,ind[k],fHist->GetBinContent(ind[k]+1));
+      if(fHist->GetBinError(ind[k]+1)==0.) //***temporary fix by Fabio, in case of null entries which induce a crash. Anyway, try to find a better fix, could bias the basline in upward direction!!!***
+      {
+        printf("****** WARNING!!! ****** Null entries found in histogram to be fit! These points are been excluded from baseline evaluation...\n");
+        npointsAv++;
+        continue;
+      }     
       av+=(fHist->GetBinContent(ind[k]+1)/(fHist->GetBinError(ind[k]+1)*fHist->GetBinError(ind[k]+1)));
-      //printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],h->GetBinContent(ind[k]+1),h->GetBinError(ind[k]+1));
+      //printf("havl: %f, hist :%f+-%f \n",hval[ind[k]+1],fHist->GetBinContent(ind[k]+1),fHist->GetBinError(ind[k]+1));
       errAv+=1./(fHist->GetBinError(ind[k]+1)*fHist->GetBinError(ind[k]+1));	  
     }
     av/=errAv;
@@ -582,12 +589,13 @@ Double_t AliHFCorrFitter::FindBaseline(){
      Printf("max and min range:%f and %f",fMaxBaselineRange,fMinBaselineRange);
      if(fHist->GetBinLowEdge(binPhi)>=-1.*fMaxBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=-1.*fMinBaselineRange){
        cout << "iBin = " << binPhi << endl;
+       if(fHist->GetBinError(binPhi)==0) {printf("*** WARNING! 0-entries bin! Bin being skipped... ***\n"); continue;} //ADDED BY FABIO FOR EMPTY BIN CASES!!
        av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
        errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
      }
-     
      if(fHist->GetBinLowEdge(binPhi)>=fMinBaselineRange && fHist->GetBinLowEdge(binPhi+1)<=fMaxBaselineRange){
        cout << "iBin = " << binPhi << endl;
+       if(fHist->GetBinError(binPhi)==0) {printf("*** WARNING! 0-entries bin! Bin being skipped... ***\n"); continue;} //ADDED BY FABIO FOR EMPTY BIN CASES!!
        av+=fHist->GetBinContent(binPhi)/(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
        errAv+=1./(fHist->GetBinError(binPhi)*fHist->GetBinError(binPhi));
      }

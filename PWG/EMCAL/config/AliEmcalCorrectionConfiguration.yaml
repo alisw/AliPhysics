@@ -56,6 +56,9 @@ CellEnergy:                                         # Cell Energy correction com
 CellBadChannel:                                     # Bad channel removal at the cell level component
     enabled: false                                  # Whether to enable the task
     createHistos: false                             # Whether the task should create output histograms
+    acceptDead: false                               # Declare dead channels as good
+    acceptHot: false                                # Declare hot channels as good
+    acceptWarm: false                               # Declare warm channels as good  
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
 CellTimeCalib:                                      # Cell Time Calibration component

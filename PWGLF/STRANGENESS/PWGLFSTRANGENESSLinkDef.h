@@ -1,6 +1,6 @@
 #ifdef __CINT__
 
-#pragma link off all glols;
+#pragma link off all globals;
 #pragma link off all classes;
 #pragma link off all functions;
 
@@ -54,4 +54,6 @@
 #pragma link C++ class AliAnalysisTaskMCPredictions+; 
 #pragma link C++ class Lifetimes::MiniV0+;
 #pragma link C++ class std::vector<Lifetimes::MiniV0>+;
+#pragma link C++ class Lifetimes::MCparticle+;
+#pragma link C++ class std::vector<Lifetimes::MCparticle>+;
 #endif

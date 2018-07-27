@@ -8,10 +8,10 @@ using namespace std;
 ClassImp(AliKFConversionMother)
 
 AliKFConversionMother::AliKFConversionMother() :
-AliKFParticle(),
-    fMCLabel(-1),
-    fOpeningAngle(-1),
-    fAlpha(-1)
+  AliKFParticle(),
+  fOpeningAngle(-1),
+  fAlpha(-1),
+  fMCLabel(-1)
 
 {
   //Default constructor
@@ -19,52 +19,31 @@ AliKFParticle(),
   fLabel[1] = -1;
 }
 
-/*AliKFConversionMother::AliKFConversionMother(const AliKFParticle& d1, const AliKFParticle& d2) :
-AliKFParticle(d1,d2),
-fOpeningAngle(-1),
-fAlpha(-1)
-
+AliKFConversionMother::AliKFConversionMother(const AliKFConversionPhoton& d1, const AliKFConversionPhoton& d2) :
+  AliKFParticle(d1,d2),
+  fOpeningAngle(-1),
+  fAlpha(-1),
+  fMCLabel(-1)
 {
   //Default constructor
   fLabel[0] = -1;
   fLabel[1] = -1;
 
-	// Calculate Opening Angle
-	TVector3 v1(d1.GetPx(),d1.GetPy(),d1.GetPz());
-	TVector3 v2(d2.GetPx(),d2.GetPy(),d2.GetPz());
-      	fOpeningAngle=v1.Angle(v2);
-	// Calculate Alpha
-	if((d1.GetE()+d2.GetE()) != 0){
-	    fAlpha=TMath::Abs((d1.GetE()-d2.GetE())/(d1.GetE()+d2.GetE()));
-	}
-}*/
-
-AliKFConversionMother::AliKFConversionMother(const AliKFConversionPhoton& d1, const AliKFConversionPhoton& d2) :
-AliKFParticle(d1,d2),
-fMCLabel(-1),
-fOpeningAngle(-1),
-fAlpha(-1)
-
-{
-  //Default constructor
-    fLabel[0] = -1;
-    fLabel[1] = -1;
-
-	// Calculate Opening Angle
-	TVector3 v1(d1.GetPx(),d1.GetPy(),d1.GetPz());
-	TVector3 v2(d2.GetPx(),d2.GetPy(),d2.GetPz());
-      	fOpeningAngle=v1.Angle(v2);
-	// Calculate Alpha
-	if((d1.GetE()+d2.GetE()) != 0){
-	    fAlpha=(d1.GetE()-d2.GetE())/(d1.GetE()+d2.GetE());
-	}
+  // Calculate Opening Angle
+  TVector3 v1(d1.GetPx(),d1.GetPy(),d1.GetPz());
+  TVector3 v2(d2.GetPx(),d2.GetPy(),d2.GetPz());
+        fOpeningAngle=v1.Angle(v2);
+  // Calculate Alpha
+  if((d1.GetE()+d2.GetE()) != 0){
+      fAlpha=(d1.GetE()-d2.GetE())/(d1.GetE()+d2.GetE());
+  }
 }
 
 AliKFConversionMother::AliKFConversionMother(const AliKFConversionMother & original) :
-AliKFParticle(original),
-fMCLabel(original.fMCLabel),
-fOpeningAngle(original.fOpeningAngle),
-fAlpha(original.fAlpha)
+  AliKFParticle(original),
+  fOpeningAngle(original.fOpeningAngle),
+  fAlpha(original.fAlpha),
+  fMCLabel(original.fMCLabel)
 {
   //Copy constructor
   fLabel[0] = original.fLabel[0];
@@ -80,20 +59,20 @@ AliKFConversionMother & AliKFConversionMother::operator = (const AliKFConversion
 
 Double_t AliKFConversionMother::GetRapidity()
 {
-    Double_t rapidity;
-    if(GetE() - GetPz() <= 0 || GetE() + GetPz() <= 0){
-	AliWarning("Error: |Pz| > E !!!! ");
-	rapidity=8.;
-    } else {
-	rapidity = 0.5*(TMath::Log((GetE() +GetPz()) / (GetE()-GetPz())));
-    }
+  Double_t rapidity;
+  if(GetE() - GetPz() <= 0 || GetE() + GetPz() <= 0){
+    AliWarning("Error: |Pz| > E !!!! ");
+    rapidity=8.;
+  } else {
+    rapidity = 0.5*(TMath::Log((GetE() +GetPz()) / (GetE()-GetPz())));
+  }
 
 return rapidity;
 }
 
 Double_t AliKFConversionMother::Phi() const
 {
-    Double_t phi = AliKFParticle::GetPhi();
-    if (phi < 0.) phi += 2. * TMath::Pi();
-    return phi;
+  Double_t phi = AliKFParticle::GetPhi();
+  if (phi < 0.) phi += 2. * TMath::Pi();
+  return phi;
 }

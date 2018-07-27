@@ -22,9 +22,13 @@
 Bool_t SameBinning(const TH1* h1, const TH1* h2, const Bool_t check)
 {
   Infomsg("SameBinning", "Checking same binning");
+  if (!h1 || !h2) {
+    Errormsg("SameBinning", "Input histogram is not found!");
+    return 1;
+  }
   const Int_t n[2] = { h1->GetNbinsX(), h2->GetNbinsX() };
   if (n[0] != n[1]) {
-    Errormsg("SameBinning", Form("Different number of bins"));
+    Errormsg("SameBinning", Form("Different number of bins: %s %i and %s %i", h1->GetName(), n[0], h2->GetName(), n[1]));
     return kFALSE;
   }
 
@@ -51,7 +55,7 @@ Bool_t SameBinning(const TH1* h1, const TH1* h2, const Bool_t check)
 //Function to get the starting point of the histogram with a minimum request on the count number
 Int_t GetHistoLowRange(TH1F* h, const Int_t nmin, const Int_t ncounts, const Int_t secondmin)
 {
-  if (h->GetEffectiveEntries() < nmin)
+  if (!h || h->GetEffectiveEntries() < nmin)
     return 1;
   const Int_t firstbin = h->FindFirstBinAbove(nmin);
   Int_t combo = 0;
@@ -73,11 +77,17 @@ Int_t GetFirstHistogram(const TObjArray* templates, const Int_t nmin)
   const Int_t entries = templates->GetEntries();
   Int_t binindex[entries];
   Int_t sorted[entries];
+  Int_t N = 0;
   for (Int_t i = 0; i < entries; i++) {
-    binindex[i] = GetHistoLowRange(static_cast<TH1F*>(templates->At(i)), nmin);
+    TH1F *H = dynamic_cast<TH1F*>(templates->At(i));
+    if(!H) {
+      Infomsg("GetFirstHistogram", Form("While looking for the first Histogram I skipped the entry %i as it is not a TH1F: %s is a %s", i, templates->At(i)->GetName(), templates->At(i)->ClassName()));
+      continue;
+    }
+    binindex[i] = GetHistoLowRange(H, nmin);
+    N++;
   }
-  TMath::Sort(entries, binindex, sorted, kFALSE); //First shall be the one with the lowest value!
-
+  TMath::Sort(N, binindex, sorted, kFALSE); //First shall be the one with the lowest value!
   return sorted[0];
 }
 
@@ -85,6 +95,10 @@ Int_t GetFirstHistogram(const TObjArray* templates, const Int_t nmin)
 //Function to get the starting point after a certain value
 Int_t GetHistoLowRangeAfter(TH1F* h, const Int_t nmin, const Int_t after)
 {
+  if (h == 0x0) {
+    Errormsg("GetHistoLowRangeAfter", "Input histogram is not found!");
+    return 1;
+  }
   if (h->GetEffectiveEntries() < nmin) {
     Errormsg("GetHistoLowRangeAfter", "Histogram has not enough entries");
     return 1;
@@ -100,6 +114,10 @@ Int_t GetHistoLowRangeAfter(TH1F* h, const Int_t nmin, const Int_t after)
 //Function to get the starting point after a certain value, without any holes in the histogram
 Int_t GetHistoNoHolesAfter(TH1F* h, const Int_t after, const Int_t check)
 {
+  if (!h) {
+    Errormsg("GetHistoNoHolesAfter", "Input histogram is not found!");
+    return 1;
+  }
   Infomsg("GetHistoNoHolesAfter", Form("Checking that there are no holes in %s", h->GetName()));
   for (Int_t i = after + check; i > after; i--) {
     //     cout<<i<<" "<<h->GetBinContent(i)<<endl;
@@ -148,20 +166,26 @@ Bool_t IsHistogramInRange(TH1* h, const Double_t rangelow, const Double_t rangeh
   const Int_t binlow = h->FindBin(rangelow);
   const Int_t binhigh = h->FindBin(rangehigh);
   if (verbose)
-    cout << "Search for content in interval [" << binlow << " (" << rangelow << "), " << binhigh << " (" << rangehigh << ")]" << endl;
+    Printf("For %s searching for content in interval [%i (%f), %i (%f)] with threshold %f", h->GetName(), binlow, rangelow, binhigh, rangehigh, threshold);
+  //
   Double_t integral = 0;
   for (Int_t i = binlow; i <= binhigh; i++) {
     const Double_t value = h->GetBinContent(i);
+    if (verbose)
+      Printf("Bin %i [%f, %f, %f] has content %f", i, h->GetXaxis()->GetBinLowEdge(i), h->GetXaxis()->GetBinCenter(i), h->GetXaxis()->GetBinUpEdge(i), value);
     if (value <= 0)
       continue;
-    if (verbose)
-      cout << "Bin " << i << "(" << h->GetXaxis()->GetBinCenter(i) << ") has content " << value << endl;
     integral += value;
   }
-  if (integral > threshold)
+  if (integral > threshold) {
+    if (verbose)
+      Printf("Intgral is above threshold: %f > %f", integral, threshold);
     return kTRUE;
-  else
+  } else {
+    if (verbose)
+      Printf("Intgral is below threshold: %f < %f", integral, threshold);
     return kFALSE;
+  }
 }
 
 //_________________________________________________________________________________________________

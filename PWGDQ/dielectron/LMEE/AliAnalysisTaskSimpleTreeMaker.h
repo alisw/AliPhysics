@@ -159,6 +159,8 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
 		Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
 
+		Bool_t CheckGenerator(Int_t trackID);
+
   private:
  
 		Int_t IsEventAccepted(AliVEvent* event);
@@ -170,9 +172,10 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 
 		Bool_t hasMC;
 
-		AliESDtrackCuts* fESDtrackCuts; // ESD track cuts object
+		AliESDtrackCuts* fESDtrackCuts;
 
 		AliPIDResponse* fPIDResponse; //! PID response object
+		AliMCEvent* fMCevent; //!
 
 		TTree* fTree;
 	
@@ -185,20 +188,20 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		AliDielectronTrackCuts *trackCuts;
 		AliDielectronPID *pidCuts;
 		AliDielectronCutGroup* cuts;
-		AliAnalysisFilter* trackFilter; 
+		AliAnalysisFilter* trackFilter;
 
 		//Class needed to use PID within the Dielectron Framework
 		AliDielectronVarManager* varManager;
 
-		//TTree branch variables
-		//Event variables
+		// TTree branch variables
+		// Event variables
 		Double_t primaryVertex[3];
 		Double_t multiplicityV0A;
 		Double_t multiplicityV0C;
 		Double_t multiplicityCL1;
 		Int_t runNumber;
 		Int_t event;
-		//Reconstructed
+		// Reconstructed
 		Double_t pt;
 		Double_t eta;
 		Double_t phi;
@@ -238,6 +241,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Int_t iPdgMother;
 		Bool_t HasMother;
 		Int_t motherLabel;
+		Bool_t isInj; // If track is injected (MC only)
 		//V0 features
 		Double_t pointingAngle;
 		Double_t daughtersDCA;
@@ -246,7 +250,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Double_t ptArm;
 		Double_t alpha;
 
-		TH1F* fQAhist;
+		TH1F* fQAhist; //!
 		Double_t fCentralityPercentileMin;// minimum centrality threshold (default = 0)
 		Double_t fCentralityPercentileMax;// maximum centrality threshold (default = 80)
 
@@ -274,7 +278,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Bool_t fHasSDD;
 
 		Bool_t fIsV0tree;
-		TH2F* fArmPlot;
+		TH2F* fArmPlot; //!
 
 		Bool_t fIsAOD;
 		Int_t fFilterBit;
@@ -286,7 +290,11 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Bool_t fUseTPCcorr;
 		TH3D* fWidth;
 		TH3D* fMean;
-		ClassDef(AliAnalysisTaskSimpleTreeMaker, 4); //
+
+		// Store list of generator hashes which can be checked against to determine
+		// whether or not the track was injected
+		std::vector<UInt_t> fGeneratorHashes;
+		ClassDef(AliAnalysisTaskSimpleTreeMaker, 5); //
 
 };
 

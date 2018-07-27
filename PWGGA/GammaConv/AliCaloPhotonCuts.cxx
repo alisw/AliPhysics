@@ -4686,6 +4686,12 @@ Float_t AliCaloPhotonCuts::CalculateMinM02 (Int_t minM02, Float_t clusEnergy){
       return 0.28;
     case 12:
       return 0.29;
+    case 13:
+      return 0.33;
+    case 14:
+      return 0.36;
+    case 15:
+      return 0.39;
 
     default:
       AliError(Form("Min M02 for merged cluster Cut not defined %d",minM02));
@@ -6402,7 +6408,8 @@ Bool_t AliCaloPhotonCuts::AcceptCellByBadChannelMap(Int_t absID ){
     fGeomEMCAL->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
 
     // Do not include bad channels found in analysis,
-    if (fEMCALRecUtils->GetEMCALChannelStatus(imod, ieta, iphi) == 0 )
+    Int_t status = 0;
+    if (fEMCALRecUtils->GetEMCALChannelStatus(imod, ieta, iphi, status) == 0 )
       return kTRUE;
     else
       return kFALSE;

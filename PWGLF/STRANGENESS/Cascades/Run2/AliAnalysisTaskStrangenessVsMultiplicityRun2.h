@@ -32,13 +32,15 @@ class TH3F;
 class TVector3;
 class THnSparse;
 class TRandom3;
-class TProfile; 
+class TProfile;
 
 class AliESDpid;
 class AliESDtrackCuts;
 class AliAnalysisUtils;
 class AliESDEvent;
+class AliESDtrack;
 class AliPhysicsSelection;
+class AliPIDResponse;
 class AliCFContainer;
 class AliV0Result;
 class AliCascadeResult;
@@ -46,7 +48,7 @@ class AliExternalTrackParam;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
-//#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 
 class AliAnalysisTaskStrangenessVsMultiplicityRun2 : public AliAnalysisTaskSE {
@@ -97,9 +99,6 @@ public:
 //---------------------------------------------------------------------------------------
     void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
         fkDoExtraEvSels = lUseExtraEvSels;
-    }
-    AliEventCuts* GetEventCuts (){
-        return &fEventCuts; //adddress of this object for manipulation at runtime
     }
     void SetUseOldCentrality ( Bool_t lUseOldCent = kTRUE) {
         fkUseOldCentrality = lUseOldCent;
@@ -209,6 +208,8 @@ public:
     Float_t GetDCAz(AliESDtrack *lTrack);
     Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, AliESDEvent *lEvent);
 //---------------------------------------------------------------------------------------
+    //Implementation of event selection utility
+    AliEventCuts fEventCuts; /// Event cuts class
 
 
 private:
@@ -225,16 +226,13 @@ private:
     TTree  *fTreeV0;              //! Output Tree, V0s
     TTree  *fTreeCascade;              //! Output Tree, Cascades
 
-    AliPIDResponse *fPIDResponse;     // PID response object
-    AliESDtrackCuts *fESDtrackCuts;   // ESD track cuts used for primary track definition
-    AliESDtrackCuts *fESDtrackCutsITSsa2010;  // ESD track cuts used for ITSsa track definition
-    AliESDtrackCuts *fESDtrackCutsGlobal2015; // ESD track cuts used for global track definition
-    AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
+    AliPIDResponse *fPIDResponse;     //! PID response object
+    AliESDtrackCuts *fESDtrackCuts;   //! ESD track cuts used for primary track definition
+    AliESDtrackCuts *fESDtrackCutsITSsa2010;  //! ESD track cuts used for ITSsa track definition
+    AliESDtrackCuts *fESDtrackCutsGlobal2015; //! ESD track cuts used for global track definition
+    AliAnalysisUtils *fUtils;         //! analysis utils (for MV pileup selection)
 
-    //Implementation of event selection utility
-    AliEventCuts fEventCuts; /// Event cuts class
-
-    TRandom3 *fRand;
+    TRandom3 *fRand; //!
 
     //Objects Controlling Task Behaviour
     Bool_t fkSaveEventTree;           //if true, save Event TTree
@@ -399,8 +397,8 @@ private:
     Float_t fTreeVariablePrimVertexY;
     Float_t fTreeVariablePrimVertexZ;
     
-    AliExternalTrackParam *fTreeVariablePosTrack;
-    AliExternalTrackParam *fTreeVariableNegTrack;
+    AliExternalTrackParam *fTreeVariablePosTrack; //!
+    AliExternalTrackParam *fTreeVariableNegTrack; //!
     
     Float_t fTreeVariableMagneticField;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -603,9 +601,9 @@ private:
     Float_t fTreeCascVarPrimVertexY;
     Float_t fTreeCascVarPrimVertexZ;
     
-    AliExternalTrackParam *fTreeCascVarBachTrack;
-    AliExternalTrackParam *fTreeCascVarPosTrack;
-    AliExternalTrackParam *fTreeCascVarNegTrack;
+    AliExternalTrackParam *fTreeCascVarBachTrack;//!
+    AliExternalTrackParam *fTreeCascVarPosTrack; //!
+    AliExternalTrackParam *fTreeCascVarNegTrack; //!
     
     Float_t fTreeCascVarMagneticField;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -620,7 +618,7 @@ private:
     AliAnalysisTaskStrangenessVsMultiplicityRun2(const AliAnalysisTaskStrangenessVsMultiplicityRun2&);            // not implemented
     AliAnalysisTaskStrangenessVsMultiplicityRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityRun2&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 2);
+    ClassDef(AliAnalysisTaskStrangenessVsMultiplicityRun2, 3);
     //1: first implementation
 };
 

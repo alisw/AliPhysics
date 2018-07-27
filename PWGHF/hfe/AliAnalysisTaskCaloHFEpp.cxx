@@ -81,6 +81,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 				EopMin(0),
 				EopMax(0),
 				MaxConeR(0),
+				ptAssoMin(0),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -195,6 +196,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 				EopMin(0),
 				EopMax(0),
 				MaxConeR(0),
+				ptAssoMin(0),
 				//==== basic parameters ====
 				fNevents(0),
 				fHist_VertexZ(0),
@@ -491,6 +493,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 				Double_t CutM20[2] = {M20Min,M20Max};
 				Double_t CutEop[2] = {EopMin,EopMax};
 				Double_t CutEopHad = -3.5;
+				Double_t CutptAsso = ptAssoMin;
 				//################################################################# //
 
 				UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -998,6 +1001,10 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 				//////Non-HFE - Invariant mass method//////
 				///////////////////////////////////////////
 
+				//##################### Set cone radius  ##################### //
+				Double_t CutptAsso = ptAssoMin;
+				//################################################################# //
+
 				AliESDtrackCuts* esdTrackCutsAsso = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 				esdTrackCutsAsso->SetAcceptKinkDaughters(kFALSE);
 				esdTrackCutsAsso->SetRequireTPCRefit(kTRUE);
@@ -1062,7 +1069,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 								}
 
 								//-------loose cut on partner electron
-								if(ptAsso <0.2) continue;
+								if(ptAsso <CutptAsso) continue;
+								//if(ptAsso <0.2) continue;
 								if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
 								if(nsigma < -3 || nsigma > 3) continue;
                 if(AssoTPCchi2perNDF >= 4) continue;

@@ -43,6 +43,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
   fOutputName(fAnalysisTags[aAnalysisType]),
   fMultHist(NULL),
   fImplementAvgSepCuts(aImplementAvgSepCuts),
+  fImplementPairCutsOnlyInKStarCfs(false),
   fWritePairKinematics(aWritePairKinematics),
   fIsMCRun(aIsMCRun),
   fIsMBAnalysis(kFALSE),
@@ -71,7 +72,8 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AliFemtoAnalysisLambdaKao
   fAnalysisParams.analysisType = aAnalysisType;
 
   fAnalysisParams.isMCRun = aIsMCRun;
-  fAnalysisParams.implementVertexCorrections = aImplementAvgSepCuts;
+  fAnalysisParams.implementAvgSepCuts = fImplementAvgSepCuts;
+  fAnalysisParams.implementPairCutsOnlyInKStarCfs = fImplementPairCutsOnlyInKStarCfs;
   fAnalysisParams.writePairKinematics = aWritePairKinematics;
 
   SetParticleTypes(fAnalysisType);
@@ -134,6 +136,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(AnalysisParams &aAnParams
   fOutputName(fAnalysisTags[fAnalysisType]),
   fMultHist(NULL),
   fImplementAvgSepCuts(aAnParams.implementAvgSepCuts),
+  fImplementPairCutsOnlyInKStarCfs(aAnParams.implementPairCutsOnlyInKStarCfs),
   fWritePairKinematics(aAnParams.writePairKinematics),
   fIsMCRun(aAnParams.isMCRun),
   fIsMBAnalysis(aAnParams.isMBAnalysis),
@@ -328,6 +331,7 @@ AliFemtoAnalysisLambdaKaon::AliFemtoAnalysisLambdaKaon(const AliFemtoAnalysisLam
   fOutputName(a.fOutputName),
   fMultHist(NULL),
   fImplementAvgSepCuts(a.fImplementAvgSepCuts),
+  fImplementPairCutsOnlyInKStarCfs(a.fImplementPairCutsOnlyInKStarCfs),
   fWritePairKinematics(a.fWritePairKinematics),
   fIsMCRun(a.fIsMCRun),
   fIsMBAnalysis(a.fIsMBAnalysis),
@@ -383,6 +387,7 @@ AliFemtoAnalysisLambdaKaon& AliFemtoAnalysisLambdaKaon::operator=(const AliFemto
   fOutputName = a.fOutputName;
   fMultHist = NULL;
   fImplementAvgSepCuts = a.fImplementAvgSepCuts;
+  fImplementPairCutsOnlyInKStarCfs = a.fImplementPairCutsOnlyInKStarCfs;
   fWritePairKinematics = a.fWritePairKinematics;
   fIsMCRun = a.fIsMCRun;
   fIsMBAnalysis = a.fIsMBAnalysis;
@@ -1748,7 +1753,13 @@ void AliFemtoAnalysisLambdaKaon::SetAnalysis(AliFemtoEventCut* aEventCut, AliFem
   SetEventCut(tEventCut);
   SetFirstParticleCut(tPartCut1);
   SetSecondParticleCut(tPartCut2);
-  SetPairCut(tPairCut);
+
+  if(fImplementPairCutsOnlyInKStarCfs)
+  {
+    AliFemtoDummyPairCut *tDummyPairCut = new AliFemtoDummyPairCut();
+    SetPairCut(tDummyPairCut);
+  }
+  else SetPairCut(tPairCut);
 
   AliFemtoCorrFctnIterator iter;
   for(iter=fCollectionOfCfs->begin(); iter!=fCollectionOfCfs->end(); iter++)

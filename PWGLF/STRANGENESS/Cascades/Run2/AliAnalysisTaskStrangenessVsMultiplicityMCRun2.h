@@ -257,6 +257,8 @@ public:
                   Double_t gg[3]); //second derivatives
     Double_t GetErrorInPosition(AliExternalTrackParam *t1) const;
     //---------------------------------------------------------------------------------------
+    //Implementation of event selection utility
+    AliEventCuts fEventCuts; /// Event cuts class
     
 private:
     // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -278,8 +280,7 @@ private:
     AliESDtrackCuts *fESDtrackCutsGlobal2015; // ESD track cuts used for global track definition
     AliAnalysisUtils *fUtils;         // analysis utils (for MV pileup selection)
     
-    //Implementation of event selection utility
-    AliEventCuts fEventCuts; /// Event cuts class
+
     
     TRandom3 *fRand;
     

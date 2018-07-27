@@ -133,6 +133,7 @@ enum CollSys { kPbPb,
   kPbp,
   kCollSysAll };
 const TString systemString[kCollSysAll] = { "PbPb", "pp", "XeXe", "pPb", "Pbp" };
+const TString systemTitle[kCollSysAll] = { "Pb#minusPb", "pp", "Xe#minusXe", "p#minusPb", "Pb#minusp" };
 
 const Double_t CSPEED = TMath::C() * 1.e2 / 1.e12; /* cm/ps */
 

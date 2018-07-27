@@ -6,12 +6,12 @@ using namespace std;
 ClassImp(AliConversionPhotonBase)
 
 AliConversionPhotonBase::AliConversionPhotonBase() :
-fV0Index(-1),
   fChi2perNDF(-1),
-  fTagged(kFALSE),
   fIMass(-999),
   fPsiPair(-999),
-  fQuality(0)
+  fV0Index(-1),
+  fQuality(0),
+  fTagged(kFALSE)
 {
   //Default constructor
   fLabel[0] = -1;
@@ -19,7 +19,7 @@ fV0Index(-1),
 
   fMCLabel[0]=-1;
   fMCLabel[1]=-1;
-  
+
 
   fArmenteros[0]=-999;
   fArmenteros[1]=-999;
@@ -31,13 +31,13 @@ fV0Index(-1),
 
 
 AliConversionPhotonBase::AliConversionPhotonBase(const AliConversionPhotonBase & original) :
-fV0Index(original.fV0Index),
-fChi2perNDF(original.fChi2perNDF),
-fTagged(original.fTagged),
-fIMass(original.fIMass),
-fPsiPair(original.fPsiPair),
-fQuality(original.fQuality)
-  {
+  fChi2perNDF(original.fChi2perNDF),
+  fIMass(original.fIMass),
+  fPsiPair(original.fPsiPair),
+  fV0Index(original.fV0Index),
+  fQuality(original.fQuality),
+  fTagged(original.fTagged)
+{
   //Copy constructor
   fLabel[0] = original.fLabel[0];
   fLabel[1] = original.fLabel[1];
@@ -67,43 +67,42 @@ AliConversionPhotonBase & AliConversionPhotonBase::operator = (const AliConversi
 }
 
 TParticle *AliConversionPhotonBase::GetMCParticle(AliMCEvent *mcEvent){
-    if(!mcEvent){printf("MCEvent not defined");return 0x0;}
+  if(!mcEvent){printf("MCEvent not defined");return 0x0;}
 
-    Int_t label=GetMCParticleLabel(mcEvent);
+  Int_t label=GetMCParticleLabel(mcEvent);
 
-    if(label>-1){
+  if(label>-1){
     return mcEvent->Particle(label);
-    }
+  }
 
-    return 0x0;
+  return 0x0;
 }
 
 Bool_t AliConversionPhotonBase::IsTruePhoton(AliMCEvent *mcEvent){
-    TParticle *mcgamma=GetMCParticle(mcEvent);
+  TParticle *mcgamma=GetMCParticle(mcEvent);
 
-    if(mcgamma){
-	// Check if it is a true photon
-	if(mcgamma->GetPdgCode()==22){
-        return kTRUE;
-	}
+  if(mcgamma){
+    // Check if it is a true photon
+    if(mcgamma->GetPdgCode()==22){
+          return kTRUE;
     }
-    return kFALSE;
+  }
+  return kFALSE;
 }
 
 Int_t AliConversionPhotonBase::GetMCParticleLabel(AliMCEvent *mcEvent){
-    if(!mcEvent){printf("MCEvent not defined");return -1;}
+  if(!mcEvent){printf("MCEvent not defined");return -1;}
 
-    TParticle *fPositiveMCParticle=GetPositiveMCDaughter(mcEvent);
-    TParticle *fNegativeMCParticle=GetNegativeMCDaughter(mcEvent);
+  TParticle *fPositiveMCParticle=GetPositiveMCDaughter(mcEvent);
+  TParticle *fNegativeMCParticle=GetNegativeMCDaughter(mcEvent);
 
-    if(!fPositiveMCParticle||!fNegativeMCParticle){return -1;}
+  if(!fPositiveMCParticle||!fNegativeMCParticle){return -1;}
 
-    if(fPositiveMCParticle->GetMother(0)>-1&&(fNegativeMCParticle->GetMother(0) == fPositiveMCParticle->GetMother(0))){
+  if(fPositiveMCParticle->GetMother(0)>-1&&(fNegativeMCParticle->GetMother(0) == fPositiveMCParticle->GetMother(0))){
+    return fPositiveMCParticle->GetMother(0);
+  }
 
-	    return fPositiveMCParticle->GetMother(0);
-    }
-
-    return -1;
+  return -1;
 }
 
 
@@ -112,36 +111,34 @@ TParticle *AliConversionPhotonBase::GetMCDaughter(AliMCEvent *mcEvent,Int_t labe
     if(label<0||label>1){printf("Requested index out of bounds: %i \n",label);return 0x0;}
 
     if(fMCLabel[label]>-1){
-    TParticle *fMCDaughter=mcEvent->Particle(fMCLabel[label]);
-	return fMCDaughter;}
+      TParticle *fMCDaughter=mcEvent->Particle(fMCLabel[label]);
+      return fMCDaughter;
+    }
     else return 0x0;
 }
 
 ///________________________________________________________________________
 void AliConversionPhotonBase::DeterminePhotonQuality(AliVTrack* negTrack, AliVTrack* posTrack){
+  if(!negTrack || !posTrack) {
+    fQuality = 0;
+    return;
+  }
+  if(negTrack->Charge() == posTrack->Charge()){
+    fQuality = 0;
+    return;
+  }
+  Int_t nClusterITSneg = negTrack->GetNcls(0);
+  Int_t nClusterITSpos = posTrack->GetNcls(0);
 
-   
-   if(!negTrack || !posTrack) {
-        fQuality = 0;
-        return;
-   }
-   if(negTrack->Charge() == posTrack->Charge()){
-        fQuality = 0;
-        return;
-   }   
-   Int_t nClusterITSneg = negTrack->GetNcls(0);
-   Int_t nClusterITSpos = posTrack->GetNcls(0);
-   
-   if (nClusterITSneg > 1 && nClusterITSpos > 1){
-      fQuality = 3;
-      return;
-   } else if (nClusterITSneg > 1 || nClusterITSpos > 1){
-      fQuality = 2;
-      return;
-   } else {
-      fQuality = 1;
-      return;
-   }
-   return;
-   
+  if (nClusterITSneg > 1 && nClusterITSpos > 1){
+    fQuality = 3;
+    return;
+  } else if (nClusterITSneg > 1 || nClusterITSpos > 1){
+    fQuality = 2;
+    return;
+  } else {
+    fQuality = 1;
+    return;
+  }
+  return;
 }

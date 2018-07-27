@@ -29,8 +29,10 @@
 
 
 #include <vector>
+#include <TH3F.h>
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODVertex.h"
+#include "AliAODMCHeader.h"
 
 #include "AliAnalysisTaskSE.h"
 
@@ -58,10 +60,14 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
 
   /// selection and reconstruction
   void     B0toDStarPiSignalTracksInMC(TClonesArray * mcTrackArray,AliAODEvent*  aodevent,TMatrix * B0toDStarPiLabelMatrix, TList *listout);
+  Bool_t   D0FirstDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix);
+  Bool_t   D0SecondDaughterSelection(AliAODTrack* aodTrack, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix);
   void     DStarPionSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix);
   void     B0PionSelection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix);  
   void     D0Selection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz,TClonesArray * mcTrackArray,TMatrix *  B0toDStarPiLabelMatrix, TClonesArray * D0TracksFromFriendFile);
-  void     DStarAndB0Selection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, TClonesArray * D0TracksFromFriendFile);
+  void     DStarAndB0Selection(AliAODEvent* aodEvent, AliAODVertex *primaryVertex, Double_t bz, TClonesArray * mcTrackArray, TMatrix * B0toDStarPiLabelMatrix, TClonesArray * D0TracksFromFriendFile, AliAODMCHeader * header);
+  Int_t    IsTrackInjected(AliAODTrack *part,AliAODMCHeader *header,TClonesArray *arrayMC);
+  Bool_t   IsCandidateInjected(AliAODRecoDecayHF2Prong *part, AliAODMCHeader *header,TClonesArray *arrayMC);
 
   AliAODVertex* RecalculateVertex(const AliVVertex *primary,TObjArray *tracks,Double_t bField, Double_t dispersion);
   void     FillFinalTrackHistograms(AliAODRecoDecayHF2Prong * trackB0, Bool_t isDesiredCandidate,TClonesArray * mcTrackArray);
@@ -86,6 +92,15 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   void     SetShowRejection(Bool_t bShowRejection) {fShowRejection = bShowRejection;}
   Bool_t   GetShowRejection() const {return fShowRejection;}
 
+  void     SetUse3DHistograms(Bool_t bUse3DHistograms) {fUse3DHistograms = bUse3DHistograms;}
+  Bool_t   GetUse3DHistograms() const {return fUse3DHistograms;}
+
+  void     SetUpgradeSetting(Int_t nUpgradeSetting) {fUpgradeSetting = nUpgradeSetting;}
+  Int_t    GetUpgradeSetting() const {return fUpgradeSetting;}
+
+  void     SetHistMassWindow(Double_t value) {fHistMassWindow = value;}
+  Double_t GetHistMassWindow() const {return fHistMassWindow;}
+
  private:
   
   AliAnalysisTaskSEB0toDStarPi(const AliAnalysisTaskSEB0toDStarPi &source);
@@ -96,12 +111,15 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   Bool_t fShowMask;                          //
   Bool_t fShowRejection;                     //
   Bool_t fQuickSignalAnalysis;               //
-  Bool_t fGetCutInfo;                        //  
+  Bool_t fGetCutInfo;                        //
+  Bool_t fUse3DHistograms;                   //
+  Int_t  fUpgradeSetting;                    //
+  Double_t fHistMassWindow;                  //  
 
   TList *fOutput;                            //!<!  User output
   TList *fListCuts;                          //!<!  User output
-  TList *fOutputD0Pion;                      //!<!  User output
-  TList *fOutputD0Kaon;                      //!<!  User output
+  TList *fOutputD0FirstDaughter;             //!<!  User output
+  TList *fOutputD0SecondDaughter;            //!<!  User output
   TList *fOutputDStarPion;                   //!<!  User output
   TList *fOutputB0Pion;                      //!<!  User output
   TList *fOutputD0;                          //!<!  User output
@@ -112,7 +130,7 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   TList *fOutputDStar_DStarPt;               //!<!  User output
   TList *fOutputB0MC;                        //!<!  User output 
 
-  AliRDHFCutsB0toDStarPi *fCuts;            // Cuts - sent to output 
+  AliRDHFCutsB0toDStarPi *fCuts;             // Cuts - sent to output 
 
   TH1F *fCEvents;                            //!<!
 
@@ -137,12 +155,13 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   TH1F* fDaughterHistogramArray[4][6][15];   //!
   TH2F* fDaughterHistogramArray2D[4][6];     //!
   TH1F* fDaughterHistogramArrayExtra[4][6];  //!
-  TH1F* fMotherHistogramArray[6][50][46];    //!
-  TH2F* fMotherHistogramArray2D[6][16][60];  //!
+  TH1F* fMotherHistogramArray[6][99][60];    //!
+  TH2F* fMotherHistogramArray2D[6][99][60];  //!
   TH1F* fMotherHistogramArrayExtra[7][10];   //!
+  TH3F* fMotherHistogramArray3D[6][99][60];  //!
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEB0toDStarPi,3); // class for B0 spectra
+  ClassDef(AliAnalysisTaskSEB0toDStarPi,4);  // class for B0 spectra
   /// \endcond
 };
 

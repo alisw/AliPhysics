@@ -1833,29 +1833,27 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
 
         pi0cand->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
         if((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-            if(!fDoLightOutput){
-                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
-            }
+          if(!fDoLightOutput){
+              fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+          }
           if(fIsMC){
             if(fInputEvent->IsA()==AliESDEvent::Class())
               ProcessTrueNeutralPionCandidatesPureConversions(pi0cand,gamma0,gamma1);
             if(fInputEvent->IsA()==AliAODEvent::Class())
               ProcessTrueNeutralPionCandidatesPureConversionsAOD(pi0cand,gamma0,gamma1);
           }
-          if (pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionLow() && pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionHigh()){
-              fNeutralPionCandidates->Add(pi0cand);
-              // 						cout << "Pi0 candidate " << pi0cand->M() << "\t" << pi0cand->Pt() << endl;
-
-          } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) && (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingHigh())){
-              fNeutralPionSidebandCandidates->Add(pi0cand);
-          } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())
-                    && ((pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftHigh())
-                    || (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightHigh())))
-          {
-              fNeutralPionSidebandCandidates->Add(pi0cand);
+          if (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)){
+            fNeutralPionCandidates->Add(pi0cand);
+          } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) &&
+                    (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 1))){
+            fNeutralPionSidebandCandidates->Add(pi0cand);
+          } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides()) &&
+                    ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 2)) ||
+                     ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 3))))){
+            fNeutralPionSidebandCandidates->Add(pi0cand);
           } else{
-              delete pi0cand;
-              pi0cand=0x0;
+            delete pi0cand;
+            pi0cand=0x0;
           }
         }else{
           delete pi0cand;
@@ -1890,33 +1888,29 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesPu
         pi0cand->SetLabels(firstGammaIndex,secondGammaIndex);
 
         if((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
-            if(!fDoLightOutput){
-                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
-            }
-          if(fIsMC){
-// 						if(fInputEvent->IsA()==AliESDEvent::Class())
-              ProcessTrueNeutralPionCandidatesPureCalo(pi0cand,gamma0,gamma1);
-// 						if(fInputEvent->IsA()==AliAODEvent::Class())
-// 							ProcessTrueNeutralPionCandidatesPureConversionsAOD(pi0cand,gamma0,gamma1);
+          if(!fDoLightOutput){
+              fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
           }
-          if (pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionLow() && pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionHigh()){
-              fNeutralPionCandidates->Add(pi0cand);
-              // 						cout << "Pi0 candidate " << pi0cand->M() << "\t" << pi0cand->Pt() << endl;
-          } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) && (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingHigh())){
-              fNeutralPionSidebandCandidates->Add(pi0cand);
-          } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())
-                    && ((pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftHigh())
-                    || (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightHigh())))
-          {
-              fNeutralPionSidebandCandidates->Add(pi0cand);
-          }else {
-              delete pi0cand;
-              pi0cand=0x0;
+          if(fIsMC){
+            ProcessTrueNeutralPionCandidatesPureCalo(pi0cand,gamma0,gamma1);
           }
 
-        }else{
+          if (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)){
+            fNeutralPionCandidates->Add(pi0cand);
+          } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) &&
+                    (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 1))){
+            fNeutralPionSidebandCandidates->Add(pi0cand);
+          } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides()) &&
+                    ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 2)) ||
+                      ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 3))))){
+            fNeutralPionSidebandCandidates->Add(pi0cand);
+          }else {
             delete pi0cand;
             pi0cand=0x0;
+          }
+        } else{
+          delete pi0cand;
+          pi0cand=0x0;
         }
       }
     }
@@ -2213,31 +2207,27 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero::ProcessNeutralPionCandidatesMi
         if((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
           if (!matched){
             if(!fDoLightOutput){
-                fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
+              fHistoGammaGammaInvMassPt[fiCut]->Fill(pi0cand->M(),pi0cand->Pt());
             }
             if(fIsMC){
-// 							if(fInputEvent->IsA()==AliESDEvent::Class())
-                ProcessTrueNeutralPionCandidatesMixedConvCalo(pi0cand,gamma0,gamma1);
-// 							if(fInputEvent->IsA()==AliAODEvent::Class())
-// 								ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1, matched);
+              ProcessTrueNeutralPionCandidatesMixedConvCalo(pi0cand,gamma0,gamma1);
             }
-            if (pi0cand->M() > ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionLow() && pi0cand->M() < ((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->GetSelectionHigh()){
-                fNeutralPionCandidates->Add(pi0cand);
-            } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) && (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingHigh())){
-                fNeutralPionSidebandCandidates->Add(pi0cand);
-            } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides())
-                      && ((pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingLeftHigh())
-                      || (pi0cand->M() > ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightLow() && pi0cand->M() < ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSidebandMixingRightHigh())))
-            {
-                fNeutralPionSidebandCandidates->Add(pi0cand);
-            }else{
-                delete pi0cand;
-                pi0cand=0x0;
-            }
-
-          }else{
+            if (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)){
+              fNeutralPionCandidates->Add(pi0cand);
+            } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixing()) &&
+                      (((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 1))){
+              fNeutralPionSidebandCandidates->Add(pi0cand);
+            } else if((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->UseSidebandMixingBothSides()) &&
+                      ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 2)) ||
+                      ((((AliConversionMesonCuts*)fNeutralPionMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 3))))){
+              fNeutralPionSidebandCandidates->Add(pi0cand);
+            } else{
               delete pi0cand;
               pi0cand=0x0;
+            }
+          }else{
+            delete pi0cand;
+            pi0cand=0x0;
           }
         }else{
           delete pi0cand;

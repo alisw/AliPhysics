@@ -48,11 +48,13 @@ public:
   void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input; }
   void                        SetSubDetector(Int_t input)                           { fSubDetector     = input; }
   void                        SetEvtMixType(UInt_t input)                           { fMixingEventType = input  ; }
+  void                        SetVetoTrigger(UInt_t input)                          { fVetoTrigger = input  ; }
   void                        SetClEnergyMin(Int_t input)                           { fClEnergyMin     = input;}
   void                        SetOpeningAngleCut(Double_t input)                    { fOpeningAngleCut = input;}
   void                        SetNLM(Int_t input)                                   { fMaxNLM          = input;}
   void                        SetM02(Double_t inputMin,Double_t inputMax)           { fClShapeMin = inputMin; fClShapeMax = inputMax;}
   void                        SetRmvMatchedTrack(Bool_t input, Double_t dEta=-1, Double_t dPhi=-1) { fRmvMTrack  = input; fTrackMatchEta=dEta; fTrackMatchPhi=dPhi;} // dEta, dPhi = -1 or 0 will use pt parametrized cut
+  void                        SetEOverPLimits(Double_t inputMin, Double_t inputMax) { fTrackMatchEOverPLow = inputMin; fTrackMatchEOverPHigh = inputMax; }
   void                        SetUseManualEvtCuts(Bool_t input)                     { fUseManualEventCuts= input;}
   void                        SetDoRotBkg(Bool_t input)                             { fDoRotBkg          = input;}
   void                        SetDoClusMixing(Bool_t input)                         { fDoClusMixing      = input;}
@@ -129,6 +131,7 @@ public:
   //..Constants
   Double_t                    fRtoD;                     ///< conversion of rad to degree
   static const Int_t          kNIdentifier=3;            ///< number of different versions of the same histogram type, can later be used for centrality or mixed event eg.
+ // static const Int_t          kNvertBins=20;             ///< vertex bins in which the ME are mixed
   static const Int_t          kNvertBins=10;             ///< vertex bins in which the ME are mixed
   static const Int_t          kNcentBins=8;              ///< centrality bins in which the ME are mixed
   static const Int_t          kNClusVertBins=7;             ///< vertex bins in which the clusters are mixed
@@ -152,6 +155,8 @@ public:
   Bool_t                      fRmvMTrack;                ///< Switch to enable removing clusters with a matched track
   Double_t                    fTrackMatchEta;            ///< eta range in which a track is called a match to a cluster
   Double_t                    fTrackMatchPhi;            ///< phi range in which a track is called a match to a cluster
+	Double_t                    fTrackMatchEOverPLow;      ///< Minimum E_cell/p_track to accept cluster track match 
+	Double_t                    fTrackMatchEOverPHigh;     ///< Maximum E_cell/p_track to accept cluster track match (-1 for no cut)
   //..Event pool variables
   TAxis                      *fMixBCent;                 ///< Number of centrality bins for the mixed event
   TAxis                      *fMixBZvtx;                 ///< Number of vertex bins for the mixed event
@@ -166,6 +171,7 @@ public:
   UInt_t                      fTriggerType;              ///<  Event types that are used for the trigger (gamma or pi0)
   UInt_t                      fMixingEventType;          ///<  Event types that are used for the tracks in the mixed event
   UInt_t                      fCurrentEventTrigger;      //!<! Trigger of the current event
+  UInt_t                      fVetoTrigger;              //!<! Trigger that is vetoed in Mixed Events to avoid bias.  Default is EMCAL Gamma Trigger
 
   //..MC stuff
   Bool_t                      fParticleLevel;            ///< Set particle level analysis
@@ -189,6 +195,8 @@ public:
   TH2             *fMassPtPionRej;           //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
   TH3             *fMassPtCentPionAcc;       //!<! Histogram of Mass vs Pt vs Cent for accepted Pi0 Candidates
   TH3             *fMassPtCentPionRej;       //!<! Histogram of Mass vs Pt vs Cent for rejected Pi0 Candidates
+  TH2             *fHistEOverPvE;            //!<! Histogram of E/p vs E_cluster for cluster-track pairs (geometrically matched)
+  TH2             *fHistPOverEvE;            //!<! Histogram of p/E vs E_cluster for cluster-track pairs (geometrically matched)
 
 
   TRandom3        *fRand;                      //!<! Random number generator.  Initialzed by rot background
