@@ -217,6 +217,14 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
       MiniV0::fgkArmAlpha_f + kEps, MiniV0::fgkArmAlpha_l + kEps,
       MiniV0::fgkArmPt_n, MiniV0::fgkArmPt_f + kEps, MiniV0::fgkArmPt_l + kEps);
 
+
+  if (man->GetMCtruthEventHandler()) {
+    fHistMCct[0] = new TH1D("fHistMCctK0s", ";MC ct (cm); Counts", 4000, 0, 20);
+    fHistMCct[1] = new TH1D("fHistMCctLambda", ";MC ct (cm); Counts", 4000, 0, 20);
+    fListHist->Add(fHistMCct[0]);
+    fListHist->Add(fHistMCct[1]);
+  }
+
   fListHist->Add(fHistV0radius);
   fListHist->Add(fHistV0pt);
   fListHist->Add(fHistV0eta);
@@ -315,6 +323,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       }
       
       int currentPDG = part->GetPdgCode();
+      int idx = 0;
       for (auto code : pdgCodes) {
         if (code == std::abs(currentPDG)) {
           if (std::abs(part->Y()) < 1.) {
@@ -329,6 +338,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
           v0part.SetPt(part->Pt());
           v0part.SetDistOverP(dist / part->P());
           bool isSecondary = stack->IsSecondaryFromWeakDecay(ilab);
+          fHistMCct[idx]->Fill(dist * part->GetMass() / part->P());
           TParticle* mother = stack->Particle(part->GetFirstMother());
           if (isSecondary && mother) {
             v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
@@ -348,6 +358,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
           mcMap[ilab] = fMCvector.size();
           fMCvector.push_back(v0part);
         }
+        ++idx;
       }
     }
   }
