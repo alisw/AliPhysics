@@ -610,32 +610,32 @@ void AliAnalysisTaskQAHighPtDeDxTest::UserCreateOutputObjects()
 
 		for(Int_t i=0; i<nCent; ++i ){
 
-//			fListOfObjects->Add(hMIPVsEta[i]);
-//			fListOfObjects->Add(pMIPVsEta[i]);
-//			fListOfObjects->Add(hMIPVsEtaV0s[i]);
-//			fListOfObjects->Add(pMIPVsEtaV0s[i]);
-//			fListOfObjects->Add(hPlateauVsEta[i]);
-//			fListOfObjects->Add(pPlateauVsEta[i]);
-//			fListOfObjects->Add(hPhi[i]);
+			fListOfObjects->Add(hMIPVsEta[i]);
+			fListOfObjects->Add(pMIPVsEta[i]);
+			fListOfObjects->Add(hMIPVsEtaV0s[i]);
+			fListOfObjects->Add(pMIPVsEtaV0s[i]);
+			fListOfObjects->Add(hPlateauVsEta[i]);
+			fListOfObjects->Add(pPlateauVsEta[i]);
+			fListOfObjects->Add(hPhi[i]);
 
 
 			for(Int_t j=0; j<nHists; ++j){
 
-//				fListOfObjects->Add(hMIPVsNch[i][j]);
-//				fListOfObjects->Add(pMIPVsNch[i][j]);
-//				fListOfObjects->Add(hMIPVsPhi[i][j]);
-//				fListOfObjects->Add(pMIPVsPhi[i][j]);
-//				fListOfObjects->Add(hPlateauVsPhi[i][j]);
-//				fListOfObjects->Add(pPlateauVsPhi[i][j]);
+				fListOfObjects->Add(hMIPVsNch[i][j]);
+				fListOfObjects->Add(pMIPVsNch[i][j]);
+				fListOfObjects->Add(hMIPVsPhi[i][j]);
+				fListOfObjects->Add(pMIPVsPhi[i][j]);
+				fListOfObjects->Add(hPlateauVsPhi[i][j]);
+				fListOfObjects->Add(pPlateauVsPhi[i][j]);
 
 			}
 
 			if(fMakePid){
 
-//				fListOfObjects->Add(hPtAll[i]);
-//				fListOfObjects->Add(hPtAllNeg[i]);
-//				fListOfObjects->Add(hPtAllPos[i]);
-/*
+				fListOfObjects->Add(hPtAll[i]);
+				fListOfObjects->Add(hPtAllNeg[i]);
+				fListOfObjects->Add(hPtAllPos[i]);
+
 				fListOfObjects->Add(hDCAxyVsPtPiNeg[i]);
 				fListOfObjects->Add(hDCAxyVsPtPiPos[i]);
 				fListOfObjects->Add(hDCAxyVsPtKNeg[i]);
@@ -649,10 +649,10 @@ void AliAnalysisTaskQAHighPtDeDxTest::UserCreateOutputObjects()
 				fListOfObjects->Add(hDCAxyVsPtKPosC[i]);
 				fListOfObjects->Add(hDCAxyVsPtPNegC[i]);
 				fListOfObjects->Add(hDCAxyVsPtPPosC[i]);
-*/
+
 
 				for(Int_t j=0; j<nHists; ++j){
-/*
+
 					fListOfObjects->Add(hnSigmaPiPos[i][j]);
 					fListOfObjects->Add(hnSigmaPiNeg[i][j]);
 					fListOfObjects->Add(hnSigmaKPos[i][j]);
@@ -661,8 +661,8 @@ void AliAnalysisTaskQAHighPtDeDxTest::UserCreateOutputObjects()
 					fListOfObjects->Add(hnSigmaPNeg[i][j]);
 					fListOfObjects->Add(hPtPos[i][j]);
 					fListOfObjects->Add(hPtNeg[i][j]);
-*/
-//					fListOfObjects->Add(hPtVsP[i][j]);
+
+					fListOfObjects->Add(hPtVsP[i][j]);
 
 
 					fListOfObjects->Add(histPiV0[i][j]);
@@ -672,7 +672,7 @@ void AliAnalysisTaskQAHighPtDeDxTest::UserCreateOutputObjects()
 					fListOfObjects->Add(histPiTof[i][j]);
 					fListOfObjects->Add(histEV0[i][j]);
 					fListOfObjects->Add(histPV0[i][j]);
-//					fListOfObjects->Add(hDeDxVsP[i][j]);
+					fListOfObjects->Add(hDeDxVsP[i][j]);
 				}
 			}//	if(MakePID) 
 		}//	Cent
