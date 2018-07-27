@@ -34,46 +34,66 @@
 #endif
 
 ///
-/// Configure the class handling the events and cluster/tracks filtering.
+/// Configure the EMCal/DCal cluster filtering cuts done in AliCaloTrackReader
 ///
-/// \param col: A string with the colliding system
-/// \param simulation : A bool identifying the data as simulation
+/// \param reader: pointer to AliCaloTrackReaderTask
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
-/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
-/// \param cutsString : A string with additional cuts (Smearing, SPDPileUp)
-/// \param nonLinOn : A bool to set the use of the non linearity correction
-/// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
-/// \param year: The year the data was taken, used to configure some histograms
-/// \param trigger :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
+/// \param col: A string with the colliding system
+/// \param year: The year the data was taken, used to configure time cut
+/// \param simulation : A bool identifying the data as simulation
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
+/// \param trigger :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
-/// \param printSettings : A bool to enable the print of the settings per task
-/// \param debug : An int to define the debug level of all the tasks
 ///
-AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
-                                     TString clustersArray, TString calorimeter, 
-                                     TString cutsString,
-                                     Bool_t  nonLinOn,      Bool_t calibrate,
-                                     Int_t   year,
-                                     TString trigger,       Bool_t rejectEMCTrig,
-                                     Int_t   minCen,        Int_t  maxCen,
-                                     Bool_t  printSettings, Int_t  debug         )
+void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString, 
+                             TString col          , Int_t  year,  Bool_t  simulation, 
+                             Bool_t  rejectEMCTrig, TString trigger,
+                             Int_t   minCen       , Int_t  maxCen                )
 {
-  // Get the data type ESD or AOD
-  AliAnalysisManager * mgr = AliAnalysisManager::GetAnalysisManager();
-  TString inputDataType = mgr->GetInputEventHandler()->GetDataType();
+  //
+  // Vertex criteria
+  //
+  reader->SetZvertexCut(10.);               
+  reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex is found
+  reader->SwitchOnRejectNoTrackEvents();    
+ 
+  reader->SwitchOffRecalculateVertexBC();
+  reader->SwitchOffVertexBCEventSelection();
   
-  AliCaloTrackReader * reader = 0;
-  if     (inputDataType == "AOD") reader = new AliCaloTrackAODReader();
-  else if(inputDataType == "ESD") reader = new AliCaloTrackESDReader();
-  else printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Data not known InputData=%s\n",inputDataType.Data());
+  reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
+  //reader->RejectFastClusterEvents() ;
+
+  //
+  // Pile-up
+  //
+  if ( cutsString.Contains("SPDPileUp") )
+  {
+    printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Switch on Pile-up event rejection by SPD\n");
+    reader->SwitchOnPileUpEventRejection();  // remove pileup by default off, apply it only for MB not for trigger
+    if ( year > 2013 ) reader->SetPileUpParamForSPD(0,5);
+  }
   
-  reader->SetDebug(debug);//10 for lots of messages
+  //
+  // Centrality
+  //
+  if ( col == "PbPb" )
+  {
+    reader->SetCentralityClass("V0M");
+    reader->SetCentralityOpt(100);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
+    reader->SetCentralityBin(minCen,maxCen); // Accept all events, if not select range
+    
+    //reader->SwitchOnAcceptOnlyHIJINGLabels();
+    
+    // Event plane (only used in Maker and mixing for AliAnaPi0/AliAnaHadronCorrelation for the moment)
+    reader->SetEventPlaneMethod("V0");
+  }
   
+  //
   // In case of Pythia pt Hard bin simulations (jet-jet, gamma-jet)
   // reject some special events that bother the cross section
-  if(simulation)
+  //
+  if ( simulation )
   {
     // Event rejection cuts for jet-jet simulations, do not use in other
     reader->SetPtHardAndJetPtComparison(kTRUE);
@@ -87,36 +107,91 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     //reader->GetMCAnalysisUtils()->SetMCGenerator("");
   }
   
-  //---------------------------
-  // Detectors acceptance, open
-  //---------------------------
+  //
+  // Calorimeter Trigger Selection
+  //
   
-  reader->SwitchOnFiducialCut();
+  //if(!simulation) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
   
-  // Tracks
-  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
+  // Event triggered by EMCal selection settings
+  // very old ways, not up to date
+  reader->SwitchOffTriggerPatchMatching();
+  reader->SwitchOffBadTriggerEventsRemoval();
   
-  // EMCal/DCal
+  if ( rejectEMCTrig > 0 && !simulation && (trigger.Contains("EMC") || trigger.Contains("L")) )
+  {
+    printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers === \n");
+    reader->SwitchOnTriggerPatchMatching();
+    reader->SwitchOnBadTriggerEventsRemoval();
+    
+    //    reader->SetTriggerPatchTimeWindow(8,9); // default values
+    //    if     (kRunNumber < 146861) reader->SetEventTriggerL0Threshold(3.);
+    //    else if(kRunNumber < 154000) reader->SetEventTriggerL0Threshold(4.);
+    //    else if(kRunNumber < 165000) reader->SetEventTriggerL0Threshold(5.5);
+    //    //redefine for other periods, triggers
+    //
+    //    if(kRunNumber < 172000)
+    //    {
+    //      reader->SetEventTriggerL1Bit(4,5); // current LHC11 data
+    //      printf("\t Old L1 Trigger data format!\n");
+    //    }
+    //    else
+    //    {
+    //      reader->SetEventTriggerL1Bit(6,8); // LHC12-13 data
+    //      printf("\t Current L1 Trigger data format!\n");
+    //    }
+    
+    //reader->SwitchOffTriggerClusterTimeRecal() ;
+  } 
+}
+
+///
+/// Configure the EMCal/DCal cluster filtering cuts done in AliCaloTrackReader
+///
+/// \param reader: pointer to AliCaloTrackReaderTask
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param cutsString : A string with additional cuts ("Smearing")
+/// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
+/// \param year: The year the data was taken, used to configure time cut
+/// \param simulation : A bool identifying the data as simulation
+///
+void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader, 
+                                 TString calorimeter, TString cutsString, TString clustersArray,
+                                 Int_t year, Bool_t simulation )
+{
+  reader->SetEMCALEMin(0.3);
+  reader->SetEMCALEMax(1000);
+  
   if      ( calorimeter == "EMCAL" ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70,  80, 187) ;
   else if ( calorimeter == "DCAL"  ) reader->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.70, 260, 327) ; 
   
-  //PHOS
-  reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250, 320) ; 
+  // Use other cluster array than default:
+  reader->SetEMCALClusterListName(clustersArray);
   
-  //------------------------
-  // Detector input filling
-  //------------------------
+  // Time cuts
+  reader->SwitchOffUseParametrizedTimeCut();
+  reader->SwitchOffUseEMCALTimeCut();
+  reader->SetEMCALTimeCut(-1e10,1e10); // Open time cut
   
-  //Min cluster/track E
-  reader->SetEMCALEMin(0.3);
-  reader->SetEMCALEMax(1000);
-  reader->SetPHOSEMin(0.3);
-  reader->SetPHOSEMax(1000);
-  reader->SetCTSPtMin(0.2);
-  reader->SetCTSPtMax(1000);
+  // For data, check what is the range needed depending on the sample
+  if ( !simulation ) 
+  {
+    printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Apply time cut:");
+    reader->SwitchOnUseEMCALTimeCut();
+    reader->SetEMCALTimeCut(-25,20);
+    if ( year > 2013 ) 
+    {
+      reader->SetEMCALTimeCut(-20,15);
+      printf(" -20 ns < t < 15 ns\n");
+    }
+    else printf(" -25 ns < t < 20 ns\n");
+  }
   
-  reader->SwitchOffRecalculateVertexBC();
-  reader->SwitchOffVertexBCEventSelection();
+  if ( calorimeter == "EMCAL" || calorimeter == "DCAL" )
+  {
+    reader->SwitchOnEMCALCells();
+    reader->SwitchOnEMCAL();
+  }
   
   // EMCal shower shape smearing
   // Set it in the train configuration page not here for the moment
@@ -130,11 +205,44 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     //reader->SetSmearingFunction(AliCaloTrackReader::kSmearingLandauShift);
     //reader->SetShowerShapeSmearWidth(0.035);
   }
+}
+
+///
+/// Configure the PHOS cluster filtering cuts done in AliCaloTrackReader
+///
+/// \param reader: pointer to AliCaloTrackReaderTask
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+///
+void ConfigurePHOSClusterCuts ( AliCaloTrackReader* reader, 
+                                TString calorimeter )
+{
+  reader->SetPHOSEMin(0.3);
+  reader->SetPHOSEMax(1000);
   
-  //
-  // Tracks
-  //
+  reader->GetFiducialCut()->SetSimplePHOSFiducialCut (0.12, 250, 320) ; 
+
+  if ( calorimeter == "PHOS" )
+  { // Should be on if QA is activated with correlation on
+    reader->SwitchOnPHOSCells();
+    reader->SwitchOnPHOS();
+  }
+}
+
+///
+/// Configure the track filtering cuts done in AliCaloTrackReader
+///
+/// \param reader: pointer to AliCaloTrackReaderTask
+/// \param inputDataType: string with data Type "ESD", "AOD"
+///
+void ConfigureTrackCuts ( AliCaloTrackReader* reader, 
+                          TString inputDataType)
+{
   reader->SwitchOnCTS();
+
+  reader->SetCTSPtMin(0.2);
+  reader->SetCTSPtMax(1000);
+  
+  reader->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ;
   
   reader->SwitchOffUseTrackTimeCut();
   reader->SetTrackTimeCut(0,50);
@@ -168,115 +276,75 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
     //reader->SwitchOnTrackHitSPDSelection();     // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
     //reader->SetTrackFilterMask(128);            // Filter bit, not mask, use if off hybrid, TPC only
   }
+}
+
+///
+/// Configure the class handling the events and cluster/tracks filtering.
+/// each item is configured in dedicated methods.
+///
+/// \param col: A string with the colliding system
+/// \param simulation : A bool identifying the data as simulation
+/// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
+/// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
+/// \param cutsString : A string with additional cuts (Smearing, SPDPileUp)
+/// \param trigger :  A string with the trigger class, abbreviated, defined in ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C
+/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
+/// \param year: The year the data was taken, used to configure some histograms and cuts
+/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
+/// \param minCen : An int to select the minimum centrality, -1 means no selection
+/// \param maxCen : An int to select the maximum centrality, -1 means no selection
+/// \param printSettings : A bool to enable the print of the settings per task
+/// \param debug : An int to define the debug level of all the tasks
+///
+AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
+                                     TString clustersArray, TString calorimeter, 
+                                     TString cutsString,    
+                                     Bool_t  nonLinOn,      Bool_t calibrate,
+                                     Int_t   year,          
+                                     TString trigger,       Bool_t rejectEMCTrig,
+                                     Int_t   minCen,        Int_t  maxCen,
+                                     Bool_t  printSettings, Int_t  debug         )
+{
+  // Get the data type ESD or AOD
+  AliAnalysisManager * mgr = AliAnalysisManager::GetAnalysisManager();
+  TString inputDataType = mgr->GetInputEventHandler()->GetDataType();
   
+  AliCaloTrackReader * reader = 0;
+  if     (inputDataType == "AOD") reader = new AliCaloTrackAODReader();
+  else if(inputDataType == "ESD") reader = new AliCaloTrackESDReader();
+  else printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Data not known InputData=%s\n",inputDataType.Data());
+  
+  reader->SetDebug(debug);//10 for lots of messages
+
+  //------------------------  
+  // Event selection cuts
+  //------------------------
+  ConfigureEventSelection(reader, cutsString, col, year, simulation, 
+                          rejectEMCTrig, trigger, minCen, maxCen);
+  
+  //------------------------
+  // Detector input filtering
+  //------------------------
+  
+  // Fiducial cuts active, see acceptance in detector methods
+  reader->SwitchOnFiducialCut();
+  
+  ConfigureTrackCuts       (reader, inputDataType);
+  
+  ConfigurePHOSClusterCuts (reader, calorimeter);
+
+  ConfigureEMCALClusterCuts(reader, calorimeter, cutsString, clustersArray, year, simulation);
+
+  // Extra calorimeter stuff:
   //
-  // Calorimeter
-  // 
-  reader->SetEMCALClusterListName(clustersArray);
-  
   // In case no external calibrated cluster/cell list or EMCal correction framework applied before
   if ( calibrate ) reader->SwitchOnClusterRecalculation();
   else             reader->SwitchOffClusterRecalculation();
   
-  // Time cuts
-  reader->SwitchOffUseParametrizedTimeCut();
-  reader->SwitchOffUseEMCALTimeCut();
-  reader->SetEMCALTimeCut(-1e10,1e10); // Open time cut
-  
-  // For data, check what is the range needed depending on the sample
-  if ( !simulation ) 
-  {
-    printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Apply time cut:");
-    reader->SwitchOnUseEMCALTimeCut();
-    reader->SetEMCALTimeCut(-25,20);
-    if ( year > 2013 ) 
-    {
-      reader->SetEMCALTimeCut(-20,15);
-      printf(" -20 ns < t < 15 ns\n");
-    }
-    else printf(" -25 ns < t < 20 ns\n");
-  }
-  
-  // CAREFUL
+  // CAREFUL, make sure not done previously in the tender/clusterizer/EM correction framework
   if ( nonLinOn ) reader->SwitchOnClusterELinearityCorrection();
   else            reader->SwitchOffClusterELinearityCorrection();
-  
-  if ( calorimeter == "EMCAL" || calorimeter == "DCAL" )
-  {
-    reader->SwitchOnEMCALCells();
-    reader->SwitchOnEMCAL();
-  }
-  
-  if ( calorimeter == "PHOS" )
-  { // Should be on if QA is activated with correlation on
-    reader->SwitchOnPHOSCells();
-    reader->SwitchOnPHOS();
-  }
-  
-  //-----------------
-  // Event selection
-  //-----------------
-  
-  //if(!simulation) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
-  
-  // Event triggered by EMCal selection settings
-  reader->SwitchOffTriggerPatchMatching();
-  reader->SwitchOffBadTriggerEventsRemoval();
-  
-  if ( rejectEMCTrig > 0 && !simulation && (trigger.Contains("EMC") || trigger.Contains("L")) )
-  {
-    printf("AddTaskCaloTrackCorrBase::ConfigureReader() === Remove bad triggers === \n");
-    reader->SwitchOnTriggerPatchMatching();
-    reader->SwitchOnBadTriggerEventsRemoval();
-    
-    //    reader->SetTriggerPatchTimeWindow(8,9); // default values
-    //    if     (kRunNumber < 146861) reader->SetEventTriggerL0Threshold(3.);
-    //    else if(kRunNumber < 154000) reader->SetEventTriggerL0Threshold(4.);
-    //    else if(kRunNumber < 165000) reader->SetEventTriggerL0Threshold(5.5);
-    //    //redefine for other periods, triggers
-    //
-    //    if(kRunNumber < 172000)
-    //    {
-    //      reader->SetEventTriggerL1Bit(4,5); // current LHC11 data
-    //      printf("\t Old L1 Trigger data format!\n");
-    //    }
-    //    else
-    //    {
-    //      reader->SetEventTriggerL1Bit(6,8); // LHC12-13 data
-    //      printf("\t Current L1 Trigger data format!\n");
-    //    }
-    
-    //reader->SwitchOffTriggerClusterTimeRecal() ;
-  }
-  
-  //reader->RejectFastClusterEvents() ;
-  
-  reader->SetZvertexCut(10.);               // Open cut
-  reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
-  reader->SwitchOnRejectNoTrackEvents();
-  
-  reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
-  
-  // Pile-up
-  if ( cutsString.Contains("SPDPileUp") )
-  {
-    printf("AddTaskCaloTrackCorrBase::ConfigureReader() - Switch on Pile-up event rejection by SPD\n");
-    reader->SwitchOnPileUpEventRejection();  // remove pileup by default off, apply it only for MB not for trigger
-    if ( year > 2013 ) reader->SetPileUpParamForSPD(0,5);
-  }
-  
-  if ( col == "PbPb" )
-  {
-    // Centrality
-    reader->SetCentralityClass("V0M");
-    reader->SetCentralityOpt(100);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
-    reader->SetCentralityBin(minCen,maxCen); // Accept all events, if not select range
-    
-    //reader->SwitchOnAcceptOnlyHIJINGLabels();
-    
-    // Event plane (only used in Maker and mixing for AliAnaPi0/AliAnaHadronCorrelation for the moment)
-    reader->SetEventPlaneMethod("V0");
-  }
   
   if(printSettings) reader->Print("");
   
