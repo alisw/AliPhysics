@@ -76,9 +76,10 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", 
     // Add the task to the manager
     mgr->AddTask(task);
     //add dielectron analysis with different cuts to the task
-    for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
+    for (Int_t i=0; i<nDie; ++i){ 
         //MB
-        AliDielectron *diel_low = Config_acapon(arrNames->At(i)->GetName(), hasMC, bESDANA, SDDstatus, doPairing, doMixing, useTPCcorr);
+				TString dielTaskName(arrNames->At(i)->GetName());
+        AliDielectron *diel_low = Config_acapon(dielTaskName, hasMC, bESDANA, SDDstatus, doPairing, doMixing, useTPCcorr);
         if(!diel_low){ continue; }
         task->AddDielectron(diel_low);
         printf("successfully added AliDielectron: %s\n",diel_low->GetName());
