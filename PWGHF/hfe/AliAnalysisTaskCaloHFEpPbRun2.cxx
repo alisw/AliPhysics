@@ -1889,8 +1889,10 @@ void AliAnalysisTaskCaloHFEpPbRun2::CheckCentrality(AliAODEvent* fAOD, Bool_t &I
     //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
     AliWarning("AliMultSelection object not found!");
   }
-  else if(fPeriodName == "LHC16r" || fPeriodName == "LHC16q") fCentrality = fMultSelection -> GetMultiplicityPercentile("V0A",false);
-  else if(fPeriodName == "LHC16s" || fPeriodName == "LHC16t") fCentrality = fMultSelection -> GetMultiplicityPercentile("V0C",false);
+  // else if(fPeriodName == "LHC16r" || fPeriodName == "LHC16q") fCentrality = fMultSelection -> GetMultiplicityPercentile("V0A",false);
+  // else if(fPeriodName == "LHC16s" || fPeriodName == "LHC16t") fCentrality = fMultSelection -> GetMultiplicityPercentile("V0C",false);
+  else if(fPeriodName == "LHC16r" || fPeriodName == "LHC16q") fCentrality = fMultSelection -> GetMultiplicityPercentile("ZNA",false);
+  else if(fPeriodName == "LHC16s" || fPeriodName == "LHC16t") fCentrality = fMultSelection -> GetMultiplicityPercentile("ZNC",false);
   else if(fPeriodName == "LHC17i5b2") fCentrality = fMultSelection -> GetMultiplicityPercentile("V0M",false);
 
   AliAODHeader *header = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
