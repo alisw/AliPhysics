@@ -372,25 +372,31 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE,
                                 Bool_t etareweight=kFALSE,
                                 Bool_t k0sreweight=kFALSE,
-                                                              TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCSpectraInput.root",
-                                TString histoNamePi0 = "",
-                                TString histoNameEta = "",
-                                TString histoNameK0s = "",
+                                TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCSpectraInput.root",
+                                TString histoNameMCPi0 = "",
+                                TString histoNameMCEta = "",
+                                TString histoNameMCK0s = "",
                                 TString fitNamePi0 = "",
                                 TString fitNameEta = "",
-                                TString fitNameK0s ="" )
+				TString fitNameK0s = "",
+				TString histoNamePi0 = "",
+				TString histoNameEta = "",
+                                TString histoNameK0s = "")
                                                                                     {
                                                                                       AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",pi0reweight, etareweight, k0sreweight));
                                                                                       fDoReweightHistoMCPi0 = pi0reweight                       ;
                                                                                       fDoReweightHistoMCEta = etareweight                       ;
                                                                                       fDoReweightHistoMCK0s = k0sreweight                       ;
                                                                                       fPathTrFReweighting=path                                  ;
-                                                                                      fNameHistoReweightingPi0 =histoNamePi0                    ;
-                                                                                      fNameHistoReweightingEta =histoNameEta                    ;
-                                                                                      fNameHistoReweightingK0s =histoNameK0s                    ;
-                                                                                      fNameFitDataPi0 =fitNamePi0                               ;
-                                                                                      fNameFitDataEta =fitNameEta                               ;
-                                                                                      fNameFitDataK0s =fitNameK0s                               ;
+                                                                                      fNameHistoReweightingMCPi0 = histoNameMCPi0               ;
+                                                                                      fNameHistoReweightingMCEta = histoNameMCEta               ;
+                                                                                      fNameHistoReweightingMCK0s = histoNameMCK0s               ;
+                                                                                      fNameFitDataPi0 = fitNamePi0                              ;
+                                                                                      fNameFitDataEta = fitNameEta                              ;
+                                                                                      fNameFitDataK0s = fitNameK0s                              ;
+										      fNameHistoReweightingPi0 = histoNamePi0                   ;
+										      fNameHistoReweightingEta = histoNameEta                   ;
+                                                                                      fNameHistoReweightingK0s = histoNameK0s                   ;
                                                                                     }
       void    SetUseWeightMultiplicityFromFile( Int_t doWeighting = 0,
                                                 TString pathC="$ALICE_PHYSICS/PWGGA/GammaConv/MultiplicityInput.root",
@@ -585,13 +591,16 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fDoCentralityFlat;                      ///<
       TString                     fPathWeightsFlatCent;                   ///<
       TString                     fNameHistoNotFlatCentrality;            ///<
-      Bool_t                      fDoReweightHistoMCPi0;                  ///< Flag for reweighting Pi0 input with histogram
-      Bool_t                      fDoReweightHistoMCEta;                  ///< Flag for reweighting Eta input with histogram
-      Bool_t                      fDoReweightHistoMCK0s;                  ///< Flag for reweighting K0s input with histogram
-      TString                     fPathTrFReweighting;                    ///< Path for file used in reweighting
-      TString                     fNameHistoReweightingPi0;               ///< Histogram name for reweighting Pi0
-      TString                     fNameHistoReweightingEta;               ///< Histogram name for reweighting Eta
-      TString                     fNameHistoReweightingK0s;               ///< Histogram name for reweighting K0s
+      Bool_t                      fDoReweightHistoMCPi0;                  ///< Flag for pT reweighting Pi0 input with histogram
+      Bool_t                      fDoReweightHistoMCEta;                  ///< Flag for pT reweighting Eta input with histogram
+      Bool_t                      fDoReweightHistoMCK0s;                  ///< Flag for pT reweighting K0s input with histogram
+      TString                     fPathTrFReweighting;                    ///< Path for file used in pT reweighting
+      TString                     fNameHistoReweightingMCPi0;             ///< Histogram name for Pi0 pT shape to be reweighted
+      TString                     fNameHistoReweightingMCEta;             ///< Histogram name for Eta pT shape to be reweighted
+      TString                     fNameHistoReweightingMCK0s;             ///< Histogram name for K0s pT shape to be reweighted
+      TString                     fNameHistoReweightingPi0;               ///< Histogram name for Pi0 pT correct shape
+      TString                     fNameHistoReweightingEta;               ///< Histogram name for Eta pT correct shape
+      TString                     fNameHistoReweightingK0s;               ///< Histogram name for K0s pT correct shape
       TString                     fNameFitDataPi0;                        ///< Fit name for fit to spectrum of pi0s in Data
       TString                     fNameFitDataEta;                        ///< Fit name for fit to spectrum of etas in Data
       TString                     fNameFitDataK0s;                        ///< Fit name for fit to spectrum of k0s in Data
@@ -611,10 +620,13 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1F*                       hTriggerClass;                          ///< fired offline trigger class
       TH1F*                       hTriggerClassSelected;                  ///< selected fired offline trigger class
       TH1F*                       hTriggerClassesCorrelated;              ///< selected trigger class correlation with others
-      TH1D*                       hReweightMCHistPi0;                     ///< histogram input for reweighting Pi0
+      TH1D*                       hReweightMCHistMCPi0;                   ///< histogram input for reweighting Pi0 (shape to be reweighted)
+      TH1D*                       hReweightMCHistMCEta;                   ///< histogram input for reweighting Eta
+      TH1D*                       hReweightMCHistMCK0s;                   ///< histogram input for reweighting K0s
+      TH1D*                       hReweightMCHistPi0;                     ///< histogram input for reweighting Pi0 (correct shape)
       TH1D*                       hReweightMCHistEta;                     ///< histogram input for reweighting Eta
       TH1D*                       hReweightMCHistK0s;                     ///< histogram input for reweighting K0s
-      TF1*                        fFitDataPi0;                            ///< fit to pi0 spectrum in Data
+      TF1*                        fFitDataPi0;                            ///< fit to pi0 spectrum in Data (correct shape)
       TF1*                        fFitDataEta;                            ///< fit to eta spectrum in Data
       TF1*                        fFitDataK0s;                            ///< fit to K0s spectrum in Data
       Int_t                       fAddedSignalPDGCode;
@@ -654,7 +666,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,53)
+      ClassDef(AliConvEventCuts,54)
       /// \endcond
 };
 
