@@ -56,7 +56,7 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
   //
   reader->SetZvertexCut(10.);               
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex is found
-  reader->SwitchOnRejectNoTrackEvents();    
+  reader->SwitchOffRejectNoTrackEvents();   // careful if on and productions with no TPC (muon_calo) 
  
   reader->SwitchOffRecalculateVertexBC();
   reader->SwitchOffVertexBCEventSelection();
