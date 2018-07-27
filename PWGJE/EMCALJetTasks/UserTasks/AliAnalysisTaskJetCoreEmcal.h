@@ -42,6 +42,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	virtual void     SetJetEtaMax(Float_t eta){fJetEtaMax=eta;}
 	virtual void     SetJetHadronDeltaPhi(Float_t delta){fJetHadronDeltaPhi=delta;}
 	virtual void     SetMinFractionSharedPt(Float_t min){fMinFractionSharedPt=min;}
+	virtual void     SetMinEmbJetPt(Float_t min){fMinEmbJetPt=min;}
 	virtual void		 SetJetContName(TString cont){fJetContName=cont;}
 	virtual void		 SetJetContTrueName(TString cont){fJetContTrueName=cont;}
 	virtual void		 SetJetContPartName(TString cont){fJetContPartName=cont;}
@@ -110,6 +111,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	Float_t fJetEtaMax; ///< maximum jet eta
 	Float_t fJetHadronDeltaPhi; ///< max angle from pi (set <0 for no selection)
 	Float_t fMinFractionSharedPt; ///< min fraction of pt between hybrid / detector jets
+	Float_t fMinEmbJetPt; ///< min corrected jet pt to use in embedding
 	TString fJetContName; ///< Base level jet container name
 	TString fJetContTrueName; ///< True pp (detector) level jet container name
 	TString fJetContPartName; ///< Particle(MC) level jet container name
@@ -175,7 +177,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 6);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 7);
   /// \endcond
 };
 #endif
