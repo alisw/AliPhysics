@@ -233,9 +233,10 @@ void ConfigurePHOSClusterCuts ( AliCaloTrackReader* reader,
 ///
 /// \param reader: pointer to AliCaloTrackReaderTask
 /// \param inputDataType: string with data Type "ESD", "AOD"
+/// \param cutsString : A string with additional cuts ("ITSonly","TPConly")
 ///
 void ConfigureTrackCuts ( AliCaloTrackReader* reader, 
-                          TString inputDataType)
+                          TString inputDataType, TString cutsString)
 {
   reader->SwitchOnCTS();
 
@@ -259,18 +260,33 @@ void ConfigureTrackCuts ( AliCaloTrackReader* reader,
     //AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWGJE(10041004);
     //reader->SetTrackCuts(esdTrackCuts);
     
-    AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
-    reader->SetTrackCuts(esdTrackCuts);
-    AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
-    reader->SetTrackComplementaryCuts(esdTrackCuts2);
-    
-    reader->SwitchOnConstrainTrackToVertex();
+    if ( cutsString.Contains("ITSonly") )
+    {
+      reader->SetTrackStatus(AliESDtrack::kITSpureSA);
+    }
+    // Hybrid TPC+ITS
+    else
+    {
+      AliESDtrackCuts * esdTrackCuts  = CreateTrackCutsPWGJE(10001008);
+      reader->SetTrackCuts(esdTrackCuts);
+      AliESDtrackCuts * esdTrackCuts2 = CreateTrackCutsPWGJE(10011008);
+      reader->SetTrackComplementaryCuts(esdTrackCuts2);
+      
+      reader->SwitchOnConstrainTrackToVertex();
+    }
   }
   else if ( inputDataType == "AOD" )
   {
-    reader->SwitchOnAODHybridTrackSelection(); // Check that the AODs have Hybrids!!!!
-    reader->SwitchOnAODTrackSharedClusterSelection();
-    reader->SetTrackStatus(AliVTrack::kITSrefit);
+    if ( cutsString.Contains("ITSonly") )
+    {
+      reader->SetTrackStatus(AliAODTrack::kTrkITSsa);
+    }
+    else
+    {
+      reader->SwitchOnAODHybridTrackSelection(); // Check that the AODs have Hybrids!!!!
+      reader->SwitchOnAODTrackSharedClusterSelection();
+      reader->SetTrackStatus(AliVTrack::kITSrefit);
+    }
     
     //reader->SwitchOnAODPrimaryTrackSelection(); // Used in preliminary results of QM from Nicolas and Xiangrong?
     //reader->SwitchOnTrackHitSPDSelection();     // Check that the track has at least a hit on the SPD, not much sense to use for hybrid or TPC only tracks
@@ -330,7 +346,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
   // Fiducial cuts active, see acceptance in detector methods
   reader->SwitchOnFiducialCut();
   
-  ConfigureTrackCuts       (reader, inputDataType);
+  ConfigureTrackCuts       (reader, inputDataType, cutsString);
   
   ConfigurePHOSClusterCuts (reader, calorimeter);
 
