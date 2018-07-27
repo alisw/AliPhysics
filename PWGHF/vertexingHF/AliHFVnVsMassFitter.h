@@ -22,6 +22,7 @@ public:
 
   enum ETypeOfBkg{kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5, kPoln=6};
   enum ETypeOfSgn{kGaus=0, k2Gaus=1};
+  enum ETypeOfVnRfl{kSameVnSignal=0, kOppVnSignal=1, kSameVnBkg=2, kFreePar=3};
 
   Bool_t SimultaneusFit(Bool_t drawFit=kTRUE);
   void DrawHere(TVirtualPad* c);
@@ -44,6 +45,10 @@ public:
     if(fMassBkgFuncType!=6) AliFatal("fMassBkgFuncType should be set to 6 to use higher order polynomials\n");
     fPolDegreeBkg=deg;
   }
+  void SetPolDegreeForVnBackgroundFit(Int_t deg){
+    if(fVnBkgFuncType!=6) AliFatal("fVnBkgFuncType should be set to 6 to use higher order polynomials\n");
+    fPolDegreeVnBkg=deg;
+  }
   void SetTemplateReflections(const TH1 *h, TString opt, Double_t minRange, Double_t maxRange) {
     fHistoTemplRflInit=(TH1F*)h->Clone();
     /// option could be:
@@ -62,6 +67,7 @@ public:
     SetInitialReflOverS(rovers);
     fFixRflOverSig=kTRUE;
   }
+  void SetReflVnOption(Int_t opt) {fVnRflOpt=opt;}
   void IncludeSecondGausPeak(Double_t mass, Bool_t fixm, Double_t width, Bool_t fixw, Bool_t doVn){
     fSecondPeak=kTRUE; fSecMass=mass; fSecWidth=width;
     fFixSecMass=fixm;  fFixSecWidth=fixw;
@@ -118,11 +124,11 @@ private:
 
     ///fit functions
   Double_t GetGausPDF(Double_t x, Double_t mean, Double_t sigma);
-  Double_t GetExpoPDF(Double_t x, Double_t slope);
+  Double_t GetExpoPDF(Double_t x, Double_t slope, Bool_t isnorm=kTRUE);
   Double_t GetPolPDF(Double_t x, Double_t *pars, Int_t order, Bool_t isnorm=kTRUE);
   Double_t GetPowerFuncPDF(Double_t x, Double_t *pars);
   Double_t GetPowerExpoPDF(Double_t x, Double_t *pars);
-  Double_t GetHigherPolFuncPDF(Double_t x, Double_t *pars);
+  Double_t GetHigherPolFuncPDF(Double_t x, Double_t *pars, Int_t Ndeg, Bool_t isnorm=kTRUE);
   Double_t MassSignal(Double_t *m, Double_t *pars);
   Double_t MassBkg(Double_t *m, Double_t *pars);
   Double_t MassRfl(Double_t *m,Double_t *par);
@@ -179,11 +185,15 @@ private:
   Int_t               fNParsMassSgn;                /// number of parameters in mass signal fit function
   Int_t               fNParsMassBkg;                /// number of parameters in mass bkg fit function
   Int_t               fNParsVnBkg;                  /// number of parameters in vn bkg fit function
+  Int_t               fNParsVnSgn;                  /// number of parameters in vn sgn fit function (1)
+  Int_t               fNParsVnSecPeak;              /// number of parameters in vn sec peak fit function (1 if included, 0 otherwise)
+  Int_t               fNParsVnRfl;                  /// number of parameters in vn refl fit function (1 if included, 0 otherwise)
   Int_t               fSigmaFixed;                  /// flag to fix peak width
   Int_t               fMeanFixed;                   /// flag to fix peak position
   Int_t               fSigma2GausFixed;             /// flag to fix second peak width in case of k2Gaus
   Int_t               fFrac2GausFixed;              /// flag to fix fraction of second gaussian in case of k2Gaus
   Int_t               fPolDegreeBkg;                /// degree of polynomial expansion for back fit (option 6 for back)
+  Int_t               fPolDegreeVnBkg;              /// degree of polynomial expansion for vn back fit (option 6 for back)
   Bool_t              fReflections;                 /// flag use/not use reflections
   Int_t               fNParsRfl;                    /// fit parameters in reflection fit function
   Double_t            fRflOverSig;                  /// reflection/signal
@@ -197,6 +207,7 @@ private:
   Double_t            fMaxRefl;                     /// maximum for refelction histo
   Bool_t              fSmoothRfl;                   /// switch for smoothing of reflection template
   Double_t            fRawYieldHelp;                /// internal variable for fit with reflections
+  Int_t               fVnRflOpt;                    /// option for reflection vn type
   Bool_t              fSecondPeak;                  /// switch off/on second peak (for D+->KKpi in Ds)
   TF1*                fMassSecPeakFunc;             /// fit function for second peak
   Int_t               fNParsSec;                    /// number of parameters in second peak fit function
@@ -210,7 +221,7 @@ private:
   Int_t               fHarmonic;                    /// harmonic number for drawing
 
     /// \cond CLASSDEF
-  ClassDef(AliHFVnVsMassFitter,2);
+  ClassDef(AliHFVnVsMassFitter,3);
     /// \endcond
 };
 #endif //ALIHFVNVSMASSFITTER
