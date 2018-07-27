@@ -1195,7 +1195,7 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00010113","3885500087052220000","01631031000000d0"); //     0.9 GeV/c
   } else if (trainConfig == 606){ // min nCells & M02 variation
     // std: min nCells = 1; M02 max=0.7, min=0.1
-    cuts.AddCut("00010113","3885500087031220000","01631031000000d0"); //   min nCells = 2
+    cuts.AddCut("00010113","3885500087031220000","01631031000000d0"); //   min nCells = 1
     cuts.AddCut("00010113","3885500087033220000","01631031000000d0"); //   min nCells = 3
     cuts.AddCut("00010113","3885500087032210000","01631031000000d0"); //   max M02 = 1
     cuts.AddCut("00010113","3885500087032240000","01631031000000d0"); //   max M02 = 0.4
