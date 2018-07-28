@@ -291,6 +291,7 @@ public:
     IMPL_CASTED_BUILDITEM(long, IntValue_t);
     IMPL_CASTED_BUILDITEM(pair_of_ints, RangeValue_t);
     IMPL_CASTED_BUILDITEM(UInt_t, IntValue_t);
+    IMPL_CASTED_BUILDITEM(ULong64_t, IntValue_t);
     IMPL_CASTED_BUILDITEM(pair_of_floats, RangeValue_t);
 
     IMPL_BUILDITEM(AliFemtoConfigObject, 0, 0);
