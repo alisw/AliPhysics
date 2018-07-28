@@ -186,13 +186,24 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     task->SetTOFCutEfficiencyFunction(f1tof);
   }
   if(!isMC && Trgcorrection){
-    TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
-    f1trg->SetNpx(1000);
-    f1trg->SetParameters(0.448,8.83,0.806);//from MB //acc x trigger efficiency 6-50GeV
-    task->SetTriggerEfficiency(f1trg);
+    if(L1input == 7){
+      printf("L1H is selected\n");
+      TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+      f1trg->SetNpx(1000);
+      f1trg->SetParameters(0.431,8.83,0.79);//from MB //acc x trigger efficiency 6-50GeV
+      task->SetTriggerEfficiency(f1trg);
+    }
+    else if(L1input==6){
+      printf("L1M is selected\n");
+      TF1 *f1trg = new TF1("f1TriggerEfficiency","[0]/(TMath::Exp(-(x-[1])/[2]) + 1)",0,100);
+      f1trg->SetNpx(1000);
+      f1trg->SetParameters(0.445,4.43,0.72);//from MB //acc x trigger efficiency 6-50GeV
+      task->SetTriggerEfficiency(f1trg);
+
+    }
   }
 
-  if(isMC){
+    if(isMC){
     //for pi0
     const Int_t Ncen_Pi0 = 11;
     const Double_t centrality_Pi0[Ncen_Pi0] = {0,5,10,20,30,40,50,60,70,80,100};
