@@ -121,6 +121,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void SetTrackMatchingDeltaPhiMax(Double_t dphi)           { fTrackMatchingDeltaPhiMax = dphi; }
   void SetPlotDCal(Bool_t b)                                { fPlotDCal = b; }
   void SetJetMatchingR(Double_t r)                          { fJetMatchingR = r; }
+  void SetPlotJetMatchCandThresh(Double_t r)                { fPlotJetMatchCandThresh = r; };
 
  protected:
   void                        ExecOnce()                                        ;
@@ -149,6 +150,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   void                        FillMatchedJetHistograms()                        ;
   void                        ComputeJetMatches()                               ;
   AliEmcalJet*                GetMatchedJet(AliEmcalJet* jet)                   ;
+  void                        PlotNumberOfJetMatchingCandidates()               ;
   
   // Utility functions
   Double_t                    GetJetPt(const AliEmcalJet* jet, Double_t rho);
@@ -196,6 +198,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliJetContainer*            fMCJetContainer;                      //!<!Pointer to jet container of truth-level jets
   AliJetContainer*            fDetJetContainer;                     //!<!Pointer to jet container of det-level jets
   Double_t                    fJetMatchingR;                        ///< Jet matching R threshold
+  Double_t                    fPlotJetMatchCandThresh;              ///< Threshold for jet R to count candidates, affects plotting only
   
   // Event selection
   Bool_t                      fUseAliEventCuts;                     ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
@@ -214,7 +217,7 @@ class AliAnalysisTaskEmcalJetPerformance : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetPerformance &operator=(const AliAnalysisTaskEmcalJetPerformance&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskEmcalJetPerformance, 15);
+  ClassDef(AliAnalysisTaskEmcalJetPerformance, 16);
   /// \endcond
 };
 #endif
