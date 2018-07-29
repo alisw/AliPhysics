@@ -47,13 +47,11 @@
 #include "AliAODHandler.h"
 #include "AliMultiInputEventHandler.h"
 #include "AliAnalysisDataContainer.h"
-#include "AliESDtrack.h"
-#include "AliAODTrack.h"
 
 // Main AddTasks and associated classes
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliAnaCaloTrackCorrMaker.h"
-#include "AddTaskGammaHadronCorrelationSelectAnalysis.C"
+#include "AddTaskGammaHadronCorrelationSelectAnalysis.C" 
 //#include "AddTaskMultipleTrackCutIsoConeAnalysis.C" // comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
 //#include "AddTaskPi0IMGammaCorrQA.C" // comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
 
@@ -157,7 +155,7 @@ Bool_t  bEMCCorrFra = kFALSE; /// Use the EMCal correction framework
 Int_t   xTalkEmul = 0;        /// Activate cross-talk emulation, 0 -no, 1 do not subtract induced energy from reference cell, 2 subtract (preferred)
 
 Bool_t  bAnalysis   = kTRUE;  /// Do photon/pi0 isolation correlation analysis 
-//Bool_t  bAnalysisQA = kFALSE;  /// Execute analysis QA train wagon, comment, does not compile with bAnalysis  
+//Bool_t  bAnalysisQA = kTRUE; /// Execute analysis QA train wagon, comment, does not compile with bAnalysis 
 Bool_t  bMultiplicity= kFALSE;/// Execute multiplicity task 
 
 //_________________________________
@@ -210,10 +208,10 @@ void SetupPar(char* pararchivename)
 //______________________________________
 /// Sets input data and tree strings.
 //______________________________________
-void CheckInputData(const Int_t mode)
+void CheckInputData(const anaModes mode)
 {  
   TString ocwd = gSystem->WorkingDirectory();
-  
+
   //---------------------------------------
   // Local files analysis
   //---------------------------------------
@@ -320,8 +318,6 @@ void CheckInputData(const Int_t mode)
     // variable XML, if non provided, collection.xml is expected.
     if ( gSystem->Getenv("XML") )
       kXML = (char*) gSystem->Getenv("XML");
-    else
-      sprintf(kXML, "collection.xml") ; 
     
     if ( !TFile::Open(kXML) ) 
     {
@@ -335,7 +331,7 @@ void CheckInputData(const Int_t mode)
     gSystem->Load("libNetx.so") ; 
     gSystem->Load("libRAliEn.so"); 
     TGrid::Connect("alien://") ;
-    
+        
     // Feed Grid with collection file
     TGridCollection * collection = (TGridCollection*) TAlienCollection::Open(kXML);
     if ( !collection )
@@ -465,7 +461,7 @@ void CheckInputData(const Int_t mode)
 //_____________________________________________________________________
 /// Fills chain with data files paths.
 //_____________________________________________________________________
-void CreateChain(const Int_t mode, TChain * chain, TChain * chainxs)
+void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
 {
   TString ocwd = gSystem->WorkingDirectory();
   
@@ -987,11 +983,10 @@ void  LoadLibraries(Int_t /*mode*/)
 ///
 /// \param mode: analysis mode defined in enum anaModes
 //________________________
-void ana(Int_t mode=mLocal)
+void ana ( anaModes mode = mLocal )
 {  
   //--------------------------------------------------------------------
   // Load analysis libraries
-  
   LoadLibraries(mode) ;
   //gSystem->ListLibraries();
   
@@ -1208,7 +1203,7 @@ void ana(Int_t mode=mLocal)
     AliEmcalCorrectionTask * emcorr = AddTaskEmcalCorrectionTask();
     
     // Data or MC specific configurations
-    if ( !kMC ) 
+    if ( !kMC )
     {
       emcorr->SetUserConfigurationFilename("$ALICE_PHYSICS_SRC/PWGGA/CaloTrackCorrelations/yaml/EMCalCorrConfig_Gamma_Data.yaml");
     }
@@ -1324,7 +1319,7 @@ void ana(Int_t mode=mLocal)
   // -----------------
   // CaloTrack Correlations Task
   // -----------------
-  
+
   // Common settings for Correlation and QA tasks
   Bool_t   calibrate     = kFALSE;
   Int_t    minCen        = -1;
@@ -1363,7 +1358,8 @@ void ana(Int_t mode=mLocal)
     Bool_t   printSettings = kFALSE;
     TString  cutSelected      = "SPDPileUp";//"_ITSonly";
     TString  analysisSelected = "Photon_InvMass"; // Activate photon selection and invariant mass analysis
-    //"Photon_InvMass_MergedPi0_Isolation_Correlation_ClusterShape_PerSM_PerTCard_QA_Charged_Bkg"; // More options
+    // More options:
+    // "Photon_InvMass_MergedPi0_Isolation_Correlation_ClusterShape_PerSM_PerTCard_QA_Charged_Bkg"; 
     
     gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskGammaHadronCorrelationSelectAnalysis.C");
     
@@ -1422,11 +1418,11 @@ void ana(Int_t mode=mLocal)
       }
     } // trigger loop
   } // bAnalysis
-    
+  
   // -----------------
   // QA train analysis, comment out since it cannot compile with bAnalysis uncommented
   // -----------------
-  
+
 //  if ( bAnalysisQA )
 //  {
 //    Int_t    minTime       = -1000;
@@ -1447,7 +1443,7 @@ void ana(Int_t mode=mLocal)
 //      sprintf(tag,"%s",kPeriod   .Data());
 //      if ( kMC ) sprintf(mc,"MC" );
 //      else       sprintf(mc,"RAW");
-//      
+//
 //      gSystem->Setenv("ALIEN_JDL_LPMINTERACTIONTYPE",col);
 //      gSystem->Setenv("ALIEN_JDL_LPMPRODUCTIONTAG"  ,tag);
 //      gSystem->Setenv("ALIEN_JDL_LPMPRODUCTIONTYPE" ,mc );
