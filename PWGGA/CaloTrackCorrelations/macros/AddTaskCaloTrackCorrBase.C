@@ -25,6 +25,8 @@
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliVTrack.h"
+#include "AliAODTrack.h"
+#include "AliESDtrack.h"
 #include "ConfigureAndGetEventTriggerMaskAndCaloTriggerString.C"
 #include "AliESDtrackCuts.h"
 #include "CreateTrackCutsPWGJE.C"
@@ -150,7 +152,7 @@ void ConfigureEventSelection( AliCaloTrackReader * reader, TString cutsString,
 ///
 /// \param reader: pointer to AliCaloTrackReaderTask
 /// \param calorimeter : A string with he calorimeter used to measure the trigger particle: EMCAL, DCAL, PHOS
-/// \param cutsString : A string with additional cuts ("Smearing")
+/// \param cutsString : A string with additional cuts ("Smearing","MCEnScale")
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param year: The year the data was taken, used to configure time cut
 /// \param simulation : A bool identifying the data as simulation
@@ -205,6 +207,39 @@ void ConfigureEMCALClusterCuts ( AliCaloTrackReader* reader,
     //reader->SetSmearingFunction(AliCaloTrackReader::kSmearingLandauShift);
     //reader->SetShowerShapeSmearWidth(0.035);
   }
+  
+  // Energy scale factor for 100 MeV clusterization threshold in MC
+  // and TRD vs no TRD SMs
+  // Factors reported in https://alice-notes.web.cern.ch/node/837
+  if ( cutsString.Contains("MCEnScale") && simulation )
+  {
+    printf("AddTaskCaloTrackCorrBase::ConfigureEMCALClusterCuts() - Set global energy scale!\n");
+    reader->SwitchOnClusterEScalePerSMCorrection() ;
+    
+    if     ( year == 2011 )
+    {
+      for(Int_t ism = 0; ism < 6; ism++) 
+        reader->SetScaleFactorPerSM(ism, 1./1.012); 
+      for(Int_t ism = 6; ism < 10; ism++) 
+        reader->SetScaleFactorPerSM(ism, 1./0.998);
+    }
+    else if( year == 2012 )
+    {
+      for(Int_t ism = 0; ism < 4; ism++) 
+        reader->SetScaleFactorPerSM(ism, 1./1.001); 
+      for(Int_t ism = 4; ism < 10; ism++) 
+        reader->SetScaleFactorPerSM(ism, 1./0.995);
+    }
+    else if( year == 2013 ) // Needs to be revised
+    {
+      for(Int_t ism = 0; ism < 4; ism++) 
+        reader->SetScaleFactorPerSM(ism, 1./0.997); 
+      for(Int_t ism = 4; ism < 10; ism++) 
+        reader->SetScaleFactorPerSM(ism, 1./0.993);
+    }
+    else
+      printf("AddTaskCaloTrackCorrBase::ConfigureEMCALClusterCuts() - Global scale not defined for such case\n");
+  }
 }
 
 ///
@@ -233,7 +268,7 @@ void ConfigurePHOSClusterCuts ( AliCaloTrackReader* reader,
 ///
 /// \param reader: pointer to AliCaloTrackReaderTask
 /// \param inputDataType: string with data Type "ESD", "AOD"
-/// \param cutsString : A string with additional cuts ("ITSonly","TPConly")
+/// \param cutsString : A string with additional cuts ("ITSonly")
 ///
 void ConfigureTrackCuts ( AliCaloTrackReader* reader, 
                           TString inputDataType, TString cutsString)
