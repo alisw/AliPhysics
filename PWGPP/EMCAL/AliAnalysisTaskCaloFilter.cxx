@@ -471,6 +471,7 @@ void AliAnalysisTaskCaloFilter::FillAODCaloCells()
     aodEMcells.CreateContainer(nEMcell);
     aodEMcells.SetType(AliVCaloCells::kEMCALCell);
     Double_t calibFactor = 1.;   
+    Int_t    status      = 0;
     for (Int_t iCell = 0; iCell < nEMcell; iCell++) 
     { 
       Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
@@ -482,7 +483,7 @@ void AliAnalysisTaskCaloFilter::FillAODCaloCells()
         calibFactor = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
       }
       
-      if(!fEMCALRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi))
+      if(!fEMCALRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi,status))
       { //Channel is not declared as bad
         aodEMcells.SetCell(iCell,
                            eventEMcells.GetCellNumber(iCell),

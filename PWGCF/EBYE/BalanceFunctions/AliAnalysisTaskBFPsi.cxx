@@ -28,6 +28,7 @@
 #include "AliAODPid.h"
 #include "AliCollisionGeometry.h"
 #include "AliGenEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
@@ -108,6 +109,8 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fHistRapidity(0),
   fHistRapidityCorr(0),
   fHistPhi(0),
+  fHistPdgMC(0),
+  fHistPdgMCAODrec(0),
   fHistPhiCorr(0),
   fHistEtaVzPos(0),
   fHistEtaVzPosCorr(0),
@@ -235,6 +238,9 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fPDGCodeToBeAnalyzed(-1),
   fExcludeResonancePDGInMC(-1),
   fIncludeResonancePDGInMC(-1),
+  fExcludeInjectedSignals(kFALSE),
+  fRejectCheckGenName(kFALSE),
+  fGenToBeKept("Hijing"),
   fEventClass("EventPlane"), 
   fCustomBinning(""),
   fHistVZEROAGainEqualizationMap(0),
@@ -467,6 +473,10 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   fList->Add(fHistPhiCorr);
   fHistPtTriggerThreshold = new TH2F("fHistPtTriggerThreshold","p_{T} distribution with threshold for pT trig;p_{T} (GeV/c);Centrality percentile",200,0,20,220,-5,105);
   fList->Add(fHistPtTriggerThreshold);
+  fHistPdgMC  = new TH1F("fHistPdgMC","Pdg code distribution;pdg code;Entries",6401,-3200.5,3200.5);
+  fList->Add(fHistPdgMC);
+  fHistPdgMCAODrec  = new TH1F("fHistPdgMCAODrec","Pdg code distribution;pdg code;Entries",6401,-3200.5,3200.5);
+  fList->Add(fHistPdgMCAODrec);
 				     
   fHistEtaVzPos  = new TH3F("fHistEtaVzPos","#eta vs Vz distribution (+);#eta;V_{z} (cm);Centrality percentile",40,-1.6,1.6,140,-12.,12.,220,-5,105);
   fList->Add(fHistEtaVzPos); 
@@ -1016,7 +1026,8 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     AliError("eventMain not available");
     return;
   }
-  
+
+
   // PID Response task active?
   if(fUsePID || fElectronRejection) {
     fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
@@ -1043,11 +1054,11 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
 
   //high pT trigger tracks
   Int_t nTracksAboveHighPtThreshold = 0;
-  
+
   // get the accepted tracks in main event  
   TObjArray *tracksMain = GetAcceptedTracks(eventMain,lMultiplicityVar,gReactionPlane,gSphericity,nTracksAboveHighPtThreshold);
   gNumberOfAcceptedTracks = tracksMain->GetEntriesFast();
-  
+
   //Use sphericity cut
   if(fUseSphericityCut) {
     if((fSphericityMin > gSphericity)||(gSphericity > fSphericityMax)) {
@@ -1197,10 +1208,9 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 	    if(TMath::Abs(gVertexArray.At(1)) < fVyMax) {
 	      if(TMath::Abs(gVertexArray.At(2)) < fVzMax) {
 		fHistEventStats->Fill(4,gRefMultiplicity);//analyzed events
-
 		// get the reference multiplicty or centrality
 		gRefMultiplicity = GetRefMultiOrCentrality(event);
-		
+						
 		fHistVx->Fill(gVertexArray.At(0));
 		fHistVy->Fill(gVertexArray.At(1));
 		fHistVz->Fill(gVertexArray.At(2),gRefMultiplicity);
@@ -1656,7 +1666,13 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
       Double_t gImpactParameter = 0.;
       AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
       if(gMCEvent){
-	AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());      
+	AliCollisionGeometry* headerH;
+	TList *ltgen = (TList*)gMCEvent->GetCocktailList();
+	if (ltgen) {
+	  headerH = dynamic_cast<AliCollisionGeometry*>(ltgen->FindObject("Hijing_0"));
+	}
+	else 
+	  headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());
 	if(headerH){
 	  gImpactParameter = headerH->ImpactParameter();
 	  gCentrality      = gImpactParameter;
@@ -1868,7 +1884,13 @@ Double_t AliAnalysisTaskBFPsi::GetEventPlane(AliVEvent *event){
 
     AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
     if(gMCEvent){
-      AliCollisionGeometry* headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());    
+      AliCollisionGeometry* headerH;
+      TList *ltgen = (TList*)gMCEvent->GetCocktailList();
+      if (ltgen) {
+	headerH = dynamic_cast<AliCollisionGeometry*>(ltgen->FindObject("Hijing_0"));
+      }
+      else 
+	headerH = dynamic_cast<AliCollisionGeometry*>(gMCEvent->GenEventHeader());  
       if (headerH) {
 	gReactionPlane = headerH->ReactionPlaneAngle();
 	//gReactionPlane *= TMath::RadToDeg();
@@ -2694,6 +2716,20 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
       }
       if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
+
+      //exclude injected signal
+      if (fExcludeInjectedSignals){
+	if (fRejectCheckGenName){
+	  TString generatorName;
+	  Int_t label = TMath::Abs(aodTrack->GetLabel());
+	  Bool_t hasGenerator = mcEvent->GetCocktailGenerator(label,generatorName);
+	  if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data())))
+	    continue;
+	  
+	  //Printf("mother =%d, generatorName=%s", label, generatorName.Data()); 
+	}
+      }
+
       
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
@@ -2923,7 +2959,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
       fHistPt->Fill(vPt,gCentrality);
       fHistEta->Fill(vEta,gCentrality);
-      fHistRapidity->Fill(vY,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality); 
       if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
       else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
       fHistPhi->Fill(vPhi,gCentrality);
@@ -2936,6 +2972,13 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	fHistEtaVzNeg->Fill(vEta,mcEvent->GetPrimaryVertex()->GetZ(),
 			    gCentrality); 		 
 	fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      }
+
+      Int_t label_pdg = TMath::Abs(aodTrack->GetLabel());
+      AliAODMCParticle *AODmcTrack_pdg = (AliAODMCParticle*) fArrayMC->At(label_pdg);
+        if(AODmcTrack_pdg){
+        Int_t trackPdg = AODmcTrack_pdg->GetPdgCode();
+        fHistPdgMCAODrec->Fill(trackPdg);
       }
       
       //=======================================correction
@@ -3229,9 +3272,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 
     AliMCEvent *gMCEvent = dynamic_cast<AliMCEvent*>(event);
     if(gMCEvent) {
-
-
-      Int_t nTracks = gMCEvent->GetNumberOfPrimaries(); // default mode: running over primary particles only 
+      Int_t nTracks = gMCEvent->GetNumberOfPrimaries(); // default mode: running over primary particles only
       if(fIncludeSecondariesInMCgen){
 	nTracks = gMCEvent->GetNumberOfTracks(); // for weak decay studies, include also secondaries
       }
@@ -3247,6 +3288,18 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	//exclude non stable particles (only if not secondaries included explicitly)
 	if(!fIncludeSecondariesInMCgen && !(gMCEvent->IsPhysicalPrimary(iTracks))) continue;
 
+	//exclude injected signal
+	if (fExcludeInjectedSignals){
+	  if (fRejectCheckGenName){
+	    TString generatorName;
+	    Bool_t hasGenerator = gMCEvent->GetCocktailGenerator(iTracks,generatorName);
+	    if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data())))
+	      continue;
+	    
+	    //Printf("mother =%d, generatorName=%s", label, generatorName.Data()); 
+	  }
+	}
+	  
 	// exclude particles with strange behaviour in AMPT
 	// - mothers that have physical primary daughters
 	if(fExcludeParticlesExtra){
@@ -3424,7 +3477,7 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	}
       
 	vPhi    = track->Phi();
-	//Printf("phi (before): %lf",vPhi);
+	//Printf("phi (before): %lf, vPt=%f, vEta =%f",vPhi, vPt, vEta);
 	
 	fHistPt->Fill(vPt,gCentrality);
 	fHistEta->Fill(vEta,gCentrality);
@@ -3446,6 +3499,11 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
 	  fHistPhiNeg->Fill(vPhi,gCentrality);
 	}
 	
+        TParticle *particle_pdg = track->Particle();
+        if(!particle_pdg) continue;
+        Int_t trackPdg = particle_pdg->GetPdgCode();
+        fHistPdgMC->Fill(trackPdg);
+
 	//Flow after burner
 	if(fUseFlowAfterBurner) {
 	  Double_t precisionPhi = 0.001;

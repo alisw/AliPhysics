@@ -37,8 +37,8 @@
 using TMath::TwoPi;
 
 const std::string AliAnalysisTaskLFefficiencies::fPosNeg[2] = {"neg","pos"};
-const int AliAnalysisTaskLFefficiencies::fNcuts = 7;
-const std::string AliAnalysisTaskLFefficiencies::fCutNames[7] = {"FB4","FB5","FB5+PID TPC", "FB5 + TOF matching", "FB5 + PID TOF", "FB5 + TOF matching - TOF mismatch", "FB5 + TOF matching - TOF mismatch + TOF pid"};
+const int AliAnalysisTaskLFefficiencies::fNcuts = 8;
+const std::string AliAnalysisTaskLFefficiencies::fCutNames[8] = {"FB4","FB5","FB5+PID TPC", "FB5 + TOF matching", "FB5 + PID TOF", "FB5 + TOF matching - TOF mismatch", "FB5 + TOF matching - TOF mismatch + TOF pid", "FB5 + hasTOF + TOF mismatch"};
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskLFefficiencies);
@@ -84,7 +84,7 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
           Form("%s;#eta;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),10,-1.,1.,16,0.,TwoPi(),60,0.,6.);
         fOutputList->Add(fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]);
       }
-      fNsigmaTOFvsPt[iSpecies][iCharge] = new TH2D(Form("nSigmaTOF_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),";#it{p}_{T} (GeV/#it{c}); n#sigma_{TOF}",60,0.,6.,401,-10.05,-10.05);
+      fNsigmaTOFvsPt[iSpecies][iCharge] = new TH2D(Form("nSigmaTOF_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),";#it{p}_{T} (GeV/#it{c}); n#sigma_{TOF}",60,0.,6.,1001,-100.1,100.1);
       fOutputList->Add(fNsigmaTOFvsPt[iSpecies][iCharge]);
     }
   }
@@ -170,14 +170,14 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
     track->GetTOFLabel(TOFlabels);
     bool TOFmismatch = TOFlabels[0] != TMath::Abs(track->GetLabel());
     bool cuts[fNcuts] = {true, hasFB5, hasFB5 && TPCpid, hasFB5 && hasTOF, hasFB5 && hasTOF && TOFpid,
-      hasFB5 && hasTOF && !TOFmismatch, hasFB5 && hasTOF && !TOFmismatch && TOFpid};
+      hasFB5 && hasTOF && !TOFmismatch, hasFB5 && hasTOF && !TOFmismatch && TOFpid, hasFB5 && hasTOF && TOFmismatch};
 
     for (int iCut = 0; iCut < fNcuts; ++iCut) {
       if (cuts[iCut]) {
         fReconstructedYPhiPt[iSpecies][iCharge][iCut]->Fill(v.Rapidity(),phi,pt);
         fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]->Fill(eta,phi,pt);
-        if (iCut==6) {
-          fNsigmaTOFvsPt[iSpecies][iCharge]->Fill(nSigmaTOF,pt);
+        if (iCut==5) {
+          fNsigmaTOFvsPt[iSpecies][iCharge]->Fill(pt,nSigmaTOF);
         }
       }
     }

@@ -1,4 +1,4 @@
-/// \file ana.C
+/// \file ana.C 
 /// \ingroup CaloTrackCorrMacros
 /// \brief Example of execution macro
 ///
@@ -47,13 +47,15 @@
 #include "AliAODHandler.h"
 #include "AliMultiInputEventHandler.h"
 #include "AliAnalysisDataContainer.h"
+#include "AliESDtrack.h"
+#include "AliAODTrack.h"
 
 // Main AddTasks and associated classes
 #include "AliAnalysisTaskCaloTrackCorrelation.h"
 #include "AliAnaCaloTrackCorrMaker.h"
 #include "AddTaskGammaHadronCorrelationSelectAnalysis.C"
-//#include "AddTaskMultipleTrackCutIsoConeAnalysis.C"
-//#include "AddTaskPi0IMGammaCorrQA.C"
+//#include "AddTaskMultipleTrackCutIsoConeAnalysis.C" // comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
+//#include "AddTaskPi0IMGammaCorrQA.C" // comment, does not compile with AddTaskGammaHadronCorrelationSelectAnalysis.C
 
 #include "AliPhysicsSelection.h"
 #include "AliPhysicsSelectionTask.h"
@@ -147,8 +149,16 @@ Bool_t  outAOD     = kFALSE; /// Create output AOD, needed by some.
 TString kTreeName;           /// "esdTree" or "aodTree" or "TE" for pure MC kinematics analysis    
 TString kPass      = "";     /// "passX"
 Int_t   kRun       = 0;      /// Run number
-Bool_t  bEMCCluster = kFALSE;/// Use the EMCal clusterization task 
-Bool_t  bEMCCorrFra = kTRUE; /// Use the EMCal correction framework 
+
+//---------------------------------------------------------------------------
+/// Activate here the desired analysis combinations, what correction/clusterization.
+Bool_t  bEMCCluster = kFALSE; /// Use the EMCal clusterization task 
+Bool_t  bEMCCorrFra = kFALSE; /// Use the EMCal correction framework 
+Int_t   xTalkEmul = 0;        /// Activate cross-talk emulation, 0 -no, 1 do not subtract induced energy from reference cell, 2 subtract (preferred)
+
+Bool_t  bAnalysis   = kTRUE;  /// Do photon/pi0 isolation correlation analysis 
+//Bool_t  bAnalysisQA = kFALSE;  /// Execute analysis QA train wagon, comment, does not compile with bAnalysis  
+Bool_t  bMultiplicity= kFALSE;/// Execute multiplicity task 
 
 //_________________________________
 /// Load par files, create analysis libraries
@@ -1011,41 +1021,42 @@ void ana(Int_t mode=mLocal)
     //Get the cross section
     Double_t xsection = 0;
     Float_t  ntrials  = 0;
-    Int_t    nfiles =  0;
+    Int_t    nfiles   = 0;
     
     Bool_t ok = GetAverageXsection(chainxs, xsection, ntrials, nfiles);
     
-    printf("n xs files %d",nfiles);
-    
-    if(ok)
+    printf("n xs files %d ntrials %f \n",nfiles, ntrials);
+    if ( nfiles > 0 && ntrials > 0 )
     {
-      Int_t  nEventsPerFile = chain->GetEntries() / nfiles;
+      if ( ok )
+      {
+        Int_t  nEventsPerFile = chain->GetEntries() / nfiles;
+        
+        Double_t trials = ntrials / nEventsPerFile ;
+        
+        scale = xsection / trials;
+        
+        printf("Get Cross section : nfiles  %d, nevents %lld, nevents per file %d \n",
+               nfiles, chain->GetEntries(),nEventsPerFile);
+        printf("                    ntrials %2.2f, trials %2.2f, xs %2.2e, scale factor %2.2e\n", 
+               ntrials,trials,xsection,scale);
+        
+        if ( chainxs->GetEntries() != chain->GetEntries() ) 
+          printf("CAREFUL: Number of files in data chain %lld, in cross section chain %lld \n",
+                 chainxs->GetEntries(),chain->GetEntries());
+      } // ok
       
-      Double_t trials = ntrials / nEventsPerFile ;
-      
-      scale = xsection / trials;
-      
-      printf("Get Cross section : nfiles  %d, nevents %lld, nevents per file %d \n",
-             nfiles, chain->GetEntries(),nEventsPerFile);
-      printf("                    ntrials %2.2f, trials %2.2f, xs %2.2e, scale factor %2.2e\n", 
-             ntrials,trials,xsection,scale);
-      
-      if ( chainxs->GetEntries() != chain->GetEntries() ) 
-        printf("CAREFUL: Number of files in data chain %lld, in cross section chain %lld \n",
-               chainxs->GetEntries(),chain->GetEntries());
-    } // ok
-    
-    // comment out this line in case the simulation did not have the cross section files produced in the directory
-    if( scale <= 0  || !ok)
-    { printf( "STOP, cross section not available! nfiles %lld \n", chainxs->GetEntries() ) ; return ; }
-    
+      // comment out this line in case the simulation did not have the cross section files produced in the directory
+      if ( scale <= 0  || !ok )
+      { printf( "STOP, cross section not available! nfiles %lld \n", chainxs->GetEntries() ) ; return ; }
+    }
   }
   
   printf("*********************************************\n");
   printf("number of entries # %lld \n", chain->GetEntries()) ; 	
   printf("*********************************************\n");
   
-  if(!chain)
+  if ( !chain )
   { 
     printf("STOP, no chain available\n"); 
     return;
@@ -1092,12 +1103,12 @@ void ana(Int_t mode=mLocal)
 //  }
   
   // MC handler
-  if((kMC || kInputData == "MC") && !kInputData.Contains("AOD"))
+  if ( (kMC || kInputData == "MC") && !kInputData.Contains("AOD") )
   {
     AliMCEventHandler* mcHandler = new AliMCEventHandler();
     mcHandler->SetReadTR(kFALSE);//Do not search TrackRef file
     mgr->SetMCtruthEventHandler(mcHandler);
-    if( kInputData == "MC") 
+    if ( kInputData == "MC" ) 
     {
       cout<<"MC INPUT EVENT HANDLER"<<endl;
       mgr->SetInputEventHandler(NULL);
@@ -1151,13 +1162,14 @@ void ana(Int_t mode=mLocal)
   }
   
   // Centrality, valid for Run1, but superseeded by new task below
-//  if ( kCollision.Contains("Pb") )
+//  if ( bMultiplicity && kCollision.Contains("Pb") )
 //  {
 //    if ( kYear < 200000 && kInputData=="ESD" )
 //    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskCentrality.C");
 //    AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 //  }
   
+  if ( bMultiplicity )
   {
     // New centrality/multiplicity selector
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
@@ -1194,9 +1206,25 @@ void ana(Int_t mode=mLocal)
     printf("INIT EMCal corrections\n");
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG/EMCAL/macros/AddTaskEmcalCorrectionTask.C");
     AliEmcalCorrectionTask * emcorr = AddTaskEmcalCorrectionTask();
-    //emcorr->SetUserConfigurationFilename("EMCalCorrConfig_MC_Run1_ClV1_xTalk.yaml");
-    //emcorr->SetUserConfigurationFilename("EMCalCorrConfig_MC_Run1_ClV1.yaml");
-    //emcorr->SetUserConfigurationFilename("EMCalCorrConfig_Gamma_Data.yaml");
+    
+    // Data or MC specific configurations
+    if ( !kMC ) 
+    {
+      emcorr->SetUserConfigurationFilename("$ALICE_PHYSICS_SRC/PWGGA/CaloTrackCorrelations/yaml/EMCalCorrConfig_Gamma_Data.yaml");
+    }
+    else
+    {
+      // Without cross-talk
+      if ( xTalkEmul  == 0 )
+        emcorr->SetUserConfigurationFilename("$ALICE_PHYSICS_SRC/PWGGA/CaloTrackCorrelations/yaml/EMCalCorrConfig_MC_ClV1.yaml");
+      // With cross-talk
+      else 
+      {
+        //emcorr->SetUserConfigurationFilename("$ALICE_PHYSICS_SRC/PWGGA/CaloTrackCorrelations/yaml/EMCalCorrConfig_MC_Run1_ClV1_xTalk.yaml");
+        emcorr->SetUserConfigurationFilename("$ALICE_PHYSICS_SRC/PWGGA/CaloTrackCorrelations/yaml/EMCalCorrConfig_MC_Run1_ClV1_xTalk_ECellCut.yaml");
+        //emcorr->SetUserConfigurationFilename("$ALICE_PHYSICS_SRC/PWGGA/CaloTrackCorrelations/yaml/EMCalCorrConfig_MC_Run1_ClV1_xTalk_ECellCut_Leak5MeV.yaml");
+      }
+    }
     
     //emcorr->SelectCollisionCandidates( AliVEvent::kAnyINT | AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 | AliVEvent::kEMCEGA | AliVEvent::kEMCEJE );
     
@@ -1225,14 +1253,13 @@ void ana(Int_t mode=mLocal)
     Int_t   unfMinE   = 15;      // Remove cells with less than 15 MeV from cluster after unfolding
     Int_t   unfFrac   = 1;       // Remove cells with less than 1% of cluster energy after unfolding
     Bool_t  updateCell= kTRUE;   // Calibrate cells and modify them on the fly
-    Int_t   xTalkEmul = 0;       // Activate cross-talk emulation, 0 -no, 1 do not subtract induced energy from reference cell, 2 subtract (preferred)
     Bool_t  filterEvents = kFALSE; // Filter events with activity in EMCal
     Int_t   cenBin[]  = {-1,-1}; // Centrality bin min-max of accepted events. {-1,-1} take all
     // Calibration, bad map ...
     
     Bool_t calibEE = kFALSE; // It is set automatically, but here we force to use ir or not in any case
     Bool_t calibTT = kFALSE; // It is set automatically, but here we force to use ir or not in any case
-    Bool_t badMap  = kFALSE; // It is set automatically, but here we force to use it or not in any case  
+    Bool_t badMap  = kTRUE;  // It is set automatically, but here we force to use it or not in any case  
        
     AliAnalysisTaskEMCALClusterize * cl = 
     AddTaskEMCALClusterize(clustersArray, outAOD, kMC, exo,"V1","", clTM,
@@ -1253,6 +1280,10 @@ void ana(Int_t mode=mLocal)
       cl->GetRecoUtils()->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MCv3);
     }
       
+    //    cl->GetRecoUtils()->SetWarmChannelAsGood();
+    //    cl->GetRecoUtils()->SetDeadChannelAsGood();
+    //    cl->GetRecoUtils()->SetHotChannelAsGood();
+    
     clustersArray = Form("V1_Ecell%d_Eseed%d",minEcell,minEseed);
     cl->SetAODBranchName(clustersArray);
 
@@ -1262,7 +1293,7 @@ void ana(Int_t mode=mLocal)
       if ( xTalkEmul > 0 )
         cellsArray = "Cells_xTalkEmulation";
     }
-    cl->SetAODCellsName(cellsArray);
+    cl->SetAODCellsName (cellsArray);
     
     //      cl->SetMaxEvent(20);
     //      cl->SetDebugLevel(100);
@@ -1290,9 +1321,11 @@ void ana(Int_t mode=mLocal)
    }
    */  
 
-  
+  // -----------------
   // CaloTrack Correlations Task
-  //
+  // -----------------
+  
+  // Common settings for Correlation and QA tasks
   Bool_t   calibrate     = kFALSE;
   Int_t    minCen        = -1;
   Int_t    maxCen        = -1;
@@ -1303,120 +1336,172 @@ void ana(Int_t mode=mLocal)
   Int_t    nTrig         = 4;
   Int_t    trig0         = 0;
   Int_t    fixTrig       = -1;
-  if(fixTrig >= 0) 
+  if ( fixTrig >= 0 ) 
   {
     trig0 = fixTrig;
     nTrig = fixTrig+1;
   }
   
-  Int_t    rejectEMCTrig = 0;
-  Bool_t   nonLinOn      = kFALSE;
-  Float_t  shshMax       = 0.27;
-  Float_t  isoCone       = 0.4;
-  Float_t  isoConeMin    = -1;
-  Float_t  isoPtTh       = 1;
-  Int_t    isoMethod     = AliIsolationCut::kSumPtIC;
-  Int_t    isoContent    = AliIsolationCut::kNeutralAndCharged;
-  Int_t    leading       = 0;
-  Int_t    tm            = 2;
-  Bool_t   mixOn         = kFALSE;
-  TString  outputfile    = "";
-  Bool_t   printSettings = kFALSE;
-  TString  cutSelected      = "SPDPileUp";
-  TString  analysisSelected = "Photon_InvMass"; // Activate photon selection and invariant mass analysis
-  //"Photon_InvMass_MergedPi0_Isolation_Correlation_ClusterShape_PerSM_PerTCard_QA_Charged_Bkg"; // More options
+  // -----------------
+  // Photon/Pi0/Isolation/Correlation etc
+  // -----------------
   
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskGammaHadronCorrelationSelectAnalysis.C");
-  
-  for(Int_t itrig = trig0; itrig < nTrig; itrig++)
+  if ( bAnalysis )
   {
-    if ( itrig > 0 && kMC ) continue; // Any MC has only one kind of trigger
+    Int_t    rejectEMCTrig = 0;
+    Bool_t   nonLinOn      = kFALSE;
+    Float_t  shshMax       = 0.27;
+    Float_t  isoCone       = 0.4;
+    Float_t  isoConeMin    = -1;
+    Float_t  isoPtTh       = 1;
+    Int_t    isoMethod     = AliIsolationCut::kSumPtIC;
+    Int_t    isoContent    = AliIsolationCut::kNeutralAndCharged;
+    Int_t    leading       = 0;
+    Int_t    tm            = 2;
+    Bool_t   mixOn         = kFALSE;
+    TString  outputfile    = "";
+    Bool_t   printSettings = kFALSE;
+    TString  cutSelected      = "SPDPileUp";//"_ITSonly";
+    TString  analysisSelected = "Photon_InvMass"; // Activate photon selection and invariant mass analysis
+    //"Photon_InvMass_MergedPi0_Isolation_Correlation_ClusterShape_PerSM_PerTCard_QA_Charged_Bkg"; // More options
     
-    AliAnalysisTaskCaloTrackCorrelation * emc = AddTaskGammaHadronCorrelationSelectAnalysis
-    ("EMCAL",kMC,kYear,kCollision,kPeriod,rejectEMCTrig,clustersArray,cutSelected,calibrate,nonLinOn, analysisSelected,
-     shshMax,isoCone,isoConeMin,isoPtTh,isoMethod ,isoContent,leading,
-     tm,minCen,maxCen,mixOn,outputfile,printSettings,-1,lTrig[itrig]);
-    emc->GetAnalysisMaker()->GetReader()->SetEMCALCellsListName(cellsArray);
-    emc->GetAnalysisMaker()->GetReader()->SwitchOffRejectNoTrackEvents();
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskGammaHadronCorrelationSelectAnalysis.C");
     
-    // Careful, need time calibration to use time cuts defined in macro
-    if(!bEMCCluster && !bEMCCorrFra && !calibrate)
+    for(Int_t itrig = trig0; itrig < nTrig; itrig++)
     {
-      emc->GetAnalysisMaker()->GetReader()->SwitchOffUseEMCALTimeCut();
-      emc->GetAnalysisMaker()->GetReader()->SetEMCALTimeCut(-1e10,1e10); // Open time cut
-    }
+      if ( itrig > 0 && kMC ) continue; // Any MC has only one kind of trigger
+      
+      AliAnalysisTaskCaloTrackCorrelation * emc = AddTaskGammaHadronCorrelationSelectAnalysis
+      ("EMCAL",kMC,kYear,kCollision,kPeriod,rejectEMCTrig,clustersArray,cutSelected,calibrate,nonLinOn, analysisSelected,
+       shshMax,isoCone,isoConeMin,isoPtTh,isoMethod ,isoContent,leading,
+       tm,minCen,maxCen,mixOn,outputfile,printSettings,debug,lTrig[itrig]);
+      
+      emc->GetAnalysisMaker()->GetReader()->SetEMCALCellsListName(cellsArray);
+      emc->GetAnalysisMaker()->GetReader()->SwitchOffRejectNoTrackEvents();
+      
+      // Careful, need time calibration to use time cuts defined in macro
+      if ( !bEMCCluster && !bEMCCorrFra && !calibrate )
+      {
+        emc->GetAnalysisMaker()->GetReader()->SwitchOffUseEMCALTimeCut();
+        emc->GetAnalysisMaker()->GetReader()->SetEMCALTimeCut(-1e10,1e10); // Open time cut
+      }
+      
+      //  emc ->SelectCollisionCandidates( AliVEvent::kINT7 | AliVEvent::kCentral  | AliVEvent::kSemiCentral | AliVEvent::kMB ); // Done internally, here as example
+      //  emc->GetAnalysisMaker()->GetReader()->SetNameOfMCEventHederGeneratorToAccept("Pythia");
+      //  emc->GetAnalysisMaker()->GetReader()->SwitchOffShowerShapeSmearing();
+      //  emc->GetAnalysisMaker()->GetReader()->SetSmearingFunction(AliCaloTrackReader::kNoSmearing);
+      
+      //  emc ->GetAnalysisMaker()->GetReader()->SwitchOnAliCentrality () ;
+      //  emc->SetLastEvent(maxEvent);
+      
+      // // Example on how to modify settings of a sub-wagon if not in corresponding macro
+      //  TList * anaList = emc->GetAnalysisMaker()->GetListOfAnalysisContainers();
+      //  AliAnaClusterShapeCorrelStudies * shapeAna = (AliAnaClusterShapeCorrelStudies*) anaList->At(9);
+      //  shapeAna->SetNCellBinLimits(3); // no analysis on predefined bins in nCell
+      //  shapeAna->SetDistToBadMin(2);
+      //  shapeAna->SwitchOnStudyColRowFromCellMax() ;
+      //  shapeAna->Print("");
+      
+      if ( kYear < 2014 ) continue;
+      
+      TString dcalTrig = lTrig[itrig];
+      dcalTrig.ReplaceAll("EM","D");
+      
+      AliAnalysisTaskCaloTrackCorrelation * dmc = AddTaskGammaHadronCorrelationSelectAnalysis
+      ("DCAL",kMC,kYear,kCollision,kPeriod,rejectEMCTrig,clustersArray,cutSelected,calibrate,nonLinOn, analysisSelected,
+       shshMax,isoCone,isoConeMin,isoPtTh,isoMethod ,isoContent,leading,
+       tm,minCen,maxCen,mixOn,outputfile,printSettings,-1,lTrig[itrig]);
+      dmc->GetAnalysisMaker()->GetReader()->SetEMCALCellsListName(cellsArray);
+      dmc->GetAnalysisMaker()->GetReader()->SwitchOffRejectNoTrackEvents();
+      
+      // Careful, need time calibration to use time cuts defined in macro
+      if ( !bEMCCluster && !bEMCCorrFra && !calibrate )
+      {
+        dmc->GetAnalysisMaker()->GetReader()->SwitchOffUseEMCALTimeCut();
+        dmc->GetAnalysisMaker()->GetReader()->SetEMCALTimeCut(-1e10,1e10); // Open time cut
+      }
+    } // trigger loop
+  } // bAnalysis
     
-    //  emc ->SelectCollisionCandidates( AliVEvent::kINT7 | AliVEvent::kCentral  | AliVEvent::kSemiCentral | AliVEvent::kMB ); // Done internally, here as example
-    //  emc->GetAnalysisMaker()->GetReader()->SetNameOfMCEventHederGeneratorToAccept("Pythia");
-    //  emc->GetAnalysisMaker()->GetReader()->SwitchOffShowerShapeSmearing();
-    //  emc->GetAnalysisMaker()->GetReader()->SetSmearingFunction(AliCaloTrackReader::kNoSmearing);
-    
-    //  emc ->GetAnalysisMaker()->GetReader()->SwitchOnAliCentrality () ;
-    //  emc->SetLastEvent(maxEvent);
-    
-    // // Example on how to modify settings of a sub-wagon if not in corresponding macro
-    //  TList * anaList = emc->GetAnalysisMaker()->GetListOfAnalysisContainers();
-    //  AliAnaClusterShapeCorrelStudies * shapeAna = (AliAnaClusterShapeCorrelStudies*) anaList->At(9);
-    //  shapeAna->SetNCellBinLimits(3); // no analysis on predefined bins in nCell
-    //  shapeAna->SetDistToBadMin(2);
-    //  shapeAna->SwitchOnStudyColRowFromCellMax() ;
-    //  shapeAna->Print("");
-    
-    if ( kYear < 2014 ) continue;
-    
-    TString dcalTrig = lTrig[itrig];
-    dcalTrig.ReplaceAll("EM","D");
-    
-    AliAnalysisTaskCaloTrackCorrelation * dmc = AddTaskGammaHadronCorrelationSelectAnalysis
-    ("DCAL",kMC,kYear,kCollision,kPeriod,rejectEMCTrig,clustersArray,cutSelected,calibrate,nonLinOn, analysisSelected,
-     shshMax,isoCone,isoConeMin,isoPtTh,isoMethod ,isoContent,leading,
-     tm,minCen,maxCen,mixOn,outputfile,printSettings,-1,lTrig[itrig]);
-    dmc->GetAnalysisMaker()->GetReader()->SetEMCALCellsListName(cellsArray);
-    dmc->GetAnalysisMaker()->GetReader()->SwitchOffRejectNoTrackEvents();
-    
-    // Careful, need time calibration to use time cuts defined in macro
-    if(!bEMCCluster && !bEMCCorrFra && !calibrate)
-    {
-      dmc->GetAnalysisMaker()->GetReader()->SwitchOffUseEMCALTimeCut();
-      dmc->GetAnalysisMaker()->GetReader()->SetEMCALTimeCut(-1e10,1e10); // Open time cut
-    }
-  } // trigger loop
+  // -----------------
+  // QA train analysis, comment out since it cannot compile with bAnalysis uncommented
+  // -----------------
   
+//  if ( bAnalysisQA )
+//  {
+//    Int_t    minTime       = -1000;
+//    Int_t    maxTime       =  1000;
+//    Bool_t   qaan          = kTRUE;
+//    Bool_t   hadronan      = kTRUE;
+//    
+//    gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskPi0IMGammaCorrQA.C");
+//    
+//    // To test the train environment variables
+//    //
+//    {
+//      char col [1024];
+//      char tag [1024];
+//      char mc  [1024];
+//      
+//      sprintf(col,"%s",kCollision.Data());
+//      sprintf(tag,"%s",kPeriod   .Data());
+//      if ( kMC ) sprintf(mc,"MC" );
+//      else       sprintf(mc,"RAW");
+//      
+//      gSystem->Setenv("ALIEN_JDL_LPMINTERACTIONTYPE",col);
+//      gSystem->Setenv("ALIEN_JDL_LPMPRODUCTIONTAG"  ,tag);
+//      gSystem->Setenv("ALIEN_JDL_LPMPRODUCTIONTYPE" ,mc );
+//    }
+//    
+//    for(Int_t itrig = trig0; itrig < nTrig; itrig++)
+//    {
+//      if ( itrig > 0 && kMC ) continue; // Any MC has only one kind of trigger
+//      
+//      AliAnalysisTaskCaloTrackCorrelation * qaTrain = AddTaskPi0IMGammaCorrQA
+//      ("EMCAL",kMC,"","",qaan,hadronan,calibrate,minTime,maxTime,
+//        minCen,maxCen,debug,lTrig[itrig]);
+//    }
+//    
+//    // Other QA
+//    // Detector QA
+//    //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
+//    //  AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
+//    // 
+//    // Very old Trigger QA, not in use
+//    //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALTriggerQA.C");  
+//    //  AliAnalysisTaskEMCALTriggerQA * qatrigtask = AddTaskEMCALTriggerQA(); 
+//  } // bAnalysis QA
   
-  //  // Simple event counting tasks
-  //  
-  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
-  //
-  //  AliAnalysisTaskCounter* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
-  //  AliAnalysisTaskCounter* countmb  = AddTaskCounter("MB"); // Min Bias
-  //  AliAnalysisTaskCounter* countany = AddTaskCounter("Any"); 
-  //  AliAnalysisTaskCounter* countint = AddTaskCounter("AnyINT");// Min Bias
-  //  
-  //  if(!kMC)
-  //  {
-  //    AliAnalysisTaskCounter* countemg = AddTaskCounter("EMCEGA"); 
-  //    AliAnalysisTaskCounter* countemj = AddTaskCounter("EMCEJE"); 
-  //    if(kCollision=="PbPb")
-  //    {
-  //      AliAnalysisTaskCounter* countcen = AddTaskCounter("Central"); 
-  //      AliAnalysisTaskCounter* countsce = AddTaskCounter("SemiCentral"); 
-  //      AliAnalysisTaskCounter* countssce= AddTaskCounter("SemiOrCentral"); 
-  //      AliAnalysisTaskCounter* countphP = AddTaskCounter("PHOSPb"); 
-  //    }
-  //    else
-  //    {
-  //      AliAnalysisTaskCounter* countem1 = AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
-  //      AliAnalysisTaskCounter* countem7 = AddTaskCounter("EMC7"); // Trig Th > 4-5 GeV 
-  //      AliAnalysisTaskCounter* countphp = AddTaskCounter("PHOS"); 
-  //    }
-  //  }  
-  // 
-  //  
-  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");  
-  //  AliAnalysisTaskCaloTrackCorrelation * qatask = AddTaskCalorimeterQA(kInputData,kYear,kPrint,kMC); 
-  //  
-  //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGPP/EMCAL/macros/AddTaskEMCALTriggerQA.C");  
-  //  AliAnalysisTaskEMCALTriggerQA * qatrigtask = AddTaskEMCALTriggerQA(); 
+    //  // Simple event counting tasks
+    //  
+    //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/AddTaskCounter.C");   
+    //
+    //  AliAnalysisTaskCounter* count    = AddTaskCounter("",kMC);   // All, fill histo with cross section and trials if kMC is true
+    //  AliAnalysisTaskCounter* countmb  = AddTaskCounter("MB"); // Min Bias
+    //  AliAnalysisTaskCounter* countany = AddTaskCounter("Any"); 
+    //  AliAnalysisTaskCounter* countint = AddTaskCounter("AnyINT");// Min Bias
+    //  
+    //  if ( !kMC )
+    //  {
+    //    AliAnalysisTaskCounter* countemg = AddTaskCounter("EMCEGA"); 
+    //    AliAnalysisTaskCounter* countemj = AddTaskCounter("EMCEJE"); 
+    //    if ( kCollision=="PbPb" )
+    //    {
+    //      AliAnalysisTaskCounter* countcen = AddTaskCounter("Central"); 
+    //      AliAnalysisTaskCounter* countsce = AddTaskCounter("SemiCentral"); 
+    //      AliAnalysisTaskCounter* countssce= AddTaskCounter("SemiOrCentral"); 
+    //      AliAnalysisTaskCounter* countphP = AddTaskCounter("PHOSPb"); 
+    //    }
+    //    else
+    //    {
+    //      AliAnalysisTaskCounter* countem1 = AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
+    //      AliAnalysisTaskCounter* countem7 = AddTaskCounter("EMC7"); // Trig Th > 4-5 GeV 
+    //      AliAnalysisTaskCounter* countphp = AddTaskCounter("PHOS"); 
+    //    }
+    //  }  
+    // 
+    //  
+  
   
   //-----------------------
   // Run the analysis

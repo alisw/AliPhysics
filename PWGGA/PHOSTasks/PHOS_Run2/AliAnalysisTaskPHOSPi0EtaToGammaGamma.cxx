@@ -611,6 +611,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   //for PID cut efficiency
   const TString PIDtype[4] = {"noPID","CPV","Disp","PID"};//str PID is for main PID cut efficiency used in this analysis
+
   TH2F *h2_p_PID     = new TH2F(Form("hMgg_Probe_%s"          ,PIDtype[3].Data()),Form("Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"            ,PIDtype[3].Data()),180,0,0.72,NpTgg-1,pTgg);
   h2_p_PID->Sumw2();
   fOutputContainer->Add(h2_p_PID);
@@ -849,24 +850,40 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     }//end of particle loop
 
 
+    //const TString PIDtype[4] = {"noPID","CPV","Disp","PID"};//str PID is for main PID cut efficiency used in this analysis
     //for purity based on MC truth
     for(Int_t ip=0;ip<Npid;ip++){
-      TH1F *h1noPID = new TH1F(Form("hPurity%s_noPID",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity no PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
-      h1noPID->Sumw2();
-      fOutputContainer->Add(h1noPID);
+      for(Int_t jp=0;jp<4;jp++){
 
-      TH1F *h1CPV = new TH1F(Form("hPurity%s_CPV",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity CPV;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
-      h1CPV->Sumw2();
-      fOutputContainer->Add(h1CPV);
+        TH1F *h1purity = new TH1F(Form("hPurity%s_%s",PIDName[ip].Data(),PIDtype[jp].Data()),Form("p_{T} of true %s in clusters for purity %s;p_{T} (GeV/c)",PIDName[ip].Data(),PIDtype[jp].Data()),NpTgg-1,pTgg);
+        h1purity->Sumw2();
+        fOutputContainer->Add(h1purity);
 
-      TH1F *h1Disp = new TH1F(Form("hPurity%s_Disp",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity Disp;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
-      h1Disp->Sumw2();
-      fOutputContainer->Add(h1Disp);
+        //      TH1F *h1CPV = new TH1F(Form("hPurity%s_CPV",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity CPV;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+        //      h1CPV->Sumw2();
+        //      fOutputContainer->Add(h1CPV);
+        //
+        //      TH1F *h1Disp = new TH1F(Form("hPurity%s_Disp",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity Disp;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+        //      h1Disp->Sumw2();
+        //      fOutputContainer->Add(h1Disp);
+        //
+        //      TH1F *h1PID = new TH1F(Form("hPurity%s_PID",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
+        //      h1PID->Sumw2();
+        //      fOutputContainer->Add(h1PID);
+      }
+    }
 
-      TH1F *h1PID = new TH1F(Form("hPurity%s_PID",PIDName[ip].Data()),Form("p_{T} of true %s in clusters for purity PID;p_{T} (GeV/c)",PIDName[ip].Data()),NpTgg-1,pTgg);
-      h1PID->Sumw2();
-      fOutputContainer->Add(h1PID);
-    };
+    //converted electrons.
+    for(Int_t jp=0;jp<4;jp++){
+      TH2F *h2e = new TH2F(Form("hElectronRxy_%s",PIDtype[jp].Data()),Form("p_{T} of true Electron in clusters for purity %s vs. V_{prod};p_{T} (GeV/c);R_{xy} (cm)",PIDtype[jp].Data()),NpTgg-1,pTgg,500,0,500);
+      h2e->Sumw2();
+      fOutputContainer->Add(h2e);
+
+      TH2F *h2ce = new TH2F(Form("hConvertedElectronRxy_%s",PIDtype[jp].Data()),Form("p_{T} of true converted Electron in clusters for purity %s vs. V_{prod};p_{T} (GeV/c);R_{xy} (cm)",PIDtype[jp].Data()),NpTgg-1,pTgg,500,0,500);
+      h2ce->Sumw2();
+      fOutputContainer->Add(h2ce);
+    }
+   
 
     //for feed down correction
     TH1F *h1gamma_K0S = new TH1F("hGammaFromK0S","#gamma from K^{0}_{S};p_{T} (GeV/c)",NpTgg-1,pTgg);
@@ -1556,7 +1573,9 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::TriggerQA()
 
     for(Int_t i=0;i<multClust;i++){
       AliCaloPhoton *ph = (AliCaloPhoton*)fPHOSClusterArray->At(i);
+      if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
       //AliVCluster *clu1 = (AliVCluster*)ph->GetCluster();
+
       energy = ph->Energy();
 
       position[0] = ph->EMCx();
@@ -2867,7 +2886,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
       Int_t pdg = p->PdgCode(); 
 
       if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_noPID",pT,weight);
-      else if(TMath::Abs(pdg) == 11)  FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
+      else if(TMath::Abs(pdg) == 11){
+        FillHistogramTH1(fOutputContainer,"hPurityElectron_noPID",pT,weight);
+        FillHistogramTH2(fOutputContainer,"hElectronRxy_noPID",pT,R(p),weight);
+        Int_t motherid = p->GetMother();
+        if(motherid > -1){
+          AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
+          Int_t pdg_mother = mp->PdgCode();
+          if(pdg_mother == 22) FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_noPID",pT,R(p),weight);
+        }
+      }
       else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_noPID",pT,weight);
       else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_noPID",pT,weight);
       else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_noPID",pT,weight);
@@ -2879,7 +2907,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
 
       if(fPHOSClusterCuts->IsNeutral(ph)){
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_CPV",pT,weight);
-        else if(TMath::Abs(pdg) == 11)  FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
+        else if(TMath::Abs(pdg) == 11){
+          FillHistogramTH1(fOutputContainer,"hPurityElectron_CPV",pT,weight);
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_CPV",pT,R(p),weight);
+          Int_t motherid = p->GetMother();
+          if(motherid > -1){
+            AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
+            Int_t pdg_mother = mp->PdgCode();
+            if(pdg_mother == 22) FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_CPV",pT,R(p),weight);
+          }
+
+        }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_CPV",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_CPV",pT,weight);
         else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_CPV",pT,weight);
@@ -2892,7 +2930,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
 
       if(fPHOSClusterCuts->AcceptDisp(ph)){
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_Disp",pT,weight);
-        else if(TMath::Abs(pdg) == 11)  FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
+        else if(TMath::Abs(pdg) == 11){
+
+          FillHistogramTH1(fOutputContainer,"hPurityElectron_Disp",pT,weight);
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_Disp",pT,R(p),weight);
+          Int_t motherid = p->GetMother();
+          if(motherid > -1){
+            AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
+            Int_t pdg_mother = mp->PdgCode();
+            if(pdg_mother == 22) FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_Disp",pT,R(p),weight);
+          }
+        }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_Disp",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_Disp",pT,weight);
         else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_Disp",pT,weight);
@@ -2905,7 +2953,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DDAPhotonPurity()
 
       if(fPHOSClusterCuts->AcceptPhoton(ph)){
         if(pdg == 22)                   FillHistogramTH1(fOutputContainer,"hPurityGamma_PID",pT,weight);
-        else if(TMath::Abs(pdg) == 11)  FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
+        else if(TMath::Abs(pdg) == 11){
+          FillHistogramTH1(fOutputContainer,"hPurityElectron_PID",pT,weight);
+          FillHistogramTH2(fOutputContainer,"hElectronRxy_PID",pT,R(p),weight);
+          Int_t motherid = p->GetMother();
+          if(motherid > -1){
+            AliAODMCParticle *mp = (AliAODMCParticle*)fMCArrayAOD->At(motherid);
+            Int_t pdg_mother = mp->PdgCode();
+            if(pdg_mother == 22) FillHistogramTH2(fOutputContainer,"hConvertedElectronRxy_PID",pT,R(p),weight);
+          }
+
+        }
         else if(TMath::Abs(pdg) == 211) FillHistogramTH1(fOutputContainer,"hPurityPion_PID",pT,weight);
         else if(TMath::Abs(pdg) == 321) FillHistogramTH1(fOutputContainer,"hPurityKaon_PID",pT,weight);
         else if(TMath::Abs(pdg) == 130) FillHistogramTH1(fOutputContainer,"hPurityK0L_PID",pT,weight);

@@ -11,8 +11,8 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetJPSItoEleOff();
   //vHF->Set3ProngOff();
   //vHF->SetLikeSignOn(); // like-sign pairs and triplets
-  //  vHF->SetLikeSign3prongOff();
-  //vHF->Set4ProngOff();
+  vHF->SetLikeSign3prongOff();
+  vHF->Set4ProngOff();
   // vHF->SetDstarOn();
   vHF->SetFindVertexForDstar(kFALSE);
   //--- secondary vertex with KF?

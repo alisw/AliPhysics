@@ -432,7 +432,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   Bool_t   highG  = kFALSE;
   Float_t  recalF = 1.;  
   Int_t    bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
-  
+  Int_t    status = 0;
   for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++)
   {
     if ( cells->GetCellNumber(iCell) < 0 ) continue; // CPV 
@@ -456,7 +456,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     {
       if(GetCalorimeter()==kEMCAL)
       {
-        if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
+        if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow,status)) continue;
       }
       else 
       {

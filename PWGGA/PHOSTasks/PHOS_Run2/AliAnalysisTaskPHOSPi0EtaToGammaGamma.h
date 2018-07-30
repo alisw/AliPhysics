@@ -255,6 +255,17 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     }
 
     void SetTriggerThreshold(Double_t energy) {fEnergyThreshold = energy;}
+
+    void SetPHOSTRUBadMap(Int_t mod, TH2I *h){
+      if(fPHOSTriggerHelper){
+        fPHOSTriggerHelper->SetPHOSTRUBadMap(mod,h);
+      }
+      else{
+        AliInfo(Form("fPHOSTriggerHelper is not set. Nothing to do."));
+      }
+    }
+
+
     void SetAnaOmega(Bool_t flag, Double_t MinPtPi0, Double_t MinPtChPi, Double_t MaxR){
       fAnaOmega3Pi = flag;
       fMinPtPi0    = MinPtPi0;
@@ -476,7 +487,7 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     AliAnalysisTaskPHOSPi0EtaToGammaGamma(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
     AliAnalysisTaskPHOSPi0EtaToGammaGamma& operator=(const AliAnalysisTaskPHOSPi0EtaToGammaGamma&);
 
-    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 64);
+    ClassDef(AliAnalysisTaskPHOSPi0EtaToGammaGamma, 65);
 };
 
 #endif

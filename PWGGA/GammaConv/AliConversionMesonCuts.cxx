@@ -91,7 +91,9 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fHistoInvMassBefore(NULL),
   fHistoInvMassAfter(NULL),
   fBrem(NULL),
-  fFAlphaCut(0),
+  fFAlphaCut(NULL),
+  fFMinOpanCut(NULL),
+  fFMaxOpanCut(NULL),
   fMaxR(180),
   fMinPt(0.),
   fSelectionLow(0.0),
@@ -106,6 +108,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDCAGammaGammaCut(1000),
   fDCAZMesonPrimVtxCut(1000),
   fDCARMesonPrimVtxCut(1000),
+  fMinOpanCutMeson(0),
+  fMaxOpanCutMeson(TMath::Pi()),
   fSidebandMixingLow(0.180),
   fSidebandMixingHigh(0.300),
   fSidebandMixingLeftLow(0.05),
@@ -121,9 +125,6 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fNumberOfBGEvents(0),
   fElectronLabelArraySize(500),
   fElectronLabelArray(NULL),
-  fMinOpanCutMeson(0),
-  fFMinOpanCut(0),
-  fFMaxOpanCut(0),
   fBackgroundHandler(0),
   fDoLightOutput(kFALSE),
   fDoMinPtCut(kFALSE),
@@ -144,7 +145,6 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDCAZMesonPrimVtxCutOn(kFALSE),
   fDCARMesonPrimVtxCutOn(kFALSE),
   fMinOpanPtDepCut(kFALSE),
-  fMaxOpanCutMeson(TMath::Pi()),
   fMaxOpanPtDepCut(kFALSE),
   fBackgroundUseSideband(kFALSE),
   fBackgroundUseSidebandBothSides(kFALSE),
@@ -189,6 +189,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fSelectionHigh(ref.fSelectionHigh),
   fAlphaMinCutMeson(ref.fAlphaMinCutMeson),
   fAlphaCutMeson(ref.fAlphaCutMeson),
+  fRapidityCutMeson(ref.fRapidityCutMeson),
   fMinV0Dist(ref.fMinV0Dist),
   fPBremSmearing(ref.fPBremSmearing),
   fPSigSmearing(ref.fPSigSmearing),
@@ -218,7 +219,6 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoMinPtCut(ref.fDoMinPtCut),
   fEnableMassCut(ref.fEnableMassCut),
   fAcceptMesonMass(ref.fAcceptMesonMass),
-  fRapidityCutMeson(ref.fRapidityCutMeson),
   fUseRotationMethodInBG(ref.fUseRotationMethodInBG),
   fUsePtmaxMethodForBG(ref.fUsePtmaxMethodForBG),
   fDoBG(ref.fDoBG),
@@ -1290,6 +1290,10 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
     break;
   case 6:
     fMinPt = 1.5;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 7:
+    fMinPt = 0.5;
     fDoMinPtCut = kTRUE;
     break;
   default:

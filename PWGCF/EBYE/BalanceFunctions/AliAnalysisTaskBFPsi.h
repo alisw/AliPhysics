@@ -39,7 +39,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   enum eCorrProcedure{kNoCorr, kDataDrivCorr, kMCCorr};
   
   AliAnalysisTaskBFPsi(const char *name = "AliAnalysisTaskBFPsi");
-  virtual ~AliAnalysisTaskBFPsi(); 
+  virtual ~AliAnalysisTaskBFPsi();
    
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -164,6 +164,14 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   void SetPDGCode(Int_t gPdgCode) {
     fUseMCPdgCode = kTRUE;
     fPDGCodeToBeAnalyzed = gPdgCode;
+  }
+
+   void SetRejectInjectedSignals() {fExcludeInjectedSignals = kTRUE;}
+
+   void SetRejectInjectedSignalsGenName(TString genToBeKept) {
+    fGenToBeKept = genToBeKept; 
+    fRejectCheckGenName=kTRUE;
+    fExcludeInjectedSignals = kTRUE;
   }
 
   //Centrality
@@ -319,7 +327,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TList *fListNUA;  //fList of TH3F for NUA run-by-run corrections
   TList *fListNUE;   //fList of TH1F for NUE run-by-run corrections
 
-  AliAnalysisTaskBFPsi::eCorrProcedure fCorrProcedure; 
+  AliAnalysisTaskBFPsi::eCorrProcedure fCorrProcedure;
 
   //defualt kFALSE to be switch on for old correction method
   
@@ -369,6 +377,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   TH2F *fHistPhivZ;//phi vs Vz (QA histos) 
   TH2F *fHistEtavZ;//eta vs Vz (QA histos)
 
+  TH1F *fHistPdgMC;
+  TH1F *fHistPdgMCAODrec;//pdg code of accepted tracks in MCAODrec
   TH1F *fHistSphericity; //sphericity of accepted tracks
   TH2F *fHistMultiplicityVsSphericity; //multiplicity vs sphericity of accepted tracks
   TH2F *fHistMeanPtVsSphericity; //mean pT vs sphericity of accepted tracks
@@ -525,6 +535,12 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC and MCAODrec
   Int_t fExcludeResonancePDGInMC;// exclude the resonance with this PDG from the MC analysis
   Int_t fIncludeResonancePDGInMC;// include excluvely this resonance with this PDG to the MC and MCAODrec analysis
+
+  Bool_t fExcludeInjectedSignals; //Flag to reject MC injected signals from MC analysis
+  Bool_t fRejectCheckGenName; // Flag to activate the injected signal rejection based on the name of the MC generator 
+  TString fGenToBeKept; //String to select the generator name that has to be kept for analysis
+
+  
   TString fEventClass; //Can be "EventPlane", "Centrality", "Multiplicity"
   TString fCustomBinning;//for setting customized binning (for output AliTHn of AliBalancePsi)
   
@@ -545,7 +561,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 14); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 15); // example of analysis
 };
 
 

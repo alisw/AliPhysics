@@ -1394,7 +1394,7 @@ void AliAnalysisTaskEmcalJetShapesMC::RecursiveParents(AliEmcalJet *fJet,AliJetC
       lim2o=SoftkTscale;
       lim1o=SoftkTscale/TMath::Sin(0.1);
       fTf1SoftOmega= new TF1("fTf1SoftOmega","1/x",lim2o,lim1o);
-      omega=fTf1Omega->GetRandom();
+      omega=fTf1SoftOmega->GetRandom();
       sinpptheta=SoftkTscale/omega;
       pptheta=TMath::ASin(sinpptheta);
       if(pptheta>fJetRadius) continue;
