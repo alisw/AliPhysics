@@ -17,17 +17,21 @@ class TInfo : public TObject {
   UInt_t       AvTime()                   const { return fAvTime; }
   Float_t      Diff(Int_t ns )            const { return fMaxT.At(ns)-fMinT.At(ns); }
   UInt_t       FirstTime()                const { return fAvTime; }
+  UInt_t       GetAverageTime()           const { return fAvTime;}
+  UInt_t       GetFirstTime()             const { return fFirstTime;}
   TH2         *GetHist(Int_t type=1)      const;
+  UInt_t       GetLastTime()              const { return fLastTime;}
   const char  *GetName()                  const { return Form("TempInfo_%d",fRunNo); }
   Int_t        GetRunNo()                 const { return fRunNo; }
   Int_t        GetNFaulty()               const { return fNFaulty; }
+
   Double_t     Fraction()                 const { return 1.*Nvalid()/(NSensors()-GetNFaulty()); }
   UInt_t       LastTime()                 const { return fAvTime; }
   Bool_t       IsValid(Int_t ns)          const { return ((fMinT.At(ns)>0)&&(fMaxT.At(ns)>0)); }
   Int_t        RunNo()                    const { return fRunNo; }
   Float_t      T(Int_t ns, Int_t t)       const;
-  Float_t      MinT(Int_t ns)             const { return fMinT.At(ns); } 
-  Float_t      MaxT(Int_t ns)             const { return fMaxT.At(ns); } 
+  Float_t      MinT(Int_t ns)             const { return fMinT.At(ns); }
+  Float_t      MaxT(Int_t ns)             const { return fMaxT.At(ns); }
   TArrayF     &MinT()                           { return fMinT; }
   TArrayF     &MaxT()                           { return fMaxT; }
   Int_t        Nvalid()                   const { Int_t ret=0; for (Int_t i=0;i<160;++i) ret += IsValid(i); return ret;}
@@ -45,7 +49,7 @@ class TInfo : public TObject {
  protected:
   Int_t        fRunNo;      // run number
   TArrayF      fMinT;       // min temperature per sensor
-  TArrayF      fMaxT;       // max temperature per sensor 
+  TArrayF      fMaxT;       // max temperature per sensor
   UInt_t       fAvTime;     // average start time
   UInt_t       fFirstTime;  // first time
   UInt_t       fLastTime;   // last time

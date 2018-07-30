@@ -26,12 +26,12 @@ class TCalCell : public TObject {
   Short_t  fSM;   //         super module index
   Short_t  fRow;  //         row (phi) index
   Short_t  fCol;  //         col (eta) index
-  Double_t fLedM; //[0,0,16] led mean
-  Double_t fLedR; //[0,0,16] led rms
-  Double_t fMonM; //[0,0,16] mon mean
-  Double_t fMonR; //[0,0,16] mon rms
-  Double_t fLocT; //[0,0,16] loc T
-  Double_t fSMT;  //[0,0,16] sm T
+  Double32_t fLedM; //[0,0,16] led mean
+  Double32_t fLedR; //[0,0,16] led rms
+  Double32_t fMonM; //[0,0,16] mon mean
+  Double32_t fMonR; //[0,0,16] mon rms
+  Double32_t fLocT; //[0,0,16] loc T
+  Double32_t fSMT;  //[0,0,16] sm T
   ClassDef(TCalCell, 1); // CalCell class
 };
 
@@ -54,7 +54,7 @@ class TCalInfo : public TObject {
 };
 #endif
 
-void createTree(const char *period, const char *ofile="treeout.root",Bool_t doprint=0) 
+void createTree(const char *period, const char *ofile="treeout.root",Bool_t doprint=0)
 {
   TDraw td(period);
   td.Compute();
@@ -96,7 +96,7 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
     if (!tinfo)
       continue;
     Int_t runl = linfo->GetRunNo();
-    Int_t runt = tinfo->GetRunNo();        
+    Int_t runt = tinfo->GetRunNo();
     if (runl!=runt) {
       cout << " Run numbers differ, skipping " << runl << " " << runt << endl;
       continue;
@@ -104,9 +104,9 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
     cout << "Working on run " << runl << endl;
     gSystem->Sleep(0.5);
     info->fRunNo     = runt;
-    info->fAvTime    = tinfo->fAvTime;
-    info->fFirstTime = tinfo->fFirstTime;
-    info->fLastTime  = tinfo->fLastTime;
+    info->fAvTime    = tinfo->GetAverageTime();
+    info->fFirstTime = tinfo->GetFirstTime();
+    info->fLastTime  = tinfo->GetLastTime();
     info->fMinT      = tinfo->AbsMinT();
     info->fMaxT      = tinfo->AbsMaxT();
     info->fFracS     = tinfo->Fraction();
@@ -137,21 +137,21 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
       TH2 *hledr = linfo->GetLedRmsHist(sm,gain);
 
       for (Int_t col=0; col<ncol; ++col) {
-	for (Int_t row=0; row<nrow; ++row) {
-	  Int_t  id = g->GetAbsCellIdFromCellIndexes(sm,row,col);
-	  Int_t ns = TInfo::SensId(sm,row,col);
-	  TCalCell *cell = (TCalCell*)carr.At(id);
-	  cell->fId = id;
-	  cell->fSM = sm;
-	  cell->fRow = row;
+        for (Int_t row=0; row<nrow; ++row) {
+          Int_t  id = g->GetAbsCellIdFromCellIndexes(sm,row,col);
+          Int_t ns = TInfo::SensId(sm,row,col);
+          TCalCell *cell = (TCalCell*)carr.At(id);
+          cell->fId = id;
+          cell->fSM = sm;
+          cell->fRow = row;
           cell->fCol = col;
-	  cell->fLedM = hledm->GetBinContent(hledm->FindBin(col,row));
-	  cell->fLedR = hledr->GetBinContent(hledr->FindBin(col,row));
-	  cell->fMonM = hmonm->GetBinContent(hmonm->FindBin(col/2));
-	  cell->fMonR = hmonr->GetBinContent(hmonr->FindBin(col/2));
-	  cell->fLocT = tinfo->T(ns,3);
-	  cell->fSMT  = avg[sm];
-	}
+          cell->fLedM = hledm->GetBinContent(hledm->FindBin(col,row));
+          cell->fLedR = hledr->GetBinContent(hledr->FindBin(col,row));
+          cell->fMonM = hmonm->GetBinContent(hmonm->FindBin(col/2));
+          cell->fMonR = hmonr->GetBinContent(hmonr->FindBin(col/2));
+          cell->fLocT = tinfo->T(ns,3);
+          cell->fSMT  = avg[sm];
+        }
       }
     }
     fTree->Fill();
@@ -160,7 +160,7 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
   out->Close();
 }
 
-void createTree_all() 
+void createTree_all()
 {
   createTree("lhc16f","tree_lhc16f.root");
   createTree("lhc16g","tree_lhc16g.root");
