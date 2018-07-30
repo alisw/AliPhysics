@@ -890,7 +890,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGGA/CaloTrackCorrelations/macros/GetAlienGlobalProductionVariables.C");
   
-  Int_t   year        = 2017;
+  Int_t   year        = -1;
   Bool_t  printGlobal = kFALSE;
   if ( trigger.Contains("default") || trigger.Contains("INT") || trigger.Contains("MB") ) printGlobal = kTRUE;
   

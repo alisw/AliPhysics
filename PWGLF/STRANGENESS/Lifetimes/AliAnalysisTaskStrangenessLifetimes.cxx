@@ -19,7 +19,6 @@
 #include "AliMCEvent.h"
 #include "AliLightV0vertexer.h"
 #include "AliPIDResponse.h"
-#include "AliStack.h"
 #include "AliV0vertexer.h"
 #include "AliVVertex.h"
 
@@ -38,18 +37,18 @@ double Distance(double dx, double dy, double dz) {
   return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
 
-int ComputeMother(AliStack* stack, const AliESDtrack* one, const AliESDtrack* two) {
+int ComputeMother(AliMCEvent* mcEvent, const AliESDtrack* one, const AliESDtrack* two) {
   int labOne = std::abs(one->GetLabel());
   int labTwo = std::abs(two->GetLabel());
 
-  if (stack->IsPhysicalPrimary(labOne) ||
-      stack->IsPhysicalPrimary(labTwo) ||
-      stack->IsSecondaryFromMaterial(labOne) ||
-      stack->IsSecondaryFromMaterial(labTwo))
+  if (mcEvent->IsPhysicalPrimary(labOne) ||
+      mcEvent->IsPhysicalPrimary(labTwo) ||
+      mcEvent->IsSecondaryFromMaterial(labOne) ||
+      mcEvent->IsSecondaryFromMaterial(labTwo))
     return -1;
   else {
-    TParticle* partOne = stack->Particle(labOne);
-    TParticle* partTwo = stack->Particle(labTwo);
+    TParticle* partOne = mcEvent->Particle(labOne);
+    TParticle* partTwo = mcEvent->Particle(labTwo);
     if (partOne->GetFirstMother() != partTwo->GetFirstMother()) {
       return -1;
     } else {
@@ -268,11 +267,6 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
     ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec","Could not retrieve MC event");
     return;
   }
-  AliStack* stack = mcEvent->Stack();
-  if (!stack && mcEvent) {
-    ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec","Could not retrieve MC stack");
-    return;
-  }
 
   double magneticField = esdEvent->GetMagneticField();
 
@@ -315,8 +309,8 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
   if (fMC) {
     const AliVVertex* mcV = mcEvent->GetPrimaryVertex();
     fMCvector.clear();
-    for (int ilab = 0;  ilab < (stack->GetNtrack()); ilab++) {   // This is the begining of the loop on tracks
-      TParticle* part = stack->Particle( ilab );
+    for (int ilab = 0;  ilab < mcEvent->GetNumberOfTracks(); ilab++) {   // This is the begining of the loop on tracks
+      TParticle* part = mcEvent->Particle( ilab );
       if(!part) {
         ::Warning("AliAnalysisTaskStrangenessLifetimes::UserExec","Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skipping.", ilab );
         continue;
@@ -330,27 +324,38 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             continue;
           }
 
-          double dist = Distance(mcV->GetX() - part->Vx(), mcV->GetY() - part->Vy(), mcV->GetZ() - part->Vz());
+          double sVtx[3]={0.};
+          if (part->GetFirstDaughter() == part->GetLastDaughter())
+            continue;
+          for (int iD = part->GetFirstDaughter(); iD <= part->GetLastDaughter(); ++iD) {
+            TParticle* dau = mcEvent->Particle(iD);
+            if (mcEvent->IsSecondaryFromWeakDecay(iD) && dau) {
+              sVtx[0] = dau->Vx();
+              sVtx[1] = dau->Vy();
+              sVtx[2] = dau->Vz();
+            }
+          }
+          double dist = Distance(mcV->GetX() - sVtx[0], mcV->GetY() - sVtx[1], mcV->GetZ() - sVtx[2]);
 
           MCparticle v0part;
           v0part.SetPDGcode(currentPDG);
           v0part.SetEta(part->Eta());
           v0part.SetPt(part->Pt());
           v0part.SetDistOverP(dist / part->P());
-          bool isSecondary = stack->IsSecondaryFromWeakDecay(ilab);
+          bool isSecondary = mcEvent->IsSecondaryFromWeakDecay(ilab);
           fHistMCct[idx]->Fill(dist * part->GetMass() / part->P());
-          TParticle* mother = stack->Particle(part->GetFirstMother());
+          TParticle* mother = mcEvent->Particle(part->GetFirstMother());
           if (isSecondary && mother) {
             v0part.SetStatus(MCparticle::kSecondaryFromWeakDecay);
 
-            double motherDist = Distance(primaryVertex[0] - mother->Vx(), primaryVertex[1] - mother->Vy(), primaryVertex[2] - mother->Vz());
+            double motherDist = Distance(mcV->GetX() - part->Vx(), mcV->GetY() - part->Vy(), mcV->GetZ() - part->Vz());
             MCparticle motherPart;
             motherPart.SetPDGcode(mother->GetPdgCode());
             motherPart.SetEta(mother->Eta());
             motherPart.SetPt(mother->Pt());
             motherPart.SetDistOverP(motherDist / mother->P());
             fMCvector.push_back(motherPart);
-          } else if (stack->IsPhysicalPrimary(ilab)) {
+          } else if (mcEvent->IsPhysicalPrimary(ilab)) {
             v0part.SetStatus(MCparticle::kPrimary);
           } else {
             continue;
@@ -571,14 +576,14 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       miniV0.SetProngsTPCnsigmas(nSigmaPosPion, nSigmaPosProton,
                                  nSigmaNegPion, nSigmaNegProton);
 
-      if (fMC && stack) {
+      if (fMC) {
         AliESDtrack* one = esdEvent->GetTrack(v0->GetNindex());
         AliESDtrack* two = esdEvent->GetTrack(v0->GetPindex());
         if (!one || !two)
           ::Fatal("AliAnalysisTaskStrangenessLifetimes::UserExec",
             "Missing V0 tracks %p %p",(void*)one,(void*)two);
-        int ilab = std::abs(ComputeMother(stack, one, two));
-        TParticle* part = stack->Particle(ilab);
+        int ilab = std::abs(ComputeMother(mcEvent, one, two));
+        TParticle* part = mcEvent->Particle(ilab);
         if(!part) {
           continue;
         }
