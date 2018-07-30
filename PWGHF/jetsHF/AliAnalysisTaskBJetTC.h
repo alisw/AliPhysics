@@ -38,7 +38,6 @@ public:
   	virtual void  Terminate(Option_t *);
 	virtual Bool_t Run();
 	virtual Double_t GetDeltaPtRandomCone();
-	virtual Double_t GetDeltaPtRandomConeTagCuts();
 	virtual Bool_t Notify();
 
 
@@ -97,6 +96,7 @@ public:
 
 	void SetDoSVAnalysis(Bool_t value){fDoSVAnalysis = value;}
 	void SetDoTCAnalysis(Bool_t value){fDoTrackCountingAnalysis = value;}
+	void SetDoForthLargestIP(Bool_t value){fDoForthIP = value;}
 
 	void SetMinTrackProbability(Double_t value){fMinTrackProb = value;}
 
@@ -180,8 +180,10 @@ private:
 
 	TH1D * fh1dJetRecPtAcceptedunCorr;//!
 
-	TH1D * fhist_BJet_Background_Fluctuation;//!
 	TH2D * f2histRhoVsDeltaPt;//!
+	TH2D * f2histRhoVsDeltaPtFirst;//!
+	TH2D * f2histRhoVsDeltaPtSecond;//!
+	TH2D * f2histRhoVsDeltaPtThird;//!
 
 	TH1D * fh1dTracksImpParXY;//! R Impact Parameter
 	TH1D * fh1dTracksImpParXYZ;//! R+z Impact Parameter
@@ -384,8 +386,21 @@ private:
 	TH2D * fh2dJetSignedImpParXYZSignificancebThird; //!
 	TH2D * fh2dJetSignedImpParXYZSignificancecThird; //!
 
+	//Forth
+	Bool_t fDoForthIP;
+
+	TH2D * fh2dJetSignedImpParXYForth; //!
+	TH2D * fh2dJetSignedImpParXYudsgForth; //!
+	TH2D * fh2dJetSignedImpParXYbForth; //!
+	TH2D * fh2dJetSignedImpParXYcForth; //!
+
+	TH2D * fh2dJetSignedImpParXYSignificanceForth; //!
+	TH2D * fh2dJetSignedImpParXYSignificanceudsgForth; //!
+	TH2D * fh2dJetSignedImpParXYSignificancebForth; //!
+	TH2D * fh2dJetSignedImpParXYSignificancecForth; //!
 
 
+	//V0
 	TH2D* fh2dKshortMassVsPt;//!
 	TH2D* fh2dLamdaMassVsPt;//!
 	TH2D* fh2dAnLamdaMassVsPt;//!
