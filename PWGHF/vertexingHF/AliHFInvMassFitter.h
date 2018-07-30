@@ -222,7 +222,7 @@ class AliHFInvMassFitter : public TNamed {
   TF1*      fTotFunc;              /// total fit function
 
   /// \cond CLASSIMP     
-  ClassDef(AliHFInvMassFitter,4); /// class for invariant mass fit
+  ClassDef(AliHFInvMassFitter,5); /// class for invariant mass fit
   /// \endcond
 };
 
