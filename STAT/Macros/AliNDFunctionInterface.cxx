@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include "TPRegexp.h"
 #include "THn.h"
+#include "TKey.h"
 #include "TMVA/Factory.h"
 #include "TMVA/Tools.h"
 #include "TMVA/Reader.h"
