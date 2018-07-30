@@ -522,6 +522,9 @@ void AliAnalysisTaskJetExtractor::AddPIDInformation(AliVParticle* particle, Floa
   // Get AOD value from reco
   recoPID  = aodtrack->GetMostProbablePID();
   AliAODPid* pidObj = aodtrack->GetDetPid();
+  if(!pidObj)
+    return;
+
   sigITS = pidObj->GetITSsignal();
   sigTPC = pidObj->GetTPCsignal();
   sigTOF = pidObj->GetTOFsignal();
