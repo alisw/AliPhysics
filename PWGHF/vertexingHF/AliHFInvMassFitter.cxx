@@ -67,6 +67,8 @@ AliHFInvMassFitter::AliHFInvMassFitter() :
   fFixedRawYield(-1.),
   fFrac2Gaus(0.2),
   fFixedFrac2Gaus(kFALSE),
+  fRatio2GausSigma(0.),
+  fFixedRatio2GausSigma(kFALSE),
   fNParsSig(3),
   fNParsBkg(2),
   fOnlySideBands(kFALSE),
@@ -121,6 +123,8 @@ AliHFInvMassFitter::AliHFInvMassFitter(const TH1F *histoToFit, Double_t minvalue
   fFixedRawYield(-1.),
   fFrac2Gaus(0.2),
   fFixedFrac2Gaus(kFALSE),
+  fRatio2GausSigma(0.),
+  fFixedRatio2GausSigma(kFALSE),
   fNParsSig(3),
   fNParsBkg(2),
   fOnlySideBands(kFALSE),
@@ -209,6 +213,9 @@ void AliHFInvMassFitter::SetNumberOfParams(){
     fNParsSig=3;
     break;
   case 1:
+    fNParsSig=5;
+    break;
+  case 2:
     fNParsSig=5;
     break;
   default:
@@ -547,6 +554,22 @@ TF1* AliHFInvMassFitter::CreateSignalFitFunction(TString fname, Double_t integsi
     else funcsig->SetParLimits(4,0.004,0.05);
     funcsig->SetParNames("SgnInt","Mean","Sigma1","Frac","Sigma2");
   }
+  if(fTypeOfFit4Sgn==k2GausSigmaRatioPar){
+    funcsig->SetParameter(0,integsig);
+    if(fFixedRawYield>-0.1) funcsig->FixParameter(0,fFixedRawYield);
+    funcsig->SetParameter(1,fMass);
+    if(fFixedMean) funcsig->FixParameter(1,fMass);
+    funcsig->SetParameter(2,fSigmaSgn);
+    funcsig->SetParLimits(2,0.004,0.05);
+    if(fFixedSigma) funcsig->FixParameter(2,fSigmaSgn);
+    funcsig->SetParameter(3,fFrac2Gaus);
+    if(fFixedFrac2Gaus) funcsig->FixParameter(3,fFrac2Gaus);
+    else funcsig->SetParLimits(3,0.,1.);
+    funcsig->SetParameter(4,fSigmaSgn2Gaus);
+    if(fFixedRatio2GausSigma) funcsig->FixParameter(4,fRatio2GausSigma);
+    else funcsig->SetParLimits(4,0.,20.);
+    funcsig->SetParNames("SgnInt","Mean","Sigma1","Frac","RatioSigma12");
+  }
   return funcsig;
 }
 
@@ -695,6 +718,8 @@ Double_t AliHFInvMassFitter::FitFunction4Sgn (Double_t *x, Double_t *par){
 
   //  AliInfo("Signal function set to: Gaussian");
   Double_t sigval=0;
+  Double_t g1=0;
+  Double_t g2=0;
   switch (fTypeOfFit4Sgn){
   case 0:
     //gaussian = A/(sigma*sqrt(2*pi))*exp(-(x-mean)^2/2/sigma^2)
@@ -714,8 +739,20 @@ Double_t AliHFInvMassFitter::FitFunction4Sgn (Double_t *x, Double_t *par){
     // * [3] = 2nd gaussian ratio
     // * [4] = deltaSigma
     //gaussian = [0]/TMath::Sqrt(2.*TMath::Pi())/[2]*exp[-(x-[1])*(x-[1])/(2*[2]*[2])]
-    Double_t g1=(1.-par[3])/TMath::Sqrt(2.*TMath::Pi())/par[2]*TMath::Exp(-(x[0]-par[1])*(x[0]-par[1])/2./par[2]/par[2]);
-    Double_t g2=par[3]/TMath::Sqrt(2.*TMath::Pi())/par[4]*TMath::Exp(-(x[0]-par[1])*(x[0]-par[1])/2./par[4]/par[4]);
+    g1=(1.-par[3])/TMath::Sqrt(2.*TMath::Pi())/par[2]*TMath::Exp(-(x[0]-par[1])*(x[0]-par[1])/2./par[2]/par[2]);
+    g2=par[3]/TMath::Sqrt(2.*TMath::Pi())/par[4]*TMath::Exp(-(x[0]-par[1])*(x[0]-par[1])/2./par[4]/par[4]);
+    sigval=par[0]*(g1+g2);
+    break;
+  case 2:
+    //double gaussian = A/(sigma*sqrt(2*pi))*exp(-(x-mean)^2/2/sigma^2)
+    //Par:
+    // * [0] = integralSgn
+    // * [1] = mean
+    // * [2] = sigma1
+    // * [3] = 2nd gaussian ratio
+    // * [4] = ratio sigma12
+    g1=(1.-par[3])/TMath::Sqrt(2.*TMath::Pi())/par[2]*TMath::Exp(-(x[0]-par[1])*(x[0]-par[1])/2./par[2]/par[2]);
+    g2=par[3]/TMath::Sqrt(2.*TMath::Pi())/(par[4]*par[2])*TMath::Exp(-(x[0]-par[1])*(x[0]-par[1])/2./(par[4]*par[2])/(par[4]*par[2]));
     sigval=par[0]*(g1+g2);
     break;
   }
