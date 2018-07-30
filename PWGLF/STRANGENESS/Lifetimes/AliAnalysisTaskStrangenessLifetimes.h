@@ -97,6 +97,7 @@ class AliAnalysisTaskStrangenessLifetimes : public AliAnalysisTaskSE {
 
   /// Control histograms to monitor the filtering
   TH1D* fHistMCct[2];               //! MC ct
+  TH1D* fHistMCctPrimary[2];        //! MC ct only for primary particles
   TH1D* fHistV0radius;              //! V0 decay vertex radius
   TH1D* fHistV0pt;                  //! V0 transverse momentum
   TH1D* fHistV0eta;                 //! V0 pseudorapidity

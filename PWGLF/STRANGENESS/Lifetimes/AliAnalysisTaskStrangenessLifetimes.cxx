@@ -73,6 +73,8 @@ AliAnalysisTaskStrangenessLifetimes::AliAnalysisTaskStrangenessLifetimes(
       fDoV0Refit{true},
       fMC{mc},
       fUseLightVertexer{true},
+      fHistMCct{nullptr},
+      fHistMCctPrimary{nullptr},
       fHistV0radius{nullptr},
       fHistV0pt{nullptr},
       fHistV0eta{nullptr},
@@ -222,6 +224,11 @@ void AliAnalysisTaskStrangenessLifetimes::UserCreateOutputObjects() {
     fHistMCct[1] = new TH1D("fHistMCctLambda", ";MC ct (cm); Counts", 4000, 0, 20);
     fListHist->Add(fHistMCct[0]);
     fListHist->Add(fHistMCct[1]);
+
+    fHistMCctPrimary[0] = new TH1D("fHistMCctPrimaryK0s", ";MC ct (cm); Counts", 4000, 0, 20);
+    fHistMCctPrimary[1] = new TH1D("fHistMCctPrimaryLambda", ";MC ct (cm); Counts", 4000, 0, 20);
+    fListHist->Add(fHistMCctPrimary[0]);
+    fListHist->Add(fHistMCctPrimary[1]);
   }
 
   fListHist->Add(fHistV0radius);
@@ -320,7 +327,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       int idx = 0;
       for (auto code : pdgCodes) {
         if (code == std::abs(currentPDG)) {
-          if (std::abs(part->Y()) < 1.) {
+          if (std::abs(part->Y()) > 1.) {
             continue;
           }
 
@@ -357,6 +364,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
             fMCvector.push_back(motherPart);
           } else if (mcEvent->IsPhysicalPrimary(ilab)) {
             v0part.SetStatus(MCparticle::kPrimary);
+            fHistMCctPrimary[idx]->Fill(dist * part->GetMass() / part->P());
           } else {
             continue;
           }
