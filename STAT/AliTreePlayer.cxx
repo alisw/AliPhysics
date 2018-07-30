@@ -1532,21 +1532,25 @@ TPad *  AliTreePlayer::DrawHistograms(TPad  * pad, TObjArray * hisArray, TString
 }
 
 
-
-void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection){
-  //
-  // Fill tree with information specified in varList of TTreeFormulas
-  // In case input tree is "flat" - not array output tree can be used as a friend ....
-  // Input:
-  //    tree      - TTree with input
-  //    varList   - list of TTreeFormulas
-  //    selection - tree selection
-  // Output: tree
-  //    outFile  - output file name
-  //    outTree  - output tree name
+///\brief Fill tree with information specified in varList of TTreeFormulas
+/// Used to cache CPU consuming formulas
+/// In case input tree is "flat" - not array output tree can be used as a friend ....
+/// \param tree         - TTree with input
+/// \param varList      - list of TTreeFormulas to export
+/// \param outFile      -  output file name
+/// \param outTree      - output tree name
+/// \param selection    - tree selection
+/// \param firstEntry   - first entry to export
+/// \param nEntries     - number of nEntries to export
+void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile, TString outTree, TCut selection, Int_t nEntries, Int_t firstEntry){
   TTreeSRedirector *pcstream = new TTreeSRedirector(outFile,"recreate");
   if (tree->GetEstimate()<tree->GetEntries()) tree->SetEstimate(tree->GetEntries());
-  Int_t entries=tree->Draw(varList.Data(),selection,"goffpara");
+  Int_t entries=0;
+  if (firstEntry>=0 && nEntries>0) {
+    entries = tree->Draw(varList.Data(),selection,"goffpara",nEntries,firstEntry);
+  }else{
+    entries = tree->Draw(varList.Data(),selection,"goffpara");
+  }
   TObjArray * varName=varList.Tokenize(":");
   const Int_t nVars=varName->GetEntries();
   Double_t vars[nVars];
