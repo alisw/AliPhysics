@@ -2798,21 +2798,21 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
             if (bin < 20) weight = weightsBins[bin];
 
-        } else if ( fPeriodEnum == kLHC16c3a ){
+        } else if ( fPeriodEnum == kLHC16c3a ){ // ALIROOT-5901
           Double_t ptHardBinRanges[6]   = {  7, 9, 12, 16, 21, 1000};
-          Double_t weightsBins[5]       = {  0.00672445, 0.00799158, 0.00678934, 0.00463908, 0.00600068}; //preliminary estimates
+          Double_t weightsBins[5]       = {  6.731200e-03, 7.995602e-03, 6.778717e-03, 4.643571e-03, 6.014497e-03}; //preliminary estimates
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 5) weight = weightsBins[bin];
 
-        } else if (fPeriodEnum == kLHC16c3b ){
+        } else if (fPeriodEnum == kLHC16c3b ){ // ALIROOT-5901
           Double_t ptHardBinRanges[7]   = {  14, 19, 26, 35, 48, 66, 1000};
-          Double_t weightsBins[6]       = {  0.00608281, 0.00393646, 0.00200138, 0.000986267, 0.000389051, 0.0001863}; //preliminary estimates
+          Double_t weightsBins[6]       = {  6.071458e-03, 3.941701e-03, 2.001984e-03, 9.862765e-04, 3.893911e-04, 1.865924e-04}; //preliminary estimates
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 6) weight = weightsBins[bin];
 
-        } else if (fPeriodEnum == kLHC16c3c ){
+        } else if (fPeriodEnum == kLHC16c3c ){ // ALIROOT-5901
           Double_t ptHardBinRanges[8]   = {  0, 5, 11, 21, 36, 57, 84, 1000};
           Double_t weightsBins[7]       = {  0.00151999, 0.000100346, 1.27688e-05, 1.82388e-06, 3.08506e-07, 6.00308e-08, 1.88414e-08}; //preliminary estimates
           Int_t bin = 0;
@@ -3018,21 +3018,21 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 20) weight = weightsBins[bin];
 
-      } else if ( fPeriodEnum == kLHC16c3a ){
+      } else if ( fPeriodEnum == kLHC16c3a ){ //ALIROOT-5901
         Double_t ptHardBinRanges[6]   = {  7, 9, 12, 16, 21, 1000};
-        Double_t weightsBins[5]       = {  0.00672445, 0.00799158, 0.00678934, 0.00463908, 0.00600068}; //preliminary estimates
+        Double_t weightsBins[5]       = {  6.731200e-03, 7.995602e-03, 6.778717e-03, 4.643571e-03, 6.014497e-03}; //preliminary estimates
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 5) weight = weightsBins[bin];
 
-      } else if (fPeriodEnum == kLHC16c3b ){
+      } else if (fPeriodEnum == kLHC16c3b ){ //ALIROOT-5901
         Double_t ptHardBinRanges[7]   = {  14, 19, 26, 35, 48, 66, 1000};
-        Double_t weightsBins[6]       = {  0.00608281, 0.00393646, 0.00200138, 0.000986267, 0.000389051, 0.0001863}; //preliminary estimates
+        Double_t weightsBins[6]       = {  6.071458e-03, 3.941701e-03, 2.001984e-03, 9.862765e-04, 3.893911e-04, 1.865924e-04}; //preliminary estimates
         Int_t bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 6) weight = weightsBins[bin];
 
-      } else if (fPeriodEnum == kLHC16c3c ){
+      } else if (fPeriodEnum == kLHC16c3c ){ //ALIROOT-5901
         Double_t ptHardBinRanges[8]   = {  0, 5, 11, 21, 36, 57, 84, 1000};
         Double_t weightsBins[7]       = {  0.00151999, 0.000100346, 1.27688e-05, 1.82388e-06, 3.08506e-07, 6.00308e-08, 1.88414e-08}; //preliminary estimates
         Int_t bin = 0;
@@ -5389,13 +5389,13 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC13b4_plus") == 0){
     fPeriodEnum = kLHC13b4_plus;
     fEnergyEnum = kpPb5TeV;
-  } else if (periodName.CompareTo("LHC16c3a") == 0){
+  } else if (periodName.CompareTo("LHC16c3a") == 0 || periodName.CompareTo("LHC16c3a2") == 0){
     fPeriodEnum = kLHC16c3a;
     fEnergyEnum = kpPb5TeV;
-  } else if (periodName.CompareTo("LHC16c3b") == 0){
+  } else if (periodName.CompareTo("LHC16c3b") == 0 || periodName.CompareTo("LHC16c3b2") == 0){
     fPeriodEnum = kLHC16c3b;
     fEnergyEnum = kpPb5TeV;
-  } else if (periodName.CompareTo("LHC16c3c") == 0){
+  } else if (periodName.CompareTo("LHC16c3c") == 0 || periodName.CompareTo("LHC16c3c2") == 0){
     fPeriodEnum = kLHC16c3c;
     fEnergyEnum = kpPb5TeV;
   } else if (periodName.CompareTo("LHC15g2") == 0){
