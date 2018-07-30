@@ -327,7 +327,7 @@ void AliAnalysisTaskStrangenessLifetimes::UserExec(Option_t *) {
       int idx = 0;
       for (auto code : pdgCodes) {
         if (code == std::abs(currentPDG)) {
-          if (std::abs(part->Y()) < 1.) {
+          if (std::abs(part->Y()) > 1.) {
             continue;
           }
 
