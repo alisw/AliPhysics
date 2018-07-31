@@ -55,7 +55,7 @@ fSavePool(0),
 fRtoD(0),fSubDetector(0),
 fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
 fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),fPoolMgr(0x0),fTrackDepth(0),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
-fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
+fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),fApplyPatchCandCut(0),
 fParticleLevel(kFALSE),fIsMC(kFALSE),fMCParticles(0),
 fEventCutList(0),
 
@@ -74,7 +74,6 @@ fHPoolReady(0x0)
 	//..Initialize by defult for
 	//..AliAnalysisTaskGammaHadron(0,0);
 	InitArrays();
-
 }
 //________________________________________________________________________
 AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Bool_t InputSeMe,Bool_t InputMCorData):
@@ -85,7 +84,7 @@ fSavePool(0),
 fRtoD(0),fSubDetector(0),
 fTriggerPtCut(5.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),fRmvMTrack(0),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
 fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),fPoolMgr(0x0),fTrackDepth(0),fClusterDepth(0),fPoolSize(0),fEventPoolOutputList(0),
-fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
+fTriggerType(AliVEvent::kINT7), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),fApplyPatchCandCut(0),
 fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCParticles(0),
 fEventCutList(0),
 
@@ -609,6 +608,18 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
       GenerateFixedBinArray(10,0,10,mcStatusArray);
       minThnPi0[dimThnPi0] = 0;
       maxThnPi0[dimThnPi0] = 10;
+      dimThnPi0++;
+    }
+
+    Double_t fPatchStatusArray[2+1];
+    if (fApplyPatchCandCut) {
+      // 1 if cluster pair is candidate for GA trigger patch (0 if not)
+      titleThnPi0[dimThnPi0] = "Patch Status";
+      nBinsThnPi0[dimThnPi0] = 2;
+      binEdgesThnPi0[dimThnPi0] = fPatchStatusArray;
+      GenerateFixedBinArray(2,0,2,fPatchStatusArray);
+      minThnPi0[dimThnPi0]=0;
+      maxThnPi0[dimThnPi0]=2;
       dimThnPi0++;
     }
 
@@ -1905,7 +1916,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 //________________________________________________________________________
 void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterVec, AliTLorentzVector CaloClusterVec2, AliTLorentzVector CaloClusterVecPi0, Double_t fMaxClusM02, Double_t Weight, Bool_t isMixed, Int_t mcIndex1, Int_t mcIndex2)
 {
-	Double_t valueArray[8];
+	Double_t valueArray[9];
 	valueArray[0]=CaloClusterVecPi0.Pt();
 	valueArray[1]=CaloClusterVecPi0.M();
 	valueArray[2]=CaloClusterVec.Angle(CaloClusterVec2.Vect());
@@ -1922,24 +1933,18 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 	else valueArray[6]=0;
 
 
-
 	// MC Status determination
-	Int_t MCMatchStatus = 0; // 0 for no matches, 1 for MC pi0
-	if (fIsMC && fMCParticles) {
+	Int_t MCMatchStatus = 0; // 0 for no matches
+	if (!isMixed && fIsMC && fMCParticles) {
 		if (mcIndex1 < 0 || mcIndex2 < 0) {
 		}
 		else if (mcIndex1 == mcIndex2) {
 			 MCMatchStatus = 1; // 2 clusters from 1 MC Part
-		}
-		else {
-	//		AliAODMCParticle * mcPart1 = fMCParticles->GetMCParticle(mcIndex1);
-	//		AliAODMCParticle * mcPart2 = fMCParticles->GetMCParticle(mcIndex2);
-
+		} else {
 			Int_t aMCTreeHeight1 = 0;
 			Int_t aMCRootPartClus1 = FindMCRootPart(mcIndex1,&aMCTreeHeight1);
 			Int_t aMCTreeHeight2 = 0;
 			Int_t aMCRootPartClus2 = FindMCRootPart(mcIndex2,&aMCTreeHeight2);
-
 
 			if (aMCRootPartClus1 == aMCRootPartClus2) { //The MC Parts still have a common ancestor
 
@@ -2021,7 +2026,12 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 			}
 		}
 	}
-	valueArray[7] = MCMatchStatus;
+	if (fIsMC) {
+		valueArray[7] = MCMatchStatus;
+		if (fApplyPatchCandCut) valueArray[8] = DetermineGAPatchCand(CaloClusterVec,CaloClusterVec2);
+	} else { // if no MC, then axis 7 is patch status
+		if (fApplyPatchCandCut) valueArray[7] = DetermineGAPatchCand(CaloClusterVec,CaloClusterVec2);
+	}
 
 
 	fPi0Cands->Fill(valueArray,Weight);
@@ -2075,6 +2085,13 @@ void AliAnalysisTaskGammaHadron::FillPi0CandsHist(AliTLorentzVector CaloClusterV
 		valueArray[4]=TMath::Min(fE1,fE2);
 		valueArray[5]=fAsym;
 		valueArray[6]=1;
+
+		if (fIsMC) {
+			valueArray[7] = 0; // MC info is meaningless for rot bkg
+			if (fApplyPatchCandCut) valueArray[8] = DetermineGAPatchCand(CaloClusterVec,CaloClusterVec2);
+		} else { // if no MC, then axis 7 is patch status
+			if (fApplyPatchCandCut) valueArray[7] = DetermineGAPatchCand(CaloClusterVec,CaloClusterVec2);
+		}
 
 		fPi0Cands->Fill(valueArray,Weight);
 	}
@@ -2608,6 +2625,24 @@ Int_t AliAnalysisTaskGammaHadron::FindMCLowComAnc(Int_t iMCIndex1, Int_t iMCInde
 	}
 
 	return iLastCommonAncestor;
+}
+//________________________________________________________________________
+Bool_t AliAnalysisTaskGammaHadron::DetermineGAPatchCand(AliTLorentzVector CaloClusterVec, AliTLorentzVector CaloClusterVec2) {
+
+	Double_t fE1 = CaloClusterVec.E();
+	Double_t fE2 = CaloClusterVec2.E();
+
+	// From OCDB, could get these dynamically
+	if (fE1 + fE2 < 10) return 0;// 10 is the GA thr in 15o
+	if ((fE1 >= 10) || (fE2 >= 10)) return 1; // one cluster is a patch cand on its own
+
+	Double_t fDeltaPhi = DeltaPhi(CaloClusterVec2,CaloClusterVec.Phi());
+	Double_t fDeltaEta = CaloClusterVec2.Eta() - CaloClusterVec.Eta();
+
+	if (abs(fDeltaPhi) > 4*0.0143) return 0;
+	if (abs(fDeltaEta) > 4*0.0143) return 0;
+
+	return 1;
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskGammaHadron::DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff)
