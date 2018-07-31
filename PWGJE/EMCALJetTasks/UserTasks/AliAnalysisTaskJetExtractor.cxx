@@ -26,6 +26,7 @@
 #include <TNamed.h>
 
 #include "AliMCEvent.h"
+#include "AliESDVertex.h"
 #include "AliAODVertex.h"
 #include "AliAODPid.h"
 
@@ -42,6 +43,9 @@
 #include "TRandom3.h"
 #include "AliAnalysisTaskEmcalJet.h"
 
+#include "AliHFJetsTaggingVertex.h"
+
+
 #include "AliAnalysisTaskJetExtractor.h"
 
 /// \cond CLASSIMP
@@ -53,7 +57,7 @@ ClassImp(AliAnalysisTaskJetExtractor)
 /// \endcond
 
 //________________________________________________________________________
-AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fExtractionPercentages(), fExtractionPercentagePtBins()
+AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fExtractionPercentages(), fExtractionPercentagePtBins(), fExtractionJetTypes_HM(), fExtractionJetTypes_PM()
 {
   // For these arrays, we need to reserve memory
   fBuffer_Const_Pt         = new Float_t[kMaxNumConstituents];
@@ -66,7 +70,7 @@ AliEmcalJetTree::AliEmcalJetTree() : TNamed("CustomTree", "CustomTree"), fJetTre
 }
 
 //________________________________________________________________________
-AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fExtractionPercentages(), fExtractionPercentagePtBins()
+AliEmcalJetTree::AliEmcalJetTree(const char* name) : TNamed(name, name), fJetTree(0), fInitialized(0), fSaveEventProperties(0), fSaveConstituents(0), fSaveConstituentsIP(0), fSaveConstituentPID(0), fSaveJetShapes(0), fSaveMCInformation(0), fSaveSecondaryVertices(0), fExtractionPercentages(), fExtractionPercentagePtBins(), fExtractionJetTypes_HM(), fExtractionJetTypes_PM()
 {
   // For these arrays, we need to reserve memory
   fBuffer_Const_Pt         = new Float_t[kMaxNumConstituents];
@@ -93,6 +97,12 @@ Bool_t AliEmcalJetTree::AddJetToTree(AliEmcalJet* jet, Float_t bgrdDensity, Floa
     AliFatal("Tree is not initialized.");
 
   fBuffer_JetPt                                   = jet->Pt() - bgrdDensity*jet->Area();
+
+  // Check if jet type is contained in extraction list
+  if( (fExtractionJetTypes_PM.size() || fExtractionJetTypes_HM.size()) &&
+      (std::find(fExtractionJetTypes_PM.begin(), fExtractionJetTypes_PM.end(), motherParton) == fExtractionJetTypes_PM.end()) &&
+      (std::find(fExtractionJetTypes_HM.begin(), fExtractionJetTypes_HM.end(), motherHadron) == fExtractionJetTypes_HM.end()) )
+    return kFALSE;
 
   // Check acceptance percentage for the given jet and discard statistically on demand
   Bool_t inPtRange = kFALSE;
@@ -253,11 +263,11 @@ void AliEmcalJetTree::InitializeTree()
     fJetTree->Branch("Jet_Const_IPd",&dummy,"Jet_Const_IPd[Jet_NumConstituents]/F");
     fJetTree->Branch("Jet_Const_IPz",&dummy,"Jet_Const_IPz[Jet_NumConstituents]/F");
     fJetTree->Branch("Jet_Const_CovIPd",&dummy,"Jet_Const_CovIPd[Jet_NumConstituents]/F");
-    fJetTree->Branch("Jet_Const_CoVIPz",&dummy,"Jet_Const_CovIPz[Jet_NumConstituents]/F");
+    fJetTree->Branch("Jet_Const_CovIPz",&dummy,"Jet_Const_CovIPz[Jet_NumConstituents]/F");
 
-    fJetTree->Branch("Jet_Const_ProdVtx_X",&dummy,"Jet_Const_ProdVtx_X[Jet_NumConstituents]/F");
-    fJetTree->Branch("Jet_Const_ProdVtx_Y",&dummy,"Jet_Const_ProdVtx_Y[Jet_NumConstituents]/F");
-    fJetTree->Branch("Jet_Const_ProdVtx_Z",&dummy,"Jet_Const_ProdVtx_Z[Jet_NumConstituents]/F");
+    fJetTree->Branch("Jet_Const_ProdVtx_X",fBuffer_Const_ProdVtx_X,"Jet_Const_ProdVtx_X[Jet_NumConstituents]/F");
+    fJetTree->Branch("Jet_Const_ProdVtx_Y",fBuffer_Const_ProdVtx_Y,"Jet_Const_ProdVtx_Y[Jet_NumConstituents]/F");
+    fJetTree->Branch("Jet_Const_ProdVtx_Z",fBuffer_Const_ProdVtx_Z,"Jet_Const_ProdVtx_Z[Jet_NumConstituents]/F");
   }
 
   if(fSaveConstituentPID)
@@ -303,13 +313,17 @@ void AliEmcalJetTree::InitializeTree()
   fInitialized = kTRUE;
 }
 
-
-
-
 //________________________________________________________________________
 AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskJetExtractor", kTRUE),
   fJetTree(0),
+  fVtxTagger(0),
+  fHadronMatchingRadius(0.4),
+  fSecondaryVertexMaxChi2(1e10),
+  fSecondaryVertexMaxDispersion(0.05),
+  fCalculateSecondaryVertices(kTRUE),
+  fVertexerCuts(0),
+  fSetEmcalJetFlavour(0),
   fJetsCont(0),
   fTracksCont(0),
   fTruthParticleArray(0),
@@ -328,6 +342,13 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
 AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fJetTree(0),
+  fVtxTagger(0),
+  fHadronMatchingRadius(0.4),
+  fSecondaryVertexMaxChi2(1e10),
+  fSecondaryVertexMaxDispersion(0.05),
+  fCalculateSecondaryVertices(kTRUE),
+  fVertexerCuts(0),
+  fSetEmcalJetFlavour(0),
   fJetsCont(0),
   fTracksCont(0),
   fTruthParticleArray(0),
@@ -377,6 +398,10 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hConstituentPt", "Jet constituent p_{T} distribution", "COLZ", 400, 0., 300., 100, 0, 100, "p_{T, const} (GeV/c)", "Centrality", "dN^{Const}/dp_{T}");
   AddHistogram2D<TH2D>("hConstituentPhiEta", "Jet constituent relative #phi/#eta distribution", "COLZ", 120, -0.6, 0.6, 120, -0.6, 0.6, "#Delta#phi", "#Delta#eta", "dN^{Const}/d#phi d#eta");
 
+  AddHistogram1D<TH1D>("hExtractionPercentage", "Extracted jets p_{T} distribution (background subtracted)", "COLZ", 400, -100., 300., "p_{T, jet} (GeV/c)", "Extracted percentage");
+
+
+
   // Track QA plots
   AddHistogram2D<TH2D>("hTrackPt", "Tracks p_{T} distribution", "", 300, 0., 300., 100, 0, 100, "p_{T} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
   AddHistogram2D<TH2D>("hTrackPhi", "Track angular distribution in #phi", "LEGO2", 180, 0., 2*TMath::Pi(), 100, 0, 100, "#phi", "Centrality", "dN^{Tracks}/(d#phi)");
@@ -397,6 +422,28 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
   if (fTruthParticleArrayName != "")
     fTruthParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTruthParticleArrayName.Data()));
 
+  // ### Prepare vertexer
+  if(fJetTree->GetSaveSecondaryVertices())
+  {
+    if(!fVertexerCuts)
+      AliFatal("VertexerCuts not given but secondary vertex calculation turned on.");
+    fVtxTagger = new AliHFJetsTaggingVertex();
+    fVtxTagger->SetCuts(fVertexerCuts);
+  }
+
+  // ### Save tree extraction percentage to histogram
+  std::vector<Float_t> extractionPtBins      = fJetTree->GetExtractionPercentagePtBins();
+  std::vector<Float_t> extractionPercentages = fJetTree->GetExtractionPercentages();
+
+  for(Int_t i=0; i<static_cast<Int_t>(extractionPercentages.size()); i++)
+  {
+    Double_t percentage = extractionPercentages[i];
+    for(Int_t pt=static_cast<Int_t>(extractionPtBins[i*2]); pt<static_cast<Int_t>(extractionPtBins[i*2+1]); pt++)
+    {
+      FillHistogram("hExtractionPercentage", pt, percentage);
+    }
+  }
+
   // ### Initialize the jet tree (settings must all be given at this stage)
   fJetTree->InitializeTree();
   fOutput->Add(fJetTree->GetTreePointer());
@@ -413,22 +460,19 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
   Double_t vtxY = 0;
   Double_t vtxZ = 0;
   Long64_t eventID = 0;
-  if(GetJetTree()->GetSaveEventProperties())
+  const AliVVertex* myVertex = InputEvent()->GetPrimaryVertex();
+  if(!myVertex && MCEvent())
+    myVertex = MCEvent()->GetPrimaryVertex();
+  if(myVertex)
   {
-    const AliVVertex* myVertex = InputEvent()->GetPrimaryVertex();
-    if(!myVertex && MCEvent())
-      myVertex = MCEvent()->GetPrimaryVertex();
-    if(myVertex)
-    {
-      vtxX = myVertex->GetX();
-      vtxY = myVertex->GetY();
-      vtxZ = myVertex->GetZ();
-    }
-    // Get event ID from header
-    AliVHeader* eventIDHeader = InputEvent()->GetHeader();
-    if(eventIDHeader)
-      eventID = eventIDHeader->GetEventIdAsLong();
+    vtxX = myVertex->GetX();
+    vtxY = myVertex->GetY();
+    vtxZ = myVertex->GetZ();
   }
+  // Get event ID from header
+  AliVHeader* eventIDHeader = InputEvent()->GetHeader();
+  if(eventIDHeader)
+    eventID = eventIDHeader->GetEventIdAsLong();
 
   // ################################### MAIN JET LOOP
   fJetsCont->ResetCurrentID();
@@ -436,31 +480,56 @@ Bool_t AliAnalysisTaskJetExtractor::Run()
   {
     FillJetControlHistograms(jet);
 
-    // Get true pT estimators
     Double_t matchedJetPt = 0;
     Double_t truePtFraction = 0;
-    if(GetJetTree()->GetSaveMCInformation())
+    Int_t currentJetType_HM = 0;
+    Int_t currentJetType_PM = 0;
+    if(fJetTree->GetSaveMCInformation())
+    {
+      // Get jet type from MC (hadron matching, parton matching definition - for HF jets)
+      GetJetType(jet, currentJetType_HM, currentJetType_PM);
+      // Get true pT estimators
       GetJetTruePt(jet, matchedJetPt, truePtFraction);
+    }
 
-    // ### CONSTITUENT LOOP: Retrieve PID values
+    // ### CONSTITUENT LOOP: Retrieve PID values + impact parameters
     std::vector<Float_t> vecSigITS; std::vector<Float_t> vecSigTPC; std::vector<Float_t> vecSigTRD; std::vector<Float_t> vecSigTOF; std::vector<Short_t> vecRecoPID; std::vector<Short_t> vecTruePID;
+    std::vector<Float_t> vec_d0; std::vector<Float_t> vec_d0cov; std::vector<Float_t> vec_z0; std::vector<Float_t> vec_z0cov;
 
-    if(GetJetTree()->GetSaveConstituentPID())
+    if(fJetTree->GetSaveConstituentPID() || fJetTree->GetSaveConstituentsIP())
       for(Int_t i = 0; i < jet->GetNumberOfTracks(); i++)
       {
         AliVParticle* particle = static_cast<AliVParticle*>(jet->TrackAt(i, fTracksCont->GetArray()));
         if(!particle) continue;
-        Float_t sigITS = 0; Float_t sigTPC = 0; Float_t sigTOF = 0; Float_t sigTRD = 0; Short_t recoPID = 0; Short_t truePID = 0;
-        AddPIDInformation(particle, sigITS, sigTPC, sigTOF, sigTRD, recoPID, truePID);
-        vecSigITS.push_back(sigITS); vecSigTPC.push_back(sigTPC); vecSigTOF.push_back(sigTOF); vecSigTRD.push_back(sigTRD); vecRecoPID.push_back(recoPID); vecTruePID.push_back(truePID);
+        if(fJetTree->GetSaveConstituentPID())
+        {
+          Float_t sigITS = 0; Float_t sigTPC = 0; Float_t sigTOF = 0; Float_t sigTRD = 0; Short_t recoPID = 0; Short_t truePID = 0;
+          AddPIDInformation(particle, sigITS, sigTPC, sigTOF, sigTRD, recoPID, truePID);
+          vecSigITS.push_back(sigITS); vecSigTPC.push_back(sigTPC); vecSigTOF.push_back(sigTOF); vecSigTRD.push_back(sigTRD); vecRecoPID.push_back(recoPID); vecTruePID.push_back(truePID);
+        }
+        if(fJetTree->GetSaveConstituentsIP())
+        {
+          Float_t d0 = 0; Float_t d0cov = 0; Float_t z0 = 0; Float_t z0cov = 0;
+          GetTrackImpactParameters(myVertex, dynamic_cast<AliAODTrack*>(particle), d0, d0cov, z0, z0cov);
+          vec_d0.push_back(d0); vec_d0cov.push_back(d0cov); vec_z0.push_back(z0); vec_z0cov.push_back(z0cov);
+        }
       }
 
+    // Reconstruct secondary vertices
+    std::vector<Float_t> secVtx_X; std::vector<Float_t> secVtx_Y; std::vector<Float_t> secVtx_Z; std::vector<Float_t> secVtx_Mass; std::vector<Float_t> secVtx_Lxy; std::vector<Float_t> secVtx_SigmaLxy; std::vector<Float_t> secVtx_Chi2; std::vector<Float_t> secVtx_Dispersion;
+    if(fJetTree->GetSaveSecondaryVertices())
+      ReconstructSecondaryVertices(myVertex, jet, secVtx_X, secVtx_Y, secVtx_Z, secVtx_Mass, secVtx_Lxy, secVtx_SigmaLxy, secVtx_Chi2, secVtx_Dispersion);
+
     // Fill jet to tree
-    Bool_t accepted = fJetTree->AddJetToTree(jet, fJetsCont->GetRhoVal(), vtxX, vtxY, vtxZ, fCent, eventID, 0, fTracksCont, 0,0,matchedJetPt,truePtFraction,0, vecSigITS, vecSigTPC, vecSigTOF, vecSigTRD, vecRecoPID, vecTruePID);
+    Bool_t accepted = fJetTree->AddJetToTree(jet, fJetsCont->GetRhoVal(), vtxX, vtxY, vtxZ, fCent, eventID, InputEvent()->GetMagneticField(), fTracksCont,
+              currentJetType_PM,currentJetType_HM,matchedJetPt,truePtFraction,fPtHard,
+              vecSigITS, vecSigTPC, vecSigTOF, vecSigTRD, vecRecoPID, vecTruePID,
+              vec_d0, vec_z0, vec_d0cov, vec_z0cov,
+              secVtx_X, secVtx_Y, secVtx_Z, secVtx_Mass, secVtx_Lxy, secVtx_SigmaLxy, secVtx_Chi2, secVtx_Dispersion);
+
     if(accepted)
       FillHistogram("hJetPtExtracted", jet->Pt() - fJetsCont->GetRhoVal()*jet->Area(), fCent);
   }
-
 
   // ################################### PARTICLE PROPERTIES
   fTracksCont->ResetCurrentID();
@@ -535,6 +604,208 @@ void AliAnalysisTaskJetExtractor::GetJetTruePt(AliEmcalJet* jet, Double_t& match
 
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractor::GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM)
+{
+  Double_t radius = fHadronMatchingRadius;
+
+  if(!fTruthParticleArray)
+    return;
+
+  typeHM = 0;
+  typePM = 0;
+
+  AliAODMCParticle* parton[2];
+  parton[0] = (AliAODMCParticle*) fVtxTagger->IsMCJetParton(fTruthParticleArray, jet, radius);  // method 1 (parton matching)
+  parton[1] = (AliAODMCParticle*) fVtxTagger->IsMCJetMeson(fTruthParticleArray, jet, radius);   // method 2 (hadron matching)
+
+  if (parton[0]) {
+    Int_t pdg = TMath::Abs(parton[0]->PdgCode());
+    typePM = pdg;
+  }
+
+  if (!parton[1])
+  {
+    // No HF jet (according to hadron matching) -- now also separate jets in udg (1) and s-jets (3)
+    if(IsStrangeJet(jet))
+      typeHM = 3;
+    else
+      typeHM = 1;
+  }
+  else {
+    Int_t pdg = TMath::Abs(parton[1]->PdgCode());
+    if(fVtxTagger->IsDMeson(pdg)) typeHM = 4;
+    else if (fVtxTagger->IsBMeson(pdg)) typeHM = 5;
+  }
+
+  // Set flavour of AliEmcalJet object (set ith bit while i corresponds to type)
+  if(fSetEmcalJetFlavour)
+    jet->AddFlavourTag(static_cast<Int_t>(TMath::Power(2, typeHM)));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractor::GetTrackImpactParameters(const AliVVertex* vtx, AliAODTrack* track, Float_t& d0, Float_t& d0cov, Float_t& z0, Float_t& z0cov)
+{
+  if (track)
+  {
+    Double_t d0rphiz[2],covd0[3];
+    Bool_t isDCA=track->PropagateToDCA(vtx,InputEvent()->GetMagneticField(),3.0,d0rphiz,covd0);
+    if(isDCA)
+    {
+      d0 = d0rphiz[0];
+      z0 = d0rphiz[1];
+      d0cov = covd0[0];
+      z0cov = covd0[2];
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskJetExtractor::ReconstructSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z, std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion)
+{
+  if(!primVtx)
+    return;
+
+  // Create ESD vertex from the existing AliVVertex
+  Double_t vtxPos[3]   = {primVtx->GetX(), primVtx->GetY(), primVtx->GetZ()};
+  Double_t covMatrix[6] = {0};
+  primVtx->GetCovarianceMatrix(covMatrix);
+  AliESDVertex* esdVtx = new AliESDVertex(vtxPos, covMatrix, primVtx->GetChi2(), primVtx->GetNContributors());
+
+  TClonesArray* secVertexArr = 0;
+  vctr_pair_dbl_int arrDispersion;
+  arrDispersion.reserve(5);
+  if(fCalculateSecondaryVertices)
+  {
+    //###########################################################################
+    // ********* Calculate secondary vertices
+    // Derived from AliAnalysisTaskEmcalJetBtagSV
+    secVertexArr = new TClonesArray("AliAODVertex");
+    Int_t nDauRejCount = 0;
+    Int_t nVtx = fVtxTagger->FindVertices(jet,
+                                         fTracksCont->GetArray(),
+                                         (AliAODEvent*)InputEvent(),
+                                         esdVtx,
+                                         InputEvent()->GetMagneticField(),
+                                         secVertexArr,
+                                         0,
+                                         arrDispersion,
+                                         nDauRejCount);
+
+
+    if(nVtx < 0)
+    {
+      secVertexArr->Clear();
+      delete secVertexArr;
+      return;
+    }
+    //###########################################################################
+  }
+  else // Load HF vertex branch from AOD event, if possible
+  {
+    secVertexArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("VerticesHF"));
+    if(!secVertexArr)
+      return;
+  }
+
+  // Loop over all potential secondary vertices
+  for(Int_t i=0; i<secVertexArr->GetEntriesFast(); i++)
+  {
+    AliAODVertex* secVtx = (AliAODVertex*)(secVertexArr->UncheckedAt(i));
+    if(!fCalculateSecondaryVertices)
+      if((strcmp(secVtx->GetParent()->ClassName(), "AliAODRecoDecayHF3Prong")))
+        continue;
+
+    // Calculate vtx distance
+    Double_t effX = secVtx->GetX() - esdVtx->GetX();
+    Double_t effY = secVtx->GetY() - esdVtx->GetY();
+    //Double_t effZ = secVtx->GetZ() - esdVtx->GetZ();
+
+    // ##### Vertex properties
+    // vertex dispersion
+    Double_t dispersion = arrDispersion[i].first;
+
+    // invariant mass
+    Double_t mass = fVtxTagger->GetVertexInvariantMass(secVtx);
+
+    // signed length
+    Double_t Lxy  = TMath::Sqrt(effX*effX + effY*effY);
+    Double_t jetP[3]; jet->PxPyPz(jetP);
+    Double_t signLxy = effX * jetP[0] + effY * jetP[1];
+    if (signLxy < 0.) Lxy *= -1.;
+
+    Double_t sigmaLxy  = 0;
+    AliAODVertex* aodVtx = (AliAODVertex*)(primVtx);
+    if (aodVtx)
+      sigmaLxy = aodVtx->ErrorDistanceXYToVertex(secVtx);
+
+    // Add secondary vertices if they fulfill the conditions
+    if( (dispersion > fSecondaryVertexMaxDispersion) || (TMath::Abs(secVtx->GetChi2perNDF()) > fSecondaryVertexMaxChi2) )
+      continue;
+
+    secVtx_X.push_back(secVtx->GetX()); secVtx_Y.push_back(secVtx->GetY()); secVtx_Z.push_back(secVtx->GetZ()); secVtx_Chi2.push_back(secVtx->GetChi2perNDF());
+    secVtx_Dispersion.push_back(dispersion); secVtx_Mass.push_back(mass); secVtx_Lxy.push_back(Lxy); secVtx_SigmaLxy.push_back(sigmaLxy); 
+  }
+
+  if(fCalculateSecondaryVertices)
+  {
+    secVertexArr->Clear();
+    delete secVertexArr;
+  }
+  delete esdVtx;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskJetExtractor::IsStrangeJet(AliEmcalJet* jet)
+{
+  // Do hadron matching jet type tagging using mcparticles
+  // ... if not explicitly deactivated
+  if (fTruthParticleArray)
+  {
+    for(Int_t i=0; i<fTruthParticleArray->GetEntries();i++)
+    {
+      AliAODMCParticle* part = (AliAODMCParticle*)fTruthParticleArray->At(i);
+      if(!part) continue;
+
+      // Check if the particle has strangeness
+      Int_t absPDG = TMath::Abs(part->PdgCode());
+      if ((absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
+      {
+        // Check if particle is in a radius around the jet
+        Double_t rsquared = (part->Eta() - jet->Eta())*(part->Eta() - jet->Eta()) + (part->Phi() - jet->Phi())*(part->Phi() - jet->Phi());
+        if(rsquared >= fHadronMatchingRadius*fHadronMatchingRadius)
+          continue;
+        else
+          return kTRUE;
+      }
+    }
+  }
+  // As fallback, the MC stack will be tried
+  else if(MCEvent() && (MCEvent()->Stack()))
+  {
+    AliStack* stack = MCEvent()->Stack();
+    // Go through the whole particle stack
+    for(Int_t i=0; i<stack->GetNtrack(); i++)
+    {
+      TParticle *part = stack->Particle(i);
+      if(!part) continue;
+
+      // Check if the particle has strangeness
+      Int_t absPDG = TMath::Abs(part->GetPdgCode());
+      if ((absPDG > 300 && absPDG < 400) || (absPDG > 3000 && absPDG < 4000))
+      {
+        // Check if particle is in a radius around the jet
+        Double_t rsquared = (part->Eta() - jet->Eta())*(part->Eta() - jet->Eta()) + (part->Phi() - jet->Phi())*(part->Phi() - jet->Phi());
+        if(rsquared >= fHadronMatchingRadius*fHadronMatchingRadius)
+          continue;
+        else
+          return kTRUE;
+      }
+    }
+  }
+  return kFALSE;
+
+}
 //________________________________________________________________________
 void AliAnalysisTaskJetExtractor::FillEventControlHistograms()
 {
