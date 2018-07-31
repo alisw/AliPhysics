@@ -3748,6 +3748,12 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
               if (fInputHandler->IsEventSelected() & AliVEvent::kMB) isSelected = 0;
             } else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CEMC8") == 0){
               if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+            } else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CDMC7") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+            } else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CDMC1") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kMB) isSelected = 0;
+            } else if (fSpecialTrigger == 5 && fSpecialSubTriggerName.CompareTo("CDMC8") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
             }
             // trigger rejection EGA
             if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EGA") == 0){
@@ -3756,50 +3762,58 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
             } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EGA") == 0){
               if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
               if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+            } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7DGA") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+            } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8DGA") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
             }
             // trigger rejection EG1 & EG2
-            if (fPeriodEnum == kLHC13g){
-              // EG1 is the trigger with the highest threshold
-              if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG1") == 0){
+            // EG1 is the trigger with the highest threshold
+            if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG1") == 0){
 //                 cout << firedTrigClass.Data() << endl;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
 //                 cout << "INT7? " << isSelected << endl;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
 //                 cout << "CEM7? " << isSelected << endl;
-                if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
+              if (firedTrigClass.Contains("7EG2"))  isSelected = 0;
 //                 cout << "7EG2? " << isSelected << endl;
-              } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG1") == 0){
-                if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
-              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG2") == 0){
+            } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG1") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (firedTrigClass.Contains("8EG2"))  isSelected = 0;
+            } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG2") == 0){
 //                 cout << firedTrigClass.Data() << endl;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
 //                 cout << "INT7? " << isSelected << endl;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
 //                 cout << "CEM7? " << isSelected << endl;
-              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG2") == 0){
+            } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG2") == 0){
+              if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+              if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
+            } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7DG1") == 0){
+                //                 cout << firedTrigClass.Data() << endl;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                //                 cout << "INT7? " << isSelected << endl;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-              }
-            } else {
-              // EG2 is the trigger with the highest threshold
-              if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG2") == 0){
-                if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
-                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                if (firedTrigClass.Contains("7EG1"))  isSelected = 0;
-              } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG2") == 0){
+                //                 cout << "CEM7? " << isSelected << endl;
+                if (firedTrigClass.Contains("7DG2"))  isSelected = 0;
+                //                 cout << "7EG2? " << isSelected << endl;
+              } else if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8DG1") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-                if (firedTrigClass.Contains("8EG1"))  isSelected = 0;
-              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7EG1") == 0){
+                if (firedTrigClass.Contains("8DG2"))  isSelected = 0;
+              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("7DG2") == 0){
+                //                 cout << firedTrigClass.Data() << endl;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                //                 cout << "INT7? " << isSelected << endl;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
-              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8EG1") == 0){
+                //                 cout << "CEM7? " << isSelected << endl;
+              } else   if (fSpecialTrigger == 8 && fSpecialSubTriggerName.CompareTo("8DG2") == 0){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7) isSelected = 0;
               }
-            }
           }
           if (isSelected != 0 ){
 //             cout << "I am here" << " :" << fSpecialSubTriggerName.Data() <<endl;
