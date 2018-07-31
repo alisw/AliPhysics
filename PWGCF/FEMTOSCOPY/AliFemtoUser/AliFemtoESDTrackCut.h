@@ -39,13 +39,6 @@ public:
   void SetPidProbKaon(const float& lo, const float& hi);
   void SetPidProbProton(const float& lo, const float& hi);
   void SetPidProbMuon(const float& lo, const float& hi);
-  
-  //
-  void SetPidProbDeuteron(const float& lo, const float& hi);
-  void SetPidProbTriton(const float& lo, const float& hi);
-  void SetPidProbHe3(const float& lo, const float& hi);
-  void SetPidProbAlpha(const float& lo, const float& hi);
-  //
   void SetLabel(const bool& flag);
   void SetStatus(const ULong64_t w);
   void SetminTPCclsF(const short& s);
@@ -65,15 +58,6 @@ public:
   void SetMostProbableProton();
   void SetLeastProbableProton();
   void SetNoMostProbable();
-  
-  //
-  void SetMostProbableDeuteron();
-  void SetMostProbableTriton();
-  void SetMostProbableHe3();
-  void SetLeastProbableAlpha();
-  //
-  
-
   void SetMostProbable(const int& num);
   void SetPIDMethod(ReadPIDMethodType newMethod);
   void SetNsigmaTPCTOF(Bool_t);
@@ -95,15 +79,6 @@ public:
   std::pair<float, float> GetProbKaon() const { return std::make_pair(fPidProbKaon[0], fPidProbKaon[1]); }
   std::pair<float, float> GetProbProton() const { return std::make_pair(fPidProbProton[0], fPidProbProton[1]); }
   std::pair<float, float> GetProbMuon() const { return std::make_pair(fPidProbMuon[0], fPidProbMuon[1]); }
-
-
-  //
-  std::pair<float, float> GetProbDeuteron() const { return std::make_pair(fPidProbDeuteron[0], fPidProbDeuteron[1]); }
-  std::pair<float, float> GetProbTriton() const { return std::make_pair(fPidProbTriton[0], fPidProbTriton[1]); }
-  std::pair<float, float> GetProbHe3() const { return std::make_pair(fPidProbHe3[0], fPidProbHe3[1]); }
-  std::pair<float, float> GetProbAlpha() const { return std::make_pair(fPidProbAlpha[0], fPidProbAlpha[1]); }
-  //
-
   bool GetLabel() const { return fLabel; }
   ULong64_t GetStatus() const { return fStatus; }
   int GetPIDmethod() const { return fPIDMethod; }
@@ -150,15 +125,6 @@ protected:   // here are the quantities I want to cut on...
   float             fPidProbProton[2];   ///< bounds for proton probability
   float             fPidProbMuon[2];     ///< bounds for muon probability
 
-
-  //
-  float             fPidProbDeuteron[2]; ///< bounds for deuteron probability
-  float             fPidProbTriton[2];     ///< bounds for triton probability
-  float             fPidProbHe3[2];     ///< bounds for he3 probability
-  float             fPidProbAlpha[2];   ///< bounds for alpha probability
-  //
-
-  
   AliESDtrackCuts::ITSClusterRequirement fCutClusterRequirementITS[3];  ///< detailed ITS cluster requirements for (SPD, SDD, SSD) - from AliESDtrackcuts!
   bool              fLabel;              ///< if true label<0 will not pass throught
   ULong64_t         fStatus;             ///< staus flag
@@ -200,66 +166,27 @@ protected:   // here are the quantities I want to cut on...
   float PidFractionKaon(float mom) const;
   float PidFractionProton(float mom) const;
 
-  //
-  float PidFractionDeuteron(float mom) const;
-  float PidFractionTriton(float mom) const;
-  float PidFractionHe3(float mom) const;
-  float PidFractionAlpha(float mom) const;
-  //
-
-
-
-  
   bool IsPionTPCdEdx(float mom, float dEdx);
   bool IsKaonTPCdEdx(float mom, float dEdx);
   bool IsProtonTPCdEdx(float mom, float dEdx);
 
-  //
-  bool IsDeuteronTPCdEdx(float mom, float dEdx);
-  bool IsTritonTPCdEdx(float mom, float dEdx);
-  bool IsHe3TPCdEdx(float mom, float dEdx);
-  bool IsAlphaTPCdEdx(float mom, float dEdx);
-  //
-
-
-
-  
   bool IsPionTOFTime(float mom, float ttof);
   bool IsKaonTOFTime(float mom, float ttof);
   bool IsProtonTOFTime(float mom, float ttof);
 
-  //
-  bool IsDeuteronTOFTime(float mom, float ttof);
-  bool IsTritonTOFTime(float mom, float ttof);
-  bool IsHe3TOFTime(float mom, float ttof);
-  bool IsAlphaTOFTime(float mom, float ttof);
-  //
-
-
-
-  
   bool IsKaonTPCdEdxNSigma(float mom, float nsigma);
   bool IsKaonTOFNSigma(float mom, float nsigma);
   bool IsKaonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsPionNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsProtonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP);
-  //
-  bool IsDeuteronNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
-  bool IsTritonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
-  bool IsHe3NSigma(float mom, float nsigmaTPC, float nsigmaTOF);
-  bool IsAlphaNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
-  //
 
-
-
-  
   Bool_t CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2); //the same as in AliESDtrackCuts
 
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoESDTrackCut, 3);
+  ClassDef(AliFemtoESDTrackCut, 2);
   /// \endcond
 #endif
 };
@@ -272,17 +199,9 @@ inline void AliFemtoESDTrackCut::SetCharge(const int& ch){fCharge = ch;}
 inline void AliFemtoESDTrackCut::SetPidProbElectron(const float& lo,const float& hi){fPidProbElectron[0]=lo; fPidProbElectron[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbPion(const float& lo,const float& hi){fPidProbPion[0]=lo; fPidProbPion[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbKaon(const float& lo,const float& hi){fPidProbKaon[0]=lo; fPidProbKaon[1]=hi;}
-inline void AliFemtoESDTrackCut::SetPidProbProton(const float& lo,const float& hi){fPidProbProton[0]=lo; fPidProbProton[1]=hi;}
+inline void AliFemtoESDTrackCut::SetPidProbProton
+(const float& lo,const float& hi){fPidProbProton[0]=lo; fPidProbProton[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbMuon(const float& lo,const float& hi){fPidProbMuon[0]=lo; fPidProbMuon[1]=hi;}
-
-//
-inline void AliFemtoESDTrackCut::SetPidProbDeuteron(const float& lo,const float& hi){fPidProbDeuteron[0]=lo; fPidProbDeuteron[1]=hi;}
-inline void AliFemtoESDTrackCut::SetPidProbTriton(const float& lo,const float& hi){fPidProbTriton[0]=lo; fPidProbTriton[1]=hi;}
-inline void AliFemtoESDTrackCut::SetPidProbHe3(const float& lo,const float& hi){fPidProbHe3[0]=lo; fPidProbHe3[1]=hi;}
-inline void AliFemtoESDTrackCut::SetPidProbAlpha(const float& lo,const float& hi){fPidProbAlpha[0]=lo; fPidProbAlpha[1]=hi;}
-//
-
-
 inline void AliFemtoESDTrackCut::SetLabel(const bool& flag){fLabel=flag;}
 inline void AliFemtoESDTrackCut::SetStatus(const ULong64_t status){fStatus=status;}
 inline void AliFemtoESDTrackCut::SetminTPCclsF(const short& minTPCclsF){fminTPCclsF=minTPCclsF;}
@@ -292,13 +211,6 @@ inline void AliFemtoESDTrackCut::SetMostProbablePion() { fMostProbable = 2; }
 inline void AliFemtoESDTrackCut::SetMostProbableKaon() { fMostProbable = 3; }
 inline void AliFemtoESDTrackCut::SetMostProbableProton() { fMostProbable = 4; }
 inline void AliFemtoESDTrackCut::SetLeastProbableProton() { fMostProbable = 5; }
-
-//
-inline void AliFemtoESDTrackCut::SetMostProbableDeuteron() { fMostProbable = 6; }
-inline void AliFemtoESDTrackCut::SetMostProbableTriton() { fMostProbable = 7; }
-inline void AliFemtoESDTrackCut::SetMostProbableHe3() { fMostProbable = 8; }
-inline void AliFemtoESDTrackCut::SetLeastProbableAlpha() { fMostProbable = 9; }
-//
 inline void AliFemtoESDTrackCut::SetNoMostProbable() { fMostProbable = 0; }
 inline void AliFemtoESDTrackCut::SetMostProbable(const int& num) {  fMostProbable =  num; }
 inline void AliFemtoESDTrackCut::SetMaxITSChiNdof(const float& maxchi) { fMaxITSchiNdof = maxchi; }
