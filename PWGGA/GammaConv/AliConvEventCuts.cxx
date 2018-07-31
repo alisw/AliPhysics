@@ -425,7 +425,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     fHistoEventCuts->GetXaxis()->SetBinLabel(8,"out");
     fHistograms->Add(fHistoEventCuts);
 
-    hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",36,-0.5,35.5);
+    hTriggerClass= new TH1F(Form("OfflineTrigger %s",GetCutNumber().Data()),"OfflineTrigger",37,-0.5,36.5);
     hTriggerClass->GetXaxis()->SetBinLabel( 1,"kMB");
     hTriggerClass->GetXaxis()->SetBinLabel( 2,"kINT7");
     hTriggerClass->GetXaxis()->SetBinLabel( 3,"kMUON");
@@ -460,8 +460,9 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hTriggerClass->GetXaxis()->SetBinLabel(32,"kAny");
     hTriggerClass->GetXaxis()->SetBinLabel(33,"V0AND");
     hTriggerClass->GetXaxis()->SetBinLabel(34,"NOT kFastOnly");
-    hTriggerClass->GetXaxis()->SetBinLabel(35,"failed Physics Selection");
-    hTriggerClass->GetXaxis()->SetBinLabel(36,"mimickedTrigger");
+    hTriggerClass->GetXaxis()->SetBinLabel(35,"kCaloOnly");
+    hTriggerClass->GetXaxis()->SetBinLabel(36,"failed Physics Selection");
+    hTriggerClass->GetXaxis()->SetBinLabel(37,"mimickedTrigger");
     fHistograms->Add(hTriggerClass);
   }
   if(!preCut){
@@ -503,8 +504,8 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hTriggerClassSelected->GetXaxis()->SetBinLabel(35,"mimickedTrigger");
     fHistograms->Add(hTriggerClassSelected);
 
-    if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9){
-      hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",10,-0.5,9.5);
+    if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10){
+      hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",17,-0.5,16.5);
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 1,"kMB");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 2,"kINT7");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 3,"kEMC1");
@@ -515,6 +516,13 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 8,"kEMCEGA");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 9,"kEMCEG1");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 10,"kEMCEG2");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 11,"kDMC7");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 12,"kDMCDJE");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 13,"kDMCDJ1");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 14,"kDMCDJ2");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 15,"kDMCDGA");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 16,"kDMCDG1");
+      hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 17,"kDMCDG2");
       fHistograms->Add(hTriggerClassesCorrelated);
     }
 
@@ -1272,6 +1280,14 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
     SETBIT(fTriggersEMCALSelected, kJ2);
     fSpecialTriggerName="AliVEvent::kEMCEJE";
     break;
+  case 10: //CALO and CALOFAST
+    fSpecialTrigger=10; // trigger alias kEMC
+    fOfflineTriggerMask=AliVEvent::kCaloOnly;
+    fTriggerSelectedManually = kTRUE;
+    fTriggersEMCALSelected= 0;
+    SETBIT(fTriggersEMCALSelected, kL0);
+    fSpecialTriggerName="AliVEvent::kCaloOnly";
+    break;
   default:
     AliError("Warning: Special Trigger Not known");
     return 0;
@@ -1785,6 +1801,138 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
       SETBIT(fTriggersEMCALSelected, kJ2);
       break;
 
+    default:
+      AliError("Warning: Special Subtrigger Class Not known");
+      return 0;
+    }
+  } else if (fSpecialTrigger == 10){ // Subdivision of kEMC trigger classes
+    switch(selectSpecialSubTriggerClass){
+    case 0: // all together
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CINT7";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/INT7";
+      break;
+    case 1: // CEMC7 - V0AND and EMCAL fired
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CEMC7-";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/EMC7";
+      break;
+    case 2: // CEMC7EG2 - V0AND and EMCAL fired
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7EG2";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7EG2";
+      break;
+    case 3: // CEMC7EG1  - V0AND and EMCAL fired
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7EG1";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7EG1";
+      break;
+    case 4: // CEMC7EJ2 - V0AND and EMCAL fired
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7EJ2";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7EJ2";
+      break;
+    case 5: // CEMC7EJ1 - V0AND and EMCAL fired
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7EJ1";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7EJ1";
+      break;
+    case 6: // CDMC7 - V0AND and DCAL fired
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CDMC7-";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/DMC7";
+      break;
+    case 7: // CDMC7DG2 - V0AND and DCAL fired
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7DG2";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7DG2";
+      break;
+    case 8: // CDMC7DG1  - V0AND and DCAL fired
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7DG1";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7DG1";
+      break;
+    case 9: // CDMC7DJ2 - V0AND and DCAL fired
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7DJ2";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7DJ2";
+      break;
+    case 10: // DEMC7DJ1 - V0AND and DCAL fired - a
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="7DJ1";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/7DJ1";
+      break;
+    case 11: // CEMC8 - V0AND and EMCAL fired - b
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CEMC8-";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/EMC8";
+      break;
+    case 12: // CEMC8EG2 - V0AND and EMCAL fired - c
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8EG2";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/8EG2";
+      break;
+    case 13: // CEMC8EG1  - V0AND and EMCAL fired - d
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8EG1";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/8EG1";
+      break;
+    case 14: // CEMC8EJ2 - V0AND and EMCAL fired - e
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8EJ2";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/8EJ2";
+      break;
+    case 15: // CEMC8EJ1 - V0AND and EMCAL fired - f
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8EJ1";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/8EJ1";
+      break;
+    case 16: // CDMC8 - V0AND and DCAL fired - g
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="CDMC8-";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/DMC8";
+      break;
+    case 17: // CDMC8DG2 - V0AND and DCAL fired - h
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8DG2";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/8DG2";
+      break;
+    case 18: // CDMC8DG1  - V0AND and DCAL fired - i
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8DG1";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/8DG1";
+      break;
+    case 19: // CDMC8DJ2 - V0AND and DCAL fired - j
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8DJ2";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/8DJ2";
+      break;
+    case 20: // DEMC8DJ1 - V0AND and DCAL fired - k
+      fSpecialSubTrigger=1;
+      fNSpecialSubTriggerOptions=1;
+      fSpecialSubTriggerName="8DJ1";
+      fSpecialTriggerName="AliVEvent::kCaloOnly/8DJ1";
+      break;
     default:
       AliError("Warning: Special Subtrigger Class Not known");
       return 0;
@@ -3822,13 +3970,42 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                 if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassesCorrelated->Fill(1);
                 if (fInputHandler->IsEventSelected() & AliVEvent::kEMC1)hTriggerClassesCorrelated->Fill(2);
-                if (fInputHandler->IsEventSelected() & AliVEvent::kEMC7)hTriggerClassesCorrelated->Fill(3);
+                if ((fInputHandler->IsEventSelected() & AliVEvent::kEMC7) && firedTrigClass.Contains("EMC7"))hTriggerClassesCorrelated->Fill(3);
                 if (firedTrigClass.Contains("7EJE") || firedTrigClass.Contains("8EJE")) hTriggerClassesCorrelated->Fill(4);
                 if (firedTrigClass.Contains("7EJ1") || firedTrigClass.Contains("8EJ1")) hTriggerClassesCorrelated->Fill(5);
                 if (firedTrigClass.Contains("7EJ2") || firedTrigClass.Contains("8EJ2")) hTriggerClassesCorrelated->Fill(6);
                 if (firedTrigClass.Contains("7EGA") || firedTrigClass.Contains("8EGA")) hTriggerClassesCorrelated->Fill(7);
                 if (firedTrigClass.Contains("7EG1") || firedTrigClass.Contains("8EG1")) hTriggerClassesCorrelated->Fill(8);
                 if (firedTrigClass.Contains("7EG2") || firedTrigClass.Contains("8EG2")) hTriggerClassesCorrelated->Fill(9);
+                if ((fInputHandler->IsEventSelected() & AliVEvent::kEMC7) && firedTrigClass.Contains("DMC7"))hTriggerClassesCorrelated->Fill(10);
+                if (firedTrigClass.Contains("7DJE") || firedTrigClass.Contains("8DJE")) hTriggerClassesCorrelated->Fill(11);
+                if (firedTrigClass.Contains("7DJ1") || firedTrigClass.Contains("8DJ1")) hTriggerClassesCorrelated->Fill(12);
+                if (firedTrigClass.Contains("7DJ2") || firedTrigClass.Contains("8DJ2")) hTriggerClassesCorrelated->Fill(13);
+                if (firedTrigClass.Contains("7DGA") || firedTrigClass.Contains("8DGA")) hTriggerClassesCorrelated->Fill(14);
+                if (firedTrigClass.Contains("7DG1") || firedTrigClass.Contains("8DG1")) hTriggerClassesCorrelated->Fill(15);
+                if (firedTrigClass.Contains("7DG2") || firedTrigClass.Contains("8DG2")) hTriggerClassesCorrelated->Fill(16);
+              }
+            } else if ( fSpecialTrigger == 10 ){
+              if (hTriggerClassesCorrelated){
+                if (fInputHandler->IsEventSelected() & AliVEvent::kCaloOnly){
+                  hTriggerClassesCorrelated->Fill(0);
+                  if (firedTrigClass.Contains("INT7-"))hTriggerClassesCorrelated->Fill(1);
+                  if (firedTrigClass.Contains("EMC1-"))hTriggerClassesCorrelated->Fill(2);
+                  if (firedTrigClass.Contains("EMC7-"))hTriggerClassesCorrelated->Fill(3);
+                  if (firedTrigClass.Contains("7EJE") || firedTrigClass.Contains("8EJE")) hTriggerClassesCorrelated->Fill(4);
+                  if (firedTrigClass.Contains("7EJ1") || firedTrigClass.Contains("8EJ1")) hTriggerClassesCorrelated->Fill(5);
+                  if (firedTrigClass.Contains("7EJ2") || firedTrigClass.Contains("8EJ2")) hTriggerClassesCorrelated->Fill(6);
+                  if (firedTrigClass.Contains("7EGA") || firedTrigClass.Contains("8EGA")) hTriggerClassesCorrelated->Fill(7);
+                  if (firedTrigClass.Contains("7EG1") || firedTrigClass.Contains("8EG1")) hTriggerClassesCorrelated->Fill(8);
+                  if (firedTrigClass.Contains("7EG2") || firedTrigClass.Contains("8EG2")) hTriggerClassesCorrelated->Fill(9);
+                  if (firedTrigClass.Contains("DMC7-"))hTriggerClassesCorrelated->Fill(10);
+                  if (firedTrigClass.Contains("7DJE") || firedTrigClass.Contains("8DJE")) hTriggerClassesCorrelated->Fill(11);
+                  if (firedTrigClass.Contains("7DJ1") || firedTrigClass.Contains("8DJ1")) hTriggerClassesCorrelated->Fill(12);
+                  if (firedTrigClass.Contains("7DJ2") || firedTrigClass.Contains("8DJ2")) hTriggerClassesCorrelated->Fill(13);
+                  if (firedTrigClass.Contains("7DGA") || firedTrigClass.Contains("8DGA")) hTriggerClassesCorrelated->Fill(14);
+                  if (firedTrigClass.Contains("7DG1") || firedTrigClass.Contains("8DG1")) hTriggerClassesCorrelated->Fill(15);
+                  if (firedTrigClass.Contains("7DG2") || firedTrigClass.Contains("8DG2")) hTriggerClassesCorrelated->Fill(16);
+                }
               }
             }
           }
@@ -3886,7 +4063,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
 
   // Fill Histogram
   if(hTriggerClass){
-    if (fIsSDDFired) hTriggerClass->Fill(33);
+    if (fIsSDDFired) hTriggerClass->Fill(34);
     if (mimickedTrigger){
       if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClass->Fill(0);
       if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClass->Fill(1);
@@ -3926,11 +4103,12 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if (fInputHandler->IsEventSelected() & AliVEvent::kUserDefined)hTriggerClass->Fill(27);
       if (fInputHandler->IsEventSelected() & AliVEvent::kTRD)hTriggerClass->Fill(28);
       if (fInputHandler->IsEventSelected() & AliVEvent::kFastOnly)hTriggerClass->Fill(29);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT)hTriggerClass->Fill(30);
-      if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClass->Fill(31);
-      if (!fInputHandler->IsEventSelected()) hTriggerClass->Fill(34);
+      if (fInputHandler->IsEventSelected() & AliVEvent::kCaloOnly)hTriggerClass->Fill(30);
+      if (fInputHandler->IsEventSelected() & AliVEvent::kAnyINT)hTriggerClass->Fill(31);
+      if (fInputHandler->IsEventSelected() & AliVEvent::kAny)hTriggerClass->Fill(32);
+      if (!fInputHandler->IsEventSelected()) hTriggerClass->Fill(35);
     }
-    if (mimickedTrigger && fMimicTrigger) hTriggerClass->Fill(35);
+    if (mimickedTrigger && fMimicTrigger) hTriggerClass->Fill(36);
   }
 
   if(hTriggerClassSelected && isSelected){
