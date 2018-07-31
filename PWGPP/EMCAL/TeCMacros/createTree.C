@@ -88,16 +88,31 @@ void createTree(const char *period, const char *ofile="treeout.root",Bool_t dopr
   fTree->Branch("event", &info, 32000, 99);
 
   TClonesArray &carr = info->fCells;
+  Int_t l = 0;
+  Int_t t = 0;
   for (Int_t i=0;i<rns;++i) {
-    LInfo *linfo = dynamic_cast<LInfo*>(la->At(i));
-    if (!linfo)
+    l++;
+    t++;
+    LInfo *linfo = dynamic_cast<LInfo*>(la->At(l));
+    if (!linfo){
+      cout << "skipping due to missing info in LED tree!" << endl;
+      t++;
       continue;
-    TInfo *tinfo = dynamic_cast<TInfo*>(ta->At(i));
-    if (!tinfo)
+    }
+    TInfo *tinfo = dynamic_cast<TInfo*>(ta->At(t));
+    if (!tinfo){
+      cout << "skipping due to missing info in temp tree!" << endl;
+      l++;
       continue;
+    }
     Int_t runl = linfo->GetRunNo();
     Int_t runt = tinfo->GetRunNo();
     if (runl!=runt) {
+      if (runl > runt){
+        l--;
+      } else {
+        t--;
+      }
       cout << " Run numbers differ, skipping " << runl << " " << runt << endl;
       continue;
     }

@@ -320,7 +320,10 @@ void read_all(Bool_t loc=0, Bool_t test=0)
   read_LHC16o(loc,test);
   read_LHC16p(loc,test);
   read_LHC17p(loc,test);
+  read_LHC18b(loc,test);
+  read_LHC18c(loc,test);
   read_LHC18d(loc,test);
+  read_LHC18e(loc,test);
 }
 
 void readOCDB(Bool_t loc=0, Int_t runno=286154)
