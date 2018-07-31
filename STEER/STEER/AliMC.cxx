@@ -574,9 +574,9 @@ void  AliMC::AddParticles()
     mode41[0][1] = -211; // negative pion
     mode41[0][2] = 2212; // proton
     bratio41[1] = 50.;
-    mode41[0][0] = 1000020030; // Helium3
-    mode41[0][1] = -211; // negative pion
-    mode41[0][2] = 1000010020; // Deuteron
+    mode41[1][0] = 1000020030; // Helium3
+    mode41[1][1] = -211; // negative pion
+    mode41[1][2] = 1000010020; // Deuteron
     
     TVirtualMC::GetMC()->SetDecayMode(1010020050,bratio41,mode41);
     
