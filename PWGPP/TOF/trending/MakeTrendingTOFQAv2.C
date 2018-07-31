@@ -111,7 +111,6 @@ void AddMissingLabel(const TString histoname);
 void CheckAndDraw(TH1* h, TProfile* prof, const TString opt);
 
 /********************************************************************************/
-Double_t TOFsignal(Double_t* x, Double_t* par);
 TF1* TOFsignal(Double_t rangeMin, Double_t rangeMax);
 TList* FitNSigma(TList* l, TString part, TF1* f, TF1* f2, const TString name = "hTOFpidSigma", const TString suffix = "_all");
 
@@ -225,7 +224,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   }
 
   TFile* fin = TFile::Open(qafilename, "READ");
-  if (!fin->IsOpen()) {
+  if (!fin || !fin->IsOpen()) {
     Printf("ERROR: QA output not found. Exiting...\n");
     return -1;
   } else
@@ -293,7 +292,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
   Double_t goodChannelsRatio = 0.0;
   Double_t goodChannelsRatioInAcc = 0.0;
 
-  TTree* ttree = new TTree("trending", "tree of trending variables");
+  TTree* ttree = new TTree("trending", "tree of trending variables"); // TTree to store the trending values for each run
   Char_t VarType = 'F';
 #define SetBranch(var) ttree->Branch(#var, &var, Form("%s/%c", #var, VarType));
   ttree->Branch("run", &runNumber, "run/I"); //run number
@@ -1048,7 +1047,7 @@ Int_t MakeTrendingTOFQAv2(const TString qafilename, //full path of the QA output
     cProfile->Print(Form("%s/%i%s_ProfileDZvsStripNumber.png", plotDir.Data(), runNumber, dirsuffix.Data()));
     cPidPerformance2->Print(Form("%s/%i%s_PID_ExpTimes.png", plotDir.Data(), runNumber, dirsuffix.Data()));
   }
-  //Fill tree and save to file
+  //Fill tree, save to file histos and canvases and delete list of canvases
   ttree->Fill();
   printf("============== Saving trending quantities in tree for run %i ==============\n", runNumber);
   trendFile->cd();
