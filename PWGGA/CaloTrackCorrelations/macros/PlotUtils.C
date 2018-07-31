@@ -293,3 +293,90 @@ static void ScaleBinBySize(TH1D* h)
   }
 }
 
+//-----------------------------------------------------------------------------
+/// When more than 1 frame pad in a canvas, define the number of 
+/// columns or rows, depending on the total number of frames
+/// \param npad number of pads
+/// \param ncol number of assigned columns
+/// \param nrow number of assigned rows
+/// \param square take the number of columns and rows as the square root of npad
+//-----------------------------------------------------------------------------
+void GetCanvasColRowNumber(Int_t npad, Int_t & ncol, Int_t & nrow, 
+                           Bool_t square = kFALSE)
+{
+  if(npad <= 0)
+  {
+    ncol = 0;
+    nrow = 0;
+    return;
+  }
+  
+  ncol = TMath::Sqrt(npad);
+  nrow = ncol; 
+  
+  if ( square ) 
+    return;
+  
+  if ( npad == 1 )
+  {
+    ncol = 1;
+    nrow = 1;
+  }
+  else if ( npad == 2 )
+  {
+    ncol = 2;
+    nrow = 1;
+  }
+  else if ( npad == 3 )
+  {
+    ncol = 3;
+    nrow = 1;
+  }
+  else if ( npad == 4 )
+  {
+    ncol = 2;
+    nrow = 2;
+  }
+  else if ( npad < 7 )
+  {
+    ncol = 3;
+    nrow = 2;
+  }
+  else if ( npad < 10 )
+  {
+    ncol = 3;
+    nrow = 3;
+  }  
+  else if ( npad < 13 )
+  {
+    ncol = 4;
+    nrow = 3;
+  }    
+  else if ( npad < 17 )
+  {
+    ncol = 4;
+    nrow = 4;
+  }  
+  else if ( npad < 21 )
+  {
+    ncol = 5;
+    nrow = 4;
+  }  
+  else if ( npad < 26 )
+  {
+    ncol = 5;
+    nrow = 5;
+  }    
+  else if ( npad < 31 )
+  {
+    ncol = 6;
+    nrow = 5;
+  }  
+  else  if ( npad < 37 )
+  {
+    ncol = 6;
+    nrow = 6; 
+  }
+
+}
+
