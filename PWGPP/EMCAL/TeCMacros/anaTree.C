@@ -26,21 +26,21 @@ void anaTree(const char *ifile="treefile.root", const char *ofile="outhist.root"
 
   TCalInfo *info = 0;
   TFile *in = TFile::Open(ifile,"read");
-  TTree *tt = (TTree*)in->Get("tcal"); 
+  TTree *tt = (TTree*)in->Get("tcal");
   tt->SetBranchAddress("event",&info);
   tt->Branch("event", &info, 32000, 99);
 
   TProfile *gLedVsT[20];
   TProfile *gRatVsT[20];
   for (Int_t i=0;i<20;++i) {
-    gLedVsT[i] = new TProfile("","Led info;T;",1000,15,35);
+    gLedVsT[i] = new TProfile("","Led info;T;",1000,10,50);
     gLedVsT[i]->SetMarkerStyle(20);
     gLedVsT[i]->SetMarkerSize(1.2);
     gLedVsT[i]->SetMarkerColor(1);
     gLedVsT[i]->SetLineColor(1);
     gLedVsT[i]->SetLineWidth(3);
     gLedVsT[i]->SetName(Form("ledsm%d",i));
-    gRatVsT[i] = new TProfile("","Led/LedMon;T",1000,15,35);
+    gRatVsT[i] = new TProfile("","Led/LedMon;T",1000,10,50);
     gRatVsT[i]->SetMarkerStyle(20);
     gRatVsT[i]->SetMarkerSize(1.2);
     gRatVsT[i]->SetMarkerColor(1);
@@ -49,6 +49,27 @@ void anaTree(const char *ifile="treefile.root", const char *ofile="outhist.root"
     gRatVsT[i]->SetName(Form("ledovermonsm%d",i));
   }
 
+  TProfile *gLedCellVsT[kNcells+1];
+  TProfile *gRatCellVsT[kNcells+1];
+
+  for (Int_t j=0;j<kNcells+1;++j) {
+    gLedCellVsT[j] = new TProfile("",Form("Led info cell ID%i ;T;",j),1000,10,50);
+    gLedCellVsT[j]->SetMarkerStyle(20);
+    gLedCellVsT[j]->SetMarkerSize(1.2);
+    gLedCellVsT[j]->SetMarkerColor(1);
+    gLedCellVsT[j]->SetLineColor(1);
+    gLedCellVsT[j]->SetLineWidth(3);
+    gLedCellVsT[j]->SetName(Form("ledCell%d",j));
+    gRatCellVsT[j] = new TProfile("",Form("Led/LedMon cell ID%i ;T;",j),1000,10,50);
+    gRatCellVsT[j]->SetMarkerStyle(20);
+    gRatCellVsT[j]->SetMarkerSize(1.2);
+    gRatCellVsT[j]->SetMarkerColor(1);
+    gRatCellVsT[j]->SetLineColor(1);
+    gRatCellVsT[j]->SetLineWidth(3);
+    gRatCellVsT[j]->SetName(Form("ledovermonCell%d",j));
+  }
+
+
   Int_t Nev=tt->GetEntries();
   for (Int_t i=0;i<Nev;++i) {
     tt->GetEvent(i);
@@ -56,7 +77,8 @@ void anaTree(const char *ifile="treefile.root", const char *ofile="outhist.root"
     TClonesArray &cells = info->fCells;
     for (Int_t j=0;j<cells.GetEntries();++j) {
       TCalCell *cell = static_cast<TCalCell*>(cells.At(j));
-      Int_t sm    = cell->fSM;
+      Int_t cellID  = cell->fId;
+      Int_t sm      = cell->fSM;
       Double_t ledM = cell->fLedM;
       Double_t ledR = cell->fLedR;
       Double_t monM = cell->fMonM;
@@ -64,27 +86,36 @@ void anaTree(const char *ifile="treefile.root", const char *ofile="outhist.root"
       Double_t locT = cell->fLocT;
       Double_t smT  = cell->fSMT;
 
-      Double_t T = locT; // use local or SM T, change here
+      Double_t T = smT; // use local or SM T, change here
       if ((T<5)||(T>45))
-	continue;
+        continue;
       if ((ledM<=0)||(ledR<=0))
-	continue;
+        continue;
       Double_t w = ledR;
-      TProfile *h = gLedVsT[sm];
+      TProfile *h     = gLedVsT[sm];
       h->Fill(T,ledM,w);
+      gLedCellVsT[cellID]->Fill(locT,ledM,w);
       if ((monM<=0)||(monR<=0))
-	continue;
+        continue;
       Double_t w2=TMath::Sqrt(ledR*ledR+monM*monM);
       TProfile *h2 = gRatVsT[sm];
       h2->Fill(T,ledM/monM,w2);
+      gRatCellVsT[cellID]->Fill(locT,ledM/monM,w2);
     }
   }
 
   TFile *out = TFile::Open(ofile,"recreate");
-  if (!out) 
+  if (!out)
     out = TFile::Open("dummyfile.root","update");
   for (Int_t i=0;i<20;++i) {
     gLedVsT[i]->Write();
     gRatVsT[i]->Write();
   }
+  for (Int_t j=0;j<kNcells+1;++j) {
+    if (gLedCellVsT[j]->GetEntries() > 0)
+      gLedCellVsT[j]->Write();
+    if (gRatCellVsT[j]->GetEntries() > 0)
+      gRatCellVsT[j]->Write();
+  }
+
 }
