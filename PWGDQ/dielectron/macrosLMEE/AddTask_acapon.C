@@ -1,9 +1,9 @@
 //Names should contain a comma seperated list of cut settings
-//Current options: all, electrons, TTreeCuts, V0_tight
+//Current options: all, electrons, TTreeCuts, V0_TPCcorr, V0_ITScorr
 AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", TString names ="electrons",
                                 Bool_t SDDstatus = kFALSE, Bool_t getFromAlien = kFALSE,
                                 Bool_t doPairing = kTRUE,  Bool_t doMixing = kTRUE,
-                                Bool_t useTPCcorr = kFALSE){
+                                Bool_t useTPCcorr = kFALSE, Bool_t useITScorr = kFALSE){
   
 		TObjArray *arrNames = names.Tokenize(";");
 		Int_t nDie = arrNames->GetEntries();
@@ -79,7 +79,7 @@ AliAnalysisTask *AddTask_acapon(TString outputFileName = "AnalysisResult.root", 
     for (Int_t i=0; i<nDie; ++i){ 
         //MB
 				TString dielTaskName(arrNames->At(i)->GetName());
-        AliDielectron *diel_low = Config_acapon(dielTaskName, hasMC, bESDANA, SDDstatus, doPairing, doMixing, useTPCcorr);
+        AliDielectron *diel_low = Config_acapon(dielTaskName, hasMC, bESDANA, SDDstatus, doPairing, doMixing, useTPCcorr, useITScorr);
         if(!diel_low){ continue; }
         task->AddDielectron(diel_low);
         printf("successfully added AliDielectron: %s\n",diel_low->GetName());
