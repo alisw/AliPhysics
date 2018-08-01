@@ -1,7 +1,7 @@
 ///
 /// \file PlotUtils.C
-/// \ingroup CaloTrackCorrMacros
-/// \brief Fit invariant mass distributions
+/// \ingroup CaloTrackCorrMacrosPlotting
+/// \brief Plotting utilities
 ///
 /// Macro that containes useful small methods
 /// that can be used in plotting macros
