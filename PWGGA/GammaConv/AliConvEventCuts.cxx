@@ -1285,7 +1285,6 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
     fOfflineTriggerMask=AliVEvent::kCaloOnly;
     fTriggerSelectedManually = kTRUE;
     fTriggersEMCALSelected= 0;
-    SETBIT(fTriggersEMCALSelected, kL0);
     fSpecialTriggerName="AliVEvent::kCaloOnly";
     break;
   default:
