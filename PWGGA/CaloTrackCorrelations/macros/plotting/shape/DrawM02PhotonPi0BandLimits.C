@@ -1,5 +1,5 @@
 /// \file DrawM02PhotonPi0BandLimits.C
-/// \ingroup CaloTrackCorrMacrosQA
+/// \ingroup CaloTrackCorrMacrosPlotting
 /// \brief Plot Shower shape vs E 2D histogram with limits
 ///
 /// Macro to plot cluster 2D histograms

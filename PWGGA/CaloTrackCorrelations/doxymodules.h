@@ -19,8 +19,20 @@
  */
 
 /**
- * \defgroup CaloTrackCorrMacrosQA CaloTrackCorr QA Configuration and Postprocessing Macros
+ * \defgroup CaloTrackCorrMacros CaloTrackCorr Analysis Configuration and Postprocessing Macros
  * \ingroup CaloTrackCorrelations
+ * \brief Analysis task configuration and postprocessing macros for CaloTrackCorr package 
+ */
+
+/**
+ * \defgroup CaloTrackCorrMacrosPlotting CaloTrackCorr Plotting Macros
+ * \ingroup CaloTrackCorrelationsMacros
+ * \brief Macros processing outout analysis histograms.
+ */
+
+/**
+ * \defgroup CaloTrackCorrMacrosQA CaloTrackCorr QA Configuration and Postprocessing Macros
+ * \ingroup CaloTrackCorrelationsMacros
  * \brief Analysis task configuration and postprocessing macros for CaloTrackCorr package devoted to QA
  */
 
@@ -29,7 +41,7 @@
  * \ingroup CaloTrackCorrMacrosQA
  * \brief Postprocessing files for EMCal analysis QA wagon for Pt hard binned productions
  *
- * The macros and scritps recover the merged output per pT hard bin and run, merges per run, 
+ * The macros and scripts recover the merged output per pT hard bin and run, merges per run, 
  * extracts the wagon histograms and scales each pT hard bin by its cross section and produce the QA plots
  *
  * The files are:

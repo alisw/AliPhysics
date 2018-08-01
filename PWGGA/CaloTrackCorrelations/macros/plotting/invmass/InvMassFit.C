@@ -1,6 +1,6 @@
 ///
 /// \file InvMassFit.C
-/// \ingroup CaloTrackCorrMacros
+/// \ingroup CaloTrackCorrMacrosPlotting
 /// \brief Fit invariant mass distributions
 ///
 /// Macro using as input the 2D histograms mass vs pT of AliAnaPi0
