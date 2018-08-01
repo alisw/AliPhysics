@@ -142,6 +142,7 @@ set(HDRS ${HDRS}
     AliHLTLoggingVariadicFree.h
     AliHLTStdIncludes.h
     AliHLTCDHWrapper.h
+    AliHLTArray.h
    )
 
 # Generate the dictionary
