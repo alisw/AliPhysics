@@ -68,7 +68,8 @@ void AliHMPIDv2::AddAlignableVolumes()const
     Double_t phi = ph[iCh];
     TGeoHMatrix *t2l  = new TGeoHMatrix();
     t2l->RotateZ(phi);
-    t2l->MultiplyLeft(&(globMatrix->Inverse()));
+    const TGeoHMatrix& globmatrixi = globMatrix->Inverse();
+    t2l->MultiplyLeft(&globmatrixi);
     eCh->SetMatrix(t2l);
   }//iCh loop
 }

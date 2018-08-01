@@ -240,7 +240,8 @@ void AliITSMFTGeomTGeo::CreateT2LMatrices()
     t2l->RotateZ(ATan2(y,x)*RadToDeg()); // rotate in direction of normal to the sensor plane
     t2l->SetDx(x);
     t2l->SetDy(y);
-    t2l->MultiplyLeft(&matSens->Inverse());
+    const TGeoHMatrix& matsensi = matSens->Inverse();
+    t2l->MultiplyLeft(&matsensi);
     fMatT2L->AddAt(t2l,isn);
     /*
     const double *gtrans = matSens->GetTranslation();
@@ -276,4 +277,3 @@ void AliITSMFTGeomTGeo::CreateT2LMatrices()
   }
   //
 }
-

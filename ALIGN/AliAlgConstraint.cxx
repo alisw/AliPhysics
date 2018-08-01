@@ -201,7 +201,8 @@ void AliAlgConstraint::CheckConstraint() const
     //
       TGeoHMatrix tau; 
       child->Delta2Matrix(tau,parsC); // child correction matrix in the child frame
-      tau.Multiply(&matRel.Inverse());
+      const TGeoHMatrix& matreli = matRel.Inverse();
+      tau.Multiply(&matreli);
       tau.MultiplyLeft(&matRel);     //  child correction matrix in the parent frame
       AliAlignObjParams tmpPar;
       tmpPar.SetMatrix(tau);

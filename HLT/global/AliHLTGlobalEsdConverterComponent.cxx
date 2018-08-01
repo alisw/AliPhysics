@@ -69,9 +69,12 @@
 #include "AliHLTSAPTrackerData.h"
 #include "AliFlatESDVertex.h"
 #include "AliHLTTRDDefinitions.h"
+#ifdef HAVE_ALITPCCOMMON
 #include "AliHLTTRDTrack.h"
 #include "AliHLTTRDTrackData.h"
 #include "AliHLTTRDTrackPoint.h"
+#include "AliHLTTRDInterfaces.h"
+#endif
 #include "AliHLTITSTrackPoint.h"
 #include "AliGRPManager.h"
 #include "AliGRPObject.h"
@@ -142,8 +145,10 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(AliHLTTPCDefinitions::ClustersXYZDataType() );
   list.push_back(kAliHLTDataTypeFlatESDVertex); // VertexTracks resonctructed using SAP ITS tracks
   list.push_back(kAliHLTDataTypeITSSAPData);    // SAP ITS tracks
+#ifdef HAVE_ALITPCCOMMON
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackDataType);
   list.push_back(AliHLTTRDDefinitions::fgkTRDTrackPointDataType);
+#endif
   list.push_back(kAliHLTDataTypeITSTrackPoint|kAliHLTDataOriginITS);
   list.push_back(kAliHLTDataTypeITSSAPTrackPoint|kAliHLTDataOriginITS);
   list.push_back(AliHLTTPCDefinitions::TracksOuterDataType() | kAliHLTDataOriginTPC);
@@ -1219,6 +1224,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   */
 
   // 4. convert the HLT TRD tracks to ESD tracks                        
+#ifdef HAVE_ALITPCCOMMON
   if (storeTracks){
 
     const AliHLTTRDTrackPointData * trackPoints = 0;
@@ -1241,7 +1247,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       for (unsigned itr=0; itr<trackData->fCount; itr++) {
 
 	const AliHLTTRDTrackDataRecord &track=trackData->fTracks[itr];
-	AliHLTTRDTrack trdTrack;
+	AliHLTTRDTrack<trackInterface<AliExternalTrackParam>> trdTrack;
 	trdTrack.ConvertFrom( track );
 	
 	Double_t TRDpid[AliPID::kSPECIES], eProb(0.2), restProb((1-eProb)/(AliPID::kSPECIES-1)); //eprob(element->GetTRDpid...);
@@ -1264,8 +1270,12 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 	AliESDtrack *tESD = pESD->GetTrack( esdID );	
 	if (!tESD) continue;
 
-	tESD->UpdateTrackParams(&trdTrack,AliESDtrack::kTRDout);
+  // ESD track misses TRD chi2 and TRD track label
+	tESD->Set(trdTrack.GetX(), trdTrack.GetAlpha(), trdTrack.GetParameter(), trdTrack.GetCovariance());
 	tESD->SetStatus(AliESDtrack::kTRDin);
+  if (!trdTrack.GetIsStopped()) {
+    tESD->SetStatus(AliESDtrack::kTRDout);
+  }
 	tESD->SetTRDpid(TRDpid);
 	tESD->SetTRDntracklets(trdTrack.GetNtracklets() << 3);
 
@@ -1301,6 +1311,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
       }
     }
   }
+#endif
 
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny); pBlock!=NULL; pBlock=GetNextInputBlock()) 
     {

@@ -189,6 +189,8 @@ public:
    Double_t GetDistortionX(double x, double y, double z, int sec, int row);
    Double_t GetYSectEdgeDist(int sec, int row, double ymax, double z);
    static Int_t GetTrackSector(double alpha);
+   inline AliTPCtrackerRow &GetRow(Int_t sec, Int_t row);
+   int GetLastSeedId() const {return fLastSeedID;}
 
  protected:
    //private:
@@ -200,7 +202,6 @@ public:
   void AddCovariance(AliTPCseed * seed);               // add covariance
   void AddCovarianceAdd(AliTPCseed * seed);               // add covariance
 
-   inline AliTPCtrackerRow &GetRow(Int_t sec, Int_t row);
    inline Bool_t     IsActive(Int_t sec, Int_t row);
    inline Double_t  GetXrow(Int_t row) const;
    inline Double_t  GetMaxY(Int_t row) const;

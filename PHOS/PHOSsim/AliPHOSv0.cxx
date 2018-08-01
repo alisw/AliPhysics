@@ -891,7 +891,8 @@ void AliPHOSv0::AddAlignableVolumes() const
 
     TGeoHMatrix *matTtoL = new TGeoHMatrix;
     matTtoL->RotateZ(-90.+angle);
-    matTtoL->MultiplyLeft(&(globMatrix->Inverse()));
+    const TGeoHMatrix& globmatrixi = globMatrix->Inverse();
+    matTtoL->MultiplyLeft(&globmatrixi);
     alignableEntry->SetMatrix(matTtoL);
   }
 
@@ -925,7 +926,8 @@ void AliPHOSv0::AddAlignableVolumes() const
 
     TGeoHMatrix *matTtoL = new TGeoHMatrix;
     matTtoL->RotateZ(-90.+angle);
-    matTtoL->MultiplyLeft(&(globMatrix->Inverse()));
+    const TGeoHMatrix& globmatrixi = globMatrix->Inverse();
+    matTtoL->MultiplyLeft(&globmatrixi);
     alignableEntry->SetMatrix(matTtoL);
     
   }

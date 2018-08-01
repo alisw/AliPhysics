@@ -311,7 +311,8 @@ void AliTOFv6T0::AddAlignableVolumes() const
 	Double_t phi = 20.0 * (isect % 18) + 10.0;
 	TGeoHMatrix *t2l  = new TGeoHMatrix();
 	t2l->RotateZ(phi);
-	t2l->MultiplyLeft(&(globMatrix->Inverse()));
+	const TGeoHMatrix& globmatrixi = globMatrix->Inverse();
+	t2l->MultiplyLeft(&globmatrixi);
 	e->SetMatrix(t2l);
       }
       else {

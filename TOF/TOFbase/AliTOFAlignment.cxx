@@ -395,7 +395,7 @@ void AliTOFAlignment::BuildGeomForSurvey()
     smZ = 0.;  
     TGeoRotation* bTOFRot = new TGeoRotation("bTOFRot",phi,90,0.);
     TGeoCombiTrans trans = *(new TGeoCombiTrans(smX,smY,smZ, bTOFRot));
-    TGeoMatrix* id = new TGeoHMatrix();
+    TGeoHMatrix* id = new TGeoHMatrix();
     TGeoHMatrix  transMat = *id * trans;
     TGeoHMatrix  *smTrans = new TGeoHMatrix(transMat);
     
@@ -453,7 +453,8 @@ void AliTOFAlignment::InsertMisAlignment(Float_t * const mis)
     AliInfo(Form("This is the ideal global trasformation of SM %i",iSM));
     g3.Print(); // g3 is the local(BTOF) to global (ALICE) matrix and is the same of fTOFMatrixId
     TGeoNode* n3 = fTOFmgr->GetCurrentNode(); 
-    TGeoMatrix* l3 = n3->GetMatrix(); 
+    TGeoMatrix* l3tmp = n3->GetMatrix(); 
+    TGeoHMatrix l3(*l3tmp);
     
     Double_t gA[3], gB[3], gC[3], gD[3]; // ideal global FM point coord.
     g3.LocalToMaster(lA,gA);
@@ -477,7 +478,7 @@ void AliTOFAlignment::InsertMisAlignment(Float_t * const mis)
     TGeoCombiTrans localdelta = *(new TGeoCombiTrans(dx,dy,dz, rrot));
     AliInfo(Form("This is the local delta trasformation for SM %i \n",iSM));
     localdelta.Print();
-    TGeoHMatrix nlocal = *l3 * localdelta;
+    TGeoHMatrix nlocal = l3 * localdelta;
     TGeoHMatrix* nl3 = new TGeoHMatrix(nlocal); // new matrix, representing real position (from new local mis RS to the global one)
    
     TGeoPhysicalNode* pn3 = fTOFmgr->MakePhysicalNode(name);
@@ -1211,5 +1212,3 @@ void AliTOFAlignment::AlignFromSurveyBCD(Int_t iSM)
     AliAlignObjMatrix* o = new AliAlignObjMatrix(symname.Data(),dvoluid,gdelta,kTRUE);
     fTOFAlignObjArray->Add(o);
   }
-
-
