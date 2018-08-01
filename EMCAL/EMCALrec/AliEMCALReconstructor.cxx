@@ -37,6 +37,7 @@
 #include "AliEMCALDigit.h"
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALClusterizerv2.h"
+#include "AliEMCALClusterizerv3.h"
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALPID.h"
@@ -305,6 +306,8 @@ void AliEMCALReconstructor::InitClusterizer() const
       
       else if(clusterizerType == AliEMCALRecParam::kClusterizerv2  && !strcmp(fgClusterizer->Version(),"clu-v2"))  return;
       
+      else if(clusterizerType == AliEMCALRecParam::kClusterizerv3  && !strcmp(fgClusterizer->Version(),"clu-v3"))  return;
+
       //Need to create new clusterizer, the one set previously is not the correct one     
       delete fgClusterizer;
     }
@@ -322,6 +325,10 @@ void AliEMCALReconstructor::InitClusterizer() const
   else if (clusterizerType  == AliEMCALRecParam::kClusterizerv2)
   {
     fgClusterizer = new AliEMCALClusterizerv2   (fGeom, fCalibData,fCalibTime,fPedestalData);
+  }
+  else if (clusterizerType  == AliEMCALRecParam::kClusterizerv3)
+  {
+    fgClusterizer = new AliEMCALClusterizerv3   (fGeom, fCalibData,fCalibTime,fPedestalData);
   }
   else 
   {

@@ -6,6 +6,8 @@
 #pragma link C++ class AliEMCALClusterizer+;
 #pragma link C++ class AliEMCALClusterizerv1+;
 #pragma link C++ class AliEMCALClusterizerv2+;
+#pragma link C++ class AliEMCALClusterizerv3+;
+#pragma link C++ class AliEMCALClusterFinder+;
 #pragma link C++ class AliEMCALClusterizerFixedWindow+;
 #pragma link C++ class AliEMCALClusterizerNxN+;
 #pragma link C++ class AliEMCALUnfolding+;
