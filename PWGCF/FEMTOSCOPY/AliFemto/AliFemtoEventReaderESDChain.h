@@ -121,5 +121,3 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
     };
   
 #endif
-
-

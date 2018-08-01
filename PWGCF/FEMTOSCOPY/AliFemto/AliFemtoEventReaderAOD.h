@@ -89,19 +89,6 @@ public:
   void Set1DCorrectionsPionsMinus(TH1D *h1);
   void Set1DCorrectionsKaonsMinus(TH1D *h1);
   void Set1DCorrectionsProtonsMinus(TH1D *h1);
-
-  
-  
-  void Set1DCorrectionsDeuterons(TH1D *h1);
-  void Set1DCorrectionsTritons(TH1D *h1);
-  void Set1DCorrectionsHe3s(TH1D *h1);
-  void Set1DCorrectionsAlphas(TH1D *h1);
-  void Set1DCorrectionsDeuteronsMinus(TH1D *h1);
-  void Set1DCorrectionsTritonsMinus(TH1D *h1);
-  void Set1DCorrectionsHe3sMinus(TH1D *h1);
-  void Set1DCorrectionsAlphasMinus(TH1D *h1);
-  
- 
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
@@ -110,10 +97,6 @@ public:
   void SetKaonAnalysis(Bool_t aSetKaonAna);
   void SetProtonAnalysis(Bool_t aSetProtonAna);
   void SetElectronAnalysis(Bool_t aSetElectronAna);
-  void SetDeuteronAnalysis(Bool_t aSetDeuteronAna);
-  void SetTritonAnalysis(Bool_t aSetTritonAna);
-  void SetHe3Analysis(Bool_t aSetHe3Ana);
-  void SetAlphaAnalysis(Bool_t aSetAlphaAna);
   //Special MC analysis for pi,K,p,e slected by PDG code <--
   
 protected:
@@ -170,19 +153,6 @@ private:
   TH1D *f1DcorrectionsPionsMinus;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsKaonsMinus;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsProtonsMinus;    ///<file with corrections, pT dependant
-  
-  //
-  TH1D *f1DcorrectionsDeuterons;    ///<file with corrections, pT dependant
-  TH1D *f1DcorrectionsTritons;    ///<file with corrections, pT dependant
-  TH1D *f1DcorrectionsHe3s;    ///<file with corrections, pT dependant
-  TH1D *f1DcorrectionsAlphas;    ///<file with corrections, pT dependant
-  TH1D *f1DcorrectionsDeuteronsMinus;    ///<file with corrections, pT dependant
-  TH1D *f1DcorrectionsTritonsMinus;    ///<file with corrections, pT dependant
-  TH1D *f1DcorrectionsHe3sMinus;    ///<file with corrections, pT dependant
-  TH1D *f1DcorrectionsAlphasMinus;    ///<file with corrections, pT dependant
-  //
- 
-  
   TH1D *f1DcorrectionsAll;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
@@ -194,18 +164,10 @@ private:
   Bool_t fIsElectronAnalysis; // e+e- are taken (for gamma cut tuning)
   //Special MC analysis for pi,K,p,e slected by PDG code <--
 
-  
-//
-  Bool_t fIsDeuteronAnalysis; 
-  Bool_t fIsTritonAnalysis; //
-  Bool_t fIsHe3Analysis; // 
-  Bool_t fIsAlphaAnalysis; // 
-//
-
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoEventReaderAOD, 13);
+  ClassDef(AliFemtoEventReaderAOD, 12);
   /// \endcond
 #endif
 

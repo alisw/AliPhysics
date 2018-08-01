@@ -35,11 +35,6 @@ public:
   float PidProbProton() const;
   float PidProbMuon() const;
 
-  float PidProbDeuteron() const;
-  float PidProbTriton() const;
-  float PidProbHe3() const;
-  float PidProbAlpha() const;
-
   AliFemtoThreeVector P() const;
   float Pt() const;
   float InnerMomentum() const;
@@ -73,50 +68,16 @@ public:
   float NSigmaTPCK() const;
   float NSigmaTPCP() const;
   float NSigmaTPCE() const;
-
-  /***********************/
-  //
-  float NSigmaTPCD() const;
-  float NSigmaTPCT() const;
-  float NSigmaTPCH() const;
-  float NSigmaTPCA() const;
-  //
-  /***********************/
-
-  
   float VTOF() const;
   float NSigmaTOFPi() const;
   float NSigmaTOFK() const;
   float NSigmaTOFP() const;
   float NSigmaTOFE() const;
 
-  
-  /**************************/
-  //
-  float NSigmaTOFD() const;
-  float NSigmaTOFT() const;
-  float NSigmaTOFH() const;
-  float NSigmaTOFA() const;
-  //
-  /**************************/
 
-
-  
   float TOFpionTime() const;
   float TOFkaonTime() const;
   float TOFprotonTime() const;
-
-  
-  /***************************/
-  //
-  float TOFdeuteronTime() const;
-  float TOFtritonTime() const;
-  float TOFhe3Time() const;
-  float TOFalphaTime() const;
-  //
-  /******************************/
-
-
 
   double XatDCA() const;
   double YatDCA() const;
@@ -130,20 +91,6 @@ public:
   float CorrectionProtonMinus() const;
   float CorrectionAll() const;
 
-  /**************************************/
-  //
-  float CorrectionDeuteron() const;
-  float CorrectionTriton() const;
-  float CorrectionHe3() const;
-  float CorrectionAlpha() const;
-  float CorrectionDeuteronMinus() const;
-  float CorrectionTritonMinus() const;
-  float CorrectionHe3Minus() const;
-  float CorrectionAlphaMinus() const;
-  //
-  /**************************************/
-  
-
   const TBits& TPCclusters() const;
   const TBits& TPCsharing()  const;
 
@@ -154,14 +101,6 @@ public:
   void SetPidProbProton(const float& x);
   void SetPidProbMuon(const float& x);
   void SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr);
-  /******************************************/
-  //
-  void SetPidProbDeuteron(const float& x);
-  void SetPidProbTriton(const float& x);
-  void SetPidProbHe3(const float& x);
-  void SetPidProbAlpha(const float& x);
-  //
-  /*****************************************/
 
   void SetP(const AliFemtoThreeVector& p);
   void SetPt(const float& x);
@@ -200,20 +139,6 @@ public:
   void SetNSigmaTOFK(const float& x);
   void SetNSigmaTOFP(const float& x);
   void SetNSigmaTOFE(const float& x);
-
-  /***************************************************/
-  //
-  void SetNSigmaTPCD(const float& x);
-  void SetNSigmaTPCT(const float& x);
-  void SetNSigmaTPCH(const float& x);
-  void SetNSigmaTPCA(const float& x);
-  void SetNSigmaTOFD(const float& x);
-  void SetNSigmaTOFT(const float& x);
-  void SetNSigmaTOFH(const float& x);
-  void SetNSigmaTOFA(const float& x);
-  //
-  /**************************************************/
-  
 
   void SetTPCcluster(const short& aNBit, const Bool_t& aValue);
   void SetTPCshared(const short& aNBit, const Bool_t& aValue);
@@ -260,19 +185,6 @@ public:
   void SetCorrectionKaonMinus(const double& x);
   void SetCorrectionProtonMinus(const double& x);
   void SetCorrectionAll(const double& x);
-
-  /**********************************************/
-  //
-  void SetCorrectionDeuteron(const double& x);
-  void SetCorrectionTriton(const double& x);
-  void SetCorrectionHe3(const double& x);
-  void SetCorrectionAlpha(const double& x);
-  void SetCorrectionDeuteronMinus(const double& x);
-  void SetCorrectionTritonMinus(const double& x);
-  void SetCorrectionHe3Minus(const double& x);
-  void SetCorrectionAlphaMinus(const double& x);
-  //
-  /********************************************/
 
   void SetTrueMomentum(AliFemtoThreeVector *aMom);
   void SetTrueMomentum(const AliFemtoThreeVector& aMom);
@@ -326,21 +238,6 @@ public:
   float fTofKaonTime;     ///< TOF time - kaon expected time
   float fTofProtonTime;   ///< TOF time - proton expected time
 
-  /**************************************************************/
-  //
-  float fPidProbDeuteron; ///<deutern pid
-  float fPidProbTriton;   ///<triton pid
-  float fPidProbHe3;      ///<He3 pid
-  float fPidProbAlpha;    ///<alpha pid
-  float fTofDeuteronTime; ///< TOF time - deuteron expected time
-  float fTofTritonTime;   ///< TOF time - triton expected time
-  float fTofHe3Time;      ///< TOF time - he3 expected time
-  float fTofAlphaTime;    ///< TOF time - alpha expected time
-  //
-  /**************************************************************/
-
-  
-
   AliFemtoThreeVector fP; ///< track momentum
   float fPt;              ///< transverse momenta
   float fInnerMomentum;   ///< *total* momentum at the *inner* wall of the TPC
@@ -383,19 +280,6 @@ public:
   float fNSigmaTOFP;      ///< nsigma TPC for P
   float fNSigmaTOFE;      ///< nsigma TPC for electron
 
-  /*******************************************************/
-  //
-  float fNSigmaTPCD;      ///< nsigma TPC for deuteron
-  float fNSigmaTPCT;      ///< nsigma TPC for triton
-  float fNSigmaTPCH;      ///< nsigma TPC for he3
-  float fNSigmaTPCA;      ///< nsigma TPC for alpha
-  float fNSigmaTOFD;      ///< nsigma TPC for deuteron 
-  float fNSigmaTOFT;      ///< nsigma TPC for triton
-  float fNSigmaTOFH;      ///< nsigma TPC for he3
-  float fNSigmaTOFA;      ///< nsigma TPC for alpha
-  //
-  /******************************************************/
-  
   float fSigmaToVertex;   ///< Distance from track to vertex in sigmas
   TBits fClusters;        ///< Cluster per padrow map
   TBits fShared;          ///< Sharing per padrow map
@@ -433,20 +317,6 @@ public:
 
   float fCorrAll;    //corrections for particles without PID
 
-  
-  /***********************************************************/
-  //
-  float fCorrD;     //corrections for deuteron hypothesis
-  float fCorrT;      //corrections for triton hypothesis
-  float fCorrH;      //corrections for he3 hypothesis
-  float fCorrA;      //corrections for alpha hypothesis
-
-  float fCorrDMinus;     //corrections for deuteron hypothesis
-  float fCorrTMinus;      //corrections for triton hypothesis
-  float fCorrHMinus;      //corrections frr he3 hypothesis
-  float fCorrAMinus;      //corrections for alpha hypothesis
-  //
-  /**************************************************************/
 
 };
 
@@ -459,14 +329,4 @@ inline float AliFemtoTrack::PidProbProton() const {return fPidProbProton;}
 inline float AliFemtoTrack::PidProbMuon() const {return fPidProbMuon;}
 inline int AliFemtoTrack::Multiplicity() const{ return fMultiplicity;}
 inline double AliFemtoTrack::Zvtx() const{  return fZvtx;}
-
-/**********************************************************************/
-//
-inline float AliFemtoTrack::PidProbDeuteron() const {return fPidProbDeuteron;}
-inline float AliFemtoTrack::PidProbTriton() const {return fPidProbTriton;}
-inline float AliFemtoTrack::PidProbHe3() const {return fPidProbHe3;}
-inline float AliFemtoTrack::PidProbAlpha() const {return fPidProbAlpha;}
-//
-/**********************************************************************/
-
 #endif
