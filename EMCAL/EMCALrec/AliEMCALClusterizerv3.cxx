@@ -25,6 +25,7 @@
 #include <TClonesArray.h>
 
 // --- Standard library ---
+#include <cstring>
 #include <cassert>
 
 // --- AliRoot header files ---
@@ -91,8 +92,8 @@ AliEMCALRecPoint* AliEMCALClusterFinder::GetClusterFromNeighbours(AliEMCALRecPoi
     else if(dir==2) {rowDiff =  0; colDiff = +1;}
     else if(dir==3) {rowDiff = +1; colDiff =  0;}
 
-    if( (row+rowDiff < 0) || (row+rowDiff >= kNrows) ) continue;
-    if( (column+colDiff < 0) || (column+colDiff >= kNcolumns) ) continue;
+    if( (row+rowDiff < 0) || (row+rowDiff >= EMCALClusterFinder::kNrows) ) continue;
+    if( (column+colDiff < 0) || (column+colDiff >= EMCALClusterFinder::kNcolumns) ) continue;
 
     if(fDigitMap[row+rowDiff][column+colDiff])
       if(!fCellMask[row+rowDiff][column+colDiff])
@@ -160,12 +161,8 @@ Int_t AliEMCALClusterFinder::FindClusters(TClonesArray* digitArray)
   // --> Seed cell and all neighbours belonging to cluster will be put in 2D bitmap
 
   // Reset digit maps and cell masks
-  for(Int_t row=0;row<kNrows;row++)
-    for(Int_t column=0;column<kNcolumns;column++)
-    {
-      fCellMask[row][column] = kFALSE;
-      fDigitMap[row][column] = 0;
-    }
+  std::memset(fCellMask, 0, sizeof(Bool_t) * EMCALClusterFinder::kNrows*EMCALClusterFinder::kNcolumns);
+  std::memset(fDigitMap, 0, sizeof(AliEMCALDigit*) * EMCALClusterFinder::kNrows*EMCALClusterFinder::kNcolumns);
 
   // Calibrate digits and fill the maps/arrays
   Int_t nCells = 0;

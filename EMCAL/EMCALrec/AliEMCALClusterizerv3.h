@@ -9,21 +9,12 @@
 class AliEMCALRecPoint; 
 class AliEMCALDigit;
 
-// Define numbers rows/columns for topological representation of cells
-const Int_t kNrows    = (24+1)*(6+4);  // 10x supermodule rows (6 for EMCAL, 4 for DCAL). +1 accounts for topological gap between two supermodules
-const Int_t kNcolumns = 48*2+1;        // 2x  supermodule columns + 1 empty space in between for DCAL (not used for EMCAL)
-
-struct cellWithE {
-  cellWithE() : energy(0.), row(0), column(0) {}
-  cellWithE(Float_t e, Int_t r, Int_t c) : energy(e), row(r), column(c) {}
-  // std::sort will require operator< to compile.
-  bool operator<( cellWithE const& rhs ) const
-     { return energy < rhs.energy; }
-  Float_t energy;
-  Int_t row;
-  Int_t column;
-};
-
+namespace EMCALClusterFinder
+{
+  // Define numbers rows/columns for topological representation of cells
+  const UInt_t kNrows    = (24+1)*(6+4);  // 10x supermodule rows (6 for EMCAL, 4 for DCAL). +1 accounts for topological gap between two supermodules
+  const UInt_t kNcolumns = 48*2+1;        // 2x  supermodule columns + 1 empty space in between for DCAL (not used for EMCAL)
+}
 
 //_________________________________________________________________________
 /// \class AliEMCALClusterFinder
@@ -37,6 +28,17 @@ struct cellWithE {
 //_________________________________________________________________________
 class AliEMCALClusterFinder: public TObject
 {
+  struct cellWithE {
+    cellWithE() : energy(0.), row(0), column(0) {}
+    cellWithE(Float_t e, Int_t r, Int_t c) : energy(e), row(r), column(c) {}
+    // std::sort will require operator< to compile.
+    bool operator<( cellWithE const& rhs ) const
+       { return energy < rhs.energy; }
+    Float_t energy;
+    Int_t row;
+    Int_t column;
+  };
+
   public:
     AliEMCALClusterFinder(TObjArray* outputArray, AliEMCALGeometry* geometry, Double_t timeCut, Double_t timeMin, Double_t timeMax, Double_t gradientCut, Bool_t doEnergyGradientCut, Double_t thresholdSeedE, Double_t thresholdCellE);
     ~AliEMCALClusterFinder();
@@ -48,21 +50,21 @@ class AliEMCALClusterFinder: public TObject
     AliEMCALRecPoint*   GetClusterFromNeighbours(AliEMCALRecPoint* recPoint, Int_t row, Int_t column);
     void                GetTopologicalRowColumn(AliEMCALDigit* digit, Int_t& row, Int_t& column);
 
-    AliEMCALGeometry*   fEMCALGeometry;
-    cellWithE           fSeedList[kNrows*kNcolumns];
-    AliEMCALDigit*      fDigitMap[kNrows][kNcolumns];
-    Bool_t              fCellMask[kNrows][kNcolumns];
+    AliEMCALGeometry*   fEMCALGeometry;                   //!<! pointer to geometry for utilities
+    cellWithE           fSeedList[EMCALClusterFinder::kNrows*EMCALClusterFinder::kNcolumns];      //!<! seed array
+    AliEMCALDigit*      fDigitMap[EMCALClusterFinder::kNrows][EMCALClusterFinder::kNcolumns];     //!<! topology arrays
+    Bool_t              fCellMask[EMCALClusterFinder::kNrows][EMCALClusterFinder::kNcolumns];     //!<! topology arrays
 
-    TObjArray*          fFoundClusters;
-    Int_t               fNumFoundClusters;
+    TObjArray*          fFoundClusters;                   //!<! Pointer to found cluster object array
+    Int_t               fNumFoundClusters;                ///<  number of found clusters in FindClusters()
 
-    Double_t            fTimeCut;
-    Double_t            fTimeMin;
-    Double_t            fTimeMax;
-    Double_t            fGradientCut;
-    Bool_t              fDoEnergyGradientCut;
-    Double_t            fThresholdSeedEnergy;
-    Double_t            fThresholdCellEnergy;
+    Double_t            fTimeCut;                         ///<  maximum time difference between the digits inside EMC cluster
+    Double_t            fTimeMin;                         ///<  minimum time of physical signal in a cell/digit
+    Double_t            fTimeMax;                         ///<  maximum time of physical signal in a cell/digit 
+    Double_t            fGradientCut;                     ///<  minimum energy difference to distinguish local maxima in a cluster
+    Bool_t              fDoEnergyGradientCut;             ///<  cut on energy gradient
+    Double_t            fThresholdSeedEnergy;             ///<  minimum energy to seed a EC digit in a cluster
+    Double_t            fThresholdCellEnergy;             ///<  minimum energy for a digit to be a member of a cluster
 
     AliEMCALClusterFinder(const AliEMCALClusterFinder&);            // not implemented
     AliEMCALClusterFinder &operator=(const AliEMCALClusterFinder&); // not implemented
