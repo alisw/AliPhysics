@@ -84,6 +84,9 @@ AliAnalysisTaskAccCont::AliAnalysisTaskAccCont(const char *name)
   fMCrec(kFALSE),
   fArrayMC(0),
   fExcludeSecondariesInMCrec(kFALSE),
+  fExcludeInjectedSignals(kFALSE),
+  fRejectCheckGenName(kFALSE),
+  fGenToBeKept("Hijing"),
   fPileupLHC15oSlope(3.38),
   fPileupLHC15oOffset(15000),
   fUseOutOfBunchPileUpCutsLHC15o(kFALSE),
@@ -332,7 +335,7 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
     if(isSelected) {
         fHistEventStats->Fill(2,gCentrality); //triggered events
         
-        const AliAODVertex *vertex = gAOD->GetPrimaryVertex();
+        const AliVVertex *vertex = gAOD->GetPrimaryVertex();
         if(vertex) {
             Double32_t fCov[6];
             vertex->GetCovarianceMatrix(fCov);
@@ -451,8 +454,22 @@ void AliAnalysisTaskAccCont::UserExec(Option_t *) {
                                             if (!AODmcTrack->IsPhysicalPrimary())
                                                 continue;
                                         }
-                                        
-                                        // AOD track cuts
+					
+					if (fExcludeInjectedSignals){
+					  if (fRejectCheckGenName){
+					    TString generatorName;
+					    AliMCEvent* mcevent = dynamic_cast<AliMCEvent*>(MCEvent());
+					    Int_t label = TMath::Abs(aodTrack->GetLabel());
+					    Bool_t hasGenerator = mcevent->GetCocktailGenerator(label,generatorName);
+					 
+					    if((!hasGenerator) || (!generatorName.Contains(fGenToBeKept.Data())))
+					      continue;
+					    
+					    //  Printf("mother =%d, generatorName=%s", label, generatorName.Data()); 
+					  }
+					}
+
+					// AOD track cuts
                                         fHistTrackStats->Fill(gCentrality,aodTrack->GetFilterMap());
                                         //Printf("filterbit is: %i",GetFilterMap());
                                         if(!aodTrack->TestFilterBit(fAODtrackCutBit)) continue;
