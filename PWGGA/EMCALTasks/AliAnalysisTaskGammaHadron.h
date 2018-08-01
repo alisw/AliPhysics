@@ -63,6 +63,7 @@ public:
   void                        SetUseParamMassSigma(Bool_t input)                    { fUseParamMassSigma = input;}
   void                        SetPi0NSigma(Float_t input)                           { fPi0NSigma         = input;}
   void                        SetPi0AsymCut(Float_t input)                          { fPi0AsymCut        = input;}
+  void                        SetApplyPatchCandCut(Bool_t input)                    { fApplyPatchCandCut = input;}
 
 
   //..Functions for mixed event purposes
@@ -100,6 +101,7 @@ public:
   void                        FillQAHistograms(Int_t identifier,AliClusterContainer* clusters,AliVCluster* caloCluster,AliVParticle* TrackVec, Double_t Weight=1);
   Bool_t                      AccClusterForAna(AliClusterContainer* clusters, AliVCluster* caloCluster);
   Bool_t                      AccClusPairForAna(AliVCluster* cluster1, AliVCluster * cluster2, TLorentzVector vecPi0);
+  Bool_t                      DetermineGAPatchCand(AliTLorentzVector CaloClusterVec, AliTLorentzVector CaloClusterVec2);
   Bool_t                      DetermineMatchedTrack(AliVCluster* caloCluster,Double_t &etadiff,Double_t & phidiff);
 
   //..Functions for MC purposes
@@ -155,8 +157,8 @@ public:
   Bool_t                      fRmvMTrack;                ///< Switch to enable removing clusters with a matched track
   Double_t                    fTrackMatchEta;            ///< eta range in which a track is called a match to a cluster
   Double_t                    fTrackMatchPhi;            ///< phi range in which a track is called a match to a cluster
-	Double_t                    fTrackMatchEOverPLow;      ///< Minimum E_cell/p_track to accept cluster track match 
-	Double_t                    fTrackMatchEOverPHigh;     ///< Maximum E_cell/p_track to accept cluster track match (-1 for no cut)
+  Double_t                    fTrackMatchEOverPLow;      ///< Minimum E_cluster/p_track to accept cluster track match 
+  Double_t                    fTrackMatchEOverPHigh;     ///< Maximum E_cluster/p_track to accept cluster track match (-1 for no cut)
   //..Event pool variables
   TAxis                      *fMixBCent;                 ///< Number of centrality bins for the mixed event
   TAxis                      *fMixBZvtx;                 ///< Number of vertex bins for the mixed event
@@ -172,6 +174,8 @@ public:
   UInt_t                      fMixingEventType;          ///<  Event types that are used for the tracks in the mixed event
   UInt_t                      fCurrentEventTrigger;      //!<! Trigger of the current event
   UInt_t                      fVetoTrigger;              //!<! Trigger that is vetoed in Mixed Events to avoid bias.  Default is EMCAL Gamma Trigger
+
+  Bool_t                      fApplyPatchCandCut;        ///< Add GA Trigger patch candidate status to Pi0Cand THnSparse
 
   //..MC stuff
   Bool_t                      fParticleLevel;            ///< Set particle level analysis
