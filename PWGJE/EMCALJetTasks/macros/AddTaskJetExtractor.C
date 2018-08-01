@@ -42,8 +42,6 @@ AliAnalysisTaskJetExtractor* AddTaskJetExtractor(
     name += suffix;
   }
 
-  AliAnalysisDataContainer* contHistos = mgr->CreateContainer(Form("%s_histos", name.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedJetsHadronCF", AliAnalysisManager::GetCommonFileName()));
-
   //==============================================================================
   // Adding and configuring tasks
 
@@ -101,8 +99,10 @@ AliAnalysisTaskJetExtractor* AddTaskJetExtractor(
   // Finalization
 
   mgr->ConnectInput  (jetTask, 0,  mgr->GetCommonInputContainer() );
-  mgr->ConnectOutput (jetTask, 1, contHistos );
+  mgr->ConnectOutput (jetTask, 1, mgr->CreateContainer(Form("%s_histos", name.Data()), AliEmcalList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedJetsHadronCF", mgr->GetCommonFileName())) );
+  mgr->ConnectOutput (jetTask, 2, mgr->CreateContainer(Form("%s_tree", name.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()) );
  
+
   cout << " ############ MACRO EXECUTION DONE: AddTaskJetExtractor.C ############\n";
  
   return jetTask;

@@ -336,6 +336,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fJetTree->SetSaveEventProperties(kTRUE);
   fJetTree->SetSaveConstituents(kTRUE);
   fJetTree->SetSaveJetShapes(kTRUE);
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -361,6 +362,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fJetTree->SetSaveEventProperties(kTRUE);
   fJetTree->SetSaveConstituents(kTRUE);
   fJetTree->SetSaveJetShapes(kTRUE);
+  DefineOutput(2, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -383,6 +385,13 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   if(!fTracksCont)
     AliFatal("Particle input container not found attached to jets!");
 
+
+  // ### Initialize the jet tree (settings must all be given at this stage)
+  fJetTree->InitializeTree();
+  OpenFile(2);
+  PostData(2, fJetTree->GetTreePointer());
+
+
   // ### Add control histograms (already some created in base task)
   AddHistogram2D<TH2D>("hTrackCount", "Number of tracks in acceptance vs. centrality", "COLZ", 500, 0., 5000., 100, 0, 100, "N tracks","Centrality", "dN^{Events}/dN^{Tracks}");
   AddHistogram2D<TH2D>("hBackgroundPt", "Background p_{T} distribution", "", 150, 0., 150., 100, 0, 100, "Background p_{T} (GeV/c)", "Centrality", "dN^{Events}/dp_{T}");
@@ -400,8 +409,6 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
 
   AddHistogram1D<TH1D>("hExtractionPercentage", "Extracted jets p_{T} distribution (background subtracted)", "COLZ", 400, -100., 300., "p_{T, jet} (GeV/c)", "Extracted percentage");
 
-
-
   // Track QA plots
   AddHistogram2D<TH2D>("hTrackPt", "Tracks p_{T} distribution", "", 300, 0., 300., 100, 0, 100, "p_{T} (GeV/c)", "Centrality", "dN^{Tracks}/dp_{T}");
   AddHistogram2D<TH2D>("hTrackPhi", "Track angular distribution in #phi", "LEGO2", 180, 0., 2*TMath::Pi(), 100, 0, 100, "#phi", "Centrality", "dN^{Tracks}/(d#phi)");
@@ -411,7 +418,6 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   AddHistogram2D<TH2D>("hTrackEtaPt", "Track angular distribution in #eta vs. p_{T}", "LEGO2", 100, -2.5, 2.5, 300, 0., 300., "#eta", "p_{T} (GeV/c)", "dN^{Tracks}/(d#eta dp_{T})");
   AddHistogram2D<TH2D>("hTrackPhiPt", "Track angular distribution in #phi vs. p_{T}", "LEGO2", 180, 0, 2*TMath::Pi(), 300, 0., 300., "#phi", "p_{T} (GeV/c)", "dN^{Tracks}/(d#phi dp_{T})");
 
-  PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
 
@@ -443,10 +449,6 @@ void AliAnalysisTaskJetExtractor::ExecOnce()
       FillHistogram("hExtractionPercentage", pt, percentage);
     }
   }
-
-  // ### Initialize the jet tree (settings must all be given at this stage)
-  fJetTree->InitializeTree();
-  fOutput->Add(fJetTree->GetTreePointer());
 }
 
 //________________________________________________________________________
