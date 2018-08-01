@@ -37,7 +37,7 @@ string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "HLTinterface-LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary_flat("${MODULE}" "HLTinterface-LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependencies
