@@ -1172,7 +1172,17 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("80085113","1111100017032230000","01631031000000d0"); // EG2
   } else if (trainConfig == 403){ // EMCAL clusters standard cuts, triggers, no nonlin, open timing (same as 201 but split)
     cuts.AddCut("80083113","1111100017032230000","01631031000000d0"); // EG1
-
+    
+  } else if (trainConfig == 480){ // EMCAL clusters standard cuts, triggers, no nonlin, open timing CALO+CALOFAST readout  - NO TM
+    cuts.AddCut("800a0113","1111100010032230000","01631031000000d0"); // INT7
+    cuts.AddCut("800a1113","1111100010032230000","01631031000000d0"); // EMC7
+    cuts.AddCut("800a2113","1111100010032230000","01631031000000d0"); // EG2
+    cuts.AddCut("800a3113","1111100010032230000","01631031000000d0"); // EG1
+  } else if (trainConfig == 481){ // EMCAL clusters standard cuts, triggers, no nonlin, open timing  - NO TM
+    cuts.AddCut("80010113","1111100010032230000","01631031000000d0"); // INT7
+    cuts.AddCut("80052113","1111100010032230000","01631031000000d0"); // EMC7
+    cuts.AddCut("80085113","1111100010032230000","01631031000000d0"); // EG2
+    cuts.AddCut("80083113","1111100010032230000","01631031000000d0"); // EG1
   // ===============================================================================================
   // Run 2 data PHOS clusters pPb 5TeV
   // ===============================================================================================
@@ -1267,7 +1277,17 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCut("a0110113","3885500017032230000","01631031000000d0"); // 0-5
     cuts.AddCut("a1210113","3885500017032230000","01631031000000d0"); // 5-10
     cuts.AddCut("86010113","3885500017032230000","01631031000000d0"); // 60-100
-
+    
+  } else if (trainConfig == 780){ // DCal clusters standard cuts, triggers, no nonlin, open timing CALO+CALOFAST
+    cuts.AddCut("800a0113","3885500010032230000","01631031000000d0"); // INT7
+    cuts.AddCut("800a6113","3885500010032230000","01631031000000d0"); // DMC7
+    cuts.AddCut("800a7113","3885500010032230000","01631031000000d0"); // DG2
+    cuts.AddCut("800a8113","3885500010032230000","01631031000000d0"); // DG1
+  } else if (trainConfig == 781){ // DCal clusters standard cuts, triggers, no nonlin, open timing CALO+CALOFAST
+    cuts.AddCut("80010113","3885500010032230000","01631031000000d0"); // INT7
+    cuts.AddCut("80055113","3885500010032230000","01631031000000d0"); // DMC7
+    cuts.AddCut("80089113","3885500010032230000","01631031000000d0"); // DG2
+    cuts.AddCut("8008b113","3885500010032230000","01631031000000d0"); // DG1
   // ===============================================================================================
   // Run 2 data DMC clusters pPb 8TeV
   // ===============================================================================================

@@ -1061,7 +1061,17 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00085113","111111106f032220000","01631031000000d0"); // fEOverPMax = 1.75
     cuts.AddCut("00085113","111111106g032220000","01631031000000d0"); // fEOverPMax = 1.5
     cuts.AddCut("00085113","111111106h032220000","01631031000000d0"); // fEOverPMax = 1.25
-
+    
+  } else if (trainConfig == 480){ // INT7 EMCAL standard cut with triggers - NO TM - CALO+CALOFAST readout triggers
+    cuts.AddCut("000a0113","1111111060032220000","01631031000000d0"); // std INT7
+    cuts.AddCut("000a1113","1111111060032220000","01631031000000d0"); // std EMC7
+    cuts.AddCut("000a2113","1111111060032220000","01631031000000d0"); // std EG2
+    cuts.AddCut("000a3113","1111111060032220000","01631031000000d0"); // std EG1
+  } else if (trainConfig == 481){ // INT7 EMCAL standard cut with triggers - NO TM
+    cuts.AddCut("00010113","1111111060032220000","01631031000000d0"); // std INT7
+    cuts.AddCut("00052113","1111111060032220000","01631031000000d0"); // std EMC7
+    cuts.AddCut("00085113","1111111060032220000","01631031000000d0"); // std EG2
+    cuts.AddCut("00083113","1111111060032220000","01631031000000d0"); // std EG1
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EMC configurations
   // *********************************************************************************************************
@@ -1234,7 +1244,16 @@ void AddTask_GammaCalo_pp(  Int_t     trainConfig                   = 1,        
     cuts.AddCut("00089113","388551108g041220000","01631031000000d0"); // fEOverPMax = 1.5
     cuts.AddCut("00089113","388551108h041220000","01631031000000d0"); // fEOverPMax = 1.25
 
-
+  } else if (trainConfig == 680){ // DCAL standard for CALO+CALOFAST readout triggers - NO TM
+    cuts.AddCut("000a0113","3885511080041220000","01631031000000d0"); // std INT7
+    cuts.AddCut("000a6113","3885511080041220000","01631031000000d0"); // std DMC7
+    cuts.AddCut("000a7113","3885511080041220000","01631031000000d0"); // std DG2
+    cuts.AddCut("000a8113","3885511080041220000","01631031000000d0"); // std DG1
+  } else if (trainConfig == 681){ // DCAL standard for standard readout triggers - NO TM
+    cuts.AddCut("00010113","3885511080041220000","01631031000000d0"); // std INT7
+    cuts.AddCut("00055113","3885511080041220000","01631031000000d0"); // std DMC7
+    cuts.AddCut("00089113","3885511080041220000","01631031000000d0"); // std DG2
+    cuts.AddCut("0008b113","3885511080041220000","01631031000000d0"); // std DG1
   // *********************************************************************************************************
   // 5 TeV 2015 pp Run2 - PHOS configurations
   // *********************************************************************************************************
