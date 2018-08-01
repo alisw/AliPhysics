@@ -4,14 +4,16 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
                                            const char *njets              = "Jets",
                                            const char *nrho               = "",
                                            Double_t jetradius =0.4,
+                                           const char *system ="PP7TeV",
                                            Bool_t isMC = kFALSE,
                                            const char * type = "TPC",
                                            const char *taskname           = "AliAnalysisTaskEmcalJetBJetTaggingIP",
                                            const char *njetsMC              = "Jets",
                                            const char *nrhoMC               = "RhoMC",
-                                           TString PathToWeights = 	"alien:///alice/cern.ch/user/l/lfeldkam/Weights.root",
-                                           TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
-                                           TString PathToJetProbabilityInput = "alien:///alice/cern.ch/user/l/lfeldkam/dummy_ResFct_XYSignificance_pp7TeV.root",
+                                           TString PathToWeights = 	"alien:///alice/cern.ch/user/k/kgarner/Weights_18_07_18.root",
+                                          // TString PathToRunwiseCorrectionParameters = "alien:///alice/cern.ch/user/l/lfeldkam/MeanSigmaImpParFactors.root",
+                                          // TString PathToJetProbabilityInput = "/home/katha/Uni/PhD/PhD/LinusCode/Anwendung/data/Binned_ResFct_XYSignificance_pp7TeV.root",
+                                           TString PathToFlukaFactor="alien:///alice/cern.ch/user/k/kgarner/FlukaFactors_18_07_18.root",
                                            Bool_t GenerateMeanSigmaCorrectionTable=kTRUE,
                                            Int_t nITSReq=6,
                                            Bool_t useCorrelationTree=kFALSE,
@@ -53,39 +55,69 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     }
     // Load and setup Monte Carlo composition correction factors from file
     //==============================================================================
-    TFile* filecorrectionfactors;
+    TFile* fileMCoverDataWeights;
     if(isMC){
-        if( PathToWeights.EqualTo("") ) {
+        if(PathToWeights.EqualTo("") ) {
         } else {
-            filecorrectionfactors=TFile::Open(PathToWeights.Data());
-            if(!filecorrectionfactors ||(filecorrectionfactors&& !filecorrectionfactors->IsOpen())){
-                AliFatal("%s :: Input weight file not found",taskname);
+            fileMCoverDataWeights=TFile::Open(PathToWeights.Data());
+            if(!fileMCoverDataWeights ||(fileMCoverDataWeights&& !fileMCoverDataWeights->IsOpen())){
+                Printf("%s :: File with modified weights not found",taskname);
                 return 0x0;
             }
         }
     }
-    
+
     
     Printf("%s :: File %s successfully loaded, setting up correction factors.",taskname,PathToWeights.Data());
-    
+
     TString name(taskname),combinedName;
     combinedName.Form("%s%s", name.Data(),suffix);
     AliAnalysisTaskHFJetIPQA* jetTask = new AliAnalysisTaskHFJetIPQA(combinedName);
     if(useCorrelationTree) jetTask->useTreeForCorrelations(kTRUE);
-    if(isMC && filecorrectionfactors){
+
+    if(isMC && fileMCoverDataWeights){
         TH1F * h[20] = {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0};
         const char * nampart[20] = {"pi0","eta","etap","rho","phi","omega","k0s","lambda","pi","kaon","proton","D0","Dp","Dsp","Ds","lambdac","bplus","b0","lambdab","bsp"};
         for(int i = 0;i<20;++i){
-            h[i]=(TH1F*)filecorrectionfactors->Get(nampart[i]);
+            h[i]=(TH1F*)fileMCoverDataWeights->Get(Form("%s/%s",system,nampart[i]));
         }
-        Printf("%s :: Reading correction factors completed.",taskname);
+        Printf("%s :: Reading MC correction factors completed.",taskname);
         for (int i = 0 ; i<20;++i) if(h[i]==0) return 0x0;
         jetTask->SetUseMonteCarloWeighingLinus(h[0],h[1],h[2],h[3],h[4],h[5],h[6],h[7],h[8],h[9],h[10],h[11],h[12],h[13],h[14],h[15],h[16],h[17],h[18],h[19]);
         Printf("%s :: Weights written to analysis task.",taskname);
-        if(filecorrectionfactors) filecorrectionfactors->Close();
+        if(fileMCoverDataWeights) fileMCoverDataWeights->Close();
     }
-    
-    
+
+    // Load and setup Fluka correction factors from file
+    //==============================================================================
+    TFile* fileFlukaCorrection;
+    if(isMC){
+        if( PathToFlukaFactor.EqualTo("") ) {
+        } else {
+            fileFlukaCorrection=TFile::Open(PathToFlukaFactor.Data());
+            if(!fileFlukaCorrection ||(fileFlukaCorrection&& !fileFlukaCorrection->IsOpen())){
+                printf("%s :: File with original weights not found",taskname);
+                return 0x0;
+            }
+        }
+    }
+
+
+    Printf("%s :: File %s successfully loaded, setting up background correction factors.",taskname,PathToFlukaFactor.Data());
+
+    if(isMC && fileFlukaCorrection){
+        TGraph *g[4] = {0x0,0x0,0x0,0x0};
+        const char * nampart[4] = {"fGraphOmega","fGraphXi","fK0Star","fPhi"};
+        for(int i = 0;i<4;++i){
+            g[i]=(TGraph*)fileFlukaCorrection->Get(Form("%s/%s",system,nampart[i]));
+        }
+        Printf("%s :: Reading  Fluka factors completed.",taskname);
+        for (int i = 0 ; i<4;++i) if(g[i]==0) return 0x0;
+        jetTask->SetFlukaFactor(g[0],g[1],g[2],g[3]);
+        Printf("%s :: Weights written to analysis task.",taskname);
+        if(fileFlukaCorrection) fileFlukaCorrection->Close();
+    }
+
     // Setup input containers
     //==============================================================================
     Printf("%s :: Setting up input containers.",taskname);
@@ -110,16 +142,17 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
             jetContMC->SetMaxTrackPt(1000);
         }
     }
-    //==============================================================================
-    TH1::AddDirectory(0);
-    if( PathToJetProbabilityInput.EqualTo("") ) 
-    {
 
+    //==============================================================================
+    /*TH1::AddDirectory(0);
+    if( PathToJetProbabilityInput.EqualTo("") )
+    {
+        printf("No path for Probability Function given! \n");
     } 
     else 
     {
         jetTask->SetResFunctionPID(PathToJetProbabilityInput.Data());
-    }
+    }*/
     // Set Monte Carlo / Data status
     //==============================================================================
     jetTask->SetIsPythia(isMC);
@@ -148,9 +181,11 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
         // trackCuts->SetDCAToVertex2D(kTRUE);
         // trackCuts->SetMaxDCAToVertexZ(1E10);
         // trackCuts->SetMaxDCAToVertexXY(1E10);
+        trackCuts->SetHistogramsOn(kTRUE);
+        trackCuts->DefineHistograms();
         jetTask->SetESDCuts(new AliESDtrackCuts(*trackCuts));
     }
-    
+
     //  Final settings, pass to manager and set the containers
     //==============================================================================
     mgr->AddTask(jetTask);
@@ -164,14 +199,12 @@ AliAnalysisTaskHFJetIPQA* AddTaskHFJetIPQA(
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
                                                               TList::Class(),AliAnalysisManager::kOutputContainer,
                                                               Form("%s", AliAnalysisManager::GetCommonFileName()));
-
     mgr->ConnectInput  (jetTask, 0,  cinput1 );
     mgr->ConnectOutput (jetTask, 1, coutput1 );
+    
+    
+    
 
-    
-    
-    
-    
     return jetTask;
 }
 
@@ -195,9 +228,11 @@ Bool_t DefineCutsTaskpp(AliAnalysisTaskHFJetIPQA *task, Float_t minC, Float_t ma
     cuts->SetOptPileup(1);
     cuts->ConfigurePileupCuts(5,0.8);
     cuts->SetTriggerClass("");
-    cuts->SetTriggerMask(AliVEvent::kMB);
+    cuts->SetTriggerMask(AliVEvent::kINT7);
     cuts->PrintAll();
+    cuts->PrintTrigger();
     // pPb minbias only
+
     return kTRUE;
 }
 
