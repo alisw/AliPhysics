@@ -101,10 +101,12 @@ AliAlgPoint* AliAlgSensITS::TrackPoint2AlgPoint(int pntId, const AliTrackPointAr
     hcovel[7] = double(pntcov[4]);
     hcovel[8] = double(pntcov[5]);
     hcov.SetRotation(hcovel);
-    hcov.Multiply(&matL2Grec);                
-    hcov.MultiplyLeft(&matL2Grec.Inverse());    // errors in local frame
+    hcov.Multiply(&matL2Grec);
+    const TGeoHMatrix& l2gi = matL2Grec.Inverse();
+    hcov.MultiplyLeft(&l2gi);    // errors in local frame
     hcov.Multiply(&matT2L);
-    hcov.MultiplyLeft(&matT2L.Inverse());       // errors in tracking frame
+    const TGeoHMatrix& t2li = matT2L.Inverse();
+    hcov.MultiplyLeft(&t2li);       // errors in tracking frame
     //
     Double_t *hcovscl = hcov.GetRotationMatrix();
     const double *sysE = GetAddError(); // additional syst error

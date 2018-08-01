@@ -1367,7 +1367,8 @@ Int_t AliITSAlignMille2::SetConstraintWrtRef(const char* reffname)
     TGeoHMatrix preMat;
     preo->GetMatrix(preMat);                     //  Delta_Glob
     TGeoHMatrix tmpMat    = *mupd;               //  Delta_Glob * Delta_Glob_Par * M
-    preMat.MultiplyLeft( &tmpMat.Inverse() );    //  M^-1 * Delta_Glob_Par^-1 = (Delta_Glob_Par * M)^-1
+    const TGeoHMatrix& tmpi = tmpMat.Inverse();
+    preMat.MultiplyLeft( &tmpi );    //  M^-1 * Delta_Glob_Par^-1 = (Delta_Glob_Par * M)^-1
     tmpMat.MultiplyLeft( &preMat );              //  (Delta_Glob_Par * M)^-1 * Delta_Glob * Delta_Glob_Par * M = Delta_loc
     preo->SetMatrix(tmpMat);     // local corrections 
   }
@@ -1806,7 +1807,8 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     //
     // now rotate in local system
     hcov.Multiply(svOrigMatrix);
-    hcov.MultiplyLeft(&svOrigMatrix->Inverse());
+    const TGeoHMatrix& svorigi = svOrigMatrix->Inverse();
+    hcov.MultiplyLeft(&svorigi);
     // now hcov is LOCAL COVARIANCE MATRIX
     // apply sigma scaling
     Double_t *hcovscl = hcov.GetRotationMatrix();
@@ -1854,7 +1856,8 @@ AliTrackPointArray *AliITSAlignMille2::PrepareTrack(const AliTrackPointArray *at
     // modify global coordinates according with pre-aligment
     svMatrix->LocalToMaster(fMeasLoc,fMeasGlo);
     // now rotate in local system
-    hcov.Multiply(&svMatrix->Inverse());
+    const TGeoHMatrix& svi = svMatrix->Inverse();
+    hcov.Multiply(&svi);
     hcov.MultiplyLeft(svMatrix);         // hcov is back in GLOBAL RF
     // cure once more
     for (int ir=3;ir--;) for (int ic=3;ic--;) if (IsZero(hcovscl[ir*3+ic])) hcovscl[ir*3+ic] = 0.;
@@ -2006,7 +2009,8 @@ Int_t AliITSAlignMille2::InitModuleParams()
     hcov.SetRotation(hcovel);
     // now rotate in local system
     hcov.Multiply(svMatrix);
-    hcov.MultiplyLeft(&svMatrix->Inverse());
+    const TGeoHMatrix& svi = svMatrix->Inverse();
+    hcov.MultiplyLeft(&svi);
     if (fSigmaLoc[0]<0.0010) fSigmaLoc[0]=0.0010;
     if (fSigmaLoc[2]<0.0010) fSigmaLoc[2]=0.0010;
     //
@@ -3441,7 +3445,8 @@ void AliITSAlignMille2::ApplyGaussianConstraint(const AliITSAlignMille2ConstrArr
 	if (preo) {
 	  TGeoHMatrix preMat,tmpMat = *mod->GetMatrix(); //  Delta_Glob * Delta_Glob_Par * M
 	  preo->GetMatrix(preMat);                       //  Delta_Glob
-	  preMat.MultiplyLeft( &tmpMat.Inverse() );      //  M^-1 * Delta_Glob_Par^-1 = (Delta_Glob_Par * M)^-1
+	  const TGeoHMatrix& tmpi = tmpMat.Inverse();
+	  preMat.MultiplyLeft( &tmpi );      //  M^-1 * Delta_Glob_Par^-1 = (Delta_Glob_Par * M)^-1
 	  tmpMat.MultiplyLeft( &preMat );                //  (Delta_Glob_Par * M)^-1 * Delta_Glob * Delta_Glob_Par * M = Delta_loc
 	  AliAlignObjParams algob;
 	  algob.SetMatrix(tmpMat);
@@ -4497,7 +4502,8 @@ TClonesArray* AliITSAlignMille2::CreateDeltas()
     // create matrix Y (see comment) ------------------------------------------------<<<
     //
     tempMatX.MultiplyLeft(&tempMatY);
-    tempMatX.Multiply(&tempMatY.Inverse());
+    const TGeoHMatrix& tmpyi = tempMatY.Inverse();
+    tempMatX.Multiply(&tmpyi);
     //
     if (tempMatX.IsIdentity()) continue; // do not store dummy matrices
     UShort_t vid = AliITSAlignMille2Module::GetVolumeIDFromSymname(algname);
@@ -4934,7 +4940,8 @@ void AliITSAlignMille2::ConvertDeltas()
     // build X_new <<<
     //
     dmPar  = *mtGjold; 
-    dmPar *= xNew.Inverse();
+    const TGeoHMatrix& xnewi = xNew.Inverse();
+    dmPar *= xnewi;
     new((*deltArrNew)[nDelNew++]) AliAlignObjParams(algname.Data(),vID,dmPar,kTRUE);
     //
   }

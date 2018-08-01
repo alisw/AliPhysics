@@ -337,8 +337,10 @@ Bool_t AliTPCclusterMI::GetGlobalCov(Float_t cov[6]) const
   TGeoHMatrix m;
   Double_t tcov[9] = { 0, 0, 0, 0, GetSigmaY2(), 0, 0, 0, GetSigmaZ2() };
   m.SetRotation(tcov);
-  m.Multiply(&mt->Inverse());
-  m.Multiply(&ml->Inverse());
+  const TGeoHMatrix& mti = mt->Inverse();
+  const TGeoHMatrix& mli = ml->Inverse();
+  m.Multiply(&mti);
+  m.Multiply(&mli);
   m.MultiplyLeft(mt);
   m.MultiplyLeft(ml);
   Double_t *ncov = m.GetRotationMatrix();

@@ -3082,7 +3082,8 @@ Bool_t AliTRDgeometry::CreateClusterMatrixArray()
       Double_t sectorAngle = 20.0 * (isector % 18) + 10.0;
       TGeoHMatrix  rotSector;
       rotSector.RotateZ(sectorAngle);
-      rotMatrix.MultiplyLeft(&rotSector.Inverse());
+      const TGeoHMatrix& rotsectori = rotSector.Inverse();
+      rotMatrix.MultiplyLeft(&rotsectori);
 
       fgClusterMatrixArray->AddAt(new TGeoHMatrix(rotMatrix),lid);       
 

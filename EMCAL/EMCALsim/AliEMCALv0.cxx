@@ -978,6 +978,7 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
    
     TGeoHMatrix *matTtoL;
     TGeoHMatrix *globMatrix = alignableEntry->GetGlobalOrig();
+    const TGeoHMatrix& globMatrixi = globMatrix->Inverse();
 
     if(smodnum%2 == 0) 
     {
@@ -987,7 +988,7 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
       TGeoCombiTrans mat0(geoTran0, geoRot0);
       matTtoL = new TGeoHMatrix(mat0);
 
-      matTtoL->MultiplyLeft(&(globMatrix->Inverse()));
+      matTtoL->MultiplyLeft(&globMatrixi);
       alignableEntry->SetMatrix(matTtoL);
     } 
     else
@@ -1000,7 +1001,7 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
       TGeoCombiTrans mat1(geoTran1, geoRot1);
       matTtoL = new TGeoHMatrix(mat1);
 
-      matTtoL->MultiplyLeft(&(globMatrix->Inverse()));
+      matTtoL->MultiplyLeft(&globMatrixi);
       alignableEntry->SetMatrix(matTtoL);
     }
 

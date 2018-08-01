@@ -205,7 +205,8 @@ void AliAlgSens::DPosTraDParGeomTRA(const AliAlgPoint* pnt, double* deriv, const
   TGeoHMatrix matRel,t2gP;
   GetMatrixT2G(matRel);           // t2g matrix of child
   parent->GetMatrixT2G(t2gP);     // t2g matrix of parent
-  matRel.MultiplyLeft(&t2gP.Inverse());
+  const TGeoHMatrix& t2gpi = t2gP.Inverse();
+  matRel.MultiplyLeft(&t2gpi);
   //
   memset(delta,0,kNDOFGeom*sizeof(double));
   memset(deriv,0,kNDOFGeom*3*sizeof(double));

@@ -413,7 +413,8 @@ TGeoHMatrix *AliITSAlignMille2Module::GetSensitiveVolumeModifiedMatrix(UShort_t 
   //
   if (local) {
     // 2) set fSensVolModif = SensVolRel
-    fSensVolModifMatrix->MultiplyLeft( &fMatrix->Inverse() );
+    const TGeoHMatrix& mati = fMatrix->Inverse();
+    fSensVolModifMatrix->MultiplyLeft( &mati );
     // 3) multiply left by delta
     fSensVolModifMatrix->MultiplyLeft( &hm );
     // 4) multiply left by fMatrix
@@ -479,7 +480,8 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShor
   //printf("\n1: modif=orig del sensvol\n");fSensVolModifMatrix->Print();
 
   // 2) set fSensVolModif = Gg-1 * Gsv
-  fSensVolModifMatrix->MultiplyLeft( &fMatrix->Inverse() );
+  const TGeoHMatrix& mati = fMatrix->Inverse();
+  fSensVolModifMatrix->MultiplyLeft( &mati );
   //printf("\n2: modif=relative del sensvol\n");fSensVolModifMatrix->Print();
  
   // 3) set fSensVolModif = Dg * Gg-1 * Gsv
@@ -492,7 +494,8 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShor
 
   // 5) set fSensVolModif = Gsv-1 * Gg * Dg * Gg-1 * Gsv
   if (SensVolMatrix(voluid, &dg)) return NULL;
-  fSensVolModifMatrix->MultiplyLeft( &dg.Inverse() );
+  const TGeoHMatrix& dgi = dg.Inverse();
+  fSensVolModifMatrix->MultiplyLeft( &dgi );
   //printf("\n5: modif=finale\n");fSensVolModifMatrix->Print();
   //
   // >> RS
@@ -524,7 +527,8 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShor
     double dy[3]={0.,0.0081,0.};
     deltay.SetTranslation(dy);
     fSensVolModifMatrix->MultiplyLeft( &deltay );
-    fSensVolModifMatrix->Multiply( &deltay.Inverse() );
+    const TGeoHMatrix& deltayi = deltay.Inverse();
+    fSensVolModifMatrix->Multiply( &deltayi );
   }
 #endif
   // << RS
@@ -579,7 +583,8 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeTotalMisalignment(
   //printf("\n1: modif=orig del sensvol\n");fSensVolModifMatrix->Print();
 
   // 2) set fSensVolModif = Gg-1 * Gsv
-  fSensVolModifMatrix->MultiplyLeft( &fMatrix->Inverse() );
+  const TGeoHMatrix& mati = fMatrix->Inverse();
+  fSensVolModifMatrix->MultiplyLeft( &mati );
   //printf("\n2: modif=relative del sensvol\n");fSensVolModifMatrix->Print();
  
   // 3) set fSensVolModif = Dg * Gg-1 * Gsv
@@ -593,7 +598,8 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeTotalMisalignment(
   // 5) set fSensVolModif = G0sv-1 * Gg * Dg * Gg-1 * Gsv
   // qui usa l'orig anziche' la prealigned...
   if (SensVolOrigGlobalMatrix(voluid, &dg)) return NULL;
-  fSensVolModifMatrix->MultiplyLeft( &dg.Inverse() );
+  const TGeoHMatrix& dgi = dg.Inverse();
+  fSensVolModifMatrix->MultiplyLeft( &dgi );
   //printf("\n5: modif=finale\n");fSensVolModifMatrix->Print();
 
   // reset align object (may not be needed...)
@@ -609,7 +615,8 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeTotalMisalignment(
     double dy[3]={0.,0.0081,0.};
     deltay.SetTranslation(dy);
     fSensVolModifMatrix->MultiplyLeft( &deltay );
-    fSensVolModifMatrix->Multiply( &deltay.Inverse() );
+    const TGeoHMatrix& deltayi = deltay.Inverse();
+    fSensVolModifMatrix->Multiply( &deltayi );
   }
 #endif
   if (!tempAlignObj.SetMatrix(*fSensVolModifMatrix)) return NULL;
@@ -662,7 +669,8 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeGlobalMisalignment
   //dg.Print();
 
   dg.MultiplyLeft( fMatrix );
-  dg.Multiply( &fMatrix->Inverse() );
+  const TGeoHMatrix& mati = fMatrix->Inverse();
+  dg.Multiply( &mati );
 
   // reset align object (may not be needed...)
   tempAlignObj.SetTranslation(0,0,0);
@@ -802,7 +810,8 @@ void AliITSAlignMille2Module::GetLocalMatrix(TGeoHMatrix &mat) const
 {
   // return the local matrix for transformation to its parent
   mat = *fMatrix;
-  if (fParent) mat.MultiplyLeft( &fParent->GetMatrix()->Inverse() );
+  const TGeoHMatrix& parenti = fParent->GetMatrix()->Inverse();
+  if (fParent) mat.MultiplyLeft( &parenti );
 }
 
 //-------------------------------------------------------------
@@ -852,7 +861,8 @@ void AliITSAlignMille2Module::GetSensVolLocalParams(UShort_t volid,Double_t *t, 
   // return parameters of the sensor volid in the current module
   for (int i=3;i--;) t[i] = r[i] = 0.;
   if (SensVolMatrix(volid,fSensVolMatrix)) return;  
-  fSensVolMatrix->MultiplyLeft( &fMatrix->Inverse() );
+  const TGeoHMatrix& mati = fMatrix->Inverse();
+  fSensVolMatrix->MultiplyLeft( &mati );
   AliAlignObjParams tempAlignObj;  
   tempAlignObj.SetMatrix(*fSensVolMatrix);
   tempAlignObj.GetPars(t,r);
@@ -886,7 +896,8 @@ void AliITSAlignMille2Module::GetSensVolLocalParams(UShort_t volid,const Double_
   //
   tempAlignObj.GetMatrix(*fSensVolModifMatrix);      // obtain local delta
   fSensVolModifMatrix->MultiplyLeft( fSensVolMatrix ); // obtain global delta
-  fSensVolModifMatrix->MultiplyLeft( &fMatrix->Inverse() ); // obtain delta in current volume
+  const TGeoHMatrix& mati = fMatrix->Inverse();
+  fSensVolModifMatrix->MultiplyLeft( &mati ); // obtain delta in current volume
   tempAlignObj.SetMatrix(*fSensVolModifMatrix);
   tempAlignObj.GetPars(t,r);                         // obtain params
 }
@@ -922,7 +933,8 @@ void AliITSAlignMille2Module::GetGeomParamsGlo(Double_t *pars)
       for (int i=kMaxParGeom;i--;) pars[i] = 0;
       return;
     }
-    fSensVolMatrix->MultiplyLeft( &parent->GetMatrix()->Inverse() ); // Local Matrix
+    const TGeoHMatrix& parenti = parent->GetMatrix()->Inverse();
+    fSensVolMatrix->MultiplyLeft( &parenti ); // Local Matrix
     Float_t *parpar = parent->GetParVals();
     tempAlignObj.SetTranslation(parpar[0],parpar[1],parpar[2]);
     tempAlignObj.SetRotation(parpar[3],parpar[4],parpar[5]);
@@ -935,7 +947,8 @@ void AliITSAlignMille2Module::GetGeomParamsGlo(Double_t *pars)
   tempAlignObj.SetTranslation(fParVals[0],fParVals[1],fParVals[2]);
   tempAlignObj.SetRotation(fParVals[3],fParVals[4],fParVals[5]);
   tempAlignObj.GetMatrix(*fSensVolModifMatrix);  // local delta matrix
-  fSensVolModifMatrix->Multiply( &fSensVolMatrix->Inverse() );
+  const TGeoHMatrix& sensvoli = fSensVolMatrix->Inverse();
+  fSensVolModifMatrix->Multiply( &sensvoli );
   fSensVolModifMatrix->MultiplyLeft( fSensVolMatrix );
   tempAlignObj.SetMatrix( *fSensVolModifMatrix );  // global delta matrix
   tempAlignObj.GetPars(pars,pars+3);
@@ -982,7 +995,8 @@ void AliITSAlignMille2Module::GetGeomParamsLoc(Double_t *pars)
   tempAlignObj.SetTranslation(fParVals[0],fParVals[1],fParVals[2]);
   tempAlignObj.SetRotation(fParVals[3],fParVals[4],fParVals[5]);
   tempAlignObj.GetMatrix(*fSensVolModifMatrix);  // global delta matrix
-  fSensVolModifMatrix->MultiplyLeft( &fSensVolMatrix->Inverse() );
+  const TGeoHMatrix& sensvoli = fSensVolMatrix->Inverse();
+  fSensVolModifMatrix->MultiplyLeft( &sensvoli );
   fSensVolModifMatrix->Multiply( fSensVolMatrix );
   tempAlignObj.SetMatrix( *fSensVolModifMatrix );  // local delta matrix
   tempAlignObj.GetPars(pars,pars+3);
@@ -1217,7 +1231,8 @@ void AliITSAlignMille2Module::GetLocalParams(const Double_t* glot, const Double_
   tempAlignObj.SetRotation(glor[0],glor[1],glor[2]);
   tempAlignObj.GetMatrix(*fSensVolMatrix);  
   fSensVolMatrix->Multiply( fMatrix );
-  fSensVolMatrix->MultiplyLeft( &fMatrix->Inverse() );
+  const TGeoHMatrix& mati = fMatrix->Inverse();
+  fSensVolMatrix->MultiplyLeft( &mati );
   tempAlignObj.SetMatrix(*fSensVolMatrix);
   tempAlignObj.GetPars(t,r);
 }

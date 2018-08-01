@@ -709,7 +709,8 @@ AliTrackPointArray *AliITSAlignMille::PrepareTrack(const AliTrackPointArray *atp
     hcov.SetRotation(hcovel);
     // now rotate in local system
     hcov.Multiply(svOrigMatrix);
-    hcov.MultiplyLeft(&svOrigMatrix->Inverse());
+    const TGeoHMatrix& svorigi = svOrigMatrix->Inverse();
+    hcov.MultiplyLeft(&svorigi);
     // now hcov is LOCAL COVARIANCE MATRIX
 
 
@@ -729,7 +730,8 @@ AliTrackPointArray *AliITSAlignMille::PrepareTrack(const AliTrackPointArray *atp
     // modify global coordinates according with pre-aligment
     svMatrix->LocalToMaster(pl,pg);
     // now rotate in local system
-    hcov.Multiply(&svMatrix->Inverse());
+    const TGeoHMatrix& svi = svMatrix->Inverse();
+    hcov.Multiply(&svi);
     hcov.MultiplyLeft(svMatrix);
     // hcov is back in GLOBAL RF
     Float_t pcov[6];
@@ -837,7 +839,8 @@ Int_t AliITSAlignMille::InitModuleParams() {
   hcov.SetRotation(hcovel);
   // now rotate in local system
   hcov.Multiply(svMatrix);
-  hcov.MultiplyLeft(&svMatrix->Inverse());
+  const TGeoHMatrix& svi = svMatrix->Inverse();
+  hcov.MultiplyLeft(&svi);
 
   // set local sigmas
   fSigmaLoc[0] = TMath::Sqrt(TMath::Abs(hcov.GetRotationMatrix()[0]));
@@ -1700,4 +1703,3 @@ Int_t AliITSAlignMille::LoadSuperModuleFile(const Char_t *sfile)
   fUseSuperModules=1;
   return 0;
 }
-

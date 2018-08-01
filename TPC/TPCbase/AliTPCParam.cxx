@@ -724,7 +724,8 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     // Convert to global coordinate system
     //
     fGlobalMatrix[isec] = new TGeoHMatrix(*m);
-    fGlobalMatrix[isec]->Multiply(&(mchange.Inverse()));
+    const TGeoHMatrix& mchangei = mchange.Inverse();
+    fGlobalMatrix[isec]->Multiply(&mchangei);
     TGeoTranslation center("center",-ROCcenter[0],-ROCcenter[1],-ROCcenter[2]);
     fGlobalMatrix[isec]->Multiply(&center);
     //
@@ -745,7 +746,8 @@ Bool_t AliTPCParam::ReadGeoMatrices(){
     TGeoTranslation trans(0,0,GetZLength(isec));
     fClusterMatrix[isec]->MultiplyLeft(&trans);
     fClusterMatrix[isec]->MultiplyLeft((GetGlobalMatrix(isec)));
-    fClusterMatrix[isec]->MultiplyLeft(&(rotMatrix.Inverse()));
+    const TGeoHMatrix& rotmatrixi = rotMatrix.Inverse();
+    fClusterMatrix[isec]->MultiplyLeft(&rotmatrixi);
   }
   return kTRUE;
 }
@@ -756,7 +758,8 @@ TGeoHMatrix *  AliTPCParam::Tracking2LocalMatrix(const TGeoHMatrix * geoMatrix, 
   Double_t sectorAngle = 20.*(sector%18)+10;
   TGeoHMatrix *newMatrix = new TGeoHMatrix();
   newMatrix->RotateZ(sectorAngle);
-  newMatrix->MultiplyLeft(&(geoMatrix->Inverse()));
+  const TGeoHMatrix& geomatrixi = geoMatrix->Inverse();
+  newMatrix->MultiplyLeft(&geomatrixi);
   return newMatrix;
 }
 
