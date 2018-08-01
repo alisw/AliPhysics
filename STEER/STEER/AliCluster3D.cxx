@@ -90,8 +90,10 @@ Bool_t AliCluster3D::GetGlobalCov(Float_t cov[6]) const
   	               fSigmaXY, GetSigmaY2(), GetSigmaYZ(), 
   	               fSigmaXZ, GetSigmaYZ(), GetSigmaZ2()};
   m.SetRotation(tcov);
-  m.Multiply(&mt->Inverse());
-  m.Multiply(&ml->Inverse());
+  const TGeoHMatrix& mti = mt->Inverse();
+  const TGeoHMatrix& mli = ml->Inverse();
+  m.Multiply(&mti);
+  m.Multiply(&mli);
   m.MultiplyLeft(mt);
   m.MultiplyLeft(ml);
   Double_t *ncov = m.GetRotationMatrix();

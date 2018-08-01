@@ -209,7 +209,8 @@ void AliTRDv1::AddAlignableVolumes() const
 	  Double_t sectorAngle = 20.0 * (isector % 18) + 10.0;
 	  TGeoHMatrix *t2lMatrix  = new TGeoHMatrix();
 	  t2lMatrix->RotateZ(sectorAngle);
-	  t2lMatrix->MultiplyLeft(&(globMatrix->Inverse()));
+	  const TGeoHMatrix& globmatrixi = globMatrix->Inverse();
+	  t2lMatrix->MultiplyLeft(&globmatrixi);
 	  alignableEntry->SetMatrix(t2lMatrix);
 	}
 	else {

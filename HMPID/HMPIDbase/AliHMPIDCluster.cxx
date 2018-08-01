@@ -67,7 +67,8 @@ void AliHMPIDCluster::SetClusterParams(Double_t xL,Double_t yL,Int_t iCh  )
   TGeoHMatrix m;
   m.SetRotation(covL);
   m.Multiply(t2l);
-  m.MultiplyLeft(&t2l->Inverse());
+  const TGeoHMatrix& t2li = t2l->Inverse();
+  m.MultiplyLeft(&t2li);
   Double_t *covT = m.GetRotationMatrix();
 
   new(this) AliCluster3D(volId,            // Can be done safer

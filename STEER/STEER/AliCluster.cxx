@@ -209,8 +209,10 @@ Bool_t AliCluster::GetGlobalCov(Float_t cov[6]) const
   TGeoHMatrix m;
   Double_t tcov[9] = { 0, 0, 0, 0, fSigmaY2, fSigmaYZ, 0, fSigmaYZ, fSigmaZ2 };
   m.SetRotation(tcov);
-  m.Multiply(&mt->Inverse());
-  m.Multiply(&ml->Inverse());
+  const TGeoHMatrix& mti = mt->Inverse();
+  const TGeoHMatrix& mli = ml->Inverse();
+  m.Multiply(&mti);
+  m.Multiply(&mli);
   m.MultiplyLeft(mt);
   m.MultiplyLeft(ml);
   Double_t *ncov = m.GetRotationMatrix();
@@ -297,8 +299,10 @@ Bool_t AliCluster::Misalign()
 
   TGeoHMatrix delta = *mt;
   delta.MultiplyLeft(ml);
-  delta.MultiplyLeft(&(mlorig->Inverse()));
-  delta.MultiplyLeft(&(mt->Inverse()));
+  const TGeoHMatrix& mlorigi = mlorig->Inverse();
+  const TGeoHMatrix& mti = mt->Inverse();
+  delta.MultiplyLeft(&mlorigi);
+  delta.MultiplyLeft(&mti);
 
   Double_t xyzorig[3] = {fX, fY, fZ};
   Double_t xyz[3] = {0, 0, 0};
@@ -333,4 +337,3 @@ const TGeoHMatrix* AliCluster::GetTracking2LocalMatrix() const
   // the local one.
   return AliGeomManager::GetTracking2LocalMatrix(fVolumeId);
 }
-

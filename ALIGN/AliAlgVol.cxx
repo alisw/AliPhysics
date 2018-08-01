@@ -189,7 +189,8 @@ void AliAlgVol::GetDeltaT2LmodLOC(TGeoHMatrix& matMod, const Double_t *delta) co
   // tau = T2L^-1*delta*T2L
   Delta2Matrix(matMod, delta);
   matMod.Multiply(&GetMatrixT2L());
-  matMod.MultiplyLeft(&GetMatrixT2L().Inverse());
+  const TGeoHMatrix& t2li = GetMatrixT2L().Inverse();
+  matMod.MultiplyLeft(&t2li);
 }
 
 //__________________________________________________________________
@@ -205,7 +206,8 @@ void AliAlgVol::GetDeltaT2LmodLOC(TGeoHMatrix& matMod, const Double_t *delta, co
   TGeoHMatrix tmp = relMat;
   tmp *= GetMatrixT2L();
   matMod.Multiply(&tmp);
-  matMod.MultiplyLeft(&tmp.Inverse());
+  const TGeoHMatrix& tmpi = tmp.Inverse();
+  matMod.MultiplyLeft(&tmpi);
 }
 
 //__________________________________________________________________
@@ -229,7 +231,8 @@ void AliAlgVol::GetDeltaT2LmodTRA(TGeoHMatrix& matMod, const Double_t *delta, co
   // tau = relMat^-1*TAU*relMat
   Delta2Matrix(matMod, delta); // TAU
   matMod.Multiply(&relMat);
-  matMod.MultiplyLeft(&relMat.Inverse());
+  const TGeoHMatrix& reli = relMat.Inverse();
+  matMod.MultiplyLeft(&reli);
 }
 
 //_________________________________________________________
@@ -345,7 +348,8 @@ void AliAlgVol::PrepareMatrixT2L()
   fMatT2L.SetDx(fX);
   fMatT2L.RotateZ(fAlp*RadToDeg());
   // then convert it to Tracking to Local  matrix
-  fMatT2L.MultiplyLeft(&GetMatrixL2GIdeal().Inverse());
+  const TGeoHMatrix& l2gi = GetMatrixL2GIdeal().Inverse();
+  fMatT2L.MultiplyLeft(&l2gi);
   //
 }
 
@@ -523,8 +527,10 @@ void AliAlgVol::CreateGloDeltaMatrix(TGeoHMatrix &deltaM) const
   // Volume knows if its variation was done in TRA or LOC frame
   //
   CreateLocDeltaMatrix(deltaM);
-  deltaM.Multiply(&GetMatrixL2G().Inverse());
-  deltaM.MultiplyLeft(&GetMatrixL2G());
+  const TGeoHMatrix& l2g = GetMatrixL2G();
+  const TGeoHMatrix& l2gi = l2g.Inverse();
+  deltaM.Multiply(&l2gi);
+  deltaM.MultiplyLeft(&l2g);
   //
 }
 
@@ -640,8 +646,10 @@ void AliAlgVol::CreateLocDeltaMatrix(TGeoHMatrix &deltaM) const
   if (IsFrameTRA()) { // we need corrections in local frame!
     // l' = T2L * delta_t * t = T2L * delta_t * T2L^-1 * l = delta_l * l
     // -> delta_l = T2L * delta_t * T2L^-1
-    deltaM.Multiply( &GetMatrixT2L().Inverse() );
-    deltaM.MultiplyLeft( &GetMatrixT2L() );
+    const TGeoHMatrix& t2l = GetMatrixT2L();
+    const TGeoHMatrix& t2li = t2l.Inverse();
+    deltaM.Multiply( &t2li );
+    deltaM.MultiplyLeft( &t2l );
   }
   //
 }
@@ -670,8 +678,9 @@ void AliAlgVol::CreateAlignmenMatrix(TGeoHMatrix& alg) const
       dchain.MultiplyLeft(&par->GetGlobalDeltaRef());
       par = par->GetParent();
     }
+    const TGeoHMatrix& dchaini = dchain.Inverse();
     alg.Multiply(&dchain);
-    alg.MultiplyLeft(&dchain.Inverse());
+    alg.MultiplyLeft(&dchaini);
   }
   alg *= GetGlobalDeltaRef();
 

@@ -61,7 +61,8 @@ void AliAlgSensTOF::PrepareMatrixT2L()
   TGeoHMatrix t2l;
   t2l.SetDx(x);
   t2l.RotateZ(alp*RadToDeg());
-  t2l.MultiplyLeft(&GetMatrixL2GIdeal().Inverse());
+  const TGeoHMatrix& l2gi = GetMatrixL2GIdeal().Inverse();
+  t2l.MultiplyLeft(&l2gi);
   /*
   const TGeoHMatrix* t2l = AliGeomManager::GetTracking2LocalMatrix(GetVolID());
   if (!t2l) {
@@ -96,7 +97,8 @@ AliAlgPoint* AliAlgSensTOF::TrackPoint2AlgPoint(int pntId, const AliTrackPointAr
     // we need reco-time alignment matrix in tracking frame, T^-1 * delta * T, where delta is local alignment matrix
     TGeoHMatrix mClAlgTrec = GetMatrixClAlgReco();
     mClAlgTrec.Multiply(&GetMatrixT2L());
-    mClAlgTrec.MultiplyLeft(&GetMatrixT2L().Inverse());
+    const TGeoHMatrix& t2li = GetMatrixT2L().Inverse();
+    mClAlgTrec.MultiplyLeft(&t2li);
     TGeoHMatrix mT2G;
     GetMatrixT2G(mT2G);
     mT2G.MasterToLocal(glo,tra);     // we are in tracking frame, with original wrong alignment
@@ -144,10 +146,12 @@ AliAlgPoint* AliAlgSensTOF::TrackPoint2AlgPoint(int pntId, const AliTrackPointAr
     hcovel[7] = double(pntcov[4]);
     hcovel[8] = double(pntcov[5]);
     hcov.SetRotation(hcovel);
-    hcov.Multiply(&matL2Grec);                
-    hcov.MultiplyLeft(&matL2Grec.Inverse());    // errors in local frame
+    hcov.Multiply(&matL2Grec);
+    const TGeoHMatrix& l2gi = matL2Grec.Inverse();
+    hcov.MultiplyLeft(&l2gi);    // errors in local frame
     hcov.Multiply(&matT2L);
-    hcov.MultiplyLeft(&matT2L.Inverse());       // errors in tracking frame
+    const TGeoHMatrix& t2li = matT2L.Inverse();
+    hcov.MultiplyLeft(&t2li);       // errors in tracking frame
     //
     Double_t *hcovscl = hcov.GetRotationMatrix();
     const double *sysE = GetAddError(); // additional syst error

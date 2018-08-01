@@ -583,7 +583,8 @@ void AliTPCCalibGlobalMisalignment::DumpAlignment( AliTPCCalibGlobalMisalignment
       TGeoHMatrix* cmatrixDown=(TGeoHMatrix*)array->At(isec%36);
       TGeoHMatrix* cmatrixUp=(TGeoHMatrix*)array->At(isec%36+36);
       TGeoHMatrix diff(*cmatrixDown);
-      diff.Multiply(&(cmatrixUp->Inverse()));
+      const TGeoHMatrix& cmatrixUpi = cmatrixUp->Inverse();
+      diff.Multiply(&cmatrixUpi);
       (*pcstream)<<name<<
 	"isec="<<isec<<
 	"m0.="<<cmatrix<<

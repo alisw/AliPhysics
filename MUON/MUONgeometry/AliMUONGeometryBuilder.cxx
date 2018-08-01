@@ -79,8 +79,8 @@ const TString& AliMUONGeometryBuilder::GetOutFileNameExtension()
 
 
 //______________________________________________________________________________
-TGeoHMatrix AliMUONGeometryBuilder::Multiply(const TGeoMatrix& m1, 
-                                             const TGeoMatrix& m2)
+TGeoHMatrix AliMUONGeometryBuilder::Multiply(const TGeoHMatrix& m1, 
+                                             const TGeoHMatrix& m2)
 {
 /// Temporary fix for problem with matrix multiplication in Root 5.02/00
 
@@ -94,9 +94,9 @@ TGeoHMatrix AliMUONGeometryBuilder::Multiply(const TGeoMatrix& m1,
 }
 
 //______________________________________________________________________________
-TGeoHMatrix AliMUONGeometryBuilder::Multiply(const TGeoMatrix& m1, 
-                                             const TGeoMatrix& m2,
-                                             const TGeoMatrix& m3)
+TGeoHMatrix AliMUONGeometryBuilder::Multiply(const TGeoHMatrix& m1, 
+                                             const TGeoHMatrix& m2,
+                                             const TGeoHMatrix& m3)
 {					     
 /// Temporary fix for problem with matrix multiplication in Root 5.02/00
 
@@ -113,10 +113,10 @@ TGeoHMatrix AliMUONGeometryBuilder::Multiply(const TGeoMatrix& m1,
 }
 
 //______________________________________________________________________________
-TGeoHMatrix AliMUONGeometryBuilder::Multiply(const TGeoMatrix& m1, 
-                                             const TGeoMatrix& m2,
-                                             const TGeoMatrix& m3,
-                                             const TGeoMatrix& m4)
+TGeoHMatrix AliMUONGeometryBuilder::Multiply(const TGeoHMatrix& m1, 
+                                             const TGeoHMatrix& m2,
+                                             const TGeoHMatrix& m3,
+                                             const TGeoHMatrix& m4)
 {					     
 /// Temporary fix for problem with matrix multiplication in Root 5.02/00
 

@@ -3370,7 +3370,8 @@ void AliTOFClusterFinderV1::GetClusterPars(Int_t *ind, Double_t* pos, Double_t* 
   TGeoHMatrix m;
   m.SetRotation(lcov);
   m.Multiply(l2t);
-  m.MultiplyLeft(&l2t->Inverse());
+  const TGeoHMatrix& l2ti = l2t->Inverse();
+  m.MultiplyLeft(&l2ti);
   Double_t *tcov = m.GetRotationMatrix();
   cov[0] = tcov[0]; cov[1] = tcov[1]; cov[2] = tcov[2];
   cov[3] = tcov[4]; cov[4] = tcov[5]; cov[5] = tcov[8];
@@ -3456,7 +3457,8 @@ void AliTOFClusterFinderV1::GetClusterPars(/*Bool_t check,*/ Int_t counter,
   TGeoHMatrix m;
   m.SetRotation(lcov);
   m.Multiply(g2l);
-  m.MultiplyLeft(&g2l->Inverse());
+  const TGeoHMatrix& g2li = g2l->Inverse();
+  m.MultiplyLeft(&g2li);
   Double_t *tcov = m.GetRotationMatrix();
   cov[0] = tcov[0]; cov[1] = tcov[1]; cov[2] = tcov[2];
   cov[3] = tcov[4]; cov[4] = tcov[5]; cov[5] = tcov[8];

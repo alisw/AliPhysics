@@ -30,11 +30,11 @@ class AliMUONGeometryBuilder : public TObject
     virtual  ~AliMUONGeometryBuilder();
     
     // static methods
-    static TGeoHMatrix Multiply(const TGeoMatrix& m1, const TGeoMatrix& m2); 
-    static TGeoHMatrix Multiply(const TGeoMatrix& m1, const TGeoMatrix& m2,
-                                const TGeoMatrix& m3); 
-    static TGeoHMatrix Multiply(const TGeoMatrix& m1, const TGeoMatrix& m2,
-                                const TGeoMatrix& m3, const TGeoMatrix& m4); 
+    static TGeoHMatrix Multiply(const TGeoHMatrix& m1, const TGeoHMatrix& m2); 
+    static TGeoHMatrix Multiply(const TGeoHMatrix& m1, const TGeoHMatrix& m2,
+                                const TGeoHMatrix& m3); 
+    static TGeoHMatrix Multiply(const TGeoHMatrix& m1, const TGeoHMatrix& m2,
+                                const TGeoHMatrix& m3, const TGeoHMatrix& m4); 
 
     // methods
     //
@@ -118,10 +118,3 @@ inline Bool_t  AliMUONGeometryBuilder::GetAlign() const
 { return fAlign; }
 
 #endif //ALI_MUON_GEOMETRY_BUILDER_H
-
-
-
-
-
-
-
