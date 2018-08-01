@@ -44,18 +44,20 @@ set(SRCS
     AliHLTTRDPreprocessorComponent.cxx
     AliHLTTRDTracklet.cxx
     AliTRDonlineTrackingDataContainer.cxx
-    tracking/AliHLTTRDTrack.cxx
-    tracking/AliHLTTRDTracker.cxx
-    tracking/AliHLTTRDTrackerComponent.cxx
-    tracking/AliHLTTRDTrackletReaderComponent.cxx
-    tracking/AliHLTTRDTrackletWord.cxx
    )
+
+if(DEFINED ALITPCCOMMON_DIR)
+    add_definitions(-DHAVE_ALITPCCOMMON)
+    include_directories(${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/SliceTracker
+                        ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/Merger
+                        ${ALITPCCOMMON_DIR}/sources/TPCCAGPUTracking/TRDTracking
+    )
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set(HDRS ${HDRS}
     AliHLTTRDTrackletWordArray.h
-    tracking/AliHLTTRDTrackPoint.h
 )
 
 # Generate the dictionary
@@ -65,7 +67,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase AliHLTUtil TRDbase TRDrec AliHLTTPC Net STAT MLP)
+set(LIBDEPS STEERBase STEER ESD CDB RAWDatabase RAWDatarec HLTbase AliHLTUtil TRDbase TRDrec Net STAT MLP)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Add a library to the project using the specified source files

@@ -78,7 +78,7 @@ void recraw_local(const char *filename,
   TString struri=cdbURI;
   TString strfile=filename;
   if (struri.BeginsWith("raw://") ||
-      strfile.Contains("://") && !strfile.Contains("local://")) {
+      (strfile.Contains("://") && !strfile.Contains("local://"))) {
     TGrid::Connect("alien");
   }
 

@@ -141,6 +141,7 @@ set(HDRS ${HDRS}
     AliHLTExternalTrackParam.h
     AliHLTLoggingVariadicFree.h
     AliHLTStdIncludes.h
+    AliHLTCDHWrapper.h
    )
 
 # Generate the dictionary
