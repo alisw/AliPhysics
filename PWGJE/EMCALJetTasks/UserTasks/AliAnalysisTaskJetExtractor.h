@@ -6,7 +6,9 @@
 
 
 //###############################################################################################################################################3
+class AliRDHFJetsCutsVertex;
 class AliEmcalJetTree;
+class AliHFJetsTaggingVertex;
 
 /**
  * \class AliAnalysisTaskJetExtractor
@@ -29,9 +31,16 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   virtual ~AliAnalysisTaskJetExtractor();
   void                        UserCreateOutputObjects();
   void                        Terminate(Option_t *option);
-
   AliEmcalJetTree*            GetJetTree() {return fJetTree;}
-  void                        ActivateTrueJetMatching(const char* arrayName, const char* rhoName, const char* partArrayName = "mcparticles") {fTruthJetsArrayName = arrayName; fTruthJetsRhoName = rhoName; fTruthParticleArrayName = partArrayName;}
+
+  void                        ActivateTrueJetMatching(const char* arrayName, const char* rhoName, const char* partArrayName = "mcparticles") 
+                                {fTruthJetsArrayName = arrayName; fTruthJetsRhoName = rhoName; fTruthParticleArrayName = partArrayName;}
+  void                        SetHadronMatchingRadius(Double_t val)               { fHadronMatchingRadius = val; }
+  void                        SetSecondaryVertexMaxChi2(Double_t val   )          { fSecondaryVertexMaxChi2 = val; }
+  void                        SetSecondaryVertexMaxDispersion(Double_t val)       { fSecondaryVertexMaxDispersion = val; }
+  void                        SetCalculateSecondaryVertices(Bool_t val)           { fCalculateSecondaryVertices = val; }
+  void                        SetVertexerCuts(AliRDHFJetsCutsVertex* val)         { fVertexerCuts = val; }
+  void                        SetSetEmcalJetFlavour(Bool_t val)                   { fSetEmcalJetFlavour = val; }
 
  protected:
   Bool_t                      CreateControlHistograms();
@@ -43,8 +52,23 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        AddPIDInformation(AliVParticle* particle, Float_t& sigITS, Float_t& sigTPC, Float_t& sigTOF, Float_t& sigTRD, Short_t& recoPID, Short_t& truePID);
   Bool_t                      IsTrackInCone(AliVParticle* track, Double_t eta, Double_t phi, Double_t radius);
   void                        GetJetTruePt(AliEmcalJet* jet, Double_t& matchedJetPt, Double_t& truePtFraction);
+  void                        GetJetType(AliEmcalJet* jet, Int_t& typeHM, Int_t& typePM);
+  Bool_t                      IsStrangeJet(AliEmcalJet* jet);
+
+  void                        GetTrackImpactParameters(const AliVVertex* vtx, AliAODTrack* track, Float_t& d0, Float_t& d0cov, Float_t& z0, Float_t& z0cov);
+  void                        ReconstructSecondaryVertices(const AliVVertex* primVtx, const AliEmcalJet* jet, std::vector<Float_t>& secVtx_X, std::vector<Float_t>& secVtx_Y, std::vector<Float_t>& secVtx_Z,
+                                  std::vector<Float_t>& secVtx_Mass, std::vector<Float_t>& secVtx_Lxy, std::vector<Float_t>& secVtx_SigmaLxy, std::vector<Float_t>& secVtx_Chi2, std::vector<Float_t>& secVtx_Dispersion);
 
   AliEmcalJetTree*            fJetTree;
+  AliHFJetsTaggingVertex*     fVtxTagger;                               //!<! class for sec. vertexing
+  Double_t                    fHadronMatchingRadius;                    ///< Matching radius to search for beauty/charm hadrons around jet
+  Double_t                    fSecondaryVertexMaxChi2;                  ///< Max chi2 of secondary vertex (others will be discarded)
+  Double_t                    fSecondaryVertexMaxDispersion;            ///< Max dispersion of secondary vertex (others will be discarded)
+  Bool_t                      fCalculateSecondaryVertices;              ///< Calculate the secondary vertices (instead of loading)
+  AliRDHFJetsCutsVertex*      fVertexerCuts;                            ///< Cuts used for the vertexer (given in add task macro)
+  Bool_t                      fSetEmcalJetFlavour;                      ///< if set, the flavour property of the AliEmcalJets will be set
+
+
 
   // ################## BASIC EVENT VARIABLES
   AliJetContainer            *fJetsCont;                                //!<! Jets
@@ -101,6 +125,10 @@ class AliEmcalJetTree : public TNamed
       fExtractionPercentagePtBins.push_back(maxPt);
       fExtractionPercentages.push_back(percentage);
     }
+
+    void            AddExtractionJetTypeHM(Int_t type) {fExtractionJetTypes_HM.push_back(type);}
+    void            AddExtractionJetTypePM(Int_t type) {fExtractionJetTypes_PM.push_back(type);}
+
     void            ResetExtractionPercentages() {fExtractionPercentages.clear(); fExtractionPercentagePtBins.clear();}
 
     void            SetSaveEventProperties(Bool_t val) {fSaveEventProperties = val; fInitialized = kFALSE;}
@@ -121,6 +149,9 @@ class AliEmcalJetTree : public TNamed
     Bool_t          GetSaveJetShapes() {return fSaveJetShapes;}
     Bool_t          GetSaveMCInformation() {return fSaveMCInformation;}
     Bool_t          GetSaveSecondaryVertices() {return fSaveSecondaryVertices;}
+
+    std::vector<Float_t> GetExtractionPercentagePtBins() {return fExtractionPercentagePtBins;}
+    std::vector<Float_t> GetExtractionPercentages() {return fExtractionPercentages;}
 
     TTree*          GetTreePointer() {return fJetTree;}
 
@@ -159,6 +190,8 @@ class AliEmcalJetTree : public TNamed
     // Option flags
     std::vector<Float_t> fExtractionPercentages;          ///< Percentages which will be extracted for a given pT bin
     std::vector<Float_t> fExtractionPercentagePtBins;     ///< pT-bins associated with fExtractionPercentages
+    std::vector<Int_t>   fExtractionJetTypes_HM;          ///< Jet-types that will be extracted with this tree (hadron matching)
+    std::vector<Int_t>   fExtractionJetTypes_PM;          ///< Jet-types that will be extracted with this tree (parton matching)
 
     // Buffers that will be added to the tree
     Float_t         fBuffer_JetPt;                        //!<! array buffer
@@ -192,6 +225,7 @@ class AliEmcalJetTree : public TNamed
     Float_t         fBuffer_Jet_MC_TruePtFraction;        //!<! array buffer
 
     Int_t           fBuffer_NumSecVertices;
+
 
     /// \cond CLASSIMP
     ClassDef(AliEmcalJetTree, 1) // Jet tree class
