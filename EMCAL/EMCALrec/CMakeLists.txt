@@ -43,6 +43,7 @@ set(SRCS
     AliEMCALClusterizerNxN.cxx
     AliEMCALClusterizerv1.cxx
     AliEMCALClusterizerv2.cxx
+    AliEMCALClusterizerv3.cxx
     AliEMCALPID.cxx
     AliEMCALQADataMakerRec.cxx
     AliEMCALReconstructor.cxx
