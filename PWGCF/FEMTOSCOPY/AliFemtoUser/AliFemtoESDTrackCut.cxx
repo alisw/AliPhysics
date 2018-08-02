@@ -512,48 +512,9 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 		}
 	      }
 	    }
-	    //       }
 	  }
 	  
-	  /*
-	  //
-	  	  // Looking for deuterons
-	  else if (fMostProbable == 13) {
-	    //       if (imost == 3) {
-	    // Using the TPC to reject non-kaons
-	    if (track->P().Mag() < 0.8) {
-	      if (!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
-		imost = 0;
-	      else imost = 4;
-	      if (0) {
-		// Using the TOF to reject non-kaons
-		if (tTOFPidIn)
-		  if (!IsDeuteronTOFTime(track->P().Mag(), track->TOFdeuteronTime()))
-		    imost = 0;
-	      }
-	    }
-	    else {
-	      if (0) {
-		if (tTOFPidIn) {
-		  if (!IsDeuteronTOFTime(track->P().Mag(), track->TOFdeuteronTime()))
-		    imost = 0;
-		  else
-		    imost = 3;
-		}
-		else {
-		  if (!(IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal())))
-		    imost = 0;
-		  else
-		    imost = 3;
-		}
-	      }
-	    }
-	    //       }
-	  }
-	  
-	  //
-	  */
-	  
+
 	}
     if (imost != fMostProbable) return false;
   }
@@ -1108,7 +1069,6 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
 
 
 /***********************************************************************/
-//parametry???????????????????????????
 bool AliFemtoESDTrackCut::IsDeuteronNSigma(float mom, float nsigmaTPCD, float nsigmaTOFD)
 {
   if (fNsigmaTPCTOF) {
