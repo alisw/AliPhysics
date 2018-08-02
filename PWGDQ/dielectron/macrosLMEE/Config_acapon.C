@@ -19,6 +19,7 @@ Bool_t plotsTPC      = kTRUE;
 Bool_t plotsTOF      = kTRUE;
 Bool_t plots3D       = kFALSE;
 // V0 plots switched on if cutDefinition is v0_tight
+// Or if requesting PID corrections
 Bool_t v0plots       = kFALSE;
 
 AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC = kFALSE, Bool_t isESD = kFALSE,
@@ -39,11 +40,14 @@ AliDielectron* Config_acapon(TString cutDefinition, Bool_t hasMC = kFALSE, Bool_
 			LMcutlib->SetEtaCorrectionTPC(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
+			v0plots = kTRUE;
 		}
 		if(setITScorr){
 			LMcutlib->SetEtaCorrectionITS(die, AliDielectronVarManager::kP,
                                       AliDielectronVarManager::kEta,
                                       AliDielectronVarManager::kRefMultTPConly, kFALSE);
+
+			v0plots = kTRUE;
 		}
     MCenabled = hasMC;
 
