@@ -93,6 +93,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance() :
   fMedianEMCal(0.),
   fMedianDCal(0.),
   fkEMCEJE(kFALSE),
+  fDoTriggerResponse(kFALSE),
   fEmbeddingQA(),
   fMCJetContainer(nullptr),
   fDetJetContainer(nullptr),
@@ -141,6 +142,7 @@ AliAnalysisTaskEmcalJetPerformance::AliAnalysisTaskEmcalJetPerformance(const cha
   fMedianEMCal(0.),
   fMedianDCal(0.),
   fkEMCEJE(kFALSE),
+  fDoTriggerResponse(kFALSE),
   fEmbeddingQA(),
   fMCJetContainer(nullptr),
   fDetJetContainer(nullptr),
@@ -904,6 +906,16 @@ void AliAnalysisTaskEmcalJetPerformance::AllocateTriggerSimHistograms()
   title = histname + ";Centrality (%);#it{E}_{patch,med} (GeV);type";
   fHistManager.CreateTH3(histname.Data(), title.Data(), 50, 0, 100, 100, 0, 50, 2, -0.5, 1.5);
   
+  if (fDoTriggerResponse) {
+    histname = "TriggerSimHistograms/hMaxPatchResponseMatrix";
+    title = histname + ";#it{E}_{maxpatch,det} (GeV);#it{E}_{maxpatch,truth} (GeV)";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 400, 0, 200, 400, 0, 200);
+    
+    histname = "TriggerSimHistograms/hEMCalEnergyResponseMatrix";
+    title = histname + ";#Sigma#it{E}_{clus,EMCal} (GeV);#it{E}_{EMCal,truth} (GeV)";
+    fHistManager.CreateTH2(histname.Data(), title.Data(), 500, 0, 500, 500, 0, 500);
+  }
+  
   //----------------------------------------------
   // Jet histograms for "triggered" events
   AliJetContainer* jets = 0;
@@ -1266,22 +1278,31 @@ void AliAnalysisTaskEmcalJetPerformance::DoTriggerSimulation()
   // Compute patches in EMCal, DCal (I want offline simple trigger patch, i.e. patch calculated using FEE energy)
   std::vector<Double_t> vecEMCal;
   std::vector<Double_t> vecDCal;
+  Double_t maxPatchEnergy = 0.;
+  Double_t patchE;
+  AliEMCALTriggerPatchInfo *maxPatch = nullptr;
   for(auto p : *fTriggerPatchInfo){
     AliEMCALTriggerPatchInfo *recpatch = static_cast<AliEMCALTriggerPatchInfo *>(p);
     if (recpatch) {
       
       if(!recpatch->IsJetHighSimple()) continue;
       
+      patchE = recpatch->GetPatchE();
+      
       histname = "TriggerSimHistograms/hEtaVsPhi";
       fHistManager.FillTH2(histname.Data(), recpatch->GetEtaGeo(), recpatch->GetPhiGeo());
       
       histname = "TriggerSimHistograms/hPatchE";
-      fHistManager.FillTH2(histname.Data(), fCent, recpatch->GetPatchE());
+      fHistManager.FillTH2(histname.Data(), fCent, patchE);
       
       if (recpatch->IsEMCal()) {
-        vecEMCal.push_back(recpatch->GetPatchE());
+        vecEMCal.push_back(patchE);
+        if (patchE > maxPatchEnergy) {
+          maxPatchEnergy = patchE;
+          maxPatch = recpatch;
+        }
       } else {
-        vecDCal.push_back(recpatch->GetPatchE());
+        vecDCal.push_back(patchE);
       }
       
     }
@@ -1300,6 +1321,70 @@ void AliAnalysisTaskEmcalJetPerformance::DoTriggerSimulation()
   histname = "TriggerSimHistograms/hNPatches";
   fHistManager.FillTH2(histname.Data(), nBkgPatchesEMCal, kEMCal);
   fHistManager.FillTH2(histname.Data(), nBkgPatchesDCal, kDCal);
+  
+  // Fill max patch response and total EMCal energy response, if requested
+  if (fGeneratorLevel && fDoTriggerResponse && maxPatch) {
+    
+    Double_t phiMinMaxPatch = maxPatch->GetPhiMin();
+    Double_t phiMaxMaxPatch = maxPatch->GetPhiMax();
+    Double_t etaMinMaxPatch = maxPatch->GetEtaMin();
+    Double_t etaMaxMaxPatch = maxPatch->GetEtaMax();
+    Double_t truthEnergyPatch = 0;
+    
+    Double_t phiMinEMCal = fGeom->GetArm1PhiMin() * TMath::DegToRad(); // 80
+    Double_t phiMaxEMCal = fGeom->GetEMCALPhiMax() * TMath::DegToRad(); // ~188
+    Double_t detEnergyEMCal = 0;
+    Double_t truthEnergyEMCal = 0;
+    
+    AliTLorentzVector part;
+    Double_t partEta;
+    Double_t partPhi;
+    Double_t partE;
+    for (auto mcpart:fGeneratorLevel->accepted_momentum()) {
+      part.Clear();
+      part = mcpart.first;
+      partEta = part.Eta();
+      partPhi = part.Phi_0_2pi();
+      partE = part.E();
+      if (partPhi < phiMaxMaxPatch && partPhi > phiMinMaxPatch) {
+        if (partEta < etaMaxMaxPatch && partEta > etaMinMaxPatch) {
+          truthEnergyPatch += partE;
+        }
+      }
+      if (partPhi < phiMaxEMCal && partPhi > phiMinEMCal) {
+        if (partEta < 0.7 && partEta > -0.7) {
+          truthEnergyEMCal += partE;
+        }
+      }
+    }
+    
+    AliTLorentzVector clusFourVec;
+    const AliVCluster* clus;
+    Double_t clusEta;
+    Double_t clusPhi;
+    AliClusterContainer* clusters = GetClusterContainer(0);
+    for (auto clusIterator : clusters->accepted_momentum() ) {
+      clusFourVec.Clear();
+      clusFourVec = clusIterator.first;
+      clusEta = clusFourVec.Eta();
+      clusPhi = clusFourVec.Phi_0_2pi();
+      clus = clusIterator.second;
+      if (clus->IsEMCAL()) {
+        if (clusPhi < phiMaxEMCal && clusPhi > phiMinEMCal) {
+          if (clusEta < 0.7 && clusEta > -0.7) {
+            detEnergyEMCal += clusFourVec.E();
+          }
+        }
+      }
+    }
+    
+    histname = "TriggerSimHistograms/hMaxPatchResponseMatrix";
+    fHistManager.FillTH2(histname.Data(), maxPatchEnergy, truthEnergyPatch);
+    
+    histname = "TriggerSimHistograms/hEMCalEnergyResponseMatrix";
+    fHistManager.FillTH2(histname.Data(), detEnergyEMCal, truthEnergyEMCal);
+
+  }
   
   // Then compute background subtracted patches, by subtracting from each patch the median patch E from the opposite hemisphere
   // If a patch is above threshold, the event is "triggered"
