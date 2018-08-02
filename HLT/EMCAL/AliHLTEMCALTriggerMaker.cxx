@@ -94,7 +94,13 @@ void AliHLTEMCALTriggerMaker::AddDigit(const AliHLTCaloDigitDataStruct *digit){
    * TODO Crosscheck
    */
   Int_t fastorIndex;
-  fkGeometryPtr->GetGeometryPtr()->GetTriggerMapping()->GetFastORIndexFromCellIndex(fkGeometryPtr->GetGeometryPtr()->GetAbsCellIdFromCellIndexes(digit->fModule, digit->fX, digit->fZ), fastorIndex);
+  // check validity of the of the digit
+  int digitCellID = fkGeometryPtr->GetGeometryPtr()->GetAbsCellIdFromCellIndexes(digit->fModule, digit->fX, digit->fZ);
+  if(digitCellID < 0){
+    HLTError("Digit out of range: mod(%d), x(%d), z(%d) -> %d", digit->fModule, digit->fX, digit->fZ, digitCellID);
+    return;
+  }
+  fkGeometryPtr->GetGeometryPtr()->GetTriggerMapping()->GetFastORIndexFromCellIndex(digitCellID, fastorIndex);
   int globCol, globRow;
   fkGeometryPtr->GetGeometryPtr()->GetTriggerMapping()->GetPositionInEMCALFromAbsFastORIndex(fastorIndex, globCol, globRow);
   (*fADCOfflineValues)(globCol, globRow) += digit->fEnergy/EMCALTrigger::kEMCL1ADCtoGeV;
