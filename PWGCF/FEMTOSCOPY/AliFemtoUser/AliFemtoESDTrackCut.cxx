@@ -357,7 +357,7 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	    if ( !IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
 	      imost = 5;
 	  }
-	  else if (fMostProbable == 6) { //pions OR kaons OR protons ORORORORORO
+	  else if (fMostProbable == 6) { //pions OR kaons OR protons
 	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
 	      imost = 6;
 	    else if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK()))
@@ -617,7 +617,6 @@ TList *AliFemtoESDTrackCut::ListSettings()
       snprintf(buf, 200, "AliFemtoESDTrackCut.mostprobable=%s", "Kaon");
     if (fMostProbable == 4)
       snprintf(buf, 200, "AliFemtoESDTrackCut.mostprobable=%s", "Proton");
-    if (fMostProbable == 5)
 
     tListSetttings->AddLast(new TObjString(buf));
   }

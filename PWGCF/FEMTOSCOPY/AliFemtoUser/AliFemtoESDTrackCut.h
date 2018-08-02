@@ -63,7 +63,7 @@ public:
   void SetMostProbableDeuteron();
   void SetMostProbableTriton();
   void SetMostProbableHe3();
-  void SetLeastProbableAlpha();
+  void SetMostProbableAlpha();
   //
 
   void SetMostProbable(const int& num);
@@ -252,7 +252,7 @@ inline void AliFemtoESDTrackCut::SetLeastProbableProton() { fMostProbable = 5; }
 inline void AliFemtoESDTrackCut::SetMostProbableDeuteron() { fMostProbable = 13; }
 inline void AliFemtoESDTrackCut::SetMostProbableTriton() { fMostProbable = 14; }
 inline void AliFemtoESDTrackCut::SetMostProbableHe3() { fMostProbable = 15; }
-inline void AliFemtoESDTrackCut::SetLeastProbableAlpha() { fMostProbable = 16; }
+inline void AliFemtoESDTrackCut::SetMostProbableAlpha() { fMostProbable = 16; }
 //
 
 inline void AliFemtoESDTrackCut::SetNoMostProbable() { fMostProbable = 0; }
