@@ -20,11 +20,26 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //Cascade
   vHF->SetCascadesOn();                 
   vHF->SetFindVertexForCascades(kFALSE);
-   vHF->SetMassCutBeforeVertexing(kTRUE); // PbPb
+  vHF->SetMassCutBeforeVertexing(kTRUE); // PbPb
   vHF->SetV0TypeForCascadeVertex(AliRDHFCuts::kOnlyOfflineV0s); //All V0s 0, Offline 1, OnTheFly 2 //as in Config_Pb_AllCent
  
 
-  vHF->SetMassCutBeforeVertexing(kTRUE); // PbPb
+  //PID switched off
+   vHF->SetUseKaonPIDfor3Prong(kFALSE);
+   vHF-> SetNotUseProtonPIDforLambdaC();
+   // vHF->SetUseProtonAndPionPIDforLambdaC();
+   vHF->SetNotUseProtonPIDforLambdaC2V0();
+   //  vHF->SetnSigmaTOFforKaonSel(5., 5.);
+   // vHF->SetnSigmaTPCforKaonSel(5., 5.);
+   vHF->SetnSigmaTOFforProtonSel(40.,40.);
+   vHF->SetnSigmaTPCforProtonSel(5., 5.);
+   vHF->SetnSigmaTPCforPionSel(40., 40.);
+   vHF->SetnSigmaTOFforPionSel(40.,40.); 
+   vHF->SetMaxMomForTPCPid(9999999999.);
+   vHF->SetUseTPCPID(kFALSE);
+   vHF->SetUseTOFPID(kFALSE);
+   // vHF->SetUseTPCPIDOnlyIfNoTOF(kTRUE);
+
 
  
   
@@ -47,6 +62,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetTrackFilter(trkFilter);
   //     D* soft pion tracks
   AliESDtrackCuts *esdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts","default");
+  esdTrackCutsSoftPi->SetRequireITSRefit(kTRUE);	
   esdTrackCutsSoftPi->SetMinNClustersITS(2);
   esdTrackCutsSoftPi->SetMaxDCAToVertexXY(1.);  
   esdTrackCutsSoftPi->SetMaxDCAToVertexZ(1.);
