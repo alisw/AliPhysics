@@ -42,11 +42,14 @@ public:
     Bool_t          GetEMCalTriggerDG1() { return fDCalDG1; };
     void            SetEMCalTriggerDG1(Bool_t flagTr1) { fDCalDG1=flagTr1; };
     
-    void            SetSSCut(Bool_t applySSCut) {fFlagApplySSCut = applySSCut;}
-    void            SetFillSprs(Bool_t fillElecSprs) {fFlagFillSprs = fillElecSprs;}
-    void            SetMC(Bool_t fillMChistos) {fFlagFillMCHistos = fillMChistos;}
-    void            SetStackLoop(Bool_t runStackLoop) {fFlagRunStackLoop = runStackLoop;}
-    void            SetTPCClus(Int_t nTPCclusters) {fNclusTPC = nTPCclusters;}
+    void            SetFillSprs(Bool_t fillElecSprs) {fFlagFillSprs = fillElecSprs;};
+    void            SetMC(Bool_t setMCfill) {fFlagFillMCHistos = setMCfill;};
+    void            SetSSCut(Double_t maxM20Cut) {fMaxM20Cut = maxM20Cut;};
+    void            SetEoP(Double_t eopCut) {fMinEoPCut = eopCut;};
+    void            SetNSig(Double_t nSigCut) {fMinNSigCut = nSigCut;};
+    void            SetDCABinSize(Double_t dcaBinning) {fDCABinSize = dcaBinning;};
+    void            SetStackLoop(Bool_t runStackLoop) {fFlagRunStackLoop = runStackLoop;};
+    void            SetTPCClus(Int_t nTPCclusters) {fNclusTPC = nTPCclusters;};
     void            SetClusterTypeEMC(Bool_t flagClsEMC) {fFlagClsTypeEMC = flagClsEMC;};
     void            SetClusterTypeDCAL(Bool_t flagClsDCAL) {fFlagClsTypeDCAL = flagClsDCAL;};
     
@@ -76,7 +79,11 @@ private:
     
     Bool_t              fEMCEG1;         // EMCal Threshold EG1
     Bool_t              fDCalDG1;        // DCal Threshold DG1
-    Bool_t              fFlagApplySSCut; //switch to turn on SS cut
+    //Bool_t              fFlagApplySSCut; //switch to turn on SS cut
+    Double_t            fMaxM20Cut;      // set eID M20 cut
+    Double_t            fMinEoPCut;      // set eID E/p cut
+    Double_t            fMinNSigCut;     // set eID nSig cut
+    Double_t            fDCABinSize;     // set DCA bin size for systematics
     Bool_t              fFlagFillSprs; //switch to fill electron eid sparse
     Bool_t              fFlagFillMCHistos; // switch to fill histos that require MC pid
     Bool_t              fFlagRunStackLoop; //switch to run stack loop to get D & B meson species info
@@ -148,6 +155,10 @@ private:
     
     TH2F                *fPhotonicDCA;   //! Photonic DCA using MC PID
     TH2F                *fInclElecDCA;   //! Inclusive electron DCA vs. pT
+    TH2F                *fnSigaftEoPCut;   //! DCA after eID E/p cut
+    TH2F                *fnSigaftSysEoPCut;   //! DCA after eID systematic E/p cut
+    TH2F                *fnSigaftM20EoPCut;   //! DCA after eID M20+E/p cut
+    TH2F                *fnSigaftSysM20EoPCut;   //! DCA after Sys eID M20 + E/p cut
     TH2F                *fInclElecDCAnoSign;   //! Inclusive electron DCA vs. pT, no sign
     TH2F                *fElecEoPnoSig;  //! Elec EoP w/o sigma cut
     TH2F                *fInclElecEoP;   //! Inclusive electron EoP vs. pT
