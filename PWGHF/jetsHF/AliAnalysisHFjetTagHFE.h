@@ -125,6 +125,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   TH1F                        *fHistHFdijet;
   TH2F                        *fHistULSjet;
   TH2F                        *fHistLSjet;
+  TH2F                        *fHistHadjet;
   TH2F                        *fHistHFjetOrder;
   TH2F                        *fHistDiJetPhi; 
   TH2F                        *fHistDiJetMomBalance; 
@@ -170,6 +171,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
   void MakeParticleLevelJet();
   //void SetCentralityMim(Int_t centMim) {fcentMim = centMim;};
   //void SetCentralityMax(Int_t centMax) {fcentMax = centMax;};
+  void GetFakeHadronJet(Double_t pthad, Double_t *hpTarray, Double_t &rho);
   void FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
   Double_t IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE);
 
