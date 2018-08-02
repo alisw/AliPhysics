@@ -13,12 +13,6 @@
  */
 
 /**
- * \defgroup CaloTrackCorrMacros CaloTrackCorr Analysis Configuration Macros
- * \ingroup CaloTrackCorrelations
- * \brief Analysis task configuration macros for CaloTrackCorr package
- */
-
-/**
  * \defgroup CaloTrackCorrMacros CaloTrackCorr Analysis Configuration and Postprocessing Macros
  * \ingroup CaloTrackCorrelations
  * \brief Analysis task configuration and postprocessing macros for CaloTrackCorr package 
@@ -26,13 +20,18 @@
 
 /**
  * \defgroup CaloTrackCorrMacrosPlotting CaloTrackCorr Plotting Macros
- * \ingroup CaloTrackCorrelationsMacros
- * \brief Macros processing outout analysis histograms.
+ * \ingroup CaloTrackCorrMacros
+ * \brief Macros processing output analysis histograms. 
+ * 
+ * All macros can be found in the subdirectory "plotting" and now there are 
+ * 2 categories:
+ *  + invmass: invariant mass fits and comparisons
+ *  + shape: shower shape and other parameters comparison between productions
  */
 
 /**
  * \defgroup CaloTrackCorrMacrosQA CaloTrackCorr QA Configuration and Postprocessing Macros
- * \ingroup CaloTrackCorrelationsMacros
+ * \ingroup CaloTrackCorrMacros
  * \brief Analysis task configuration and postprocessing macros for CaloTrackCorr package devoted to QA
  */
 
