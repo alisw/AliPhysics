@@ -114,6 +114,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
 		SPDfirst(0),
 		charge(0),
 		EnSigmaITS(0),
+		EnSigmaITScorr(0),
 		EnSigmaTPC(0),
 		EnSigmaTPCcorr(0),
 		EnSigmaTOF(0),
@@ -168,8 +169,11 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker():
     fIsGRIDanalysis(kTRUE),
     fGridPID(-1),
 		fUseTPCcorr(kFALSE),
-		fWidth(0),
-		fMean(0),
+		fWidthTPC(0),
+		fMeanTPC(0),
+		fUseITScorr(kFALSE),
+		fWidthITS(0),
+		fMeanITS(0),
 		fGeneratorHashes(0)
 {
 
@@ -213,6 +217,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
 		SPDfirst(0),
 		charge(0),
 		EnSigmaITS(0),
+		EnSigmaITScorr(0),
 		EnSigmaTPC(0),
 		EnSigmaTPCcorr(0),
 		EnSigmaTOF(0),
@@ -267,8 +272,11 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     fIsGRIDanalysis(kTRUE),
     fGridPID(0),
 		fUseTPCcorr(kFALSE),
-		fWidth(0),
-		fMean(0),
+		fWidthTPC(0),
+		fMeanTPC(0),
+		fUseITScorr(kFALSE),
+		fWidthITS(0),
+		fMeanITS(0),
 		fGeneratorHashes(0)
 
 {
@@ -293,6 +301,7 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name)
     DefineOutput(1, TTree::Class()); //will be connected to fTree
     DefineOutput(2, TH1F::Class());
     DefineOutput(3, TH2F::Class());
+		
 }
 
 //________________________________________________________________________
@@ -314,7 +323,7 @@ AliAnalysisTaskSimpleTreeMaker::~AliAnalysisTaskSimpleTreeMaker(){
 //________________________________________________________________________
 
 void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
-  
+
     AliAnalysisManager* man = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
     inputHandler->SetNeedField();
@@ -347,9 +356,12 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
 		fTree->Branch("goldenChi2",        &goldenChi2);
 		fTree->Branch("charge",            &charge);
 		fTree->Branch("EsigITS",           &EnSigmaITS);
+		if(fUseITScorr){
+			fTree->Branch("EsigITScorr",     &EnSigmaITScorr);
+		}
 		fTree->Branch("EsigTPC",           &EnSigmaTPC);
 		if(fUseTPCcorr){
-			fTree->Branch("EsigTPCcorr",       &EnSigmaTPCcorr);
+			fTree->Branch("EsigTPCcorr",     &EnSigmaTPCcorr);
 		}
 		fTree->Branch("EsigTOF",           &EnSigmaTOF);
 		fTree->Branch("PsigITS",           &PnSigmaITS);
@@ -405,6 +417,21 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
         fGridPID = -1;
     }
 
+		//Setup TPC correction maps
+		if(fUseTPCcorr){
+			AliDielectronPID::SetCentroidCorrFunction( (TH1*)fMeanTPC->Clone() );
+			AliDielectronPID::SetWidthCorrFunction( (TH1*)fWidthTPC->Clone() );
+			//::Info("AliAnalysisTaskSimpleTreeMaker::UserExec","Setting TPC Correction Histos");
+		}
+
+		if(fUseITScorr){
+			AliDielectronPID::SetCentroidCorrFunctionITS( (TH1*)fMeanITS->Clone() );
+			AliDielectronPID::SetWidthCorrFunctionITS( (TH1*)fWidthITS->Clone() );
+			//::Info("AliAnalysisTaskSimpleTreeMaker::UserExec","Setting ITS Correction Histos");
+		}
+	
+		//Needed by the dielectron framework
+		varManager->SetPIDResponse(fPIDResponse);
 
     //Create TH2F for armenteros plot. Filled if creating v0 tree
 		//NOTE: Class designed to study electrons with weak EsigTPC cuts
@@ -520,16 +547,6 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 
 	AliVParticle* mcTrack = 0x0;
 	AliVParticle* motherMCtrack = 0x0;
-	
-	//Setup TPC correction maps
-	if(fUseTPCcorr){
-		AliDielectronPID::SetCentroidCorrFunction( (TH1*)fMean->Clone() );
-		AliDielectronPID::SetWidthCorrFunction( (TH1*)fWidth->Clone() );
-		::Info("AliAnalysisTaskSimpleTreeMaker::UserExec","Setting Correction Histos");
-	}
-
-	//Needed by the dielectron framework
-  varManager->SetPIDResponse(fPIDResponse);
 
 	//Loop over tracks for event
 	if(!fIsV0tree){
@@ -638,6 +655,12 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
 			EnSigmaITS = -999;
 			if(fHasSDD){
 				EnSigmaITS = fPIDResponse->NumberOfSigmasITS(track,(AliPID::EParticleType)AliPID::kElectron);
+				EnSigmaITScorr = EnSigmaITS;
+				// Only apply ITS correction if valid PID signal returned
+				if(fUseITScorr && (EnSigmaITS != -999)){
+					EnSigmaITScorr -= AliDielectronPID::GetCntrdCorrITS(track);
+					EnSigmaITScorr /= AliDielectronPID::GetWdthCorrITS(track);
+				}
 			}
 			EnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)AliPID::kElectron);
 

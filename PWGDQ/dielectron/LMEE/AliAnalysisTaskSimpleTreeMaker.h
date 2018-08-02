@@ -44,9 +44,14 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 	
 		//PID calibration function to correct the width and mean of detector
 		//response (I.e should be unit guassian)
-		void SetCorrWidthMean(TH3D* width, TH3D* mean){
-			fMean  = mean;
-			fWidth = width;
+		void SetCorrWidthMeanTPC(TH3D* width, TH3D* mean){
+			fMeanTPC  = mean;
+			fWidthTPC = width;
+		};
+		
+		void SetCorrWidthMeanITS(TH3D* width, TH3D* mean){
+			fMeanITS  = mean;
+			fWidthITS = width;
 		};
 
 		void SetCentralityPercentileRange(Double_t min, Double_t max){
@@ -153,8 +158,12 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 			hasMC = answer;
 		}
 
-		void SetUseCorr(Bool_t answer){
+		void SetUseTPCcorr(Bool_t answer){
 			fUseTPCcorr = answer;
+		}
+
+		void SetUseITScorr(Bool_t answer){
+			fUseITScorr = answer;
 		}
 
 		Bool_t GetDCA(const AliVEvent* event, const AliAODTrack* track, Double_t* d0z0, Double_t* covd0z0);
@@ -219,6 +228,7 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Bool_t SPDfirst;
 		Int_t charge;
 		Double_t EnSigmaITS;
+		Double_t EnSigmaITScorr;
 		Double_t EnSigmaTPC;
 		Double_t EnSigmaTPCcorr;
 		Double_t EnSigmaTOF;
@@ -288,8 +298,12 @@ class AliAnalysisTaskSimpleTreeMaker : public AliAnalysisTaskSE {
 		Int_t fGridPID;
 				
 		Bool_t fUseTPCcorr;
-		TH3D* fWidth;
-		TH3D* fMean;
+		TH3D* fWidthTPC;
+		TH3D* fMeanTPC;
+
+		Bool_t fUseITScorr;
+		TH3D* fWidthITS;
+		TH3D* fMeanITS;
 
 		// Store list of generator hashes which can be checked against to determine
 		// whether or not the track was injected

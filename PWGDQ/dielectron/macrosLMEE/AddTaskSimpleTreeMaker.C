@@ -1,6 +1,7 @@
 AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtree", 
                                                        Bool_t hasSDD = kTRUE,
                                                        Bool_t useTPCcorr = kTRUE,
+																											 Bool_t useITScorr = kTRUE,
 																											 Bool_t getFromAlien = kFALSE) {				
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -48,15 +49,28 @@ AliAnalysisTaskSimpleTreeMaker *AddTaskSimpleTreeMaker(TString taskName = "MLtre
     // user customization part
 
     if(useTPCcorr){
-			TH3D mean = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
+			TH3D meanTPC = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
                                               AliDielectronVarManager::kEta,
                                               AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
 
-			TH3D width = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
+			TH3D widthTPC = cutLib->SetEtaCorrectionTPCTTree(AliDielectronVarManager::kP,
                                                AliDielectronVarManager::kEta,
                                                AliDielectronVarManager::kRefMultTPConly, kFALSE,2);
-			task->SetUseCorr(kTRUE);
-			task->SetCorrWidthMean((TH3D*)width.Clone(),(TH3D*)mean.Clone());
+			task->SetUseTPCcorr(kTRUE);
+			task->SetCorrWidthMeanTPC((TH3D*)widthTPC.Clone(),(TH3D*)meanTPC.Clone());
+
+		}
+
+    if(useITScorr){
+			TH3D meanITS = cutLib->SetEtaCorrectionITSTTree(AliDielectronVarManager::kP,
+                                              AliDielectronVarManager::kEta,
+                                              AliDielectronVarManager::kRefMultTPConly, kFALSE,1);
+
+			TH3D widthITS = cutLib->SetEtaCorrectionITSTTree(AliDielectronVarManager::kP,
+                                               AliDielectronVarManager::kEta,
+                                               AliDielectronVarManager::kRefMultTPConly, kFALSE,2);
+			task->SetUseITScorr(kTRUE);
+			task->SetCorrWidthMeanITS((TH3D*)widthITS.Clone(),(TH3D*)meanITS.Clone());
 
 		}
     //Add event filter
