@@ -30,6 +30,9 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   void SetUseCentrality(Int_t flag){
     fRDHFCuts->SetUseCentrality(flag);
   }
+  void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
+    fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
+  }
   virtual void UserCreateOutputObjects();
   virtual void Init(){};
   virtual void LocalInit() {Init();}
@@ -67,6 +70,10 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   TH2F* fHistNormDLxyVsPt[2*kDecays];     //!<! hist. of decay length (meas)
   TH2F* fHistCosPointVsPt[2*kDecays];   //!<! hist. of cos(theta_p) (meas)
 
+  Int_t fNPtBins;               /// number of pt bins in histos
+  Double_t fMinPt;              /// lower limit for pt
+  Double_t fMaxPt;              /// upper limit for pt
+
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
 
   AliRDHFCutsD0toKpi *fRDHFCuts;             /// Cuts for event selection
@@ -75,7 +82,7 @@ class AliAnalysisTaskDmesonMCPerform : public AliAnalysisTaskSE
   Int_t fMapTrLabel[kMaxLabel];              /// map of track labels
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskDmesonMCPerform,1); 
+  ClassDef(AliAnalysisTaskDmesonMCPerform,2);
   /// \endcond
 };
 #endif

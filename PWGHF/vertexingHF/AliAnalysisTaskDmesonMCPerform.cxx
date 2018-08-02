@@ -46,6 +46,9 @@ AliAnalysisTaskDmesonMCPerform::AliAnalysisTaskDmesonMCPerform():
   fHistNEvents(0x0),
   fHistNGenD(0x0),
   fHistNCand(0x0),
+  fNPtBins(16),
+  fMinPt(0.),
+  fMaxPt(16.),
   fAODProtection(1),
   fRDHFCuts(0x0),
   fRDHFCutsDplus(0x0)
@@ -140,7 +143,7 @@ void AliAnalysisTaskDmesonMCPerform::UserCreateOutputObjects()
   fHistNGenD->SetMinimum(0);
   fOutput->Add(fHistNGenD);
 
-  fHistNCand=new TH2F("fHistNCand","number of D meson candidates",5,-0.5,4.5,16,0.,16.);
+  fHistNCand=new TH2F("fHistNCand","number of D meson candidates",5,-0.5,4.5,fNPtBins,fMinPt,fMaxPt);
   fHistNCand->GetXaxis()->SetBinLabel(1,"D0#rightarrowK#pi");
   fHistNCand->GetXaxis()->SetBinLabel(2,"D+#rightarrowK#pi#pi");
   fHistNCand->GetXaxis()->SetBinLabel(3,"D*+#rightarrowD0#pi");
@@ -152,23 +155,23 @@ void AliAnalysisTaskDmesonMCPerform::UserCreateOutputObjects()
   for(Int_t j=0; j<kDecays; j++){
     for(Int_t i=0; i<2; i++){
       Int_t index=j*2+i;
-      fHistPtYMultGen[index]=new TH3F(Form("hPtYMult%sGen%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",16,0.,16.,24,-6.,6.,40,0.,100.);
-      fHistPtYMultGenDauInAcc[index]=new TH3F(Form("hPtYMult%sGenDauInAcc%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",16,0.,16.,24,-6.,6.,40,0.,100.);
-      fHistPtYMultReco[index]=new TH3F(Form("hPtYMult%sReco%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",16,0.,16.,24,-6.,6.,40,0.,100.);
-      fHistPtYMultRecoFilt[index]=new TH3F(Form("hPtYMult%sRecoFilt%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",16,0.,16.,24,-6.,6.,40,0.,100.);
-      fHistPtYMultRecoSel[index]=new TH3F(Form("hPtYMult%sRecoSel%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",16,0.,16.,24,-6.,6.,40,0.,100.);
+      fHistPtYMultGen[index]=new TH3F(Form("hPtYMult%sGen%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",fNPtBins,fMinPt,fMaxPt,24,-6.,6.,40,0.,100.);
+      fHistPtYMultGenDauInAcc[index]=new TH3F(Form("hPtYMult%sGenDauInAcc%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",fNPtBins,fMinPt,fMaxPt,24,-6.,6.,40,0.,100.);
+      fHistPtYMultReco[index]=new TH3F(Form("hPtYMult%sReco%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",fNPtBins,fMinPt,fMaxPt,24,-6.,6.,40,0.,100.);
+      fHistPtYMultRecoFilt[index]=new TH3F(Form("hPtYMult%sRecoFilt%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",fNPtBins,fMinPt,fMaxPt,24,-6.,6.,40,0.,100.);
+      fHistPtYMultRecoSel[index]=new TH3F(Form("hPtYMult%sRecoSel%s",type[i].Data(),fPartName[j].Data())," ; p_{T} (GeV/c) ; y; multPercentile",fNPtBins,fMinPt,fMaxPt,24,-6.,6.,40,0.,100.);
       fOutput->Add(fHistPtYMultGen[index]);
       fOutput->Add(fHistPtYMultGenDauInAcc[index]);
       fOutput->Add(fHistPtYMultReco[index]);
       fOutput->Add(fHistPtYMultRecoFilt[index]);
       fOutput->Add(fHistPtYMultRecoSel[index]);
-      fHistXvtxResVsPt[index]=new TH2F(Form("hXvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; x_{v}(rec)-x_{v}(gen) (#mum)",16,0.,16.,100,-500.,500.);
-      fHistYvtxResVsPt[index]=new TH2F(Form("hYvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; y_{v}(rec)-y_{v}(gen) (#mum)",16,0.,16.,100,-500.,500.);
-      fHistZvtxResVsPt[index]=new TH2F(Form("hZvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; z_{v}(rec)-z_{v}(gen) (#mum)",16,0.,16.,100,-500.,500.);
-      fHistInvMassVsPt[index]=new TH2F(Form("hInvMassVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; Inv. Mass (GeV/c^{2})",16,0.,16.,300,1.75,2.35);
-      fHistDecLenVsPt[index]=new TH2F(Form("hDecLenVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; dec. len. (#mum)",16,0.,16.,100,0.,5000.);
-      fHistNormDLxyVsPt[index]=new TH2F(Form("hNormDLxyVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; dec. len. (#mum)",16,0.,16.,100,0.,20.);
-      fHistCosPointVsPt[index]=new TH2F(Form("hCosPointVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; cos(#vartheta_{point})",16,0.,16.,100,-1.,1.);
+      fHistXvtxResVsPt[index]=new TH2F(Form("hXvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; x_{v}(rec)-x_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,-500.,500.);
+      fHistYvtxResVsPt[index]=new TH2F(Form("hYvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; y_{v}(rec)-y_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,-500.,500.);
+      fHistZvtxResVsPt[index]=new TH2F(Form("hZvtxResVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; z_{v}(rec)-z_{v}(gen) (#mum)",fNPtBins,fMinPt,fMaxPt,100,-500.,500.);
+      fHistInvMassVsPt[index]=new TH2F(Form("hInvMassVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; Inv. Mass (GeV/c^{2})",fNPtBins,fMinPt,fMaxPt,300,1.75,2.35);
+      fHistDecLenVsPt[index]=new TH2F(Form("hDecLenVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; dec. len. (#mum)",fNPtBins,fMinPt,fMaxPt,100,0.,5000.);
+      fHistNormDLxyVsPt[index]=new TH2F(Form("hNormDLxyVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; dec. len. (#mum)",fNPtBins,fMinPt,fMaxPt,100,0.,20.);
+      fHistCosPointVsPt[index]=new TH2F(Form("hCosPointVsPt%s%s",type[i].Data(),fPartName[j].Data())," ;  p_{T} (GeV/c) ; cos(#vartheta_{point})",fNPtBins,fMinPt,fMaxPt,100,-1.,1.);
       fOutput->Add(fHistXvtxResVsPt[index]);
       fOutput->Add(fHistYvtxResVsPt[index]);
       fOutput->Add(fHistZvtxResVsPt[index]);
