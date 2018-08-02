@@ -129,6 +129,7 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
   if (fTOFParticle == 0) tTOF = aTrack->TOFpionTime();
   if (fTOFParticle == 1) tTOF = aTrack->TOFkaonTime();
   if (fTOFParticle == 2) tTOF = aTrack->TOFprotonTime();
+  if (fTOFParticle == 3) tTOF = aTrack->TOFdeuteronTime();
 
   fTPCdEdx->Fill(tMom, tdEdx);
   fTOFTime->Fill(tMom, tTOF);
@@ -152,18 +153,22 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
     if (fTOFParticle == 0) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFPi());
     if (fTOFParticle == 1) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFK());
     if (fTOFParticle == 2) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFP());
+    if (fTOFParticle == 3) fTOFNSigma->Fill(tMom, aTrack->NSigmaTOFD());
 
     if (fTOFParticle == 0) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCPi());
     if (fTOFParticle == 1) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCK());
     if (fTOFParticle == 2) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCP());
+    if (fTOFParticle == 3) fTPCNSigma->Fill(tMom, aTrack->NSigmaTPCD());
 
     if (fTOFParticle == 0) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCPi(), aTrack->NSigmaTOFPi() ) );
     if (fTOFParticle == 1) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCK(), aTrack->NSigmaTOFK() ) );
     if (fTOFParticle == 2) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP() ) );
-
+    if (fTOFParticle == 3) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCD(), aTrack->NSigmaTOFD() ) );
+    
     if (fTOFParticle == 0) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCPi(), aTrack->NSigmaTOFPi());
     if (fTOFParticle == 1) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCK(), aTrack->NSigmaTOFK());
     if (fTOFParticle == 2) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP());
+    if (fTOFParticle == 3) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCD(), aTrack->NSigmaTOFD());
 
 
 }

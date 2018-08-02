@@ -88,6 +88,14 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   f1DcorrectionsPionsMinus(0),
   f1DcorrectionsKaonsMinus(0),
   f1DcorrectionsProtonsMinus(0),
+  f1DcorrectionsDeuterons(0),
+  f1DcorrectionsTritons(0),
+  f1DcorrectionsHe3s(0),
+  f1DcorrectionsAlphas(0),
+  f1DcorrectionsDeuteronsMinus(0),
+  f1DcorrectionsTritonsMinus(0),
+  f1DcorrectionsHe3sMinus(0),
+  f1DcorrectionsAlphasMinus(0),
   f1DcorrectionsAll(0),
   f1DcorrectionsLambdas(0),
   f1DcorrectionsLambdasMinus(0),
@@ -142,13 +150,25 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   f1DcorrectionsPionsMinus(aReader.f1DcorrectionsPionsMinus),
   f1DcorrectionsKaonsMinus(aReader.f1DcorrectionsKaonsMinus),
   f1DcorrectionsProtonsMinus(aReader.f1DcorrectionsProtonsMinus),
+  f1DcorrectionsDeuterons(aReader.f1DcorrectionsDeuterons),
+  f1DcorrectionsTritons(aReader.f1DcorrectionsTritons),
+  f1DcorrectionsHe3s(aReader.f1DcorrectionsHe3s),
+  f1DcorrectionsAlphas(aReader.f1DcorrectionsAlphas),
+  f1DcorrectionsDeuteronsMinus(aReader.f1DcorrectionsDeuteronsMinus),
+  f1DcorrectionsTritonsMinus(aReader.f1DcorrectionsTritonsMinus),
+  f1DcorrectionsHe3sMinus(aReader.f1DcorrectionsHe3sMinus),
+  f1DcorrectionsAlphasMinus(aReader.f1DcorrectionsAlphasMinus),
   f1DcorrectionsAll(aReader.f1DcorrectionsAll),
   f1DcorrectionsLambdas(aReader.f1DcorrectionsLambdas),
   f1DcorrectionsLambdasMinus(aReader.f1DcorrectionsLambdasMinus),
   fIsKaonAnalysis(aReader.fIsKaonAnalysis),
   fIsProtonAnalysis(aReader.fIsProtonAnalysis),
   fIsPionAnalysis(aReader.fIsPionAnalysis),
-  fIsElectronAnalysis(aReader.fIsElectronAnalysis)
+  fIsElectronAnalysis(aReader.fIsElectronAnalysis),
+  fIsDeuteronAnalysis(aReader.fIsDeuteronAnalysis),
+  fIsTritonAnalysis(aReader.fIsTritonAnalysis),
+  fIsHe3Analysis(aReader.fIsHe3Analysis),
+  fIsAlphaAnalysis(aReader.fIsAlphaAnalysis)
 
 {
   // copy constructor
@@ -216,6 +236,14 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   f1DcorrectionsPionsMinus = aReader.f1DcorrectionsPionsMinus;
   f1DcorrectionsKaonsMinus = aReader.f1DcorrectionsKaonsMinus;
   f1DcorrectionsProtonsMinus = aReader.f1DcorrectionsProtonsMinus;
+  f1DcorrectionsDeuterons = aReader.f1DcorrectionsDeuterons;
+  f1DcorrectionsTritons = aReader.f1DcorrectionsTritons;
+  f1DcorrectionsHe3s = aReader.f1DcorrectionsHe3s;
+  f1DcorrectionsAlphas = aReader.f1DcorrectionsAlphas;
+  f1DcorrectionsDeuteronsMinus = aReader.f1DcorrectionsDeuteronsMinus;
+  f1DcorrectionsTritonsMinus = aReader.f1DcorrectionsTritonsMinus;
+  f1DcorrectionsHe3sMinus = aReader.f1DcorrectionsHe3sMinus;
+  f1DcorrectionsAlphasMinus = aReader.f1DcorrectionsAlphasMinus;
   f1DcorrectionsAll = aReader.f1DcorrectionsAll;
   f1DcorrectionsLambdas = aReader.f1DcorrectionsLambdas;
   f1DcorrectionsLambdasMinus = aReader.f1DcorrectionsLambdasMinus;
@@ -708,6 +736,15 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       if (fIsPionAnalysis == true && TMath::Abs(pdg) != 211)    trackAccept = false;
       if (fIsElectronAnalysis == true && TMath::Abs(pdg) != 11) trackAccept = false;
 
+      /***************************************************/
+      //
+      
+      if (fIsDeuteronAnalysis == true && TMath::Abs(pdg) != 700201) trackAccept = false;
+      if (fIsTritonAnalysis == true && TMath::Abs(pdg) != 700301) trackAccept = false;
+      if (fIsHe3Analysis == true && TMath::Abs(pdg) != 700302)    trackAccept = false;
+      if (fIsAlphaAnalysis == true && TMath::Abs(pdg) != 700202) trackAccept = false;
+      //
+      /*****************************************************/
       if (trackAccept == true && ptrue > 0) {    
 	tEvent->TrackCollection()->push_back(trackCopy);//adding track to analysis
 	realnofTracks++;//real number of tracks
@@ -1111,9 +1148,52 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   if(f1DcorrectionsAll){
     tFemtoTrack->SetCorrectionAll(f1DcorrectionsAll->GetBinContent(f1DcorrectionsAll->FindFixBin(tAodTrack->Pt())));
   }
-  else tFemtoTrack->SetCorrectionAll(1.0);
+    else tFemtoTrack->SetCorrectionAll(1.0);
 
+  /*******************************************************************/
+  //
+  if(f1DcorrectionsDeuterons){
+    tFemtoTrack->SetCorrectionDeuteron(f1DcorrectionsDeuterons->GetBinContent(f1DcorrectionsDeuterons->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionDeuteron(1.0);
 
+  if(f1DcorrectionsKaons){
+    tFemtoTrack->SetCorrectionTriton(f1DcorrectionsTritons->GetBinContent(f1DcorrectionsTritons->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionTriton(1.0);
+
+  if(f1DcorrectionsHe3s){
+    tFemtoTrack->SetCorrectionHe3(f1DcorrectionsHe3s->GetBinContent(f1DcorrectionsHe3s->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionHe3(1.0);
+  
+  if(f1DcorrectionsAlphas){
+    tFemtoTrack->SetCorrectionAlpha(f1DcorrectionsAlphas->GetBinContent(f1DcorrectionsAlphas->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionAlpha(1.0);
+
+  if(f1DcorrectionsDeuteronsMinus){
+    tFemtoTrack->SetCorrectionDeuteronMinus(f1DcorrectionsDeuteronsMinus->GetBinContent(f1DcorrectionsDeuteronsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionDeuteronMinus(1.0);
+
+  if(f1DcorrectionsTritonsMinus){
+    tFemtoTrack->SetCorrectionTritonMinus(f1DcorrectionsTritonsMinus->GetBinContent(f1DcorrectionsTritonsMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionTritonMinus(1.0);
+
+  if(f1DcorrectionsHe3sMinus){
+    tFemtoTrack->SetCorrectionHe3Minus(f1DcorrectionsHe3sMinus->GetBinContent(f1DcorrectionsHe3sMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionHe3Minus(1.0);
+
+  if(f1DcorrectionsAlphasMinus){
+    tFemtoTrack->SetCorrectionAlphaMinus(f1DcorrectionsAlphasMinus->GetBinContent(f1DcorrectionsAlphasMinus->FindFixBin(tAodTrack->Pt())));
+  }
+  else tFemtoTrack->SetCorrectionAlphaMinus(1.0);
+
+  //
+  /*******************************************************************/
   return tFemtoTrack;
 }
 
@@ -1256,7 +1336,6 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
     tFemtoV0->SetNegNSigmaTPCP(fAODpidUtil->NumberOfSigmasTPC(trackneg, AliPID::kProton));
     tFemtoV0->SetPosNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackpos, AliPID::kPion));
     tFemtoV0->SetNegNSigmaTPCPi(fAODpidUtil->NumberOfSigmasTPC(trackneg, AliPID::kPion));
-
 
     float bfield = 5 * fMagFieldSign;
     float globalPositionsAtRadiiPos[9][3];
@@ -1798,18 +1877,37 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
 
   tFemtoTrack->SetTofExpectedTimes(tTOF - aodpid[2], tTOF - aodpid[3], tTOF - aodpid[4]);
 
-  //////  TPC ////////////////////////////////////////////
+   //////  TPC ////////////////////////////////////////////
 
   const float nsigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kKaon);
   const float nsigmaTPCPi = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kPion);
   const float nsigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kProton);
   const float nsigmaTPCE = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kElectron);
 
+  
+  /*************************************************************************************/
+  const float nsigmaTPCD = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kDeuteron);
+  const float nsigmaTPCT = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kTriton);
+  const float nsigmaTPCH = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kHe3);
+  const float nsigmaTPCA = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kAlpha);
+  /*************************************************************************************/
+
+
+  
   tFemtoTrack->SetNSigmaTPCPi(nsigmaTPCPi);
   tFemtoTrack->SetNSigmaTPCK(nsigmaTPCK);
   tFemtoTrack->SetNSigmaTPCP(nsigmaTPCP);
   tFemtoTrack->SetNSigmaTPCE(nsigmaTPCE);
 
+
+  
+  /***************************************/
+  tFemtoTrack->SetNSigmaTPCD(nsigmaTPCD);
+  tFemtoTrack->SetNSigmaTPCT(nsigmaTPCT);
+  tFemtoTrack->SetNSigmaTPCH(nsigmaTPCH);
+  tFemtoTrack->SetNSigmaTPCA(nsigmaTPCA);
+  /****************************************/
+  
   tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
   tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNcls());
@@ -1826,7 +1924,14 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
   float nsigmaTOFK = -1000.;
   float nsigmaTOFP = -1000.;
   float nsigmaTOFE = -1000.;
-
+  /*****************************/
+  //
+  float nsigmaTOFD = -1000.;
+  float nsigmaTOFT = -1000.;
+  float nsigmaTOFH = -1000.;
+  float nsigmaTOFA = -1000.;
+  //
+  /*******************************/
   if (((status & AliVTrack::kTOFout) == AliVTrack::kTOFout)
       && ((status & AliVTrack::kTIME) == AliVTrack::kTIME)
       && probMis < 0.01) {
@@ -1835,6 +1940,13 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
     nsigmaTOFK = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kKaon);
     nsigmaTOFP = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kProton);
     nsigmaTOFE = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kElectron);
+
+    /********************************************************************/
+    nsigmaTOFD = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kDeuteron);
+    nsigmaTOFT = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kTriton);
+    nsigmaTOFH = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kHe3);
+    nsigmaTOFA = fAODpidUtil->NumberOfSigmasTOF(tAodTrack, AliPID::kAlpha);
+    /*********************************************************************/
 
     Double_t len = 200; // esdtrack->GetIntegratedLength(); !!!!!
     Double_t tof = tAodTrack->GetTOFsignal();
@@ -1846,7 +1958,14 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack, AliFemt
   tFemtoTrack->SetNSigmaTOFK(nsigmaTOFK);
   tFemtoTrack->SetNSigmaTOFP(nsigmaTOFP);
   tFemtoTrack->SetNSigmaTOFE(nsigmaTOFE);
+  
 
+  /*****************************************/
+  tFemtoTrack->SetNSigmaTOFD(nsigmaTOFD);
+  tFemtoTrack->SetNSigmaTOFT(nsigmaTOFT);
+  tFemtoTrack->SetNSigmaTOFH(nsigmaTOFH);
+  tFemtoTrack->SetNSigmaTOFA(nsigmaTOFA);
+  /******************************************/
   //////////////////////////////////////
 }
 
@@ -2099,6 +2218,51 @@ void AliFemtoEventReaderAOD::Set1DCorrectionsProtonsMinus(TH1D *h1)
   f1DcorrectionsProtonsMinus = h1;
 }
 
+/*************************************/
+//
+void AliFemtoEventReaderAOD::Set1DCorrectionsDeuterons(TH1D *h1)
+{
+  f1DcorrectionsDeuterons = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsTritons(TH1D *h1)
+{
+  f1DcorrectionsTritons = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsHe3s(TH1D *h1)
+{
+  f1DcorrectionsHe3s = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsAlphas(TH1D *h1)
+{
+  f1DcorrectionsAlphas = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsDeuteronsMinus(TH1D *h1)
+{
+  f1DcorrectionsDeuteronsMinus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsTritonsMinus(TH1D *h1)
+{
+  f1DcorrectionsTritonsMinus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsHe3sMinus(TH1D *h1)
+{
+  f1DcorrectionsHe3sMinus = h1;
+}
+
+void AliFemtoEventReaderAOD::Set1DCorrectionsAlphasMinus(TH1D *h1)
+{
+  f1DcorrectionsAlphasMinus = h1;
+}
+//
+/************************************/
+
+
 void AliFemtoEventReaderAOD::Set1DCorrectionsAll(TH1D *h1)
 {
   f1DcorrectionsAll = h1;
@@ -2132,3 +2296,23 @@ void AliFemtoEventReaderAOD::SetElectronAnalysis(Bool_t aSetElectronAna)
   fIsElectronAnalysis = aSetElectronAna;
 }
 //Special MC analysis for pi,K,p,e selected by PDG code <--
+/**************************************************/
+//
+void AliFemtoEventReaderAOD::SetDeuteronAnalysis(Bool_t aSetDeuteronAna)
+{
+  fIsDeuteronAnalysis = aSetDeuteronAna;
+}
+void AliFemtoEventReaderAOD::SetTritonAnalysis(Bool_t aSetTritonAna)
+{
+  fIsTritonAnalysis = aSetTritonAna;
+}
+void AliFemtoEventReaderAOD::SetHe3Analysis(Bool_t aSetHe3Ana)
+{
+  fIsHe3Analysis = aSetHe3Ana;
+}
+void AliFemtoEventReaderAOD::SetAlphaAnalysis(Bool_t aSetAlphaAna)
+{
+  fIsAlphaAnalysis = aSetAlphaAna;
+}
+//
+/*************************************************/

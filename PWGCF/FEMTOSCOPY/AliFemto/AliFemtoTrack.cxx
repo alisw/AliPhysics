@@ -26,6 +26,10 @@ AliFemtoTrack::AliFemtoTrack():
   fTofPionTime(-100000.0f),
   fTofKaonTime(-100000.0f),
   fTofProtonTime(-100000.0f),
+  fTofDeuteronTime(-100000.0f),
+  fTofTritonTime(-100000.0f),
+  fTofHe3Time(-100000.0f),
+  fTofAlphaTime(-100000.0f),
   fP(0,0,0),
   fPt(0.0f),
   fInnerMomentum(0.0f),
@@ -53,10 +57,18 @@ AliFemtoTrack::AliFemtoTrack():
   fNSigmaTPCK(0.0f),
   fNSigmaTPCP(0.0f),
   fNSigmaTPCE(0.0f),
+  fNSigmaTPCD(0.0f),
+  fNSigmaTPCT(0.0f),
+  fNSigmaTPCH(0.0f),
+  fNSigmaTPCA(0.0f),
   fNSigmaTOFPi(0.0f),
   fNSigmaTOFK(0.0f),
   fNSigmaTOFP(0.0f),
   fNSigmaTOFE(0.0f),
+  fNSigmaTOFD(0.0f),
+  fNSigmaTOFT(0.0f),
+  fNSigmaTOFH(0.0f),
+  fNSigmaTOFA(0.0f),
   fSigmaToVertex(0.0f),
   fClusters(159),
   fShared(159),
@@ -75,9 +87,17 @@ AliFemtoTrack::AliFemtoTrack():
   fCorrPi(0.0),
   fCorrK(0.0),
   fCorrP(0.0),
+  fCorrD(0.0),
+  fCorrT(0.0),
+  fCorrH(0.0),
+  fCorrA(0.0),
   fCorrPiMinus(0.0),
   fCorrKMinus(0.0),
   fCorrPMinus(0.0),
+  fCorrDMinus(0.0),
+  fCorrTMinus(0.0),
+  fCorrHMinus(0.0),
+  fCorrAMinus(0.0),
   fCorrAll(0.0)
 {
   // Default constructor
@@ -112,6 +132,10 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTofPionTime(t.fTofPionTime),
   fTofKaonTime(t.fTofKaonTime),
   fTofProtonTime(t.fTofProtonTime),
+  fTofDeuteronTime(t.fTofDeuteronTime),
+  fTofTritonTime(t.fTofTritonTime),
+  fTofHe3Time(t.fTofHe3Time),
+  fTofAlphaTime(t.fTofAlphaTime),
   fP(t.fP),
   fPt(t.fPt),
   fInnerMomentum(t.fInnerMomentum),
@@ -141,10 +165,18 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fNSigmaTPCK(t.fNSigmaTPCK),
   fNSigmaTPCP(t.fNSigmaTPCP),
   fNSigmaTPCE(t.fNSigmaTPCE),
+  fNSigmaTPCD(t.fNSigmaTPCD),
+  fNSigmaTPCT(t.fNSigmaTPCT),
+  fNSigmaTPCH(t.fNSigmaTPCH),
+  fNSigmaTPCA(t.fNSigmaTPCA),
   fNSigmaTOFPi(t.fNSigmaTOFPi),
   fNSigmaTOFK(t.fNSigmaTOFK),
   fNSigmaTOFP(t.fNSigmaTOFP),
   fNSigmaTOFE(t.fNSigmaTOFE),
+  fNSigmaTOFD(t.fNSigmaTOFD),
+  fNSigmaTOFT(t.fNSigmaTOFT),
+  fNSigmaTOFH(t.fNSigmaTOFH),
+  fNSigmaTOFA(t.fNSigmaTOFA),
   fSigmaToVertex(t.fSigmaToVertex),
   fClusters(t.fClusters),
   fShared(t.fShared),
@@ -163,9 +195,17 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fCorrPi(t.fCorrPi),
   fCorrK(t.fCorrK),
   fCorrP(t.fCorrP),
+  fCorrD(t.fCorrD),
+  fCorrT(t.fCorrT),
+  fCorrH(t.fCorrH),
+  fCorrA(t.fCorrA),
   fCorrPiMinus(t.fCorrPiMinus),
   fCorrKMinus(t.fCorrKMinus),
   fCorrPMinus(t.fCorrPMinus),
+  fCorrDMinus(t.fCorrDMinus),
+  fCorrTMinus(t.fCorrTMinus),
+  fCorrHMinus(t.fCorrHMinus),
+  fCorrAMinus(t.fCorrAMinus),
   fCorrAll(t.fCorrAll)
  {
    // copy constructor
@@ -205,6 +245,10 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fTofPionTime=aTrack.fTofPionTime;
   fTofKaonTime=aTrack.fTofKaonTime;
   fTofProtonTime=aTrack.fTofProtonTime;
+  fTofDeuteronTime=aTrack.fTofDeuteronTime;
+  fTofTritonTime=aTrack.fTofTritonTime;
+  fTofHe3Time=aTrack.fTofHe3Time;
+  fTofAlphaTime=aTrack.fTofAlphaTime;
   fP=aTrack.fP;
   fPt=aTrack.fPt;
   fInnerMomentum=aTrack.fInnerMomentum;
@@ -235,10 +279,19 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fNSigmaTPCK=aTrack.fNSigmaTPCK;
   fNSigmaTPCP=aTrack.fNSigmaTPCP;
   fNSigmaTPCE=aTrack.fNSigmaTPCE;
+  fNSigmaTPCD=aTrack.fNSigmaTPCD;
+  fNSigmaTPCT=aTrack.fNSigmaTPCT;
+  fNSigmaTPCH=aTrack.fNSigmaTPCH;
+  fNSigmaTPCA=aTrack.fNSigmaTPCA;
+
   fNSigmaTOFPi=aTrack.fNSigmaTOFPi;
   fNSigmaTOFK=aTrack.fNSigmaTOFK;
   fNSigmaTOFP=aTrack.fNSigmaTOFP;
   fNSigmaTOFE=aTrack.fNSigmaTOFE;
+  fNSigmaTOFD=aTrack.fNSigmaTOFD;
+  fNSigmaTOFT=aTrack.fNSigmaTOFT;
+  fNSigmaTOFH=aTrack.fNSigmaTOFH;
+  fNSigmaTOFA=aTrack.fNSigmaTOFA;
   fClusters=aTrack.fClusters;
   fShared=aTrack.fShared;
   fNominalTpcEntrancePoint=aTrack.fNominalTpcEntrancePoint;
@@ -255,9 +308,17 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fCorrPi = aTrack.fCorrPi;
   fCorrK = aTrack.fCorrK;
   fCorrP = aTrack.fCorrP;
+  fCorrD = aTrack.fCorrD;
+  fCorrT = aTrack.fCorrT;
+  fCorrH = aTrack.fCorrH;
+  fCorrA = aTrack.fCorrA;
   fCorrPiMinus = aTrack.fCorrPiMinus;
   fCorrKMinus = aTrack.fCorrKMinus;
   fCorrPMinus = aTrack.fCorrPMinus;
+  fCorrDMinus = aTrack.fCorrDMinus;
+  fCorrTMinus = aTrack.fCorrTMinus;
+  fCorrHMinus = aTrack.fCorrHMinus;
+  fCorrAMinus = aTrack.fCorrAMinus;
   fCorrAll = aTrack.fCorrAll;
 
   for (int i=0; i<6; i++) {
@@ -317,7 +378,7 @@ void AliFemtoTrack::SetPidProbPion(const float& x){fPidProbPion = x;}
 void AliFemtoTrack::SetPidProbKaon(const float& x){fPidProbKaon = x;}
 void AliFemtoTrack::SetPidProbProton(const float& x){fPidProbProton = x;}
 void AliFemtoTrack::SetPidProbMuon(const float& x){fPidProbMuon = x;}
-void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr){fTofPionTime = tpi; fTofKaonTime = tkn; fTofProtonTime = tpr; }
+void AliFemtoTrack::SetTofExpectedTimes(const float& tpi, const float& tkn, const float& tpr){fTofPionTime = tpi; fTofKaonTime = tkn; fTofProtonTime = tpr;}
 
 void AliFemtoTrack::SetP(const AliFemtoThreeVector& p){fP = p;}
 void AliFemtoTrack::SetPt(const float& pt){fPt = pt;}
@@ -349,10 +410,19 @@ void AliFemtoTrack::SetNSigmaTPCPi(const float& aNSigmaTPCPi){fNSigmaTPCPi=aNSig
 void AliFemtoTrack::SetNSigmaTPCK(const float& aNSigmaTPCK){fNSigmaTPCK=aNSigmaTPCK;}
 void AliFemtoTrack::SetNSigmaTPCP(const float& aNSigmaTPCP){fNSigmaTPCP=aNSigmaTPCP;}
 void AliFemtoTrack::SetNSigmaTPCE(const float& aNSigmaTPCE){fNSigmaTPCE=aNSigmaTPCE;}
+void AliFemtoTrack::SetNSigmaTPCD(const float& aNSigmaTPCD){fNSigmaTPCD=aNSigmaTPCD;}
+void AliFemtoTrack::SetNSigmaTPCT(const float& aNSigmaTPCT){fNSigmaTPCT=aNSigmaTPCT;}
+void AliFemtoTrack::SetNSigmaTPCH(const float& aNSigmaTPCH){fNSigmaTPCH=aNSigmaTPCH;}
+void AliFemtoTrack::SetNSigmaTPCA(const float& aNSigmaTPCA){fNSigmaTPCA=aNSigmaTPCA;}
+
 void AliFemtoTrack::SetNSigmaTOFPi(const float& aNSigmaTOFPi){fNSigmaTOFPi=aNSigmaTOFPi;}
 void AliFemtoTrack::SetNSigmaTOFK(const float& aNSigmaTOFK){fNSigmaTOFK=aNSigmaTOFK;}
 void AliFemtoTrack::SetNSigmaTOFP(const float& aNSigmaTOFP){fNSigmaTOFP=aNSigmaTOFP;}
 void AliFemtoTrack::SetNSigmaTOFE(const float& aNSigmaTOFE){fNSigmaTOFE=aNSigmaTOFE;}
+void AliFemtoTrack::SetNSigmaTOFD(const float& aNSigmaTOFD){fNSigmaTOFD=aNSigmaTOFD;}
+void AliFemtoTrack::SetNSigmaTOFT(const float& aNSigmaTOFT){fNSigmaTOFT=aNSigmaTOFT;}
+void AliFemtoTrack::SetNSigmaTOFH(const float& aNSigmaTOFH){fNSigmaTOFH=aNSigmaTOFH;}
+void AliFemtoTrack::SetNSigmaTOFA(const float& aNSigmaTOFA){fNSigmaTOFA=aNSigmaTOFA;}
 void AliFemtoTrack::SetSigmaToVertex(const float& aSigma){fSigmaToVertex=aSigma;}
 
 void AliFemtoTrack::SetXatDCA(const double& x) {fXatDCA=x;}
@@ -363,9 +433,17 @@ void AliFemtoTrack::SetZatDCA(const double& x) {fZatDCA=x;}
 void AliFemtoTrack::SetCorrectionPion(const double& x){fCorrPi=x;}
 void AliFemtoTrack::SetCorrectionKaon(const double& x){fCorrK=x;}
 void AliFemtoTrack::SetCorrectionProton(const double& x){fCorrP=x;}
+void AliFemtoTrack::SetCorrectionDeuteron(const double& x){fCorrD=x;}
+void AliFemtoTrack::SetCorrectionTriton(const double& x){fCorrT=x;}
+void AliFemtoTrack::SetCorrectionHe3(const double& x){fCorrH=x;}
+void AliFemtoTrack::SetCorrectionAlpha(const double& x){fCorrA=x;}
 void AliFemtoTrack::SetCorrectionPionMinus(const double& x){fCorrPiMinus=x;}
 void AliFemtoTrack::SetCorrectionKaonMinus(const double& x){fCorrKMinus=x;}
 void AliFemtoTrack::SetCorrectionProtonMinus(const double& x){fCorrPMinus=x;}
+void AliFemtoTrack::SetCorrectionDeuteronMinus(const double& x){fCorrDMinus=x;}
+void AliFemtoTrack::SetCorrectionTritonMinus(const double& x){fCorrTMinus=x;}
+void AliFemtoTrack::SetCorrectionHe3Minus(const double& x){fCorrHMinus=x;}
+void AliFemtoTrack::SetCorrectionAlphaMinus(const double& x){fCorrAMinus=x;}
 void AliFemtoTrack::SetCorrectionAll(const double& x){fCorrAll=x;}
 
 short AliFemtoTrack::Charge() const {return fCharge;}
@@ -399,21 +477,42 @@ float AliFemtoTrack::NSigmaTPCPi() const{return fNSigmaTPCPi;}
 float AliFemtoTrack::NSigmaTPCK() const{return fNSigmaTPCK;}
 float AliFemtoTrack::NSigmaTPCP() const{return fNSigmaTPCP;}
 float AliFemtoTrack::NSigmaTPCE() const{return fNSigmaTPCE;}
+float AliFemtoTrack::NSigmaTPCD() const{return fNSigmaTPCD;}
+float AliFemtoTrack::NSigmaTPCT() const{return fNSigmaTPCT;}
+float AliFemtoTrack::NSigmaTPCH() const{return fNSigmaTPCH;}
+float AliFemtoTrack::NSigmaTPCA() const{return fNSigmaTPCA;}
 float AliFemtoTrack::NSigmaTOFPi() const{return fNSigmaTOFPi;}
 float AliFemtoTrack::NSigmaTOFK() const{return fNSigmaTOFK;}
 float AliFemtoTrack::NSigmaTOFP() const{return fNSigmaTOFP;}
 float AliFemtoTrack::NSigmaTOFE() const{return fNSigmaTOFE;}
+float AliFemtoTrack::NSigmaTOFD() const{return fNSigmaTOFD;}
+float AliFemtoTrack::NSigmaTOFT() const{return fNSigmaTOFT;}
+float AliFemtoTrack::NSigmaTOFH() const{return fNSigmaTOFH;}
+float AliFemtoTrack::NSigmaTOFA() const{return fNSigmaTOFA;}
 float AliFemtoTrack::SigmaToVertex() const{return fSigmaToVertex;}
 float AliFemtoTrack::TOFpionTime() const{return fTofPionTime;}
 float AliFemtoTrack::TOFkaonTime() const{return fTofKaonTime;}
 float AliFemtoTrack::TOFprotonTime() const{return fTofProtonTime;}
+float AliFemtoTrack::TOFdeuteronTime() const{return fTofDeuteronTime;}
+float AliFemtoTrack::TOFtritonTime() const{return fTofTritonTime;}
+float AliFemtoTrack::TOFhe3Time() const{return fTofHe3Time;}
+float AliFemtoTrack::TOFalphaTime() const{return fTofAlphaTime;}
+
 //corrections
 float AliFemtoTrack::CorrectionPion() const {return fCorrPi;}
 float AliFemtoTrack::CorrectionKaon() const {return fCorrK;}
 float AliFemtoTrack::CorrectionProton() const {return fCorrP;}
+float AliFemtoTrack::CorrectionDeuteron() const {return fCorrD;}
+float AliFemtoTrack::CorrectionTriton() const {return fCorrT;}
+float AliFemtoTrack::CorrectionHe3() const {return fCorrH;}
+float AliFemtoTrack::CorrectionAlpha() const {return fCorrA;}
 float AliFemtoTrack::CorrectionPionMinus() const {return fCorrPiMinus;}
 float AliFemtoTrack::CorrectionKaonMinus() const {return fCorrKMinus;}
 float AliFemtoTrack::CorrectionProtonMinus() const {return fCorrPMinus;}
+float AliFemtoTrack::CorrectionDeuteronMinus() const {return fCorrDMinus;}
+float AliFemtoTrack::CorrectionTritonMinus() const {return fCorrTMinus;}
+float AliFemtoTrack::CorrectionHe3Minus() const {return fCorrHMinus;}
+float AliFemtoTrack::CorrectionAlphaMinus() const {return fCorrAMinus;}
 float AliFemtoTrack::CorrectionAll() const {return fCorrAll;}
 
 double AliFemtoTrack::XatDCA() const {return fXatDCA;}
@@ -734,3 +833,4 @@ void AliFemtoTrack::SetZvtx(double vtx)
 {
   fZvtx=vtx;
 }
+//______________________
