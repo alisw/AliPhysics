@@ -1122,9 +1122,14 @@ TObjArray  * AliTreePlayer::MakeHistograms(TTree * tree, TString hisString, TStr
   //
 
   const Int_t kMaxDim=10;
-  Int_t entriesAll=tree->GetEntriesFast();
+  Int_t entriesAll=tree->GetEntries();
   if (chunkSize<=0) chunkSize=entriesAll;
   if (lastEntry>entriesAll) lastEntry=entriesAll;
+  if (verbose&0x7){
+    ::Info("AliTreePlayer::MakeHistograms","firstEntry %d", firstEntry);
+    ::Info("AliTreePlayer::MakeHistograms","lastEntry %d", lastEntry);
+    ::Info("AliTreePlayer::MakeHistograms","entriesAll %d", entriesAll);
+  }
   //
   TObjArray *hisDescriptionList=hisString.Tokenize(";");
   Int_t nHistograms = hisDescriptionList->GetEntries();
@@ -1570,7 +1575,93 @@ void AliTreePlayer::MakeCacheTree(TTree * tree, TString varList, TString outFile
   delete pcstream;
 }
 
-
-
-
+/// \brief LoadTrees and and append friend trees
+/// \param inputDataList          - command returning input data list - line with #tag:value for the metadata definition
+/// \param chRegExp               - regular expression  - trees to include
+/// \param chNotReg               - regular expression  - trees to exclude
+/// \param inputFileSelection     - : separated input file selection
+/// \param axisAlias              - axis names
+/// \param axisTitle              - axis titles
+/// \return                       - resulting tree
+TTree* AliTreePlayer::LoadTrees(const char *inputDataList, const char *chRegExp, const char *chNotReg, TString inputFileSelection, TString axisAlias, TString axisTitle) {
+  //
+  TPRegexp regExp(chRegExp);
+  TPRegexp notReg(chNotReg);
+  TObjArray *regExpArray = inputFileSelection.Tokenize(":");
+  TObjArray *residualMapList = gSystem->GetFromPipe(inputDataList).Tokenize("\n");
+  Int_t nFiles = residualMapList->GetEntries();
+  TTree *treeBase = 0;
+  TObjArray *arrayAxisAlias = axisAlias.Tokenize(":");
+  TObjArray *arrayAxisTitle = axisTitle.Tokenize(":");
+  std::map<string,string> tagValue;
+  ///
+  Int_t nSelected=0;
+  for (Int_t iFile = 0; iFile < nFiles; iFile++) {
+    tagValue.clear();
+    /// read metadata #tag:value information - signed by # at the beginning of the line
+    for (Int_t jFile=iFile;jFile<nFiles; jFile++){
+      TString name = residualMapList->At(jFile)->GetName();
+      if (name[0]=='#') {
+        Int_t first=name.First(":");
+        TString tag=name(1,name.First(":")-1);
+        TString value=name(name.First(":")+1,name.Length());
+        tagValue[tag.Data()]=value.Data();
+      }else{
+        iFile=jFile;
+        break;
+      }
+    }
+    TString fileName = residualMapList->At(iFile)->GetName(); ///
+    Bool_t isSelected = kTRUE;
+    // check if the file was selected
+    if (regExpArray->GetEntries() > 0) {
+      isSelected = kFALSE;
+      for (Int_t entry = 0; entry < regExpArray->GetEntries(); entry++) {
+        TPRegexp reg(regExpArray->At(entry)->GetName());
+        if (reg.Match(fileName)) isSelected |= kTRUE;
+      }
+    }
+    if (!isSelected) continue;
+    ::Info("LoadTrees","Load file\t%s", fileName.Data());
+    TString description = "";
+    TFile *finput = TFile::Open(fileName.Data());
+    if (finput == NULL) {
+      ::Error("MakeResidualDistortionReport", "Invalid file name %s", fileName.Data());
+      continue;
+    }
+    TList *keys = finput->GetListOfKeys();
+    Int_t isLegend = kFALSE;
+    ///
+    for (Int_t iKey = 0; iKey < keys->GetEntries(); iKey++) {
+      if (regExp.Match(keys->At(iKey)->GetName()) == 0) continue;     // is selected
+      if (notReg.Match(keys->At(iKey)->GetName()) != 0) continue;     // is rejected
+      TTree *tree = (TTree *) finput->Get(keys->At(iKey)->GetName()); // better to use dynamic cast
+      if (treeBase == NULL) {
+        TFile *finput2 = TFile::Open(fileName.Data());
+        treeBase = (TTree *) finput2->Get(keys->At(iKey)->GetName());
+      }
+      TString fileTitle=tagValue["Title"];
+      if (fileTitle.Length()){
+        treeBase->AddFriend(tree, TString::Format("%s.%s", fileTitle.Data(), keys->At(iKey)->GetName()).Data());
+      }else{
+        treeBase->AddFriend(tree, TString::Format("%s", keys->At(iKey)->GetName()).Data());
+      }
+      Int_t entriesF = tree->GetEntries();
+      Int_t entriesB = treeBase->GetEntries();
+      if (entriesB == entriesF) {
+        ::Info("InitMapTree", "%s\t%s.%s:\t%d\t%d", treeBase->GetName(), fileName.Data(), keys->At(iKey)->GetName(), entriesB, entriesF);
+      } else {
+        ::Error("InitMapTree", "%s\t%s.%s:\t%d\t%d", treeBase->GetName(), fileName.Data(), keys->At(iKey)->GetName(), entriesB, entriesF);
+      }
+    }
+    /// add metadata to all files ....
+  }
+  if (treeBase) {
+    for (Int_t iAxis = 0; iAxis < arrayAxisAlias->GetEntries(); iAxis++) {
+      treeBase->SetAlias(arrayAxisAlias->At(iAxis)->GetName(), TString::Format("%s%dCenter", arrayAxisAlias->At(iAxis)->GetName(), iAxis + 1).Data());
+      TStatToolkit::AddMetadata(treeBase, TString::Format("%s.AxisTitle", arrayAxisAlias->At(iAxis)->GetName()).Data(), arrayAxisTitle->At(iAxis)->GetName());
+    }
+  }
+  return treeBase;
+}
 
