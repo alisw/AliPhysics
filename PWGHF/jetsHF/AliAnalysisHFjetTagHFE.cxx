@@ -1274,8 +1274,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run()
             if(fTPCnSigma<-4)fHistEopHad->Fill(pt,eop);
 
             // check nSigma Data and MC
-            if(0.8<eop<1.3)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
-            if(0.3<eop<0.6)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
+            if(eop>0.85 && eop<1.3 && m20>0.01 && m20<0.35)fHistTPCnSigma_ele->Fill(pt,fTPCnSigma);
+            if(eop>0.2  && eop<0.7 && m20>0.01 && m20<0.35)fHistTPCnSigma_had->Fill(pt,fTPCnSigma);
             if(abs(MCpdg)==11)fHistTPCnSigma_eMC->Fill(pt,fTPCnSigma);
  
             if(fTPCnSigma<fmimSig || fTPCnSigma>3)continue;  // Nsigma cut
